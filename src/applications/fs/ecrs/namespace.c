@@ -120,7 +120,7 @@ int ECRS_createNamespace(const char * name,
   char ** keywords;
   unsigned int keywordCount;
   int i;
-
+  char * cpy;
 
   if ( (advertisementURI != NULL) &&
        (! ECRS_isKeywordURI(advertisementURI)) ) {
@@ -218,11 +218,15 @@ int ECRS_createNamespace(const char * name,
   knb = (KNBlock*) &knvalue[1];
   knb->type = htonl(KN_BLOCK);
   memcpy(&knb->nblock,
-	 &nb,
+	 nb,
 	 sizeof(NBlock) + mdsize);
 
   keywords = advertisementURI->data.ksk.keywords;
   keywordCount = advertisementURI->data.ksk.keywordCount;
+  cpy = MALLOC(size - sizeof(KBlock) - sizeof(unsigned int));
+  memcpy(cpy, 
+	 &knb->nblock,
+	 size - sizeof(KBlock) - sizeof(unsigned int));
   for (i=0;i<keywordCount;i++) {
     hash(keywords[i],
 	 strlen(keywords[i]),
@@ -230,11 +234,14 @@ int ECRS_createNamespace(const char * name,
     pk = makeKblockKey(&hc);
     getPublicKey(pk,
 		 &knb->kblock.keyspace);
-    GNUNET_ASSERT(size - sizeof(KBlock)
+    GNUNET_ASSERT(size - sizeof(KBlock) - sizeof(unsigned int)
 		  == sizeof(NBlock) + mdsize);
     ECRS_encryptInPlace(&hc,
 			&knb->nblock,
-			size - sizeof(KBlock));
+			size - sizeof(KBlock) - sizeof(unsigned int));
+    printf("SIGN size: %u\n",
+	   sizeof(NBlock) + mdsize);
+
     GNUNET_ASSERT(OK == sign(pk,
 			     sizeof(NBlock) + mdsize,
 			     &knb->nblock,
@@ -244,7 +251,12 @@ int ECRS_createNamespace(const char * name,
     if (OK != FS_insert(sock, knvalue))
       ret = SYSERR;
     FREE(keywords[i]);
+    /* restore nblock to avoid re-encryption! */
+    memcpy(&knb->nblock,
+	   cpy, 	   
+	   size - sizeof(KBlock) - sizeof(unsigned int));
   }
+  FREE(cpy);
   GROW(keywords, keywordCount, 0);
   FREE(knvalue);
   releaseClientSocket(sock);

@@ -222,8 +222,11 @@ int getQueryFor(unsigned int size,
       return SYSERR;
     }
     kb = (const KNBlock*) data;
+    LOG(LOG_NOTHING,
+	"VERIFY size: %u\n",
+	size - sizeof(KBlock) - sizeof(unsigned int));
     if ( (OK != verifySig(&kb->nblock,
-			  size - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
+			  size - sizeof(KBlock) - sizeof(unsigned int),
 			  &kb->kblock.signature,
 			  &kb->kblock.keyspace)) ) {
       BREAK();

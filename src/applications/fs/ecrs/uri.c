@@ -519,7 +519,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
     kd = MALLOC(strlen(key) + 13);
     memset(kd, 0, strlen(key) + 13);
     strcpy(kd, key);
-    strftime(kd[strlen(key)],
+    strftime(&kd[strlen(key)],
 	     13,
 	     "-%Y-%m-%d",
 	     &t);

@@ -28,6 +28,7 @@
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
+#include <sys/wait.h>
 
 #define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; }
 #define CHECK(c) { do { if (!(c)) ABORT(); } while(0); }
@@ -49,7 +50,7 @@ static int testNamespace() {
   };
   
 
-  CHECK(SYSERR == ECRS_deleteNamespace(CHECKNAME));
+  ECRS_deleteNamespace(CHECKNAME); /* make sure old one is deleted */
   meta = ECRS_createMetaData();
   adv = ECRS_keywordsToUri(keys);
   hash("root", 4, &root);
@@ -94,13 +95,14 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "NOTHING"));
+				     "DEBUG"));
   return OK;
 }
 
 int main(int argc, char * argv[]) {
   pid_t daemon;
-  int failureCount = 0;
+  int status;
+  int failureCount = 0; 
 
   daemon = fork();
   if (daemon == 0) {
@@ -131,8 +133,7 @@ int main(int argc, char * argv[]) {
     if (daemon != waitpid(daemon, &status, 0))
       DIE_STRERROR("waitpid");
 
-    if (! ( (WEXITSTATUS(status) == 0) &&
-	    (ok == YES) ) )
+    if (WEXITSTATUS(status) != 0)
       failureCount++;
   }
   if (failureCount == 0)
