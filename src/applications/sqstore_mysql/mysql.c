@@ -287,7 +287,7 @@ static int iopen(mysqlHandle * dbhI) {
 	      " expire BIGINT NOT NULL DEFAULT 0," 
 	      " hash TINYBLOB BINARY NOT NULL DEFAULT '',"
 	      " value BLOB NOT NULL DEFAULT '',"
-	      " INDEX (hash(20)),"
+	      " INDEX (hash(64)),"
 	      " INDEX (prio),"
 	      " INDEX (expire)"
 	      ") TYPE=MyISAM");

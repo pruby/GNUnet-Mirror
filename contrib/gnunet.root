@@ -189,6 +189,11 @@ TRANSPORTS = "udp tcp nat"
 # The default is "sqstore_sqlite".
 sqstore = "sqstore_sqlite"
 
+# Which topology should be used?  The only
+# option at the moment is "topology_default".
+#
+# The default is "topology_default"
+topology = "topology_default"
 
 
 ############################################

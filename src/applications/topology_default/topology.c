@@ -255,7 +255,7 @@ static double estimateSaturation() {
 }
 
 Topology_ServiceAPI * 
-provide_module_topology(CoreAPIForApplication * capi) {
+provide_module_topology_default(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
 
   coreAPI = capi;
@@ -302,7 +302,7 @@ provide_module_topology(CoreAPIForApplication * capi) {
   return &api;
 }
 
-int release_module_topology() {
+int release_module_topology_default() {
   delCronJob(&cronCheckLiveness,
 	     5 * cronSECONDS,
 	     NULL);
@@ -321,14 +321,14 @@ int release_module_topology() {
 static CoreAPIForApplication * myCapi;
 static Topology_ServiceAPI * myTopology;
 
-int initialize_module_topology(CoreAPIForApplication * capi) {
+int initialize_module_topology_default(CoreAPIForApplication * capi) {
   myCapi = capi;
   myTopology = capi->requestService("topology");
   GNUNET_ASSERT(myTopology != NULL);
   return OK;
 }
 
-void done_module_topology() {
+void done_module_topology_default() {
   myCapi->releaseService(myTopology);
   myCapi = NULL;
   myTopology = NULL;

@@ -256,12 +256,8 @@ void waitForSignalHandler() {
  * Check if the compiler did a decent job aligning the structs...
  */
 void checkCompiler() {
-  if (sizeof(HELO_Message) != 556)
-    errexit("sizeof HELO Message wrong! (%d != 556)",
-	    sizeof(HELO_Message));
-  if (sizeof(p2p_HEADER) != 4)
-    errexit("sizeof p2p_HEADER wrong! (%d != 4)",
-	    sizeof(p2p_HEADER));
+  GNUNET_ASSERT(sizeof(HELO_Message) == 600);
+  GNUNET_ASSERT(sizeof(p2p_HEADER) == 4);
 }
 
 /* *********** PID file handling *************** */
