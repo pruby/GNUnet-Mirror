@@ -43,7 +43,7 @@
  *  match the query
  */
 int fileBlockEncode(const DBlock * data,
-		    unsigned short len,
+		    unsigned int len,
 		    const HashCode512 * query,
 		    Datastore_Value ** value) {
   HashCode512 hc;
@@ -66,6 +66,7 @@ int fileBlockEncode(const DBlock * data,
   val->expirationTime = htonl(0);
   db = (DBlock*) &val[1];
   db->type = htonl(D_BLOCK);
+  GNUNET_ASSERT(len - sizeof(DBlock) < MAX_BUFFER_SIZE);
   GNUNET_ASSERT(len - sizeof(DBlock)
 		== encryptBlock(&data[1],
 				len - sizeof(DBlock),
@@ -92,7 +93,7 @@ int fileBlockEncode(const DBlock * data,
  * a certain block of data.
  */
 void fileBlockGetKey(const DBlock * data,
-		     unsigned short len,
+		     unsigned int len,
 		     HashCode512 * key) {
   GNUNET_ASSERT(len >= sizeof(DBlock));
   hash(&data[1],
@@ -105,7 +106,7 @@ void fileBlockGetKey(const DBlock * data,
  * a certain block of data.
  */
 void fileBlockGetQuery(const DBlock * db,
-		       unsigned short len,
+		       unsigned int len,
 		       HashCode512 * query) {
   char * tmp;
   const char * data;
@@ -131,7 +132,7 @@ void fileBlockGetQuery(const DBlock * db,
   FREE(tmp);
 }
 
-unsigned int getTypeOfBlock(unsigned short size,
+unsigned int getTypeOfBlock(unsigned int size,
 			    const DBlock * data) {
   if (size <= 4) {
     BREAK();
@@ -149,7 +150,7 @@ unsigned int getTypeOfBlock(unsigned short size,
  * @return SYSERR if the content is invalid or
  *   the content type is not known
  */
-int getQueryFor(unsigned short size,
+int getQueryFor(unsigned int size,
 		const DBlock * data,
 		HashCode512 * query) {
   unsigned int type;
@@ -270,7 +271,7 @@ int getQueryFor(unsigned short size,
  *         query type
  */
 int isDatumApplicable(unsigned int type,
-		      unsigned short size,
+		      unsigned int size,
 		      const DBlock * data,
 		      unsigned int keyCount,
 		      const HashCode512 * keys) {

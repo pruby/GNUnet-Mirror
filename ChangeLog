@@ -1,3 +1,6 @@
+Thu Mar 31 21:38:06 EST 2005
+	Releasing 0.7.0pre1.
+
 Tue Mar  8 14:45:55 EST 2005
 	OpenSSL cannot fully support SHA-512.  Eliminated as an
 	option (not necessary, GPL incompatible, trouble, work
