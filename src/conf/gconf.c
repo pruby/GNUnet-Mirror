@@ -28,7 +28,7 @@
 #include "gconf_support.h"
 #define ENABLE_NLS 1
 
-#define DEBUG
+/* #define DEBUG */
 
 enum {
   SINGLE_VIEW, SPLIT_VIEW, FULL_VIEW
@@ -36,7 +36,7 @@ enum {
 
 static gint view_mode = SPLIT_VIEW;
 static gboolean show_name = TRUE;
-static gboolean show_range = TRUE;
+static gboolean show_range = FALSE;
 static gboolean show_value = TRUE;
 static gboolean show_all = FALSE;
 static gboolean show_debug = FALSE;
@@ -194,10 +194,12 @@ static void set_help(const char *prompt, const char *name, const char *help)
   gtk_text_buffer_get_end_iter(buffer, &end);
   gtk_text_buffer_insert_with_tags(buffer, &end, prompt, -1, tag1,
            NULL);
-  gtk_text_buffer_insert_at_cursor(buffer, " ", 1);
-  gtk_text_buffer_get_end_iter(buffer, &end);
-  gtk_text_buffer_insert_with_tags(buffer, &end, name, -1, tag1,
-           NULL);
+  if (*name)
+  {
+    gtk_text_buffer_insert_at_cursor(buffer, " (", 2);
+    gtk_text_buffer_insert_at_cursor(buffer, name, -1);
+    gtk_text_buffer_insert_at_cursor(buffer, ")", 1);
+  }
   gtk_text_buffer_insert_at_cursor(buffer, "\n\n", 2);
   gtk_text_buffer_get_end_iter(buffer, &end);
   gtk_text_buffer_insert_with_tags(buffer, &end, help, -1, tag2,
