@@ -1090,7 +1090,7 @@ static void processRequests(RequestManager * rm) {
   perm = permute(rm->requestListIndex);
   for (i=0;i<rm->requestListIndex;i++) {
     int j = perm[i];
-    if (rm->requestList[i]->lastTimeout + TTL_DECREMENT < now) {
+    if (rm->requestList[j]->lastTimeout + TTL_DECREMENT < now) {
       int pOCWCubed;
       int pendingOverCWin = pending - rm->congestionWindow;
       if (pendingOverCWin <= 0)
