@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -21,7 +21,7 @@
 /**
  * @file applications/fs/ecrs/upload.c
  * @brief publish a URI in the keyword space
- * @see http://www.ovmj.org/GNUnet/encoding.php3
+ * @see http://gnunet.org/encoding.php3
  * @author Krista Bennett
  * @author Christian Grothoff
  */
@@ -122,6 +122,9 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     hash(keywords[i],
 	 strlen(keywords[i]),
 	 &hc);
+    LOG(LOG_DEBUG,
+	"Encrypting KBlock with key %u.\n",
+	hc.a);
     ECRS_encryptInPlace(&hc,
 			&kb[1],
 			mdsize + strlen(dstURI) + 1);

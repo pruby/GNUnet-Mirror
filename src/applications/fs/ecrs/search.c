@@ -105,7 +105,7 @@ typedef struct {
    * queryCount pending searches.
    */
   PendingSearch ** queries;
-  
+
   ECRS_SearchProgressCallback spcb;
   
   void * spcbClosure;
@@ -329,12 +329,15 @@ static int receiveReplies(const HashCode160 * key,
 	if (size < sizeof(KBlock))
 	  return SYSERR;
 	kb = (KBlock*) &value[1];
-	ECRS_decryptInPlace(key,
+	LOG(LOG_DEBUG,
+	    "Decrypting KBlock with key %u.\n",
+	    ps->decryptKey.a);
+	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb[1],
 			    size - sizeof(KBlock));
 	j = sizeof(KBlock);
 	while ( (j < size) &&
-		(((char*) &kb[1])[j] != '\0') )
+		(((char*)kb)[j] != '\0') )
 	  j++;
 	if (j == size) {
 	  BREAK(); /* kblock malformed */
@@ -343,7 +346,7 @@ static int receiveReplies(const HashCode160 * key,
 	dstURI = (char*) &kb[1];
 	j++;
 	if (OK != ECRS_deserializeMetaData(&fi.meta,
-					   &dstURI[j],
+					   &((char*)kb)[j],
 					   size - j)) {
 	  BREAK(); /* kblock malformed */
 	  return SYSERR;
@@ -354,7 +357,9 @@ static int receiveReplies(const HashCode160 * key,
 	  ECRS_freeMetaData(fi.meta);
 	  return SYSERR;
 	}
-	sqc->spcb(&fi, &ps->decryptKey, sqc->spcbClosure);
+	sqc->spcb(&fi, 
+		  &ps->decryptKey,
+		  sqc->spcbClosure);
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
 	return OK;      
@@ -376,7 +381,7 @@ static int receiveReplies(const HashCode160 * key,
 	if (size < sizeof(KNBlock))
 	  return SYSERR;
 	kb = (KNBlock*) &value[1];
-	ECRS_decryptInPlace(key,
+	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb->nblock,
 			    size - sizeof(KBlock));
 	return processNBlock(&kb->nblock,
@@ -395,7 +400,7 @@ static int receiveReplies(const HashCode160 * key,
 	if (size < sizeof(SBlock))
 	  return SYSERR;
 	sb = (SBlock*) &value[1];
-	ECRS_decryptInPlace(key,
+	ECRS_decryptInPlace(&ps->decryptKey,
 			    &sb->creationTime,
 			    size
 			    - sizeof(Signature)
