@@ -1507,6 +1507,9 @@ static int execQuery(const PeerIdentity * sender,
     }
     FREE(perm);
   }
+  GROW(cls.values,
+       cls.valueCount,
+       0);
 
 
 

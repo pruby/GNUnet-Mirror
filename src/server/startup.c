@@ -220,8 +220,8 @@ void waitForSignalHandler() {
 
   /* mechanism to stop gnunetd after a certain
      time without a signal -- to debug with valgrind*/
-  valgrind = 240; //getConfigurationInt("GNUNETD",
-  // 	 "VALGRIND");
+  valgrind = getConfigurationInt("GNUNETD",
+       	 "VALGRIND");
   if (valgrind > 0)
     addCronJob(&semaphore_up,
 	       valgrind * cronSECONDS,

@@ -166,9 +166,10 @@ void release_module_stats() {
   for (i=0;i<statCounters;i++)
     FREE(descriptions[i]);
   FREENONNULL(descriptions);
-  FREENONNULL(values);
   descriptions = NULL;
-  values = NULL;
+  GROW(values,
+       statCounters,
+       0);
 }
 
 
