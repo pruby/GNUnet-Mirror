@@ -25,7 +25,6 @@
  *
  * Todo:
  * - test
- * - add options (verbose reporting of DHT operations, leave-timeout)
  */
 
 #include "platform.h"

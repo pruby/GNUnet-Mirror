@@ -152,13 +152,15 @@ static int parseOptions(int argc,
     case 'a': {
       unsigned int receivePolicy;
 
-      if (1 != sscanf(GNoptarg, "%ud", &receivePolicy)) {
+      if (1 != sscanf(GNoptarg,
+		      "%ud", 
+		      &receivePolicy)) {
         LOG(LOG_FAILURE,
 	  _("You must pass a number to the '%s' option.\n"),
 	    "-a");
         return -1;
       }
-      setConfigurationInt("AFS",
+      setConfigurationInt("FS",
                           "ANONYMITY-RECEIVE",
                           receivePolicy);
       break;
@@ -174,7 +176,7 @@ static int parseOptions(int argc,
 	    "-m");
 	return SYSERR;
       } else {
-	setConfigurationInt("AFS",
+	setConfigurationInt("FS",
 			    "MAXRESULTS",
 			    max);
 	if (max == 0) 
@@ -195,7 +197,7 @@ static int parseOptions(int argc,
 	    "-t");
 	return SYSERR;
       } else {
-	setConfigurationInt("AFS",
+	setConfigurationInt("FS",
 			    "SEARCHTIMEOUT",
 			    timeout);
       }
@@ -245,7 +247,7 @@ static int runSearch() {
   FREE(suri);
   
   memset(&max, 0, sizeof(SearchClosure));
-  max.max = getConfigurationInt("AFS",
+  max.max = getConfigurationInt("FS",
 				"MAXRESULTS");
   max.resultCount = 0;  
   if (max.max == 0)
@@ -258,7 +260,9 @@ static int runSearch() {
     ECRS_freeUri(uri);
     return SYSERR;
   }
-
+  FSUI_setAnonymityLevel(ctx,
+			 getConfigurationInt("FS",
+					     "ANONYMITY-RECEIVE"));
 
   FSUI_startSearch(ctx,
 		   uri);  
@@ -345,7 +349,7 @@ int main(int argc,
   
   initializeShutdownHandlers();
   addCronJob((CronJob)&run_shutdown,
-	     cronSECONDS * getConfigurationInt("AFS",
+	     cronSECONDS * getConfigurationInt("FS",
 					       "SEARCHTIMEOUT"),
 	     0, /* no need to repeat */
 	     NULL);

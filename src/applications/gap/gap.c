@@ -860,11 +860,11 @@ static void forwardQuery(const GAP_QUERY * msg,
       ((PerNodeCallback)&hotpathSelectionCode,
        qr);    
     /* actual selection, proportional to rankings
-       assigned by newSelectCode ... */    
+       assigned by hotpathSelectionCode ... */    
     rankingSum = 0;
     for (i=0;i<8*BITMAP_SIZE;i++)
       rankingSum += qr->rankings[i];
-    if ( (rankingSum != 0) && /* doppelt haelt besser */
+    if ( (rankingSum != 0) && 
 	 (qr->activeConnections > 0) ) {
       /* select 4 peers for forwarding */
       for (i=0;i<4;i++) {

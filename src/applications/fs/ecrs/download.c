@@ -116,7 +116,7 @@ static void freeIOC(IOContext * this,
       fn[strlen(fn)-1]+=i;    
       if (0 != UNLINK(fn))
 	LOG(LOG_WARNING,
-	    " could not unlink temporary file %s: %s\n",
+	    "Could not unlink temporary file %s: %s\n",
 	    fn, STRERROR(errno));
       FREE(fn);
     }

@@ -172,6 +172,8 @@ static void printstatus(int * verboselevel,
  */
 static void printhelp() {
   static Help help[] = {
+    { 'a', "anonymity", "LEVEL",
+      gettext_noop("set the desired LEVEL of sender-anonymity") },
     HELP_CONFIG,
     { 'C', "copy", NULL,
       gettext_noop("even if gnunetd is running on the local machine, force the"
@@ -237,6 +239,7 @@ static int parseOptions(int argc,
     int option_index=0;
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
+      { "anonymity",     1, 0, 'a' }, 
       { "copy",          0, 0, 'C' },
       { "extract",       0, 0, 'e' },
       { "interval",      1, 0, 'i' },
@@ -257,7 +260,7 @@ static int parseOptions(int argc,
     };    
     c = GNgetopt_long(argc,
 		      argv, 
-		      "c:CdehH:i:L:k:K:m:nN:p:P:RSt:T:u:vV", 
+		      "a:c:CdehH:i:L:k:K:m:nN:p:P:RSt:T:u:vV", 
 		      long_options, 
 		      &option_index);    
     if (c == -1) 
@@ -265,6 +268,22 @@ static int parseOptions(int argc,
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
+    case 'a': {
+      unsigned int receivePolicy;
+
+      if (1 != sscanf(GNoptarg,
+		      "%ud", 
+		      &receivePolicy)) {
+        LOG(LOG_FAILURE,
+	  _("You must pass a number to the '%s' option.\n"),
+	    "-a");
+        return -1;
+      }
+      setConfigurationInt("FS",
+                          "ANONYMITY-SEND",
+                          receivePolicy);
+      break;
+    }
     case 'C':
       FREENONNULL(setConfigurationString("FS",
 					 "DISABLE-SYMLINKING",
@@ -452,7 +471,7 @@ static int parseOptions(int argc,
     EXTRACTOR_ExtractorList * l;
     char * ex;
 
-    ex = getConfigurationString("GNUNET-INSERT",
+    ex = getConfigurationString("FS",
 				"EXTRACTORS");
     if (ex == NULL)
       ex = STRDUP(EXTRACTOR_DEFAULT_LIBRARIES);
@@ -569,6 +588,9 @@ int main(int argc, char ** argv) {
   /* fundamental init */
   ctx = FSUI_start((FSUI_EventCallback) &printstatus,
 		   &verbose);
+  FSUI_setAnonymityLevel(ctx,
+			 getConfigurationInt("FS",
+					     "ANONYMITY-SEND"));
   
   /* first insert all of the top-level files or directories */
   tmp = getConfigurationString("GNUNET-INSERT",
@@ -581,7 +603,7 @@ int main(int argc, char ** argv) {
     doIndex = NO;
   else
     doIndex = YES;
-  extractors = getConfigurationString("GNUNET-INSERT",
+  extractors = getConfigurationString("FS",
 				      "EXTRACTORS");
   if (extractors == NULL)
       extractors = STRDUP(EXTRACTOR_DEFAULT_LIBRARIES);

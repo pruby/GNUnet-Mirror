@@ -20,10 +20,9 @@
 /**
  * @file include/gnunet_gap_service.h
  * @brief API to the GAP-module.  This API is what will be used by
- *     GAP clients that run as modules within gnunetd.  If you
- *     are writing a client look at either gnunet_gap.h (if you
- *     want to handle the communication with gnunetd yourself) or
- *     at gnunet_gap_lib to use the convenience library.
+ *     GAP clients that run as modules within gnunetd.  GAP is
+ *     currently not supposed to be used directly by clients,
+ *     look at the gnunet_fs_lib.h for the lowest-level client API.
  * @author Christian Grothoff
  */
 

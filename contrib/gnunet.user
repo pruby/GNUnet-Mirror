@@ -62,6 +62,18 @@ INSERT-EXPIRATION = 36500
 # for pretty much anything. Use 0 for no timeout.
 SEARCHTIMEOUT   = 3000
 
+# Anonymity level for receiving data (default).
+ANONYMITY-RECEIVE = 1
+
+# Anonymity level for sharing data (default).
+ANONYMITY-SEND = 1
+
+# Default limit for the number of search results (0 for unlimited).
+MAXRESULTS = 0
+
+# Default timeout for searches
+SEARCHTIMEOUT = 300
+
 # Specify which additional extractor libraries should be used.
 # gnunet-insert uses libextractor to extract keywords from files.
 # libextractor can be dynamically extended to handle additional file

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -150,14 +150,14 @@
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_MYSQL(cmd, dbh) do { errexit(_("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error(dbh->dbf)); } while(0);
+#define DIE_MYSQL(cmd, dbh) do { errexit(_("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_MYSQL(level, cmd, dbh) do { LOG(level, _("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error(dbh->dbf)); } while(0);
+#define LOG_MYSQL(level, cmd, dbh) do { LOG(level, _("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
 
 
 
@@ -171,6 +171,7 @@ typedef struct {
   int avgLength_ID;	   /* which column contains the Avg_row_length  
                             * in SHOW TABLE STATUS resultset */
   int useDelayed;          /* use potentially unsafe delayed inserts? */
+  char * cnffile;  
 } mysqlHandle;
 
 static mysqlHandle * dbh;
@@ -206,6 +207,54 @@ static Datastore_Datum * assembleDatum(MYSQL_ROW sql_row) {
   return(datum);
 }
 
+/**
+ * Initiate the database connection.  
+ * Uses dbhI->cnffile for the configuration,
+ * so that must be set already.
+ * @return OK on success
+ */
+static int iopen(mysqlHandle * dbhI) {
+  if (dbhI->cnffile == NULL)
+    return SYSERR;
+  dbhI->dbf = mysql_init(NULL);
+  if (dbhI->dbf == NULL)
+    return SYSERR;  
+  mysql_options(dbhI->dbf,
+  		MYSQL_READ_DEFAULT_FILE,
+		dbh->cnffile);
+  mysql_options(dbhI->dbf, 
+		MYSQL_READ_DEFAULT_GROUP, 
+		"client");
+  mysql_real_connect(dbhI->dbf,
+		     NULL,
+		     NULL,
+		     NULL,
+		     "gnunet",
+		     0,
+		     NULL,
+		     0);
+  if (mysql_error(dbhI->dbf)[0]) {
+    LOG_MYSQL(LOG_ERROR, 
+	      "mysql_real_connect",
+	      dbhI);
+    dbhI->dbf = NULL;
+    return SYSERR;
+  }    
+  MUTEX_CREATE_RECURSIVE(&dbhI->DATABASE_Lock_);
+  return OK;
+}
+
+/**
+ * Close the database connection.
+ */
+static int iclose(mysqlHandle * dbhI) {
+  if (dbh->dbf == NULL)
+    return SYSERR;
+  MUTEX_DESTROY(&dbh->DATABASE_Lock_);
+  mysql_close(dbh->dbf);
+  dbh->dbf = NULL;
+  return OK;
+}
 
 /**
  * Iterate over the items in the datastore in ascending
@@ -226,8 +275,13 @@ static int iterateLowPriority(unsigned int type,
   char * scratch;
   char typestr[32];
   int count = 0;
+  mysqlHandle dbhI;
 
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  dbhI.cnffile = dbh->cnffile; /* shared */
+  if (OK != iopen(&dbhI))
+    return SYSERR;
+
+  MUTEX_LOCK(&dbhI.DATABASE_Lock_);
 
   if(type==0) {
     typestr[0]=0;
@@ -244,17 +298,17 @@ static int iterateLowPriority(unsigned int type,
 	   " %s"
 	   " ORDER BY prio ASC",
 	   typestr);
-  mysql_query(dbh->dbf, 
+  mysql_query(dbhI.dbf, 
 	      scratch);
   FREE(scratch);
-  if (mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
-    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  if (mysql_error(dbhI.dbf)[0]) {
+    LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
+    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     return(SYSERR);
   }
   
-  if (!(sql_res=mysql_use_result(dbh->dbf))) {
-    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  if (!(sql_res=mysql_use_result(dbhI.dbf))) {
+    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     return(SYSERR);
   }
 
@@ -272,9 +326,13 @@ static int iterateLowPriority(unsigned int type,
   }
 		
   mysql_free_result(sql_res);
-  MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+  iclose(&dbhI);
   return count;
 }
+
+  
+
 
 /**
  * Iterate over the items in the datastore in ascending
@@ -294,9 +352,15 @@ static int iterateExpirationTime(unsigned int type,
   Datastore_Datum * datum;
   char * scratch;
   char typestr[32];
-  int count = 0;
+  int count = 0;   
+  mysqlHandle dbhI;
 
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  dbhI.cnffile = dbh->cnffile; /* shared */
+  if (OK != iopen(&dbhI))
+    return SYSERR;
+
+
+  MUTEX_LOCK(&dbhI.DATABASE_Lock_);
 
   if(type==0) {
     typestr[0]=0;
@@ -313,17 +377,17 @@ static int iterateExpirationTime(unsigned int type,
 	   " %s"
 	   " ORDER BY expire ASC",
 	   typestr);
-  mysql_query(dbh->dbf, 
+  mysql_query(dbhI.dbf, 
 	      scratch);
   FREE(scratch);
-  if (mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
-    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  if (mysql_error(dbhI.dbf)[0]) {
+    LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
+    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     return(SYSERR);
   }
   
-  if (!(sql_res=mysql_use_result(dbh->dbf))) {
-    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  if (!(sql_res=mysql_use_result(dbhI.dbf))) {
+    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     return(SYSERR);
   }
 
@@ -340,7 +404,8 @@ static int iterateExpirationTime(unsigned int type,
   }
 		
   mysql_free_result(sql_res);
-  MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+  iclose(&dbhI);
   return count;
 }
 
@@ -764,43 +829,20 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   }
 
   dbh = MALLOC(sizeof(mysqlHandle));
-  dbh->dbf = mysql_init(NULL);
-  if(dbh->dbf == NULL) {
-    LOG(LOG_ERROR, 
-	_("Unable to initialize MySQL.\n"));
-    FREE(dbh);
-    return NULL;
-  }
-  if(testConfigurationString("AFS",
-  			     "MYSQL_DELAYED",
-			     "YES"))
+  dbh->cnffile = cnffile;
+  if (testConfigurationString("AFS",
+			      "MYSQL_DELAYED",
+			      "YES"))
     dbh->useDelayed = YES;
   else
     dbh->useDelayed = NO;
 
-  mysql_options(dbh->dbf,
-  		MYSQL_READ_DEFAULT_FILE,
-		cnffile);
-  mysql_options(dbh->dbf, 
-		MYSQL_READ_DEFAULT_GROUP, 
-		"client");
-  mysql_real_connect(dbh->dbf,
-		     NULL,
-		     NULL,
-		     NULL,
-		     "gnunet",
-		     0,
-		     NULL,
-		     0);
-  if (mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR, 
-	      "mysql_real_connect",
-	      dbh);
-    FREE(dbh);
+  if (OK != iopen(dbh)) {
     FREE(cnffile);
+    FREE(dbh);
+    dbh = NULL;
     return NULL;
-  }    
-  FREE(cnffile);
+  }
 
   scratch = MALLOC(1024);
   SNPRINTF(scratch,
@@ -823,11 +865,13 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     LOG_MYSQL(LOG_ERROR, 
 	      "mysql_query",
 	      dbh);
+    iclose(dbh);
     FREE(dbh);
+    FREE(cnffile);
     FREE(scratch);
     return NULL;
   }
-  MUTEX_CREATE_RECURSIVE(&dbh->DATABASE_Lock_);	
+
 
   /* Find out which column contains the avg row length field and assume
    * that mysqld always gives it in the same order across calls :) */
@@ -841,8 +885,9 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     LOG_MYSQL(LOG_ERROR, 
 	      "mysql_query",
 	      dbh);
-    MUTEX_DESTROY(&dbh->DATABASE_Lock_);
+    iclose(dbh);
     FREE(dbh);
+    FREE(cnffile);
     return NULL;
   }
   if((sql_res=mysql_store_result(dbh->dbf))) {
@@ -854,15 +899,17 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     num_fields=mysql_num_fields(sql_res);
     if(num_fields<=0) {
       LOG(LOG_ERROR, "ERROR: num_fields<=0\n");
-      MUTEX_DESTROY(&dbh->DATABASE_Lock_);
+      iclose(dbh);
       FREE(dbh);
+      FREE(cnffile);
       return NULL;
     }
     sql_fields=mysql_fetch_fields(sql_res); 
     if(sql_fields==NULL) {
       LOG(LOG_ERROR, "ERROR: sql_fields==0\n");
-      MUTEX_DESTROY(&dbh->DATABASE_Lock_);
+      iclose(dbh);
       FREE(dbh);
+      FREE(cnffile);
       return NULL;
     }
     dbh->avgLength_ID = -1;
@@ -878,16 +925,18 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     if (found == NO) {
       BREAK();
       /* avg_row_length not found in SHOW TABLE STATUS */
-      MUTEX_DESTROY(&dbh->DATABASE_Lock_);
+      iclose(dbh);
       FREE(dbh);
+      FREE(cnffile);
       return NULL;
     }
     /* FIXME: mysql manual doesn't mention if sql_fields should be freed?*/
   } else {
     LOG(LOG_ERROR, "ERROR: couldn't store res row for SHOW TABLE STATUS\n");
     BREAK();
-    MUTEX_DESTROY(&dbh->DATABASE_Lock_);
+    iclose(dbh);
     FREE(dbh);
+    FREE(cnffile);
     return NULL;
   }
 
@@ -906,8 +955,8 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
  * Shutdown the module.
  */
 void release_module_sqstore_mysql() {
-  MUTEX_DESTROY(&dbh->DATABASE_Lock_);
-  mysql_close(dbh->dbf);
+  iclose(dbh);
+  FREE(dbh->cnffile);
   FREE(dbh);
   dbh = NULL;
 }

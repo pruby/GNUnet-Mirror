@@ -103,7 +103,7 @@ static int parseOptions(int argc,
   } /* while (1) */
   if (argc - GNoptind == 0) {
     LOG(LOG_WARNING, 
-	"No commands specified.\n");
+	_("No commands specified.\n"));
     printHelp();
     return SYSERR;
   }
@@ -243,14 +243,14 @@ int main(int argc,
   handle = getClientSocket();
   if (handle == NULL) {
     fprintf(stderr, 
-	    _("failed to connect to gnunetd\n"));
+	    _("Failed to connect to gnunetd.\n"));
     return 1;
   }
 
   for (i=0;i<count;i++) {
     if (0 == strcmp("get", commands[i])) {
       if (i+2 > count) 
-	errexit(_("command '%s' requires an argument ('%s')\n"),
+	errexit(_("Command '%s' requires an argument ('%s').\n"),
 		"get",
 		"key");
       do_get(handle, commands[++i]);
@@ -258,7 +258,7 @@ int main(int argc,
     }
     if (0 == strcmp("put", commands[i])) {
       if (i+3 > count) 
-	errexit(_("command '%s' requires two arguments ('%s' and '%s')\n"),
+	errexit(_("Command '%s' requires two arguments ('%s' and '%s').\n"),
 		"put",
 		"key",
 		"value");
@@ -268,7 +268,7 @@ int main(int argc,
     }
     if (0 == strcmp("remove", commands[i])) {
       if (i+3 > count) 
-	errexit(_("command '%s' requires two arguments ('%s' and '%s')\n"),
+	errexit(_("Command '%s' requires two arguments ('%s' and '%s').\n"),
 		"remove",
 		"key",
 		"value");

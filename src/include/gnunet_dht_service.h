@@ -42,7 +42,7 @@ struct DHT_PUT_RECORD;
 struct DHT_REMOVE_RECORD;
 
 /**
- * DHT operation 'complete' (i.e timed out)
+ * DHT operation 'complete' (i.e timed out).
  */
 typedef void (*DHT_OP_Complete)(void * closure);
 

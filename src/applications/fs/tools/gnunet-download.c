@@ -236,6 +236,9 @@ int main(int argc,
   signalFinished = SEMAPHORE_NEW(0);
   ctx = FSUI_start(&progressModel,
 		   &ok);
+  FSUI_setAnonymityLevel(ctx,
+			 getConfigurationInt("FS",
+					     "ANONYMITY-SEND"));
   startCron();
   if (testConfigurationString("GNUNET-DOWNLOAD",
 			      "RECURSIVE",
