@@ -95,7 +95,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "DEBUG"));
+				     "NOTHING"));
   return OK;
 }
 

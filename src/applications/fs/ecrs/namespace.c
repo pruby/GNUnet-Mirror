@@ -239,8 +239,6 @@ int ECRS_createNamespace(const char * name,
     ECRS_encryptInPlace(&hc,
 			&knb->nblock,
 			size - sizeof(KBlock) - sizeof(unsigned int));
-    printf("SIGN size: %u\n",
-	   sizeof(NBlock) + mdsize);
 
     GNUNET_ASSERT(OK == sign(pk,
 			     sizeof(NBlock) + mdsize,
@@ -460,10 +458,9 @@ int ECRS_addToNamespace(const char * name,
 		      - sizeof(Signature)
 		      - sizeof(PublicKey)
 		      - sizeof(HashCode512));
-
   /* FINALLY: sign & publish SBlock */
   GNUNET_ASSERT(OK == sign(hk,
-			   sizeof(SBlock) 
+			   size
 			   - sizeof(Signature) 
 			   - sizeof(PublicKey)
 			   - sizeof(unsigned int),
