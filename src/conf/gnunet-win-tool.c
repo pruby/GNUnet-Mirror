@@ -70,8 +70,16 @@ void PrintAdapters()
   {
     for(dwIfIdx=0; dwIfIdx <= pTable->dwNumEntries; dwIfIdx++)
     {
-      printf("Index: %i\nAdapter name: %s\n",
-        (int) pTable->table[dwIfIdx].dwIndex, pTable->table[dwIfIdx].bDescr);
+      BYTE bPhysAddr[MAXLEN_PHYSADDR];
+
+      memset(bPhysAddr, 0, MAXLEN_PHYSADDR);
+      memcpy(bPhysAddr,
+        pTable->table[dwIfIdx].bPhysAddr,
+        pTable->table[dwIfIdx].dwPhysAddrLen);
+      
+      printf("Index: %i\nAdapter name: %s\nID: %I64u\n",
+        (int) pTable->table[dwIfIdx].dwIndex, pTable->table[dwIfIdx].bDescr,
+        *((unsigned long long *) bPhysAddr));
 
       /* Get IP-Addresses */
       int i;

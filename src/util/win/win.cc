@@ -196,7 +196,8 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
       *pIfTable = (MIB_IFTABLE *) GlobalAlloc(GPTR, dwSize);
     }
 
-    if ((dwRet = GNGetIfTable(*pIfTable, &dwSize, 0)) == NO_ERROR)
+    if ((dwRet = GNGetIfTable(*pIfTable, &dwSize, 0)) == NO_ERROR &&
+      pAddrTable)
     {
       DWORD dwIfIdx, dwSize = sizeof(MIB_IPADDRTABLE);
       *pAddrTable = (MIB_IPADDRTABLE *) GlobalAlloc(GPTR, dwSize);
@@ -239,7 +240,7 @@ int PopulateNICCombo(HWND hCombo)
   {
     for(dwIfIdx=0; dwIfIdx <= pTable->dwNumEntries; dwIfIdx++)
     {
-      char szEntry[251];
+      char szEntry[1001];
       DWORD dwIP = 0;
       int iItm;
       /* Get IP-Address */
@@ -255,17 +256,21 @@ int PopulateNICCombo(HWND hCombo)
       
       if (dwIP)
       {
-        snprintf(szEntry, 250, "%d.%d.%d.%d - %s - %i",
+        BYTE bPhysAddr[MAXLEN_PHYSADDR];
+  
+        memset(bPhysAddr, 0, MAXLEN_PHYSADDR);
+        memcpy(bPhysAddr,
+          pTable->table[dwIfIdx].bPhysAddr,
+          pTable->table[dwIfIdx].dwPhysAddrLen);
+          
+        snprintf(szEntry, 1000, "%d.%d.%d.%d - %s - %I64u",
           PRIP(ntohl(dwIP)),
-          pTable->table[dwIfIdx].bDescr, pTable->table[dwIfIdx].dwIndex);
-        szEntry[250] = 0;
+          pTable->table[dwIfIdx].bDescr, *((unsigned long long *) bPhysAddr));
+        szEntry[1000] = 0;
           
         iItm = SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM) szEntry);
         if (iItm == -1)        
           return NO;
-        
-        SendMessage(hCombo, CB_SETITEMDATA, (WPARAM) iItm,
-          (LPARAM) dwIfIdx);
           
         if (pAddrTable->table[dwIfIdx].dwIndex == dwExternalNIC)
           SendMessage(hCombo, CB_SETCURSEL, iItm, 0);

@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.6.6"
+!define PRODUCT_VERSION "0.6.6-2"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.ovmj.org/GNUnet/"
 ;!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\gnunet-gtk.exe"
@@ -86,6 +86,9 @@ Function InitStep1
   CreateFont $R2 "Tahoma" 14 700
   SendMessage $R1 ${WM_SETFONT} $R2 0
 
+  GetDlgItem $R1 $R0 1203
+  SetCtlColors $R1 0xFF0000 transparent
+  
   InstallOptions::show
   Pop $R0
 
@@ -170,7 +173,7 @@ Function DoneStep2
   WriteINIStr $GNUNET_INI "LOAD" "BASICLIMITING" "NO"
  nw:
   ReadINIStr $R0 $STEP2_INI "Field 11" "State"
-  WriteINIStr $GNUNET_INI "NETWORK" "IP" $R0
+  WriteINIStr $GNUNET_INI "NETWORK" "IP" '"$R0"'
   ReadINIStr $R0 $STEP2_INI "Field 14" "State"
   WriteINIStr $GNUNET_INI "LOAD" "MAXCPULOAD" $R0
   ReadINIStr $R0 $STEP2_INI "Field 15" "State"

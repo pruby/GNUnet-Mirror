@@ -33,8 +33,8 @@
  * - port to other platforms
  */
 
-#include "gnunet_util.h"
 #include "platform.h"
+#include "gnunet_util.h"
 
 #if SOLARIS
 #if HAVE_KSTAT_H
@@ -415,11 +415,34 @@ static int networkUsageAdvancedDown() {
   {
     for (ifnum=0; ifnum < numInterfaces; ifnum++)
     {
-      MIB_IFROW theInfo;
+      PMIB_IFTABLE pTable;
+      DWORD dwIfIdx;
+      int found = 0;
       
-      theInfo.dwIndex = atoi(interfacePtrs[i]);
-      GNGetIfEntry(&theInfo);
-      rxnew = theInfo.dwInOctets;
+      EnumNICs(&pTable, NULL);
+      
+      for(dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
+        unsigned long long l;
+        BYTE bPhysAddr[MAXLEN_PHYSADDR];
+  
+        l = _atoi64(interfacePtrs[i]);
+  
+        memset(bPhysAddr, 0, MAXLEN_PHYSADDR);      
+        memcpy(bPhysAddr,
+          pTable->table[dwIfIdx].bPhysAddr,
+          pTable->table[dwIfIdx].dwPhysAddrLen);
+
+        if (memcmp(bPhysAddr, &l, sizeof(l)) == 0) {
+          found = 1;
+          break;
+        }
+      }
+      
+      if (found)
+        rxnew = pTable->table[dwIfIdx].dwInOctets;
+      else
+        rxnew = last_net_results[ifnum].last_in;
+      
       rxdiff += rxnew - last_net_results[ifnum].last_in;
       last_net_results[ifnum].last_in = rxnew;
     }
@@ -610,12 +633,35 @@ static int networkUsageAdvancedUp() {
   {
     for (ifnum=0; ifnum < numInterfaces; ifnum++)
     {
-      MIB_IFROW theInfo;
- 
-      theInfo.dwIndex = atoi(interfacePtrs[i]);     
-      GNGetIfEntry(&theInfo);
-      txnew = theInfo.dwOutOctets;
-      txdiff += txnew - last_net_results[ifnum].last_out;	  
+      PMIB_IFTABLE pTable;
+      DWORD dwIfIdx;
+      int found = 0;
+      
+      EnumNICs(&pTable, NULL);
+      
+      for(dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
+        unsigned long long l;
+        BYTE bPhysAddr[MAXLEN_PHYSADDR];
+  
+        l = _atoi64(interfacePtrs[i]);
+  
+        memset(bPhysAddr, 0, MAXLEN_PHYSADDR);      
+        memcpy(bPhysAddr,
+          pTable->table[dwIfIdx].bPhysAddr,
+          pTable->table[dwIfIdx].dwPhysAddrLen);
+
+        if (memcmp(bPhysAddr, &l, sizeof(l)) == 0) {
+          found = 1;
+          break;
+        }
+      }
+      
+      if (found)
+        txnew = pTable->table[dwIfIdx].dwOutOctets;
+      else
+        txnew = last_net_results[ifnum].last_out;
+      
+      txdiff += txnew - last_net_results[ifnum].last_out;   
       last_net_results[ifnum].last_out = txnew;
     }
   }

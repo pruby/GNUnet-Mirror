@@ -41,8 +41,9 @@
  * @author Tzvetan Horozov
  */
 
-#include "gnunet_util.h"
+#include <stdlib.h>
 #include "platform.h"
+#include "gnunet_util.h"
 
 /**
  * @brief our current IPv4 address.
@@ -147,9 +148,6 @@ static int getAddressFromIOCTL(IPaddr * identity) {
   struct ifconf ifc;
   int sockfd,ifCount;
 #else
-  DWORD dwIfIdx, dwSize;
-  PMIB_IPADDRTABLE pAddrTbl;
-  int iAddrCount;
   DWORD dwIP;
 #endif
   int i;
@@ -228,36 +226,40 @@ static int getAddressFromIOCTL(IPaddr * identity) {
   FREE(interfaces);
   return SYSERR;
 #else /* MinGW */
-  dwIfIdx = atoi(interfaces);
   
   /* Win 98 or Win NT SP 4 */
   if (GNGetIpAddrTable)
   {
+    PMIB_IFTABLE pTable;
+    PMIB_IPADDRTABLE pAddrTable;
+    DWORD dwIfIdx;
+    unsigned int iAddrCount = 0;
+
     dwIP = 0;
-    dwSize = sizeof(MIB_IPADDRTABLE);
-    pAddrTbl = (MIB_IPADDRTABLE *) GlobalAlloc(GPTR, dwSize);
-  
-    /* Make an initial call to GetIpAddrTable to get the
-       necessary size */
-    if (GNGetIpAddrTable(pAddrTbl, &dwSize, 0) == ERROR_INSUFFICIENT_BUFFER)
-    {
-      GlobalFree(pAddrTbl);
-      pAddrTbl = (MIB_IPADDRTABLE *) GlobalAlloc(GPTR, dwSize);
-    }
-    GNGetIpAddrTable(pAddrTbl, &dwSize, 0);
-    iAddrCount = 0;
-    for(i = 0; i < pAddrTbl->dwNumEntries; i++)
-    {  
-      if (pAddrTbl->table[i].dwIndex == dwIfIdx)
-      {
-        if (! iAddrCount)
-          dwIP = pAddrTbl->table[i].dwAddr;
-        iAddrCount++;
+    
+    EnumNICs(&pTable, &pAddrTable);
+    
+    for(dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
+      unsigned long long l;
+      BYTE bPhysAddr[MAXLEN_PHYSADDR];
+
+      l = _atoi64(interfaces);
+
+      memset(bPhysAddr, 0, MAXLEN_PHYSADDR);      
+      memcpy(bPhysAddr,
+        pTable->table[dwIfIdx].bPhysAddr,
+        pTable->table[dwIfIdx].dwPhysAddrLen);
+
+      if (memcmp(bPhysAddr, &l, sizeof(l)) == 0) {
+        for(i = 0; i < pAddrTable->dwNumEntries; i++) {  
+          if (pAddrTable->table[i].dwIndex == pTable->table[dwIfIdx].dwIndex) {
+            iAddrCount++;
+            dwIP = pAddrTable->table[i].dwAddr;
+          }
+        }
       }
     }
-    
-    GlobalFree(pAddrTbl);
-    
+
     if (! iAddrCount)
       {
       LOG(LOG_WARNING,
@@ -274,6 +276,9 @@ static int getAddressFromIOCTL(IPaddr * identity) {
 	    "use %u.%u.%u.%u.\n"), 
 	  interfaces, 
 	  PRIP(ntohl(dwIP)));
+    else
+      LOG(LOG_DEBUG, _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
+        PRIP(ntohl(dwIP)));
 
     identity->addr = dwIP;
   }
@@ -330,7 +335,7 @@ static int getAddress(IPaddr  * address){
   retval = SYSERR;
   ipString = getConfigurationString("NETWORK",
 				    "IP");
-  if (ipString == NULL) {
+  if (ipString == NULL || !ipString[0]) {
 #if LINUX || SOMEBSD || MINGW
     if (OK == getAddressFromIOCTL(address))
       retval = OK;

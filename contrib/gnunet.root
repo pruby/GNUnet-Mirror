@@ -204,7 +204,7 @@ PORT = 2087
 # Set if GNUnet fails to determine your IP.  GNUnet first tries to
 # determine your IP by looking at the IP that matches the interface
 # that is given with the option INTERFACE.
-# Under Windows, specify the index number reported by
+# Under Windows, specify the ID reported by
 #  "gnunet-win-tool -n"
 # Default: INTERFACE = eth0
 INTERFACE = eth0
@@ -266,7 +266,7 @@ TRUSTED = 127.0.0.0/8;
 # the IP to use. Typical values are eth0, ppp0, eth1, wlan0, etc.
 # 'ifconfig' will tell you what you have.  Never use 'lo', that just
 # won't work.
-# Under Windows, specify the index number reported by
+# Under Windows, specify the ID reported by
 #  "gnunet-win-tool -n".
 # Default is: INTERFACES      = eth0
 INTERFACES      = eth0
