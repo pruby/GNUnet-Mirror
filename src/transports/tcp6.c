@@ -36,6 +36,8 @@
  */
 #define TCP6_TIMEOUT 30 * cronSECONDS
 
+#define TARGET_BUFFER_SIZE 2048
+
 /**
  * @brief Host-Address in a TCP6 network.
  */
@@ -851,6 +853,7 @@ static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
     GROW(tcp6Session->wbuff,
 	 tcp6Session->wpos,
 	 tcp6Session->wpos + ssize);
+    tcp6Session->wpos += ssize;
     memcpy(&tcp6Session->wbuff[old],
 	   mp,
 	   ssize);
@@ -1131,9 +1134,14 @@ static int tcp6Send(TSession * tsession,
 	 size);
   mp->size = htons(size);
   mp->reserved = 0;
-  ok = tcp6DirectSend(tsession->internal,
-		      mp,
-		      size + sizeof(TCP6MessagePack));
+  if (((TCPSession*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE)
+    ok = tcp6DirectSendReliable(tsession->internal,
+				mp,
+				size + sizeof(TCP6MessagePack));
+  else
+    ok = tcp6DirectSend(tsession->internal,
+			mp,
+			size + sizeof(TCP6MessagePack));
   FREE(mp);
   return ok;
 }

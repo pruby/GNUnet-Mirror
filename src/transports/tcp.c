@@ -36,6 +36,8 @@
  */
 #define TCP_TIMEOUT (30 * cronSECONDS)
 
+#define TARGET_BUFFER_SIZE 2048
+
 /**
  * Host-Address in a TCP network.
  */
@@ -1187,9 +1189,16 @@ static int tcpSend(TSession * tsession,
 	 size);
   mp->size = htons(size);
   mp->reserved = 0;
-  ok = tcpDirectSend(tsession->internal,
-		     mp,
-		     size + sizeof(TCPMessagePack));
+  /* if we would have less than 2k in buffers,
+     do reliable send */
+  if (((TCPSession*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE)
+    ok = tcpDirectSendReliable(tsession->internal,
+			       mp,
+			       size + sizeof(TCPMessagePack));
+  else
+    ok = tcpDirectSend(tsession->internal,
+		       mp,
+		       size + sizeof(TCPMessagePack));
   FREE(mp);
   return ok;
 }
