@@ -361,9 +361,9 @@ static int readAndProcess(ClientHandle handle) {
 		      handle);
   MUTEX_LOCK(&clientlock);
   /* finally, shrink buffer adequately */
-  memcpy(&handle->readBuffer[0],
-	 &handle->readBuffer[len],
-	 handle->readBufferPos - len);
+  memmove(&handle->readBuffer[0],
+	  &handle->readBuffer[len],
+	  handle->readBufferPos - len);
   handle->readBufferPos -= len;	   
   return ret;
 }

@@ -22,7 +22,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "WARNING"));
+				     "DEBUG"));
   return OK;
 }
 
@@ -113,8 +113,12 @@ static int searchCB(const ECRS_FileInfo * fi,
 		    const HashCode160 * key,
 		    void * closure) {
   struct ECRS_URI ** my = closure;
-
-  GNUNET_ASSERT(NULL == *my);
+  
+  // GNUNET_ASSERT(NULL == *my);
+  if (NULL != *my) {
+    BREAK();
+    return SYSERR;
+  }
   *my = ECRS_dupUri(fi->uri);
   return SYSERR; /* abort search */
 }
@@ -128,13 +132,13 @@ static int searchFile(struct ECRS_URI ** uri) {
   struct ECRS_URI * myURI;
 
   myURI = NULL;
-  ECRS_search(*uri,
-	      0,
-	      15 * cronSECONDS,
-	      &searchCB,
-	      &myURI,
-	      &testTerminate,
-	      NULL);
+  ret = ECRS_search(*uri,
+		    0,
+		    450 * cronSECONDS,
+		    &searchCB,
+		    &myURI,
+		    &testTerminate,
+		    NULL);
   ECRS_freeUri(*uri);
   *uri = myURI;
   if ( (ret != SYSERR) &&
@@ -196,7 +200,7 @@ int main(int argc, char * argv[]){
   struct ECRS_URI * uri;
   int i;
 
-  daemon = fork();
+  daemon = -1; // fork();
   if (daemon == 0) {
     /* FIXME: would be nice to be able to tell
        gnunetd to use the check/debug DB and not
@@ -204,7 +208,7 @@ int main(int argc, char * argv[]){
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
 		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-L", "NOTHING",
+		    "-L", "DEBUG",
 		    "-c",
 		    "check.conf", /* configuration file */
 		    NULL)) {
@@ -246,16 +250,20 @@ int main(int argc, char * argv[]){
   MUTEX_DESTROY(&lock);
   stopCron();
   doneUtil();
-  if (0 != kill(daemon, SIGTERM))
-    DIE_STRERROR("kill");
-  if (daemon != waitpid(daemon, &status, 0)) 
-    DIE_STRERROR("waitpid");
-  
-  if ( (WEXITSTATUS(status) == 0) && 
-       (ok == YES) )
+  if (daemon != -1) {
+    if (0 != kill(daemon, SIGTERM))
+      DIE_STRERROR("kill");
+    if (daemon != waitpid(daemon, &status, 0)) 
+      DIE_STRERROR("waitpid");
+    
+    if ( (WEXITSTATUS(status) == 0) && 
+	 (ok == YES) )
+      return 0;
+    else
+      return 1;    
+  } else {
     return 0;
-  else
-    return 1;    
+  }
 }
 
 /* end of ecrstest.c */

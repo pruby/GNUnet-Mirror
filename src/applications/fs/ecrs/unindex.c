@@ -141,7 +141,7 @@ static int undoSymlinking(const char * fn,
 	   &enc);
   strcat(serverFN,
 	 (char*)&enc);  
-  tmpName = MALLOC(strlen(serverFN + 5));
+  tmpName = MALLOC(strlen(serverFN) + 5);
   ret = readlink(fn,
 		 tmpName,
 		 strlen(serverFN) + 4);
@@ -298,7 +298,7 @@ int ECRS_unindexFile(const char * filename,
   dblock->expirationTime = htonll(0);
   db = (DBlock*) &dblock[1];
   db->type = htonl(D_BLOCK);
-  iblocks = MALLOC(sizeof(Datastore_Value*) * treedepth);
+  iblocks = MALLOC(sizeof(Datastore_Value*) * (treedepth+1));
   for (i=0;i<=treedepth;i++) {
     iblocks[i] = MALLOC(sizeof(Datastore_Value) + IBLOCK_SIZE + sizeof(DBlock));
     iblocks[i]->size = htonl(sizeof(Datastore_Value) + sizeof(DBlock));
