@@ -36,7 +36,7 @@
  */
 #define TCP_TIMEOUT (30 * cronSECONDS)
 
-#define TARGET_BUFFER_SIZE 2048
+#define TARGET_BUFFER_SIZE 4092
 
 /**
  * Host-Address in a TCP network.

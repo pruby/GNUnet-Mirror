@@ -36,7 +36,7 @@
  */
 #define TCP6_TIMEOUT 30 * cronSECONDS
 
-#define TARGET_BUFFER_SIZE 2048
+#define TARGET_BUFFER_SIZE 4092
 
 /**
  * @brief Host-Address in a TCP6 network.

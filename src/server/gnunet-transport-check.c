@@ -63,6 +63,8 @@ static char * expectedValue;
 static unsigned short expectedSize;
 
 static void semUp(Semaphore * sem) {
+  LOG(LOG_DEBUG,
+      "semUp timeout happened!\n");
   terminate = YES;
   SEMAPHORE_UP(sem);
 }
@@ -189,6 +191,8 @@ static void testTAPI(TransportAPI * tapi,
 }
 
 static void pingCallback(void * unused) {
+  LOG(LOG_DEBUG,
+      "PONG callback called!\n");
   ok = YES;
   SEMAPHORE_UP(sem);
 }
@@ -290,6 +294,9 @@ static void testPING(HELO_Message * xhelo,
 			      "YES"))
     fprintf(stderr, ".");
   /* check: received pong? */
+  LOG(LOG_DEBUG,
+      "Waiting for PONG\n");
+
   terminate = NO;
   addCronJob((CronJob)&semUp,
 	     timeout,
