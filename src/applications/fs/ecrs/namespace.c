@@ -388,7 +388,7 @@ int ECRS_addToNamespace(const char * name,
   /* THEN: construct SBlock */
   dstURI = ECRS_uriToString(dstU);
   mdsize = ECRS_sizeofMetaData(md);
-  size = mdsize + sizeof(SBlock);
+  size = mdsize + sizeof(SBlock) + strlen(dstURI) + 1;
   if (size > MAX_SBLOCK_SIZE) {
     size = MAX_SBLOCK_SIZE;
     value = MALLOC(sizeof(Datastore_Value) +
@@ -456,13 +456,17 @@ int ECRS_addToNamespace(const char * name,
   ECRS_encryptInPlace(thisId,
 		      &sb->creationTime,
 		      size
+		      - sizeof(unsigned int)
 		      - sizeof(Signature)
 		      - sizeof(PublicKey)
 		      - sizeof(HashCode512));
 
   /* FINALLY: sign & publish SBlock */
   GNUNET_ASSERT(OK == sign(hk,
-			   sizeof(SBlock) - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
+			   sizeof(SBlock) 
+			   - sizeof(Signature) 
+			   - sizeof(PublicKey)
+			   - sizeof(unsigned int),
 			   &sb->identifier,
 			   &sb->signature));
   freePrivateKey(hk);
