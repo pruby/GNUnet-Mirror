@@ -1168,18 +1168,28 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   FILE * fp;
   struct passwd * pw;
   size_t nX;
+  char *home_dir;
 
   /* verify that .my.cnf can be found */
+#ifndef WINDOWS
   pw = getpwuid(getuid());
   if(!pw) 
     DIE_STRERROR("getpwuid");
-  nX = strlen(pw->pw_dir)+1024;
+  home_dir = pw->pw_dir;
+#else
+  home_dir = (char *) MALLOC(_MAX_PATH + 1);
+  conv_to_win_path("$HOME", home_dir);
+#endif
+  nX = strlen(home_dir)+1024;
   cnffile = getConfigurationString("MYSQL",
 				   "CONFIG");
   if (cnffile == NULL) {
     cnffile = MALLOC(nX);
-    SNPRINTF(cnffile, nX, "%s/.my.cnf", pw->pw_dir);
+    SNPRINTF(cnffile, nX, "%s/.my.cnf", home_dir);
   } 
+#ifdef WINDOWS
+  FREE(home_dir);
+#endif
   LOG(LOG_DEBUG, 
       _("Trying to use file '%s' for MySQL configuration.\n"),
       cnffile); 

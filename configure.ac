@@ -291,6 +291,10 @@ ZLIBS=$LIBS
 LIBS=$saveLIBS
 AM_CONDITIONAL(HAVE_ZLIB, test x$zlib = x1)
 
+# mysql & windows
+AC_CHECK_TYPES([sigset_t, off_t], [], [], [#include <sys/types.h>])
+AC_CHECK_TYPES([size_t], [], [], [#include <stdio.h>])
+
 # test for mysql
 mysql=false
 mysqlfail=false
@@ -305,7 +309,7 @@ AC_ARG_WITH(mysql,
     AC_CHECK_HEADERS(mysql/mysql.h,
      AC_CHECK_LIB(mysqlclient, mysql_init,
       EXT_LIB_PATH="-L$with_mysql/lib -L$with_mysql/lib/mysql $EXT_LIB_PATH"
-      mysql=true))
+      mysql=true), [], [#include <my_global.h>])
    fi
   ],
   [AC_MSG_RESULT([--with-mysql not specified])
@@ -314,14 +318,15 @@ AC_ARG_WITH(mysql,
     [AC_CHECK_HEADERS(mysql/mysql.h,
       EXT_LIB_PATH="-L/usr/lib/mysql $EXT_LIB_PATH"
       mysql=true
-     )])])
+     , [], [#include <my_global.h>])])])
 
 # additional version check for mysql
 if test "$mysql" = "true"
 then
   AC_MSG_CHECKING(mysql version)
   AC_RUN_IFELSE([AC_LANG_PROGRAM(
-    [[#include <mysql/mysql.h>]],
+    [[#include <mysql/my_global.h>
+      #include <mysql/mysql.h>]],
     [[if (MYSQL_VERSION_ID < 40100)
         return(-1);
       else
