@@ -169,12 +169,13 @@ void startBootstrap(CoreAPIForApplication * capi) {
 
 /**
  * Stop advertising.
+ * @todo [WIN] Check if this works under Windows
  */
 void stopBootstrap() {
   void * unused;
 
   abort_bootstrap = YES;
-#if SOMEBSD || OSX || SOLARIS
+#if SOMEBSD || OSX || SOLARIS || MINGW
   PTHREAD_KILL(&pt, SIGALRM);
 #else
   /* linux */

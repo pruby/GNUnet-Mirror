@@ -296,8 +296,8 @@ int assertIsFile(const char * fil) {
 char * expandFileName(const char * fil) {
   char buffer[512];
   char * fn;
-  size_t n;
 #ifndef MINGW
+  size_t n;
   char * fm;
   const char *fil_ptr;
 #else
@@ -676,15 +676,15 @@ int copyFile(const char * src,
     if (len > size - pos)
       len = size - pos;
     if (len != READ(in, buf, len))
-      goto ERROR;
+      goto FAIL;
     if (len != WRITE(out, buf, len))
-      goto ERROR;
+      goto FAIL;
     pos += len;
   }
   CLOSE(in);
   CLOSE(out);
   return OK;
- ERROR:
+ FAIL:
   CLOSE(in);
   CLOSE(out);
   return SYSERR;

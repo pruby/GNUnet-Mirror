@@ -313,7 +313,7 @@ int ECRS_unindexFile(const char * filename,
       upcb(filesize, pos, eta, upcbClosure);
     if (tt != NULL)
       if (OK != tt(ttClosure))
-	goto ERROR;
+	goto FAILURE;
     size = DBLOCK_SIZE;
     if (size > filesize - pos) {
       size = filesize - pos;
@@ -327,12 +327,12 @@ int ECRS_unindexFile(const char * filename,
       LOG_FILE_STRERROR(LOG_WARNING,
 			"READ", 
 			filename);
-      goto ERROR;
+      goto FAILURE;
     }   
     size = DBLOCK_SIZE + sizeof(DBlock); /* padding! */
     if (tt != NULL)
       if (OK != tt(ttClosure))
-	goto ERROR;
+	goto FAILURE;
     fileBlockGetKey((char*) &dblock[1],
 		    size,
 		    &chk.key);
@@ -343,7 +343,7 @@ int ECRS_unindexFile(const char * filename,
 			&chk,
 			0, /* dblocks are on level 0 */
 			iblocks))
-      goto ERROR;
+      goto FAILURE;
     if (! wasIndexed) {
       fileBlockEncode(db,
 		      size,
@@ -353,7 +353,7 @@ int ECRS_unindexFile(const char * filename,
       if (OK != FS_delete(sock,
 			  value)) {
 	FREE(value);
-	goto ERROR;
+	goto FAILURE;
       }
       FREE(value);
     }
@@ -365,7 +365,7 @@ int ECRS_unindexFile(const char * filename,
   }
   if (tt != NULL)
     if (OK != tt(ttClosure))
-      goto ERROR;  
+      goto FAILURE;  
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
     db = (DBlock*) &iblocks[i];
@@ -379,7 +379,7 @@ int ECRS_unindexFile(const char * filename,
 			&chk,
 			i+1, 
 			iblocks))
-      goto ERROR;
+      goto FAILURE;
     fileBlockEncode(db,
 		    size,
 		    &chk.query,
@@ -387,7 +387,7 @@ int ECRS_unindexFile(const char * filename,
     if (OK != FS_delete(sock,
 			value)) {
       FREE(value);
-      goto ERROR;
+      goto FAILURE;
     }
     FREE(value);
     FREE(iblocks[i]);
@@ -401,9 +401,9 @@ int ECRS_unindexFile(const char * filename,
       if (OK != FS_unindex(sock,
 			   DBLOCK_SIZE,
 			   &fileId))
-	goto ERROR;
+	goto FAILURE;
     } else
-      goto ERROR;
+      goto FAILURE;
   }
 
   /* free resources */
@@ -412,7 +412,7 @@ int ECRS_unindexFile(const char * filename,
   CLOSE(fd);
   releaseClientSocket(sock);
   return OK;
- ERROR:
+ FAILURE:
   for (i=0;i<treedepth;i++)
     FREENONNULL(iblocks[i]);
   FREE(iblocks);

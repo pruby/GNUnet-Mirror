@@ -19,6 +19,7 @@
   * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
+- Resolve "@todo [WIN]" (Nils)
 
 0.7.0pre1 [4'05] (aka "preview"):
 - topology: do aggressive bootstrap on first start (Christian) [ easy ]
@@ -37,6 +38,7 @@
 0.7.0 [5'05] (aka "compatibility? what's that?"):
 - ecrs-unindex: code cleanup [ easy ]
 - Missing Features:
+   - resolve "FIXME 0.7"
   * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
     linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
   * fsui core (persistence) [ difficult ]

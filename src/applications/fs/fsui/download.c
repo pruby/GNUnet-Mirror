@@ -33,9 +33,6 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
-/* for mmap */
-#include <sys/mman.h>
-
 /**
  * Start to download a file.
  *
@@ -218,7 +215,7 @@ static void * downloadThread(FSUI_DownloadList * dl) {
 			"OPEN",
 			dl->filename);
     } else {
-      dirBlock = mmap(NULL, 
+      dirBlock = MMAP(NULL, 
 		      totalBytes, 
 		      PROT_READ,
 		      MAP_SHARED,
@@ -234,7 +231,7 @@ static void * downloadThread(FSUI_DownloadList * dl) {
 			 dl);
       MUTEX_UNLOCK(&dl->ctx->lock);
       ECRS_freeMetaData(md);
-      munmap(dirBlock, totalBytes);
+      MUNMAP(dirBlock, totalBytes);
       CLOSE(fd);
     }
 

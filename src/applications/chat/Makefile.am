@@ -21,3 +21,5 @@ libgnunetmodule_chat_la_SOURCES = \
   chat.h
 libgnunetmodule_chat_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
+libgnunetmodule_chat_la_LIBADD = \
+  $(LDADD)

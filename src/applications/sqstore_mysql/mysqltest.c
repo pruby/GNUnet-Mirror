@@ -10,7 +10,7 @@
 #include "gnunet_sqstore_service.h"
 #include "core.h"
 
-#define ASSERT(x) do { if (! (x)) goto ERROR; } while (0)
+#define ASSERT(x) do { if (! (x)) goto FAILURE; } while (0)
 
 static cron_t now;
 
@@ -112,7 +112,7 @@ static int test(SQstore_ServiceAPI * api) {
   
   api->drop();
   return OK;
- ERROR:
+ FAILURE:
   api->drop();
   return SYSERR;
 }

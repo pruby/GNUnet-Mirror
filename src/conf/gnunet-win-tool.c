@@ -298,15 +298,15 @@ void IncreaseConnections()
 void doHash()
 {
   HashCode160 code;
-  HexName hex;
+  EncName hex;
   char *c;
 
   getFileHash(hashFile, &code);
-  hash2hex(&code, &hex);
+  hash2enc(&code, &hex);
   printf("RIPEMD160(%s)= ", hashFile);
   
   /* Flip byte order */
-  c = (char *) &hex;
+  c = (char *) hex.encoding;
   while(*c)
   {
     putchar(*(c + 1));

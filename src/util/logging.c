@@ -29,7 +29,10 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#ifndef MINGW
 #include <langinfo.h>
+#endif
+#include <time.h>
 
 /**
  * Where to write log information to.
@@ -112,8 +115,8 @@ struct logfiledef {
  * Remove file if it is an old log
  */
 static void removeOldLog(const char * fil,
-			 const char * dir,
-			 struct logfiledef * def) {
+       const char * dir,
+       struct logfiledef * def) {
   struct tm t;
   char * fullname;
   const char * logdate;
@@ -125,15 +128,19 @@ static void removeOldLog(const char * fil,
     strcat(fullname, DIR_SEPARATOR_STR);
   strcat(fullname, fil);
   if (0 != strncmp(def->basename,
-		   fullname,
-		   strlen(def->basename))) {
+       fullname,
+       strlen(def->basename))) {
     FREE(fullname);
     return;
   }
   logdate = &fullname[strlen(def->basename)];
   ret = strptime(logdate,
-		 nl_langinfo(D_FMT),
-		 &t);
+#ifndef MINGW
+     nl_langinfo(D_FMT),
+#else
+     "%Y%m%d",
+#endif
+     &t);
   if ( (ret == NULL) ||
        (ret[0] != '\0') ) {
     FREE(fullname);
@@ -155,12 +162,12 @@ void reopenLogFile() {
   
   logfilename
     = getConfigurationString(base,
-			     "LOGFILE"); 
+           "LOGFILE"); 
   if (logfilename != NULL) {
     char * fn;
     
     if ( (logfile != stderr) &&
-	 (logfile != NULL) ) {
+   (logfile != NULL) ) {
       fclose(logfile);
       logfile = NULL;
     }
@@ -171,7 +178,13 @@ void reopenLogFile() {
       struct logfiledef def;
       char datestr[80];
       time_t curtime;
+      char *datefmt;
       
+#ifndef MINGW
+      datefmt = nl_langinfo(D_FMT);
+#else
+      datefmt = "%Y%m%d";
+#endif
       time(&curtime);
 #ifdef localtime_r
       localtime_r(&curtime, &def.curtime);
@@ -185,9 +198,9 @@ void reopenLogFile() {
       strcat(fn, "_");
       def.basename = STRDUP(fn);
       GNUNET_ASSERT(0 != strftime(datestr,
-				  80,
-				  nl_langinfo(D_FMT), 
-				  &def.curtime));
+          80,
+          datefmt, 
+          &def.curtime));
       strcat(fn, datestr);
       
       /* Remove old logs */
@@ -197,8 +210,8 @@ void reopenLogFile() {
         end--;
       *end = 0;
       scanDirectory(logdir, 
-		    (DirectoryEntryCallback) removeOldLog, 
-		    &def);
+        (DirectoryEntryCallback) removeOldLog, 
+        &def);
       FREE(def.basename);
       FREE(logdir);
     }
@@ -330,11 +343,11 @@ static void printTime() {
     time(&timetmp);
     tmptr = localtime(&timetmp);
     GNUNET_ASSERT(0 != strftime(timebuf, 
-				64, 
-				"%b %d %H:%M:%S ", 
-				tmptr));
+        64, 
+        "%b %d %H:%M:%S ", 
+        tmptr));
     fputs(timebuf, 
-	  logfile);
+    logfile);
   }
 }
 

@@ -444,11 +444,11 @@ int ECRS_deserializeMetaData(MetaData ** md,
 
   if ( (sizeof(unsigned int) * ic + ic) > dataSize) {
     BREAK();
-    goto ERROR;
+    goto FAILURE;
   }
   if (data[dataSize-1] != '\0') {
     BREAK();
-    goto ERROR;
+    goto FAILURE;
   }
 
   *md = ECRS_createMetaData();
@@ -465,12 +465,12 @@ int ECRS_deserializeMetaData(MetaData ** md,
   }
   if (i < ic) { /* oops */
     ECRS_freeMetaData(*md);
-    goto ERROR;
+    goto FAILURE;
   }
   if (compressed)
     FREE(data);
   return OK;
- ERROR:
+ FAILURE:
   if (compressed) 
     FREE(data);
   return SYSERR; /* size too small */  

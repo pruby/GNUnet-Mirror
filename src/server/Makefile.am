@@ -16,6 +16,8 @@ libgnunetcore_la_SOURCES = \
  handler.c handler.h \
  tcpserver.c tcpserver.h \
  version.c version.h
+libgnunetcore_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 gnunetd_SOURCES = \
  gnunetd.c \

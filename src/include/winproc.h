@@ -199,7 +199,12 @@ extern "C" {
 #define NO_RECOVERY 3
 #undef NO_ADDRESS
 #define NO_ADDRESS 4
- 
+
+#define PROT_READ   0x1
+#define PROT_WRITE  0x2
+#define MAP_SHARED  0x1
+#define MAP_FIXED   0x10
+
 struct statfs
 {
   long f_type;                  /* type of filesystem (see below) */
@@ -403,6 +408,9 @@ int _win_read(int fildes, void *buf, size_t nbyte);
 size_t _win_fwrite(const void *buffer, size_t size, size_t count, FILE *stream);
 size_t _win_fread( void *buffer, size_t size, size_t count, FILE *stream );
 int _win_symlink(const char *path1, const char *path2);
+void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
+                unsigned long long offset);
+int _win_munmap(void *start, size_t length);
 int _win_accept(SOCKET s, struct sockaddr *addr, int *addrlen);
 int _win_bind(SOCKET s, const struct sockaddr *name, int namelen);
 int _win_connect(SOCKET s,const struct sockaddr *name, int namelen);

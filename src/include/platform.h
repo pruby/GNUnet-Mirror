@@ -151,6 +151,13 @@
  #define SIOCGIFADDR     _IOW('s', 102, struct ifreq) /* Get if addr */
 #endif
 
+#ifndef MINGW
+#include <sys/mman.h>
+#endif
+
+#ifndef SIGALRM
+ #define SIGALRM 14
+#endif
 
 /**
  * Open a file
@@ -180,6 +187,8 @@ int OPEN(const char *filename, int oflag, ...);
  #define GN_FREAD(b, s, c, f) fread(b, s, c, f)
  #define GN_FWRITE(b, s, c, f) fwrite(b, s, c, f)
  #define SYMLINK(a, b) symlink(a, b)
+ #define MMAP(s, l, p, f, d, o) mmap(s, l, p, f, d, o)
+ #define MUNMAP(s, l) munmap(s, l);
  #define STRERROR(i) strerror(i)
  #define ACCEPT(s, a, l) accept(s, a, l)
  #define BIND(s, n, l) bind(s, n, l)
@@ -220,6 +229,8 @@ int OPEN(const char *filename, int oflag, ...);
  #define GN_FREAD(b, s, c, f) _win_fread(b, s, c, f)
  #define GN_FWRITE(b, s, c, f) _win_fwrite(b, s, c, f)
  #define SYMLINK(a, b) _win_symlink(a, b)
+ #define MMAP(s, l, p, f, d, o) _win_mmap(s, l, p, f, d, o)
+ #define MUNMAP(s, l) _win_munmap(s, l);
  #define STRERROR(i) _win_strerror(i)
  #define ACCEPT(s, a, l) _win_accept(s, a, l)
  #define BIND(s, n, l) _win_bind(s, n, l)

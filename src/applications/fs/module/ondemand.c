@@ -202,7 +202,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 
   if (ntohl(dbv->size) != sizeof(OnDemandBlock)) {
     BREAK();
-    goto ERROR;
+    goto FAILURE;
   }
   odb = (OnDemandBlock*) dbv;
   fn = getOnDemandFile(&odb->fileId);
@@ -211,7 +211,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   if (fileHandle == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
     FREE(fn);
-    goto ERROR;
+    goto FAILURE;
   }
 
 #if TRACK_INDEXED_FILES
@@ -247,7 +247,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     LOG_FILE_STRERROR(LOG_WARNING, "lseek", fn);
     FREE(fn);
     CLOSE(fileHandle);
-    goto ERROR;
+    goto FAILURE;
   }
   db = MALLOC(sizeof(DBlock) + ntohl(odb->blockSize));
   db->type = htonl(D_BLOCK);
@@ -260,7 +260,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     FREE(fn);
     FREE(db);
     CLOSE(fileHandle);
-    goto ERROR;
+    goto FAILURE;
   }
   ret = fileBlockEncode(db,
 			ntohl(odb->blockSize) + sizeof(DBlock),
@@ -269,9 +269,9 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   FREE(db);
   FREE(fn);
   if (ret == SYSERR)
-    goto ERROR;
+    goto FAILURE;
   return OK;   
- ERROR:
+ FAILURE:
   datastore->del(query,
 		 dbv);
   return SYSERR;

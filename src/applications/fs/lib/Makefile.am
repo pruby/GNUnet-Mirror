@@ -6,4 +6,5 @@ lib_LTLIBRARIES = \
 libgnunetfs_la_SOURCES = \
   fslib.c 
 libgnunetfs_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/util/libgnunetutil.la \
+ ../libecrs_core.la

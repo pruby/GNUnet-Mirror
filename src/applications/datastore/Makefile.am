@@ -15,4 +15,6 @@ libgnunetmodule_datastore_la_SOURCES = \
   datastore.c 
 libgnunetmodule_datastore_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
+libgnunetmodule_datastore_la_LIBADD = \
+  $(LDADD)
 
