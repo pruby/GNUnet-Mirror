@@ -513,7 +513,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
   ret->data.ksk.keywordCount = 2 * uri->data.ksk.keywordCount;
   ret->data.ksk.keywords = MALLOC(sizeof(char*) * ret->data.ksk.keywordCount);
   for (i=0;i<uri->data.ksk.keywordCount;i++) {
-    key = uri->data.ksk.keywords[2*i];
+    key = uri->data.ksk.keywords[i];
     ret->data.ksk.keywords[2*i]
       = STRDUP(key);
     kd = MALLOC(strlen(key) + 13);
