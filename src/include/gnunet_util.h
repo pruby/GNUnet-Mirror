@@ -1519,14 +1519,13 @@ int encryptPrivateKey(const void * block,
  * @param key the key to use
  * @param block the data to decrypt, encoded as returned by encrypt, not consumed
  * @param result pointer to a location where the result can be stored
- * @param max the maximum number of bits to store for the result, if
- *        the decrypted block is bigger, an error is returned
- * @returns the size of the decrypted block, -1 on error
+ * @param size how many bytes of a result are expected? Must be exact.
+ * @returns the size of the decrypted block (that is, size) or -1 on error
  */
 int decryptPrivateKey(const struct PrivateKey * key, 
 		      const RSAEncryptedData * block,
 		      void * result,
-		      unsigned int max);
+		      unsigned short size);
 
 /**
  * Sign a given block.

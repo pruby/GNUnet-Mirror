@@ -537,7 +537,7 @@ int ECRS_deserializeMetaData(MetaData ** md,
 	  (i < ic) ) {
     len = strlen(&data[pos])+1;
     ECRS_addToMetaData(*md,
-		       (EXTRACTOR_KeywordType) ((unsigned int*)data)[i],
+		       (EXTRACTOR_KeywordType) ntohl(((unsigned int*)data)[i]),
 		       &data[pos]);    
     pos += len;
     i++;
