@@ -255,8 +255,6 @@ struct ECRS_URI * ECRS_dateExpandKeywordUri(const struct ECRS_URI * uri);
 int ECRS_equalsUri(const struct ECRS_URI * u1,
 		   const struct ECRS_URI * u2);
 
-		
-
 /**
  * Is this a namespace URI?
  */
@@ -542,7 +540,6 @@ int ECRS_search(const struct ECRS_URI * uri,
 		void * spcbClosure,
 		ECRS_TestTerminate tt,
 		void * ttClosure); /* search.c */
-
 
 /**
  * Notification of ECRS to a client about the progress of an insertion

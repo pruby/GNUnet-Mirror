@@ -1,16 +1,5 @@
-0.6.7 [3?'05] (aka "features"):
-- 770?   [ use freedback (LOG) in gnunet-gtk via show-messages ]
-- 678?   [ directory browser ]
-- 593??? [ gnunet-setup ]
-
 0.7.0pre1 [4'05] (aka "preview"):
-CODE CHANGES:
-- UI features:
-  * insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
-    as keyword (to allow getting meta-data from URI only)
-
 TESTING / TESTCASES:
-- new HTTP transport code (gnunet-transport-check + tbench!)
 - uni-peer:
   * sqlite: test concurrency with iterators
 - multi-peer: (see sessiontest.c and tbenchtest.c for templates)
@@ -28,26 +17,25 @@ TESTING / TESTCASES:
 - Features removed but to be revived:
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
     user to specify maximum amount of parallelism) [ tricky ]
+  * gnunet-gtk
 - Need testing:
   * gnunet-tracekit
 - Documentation changes (to be documented):
   * ECRS block format changes (dramatic!)
   * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
+- #593 (gnunet-setup)
+- #770? [ use freedback (LOG) in gnunet-gtk via show-messages ]
 
 0.7.x (aka "stabilization"):
-- add gnunet-gtk (or some other GUI)
-- gnunet-chat: have a real implementation.
-- DHT optimizations:
-  * optional fields (HELOs)
-- #727
-- XFS
-- #675
+- gnunet-chat
+- XFS [ location URIs ]
+- DHT optimizations [ use additional optional fields (HELOs) ]
 - #747 (sharing stats for gnunet-gtk)
+- insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
+  as keyword (to allow getting meta-data from URI only)
+- #678 (directory browser)
 
 1.0.0 (aka "userfriendly"):
-- #593 (gnunet-setup)
-- #678 (directory browser)
-- #704 (reindex downloaded files)
 - implement testbed for profiling
 
 
@@ -64,6 +52,7 @@ otherwise, feel free to implement):
 - while (!) downloading directory, display already received results
   for download (now supported by libecrs!)
 - add option to list all indexed files and perhaps delete from them
+  (ECRS now supports listing of indexed files!)
 - for potentially long clists, add option to specify a string
   pattern that must be matched for the lines to be displayed
   (to further prune search results, for example)
