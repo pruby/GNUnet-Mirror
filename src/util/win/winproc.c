@@ -1634,7 +1634,7 @@ int __win_deref(const char *path)
 
   errno = 0;
    
-  while (DereferenceShortcut(szFile))
+  while (DereferenceShortcut(path))
   {
     if (iDepth++ > 10)
     {
@@ -1683,7 +1683,7 @@ int __win_stat(const char *path, struct stat *buffer, int iDeref)
  */
 int _win_stat(const char *path, struct stat *buffer)
 {
-  return __win_stat(szFile, buffer, 1);
+  return __win_stat(path, buffer, 1);
 }
 
 /**
