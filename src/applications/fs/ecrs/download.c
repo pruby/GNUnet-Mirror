@@ -794,18 +794,18 @@ static int decryptContent(const char * data,
 			  unsigned int size,
 			  const HashCode160 * hashcode,
 			  char * result){
-  unsigned char iv[BLOWFISH_BLOCK_LENGTH]; /* initial value */
+  INITVECTOR iv;
   SESSIONKEY skey;
 
   GNUNET_ASSERT((data!=NULL) && (hashcode != NULL) && (result != NULL));
   /* get key and init value from the hash code */
   hashToKey(hashcode,
 	    &skey,
-	    &iv[0]);
+	    &iv);
   return decryptBlock(&skey,
 		      data,
 		      size,
-		      iv,
+		      &iv,
 		      result);
 }
 

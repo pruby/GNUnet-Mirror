@@ -55,7 +55,7 @@ void makeSessionkey(SESSIONKEY * key) {
 int encryptBlock(const void * block, 
 		 unsigned short len,
 		 const SESSIONKEY * sessionkey,
-		 const unsigned char * iv,
+		 const INITVECTOR * iv,
 		 void * result) {
   int outlen = 0;
   EVP_CIPHER_CTX ctx;
@@ -118,7 +118,7 @@ int encryptBlock(const void * block,
 int decryptBlock(const SESSIONKEY * sessionkey, 
 		 const void * block,
 		 unsigned short size,
-		 const unsigned char * iv,
+		 const INITVECTOR * iv,
 		 void * result) {
   int outlen = 0;
   EVP_CIPHER_CTX ctx;

@@ -12,7 +12,7 @@
 #define ITER 10
 
 static int testEncryptDecrypt() {
-  PrivateKey hostkey;
+  struct PrivateKey * hostkey;
   PublicKey pkey;
   RSAEncryptedData target;
   char result[MAX_TESTVAL];
@@ -68,7 +68,7 @@ static int testEncryptDecrypt() {
 }
 
 static int testSignVerify() {
-  PrivateKey hostkey;
+  struct PrivateKey * hostkey;
   Signature sig;
   PublicKey pkey;
   int i;
@@ -101,7 +101,7 @@ static int testSignVerify() {
 }
 
 static int testPrivateKeyEncoding() {
-  PrivateKey hostkey;
+  struct PrivateKey * hostkey;
   PrivateKeyEncoded * encoding;
   PublicKey pkey;
   RSAEncryptedData target;

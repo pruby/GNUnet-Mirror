@@ -15,7 +15,7 @@
 
 static int testMultiKey(const char * word) {
   HashCode160 in;  
-  PrivateKey hostkey;
+  struct PrivateKey * hostkey;
   PublicKey pkey;
   PublicKey pkey1;
   int i;
@@ -57,7 +57,7 @@ static int testMultiKey(const char * word) {
 }
 
 
-static int testEncryptDecrypt(PrivateKey hostkey) {
+static int testEncryptDecrypt(struct PrivateKey * hostkey) {
   PublicKey pkey;
   RSAEncryptedData target;
   char result[MAX_TESTVAL];
@@ -110,7 +110,7 @@ static int testEncryptDecrypt(PrivateKey hostkey) {
     return SYSERR;
 }
 
-static int testSignVerify(PrivateKey hostkey) {
+static int testSignVerify(struct PrivateKey * hostkey) {
   Signature sig;
   PublicKey pkey;
   int i;
@@ -140,7 +140,7 @@ static int testSignVerify(PrivateKey hostkey) {
   return ok;
 }
 
-static int testPrivateKeyEncoding(PrivateKey hostkey) {
+static int testPrivateKeyEncoding(struct PrivateKey * hostkey) {
   PrivateKeyEncoded * encoding;
   PublicKey pkey;
   RSAEncryptedData target;
@@ -207,7 +207,7 @@ void doneLockingGcrypt();
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   HashCode160 in;
-  PrivateKey hostkey;
+  struct PrivateKey * hostkey;
 
 #if USE_GCRYPT
   initLockingGcrypt();

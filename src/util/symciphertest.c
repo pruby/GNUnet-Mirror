@@ -8,7 +8,7 @@
 #include "platform.h"
 
 #define TESTSTRING "Hello World!"
-#define INITVALUE "InitValu"
+#define INITVALUE "InitializationVectorValue"
 
 static int testSymcipher() {
   SESSIONKEY key;
@@ -20,7 +20,7 @@ static int testSymcipher() {
   size = encryptBlock(TESTSTRING,
 		      strlen(TESTSTRING)+1,
 		      &key,
-		      INITVALUE,
+		      (const INITVECTOR*) INITVALUE,
 		      result);
   if (size == -1) {
     printf("symciphertest failed: encryptBlock returned %d\n",
@@ -30,7 +30,7 @@ static int testSymcipher() {
   size = decryptBlock(&key,
 		      result,
 		      size,
-		      INITVALUE,
+		      (const INITVECTOR*) INITVALUE,
 		      res);
   if (strlen(TESTSTRING)+1 
       != size) {
@@ -54,6 +54,7 @@ void doneLockingGcrypt();
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   
+  GNUNET_ASSERT(strlen(INITVALUE) > sizeof(INITVECTOR));
 #if ! USE_OPENSSL
   initLockingGcrypt();
 #endif

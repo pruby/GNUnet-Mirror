@@ -78,7 +78,7 @@ void makeSessionkey(SESSIONKEY * key) {
 int encryptBlock(const void * block, 
 		 unsigned short len,
 		 const SESSIONKEY * sessionkey,
-		 const unsigned char * iv,
+		 const INITVECTOR * iv,
 		 void * result) {
   gcry_cipher_hd_t handle;
   int rc;
@@ -117,7 +117,7 @@ int encryptBlock(const void * block,
   }
   rc != gcry_cipher_setiv(handle, 
 			  iv,
-			  SESSIONKEY_LEN/2);
+			  sizeof(INITVECTOR));
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setiv", rc);
@@ -155,7 +155,7 @@ int encryptBlock(const void * block,
 int decryptBlock(const SESSIONKEY * sessionkey, 
 		 const void * block,
 		 unsigned short size,
-		 const unsigned char * iv,
+		 const INITVECTOR * iv,
 		 void * result) {
   gcry_cipher_hd_t handle;
   int rc;
@@ -194,7 +194,7 @@ int decryptBlock(const SESSIONKEY * sessionkey,
   }
   rc = gcry_cipher_setiv(handle, 
 			 iv,
-			 SESSIONKEY_LEN/2);
+			 sizeof(INITVECTOR));
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setiv", rc);

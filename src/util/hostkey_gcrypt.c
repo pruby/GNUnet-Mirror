@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -36,9 +36,13 @@
 #include "locking_gcrypt.h"
 
 #include <gcrypt.h>
-#define HOSTKEY(a) ((gcry_sexp_t)(a)->internal)
-#define HOSTKEYL(a) ((a)->internal)
 
+/**
+ * The private information of an RSA key pair.
+ */
+struct PrivateKey {
+  gcry_sexp_t sexp;
+};
 
 #define HOSTKEY_LEN 2048
 #define EXTRA_CHECKS YES
@@ -81,8 +85,8 @@ static void adjust(char * buf,
 /**
  * This HostKey implementation uses RSA.
  */
-PrivateKey makePrivateKey() {
-  PrivateKey ret;
+struct PrivateKey * makePrivateKey() {
+  struct PrivateKey * ret;
   gcry_sexp_t s_key;
   gcry_sexp_t s_keyparam;
   int rc;
@@ -114,17 +118,17 @@ PrivateKey makePrivateKey() {
   }
 #endif
   unlockGcrypt();
-  ret = MALLOC(sizeof(PrivateKey));
-  HOSTKEYL(ret) = s_key;
+  ret = MALLOC(sizeof(struct PrivateKey));
+  ret->sexp = s_key;
   return ret;
 }
 
 /**
  * Free memory occupied by hostkey
  */
-void freePrivateKey(PrivateKey hostkey) {
+void freePrivateKey(struct PrivateKey * hostkey) {
   lockGcrypt();
-  gcry_sexp_release(HOSTKEY(hostkey));
+  gcry_sexp_release(hostkey->sexp);
   unlockGcrypt();
   FREE(hostkey);
 }
@@ -185,7 +189,7 @@ static int key_from_sexp( gcry_mpi_t *array,
  * @param hostkey the hostkey to extract into the result.
  * @param result where to write the result.
  */
-void getPublicKey(PrivateKey hostkey,
+void getPublicKey(const struct PrivateKey * hostkey,
 		  PublicKey * result) {
   gcry_mpi_t skey[2];
   int size;
@@ -193,17 +197,17 @@ void getPublicKey(PrivateKey hostkey,
   
   lockGcrypt();
   rc = key_from_sexp(skey, 
-		     HOSTKEY(hostkey), 
+		     hostkey->sexp, 
 		     "public-key", 
 		     "ne");
   if (rc)
     rc = key_from_sexp(skey, 
-		       HOSTKEY(hostkey), 
+		       hostkey->sexp, 
 		       "private-key", 
 		       "ne");    
   if (rc)
     rc = key_from_sexp(skey, 
-		       HOSTKEY(hostkey), 
+		       hostkey->sexp, 
 		       "rsa", 
 		       "ne");    
   if (rc) 
@@ -239,10 +243,13 @@ void getPublicKey(PrivateKey hostkey,
 
 
 /**
- * Internal: publicKey => RSA-Key
+ * Internal: publicKey => RSA-Key.
+ *
+ * Note that the return type is not actually a private
+ * key but rather an sexpression for the public key!
  */
-static PrivateKey public2PrivateKey(const PublicKey * publicKey) {
-  PrivateKey ret;
+static struct PrivateKey * public2PrivateKey(const PublicKey * publicKey) {
+  struct PrivateKey * ret;
   gcry_sexp_t result;
   gcry_mpi_t n;
   gcry_mpi_t e;
@@ -292,8 +299,8 @@ static PrivateKey public2PrivateKey(const PublicKey * publicKey) {
     return NULL;
   }  
   unlockGcrypt();
-  ret = MALLOC(sizeof(PrivateKey));
-  HOSTKEYL(ret) = result;
+  ret = MALLOC(sizeof(struct PrivateKey));
+  ret->sexp = result;
   return ret;
 }
 
@@ -303,7 +310,7 @@ static PrivateKey public2PrivateKey(const PublicKey * publicKey) {
  * @returns encoding of the private key.
  *    The first 4 bytes give the size of the array, as usual.
  */
-PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
+PrivateKeyEncoded * encodePrivateKey(const struct PrivateKey * hostkey) {
   /* libgcrypt */
 
   PrivateKeyEncoded * retval;
@@ -316,7 +323,7 @@ PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
 
   lockGcrypt();    
 #if EXTRA_CHECKS
-  if (gcry_pk_testkey(HOSTKEY(hostkey))) {
+  if (gcry_pk_testkey(hostkey->sexp)) {
     BREAK();
     unlockGcrypt();
     return NULL;
@@ -325,32 +332,32 @@ PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
 
   memset(pkv, 0, sizeof(gcry_mpi_t) * 6);
   rc = key_from_sexp(pkv,
-		     HOSTKEY(hostkey),
+		     hostkey->sexp,
 		     "private-key",
 		     "nedpqu");
   if (rc)
     rc = key_from_sexp(pkv,
-		       HOSTKEY(hostkey),
+		       hostkey->sexp,
 		       "rsa",
 		       "nedpqu");
   if (rc) 
     rc = key_from_sexp(pkv,
-		       HOSTKEY(hostkey),
+		       hostkey->sexp,
 		       "private-key",
 		       "nedpq");
   if (rc)
     rc = key_from_sexp(pkv,
-		       HOSTKEY(hostkey),
+		       hostkey->sexp,
 		       "rsa",
 		       "nedpq");
   if (rc) 
     rc = key_from_sexp(pkv,
-		       HOSTKEY(hostkey),
+		       hostkey->sexp,
 		       "private-key",
 		       "ned");
   if (rc)
     rc = key_from_sexp(pkv,
-		       HOSTKEY(hostkey),
+		       hostkey->sexp,
 		       "rsa",
 		       "ned");
   if (rc) {
@@ -387,34 +394,34 @@ PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
   retval->len = htons(size);
   i = 0;
   retval->sizen = htons(sizes[0]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)(&retval[1]))[i], 
 	 pbu[0],
 	 sizes[0]);
   i += sizes[0];
   retval->sizee = htons(sizes[1]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)(&retval[1]))[i], 
 	 pbu[1],
 	 sizes[1]);
   i += sizes[1];
   retval->sized = htons(sizes[2]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)(&retval[1]))[i], 
 	 pbu[2],
 	 sizes[2]);
   i += sizes[2];
   /* swap p and q! */
   retval->sizep = htons(sizes[4]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)(&retval[1]))[i], 
 	 pbu[4],
 	 sizes[4]);
   i += sizes[4];
   retval->sizeq = htons(sizes[3]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)(&retval[1]))[i], 
 	 pbu[3],
 	 sizes[3]);
   i += sizes[3];
   retval->sizedmp1 = htons(0);
   retval->sizedmq1 = htons(0);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)(&retval[1]))[i], 
 	 pbu[5],
 	 sizes[5]);
   for (i=0;i<6;i++) {
@@ -431,8 +438,8 @@ PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
  * Decode the private key from the file-format back
  * to the "normal", internal format.
  */
-PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
-  PrivateKey ret;
+struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
+  struct PrivateKey * ret;
   gcry_sexp_t res;
   gcry_mpi_t n,e,d,p,q,u;
   int rc;
@@ -444,7 +451,7 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   lockGcrypt();
   rc = gcry_mpi_scan(&n,
 		     GCRYMPI_FMT_USG,
-		     &((PrivateKeyEncoded_GENERIC*)encoding)->key[pos],
+		     &((char*)(&encoding[1]))[pos], 
 		     size,
 		     &size);
   pos += ntohs(encoding->sizen);
@@ -456,7 +463,7 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->sizee);
   rc = gcry_mpi_scan(&e,
 		     GCRYMPI_FMT_USG,
-		     &((PrivateKeyEncoded_GENERIC*)encoding)->key[pos],
+		     &((char*)(&encoding[1]))[pos], 
 		     size,
 		     &size);
   pos += ntohs(encoding->sizee);
@@ -469,7 +476,7 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->sized);
   rc = gcry_mpi_scan(&d,
 		     GCRYMPI_FMT_USG,
-		     &((PrivateKeyEncoded_GENERIC*)encoding)->key[pos],
+		     &((char*)(&encoding[1]))[pos], 
 		     size,
 		     &size);
   pos += ntohs(encoding->sized);
@@ -485,7 +492,7 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   if (size > 0) {
     rc = gcry_mpi_scan(&q,
 		       GCRYMPI_FMT_USG,
-		       &((PrivateKeyEncoded_GENERIC*)encoding)->key[pos],
+		       &((char*)(&encoding[1]))[pos], 
 		       size,
 		       &size);
     pos += ntohs(encoding->sizep);
@@ -503,7 +510,7 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   if (size > 0) {
     rc = gcry_mpi_scan(&p,
 		       GCRYMPI_FMT_USG,
-		       &((PrivateKeyEncoded_GENERIC*)encoding)->key[pos],
+		       &((char*)(&encoding[1]))[pos], 
 		       size,
 		       &size);
     pos += ntohs(encoding->sizeq);
@@ -526,7 +533,7 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   if (size > 0) {
     rc = gcry_mpi_scan(&u,
 		       GCRYMPI_FMT_USG,
-		       &((PrivateKeyEncoded_GENERIC*)encoding)->key[pos],
+		       &((char*)(&encoding[1]))[pos], 
 		       size,
 		       &size);
     if (rc) {
@@ -584,8 +591,8 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
     return NULL;
   }
 #endif
-  ret = MALLOC(sizeof(PrivateKey));
-  HOSTKEYL(ret) = res;
+  ret = MALLOC(sizeof(struct PrivateKey));
+  ret->sexp = res;
   unlockGcrypt();
   return ret;
 }
@@ -606,7 +613,7 @@ int encryptPrivateKey(const void * block,
 		      RSAEncryptedData * target) {
   gcry_sexp_t result;
   gcry_sexp_t data;
-  PrivateKey pubkey;
+  struct PrivateKey * pubkey;
   gcry_mpi_t val;
   gcry_mpi_t rval;
   size_t isize;
@@ -640,7 +647,7 @@ int encryptPrivateKey(const void * block,
     return SYSERR;
   }
   
-  rc = gcry_pk_encrypt(&result, data, HOSTKEY(pubkey));
+  rc = gcry_pk_encrypt(&result, data, pubkey->sexp);
   if (rc) {
     LOG_GCRY(LOG_ERROR, "gcry_pk_encrypt", rc); 
     gcry_sexp_release(data);
@@ -690,10 +697,10 @@ int encryptPrivateKey(const void * block,
  *        the decrypted block is bigger, an error is returned
  * @returns the size of the decrypted block, -1 on error
  */
-int decryptPrivateKey(const PrivateKey hostkey, 
-		   const RSAEncryptedData * block,
-		   void * result,
-		   unsigned int max) {
+int decryptPrivateKey(const struct PrivateKey * hostkey, 
+		      const RSAEncryptedData * block,
+		      void * result,
+		      unsigned int max) {
   gcry_sexp_t resultsexp;
   gcry_sexp_t data;
   size_t erroff;
@@ -705,7 +712,7 @@ int decryptPrivateKey(const PrivateKey hostkey,
 
   lockGcrypt();
 #if EXTRA_CHECKS
-  rc = gcry_pk_testkey(HOSTKEY(hostkey));
+  rc = gcry_pk_testkey(hostkey->sexp);
   if (rc) {
     LOG_GCRY(LOG_ERROR, "gcry_pk_testkey", rc);
     unlockGcrypt();
@@ -735,7 +742,7 @@ int decryptPrivateKey(const PrivateKey hostkey,
   }
   rc = gcry_pk_decrypt(&resultsexp,
 		       data,
-		       HOSTKEY(hostkey));
+		       hostkey->sexp);
   gcry_sexp_release(data);
   if (rc) {
     LOG_GCRY(LOG_ERROR, "gcry_pk_decrypt", rc);
@@ -817,7 +824,7 @@ int decryptPrivateKey(const PrivateKey hostkey,
  * @param sig where to write the signature
  * @return SYSERR on error, OK on success
  */
-int sign(const PrivateKey hostkey, 
+int sign(const struct PrivateKey * hostkey, 
 	 unsigned short size,
 	 const void * block,
 	 Signature * sig) {
@@ -851,7 +858,7 @@ int sign(const PrivateKey hostkey,
     unlockGcrypt();
     return SYSERR;
   }
-  rc = gcry_pk_sign(&result, data, HOSTKEY(hostkey));
+  rc = gcry_pk_sign(&result, data, hostkey->sexp);
   gcry_sexp_release(data);
   if (rc) {
     LOG_GCRY(LOG_ERROR, "gcry_pk_sign", rc);
@@ -904,7 +911,7 @@ int verifySig(const void * block,
   gcry_sexp_t sigdata;
   size_t size;
   gcry_mpi_t val;
-  PrivateKey hostkey;
+  struct PrivateKey * hostkey;
   HashCode160 hc;
   char * buff;
   int bufSize;
@@ -950,7 +957,7 @@ int verifySig(const void * block,
   hostkey = public2PrivateKey(publicKey);
   rc = gcry_pk_verify(sigdata,
 		      data,
-		      HOSTKEY(hostkey));  
+		      hostkey->sexp);  
   freePrivateKey(hostkey);
   gcry_sexp_release(data);
   gcry_sexp_release(sigdata);

@@ -192,7 +192,7 @@ static SKEY_Message * makeSessionKeySigned(const PeerIdentity * hostId,
     GNUNET_ASSERT(-1 != encryptBlock(pt,
 				     size,
 				     sk,
-				     (unsigned char*) &msg->signature,
+				     (const INITVECTOR*) &msg->signature,
 				     &((char*)msg)[sizeof(SKEY_Message)]));
     FREE(pt);
   } 
@@ -503,7 +503,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
     GNUNET_ASSERT(-1 != decryptBlock(&key,
 				     &((char*)sessionkeySigned)[sizeof(SKEY_Message)],
 				     size,
-				     (unsigned char*) &sessionkeySigned->signature,
+				     (const INITVECTOR*) &sessionkeySigned->signature,
 				     plaintext));
     pos = 0;
     /* find pings & pongs! */

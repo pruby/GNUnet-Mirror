@@ -20,8 +20,6 @@
   * gnunet-pseudonym
 - FSUI:
   * API changes (Krista discussion, anonymity level)
-- UTIL:
-  * API changes (hostkey struct, other structs? HashCode160)
 
 0.7.0pre1 [4'05] (aka "preview"):
 - util:

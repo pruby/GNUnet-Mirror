@@ -311,7 +311,7 @@ void injectMessage(const PeerIdentity * sender,
     memcpy(&cpart,
 	   &msg[pos],
 	   sizeof(p2p_HEADER));
-    plen = htons(cpart->size);
+    plen = htons(cpart.size);
     if (pos + plen > size) {
       IFLOG(LOG_WARNING,
 	    hash2enc(&sender->hashPubKey,

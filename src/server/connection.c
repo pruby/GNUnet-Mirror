@@ -1140,7 +1140,7 @@ static void sendBuffer(BufferEntry * be) {
   encryptBlock(&p2pHdr->sequenceNumber,
 	       p - sizeof(HashCode160),
 	       &be->skey_local,
-	       (const char*) encryptedMsg, /* IV */
+	       (const INITVECTOR*) encryptedMsg, /* IV */
 	       &((P2P_Message*)encryptedMsg)->sequenceNumber);
 #if DEBUG_CONNECTION
   LOG(LOG_DEBUG,
@@ -1900,7 +1900,7 @@ int checkHeader(const PeerIdentity * sender,
   res = decryptBlock(&be->skey_remote, 
 		     &msg->sequenceNumber,
 		     size - sizeof(HashCode160),
-		     (const unsigned char*) &msg->hash, /* IV */
+		     (const INITVECTOR*) &msg->hash, /* IV */
 		     tmp);
   hash(tmp,
        size - sizeof(HashCode160),

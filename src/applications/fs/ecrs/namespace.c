@@ -102,7 +102,7 @@ int ECRS_createNamespace(const char * name,
 			 struct ECRS_URI ** rootURI) {
   char * fileName;
   char tmp;
-  PrivateKey hk;
+  struct PrivateKey * hk;
   PrivateKeyEncoded * hke;
   char * dst;
   unsigned short len;
@@ -113,7 +113,7 @@ int ECRS_createNamespace(const char * name,
   int ret;
   unsigned int size;
   unsigned int mdsize;
-  PrivateKey pk;
+  struct PrivateKey * pk;
   NBlock * nb;
   KNBlock * knb;
   char ** keywords;
@@ -266,7 +266,7 @@ int ECRS_createNamespace(const char * name,
  */
 int ECRS_testNamespaceExists(const char * name,
 			     const HashCode160 * hc) {
-  PrivateKey hk;
+  struct PrivateKey * hk;
   char * fileName;
   PrivateKeyEncoded * hke;
   char * dst;
@@ -336,7 +336,7 @@ int ECRS_addToNamespace(const char * name,
   int ret;
   unsigned int size;
   unsigned int mdsize;
-  PrivateKey hk;
+  struct PrivateKey * hk;
   SBlock * sb;
   HashCode160 namespace;
   char * dstURI;

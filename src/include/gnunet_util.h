@@ -58,7 +58,7 @@
  * frequently, even between different CVS versions.
  */
 
-#define GNUNET_UTIL_VERSION 0x00060900
+#define GNUNET_UTIL_VERSION 0x00060901
 
 /**
  * We use an unsigned short in the protocol header, thus: 
@@ -73,13 +73,13 @@
 /**
  * Named constants for return values.
  */
-#define OK 1
+#define OK      1
 #define SYSERR -1
-#define YES 1
-#define NO 0
+#define YES     1
+#define NO      0
 
 /**
- * constants to specify time 
+ * @brief constants to specify time 
  */
 #define cronMILLIS ((cron_t)1)
 #define cronSECONDS ((cron_t)(1000 * cronMILLIS))
@@ -91,7 +91,7 @@
 #define cronYEARS ((cron_t)(365 * cronDAYS))
 
 /** 
- * log levels 
+ * @brief log levels 
  */
 #define LOG_NOTHING    0
 #define LOG_FATAL      1
@@ -105,30 +105,15 @@
 #define LOG_EVERYTHING 9
 
 /**
- * length of the sessionkey in bytes (128 BIT sessionkey) 
+ * @brief length of the sessionkey in bytes (128 BIT sessionkey) 
  */
 #define SESSIONKEY_LEN (128/8)
 
 /**
- * size of blowfish key in bytes 
- */
-#define BF_KEYSIZE 16
-
-/** 
- * 64 bit, blowfish 
- */
-#define BLOWFISH_BLOCK_LENGTH 8 
-
-/**
- * Default names of the configuration files.
+ * @brief Default names of the configuration files.
  */
 #define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
 #define DEFAULT_DAEMON_CONFIG_FILE "/etc/gnunet.conf"
-
-/* Names for the values of the `has_arg' field of `struct GNoption'.  */
-#define	no_argument		0
-#define required_argument	1
-#define optional_argument	2
 
 /**
  * @brief Length of RSA encrypted data (2048 bit)
@@ -184,12 +169,10 @@
 
 /* **************** structs ****************** */
 
-/* FIXME: use 'struct PrivateKey' instead! */
-typedef struct {
-  void * internal;
-} _PrivateKey;
-
-typedef _PrivateKey *PrivateKey;
+/**
+ * The private information of an RSA key pair.
+ */
+struct PrivateKey;
 
 /**
  * Header for all Client-Server communications.
@@ -345,8 +328,18 @@ typedef struct {
   unsigned char encoding[33];
 } EncName;
 
+/**
+ * GNUnet mandates a certain format for the encoding
+ * of private RSA key information that is provided
+ * by the RSA implementations.  This format is used
+ * to serialize a private RSA key (typically when
+ * writing it to disk).  
+ */
 typedef struct {
-  unsigned short len; /*  in big-endian! */
+  /** 
+   * Total size of the structure, in bytes, in big-endian! 
+   */
+  unsigned short len; 
   unsigned short sizen;/*  in big-endian! */
   unsigned short sizee;/*  in big-endian! */
   unsigned short sized;/*  in big-endian! */
@@ -354,32 +347,41 @@ typedef struct {
   unsigned short sizeq;/*  in big-endian! */
   unsigned short sizedmp1;/*  in big-endian! */
   unsigned short sizedmq1;/*  in big-endian! */
+  /* followed by the actual values */
 } PrivateKeyEncoded;
 
 /**
- * Generic version of PrivateKeyEncoded with field for accessing the end of
- * the data structure (use the other version for allocation)
+ * @brief an RSA signature
  */
-typedef struct {
-  PrivateKeyEncoded host_key_encoded;
-
-  /**
-   * Address of this field used for finding the end of the structure
-   */
-  unsigned char key[1];
-} PrivateKeyEncoded_GENERIC;
-
 typedef struct {
   unsigned char sig[RSA_ENC_LEN]; 
 } Signature;
 
+/**
+ * @brief A public key.
+ */
 typedef struct {
-  unsigned short len; /*  in big-endian, must be RSA_KEY_LEN+2 */
-  unsigned short sizen;  /*  in big-endian! */ 
+  /**
+   * In big-endian, must be RSA_KEY_LEN+2 
+   */
+  unsigned short len; 
+  /**
+   * Size of n in key; in big-endian! 
+   */ 
+  unsigned short sizen;  
+  /**
+   * The key itself, contains n followed by e.
+   */
   unsigned char key[RSA_KEY_LEN];
-  unsigned short padding; /* padding (must be 0) */
+  /**
+   * Padding (must be 0) 
+   */
+  unsigned short padding; 
 } PublicKey;
 
+/**
+ * RSA Encrypted data.
+ */
 typedef struct {
   unsigned char encoding[RSA_ENC_LEN];
 } RSAEncryptedData;
@@ -451,12 +453,22 @@ typedef struct GNUNET_TCP_SOCKET {
 } GNUNET_TCP_SOCKET;
 
 /** 
- * type for session keys 
+ * @brief type for session keys 
  */
 typedef struct {
   unsigned char key[SESSIONKEY_LEN];
   int crc32; /* checksum! */
 } SESSIONKEY;
+
+/**
+ * @brief IV for sym cipher
+ *
+ * NOTE: must be smaller (!) in size than the
+ * HashCode160.
+ */
+typedef struct {
+  unsigned char iv[SESSIONKEY_LEN/2];
+} INITVECTOR;
 
 /**
  * Method to parse the command line. The results
@@ -472,6 +484,9 @@ typedef void (*DirectoryEntryCallback)(const char * filename,
 				       const char * dirName,
 				       void * data);
 
+/**
+ * @brief description of a command line option (helptext)
+ */
 typedef struct {
   char shortArg;
   char * longArg;
@@ -1157,7 +1172,7 @@ void makeSessionkey(SESSIONKEY * key);
 int encryptBlock(const void * block, 
 		 unsigned short len,
 		 const SESSIONKEY * sessionkey,
-		 const unsigned char * iv,
+		 const INITVECTOR * iv,
 		 void * result);
 
 /**
@@ -1172,7 +1187,7 @@ int encryptBlock(const void * block,
 int decryptBlock(const SESSIONKEY * sessionkey, 
 		 const void * block,
 		 unsigned short size,
-		 const unsigned char * iv,
+		 const INITVECTOR * iv,
 		 void * result);
 
 #define SEMAPHORE_NEW(value) semaphore_new_(value, __FILE__, __LINE__)
@@ -1402,7 +1417,7 @@ void xorHashCodes(const HashCode160 * a,
  */
 void hashToKey(const HashCode160 * hc,
 	       SESSIONKEY * skey,
-	       unsigned char * iv);
+	       INITVECTOR * iv);
 
 /**
  * Obtain a bit from a hashcode.
@@ -1433,25 +1448,25 @@ int hashCodeCompareDistance(const HashCode160 * h1,
 /**
  * create a new hostkey. Callee must free return value.
  */
-PrivateKey makePrivateKey(); 
+struct PrivateKey * makePrivateKey(); 
 
 /**
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-PrivateKey makeKblockKey(const HashCode160 * input);
+struct PrivateKey * makeKblockKey(const HashCode160 * input);
 
 /**
  * Free memory occupied by hostkey
  * @param hostkey pointer to the memory to free
  */
-void freePrivateKey(PrivateKey hostkey); 
+void freePrivateKey(struct PrivateKey * hostkey); 
 
 /**
  * Extract the public key of the host.
  * @param result where to write the result.
  */
-void getPublicKey(const PrivateKey hostkey,
+void getPublicKey(const struct PrivateKey * hostkey,
 		  PublicKey * result);
 
 /**
@@ -1460,7 +1475,7 @@ void getPublicKey(const PrivateKey hostkey,
  * @param hostkey the hostkey to use
  * @returns encoding of the private key.
  */
-PrivateKeyEncoded * encodePrivateKey(const PrivateKey hostkey);
+PrivateKeyEncoded * encodePrivateKey(const struct PrivateKey * hostkey);
 
 /**
  * Decode the private key from the file-format back
@@ -1468,11 +1483,12 @@ PrivateKeyEncoded * encodePrivateKey(const PrivateKey hostkey);
  * @param encoded the encoded hostkey
  * @returns the decoded hostkey
  */
-PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding);
+struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding);
 
 /**
- * Encrypt a block with the public key of another
- * host that uses the same cyper.
+ * Encrypt a block with the public key of another host that uses the
+ * same cyper.
+ *
  * @param block the block to encrypt
  * @param size the size of block
  * @param publicKey the encoded public key used to encrypt
@@ -1486,26 +1502,28 @@ int encryptPrivateKey(const void * block,
 
 /**
  * Decrypt a given block with the hostkey. 
- * @param hostkey the hostkey to use
+ *
+ * @param key the key to use
  * @param block the data to decrypt, encoded as returned by encrypt, not consumed
  * @param result pointer to a location where the result can be stored
  * @param max the maximum number of bits to store for the result, if
  *        the decrypted block is bigger, an error is returned
  * @returns the size of the decrypted block, -1 on error
  */
-int decryptPrivateKey(const PrivateKey hostkey, 
+int decryptPrivateKey(const struct PrivateKey * key, 
 		      const RSAEncryptedData * block,
 		      void * result,
 		      unsigned int max);
 
 /**
  * Sign a given block.
+ *
  * @param block the data to sign, first unsigned short_SIZE bytes give length
  * @param size how many bytes to sign
  * @param result where to write the signature
  * @return SYSERR on error, OK on success
  */
-int sign(const PrivateKey hostkey, 
+int sign(const struct PrivateKey * key, 
 	 unsigned short size,
 	 const void * block,
 	 Signature * result);

@@ -7,6 +7,11 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
+#if ! USE_OPENSSL
+void initLockingGcrypt();
+void doneLockingGcrypt();
+#endif
+
 static int test(int number) {
   HashCode160 h1;
   HashCode160 h2;
@@ -35,9 +40,14 @@ static int testEncoding() {
 
 int main(int argc, char * argv[]) {
   int failureCount = 0;
-  
-  failureCount += testEncoding();
 
+#if ! USE_OPENSSL
+  initLockingGcrypt();
+#endif
+  failureCount += testEncoding();
+#if ! USE_OPENSSL
+  doneLockingGcrypt();
+#endif
   if (failureCount == 0)
     return 0;
   else 

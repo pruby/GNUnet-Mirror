@@ -34,15 +34,15 @@ void ECRS_encryptInPlace(const HashCode160 * hc,
 			 unsigned int len) {
   char * tmp;
   SESSIONKEY skey;
-  char iv[16];
+  INITVECTOR iv;
 
-  hashToKey(hc, &skey, iv);
+  hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
   GNUNET_ASSERT(len ==
 		encryptBlock(data,
 			     len,
 			     &skey,
-			     iv,
+			     &iv,
 			     tmp));
   memcpy(data, tmp, len);
   FREE(tmp);
@@ -53,15 +53,15 @@ void ECRS_decryptInPlace(const HashCode160 * hc,
 			 unsigned int len) {
   char * tmp;
   SESSIONKEY skey;
-  char iv[16];
-
-  hashToKey(hc, &skey, iv);
+  INITVECTOR iv;
+  
+  hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
   GNUNET_ASSERT(len ==
 		decryptBlock(&skey,
 			     data,
 			     len,
-			     iv,
+			     &iv,
 			     tmp));
   memcpy(data, tmp, len);
   FREE(tmp);

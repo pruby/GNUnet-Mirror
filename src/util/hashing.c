@@ -384,18 +384,20 @@ int hostIdentityEquals(const PeerIdentity * first,
  */
 void hashToKey(const HashCode160 * hc,
 	       SESSIONKEY * skey,
-	       unsigned char * iv) {
+	       INITVECTOR * iv) {
   memcpy(skey,
 	 hc,
 	 sizeof(SESSIONKEY));
   skey->crc32 = htonl(crc32N(skey, 
 			     SESSIONKEY_LEN));
-  memcpy(iv, 
-	 &(((char *)hc)[BF_KEYSIZE]), 
-	 BLOWFISH_BLOCK_LENGTH/2);
-  memcpy(&iv[BLOWFISH_BLOCK_LENGTH/2], 
-	 &(((char *)hc)[BF_KEYSIZE]),
-         BLOWFISH_BLOCK_LENGTH/2);
+  memcpy(&iv->iv[0], 
+	 &(((char *)hc)[sizeof(SESSIONKEY)]), 
+	 sizeof(HashCode160) - sizeof(SESSIONKEY));
+  GNUNET_ASSERT(sizeof(HashCode160) - sizeof(SESSIONKEY) ==
+		sizeof(INITVECTOR) - (sizeof(HashCode160) - sizeof(SESSIONKEY)));
+  memcpy(&iv->iv[sizeof(HashCode160) - sizeof(SESSIONKEY)],
+	 &(((char *)hc)[sizeof(SESSIONKEY)]), 
+	 sizeof(HashCode160) - sizeof(SESSIONKEY));
 }
 
 

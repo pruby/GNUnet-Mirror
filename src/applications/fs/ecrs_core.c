@@ -48,7 +48,7 @@ int fileBlockEncode(const DBlock * data,
 		    Datastore_Value ** value) {
   HashCode160 hc;
   SESSIONKEY skey;
-  unsigned char iv[BLOWFISH_BLOCK_LENGTH];  /* initial value */
+  INITVECTOR iv;  /* initial value */
   Datastore_Value * val;
   DBlock * db;
 
@@ -57,7 +57,7 @@ int fileBlockEncode(const DBlock * data,
   hash(&data[1], len - sizeof(DBlock), &hc);
   hashToKey(&hc,
 	    &skey,
-	    &iv[0]);
+	    &iv);
   val = MALLOC(sizeof(Datastore_Value) + len);
   val->size = htonl(sizeof(Datastore_Value) + len);
   val->type = htonl(D_BLOCK);
@@ -70,7 +70,7 @@ int fileBlockEncode(const DBlock * data,
 		== encryptBlock(&data[1],
 				len - sizeof(DBlock),
 				&skey,
-				iv,
+				&iv,
 				&db[1]));
   hash(&db[1],
        len - sizeof(DBlock),
@@ -111,7 +111,7 @@ void fileBlockGetQuery(const DBlock * db,
   const char * data;
   HashCode160 hc;
   SESSIONKEY skey;
-  unsigned char iv[BLOWFISH_BLOCK_LENGTH];
+  INITVECTOR iv;
 
   GNUNET_ASSERT(len >= sizeof(DBlock));
   data = (const char*) &db[1];
@@ -119,12 +119,12 @@ void fileBlockGetQuery(const DBlock * db,
   hash(data, len, &hc);
   hashToKey(&hc,
 	    &skey,
-	    &iv[0]);
+	    &iv);
   tmp = MALLOC(len);  
   GNUNET_ASSERT(len == encryptBlock(data,
 				    len,
 				    &skey,
-				    &iv[0],
+				    &iv,
 				    tmp));
   hash(tmp, len, query);
   FREE(tmp);

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,23 +29,25 @@
 #include "gnunet_util.h"
 #include "hostkey.h"
 
+/**
+ * Name of the file in which we store the hostkey.
+ */
 #define HOSTKEYFILE ".hostkey"
 
-
 /**
- * The SECRET hostkey. Keep local, never export outside of this
+ * The SECRET hostkey.  Keep local, never export outside of this
  * module!
  */
-static PrivateKey hostkey;
+static struct PrivateKey * hostkey;
 
 /**
  * The public hostkey
  */
 static PublicKey * publicKey;
 
-
 /**
  * Get the public key of the host
+ *
  * @return reference to the public key. Do not free it!
  */
 const PublicKey * getPublicPrivateKey() {
@@ -68,6 +70,7 @@ int signData(const void * data,
 
 /**
  * Decrypt a given block with the hostkey. 
+ *
  * @param block the data to decrypt, encoded as returned by encrypt, not consumed
  * @param result pointer to a location where the result can be stored
  * @param max the maximum number of bits to store for the result, if
@@ -78,9 +81,9 @@ int decryptData(const RSAEncryptedData * block,
 		void * result,
 		unsigned int max) {
   return decryptPrivateKey(hostkey, 
-			block, 
-			result, 
-			max);
+			   block, 
+			   result, 
+			   max);
 }
 
 void initPrivateKey() {
@@ -108,7 +111,9 @@ void initPrivateKey() {
   if (res == sizeof(unsigned short)) {
     encPrivateKey = (PrivateKeyEncoded*) MALLOC(ntohs(len));
     if (ntohs(len) != 
-	readFile(hostkeyfile, ntohs(len), encPrivateKey)) {
+	readFile(hostkeyfile,
+		 ntohs(len),
+		 encPrivateKey)) {
       FREE(encPrivateKey);
       LOG(LOG_WARNING,
 	  _("Existing hostkey in file '%s' failed format check, creating new hostkey.\n"),

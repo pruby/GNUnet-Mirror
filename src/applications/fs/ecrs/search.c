@@ -178,7 +178,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
   case ksk: {
       HashCode160 hc;
       HashCode160 query;
-      PrivateKey pk;
+      struct PrivateKey * pk;
       PublicKey pub;
       int i;
 

@@ -426,7 +426,7 @@ static void generate_kblock_key(KBlock_secret_key *sk,
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-PrivateKey makeKblockKey(const HashCode160 * hc) {
+struct PrivateKey * makeKblockKey(const HashCode160 * hc) {
   KBlock_secret_key sk;
   HashCode160 hx;
   void * pbu[6];
@@ -434,7 +434,7 @@ PrivateKey makeKblockKey(const HashCode160 * hc) {
   size_t sizes[6];
   PrivateKeyEncoded * retval;
   int i;
-  PrivateKey ret;
+  struct PrivateKey * ret;
   size_t size;
 
   hx = *hc;
@@ -463,34 +463,34 @@ PrivateKey makeKblockKey(const HashCode160 * hc) {
   retval->len = htons(size);
   i = 0;
   retval->sizen = htons(sizes[0]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)&retval[1])[i], 
 	 pbu[0],
 	 sizes[0]);
   i += sizes[0];
   retval->sizee = htons(sizes[1]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)&retval[1])[i], 
 	 pbu[1],
 	 sizes[1]);
   i += sizes[1];
   retval->sized = htons(sizes[2]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)&retval[1])[i], 
 	 pbu[2],
 	 sizes[2]);
   i += sizes[2];
   /* swap p and q! */
   retval->sizep = htons(sizes[4]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)&retval[1])[i], 
 	 pbu[4],
 	 sizes[4]);
   i += sizes[4];
   retval->sizeq = htons(sizes[3]);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)&retval[1])[i], 
 	 pbu[3],
 	 sizes[3]);
   i += sizes[3];
   retval->sizedmp1 = htons(0);
   retval->sizedmq1 = htons(0);
-  memcpy(&((PrivateKeyEncoded_GENERIC*)retval)->key[i], 
+  memcpy(&((char*)&retval[1])[i], 
 	 pbu[5],
 	 sizes[5]);
   for (i=0;i<6;i++) {

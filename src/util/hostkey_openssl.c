@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -31,11 +31,9 @@
 #include <openssl/bn.h>
 #include <openssl/err.h>
 
-
-#define HOSTKEY(a) ((RSA *)(a)->internal)
-#define HOSTKEYL(a) ((a)->internal)
-
-
+struct PrivateKey {
+  RSA * rsa;
+};
 
 #define HOSTKEY_LEN 2048
 #define EXTRA_CHECKS YES
@@ -43,8 +41,8 @@
 /**
  * This HostKey implementation uses RSA.
  */
-PrivateKey makePrivateKey() {
-  PrivateKey ret;
+struct PrivateKey * makePrivateKey() {
+  struct PrivateKey * ret;
   RSA * hk;
 
   hk = RSA_generate_key(HOSTKEY_LEN, 65535, NULL, 0);
@@ -56,16 +54,16 @@ PrivateKey makePrivateKey() {
 	ERR_error_string(ERR_get_error(), NULL));  
     return NULL;
   }
-  ret = MALLOC(sizeof(PrivateKey));
-  HOSTKEYL(ret) = hk;
+  ret = MALLOC(sizeof(struct PrivateKey));
+  ret->rsa = hk;
   return ret;
 }
 
 /**
  * Free memory occupied by hostkey
  */
-void freePrivateKey(PrivateKey hostkey) {
-  RSA_free(HOSTKEY(hostkey));
+void freePrivateKey(struct PrivateKey * hostkey) {
+  RSA_free(hostkey->rsa);
   FREE(hostkey);
 }
 
@@ -75,27 +73,27 @@ void freePrivateKey(PrivateKey hostkey) {
  * @param hostkey the hostkey to extract into the result.
  * @param result where to write the result.
  */
-void getPublicKey(PrivateKey hostkey,
+void getPublicKey(const struct PrivateKey * hostkey,
 		  PublicKey * result) {
   unsigned short sizen;
   unsigned short sizee;
   unsigned short size;
 
-  sizen = BN_num_bytes(HOSTKEY(hostkey)->n);
-  sizee = BN_num_bytes(HOSTKEY(hostkey)->e);
+  sizen = BN_num_bytes(hostkey->rsa->n);
+  sizee = BN_num_bytes(hostkey->rsa->e);
   size = sizen + sizee+2*sizeof(unsigned short);
   GNUNET_ASSERT(size == sizeof(PublicKey)-sizeof(result->padding));
   GNUNET_ASSERT(RSA_KEY_LEN == sizen+sizee);
   result->len = htons(size);
   result->sizen = htons(sizen);
   result->padding = 0;  
-  if (sizen != BN_bn2bin(HOSTKEY(hostkey)->n,
+  if (sizen != BN_bn2bin(hostkey->rsa->n,
 			 &result->key[0])) 
     errexit(_("Function '%s' did not return expected size %u: %s\n"),
 	    "BN_bn2bin(n)",
 	    sizen, 
 	    ERR_error_string(ERR_get_error(), NULL));
-  if (sizee != BN_bn2bin(HOSTKEY(hostkey)->e,
+  if (sizee != BN_bn2bin(hostkey->rsa->e,
 			 &result->key[sizen]))
     errexit(_("Function '%s' did not return expected size %u: %s\n"),
 	    "BN_bn2bin(e)",
@@ -106,9 +104,12 @@ void getPublicKey(PrivateKey hostkey,
 
 /**
  * Internal: publicKey => RSA-Key
+ *
+ * Note that this function returns a public key, despite
+ * of what the type says.
  */
-static PrivateKey public2PrivateKey(const PublicKey * publicKey) {
-  PrivateKey ret;
+static struct PrivateKey * public2PrivateKey(const PublicKey * publicKey) {
+  struct PrivateKey * ret;
   RSA * result;
   int sizen;
   int sizee;
@@ -131,8 +132,8 @@ static PrivateKey public2PrivateKey(const PublicKey * publicKey) {
   result->e = BN_bin2bn(&publicKey->key[sizen],
 			sizee, 
 			NULL);
-  ret = MALLOC(sizeof(PrivateKey));
-  HOSTKEYL(ret) = result;
+  ret = MALLOC(sizeof(struct PrivateKey));
+  ret->rsa = result;
   return ret;
 }
 
@@ -142,7 +143,7 @@ static PrivateKey public2PrivateKey(const PublicKey * publicKey) {
  * @returns encoding of the private key.
  *    The first 4 bytes give the size of the array, as usual.
  */
-PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
+PrivateKeyEncoded * encodePrivateKey(const struct PrivateKey * hostkey) {
   /*
                BIGNUM *n;               public modulus
                BIGNUM *e;               public exponent
@@ -164,27 +165,27 @@ PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
   unsigned short size;
   PrivateKeyEncoded * retval;
 
-  sizen = BN_num_bytes(HOSTKEY(hostkey)->n);
-  sizee = BN_num_bytes(HOSTKEY(hostkey)->e);
-  sized = BN_num_bytes(HOSTKEY(hostkey)->d);
-  if (HOSTKEY(hostkey)->p != NULL)
-    sizep = BN_num_bytes(HOSTKEY(hostkey)->p);
+  sizen = BN_num_bytes(hostkey->rsa->n);
+  sizee = BN_num_bytes(hostkey->rsa->e);
+  sized = BN_num_bytes(hostkey->rsa->d);
+  if (hostkey->rsa->p != NULL)
+    sizep = BN_num_bytes(hostkey->rsa->p);
   else
     sizep = 0;
-  if (HOSTKEY(hostkey)->q != NULL)
-    sizeq = BN_num_bytes(HOSTKEY(hostkey)->q);
+  if (hostkey->rsa->q != NULL)
+    sizeq = BN_num_bytes(hostkey->rsa->q);
   else
     sizeq = 0;
-  if (HOSTKEY(hostkey)->dmp1 != NULL)
-    sizedmp1 = BN_num_bytes(HOSTKEY(hostkey)->dmp1);
+  if (hostkey->rsa->dmp1 != NULL)
+    sizedmp1 = BN_num_bytes(hostkey->rsa->dmp1);
   else
     sizedmp1 = 0;
-  if (HOSTKEY(hostkey)->dmq1 != NULL)
-    sizedmq1 = BN_num_bytes(HOSTKEY(hostkey)->dmq1);
+  if (hostkey->rsa->dmq1 != NULL)
+    sizedmq1 = BN_num_bytes(hostkey->rsa->dmq1);
   else
     sizedmq1 = 0;
-  if (HOSTKEY(hostkey)->iqmp != NULL)
-    sizeiqmp = BN_num_bytes(HOSTKEY(hostkey)->iqmp);
+  if (hostkey->rsa->iqmp != NULL)
+    sizeiqmp = BN_num_bytes(hostkey->rsa->iqmp);
   else
     sizeiqmp = 0;
   size = sizen+sizee+sized+sizep+sizeq+sizedmp1+sizedmq1+sizeiqmp+sizeof(PrivateKeyEncoded);
@@ -197,29 +198,31 @@ PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
   retval->sizeq = htons(sizeq);
   retval->sizedmp1 = htons(sizedmp1);
   retval->sizedmq1 = htons(sizedmq1);
-  BN_bn2bin(HOSTKEY(hostkey)->n, &((PrivateKeyEncoded_GENERIC *)retval)->key[0]);
-  BN_bn2bin(HOSTKEY(hostkey)->e, &((PrivateKeyEncoded_GENERIC *)retval)->key[0+sizen]);
-  BN_bn2bin(HOSTKEY(hostkey)->d, &((PrivateKeyEncoded_GENERIC *)retval)->key[0+
-            sizen+sizee]);
-  if (HOSTKEY(hostkey)->p != NULL)
-    BN_bn2bin(HOSTKEY(hostkey)->p, 
-	      &((PrivateKeyEncoded_GENERIC *)retval)->key[0+sizen+sizee+sized]);
-  if (HOSTKEY(hostkey)->q != NULL)
-    BN_bn2bin(HOSTKEY(hostkey)->q, 
-	      &((PrivateKeyEncoded_GENERIC *)retval)->key[0+sizen+sizee+sized+
-              sizep]);
-  if (HOSTKEY(hostkey)->dmp1 != NULL)
-    BN_bn2bin(HOSTKEY(hostkey)->dmp1, 
-	      &((PrivateKeyEncoded_GENERIC *)retval)->key[0+sizen+sizee+sized+
-              sizep+sizeq]);
-  if (HOSTKEY(hostkey)->dmq1 != NULL)
-    BN_bn2bin(HOSTKEY(hostkey)->dmq1, 
-	      &((PrivateKeyEncoded_GENERIC *)retval)->key[0+sizen+sizee+sized+
-              sizep+sizeq+sizedmp1]);
-  if (HOSTKEY(hostkey)->iqmp != NULL)
-    BN_bn2bin(HOSTKEY(hostkey)->iqmp, 
-	      &((PrivateKeyEncoded_GENERIC *)retval)->key[0+sizen+sizee+sized+
-              sizep+sizeq+sizedmp1+sizedmq1]);
+  BN_bn2bin(hostkey->rsa->n, 
+	    &((char*)&retval[1])[0]);
+  BN_bn2bin(hostkey->rsa->e, 
+	    &((char*)&retval[1])[0+sizen]);
+  BN_bn2bin(hostkey->rsa->d, 
+	    &((char*)&retval[1])[0+sizen+sizee]);
+  if (hostkey->rsa->p != NULL)
+    BN_bn2bin(hostkey->rsa->p, 
+	      &((char*)&retval[1])[0+sizen+sizee+sized]);
+  if (hostkey->rsa->q != NULL)
+    BN_bn2bin(hostkey->rsa->q, 
+	      &((char*)&retval[1])[0+sizen+sizee+sized+
+				   sizep]);
+  if (hostkey->rsa->dmp1 != NULL)
+    BN_bn2bin(hostkey->rsa->dmp1, 
+	      &((char*)&retval[1])[0+sizen+sizee+sized+
+				   sizep+sizeq]);
+  if (hostkey->rsa->dmq1 != NULL)
+    BN_bn2bin(hostkey->rsa->dmq1, 
+	      &((char*)&retval[1])[0+sizen+sizee+sized+
+				   sizep+sizeq+sizedmp1]);
+  if (hostkey->rsa->iqmp != NULL)
+    BN_bn2bin(hostkey->rsa->iqmp, 
+	      &((char*)&retval[1])[0+sizen+sizee+sized+
+				   sizep+sizeq+sizedmp1+sizedmq1]);
   return retval;
 }
 
@@ -227,7 +230,7 @@ PrivateKeyEncoded * encodePrivateKey(PrivateKey hostkey) {
  * Decode the private key from the file-format back
  * to the "normal", internal format.
  */
-PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
+struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
   unsigned short sizen;
   unsigned short sizee;
   unsigned short sized;
@@ -238,7 +241,7 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   unsigned short size;
   unsigned short sum;
   RSA * result;
-  PrivateKey ret;
+  struct PrivateKey * ret;
 
   result = RSA_new();
   size    = ntohs(encoding->len) - sizeof(PrivateKeyEncoded);
@@ -250,39 +253,53 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
   sizedmp1= ntohs(encoding->sizedmp1);
   sizedmq1= ntohs(encoding->sizedmq1);
   sum = 0;
-  result->n= BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum], sizen,
-                       NULL); sum += sizen;
-  result->e= BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum], sizee,
-                       NULL); sum += sizee;
-  result->d= BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum], sized,
-                       NULL); sum += sized;
+  result->n= BN_bin2bn(&((char*)&encoding[1])[sum], 
+		       sizen,
+                       NULL); 
+  sum += sizen;
+  result->e= BN_bin2bn(&((char*)&encoding[1])[sum], 
+		       sizee,
+                       NULL); 
+  sum += sizee;
+  result->d= BN_bin2bn(&((char*)&encoding[1])[sum], 
+		       sized,
+                       NULL);
+  sum += sized;
   if (sizep != 0) {
-    result->p = BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum],
-                          sizep, NULL); sum += sizep;
+    result->p = BN_bin2bn(&((char*)&encoding[1])[sum],
+                          sizep, NULL);
+    sum += sizep;
   } else
     result->p = NULL;
   if (sizeq != 0) {
-    result->q = BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum],
-                          sizeq, NULL); sum += sizeq;
+    result->q = BN_bin2bn(&((char*)&encoding[1])[sum],
+                          sizeq,
+			  NULL);
+    sum += sizeq;
   } else
     result->q = NULL;
   if (sizedmp1 != 0) {
-    result->dmp1= BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum],
-                            sizedmp1, NULL); sum += sizedmp1;
+    result->dmp1= BN_bin2bn(&((char*)&encoding[1])[sum],
+                            sizedmp1, 
+			    NULL); 
+    sum += sizedmp1;
   } else
     result->dmp1 = NULL;
   if (sizedmq1 != 0) {
-    result->dmq1 = BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum],
-                             sizedmq1, NULL); sum += sizedmq1;
+    result->dmq1 = BN_bin2bn(&((char*)&encoding[1])[sum],
+                             sizedmq1,
+			     NULL); 
+    sum += sizedmq1;
   } else
     result->dmq1 = NULL;
   if (size - sum > 0) 
-    result->iqmp= BN_bin2bn(&((PrivateKeyEncoded_GENERIC *)encoding)->key[sum],
-                            size-sum, NULL);
+    result->iqmp= BN_bin2bn(&((char*)&encoding[1])[sum],
+                            size-sum,
+			    NULL);
   else
     result->iqmp = NULL;
-  ret = MALLOC(sizeof(PrivateKey));
-  HOSTKEYL(ret) = result;
+  ret = MALLOC(sizeof(struct PrivateKey));
+  ret->rsa = result;
   return ret;
 }
 
@@ -297,17 +314,17 @@ PrivateKey decodePrivateKey(const PrivateKeyEncoded * encoding) {
  * @returns SYSERR on error, OK if ok
  */
 int encryptPrivateKey(const void * block, 
-		   unsigned short size,
-		   const PublicKey * publicKey,
-		   RSAEncryptedData * target) {
-  PrivateKey foreignkey;
+		      unsigned short size,
+		      const PublicKey * publicKey,
+		      RSAEncryptedData * target) {
+  struct PrivateKey * foreignkey;
   int rs;
   int len;
 
   foreignkey = public2PrivateKey(publicKey);
   if (foreignkey == NULL)
     return SYSERR;
-  rs = RSA_size(HOSTKEY(foreignkey));
+  rs = RSA_size(foreignkey->rsa);
   /* now encrypt. First get size of the block */
   if (size > (rs - 41)) {
     BREAK();
@@ -322,7 +339,7 @@ int encryptPrivateKey(const void * block,
   len = RSA_public_encrypt(size, 
 			   (void*)block,  /* cast for old OpenSSL versions */
 			   &target->encoding[0], 
-			   HOSTKEY(foreignkey),
+			   foreignkey->rsa,
 			   RSA_PKCS1_PADDING);
   if (len != RSA_ENC_LEN) {
     if (len == -1)
@@ -353,10 +370,10 @@ int encryptPrivateKey(const void * block,
  *        the decrypted block is bigger, an error is returned
  * @returns the size of the decrypted block, -1 on error
  */
-int decryptPrivateKey(const PrivateKey hostkey, 
-		   const RSAEncryptedData * block,
-		   void * result,
-		   unsigned int max) {
+int decryptPrivateKey(const struct PrivateKey * hostkey, 
+		      const RSAEncryptedData * block,
+		      void * result,
+		      unsigned int max) {
   RSAEncryptedData tmp; /* this is as big as the result can possibly get */
   int size;
 
@@ -366,7 +383,7 @@ int decryptPrivateKey(const PrivateKey hostkey,
   size = RSA_private_decrypt(sizeof(RSAEncryptedData), 
 			     (void*)&block->encoding[0], /* cast for old OpenSSL versions */
 			     &tmp.encoding[0], 
-			     HOSTKEY(hostkey),
+			     hostkey->rsa,
 			     RSA_PKCS1_PADDING);
   if ( (size == -1) || 
        (size > max) ) {
@@ -394,14 +411,14 @@ int decryptPrivateKey(const PrivateKey hostkey,
  * @param sig where to write the signature
  * @return SYSERR on error, OK on success
  */
-int sign(const PrivateKey hostkey, 
+int sign(const struct PrivateKey * hostkey, 
 	 unsigned short size,
 	 const void * block,
 	 Signature * sig) {
 #if EXTRA_CHECKS
   PublicKey pkey;
 #endif
-  int rs = RSA_size(HOSTKEY(hostkey));
+  int rs = RSA_size(hostkey->rsa);
   unsigned int sigSize;
   HashCode160 hc;
 
@@ -419,7 +436,7 @@ int sign(const PrivateKey hostkey,
 		    sizeof(HashCode160),
 		    &sig->sig[0],
 		    &sigSize,
-		    HOSTKEY(hostkey))) {
+		    hostkey->rsa)) {
     LOG(LOG_ERROR,
 	_("'%s' failed at %s:%d with error: %s\n"),
 	"RSA_sign",
@@ -437,7 +454,7 @@ int sign(const PrivateKey hostkey,
 		      sizeof(HashCode160),
 		      &sig->sig[0],
 		      sizeof(Signature),
-		      HOSTKEY(hostkey))) 
+		      hostkey->rsa)) 
     BREAK();
   
   getPublicKey(hostkey, &pkey);
@@ -448,7 +465,7 @@ int sign(const PrivateKey hostkey,
 			sizeof(HashCode160),
 			&sig->sig[0],
 			sizeof(Signature),
-			HOSTKEY(hostkey))) 
+			hostkey->rsa)) 
       BREAK();
    return SYSERR;
   }
@@ -469,7 +486,7 @@ int verifySig(const void * block,
 	      unsigned short len,
 	      const Signature * sig,	      
 	      const PublicKey * publicKey) {
-  PrivateKey hostkey;
+  struct PrivateKey * hostkey;
   int rs;
   HashCode160 hc;
  
@@ -478,7 +495,7 @@ int verifySig(const void * block,
        (sig == NULL) || 
        (block == NULL))
     return SYSERR; /* hey, no data !? */
-  rs = RSA_size(HOSTKEY(hostkey));
+  rs = RSA_size(hostkey->rsa);
   if (rs != RSA_ENC_LEN) {
     BREAK();
     return SYSERR;
@@ -491,7 +508,7 @@ int verifySig(const void * block,
 		      sizeof(HashCode160),
 		      (unsigned char*) &sig->sig[0], /* cast because OpenSSL may not declare const */
 		      sizeof(Signature),
-		      HOSTKEY(hostkey))) {
+		      hostkey->rsa)) {
     LOG(LOG_INFO,
 	_("RSA signature verification failed at %s:%d: %s\n"),
 	__FILE__, __LINE__,
