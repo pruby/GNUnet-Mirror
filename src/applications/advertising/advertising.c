@@ -458,8 +458,10 @@ broadcastHELOTransport(TransportAPI * tapi,
 #endif
   identity->addHost(sd.m);
   if (sd.n < 1) {
-    LOG(LOG_WARNING,
-	_("Announcing ourselves pointless: no other peers are known to us so far.\n"));
+    if (identity->forEachHost(0, NULL, NULL) == 0) 
+      LOG(LOG_WARNING,
+	  _("Announcing ourselves pointless: "
+	    "no other peers are known to us so far.\n"));
     FREE(sd.m);
     return; /* no point in trying... */
   }

@@ -637,7 +637,7 @@ static int blacklistHost(const PeerIdentity * identity,
       hash2enc(&identity->hashPubKey,
 	       &hn);
 #if DEBUG_IDENTITY
-      LOG(LOG_DEBUG, 
+      LOG(LOG_INFO, 
 	  "Blacklisting host '%s' (%d) for %llu seconds until %llu (strict=%d).\n",
 	  &hn, 
 	  i,

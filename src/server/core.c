@@ -31,7 +31,7 @@
 #include "tcpserver.h"
 #include "core.h"
 
-#define DEBUG_CORE YES
+#define DEBUG_CORE NO
 
 /**
  * Linked list of loaded protocols (for clean shutdown).

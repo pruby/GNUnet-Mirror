@@ -63,7 +63,10 @@ typedef struct {
 typedef struct {
   /**
    * size of the message, in bytes, including this header; 
-   * max 65536-header (network byte order) 
+   * max 65535; we do NOT want to make this field an int
+   * because then a malicious peer could cause us to allocate
+   * lots of memory -- this bounds it by 64k/peer. 
+   * Field is in network byte order.
    */
   unsigned short size;
 
@@ -417,102 +420,98 @@ static int readAndProcess(int i) {
   }
   incrementBytesReceived(ret);
   tcpSession->pos += ret;
-  len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size);
-  if (len > tcpSession->rsize) /* if message larger than read buffer, grow! */
-    GROW(tcpSession->rbuff,
-	 tcpSession->rsize,
-	 len);
+
+  while (tcpSession->pos > 2) {
+    len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) + sizeof(TCPMessagePack);
+    if (len > tcpSession->rsize) /* if message larger than read buffer, grow! */
+      GROW(tcpSession->rbuff,
+	   tcpSession->rsize,
+	   len);
 #if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "Read %d bytes on socket %d, expecting %d for full message\n",
-      tcpSession->pos,
-      tcpSession->sock, 
-      len);
+    LOG(LOG_DEBUG,
+	"Read %d bytes on socket %d, expecting %d for full message\n",
+	tcpSession->pos,
+	tcpSession->sock, 
+	len);
 #endif
-  if ( (tcpSession->pos < 2) ||
-       (tcpSession->pos < len) ) {
-    tcpDisconnect(tsession);
-    return OK;
-  }
- 
-  /* complete message received, let's check what it is */
-  if (YES == tcpSession->expectingWelcome) {
-    TCPWelcome * welcome;
-#if DEBUG_TCP
-    EncName enc;
-#endif
+    if (tcpSession->pos < len) {
+      tcpDisconnect(tsession);
+      return OK;
+    }
     
-    welcome = (TCPWelcome*) &tcpSession->rbuff[0];
-    if ( (ntohs(welcome->version) != 0) ||
-	 (ntohs(welcome->size) != sizeof(TCPWelcome)) ) {
+    /* complete message received, let's check what it is */
+    if (YES == tcpSession->expectingWelcome) {
+      TCPWelcome * welcome;
+#if DEBUG_TCP 
+      EncName enc;
+#endif
+      
+      welcome = (TCPWelcome*) &tcpSession->rbuff[0];
+      if ( (ntohs(welcome->version) != 0) ||
+	   (ntohs(welcome->size) != sizeof(TCPWelcome)) ) {
+	LOG(LOG_WARNING,
+	    _("Expected welcome message on tcp connection, got garbage. Closing.\n"));
+	tcpDisconnect(tsession);
+	return SYSERR;
+      }
+      tcpSession->expectingWelcome = NO;
+      tcpSession->sender = welcome->clientIdentity;
+#if DEBUG_TCP 
+      IFLOG(LOG_DEBUG,
+	    hash2enc(&tcpSession->sender.hashPubKey,
+		     &enc));
+      LOG(LOG_DEBUG,
+	  "tcp welcome message from %s received\n",
+	  &enc);
+#endif
+      memmove(&tcpSession->rbuff[0],
+	      &tcpSession->rbuff[sizeof(TCPWelcome)],
+	      tcpSession->pos - sizeof(TCPWelcome));
+      tcpSession->pos -= sizeof(TCPWelcome); 
+      len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) + sizeof(TCPMessagePack);
+    } 
+    if ( (tcpSession->pos < 2) ||
+	 (tcpSession->pos < len) ) {
+      tcpDisconnect(tsession);
+      return OK;
+    }
+    
+    pack = (TCPMessagePack*)&tcpSession->rbuff[0];
+    /* send msg to core! */
+    if (len <= sizeof(TCPMessagePack)) {
       LOG(LOG_WARNING,
-	  _("Expected welcome message on tcp connection, got garbage. Closing.\n"));
+	  _("Received malformed message (size %u) from tcp-peer connection. Closing.\n"),
+	  len);
       tcpDisconnect(tsession);
       return SYSERR;
     }
-    tcpSession->expectingWelcome = NO;
-    tcpSession->sender = welcome->clientIdentity;
+    mp      = MALLOC(sizeof(MessagePack));
+    mp->msg = MALLOC(len - sizeof(TCPMessagePack));
+    memcpy(mp->msg,
+	   &pack[1],
+	   len - sizeof(TCPMessagePack));
+    mp->sender   = tcpSession->sender;
+    mp->size     = len - sizeof(TCPMessagePack);
+    mp->tsession = tsession;
 #if DEBUG_TCP
-    IFLOG(LOG_DEBUG,
-	  hash2enc(&tcpSession->sender.hashPubKey,
-		   &enc));
     LOG(LOG_DEBUG,
-	"tcp welcome message from %s received\n",
-	&enc);
+	"tcp transport received %u bytes, forwarding to core\n",
+	mp->rsize);
 #endif
+    coreAPI->receive(mp);
+    /* finally, shrink buffer adequately */
     memmove(&tcpSession->rbuff[0],
-	    &tcpSession->rbuff[sizeof(TCPWelcome)],
-	    tcpSession->pos - sizeof(TCPWelcome));
-    tcpSession->pos -= sizeof(TCPWelcome); 
-    len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size);
-  } 
-  if ( (tcpSession->pos < 2) ||
-       (tcpSession->pos < len) ) {
-    tcpDisconnect(tsession);
-    return OK;
+	    &tcpSession->rbuff[len],
+	    tcpSession->pos - len);
+    tcpSession->pos -= len;
+    if ( (tcpSession->pos * 4 < tcpSession->rsize) &&
+	 (tcpSession->rsize > 4 * 1024) ) {
+      /* read buffer far too large, shrink! */
+      GROW(tcpSession->rbuff,
+	   tcpSession->rsize,
+	   tcpSession->pos + 1024);
+    }
   }
-     
-  pack = (TCPMessagePack*)&tcpSession->rbuff[0];
-  /* send msg to core! */
-  if (len <= sizeof(TCPMessagePack)) {
-    LOG(LOG_WARNING,
-	_("Received malformed message from tcp-peer connection. Closing.\n"));
-    tcpDisconnect(tsession);
-    return SYSERR;
-  }
-  mp      = MALLOC(sizeof(MessagePack));
-  mp->msg = MALLOC(len);
-  memcpy(mp->msg,
-	 &pack[1],
-	 len - sizeof(TCPMessagePack));
-  mp->sender   = tcpSession->sender;
-  mp->size     = len - sizeof(TCPMessagePack);
-  mp->tsession = tsession;
-#if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "tcp transport received %u bytes, forwarding to core\n",
-      mp->rsize);
-#endif
-  coreAPI->receive(mp);
-
-  if (tcpSession->pos < len) { 
-    BREAK();
-    tcpDisconnect(tsession);
-    return SYSERR;
-  }
-  /* finally, shrink buffer adequately */
-  memmove(&tcpSession->rbuff[0],
-	  &tcpSession->rbuff[len],
-	  tcpSession->pos - len);
-  tcpSession->pos -= len;
-  if ( (tcpSession->pos * 4 < tcpSession->rsize) &&
-       (tcpSession->rsize > 4 * 1024) ) {
-    /* read buffer far too large, shrink! */
-    GROW(tcpSession->rbuff,
-	 tcpSession->rsize,
-	 tcpSession->pos + 1024);
-  }
-  
   tcpDisconnect(tsession);
   return OK;
 }
@@ -789,8 +788,7 @@ try_again_1:
 static int tcpDirectSend(TCPSession * tcpSession,
 			 void * mp,
 			 unsigned int ssize) {
-  int ok;
-  int ret;
+  size_t ret;
   int success;
 
   if (tcp_shutdown == YES)
@@ -806,54 +804,42 @@ static int tcpDirectSend(TCPSession * tcpSession,
     BREAK(); /* size 0 not allowed */
     return SYSERR;
   }
-  ok = SYSERR;
   MUTEX_LOCK(&tcplock);
   if (tcpSession->wpos > 0) {
     /* select already pending... */
-    ret = 0;
-  } else {
-    success = SEND_NONBLOCKING(tcpSession->sock,
-			       mp,
-			       ssize,
-			       &ret);
-    if (success == SYSERR) {
-      LOG_STRERROR(LOG_INFO, "send");
-      MUTEX_UNLOCK(&tcplock);
-      return SYSERR;
-    } else if (success == NO)
-      ret = 0;
+    MUTEX_UNLOCK(&tcplock);
+    return SYSERR;
   }
-  if ((unsigned int)ret <= ssize) { /* some bytes send or blocked */
-    if ((unsigned int)ret < ssize) {
-      if (tcpSession->wbuff == NULL) {
-	tcpSession->wsize = ssize + sizeof(TCPMessagePack);
-	tcpSession->wbuff = MALLOC(tcpSession->wsize);
-	tcpSession->wpos  = 0;
-      }
-      if (ssize + tcpSession->wpos - ret > 
-	  tcpSession->wsize) {
-	ssize = 0;
-	ok = SYSERR; /* buffer full, drop */
-      } else {
-	memcpy(&tcpSession->wbuff[tcpSession->wpos],
-	       mp,
-	       ssize - ret);
-	tcpSession->wpos += ssize - ret;
-	if (tcpSession->wpos == ssize - ret)
-	  signalSelect(); /* select set changed! */
-	ok = OK; /* all buffered */
-      }      
-    } else 
-      ok = OK; /* all written */
-  } else {
-    LOG_STRERROR(LOG_WARNING, "send");
-    ssize = 0;
-    ok = SYSERR; /* write failed for real */
+  success = SEND_NONBLOCKING(tcpSession->sock,
+			     mp,
+			     ssize,
+			     &ret);
+  if (success == SYSERR) {
+#if DEBUG_TCP
+    LOG_STRERROR(LOG_INFO, "send");
+#endif
+    MUTEX_UNLOCK(&tcplock);
+    return SYSERR;
+  }
+  if (success == NO)
+    ret = 0;
+ 
+  if (ret < ssize) {/* partial send */
+    if (tcpSession->wsize < ssize - ret) {
+      GROW(tcpSession->wbuff,
+	   tcpSession->wsize,
+	   ssize - ret);
+    }
+    memcpy(tcpSession->wbuff,
+	   mp,
+	   ssize - ret);
+    tcpSession->wpos = ssize - ret;
+    signalSelect(); /* select set changed! */
   }
   MUTEX_UNLOCK(&tcplock);
   cronTime(&tcpSession->lastUse);
   incrementBytesSent(ssize);
-  return ok;
+  return OK;
 }
 
 /**
@@ -918,8 +904,9 @@ static int tcpSendReliable(TSession * tsession,
 			   const unsigned int size) {
   TCPMessagePack * mp;
   int ok;
-  int ssize;
   
+  if (size >= MAX_BUFFER_SIZE)
+    return SYSERR;
   if (tcp_shutdown == YES)
     return SYSERR;
   if (size == 0) {
@@ -932,12 +919,11 @@ static int tcpSendReliable(TSession * tsession,
   memcpy(&mp[1],
 	 msg,
 	 size);
-  ssize = size + sizeof(TCPMessagePack);
-  mp->size = htons(ssize);
+  mp->size = htons(size);
   mp->reserved = 0;  
   ok = tcpDirectSendReliable(tsession->internal,
 			     mp,
-			     ssize);
+			     size + sizeof(TCPMessagePack));
   FREE(mp);
   return ok;
 }
@@ -1128,8 +1114,10 @@ static int tcpSend(TSession * tsession,
 		   const unsigned int size) {
   TCPMessagePack * mp;
   int ok;
-  int ssize;
-  
+ 
+  if (size >= MAX_BUFFER_SIZE)
+    return SYSERR;
+ 
   if (tcp_shutdown == YES)
     return SYSERR;
   if (size == 0) {
@@ -1142,12 +1130,11 @@ static int tcpSend(TSession * tsession,
   memcpy(&mp[1],
 	 msg,
 	 size);
-  ssize = size + sizeof(TCPMessagePack);
-  mp->size = htons(ssize);
+  mp->size = htons(size);
   mp->reserved = 0;
   ok = tcpDirectSend(tsession->internal,
 		     mp,
-		     ssize);
+		     size + sizeof(TCPMessagePack));
   FREE(mp);
   return ok;
 }

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,23 +28,23 @@
 #include "gnunet_protocols.h"
 #include "tbench.h"
 
-#define TBENCH_VERSION "0.1.0"
+#define TBENCH_VERSION "0.1.1"
 
 #define DEFAULT_MESSAGE_SIZE	10
-#define DEFAULT_TIMEOUT		2
+#define DEFAULT_TIMEOUT		(2 * cronSECONDS)
 #define DEFAULT_SPACING		0
 
 #define OF_HUMAN_READABLE 0
 #define OF_GNUPLOT_INPUT 1
 
-static unsigned int  messageSize = DEFAULT_MESSAGE_SIZE;
-static unsigned int  messageCnt  = 1;
+static unsigned int messageSize = DEFAULT_MESSAGE_SIZE;
+static unsigned int messageCnt  = 1;
 static char * messageReceiver;
-static unsigned int  messageIterations = 1;
-static unsigned int  messageTrainSize = 1;
-static unsigned int  messageTimeOut = DEFAULT_TIMEOUT;
-static unsigned int  messageSpacing = DEFAULT_SPACING;
-static unsigned int outputFormat = OF_HUMAN_READABLE;
+static unsigned int messageIterations = 1;
+static unsigned int messageTrainSize  = 1;
+static cron_t messageTimeOut          = DEFAULT_TIMEOUT;
+static cron_t messageSpacing          = DEFAULT_SPACING;
+static unsigned int outputFormat      = OF_HUMAN_READABLE;
 
 /**
  * Parse the options, set the timeout.
@@ -103,9 +103,9 @@ static int parseOptions(int argc,
 	{ 's', "size", "SIZE",
 	  gettext_noop("message size") },
 	{ 'S', "space", "SPACE",
-	  gettext_noop("inter-train message spacing") },
+	  gettext_noop("inter-train message spacing (in number of messages)") },
 	{ 't', "timeout", "TIMEOUT",
-	  gettext_noop("time to wait for the arrival of a response") },
+	  gettext_noop("time to wait for the completion of an iteration (in ms)") },
 	HELP_VERSION,
 	{ 'X', "xspace", "COUNT",
 	  gettext_noop("sleep for SPACE ms after COUNT messages") },
@@ -117,7 +117,9 @@ static int parseOptions(int argc,
       return SYSERR;
     }
     case 'i': 
-      if(1 != sscanf(GNoptarg, "%ud", &messageIterations)){
+      if(1 != sscanf(GNoptarg,
+		     "%ud",
+		     &messageIterations)){
 	LOG(LOG_FAILURE, 
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-i");
@@ -125,7 +127,9 @@ static int parseOptions(int argc,
       }
       break;
     case 'n': 
-      if(1 != sscanf(GNoptarg, "%ud", &messageCnt)){
+      if(1 != sscanf(GNoptarg,
+		     "%ud",
+		     &messageCnt)){
 	LOG(LOG_FAILURE, 
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-n");
@@ -136,7 +140,9 @@ static int parseOptions(int argc,
       messageReceiver = STRDUP(GNoptarg);
       break;
     case 's': 
-      if(1 != sscanf(GNoptarg, "%ud", &messageSize)){
+      if(1 != sscanf(GNoptarg, 
+		     "%ud",
+		     &messageSize)){
 	LOG(LOG_FAILURE, 
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-s");
@@ -144,7 +150,9 @@ static int parseOptions(int argc,
       }
       break;
     case 'S':
-      if(1 != sscanf(GNoptarg, "%ud", &messageSpacing)){
+      if(1 != sscanf(GNoptarg,
+		     "%ud",
+		     &messageTrainSize)){
 	LOG(LOG_FAILURE, 
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-S");
@@ -152,7 +160,9 @@ static int parseOptions(int argc,
       }
       break;
     case 't':
-      if(1 != sscanf(GNoptarg, "%ud", &messageTimeOut)){
+      if(1 != sscanf(GNoptarg, 
+		     "%llud", 
+		     &messageTimeOut)){
 	LOG(LOG_FAILURE, 
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-t");
@@ -165,7 +175,9 @@ static int parseOptions(int argc,
 	     TBENCH_VERSION);
       return SYSERR;
     case 'X':
-      if(1 != sscanf(GNoptarg, "%ud", &messageTrainSize)){
+      if(1 != sscanf(GNoptarg, 
+		     "%llud",
+		     &messageSpacing)){
 	LOG(LOG_FAILURE, 
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-X");
@@ -174,8 +186,7 @@ static int parseOptions(int argc,
       break;
     default: 
       LOG(LOG_FAILURE,
-	  _("Use --help to get a list of options.\n"),
-	  c);
+	  _("Use --help to get a list of options.\n"));
       return -1;
     } /* end of parsing commandline */
   } /* while (1) */
@@ -201,35 +212,34 @@ int main(int argc, char ** argv) {
   if (sock == NULL)
     errexit(_("Could not connect to gnunetd.\n"));
 
-  memset(&msg,
-	 0,
-	 sizeof(TBENCH_CS_MESSAGE));
-  msg.msgSize     =htons(messageSize);
-  msg.msgCnt      =htons(messageCnt);
-  msg.iterations  =htons(messageIterations);
-  msg.intPktSpace =htons(messageSpacing);
-  msg.trainSize   =htons(messageTrainSize);
-  msg.timeOut     =htonl(messageTimeOut);
+  msg.header.size = htons(sizeof(TBENCH_CS_MESSAGE));
+  msg.header.type = htons(TBENCH_CS_PROTO_REQUEST);
+  msg.msgSize     = htonl(messageSize);
+  msg.msgCnt      = htonl(messageCnt);
+  msg.iterations  = htonl(messageIterations);
+  msg.intPktSpace = htonll(messageSpacing);
+  msg.trainSize   = htonl(messageTrainSize);
+  msg.timeOut     = htonll(messageTimeOut);
+  msg.priority    = htonl(5);
   if (messageReceiver == NULL)
     errexit(_("You must specify a receiver!\n"));
   if (OK != enc2hash(messageReceiver,
 		     &msg.receiverId.hashPubKey))		     
-    errexit(_("Invalid receiver peer ID specified ('%s' is not valid enc name).\n"),
+    errexit(_("Invalid receiver peer ID specified ('%s' is not valid name).\n"),
 	    messageReceiver);
   FREE(messageReceiver);
-
-  msg.header.size = htons(sizeof(TBENCH_CS_MESSAGE));
-  msg.header.type = htons(TBENCH_CS_PROTO_REQUEST);
 
   if (SYSERR == writeToSocket(sock,
 			      &msg.header))
     return -1;
   
-  buffer = MALLOC(MAX_BUFFER_SIZE);
-  LOG(LOG_DEBUG,
-      "Reading using readFromSocket...\n");
-  if (OK == readFromSocket(sock, (CS_HEADER**)&buffer)) {
-    if((float)buffer->mean_loss <= 0){
+  buffer = NULL;
+  if (OK == readFromSocket(sock, 
+			   (CS_HEADER**)&buffer)) {
+    GNUNET_ASSERT(ntohs(buffer->header.size) ==
+		  sizeof(TBENCH_CS_REPLY));
+    if ((float)buffer->mean_loss <= 0){
+      BREAK();
       messagesPercentLoss = 0.0;
     } else {
       messagesPercentLoss = (buffer->mean_loss/((float)htons(msg.msgCnt)));
@@ -237,23 +247,23 @@ int main(int argc, char ** argv) {
     switch (outputFormat) {
     case OF_HUMAN_READABLE:
       printf(_("Time:\n"));
-      printf(_("\tmax      %d\n"),
-	     htons(buffer->max_time));
-      printf(_("\tmin      %d\n"),
-	     htons(buffer->min_time));
-      printf(_("\tmean     %f\n"),
+      printf(_("\tmax      %llums\n"),
+	     ntohll(buffer->max_time));
+      printf(_("\tmin      %llums\n"),
+	     ntohll(buffer->min_time));
+      printf(_("\tmean     %8.4fms\n"),
 	     buffer->mean_time);
-      printf(_("\tvariance %f\n"),
+      printf(_("\tvariance %8.4fms\n"),
 	     buffer->variance_time);
       
       printf(_("Loss:\n"));
-      printf(_("\tmax      %d\n"),
-	     htons(buffer->max_loss));
-      printf(_("\tmin      %d\n"),
-	     htons(buffer->min_loss));
-      printf(_("\tmean     %f\n"),
+      printf(_("\tmax      %u\n"),
+	     ntohl(buffer->max_loss));
+      printf(_("\tmin      %u\n"),
+	     ntohl(buffer->min_loss));
+      printf(_("\tmean     %8.4f\n"),
 	     buffer->mean_loss);
-      printf(_("\tvariance %f\n"),
+      printf(_("\tvariance %8.4f\n"),
 	     buffer->variance_loss); 
       break;
     case OF_GNUPLOT_INPUT:
@@ -264,9 +274,9 @@ int main(int argc, char ** argv) {
     default:
       printf(_("Output format not known, this should not happen.\n"));
     }
+    FREE(buffer);
   } else 
     printf(_("\nDid not receive the message from gnunetd. Is gnunetd running?\n"));  
-  FREE(buffer);
 
   releaseClientSocket(sock);
   doneUtil();

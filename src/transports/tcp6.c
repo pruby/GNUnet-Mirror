@@ -410,101 +410,103 @@ static int readAndProcess(int i) {
   }
   incrementBytesReceived(ret);
   tcp6Session->pos += ret;
-  len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size);
-  if (len > tcp6Session->rsize) /* if MTU larger than expected, grow! */
-    GROW(tcp6Session->rbuff,
-	 tcp6Session->rsize,
-	 len);
+  
+  while (tcp6Session->pos > 2) {
+    len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6MessagePack);
+    if (len > tcp6Session->rsize) /* if MTU larger than expected, grow! */
+      GROW(tcp6Session->rbuff,
+	   tcp6Session->rsize,
+	   len);
 #if DEBUG_TCP6
-  LOG(LOG_DEBUG,
-      "Read %d bytes on socket %d, expecting %d for full message\n",
-      tcp6Session->pos,
-      tcp6Session->sock, 
-      len);
+    LOG(LOG_DEBUG,
+	"Read %d bytes on socket %d, expecting %d for full message\n",
+	tcp6Session->pos,
+	tcp6Session->sock, 
+	len);
 #endif
-  if ( (tcp6Session->pos < 2) ||
-       (tcp6Session->pos < len) ) {
-    tcp6Disconnect(tsession);
-    return OK;
-  }
- 
-  /* complete message received, let's check what it is */
-  if (YES == tcp6Session->expectingWelcome) {
-    TCP6Welcome * welcome;
-#if DEBUG_TCP6
-    EncName hex;
-#endif
+    if (tcp6Session->pos < len) {
+      tcp6Disconnect(tsession);
+      return OK;
+    }
     
-    welcome = (TCP6Welcome*) &tcp6Session->rbuff[0];
-    if ( (ntohs(welcome->version) != 0) ||
-	 (ntohs(welcome->size) != sizeof(TCP6Welcome)) ) {
+    /* complete message received, let's check what it is */
+    if (YES == tcp6Session->expectingWelcome) {
+      TCP6Welcome * welcome;
+#if DEBUG_TCP6
+      EncName hex;
+#endif
+      
+      welcome = (TCP6Welcome*) &tcp6Session->rbuff[0];
+      if ( (ntohs(welcome->version) != 0) ||
+	   (ntohs(welcome->size) != sizeof(TCP6Welcome)) ) {
+	LOG(LOG_WARNING,
+	    _("Expected welcome message on tcp connection, got garbage. Closing.\n"));
+	tcp6Disconnect(tsession);
+	return SYSERR;
+      }
+      tcp6Session->expectingWelcome = NO;
+      tcp6Session->sender = welcome->clientIdentity;
+#if DEBUG_TCP6
+      IFLOG(LOG_DEBUG,
+	    hash2enc(&tcp6Session->sender.hashPubKey,
+		     &enc));
+      LOG(LOG_DEBUG,
+	  "tcp6 welcome message from %s received\n",
+	  &enc);
+#endif
+      memmove(&tcp6Session->rbuff[0],
+	      &tcp6Session->rbuff[sizeof(TCP6Welcome)],
+	      tcp6Session->pos - sizeof(TCP6Welcome));
+      tcp6Session->pos -= sizeof(TCP6Welcome); 
+      len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6MessagePack);
+    } 
+    if ( (tcp6Session->pos < 2) ||
+	 (tcp6Session->pos < len) ) {
+      tcp6Disconnect(tsession);
+      return OK;
+    }
+    
+    pack = (TCP6MessagePack*)&tcp6Session->rbuff[0];
+    /* send msg to core! */
+    if (len <= sizeof(TCP6MessagePack)) {
       LOG(LOG_WARNING,
-	  _("Expected welcome message on tcp connection, got garbage. Closing.\n"));
+	  _("Received malformed message from tcp6-peer connection. Closing connection.\n"));
       tcp6Disconnect(tsession);
       return SYSERR;
     }
-    tcp6Session->expectingWelcome = NO;
-    tcp6Session->sender = welcome->clientIdentity;
+    mp      = MALLOC(sizeof(MessagePack));
+    mp->msg = MALLOC(len - sizeof(TCP6MessagePack));
+    memcpy(mp->msg,
+	   &pack[1],
+	   len - sizeof(TCP6MessagePack));
+    mp->sender   = tcp6Session->sender;
+    mp->size     = len - sizeof(TCP6MessagePack);
+    mp->tsession = tsession;
 #if DEBUG_TCP6
-    IFLOG(LOG_DEBUG,
-	  hash2enc(&tcp6Session->sender.hashPubKey,
-		   &enc));
     LOG(LOG_DEBUG,
-	"tcp6 welcome message from %s received\n",
-	&enc);
+	"tcp6 transport received %d bytes, forwarding to core\n",
+	mp->size);
 #endif
+    coreAPI->receive(mp);
+    
+    if (tcp6Session->pos < len) { 
+      BREAK();
+      tcp6Disconnect(tsession);
+      return SYSERR;
+    }
+    /* finally, shrink buffer adequately */
     memmove(&tcp6Session->rbuff[0],
-	    &tcp6Session->rbuff[sizeof(TCP6Welcome)],
-	    tcp6Session->pos - sizeof(TCP6Welcome));
-    tcp6Session->pos -= sizeof(TCP6Welcome); 
-    len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size);
-  } 
-  if ( (tcp6Session->pos < 2) ||
-       (tcp6Session->pos < len) ) {
-    tcp6Disconnect(tsession);
-    return OK;
+	    &tcp6Session->rbuff[len],
+	    tcp6Session->pos - len);
+    tcp6Session->pos -= len;	   
+    if ( (tcp6Session->pos * 4 < tcp6Session->rsize) &&
+	 (tcp6Session->rsize > 4 * 1024) ) {
+      /* read buffer far too large, shrink! */
+      GROW(tcp6Session->rbuff,
+	   tcp6Session->rsize,
+	   tcp6Session->pos + 1024);
+    }  
   }
-     
-  pack = (TCP6MessagePack*)&tcp6Session->rbuff[0];
-  /* send msg to core! */
-  if (len <= sizeof(TCP6MessagePack)) {
-    LOG(LOG_WARNING,
-	_("Received malformed message from tcp6-peer connection. Closing connection.\n"));
-    tcp6Disconnect(tsession);
-    return SYSERR;
-  }
-  mp      = MALLOC(sizeof(MessagePack));
-  mp->msg = MALLOC(len);
-  memcpy(mp->msg,
-	 &pack[1],
-	 len - sizeof(TCP6MessagePack));
-  mp->sender   = tcp6Session->sender;
-  mp->size     = len - sizeof(TCP6MessagePack);
-  mp->tsession = tsession;
-#if DEBUG_TCP6
-  LOG(LOG_DEBUG,
-      "tcp6 transport received %d bytes, forwarding to core\n",
-      mp->size);
-#endif
-  coreAPI->receive(mp);
-
-  if (tcp6Session->pos < len) { 
-    BREAK();
-    tcp6Disconnect(tsession);
-    return SYSERR;
-  }
-  /* finally, shrink buffer adequately */
-  memmove(&tcp6Session->rbuff[0],
-	  &tcp6Session->rbuff[len],
-	  tcp6Session->pos - len);
-  tcp6Session->pos -= len;	   
-  if ( (tcp6Session->pos * 4 < tcp6Session->rsize) &&
-       (tcp6Session->rsize > 4 * 1024) ) {
-    /* read buffer far too large, shrink! */
-    GROW(tcp6Session->rbuff,
-	 tcp6Session->rsize,
-	 tcp6Session->pos + 1024);
-  }  
   tcp6Disconnect(tsession);
   return OK;
 }
@@ -772,8 +774,7 @@ try_again_1:
 static int tcp6DirectSend(TCP6Session * tcp6Session,
 			  void * mp,
 			  unsigned int ssize) {
-  int ok;
-  int ret;
+  size_t ret;
   int success;
 
   if (tcp6_shutdown == YES)
@@ -789,57 +790,39 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
     BREAK();
     return SYSERR;
   }
-  if (ssize > tcp6API.mtu + sizeof(TCP6MessagePack)) {
-    BREAK();
-    return SYSERR;
-  }
-  ok = SYSERR;
   MUTEX_LOCK(&tcp6lock);
   if (tcp6Session->wpos > 0) {
-    ret = 0;
-  } else {
-    success = SEND_NONBLOCKING(tcp6Session->sock,
-                              mp,
-                              ssize,
-                              &ret);
-    if (success == SYSERR) {
-      LOG_STRERROR(LOG_INFO, "send");
-      MUTEX_UNLOCK(&tcp6lock);
-      return SYSERR;
-    } else if (success == NO)
-      ret = 0;
+    MUTEX_UNLOCK(&tcp6lock);
+    return SYSERR;
   }
-  if ((unsigned int) ret <= ssize) { /* some bytes send or blocked */
-    if ((unsigned int)ret < ssize) {
-      if (tcp6Session->wbuff == NULL) {
-	tcp6Session->wsize = ssize + sizeof(TCP6MessagePack);
-	tcp6Session->wbuff = MALLOC(tcp6Session->wsize);
-	tcp6Session->wpos  = 0;
-      }
-      if (tcp6Session->wpos + ssize - ret > 
-	  tcp6Session->wsize) {
-	ssize = 0;
-	ok = SYSERR; /* buffer full, drop */
-      } else {
-	memcpy(&tcp6Session->wbuff[tcp6Session->wpos],
-	       mp,
-	       ssize - ret);
-	tcp6Session->wpos += ssize - ret;
-	if (tcp6Session->wpos == ssize - ret)
-	  signalSelect(); /* select set changed! */
-	ok = OK; /* all buffered */
-      }      
-    } else 
-      ok = OK; /* all written */
-  } else {
-    LOG_STRERROR(LOG_WARNING, "send");
-    ssize = 0;
-    ok = SYSERR; /* write failed for real */
+  success = SEND_NONBLOCKING(tcp6Session->sock,
+			     mp,
+			     ssize,
+			     &ret);
+  if (success == SYSERR) {
+    LOG_STRERROR(LOG_INFO, "send");
+    MUTEX_UNLOCK(&tcp6lock);
+    return SYSERR;
+  }
+  if (success == NO)
+    ret = 0;
+  
+  if (ret < ssize) { /* partial send */    
+    if (tcp6Session->wsize < ssize - ret) {
+      GROW(tcp6Session->wbuff,
+	   tcp6Session->wsize,
+	   ssize - ret);
+    }
+    memcpy(tcp6Session->wbuff,
+	   mp,
+	   ssize - ret);
+    tcp6Session->wpos = ssize - ret;
+    signalSelect(); /* select set changed! */    
   }
   MUTEX_UNLOCK(&tcp6lock);
   cronTime(&tcp6Session->lastUse);
   incrementBytesSent(ssize);
-  return ok;
+  return OK;
 }
 
 
@@ -902,8 +885,9 @@ static int tcp6SendReliable(TSession * tsession,
 			   const unsigned int size) {
   TCP6MessagePack * mp;
   int ok;
-  int ssize;
   
+  if (size >= MAX_BUFFER_SIZE)
+    return SYSERR;
   if (tcp6_shutdown == YES)
     return SYSERR;
   if (size == 0) {
@@ -916,12 +900,11 @@ static int tcp6SendReliable(TSession * tsession,
   memcpy(&mp[1],
 	 msg,
 	 size);
-  ssize = size + sizeof(TCP6MessagePack);
-  mp->size = htons(ssize);
+  mp->size = htons(size);
   mp->reserved = 0;
   ok = tcp6DirectSendReliable(tsession->internal,
 			      mp,
-			      ssize);
+			      size + sizeof(TCP6MessagePack));
   FREE(mp);
   return ok;
 }
@@ -1139,8 +1122,9 @@ static int tcp6Send(TSession * tsession,
 		    const unsigned int size) {
   TCP6MessagePack * mp;
   int ok;
-  int ssize;
   
+  if (size >= MAX_BUFFER_SIZE)
+    return SYSERR;
   if (tcp6_shutdown == YES)
     return SYSERR;
   if (size == 0) {
@@ -1153,12 +1137,11 @@ static int tcp6Send(TSession * tsession,
   memcpy(&mp[1],
 	 msg,
 	 size);
-  ssize = size + sizeof(TCP6MessagePack);
-  mp->size = htons(ssize);
+  mp->size = htons(size);
   mp->reserved = 0;
   ok = tcp6DirectSend(tsession->internal,
 		      mp,
-		      ssize);
+		      size + sizeof(TCP6MessagePack));
   FREE(mp);
   return ok;
 }

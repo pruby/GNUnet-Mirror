@@ -30,6 +30,11 @@
 #include "tbench.h"
 #include <sys/wait.h>
 
+/**
+ * Set this to NO when debugging gnunetd processes separately.
+ */
+#define DO_FORK NO
+
 static int parseOptions(int argc,
 			char ** argv) {
   FREENONNULL(setConfigurationString("GNUNETD",
@@ -44,28 +49,30 @@ static int parseOptions(int argc,
 static PeerIdentity peer2;
 
 static int test(GNUNET_TCP_SOCKET * sock,
-		unsigned short messageSize,
-		unsigned short messageCnt,
-		unsigned short messageIterations,
-		unsigned short messageSpacing,
-		unsigned short messageTrainSize,
-		unsigned int messageTimeOut /* in milli-seconds */) {
+		unsigned int messageSize,
+		unsigned int messageCnt,
+		unsigned int messageIterations,
+		cron_t messageSpacing,
+		unsigned int messageTrainSize,
+		cron_t messageTimeOut /* in milli-seconds */) {
   int ret;
   TBENCH_CS_MESSAGE msg;
   TBENCH_CS_REPLY * buffer;
   float messagesPercentLoss;
 
-  memset(&msg,
-	 0,
-	 sizeof(TBENCH_CS_MESSAGE));
+  printf(_("Using %u messages of size %u for %u times.\n"),
+	 messageCnt, 
+	 messageSize, 
+	 messageIterations);
   msg.header.size = htons(sizeof(TBENCH_CS_MESSAGE));
   msg.header.type = htons(TBENCH_CS_PROTO_REQUEST);
-  msg.msgSize     = htons(messageSize);
-  msg.msgCnt      = htons(messageCnt);
-  msg.iterations  = htons(messageIterations);
-  msg.intPktSpace = htons(messageSpacing);
-  msg.trainSize   = htons(messageTrainSize);
-  msg.timeOut     = htonl(messageTimeOut);
+  msg.msgSize     = htonl(messageSize);
+  msg.msgCnt      = htonl(messageCnt);
+  msg.iterations  = htonl(messageIterations);
+  msg.intPktSpace = htonll(messageSpacing);
+  msg.trainSize   = htonl(messageTrainSize);
+  msg.timeOut     = htonll(messageTimeOut);
+  msg.priority    = htonl(5);
   msg.receiverId  = peer2;
   
   if (SYSERR == writeToSocket(sock,
@@ -80,14 +87,14 @@ static int test(GNUNET_TCP_SOCKET * sock,
     } else {
       messagesPercentLoss = (buffer->mean_loss/((float)htons(msg.msgCnt)));
     }
-    printf(_("Times: max %8d  min %8d  mean %8.4f  variance %8.4f\n"),
-	   htons(buffer->max_time),
-	   htons(buffer->min_time),
+    printf(_("Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"),
+	   ntohll(buffer->max_time),
+	   ntohll(buffer->min_time),
 	   buffer->mean_time,
 	   buffer->variance_time);
-    printf(_("Loss:  max %8d  min %8d  mean %8.4f  variance %8.4f\n"),
-	   htons(buffer->max_loss),
-	   htons(buffer->min_loss),
+    printf(_("Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"),
+	   ntohl(buffer->max_loss),
+	   ntohl(buffer->min_loss),
 	   buffer->mean_loss,
 	   buffer->variance_loss); 
   } else {
@@ -109,6 +116,27 @@ static int waitForConnect(const char * name,
   return OK;
 }
 
+static int checkConnected(GNUNET_TCP_SOCKET * sock) {
+  int left;
+  int ret;
+
+  ret = 0;
+  left = 30; /* how many iterations should we wait? */
+  while (OK == requestStatistics(sock,
+				 &waitForConnect,
+				 NULL)) {
+    printf(_("Waiting for peers to connect (%u iterations left)...\n"), 
+	   left);
+    sleep(5);
+    left--;
+    if (left == 0) {
+      ret = 1;
+      break;
+    }
+  }
+  return ret;
+}
+
 /**
  * Testcase to test p2p communications.
  *
@@ -117,19 +145,22 @@ static int waitForConnect(const char * name,
  * @return 0: ok, -1: error
  */   
 int main(int argc, char ** argv) {
+#if DO_FORK
   pid_t daemon1;
   pid_t daemon2;
+  int status;
+#endif
   int ret;
   int left;
-  int status;
   GNUNET_TCP_SOCKET * sock;
+  int i;
 
   GNUNET_ASSERT(OK ==
 		enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
 			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
-
+#if DO_FORK
   daemon1 = fork();
   if (daemon1 == 0) {
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
@@ -138,7 +169,7 @@ int main(int argc, char ** argv) {
 		    "-c",
 		    "peer1.conf", /* configuration file */
 		    NULL)) {
-      fprintf(stderr,
+     fprintf(stderr,
 	      _("'%s' failed: %s\n"),
 	      "execlp",
 	      STRERROR(errno));
@@ -209,6 +240,7 @@ int main(int argc, char ** argv) {
     }
   }
   sleep(5);
+#endif
   
   ret = 0;
   left = 5;
@@ -228,18 +260,23 @@ int main(int argc, char ** argv) {
     }
   } while (sock == NULL);
 
+  ret = checkConnected(sock);
+  printf(_("Running benchmark...\n"));
+  /* 'slow' pass: wait for bandwidth negotiation! */
   if (ret == 0)
-    ret = test(sock, 4, 1, 1, 1, 1, 5000);
-  if (ret == 0)
-    ret = test(sock, 50, 64, 40, 50, 10, 10000);
-  if (ret == 0)
-    ret = test(sock, 1024, 64, 4, 0, 1, 10000);
-  if (ret == 0)
-    ret = test(sock, 32*1024, 8, 4, 0, 1, 30000);
-  
+    ret = test(sock, 64, 100, 4, 50 * cronMILLIS, 1, 30 * cronSECONDS);
+  checkConnected(sock);  
+  /* 'blast' pass: hit bandwidth limits! */
+  for (i=8;i<60000;i*=2) {
+    if (ret == 0)
+      ret = test(sock, i, 1+1024/i, 4, 10 * cronMILLIS, 2, 2 * cronSECONDS);
+    checkConnected(sock);
+  }
+  ret = test(sock, i, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
   releaseClientSocket(sock);
   doneUtil();
 
+#if DO_FORK
   if (daemon1 != -1) {
     if (0 != kill(daemon1, SIGTERM))
       DIE_STRERROR("kill");
@@ -252,6 +289,7 @@ int main(int argc, char ** argv) {
     if (daemon2 != waitpid(daemon2, &status, 0)) 
       DIE_STRERROR("waitpid");
   }
+#endif
   return ret;
 }
 

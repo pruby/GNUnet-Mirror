@@ -264,6 +264,7 @@ Topology_ServiceAPI *
 provide_module_topology_default(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
   char * data;
+  unsigned int len;
 
   coreAPI = capi;
   identity = capi->requestService("identity");
@@ -293,14 +294,15 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 	     5 * cronSECONDS,
 	     NULL);
 
-  if (-1 == stateReadContent(TOPOLOGY_TAG_FILE,
-			     (void**) &data)) {
+  if (-1 == (len = stateReadContent(TOPOLOGY_TAG_FILE,
+				    (void**) &data))) {
     stateWriteContent(TOPOLOGY_TAG_FILE,
 		      strlen(PACKAGE_VERSION),
 		      PACKAGE_VERSION);    
   } else {
-    if (0 != strcmp(PACKAGE_VERSION,
-		    data)) {
+    if (0 != strncmp(PACKAGE_VERSION,
+		     data,
+		     len)) {
       LOG(LOG_FAILURE,
 	  _("Version mismatch ('%s' vs. '%s'), run gnunet-update!\n"),
 	  PACKAGE_VERSION,

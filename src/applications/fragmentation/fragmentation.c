@@ -508,7 +508,9 @@ static int fragmentBMC(void * buf,
 		     &frag->header,
 		     EXTREME_PRIORITY,
 		     ctx->transmissionTime - cronTime(NULL)); 
+    pos += mlen - sizeof(FRAGMENT_Message);
   }
+  GNUNET_ASSERT(pos == ctx->len);
   FREE(frag);
   FREE(tmp);
   FREE(ctx);

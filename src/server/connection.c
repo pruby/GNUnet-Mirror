@@ -838,15 +838,8 @@ static void sendBuffer(BufferEntry * be) {
   }  
   if (be->status != STAT_UP)
     return; /* status is not up, cannot send! */
-  if (be->sendBufferSize == 0) {
-#if DEBUG_CONNECTION
-    LOG(LOG_DEBUG,
-	"Message queue empty.  Nothing transmitted.\n");
-#endif
-    return; /* nothing to send */    
-  }
-
-
+  if (be->sendBufferSize == 0) 
+    return; /* nothing to send */
 
   /* recompute max send frequency */
   if (be->max_bpm <= 0)
@@ -870,7 +863,7 @@ static void sendBuffer(BufferEntry * be) {
 
   if ( (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > cronTime(NULL)) &&
        (be->sendBufferSize < MAX_SEND_BUFFER_SIZE/4) ) {
-#if DEBUG_CONNECTION 
+#if DEBUG_CONNECTION
     LOG(LOG_DEBUG,
 	"Send frequency too high (CPU load), send deferred.\n");
 #endif
@@ -879,7 +872,7 @@ static void sendBuffer(BufferEntry * be) {
 
   /* test if receiver has enough bandwidth available!  */
   updateCurBPS(be);
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION 
   LOG(LOG_DEBUG,
       "receiver window available: %lld bytes (MTU: %u)\n",
       be->available_send_window,
@@ -897,7 +890,7 @@ static void sendBuffer(BufferEntry * be) {
     i = 0;
     /* assumes entries are sorted by priority! */
     while (i < be->sendBufferSize) {
-      if ( (totalMessageSize + entries[i]->len < 60000) &&
+      if ( (totalMessageSize + entries[i]->len < MAX_BUFFER_SIZE) &&
 	   (entries[i]->pri >= EXTREME_PRIORITY) ) {
 	knapsackSolution[i] = YES;
 	priority += entries[i]->pri;
@@ -906,17 +899,18 @@ static void sendBuffer(BufferEntry * be) {
 	break;
       }
       i++;
-    }    
+    }        
     while ( (i < be->sendBufferSize) &&
 	    (be->available_send_window > totalMessageSize) ) {
-      if (entries[i]->len + totalMessageSize <=
-	  be->available_send_window) {
+      if ( (entries[i]->len + totalMessageSize <=
+	    be->available_send_window) && 
+	   (totalMessageSize + entries[i]->len < MAX_BUFFER_SIZE) ) {
 	knapsackSolution[i] = YES;
 	totalMessageSize += entries[i]->len;
 	priority += entries[i]->pri;
       } else {
 	knapsackSolution[i] = NO;
-	if (totalMessageSize == 0) {
+	if (totalMessageSize == sizeof(P2P_Message)) {	  
 	  /* if the highest-priority message does not yet
 	     fit, wait for send window to grow so that
 	     we can get it out (otherwise we would starve
@@ -927,6 +921,15 @@ static void sendBuffer(BufferEntry * be) {
       }
       i++;
     }
+    if ( (totalMessageSize == sizeof(P2P_Message)) ||
+	 ( (priority < EXTREME_PRIORITY) &&
+	   ((totalMessageSize / sizeof(P2P_Message)) < 4) &&
+	   (randomi(16) != 0) ) ) {
+      /* randomization necessary to ensure we eventually send
+	 the message if there is nothing else to do! */
+      FREE(knapsackSolution);
+      return;
+    }      
   } else { /* if (be->session.mtu == 0) */
     /* solve knapsack problem, compute accumulated priority */
     knapsackSolution = MALLOC(sizeof(int) * be->sendBufferSize);
@@ -989,7 +992,7 @@ static void sendBuffer(BufferEntry * be) {
 	 which  has EXTREME_PRIORITY) */
       if (priority < EXTREME_PRIORITY) {
 	FREE(knapsackSolution);
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION 
 	LOG(LOG_DEBUG,
 	    "bandwidth limits prevent sending (send window %u too small).\n",
 	    be->available_send_window);
@@ -1008,7 +1011,7 @@ static void sendBuffer(BufferEntry * be) {
     int msgCap;
     FREE(knapsackSolution);
     cronTime(&be->lastSendAttempt);
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION 
     LOG(LOG_DEBUG,
 	"policy prevents sending message (priority too low: %d)\n",
 	priority);
@@ -1027,7 +1030,7 @@ static void sendBuffer(BufferEntry * be) {
       if (be->sendBufferSize <= msgCap)
 	break;
       if ( entry->transmissionTime < expired) {
-#if DEBUG_CONNECTION 
+#if DEBUG_CONNECTION
 	LOG(LOG_DEBUG,
 	    "expiring message, expired %ds ago, queue size is %u (bandwidth stressed)\n",
 	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
@@ -1046,7 +1049,7 @@ static void sendBuffer(BufferEntry * be) {
   }
   
   /* build message (start with sequence number) */
-  GNUNET_ASSERT(totalMessageSize >= sizeof(P2P_Message));
+  GNUNET_ASSERT(totalMessageSize > sizeof(P2P_Message));
   plaintextMsg = MALLOC(totalMessageSize);
   p2pHdr = (P2P_Message*) plaintextMsg;
   p2pHdr->timeStamp 
@@ -1186,23 +1189,11 @@ static void sendBuffer(BufferEntry * be) {
   hash(&p2pHdr->sequenceNumber,
        p - sizeof(HashCode512),
        (HashCode512*) encryptedMsg);
-#if DEBUG_CONNECTION
-  LOG(LOG_DEBUG,
-      "Encrypting with key %u and IV %u\n",
-      *(int*) &be->skey_local,
-      *(int*) &encryptedMsg /* IV */);
-#endif
   encryptBlock(&p2pHdr->sequenceNumber,
 	       p - sizeof(HashCode512),
 	       &be->skey_local,
 	       (const INITVECTOR*) encryptedMsg, /* IV */
 	       &((P2P_Message*)encryptedMsg)->sequenceNumber);
-#if DEBUG_CONNECTION
-  LOG(LOG_DEBUG,
-      "calling transport layer to send %d bytes with crc %x\n",
-      p,
-      crc);
-#endif
   if (! ( (SYSERR == transport->send(be->session.tsession,
 				     encryptedMsg,
 				     p)) &&
@@ -1264,7 +1255,7 @@ static void appendToBuffer(BufferEntry * be,
        (se->len > be->session.mtu - sizeof(P2P_Message)) ) {
     /* this message is so big that it must be fragmented! */
     fragmentation->fragment(&be->session.sender,
-			    be->session.mtu,
+			    be->session.mtu - sizeof(P2P_Message),
 			    se->pri,
 			    se->transmissionTime,
 			    se->len,
@@ -1368,14 +1359,14 @@ static BufferEntry * addHost(const PeerIdentity * hostId,
 			     int establishSession) {
   BufferEntry * root;
   BufferEntry * prev;
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION 
   EncName enc;
 
-  IFLOG(LOG_INFO,
+  IFLOG(LOG_EVERYTHING,
 	hash2enc(&hostId->hashPubKey, 
 		 &enc));
-  LOG(LOG_INFO, 
-      "Adding host %s to the connection table.\n",
+  LOG(LOG_EVERYTHING, 
+      "Adding host '%s' to the connection table.\n",
       &enc);
 #endif
 
@@ -1656,8 +1647,7 @@ static void scheduleInboundTraffic() {
      and then merge the values; but for now, let's just go
      hardcore and adjust all values rapidly */
   for (u=0;u<activePeerCount;u++) {
-    entries[u]->idealized_limit = 0;
-    adjustedRR[u] = entries[u]->recently_received * cronMINUTES / timeDifference;
+    adjustedRR[u] = entries[u]->recently_received * cronMINUTES / timeDifference / 2;
 
 #if DEBUG_CONNECTION
     if (adjustedRR[u] > entries[u]->idealized_limit) {
@@ -1666,7 +1656,7 @@ static void scheduleInboundTraffic() {
 	    hash2enc(&entries[u]->session.sender.hashPubKey,
 		     &enc));
       LOG(LOG_INFO,
-	  "peer %s transmitted above limit: %llu bpm > %u bpm\n",
+	  "peer '%s' transmitted above limit: %llu bpm > %u bpm\n",
 	  &enc,
 	  adjustedRR[u],
 	  entries[u]->idealized_limit);
@@ -1678,15 +1668,14 @@ static void scheduleInboundTraffic() {
      */
     if (adjustedRR[u] > 2 * MAX_BUF_FACT * 
 	entries[u]->max_transmitted_limit) {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
       EncName enc;
       IFLOG(LOG_INFO,
 	    hash2enc(&entries[u]->session.sender.hashPubKey,
 		     &enc));
       LOG(LOG_INFO,
-	  "blacklisting %s, it sent >%dx+MTU above mLimit: %llu bpm > %u bpm (cLimit %u bpm)\n",
+	  "blacklisting '%s': sent %llu bpm (limit %u bpm, target %u bpm)\n",
 	  &enc,
-	  2 * MAX_BUF_FACT,
 	  adjustedRR[u],
 	  entries[u]->max_transmitted_limit,
 	  entries[u]->idealized_limit);
@@ -1696,9 +1685,9 @@ static void scheduleInboundTraffic() {
 			      1, /* FIXME: 1? */
 			      YES);
       activePeerCount--;
-      entries[u]=entries[activePeerCount];
-      shares[u]=shares[activePeerCount];
-      adjustedRR[u]=adjustedRR[activePeerCount];
+      entries[u]    = entries[activePeerCount];
+      shares[u]     = shares[activePeerCount];
+      adjustedRR[u] = adjustedRR[activePeerCount];
       u--;
     }
     
@@ -1707,11 +1696,6 @@ static void scheduleInboundTraffic() {
 					     at least MIN_BPM_PER_PEER */
   }
 
-#if DEBUG_CONNECTION
-  LOG(LOG_DEBUG,
-      "freely schedulable bandwidth is %d bpm\n",
-      schedulableBandwidth);
-#endif
   /* now distribute the schedulableBandwidth according
      to the shares.  Note that since we cap peers at twice
      of what they transmitted last, we may not be done with
@@ -1800,7 +1784,7 @@ static void scheduleInboundTraffic() {
 	entries[u]->idealized_limit);
 #endif
     entries[u]->current_connection_value /= 2.0;
-    entries[u]->recently_received = 0;
+    entries[u]->recently_received /= 2;
   }
 
   /* free memory */
@@ -1952,12 +1936,6 @@ int checkHeader(const PeerIdentity * sender,
     return SYSERR; /* could not decrypt */
   }
   tmp = MALLOC(size - sizeof(HashCode512));
-#if DEBUG_CONNECTION
-  LOG(LOG_DEBUG,
-      "Decrypting with key %u and IV %u\n",
-      *(int*) &be->skey_remote,
-      *(int*) &msg->hash);
-#endif
   res = decryptBlock(&be->skey_remote, 
 		     &msg->sequenceNumber,
 		     size - sizeof(HashCode512),
@@ -2092,10 +2070,6 @@ void assignSessionKey(const SESSIONKEY * key,
   BufferEntry * be;
 
   MUTEX_LOCK(&lock);
-  LOG(LOG_DEBUG,
-      "Assigning session key %u %s\n",
-      *(int*)key,
-      forSending == YES ? "for sending" : "for receiving");
   be = lookForHost(peer);
   if (be == NULL)
     be = addHost(peer, NO);

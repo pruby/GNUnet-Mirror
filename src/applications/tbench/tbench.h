@@ -19,47 +19,70 @@
 */
 
 /**
- * @author Christian Grothoff
  * @file applications/tbench/tbench.h
- **/
+ * @author Christian Grothoff
+ */
 #ifndef TBENCH_TBENCH_H
 #define TBENCH_TBENCH_H
 
 #include "gnunet_core.h"
 
-#define TBENCH_MSG_LENGTH 1024
-
-typedef struct {
-  p2p_HEADER header; 
-  unsigned int iterationNum;
-  unsigned int packetNum;
-} TBENCH_p2p_MESSAGE;
-
-typedef struct {
-  TBENCH_p2p_MESSAGE p2p_message;
-  char message[1];
-} TBENCH_p2p_MESSAGE_GENERIC;
-
+/**
+ * Client requests peer to perform some profiling.
+ */
 typedef struct {
   CS_HEADER header;
+  /**
+   * How big is each message (plus headers).
+   * Note that GNUnet is limited to 64k messages.
+   */
   unsigned int msgSize;
+  /**
+   * How many messages should be transmitted in 
+   * each iteration?
+   */
   unsigned int msgCnt;
+  /**
+   * How many iterations should be performed?
+   */
   unsigned int iterations;
+  /**
+   * Which peer should receive the messages?
+   */
   PeerIdentity receiverId;
-  unsigned int intPktSpace;	/* Inter packet space in milliseconds */
+  /**
+   * Inter packet space in milliseconds (delay
+   * introduced when sending messages).
+   */
+  cron_t intPktSpace;
+  /**
+   * Time to wait for the arrival of all repies
+   * in one iteration.
+   */
+  cron_t timeOut;		
+  /**
+   * intPktSpace delay is only introduced every
+   * trainSize messages.
+   */
   unsigned int trainSize;
-  unsigned int timeOut;		/* Time to wait for the arrival of a reply in secs */
+  /**
+   * Which priority should be used?
+   */
+  unsigned int priority;
 } TBENCH_CS_MESSAGE;
 
+/**
+ * Response from server with statistics.
+ */
 typedef struct {
   CS_HEADER header;
-  int max_loss;
-  int min_loss;
+  unsigned int max_loss;
+  unsigned int min_loss;
   float mean_loss;
   float variance_loss;
   
-  int max_time;
-  int min_time;
+  cron_t max_time;
+  cron_t min_time;
   float mean_time;
   float variance_time;  
 } TBENCH_CS_REPLY;

@@ -7,10 +7,11 @@
 
 0.7.0pre1 [4'05] (aka "preview"):
 - testing:
+  * tbench:
+    + CAN TEST: http transport (after MTU change)
   * sqlite-tests: test concurrency with iterators
   * gnunet-pseudonym
   * gnunet-search: multiple search results don't work (yet); test on FSLIB and ECRS levels!
-  * tbench is awful code (FIX) and also somehow _breaks_ bandwidth limitations! (Mantis #766 anyone?)
 - FSUI:
   * download: various details wrt generated events
   * namespace updates
@@ -21,7 +22,6 @@
   * dht / gnunet-dht-join and gnunet-dht-query 
   * fs
 - transport refactoring:
-  * TEST: TCP MTU change [ at this point, it may just work or equally just crash and burn ]
   * UPDATE: HTTP: MTU change!
   * port knocking support? [ tricky ]
 - UI features:
