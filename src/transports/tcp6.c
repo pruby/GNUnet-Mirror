@@ -65,13 +65,13 @@ typedef struct {
    * size of the message, in bytes, including this header; 
    * max 65536-header (network byte order) 
    */
-  unsigned short size;
-  
+  unsigned short size; 
+
   /**
-   * This struct is followed by MESSAGE_PARTs - until size is reached 
-   * There is no "end of message".
+   * For alignment, always 0.
    */
-  p2p_HEADER parts[0];
+  unsigned short reserved;
+
 } TCP6MessagePack;
 
 /**
@@ -138,7 +138,7 @@ typedef struct {
   /**
    * Current size of the buffer.
    */
-  unsigned int size;
+  unsigned int rsize;
 
   /**
    * The read buffer.
@@ -154,6 +154,11 @@ typedef struct {
    * The write buffer.
    */
   char * wbuff;
+
+  /**
+   * Size of the write buffer
+   */
+  unsigned int wsize;
 
 } TCP6Session;
 
@@ -239,8 +244,6 @@ static void signalSelect() {
   char i = 0;
   int ret;
 
-  LOG(LOG_DEBUG,
-      "Signaling select.\n");
   ret = WRITE(tcp6_pipe[1],
 	      &i,
 	      sizeof(char));
@@ -297,10 +300,7 @@ static void destroySession(int i) {
   tcp6Session = tsessions[i]->internal;
   if (-1 != tcp6Session->sock)
     if (0 != SHUTDOWN(tcp6Session->sock, SHUT_RDWR))
-      LOG(LOG_EVERYTHING,
-	  "Error shutting down socket %d: %s\n",
-	  tcp6Session->sock,
-	  STRERROR(errno));
+      LOG_STRERROR(LOG_EVERYTHING, "shutdown");
   CLOSE(tcp6Session->sock);
   tcp6Session->sock = -1;
   tcp6Disconnect(tsessions[i]);
@@ -366,7 +366,7 @@ static int readAndProcess(int i) {
   TSession * tsession;
   TCP6Session * tcp6Session;
   unsigned int len;
-  int ret, success;
+  int ret;
   TCP6MessagePack * pack;
   MessagePack * mp;
 
@@ -374,43 +374,36 @@ static int readAndProcess(int i) {
   if (SYSERR == tcp6Associate(tsession))
     return SYSERR;
   tcp6Session = tsession->internal;
-try_again_2:
-  success = RECV_NONBLOCKING(tcp6Session->sock,
-			     &tcp6Session->rbuff[tcp6Session->pos],
-	                     tcp6Session->size - tcp6Session->pos,
-	                     &ret);
+  if (tcp6Session->rsize == tcp6Session->pos) {
+    /* read buffer too small, grow */
+    GROW(tcp6Session->rbuff,
+	 tcp6Session->rsize,
+	 tcp6Session->rsize * 2);
+  }
+  ret = READ(tcp6Session->sock,
+	     &tcp6Session->rbuff[tcp6Session->pos],
+	     tcp6Session->rsize - tcp6Session->pos);
   cronTime(&tcp6Session->lastUse);
   if (ret == 0) {
     tcp6Disconnect(tsession);
 #if DEBUG_TCP6
     LOG(LOG_DEBUG,
 	"READ on socket %d returned 0 bytes, closing connection\n",
-	tcp6Session->sock);
+	tcpSession->sock);
 #endif
     return SYSERR; /* other side closed connection */
   }
-  if (success == NO) {
-    gnunet_util_sleep(20);
-    goto try_again_2;
-  }
-  
   if (ret < 0) {
     if ( (errno == EINTR) ||
 	 (errno == EAGAIN) ) { 
-#if DEBUG_TCP6
-      LOG(LOG_DEBUG,
-	  "READ on socket %d returned %s, closing connection\n",
-	  tcp6Session->sock,
-	  STRERROR(errno));
+#if DEBUG_TCP
+      LOG_STRERROR(LOG_DEBUG, "read");
 #endif
       tcp6Disconnect(tsession);
       return OK;    
     }
-#if DEBUG_TCP6
-    LOG(LOG_INFO,
-	"Read failed on peer tcp6 connection (%d), closing (%s).\n",
-	ret,
-	STRERROR(errno));
+#if DEBUG_TCP
+    LOG_STRERROR(LOG_INFO, "read");
 #endif
     tcp6Disconnect(tsession);
     return SYSERR;
@@ -418,9 +411,9 @@ try_again_2:
   incrementBytesReceived(ret);
   tcp6Session->pos += ret;
   len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size);
-  if (len > tcp6Session->size) /* if MTU larger than expected, grow! */
+  if (len > tcp6Session->rsize) /* if MTU larger than expected, grow! */
     GROW(tcp6Session->rbuff,
-	 tcp6Session->size,
+	 tcp6Session->rsize,
 	 len);
 #if DEBUG_TCP6
   LOG(LOG_DEBUG,
@@ -451,9 +444,7 @@ try_again_2:
       return SYSERR;
     }
     tcp6Session->expectingWelcome = NO;
-    memcpy(&tcp6Session->sender,
-	   &welcome->clientIdentity,
-	   sizeof(PeerIdentity));     
+    tcp6Session->sender = welcome->clientIdentity;
 #if DEBUG_TCP6
     IFLOG(LOG_DEBUG,
 	  hash2enc(&tcp6Session->sender.hashPubKey,
@@ -485,13 +476,11 @@ try_again_2:
   mp      = MALLOC(sizeof(MessagePack));
   mp->msg = MALLOC(len);
   memcpy(mp->msg,
-	 &pack->parts[0],
+	 &pack[1],
 	 len - sizeof(TCP6MessagePack));
-  memcpy(&mp->sender,
-	 &tcp6Session->sender,
-	 sizeof(PeerIdentity));
-  mp->size        = len - sizeof(TCP6MessagePack);
-  mp->tsession    = tsession;
+  mp->sender   = tcp6Session->sender;
+  mp->size     = len - sizeof(TCP6MessagePack);
+  mp->tsession = tsession;
 #if DEBUG_TCP6
   LOG(LOG_DEBUG,
       "tcp6 transport received %d bytes, forwarding to core\n",
@@ -509,7 +498,13 @@ try_again_2:
 	  &tcp6Session->rbuff[len],
 	  tcp6Session->pos - len);
   tcp6Session->pos -= len;	   
-  
+  if ( (tcp6Session->pos * 4 < tcp6Session->rsize) &&
+       (tcp6Session->rsize > 4 * 1024) ) {
+    /* read buffer far too large, shrink! */
+    GROW(tcp6Session->rbuff,
+	 tcp6Session->rsize,
+	 tcp6Session->pos + 1024);
+  }  
   tcp6Disconnect(tsession);
   return OK;
 }
@@ -546,16 +541,14 @@ static void createNewSession(int sock) {
 
   tcp6Session = MALLOC(sizeof(TCP6Session));
   tcp6Session->pos = 0;
-  tcp6Session->size = tcp6API.mtu + sizeof(TCP6MessagePack);
-  tcp6Session->rbuff = MALLOC(tcp6Session->size);
+  tcp6Session->rsize = 2 * 1024 + sizeof(TCP6MessagePack);
+  tcp6Session->rbuff = MALLOC(tcp6Session->rsize);
   tcp6Session->wpos = 0;
   tcp6Session->wbuff = NULL;
   tcp6Session->sock = sock;
   /* fill in placeholder identity to mark that we 
      are waiting for the welcome message */
-  memcpy(&tcp6Session->sender,
-	 coreAPI->myIdentity,
-	 sizeof(PeerIdentity));
+  tcp6Session->sender = *(coreAPI->myIdentity);
   tcp6Session->expectingWelcome = YES;
   MUTEX_CREATE_RECURSIVE(&tcp6Session->lock);
   tcp6Session->users = 1; /* us only, core has not seen this tsession! */
@@ -596,8 +589,6 @@ static void * tcp6ListenMain() {
     if (tcp6_sock != -1) {
       if (isSocketValid(tcp6_sock)) {
 	FD_SET(tcp6_sock, &readSet);
-	FD_SET(tcp6_sock, &writeSet);
-	FD_SET(tcp6_sock, &errorSet);
       } else {
 	LOG_STRERROR(LOG_ERROR, "isSocketValid");
 	tcp6_sock = -1; /* prevent us from error'ing all the time */
@@ -636,13 +627,9 @@ static void * tcp6ListenMain() {
       if (sock > max)
 	max = sock;
     }    
-    LOG(LOG_DEBUG,
-	"Blocking on select!\n");
     MUTEX_UNLOCK(&tcp6lock);
     ret = SELECT(max+1, &readSet, &writeSet, &errorSet, NULL);    
     MUTEX_LOCK(&tcp6lock);
-    LOG(LOG_DEBUG,
-	"Select returned!\n");
     if ( (ret == -1) &&
 	 ( (errno == EAGAIN) || (errno == EINTR) ) ) 
       continue;    
@@ -657,9 +644,7 @@ static void * tcp6ListenMain() {
       if (FD_ISSET(tcp6_sock, &readSet)) {
 	int sock;
 	
-	LOG(LOG_DEBUG,
-	    "accepting inbound connection\n");
-	lenOfIncomingAddr = sizeof(clientAddr);               
+	lenOfIncomingAddr = sizeof(clientAddr);
 	sock = ACCEPT(tcp6_sock, 
 		      (struct sockaddr *)&clientAddr, 
 		      &lenOfIncomingAddr);
@@ -714,9 +699,9 @@ static void * tcp6ListenMain() {
 
 try_again_1:
 	success = SEND_NONBLOCKING(sock,
-			       tcp6Session->wbuff,
-			       tcp6Session->wpos,
-			       &ret);
+				   tcp6Session->wbuff,
+				   tcp6Session->wpos,
+				   &ret);
 	if (success == SYSERR) {
 	  LOG_STRERROR(LOG_WARNING, "send");
 	  destroySession(i);
@@ -739,7 +724,8 @@ try_again_1:
 	if ((unsigned int)ret == tcp6Session->wpos) {
 	  FREENONNULL(tcp6Session->wbuff);
 	  tcp6Session->wbuff = NULL;
-	  tcp6Session->wpos = 0;
+	  tcp6Session->wpos  = 0;
+	  tcp6Session->wsize = 0;
 	} else {
 	  memmove(tcp6Session->wbuff,
 		  &tcp6Session->wbuff[ret],
@@ -790,6 +776,8 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
   int ret;
   int success;
 
+  if (tcp6_shutdown == YES)
+    return SYSERR;
   if (tcp6Session->sock == -1) {
 #if DEBUG_TCP6
     LOG(LOG_INFO,
@@ -824,11 +812,12 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
   if ((unsigned int) ret <= ssize) { /* some bytes send or blocked */
     if ((unsigned int)ret < ssize) {
       if (tcp6Session->wbuff == NULL) {
-	tcp6Session->wbuff = MALLOC(tcp6API.mtu + sizeof(TCP6MessagePack));
-	tcp6Session->wpos = 0;
+	tcp6Session->wsize = ssize + sizeof(TCP6MessagePack);
+	tcp6Session->wbuff = MALLOC(tcp6Session->wsize);
+	tcp6Session->wpos  = 0;
       }
-      if ((unsigned int) (ssize - ret) > 
-	  tcp6API.mtu + sizeof(TCP6MessagePack) - tcp6Session->wpos) {
+      if (tcp6Session->wpos + ssize - ret > 
+	  tcp6Session->wsize) {
 	ssize = 0;
 	ok = SYSERR; /* buffer full, drop */
       } else {
@@ -880,10 +869,6 @@ static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
     BREAK();
     return SYSERR;
   }
-  if (ssize > tcp6API.mtu + sizeof(TCP6MessagePack)) {
-    BREAK();
-    return SYSERR;
-  }
   MUTEX_LOCK(&tcp6lock);
   if (tcp6Session->wpos > 0) {
     unsigned int old = tcp6Session->wpos;
@@ -925,22 +910,18 @@ static int tcp6SendReliable(TSession * tsession,
     BREAK();
     return SYSERR;
   }
-  if (size > tcp6API.mtu) {
-    BREAK();
-    return SYSERR;
-  }
   if (((TCP6Session*)tsession->internal)->sock == -1)
     return SYSERR; /* other side closed connection */
   mp = MALLOC(sizeof(TCP6MessagePack) + size);
-  memcpy(&mp->parts[0],
+  memcpy(&mp[1],
 	 msg,
 	 size);
   ssize = size + sizeof(TCP6MessagePack);
   mp->size = htons(ssize);
-  
+  mp->reserved = 0;
   ok = tcp6DirectSendReliable(tsession->internal,
-			     mp,
-			     ssize);
+			      mp,
+			      ssize);
   FREE(mp);
   return ok;
 }
@@ -1055,7 +1036,7 @@ static int tcp6Connect(HELO_Message * helo,
 #if DEBUG_TCP6
   tmp = MALLOC(INET6_ADDRSTRLEN);
   LOG(LOG_DEBUG,
-      "creating TCP6 connection to %s:%d\n",
+      "Creating TCP6 connection to %s:%d\n",
       inet_ntop(AF_INET6,
 		haddr,
 		tmp,
@@ -1080,9 +1061,10 @@ static int tcp6Connect(HELO_Message * helo,
     }
     ((struct sockaddr_in6*)(res->ai_addr))->sin6_port 
       = haddr->port;
-    if ( (CONNECT(sock, 
-		  res->ai_addr, 
-		  res->ai_addrlen) < 0) &&
+    i = CONNECT(sock, 
+		res->ai_addr, 
+		res->ai_addrlen);
+    if ( (i < 0) &&
 	 (errno != EINPROGRESS) ) {
       LOG_STRERROR(LOG_WARNING, "connect");
       CLOSE(sock);
@@ -1101,13 +1083,12 @@ static int tcp6Connect(HELO_Message * helo,
     CLOSE(sock);
     return SYSERR;
   }
-
   tcp6Session = MALLOC(sizeof(TCP6Session));
   tcp6Session->sock = sock;
   tcp6Session->wpos = 0;
   tcp6Session->wbuff = NULL;
-  tcp6Session->size = tcp6API.mtu + sizeof(TCP6MessagePack);
-  tcp6Session->rbuff = MALLOC(tcp6Session->size);
+  tcp6Session->rsize = 2 * 1024 + sizeof(TCP6MessagePack);
+  tcp6Session->rbuff = MALLOC(tcp6Session->rsize);
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = tcp6Session;
   tsession->ttype = tcp6API.protocolNumber;
@@ -1166,19 +1147,15 @@ static int tcp6Send(TSession * tsession,
     BREAK();
     return SYSERR;
   }
-  if (size > tcp6API.mtu) {
-    BREAK();
-    return SYSERR;
-  }
   if (((TCP6Session*)tsession->internal)->sock == -1)
     return SYSERR; /* other side closed connection */
   mp = MALLOC(sizeof(TCP6MessagePack) + size);
-  memcpy(&mp->parts[0],
+  memcpy(&mp[1],
 	 msg,
 	 size);
   ssize = size + sizeof(TCP6MessagePack);
   mp->size = htons(ssize);
-  
+  mp->reserved = 0;
   ok = tcp6DirectSend(tsession->internal,
 		      mp,
 		      ssize);
@@ -1194,9 +1171,11 @@ static int startTransportServer(void) {
   struct sockaddr_in6 serverAddr;
   const int on = 1;
   unsigned short port;
-  int flags;
   
-  GNUNET_ASSERT(serverSignal == NULL);
+  if (serverSignal != NULL) {
+    BREAK();
+    return SYSERR;
+  }
   serverSignal = SEMAPHORE_NEW(0);
   tcp6_shutdown = NO;
     
@@ -1204,22 +1183,28 @@ static int startTransportServer(void) {
     LOG_STRERROR(LOG_ERROR, "pipe");
     return SYSERR;
   }
-  flags = fcntl(tcp6_pipe[1], F_GETFL, 0);
-  fcntl(tcp6_pipe[1], F_SETFL, flags | O_NONBLOCK);
- 
+  setBlocking(tcp6_pipe[1], NO);
+
   port = getGNUnetTCP6Port();
   if (port != 0) { /* if port == 0, this is a read-only
 		      business! */
     tcp6_sock = SOCKET(PF_INET6, 
 		       SOCK_STREAM, 
 		       0);   
-    if (tcp6_sock < 0) 
-      DIE_STRERROR("socket");
-    if ( SETSOCKOPT(tcp6_sock,
-		    SOL_SOCKET, 
-		    SO_REUSEADDR, 
-		    &on, 
-		    sizeof(on)) < 0 ) 
+    if (tcp6_sock < 0) {
+      LOG_STRERROR(LOG_FAILURE, "socket");
+      CLOSE(tcp6_pipe[0]);
+      CLOSE(tcp6_pipe[1]);
+      SEMAPHORE_FREE(serverSignal);
+      serverSignal = NULL;      
+      tcp6_shutdown = YES;
+      return SYSERR;
+    }
+    if (SETSOCKOPT(tcp6_sock,
+		   SOL_SOCKET, 
+		   SO_REUSEADDR, 
+		   &on, 
+		   sizeof(on)) < 0 ) 
       DIE_STRERROR("setsockopt");
     memset((char *) &serverAddr, 
 	   0,
@@ -1251,10 +1236,11 @@ static int startTransportServer(void) {
   if (0 == PTHREAD_CREATE(&listenThread, 
 			  (PThreadMain) &tcp6ListenMain,
 			  NULL,
-			  2048)) {
-      SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */      
+			  4092)) {
+    SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */      
   } else {
-    LOG_STRERROR(LOG_FAILURE, "pthread_create");
+    LOG_STRERROR(LOG_ERROR,
+		 "pthread_create");
     CLOSE(tcp6_sock);
     SEMAPHORE_FREE(serverSignal);
     serverSignal = NULL;
@@ -1271,6 +1257,8 @@ static int stopTransportServer() {
   void * unused;
   int haveThread;
 
+  if (tcp6_shutdown == YES)
+    return OK;
   tcp6_shutdown = YES;  
   signalSelect();
   if (serverSignal != NULL) {
@@ -1342,25 +1330,16 @@ static char * addressToString(const HELO_Message * helo) {
  * via a global and returns the udp transport API.
  */ 
 TransportAPI * inittransport_tcp6(CoreAPIForTransport * core) {
-  int mtu;
-
   MUTEX_CREATE_RECURSIVE(&tcp6lock);
   reloadConfiguration();
   tsessionCount = 0;
-  tsessionArrayLength = 32;
-  tsessions = MALLOC(sizeof(TSession*) * tsessionArrayLength);
+  tsessionArrayLength = 0;
+  GROW(tsessions,
+       tsessionArrayLength,
+       32);
   coreAPI = core;
-  mtu = getConfigurationInt("TCP6",
-			    "MTU");
-  if (mtu == 0)
-    mtu = 1440;
-  if (mtu < 1200)
-    LOG(LOG_ERROR,
-	_("MTU for '%s' is probably too low (fragmentation not implemented!)\n"),
-	"TCP6");
- 
   tcp6API.protocolNumber       = TCP6_PROTOCOL_NUMBER;
-  tcp6API.mtu                  = mtu - sizeof(TCP6MessagePack);
+  tcp6API.mtu                  = 0;
   tcp6API.cost                 = 19950; /* about equal to udp6 */
   tcp6API.verifyHelo           = &verifyHelo;
   tcp6API.createHELO           = &createHELO;
@@ -1384,9 +1363,9 @@ void donetransport_tcp6() {
     LOG(LOG_DEBUG,
 	"tsessions array still contains %p\n",
 	tsessions[i]);
-  FREE(tsessions);
-  tsessions = NULL;
-  tsessionArrayLength = 0;
+  GROW(tsessions,
+       tsessionArrayLength,
+       0);
   FREENONNULL(filteredNetworks_);
   MUTEX_DESTROY(&tcp6lock);
 }

@@ -474,7 +474,7 @@ static int readAndProcess(int i) {
      
   pack = (TCPMessagePack*)&tcpSession->rbuff[0];
   /* send msg to core! */
-  if ((unsigned int)len <= sizeof(TCPMessagePack)) {
+  if (len <= sizeof(TCPMessagePack)) {
     LOG(LOG_WARNING,
 	_("Received malformed message from tcp-peer connection. Closing.\n"));
     tcpDisconnect(tsession);
@@ -587,7 +587,8 @@ static void * tcpListenMain() {
   int ret;
   
   if (tcp_sock != -1)
-    LISTEN(tcp_sock, 5);
+    if (0 != LISTEN(tcp_sock, 5))
+      LOG_STRERROR(LOG_ERROR, "listen");
   SEMAPHORE_UP(serverSignal); /* we are there! */
   MUTEX_LOCK(&tcplock);
   while (tcp_shutdown == NO) {
@@ -601,7 +602,9 @@ static void * tcpListenMain() {
 	LOG_STRERROR(LOG_ERROR, "isSocketValid");
 	tcp_sock = -1; /* prevent us from error'ing all the time */
       }
-    }
+    } else
+      LOG(LOG_DEBUG,
+	  "TCP6 server socket not open!\n");
     if (tcp_pipe[0] != -1) {
       if (-1 != FSTAT(tcp_pipe[0], &buf)) {
 	FD_SET(tcp_pipe[0], &readSet);
@@ -669,6 +672,7 @@ static void * tcpListenMain() {
 	    LOG(LOG_INFO,
 		_("Rejected blacklisted connection from %u.%u.%u.%u.\n"),
 		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
+	    SHUTDOWN(sock, 2);
 	    CLOSE(sock);
 	  } else {
 #if DEBUG_TCP
@@ -709,7 +713,7 @@ static void * tcpListenMain() {
       if (FD_ISSET(sock, &writeSet)) {
 	int ret, success;
 
-try_again_1:	
+try_again_1:
 	success = SEND_NONBLOCKING(sock,
 				   tcpSession->wbuff,
 				   tcpSession->wpos,
@@ -786,8 +790,11 @@ static int tcpDirectSend(TCPSession * tcpSession,
 			 void * mp,
 			 unsigned int ssize) {
   int ok;
-  int ret, success;
+  int ret;
+  int success;
 
+  if (tcp_shutdown == YES)
+    return SYSERR;
   if (tcpSession->sock == -1) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
@@ -823,7 +830,8 @@ static int tcpDirectSend(TCPSession * tcpSession,
 	tcpSession->wbuff = MALLOC(tcpSession->wsize);
 	tcpSession->wpos  = 0;
       }
-      if (ssize + tcpSession->wpos - ret > tcpSession->wsize) {
+      if (ssize + tcpSession->wpos - ret > 
+	  tcpSession->wsize) {
 	ssize = 0;
 	ok = SYSERR; /* buffer full, drop */
       } else {
@@ -863,6 +871,8 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 				 unsigned int ssize) {
   int ok;
 
+  if (tcp_shutdown == YES)
+    return SYSERR;  
   if (tcpSession->sock == -1) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
@@ -871,10 +881,6 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
     return SYSERR;
   }
   if (ssize == 0) {
-    BREAK();
-    return SYSERR;
-  }
-  if (ssize > tcpAPI.mtu + sizeof(TCPMessagePack)) {
     BREAK();
     return SYSERR;
   }
@@ -894,6 +900,45 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 		       ssize);
   }
   MUTEX_UNLOCK(&tcplock);
+  return ok;
+}
+
+/**
+ * Send a message to the specified remote node with
+ * increased reliability (i.e. grow TCP send buffer
+ * above one frame if needed).
+ *
+ * @param tsession the HELO_Message identifying the remote node
+ * @param msg the message
+ * @param size the size of the message
+ * @return SYSERR on error, OK on success
+ */
+static int tcpSendReliable(TSession * tsession,
+			   const void * msg,
+			   const unsigned int size) {
+  TCPMessagePack * mp;
+  int ok;
+  int ssize;
+  
+  if (tcp_shutdown == YES)
+    return SYSERR;
+  if (size == 0) {
+    BREAK();
+    return SYSERR;
+  }
+  if (((TCPSession*)tsession->internal)->sock == -1)
+    return SYSERR; /* other side closed connection */
+  mp = MALLOC(sizeof(TCPMessagePack) + size);
+  memcpy(&mp[1],
+	 msg,
+	 size);
+  ssize = size + sizeof(TCPMessagePack);
+  mp->size = htons(ssize);
+  mp->reserved = 0;  
+  ok = tcpDirectSendReliable(tsession->internal,
+			     mp,
+			     ssize);
+  FREE(mp);
   return ok;
 }
 
@@ -1025,6 +1070,11 @@ static int tcpConnect(HELO_Message * helo,
     CLOSE(sock);
     return SYSERR;
   }  
+  if (0 != setBlocking(sock, NO)) {
+    LOG_STRERROR(LOG_FAILURE, "setBlocking");
+    CLOSE(sock);
+    return SYSERR;
+  }
   tcpSession = MALLOC(sizeof(TCPSession));
   tcpSession->sock = sock;
   tcpSession->wpos = 0;
@@ -1103,46 +1153,6 @@ static int tcpSend(TSession * tsession,
 }
 
 /**
- * Send a message to the specified remote node with
- * increased reliability (i.e. grow TCP send buffer
- * above one frame if needed).
- *
- * @param tsession the HELO_Message identifying the remote node
- * @param msg the message
- * @param size the size of the message
- * @return SYSERR on error, OK on success
- */
-static int tcpSendReliable(TSession * tsession,
-			   const void * msg,
-			   const unsigned int size) {
-  TCPMessagePack * mp;
-  int ok;
-  int ssize;
-  
-  if (tcp_shutdown == YES)
-    return SYSERR;
-  if (size == 0) {
-    BREAK();
-    return SYSERR;
-  }
-  if (((TCPSession*)tsession->internal)->sock == -1)
-    return SYSERR; /* other side closed connection */
-  mp = MALLOC(sizeof(TCPMessagePack) + size);
-  memcpy(&mp[1],
-	 msg,
-	 size);
-  ssize = size + sizeof(TCPMessagePack);
-  mp->size = htons(ssize);
-  mp->reserved = 0;
-  
-  ok = tcpDirectSendReliable(tsession->internal,
-			     mp,
-			     ssize);
-  FREE(mp);
-  return ok;
-}
-
-/**
  * Start the server process to receive inbound traffic.
  * @return OK on success, SYSERR if the operation failed
  */
@@ -1155,26 +1165,35 @@ static int startTransportServer(void) {
     BREAK();
     return SYSERR;
   }
+  serverSignal = SEMAPHORE_NEW(0);
+  tcp_shutdown = NO;
     
   if (0 != PIPE(tcp_pipe)) {
     LOG_STRERROR(LOG_ERROR, "pipe");
     return SYSERR;
   }
-  setBlocking(tcp_pipe[1], NO);
-  
-  serverSignal = SEMAPHORE_NEW(0);
-  tcp_shutdown = NO;
+  setBlocking(tcp_pipe[1], NO);  
 
   port = getGNUnetTCPPort();
   if (port != 0) { /* if port == 0, this is a read-only
 		      business! */
-    tcp_sock = SOCKET(PF_INET, SOCK_STREAM, 0);
-    if (tcp_sock < 0) 
-      DIE_STRERROR("socket");
+    tcp_sock = SOCKET(PF_INET, 
+		      SOCK_STREAM,
+		      0);
+    if (tcp_sock < 0) {
+      LOG_STRERROR(LOG_FAILURE, "socket");
+      CLOSE(tcp_pipe[0]);
+      CLOSE(tcp_pipe[1]);
+      SEMAPHORE_FREE(serverSignal);
+      serverSignal = NULL;      
+      tcp_shutdown = YES;
+      return SYSERR;
+    }
     if (SETSOCKOPT(tcp_sock,
 		   SOL_SOCKET, 
 		   SO_REUSEADDR, 
-		   &on, sizeof(on)) < 0 ) 
+		   &on, 
+		   sizeof(on)) < 0 ) 
       DIE_STRERROR("setsockopt");
     memset((char *) &serverAddr, 
 	   0,
@@ -1226,6 +1245,8 @@ static int stopTransportServer() {
   void * unused;
   int haveThread;
   
+  if (tcp_shutdown == YES)
+    return OK;
   tcp_shutdown = YES;  
   signalSelect();
   if (serverSignal != NULL) {
