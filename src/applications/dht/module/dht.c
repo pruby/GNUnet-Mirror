@@ -1228,10 +1228,9 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
 static void ping_reply_handler(const PeerIdentity * responder,
 			       RPC_Param * results,
 			       FindNodesContext * fnc) {
-  unsigned int tableCount;
   int i;
-  DHT_TableId * tables;
   EncName enc;
+  PeerInfo * pos;
 
   ENTER();
   GNUNET_ASSERT(! hostIdentityEquals(responder,
@@ -1241,20 +1240,22 @@ static void ping_reply_handler(const PeerIdentity * responder,
 			results);
   if (fnc == NULL)
     return;
-
+  /* update k-best list */
+  MUTEX_LOCK(&fnc->lock);
+  pos = findPeerInfo(responder);
   /* does the peer support the table in question? */
   if (! equalsHashCode512(&fnc->table,
 			  &masterTableId)) {
-    for (i=tableCount-1;i>=0;i--)
+    for (i=pos->tableCount-1;i>=0;i--)
       if (equalsHashCode512(&fnc->table,
-			    &tables[i]))
+			    &pos->tables[i]))
 	break;
-    if (i == -1)
+    if (i == -1) {
+      MUTEX_UNLOCK(&fnc->lock);
       return; /* peer does not support table in question */
+    }
   }
 
-  /* update k-best list */
-  MUTEX_LOCK(&fnc->lock);
 #if DEBUG_DHT
   IFLOG(LOG_DEBUG,
 	hash2enc(&responder->hashPubKey,
