@@ -33,7 +33,7 @@
 /**
  * Set this to NO when debugging gnunetd processes separately.
  */
-#define DO_FORK NO
+#define DO_FORK YES
 
 static int parseOptions(int argc,
 			char ** argv) {
