@@ -469,28 +469,23 @@ static void cs_put_abort(CS_PUT_RECORD * record) {
   FREE(record);
 }
 
-struct CSPutClosure {
-  ClientHandle client;
-  DHT_CS_REQUEST_PUT * message;
-};
-
 /**
- * Cron job for the CS handler inserting <key,value>-pair into DHT-table.
+ * CS handler for inserting <key,value>-pair into DHT-table.
  */
-static void csPutJob(struct CSPutClosure * cpc) {
-  ClientHandle client;
+static int csPut(ClientHandle client,
+		 const CS_HEADER * message) {
   DHT_CS_REQUEST_PUT * req;
   DataContainer * data;
   CS_PUT_RECORD * ptr;
   unsigned int size;
 
-  req = cpc->message;
-  client = cpc->client;
-  FREE(cpc);
+  if (ntohs(message->size) < sizeof(DHT_CS_REQUEST_PUT))
+    return SYSERR;
+  req = (DHT_CS_REQUEST_PUT*) message;
   size = ntohs(req->header.size)
     - sizeof(DHT_CS_REQUEST_PUT)
     + sizeof(DataContainer);
-  GNUNET_ASSERT(size < 0xFFFF);
+  GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
   if (size == 0) {
     data = NULL;
   } else {
@@ -519,28 +514,6 @@ static void csPutJob(struct CSPutClosure * cpc) {
 				      (DHT_OP_Complete) &cs_put_abort,
 				      ptr);
   FREE(data);
-  FREE(req);
-}
-
-/**
- * CS handler for inserting <key,value>-pair into DHT-table.
- */
-static int csPut(ClientHandle client,
-		 const CS_HEADER * message) {
-  struct CSPutClosure * cpc;
-
-  if (ntohs(message->size) < sizeof(DHT_CS_REQUEST_PUT))
-    return SYSERR;
-  cpc = MALLOC(sizeof(struct CSPutClosure));
-  cpc->message = MALLOC(ntohs(message->size));
-  memcpy(cpc->message,
-	 message,
-	 ntohs(message->size));
-  cpc->client = client;
-  addCronJob((CronJob)&csPutJob,
-	     0,
-	     0,
-	     cpc);
   return OK;
 }
 

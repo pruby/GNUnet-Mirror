@@ -289,8 +289,7 @@ static void cronHelper(const char * filename,
   }
 
   fullname = MALLOC(strlen(filename) + strlen(networkIdDirectory) + 1);
-  fullname[0] = '\0';
-  strcat(fullname, networkIdDirectory);
+  strcpy(fullname, networkIdDirectory);
   strcat(fullname, filename);
   if (0 == UNLINK(fullname))
     LOG(LOG_WARNING,
