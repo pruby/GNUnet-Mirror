@@ -43,6 +43,8 @@
 #include "gnunet_traffic_service.h"
 #include "gnunet_topology_service.h"
 
+#define EXTRA_CHECKS YES
+
 
 /* ***************** policy constants **************** */
 
@@ -783,10 +785,22 @@ static void hotpathSelectionCode(const PeerIdentity * id,
  */
 static void sendToSelected(const PeerIdentity * id,
 			   const QueryRecord * qr) {
+  EncName encq;
+  EncName encp;
+
   if (equalsHashCode512(&id->hashPubKey,
 			&qr->noTarget.hashPubKey))
     return;
   if (getBit(qr, getIndex(id)) == 1) {
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&id->hashPubKey,
+		   &encp);
+	  hash2enc(&qr->msg->queries[0],
+		   &encq));
+    LOG(LOG_DEBUG,
+	"Sending query '%s' to '%s'\n",
+	&encq,
+	&encp);
     coreAPI->unicast(id,
 		     &qr->msg->header,
 		     BASE_QUERY_PRIORITY
@@ -991,6 +1005,11 @@ static void useContentLater(GAP_REPLY * pmsg) {
  *
  * @param sender the next hop
  * @param result the content that was found
+ * @param data is a DataContainer which
+ *  wraps the content in the format that
+ *  can be passed to the FS module (GapWrapper),
+ *  which in turn wraps the DBlock (including
+ *  the type ID).
  */
 static void queueReply(const PeerIdentity * sender,
 		       const HashCode512 * primaryKey,
@@ -998,6 +1017,13 @@ static void queueReply(const PeerIdentity * sender,
   GAP_REPLY * pmsg;
   IndirectionTableEntry * ite;
   unsigned int size;
+
+#if EXTRA_CHECKS
+  /* verify data is valid */
+  uri(data,
+      ANY_BLOCK,
+      primaryKey);
+#endif  
 
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
   if (! equalsHashCode512(&ite->primaryKey,
@@ -1009,12 +1035,12 @@ static void queueReply(const PeerIdentity * sender,
 	       the same query.  Well, at least we should not also
 	       queue the delayed reply twice... */
   }
-  ite->successful_local_lookup_in_delay_loop = YES;
   size = sizeof(GAP_REPLY) + ntohl(data->size) - sizeof(DataContainer);
   if (size >= MAX_BUFFER_SIZE) {
     BREAK();
     return;
   }
+  ite->successful_local_lookup_in_delay_loop = YES;
   pmsg = MALLOC(size);
   pmsg->header.size
     = htons(size);
@@ -1397,6 +1423,7 @@ static void sendReply(IndirectionTableEntry * ite,
   unsigned int j;
   unsigned int maxDelay;
   cron_t now;
+  EncName enc;
 
   cronTime(&now);
   if (now < ite->ttl)
@@ -1404,13 +1431,20 @@ static void sendReply(IndirectionTableEntry * ite,
   else
     maxDelay = TTL_DECREMENT; /* for expired queries */
   /* send to peers */
-  for (j=0;j<ite->hostsWaiting;j++)
+  for (j=0;j<ite->hostsWaiting;j++) {
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&ite->destination[j].hashPubKey,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"GAP sending reply to '%s'\n",
+	&enc);
     coreAPI->unicast(&ite->destination[j],
 		     msg,
 		     BASE_REPLY_PRIORITY *
 		     (ite->priority+1),
 		     /* weigh priority */
 		     maxDelay);
+  }
 }
 
 struct qLRC {
@@ -1419,17 +1453,38 @@ struct qLRC {
   unsigned int valueCount;
 };
 
+/**
+ * Callback for processing local results.
+ * Inserts all results into the qLRC closure.
+ *
+ * @param primaryKey is the key needed to decrypt
+ *  the block
+ * @param value is a DataContainer which
+ *  wraps the content in the format that
+ *  can be passed to the FS module (GapWrapper),
+ *  which in turn wraps the DBlock (including
+ *  the type ID).
+ */
 static int
 queryLocalResultCallback(const HashCode512 * primaryKey,
 			 const DataContainer * value,
 			 struct qLRC * cls) {
   HashCode512 hc;
+  HashCode512 hc1;
   int i;
   IndirectionTableEntry * ite;
 
+#if EXTRA_CHECKS
+  /* verify data is valid */
+  uri(value,
+      ANY_BLOCK,
+      primaryKey);
+#endif  
+
   /* check seen */
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
-
+  /* FIXME: this computation of the seen-ID
+     includes the timeout (bad!) */
   hash(&value[1],
        ntohl(value->size) - sizeof(DataContainer),
        &hc);
@@ -1437,7 +1492,14 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
     if (equalsHashCode512(&hc,
 			  &ite->seen[i]))
       return OK; /* drop, duplicate result! */
-
+  for (i=0;i<cls->valueCount;i++) {
+    hash(&cls->values[i][1],
+	 ntohl(cls->values[i]->size) - sizeof(DataContainer),
+	 &hc1);
+    if (equalsHashCode512(&hc,
+			  &hc1))
+      return OK; /* drop, duplicate entry in DB! */
+  }
   GROW(cls->values,
        cls->valueCount,
        cls->valueCount+1);
@@ -1540,7 +1602,7 @@ static int execQuery(const PeerIdentity * sender,
     if (max > cls.valueCount)
       max = cls.valueCount; /* can't send more back then
 				what we have */
-
+    
     for (i=0;i<cls.valueCount;i++) {
       if (i < max) {
 	if (cls.sender != NULL)
@@ -1556,9 +1618,8 @@ static int execQuery(const PeerIdentity * sender,
 	      &query->queries[0],
 	      cls.values[perm[i]],
 	      ite->priority);
-
+      
       if (uri(cls.values[perm[i]],
-	      ntohl(cls.values[perm[i]]->size),
 	      ite->type,
 	      &query->queries[0]))
 	doForward = NO; /* we have the one and only answer,
@@ -1605,15 +1666,26 @@ static int useContent(const PeerIdentity * hostId,
   unsigned int prio;
   DataContainer * value;
   double preference;
+  EncName enc;
 
+  IFLOG(LOG_DEBUG,
+	if (hostId != NULL)
+	  hash2enc(&hostId->hashPubKey,
+		   &enc));
+  LOG(LOG_DEBUG,
+      "GAP received content from '%s'\n",
+      (hostId != NULL) ? (const char*)&enc : "myself");
   if (ntohs(msg->header.size) < sizeof(GAP_REPLY)) {
     BREAK();
     return SYSERR; /* invalid! */
   }
 	
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
+  ite->successful_local_lookup_in_delay_loop = NO;
   size = ntohs(msg->header.size) - sizeof(GAP_REPLY);
   prio = 0;
+  /* FIXME: this computation of contentHC
+     includes the timeout, which is bad! */
   hash(&msg[1],
        size,
        &contentHC);
@@ -1641,14 +1713,15 @@ static int useContent(const PeerIdentity * hostId,
 		0);
   if (ret == SYSERR) {
     FREE(value);
+    BREAK();
     return SYSERR; /* invalid */
   }
 
   /* THIRD: compute content priority/value and
      send remote reply (ITE processing) */
   MUTEX_LOCK(&ite->lookup_exclusion);
-  if (! equalsHashCode512(&ite->primaryKey,
-			  &msg->primaryKey) ) {	
+  if (equalsHashCode512(&ite->primaryKey,
+			&msg->primaryKey) ) {	
     prio = ite->priority;
     ite->priority = 0;
     /* remove the sender from the waiting list
@@ -1670,8 +1743,7 @@ static int useContent(const PeerIdentity * hostId,
     ite->seen[ite->seenIndex-1] = contentHC;
     if (ite->seenIndex == 1) {
       ite->seenReplyWasUnique
-	= uri(&msg[1],
-	      size,
+	= uri(value,
 	      ite->type,
 	      &ite->primaryKey);
     } else {
@@ -1682,7 +1754,6 @@ static int useContent(const PeerIdentity * hostId,
   }
   MUTEX_UNLOCK(&ite->lookup_exclusion);
   prio += claimReward(&msg->primaryKey, hostId);
-  FREE(value);
 
   /* FOURTH: update content priority in local datastore */
   if (prio > 0) {
@@ -1693,13 +1764,13 @@ static int useContent(const PeerIdentity * hostId,
   }
 
   /* FIFTH: if unique reply, stopy querying */
-  if (uri(&msg[1],
-	  size,
+  if (uri(value,
 	  ite->type,
 	  &ite->primaryKey)) {
     /* unique reply, stop forwarding! */
     dequeueQuery(&ite->primaryKey);
   }
+  FREE(value);
 
   /* SIXTH: adjust traffic preferences */
   if (hostId != NULL) { /* if we are the sender, hostId will be NULL */

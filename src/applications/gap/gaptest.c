@@ -265,6 +265,7 @@ int main(int argc, char ** argv) {
 			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
+#if 0
   daemon1 = fork();
   if (daemon1 == 0) {
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
@@ -345,10 +346,10 @@ int main(int argc, char ** argv) {
   }
   sleep(5);
 
-
   ret = 0;
   left = 5;
   /* wait for connection or abort with error */
+#endif
   initUtil(argc, argv, &parseOptions);
   do {
     sock = getClientSocket();
@@ -378,13 +379,13 @@ int main(int argc, char ** argv) {
   CHECK(NULL != uri);
   CHECK(OK == searchFile(&uri));
   setConfigurationInt("NETWORK",
-					  "PORT",
-					  12087);
+		      "PORT",
+		      12087);
   CHECK(OK == downloadFile(12345, uri));
   ECRS_freeUri(uri);
   setConfigurationInt("NETWORK",
-					  "PORT",
-					  2087);
+		      "PORT",
+		      2087);
   CHECK(OK == unindexFile(12345));
 
  FAILURE:

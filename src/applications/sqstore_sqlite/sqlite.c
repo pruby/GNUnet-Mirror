@@ -697,7 +697,7 @@ static int put(const HashCode512 * key,
   FREE(escapedBlock);
   FREE(escapedHash);
   sqlite3_reset(stmt);
-  if(n != SQLITE_DONE) {
+  if (n != SQLITE_DONE) {
     LOG_SQLITE(LOG_ERROR,
 	       "sqlite_query");
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
