@@ -72,7 +72,7 @@ typedef struct {
 
 /**
  * How many buckets does the fragment hash table
- * have?  
+ * have?
  */
 #define DEFRAG_BUCKET_COUNT 16
 
@@ -127,9 +127,9 @@ static Mutex defragCacheLock;
 static void freeFL(FL * fl,
 		   int c) {
   while (fl != NULL) {
-    FL * link = fl->link;    
+    FL * link = fl->link;
     if (stats != NULL)
-      stats->change(stat_discarded, c);    
+      stats->change(stat_discarded, c);
     FREE(fl->frag);
     FREE(fl);
     fl = link;
@@ -191,7 +191,7 @@ static void checkComplete(FC * pep) {
   char * msg;
 
   GNUNET_ASSERT(pep != NULL);
-  
+
   pos = pep->head;
   if (pos == NULL)
     return;
@@ -225,7 +225,7 @@ static void checkComplete(FC * pep) {
     stats->change(stat_defragmented, 1);
   /* handle message! */
   coreAPI->injectMessage(&pep->sender,
-			 msg,			 
+			 msg,			
 			 len,
 			 YES,
 			 NULL);
@@ -267,7 +267,7 @@ static int tryJoin(FC * entry,
   unsigned short end;
 
   GNUNET_ASSERT(entry != NULL);
-  if (! hostIdentityEquals(sender, 
+  if (! hostIdentityEquals(sender,
 			   &entry->sender))
     return SYSERR; /* wrong fragment list, try another! */
   if (ntohl(packet->id) != entry->id)
@@ -281,12 +281,12 @@ static int tryJoin(FC * entry,
   before = NULL;
   /* find the before-frame */
   while ( (pos != NULL) &&
-	  (ntohs(pos->frag->off) < 
+	  (ntohs(pos->frag->off) <
 	   ntohs(packet->off)) ) {
     before = pos;
     pos = pos->link;
   }
-  
+
   /* find the after-frame */
   end = ntohs(packet->off) + ntohs(packet->header.size) - sizeof(FRAGMENT_Message);
   if (end <= ntohs(packet->off)) {
@@ -295,11 +295,11 @@ static int tryJoin(FC * entry,
 	__FILE__, __LINE__);
     return SYSERR; /* yuck! integer overflow! */
   }
-  
+
   if (before != NULL)
-    after = before; 
+    after = before;
   else
-    after = entry->head; 
+    after = entry->head;
   while ( (after != NULL) &&
 	  (ntohs(after->frag->off)<end) )
     after = after->link;
@@ -312,12 +312,12 @@ static int tryJoin(FC * entry,
     if (stats != NULL)
       stats->change(stat_defragmented, 1);
     return OK; /* drop, there is a packet that spans our range! */
-  }    
+  }
 
   if ( (before != NULL) &&
        (after != NULL) &&
-       ( (htons(before->frag->off) + 
-	  FRAGSIZE(before)) 
+       ( (htons(before->frag->off) +
+	  FRAGSIZE(before))
 	 >= htons(after->frag->off)) ) {
     /* this implies that the fragment that starts before us and the
        fragment that comes after this one leave no space in the middle
@@ -335,19 +335,19 @@ static int tryJoin(FC * entry,
 
   if (before == NULL) {
     pep->link = after;
-    pos = entry->head; 
+    pos = entry->head;
     while (pos != after) {
       tmp = pos->link;
       FREE(pos->frag);
       FREE(pos);
       pos = tmp;
     }
-    entry->head = pep; 
+    entry->head = pep;
     goto FINISH;
     /* end of insert first */
   }
 
-  if (after == NULL) {    
+  if (after == NULL) {
     /* insert last: find the end, free everything after it */
     freeFL(before->link, 1);
     before->link = pep;
@@ -388,7 +388,7 @@ static int processFragment(const PeerIdentity * sender,
 
   if (ntohs(frag->size) < sizeof(FRAGMENT_Message))
     return SYSERR;
-    
+
   MUTEX_LOCK(&defragCacheLock);
   hash = sender->hashPubKey.bits[0] % DEFRAG_BUCKET_COUNT;
   smf = defragmentationCache[hash];
@@ -405,7 +405,7 @@ static int processFragment(const PeerIdentity * sender,
     smf = smf->next;
   }
   if (smf == NULL) {
-    smf = MALLOC(sizeof(FC));    
+    smf = MALLOC(sizeof(FC));
     smf->next = defragmentationCache[hash];
     defragmentationCache[hash] = smf;
     smf->ttl = cronTime(NULL) + DEFRAGMENTATION_TIMEOUT;
@@ -415,8 +415,8 @@ static int processFragment(const PeerIdentity * sender,
   smf->head = MALLOC(sizeof(FL));
   smf->head->link = NULL;
   smf->head->frag = MALLOC(ntohs(frag->size));
-  memcpy(smf->head->frag, 
-	 frag, 
+  memcpy(smf->head->frag,
+	 frag,
 	 ntohs(frag->size));
 
   MUTEX_UNLOCK(&defragCacheLock);
@@ -481,7 +481,7 @@ static int fragmentBMC(void * buf,
   frag = (FRAGMENT_Message*) buf;
   frag->header.size = htons(len);
   frag->header.type = htons(p2p_PROTO_FRAGMENT);
-  frag->id = id; 
+  frag->id = id;
   frag->off = htons(0);
   frag->len = htons(ctx->len);
   memcpy(&((FRAGMENT_Message_GENERIC*)frag)->data[0],
@@ -491,7 +491,7 @@ static int fragmentBMC(void * buf,
   /* create remaining fragments, add to queue! */
   pos = len - sizeof(FRAGMENT_Message);
   frag = MALLOC(ctx->mtu);
-  while (pos < ctx->len) {  
+  while (pos < ctx->len) {
     mlen = sizeof(FRAGMENT_Message) + ctx->len - pos;
     if (mlen > ctx->mtu)
       mlen = ctx->mtu;
@@ -507,7 +507,7 @@ static int fragmentBMC(void * buf,
     coreAPI->unicast(&ctx->sender,
 		     &frag->header,
 		     EXTREME_PRIORITY,
-		     ctx->transmissionTime - cronTime(NULL)); 
+		     ctx->transmissionTime - cronTime(NULL));
     pos += mlen - sizeof(FRAGMENT_Message);
   }
   GNUNET_ASSERT(pos == ctx->len);
@@ -541,7 +541,7 @@ void fragment(const PeerIdentity * peer,
   fbmc->transmissionTime = targetTime;
   fbmc->callback = bmc;
   fbmc->closure = bmcClosure;
-  fbmc->len = len;  
+  fbmc->len = len;
   xlen = mtu - sizeof(FRAGMENT_Message);
   coreAPI->unicastCallback(peer,
 			   (BuildMessageCallback) &fragmentBMC,
@@ -566,11 +566,11 @@ provide_module_fragmentation(CoreAPIForApplication * capi) {
     stat_fragmented = stats->create(_("# messages fragmented"));
     stat_discarded = stats->create(_("# fragments discarded"));
   }
-  for (i=0;i<DEFRAG_BUCKET_COUNT;i++) 
+  for (i=0;i<DEFRAG_BUCKET_COUNT;i++)
     defragmentationCache[i] = NULL;
   MUTEX_CREATE(&defragCacheLock);
   addCronJob((CronJob) &defragmentationPurgeCron,
-	     60 * cronSECONDS, 
+	     60 * cronSECONDS,
 	     60 * cronSECONDS,
 	     NULL);
   LOG(LOG_DEBUG,
@@ -589,7 +589,7 @@ provide_module_fragmentation(CoreAPIForApplication * capi) {
  */
 void release_module_fragmentation() {
   int i;
- 
+
   coreAPI->unregisterHandler(p2p_PROTO_FRAGMENT,
 			     &processFragment);
   delCronJob((CronJob) &defragmentationPurgeCron,
@@ -602,7 +602,7 @@ void release_module_fragmentation() {
       freeFL(pos->head, 1);
       FREE(pos);
       pos = next;
-    }    
+    }
   }
   if (stats != NULL) {
     coreAPI->releaseService(stats);

@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/tools/gnunet-insert.c 
+ * @file applications/fs/tools/gnunet-insert.c
  * @brief Tool to insert or index files into GNUnet's FS.
  * @author Christian Grothoff
  * @author Krista Bennett
@@ -33,7 +33,7 @@
 /* hmm. Man says time.h, but that doesn't yield the
    prototype.  Strange... */
 extern char *strptime(const char *s,
-		      const char *format, 
+		      const char *format,
 		      struct tm *tm);
 
 static Semaphore * exitSignal;
@@ -86,7 +86,7 @@ static void postProcess(const struct ECRS_URI * uri) {
   nid = getConfigurationString("GNUNET-INSERT",
 			       "NEXTHASH");
   if (nid != NULL)
-    enc2hash(nid, &nextId);   
+    enc2hash(nid, &nextId);
   updateInterval = getConfigurationInt("GNUNET-INSERT",
 				       "INTERVAL");
 
@@ -119,7 +119,7 @@ static void printstatus(int * verboselevel,
 			const FSUI_Event * event) {
   unsigned long long delta;
   char * fstring;
-      
+
   switch(event->type) {
   case upload_progress:
     if (*verboselevel == YES) {
@@ -128,7 +128,7 @@ static void printstatus(int * verboselevel,
       _("%16llu of %16llu bytes inserted (estimating %llu seconds to completion)                "),
 	     event->data.UploadProgress.main_completed,
 	     event->data.UploadProgress.main_total,
-	     delta / cronSECONDS);      
+	     delta / cronSECONDS);
       printf("\r");
     }
     break;
@@ -148,7 +148,7 @@ static void printstatus(int * verboselevel,
     printf(_("File '%s' has URI: %s\n"),
 	   event->data.UploadComplete.filename,
 	   fstring);
-    FREE(fstring);   
+    FREE(fstring);
     if (0 == strcmp(event->data.UploadComplete.main_filename,
 		    event->data.UploadComplete.filename)) {
       postProcess(event->data.UploadComplete.uri);
@@ -192,7 +192,7 @@ static void printhelp() {
 		   " (this option can be specified multiple times)") },
     { 'K', "global-key", "KEYWORD",
       gettext_noop("add an additional keyword for all files and directories"
-		   " (this option can be specified multiple times)") },   
+		   " (this option can be specified multiple times)") },
     HELP_LOGLEVEL,
     { 'm', "meta", "TYPE:VALUE",
       gettext_noop("set the meta-data for the given TYPE to the given VALUE") },
@@ -241,7 +241,7 @@ static int parseOptions(int argc,
     int option_index=0;
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
-      { "anonymity",     1, 0, 'a' }, 
+      { "anonymity",     1, 0, 'a' },
       { "copy",          0, 0, 'C' },
       { "extract",       0, 0, 'e' },
       { "interval",      1, 0, 'i' },
@@ -259,13 +259,13 @@ static int parseOptions(int argc,
       { "update",        1, 0, 'u' },
       { "verbose",       0, 0, 'V' },
       { 0,0,0,0 }
-    };    
+    };
     c = GNgetopt_long(argc,
-		      argv, 
-		      "a:c:CdehH:i:L:k:K:m:nN:p:P:RSt:T:u:vV", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "a:c:CdehH:i:L:k:K:m:nN:p:P:RSt:T:u:vV",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
@@ -274,7 +274,7 @@ static int parseOptions(int argc,
       unsigned int receivePolicy;
 
       if (1 != sscanf(GNoptarg,
-		      "%ud", 
+		      "%ud",
 		      &receivePolicy)) {
         LOG(LOG_FAILURE,
 	  _("You must pass a number to the '%s' option.\n"),
@@ -291,11 +291,11 @@ static int parseOptions(int argc,
 					 "DISABLE-SYMLINKING",
 					 "YES"));
       break;
-    case 'e': 
+    case 'e':
       printAndReturn = YES;
       break;
-    case 'h': 
-      printhelp(); 
+    case 'h':
+      printhelp();
       return SYSERR;
     case 'i': {
       unsigned int interval;
@@ -308,8 +308,8 @@ static int parseOptions(int argc,
 	setConfigurationInt("GNUNET-INSERT",
 			    "INTERVAL",
 			    interval);
-      break;    
-    }      
+      break;
+    }
     case 'k':
       GROW(topKeywords,
 	   topKeywordCnt,
@@ -324,7 +324,7 @@ static int parseOptions(int argc,
       GROW(gloKeywords,
 	   gloKeywordCnt,
 	   gloKeywordCnt+1);
-      gloKeywords[gloKeywordCnt-1] 
+      gloKeywords[gloKeywordCnt-1]
 	= convertToUtf8(GNoptarg,
 			strlen(GNoptarg),
         nl_langinfo(CODESET)
@@ -337,7 +337,7 @@ static int parseOptions(int argc,
       tmp = convertToUtf8(GNoptarg,
 			  strlen(GNoptarg),
       nl_langinfo(CODESET)
-      );     
+      );
       type = EXTRACTOR_getHighestKeywordTypeNumber();
       while (type > 0) {
 	type--;
@@ -374,9 +374,9 @@ static int parseOptions(int argc,
     case 'N': {
       EncName enc;
       HashCode512 nextId;
-      
+
       if (enc2hash(GNoptarg,
-		   &nextId) == SYSERR) 
+		   &nextId) == SYSERR)
 	hash(GNoptarg,
 	     strlen(GNoptarg),
 	     &nextId);
@@ -388,8 +388,8 @@ static int parseOptions(int argc,
     }
     case 'p': {
       unsigned int contentPriority;
-      
-      if (1 != sscanf(GNoptarg, 
+
+      if (1 != sscanf(GNoptarg,
 		      "%ud",
 		      &contentPriority)) {
 	LOG(LOG_FAILURE,
@@ -420,9 +420,9 @@ static int parseOptions(int argc,
     case 't': {
       EncName enc;
       HashCode512 thisId;
-      
+
       if (enc2hash(GNoptarg,
-		   &thisId) == SYSERR) 
+		   &thisId) == SYSERR)
 	hash(GNoptarg,
 	     strlen(GNoptarg),
 	     &thisId);
@@ -440,9 +440,9 @@ static int parseOptions(int argc,
     case 'u': {
       EncName enc;
       HashCode512 nextId;
-      
+
       if (enc2hash(GNoptarg,
-		   &nextId) == SYSERR) 
+		   &nextId) == SYSERR)
 	hash(GNoptarg,
 	     strlen(GNoptarg),
 	     &nextId);
@@ -457,12 +457,12 @@ static int parseOptions(int argc,
 					 "VERBOSE",
 					 "YES"));
       break;
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-insert v%s\n",
-	     VERSION, 
+	     VERSION,
 	     AFS_VERSION);
       return SYSERR;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
@@ -486,7 +486,7 @@ static int parseOptions(int argc,
       l = EXTRACTOR_loadConfigLibraries(NULL,
 					ex);
     for (c=GNoptind;c<argc;c++) {
-      EXTRACTOR_KeywordList * list 
+      EXTRACTOR_KeywordList * list
 	= EXTRACTOR_getKeywords(l, argv[c]);
       printf(_("Keywords for file '%s':\n"),
 	     argv[c]);
@@ -517,7 +517,7 @@ static int parseOptions(int argc,
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return 0 for ok, -1 on error
- */   
+ */
 int main(int argc, char ** argv) {
   int i;
   char * pname;
@@ -528,7 +528,7 @@ int main(int argc, char ** argv) {
   int doIndex;
   int ret;
   char * extractors;
-  
+
   meta = ECRS_createMetaData();
   if (SYSERR == initUtil(argc, argv, &parseOptions)) {
     ECRS_freeMetaData(meta);
@@ -556,7 +556,7 @@ int main(int argc, char ** argv) {
                     		     "INSERTTIME");
     if (timestr != NULL) {
       struct tm t;
-      if ((NULL == strptime(timestr, 
+      if ((NULL == strptime(timestr,
 			    nl_langinfo(D_T_FMT),
 			    &t))) {
 	LOG_STRERROR(LOG_FATAL, "strptime");
@@ -565,7 +565,7 @@ int main(int argc, char ** argv) {
           );
       }
       FREE(timestr);
-    }    
+    }
   } else { /* ordinary insertion checks */
     if (NULL != getConfigurationString("GNUNET-INSERT",
 				       "NEXTHASH"))
@@ -596,11 +596,11 @@ int main(int argc, char ** argv) {
 		   NO,
 		   (FSUI_EventCallback) &printstatus,
 		   &verbose);
- 
+
   /* first insert all of the top-level files or directories */
   tmp = getConfigurationString("GNUNET-INSERT",
 			       "MAIN-FILE");
-  filename = expandFileName(tmp);  
+  filename = expandFileName(tmp);
   FREE(tmp);
   if (testConfigurationString("GNUNET-INSERT",
 			      "INDEX-CONTENT",
@@ -641,19 +641,19 @@ int main(int argc, char ** argv) {
   /* wait for completion */
   SEMAPHORE_DOWN(exitSignal);
   SEMAPHORE_FREE(exitSignal);
-  
+
   /* shutdown */
   FREE(filename);
-  for (i=0;i<topKeywordCnt;i++) 
+  for (i=0;i<topKeywordCnt;i++)
     FREE(topKeywords[i]);
   GROW(topKeywords, topKeywordCnt, 0);
-  for (i=0;i<gloKeywordCnt;i++) 
+  for (i=0;i<gloKeywordCnt;i++)
     FREE(gloKeywords[i]);
   GROW(gloKeywords, gloKeywordCnt, 0);
   ECRS_freeMetaData(meta);
   FSUI_stop(ctx);
   doneUtil();
   return errorCode;
-}  
+}
 
 /* end of gnunet-insert.c */

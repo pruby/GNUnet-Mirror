@@ -19,7 +19,7 @@
 
 /**
  * @file rpc/parameters.c
- * @brief  This file provides convenience methods for parameter 
+ * @brief  This file provides convenience methods for parameter
  * handling.
  * @author Antti Salonen, Christian Grothoff
  */
@@ -29,7 +29,7 @@
 #include "gnunet_rpc_service.h"
 
 /**
- * A parameter to/from an RPC call. These (and nothing else) are stored in 
+ * A parameter to/from an RPC call. These (and nothing else) are stored in
  * the Vector of the RPC_Param structure.
  */
 typedef struct {
@@ -51,7 +51,7 @@ RPC_Param * RPC_paramNew() {
  * Free the memory used by an RPC parameter structure. All parameter names and
  * values residing in the structure are freed, and thus all pointers returned
  * by this abstractions become dangling.
- * 
+ *
  * @param param The RPC parameter structure to be freed
  */
 void RPC_paramFree(RPC_Param *param) {
@@ -86,7 +86,7 @@ void RPC_paramSerialize(RPC_Param * param,
   for (i = 0; i < RPC_paramCount(param); i++) {
     paramName = RPC_paramName(param, i);
     paramValue = NULL;
-    RPC_paramValueByPosition(param, 
+    RPC_paramValueByPosition(param,
 			     i,
 			     &dataLength,
 			     &paramValue);
@@ -134,12 +134,12 @@ RPC_Param * RPC_paramDeserialize(char * buffer,
       RPC_paramFree(ret);
       return NULL;
     }
-    
+
     RPC_paramAdd(ret,
 		 &buffer[xpos],
 		 dataLength,
 		 &buffer[pos]);
-    pos += dataLength;    
+    pos += dataLength;
   }
   return ret;
 }
@@ -153,21 +153,21 @@ size_t RPC_paramSize(RPC_Param * param) {
   unsigned int dataLength;
   void * paramValue;
   size_t pos;
-  
+
   if (param == NULL)
     return 0;
   pos = 0;
   for (i = 0; i < RPC_paramCount(param); i++) {
     paramName = RPC_paramName(param, i);
     paramValue = NULL;
-    RPC_paramValueByPosition(param, 
+    RPC_paramValueByPosition(param,
 			     i,
 			     &dataLength,
 			     &paramValue);
-    if (pos + strlen(paramName)+1+sizeof(unsigned int) < pos) 
-      return 0;    
+    if (pos + strlen(paramName)+1+sizeof(unsigned int) < pos)
+      return 0;
     pos += strlen(paramName)+1;
-    pos += sizeof(unsigned int);    
+    pos += sizeof(unsigned int);
     if (pos + dataLength < pos)
       return 0;
     pos += dataLength;
@@ -201,7 +201,7 @@ unsigned int RPC_paramCount(RPC_Param *param) {
  * @param data Value of the parameter
  */
 
-void RPC_paramAdd(RPC_Param *param, 
+void RPC_paramAdd(RPC_Param *param,
 		  const char *name,
 		  unsigned int dataLength,
 		  const void *data) {
@@ -233,7 +233,7 @@ void RPC_paramAdd(RPC_Param *param,
  * @param dataLength Length of the value of the parameter
  * @param data Value of the parameter
  */
-void RPC_paramAddDataContainer(RPC_Param *param, 
+void RPC_paramAddDataContainer(RPC_Param *param,
 			       const char *name,
 			       const DataContainer * data) {
   Parameter * new;
@@ -247,8 +247,8 @@ void RPC_paramAddDataContainer(RPC_Param *param,
     new->data = NULL;
   } else {
     new->data = MALLOC(new->dataLength);
-    memcpy(new->data, 
-	   &data[1], 
+    memcpy(new->data,
+	   &data[1],
 	   new->dataLength);
   }
   vectorInsertLast(param, new);
@@ -299,7 +299,7 @@ int RPC_paramValueByName(RPC_Param *param,
     }
     p = vectorGetNext(param);
   }
-		      
+		
   return SYSERR;
 }
 
@@ -331,7 +331,7 @@ DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
     }
     p = vectorGetNext(param);
   }
-		      
+		
   return NULL;
 }
 
@@ -341,12 +341,12 @@ DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
  * @param param Target RPC parameter structure
  * @param value set to the value of the parameter
  */
-int RPC_paramValueByPosition(RPC_Param *param, 
+int RPC_paramValueByPosition(RPC_Param *param,
 			     unsigned int i,
 			     unsigned int * dataLength,
 			     void ** value) {
   Parameter * p;
- 
+
   if (param == NULL)
     return SYSERR;
   p = vectorGetAt(param, i);
@@ -365,11 +365,11 @@ int RPC_paramValueByPosition(RPC_Param *param,
  * @param value set to the value of the parameter
  */
 DataContainer *
-RPC_paramDataContainerByPosition(RPC_Param *param, 
+RPC_paramDataContainerByPosition(RPC_Param *param,
 				 unsigned int i) {
   Parameter * p;
   DataContainer * ret;
- 
+
   if (param == NULL)
     return NULL;
   p = vectorGetAt(param, i);

@@ -18,11 +18,11 @@
      Boston, MA 02111-1307, USA.
 */
 
-/** 
+/**
  * @file traffic/clientapi.c
  * @author Christian Grothoff
  * @brief API for clients to obtain traffic statistics
- */ 
+ */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
@@ -55,28 +55,28 @@ int pollSocket(GNUNET_TCP_SOCKET * sock,
   CS_TRAFFIC_REQUEST req;
   int i;
 
-  req.header.size 
+  req.header.size
     = htons(sizeof(CS_TRAFFIC_REQUEST));
   req.header.type
     = htons(CS_PROTO_TRAFFIC_QUERY);
-  req.timePeriod 
+  req.timePeriod
     = htonl(timeframe);
   if (SYSERR == writeToSocket(sock,
 			      &req.header)) {
     LOG(LOG_WARNING,
 	_("Failed to query gnunetd about traffic conditions.\n"));
-    return SYSERR; 
+    return SYSERR;
   }
   info = NULL;
   if (SYSERR == readFromSocket(sock,
 			       (CS_HEADER**)&info)) {
     LOG(LOG_WARNING,
 	_("Did not receive reply from gnunetd about traffic conditions.\n"));
-    return SYSERR; 
+    return SYSERR;
   }
-  if ( (ntohs(info->header.type) != 
+  if ( (ntohs(info->header.type) !=
 	CS_PROTO_TRAFFIC_INFO) ||
-       (ntohs(info->header.size) != 
+       (ntohs(info->header.size) !=
 	sizeof(CS_TRAFFIC_INFO) + ntohl(info->count)*sizeof(TRAFFIC_COUNTER)) ) {
     BREAK();
     return SYSERR;

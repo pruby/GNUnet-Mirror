@@ -19,7 +19,7 @@ static int test(int number) {
     printf("enc2hash failed!\n");
     return 1;
   }
-    
+
   if (! equalsHashCode512(&h1, &h2)) {
     return 1;
   }
@@ -42,8 +42,8 @@ int main(int argc, char * argv[]) {
   doneLockingGcrypt();
   if (failureCount == 0)
     return 0;
-  else 
+  else
     return 1;
-} 
+}
 
 /* end of hashingtest.c */

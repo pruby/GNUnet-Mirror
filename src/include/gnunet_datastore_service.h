@@ -22,7 +22,7 @@
  * @brief API that can be used manage the
  *   datastore for files stored on a GNUnet node;
  *   note that the datastore is NOT responsible for
- *   on-demand encoding, that is achieved using 
+ *   on-demand encoding, that is achieved using
  *   a special kind of entry.
  * @author Christian Grothoff
  */
@@ -95,11 +95,11 @@ typedef struct {
  * An iterator over a set of Datastore items.
  *
  * @param datum called with the next item
- * @param closure user-defined extra argument 
+ * @param closure user-defined extra argument
  * @return SYSERR to abort the iteration, OK to continue.
  */
 typedef int (*Datum_Iterator)(const HashCode512 * key,
-			      const Datastore_Value * value, 
+			      const Datastore_Value * value,
 			      void * closure);
 
 
@@ -111,14 +111,14 @@ typedef int (*Datum_Iterator)(const HashCode512 * key,
  * old entries and low-priority entries in the background as the
  * database fills up to its limit.  It uses a bloomfilter to avoid
  * disk-IO.  A datastore should pre-fetch some set of random entries
- * to quickly respond to getRandom(). 
+ * to quickly respond to getRandom().
  *
  * Finally, the datastore should try to detect corruption and if
  * so automatically attempt to repair itself (i.e. by keeping
  * a flag in the state-DB to indicate if the last shutdown was
  * clean, and if not, trigger a repair on startup).
  *
- * Once GNUnet has IO load management the DS should integrate with 
+ * Once GNUnet has IO load management the DS should integrate with
  * that and refuse IO if the load is too high.
  */
 typedef struct {
@@ -131,26 +131,26 @@ typedef struct {
   /**
    * Store an item in the datastore.  If the item is
    * already present, a second copy is created.
-   *  
+   *
    * @return YES on success, NO if the datastore is
    *   full and the priority of the item is not high enough
    *   to justify removing something else, SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*put)(const HashCode512 * key, 
+  int (*put)(const HashCode512 * key,
 	     const Datastore_Value * value);
 
   /**
    * Store an item in the datastore.  If the item is already present,
    * the priorities are summed up and the higher expiration time and
    * lower anonymity level is used.
-   *  
+   *
    * @return YES on success, NO if the datastore is
    *   full and the priority of the item is not high enough
    *   to justify removing something else, SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*putUpdate)(const HashCode512 * key, 
+  int (*putUpdate)(const HashCode512 * key,
 		   const Datastore_Value * value);
 
   /**
@@ -166,7 +166,7 @@ typedef struct {
    *   0 if no matches were found.  May NOT return
    *   SYSERR unless the iterator aborted!
    */
-  int (*get)(const HashCode512 * key, 
+  int (*get)(const HashCode512 * key,
 	     unsigned int type,
 	     Datum_Iterator iter,
 	     void * closure);
@@ -183,7 +183,7 @@ typedef struct {
    *        for any type.
    * @return OK if a value was found, SYSERR if not
    */
-  int (*getRandom)(const HashCode512 * approx, 
+  int (*getRandom)(const HashCode512 * approx,
 		   unsigned int sizeLimit,
 		   HashCode512 * key,
 		   Datastore_Value ** value,
@@ -191,13 +191,13 @@ typedef struct {
 
   /**
    * Delete an item from the datastore.
-   *   
+   *
    * @param value maybe NULL, then all items under the
    *         given key are deleted
    * @return the number of items deleted, 0 if
    *         none were found, SYSERR on errors
    */
-  int (*del)(const HashCode512 * key, 
+  int (*del)(const HashCode512 * key,
 	     const Datastore_Value * value);
 
 } Datastore_ServiceAPI;

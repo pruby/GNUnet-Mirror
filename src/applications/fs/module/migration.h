@@ -36,19 +36,19 @@
 
 
 /**
- * What is the maximum expiration time for migrated content? 
+ * What is the maximum expiration time for migrated content?
  *
  * This is a non-trivial issue.  If we have a ceiling for migration
  * time, it would violate anonymity if we send out content with an
  * expiration time above that ceiling (since it would expose the
  * content to originate from this peer).  But we want to store a
  * higher expiration time for our content in the DB.
- * 
+ *
  * A first idea would be to pick a random time smaller than the limit
  * for outgoing content; that does not _quite_ work since that could
  * also expose us as the originator: only for our own content the
  * expiration time would randomly go up and down.
- * 
+ *
  * The current best solution is to first bound the expiration time by
  * this ceiling (for inbound and outbound ETs, not for the database
  * entries locally) using modulo (to, in practice, get a constant
@@ -74,7 +74,7 @@
  * that content stays around longer.  Finally, clients (UI) may want
  * to filter / rank / display search results with their current
  * expiration to give the user some indication about availability.
- * 
+ *
  */
 #define MAX_MIGRATION_EXP (1L * cronMONTHS)
 

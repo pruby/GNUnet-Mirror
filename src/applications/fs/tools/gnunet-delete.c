@@ -22,7 +22,7 @@
  * Tool to delete files that were indexed with gnunet-insert.
  *
  * @author Christian Grothoff
- * @file applications/afs/tools/gnunet-delete.c 
+ * @file applications/afs/tools/gnunet-delete.c
  */
 
 #include "gnunet_afs_esed2.h"
@@ -36,7 +36,7 @@ static void printstatus(ProgressStats * stats,
   if (*(int*)verboselevel == YES) {
     printf(_("%8u of %8u bytes deleted."),
 	   (unsigned int) stats->progress,
-	   (unsigned int) stats->filesize);  
+	   (unsigned int) stats->filesize);
     printf("\r");
   }
 }
@@ -77,13 +77,13 @@ static int parseOptions(int argc,
       { "file",          1, 0, 'f' },
       { "verbose",       0, 0, 'V' },
       { 0,0,0,0 }
-    };    
+    };
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhdc:L:H:Vf:", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "vhdc:L:H:Vf:",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
@@ -93,20 +93,20 @@ static int parseOptions(int argc,
 					 "VERBOSE",
 					 "YES"));
       break;
-    case 'f': 
+    case 'f':
       FREENONNULL(setConfigurationString("GNUNET-DELETE",
 					 "FILENAME",
 					 GNoptarg));
-      break;    
-    case 'v': 
+      break;
+    case 'v':
       printf("GNUnet v%s, gnunet-delete v%s\n",
-	     VERSION, 
+	     VERSION,
 	     AFS_VERSION);
       return SYSERR;
-    case 'h': 
-      printhelp(); 
+    case 'h':
+      printhelp();
       return SYSERR;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
@@ -121,14 +121,14 @@ static int parseOptions(int argc,
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return 0 for ok, -1 on error
- */   
+ */
 int main(int argc, char ** argv) {
   int beVerbose;
   GNUNET_TCP_SOCKET * sock;
   int ok;
   char * filename;
-  
-  if (SYSERR == initUtil(argc, argv, &parseOptions)) 
+
+  if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0;
   beVerbose = testConfigurationString("GNUNET-INSERT",
 				      "VERBOSE",
@@ -152,13 +152,13 @@ int main(int argc, char ** argv) {
 	     "Probably a few blocks were already missing from the database.\n"),
 	   filename);
   }
-  releaseClientSocket(sock); 
+  releaseClientSocket(sock);
   doneUtil();
   FREE(filename);
   if (ok == OK)
     return 0;
-  else 
+  else
     return -1;
-}  
+}
 
 /* end of gnunet-delete.c */

@@ -20,7 +20,7 @@
 /**
  * @file include/gnunet_traffic_service.h
  * @author Christian Grothoff
- * 
+ *
  * @brief Module to keep track of recent amounts of p2p traffic
  * on the local GNUnet node.
  */
@@ -51,7 +51,7 @@
  * What is the unit of time (in cron_t) for the traffic module? This
  * constant essentially specifies the resolution of the distribution
  * function that is applied for sampling traffic. Default is 1s.
- */ 
+ */
 #define TRAFFIC_TIME_UNIT cronSECONDS
 
 /**

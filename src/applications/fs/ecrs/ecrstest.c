@@ -18,7 +18,7 @@
      Boston, MA 02111-1307, USA.
 */
 
-/** 
+/**
  * @file applications/fs/ecrs/ecrstest.c
  * @brief testcase for ecrs (upload-download)
  * @author Christian Grothoff
@@ -32,7 +32,7 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
@@ -76,12 +76,12 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   char * buf;
   struct ECRS_URI * uri;
   int i;
-  
+
   name = makeName(size);
   fd = OPEN(name, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
-  for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512)) 
+  for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
     hash(&buf[i+sizeof(HashCode512)],
 	 42,
 	 (HashCode512*) &buf[i]);
@@ -94,7 +94,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			0, /* prio */
 			cronTime(NULL) + 10 * cronMINUTES, /* expire */
 			NULL, /* progress */
-			NULL, 
+			NULL,
 			&testTerminate,
 			NULL,
 			&uri);
@@ -116,7 +116,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			     meta);
     ECRS_freeMetaData(meta);
     ECRS_freeUri(uri);
-    FREE(name);  
+    FREE(name);
     if (ret == OK) {
       return key;
     } else {
@@ -124,7 +124,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
       return NULL;
     }
   } else {
-    FREE(name);  
+    FREE(name);
     return NULL;
   }
 }
@@ -134,12 +134,12 @@ static int searchCB(const ECRS_FileInfo * fi,
 		    void * closure) {
   struct ECRS_URI ** my = closure;
   char * tmp;
-  
+
   tmp = ECRS_uriToString(fi->uri);
   LOG(LOG_DEBUG,
       "Search found URI '%s'\n",
       tmp);
-  FREE(tmp);    
+  FREE(tmp);
   GNUNET_ASSERT(NULL == *my);
   *my = ECRS_dupUri(fi->uri);
   return SYSERR; /* abort search */
@@ -167,7 +167,7 @@ static int searchFile(struct ECRS_URI ** uri) {
        (myURI != NULL) )
     return OK;
   else
-    return SYSERR;  
+    return SYSERR;
 }
 
 static int downloadFile(unsigned int size,
@@ -179,7 +179,7 @@ static int downloadFile(unsigned int size,
   char * in;
   int i;
   char * tmp;
-  
+
   tmp = ECRS_uriToString(uri);
   LOG(LOG_DEBUG,
       "Starting download of '%s'\n",
@@ -194,12 +194,12 @@ static int downloadFile(unsigned int size,
 			      NULL,
 			      &testTerminate,
 			      NULL)) {
-    
+
     fd = OPEN(tmpName, O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
-    for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512)) 
+    for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
       hash(&buf[i+sizeof(HashCode512)],
 	   42,
 	   (HashCode512*) &buf[i]);
@@ -211,7 +211,7 @@ static int downloadFile(unsigned int size,
       ret = OK;
     FREE(buf);
     FREE(in);
-    CLOSE(fd); 
+    CLOSE(fd);
   }
   UNLINK(tmpName);
   FREE(tmpName);
@@ -222,7 +222,7 @@ static int downloadFile(unsigned int size,
 static int unindexFile(unsigned int size) {
   int ret;
   char * name;
-  
+
   name = makeName(size);
   ret = ECRS_unindexFile(name,
 			 NULL,
@@ -231,7 +231,7 @@ static int unindexFile(unsigned int size) {
 			 NULL);
   if (0 != UNLINK(name))
     ret = SYSERR;
-  FREE(name);  
+  FREE(name);
   return ret;
 }
 
@@ -250,8 +250,8 @@ int main(int argc, char * argv[]){
     2,
     4,
     16,
-    32, 
-    1024, 
+    32,
+    1024,
     0
   };
   pid_t daemon;
@@ -283,7 +283,7 @@ int main(int argc, char * argv[]){
   gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
   sock = getClientSocket();
   CHECK(sock != NULL);
-  
+
   /* ACTUAL TEST CODE */
   i = 0;
   while (filesizes[i] != 0) {
@@ -299,7 +299,7 @@ int main(int argc, char * argv[]){
     fprintf(stderr,
 	    " Ok.\n");
     i++;
-  } 
+  }
 
   /* END OF TEST CODE */
  FAILURE:
@@ -310,14 +310,14 @@ int main(int argc, char * argv[]){
   if (daemon != -1) {
     if (0 != kill(daemon, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon != waitpid(daemon, &status, 0)) 
+    if (daemon != waitpid(daemon, &status, 0))
       DIE_STRERROR("waitpid");
-    
-    if ( (WEXITSTATUS(status) == 0) && 
+
+    if ( (WEXITSTATUS(status) == 0) &&
 	 (ok == YES) )
       return 0;
     else
-      return 1;    
+      return 1;
   } else {
     return 0;
   }

@@ -41,7 +41,7 @@
  * Host-Address in a SMTP network.
  */
 typedef struct {
-  
+
   /**
    * Filter line that every sender must include in the E-mails such
    * that the receiver can effectively filter out the GNUnet traffic
@@ -50,10 +50,10 @@ typedef struct {
   char filter[FILTER_STRING_SIZE];
 
   /**
-   * Claimed E-mail address of the sender. 
+   * Claimed E-mail address of the sender.
    * Format is "foo@bar.com" with null termination, padded to be
    * of a multiple of 8 bytes long.
-   */  
+   */
   char senderAddress[0];
 
 } EmailAddress;
@@ -66,14 +66,14 @@ typedef struct {
   /* this struct is always preceeded by n bytes of p2p messages
      that the GNUnet core will process */
 
-  /** 
+  /**
    * size of the message, in bytes, including this header; max
    * 65536-header (network byte order)
    */
   unsigned short size;
 
   /**
-   * What is the identity of the sender (hash of public key) 
+   * What is the identity of the sender (hash of public key)
    */
   PeerIdentity sender;
 
@@ -82,13 +82,13 @@ typedef struct {
 /* *********** globals ************* */
 
 /**
- * apis (our advertised API and the core api ) 
+ * apis (our advertised API and the core api )
  */
 static CoreAPIForTransport * coreAPI;
 static TransportAPI smtpAPI;
 
 /**
- * thread that listens for inbound messages 
+ * thread that listens for inbound messages
  */
 static PTHREAD_T dispatchThread;
 
@@ -161,14 +161,14 @@ static unsigned int base64_encode(char * data,
     if (i < len) {
       c = (data[i] << 2) & 0x3f;
       if (++i < len)
-	c |= (data[i] >> 6) & 0x03;      
+	c |= (data[i] >> 6) & 0x03;
       (*output)[ret++] = cvt[(int)c];
       CHECKLINE;
     } else {
       ++i;
       (*output)[ret++] = FILLCHAR;
       CHECKLINE;
-    }    
+    }
     if (i < len) {
       c = data[i] & 0x3f;
       (*output)[ret++] = cvt[(int)c];
@@ -226,22 +226,22 @@ static unsigned int base64_decode(char * data,
       CHECK_CRLF;
       c = data[i];
       if (FILLCHAR == c)
-	break;      
+	break;
       c = (char) cvtfind(c);
       c1 = ((c1 << 4) & 0xf0) | ((c >> 2) & 0xf);
       (*output)[ret++] = c1;
-    } 
+    }
     if (++i < len) {
       CHECK_CRLF;
       c1 = data[i];
       if (FILLCHAR == c1)
 	break;
-      
+
       c1 = (char) cvtfind(c1);
       c = ((c << 6) & 0xc0) | c1;
       (*output)[ret++] = c;
     }
-  }  
+  }
  END:
   return ret;
 }
@@ -263,9 +263,9 @@ static unsigned short getSMTPPort() {
   port = (unsigned short) getConfigurationInt("SMTP",
 					      "PORT");
   if (port == 0) { /* try lookup in services */
-    if ((pse = getservbyname("gnunet", "smtp"))) 
-      port = ntohs(pse->s_port);      
-    else 
+    if ((pse = getservbyname("gnunet", "smtp")))
+      port = ntohs(pse->s_port);
+    else
       errexit("Cannot determine port to bind to. "\
 	      " Define in configuration file in section %s under %s "\
 	      "or in /etc/services under smtp/gnunet.\n",
@@ -290,13 +290,13 @@ static int connectToSMTPServer() {
   if (hostname == NULL)
     hostname = STRDUP("localhost");
   ip = GETHOSTBYNAME(hostname);
-  if (ip == NULL) {    
+  if (ip == NULL) {
     LOG(LOG_ERROR,
 	_("Could not resolve name of SMTP server '%s': %s"),
 	hostname, hstrerror(h_errno));
     FREE(hostname);
     return -1;
-  } 
+  }
   FREE(hostname);
   res = SOCKET(PF_INET, SOCK_STREAM, 6);/* 6: TCP */
   if (res == -1) {
@@ -322,7 +322,7 @@ static int connectToSMTPServer() {
 #define MAX_SMTP_LINE 128
 
 /**
- * Read a single line from the socket and check if 
+ * Read a single line from the socket and check if
  * it starts with the expected string. If the server
  * sends more than one line, an arbitrary amount of
  * data from the next line may be read!
@@ -350,8 +350,8 @@ try_again:
     if (success == NO) {
       gnunet_util_sleep(20);
       goto try_again;
-    }      
-	 
+    }
+	
     if (i <= 0)
       return SYSERR;
     while (i > 0) {
@@ -379,20 +379,20 @@ static int writeSMTPLine(int sock,
   char * target;
   int size;
   int ret;
-  
+
   size = 256;
   ret = -1;
   target = MALLOC(size);
   while (ret == -1) {
     va_start(args, format);
     ret = vsnprintf(target, size, format, args);
-    va_end(args);  
+    va_end(args);
     if (ret == -1) {
       FREE(target);
       size *= 2;
       target = MALLOC(size);
     }
-  }  
+  }
   if (ret == SEND_BLOCKING_ALL(sock, target, ret))
     ret = OK;
   FREE(target);
@@ -415,7 +415,7 @@ static void * listenAndDistribute() {
   GNUNET_ASSERT(pipename != NULL);
   UNLINK(pipename);
   if (0 != mkfifo(pipename,
-		  S_IWUSR|S_IRUSR)) 
+		  S_IWUSR|S_IRUSR))
     DIE_STRERROR("mkfifo");
   LINESIZE = ((smtpAPI.mtu * 4 / 3) + 8) * (MAX_CHAR_PER_LINE+2)/
              MAX_CHAR_PER_LINE; /* maximum size of a line supported */
@@ -431,14 +431,14 @@ static void * listenAndDistribute() {
 
 
   SEMAPHORE_UP(serverSignal); /* we are there! */
-  while ( smtp_shutdown == NO ) {    
+  while ( smtp_shutdown == NO ) {
     FILE * fdes;
     char * retl;
     char * boundary;
     char * out;
     unsigned int size;
     MessagePack * coreMP;
-    
+
     smtp_pipe = OPEN(pipename, O_RDONLY);
     fdes = fdopen(smtp_pipe, "r");
     while ( smtp_shutdown == NO ) {
@@ -454,7 +454,7 @@ static void * listenAndDistribute() {
 	FREE(boundary);
 	goto END; /* format error */
       } else {
-	boundary[strlen(boundary)-2] = '\0';      
+	boundary[strlen(boundary)-2] = '\0';
 	boundary[0] = boundary[1] = '-';
       }
       do {
@@ -480,8 +480,8 @@ static void * listenAndDistribute() {
       if (ntohs(mp->size) != size) {
 	LOG(LOG_WARNING,
 	    _("Received malformed message via SMTP (size mismatch).\n"));
-	LOG(LOG_DEBUG, 
-	    "Size returned by base64=%d, in the msg=%d.\n", 
+	LOG(LOG_DEBUG,
+	    "Size returned by base64=%d, in the msg=%d.\n",
 	    size,
 	    ntohl(mp->size));
 	goto END;
@@ -493,16 +493,16 @@ static void * listenAndDistribute() {
       memcpy(&coreMP->sender,
 	     &mp->sender,
 	     sizeof(PeerIdentity));
-      LOG(LOG_DEBUG, 
+      LOG(LOG_DEBUG,
 	  "SMTP message passed to the core.\n");
 
       coreAPI->receive(coreMP);
       READLINE(line, LINESIZE); /* new line at the end */
     }
   END:
-    LOG(LOG_DEBUG, 
+    LOG(LOG_DEBUG,
 	"SMTP message processed.\n");
-    fclose(fdes);    
+    fclose(fdes);
   }
   SEMAPHORE_UP(serverSignal); /* we are there! */
   return NULL;
@@ -530,13 +530,13 @@ static int verifyHelo(const HELO_Message * helo) {
 	" received invalid SMTP address advertisement (HELO) %d != %d or %d != 0\n",
 	ntohs(helo->header.size),
 	sizeof(HELO_Message)+ntohs(helo->senderAddressSize),
-	maddr->senderAddress[ntohs(helo->senderAddressSize)-1-FILTER_STRING_SIZE]);    
+	maddr->senderAddress[ntohs(helo->senderAddressSize)-1-FILTER_STRING_SIZE]);
     BREAK();
     return SYSERR; /* obviously invalid */
   } else {
     LOG(LOG_DEBUG,
 	"Verified SMTP helo from %s.\n",
-	&maddr->senderAddress[0]);    
+	&maddr->senderAddress[0]);
     return OK;
   }
 }
@@ -556,8 +556,8 @@ static int createHELO(HELO_Message ** helo) {
   char * filter;
   EmailAddress * haddr;
   int i;
-  
-  email = getConfigurationString("SMTP", 
+
+  email = getConfigurationString("SMTP",
 				 "EMAIL");
   if (email == NULL) {
     LOG(LOG_DEBUG,
@@ -566,8 +566,8 @@ static int createHELO(HELO_Message ** helo) {
   }
   filter = getConfigurationString("SMTP",
 				  "FILTER");
-  if (filter == NULL) { 
-    LOG(LOG_ERROR, 
+  if (filter == NULL) {
+    LOG(LOG_ERROR,
 	_("No filter for E-mail specified, cannot create SMTP advertisement.\n"));
     FREE(email);
     return SYSERR;
@@ -599,7 +599,7 @@ static int createHELO(HELO_Message ** helo) {
       = htons(HELO_Message_size(msg));
   *helo = msg;
   FREE(email);
-  if (verifyHelo(*helo) == SYSERR) 
+  if (verifyHelo(*helo) == SYSERR)
     GNUNET_ASSERT(0);
   return OK;
 }
@@ -613,7 +613,7 @@ static int createHELO(HELO_Message ** helo) {
 static int smtpConnect(HELO_Message * helo,
 		       TSession ** tsessionPtr) {
   TSession * tsession;
-  
+
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = helo;
   tsession->ttype = smtpAPI.protocolNumber;
@@ -656,7 +656,7 @@ static int smtpSend(TSession * tsession,
   char * ebody;
   int res;
   int ssize, ssize2;
-  
+
   if (smtp_shutdown == YES)
     return SYSERR;
   if (size == 0) {
@@ -668,7 +668,7 @@ static int smtpSend(TSession * tsession,
     return SYSERR;
   }
   helo = (HELO_Message*)tsession->internal;
-  if (helo == NULL) 
+  if (helo == NULL)
     return SYSERR;
 
   haddr = (EmailAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
@@ -690,19 +690,19 @@ static int smtpSend(TSession * tsession,
   LOG(LOG_DEBUG,
       "Base64-encoded message size is %d bytes.\n",
       ssize);
-  
+
   FREE(msg);
   MUTEX_LOCK(&smtpLock);
   res = SYSERR;
   /*
     The mail from field is left empty, so mailing list servers
-    will interpret the message as a bounce message.    
-    MAIL FROM: <>    
+    will interpret the message as a bounce message.
+    MAIL FROM: <>
     RCPT TO: recpient@www.example.com
     DATA
     FILTER
     ebody
-    .    
+    .
    */
   if (OK == writeSMTPLine(smtp_sock,
 			  "MAIL FROM: <>\r\n"))
@@ -716,7 +716,7 @@ static int smtpSend(TSession * tsession,
 	  if (OK == writeSMTPLine(smtp_sock,
 				  "DATA\r\n"))
 	    if (OK == readSMTPLine(smtp_sock,
-				   "354 ")) 
+				   "354 "))
 	      if (OK == writeSMTPLine(smtp_sock,
 				      "%-*s\r\n",
 				      MIN(FILTER_STRING_SIZE,
@@ -732,14 +732,14 @@ static int smtpSend(TSession * tsession,
 		    if (SYSERR != SEND_BLOCKING_ALL(smtp_sock,
 						    ebody,
 						    ssize))
-		      if (OK == writeSMTPLine(smtp_sock, 
+		      if (OK == writeSMTPLine(smtp_sock,
 					      "\r\n--%s\r\n",
 					      BOUNDARY_SPECIFIER))
 			if (OK == writeSMTPLine(smtp_sock,
 						"\r\n.\r\n"))
 			  if (OK == readSMTPLine(smtp_sock,
 						 "250 "))
-			    res = OK;  
+			    res = OK;
   MUTEX_UNLOCK(&smtpLock);
   if (res != OK)
     LOG(LOG_WARNING,
@@ -796,7 +796,7 @@ static int startTransportServer(void) {
 	__FILE__, __LINE__);
     CLOSE(smtp_sock);
     return SYSERR;
-  } 
+  }
   email = NULL; /* abusing email as a flag... */
   if (OK == writeSMTPLine(smtp_sock,
 			  "HELO %s\r\n",
@@ -804,9 +804,9 @@ static int startTransportServer(void) {
 						 "SENDERHOSTNAME")))
     if (OK == readSMTPLine(smtp_sock,
 			   "250 "))
-      email = getConfigurationString("SMTP", 
+      email = getConfigurationString("SMTP",
 				     "EMAIL");
-    
+
   if (email == NULL) {
     LOG(LOG_DEBUG,
 	"No email-address specified, will not advertise SMTP address.\n");
@@ -818,7 +818,7 @@ static int startTransportServer(void) {
   if (0 != PTHREAD_CREATE(&dispatchThread,
 			  (PThreadMain) &listenAndDistribute,
 			  NULL,
-			  1024*4)) 
+			  1024*4))
     DIE_STRERROR("pthread_create");
   SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */
   return OK;
@@ -853,8 +853,8 @@ static char * addressToString(const HELO_Message * helo) {
   char * ret;
   EmailAddress * addr;
   size_t n;
-  
-  addr = (EmailAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];  
+
+  addr = (EmailAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   n = FILTER_STRING_SIZE + strlen(addr->senderAddress) + 16;
   ret = MALLOC(n);
   SNPRINTF(ret,
@@ -874,7 +874,7 @@ static char * addressToString(const HELO_Message * helo) {
 /**
  * The exported method. Makes the core api available via a global and
  * returns the smtp transport API.
- */ 
+ */
 TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   int mtu;
 

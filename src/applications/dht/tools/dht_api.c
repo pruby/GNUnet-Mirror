@@ -19,7 +19,7 @@
 
 /**
  * @file tools/dht_api.c
- * @brief DHT-module's core API's implementation. 
+ * @brief DHT-module's core API's implementation.
  * @author Tomi Tukiainen, Christian Grothoff
  */
 
@@ -79,11 +79,11 @@ static Mutex lock;
  * Check if the given message is an ACK.  If so,
  * return the status, otherwise SYSERR.
  */
-static int checkACK(CS_HEADER * reply) {  
+static int checkACK(CS_HEADER * reply) {
   LOG(LOG_DEBUG,
       "received ACK from gnunetd\n");
   if ( (sizeof(DHT_CS_REPLY_ACK) == ntohs(reply->size)) &&
-       (DHT_CS_PROTO_REPLY_ACK == ntohs(reply->type)) ) 
+       (DHT_CS_PROTO_REPLY_ACK == ntohs(reply->type)) )
     return ntohl(((DHT_CS_REPLY_ACK*)reply)->status);
   return SYSERR;
 }
@@ -111,7 +111,7 @@ static int sendAllResults(const HashCode512 * key,
 			  void * cls) {
   TableList * list = (TableList*) cls;
   DHT_CS_REPLY_RESULTS * reply;
- 
+
   reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode512));
   reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode512));
   reply->header.type = htons(DHT_CS_PROTO_REPLY_GET);
@@ -147,24 +147,24 @@ static void * process_thread(TableList * list) {
   CS_HEADER * reply;
   DHT_CS_REQUEST_JOIN req;
   int ok;
-  
+
   req.header.size = htons(sizeof(DHT_CS_REQUEST_JOIN));
-  req.header.type = htons(DHT_CS_PROTO_REQUEST_JOIN);  
+  req.header.type = htons(DHT_CS_PROTO_REQUEST_JOIN);
   req.table = list->table;
 
   while (list->leave_request == NO) {
-    if (list->sock == NULL) {     
+    if (list->sock == NULL) {
       gnunet_util_sleep(500 * cronMILLIS);
       MUTEX_LOCK(&list->lock);
       if (list->leave_request == NO)
-	list->sock  = getClientSocket();      
+	list->sock  = getClientSocket();
       MUTEX_UNLOCK(&list->lock);
     }
     if (list->sock == NULL)
       continue;
 
     ok = NO;
-    /* send 'join' message via socket! */    
+    /* send 'join' message via socket! */
     if (OK == writeToSocket(list->sock,
 			    &req.header)) {
       reply = NULL;
@@ -271,9 +271,9 @@ static void * process_thread(TableList * list) {
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
 	}
-	value = MALLOC(sizeof(DataContainer) + 
-		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));       
-	value->size = htonl(sizeof(DataContainer) + 
+	value = MALLOC(sizeof(DataContainer) +
+		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
+	value->size = htonl(sizeof(DataContainer) +
 			    ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
 	memcpy(&value[1],
 	       &req[1],
@@ -326,9 +326,9 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 
-	value = MALLOC(sizeof(DataContainer) + 
-		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));       
-	value->size = htonl(sizeof(DataContainer) + 
+	value = MALLOC(sizeof(DataContainer) +
+		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
+	value->size = htonl(sizeof(DataContainer) +
 			    ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
 	memcpy(&value[1],
 	       &req[1],
@@ -415,7 +415,7 @@ static void * process_thread(TableList * list) {
  *
  * @param datastore the storage callbacks to use for the table
  * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to 
+ * @param timeout how long to wait for other peers to respond to
  *   the join request (has no impact on success or failure)
  * @return SYSERR on error, OK on success
  */
@@ -425,7 +425,7 @@ int DHT_LIB_join(Blockstore * store,
   int i;
 
   MUTEX_LOCK(&lock);
-  for (i=0;i<tableCount;i++) 
+  for (i=0;i<tableCount;i++)
     if (equalsHashCode512(&tables[i]->table,
 			  table)) {
       LOG(LOG_WARNING,
@@ -454,7 +454,7 @@ int DHT_LIB_join(Blockstore * store,
     FREE(list);
     MUTEX_UNLOCK(&lock);
     return SYSERR;
-  } 
+  }
   GROW(tables,
        tableCount,
        tableCount+1);
@@ -470,7 +470,7 @@ int DHT_LIB_join(Blockstore * store,
  *
  * @param datastore the storage callbacks to use for the table
  * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to 
+ * @param timeout how long to wait for other peers to respond to
  *   the leave request (has no impact on success or failure);
  *   but only timeout time is available for migrating data, so
  *   pick this value with caution.
@@ -484,8 +484,8 @@ int DHT_LIB_leave(DHT_TableId * table,
   DHT_CS_REQUEST_LEAVE req;
   CS_HEADER * reply;
   int ret;
-  GNUNET_TCP_SOCKET * sock;  
-  
+  GNUNET_TCP_SOCKET * sock;
+
   list = NULL;
   MUTEX_LOCK(&lock);
   for (i=0;i<tableCount;i++) {
@@ -507,7 +507,7 @@ int DHT_LIB_leave(DHT_TableId * table,
   }
 
   list->leave_request = YES;
-  /* send LEAVE message! */  
+  /* send LEAVE message! */
   req.header.size = htons(sizeof(DHT_CS_REQUEST_LEAVE));
   req.header.type = htons(DHT_CS_PROTO_REQUEST_LEAVE);
   req.timeout = htonll(timeout);
@@ -526,12 +526,12 @@ int DHT_LIB_leave(DHT_TableId * table,
 	else
 	  LOG(LOG_WARNING,
 	      _("gnunetd signaled error in response to '%s' message\n"),
-	      "DHT_CS_REQUEST_LEAVE");      	  
+	      "DHT_CS_REQUEST_LEAVE");      	
 	FREE(reply);
       } else {
 	LOG(LOG_WARNING,
 	    _("Failed to receive response to '%s' message from gnunetd\n"),
-	    "DHT_CS_REQUEST_LEAVE");      
+	    "DHT_CS_REQUEST_LEAVE");
       }
     } else {
       LOG(LOG_WARNING,
@@ -565,7 +565,7 @@ int DHT_LIB_leave(DHT_TableId * table,
  * The peer does not have to be part of the table!
  *
  * @param table table to use for the lookup
- * @param key the key to look up  
+ * @param key the key to look up
  * @param timeout how long to wait until this operation should
  *        automatically time-out
  * @param maxResults maximum number of results to obtain, size of the results array
@@ -592,7 +592,7 @@ int DHT_LIB_get(const DHT_TableId * table,
   if (sock == NULL)
     return SYSERR;
 
-  req = MALLOC(sizeof(DHT_CS_REQUEST_GET) + 
+  req = MALLOC(sizeof(DHT_CS_REQUEST_GET) +
 	       (keyCount-1) * sizeof(HashCode512));
   req->header.size = htons(sizeof(DHT_CS_REQUEST_GET) +
 			   (keyCount-1) * sizeof(HashCode512));
@@ -636,7 +636,7 @@ int DHT_LIB_get(const DHT_TableId * table,
     /* ok, we got some replies! */
     res = (DHT_CS_REPLY_RESULTS*) reply;
     ret = ntohl(res->totalResults);
-    
+
     size = ntohs(reply->size) - sizeof(DHT_CS_REPLY_RESULTS);
     result = MALLOC(size + sizeof(DataContainer));
     result->size = htonl(size + sizeof(DataContainer));
@@ -682,14 +682,14 @@ int DHT_LIB_put(const DHT_TableId * table,
   sock = getClientSocket();
   if (sock == NULL)
     return SYSERR;
-  req = MALLOC(sizeof(DHT_CS_REQUEST_PUT) + 
-	       ntohl(value->size) - 
+  req = MALLOC(sizeof(DHT_CS_REQUEST_PUT) +
+	       ntohl(value->size) -
 	       sizeof(DataContainer));
-  req->header.size 
+  req->header.size
     = htons(sizeof(DHT_CS_REQUEST_PUT) +
 	    ntohl(value->size) -
 	    sizeof(DataContainer));
-  req->header.type 
+  req->header.type
     = htons(DHT_CS_PROTO_REQUEST_PUT);
   req->table = *table;
   req->key = *key;

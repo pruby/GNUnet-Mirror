@@ -50,7 +50,7 @@ int testCron() {
   addCronJob(&cronJob3, cronSECONDS*16, cronSECONDS*16, NULL);
   for (i=0;i<10;i++) {
     /*    fprintf(stderr,"."); */
-    sleep(1);   
+    sleep(1);
     if (((global-i) * (global-i)) > 9) {
       fprintf(stderr,"1: Expected %d got %d\n", i, global);
       return 1;
@@ -83,20 +83,20 @@ static int testDelCron() {
     fprintf(stderr,
 	    "cron job was supposed to be deleted, but ran anyway!\n");
     return 1;
-  } else 
+  } else
     return 0;
 }
- 
+
 int main(int argc, char * argv[]) {
   int failureCount = 0;
 
   initCron();
   startCron();
-  failureCount += testCron(); 
+  failureCount += testCron();
   failureCount += testDelCron();
   stopCron();
   doneCron();
-  if (failureCount == 0) 
+  if (failureCount == 0)
     return 0;
   else {
     printf("\n\n%d TESTS FAILED!\n\n",failureCount);

@@ -438,7 +438,7 @@ int _win_bind(SOCKET s, const struct sockaddr *name, int namelen);
 int _win_connect(SOCKET s,const struct sockaddr *name, int namelen);
 int _win_getpeername(SOCKET s, struct sockaddr *name,
                 int *namelen);
-int _win_getsockname(SOCKET s, struct sockaddr *name, 
+int _win_getsockname(SOCKET s, struct sockaddr *name,
                 int *namelen);
 int _win_getsockopt(SOCKET s, int level, int optname, char *optval,
 				int *optlen);

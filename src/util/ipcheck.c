@@ -76,7 +76,7 @@ CIDRNetwork * parseRoutes(const char * routeList) {
     if (routeList[i] == ';')
       count++;
   result = MALLOC(sizeof(CIDRNetwork) * (count+1));
-  /* add termination */  
+  /* add termination */
   memset(result,
 	 0,
 	 sizeof(CIDRNetwork)*(count+1));
@@ -104,14 +104,14 @@ CIDRNetwork * parseRoutes(const char * routeList) {
 	}
       result[i].network.addr
 	= htonl((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) + temps[3]);
-      result[i].netmask.addr 
+      result[i].netmask.addr
 	= htonl((temps[4] << 24) + (temps[5] << 16) + (temps[6] << 8) + temps[7]);
       while (routeList[pos] != ';')
 	pos++;
       pos++;
       i++;
       continue;
-    } 
+    }
     /* try second notation */
     cnt = sscanf(&routeList[pos],
 		 "%u.%u.%u.%u/%u;",
@@ -144,7 +144,7 @@ CIDRNetwork * parseRoutes(const char * routeList) {
 	  pos++;
 	pos++;
  	i++;
-	continue;       
+	continue;
       } else {
 	LOG(LOG_ERROR,
 	    _("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
@@ -152,7 +152,7 @@ CIDRNetwork * parseRoutes(const char * routeList) {
 	FREE(result);
 	return NULL; /* error */
       }
-    } 
+    }
     LOG(LOG_ERROR,
 	"invalid network notation: >>%s<<",
 	&routeList[pos]);
@@ -182,17 +182,17 @@ int checkIPListed(const CIDRNetwork * list,
 		  IPaddr ip) {
   int i;
   IPaddr add;
- 
+
   add = ip;
   i=0;
-  if (list == NULL) 
+  if (list == NULL)
     return NO;
-  
+
   while ( (list[i].network.addr != 0) ||
 	  (list[i].netmask.addr != 0) ) {
-    if ( (add.addr & list[i].netmask.addr) == 
-	 (list[i].network.addr & list[i].netmask.addr) ) 
-      return YES;    
+    if ( (add.addr & list[i].netmask.addr) ==
+	 (list[i].network.addr & list[i].netmask.addr) )
+      return YES;
     i++;
   }
   return NO;
@@ -238,25 +238,25 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
     FREE(routeList);
     return NULL;
   }
-    
+
   result = MALLOC(sizeof(CIDR6Network) * (count+1));
-  memset(result, 
+  memset(result,
 	 0,
 	 sizeof(CIDR6Network) * (count+1));
   i=0;
   pos = 0;
   while (i < count) {
     start = pos;
-    while (routeList[pos] != ';') 
+    while (routeList[pos] != ';')
       pos++;
     slash = pos;
     while ( (slash >= start) &&
 	    (routeList[slash] != '/') )
       slash--;
     if (slash < start) {
-      memset(&result[i].netmask, 
+      memset(&result[i].netmask,
 	     0xFF,
-	     sizeof(IP6addr));	     
+	     sizeof(IP6addr));	
       slash = pos;
     } else {
       routeList[pos] = '\0';
@@ -304,11 +304,11 @@ int checkIP6Listed(const CIDR6Network * list,
   unsigned int i;
   unsigned int j;
   struct in6_addr zero;
- 
+
   i=0;
-  if (list == NULL) 
+  if (list == NULL)
     return NO;
-  
+
   memset(&zero, 0, sizeof(struct in6_addr));
   while ( (memcmp(&zero, &list[i].network, sizeof(struct in6_addr)) != 0) ||
 	  (memcmp(&zero, &list[i].netmask, sizeof(struct in6_addr)) != 0) ) {

@@ -42,7 +42,7 @@
 #define QUEUE_LENGTH 16
 
 /**
- * How many threads do we start? 
+ * How many threads do we start?
  */
 #define THREAD_COUNT 2
 
@@ -64,7 +64,7 @@ static int bq_firstFull_;
 static int threads_running = NO;
 
 static Semaphore * bufferQueueRead_;
-static Semaphore * bufferQueueWrite_;   
+static Semaphore * bufferQueueWrite_;
 static Mutex globalLock_;
 static Semaphore * mainShutdownSignal = NULL;
 static PTHREAD_T threads_[THREAD_COUNT];
@@ -114,7 +114,7 @@ static Mutex handlerLock;
 int registerp2pHandler(const unsigned short type,
 		       MessagePartHandler callback) {
   int last;
- 
+
   MUTEX_LOCK(&handlerLock);
   if (threads_running == YES) {
     BREAK();
@@ -140,9 +140,9 @@ int registerp2pHandler(const unsigned short type,
   GROW(handlers[type], last, last+1);
   handlers[type][last-2] = callback;
   MUTEX_UNLOCK(&handlerLock);
-  return OK;    
+  return OK;
 }
-  
+
 /**
  * Unregister a method as a handler for specific message types. Only
  * for encrypted messages!
@@ -184,9 +184,9 @@ int unregisterp2pHandler(const unsigned short type,
       MUTEX_UNLOCK(&handlerLock);
       return OK;
     }
-  } 
+  }
   MUTEX_UNLOCK(&handlerLock);
-  return SYSERR; 
+  return SYSERR;
 }
 
 /**
@@ -205,7 +205,7 @@ int unregisterp2pHandler(const unsigned short type,
 int registerPlaintextHandler(const unsigned short type,
 			     PlaintextMessagePartHandler callback) {
   int last;
- 
+
   MUTEX_LOCK(&handlerLock);
   if (threads_running == YES) {
     MUTEX_UNLOCK(&handlerLock);
@@ -231,9 +231,9 @@ int registerPlaintextHandler(const unsigned short type,
   GROW(plaintextHandlers[type], last, last+1);
   plaintextHandlers[type][last-2] = callback;
   MUTEX_UNLOCK(&handlerLock);
-  return OK;    
+  return OK;
 }
-  
+
 /**
  * Unregister a method as a handler for specific message types. Only
  * for plaintext messages!
@@ -275,9 +275,9 @@ int unregisterPlaintextHandler(const unsigned short type,
       MUTEX_UNLOCK(&handlerLock);
       return OK;
     }
-  } 
+  }
   MUTEX_UNLOCK(&handlerLock);
-  return SYSERR; 
+  return SYSERR;
 }
 
 
@@ -286,7 +286,7 @@ int unregisterPlaintextHandler(const unsigned short type,
  * Processes the message by calling the registered
  * handler for each message part.
  *
- * @param encrypted YES if it was encrypted, 
+ * @param encrypted YES if it was encrypted,
  *    NO if plaintext,
  * @param session NULL if not available
  */
@@ -315,10 +315,10 @@ void injectMessage(const PeerIdentity * sender,
     if (pos + plen > size) {
       IFLOG(LOG_WARNING,
 	    hash2enc(&sender->hashPubKey,
-		     &enc));      
-      LOG(LOG_WARNING, 
+		     &enc));
+      LOG(LOG_WARNING,
 	  _("Received corrupt message from peer '%s'in %s:%d.\n"),
-	  &enc, 
+	  &enc,
 	  __FILE__, __LINE__);
       return;
     }
@@ -342,10 +342,10 @@ void injectMessage(const PeerIdentity * sender,
     ptyp = htons(part->type);
     if (YES == wasEncrypted) {
       MessagePartHandler callback;
-      
+
       if ( (ptyp >= max_registeredType) ||
 	   (NULL == handlers[ptyp][0]) ) {
-	LOG(LOG_DEBUG, 
+	LOG(LOG_DEBUG,
 	    "Encrypted message of type '%d' not understood (no handler registered).\n",
 	    ptyp);
 	continue; /* no handler registered, go to next part */
@@ -363,10 +363,10 @@ void injectMessage(const PeerIdentity * sender,
       }
     } else { /* isEncrypted == NO */
       PlaintextMessagePartHandler callback;
-      
+
       if ( (ptyp >= plaintextmax_registeredType) ||
 	   (NULL == plaintextHandlers[ptyp][0]) ) {
-	LOG(LOG_DEBUG, 
+	LOG(LOG_DEBUG,
 	    "Plaintext message of type '%d' not understood (no handler registered).\n",
 	    ptyp);
 	continue; /* no handler registered, go to next part */
@@ -400,7 +400,7 @@ void injectMessage(const PeerIdentity * sender,
 static void handleMessage(TSession * tsession,
 			  const PeerIdentity * sender,
 			  const char * msg,
-			  const unsigned int size) { 
+			  const unsigned int size) {
   int ret;
 
   if (YES == identity->isBlacklistedStrict(sender) ) {
@@ -425,7 +425,7 @@ static void handleMessage(TSession * tsession,
 		&msg[sizeof(P2P_Message)],
 		size - sizeof(P2P_Message),
 		ret,
-		tsession);  
+		tsession);
 }
 
 /**
@@ -435,7 +435,7 @@ static void handleMessage(TSession * tsession,
  */
 static void * threadMain(int id) {
   MessagePack * mp;
-  
+
   while (mainShutdownSignal == NULL) {
     SEMAPHORE_DOWN(bufferQueueRead_);
     /* handle buffer entry */
@@ -451,9 +451,9 @@ static void * threadMain(int id) {
       bq_lastFree_ = 0;
     MUTEX_UNLOCK(&globalLock_);
     /* end of sync */
-    SEMAPHORE_UP(bufferQueueWrite_);    
+    SEMAPHORE_UP(bufferQueueWrite_);
 
-    /* handle buffer - now out of sync */    
+    /* handle buffer - now out of sync */
     handleMessage(mp->tsession,
 		  &mp->sender,
 		  mp->msg,
@@ -478,17 +478,17 @@ void core_receive(MessagePack * mp) {
     FREE(mp->msg);
     FREE(mp);
     return;
-  } 
+  }
   /* aquire buffer */
   if (SYSERR == transport->associate(mp->tsession))
     mp->tsession = NULL;
-  
+
   MUTEX_LOCK(&globalLock_);
   if (bq_firstFree_ == QUEUE_LENGTH)
     bq_firstFree_ = 0;
-  bufferQueue_[bq_firstFree_++] = mp;    
+  bufferQueue_[bq_firstFree_++] = mp;
   MUTEX_UNLOCK(&globalLock_);
-  SEMAPHORE_UP(bufferQueueRead_);  
+  SEMAPHORE_UP(bufferQueueRead_);
 }
 
 /**
@@ -503,16 +503,16 @@ void enableCoreProcessing() {
   bq_firstFree_ = 0;
   bq_lastFree_ = 0;
   bq_firstFull_ = 0;
-  
+
   /* create message handling threads */
   MUTEX_LOCK(&handlerLock);
   threads_running = YES;
   MUTEX_UNLOCK(&handlerLock);
   for (i=0;i<THREAD_COUNT;i++) {
-    PTHREAD_CREATE(&threads_[i], 
+    PTHREAD_CREATE(&threads_[i],
 		   (PThreadMain) &threadMain,
 		   (void *) &i,
-		   8 * 1024); 
+		   8 * 1024);
   }
 }
 
@@ -529,7 +529,7 @@ void disableCoreProcessing() {
     SEMAPHORE_UP(bufferQueueRead_);
     SEMAPHORE_DOWN(mainShutdownSignal);
   }
-  for (i=0;i<THREAD_COUNT;i++) 
+  for (i=0;i<THREAD_COUNT;i++)
     PTHREAD_JOIN(&threads_[i], &unused);
   MUTEX_LOCK(&handlerLock);
   threads_running = NO;
@@ -543,7 +543,7 @@ void disableCoreProcessing() {
  * Initialize message handling module.
  */
 void initHandler() {
-  MUTEX_CREATE(&handlerLock); 
+  MUTEX_CREATE(&handlerLock);
   transport = requestService("transport");
   GNUNET_ASSERT(transport != NULL);
   identity  = requestService("identity");

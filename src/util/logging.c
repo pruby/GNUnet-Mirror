@@ -72,9 +72,9 @@ static int maxLogLevel = LOG_EVERYTHING;
 static unsigned int lastlog;
 
 /**
- * How long to keep logs, in days 
+ * How long to keep logs, in days
  */
-static int keepLog; 
+static int keepLog;
 
 /**
  * Base value for getting configuration options; either "GNUNETD" or
@@ -137,13 +137,13 @@ static void removeOldLog(const char * fil,
   if ( (ret == NULL) ||
        (ret[0] != '\0') ) {
     FREE(fullname);
-    return; /* not a logfile */  
+    return; /* not a logfile */
   }
 
-  if (t.tm_year*365 + t.tm_yday + keepLog 
-      < def->curtime.tm_year*365 + def->curtime.tm_yday) 
+  if (t.tm_year*365 + t.tm_yday + keepLog
+      < def->curtime.tm_year*365 + def->curtime.tm_yday)
     UNLINK(fullname);
-  
+
   FREE(fullname);
 }
 
@@ -152,19 +152,19 @@ static void removeOldLog(const char * fil,
  */
 void reopenLogFile() {
   char * logfilename;
-  
+
   logfilename
     = getConfigurationString(base,
-           "LOGFILE"); 
+           "LOGFILE");
   if (logfilename != NULL) {
     char * fn;
-    
+
     if ( (logfile != stderr) &&
    (logfile != NULL) ) {
       fclose(logfile);
       logfile = NULL;
     }
-    fn = expandFileName(logfilename);     
+    fn = expandFileName(logfilename);
     if (keepLog) {
       char * logdir;
       char * end;
@@ -172,7 +172,7 @@ void reopenLogFile() {
       char datestr[80];
       time_t curtime;
       char *datefmt;
-      
+
       datefmt = nl_langinfo(D_FMT);
       time(&curtime);
 #ifdef localtime_r
@@ -181,30 +181,30 @@ void reopenLogFile() {
       def.curtime = *localtime(&curtime);
 #endif
       lastlog = def.curtime.tm_yday;
-      
+
       /* Format current date for filename*/
       fn = (char *) realloc(fn, strlen(fn) + 82);
       strcat(fn, "_");
       def.basename = STRDUP(fn);
       GNUNET_ASSERT(0 != strftime(datestr,
           80,
-          datefmt, 
+          datefmt,
           &def.curtime));
       strcat(fn, datestr);
-      
+
       /* Remove old logs */
       logdir = STRDUP(fn);
       end = logdir + strlen(logdir);
       while (*end != DIR_SEPARATOR)
         end--;
       *end = 0;
-      scanDirectory(logdir, 
-        (DirectoryEntryCallback) removeOldLog, 
+      scanDirectory(logdir,
+        (DirectoryEntryCallback) removeOldLog,
         &def);
       FREE(def.basename);
       FREE(logdir);
     }
-        
+
     logfile = FOPEN(fn, "a+");
     if (logfile == NULL)
       logfile = stderr;
@@ -227,7 +227,7 @@ int getLogLevel() {
 void *getLogfile() {
   return logfile;
 }
- 
+
 /**
  * Convert a textual description of a loglevel into an int.
  */
@@ -239,7 +239,7 @@ static int getLoglevel(const char * log) {
     errexit(_("LOGLEVEL not specified, that is not ok.\n"));
   caplog = strdup(log);
   for (i=strlen(caplog)-1;i>=0;i--)
-    caplog[i] = toupper(caplog[i]);    
+    caplog[i] = toupper(caplog[i]);
   i = 0;
   while ( (loglevels[i] != NULL) &&
 	  ( (0 != strcmp(caplog, gettext(loglevels[i]))) &&
@@ -283,14 +283,14 @@ static void resetLogging() {
     }
   }
 
-  loglevel__ 
+  loglevel__
     = getLoglevel(loglevelname); /* will errexit if loglevel == NULL */
   if (! levelstatic)
     FREE(loglevelname);
   keepLog
     = getConfigurationInt(base,
 			  "KEEPLOG");
-  reopenLogFile();  
+  reopenLogFile();
   MUTEX_UNLOCK(&logMutex);
 }
 
@@ -299,7 +299,7 @@ static void resetLogging() {
  */
 void initLogging() {
   MUTEX_CREATE_RECURSIVE(&logMutex);
- 
+
   bInited = YES;
   registerConfigurationUpdateCallback(&resetLogging);
   resetLogging();
@@ -328,14 +328,14 @@ static void printTime() {
     char timebuf[64];
     time_t timetmp;
     struct tm * tmptr;
- 
+
     time(&timetmp);
     tmptr = localtime(&timetmp);
-    GNUNET_ASSERT(0 != strftime(timebuf, 
-        64, 
-        "%b %d %H:%M:%S ", 
+    GNUNET_ASSERT(0 != strftime(timebuf,
+        64,
+        "%b %d %H:%M:%S ",
         tmptr));
-    fputs(timebuf, 
+    fputs(timebuf,
     logfile);
   }
 }
@@ -346,18 +346,18 @@ static void printTime() {
  *
  * @param filename where in the code did the problem occur
  * @param linenumber where in the code did the problem occur
- */ 
+ */
 void breakpoint_(const char * filename,
                  const int linenumber) {
   if (logfile != NULL) {
     printTime();
-    FPRINTF(logfile, 
+    FPRINTF(logfile,
 	    _("Failure at %s:%d.\n"),
-    	    filename, 
+    	    filename,
 	    linenumber);
     fflush(logfile);
   } else
-    FPRINTF(stderr, 
+    FPRINTF(stderr,
 	    _("Failure at at %s:%d.\n"),
     	    filename,
 	    linenumber);
@@ -387,7 +387,7 @@ void setCustomLogProc(TLogProc proc) {
  */
 void LOG(int minLogLevel,
 	 const char *format, ...) {
-  va_list	args;  
+  va_list	args;
   size_t len;
 
   if (loglevel__ < minLogLevel)
@@ -401,15 +401,15 @@ void LOG(int minLogLevel,
   if (logfile != NULL) {
     time_t curtime;
     struct tm *lcltime;
-    
+
     time(&curtime);
-    lcltime = localtime(&curtime); 
-    
+    lcltime = localtime(&curtime);
+
     if (lcltime->tm_yday != lastlog) {
       reopenLogFile();
       lastlog = lcltime->tm_yday;
     }
-    
+
     printTime();
     if (format[0] == ' ')
       FPRINTF(logfile, "%s:", gettext(loglevels[minLogLevel]));
@@ -425,13 +425,13 @@ void LOG(int minLogLevel,
   va_start(args, format);
   if (customLog) {
     char * txt;
-    
+
     txt = MALLOC(len + 1);
     GNUNET_ASSERT(len == VSNPRINTF(txt, len, format, args));
     customLog(txt);
     FREE(txt);
   }
-  va_end(args);  
+  va_end(args);
 }
 
 /**
@@ -449,7 +449,7 @@ void errexit(const char *format, ...) {
     printTime();
     VFPRINTF(logfile, format, args);
     fflush(logfile);
-    va_end(args); 
+    va_end(args);
   }
   if (logfile != stderr) {
     va_start(args, format);

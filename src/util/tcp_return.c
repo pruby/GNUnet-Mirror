@@ -35,7 +35,7 @@
 /**
  * Obtain a return value from a remote call from TCP.
  *
- * @param sock the TCP socket 
+ * @param sock the TCP socket
  * @param ret the return value from TCP
  * @return SYSERR on error, OK if the return value was read
  * successfully
@@ -43,10 +43,10 @@
 int readTCPResult(GNUNET_TCP_SOCKET * sock,
 		  int * ret) {
   CS_RETURN_VALUE * rv;
-  
+
   rv = NULL;
   if (SYSERR == readFromSocket(sock,
-			       (CS_HEADER **) &rv)) { 
+			       (CS_HEADER **) &rv)) {
     LOG(LOG_WARNING,
 	_("'%s' failed, other side closed connection.\n"),
 	__FUNCTION__);
@@ -76,12 +76,12 @@ int readTCPResult(GNUNET_TCP_SOCKET * sock,
 int sendTCPResult(GNUNET_TCP_SOCKET * sock,
 		  int ret) {
   CS_RETURN_VALUE rv;
-  
-  rv.header.size 
+
+  rv.header.size
     = htons(sizeof(CS_RETURN_VALUE));
-  rv.header.type 
+  rv.header.type
     = htons(CS_PROTO_RETURN_VALUE);
-  rv.return_value 
+  rv.return_value
     = htonl(ret);
   return writeToSocket(sock,
 		       &rv.header);

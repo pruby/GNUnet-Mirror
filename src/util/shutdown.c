@@ -43,7 +43,7 @@ static int shutdown_active;
 void run_shutdown(int signum) {
   if (shutdown_signal != NULL) {
     shutdown_active = YES;
-    SEMAPHORE_UP(shutdown_signal);  
+    SEMAPHORE_UP(shutdown_signal);
   }
 }
 
@@ -62,7 +62,7 @@ BOOL WINAPI run_shutdown_win(DWORD dwCtrlType)
     case CTRL_LOGOFF_EVENT:
       run_shutdown(1);
   }
-  
+
   return TRUE;
 }
 #endif
@@ -87,7 +87,7 @@ void initializeShutdownHandlers() {
 
   if (shutdown_signal != NULL)
     errexit(" initializeShutdownHandlers called twice!\n");
-  shutdown_signal = SEMAPHORE_NEW(0); 
+  shutdown_signal = SEMAPHORE_NEW(0);
   shutdown_active = NO;
 #ifndef MINGW
   sig.sa_handler = &run_shutdown;
@@ -96,7 +96,7 @@ void initializeShutdownHandlers() {
   sig.sa_flags = SA_INTERRUPT; /* SunOS */
 #else
   sig.sa_flags = SA_RESTART;
-#endif    
+#endif
   sigaction(SIGINT,  &sig, &oldsig);
   sigaction(SIGTERM, &sig, &oldsig);
   sigaction(SIGQUIT, &sig, &oldsig);

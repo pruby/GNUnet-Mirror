@@ -10,21 +10,21 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       General Public License for more details.
- 
+
       You should have received a copy of the GNU General Public License
       along with GNUnet; see the file COPYING.  If not, write to the
       Free Software Foundation, Inc., 59 Temple Place - Suite 330,
       Boston, MA 02111-1307, USA.
  */
- 
+
 /**
  * @file applications/dht/module/datastore_memory.c
- * @brief provides the implementation of the 
- * 
+ * @brief provides the implementation of the
+ *
  * Blockstore implementation for keeping the table
- * data in memory.  This implementation knows 
- * nothing about entry types or multiple keys.  
- * get calls must only use one key and types 
+ * data in memory.  This implementation knows
+ * nothing about entry types or multiple keys.
+ * get calls must only use one key and types
  * are always ignored.
  *
  * @author Simo Viitanen, Christian Grothoff
@@ -35,8 +35,8 @@
 #include "platform.h"
 
 /**
- * @brief datastructure for one entry in the table. 
- */ 
+ * @brief datastructure for one entry in the table.
+ */
 typedef struct HT_Entry_t {
   struct HT_Entry_t * next;
   HashCode512 key;
@@ -46,7 +46,7 @@ typedef struct HT_Entry_t {
 
 /**
  * @brief the per-table data
- */ 
+ */
 typedef struct {
   Mutex lock;
   size_t max_memory;
@@ -100,7 +100,7 @@ static int lookup(void * closure,
   MUTEX_UNLOCK(&ds->lock);
   return 0;
 }
-  
+
 /**
  * Store an item in the datastore.
  *
@@ -138,7 +138,7 @@ static int store(void * closure,
       memcpy(pos->values[pos->count-1],
 	     value,
 	     size);
-      MUTEX_UNLOCK(&ds->lock);  
+      MUTEX_UNLOCK(&ds->lock);
       return OK;
     } /* end key match */
     pos = pos->next;
@@ -205,7 +205,7 @@ static int ds_remove(void * closure,
 	      else
 		prev->next = pos->next;
 	      FREE(pos);
-	      ds->max_memory += sizeof(HT_Entry);	      
+	      ds->max_memory += sizeof(HT_Entry);	
 	    }
 	    MUTEX_UNLOCK(&ds->lock);
 	    return OK;
@@ -245,7 +245,7 @@ static int ds_remove(void * closure,
  * @param cls argument to processor
  * @return number of results, SYSERR on error
  */
-static int iterate(void * closure,		 
+static int iterate(void * closure,		
 		   DataProcessor processor,
 		   void * cls) {
   MemoryDatastore * ds = closure;
@@ -313,8 +313,8 @@ void destroy_blockstore_memory(Blockstore * ds) {
   pos = md->first;
   while (pos != NULL) {
     next = pos->next;
-    for (i=0;i<pos->count;i++) 
-      FREENONNULL(pos->values[i]);    
+    for (i=0;i<pos->count;i++)
+      FREENONNULL(pos->values[i]);
     FREE(pos->values);
     FREE(pos);
     pos = next;

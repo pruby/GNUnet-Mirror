@@ -18,15 +18,15 @@
      Boston, MA 02111-1307, USA.
 
      For the actual CRC code:
-     Copyright abandoned; this code is in the public domain. 
-     Provided to GNUnet by peter@horizon.com 
+     Copyright abandoned; this code is in the public domain.
+     Provided to GNUnet by peter@horizon.com
 */
 
 /**
  * @file util/checksum.c
  * @brief implementation of CRC32 and various helper methods
  * @author Christian Grothoff
- */ 
+ */
 
 #include "platform.h"
 #include "gnunet_util.h"
@@ -41,7 +41,7 @@
  #error This compiler is not ANSI-compliant!
 #endif
 
-#define Z_NULL  0  
+#define Z_NULL  0
 
 
 #define POLYNOMIAL (uLong)0xedb88320
@@ -75,7 +75,7 @@ static void make_crc_table() {
  * property of detecting all burst errors of length 32 bits or less.
  */
 static uLong crc32(uLong crc,
-		   const char *buf, 
+		   const char *buf,
 		   size_t len) {
   if (crc_table[255] == 0)
     make_crc_table();
@@ -108,7 +108,7 @@ int crc32N(const void * buf, int len) {
  */
 unsigned long long ntohll(unsigned long long n) {
 #if __BYTE_ORDER == __BIG_ENDIAN
-  return n; 
+  return n;
 #else
   return (((unsigned long long)ntohl(n)) << 32) + ntohl(n >> 32);
 #endif
@@ -120,7 +120,7 @@ unsigned long long ntohll(unsigned long long n) {
  */
 unsigned long long htonll(unsigned long long n) {
 #if __BYTE_ORDER == __BIG_ENDIAN
-  return n; 
+  return n;
 #else
   return (((unsigned long long)htonl(n)) << 32) + htonl(n >> 32);
 #endif
@@ -145,7 +145,7 @@ char * convertToUtf8(const char * input,
   char * ret;
   char * itmp;
   iconv_t cd;
-  
+
   cd = iconv_open("UTF-8", charset);
   if (cd == (iconv_t) -1)
     return strdup(charset);
@@ -156,7 +156,7 @@ char * convertToUtf8(const char * input,
   if (iconv(cd,
 	    (char**) &input,
 	    &len,
-	    &itmp, 
+	    &itmp,
 	    &finSize) == (size_t)-1) {
     iconv_close(cd);
     free(tmp);

@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/ecrs/indexinfo.c 
+ * @file applications/fs/ecrs/indexinfo.c
  * @brief information about indexed files
  * @author Christian Grothoff
  */
@@ -69,7 +69,7 @@ static void iiHelper(const char * fn,
 
   if (cls->cnt == SYSERR)
     return;
-  
+
   // FIXME: implement!
   cls->cnt++;
   if (OK != cls->iterator(lnkName,
@@ -79,11 +79,11 @@ static void iiHelper(const char * fn,
 }
 
 /**
- * Iterate over all indexed files.  
+ * Iterate over all indexed files.
  *
  * This function will ONLY work if gnunetd runs on the
  * same machine as the current process and if the indexed
- * files could be symlinked.  If indexed files had to be 
+ * files could be symlinked.  If indexed files had to be
  * uploaded to a remote machine or copied, the original
  * names will have been lost.  In that case, the iterator
  * will NOT iterate over these files.

@@ -74,7 +74,7 @@ static int verifyKBlock(const HashCode512 * key,
 		 &enc));
   ECRS_decryptInPlace(key,
 		      &kb[1],
-		      size - sizeof(KBlock));  
+		      size - sizeof(KBlock));
   j = sizeof(KBlock);
   while ( (j < size) &&
 	  (((const char*)kb)[j] != '\0') )
@@ -99,7 +99,7 @@ static int verifyKBlock(const HashCode512 * key,
   }
   ECRS_freeUri(fi.uri);
   ECRS_freeMetaData(fi.meta);
-  return OK;      
+  return OK;
 }
 
 #endif
@@ -146,7 +146,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   size = mdsize + sizeof(KBlock) + strlen(dstURI) + 1;
   if (size > MAX_KBLOCK_SIZE) {
     size = MAX_KBLOCK_SIZE;
-    value = MALLOC(sizeof(Datastore_Value) + 
+    value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     kb = (KBlock*) &value[1];
     kb->type = htonl(K_BLOCK);
@@ -165,7 +165,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     }
     size = sizeof(KBlock) + strlen(dstURI) + 1 + mdsize;
   } else {
-    value = MALLOC(sizeof(Datastore_Value) + 
+    value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     kb = (KBlock*) &value[1];
     kb->type = htonl(K_BLOCK);
@@ -177,7 +177,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 					 &((char*)&kb[1])[strlen(dstURI)+1],
 					 mdsize,
 					 NO));
-  }  
+  }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(K_BLOCK);
   value->prio = htonl(priority);
@@ -185,7 +185,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   value->expirationTime = htonll(expirationTime);
   sock = getClientSocket();
   ret = OK;
-  
+
   keywords = uri->data.ksk.keywords;
   keywordCount = uri->data.ksk.keywordCount;
   cpy = MALLOC(mdsize + strlen(dstURI) + 1);

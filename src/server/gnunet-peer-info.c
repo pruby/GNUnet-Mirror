@@ -36,9 +36,9 @@ static Transport_ServiceAPI * transport;
 static Identity_ServiceAPI * identity;
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parser(int argc, 
+static int parser(int argc,
 		  char * argv[]) {
   int cont = OK;
   int c;
@@ -62,23 +62,23 @@ static int parser(int argc,
       { "help",    0, 0, 'h' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhc:L:", 
-		      long_options, 
+		      argv,
+		      "vhc:L:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
     case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));
       break;
-    case 'v': 
+    case 'v':
       printf("gnunet-peer-info v%s\n",
 	     VERSION);
       cont = SYSERR;
@@ -103,16 +103,16 @@ static int parser(int argc,
 					 GNoptarg));
       break;
     default:
-      LOG(LOG_FAILURE, 
+      LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
-      cont = SYSERR;    
+      cont = SYSERR;
     } /* end of parsing commandline */
   }
   if (GNoptind < argc) {
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("Invalid arguments: "));
     while (GNoptind < argc)
-      LOG(LOG_WARNING, 
+      LOG(LOG_WARNING,
 	  "%s ", argv[GNoptind++]);
     LOG(LOG_FATAL,
 	_("Invalid arguments. Exiting.\n"));
@@ -123,9 +123,9 @@ static int parser(int argc,
 
 /**
  * Print information about the peer.
- * Currently prints the PeerIdentity, trust and the IP. 
+ * Currently prints the PeerIdentity, trust and the IP.
  * Could of course do more (e.g. resolve via DNS).
- */ 
+ */
 static void printHostInfo(const PeerIdentity * id,
 			  const unsigned short proto,
 			  int verified,
@@ -144,12 +144,12 @@ static void printHostInfo(const PeerIdentity * id,
 	_("Could not get address of peer '%s'.\n"),
 	&enc);
     return;
-  }  
+  }
   if (SYSERR == verifySig(&helo->senderIdentity,
 			  HELO_Message_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(p2p_HEADER),
 			  &helo->signature,
 			  &helo->publicKey)) {
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("HELO message invalid (signature invalid).\n"));
   }
   info = transport->heloToString(helo);
@@ -160,7 +160,7 @@ static void printHostInfo(const PeerIdentity * id,
 	&enc);
     return;
   }
-  
+
   printf(_("Peer '%s' with trust %8u and address '%s'\n"),
 	 (char*)&enc,
 	 identity->getHostTrust(id),

@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/stats/clientapi.c 
+ * @file applications/stats/clientapi.c
  * @brief convenience API to the stats service
  * @author Christian Grothoff
  * @author Igor Wronsky
@@ -38,37 +38,37 @@ const char * p2pMessageName(unsigned short type) {
   const char *name = NULL;
 
   switch( type ) {
-  case p2p_PROTO_HELO : 
+  case p2p_PROTO_HELO :
     name = "p2p_PROTO_HELO";
     break;
-  case p2p_PROTO_SKEY : 
+  case p2p_PROTO_SKEY :
     name = "p2p_PROTO_SKEY";
     break;
-  case p2p_PROTO_PING : 
+  case p2p_PROTO_PING :
     name = "p2p_PROTO_PING";
     break;
-  case p2p_PROTO_PONG : 
+  case p2p_PROTO_PONG :
     name = "p2p_PROTO_PONG";
     break;
-  case p2p_PROTO_NOISE : 
+  case p2p_PROTO_NOISE :
     name = "p2p_PROTO_NOISE";
     break;
-  case p2p_PROTO_HANGUP : 
+  case p2p_PROTO_HANGUP :
     name = "p2p_PROTO_HANGUP";
     break;
-  case CHAT_p2p_PROTO_MSG : 
+  case CHAT_p2p_PROTO_MSG :
     name = "CHAT_p2p_PROTO_MSG";
     break;
-  case TRACEKIT_p2p_PROTO_PROBE : 
+  case TRACEKIT_p2p_PROTO_PROBE :
     name = "TRACEKIT_p2p_PROTO_PROBE";
     break;
-  case TRACEKIT_p2p_PROTO_REPLY : 
+  case TRACEKIT_p2p_PROTO_REPLY :
     name = "TRACEKIT_p2p_PROTO_REPLY";
     break;
-  case TBENCH_p2p_PROTO_REQUEST	: 
+  case TBENCH_p2p_PROTO_REQUEST	:
     name = "TBENCH_p2p_PROTO_REQUEST";
     break;
-  case TBENCH_p2p_PROTO_REPLY	: 
+  case TBENCH_p2p_PROTO_REPLY	:
     name = "TBENCH_p2p_PROTO_REPLY";
     break;
   default:
@@ -86,55 +86,55 @@ const char *csMessageName(unsigned short type) {
   const char *name = NULL;
 
   switch( type ) {
-  case CS_PROTO_RETURN_VALUE : 
+  case CS_PROTO_RETURN_VALUE :
     name = "CS_PROTO_RETURN_VALUE";
     break;
-  case CS_PROTO_CLIENT_COUNT : 
+  case CS_PROTO_CLIENT_COUNT :
     name = "CS_PROTO_CLIENT_COUNT";
     break;
-  case CS_PROTO_TRAFFIC_QUERY : 
+  case CS_PROTO_TRAFFIC_QUERY :
     name = "CS_PROTO_TRAFFIC_QUERY";
     break;
-  case CS_PROTO_TRAFFIC_INFO : 
+  case CS_PROTO_TRAFFIC_INFO :
     name = "CS_PROTO_TRAFFIC_INFO";
     break;
-  case STATS_CS_PROTO_GET_STATISTICS : 
+  case STATS_CS_PROTO_GET_STATISTICS :
     name = "STATS_CS_PROTO_GET_STATISTICS";
     break;
-  case STATS_CS_PROTO_STATISTICS : 
+  case STATS_CS_PROTO_STATISTICS :
     name = "STATS_CS_PROTO_STATISTICS";
     break;
-  case STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED : 
+  case STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED :
     name = "STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED";
     break;
-  case STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED : 
+  case STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED :
     name = "STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED";
     break;
-  case CHAT_CS_PROTO_MSG : 
+  case CHAT_CS_PROTO_MSG :
     name = "CHAT_CS_PROTO_MSG";
     break;
-  case TRACEKIT_CS_PROTO_PROBE : 
+  case TRACEKIT_CS_PROTO_PROBE :
     name = "TRACEKIT_CS_PROTO_PROBE";
     break;
-  case TRACEKIT_CS_PROTO_REPLY : 
+  case TRACEKIT_CS_PROTO_REPLY :
     name = "TRACEKIT_CS_PROTO_REPLY";
     break;
-  case TBENCH_CS_PROTO_REQUEST : 
+  case TBENCH_CS_PROTO_REQUEST :
     name = "TBENCH_CS_PROTO_REQUEST";
     break;
-  case TBENCH_CS_PROTO_REPLY : 
+  case TBENCH_CS_PROTO_REPLY :
     name = "TBENCH_CS_PROTO_REPLY";
     break;
   default:
     name = NULL;
-    break;    
+    break;
   }
   return name;
 }
 
 /**
  * Request statistics from TCP socket.
- * @param sock the socket to use 
+ * @param sock the socket to use
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
@@ -147,18 +147,18 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
   unsigned int i;
   int mpos;
   int ret;
-  
+
   ret = OK;
-  csHdr.size 
+  csHdr.size
     = htons(sizeof(CS_HEADER));
   csHdr.type
     = htons(STATS_CS_PROTO_GET_STATISTICS);
   if (SYSERR == writeToSocket(sock,
-			      &csHdr)) 
-    return SYSERR;  
-  statMsg 
+			      &csHdr))
+    return SYSERR;
+  statMsg
     = MALLOC(MAX_BUFFER_SIZE);
-  statMsg->totalCounters 
+  statMsg->totalCounters
     = htonl(1); /* to ensure we enter the loop */
   count = 0;
   while ( count < ntohl(statMsg->totalCounters) ) {
@@ -167,7 +167,7 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
     if (SYSERR == readFromSocket(sock,
 				 (CS_HEADER**)&statMsg)) {
       FREE(statMsg);
-      return SYSERR;    
+      return SYSERR;
     }
     if (ntohs(statMsg->header.size) < sizeof(STATS_CS_MESSAGE)) {
       BREAK();
@@ -177,16 +177,16 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
     mpos = sizeof(unsigned long long) * ntohl(statMsg->statCounters);
     if (count == 0) {
       ret = processor(_("Uptime (seconds)"),
-		      (unsigned long long) 
+		      (unsigned long long)
 		      ((cronTime(NULL) - ntohll(statMsg->startTime))/cronSECONDS),
 		      cls);
     }
     for (i=0;i<ntohl(statMsg->statCounters);i++) {
-      if (mpos+strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1 > 
+      if (mpos+strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1 >
 	  ntohs(statMsg->header.size) - sizeof(STATS_CS_MESSAGE)) {
 	BREAK();
 	ret = SYSERR;
-	break; /* out of bounds! */      
+	break; /* out of bounds! */
       }
       if (ret != SYSERR) {
 	ret = processor(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos],
@@ -194,7 +194,7 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 			cls);
       }
       mpos += strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1;
-    }    
+    }
     count += ntohl(statMsg->statCounters);
   } /* end while */
   FREE(statMsg);
@@ -204,7 +204,7 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 
 /**
  * Request available protocols from TCP socket.
- * @param sock the socket to use 
+ * @param sock the socket to use
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
@@ -217,17 +217,17 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
   int ret;
 
   ret = OK;
-  csStatMsg.header.size 
+  csStatMsg.header.size
     = htons(sizeof(STATS_CS_GET_MESSAGE_SUPPORTED));
   csStatMsg.header.type
     = htons(STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED);
   for (i=0;i<65535;i++) {
     csStatMsg.type = htons(i);
-    if (SYSERR == writeToSocket(sock, 
-				&csStatMsg.header)) 
+    if (SYSERR == writeToSocket(sock,
+				&csStatMsg.header))
       return SYSERR;
     if (SYSERR == readTCPResult(sock,
-				&supported)) 
+				&supported))
       return SYSERR;
     if (supported == YES) {
       ret = processor(i, YES, cls);
@@ -239,10 +239,10 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
     = htons(STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED);
   for (i=0;i<65535;i++) {
     csStatMsg.type = htons(i);
-    if (SYSERR == writeToSocket(sock, 
-				&csStatMsg.header)) 
-      return SYSERR;   
-    if (SYSERR == readTCPResult(sock, &supported)) 
+    if (SYSERR == writeToSocket(sock,
+				&csStatMsg.header))
+      return SYSERR;
+    if (SYSERR == readTCPResult(sock, &supported))
       return SYSERR;
     if (supported == YES) {
       ret = processor(i, NO, cls);

@@ -27,7 +27,7 @@
  */
 
 /* Stolen from Felix von Leitners "diet libc" 0.28 */
- 
+
 #include <stdarg.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -587,9 +587,9 @@ num_printf:
 	  if (width==0) width=1;
 	  if (!flag_dot) preci=6;
 	  if (flag_sign || d < +0.0) flag_in_sign=1;
-	  
+	
 	  sz=__dtostr(d,s,sizeof(buf)-1,width,preci);
-	  
+	
 	  if (flag_dot) {
 	    char *tmp;
 	    if ((tmp=strchr(s,'.'))) {
@@ -614,12 +614,12 @@ num_printf:
 	      if (tmp1) strcpy(tmp,tmp1);
 	    }
 	  }
-	  
+	
 	  if ((flag_sign || flag_space) && d>=0) {
 	    *(--s)=(flag_sign)?'+':' ';
 	    ++sz;
 	  }
-	  
+	
 	  sz=strlen(s);
 	  flag_dot=0;
 	  flag_hash=0;

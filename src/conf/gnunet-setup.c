@@ -1,4 +1,4 @@
-/* 
+/*
      This file is part of GNUnet.
      (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
 
@@ -49,10 +49,10 @@ extern void InitWinEnv();
 extern void ShutdownWinEnv();
 #endif
 
-int main(int argc, 
+int main(int argc,
 	 char *argv[]) {
   if (argc < 3) {
-    help();    
+    help();
     return 0;
   }
 
@@ -74,7 +74,7 @@ int main(int argc,
     gconf_main(argc - 1, &argv[1]);
 #else
     puts("Gconfig is not available\n");
-#endif 
+#endif
  } else {
     puts("Unknown configurator\n\n");
     help();

@@ -92,7 +92,7 @@ BOOL __win_IsHandleMarkedAsBlocking(SOCKET hHandle)
     }
   }
   ReleaseMutex(hSocksLock);
-  
+
   return bBlocking;
 }
 
@@ -111,13 +111,13 @@ void __win_SetHandleBlockingMode(SOCKET s, BOOL bBlocking)
       break;
     }
   }
-  
+
   if (bFound)
     pSocks[uiIndex].bBlocking = bBlocking;
   else
   {
     uiIndex = 0;
-    
+
     while(TRUE)
     {
       if (pSocks[uiIndex].s == -1)
@@ -130,7 +130,7 @@ void __win_SetHandleBlockingMode(SOCKET s, BOOL bBlocking)
         uiSockCount++;
         pSocks = (Winsock *) realloc(pSocks, (uiSockCount + 1) * sizeof(Winsock));
         pSocks[uiSockCount].s = -1;
-        
+
         break;
       }
       uiIndex++;
@@ -142,7 +142,7 @@ void __win_SetHandleBlockingMode(SOCKET s, BOOL bBlocking)
 void __win_DiscardHandleBlockingMode(SOCKET s)
 {
   unsigned int uiIndex;
-  
+
   WaitForSingleObject(hSocksLock, INFINITE);
   for(uiIndex = 0; uiIndex < uiSockCount; uiIndex++)
     if (pSocks[uiIndex].s == s)
@@ -186,7 +186,7 @@ int truncate(const char *fname, int distance)
     }
     CloseHandle(hFile);
   }
-  
+
   return i;
 }
 
@@ -206,7 +206,7 @@ int statfs(const char *path, struct statfs *buf)
   int retval = 0;
 
   errno = 0;
-  
+
   realpath(path, resolved_path);
   if(!resolved_path)
     retval = -1;
@@ -299,7 +299,7 @@ const char *hstrerror(int err)
 void gettimeofday(struct timeval *tp, void *tzp)
 {
   struct _timeb theTime;
-  
+
   errno = 0;
 
   _ftime(&theTime);
@@ -316,7 +316,7 @@ int mkstemp(char *tmplate)
   char szDest[_MAX_PATH + 1];
 
   errno = 0;
-  
+
   iLen = strlen(tmplate);
   if(iLen >= 6)
   {
@@ -344,9 +344,9 @@ int mkstemp(char *tmplate)
     errno = EINVAL;
     return -1;
   }
-  
+
   conv_to_win_path(tmplate, szDest);
-  
+
   return _open(szDest, _O_CREAT | _O_EXCL, _S_IREAD | _S_IWRITE);
 }
 
@@ -388,7 +388,7 @@ long DetermineRootDir()
   long lDirLen;
 
   /* Get the path of the calling module.
-     It should be located in one of the "bin" directories */  
+     It should be located in one of the "bin" directories */
   GetModuleFileName(NULL, szModule, MAX_PATH);
   _splitpath(szModule, szDrv, szDir, NULL, NULL);
 
@@ -461,7 +461,7 @@ long DetermineHomeDir()
   }
   else
   {
-    /* C:\My Documents */ 
+    /* C:\My Documents */
     long lRet;
 
     lHomeDirLen = _MAX_PATH;
@@ -531,7 +531,7 @@ void InitWinEnv()
                     FORMAT_MESSAGE_IGNORE_INSERTS, NULL, lRet, 0,
                     (LPTSTR) & pszMsg, 0, NULL);
 
-    pszMsg2 = (char *) MALLOC(lRet + 1); 
+    pszMsg2 = (char *) MALLOC(lRet + 1);
     strcpy(pszMsg2, pszMsg);
     if(pszMsg2[lRet - 2] == '\r')
       pszMsg2[lRet - 2] = 0;
@@ -540,7 +540,7 @@ void InitWinEnv()
             eAction == ROOT ? "root directory" :
               "home directory", pszMsg2);
     LocalFree(pszMsg);
-    FREE(pszMsg2); 
+    FREE(pszMsg2);
 
     exit(1);
   }
@@ -549,29 +549,29 @@ void InitWinEnv()
   if (WSAStartup(257, &wsaData) != 0)
   {
     LOG(LOG_FAILURE, "Cannot initialize Winsock.\n");
-    
+
     exit(1);
   }
-  
+
   /* To keep track of blocking/non-blocking sockets */
   pSocks = (Winsock *) malloc(sizeof(Winsock) + (uiSockCount + 1));
   pSocks[0].s = -1;
   hSocksLock = CreateMutex(NULL, FALSE, NULL);
-  
+
   /* To keep track of mapped files */
   pMappings = (TMapping *) malloc(sizeof(TMapping));
   pMappings[0].pStart = NULL;
   hMappingsLock = CreateMutex(NULL, FALSE, NULL);
-  
+
   /* Open files in binary mode */
   _fmode = _O_BINARY;
-  
+
   /* Get Windows version */
   theWinVersion.dwOSVersionInfoSize = sizeof(theWinVersion);
   GetVersionEx(&theWinVersion);
-  
+
   hNTDLL = LoadLibrary("ntdll.dll");
-    
+
   /* Function to get CPU usage under Win NT */
   if (hNTDLL)
   {
@@ -582,7 +582,7 @@ void InitWinEnv()
   {
     GNNtQuerySystemInformation = NULL;
   }
-  
+
   /* Functions to get information about a network adapter */
   hIphlpapi = LoadLibrary("iphlpapi.dll");
   if (hIphlpapi)
@@ -601,7 +601,7 @@ void InitWinEnv()
     GNGetIfTable = NULL;
     GNGetBestInterface = NULL;
   }
-  
+
   /* Service functions */
   hAdvapi = LoadLibrary("advapi32.dll");
   if (hAdvapi)
@@ -624,14 +624,14 @@ void InitWinEnv()
       GetProcAddress(hAdvapi, "ControlService");
     GNOpenService = (TOpenService)
       GetProcAddress(hAdvapi, "OpenServiceA");
-    
+
   }
-  
+
   /* Use ANSI codepage for console IO */
   SetConsoleCP(CP_ACP);
   SetConsoleOutputCP(CP_ACP);
   setlocale( LC_ALL, ".OCP" );
-  
+
   /* Initialize COM library */
   CoInitializeEx(NULL, COINIT_MULTITHREADED);
 }
@@ -644,14 +644,14 @@ void ShutdownWinEnv()
   WSACleanup();
   free(pSocks);
   CloseHandle(hSocksLock);
-  
+
   free(pMappings);
   CloseHandle(hMappingsLock);
-  
+
   FreeLibrary(hNTDLL);
   FreeLibrary(hIphlpapi);
   FreeLibrary(hAdvapi);
-  
+
   CoUninitialize();
 }
 
@@ -663,7 +663,7 @@ int __win_deref(char *path)
   int iDepth = 0;
 
   errno = 0;
-   
+
   while (DereferenceShortcut(path))
   {
     if (iDepth++ > 10)
@@ -672,7 +672,7 @@ int __win_deref(char *path)
       return -1;
     }
   }
-  
+
   return errno ? -1 : 0;
 }
 
@@ -754,7 +754,7 @@ int conv_to_win_path_ex(const char *pszUnix, char *pszWindows, int derefLinks)
     pSrc++;
   }
   *pDest = 0;
-  
+
   if (derefLinks)
     __win_deref(pszWindows);
 
@@ -778,7 +778,7 @@ void _SetErrnoFromWinError(long lWinError, char *pszCaller, int iLine)
     case ERROR_SUCCESS:
       errno = 0;
       break;
-      
+
     case ERROR_INVALID_FUNCTION:
       errno = EBADRQC;
       break;
@@ -1098,15 +1098,15 @@ void _SetErrnoFromWinError(long lWinError, char *pszCaller, int iLine)
     case ERROR_BUFFER_OVERFLOW:
       errno = ENOMEM;
       break;
-      
+
     case ERROR_SERVICE_DOES_NOT_EXIST:
       errno = ESRCH;
       break;
-      
+
     case ERROR_SERVICE_EXISTS:
       errno = EEXIST;
       break;
-    
+
     default:
       errno = ESTALE;
       LOG(LOG_ERROR, " Unknown error %i in SetErrnoFromWinError(). " \
@@ -1285,7 +1285,7 @@ void SetErrnoFromWinsockError(long lWinError)
     case WSAEFAULT:
       errno = EFAULT;
       break;
-      
+
     default:
       errno = ESTALE;
       LOG(LOG_ERROR, " Unknown error %i in SetErrnoFromWinsockError()\n",
@@ -1345,7 +1345,7 @@ void SetHErrnoFromWinError(long lWinError)
   switch(lWinError)
   {
     case WSAHOST_NOT_FOUND:
-      /* h_errno is defined as WSAGetLastError */    
+      /* h_errno is defined as WSAGetLastError */
       WSASetLastError(HOST_NOT_FOUND);
       break;
 
@@ -1372,12 +1372,12 @@ int flock(int fd, int operation)
   HANDLE hFile;
   OVERLAPPED theOvInfo;
   BOOL bRet;
-  
+
   errno = 0;
-  
+
   hFile = (HANDLE) _get_osfhandle(fd);
   memset(&theOvInfo, sizeof(OVERLAPPED), 0);
-  
+
   /* Don't deadlock ourselves */
   if (theWinVersion.dwPlatformId == VER_PLATFORM_WIN32_NT)
     bRet = UnlockFileEx(hFile, 0, 1, 0, &theOvInfo);
@@ -1388,13 +1388,13 @@ int flock(int fd, int operation)
   {
     if (!bRet && ((dwFlags = GetLastError()) != ERROR_NOT_LOCKED))
     {
-      SetErrnoFromWinError(dwFlags);  
+      SetErrnoFromWinError(dwFlags);
       return -1;
     }
     else
       return 0;
   }
-      
+
   if (operation & LOCK_EX)
   {
     dwFlags = LOCKFILE_EXCLUSIVE_LOCK;
@@ -1408,18 +1408,18 @@ int flock(int fd, int operation)
     errno = EINVAL;
     return -1;
   }
-  
+
   if (operation & LOCK_NB)
     dwFlags |= LOCKFILE_FAIL_IMMEDIATELY;
-  
+
   if (theWinVersion.dwPlatformId == VER_PLATFORM_WIN32_NT)
     bRet = LockFileEx(hFile, dwFlags, 0, 1, 0, &theOvInfo);
   else
     bRet = LockFile(hFile, 0, 0, 1, 0);
-    
+
   if (! bRet)
   {
-    SetErrnoFromWinError(GetLastError());  
+    SetErrnoFromWinError(GetLastError());
     return -1;
   }
   else
@@ -1451,17 +1451,17 @@ FILE *_win_fopen(const char *filename, const char *mode)
   char szFile[_MAX_PATH + 1];
   FILE *hFile;
   int i;
-  
+
   if ((i = conv_to_win_path(filename, szFile)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(i);
-    
+
     return NULL;
   }
 
   hFile = fopen(szFile, mode);
   SetErrnoFromWinError(GetLastError());
-  
+
   return hFile;
 }
 
@@ -1472,13 +1472,13 @@ DIR *_win_opendir(const char *dirname)
 {
   char szDir[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(dirname, szDir)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return NULL;
-  }  
-  
+  }
+
   /* opendir sets errno */
   return opendir(szDir);
 }
@@ -1490,15 +1490,15 @@ int _win_chdir(const char *path)
 {
   char szDir[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(path, szDir)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* chdir sets errno */
-  return chdir(szDir);  
+  return chdir(szDir);
 }
 
 /**
@@ -1507,12 +1507,12 @@ int _win_chdir(const char *path)
 int _win_fstat(int handle, struct stat *buffer)
 {
   errno = 0;
-  
+
   /* File */
   if (fstat(handle, buffer) == -1)
   {
     /* We just check for a valid handle here */
-  
+
     /* Handle */
     memset(buffer, sizeof(struct stat), 0);
     GetFileType((HANDLE) handle);
@@ -1536,15 +1536,15 @@ int _win_rmdir(const char *path)
 {
   char szDir[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(path, szDir)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* rmdir sets errno */
-  return rmdir(szDir);  
+  return rmdir(szDir);
 }
 
 /**
@@ -1557,7 +1557,7 @@ int _win_pipe(int *phandles)
   if (!CreatePipe((HANDLE *) &phandles[0],(HANDLE *) &phandles[1], NULL, 0))
   {
     SetErrnoFromWinError(GetLastError());
-    
+
     return -1;
   }
   else
@@ -1574,15 +1574,15 @@ int _win_access( const char *path, int mode )
 {
   char szFile[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(path, szFile)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* access sets errno */
-  return access(szFile, mode);    
+  return access(szFile, mode);
 }
 
 /**
@@ -1592,15 +1592,15 @@ int _win_chmod(const char *filename, int pmode)
 {
   char szFile[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(filename, szFile)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* chmod sets errno */
-  return access(szFile, pmode);  
+  return access(szFile, pmode);
 }
 
 
@@ -1609,17 +1609,17 @@ char *realpath(const char *file_name, char *resolved_name)
   char szFile[_MAX_PATH + 1];
   long lRet;
   char *pszRet;
-  
+
   if ((lRet = conv_to_win_path(file_name, szFile)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return NULL;
-  }  
-  
+  }
+
   pszRet = _fullpath(szFile, resolved_name, MAX_PATH);
   SetErrnoFromWinError(GetLastError());
-  
-  return pszRet;  
+
+  return pszRet;
 }
 
 /**
@@ -1630,13 +1630,13 @@ int _win_remove(const char *path)
 {
   char szFile[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path_ex(path, szFile, 0)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* remove sets errno */
   return remove(szFile);
 }
@@ -1650,19 +1650,19 @@ int _win_rename(const char *oldname, const char *newname)
   char szOldName[_MAX_PATH + 1];
   char szNewName[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path_ex(oldname, szOldName, 0)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
+  }
 
   if ((lRet = conv_to_win_path(newname, szNewName)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* rename sets errno */
   return rename(szOldName, szNewName);
 }
@@ -1674,27 +1674,27 @@ int __win_stat(const char *path, struct stat *buffer, int iDeref)
 {
   char szFile[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(path, szFile)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
   }
-  
+
   /* Remove trailing slash */
   lRet = strlen(szFile) - 1;
   if (szFile[lRet] == '\\')
   {
     szFile[lRet] = 0;
   }
-  
+
   /* Dereference symlinks */
   if (iDeref)
   {
     if (__win_deref(szFile) == -1 && errno != EINVAL)
       return -1;
   }
-  
+
   /* stat sets errno */
   return stat(szFile, buffer);
 }
@@ -1715,13 +1715,13 @@ int _win_unlink(const char *filename)
 {
   char szFile[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path_ex(filename, szFile, 0)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* unlink sets errno */
   return unlink(szFile);
 }
@@ -1729,12 +1729,12 @@ int _win_unlink(const char *filename)
 DWORD WINAPI __win_Write(TReadWriteInfo *pInfo)
 {
   int iRet;
-  
+
   errno = 0;
   if ((iRet = write(pInfo->fildes, pInfo->buf, pInfo->nbyte)) == -1)
   {
     DWORD dwWritten;
-    if (!WriteFile((HANDLE) pInfo->fildes, pInfo->buf, pInfo->nbyte, 
+    if (!WriteFile((HANDLE) pInfo->fildes, pInfo->buf, pInfo->nbyte,
       &dwWritten, NULL))
     {
       SetErrnoFromWinError(GetLastError());
@@ -1764,7 +1764,7 @@ int _win_write(int fildes, const void *buf, size_t nbyte)
     theInfo.fildes = fildes;
     theInfo.buf = (void *) buf;
     theInfo.nbyte = nbyte;
-    
+
     if (__win_IsHandleMarkedAsBlocking(fildes))
       return __win_Write(&theInfo);
     else
@@ -1779,7 +1779,7 @@ int _win_write(int fildes, const void *buf, size_t nbyte)
 DWORD WINAPI __win_Read(TReadWriteInfo *pInfo)
 {
   int iRet;
-  
+
   errno = 0;
   if ((iRet = read(pInfo->fildes, pInfo->buf, pInfo->nbyte)) == -1)
   {
@@ -1814,7 +1814,7 @@ int _win_read(int fildes, void *buf, size_t nbyte)
     theInfo.fildes = fildes;
     theInfo.buf = buf;
     theInfo.nbyte = nbyte;
-    
+
     if (__win_IsHandleMarkedAsBlocking(fildes))
       return __win_Read(&theInfo);
     else
@@ -1836,7 +1836,7 @@ size_t _win_fwrite(const void *buffer, size_t size, size_t count, FILE *stream)
   WriteFile((HANDLE) _get_osfhandle(fileno(stream)), buffer, size, &dwWritten,
             NULL);
   SetErrnoFromWinError(GetLastError());
-  
+
   return dwWritten;
 }
 
@@ -1848,7 +1848,7 @@ size_t _win_fread( void *buffer, size_t size, size_t count, FILE *stream )
   DWORD dwRead;
   int iItemsRead;
   void *pDest = buffer;
-  
+
   for(iItemsRead = 0; iItemsRead < count; iItemsRead++)
   {
     if (!ReadFile((HANDLE) _get_osfhandle(fileno(stream)), pDest, size,
@@ -1856,9 +1856,9 @@ size_t _win_fread( void *buffer, size_t size, size_t count, FILE *stream )
       break;
     pDest += size;
   }
-  
+
   SetErrnoFromWinError(GetLastError());
-  
+
   return iItemsRead;
 }
 
@@ -1869,22 +1869,22 @@ int _win_symlink(const char *path1, const char *path2)
 {
   char szFile1[_MAX_PATH + 1], szFile2[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(path1, szFile1)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
+  }
 
   if ((lRet = conv_to_win_path(path2, szFile2)) != ERROR_SUCCESS)
   {
     SetErrnoFromWinError(lRet);
     return -1;
-  }  
-  
+  }
+
   /* CreateShortcut sets errno */
   lRet = CreateShortcut(szFile1, szFile2);
-  
+
   return lRet ? 0 : -1;
 }
 
@@ -1919,43 +1919,43 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
       access_param = FILE_MAP_COPY;
       break;
   }
-  
+
   sec_none.nLength = sizeof(SECURITY_ATTRIBUTES);
   sec_none.bInheritHandle = TRUE;
   sec_none.lpSecurityDescriptor = NULL;
-  
+
   hFile = (HANDLE) _get_osfhandle(fd);
-  
+
   h = CreateFileMapping(hFile, &sec_none, protect, 0, 0, NULL);
-  
+
   if (! h)
   {
     SetErrnoFromWinError(GetLastError());
     return (void *) -1;
   }
-  
+
   high = off >> 32;
   low = off & ULONG_MAX;
   base = NULL;
-  
+
   /* If a non-zero start is given, try mapping using the given address first.
      If it fails and flags is not MAP_FIXED, try again with NULL address. */
   if (start)
     base = MapViewOfFileEx(h, access_param, high, low, len, start);
   if (!base && !(flags & MAP_FIXED))
     base = MapViewOfFileEx(h, access_param, high, low, len, NULL);
-  
+
   if (!base || ((flags & MAP_FIXED) && base != start))
   {
     if (!base)
       SetErrnoFromWinError(GetLastError());
     else
       errno = EINVAL;
-    
+
     CloseHandle(h);
     return (void *) -1;
   }
-  
+
   /* Save mapping handle */
   WaitForSingleObject(hMappingsLock, INFINITE);
 
@@ -1967,11 +1967,11 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
       break;
     }
   }
-  
+
   if (! bFound)
   {
     uiIndex = 0;
-    
+
     while(TRUE)
     {
       if (pMappings[uiIndex].pStart == NULL)
@@ -1984,14 +1984,14 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
         uiMappingsCount++;
         pMappings = (TMapping *) realloc(pMappings, (uiMappingsCount + 1) * sizeof(TMapping));
         pMappings[uiMappingsCount].pStart = NULL;
-        
+
         break;
       }
       uiIndex++;
     }
   }
   ReleaseMutex(hMappingsLock);
-  
+
   return base;
 }
 
@@ -2005,12 +2005,12 @@ int _win_munmap(void *start, size_t length)
   unsigned uiIndex;
   BOOL success = UnmapViewOfFile(start);
   SetErrnoFromWinError(GetLastError());
-  
+
   if (success)
   {
     /* Release mapping handle */
     WaitForSingleObject(hMappingsLock, INFINITE);
-  
+
     for(uiIndex = 0; uiIndex <= uiMappingsCount; uiIndex++)
     {
       if (pMappings[uiIndex].pStart == start)
@@ -2023,10 +2023,10 @@ int _win_munmap(void *start, size_t length)
         break;
       }
     }
-    
+
     ReleaseMutex(hMappingsLock);
   }
-  
+
   return success ? 0 : -1;
 }
 
@@ -2035,7 +2035,7 @@ int _win_munmap(void *start, size_t length)
  */
 int _win_lstat(const char *path, struct stat *buf)
 {
-  return __win_stat(path, buf, 0);  
+  return __win_stat(path, buf, 0);
 }
 
 /**
@@ -2051,18 +2051,18 @@ int _win_readlink(const char *path, char *buf, size_t bufsize)
     errno = ENAMETOOLONG;
     return -1;
   }
-    
+
   strcpy(szDeref, path);
-  
+
   if (__win_deref(szDeref) == -1)
     return -1;
-    
+
   if ((iLen = strlen(szDeref)) > bufsize)
   {
     errno = ENAMETOOLONG;
     return -1;
   }
-  
+
   errno = 0;
   return iLen;
 }
@@ -2074,15 +2074,15 @@ int _win_readlink(const char *path, char *buf, size_t bufsize)
 char *nl_langinfo(int item)
 {
   unsigned int loc;
-  
+
   loc = GetThreadLocale();
-  
+
   switch(item)
   {
     case CODESET:
       {
         unsigned int cp = GetACP();
-        
+
         if (cp)
           sprintf(__langinfo, "CP%u", cp);
         else
@@ -2231,7 +2231,7 @@ char *nl_langinfo(int item)
       return __langinfo;
     case RADIXCHAR:
       GetLocaleInfo(loc, LOCALE_SDECIMAL, __langinfo, 251);
-      return __langinfo;      
+      return __langinfo;
     case THOUSEP:
       GetLocaleInfo(loc, LOCALE_STHOUSAND, __langinfo, 251);
       return __langinfo;
@@ -2265,7 +2265,7 @@ int _win_accept(SOCKET s, struct sockaddr *addr, int *addrlen)
   int iRet = accept(s, addr, addrlen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2277,7 +2277,7 @@ int _win_bind(SOCKET s, const struct sockaddr *name, int namelen)
   int iRet = bind(s, name, namelen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2288,7 +2288,7 @@ int _win_connect(SOCKET s,const struct sockaddr *name, int namelen)
 {
   int iRet, iWSErr;
   BOOL bBlocking;
-  
+
   /* connect()ing a non-blocking socket always fails under Windows.
      Check whether it is blocking */
   bBlocking = __win_IsHandleMarkedAsBlocking(s);
@@ -2298,19 +2298,19 @@ int _win_connect(SOCKET s,const struct sockaddr *name, int namelen)
     l = 0;
     ioctlsocket(s, FIONBIO, &l);
   }
-  
+
   iRet = connect(s, name, namelen);
   iWSErr = WSAGetLastError();
-  
+
   if (! bBlocking)
   {
     u_long l;
     l = 1;
     ioctlsocket(s, FIONBIO, &l);
   }
-    
+
   SetErrnoFromWinsockError(iWSErr);
-    
+
   return iRet;
 }
 
@@ -2323,32 +2323,32 @@ int _win_getpeername(SOCKET s, struct sockaddr *name,
   int iRet = getpeername(s, name, namelen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
 /**
  * Get the socket name
  */
-int _win_getsockname(SOCKET s, struct sockaddr *name, 
+int _win_getsockname(SOCKET s, struct sockaddr *name,
                 int *namelen)
 {
   int iRet = getsockname(s, name, namelen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
 /**
- * Get the socket options 
+ * Get the socket options
  */
 int _win_getsockopt(SOCKET s, int level, int optname, char *optval, int *optlen)
 {
   int iRet = getsockopt(s, level, optname, optval, optlen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2360,19 +2360,19 @@ int _win_listen(SOCKET s, int backlog)
   int iRet = listen(s, backlog);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
 /**
- * Receive a message from a connected socket 
+ * Receive a message from a connected socket
  */
 int _win_recv(SOCKET s, char *buf, int len, int flags)
 {
   int iRet = recv(s, buf, len, flags);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2385,7 +2385,7 @@ int _win_recvfrom(SOCKET s, void *buf, int len, int flags,
   int iRet = recvfrom(s, buf, len, flags, from, fromlen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2397,7 +2397,7 @@ int _win_send(SOCKET s, const char *buf, int len, int flags)
   int iRet = send(s, buf, len, flags);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2410,7 +2410,7 @@ int _win_sendto(SOCKET s, const char *buf, int len, int flags,
   int iRet = sendto(s, buf, len, flags, to, tolen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2423,7 +2423,7 @@ int _win_setsockopt(SOCKET s, int level, int optname, const void *optval,
   int iRet = setsockopt(s, level, optname, (const char *) optval, optlen);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
@@ -2435,24 +2435,24 @@ int _win_shutdown(SOCKET s, int how)
   int iRet = shutdown(s, how);
 
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return iRet;
 }
 
 /**
- * Create an endpoint for communication 
+ * Create an endpoint for communication
  */
 SOCKET _win_socket(int af, int type, int protocol)
 {
   int iRet;
-  
+
   errno = 0;
-  
+
   iRet = socket(af, type, protocol);
   if (iRet == SOCKET_ERROR)
   {
     SetErrnoFromWinsockError(WSAGetLastError());
-    
+
     return -1;
   }
   else
@@ -2461,13 +2461,13 @@ SOCKET _win_socket(int af, int type, int protocol)
     u_long l;
     l = 0;
     ioctlsocket(iRet, FIONBIO, &l);
-    
+
     return iRet;
   }
 }
 
 /**
- * Retrieve the host information corresponding to a network address 
+ * Retrieve the host information corresponding to a network address
  */
 struct hostent *_win_gethostbyaddr(const char *addr, int len, int type)
 {
@@ -2475,7 +2475,7 @@ struct hostent *_win_gethostbyaddr(const char *addr, int len, int type)
 
   SetHErrnoFromWinError(WSAGetLastError());
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return pHost;
 }
 
@@ -2488,7 +2488,7 @@ struct hostent *_win_gethostbyname(const char *name)
 
   SetHErrnoFromWinError(WSAGetLastError());
   SetErrnoFromWinsockError(WSAGetLastError());
-    
+
   return pHost;
 }
 

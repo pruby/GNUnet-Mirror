@@ -62,9 +62,9 @@ void initFilters() {
   qt = NULL;
   quota = getConfigurationInt("FS",
 			      "QUOTA") * 1024;
- 
+
   bf_size = quota/8; /* 8 bit per entry, 1 bit per kb in DB */
-  filter 
+  filter
     = loadBloomfilter(bf,
 		      bf_size,
 		      5); /* approx. 3% false positives at max use */

@@ -25,7 +25,7 @@
  *
  * @file util/winselect.c
  * @brief select implementation for Win32
- * @author Wez Furlong <wez@thebrainroom.com>  
+ * @author Wez Furlong <wez@thebrainroom.com>
  * @author Nils Durner (GNUnet extensions)
  */
 
@@ -70,15 +70,15 @@ int _win_select(int max_fd, fd_set * rfds, fd_set * wfds, fd_set * efds,
     ms_total = tv->tv_sec * 1000;
     ms_total += tv->tv_usec / 1000;
   }
-  
+
   /* select() may be used as a portable way to sleep */
   if (!(rfds || wfds || efds))
   {
     Sleep(ms_total);
-    
+
     return 0;
   }
-  
+
   FD_ZERO(&sock_read);
   FD_ZERO(&sock_write);
   FD_ZERO(&sock_except);
@@ -91,7 +91,7 @@ int _win_select(int max_fd, fd_set * rfds, fd_set * wfds, fd_set * efds,
     {
       unsigned long ulVal;
 
-      if (ioctlsocket(i, FIONBIO, &ulVal) != SOCKET_ERROR) 
+      if (ioctlsocket(i, FIONBIO, &ulVal) != SOCKET_ERROR)
       {
         /* socket */
         if(SAFE_FD_ISSET(i, rfds))
@@ -151,15 +151,15 @@ int _win_select(int max_fd, fd_set * rfds, fd_set * wfds, fd_set * efds,
       tvslice.tv_sec = 0;
       tvslice.tv_usec = 100000;
 
-      if ((retcode = select(sock_max_fd + 1, &aread, &awrite, &aexcept, 
+      if ((retcode = select(sock_max_fd + 1, &aread, &awrite, &aexcept,
                             &tvslice)) == SOCKET_ERROR)
       {
         SetErrnoFromWinsockError(WSAGetLastError());
-        
+
         return -1;
       }
     }
-    
+
     if(n_handles > 0)
     {
       /* check handles */
@@ -205,7 +205,7 @@ int _win_select(int max_fd, fd_set * rfds, fd_set * wfds, fd_set * efds,
         }
       }
     }
-    
+
     /* Poll Pipes */
     for(i = 0; i < iPipes; i++)
     {

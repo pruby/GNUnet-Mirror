@@ -20,15 +20,15 @@
 
 /**
  * @file applications/fs/tools/gnunet-directory.c
- * @brief tool to list the entries stored in the database holding 
- *        files for building directories, to delete all of these 
+ * @brief tool to list the entries stored in the database holding
+ *        files for building directories, to delete all of these
  *        entries and to display the contents of  directories.
  * @author Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
-  
+
 static char ** filenames;
 static int filenamescnt;
 
@@ -46,16 +46,16 @@ static int itemPrinter(EXTRACTOR_KeywordType type,
 }
 
 static void printMeta(const struct ECRS_MetaData * meta) {
-  ECRS_getMetaData(meta, 
+  ECRS_getMetaData(meta,
 		   &itemPrinter,
 		   NULL);
 }
 
 static int printNode(const ECRS_FileInfo * fi,
 		     const HashCode512 * key,
-		     void * unused) {  
+		     void * unused) {
   char * string;
-  
+
   string = ECRS_uriToString(fi->uri);
   printf("%s:\n", string);
   FREE(string);
@@ -72,7 +72,7 @@ static void printDirectory(const char * filename) {
 
   name = expandFileName(filename);
   printf(_("==> Directory '%s':\n"),
-	 name); 
+	 name);
   len = getFileSize(name);
   if (len <= 0) {
     printf(_("=\tError reading directory.\n"));
@@ -130,9 +130,9 @@ static void printhelp() {
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   int c;
 
@@ -145,19 +145,19 @@ static int parseCommandLine(int argc,
       { "track",   0, 0, 't' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
+		      argv,
 		      "c:hklL:tv",
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;    
+      continue;
     switch(c) {
-    case 'h': 
-      printhelp(); 
+    case 'h':
+      printhelp();
       return SYSERR;
     case 'k':
       do_kill = YES;
@@ -168,9 +168,9 @@ static int parseCommandLine(int argc,
     case 't':
       do_track = YES;
       break;
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-directory v%s\n",
-	     VERSION, 
+	     VERSION,
 	     AFS_VERSION);
       return SYSERR;
     default:
@@ -183,7 +183,7 @@ static int parseCommandLine(int argc,
   return OK;
 }
 
-int main(int argc, 
+int main(int argc,
 	 char * argv[]) {
   int i;
   if (SYSERR == initUtil(argc, argv, &parseCommandLine))
@@ -200,7 +200,7 @@ int main(int argc,
 
   for (i=0;i<filenamescnt;i++)
     printDirectory(filenames[i]);
- 
+
   doneUtil();
   return 0;
 }

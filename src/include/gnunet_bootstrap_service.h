@@ -44,7 +44,7 @@ typedef struct {
    * Obtain HELOs (i.e. by downloading form the web) and call the
    * callback on each HELO.
    *
-   * @param callback the method to call 
+   * @param callback the method to call
    * @param arg extra argument to the method
    */
   void (*bootstrap)(HELO_Callback callback,

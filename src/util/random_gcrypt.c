@@ -23,7 +23,7 @@
  * @file util/random_gcrypt.c
  * @brief functions to gather random numbers
  * @author Christian Grothoff
- */ 
+ */
 #include "platform.h"
 #include "gnunet_util.h"
 #include "locking_gcrypt.h"
@@ -46,7 +46,7 @@ void initRAND() {
 }
 
 /**
- * @return a random value in the interval [0,i[. 
+ * @return a random value in the interval [0,i[.
  */
 unsigned int randomi(unsigned int i) {
   static unsigned int invokeCount;
@@ -77,7 +77,7 @@ int * permute(int n) {
   int * ret;
   int i;
   int tmp;
-  unsigned int x;    
+  unsigned int x;
 
   GNUNET_ASSERT(n>0);
   ret = (int*)MALLOC(n * sizeof(int));

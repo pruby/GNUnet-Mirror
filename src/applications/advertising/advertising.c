@@ -21,7 +21,7 @@
 /**
  * @file advertising/advertising.c
  * @brief Cron-jobs that exchange HELOs to ensure that the network is
- * connected (nodes know of each other).  This is implemented as 
+ * connected (nodes know of each other).  This is implemented as
  * an application and not a service (since no API is provided for
  * clients to call on -- this just happens in the background).
  *
@@ -88,11 +88,11 @@ static int stat_HELO_fwd;
  */
 static int activeCronJobs = ACJ_NONE;
 
-static cron_t lastHELOMsg = 0; 
+static cron_t lastHELOMsg = 0;
 
 static double getConnectPriority() {
   double preference;
-  
+
   /* we should'nt give lots of bandwidth for HELOs if we're close to
      the connection goal */
   preference = topology->getSaturation();
@@ -120,14 +120,14 @@ static void callAddHost(HELO_Message * helo) {
  * @param message the HELO message
  * @return SYSERR on error, OK on success
  */
-static int 
+static int
 receivedHELO(const p2p_HEADER * message) {
   TSession * tsession;
   HELO_Message * copy;
   PeerIdentity foreignId;
   HELO_Message * msg;
   p2p_HEADER * ping;
-  char * buffer;    
+  char * buffer;
   int heloEnd;
   int mtu;
   int res;
@@ -143,9 +143,9 @@ receivedHELO(const p2p_HEADER * message) {
 			 &foreignId.hashPubKey))
     return SYSERR; /* public key and host hash do not match */
   if (SYSERR == verifySig(&msg->senderIdentity,
-			  HELO_Message_size(msg) 
-			  - sizeof(Signature) 
-			  - sizeof(PublicKey) 
+			  HELO_Message_size(msg)
+			  - sizeof(Signature)
+			  - sizeof(PublicKey)
 			  - sizeof(p2p_HEADER),
 			  &msg->signature,
 			  &msg->publicKey)) {
@@ -153,18 +153,18 @@ receivedHELO(const p2p_HEADER * message) {
     IFLOG(LOG_WARNING,
 	  hash2enc(&msg->senderIdentity.hashPubKey,
 		   &enc));
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("HELO message from '%s' invalid (signature invalid). Dropping.\n"),
 	(char*)&enc);
-    return SYSERR; /* message invalid */  
+    return SYSERR; /* message invalid */
   }
   if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_HELO_EXPIRES) {
-     LOG(LOG_WARNING, 
-	 _("HELO message received invalid (expiration time over limit). Dropping.\n"));   
+     LOG(LOG_WARNING,
+	 _("HELO message received invalid (expiration time over limit). Dropping.\n"));
     return SYSERR;
   }
-  if (SYSERR == transport->verifyHELO(msg)) 
-    return OK; /* not good, but do process rest of message */ 
+  if (SYSERR == transport->verifyHELO(msg))
+    return OK; /* not good, but do process rest of message */
   if (stats != NULL)
     stats->change(stat_HELO_in, 1);
 #if DEBUG_HELOEXCHANGE
@@ -198,7 +198,7 @@ receivedHELO(const p2p_HEADER * message) {
 	 (0 == memcmp(&msg->MTU,
 		      &copy->MTU,
 		      sizeof(unsigned short)*2+
-		      sizeof(unsigned int) + 
+		      sizeof(unsigned int) +
 		      ntohs(copy->senderAddressSize)) ) ) {
       /* ok, we've seen this one exactly like this before (at most the
 	 TTL has changed); thus we can 'trust' it without playing
@@ -243,7 +243,7 @@ receivedHELO(const p2p_HEADER * message) {
        if the NAT transport is loaded; for that,
        a couple of lines above would need some minor
        editing :-). */
-    return SYSERR; 
+    return SYSERR;
   }
 
   cronTime(&now);
@@ -252,7 +252,7 @@ receivedHELO(const p2p_HEADER * message) {
 			   "MAXNETDOWNBPSTOTAL") /
        cronSECONDS / 100
        < HELO_Message_size(msg) ) {
-    /* do not use more than about 1% of the 
+    /* do not use more than about 1% of the
        available bandwidth to VERIFY HELOs (by sending
        our own with a PING).  This does not affect
        the HELO advertising.  Sure, we should not
@@ -273,7 +273,7 @@ receivedHELO(const p2p_HEADER * message) {
 	 msg,
 	 HELO_Message_size(msg));
   identity->addHostTemporarily(copy);
-  
+
 
   /* Establish session as advertised in the HELO */
   copy = MALLOC(HELO_Message_size(msg));
@@ -285,7 +285,7 @@ receivedHELO(const p2p_HEADER * message) {
 				   &tsession)) {
     FREE(copy);
     return SYSERR; /* could not connect */
-  }    
+  }
 
   /* build message to send, ping must contain return-information,
      such as a selection of our HELOs... */
@@ -312,7 +312,7 @@ receivedHELO(const p2p_HEADER * message) {
 	"'%s' failed. Will not send PING.\n",
 	"getAdvertisedHELOs");
     FREE(buffer);
-    transport->disconnect(tsession);    
+    transport->disconnect(tsession);
     return SYSERR;
   }
   copy = MALLOC(HELO_Message_size(msg));
@@ -345,7 +345,7 @@ typedef struct {
   int n;
 } SendData;
 
-static void 
+static void
 broadcastHelper(const PeerIdentity * hi,
 		const unsigned short proto,
 		int confirmed,
@@ -359,7 +359,7 @@ broadcastHelper(const PeerIdentity * hi,
     return;
   if (proto == NAT_PROTOCOL_NUMBER)
     return; /* don't advertise NAT addresses via broadcast */
-  if (randomi(sd->n) != 0) 
+  if (randomi(sd->n) != 0)
     return;
   hash2enc(&hi->hashPubKey,
 	   &other);
@@ -430,10 +430,10 @@ broadcastHelper(const PeerIdentity * hi,
  }
 
 /**
- * Tell a couple of random hosts on the currentKnownHost list 
+ * Tell a couple of random hosts on the currentKnownHost list
  * that we exist (called for each transport)...
  */
-static void 
+static void
 broadcastHELOTransport(TransportAPI * tapi,
 		       void * unused) {
   SendData sd;
@@ -446,7 +446,7 @@ broadcastHELOTransport(TransportAPI * tapi,
 #endif
   cronTime(&now);
   sd.n = identity->forEachHost(now,
-			       NULL, 
+			       NULL,
 			       NULL); /* just count */
   if (SYSERR == transport->createHELO(tapi->protocolNumber,
 				    &sd.m))
@@ -458,7 +458,7 @@ broadcastHELOTransport(TransportAPI * tapi,
 #endif
   identity->addHost(sd.m);
   if (sd.n < 1) {
-    if (identity->forEachHost(0, NULL, NULL) == 0) 
+    if (identity->forEachHost(0, NULL, NULL) == 0)
       LOG(LOG_WARNING,
 	  _("Announcing ourselves pointless: "
 	    "no other peers are known to us so far.\n"));
@@ -477,7 +477,7 @@ broadcastHELOTransport(TransportAPI * tapi,
 }
 
 /**
- * Tell a couple of random hosts on the currentKnownHost list 
+ * Tell a couple of random hosts on the currentKnownHost list
  * that we exist...
  */
 static void broadcastHELO(void * unused) {
@@ -506,7 +506,7 @@ static void forwardCallback(const PeerIdentity * peer,
 /**
  * Forward HELOs from all known hosts to all connected hosts.
  */
-static void 
+static void
 forwardHELOHelper(const PeerIdentity * peer,
 		  const unsigned short protocol,
 		  int confirmed,
@@ -532,15 +532,15 @@ forwardHELOHelper(const PeerIdentity * peer,
 					NO,
 					&helo))
     return; /* this should not happen */
-  helo->header.type 
-    = htons(p2p_PROTO_HELO); 
+  helo->header.type
+    = htons(p2p_PROTO_HELO);
   helo->header.size
     = htons(HELO_Message_size(helo));
   /* do not forward expired HELOs */
   TIME(&now);
   if ((TIME_T)ntohl(helo->expirationTime) < now) {
     EncName enc;
-    /* remove HELOs that expired */ 
+    /* remove HELOs that expired */
     IFLOG(LOG_INFO,
 	  hash2enc(&peer->hashPubKey,
 		   &enc));
@@ -552,13 +552,13 @@ forwardHELOHelper(const PeerIdentity * peer,
     FREE(helo);
     return;
   }
-  count = coreAPI->forAllConnectedNodes(NULL, 
+  count = coreAPI->forAllConnectedNodes(NULL,
 					NULL);
   if (count > 0) {
     fcc.delay = (*probability) * HELO_BROADCAST_FREQUENCY;  /* send before the next round */
     fcc.msg = &helo->header;
     fcc.prob = count;
-    coreAPI->forAllConnectedNodes((PerNodeCallback) &forwardCallback, 
+    coreAPI->forAllConnectedNodes((PerNodeCallback) &forwardCallback,
 				  &fcc);
   }
   FREE(helo);
@@ -580,7 +580,7 @@ forwardHELO(void * unused) {
 #endif
   count = identity->forEachHost(0,
 				NULL,
-				NULL);  
+				NULL);
   identity->forEachHost(0, /* ignore blacklisting */
 			(HostIterator)&forwardHELOHelper,
 			&count);
@@ -594,15 +594,15 @@ forwardHELO(void * unused) {
 /**
  * Type for a HELO send via an encrypted channel.
  */
-static int 
+static int
 eHELOHandler(const PeerIdentity * sender,
 	     const p2p_HEADER * message) {
   if (OK == receivedHELO(message)) {
     /* if the HELO was ok, update traffic preference
        for the peer (depending on how much we like
        to learn about other peers) */
-    coreAPI->preferTrafficFrom(sender, 
-			       getConnectPriority());    
+    coreAPI->preferTrafficFrom(sender,
+			       getConnectPriority());
   }
   return OK; /* even if we had errors processing the HELO, keep going */
 }
@@ -610,7 +610,7 @@ eHELOHandler(const PeerIdentity * sender,
 /**
  * Type for a HELO send in plaintext.
  */
-static int 
+static int
 pHELOHandler(const PeerIdentity * sender,
 	     const p2p_HEADER * message,
 	     TSession * session) {
@@ -623,30 +623,30 @@ pHELOHandler(const PeerIdentity * sender,
  * Does not have to suspend cron since this guaranteed to be a cron
  * job!
  */
-static void 
+static void
 configurationUpdateCallback() {
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE)) {
     if (testConfigurationString("NETWORK",
 				"DISABLE-ADVERTISEMENTS",
-				"YES")) 
+				"YES"))
       delCronJob(&broadcastHELO,
 		 HELO_BROADCAST_FREQUENCY,
-		 NULL); 
+		 NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   } else {
     if (testConfigurationString("NETWORK",
 				"HELOEXCHANGE",
-				"YES")) 
+				"YES"))
       addCronJob(&broadcastHELO,
-		 15 * cronSECONDS, 
+		 15 * cronSECONDS,
 		 HELO_BROADCAST_FREQUENCY,
-		 NULL); 
+		 NULL);
     activeCronJobs += ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
     if (! testConfigurationString("NETWORK",
 				  "HELOEXCHANGE",
-				  "YES")) 
+				  "YES"))
       delCronJob(&forwardHELO,
 		 HELO_FORWARD_FREQUENCY,
 		 NULL); /* seven minutes: exchange */
@@ -654,11 +654,11 @@ configurationUpdateCallback() {
   } else {
     if (! testConfigurationString("NETWORK",
 				  "DISABLE-ADVERTISEMENTS",
-				  "YES")) 
+				  "YES"))
       addCronJob(&broadcastHELO,
-		 15 * cronSECONDS, 
+		 15 * cronSECONDS,
 		 HELO_BROADCAST_FREQUENCY,
-		 NULL); 
+		 NULL);
     activeCronJobs += ACJ_FORWARD;
   }
 }
@@ -672,7 +672,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   identity = capi->requestService("identity");
   if (identity == NULL) {
     BREAK();
-    return SYSERR;  
+    return SYSERR;
   }
   transport = capi->requestService("transport");
   if (transport == NULL) {
@@ -722,9 +722,9 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 				"DISABLE-ADVERTISEMENTS",
 				"YES")) {
     addCronJob(&broadcastHELO,
-	       15 * cronSECONDS, 
+	       15 * cronSECONDS,
 	       HELO_BROADCAST_FREQUENCY,
-	       NULL); 
+	       NULL);
     activeCronJobs += ACJ_ANNOUNCE;
   } else {
     LOG(LOG_WARNING,
@@ -734,17 +734,17 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 			      "HELOEXCHANGE",
 			      "YES") == YES) {
     addCronJob(&forwardHELO,
-	       4 * cronMINUTES, 
+	       4 * cronMINUTES,
 	       HELO_FORWARD_FREQUENCY,
-	       NULL); 
+	       NULL);
     activeCronJobs += ACJ_FORWARD;
   }
 #if DEBUG_HELOEXCHANGE
   else
-    LOG(LOG_DEBUG, 
+    LOG(LOG_DEBUG,
 	"HELO forwarding disabled!\n");
 #endif
-  
+
   startBootstrap(capi);
   return OK;
 }
@@ -757,7 +757,7 @@ void done_module_advertising() {
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE)) {
     delCronJob(&broadcastHELO,
 	       HELO_BROADCAST_FREQUENCY,
-	       NULL); 
+	       NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {

@@ -104,7 +104,7 @@ void trackQuery(const HashCode512 * query,
 }
 
 /**
- * Stop keeping track of a query. 
+ * Stop keeping track of a query.
  *
  * @param msg the query
  * @param client where did the query come from?
@@ -143,9 +143,9 @@ void processResponse(const HashCode512 * key,
 			    key)) &&
 	 ( (trackers[i]->type == ANY_BLOCK) ||
 	   (trackers[i]->type == ntohl(value->type)) ) ) {
-      rc = MALLOC(sizeof(ReplyContent) + 
+      rc = MALLOC(sizeof(ReplyContent) +
 		  ntohl(value->size) - sizeof(Datastore_Value));
-      rc->header.size = htons(sizeof(ReplyContent) + 
+      rc->header.size = htons(sizeof(ReplyContent) +
 			      ntohl(value->size) - sizeof(Datastore_Value));
       rc->header.type = htons(AFS_CS_PROTO_RESULT);
       memcpy(&rc[1],
@@ -165,7 +165,7 @@ void processResponse(const HashCode512 * key,
   }
   MUTEX_UNLOCK(&queryManagerLock);
 }
- 
+
 /**
  * Initialize the query management.
  */

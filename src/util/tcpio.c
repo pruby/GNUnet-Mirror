@@ -80,14 +80,14 @@ int initGNUnetClientSocket(unsigned short port,
       hostname,
       port);
 #endif
-  he = GETHOSTBYNAME(hostname); 
+  he = GETHOSTBYNAME(hostname);
   if (he == NULL) {
     LOG(LOG_ERROR,
 	_("Could not find IP of host '%s': %s\n"),
 	hostname,
 	hstrerror(h_errno));
     return SYSERR;
-  }  
+  }
   result->ip.addr = (unsigned int) ((struct in_addr*)he->h_addr)->s_addr;
   result->port = port;
   result->socket = -1; /* closed */
@@ -123,7 +123,7 @@ int initGNUnetServerSocket(int sock,
  * @return 1 if open, 0 if closed
  */
 int isOpenConnection(GNUNET_TCP_SOCKET * sock) {
-  return (sock->socket != -1); 
+  return (sock->socket != -1);
 }
 
 /**
@@ -149,14 +149,14 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
 
   wasSockBlocking = isSocketBlocking(sock->socket);
   setBlocking(sock->socket, NO);
-	     
+	
   soaddr.sin_family = AF_INET;
   GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(sock->ip.addr));
   memcpy(&soaddr.sin_addr,
 	 &sock->ip.addr,
 	 sizeof(struct in_addr));
   soaddr.sin_port = htons(sock->port);
-  res = CONNECT(sock->socket, 
+  res = CONNECT(sock->socket,
 		(struct sockaddr*)&soaddr,
 		sizeof(soaddr));
   if ( (res < 0) &&
@@ -181,8 +181,8 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
   FD_ZERO(&rset);
   FD_ZERO(&wset);
   FD_ZERO(&eset);
-  if (sock->socket < 0) 
-    return SYSERR;  
+  if (sock->socket < 0)
+    return SYSERR;
   FD_SET(sock->socket, &wset);
   timeout.tv_sec = 5;
   timeout.tv_usec = 0;
@@ -196,7 +196,7 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
 	PRIP(ntohl(*(int*)&sock->ip.addr)),
 	sock->port,
 	STRERROR(errno));
-    setBlocking(sock->socket, wasSockBlocking);  
+    setBlocking(sock->socket, wasSockBlocking);
     return SYSERR;
   }
   setBlocking(sock->socket, wasSockBlocking);
@@ -233,7 +233,7 @@ int writeToSocket(GNUNET_TCP_SOCKET * sock,
 	MUTEX_UNLOCK(&sock->writelock);
 	return SYSERR; /* can not send right now;
 			  but do NOT close socket in this case! */
-      }      
+      }
       LOG_STRERROR(LOG_INFO, "send");
       closeSocketTemporarily(sock);
       MUTEX_UNLOCK(&sock->writelock);
@@ -280,7 +280,7 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
 			     const CS_HEADER * buffer) {
   int res;
   int size;
-  
+
   if (SYSERR == checkSocket(sock))
     return SYSERR;
   MUTEX_LOCK(&sock->writelock);
@@ -293,7 +293,7 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
       if ( (errno == EWOULDBLOCK) ||
 	   (errno == EAGAIN) ) {
 	MUTEX_UNLOCK(&sock->writelock);
-	return NO; 
+	return NO;
       }
       LOG_STRERROR(LOG_INFO, "write");
       closeSocketTemporarily(sock);
@@ -306,7 +306,7 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
 	     sock->outBufLen - res);
       sock->outBufLen -= res;
       MUTEX_UNLOCK(&sock->writelock);
-      return SYSERR;      
+      return SYSERR;
     }
     /* completely send out deferred buffer, so
        we can in fact continue! */
@@ -367,7 +367,7 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
 
   if (SYSERR == checkSocket(sock))
     return SYSERR;
-   
+
   MUTEX_LOCK(&sock->readlock);
   pos = 0;
   res = 0;
@@ -376,7 +376,7 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
 			  &size,
 			  sizeof(unsigned short));
   if (pos != sizeof(unsigned short)) {
-#if DEBUG_TCPIO    
+#if DEBUG_TCPIO
     LOG_STRERROR(LOG_INFO, "recv");
 #endif
     closeSocketTemporarily(sock);
@@ -385,16 +385,16 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
   }
   size = ntohs(size);
   if (size < sizeof(CS_HEADER)) {
-#if DEBUG_TCPIO    
+#if DEBUG_TCPIO
     LOG_STRERROR(LOG_INFO, "recv");
 #endif
     closeSocketTemporarily(sock);
     MUTEX_UNLOCK(&sock->readlock);
     return SYSERR; /* invalid header */
-  } 
+  }
 
   buf = (char*) *buffer;
-  if (buf == NULL) 
+  if (buf == NULL)
     buf = MALLOC(size);
 
   res = RECV_BLOCKING_ALL(sock->socket,
@@ -409,7 +409,7 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
       FREE(buf);
     MUTEX_UNLOCK(&sock->readlock);
     return SYSERR;
-  }    
+  }
 #if DEBUG_TCPIO
   LOG(LOG_DEBUG,
       "Successfully received %d bytes from TCP socket.\n",
@@ -440,13 +440,13 @@ void closeSocketTemporarily(GNUNET_TCP_SOCKET * sock) {
 	sock->socket);
 #endif
     sock->socket = -1;
-    if (0 != SHUTDOWN(i, SHUT_RDWR)) 
+    if (0 != SHUTDOWN(i, SHUT_RDWR))
       LOG_STRERROR(LOG_DEBUG, "shutdown");
     CLOSE(i);
   }
   sock->outBufLen = 0;
   FREENONNULL(sock->outBufPending);
-  sock->outBufPending = NULL;  
+  sock->outBufPending = NULL;
 }
 
 /**

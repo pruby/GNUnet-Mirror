@@ -18,7 +18,7 @@
      Boston, MA 02111-1307, USA.
 
      SHA-512 code by Jean-Luc Cooke <jlcooke@certainkey.com>
-  
+
      Copyright (c) Jean-Luc Cooke <jlcooke@certainkey.com>
      Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
      Copyright (c) 2003 Kyle McMartin <kyle@debian.org>
@@ -42,19 +42,19 @@ struct sha512_ctx {
   unsigned char buf[128];
 };
 
-static unsigned long long Ch(unsigned long long x, 
-			     unsigned long long y, 
+static unsigned long long Ch(unsigned long long x,
+			     unsigned long long y,
 			     unsigned long long z) {
   return z ^ (x & (y ^ z));
 }
 
-static unsigned long long Maj(unsigned long long x, 
-			      unsigned long long y, 
+static unsigned long long Maj(unsigned long long x,
+			      unsigned long long y,
 			      unsigned long long z) {
   return (x & y) | (z & (x | y));
 }
 
-static unsigned long long RORu64(unsigned long long x, 
+static unsigned long long RORu64(unsigned long long x,
 				 unsigned long long y) {
   return (x >> y) | (x << (64 - y));
 }
@@ -141,21 +141,21 @@ static void
 sha512_transform(unsigned long long *state, const unsigned char *input) {
   unsigned long long a, b, c, d, e, f, g, h, t1, t2;
   unsigned long long W[80];
-  
+
   int i;
-  
+
   /* load the input */
   for (i = 0; i < 16; i++)
     LOAD_OP(i, W, input);
-  
+
   for (i = 16; i < 80; i++) {
     BLEND_OP(i, W);
   }
-  
+
   /* load the state into our registers */
-  a=state[0];   b=state[1];   c=state[2];   d=state[3];  
-  e=state[4];   f=state[5];   g=state[6];   h=state[7];  
-  
+  a=state[0];   b=state[1];   c=state[2];   d=state[3];
+  e=state[4];   f=state[5];   g=state[6];   h=state[7];
+
   /* now iterate */
   for (i=0; i<80; i+=8) {
     t1 = h + e1(e) + Ch(e,f,g) + sha512_K[i  ] + W[i  ];
@@ -175,10 +175,10 @@ sha512_transform(unsigned long long *state, const unsigned char *input) {
     t1 = a + e1(f) + Ch(f,g,h) + sha512_K[i+7] + W[i+7];
     t2 = e0(b) + Maj(b,c,d);    e+=t1;    a=t1+t2;
   }
-  
-  state[0] += a; state[1] += b; state[2] += c; state[3] += d;  
-  state[4] += e; state[5] += f; state[6] += g; state[7] += h;  
-  
+
+  state[0] += a; state[1] += b; state[2] += c; state[3] += d;
+  state[4] += e; state[5] += f; state[6] += g; state[7] += h;
+
   /* erase our data */
   a = b = c = d = e = f = g = h = t1 = t2 = 0;
   memset(W, 0, 80 * sizeof(unsigned long long));
@@ -200,13 +200,13 @@ sha512_init(struct sha512_ctx * sctx) {
 
 static void
 sha512_update(struct sha512_ctx * sctx,
-	      const unsigned char *data, 
+	      const unsigned char *data,
 	      unsigned int len) {
   unsigned int i, index, part_len;
-  
+
   /* Compute number of bytes mod 128 */
   index = (unsigned int)((sctx->count[0] >> 3) & 0x7F);
-  
+
   /* Update number of bits */
   if ((sctx->count[0] += (len << 3)) < (len << 3)) {
     if ((sctx->count[1] += 1) < 1)
@@ -214,70 +214,70 @@ sha512_update(struct sha512_ctx * sctx,
 	sctx->count[3]++;
     sctx->count[1] += (len >> 29);
   }
-  
+
   part_len = 128 - index;
-  
+
   /* Transform as many times as possible. */
   if (len >= part_len) {
     memcpy(&sctx->buf[index], data, part_len);
     sha512_transform(sctx->state, sctx->buf);
-    
+
     for (i = part_len; i + 127 < len; i+=128)
       sha512_transform(sctx->state, &data[i]);
-    
+
     index = 0;
   } else {
     i = 0;
   }
-  
+
   /* Buffer remaining input */
   memcpy(&sctx->buf[index], &data[i], len - i);
 }
 
 static void
-sha512_final(struct sha512_ctx * sctx, 
-	     unsigned char *hash) {  
+sha512_final(struct sha512_ctx * sctx,
+	     unsigned char *hash) {
   static unsigned char padding[128] = { 0x80, };
-  
+
   unsigned int t;
   unsigned long long t2;
   unsigned char bits[128];
   unsigned int index, pad_len;
   int i, j;
-  
+
   index = pad_len = t = i = j = 0;
   t2 = 0;
-  
+
   /* Save number of bits */
   t = sctx->count[0];
   bits[15] = t; t>>=8;
   bits[14] = t; t>>=8;
   bits[13] = t; t>>=8;
-  bits[12] = t; 
+  bits[12] = t;
   t = sctx->count[1];
   bits[11] = t; t>>=8;
   bits[10] = t; t>>=8;
   bits[9 ] = t; t>>=8;
-  bits[8 ] = t; 
+  bits[8 ] = t;
   t = sctx->count[2];
   bits[7 ] = t; t>>=8;
   bits[6 ] = t; t>>=8;
   bits[5 ] = t; t>>=8;
-  bits[4 ] = t; 
+  bits[4 ] = t;
   t = sctx->count[3];
   bits[3 ] = t; t>>=8;
   bits[2 ] = t; t>>=8;
   bits[1 ] = t; t>>=8;
-  bits[0 ] = t; 
-  
+  bits[0 ] = t;
+
   /* Pad out to 112 mod 128. */
   index = (sctx->count[0] >> 3) & 0x7f;
   pad_len = (index < 112) ? (112 - index) : ((128+112) - index);
   sha512_update(sctx, padding, pad_len);
-  
+
   /* Append length (before padding) */
   sha512_update(sctx, bits, 16);
-  
+
   /* Store state in digest */
   for (i = j = 0; i < 8; i++, j += 8) {
     t2 = sctx->state[i];
@@ -290,7 +290,7 @@ sha512_final(struct sha512_ctx * sctx,
     hash[j+1] = (char)t2 & 0xff; t2>>=8;
     hash[j  ] = (char)t2 & 0xff;
   }
-  
+
   /* Zeroize sensitive information. */
   memset(sctx, 0, sizeof(struct sha512_ctx));
 }
@@ -328,15 +328,15 @@ int getFileHash(const char * filename,
   int fh;
   struct sha512_ctx ctx;
 
-  fh = OPEN(filename, 
+  fh = OPEN(filename,
 #ifdef O_LARGEFILE
 	    O_RDONLY | O_LARGEFILE
 #else
 	    O_RDONLY
 #endif
 	    );
-  if (fh == -1) 
-    return SYSERR;  
+  if (fh == -1)
+    return SYSERR;
   sha512_init(&ctx);
   pos = 0;
   buf = MALLOC(65536);
@@ -375,7 +375,7 @@ int getFileHash(const char * filename,
 static unsigned char * encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
 static unsigned int getValue__(unsigned char a) {
-  if ( (a >= '0') && (a <= '9') ) 
+  if ( (a >= '0') && (a <= '9') )
     return a - '0';
   if ( (a >= 'A') && (a <= 'V') )
     return (a - 'A' + 10);
@@ -429,7 +429,7 @@ void hash2enc(const HashCode512 * block,
  * Convert ASCII encoding back to hash
  *
  * @param enc the encoding
- * @param result where to store the hash code 
+ * @param result where to store the hash code
  * @return OK on success, SYSERR if result has the wrong encoding
  */
 int enc2hash(const char * enc,
@@ -451,7 +451,7 @@ int enc2hash(const char * enc,
     bits = (getValue__(enc[--rpos]) << vbit) | bits;
     vbit += 5;
     if (vbit >= 8) {
-      ((unsigned char*)result)[--wpos] 
+      ((unsigned char*)result)[--wpos]
 	= (unsigned char) bits;
       bits = bits >> 8;
       vbit -= 8;
@@ -468,10 +468,10 @@ int enc2hash(const char * enc,
  * somewhat consistent. And of course, the result should be a positive
  * number.
  *
- * @returns a positive number which is a measure for 
+ * @returns a positive number which is a measure for
  *  hashcode proximity.
  */
-int distanceHashCode512(const HashCode512 * a, 
+int distanceHashCode512(const HashCode512 * a,
 			const HashCode512 * b) {
   int x = (a->bits[1] - b->bits[1])>>16;
   return ((x*x)>>16);
@@ -481,14 +481,14 @@ int distanceHashCode512(const HashCode512 * a,
  * Compare two hashcodes.
  * @return 1 if they are equal, 0 if not.
  */
-int equalsHashCode512(const HashCode512 * a, 
+int equalsHashCode512(const HashCode512 * a,
 		      const HashCode512 * b) {
   return (0 == memcmp(a,b,sizeof(HashCode512)));
 }
 
 void makeRandomId(HashCode512 * result) {
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--) 
+  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
     result->bits[i] = rand();
 }
 
@@ -496,7 +496,7 @@ void deltaId(const HashCode512 * a,
 	     const HashCode512 * b,
 	     HashCode512 * result) {
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--) 
+  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
     result->bits[i] = b->bits[i] - a->bits[i];
 }
 
@@ -504,7 +504,7 @@ void addHashCodes(const HashCode512 * a,
 		  const HashCode512 * delta,
 		  HashCode512 * result) {
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--) 
+  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
     result->bits[i] = delta->bits[i] + a->bits[i];
 }
 
@@ -512,7 +512,7 @@ void xorHashCodes(const HashCode512 * a,
 		  const HashCode512 * b,
 		  HashCode512 * result) {
   int i;
-  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--) 
+  for (i=(sizeof(HashCode512)/sizeof(unsigned int))-1;i>=0;i--)
     result->bits[i] = a->bits[i] ^ a->bits[i];
 }
 
@@ -520,9 +520,9 @@ void xorHashCodes(const HashCode512 * a,
  * Check if two hosts are the same.
  * @return YES if they are equal, otherwise NO
  */
-int hostIdentityEquals(const PeerIdentity * first, 
+int hostIdentityEquals(const PeerIdentity * first,
 		       const PeerIdentity * second) {
-  if ( (first == NULL) || 
+  if ( (first == NULL) ||
        (second == NULL) )
     return NO;
   return equalsHashCode512(&first->hashPubKey,
@@ -541,7 +541,7 @@ void hashToKey(const HashCode512 * hc,
   memcpy(skey,
 	 hc,
 	 SESSIONKEY_LEN);
-  skey->crc32 = htonl(crc32N(skey, 
+  skey->crc32 = htonl(crc32N(skey,
 			     SESSIONKEY_LEN));
   memcpy(iv,
 	 &((char *)hc)[SESSIONKEY_LEN],
@@ -575,7 +575,7 @@ int hashCodeCompare(const HashCode512 * h1,
   /* FIXME: we can do this much more efficiently... */
   for (i = sizeof(HashCode512)*8 - 1; i >= 0; --i) {
     diff = getHashCodeBit(h2, i) - getHashCodeBit(h1, i);
-    if (diff < 0) 
+    if (diff < 0)
       return -1;
     else if (diff > 0)
       return 1;
@@ -615,7 +615,7 @@ int hashCodeCompareDistance(const HashCode512 * h1,
     bt = getHashCodeBit(target, i);
     /* Check XOR distance. */
     diff = (b2 ^ bt) - (b1 ^ bt);
-    if (diff < 0) 
+    if (diff < 0)
       return -1;
     else if (diff > 0)
       return 1;

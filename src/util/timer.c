@@ -22,7 +22,7 @@
  * @file util/timer.c
  * @brief abstraction of the time and sleep functions
  * @author Christian Grothoff
- * 
+ *
  * GNUnet uses both 32-bit and 64-bit timer values.
  *
  * 32-bit timers are measured in seconds and are used
@@ -30,9 +30,9 @@
  * the network.  We don't really care if they overrun
  * in 2037, as long as the relative times are correct.<p>
  * The type used for these values is TIME_T since
- * some architectures use 64-bit time_t values. 
+ * some architectures use 64-bit time_t values.
  * We wrap all time() calls into "TIME()" calls and
- * replace time_t with a GNUnet internal, 32-bit 
+ * replace time_t with a GNUnet internal, 32-bit
  * TIME_T type.
  *
  * <p>
@@ -41,12 +41,12 @@
  * mostly used for internal timers.  Some
  * network messages also use milli-second precision,
  * but these are so far always relative times which
- * are again represented as 32-bit (int) values.  
+ * are again represented as 32-bit (int) values.
  * <p>
  *
  * Consequently, whenever handling times in GNUnet,
  * watch out for the types and units involved.
- */ 
+ */
 
 #include "gnunet_util.h"
 #include "platform.h"
@@ -56,7 +56,7 @@
    a cron-job scheduled after 1 minute in the code
    will occur after 6 seconds. This is useful for
    testing bugs that would otherwise occur only after
-   a long time. 
+   a long time.
 
    For releases, this value should always be 1 */
 #define SPEED_UP 1
@@ -75,17 +75,17 @@
  * Sleep for the specified time interval.  A signal interrupts the
  * sleep.  Caller is responsible to check that the sleep was long
  * enough.
- * 
- * @return 0 if there was no interrupt, 1 if there was, -1 on error.     
+ *
+ * @return 0 if there was no interrupt, 1 if there was, -1 on error.
  */
 int gnunet_util_sleep(cron_t delay) {
 #if LINUX || SOLARIS || SOMEBSD || OSX
   struct timespec req;
   struct timespec rem;
-  req.tv_sec  
+  req.tv_sec
     = delay / CRON_UNIT_TO_SECONDS;
-  req.tv_nsec 
-    = (delay - req.tv_sec * CRON_UNIT_TO_SECONDS) 
+  req.tv_nsec
+    = (delay - req.tv_sec * CRON_UNIT_TO_SECONDS)
     * NANOSEC_TO_CRON_UNIT;
   if (0 != nanosleep(&req, &rem)) {
     if (errno == EINTR) {
@@ -106,10 +106,10 @@ int gnunet_util_sleep(cron_t delay) {
   int ret;
   struct timeval timeout;
 
-  timeout.tv_sec 
+  timeout.tv_sec
     = delay / CRON_UNIT_TO_SECONDS;
-  timeout.tv_usec 
-    = (delay - timeout.tv_sec * CRON_UNIT_TO_SECONDS) 
+  timeout.tv_usec
+    = (delay - timeout.tv_sec * CRON_UNIT_TO_SECONDS)
     * MICROSEC_TO_CRON_UNIT;
   ret = SELECT(0, NULL, NULL, NULL, &timeout);
   if (ret == -1) {
@@ -118,7 +118,7 @@ int gnunet_util_sleep(cron_t delay) {
     } else {
       LOG_STRERROR(LOG_WARNING, "select");
       return -1;
-    }      
+    }
   }
   return 0;
 #endif
@@ -129,7 +129,7 @@ int gnunet_util_sleep(cron_t delay) {
  * unit of time that the cron-jobs use (and is 64 bit)).
  *
  * @param setme will set the current time if non-null
- * @return the current time 
+ * @return the current time
  */
 cron_t cronTime(cron_t * setme) {
   cron_t res;
@@ -137,14 +137,14 @@ cron_t cronTime(cron_t * setme) {
 #ifndef WINDOWS
   struct timezone tz; /* man page says it's obsolete, but
 			 I'd rather not pass a NULL pointer */
-  
+
   gettimeofday(&tv, &tz);
 #else
   gettimeofday(&tv, NULL);
 #endif
-  res = 
+  res =
     (((cron_t)tv.tv_sec) * CRON_UNIT_TO_SECONDS) +
-    (tv.tv_usec / MICROSEC_TO_CRON_UNIT);    
+    (tv.tv_usec / MICROSEC_TO_CRON_UNIT);
   if (setme != NULL)
     *setme = res;
   return res;

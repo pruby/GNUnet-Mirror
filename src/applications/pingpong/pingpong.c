@@ -37,7 +37,7 @@
  * exactly the same message, except that it is now a pong.
  * This message can be send in plaintext and without padding
  * and typically does make little sense (except keepalive)
- * for an encrypted (authenticated) tunnel. 
+ * for an encrypted (authenticated) tunnel.
  * <br>
  * There is also no proof that the other side actually
  * has the acclaimed identity, the only thing that is
@@ -96,18 +96,18 @@ static Identity_ServiceAPI * identity;
 static int pingReceived(const PeerIdentity * sender,
 			const p2p_HEADER * msg) {
   PINGPONG_Message * pmsg;
-  
+
   if (ntohs(msg->size) != sizeof(PINGPONG_Message) ) {
     LOG(LOG_WARNING,
 	_("Received malformed '%s' message. Dropping.\n"),
-	"ping");  
+	"ping");
     return SYSERR;
   }
   pmsg = (PINGPONG_Message *) msg;
   if (!hostIdentityEquals(coreAPI->myIdentity,
 			  &pmsg->receiver)) {
     LOG(LOG_WARNING,
-	_("Received ping for another peer. Dropping.\n"));  
+	_("Received ping for another peer. Dropping.\n"));
     return SYSERR; /* not for us */
   }
   pmsg->header.type = htons(p2p_PROTO_PONG);
@@ -122,12 +122,12 @@ static int sendPlaintext(const PeerIdentity * peer,
 			 const PINGPONG_Message * msg) {
   HELO_Message * helo;
   TSession * mytsession;
-  
+
   if (SYSERR == identity->identity2Helo(peer,
-					ANY_PROTOCOL_NUMBER, 
+					ANY_PROTOCOL_NUMBER,
 					YES,
-					&helo)) 
-    return SYSERR;  
+					&helo))
+    return SYSERR;
   if (SYSERR == transport->connect(helo, &mytsession)) {
     FREE(helo);
     return SYSERR;
@@ -139,7 +139,7 @@ static int sendPlaintext(const PeerIdentity * peer,
     return SYSERR;
   }
   transport->disconnect(mytsession);
-  return OK;  
+  return OK;
 }
 
 /**
@@ -154,7 +154,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
   if (ntohs(hmsg->size) != sizeof(PINGPONG_Message) ) {
     LOG(LOG_WARNING,
 	_("Received malformed '%s' message. Dropping.\n"),
-	"ping");     
+	"ping");
     return SYSERR;
   }
   pmsg = (PINGPONG_Message *) hmsg;
@@ -170,7 +170,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
   if (OK != coreAPI->sendPlaintext(tsession,
 				   (char*) pmsg,
 				   sizeof(PINGPONG_Message))) {
-    return sendPlaintext(sender, pmsg); 
+    return sendPlaintext(sender, pmsg);
   }
   return OK;
 }
@@ -190,10 +190,10 @@ static int pongReceived(const PeerIdentity * sender,
 			   &pmsg->receiver)) {
     LOG(LOG_WARNING,
 	_("Received malformed '%s' message. Dropping.\n"),
-	"pong");     
+	"pong");
     return SYSERR; /* bad pong */
   }
-  MUTEX_LOCK(pingPongLock);   
+  MUTEX_LOCK(pingPongLock);
   for (i=0;i<MAX_PING_PONG;i++) {
     entry = &pingPongs[i];
     if ( ((int)ntohl(pmsg->challenge) == entry->challenge) &&
@@ -207,7 +207,7 @@ static int pongReceived(const PeerIdentity * sender,
 	     sizeof(PingPongEntry));
     }
   }
-  MUTEX_UNLOCK(pingPongLock);   
+  MUTEX_UNLOCK(pingPongLock);
   return OK;
 }
 
@@ -227,10 +227,10 @@ static int plaintextPongReceived(const PeerIdentity * sender,
 			   &pmsg->receiver)) {
     LOG(LOG_WARNING,
 	_("Received malformed '%s' message. Dropping.\n"),
-	"pong");     
+	"pong");
     return SYSERR; /* bad pong */
   }
-  MUTEX_LOCK(pingPongLock);   
+  MUTEX_LOCK(pingPongLock);
   for (i=0;i<MAX_PING_PONG;i++) {
     entry = &pingPongs[i];
     if ( ((int)ntohl(pmsg->challenge) == entry->challenge) &&
@@ -245,7 +245,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
 	     sizeof(PingPongEntry));
     }
   }
-  MUTEX_UNLOCK(pingPongLock);   
+  MUTEX_UNLOCK(pingPongLock);
   return OK;
 }
 
@@ -261,9 +261,9 @@ static int plaintextPongReceived(const PeerIdentity * sender,
  * @param plaintext is the PONG expected to be in plaintext (YES/NO)
  * @returns NULL on error, otherwise the PING message
  */
-static p2p_HEADER * 
+static p2p_HEADER *
 createPing(const PeerIdentity * receiver,
-	   CronJob method,	   
+	   CronJob method,	
 	   void * data,
 	   int plaintext) {
   int i;
@@ -273,17 +273,17 @@ createPing(const PeerIdentity * receiver,
   TIME_T now;
   PINGPONG_Message * pmsg;
 
-  MUTEX_LOCK(pingPongLock);   
+  MUTEX_LOCK(pingPongLock);
   now = TIME(&min); /* set both, tricky... */
-  
+
   j = -1;
-  for (i=0;i<MAX_PING_PONG;i++) 
+  for (i=0;i<MAX_PING_PONG;i++)
     if (min > pingPongs[i].sendTime) {
       min = pingPongs[i].sendTime;
       j = i;
     }
   if (j == -1) { /* all send this second!? */
-    MUTEX_UNLOCK(pingPongLock);     
+    MUTEX_UNLOCK(pingPongLock);
     return NULL;
   }
   entry = &pingPongs[j];
@@ -303,7 +303,7 @@ createPing(const PeerIdentity * receiver,
 	 sizeof(PeerIdentity));
   entry->challenge = rand();
   pmsg->challenge = htonl(entry->challenge);
-  MUTEX_UNLOCK(pingPongLock);     
+  MUTEX_UNLOCK(pingPongLock);
   return &pmsg->header;
 }
 
@@ -322,8 +322,8 @@ static int initiatePing(const PeerIdentity * receiver,
 			void * data) {
   PINGPONG_Message * pmsg;
 
-  pmsg = (PINGPONG_Message*) createPing(receiver, 
-					method, 
+  pmsg = (PINGPONG_Message*) createPing(receiver,
+					method,
 					data,
 					usePlaintext);
   if (pmsg == NULL)
@@ -361,7 +361,7 @@ static int pingPlaintext(const PeerIdentity * receiver,
 					YES);
   if (pmsg == NULL)
     return SYSERR;
-  coreAPI->sendPlaintext(session, 
+  coreAPI->sendPlaintext(session,
 			 (char*)pmsg,
 			 sizeof(PINGPONG_Message));
   FREE(pmsg);

@@ -19,7 +19,7 @@
 
 /**
  * @file include/gnunet_ecrs_lib.h
- * @brief support for ECRS encoding of files 
+ * @brief support for ECRS encoding of files
  * @author Christian Grothoff
  */
 
@@ -58,11 +58,11 @@
 
 
 /**
- * Fixed SBlock updateInterval codes. Positive values 
- * are interpreted as durations (in seconds) for periodical 
+ * Fixed SBlock updateInterval codes. Positive values
+ * are interpreted as durations (in seconds) for periodical
  * updates.
  */
-#define ECRS_SBLOCK_UPDATE_SPORADIC  -1 
+#define ECRS_SBLOCK_UPDATE_SPORADIC  -1
 #define ECRS_SBLOCK_UPDATE_NONE       0
 
 
@@ -122,7 +122,7 @@ int ECRS_delFromMetaData(struct ECRS_MetaData * md,
 /**
  * Iterate over MD entries, excluding thumbnails.
  *
- * @return number of entries 
+ * @return number of entries
  */
 int ECRS_getMetaData(const struct ECRS_MetaData * md,
 		     ECRS_MetaDataIterator iterator,
@@ -145,10 +145,10 @@ char * ECRS_getFromMetaData(const struct ECRS_MetaData * md,
  */
 size_t ECRS_getThumbnailFromMetaData(const struct ECRS_MetaData * md,
 				     unsigned char ** thumb);
-		   
+		
 /**
- * Extract meta-data from a file.  
- * 
+ * Extract meta-data from a file.
+ *
  * @return SYSERR on error, otherwise the number
  *   of meta-data items obtained
  */
@@ -160,10 +160,10 @@ int ECRS_extractMetaData(struct ECRS_MetaData * md,
  * Serialize meta-data to target.
  *
  * @param size maximum number of bytes available
- * @param part is it ok to just write SOME of the 
+ * @param part is it ok to just write SOME of the
  *        meta-data to match the size constraint,
  *        possibly discarding some data? YES/NO.
- * @return number of bytes written on success, 
+ * @return number of bytes written on success,
  *         SYSERR on error (typically: not enough
  *         space)
  */
@@ -181,7 +181,7 @@ unsigned int ECRS_sizeofMetaData(const struct ECRS_MetaData * md);
 /**
  * Deserialize meta-data.  Initializes md.
  * @param size number of bytes available
- * @return OK on success, SYSERR on error (i.e. 
+ * @return OK on success, SYSERR on error (i.e.
  *         bad format)
  */
 int ECRS_deserializeMetaData(struct ECRS_MetaData ** md,
@@ -194,7 +194,7 @@ int ECRS_deserializeMetaData(struct ECRS_MetaData ** md,
  *
  * @return YES if it is, NO if it is not, SYSERR if
  *  we have no mime-type information (treat as 'NO')
- */ 
+ */
 int ECRS_isDirectory(struct ECRS_MetaData * md);
 
 /**
@@ -258,7 +258,7 @@ int ECRS_isNamespaceURI(const struct ECRS_URI * uri);
 char * ECRS_getNamespaceName(const HashCode512 * nsid);
 
 /**
- * Get the ID of a namespace from the given 
+ * Get the ID of a namespace from the given
  * namespace URI.
  */
 int ECRS_getNamespaceId(const struct ECRS_URI * uri,
@@ -368,11 +368,11 @@ typedef int (*ECRS_FileIterator)(const char * filename,
 				 void * cls);
 
 /**
- * Iterate over all indexed files.  
+ * Iterate over all indexed files.
  *
  * This function will ONLY work if gnunetd runs on the
  * same machine as the current process and if the indexed
- * files could be symlinked.  If indexed files had to be 
+ * files could be symlinked.  If indexed files had to be
  * uploaded to a remote machine or copied, the original
  * names will have been lost.  In that case, the iterator
  * will NOT iterate over these files.
@@ -409,7 +409,7 @@ int ECRS_unindexFile(const char * filename,
  * @param meta meta-data for the namespace advertisement
  * @param rootEntry name of the root entry in the namespace (for
  *        the namespace advertisement)
- * @param rootURI set to the URI of the namespace, NULL if 
+ * @param rootURI set to the URI of the namespace, NULL if
  *        no advertisement was created
  *
  * @return OK on success, SYSERR on error (namespace already exists)
@@ -507,7 +507,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
  * @param key under which the result was found (hash of keyword),
  *        NULL if no key is known
  * @param md a description for the URI
- * @return OK, SYSERR to abort 
+ * @return OK, SYSERR to abort
  */
 typedef int (*ECRS_SearchProgressCallback)
   (const ECRS_FileInfo * fi,
@@ -551,10 +551,10 @@ typedef void (*ECRS_DownloadProgressCallback)
    unsigned long long lastBlockOffset,
    const char * lastBlock,
    unsigned int lastBlockSize,
-   void * closure); 
+   void * closure);
 
 /**
- * Download a file. 
+ * Download a file.
  *
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file

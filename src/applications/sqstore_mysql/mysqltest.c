@@ -43,7 +43,7 @@ static int checkValue(const HashCode512 * key,
     ret = OK;
   } else {
     fprintf(stderr, "Invalid value!\n");
-    ret = SYSERR;		  
+    ret = SYSERR;		
   }
   FREE(value);
   return ret;
@@ -55,7 +55,7 @@ static int iterateUp(const HashCode512 * key,
   int ret;
 
   ret = checkValue(key, val, closure);
-  (*closure) += 2;  
+  (*closure) += 2;
   return ret;
 }
 
@@ -65,7 +65,7 @@ static int iterateUp1(const HashCode512 * key,
   int ret;
 
   ret = checkValue(key, val, closure);
-  (*closure) += 1;  
+  (*closure) += 1;
   return ret;
 }
 
@@ -74,7 +74,7 @@ static int iterateDown(const HashCode512 * key,
 		       int * closure) {
   int ret;
 
-  (*closure) -= 2;  
+  (*closure) -= 2;
   ret = checkValue(key, val, closure);
   return ret;
 }
@@ -102,9 +102,9 @@ static int multipleCheck(const HashCode512 * key,
 		      ntohl(val->size)) ) )
       return SYSERR; /* duplicate! */
     FREE(*last);
-  } 
+  }
   *last = MALLOC(ntohl(val->size));
-  memcpy(*last, 
+  memcpy(*last,
 	 val,
 	 ntohl(val->size));
   return OK;
@@ -137,13 +137,13 @@ static int test(SQstore_ServiceAPI * api) {
 					(Datum_Iterator) &iterateUp1,
 					&i));
   for (i=255;i>=0;i--) {
-    memset(&key, 256-i, sizeof(HashCode512));     
+    memset(&key, 256-i, sizeof(HashCode512));
     ASSERT(1 == api->get(&key, i+1, &checkValue, &i));
   }
 
   oldSize = api->getSize();
   for (i=255;i>=0;i-=2) {
-    memset(&key, 256-i, sizeof(HashCode512)); 
+    memset(&key, 256-i, sizeof(HashCode512));
     value = initValue(i+1);
     ASSERT(1 == api->del(&key, value));
     FREE(value);
@@ -159,7 +159,7 @@ static int test(SQstore_ServiceAPI * api) {
 					   &i));
   ASSERT(0 == i);
   for (i=254;i>=0;i-=2) {
-    memset(&key, 256-i, sizeof(HashCode512)); 
+    memset(&key, 256-i, sizeof(HashCode512));
     value = initValue(i+1);
     ASSERT(1 == api->del(&key, value));
     FREE(value);
@@ -172,14 +172,14 @@ static int test(SQstore_ServiceAPI * api) {
   api->put(&key, value);
   ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
 					 (Datum_Iterator) &priorityCheck,
-					 &i));  
+					 &i));
   api->update(&key,
 	      value,
 	      4);
   i += 4;
   ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
 					 (Datum_Iterator) &priorityCheck,
-					 &i));  
+					 &i));
   FREE(value);
 
   /* test multiple results */
@@ -190,7 +190,7 @@ static int test(SQstore_ServiceAPI * api) {
   value = NULL;
   ASSERT(2 == api->iterateExpirationTime(ANY_BLOCK,
 					 (Datum_Iterator) &multipleCheck,
-					 &value));  
+					 &value));
   FREE(value);
   api->del(&key,
 	   NULL);
@@ -198,8 +198,8 @@ static int test(SQstore_ServiceAPI * api) {
 	   NULL);
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
 					 NULL,
-					 NULL));  
-  
+					 NULL));
+
   api->drop();
   return OK;
  FAILURE:
@@ -208,9 +208,9 @@ static int test(SQstore_ServiceAPI * api) {
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parser(int argc, 
+static int parser(int argc,
 		  char * argv[]) {
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
@@ -242,21 +242,21 @@ int main(int argc, char *argv[]) {
   initCore();
   api = requestService("sqstore_mysql");
   ok = SYSERR;
-  if (api != NULL) {   
+  if (api != NULL) {
     api->drop();
-    releaseService(api);  
-    api = requestService("sqstore_mysql");    
+    releaseService(api);
+    api = requestService("sqstore_mysql");
     if (api != NULL) {
       ok = test(api);
       releaseService(api);
-    }  
+    }
   }
   doneCore();
   doneUtil();
-  if (ok == SYSERR) 
+  if (ok == SYSERR)
     return 1;
-  else 
-    return 0; 
+  else
+    return 0;
 }
 
 /* end of mysqltest.c */

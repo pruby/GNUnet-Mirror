@@ -88,7 +88,7 @@ int ECRS_deleteNamespace(const char * name) {
  * @param meta meta-data for the namespace advertisement
  * @param rootEntry name of the root entry in the namespace (for
  *        the namespace advertisement)
- * @param rootURI set to the URI of the namespace, NULL if 
+ * @param rootURI set to the URI of the namespace, NULL if
  *        no advertisement was created
  *
  * @return OK on success, SYSERR on error (namespace already exists)
@@ -146,14 +146,14 @@ int ECRS_createNamespace(const char * name,
             "600");
   FREE(fileName);
   FREE(dst);
-  
+
   /* create advertisements */
 
   mdsize = ECRS_sizeofMetaData(meta);
   size = mdsize + sizeof(NBlock);
   if (size > MAX_NBLOCK_SIZE) {
     size = MAX_NBLOCK_SIZE;
-    value = MALLOC(sizeof(Datastore_Value) + 
+    value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     nb = (NBlock*) &value[1];
     nb->type = htonl(N_BLOCK);
@@ -170,7 +170,7 @@ int ECRS_createNamespace(const char * name,
     }
     size = sizeof(NBlock) + mdsize;
   } else {
-    value = MALLOC(sizeof(Datastore_Value) + 
+    value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     nb = (NBlock*) &value[1];
     nb->type = htonl(N_BLOCK);
@@ -178,7 +178,7 @@ int ECRS_createNamespace(const char * name,
 			   (char*)&nb[1],
 			   mdsize,
 			   NO);
-  }  
+  }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(N_BLOCK);
   value->prio = htonl(priority);
@@ -186,9 +186,9 @@ int ECRS_createNamespace(const char * name,
   value->expirationTime = htonll(expiration);
   sock = getClientSocket();
   ret = OK;
-    
+
   /* publish NBlock */
-  memset(&nb->identifier, 0, sizeof(HashCode512));  
+  memset(&nb->identifier, 0, sizeof(HashCode512));
   getPublicKey(hk,
 	       &nb->subspace);
   hash(&nb->subspace,
@@ -198,7 +198,7 @@ int ECRS_createNamespace(const char * name,
   (*rootURI)->type = sks;
   (*rootURI)->data.sks.namespace = nb->namespace;
   (*rootURI)->data.sks.identifier = *rootEntry;
-  
+
   nb->rootEntry = *rootEntry;
 
   GNUNET_ASSERT(OK == sign(hk,
@@ -206,13 +206,13 @@ int ECRS_createNamespace(const char * name,
 			   &nb->identifier,
 			   &nb->signature));
   if (OK != FS_insert(sock, value))
-    ret = SYSERR;  
-  
+    ret = SYSERR;
+
 
   /* publish KNBlocks */
   size += sizeof(KNBlock) - sizeof(NBlock);
   knvalue = MALLOC(sizeof(Datastore_Value) + size);
-  *knvalue = *value;  
+  *knvalue = *value;
   knvalue->type = htonl(KN_BLOCK);
   knvalue->size = htonl(sizeof(Datastore_Value) + size);
   knb = (KNBlock*) &knvalue[1];
@@ -220,7 +220,7 @@ int ECRS_createNamespace(const char * name,
   memcpy(&knb->nblock,
 	 &nb,
 	 sizeof(NBlock) + mdsize);
-  
+
   keywords = advertisementURI->data.ksk.keywords;
   keywordCount = advertisementURI->data.ksk.keywordCount;
   for (i=0;i<keywordCount;i++) {
@@ -245,10 +245,10 @@ int ECRS_createNamespace(const char * name,
       ret = SYSERR;
     FREE(keywords[i]);
   }
-  GROW(keywords, keywordCount, 0);  
+  GROW(keywords, keywordCount, 0);
   FREE(knvalue);
   releaseClientSocket(sock);
-  FREE(value); 
+  FREE(value);
 
   freePrivateKey(hk);
   if (ret != OK) {
@@ -302,7 +302,7 @@ int ECRS_testNamespaceExists(const char * name,
     return SYSERR;
   getPublicKey(hk,
 	       &pk);
-  freePrivateKey(hk);  
+  freePrivateKey(hk);
   hash(&pk, sizeof(PublicKey), &namespace);
   if ( (hc == NULL) ||
        (equalsHashCode512(hc,
@@ -374,12 +374,12 @@ int ECRS_addToNamespace(const char * name,
     return SYSERR;
 
   /* THEN: construct SBlock */
-  dstURI = ECRS_uriToString(dstU); 
+  dstURI = ECRS_uriToString(dstU);
   mdsize = ECRS_sizeofMetaData(md);
   size = mdsize + sizeof(SBlock);
   if (size > MAX_SBLOCK_SIZE) {
     size = MAX_SBLOCK_SIZE;
-    value = MALLOC(sizeof(Datastore_Value) + 
+    value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     sb = (SBlock*) &value[1];
     sb->type = htonl(S_BLOCK);
@@ -398,7 +398,7 @@ int ECRS_addToNamespace(const char * name,
     }
     size = sizeof(SBlock) + mdsize;
   } else {
-    value = MALLOC(sizeof(Datastore_Value) + 
+    value = MALLOC(sizeof(Datastore_Value) +
 		   size);
     sb = (SBlock*) &value[1];
     sb->type = htonl(S_BLOCK);
@@ -409,7 +409,7 @@ int ECRS_addToNamespace(const char * name,
 			   &((char*)&sb[1])[strlen(dstURI)+1],
 			   mdsize,
 			   NO);
-  }  
+  }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(S_BLOCK);
   value->prio = htonl(priority);
@@ -422,7 +422,7 @@ int ECRS_addToNamespace(const char * name,
   sb->nextIdentifier = *nextId;
 
   deltaId(thisId,
-	  nextId,	  
+	  nextId,	
 	  &sb->identifierIncrement);
   hash(thisId,
        sizeof(HashCode512),
@@ -440,12 +440,12 @@ int ECRS_addToNamespace(const char * name,
   (*uri)->type = sks;
   (*uri)->data.sks.namespace = namespace;
   (*uri)->data.sks.identifier = *thisId;
-  
+
   ECRS_encryptInPlace(thisId,
 		      &sb->creationTime,
 		      size
 		      - sizeof(Signature)
-		      - sizeof(PublicKey) 
+		      - sizeof(PublicKey)
 		      - sizeof(HashCode512));
 
   /* FINALLY: sign & publish SBlock */
@@ -453,7 +453,7 @@ int ECRS_addToNamespace(const char * name,
 			   sizeof(SBlock) - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			   &sb->identifier,
 			   &sb->signature));
-  freePrivateKey(hk);  
+  freePrivateKey(hk);
 
   sock = getClientSocket();
   ret = OK;
@@ -462,7 +462,7 @@ int ECRS_addToNamespace(const char * name,
     FREE(*uri);
   }
   releaseClientSocket(sock);
-  FREE(value); 
+  FREE(value);
   FREE(dstURI);
 
   return ret;
@@ -491,7 +491,7 @@ static int processFile_(char * name,
 
   fileName = getPseudonymFileName(name);
   len = getFileSize(fileName);
-  if (len < 2) {   
+  if (len < 2) {
     LOG(LOG_ERROR,
         _("File '%s' does not contain a pseudonym.\n"),
         fileName);
@@ -522,7 +522,7 @@ static int processFile_(char * name,
   FREE(fileName);
   getPublicKey(hk,
 	       &pk);
-  freePrivateKey(hk);  
+  freePrivateKey(hk);
   hash(&pk, sizeof(PublicKey), &namespace);
   if (c->cb != NULL) {
     if (OK == c->cb(&namespace,

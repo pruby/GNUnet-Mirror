@@ -31,8 +31,8 @@
 
 /**
  * Type of the per-transport callback method.
- */ 
-typedef void (*TransportCallback)(TransportAPI * tapi, 
+ */
+typedef void (*TransportCallback)(TransportAPI * tapi,
 				  void * data);
 
 /**
@@ -69,7 +69,7 @@ typedef struct {
    */
   void (*forEach)(TransportCallback callback,
 		  void * data);
-  
+
   /**
    * Connect to a remote host using the advertised transport
    * layer. This may fail if the appropriate transport mechanism is
@@ -90,7 +90,7 @@ typedef struct {
    * core if the connection is being closed. Associate can also be
    * called to test if it would be possible to associate the session
    * later, in this case, use disconnect afterwards.
-   * 
+   *
    * @param tsession the session handle passed along
    *   from the call to receive that was made by the transport
    *   layer
@@ -98,7 +98,7 @@ typedef struct {
    *         SYSERR if not.
    */
   int (*associate)(TSession * tsession);
-  
+
   /**
    * Get the cost of a message in for the given transport mechanism.
    */
@@ -115,9 +115,9 @@ typedef struct {
   int (*send)(TSession * session,
 	      const void * msg,
 	      const unsigned int size);
-  
+
   /**
-   * Send a message.  
+   * Send a message.
    * Try to be more reliable than the usual transportSend.
    *
    * @param session the session identifying the connection
@@ -134,9 +134,9 @@ typedef struct {
    * either connected or associated sessions.
    *
    * @return OK on success, SYSERR on error
-   */ 
+   */
   int (*disconnect)(TSession * session);
-  
+
   /**
    * Verify that a HELO is ok. Call a method
    * if the verification was successful.
@@ -144,17 +144,17 @@ typedef struct {
    *        SYSERR if the transport mechanism is not supported
    */
   int (*verifyHELO)(const HELO_Message * helo);
-  
+
   /**
    * Convert HELO to string.
    */
   char * (*heloToString)(const HELO_Message * helo);
-  
+
   /**
    * Get the MTU for a given transport type.
    */
   int (*getMTU)(unsigned short ttype);
-  
+
   /**
    * Create a HELO advertisement for the given
    * transport type for this node.
@@ -177,7 +177,7 @@ typedef struct {
    */
   int (*getAdvertisedHELOs)(int maxLen,
 			    char * buff);
-  
+
 } Transport_ServiceAPI;
 
 /* end of gnunet_transport_service.h */

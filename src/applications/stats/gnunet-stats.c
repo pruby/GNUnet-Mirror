@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/stats/gnunet-stats.c 
+ * @file applications/stats/gnunet-stats.c
  * @brief tool to obtain statistics from gnunetd.
  * @author Christian Grothoff
  * @author Igor Wronsky
@@ -57,10 +57,10 @@ static int printProtocols(unsigned short type,
 
   if (isP2P != lastIp2p) {
     if (isP2P)
-      fprintf(stream, 
+      fprintf(stream,
 	      _("Supported peer-to-peer messages:\n"));
     else
-      fprintf(stream, 
+      fprintf(stream,
 	      _("Supported client-server messages:\n"));
     lastIp2p = isP2P;
   }
@@ -69,12 +69,12 @@ static int printProtocols(unsigned short type,
   else
     name = csMessageName(type);
   if (name == NULL)
-    fprintf(stream, 
+    fprintf(stream,
 	    "\t%d\n",
 	    type);
   else
-    fprintf(stream, 
-	    "\t%d\t(%s)\n", 
+    fprintf(stream,
+	    "\t%d\t(%s)\n",
 	    type,
 	    name);
   return OK;
@@ -109,36 +109,36 @@ static void printhelp() {
 static int parseOptions(int argc,
 			char ** argv) {
   int option_index;
-  int c;  
+  int c;
 
   while (1) {
     static struct GNoption long_options[] = {
-      { "protocols",          0, 0, 'p' }, 
+      { "protocols",          0, 0, 'p' },
       LONG_DEFAULT_OPTIONS,
       { 0,0,0,0 }
-    };    
+    };
     option_index = 0;
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhdc:L:H:", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "vhdc:L:H:",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-stats v%s\n",
 	     VERSION, STATS_VERSION);
       return SYSERR;
-    case 'h': 
-      printhelp(); 
+    case 'h':
+      printhelp();
       return SYSERR;
     case 'p':
       printProtocolsSelected = YES;
       break;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return -1;
@@ -153,7 +153,7 @@ static int parseOptions(int argc,
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return 0 ok, 1 on error
- */   
+ */
 int main(int argc, char ** argv) {
   int res;
   GNUNET_TCP_SOCKET * sock;
@@ -169,7 +169,7 @@ int main(int argc, char ** argv) {
   res = requestStatistics(sock,
 			  (StatisticsProcessor) &printStatistics,
 			  stdout);
-  if ((printProtocolsSelected == YES) && 
+  if ((printProtocolsSelected == YES) &&
       (res == OK)) {
     res = requestAvailableProtocols(sock,
 				    (ProtocolProcessor) &printProtocols,

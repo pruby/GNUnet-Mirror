@@ -17,7 +17,7 @@
      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
      Boston, MA 02111-1307, USA.
 */
-/** 
+/**
  * @file applications/fs/lib/fslibtest.c
  * @brief testcase for fslib
  * @author Christian Grothoff
@@ -32,7 +32,7 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
@@ -98,14 +98,14 @@ static Datastore_Value * makeKBlock(unsigned int i,
   hash(&db->keyspace,
        sizeof(PublicKey),
        query);
-  freePrivateKey(kkey);  
+  freePrivateKey(kkey);
   return block;
 }
 
 
 typedef struct {
   Semaphore * sem;
-  int found; 
+  int found;
   int i;
 } TSC;
 
@@ -140,7 +140,7 @@ static int searchResultCB(const HashCode512 * key,
   fileBlockGetQuery((DBlock*) &blk[1],
 		    ntohl(blk->size) - sizeof(Datastore_Value),
 		    &ekey);
-  GNUNET_ASSERT(OK == 
+  GNUNET_ASSERT(OK ==
 		fileBlockEncode((DBlock*) &blk[1],
 				ntohl(blk->size) - sizeof(Datastore_Value),
 				&ekey,
@@ -192,11 +192,11 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
 			   now + 30 * cronSECONDS,
 			   (Datum_Iterator)&searchResultCB,
 			   &closure);
-  addCronJob((CronJob) &abortSem, 
+  addCronJob((CronJob) &abortSem,
 	     30 * cronSECONDS,
-	     0, 
+	     0,
 	     closure.sem);
-  SEMAPHORE_DOWN(closure.sem);  
+  SEMAPHORE_DOWN(closure.sem);
   FS_stop_search(ctx,
 		 handle);
   suspendCron();
@@ -260,7 +260,7 @@ int main(int argc, char * argv[]){
 				ntohl(block->size) - sizeof(Datastore_Value),
 				&query,
 				&eblock));
-    CHECK(OK == FS_insert(sock, 
+    CHECK(OK == FS_insert(sock,
 			  eblock));
     CHECK(OK == trySearch(ctx, i));
     CHECK(SYSERR != FS_delete(sock,
@@ -288,7 +288,7 @@ int main(int argc, char * argv[]){
 				ntohl(block->size) - sizeof(Datastore_Value),
 				&query,
 				&eblock));
-    CHECK(OK == FS_insert(sock, 
+    CHECK(OK == FS_insert(sock,
 			  eblock));
     CHECK(OK == trySearch(ctx, i));
     CHECK(1 == FS_delete(sock,
@@ -332,7 +332,7 @@ int main(int argc, char * argv[]){
   gnunet_util_sleep(10 * cronSECONDS);
   FS_stop_search(ctx, hnd);
   CHECK(i == 0);
-		 
+		
 
   /* just to check if it crashes... */
   FS_getAveragePriority(sock);
@@ -349,14 +349,14 @@ int main(int argc, char * argv[]){
   if (daemon != -1) {
     if (0 != kill(daemon, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon != waitpid(daemon, &status, 0)) 
+    if (daemon != waitpid(daemon, &status, 0))
       DIE_STRERROR("waitpid");
-  
-    if ( (WEXITSTATUS(status) == 0) && 
+
+    if ( (WEXITSTATUS(status) == 0) &&
 	 (ok == YES) )
       return 0;
     else
-      return 1;    
+      return 1;
   } else
     return 0;
 }

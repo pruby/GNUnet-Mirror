@@ -20,7 +20,7 @@
 /**
  * @file traffic/traffic.h
  * @author Christian Grothoff
- * 
+ *
  * @brief Module to keep track of recent amounts of p2p traffic
  * on the local GNUnet node.
  */
@@ -81,7 +81,7 @@ typedef struct {
 } CS_TRAFFIC_INFO;
 
 /**
- * Generic version of CS_TRAFFIC_INFO with field for accessing end of struct 
+ * Generic version of CS_TRAFFIC_INFO with field for accessing end of struct
  * (use the other version for allocation).
  */
 typedef struct {
@@ -107,7 +107,7 @@ typedef struct {
   CS_HEADER header;
 
   /**
-   * How many time units back should the statistics returned contain? 
+   * How many time units back should the statistics returned contain?
    * (in network byte order) Must be smaller or equal to HISTORY_SIZE.
    */
   unsigned int timePeriod;

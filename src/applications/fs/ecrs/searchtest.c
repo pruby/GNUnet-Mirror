@@ -18,7 +18,7 @@
      Boston, MA 02111-1307, USA.
 */
 
-/** 
+/**
  * @file applications/fs/ecrs/searchtest.c
  * @brief testcase for search
  * @author Christian Grothoff
@@ -32,7 +32,7 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
@@ -84,7 +84,7 @@ static int searchFile(const struct ECRS_URI * uri,
 	      NULL);
   if (resultCount <= 0)
     return OK;
-  else 
+  else
     return SYSERR;
 }
 
@@ -119,7 +119,7 @@ int main(int argc, char * argv[]){
   gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
   sock = getClientSocket();
   CHECK(sock != NULL);
-  
+
   /* ACTUAL TEST CODE */
   /* first, simple insertion => one result */
 #if 0
@@ -182,14 +182,14 @@ int main(int argc, char * argv[]){
   if (daemon != -1) {
     if (0 != kill(daemon, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon != waitpid(daemon, &status, 0)) 
+    if (daemon != waitpid(daemon, &status, 0))
       DIE_STRERROR("waitpid");
-    
-    if ( (WEXITSTATUS(status) == 0) && 
+
+    if ( (WEXITSTATUS(status) == 0) &&
 	 (ok == YES) )
       return 0;
     else
-      return 1;    
+      return 1;
   } else {
     if (ok == YES)
       return 0;

@@ -31,11 +31,11 @@
 
 /**
  * Just the version number of GNUnet-transport implementation.
- * Encoded as 
+ * Encoded as
  * 0.6.1d  => 0x00060100
  * 4.5.2   => 0x04050200
- * 
- * Note that this version number is only changed if 
+ *
+ * Note that this version number is only changed if
  * something changes in the transport API.  It follows
  * roughly the main GNUnet version scheme, but is
  * more a compatibility ID.
@@ -84,7 +84,7 @@ typedef void (*MessagePackProcessor)(MessagePack * mp);
  * This header file contains a draft for the gnunetd
  * core API. This API is used by the transport layer
  * for communication with the GNUnet core.
- * 
+ *
  * A pointer to an instance of this struct is passed
  * to the init method of each Transport API.
  */
@@ -162,7 +162,7 @@ typedef struct {
   /**
    * The name of the transport, set by the
    * core. Read only for the service itself!
-   */ 
+   */
   char * transName;
 
   /**
@@ -204,13 +204,13 @@ typedef struct {
    * @return OK if the helo is well-formed
    */
   int (*verifyHelo)(const HELO_Message * helo);
-  
+
   /**
    * Create a HELO-Message for the current node. The HELO is
    * created without signature, timestamp, senderIdentity
-   * or publicKey. The GNUnet core will sign the message 
+   * or publicKey. The GNUnet core will sign the message
    * and add these other fields. The callee is only
-   * responsible for filling in the protocol number, 
+   * responsible for filling in the protocol number,
    * senderAddressSize and the senderAddress itself.
    *
    * @param helo address where to store the pointer to the HELO
@@ -246,7 +246,7 @@ typedef struct {
 	      const unsigned int size);
 
   /**
-   * Send a message to the specified remote node with 
+   * Send a message to the specified remote node with
    * increased reliablility (whatever that means is
    * up to the transport).
    *
@@ -275,7 +275,7 @@ typedef struct {
    * for eventually freeing resources associated with the tesession). If
    * session is not NULL, the core takes responsbility for eventually
    * calling disconnect.
-   * 
+   *
    * @param tsession the session handle passed along
    *   from the call to receive that was made by the transport
    *   layer
@@ -289,7 +289,7 @@ typedef struct {
    * by either the transport layer calling "closeSession" on
    * the core API or by the core API calling "disconnect"
    * on the transport API. Neither closeSession nor
-   * disconnect should call the other method. Due to 
+   * disconnect should call the other method. Due to
    * potentially concurrent actions (both sides close the
    * connection simultaneously), either API must tolerate
    * being called from the other side.
@@ -297,7 +297,7 @@ typedef struct {
    * @param tsession the session that is to be closed
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*disconnect)(TSession * tsession);  
+  int (*disconnect)(TSession * tsession);
 
   /**
    * Start the server process to receive inbound traffic.

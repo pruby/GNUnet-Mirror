@@ -35,7 +35,7 @@
 /**
  * Obtain option from a peer.
  * @return NULL on error
- */   
+ */
 char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
 				   const char * section,
 				   const char * option) {
@@ -43,14 +43,14 @@ char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
   CS_GET_OPTION_REPLY * reply;
   int res;
   char * ret;
-  
+
   memset(&req,
 	 0,
 	 sizeof(CS_GET_OPTION_REQUEST));
   req.header.type = htons(CS_PROTO_GET_OPTION_REQUEST);
   req.header.size = htons(sizeof(CS_GET_OPTION_REQUEST));
   if ( (strlen(section) >= CS_GET_OPTION_REQUEST_OPT_LEN) ||
-       (strlen(option) >= CS_GET_OPTION_REQUEST_OPT_LEN) ) 
+       (strlen(option) >= CS_GET_OPTION_REQUEST_OPT_LEN) )
     return NULL;
   strcpy(&req.section[0],
 	 section);
@@ -58,12 +58,12 @@ char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
 	 option);
   res = writeToSocket(sock,
 		      &req.header);
-  if (res != OK) 
+  if (res != OK)
     return NULL;
   reply = NULL;
   res = readFromSocket(sock,
 		       (CS_HEADER**)&reply);
-  if (res != OK) 
+  if (res != OK)
     return NULL;
   ret = MALLOC(ntohs(reply->header.size) - sizeof(CS_HEADER) + 1);
   memcpy(ret,

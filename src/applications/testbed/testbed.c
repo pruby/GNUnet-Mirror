@@ -64,13 +64,13 @@ static void tb_undefined(ClientHandle client,
 /**
  * Connect to another peer.
  */
-static void tb_ADD_PEER(ClientHandle client, 
+static void tb_ADD_PEER(ClientHandle client,
 			TESTBED_CS_MESSAGE * msg) {
   p2p_HEADER noise;
-  TESTBED_ADD_PEER_MESSAGE * hm 
+  TESTBED_ADD_PEER_MESSAGE * hm
     = (TESTBED_ADD_PEER_MESSAGE*) msg;
-  
-  LOG(LOG_DEBUG, 
+
+  LOG(LOG_DEBUG,
       " tb_ADD_PEER\n");
   if (sizeof(TESTBED_ADD_PEER_MESSAGE) >
       ntohs(msg->header.size) ) {
@@ -86,13 +86,13 @@ static void tb_ADD_PEER(ClientHandle client,
 	"_ADD_PEER");
     return;
   }
-  
+
   identity->addHost(&hm->helo);
   noise.size = htons(sizeof(p2p_HEADER));
   noise.type = htons(p2p_PROTO_NOISE);
   coreAPI->unicast(&hm->helo.senderIdentity,
 		   &noise,
-		   EXTREME_PRIORITY, 
+		   EXTREME_PRIORITY,
 		   0);
   sendAcknowledgement(client, OK);
 }
@@ -128,26 +128,26 @@ static void tb_GET_HELO(ClientHandle client,
 			TESTBED_GET_HELO_MESSAGE * msg) {
   HELO_Message * helo;
   unsigned int proto = ntohs(msg->proto);
-  
-  if (SYSERR == identity->identity2Helo(coreAPI->myIdentity, 
+
+  if (SYSERR == identity->identity2Helo(coreAPI->myIdentity,
 					proto,
-					NO, 
+					NO,
 					&helo)) {
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("TESTBED could not generate HELO message for protocol %u\n"),
 	proto);
     sendAcknowledgement(client, SYSERR);
   } else {
-    TESTBED_HELO_MESSAGE * reply 
+    TESTBED_HELO_MESSAGE * reply
       = MALLOC(ntohs(helo->header.size) + sizeof(TESTBED_CS_MESSAGE));
-    reply->header.header.size 
+    reply->header.header.size
       = htons(ntohs(helo->header.size) + sizeof(TESTBED_CS_MESSAGE));
-    reply->header.header.type 
+    reply->header.header.type
       = htons(TESTBED_CS_PROTO_REPLY);
     reply->header.msgType
       = htonl(TESTBED_HELO_RESPONSE);
-    memcpy(&reply->helo, 
-	   helo, 
+    memcpy(&reply->helo,
+	   helo,
 	   ntohs(helo->header.size));
     coreAPI->sendToClient(client,
 			  &reply->header.header);
@@ -156,7 +156,7 @@ static void tb_GET_HELO(ClientHandle client,
 	__FUNCTION__);
     FREE(helo);
     FREE(reply);
-  }    
+  }
 }
 
 /**
@@ -165,20 +165,20 @@ static void tb_GET_HELO(ClientHandle client,
 static void tb_SET_TVALUE(ClientHandle client,
 			  TESTBED_SET_TVALUE_MESSAGE * msg) {
   int trust;
-  
+
   trust = ntohl(msg->trust);
-  identity->changeHostTrust(&msg->otherPeer, 
+  identity->changeHostTrust(&msg->otherPeer,
 			    trust);
   sendAcknowledgement(client, OK);
 }	
-		  
+		
 /**
  * Get a trust value.
  */
 static void tb_GET_TVALUE(ClientHandle client,
-			  TESTBED_GET_TVALUE_MESSAGE * msg) {    
+			  TESTBED_GET_TVALUE_MESSAGE * msg) {
   unsigned int trust;
-  
+
   trust = identity->getHostTrust(&msg->otherPeer);
   sendAcknowledgement(client, trust);
 }	
@@ -191,14 +191,14 @@ static void tb_SET_BW(ClientHandle client,
   LOG(LOG_DEBUG,
       "gnunet-testbed: tb_SET_BW\n");
   setConfigurationInt("LOAD",
-		      "MAXNETDOWNBPSTOTAL", 
+		      "MAXNETDOWNBPSTOTAL",
 		      ntohl(msg->in_bw));
   setConfigurationInt("LOAD",
-		      "MAXNETUPBPSTOTAL", 
+		      "MAXNETUPBPSTOTAL",
 		      ntohl(msg->out_bw));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
-}		  
+}		
 
 /**
  * Load an application module.
@@ -208,22 +208,22 @@ static void tb_LOAD_MODULE(ClientHandle client,
   unsigned short size;
   char * name;
   int ok;
-  
+
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_WARNING,
 	_("received invalid '%s' message\n"),
 	"LOAD_MODULE");
     return;
-  } 
-  
+  }
+
   if (! testConfigurationString("TESTBED",
 				"ALLOW_MODULE_LOADING",
 				"YES")) {
     sendAcknowledgement(client, SYSERR);
     return;
   }
-  
+
   name = STRNDUP(&((TESTBED_LOAD_MODULE_MESSAGE_GENERIC*)msg)->modulename[0],
 		 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
@@ -249,21 +249,21 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
   unsigned short size;
   char * name;
   int ok;
-  
+
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_WARNING,
 	_("received invalid '%s' message\n"),
 	"UNLOAD_MODULE");
     return;
-  }  
+  }
   if (! testConfigurationString("TESTBED",
 				"ALLOW_MODULE_LOADING",
-				"YES")) {      
+				"YES")) {
     sendAcknowledgement(client, SYSERR);
     return;
   }
-  
+
   name = STRNDUP(&((TESTBED_UNLOAD_MODULE_MESSAGE_GENERIC*)msg)->modulename[0],
 		 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
@@ -439,22 +439,22 @@ typedef struct {
   /** errno after fork */
   int errno_;
   /** the PID of the process */
-  pid_t pid; 
+  pid_t pid;
   /** stdout and stderr of the process */
   int outputPipe;
   /** thread that reads the output of the process */
   PTHREAD_T reader;
   /** how many bytes of output did the process produce? */
   int outputSize;
-  /** the output of the process */ 
-  char * output; 
+  /** the output of the process */
+  char * output;
   /** did the process exit? (YES/NO) */
-  int hasExited; 
+  int hasExited;
   /** if the process did exit, what was the status? (or errno of execve) */
-  int exitStatus; 
+  int exitStatus;
   /** semaphore used to communicate thread-start */
   Semaphore * sem;
-  /** Client responsible for this process 
+  /** Client responsible for this process
       (if that client disconnects, the process
       will be killed!) */
   ClientHandle client;
@@ -521,15 +521,15 @@ static int pipeReaderThread(ProcessInfo * pi) {
   pi->errno_ = errno;
   if (pi->pid == 0) {
     /* make pipe stdout/stderr */
-    
+
     CLOSE(fd[0]);
     CLOSE(1);
     CLOSE(2);
     if (-1 == dup2(fd[1], 1))
       LOG_STRERROR(LOG_ERROR, "dup2");
     if (-1 == dup2(fd[1], 2))
-      LOG_STRERROR(LOG_ERROR, "dup2");    
-    CLOSE(fd[1]); 
+      LOG_STRERROR(LOG_ERROR, "dup2");
+    CLOSE(fd[1]);
     CHDIR(dir);
     FREE(dir);
     execvp(pi->argv[0],
@@ -563,7 +563,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
   GROW(pt,
        ptSize,
        ptSize+1);
-  pt[ptSize-1] = pi;  
+  pt[ptSize-1] = pi;
   SEMAPHORE_UP(pi->sem);
   MUTEX_UNLOCK(&lock);
 
@@ -598,7 +598,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
     LOG_STRERROR(LOG_WARNING, "waitpid");
     pi->exitStatus = errno;
   }
-  pi->hasExited = YES;    
+  pi->hasExited = YES;
   MUTEX_UNLOCK(&lock);
   return 0;
 }
@@ -624,9 +624,9 @@ static void tb_EXEC(ClientHandle client,
     LOG(LOG_WARNING,
 	_("received invalid '%s' message: %s.\n"),
 	"EXEC",
-	(size <= sizeof(TESTBED_CS_MESSAGE)) 
+	(size <= sizeof(TESTBED_CS_MESSAGE))
 	? "size smaller or equal than TESTBED_CS_MESSAGE"
-	: "last character in command line is not zero-terminator"); 
+	: "last character in command line is not zero-terminator");
     sendAcknowledgement(client, SYSERR);
     return;
   }
@@ -640,9 +640,9 @@ static void tb_EXEC(ClientHandle client,
   clientConfig = NULL;
   if (0 == strncmp("gnunet",
 		   mainName,
-		   strlen("gnunet"))) 
+		   strlen("gnunet")))
     clientConfig = getConfigurationString("TESTBED",
-					  "CLIENTCONFIG"); 
+					  "CLIENTCONFIG");
   if (clientConfig != NULL)
     pi->argc +=2;
   argc2 = pi->argc;
@@ -702,7 +702,7 @@ static void tb_SIGNAL(ClientHandle client,
   MUTEX_LOCK(&lock);
   for (i=0;i<ptSize;i++) {
     pi = pt[i];
-    if (pi->uid != uid) 
+    if (pi->uid != uid)
       continue;
     if (sig == -1) {	
       if (pi->hasExited == NO) {
@@ -722,8 +722,8 @@ static void tb_SIGNAL(ClientHandle client,
 	     ptSize-1);
       }
     } else {
-      if (pi->hasExited == NO) {      
-	if (0 == kill(pi->pid, 
+      if (pi->hasExited == NO) {
+	if (0 == kill(pi->pid,
 		      ntohl(msg->signal)))
 	  ret = OK;
 	else
@@ -755,11 +755,11 @@ static void tb_GET_OUTPUT(ClientHandle client,
       TESTBED_OUTPUT_REPLY_MESSAGE * msg;
 
       msg = MALLOC(65532);
-      msg->header.header.type 
+      msg->header.header.type
 	= htons(TESTBED_CS_PROTO_REPLY);
-      msg->header.msgType 
+      msg->header.msgType
 	= htonl(TESTBED_OUTPUT_RESPONSE);
-      
+
       sendAcknowledgement(client, pi->outputSize);
       pos = 0;
       while (pos < pi->outputSize) {	
@@ -783,7 +783,7 @@ static void tb_GET_OUTPUT(ClientHandle client,
       MUTEX_UNLOCK(&lock);
       return;
     }
-  } 
+  }
   MUTEX_UNLOCK(&lock);
   sendAcknowledgement(client, SYSERR);
 }
@@ -799,8 +799,8 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   char * end;
   char * tmp;
   FILE *outfile;
-  
-  LOG(LOG_DEBUG, 
+
+  LOG(LOG_DEBUG,
       "tb_UPLOAD_FILE\n");
   if (sizeof(TESTBED_UPLOAD_FILE_MESSAGE) > ntohs(msg->header.header.size)) {
     LOG(LOG_ERROR,
@@ -823,14 +823,14 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   if (s == filename) {
     /* filename empty, not allowed! */
     LOG(LOG_ERROR,
-	_("Empty filename for UPLOAD_FILE message is invalid!\n")); 
+	_("Empty filename for UPLOAD_FILE message is invalid!\n"));
     sendAcknowledgement(client, SYSERR);
     return;
   }
   if (s == end) {
     /* filename empty, not allowed! */
     LOG(LOG_ERROR,
-	_("Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n")); 
+	_("Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"));
     sendAcknowledgement(client, SYSERR);
     return;
   }
@@ -845,11 +845,11 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   gnHome = expandFileName(tmp);
   FREE(tmp);
   mkdirp(gnHome);
-  
-  filename = MALLOC(strlen(filename) + strlen(gnHome) + 2); /*2: /, \0 */ 
+
+  filename = MALLOC(strlen(filename) + strlen(gnHome) + 2); /*2: /, \0 */
   strcpy(filename, gnHome);
   strcat(filename, "/");
-  strncat(filename, 
+  strncat(filename,
 	  ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf,
 	  end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf);
   if (htonl(msg->type) == TESTBED_FILE_DELETE) {
@@ -861,7 +861,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
     FREE(filename);
     sendAcknowledgement(client, ack);
     return;
-  }   
+  }
   if (htonl(msg->type) != TESTBED_FILE_APPEND) {
     LOG(LOG_ERROR,
 	_("Invalid message received at %s:%d."),
@@ -869,7 +869,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
 	__LINE__);
     FREE(filename);
     return;
-  }   
+  }
   outfile = FOPEN(filename, "ab");
   if (outfile == NULL) {
     /* Send nack back to control point. */
@@ -879,10 +879,10 @@ static void tb_UPLOAD_FILE(ClientHandle client,
     return;
   }
   FREE(filename);
-  s    = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf 
+  s    = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf
     + strlen(((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf) + 1; /* \0 added */
   size = ntohs(msg->header.header.size) -
-    sizeof(TESTBED_UPLOAD_FILE_MESSAGE) - 
+    sizeof(TESTBED_UPLOAD_FILE_MESSAGE) -
     (strlen(((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf)+1);
   if (GN_FWRITE(s, 1, size, outfile) != size)
     ack = SYSERR;
@@ -894,7 +894,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
 
 /**
  * General type of a message handler.
- */			  
+ */			
 typedef void (*THandler)(ClientHandle client,
 			 TESTBED_CS_MESSAGE * msg);
 
@@ -903,28 +903,28 @@ typedef void (*THandler)(ClientHandle client,
  */
 typedef struct HD_ {
     /**
-     * function that handles these types of messages 
+     * function that handles these types of messages
      */
-    THandler handler; 
+    THandler handler;
 
     /**
      * Expected size of messages for this handler.  Checked by caller.  Use
      * 0 for variable size, in that case, the handler must check.
      */
-    unsigned short expectedSize; 
+    unsigned short expectedSize;
 
     /**
-     * Textual description of the handler for debugging 
+     * Textual description of the handler for debugging
      */
-    char * description; 
-    
+    char * description;
+
     /**
-     * The message-ID of the handler.  Used only for checking that 
+     * The message-ID of the handler.  Used only for checking that
      * the handler array matches the message IDs defined in testbed.h.
      * Must be equal to the index in the handler array that yields
      * this entry.
      */
-    unsigned int msgId; 
+    unsigned int msgId;
 } HD;
 
 /* some macros to make initializing the handlers array extremely brief. */
@@ -939,13 +939,13 @@ typedef struct HD_ {
 static HD handlers[] = {
   TBSENTRY(undefined),	/* For IDs that should never be received */
   TBDENTRY(ADD_PEER),	/* RF: Why was this as TBDENTRY? Because HELO is variable size! */
-  TBSENTRY(DEL_PEER), 
+  TBSENTRY(DEL_PEER),
   TBSENTRY(DEL_ALL_PEERS),
-  TBSENTRY(GET_HELO), 
-  TBSENTRY(SET_TVALUE), 
-  TBSENTRY(GET_TVALUE), 
-  TBSENTRY(undefined), 
-  TBSENTRY(SET_BW), 
+  TBSENTRY(GET_HELO),
+  TBSENTRY(SET_TVALUE),
+  TBSENTRY(GET_TVALUE),
+  TBSENTRY(undefined),
+  TBSENTRY(SET_BW),
   TBDENTRY(LOAD_MODULE),
   TBDENTRY(UNLOAD_MODULE),
   TBDENTRY(UPLOAD_FILE),
@@ -974,9 +974,9 @@ static void csHandleTestbedRequest(ClientHandle client,
   TESTBED_CS_MESSAGE * msg;
   unsigned short size;
   unsigned int id;
-  
+
 #if DEBUG_TESTBED
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "TESTBED handleTestbedRequest\n");
 #endif
   size = ntohs(message->size);
@@ -991,23 +991,23 @@ static void csHandleTestbedRequest(ClientHandle client,
   if (id < TESTBED_MAX_MSG) {
     if ( (handlers[id].expectedSize == 0) ||
 	 (handlers[id].expectedSize == size) ) {
-      LOG(LOG_DEBUG, 
+      LOG(LOG_DEBUG,
 	  "TESTBED received message of type %u.\n",
 	  id);
-      
+
       handlers[id].handler(client, msg);
-      
+
     } else {
       LOG(LOG_ERROR,
 	  _("Received testbed message of type %u but unexpected size %u, expected %u\n"),
-	  id, 
+	  id,
 	  size,
 	  handlers[id].expectedSize);
     }
   } else {
     tb_undefined(client, msg);
   }
-} 
+}
 
 /**
  * Register this testbed peer with the central testbed server.
@@ -1047,17 +1047,17 @@ static void httpRegister(char * cmd) {
     return;
   }
 
-  proxy = getConfigurationString("GNUNETD", 
+  proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
     ip = GETHOSTBYNAME(proxy);
     if (ip == NULL) {
-      LOG(LOG_ERROR, 
+      LOG(LOG_ERROR,
 	  _("Could not resolve name of HTTP proxy '%s'.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
-      theProxy.sin_addr.s_addr 
+      theProxy.sin_addr.s_addr
 	= ((struct in_addr *)ip->h_addr)->s_addr;
       proxyPort = getConfigurationString("GNUNETD",
 					 "HTTP-PROXY-PORT");
@@ -1074,11 +1074,11 @@ static void httpRegister(char * cmd) {
   }
 
   if (0 != strncmp(HTTP_URL,
-		   reg, 
+		   reg,
 		   strlen(HTTP_URL)) ) {
-    LOG(LOG_WARNING, 
-	_("Invalid URL '%s' (must begin with '%s')\n"), 
-	reg, 
+    LOG(LOG_WARNING,
+	_("Invalid URL '%s' (must begin with '%s')\n"),
+	reg,
 	HTTP_URL);
     return;
   }
@@ -1089,16 +1089,16 @@ static void httpRegister(char * cmd) {
   j = -1;
   k = -1;
   for (i=0;i<strlen(hostname);i++) {
-    if (hostname[i] == ':') 
+    if (hostname[i] == ':')
       j = i;
     if (hostname[i] == '/') {
       k = i;
       if (j == -1)
-	j = i;      
+	j = i;
       break;
     }
   }
-  if ( (j != -1) && (j < k) ) {   
+  if ( (j != -1) && (j < k) ) {
     char * pstring;
     if (k == -1) {
       pstring = MALLOC(strlen(hostname)-j+1);
@@ -1136,12 +1136,12 @@ static void httpRegister(char * cmd) {
 
 
 
-  sock = SOCKET(PF_INET, 
+  sock = SOCKET(PF_INET,
 		SOCK_STREAM,
 		0);
   if (sock < 0) {
     LOG_STRERROR(LOG_ERROR, "socket");
-    FREE(hostname);   
+    FREE(hostname);
     FREE(reg);
     return;
   }
@@ -1157,21 +1157,21 @@ static void httpRegister(char * cmd) {
       FREE(reg);
       FREE(hostname);
       return;
-    }    
-    soaddr.sin_addr.s_addr 
+    }
+    soaddr.sin_addr.s_addr
       = ((struct in_addr*)(ip_info->h_addr))->s_addr;
-    soaddr.sin_port 
+    soaddr.sin_port
       = htons((unsigned short)port);
   } else {
     /* proxy */
-    soaddr.sin_addr.s_addr 
+    soaddr.sin_addr.s_addr
       = theProxy.sin_addr.s_addr;
-    soaddr.sin_port 
+    soaddr.sin_port
       = theProxy.sin_port;
   }
   soaddr.sin_family = AF_INET;
-  if (CONNECT(sock, 
-	      (struct sockaddr*)&soaddr, 
+  if (CONNECT(sock,
+	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr)) < 0) {
     LOG(LOG_WARNING,
 	_("Failed to send HTTP request to host '%s': %s\n"),
@@ -1182,7 +1182,7 @@ static void httpRegister(char * cmd) {
     CLOSE(sock);
     return;
   }
-  
+
 
   trusted = getConfigurationString("NETWORK",
 				   "TRUSTED");
@@ -1203,14 +1203,14 @@ static void httpRegister(char * cmd) {
 				  "LOGIN");
   if (secure == NULL)
     secure = STRDUP("");
-  n = strlen(GET_COMMAND) 
-    + strlen(cmd) 
-    + strlen(reg) 
-    + strlen(trusted) 
+  n = strlen(GET_COMMAND)
+    + strlen(cmd)
+    + strlen(reg)
+    + strlen(trusted)
     + strlen(sport)
     + strlen(secure) + 1;
   command = MALLOC(n);
-  SNPRINTF(command, 
+  SNPRINTF(command,
 	   n,
 	   GET_COMMAND,
 	   reg,
@@ -1231,7 +1231,7 @@ static void httpRegister(char * cmd) {
 	command,
 	hostname,
 	STRERROR(errno));
-    FREE(command);    
+    FREE(command);
     FREE(hostname);
     CLOSE(sock);
     return;
@@ -1245,7 +1245,7 @@ static void httpRegister(char * cmd) {
   curpos = 0;
   while (curpos < 4) {
     int success;
-    
+
     if (start + 5 * cronMINUTES < cronTime(NULL))
       break; /* exit after 5m */
     success = RECV_NONBLOCKING(sock,
@@ -1254,18 +1254,18 @@ static void httpRegister(char * cmd) {
 			       &ret);
     if ( success == NO ) {
       gnunet_util_sleep(100 * cronMILLIS);
-      continue;    
+      continue;
     }
     if (ret <= 0)
       break; /* end of transmission or error */
-    if ((c=='\r') || (c=='\n')) 
+    if ((c=='\r') || (c=='\n'))
       curpos += ret;
-    else 
-      curpos=0;    
+    else
+      curpos=0;
   }
-  CLOSE(sock);  
+  CLOSE(sock);
   if (curpos < 4) { /* invalid response */
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("Exit register (error: no http response read).\n"));
   }
 #if DEBUG_HELOEXCHANGE
@@ -1273,7 +1273,7 @@ static void httpRegister(char * cmd) {
       "Exit register (%d seconds before timeout)\n",
       (int)(start + 300 * cronSECONDS - cronTime(NULL))/cronSECONDS);
 #endif
-} 
+}
 
 /**
  * When a client exits, kill all associated processes.
@@ -1296,7 +1296,7 @@ static void testbedClientExitHandler(ClientHandle client) {
   MUTEX_UNLOCK(&lock);
   /* join on all pthreads, but since they may be
      blocking on the same lock, unlock from time
-     to time for a while to let them leave... 
+     to time for a while to let them leave...
      FIXME: not really elegant, better use
      semaphores... */
   while (pding > 0) {
@@ -1332,7 +1332,7 @@ static void testbedClientExitHandler(ClientHandle client) {
  */
 int initialize_module_testbed(CoreAPIForApplication * capi) {
   unsigned int i;
-  
+
   /* some checks */
   for (i=0;i<TESTBED_MAX_MSG;i++)
     if ( (handlers[i].msgId != i) &&
@@ -1368,16 +1368,16 @@ void done_module_testbed() {
 
     pi = pt[i];
     if (pi->hasExited != NO)
-      kill(pi->pid, SIGKILL);    
+      kill(pi->pid, SIGKILL);
     PTHREAD_JOIN(&pi->reader,
 		 &unused);
     FREENONNULL(pi->output);
-    FREE(pi);    
+    FREE(pi);
   }
   GROW(pt,
        ptSize,
        0);
-  
+
   httpRegister("shutdown");
   MUTEX_DESTROY(&lock);
   LOG(LOG_DEBUG,

@@ -36,7 +36,7 @@
 typedef struct {
   CS_HEADER header;
 
-  /** 
+  /**
    * Priority of the search.
    */
   unsigned int prio;
@@ -85,7 +85,7 @@ typedef struct {
 typedef struct {
   CS_HEADER header;
 
-  /** 
+  /**
    * Priority for the on-demand encoded entry.
    */
   unsigned int prio;
@@ -117,7 +117,7 @@ typedef struct {
    * this block?
    */
   HashCode512 fileId;
-  
+
 } RequestInitIndex;
 
 /**
@@ -128,7 +128,7 @@ typedef struct {
 typedef struct {
   CS_HEADER header;
 
-  /** 
+  /**
    * Priority for the on-demand encoded entry.
    */
   unsigned int prio;

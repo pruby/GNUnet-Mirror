@@ -10,16 +10,16 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       General Public License for more details.
- 
+
       You should have received a copy of the GNU General Public License
       along with GNUnet; see the file COPYING.  If not, write to the
       Free Software Foundation, Inc., 59 Temple Place - Suite 330,
       Boston, MA 02111-1307, USA.
  */
- 
+
 /**
  * @file applications/dht/module/datastore_dht_master.c
- * @brief provides the implementation of the 
+ * @brief provides the implementation of the
  * Blockstore API for the DHT master table; based on
  * datastore_memory.c.
  * @author Simo Viitanen, Christian Grothoff
@@ -46,8 +46,8 @@ typedef struct {
 } MasterEntry;
 
 /**
- * @brief datastructure for one entry in the table. 
- */ 
+ * @brief datastructure for one entry in the table.
+ */
 typedef struct HT_Entry_t {
   struct HT_Entry_t * next;
   HashCode512 key;
@@ -57,7 +57,7 @@ typedef struct HT_Entry_t {
 
 /**
  * @brief the per-table data
- */ 
+ */
 typedef struct {
   Mutex lock;
   size_t max_memory;
@@ -99,7 +99,7 @@ static int lookup(void * closure,
 	count = prio;
       else
 	count = pos->count;
-      if (count < pos->count) 
+      if (count < pos->count)
 	perm = permute(pos->count); /* randomize returned set! */
       else
 	perm = NULL;
@@ -110,9 +110,9 @@ static int lookup(void * closure,
 	  j = i;
 	else
 	  j = perm[i];
-	data = MALLOC(sizeof(DataContainer) + 
+	data = MALLOC(sizeof(DataContainer) +
 		      sizeof(HashCode512));
-	data->size = htonl(sizeof(DataContainer) + 
+	data->size = htonl(sizeof(DataContainer) +
 			   sizeof(HashCode512));
 	memcpy(&data[1],
 	       &pos->values[j].hash,
@@ -131,14 +131,14 @@ static int lookup(void * closure,
   MUTEX_UNLOCK(&ds->lock);
   return 0;
 }
-  
+
 /**
  * Store an item in the datastore.
  *
  * @param key the key of the item
- * @param value the value to store, must be of size HashCode512 for 
+ * @param value the value to store, must be of size HashCode512 for
  *        the master table!
- * @return OK if the value could be stored, SYSERR if not, 
+ * @return OK if the value could be stored, SYSERR if not,
  *         NO for out of space)
  */
 static int store(void * closure,
@@ -151,7 +151,7 @@ static int store(void * closure,
 
   if ( (ds == NULL) || (value == NULL) )
     return SYSERR;
-  if (ntohl(value->size) - sizeof(DataContainer) 
+  if (ntohl(value->size) - sizeof(DataContainer)
       != sizeof(HashCode512))
     return SYSERR;
 
@@ -173,12 +173,12 @@ static int store(void * closure,
       ds->max_memory -= sizeof(MasterEntry);
       GROW(pos->values,
 	   pos->count,
-	   pos->count+1);      
+	   pos->count+1);
       pos->values[pos->count-1].lastRefreshTime = cronTime(NULL);
       memcpy(&pos->values[pos->count-1].hash,
 	     &value[1],
 	     sizeof(HashCode512));
-      MUTEX_UNLOCK(&ds->lock);  
+      MUTEX_UNLOCK(&ds->lock);
       return OK;
     } /* end key match */
     pos = pos->next;
@@ -220,7 +220,7 @@ static int ds_remove(void * closure,
   if (ds == NULL)
     return SYSERR;
   if ( (value != NULL) &&
-       (ntohl(value->size) - sizeof(DataContainer) 
+       (ntohl(value->size) - sizeof(DataContainer)
 	!= sizeof(HashCode512)) )
     return SYSERR;
 
@@ -245,7 +245,7 @@ static int ds_remove(void * closure,
 	      else
 		prev->next = pos->next;
 	      FREE(pos);
-	      ds->max_memory += sizeof(HT_Entry);	      
+	      ds->max_memory += sizeof(HT_Entry);	
 	    }
 	    MUTEX_UNLOCK(&ds->lock);
 	    return OK;
@@ -282,7 +282,7 @@ static int ds_remove(void * closure,
  * @param cls argument to processor
  * @return number of results, SYSERR on error
  */
-static int iterate(void * closure,		 
+static int iterate(void * closure,		
 		   DataProcessor processor,
 		   void * cls) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
@@ -329,7 +329,7 @@ static void expirationJob(MemoryDatastore * store) {
   cron_t now;
 
   prev = NULL;
-  MUTEX_LOCK(&store->lock);  
+  MUTEX_LOCK(&store->lock);
   cronTime(&now);
   pos = store->first;
   while (pos != NULL) {
@@ -338,7 +338,7 @@ static void expirationJob(MemoryDatastore * store) {
 	pos->values[i] = pos->values[pos->count-1];
 	GROW(pos->values,
 	     pos->count,
-	     pos->count-1);    
+	     pos->count-1);
 	store->max_memory += sizeof(MasterEntry);
       }
     }
@@ -397,7 +397,7 @@ void destroy_datastore_dht_master(Blockstore * ds) {
 
   md  = ds->closure;
   icr = isCronRunning();
-  if (icr) 
+  if (icr)
     suspendCron();
   delCronJob((CronJob) &expirationJob,
 	     5 * cronMINUTES,

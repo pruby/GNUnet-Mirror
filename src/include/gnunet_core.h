@@ -30,11 +30,11 @@
 
 /**
  * Just the version number of GNUnet-core API.
- * Encoded as 
+ * Encoded as
  * 0.6.1d  => 0x00060100
  * 4.5.2   => 0x04050200
- * 
- * Note that this version number is only changed if 
+ *
+ * Note that this version number is only changed if
  * something changes in the core API.  It follows
  * roughly the main GNUnet version scheme, but is
  * more a compatibility ID.
@@ -50,7 +50,7 @@
 
 /**
  * Opaque handle for a session representation on the transport
- * layer side 
+ * layer side
  */
 typedef struct {
   unsigned short ttype;
@@ -71,42 +71,42 @@ typedef struct {
   p2p_HEADER header;
 
   /**
-   * The signature 
+   * The signature
    */
   Signature signature;
 
   /**
-   * The public key 
+   * The public key
    */
-  PublicKey publicKey; 
+  PublicKey publicKey;
 
   /**
    * Whose identity follows? No, this is NOT a duplicate
-   * as a node may send us the identity of ANOTHER node! 
+   * as a node may send us the identity of ANOTHER node!
    */
-  PeerIdentity senderIdentity; 
+  PeerIdentity senderIdentity;
 
   /**
-   * time this address expires  (network byte order) 
-   */ 
+   * time this address expires  (network byte order)
+   */
   TIME_T expirationTime;
 
   /**
    * advertised MTU for sending (replies can have a different
-   * MTU!) 
+   * MTU!)
    */
   unsigned int MTU;
 
   /**
-   * size of the sender address 
+   * size of the sender address
    */
   unsigned short senderAddressSize;
 
   /**
    * protocol supported by the node (only one protocol
-   * can be advertised by the same HELO) 
+   * can be advertised by the same HELO)
    * Examples are UDP, TCP, etc. This field is
-   * in network byte order 
+   * in network byte order
    */
   unsigned short protocol;
 
@@ -116,11 +116,11 @@ typedef struct {
   HELO_Message helo_message;
 
   /**
-   * address of the node in a protocol specific format 
-   */ 
-  char senderAddress[1]; 
-  
-} HELO_Message_GENERIC;  
+   * address of the node in a protocol specific format
+   */
+  char senderAddress[1];
+
+} HELO_Message_GENERIC;
 
 #define HELO_Message_size(helo) ((sizeof(HELO_Message) + ntohs((helo)->senderAddressSize)))
 
@@ -138,7 +138,7 @@ typedef int (*CSHandler)(ClientHandle client,
 
 /**
  * Method called whenever a given client disconnects.
- */ 
+ */
 typedef void (*ClientExitHandler)(ClientHandle client);
 
 /**
@@ -314,7 +314,7 @@ typedef struct {
 			  void * closure,
 			  unsigned short len,
 			  unsigned int importance,
-			  unsigned int maxdelay);  
+			  unsigned int maxdelay);
 
   /**
    * Perform an operation for all connected hosts.
@@ -323,14 +323,14 @@ typedef struct {
    * @param method the method to invoke (NULL for counting only)
    * @param arg the second argument to the method
    * @return the number of connected hosts
-   */ 
+   */
   int (*forAllConnectedNodes)(PerNodeCallback method,
 			      void * arg);
 
   /**
    * Register a callback method that should be invoked whenever a message
    * is about to be send that has more than minimumPadding bytes left
-   * before maxing out the MTU. 
+   * before maxing out the MTU.
    * The callback method can then be used to add additional content
    * to the message (instead of the random noise that is added by
    * otherwise). Note that if the MTU is 0 (for streams), the
@@ -349,7 +349,7 @@ typedef struct {
    */
   int (*registerSendCallback)(const unsigned int minimumPadding,
 			      BufferFillCallback callback);
-  
+
   /**
    * Unregister a handler that was registered with registerSendCallback.
    * @return OK if the handler was removed, SYSERR on error
@@ -359,7 +359,7 @@ typedef struct {
 
   /**
    * Register a handler that is to be called for each
-   * message that leaves the peer. 
+   * message that leaves the peer.
    *
    * @param callback the method to call for each
    *        P2P message part that is transmitted
@@ -369,14 +369,14 @@ typedef struct {
 
   /**
    * Unregister a handler that is to be called for each
-   * message that leaves the peer. 
+   * message that leaves the peer.
    *
    * @param callback the method to call for each
    *        P2P message part that is transmitted
    * @return OK on success, SYSERR if there is a problem
    */
   int (*unregisterSendNotify)(MessagePartHandler callback);
-  
+
 
   /* ********************* handlers ***************** */
 
@@ -391,7 +391,7 @@ typedef struct {
    */
   int (*registerHandler)(const unsigned short type,
 			 MessagePartHandler callback);
-  
+
   /**
    * Unregister a method as a handler for specific message
    * types. Only for encrypted messages!
@@ -415,7 +415,7 @@ typedef struct {
    */
   int (*registerPlaintextHandler)(const unsigned short type,
 				  PlaintextMessagePartHandler callback);
-  
+
   /**
    * Unregister a method as a handler for specific message
    * types. Only for encrypted messages!
@@ -435,7 +435,7 @@ typedef struct {
    * Offer the core a session for communication with the
    * given peer.  This is useful after establishing a connection
    * with another peer to hand it of to the core.  Note that
-   * the core will take over the session and disconnect 
+   * the core will take over the session and disconnect
    * it as it feels like.  Thus the client should no longer
    * use it after this call.  If the core does not want/need
    * the session, it will also be disconnected.
@@ -447,7 +447,7 @@ typedef struct {
    * Assign a session key for traffic from or to a given peer.
    * If the core does not yet have an entry for the given peer
    * in the connection table, a new entry is created.
-   * 
+   *
    * @param key the sessionkey,
    * @param peer the other peer,
    * @param forSending NO if it is the key for receiving,
@@ -460,7 +460,7 @@ typedef struct {
 
   /**
    * Obtain the session key used for traffic from or to a given peer.
-   * 
+   *
    * @param key the sessionkey (set)
    * @param age the age of the key (set)
    * @param peer the other peer,
@@ -562,7 +562,7 @@ typedef struct {
    * @return OK on success, SYSERR on error
    */
   int (*registerClientExitHandler)(ClientExitHandler callback);
-  
+
   /**
    * Unregister a handler to call if any client exits.
    * @param callback a method to call with the socket
@@ -570,7 +570,7 @@ typedef struct {
    * @return OK on success, SYSERR on error
    */
   int (*unregisterClientExitHandler)(ClientExitHandler callback);
-  
+
   /**
    * Terminate the connection with the given client (asynchronous
    * detection of a protocol violation).
@@ -584,7 +584,7 @@ typedef struct {
    * Handle a message (that was decrypted if needed).  Processes the
    * message by calling the registered handler for each message part.
    *
-   * @param wasEncrypted YES if it was encrypted, 
+   * @param wasEncrypted YES if it was encrypted,
    *                     NO if plaintext.
    * @param session for plaintext messages, the
    *  assumed transport session.  Maybe NULL.
@@ -594,7 +594,7 @@ typedef struct {
 			unsigned int size,
 			int wasEncrypted,
 			TSession * session);
- 
+
   /**
    * Compute the index (small, positive, pseudo-unique identification
    * number) of a hostId.
@@ -635,7 +635,7 @@ typedef struct {
  * Type of the initialization method implemented by GNUnet protocol
  * plugins.
  *
- * @param capi the core API 
+ * @param capi the core API
  */
 typedef int (*ApplicationInitMethod) (CoreAPIForApplication * capi);
 
@@ -649,7 +649,7 @@ typedef void (*ApplicationDoneMethod)();
  * Type of the initialization method implemented by GNUnet service
  * plugins.
  *
- * @param capi the core API 
+ * @param capi the core API
  */
 typedef void * (*ServiceInitMethod)(CoreAPIForApplication * capi);
 

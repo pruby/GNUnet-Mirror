@@ -56,34 +56,34 @@ static void printHelp() {
 
 static int parseOptions(int argc,
 			char ** argv) {
-  int c;  
+  int c;
 
   while (1) {
     int option_index = 0;
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
       { "memory", 1, 0, 'm' },
-      { "table", 1, 0, 't' },      
+      { "table", 1, 0, 't' },
       { "verbose", 0, 0, 'V' },
       { 0,0,0,0 }
     };
     c = GNgetopt_long(argc,
 		      argv,
 		      "vhH:c:L:dt:m:T:V",
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
-    case 'h': 
-      printHelp(); 
+    case 'h':
+      printHelp();
       return SYSERR;
     case 'm': {
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-m");
 	return SYSERR;
@@ -102,7 +102,7 @@ static int parseOptions(int argc,
     case 'T': {
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-T");
 	return SYSERR;
@@ -113,7 +113,7 @@ static int parseOptions(int argc,
       }
       break;
     }
-    case 'v': 
+    case 'v':
       printf("dht-join v0.0.0\n");
       return SYSERR;
     case 'V':
@@ -126,8 +126,8 @@ static int parseOptions(int argc,
       return SYSERR;
     } /* end of parsing commandline */
   } /* while (1) */
-  if (argc - GNoptind != 0) 
-    LOG(LOG_WARNING, 
+  if (argc - GNoptind != 0)
+    LOG(LOG_WARNING,
 	_("Superflous arguments (ignored).\n"));
   return OK;
 }
@@ -156,7 +156,7 @@ static int lookup(void * closure,
 		  DataProcessor processor,
 		  void * pclosure) {
   int ret;
-  Blockstore * cls = (Blockstore*) closure;  
+  Blockstore * cls = (Blockstore*) closure;
   LOGKEY(&keys[0]);
   ret = cls->get(cls->closure,
 		 type,
@@ -165,10 +165,10 @@ static int lookup(void * closure,
 		 keys,
 		 processor,
 		 pclosure);
-  LOGRET(ret);  
+  LOGRET(ret);
   return ret;
 }
-  
+
 static int store(void * closure,
 		 const HashCode512 * key,
 		 const DataContainer * value,
@@ -211,17 +211,17 @@ static int iterate(void * closure,
   return ret;
 }
 
-int main(int argc, 
+int main(int argc,
 	 char **argv) {
   char * tableName;
   unsigned int mem;
   HashCode512 table;
   Blockstore myStore;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions)) 
+  if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0;
 
-  tableName = getConfigurationString("DHT-JOIN", 
+  tableName = getConfigurationString("DHT-JOIN",
 				     "TABLE");
   if (tableName == NULL) {
     printf(_("No table name specified, using '%s'.\n"),
@@ -259,8 +259,8 @@ int main(int argc,
   printf(_("Joined DHT.  Press CTRL-C to leave.\n"));
   /* wait for CTRL-C */
   wait_for_shutdown();
-  
-  /* shutdown */ 
+
+  /* shutdown */
   if (OK != DHT_LIB_leave(&table,
 			  getConfigurationInt("DHT-JOIN",
 					      "TIMEOUT") * cronSECONDS)) {

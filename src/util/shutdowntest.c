@@ -1,4 +1,4 @@
-/** 
+/**
  * @file test/shutdowntest.c
  * @brief testcase for util/shutdown.c
  */
@@ -20,9 +20,9 @@ static int check() {
 #endif
   if (testShutdown() != YES)
     return 2;
-  wait_for_shutdown(); 
+  wait_for_shutdown();
   doneShutdownHandlers();
-  
+
   /* now, test "run_shutdown" */
   initializeShutdownHandlers();
   if (testShutdown() != NO)
@@ -30,17 +30,17 @@ static int check() {
   run_shutdown(42);
   if (testShutdown() != YES)
     return 4;
-  wait_for_shutdown(); 
-  doneShutdownHandlers();  
+  wait_for_shutdown();
+  doneShutdownHandlers();
 
   return 0;
 }
 
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   char c;
 
@@ -50,18 +50,18 @@ static int parseCommandLine(int argc,
       { "config",  1, 0, 'c' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "c:", 
-		      long_options, 
+		      argv,
+		      "c:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
-    case 'c': 
+    case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));

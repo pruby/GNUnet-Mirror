@@ -48,7 +48,7 @@ static void dyncat(char ** string,
     val = STRDUP("");
   len += strlen(val) + 2;
   tmp = MALLOC(len);
-  strcpy(tmp, *string);  
+  strcpy(tmp, *string);
   strcat(tmp, section);
   strcat(tmp, ":");
   strcat(tmp, part);
@@ -63,7 +63,7 @@ static void dyncat(char ** string,
 /**
  * Get the hash code that concatenated with the
  * current version defines the current configuration.
- * 
+ *
  * The hash is determined from the configuration file,
  * since changes to certain values there will also
  * require us to run gnunet-update!
@@ -78,7 +78,7 @@ static void getVersionHash(EncName * enc) {
      changes require gnunet-update feels like overkill for now; one
      simple alternative would be to require gnunet-update for any
      configuration change, but that again would be too strict. */
-  dyncat(&string, "GNUNETD", "APPLICATIONS"); 
+  dyncat(&string, "GNUNETD", "APPLICATIONS");
   dyncat(&string, "FS", "QUOTA");
   dyncat(&string, "MODULES", "sqstore");
   hash(string,
@@ -92,7 +92,7 @@ static void getVersionHash(EncName * enc) {
  * Check if we are up-to-date.
  * @return OK if we are
  */
-int checkUpToDate() {  
+int checkUpToDate() {
   char * version;
   int len;
   EncName enc;
@@ -124,7 +124,7 @@ int checkUpToDate() {
 
 /**
  * We are up-to-date.
- * Writes the version tag 
+ * Writes the version tag
  */
 void upToDate() {
   char * version;
@@ -142,4 +142,4 @@ void upToDate() {
   FREE(version);
 }
 		
-/* end of version.c */     
+/* end of version.c */

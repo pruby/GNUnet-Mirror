@@ -23,7 +23,7 @@
  * @brief module encapsulating our secret key for the peer
  *
  * @author Christian Grothoff
- */ 
+ */
 
 #include "platform.h"
 #include "gnunet_util.h"
@@ -54,22 +54,22 @@ const PublicKey * getPublicPrivateKey() {
   return publicKey;
 }
 
-/** 
+/**
  * Sign arbitrary data. ALWAYS use only on data we generated
- * entirely! 
+ * entirely!
  * @return SYSERR on error, OK on success
  */
 int signData(const void * data,
 	     unsigned short size,
 	     Signature * result) {
-  return sign(hostkey, 
-	      size, 
-	      data, 
+  return sign(hostkey,
+	      size,
+	      data,
 	      result);
 }
 
 /**
- * Decrypt a given block with the hostkey. 
+ * Decrypt a given block with the hostkey.
  *
  * @param block the data to decrypt, encoded as returned by encrypt, not consumed
  * @param result pointer to a location where the result can be stored
@@ -80,9 +80,9 @@ int signData(const void * data,
 int decryptData(const RSAEncryptedData * block,
 		void * result,
 		unsigned int max) {
-  return decryptPrivateKey(hostkey, 
-			   block, 
-			   result, 
+  return decryptPrivateKey(hostkey,
+			   block,
+			   result,
 			   max);
 }
 
@@ -105,12 +105,12 @@ void initPrivateKey() {
   FREE(gnHome);
   strcat(hostkeyfile, "/");
   strcat(hostkeyfile, HOSTKEYFILE);
-  res = readFile(hostkeyfile, 
-		 sizeof(unsigned short), 
+  res = readFile(hostkeyfile,
+		 sizeof(unsigned short),
 		 &len);
   if (res == sizeof(unsigned short)) {
     encPrivateKey = (PrivateKeyEncoded*) MALLOC(ntohs(len));
-    if (ntohs(len) != 
+    if (ntohs(len) !=
 	readFile(hostkeyfile,
 		 ntohs(len),
 		 encPrivateKey)) {
@@ -123,28 +123,28 @@ void initPrivateKey() {
   } else
     encPrivateKey = NULL;
   if (encPrivateKey == NULL) { /* make new hostkey */
-    LOG(LOG_MESSAGE, 
+    LOG(LOG_MESSAGE,
 	_("Creating new hostkey (this may take a while).\n"));
     hostkey = makePrivateKey();
     if (hostkey == NULL)
       errexit(_("Could not create hostkey!\n"));
     encPrivateKey = encodePrivateKey(hostkey);
     GNUNET_ASSERT(encPrivateKey != NULL);
-    writeFile(hostkeyfile, 
-	      encPrivateKey, 
+    writeFile(hostkeyfile,
+	      encPrivateKey,
 	      ntohs(encPrivateKey->len),
 	      "600");
     FREE(encPrivateKey);
-    LOG(LOG_MESSAGE, 
+    LOG(LOG_MESSAGE,
 	_("Done creating hostkey.\n"));
   } else {
-    hostkey = decodePrivateKey(encPrivateKey);    
+    hostkey = decodePrivateKey(encPrivateKey);
     FREE(encPrivateKey);
   }
   FREE(hostkeyfile);
   if (hostkey != NULL) {
     publicKey = MALLOC(sizeof(PublicKey));
-    getPublicKey(hostkey, 
+    getPublicKey(hostkey,
 		 publicKey);
   } else {
     publicKey = NULL;

@@ -44,8 +44,8 @@ static Mutex chatMutex;
 static void markSeen(HashCode512 * hc) {
   if (++ringIndex >= MAX_LAST_MESSAGES)
     ringIndex = 0;
-  memcpy(&lastMsgs[ringIndex], 
-	 hc, 
+  memcpy(&lastMsgs[ringIndex],
+	 hc,
 	 sizeof(HashCode512));
 }
 
@@ -99,15 +99,15 @@ static int handleChatMSG(const PeerIdentity * sender,
   for (i=0;i<MAX_LAST_MESSAGES;i++)
     if (equalsHashCode512(&hc, &lastMsgs[i]))
       j = i;
-  if (j == -1) { 
+  if (j == -1) {
     /* we have not seen it before, send to all TCP clients
        and broadcast to all peers */
-    markSeen(&hc); 
+    markSeen(&hc);
     for (j=0;j<clientCount;j++)
       coreAPI->sendToClient(clients[j],
 		    &cmsg->header);
     broadcastToConnected(message, 5, 1);
-    pmsg->nick[CHAT_NICK_LENGTH-1] = '\0'; 
+    pmsg->nick[CHAT_NICK_LENGTH-1] = '\0';
     pmsg->message[CHAT_MSG_LENGTH-1] = '\0';
     /*
     LOG(LOG_DEBUG,
@@ -144,9 +144,9 @@ static void csHandleChatRequest(ClientHandle client,
   /* forward to all other TCP chat clients */
   j = -1; /* marker to check if this is a new client */
   for (i=0;i<clientCount;i++)
-    if (clients[i] == client) 
+    if (clients[i] == client)
       j = i;
-    else 
+    else
       coreAPI->sendToClient(clients[i],
 		    message);
   if (j == -1) {

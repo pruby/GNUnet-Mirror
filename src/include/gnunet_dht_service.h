@@ -58,20 +58,20 @@ typedef struct {
    *
    * @param datastore the storage callbacks to use for the table
    * @param table the ID of the table
-   * @param timeout how long to wait for other peers to respond to 
+   * @param timeout how long to wait for other peers to respond to
    *   the join request (has no impact on success or failure)
    * @return SYSERR on error, OK on success
    */
   int (*join)(Blockstore * datastore,
 	      const DHT_TableId * table);
-  
+
   /**
    * Leave a table (stop storing data for the table).  Leave
    * fails if the node is not joint with the table.
    *
    * @param datastore the storage callbacks to use for the table
    * @param table the ID of the table
-   * @param timeout how long to wait for other peers to respond to 
+   * @param timeout how long to wait for other peers to respond to
    *   the leave request (has no impact on success or failure);
    *   but only timeout time is available for migrating data, so
    *   pick this value with caution.
@@ -79,7 +79,7 @@ typedef struct {
    * @return SYSERR on error, OK on success
    */
   int (*leave)(const DHT_TableId * table,
-	       cron_t timeout); 
+	       cron_t timeout);
 
 
   /**
@@ -88,7 +88,7 @@ typedef struct {
    * of the table (if so, we will attempt to locate a peer that is!)
    *
    * @param table table to use for the lookup
-   * @param key the key to look up  
+   * @param key the key to look up
    * @param timeout how long to wait until this operation should
    *        automatically time-out
    * @param callback function to call on each result
@@ -117,7 +117,7 @@ typedef struct {
    * peer that is!)
    *
    * @param table table to use for the lookup
-   * @param key the key to look up  
+   * @param key the key to look up
    * @param timeout how long to wait until this operation should
    *        automatically time-out
    * @param callback function to call on successful completion
@@ -130,7 +130,7 @@ typedef struct {
 				       const DataContainer * value,
 				       DHT_OP_Complete callback,
 				       void * closure);
-  
+
   /**
    * Stop async DHT-put.  Frees associated resources.
    */
@@ -143,7 +143,7 @@ typedef struct {
    * peer that is!)
    *
    * @param table table to use for the lookup
-   * @param key the key to look up  
+   * @param key the key to look up
    * @param timeout how long to wait until this operation should
    *        automatically time-out
    * @param callback function to call on successful completion
@@ -155,13 +155,13 @@ typedef struct {
 					     cron_t timeout,
 					     const DataContainer * value,
 					     DHT_OP_Complete callback,
-					     void * closure); 
-    
+					     void * closure);
+
   /**
    * Stop async DHT-remove.  Frees associated resources.
    */
   int (*remove_stop)(struct DHT_REMOVE_RECORD * record);
-  
+
 } DHT_ServiceAPI;
 
 #endif /* DHT_SERVICE_API_H */

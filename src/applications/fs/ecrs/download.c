@@ -100,20 +100,20 @@ static void freeIOC(IOContext * this,
 		    int unlinkTreeFiles) {
   int i;
   char * fn;
-  
+
   for (i=0;i<=this->treedepth;i++) {
     if (this->handles[i] != -1) {
       CLOSE(this->handles[i]);
       this->handles[i] = -1;
-    } 
+    }
   }
-  MUTEX_DESTROY(&this->lock);    
+  MUTEX_DESTROY(&this->lock);
   if (YES == unlinkTreeFiles) {
     for (i=1;i<= this->treedepth;i++) {
       fn = MALLOC(strlen(this->filename) + 3);
       strcpy(fn, this->filename);
       strcat(fn, ".A");
-      fn[strlen(fn)-1]+=i;    
+      fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
 	LOG(LOG_WARNING,
 	    "Could not unlink temporary file %s: %s\n",
@@ -152,8 +152,8 @@ static int createIOContext(IOContext * this,
       LOG_FILE_STRERROR(LOG_FAILURE, "truncate", filename);
       return SYSERR;
     }
-  }  
-  for (i=0;i<=this->treedepth;i++) 
+  }
+  for (i=0;i<=this->treedepth;i++)
     this->handles[i] = -1;
 
   for (i=0;i<=this->treedepth;i++) {
@@ -171,7 +171,7 @@ static int createIOContext(IOContext * this,
       freeIOC(this, NO);
       FREE(fn);
       return SYSERR;
-    }          
+    }
     FREE(fn);
   }
   return OK;
@@ -185,7 +185,7 @@ static int createIOContext(IOContext * this,
  * @param pos position where to read or write
  * @param buf where to read from or write to
  * @param len how many bytes to read or write
- * @return number of bytes read, SYSERR on error  
+ * @return number of bytes read, SYSERR on error
  */
 int readFromIOC(IOContext * this,
 		unsigned int level,
@@ -194,16 +194,16 @@ int readFromIOC(IOContext * this,
 		unsigned int len) {
   int ret;
   size_t lpos;
-  
+
   lpos = pos;
   for (ret=0;ret<level;ret++)
-    lpos /= CHK_PER_INODE;  
+    lpos /= CHK_PER_INODE;
   MUTEX_LOCK(&this->lock);
   lseek(this->handles[level],
 	lpos,
 	SEEK_SET);
   ret = READ(this->handles[level],
-	     buf, 
+	     buf,
 	     len);
   MUTEX_UNLOCK(&this->lock);
   return ret;
@@ -217,7 +217,7 @@ int readFromIOC(IOContext * this,
  * @param pos position where to  write
  * @param buf where to write to
  * @param len how many bytes to write
- * @return number of bytes written, SYSERR on error  
+ * @return number of bytes written, SYSERR on error
  */
 int writeToIOC(IOContext * this,
 	       unsigned int level,
@@ -226,16 +226,16 @@ int writeToIOC(IOContext * this,
 	       unsigned int len) {
   int ret;
   size_t lpos;
-  
-  lpos = pos;  
+
+  lpos = pos;
   for (ret=0;ret<level;ret++)
-    lpos /= CHK_PER_INODE;  
+    lpos /= CHK_PER_INODE;
   MUTEX_LOCK(&this->lock);
   lseek(this->handles[level],
 	lpos,
 	SEEK_SET);
   ret = WRITE(this->handles[level],
-	      buf, 
+	      buf,
 	      len);
   if (ret != len) {
     LOG(LOG_WARNING,
@@ -254,7 +254,7 @@ int writeToIOC(IOContext * this,
  * Node-specific data (not shared, keep small!). 56 bytes.
  */
 typedef struct {
-  /** 
+  /**
    * Pointer to shared data between all nodes (request manager,
    * progress data, etc.).
    */
@@ -280,7 +280,7 @@ typedef struct {
  * This structure together with the NodeContext determine the memory
  * requirements, so try keeping it as small as possible!  (currently
  * 32 bytes, plus 56 in the NodeContext => roughly 88 byte per block!)
- * 
+ *
  * Estimate: max ~12 MB memory for a 4 GB file in the end (assuming
  * maximum parallelism, which is likely, so we are really going to use
  * about 12 MB, but that should be acceptable).
@@ -294,7 +294,7 @@ typedef struct RequestEntry {
    * The node for which this entry keeps data.
    */
   NodeClosure * node;
-  
+
   /**
    * Last time the query was send.
    */
@@ -316,7 +316,7 @@ typedef struct RequestEntry {
    * Priority used for the last request.
    */
   unsigned int lastPriority;
-  
+
   /**
    * Search handle of the last request (NULL if never
    * requested).
@@ -330,7 +330,7 @@ typedef struct RequestEntry {
  *        a download
  *
  * Handle to the state of a request manager.  Here we keep track of
- * which queries went out with which priorities and which nodes in 
+ * which queries went out with which priorities and which nodes in
  * the merkle-tree are waiting for the replies.
  */
 typedef struct RequestManager {
@@ -342,7 +342,7 @@ typedef struct RequestManager {
 
   /**
    * Current list of all pending requests
-   */ 
+   */
   RequestEntry ** requestList;
 
   /**
@@ -393,7 +393,7 @@ static int nodeReceive(const HashCode512 * query,
 /**
  * Create a request manager.  Will create the request manager
  * datastructures. Use destroyRequestManager to abort and/or to free
- * resources after the download is complete. 
+ * resources after the download is complete.
  *
  * @return NULL on error
  */
@@ -403,15 +403,15 @@ static RequestManager * createRequestManager() {
   rm = MALLOC(sizeof(RequestManager));
   rm->abortFlag
     = NO;
-  rm->lastDET 
+  rm->lastDET
     = 0;
   MUTEX_CREATE_RECURSIVE(&rm->lock);
   rm->sctx = FS_SEARCH_makeContext(&rm->lock);
-  rm->requestListIndex 
+  rm->requestListIndex
     = 0;
-  rm->requestListSize  
+  rm->requestListSize
     = 0;
-  rm->requestList      
+  rm->requestList
     = NULL;
   GROW(rm->requestList,
        rm->requestListSize,
@@ -447,7 +447,7 @@ static void destroyRequestManager(RequestManager * rm) {
 		     rm->requestList[i]->searchHandle);
     FREE(rm->requestList[i]->node);
     FREE(rm->requestList[i]);
-  }   
+  }
   GROW(rm->requestList,
        rm->requestListSize,
        0);
@@ -467,7 +467,7 @@ static void requestManagerEndgame(RequestManager * rm) {
   for (i=0;i<rm->requestListIndex;i++) {
     RequestEntry * entry = rm->requestList[i];
     /* cut TTL in half */
-    entry->lasttime 
+    entry->lasttime
       += (entry->lasttime + entry->lastTimeout) / 2;
   }
   MUTEX_UNLOCK(&rm->lock);
@@ -475,7 +475,7 @@ static void requestManagerEndgame(RequestManager * rm) {
 
 /**
  * Queue a request for execution.
- * 
+ *
  * @param rm the request manager struct from createRequestManager
  * @param node the node to call once a reply is received
  */
@@ -496,18 +496,18 @@ static void addRequest(RequestManager * rm,
     = MALLOC(sizeof(RequestEntry));
   entry->node
     = node;
-  entry->lasttime 
+  entry->lasttime
     = 0; /* never sent */
-  entry->lastTimeout 
+  entry->lastTimeout
     = 0;
-  entry->tries 
+  entry->tries
     = 0; /* not tried so far */
   entry->lastPriority
     = 0;
   entry->searchHandle
     = NULL;
-  MUTEX_LOCK(&rm->lock);   
-  if (rm->requestListSize == rm->requestListIndex) 
+  MUTEX_LOCK(&rm->lock);
+  if (rm->requestListSize == rm->requestListIndex)
     GROW(rm->requestList,
 	 rm->requestListSize,
 	 rm->requestListSize*2);
@@ -517,7 +517,7 @@ static void addRequest(RequestManager * rm,
 
 
 /**
- * Cancel a request. 
+ * Cancel a request.
  *
  * @param this the request manager struct from createRequestManager
  * @param node the block for which the request is canceled
@@ -526,24 +526,24 @@ static void delRequest(RequestManager * rm,
 		       NodeClosure * node) {
   int i;
   RequestEntry * re;
- 
+
   MUTEX_LOCK(&rm->lock);
   for (i=0;i<rm->requestListIndex;i++) {
     re = rm->requestList[i];
     if (re->node == node) {
-      rm->requestList[i] 
+      rm->requestList[i]
 	= rm->requestList[--rm->requestListIndex];
-      rm->requestList[rm->requestListIndex] 
+      rm->requestList[rm->requestListIndex]
 	= NULL;
       MUTEX_UNLOCK(&rm->lock);
       if (NULL != re->searchHandle)
 	FS_stop_search(rm->sctx,
 		       re->searchHandle);
       FREE(re);
-      return; 
+      return;
     }
   }
-  MUTEX_UNLOCK(&rm->lock);  
+  MUTEX_UNLOCK(&rm->lock);
   BREAK(); /* uh uh - at least a memory leak... */
 }
 
@@ -563,20 +563,20 @@ typedef struct CommonCtx {
   void * dpcbClosure;
   cron_t startTime;
   unsigned int anonymityLevel;
-  cron_t TTL_DECREMENT; 
+  cron_t TTL_DECREMENT;
 } CommonCtx;
 
 /**
  * Compute how many bytes of data are stored in
  * this node.
  */
-static unsigned int getNodeSize(const NodeClosure * node) {  
+static unsigned int getNodeSize(const NodeClosure * node) {
   unsigned int i;
   unsigned int ret;
   unsigned long long rsize;
   unsigned long long spos;
   unsigned long long epos;
-  
+
   GNUNET_ASSERT(node->offset < node->ctx->total);
   if (node->level == 0) {
     ret = DBLOCK_SIZE;
@@ -630,9 +630,9 @@ static void updateProgress(const NodeClosure * node,
     cronTime(&eta); /* now */
     if (node->ctx->completed > 0) {
       eta = (cron_t) (node->ctx->startTime +
-		      (((double)(eta - node->ctx->startTime)/(double)node->ctx->completed)) 
+		      (((double)(eta - node->ctx->startTime)/(double)node->ctx->completed))
 		      * (double)node->ctx->total);
-    } 
+    }
     if (node->ctx->dpcb != NULL) {
       node->ctx->dpcb(node->ctx->total,
 		      node->ctx->completed,
@@ -642,14 +642,14 @@ static void updateProgress(const NodeClosure * node,
 		      size,
 		      node->ctx->dpcbClosure);
     }
-  } 
+  }
   rm = node->ctx->rm;
 
   /* check type of reply msg, fill in query */
-  pos = -1;  
+  pos = -1;
   /* find which query matches the reply, call the callback
      and recycle the slot */
-  for (i=0;i<rm->requestListIndex;i++) 
+  for (i=0;i<rm->requestListIndex;i++)
     if (rm->requestList[i]->node == node)
       pos = i;
   if (pos == -1) {
@@ -657,7 +657,7 @@ static void updateProgress(const NodeClosure * node,
     return;
   }
   entry = rm->requestList[pos];
-  
+
   if ( (entry->lasttime < cronTime(NULL)) &&
        (entry->lasttime != 0) ) {
     unsigned int weight = 15;
@@ -667,8 +667,8 @@ static void updateProgress(const NodeClosure * node,
       weight = 127;
       /* eTTL is MUCH bigger than what we currently expect AND the time
 	 between the last query and the reply was in the range of the
-	 expected TTL => don't take ettl too much into account! */   
-    }     
+	 expected TTL => don't take ettl too much into account! */
+    }
     rm->initialTTL = ((rm->initialTTL) * weight + ettl) / (weight+1);
 
     /* RFC 2001: increase cwnd; note that we can't really discriminate between
@@ -677,21 +677,21 @@ static void updateProgress(const NodeClosure * node,
       rm->congestionWindow += 2; /* slow start */
     else
       rm->congestionWindow += 1; /* slower start :-) */
-  } 
+  }
   if (entry->tries > 1) {
     TIME_T nowTT;
-    
+
     TIME(&nowTT);
     if ( (nowTT - rm->initialTTL) > rm->lastDET) {
       /* only consider congestion control every
 	 "average" TTL seconds, otherwise the system
 	 reacts to events that are far too old! */
       /* we performed retransmission, treat as congestion (RFC 2001) */
-      rm->ssthresh 
+      rm->ssthresh
 	= rm->congestionWindow / 2;
       if (rm->ssthresh < 2)
 	rm->ssthresh = 2;
-      rm->congestionWindow 
+      rm->congestionWindow
 	= rm->ssthresh + 1;
       rm->lastDET = nowTT;
     }
@@ -701,7 +701,7 @@ static void updateProgress(const NodeClosure * node,
 
 /**
  * Download children of this IBlock.
- * 
+ *
  * @param rm the node that should downloaded
  */
 static void iblock_download_children(NodeClosure * node,
@@ -731,21 +731,21 @@ static int checkPresent(NodeClosure * node) {
 		    size);
   if (res == size) {
     HashCode512 hc;
-    
+
     hash(data,
 	 size,
 	 &hc);
     if (equalsHashCode512(&hc,
 			  &node->chk.key)) {
       updateProgress(node, data, size);
-      if (node->level > 0) 
+      if (node->level > 0)
 	iblock_download_children(node,
 				 data,
 				 size);
-      
+
       FREE(data);
       return YES;
-    }    
+    }
   }
   FREE(data);
   return NO;
@@ -753,7 +753,7 @@ static int checkPresent(NodeClosure * node) {
 
 /**
  * Download children of this IBlock.
- * 
+ *
  * @param this the node that should downloaded
  */
 static void iblock_download_children(NodeClosure * node,
@@ -765,7 +765,7 @@ static void iblock_download_children(NodeClosure * node,
   CHK * chks;
   unsigned int levelSize;
   unsigned long long baseOffset;
- 
+
   GNUNET_ASSERT(node->level > 0);
   childcount = size / sizeof(CHK);
   if (size != childcount * sizeof(CHK)) {
@@ -794,7 +794,7 @@ static void iblock_download_children(NodeClosure * node,
 		 child);
     else
       FREE(child); /* done already! */
-  }  
+  }
 }
 
 
@@ -886,7 +886,7 @@ static int nodeReceive(const HashCode512 * query,
 	  "file. Download aborted.\n"));
     node->ctx->rm->abortFlag = YES;
     return SYSERR;
-  } 
+  }
   if (size != writeToIOC(node->ctx->ioc,
 			 node->level,
 			 node->offset,
@@ -896,14 +896,14 @@ static int nodeReceive(const HashCode512 * query,
     node->ctx->rm->abortFlag = YES;
     return SYSERR;
   }
-  updateProgress(node, 
-		 data, 
+  updateProgress(node,
+		 data,
 		 size);
   if (node->level > 0)
     iblock_download_children(node,
 			     data,
 			     size);
-  
+
 
   for (i=0;i<10;i++) {
     if ( (node->ctx->completed * 10000L >
@@ -931,7 +931,7 @@ static void issueRequest(RequestManager * rm,
 			 int requestIndex) {
   static unsigned int lastmpriority;
   static cron_t lastmpritime;
-  RequestEntry * entry; 
+  RequestEntry * entry;
   cron_t now;
   unsigned int priority;
   unsigned int mpriority;
@@ -955,7 +955,7 @@ static void issueRequest(RequestManager * rm,
     sock = getClientSocket();
     lastmpriority = FS_getAveragePriority(sock);
     lastmpritime = now;
-    releaseClientSocket(sock);    
+    releaseClientSocket(sock);
   }
   mpriority = lastmpriority;
   priority
@@ -973,11 +973,11 @@ static void issueRequest(RequestManager * rm,
 
   /* compute TTL */
 
-  TTL_DECREMENT 
+  TTL_DECREMENT
     = entry->node->ctx->TTL_DECREMENT;
 
-  if (entry->lastTimeout + TTL_DECREMENT > now) 
-    BREAK(); 
+  if (entry->lastTimeout + TTL_DECREMENT > now)
+    BREAK();
   if (entry->lasttime == 0) {
     timeout = now + rm->initialTTL;
   } else {
@@ -996,14 +996,14 @@ static void issueRequest(RequestManager * rm,
       rd = TTL_DECREMENT / rd;
       if (rd == 0)
 	rd = 1;
-      ttl += randomi(50 * cronMILLIS + rd); 
-      /* rd == TTL_DECREMENT / (con->ttl / rm->initialTTL) + saveguards 
+      ttl += randomi(50 * cronMILLIS + rd);
+      /* rd == TTL_DECREMENT / (con->ttl / rm->initialTTL) + saveguards
 	 50ms: minimum increment */
     } else {
       ttl += randomi(ttl + 2 * TTL_DECREMENT); /* exponential backoff with random factor */
     }
-    if (ttl > (priority+8)* TTL_DECREMENT) 
-      ttl = (priority+8) * TTL_DECREMENT; /* see adjustTTL in gap */    
+    if (ttl > (priority+8)* TTL_DECREMENT)
+      ttl = (priority+8) * TTL_DECREMENT; /* see adjustTTL in gap */
     timeout = now + ttl;
   }
 
@@ -1060,7 +1060,7 @@ static void processRequests(RequestManager * rm) {
   cron_t minSleep;
   cron_t now;
   cron_t delta;
-  int i;  
+  int i;
   unsigned int pending;
   int * perm;
   unsigned int TTL_DECREMENT;
@@ -1097,11 +1097,11 @@ static void processRequests(RequestManager * rm) {
 	pendingOverCWin = -1; /* avoid 0! */
       pOCWCubed = pendingOverCWin *
 	pendingOverCWin *
-	pendingOverCWin;     
+	pendingOverCWin;
       if ( (pOCWCubed <= 0) ||
 	   (pOCWCubed * rm->requestListIndex <= 0) /* see #642 */ ||
 	   /* avoid no-start: override congestionWindow occasionally... */
-	   (0 == randomi(rm->requestListIndex * 
+	   (0 == randomi(rm->requestListIndex *
 			 pOCWCubed)) ) {
 	delta = (rm->requestList[j]->lastTimeout - now) + 10 * cronMILLIS;
 	issueRequest(rm, j);
@@ -1111,7 +1111,7 @@ static void processRequests(RequestManager * rm) {
       }
     } else {
       delta = (rm->requestList[j]->lastTimeout + TTL_DECREMENT - now);
-    }      
+    }
     if (delta < minSleep )
       minSleep = delta;
   }
@@ -1127,7 +1127,7 @@ static void processRequests(RequestManager * rm) {
 /* ***************** main method **************** */
 
 /**
- * Download a file. 
+ * Download a file.
  *
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file
@@ -1152,7 +1152,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
 
   if (OK != createIOContext(&ioc,
 			    ntohll(fid.file_length),
-			    filename)) 
+			    filename))
     return SYSERR;
   rm = createRequestManager();
 
@@ -1179,9 +1179,9 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   if ( (rm->requestListIndex == 0) &&
        (ctx.completed == ctx.total) &&
        (rm->abortFlag == NO) )
-    ret = OK;    
-  else 
-    ret = SYSERR;  
+    ret = OK;
+  else
+    ret = SYSERR;
   destroyRequestManager(rm);
   if (ret == OK)
     freeIOC(&ioc, YES);

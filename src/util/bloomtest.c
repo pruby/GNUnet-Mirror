@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   int falseok;
 
   initUtil(argc, argv, NULL);
-  srand(1);  
+  srand(1);
   UNLINK("/tmp/bloomtest.dat");
   bf = loadBloomfilter("/tmp/bloomtest.dat", SIZE, K);
 
@@ -48,10 +48,10 @@ int main(int argc, char *argv[]) {
     return -1;
   }
   freeBloomfilter(bf);
- 
+
 
    bf=loadBloomfilter("/tmp/bloomtest.dat", SIZE, K);
-  
+
   srand(1);
   ok=0;
   for(i=0;i<200;i++) {
@@ -61,13 +61,13 @@ int main(int argc, char *argv[]) {
   }
   if (ok != 200) {
     printf(" Got %d elements out of 200"
-	   "expected after reloading.\n", 
+	   "expected after reloading.\n",
 	   ok);
     doneUtil();
     return -1;
   }
 
-  srand(1);  
+  srand(1);
   for(i=0;i<100;i++) {
     nextHC(&tmp);
     delFromBloomfilter(bf, &tmp);
@@ -81,27 +81,27 @@ int main(int argc, char *argv[]) {
     if(testBloomfilter(bf, &tmp) == YES)
       ok++;
   }
-  
+
   if (ok != 100) {
     printf(" Expected 100 elements in filter"
-	   " after adding 200 and deleting 100, got %d\n", 
+	   " after adding 200 and deleting 100, got %d\n",
 	   ok);
     doneUtil();
-    return -1; 
-  } 
+    return -1;
+  }
 
   srand(3);
- 
+
   falseok=0;
   for(i=0;i<1000;i++) {
     nextHC(&tmp);
     if(testBloomfilter(bf, &tmp) == YES)
       falseok++;
   }
- 
+
   freeBloomfilter(bf);
-  
-  UNLINK("/tmp/bloomtest.dat"); 
+
+  UNLINK("/tmp/bloomtest.dat");
   doneUtil();
   return(0);
 }

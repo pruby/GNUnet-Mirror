@@ -322,9 +322,9 @@ int conf_write(const char *name)
 	if (! dirname[0])
 		strcpy(dirname, conf_def_dir);
 
-	sprintf(newname, 
-		"%s.tmpconfig.%u", 
-		dirname, 
+	sprintf(newname,
+		"%s.tmpconfig.%u",
+		dirname,
 		(unsigned int) getpid());
 	out = FOPEN(newname, "w");
 	if (!out)

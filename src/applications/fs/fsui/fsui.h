@@ -112,7 +112,7 @@ typedef struct FSUI_SearchList {
    * yet all of them.
    */
   unsigned int sizeUnmatchedResultsReceived;
-  
+
   ResultPending * unmatchedResultsReceived;
 
 } FSUI_SearchList;
@@ -148,7 +148,7 @@ typedef struct FSUI_DownloadList {
   /**
    * FSUI context for this download.
    */
-  struct FSUI_Context * ctx;  
+  struct FSUI_Context * ctx;
 
   /**
    * Handle to the thread which performs the download.
@@ -199,7 +199,7 @@ typedef struct FSUI_DownloadList {
    * decode the directory eagerly and start the other downloads in
    * parallel.  Once the directory is complete, we make sure that
    * really all files have been started and wait for their completion.
-   */ 
+   */
   int is_directory;
 
   /**

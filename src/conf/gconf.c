@@ -25,7 +25,7 @@
 
 /**
  * @brief GNUnet Setup
- * @file conf/gconf.c 
+ * @file conf/gconf.c
  * @author Roman Zippel
  * @author Nils Durner
  */
@@ -237,7 +237,7 @@ void init_main_window()
   GtkToolbar *toolbar;
   GtkWidget *vbox;
   GtkMenu *options;
-  
+
   main_wnd = create_main_wnd ();
   gtk_widget_show(GTK_WIDGET(main_wnd));
 
@@ -382,7 +382,7 @@ void init_left_tree(void)
   gtk_tree_view_set_model(view, model1);
   gtk_tree_view_set_headers_visible(view, TRUE);
   gtk_tree_view_set_rules_hint(view, FALSE);
-  
+
   column = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, column);
   gtk_tree_view_column_set_title(column, "Options");
@@ -394,11 +394,11 @@ void init_left_tree(void)
               renderer,
               "active", COL_BTNACT,
               "inconsistent", COL_BTNINC,
-              "visible", COL_BTNVIS, 
+              "visible", COL_BTNVIS,
               "radio", COL_BTNRAD, NULL);
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(GTK_TREE_VIEW_COLUMN(column),
-          renderer, FALSE); 
+          renderer, FALSE);
   gtk_tree_view_column_set_attributes(GTK_TREE_VIEW_COLUMN(column),
               renderer,
               "text", COL_OPTION,
@@ -446,7 +446,7 @@ void init_right_tree(void)
               renderer,
               "active", COL_BTNACT,
               "inconsistent", COL_BTNINC,
-              "visible", COL_BTNVIS, 
+              "visible", COL_BTNVIS,
               "radio", COL_BTNRAD, NULL);
   /*g_signal_connect(G_OBJECT(renderer), "toggled",
      G_CALLBACK(renderer_toggled), NULL); */
@@ -891,7 +891,7 @@ void on_split_clicked(GtkButton * button, gpointer user_data)
   gtk_window_get_default_size(GTK_WINDOW(main_wnd), &w, &h);
   gtk_paned_set_position(GTK_PANED(hpaned), w / 2);
   gtk_paned_set_position(GTK_PANED(vpaned), h / 2);
-  if (tree2)  
+  if (tree2)
     gtk_tree_store_clear(tree2);
   display_list();
 }
@@ -1577,7 +1577,7 @@ static void display_tree(struct menu *menu)
     if (((menu != &rootmenu) && !(menu->flags & MENU_ROOT)) ||
         (view_mode == FULL_VIEW)
         || (view_mode == SPLIT_VIEW))*/
-    if ((view_mode == SINGLE_VIEW) && (menu->flags & MENU_ROOT) 
+    if ((view_mode == SINGLE_VIEW) && (menu->flags & MENU_ROOT)
     || (view_mode == FULL_VIEW) || (view_mode == SPLIT_VIEW)) {
       indent++;
       display_tree(child);

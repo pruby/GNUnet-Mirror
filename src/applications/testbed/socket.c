@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/testbed/socket.c 
+ * @file applications/testbed/socket.c
  * @brief socket operation for communication between the testbed processes
  * @author Ronaldo Alves Ferreira
  * @author Christian Grothoff
@@ -36,8 +36,8 @@
 
 int sock = -1;
 
-static void writeAll(int fd, 
-		     char * data, 
+static void writeAll(int fd,
+		     char * data,
 		     unsigned int len) {
   unsigned int pos;
   int ret;
@@ -45,7 +45,7 @@ static void writeAll(int fd,
   ret = 42;
   while ( (ret > 0) && (pos < len) ) {
     ret = WRITE(sock, &data[pos], len-pos);
-    if (ret > 0) 
+    if (ret > 0)
       pos += ret;
     else
       LOG_STRERROR(LOG_WARNING, "write");
@@ -60,29 +60,29 @@ typedef struct {
   char data[0];
 } ExchangeBuffer;
 
-void socketSend(unsigned int len, 
-		unsigned int type, 
+void socketSend(unsigned int len,
+		unsigned int type,
 		void * data) {
   ExchangeBuffer * buf;
   unsigned int tlen;
 #if DEBUG
   unsigned int i;
 #endif
-  
-  tlen = len + sizeof(ExchangeBuffer); 
+
+  tlen = len + sizeof(ExchangeBuffer);
   buf = MALLOC(tlen);
   if (len > 0)
     memcpy(&buf->data[0], data, len);
   buf->size = htonl(tlen);
   buf->type = htonl(type);
-  
+
 #if DEBUG
   printf("Sending %u bytes: ", tlen);
   for (i=0;i<tlen;i++)
     printf("%d ", ((char*)buf)[i]);
   printf("\n");
 #endif
-  
+
   writeAll(sock, (void*)buf, tlen);
   FREE(buf);
 }
@@ -91,38 +91,38 @@ void socketSend(unsigned int len,
  * Read a message from the socket.
  * @return the type of the message
  */
-unsigned int readSocket(char ** rbuf, 
+unsigned int readSocket(char ** rbuf,
 			unsigned int * len) {
-  unsigned int type;  
+  unsigned int type;
   ExchangeBuffer * buf;
   unsigned int pos;
   int ret;
   unsigned int mlen;
-  
+
 #if DEBUG
   unsigned int i;
-#endif  
-  
+#endif
+
   pos = 0;
   ret = 42;
   while ( (pos < sizeof(unsigned int)) && (ret >= 0) ) {
     ret = READ(sock, &((char*)&mlen)[pos], sizeof(unsigned int)-pos);
-    if (ret >= 0) 
+    if (ret >= 0)
       pos += ret;
     else
       DIE_STRERROR("read");
   }
   mlen = ntohl(mlen);
-  
+
   buf = MALLOC(mlen);
   while ( (pos < mlen) && (ret >= 0) ) {
     ret = READ(sock, &((char*)buf)[pos], mlen-pos);
-    if (ret >= 0) 
+    if (ret >= 0)
       pos += ret;
     else
       DIE_STRERROR("read");
   }
-  
+
 #if DEBUG
   buf->size = htonl(mlen);
   printf("Reading %u bytes: ", mlen);
@@ -130,7 +130,7 @@ unsigned int readSocket(char ** rbuf,
     printf("%d ", ((char*)buf)[i]);
   printf("\n");
 #endif
-  
+
   type = ntohl(buf->type);
   *rbuf = MALLOC(mlen - sizeof(ExchangeBuffer));
   memcpy(*rbuf, &buf->data[0], mlen - sizeof(ExchangeBuffer));
@@ -142,12 +142,12 @@ unsigned int readSocket(char ** rbuf,
 /**
  * Print a message in the testbed-shell.
  */
-void XPRINTF(char * fmt, ...) {  
-  va_list	args;  
+void XPRINTF(char * fmt, ...) {
+  va_list	args;
   int n;
   int size = 1024;
   char * p;
-  
+
   p = MALLOC(size);
   while (1) {
     /* Try to print in the allocated space. */

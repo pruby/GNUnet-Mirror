@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/ecrs/uri.c 
+ * @file applications/fs/ecrs/uri.c
  * @brief Parses and produces uri strings.
  * @author Igor Wronsky, Christian Grothoff
  *
@@ -37,7 +37,7 @@
  * implementation is rather different in pretty much every detail.
  * The concrete URI formats are:
  *
- * <ul><li> 
+ * <ul><li>
  *
  * First, there are URIs that identify a file.  They have the format
  * "gnunet://ecrs/chk/HEX1.HEX2.SIZE".  These URIs can be used to
@@ -45,7 +45,7 @@
  * meta-data is NOT part of the file-URI since a URI uniquely
  * identifies a resource (and the contents of the file would be the
  * same even if it had a different description).
- * 
+ *
  * </li><li>
  *
  * The second category identifies entries in a namespace.  The format
@@ -56,16 +56,16 @@
  * identifier is in ASCII but the format is ambiguous and could denote
  * a HEX-string a "/" is appended to indicate ASCII encoding.
  *
- * </li> <li> 
+ * </li> <li>
  *
  * The third category identifies ordinary searches.  The format is
  * "gnunet://ecrs/ksk/KEYWORD[+KEYWORD]*".  Using the "+" syntax
  * it is possible to encode searches with the boolean "AND" operator.
  * "+" is used since it indicates a commutative 'and' operation and
- * is unlikely to be used in a keyword by itself.  
+ * is unlikely to be used in a keyword by itself.
  *
- * </li><li> 
- * 
+ * </li><li>
+ *
  * The last category identifies a datum on a specific machine.  The
  * format is "gnunet://ecrs/loc/PEER/QUERY.TYPE.KEY.SIZE".  MACHINE is
  * the EncName of the peer storing the datum, TYPE is the (block) type
@@ -113,7 +113,7 @@ static char * createKeywordURI(char ** keywords,
 
 /**
  * Generate a subspace URI.
- */ 
+ */
 static char * createSubspaceURI(const HashCode512 * namespace,
 				const HashCode512 * identifier) {
   size_t n;
@@ -124,7 +124,7 @@ static char * createSubspaceURI(const HashCode512 * namespace,
   n = sizeof(EncName) * 2 + strlen(ECRS_URI_PREFIX) + strlen(ECRS_SUBSPACE_INFIX) + 1;
   ret = MALLOC(n);
   hash2enc(namespace, &ns);
-  hash2enc(identifier, &id);  
+  hash2enc(identifier, &id);
   SNPRINTF(ret, n,
 	   "%s%s%s/%s",
 	   ECRS_URI_PREFIX,
@@ -136,28 +136,28 @@ static char * createSubspaceURI(const HashCode512 * namespace,
 
 /**
  * Generate a file URI.
- */ 
+ */
 char * createFileURI(const FileIdentifier * fi) {
   char * ret;
   EncName keyhash;
-  EncName queryhash;  
+  EncName queryhash;
   size_t n;
-    
+
   hash2enc(&fi->chk.key,
            &keyhash);
   hash2enc(&fi->chk.query,
            &queryhash);
-  
+
   n = strlen(ECRS_URI_PREFIX)+2*sizeof(EncName)+8+16+32+strlen(ECRS_FILE_INFIX);
   ret = MALLOC(n);
-  SNPRINTF(ret, 
+  SNPRINTF(ret,
 	   n,
 	   "%s%s%s.%s.%llu",
 	   ECRS_URI_PREFIX,
 	   ECRS_FILE_INFIX,
 	   (char*)&keyhash,
 	   (char*)&queryhash,
-	   ntohll(fi->file_length));	     
+	   ntohll(fi->file_length));	
   return ret;
 }
 
@@ -186,7 +186,7 @@ char * ECRS_uriToString(const struct ECRS_URI * uri) {
   }
 }
 
-/** 
+/**
  * Parses an AFS search URI.
  *
  * @param uri an uri string
@@ -202,15 +202,15 @@ static int parseKeywordURI(const char * uri,
   int i;
   size_t slen;
   char * dup;
-  
+
   GNUNET_ASSERT(uri != NULL);
-  
+
   slen = strlen(uri);
   pos = strlen(ECRS_URI_PREFIX);
- 
-  if (0 != strncmp(uri, 
+
+  if (0 != strncmp(uri,
 		   ECRS_URI_PREFIX,
-		   pos)) 
+		   pos))
     return SYSERR;
   if (0 != strncmp(&uri[pos],
 		   ECRS_SEARCH_INFIX,
@@ -218,10 +218,10 @@ static int parseKeywordURI(const char * uri,
     return SYSERR;
   pos += strlen(ECRS_SEARCH_INFIX);
   if ( (slen == pos) ||
-       (uri[slen-1] == '+') || 
+       (uri[slen-1] == '+') ||
        (uri[pos] == '+') )
     return SYSERR; /* no keywords / malformed */
-  
+
   ret = 1;
   for (i=pos;i<slen;i++) {
     if (uri[i] == '+') {
@@ -238,13 +238,13 @@ static int parseKeywordURI(const char * uri,
       (*keywords)[--ret] = STRDUP(&dup[i+1]);
       dup[i] = '\0';
     }
-  }  
+  }
   (*keywords)[--ret] = STRDUP(&dup[pos]);
   FREE(dup);
   return iret;
 }
 
-/** 
+/**
  * Parses an AFS namespace / subspace identifier URI.
  *
  * @param uri an uri string
@@ -258,15 +258,15 @@ static int parseSubspaceURI(const char * uri,
   unsigned int pos;
   size_t slen;
   char * up;
-  
+
   GNUNET_ASSERT(uri != NULL);
-  
+
   slen = strlen(uri);
   pos = strlen(ECRS_URI_PREFIX);
- 
-  if (0 != strncmp(uri, 
+
+  if (0 != strncmp(uri,
 		   ECRS_URI_PREFIX,
-		   pos)) 
+		   pos))
     return SYSERR;
   if (0 != strncmp(&uri[pos],
 		   ECRS_SUBSPACE_INFIX,
@@ -283,7 +283,7 @@ static int parseSubspaceURI(const char * uri,
 		       namespace)) ) {
     FREE(up);
     return SYSERR;
-  }    
+  }
   if ( (slen != pos+2*sizeof(EncName)-1) ||
        (OK == enc2hash(&up[pos+sizeof(EncName)],
 		       identifier)) ) {
@@ -297,7 +297,7 @@ static int parseSubspaceURI(const char * uri,
   return OK;
 }
 
-/** 
+/**
  * Parses an URI that identifies a file
  *
  * @param uri an uri string
@@ -309,15 +309,15 @@ static int parseFileURI(const char * uri,
   unsigned int pos;
   size_t slen;
   char * dup;
-  
+
   GNUNET_ASSERT(uri != NULL);
-  
+
   slen = strlen(uri);
   pos = strlen(ECRS_URI_PREFIX);
- 
-  if (0 != strncmp(uri, 
+
+  if (0 != strncmp(uri,
 		   ECRS_URI_PREFIX,
-		   pos)) 
+		   pos))
     return SYSERR;
   if (0 != strncmp(&uri[pos],
 		   ECRS_FILE_INFIX,
@@ -326,7 +326,7 @@ static int parseFileURI(const char * uri,
   pos += strlen(ECRS_FILE_INFIX);
   if ( (slen < pos+2*sizeof(EncName)+1) ||
        (uri[pos+sizeof(EncName)-1] != '.') ||
-       (uri[pos+sizeof(EncName)*2-1] != '.') ) 
+       (uri[pos+sizeof(EncName)*2-1] != '.') )
     return SYSERR;
 
   dup = STRDUP(uri);
@@ -340,7 +340,7 @@ static int parseFileURI(const char * uri,
 		    "%llu",
 		    &fi->file_length)) ) {
     FREE(dup);
-    return SYSERR;  
+    return SYSERR;
   }
   FREE(dup);
   fi->file_length = htonll(fi->file_length);
@@ -374,7 +374,7 @@ URI * ECRS_stringToUri(const char * uri) {
     return NULL;
   }
   ret->type = ksk;
-  ret->data.ksk.keywordCount 
+  ret->data.ksk.keywordCount
     = len;
   return ret;
 }
@@ -392,7 +392,7 @@ void ECRS_freeUri(struct ECRS_URI * uri) {
 	 uri->data.ksk.keywordCount,
 	 0);
   }
-   
+
   FREE(uri);
 }
 
@@ -411,7 +411,7 @@ int ECRS_isNamespaceURI(const struct ECRS_URI * uri) {
  */
 char * ECRS_getNamespaceName(const HashCode512 * id) {
   char * ret;
-  
+
   ret = MALLOC(sizeof(EncName));
   hash2enc(id,
 	   (EncName*)ret);
@@ -429,7 +429,7 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
   if (! ECRS_isNamespaceURI(uri)) {
     BREAK();
     return SYSERR;
-  }  
+  }
   *id = uri->data.sks.namespace;
   return OK;
 }
@@ -518,7 +518,7 @@ struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]) {
   unsigned int count;
   URI * ret;
   unsigned int i;
-  
+
   count = 0;
   while (keyword[count] != NULL)
     count++;
@@ -533,7 +533,7 @@ struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]) {
   for (i=0;i<count;i++)
     ret->data.ksk.keywords[i] = STRDUP(keyword[i]);
   return ret;
-  
+
 }
 
 

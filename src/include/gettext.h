@@ -53,8 +53,8 @@
     ((N) == 1 ? (const char *) (Msgid1) : (const char *) (Msgid2))
 /* slight modification here to avoid warnings: generate NO code,
    not even the cast... */
-# define textdomain(Domainname) 
-# define bindtextdomain(Domainname, Dirname) 
+# define textdomain(Domainname)
+# define bindtextdomain(Domainname, Dirname)
 # define bind_textdomain_codeset(Domainname, Codeset) ((const char *) (Codeset))
 
 #endif

@@ -19,7 +19,7 @@
 
 /**
  * @file applications/fs/module/ecrs_core.c
- * @brief support for ECRS encoding of files 
+ * @brief support for ECRS encoding of files
  * @author Christian Grothoff
  */
 
@@ -28,7 +28,7 @@
 #include "ecrs_core.h"
 
 /**
- * Perform on-demand content encoding.  
+ * Perform on-demand content encoding.
  *
  * @param data the data to encode
  * @param len the length of the data
@@ -96,7 +96,7 @@ void fileBlockGetKey(const DBlock * data,
 		     HashCode512 * key) {
   GNUNET_ASSERT(len >= sizeof(DBlock));
   hash(&data[1],
-       len - sizeof(DBlock), 
+       len - sizeof(DBlock),
        key);
 }
 
@@ -120,7 +120,7 @@ void fileBlockGetQuery(const DBlock * db,
   hashToKey(&hc,
 	    &skey,
 	    &iv);
-  tmp = MALLOC(len);  
+  tmp = MALLOC(len);
   GNUNET_ASSERT(len == encryptBlock(data,
 				    len,
 				    &skey,
@@ -150,18 +150,18 @@ unsigned int getTypeOfBlock(unsigned int size,
  */
 int getQueryFor(unsigned int size,
 		const DBlock * data,
-		HashCode512 * query) {  
+		HashCode512 * query) {
   unsigned int type;
 
   type = getTypeOfBlock(size, data);
   if (type == ANY_BLOCK)
     return SYSERR;
   switch (type) {
-  case D_BLOCK: 
+  case D_BLOCK:
     fileBlockGetKey(data,
-		    size, 
+		    size,
 		    query);
-    return OK;  
+    return OK;
   case S_BLOCK: {
     const SBlock * sb;
     if (size < sizeof(SBlock)) {
@@ -237,15 +237,15 @@ int getQueryFor(unsigned int size,
   case ONDEMAND_BLOCK: {
     BREAK(); /* should never be used here! */
     return SYSERR;
-  }    
+  }
   default: {
     BREAK(); /* unknown block type */
     return SYSERR;
   }
   } /* end switch */
 }
-  
-  
+
+
 /**
  * Verify that the given Datum is a valid response
  * to a given query.
@@ -267,7 +267,7 @@ int isDatumApplicable(unsigned int type,
 		      const HashCode512 * keys) {
   HashCode512 hc;
 
-  if (type != getTypeOfBlock(size, data)) {    
+  if (type != getTypeOfBlock(size, data)) {
     BREAK();
     return SYSERR; /* type mismatch */
   }
@@ -278,39 +278,39 @@ int isDatumApplicable(unsigned int type,
   if (! equalsHashCode512(&hc, &keys[0])) {
     BREAK(); /* mismatch between primary queries,
 		we should not even see those here. */
-    return SYSERR;    
+    return SYSERR;
   }
   if (keyCount == 0)
     return YES; /* request was to match only primary key */
   switch (type) {
-  case S_BLOCK: 
-    if (keyCount != 2) 
+  case S_BLOCK:
+    if (keyCount != 2)
       return SYSERR; /* no match */
     hash(&((const SBlock*)data)->subspace,
 	 sizeof(PublicKey),
-	 &hc);	 
+	 &hc);	
     if (equalsHashCode512(&keys[1],
 			  &hc))
       return OK;
     else
-      return SYSERR;  
-  case N_BLOCK: 
-    if (keyCount != 2) 
+      return SYSERR;
+  case N_BLOCK:
+    if (keyCount != 2)
       return SYSERR; /* no match */
     hash(&((const NBlock*)data)->subspace,
 	 sizeof(PublicKey),
-	 &hc);	 
+	 &hc);	
     if (equalsHashCode512(&keys[1],
 			  &hc))
       return OK;
     else
-      return SYSERR;  
+      return SYSERR;
   case D_BLOCK:
   case K_BLOCK:
-  case KN_BLOCK: 
+  case KN_BLOCK:
     if (keyCount != 1)
       BREAK(); /* keyCount should be 1 */
-    return OK; /* if query matches, everything matches! */    
+    return OK; /* if query matches, everything matches! */
   case ANY_BLOCK:
     BREAK(); /* block type should be known */
     return SYSERR;

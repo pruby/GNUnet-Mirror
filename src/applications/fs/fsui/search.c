@@ -37,7 +37,7 @@
 static void processResult(const ECRS_FileInfo * fi,
 			  FSUI_SearchList * pos) {
   FSUI_Event event;
-  
+
   GROW(pos->resultsReceived,
        pos->sizeResultsReceived,
        pos->sizeResultsReceived+1);
@@ -89,7 +89,7 @@ static int spcb(const ECRS_FileInfo * fi,
 			pos);
 	  ECRS_freeUri(rp->fi.uri);
 	  ECRS_freeMetaData(rp->fi.meta);
-	  pos->unmatchedResultsReceived[i] 
+	  pos->unmatchedResultsReceived[i]
 	    = pos->unmatchedResultsReceived[pos->sizeUnmatchedResultsReceived-1];
 	  GROW(pos->unmatchedResultsReceived,
 	       pos->sizeUnmatchedResultsReceived,
@@ -159,7 +159,7 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
       return SYSERR;
     }
     pos = pos->next;
-  }  
+  }
   pos = MALLOC(sizeof(FSUI_SearchList));
   pos->signalTerminate = NO;
   pos->uri = ECRS_dupUri(uri);
@@ -219,21 +219,21 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
 	GROW(pos->unmatchedResultsReceived[i].matchingKeys,
 	     pos->unmatchedResultsReceived[i].matchingKeyCount,
 	     0);
-      }     
+      }
       GROW(pos->unmatchedResultsReceived,
 	   pos->sizeUnmatchedResultsReceived,
-	   0);      
+	   0);
       if (prev == NULL)
 	ctx->activeSearches = pos->next;
       else
 	prev->next = pos->next;
-      FREE(pos);      
+      FREE(pos);
       MUTEX_UNLOCK(&ctx->lock);
       return OK;
     }
-    prev = pos;    
+    prev = pos;
     pos = pos->next;
-  }  
+  }
   MUTEX_UNLOCK(&ctx->lock);
   return SYSERR;
 }
@@ -264,7 +264,7 @@ int FSUI_listSearches(struct FSUI_Context * ctx,
     }
     ret++;
     pos = pos->next;
-  }  
+  }
   MUTEX_UNLOCK(&ctx->lock);
   return ret;
 }

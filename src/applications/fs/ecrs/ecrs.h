@@ -35,8 +35,8 @@
 
 
 /**
- * Fixed SBlock updateInterval codes. Positive values 
- * are interpreted as durations (in seconds) for periodical 
+ * Fixed SBlock updateInterval codes. Positive values
+ * are interpreted as durations (in seconds) for periodical
  * updates.
  */
 #define SBLOCK_UPDATE_SPORADIC ECRS_SBLOCK_UPDATE_SPORADIC
@@ -92,7 +92,7 @@ void ECRS_encryptInPlace(const HashCode512 * hc,
 void ECRS_decryptInPlace(const HashCode512 * hc,
 			 void * data,
 			 unsigned int len);
- 
+
 
 
 #endif

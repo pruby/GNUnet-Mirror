@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/ecrs/search.c 
+ * @file applications/fs/ecrs/search.c
  * @brief Helper functions for searching.
  * @author Christian Grothoff
  */
@@ -67,7 +67,7 @@ typedef struct {
 
   /**
    * The keys (for the search).
-   */ 
+   */
   HashCode512 * keys;
 
   /**
@@ -107,7 +107,7 @@ typedef struct {
   PendingSearch ** queries;
 
   ECRS_SearchProgressCallback spcb;
-  
+
   void * spcbClosure;
 
   int aborted;
@@ -130,8 +130,8 @@ static void addPS(unsigned int type,
   ps->timeout = 0;
   ps->lastTransmission = 0;
   ps->priority = 5 + randomi(20);
-  ps->type = type; 
-  ps->keyCount = keyCount; 
+  ps->type = type;
+  ps->keyCount = keyCount;
   ps->keys = MALLOC(sizeof(HashCode512) * keyCount);
   memcpy(ps->keys,
 	 keys,
@@ -163,16 +163,16 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 
     hash(&uri->data.sks.identifier,
 	 sizeof(HashCode512),
-	 &hk); 
+	 &hk);
     xorHashCodes(&hk,
 		 &uri->data.sks.namespace,
-		 &keys[0]); /* compute routing key r = H(identifier) ^ namespace */   
+		 &keys[0]); /* compute routing key r = H(identifier) ^ namespace */
     keys[1] = uri->data.sks.namespace;
     addPS(K_BLOCK,
 	  2,
 	  &keys[0],
 	  &uri->data.sks.identifier,
-	  sqc);   
+	  sqc);
     break;
   }
   case ksk: {
@@ -209,7 +209,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
     LOG(LOG_ERROR,
 	_("LOC URI not allowed for search.\n"));
     break;
-  default: 
+  default:
     BREAK();
     /* unknown URI type */
     break;
@@ -234,8 +234,8 @@ static int computeIdAtTime(const SBlock * sb,
   unsigned int iter;
 
   if (ntohll(sb->updateInterval) == (cron_t) SBLOCK_UPDATE_SPORADIC) {
-    memcpy(c, 
-	   &sb->nextIdentifier, 
+    memcpy(c,
+	   &sb->nextIdentifier,
 	   sizeof(HashCode512));
     return OK;
   }
@@ -245,24 +245,24 @@ static int computeIdAtTime(const SBlock * sb,
 	    &sb->nextIdentifier,
 	    c);
     return OK;
-  } 
+  }
   GNUNET_ASSERT(ntohll(sb->updateInterval) != 0);
   pos = ntohll(sb->creationTime);
   deltaId(&sb->identifierIncrement,
 	  &sb->nextIdentifier,
 	  c);
-  
+
   iter = (now - (pos + ntohll(sb->updateInterval))) / ntohll(sb->updateInterval);
-  if (iter > 0xFFFF) 
+  if (iter > 0xFFFF)
     /* too many iterators, signal error! */
     return SYSERR;
   while (pos + ntohll(sb->updateInterval) < now) {
     pos += ntohll(sb->updateInterval);
-    addHashCodes(c, 
+    addHashCodes(c,
 		 &sb->identifierIncrement,
-		 &tmp);    
+		 &tmp);
     *c = tmp;
-  } 
+  }
   return OK;
 }
 
@@ -327,7 +327,7 @@ static int receiveReplies(const HashCode512 * key,
 			&query))
     return SYSERR;
   for (i=0;i<sqc->queryCount;i++) {
-    ps = sqc->queries[i];    
+    ps = sqc->queries[i];
     if ( equalsHashCode512(&query,
 			   &ps->keys[0]) &&
 	 ( (ps->type == type) ||
@@ -383,7 +383,7 @@ static int receiveReplies(const HashCode512 * key,
 	  return SYSERR;
 	}
 	if (sqc->spcb != NULL) {
-	  ret = sqc->spcb(&fi, 
+	  ret = sqc->spcb(&fi,
 			  &ps->decryptKey,
 			  sqc->spcbClosure);
 	  if (ret == SYSERR)
@@ -393,7 +393,7 @@ static int receiveReplies(const HashCode512 * key,
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
 	FREE(kb);
-	return ret;      
+	return ret;
       }
       case N_BLOCK: {
 	const NBlock * nb;
@@ -440,7 +440,7 @@ static int receiveReplies(const HashCode512 * key,
 			    &sb->creationTime,
 			    size
 			    - sizeof(Signature)
-			    - sizeof(PublicKey) 
+			    - sizeof(PublicKey)
 			    - sizeof(HashCode512));
 	j = sizeof(SBlock);
 	while ( (j < size) &&
@@ -579,10 +579,10 @@ int ECRS_search(const struct ECRS_URI * uri,
       ps->lastTransmission = now;
       LOG(LOG_DEBUG,
 	  "ECRS initiating FS search with timeout %llus and priority %u.\n",
-	  (ps->timeout - now) / cronSECONDS, 
+	  (ps->timeout - now) / cronSECONDS,
 	  ps->priority);
 
-      ps->handle 
+      ps->handle
 	= FS_start_search(ctx.sctx,
 			  ps->type,
 			  ps->keyCount,

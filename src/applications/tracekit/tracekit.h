@@ -35,7 +35,7 @@ typedef struct {
    * When was this probe started? (NBO)
    */
   TIME_T timestamp;
-  
+
   /**
    * How many more hops should this probe go (NBO)
    */
@@ -73,7 +73,7 @@ typedef struct {
    * for sending this reply?
    */
   PeerIdentity responderId;
-  
+
   /**
    * At what time was the initator sending the
    * request?
@@ -96,7 +96,7 @@ typedef struct {
    */
   PeerIdentity peerList[1];
 } TRACEKIT_p2p_REPLY_GENERIC;
-  
+
 
 typedef struct {
   CS_HEADER header;
@@ -120,7 +120,7 @@ typedef struct {
    * for sending this reply?
    */
   PeerIdentity responderId;
-  
+
 } TRACEKIT_CS_REPLY;
 
 typedef struct {

@@ -67,16 +67,16 @@
 static void getSizeRec(const char * filename,
 		       const char * dirname,
 		       unsigned long long * size) {
-  struct stat buf;  
+  struct stat buf;
   char * fn;
-  
+
   if (filename == NULL)
     return;
   if (dirname != NULL) {
     fn = MALLOC(strlen(filename) + strlen(dirname) + 2);
     fn[0] = '\0';
     if (strlen(dirname) > 0) {
-      strcat(fn, dirname);      
+      strcat(fn, dirname);
       if (dirname[strlen(dirname)-1] != DIR_SEPARATOR)
 	strcat(fn, "/"); /* add tailing / if needed */
     }
@@ -103,7 +103,7 @@ static void getSizeRec(const char * filename,
     scanDirectory(fn,
 		  (DirectoryEntryCallback)&getSizeRec,
 		  size);
-  }  
+  }
   FREE(fn);
 }
 
@@ -111,16 +111,16 @@ static void getSizeRec(const char * filename,
 static void getSizeWithoutSymlinksRec(const char * filename,
 				      const char * dirname,
 				      unsigned long long * size) {
-  struct stat buf;  
+  struct stat buf;
   char * fn;
-  
+
   if (filename == NULL)
     return;
   if (dirname != NULL) {
     fn = MALLOC(strlen(filename) + strlen(dirname) + 2);
     fn[0] = '\0';
     if (strlen(dirname) > 0) {
-      strcat(fn, dirname);      
+      strcat(fn, dirname);
       if (dirname[strlen(dirname)-1] != DIR_SEPARATOR)
 	strcat(fn, "/"); /* add tailing / if needed */
     }
@@ -148,7 +148,7 @@ static void getSizeWithoutSymlinksRec(const char * filename,
     scanDirectory(fn,
 		  (DirectoryEntryCallback)&getSizeRec,
 		  size);
-  }  
+  }
   FREE(fn);
 }
 
@@ -172,16 +172,16 @@ long getBlocksLeftOnDrive(const char * part) {
 #elif MINGW
   DWORD dwDummy, dwBlocks;
   char szDrive[4];
-  
+
   memcpy(szDrive, part, 3);
-  szDrive[3] = 0; 
+  szDrive[3] = 0;
   if(!GetDiskFreeSpace(szDrive, &dwDummy, &dwDummy, &dwBlocks, &dwDummy))
   {
     LOG(LOG_ERROR,
         _("'%s' failed for drive %s: %u\n"),
 	"GetDiskFreeSpace",
         szDrive, GetLastError());
-        
+
     return -1;
   }
   else
@@ -192,7 +192,7 @@ long getBlocksLeftOnDrive(const char * part) {
   struct statfs s;
   if (0 == statfs(part, &s)) {
     return s.f_bavail;
-  } else {    
+  } else {
     LOG_STRERROR(LOG_ERROR, "statfs");
     return -1;
   }
@@ -213,7 +213,7 @@ unsigned long long getFileSize(const char * filename) {
 }
 
 /**
- * Get the size of the file (or directory) without 
+ * Get the size of the file (or directory) without
  * counting symlinks.
  * FIXME: Currently this function does not return errors
  */
@@ -278,7 +278,7 @@ int assertIsFile(const char * fil) {
 	_("'%s' is not a regular file.\n"),
 	fil);
     return 0;
-  }  
+  }
   if (ACCESS(fil, R_OK) < 0 ) {
     LOG_FILE_STRERROR(LOG_WARNING, "access", fil);
     return 0;
@@ -288,9 +288,9 @@ int assertIsFile(const char * fil) {
 
 /**
  * Complete filename (a la shell) from abbrevition.
- * @param fil the name of the file, may contain ~/ or 
+ * @param fil the name of the file, may contain ~/ or
  *        be relative to the current directory
- * @returns the full file name, 
+ * @returns the full file name,
  *          NULL is returned on error
  */
 char * expandFileName(const char * fil) {
@@ -322,7 +322,7 @@ char * expandFileName(const char * fil) {
     /* do not copy '~' */
     fil_ptr = fil + 1;
 
-	/* skip over dir seperator to be consistent */    
+	/* skip over dir seperator to be consistent */
     if (fil_ptr[0] == DIR_SEPARATOR) {
     	fil_ptr++;
     }
@@ -349,7 +349,7 @@ char * expandFileName(const char * fil) {
     return NULL;
   }
   /* is the path relative? */
-  if ((strncmp(buffer + 1, ":\\", 2) != 0) && 
+  if ((strncmp(buffer + 1, ":\\", 2) != 0) &&
       (strncmp(buffer, "\\\\", 2) != 0))
   {
     char szCurDir[MAX_PATH + 1];
@@ -357,7 +357,7 @@ char * expandFileName(const char * fil) {
     if (lRet + strlen(fn) + 1 > (MAX_PATH + 1))
     {
       SetErrnoFromWinError(ERROR_BUFFER_OVERFLOW);
-      
+
       return NULL;
     }
     SNPRINTF(fn,
@@ -398,7 +398,7 @@ int mkdirp(const char * dir) {
       if (rdir[pos] == '\\')
       {
         pos ++;
-        
+
         break;
       }
       pos ++;
@@ -410,28 +410,28 @@ int mkdirp(const char * dir) {
   }
 #endif
   while (pos <= len) {
-    if ( (rdir[pos] == DIR_SEPARATOR) || 
+    if ( (rdir[pos] == DIR_SEPARATOR) ||
 	 (pos == len) ) {
       rdir[pos] = '\0';
       if (! isDirectory(rdir))
 #ifndef MINGW
 	if (0 != mkdir(rdir,
-		       S_IRUSR | S_IWUSR | 
-		       S_IXUSR | S_IRGRP | 
-		       S_IXGRP | S_IROTH | 
+		       S_IRUSR | S_IWUSR |
+		       S_IXUSR | S_IRGRP |
+		       S_IXGRP | S_IROTH |
 		       S_IXOTH)) { /* 755 */
 #else
-	if (0 != mkdir(rdir)) {    
+	if (0 != mkdir(rdir)) {
 #endif
 	  if (errno != EEXIST) {
 	    LOG_FILE_STRERROR(LOG_ERROR, "mkdir", rdir);
 	    ret = SYSERR;
 	  }
 	}
-      rdir[pos] = DIR_SEPARATOR;       
-    }      
+      rdir[pos] = DIR_SEPARATOR;
+    }
     pos++;
-  }   
+  }
   FREE(rdir);
   return ret;
 }
@@ -443,22 +443,22 @@ int mkdirp(const char * dir) {
  * @param len the maximum number of bytes to read
  * @param result the buffer to write the result to
  * @return the number of bytes read on success, -1 on failure
- */ 
+ */
 int readFile(const char * fileName,
 	     int  len,
 	     void * result) {
   /* open file, must exist, open read only */
-  int handle;  
+  int handle;
   int size;
 
   if ((fileName == NULL) || (result == NULL))
     return -1;
   handle = OPEN(fileName,O_RDONLY,S_IRUSR);
   if (handle < 0)
-    return -1; 
+    return -1;
   size = READ(handle, result, len);
   CLOSE(handle);
-  return size;  
+  return size;
 }
 
 /**
@@ -467,14 +467,14 @@ int readFile(const char * fileName,
  * @param buffer the data to write
  * @param n number of bytes to write
  * @param mode permissions to set on the file
- */ 
-void writeFile(const char * fileName, 
+ */
+void writeFile(const char * fileName,
 	       const void * buffer,
 	       unsigned int n,
 	       const char *mode) {
   int handle;
-  /* open file, open with 600, create if not 
-     present, otherwise overwrite */  
+  /* open file, open with 600, create if not
+     present, otherwise overwrite */
   if ((fileName == NULL) || (buffer == NULL))
     return;
   handle = OPEN(fileName,
@@ -484,7 +484,7 @@ void writeFile(const char * fileName,
     return;
   }
   /* write the buffer take length from the beginning */
-  if (n != WRITE(handle, buffer, n)) 
+  if (n != WRITE(handle, buffer, n))
     LOG_FILE_STRERROR(LOG_WARNING, "write", fileName);
   CHMOD(fileName, atoo(mode));
   CLOSE(handle);
@@ -492,7 +492,7 @@ void writeFile(const char * fileName,
 
 /**
  * Build a filename from directory and filename, completing like the shell does
- * @param dir the name of the directory, may contain ~/ or other shell stuff. Will 
+ * @param dir the name of the directory, may contain ~/ or other shell stuff. Will
  *        NOT be freed!
  * @param fil the name of the file, will NOT be deallocated anymore!
  * @param result where to store the full file name (must be large enough!)
@@ -521,14 +521,14 @@ int scanDirectory(const char * dirName,
   struct dirent *finfo;
   struct stat istat;
   int count = 0;
- 
-  if (dirName == NULL) 
-    return -1; 
+
+  if (dirName == NULL)
+    return -1;
   if (0 != STAT(dirName, &istat)) {
     LOG_FILE_STRERROR(LOG_WARNING, "stat", dirName);
     return -1;
   }
-  if (!S_ISDIR(istat.st_mode)) {    
+  if (!S_ISDIR(istat.st_mode)) {
     LOG(LOG_ERROR,
 	_("'%s' expected '%s' to be a directory!\n"),
 	__FUNCTION__,
@@ -582,7 +582,7 @@ static void rmHelper(const char * fil,
 int rm_minus_rf(const char * fileName) {
   if (UNLINK(fileName) == 0)
     return OK;
-  if ( (errno == EISDIR) || 
+  if ( (errno == EISDIR) ||
        /* EISDIR is not sufficient in all cases, e.g.
 	  sticky /tmp directory may result in EPERM on BSD.
 	  So we also explicitly check "isDirectory" */
@@ -618,7 +618,7 @@ void close_(int fd,
       if (! CloseHandle((HANDLE) fd)) {
 #endif
 	LOG(LOG_INFO,
-	    _("'%s' failed at %s:%d with error: %s\n"), 
+	    _("'%s' failed at %s:%d with error: %s\n"),
 #ifdef MINGW
 	    "CloseHandle",
 #else
@@ -663,7 +663,7 @@ int copyFile(const char * src,
 	     | O_LARGEFILE
 #endif
 	    );
-  if (in == -1) 
+  if (in == -1)
     return SYSERR;
   out = OPEN(dst, O_WRONLY | O_CREAT | O_EXCL
 #ifdef O_LARGEFILE

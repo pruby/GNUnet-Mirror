@@ -21,7 +21,7 @@
  * @brief Code that maintains the GNUnet session.
  *  It is responsible for establishing connections.
  * @author Christian Grothoff
- */ 
+ */
 
 #ifndef GNUNET_SESSION_SERVICE_H
 #define GNUNET_SESSION_SERVICE_H
@@ -39,12 +39,12 @@ typedef struct {
   /**
    * Try to connect to the given peer.
    *
-   * @return SYSERR if that is impossible, 
+   * @return SYSERR if that is impossible,
    *         YES if a connection is established upon return,
    *         NO if we're going to try to establish one asynchronously
    */
   int (*tryConnect)(const PeerIdentity * peer);
-   
+
 } Session_ServiceAPI;
 
 #endif

@@ -146,8 +146,8 @@ day_of_the_year (struct tm *tm)
 		   + (tm->tm_mday - 1));
 }
 
-char * 
-strptime_internal (const char *rp, const char *fmt, struct tm *tm, 
+char *
+strptime_internal (const char *rp, const char *fmt, struct tm *tm,
 		   enum locale_status *decided)
 {
     const char *rp_backup;

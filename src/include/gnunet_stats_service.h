@@ -41,7 +41,7 @@ typedef struct {
 
   /**
    * Manipulate statistics.  Sets the core-statistics associated with
-   * the handle to value.  
+   * the handle to value.
    *
    * @param handle the handle for the value to change
    * @param value to what the value should be set

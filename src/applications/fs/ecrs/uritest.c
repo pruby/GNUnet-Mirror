@@ -49,7 +49,7 @@ static int testKeyword() {
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
-		  "gnunet://ecrs/ksk/foo+bar")) 
+		  "gnunet://ecrs/ksk/foo+bar"))
     ABORT();
   FREE(uri);
   ECRS_freeUri(ret);
@@ -59,7 +59,7 @@ static int testKeyword() {
 static int testNamespace(int i) {
   char * uri;
   struct ECRS_URI * ret;
-  
+
   if (NULL != ECRS_stringToUri("gnunet://ecrs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3VUK"))
     ABORT();
   if (NULL != ECRS_stringToUri("gnunet://ecrs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3V/test"))
@@ -76,8 +76,8 @@ static int testNamespace(int i) {
 
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
-		  "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO")) 
-    ABORT();  
+		  "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/TOJB1NAAUVJKJAGQHRHS22N9I8VM32C0ESN4EFS836IT950E1MP7LGC5V2GE3LFO9U4BP23VQPTH8DPIOC2CONT9LM76ULVL00KAHVO"))
+    ABORT();
   FREE(uri);
   ECRS_freeUri(ret);
   return 0;
@@ -86,7 +86,7 @@ static int testNamespace(int i) {
 static int testFile(int i) {
   char * uri;
   struct ECRS_URI * ret;
-  
+
   if (NULL != ECRS_stringToUri("gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H00000440000.42"))
     ABORT();
   if (NULL != ECRS_stringToUri("gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000"))
@@ -106,14 +106,14 @@ static int testFile(int i) {
   uri = ECRS_uriToString(ret);
   if (0 != strcmp(uri,
 		  "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42")) {
-    ABORT();  
+    ABORT();
   }
   FREE(uri);
   ECRS_freeUri(ret);
   return 0;
 }
 
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
@@ -140,8 +140,8 @@ int main(int argc, char * argv[]) {
   doneUtil();
   if (failureCount == 0)
     return 0;
-  else 
+  else
     return 1;
-} 
+}
 
 /* end of uritest.c */

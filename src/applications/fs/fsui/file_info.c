@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/file_info.c 
+ * @file applications/fs/fsui/file_info.c
  * @brief Helper functions for keeping track of files for building directories.
  * @author Christian Grothoff
  *
@@ -52,7 +52,7 @@ static IPC_Semaphore * createIPC() {
   FREE(tmpname);
   sem = IPC_SEMAPHORE_NEW(ipcName, 1);
   FREE(ipcName);
-  return sem;				    
+  return sem;				
 }
 
 
@@ -60,7 +60,7 @@ static IPC_Semaphore * createIPC() {
  * Get the FSUI URI tracking status.
  *
  * @return YES of tracking is enabled, NO if not
- */ 
+ */
 int FSUI_trackStatus() {
   int * status;
 
@@ -97,8 +97,8 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
 					       NO));
   size = htonl(size);
   suri = ECRS_uriToString(fi->uri);
-  sem = createIPC();  
-  IPC_SEMAPHORE_DOWN(sem); 
+  sem = createIPC();
+  IPC_SEMAPHORE_DOWN(sem);
   stateAppendContent(STATE_NAME, strlen(suri) + 1, suri);
   stateAppendContent(STATE_NAME, sizeof(unsigned int), &size);
   stateAppendContent(STATE_NAME, ntohl(size), data);
@@ -110,7 +110,7 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
 /**
  * Remove all of the root-nodes of a particular type
  * from the tracking database.
- */ 
+ */
 static void emptyTrackDatabase() {
   IPC_Semaphore * sem;
 
@@ -127,7 +127,7 @@ static void emptyTrackDatabase() {
  * @param onOff YES to enable tracking, NO to disable
  *  disabling tracking also deletes all entries in the
  *  cache.
- */ 
+ */
 void FSUI_trackURIS(int onOff) {
   if (onOff == NO)
     emptyTrackDatabase();
@@ -167,11 +167,11 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
     while ( (spos < ret) &&
 	    (result[spos] != '\0') )
       spos++;
-    if (spos + sizeof(int) >= ret) 
+    if (spos + sizeof(int) >= ret)
       goto FORMATERROR;
     fi.uri = ECRS_stringToUri(&result[pos]);
     if (fi.uri == NULL)
-      goto FORMATERROR;    
+      goto FORMATERROR;
     memcpy(&msize, &result[spos], sizeof(int));
     msize = ntohl(msize);
     spos += 4;

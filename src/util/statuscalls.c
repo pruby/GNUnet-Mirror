@@ -89,7 +89,7 @@ static int initialized_ = NO;
 
 /**
  * Increment the number of bytes sent.  Transports should use this
- * so that statuscalls module can measure gnunet traffic usage between 
+ * so that statuscalls module can measure gnunet traffic usage between
  * calls to /proc.
  *
  * Note: the caller doesn't know what interface it is attached to,
@@ -128,7 +128,7 @@ static void resetStatusCalls() {
   int start;
 
   MUTEX_LOCK(&statusMutex);
-  interfaces 
+  interfaces
     = getConfigurationString("LOAD",
 			     "INTERFACES");
   ifcs = interfaces;
@@ -143,22 +143,22 @@ static void resetStatusCalls() {
     return;
   }
 
-  /* The string containing the interfaces is formatted in the following way: 
-   * each comma is replaced by '\0' and the pointers to the beginning of every 
+  /* The string containing the interfaces is formatted in the following way:
+   * each comma is replaced by '\0' and the pointers to the beginning of every
    * interface are stored
    */
   numInterfaces = 0;
   start = YES;
   while (1) {
     if (*interfaces == '\0') {
-      if (start == NO) 
-	numInterfaces++;      
+      if (start == NO)
+	numInterfaces++;
       break;
     }
-    if ( ((*interfaces>='a') && (*interfaces<='z')) || 
-	 ((*interfaces>='A') && (*interfaces<='Z')) || 
+    if ( ((*interfaces>='a') && (*interfaces<='z')) ||
+	 ((*interfaces>='A') && (*interfaces<='Z')) ||
 	 ((*interfaces>='0') && (*interfaces<='9')) ) {
-      start = NO;         
+      start = NO;
     } else {
       if (*interfaces != ',')
 	errexit(_("Interfaces string (%s) in configuration section '%s' under '%s' is malformed.\n"),
@@ -196,15 +196,15 @@ static void resetStatusCalls() {
   start = YES;
   while (1) {
     if (*interfaces=='\0') {
-      if (start == NO) 
-	numInterfaces++;      
+      if (start == NO)
+	numInterfaces++;
       break;
     }
-    if ( ((*interfaces>='a') && (*interfaces<='z')) || 
-	 ((*interfaces>='A') && (*interfaces<='Z')) || 
+    if ( ((*interfaces>='a') && (*interfaces<='z')) ||
+	 ((*interfaces>='A') && (*interfaces<='Z')) ||
 	 ((*interfaces>='0') && (*interfaces<='9')) ) {
       if (start == YES) {
-	start = NO;   
+	start = NO;
 	interfacePtrs[numInterfaces] = interfaces;	
       }
     } else {
@@ -216,17 +216,17 @@ static void resetStatusCalls() {
     }
     interfaces++;
   }
-  
-  useBasicMethod 
+
+  useBasicMethod
     = testConfigurationString("LOAD",
  			      "BASICLIMITING",
 			      "YES");
-  maxNetDownBPS 
+  maxNetDownBPS
     = getConfigurationInt("LOAD",
 			  "MAXNETDOWNBPSTOTAL");
   if (maxNetDownBPS == 0)
     maxNetDownBPS = 50000;
-  maxNetUpBPS 
+  maxNetUpBPS
     = getConfigurationInt("LOAD",
 			  "MAXNETUPBPSTOTAL");
   if (maxNetUpBPS == 0)
@@ -236,7 +236,7 @@ static void resetStatusCalls() {
 			  "MAXCPULOAD");
   if (maxCPULoad == 0)
     maxCPULoad = 100;
-  MUTEX_UNLOCK(&statusMutex);  
+  MUTEX_UNLOCK(&statusMutex);
 }
 
 #ifdef LINUX
@@ -250,13 +250,13 @@ static int networkUsageBasicUp() {
   cron_t now, elapsedTime;
   double upUsage;
   double etc;
-  
+
   MUTEX_LOCK(&statusMutex);
-  /* If called less than 1 seconds ago, calc average 
+  /* If called less than 1 seconds ago, calc average
      between avg. traffic of last second and the additional
      gained traffic.  If more than 1 second between calls,
      set the avg bytes/sec as the usage of last second. */
-  cronTime(&now);  
+  cronTime(&now);
   elapsedTime = now - lastnettimeUp;
   etc = (double) elapsedTime / (double) cronSECONDS;
   if (elapsedTime < cronSECONDS) {
@@ -280,17 +280,17 @@ static int networkUsageBasicDown() {
   cron_t now, elapsedTime;
   double downUsage;
   double etc;
-  
+
   MUTEX_LOCK(&statusMutex);
-  /* If called less than 1 seconds ago, calc average 
+  /* If called less than 1 seconds ago, calc average
      between avg. traffic of last second and the additional
      gained traffic. If more than 1 second between calls,
      set the avg bytes/sec as the usage of last second. */
-  cronTime(&now);  
+  cronTime(&now);
   elapsedTime = now - lastnettimeDown;
   etc = (double) elapsedTime / (double) cronSECONDS;
   if (elapsedTime < cronSECONDS) {
-    downUsage = ( ( lastNetResultDown + 
+    downUsage = ( ( lastNetResultDown +
 		    ((double)globalTrafficBetweenProc.last_in * etc) )
 		  / (1.0 + etc) );
   } else {
@@ -305,9 +305,9 @@ static int networkUsageBasicDown() {
 
 /**
  * The advanced usage meter takes into account all network traffic.
- * This might be problematic on systems where the same interface 
- * can have different capabilities for different types of traffic 
- * (like support for very fast local traffic but capable of 
+ * This might be problematic on systems where the same interface
+ * can have different capabilities for different types of traffic
+ * (like support for very fast local traffic but capable of
  * handling only small-scale inet traffic).
  */
 static int networkUsageAdvancedDown() {
@@ -318,7 +318,7 @@ static int networkUsageAdvancedDown() {
   int i=0;
   int ifnum;
   cron_t now, elapsedtime;
-  
+
 #ifdef LINUX
   FILE * proc_net_dev;
   char * data;
@@ -338,7 +338,7 @@ static int networkUsageAdvancedDown() {
 
   /* If we checked /proc less than 2 seconds ago, don't do
      it again, but add internal gnunet traffic increments */
-  cronTime(&now);  
+  cronTime(&now);
   elapsedtime = now - lastnettimeDown;
   if (elapsedtime == 0) {
     MUTEX_UNLOCK(&statusMutex);
@@ -358,18 +358,18 @@ static int networkUsageAdvancedDown() {
     /* weigh last global measurement and gnunetd load,
        with 100% global measurement at first and 50/50 mix
        just before we take the next measurement */
-    ret = ( (2 * cronSECONDS * lastNetResultDown + elapsedtime * gnunetLOAD) / 
+    ret = ( (2 * cronSECONDS * lastNetResultDown + elapsedtime * gnunetLOAD) /
 	    (2 * cronSECONDS + elapsedtime));
     MUTEX_UNLOCK(&statusMutex);
     return ret;
-  } 
+  }
 
   globalTrafficBetweenProc.last_in = 0;
-  lastnettimeDown = now;  
+  lastnettimeDown = now;
 
   /* ok, full program... */
   rxdiff = 0;
-  
+
 #ifdef LINUX
   proc_net_dev = fopen(PROC_NET_DEV, "r");
   /* Try to open the file*/
@@ -381,12 +381,12 @@ static int networkUsageAdvancedDown() {
   }
   ifnum = 0;
   /* Parse the line matching the interface ('eth0') */
-  while ( (!feof(proc_net_dev)) && 
-	  ( ifnum < numInterfaces) ) {    
+  while ( (!feof(proc_net_dev)) &&
+	  ( ifnum < numInterfaces) ) {
     fgets(line,
-	  MAX_PROC_LINE, 
+	  MAX_PROC_LINE,
 	  proc_net_dev);
-    
+
     for (i=0;i<numInterfaces;i++) {
       if (NULL != strstr(line, interfacePtrs[i]) ) {
 	data = (char*)strchr(line, ':');
@@ -394,7 +394,7 @@ static int networkUsageAdvancedDown() {
 	if (sscanf(data,
 		   "%llu %*s %*s %*s %*s %*s %*s %*s %llu",
 		  &rxnew, &txnew) != 2) {
-	  fclose(proc_net_dev);	 
+	  fclose(proc_net_dev);	
 	  errexit(_("Failed to parse interface data from '%s' at %s:%d.\n"),
 		  PROC_NET_DEV, __FILE__, __LINE__);
 	}
@@ -418,16 +418,16 @@ static int networkUsageAdvancedDown() {
       PMIB_IFTABLE pTable;
       DWORD dwIfIdx;
       int found = 0;
-      
+
       EnumNICs(&pTable, NULL);
-      
+
       for(dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
         unsigned long long l;
         BYTE bPhysAddr[MAXLEN_PHYSADDR];
-  
+
         l = _atoi64(interfacePtrs[i]);
-  
-        memset(bPhysAddr, 0, MAXLEN_PHYSADDR);      
+
+        memset(bPhysAddr, 0, MAXLEN_PHYSADDR);
         memcpy(bPhysAddr,
           pTable->table[dwIfIdx].bPhysAddr,
           pTable->table[dwIfIdx].dwPhysAddrLen);
@@ -437,15 +437,15 @@ static int networkUsageAdvancedDown() {
           break;
         }
       }
-      
+
       if (found)
         rxnew = pTable->table[dwIfIdx].dwInOctets;
       else
         rxnew = last_net_results[ifnum].last_in;
-      
+
       rxdiff += rxnew - last_net_results[ifnum].last_in;
       last_net_results[ifnum].last_in = rxnew;
-      
+
       GlobalFree(pTable);
     }
   }
@@ -453,7 +453,7 @@ static int networkUsageAdvancedDown() {
   {
     /* Win 95 */
     int iLine = 0;
-    
+
     if ( ( command = popen("netstat -e", "rt") ) == NULL )
     {
       LOG_FILE_STRERROR(LOG_ERROR, "popen", "netstat -e");
@@ -468,8 +468,8 @@ static int networkUsageAdvancedDown() {
       {
         char szDummy[100];
         sscanf("%s%i%i", szDummy, &rxnew, &txnew);
-	      rxdiff += rxnew - last_net_results[0].last_in;	  
-	      last_net_results[0].last_in = rxnew;        
+	      rxdiff += rxnew - last_net_results[0].last_in;	
+	      last_net_results[0].last_in = rxnew;
       }
       iLine++;
     }
@@ -487,14 +487,14 @@ static int networkUsageAdvancedDown() {
     return -1;
   }
   ifnum = 0;
-  while ( (!feof(command)) && 
+  while ( (!feof(command)) &&
 	  (ifnum < numInterfaces ) ) {
-    fgets(line, 
-	  MAX_PROC_LINE, 
+    fgets(line,
+	  MAX_PROC_LINE,
 	  command);
     for (i=0; i < numInterfaces; i++) {
       if ( NULL != strstr(line, interfacePtrs[i]) ) {
-	if(sscanf(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s", 
+	if(sscanf(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s",
 		  &rxnew, &txnew) != 2 ) {
 	  pclose(command);
 	  errexit(_("Failed to parse interface data '%s' output at %s:%d.\n"),
@@ -513,20 +513,20 @@ static int networkUsageAdvancedDown() {
   } /* while: for all lines in proc */
   pclose(command);
 #endif
-  
-  lastNetResultDown 
+
+  lastNetResultDown
     = (100 * rxdiff * cronSECONDS) / (elapsedtime * maxNetDownBPS);
 	
   MUTEX_UNLOCK(&statusMutex);
-  return (int) lastNetResultDown;  
+  return (int) lastNetResultDown;
 }
 
 
 /**
  * The advanced usage meter takes into account all network traffic.
- * This might be problematic on systems where the same interface 
- * can have different capabilities for different types of traffic 
- * (like support for very fast local traffic but capable of 
+ * This might be problematic on systems where the same interface
+ * can have different capabilities for different types of traffic
+ * (like support for very fast local traffic but capable of
  * handling only small-scale inet traffic).
  */
 static int networkUsageAdvancedUp() {
@@ -537,7 +537,7 @@ static int networkUsageAdvancedUp() {
   int i=0;
   int ifnum;
   cron_t now, elapsedtime;
-  
+
 #ifdef LINUX
   FILE * proc_net_dev;
   char * data;
@@ -557,7 +557,7 @@ static int networkUsageAdvancedUp() {
 
   /* If we checked /proc less than 2 seconds ago, don't do
      it again, but add internal gnunet traffic increments */
-  cronTime(&now);  
+  cronTime(&now);
   elapsedtime = now - lastnettimeUp;
   if (elapsedtime == 0) {
     MUTEX_UNLOCK(&statusMutex);
@@ -578,18 +578,18 @@ static int networkUsageAdvancedUp() {
     /* weigh last global measurement and gnunetd load,
        with 100% global measurement at first and 50/50 mix
        just before we take the next measurement */
-    ret = ( (2 * cronSECONDS * lastNetResultUp + elapsedtime * gnunetLOAD) / 
+    ret = ( (2 * cronSECONDS * lastNetResultUp + elapsedtime * gnunetLOAD) /
 	    (2 * cronSECONDS + elapsedtime));
     MUTEX_UNLOCK(&statusMutex);
     return ret;
   }
 
-  globalTrafficBetweenProc.last_out = 0;  
+  globalTrafficBetweenProc.last_out = 0;
   lastnettimeUp = now;
 
   /* ok, full program... */
   txdiff = 0;
-  
+
 #ifdef LINUX
   proc_net_dev = fopen(PROC_NET_DEV, "r");
   /* Try to open the file*/
@@ -601,12 +601,12 @@ static int networkUsageAdvancedUp() {
   }
   ifnum = 0;
   /* Parse the line matching the interface ('eth0') */
-  while ( (!feof(proc_net_dev)) && 
-	  ( ifnum < numInterfaces) ) {    
+  while ( (!feof(proc_net_dev)) &&
+	  ( ifnum < numInterfaces) ) {
     fgets(line,
-	  MAX_PROC_LINE, 
+	  MAX_PROC_LINE,
 	  proc_net_dev);
-    
+
     for (i=0;i<numInterfaces;i++) {
       if (NULL != strstr(line, interfacePtrs[i]) ) {
 	data = (char*)strchr(line, ':');
@@ -638,16 +638,16 @@ static int networkUsageAdvancedUp() {
       PMIB_IFTABLE pTable;
       DWORD dwIfIdx;
       int found = 0;
-      
+
       EnumNICs(&pTable, NULL);
-      
+
       for(dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
         unsigned long long l;
         BYTE bPhysAddr[MAXLEN_PHYSADDR];
-  
+
         l = _atoi64(interfacePtrs[i]);
-  
-        memset(bPhysAddr, 0, MAXLEN_PHYSADDR);      
+
+        memset(bPhysAddr, 0, MAXLEN_PHYSADDR);
         memcpy(bPhysAddr,
           pTable->table[dwIfIdx].bPhysAddr,
           pTable->table[dwIfIdx].dwPhysAddrLen);
@@ -657,15 +657,15 @@ static int networkUsageAdvancedUp() {
           break;
         }
       }
-      
+
       if (found)
         txnew = pTable->table[dwIfIdx].dwOutOctets;
       else
         txnew = last_net_results[ifnum].last_out;
-      
-      txdiff += txnew - last_net_results[ifnum].last_out;   
+
+      txdiff += txnew - last_net_results[ifnum].last_out;
       last_net_results[ifnum].last_out = txnew;
-      
+
       GlobalFree(pTable);
     }
   }
@@ -673,7 +673,7 @@ static int networkUsageAdvancedUp() {
   {
     /* Win 95 */
     int iLine = 0;
-    
+
     if ((command = popen("netstat -e", "rt")) == NULL)
     {
       LOG_FILE_STRERROR(LOG_ERROR, "popen", "netstat -e");
@@ -688,8 +688,8 @@ static int networkUsageAdvancedUp() {
       {
         char szDummy[100];
         sscanf("%s%i%i", szDummy, &rxnew, &txnew);
-	      txdiff += txnew - last_net_results[0].last_out;	  
-	      last_net_results[0].last_out = txnew;        
+	      txdiff += txnew - last_net_results[0].last_out;	
+	      last_net_results[0].last_out = txnew;
       }
       iLine++;
     }
@@ -707,14 +707,14 @@ static int networkUsageAdvancedUp() {
     return -1;
   }
   ifnum = 0;
-  while ( (!feof(command)) && 
+  while ( (!feof(command)) &&
 	  (ifnum < numInterfaces ) ) {
-    fgets(line, 
-	  MAX_PROC_LINE, 
+    fgets(line,
+	  MAX_PROC_LINE,
 	  command);
     for (i=0; i < numInterfaces; i++) {
       if ( NULL != strstr(line, interfacePtrs[i]) ) {
-	if(sscanf(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s", 
+	if(sscanf(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s",
 		  &rxnew, &txnew) != 2 ) {
 	  pclose(command);
 	  errexit(" reading interface data using netstat\n");
@@ -731,12 +731,12 @@ static int networkUsageAdvancedUp() {
   } /* while: for all lines in proc */
   pclose(command);
 #endif
-  
-  lastNetResultUp 
+
+  lastNetResultUp
     = (100 * txdiff * cronSECONDS) / (elapsedtime * maxNetUpBPS);
 	
   MUTEX_UNLOCK(&statusMutex);
-  return (int) lastNetResultUp;  
+  return (int) lastNetResultUp;
 }
 
 /**
@@ -774,8 +774,8 @@ int networkUsageDown() {
 
 /**
  * The following routine returns a number between 0-100 (can be larger than 100
- * if the load is > 1) which indicates the percentage CPU usage.  
- * 
+ * if the load is > 1) which indicates the percentage CPU usage.
+ *
  * Before its first invocation the method initStatusCalls() must be called.
  * If there is an error the method returns -1
  */
@@ -790,7 +790,7 @@ int cpuUsage(){
   if (initialized_ == NO)
     return -1;
   MUTEX_LOCK(&statusMutex);
-  cronTime(&now);  
+  cronTime(&now);
   elapsedtime = now - lastcputime;
   if ( (elapsedtime < 10 * cronSECONDS) &&
        (lastcpuresult != -1) ) {
@@ -819,7 +819,7 @@ int cpuUsage(){
       fclose(proc_stat);
       proc_stat = NULL;
     } else {
-      if (sscanf(line, "%*s %i %i %i %i", 
+      if (sscanf(line, "%*s %i %i %i %i",
 		 &user_read, &system_read, &nice_read,
 		 &idle_read) != 4) {
 	fclose(proc_stat);
@@ -853,7 +853,7 @@ int cpuUsage(){
 	last_cpu_results[3] = idle_read;
 	lastcpuresult = ret;
 	MUTEX_UNLOCK(&statusMutex);
-	return ret;      
+	return ret;
       }
     }
   }
@@ -874,7 +874,7 @@ int cpuUsage(){
     static long long last_totalcount = 0;
     long long deltaidle;
     long long deltatotal;
-    
+
     if (kstat_once == 0) {
       kc = kstat_open();
       if (kc == NULL)
@@ -882,26 +882,26 @@ int cpuUsage(){
     } else {
       kc = NULL;
     }
-    if (kc == NULL) 
+    if (kc == NULL)
       goto ABORT_KSTAT;
-    
+
     idlecount = 0;
     totalcount = 0;
     for (khelper = kc->kc_chain;
-	 khelper != NULL; 
+	 khelper != NULL;
 	 khelper = khelper->ks_next) {
       cpu_stat_t stats;
-      
+
       if (0 != strncmp(khelper->ks_name,
-		       "cpu_stat", 
+		       "cpu_stat",
 		       strlen("cpu_stat")) )
 	continue;
       if (khelper->ks_data_size > sizeof(cpu_stat_t))
 	continue; /* better save then sorry! */
       if (-1 != kstat_read(kc, khelper, &stats)) {
-	idlecount 
+	idlecount
 	  += stats.cpu_sysinfo.cpu[CPU_IDLE];
-	totalcount 
+	totalcount
 	  += stats.cpu_sysinfo.cpu[CPU_IDLE] +
 	  stats.cpu_sysinfo.cpu[CPU_USER] +
 	  stats.cpu_sysinfo.cpu[CPU_KERNEL] +
@@ -923,7 +923,7 @@ int cpuUsage(){
     MUTEX_UNLOCK(&statusMutex);
     lastcpuresult = (int) (100 * deltaidle / deltatotal);
     return lastcpuresult;
-    
+
   ABORT_KSTAT:
     kstat_once = 1; /* failed, don't try again */
   }
@@ -966,17 +966,17 @@ int cpuUsage(){
     {
       double dKernel, dIdle, dUser, dDiffKernel, dDiffIdle, dDiffUser;
       static double dLastKernel = 0, dLastIdle = 0, dLastUser = 0;
-      
+
       dKernel = Li2Double(theInfo.KernelTime);
       dIdle = Li2Double(theInfo.IdleTime);
       dUser = Li2Double(theInfo.UserTime);
-      
+
       if (dLastIdle != 0)
       {
         dDiffKernel = dKernel - dLastKernel;
         dDiffIdle = dIdle - dLastIdle;
         dDiffUser = dUser - dLastUser;
-    
+
         /* FIXME MINGW: Multi-processor? */
         lastcpuresult = 100.0 - (dDiffIdle / (dDiffKernel + dDiffUser)) * 100.0;
       }
@@ -1020,7 +1020,7 @@ int cpuUsage(){
   	    once = 1;
   	    LOG(LOG_ERROR,
 		_("Cannot query the CPU usage (Win 9x)\n"));
-  	  }      
+  	  }
     }
 
     RegOpenKeyEx(HKEY_DYN_DATA, "PerfStats\\StartStat", 0, KEY_ALL_ACCESS,
@@ -1030,7 +1030,7 @@ int cpuUsage(){
     RegQueryValueEx(hKey, "KERNEL\\CPUUsage", NULL, &dwType, (LPBYTE) &dwDummy,
                     &dwDataSize);
     RegCloseKey(hKey);
-    
+
     /* Get CPU usage */
     RegOpenKeyEx(HKEY_DYN_DATA, "PerfStats\\StatData", 0, KEY_ALL_ACCESS,
                  &hKey);
@@ -1038,7 +1038,7 @@ int cpuUsage(){
     RegQueryValueEx(hKey, "KERNEL\\CPUUsage", NULL, &dwType,
                     (LPBYTE) &lastcpuresult, &dwDataSize);
     RegCloseKey(hKey);
-    
+
     /* Stop query */
     RegOpenKeyEx(HKEY_DYN_DATA, "PerfStats\\StopStat", 0, KEY_ALL_ACCESS,
                  &hKey);
@@ -1048,15 +1048,15 @@ int cpuUsage(){
     RegQueryValueEx(hKey, "KERNEL\\CPUUsage", NULL, &dwType, (LPBYTE)&dwDummy,
                     &dwDataSize);
     RegCloseKey(hKey);
-    
+
     MUTEX_UNLOCK(&statusMutex);
     return lastcpuresult;
   }
 #endif
 
-  /* loadaverage not defined and no platform 
-     specific alternative defined 
-     => default: error 
+  /* loadaverage not defined and no platform
+     specific alternative defined
+     => default: error
   */
   lastcpuresult = -1;
   MUTEX_UNLOCK(&statusMutex);
@@ -1091,7 +1091,7 @@ int getNetworkLoadUp() {
 
   ret = (ret + 7 * lastRet)/8;
   lastRet = ret;
- 
+
   return ret;
 }
 
@@ -1112,9 +1112,9 @@ int getNetworkLoadDown() {
   ret = networkUsageDown();
   if (ret == -1) /*  in the case of error, we do NOT go to 100%
 		    since that would render GNUnet useless on
-		    systems where networkUsageUp is not supported */    
+		    systems where networkUsageUp is not supported */
     return -1;
- 
+
   cronTime(&now);
   if (now - lastCall < 250*cronMILLIS) {
     /* use smoothing, but do NOT update lastRet at frequencies higher
@@ -1123,9 +1123,9 @@ int getNetworkLoadDown() {
     return (ret + 7 * lastRet)/8;
   }
   lastCall = now;
-   
+
   ret = (ret + 7 * lastRet)/8;
-  lastRet = ret;  
+  lastRet = ret;
   return ret;
 }
 
@@ -1143,7 +1143,7 @@ int getCPULoad() {
   if (initialized_ == NO)
     return -1;
 
-  ret = (100 * cpuUsage()) / maxCPULoad;  
+  ret = (100 * cpuUsage()) / maxCPULoad;
 
   cronTime(&now);
   if (now - lastCall < 250*cronMILLIS) {
@@ -1157,7 +1157,7 @@ int getCPULoad() {
   /* for CPU, we don't do the 'fast increase' since CPU is much
      more jitterish to begin with */
   lastRet = (ret + 7 * lastRet)/8;
-  
+
   return lastRet;
 }
 
@@ -1170,7 +1170,7 @@ void initStatusCalls() {
   initialized_ = YES;
 #ifdef LINUX
   proc_stat = fopen("/proc/stat", "r");
-  if (NULL == proc_stat) 
+  if (NULL == proc_stat)
     LOG_FILE_STRERROR(LOG_ERROR, "fopen", "/proc/stat");
 #endif
   MUTEX_CREATE_RECURSIVE(&statusMutex);
@@ -1179,13 +1179,13 @@ void initStatusCalls() {
   last_net_results = NULL;
   globalTrafficBetweenProc.last_in = 0;
   globalTrafficBetweenProc.last_out = 0;
-  cronTime(&lastnettimeUp);  
-  cronTime(&lastnettimeDown);  
+  cronTime(&lastnettimeUp);
+  cronTime(&lastnettimeDown);
   registerConfigurationUpdateCallback(&resetStatusCalls);
   resetStatusCalls();
-  networkUsageUp(); 
-  networkUsageDown(); 
-  cpuUsage();  
+  networkUsageUp();
+  networkUsageDown();
+  cpuUsage();
   addCronJob(&cronLoadUpdate,
 	     10 * cronSECONDS,
 	     10 * cronSECONDS,

@@ -66,7 +66,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
  * filesystem and all of the corresponding obd blocks from the
  * datastore.  Note that the IBlocks are NOT removed by this function.
  *
- * @param blocksize the size of each of the 
+ * @param blocksize the size of each of the
  *        indexed blocks (required to break
  *        up the file properly when computing
  *        the keys of the odb blocks).

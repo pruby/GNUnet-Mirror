@@ -113,11 +113,11 @@ static int testMeta(int i) {
 				   EXTRACTOR_UNKNOWN,
 				   val))
       ABORT();
-  } 
+  }
   FREE(val);
   if (0 != ECRS_getMetaData(m, NULL, NULL))
     ABORT();
-  
+
   ECRS_freeMetaData(m);
   return 0;
 }
@@ -153,16 +153,16 @@ int testMetaMore(int i) {
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   int i;
-  
-  for (i=0;i<255;i++) 
-    failureCount += testMeta(i);  
-  for (i=1;i<255;i++) 
-    failureCount += testMetaMore(i);  
+
+  for (i=0;i<255;i++)
+    failureCount += testMeta(i);
+  for (i=1;i<255;i++)
+    failureCount += testMetaMore(i);
 
   if (failureCount == 0)
     return 0;
-  else 
+  else
     return 1;
-} 
+}
 
 /* end of metatest.c */

@@ -6,12 +6,12 @@
   it under the terms of the GNU General Public License as published
   by the Free Software Foundation; either version 2, or (at your
   option) any later version.
-  
+
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with GNUnet; see the file COPYING.  If not, write to the
   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -44,27 +44,27 @@
 /* *************** service *************** */
 
 /**
- * When did the module start? 
+ * When did the module start?
  */
 static cron_t startTime;
 
 /**
- * How many values do we keep statistics for? 
+ * How many values do we keep statistics for?
  */
 static unsigned int statCounters = 0;
 
 /**
- * What are these values (value) 
+ * What are these values (value)
  */
 static unsigned long long * values = NULL;
 
 /**
- * A description for each of the values 
+ * A description for each of the values
  */
 static char ** descriptions = NULL;
 
 /**
- * lock for the stat module 
+ * lock for the stat module
  */
 static Mutex statLock;
 
@@ -97,7 +97,7 @@ static int statHandle(const char * name) {
        statCounters,
        statCounters+1);
   descriptions[statCounters-1] = STRDUP(name);
-  MUTEX_UNLOCK(&statLock);   
+  MUTEX_UNLOCK(&statLock);
   return statCounters-1;
 }
 
@@ -210,14 +210,14 @@ static void initializeStats() {
     = statHandle(_("% of allowed cpu load"));
   stat_connected
     = statHandle(_("# of connected peers"));
-  stat_bytes_noise_received 
+  stat_bytes_noise_received
     = statHandle(_("# bytes of noise received"));
 }
 
 static void immediateUpdates() {
   statSet(stat_handle_cpu_load, getCPULoad());
   statSet(stat_handle_network_load_up, getNetworkLoadUp());
-  statSet(stat_handle_network_load_down, getNetworkLoadDown());   
+  statSet(stat_handle_network_load_down, getNetworkLoadDown());
   statSet(stat_connected,
 	  coreAPI->forAllConnectedNodes(NULL, NULL));
 }
@@ -237,25 +237,25 @@ static int sendStatistics(ClientHandle sock,
   int end;
   int mpos; /* postion in the message */
 
-  immediateUpdates();  
+  immediateUpdates();
   statMsg = (STATS_CS_MESSAGE*)MALLOC(MAX_BUFFER_SIZE);
-  statMsg->header.type 
+  statMsg->header.type
     = htons(STATS_CS_PROTO_STATISTICS);
-  statMsg->totalCounters 
+  statMsg->totalCounters
     = htonl(statCounters);
-  statMsg->statCounters 
+  statMsg->statCounters
     = htons(0);
-  statMsg->startTime 
+  statMsg->startTime
     = htonll(startTime);
-  
-  start = 0;  
+
+  start = 0;
   while (start < statCounters) {
     pos = start;
     /* first pass: gauge how many statistic numbers
        and their descriptions we can send in one message */
     mpos = 0;
     while ( (pos < statCounters) &&
-	    (mpos + sizeof(unsigned long long) 
+	    (mpos + sizeof(unsigned long long)
 	     + strlen(descriptions[pos]) + 1
 	     < MAX_BUFFER_SIZE - sizeof(STATS_CS_MESSAGE)) ) {
       mpos += sizeof(unsigned long long); /* value */
@@ -309,7 +309,7 @@ static int handlep2pMessageSupported(ClientHandle sock,
 /**
  * We received a request from a client to provide the number
  * of directly connected peers.  Sends the response.
- * 
+ *
  * @param client the socket connecting to the client
  * @param msg the request from the client
  * @returns OK if ok, SYSERR if not.
@@ -343,7 +343,7 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(myCoreAPI == NULL);
   myCoreAPI = capi;
   myApi = capi->requestService("stats");
-  if (myApi == NULL) { 
+  if (myApi == NULL) {
     BREAK();
     myCoreAPI = NULL;
     return SYSERR;
@@ -382,6 +382,6 @@ int done_module_stats() {
   myCoreAPI = NULL;
   return OK;
 }
- 
+
 
 /* end of statistics.c */

@@ -62,7 +62,7 @@ typedef int (*DataProcessor)(const HashCode512 * key,
  * routing, the other parts are just passed along and untouched by the
  * routing code.  The type is typically used to tell what they refer
  * to.  The assumption is that they (including the type) can be
- * reproduced from the DataContainer and thus the Iterator 
+ * reproduced from the DataContainer and thus the Iterator
  * methods do not communicate those values.
  *
  * The put method is (ab)used to check an item that is merely routed
@@ -93,7 +93,7 @@ typedef struct {
 	     const HashCode512 * keys,
 	     DataProcessor resultCallback,
 	     void * resCallbackClosure);
-  
+
   /**
    * Store an item in the datastore.
    *
@@ -127,7 +127,7 @@ typedef struct {
    * @param cls argument to processor
    * @return number of results, SYSERR on error
    */
-  int (*iterate)(void * closure,		 
+  int (*iterate)(void * closure,		
 		 DataProcessor processor,
 		 void * cls);
 

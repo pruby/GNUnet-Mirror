@@ -43,7 +43,7 @@
  * _internally_ to GNUnet which protocol from the TCP/IP suite to use
  * to run GNUnet over.
  */
-   
+
 /**
  * protocol number for "unspecified"
  */
@@ -56,7 +56,7 @@
 #define NAT_PROTOCOL_NUMBER 1
 
 /**
- * protocol number of TCP. Do NEVER change, also used in other context! 
+ * protocol number of TCP. Do NEVER change, also used in other context!
  */
 #define TCP_PROTOCOL_NUMBER 6
 
@@ -71,7 +71,7 @@
 #define TCP6_PROTOCOL_NUMBER 12
 
 /**
- * protocol number of UDP. Do NEVER change, also used in other context! 
+ * protocol number of UDP. Do NEVER change, also used in other context!
  */
 #define UDP_PROTOCOL_NUMBER 17
 
@@ -81,7 +81,7 @@
 #define UDP6_PROTOCOL_NUMBER 23
 
 /**
- * protocol number for SMTP 
+ * protocol number for SMTP
  */
 #define SMTP_PROTOCOL_NUMBER 25
 
@@ -95,12 +95,12 @@
  */
 #define CS_PROTO_RETURN_VALUE 0
 
-/** 
+/**
  * client to gnunetd: shutdown
  */
 #define CS_PROTO_SHUTDOWN_REQUEST 1
 
-/** 
+/**
  * client to gnunetd: get configuration option
  */
 #define CS_PROTO_GET_OPTION_REQUEST 2
@@ -129,7 +129,7 @@
 #define AFS_CS_PROTO_RESULT 9
 
 /**
- * client to gnunetd: insert CHK content (no index) 
+ * client to gnunetd: insert CHK content (no index)
  */
 #define AFS_CS_PROTO_INSERT 10
 
@@ -139,7 +139,7 @@
 #define AFS_CS_PROTO_INDEX 11
 
 /**
- * client to gnunetd: delete content 
+ * client to gnunetd: delete content
  */
 #define AFS_CS_PROTO_DELETE 12
 
@@ -167,8 +167,8 @@
 /* *********** messages for traffic module ************* */
 
 /**
- * client to traffic module: to how many nodes are we connected? 
- * reply is a CS_RETURN_VALUE message. 
+ * client to traffic module: to how many nodes are we connected?
+ * reply is a CS_RETURN_VALUE message.
  */
 #define CS_PROTO_CLIENT_COUNT 32
 
@@ -178,7 +178,7 @@
 #define CS_PROTO_TRAFFIC_QUERY 33
 
 /**
- * traffic module to client: traffic statistics 
+ * traffic module to client: traffic statistics
  */
 #define CS_PROTO_TRAFFIC_INFO 34
 
@@ -186,12 +186,12 @@
 /* *********** messages for stats module ************* */
 
 /**
- * client to stats module: request statistics 
+ * client to stats module: request statistics
  */
 #define STATS_CS_PROTO_GET_STATISTICS 36
 
 /**
- * stats module to client: statistics 
+ * stats module to client: statistics
  */
 #define STATS_CS_PROTO_STATISTICS 37
 
@@ -230,31 +230,31 @@
 
 
 /* ********** CS DHT application messages ********** */
-                                        
+
 /**
- * client to CS: join table        
+ * client to CS: join table
  */
 #define DHT_CS_PROTO_REQUEST_JOIN     72
 
 /**
- * client to CS: leave table       
+ * client to CS: leave table
  */
 #define DHT_CS_PROTO_REQUEST_LEAVE    73
 
 /**
- * Client to CS or CS to client: get from table   
+ * Client to CS or CS to client: get from table
  */
 #define DHT_CS_PROTO_REQUEST_GET      74
 
 /**
- * Client to CS or CS to client: put into table    
+ * Client to CS or CS to client: put into table
  */
-#define DHT_CS_PROTO_REQUEST_PUT      75 
+#define DHT_CS_PROTO_REQUEST_PUT      75
 
 /**
  * Client to CS or CS to client: remove from table
  */
-#define DHT_CS_PROTO_REQUEST_REMOVE   76 
+#define DHT_CS_PROTO_REQUEST_REMOVE   76
 
 /**
  * Client to CS or CS to client: results from get
@@ -279,28 +279,28 @@
 /* ********* p2p infrastructure messages *********** */
 
 /**
- * announcement of public key 
+ * announcement of public key
  */
 #define p2p_PROTO_HELO 0
 
 /**
- * session key exchange, session key is encrypted with hostkey 
+ * session key exchange, session key is encrypted with hostkey
  */
 #define p2p_PROTO_SKEY 1
 
 /**
- * PING 
+ * PING
  */
 #define p2p_PROTO_PING 2
 
 /**
- * PONG (response to PING) 
+ * PONG (response to PING)
  */
 #define p2p_PROTO_PONG 3
 
 /**
  * termination of connection (other host is nice
- * and tells us, there is NO requirement to do so!) 
+ * and tells us, there is NO requirement to do so!)
  */
 #define p2p_PROTO_HANGUP 4
 
@@ -317,19 +317,19 @@
 /* ************* p2p GAP application messages *********** */
 
 /**
- * Query for content. 
+ * Query for content.
  */
 #define GAP_p2p_PROTO_QUERY 16
 
 /**
- * receive content 
+ * receive content
  */
 #define GAP_p2p_PROTO_RESULT 17
 
 /* ************** p2p CHAT application messages *********** */
 
 /**
- * chat message 
+ * chat message
  */
 #define CHAT_p2p_PROTO_MSG 32
 
@@ -342,7 +342,7 @@
 /* ********** p2p TBENCH application messages ********** */
 
 /**
- * benchmark message: send back reply asap 
+ * benchmark message: send back reply asap
  */
 #define TBENCH_p2p_PROTO_REQUEST 40
 #define TBENCH_p2p_PROTO_REPLY 	 41
@@ -361,7 +361,7 @@
 
 /**
  * Reserved number for "any type".
- */ 
+ */
 #define ANY_BLOCK 0
 
 /**

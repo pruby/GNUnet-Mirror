@@ -29,7 +29,7 @@
 #include "ecrs_core.h"
 #include "ondemand.h"
 
-#define TRACK_INDEXED_FILES NO 
+#define TRACK_INDEXED_FILES NO
 #define TRACKFILE "indexed_requests.txt"
 
 /**
@@ -58,7 +58,7 @@ typedef struct {
    * of the file in the on-demand datastore.
    */
   HashCode512 fileId;
-  
+
 } OnDemandBlock;
 
 static char * getOnDemandFile(const HashCode512 * fileId) {
@@ -88,10 +88,10 @@ static char * getOnDemandFile(const HashCode512 * fileId) {
  * by aborting the iteration.
  */
 static int checkPresent(const HashCode512 * key,
-			const Datastore_Value * value, 
+			const Datastore_Value * value,
 			void * closure) {
   Datastore_Value * comp = closure;
-  
+
   if ( (comp->size != value->size) ||
        (0 != memcmp(&value[1],
 		    &comp[1],
@@ -113,7 +113,7 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
   char * serverFN;
   char unavail_key[256];
 
-  serverDir 
+  serverDir
     = getConfigurationString("FS",
 			     "INDEX-DIRECTORY");
   if (!serverDir) {
@@ -121,20 +121,20 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 				       "GNUNETD_HOME");
     if (!serverDir)
       return SYSERR;
-    
-    serverDir = REALLOC(serverDir, 
-			strlen(serverDir) + 
+
+    serverDir = REALLOC(serverDir,
+			strlen(serverDir) +
 			strlen("/data/shared/") + 1);
     strcat(serverDir, "/data/shared/");
   }
-  
+
   serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
   strcpy(serverFN,
 	 serverDir);
-  
+
   /* Just in case... */
   mkdirp(serverDir);
-   
+
   FREE(serverDir);
   strcat(serverFN,
 	 DIR_SEPARATOR_STR);
@@ -151,8 +151,8 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 	   256,
 	   "FIRST_UNAVAILABLE-%s",
 	   (char*)&enc);
-  stateUnlinkFromDB(unavail_key);  
-  FREE(serverFN);  
+  stateUnlinkFromDB(unavail_key);
+  FREE(serverFN);
   return YES;
 }
 
@@ -195,9 +195,9 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   /* compute the primary key */
   fileBlockGetQuery(content,
 		    size,
-		    &key);  
+		    &key);
   /* extra check */
-  { 
+  {
     Datastore_Value * dsvalue;
     if (OK != fileBlockEncode(content,
 			      size,
@@ -220,7 +220,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 		       ONDEMAND_BLOCK,
 		       &checkPresent,
 		       &odb.header);
-  if (ret <= 0) {   
+  if (ret <= 0) {
     ret = datastore->put(&key,
 			 &odb.header);
   } else {
@@ -267,9 +267,9 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     EncName enc;
     cron_t *first_unavail;
     struct stat linkStat;
-       
+
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
-    
+
     /* Is the symlink there? */
     if (LSTAT(fn, &linkStat) == -1) {
       /* No, we have deleted it previously.
@@ -299,16 +299,16 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	  ofn = MALLOC(len);
 	  while ( ((ret = READLINK(fn, ofn, len)) == -1) &&
 		  (errno == ENAMETOOLONG) &&
-		  (len < 4 * 1024 * 1024) ) 
+		  (len < 4 * 1024 * 1024) )
 	    GROW(ofn, len, len*2);
-	  	            
+	  	
           if (ret != -1) {
-            LOG(LOG_ERROR, 
+            LOG(LOG_ERROR,
 		_("Because the file '%s' has been unavailable for 3 days"
 		  " it got removed from your share.  Please unindex files before"
 		  " deleting them as the index now contains invalid references!"),
 		ofn);
-	  } 
+	  }
 	  FREE(ofn);
           datastore->del(query, dbv);
           stateUnlinkFromDB(unavail_key);
@@ -316,7 +316,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
         }
       }
     }
-    
+
     FREE(fn);
     return SYSERR;
   }
@@ -327,7 +327,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     char * afsDir;
     char * scratch;
     int n;
-  
+
     afsDir = getFileName("FS",
 			 "DIR",
 			 _("Configuration file must specify directory for"
@@ -340,16 +340,16 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	     "%s/%s", afsDir, TRACKFILE);
     fp = FOPEN(scratch, "a");
     FPRINTF(fp,
-	    "%u %llu\n", 
-	    ntohs(ce->fileNameIndex), 
+	    "%u %llu\n",
+	    ntohs(ce->fileNameIndex),
 	    (unsigned long long)TIME(NULL));
     fclose(fp);
     FREE(scratch);
     FREE(afsDir);
   }
 #endif
-  if (ntohll(odb->fileOffset) != lseek(fileHandle, 
-				       ntohll(odb->fileOffset), 
+  if (ntohll(odb->fileOffset) != lseek(fileHandle,
+				       ntohll(odb->fileOffset),
 				       SEEK_SET)) {
     LOG_FILE_STRERROR(LOG_WARNING, "lseek", fn);
     FREE(fn);
@@ -359,7 +359,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   db = MALLOC(sizeof(DBlock) + ntohl(odb->blockSize));
   db->type = htonl(D_BLOCK);
   iobuf = (char*) &db[1];
-  blen = READ(fileHandle, 
+  blen = READ(fileHandle,
 	      iobuf,
 	      ntohl(odb->blockSize));
   if (blen != ntohl(odb->blockSize)) {
@@ -377,11 +377,11 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   FREE(fn);
   if (ret == SYSERR)
     return SYSERR;
-  
+
   (*enc)->anonymityLevel = dbv->anonymityLevel;
   (*enc)->expirationTime = dbv->expirationTime;
   (*enc)->prio = dbv->prio;
-  return OK;   
+  return OK;
 }
 
 /**
@@ -395,10 +395,10 @@ int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
   int fd;
 
   fn = getOnDemandFile(fileId);
-  fd = OPEN(fn, 
+  fd = OPEN(fn,
 	    O_RDONLY);
   FREE(fn);
-  if(fd == -1) 
+  if(fd == -1)
     return NO;
   CLOSE(fd);
   return YES;
@@ -412,10 +412,10 @@ int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
  * continue.
  */
 static int completeValue(const HashCode512 * key,
-			 const Datastore_Value * value, 
+			 const Datastore_Value * value,
 			 void * closure) {
   Datastore_Value * comp = closure;
-  
+
   if ( (comp->size != value->size) ||
        (0 != memcmp(&value[1],
 		    &comp[1],
@@ -439,7 +439,7 @@ static int completeValue(const HashCode512 * key,
  * filesystem and all of the corresponding obd blocks from the
  * datastore.  Note that the IBlocks are NOT removed by this function.
  *
- * @param blocksize the size of each of the 
+ * @param blocksize the size of each of the
  *        indexed blocks (required to break
  *        up the file properly when computing
  *        the keys of the odb blocks).
@@ -463,14 +463,14 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   LOG(LOG_DEBUG,
       "Removing on-demand encoded data stored in '%s'.\n",
       fn);
-  fd = OPEN(fn, 
+  fd = OPEN(fn,
 #ifdef O_LARGEFILE
 	    O_RDONLY | O_LARGEFILE,
 #else
 	    O_RDONLY,
 #endif
 	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
-  if(fd == -1) {    
+  if(fd == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
     FREE(fn);
     return SYSERR;
@@ -504,7 +504,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     /* compute the primary key */
     fileBlockGetQuery(block,
 		      delta + sizeof(DBlock),
-		      &key);  
+		      &key);
     if (SYSERR == datastore->get(&key,
 				 ONDEMAND_BLOCK,
 				 &completeValue,
@@ -513,7 +513,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 			   &odb.header);
     else /* not found */
       ret = SYSERR;
-    if (ret == SYSERR) { 
+    if (ret == SYSERR) {
       IFLOG(LOG_WARNING,
 	    hash2enc(&key,
 		     &enc));
@@ -527,14 +527,14 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   FREE(block);
   CLOSE(fd);
   UNLINK(fn);
-  
+
   /* Remove information about unavailability */
   SNPRINTF(unavail_key,
 	   256,
 	   "FIRST_UNAVAILABLE-%s",
 	   (char*)&enc);
   stateUnlinkFromDB(unavail_key);
-  
+
   FREE(fn);
   return OK;
 }

@@ -33,7 +33,7 @@ static int testSymcipher() {
 		      size,
 		      (const INITVECTOR*) INITVALUE,
 		      res);
-  if (strlen(TESTSTRING)+1 
+  if (strlen(TESTSTRING)+1
       != size) {
     printf("symciphertest failed: decryptBlock returned %d\n",
 	  size);
@@ -49,7 +49,7 @@ static int testSymcipher() {
 
 int main(int argc, char * argv[]) {
   int failureCount = 0;
-  
+
   GNUNET_ASSERT(strlen(INITVALUE) > sizeof(INITVECTOR));
   initLockingGcrypt();
   failureCount += testSymcipher();
@@ -61,6 +61,6 @@ int main(int argc, char * argv[]) {
     printf("%d TESTS FAILED!\n",failureCount);
     return -1;
   }
-} 
+}
 
 /* end of symciphertest.c */

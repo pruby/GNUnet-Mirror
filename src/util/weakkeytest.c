@@ -20,22 +20,22 @@ static void printWeakKey(SESSIONKEY* key) {
 }
 
 static int testWeakKey() {
-  char result[100];  
+  char result[100];
   char res[100];
   int size;
   SESSIONKEY weak_key;
 
-  weak_key.key[0]= (char)(0x4c); 
+  weak_key.key[0]= (char)(0x4c);
   weak_key.key[1]= (char)(0x31);
-  weak_key.key[2]= (char)(0xc6); 
-  weak_key.key[3]= (char)(0x2b); 
+  weak_key.key[2]= (char)(0xc6);
+  weak_key.key[3]= (char)(0x2b);
   weak_key.key[4]= (char)(0xc1);
   weak_key.key[5]= (char)(0x5f);
   weak_key.key[6]= (char)(0x4d);
   weak_key.key[7]= (char)(0x1f);
   weak_key.key[8]= (char)(0x31);
   weak_key.key[9]= (char)(0xaa);
-  weak_key.key[10]= (char)(0x12); 
+  weak_key.key[10]= (char)(0x12);
   weak_key.key[11]= (char)(0x2e);
   weak_key.key[12]= (char)(0xb7);
   weak_key.key[13]= (char)(0x82);
@@ -47,7 +47,7 @@ static int testWeakKey() {
                       &weak_key,
                       INITVALUE,
                       result);
-   
+
   if (size == -1) {
     printf("weakkeytest failed: encryptBlock returned %d\n",
            size);
@@ -68,7 +68,7 @@ static int testWeakKey() {
   if (0 != strcmp(res,WEAK_KEY_TESTSTRING)) {
     printf("weakkeytest failed: %s != %s\n", res, WEAK_KEY_TESTSTRING);
     return 1;
-  } 
+  }
   else
     return 0;
 }
@@ -80,8 +80,8 @@ static int getWeakKeys() {
 
   gcry_cipher_hd_t handle;
   int rc;
-  
-  for (number_of_runs = 0; number_of_runs < MAX_WEAK_KEY_TRIALS; 
+
+  for (number_of_runs = 0; number_of_runs < MAX_WEAK_KEY_TRIALS;
        number_of_runs++) {
 
     if (number_of_runs % 1000 == 0) printf(".");
@@ -101,33 +101,33 @@ static int getWeakKeys() {
     }
 
     rc = gcry_cipher_setkey(handle,
-			    &sessionkey, 
+			    &sessionkey,
 			    sizeof(SESSIONKEY));
 
-    if ((char)rc == GPG_ERR_WEAK_KEY) {    
+    if ((char)rc == GPG_ERR_WEAK_KEY) {
       printf("\nWeak key (in hex): ");
       printWeakKey(&sessionkey);
       printf("\n");
       number_of_weak_keys++;
     }
     else if (rc) {
-      printf("\nUnexpected error generating keys. Error is %s\n", 
+      printf("\nUnexpected error generating keys. Error is %s\n",
              gcry_strerror(rc));
     }
 
     gcry_cipher_close(handle);
-	    
+	
   }
 
   return number_of_weak_keys;
 }
 
 int main(int argc, char * argv[]) {
-  int weak_keys; 
+  int weak_keys;
 
   if (GENERATE_WEAK_KEYS) {
     weak_keys = getWeakKeys();
-  
+
     if (weak_keys == 0) {
       printf("No weak keys found in %d runs.", MAX_WEAK_KEY_TRIALS);
     }
@@ -142,6 +142,6 @@ int main(int argc, char * argv[]) {
     printf("WEAK KEY TEST FAILED.\n");
     return -1;
   }
-} 
+}
 
 /* end of weakkeytest.c */

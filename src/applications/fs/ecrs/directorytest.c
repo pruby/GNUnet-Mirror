@@ -41,7 +41,7 @@ static int processor(const ECRS_FileInfo * fi,
 		     const HashCode512 * key,
 		     void * cls) {
   struct PCLS * p = cls;
-  
+
   if (ECRS_equalsMetaData(p->fi[p->pos].meta,
 			  fi->meta) &&
       ECRS_equalsUri(p->fi[p->pos].uri,
@@ -49,7 +49,7 @@ static int processor(const ECRS_FileInfo * fi,
     p->pos++;
     return OK;
   } else {
-    fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); 
+    fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__);
     return SYSERR;
   }
 }
@@ -123,14 +123,14 @@ static int testDirectory(unsigned int i) {
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   int i;
-  
-  for (i=17;i<18;i++) 
-    failureCount += testDirectory(i);  
+
+  for (i=17;i<18;i++)
+    failureCount += testDirectory(i);
 
   if (failureCount == 0)
     return 0;
-  else 
+  else
     return 1;
-} 
+}
 
 /* end of directorytest.c */

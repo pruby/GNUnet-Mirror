@@ -27,7 +27,7 @@
 #define GNUNET_GNUNETD_LIB_H
 
 /**
- * Is gnunetd running?  
+ * Is gnunetd running?
  * @return YES if gnunetd is running, NO if not
  */
 int GNUNETD_checkRunning();

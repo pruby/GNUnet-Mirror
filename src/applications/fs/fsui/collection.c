@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/collection.c 
+ * @file applications/fs/fsui/collection.c
  * @brief Helper functions for building a collection
  * @author Christian Grothoff
  *
@@ -42,7 +42,7 @@
 /**
  * Entry in the state-DB that caches the current
  * collection.
- */ 
+ */
 #define COLLECTION "collection"
 
 /**
@@ -173,7 +173,7 @@ int FSUI_stopCollection(struct FSUI_Context * ctx) {
   cd = (CollectionData*) ctx->collectionData;
   ECRS_deleteNamespace(cd->name);
   FREE(cd);
-  ctx->collectionData = NULL;  
+  ctx->collectionData = NULL;
   return OK;
 }
 
@@ -198,7 +198,7 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx) {
  * collecting, this function does nothing.
  *
  * Note that clients typically don't have to call this
- * function explicitly.  FSUI will call the function on 
+ * function explicitly.  FSUI will call the function on
  * exit (for sporadically updated collections), on any
  * change to the collection (for immediately updated
  * content) or when the publication time has arrived
@@ -210,7 +210,7 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx) {
  */
 void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
   CollectionData * cd;
-  cron_t now;  
+  cron_t now;
   struct ECRS_URI * uri;
   struct ECRS_URI * directoryURI;
   struct ECRS_MetaData *  metaData;
@@ -228,7 +228,7 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
   if ( (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
        (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) &&
        (ntohll(cd->lastPublication) + ntohll(cd->updateInterval) < now) )
-    return;  
+    return;
   if ( (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
        (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
     HashCode512 delta;
@@ -280,7 +280,7 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
 					 dirLen,
 					 &metaData,
 					 NULL,
-					 NULL));  
+					 NULL));
   if (OK == ECRS_addToNamespace(cd->name,
 				ntohl(cd->anonymityLevel),
 				getConfigurationInt("FS",

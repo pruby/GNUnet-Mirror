@@ -1,4 +1,4 @@
-/** 
+/**
  * @file test/xmalloctest.c
  * @brief testcase for util/xmalloc.c
  */
@@ -12,7 +12,7 @@ static int check() {
   int i;
   int j;
   int k;
-  
+
   /* MALLOC/FREE test */
   k = 352; /* random start value */
   for (i=1;i<MAX_TESTVAL;i++) {
@@ -20,13 +20,13 @@ static int check() {
     for (j=0;j<i;j++)
       ptrs[i][j] = k++;
   }
-  
+
   for (i=MAX_TESTVAL-1;i>=1;i--) {
     for (j=i-1;j>=0;j--)
       if (ptrs[i][j] != (char) --k)
 	return 1;
     FREE(ptrs[i]);
-  }  
+  }
 
   /* STRNDUP tests */
   FREE(STRNDUP("foo", 0));
@@ -38,11 +38,11 @@ static int check() {
   if (0 != strcmp(ptrs[0], "fo"))
     return 2;
   FREE(ptrs[0]);
-  
+
   /* FREENONNULL test */
   FREENONNULL(NULL);
   FREENONNULL(MALLOC(4));
-  
+
   /* STRDUP tests */
   ptrs[0] = STRDUP("bar");
   if (0 != strcmp(ptrs[0], "bar"))
@@ -80,7 +80,7 @@ static int check() {
     return 8;
   if (ptrs[0] != NULL)
     return 9;
-  
+
 
   return 0;
 }

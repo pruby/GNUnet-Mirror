@@ -20,7 +20,7 @@
  * @file server/connection.h
  * @author Tzvetan Horozov
  * @author Christian Grothoff
- */ 
+ */
 
 #ifndef CONNECTION_H
 #define CONNECTION_H
@@ -195,7 +195,7 @@ void unicast(const PeerIdentity * receiver,
 
 /**
  * Return a pointer to the lock of the connection module.
- */ 
+ */
 Mutex * getConnectionModuleLock();
 
 
@@ -229,7 +229,7 @@ void disconnectFromPeer(const PeerIdentity *node);
  * Offer the core a session for communication with the
  * given peer.  This is useful after establishing a connection
  * with another peer to hand it of to the core.  Note that
- * the core will take over the session and disconnect 
+ * the core will take over the session and disconnect
  * it as it feels like.  Thus the client should no longer
  * use it after this call.  If the core does not want/need
  * the session, it will also be disconnected.
@@ -242,7 +242,7 @@ void offerTSessionFor(const PeerIdentity * peer,
  * Assign a session key for traffic from or to a given peer.
  * If the core does not yet have an entry for the given peer
  * in the connection table, a new entry is created.
- * 
+ *
  * @param key the sessionkey,
  * @param peer the other peer,
  * @param forSending NO if it is the key for receiving,
@@ -255,7 +255,7 @@ void assignSessionKey(const SESSIONKEY * key,
 
 /**
  * Obtain the session key used for traffic from or to a given peer.
- * 
+ *
  * @param key the sessionkey (set)
  * @param age the age of the key (set)
  * @param peer the other peer,
@@ -295,7 +295,7 @@ int getLastActivityOf(const PeerIdentity * peer,
 
 /**
  * Confirm that a connection is up.
- * 
+ *
  * @param peer the other peer,
  */
 void confirmSessionUp(const PeerIdentity * peer);
@@ -303,7 +303,7 @@ void confirmSessionUp(const PeerIdentity * peer);
 
 /**
  * Register a handler that is to be called for each
- * message that leaves the peer. 
+ * message that leaves the peer.
  *
  * @param callback the method to call for each
  *        P2P message part that is transmitted
@@ -313,14 +313,14 @@ int registerSendNotify(MessagePartHandler callback);
 
 /**
  * Unregister a handler that is to be called for each
- * message that leaves the peer. 
+ * message that leaves the peer.
  *
  * @param callback the method to call for each
  *        P2P message part that is transmitted
  * @return OK on success, SYSERR if there is a problem
  */
 int unregisterSendNotify(MessagePartHandler callback);
- 
+
 
 
 #endif

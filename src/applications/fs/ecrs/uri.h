@@ -25,7 +25,7 @@
 
 /**
  * Generate a file URI.
- */ 
+ */
 char * createFileURI(const FileIdentifier * fi);
 
 #endif

@@ -59,7 +59,7 @@ typedef struct {
 
   /* description for each of the values,
      separated by '\0'-terminators; the
-     last description is also terminated 
+     last description is also terminated
      by a '\0'; again statCounters entries */
   /* char descriptions[0]; */
 } STATS_CS_MESSAGE_GENERIC;
@@ -72,7 +72,7 @@ typedef struct {
   CS_HEADER header;
 
   /**
-   * The type of the message (XX_CS_PROTO_XXXX) 
+   * The type of the message (XX_CS_PROTO_XXXX)
    * we want to know the status of.
    */
   unsigned short type;

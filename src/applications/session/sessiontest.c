@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/session/sessiontest.c 
+ * @file applications/session/sessiontest.c
  * @brief Session establishment testcase
  * @author Christian Grothoff
  */
@@ -58,7 +58,7 @@ static int waitForConnect(const char * name,
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return 0: ok, -1: error
- */   
+ */
 int main(int argc, char ** argv) {
   pid_t daemon1;
   pid_t daemon2;
@@ -72,7 +72,7 @@ int main(int argc, char ** argv) {
 			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
-  daemon1 = fork(); 
+  daemon1 = fork();
   if (daemon1 == 0) {
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
@@ -109,18 +109,18 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (0 != kill(daemon1, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon1 != waitpid(daemon1, &status, 0)) 
+    if (daemon1 != waitpid(daemon1, &status, 0))
       DIE_STRERROR("waitpid");
   }
   if (daemon2 != -1) {
     if (0 != kill(daemon2, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon2 != waitpid(daemon2, &status, 0)) 
+    if (daemon2 != waitpid(daemon2, &status, 0))
       DIE_STRERROR("waitpid");
   }
 
   /* re-start, this time we're sure up-to-date HELOs are available */
-  daemon1 = fork(); 
+  daemon1 = fork();
   if (daemon1 == 0) {
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
@@ -175,7 +175,7 @@ int main(int argc, char ** argv) {
   while (OK == requestStatistics(sock,
 				 &waitForConnect,
 				 NULL)) {
-    printf(_("Waiting for peers to connect (%u iterations left)...\n"), 
+    printf(_("Waiting for peers to connect (%u iterations left)...\n"),
 	   left);
     sleep(5);
     left--;
@@ -191,16 +191,16 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (0 != kill(daemon1, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon1 != waitpid(daemon1, &status, 0)) 
+    if (daemon1 != waitpid(daemon1, &status, 0))
       DIE_STRERROR("waitpid");
   }
   if (daemon2 != -1) {
     if (0 != kill(daemon2, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon2 != waitpid(daemon2, &status, 0)) 
+    if (daemon2 != waitpid(daemon2, &status, 0))
       DIE_STRERROR("waitpid");
   }
   return ret;
 }
 
-/* end of sessiontest.c */ 
+/* end of sessiontest.c */

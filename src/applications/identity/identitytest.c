@@ -49,7 +49,7 @@ static int runTest() {
   const PublicKey * pkey;
   Signature sig;
   HELO_Message * helo;
-  
+
   transport = requestService("transport");
   identity = requestService("identity");
   if (OK != transport->createHELO(ANY_PROTOCOL_NUMBER,
@@ -62,7 +62,7 @@ static int runTest() {
   identity->addHost(helo);
   pid = helo->senderIdentity;
   FREE(helo);
-  
+
   identity->changeHostTrust
     (&pid,
      -identity->getHostTrust(&pid));
@@ -83,7 +83,7 @@ static int runTest() {
   identity->getPeerIdentity(pkey,
 			    &pid);
   ASSERT(0 == identity->getHostTrust(&pid));
-  
+
   pkey = identity->getPublicPrivateKey();
   ASSERT(OK == identity->signData("TestData",
 				  8,
@@ -92,7 +92,7 @@ static int runTest() {
 			 8,
 			 &sig,
 			 pkey));
-  
+
   /* to test:
      HELO verification, temporary storage,
      permanent storage, blacklisting, etc. */
@@ -102,9 +102,9 @@ static int runTest() {
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parser(int argc, 
+static int parser(int argc,
 		  char * argv[]) {
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",

@@ -49,7 +49,7 @@ static GAP_ServiceAPI * gap;
  */
 static DHT_ServiceAPI * dht;
 
-				  
+				
 /**
  * Callback method for pushing content into the network.
  * The method chooses either a "recently" deleted block
@@ -76,7 +76,7 @@ activeMigrationCallback(PeerIdentity * receiver,
   unsigned int size;
   cron_t et;
   cron_t now;
- 
+
   ret = 0;
   if (OK == datastore->getRandom(&receiver->hashPubKey,
 				 padding,
@@ -99,13 +99,13 @@ activeMigrationCallback(PeerIdentity * receiver,
 	   size - sizeof(GapWrapper));
     /* FIXME: check anonymity level,
        if 0, consider using DHT migration instead;
-       if high, consider traffic volume before 
+       if high, consider traffic volume before
        migrating */
     FREE(content);
     ret = gap->tryMigrate(&gw->dc,
 			  &key,
 			  position,
-			  padding);  
+			  padding);
     FREE(gw);
   }
   return ret;

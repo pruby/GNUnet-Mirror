@@ -21,7 +21,7 @@
  * @brief Code that maintains the GNUnet topology.
  *  It is responsible for establishing connections.
  * @author Christian Grothoff
- */ 
+ */
 
 #ifndef GNUNET_TOPOLOGY_SERVICE_H
 #define GNUNET_TOPOLOGY_SERVICE_H

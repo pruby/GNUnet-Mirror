@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/tools/gnunet-search.c 
+ * @file applications/fs/tools/gnunet-search.c
  * @brief Main function to search for files on GNUnet.
  * @author Christian Grothoff
  */
@@ -45,7 +45,7 @@ static int itemPrinter(EXTRACTOR_KeywordType type,
 }
 
 static void printMeta(const struct ECRS_MetaData * meta) {
-  ECRS_getMetaData(meta, 
+  ECRS_getMetaData(meta,
 		   &itemPrinter,
 		   NULL);
 }
@@ -60,7 +60,7 @@ static void eventCallback(SearchClosure * sc,
 
   if (event->type != search_result)
     return;
-  
+
   /* retain URIs for possible directory dump later */
   GROW(sc->fis,
        sc->fiCount,
@@ -68,14 +68,14 @@ static void eventCallback(SearchClosure * sc,
   sc->fis[sc->fiCount-1].uri
     = ECRS_dupUri(event->data.SearchResult.fi.uri);
   sc->fis[sc->fiCount-1].meta
-    = ECRS_dupMetaData(event->data.SearchResult.fi.meta);  
+    = ECRS_dupMetaData(event->data.SearchResult.fi.meta);
 
   uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
   printf("%s:\n",
 	 uri);
   filename = ECRS_getFromMetaData(event->data.SearchResult.fi.meta,
 				  EXTRACTOR_FILENAME);
-  if (filename != NULL) 
+  if (filename != NULL)
     printf("gnunet-download -o \"%s\" %s\n",
 	   filename,
 	   uri);
@@ -124,24 +124,24 @@ static void printhelp() {
  */
 static int parseOptions(int argc,
 			char ** argv) {
-  int c;  
+  int c;
 
   while (1) {
     int option_index = 0;
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
-      { "anonymity", 1, 0, 'a' }, 
+      { "anonymity", 1, 0, 'a' },
       { "max",       1, 0, 'm' },
       { "output",    1, 0, 'o' },
       { "timeout",   1, 0, 't' },
       { 0,0,0,0 }
-    };    
+    };
     c = GNgetopt_long(argc,
-		      argv, 
-		      "a:c:dhH:L:m:o:t:v", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "a:c:dhH:L:m:o:t:v",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
@@ -150,7 +150,7 @@ static int parseOptions(int argc,
       unsigned int receivePolicy;
 
       if (1 != sscanf(GNoptarg,
-		      "%ud", 
+		      "%ud",
 		      &receivePolicy)) {
         LOG(LOG_FAILURE,
 	  _("You must pass a number to the '%s' option.\n"),
@@ -162,13 +162,13 @@ static int parseOptions(int argc,
                           receivePolicy);
       break;
     }
-    case 'h': 
-      printhelp(); 
+    case 'h':
+      printhelp();
       return SYSERR;
     case 'm': {
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-m");
 	return SYSERR;
@@ -176,7 +176,7 @@ static int parseOptions(int argc,
 	setConfigurationInt("FS",
 			    "MAXRESULTS",
 			    max);
-	if (max == 0) 
+	if (max == 0)
 	  return SYSERR; /* exit... */	
       }
       break;
@@ -189,7 +189,7 @@ static int parseOptions(int argc,
     case 't': {
       unsigned int timeout;
       if (1 != sscanf(GNoptarg, "%ud", &timeout)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-t");
 	return SYSERR;
@@ -200,19 +200,19 @@ static int parseOptions(int argc,
       }
       break;
     }
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-search v%s\n",
-	     VERSION, 
+	     VERSION,
 	     AFS_VERSION);
       return SYSERR;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */
   } /* while (1) */
   if (argc - GNoptind <= 0) {
-    LOG(LOG_FAILURE, 
+    LOG(LOG_FAILURE,
 	_("Not enough arguments. "
 	  "You must specify a keyword or identifier.\n"));
     printhelp();
@@ -238,17 +238,17 @@ static int runSearch() {
 				"URI");
   if (suri == NULL) {
     BREAK();
-    return SYSERR; 
+    return SYSERR;
   }
   uri = ECRS_stringToUri(suri);
   if (uri == NULL)
     uri = FSUI_parseCharKeywordURI(suri);
   FREE(suri);
-  
+
   memset(&sc, 0, sizeof(SearchClosure));
   sc.max = getConfigurationInt("FS",
 			       "MAXRESULTS");
-  sc.resultCount = 0;  
+  sc.resultCount = 0;
   if (sc.max == 0)
     sc.max = (unsigned int)-1; /* infty */
   ctx = FSUI_start("gnunet-search",
@@ -262,7 +262,7 @@ static int runSearch() {
   FSUI_startSearch(ctx,
 		   getConfigurationInt("FS",
 				       "ANONYMITY-RECEIVE"),
-		   uri);  
+		   uri);
   wait_for_shutdown();
   FSUI_stopSearch(ctx,
 		  uri);
@@ -289,14 +289,14 @@ static int runSearch() {
 		data,
 		n,
 		"600");
-      FREE(outfile);    
+      FREE(outfile);
       FREE(data);
-    } 
+    }
     FREE(prefix);
   }
   for (i=0;i<sc.fiCount;i++) {
     ECRS_freeUri(sc.fis[i].uri);
-    ECRS_freeMetaData(sc.fis[i].meta);    
+    ECRS_freeMetaData(sc.fis[i].meta);
   }
   GROW(sc.fis,
        sc.fiCount,
@@ -310,24 +310,24 @@ static int runSearch() {
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return value from gnunet-search: 0: ok, -1: error
- */   
+ */
 int main(int argc,
 	 char ** argv) {
   int ret;
   char * suri;
   struct ECRS_URI * uri;
-  
+
   if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0;
 
   /* convert args to URI */
   argc = getConfigurationStringList(&argv);
   uri = NULL;
-  if (argc == 1) 
-    uri = ECRS_stringToUri(argv[0]);  
-  if (uri == NULL) 
+  if (argc == 1)
+    uri = ECRS_stringToUri(argv[0]);
+  if (uri == NULL)
     uri = FSUI_parseArgvKeywordURI(argc,
-				   (const char**) argv);  
+				   (const char**) argv);
   while (argc > 0)
     FREE(argv[--argc]);
   FREE(argv);
@@ -341,9 +341,9 @@ int main(int argc,
   FREENONNULL(setConfigurationString("GNUNET-SEARCH",
 				     "URI",
 				     suri));
-  FREE(suri);    
+  FREE(suri);
 
-  
+
   initializeShutdownHandlers();
   addCronJob((CronJob)&run_shutdown,
 	     cronSECONDS * getConfigurationInt("FS",
@@ -351,7 +351,7 @@ int main(int argc,
 	     0, /* no need to repeat */
 	     NULL);
   startCron();
-  ret = runSearch(); 
+  ret = runSearch();
   stopCron();
   delCronJob((CronJob)&run_shutdown,
 	     0,

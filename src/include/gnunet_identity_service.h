@@ -20,11 +20,11 @@
  * @file include/gnunet_identity_service.h
  * @brief Code to maintain the list of currently known hosts
  *   (in memory structure of data/hosts), their credit ratings
- *   (in memory structure of data/trust), and temporary 
+ *   (in memory structure of data/trust), and temporary
  *   blacklisting information (misbehavior, failed connection
  *   attempts)
  * @author Christian Grothoff
- */ 
+ */
 
 #ifndef GNUNET_IDENTITY_SERVICE_H
 #define GNUNET_IDENTITY_SERVICE_H
@@ -48,7 +48,7 @@
  *        if NO the host is in the temporary list
  * @param data callback closure
  */
-typedef void (*HostIterator)(const PeerIdentity * identity, 
+typedef void (*HostIterator)(const PeerIdentity * identity,
 			     unsigned short protocol,
 			     int confirmed,
 			     void * data);
@@ -57,7 +57,7 @@ typedef void (*HostIterator)(const PeerIdentity * identity,
  * @brief Definition of the Identity API.
  */
 typedef struct {
-  
+
   /**
    * Get the public key of this peer.
    *
@@ -73,9 +73,9 @@ typedef struct {
    */
   void (*getPeerIdentity)(const PublicKey * pubKey,
 			  PeerIdentity * result);
-  
-  
-  /** 
+
+
+  /**
    * Sign arbitrary data. ALWAYS use only on data we entirely generated.
    * @param data what to sign
    * @param size how big is the data
@@ -87,7 +87,7 @@ typedef struct {
 		  Signature * result);
 
   /**
-   * Decrypt a given block with the hostkey. 
+   * Decrypt a given block with the hostkey.
    * @param block the data to decrypt, encoded as returned by encrypt, not consumed
    * @param result pointer to a location where the result can be stored
    * @param max the maximum number of bits to store for the result, if
@@ -103,7 +103,7 @@ typedef struct {
    */
   void (*delHostFromKnown)(const PeerIdentity * identity,
 			   unsigned short protocol);
-  
+
   /**
    * Add a host to the temporary list.
    */
@@ -118,15 +118,15 @@ typedef struct {
   /**
    * Call a method for each known host.
    * @param callback the method to call for each host, may be NULL
-   * @param now the time to use for excluding hosts due to blacklisting, use 0 
+   * @param now the time to use for excluding hosts due to blacklisting, use 0
    *        to go through all hosts.
    * @param data an argument to pass to the method
    * @return the number of known hosts matching
    */
   int (*forEachHost)(cron_t now,
-		     HostIterator callback,		     
+		     HostIterator callback,		
 		     void * data);
-  
+
   /**
    * Obtain the public key and address of a known host. If no specific
    * protocol is specified (ANY_PROTOCOL_NUMBER), the HELO for the
@@ -145,7 +145,7 @@ typedef struct {
 
   /**
    *
-   * 
+   *
    * @param signer the identity of the host that presumably signed the message
    * @param message the signed message
    * @param size the size of the message
@@ -172,7 +172,7 @@ typedef struct {
 
   /**
    * Is the node currently 'strictly' blacklisted, that is, the node
-   * misbehaved badly and we also reject inbound connections.  
+   * misbehaved badly and we also reject inbound connections.
    *
    * @param identity node to check
    * @return YES if true, else NO
@@ -195,7 +195,7 @@ typedef struct {
    * @param value is the int value by which the host credit is to be increased
    * @returns the new credit
    */
-  int (*changeHostTrust)(const PeerIdentity * hostId, 
+  int (*changeHostTrust)(const PeerIdentity * hostId,
 			 int value);
 
   /**

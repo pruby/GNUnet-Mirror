@@ -40,9 +40,9 @@
 void checkCompiler();
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  **/
-int parseCommandLine(int argc, 
+int parseCommandLine(int argc,
 		     char * argv[]);
 
 /**
@@ -53,7 +53,7 @@ void initSignalHandlers();
 void doneSignalHandlers();
 
 void waitForSignalHandler();
- 
+
 /**
  * Fork and start a new session to go into the background
  * in the way a good deamon should.
@@ -89,5 +89,5 @@ void loadApplicationModules();
 BOOL WINAPI win_shutdown_gnunetd(DWORD dwCtrlType);
 #endif
 
-#endif 
+#endif
 /* end of startup.h */

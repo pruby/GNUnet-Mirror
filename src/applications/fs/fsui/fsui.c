@@ -39,7 +39,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 				 int doResume,
 				 FSUI_EventCallback cb,
 				 void * closure) {
-  FSUI_Context * ret;  
+  FSUI_Context * ret;
   char * fn;
   char * gh;
 
@@ -88,7 +88,7 @@ static void freeDownloadList(FSUI_DownloadList * list) {
     ECRS_freeUri(dpos->uri);
     FREE(dpos->filename);
     for (i=dpos->completedDownloadsCount-1;i>=0;i--)
-      ECRS_freeUri(dpos->completedDownloads[i]);    
+      ECRS_freeUri(dpos->completedDownloads[i]);
     GROW(dpos->completedDownloads,
 	 dpos->completedDownloadsCount,
 	 0);
@@ -115,7 +115,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     PTHREAD_JOIN(&tpos->handle, &unused);
     FREE(tpos);
   }
-  
+
   while (ctx->activeSearches != NULL) {
     spos = ctx->activeSearches;
     ctx->activeSearches = spos->next;
@@ -174,7 +174,7 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
   FSUI_DownloadList * dtmp;
   void * unused;
   int i;
-  
+
   prev = NULL;
   MUTEX_LOCK(&ctx->lock);
   pos = ctx->activeThreads;
@@ -208,7 +208,7 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
 	ECRS_freeUri(dpos->completedDownloads[i]);
       GROW(dpos->completedDownloads,
 	   dpos->completedDownloadsCount,
-	   0);      
+	   0);
       FREE(dpos);
       if (dprev != NULL)
 	dprev->next = dtmp;

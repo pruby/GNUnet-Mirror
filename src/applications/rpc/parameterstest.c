@@ -1,4 +1,4 @@
-/** 
+/**
  * @file applications/rpc/parameterstest.c
  * @brief testcase for parameters.c
  * @author Christian Grothoff
@@ -50,12 +50,12 @@ int main(int argc, char * argv[]){
   buf = MALLOC(size);
   RPC_paramSerialize(p, buf);
   RPC_paramFree(p);
-  p = RPC_paramDeserialize(buf, 
+  p = RPC_paramDeserialize(buf,
 			   size);
   FREE(buf);
   if (p == NULL)
     return 1;
-  
+
   if (OK != RPC_paramValueByName(p,
 				 "foo",
 				 &len,

@@ -20,7 +20,7 @@
 
 /**
  * @file server/gnunet-transport-check.c
- * @brief Test for the transports.  
+ * @brief Test for the transports.
  * @author Christian Grothoff
  *
  * This utility can be used to test if a transport mechanism for
@@ -70,7 +70,7 @@ static void semUp(Semaphore * sem) {
 static int noiseHandler(const PeerIdentity *peer,
 			const p2p_HEADER * msg,
 			TSession * s) {
-  if ( (ntohs(msg->size) == 
+  if ( (ntohs(msg->size) ==
 	sizeof(p2p_HEADER) + expectedSize) &&
        (0 == memcmp(expectedValue,
 		    &msg[1],
@@ -146,7 +146,7 @@ static void testTAPI(TransportAPI * tapi,
       SEMAPHORE_FREE(sem);
       FREE(noise);
       return;
-    } 
+    }
     addCronJob((CronJob)&semUp,
 	       timeout,
 	       0,
@@ -155,7 +155,7 @@ static void testTAPI(TransportAPI * tapi,
     suspendCron();
     delCronJob((CronJob)&semUp,
 	       0,
-	       sem); 
+	       sem);
     resumeCron();
     if (ok != YES) {
       FPRINTF(stderr,
@@ -182,7 +182,7 @@ static void testTAPI(TransportAPI * tapi,
   SEMAPHORE_FREE(sem);
   printf(_("'%s' transport OK.  It took %ums to transmit %d messages of %d bytes each.\n"),
 	 tapi->transName,
-	 (unsigned int) ((end - start)/cronMILLIS),  
+	 (unsigned int) ((end - start)/cronMILLIS),
 	 getConfigurationInt("TRANSPORT-CHECK",
 			     "REPEAT"),
 	 expectedSize);
@@ -194,20 +194,20 @@ static void pingCallback(void * unused) {
 }
 
 static void testPING(HELO_Message * xhelo,
-		     int * stats) {  
+		     int * stats) {
   TSession * tsession;
   HELO_Message * helo;
   HELO_Message * myHelo;
   p2p_HEADER * ping;
   char * msg;
   int len;
-  
+
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
 			      "YES")) {
     char * str;
     str = transport->heloToString(xhelo);
-    fprintf(stderr, 
+    fprintf(stderr,
 	    _("\nContacting '%s'."),
 	    str);
     FREE(str);
@@ -218,7 +218,7 @@ static void testPING(HELO_Message * xhelo,
 
   stats[0]++; /* one more seen */
   if (NO == transport->isAvailable(ntohs(helo->protocol))) {
-    fprintf(stderr, 
+    fprintf(stderr,
 	    " Transport %d not available\n",
 	    ntohs(helo->protocol));
     FREE(helo);
@@ -232,23 +232,23 @@ static void testPING(HELO_Message * xhelo,
   }
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
-			      "YES")) 
+			      "YES"))
     fprintf(stderr, ".");
 
   stats[1]++; /* one more with transport 'available' */
   tsession = NULL;
-  if (OK != transport->connect(helo, 
+  if (OK != transport->connect(helo,
 			       &tsession)) {
     FREE(helo);
-    fprintf(stderr, 
+    fprintf(stderr,
 	    " Connection failed\n");
     return;
   }
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
-			      "YES")) 
+			      "YES"))
     fprintf(stderr, ".");
-  
+
   sem = SEMAPHORE_NEW(0);
 
   ping = pingpong->pingUser(&helo->senderIdentity,
@@ -262,7 +262,7 @@ static void testPING(HELO_Message * xhelo,
 	 ntohs(myHelo->header.size));
   memcpy(&msg[ntohs(myHelo->header.size)],
 	 ping,
-	 ntohs(ping->size));  
+	 ntohs(ping->size));
   FREE(myHelo);
   FREE(ping);
   /* send ping */
@@ -270,7 +270,7 @@ static void testPING(HELO_Message * xhelo,
   if (OK != transport->send(tsession,
 			    msg,
 			    len)) {
-    fprintf(stderr, 
+    fprintf(stderr,
 	    "Send failed.\n");
     FREE(msg);
     transport->disconnect(tsession);
@@ -279,7 +279,7 @@ static void testPING(HELO_Message * xhelo,
   FREE(msg);
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
-			      "YES")) 
+			      "YES"))
     fprintf(stderr, ".");
   /* check: received pong? */
   terminate = NO;
@@ -288,29 +288,29 @@ static void testPING(HELO_Message * xhelo,
 	     5 * cronSECONDS,
 	     sem);
   SEMAPHORE_DOWN(sem);
-  
+
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
 			      "YES")) {
     if (ok != YES)
-      FPRINTF(stderr, 
+      FPRINTF(stderr,
 	      _("No reply received within %llums.\n"),
 	      timeout);
   }
   suspendCron();
   delCronJob((CronJob)&semUp,
 	     5 * cronSECONDS,
-	     sem); 
+	     sem);
   resumeCron();
   SEMAPHORE_FREE(sem);
   sem = NULL;
-  transport->disconnect(tsession);  
+  transport->disconnect(tsession);
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parser(int argc, 
+static int parser(int argc,
 		  char * argv[]) {
   int cont = OK;
   int c;
@@ -343,18 +343,18 @@ static int parser(int argc,
       { "verbose", 0, 0, 'V' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhc:L:t:r:s:X:P:pVT:", 
-		      long_options, 
+		      argv,
+		      "vhc:L:t:r:s:X:P:pVT:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
-    case 'p': 
+    case 'p':
       FREENONNULL(setConfigurationString("TRANSPORT-CHECK",
 					 "PING",
 					 "YES"));
@@ -362,7 +362,7 @@ static int parser(int argc,
     case 'P':{
       unsigned int port;
       if (1 != sscanf(GNoptarg, "%ud", &port)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    "You must pass a number to the -P option.\n");
 	return SYSERR;
       } else {
@@ -377,7 +377,7 @@ static int parser(int argc,
     case 's':{
       unsigned int size;
       if (1 != sscanf(GNoptarg, "%ud", &size)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-s");
 	return SYSERR;
@@ -397,7 +397,7 @@ static int parser(int argc,
     case 'r':{
       unsigned int repeat;
       if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-r");
 	return SYSERR;
@@ -411,7 +411,7 @@ static int parser(int argc,
     case 'X':{
       unsigned int repeat;
       if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-X");
 	return SYSERR;
@@ -424,7 +424,7 @@ static int parser(int argc,
     }
     case 'T':{
       if (1 != SSCANF(GNoptarg, "%llu", &timeout)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-T");
 	return SYSERR;
@@ -441,7 +441,7 @@ static int parser(int argc,
 					 "TRANSPORTS",
 					 GNoptarg));
       break;
-    case 'v': 
+    case 'v':
       printf("gnunet-transport-check v%s\n",
 	     VERSION);
       cont = SYSERR;
@@ -472,7 +472,7 @@ static int parser(int argc,
       };
       formatHelp("gnunet-transport-check [OPTIONS]",
 		 _("Tool to test if GNUnet transport services are operational."),
-		 help);  
+		 help);
       cont = SYSERR;
       break;
     }
@@ -482,16 +482,16 @@ static int parser(int argc,
 					 GNoptarg));
       break;
     default:
-      LOG(LOG_FAILURE, 
+      LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
-      cont = SYSERR;    
+      cont = SYSERR;
     } /* end of parsing commandline */
   }
   if (GNoptind < argc) {
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("Invalid arguments: "));
     while (GNoptind < argc)
-      LOG(LOG_WARNING, 
+      LOG(LOG_WARNING,
 	  "%s ", argv[GNoptind++]);
     LOG(LOG_FATAL,
 	_("Invalid arguments. Exiting.\n"));
@@ -577,9 +577,9 @@ int main(int argc, char *argv[]) {
 	   stats[0] - stats[1]);
     releaseService(bootstrap);
   } else {
-    while (Xrepeat-- > 0) 
+    while (Xrepeat-- > 0)
       transport->forEach((TransportCallback)&testTAPI,
-			 &res);  
+			 &res);
   }
   stopCron();
   releaseService(identity);

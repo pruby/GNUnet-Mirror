@@ -33,7 +33,7 @@
  * noise, encryption and deferred sending of these messages.<p>
  *
  * The file is organized as follows:
- * 
+ *
  * a) includes
  * b) defines
  * c) typedefs
@@ -43,7 +43,7 @@
  *
  * @author Tzvetan Horozov
  * @author Christian Grothoff
- */ 
+ */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
@@ -72,7 +72,7 @@
 #define SECONDS_NOPINGPONG_DROP 150
 
 /**
- * If an established connection is inactive for 5 minutes, 
+ * If an established connection is inactive for 5 minutes,
  * drop.
  */
 #define SECONDS_INACTIVE_DROP 300
@@ -145,7 +145,7 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  * How often do we expect to re-run the traffic allocation
  * code? (depends on MINIMUM_SAMPLE_COUNT and MIN_BPM_PER_PEER
  * and MTU size).
- * With MSC 16 and 5 minutes inactivity timeout and TMSID 32 about every 148s 
+ * With MSC 16 and 5 minutes inactivity timeout and TMSID 32 about every 148s
  */
 #define MIN_SAMPLE_TIME (MINIMUM_SAMPLE_COUNT * cronMINUTES * EXPECTED_MTU / MIN_BPM_PER_PEER)
 
@@ -155,16 +155,16 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
 #define MAX_SEND_BUFFER_SIZE 256
 
 /**
- * Status constants 
- * 
+ * Status constants
+ *
  * Protocol goes like this:
  *          DOWN
- *   -> HELO+SKEY+PING(1) -> 
+ *   -> HELO+SKEY+PING(1) ->
  *        SKEY_SENT
  *  <- HELO+SKEY+PONG(1)+PING(2) <-
  *       -> PONG(2) ->
  *           UP
- *  
+ *
  * Note that the second HELO may not be necessary from a protocol
  * point of view, but makes sense for symmetry and to provide the
  * other side with an up-to-date HELO.  For the other side, it looks
@@ -182,7 +182,7 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  * If a peer wants to shutdown a connection
  * immediately (be polite, not let it time-out,
  * save bandwidth), he sends:
- * 
+ *
  *          UP
  *      -> HANGUP ->
  *         DOWN
@@ -190,7 +190,7 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  * The other side then does:
  *          UP
  *      <- HANGUP -<
- *         DOWN 
+ *         DOWN
  *
  * A 3-way handshake does not happen for
  * the shutdown since it is not reliable
@@ -315,7 +315,7 @@ typedef struct {
    */
   unsigned short mtu;
 
-  /** 
+  /**
    * The session handle specific for the transport service.
    */
   TSession * tsession;
@@ -338,7 +338,7 @@ typedef struct BufferEntry_ {
   /** at which time was the remote sessionkey created */
   TIME_T skey_remote_created;
   /** is this host alive? timestamp of the time of the last-active point */
-  cron_t isAlive; 
+  cron_t isAlive;
   /**  Status of the connection (STAT_XXX) */
   unsigned int status;
 
@@ -353,14 +353,14 @@ typedef struct BufferEntry_ {
 
   /** number of entries in the send buffer */
   unsigned int sendBufferSize;
-  
+
   /** buffer of entries waiting to be transmitted */
   SendEntry ** sendBuffer;
 
   /** time of the last send-attempt (to avoid
       solving knapsack's too often) */
   cron_t lastSendAttempt;
-  
+
   /**
    * How frequent (per connection!) may we attempt to solve the knapsack
    * problem and send a message out? Note that setting this value higher
@@ -485,7 +485,7 @@ static unsigned int rsnSize;
 
 /* ******************** CODE ********************* */
 
-/** 
+/**
  * This allocates and initializes a BufferEntry.
  * @return the initialized BufferEntry
  */
@@ -493,9 +493,9 @@ static BufferEntry * initBufferEntry() {
   BufferEntry * be;
 
   be = (BufferEntry*) MALLOC(sizeof(BufferEntry));
-  be->isAlive 
+  be->isAlive
     = 0;
-  be->status 
+  be->status
     = STAT_DOWN;
   be->sendBuffer
     = NULL;
@@ -538,12 +538,12 @@ void updateCurBPS(BufferEntry * be) {
     return;
   delta = now - be->last_bps_update;
   if (be->max_bpm * delta < cronMINUTES)
-    return; 
+    return;
   be->available_send_window =
     be->available_send_window + be->max_bpm * delta / cronMINUTES;
   if (be->available_send_window > (long long) be->max_bpm * MAX_BUF_FACT)
     be->available_send_window = (long long) be->max_bpm * MAX_BUF_FACT;
-  be->last_bps_update = now;    
+  be->last_bps_update = now;
 }
 
 
@@ -570,15 +570,15 @@ static int gcd(int a, int b) {
  * (by priority/len).
  *
  * The code falls back to this function if the CPU is
- * too busy.  As long as the CPU is idle, solveKnapsack 
+ * too busy.  As long as the CPU is idle, solveKnapsack
  * is used.
  *
  * @param be the send buffer that is scheduled
  * @param available what is the maximum length available?
  * @param solution int[count] to store the solution as "YES" and "NO" values
- * @return the overall priority that was achieved 
- */ 
-static unsigned int 
+ * @return the overall priority that was achieved
+ */
+static unsigned int
 approximateKnapsack(BufferEntry * be,
 		    unsigned int available,
 		    int * solution) {
@@ -597,10 +597,10 @@ approximateKnapsack(BufferEntry * be,
     if (entries[i]->len <= left) {
       solution[i] = YES;
       left -= entries[i]->len;
-      max += entries[i]->pri;     
+      max += entries[i]->pri;
     } else {
       solution[i] = NO;
-    }    
+    }
   }
   return max;
 }
@@ -609,7 +609,7 @@ approximateKnapsack(BufferEntry * be,
  * Solve the 0-1 knapsack problem.  Given "count" "entries" of
  * different "len" and "pri"ority and the amount of space "available",
  * compute the "solution", which is the set of entries to transport.
- * 
+ *
  * Solving this problem is NP complete in "count", but given that
  * available is small, the complexity is actually
  * "O(count*available)".
@@ -617,9 +617,9 @@ approximateKnapsack(BufferEntry * be,
  * @param be the send buffer that is scheduled
  * @param available what is the maximum length available?
  * @param solution int[count] to store the solution as "YES" and "NO" values
- * @return the overall priority that was achieved 
+ * @return the overall priority that was achieved
  */
-static unsigned int 
+static unsigned int
 solveKnapsack(BufferEntry * be,
 	      unsigned int available,
 	      int * solution) {
@@ -657,9 +657,9 @@ solveKnapsack(BufferEntry * be,
     return max;
   }
 
-  /* division of sizes & available by gcd(sizes,available) 
+  /* division of sizes & available by gcd(sizes,available)
      to reduce cost to O(count*available/gcd) in terms of
-     CPU and memory.  Since gcd is almost always at least 
+     CPU and memory.  Since gcd is almost always at least
      4, this is probably a good idea (TM)  :-) */
   efflen = MALLOC(sizeof(int)*count);
   max = available;
@@ -669,13 +669,13 @@ solveKnapsack(BufferEntry * be,
   for (i=0;i<count;i++)
     efflen[i] = entries[i]->len / max;
 
-  /* dynamic programming: 
+  /* dynamic programming:
      VARR(i,j) stores the maximum value of any subset
      of objects {1, ... i} that can fit into a knapsack
      of weight j. */
   v = MALLOC(sizeof(long long) * (count+1) * (available+1));
-  memset(v, 
-	 0, 
+  memset(v,
+	 0,
 	 sizeof(long long) * (count+1) * (available+1));
   for (j=1;j<=available;j++)
     VARR(0,j) = -1;
@@ -697,11 +697,11 @@ solveKnapsack(BufferEntry * be,
       /*
       printf("i: %d j: %d (of %d) efflen: %d take: %d "
              "leave %d e[i-1]->pri %d VAR(i-1,j-eff) %lld VAR(i,j) %lld\n",
-	     i, 
-	     j, 
+	     i,
+	     j,
 	     available,
 	     efflen[i-1],
-	     take_val, 
+	     take_val,
 	     leave_val,
 	     entries[i-1]->pri,
 	     VARR(i-1,j-efflen[i-1]),
@@ -727,7 +727,7 @@ solveKnapsack(BufferEntry * be,
     if (j >= efflen[i-1]) {
       if (VARR(i-1, j-efflen[i-1]) + entries[i-1]->pri == VARR(i,j)) {
 	j -= efflen[i-1];
-	solution[i-1] = YES; 
+	solution[i-1] = YES;
       }
     }
   }
@@ -760,7 +760,7 @@ static int outgoingCheck(unsigned int priority) {
   if (load >= 150) {
     return SYSERR; /* => always drop */
   }
-  if (load > 100) { 
+  if (load > 100) {
     if (priority >= EXTREME_PRIORITY) {
       return OK; /* allow administrative msgs */
     } else {
@@ -776,11 +776,11 @@ static int outgoingCheck(unsigned int priority) {
      at 75% require priority >= 15626 = (load-50)^3
      at 100% require priority >= 125000 = (load-50)^3
      (cubic function)
-  */ 
+  */
   delta = load - 50; /* now delta is in [1,50] with 50 == 100% load */
   if (delta * delta * delta > priority ) {
-#if DEBUG_POLICY 
-    LOG(LOG_DEBUG, 
+#if DEBUG_POLICY
+    LOG(LOG_DEBUG,
 	"Network load is too high (%d%%, priority is %u, require %d), "
 	"dropping outgoing.\n",
 	load,
@@ -790,7 +790,7 @@ static int outgoingCheck(unsigned int priority) {
     return SYSERR; /* drop */
   } else {
 #if DEBUG_POLICY
-    LOG(LOG_DEBUG, 
+    LOG(LOG_DEBUG,
 	"Network load is ok (%d%%, priority is %u >= %d), "
 	"sending outgoing.\n",
 	load,
@@ -835,10 +835,10 @@ static void sendBuffer(BufferEntry * be) {
   if (be == NULL) {
     BREAK();
     return;
-  }  
+  }
   if (be->status != STAT_UP)
     return; /* status is not up, cannot send! */
-  if (be->sendBufferSize == 0) 
+  if (be->sendBufferSize == 0)
     return; /* nothing to send */
 
   /* recompute max send frequency */
@@ -847,7 +847,7 @@ static void sendBuffer(BufferEntry * be) {
 
   if (be->session.mtu == 0) {
     be->MAX_SEND_FREQUENCY = /* ms per message */
-      EXPECTED_MTU 
+      EXPECTED_MTU
       / (be->max_bpm * cronMINUTES / cronMILLIS) /* bytes per ms */
       / 2;
   } else {
@@ -859,7 +859,7 @@ static void sendBuffer(BufferEntry * be) {
   /* Also: allow at least MINIMUM_SAMPLE_COUNT knapsack
      solutions for any MIN_SAMPLE_TIME! */
   if (be->MAX_SEND_FREQUENCY > MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
-    be->MAX_SEND_FREQUENCY = MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;  
+    be->MAX_SEND_FREQUENCY = MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
 
   if ( (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > cronTime(NULL)) &&
        (be->sendBufferSize < MAX_SEND_BUFFER_SIZE/4) ) {
@@ -872,7 +872,7 @@ static void sendBuffer(BufferEntry * be) {
 
   /* test if receiver has enough bandwidth available!  */
   updateCurBPS(be);
-#if DEBUG_CONNECTION 
+#if DEBUG_CONNECTION
   LOG(LOG_DEBUG,
       "receiver window available: %lld bytes (MTU: %u)\n",
       be->available_send_window,
@@ -899,18 +899,18 @@ static void sendBuffer(BufferEntry * be) {
 	break;
       }
       i++;
-    }        
+    }
     while ( (i < be->sendBufferSize) &&
 	    (be->available_send_window > totalMessageSize) ) {
       if ( (entries[i]->len + totalMessageSize <=
-	    be->available_send_window) && 
+	    be->available_send_window) &&
 	   (totalMessageSize + entries[i]->len < MAX_BUFFER_SIZE) ) {
 	knapsackSolution[i] = YES;
 	totalMessageSize += entries[i]->len;
 	priority += entries[i]->pri;
       } else {
 	knapsackSolution[i] = NO;
-	if (totalMessageSize == sizeof(P2P_Message)) {	  
+	if (totalMessageSize == sizeof(P2P_Message)) {	
 	  /* if the highest-priority message does not yet
 	     fit, wait for send window to grow so that
 	     we can get it out (otherwise we would starve
@@ -929,11 +929,11 @@ static void sendBuffer(BufferEntry * be) {
 	 the message if there is nothing else to do! */
       FREE(knapsackSolution);
       return;
-    }      
+    }
   } else { /* if (be->session.mtu == 0) */
     /* solve knapsack problem, compute accumulated priority */
     knapsackSolution = MALLOC(sizeof(int) * be->sendBufferSize);
-    
+
     approxProb = getCPULoad();
     if (approxProb > 50) {
       if (approxProb > 100)
@@ -941,7 +941,7 @@ static void sendBuffer(BufferEntry * be) {
       approxProb = 100 - approxProb; /* now value between 0 and 50 */
       approxProb *= 2; /* now value between 0 [always approx] and 100 [never approx] */
       /* control CPU load probabilistically! */
-      if (randomi(1+approxProb) == 0) { 
+      if (randomi(1+approxProb) == 0) {
 	priority = approximateKnapsack(be,
 				       be->session.mtu - sizeof(P2P_Message),
 				       knapsackSolution);
@@ -975,24 +975,24 @@ static void sendBuffer(BufferEntry * be) {
 	  j,
 	  be->sendBufferSize,
 	  be->session.mtu - sizeof(P2P_Message));
-      
+
       for (j=0;j<be->sendBufferSize;j++)
 	LOG(LOG_ERROR,
 	    _("Message details: %u: length %d, priority: %d\n"),
-	    j, 
+	    j,
 	    be->sendBuffer[j]->len,
 	    be->sendBuffer[j]->pri);
       FREE(knapsackSolution);
       return;
     }
-    
+
     if (be->available_send_window < be->session.mtu) {
       /* if we have a very high priority, we may
 	 want to ignore bandwidth availability (e.g. for HANGUP,
 	 which  has EXTREME_PRIORITY) */
       if (priority < EXTREME_PRIORITY) {
 	FREE(knapsackSolution);
-#if DEBUG_CONNECTION 
+#if DEBUG_CONNECTION
 	LOG(LOG_DEBUG,
 	    "bandwidth limits prevent sending (send window %u too small).\n",
 	    be->available_send_window);
@@ -1002,8 +1002,8 @@ static void sendBuffer(BufferEntry * be) {
     }
     totalMessageSize = be->session.mtu;
   } /* end MTU > 0 */
-    
-  expired = cronTime(NULL) - SECONDS_PINGATTEMPT * cronSECONDS; 
+
+  expired = cronTime(NULL) - SECONDS_PINGATTEMPT * cronSECONDS;
   /* if it's more than one connection "lifetime" old, always kill it! */
 
   /* check if we (sender) have enough bandwidth available */
@@ -1011,17 +1011,17 @@ static void sendBuffer(BufferEntry * be) {
     int msgCap;
     FREE(knapsackSolution);
     cronTime(&be->lastSendAttempt);
-#if DEBUG_CONNECTION 
+#if DEBUG_CONNECTION
     LOG(LOG_DEBUG,
 	"policy prevents sending message (priority too low: %d)\n",
 	priority);
 #endif
-    
+
     /* cleanup queue */
     if (getCPULoad() > 50)
       msgCap = 4;
-    else 
-      msgCap = 54 - getCPULoad();    
+    else
+      msgCap = 54 - getCPULoad();
     if (be->max_bpm > 2)
       msgCap += 2 * (int) log((double)be->max_bpm);
     /* allow at least msgCap msgs in buffer */
@@ -1043,16 +1043,16 @@ static void sendBuffer(BufferEntry * be) {
 	     be->sendBufferSize,
 	     be->sendBufferSize-1);
 	i--; /* go again for this slot */
-      }        
+      }
     }
     return; /* deferr further */
   }
-  
+
   /* build message (start with sequence number) */
   GNUNET_ASSERT(totalMessageSize > sizeof(P2P_Message));
   plaintextMsg = MALLOC(totalMessageSize);
   p2pHdr = (P2P_Message*) plaintextMsg;
-  p2pHdr->timeStamp 
+  p2pHdr->timeStamp
     = htonl(TIME(NULL));
   p2pHdr->sequenceNumber
     = htonl(be->lastSequenceNumberSend);
@@ -1065,7 +1065,7 @@ static void sendBuffer(BufferEntry * be) {
   headpos = 0;
   tailpos = be->sendBufferSize-1;
   remainingBufferSize = be->sendBufferSize;
-  for (i=0;i<be->sendBufferSize;i++) 
+  for (i=0;i<be->sendBufferSize;i++)
     if (knapsackSolution[perm[i]] == YES) {
       remainingBufferSize--;
       switch (be->sendBuffer[perm[i]]->flags & SE_PLACEMENT_FLAG) {
@@ -1101,9 +1101,9 @@ static void sendBuffer(BufferEntry * be) {
 	p2p_HEADER * part;
 
 	part = (p2p_HEADER *) &plaintextMsg[p];
-	part->size 
+	part->size
 	  = htons(entry->len);
-	part->type 
+	part->type
 	  = htons(p2p_PROTO_NOISE);
 	for (i=p+sizeof(p2p_HEADER);i<entry->len+p;i++)
 	  plaintextMsg[p] = (char) rand();
@@ -1125,12 +1125,12 @@ static void sendBuffer(BufferEntry * be) {
       if (be->max_bpm > 2) {
 	msgCap += 2 * (int) log((double)be->max_bpm);
 	if (msgCap >= MAX_SEND_BUFFER_SIZE-1)
-	  msgCap = MAX_SEND_BUFFER_SIZE-2; /* try to make sure that there 
+	  msgCap = MAX_SEND_BUFFER_SIZE-2; /* try to make sure that there
 					      is always room... */
       }
       if ( (remainingBufferSize > msgCap) &&
 	   (entry->transmissionTime < expired) ) {
-#if DEBUG_CONNECTION 
+#if DEBUG_CONNECTION
 	LOG(LOG_DEBUG,
 	    "expiring message, expired %ds ago, queue size is %u (other messages went through)\n",
 	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
@@ -1149,13 +1149,13 @@ static void sendBuffer(BufferEntry * be) {
 
   /* cleanup/compact sendBuffer */
   j = 0;
-  for (i=0;i<be->sendBufferSize;i++) 
+  for (i=0;i<be->sendBufferSize;i++)
     if (be->sendBuffer[i] != NULL)
-      be->sendBuffer[j++] = be->sendBuffer[i];  
+      be->sendBuffer[j++] = be->sendBuffer[i];
   GROW(be->sendBuffer,
        be->sendBufferSize,
        targetSBLEN);
-    
+
   /* still room left? try callbacks! */
   pos = scl_nextHead;
   while (pos != NULL) {
@@ -1166,17 +1166,17 @@ static void sendBuffer(BufferEntry * be) {
     }
     pos = pos->next;
   }
-  
-  /* finally padd with noise */  
+
+  /* finally padd with noise */
   if ( (p + sizeof(p2p_HEADER) <= totalMessageSize) &&
        (disable_random_padding == NO) ) {
     p2p_HEADER * part;
     unsigned short noiseLen = totalMessageSize - p;
 
     part = (p2p_HEADER *) &plaintextMsg[p];
-    part->size 
+    part->size
       = htons(noiseLen);
-    part->type 
+    part->type
       = htons(p2p_PROTO_NOISE);
     for (i=p+sizeof(p2p_HEADER);
 	 i < totalMessageSize;
@@ -1185,7 +1185,7 @@ static void sendBuffer(BufferEntry * be) {
     p = totalMessageSize;
   }
 
-  encryptedMsg = MALLOC(p); 
+  encryptedMsg = MALLOC(p);
   hash(&p2pHdr->sequenceNumber,
        p - sizeof(HashCode512),
        (HashCode512*) encryptedMsg);
@@ -1208,10 +1208,10 @@ static void sendBuffer(BufferEntry * be) {
 					reset to 0 at least... */
     be->lastSequenceNumberSend++;
     if (be->idealized_limit > be->max_transmitted_limit)
-      be->max_transmitted_limit 
+      be->max_transmitted_limit
 	= be->idealized_limit;
     else /* age */
-      be->max_transmitted_limit 
+      be->max_transmitted_limit
 	= (be->idealized_limit + be->max_transmitted_limit*3)/4;
 
     if (rsnSize > 0) {
@@ -1233,7 +1233,7 @@ static void sendBuffer(BufferEntry * be) {
 /**
  * Append a message to the current buffer. This method
  * assumes that the access to be is already synchronized.
- * 
+ *
  * @param be on which connection to transmit
  * @param se what to transmit (with meta-data)
  */
@@ -1241,7 +1241,7 @@ static void appendToBuffer(BufferEntry * be,
 			   SendEntry * se) {
 #if DEBUG_CONNECTION
   EncName enc;
-#endif  
+#endif
   float apri;
   unsigned int i;
   SendEntry ** ne;
@@ -1266,9 +1266,9 @@ static void appendToBuffer(BufferEntry * be,
 
 #if DEBUG_CONNECTION
   IFLOG(LOG_DEBUG,
-	hash2enc(&be->session.sender.hashPubKey, 
+	hash2enc(&be->session.sender.hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "adding message of size %d to buffer of host %s.\n",
       se->len,
       &enc);
@@ -1286,11 +1286,11 @@ static void appendToBuffer(BufferEntry * be,
     FREE(se);
     return;
   }
-  if (be->sendBufferSize >= MAX_SEND_BUFFER_SIZE) { 
+  if (be->sendBufferSize >= MAX_SEND_BUFFER_SIZE) {
     /* first, try to remedy! */
     sendBuffer(be);
     /* did it work? */
-    if (be->sendBufferSize >= MAX_SEND_BUFFER_SIZE) { 
+    if (be->sendBufferSize >= MAX_SEND_BUFFER_SIZE) {
       /* we need to enforce some hard limit here, otherwise we may take
 	 FAR too much memory (200 MB easily) */
 #if DEBUG_CONNECTION
@@ -1321,7 +1321,7 @@ static void appendToBuffer(BufferEntry * be,
   FREENONNULL(be->sendBuffer);
   be->sendBuffer = ne;
   be->sendBufferSize++;
-  sendBuffer(be);  
+  sendBuffer(be);
 }
 
 /**
@@ -1337,7 +1337,7 @@ static BufferEntry * lookForHost(const PeerIdentity * hostId) {
   root = CONNECTION_buffer_[computeIndex(hostId)];
   while (root != NULL) {
     if (equalsHashCode512(&hostId->hashPubKey,
-			  &root->session.sender.hashPubKey)) 
+			  &root->session.sender.hashPubKey))
       return root;
     root = root->overflowChain;
   }
@@ -1348,24 +1348,24 @@ static BufferEntry * lookForHost(const PeerIdentity * hostId) {
  * Force adding of a host to the buffer. If the node is already in the
  * table, the table entry is returned.  If the connection is down,
  * the session service is asked to try to establish a connection.
- * 
+ *
  * The connection lock must be held when calling this function.
  *
  * @param establishSession should we try to establish a session?
  * @param hostId for which peer should we get/create a connection
- * @return the table entry for the host 
+ * @return the table entry for the host
  */
 static BufferEntry * addHost(const PeerIdentity * hostId,
 			     int establishSession) {
   BufferEntry * root;
   BufferEntry * prev;
-#if DEBUG_CONNECTION 
+#if DEBUG_CONNECTION
   EncName enc;
 
   IFLOG(LOG_EVERYTHING,
-	hash2enc(&hostId->hashPubKey, 
+	hash2enc(&hostId->hashPubKey,
 		 &enc));
-  LOG(LOG_EVERYTHING, 
+  LOG(LOG_EVERYTHING,
       "Adding host '%s' to the connection table.\n",
       &enc);
 #endif
@@ -1379,7 +1379,7 @@ static BufferEntry * addHost(const PeerIdentity * hostId,
       /* settle for entry in the linked list that is down */
       if ( (root->status == STAT_DOWN) ||
 	   (equalsHashCode512(&hostId->hashPubKey,
-			      &root->session.sender.hashPubKey)) ) 
+			      &root->session.sender.hashPubKey)) )
 	break;
       prev = root;
       root = root->overflowChain;
@@ -1393,11 +1393,11 @@ static BufferEntry * addHost(const PeerIdentity * hostId,
     }
     memcpy(&root->session.sender,
 	   hostId,
-	   sizeof(PeerIdentity));	 
-  } 
+	   sizeof(PeerIdentity));	
+  }
   if ( (root->status == STAT_DOWN) &&
        (establishSession == YES) )
-    session->tryConnect(hostId); 
+    session->tryConnect(hostId);
   return root;
 }
 
@@ -1409,13 +1409,13 @@ static BufferEntry * addHost(const PeerIdentity * hostId,
  * @param method the method to invoke (NULL for couting only)
  * @param arg the second argument to the method
  * @return the number of connected hosts
- */ 
+ */
 static int forAllConnectedHosts(BufferEntryCallback method,
 				void * arg) {
   unsigned int i;
   int count = 0;
   BufferEntry * be;
-  
+
   ENTRY();
   for (i=0;i<CONNECTION_MAX_HOSTS_;i++) {
     be = CONNECTION_buffer_[i];
@@ -1433,8 +1433,8 @@ static int forAllConnectedHosts(BufferEntryCallback method,
 
 /**
  * Little helper function for forEachConnectedNode.
- * 
- * @param be the connection 
+ *
+ * @param be the connection
  * @param arg closure of type fENHWrap giving the function
  *        to call
  */
@@ -1464,7 +1464,7 @@ static int copyCallback(void * buf,
   if (len > 0) {
     memcpy(buf, closure, len);
     FREE(closure);
-    return OK; 
+    return OK;
   } else {
     FREE(closure);
     return SYSERR;
@@ -1492,7 +1492,7 @@ static void shutdownConnection(BufferEntry * be) {
     hangup.header.type = htons(p2p_PROTO_HANGUP);
     hangup.header.size = htons(sizeof(HANGUP_Message));
     identity->getPeerIdentity(identity->getPublicPrivateKey(),
-			      &hangup.sender);    
+			      &hangup.sender);
     se = MALLOC(sizeof(SendEntry));
     se->len = sizeof(HANGUP_Message);
     se->flags = SE_FLAG_PLACE_TAIL;
@@ -1507,12 +1507,12 @@ static void shutdownConnection(BufferEntry * be) {
   }
   be->skey_remote_created = 0;
   be->status = STAT_DOWN;
-  be->idealized_limit = START_TRANSMIT_LIMIT; 
+  be->idealized_limit = START_TRANSMIT_LIMIT;
   be->max_transmitted_limit = START_TRANSMIT_LIMIT;
   if (be->session.tsession != NULL) {
     transport->disconnect(be->session.tsession);
     be->session.tsession = NULL;
-  }    
+  }
   for (i=0;i<be->sendBufferSize;i++) {
     FREENONNULL(be->sendBuffer[i]->closure);
     FREE(be->sendBuffer[i]);
@@ -1522,7 +1522,7 @@ static void shutdownConnection(BufferEntry * be) {
        0);
 }
 
-/* ******** inbound bandwidth scheduling ************* */		    
+/* ******** inbound bandwidth scheduling ************* */		
 
 static void gatherEntries(BufferEntry * be,
 			  UTL_Closure * utl) {
@@ -1543,14 +1543,14 @@ static void resetRecentlyReceived(BufferEntry * be,
  * - proportional share: (x) [ bandwidth proportional to contribution ]
  * - square-root (sqrt(x))  [ contributing a lot more gives a little gain ]
  * - square share: (x*x) [ Bush's tax system: if you're rich, you get even more ]
- * 
+ *
  * Pretty much every monotonically increasing, always
  * positive function can be used.  The main loop normalizes later.
  */
 #define SHARE_DISTRIBUTION_FUNCTION(be) (be->current_connection_value)
 
 /**
- * What is the minimum number of peers to connect to that is 
+ * What is the minimum number of peers to connect to that is
  * still acceptable? (By dividing CONNECTION_MAX_HOSTS_ by
  * two, we specify to maintain at least 50% of the maximum
  * number of connections).
@@ -1576,12 +1576,12 @@ static void scheduleInboundTraffic() {
   unsigned int u;
   unsigned int minCon;
   long long schedulableBandwidth; /* MUST be unsigned! */
-  long long decrementSB; 
+  long long decrementSB;
   long long * adjustedRR;
   int didAssign;
 
   MUTEX_LOCK(&lock);
-  cronTime(&now);    
+  cronTime(&now);
 
   /* if this is the first round, don't bother... */
   if (lastRoundStart == 0) {
@@ -1614,7 +1614,7 @@ static void scheduleInboundTraffic() {
   forAllConnectedHosts((BufferEntryCallback)&gatherEntries,
 		       &utl);
 
-  
+
   /* compute shares */
   shares = MALLOC(sizeof(double)*activePeerCount);
   shareSum = 0.0;
@@ -1633,7 +1633,7 @@ static void scheduleInboundTraffic() {
     for (u=0;u<activePeerCount;u++)
       shares[u] = 1 / activePeerCount;
   }
-  
+
   /* compute how much bandwidth we can bargain with */
   minCon = minConnect();
   if (minCon > activePeerCount)
@@ -1664,9 +1664,9 @@ static void scheduleInboundTraffic() {
 #endif
     /* Check for peers grossly exceeding send limits. Be a bit
      * reasonable and make the check against the max value we have
-     * sent to this peer (assume announcements may have got lost). 
+     * sent to this peer (assume announcements may have got lost).
      */
-    if (adjustedRR[u] > 2 * MAX_BUF_FACT * 
+    if (adjustedRR[u] > 2 * MAX_BUF_FACT *
 	entries[u]->max_transmitted_limit) {
 #if DEBUG_CONNECTION
       EncName enc;
@@ -1690,7 +1690,7 @@ static void scheduleInboundTraffic() {
       adjustedRR[u] = adjustedRR[activePeerCount];
       u--;
     }
-    
+
     if (adjustedRR[u] < MIN_BPM_PER_PEER/2)
       adjustedRR[u] = MIN_BPM_PER_PEER/2; /* even if we received NO traffic, allow
 					     at least MIN_BPM_PER_PEER */
@@ -1699,7 +1699,7 @@ static void scheduleInboundTraffic() {
   /* now distribute the schedulableBandwidth according
      to the shares.  Note that since we cap peers at twice
      of what they transmitted last, we may not be done with
-     just one pass. 
+     just one pass.
 
      We don't wait until schedulableBandwidth hits 0 since that may
      take forever (due to rounding you can even take that literally).
@@ -1729,7 +1729,7 @@ static void scheduleInboundTraffic() {
       }
     }
     schedulableBandwidth -= decrementSB;
-    if ( (activePeerCount > 0) && 
+    if ( (activePeerCount > 0) &&
 	 (didAssign == NO) ) {
       int * perm = permute(activePeerCount);
       /* assign also to random "worthless" (zero-share) peers */
@@ -1744,29 +1744,29 @@ static void scheduleInboundTraffic() {
 	  schedulableBandwidth -= share - entries[v]->idealized_limit;
 	  entries[v]->idealized_limit = share;
 	}
-      }      
+      }
       FREE(perm);
 
       if ( (schedulableBandwidth > 0) &&
 	   (activePeerCount > 0) ) {
 	/* assign rest disregarding traffic limits */
 	perm = permute(activePeerCount);
-	for (u=0;u<activePeerCount;u++) 
+	for (u=0;u<activePeerCount;u++)
 	  entries[perm[u]]->idealized_limit += (unsigned int) (schedulableBandwidth/activePeerCount);	
 	schedulableBandwidth = 0;
 	FREE(perm);
-      }    
+      }
       break;
     } /* didAssign == NO? */
   } /* while bandwidth to distribute */
- 
+
 
   /* randomly add the MIN_BPM_PER_PEER to minCon peers; yes, this will
      yield some fluctuation, but some amount of fluctuation should be
      good since it creates opportunities. */
   if (activePeerCount > 0)
-    for (u=0;u<minCon;u++) 
-      entries[randomi(activePeerCount)]->idealized_limit += MIN_BPM_PER_PEER;  
+    for (u=0;u<minCon;u++)
+      entries[randomi(activePeerCount)]->idealized_limit += MIN_BPM_PER_PEER;
 
   /* prepare for next round */
   lastRoundStart = now;
@@ -1794,7 +1794,7 @@ static void scheduleInboundTraffic() {
   MUTEX_UNLOCK(&lock);
 }
 
-/* ******** end of inbound bandwidth scheduling ************* */   
+/* ******** end of inbound bandwidth scheduling ************* */
 
 
 /**
@@ -1802,7 +1802,7 @@ static void scheduleInboundTraffic() {
  *
  * @param unused not used, just to make signature type nicely
  */
-static void cronDecreaseLiveness(void * unused) {  
+static void cronDecreaseLiveness(void * unused) {
   BufferEntry * root;
   BufferEntry * prev;
   BufferEntry * tmp;
@@ -1810,7 +1810,7 @@ static void cronDecreaseLiveness(void * unused) {
   int i;
 
   scheduleInboundTraffic();
-  cronTime(&now);    
+  cronTime(&now);
   MUTEX_LOCK(&lock);
   for (i=0;i<CONNECTION_MAX_HOSTS_;i++) {
     root = CONNECTION_buffer_[i];
@@ -1831,7 +1831,7 @@ static void cronDecreaseLiveness(void * unused) {
 	if ( (now > root->isAlive) && /* concurrency might make this false... */
 	     (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS) ) {
 	  EncName enc;
-	  
+	
 	  /* switch state form UP to DOWN: too much inactivity */
 	  IFLOG(LOG_DEBUG,
 		hash2enc(&root->session.sender.hashPubKey,
@@ -1842,26 +1842,26 @@ static void cronDecreaseLiveness(void * unused) {
 	      now - root->isAlive);
 	  shutdownConnection(root);
 	  identity->whitelistHost(&root->session.sender); /* the host may still be worth trying again soon */
-	} 
+	}
 	break;
       default: /* not up, not down - partial SKEY exchange */
 	if ( (now > root->isAlive) &&
 	     (now - root->isAlive > SECONDS_NOPINGPONG_DROP * cronSECONDS) ) {
 #if DEBUG_CONNECTION
 	  EncName enc;
-	  IFLOG(LOG_DEBUG, 
+	  IFLOG(LOG_DEBUG,
 		hash2enc(&root->session.sender.hashPubKey, &enc));
 	  LOG(LOG_DEBUG,
 	      "closing connection to %s: %s not answered.\n",
 	      &enc,
 	      (root->status == STAT_SKEY_SENT) ? "SKEY" : "PING");
 #endif
-	  shutdownConnection(root);      
+	  shutdownConnection(root);
 	}
 	break;
-      } /* end of switch */ 
+      } /* end of switch */
       sendBuffer(root);
-      prev = root; 
+      prev = root;
       root = root->overflowChain;
     } /* end of while */
   } /* for all buckets */
@@ -1903,7 +1903,7 @@ int checkHeader(const PeerIdentity * sender,
 	&enc);
     return SYSERR;
   }
-  hash2enc(&sender->hashPubKey, 
+  hash2enc(&sender->hashPubKey,
 	   &enc);
   hash(&msg->sequenceNumber,
        size - sizeof(HashCode512),
@@ -1914,29 +1914,29 @@ int checkHeader(const PeerIdentity * sender,
        (msg->bandwidth == 0) &&
        (msg->timeStamp == 0) )
     return NO; /* plaintext */
-  
+
 #if DEBUG_CONNECTION
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "Decrypting message from host '%s'\n",
       &enc);
-#endif  
+#endif
   MUTEX_LOCK(&lock);
   be = lookForHost(sender);
-  if ( (be == NULL) || 
+  if ( (be == NULL) ||
        (be->status == STAT_DOWN) ||
        (be->status == STAT_SKEY_SENT) ) {
-    LOG(LOG_INFO, 
+    LOG(LOG_INFO,
 	"Decrypting message from host '%s' failed, no sessionkey (yet)!\n",
 	&enc);
     /* try to establish a connection, that way, we don't keep
        getting bogus messages until the other one times out. */
     if ( (be == NULL) || (be->status == STAT_DOWN) )
-      addHost(sender, YES); 
+      addHost(sender, YES);
     MUTEX_UNLOCK(&lock);
     return SYSERR; /* could not decrypt */
   }
   tmp = MALLOC(size - sizeof(HashCode512));
-  res = decryptBlock(&be->skey_remote, 
+  res = decryptBlock(&be->skey_remote,
 		     &msg->sequenceNumber,
 		     size - sizeof(HashCode512),
 		     (const INITVECTOR*) &msg->hash, /* IV */
@@ -1947,13 +1947,13 @@ int checkHeader(const PeerIdentity * sender,
   if ( ! ( (res != OK) &&
 	   equalsHashCode512(&hc,
 			     &msg->hash)) ) {
-    LOG(LOG_INFO, 
+    LOG(LOG_INFO,
 	"Decrypting message from host '%s' failed, wrong sessionkey!\n",
-	&enc);      
-    addHost(sender, YES); 
+	&enc);
+    addHost(sender, YES);
     MUTEX_UNLOCK(&lock);
     FREE(tmp);
-    return SYSERR;  
+    return SYSERR;
   }
   memcpy(&msg->sequenceNumber,
 	 tmp,
@@ -1963,25 +1963,25 @@ int checkHeader(const PeerIdentity * sender,
   sequenceNumber = ntohl(msg->sequenceNumber);
   if (be->lastSequenceNumberReceived >= sequenceNumber) {
     res = SYSERR;
-    if ( (be->lastSequenceNumberReceived - sequenceNumber <= 32) && 
+    if ( (be->lastSequenceNumberReceived - sequenceNumber <= 32) &&
 	 (be->lastSequenceNumberReceived != sequenceNumber) ) {
       unsigned int rotbit = 1 << (be->lastSequenceNumberReceived - sequenceNumber - 1);
       if ( (be->lastPacketsBitmap & rotbit) == 0) {
 	be->lastPacketsBitmap |= rotbit;
 	res = OK;
-      } 
-    } 
+      }
+    }
     if (res == SYSERR) {
       LOG(LOG_WARNING,
 	  _("Invalid sequence number"
 	    " %u <= %u, dropping rest of packet.\n"),
-	  sequenceNumber, 
+	  sequenceNumber,
 	  be->lastSequenceNumberReceived);
       MUTEX_UNLOCK(&lock);
       return SYSERR;
-    }    
-  } else {    
-    be->lastPacketsBitmap = 
+    }
+  } else {
+    be->lastPacketsBitmap =
       be->lastPacketsBitmap << (sequenceNumber - be->lastSequenceNumberReceived);
     be->lastSequenceNumberReceived = sequenceNumber;
   }
@@ -2002,10 +2002,10 @@ int checkHeader(const PeerIdentity * sender,
   if (be->available_send_window >= be->max_bpm) {
     be->available_send_window = be->max_bpm;
     cronTime(&be->last_bps_update);
-  }  
+  }
   be->recently_received += size;
-  if (be->status == STAT_UP) 
-    cronTime(&be->isAlive); 
+  if (be->status == STAT_UP)
+    cronTime(&be->isAlive);
   MUTEX_UNLOCK(&lock);
   return YES;
 }
@@ -2030,7 +2030,7 @@ static int handleHANGUP(const PeerIdentity * sender,
 			  &((HANGUP_Message*)msg)->sender))
     return SYSERR;
   IFLOG(LOG_INFO,
-	hash2enc(&sender->hashPubKey, 
+	hash2enc(&sender->hashPubKey,
 		 &enc));
 #if DEBUG_CONNECTION
   LOG(LOG_INFO,
@@ -2057,7 +2057,7 @@ static int handleHANGUP(const PeerIdentity * sender,
  * Assign a session key for traffic from or to a given peer.
  * If the core does not yet have an entry for the given peer
  * in the connection table, a new entry is created.
- * 
+ *
  * @param key the sessionkey,
  * @param peer the other peer,
  * @param forSending NO if it is the key for receiving,
@@ -2093,7 +2093,7 @@ void assignSessionKey(const SESSIONKEY * key,
 
 /**
  * Confirm that a connection is up.
- * 
+ *
  * @param peer the other peer,
  */
 void confirmSessionUp(const PeerIdentity * peer) {
@@ -2106,7 +2106,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
       if (be->session.tsession == NULL) {
 	HELO_Message * helo;
 	helo = NULL;
-	if (OK == 
+	if (OK ==
 	    identity->identity2Helo(&be->session.sender,
 				    ANY_PROTOCOL_NUMBER,
 				    NO,
@@ -2115,7 +2115,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	      transport->connect(helo,
 				 &be->session.tsession)) {
 	    be->session.mtu
-	      = transport->getMTU(be->session.tsession->ttype);	    
+	      = transport->getMTU(be->session.tsession->ttype);	
 	  } else {
 	    LOG(LOG_WARNING,
 		_("Session confirmed, but cannot connect! (bug?)"));
@@ -2192,7 +2192,7 @@ int getLastActivityOf(const PeerIdentity * peer,
 
 /**
  * Obtain the session key used for traffic from or to a given peer.
- * 
+ *
  * @param key the sessionkey (set)
  * @param age the age of the key (set)
  * @param peer the other peer,
@@ -2259,7 +2259,7 @@ void considerTakeover(const PeerIdentity * sender,
       if (be->session.tsession != NULL)
 	cost = transport->getCost(be->session.tsession->ttype);
       /* Question: doesn't this always do takeover in tcp/udp
-	 case, which have the same costs? Should it? -IW 
+	 case, which have the same costs? Should it? -IW
 
 	 Answer: this will always switch to TCP in the long run (if
 	 that is possible) since udpAssociate always
@@ -2287,7 +2287,7 @@ void considerTakeover(const PeerIdentity * sender,
  * The configuration may have changed.  In particular, bandwidth
  * limits may now be different.  Adjust the connection table
  * accordingly.
- */ 
+ */
 static void connectionConfigChangeCallback() {
   long new_max_bpm;
   unsigned int i;
@@ -2310,14 +2310,14 @@ static void connectionConfigChangeCallback() {
     newMAXHOSTS
       = max_bpm / MIN_BPM_PER_PEER;
     /* => for 50000 bps, we get 78 (rounded DOWN to 64) connections! */
-  
+
     if (newMAXHOSTS < 2)
       newMAXHOSTS = 2; /* strict minimum is 2 */
     i = 1;
     while (i <= newMAXHOSTS)
       i*=2;
     newMAXHOSTS = i/2; /* make sure it's a power of 2 */
-    
+
     if (newMAXHOSTS != CONNECTION_MAX_HOSTS_) {
       /* change size of connection buffer!!! */
       unsigned int olen;
@@ -2329,7 +2329,7 @@ static void connectionConfigChangeCallback() {
 			  "connection-max-hosts",
 			  CONNECTION_MAX_HOSTS_);
       newBuffer = (BufferEntry**) MALLOC(sizeof(BufferEntry*)*newMAXHOSTS);
-      for (i=0;i<CONNECTION_MAX_HOSTS_;i++) 
+      for (i=0;i<CONNECTION_MAX_HOSTS_;i++)
 	newBuffer[i] = NULL;
 
       /* rehash! */
@@ -2356,8 +2356,8 @@ static void connectionConfigChangeCallback() {
 	  (olen == 0) ? "" : "now ",
 	  CONNECTION_MAX_HOSTS_,
 	  max_bpm);
-      
-    }  
+
+    }
   }
   disable_random_padding = testConfigurationString("GNUNETD-EXPERIMENTAL",
 						   "PADDING",
@@ -2370,9 +2370,9 @@ static void connectionConfigChangeCallback() {
  */
 void initConnection() {
   ENTRY();
-  scl_nextHead 
+  scl_nextHead
     = NULL;
-  scl_nextTail 
+  scl_nextTail
     = NULL;
   MUTEX_CREATE_RECURSIVE(&lock);
   registerConfigurationUpdateCallback(&connectionConfigChangeCallback);
@@ -2381,13 +2381,13 @@ void initConnection() {
   registerp2pHandler(p2p_PROTO_HANGUP,
 		     &handleHANGUP);
   addCronJob(&cronDecreaseLiveness,
-	     1 * cronSECONDS, 
-	     1 * cronSECONDS, 
-	     NULL); 
+	     1 * cronSECONDS,
+	     1 * cronSECONDS,
+	     NULL);
 #if DEBUG_COLLECT_PRIO == YES
   prioFile = FOPEN("/tmp/knapsack_prio.txt", "w");
 #endif
-  
+
   transport = requestService("transport");
   GNUNET_ASSERT(transport != NULL);
   identity  = requestService("identity");
@@ -2407,13 +2407,13 @@ void doneConnection() {
   unsigned int i;
   BufferEntry * be;
   SendCallbackList * scl;
-  
+
   ENTRY();
   transport->stop();
   unregisterConfigurationUpdateCallback(&connectionConfigChangeCallback);
   delCronJob(&cronDecreaseLiveness,
 	     1 * cronSECONDS,
-	     NULL); 
+	     NULL);
   for (i=0;i<CONNECTION_MAX_HOSTS_;i++) {
     BufferEntry * prev;
 
@@ -2427,7 +2427,7 @@ void doneConnection() {
       be = be->overflowChain;
       FREE(prev);
     }
-  } 
+  }
   MUTEX_DESTROY(&lock);
   FREENONNULL(CONNECTION_buffer_);
   CONNECTION_buffer_ = NULL;
@@ -2492,7 +2492,7 @@ void printConnectionBuffer() {
     while (tmp != NULL) {
       if (tmp->status != STAT_DOWN) {
         IFLOG(LOG_MESSAGE,
-  	      hash2enc(&tmp->session.sender.hashPubKey, 
+  	      hash2enc(&tmp->session.sender.hashPubKey,
   	  	       &hostName));
 	IFLOG(LOG_MESSAGE,
 	      hash2enc((HashCode512*) &tmp->skey_local,
@@ -2509,7 +2509,7 @@ void printConnectionBuffer() {
 	    i,
 	    tmp->status,
 	    ttype,
-	    (int) ((cronTime(NULL) - tmp->isAlive)/cronSECONDS), 
+	    (int) ((cronTime(NULL) - tmp->isAlive)/cronSECONDS),
 	    SECONDS_INACTIVE_DROP,
 	    tmp->recently_received,
 	    tmp->idealized_limit,
@@ -2562,9 +2562,9 @@ int registerSendCallback(const unsigned int minimumPadding,
     scl_nextTail = scl;
   }
   MUTEX_UNLOCK(&lock);
-  return OK;  
+  return OK;
 }
- 
+
 /**
  * Unregister a handler that was registered with registerSendCallback.
  *
@@ -2582,14 +2582,14 @@ int unregisterSendCallback(const unsigned int minimumPadding,
 			   BufferFillCallback callback) {
   SendCallbackList * pos;
   SendCallbackList * prev;
-  
+
   prev = NULL;
   MUTEX_LOCK(&lock);
   pos = scl_nextHead;
   while (pos != NULL) {
     if ( (pos->callback == callback) &&
 	 (pos->minimumPadding == minimumPadding) ) {
-      if (prev == NULL) 
+      if (prev == NULL)
 	scl_nextHead = pos->next;
       else
 	prev->next = pos->next;
@@ -2597,7 +2597,7 @@ int unregisterSendCallback(const unsigned int minimumPadding,
 	scl_nextTail = prev;
       FREE(pos);
       MUTEX_UNLOCK(&lock);
-      return OK;     
+      return OK;
     }
     prev = pos;
     pos = pos->next;
@@ -2635,9 +2635,9 @@ int sendPlaintext(TSession * tsession,
 	 size);
   hash(&hdr->sequenceNumber,
        size + sizeof(P2P_Message) - sizeof(HashCode512),
-       &hdr->hash);  
-  ret = transport->send(tsession, 
-			buf, 
+       &hdr->hash);
+  ret = transport->send(tsession,
+			buf,
 			size + sizeof(P2P_Message));
   FREE(buf);
   return ret;
@@ -2665,18 +2665,18 @@ void unicastCallback(const PeerIdentity * hostId,
   EncName enc;
 
   IFLOG(LOG_DEBUG,
-	hash2enc(&hostId->hashPubKey, 
+	hash2enc(&hostId->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "unicast: sending message to host %s message of size %d\n",
       &enc,
       len);
 #endif
   ENTRY();
   MUTEX_LOCK(&lock);
-  be = addHost(hostId, YES); 
+  be = addHost(hostId, YES);
   if ( (be != NULL) &&
-       (be->status != STAT_DOWN) ) {  
+       (be->status != STAT_DOWN) ) {
     SendEntry * entry;
 
     entry = MALLOC(sizeof(SendEntry));
@@ -2743,15 +2743,15 @@ int isConnected(const PeerIdentity * hi) {
     return (be->status == STAT_UP);
   }
 }
-	       
+	
 /**
  * Compute the hashtable index of a host id.
- * 
+ *
  * @param hostId the ID of a peer
  * @return the index for this peer in the connection table
  */
 unsigned int computeIndex(const PeerIdentity * hostId) {
-  unsigned int res = (((unsigned int)hostId->hashPubKey.bits[0]) & 
+  unsigned int res = (((unsigned int)hostId->hashPubKey.bits[0]) &
 		      ((unsigned int)(CONNECTION_MAX_HOSTS_ - 1)));
   GNUNET_ASSERT(res <  CONNECTION_MAX_HOSTS_);
   return res;
@@ -2769,7 +2769,7 @@ Mutex * getConnectionModuleLock() {
 unsigned int getBandwidthAssignedTo(const PeerIdentity * node) {
   BufferEntry * be;
   unsigned int ret;
-  
+
   ENTRY();
   MUTEX_LOCK(&lock);
   be = lookForHost(node);
@@ -2777,11 +2777,11 @@ unsigned int getBandwidthAssignedTo(const PeerIdentity * node) {
        (be->status != STAT_UP) ) {
     ret = be->idealized_limit;
     if (ret == 0)
-      ret = 1;  
+      ret = 1;
   } else
     ret = 0;
   MUTEX_UNLOCK(&lock);
-  return ret;  
+  return ret;
 }
 
 /**
@@ -2820,7 +2820,7 @@ void disconnectFromPeer(const PeerIdentity *node) {
 
 /**
  * Register a handler that is to be called for each
- * message that leaves the peer. 
+ * message that leaves the peer.
  *
  * @param callback the method to call for each
  *        P2P message part that is transmitted
@@ -2840,7 +2840,7 @@ int registerSendNotify(MessagePartHandler callback) {
 
 /**
  * Unregister a handler that is to be called for each
- * message that leaves the peer. 
+ * message that leaves the peer.
  *
  * @param callback the method to call for each
  *        P2P message part that is transmitted
@@ -2862,6 +2862,6 @@ int unregisterSendNotify(MessagePartHandler callback) {
   MUTEX_UNLOCK(&lock);
   return SYSERR;
 }
- 
+
 
 /* end of connection.c */

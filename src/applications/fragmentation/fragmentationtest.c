@@ -53,7 +53,7 @@ static char masterBuffer[65536];
 static char resultBuffer[65536];
 
 static void handleHelper(const PeerIdentity * sender,
-			 const char * msg,		  
+			 const char * msg,		
 			 const unsigned int len,
 			 int wasEncrypted,
 			 TSession  * ts) {
@@ -74,7 +74,7 @@ static void makeTimeout() {
 /**
  * Create a fragment. The data-portion will be filled
  * with a sequence of numbers from start+id to start+len-1+id.
- * 
+ *
  * @param pep pointer to the ethernet frame/buffer
  * @param ip pointer to the ip-header
  * @param start starting-offset
@@ -87,16 +87,16 @@ static p2p_HEADER * makeFragment(unsigned short start,
 				 int id) {
   FRAGMENT_Message * frag;
   int i;
-  
+
   frag      = (FRAGMENT_Message*) masterBuffer;
   frag->id  = htonl(id);
   frag->off = htons(start);
   frag->len = htons(tot);
   frag->header.size
     = htons(sizeof(FRAGMENT_Message) + size);
-  
-  for (i=0;i<size;i++) 
-    ((FRAGMENT_Message_GENERIC*)frag)->data[i] 
+
+  for (i=0;i<size;i++)
+    ((FRAGMENT_Message_GENERIC*)frag)->data[i]
       = (char)i+id+start;
   return &frag->header;
 }
@@ -107,14 +107,14 @@ static p2p_HEADER * makeFragment(unsigned short start,
  * @param id the expected id
  * @param len the expected length
  */
-static void checkPacket(int id, 
+static void checkPacket(int id,
 			unsigned int len) {
   int i;
 
   GNUNET_ASSERT(myMsg != NULL);
   GNUNET_ASSERT(myMsgLen == len);
-  for (i=0;i<len;i++) 
-    GNUNET_ASSERT(myMsg[i] == (char) (i+id));  
+  for (i=0;i<len;i++)
+    GNUNET_ASSERT(myMsg[i] == (char) (i+id));
   myMsgLen = 0;
   myMsg = NULL;
 }
@@ -150,7 +150,7 @@ static void testSimpleFragmentTimeout() {
 
 static void testSimpleFragmentReverse() {
   p2p_HEADER * pep;
-  
+
   pep = makeFragment(16, 16, 32, 42);
   processFragment(&mySender, pep);
   GNUNET_ASSERT(myMsg == NULL);
@@ -333,9 +333,9 @@ static int unregisterp2pHandler(const unsigned short type,
 
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parser(int argc, 
+static int parser(int argc,
 		  char * argv[]) {
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
@@ -356,8 +356,8 @@ static void * requestService(const char * name) {
 int main(int argc, char * argv[]){
   CoreAPIForApplication capi;
 
-  if (OK != initUtil(argc, argv, &parser)) 
-    return SYSERR;  
+  if (OK != initUtil(argc, argv, &parser))
+    return SYSERR;
 
   memset(&capi, 0, sizeof(CoreAPIForApplication));
   capi.injectMessage = &handleHelper;
@@ -365,7 +365,7 @@ int main(int argc, char * argv[]){
   capi.registerHandler = &registerp2pHandler;
   capi.unregisterHandler = &unregisterp2pHandler;
   provide_module_fragmentation(&capi);
-  
+
   fprintf(stderr, ".");
   testSimpleFragment();
   fprintf(stderr, ".");
@@ -391,7 +391,7 @@ int main(int argc, char * argv[]){
   testLastFragmentEarly();
   fprintf(stderr, ".");
   testManyFragmentsMultiIdCollisions();
-  fprintf(stderr, "."); 
+  fprintf(stderr, ".");
   release_module_fragmentation();
   fprintf(stderr, "\n");
   doneUtil();

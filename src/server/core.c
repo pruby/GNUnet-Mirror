@@ -40,7 +40,7 @@ typedef struct ShutdownList {
   /**
    * Pointer to the library (as returned by dlopen).
    */
-  void * library;  
+  void * library;
   /**
    * Textual name of the library ("libgnunet_afs_protocol").
    */
@@ -85,7 +85,7 @@ static Identity_ServiceAPI * identity;
 /**
  * Load the application module named "pos".
  * @return OK on success, SYSERR on error
- */ 
+ */
 static int loadApplicationModule(const char * rpos) {
   int ok;
   ShutdownList * nxt;
@@ -102,11 +102,11 @@ static int loadApplicationModule(const char * rpos) {
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);
-  FREE(pos);    
+  FREE(pos);
 
   nxt = shutdownList;
   while (nxt != NULL) {
-    if (0 == strcmp(name, 
+    if (0 == strcmp(name,
 		    nxt->dsoName)) {
       if (nxt->applicationInitialized == YES) {
 	LOG(LOG_WARNING,
@@ -127,7 +127,7 @@ static int loadApplicationModule(const char * rpos) {
 	  nxt->applicationInitialized = YES;
 	FREE(name);
 	return ok;
-      }      
+      }
     }
     nxt = nxt->next;
   }
@@ -142,9 +142,9 @@ static int loadApplicationModule(const char * rpos) {
 			   "initialize_",
 			   name);
   if (mptr == NULL) {
-#if DEBUG_CORE     
+#if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Unloading library '%s' at %s:%d.\n", 
+	"Unloading library '%s' at %s:%d.\n",
 	name, __FILE__, __LINE__);
 #endif
     unloadDynamicLibrary(library);
@@ -160,7 +160,7 @@ static int loadApplicationModule(const char * rpos) {
   nxt->servicePTR = NULL;
   shutdownList = nxt;
   ok = mptr(&applicationCore);
-  if (OK != ok) {    
+  if (OK != ok) {
     nxt->applicationInitialized = NO;
     /* FIXME: undo loading? */
     /* Note: we cannot assert that shutdownList == nxt here! */
@@ -186,13 +186,13 @@ static int unloadApplicationModule(const char * name) {
 	name);
     return SYSERR;
   }
-  
+
   if (pos->applicationInitialized != YES) {
     LOG(LOG_WARNING,
 	_("Could not shutdown application '%s': not initialized\n"),
 	name);
     return SYSERR;
-  }      
+  }
   mptr = bindDynamicMethod(pos->library,
 			   "done_",
 			   pos->dsoName);
@@ -218,24 +218,24 @@ static int unloadApplicationModule(const char * name) {
 
   /* compute prev! */
   if (pos == shutdownList) {
-    prev = NULL; 
+    prev = NULL;
   } else {
     prev = shutdownList;
     while (prev->next != pos)
       prev = prev->next;
   }
- 
+
   if (0 == getConfigurationInt("GNUNETD",
 			       "VALGRIND")) {
     /* do not unload plugins if we're using
        valgrind */
-#if DEBUG_CORE     
+#if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Unloading application plugin '%s' at %s:%d.\n", 
+	"Unloading application plugin '%s' at %s:%d.\n",
 	pos->dsoName, __FILE__, __LINE__);
 #endif
     unloadDynamicLibrary(pos->library);
-  }    
+  }
   if (prev == NULL)
     shutdownList = pos->next;
   else
@@ -265,7 +265,7 @@ void * requestService(const char * rpos) {
 
   nxt = shutdownList;
   while (nxt != NULL) {
-    if (0 == strcmp(name, 
+    if (0 == strcmp(name,
 		    nxt->dsoName)) {
       if (nxt->serviceCount > 0) {
 	if (nxt->servicePTR != NULL)
@@ -289,7 +289,7 @@ void * requestService(const char * rpos) {
 	  return NULL;
 	}
 	nxt->servicePTR = mptr(&applicationCore);
-	if (nxt->servicePTR != NULL) 
+	if (nxt->servicePTR != NULL)
 	  nxt->serviceCount++;
 	FREE(name);
 #if DEBUG_CORE
@@ -300,7 +300,7 @@ void * requestService(const char * rpos) {
 #endif
 	FREE(pos);
 	return nxt->servicePTR;
-      }      
+      }
     }
     nxt = nxt->next;
   }
@@ -316,9 +316,9 @@ void * requestService(const char * rpos) {
 			   "provide_",
 			   name);
   if (mptr == NULL) {
-#if DEBUG_CORE     
+#if DEBUG_CORE
 	LOG(LOG_DEBUG,
-	    "Unloading library '%s' at %s:%d.\n", 
+	    "Unloading library '%s' at %s:%d.\n",
 	    name, __FILE__, __LINE__);
 #endif
     unloadDynamicLibrary(library);
@@ -339,7 +339,7 @@ void * requestService(const char * rpos) {
       pos);
   api = mptr(&applicationCore);
   if (api != NULL) {
-    nxt->servicePTR = api;    
+    nxt->servicePTR = api;
   } else {
     LOG(LOG_WARNING,
 	"Failed to load service '%s'\n",
@@ -365,7 +365,7 @@ int releaseService(void * service) {
     LOG(LOG_ERROR,
 	_("Could not release %p: service not loaded\n"),
 	service);
-    return SYSERR; 
+    return SYSERR;
   }
   if (pos->serviceCount > 1) {
 #if DEBUG_CORE
@@ -376,10 +376,10 @@ int releaseService(void * service) {
     pos->serviceCount--;
     return OK; /* service still in use elsewhere! */
   }
-  
+
   LOG(LOG_DEBUG,
-      "Unloading service '%s'.\n", 
-      pos->dsoName);   
+      "Unloading service '%s'.\n",
+      pos->dsoName);
   mptr = bindDynamicMethod(pos->library,
 			   "release_",
 			   pos->dsoName);
@@ -428,7 +428,7 @@ int releaseService(void * service) {
     unloadDynamicLibrary(pos->library);
   }
   FREE(pos->dsoName);
-  FREE(pos);    
+  FREE(pos);
   return OK;
 }
 
@@ -436,7 +436,7 @@ void loadApplicationModules() {
   char * dso;
   char * next;
   char * pos;
-  
+
   dso = getConfigurationString("GNUNETD",
 			       "APPLICATIONS");
   if (dso == NULL) {
@@ -482,9 +482,9 @@ void unloadApplicationModules() {
 	 (OK != unloadApplicationModule(pos->dsoName)) )
       LOG(LOG_ERROR,
 	  _("Could not properly shutdown application '%s'.\n"),
-	  pos->dsoName);    
+	  pos->dsoName);
     pos = nxt;
-  }   
+  }
 
 }
 
@@ -522,14 +522,14 @@ void initCore() {
   applicationCore.queryBPMfromPeer = &getBandwidthAssignedTo; /* connection.c */
   applicationCore.disconnectFromPeer = &disconnectFromPeer; /* connection.c */
 
-  applicationCore.sendValueToClient = &sendTCPResultToClient; /* tcpserver.c */ 
+  applicationCore.sendValueToClient = &sendTCPResultToClient; /* tcpserver.c */
   applicationCore.sendToClient = &sendToClient; /* tcpserver.c */
   applicationCore.registerClientHandler = &registerCSHandler; /* tcpserver.c */
   applicationCore.unregisterClientHandler = &unregisterCSHandler; /* tcpserver.c */
   applicationCore.registerClientExitHandler = &registerClientExitHandler; /* tcpserver.c */
   applicationCore.unregisterClientExitHandler = &unregisterClientExitHandler; /* tcpserver.c */
   applicationCore.terminateClientConnection = &terminateClientConnection;  /* tcpserver.c */
-  
+
   applicationCore.injectMessage = &injectMessage; /* handler.c */
   applicationCore.computeIndex = &computeIndex; /* connection.c */
   applicationCore.getConnectionModuleLock = &getConnectionModuleLock; /* connection.c */
@@ -558,7 +558,7 @@ void doneCore() {
   releaseService(identity);
   identity = NULL;
 
-  /* unload all modules; 
+  /* unload all modules;
      due to mutual dependencies we have
      to do a fixpoint iteration here! */
   pos = shutdownList;
@@ -574,9 +574,9 @@ void doneCore() {
 	if (0 == getConfigurationInt("GNUNETD",
 				     "VALGRIND")) {
 	  /* do not unload plugins if we're using valgrind */
-#if DEBUG_CORE     
+#if DEBUG_CORE
 	  LOG(LOG_DEBUG,
-	      "Unloading library '%s' at %s:%d.\n", 
+	      "Unloading library '%s' at %s:%d.\n",
 	      pos->dsoName, __FILE__, __LINE__);
 #endif	
 	  unloadDynamicLibrary(pos->library);
@@ -595,7 +595,7 @@ void doneCore() {
     }
   }
   pos = shutdownList;
-  while (pos != NULL) {      
+  while (pos != NULL) {
     LOG(LOG_ERROR,
 	_("Could not properly unload service '%s'!\n"),
 	pos->dsoName);

@@ -36,7 +36,7 @@
 /**
  * For strptime (glibc2 needs this).
  */
-#define _XOPEN_SOURCE 
+#define _XOPEN_SOURCE
 
 
 /* configuration options */
@@ -84,7 +84,7 @@
 #endif
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifndef _MSC_VER 
+#ifndef _MSC_VER
 #include <dirent.h> /* KLB_FIX */
 #endif
 #include <fcntl.h>
@@ -101,7 +101,7 @@
  #endif
 #endif
 
-/* if we have both openssl & libgcrypt, stick 
+/* if we have both openssl & libgcrypt, stick
    to openssl for now (who has the obscure
    libgcrypt CVS version that works for us!?...) */
 #if USE_OPENSSL
@@ -267,7 +267,7 @@ int OPEN(const char *filename, int oflag, ...);
  #define BIND(s, n, l) _win_bind(s, n, l)
  #define CONNECT(s, n, l) _win_connect(s, n, l)
  #define GETPEERNAME(s, n, l) _win_getpeername(s, n, l)
- #define GETSOCKNAME(s, n, l) _win_getsockname(s, n, l) 
+ #define GETSOCKNAME(s, n, l) _win_getsockname(s, n, l)
  #define GETSOCKOPT(s, l, o, v, p) _win_getsockopt(s, l, o, v, p)
  #define LISTEN(s, b) _win_listen(s, b)
  #define RECV(s, b, l, f) _win_recv(s, b, l, f)

@@ -38,7 +38,7 @@ void formatHelp(const char * general,
   int p;
   char * scp;
   const char * trans;
-	   
+	
   printf(_("Usage: %s\n%s\n\n"),
 	 gettext(general),
 	 gettext(description));
@@ -58,7 +58,7 @@ void formatHelp(const char * general,
       printf("=%s",
 	     opt[i].mandatoryArg);
       slen += 1+strlen(opt[i].mandatoryArg);
-    }    
+    }
     if (slen > BORDER) {
       printf("\n%*s", BORDER, "");
       slen = BORDER;
@@ -121,7 +121,7 @@ void formatHelp(const char * general,
 int parseDefaultOptions(char c,
 			char * optarg) {
   switch(c) {
-  case 'c': 
+  case 'c':
     FREENONNULL(setConfigurationString("FILES",
 				       "gnunet.conf",
 				       optarg));

@@ -35,32 +35,32 @@
  */
 typedef struct {
   /**
-   * claimed IP of the sender, network byte order 
-   */  
+   * claimed IP of the sender, network byte order
+   */
   IPaddr senderIP;
 
   /**
-   * claimed port of the sender, network byte order 
+   * claimed port of the sender, network byte order
    */
-  unsigned short senderPort; 
+  unsigned short senderPort;
 
   /**
-   * reserved (set to 0 for signature verification) 
+   * reserved (set to 0 for signature verification)
    */
-  unsigned short reserved; 
+  unsigned short reserved;
 
 } HostAddress;
 
 /**
- * Message-Packet header. 
+ * Message-Packet header.
  */
 typedef struct {
   /**
    * this struct is *preceded* by MESSAGE_PARTs - until
    * size-sizeof(UDPMessage)!
-   */ 
+   */
 
-  /** 
+  /**
    * size of the message, in bytes, including this header.
    */
   unsigned short size;
@@ -71,7 +71,7 @@ typedef struct {
   unsigned short reserved;
 
   /**
-   * What is the identity of the sender (hash of public key) 
+   * What is the identity of the sender (hash of public key)
    */
   PeerIdentity sender;
 
@@ -84,12 +84,12 @@ static CoreAPIForTransport * coreAPI;
 static TransportAPI udpAPI;
 
 /**
- * thread that listens for inbound messages 
+ * thread that listens for inbound messages
  */
 static PTHREAD_T dispatchThread;
 
 /**
- * the socket that we receive all data from 
+ * the socket that we receive all data from
  */
 static int udp_sock = -1;
 
@@ -101,7 +101,7 @@ static Semaphore * serverSignal;
 static int udp_shutdown = YES;
 
 /**
- * configuration 
+ * configuration
  */
 static struct CIDRNetwork * filteredNetworks_ = NULL;
 static Mutex configLock;
@@ -127,13 +127,13 @@ static unsigned short getGNUnetUDPPort() {
   port = (unsigned short) getConfigurationInt("UDP",
 					      "PORT");
   if (port == 0) { /* try lookup in services */
-    if ((pse = getservbyname("gnunet", "udp"))) 
-      port = ntohs(pse->s_port);      
-    else 
+    if ((pse = getservbyname("gnunet", "udp")))
+      port = ntohs(pse->s_port);
+    else
       errexit(_("Cannot determine port to bind to. "
 		" Define in configuration file in section '%s' under '%s' "
 		"or in '%s' under %s/%s.\n"),
-	      "UDP", 
+	      "UDP",
 	      "PORT",
 	      "/etc/services",
 	      "udp",
@@ -151,17 +151,17 @@ static int passivesock(unsigned short port) {
   const int on = 1;
 
   sock = SOCKET(PF_INET, SOCK_DGRAM, UDP_PROTOCOL_NUMBER);
-  if (sock < 0) 
+  if (sock < 0)
     DIE_STRERROR("socket");
   if ( SETSOCKOPT(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0 )
     DIE_STRERROR("setsockopt");
   if (port != 0) {
-    memset(&sin, 0, sizeof(sin)); 
+    memset(&sin, 0, sizeof(sin));
     sin.sin_family      = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port        = htons(port);
-    if (BIND(sock, 
-	     (struct sockaddr *)&sin, 
+    if (BIND(sock,
+	     (struct sockaddr *)&sin,
 	     sizeof(sin)) < 0) {
       LOG_STRERROR(LOG_FATAL, "bind");
       errexit(_("Failed to bind to UDP port %d.\n"),
@@ -191,7 +191,7 @@ static int isBlacklisted(IPaddr ip) {
  */
 static void * listenAndDistribute() {
   struct sockaddr_in incoming;
-  socklen_t addrlen = sizeof(incoming);  
+  socklen_t addrlen = sizeof(incoming);
   int size;
   EncName enc;
   MessagePack * mp;
@@ -203,24 +203,24 @@ static void * listenAndDistribute() {
     mp = MALLOC(sizeof(MessagePack));
     mp->msg = MALLOC(udpAPI.mtu + sizeof(UDPMessage));
   RETRY:
-    memset(&incoming, 
-	   0, 
+    memset(&incoming,
+	   0,
 	   sizeof(struct sockaddr_in));
     if (udp_shutdown == YES) {
       FREE(mp->msg);
       FREE(mp);
       break;
     }
-    size = RECVFROM(udp_sock, 
-		    mp->msg, 
-		    udpAPI.mtu + sizeof(UDPMessage), 
+    size = RECVFROM(udp_sock,
+		    mp->msg,
+		    udpAPI.mtu + sizeof(UDPMessage),
 		    0,
-		    (struct sockaddr * )&incoming, 
+		    (struct sockaddr * )&incoming,
 		    &addrlen);
-    if ( (size < 0) || 
+    if ( (size < 0) ||
 	 (udp_shutdown == YES) ) {
       if (udp_shutdown == NO) {
-	if ( (errno == EINTR) || 
+	if ( (errno == EINTR) ||
 	     (errno == EAGAIN) ||
 	     (errno == ECONNREFUSED) )
 	  goto RETRY;
@@ -274,7 +274,7 @@ static void * listenAndDistribute() {
     }
     /* message ok, fill in mp and pass to core */
     mp->tsession = NULL;
-    mp->size     = ntohs(udpm.size) - sizeof(UDPMessage);    
+    mp->size     = ntohs(udpm.size) - sizeof(UDPMessage);
     mp->sender   = udpm.sender;
     coreAPI->receive(mp);
   }
@@ -308,9 +308,9 @@ static int verifyHelo(const HELO_Message * helo) {
 #if DEBUG_UDP
     LOG(LOG_DEBUG,
 	"Verified UDP helo from %u.%u.%u.%u:%u.\n",
-	PRIP(ntohl(*(int*)&haddr->senderIP.addr)), 
+	PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
 	ntohs(haddr->senderPort));
-#endif    
+#endif
     return OK;
   }
 }
@@ -329,7 +329,7 @@ static int createHELO(HELO_Message ** helo) {
 
   if ( ( (udp_shutdown == YES) && (getGNUnetUDPPort() == 0) ) ||
        ( (udp_shutdown == NO) && (port == 0) ) )
-    return SYSERR; /* UDP transport configured send-only */  
+    return SYSERR; /* UDP transport configured send-only */
 
   msg = MALLOC(sizeof(HELO_Message) + sizeof(HostAddress));
   haddr = (HostAddress*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
@@ -341,9 +341,9 @@ static int createHELO(HELO_Message ** helo) {
     return SYSERR;
   }
   if (udp_shutdown == YES)
-    haddr->senderPort      = htons(getGNUnetUDPPort()); 
+    haddr->senderPort      = htons(getGNUnetUDPPort());
   else
-    haddr->senderPort      = htons(port); 
+    haddr->senderPort      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol          = htons(UDP_PROTOCOL_NUMBER);
@@ -362,15 +362,15 @@ static int udpConnect(HELO_Message * helo,
 		      TSession ** tsessionPtr) {
   TSession * tsession;
   HostAddress * haddr;
-  
+
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = helo;
   tsession->ttype = udpAPI.protocolNumber;
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];  
+  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
 #if DEBUG_UDP
   LOG(LOG_DEBUG,
       "Connecting via UDP to %u.%u.%u.%u:%u.\n",
-      PRIP(ntohl(*(int*)&haddr->senderIP.addr)), 
+      PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
       ntohs(haddr->senderPort));
 #endif
    (*tsessionPtr) = tsession;
@@ -410,7 +410,7 @@ static int udpSend(TSession * tsession,
   struct sockaddr_in sin; /* an Internet endpoint address */
   int ok;
   int ssize;
-  
+
   if (udp_shutdown == YES)
     return SYSERR;
   if (size == 0) {
@@ -422,7 +422,7 @@ static int udpSend(TSession * tsession,
     return SYSERR;
   }
   helo = (HELO_Message*)tsession->internal;
-  if (helo == NULL) 
+  if (helo == NULL)
     return SYSERR;
 
   haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
@@ -441,7 +441,7 @@ static int udpSend(TSession * tsession,
   memset(&sin, 0, sizeof(sin));
   sin.sin_family = AF_INET;
   sin.sin_port = haddr->senderPort;
-  
+
   GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&sin.sin_addr,
 	 &haddr->senderIP,
@@ -450,7 +450,7 @@ static int udpSend(TSession * tsession,
   LOG(LOG_DEBUG,
       "Sending message of %d bytes via UDP to %u.%u.%u.%u:%u.\n",
       ssize,
-      PRIP(ntohl(*(int*)&sin.sin_addr)), 
+      PRIP(ntohl(*(int*)&sin.sin_addr)),
       ntohs(sin.sin_port));
 #endif
   if (ssize == SENDTO(udp_sock,
@@ -464,7 +464,7 @@ static int udpSend(TSession * tsession,
     LOG(LOG_WARNING,
 	_("Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"),
 	ssize,
-	PRIP(ntohl(*(int*)&sin.sin_addr)), 
+	PRIP(ntohl(*(int*)&sin.sin_addr)),
 	ntohs(sin.sin_port),
 	STRERROR(errno));
   }
@@ -522,7 +522,7 @@ static int startTransportServer(void) {
  * restarted later!
  */
 static int stopTransportServer() {
-  GNUNET_ASSERT(udp_sock != -1);    
+  GNUNET_ASSERT(udp_sock != -1);
   if (udp_shutdown == NO) {
     /* stop the thread, first set shutdown
        to YES, then ensure that the thread
@@ -534,17 +534,17 @@ static int stopTransportServer() {
       struct sockaddr_in sin;
       void * unused;
       int mySock;
-      
+
       mySock = SOCKET(PF_INET, SOCK_DGRAM, UDP_PROTOCOL_NUMBER);
-      if (mySock < 0) 
+      if (mySock < 0)
 	DIE_STRERROR("socket");
       /* send to loopback */
       sin.sin_family = AF_INET;
       sin.sin_port = htons(port);
       *(int*)&sin.sin_addr = htonl(0x7F000001); /* 127.0.0.1 = localhost */
-      SENDTO(mySock, 
-	     &msg, 
-	     sizeof(msg), 
+      SENDTO(mySock,
+	     &msg,
+	     sizeof(msg),
 	     0,
 	     (struct sockaddr*) &sin,
 	     sizeof(sin));
@@ -553,8 +553,8 @@ static int stopTransportServer() {
       PTHREAD_JOIN(&dispatchThread, &unused);
     }
   }
-  CLOSE(udp_sock);  
-  udp_sock = -1;  
+  CLOSE(udp_sock);
+  udp_sock = -1;
   return OK;
 }
 
@@ -572,7 +572,7 @@ static void reloadConfiguration(void) {
     filteredNetworks_ = parseRoutes("");
   else {
     filteredNetworks_ = parseRoutes(ch);
-    FREE(ch);    
+    FREE(ch);
   }
   MUTEX_UNLOCK(&configLock);
 }
@@ -584,20 +584,20 @@ static char * addressToString(const HELO_Message * helo) {
   char * ret;
   HostAddress * haddr;
   size_t n;
-  
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];  
+
+  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   n = 4*4+6+6;
   ret = MALLOC(n);
   SNPRINTF(ret,
 	   n,
 	   "%u.%u.%u.%u:%u (UDP)",
-	   PRIP(ntohl(*(int*)&haddr->senderIP.addr)), 
+	   PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
 	   ntohs(haddr->senderPort));
   return ret;
 }
 
 /**
- * The default maximum size of each outbound UDP message, 
+ * The default maximum size of each outbound UDP message,
  * optimal value for Ethernet (10 or 100 MBit).
  */
 #define MESSAGE_SIZE 1472
@@ -605,7 +605,7 @@ static char * addressToString(const HELO_Message * helo) {
 /**
  * The exported method. Makes the core api available via a global and
  * returns the udp transport API.
- */ 
+ */
 TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
   int mtu;
 

@@ -47,7 +47,7 @@
 #endif
 
 /**
- * The initial size of the cron-job table 
+ * The initial size of the cron-job table
  */
 #define INIT_CRON_JOBS 16
 
@@ -56,7 +56,7 @@
  * signal-interrupted sleep does not work nicely, so to ensure
  * progress, we should rather wake up periodically. (But we don't want
  * to burn too much CPU time doing busy waiting; every 2s strikes a
- * good balance) 
+ * good balance)
  */
 #define MAXSLEEP 2000
 
@@ -90,7 +90,7 @@ static DeltaEntry * deltaList_;
  */
 static unsigned int deltaListSize_;
 
-/** 
+/**
  * The lock for the delta-list.
  */
 static Mutex deltaListLock_;
@@ -161,7 +161,7 @@ void initCron() {
 #endif
 
   deltaListSize_ = INIT_CRON_JOBS;
-  deltaList_ 
+  deltaList_
     = MALLOC(sizeof(DeltaEntry) * deltaListSize_);
   for (i=0;i<deltaListSize_;i++)
     deltaList_[i].next = i-1;
@@ -172,7 +172,7 @@ void initCron() {
   firstUsed_  = -1;
   /* SA_NODEFER == SA_NOMASK but is available on linux */
 
-#ifndef WINDOWS /* We don't use signals under Windows */ 
+#ifndef WINDOWS /* We don't use signals under Windows */
   memset(&sig, 0, sizeof(struct sigaction));
   memset(&old, 0, sizeof(struct sigaction));
   sig.sa_flags = SA_NODEFER;
@@ -208,10 +208,10 @@ void startCron() {
   cron_shutdown = NO;
   cron_signal = SEMAPHORE_NEW(0);
   if (0 != PTHREAD_CREATE(&cron_handle,
-			  (PThreadMain) cron, 
+			  (PThreadMain) cron,
 			  NULL,
 			  256 * 1024))
-    DIE_STRERROR("pthread_create"); 
+    DIE_STRERROR("pthread_create");
   /* large stack, we don't know for sure
      what the cron jobs may be doing */
 }
@@ -257,7 +257,7 @@ static void block(Semaphore * sig) {
     MUTEX_UNLOCK(&inBlockLock_);
   }
 }
-				   
+				
 /**
  * Stop running cron-jobs for a short time.  This method may only be
  * called by a thread that is not holding any locks (otherwise
@@ -273,7 +273,7 @@ void suspendCron() {
   if (inBlock == 1) {
     blockSignal = SEMAPHORE_NEW(0);
     addCronJob((CronJob)&block,
-	       0, 
+	       0,
 	       0,
 	       blockSignal);
     SEMAPHORE_DOWN(blockSignal);
@@ -309,20 +309,20 @@ void resumeIfNotCron() {
 
 static void abortSleep() {
 #if DEBUG_CRON
-  LOG(LOG_CRON, 
+  LOG(LOG_CRON,
       "Sending signal to pid %d\n",
       cronPID);
 #endif
   if (! isCronRunning())
     return;
 #ifdef WINDOWS
-  QueueUserAPC((PAPCFUNC) sigalrmHandler, 
+  QueueUserAPC((PAPCFUNC) sigalrmHandler,
 	       IsWinNT() ? 0 : GetCurrentThread(), 0);
-#elif SOMEBSD || OSX || SOLARIS 
+#elif SOMEBSD || OSX || SOLARIS
   PTHREAD_KILL(&cron_handle, SIGALRM);
 #else
   /* linux */
-  if (cronPID != 0) 
+  if (cronPID != 0)
     kill(cronPID, SIGALRM);
 #endif
 }
@@ -360,7 +360,7 @@ void advanceCronJob(CronJob method,
     /* not in queue; add if not running */
     if ( (method != runningJob_) ||
          (data != runningData_) ||
-	 (deltaRepeat != runningRepeat_) ) { 
+	 (deltaRepeat != runningRepeat_) ) {
       BREAK();
       LOG(LOG_WARNING,
 	  _("'%s' called with cron job not in queue, adding.  This may not be what you want.\n"),
@@ -370,12 +370,12 @@ void advanceCronJob(CronJob method,
 		 deltaRepeat,
 		 data);
     }
-    MUTEX_UNLOCK(&deltaListLock_); 
-    return; 
+    MUTEX_UNLOCK(&deltaListLock_);
+    return;
   }
   last = NULL;
   job = &deltaList_[jobId];
-  while ( (job->method != method) || 
+  while ( (job->method != method) ||
 	  (job->data != data) ||
 	  (job->deltaRepeat != deltaRepeat) ) {
     last = job;
@@ -389,21 +389,21 @@ void advanceCronJob(CronJob method,
 		   deltaRepeat,
 		   data);
       }
-      MUTEX_UNLOCK(&deltaListLock_); 
-      return; 
+      MUTEX_UNLOCK(&deltaListLock_);
+      return;
     }
     jobId = job->next;
-    job = &deltaList_[jobId];    
+    job = &deltaList_[jobId];
   }
   /* ok, found it; remove, re-add with time 0 */
   delCronJob(method,
-	     deltaRepeat, 
+	     deltaRepeat,
 	     data);
   addCronJob(method,
 	     0,
 	     deltaRepeat,
 	     data);
-  MUTEX_UNLOCK(&deltaListLock_); 
+  MUTEX_UNLOCK(&deltaListLock_);
 }
 
 /**
@@ -427,9 +427,9 @@ void addCronJob(CronJob method,
   int current;
 
 #if DEBUG_CRON
-  LOG(LOG_CRON, 
+  LOG(LOG_CRON,
       "Adding job %p-%p to fire in %d CU\n",
-      method, 
+      method,
       data,
       delta);
 #endif
@@ -452,12 +452,12 @@ void addCronJob(CronJob method,
   entry->deltaRepeat = deltaRepeat;
   entry->delta = cronTime(NULL) + delta;
   if (firstUsed_ == -1) {
-    firstUsed_ 
+    firstUsed_
       = firstFree_;
     firstFree_
       = entry->next;
     entry->next = -1; /* end of list */
-    MUTEX_UNLOCK(&deltaListLock_);  
+    MUTEX_UNLOCK(&deltaListLock_);
     /* interrupt sleeping cron-thread! */
     abortSleep();
     return;
@@ -477,20 +477,20 @@ void addCronJob(CronJob method,
       firstFree_
 	= entry->next;
       entry->next = -1;
-      MUTEX_UNLOCK(&deltaListLock_); 
+      MUTEX_UNLOCK(&deltaListLock_);
       return;
-    }      
+    }
   }
   /* insert before pos */
   if (last == -1) {
     firstUsed_ = firstFree_;
     abortSleep();
-  } else 
-    deltaList_[last].next = firstFree_;  
+  } else
+    deltaList_[last].next = firstFree_;
   firstFree_
     = entry->next;
   entry->next = current;
-  MUTEX_UNLOCK(&deltaListLock_); 
+  MUTEX_UNLOCK(&deltaListLock_);
 }
 
 #if HAVE_PRINT_CRON_TAB
@@ -508,11 +508,11 @@ void printCronTab() {
   jobId = firstUsed_;
   while (jobId != -1) {
     tab = &deltaList_[jobId];
-    LOG(LOG_CRON, 
+    LOG(LOG_CRON,
 	"%3u: delta %8lld CU --- method %p --- repeat %8u CU\n",
-	jobId, 
+	jobId,
 	tab->delta - now,
-	(int)tab->method, 
+	(int)tab->method,
 	tab->deltaRepeat);
     jobId = tab->next;
   }
@@ -536,8 +536,8 @@ static void runJob() {
   unsigned int repeat;
 
   jobId = firstUsed_;
-  if (jobId == -1) 
-    return; /* no job to be done */  
+  if (jobId == -1)
+    return; /* no job to be done */
   job    = &deltaList_[jobId];
   method = job->method;
   runningJob_ = method;
@@ -551,21 +551,21 @@ static void runJob() {
   job->next
     = firstFree_;
   firstFree_ = jobId;
-  MUTEX_UNLOCK(&deltaListLock_); 
-  /* re-insert */  
+  MUTEX_UNLOCK(&deltaListLock_);
+  /* re-insert */
   if (repeat > 0) {
 #if DEBUG_CRON
-    LOG(LOG_CRON, 
+    LOG(LOG_CRON,
 	"adding periodic job %p-%p to run again in %u\n",
 	method,
 	data,
 	repeat);
-#endif   
+#endif
     addCronJob(method, repeat, repeat, data);
   }
   /* run */
 #if DEBUG_CRON
-  LOG(LOG_CRON, 
+  LOG(LOG_CRON,
       "running job %p-%p\n",
       method,
       data);
@@ -574,7 +574,7 @@ static void runJob() {
   MUTEX_LOCK(&deltaListLock_);
   runningJob_ = NULL;
 #if DEBUG_CRON
-  LOG(LOG_CRON, 
+  LOG(LOG_CRON,
       "job %p-%p done\n",
       method,
       data);
@@ -590,7 +590,7 @@ static void * cron() {
 
   cronPID = getpid();
   while (cron_shutdown == NO) {
-#if HAVE_PRINT_CRON_TAB 
+#if HAVE_PRINT_CRON_TAB
     printCronTab();
 #endif
     cronTime(&now);
@@ -600,24 +600,24 @@ static void * cron() {
       cronTime(&now);
       next = deltaList_[firstUsed_].delta;
       if (next <= now) {
-#if DEBUG_CRON 
+#if DEBUG_CRON
 	LOG(LOG_CRON,
 	    "running cron job, table is\n");
 	printCronTab();
 #endif
 	runJob();
-#if DEBUG_CRON 
+#if DEBUG_CRON
 	LOG(LOG_CRON,
 	    "job run, new table is\n");
 	printCronTab();
 #endif
-      } else 
-	break;      
+      } else
+	break;
     }
     MUTEX_UNLOCK(&deltaListLock_);
     next = next - now; /* how long to sleep */
 #if DEBUG_CRON
-    LOG(LOG_CRON, 
+    LOG(LOG_CRON,
 	"Sleeping at %llu for %llu CU (%llu s, %llu CU)\n",
 	now,
 	next,
@@ -628,10 +628,10 @@ static void * cron() {
       next = MAXSLEEP;
     gnunet_util_sleep(next);
 #if DEBUG_CRON
-    LOG(LOG_CRON, 
-	"woke up at  %llu - %lld CS late\n", 
+    LOG(LOG_CRON,
+	"woke up at  %llu - %lld CS late\n",
 	cronTime(NULL),
-	cronTime(NULL)-(now+next)); 
+	cronTime(NULL)-(now+next));
 #endif
   }
   SEMAPHORE_UP(cron_signal);
@@ -647,7 +647,7 @@ static void * cron() {
  * running job and may return before the running job has terminated).
  *
  * @param method which method is listed?
- * @param repeat which repeat factor was chosen? 
+ * @param repeat which repeat factor was chosen?
  * @param data what was the data given to the method
  * @return the number of jobs removed
  */
@@ -667,23 +667,23 @@ int delCronJob(CronJob method,
   MUTEX_LOCK(&deltaListLock_);
   jobId = firstUsed_;
   if (jobId == -1) {
-    MUTEX_UNLOCK(&deltaListLock_); 
-    return 0; 
+    MUTEX_UNLOCK(&deltaListLock_);
+    return 0;
   }
   last = NULL;
   job = &deltaList_[jobId];
-  while ( (job->method != method) || 
+  while ( (job->method != method) ||
 	  (job->data != data) ||
 	  (job->deltaRepeat != repeat) ) {
     last = job;
     if (job->next == -1) {
-      MUTEX_UNLOCK(&deltaListLock_); 
-      return 0;  
+      MUTEX_UNLOCK(&deltaListLock_);
+      return 0;
     }
     jobId = job->next;
-    job = &deltaList_[jobId];    
+    job = &deltaList_[jobId];
   }
-  if (last != NULL) 
+  if (last != NULL)
     last->next = job->next;
   else
     firstUsed_ = job->next;

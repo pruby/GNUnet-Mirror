@@ -1,4 +1,4 @@
-/** 
+/**
  * @file util/kblockkey_test.c
  * @brief testcase for util/kblockkey.c
  * @author Christian Grothoff
@@ -14,13 +14,13 @@
 
 
 static int testMultiKey(const char * word) {
-  HashCode512 in;  
+  HashCode512 in;
   struct PrivateKey * hostkey;
   PublicKey pkey;
   PublicKey pkey1;
   int i;
 
-  fprintf(stderr, 
+  fprintf(stderr,
 	  "Testing KBlock key uniqueness (%s) ",
 	  word);
   hash(word, strlen(word), &in);
@@ -45,7 +45,7 @@ static int testMultiKey(const char * word) {
     }
     getPublicKey(hostkey, &pkey1);
     freePrivateKey(hostkey);
-    if (0 != memcmp(&pkey, &pkey1, 
+    if (0 != memcmp(&pkey, &pkey1,
 		    sizeof(PublicKey))) {
       BREAK();
     fprintf(stderr, " ERROR\n");
@@ -76,16 +76,16 @@ static int testEncryptDecrypt(struct PrivateKey * hostkey) {
 				    strlen(TESTSTRING)+1,
 				    &pkey,
 				    &target)) {
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "encryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
     }
     if (-1 == decryptPrivateKey(hostkey,
-				&target, 
+				&target,
 				result,
 				strlen(TESTSTRING)+1)) {
-     fprintf(stderr, 
+     fprintf(stderr,
 	      "decryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
@@ -93,14 +93,14 @@ static int testEncryptDecrypt(struct PrivateKey * hostkey) {
     if (strncmp(TESTSTRING, result,
 		strlen(TESTSTRING)) != 0) {
       printf("%s != %.*s - testEncryptDecrypt failed!\n",
-	     TESTSTRING, 
-	     MAX_TESTVAL, 
+	     TESTSTRING,
+	     MAX_TESTVAL,
 	     result);
       ok++;
       continue;
     }
   }
-  printf("%d RSA encrypt/decrypt operations %ds (%d failures)\n", 
+  printf("%d RSA encrypt/decrypt operations %ds (%d failures)\n",
 	 ITER,
 	 (int) (TIME(NULL)-start),
 	 ok);
@@ -116,7 +116,7 @@ static int testSignVerify(struct PrivateKey * hostkey) {
   int i;
   TIME_T start;
   int ok = OK;
-  
+
   fprintf(stderr, "W");
   getPublicKey(hostkey, &pkey);
   TIME(&start);
@@ -130,17 +130,17 @@ static int testSignVerify(struct PrivateKey * hostkey) {
       ok = SYSERR;
       continue;
     }
-    if (SYSERR == verifySig(TESTSTRING, 
-			    strlen(TESTSTRING), 
-			    &sig, 
+    if (SYSERR == verifySig(TESTSTRING,
+			    strlen(TESTSTRING),
+			    &sig,
 			    &pkey)) {
       printf("testSignVerify failed!\n");
       ok = SYSERR;
       continue;
     }
   }
-  printf("%d RSA sign/verify operations %ds\n", 
-	 ITER, 
+  printf("%d RSA sign/verify operations %ds\n",
+	 ITER,
 	 (int) (TIME(NULL)-start));
   return ok;
 }
@@ -178,27 +178,27 @@ static int testPrivateKeyEncoding(struct PrivateKey * hostkey) {
     }
     hostkey = decodePrivateKey(encoding);
     FREE(encoding);
-    if (SYSERR == decryptPrivateKey(hostkey, 
+    if (SYSERR == decryptPrivateKey(hostkey,
 				    &target,
-				    result, 
+				    result,
 				    strlen(TESTSTRING)+1)) {
       fprintf(stderr,
 	      "decryptPrivateKey returned SYSERR\n");
       ok = SYSERR;
       continue;
-    }  
+    }
     if (strncmp(TESTSTRING, result,
 		strlen(TESTSTRING)) != 0) {
       printf("%s != %.*s - testEncryptDecrypt failed!\n",
-	     TESTSTRING, 
-	     (int) strlen(TESTSTRING), 
+	     TESTSTRING,
+	     (int) strlen(TESTSTRING),
 	     result);
       ok = SYSERR;
       continue;
     }
-  }  
-  printf("%d RSA encrypt/encode/decode/decrypt operations %ds\n", 
-	 ITER, 
+  }
+  printf("%d RSA encrypt/encode/decode/decrypt operations %ds\n",
+	 ITER,
 	 (int) (TIME(NULL)-start));
   return ok;
 }
@@ -213,14 +213,14 @@ int main(int argc, char * argv[]) {
   struct PrivateKey * hostkey;
 
   initLockingGcrypt();
-  initRAND();  
+  initRAND();
   makeRandomId(&in);
 
   hostkey = makeKblockKey(&in);
   if (hostkey == NULL) {
     printf("\nmakeKblockKey failed!\n");
     return 1;
-  } 
+  }
 
   if (OK != testMultiKey("foo"))
     failureCount++;
@@ -229,8 +229,8 @@ int main(int argc, char * argv[]) {
   if (OK != testEncryptDecrypt(hostkey))
     failureCount++;
   if (OK != testSignVerify(hostkey))
-    failureCount++;       
-  if (OK != testPrivateKeyEncoding(hostkey)) 
+    failureCount++;
+  if (OK != testPrivateKeyEncoding(hostkey))
     failureCount++;
   freePrivateKey(hostkey);
   doneLockingGcrypt();
@@ -241,5 +241,5 @@ int main(int argc, char * argv[]) {
     printf("\n\n%d TESTS FAILED!\n\n",
 	   failureCount);
     return -1;
-  }  
+  }
 }

@@ -38,7 +38,7 @@
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) { 
+struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
   char ** keywords;
   unsigned int num_Words;
   int inWord;
@@ -63,7 +63,7 @@ struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
 
   if (num_Words == 0) {
     FREENONNULL(searchString);
-    LOG(LOG_FAILURE, 
+    LOG(LOG_FAILURE,
 	_("No keywords specified!\n"));
     return NULL;
   }
@@ -81,7 +81,7 @@ struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
   }
   uri = FSUI_parseArgvKeywordURI(num_Words,
 				 (const char**) keywords);
-  FREE(keywords); 
+  FREE(keywords);
   FREE(searchString);
   return uri;
 }
@@ -113,7 +113,7 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int num_keywords,
 
 
   for (i=0;i<num_keywords;i++) {
-    if (uriSize < uriLen + 1 + strlen(keywords[i])) 
+    if (uriSize < uriLen + 1 + strlen(keywords[i]))
       GROW(uriString,
 	   uriSize,
 	   uriSize + 4096);
@@ -124,11 +124,11 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int num_keywords,
     } else {
       if ( (i > 0) &&
 	   (0 != strcmp(keywords[i-1], _("AND"))) ) {
-	strcat(uriString, " "); 
+	strcat(uriString, " ");
 	uriLen += 1;
       }
       strcat(uriString, keywords[i]);
-      uriLen += strlen(keywords[i]);      
+      uriLen += strlen(keywords[i]);
     }
   }
   uri = ECRS_stringToUri(uriString);

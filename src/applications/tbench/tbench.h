@@ -38,7 +38,7 @@ typedef struct {
    */
   unsigned int msgSize;
   /**
-   * How many messages should be transmitted in 
+   * How many messages should be transmitted in
    * each iteration?
    */
   unsigned int msgCnt;
@@ -80,11 +80,11 @@ typedef struct {
   unsigned int min_loss;
   float mean_loss;
   float variance_loss;
-  
+
   cron_t max_time;
   cron_t min_time;
   float mean_time;
-  float variance_time;  
+  float variance_time;
 } TBENCH_CS_REPLY;
 
 #endif

@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/tools/gnunet-download.c 
+ * @file applications/fs/tools/gnunet-download.c
  * @brief Main function to download files from GNUnet.
  * @author Christian Grothoff
  */
@@ -61,31 +61,31 @@ static void printhelp() {
  */
 static int parseOptions(int argc,
 			char ** argv) {
-  int c;  
+  int c;
 
   while (1) {
     int option_index = 0;
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
-      { "anonymity", 1, 0, 'a' }, 
+      { "anonymity", 1, 0, 'a' },
       { "output",    1, 0, 'o' },
       { "recursive", 0, 0, 'R' },
       { "verbose",   0, 0, 'V' },
       { 0,0,0,0 }
-    };    
+    };
     c = GNgetopt_long(argc,
-		      argv, 
-		      "a:cdh:H:L:o:RvV", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "a:cdh:H:L:o:RvV",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
     case 'a': {
       unsigned int receivePolicy;
-      
+
       if (1 != sscanf(GNoptarg, "%ud", &receivePolicy)) {
         LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
@@ -97,20 +97,20 @@ static int parseOptions(int argc,
 			  receivePolicy);
       break;
     }
-    case 'h': 
-      printhelp(); 
+    case 'h':
+      printhelp();
       return SYSERR;
     case 'o':
       FREENONNULL(setConfigurationString("GNUNET-DOWNLOAD",
 					 "FILENAME",
 					 GNoptarg));
       break;
-    case 'R': 
+    case 'R':
       FREENONNULL(setConfigurationString("GNUNET-DOWNLOAD",
 					 "RECURSIVE",
 					 "YES"));
       break;
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-download v%s\n",
 	     VERSION,
 	     AFS_VERSION);
@@ -120,14 +120,14 @@ static int parseOptions(int argc,
 					 "VERBOSE",
 					 "YES"));
       break;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */
   } /* while (1) */
   if (argc - GNoptind != 1) {
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("Not enough arguments. "
 	  "You must specify a GNUnet file URI\n"));
     printhelp();
@@ -156,8 +156,8 @@ static void progressModel(void * okVal,
       printf(_("Download at %16llu out of %16llu bytes (%8.3f kbps)"),
 	     event->data.DownloadProgress.completed,
 	     event->data.DownloadProgress.total,
-	     (event->data.DownloadProgress.completed/1024.0) / 
-	     (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1))) 
+	     (event->data.DownloadProgress.completed/1024.0) /
+	     (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1)))
 	      / (double)cronSECONDS) );
       printf("\r");
     }
@@ -171,8 +171,8 @@ static void progressModel(void * okVal,
   case download_complete:
     printf(_("\nDownload of file '%s' comlete.  Speed was %8.3f kilobyte per second.\n"),
 	   event->data.DownloadProgress.filename,
-	   (event->data.DownloadProgress.completed/1024.0) / 
-	   (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1))) 
+	   (event->data.DownloadProgress.completed/1024.0) /
+	   (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1)))
 	    / (double)cronSECONDS) );
     if (event->data.DownloadProgress.completed
 	== event->data.DownloadProgress.total) {
@@ -192,8 +192,8 @@ static void progressModel(void * okVal,
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return value from download file: 0: ok, -1, 1: error
- */   
-int main(int argc, 
+ */
+int main(int argc,
 	 char ** argv) {
   struct ECRS_URI * uri;
   char * fstring;
@@ -222,8 +222,8 @@ int main(int argc,
   filename = getConfigurationString("GNUNET-DOWNLOAD",
 				    "FILENAME");
   if (filename == NULL) {
-    GNUNET_ASSERT(strlen(fstring) > 
-		  strlen(ECRS_URI_PREFIX) + 
+    GNUNET_ASSERT(strlen(fstring) >
+		  strlen(ECRS_URI_PREFIX) +
 		  strlen(ECRS_FILE_INFIX));
     filename = expandFileName(&fstring[strlen(ECRS_URI_PREFIX)+
 				       strlen(ECRS_FILE_INFIX)]);
@@ -253,7 +253,7 @@ int main(int argc,
 						"ANONYMITY-RECEIVE"),
 			    uri,
 			    filename);
-  if (OK == ok) 
+  if (OK == ok)
     SEMAPHORE_DOWN(signalFinished);
   FSUI_stop(ctx);
   SEMAPHORE_FREE(signalFinished);
@@ -271,9 +271,9 @@ int main(int argc,
   FREE(filename);
   ECRS_freeUri(uri);
 
-  stopCron(); 
+  stopCron();
   doneUtil();
-  
+
   if (ok == OK)
     return 0;
   else

@@ -27,7 +27,7 @@
  */
 
 #ifndef GNUNET_DHT_H
-#define GNUNET_DHT_H 
+#define GNUNET_DHT_H
 
 #include "gnunet_util.h"
 #include "gnunet_blockstore.h"
@@ -48,36 +48,36 @@
  * tables.  The GNUnet DHT infrastructure supports multiple
  * tables, the table to lookup peers is just one of these.
  */
-typedef HashCode512 DHT_TableId; 
+typedef HashCode512 DHT_TableId;
 
 #define equalsDHT_TableId(a,b) equalsHashCode512(a,b)
 
 /**
  * TCP communication: client to gnunetd: join table.
  * All future communications via this socket are reserved
- * for either gnunetd requesting datastore operations or 
+ * for either gnunetd requesting datastore operations or
  * the client sending a leave table message.
  */
 typedef struct {
 
   CS_HEADER header;
 
-  DHT_TableId table;  
+  DHT_TableId table;
 
 } DHT_CS_REQUEST_JOIN;
 
 /**
- * TCP communication: client to gnunetd: leave table 
+ * TCP communication: client to gnunetd: leave table
  */
 typedef struct {
 
   CS_HEADER header;
-  
-  DHT_TableId table;  
+
+  DHT_TableId table;
 
   unsigned long long timeout;  /* nbo */
 
-} DHT_CS_REQUEST_LEAVE; 
+} DHT_CS_REQUEST_LEAVE;
 
 
 /**
@@ -87,11 +87,11 @@ typedef struct {
 typedef struct {
 
   CS_HEADER header;
-  
-  DHT_TableId table; 
+
+  DHT_TableId table;
 
   unsigned long long timeout;  /* nbo */
-  
+
   HashCode512 key;
 
   unsigned int priority; /* nbo */
@@ -110,12 +110,12 @@ typedef struct {
 
   unsigned long long timeout;  /* nbo */
 
-  DHT_TableId table; 
+  DHT_TableId table;
 
   unsigned int priority; /* nbo */
 
   /* one or more keys */
-  HashCode512 keys;  
+  HashCode512 keys;
 
 } DHT_CS_REQUEST_GET;
 
@@ -125,9 +125,9 @@ typedef struct {
 typedef struct {
 
   CS_HEADER header;
-  
-  DHT_TableId table; 
-  
+
+  DHT_TableId table;
+
   unsigned long long timeout; /* nbo */
 
   HashCode512 key;
@@ -141,7 +141,7 @@ typedef struct {
 typedef struct {
 
   CS_HEADER header;
-  
+
 } DHT_CS_REQUEST_ITERATE;
 
 /**
@@ -155,7 +155,7 @@ typedef struct {
 
   unsigned int totalResults;
 
-  DHT_TableId table; 
+  DHT_TableId table;
 
   HashCode512 key;
 
@@ -172,7 +172,7 @@ typedef struct {
 
   int status; /* NBO */
 
-  DHT_TableId table; 
+  DHT_TableId table;
 
 } DHT_CS_REPLY_ACK;
 

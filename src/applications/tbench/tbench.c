@@ -43,7 +43,7 @@ typedef struct {
  * transport performance.
  */
 typedef struct {
-  p2p_HEADER header; 
+  p2p_HEADER header;
   unsigned int iterationNum;
   unsigned int packetNum;
   unsigned int priority;
@@ -108,16 +108,16 @@ static int pollResults(IterationData * results,
       return results->lossCount;
     }
     if (0 == results->packetsReceived[lastPacketNumber]++) {
-      results->lossCount--;    
+      results->lossCount--;
     } else {
       results->duplicateCount++;
 #if DEBUG_TBENCH
       LOG(LOG_DEBUG,
 	  "Received duplicate message %u from iteration %u\n",
-	  lastPacketNumber, 
+	  lastPacketNumber,
 	  currIteration);
-#endif     
-    } 
+#endif
+    }
     SEMAPHORE_UP(presem);
   } while (OK == SEMAPHORE_DOWN_NONBLOCKING(postsem));
   return results->lossCount;
@@ -147,7 +147,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
 #if DEBUG_TBENCH
   LOG(LOG_DEBUG,
       "Received message %u from iteration %u/%u\n",
-      htonl(msg->packetNum), 
+      htonl(msg->packetNum),
       htonl(msg->iterationNum),
       htonl(msg->nounce));
 #endif
@@ -156,7 +156,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
 	 message,
 	 ntohs(message->size));
   reply->type = htons(TBENCH_p2p_PROTO_REPLY);
-  coreAPI->unicast(sender, 
+  coreAPI->unicast(sender,
 		   reply,
 		   ntohl(msg->priority), /* medium importance */
 		   0); /* no delay */
@@ -175,7 +175,7 @@ static int handleTBenchReply(const PeerIdentity * sender,
     BREAK();
     return SYSERR;
   }
-  pmsg = (TBENCH_p2p_MESSAGE*) message;  
+  pmsg = (TBENCH_p2p_MESSAGE*) message;
   if (crc32N(&pmsg[1],
 	     ntohs(message->size) - sizeof(TBENCH_p2p_MESSAGE))
       != ntohl(pmsg->crc)) {
@@ -185,11 +185,11 @@ static int handleTBenchReply(const PeerIdentity * sender,
 #if DEBUG_TBENCH
   LOG(LOG_DEBUG,
       "Received message %u from iteration %u/%u\n",
-      htonl(pmsg->packetNum), 
+      htonl(pmsg->packetNum),
       htonl(pmsg->iterationNum),
       htonl(pmsg->nounce));
 #endif
-  MUTEX_LOCK(&lock); 
+  MUTEX_LOCK(&lock);
   if ( (timeoutOccured == NO) &&
        (presem != NULL) &&
        (postsem != NULL) &&
@@ -250,8 +250,8 @@ static int csHandleTBenchRequest(ClientHandle client,
 
   if ( ntohs(message->size) != sizeof(TBENCH_CS_MESSAGE) )
     return SYSERR;
-  
-  msg = (TBENCH_CS_MESSAGE*) message; 
+
+  msg = (TBENCH_CS_MESSAGE*) message;
   size = sizeof(TBENCH_p2p_MESSAGE) + ntohl(msg->msgSize);
   if (size < sizeof(TBENCH_p2p_MESSAGE))
     return SYSERR;
@@ -261,7 +261,7 @@ static int csHandleTBenchRequest(ClientHandle client,
 #if DEBUG_TBENCH
   LOG(LOG_MESSAGE,
       "Tbench runs %u test messages of size %u in %u iterations.\n",
-      msgCnt, 
+      msgCnt,
       size,
       iterations);
 #endif
@@ -275,7 +275,7 @@ static int csHandleTBenchRequest(ClientHandle client,
   p2p->header.type = htons(TBENCH_p2p_PROTO_REQUEST);
   p2p->priority = msg->priority;
 
-  MUTEX_LOCK(&lock);  
+  MUTEX_LOCK(&lock);
   for (iteration=0;iteration<iterations;iteration++) {
     results[iteration].maxPacketNumber = msgCnt;
     results[iteration].packetsReceived = MALLOC(msgCnt);
@@ -289,10 +289,10 @@ static int csHandleTBenchRequest(ClientHandle client,
     presem = SEMAPHORE_NEW(1);
     postsem = SEMAPHORE_NEW(0);
     currNounce = randomi(0xFFFFFF);
-    p2p->nounce 
+    p2p->nounce
       = htonl(currNounce);
     currIteration = iteration;
-    p2p->iterationNum 
+    p2p->iterationNum
       = htonl(currIteration);
     memset(&p2p[1],
 	   randomi(256),
@@ -300,7 +300,7 @@ static int csHandleTBenchRequest(ClientHandle client,
     p2p->crc
       = htonl(crc32N(&p2p[1],
 		     size - sizeof(TBENCH_p2p_MESSAGE)));
-    
+
     MUTEX_UNLOCK(&lock); /* allow receiving */
 
     cronTime(&startTime);
@@ -311,19 +311,19 @@ static int csHandleTBenchRequest(ClientHandle client,
 	       ntohll(msg->timeOut) * cronMILLIS,
 	       0,
 	       postsem);
-    for (packetNum=0;packetNum<msgCnt;packetNum++){      
+    for (packetNum=0;packetNum<msgCnt;packetNum++){
       cronTime(&now);
       if (now > endTime)
 	break; /* timeout */
-      
+
       p2p->packetNum = htonl(packetNum);
 #if DEBUG_TBENCH
       LOG(LOG_DEBUG,
 	  "Sending message %u in iteration %u\n",
 	  packetNum, iteration);
 #endif
-      coreAPI->unicast(&msg->receiverId, 
-		       &p2p->header, 
+      coreAPI->unicast(&msg->receiverId,
+		       &p2p->header,
 		       ntohl(msg->priority),
 		       0); /* no delay */
       pollResults(&results[iteration], NO);
@@ -339,7 +339,7 @@ static int csHandleTBenchRequest(ClientHandle client,
 	  } else
 	    gnunet_util_sleep(delayStart + delay - now);
 	}
-      }	    
+      }	
       if ( (0 == pollResults(&results[iteration], NO)) &&
 	   (earlyEnd == 0) )
 	earlyEnd = cronTime(NULL);
@@ -359,7 +359,7 @@ static int csHandleTBenchRequest(ClientHandle client,
     MUTEX_LOCK(&lock);
     if (earlyEnd == 0)
       earlyEnd = now;
-    results[iteration].totalTime 
+    results[iteration].totalTime
       = earlyEnd - startTime;
     FREE(results[iteration].packetsReceived);
     suspendCron();
@@ -385,7 +385,7 @@ static int csHandleTBenchRequest(ClientHandle client,
   for (iteration=0;iteration<iterations;iteration++) {
     sum_loss += results[iteration].lossCount;
     sum_time += results[iteration].totalTime;
-    
+
     if (results[iteration].lossCount > max_loss)
       max_loss = results[iteration].lossCount;
     if (results[iteration].lossCount < min_loss)
@@ -394,19 +394,19 @@ static int csHandleTBenchRequest(ClientHandle client,
       max_time = results[iteration].totalTime;
     if (results[iteration].totalTime < min_time)
       min_time = results[iteration].totalTime;
-  } 
- 
+  }
+
   sum_variance_time = 0.0;
   sum_variance_loss = 0.0;
   for(iteration = 0; iteration <iterations; iteration++){
-    sum_variance_time += 
+    sum_variance_time +=
       (results[iteration].totalTime - sum_time/iterations) *
       (results[iteration].totalTime - sum_time/iterations);
-    sum_variance_loss += 
+    sum_variance_loss +=
       (results[iteration].lossCount - sum_loss/iterations) *
       (results[iteration].lossCount - sum_loss/iterations);
   }
-  
+
   /* send collected stats back to client */
   reply.header.size = htons(sizeof(TBENCH_CS_REPLY));
   reply.header.type = htons(TBENCH_CS_PROTO_REPLY);

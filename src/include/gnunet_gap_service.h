@@ -49,14 +49,14 @@ typedef int (*UniqueReplyIdentifier)(const void * content,
 typedef struct {
 
   /**
-   * Start GAP.  
+   * Start GAP.
    *
    * @param datastore the storage callbacks to use for storing data
    * @return SYSERR on error, OK on success
    */
   int (*init)(Blockstore * datastore,
 	      UniqueReplyIdentifier uri);
-  
+
   /**
    * Perform a GET operation using 'key' as the key.  Note that no
    * callback is given for the results since GAP just calls PUT on the
@@ -105,7 +105,7 @@ typedef struct {
    * are currently routing?
    */
   unsigned int (*getAvgPriority)();
-    
+
 } GAP_ServiceAPI;
 
 #endif /* GAP_SERVICE_API_H */

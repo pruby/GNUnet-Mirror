@@ -52,8 +52,8 @@
  * interrupted (such as indexing / unindexing operations). If this
  * is not acceptable, clients should wait until all uploads and
  * unindexing operations have completed before attempting to close
- * the FSUI_Context.<p> 
- * 
+ * the FSUI_Context.<p>
+ *
  * Note that most of this code is completely new in GNUnet 0.7.0 and
  * thus still highly experimental.  Suggestions are welcome.
  */
@@ -67,7 +67,7 @@
 /**
  * @brief types of FSUI events.
  */
-enum FSUI_EventType { 
+enum FSUI_EventType {
   /**
    * We found a new search result.
    */
@@ -198,7 +198,7 @@ typedef struct {
       /**
        * Start time.
        */
-      cron_t start_time;   
+      cron_t start_time;
       /**
        * Is this (part of) a recursive upload?
        */
@@ -230,7 +230,7 @@ typedef struct {
       /**
        * Start time.
        */
-      cron_t start_time;   
+      cron_t start_time;
       /**
        * Is this (part of) a recursive upload?
        */
@@ -239,7 +239,7 @@ typedef struct {
        * If the download is recursive, what is the
        * main file? (otherwise equal to filename);
        */
-      char * main_filename;      
+      char * main_filename;
     } UploadComplete;
     struct {
       /* FIXME */
@@ -251,7 +251,7 @@ typedef struct {
      * Used for errors.
      */
     char * message;
-  } data;  
+  } data;
 } FSUI_Event;
 
 /**
@@ -312,7 +312,7 @@ typedef int (*FSUI_UpdateIterator)(void * cls,
 				   const HashCode512 * lastId,
 				   const HashCode512 * nextId,
 				   cron_t publicationFrequency,
-				   cron_t nextPublicationTime); 
+				   cron_t nextPublicationTime);
 
 /**
  * Iterator over active downloads.
@@ -343,7 +343,7 @@ typedef int (*FSUI_DownloadIterator)(void * cls,
  * <p>
  *
  * Note that suspend/resume is not implemented in this version of
- * GNUnet.  
+ * GNUnet.
  *
  * @param name name of the tool or set of tools; used to
  *          resume activities; tools that use the same name here
@@ -525,7 +525,7 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
 int FSUI_stopDownloadAll(struct FSUI_Context * ctx,
 			 const struct ECRS_URI * uri,
 			 const char * dirname); /* download.c */
-		    
+		
 /* ******************** collections API **************** */
 
 /**
@@ -558,7 +558,7 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx); /* collection.c */
  * collecting, this function does nothing.
  *
  * Note that clients typically don't have to call this
- * function explicitly.  FSUI will call the function on 
+ * function explicitly.  FSUI will call the function on
  * exit (for sporadically updated collections), on any
  * change to the collection (for immediately updated
  * content) or when the publication time has arrived
@@ -628,7 +628,7 @@ int FSUI_rankNamespace(struct FSUI_Context * ctx,
  * Add a namespace to the set of known namespaces.
  * For all namespace advertisements that we discover
  * FSUI should automatically call this function.
- * 
+ *
  * @param ns the namespace identifier
  */
 void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
@@ -636,7 +636,7 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
 
 /**
  * List all available (local or non-local) namespaces.
- * 
+ *
  * @param local only list local namespaces (if NO, only
  *   non-local known namespaces are listed)
  */
@@ -653,10 +653,10 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
  *      or NULL if user wants system to pick random value;
  *      nextId and lastId NULL (irrelevant)</li>
  *  <li>updateInterval SPORADIC, thisId given (initial
- *      submission), nextId maybe given or NULL, 
+ *      submission), nextId maybe given or NULL,
  *      lastId NULL</li>
  *  <li>updateInterval SPORADIC, lastId given (either
- *      user-provided or from listNamespaceContent 
+ *      user-provided or from listNamespaceContent
  *      iterator); thisId NULL or given (from lNC);
  *      nextId maybe given or NULL, depending on user preference</li>
  *  <li>updateInterval non-NULL, non-SPORADIC; lastId
@@ -666,7 +666,7 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
  *  <li>updateInterval non-NULL, non-SPORADIC; lastId
  *      is non-NULL (periodic update), thisId NULL (computed!)
  *      nextID NULL (computed)</li>
- * </ul> 
+ * </ul>
  * And yes, reading the ECRS paper maybe a good idea.
  *
  * @param name in which namespace to publish
@@ -711,7 +711,7 @@ int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
  * @param onOff YES to enable tracking, NO to disable
  *  disabling tracking also deletes all entries in the
  *  cache.
- */ 
+ */
 void FSUI_trackURIS(int onOff); /* file_info.c */
 
 
@@ -719,7 +719,7 @@ void FSUI_trackURIS(int onOff); /* file_info.c */
  * Get the FSUI URI tracking status.
  *
  * @return YES of tracking is enabled, NO if not
- */ 
+ */
 int FSUI_trackStatus(); /* file_info.c */
 
 /**
@@ -729,7 +729,7 @@ int FSUI_trackStatus(); /* file_info.c */
  * call ECRS directly.
  */
 void FSUI_trackURI(const ECRS_FileInfo * fi); /* file_info.c */
- 
+
 /**
  * List all URIs.
  */

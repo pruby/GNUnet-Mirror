@@ -5,7 +5,7 @@
 
 /**
  * @brief GNUnet Setup
- * @file conf/expr.h 
+ * @file conf/expr.h
  * @author Roman Zippel
  * @author Nils Durner
  **/
@@ -143,7 +143,7 @@ struct menu {
 	//char *help;
 	struct file *file;
 	int lineno;
-	void *data; 
+	void *data;
 	char *section;
 };
 

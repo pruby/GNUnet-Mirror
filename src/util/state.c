@@ -53,8 +53,8 @@ static char * getDirectory(char * dir) {
   size_t n;
 
 #if STATE_DEBUG
-  LOG(LOG_DEBUG, 
-      "Database (state): %s\n", 
+  LOG(LOG_DEBUG,
+      "Database (state): %s\n",
       dir);
 #endif
   n = strlen(dir) + strlen(DIR_EXT) + 5;
@@ -80,7 +80,7 @@ void initState() {
 		    base,
 		    _("Configuration file must specify a directory"
 		      " for GNUnet to store per-peer data under %s%s.\n"));
-  dbh = getDirectory(dir);  
+  dbh = getDirectory(dir);
   FREE(dir);
   GNUNET_ASSERT(dbh != NULL);
   mkdirp(dbh);
@@ -101,10 +101,10 @@ void doneState() {
  * Read the contents of a bucket to a buffer.
  *
  * @param name the hashcode representing the entry
- * @param result the buffer to write the result to 
+ * @param result the buffer to write the result to
  *        (*result should be NULL, sufficient space is allocated)
  * @return the number of bytes read on success, -1 on failure
- */ 
+ */
 int stateReadContent(const char * name,
 		     void ** result) {
   /* open file, must exist, open read only */
@@ -120,12 +120,12 @@ int stateReadContent(const char * name,
     return -1;
   n = strlen(dbh) + strlen(name) + 2;
   fil = MALLOC(n);
-  SNPRINTF(fil, 
+  SNPRINTF(fil,
 	   n,
-	   "%s/%s", 
-	   dbh, 
+	   "%s/%s",
+	   dbh,
 	   name);
-  fd = OPEN(fil, 
+  fd = OPEN(fil,
 	    O_RDONLY,
 	    S_IRUSR);
   if (fd == -1) {
@@ -138,10 +138,10 @@ int stateReadContent(const char * name,
     CLOSE(fd);
     return -1;
   }
-    
+
   *result = MALLOC(fsize);
-  size = READ(fd, 
-	      *result, 
+  size = READ(fd,
+	      *result,
 	      fsize);
   CLOSE(fd);
   if (size == -1) {
@@ -173,8 +173,8 @@ int stateAppendContent(const char * name,
   fil = MALLOC(n);
   SNPRINTF(fil,
 	   n,
-	   "%s/%s", 
-	   dbh, 
+	   "%s/%s",
+	   dbh,
 	   name);
   fd = OPEN(fil,
 	    O_RDWR|O_CREAT,
@@ -185,18 +185,18 @@ int stateAppendContent(const char * name,
     return SYSERR; /* failed! */
   }
   FREE(fil);
-  lseek(fd, 
-	0, 
+  lseek(fd,
+	0,
 	SEEK_END);
-  WRITE(fd, 
-	block, 
+  WRITE(fd,
+	block,
 	len);
   CLOSE(fd);
   return OK;
 }
 
 /**
- * Write content to a file. 
+ * Write content to a file.
  *
  * @param name the key for the entry
  * @param len the number of bytes in block
@@ -216,8 +216,8 @@ int stateWriteContent(const char * name,
   fil = MALLOC(n);
   SNPRINTF(fil,
 	   n,
-	   "%s/%s", 
-	   dbh, 
+	   "%s/%s",
+	   dbh,
 	   name);
   fd = OPEN(fil,
 	    O_RDWR|O_CREAT,
@@ -227,8 +227,8 @@ int stateWriteContent(const char * name,
     FREE(fil);
     return SYSERR; /* failed! */
   }
-  WRITE(fd, 
-	block, 
+  WRITE(fd,
+	block,
 	len);
   if (0 != ftruncate(fd, len))
     LOG_FILE_STRERROR(LOG_WARNING, "ftruncate", fil);
@@ -239,7 +239,7 @@ int stateWriteContent(const char * name,
 
 /**
  * Free space in the database by removing one file
- * @param name the hashcode representing the name of the file 
+ * @param name the hashcode representing the name of the file
  *        (without directory)
  */
 int stateUnlinkFromDB(const char * name) {
@@ -250,10 +250,10 @@ int stateUnlinkFromDB(const char * name) {
   GNUNET_ASSERT(handle != NULL);
   n = strlen(dbh) + strlen(name) + 2;
   fil = MALLOC(n);
-  SNPRINTF(fil, 
+  SNPRINTF(fil,
 	   n,
 	   "%s/%s",
-	   dbh, 
+	   dbh,
 	   name);
   UNLINK(fil);
   FREE(fil);

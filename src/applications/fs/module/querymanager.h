@@ -50,7 +50,7 @@ void trackQuery(const HashCode512 * query,
 		const ClientHandle client);
 
 /**
- * Stop keeping track of a query. 
+ * Stop keeping track of a query.
  *
  * @param msg the query
  * @param client where did the query come from?
@@ -66,5 +66,5 @@ void untrackQuery(const HashCode512 * query,
  */
 void processResponse(const HashCode512 * key,
 		     const Datastore_Value * value);
- 
+
 #endif

@@ -31,7 +31,7 @@
 /**
  * Obtain option value from a peer.
  * @return NULL on error
- */   
+ */
 char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
 				   const char * section,
 				   const char * option);

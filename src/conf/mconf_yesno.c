@@ -70,7 +70,7 @@ dialog_yesno (const char *title, const char *prompt, int height, int width)
     wattrset (dialog, dialog_attr);
     waddch (dialog, ACS_RTEE);
 
-    if ( (title != NULL) && 
+    if ( (title != NULL) &&
 	 (strlen(title) >= (unsigned int) width-2) ) {
 	/* truncate long title -- mec */
 	char * title2 = malloc(width-2+1);

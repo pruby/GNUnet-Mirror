@@ -44,7 +44,7 @@ static struct sockaddr_in theProxy;
  * Download hostlist from the web and call method
  * on each HELO.
  */
-static void 
+static void
 downloadHostlistHelper(char * url,
 		       HELO_Callback callback,
 		       void * arg) {
@@ -65,9 +65,9 @@ downloadHostlistHelper(char * url,
   port = TCP_HTTP_PORT;
 
   if (0 != strncmp(HTTP_URL, url, strlen(HTTP_URL)) ) {
-    LOG(LOG_WARNING, 
-	_("Invalid URL '%s' (must begin with '%s')\n"), 
-	url, 
+    LOG(LOG_WARNING,
+	_("Invalid URL '%s' (must begin with '%s')\n"),
+	url,
 	HTTP_URL);
     return;
   }
@@ -78,9 +78,9 @@ downloadHostlistHelper(char * url,
     curpos++;
   if (curpos == strlen(url))
     filename = STRDUP("/");
-  else 
+  else
     filename = STRDUP(&url[curpos]);
-  url[curpos] = '\0'; /* terminator for hostname */  
+  url[curpos] = '\0'; /* terminator for hostname */
 
   sock = SOCKET(PF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
@@ -103,21 +103,21 @@ downloadHostlistHelper(char * url,
       FREE(filename);
       return;
     }
-    
-    soaddr.sin_addr.s_addr 
+
+    soaddr.sin_addr.s_addr
       = ((struct in_addr*)(ip_info->h_addr))->s_addr;
-    soaddr.sin_port 
+    soaddr.sin_port
       = htons(TCP_HTTP_PORT);
   } else {
-    soaddr.sin_addr.s_addr 
+    soaddr.sin_addr.s_addr
       = theProxy.sin_addr.s_addr;
-    soaddr.sin_port 
+    soaddr.sin_port
       = theProxy.sin_port;
   }
   soaddr.sin_family = AF_INET;
 
-  if (CONNECT(sock, 
-	      (struct sockaddr*)&soaddr, 
+  if (CONNECT(sock,
+	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr)) < 0) {
     LOG(LOG_WARNING,
 	_("'%s' to '%s' failed at %s:%d with error: %s\n"),
@@ -129,10 +129,10 @@ downloadHostlistHelper(char * url,
     CLOSE(sock);
     return;
   }
-  
+
   n = strlen(filename) + strlen(GET_COMMAND) + strlen(hostname) + 1;
   command = MALLOC(n);
-  SNPRINTF(command, 
+  SNPRINTF(command,
 	   n,
 	   GET_COMMAND,
 	   hostname,
@@ -168,18 +168,18 @@ downloadHostlistHelper(char * url,
 			       &ret);
     if (success == NO) {
       gnunet_util_sleep(100 * cronMILLIS);
-      continue;    
+      continue;
     }
     if (ret <= 0)
       break; /* end of transmission or error */
-    if ((c=='\r') || (c=='\n')) 
+    if ((c=='\r') || (c=='\n'))
       curpos += ret;
-    else 
-      curpos=0;    
+    else
+      curpos=0;
   }
 
   if (curpos < 4) { /* we have not found it */
-    LOG(LOG_WARNING, 
+    LOG(LOG_WARNING,
 	_("Parsing HTTP response for URL '%s' failed.\n"),
 	url);
     CLOSE(sock);
@@ -189,7 +189,7 @@ downloadHostlistHelper(char * url,
   buffer = MALLOC(MAX_BUFFER_SIZE);
   while (1) {
     HELO_Message * helo;
-    
+
     helo = (HELO_Message*) &buffer[0];
     helo->header.type = htons(p2p_PROTO_HELO);
 
@@ -203,13 +203,13 @@ downloadHostlistHelper(char * url,
       success = RECV_NONBLOCKING(sock,
 			         &((char*)helo)[curpos],
 			         HELO_Message_size(helo)-curpos,
-			         &ret);      
+			         &ret);
       if ( success == NO )
 	continue;
       if (ret <= 0)
 	break; /* end of file or error*/
-      if (HELO_Message_size(helo) >= MAX_BUFFER_SIZE) 
-	break; /* INVALID! Avoid overflow! */      
+      if (HELO_Message_size(helo) >= MAX_BUFFER_SIZE)
+	break; /* INVALID! Avoid overflow! */
       curpos += ret;
     }
     if (curpos != HELO_Message_size(helo)) {
@@ -223,9 +223,9 @@ downloadHostlistHelper(char * url,
     callback(helo,
 	     arg);
   }
-    
+
   FREE(buffer);
-  CLOSE(sock);  
+  CLOSE(sock);
 }
 
 
@@ -234,16 +234,16 @@ static void downloadHostlist(HELO_Callback callback,
   char * url;
   int i;
   int cnt;
- 
+
   url = getConfigurationString("GNUNETD",
 			       "HOSTLISTURL");
-  if (url == NULL) 
-    return;  
+  if (url == NULL)
+    return;
   cnt = 1;
   i = strlen(url);
   while (i > 0) {
     i--;
-    if (url[i] == ' ') 
+    if (url[i] == ' ')
       cnt++;
   }
   cnt = randomi(cnt); /* pick random hostlist of the pack */
@@ -261,7 +261,7 @@ static void downloadHostlist(HELO_Callback callback,
 			     arg);
       return;
     }
-  } 
+  }
   downloadHostlistHelper(&url[0],
 			 callback,
 			 arg);
@@ -269,23 +269,23 @@ static void downloadHostlist(HELO_Callback callback,
 }
 
 
-Bootstrap_ServiceAPI * 
+Bootstrap_ServiceAPI *
 provide_module_bootstrap(CoreAPIForApplication * capi) {
   static Bootstrap_ServiceAPI api;
   char *proxy, *proxyPort;
   struct hostent *ip;
 
-  proxy = getConfigurationString("GNUNETD", 
+  proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
     ip = GETHOSTBYNAME(proxy);
     if (ip == NULL) {
-      LOG(LOG_ERROR, 
+      LOG(LOG_ERROR,
 	  _("Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
-      theProxy.sin_addr.s_addr 
+      theProxy.sin_addr.s_addr
 	= ((struct in_addr *)ip->h_addr)->s_addr;
       proxyPort = getConfigurationString("GNUNETD",
 					 "HTTP-PROXY-PORT");

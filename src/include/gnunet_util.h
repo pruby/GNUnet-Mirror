@@ -24,7 +24,7 @@
  *
  * @author Christian Grothoff
  * @author Krista Bennett
- * @author Gerd Knorr <kraxel@bytesex.org> 
+ * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
  */
@@ -47,7 +47,7 @@
 
 /**
  * Just the version number of GNUnet-util implementation.
- * Encoded as 
+ * Encoded as
  * 0.6.1-4 => 0x00060104
  * 4.5.2   => 0x04050200
  *
@@ -61,7 +61,7 @@
 #define GNUNET_UTIL_VERSION 0x00060901
 
 /**
- * We use an unsigned short in the protocol header, thus: 
+ * We use an unsigned short in the protocol header, thus:
  */
 #define MAX_BUFFER_SIZE 65536
 
@@ -79,7 +79,7 @@
 #define NO      0
 
 /**
- * @brief constants to specify time 
+ * @brief constants to specify time
  */
 #define cronMILLIS ((cron_t)1)
 #define cronSECONDS ((cron_t)(1000 * cronMILLIS))
@@ -90,8 +90,8 @@
 #define cronMONTHS ((cron_t)(30 * cronDAYS))
 #define cronYEARS ((cron_t)(365 * cronDAYS))
 
-/** 
- * @brief log levels 
+/**
+ * @brief log levels
  */
 #define LOG_NOTHING    0
 #define LOG_FATAL      1
@@ -105,7 +105,7 @@
 #define LOG_EVERYTHING 9
 
 /**
- * @brief length of the sessionkey in bytes (256 BIT sessionkey) 
+ * @brief length of the sessionkey in bytes (256 BIT sessionkey)
  */
 #define SESSIONKEY_LEN (256/8)
 
@@ -156,7 +156,7 @@
 
 /**
  * Default "long" version of the options, use
- * "vhdc:L:H:" in the short option argument 
+ * "vhdc:L:H:" in the short option argument
  * to getopt_long for now.
  */
 #define LONG_DEFAULT_OPTIONS \
@@ -179,12 +179,12 @@ struct PrivateKey;
  */
 typedef struct {
   /**
-   * The length of the struct (in bytes, including the length field itself) 
+   * The length of the struct (in bytes, including the length field itself)
    */
   unsigned short size;
 
   /**
-   * The type of the message (XX_CS_PROTO_XXXX) 
+   * The type of the message (XX_CS_PROTO_XXXX)
    */
   unsigned short type;
 
@@ -196,11 +196,11 @@ typedef struct {
 typedef struct {
   /**
    * The CS header (values: sizeof(CS_RETURN_VALUE), CS_PROTO_RETURN_VALUE)
-   */ 
+   */
   CS_HEADER header;
 
   /**
-   * The return value (network byte order) 
+   * The return value (network byte order)
    */
   int return_value;
 } CS_RETURN_VALUE;
@@ -210,14 +210,14 @@ typedef struct {
  */
 typedef struct {
   /**
-   * size of this MESSAGE_PART (network byte order) 
+   * size of this MESSAGE_PART (network byte order)
    */
   unsigned short size;
 
   /**
-   * type of the request, XX_p2p_PROTO_XXX (network byte order) 
+   * type of the request, XX_p2p_PROTO_XXX (network byte order)
    */
-  unsigned short type; 
+  unsigned short type;
 } p2p_HEADER;
 
 typedef void (*NotifyConfigurationUpdateCallback)();
@@ -230,7 +230,7 @@ typedef void (*CronJob)(void *);
 /**
  * Time for absolute times used by cron (64 bit)
  */
-typedef unsigned long long cron_t;  
+typedef unsigned long long cron_t;
 
 /**
  * 32-bit timer value.
@@ -269,7 +269,7 @@ struct GNoption {
 
 /**
  * @brief an IPv4 address
- */ 
+ */
 typedef struct {
   unsigned int addr; /* struct in_addr */
 } IPaddr;
@@ -329,13 +329,13 @@ typedef struct {
  * of private RSA key information that is provided
  * by the RSA implementations.  This format is used
  * to serialize a private RSA key (typically when
- * writing it to disk).  
+ * writing it to disk).
  */
 typedef struct {
-  /** 
-   * Total size of the structure, in bytes, in big-endian! 
+  /**
+   * Total size of the structure, in bytes, in big-endian!
    */
-  unsigned short len; 
+  unsigned short len;
   unsigned short sizen;/*  in big-endian! */
   unsigned short sizee;/*  in big-endian! */
   unsigned short sized;/*  in big-endian! */
@@ -350,7 +350,7 @@ typedef struct {
  * @brief an RSA signature
  */
 typedef struct {
-  unsigned char sig[RSA_ENC_LEN]; 
+  unsigned char sig[RSA_ENC_LEN];
 } Signature;
 
 /**
@@ -358,21 +358,21 @@ typedef struct {
  */
 typedef struct {
   /**
-   * In big-endian, must be RSA_KEY_LEN+2 
+   * In big-endian, must be RSA_KEY_LEN+2
    */
-  unsigned short len; 
+  unsigned short len;
   /**
-   * Size of n in key; in big-endian! 
-   */ 
-  unsigned short sizen;  
+   * Size of n in key; in big-endian!
+   */
+  unsigned short sizen;
   /**
    * The key itself, contains n followed by e.
    */
   unsigned char key[RSA_KEY_LEN];
   /**
-   * Padding (must be 0) 
+   * Padding (must be 0)
    */
-  unsigned short padding; 
+  unsigned short padding;
 } PublicKey;
 
 /**
@@ -384,10 +384,10 @@ typedef struct {
 
 
 /**
- * @brief Structure for MUTual EXclusion (Mutex).  
+ * @brief Structure for MUTual EXclusion (Mutex).
  *
  * Essentially a wrapper around pthread_mutex_t.
- */ 
+ */
 typedef struct Mutex {
   void * internal;
 } Mutex;
@@ -409,7 +409,7 @@ typedef struct IPC_Semaphore{
 } IPC_Semaphore;
 
 /**
- * Struct to refer to a GNUnet TCP connection. 
+ * Struct to refer to a GNUnet TCP connection.
  * This is more than just a socket because if the server
  * drops the connection, the client automatically tries
  * to reconnect (and for that needs connection information).
@@ -417,7 +417,7 @@ typedef struct IPC_Semaphore{
 typedef struct GNUNET_TCP_SOCKET {
 
   /**
-   * the socket handle, -1 if invalid / not life 
+   * the socket handle, -1 if invalid / not life
    */
   int socket;
 
@@ -427,29 +427,29 @@ typedef struct GNUNET_TCP_SOCKET {
    * use 0.
    */
   IPaddr ip;
-  
+
   /**
-   * the port number, in host byte order 
+   * the port number, in host byte order
    */
   unsigned short port;
 
   /**
    * Write buffer length for non-blocking writes.
-   */ 
+   */
   unsigned int outBufLen;
 
   /**
    * Write buffer for non-blocking writes.
-   */ 
+   */
   void * outBufPending;
 
-  Mutex readlock; 
+  Mutex readlock;
   Mutex writelock;
 
 } GNUNET_TCP_SOCKET;
 
-/** 
- * @brief type for session keys 
+/**
+ * @brief type for session keys
  */
 typedef struct {
   unsigned char key[SESSIONKEY_LEN];
@@ -516,7 +516,7 @@ struct Vector;
  *
  * @param buf the data over which we're taking the CRC
  * @param len the length of the buffer in bytes
- * @return the resulting CRC32 checksum 
+ * @return the resulting CRC32 checksum
  */
 int crc32N(const void * buf, int len);
 
@@ -524,7 +524,7 @@ int crc32N(const void * buf, int len);
  * Produce a random value.
  *
  * @param i the upper limit (exclusive) for the random number
- * @return a random value in the interval [0,i[. 
+ * @return a random value in the interval [0,i[.
  */
 unsigned int randomi(unsigned int i);
 
@@ -589,7 +589,7 @@ char * convertToUtf8(const char * input,
 
 void registerConfigurationUpdateCallback
 (NotifyConfigurationUpdateCallback cb);
-  
+
 void unregisterConfigurationUpdateCallback
 (NotifyConfigurationUpdateCallback cb);
 
@@ -601,11 +601,11 @@ void triggerGlobalConfigurationRefresh();
 
 /**
  * Read the specified configuration file. The previous
- * configuration will be discarded if this method is 
+ * configuration will be discarded if this method is
  * invoked twice. The configuration file that is read
- * can be set using setConfigurationString on 
+ * can be set using setConfigurationString on
  * section "FILES" and option "gnunet.conf".
- * 
+ *
  * This method should be invoked after the options have
  * been parsed (and eventually the configuration filename
  * default has been overriden) and if gnunetd receives
@@ -616,7 +616,7 @@ void readConfiguration();
 /**
  * Obtain a filename from the given section and option.  If the
  * filename is not specified, die with the given error message (do not
- * die if errMsg == NULL). 
+ * die if errMsg == NULL).
  *
  * @param section from which section, may not be NULL
  * @param option which option, may not be NULL
@@ -700,7 +700,7 @@ int getConfigurationStringList(char *** value);
  * Set the list of command line options (remainder after getopt style
  * parsing).
  *
- * @param value the values 
+ * @param value the values
  + @param count the number of values
  */
 void setConfigurationStringList(char ** value,
@@ -750,7 +750,7 @@ void resumeIfNotCron();
  * Get the current time (works just as "time", just
  * that we use the unit of time that the cron-jobs use).
  * @param setme will set the current time if non-null
- * @return the current time 
+ * @return the current time
  */
 cron_t cronTime(cron_t * setme);
 
@@ -791,7 +791,7 @@ void advanceCronJob(CronJob method,
  * running job and may return before the running job has terminated).
  *
  * @param method which method is listed?
- * @param repeat which repeat factor was chosen? 
+ * @param repeat which repeat factor was chosen?
  * @param data what was the data given to the method
  * @return the number of jobs removed
  */
@@ -857,8 +857,8 @@ extern int GNopterr;
 extern int GNoptopt;
 
 
-int GNgetopt_long (int argc, 
-		   char *const *argv, 
+int GNgetopt_long (int argc,
+		   char *const *argv,
 		   const char *shortopts,
 		   const struct GNoption *longopts,
 		   int *longind);
@@ -879,7 +879,7 @@ struct CIDRNetwork * parseRoutes(const char * routeList);
 
 
 /**
- * Check if the given IP address is in the list of 
+ * Check if the given IP address is in the list of
  * IP addresses.
  * @param list a list of networks
  * @param ip the IP to check (in network byte order)
@@ -889,7 +889,7 @@ int checkIPListed(const struct CIDRNetwork * list,
 		  IPaddr ip);
 
 /**
- * Check if the given IP address is in the list of 
+ * Check if the given IP address is in the list of
  * IP addresses.
  * @param list a list of networks
  * @param ip the IP to check (in network byte order)
@@ -1003,7 +1003,7 @@ void breakpoint_(const char * filename,
  * memory is available.  Don't use xmalloc_ directly. Use the
  * MALLOC macro.
  */
-void * xmalloc_(size_t size, 
+void * xmalloc_(size_t size,
 		const char * filename,
 		const int linenumber);
 
@@ -1013,7 +1013,7 @@ void * xmalloc_(size_t size,
  * allocations larger than 40 MB.  If you don't expect the
  * possibility of very large allocations, use MALLOC instead.
  */
-void * xmalloc_unchecked_(size_t size, 
+void * xmalloc_unchecked_(size_t size,
 			  const char * filename,
 			  const int linenumber);
 
@@ -1046,7 +1046,7 @@ void * xrealloc_(void * ptr,
  * want to keep track of allocations.  Don't use xfree_
  * directly. Use the FREE macro.
  */
-void xfree_(void * ptr, 
+void xfree_(void * ptr,
 	    const char * filename,
 	    const int linenumber);
 
@@ -1056,7 +1056,7 @@ void xfree_(void * ptr,
  * allocated with GROW using GROW(mem, size, 0) instead of FREE.
  *
  * @param ptr location where to free the memory. ptr must have
- *     been returned by STRDUP, MALLOC or GROW earlier. 
+ *     been returned by STRDUP, MALLOC or GROW earlier.
  */
 #define FREE(ptr) xfree_(ptr, __FILE__, __LINE__)
 
@@ -1076,7 +1076,7 @@ char * xstrdup_(const char * str,
 
 /**
  * Wrapper around STRDUP.  Makes a copy of the zero-terminated string
- * pointed to by a. 
+ * pointed to by a.
  * @param a pointer to a zero-terminated string
  * @return a copy of the string including zero-termination
  */
@@ -1098,7 +1098,7 @@ char * xstrndup_(const char * str,
 
 /**
  * Wrapper around STRNDUP.  Makes a copy of the zero-terminated string
- * pointed to by a. 
+ * pointed to by a.
  * @param a pointer to a zero-terminated string
  * @param n the maximum number of characters to copy (+1 for 0-termination)
  * @return a copy of the string including zero-termination
@@ -1128,7 +1128,7 @@ void xgrow_(void ** old,
 /**
  * Grow a well-typed (!) array.  This is a convenience
  * method to grow a vector <tt>arr</tt> of size <tt>size</tt>
- * to the new (target) size <tt>tsize</tt>. 
+ * to the new (target) size <tt>tsize</tt>.
  * <p>
  *
  * Example (simple, well-typed stack):
@@ -1136,7 +1136,7 @@ void xgrow_(void ** old,
  * <pre>
  * static struct foo * myVector = NULL;
  * static int myVecLen = 0;
- * 
+ *
  * static void push(struct foo * elem) {
  *   GROW(myVector, myVecLen, myVecLen+1);
  *   memcpy(&myVector[myVecLen-1], elem, sizeof(struct foo));
@@ -1155,7 +1155,7 @@ void xgrow_(void ** old,
  *        not the size in bytes
  * @param size the number of elements in the existing vector (number
  *        of elements to copy over)
- * @param tsize the target size for the resulting vector, use 0 to 
+ * @param tsize the target size for the resulting vector, use 0 to
  *        free the vector (then, arr will be NULL afterwards).
  */
 #define GROW(arr,size,tsize) xgrow_((void**)&arr, sizeof(arr[0]), &size, tsize, __FILE__, __LINE__)
@@ -1185,7 +1185,7 @@ void makeSessionkey(SESSIONKEY * key);
  *        for streams.
  * @returns the size of the encrypted block, -1 for errors
  */
-int encryptBlock(const void * block, 
+int encryptBlock(const void * block,
 		 unsigned short len,
 		 const SESSIONKEY * sessionkey,
 		 const INITVECTOR * iv,
@@ -1200,7 +1200,7 @@ int encryptBlock(const void * block,
  * @param result address to store the result at
  * @return -1 on failure, size of decrypted block on success
  */
-int decryptBlock(const SESSIONKEY * sessionkey, 
+int decryptBlock(const SESSIONKEY * sessionkey,
 		 const void * block,
 		 unsigned short size,
 		 const INITVECTOR * iv,
@@ -1279,10 +1279,10 @@ void PTHREAD_REL_SELF(PTHREAD_T * pt);
  * @param handle handle to the pthread (for detaching, join)
  * @param main the main method of the thread
  * @param arg the argument to main
- * @param stackSize the size of the stack of the thread in bytes. 
- *        Note that if the stack overflows, some OSes (seen under BSD) 
+ * @param stackSize the size of the stack of the thread in bytes.
+ *        Note that if the stack overflows, some OSes (seen under BSD)
  *        will just segfault and gdb will give a messed-up stacktrace.
- * @return see pthread_create 
+ * @return see pthread_create
  */
 int PTHREAD_CREATE(PTHREAD_T * handle,
 		   PThreadMain main,
@@ -1323,19 +1323,19 @@ void ipc_semaphore_free_(IPC_Semaphore * sem,
 /**
  * While we must define these globally to make the
  * compiler happy, always use the macros in the sources
- * instead! 
+ * instead!
  */
 void create_mutex_(Mutex * mutex);
 void create_recursive_mutex_(Mutex * mutex);
 void create_fast_mutex_(Mutex * mutex);
 void destroy_mutex_(Mutex * mutex);
-void mutex_lock_(Mutex * mutex, 
+void mutex_lock_(Mutex * mutex,
 		 const char * filename,
 		 const int linenumber);
-void mutex_unlock_(Mutex * mutex, 
+void mutex_unlock_(Mutex * mutex,
 		   const char * filename,
 		   const int linenumber);
-Semaphore * semaphore_new_(int value, 
+Semaphore * semaphore_new_(int value,
 			   const char * filename,
 			   const int linenumber);
 void semaphore_free_(Semaphore * s,
@@ -1349,7 +1349,7 @@ int semaphore_down_nonblocking_(Semaphore * s,
 				const int linenumber);
 int semaphore_up_(Semaphore * s,
 		  const char * filename,
-		  const int linenumber);		    
+		  const int linenumber);		
 
 /**
  * Convert hash to ASCII encoding.
@@ -1363,7 +1363,7 @@ void hash2enc(const HashCode512 * block,
 /**
  * Convert ASCII encoding back to hash
  * @param enc the encoding
- * @param result where to store the hash code 
+ * @param result where to store the hash code
  * @return OK on success, SYSERR if result has the wrong encoding
  */
 int enc2hash(const char * enc,
@@ -1376,15 +1376,15 @@ int enc2hash(const char * enc,
  * be somewhat consistent. And of course, the
  * result should be a positive number.
  */
-int distanceHashCode512(const HashCode512 * a, 
+int distanceHashCode512(const HashCode512 * a,
 			const HashCode512 * b);
- 
+
 /**
  * compare two hashcodes.
  */
-int equalsHashCode512(const HashCode512 * a, 
+int equalsHashCode512(const HashCode512 * a,
 		      const HashCode512 * b);
- 
+
 /**
  * Hash block of given size.
  * @param block the data to hash, length is given as a second argument
@@ -1408,9 +1408,9 @@ int getFileHash(const char * filename,
  * @param second the second host
  * @returns 1 if the hosts are the same, 0 otherwise
  */
-int hostIdentityEquals(const PeerIdentity * first, 
+int hostIdentityEquals(const PeerIdentity * first,
 		       const PeerIdentity * second);
- 
+
 void makeRandomId(HashCode512 * result);
 
 /* compute result(delta) = b - a */
@@ -1441,7 +1441,7 @@ void hashToKey(const HashCode512 * hc,
  * @param bit index into the hashcode, [0...159]
  * @return Bit \a bit from hashcode \a code, -1 for invalid index
  */
-int getHashCodeBit(const HashCode512 * code, 
+int getHashCodeBit(const HashCode512 * code,
 		   unsigned int bit);
 
 /**
@@ -1460,11 +1460,11 @@ int hashCodeCompare(const HashCode512 * h1,
 int hashCodeCompareDistance(const HashCode512 * h1,
 			    const HashCode512 * h2,
 			    const HashCode512 * target);
-  
+
 /**
  * create a new hostkey. Callee must free return value.
  */
-struct PrivateKey * makePrivateKey(); 
+struct PrivateKey * makePrivateKey();
 
 /**
  * Deterministically (!) create a hostkey using only the
@@ -1476,7 +1476,7 @@ struct PrivateKey * makeKblockKey(const HashCode512 * input);
  * Free memory occupied by hostkey
  * @param hostkey pointer to the memory to free
  */
-void freePrivateKey(struct PrivateKey * hostkey); 
+void freePrivateKey(struct PrivateKey * hostkey);
 
 /**
  * Extract the public key of the host.
@@ -1511,13 +1511,13 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding);
  * @param target where to store the encrypted block
  * @returns SYSERR on error, OK if ok
  */
-int encryptPrivateKey(const void * block, 
+int encryptPrivateKey(const void * block,
 		      unsigned short size,
 		      const PublicKey * publicKey,
 		      RSAEncryptedData * target);
 
 /**
- * Decrypt a given block with the hostkey. 
+ * Decrypt a given block with the hostkey.
  *
  * @param key the key to use
  * @param block the data to decrypt, encoded as returned by encrypt, not consumed
@@ -1525,7 +1525,7 @@ int encryptPrivateKey(const void * block,
  * @param size how many bytes of a result are expected? Must be exact.
  * @returns the size of the decrypted block (that is, size) or -1 on error
  */
-int decryptPrivateKey(const struct PrivateKey * key, 
+int decryptPrivateKey(const struct PrivateKey * key,
 		      const RSAEncryptedData * block,
 		      void * result,
 		      unsigned short size);
@@ -1538,7 +1538,7 @@ int decryptPrivateKey(const struct PrivateKey * key,
  * @param result where to write the signature
  * @return SYSERR on error, OK on success
  */
-int sign(const struct PrivateKey * key, 
+int sign(const struct PrivateKey * key,
 	 unsigned short size,
 	 const void * block,
 	 Signature * result);
@@ -1546,18 +1546,18 @@ int sign(const struct PrivateKey * key,
 /**
  * Verify signature.
  * @param block the signed data
- * @param len the length of the block 
+ * @param len the length of the block
  * @param sig signature
  * @param publicKey public key of the signer
  * @returns OK if ok, SYSERR if invalid
  */
 int verifySig(const void * block,
 	      unsigned short len,
-	      const Signature * sig,	      
+	      const Signature * sig,	
 	      const PublicKey * publicKey);
 
 /**
- * Initialize the util module. 
+ * Initialize the util module.
  * @param argc the number of arguments
  * @param argv the command line arguments
  * @param parser parser to call at the right moment
@@ -1606,10 +1606,10 @@ void releaseClientSocket(GNUNET_TCP_SOCKET * sock);
  * Read the contents of a bucket to a buffer.
  *
  * @param fn the hashcode representing the entry
- * @param result the buffer to write the result to 
+ * @param result the buffer to write the result to
  *        (*result should be NULL, sufficient space is allocated)
  * @return the number of bytes read on success, -1 on failure
- */ 
+ */
 int stateReadContent(const char * name,
 		     void ** result);
 
@@ -1626,7 +1626,7 @@ int stateAppendContent(const char * name,
 		       const void * block);
 
 /**
- * Write content to a file. 
+ * Write content to a file.
  *
  * @param fn the key for the entry
  * @param len the number of bytes in block
@@ -1639,7 +1639,7 @@ int stateWriteContent(const char * name,
 
 /**
  * Free space in the database by removing one file
- * @param name the hashcode representing the name of the file 
+ * @param name the hashcode representing the name of the file
  *        (without directory)
  */
 int stateUnlinkFromDB(const char * name);
@@ -1771,7 +1771,7 @@ int sendTCPResult(GNUNET_TCP_SOCKET * sock,
  * c) from the configuration (HOSTNAME specification or static IP)
  *
  * Which way applies depends on the OS, the configuration
- * (dynDNS? static IP? NAT?) and at the end what the user 
+ * (dynDNS? static IP? NAT?) and at the end what the user
  * needs.
  *
  * @return SYSERR on error, OK on success
@@ -1787,7 +1787,7 @@ int getPublicIP6Address(IP6addr  * address);
 
 /**
  * Get the load of the CPU relative to what is allowed.
- * 
+ *
  * @return the CPU load as a percentage of allowed
  *        (100 is equivalent to full load)
  */
@@ -1854,9 +1854,9 @@ int assertIsFile(const char * fil);
 
 /**
  * Complete filename (a la shell) from abbrevition.
- * @param fil the name of the file, may contain ~/ or 
+ * @param fil the name of the file, may contain ~/ or
  *        be relative to the current directory
- * @returns the full file name, 
+ * @returns the full file name,
  *          NULL is returned on error
  */
 char * expandFileName(const char * fil);
@@ -1875,7 +1875,7 @@ int mkdirp(const char * dir);
  * @param len the maximum number of bytes to read
  * @param result the buffer to write the result to
  * @return the number of bytes read on success, -1 on failure
- */ 
+ */
 int readFile(const char * fileName,
 	     int len,
 	     void * result);
@@ -1886,8 +1886,8 @@ int readFile(const char * fileName,
  * @param buffer the data to write
  * @param n number of bytes to write
  * @param mode the mode for file permissions
- */ 
-void writeFile(const char * fileName, 
+ */
+void writeFile(const char * fileName,
 	       const void * buffer,
 	       unsigned int n,
 	       const char * mode);
@@ -1901,7 +1901,7 @@ int copyFile(const char * src,
 
 /**
  * Build a filename from directory and filename, completing like the shell does
- * @param dir the name of the directory, may contain ~/ or other shell stuff. Will 
+ * @param dir the name of the directory, may contain ~/ or other shell stuff. Will
  *        NOT be freed!
  * @param fil the name of the file, will NOT be deallocated anymore!
  * @param result where to store the full file name (must be large enough!)
@@ -2083,7 +2083,7 @@ int isSocketBlocking(int s);
  *             0 is returned if no more bytes can be read
  * @return SYSERR on error, YES on success or NO if the operation
  *         would have blocked
- */ 
+ */
 int RECV_NONBLOCKING(int s,
 		     void * buf,
 		     size_t max,
@@ -2115,8 +2115,8 @@ int RECV_BLOCKING_ALL(int s,
  * @param max maximum number of bytes to send
  * @param sent number of bytes actually sent
  * @return SYSERR on error, YES on success or
- *         NO if the operation would have blocked. 
- */ 
+ *         NO if the operation would have blocked.
+ */
 int SEND_NONBLOCKING(int s,
 		     const void * buf,
 		     size_t max,
@@ -2174,10 +2174,10 @@ void vectorFree(struct Vector * v);
 size_t vectorSize(struct Vector * v);
 
 /**
- * Insert a new element in the vector at given index. 
+ * Insert a new element in the vector at given index.
  * @return OK on success, SYSERR if the index is out of bounds.
  */
-int vectorInsertAt(struct Vector * v, 
+int vectorInsertAt(struct Vector * v,
 		   void * object,
 		   unsigned int index);
 
@@ -2190,10 +2190,10 @@ void vectorInsertLast(struct Vector * v, void * object);
  * Return the element at given index in the vector or NULL if the index is out
  * of bounds. The iterator is set to point to the returned element.
  */
-void * vectorGetAt(struct Vector * v, 
+void * vectorGetAt(struct Vector * v,
 		   unsigned int index);
 
-/** 
+/**
  * Return the first element in the vector, whose index is 0, or NULL if the
  * vector is empty. The iterator of the vector is set to point to the first
  * element.
@@ -2209,7 +2209,7 @@ void * vectorGetLast(struct Vector * v);
 /**
  * Return the next element in the vector, as called after vector_get_at() or
  * vector_get_first(). The return value is NULL if there are no more elements
- * in the vector or if the iterator has not been set. 
+ * in the vector or if the iterator has not been set.
  */
 void * vectorGetNext(struct Vector * v);
 
@@ -2221,10 +2221,10 @@ void * vectorGetNext(struct Vector * v);
 void * vectorGetPrevious(struct Vector * v);
 
 /**
- * Delete and return the element at given index. NULL is returned if index is 
- * out of bounds. 
+ * Delete and return the element at given index. NULL is returned if index is
+ * out of bounds.
  */
-void * vectorRemoveAt(struct Vector * v, 
+void * vectorRemoveAt(struct Vector * v,
 		      unsigned int index);
 
 /**
@@ -2240,33 +2240,33 @@ void * vectorRemoveLast(struct Vector * v);
 void * vectorRemoveObject(struct Vector * v, void * object);
 
 /**
- * Set the given index in the vector. The old value of the index is 
+ * Set the given index in the vector. The old value of the index is
  * returned, or NULL if the index is out of bounds.
  */
 void * vectorSetAt(struct Vector * v,
-		   void * object, 
+		   void * object,
 		   unsigned int index);
 
 /**
  * Set the index occupied by the given object to point to the new object.
  * The old object is returned, or NULL if it's not found.
  */
-void * vectorSetObject(struct Vector * v, 
+void * vectorSetObject(struct Vector * v,
 		       void * object,
 		       void * old_object);
 
-/** 
+/**
  * Swaps the contents of index1 and index2. Return value is OK
  * on success, SYSERR if either index is out of bounds.
  */
-int vectorSwap(struct Vector * v, 
-	       unsigned int index1, 
+int vectorSwap(struct Vector * v,
+	       unsigned int index1,
 	       unsigned int index2);
 
 /**
  * Return the index of given element or -1 if the element is not found.
  */
-unsigned int vectorIndexOf(struct Vector * v, 
+unsigned int vectorIndexOf(struct Vector * v,
 			   void * object);
 
 /**

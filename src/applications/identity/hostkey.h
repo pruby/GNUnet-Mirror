@@ -23,7 +23,7 @@
  * @brief module encapsulating our secret key for the peer
  *
  * @author Christian Grothoff
- */ 
+ */
 
 #ifndef HOSTKEY_H
 #define HOSTKEY_H
@@ -36,9 +36,9 @@
  */
 const PublicKey * getPublicPrivateKey();
 
-/** 
+/**
  * Sign arbitrary data. ALWAYS use only on data we generated
- * entirely! 
+ * entirely!
  * @return SYSERR on error, OK on success
  */
 int signData(const void * data,
@@ -46,7 +46,7 @@ int signData(const void * data,
 	     Signature * result);
 
 /**
- * Decrypt a given block with the hostkey. 
+ * Decrypt a given block with the hostkey.
  * @param block the data to decrypt, encoded as returned by encrypt, not consumed
  * @param result pointer to a location where the result can be stored
  * @param max the maximum number of bits to store for the result, if
@@ -58,7 +58,7 @@ int decryptData(const RSAEncryptedData * block,
 		unsigned int max);
 
 
- 
+
 
 void initPrivateKey();
 

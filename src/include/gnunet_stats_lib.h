@@ -51,7 +51,7 @@ typedef int (*StatisticsProcessor)(const char * name,
 
 /**
  * Request statistics from TCP socket.
- * @param sock the socket to use 
+ * @param sock the socket to use
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
@@ -70,7 +70,7 @@ typedef int (*ProtocolProcessor)(unsigned short type,
 
 /**
  * Request available protocols from TCP socket.
- * @param sock the socket to use 
+ * @param sock the socket to use
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */

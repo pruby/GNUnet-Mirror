@@ -42,12 +42,12 @@ int stopTCPServer();
 /**
  * Shutdown the module.
  * @return OK on success, SYSERR on error
- */ 
+ */
 int doneTCPServer();
 
 /**
  * Register a method as a handler for specific message
- * types. 
+ * types.
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns
@@ -61,7 +61,7 @@ int registerCSHandler(const unsigned short type,
 
 /**
  * Unregister a method as a handler for specific message
- * types. 
+ * types.
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns

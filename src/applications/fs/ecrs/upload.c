@@ -103,8 +103,8 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   memcpy(&((char*)db)[size],
 	 chk,
 	 sizeof(CHK));
-  iblocks[level]->size = htonl(size + 
-			       sizeof(CHK) + 
+  iblocks[level]->size = htonl(size +
+			       sizeof(CHK) +
 			       sizeof(Datastore_Value));
   return OK;
 }
@@ -147,7 +147,7 @@ int ECRS_uploadFile(const char * filename,
   cron_t start;
   cron_t now;
   char * uris;
-  FileIdentifier fid; 
+  FileIdentifier fid;
   EncName enc;
 
   cronTime(&start);
@@ -161,8 +161,8 @@ int ECRS_uploadFile(const char * filename,
     return SYSERR;
   }
   sock = getClientSocket();
-  if (sock == NULL) 
-    return SYSERR;  
+  if (sock == NULL)
+    return SYSERR;
   filesize = getFileSize(filename);
   eta = 0;
   if (upcb != NULL)
@@ -174,7 +174,7 @@ int ECRS_uploadFile(const char * filename,
       return SYSERR;
     }
     cronTime(&now);
-    eta = now + 2 * (now - start); 
+    eta = now + 2 * (now - start);
     /* very rough estimate: hash reads once through the file,
        we'll do that once more and write it.  But of course
        the second read may be cached, and we have the encryption,
@@ -216,7 +216,7 @@ int ECRS_uploadFile(const char * filename,
     iblocks[i]->expirationTime = htonll(expirationTime);
     ((DBlock*) &iblocks[i][1])->type = htonl(D_BLOCK);
   }
-  
+
   pos = 0;
   while (pos < filesize) {
     if (upcb != NULL)
@@ -227,19 +227,19 @@ int ECRS_uploadFile(const char * filename,
     size = DBLOCK_SIZE;
     if (size > filesize - pos) {
       size = filesize - pos;
-      memset(&db[1], 
-	     0, 
+      memset(&db[1],
+	     0,
 	     DBLOCK_SIZE);
     }
     dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
-    if (size != READ(fd, 
-		     &db[1], 
+    if (size != READ(fd,
+		     &db[1],
 		     size)) {
-      LOG_FILE_STRERROR(LOG_WARNING, 
+      LOG_FILE_STRERROR(LOG_WARNING,
 			"READ",
 			filename);
       goto FAILURE;
-    }   
+    }
     if (tt != NULL)
       if (OK != tt(ttClosure))
 	goto FAILURE;
@@ -279,7 +279,7 @@ int ECRS_uploadFile(const char * filename,
     cronTime(&now);
     if (pos > 0) {
       eta = (cron_t) (start +
-		      (((double)(now - start)/(double)pos)) 
+		      (((double)(now - start)/(double)pos))
 		      * (double)filesize);
     }
     if (OK != pushBlock(sock,
@@ -290,7 +290,7 @@ int ECRS_uploadFile(const char * filename,
   }
   if (tt != NULL)
     if (OK != tt(ttClosure))
-      goto FAILURE;  
+      goto FAILURE;
   LOG(LOG_DEBUG,
       "Tree depth is %u, walking up tree.\n",
       treedepth);
@@ -311,7 +311,7 @@ int ECRS_uploadFile(const char * filename,
 	size);
     fileBlockGetQuery(db,
 		      size,
-		      &chk.query);   
+		      &chk.query);
     IFLOG(LOG_DEBUG,
 	  hash2enc(&chk.query,
 		   &enc));
@@ -319,9 +319,9 @@ int ECRS_uploadFile(const char * filename,
 	"Query for current block at level %u is %s\n",
 	i,
 	&enc);
-    if (OK != pushBlock(sock, 
+    if (OK != pushBlock(sock,
 			&chk,
-			i+1, 
+			i+1,
 			iblocks))
       goto FAILURE;
     fileBlockEncode(db,
@@ -346,7 +346,7 @@ int ECRS_uploadFile(const char * filename,
 		 &enc));
   LOG(LOG_DEBUG,
       "Query for top block is %s\n",
-      &enc);  
+      &enc);
   /* build URI */
   fid.file_length = htonll(filesize);
   db = (DBlock*) &iblocks[treedepth][1];

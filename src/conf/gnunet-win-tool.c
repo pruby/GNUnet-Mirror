@@ -19,7 +19,7 @@
 */
 
 /**
- * @file conf/gnunet-win-tool.c 
+ * @file conf/gnunet-win-tool.c
  * @brief tool for Windows specific tasks
  * @author Nils Durner
  */
@@ -44,8 +44,8 @@ static void printhelp() {
     HELP_HELP,
     HELP_LOGLEVEL,
     { 'n', "netadapters", NULL, "list all network adapters" },
-    { 'i', "install", NULL, "install GNUnet as Windows service" },    
-    { 'u', "uninstall", NULL, "uninstall GNUnet service" },    
+    { 'i', "install", NULL, "install GNUnet as Windows service" },
+    { 'u', "uninstall", NULL, "uninstall GNUnet service" },
     { 'C', "increase-connections", NULL, "increase the maximum number of TCP/IP connections"},
     HELP_VERSION,
     HELP_END,
@@ -63,7 +63,7 @@ void PrintAdapters()
   PMIB_IFTABLE pTable;
   PMIB_IPADDRTABLE pAddrTable;
   DWORD dwIfIdx;
-  
+
   EnumNICs(&pTable, &pAddrTable);
 
   if (pTable)
@@ -76,7 +76,7 @@ void PrintAdapters()
       memcpy(bPhysAddr,
         pTable->table[dwIfIdx].bPhysAddr,
         pTable->table[dwIfIdx].dwPhysAddrLen);
-      
+
       printf("Index: %i\nAdapter name: %s\nID: %I64u\n",
         (int) pTable->table[dwIfIdx].dwIndex, pTable->table[dwIfIdx].bDescr,
         *((unsigned long long *) bPhysAddr));
@@ -84,9 +84,9 @@ void PrintAdapters()
       /* Get IP-Addresses */
       int i;
       for(i = 0; i < pAddrTable->dwNumEntries; i++)
-      {  
+      {
         if (pAddrTable->table[i].dwIndex == pTable->table[dwIfIdx].dwIndex)
-          printf("Address: %u.%u.%u.%u\n", 
+          printf("Address: %u.%u.%u.%u\n",
             PRIP(ntohl(pAddrTable->table[i].dwAddr)));
       }
       printf("\n");
@@ -103,13 +103,13 @@ void Install()
 {
   HANDLE hManager, hService;
   char szEXE[_MAX_PATH + 17] = "\"";
-  
+
   if (! GNOpenSCManager)
   {
     printf("This version of Windows doesn't support services.\n");
     return;
   }
-  
+
   conv_to_win_path("/bin/gnunetd.exe", szEXE + 1);
   strcat(szEXE, "\" --win-service");
   hManager = GNOpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
@@ -119,7 +119,7 @@ void Install()
     printf("Error: can't open Service Control Manager: %s\n", _win_strerror(errno));
     return;
   }
-  
+
   hService = GNCreateService(hManager, "GNUnet", "GNUnet", 0,
     SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, szEXE,
     NULL, NULL, NULL, NULL, NULL);
@@ -130,9 +130,9 @@ void Install()
     printf("Error: can't create service: %s\n", _win_strerror(errno));
     return;
   }
-  
+
   GNCloseServiceHandle(hService);
-  
+
   printf("GNUnet service installed successfully.\n");
 }
 
@@ -148,7 +148,7 @@ void Uninstall()
     printf("This version of Windows doesn't support services.\n");
     return;
   }
-  
+
   hManager = GNOpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
   if (! hManager)
   {
@@ -163,16 +163,16 @@ void Uninstall()
     printf("Error: can't access service: %s\n", _win_strerror(errno));
     return;
   }
-  
+
   if (! GNDeleteService(hService))
   {
     SetErrnoFromWinError(GetLastError());
     printf("Error: can't delete service: %s\n", _win_strerror(errno));
     return;
   }
-  
+
   GNCloseServiceHandle(hService);
-  
+
   printf("Service deleted.\n");
 }
 
@@ -187,7 +187,7 @@ void IncreaseConnections()
   char szCache[_MAX_PATH + 1], szDriver[_MAX_PATH + 1];
   unsigned long lMem;
   char *pMem;
-  
+
   puts("Warning: This modifies your operating system. Use it at your own risk.\nContinue?[Y/n]");
   switch(_getch())
   {
@@ -201,12 +201,12 @@ void IncreaseConnections()
       return;
   }
   puts("Y\n");
-  
+
   /* Step 1: Registry setting,
      see http://support.microsoft.com/default.aspx?scid=kb;EN-US;314053 */
   printf("Writing to registry... ");
   if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\"
-                                       "Tcpip\\Parameters\\Winsock", 0, 
+                                       "Tcpip\\Parameters\\Winsock", 0,
                    KEY_WRITE, &hKey) != ERROR_SUCCESS)
   {
     DWORD dwErr = GetLastError();
@@ -216,7 +216,7 @@ void IncreaseConnections()
   else
   {
     DWORD dwCon = 0xfffffe;
-    if (RegSetValueEx(hKey, "TcpNumConnections", 0, REG_DWORD, 
+    if (RegSetValueEx(hKey, "TcpNumConnections", 0, REG_DWORD,
                       (const BYTE *) &dwCon, sizeof(dwCon)) != ERROR_SUCCESS)
     {
       DWORD dwErr = GetLastError();
@@ -227,7 +227,7 @@ void IncreaseConnections()
       printf("OK.\n");
     RegCloseKey(hKey);
   }
-  
+
   /* Step 2: Patch tcpip.sys */
   printf("Patching tcpip.sys... ");
   snprintf(szCache, _MAX_PATH, "%s\\SYSTEM32\\DLLCACHE\\tcpip.sys", getenv("windir"));
@@ -238,13 +238,13 @@ void IncreaseConnections()
     printf("failed.\n Cannot open %s\n", szCache);
     return;
   }
-  
+
   if (fseek(pFile, 0, SEEK_END))
   {
     printf("failed.\n Cannot seek.\n");
     return;
   }
-  
+
   lMem = ftell(pFile);
   pMem = malloc(lMem);
   if (! pMem)
@@ -253,7 +253,7 @@ void IncreaseConnections()
     fclose(pFile);
     return;
   }
-  
+
   fseek(pFile, 0, SEEK_SET);
   fread(pMem, 1, lMem, pFile);
 
@@ -262,7 +262,7 @@ void IncreaseConnections()
     case 2151852539:
       memcpy(pMem + 0x130, chunk1, 4);
       memcpy(pMem + 0x4F322, chunk2, 4);
-      break;   
+      break;
     case 2437296753:
       printf("already patched.\n");
       free(pMem);
@@ -274,7 +274,7 @@ void IncreaseConnections()
       fclose(pFile);
       return;
   }
-  
+
   fseek(pFile, 0, SEEK_SET);
   fwrite(pMem, 1, lMem, pFile);
   fclose(pFile);
@@ -304,7 +304,7 @@ void doHash()
   getFileHash(hashFile, &code);
   hash2enc(&code, &hex);
   printf("RIPEMD160(%s)= ", hashFile);
-  
+
   /* Flip byte order */
   c = (char *) hex.encoding;
   while(*c)
@@ -332,34 +332,34 @@ static int parseOptions(int argc, char ** argv) {
 
   while (1) {
     static struct GNoption long_options[] = {
-      { "netadapters",          0, 0, 'n' }, 
-      { "install",              0, 0, 'i' }, 
-      { "uninstall",            0, 0, 'u' }, 
+      { "netadapters",          0, 0, 'n' },
+      { "install",              0, 0, 'i' },
+      { "uninstall",            0, 0, 'u' },
       { "increase-connections", 0, 0, 'C' },
       { "filehash",             1, 0, 'R' },
       LONG_DEFAULT_OPTIONS,
       { 0,0,0,0 }
-    };    
+    };
     option_index = 0;
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhdc:L:H:niuCR:", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "vhdc:L:H:niuCR:",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     bPrintHelp = FALSE;
-      
+
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
-      case 'v': 
+      case 'v':
         printf("GNUnet v%s, gnunet-win-tool v%s\n",
   	      VERSION, WINTOOL_VERSION);
         return SYSERR;
-      case 'h': 
-        printhelp(); 
+      case 'h':
+        printhelp();
         return SYSERR;
       case 'n':
         bPrintAdapters = YES;
@@ -377,7 +377,7 @@ static int parseOptions(int argc, char ** argv) {
         hashFile = MALLOC(strlen(GNoptarg) + 1);
         strcpy(hashFile, GNoptarg);
         break;
-      default: 
+      default:
         LOG(LOG_FAILURE,
         	  "Unknown option %c. Aborting.\n"\
         	  "Use --help to get a list of options.\n",
@@ -385,13 +385,13 @@ static int parseOptions(int argc, char ** argv) {
         return -1;
     } /* end of parsing commandline */
   } /* while (1) */
-  
+
   if (bPrintHelp) {
     printhelp();
-    
+
     return SYSERR;
   }
-  
+
   return OK;
 }
 
@@ -401,7 +401,7 @@ static int parseOptions(int argc, char ** argv) {
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return 0 ok, 1 on error
- */   
+ */
 int main(int argc, char ** argv) {
   int res;
 

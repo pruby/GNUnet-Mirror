@@ -54,11 +54,11 @@ void disableCoreProcessing();
  * Handle a message (that was decrypted if needed).  Processes the
  * message by calling the registered handler for each message part.
  *
- * @param wasEncrypted YES if it was encrypted, 
+ * @param wasEncrypted YES if it was encrypted,
  *                     NO if plaintext,
  */
 void injectMessage(const PeerIdentity * sender,
-		   const char * msg,		   
+		   const char * msg,		
 		   unsigned int size,
 		   int wasEncrypted,
 		   TSession * session);
@@ -72,7 +72,7 @@ void core_receive(MessagePack * mp);
 
 /**
  * Register a method as a handler for specific message
- * types. 
+ * types.
  * @param type the message type
  * @param callback the method to call if a message of
  *        that type is received, if the callback returns
@@ -82,7 +82,7 @@ void core_receive(MessagePack * mp);
  *         handler for that type
  */
 int registerp2pHandler(const unsigned short type,
-		       MessagePartHandler callback); 
+		       MessagePartHandler callback);
 
 
 /**

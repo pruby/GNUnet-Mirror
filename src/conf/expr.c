@@ -5,7 +5,7 @@
 
 /**
  * @brief GNUnet Setup
- * @file conf/expr.c 
+ * @file conf/expr.c
  * @author Roman Zippel
  * @author Nils Durner
  */

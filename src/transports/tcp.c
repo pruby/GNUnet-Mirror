@@ -32,7 +32,7 @@
 
 /**
  * after how much time of the core not being associated with a tcp
- * connection anymore do we close it? 
+ * connection anymore do we close it?
  */
 #define TCP_TIMEOUT 30 * cronSECONDS
 
@@ -41,31 +41,31 @@
  */
 typedef struct {
   /**
-   * claimed IP of the sender, network byte order 
-   */  
+   * claimed IP of the sender, network byte order
+   */
   IPaddr ip;
 
   /**
-   * claimed port of the sender, network byte order 
+   * claimed port of the sender, network byte order
    */
-  unsigned short port; 
+  unsigned short port;
 
   /**
-   * reserved (set to 0 for signature verification) 
+   * reserved (set to 0 for signature verification)
    */
-  unsigned short reserved; 
+  unsigned short reserved;
 
 } HostAddress;
 
 /**
- * TCP Message-Packet header. 
+ * TCP Message-Packet header.
  */
 typedef struct {
   /**
-   * size of the message, in bytes, including this header; 
+   * size of the message, in bytes, including this header;
    * max 65535; we do NOT want to make this field an int
    * because then a malicious peer could cause us to allocate
-   * lots of memory -- this bounds it by 64k/peer. 
+   * lots of memory -- this bounds it by 64k/peer.
    * Field is in network byte order.
    */
   unsigned short size;
@@ -76,7 +76,7 @@ typedef struct {
   unsigned short reserved;
 
   /**
-   * This struct is followed by MESSAGE_PARTs - until size is reached 
+   * This struct is followed by MESSAGE_PARTs - until size is reached
    * There is no "end of message".
    */
 } TCPMessagePack;
@@ -87,8 +87,8 @@ typedef struct {
  */
 typedef struct {
   /**
-   * size of the handshake message, in nbo, value is 24 
-   */    
+   * size of the handshake message, in nbo, value is 24
+   */
   unsigned short size;
 
   /**
@@ -97,7 +97,7 @@ typedef struct {
   unsigned short version;
 
   /**
-   * Identity of the node connecting (TCP client) 
+   * Identity of the node connecting (TCP client)
    */
   PeerIdentity clientIdentity;
 } TCPWelcome;
@@ -107,12 +107,12 @@ typedef struct {
  */
 typedef struct {
   /**
-   * the tcp socket 
+   * the tcp socket
    */
   int sock;
 
   /**
-   * number of users of this session 
+   * number of users of this session
    */
   int users;
 
@@ -122,7 +122,7 @@ typedef struct {
   cron_t lastUse;
 
   /**
-   * mutex for synchronized access to 'users' 
+   * mutex for synchronized access to 'users'
    */
   Mutex lock;
 
@@ -140,7 +140,7 @@ typedef struct {
   /**
    * Current read position in the buffer.
    */
-  unsigned int pos;  
+  unsigned int pos;
 
   /**
    * Current size of the read buffer.
@@ -172,14 +172,14 @@ typedef struct {
 /* *********** globals ************* */
 
 /**
- * apis (our advertised API and the core api ) 
+ * apis (our advertised API and the core api )
  */
 static CoreAPIForTransport * coreAPI;
 static TransportAPI tcpAPI;
 
 /**
  * one thread for listening for new connections,
- * and for reading on all open sockets 
+ * and for reading on all open sockets
  */
 static PTHREAD_T listenThread;
 
@@ -197,7 +197,7 @@ static int tcp_sock;
 static int tcp_pipe[2];
 
 /**
- * Array of currently active TCP sessions. 
+ * Array of currently active TCP sessions.
  */
 static TSession ** tsessions = NULL;
 static int tsessionCount;
@@ -254,7 +254,7 @@ static void signalSelect() {
   ret = WRITE(tcp_pipe[1],
 	      &i,
 	      sizeof(char));
-  if (ret != sizeof(char)) 
+  if (ret != sizeof(char))
     LOG_STRERROR(LOG_ERROR, "write");
 }
 
@@ -301,7 +301,7 @@ static int tcpDisconnect(TSession * tsession) {
  *
  * @param i index to the session handle
  */
-static void destroySession(int i) {  
+static void destroySession(int i) {
   TCPSession * tcpSession;
 
   tcpSession = tsessions[i]->internal;
@@ -317,7 +317,7 @@ static void destroySession(int i) {
 
 /**
  * Get the GNUnet UDP port from the configuration,
- * or from /etc/services if it is not specified in 
+ * or from /etc/services if it is not specified in
  * the config file.
  */
 static unsigned short getGNUnetTCPPort() {
@@ -327,8 +327,8 @@ static unsigned short getGNUnetTCPPort() {
   port = (unsigned short) getConfigurationInt("TCP",
 					      "PORT");
   if (port == 0) { /* try lookup in services */
-    if ((pse = getservbyname("gnunet", "tcp"))) 
-      port = htons(pse->s_port);      
+    if ((pse = getservbyname("gnunet", "tcp")))
+      port = htons(pse->s_port);
   }
   return port;
 }
@@ -345,7 +345,7 @@ static unsigned short getGNUnetTCPPort() {
  * for eventually freeing resources associated with the tesession). If
  * session is not NULL, the core takes responsbility for eventually
  * calling disconnect.
- * 
+ *
  * @param tsession the session handle passed along
  *   from the call to receive that was made by the transport
  *   layer
@@ -368,7 +368,7 @@ static int tcpAssociate(TSession * tsession) {
 
 /**
  * The socket of session i has data waiting, process!
- * 
+ *
  * This function may only be called if the tcplock is
  * already held by the caller.
  */
@@ -405,12 +405,12 @@ static int readAndProcess(int i) {
   }
   if (ret < 0) {
     if ( (errno == EINTR) ||
-	 (errno == EAGAIN) ) { 
+	 (errno == EAGAIN) ) {
 #if DEBUG_TCP
       LOG_STRERROR(LOG_DEBUG, "read");
 #endif
       tcpDisconnect(tsession);
-      return OK;    
+      return OK;
     }
 #if DEBUG_TCP
     LOG_STRERROR(LOG_INFO, "read");
@@ -431,21 +431,21 @@ static int readAndProcess(int i) {
     LOG(LOG_DEBUG,
 	"Read %d bytes on socket %d, expecting %d for full message\n",
 	tcpSession->pos,
-	tcpSession->sock, 
+	tcpSession->sock,
 	len);
 #endif
     if (tcpSession->pos < len) {
       tcpDisconnect(tsession);
       return OK;
     }
-    
+
     /* complete message received, let's check what it is */
     if (YES == tcpSession->expectingWelcome) {
       TCPWelcome * welcome;
-#if DEBUG_TCP 
+#if DEBUG_TCP
       EncName enc;
 #endif
-      
+
       welcome = (TCPWelcome*) &tcpSession->rbuff[0];
       if ( (ntohs(welcome->version) != 0) ||
 	   (ntohs(welcome->size) != sizeof(TCPWelcome)) ) {
@@ -456,7 +456,7 @@ static int readAndProcess(int i) {
       }
       tcpSession->expectingWelcome = NO;
       tcpSession->sender = welcome->clientIdentity;
-#if DEBUG_TCP 
+#if DEBUG_TCP
       IFLOG(LOG_DEBUG,
 	    hash2enc(&tcpSession->sender.hashPubKey,
 		     &enc));
@@ -467,15 +467,15 @@ static int readAndProcess(int i) {
       memmove(&tcpSession->rbuff[0],
 	      &tcpSession->rbuff[sizeof(TCPWelcome)],
 	      tcpSession->pos - sizeof(TCPWelcome));
-      tcpSession->pos -= sizeof(TCPWelcome); 
+      tcpSession->pos -= sizeof(TCPWelcome);
       len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) + sizeof(TCPMessagePack);
-    } 
+    }
     if ( (tcpSession->pos < 2) ||
 	 (tcpSession->pos < len) ) {
       tcpDisconnect(tsession);
       return OK;
     }
-    
+
     pack = (TCPMessagePack*)&tcpSession->rbuff[0];
     /* send msg to core! */
     if (len <= sizeof(TCPMessagePack)) {
@@ -527,7 +527,7 @@ static int addTSession(TSession * tsession) {
   int i;
 
   MUTEX_LOCK(&tcplock);
-  if (tsessionCount == tsessionArrayLength) 
+  if (tsessionCount == tsessionArrayLength)
     GROW(tsessions,
 	 tsessionArrayLength,
 	 tsessionArrayLength * 2);
@@ -554,7 +554,7 @@ static void createNewSession(int sock) {
   tcpSession->wbuff = NULL;
   tcpSession->wsize = 0;
   tcpSession->sock = sock;
-  /* fill in placeholder identity to mark that we 
+  /* fill in placeholder identity to mark that we
      are waiting for the welcome message */
   tcpSession->sender = *(coreAPI->myIdentity);
   tcpSession->expectingWelcome = YES;
@@ -565,7 +565,7 @@ static void createNewSession(int sock) {
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
   addTSession(tsession);
-}					 
+}					
 
 /**
  * Main method for the thread listening on the tcp socket and all tcp
@@ -584,7 +584,7 @@ static void * tcpListenMain() {
   int i;
   int max;
   int ret;
-  
+
   if (tcp_sock != -1)
     if (0 != LISTEN(tcp_sock, 5))
       LOG_STRERROR(LOG_ERROR, "listen");
@@ -634,13 +634,13 @@ static void * tcpListenMain() {
       }
       if (sock > max)
 	max = sock;
-    }    
+    }
     MUTEX_UNLOCK(&tcplock);
-    ret = SELECT(max+1, &readSet, &writeSet, &errorSet, NULL);    
+    ret = SELECT(max+1, &readSet, &writeSet, &errorSet, NULL);
     MUTEX_LOCK(&tcplock);
     if ( (ret == -1) &&
-	 ( (errno == EAGAIN) || (errno == EINTR) ) ) 
-      continue;    
+	 ( (errno == EAGAIN) || (errno == EINTR) ) )
+      continue;
     if (ret == -1) {
       if (errno == EBADF) {
 	LOG_STRERROR(LOG_ERROR, "select");
@@ -652,14 +652,14 @@ static void * tcpListenMain() {
       if (FD_ISSET(tcp_sock, &readSet)) {
 	int sock;
 	
-	lenOfIncomingAddr = sizeof(clientAddr); 
-	sock = ACCEPT(tcp_sock, 
-		      (struct sockaddr *)&clientAddr, 
+	lenOfIncomingAddr = sizeof(clientAddr);
+	sock = ACCEPT(tcp_sock,
+		      (struct sockaddr *)&clientAddr,
 		      &lenOfIncomingAddr);
-	if (sock != -1) {	  
+	if (sock != -1) {	
 	  /* verify clientAddr for eligibility here (ipcheck-style,
 	     user should be able to specify who is allowed to connect,
-	     otherwise we just close and reject the communication! */  
+	     otherwise we just close and reject the communication! */
 
 	  IPaddr ipaddr;
 	  GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
@@ -679,7 +679,7 @@ static void * tcpListenMain() {
 		"Accepted connection from %u.%u.%u.%u.\n",
 		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));	
 #endif
-	    createNewSession(sock);      
+	    createNewSession(sock);
 	  }
 	} else {
 	  LOG_STRERROR(LOG_INFO, "accept");
@@ -692,8 +692,8 @@ static void * tcpListenMain() {
 #define MAXSIG_BUF 128
       char buf[MAXSIG_BUF];
       /* just a signal to refresh sets, eat and continue */
-      if (0 >= READ(tcp_pipe[0], 
-		    &buf[0], 
+      if (0 >= READ(tcp_pipe[0],
+		    &buf[0],
 		    MAXSIG_BUF)) {
 	LOG_STRERROR(LOG_WARNING, "read");
       }
@@ -729,7 +729,7 @@ try_again_1:
   	  gnunet_util_sleep(20);
   	  goto try_again_1;
         }
-        
+
 	if (ret == 0) {
           /* send only returns 0 on error (other side closed connection),
 	   * so close the session */
@@ -768,7 +768,7 @@ try_again_1:
     tcp_sock = -1;
   }
   /* close all sessions */
-  while (tsessionCount > 0) 
+  while (tsessionCount > 0)
     destroySession(0);
   MUTEX_UNLOCK(&tcplock);
   SEMAPHORE_UP(serverSignal); /* we are there! */
@@ -823,7 +823,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
   }
   if (success == NO)
     ret = 0;
- 
+
   if (ret < ssize) {/* partial send */
     if (tcpSession->wsize < ssize - ret) {
       GROW(tcpSession->wbuff,
@@ -858,7 +858,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
   int ok;
 
   if (tcp_shutdown == YES)
-    return SYSERR;  
+    return SYSERR;
   if (tcpSession->sock == -1) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
@@ -878,7 +878,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 	 tcpSession->wpos + ssize);
     memcpy(&tcpSession->wbuff[old],
 	   mp,
-	   ssize);    
+	   ssize);
     ok = OK;
   } else {
     ok = tcpDirectSend(tcpSession,
@@ -904,7 +904,7 @@ static int tcpSendReliable(TSession * tsession,
 			   const unsigned int size) {
   TCPMessagePack * mp;
   int ok;
-  
+
   if (size >= MAX_BUFFER_SIZE)
     return SYSERR;
   if (tcp_shutdown == YES)
@@ -920,7 +920,7 @@ static int tcpSendReliable(TSession * tsession,
 	 msg,
 	 size);
   mp->size = htons(size);
-  mp->reserved = 0;  
+  mp->reserved = 0;
   ok = tcpDirectSendReliable(tsession->internal,
 			     mp,
 			     size + sizeof(TCPMessagePack));
@@ -932,7 +932,7 @@ static int tcpSendReliable(TSession * tsession,
  * Verify that a HELO-Message is correct (a node
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
- * success. 
+ * success.
  * @param helo the HELO message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
@@ -954,7 +954,7 @@ static int verifyHelo(const HELO_Message * helo) {
 /**
  * Create a HELO-Message for the current node. The HELO is
  * created without signature and without a timestamp. The
- * GNUnet core will sign the message and add an expiration time. 
+ * GNUnet core will sign the message and add an expiration time.
  *
  * @param helo address where to store the pointer to the HELO
  *        message
@@ -980,7 +980,7 @@ static int createHELO(HELO_Message ** helo) {
 	_("Could not determine my public IP address.\n"));
     return SYSERR;
   }
-  haddr->port = htons(port); 
+  haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol = htons(TCP_PROTOCOL_NUMBER);
@@ -1012,11 +1012,11 @@ static int tcpConnect(HELO_Message * helo,
 #if DEBUG_TCP
   LOG(LOG_DEBUG,
       "Creating TCP connection to %u.%u.%u.%u:%u.\n",
-      PRIP(ntohl(*(int*)&haddr->ip.addr)), 
+      PRIP(ntohl(*(int*)&haddr->ip.addr)),
       ntohs(haddr->port));
 #endif
   sock = SOCKET(PF_INET,
-		SOCK_STREAM, 
+		SOCK_STREAM,
 		6); /* 6: TCP */
   if (sock == -1) {
     LOG_STRERROR(LOG_FAILURE, "socket");
@@ -1037,7 +1037,7 @@ static int tcpConnect(HELO_Message * helo,
 	 &haddr->ip,
 	 sizeof(IPaddr));
   soaddr.sin_port = haddr->port;
-  i = CONNECT(sock, 
+  i = CONNECT(sock,
 	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr));
   if ( (i < 0) &&
@@ -1049,7 +1049,7 @@ static int tcpConnect(HELO_Message * helo,
 	STRERROR(errno));
     CLOSE(sock);
     return SYSERR;
-  }  
+  }
   if (0 != setBlocking(sock, NO)) {
     LOG_STRERROR(LOG_FAILURE, "setBlocking");
     CLOSE(sock);
@@ -1089,7 +1089,7 @@ static int tcpConnect(HELO_Message * helo,
   }
   MUTEX_UNLOCK(&tcplock);
   signalSelect();
-  
+
   *tsessionPtr = tsession;
   FREE(helo);
   return OK;
@@ -1108,17 +1108,17 @@ static int tcpSend(TSession * tsession,
 		   const unsigned int size) {
   TCPMessagePack * mp;
   int ok;
- 
+
   if (size >= MAX_BUFFER_SIZE)
     return SYSERR;
- 
+
   if (tcp_shutdown == YES)
     return SYSERR;
   if (size == 0) {
     BREAK();
     return SYSERR;
   }
-  if (((TCPSession*)tsession->internal)->sock == -1) 
+  if (((TCPSession*)tsession->internal)->sock == -1)
     return SYSERR; /* other side closed connection */
   mp = MALLOC(sizeof(TCPMessagePack) + size);
   memcpy(&mp[1],
@@ -1141,24 +1141,24 @@ static int startTransportServer(void) {
   struct sockaddr_in serverAddr;
   const int on = 1;
   unsigned short port;
-  
+
   if (serverSignal != NULL) {
     BREAK();
     return SYSERR;
   }
   serverSignal = SEMAPHORE_NEW(0);
   tcp_shutdown = NO;
-    
+
   if (0 != PIPE(tcp_pipe)) {
     LOG_STRERROR(LOG_ERROR, "pipe");
     return SYSERR;
   }
-  setBlocking(tcp_pipe[1], NO);  
+  setBlocking(tcp_pipe[1], NO);
 
   port = getGNUnetTCPPort();
   if (port != 0) { /* if port == 0, this is a read-only
 		      business! */
-    tcp_sock = SOCKET(PF_INET, 
+    tcp_sock = SOCKET(PF_INET,
 		      SOCK_STREAM,
 		      0);
     if (tcp_sock < 0) {
@@ -1166,17 +1166,17 @@ static int startTransportServer(void) {
       CLOSE(tcp_pipe[0]);
       CLOSE(tcp_pipe[1]);
       SEMAPHORE_FREE(serverSignal);
-      serverSignal = NULL;      
+      serverSignal = NULL;
       tcp_shutdown = YES;
       return SYSERR;
     }
     if (SETSOCKOPT(tcp_sock,
-		   SOL_SOCKET, 
-		   SO_REUSEADDR, 
-		   &on, 
-		   sizeof(on)) < 0 ) 
+		   SOL_SOCKET,
+		   SO_REUSEADDR,
+		   &on,
+		   sizeof(on)) < 0 )
       DIE_STRERROR("setsockopt");
-    memset((char *) &serverAddr, 
+    memset((char *) &serverAddr,
 	   0,
 	   sizeof(serverAddr));
     serverAddr.sin_family      = AF_INET;
@@ -1188,7 +1188,7 @@ static int startTransportServer(void) {
 	"tcp",
 	ntohs(serverAddr.sin_port));
 #endif
-    if (BIND(tcp_sock, 
+    if (BIND(tcp_sock,
 	     (struct sockaddr *) &serverAddr,
 	     sizeof(serverAddr)) < 0) {
       LOG_STRERROR(LOG_ERROR, "bind");
@@ -1203,13 +1203,13 @@ static int startTransportServer(void) {
     }
   } else
     tcp_sock = -1;
-  if (0 == PTHREAD_CREATE(&listenThread, 
+  if (0 == PTHREAD_CREATE(&listenThread,
 			  (PThreadMain) &tcpListenMain,
 			  NULL,
 			  4092)) {
     SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */
   } else {
-    LOG_STRERROR(LOG_ERROR, 
+    LOG_STRERROR(LOG_ERROR,
 		 "pthread_create");
     CLOSE(tcp_sock);
     SEMAPHORE_FREE(serverSignal);
@@ -1226,10 +1226,10 @@ static int startTransportServer(void) {
 static int stopTransportServer() {
   void * unused;
   int haveThread;
-  
+
   if (tcp_shutdown == YES)
     return OK;
-  tcp_shutdown = YES;  
+  tcp_shutdown = YES;
   signalSelect();
   if (serverSignal != NULL) {
     haveThread = YES;
@@ -1237,7 +1237,7 @@ static int stopTransportServer() {
     SEMAPHORE_FREE(serverSignal);
   } else
     haveThread = NO;
-  serverSignal = NULL; 
+  serverSignal = NULL;
   CLOSE(tcp_pipe[1]);
   CLOSE(tcp_pipe[0]);
   if (tcp_sock != -1) {
@@ -1276,25 +1276,25 @@ static char * addressToString(const HELO_Message * helo) {
   char * ret;
   HostAddress * haddr;
   size_t n;
-  
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];  
+
+  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   n = 4*4+6+6;
   ret = MALLOC(n);
   SNPRINTF(ret,
 	   n,
 	   "%u.%u.%u.%u:%u (TCP)",
-	   PRIP(ntohl(*(int*)&haddr->ip.addr)), 
+	   PRIP(ntohl(*(int*)&haddr->ip.addr)),
 	   ntohs(haddr->port));
   return ret;
 }
 
- 
+
 /* ******************** public API ******************** */
- 
+
 /**
  * The exported method. Makes the core api available
  * via a global and returns the udp transport API.
- */ 
+ */
 TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   MUTEX_CREATE_RECURSIVE(&tcplock);
   reloadConfiguration();
@@ -1324,9 +1324,9 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
 
 void donetransport_tcp() {
   int i;
-  for (i=tsessionCount-1;i>=0;i--) 
-    destroySession(i); 
-  GROW(tsessions, 
+  for (i=tsessionCount-1;i>=0;i--)
+    destroySession(i);
+  GROW(tsessions,
        tsessionArrayLength,
        0);
   FREENONNULL(filteredNetworks_);

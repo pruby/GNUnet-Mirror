@@ -72,7 +72,7 @@ static PTHREAD_T gather_thread;
 
 
 static int aquire(const HashCode512 * key,
-		  const Datastore_Value * value, 
+		  const Datastore_Value * value,
 		  void * closure) {
   int load;
 
@@ -90,7 +90,7 @@ static int aquire(const HashCode512 * key,
 	 ntohl(value->size));
   rCBPos++;
   MUTEX_UNLOCK(&lock);
-  load = getCPULoad(); /* FIXME: should use 'IO load' here */      
+  load = getCPULoad(); /* FIXME: should use 'IO load' here */
   if (load < 10)
     load = 10;    /* never sleep less than 500 ms */
   if (load > 100)
@@ -98,7 +98,7 @@ static int aquire(const HashCode512 * key,
 		     might show up badly in the shutdown sequence... */
   if (doneSignal != NULL)
     return SYSERR;
-  /* the higher the load, the longer the sleep */ 
+  /* the higher the load, the longer the sleep */
   gnunet_util_sleep(50 * cronMILLIS * load);
   if (doneSignal != NULL)
     return SYSERR;
@@ -116,7 +116,7 @@ static void * rcbAcquire(void * unused) {
 			      NULL);
     /* sleep here, too - otherwise we start looping immediately
        if there is no content in the DB! */
-    load = getCPULoad(); 
+    load = getCPULoad();
     if (load < 10)
       load = 10;    /* never sleep less than 500 ms */
     if (load > 100)
@@ -143,7 +143,7 @@ int getRandom(const HashCode512 * receiver,
   unsigned int minDist;
   int minIdx;
   int i;
-  
+
   minIdx = -1;
   minDist = -1; /* max */
   MUTEX_LOCK(&lock);
@@ -156,7 +156,7 @@ int getRandom(const HashCode512 * receiver,
     if (dist < minDist) {
       minIdx = i;
       minDist = dist;
-    }    
+    }
   }
   if (minIdx == -1) {
     MUTEX_UNLOCK(&lock);
@@ -164,19 +164,19 @@ int getRandom(const HashCode512 * receiver,
   }
   *key = randomContentBuffer[minIdx].key;
   *value = randomContentBuffer[minIdx].value;
-  
-  randomContentBuffer[minIdx] 
+
+  randomContentBuffer[minIdx]
     = randomContentBuffer[rCBPos];
   randomContentBuffer[rCBPos].value = NULL;
   MUTEX_UNLOCK(&lock);
   SEMAPHORE_UP(acquireMoreSignal);
   return OK;
 }
-				  
+				
 void initPrefetch(SQstore_ServiceAPI * s) {
   sq = s;
   memset(&randomContentBuffer,
-	 0, 
+	 0,
 	 sizeof(ContentBuffer *)*RCB_SIZE);
   acquireMoreSignal = SEMAPHORE_NEW(RCB_SIZE);
   doneSignal = NULL;
@@ -184,7 +184,7 @@ void initPrefetch(SQstore_ServiceAPI * s) {
   if (0 != PTHREAD_CREATE(&gather_thread,
 			  (PThreadMain)&rcbAcquire,
 			  NULL,
-			  64*1024)) 
+			  64*1024))
     DIE_STRERROR("pthread_create");
 }
 
@@ -198,7 +198,7 @@ void donePrefetch() {
   SEMAPHORE_FREE(acquireMoreSignal);
   SEMAPHORE_FREE(doneSignal);
   MUTEX_DESTROY(&lock);
-  for (i=0;i<rCBPos;i++) 
+  for (i=0;i<rCBPos;i++)
     FREENONNULL(randomContentBuffer[i].value);
   PTHREAD_JOIN(&gather_thread, &unused);
 }

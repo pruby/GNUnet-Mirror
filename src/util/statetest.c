@@ -8,9 +8,9 @@
 #include "platform.h"
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   char c;
 
@@ -20,18 +20,18 @@ static int parseCommandLine(int argc,
       { "config",  1, 0, 'c' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "c:", 
-		      long_options, 
+		      argv,
+		      "c:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
-    case 'c': 
+    case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));
@@ -47,7 +47,7 @@ static int parseCommandLine(int argc,
 #define TH "TestHandle"
 
 int testState() {
-  char * testString = "Hello World";  
+  char * testString = "Hello World";
   char * ret;
 
   stateUnlinkFromDB(TH); /* go to defined state */

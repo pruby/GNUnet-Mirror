@@ -25,7 +25,7 @@
 
 /**
  * Size of a DBlock.  Currently set for debugging.
- * Should be a multiple of 8 and larger than 
+ * Should be a multiple of 8 and larger than
  * sizeof(CHK). [ 32768? ]
  */
 #define DBLOCK_SIZE (sizeof(CHK) * 2 + 8)

@@ -1,4 +1,4 @@
-/** 
+/**
  * @file test/identitytest.c
  * @brief testcase for util/identity.c
  */
@@ -15,9 +15,9 @@ static int check() {
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   char c;
 
@@ -27,18 +27,18 @@ static int parseCommandLine(int argc,
       { "config",  1, 0, 'c' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "c:", 
-		      long_options, 
+		      argv,
+		      "c:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
-    case 'c': 
+    case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));
@@ -62,7 +62,7 @@ int main(int argc,
   ret = check();
   if (ret != 0)
     fprintf(stderr,
-	    "ERROR %d.  Did you configure GNUnet properly?\n", 
+	    "ERROR %d.  Did you configure GNUnet properly?\n",
 	    ret);
   doneUtil();
   return ret;

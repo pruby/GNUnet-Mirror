@@ -44,7 +44,7 @@ static int stat_p2p_replies;
 typedef struct {
   PeerIdentity initiator;
   PeerIdentity replyTo;
-  TIME_T timestamp;  
+  TIME_T timestamp;
   unsigned int priority;
 } RTE;
 
@@ -110,11 +110,11 @@ static int handlep2pReply(const PeerIdentity * sender,
 	
 	csReply = MALLOC(sizeof(TRACEKIT_CS_REPLY)+hostCount*sizeof(PeerIdentity));
 	/* build msg */
-	csReply->header.size 
+	csReply->header.size
 	  = htons(sizeof(TRACEKIT_CS_REPLY)+hostCount*sizeof(PeerIdentity));
-	csReply->header.type 
+	csReply->header.type
 	  = htons(TRACEKIT_CS_PROTO_REPLY);
-	csReply->responderId 
+	csReply->responderId
 	  = reply->responderId;
 	memcpy(&((TRACEKIT_CS_REPLY_GENERIC*)csReply)->peerList[0],
 	       &((TRACEKIT_p2p_REPLY_GENERIC*)reply)->peerList[0],
@@ -189,7 +189,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
 
   hash2enc(&sender->hashPubKey,
 	   &sen);
-  if (ntohs(message->size) != 
+  if (ntohs(message->size) !=
       sizeof(TRACEKIT_p2p_PROBE)) {
     LOG(LOG_WARNING,
 	_("Received invalid '%s' message from '%s'.\n"),
@@ -207,7 +207,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
   if ((TIME_T)ntohl(msg->timestamp) > 3600 + now) {
     LOG(LOG_DEBUG,
 	"TRACEKIT: probe has timestamp in the far future (%d > %d), dropping\n",
-	ntohl(msg->timestamp), 
+	ntohl(msg->timestamp),
 	3600 + now);
     return SYSERR; /* Timestamp is more than 1h in the future. Invalid! */
   }
@@ -257,14 +257,14 @@ static int handlep2pProbe(const PeerIdentity * sender,
   }
   if (routeTable[sel] == NULL)
     routeTable[sel] = MALLOC(sizeof(RTE));
-  routeTable[sel]->timestamp 
+  routeTable[sel]->timestamp
     = ntohl(msg->timestamp);
   routeTable[sel]->priority
     = ntohl(msg->priority);
-  routeTable[sel]->initiator 
+  routeTable[sel]->initiator
     = msg->initiatorId;
   routeTable[sel]->replyTo
-    = *sender;  
+    = *sender;
   MUTEX_UNLOCK(&lock);
   LOG(LOG_DEBUG,
       "TRACEKIT-PROBE started at %d by peer '%s' received, processing in slot %d with %u hops\n",
@@ -280,7 +280,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
     coreAPI->forAllConnectedNodes((PerNodeCallback) & transmit,
 				  msg);
 #if VERBOSE_STATS
-    statChange(stat_p2p_requests, 
+    statChange(stat_p2p_requests,
 	       count);
 #endif
   }
@@ -292,13 +292,13 @@ static int handlep2pProbe(const PeerIdentity * sender,
   closure.pos = 0;
   coreAPI->forAllConnectedNodes((PerNodeCallback)&getPeerCallback,
 				&closure);
-  reply->header.type 
+  reply->header.type
     = htons(TRACEKIT_p2p_PROTO_REPLY);
-  reply->initiatorId 
+  reply->initiatorId
     = msg->initiatorId;
   reply->responderId
     = *(coreAPI->myIdentity);
-  reply->initiatorTimestamp 
+  reply->initiatorTimestamp
     = msg->timestamp;
   reply->clientId
     = msg->clientId;
@@ -308,11 +308,11 @@ static int handlep2pProbe(const PeerIdentity * sender,
     int maxBytes;
     int batchSize;
 
-    if (size > 1024) {     
+    if (size > 1024) {
       batchSize = (1024 - sizeof(TRACEKIT_p2p_REPLY) / sizeof(PeerIdentity));
       maxBytes = sizeof(TRACEKIT_p2p_REPLY) + sizeof(PeerIdentity) * batchSize;
     } else {
-      batchSize = (size - sizeof(TRACEKIT_p2p_REPLY)) / sizeof(PeerIdentity); 
+      batchSize = (size - sizeof(TRACEKIT_p2p_REPLY)) / sizeof(PeerIdentity);
       maxBytes = size;
     }
     reply->header.size
@@ -357,7 +357,7 @@ static int csHandle(ClientHandle client,
 
   /* build probe, broadcast */
   csProbe = (TRACEKIT_CS_PROBE*) message;
-  if (ntohs(csProbe->header.size) != 
+  if (ntohs(csProbe->header.size) !=
       sizeof(TRACEKIT_CS_PROBE) ) {
     LOG(LOG_WARNING,
 	_("TRACEKIT: received invalid '%s' message\n"),
@@ -371,7 +371,7 @@ static int csHandle(ClientHandle client,
     if (clients[i] == client) {
       idx = i;
       break;
-    }    
+    }
     if ( (clients[i] == NULL) &&
 	 (idx == -1) ) {
       idx = i;
@@ -383,7 +383,7 @@ static int csHandle(ClientHandle client,
 	 clientCount,
 	 clientCount+1);
     idx = clientCount-1;
-  }  
+  }
   clients[idx] = client;
   MUTEX_UNLOCK(&lock);
   LOG(LOG_DEBUG,
@@ -432,7 +432,7 @@ static void clientExitHandler(ClientHandle c) {
     i--;
   i++;
   if (i != clientCount)
-    GROW(clients, 
+    GROW(clients,
 	 clientCount,
 	 i);
   MUTEX_UNLOCK(&lock);
@@ -444,7 +444,7 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
   MUTEX_CREATE(&lock);
   coreAPI = capi;
 #if VERBOSE_STATS
-  stat_cs_requests 
+  stat_cs_requests
     = statHandle(_("# client trace requests received"));
   stat_cs_replies
     = statHandle(_("# client trace replies sent"));
@@ -458,8 +458,8 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
       TRACEKIT_p2p_PROTO_PROBE,
       TRACEKIT_p2p_PROTO_REPLY,
       TRACEKIT_CS_PROTO_PROBE);
-  memset(routeTable, 
-	 0, 
+  memset(routeTable,
+	 0,
 	 MAXROUTE*sizeof(RTE*));
   if (SYSERR == capi->registerHandler(TRACEKIT_p2p_PROTO_PROBE,
 				      &handlep2pProbe))
@@ -488,7 +488,7 @@ void done_module_tracekit() {
   for (i=0;i<MAXROUTE;i++) {
     FREENONNULL(routeTable[i]);
     routeTable[i] = NULL;
-  }  
+  }
   GROW(clients,
        clientCount,
        0);

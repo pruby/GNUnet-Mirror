@@ -45,9 +45,9 @@ static void writeNamespaceInfo(const char * namespaceName,
   fn = getConfigurationString(NULL, "GNUNET_HOME");
   fnBase = expandFileName(fn);
   FREE(fn);
-  fn = MALLOC(strlen(fnBase) + 
-	      strlen(NS_DIR) + 
-	      strlen(namespaceName) + 
+  fn = MALLOC(strlen(fnBase) +
+	      strlen(NS_DIR) +
+	      strlen(namespaceName) +
 	      6);
   strcpy(fn, fnBase);
   strcat(fn, DIR_SEPARATOR_STR);
@@ -86,9 +86,9 @@ static int readNamespaceInfo(const char * namespaceName,
   fn = getConfigurationString(NULL, "GNUNET_HOME");
   fnBase = expandFileName(fn);
   FREE(fn);
-  fn = MALLOC(strlen(fnBase) + 
-	      strlen(NS_DIR) + 
-	      strlen(namespaceName) + 
+  fn = MALLOC(strlen(fnBase) +
+	      strlen(NS_DIR) +
+	      strlen(namespaceName) +
 	      6);
   strcpy(fn, fnBase);
   strcat(fn, DIR_SEPARATOR_STR);
@@ -96,7 +96,7 @@ static int readNamespaceInfo(const char * namespaceName,
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, namespaceName);
   FREE(fnBase);
-  
+
   tag = getFileSize(fn);
   if (tag <= sizeof(int)) {
     FREE(fn);
@@ -109,7 +109,7 @@ static int readNamespaceInfo(const char * namespaceName,
     FREE(fn);
     return SYSERR;
   }
-  buf = MALLOC(tag);  
+  buf = MALLOC(tag);
   if (size != readFile(fn,
 		       tag,
 		       buf)) {
@@ -117,9 +117,9 @@ static int readNamespaceInfo(const char * namespaceName,
     FREE(fn);
     return SYSERR;
   }
-  
-  size = tag - sizeof(int);  
-  *ranking = ntohl(((int *) buf)[0]);  
+
+  size = tag - sizeof(int);
+  *ranking = ntohl(((int *) buf)[0]);
   if (OK != ECRS_deserializeMetaData(meta,
 				     &buf[sizeof(int)],
 				     size)) {
@@ -134,7 +134,7 @@ static int readNamespaceInfo(const char * namespaceName,
   FREE(buf);
   return OK;
 }
-					    
+					
 
 /**
  * Create a new namespace (and publish an advertismement).
@@ -251,7 +251,7 @@ static void listNamespaceHelper(const char * fn,
   if (c->ret == SYSERR)
     return;
   if (OK != enc2hash(fn,
-		     &id)) 
+		     &id))
     return; /* invalid name */
   if (OK != readNamespaceInfo(fn,
 			      &meta,
@@ -271,7 +271,7 @@ static void listNamespaceHelper(const char * fn,
 
 /**
  * List all available (local or non-local) namespaces.
- * 
+ *
  * @param local only list local namespaces (if NO, only
  *   non-local known namespaces are listed)
  */
@@ -295,13 +295,13 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
     fn = getConfigurationString(NULL, "GNUNET_HOME");
     fnBase = expandFileName(fn);
     FREE(fn);
-    fn = MALLOC(strlen(fnBase) + 
-		strlen(NS_DIR) + 
+    fn = MALLOC(strlen(fnBase) +
+		strlen(NS_DIR) +
 		4);
     strcpy(fn, fnBase);
     strcat(fn, DIR_SEPARATOR_STR);
     strcat(fn, NS_DIR);
-    
+
     scanDirectory(fn,
 		  &listNamespaceHelper,
 		  &cls);
@@ -337,7 +337,7 @@ static char * getUpdateDataFilename(const char * nsname,
 
     hash2enc(lastId, &enc);
     strcat(ret, (char*) &enc);
-  }  
+  }
   return ret;
 }
 
@@ -345,7 +345,7 @@ struct UpdateData {
   cron_t updateInterval;
   cron_t lastPubTime;
   HashCode512 nextId;
-  HashCode512 thisId;  
+  HashCode512 thisId;
 };
 
 /**
@@ -371,10 +371,10 @@ static int readUpdateData(const char * nsname,
 			     lastId);
   size = getFileSize(fn);
   if ( (size == 0) ||
-       (size <= sizeof(struct UpdateData)) || 
+       (size <= sizeof(struct UpdateData)) ||
        (size > 1024 * 1024 * 16) )
     return SYSERR;
-  
+
   buf = MALLOC(size);
   if (size != readFile(fn,
 		       size,	
@@ -449,11 +449,11 @@ static int writeUpdateData(const char * nsname,
 	 uri,
 	 strlen(uri)+1);
   FREE(uri);
-  GNUNET_ASSERT(OK == 
+  GNUNET_ASSERT(OK ==
 		ECRS_serializeMetaData(fi->meta,
 				       &((char*)&buf[1])[strlen(uri)+1],
 				       metaSize,
-				       NO));  
+				       NO));
   fn = getUpdateDataFilename(nsname,
 			     thisId);
   writeFile(fn,
@@ -464,12 +464,12 @@ static int writeUpdateData(const char * nsname,
   FREE(buf);
   return OK;
 }
-			  
+			
 
 
 /**
  * Add an entry into a namespace (also for publishing
- * updates).  
+ * updates).
  *
  * @param name in which namespace to publish
  * @param updateInterval the desired frequency for updates
@@ -516,7 +516,7 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
       if (lastInterval != updateInterval) {
 	LOG(LOG_WARNING,
 	    _("Publication interval for periodic publication changed."));
-      }      
+      }
       /* try to compute tid and/or
 	 nid based on information read from lastId */
 
@@ -549,14 +549,14 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
 	/* sporadic ones are unpredictable,
 	   tid has been obtained from IO, pick random nid if
 	   not specified */
-	if (thisId != NULL) 
+	if (thisId != NULL)
 	  tid = *thisId; /* allow user override */	
 	if (nextId == NULL) {
 	  makeRandomId(&nid);
 	} else {
 	  nid = *nextId;
 	}
-      }      
+      }
     } else { /* no previous ID found or given */
       if (nextId == NULL) {
 	/* no previous block found and nextId not specified;
@@ -568,7 +568,7 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
       if (thisId != NULL) {
 	tid = *thisId;
       } else {
-	makeRandomId(&tid);  
+	makeRandomId(&tid);
       }
     }
   } else {
@@ -589,7 +589,7 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
 			    &nid,
 			    dst,
 			    md,
-			    uri);  
+			    uri);
   if (updateInterval != ECRS_SBLOCK_UPDATE_NONE) {
     fi.uri = (struct ECRS_URI*) uri;
     fi.meta = (struct ECRS_MetaData*) md;
@@ -626,7 +626,7 @@ void lNCHelper(const char * fil,
   cron_t lastTime;
   cron_t nextTime;
   cron_t now;
-  
+
   if (cls->cnt == SYSERR)
     return;
   if (OK != enc2hash(fil,
@@ -701,7 +701,7 @@ static int mergeMeta(EXTRACTOR_KeywordType type,
  * Add a namespace to the set of known namespaces.
  * For all namespace advertisements that we discover
  * FSUI should automatically call this function.
- * 
+ *
  * @param ns the namespace identifier
  */
 void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
@@ -731,7 +731,7 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
 		       old,
 		       ranking);
     ECRS_freeMetaData(old);
-  } else {  
+  } else {
     writeNamespaceInfo(name,
 		       meta,
 		       ranking);

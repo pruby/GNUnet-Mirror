@@ -107,13 +107,13 @@ struct RPC_Record;
 
 /**
  * The RPC service API.
- */ 
+ */
 typedef struct {
 
   /**
    * Perform a synchronous RPC.
    */
-  int (*RPC_execute)(const PeerIdentity * receiver, 
+  int (*RPC_execute)(const PeerIdentity * receiver,
 		     const char * name,
 		     RPC_Param * request_param,
 		     RPC_Param * return_param,
@@ -125,7 +125,7 @@ typedef struct {
    */
   int (*RPC_register)(const char * name,
 		      RPC_Function func);
-  
+
   /**
    * Unregister a synchronous RPC function.
    */
@@ -162,7 +162,7 @@ typedef struct {
 				   cron_t timeout,
 				   RPC_Complete callback,
 				   void * closure);
- 
+
   /**
    * Stop an asynchronous RPC.
    *
@@ -185,13 +185,13 @@ void RPC_paramFree(RPC_Param * param);
 
 unsigned int RPC_paramCount(RPC_Param *param);
 
-void RPC_paramAdd(RPC_Param * param, 
-		  const char * name, 
-		  unsigned int dataLength, 
+void RPC_paramAdd(RPC_Param * param,
+		  const char * name,
+		  unsigned int dataLength,
 		  const void * data);
 
-void RPC_paramAddDataContainer(RPC_Param * param, 
-			       const char * name, 
+void RPC_paramAddDataContainer(RPC_Param * param,
+			       const char * name,
 			       const DataContainer * data);
 
 const char * RPC_paramName(RPC_Param * param,
@@ -203,7 +203,7 @@ unsigned int RPC_paramIndex(RPC_Param * param,
 /**
  * @return OK on success, SYSERR on error
  */
-int RPC_paramValueByName(RPC_Param * param, 
+int RPC_paramValueByName(RPC_Param * param,
 			 const char * name,
 			 unsigned int * dataLength,
 			 void ** data);
@@ -211,7 +211,7 @@ int RPC_paramValueByName(RPC_Param * param,
 /**
  * @return OK on success, SYSERR on error
  */
-int RPC_paramValueByPosition(RPC_Param * param, 
+int RPC_paramValueByPosition(RPC_Param * param,
 			     unsigned int i,
 			     unsigned int * dataLength,
 			     void ** data);
@@ -223,7 +223,7 @@ int RPC_paramValueByPosition(RPC_Param * param,
  * @param value set to the value of the parameter
  */
 DataContainer *
-RPC_paramDataContainerByPosition(RPC_Param *param, 
+RPC_paramDataContainerByPosition(RPC_Param *param,
 				 unsigned int i);
 
 /**
@@ -253,7 +253,7 @@ RPC_Param * RPC_paramDeserialize(char * buffer,
 /**
  * How many bytes are required to serialize the param array?
  */
-size_t RPC_paramSize(RPC_Param * param); 
+size_t RPC_paramSize(RPC_Param * param);
 
 
 #endif /* GNUNET_RPC_SERVICE_H */

@@ -63,7 +63,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   DBlock * db;
   CHK ichk;
 
-  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value); 
+  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value);
   present = (size - sizeof(DBlock)) / sizeof(CHK);
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
@@ -73,9 +73,9 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
     fileBlockGetQuery(db,
 		      size,
 		      &ichk.query);
-    if (OK != pushBlock(sock, 
+    if (OK != pushBlock(sock,
 			&ichk,
-			level+1, 
+			level+1,
 			iblocks)) {
       BREAK();
       return SYSERR;
@@ -94,7 +94,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 #else
     FS_delete(sock,
 	      value);
-#endif    
+#endif
     FREE(value);
     size = sizeof(DBlock);
   }
@@ -102,8 +102,8 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   memcpy(&((char*)db)[size],
 	 chk,
 	 sizeof(CHK));
-  iblocks[level]->size = htonl(size + 
-			       sizeof(CHK) + 
+  iblocks[level]->size = htonl(size +
+			       sizeof(CHK) +
 			       sizeof(Datastore_Value));
   return OK;
 }
@@ -111,7 +111,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 
 
 /**
- * Undo sym-linking operation: 
+ * Undo sym-linking operation:
  * a) check if we have a symlink
  * b) delete symbolic link
  */
@@ -137,7 +137,7 @@ static int undoSymlinking(const char * fn,
   if (! S_ISLNK(buf.st_mode))
     return OK;
 #endif
-  serverDir 
+  serverDir
     = getConfigurationOptionValue(sock,
 				  "FS",
 				  "INDEX-DIRECTORY");
@@ -153,7 +153,7 @@ static int undoSymlinking(const char * fn,
   hash2enc(fileId,
 	   &enc);
   strcat(serverFN,
-	 (char*)&enc);  
+	 (char*)&enc);
 
   if (0 != UNLINK(serverFN)) {
     FREE(serverFN);
@@ -161,7 +161,7 @@ static int undoSymlinking(const char * fn,
     LOG_FILE_STRERROR(LOG_ERROR, "unlink", tmpName);
     return SYSERR;
   }
-  
+
   FREE(tmpName);
   FREE(serverFN);
   return OK;
@@ -208,8 +208,8 @@ int ECRS_unindexFile(const char * filename,
     return SYSERR;
   }
   sock = getClientSocket();
-  if (sock == NULL) 
-    return SYSERR;  
+  if (sock == NULL)
+    return SYSERR;
   filesize = getFileSize(filename);
   eta = 0;
   if (upcb != NULL)
@@ -221,20 +221,20 @@ int ECRS_unindexFile(const char * filename,
     return SYSERR;
   }
   cronTime(&now);
-  eta = now + 2 * (now - start); 
+  eta = now + 2 * (now - start);
   /* very rough estimate: hash reads once through the file,
      we'll do that once more and write it.  But of course
      the second read may be cached, and we have the encryption,
      so a factor of two is really, really just a rough estimate */
   start = now;
   /* reset the counter since the formula later does not
-     take the time for getFileHash into account */  
+     take the time for getFileHash into account */
   treedepth = computeDepth(filesize);
 
   /* Test if file is indexed! */
   rti.header.size
     = htons(sizeof(RequestTestindex));
-  rti.header.type 
+  rti.header.type
     = htons(AFS_CS_PROTO_TESTINDEX);
   rti.fileId = fileId;
   if (OK != writeToSocket(sock,
@@ -283,24 +283,24 @@ int ECRS_unindexFile(const char * filename,
     if (upcb != NULL)
       upcb(filesize, pos, eta, upcbClosure);
     if (tt != NULL)
-      if (OK != tt(ttClosure)) 
+      if (OK != tt(ttClosure))
 	goto FAILURE;
     size = DBLOCK_SIZE;
     if (size > filesize - pos) {
       size = filesize - pos;
       memset(&db[1],
-	     0, 
+	     0,
 	     DBLOCK_SIZE);
     }
     dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
-    if (size != READ(fd, 
-		     &db[1], 
+    if (size != READ(fd,
+		     &db[1],
 		     size)) {
       LOG_FILE_STRERROR(LOG_WARNING,
-			"READ", 
+			"READ",
 			filename);
       goto FAILURE;
-    }   
+    }
     if (tt != NULL)
       if (OK != tt(ttClosure))
 	goto FAILURE;
@@ -333,18 +333,18 @@ int ECRS_unindexFile(const char * filename,
 #else
       FS_delete(sock,
 		value);
-#endif     
+#endif
       FREE(value);
     }
     pos += size;
     cronTime(&now);
     eta = (cron_t) (start +
-		    (((double)(now - start)/(double)pos)) 
+		    (((double)(now - start)/(double)pos))
 		    * (double)filesize);
   }
   if (tt != NULL)
     if (OK != tt(ttClosure))
-      goto FAILURE;  
+      goto FAILURE;
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
     db = (DBlock*) &iblocks[i][1];
@@ -353,10 +353,10 @@ int ECRS_unindexFile(const char * filename,
 		    &chk.key);
     fileBlockGetQuery(db,
 		      size,
-		      &chk.query);   
-    if (OK != pushBlock(sock, 
+		      &chk.query);
+    if (OK != pushBlock(sock,
 			&chk,
-			i+1, 
+			i+1,
 			iblocks)) {
       BREAK();
       goto FAILURE;
@@ -375,12 +375,12 @@ int ECRS_unindexFile(const char * filename,
 #else
     FS_delete(sock,
 	      value);
-#endif    
+#endif
     FREE(value);
     FREE(iblocks[i]);
     iblocks[i] = NULL;
   }
-  
+
   if (wasIndexed) {
     if (OK == undoSymlinking(filename,
 			     &fileId,

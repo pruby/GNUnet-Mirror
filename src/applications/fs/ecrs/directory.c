@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/ecrs/directory.c 
+ * @file applications/fs/ecrs/directory.c
  * @brief Helper functions for building directories.
  * @author Christian Grothoff
  */
@@ -61,12 +61,12 @@ int ECRS_listDirectory(const char * data,
        (0 == memcmp(data,
 		    GNUNET_DIRECTORY_MAGIC,
 		    8)) ) {
-    memcpy(&mdSize, &data[8], sizeof(unsigned int)); 
+    memcpy(&mdSize, &data[8], sizeof(unsigned int));
     mdSize = ntohl(mdSize);
     if (mdSize > len - 8 - sizeof(unsigned int) )
       return SYSERR; /* invalid size */
-    if (OK != ECRS_deserializeMetaData(md, 
-				       &data[8 + sizeof(unsigned int)], 
+    if (OK != ECRS_deserializeMetaData(md,
+				       &data[8 + sizeof(unsigned int)],
 				       mdSize)) {
       *md = NULL;
       return SYSERR; /* malformed !*/
@@ -89,17 +89,17 @@ int ECRS_listDirectory(const char * data,
       epos++;
     if (epos == len)
       return SYSERR; /* malformed */
-    
+
     fi.uri = ECRS_stringToUri(&data[pos]);
     pos = epos+1;
-    if (fi.uri == NULL) 
+    if (fi.uri == NULL)
       return SYSERR; /* malformed! */
     if (ECRS_isKeywordURI(fi.uri)) {
       ECRS_freeUri(fi.uri);
       return SYSERR; /* illegal in directory! */
     }
 
-    memcpy(&mdSize, &data[pos], sizeof(unsigned int)); 
+    memcpy(&mdSize, &data[pos], sizeof(unsigned int));
     mdSize = ntohl(mdSize);
 
     pos += sizeof(unsigned int);
@@ -109,11 +109,11 @@ int ECRS_listDirectory(const char * data,
     }
 
     if (OK != ECRS_deserializeMetaData(&fi.meta,
-				       &data[pos], 
+				       &data[pos],
 				       mdSize)) {
       ECRS_freeUri(fi.uri);
       return SYSERR; /* malformed !*/
-    }    
+    }
     pos += mdSize;
     count++;
     spcb(&fi, NULL, spcbClosure);
@@ -208,9 +208,9 @@ int ECRS_createDirectory(char ** data,
   for (i=0;i<count;i++) {
     psize = pos;
 
-    pos += strlen(ucs[i]) + 1 + 
+    pos += strlen(ucs[i]) + 1 +
       ECRS_sizeofMetaData(fis[i].meta);
-    pos += sizeof(unsigned int);    
+    pos += sizeof(unsigned int);
     align = (pos / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
     if ( (psize < align) &&
 	 (pos > align) ) {
@@ -232,7 +232,7 @@ int ECRS_createDirectory(char ** data,
     memcpy(&(*data)[pos],
 	   &ret,
 	   sizeof(unsigned int));
-    pos += ntohl(ret) + sizeof(unsigned int);   
+    pos += ntohl(ret) + sizeof(unsigned int);
   }
   FREE(ucs);
   GNUNET_ASSERT(pos == size);

@@ -20,7 +20,7 @@
 
 /**
  * @brief GNUnet Setup
- * @file conf/mconf_colors.h 
+ * @file conf/mconf_colors.h
  * @author Savio Lam
  * @author Nils Durner
  **/

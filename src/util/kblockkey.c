@@ -18,10 +18,10 @@
      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
      Boston, MA 02111-1307, USA.
 
-     Note: This code is based on code from libgcrypt 
+     Note: This code is based on code from libgcrypt
      The code was adapted for GNUnet to support RSA-key generation
      based on weak, pseudo-random keys.  Do NOT use to generate
-     ordinary RSA keys!     
+     ordinary RSA keys!
 */
 
 
@@ -30,7 +30,7 @@
  * @brief implementation of RSA-Key generation for KBlocks
  *        (do NOT use for pseudonyms or hostkeys!)
  * @author Christian Grothoff
- */ 
+ */
 
 #include "platform.h"
 #include "gnunet_util.h"
@@ -144,7 +144,7 @@ static unsigned int get_nbits(mpz_t a) {
 static unsigned int get_trailing_zeros(mpz_t a) {
   unsigned int count = 0;
   unsigned int nbits = get_nbits(a);
-  
+
   while ( (mpz_tstbit(a, count)) && (count < nbits) )
     count++;
   return count;
@@ -153,9 +153,9 @@ static unsigned int get_trailing_zeros(mpz_t a) {
 /**
  * Set bit N of A. and clear all bits above
  */
-static void set_highbit(mpz_t a, 
+static void set_highbit(mpz_t a,
 			unsigned int n) {
-  unsigned int nbits;  
+  unsigned int nbits;
 
   nbits = get_nbits(a);
   while (nbits > n)
@@ -172,7 +172,7 @@ static void mpz_randomize(mpz_t n,
 
   cnt = (nbits / sizeof(HashCode512) / 8) + 1;
   tmp = MALLOC(sizeof(HashCode512) * cnt);
-  
+
   tmp[0] = *rnd;
   for (i=0;i<cnt-1;i++) {
     hash(&tmp[i],
@@ -189,7 +189,7 @@ static void mpz_randomize(mpz_t n,
 
   mpz_import(n, cnt * sizeof(HashCode512) / sizeof(unsigned int),
 	     1, sizeof(unsigned int), 1, 0, tmp);
-  FREE(tmp); 
+  FREE(tmp);
   i = get_nbits(n);
   while (i > nbits)
     mpz_clrbit(n, i--);
@@ -198,7 +198,7 @@ static void mpz_randomize(mpz_t n,
 /**
  * Return true if n is probably a prime
  */
-static int is_prime (mpz_t n, 
+static int is_prime (mpz_t n,
 		     int steps,
 		     HashCode512 * hc) {
   mpz_t x;
@@ -229,7 +229,7 @@ static int is_prime (mpz_t n,
       mpz_set_ui( x, 2 );
     } else {
       mpz_randomize( x, nbits, hc );
-      
+
       /* Make sure that the number is smaller than the prime and
 	 keep the randomness of the high bit. */
       if (mpz_tstbit(x, nbits-2) ) {
@@ -265,14 +265,14 @@ static int is_prime (mpz_t n,
 }
 
 static void gen_prime(mpz_t ptest,
-		      unsigned int nbits, 
+		      unsigned int nbits,
 		      HashCode512 * hc) {
   mpz_t prime, pminus1, val_2, val_3, result;
   int i;
   unsigned x, step;
   int *mods;
   mpz_t tmp;
-  
+
   GNUNET_ASSERT(nbits >= 16);
 
   mods = MALLOC(no_of_small_prime_numbers * sizeof(*mods));
@@ -293,7 +293,7 @@ static void gen_prime(mpz_t ptest,
     set_highbit (prime, nbits-1);
     mpz_setbit(prime, nbits-2);
     mpz_setbit(prime, 0);
-    
+
     /* Calculate all remainders. */
     mpz_init(tmp);
     for (i=0; (x = small_prime_numbers[i]); i++ )
@@ -314,11 +314,11 @@ static void gen_prime(mpz_t ptest,
       mpz_add_ui( ptest, prime, step );
       if (! mpz_tstbit( ptest, nbits-2 ))
 	break;
-      
+
       /* Do a fast Fermat test now. */
       mpz_sub_ui( pminus1, ptest, 1);
       mpz_powm( result, val_2, pminus1, ptest );
-      if ( ( !mpz_cmp_ui( result, 1 ) ) &&	  
+      if ( ( !mpz_cmp_ui( result, 1 ) ) &&	
 	   (is_prime(ptest, 5, hc) ) ) {		
 	/* Got it. */
 	mpz_clear(val_2);
@@ -338,13 +338,13 @@ static void gen_prime(mpz_t ptest,
  * Return: 1 if this 1, 0 in all other cases
  */
 static int test_gcd(mpz_t g,
-		    mpz_t xa, 
+		    mpz_t xa,
 		    mpz_t xb) {
   mpz_t a, b;
 
   mpz_init_set(a, xa);
   mpz_init_set(b, xb);
-  
+
   /* TAOCP Vol II, 4.5.2, Algorithm A */
   while (mpz_cmp_ui( b, 0 ) ) {
     mpz_fdiv_r(g, a, b); /* g used as temorary variable */
@@ -352,14 +352,14 @@ static int test_gcd(mpz_t g,
     mpz_set(b,g);
   }
   mpz_set(g, a);
-  
+
   mpz_clear(a);
   mpz_clear(b);
   return (0 == mpz_cmp_ui(g, 1));
 }
 
 /**
- * Generate a key pair with a key of size NBITS.  
+ * Generate a key pair with a key of size NBITS.
  * @param sk where to store the key
  * @param nbits the number of bits to use
  * @param hc the HC to use for PRNG (modified!)
@@ -374,7 +374,7 @@ static void generate_kblock_key(KBlock_secret_key *sk,
 
   /* make sure that nbits is even so that we generate p, q of equal size */
   if ( (nbits&1) )
-    nbits++; 
+    nbits++;
 
   mpz_init_set_ui(sk->e, 257);
   mpz_init(sk->n);
@@ -393,24 +393,24 @@ static void generate_kblock_key(KBlock_secret_key *sk,
     do {
       gen_prime(sk->p, nbits/2, hc);
       gen_prime(sk->q, nbits/2, hc);
-      
+
       if (mpz_cmp (sk->p, sk->q) > 0 ) /* p shall be smaller than q (for calc of u)*/
 	mpz_swap(sk->p, sk->q);
       /* calculate the modulus */
       mpz_mul(sk->n, sk->p, sk->q );
     } while (get_nbits(sk->n) != nbits);
-    
+
     /* calculate Euler totient: phi = (p-1)(q-1) */
     mpz_sub_ui(t1, sk->p, 1 );
     mpz_sub_ui(t2, sk->q, 1 );
     mpz_mul(phi, t1, t2 );
     mpz_gcd(g, t1, t2);
     mpz_fdiv_q(f, phi, g);
-    
-    while (0 == test_gcd(t1, sk->e, phi)) { /* (while gcd is not 1) */ 
+
+    while (0 == test_gcd(t1, sk->e, phi)) { /* (while gcd is not 1) */
       mpz_add_ui (sk->e, sk->e, 2);
     }
-    
+
     /* calculate the secret key d = e^1 mod phi */
   } while ( (0 == mpz_invert(sk->d, sk->e, f )) ||
 	    (0 == mpz_invert(sk->u, sk->p, sk->q )) );
@@ -463,41 +463,41 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
   retval->len = htons(size);
   i = 0;
   retval->sizen = htons(sizes[0]);
-  memcpy(&((char*)&retval[1])[i], 
+  memcpy(&((char*)&retval[1])[i],
 	 pbu[0],
 	 sizes[0]);
   i += sizes[0];
   retval->sizee = htons(sizes[1]);
-  memcpy(&((char*)&retval[1])[i], 
+  memcpy(&((char*)&retval[1])[i],
 	 pbu[1],
 	 sizes[1]);
   i += sizes[1];
   retval->sized = htons(sizes[2]);
-  memcpy(&((char*)&retval[1])[i], 
+  memcpy(&((char*)&retval[1])[i],
 	 pbu[2],
 	 sizes[2]);
   i += sizes[2];
   /* swap p and q! */
   retval->sizep = htons(sizes[4]);
-  memcpy(&((char*)&retval[1])[i], 
+  memcpy(&((char*)&retval[1])[i],
 	 pbu[4],
 	 sizes[4]);
   i += sizes[4];
   retval->sizeq = htons(sizes[3]);
-  memcpy(&((char*)&retval[1])[i], 
+  memcpy(&((char*)&retval[1])[i],
 	 pbu[3],
 	 sizes[3]);
   i += sizes[3];
   retval->sizedmp1 = htons(0);
   retval->sizedmq1 = htons(0);
-  memcpy(&((char*)&retval[1])[i], 
+  memcpy(&((char*)&retval[1])[i],
 	 pbu[5],
 	 sizes[5]);
   for (i=0;i<6;i++) {
     mpz_clear(*pkv[i]);
-    free(pbu[i]);  
+    free(pbu[i]);
   }
-  
+
   ret = decodePrivateKey(retval);
   FREE(retval);
   return ret;

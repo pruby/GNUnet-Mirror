@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/tbench/tbenchtest.c 
+ * @file applications/tbench/tbenchtest.c
  * @brief Transport mechanism testing tool
  * @author Paul Ruth, Christian Grothoff
  */
@@ -61,8 +61,8 @@ static int test(GNUNET_TCP_SOCKET * sock,
   float messagesPercentLoss;
 
   printf(_("Using %u messages of size %u for %u times.\n"),
-	 messageCnt, 
-	 messageSize, 
+	 messageCnt,
+	 messageSize,
 	 messageIterations);
   msg.header.size = htons(sizeof(TBENCH_CS_MESSAGE));
   msg.header.type = htons(TBENCH_CS_PROTO_REQUEST);
@@ -74,12 +74,12 @@ static int test(GNUNET_TCP_SOCKET * sock,
   msg.timeOut     = htonll(messageTimeOut);
   msg.priority    = htonl(5);
   msg.receiverId  = peer2;
-  
+
   if (SYSERR == writeToSocket(sock,
 			      &msg.header))
     return -1;
   ret = 0;
-  
+
   buffer = NULL;
   if (OK == readFromSocket(sock, (CS_HEADER**)&buffer)) {
     if ((float)buffer->mean_loss <= 0){
@@ -96,9 +96,9 @@ static int test(GNUNET_TCP_SOCKET * sock,
 	   ntohl(buffer->max_loss),
 	   ntohl(buffer->min_loss),
 	   buffer->mean_loss,
-	   buffer->variance_loss); 
+	   buffer->variance_loss);
   } else {
-    printf(_("\nFailed to receive reply from gnunetd.\n"));  
+    printf(_("\nFailed to receive reply from gnunetd.\n"));
     ret = -1;
   }
   FREENONNULL(buffer);
@@ -125,7 +125,7 @@ static int checkConnected(GNUNET_TCP_SOCKET * sock) {
   while (OK == requestStatistics(sock,
 				 &waitForConnect,
 				 NULL)) {
-    printf(_("Waiting for peers to connect (%u iterations left)...\n"), 
+    printf(_("Waiting for peers to connect (%u iterations left)...\n"),
 	   left);
     sleep(5);
     left--;
@@ -143,7 +143,7 @@ static int checkConnected(GNUNET_TCP_SOCKET * sock) {
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return 0: ok, -1: error
- */   
+ */
 int main(int argc, char ** argv) {
 #if DO_FORK
   pid_t daemon1;
@@ -198,18 +198,18 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (0 != kill(daemon1, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon1 != waitpid(daemon1, &status, 0)) 
+    if (daemon1 != waitpid(daemon1, &status, 0))
       DIE_STRERROR("waitpid");
   }
   if (daemon2 != -1) {
     if (0 != kill(daemon2, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon2 != waitpid(daemon2, &status, 0)) 
+    if (daemon2 != waitpid(daemon2, &status, 0))
       DIE_STRERROR("waitpid");
   }
 
   /* re-start, this time we're sure up-to-date HELOs are available */
-  daemon1 = fork(); 
+  daemon1 = fork();
   if (daemon1 == 0) {
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
@@ -241,7 +241,7 @@ int main(int argc, char ** argv) {
   }
   sleep(5);
 #endif
-  
+
   ret = 0;
   left = 5;
   /* wait for connection or abort with error */
@@ -265,7 +265,7 @@ int main(int argc, char ** argv) {
   /* 'slow' pass: wait for bandwidth negotiation! */
   if (ret == 0)
     ret = test(sock, 64, 100, 4, 50 * cronMILLIS, 1, 30 * cronSECONDS);
-  checkConnected(sock);  
+  checkConnected(sock);
   /* 'blast' pass: hit bandwidth limits! */
   for (i=8;i<60000;i*=2) {
     if (ret == 0)
@@ -280,17 +280,17 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (0 != kill(daemon1, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon1 != waitpid(daemon1, &status, 0)) 
+    if (daemon1 != waitpid(daemon1, &status, 0))
       DIE_STRERROR("waitpid");
   }
   if (daemon2 != -1) {
     if (0 != kill(daemon2, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon2 != waitpid(daemon2, &status, 0)) 
+    if (daemon2 != waitpid(daemon2, &status, 0))
       DIE_STRERROR("waitpid");
   }
 #endif
   return ret;
 }
 
-/* end of tbenchtest.c */ 
+/* end of tbenchtest.c */

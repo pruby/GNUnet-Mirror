@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/tbench/gnunet-tbench.c 
+ * @file applications/tbench/gnunet-tbench.c
  * @brief Transport mechanism benchmarking tool
  * @author Paul Ruth, Christian Grothoff
  */
@@ -50,12 +50,12 @@ static unsigned int outputFormat      = OF_HUMAN_READABLE;
  * Parse the options, set the timeout.
  * @param argc the number of options
  * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit 
+ * @return OK on error, SYSERR if we should exit
  */
 static int parseOptions(int argc,
 			char ** argv) {
   int option_index;
-  int c;  
+  int c;
 
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGFILE",
@@ -72,19 +72,19 @@ static int parseOptions(int argc,
       { "timeout", 1, 0, 't' },
       { "xspace", 1, 0, 'X' },
       { 0,0,0,0 }
-    };    
+    };
     option_index=0;
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhdc:L:H:n:s:r:i:t:S:X:g", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "vhdc:L:H:n:s:r:i:t:S:X:g",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process*/
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
-    case 'g': 
+    case 'g':
       outputFormat = OF_GNUPLOT_INPUT;
       break;
     case 'h': {
@@ -95,7 +95,7 @@ static int parseOptions(int argc,
 	  gettext_noop("output in gnuplot format") },
 	HELP_LOGLEVEL,	
 	{ 'i', "iterations", "ITER",
-	  gettext_noop("number of iterations") }, 
+	  gettext_noop("number of iterations") },
 	{ 'n', "msg", "MESSAGES",
 	  gettext_noop("number of messages to use per iteration") },
 	{ 'r', "rec", "RECEIVER",
@@ -116,34 +116,34 @@ static int parseOptions(int argc,
 		 help);
       return SYSERR;
     }
-    case 'i': 
+    case 'i':
       if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageIterations)){
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-i");
 	return SYSERR;
       }
       break;
-    case 'n': 
+    case 'n':
       if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageCnt)){
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-n");
 	return SYSERR;
       }
       break;
-    case 'r': 
+    case 'r':
       messageReceiver = STRDUP(GNoptarg);
       break;
-    case 's': 
-      if(1 != sscanf(GNoptarg, 
+    case 's':
+      if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageSize)){
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-s");
 	return SYSERR;
@@ -153,38 +153,38 @@ static int parseOptions(int argc,
       if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageTrainSize)){
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-S");
 	return SYSERR;
       }
       break;
     case 't':
-      if(1 != SSCANF(GNoptarg, 
-		     "%llud", 
+      if(1 != SSCANF(GNoptarg,
+		     "%llud",
 		     &messageTimeOut)){
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-t");
 	return SYSERR;
       }
       break;
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-tbench v%s\n",
 	     VERSION,
 	     TBENCH_VERSION);
       return SYSERR;
     case 'X':
-      if(1 != SSCANF(GNoptarg, 
+      if(1 != SSCANF(GNoptarg,
 		     "%llud",
 		     &messageSpacing)){
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-X");
 	return SYSERR;
       }
       break;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return -1;
@@ -199,7 +199,7 @@ static int parseOptions(int argc,
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return value from gnunetsearch: 0: ok, -1: error
- */   
+ */
 int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
   TBENCH_CS_MESSAGE msg;
@@ -207,7 +207,7 @@ int main(int argc, char ** argv) {
   float messagesPercentLoss;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0; /* parse error, --help, etc. */ 
+    return 0; /* parse error, --help, etc. */
   sock = getClientSocket();
   if (sock == NULL)
     errexit(_("Could not connect to gnunetd.\n"));
@@ -224,7 +224,7 @@ int main(int argc, char ** argv) {
   if (messageReceiver == NULL)
     errexit(_("You must specify a receiver!\n"));
   if (OK != enc2hash(messageReceiver,
-		     &msg.receiverId.hashPubKey))		     
+		     &msg.receiverId.hashPubKey))		
     errexit(_("Invalid receiver peer ID specified ('%s' is not valid name).\n"),
 	    messageReceiver);
   FREE(messageReceiver);
@@ -232,9 +232,9 @@ int main(int argc, char ** argv) {
   if (SYSERR == writeToSocket(sock,
 			      &msg.header))
     return -1;
-  
+
   buffer = NULL;
-  if (OK == readFromSocket(sock, 
+  if (OK == readFromSocket(sock,
 			   (CS_HEADER**)&buffer)) {
     GNUNET_ASSERT(ntohs(buffer->header.size) ==
 		  sizeof(TBENCH_CS_REPLY));
@@ -255,7 +255,7 @@ int main(int argc, char ** argv) {
 	     buffer->mean_time);
       printf(_("\tvariance %8.4fms\n"),
 	     buffer->variance_time);
-      
+
       printf(_("Loss:\n"));
       printf(_("\tmax      %u\n"),
 	     ntohl(buffer->max_loss));
@@ -264,7 +264,7 @@ int main(int argc, char ** argv) {
       printf(_("\tmean     %8.4f\n"),
 	     buffer->mean_loss);
       printf(_("\tvariance %8.4f\n"),
-	     buffer->variance_loss); 
+	     buffer->variance_loss);
       break;
     case OF_GNUPLOT_INPUT:
       printf("%f %f\n",
@@ -275,12 +275,12 @@ int main(int argc, char ** argv) {
       printf(_("Output format not known, this should not happen.\n"));
     }
     FREE(buffer);
-  } else 
-    printf(_("\nDid not receive the message from gnunetd. Is gnunetd running?\n"));  
+  } else
+    printf(_("\nDid not receive the message from gnunetd. Is gnunetd running?\n"));
 
   releaseClientSocket(sock);
   doneUtil();
   return 0;
 }
 
-/* end of gnunet-tbench.c */ 
+/* end of gnunet-tbench.c */

@@ -1,4 +1,4 @@
-/* 
+/*
      This file is part of GNUnet.
      (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
 
@@ -73,15 +73,15 @@ void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
   theServiceStatus.dwServiceType = SERVICE_WIN32;
   theServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
   theServiceStatus.dwCurrentState = SERVICE_RUNNING;
-  
+
   hService = GNRegisterServiceCtrlHandler("GNUnet", ServiceCtrlHandler);
   if (! hService)
     return;
-    
+
   GNSetServiceStatus(hService, &theServiceStatus);
-  
+
   gnunet_main();
-  
+
   theServiceStatus.dwCurrentState = SERVICE_STOPPED;
   GNSetServiceStatus(hService, &theServiceStatus);
 }
@@ -104,25 +104,25 @@ void gnunet_main() {
   /* init 1: version management for GNUnet core,
      essentially forces running gnunet-update
      whenever the version OR configuration changes. */
-  if (OK != checkUpToDate()) 
+  if (OK != checkUpToDate())
     errexit(_("Configuration or GNUnet version changed.  You need to run '%s'!\n"),
 	    "gnunet-update");
-  
+
   /* init 2: become deamon, initialize core subsystems */
-  if (NO == debug_flag) 
-    detachFromTerminal(filedes);  
+  if (NO == debug_flag)
+    detachFromTerminal(filedes);
 
   LOG(LOG_MESSAGE,
       _("'%s' starting\n"),
       "gnunetd");
 
-  initCore(); 
+  initCore();
   initConnection();   /* requires core, starts transports! */
   loadApplicationModules(); /* still single-threaded! */
 
   /* initialize signal handler (CTRL-C / SIGTERM) */
-  if (NO == debug_flag) 
-    detachFromTerminalComplete(filedes);  
+  if (NO == debug_flag)
+    detachFromTerminalComplete(filedes);
   writePIDFile();
 
   startCron();
@@ -137,20 +137,20 @@ void gnunet_main() {
   LOG(LOG_MESSAGE,
       _("'%s' startup complete.\n"),
       "gnunetd");
-  
+
   waitForSignalHandler();
   LOG(LOG_MESSAGE,
       _("'%s' is shutting down.\n"),
       "gnunetd");
 
-  /* init 5: shutdown */   
+  /* init 5: shutdown */
   disableCoreProcessing(); /* calls on applications! */
   stopCron(); /* avoid concurrency! */
   stopTCPServer(); /* calls on applications! */
   unloadApplicationModules(); /* requires connection+tcpserver+handler */
 
   doneConnection();  /* requires core, stops transports! */
-  doneCore(); 
+  doneCore();
 
   /* init 6: goodbye */
   deletePIDFile();
@@ -174,14 +174,14 @@ int main(int argc, char * argv[]) {
     SERVICE_TABLE_ENTRY DispatchTable[] =
       {{"GNUnet", ServiceMain}, {NULL, NULL}};
     GNStartServiceCtrlDispatcher(DispatchTable);
-    
+
     return 0;
   } else
 #endif
     gnunet_main();
 
   return 0;
-} 
+}
 
 /* You have reached the end of GNUnet. You can shutdown your
    computer and get a life now. */

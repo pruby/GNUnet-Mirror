@@ -32,7 +32,7 @@
 
 /**
  * after how much time of the core not being associated with a tcp6
- * connection anymore do we close it? 
+ * connection anymore do we close it?
  */
 #define TCP6_TIMEOUT 30 * cronSECONDS
 
@@ -41,31 +41,31 @@
  */
 typedef struct {
   /**
-   * claimed IP of the sender, network byte order 
-   */  
+   * claimed IP of the sender, network byte order
+   */
   IP6addr ip;
 
   /**
-   * claimed port of the sender, network byte order 
+   * claimed port of the sender, network byte order
    */
-  unsigned short port; 
+  unsigned short port;
 
   /**
-   * reserved (set to 0 for signature verification) 
+   * reserved (set to 0 for signature verification)
    */
-  unsigned short reserved; 
+  unsigned short reserved;
 
 } Host6Address;
 
 /**
- * @brief TCP6 Message-Packet header. 
+ * @brief TCP6 Message-Packet header.
  */
 typedef struct {
   /**
-   * size of the message, in bytes, including this header; 
-   * max 65536-header (network byte order) 
+   * size of the message, in bytes, including this header;
+   * max 65536-header (network byte order)
    */
-  unsigned short size; 
+  unsigned short size;
 
   /**
    * For alignment, always 0.
@@ -80,8 +80,8 @@ typedef struct {
  */
 typedef struct {
   /**
-   * size of the handshake message, in nbo, value is 24 
-   */    
+   * size of the handshake message, in nbo, value is 24
+   */
   unsigned short size;
 
   /**
@@ -90,7 +90,7 @@ typedef struct {
   unsigned short version;
 
   /**
-   * Identity of the node connecting (TCP6 client) 
+   * Identity of the node connecting (TCP6 client)
    */
   PeerIdentity clientIdentity;
 } TCP6Welcome;
@@ -100,12 +100,12 @@ typedef struct {
  */
 typedef struct {
   /**
-   * the tcp6 socket 
+   * the tcp6 socket
    */
   int sock;
 
   /**
-   * number of users of this session 
+   * number of users of this session
    */
   int users;
 
@@ -115,7 +115,7 @@ typedef struct {
   cron_t lastUse;
 
   /**
-   * mutex for synchronized access to 'users' 
+   * mutex for synchronized access to 'users'
    */
   Mutex lock;
 
@@ -133,7 +133,7 @@ typedef struct {
   /**
    * Current read position in the buffer.
    */
-  unsigned int pos;  
+  unsigned int pos;
 
   /**
    * Current size of the buffer.
@@ -165,14 +165,14 @@ typedef struct {
 /* *********** globals ************* */
 
 /**
- * apis (our advertised API and the core api ) 
+ * apis (our advertised API and the core api )
  */
 static CoreAPIForTransport * coreAPI;
 static TransportAPI tcp6API;
 
 /**
  * one thread for listening for new connections,
- * and for reading on all open sockets 
+ * and for reading on all open sockets
  */
 static PTHREAD_T listenThread;
 
@@ -190,7 +190,7 @@ static int tcp6_sock;
 static int tcp6_pipe[2];
 
 /**
- * Array of currently active TCP6 sessions. 
+ * Array of currently active TCP6 sessions.
  */
 static TSession ** tsessions = NULL;
 static int tsessionCount;
@@ -294,7 +294,7 @@ static int tcp6Disconnect(TSession * tsession) {
  *
  * @param i index to the session handle
  */
-static void destroySession(int i) {  
+static void destroySession(int i) {
   TCP6Session * tcp6Session;
 
   tcp6Session = tsessions[i]->internal;
@@ -310,7 +310,7 @@ static void destroySession(int i) {
 
 /**
  * Get the GNUnet UDP port from the configuration,
- * or from /etc/services if it is not specified in 
+ * or from /etc/services if it is not specified in
  * the config file.
  */
 static unsigned short getGNUnetTCP6Port() {
@@ -320,8 +320,8 @@ static unsigned short getGNUnetTCP6Port() {
   port = (unsigned short) getConfigurationInt("TCP6",
 					      "PORT");
   if (port == 0) { /* try lookup in services */
-    if ((pse = getservbyname("gnunet", "tcp6"))) 
-      port = htons(pse->s_port);      
+    if ((pse = getservbyname("gnunet", "tcp6")))
+      port = htons(pse->s_port);
   }
   return port;
 }
@@ -338,7 +338,7 @@ static unsigned short getGNUnetTCP6Port() {
  * for eventually freeing resources associated with the tesession). If
  * session is not NULL, the core takes responsbility for eventually
  * calling disconnect.
- * 
+ *
  * @param tsession the session handle passed along
  *   from the call to receive that was made by the transport
  *   layer
@@ -358,7 +358,7 @@ static int tcp6Associate(TSession * tsession) {
 
 /**
  * The socket of session i has data waiting, process!
- * 
+ *
  * This function may only be called if the tcp6lock is
  * already held by the caller.
  */
@@ -395,12 +395,12 @@ static int readAndProcess(int i) {
   }
   if (ret < 0) {
     if ( (errno == EINTR) ||
-	 (errno == EAGAIN) ) { 
+	 (errno == EAGAIN) ) {
 #if DEBUG_TCP
       LOG_STRERROR(LOG_DEBUG, "read");
 #endif
       tcp6Disconnect(tsession);
-      return OK;    
+      return OK;
     }
 #if DEBUG_TCP
     LOG_STRERROR(LOG_INFO, "read");
@@ -410,7 +410,7 @@ static int readAndProcess(int i) {
   }
   incrementBytesReceived(ret);
   tcp6Session->pos += ret;
-  
+
   while (tcp6Session->pos > 2) {
     len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6MessagePack);
     if (len > tcp6Session->rsize) /* if MTU larger than expected, grow! */
@@ -421,21 +421,21 @@ static int readAndProcess(int i) {
     LOG(LOG_DEBUG,
 	"Read %d bytes on socket %d, expecting %d for full message\n",
 	tcp6Session->pos,
-	tcp6Session->sock, 
+	tcp6Session->sock,
 	len);
 #endif
     if (tcp6Session->pos < len) {
       tcp6Disconnect(tsession);
       return OK;
     }
-    
+
     /* complete message received, let's check what it is */
     if (YES == tcp6Session->expectingWelcome) {
       TCP6Welcome * welcome;
 #if DEBUG_TCP6
       EncName hex;
 #endif
-      
+
       welcome = (TCP6Welcome*) &tcp6Session->rbuff[0];
       if ( (ntohs(welcome->version) != 0) ||
 	   (ntohs(welcome->size) != sizeof(TCP6Welcome)) ) {
@@ -457,15 +457,15 @@ static int readAndProcess(int i) {
       memmove(&tcp6Session->rbuff[0],
 	      &tcp6Session->rbuff[sizeof(TCP6Welcome)],
 	      tcp6Session->pos - sizeof(TCP6Welcome));
-      tcp6Session->pos -= sizeof(TCP6Welcome); 
+      tcp6Session->pos -= sizeof(TCP6Welcome);
       len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6MessagePack);
-    } 
+    }
     if ( (tcp6Session->pos < 2) ||
 	 (tcp6Session->pos < len) ) {
       tcp6Disconnect(tsession);
       return OK;
     }
-    
+
     pack = (TCP6MessagePack*)&tcp6Session->rbuff[0];
     /* send msg to core! */
     if (len <= sizeof(TCP6MessagePack)) {
@@ -488,8 +488,8 @@ static int readAndProcess(int i) {
 	mp->size);
 #endif
     coreAPI->receive(mp);
-    
-    if (tcp6Session->pos < len) { 
+
+    if (tcp6Session->pos < len) {
       BREAK();
       tcp6Disconnect(tsession);
       return SYSERR;
@@ -498,14 +498,14 @@ static int readAndProcess(int i) {
     memmove(&tcp6Session->rbuff[0],
 	    &tcp6Session->rbuff[len],
 	    tcp6Session->pos - len);
-    tcp6Session->pos -= len;	   
+    tcp6Session->pos -= len;	
     if ( (tcp6Session->pos * 4 < tcp6Session->rsize) &&
 	 (tcp6Session->rsize > 4 * 1024) ) {
       /* read buffer far too large, shrink! */
       GROW(tcp6Session->rbuff,
 	   tcp6Session->rsize,
 	   tcp6Session->pos + 1024);
-    }  
+    }
   }
   tcp6Disconnect(tsession);
   return OK;
@@ -522,7 +522,7 @@ static int addTSession(TSession * tsession) {
   int i;
 
   MUTEX_LOCK(&tcp6lock);
-  if (tsessionCount == tsessionArrayLength) 
+  if (tsessionCount == tsessionArrayLength)
     GROW(tsessions,
 	 tsessionArrayLength,
 	 tsessionArrayLength * 2);
@@ -548,7 +548,7 @@ static void createNewSession(int sock) {
   tcp6Session->wpos = 0;
   tcp6Session->wbuff = NULL;
   tcp6Session->sock = sock;
-  /* fill in placeholder identity to mark that we 
+  /* fill in placeholder identity to mark that we
      are waiting for the welcome message */
   tcp6Session->sender = *(coreAPI->myIdentity);
   tcp6Session->expectingWelcome = YES;
@@ -559,7 +559,7 @@ static void createNewSession(int sock) {
   tsession->ttype = TCP6_PROTOCOL_NUMBER;
   tsession->internal = tcp6Session;
   addTSession(tsession);
-}					 
+}					
 
 /**
  * Main method for the thread listening on the tcp6 socket and all tcp6
@@ -578,9 +578,9 @@ static void * tcp6ListenMain() {
   int i;
   int max;
   int ret;
-  
+
   if (tcp6_sock != -1)
-    if (0 != LISTEN(tcp6_sock, 5)) 
+    if (0 != LISTEN(tcp6_sock, 5))
       LOG_STRERROR(LOG_ERROR, "listen");
   SEMAPHORE_UP(serverSignal); /* we are there! */
   MUTEX_LOCK(&tcp6lock);
@@ -628,13 +628,13 @@ static void * tcp6ListenMain() {
       }
       if (sock > max)
 	max = sock;
-    }    
+    }
     MUTEX_UNLOCK(&tcp6lock);
-    ret = SELECT(max+1, &readSet, &writeSet, &errorSet, NULL);    
+    ret = SELECT(max+1, &readSet, &writeSet, &errorSet, NULL);
     MUTEX_LOCK(&tcp6lock);
     if ( (ret == -1) &&
-	 ( (errno == EAGAIN) || (errno == EINTR) ) ) 
-      continue;    
+	 ( (errno == EAGAIN) || (errno == EINTR) ) )
+      continue;
     if (ret == -1) {
       if (errno == EBADF) {
 	LOG_STRERROR(LOG_ERROR, "select");
@@ -647,13 +647,13 @@ static void * tcp6ListenMain() {
 	int sock;
 	
 	lenOfIncomingAddr = sizeof(clientAddr);
-	sock = ACCEPT(tcp6_sock, 
-		      (struct sockaddr *)&clientAddr, 
+	sock = ACCEPT(tcp6_sock,
+		      (struct sockaddr *)&clientAddr,
 		      &lenOfIncomingAddr);
-	if (sock != -1) {	  
+	if (sock != -1) {	
 	  /* verify clientAddr for eligibility here (ipcheck-style,
 	     user should be able to specify who is allowed to connect,
-	     otherwise we just close and reject the communication! */  	  
+	     otherwise we just close and reject the communication! */  	
 	  GNUNET_ASSERT(sizeof(struct in6_addr) == sizeof(IP6addr));
 	  if (YES == isBlacklisted((IP6addr*)&clientAddr.sin6_addr)) {
 	    char * tmp = MALLOC(INET6_ADDRSTRLEN);
@@ -666,8 +666,8 @@ static void * tcp6ListenMain() {
 	    FREE(tmp);
 	    SHUTDOWN(sock, 2);
 	    CLOSE(sock);
-	  } else 
-	    createNewSession(sock);      
+	  } else
+	    createNewSession(sock);
 	} else {
 	  LOG_STRERROR(LOG_INFO, "accept");
 	}
@@ -680,8 +680,8 @@ static void * tcp6ListenMain() {
 #define MAXSIG_BUF 128
       char buf[MAXSIG_BUF];
       /* just a signal to refresh sets, eat and continue */
-      if (0 >= READ(tcp6_pipe[0], 
-		    &buf[0], 
+      if (0 >= READ(tcp6_pipe[0],
+		    &buf[0],
 		    MAXSIG_BUF)) {
 	LOG_STRERROR(LOG_WARNING, "read");
       }
@@ -754,7 +754,7 @@ try_again_1:
     tcp6_sock = -1;
   }
   /* close all sessions */
-  while (tsessionCount > 0) 
+  while (tsessionCount > 0)
     destroySession(0);
   MUTEX_UNLOCK(&tcp6lock);
   SEMAPHORE_UP(serverSignal); /* we are there! */
@@ -806,8 +806,8 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
   }
   if (success == NO)
     ret = 0;
-  
-  if (ret < ssize) { /* partial send */    
+
+  if (ret < ssize) { /* partial send */
     if (tcp6Session->wsize < ssize - ret) {
       GROW(tcp6Session->wbuff,
 	   tcp6Session->wsize,
@@ -817,7 +817,7 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
 	   mp,
 	   ssize - ret);
     tcp6Session->wpos = ssize - ret;
-    signalSelect(); /* select set changed! */    
+    signalSelect(); /* select set changed! */
   }
   MUTEX_UNLOCK(&tcp6lock);
   cronTime(&tcp6Session->lastUse);
@@ -861,7 +861,7 @@ static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
 	 tcp6Session->wpos + ssize);
     memcpy(&tcp6Session->wbuff[old],
 	   mp,
-	   ssize);    
+	   ssize);
     ok = OK;
   } else {
     ok = tcp6DirectSend(tcp6Session,
@@ -885,7 +885,7 @@ static int tcp6SendReliable(TSession * tsession,
 			   const unsigned int size) {
   TCP6MessagePack * mp;
   int ok;
-  
+
   if (size >= MAX_BUFFER_SIZE)
     return SYSERR;
   if (tcp6_shutdown == YES)
@@ -914,7 +914,7 @@ static int tcp6SendReliable(TSession * tsession,
  * Verify that a HELO-Message is correct (a node
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
- * success. 
+ * success.
  * @param helo the HELO message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
@@ -936,7 +936,7 @@ static int verifyHelo(const HELO_Message * helo) {
 /**
  * Create a HELO-Message for the current node. The HELO is
  * created without signature and without a timestamp. The
- * GNUnet core will sign the message and add an expiration time. 
+ * GNUnet core will sign the message and add an expiration time.
  *
  * @param helo address where to store the pointer to the HELO
  *        message
@@ -962,7 +962,7 @@ static int createHELO(HELO_Message ** helo) {
 	_("Could not determine my public IPv6 address.\n"));
     return SYSERR;
   }
-  haddr->port = htons(port); 
+  haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(Host6Address));
   msg->protocol = htons(TCP6_PROTOCOL_NUMBER);
@@ -1008,9 +1008,9 @@ static int tcp6Connect(HELO_Message * helo,
 	    INET6_ADDRSTRLEN);
   rtn = getaddrinfo(hostname, NULL, &hints, &res0);
   FREE(hostname);
-  if (rtn != 0) {    
+  if (rtn != 0) {
     LOG(LOG_WARNING,	
-	_("'%s': unknown service: %s\n"), 
+	_("'%s': unknown service: %s\n"),
 	__FUNCTION__,
 	gai_strerror(rtn));
     return SYSERR;
@@ -1023,7 +1023,7 @@ static int tcp6Connect(HELO_Message * helo,
       inet_ntop(AF_INET6,
 		haddr,
 		tmp,
-		INET6_ADDRSTRLEN), 
+		INET6_ADDRSTRLEN),
       ntohs(haddr->port));
   FREE(tmp);
 #endif
@@ -1032,8 +1032,8 @@ static int tcp6Connect(HELO_Message * helo,
   for (res=res0; res; res=res->ai_next) {
     if (res->ai_family != PF_INET6)
       continue;
-    sock = SOCKET(res->ai_family, 
-		  res->ai_socktype, 
+    sock = SOCKET(res->ai_family,
+		  res->ai_socktype,
 		  res->ai_protocol);
     if (sock < 0)
       continue;
@@ -1042,10 +1042,10 @@ static int tcp6Connect(HELO_Message * helo,
       LOG_STRERROR(LOG_FAILURE, "setBlocking");
       return SYSERR;
     }
-    ((struct sockaddr_in6*)(res->ai_addr))->sin6_port 
+    ((struct sockaddr_in6*)(res->ai_addr))->sin6_port
       = haddr->port;
-    i = CONNECT(sock, 
-		res->ai_addr, 
+    i = CONNECT(sock,
+		res->ai_addr,
 		res->ai_addrlen);
     if ( (i < 0) &&
 	 (errno != EINPROGRESS) ) {
@@ -1103,7 +1103,7 @@ static int tcp6Connect(HELO_Message * helo,
   }
   MUTEX_UNLOCK(&tcp6lock);
   signalSelect();
-  
+
   *tsessionPtr = tsession;
   FREE(helo);
   return OK;
@@ -1122,7 +1122,7 @@ static int tcp6Send(TSession * tsession,
 		    const unsigned int size) {
   TCP6MessagePack * mp;
   int ok;
-  
+
   if (size >= MAX_BUFFER_SIZE)
     return SYSERR;
   if (tcp6_shutdown == YES)
@@ -1154,14 +1154,14 @@ static int startTransportServer(void) {
   struct sockaddr_in6 serverAddr;
   const int on = 1;
   unsigned short port;
-  
+
   if (serverSignal != NULL) {
     BREAK();
     return SYSERR;
   }
   serverSignal = SEMAPHORE_NEW(0);
   tcp6_shutdown = NO;
-    
+
   if (0 != PIPE(tcp6_pipe)) {
     LOG_STRERROR(LOG_ERROR, "pipe");
     return SYSERR;
@@ -1171,25 +1171,25 @@ static int startTransportServer(void) {
   port = getGNUnetTCP6Port();
   if (port != 0) { /* if port == 0, this is a read-only
 		      business! */
-    tcp6_sock = SOCKET(PF_INET6, 
-		       SOCK_STREAM, 
-		       0);   
+    tcp6_sock = SOCKET(PF_INET6,
+		       SOCK_STREAM,
+		       0);
     if (tcp6_sock < 0) {
       LOG_STRERROR(LOG_FAILURE, "socket");
       CLOSE(tcp6_pipe[0]);
       CLOSE(tcp6_pipe[1]);
       SEMAPHORE_FREE(serverSignal);
-      serverSignal = NULL;      
+      serverSignal = NULL;
       tcp6_shutdown = YES;
       return SYSERR;
     }
     if (SETSOCKOPT(tcp6_sock,
-		   SOL_SOCKET, 
-		   SO_REUSEADDR, 
-		   &on, 
-		   sizeof(on)) < 0 ) 
+		   SOL_SOCKET,
+		   SO_REUSEADDR,
+		   &on,
+		   sizeof(on)) < 0 )
       DIE_STRERROR("setsockopt");
-    memset((char *) &serverAddr, 
+    memset((char *) &serverAddr,
 	   0,
 	   sizeof(serverAddr));
     serverAddr.sin6_family   = AF_INET6;
@@ -1201,7 +1201,7 @@ static int startTransportServer(void) {
 	"starting tcp6 peer server on port %d\n",
 	ntohs(serverAddr.sin6_port));
 #endif
-    if (BIND(tcp6_sock, 
+    if (BIND(tcp6_sock,
 	     (struct sockaddr *) &serverAddr,
 	     sizeof(serverAddr)) < 0) {
       LOG_STRERROR(LOG_ERROR, "bind");
@@ -1216,11 +1216,11 @@ static int startTransportServer(void) {
     }
   } else
     tcp6_sock = -1;
-  if (0 == PTHREAD_CREATE(&listenThread, 
+  if (0 == PTHREAD_CREATE(&listenThread,
 			  (PThreadMain) &tcp6ListenMain,
 			  NULL,
 			  4092)) {
-    SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */      
+    SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */
   } else {
     LOG_STRERROR(LOG_ERROR,
 		 "pthread_create");
@@ -1242,7 +1242,7 @@ static int stopTransportServer() {
 
   if (tcp6_shutdown == YES)
     return OK;
-  tcp6_shutdown = YES;  
+  tcp6_shutdown = YES;
   signalSelect();
   if (serverSignal != NULL) {
     haveThread = YES;
@@ -1250,7 +1250,7 @@ static int stopTransportServer() {
     SEMAPHORE_FREE(serverSignal);
   } else
     haveThread = NO;
-  serverSignal = NULL; 
+  serverSignal = NULL;
   CLOSE(tcp6_pipe[1]);
   CLOSE(tcp6_pipe[0]);
   if (tcp6_sock != -1) {
@@ -1289,29 +1289,29 @@ static char * addressToString(const HELO_Message * helo) {
   char * ret;
   char * tmp;
   Host6Address * haddr;
-  
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];  
+
+  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   ret = MALLOC(INET6_ADDRSTRLEN+16);
-  tmp = MALLOC(INET6_ADDRSTRLEN);  
+  tmp = MALLOC(INET6_ADDRSTRLEN);
   SNPRINTF(ret,
 	   INET6_ADDRSTRLEN+16,
 	   "%s:%d (TCP6)",
 	   inet_ntop(AF_INET6,
 		     haddr,
 		     tmp,
-		     INET6_ADDRSTRLEN), 
+		     INET6_ADDRSTRLEN),
 	   ntohs(haddr->port));
   FREE(tmp);
   return ret;
 }
 
- 
+
 /* ******************** public API ******************** */
- 
+
 /**
  * The exported method. Makes the core api available
  * via a global and returns the udp transport API.
- */ 
+ */
 TransportAPI * inittransport_tcp6(CoreAPIForTransport * core) {
   MUTEX_CREATE_RECURSIVE(&tcp6lock);
   reloadConfiguration();

@@ -54,7 +54,7 @@ void ECRS_decryptInPlace(const HashCode512 * hc,
   char * tmp;
   SESSIONKEY skey;
   INITVECTOR iv;
-  
+
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
   GNUNET_ASSERT(len ==

@@ -35,7 +35,7 @@ unsigned short getGNUnetPort() {
 					      "PORT");
   if (port == 0) { /* try lookup in services */
     errexit(_("Cannot determine port of gnunetd server. Define in configuration file in section '%s' under '%s'.\n"),
-	    "NETWORK", 
+	    "NETWORK",
 	    "PORT");
   }
   return port;
@@ -67,7 +67,7 @@ GNUNET_TCP_SOCKET * getClientSocket() {
   host = getGNUnetdHost();
   if (SYSERR == initGNUnetClientSocket(getGNUnetPort(),
 				       host,
-				       sock)) {    
+				       sock)) {
     LOG(LOG_ERROR,
 	_("Could not connect to gnunetd.\n"));
     FREE(sock);

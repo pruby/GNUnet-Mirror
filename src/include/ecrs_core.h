@@ -59,9 +59,9 @@ typedef struct {
  * required to download (and check) a file.
  */
 typedef struct {
-  
+
   /**
-   * Total size of the file in bytes. (network byte order (!)) 
+   * Total size of the file in bytes. (network byte order (!))
    */
   unsigned long long file_length;
 
@@ -81,7 +81,7 @@ typedef struct {
   /**
    * Key generated (!) from the H(keyword) as the seed!
    */
-  PublicKey keyspace; 
+  PublicKey keyspace;
 
   /* 0-terminated URI here */
   /* variable-size Meta-Data follows here! */
@@ -92,15 +92,15 @@ typedef struct {
 
   Signature signature; /* 256 b */
   /**
-   * S = H(subspace); 264 b 
+   * S = H(subspace); 264 b
    */
-  PublicKey subspace; 
+  PublicKey subspace;
 
   /* from here on signed */
   /**
    * R = H(N-I)^S, used for routing!
-   */ 
-  HashCode512 identifier; 
+   */
+  HashCode512 identifier;
   /* from here on encrypted */
   cron_t creationTime; /* in network byte order */
   cron_t updateInterval; /* in network byte order */
@@ -117,15 +117,15 @@ typedef struct {
 
   PublicKey subspace; /* S = H(subspace); 264 b */
   /**
-   * Must be all zeros 
-   */ 
-  HashCode512 identifier; 
+   * Must be all zeros
+   */
+  HashCode512 identifier;
   /* The REST (from here on) is encrypted! */
   /**
    * Identifier of the namespace
    */
   HashCode512 namespace;
-  
+
   /**
    * Key of an (optional) root entry into the namespace
    * (use all-zeros for not given).
@@ -147,7 +147,7 @@ typedef struct {
 
 
 /**
- * Perform on-demand content encoding.  
+ * Perform on-demand content encoding.
  *
  * @param data the data to encode
  * @param len the length of the data

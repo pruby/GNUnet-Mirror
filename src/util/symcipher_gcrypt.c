@@ -29,7 +29,7 @@
  * (since only global operations on the random pool must be locked,
  * strictly speaking).  But libgcrypt does sometimes require locking in
  * unexpected places, so the safe solution is to always lock even if it
- * is not required.  The performance impact is minimal anyway. 
+ * is not required.  The performance impact is minimal anyway.
  */
 
 #include "gnunet_util.h"
@@ -77,7 +77,7 @@ void makeSessionkey(SESSIONKEY * key) {
  * @param result the output parameter in which to store the encrypted result
  * @returns the size of the encrypted block, -1 for errors
  */
-int encryptBlock(const void * block, 
+int encryptBlock(const void * block,
 		 unsigned short len,
 		 const SESSIONKEY * sessionkey,
 		 const INITVECTOR * iv,
@@ -107,27 +107,27 @@ int encryptBlock(const void * block,
     unlockGcrypt();
     return -1;
   }
-  rc = gcry_cipher_setkey(handle, 
-			  sessionkey, 
+  rc = gcry_cipher_setkey(handle,
+			  sessionkey,
 			  SESSIONKEY_LEN);
 
-  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
+  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setkey", rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
-  rc != gcry_cipher_setiv(handle, 
+  rc != gcry_cipher_setiv(handle,
 			  iv,
 			  sizeof(INITVECTOR));
 
-  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
+  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setiv", rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
-    
+
   rc = gcry_cipher_encrypt(handle,
 			   result,
 			   len,
@@ -154,7 +154,7 @@ int encryptBlock(const void * block,
  * @param result address to store the result at
  * @return -1 on failure, size of decrypted block on success
  */
-int decryptBlock(const SESSIONKEY * sessionkey, 
+int decryptBlock(const SESSIONKEY * sessionkey,
 		 const void * block,
 		 unsigned short size,
 		 const INITVECTOR * iv,
@@ -178,33 +178,33 @@ int decryptBlock(const SESSIONKEY * sessionkey,
   rc = gcry_cipher_open(&handle,
 			GCRY_CIPHER_AES256,
 			GCRY_CIPHER_MODE_CFB,
-			0);  
+			0);
   if (rc) {
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_open", rc);
     unlockGcrypt();
     return -1;
   }
-  rc = gcry_cipher_setkey(handle, 
-			  sessionkey, 
+  rc = gcry_cipher_setkey(handle,
+			  sessionkey,
 			  SESSIONKEY_LEN);
 
-  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
+  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setkey", rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
-  rc = gcry_cipher_setiv(handle, 
+  rc = gcry_cipher_setiv(handle,
 			 iv,
 			 sizeof(INITVECTOR));
 
-  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
+  if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setiv", rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;
   }
-    
+
   rc = gcry_cipher_decrypt(handle,
 			   result,
 			   size,

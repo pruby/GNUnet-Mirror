@@ -35,39 +35,39 @@
  */
 typedef struct {
   /**
-   * claimed IP of the sender, network byte order 
-   */  
+   * claimed IP of the sender, network byte order
+   */
   IP6addr senderIP;
 
   /**
-   * claimed port of the sender, network byte order 
+   * claimed port of the sender, network byte order
    */
-  unsigned short senderPort; 
+  unsigned short senderPort;
 
   /**
-   * reserved (set to 0 for signature verification) 
+   * reserved (set to 0 for signature verification)
    */
-  unsigned short reserved; 
+  unsigned short reserved;
 
 } Host6Address;
 
 /**
- * Message-Packet header. 
+ * Message-Packet header.
  */
 typedef struct {
   /**
    * this struct is *preceded* by MESSAGE_PARTs - until
    * size-sizeof(UDP6Message)!
-   */ 
+   */
 
-  /** 
+  /**
    * size of the message, in bytes, including this header; max
    * 65536-header (network byte order)
    */
   unsigned short size;
 
   /**
-   * What is the identity of the sender (hash of public key) 
+   * What is the identity of the sender (hash of public key)
    */
   PeerIdentity sender;
 
@@ -80,12 +80,12 @@ static CoreAPIForTransport * coreAPI;
 static TransportAPI udp6API;
 
 /**
- * thread that listens for inbound messages 
+ * thread that listens for inbound messages
  */
 static PTHREAD_T dispatchThread;
 
 /**
- * the socket that we receive all data from 
+ * the socket that we receive all data from
  */
 static int udp6_sock;
 
@@ -97,7 +97,7 @@ static Semaphore * serverSignal;
 static int udp6_shutdown = YES;
 
 /**
- * configuration 
+ * configuration
  */
 static struct CIDR6Network * filteredNetworks_ = NULL;
 static Mutex configLock;
@@ -115,13 +115,13 @@ static unsigned short getGNUnetUDP6Port() {
   port = (unsigned short) getConfigurationInt("UDP6",
 					      "PORT");
   if (port == 0) { /* try lookup in services */
-    if ((pse = getservbyname("gnunet", "udp6"))) 
-      port = ntohs(pse->s_port);      
-    else 
+    if ((pse = getservbyname("gnunet", "udp6")))
+      port = ntohs(pse->s_port);
+    else
       errexit(_("Cannot determine port to bind to. "
 		" Define in configuration file in section '%s' under '%s' "
 		"or in '%s' under %s/%s.\n"),
-	      "UDP6", 
+	      "UDP6",
 	      "PORT",
 	      "/etc/services",
 	      "udp6",
@@ -138,15 +138,15 @@ static int passivesock(unsigned short port) {
   int sock;
   const int on = 1;
 
-  sock = SOCKET(PF_INET6, 
-		SOCK_DGRAM, 
+  sock = SOCKET(PF_INET6,
+		SOCK_DGRAM,
 		UDP_PROTOCOL_NUMBER);
-  if (sock < 0) 
+  if (sock < 0)
     DIE_STRERROR("socket");
   if ( SETSOCKOPT(sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0 )
     DIE_STRERROR("setsockopt");
   if (port != 0) {
-    memset(&sin, 0, sizeof(sin)); 
+    memset(&sin, 0, sizeof(sin));
     sin.sin6_family = AF_INET6;
     sin.sin6_port   = htons(port);
     memcpy(&sin.sin6_addr,
@@ -181,7 +181,7 @@ static int isBlacklisted(IP6addr * ip) {
  */
 static void * listenAndDistribute() {
   struct sockaddr_in6 incoming;
-  socklen_t addrlen = sizeof(incoming);  
+  socklen_t addrlen = sizeof(incoming);
   int size;
   EncName enc;
   MessagePack * mp;
@@ -193,24 +193,24 @@ static void * listenAndDistribute() {
     mp = MALLOC(sizeof(MessagePack));
     mp->msg = MALLOC(udp6API.mtu + sizeof(UDP6Message));
   RETRY:
-    memset(&incoming, 
-	   0, 
+    memset(&incoming,
+	   0,
 	   sizeof(struct sockaddr_in6));
     if (udp6_shutdown == YES) {
       FREE(mp->msg);
       FREE(mp);
       break;
     }
-    size = RECVFROM(udp6_sock, 
-		    mp->msg, 
-		    udp6API.mtu + sizeof(UDP6Message), 
+    size = RECVFROM(udp6_sock,
+		    mp->msg,
+		    udp6API.mtu + sizeof(UDP6Message),
 		    0,
-		    (struct sockaddr * )&incoming, 
+		    (struct sockaddr * )&incoming,
 		    &addrlen);
-    if ( (size < 0) || 
+    if ( (size < 0) ||
 	 (udp6_shutdown == YES) ) {
       if (udp6_shutdown == NO) {
-	if ( (errno == EINTR) || 
+	if ( (errno == EINTR) ||
 	     (errno == EAGAIN) ||
 	     (errno == ECONNREFUSED) )
 	  goto RETRY;
@@ -229,7 +229,7 @@ static void * listenAndDistribute() {
 	  inet_ntop(AF_INET6,
 		    &incoming,
 		    tmp,
-		    INET6_ADDRSTRLEN), 
+		    INET6_ADDRSTRLEN),
 	  ntohs(incoming.sin6_port));
       FREE(tmp);
       goto RETRY;
@@ -249,7 +249,7 @@ static void * listenAndDistribute() {
 	inet_ntop(AF_INET6,
 		  &incoming,
 		  tmp,
-		  INET6_ADDRSTRLEN), 
+		  INET6_ADDRSTRLEN),
 	ntohs(incoming.sin6_port),
 	&enc);
     FREE(tmp);
@@ -262,7 +262,7 @@ static void * listenAndDistribute() {
 	  inet_ntop(AF_INET6,
 		    &incoming,
 		    tmp,
-		    INET6_ADDRSTRLEN), 
+		    INET6_ADDRSTRLEN),
 	  ntohs(incoming.sin6_port));
       FREE(tmp);
       goto RETRY;
@@ -281,7 +281,7 @@ static void * listenAndDistribute() {
     }
     /* message ok, fill in mp and pass to core */
     mp->tsession     = NULL;
-    mp->size        = ntohs(udp6m.size) - sizeof(UDP6Message);    
+    mp->size        = ntohs(udp6m.size) - sizeof(UDP6Message);
     memcpy(&mp->sender,
 	   &udp6m.sender,
 	   sizeof(PeerIdentity));
@@ -321,10 +321,10 @@ static int verifyHelo(const HELO_Message * helo) {
 	inet_ntop(AF_INET6,
 		  &haddr->senderIP,
 		  tmp,
-		  INET6_ADDRSTRLEN), 
+		  INET6_ADDRSTRLEN),
 	ntohs(haddr->senderPort));
     FREE(tmp);
-#endif    
+#endif
     return OK;
   }
 }
@@ -355,7 +355,7 @@ static int createHELO(HELO_Message ** helo) {
 	_("UDP6: Could not determine my public IPv6 address.\n"));
     return SYSERR;
   }
-  haddr->senderPort      = htons(port); 
+  haddr->senderPort      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(Host6Address));
   msg->protocol          = htons(UDP6_PROTOCOL_NUMBER);
@@ -381,7 +381,7 @@ static int udp6Connect(HELO_Message * helo,
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = helo;
   tsession->ttype = udp6API.protocolNumber;
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];  
+  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
 #if DEBUG_UDP6
   tmp = MALLOC(INET6_ADDRSTRLEN);
   LOG(LOG_DEBUG,
@@ -389,7 +389,7 @@ static int udp6Connect(HELO_Message * helo,
       inet_ntop(AF_INET6,
 		&haddr->senderIP,
 		tmp,
-		INET6_ADDRSTRLEN), 
+		INET6_ADDRSTRLEN),
       ntohs(haddr->senderPort));
   FREE(tmp);
 #endif
@@ -433,7 +433,7 @@ static int udp6Send(TSession * tsession,
 #if DEBUG_UDP6
   char * tmp;
 #endif
-  
+
   if (udp6_shutdown == YES)
     return SYSERR;
   if (size == 0) {
@@ -445,7 +445,7 @@ static int udp6Send(TSession * tsession,
     return SYSERR;
   }
   helo = (HELO_Message*)tsession->internal;
-  if (helo == NULL) 
+  if (helo == NULL)
     return SYSERR;
 
   haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
@@ -476,7 +476,7 @@ static int udp6Send(TSession * tsession,
       inet_ntop(AF_INET6,
 		&sin,
 		tmp,
-		INET6_ADDRSTRLEN), 
+		INET6_ADDRSTRLEN),
       ntohs(sin.sin_port));
   FREE(tmp);
 #endif
@@ -552,14 +552,14 @@ static int stopTransportServer() {
       char msg = '\0';
       struct sockaddr_in sin;
       void * unused;
-      
+
       /* send to loopback */
       sin.sin_family = AF_INET;
       sin.sin_port = htons(getGNUnetUDP6Port());
       *(int*)&sin.sin_addr = htonl(0x7F000001); /* 127.0.0.1 = localhost */
-      SENDTO(udp6_sock, 
-	     &msg, 
-	     sizeof(msg), 
+      SENDTO(udp6_sock,
+	     &msg,
+	     sizeof(msg),
 	     0, /* no flags */
 	     (struct sockaddr*) &sin,
 	     sizeof(sin));
@@ -568,7 +568,7 @@ static int stopTransportServer() {
       PTHREAD_JOIN(&dispatchThread, &unused);
     }
   }
-  CLOSE(udp6_sock);  
+  CLOSE(udp6_sock);
   udp6_sock = -1;
   return OK;
 }
@@ -587,7 +587,7 @@ static void reloadConfiguration(void) {
     filteredNetworks_ = parseRoutes6("");
   else {
     filteredNetworks_ = parseRoutes6(ch);
-    FREE(ch);    
+    FREE(ch);
   }
   MUTEX_UNLOCK(&configLock);
 }
@@ -599,24 +599,24 @@ static char * addressToString(const HELO_Message * helo) {
   char * ret;
   char * tmp;
   Host6Address * haddr;
-  
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];  
+
+  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   ret = MALLOC(INET6_ADDRSTRLEN+16);
-  tmp = MALLOC(INET6_ADDRSTRLEN);  
+  tmp = MALLOC(INET6_ADDRSTRLEN);
   SNPRINTF(ret,
 	   INET6_ADDRSTRLEN+16,
 	   "%s:%d (UDP6)",
 	   inet_ntop(AF_INET6,
 		     haddr,
 		     tmp,
-		     INET6_ADDRSTRLEN), 
+		     INET6_ADDRSTRLEN),
 	   ntohs(haddr->senderPort));
   FREE(tmp);
   return ret;
 }
 
 /**
- * The default maximum size of each outbound UDP6 message, 
+ * The default maximum size of each outbound UDP6 message,
  * optimal value for Ethernet (10 or 100 MBit).
  */
 #define MESSAGE_SIZE 1452
@@ -624,7 +624,7 @@ static char * addressToString(const HELO_Message * helo) {
 /**
  * The exported method. Makes the core api available via a global and
  * returns the udp6 transport API.
- */ 
+ */
 TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
   int mtu;
 

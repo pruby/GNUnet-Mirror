@@ -111,8 +111,8 @@ static int gapPut(void * closure,
     return SYSERR;
   }
   gw = (GapWrapper*) value;
-  size = ntohl(gw->dc.size) 
-    - sizeof(GapWrapper) 
+  size = ntohl(gw->dc.size)
+    - sizeof(GapWrapper)
     + sizeof(Datastore_Value);
   if ( (OK != getQueryFor(size - sizeof(Datastore_Value),
 			  (DBlock*)&gw[1],
@@ -130,7 +130,7 @@ static int gapPut(void * closure,
   dv->anonymityLevel = htonl(0);
   et = ntohll(gw->timeout);
   cronTime(&now);
-  /* bound ET to MAX_MIGRATION_EXP from now */ 
+  /* bound ET to MAX_MIGRATION_EXP from now */
   if (et > now) {
     et -= now;
     et = et % MAX_MIGRATION_EXP;
@@ -149,7 +149,7 @@ static int gapPut(void * closure,
     FREE(dv);
     return SYSERR;
   }
-  processResponse(key, dv); 
+  processResponse(key, dv);
   IFLOG(LOG_DEBUG,
 	hash2enc(key,
 		 &enc));
@@ -168,7 +168,7 @@ static int get_result_callback(const HashCode512 * key,
   EncName enc;
 
   IFLOG(LOG_DEBUG,
-	hash2enc(key, 
+	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
       "Found reply to query %s.\n",
@@ -178,7 +178,7 @@ static int get_result_callback(const HashCode512 * key,
 	 value,
 	 cls->prio);
   return OK;
-}				    
+}				
 
 static void get_complete_callback(DHT_GET_CLS * cls) {
   dht->get_stop(cls->rec);
@@ -194,7 +194,7 @@ static void put_complete_callback(DHT_PUT_CLS * cls) {
  * Process a query from the client. Forwards to the network.
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
- */ 
+ */
 static int csHandleRequestQueryStart(ClientHandle sock,
 				     const CS_HEADER * req) {
   const RequestSearch * rs;
@@ -212,12 +212,12 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   LOG(LOG_DEBUG,
       "FS received QUERY START (query: %s)\n",
       &enc);
-  trackQuery(&rs->query[0], 
+  trackQuery(&rs->query[0],
 	     ntohl(rs->type),
 	     sock);
   keyCount = 1 + (ntohs(req->size) - sizeof(RequestSearch)) / sizeof(HashCode512);
   gap->get_start(ntohl(rs->type),
-		 ntohl(rs->anonymityLevel),		 
+		 ntohl(rs->anonymityLevel),		
 		 keyCount,
 		 &rs->query[0],
 		 ntohll(rs->expiration),
@@ -246,7 +246,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
  * Stop processing a query.
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
- */ 
+ */
 static int csHandleRequestQueryStop(ClientHandle sock,
 				    const CS_HEADER * req) {
   RequestSearch * rs;
@@ -292,9 +292,9 @@ static int csHandleRequestInsert(ClientHandle sock,
     return SYSERR;
   }
   ri = (const RequestInsert*) req;
-  datum = MALLOC(sizeof(Datastore_Value) + 
+  datum = MALLOC(sizeof(Datastore_Value) +
 		 ntohs(req->size) - sizeof(RequestInsert));
-  datum->size = htonl(sizeof(Datastore_Value) + 
+  datum->size = htonl(sizeof(Datastore_Value) +
 		      ntohs(req->size) - sizeof(RequestInsert));
   datum->expirationTime = ri->expiration;
   datum->prio = ri->prio;
@@ -330,7 +330,7 @@ static int csHandleRequestInsert(ClientHandle sock,
     cron_t now;
     cron_t et;
     DHT_PUT_CLS * cls;
-    
+
     size = sizeof(GapWrapper) +
       ntohs(ri->header.size) - sizeof(RequestInsert) -
       sizeof(Datastore_Value);
@@ -360,7 +360,7 @@ static int csHandleRequestInsert(ClientHandle sock,
   }
 
   FREE(datum);
-  return coreAPI->sendValueToClient(sock, 
+  return coreAPI->sendValueToClient(sock,
 				    ret);
 }
 
@@ -373,14 +373,14 @@ static int csHandleRequestInitIndex(ClientHandle sock,
   char *fn;
   RequestInitIndex *ri;
   int fnLen;
-  
+
   if (ntohs(req->size) < sizeof(RequestInitIndex)) {
     BREAK();
     return SYSERR;
   }
-  
+
   ri = (RequestInitIndex *) req;
-  
+
   fnLen = ntohs(ri->header.size) - sizeof(RequestInitIndex);
 #if CYGWIN
   if (fnLen > _MAX_PATH)
@@ -389,10 +389,10 @@ static int csHandleRequestInitIndex(ClientHandle sock,
   fn = MALLOC(fnLen + 1);
   strncpy(fn, (char*) &ri[1], fnLen+1);
   fn[fnLen] = 0;
-  
+
   ret = ONDEMAND_initIndex(&ri->fileId,
           fn);
-          
+
   FREE(fn);
 
   LOG(LOG_DEBUG,
@@ -411,7 +411,7 @@ static int csHandleRequestIndex(ClientHandle sock,
 				const CS_HEADER * req) {
   int ret;
   const RequestIndex * ri;
-  
+
   if (ntohs(req->size) < sizeof(RequestIndex)) {
     BREAK();
     return SYSERR;
@@ -439,10 +439,10 @@ static int csHandleRequestIndex(ClientHandle sock,
  * continue.
  */
 static int completeValue(const HashCode512 * key,
-			 const Datastore_Value * value, 
+			 const Datastore_Value * value,
 			 void * closure) {
   Datastore_Value * comp = closure;
-  
+
   if ( (comp->size != value->size) ||
        (0 != memcmp(&value[1],
 		    &comp[1],
@@ -474,12 +474,12 @@ static int csHandleRequestDelete(ClientHandle sock,
   HashCode512 query;
   unsigned int type;
   EncName enc;
-  
+
   if (ntohs(req->size) < sizeof(RequestDelete)) {
     BREAK();
     return SYSERR;
   }
-  rd = (const RequestDelete*) req;  
+  rd = (const RequestDelete*) req;
   value = MALLOC(sizeof(Datastore_Value) +
 		 ntohs(req->size) - sizeof(RequestDelete));
   value->size = ntohl(sizeof(Datastore_Value) +
@@ -519,7 +519,7 @@ static int csHandleRequestDelete(ClientHandle sock,
   LOG(LOG_DEBUG,
       "Sending confirmation (%s) of delete request to client\n",
       ret != SYSERR ? "success" : "failure");
-  return coreAPI->sendValueToClient(sock, 
+  return coreAPI->sendValueToClient(sock,
 				    ret);
 }
 
@@ -530,18 +530,18 @@ static int csHandleRequestUnindex(ClientHandle sock,
 				  const CS_HEADER * req) {
   int ret;
   RequestUnindex * ru;
-  
+
   if (ntohs(req->size) != sizeof(RequestUnindex)) {
     BREAK();
     return SYSERR;
   }
-  ru = (RequestUnindex*) req;  
+  ru = (RequestUnindex*) req;
   LOG(LOG_DEBUG,
       "FS received REQUEST UNINDEX\n");
   ret = ONDEMAND_unindex(datastore,
 			 ntohl(ru->blocksize),
 			 &ru->fileId);
-  return coreAPI->sendValueToClient(sock, 
+  return coreAPI->sendValueToClient(sock,
 				    ret);
 }
 
@@ -554,17 +554,17 @@ static int csHandleRequestTestIndexed(ClientHandle sock,
 				      const CS_HEADER * req) {
   int ret;
   RequestTestindex * ru;
-  
+
   if (ntohs(req->size) != sizeof(RequestTestindex)) {
     BREAK();
     return SYSERR;
   }
-  ru = (RequestTestindex*) req;  
+  ru = (RequestTestindex*) req;
   LOG(LOG_DEBUG,
       "FS received REQUEST TESTINDEXED\n");
   ret = ONDEMAND_testindexed(datastore,
 			     &ru->fileId);
-  return coreAPI->sendValueToClient(sock, 
+  return coreAPI->sendValueToClient(sock,
 				    ret);
 }
 
@@ -576,7 +576,7 @@ static int csHandleRequestGetAvgPriority(ClientHandle sock,
 					 const CS_HEADER * req) {
   LOG(LOG_DEBUG,
       "FS received REQUEST GETAVGPRIORITY\n");
-  return coreAPI->sendValueToClient(sock, 
+  return coreAPI->sendValueToClient(sock,
 				    gap->getAvgPriority());
 }
 
@@ -619,7 +619,7 @@ static int gapGetConverter(const HashCode512 * key,
     xvalue = NULL;
     value = invalue;
   }
-		   
+		
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
 			  (const DBlock*) &value[1],
@@ -699,7 +699,7 @@ static int gapGetConverter(const HashCode512 * key,
       return OK;
     }
   }
-  
+
   gw = MALLOC(size);
   gw->dc.size = htonl(size);
   et = ntohll(value->expirationTime);
@@ -767,7 +767,7 @@ static int gapGet(void * closure,
 			 &gapGetConverter,
 			 &myClosure);
   }
-  if (ret != SYSERR) 
+  if (ret != SYSERR)
     ret = datastore->get(&keys[0],
 			 type,
 			 &gapGetConverter,
@@ -778,7 +778,7 @@ static int gapGet(void * closure,
 			      were found */
   return ret;
 }
-  
+
 /**
  * Remove an item from the datastore.
  *
@@ -800,7 +800,7 @@ static int gapDel(void * closure,
  * @param cls argument to processor
  * @return number of results, SYSERR on error
  */
-static int gapIterate(void * closure,		 
+static int gapIterate(void * closure,		
 		      DataProcessor processor,
 		      void * cls) {
   BREAK(); /* gap does not use 'iterate' */
@@ -938,7 +938,7 @@ static int uniqueReplyIdentifier(const void * content,
   unsigned int t;
   const GapWrapper * gw;
 
-  if (size < sizeof(GapWrapper)) { 
+  if (size < sizeof(GapWrapper)) {
     BREAK();
     return NO;
   }
@@ -949,19 +949,19 @@ static int uniqueReplyIdentifier(const void * content,
        (equalsHashCode512(&q,
 			  primaryKey)) &&
        ( (type == ANY_BLOCK) ||
-	 (type == (t = getTypeOfBlock(size - sizeof(GapWrapper), 
+	 (type == (t = getTypeOfBlock(size - sizeof(GapWrapper),
 				      (const DBlock*)&gw[1]) ) ) ) ) {
     switch(type) {
     case D_BLOCK:
       return YES;
-    default: 
+    default:
       return NO;
     }
   } else
     return NO;
 }
 
-  
+
 /**
  * Initialize the FS module. This method name must match
  * the library name (libgnunet_XXX => initialize_XXX).
@@ -972,8 +972,8 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   static Blockstore dsGap;
   static Blockstore dsDht;
 
-  hash("GNUNET_FS", 
-       strlen("GNUNET_FS"), 
+  hash("GNUNET_FS",
+       strlen("GNUNET_FS"),
        &dht_table);
   if (getConfigurationInt("FS",
 			  "QUOTA") <= 0) {
@@ -997,7 +997,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   // dht = capi->requestService("dht");
   dht = NULL;
 
-  coreAPI = capi;  
+  coreAPI = capi;
   MUTEX_CREATE(&lock);
   dsGap.closure = NULL;
   dsGap.get = &gapGet;
@@ -1006,7 +1006,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   dsGap.iterate = &gapIterate;
   initQueryManager(capi);
   gap->init(&dsGap, &uniqueReplyIdentifier);
-  
+
   if (dht != NULL) {
     dsDht.closure = NULL;
     dsDht.get = &dhtGet;
@@ -1014,7 +1014,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     dsDht.del = &gapDel; /* exactly the same method for gap/dht*/
     dsDht.iterate = &gapIterate;  /* exactly the same method for gap/dht*/
     dht->join(&dsDht, &dht_table);
-  } 
+  }
 
   LOG(LOG_DEBUG,
       _("'%s' registering client handlers %d %d %d %d %d %d %d %d %d %d\n"),
@@ -1057,8 +1057,8 @@ void done_module_fs() {
   if (dht != NULL) {
     LOG(LOG_INFO,
 	"Leaving DHT (this may take a while).");
-    dht->leave(&dht_table, 
-	       15 * cronSECONDS); 
+    dht->leave(&dht_table,
+	       15 * cronSECONDS);
     LOG(LOG_INFO,
 	"Leaving DHT complete.");
 

@@ -72,12 +72,12 @@
  */
 
 typedef struct {
-  CS_HEADER header;  
+  CS_HEADER header;
   unsigned int msgType;	/* The message types listed above	*/
 } TESTBED_CS_MESSAGE;
 
 typedef struct {
-  TESTBED_CS_MESSAGE testbed_cs_message;  
+  TESTBED_CS_MESSAGE testbed_cs_message;
   char data[1];		/* Value is dependent on the type field */
 } TESTBED_CS_MESSAGE_GENERIC;
 

@@ -29,14 +29,14 @@ static RPC_ServiceAPI * rpcAPI;
 
 DHT_ServiceAPI * provide_dht_protocol(CoreAPIForApplication * capi);
 int release_dht_protocol();
-RPC_ServiceAPI * provide_rpc_protocol(CoreAPIForApplication * capi); 
+RPC_ServiceAPI * provide_rpc_protocol(CoreAPIForApplication * capi);
 void release_rpc_protocol();
 
 static int forAllConnectedNodes(PerNodeCallback method,
 				void * arg) {
   return 0;
 }
- 
+
 static void sendToNode(const PeerIdentity * hostId,
 		       const p2p_HEADER * message,
 		       unsigned int priority,
@@ -61,7 +61,7 @@ static int unregisterHandler(const unsigned short type,
   return SYSERR;
 }
 
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   char c;
 
@@ -70,18 +70,18 @@ static int parseCommandLine(int argc,
     static struct GNoption long_options[] = {
       { "config",  1, 0, 'c' },
       { 0,0,0,0 }
-    };    
+    };
     c = GNgetopt_long(argc,
-		      argv, 
-		      "c:", 
-		      long_options, 
+		      argv,
+		      "c:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
-    case 'c': 
+    case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));
@@ -100,7 +100,7 @@ static int parseCommandLine(int argc,
 int main(int argc,
 	 char * argv[]) {
   PeerIdentity id;
-  
+
   if (1)
     return 0; /* testcase not complete, always pass for now */
 
@@ -108,7 +108,7 @@ int main(int argc,
 
   if (OK != initUtil(argc, argv, &parseCommandLine))
     return 1;
-  
+
   /* for DHT */
   memset(&dht_capi, 0, sizeof(CoreAPIForApplication));
   dht_capi.myIdentity = &id;
@@ -122,7 +122,7 @@ int main(int argc,
   rpc_capi.registerHandler = &registerHandler;
   rpc_capi.unregisterHandler = &unregisterHandler;
   rpc_capi.sendToNode = &sendToNode;
-  
+
   rpcAPI = provide_rpc_protocol(&rpc_capi);
   if (rpcAPI == NULL)
     ABORT();

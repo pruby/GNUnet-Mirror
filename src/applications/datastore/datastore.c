@@ -20,7 +20,7 @@
 
 /**
  * @file applications/datastore/datastore.c
- * @brief This module is responsible to manage content, in particular 
+ * @brief This module is responsible to manage content, in particular
  *        it needs to decide what content to keep.  This module
  *        also uses the bloomfilter to reduce get operations on the
  *        database.
@@ -92,7 +92,7 @@ static int get(const HashCode512 * query,
 
 /**
  * Explicitly remove some content from the database.
- */  
+ */
 static int del(const HashCode512 * query,
 	       const Datastore_Value * value) {
   int ok;
@@ -112,7 +112,7 @@ static int del(const HashCode512 * query,
   ok = sq->del(query, value);
   if (0 < ok) {
     for (i=0;i<ok;i++) {
-      makeUnavailable(query); /* update filter! */ 
+      makeUnavailable(query); /* update filter! */
       available += ntohl(value->size);
     }
     IFLOG(LOG_DEBUG,
@@ -135,7 +135,7 @@ static int del(const HashCode512 * query,
 /**
  * Store an item in the datastore.  If the item is
  * already present, a second copy is created.
- *  
+ *
  * @return YES on success, NO if the datastore is
  *   full and the priority of the item is not high enough
  *   to justify removing something else, SYSERR on
@@ -154,7 +154,7 @@ static int put(const HashCode512 * key,
     minPriority = ntohl(value->prio);
 
   /* add the content */
-  ok = sq->put(key, 
+  ok = sq->put(key,
 	       value);
   if (ok == YES) {
     makeAvailable(key);
@@ -184,7 +184,7 @@ static int checkExists(const HashCode512 * key,
  * Store an item in the datastore.  If the item is already present,
  * the priorities are summed up and the higher expiration time and
  * lower anonymity level is used.
- *  
+ *
  * @return YES on success, NO if the datastore is
  *   full and the priority of the item is not high enough
  *   to justify removing something else, SYSERR on
@@ -203,25 +203,25 @@ static int putUpdate(const HashCode512 * key,
 	  ntohl(value->type),
 	  (Datum_Iterator) &checkExists,
 	  &cls);
-  if (ntohl(value->type) == D_BLOCK) 
+  if (ntohl(value->type) == D_BLOCK)
     sq->get(key,
 	    ONDEMAND_BLOCK,
 	    (Datum_Iterator) &checkExists,
 	    &cls);
-   
+
   if (cls.exists) {
     if (htonl(value->prio) == 0) {
       FREE(cls.existing);
       return OK;
     }
     /* update prio */
-    sq->update(key, 
+    sq->update(key,
 	       cls.existing,
 	       ntohl(value->prio));
     FREE(cls.existing);
     return OK;
   }
-  
+
   /* check if we have enough space / priority */
   if ( (available < ntohl(value->size) ) &&
        (minPriority > ntohl(value->prio)) )
@@ -231,7 +231,7 @@ static int putUpdate(const HashCode512 * key,
     minPriority = ntohl(value->prio);
 
   /* add the content */
-  ok = sq->put(key, 
+  ok = sq->put(key,
 	       value);
   if (ok == YES) {
     makeAvailable(key);
@@ -241,9 +241,9 @@ static int putUpdate(const HashCode512 * key,
 }
 
 static int freeSpaceExpired(const HashCode512 * key,
-			 const Datastore_Value * value, 
+			 const Datastore_Value * value,
 			 void * closure) {
-  int ret; 
+  int ret;
 
   if (cronTime(NULL) < ntohll(value->expirationTime))
     return SYSERR; /* not expired */
@@ -256,9 +256,9 @@ static int freeSpaceExpired(const HashCode512 * key,
 }
 
 static int freeSpaceLow(const HashCode512 * key,
-			const Datastore_Value * value, 
+			const Datastore_Value * value,
 			void * closure) {
-  int ret; 
+  int ret;
 
   minPriority = ntohl(value->prio);
   ret = sq->del(key, value);
@@ -276,7 +276,7 @@ static int freeSpaceLow(const HashCode512 * key,
  * Also updates available and minPriority.
  */
 static void cronMaintenance(void * unused) {
-  long long tmpAvailable 
+  long long tmpAvailable
     = getConfigurationInt("FS", "QUOTA") * 1024 * 1024; /* MB to bytes */
   available = tmpAvailable - sq->getSize();
   if (available < MIN_FREE) {
@@ -290,13 +290,13 @@ static void cronMaintenance(void * unused) {
     }
   } else {
     minPriority = 0;
-  }  
+  }
 }
 
 /**
  * Initialize the manager-module.
- */ 
-Datastore_ServiceAPI * 
+ */
+Datastore_ServiceAPI *
 provide_module_datastore(CoreAPIForApplication * capi) {
   static Datastore_ServiceAPI api;
   int quota;
@@ -320,7 +320,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   addCronJob(&cronMaintenance,
 	     10 * cronSECONDS,
 	     10 * cronSECONDS,
-	     NULL); 
+	     NULL);
 
   api.getSize = &getSize;
   api.put = &put;
@@ -338,7 +338,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
 void release_module_datastore() {
   delCronJob(&cronMaintenance,
 	     10 * cronSECONDS,
-	     NULL); 
+	     NULL);
   donePrefetch();
   doneFilters();
   coreAPI->releaseService(sq);
@@ -351,7 +351,7 @@ void release_module_datastore() {
  * bloomfilter.
  */
 static int filterAddAll(const HashCode512 * key,
-			const Datastore_Value * value, 
+			const Datastore_Value * value,
 			void * closure) {
   makeAvailable(key);
   return OK;
@@ -371,7 +371,7 @@ void update_module_datastore(UpdateAPI * uapi) {
     = getConfigurationInt("FS", "QUOTA");
   lq = NULL;
   if (sizeof(int) != stateReadContent("FS-LAST-QUOTA",
-				      (void**)&lq)) 
+				      (void**)&lq))
     return; /* first start? */
   lastQuota = ntohl(*lq);
   FREE(lq);
@@ -379,11 +379,11 @@ void update_module_datastore(UpdateAPI * uapi) {
     return; /* unchanged */
   /* ok, need to convert! */
   deleteFilter();
-  initFilters();  
+  initFilters();
   sq = uapi->requestService("sqstore");
   sq->get(NULL, ANY_BLOCK,
 	  &filterAddAll,
-	  NULL);  
+	  NULL);
   uapi->releaseService(sq);
   sq = NULL;
   doneFilters();

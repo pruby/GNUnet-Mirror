@@ -32,7 +32,7 @@
 #ifndef LINUX
 static void catcher(int sig) {
   LOG(LOG_INFO,
-      _("Caught signal %d.\n"), 
+      _("Caught signal %d.\n"),
       sig);
   /* re-install signal handler! */
   signal(sig, catcher);
@@ -45,7 +45,7 @@ void gnunet_util_initIO() {
 #if ! (defined(LINUX) || defined(MINGW))
   if ( SIG_ERR == signal(SIGPIPE, SIG_IGN))
     if ( SIG_ERR == signal(SIGPIPE, catcher))
-      LOG_STRERROR(LOG_WARNING, "signal"); 
+      LOG_STRERROR(LOG_WARNING, "signal");
 #endif
 }
 
@@ -57,14 +57,14 @@ void gnunet_util_doneIO() {
  * of socket s.
  *
  * @param doBlock use YES to change the socket to blocking, NO to non-blocking
- * @return Upon successful completion, it returns zero, otherwise -1 
+ * @return Upon successful completion, it returns zero, otherwise -1
  */
-int setBlocking(int s, int doBlock) {  
+int setBlocking(int s, int doBlock) {
 #if MINGW
   u_long l = !doBlock;
   if (ioctlsocket(s, FIONBIO, &l) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
-    
+
     return -1;
   } else {
     /* store the blocking mode */
@@ -78,8 +78,8 @@ int setBlocking(int s, int doBlock) {
   else
     flags |= O_NONBLOCK;
 
-  return fcntl(s, 
-	       F_SETFL, 
+  return fcntl(s,
+	       F_SETFL,
 	       flags);
 #endif
 }
@@ -114,14 +114,14 @@ int isSocketBlocking(int s)
  *             0 is returned if no more bytes can be read
  * @return SYSERR on error, YES on success or NO if the operation
  *         would have blocked
- */ 
+ */
 int RECV_NONBLOCKING(int s,
 		     void * buf,
 		     size_t max,
-		     size_t *read) {  
+		     size_t *read) {
   int flags;
 
-  setBlocking(s, NO);  
+  setBlocking(s, NO);
 
 #ifdef CYGWIN
     flags = MSG_NOSIGNAL;
@@ -142,7 +142,7 @@ int RECV_NONBLOCKING(int s,
 	                  max,
 	                  flags);
   } while ( ( *read == -1) && ( errno == EINTR) );
-  
+
   setBlocking(s, YES);
 
   if (*read == SYSERR && (errno == EWOULDBLOCK || errno == EAGAIN))
@@ -191,7 +191,7 @@ int RECV_BLOCKING_ALL(int s,
     pos += i;
   }
   GNUNET_ASSERT(pos == len);
-  
+
   setBlocking(s, NO);
 
   return pos;
@@ -210,12 +210,12 @@ int RECV_BLOCKING_ALL(int s,
  * @param max maximum number of bytes to send
  * @param sent number of bytes actually sent
  * @return SYSERR on error, YES on success or
- *         NO if the operation would have blocked. 
- */ 
+ *         NO if the operation would have blocked.
+ */
 int SEND_NONBLOCKING(int s,
 		     const void * buf,
 		     size_t max,
-		     size_t *sent) {  
+		     size_t *sent) {
   int flags;
 
   setBlocking(s, NO);
@@ -246,7 +246,7 @@ int SEND_NONBLOCKING(int s,
 	    (errno == EINTR) );
 
   setBlocking(s, YES);
-  
+
   if (*sent == SYSERR && (errno == EWOULDBLOCK || errno == EAGAIN))
     return NO;
   else if ( (*sent < 0) || (*sent > max) )
@@ -276,19 +276,19 @@ int SEND_BLOCKING_ALL(int s,
     flags = MSG_NOSIGNAL;
 #else
     flags = 0;
-#endif  
+#endif
     i = SEND(s,
 	     &((char*)buf)[pos],
 	     len - pos,
 	     flags);
-    
+
     if ( (i == -1) &&
 	 (errno == EINTR) )
       continue; /* ingnore interrupts */
     if (i <= 0) {
       if (i == -1)
 	LOG_STRERROR(LOG_WARNING, "send");
-      return SYSERR;    
+      return SYSERR;
     }
     pos += i;
   }
@@ -323,36 +323,36 @@ int OPEN(const char *filename, int oflag, ...)
 #ifdef MINGW
   char szFile[_MAX_PATH + 1];
   long lRet;
-  
+
   if ((lRet = conv_to_win_path(filename, szFile)) != ERROR_SUCCESS)
   {
     errno = ENOENT;
     SetLastError(lRet);
-    
+
     return -1;
   }
   fn = szFile;
 #else
   fn = (char *) filename;
 #endif
-  
+
   if (oflag & O_CREAT)
   {
     va_list arg;
     va_start(arg, oflag);
     mode = va_arg(arg, int);
-    va_end(arg);    
+    va_end(arg);
   }
   else
   {
     mode = 0;
   }
-  
+
 #ifdef MINGW
   /* Set binary mode */
   mode |= O_BINARY;
 #endif
-  
+
   return open(fn, oflag, mode);
 }
 

@@ -33,16 +33,16 @@ static int testEncryptDecrypt() {
 				    strlen(TESTSTRING)+1,
 				    &pkey,
 				    &target)) {
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "encryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
     }
     if (-1 == decryptPrivateKey(hostkey,
-				&target, 
+				&target,
 				result,
 				strlen(TESTSTRING)+1)) {
-     fprintf(stderr, 
+     fprintf(stderr,
 	      "decryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
@@ -51,14 +51,14 @@ static int testEncryptDecrypt() {
     if (strncmp(TESTSTRING, result,
 		strlen(TESTSTRING)) != 0) {
       printf("%s != %.*s - testEncryptDecrypt failed!\n",
-	     TESTSTRING, 
-	     MAX_TESTVAL, 
+	     TESTSTRING,
+	     MAX_TESTVAL,
 	     result);
       ok++;
       continue;
     }
   }
-  printf("%d RSA encrypt/decrypt operations %ds (%d failures)\n", 
+  printf("%d RSA encrypt/decrypt operations %ds (%d failures)\n",
 	 ITER,
 	 (int) (TIME(NULL)-start),
 	 ok);
@@ -93,16 +93,16 @@ static int testEncryptDecryptSK() {
 				    sizeof(SESSIONKEY),
 				    &pkey,
 				    &target)) {
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "encryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
     }
     if (-1 == decryptPrivateKey(hostkey,
-				&target, 
+				&target,
 				&outsk,
 				sizeof(SESSIONKEY))) {
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "decryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
@@ -115,7 +115,7 @@ static int testEncryptDecryptSK() {
       continue;
     }
   }
-  printf("%d RSA encrypt/decrypt SK operations %ds (%d failures)\n", 
+  printf("%d RSA encrypt/decrypt SK operations %ds (%d failures)\n",
 	 ITER,
 	 (int) (TIME(NULL)-start),
 	 ok);
@@ -133,24 +133,24 @@ static int testSignVerify() {
   int i;
   TIME_T start;
   int ok = OK;
-  
+
   fprintf(stderr, "W");
   hostkey = makePrivateKey();
   getPublicKey(hostkey, &pkey);
   TIME(&start);
   for (i=0;i<ITER;i++) {
     fprintf(stderr, ".");
-    if (SYSERR == sign(hostkey, 
-		       strlen(TESTSTRING), 
-		       TESTSTRING, 
+    if (SYSERR == sign(hostkey,
+		       strlen(TESTSTRING),
+		       TESTSTRING,
 		       &sig)) {
       fprintf(stderr,
 	      "sign returned SYSERR\n");
       ok = SYSERR;
       continue;
     }
-    if (SYSERR == verifySig(TESTSTRING, 
-			    strlen(TESTSTRING), 
+    if (SYSERR == verifySig(TESTSTRING,
+			    strlen(TESTSTRING),
 			    &sig,
 			    &pkey)) {
       printf("testSignVerify failed!\n");
@@ -158,8 +158,8 @@ static int testSignVerify() {
       continue;
     }
   }
-  printf("%d RSA sign/verify operations %ds\n", 
-	 ITER, 
+  printf("%d RSA sign/verify operations %ds\n",
+	 ITER,
 	 (int) (TIME(NULL)-start));
   freePrivateKey(hostkey);
   return ok;
@@ -201,28 +201,28 @@ static int testPrivateKeyEncoding() {
     }
     hostkey = decodePrivateKey(encoding);
     FREE(encoding);
-    if (SYSERR == decryptPrivateKey(hostkey, 
-				    &target, 
-				    result, 
+    if (SYSERR == decryptPrivateKey(hostkey,
+				    &target,
+				    result,
 				    strlen(TESTSTRING)+1)) {
       fprintf(stderr,
 	      "decryptPrivateKey returned SYSERR\n");
       ok = SYSERR;
       continue;
-    }  
+    }
     if (strncmp(TESTSTRING, result,
 		strlen(TESTSTRING)) != 0) {
       printf("%s != %.*s - testEncryptDecrypt failed!\n",
-	     TESTSTRING, 
-	     (int) strlen(TESTSTRING), 
+	     TESTSTRING,
+	     (int) strlen(TESTSTRING),
 	     result);
       ok = SYSERR;
       continue;
     }
-  }  
+  }
   freePrivateKey(hostkey);
-  printf("%d RSA encrypt/encode/decode/decrypt operations %ds\n", 
-	 ITER, 
+  printf("%d RSA encrypt/encode/decode/decrypt operations %ds\n",
+	 ITER,
 	 (int) (TIME(NULL)-start));
   return ok;
 }
@@ -233,14 +233,14 @@ int main(int argc, char * argv[]) {
   int failureCount = 0;
 
   initLockingGcrypt();
-  initRAND();  
+  initRAND();
   if (OK != testEncryptDecryptSK())
      failureCount++;
   if (OK != testEncryptDecrypt())
      failureCount++;
   if (OK != testSignVerify())
-    failureCount++;       
-  if (OK != testPrivateKeyEncoding()) 
+    failureCount++;
+  if (OK != testPrivateKeyEncoding())
     failureCount++;
   doneLockingGcrypt();
 

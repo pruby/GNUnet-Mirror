@@ -41,7 +41,7 @@ static PTHREAD_T pt;
 static int ptPID;
 
 static int abort_bootstrap = YES;
-  
+
 typedef struct {
   HELO_Message ** helos;
   int helosCount;
@@ -73,7 +73,7 @@ static void processHELOs(HeloListClosure * hcq) {
     GROW(hcq->helos,
 	 hcq->helosCount,
 	 hcq->helosCount-1);
-    
+
     coreAPI->injectMessage(&msg->senderIdentity,
 			   (char*)msg,
 			   HELO_Message_size(msg),
@@ -82,7 +82,7 @@ static void processHELOs(HeloListClosure * hcq) {
     FREE(msg);
     if ( (hcq->helosCount > 0) &&
 	 (abort_bootstrap == NO) ) {
-      /* wait a bit */ 
+      /* wait a bit */
       int load;
       int nload;
       load = getCPULoad();
@@ -128,7 +128,7 @@ static int needBootstrap() {
   cronTime(&now);
   if (coreAPI->forAllConnectedNodes(NULL, NULL) > 4) {
     /* still change delta and lastTest; even
-       if the peer _briefly_ drops below 4 
+       if the peer _briefly_ drops below 4
        connections, we don't want it to immediately
        go for the hostlist... */
     delta = 5 * cronMINUTES;
@@ -155,7 +155,7 @@ static int needBootstrap() {
     lastTest = now;
     delta *= 2; /* exponential back-off */
     /* Maybe it should ALSO be based on how many peers
-       we know (identity).  
+       we know (identity).
        Sure, in the end it goes to the topology, so
        probably that API should be extended here... */
     return YES;
@@ -170,7 +170,7 @@ static void processThread(void * unused) {
 
   ptPID = getpid();
   cls.helos = NULL;
-  while (abort_bootstrap == NO) {    
+  while (abort_bootstrap == NO) {
     while (abort_bootstrap == NO) {
       gnunet_util_sleep(2 * cronSECONDS);
       if (needBootstrap())
@@ -217,7 +217,7 @@ void stopBootstrap() {
   PTHREAD_KILL(&pt, SIGALRM);
 #else
   /* linux */
-  if (ptPID != 0) 
+  if (ptPID != 0)
     kill(ptPID, SIGALRM);
 #endif
   PTHREAD_JOIN(&pt, &unused);

@@ -23,7 +23,7 @@
  *   additional indices that allow traversing the store in
  *   order of expiration time or priority, in addition to
  *   queries by key and block type.  The name comes from SQL,
- *   because using an SQL database to do this should be 
+ *   because using an SQL database to do this should be
  *   particularly easy.  But that is of course not the only
  *   way to implement an sqstore.
  * @author Christian Grothoff
@@ -50,10 +50,10 @@ typedef struct {
 
   /**
    * Store an item in the datastore.
-   *  
+   *
    * @return OK on success, SYSERR on error
    */
-  int (*put)(const HashCode512 * key, 
+  int (*put)(const HashCode512 * key,
 	     const Datastore_Value * value);
 
   /**
@@ -67,7 +67,7 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*get)(const HashCode512 * key, 
+  int (*get)(const HashCode512 * key,
 	     unsigned int type,
 	     Datum_Iterator iter,
 	     void * closure);
@@ -83,7 +83,7 @@ typedef struct {
    * Note that it is possible for multiple values to match this put.
    * In that case, all of the respective values are updated.
    *
-   * @param key never NULL 
+   * @param key never NULL
    * @param value the value to update (priority
    *     maybe different than in DB, only match
    *     on content and use other data as in DB!)
@@ -94,7 +94,7 @@ typedef struct {
    * @return OK if a match was found and the update
    *     was successful, SYSERR on error
    */
-  int (*update)(const HashCode512 * key, 
+  int (*update)(const HashCode512 * key,
 		const Datastore_Value * value,
 		int delta);
 
@@ -137,7 +137,7 @@ typedef struct {
    * contain the same data, the data has multiple replicas and all are
    * kept, avoiding unavaialbility if just one of the files is
    * removed).
-   *   
+   *
    * @param value maybe NULL, then all items under the
    *        given key are deleted
    * @return the number of items deleted (if possible, the
@@ -150,7 +150,7 @@ typedef struct {
    *        also be rare).
    *        0 if no matching items were found, SYSERR on errors
    */
-  int (*del)(const HashCode512 * key, 
+  int (*del)(const HashCode512 * key,
 	     const Datastore_Value * value);
 
   /**

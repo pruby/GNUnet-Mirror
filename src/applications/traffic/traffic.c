@@ -21,7 +21,7 @@
  * @file applications/traffic/traffic.c
  * @brief tracks current traffic patterns
  * @author Christian Grothoff
- * 
+ *
  * Module to keep track of recent amounts of p2p traffic on the local
  * GNUnet node. Uses roughly 6 kb of memory given the current
  * settings. The current settings allow the minimal anonymity
@@ -84,10 +84,10 @@ static int stat_traffic_transmitted_by_type[MAX_p2p_PROTO_USED];
  * in a message of the given type.
  */
 typedef struct {
-  
+
   /**
    * The ".a" member of the Host identity of the peer.
-   */ 
+   */
   int peerIdentity_a;
 
   /**
@@ -101,7 +101,7 @@ typedef struct {
  * Numbers for one receive/send/self-send type.
  */
 typedef struct {
-  
+
   /**
    * When was this record last updated?
    */
@@ -120,7 +120,7 @@ typedef struct {
 
   /**
    * How many messages were processed? (rotating buffer)
-   */ 
+   */
   unsigned int count[HISTORY_SIZE];
 
   /**
@@ -134,15 +134,15 @@ typedef struct {
  * Type of the internal traffic counters.
  */
 typedef struct {
-  
+
   /**
-   * Statistics for sending 
-   */ 
+   * Statistics for sending
+   */
   DirectedTrafficCounter send;
 
   /**
    * Statistics for receiving
-   */ 
+   */
   DirectedTrafficCounter receive;
 
 } TrafficCounter;
@@ -213,13 +213,13 @@ static void updateUse(DirectedTrafficCounter * dtc,
     dtc->count[HS_SLOT(unitNow - HISTORY_SIZE - i)] = 0;
     dtc->avgSize[HS_SLOT(unitNow - HISTORY_SIZE - i)] = 0.0;
   }
-  
+
   if (NO == expireOnly) {
     int devideBy;
-    
+
     /* update slots */
     dtc->slots = 0x80000000 | (dtc->slots >> deltaUnits);
-    
+
     /* recompute average, increment count */
     slot = HS_SLOT(unitNow);
     dtc->count[slot]++;
@@ -227,8 +227,8 @@ static void updateUse(DirectedTrafficCounter * dtc,
     if (devideBy <= 0)
       dtc->avgSize[slot] = 0; /* how can this happen? */
     else
-      dtc->avgSize[slot] 
-        = ((dtc->avgSize[slot] * (dtc->count[slot]-1)) + size) / devideBy; 
+      dtc->avgSize[slot]
+        = ((dtc->avgSize[slot] * (dtc->count[slot]-1)) + size) / devideBy;
   }
 }
 
@@ -286,7 +286,7 @@ static void buildSummary(TRAFFIC_COUNTER * res,
 
 /**
  * Build a reply message for the client.
- */ 
+ */
 static CS_TRAFFIC_INFO * buildReply(unsigned int countTimeUnits) {
   CS_TRAFFIC_INFO * reply;
   unsigned int count;
@@ -294,7 +294,7 @@ static CS_TRAFFIC_INFO * buildReply(unsigned int countTimeUnits) {
 
   MUTEX_LOCK(&lock);
   count = 0;
-  for (i=0;i<max_message_type;i++) 
+  for (i=0;i<max_message_type;i++)
     if (counters[i] != NULL) {
       if (counters[i]->send.slots != 0)
 	count++;
@@ -308,22 +308,22 @@ static CS_TRAFFIC_INFO * buildReply(unsigned int countTimeUnits) {
 			    count * sizeof(TRAFFIC_COUNTER));
   reply->count = htonl(count);
   count = 0;
-  for (i=0;i<max_message_type;i++) 
+  for (i=0;i<max_message_type;i++)
     if (counters[i] != NULL) {
-      if (counters[i]->send.slots != 0) 
+      if (counters[i]->send.slots != 0)
 	buildSummary(&((CS_TRAFFIC_INFO_GENERIC*)reply)->counters[count++],
 		     &counters[i]->send,
-		     TC_SENT, 
+		     TC_SENT,
 		     countTimeUnits,
 		     i);
       if (counters[i]->receive.slots != 0)
 	buildSummary(&((CS_TRAFFIC_INFO_GENERIC*)reply)->counters[count++],
 		     &counters[i]->receive,
-		     TC_RECEIVED, 
+		     TC_RECEIVED,
 		     countTimeUnits,
 		     i);
     }
-  
+
   MUTEX_UNLOCK(&lock);
   return reply;
 }
@@ -392,7 +392,7 @@ static int getTrafficStats(unsigned int timePeriod,
   *peerCount = 0;
   *messageCount = 0;
   totSize = 0;
-  for (i=0;i<MAX_PEER_IDs;i++) 
+  for (i=0;i<MAX_PEER_IDs;i++)
     if (dtc->peers[i].time > nowUnit - timePeriod)
       (*peerCount)++;
   for (i=0;i<timePeriod;i++) {
@@ -418,7 +418,7 @@ static int getTrafficStats(unsigned int timePeriod,
  * given port.
  */
 static void checkPort(unsigned short port) {
-  if (port >= max_message_type) 
+  if (port >= max_message_type)
     GROW(counters,
 	 max_message_type,
 	 port + 1);
@@ -433,12 +433,12 @@ static void checkPort(unsigned short port) {
 static void updateTrafficSendCounter(unsigned short ptyp,
 				     unsigned short plen) {
 #if KEEP_TRANSMITTED_STATS
-  if (ptyp >= MAX_p2p_PROTO_USED) 
+  if (ptyp >= MAX_p2p_PROTO_USED)
     return; /* not tracked */
   if (0 == stat_traffic_transmitted_by_type[ptyp]) {
     char * s;
     s = MALLOC(256);
-    SNPRINTF(s, 
+    SNPRINTF(s,
 	     256,
 	     _("# bytes transmitted of type %d"),
 	     ptyp);
@@ -458,7 +458,7 @@ static void updateTrafficReceiveCounter(unsigned short ptyp,
     if (0 == stat_traffic_received_by_type[ptyp]) {
       char * s;
       s = MALLOC(256);
-      SNPRINTF(s, 
+      SNPRINTF(s,
 	       256,
 	       _("# bytes received of type %d"),
 	       ptyp);
@@ -477,7 +477,7 @@ static void updateTrafficReceiveCounter(unsigned short ptyp,
  * A message was received.  Update traffic stats.
  *
  * @param header the header of the message
- * @param sender the identity of the sender 
+ * @param sender the identity of the sender
  */
 static int trafficReceive(const PeerIdentity * sender,
 			  const p2p_HEADER * header) {
@@ -498,7 +498,7 @@ static int trafficReceive(const PeerIdentity * sender,
 
 /**
  * A message is send.  Update traffic stats.
- * 
+ *
  * @param header the header of the message
  * @param receiver the identity of the receiver
  */
@@ -528,12 +528,12 @@ Traffic_ServiceAPI * provide_module_traffic(CoreAPIForApplication * capi) {
 #if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
   int i;
 #endif
-  
+
   coreAPI = capi;
   api.get = &getTrafficStats;
 #if KEEP_TRANSMITTED_STATS
-  for (i=0;i<MAX_p2p_PROTO_USED;i++) 
-    stat_traffic_transmitted_by_type[i] = 0;  
+  for (i=0;i<MAX_p2p_PROTO_USED;i++)
+    stat_traffic_transmitted_by_type[i] = 0;
   coreAPI->unregisterSendNotify(&trafficSend);
 #endif
 #if KEEP_RECEIVE_STATS
@@ -557,14 +557,14 @@ Traffic_ServiceAPI * provide_module_traffic(CoreAPIForApplication * capi) {
  */
 void release_module_traffic() {
   unsigned int i;
-  
+
 #if KEEP_RECEIVE_STATS
-  for (i=0;i<MAX_p2p_PROTO_USED;i++) 
+  for (i=0;i<MAX_p2p_PROTO_USED;i++)
     coreAPI->unregisterHandler(i,
-			     &trafficReceive);  
+			     &trafficReceive);
 #endif
 #if KEEP_TRANSMITTED_STATS
-  coreAPI->unregisterSendNotify(&trafficSend);  
+  coreAPI->unregisterSendNotify(&trafficSend);
 #endif
 #if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
   coreAPI->releaseService(stats);
@@ -591,7 +591,7 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(myCoreAPI == NULL);
   myCoreAPI = capi;
   myApi = capi->requestService("traffic");
-  if (myApi == NULL) { 
+  if (myApi == NULL) {
     BREAK();
     myCoreAPI = NULL;
     return SYSERR;

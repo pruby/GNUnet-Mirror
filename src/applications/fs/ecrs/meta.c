@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/ecrs/meta.c 
+ * @file applications/fs/ecrs/meta.c
  * @brief Meta-data handling
  * @author Christian Grothoff
  */
@@ -45,7 +45,7 @@ MetaData * ECRS_createMetaData() {
  */
 void ECRS_freeMetaData(MetaData * md) {
   int i;
-  for (i=0;i<md->itemCount;i++) 
+  for (i=0;i<md->itemCount;i++)
     FREE(md->items[i].data);
   GROW(md->items,
        md->itemCount,
@@ -101,7 +101,7 @@ int ECRS_delFromMetaData(MetaData * md,
 	continue;
       }
       return OK;
-    }      
+    }
   }
   return ret;
 }
@@ -109,7 +109,7 @@ int ECRS_delFromMetaData(MetaData * md,
 /**
  * Iterate over MD entries, excluding thumbnails.
  *
- * @return number of entries 
+ * @return number of entries
  */
 int ECRS_getMetaData(const MetaData * md,
 		     ECRS_MetaDataIterator iterator,
@@ -134,13 +134,13 @@ int ECRS_getMetaData(const MetaData * md,
 /**
  * Iterate over MD entries
  *
- * @return number of entries 
+ * @return number of entries
  */
 char * ECRS_getFromMetaData(const MetaData * md,
 			    EXTRACTOR_KeywordType type) {
   int i;
 
-  for (i=md->itemCount-1;i>=0;i--) 
+  for (i=md->itemCount-1;i>=0;i--)
     if (type == md->items[i].type)
       return STRDUP(md->items[i].data);
   return NULL;
@@ -148,7 +148,7 @@ char * ECRS_getFromMetaData(const MetaData * md,
 
 /**
  * This function can be used to decode the binary data
- * stream produced by the thumbnailextractor. 
+ * stream produced by the thumbnailextractor.
  *
  * @param in 0-terminated string from the meta-data
  * @return 1 on error, 0 on success
@@ -163,7 +163,7 @@ static int decodeThumbnail(const unsigned char * in,
   size_t i;
   size_t end;
   size_t inSize;
-  
+
   inSize = strlen(in);
   if (inSize == 0) {
     *out = NULL;
@@ -173,7 +173,7 @@ static int decodeThumbnail(const unsigned char * in,
 
   buf = malloc(inSize); /* slightly more than needed ;-) */
   *out = buf;
-  
+
   pos = 0;
   wpos = 0;
   while (pos < inSize) {
@@ -181,7 +181,7 @@ static int decodeThumbnail(const unsigned char * in,
     if (end > inSize)
       end = inSize;
     marker = in[pos++];
-    for (i=pos;i<end;i++) 
+    for (i=pos;i<end;i++)
       buf[wpos++] = (in[i] == marker) ? 0 : in[i];
     pos = end;
   }
@@ -231,16 +231,16 @@ MetaData * ECRS_dupMetaData(const MetaData * md) {
   if (md == NULL)
     return NULL;
   ret = ECRS_createMetaData();
-  for (i=md->itemCount-1;i>=0;i--) 
+  for (i=md->itemCount-1;i>=0;i--)
     ECRS_addToMetaData(ret,
 		       md->items[i].type,
 		       md->items[i].data);
   return ret;
 }
-		   
+		
 /**
- * Extract meta-data from a file.  
- * 
+ * Extract meta-data from a file.
+ *
  * @return SYSERR on error, otherwise the number
  *   of meta-data items obtained
  */
@@ -299,7 +299,7 @@ static char * decompress(const char * input,
 			 unsigned int outputSize) {
   char * output;
   uLongf olen;
-  
+
   olen = outputSize;
   output = MALLOC(olen);
   if (Z_OK == uncompress(output,
@@ -330,7 +330,7 @@ typedef struct {
    * compression.
    */
   unsigned int version;
-  
+
   /**
    * How many MD entries are there?
    */
@@ -354,10 +354,10 @@ typedef struct {
  * Serialize meta-data to target.
  *
  * @param size maximum number of bytes available
- * @param part is it ok to just write SOME of the 
+ * @param part is it ok to just write SOME of the
  *        meta-data to match the size constraint,
  *        possibly discarding some data? YES/NO.
- * @return number of bytes written on success, 
+ * @return number of bytes written on success,
  *         SYSERR on error (typically: not enough
  *         space)
  */
@@ -370,7 +370,7 @@ int ECRS_serializeMetaData(const MetaData * md,
   size_t pos;
   int i;
   int len;
-  unsigned int ic;  
+  unsigned int ic;
 
   if (max < sizeof(MetaDataHeader))
     return SYSERR; /* far too small */
@@ -392,7 +392,7 @@ int ECRS_serializeMetaData(const MetaData * md,
     pos = sizeof(MetaDataHeader);
     pos += sizeof(unsigned int) * md->itemCount;
     for (i=0;i<ic;i++) {
-      len = strlen(md->items[i].data) + 1; 
+      len = strlen(md->items[i].data) + 1;
       memcpy(&((char*)hdr)[pos],
 	     md->items[i].data,
 	     len);
@@ -415,7 +415,7 @@ int ECRS_serializeMetaData(const MetaData * md,
     }
 
     /* partial serialization ok, try again with less meta-data */
-    if (size > 2 * max) 
+    if (size > 2 * max)
       ic = ic * 2 / 3; /* stil far too big, make big reductions */
     else
       ic--; /* small steps, we're close */
@@ -432,7 +432,7 @@ int ECRS_serializeMetaData(const MetaData * md,
     GNUNET_ASSERT(OK == ECRS_deserializeMetaData(&md,
 						 target,
 						 size));
-    ECRS_freeMetaData(md);    
+    ECRS_freeMetaData(md);
   }
 #endif
   return size;
@@ -450,7 +450,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
   size_t pos;
   int i;
   int len;
-  unsigned int ic;  
+  unsigned int ic;
 
   ic = md->itemCount;
   size = sizeof(MetaDataHeader);
@@ -467,7 +467,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
   pos = sizeof(MetaDataHeader);
   pos += sizeof(unsigned int) * md->itemCount;
   for (i=0;i<ic;i++) {
-    len = strlen(md->items[i].data) + 1; 
+    len = strlen(md->items[i].data) + 1;
     memcpy(&((char*)hdr)[pos],
 	   md->items[i].data,
 	   len);
@@ -476,7 +476,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
 
   pos = tryCompression((char*)&hdr[1],
 		       size - sizeof(MetaDataHeader));
-  if (pos < size - sizeof(MetaDataHeader)) 
+  if (pos < size - sizeof(MetaDataHeader))
     size = pos + sizeof(MetaDataHeader);
 
   FREE(hdr);
@@ -486,7 +486,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
 /**
  * Deserialize meta-data.  Initializes md.
  * @param size number of bytes available
- * @return OK on success, SYSERR on error (i.e. 
+ * @return OK on success, SYSERR on error (i.e.
  *         bad format)
  */
 int ECRS_deserializeMetaData(MetaData ** md,
@@ -520,8 +520,8 @@ int ECRS_deserializeMetaData(MetaData ** md,
 		      size - sizeof(MetaDataHeader),
 		      dataSize);
     if (data == NULL) {
-      BREAK(); 
-      return SYSERR; 
+      BREAK();
+      return SYSERR;
     }
   } else {
     data = (char*) &hdr[1];
@@ -549,7 +549,7 @@ int ECRS_deserializeMetaData(MetaData ** md,
     len = strlen(&data[pos])+1;
     ECRS_addToMetaData(*md,
 		       (EXTRACTOR_KeywordType) ntohl(((unsigned int*)data)[i]),
-		       &data[pos]);    
+		       &data[pos]);
     pos += len;
     i++;
   }
@@ -561,25 +561,25 @@ int ECRS_deserializeMetaData(MetaData ** md,
     FREE(data);
   return OK;
  FAILURE:
-  if (compressed) 
+  if (compressed)
     FREE(data);
-  return SYSERR; /* size too small */  
+  return SYSERR; /* size too small */
 }
 
 /**
  * Does the meta-data claim that this is a directory?
  * Checks if the mime-type is that of a GNUnet directory.
- */ 
+ */
 int ECRS_isDirectory(MetaData * md) {
   int i;
 
-  for (i=md->itemCount-1;i>=0;i--) 
+  for (i=md->itemCount-1;i>=0;i--)
     if ( (md->items[i].type == EXTRACTOR_MIMETYPE) &&
 	 (0 == strcmp(md->items[i].data,
 		      GNUNET_DIRECTORY_MIME)) )
       return YES;
     else
-      return NO;   
+      return NO;
   return SYSERR;
 }
 
@@ -590,7 +590,7 @@ static char * mimeMap[][2] = {
   { "application/msword", ".doc" },
   { "application/ogg", ".ogg" },
   { "application/pdf", ".pdf" },
-  { "application/pgp-keys", ".key" }, 
+  { "application/pgp-keys", ".key" },
   { "application/pgp-signature", ".pgp" },
   { "application/postscript", ".ps" },
   { "application/rar", ".rar" },
@@ -620,7 +620,7 @@ static char * mimeMap[][2] = {
   { "image/gif", ".gif"},
   { "image/jpeg", ".jpg"},
   { "image/pcx", ".pcx"},
-  { "image/png", ".png"}, 
+  { "image/png", ".png"},
   { "image/tiff", ".tiff" },
   { "image/x-ms-bmp", ".bmp"},
   { "image/x-xpixmap", ".xpm"},
@@ -661,7 +661,7 @@ char * ECRS_suggestFilename(const char * filename) {
   int i;
   char * renameTo;
   char * ret;
-  
+
   ret = NULL;
   l = EXTRACTOR_loadDefaultLibraries();
   list = EXTRACTOR_getKeywords(l, filename);
@@ -708,15 +708,15 @@ char * ECRS_suggestFilename(const char * filename) {
     renameTo = MALLOC(strlen(key) + strlen(mime) + 1);
     strcpy(renameTo, key);
     strcat(renameTo, mime);
-  }   
+  }
   for (i=strlen(renameTo)-1;i>=0;i--)
     if (! isprint(renameTo[i]))
-      renameTo[i] = '_';    
+      renameTo[i] = '_';
   if (0 != strcmp(renameTo, filename)) {
     struct stat filestat;
     if (0 != STAT(renameTo,
 		  &filestat)) {
-      if (0 != RENAME(filename, renameTo)) 	  
+      if (0 != RENAME(filename, renameTo)) 	
 	LOG(LOG_ERROR,
 	    _("Renaming of file '%s' to '%s' failed: %s\n"),
 	    filename, renameTo, strerror(errno));
@@ -728,9 +728,9 @@ char * ECRS_suggestFilename(const char * filename) {
 	  filename, renameTo);
     }	
   }
-  FREE(renameTo);  				  
+  FREE(renameTo);  				
   EXTRACTOR_freeKeywords(list);
-  EXTRACTOR_removeAll(l);    
+  EXTRACTOR_removeAll(l);
   return ret;
 }
 

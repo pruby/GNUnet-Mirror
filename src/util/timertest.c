@@ -1,4 +1,4 @@
-/** 
+/**
  * @file test/timertest.c
  * @brief testcase for util/timer.c; also measures how
  *  precise the timers are.  Expect values between 10 and 20 ms on
@@ -46,7 +46,7 @@ static int check() {
 #define MAXV 1500
   for (i=0;i<MAXV;i+=INCR) {
     cronTime(&last);
-    if (0 != gnunet_util_sleep(cronMILLIS * i)) 
+    if (0 != gnunet_util_sleep(cronMILLIS * i))
       return 5;
     cronTime(&now);
 #if VERBOSE
@@ -55,7 +55,7 @@ static int check() {
 	    i / cronMILLIS,
 	    (now - last) / cronMILLIS);
 #endif
-    if (last + cronMILLIS * i < now)      
+    if (last + cronMILLIS * i < now)
       cumDelta += (now - (last+cronMILLIS*i));
     else
       cumDelta += ((last+cronMILLIS*i) - now);
@@ -127,9 +127,9 @@ static int check() {
 
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   char c;
 
@@ -139,18 +139,18 @@ static int parseCommandLine(int argc,
       { "config",  1, 0, 'c' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "c:", 
-		      long_options, 
+		      argv,
+		      "c:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
-    case 'c': 
+    case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));

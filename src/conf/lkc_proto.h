@@ -1,7 +1,7 @@
 
 /**
  * @brief GNUnet Setup
- * @file conf/lkc_proto.h 
+ * @file conf/lkc_proto.h
  * @author Roman Zippel
  * @author Nils Durner
  **/

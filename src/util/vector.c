@@ -67,12 +67,12 @@ void vectorDump(Vector *v) {
   VectorSegment *vs;
   int n;
   unsigned int sum = 0;
-  
+
   for (vs = v->segmentsHead; vs; vs = vs->next) {
-    fprintf(stderr, 
+    fprintf(stderr,
 	    "Segment-size: %3d / %d [%d...%d]: ",
-	    vs->size, 
-	    v->VECTOR_SEGMENT_SIZE, 
+	    vs->size,
+	    v->VECTOR_SEGMENT_SIZE,
 	    sum,
 	    sum + vs->size - 1);
     for (n=0;n<vs->size;n++) {
@@ -85,7 +85,7 @@ void vectorDump(Vector *v) {
     sum += vs->size;
   }
   fprintf(stderr,
-	  "Vector size: %u\n", 
+	  "Vector size: %u\n",
 	  sum);
 }
 
@@ -93,7 +93,7 @@ void vectorDump(Vector *v) {
  * Remove and return the element at given index in the segment's array. The
  * trailing pointers in the array, if any, are moved backwards to fill the gap.
  */
-static void *vectorSegmentRemoveAtIndex(VectorSegment *vs, 
+static void *vectorSegmentRemoveAtIndex(VectorSegment *vs,
 					int index) {
    void *rvalue = vs->data[index];
 
@@ -108,7 +108,7 @@ static void *vectorSegmentRemoveAtIndex(VectorSegment *vs,
 /**
  * Split the full segment vs into two half-full segments.
  */
-static void vectorSegmentSplit(Vector *v, 
+static void vectorSegmentSplit(Vector *v,
 			       VectorSegment *vs) {
    VectorSegment *oldNext;
    int moveCount;
@@ -134,11 +134,11 @@ static void vectorSegmentSplit(Vector *v,
  * Joins the given segment with the following segment. The first segment _must_
  * be empty enough to store the data of both segments.
  */
-static void vectorSegmentJoin(Vector *v, 
+static void vectorSegmentJoin(Vector *v,
 			      VectorSegment *vs) {
   VectorSegment *oldNext = vs->next->next;
-  
-  memcpy(vs->data + vs->size, 
+
+  memcpy(vs->data + vs->size,
 	 vs->next->data,
 	 vs->next->size * sizeof (void *));
   vs->size += vs->next->size;
@@ -154,9 +154,9 @@ static void vectorSegmentJoin(Vector *v,
 /**
  * Free an empty segment, _unless_ it is the only segment.
  */
-static void vectorSegmentRemove(Vector *v, 
+static void vectorSegmentRemove(Vector *v,
 				VectorSegment *vs) {
-  if ( (vs->previous == NULL) && 
+  if ( (vs->previous == NULL) &&
        (vs->next == NULL) )
     return;
   if (vs->previous != NULL)
@@ -178,13 +178,13 @@ static void vectorSegmentRemove(Vector *v,
  * If possible, an unused index at the end of a segment is returned, as this
  * is also a requirement for adding data in an empty vector.
  */
-static void vectorFindNewIndex(Vector *v, 
-			       unsigned int index, 
+static void vectorFindNewIndex(Vector *v,
+			       unsigned int index,
 			       VectorSegment **vs,
 			       int *segmentIndex) {
   VectorSegment *segment;
   int segmentStartIndex;
-   
+
   if (index > v->size) {
     *vs = NULL;
     *segmentIndex = -1;
@@ -196,10 +196,10 @@ static void vectorFindNewIndex(Vector *v,
     while (index > segmentStartIndex + segment->size) {
       segmentStartIndex += segment->size;
       segment = segment->next;
-    } 
-  } else { /* reverse */ 
+    }
+  } else { /* reverse */
     segment = v->segmentsTail;
-    segmentStartIndex = v->size - segment->size;    
+    segmentStartIndex = v->size - segment->size;
     while (index <= segmentStartIndex) {
       segment = segment->previous;
       segmentStartIndex -= segment->size;
@@ -220,7 +220,7 @@ static void vectorFindIndex(Vector *v,
 			    int *segmentIndex) {
   VectorSegment *segment;
   int segmentStartIndex;
-  
+
   if (index >= v->size) {
     *vs = NULL;
     *segmentIndex = -1;
@@ -232,10 +232,10 @@ static void vectorFindIndex(Vector *v,
     while (index >= segmentStartIndex + segment->size) {
       segmentStartIndex += segment->size;
       segment = segment->next;
-    } 
+    }
   } else {
     segment = v->segmentsTail;
-    segmentStartIndex = v->size - segment->size;    
+    segmentStartIndex = v->size - segment->size;
     while (index < segmentStartIndex) {
       segment = segment->previous;
       segmentStartIndex -= segment->size;
@@ -246,10 +246,10 @@ static void vectorFindIndex(Vector *v,
 }
 
 
-/*  
+/*
  * Traverse the vector looking for a given object. When found, set the pointer
  * pointed to by vs to point to the object's segment and the integer pointed
- * to by segmentIndex to the object's index in the segment. If the object is 
+ * to by segmentIndex to the object's index in the segment. If the object is
  * not found, *vs is set to NULL.
  */
 static void vectorFindObject(Vector *v,
@@ -258,7 +258,7 @@ static void vectorFindObject(Vector *v,
 			     int *segmentIndex) {
   VectorSegment *segment;
   int i;
-  
+
   segment = v->segmentsHead;
   while (NULL != segment) {
     for (i=0;i<segment->size;i++) {
@@ -292,7 +292,7 @@ Vector * vectorNew(unsigned int vss) {
    rvalue->segmentsHead->previous = NULL;
    rvalue->segmentsHead->size = 0;
    rvalue->iteratorSegment = NULL;
-   rvalue->iteratorIndex = 0; 
+   rvalue->iteratorIndex = 0;
    return rvalue;
 }
 
@@ -332,8 +332,8 @@ int vectorInsertAt(Vector *v,
   VectorSegment *segment;
   unsigned int segmentIndex;
   int i;
-  
-  if (index > v->size) 
+
+  if (index > v->size)
     return SYSERR;
   v->iteratorSegment = NULL;
   vectorFindNewIndex(v, index, &segment, &segmentIndex);
@@ -363,24 +363,24 @@ void vectorInsertLast(Vector *v, void *object) {
  * Return the element at given index in the vector or NULL if the index is out
  * of bounds. The iterator is set to point to the returned element.
  */
-void * vectorGetAt(Vector *v, 
+void * vectorGetAt(Vector *v,
 		   unsigned int index) {
-  if ( (index < 0) || (index >= v->size) ) 
+  if ( (index < 0) || (index >= v->size) )
     return NULL;
   vectorFindIndex(v,
-		  index, 
-		  &v->iteratorSegment, 
+		  index,
+		  &v->iteratorSegment,
 		  &v->iteratorIndex);
   return v->iteratorSegment->data[v->iteratorIndex];
 }
 
-/** 
+/**
  * Return the first element in the vector, whose index is 0, or NULL if the
  * vector is empty. The iterator of the vector is set to point to the first
  * element.
  */
 void * vectorGetFirst(Vector *v) {
-  if (v->size == 0) 
+  if (v->size == 0)
     return NULL;
   v->iteratorSegment = v->segmentsHead;
   v->iteratorIndex = 0;
@@ -392,7 +392,7 @@ void * vectorGetFirst(Vector *v) {
  * empty. The iterator of the vector is set to the last element.
  */
 void * vectorGetLast(Vector *v) {
-  if (v->size == 0) 
+  if (v->size == 0)
     return NULL;
   v->iteratorSegment = v->segmentsTail;
   v->iteratorIndex = v->segmentsTail->size-1;
@@ -402,11 +402,11 @@ void * vectorGetLast(Vector *v) {
 /**
  * Return the next element in the vector, as called after vector_get_at() or
  * vector_get_first(). The return value is NULL if there are no more elements
- * in the vector or if the iterator has not been set. 
+ * in the vector or if the iterator has not been set.
  */
 void * vectorGetNext(Vector *v) {
-  if (v->iteratorSegment == NULL) 
-    return NULL;   
+  if (v->iteratorSegment == NULL)
+    return NULL;
   if (++v->iteratorIndex >= v->iteratorSegment->size) {
     if (v->iteratorSegment == v->segmentsTail) {
       v->iteratorSegment = NULL;
@@ -425,7 +425,7 @@ void * vectorGetNext(Vector *v) {
  * elements in the vector or if the iterator has not been set.
  */
 void * vectorGetPrevious(Vector * v) {
-  if (v->iteratorSegment == NULL) 
+  if (v->iteratorSegment == NULL)
     return NULL;
   if (--v->iteratorIndex == -1) {
     if (v->iteratorSegment == v->segmentsHead) {
@@ -440,26 +440,26 @@ void * vectorGetPrevious(Vector * v) {
 }
 
 /**
- * Delete and return the element at given index. NULL is returned if index is 
- * out of bounds. 
+ * Delete and return the element at given index. NULL is returned if index is
+ * out of bounds.
  */
-void * vectorRemoveAt(Vector *v, 
+void * vectorRemoveAt(Vector *v,
 		      unsigned int index) {
   VectorSegment * segment;
   int segmentIndex;
   void *rvalue;
-  
-  if (index >= v->size) 
+
+  if (index >= v->size)
      return NULL;
   v->iteratorSegment = NULL;
   vectorFindIndex(v, index, &segment, &segmentIndex);
-  rvalue = vectorSegmentRemoveAtIndex(segment, 
+  rvalue = vectorSegmentRemoveAtIndex(segment,
 				      segmentIndex);
-  /* If the segment ends empty remove it, otherwise 
+  /* If the segment ends empty remove it, otherwise
      try to join it with its neighbors. */
   if (--segment->size == 0)
     vectorSegmentRemove(v, segment);
-  else if (segment->next && 
+  else if (segment->next &&
 	   segment->size + segment->next->size < v->VECTOR_SEGMENT_SIZE)
     vectorSegmentJoin(v, segment);
   else if (segment->previous &&
@@ -475,8 +475,8 @@ void * vectorRemoveAt(Vector *v,
  */
 void *vectorRemoveLast (Vector *v) {
   void *rvalue;
-  
-  if (v->size == 0) 
+
+  if (v->size == 0)
     return NULL;
   v->iteratorSegment = NULL;
   rvalue = v->segmentsTail->data[v->segmentsTail->size - 1];
@@ -484,7 +484,7 @@ void *vectorRemoveLast (Vector *v) {
   if (--v->segmentsTail->size == 0)
     vectorSegmentRemove(v, v->segmentsTail);
   else if ( (v->segmentsTail->previous != NULL) &&
-	    (v->segmentsTail->size + v->segmentsTail->previous->size 
+	    (v->segmentsTail->size + v->segmentsTail->previous->size
 	     < v->VECTOR_SEGMENT_SIZE) )
     vectorSegmentJoin (v, v->segmentsTail->previous);
   v->size--;
@@ -499,19 +499,19 @@ void * vectorRemoveObject(Vector *v, void *object) {
   VectorSegment *segment;
   int segmentIndex;
   void * rvalue;
-  
+
   v->iteratorSegment = NULL;
   vectorFindObject(v, object, &segment, &segmentIndex);
-  if (segment == NULL) 
+  if (segment == NULL)
     return NULL;
   rvalue = vectorSegmentRemoveAtIndex(segment, segmentIndex);
   /* If the segment ends empty remove it, otherwise join it if necessary. */
   if (--segment->size == 0)
     vectorSegmentRemove (v, segment);
-  else if ( (segment->next != NULL) && 
+  else if ( (segment->next != NULL) &&
 	    (segment->size + segment->next->size < v->VECTOR_SEGMENT_SIZE) )
     vectorSegmentJoin (v, segment);
-  else if ( (segment->previous != NULL) && 
+  else if ( (segment->previous != NULL) &&
 	    (segment->size + segment->previous->size < v->VECTOR_SEGMENT_SIZE) )
     vectorSegmentJoin (v, segment->previous);
   v->size--;
@@ -519,17 +519,17 @@ void * vectorRemoveObject(Vector *v, void *object) {
 }
 
 /**
- * Set the given index in the vector. The old value of the index is 
+ * Set the given index in the vector. The old value of the index is
  * returned, or NULL if the index is out of bounds.
  */
-void *vectorSetAt (Vector *v, 
-		   void *object, 
+void *vectorSetAt (Vector *v,
+		   void *object,
 		   unsigned int index) {
   VectorSegment *segment;
   int segmentIndex;
   void *rvalue;
-  
-  if (index >= v->size) 
+
+  if (index >= v->size)
     return NULL;
   v->iteratorSegment = NULL;
   vectorFindIndex(v, index, &segment, &segmentIndex);
@@ -543,16 +543,16 @@ void *vectorSetAt (Vector *v,
  * Set the index occupied by the given object to point to the new object.
  * The old object is returned, or NULL if it's not found.
  */
-void *vectorSetObject(Vector *v, 
+void *vectorSetObject(Vector *v,
 		      void *object,
 		      void *oldObject) {
   VectorSegment *segment;
   int segmentIndex;
   void *rvalue;
-  
+
   v->iteratorSegment = NULL;
   vectorFindObject (v, oldObject, &segment, &segmentIndex);
-  if (segment == NULL) 
+  if (segment == NULL)
     return NULL;
   rvalue = segment->data[segmentIndex];
   segment->data[segmentIndex] = object;
@@ -560,12 +560,12 @@ void *vectorSetObject(Vector *v,
 }
 
 
-/** 
+/**
  * Swaps the contents of index1 and index2. Return value is OK
  * on success, SYSERR if either index is out of bounds.
  */
-int vectorSwap(Vector *v, 
-	       unsigned int index1, 
+int vectorSwap(Vector *v,
+	       unsigned int index1,
 	       unsigned int index2) {
   VectorSegment * segment1;
   VectorSegment * segment2;
@@ -574,7 +574,7 @@ int vectorSwap(Vector *v,
   void *temp;
 
   if ( (index1 >= v->size) ||
-       (index2 >= v->size) ) 
+       (index2 >= v->size) )
     return SYSERR;
   v->iteratorSegment= NULL;
   vectorFindIndex(v, index1, &segment1, &segmentIndex1);
@@ -588,7 +588,7 @@ int vectorSwap(Vector *v,
 /**
  * Return the index of given element or -1 if the element is not found.
  */
-unsigned int vectorIndexOf(Vector *v, 
+unsigned int vectorIndexOf(Vector *v,
 			   void *object) {
   VectorSegment * segment;
   unsigned int i;
@@ -598,8 +598,8 @@ unsigned int vectorIndexOf(Vector *v,
   segment = v->segmentsHead;
   while (NULL != segment) {
     for (i = 0; i < segment->size; i++)
-      if (segment->data[i] == object) 
-	return segmentStartIndex + i;      
+      if (segment->data[i] == object)
+	return segmentStartIndex + i;
     segmentStartIndex += segment->size;
     segment = segment->next;
   }
@@ -607,7 +607,7 @@ unsigned int vectorIndexOf(Vector *v,
 }
 
 
-/* 
+/*
  * Return the data stored in the vector as a single dynamically allocated
  * array of (void *), which must be free(3)d by the user. Use the functions
  * get_{at,first,last,next,previous} instead, unless you really need to access
@@ -617,13 +617,13 @@ void ** vectorElements (Vector *v) {
   void **rvalue;
   VectorSegment *vs;
   size_t i = 0;
-  
+
   rvalue = xmalloc_unchecked_(v->size * sizeof (void *),
 			      __FILE__,
 			      __LINE__);
   for (vs = v->segmentsHead; vs; vs = vs->next) {
-    memcpy (rvalue + i, 
-	    vs->data, 
+    memcpy (rvalue + i,
+	    vs->data,
 	    vs->size * sizeof (void *));
     i += vs->size;
   }

@@ -28,7 +28,7 @@
  * application to allow users to force loading it
  * (which is probably a very good idea -- otherwise
  * the peer will end up rather disconnected :-)
- * 
+ *
  * Todo:
  * - spread out the current 'every-5-second' bulk cron job
  *   over a more continuous interval (as it was in 0.6.5)
@@ -88,12 +88,12 @@ static void scanHelperCount(const PeerIdentity * id,
 			    const unsigned short proto,	
 			    int confirmed,
 			    IndexMatch * im) {
-  if (hostIdentityEquals(coreAPI->myIdentity, id)) 
+  if (hostIdentityEquals(coreAPI->myIdentity, id))
     return;
   if (coreAPI->computeIndex(id) != im->index)
     return;
   if (YES == transport->isAvailable(proto)) {
-    im->matchCount++;  
+    im->matchCount++;
     im->costSelector += transport->getCost(proto);
   }
 }
@@ -101,7 +101,7 @@ static void scanHelperCount(const PeerIdentity * id,
 /**
  * Select the peer and transport that was selected based on transport
  * cost.
- * 
+ *
  * @param id the current peer
  * @param proto the protocol of the current peer
  * @param im structure responsible for the selection process
@@ -110,15 +110,15 @@ static void scanHelperSelect(const PeerIdentity * id,
 			     const unsigned short proto,
 			     int confirmed,
 			     IndexMatch * im) {
-  if (hostIdentityEquals(coreAPI->myIdentity, id)) 
+  if (hostIdentityEquals(coreAPI->myIdentity, id))
     return;
   if (coreAPI->computeIndex(id) != im->index)
     return;
   if (YES == transport->isAvailable(proto)) {
     im->costSelector -= transport->getCost(proto);
     if ( (im->matchCount == 0) ||
-	 (im->costSelector < 0) ) 
-      im->match = *id;    
+	 (im->costSelector < 0) )
+      im->match = *id;
     im->matchCount--;
   }
 }
@@ -142,7 +142,7 @@ static void scanForHosts(unsigned int index) {
   identity->forEachHost(now,
 			(HostIterator)&scanHelperCount,
 			&indexMatch);
-  if (indexMatch.matchCount == 0) 
+  if (indexMatch.matchCount == 0)
     return; /* no matching peers found! */
   if (indexMatch.costSelector > 0)
     indexMatch.costSelector
@@ -151,7 +151,7 @@ static void scanForHosts(unsigned int index) {
   identity->forEachHost(now,
 			(HostIterator)&scanHelperSelect,
 			&indexMatch);
-  if (hostIdentityEquals(coreAPI->myIdentity, 
+  if (hostIdentityEquals(coreAPI->myIdentity,
 			 &indexMatch.match)) {
     BREAK(); /* should not happen, at least not often... */
     return;
@@ -175,8 +175,8 @@ static void scanForHosts(unsigned int index) {
 }
 
 /**
- * We received a sign of life from this host. 
- * 
+ * We received a sign of life from this host.
+ *
  * @param hostId the peer that gave a sign of live
  */
 static void notifyPONG(PeerIdentity * hostId) {
@@ -197,12 +197,12 @@ static void checkNeedForPing(const PeerIdentity * peer,
   if (slot == *lastSlot)
     return; /* slot already in use twice! */
   *lastSlot = slot;
-  cronTime(&now);    
+  cronTime(&now);
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
     BREAK();
     return; /* this should not happen... */
   }
-  
+
   if (now - act > SECONDS_PINGATTEMPT * cronSECONDS) {
     /* if we have less than 75% of the number of connections
        that we would like to have, try ping-ing the other side
@@ -222,7 +222,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
  *
  * @param unused not used, just to make signature type nicely
  */
-static void cronCheckLiveness(void * unused) {  
+static void cronCheckLiveness(void * unused) {
   int i;
   int slotCount;
   int active;
@@ -260,7 +260,7 @@ static int allowConnection(const PeerIdentity * peer) {
 
 #define TOPOLOGY_TAG_FILE "topology-070"
 
-Topology_ServiceAPI * 
+Topology_ServiceAPI *
 provide_module_topology_default(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
   char * data;
@@ -298,7 +298,7 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 				    (void**) &data))) {
     stateWriteContent(TOPOLOGY_TAG_FILE,
 		      strlen(PACKAGE_VERSION),
-		      PACKAGE_VERSION);    
+		      PACKAGE_VERSION);
   } else {
     if (0 != strncmp(PACKAGE_VERSION,
 		     data,

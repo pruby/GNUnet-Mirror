@@ -27,7 +27,7 @@ USA.  */
 /**
  * @file util/getopt.c
  * @brief GNU style option parsing
- */ 
+ */
 
 #include "gnunet_util.h"
 #include "platform.h"

@@ -38,7 +38,7 @@ typedef struct FS_SEARCH_HANDLE {
 typedef struct FS_SEARCH_CONTEXT {
   GNUNET_TCP_SOCKET * sock;
   PTHREAD_T thread;
-  Mutex * lock;  
+  Mutex * lock;
   SEARCH_HANDLE ** handles;
   unsigned int handleCount;
   unsigned int handleSize;
@@ -80,14 +80,14 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	BREAK();
 	FREE(hdr);
 	continue;
-      }      
+      }
       MUTEX_LOCK(ctx->lock);
       for (i=ctx->handleCount-1;i>=0;i--) {
 	if (equalsHashCode512(&query,
 			      &ctx->handles[i]->req->query[0])) {
 	  Datastore_Value * value;
 
-	  if (ctx->handles[i]->callback != NULL) {	    
+	  if (ctx->handles[i]->callback != NULL) {	
 	    value = MALLOC(sizeof(Datastore_Value) + size);
 	    value->size = htonl(size + sizeof(Datastore_Value));
 	    value->type = htonl(getTypeOfBlock(size,
@@ -107,7 +107,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	  }
 	}
       }
-      MUTEX_UNLOCK(ctx->lock);      
+      MUTEX_UNLOCK(ctx->lock);
     } else {
       gnunet_util_sleep(delay);
       delay *= 2;
@@ -132,7 +132,7 @@ SEARCH_CONTEXT * FS_SEARCH_makeContext(Mutex * lock) {
 			  (PThreadMain) &processReplies,
 			  ret,
 			  16 * 1024))
-    DIE_STRERROR("PTHREAD_CREATE");  
+    DIE_STRERROR("PTHREAD_CREATE");
   return ret;
 }
 
@@ -156,7 +156,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
  * Search for blocks matching the given key and type.
  *
  * @param timeout how long to search
- * @param anonymityLevel what are the anonymity 
+ * @param anonymityLevel what are the anonymity
  *        requirements for this request? 0 for no
  *        anonymity (DHT/direct transfer ok)
  * @param callback method to call for each result
@@ -193,7 +193,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   if (ctx->handleCount == ctx->handleSize) {
     GROW(ctx->handles,
 	 ctx->handleSize,
-	 ctx->handleSize * 2 + 4);    
+	 ctx->handleSize * 2 + 4);
   }
   ctx->handles[ctx->handleCount++] = ret;
   MUTEX_UNLOCK(ctx->lock);
@@ -222,14 +222,14 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
 
   handle->req->header.type = htons(AFS_CS_PROTO_QUERY_STOP);
   writeToSocket(ctx->sock,
-		&handle->req->header);  
+		&handle->req->header);
   MUTEX_LOCK(ctx->lock);
   for (i=ctx->handleCount-1;i>=0;i--)
     if (ctx->handles[i] == handle) {
       ctx->handles[i] = ctx->handles[--ctx->handleCount];
       break;
     }
-  MUTEX_UNLOCK(ctx->lock);      
+  MUTEX_UNLOCK(ctx->lock);
   FREE(handle->req);
   FREE(handle);
 }
@@ -254,8 +254,8 @@ unsigned int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock) {
 }
 
 /**
- * Insert a block. 
- * 
+ * Insert a block.
+ *
  * @param block the block (properly encoded and all)
  * @return OK on success, SYSERR on error
  */
@@ -282,9 +282,9 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
   if (OK != writeToSocket(sock,
 			  &ri->header)) {
     FREE(ri);
-    return SYSERR; 
+    return SYSERR;
   }
-  FREE(ri);  
+  FREE(ri);
 
   if (OK != readTCPResult(sock,
 			  &ret))
@@ -301,7 +301,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   int ret;
   RequestInitIndex *ri;
   unsigned int size, fnSize;
-  
+
   fnSize = strlen(fn);
   size = sizeof(RequestIndex) + fnSize;
   ri = MALLOC(size);
@@ -309,13 +309,13 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   ri->header.type = htons(AFS_CS_PROTO_INIT_INDEX);
   ri->fileId = *fileHc;
   memcpy(&ri[1], fn, fnSize);
-  
+
   LOG(LOG_DEBUG,
       "Sending index initialization request to gnunetd\n");
   if (OK != writeToSocket(sock,
         &ri->header)) {
     FREE(ri);
-    return SYSERR; 
+    return SYSERR;
   }
   FREE(ri);
   LOG(LOG_DEBUG,
@@ -327,15 +327,15 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
 }
 
 /**
- * Index a block. 
- * 
+ * Index a block.
+ *
  * @param fileHc the hash of the entire file
  * @param block the data from the file (in plaintext)
  * @param offset the offset of the block into the file
  * @return OK on success, SYSERR on error
  */
 int FS_index(GNUNET_TCP_SOCKET * sock,
-	     const HashCode512 * fileHc,	  
+	     const HashCode512 * fileHc,	
 	     const Datastore_Value * block,
 	     unsigned long long offset) {
   int ret;
@@ -359,7 +359,7 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
   if (OK != writeToSocket(sock,
 			  &ri->header)) {
     FREE(ri);
-    return SYSERR; 
+    return SYSERR;
   }
   FREE(ri);
   LOG(LOG_DEBUG,
@@ -372,15 +372,15 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
 
 /**
  * Delete a block.  The arguments are the same as the ones for
- * FS_insert. 
- * 
+ * FS_insert.
+ *
  * @param block the block (properly encoded and all)
- * @return number of items deleted on success, 
+ * @return number of items deleted on success,
  *    SYSERR on error
  */
 int FS_delete(GNUNET_TCP_SOCKET * sock,
 	      const Datastore_Value * block) {
-  int ret;  
+  int ret;
   RequestDelete * rd;
   unsigned int size;
 
@@ -395,7 +395,7 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
 			  &rd->header)) {
     FREE(rd);
     BREAK();
-    return SYSERR; 
+    return SYSERR;
   }
   FREE(rd);
   if (OK != readTCPResult(sock,
@@ -408,7 +408,7 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
 
 /**
  * Unindex a file.
- * 
+ *
  * @param hc the hash of the entire file
  * @return OK on success, SYSERR on error
  */
@@ -424,7 +424,7 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
   ru.fileId = *hc;
   if (OK != writeToSocket(sock,
 			  &ru.header))
-    return SYSERR; 
+    return SYSERR;
   if (OK != readTCPResult(sock,
 			  &ret))
     return SYSERR;
@@ -433,7 +433,7 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
 
 /**
  * Test if a file of the given hash is indexed.
- * 
+ *
  * @param hc the hash of the entire file
  * @return YES if so, NO if not, SYSERR on error
  */

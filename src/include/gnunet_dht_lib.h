@@ -24,7 +24,7 @@
  */
 
 #ifndef GNUNET_DHT_LIB_H
-#define GNUNET_DHT_LIB_H 
+#define GNUNET_DHT_LIB_H
 
 #include "gnunet_blockstore.h"
 #include "gnunet_dht_service.h"
@@ -46,9 +46,9 @@ void DHT_LIB_done();
  *
  * @param datastore the storage callbacks to use for the table
  * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to 
+ * @param timeout how long to wait for other peers to respond to
  *   the join request (has no impact on success or failure)
- * @param flags 
+ * @param flags
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
@@ -61,7 +61,7 @@ int DHT_LIB_join(Blockstore * store,
  *
  * @param datastore the storage callbacks to use for the table
  * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to 
+ * @param timeout how long to wait for other peers to respond to
  *   the leave request (has no impact on success or failure);
  *   but only timeout time is available for migrating data, so
  *   pick this value with caution.
@@ -70,7 +70,7 @@ int DHT_LIB_join(Blockstore * store,
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_leave(DHT_TableId * table,
-		  cron_t timeout); 
+		  cron_t timeout);
 
 
 /**
@@ -85,7 +85,7 @@ int DHT_LIB_leave(DHT_TableId * table,
  * The peer does not have to be part of the table!
  *
  * @param table table to use for the lookup
- * @param keys the keys to look up  
+ * @param keys the keys to look up
  * @param timeout how long to wait until this operation should
  *        automatically time-out
  * @param resultCallback function to call for results

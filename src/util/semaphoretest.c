@@ -1,4 +1,4 @@
-/** 
+/**
  * @file test/hashtest.c
  * @brief testcase for util/semaphore.c
  */
@@ -24,7 +24,7 @@ static IPC_Semaphore * ipc;
 static void lockIt() {
   sv = 0;
   fprintf(stderr, ".");
-  while (sv == 0) 
+  while (sv == 0)
     gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
   MUTEX_LOCK(&lock);
   sv = 1;
@@ -54,7 +54,7 @@ static int testPTHREAD_CREATE() {
 		 NULL,
 		 1024);
   PTHREAD_DETACH(&pt);
-  while (tv != 2) { 
+  while (tv != 2) {
     sv = 1;
     gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
   }
@@ -67,7 +67,7 @@ static int testPTHREAD_CREATE() {
   return 0;
 }
 
-static int testMutex() {  
+static int testMutex() {
   PTHREAD_T pt;
   void * unused;
   MUTEX_CREATE(&lock);
@@ -84,10 +84,10 @@ static int testMutex() {
   sv = 5; /* release lockIt from while sv==0 loop,
 	     blocks it on lock */
   fprintf(stderr, ".");
-  
+
   if (sv != 5) {
     MUTEX_UNLOCK(&lock);
-    while (tv != 2) 
+    while (tv != 2)
       gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
     MUTEX_DESTROY(&lock);
     printf("MUTEX test failed at %s:%u\n",
@@ -95,12 +95,12 @@ static int testMutex() {
     return 1; /* error */
   } else {
     MUTEX_UNLOCK(&lock);
-    while (tv != 2) 
+    while (tv != 2)
       gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
     PTHREAD_JOIN(&pt, &unused);
     MUTEX_DESTROY(&lock);
     return 0; /* ok */
-  } 
+  }
 }
 
 static int testRecursiveMutex() {
@@ -114,7 +114,7 @@ static int testRecursiveMutex() {
     MUTEX_UNLOCK(&lock);
   MUTEX_DESTROY(&lock);
   return 0; /* ok -- fails by hanging!*/
-} 
+}
 
 static void semUpDown() {
   int i;
@@ -187,7 +187,7 @@ static int testIPCSemaphore() {
   int cnt;
   int i;
   int j;
-  FILE * fd;  
+  FILE * fd;
   int ret;
   int si;
   int sw;
@@ -225,7 +225,7 @@ static int testIPCSemaphore() {
 	  ret = 1;
 	  goto END;
 	}
-	fclose(fd);  
+	fclose(fd);
 	if (j != i+cnt) {
 	  printf("IPC test failed at cnt=%d i=%d j=%d %s:%u\n",
 		 cnt, i, j, __FILE__, __LINE__);
@@ -233,8 +233,8 @@ static int testIPCSemaphore() {
 	  goto END;
 	} else
 	  fprintf(stderr, ".");
-      } 
-      REMOVE("/tmp/gnunet_ipc_xchange");     
+      }
+      REMOVE("/tmp/gnunet_ipc_xchange");
       sw = 1;
     } else {
       for (i=0;i<6;i++) {
@@ -257,7 +257,7 @@ static int testIPCSemaphore() {
 	}
 	fclose(fd);
 	IPC_SEMAPHORE_UP(ipc);
-      }      
+      }
       fprintf(stderr, ".");
       sleep(2); /* give reader ample time to finish */
       sw = 0;
@@ -283,9 +283,9 @@ static int testIPCSemaphore() {
 
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   char c;
 
@@ -296,23 +296,23 @@ static int parseCommandLine(int argc,
       { "config",  1, 0, 'c' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "c:L:", 
-		      long_options, 
+		      argv,
+		      "c:L:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
     case 'L':
       FREENONNULL(setConfigurationString("GNUNET",
 					 "LOGLEVEL",
 					 GNoptarg));
       break;
-    case 'c': 
+    case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));

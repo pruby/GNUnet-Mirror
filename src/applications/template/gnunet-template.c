@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/template/gnunet-template.c 
+ * @file applications/template/gnunet-template.c
  * @brief template for writing a GNUnet tool (client)
  * @author Christian Grothoff
  */
@@ -35,12 +35,12 @@ static Semaphore * doneSem;
  * Parse the options, set the timeout.
  * @param argc the number of options
  * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit 
+ * @return OK on error, SYSERR if we should exit
  */
 static int parseOptions(int argc,
 			char ** argv) {
   int option_index;
-  int c;  
+  int c;
 
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGFILE",
@@ -49,14 +49,14 @@ static int parseOptions(int argc,
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
       { 0,0,0,0 }
-    };    
+    };
     option_index=0;
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhdc:L:H:t", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "vhdc:L:H:t",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
@@ -77,12 +77,12 @@ static int parseOptions(int argc,
 
       return SYSERR;
     }
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-template v%s\n",
 	     VERSION,
 	     TEMPLATE_VERSION);
       return SYSERR;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return -1;
@@ -95,7 +95,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
   void * buffer;
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  while (OK == readFromSocket(sock, 
+  while (OK == readFromSocket(sock,
 			      (CS_HEADER**)&buffer)) {
     /* process */
   }
@@ -108,18 +108,18 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return value from gnunet-template: 0: ok, -1: error
- */   
+ */
 int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
   PTHREAD_T messageReceiveThread;
   void * unused;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0; /* parse error, --help, etc. */ 
+    return 0; /* parse error, --help, etc. */
   sock = getClientSocket();
 
-  if (0 != PTHREAD_CREATE(&messageReceiveThread, 
-			  (PThreadMain) &receiveThread, 
+  if (0 != PTHREAD_CREATE(&messageReceiveThread,
+			  (PThreadMain) &receiveThread,
 			  sock,
 			  128 * 1024))
     DIE_STRERROR("pthread_create");

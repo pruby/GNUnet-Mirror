@@ -12,17 +12,17 @@ static int openServerSocket() {
   struct sockaddr_in serverAddr;
   const int on = 1;
 
-  listenerPort = getGNUnetPort(); 
+  listenerPort = getGNUnetPort();
   /* create the socket */
   while ( (listenerFD = SOCKET(PF_INET, SOCK_STREAM, 0)) < 0) {
-    LOG(LOG_ERROR, 
+    LOG(LOG_ERROR,
 	"ERROR opening socket (%s).  "
 	"No client service started.  "
 	"Trying again in 30 seconds.\n",
 	STRERROR(errno));
     sleep(30);
   }
-  
+
   /* fill in the inet address structure */
   memset((char *) &serverAddr,
 	 0,
@@ -30,28 +30,28 @@ static int openServerSocket() {
   serverAddr.sin_family = AF_INET;
   serverAddr.sin_addr.s_addr=htonl(INADDR_ANY);
   serverAddr.sin_port=htons(listenerPort);
- 
-  if ( SETSOCKOPT(listenerFD, 
-		  SOL_SOCKET, 
-		  SO_REUSEADDR, 
+
+  if ( SETSOCKOPT(listenerFD,
+		  SOL_SOCKET,
+		  SO_REUSEADDR,
 		  &on, sizeof(on)) < 0 )
     perror("setsockopt");
 
   /* bind the socket */
-  if (BIND (listenerFD, 
+  if (BIND (listenerFD,
 	   (struct sockaddr *) &serverAddr,
-	    sizeof(serverAddr)) < 0) {    
-    LOG(LOG_ERROR, 
+	    sizeof(serverAddr)) < 0) {
+    LOG(LOG_ERROR,
 	"ERROR (%s) binding the TCP listener to port %d. "
 	"Test failed.  Is gnunetd running?\n",
 	STRERROR(errno),
 	listenerPort);
     return -1;
   }
-  
+
   /* start listening for new connections */
   if (0 != LISTEN(listenerFD, 5)) {
-    LOG(LOG_ERROR, 
+    LOG(LOG_ERROR,
 	" listen failed: %s\n",
 	STRERROR(errno));
     return -1;
@@ -68,10 +68,10 @@ static int doAccept(int serverSocket) {
   while (incomingFD < 0) {
     lenOfIncomingAddr = sizeof(clientAddr);
     incomingFD = ACCEPT(serverSocket,
-			(struct sockaddr *)&clientAddr, 
+			(struct sockaddr *)&clientAddr,
 			&lenOfIncomingAddr);
     if (incomingFD < 0) {
-      LOG(LOG_ERROR, 
+      LOG(LOG_ERROR,
 	  "ERROR accepting new connection (%s).\n",
 	  STRERROR(errno));
       continue;
@@ -81,9 +81,9 @@ static int doAccept(int serverSocket) {
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   char c;
 
@@ -93,18 +93,18 @@ static int parseCommandLine(int argc,
       { "config",  1, 0, 'c' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "c:", 
-		      long_options, 
+		      argv,
+		      "c:",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
-    
+
     switch(c) {
-    case 'c': 
+    case 'c':
       FREENONNULL(setConfigurationString("FILES",
 					 "gnunet.conf",
 					 GNoptarg));
@@ -130,13 +130,13 @@ static int testTransmission(GNUNET_TCP_SOCKET * a,
   hdr = MALLOC(1024);
   for (i=0;i<1024-sizeof(CS_HEADER);i+=7) {
     fprintf(stderr, ".");
-    for (j=0;j<i;j++) 
-      ((char*)&hdr[1])[j] = (char)i+j;      
+    for (j=0;j<i;j++)
+      ((char*)&hdr[1])[j] = (char)i+j;
     hdr->size = htons(i+sizeof(CS_HEADER));
     hdr->type = 0;
     if (OK != writeToSocket(a, hdr)) {
       FREE(hdr);
-      return 1; 
+      return 1;
     }
     buf = NULL;
     if (OK != readFromSocket(b, &buf)) {
@@ -163,9 +163,9 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
 
   hdr = MALLOC(1024);
   for (i=0;i<1024-sizeof(CS_HEADER);i+=11)
-    ((char*)&hdr[1])[i] = (char)i;      
+    ((char*)&hdr[1])[i] = (char)i;
   hdr->size = htons(64+sizeof(CS_HEADER));
-  hdr->type = 0;  
+  hdr->type = 0;
   while (OK == writeToSocketNonBlocking(a,
 					hdr))
     hdr->type++;
@@ -180,7 +180,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
     if (OK != readFromSocket(b, &buf)) {
       FREE(hdr);
       return 16;
-    }    
+    }
     if (0 != memcmp(buf, hdr, 64+sizeof(CS_HEADER))) {
       printf("Failure in message %u.  Headers: %d ? %d\n",
 	     i,
@@ -206,13 +206,13 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
   if (OK != readFromSocket(b, &buf)) {
     FREE(hdr);
     return 128;
-  }    
+  }
   if (0 != memcmp(buf, hdr, 64+sizeof(CS_HEADER))) {
     FREE(buf);
     FREE(hdr);
     return 256;
   }
-  FREE(buf);  
+  FREE(buf);
   FREE(hdr);
   return 0;
 }

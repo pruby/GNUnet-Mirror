@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/tracekit/gnunet-tracekit.c 
+ * @file applications/tracekit/gnunet-tracekit.c
  * @brief tool that sends a trace request and prints the received network topology
  * @author Christian Grothoff
  */
@@ -36,12 +36,12 @@ static Semaphore * doneSem;
  * Parse the options, set the timeout.
  * @param argc the number of options
  * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit 
+ * @return OK on error, SYSERR if we should exit
  */
 static int parseOptions(int argc,
 			char ** argv) {
   int option_index;
-  int c;  
+  int c;
 
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGFILE",
@@ -54,14 +54,14 @@ static int parseOptions(int argc,
       { "priority", 1, 0, 'P' },
       { "wait", 1, 0, 'W' },
       { 0,0,0,0 }
-    };    
+    };
     option_index = 0;
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhdc:L:H:W:D:F:P:", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "vhdc:L:H:W:D:F:P:",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
@@ -69,7 +69,7 @@ static int parseOptions(int argc,
     case 'D': {
       unsigned int depth;
       if (1 != sscanf(GNoptarg, "%ud", &depth)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-D");
 	return SYSERR;
@@ -83,7 +83,7 @@ static int parseOptions(int argc,
     case 'F': {
       unsigned int format;
       if (1 != sscanf(GNoptarg, "%ud", &format)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-F");
 	return SYSERR;
@@ -118,7 +118,7 @@ static int parseOptions(int argc,
     case 'P': {
       unsigned int prio;
       if (1 != sscanf(GNoptarg, "%ud", &prio)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-P");
 	return SYSERR;
@@ -132,7 +132,7 @@ static int parseOptions(int argc,
     case 'W': {
       unsigned int wait;
       if (1 != sscanf(GNoptarg, "%ud", &wait)) {
-	LOG(LOG_FAILURE, 
+	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-W");
 	return SYSERR;
@@ -143,12 +143,12 @@ static int parseOptions(int argc,
       }
       break;
     }
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-tracekit v%s\n",
 	     VERSION,
 	     TRACEKIT_VERSION);
       return SYSERR;
-    default: 
+    default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
@@ -177,13 +177,13 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
   prSize = 1;
   peersResponding = MALLOC(prSize * sizeof(PeerIdentity));
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  format = getConfigurationInt("GNUNET-TRACEKIT", 
+  format = getConfigurationInt("GNUNET-TRACEKIT",
 			       "FORMAT");
   if (format == 1)
     printf("digraph G {\n");
   if (format == 2)
     printf("graph: {\n");
-  while (OK == readFromSocket(sock, 
+  while (OK == readFromSocket(sock,
 			      (CS_HEADER**)&buffer)) {
     int count;
     EncName enc;
@@ -201,7 +201,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 			    &peersResponding[j].hashPubKey))
 	match = YES;
     if (match == NO) {
-      if (prCount == prSize) 
+      if (prCount == prSize)
 	GROW(peersResponding,
 	     prSize,
 	     prSize*2);
@@ -339,7 +339,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
     printf("}\n");
   SEMAPHORE_UP(doneSem);
   FREE(peersResponding);
-  FREE(peersSeen);  
+  FREE(peersSeen);
   return NULL;
 }
 
@@ -347,7 +347,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return return value from gnunet-tracekit: 0: ok, -1: error
- */   
+ */
 int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
   PTHREAD_T messageReceiveThread;
@@ -356,7 +356,7 @@ int main(int argc, char ** argv) {
   int sleepTime;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0; /* parse error, --help, etc. */ 
+    return 0; /* parse error, --help, etc. */
   sock = getClientSocket();
   if (sock == NULL) {
     LOG(LOG_ERROR,
@@ -365,22 +365,22 @@ int main(int argc, char ** argv) {
   }
 
   doneSem = SEMAPHORE_NEW(0);
-  if (0 != PTHREAD_CREATE(&messageReceiveThread, 
-			  (PThreadMain) &receiveThread, 
+  if (0 != PTHREAD_CREATE(&messageReceiveThread,
+			  (PThreadMain) &receiveThread,
 			  sock,
 			  128 * 1024))
     DIE_STRERROR("pthread_create");
-  
-  probe.header.size 
+
+  probe.header.size
     = htons(sizeof(TRACEKIT_CS_PROBE));
   probe.header.type
     = htons(TRACEKIT_CS_PROTO_PROBE);
-  probe.hops 
+  probe.hops
     = htonl(getConfigurationInt("GNUNET-TRACEKIT",
 				"HOPS"));
   probe.priority
     = htonl(getConfigurationInt("GNUNET-TRACEKIT",
-				"PRIORITY"));  
+				"PRIORITY"));
   if (SYSERR == writeToSocket(sock,
                               &probe.header)) {
     LOG(LOG_ERROR,

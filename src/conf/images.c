@@ -5,7 +5,7 @@
 
 /**
  * @brief GNUnet Setup
- * @file 
+ * @file
  * @author Roman Zippel
  */
 

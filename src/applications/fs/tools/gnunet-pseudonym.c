@@ -67,9 +67,9 @@ static void printhelp() {
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parser(int argc, 
+static int parser(int argc,
 	   char * argv[]) {
   int c;
 
@@ -82,24 +82,24 @@ static int parser(int argc,
       { "delete", 1, 0, 'D' },
       { "end", 0, 0, 'E' },
       { "keyword", 1, 0, 'k' },
-      { "mimetype", 1, 0, 'm' },     
+      { "mimetype", 1, 0, 'm' },
       { "no-advertisement", 0, 0, 'n' },
       { "quiet", 0, 0, 'q' },
-      { "realname", 1, 0, 'r' }, 
+      { "realname", 1, 0, 'r' },
       { "root", 1, 0, 'R' },
       { "set-rating", 1, 0, 's' },
       { "text", 1, 0, 't' },
       { "uri", 1, 0, 'u' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "ac:C:D:Ehk:L:m:nqr:R:s:t:u:v", 
-		      long_options, 
+		      argv,
+		      "ac:C:D:Ehk:L:m:nqr:R:s:t:u:v",
+		      long_options,
 		      &option_index);
-    
-    if (c == -1) 
+
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
@@ -130,7 +130,7 @@ static int parser(int argc,
 					 "KEYWORD",
 					 GNoptarg));
       break;
-    case 'h': 
+    case 'h':
       printhelp();
       return SYSERR;
     case 'm':
@@ -142,7 +142,7 @@ static int parser(int argc,
       FREENONNULL(setConfigurationString("PSEUDONYM",
 					 "NO-ADVERTISEMENT",
 					 "YES"));
-      break;      
+      break;
     case 'q':
       FREENONNULL(setConfigurationString("PSEUDONYM",
 					 "QUIET",
@@ -188,14 +188,14 @@ static int parser(int argc,
 	     VERSION);
       return SYSERR;
     default:
-      LOG(LOG_FAILURE, 
+      LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */
   }
   if (GNoptind < argc) {
     while (GNoptind < argc)
-      LOG(LOG_WARNING, 
+      LOG(LOG_WARNING,
 	  _("Invalid argument: '%s'\n"), argv[GNoptind++]);
     LOG(LOG_FATAL,
 	_("Invalid arguments. Exiting.\n"));
@@ -220,7 +220,7 @@ static int itemPrinter(EXTRACTOR_KeywordType type,
 }
 
 static void printMeta(const struct ECRS_MetaData * meta) {
-  ECRS_getMetaData(meta, 
+  ECRS_getMetaData(meta,
 		   &itemPrinter,
 		   NULL);
 }
@@ -249,14 +249,14 @@ static int namespacePrinter(void * unused,
 	   rating);
   printMeta(md);
 
-  if (set != NULL) {    
+  if (set != NULL) {
     int delta;
 
-    delta = 0;    
+    delta = 0;
     cpos = 0;
     while ( (set[cpos] != '\0') &&
 	    (set[cpos] != ':') )
-      cpos++;    
+      cpos++;
     if ( ( ( ( (strlen((char*)&enc)+1 == cpos) &&
 	       (0 == strncmp(set,
 			     (char*)&enc,
@@ -269,14 +269,14 @@ static int namespacePrinter(void * unused,
 	 (set[cpos] == ':') ) {
       delta = strtol(&set[cpos+1],
 		     NULL, /* no error handling yet */
-		     10);	      
+		     10);	
     }
-    
+
     if (delta != 0) {
       rating = FSUI_rankNamespace(ctx,
 				  namespaceName,
 				  delta);
-      printf(_("\tRating (after update): %d\n"), 
+      printf(_("\tRating (after update): %d\n"),
 	     rating);
     }
   }
@@ -458,9 +458,9 @@ int main(int argc, char *argv[]) {
 			    NO,
 			    &namespacePrinter,
 			    NULL);
-  if (cnt == -1) 
-    printf(_("Could not access namespace information.\n"));  
- 
+  if (cnt == -1)
+    printf(_("Could not access namespace information.\n"));
+
   FSUI_stop(ctx);
   doneUtil();
   return success;

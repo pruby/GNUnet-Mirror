@@ -38,7 +38,7 @@
  *  if the disk does not have enough space).
  */
 static int startDownload(struct FSUI_Context * ctx,
-			 unsigned int anonymityLevel,			 
+			 unsigned int anonymityLevel,			
 			 const struct ECRS_URI * uri,
 			 const char * filename,
 			 int is_recursive,
@@ -72,8 +72,8 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
     filename = STRDUP(&tmp[strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX)]);
     FREE(tmp);
   }
-  fullName = MALLOC(strlen(parent->filename) + 
-		    + strlen(GNUNET_DIRECTORY_EXT) + 2 
+  fullName = MALLOC(strlen(parent->filename) +
+		    + strlen(GNUNET_DIRECTORY_EXT) + 2
 		    + strlen(filename));
   strcpy(fullName, parent->filename);
   strcat(fullName, GNUNET_DIRECTORY_EXT);
@@ -105,7 +105,7 @@ downloadProgressCallback(unsigned long long totalBytes,
   FSUI_Event event;
   struct ECRS_MetaData * md;
   FSUI_DownloadList * root;
-  
+
   root = dl;
   while (root->parent != NULL)
     root = root->parent;
@@ -132,7 +132,7 @@ downloadProgressCallback(unsigned long long totalBytes,
     if ( (lastBlockSize > strlen(GNUNET_DIRECTORY_MAGIC)) &&
 	 (0 == strncmp(GNUNET_DIRECTORY_MAGIC,
 		       lastBlock,
-		       strlen(GNUNET_DIRECTORY_MAGIC)) ) ) 
+		       strlen(GNUNET_DIRECTORY_MAGIC)) ) )
       dl->is_directory = YES;
     else
       dl->is_directory = NO;
@@ -174,11 +174,11 @@ static void * downloadThread(FSUI_DownloadList * dl) {
   FSUI_DownloadList * pos;
   struct ECRS_MetaData * md;
   FSUI_DownloadList * root;
-  
+
   root = dl;
   while (root->parent != NULL)
     root = root->parent;
-  
+
   totalBytes = ECRS_fileSize(dl->uri);
   ret = ECRS_downloadFile(dl->uri,
 			  dl->filename,
@@ -218,15 +218,15 @@ static void * downloadThread(FSUI_DownloadList * dl) {
 	      O_LARGEFILE | O_RDONLY);
 #else
     fd = OPEN(dl->filename,
-	      O_RDONLY);     
+	      O_RDONLY);
 #endif
     if (fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR,
 			"OPEN",
 			dl->filename);
     } else {
-      dirBlock = MMAP(NULL, 
-		      totalBytes, 
+      dirBlock = MMAP(NULL,
+		      totalBytes,
 		      PROT_READ,
 		      MAP_SHARED,
 		      fd,
@@ -248,7 +248,7 @@ static void * downloadThread(FSUI_DownloadList * dl) {
     /* wait for recursive downloads (if any) */
     while ( (dl->subDownloads != NULL) &&
 	    (dl->signalTerminate != YES) )
-      gnunet_util_sleep(100);    
+      gnunet_util_sleep(100);
   }
   if (dl->parent != NULL) {
     /* notify parent that we're done */
@@ -271,11 +271,11 @@ static void * downloadThread(FSUI_DownloadList * dl) {
       if (prev != NULL)
 	prev->next = pos->subDownloadsNext;
       else
-	dl->parent->subDownloads = pos->subDownloadsNext;      
-    }    
+	dl->parent->subDownloads = pos->subDownloadsNext;
+    }
     MUTEX_UNLOCK(&dl->ctx->lock);
   }
-  dl->signalTerminate = YES; 
+  dl->signalTerminate = YES;
   return NULL;
 }
 
@@ -287,7 +287,7 @@ static void * downloadThread(FSUI_DownloadList * dl) {
  *  if the disk does not have enough space).
  */
 static int startDownload(struct FSUI_Context * ctx,
-			 unsigned int anonymityLevel, 
+			 unsigned int anonymityLevel,
 			 const struct ECRS_URI * uri,
 			 const char * filename,
 			 int is_recursive,
@@ -297,7 +297,7 @@ static int startDownload(struct FSUI_Context * ctx,
   if (! (ECRS_isFileURI(uri) ||
 	 ECRS_isLocationURI(uri)) ) {
     BREAK(); /* wrong type of URI! */
-    return SYSERR; 
+    return SYSERR;
   }
 
   dl = MALLOC(sizeof(FSUI_DownloadList));
@@ -311,7 +311,7 @@ static int startDownload(struct FSUI_Context * ctx,
   dl->ctx = ctx;
   dl->filename = STRDUP(filename);
   dl->uri = ECRS_dupUri(uri);
-  dl->total = ECRS_fileSize(uri); 
+  dl->total = ECRS_fileSize(uri);
   MUTEX_LOCK(&ctx->lock);
   if (0 != PTHREAD_CREATE(&dl->handle,
 			  (PThreadMain) &downloadThread,
@@ -343,14 +343,14 @@ static int startDownload(struct FSUI_Context * ctx,
  *  if the disk does not have enough space).
  */
 int FSUI_startDownload(struct FSUI_Context * ctx,
-		       unsigned int anonymityLevel,			 
+		       unsigned int anonymityLevel,			
 		       const struct ECRS_URI * uri,
 		       const char * filename) {
   return startDownload(ctx,
-		       anonymityLevel, 
-		       uri, 
+		       anonymityLevel,
+		       uri,
 		       filename,
-		       NO, 
+		       NO,
 		       NULL);
 }
 
@@ -368,7 +368,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   dl = ctx->activeDownloads;
   while (dl != NULL) {
     if (ECRS_equalsUri(uri,
-		       dl->uri)) {      
+		       dl->uri)) {
       dl->signalTerminate = YES;
       MUTEX_UNLOCK(&ctx->lock);
       cleanupFSUIThreadList(ctx);
@@ -393,7 +393,7 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
   int ret;
 
   ret = 0;
-  cleanupFSUIThreadList(ctx);      
+  cleanupFSUIThreadList(ctx);
   MUTEX_LOCK(&ctx->lock);
   dl = ctx->activeDownloads;
   while (dl != NULL) {
@@ -421,20 +421,20 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
  *  SYSERR if the file does not exist
  */
 int FSUI_startDownloadAll(struct FSUI_Context * ctx,
-			  unsigned int anonymityLevel,			 
+			  unsigned int anonymityLevel,			
 			  const struct ECRS_URI * uri,
 			  const char * dirname) {
-  return startDownload(ctx, 
+  return startDownload(ctx,
 		       anonymityLevel,
-		       uri, 
-		       dirname, 
+		       uri,
+		       dirname,
 		       YES,
 		       NULL);
 }
 
 /**
  * Abort a recursive download (internal function).
- * 
+ *
  * Do NOT call cleanupFSUIThreadList in here -- this
  * function maybe called recursively!
  *
@@ -452,12 +452,12 @@ static int stopDownloadAll(struct FSUI_Context * ctx,
     if ( (0 == strcmp(dirname,
 		      dl->filename)) &&
 	 (ECRS_equalsUri(uri,
-			 dl->uri)) ) {      
+			 dl->uri)) ) {
       dl->signalTerminate = YES;
       for (i=0;i<dl->completedDownloadsCount;i++)
 	FSUI_stopDownloadAll(ctx,
 			     dl->completedDownloads[i],
-			     dirname);      
+			     dirname);
       return OK;
     }
     dl = dl->next;
@@ -467,7 +467,7 @@ static int stopDownloadAll(struct FSUI_Context * ctx,
 
 /**
  * Abort a recursive download.
- * 
+ *
  * @return OK on success, SYSERR if no such download is
  *  pending
  */
@@ -478,7 +478,7 @@ int FSUI_stopDownloadAll(struct FSUI_Context * ctx,
 
   MUTEX_LOCK(&ctx->lock);
   ret = stopDownloadAll(ctx, uri, dirname);
-  MUTEX_UNLOCK(&ctx->lock);  
+  MUTEX_UNLOCK(&ctx->lock);
   cleanupFSUIThreadList(ctx);
   return ret;
 }

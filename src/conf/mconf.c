@@ -91,13 +91,13 @@ save_config_help[] =
 	"\n"
 	"If you are uncertain what all this means then you should probably\n"
 	"leave this blank.\n",
-readme_text[] = 
+readme_text[] =
 	"Overview\n"
 	"--------\n"
-	"To change a setting, highlight it with the cursor\n" 
+	"To change a setting, highlight it with the cursor\n"
 	"keys and press <Y> to enable it or <N> to removed it.\n"
 	"\n"
-	"Items beginning with numbers or other text within parenthesis can\n" 
+	"Items beginning with numbers or other text within parenthesis can\n"
 	"be changed by highlighting the item and pressing <Enter>.  Then\n"
 	"enter the new value into the dialog box that pops up.\n"
 	"\n"
@@ -106,7 +106,7 @@ readme_text[] =
 	"\n"
 	"Menus\n"
 	"----------\n"
-	"o  Use the Up/Down arrow keys (cursor keys) to highlight the item\n" 
+	"o  Use the Up/Down arrow keys (cursor keys) to highlight the item\n"
    	"   you wish to change or submenu wish to select and press <Enter>.\n"
    	"   Submenus are designated by \"--->\".\n"
 	"\n"
@@ -118,7 +118,7 @@ readme_text[] =
    	"   unseen options into view.\n"
 	"\n"
 	"o  To exit a menu use the cursor keys to highlight the <Exit> button\n"
-   	"   and press <ENTER>.\n"  
+   	"   and press <ENTER>.\n"
 	"\n"
    	"   Shortcut: Press <ESC><ESC> or <E> or <X> if there is no hotkey\n"
         "             using those letters.  You may press a single <ESC>, but\n"
@@ -177,7 +177,7 @@ readme_text[] =
 	"Alternate Configuration Files\n"
 	"-----------------------------\n"
 	"Menuconfig supports the use of alternate configuration files for\n"
-	"those who, for various reasons, find it necessary to switch\n" 
+	"those who, for various reasons, find it necessary to switch\n"
 	"between different configurations.\n"
 	"\n"
 	"At the end of the main menu you will find two options.  One is\n"
@@ -185,15 +185,15 @@ readme_text[] =
 	"The other option is for loading a previously saved alternate\n"
 	"configuration.\n"
 	"\n"
-	"Even if you don't use alternate configuration files, but you\n" 
+	"Even if you don't use alternate configuration files, but you\n"
 	"find during a Menuconfig session that you have completely messed\n"
 	"up your settings, you may use the \"Load Alternate...\" option to\n"
-	"restore your previously saved settings from \".config\" without\n" 
+	"restore your previously saved settings from \".config\" without\n"
 	"restarting Menuconfig.\n"
 	"\n"
 	"Other information\n"
 	"-----------------\n"
-	"If you use Menuconfig in an XTERM window make sure you have your\n" 
+	"If you use Menuconfig in an XTERM window make sure you have your\n"
 	"$TERM variable set to point to a xterm definition which supports color.\n"
 	"Otherwise, Menuconfig will look rather bad.  Menuconfig will not\n"
 	"display correctly in a RXVT window because rxvt displays only one\n"
@@ -529,7 +529,7 @@ static void conf(struct menu *menu)
 			cmake(); cset_tag('S', NULL); cprint_name("Save Configuration to an Alternate File");
 		}
 		dialog_clear();
-		/* active_item itself can change after any creset() + 
+		/* active_item itself can change after any creset() +
                  * build_conf() :-( */
 		stat = dialog_menu(prompt ? prompt : "Main Menu",
 				menu_instructions, rows, cols, rows - 10,

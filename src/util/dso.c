@@ -82,12 +82,12 @@ void * loadDynamicLibrary(const char * libprefix,
   void * libhandle;
   char * libname;
 
-  if (0 != lt_dlinit()) 
+  if (0 != lt_dlinit())
     DIE_STRERROR("lt_dlinit");
   /* finally, load the library */
   libname = buildLibName(libprefix,
 			 dsoname);
-  libhandle = lt_dlopenext(libname); 
+  libhandle = lt_dlopenext(libname);
   if (libhandle == NULL) {
     LOG(LOG_ERROR,
 	_("'%s' failed for library '%s' at %s:%d with error: %s\n"),
@@ -100,12 +100,12 @@ void * loadDynamicLibrary(const char * libprefix,
   return libhandle;
 }
 
-void unloadDynamicLibrary(void * libhandle) {  
+void unloadDynamicLibrary(void * libhandle) {
   /* when valgrinding, comment out these lines
      to get decent traces for memory leaks on exit */
   lt_dlclose(libhandle);
   if (0 != lt_dlexit())
-    LOG_STRERROR(LOG_WARNING, "lt_dlexit");  
+    LOG_STRERROR(LOG_WARNING, "lt_dlexit");
 }
 
 void * trybindDynamicMethod(void * libhandle,
@@ -142,7 +142,7 @@ void * bindDynamicMethod(void * libhandle,
     LOG(LOG_ERROR,
 	_("'%s' failed to resolve method '%s%s' at %s:%d with error: %s\n"),
 	"lt_dlsym",
-	methodprefix, dsoname, 
+	methodprefix, dsoname,
 	__FILE__, __LINE__,
 	lt_dlerror());
   return mptr;

@@ -36,7 +36,7 @@ void doneXmalloc();
 /**
  * Initialize Random number generator.
  */
-void initRAND(); 
+void initRAND();
 
 /**
  * This method must be called first. Typically,
@@ -81,12 +81,12 @@ void initStatusCalls();
  */
 void doneStatusCalls();
 
-/** 
+/**
  * Initialize identity module. Requries configuration.
  */
 int initAddress();
 
-/** 
+/**
  * Shutdown identity module.
  */
 void doneAddress();
@@ -139,7 +139,7 @@ int initUtil(int argc,
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
 			      "YES")) {
-    initStatusCalls(); 
+    initStatusCalls();
     if (OK != initAddress()) {
       initState();
       return SYSERR;
@@ -160,7 +160,7 @@ void doneUtil() {
   doneState();
   LOG(LOG_MESSAGE,
       _("Shutdown complete.\n"));
-  doneLogging();  
+  doneLogging();
   doneConfiguration();
 #ifdef MINGW
   ShutdownWinEnv();

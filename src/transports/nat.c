@@ -49,7 +49,7 @@ static CoreAPIForTransport * coreAPI = NULL;
 
 /**
  * Verify that a HELO-Message is correct (a node is reachable at that
- * address). 
+ * address).
  *
  * @param helo the HELO message to verify
  *        (the signature/crc have been verified before)
@@ -73,7 +73,7 @@ static int verifyHelo(const HELO_Message * helo) {
       else
 	return SYSERR;
     }
-    return OK;  
+    return OK;
   }
 }
 
@@ -185,7 +185,7 @@ static char * addressToString(const HELO_Message * helo) {
 /**
  * The exported method. Makes the core api available via a global and
  * returns the nat transport API.
- */ 
+ */
 TransportAPI * inittransport_nat(CoreAPIForTransport * core) {
   coreAPI = core;
   natAPI.protocolNumber       = NAT_PROTOCOL_NUMBER;

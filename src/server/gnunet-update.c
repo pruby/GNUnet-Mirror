@@ -33,7 +33,7 @@
 /**
  * We may want to change this at some point into
  * something like libgnunet_update if we want to
- * separate the update code from the codebase 
+ * separate the update code from the codebase
  * used in normal operation -- but currently I
  * see no need / use for that.
  */
@@ -63,9 +63,9 @@ static void printhelp() {
 static int be_verbose = NO;
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   int c;
   int user = NO;
@@ -87,16 +87,16 @@ static int parseCommandLine(int argc,
       { "verbose", 0, 0, 'V' },
       { 0,0,0,0 }
     };
-    
+
     c = GNgetopt_long(argc,
-		      argv, 
-		      "vhdc:g:VL:", 
-		      long_options, 
-		      &option_index);    
-    if (c == -1) 
+		      argv,
+		      "vhdc:g:VL:",
+		      long_options,
+		      &option_index);
+    if (c == -1)
       break;  /* No more flags to process */
     if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;    
+      continue;
     switch(c) {
     case 'g':
       FREENONNULL(setConfigurationString("GNUNET-UPDATE",
@@ -109,8 +109,8 @@ static int parseCommandLine(int argc,
 					 "LOGLEVEL",
 					 GNoptarg));
      break;
-    case 'h': 
-      printhelp(); 
+    case 'h':
+      printhelp();
       return SYSERR;
     case 'u':
       FREENONNULL(setConfigurationString("GNUNETD",
@@ -118,7 +118,7 @@ static int parseCommandLine(int argc,
 					 "NO"));
       user = YES;
       break;
-    case 'v': 
+    case 'v':
       printf("GNUnet v%s, gnunet-update 0.0.1\n",
 	     VERSION);
       return SYSERR;
@@ -144,7 +144,7 @@ static int parseCommandLine(int argc,
   }
   if (get == NO) {
     /* if we do not run in 'get' mode,
-       make sure we send error messages 
+       make sure we send error messages
        to the console... */
     FREENONNULL(setConfigurationString("GNUNETD",
 				       "LOGFILE",
@@ -160,7 +160,7 @@ static UpdateAPI uapi;
 /**
  * Allow the module named "pos" to update.
  * @return OK on success, SYSERR on error
- */ 
+ */
 static int updateModule(const char * rpos) {
   UpdateMethod mptr;
   void * library;
@@ -186,7 +186,7 @@ static int updateModule(const char * rpos) {
   library = loadDynamicLibrary(DSO_PREFIX,
 			       name);
   if (library == NULL) {
-    FREE(name);    
+    FREE(name);
     return SYSERR;
   }
   mptr = trybindDynamicMethod(library,
@@ -210,7 +210,7 @@ static void updateApplicationModules() {
   char * dso;
   char * next;
   char * pos;
-  
+
   dso = getConfigurationString("GNUNETD",
 			       "APPLICATIONS");
   if (dso == NULL) {
@@ -247,7 +247,7 @@ static void doGet(char * get) {
   char * sec;
   char * ent;
   char * val;
-  
+
   sec = get;
   ent = get;
   while ( ( (*ent) != ':') &&
@@ -258,14 +258,14 @@ static void doGet(char * get) {
     ent++;
   }
   val = getConfigurationString(sec, ent);
-  if (val == NULL) 
+  if (val == NULL)
     printf("%u\n",
 	   getConfigurationInt(sec, ent));
   else {
     printf("%s\n",
 	   val);
     FREE(val);
-  }    
+  }
   FREE(get);
 }
 
@@ -293,20 +293,20 @@ static void work() {
   if (be_verbose)
     printf(_("Updated data for %d applications.\n"),
 	   processedCount);
-  GROW(processed, processedCount, 0); 
+  GROW(processed, processedCount, 0);
 
   doneCore();
 }
 
-int main(int argc, 
+int main(int argc,
 	 char * argv[]) {
   char * get;
 
-  if (SYSERR == initUtil(argc, argv, &parseCommandLine))    
+  if (SYSERR == initUtil(argc, argv, &parseCommandLine))
     return 0;
   get = getConfigurationString("GNUNET-UPDATE",
 			       "GET");
-  if (get != NULL) 
+  if (get != NULL)
     doGet(get);
   else
     work();

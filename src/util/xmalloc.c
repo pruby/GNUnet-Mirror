@@ -20,28 +20,28 @@
 
 /**
  * @file util/xmalloc.c
- * @brief wrapper around malloc/free 
+ * @brief wrapper around malloc/free
  * @author Christian Grothoff
- */ 
+ */
 
 #include "gnunet_util.h"
 #include "platform.h"
 
 #define DEBUG_MALLOC 0
 
-#if DEBUG_MALLOC 
+#if DEBUG_MALLOC
 static Mutex lock;
 #endif
 
 
 void initXmalloc() {
-#if DEBUG_MALLOC 
+#if DEBUG_MALLOC
   MUTEX_CREATE(&lock);
 #endif
 }
 
 void doneXmalloc() {
-#if DEBUG_MALLOC 
+#if DEBUG_MALLOC
   MUTEX_DESTROY(&lock);
 #endif
 }
@@ -62,10 +62,10 @@ void doneXmalloc() {
  * @param linenumber where in the code was the call to GROW
  * @return pointer to size bytes of memory
  */
-void * xmalloc_(size_t size, 
+void * xmalloc_(size_t size,
 		const char * filename,
 		const int linenumber) {
-  /* As a security precaution, we generally do not allow very large 
+  /* As a security precaution, we generally do not allow very large
      allocations using the default 'MALLOC' macro */
   if (size > 1024 * 1024 * 40)
     errexit(_("Unexpected very large allocation (%u bytes) at %s:%d!\n"),
@@ -73,24 +73,24 @@ void * xmalloc_(size_t size,
   return xmalloc_unchecked_(size, filename, linenumber);
 }
 
-void * xmalloc_unchecked_(size_t size, 
+void * xmalloc_unchecked_(size_t size,
 			  const char * filename,
 			  const int linenumber) {
   void * result;
-  
+
   GNUNET_ASSERT(size < INT_MAX);
   result = malloc(size);
-#if DEBUG_MALLOC 
+#if DEBUG_MALLOC
   MUTEX_LOCK(&lock);
-  printf("%p malloc %s:%d (%d bytes)\n", 
-	 result, 
+  printf("%p malloc %s:%d (%d bytes)\n",
+	 result,
 	 filename,
 	 linenumber,
 	 size);
   fflush(stdout);
   MUTEX_UNLOCK(&lock);
 #endif
-  if (result == NULL) 
+  if (result == NULL)
     DIE_STRERROR_FL(filename, linenumber, "malloc");
   memset(result, 0, size); /* client code should not rely on this, though... */
   return result;
@@ -112,31 +112,31 @@ void * xrealloc_(void * ptr,
       const size_t n,
       const char * filename,
       const int linenumber) {
-#if DEBUG_MALLOC 
+#if DEBUG_MALLOC
   MUTEX_LOCK(&lock);
-  printf("%p free %s:%d\n", 
-   ptr, 
+  printf("%p free %s:%d\n",
+   ptr,
    filename,
    linenumber);
   MUTEX_UNLOCK(&lock);
-#endif        
-  
+#endif
+
   ptr = realloc(ptr, n);
 
-  if (!ptr) 
+  if (!ptr)
     DIE_STRERROR_FL(filename, linenumber, "realloc");
 
-#if DEBUG_MALLOC 
+#if DEBUG_MALLOC
   MUTEX_LOCK(&lock);
-  printf("%p malloc %s:%d (%d bytes)\n", 
-   ptr, 
+  printf("%p malloc %s:%d (%d bytes)\n",
+   ptr,
    filename,
    linenumber,
    n);
   fflush(stdout);
   MUTEX_UNLOCK(&lock);
 #endif
-    
+
   return ptr;
 }
 
@@ -148,14 +148,14 @@ void * xrealloc_(void * ptr,
  * @param filename where in the code was the call to GROW
  * @param linenumber where in the code was the call to GROW
  */
-void xfree_(void * ptr, 
+void xfree_(void * ptr,
 	    const char * filename,
 	    const int linenumber) {
   GNUNET_ASSERT_FL(filename, linenumber, ptr != NULL);
-#if DEBUG_MALLOC 
+#if DEBUG_MALLOC
   MUTEX_LOCK(&lock);
-  printf("%p free %s:%d\n", 
-	 ptr, 
+  printf("%p free %s:%d\n",
+	 ptr,
 	 filename,
 	 linenumber);
   fflush(stdout);
@@ -242,18 +242,18 @@ void xgrow_(void ** old,
   } else {
     tmp = xmalloc_(size,
 		   filename,
-		   linenumber);  
+		   linenumber);
     GNUNET_ASSERT(tmp != NULL);
     memset(tmp, 0, size); /* client code should not rely on this, though... */
     if (*oldCount > newCount)
       *oldCount = newCount; /* shrink is also allowed! */
-    memcpy(tmp, 
-	   *old, 
+    memcpy(tmp,
+	   *old,
 	   elementSize * (*oldCount));
   }
 
   if (*old != NULL) {
-    xfree_(*old, 
+    xfree_(*old,
 	   filename,
 	   linenumber);
   }

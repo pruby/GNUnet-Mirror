@@ -10,7 +10,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       General Public License for more details.
- 
+
       You should have received a copy of the GNU General Public License
       along with GNUnet; see the file COPYING.  If not, write to the
       Free Software Foundation, Inc., 59 Temple Place - Suite 330,
@@ -30,7 +30,7 @@
 #include "gnunet_dht_datastore_memory.h"
 #include "gnunet_dht_service.h"
 
-#define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); 
+#define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__);
 
 static int store(Blockstore * s,
 		 char * key,
@@ -49,11 +49,11 @@ static int store(Blockstore * s,
   if (OK != s->put(s->closure,
 		   &hc,
 		   cont,
-		   0)) { 
-    DUMP(s); 
+		   0)) {
+    DUMP(s);
     FREE(cont);
     return 1;
-  }    
+  }
   FREE(cont);
   return 0;
 }
@@ -78,10 +78,10 @@ static int rem(Blockstore * s,
        &hc);
   if (OK != s->del(s->closure,
 		   &hc,
-		   cont)) { 
+		   cont)) {
     FREE(cont);
-    DUMP(s); 
-    return 1; 
+    DUMP(s);
+    return 1;
   }
   FREE(cont);
   return 0;
@@ -117,8 +117,8 @@ static int load(Blockstore * s,
 		   &cont)) {
     if (val == NULL)
       return 0;
-    DUMP(s); 
-    return 1; 
+    DUMP(s);
+    return 1;
   } else if (val == NULL) {
     FREE(cont);
     DUMP(s);
@@ -162,9 +162,9 @@ static int test(Blockstore * s) {
 }
 
 /**
- * Perform option parsing from the command line. 
+ * Perform option parsing from the command line.
  */
-static int parseCommandLine(int argc, 
+static int parseCommandLine(int argc,
 			    char * argv[]) {
   return OK;
 }
@@ -173,7 +173,7 @@ int main(int argc,
 	 char * argv[]) {
   Blockstore * s;
   int i;
-  
+
   initUtil(argc, argv, &parseCommandLine);
   s = create_blockstore_memory(65536);
   for (i=0;i<65536;i++)
