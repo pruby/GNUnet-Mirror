@@ -186,6 +186,10 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
   Datastore_Datum * datum;
   int contentSize;
   unsigned long * lens;
+  unsigned int type;
+  unsigned int prio;
+  unsigned int level;
+  unsigned long long exp;
   
   contentSize = atol(sql_row[0]) - sizeof(Datastore_Value);
   if (contentSize < 0)
@@ -193,7 +197,11 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
 
   lens = mysql_fetch_lengths(res); 
   if ( (lens[5] != sizeof(HashCode160)) ||
-       (lens[6] != contentSize) ) {
+       (lens[6] != contentSize) ||
+       (sscanf(sql_row[1], "%u", &type) != 1) ||
+       (sscanf(sql_row[2], "%u", &prio) != 1) ||
+       (sscanf(sql_row[3], "%u", &level) != 1) ||
+       (sscanf(sql_row[4], "%llu", &exp) != 1) ) {
     LOG(LOG_WARNING,
 	"SQL Database corrupt, ignoring result.\n");
     return NULL;
@@ -201,11 +209,10 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
 
   datum = MALLOC(sizeof(Datastore_Datum) + contentSize);
   datum->value.size = htonl(contentSize + sizeof(Datastore_Value));
-  datum->value.type = htonl(atol(sql_row[1]));
-  datum->value.prio = htonl(atol(sql_row[2]));
-  datum->value.anonymityLevel = htonl(atol(sql_row[3]));
-  datum->value.expirationTime = htonll(atoll(sql_row[4]));
-
+  datum->value.type = htonl(type);
+  datum->value.prio = htonl(prio);
+  datum->value.anonymityLevel = htonl(level);
+  datum->value.expirationTime = htonll(exp);
   memcpy(&datum->key,
   	 sql_row[5],
 	 sizeof(HashCode160)); 
