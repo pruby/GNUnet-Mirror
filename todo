@@ -17,9 +17,8 @@
   * gnunet-insert - ok
   * gnunet-search - ok
   * gnunet-download:
-    - type for on-demand content wrong (out of mysql DB,
-      wrong in DB? wrong before put?)
-    - getIndexed (ondemand.c) is not even used yet!
+    - files < sizeof DBlock seem to work
+    - files > sizeof DBlock have assertion failure
   * FS/ECRS upload/download
   * ECRS-directories (build, iterate)
   * gnunet-directory
