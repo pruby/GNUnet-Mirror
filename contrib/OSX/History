@@ -1,0 +1,37 @@
+Release 1:
+
+Initial release
+
+Release 2:
+
+- switched to libgcrypt due to some strange openssl problem (core dumps)
+- version numbering for binary packages
+- CVS version (incl. deadlock fix in transport.c)
+
+Release 3:
+
+- experimental sqlite 3.1 (passes tests, better performance)
+- GNUnet version checking: run gnunet-update when new version is installed
+- Application icon now displays correctly
+- libextractor 4.1
+- atk-1.8.0, glib-2.4.8, fontconfig-2.2.99, gtk+-2.4.14, gettext-0.14.1,
+  pango-1.6.0
+- insertion now works more or less with gnunet-gtk
+- gnunet -> .gnunet link created - Easier to edit config files.
+- Before starting run gnunet-convert just in case config files were modified.
+
+Release 4
+
+- ~/gnunet is now the main directory (.gnunet is a link to this)
+  If the user wants to get rid of settings then this dir is easier to locate
+- CocoaDialogs for setup etc.
+
+Release 5
+
+- Fixed shell bug: PATH was not inherited to the new shell
+- Updated help page
+- removed & from gnunetd startup.
+- Added loglevel and keeplog configurations
+- config no longer automatically tries to stop & start gnunetd
+  It is better to do manually.
+

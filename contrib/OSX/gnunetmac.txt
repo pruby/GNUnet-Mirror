@@ -1,0 +1,206 @@
+Welcome to GNUnet 0.6.6 (CVS) for MacOS X 10.3.x !
+
+Installation:
+
+For most users the default values supplied by the installer will be
+sufficient. If you are behind a firewall then you may need to edit
+the gnunet.root file. For instructions see http://www.gnunet.org
+
+The installation will be created in ~/gnunet, where ~ refers to
+your home directory. The two relevant files are: gnunet.root and
+gnunet.conf. These files can be edited with textedit or with
+the graphical configuration utility (Configure option).
+
+The most important options in gnunet.root are:
+
+Network interface: 	   What is your active network interface?
+			   On most computers this will be either:
+			   en0 = Ethernet or en1 = Wireless LAN.
+			   In gnunet.root this setting correspond
+			   to two options: [NETWORK] INTERFACE
+			   and [LOAD] INTERFACE
+
+IP number:		   Internet number of your computer.
+   			   If you are using NAT and have mapped
+			   the gnunet ports to your computer then
+			   you should specify the IP address of
+			   your router here. Otherwise it should
+			   the IP address of your computer.
+			   If your IP address changes from time
+			   to time then you want to say NA here.
+			   This avoids setting the IP number
+			   to any fixed value. In gnunet.root
+			   this setting corresponds to
+			   [NETWORK] IP.
+
+How long is your IP valid  If your IP number changes from time
+    	    	    	   to time then you may want to give
+			   gnunetd a hint how often this is
+			   expected to happen. 1440 = 10 days.
+			   In gnunet.root this corresponds to:
+			   [GNUNETD] HELOEXPIRES.
+
+Upstream bandwidth	   Bandwidth limit for upstream traffic.
+	 		   Given in units of bytes/s. Set this
+			   value based on your internet connection.
+			   In gnunet.root this corresponds to:
+			   [LOAD] [MAXNETUPBPSTOTAL].
+
+Downstream bandwidth	   Bandwidth limit for downstream traffic.
+	 		   Given in units of bytes/s. Set this
+			   value based on your internet connection.
+			   In gnunet.root this corresponds to:
+			   [LOAD] [MAXNETDOWNBPSTOTAL].
+
+Maximum CPU load	   This is the maximum CPU load that lets
+	    		   gnunetd to run without dropping any
+			   traffic. Small number means less load
+			   to the system and larger number more
+			   load. Note that if you don't want any
+			   limits then set this to a large value
+			   (for example, 800). In gnunet.root this
+			   corresponds to: [LOAD] MAXCPULOAD.
+
+UDP port number		   UDP port number to use. If your ISP
+    	 		   is blocking certain ports then you may
+			   want to change this. If you are using
+			   NAT then you want to make this port
+			   number to match your mapped port in
+			   the router. In gnunet.root this 
+			   corresponds to: [UDP] PORT.
+
+TCP port number		   TCP port number to use. If your ISP
+    	 		   is blocking certain ports then you may
+			   want to change this. If you are using
+			   NAT then you want to make this port
+			   number to match your mapped port in
+			   the router. In gnunet.root this
+			   corresponds to: [TCP] PORT.
+
+Limited connectivity	   Set this to YES if you are behind
+			   a firewall and to NO if not.
+			   In gnunet.root this corresponds to:
+			   [NAT] LIMITED.
+
+Anon. file sharing quota   How much disk space is allocated for
+      	   	   	   storing GNUnet data. This space is
+			   only used for full inserts and migrated
+			   data. Thus it does not have to correspond
+			   to the amount you of data you want to
+			   share. The units are in megabytes.
+			   Typically few megabytes is sufficient
+			   unless you will be doing full inserts.
+			   In gnunet.root this corresponds to:
+			   [AFS] DISKQUOTA.
+
+Anon. receive level	   Anonymity level for receving data.
+      	      		   If the value v # is < 1000, it means that
+      	      		   if GNUnet routes n bytes of messages from
+			   # foreign peers, it may originate n/v bytes
+			   of queries in the same # time-period. The
+			   time-period is twice the average delay that
+			   GNUnet # deferrs forwarded queries. If the
+			   value v is >= 1000, it means that if GNUnet 
+			   routes n bytes of QUERIES from at least (v
+			   % 1000) peers, it may originate n/v/1000
+			   bytes of queries in the same time-period.
+			   The default is 0 and this should be fine 
+			   for most users. Also notice that if you 
+			   choose values above 1000, you may end up
+			   having no throughput at all, especially if 
+			   many of your fellow GNUnet-peers do the same.
+			   This corresponds to gnunet.root setting:
+			   [AFS] ANONYMITY-SEND option.
+
+Anon. send level	   Anonymity level for sending data. See
+      	   		   above. This corresponds to gnunet.root
+			   setting: [AFS] ANONYMITY-RECEIVE option.
+
+Active content migration   Should we participate in content
+       	       		   migration? If you say yes here, GNUnet
+			   will migrate content to your server, and
+			   you will not be able to control what data
+			   is stored on your  machine. This option
+			   has advantages and disadvantages. If you
+			   activate it, you can claim for *all*
+			   the non-indexed (-n to gnunet-insert)
+			    content that you did not know
+			   what it was even if an adversary takes
+			   control of your machine. If you do not
+			   activate it, it is obvious that you have
+			   knowledge of all the content that is hosted
+			   on your machine and thus can be considered
+			   liable for it. This corresponds to the
+			   gnunet.root setting: 
+			   [AFS] [ACTIVEMIGRATION].
+
+Index quota		   Space allocated for storing the index.
+      			   8192 is a good number. This corresponds
+			   to the gnunet.root setting:
+			   [AFS] [INDEX-QUOTA].
+
+Log level		   Which gnunetd messages to log:
+    			   nothing, fatal, error, failure, warning,
+			   message, info, ...
+			   Making gnunetd more verbose will cause
+			   the log file to grow.
+			   This corresponds to the gnunet.root
+			   setting: [GNUNETD] LOGLEVEL.
+
+Log rotation		   Rotate log files? If 0 no rotation is
+    			   performed. If you specify a value 
+			   greater than zero, a log is created each
+			   day with the date appended to its filename.
+			   These logs are deleted after given # of days.
+
+The gnunet.conf file:
+
+Search timeout		   Time out in seconds for gnunet-search
+       			   command. This corresponds to
+			   [AFS] SEARCHTIMEOUT setting in
+			   gnunet.conf.
+
+Usage:
+
+GNUnet consists of server (gnunetd) and client programs. The
+server will run in background and is usually started automatically
+when necessary. If configuration files are changed then the server
+process must be restarted. For most parts the graphical interface
+will do this automatically.
+
+The GNUnet graphical user interface uses X windows system (X11)
+and assumes that a three button mouse is available. Usethe  alt
+and apple keys to access second and third mouse buttons. 
+
+The command line utilities can be found from directory: 
+GNUnet.app/Contents/MacOS/bin. Alternatively you can launch a
+shell from the GNUnet menu, which will automatically set the path
+correctly. The commands are:
+
+gnunet-search <keyword>
+gnunet-download <URI>
+gnunet-peer-info
+gnunet-stats
+gnunet-insert <file>
+
+For more information, see the manual pages located in:
+GNUnet.app/Contents/MacOS/man
+
+Downloads will be placed in the gnunet-downloads directory in your
+home directory.
+
+Acknowledgements:
+
+- GNUnet 0.6.6 (http://www.gnunet.org)
+- Exctractor 4.0 (http://www.gnunet.org)
+- Libgrypt 1.2.1 (http://www.gnu.org)
+- gmp 4.1.3 (via Fink; http://fink.sourceforge.net)
+- GTK 2.4.14 (via Fink; http://fink.sourceforge.net)
+- libiconv 1.9.2 (via Fink; http://fink.sourceforge.net)
+- libncurses 5.4 (via Fink; http://fink.sourceforge.net)
+- GDBM 1.8 (via Fink; http://fink.sourceforge.net)
+- Sqlite 3 (via http://www.sqlite.org)
+- CocoaDialog (via http://cocoadialog.sourceforge.net)
+
+The GPL COPYING file is included with the application and can be
+found from GNUnet.app/Contents/MacOS/doc/COPYING

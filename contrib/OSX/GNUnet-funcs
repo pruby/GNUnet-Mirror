@@ -1,0 +1,154 @@
+#!/bin/bash
+#
+# Common functions
+#
+
+# Location of CocoaDialog
+
+CD=$ROOTDIR/CocoaDialog.app/Contents/MacOS/CocoaDialog
+export CD
+
+#
+# Set value for a given keyword
+#
+# $1 = config file name
+# $2 = section (without [])
+# $3 = config keyword
+# $4 = new value
+#
+# For some reason sed is having hard time with tabs (\t)
+# Work around: use tr to translate it to space.
+#
+# NOTE: These macros will fail for the last section since it does not contain the ending [ !!!!
+# Fortunately this is about DHT...   [FIXME]
+
+editconf () {
+
+  tr '\t' ' ' < $1 | sed -e "/^\[$2\]/,/^\[/s!^$3 *=[^\n\r]*!$3 = $4!" > $1.tmp
+  mv -f $1.tmp $1
+}
+
+#
+# Get current value of given keyword
+#
+# $1 = config file
+# $2 = section
+# $3 = keyword name
+cv=""
+getconf() {
+
+  cv=`tr '\t' ' ' < $1 | sed -e "/^\[$2\]/,/^\[/s+^$3 *=+MARKERXX+" | fgrep MARKERXX | sed -e s/MARKERXX// | tr -d \ `
+}
+
+#
+# Make sure given keyword setting is not commented out
+#
+# $1 = config file
+# $2 = section
+# $3 = keyword
+#
+uncomm() {
+
+  tr '\t' ' ' < $1 | sed -e "/^\[$2\]/,/^\[/s+^# *$3 *=+$3 =+" > $1.tmp
+  mv $1.tmp $1
+}
+
+#
+# Make sure given keyword setting is commented out
+#
+# $1 = config file
+# $2 = section
+# $3 = keyword
+#
+comm() {
+
+  tr '\t' ' ' < $1 | sed -e "/^\[$2\]/,/^\[/s+^ *$3 *=+# $3 =+" > $1.tmp
+  mv $1.tmp $1
+}
+
+# If gnunet directory does not exist then generate new configuration
+gnetconf() {
+# Compatibility checks
+  if [ -d ~/.gnunet -a ! -d ~/gnunet ]; then
+    mv ~/.gnunet ~/gnunet
+  fi
+  if [ -d ~/.gnunet -a -h ~/gnunet ]; then
+    rm ~/gnunet
+    mv ~/.gnunet ~/gnunet
+  fi
+
+  if [ ! -d ~/gnunet ]; then
+    mkdir -p ~/gnunet
+    mkdir -p ~/gnunet/data
+    mkdir -p ~/gnunet/data/hosts
+    cp $ROOTDIR/hosts/* ~/gnunet/data/hosts > /dev/null 2>&1
+# These don't belong to any section
+    sed -e "/^GNUNETD_HOME/s-/var/lib/GNUnet-~/gnunet-" < $ROOTDIR/etc/gnunet.root > ~/gnunet/gnunet.root
+    sed -e "/^GNUNET_HOME/s-~/.gnunet-~/gnunet-" < $ROOTDIR/etc/gnunet.user > ~/gnunet/gnunet.conf
+# Locate active network interface (e.g. en0 or en1)
+    act1=`ifconfig en0 2> /dev/null | grep inet | wc -l`
+    act2=`ifconfig en1 2> /dev/null | grep inet | wc -l`
+
+    if [ $act1 -gt 0 ]; then
+       in=en0
+    elif [ $act2 -gt 0 ]; then
+       in=en1
+    else
+       in=unknown
+    fi
+    ip=`ifconfig $in | grep inet\  | cut -f2 | cut -d\  -f2`
+    editconf ~/gnunet/gnunet.root NETWORK INTERFACE $in
+    editconf ~/gnunet/gnunet.root LOAD INTERFACES $in
+    editconf ~/gnunet/gnunet.root AFS DATABASETYPE sqlite
+  fi
+  rm ~/.gnunet
+  ln -sf ~/gnunet ~/.gnunet
+}
+
+# This function finds out if gnunetd is running
+# 0 = not running, 1 = running. Global variable pid gives the process pid.
+#
+pid=0
+cgnunetd() {
+
+  if [ -e ~/gnunet/gnunetd.pid ]; then
+    pid=`cat ~/gnunet/gnunetd.pid`
+    if [ `ps -p $pid | wc -l` == 2 ]; then
+      return
+    fi
+  fi
+  pid=0
+  return
+}
+
+#
+# Update Pango files
+#
+pango() {
+
+  mkdir -p ~/gnunet/pango
+  PANGO_RC_FILE=~/gnunet/pango/pango.rc
+  export PANGO_RC_FILE
+  cat << E_O_F > $PANGO_RC_FILE
+[Pango]
+ModuleFiles=$HOME/gnunet/pango/pango.modules
+E_O_F
+  cp $ROOTDIR/etc/pangox.aliases ~/gnunet/pango
+  pth=`fgrep ModulesPath $ROOTDIR/etc/pango.modules | cut -d\  -f4`
+  sed -e "s-$pth-$ROOTDIR/pango-g" < $ROOTDIR/etc/pango.modules > ~/gnunet/pango/pango.modules
+}
+
+#
+# Track version changes
+#
+checkversion() {
+
+  CURRENT=`$ROOTDIR/bin/gnunetd -v | cut -d\  -f2 | cut -c2-`
+  if [ ! -f ~/gnunet/VERSION ]; then
+    echo $CURRENT > ~/gnunet/VERSION
+  fi
+  VERSION=`cat ~/gnunet/VERSION`
+  if [ $VERSION != $CURRENT ]; then
+    $CD msgbox --text "Version change detected! Please run Update GNUnet database in Configuration section" --button1 "OK"
+  fi
+}

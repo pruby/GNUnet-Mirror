@@ -1,0 +1,10 @@
+Apple X11 package not installed.
+
+Please download and install Apple's X11 package.
+
+It is available from:
+
+http://www.apple.com/macosx/features/x11/download/
+
+If you want to just run the command line utilities then X11 is not
+required.

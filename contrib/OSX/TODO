@@ -1,0 +1,6 @@
+TODO:
+
+- mysql
+- better configurator
+- write in modular form so that cocoaDialog can be easily replaced
+  with Xdialog, for example.

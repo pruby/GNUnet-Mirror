@@ -53,7 +53,7 @@ while true; do
   if [ $select = 0 ]; then
     cgnunetd
     if [ $pid = 0 ]; then
-      $ROOTDIR/bin/gnunetd &
+      $ROOTDIR/bin/gnunetd
     else
       kill $pid
     fi
@@ -63,7 +63,7 @@ while true; do
   if [ $select = 1 ]; then
     cgnunetd
     if [ $pid = 0 ]; then
-      $ROOTDIR/bin/gnunetd &
+      $ROOTDIR/bin/gnunetd
     fi
     if [ ! -d /usr/X11R6 ]; then
       $CD textbox --title "X11 not installed" --text-from-file $ROOTDIR/doc/gnunetmac-nox.txt --button1 Cancel
@@ -84,17 +84,7 @@ EOF
   fi
 
   if [ $select = 3 ]; then
-    wasrun=0
-    cgnunetd
-    if [ $pid != 0 ]; then
-      kill $pid
-      sleep 5
-      wasrun=1
-    fi
     $ROOTDIR/GNUnet-config
-    if [ $wasrun = 1 ]; then
-      $ROOTDIR/bin/gnunetd &
-    fi
   fi
 
   if [ $select = 4 ]; then

@@ -1,0 +1,141 @@
+#!/bin/bash
+#
+# GNUnet configuration utility.
+#
+
+# Locate install directory
+
+ROOTDIR=`dirname $0`
+
+if [ ! -d $ROOTDIR ]; then
+  cd ..
+  ROOTDIR=`pwd`
+fi
+
+if [ ! -d $ROOTDIR ]; then
+  echo "Can't locate GNUnet ROOTDIR."
+  exit 0
+fi
+
+export ROOTDIR
+
+. $ROOTDIR/GNUnet-funcs
+
+cr=~/gnunet/gnunet.root
+cu=~/gnunet/gnunet.conf
+
+while true; do
+  sel=`$CD dropdown --text "Select function" --items "Edit GNUnet daemon config" "Edit GNUnet client config" "Update GNUnet database to current version" "Remove GNUnet configuration/index" --button1 "Run" --button2 "Back"`
+  button=`echo $sel | cut -d\  -f1`
+  select=`echo $sel | cut -d\  -f2`
+
+  if [ $button = 2 ]; then
+    exit 0
+  fi
+
+  if [ $select = 0 ]; then
+# gnunetd already killed - proceed with config
+    getconf $cr NETWORK INTERFACE
+    cv=`$CD inputbox --text $cv --informative-text "Network interface name" --button1 OK | tail -1`
+    editconf ~/gnunet/gnunet.conf NETWORK INTERFACE $cv
+    editconf ~/gnunet/gnunet.conf LOAD INTERFACES $cv
+    in=$cv
+  
+# Can't be done for all keywords (MAXNET* will appear twice, for example)
+    getconf $cr NETWORK IP
+    if [ "$cv" = "" ]; then
+      cv=`ifconfig $in | grep inet\  | cut -f2 | cut -d\  -f2`
+    fi
+    cv=`$CD inputbox --text $cv --informative-text "What is your IP number (IP or NA)?" --button1 OK | tail -1`
+    if [ $cv != "NA" -a $cv != "na" ]; then
+      uncomm $cr NETWORK IP
+      editconf $cr NETWORK IP $cv
+    else
+      comm $cr NETWORK IP
+    fi
+  
+    getconf $cr GNUNETD HELOEXPIRES
+    cv=`$CD inputbox --text $cv --informative-text "How many minutes is your IP valid?" --button1 OK | tail -1`
+    editconf $cr GNUNETD HELOEXPIRES $cv
+
+    getconf $cr LOAD MAXNETUPBPSTOTAL
+    cv=`$CD inputbox --text $cv --informative-text "Upstream bandwidth (bytes/s)" --button1 OK | tail -1`
+    editconf $cr LOAD MAXNETUPBPSTOTAL $cv
+
+    getconf $cr LOAD MAXNETDOWNBPSTOTAL
+    cv=`$CD inputbox --text $cv --informative-text "Downstream bandwidth (bytes/s)" --button1 OK | tail -1`
+    editconf $cr LOAD MAXNETDOWNBPSTOTAL $cv
+
+    getconf $cr LOAD MAXCPULOAD
+    cv=`$CD inputbox --text $cv --informative-text "Maximum tolerated CPU load (%)" --button1 OK | tail -1`
+    editconf $cr LOAD MAXCPULOAD $cv
+
+    getconf $cr UDP PORT
+    cv=`$CD inputbox --text $cv --informative-text "UDP port number to use" --button1 OK | tail -1`
+    editconf $cr UDP PORT $cv
+
+    getconf $cr TCP PORT
+    cv=`$CD inputbox --text $cv --informative-text "TCP port number to use" --button1 OK | tail -1`
+    editconf $cr TCP PORT $cv
+
+    getconf $cr NAT LIMITED
+    cv=`$CD inputbox --text $cv --informative-text "Limited connectivity (NAT/firewall; yes or no)?" --button1 OK | tail -1`
+    editconf $cr NAT LIMITED $cv
+
+    getconf $cr AFS DISKQUOTA
+    cv=`$CD inputbox --text $cv --informative-text "Anonymous file sharing quota (megabytes)" --button1 OK | tail -1`
+    editconf $cr AFS DISKQUOTA $cv
+
+    getconf $cr AFS ANONYMITY-RECEIVE
+    cv=`$CD inputbox --text $cv --informative-text "Anonymity receive level (# of relaying nodes)?" --button1 OK | tail -1`
+    editconf $cr AFS ANONYMITY-RECEIVE $cv
+
+    getconf $cr AFS ANONYMITY-SEND
+    cv=`$CD inputbox --text $cv --informative-text "Anonymity send level (# of relaying nodes)?" --button1 OK | tail -1`
+    editconf $cr AFS ANONYMITY-SEND $cv
+
+    getconf $cr AFS ACTIVEMIGRATION
+    cv=`$CD inputbox --text $cv --informative-text "Active content migration? (yes or no)" --button1 OK | tail -1`
+    editconf $cr AFS ACTIVEMIGRATION $cv
+
+    getconf $cr AFS INDEX-QUOTA
+    cv=`$CD inputbox --text $cv --informative-text "Index quota? (# of entries)?" --button1 OK | tail -1`
+    editconf $cr AFS INDEX-QUOTA $cv
+
+    getconf $cr GNUNETD LOGLEVEL
+    cv=`$CD inputbox --text $cv --informative-text "Loglevel (NOTHING,FATAL,ERROR,FAILURE,WARNING,MESSAGE,INFO)?" --button1 OK | tail -1`
+    editconf $cr GNUNETD LOGLEVEL $cv
+
+# FIXME: There is a problem with KEEPLOG. WHen gnunetd starts it wipes
+# out all the files from ~/gnunet directory !!!!
+#    getconf $cr GNUNETD KEEPLOG
+#    cv=`$CD inputbox --text $cv --informative-text "Log rotation (0 = disable, otherwise rotate logs)?" --button1 OK | tail -1`
+#    editconf $cr GNUNETD KEEPLOG $cv
+
+    cv=`$CD msgbox --text "About to run gnunet-convert - this may take some time!" --button1 "OK" --button2 "Cancel"`
+    if [ $cv = 1 ]; then 
+      $ROOTDIR/bin/gnunet-convert -c ~/gnunet/gnunet.root
+      $CD msgbox --text "gnunet-convert done!" --button1 "OK"
+    fi
+  fi
+
+  if [ $select = 1 ]; then
+    getconf $cu AFS SEARCHTIMEOUT
+    cv=`$CD inputbox --text $cv --informative-text "Search timeout? (s)?" --button1 OK | tail -1`
+    editconf $cu AFS SEARCHTIMEOUT $cv  
+  fi
+
+  if [ $select = 2 ]; then
+    $ROOTDIR/bin/gnunet-update -c ~/gnunet/gnunet.root
+    $CD msgbox --text "gnunet-update done!" --button1 "OK"
+    CURRENT=`$ROOTDIR/bin/gnunetd -v | cut -d\  -f2 | cut -c2-`
+    echo $CURRENT > ~/gnunet/VERSION
+  fi
+
+  if [ $select = 3 ]; then
+    rm -rf ~/gnunet
+    $CD msgbox --text "All configuration and file data removed!" --button1 "OK"
+  fi
+done
+
+# Not reached
