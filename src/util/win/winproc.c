@@ -1794,11 +1794,10 @@ int _win_symlink(const char *path1, const char *path2)
  * map files into memory
  * @author Cygwin team
  * @author Nils Durner
- * @todo [WIN] Needs testing
  */
 void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
                 unsigned long long off) {
-  DWORD protect, high, low;
+  DWORD protect, high, low, access_param;
   HANDLE h, hFile;
   SECURITY_ATTRIBUTES sec_none;
   void *base;
@@ -1809,12 +1808,15 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
   {
     case PROT_WRITE:
       protect = PAGE_READWRITE;
+      access_param = FILE_MAP_WRITE;
       break;
     case PROT_READ:
       protect = PAGE_READONLY;
+      access_param = FILE_MAP_READ;
       break;
     default:
       protect = PAGE_WRITECOPY;
+      access_param = FILE_MAP_COPY;
       break;
   }
   
@@ -1839,9 +1841,9 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
   /* If a non-zero start is given, try mapping using the given address first.
      If it fails and flags is not MAP_FIXED, try again with NULL address. */
   if (start)
-    base = MapViewOfFileEx(h, access, high, low, len, start);
+    base = MapViewOfFileEx(h, access_param, high, low, len, start);
   if (!base && !(flags & MAP_FIXED))
-    base = MapViewOfFileEx(h, access, high, low, len, NULL);
+    base = MapViewOfFileEx(h, access_param, high, low, len, NULL);
   
   if (!base || ((flags & MAP_FIXED) && base != start))
   {
@@ -1861,7 +1863,6 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
  * Unmap files from memory
  * @author Cygwin team
  * @author Nils Durner
- * @todo [WIN] Needs testing
  */
 int _win_munmap(void *start, size_t length)
 {
