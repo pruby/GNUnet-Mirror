@@ -37,10 +37,28 @@
  */
 struct FSUI_Context * FSUI_start(FSUI_EventCallback cb,
 				 void * closure) {
-  FSUI_Context * ret;
+  FSUI_Context * ret;  
+  char * fn;
+  char * gh;
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
+  gh = getConfigurationString("",
+			      "GNUNET_HOME");
+  fn = MALLOC(strlen(gh) + strlen("fsui-lock") + 2);
+  strcpy(fn, gh);
+  FREE(gh);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, "fsui-lock");
+  ret->ipc = IPC_SEMAPHORE_NEW(fn,
+			       1);
+  LOG(LOG_INFO,
+      "Getting IPC lock for FSUI (%s).\n",
+      fn);
+  FREE(fn);
+  IPC_SEMAPHORE_DOWN(ret->ipc);
+  LOG(LOG_INFO,
+      "Aquired IPC lock.\n");
   MUTEX_CREATE_RECURSIVE(&ret->lock);
   ret->ecb = cb;
   ret->ecbClosure = closure;
@@ -48,13 +66,90 @@ struct FSUI_Context * FSUI_start(FSUI_EventCallback cb,
   return ret;
 }
 
+static void freeDownloadList(FSUI_DownloadList * list) {
+  FSUI_DownloadList * dpos;
+  int i;
+  void * unused;
+
+  while (list != NULL) {
+    dpos = list;
+    list = dpos->next;
+    freeDownloadList(dpos->subDownloads);
+    freeDownloadList(dpos->subDownloadsNext);
+    dpos->signalTerminate = YES;
+    PTHREAD_JOIN(&dpos->handle, &unused);
+    ECRS_freeUri(dpos->uri);
+    FREE(dpos->filename);
+    for (i=dpos->completedDownloadsCount-1;i>=0;i--)
+      ECRS_freeUri(dpos->completedDownloads[i]);    
+    GROW(dpos->completedDownloads,
+	 dpos->completedDownloadsCount,
+	 0);
+    FREE(dpos);
+  }
+}
+
 /**
  * Stop all processes under FSUI control (serialize state, continue
  * later if possible).
  */
 void FSUI_stop(struct FSUI_Context * ctx) {
+  FSUI_ThreadList * tpos;
+  FSUI_SearchList * spos;
+  void * unused;
+  int i;
+
+  LOG(LOG_INFO,
+      "FSUI shutdown.  This may take a while.\n");
+  while (ctx->activeThreads != NULL) {
+    tpos = ctx->activeThreads;
+    ctx->activeThreads = tpos->next;
+    PTHREAD_JOIN(&tpos->handle, &unused);
+    FREE(tpos);
+  }
+  
+  while (ctx->activeSearches != NULL) {
+    spos = ctx->activeSearches;
+    ctx->activeSearches = spos->next;
+
+    spos->signalTerminate = YES;
+    PTHREAD_JOIN(&spos->handle, &unused);
+    /* FIXME: serialize spos state! */
+
+    ECRS_freeUri(spos->uri);
+    for (i=spos->sizeResultsReceived-1;i>=0;i--) {
+      ECRS_FileInfo * fi;
+      fi = &spos->resultsReceived[i];
+      ECRS_freeMetaData(fi->meta);
+      ECRS_freeUri(fi->uri);
+    }
+    GROW(spos->resultsReceived,
+	 spos->sizeResultsReceived,
+	 0);
+    for (i=spos->sizeUnmatchedResultsReceived-1;i>=0;i--) {
+      ResultPending * rp = &spos->unmatchedResultsReceived[i];
+      GROW(rp->matchingKeys,
+	   rp->matchingKeyCount,
+	   0);
+      ECRS_freeMetaData(rp->fi.meta);
+      ECRS_freeUri(rp->fi.uri);
+    }
+    GROW(spos->unmatchedResultsReceived,
+	 spos->sizeUnmatchedResultsReceived,
+	 0);
+    FREE(spos);
+  }
+
+  /* FIXME: serialize dpos state! */
+  freeDownloadList(ctx->activeDownloads);
+  ctx->activeDownloads = NULL;
+
+  IPC_SEMAPHORE_UP(ctx->ipc);
+  IPC_SEMAPHORE_FREE(ctx->ipc);
   MUTEX_DESTROY(&ctx->lock);
   FREE(ctx);
+  LOG(LOG_INFO,
+      "FSUI shutdown complete.\n");
 }
 
 /**
@@ -134,8 +229,6 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
       dpos = dpos->next;
     }
   }
-
-
   MUTEX_UNLOCK(&ctx->lock);
 }
 

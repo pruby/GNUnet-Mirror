@@ -9,7 +9,6 @@
 
 0.7.0pre0 [3'05] (aka "pre-preview"):
 - Missing Features:
-  * fsui core (persistence, shutdown, multiple FSUIs) [ difficult ]
   * mysql sqstore implementation iterator problem (Igor?)
 - Need testing:
   * ECRS-directories (build, iterate)
@@ -19,6 +18,8 @@
   * gnunet-search
 
 0.7.0pre1 [4'05] (aka "preview"):
+- topology: do aggressive bootstrap on first start (Christian) [ easy ]
+- ecrs-unindex: code cleanup [ easy ]
 - sqlite sqstore implementation does not compile yet (Nils)
 - gnunet-search: 
   * dump directory with search results [ easy ]
@@ -32,10 +33,9 @@
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
 - Missing Features:
-  * topology: do aggressive bootstrap on first start (Christian) [ easy ]
-  * ecrs-unindex: code cleanup [ easy ]
   * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
     linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
+  * fsui core (persistence) [ difficult ]
 - Features removed but to be revived:
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
     user to specify maximum amount of parallelism) [ tricky ]

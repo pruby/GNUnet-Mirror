@@ -222,6 +222,8 @@ typedef struct FSUI_DownloadList {
  */
 typedef struct FSUI_Context {
 
+  IPC_Semaphore * ipc;
+
   /**
    * Lock to synchronize access to the FSUI Context.
    */

@@ -324,7 +324,12 @@ typedef int (*FSUI_DownloadIterator)(void * cls,
 /**
  * Start FSUI manager.  Use the given progress callback to notify the
  * UI about events.  Start processing pending activities that were
- * running when FSUI_stop was called previously.
+ * running when FSUI_stop was called previously.  There can only be
+ * one FSUI_Context open PER USER.  The second time anyone tries to
+ * open an FSUI_Context, FSUI_start will BLOCK until the first
+ * FSUI_Context is released (with FSUI_stop).  This may seem totally
+ * awful, but it is the only way to ensure that everything stays
+ * consistent.
  *
  * @return NULL on error
  */
