@@ -26,16 +26,24 @@
 /**
  * Size of a DBlock.  Currently set for debugging.
  * Should be a multiple of 8 and larger than
- * sizeof(CHK). [ 32768? ]
+ * sizeof(CHK).
  */
-#define DBLOCK_SIZE (sizeof(CHK) * 2 + 8)
+#define DBLOCK_SIZE 32768
 
 /**
  * Pick a multiple of 2 here to achive 8-byte alignment!
  * We also probably want DBlocks to have (roughly) the
- * same size as IBlocks. [ 819? ]
+ * same size as IBlocks.  With SHA-512, the optimal
+ * value is 32768 byte / 64 byte = 512
+ * (64 byte = 2 * 512 bits).
  */
-#define CHK_PER_INODE 2
+#define CHK_PER_INODE 512
+
+/**
+ * You cannot change this one (directly).  Ideally
+ * CHK_PER_INODE is chosen such that
+ * IBLOCK_SIZE == DBLOCK_SIZE.
+ */
 #define IBLOCK_SIZE (CHK_PER_INODE * sizeof(CHK))
 
 /**

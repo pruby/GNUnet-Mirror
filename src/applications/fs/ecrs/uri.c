@@ -441,6 +441,18 @@ int ECRS_isKeywordURI(const struct ECRS_URI * uri) {
   return uri->type == ksk;
 }
 
+
+/**
+ * How many keywords are ANDed in this keyword URI?
+ * @return 0 if this is not a keyword URI
+ */
+unsigned int ECRS_countKeywordsOfUri(const struct ECRS_URI * uri) {
+  if (uri->type != ksk)
+    return 0;
+  else
+    return uri->data.ksk.keywordCount;
+}
+
 /**
  * Is this a file (or directory) URI?
  */

@@ -238,6 +238,12 @@ struct ECRS_URI * ECRS_stringToUri(const char * uri);
 void ECRS_freeUri(struct ECRS_URI * uri);
 
 /**
+ * How many keywords are ANDed in this keyword URI?
+ * @return 0 if this is not a keyword URI
+ */
+unsigned int ECRS_countKeywordsOfUri(const struct ECRS_URI * uri);
+
+/**
  * Duplicate URI.
  */
 struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);

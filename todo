@@ -1,5 +1,5 @@
 0.7.0pre1 [4'05] (aka "preview"):
-* FSUI testcase currently fails (unindex?)
+* package & final tests
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Features removed but to be revived:
@@ -10,7 +10,7 @@
   * read 'friends' list for topology_f2f
   * #593 (gnunet-setup)
   * #770? (use freedback (LOG) in gnunet-gtk via show-messages)
-- Additional testing:
+- Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
   * FSUI:

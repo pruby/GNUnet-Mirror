@@ -176,34 +176,34 @@ static void addQueryForURI(const struct ECRS_URI * uri,
     break;
   }
   case ksk: {
-      HashCode512 hc;
-      HashCode512 query;
-      struct PrivateKey * pk;
-      PublicKey pub;
-      int i;
-
-      LOG(LOG_DEBUG,
-	  "Computing queries (this may take a while).\n");
-      for (i=0;i<uri->data.ksk.keywordCount;i++) {
-	hash(uri->data.ksk.keywords[i],
-	     strlen(uri->data.ksk.keywords[i]),
-	     &hc);
-	pk = makeKblockKey(&hc);
-	getPublicKey(pk,
-		     &pub);
-	hash(&pub,
-	     sizeof(PublicKey),
-	     &query);
-	addPS(ANY_BLOCK, /* K_BLOCK, N_BLOCK or KN_BLOCK ok */
-	      1,
-	      &query,
-	      &hc,
-	      sqc);
-	freePrivateKey(pk);
-      }	
-      LOG(LOG_DEBUG,
-	  "Queries ready.\n");
-      break;
+    HashCode512 hc;
+    HashCode512 query;
+    struct PrivateKey * pk;
+    PublicKey pub;
+    int i;
+    
+    LOG(LOG_DEBUG,
+	"Computing queries (this may take a while).\n");
+    for (i=0;i<uri->data.ksk.keywordCount;i++) {
+      hash(uri->data.ksk.keywords[i],
+	   strlen(uri->data.ksk.keywords[i]),
+	   &hc);
+      pk = makeKblockKey(&hc);
+      getPublicKey(pk,
+		   &pub);
+      hash(&pub,
+	   sizeof(PublicKey),
+	   &query);
+      addPS(ANY_BLOCK, /* K_BLOCK, N_BLOCK or KN_BLOCK ok */
+	    1,
+	    &query,
+	    &hc,
+	    sqc);
+      freePrivateKey(pk);
+    }	
+    LOG(LOG_DEBUG,
+	"Queries ready.\n");
+    break;
   }
   case loc:
     LOG(LOG_ERROR,
