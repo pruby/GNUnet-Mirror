@@ -29,7 +29,6 @@ SUBDIRS	= \
  stats \
  tbench \
  template \
- $(TESTED_DIR) \
  topology_default \
  traffic \
  transport
