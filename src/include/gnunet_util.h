@@ -58,7 +58,7 @@
  * frequently, even between different CVS versions.
  */
 
-#define GNUNET_UTIL_VERSION 0x00060901
+#define GNUNET_UTIL_VERSION 0x00060902
 
 /**
  * We use an unsigned short in the protocol header, thus:
