@@ -83,24 +83,20 @@ typedef struct {
   Semaphore * postreply;
 
   /**
-   * Size of the results array; 
+   * Function to call for results
    */
-  unsigned int resultSize;
+  DataProcessor resultCallback;
 
   /**
-   * Pointer to Data passed to or from the client.
+   * Extra argument to result callback.
    */
-  DataContainer ** results;
+  void * resultCallbackClosure;
 
   /**
    * Status value; used to communciate errors (typically using
    * SYSERR/OK or number of results).
    */
   int status;
-
-  DataProcessor resultCallback;
-
-  void * resultCallbackClosure;
 
 } CS_TableHandlers;
 
@@ -173,24 +169,41 @@ static int tcp_get(void * closure,
 		   const HashCode160 * keys,
 		   DataProcessor resultCallback,
 		   void * resCallbackClosure) {
-  DHT_CS_REQUEST_GET req;
+  DHT_CS_REQUEST_GET * req;
+  unsigned short size;
   CS_TableHandlers * handlers = closure;
   int ret;
 
-  SEMAPHORE_DOWN(handlers->prerequest);
-  handlers->results = results;
-  handlers->maxResults = maxResults;
-  handlers->status = 0;
-  req.header.size = htons(sizeof(DHT_CS_REQUEST_GET));
-  req.header.type = htons(DHT_CS_PROTO_REQUEST_GET);
-  req.table = handlers->table;
-  req.key = *key;
-  req.maxResults = htonl(maxResults);
-  req.maxResultSize = htonl(results[0].dataLength);
-  req.timeout = htonl(0);
-  if (OK != coreAPI->sendToClient(handlers->handler,
-				  &req.header))
+  if (keyCount < 1)
     return SYSERR;
+
+  SEMAPHORE_DOWN(handlers->prerequest);
+  handlers->resultCallback = resultCallback;
+  handlers->resultCallbackClosure = resCallbackClosure;
+  handlers->status = 0;
+  size = sizeof(DHT_CS_REQUEST_GET) + 
+    (keyCount-1) * sizeof(HashCode160);
+  if (((unsigned int)size) 
+      != sizeof(DHT_CS_REQUEST_GET) + 
+      (keyCount-1) * sizeof(HashCode160)) {
+    SEMAPHORE_UP(handlers->prerequest);
+    return SYSERR; /* too many keys, size > rangeof(short) */
+  }
+  req = MALLOC(size);
+  req->header.size = htons(size);
+  req->header.type = htons(DHT_CS_PROTO_REQUEST_GET);
+  req->type = htonl(type);
+  req->table = handlers->table;
+  memcpy(&req->keys,
+	 keys,
+	 sizeof(HashCode160) * keyCount);
+  req->timeout = htonll(0);
+  if (OK != coreAPI->sendToClient(handlers->handler,
+				  &req->header)) {
+    SEMAPHORE_UP(handlers->prerequest);
+    return SYSERR;
+  }
+  FREE(req);
   SEMAPHORE_UP(handlers->postreply);
   SEMAPHORE_DOWN(handlers->prereply);
   ret = handlers->status;
@@ -214,22 +227,22 @@ static int tcp_put(void * closure,
   int ret;
   size_t n;
   
-  n = sizeof(DHT_CS_REQUEST_PUT) + value->dataLength;
+  n = sizeof(DHT_CS_REQUEST_PUT) + ntohl(value->size);
   req = MALLOC(n);
   SEMAPHORE_DOWN(handlers->prerequest);
-  handlers->maxResults = 0;
   handlers->status = 0;
   req->header.size = htons(n);
   req->header.type = htons(DHT_CS_PROTO_REQUEST_PUT);
   req->table = handlers->table;
   req->key = *key;
   req->timeout = htonl(0);
-  memcpy(&((DHT_CS_REQUEST_PUT_GENERIC*)req)->value[0],
-	 value->data,
-	 value->dataLength);
+  memcpy(&req[1],
+	 value,
+	 ntohl(value->size));
   if (OK != coreAPI->sendToClient(handlers->handler,
 				  &req->header)) {
     FREE(req);
+    SEMAPHORE_UP(handlers->prerequest);
     return SYSERR;
   }
   FREE(req);
@@ -260,22 +273,25 @@ static int tcp_del(void * closure,
   int ret;
   size_t n;
   
-  n = sizeof(DHT_CS_REQUEST_REMOVE) + value->dataLength;
+  n = sizeof(DHT_CS_REQUEST_REMOVE);
+  if (value != NULL)
+    n += htonl(value->size);
   req = MALLOC(n);
   SEMAPHORE_DOWN(handlers->prerequest);
-  handlers->maxResults = 0;
   handlers->status = 0;
   req->header.size = htons(n);
   req->header.type = htons(DHT_CS_PROTO_REQUEST_REMOVE);
   req->table = handlers->table;
   req->key = *key;
   req->timeout = htonl(0);
-  memcpy(&((DHT_CS_REQUEST_REMOVE_GENERIC*)req)->value[0],
-	 value->data,
-	 value->dataLength);
+  if (value != NULL)
+    memcpy(&req[1],
+	   value,
+	   htonl(value->size));
   if (OK != coreAPI->sendToClient(handlers->handler,
 				  &req->header)) {
     FREE(req);
+    SEMAPHORE_UP(handlers->prerequest);
     return SYSERR;
   }
   FREE(req);
@@ -299,38 +315,21 @@ static int tcp_iterate(void * closure,
   DHT_CS_REQUEST_ITERATE req;
   CS_TableHandlers * handlers = closure;
   int ret;
-  int i;
   
   SEMAPHORE_DOWN(handlers->prerequest);
-  handlers->maxResults = 1;
-  results.dataLength = 4;
-  results.data = &ret;
-  handlers->results = &results;
   handlers->status = 0;
   handlers->resultCallback = processor;
   handlers->resultCallbackClosure = cls;
   req.header.size = htons(sizeof(DHT_CS_REQUEST_ITERATE));
   req.header.type = htons(DHT_CS_PROTO_REQUEST_ITERATE);
   if (OK != coreAPI->sendToClient(handlers->handler,
-				  &req.header)) 
+				  &req.header)) {
+    SEMAPHORE_UP(handlers->prerequest);
     return SYSERR;
-
+  }
   SEMAPHORE_UP(handlers->postreply);
   SEMAPHORE_DOWN(handlers->prereply);
-  if (handlers->status == 1) {
-    ret = ntohl(ret);
-    for (i=0;i<ret;i++) {
-      SEMAPHORE_UP(handlers->postreply);
-      SEMAPHORE_DOWN(handlers->prereply);
-      if (handlers->status != 1) {
-	ret = SYSERR;
-	break;
-      }
-    }
-  } else {
-    ret = SYSERR;
-  }
-
+  ret = handlers->status;
   SEMAPHORE_UP(handlers->prerequest);
   return ret;
 }
