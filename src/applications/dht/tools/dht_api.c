@@ -579,7 +579,7 @@ int DHT_LIB_get(const DHT_TableId * table,
 		unsigned int type,
 		unsigned int prio,
 		unsigned int keyCount,
-		HashCode160 * keys,
+		const HashCode160 * keys,
 		cron_t timeout,
 		DataProcessor processor,
 		void * closure) {
@@ -588,8 +588,8 @@ int DHT_LIB_get(const DHT_TableId * table,
   DHT_CS_REPLY_RESULTS * res;
   CS_HEADER * reply;
   int ret;
-  int i;
   unsigned int size;
+  DataContainer * result;
 
   sock = getClientSocket();
   if (sock == NULL)
@@ -613,87 +613,44 @@ int DHT_LIB_get(const DHT_TableId * table,
     return SYSERR;
   }
   FREE(req);
-  reply = NULL;
-  if (OK != readFromSocket(sock,
-			   &reply)) {
-    releaseClientSocket(sock);
-    return SYSERR;
-  }
-
-  /* FIXME here! */
-
-  if ( (sizeof(DHT_CS_REPLY_ACK) == ntohs(reply->size)) &&
-       (DHT_CS_PROTO_REPLY_ACK == ntohs(reply->type)) ) {
-    releaseClientSocket(sock);
-    ret = checkACK(reply);
-    FREE(reply);
-    return ret;
-  }
-  if ( (sizeof(DHT_CS_REPLY_RESULTS) > ntohs(reply->size)) ||
-       (DHT_CS_PROTO_REPLY_GET != ntohs(reply->type)) ) {
-    LOG(LOG_WARNING,
-	_("Unexpected reply to '%s' operation.\n"),
-	"GET");
-    releaseClientSocket(sock);
-    FREE(reply);
-    return SYSERR;
-  }
-  /* ok, we got some replies! */
-
-  res = (DHT_CS_REPLY_RESULTS*) reply;
-  ret = ntohl(res->totalResults);
-  
-  size = ntohs(reply->size) - sizeof(DHT_CS_REPLY_RESULTS);
-  if (results[0]->dataLength == 0)
-    results[0]->data = MALLOC(size);
-  else
-    if (results[0]->dataLength < size)
-      size = results[0]->dataLength;
-  results[0]->dataLength = size;
-  memcpy(results[0]->data,
-	 &((DHT_CS_REPLY_RESULTS_GENERIC*)res)->data[0],
-	 size);  
-  FREE(reply);
-  for (i=1;i<ret;i++) {
+  while (1) {
     reply = NULL;
     if (OK != readFromSocket(sock,
 			     &reply)) {
       releaseClientSocket(sock);
-      return i;
-    }  
+      return SYSERR;
+    }
+    if ( (sizeof(DHT_CS_REPLY_ACK) == ntohs(reply->size)) &&
+	 (DHT_CS_PROTO_REPLY_ACK == ntohs(reply->type)) ) {
+      releaseClientSocket(sock);
+      ret = checkACK(reply);
+      FREE(reply);
+      break; /* termination message, end loop! */
+    }
     if ( (sizeof(DHT_CS_REPLY_RESULTS) > ntohs(reply->size)) ||
 	 (DHT_CS_PROTO_REPLY_GET != ntohs(reply->type)) ) {
       LOG(LOG_WARNING,
-	  _("Unexpected reply to '%s' operation.\n"),
+	_("Unexpected reply to '%s' operation.\n"),
 	  "GET");
       releaseClientSocket(sock);
       FREE(reply);
-      return i;
+      return SYSERR;
     }
-    if (i > maxResults) {
-      FREE(reply);
-      continue;
-    }
-
+    /* ok, we got some replies! */
     res = (DHT_CS_REPLY_RESULTS*) reply;
     ret = ntohl(res->totalResults);
-  
+    
     size = ntohs(reply->size) - sizeof(DHT_CS_REPLY_RESULTS);
-    LOG(LOG_DEBUG,
-	"'%s' processes reply '%.*s'\n",
-	__FUNCTION__,
-	size,
-	&((DHT_CS_REPLY_RESULTS_GENERIC*)res)->data[0]);
-    if (results[i]->dataLength == 0)
-      results[i]->data = MALLOC(size);
-    else
-      if (results[i]->dataLength < size)
-	size = results[i]->dataLength;
-    results[i]->dataLength = size;
-    memcpy(results[i]->data,
-	   &((DHT_CS_REPLY_RESULTS_GENERIC*)res)->data[0],
-	   size);  
+    result = MALLOC(size + sizeof(DataContainer));
+    result->size = htonl(size + sizeof(DataContainer));
+    memcpy(&result[1],
+	   &res[1],
+	   size);
     FREE(reply);
+    processor(&keys[0],
+	      result,
+	      closure);
+    FREE(result);
   }
   releaseClientSocket(sock);
   return ret;
