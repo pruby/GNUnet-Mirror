@@ -442,6 +442,7 @@ int ECRS_uploadFile(const char * filename,
   FREE(uris);
 
   /* free resources */
+  FREENONNULL(iblocks[treedepth]);
   FREE(iblocks);
   FREE(dblock);
   CLOSE(fd);

@@ -147,9 +147,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     freePrivateKey(pk);
     if (OK != FS_insert(sock, value))
       ret = SYSERR;
-    FREE(keywords[i]);
   }
-  GROW(keywords, keywordCount, 0);  
 
   FREE(dstURI);
   releaseClientSocket(sock);

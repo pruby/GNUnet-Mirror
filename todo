@@ -1,4 +1,4 @@
-0.6.6a [2?'05] (aka "bugfixes"):
+0.6.6b [2?'05] (aka "bugfixes"):
 - 828?
 - 827??
 - 823?
@@ -19,6 +19,10 @@
   * gnunet-directory
   * gnunet-pseudonym
 - Resolve "@todo [WIN]" (Nils)
+- FSUI:
+  * API changes (Krista discussion, anonymity level)
+- UTIL:
+  * API changes (hostkey struct, other structs? HashCode160)
 
 0.7.0pre1 [4'05] (aka "preview"):
 - fslibtest: implement verify result

@@ -45,12 +45,12 @@
  */
 #define AFS_VERSION "4.0.0"
 
-#define GNUNET_DIRECTORY_MIME "application/gnunet-directory"
+#define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"
-#define GNUNET_DIRECTORY_EXT ".gnd"
+#define GNUNET_DIRECTORY_EXT   ".gnd"
 
 
-#define ECRS_URI_PREFIX "gnunet://ecrs/"
+#define ECRS_URI_PREFIX      "gnunet://ecrs/"
 #define ECRS_SEARCH_INFIX    "ksk/"
 #define ECRS_SUBSPACE_INFIX  "sks/"
 #define ECRS_FILE_INFIX      "chk/"
@@ -186,6 +186,12 @@ struct ECRS_URI;
  * Convert a URI to a UTF-8 String.
  */
 char * ECRS_uriToString(const struct ECRS_URI * uri);
+
+/**
+ * Convert a NULL-terminated array of keywords
+ * to an ECRS URI.
+ */
+struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]);
 
 /**
  * Convert a UTF-8 String to a URI.

@@ -101,7 +101,7 @@ void * loadDynamicLibrary(const char * libprefix,
 }
 
 void unloadDynamicLibrary(void * libhandle) {  
-  lt_dlclose(libhandle);
+//  lt_dlclose(libhandle);
   if (0 != lt_dlexit())
     LOG_STRERROR(LOG_WARNING, "lt_dlexit");
 }

@@ -197,6 +197,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 	      &query,
 	      &hc,
 	      sqc);
+	freePrivateKey(pk);
       }	
       LOG(LOG_DEBUG,
 	  "Queries ready.\n");

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -497,6 +497,33 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
     ret->data.ksk.keywords[i] = STRDUP(md->items[i].data);
   return ret;
 }
+
+/**
+ * Convert a NULL-terminated array of keywords
+ * to an ECRS URI.
+ */
+struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]) {
+  unsigned int count;
+  URI * ret;
+  unsigned int i;
+  
+  count = 0;
+  while (keyword[count] != NULL)
+    count++;
+
+  ret = MALLOC(sizeof(URI));
+  ret->type = ksk;
+  ret->data.ksk.keywordCount = 0;
+  ret->data.ksk.keywords = NULL;
+  GROW(ret->data.ksk.keywords,
+       ret->data.ksk.keywordCount,
+       count);
+  for (i=0;i<count;i++)
+    ret->data.ksk.keywords[i] = STRDUP(keyword[i]);
+  return ret;
+  
+}
+
 
 
 /**
