@@ -32,7 +32,6 @@ int main(int argc, char * argv[]){
   int ok;
   Mutex lock;
   GNUNET_TCP_SOCKET * sock;
-  int i;
 
   daemon = fork();
   if (daemon == 0) {
@@ -42,8 +41,8 @@ int main(int argc, char * argv[]){
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
 		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-L", 
-		    "DEBUG",  /* gnunetd loglevel */
+		    "-c",
+		    "check.conf", /* configuration file */
 		    NULL)) {
       fprintf(stderr,
 	      _("'%s' failed: %s\n"),
@@ -61,7 +60,7 @@ int main(int argc, char * argv[]){
   CHECK(sock != NULL);
   
   /* ACTUAL TEST CODE */
-  /* TO BE ADDED */
+  /* FIXME: actual test code is TO BE ADDED */
 
   /* END OF TEST CODE */
  FAILURE:

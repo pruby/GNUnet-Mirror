@@ -45,3 +45,6 @@ ecrstest_SOURCES = \
   ecrstest.c
 ecrstest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
+
+EXTRA_DIST = \
+  check.conf
