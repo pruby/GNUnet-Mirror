@@ -18,7 +18,6 @@
                    handle anonymity-level setting
   * fsui upload: ETA, tracking URIs
   * fsui core (persistence, shutdown, multiple FSUIs)
-  * gnunet-insert: namespace insertion, check options, keyword to utf8 conversion
 - Need testing:
   * ECRS-directories (build, iterate)
   * FS/ECRS upload/download
