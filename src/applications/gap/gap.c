@@ -766,7 +766,7 @@ static void sendToSelected(const PeerIdentity * id,
  * Take a query and forward it to the appropriate number of nodes
  * (depending on load, queue, etc).
  */
-static void forwardQuery(GAP_QUERY * msg,
+static void forwardQuery(const GAP_QUERY * msg,
 			 const PeerIdentity * excludePeer) {
   cron_t now;
   QueryRecord * qr;
@@ -1442,6 +1442,9 @@ static int execQuery(const PeerIdentity * sender,
 	  (DataProcessor) &queryLocalResultCallback,
 	  &cls);
   MUTEX_UNLOCK(&ite->lookup_exclusion);
+  if (cls.doForward)
+    forwardQuery(query,
+		 sender);
   return cls.doForward; 
 }
 
