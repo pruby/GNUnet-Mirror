@@ -59,7 +59,7 @@ fi
 
 CFLAGS="-Wall $CFLAGS"
 # use '-fno-strict-aliasing', but only if the compiler can take it
-if gcc -fno-strict-aliasing -S -o /dev/null -xc /dev/null >/dev/null 2>&1; 
+if gcc -fno-strict-aliasing -S -o /dev/null -xc /dev/null >/dev/null 2>&1;
 then
  CFLAGS="-fno-strict-aliasing $CFLAGS"
 fi
@@ -155,7 +155,7 @@ AC_CHECK_MEMBER(pthread_t.p, AC_DEFINE(HAVE_NEW_PTHREAD_T, 1,
 
 # libgcrypt
 gcrypt=0
-AC_MSG_CHECKING(for libgcrypt) 
+AC_MSG_CHECKING(for libgcrypt)
 AM_PATH_LIBGCRYPT(1.2.0, gcrypt=1)
 
 if test $gcrypt = 0
@@ -192,7 +192,7 @@ AC_ARG_WITH(extractor,
             extractor=1))
         ;;
     esac
-   ],     
+   ],
    [AC_MSG_RESULT([--with-extractor not specified])
     AC_CHECK_HEADERS(extractor.h,
      AC_CHECK_LIB([extractor], [EXTRACTOR_loadDefaultLibraries],
@@ -212,7 +212,7 @@ AC_ARG_WITH(sqlite,
   [  --with-sqlite=PFX   Base of SQLite installation],
   [AC_MSG_RESULT("$with_sqlite")
    case $with_sqlite in
-   no) 
+   no)
      ;;
    yes)
     AC_CHECK_HEADERS(sqlite3.h,
@@ -279,7 +279,7 @@ AC_ARG_WITH(mysql,
     [AC_CHECK_HEADERS(mysql/mysql.h,
       MYSQL_LDFLAGS="-L/usr/lib/mysql"
       mysql=true
-      
+
      , [], [$CYGWIN_MYSQL_MAGIC])])
   ])
 
@@ -323,7 +323,7 @@ AC_CHECK_LIB(ncurses, scrollok,,curses=0)
 AC_DEFINE_UNQUOTED([HAVE_CURSES], $curses, [We have curses])
 AM_CONDITIONAL(HAVE_CURSES, test x$curses = x1)
 
-# check for gtk >= 2.4.0 
+# check for gtk >= 2.4.0
 AC_MSG_CHECKING(for gtk)
 AM_PATH_GTK_2_0(2.4.0,without_gtk=false,without_gtk=true)
 AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
@@ -482,7 +482,7 @@ then
 fi # enable_guile
 AM_CONDITIONAL(HAVE_GUILE, test x$guile != x0)
 
-AC_CONFIG_FILES([ po/Makefile.in m4/Makefile 
+AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
 contrib/Makefile
 doc/Makefile
@@ -531,13 +531,13 @@ AC_OUTPUT
 
 # Finally: summary!
 
-# warn user if mysql found but not used due to version  
+# warn user if mysql found but not used due to version
 if test "$mysqlfail" = "true"
 then
   AC_MSG_NOTICE([NOTICE: MySQL found, but too old. MySQL support will not be compiled.])
 fi
 
-# guile 
+# guile
 if test "x$guile" = "x0"
 then
   AC_MSG_NOTICE([NOTICE: Guile not found, gnunet-download-manager will not be installed.])
@@ -549,7 +549,7 @@ then
 fi
 
 #if test "$without_gtk" = "true"
-#then 
+#then
 #  AC_MSG_NOTICE([NOTICE: gnunet-gtk user interface will NOT be compiled.])
 #fi
 
