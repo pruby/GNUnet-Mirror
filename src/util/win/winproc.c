@@ -41,6 +41,11 @@ const char *errlist[] = {
   "Unknown resolver error"              /* errno > 4 */
 };
 
+typedef struct {
+  char *pStart;
+  HANDLE hMapping;
+} TMapping;
+
 static char szRootDir[_MAX_PATH + 1];
 static long lRootDirLen;
 static char szHomeDir[_MAX_PATH + 2];
@@ -51,6 +56,9 @@ unsigned int uiSockCount = 0;
 Winsock *pSocks;
 HANDLE hSocksLock;
 static char __langinfo[251];
+static unsigned int uiMappingsCount = 0;
+static TMapping *pMappings;
+HANDLE hMappingsLock;
 
 static HINSTANCE hNTDLL, hIphlpapi, hAdvapi;
 TNtQuerySystemInformation GNNtQuerySystemInformation;
@@ -550,6 +558,11 @@ void InitWinEnv()
   pSocks[0].s = -1;
   hSocksLock = CreateMutex(NULL, FALSE, NULL);
   
+  /* To keep track of mapped files */
+  pMappings = (TMapping *) malloc(sizeof(TMapping));
+  pMappings[0].pStart = NULL;
+  hMappingsLock = CreateMutex(NULL, FALSE, NULL);
+  
   /* Open files in binary mode */
   _fmode = _O_BINARY;
   
@@ -631,6 +644,9 @@ void ShutdownWinEnv()
   WSACleanup();
   free(pSocks);
   CloseHandle(hSocksLock);
+  
+  free(pMappings);
+  CloseHandle(hMappingsLock);
   
   FreeLibrary(hNTDLL);
   FreeLibrary(hIphlpapi);
@@ -1883,6 +1899,8 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
   HANDLE h, hFile;
   SECURITY_ATTRIBUTES sec_none;
   void *base;
+  BOOL bFound = FALSE;
+  unsigned int uiIndex;
 
   errno = 0;
 
@@ -1938,6 +1956,42 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
     return (void *) -1;
   }
   
+  /* Save mapping handle */
+  WaitForSingleObject(hMappingsLock, INFINITE);
+
+  for(uiIndex = 0; uiIndex <= uiMappingsCount; uiIndex++)
+  {
+    if (pMappings[uiIndex].pStart == base)
+    {
+      bFound = 1;
+      break;
+    }
+  }
+  
+  if (! bFound)
+  {
+    uiIndex = 0;
+    
+    while(TRUE)
+    {
+      if (pMappings[uiIndex].pStart == NULL)
+      {
+        pMappings[uiIndex].pStart = base;
+        pMappings[uiIndex].hMapping = h;
+      }
+      if (uiIndex == uiMappingsCount)
+      {
+        uiMappingsCount++;
+        pMappings = (TMapping *) realloc(pMappings, (uiMappingsCount + 1) * sizeof(TMapping));
+        pMappings[uiMappingsCount].pStart = NULL;
+        
+        break;
+      }
+      uiIndex++;
+    }
+  }
+  ReleaseMutex(hMappingsLock);
+  
   return base;
 }
 
@@ -1948,8 +2002,30 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
  */
 int _win_munmap(void *start, size_t length)
 {
+  unsigned uiIndex;
   BOOL success = UnmapViewOfFile(start);
   SetErrnoFromWinError(GetLastError());
+  
+  if (success)
+  {
+    /* Release mapping handle */
+    WaitForSingleObject(hMappingsLock, INFINITE);
+  
+    for(uiIndex = 0; uiIndex <= uiMappingsCount; uiIndex++)
+    {
+      if (pMappings[uiIndex].pStart == start)
+      {
+        success = CloseHandle(pMappings[uiIndex].hMapping);
+        SetErrnoFromWinError(GetLastError());
+        pMappings[uiIndex].pStart = NULL;
+        pMappings[uiIndex].hMapping = NULL;
+
+        break;
+      }
+    }
+    
+    ReleaseMutex(hMappingsLock);
+  }
   
   return success ? 0 : -1;
 }
