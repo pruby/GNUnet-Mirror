@@ -15,3 +15,21 @@ libgnunetmodule_gap_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
   $(LDADD)
 
+
+
+check_PROGRAMS = \
+  gaptest 
+
+TESTS = $(check_PROGRAMS)
+
+gaptest_SOURCES = \
+  gaptest.c 
+gaptest_LDADD = \
+  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+EXTRA_DIST = \
+  peer1.conf \
+  peer2.conf \
+  peer1/.hostkey \
+  peer2/.hostkey 
