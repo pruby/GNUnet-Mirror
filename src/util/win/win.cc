@@ -181,7 +181,9 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
   DWORD dwSize, dwRet;
 
   *pIfTable = NULL;
-  *pAddrTable = NULL;
+  
+  if (pAddrTable)
+    *pAddrTable = NULL;
 
   if (GNGetIfTable)
   {
