@@ -244,7 +244,7 @@ Section "Core files" SEC01
 ; Redistribution is permitted, see Microsoft Knowledge Base Article 326922
   File "C:\GNUnet\bin\msvcr70.dll"
   File "C:\GNUnet\bin\libsqlite3-0.dll"
-  File "C:\GNUnet\bin\pthreadGC.dll"
+  File "C:\GNUnet\bin\pthreadGC1.dll"
   File "C:\GNUnet\bin\libz.dll"
   File "C:\GNUnet\bin\libpng12.dll"
   File "C:\GNUnet\bin\libpango-1.0-0.dll"
@@ -539,6 +539,7 @@ Section Uninstall
   Delete "$INSTDIR\bin\pango-basic-fc.dll"
   Delete "$INSTDIR\bin\pango-basic-win32.dll"
   Delete "$INSTDIR\bin\pthreadGC.dll"
+  Delete "$INSTDIR\bin\pthreadGC1.dll"
   Delete "$INSTDIR\bin\libsqlite3-0.dll"
   Delete "$INSTDIR\bin\msvcr70.dll"
   Delete "$INSTDIR\bin\gnunet-gtk.exe"
