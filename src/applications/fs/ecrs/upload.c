@@ -59,12 +59,19 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   present = size / sizeof(CHK);
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
-    fileBlockGetKey((char*) db,
-		    size,
+    fileBlockGetKey(db,
+		    size + sizeof(DBlock),
 		    &ichk.key);
-    fileBlockGetQuery((char*) db,
-		      size,
+    fileBlockGetQuery(db,
+		      size + sizeof(DBlock),
 		      &ichk.query);
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&ichk.query,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"Query for current iblock at level %u is %s\n",
+	level,
+	&enc);
     if (OK != pushBlock(sock, &ichk, level+1, iblocks))
       return SYSERR;
     fileBlockEncode(db,
@@ -217,8 +224,10 @@ int ECRS_uploadFile(const char * filename,
   cron_t now;
   char * uris;
   FileIdentifier fid; 
+  EncName enc;
 
   cronTime(&start);
+  memset(&chk, 0, sizeof(CHK));
   if (isDirectory(filename)) {
     BREAK();
     return SYSERR;
@@ -301,21 +310,21 @@ int ECRS_uploadFile(const char * filename,
       LOG_FILE_STRERROR(LOG_WARNING, "READ", filename);
       goto FAILURE;
     }   
-    size = DBLOCK_SIZE; /* padding! */
     if (tt != NULL)
       if (OK != tt(ttClosure))
 	goto FAILURE;
-    fileBlockGetKey((char*) &dblock[1],
-		    size,
+    fileBlockGetKey(db,
+		    size + sizeof(DBlock),
 		    &chk.key);
-    fileBlockGetQuery((char*) &dblock[1],
-		      size,
+    fileBlockGetQuery(db,
+		      size + sizeof(DBlock),
 		      &chk.query);
-    if (OK != pushBlock(sock,
-			&chk,
-			0, /* dblocks are on level 0 */
-			iblocks))
-      goto FAILURE;
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&chk.query,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"Query for current block is %s\n",
+	&enc);
     if (doIndex) {
       if (SYSERR == FS_index(sock,
 			     &fileId,
@@ -335,6 +344,8 @@ int ECRS_uploadFile(const char * filename,
       }
       FREE(value);
     }
+    if (treedepth == 0)
+      goto NOTREE;
     pos += size;
     cronTime(&now);
     if (pos > 0) {
@@ -342,6 +353,11 @@ int ECRS_uploadFile(const char * filename,
 		      (((double)(now - start)/(double)pos)) 
 		      * (double)filesize);
     }
+    if (OK != pushBlock(sock,
+			&chk,
+			0, /* dblocks are on level 0 */
+			iblocks))
+      goto FAILURE;
   }
   if (tt != NULL)
     if (OK != tt(ttClosure))
@@ -351,12 +367,23 @@ int ECRS_uploadFile(const char * filename,
     if (size == sizeof(DBlock))
       continue;
     db = (DBlock*) &iblocks[i];
-    fileBlockGetKey((char*) db,
-		    size,
+    fileBlockGetKey(db,
+		    size + sizeof(DBlock),
 		    &chk.key);
-    fileBlockGetQuery((char*) db,
-		      size,
+    LOG(LOG_DEBUG,
+	"Computing query for %u bytes content %.*s\n",
+	size,
+	size, db);
+    fileBlockGetQuery(db,
+		      size + sizeof(DBlock),
 		      &chk.query);   
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&chk.query,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"Query for current block at level %u is %s\n",
+	treedepth,
+	&enc);
     if (OK != pushBlock(sock, 
 			&chk,
 			i+1, 
@@ -375,11 +402,18 @@ int ECRS_uploadFile(const char * filename,
     FREE(iblocks[i]);
     iblocks[i] = NULL;
   }
+ NOTREE:
   if (doIndex) {
     trySymlinking(filename,
 		  &fileId,
 		  sock);
   }
+  IFLOG(LOG_DEBUG,
+	hash2enc(&chk.query,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Query for top block is %s\n",
+      &enc);  
   /* build URI */
   fid.file_length = htonll(filesize);
   fid.chk = chk;

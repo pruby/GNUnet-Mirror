@@ -65,11 +65,11 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   present = size / sizeof(CHK);
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
-    fileBlockGetKey((char*) db,
-		    size,
+    fileBlockGetKey(db,
+		    size + sizeof(DBlock),
 		    &ichk.key);
-    fileBlockGetQuery((char*) db,
-		      size,
+    fileBlockGetQuery(db,
+		      size + sizeof(DBlock),
 		      &ichk.query);
     if (OK != pushBlock(sock, &ichk, level+1, iblocks))
       return SYSERR;
@@ -329,15 +329,14 @@ int ECRS_unindexFile(const char * filename,
 			filename);
       goto FAILURE;
     }   
-    size = DBLOCK_SIZE + sizeof(DBlock); /* padding! */
     if (tt != NULL)
       if (OK != tt(ttClosure))
 	goto FAILURE;
-    fileBlockGetKey((char*) &dblock[1],
-		    size,
+    fileBlockGetKey(db,
+		    size + sizeof(DBlock),
 		    &chk.key);
-    fileBlockGetQuery((char*) &dblock[1],
-		      size,
+    fileBlockGetQuery(db,
+		      size + sizeof(DBlock),
 		      &chk.query);
     if (OK != pushBlock(sock,
 			&chk,
@@ -369,11 +368,11 @@ int ECRS_unindexFile(const char * filename,
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
     db = (DBlock*) &iblocks[i];
-    fileBlockGetKey((char*) db,
-		    size,
+    fileBlockGetKey(db,
+		    size + sizeof(DBlock),
 		    &chk.key);
-    fileBlockGetQuery((char*) db,
-		      size,
+    fileBlockGetQuery(db,
+		      size + sizeof(DBlock),
 		      &chk.query);   
     if (OK != pushBlock(sock, 
 			&chk,

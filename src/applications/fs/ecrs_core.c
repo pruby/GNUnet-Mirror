@@ -92,12 +92,12 @@ int fileBlockEncode(const DBlock * data,
  * Get the key that will be used to decrypt
  * a certain block of data.
  */
-void fileBlockGetKey(const char * data,
+void fileBlockGetKey(const DBlock * data,
 		     unsigned int len,
 		     HashCode160 * key) {
-  GNUNET_ASSERT(len >= sizeof(unsigned int));
-  hash(&data[sizeof(unsigned int)], 
-       len - sizeof(unsigned int), 
+  GNUNET_ASSERT(len >= sizeof(DBlock));
+  hash(&data[1],
+       len - sizeof(DBlock), 
        key);
 }
 
@@ -105,17 +105,18 @@ void fileBlockGetKey(const char * data,
  * Get the query that will be used to query for
  * a certain block of data.
  */
-void fileBlockGetQuery(const char * data,
+void fileBlockGetQuery(const DBlock * db,
 		       unsigned int len,
 		       HashCode160 * query) {
   char * tmp;
+  const char * data;
   HashCode160 hc;
   SESSIONKEY skey;
   unsigned char iv[BLOWFISH_BLOCK_LENGTH];
 
-  GNUNET_ASSERT(len >= sizeof(unsigned int));
-  data = &data[sizeof(unsigned int)];
-  len -= sizeof(unsigned int);
+  GNUNET_ASSERT(len >= sizeof(DBlock));
+  data = (const char*) &db[1];
+  len -= sizeof(DBlock);
   hash(data, len, &hc);
   hashToKey(&hc,
 	    &skey,
@@ -158,7 +159,9 @@ int getQueryFor(unsigned int size,
     return SYSERR;
   switch (type) {
   case D_BLOCK: 
-    fileBlockGetKey(data, size, query);
+    fileBlockGetKey((const DBlock*)data,
+		    size, 
+		    query);
     return OK;  
   case S_BLOCK: {
     SBlock * sb;

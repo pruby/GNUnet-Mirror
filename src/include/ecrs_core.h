@@ -170,7 +170,7 @@ int fileBlockEncode(const DBlock * data,
  * Get the query that will be used to query for
  * a certain block of data.
  */
-void fileBlockGetQuery(const char * data,
+void fileBlockGetQuery(const DBlock * data,
 		       unsigned int len,
 		       HashCode160 * query);
 
@@ -179,7 +179,7 @@ void fileBlockGetQuery(const char * data,
  * Get the key that will be used to decrypt
  * a certain block of data.
  */
-void fileBlockGetKey(const char * data,
+void fileBlockGetKey(const DBlock * data,
 		     unsigned int len,
 		     HashCode160 * key);
 

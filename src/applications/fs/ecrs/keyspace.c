@@ -66,6 +66,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   char ** keywords;
   unsigned int keywordCount;
   int i;
+  EncName enc;
 
   if (! ECRS_isKeywordURI(uri)) {
     BREAK();
@@ -122,9 +123,12 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     hash(keywords[i],
 	 strlen(keywords[i]),
 	 &hc);
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&hc,
+		   &enc));
     LOG(LOG_DEBUG,
-	"Encrypting KBlock with key %u.\n",
-	hc.a);
+	"Encrypting KBlock with key %s.\n",
+	&enc);
     ECRS_encryptInPlace(&hc,
 			&kb[1],
 			mdsize + strlen(dstURI) + 1);

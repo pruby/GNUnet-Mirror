@@ -360,8 +360,6 @@ static int csHandleRequestIndex(ClientHandle sock,
   int ret;
   const RequestIndex * ri;
   
-  LOG(LOG_DEBUG,
-      "Received index request from client\n");
   if (ntohs(req->size) < sizeof(RequestIndex)) {
     BREAK();
     return SYSERR;

@@ -122,6 +122,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   int ret;
   OnDemandBlock odb;
   HashCode160 key;
+  EncName enc;
 
   if (size <= sizeof(DBlock)) {
     BREAK();
@@ -166,6 +167,12 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   fileBlockGetQuery(content,
 		    size,
 		    &key);  
+  IFLOG(LOG_DEBUG,
+	hash2enc(&key, &enc));
+  LOG(LOG_DEBUG,
+      "Storing on-demand content for query '%s'\n",
+      &enc);
+
   ret = datastore->get(&key,
 		       ONDEMAND_BLOCK,
 		       &checkPresent,
