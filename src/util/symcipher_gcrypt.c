@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -97,7 +97,7 @@ int encryptBlock(const void * block,
 #endif
   lockGcrypt();
   rc = gcry_cipher_open(&handle,
-			GCRY_CIPHER_BLOWFISH,
+			GCRY_CIPHER_AES256,
 			GCRY_CIPHER_MODE_CFB,
 			0);
   if (rc) {
@@ -107,7 +107,7 @@ int encryptBlock(const void * block,
   }
   rc = gcry_cipher_setkey(handle, 
 			  sessionkey, 
-			  sizeof(SESSIONKEY));
+			  SESSIONKEY_LEN);
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setkey", rc);
@@ -174,7 +174,7 @@ int decryptBlock(const SESSIONKEY * sessionkey,
 #endif
   lockGcrypt();
   rc = gcry_cipher_open(&handle,
-			GCRY_CIPHER_BLOWFISH,
+			GCRY_CIPHER_AES256,
 			GCRY_CIPHER_MODE_CFB,
 			0);  
   if (rc) {
@@ -183,8 +183,8 @@ int decryptBlock(const SESSIONKEY * sessionkey,
     return -1;
   }
   rc = gcry_cipher_setkey(handle, 
-			 sessionkey, 
-			 sizeof(SESSIONKEY));
+			  sessionkey, 
+			  SESSIONKEY_LEN);
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {    
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setkey", rc);

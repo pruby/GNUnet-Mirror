@@ -37,16 +37,16 @@ static CoreAPIForApplication * coreAPI = NULL;
 
 static ClientHandle clients[MAX_CLIENTS];
 static int clientCount;
-static HashCode160 lastMsgs[MAX_LAST_MESSAGES];
+static HashCode512 lastMsgs[MAX_LAST_MESSAGES];
 static int ringIndex;
 static Mutex chatMutex;
 
-static void markSeen(HashCode160 * hc) {
+static void markSeen(HashCode512 * hc) {
   if (++ringIndex >= MAX_LAST_MESSAGES)
     ringIndex = 0;
   memcpy(&lastMsgs[ringIndex], 
 	 hc, 
-	 sizeof(HashCode160));
+	 sizeof(HashCode512));
 }
 
 typedef struct {
@@ -80,7 +80,7 @@ static int handleChatMSG(const PeerIdentity * sender,
   int j;
   CHAT_CS_MESSAGE * cmsg;
   CHAT_p2p_MESSAGE * pmsg;
-  HashCode160 hc;
+  HashCode512 hc;
 
   if (ntohs(message->size) != sizeof(CHAT_p2p_MESSAGE)) {
     LOG(LOG_WARNING,
@@ -97,7 +97,7 @@ static int handleChatMSG(const PeerIdentity * sender,
   j = -1;
   MUTEX_LOCK(&chatMutex);
   for (i=0;i<MAX_LAST_MESSAGES;i++)
-    if (equalsHashCode160(&hc, &lastMsgs[i]))
+    if (equalsHashCode512(&hc, &lastMsgs[i]))
       j = i;
   if (j == -1) { 
     /* we have not seen it before, send to all TCP clients
@@ -126,7 +126,7 @@ static void csHandleChatRequest(ClientHandle client,
   int j;
   CHAT_CS_MESSAGE * cmsg;
   CHAT_p2p_MESSAGE * pmsg;
-  HashCode160 hc;
+  HashCode512 hc;
 
   if (ntohs(message->size) != sizeof(CHAT_CS_MESSAGE)) {
     LOG(LOG_WARNING,

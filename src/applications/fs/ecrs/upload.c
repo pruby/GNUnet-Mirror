@@ -118,13 +118,13 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
  * d) delete old file
  */
 static void trySymlinking(const char * fn,
-			  const HashCode160 * fileId,
+			  const HashCode512 * fileId,
 			  GNUNET_TCP_SOCKET * sock) {
   EncName enc;
   char * serverDir;
   char * serverFN;
   char * tmpName;
-  HashCode160 serverFileId;
+  HashCode512 serverFileId;
 
   if (testConfigurationString("FS",
 			      "DISABLE-SYMLINKING",
@@ -151,7 +151,7 @@ static void trySymlinking(const char * fn,
     FREE(serverFN);
     return;
   }
-  if (! equalsHashCode160(&serverFileId,
+  if (! equalsHashCode512(&serverFileId,
 			  fileId)) {
     BREAK(); /* rather odd... */
     return;
@@ -226,7 +226,7 @@ int ECRS_uploadFile(const char * filename,
   DBlock * db;
   Datastore_Value * value;
   GNUNET_TCP_SOCKET * sock;
-  HashCode160 fileId;
+  HashCode512 fileId;
   CHK chk;
   cron_t eta;
   cron_t start;

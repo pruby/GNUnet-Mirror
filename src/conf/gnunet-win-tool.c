@@ -297,7 +297,7 @@ void IncreaseConnections()
  */
 void doHash()
 {
-  HashCode160 code;
+  HashCode512 code;
   EncName hex;
   char *c;
 

@@ -15,27 +15,35 @@ static int parseCommandLine(int argc,
 }
 
 int main(int argc, char * argv[]){
-  HashCode160 hc;
+  HashCode512 hc;
 
   initUtil(argc, argv, &parseCommandLine);
   hash("TEST", 4, &hc);
-  if ( (hc.a != ntohl(830102737)) ||
-       (hc.b != ntohl(-2066785626)) ||
-       (hc.c != ntohl(-326698784)) ||
-       (hc.d != ntohl(-183450437)) ||
-       (hc.e != ntohl(1019905624)) ) {
+  if ( (hc.bits[0] != ntohl(2080019878)) ||
+       (hc.bits[1] != ntohl(-2003678137)) ||
+       (hc.bits[2] != ntohl(-942529663)) ||
+       (hc.bits[3] != ntohl(-234043098)) ||
+       (hc.bits[4] != ntohl(-182141268)) ) {
     printf("Hash of TEST wrong (%d, %d, %d, %d, %d).\n",
-	   hc.a, hc.b, hc.c, hc.d, hc.e);
+	   ntohl(hc.bits[0]), 
+	   ntohl(hc.bits[1]),
+	   ntohl(hc.bits[2]),
+	   ntohl(hc.bits[3]),
+	   ntohl(hc.bits[4]));
     return -1;
   }
   hash(NULL, 0, &hc);
-  if ( (hc.a != ntohl(-1676573275)) ||
-       (hc.b != ntohl(-974521260)) ||
-       (hc.c != ntohl(1630013591)) ||
-       (hc.d != ntohl(2129196360)) ||
-       (hc.e != ntohl(-1306161871)) ) {
+  if ( (hc.bits[0] != ntohl(-813440715)) ||
+       (hc.bits[1] != ntohl(2129639613)) ||
+       (hc.bits[2] != ntohl(-246142896)) ||
+       (hc.bits[3] != ntohl(-697466873)) ||
+       (hc.bits[4] != ntohl(-702487547)) ) {
     printf("Hash of nothing (0-size) wrong  (%d, %d, %d, %d, %d).\n",
-	   hc.a, hc.b, hc.c, hc.d, hc.e);
+	   ntohl(hc.bits[0]), 
+	   ntohl(hc.bits[1]),
+	   ntohl(hc.bits[2]),
+	   ntohl(hc.bits[3]),
+	   ntohl(hc.bits[4]));
     return -1;
   }
   doneUtil();

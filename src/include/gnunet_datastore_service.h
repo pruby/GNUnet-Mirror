@@ -82,7 +82,7 @@ typedef struct {
    * A key (not unique) that can be used to lookup this Datum in the
    * datastore.
    */
-  HashCode160 key;
+  HashCode512 key;
 
   /**
    * The value associated with the key.
@@ -98,7 +98,7 @@ typedef struct {
  * @param closure user-defined extra argument 
  * @return SYSERR to abort the iteration, OK to continue.
  */
-typedef int (*Datum_Iterator)(const HashCode160 * key,
+typedef int (*Datum_Iterator)(const HashCode512 * key,
 			      const Datastore_Value * value, 
 			      void * closure);
 
@@ -137,7 +137,7 @@ typedef struct {
    *   to justify removing something else, SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*put)(const HashCode160 * key, 
+  int (*put)(const HashCode512 * key, 
 	     const Datastore_Value * value);
 
   /**
@@ -150,7 +150,7 @@ typedef struct {
    *   to justify removing something else, SYSERR on
    *   other serious error (i.e. IO permission denied)
    */
-  int (*putUpdate)(const HashCode160 * key, 
+  int (*putUpdate)(const HashCode512 * key, 
 		   const Datastore_Value * value);
 
   /**
@@ -166,7 +166,7 @@ typedef struct {
    *   0 if no matches were found.  May NOT return
    *   SYSERR unless the iterator aborted!
    */
-  int (*get)(const HashCode160 * key, 
+  int (*get)(const HashCode512 * key, 
 	     unsigned int type,
 	     Datum_Iterator iter,
 	     void * closure);
@@ -183,9 +183,9 @@ typedef struct {
    *        for any type.
    * @return OK if a value was found, SYSERR if not
    */
-  int (*getRandom)(const HashCode160 * approx, 
+  int (*getRandom)(const HashCode512 * approx, 
 		   unsigned int sizeLimit,
-		   HashCode160 * key,
+		   HashCode512 * key,
 		   Datastore_Value ** value,
 		   unsigned int type);
 
@@ -197,7 +197,7 @@ typedef struct {
    * @return the number of items deleted, 0 if
    *         none were found, SYSERR on errors
    */
-  int (*del)(const HashCode160 * key, 
+  int (*del)(const HashCode512 * key, 
 	     const Datastore_Value * value);
 
 } Datastore_ServiceAPI;

@@ -206,7 +206,7 @@ typedef struct {
    * Hashcodes of the file(s) we're looking for. 
    * Details depend on the query type.
    */
-  HashCode160 queries[1]; 
+  HashCode512 queries[1]; 
 
 } GAP_QUERY;
 
@@ -216,7 +216,7 @@ typedef struct {
 typedef struct {
   p2p_HEADER header;   
 
-  HashCode160 primaryKey;
+  HashCode512 primaryKey;
 
 } GAP_REPLY;
 
@@ -289,7 +289,7 @@ typedef struct {
   /**
    * What are we waiting for? 
    */
-  HashCode160 primaryKey;
+  HashCode512 primaryKey;
 
   /**
    * For what type of reply are we waiting?
@@ -319,7 +319,7 @@ typedef struct {
   /**
    * Hashcodes of the encrypted (!) replies that we have forwarded so far
    */
-  HashCode160 * seen; 
+  HashCode512 * seen; 
 
   /**
    * How many hosts are waiting for an answer to this query (length of
@@ -719,7 +719,7 @@ static void hotpathSelectionCode(const PeerIdentity * id,
 
   pos = rtdList;
   while (pos != NULL) {
-    if (equalsHashCode160(&pos->queryOrigin.hashPubKey,
+    if (equalsHashCode512(&pos->queryOrigin.hashPubKey,
 			  &qr->noTarget.hashPubKey))
       break;
     pos = pos->next;
@@ -727,7 +727,7 @@ static void hotpathSelectionCode(const PeerIdentity * id,
   if (pos != NULL) {
     rp = pos->responseList;
     while (rp != NULL) {
-      if (equalsHashCode160(&rp->responder.hashPubKey,
+      if (equalsHashCode512(&rp->responder.hashPubKey,
 			    &id->hashPubKey))
 	break;
       rp = rp->next;
@@ -740,7 +740,7 @@ static void hotpathSelectionCode(const PeerIdentity * id,
     }
   }    
   distance 
-    = distanceHashCode160(&qr->msg->queries[0],
+    = distanceHashCode512(&qr->msg->queries[0],
 			  &id->hashPubKey);
   if (distance <= 0)
     distance = 1;
@@ -755,7 +755,7 @@ static void hotpathSelectionCode(const PeerIdentity * id,
  */
 static void sendToSelected(const PeerIdentity * id,
 			   const QueryRecord * qr) {
-  if (equalsHashCode160(&id->hashPubKey,
+  if (equalsHashCode512(&id->hashPubKey,
 			&qr->noTarget.hashPubKey))
     return;
   if (getBit(qr, getIndex(id)) == 1) {
@@ -800,7 +800,7 @@ static void forwardQuery(const GAP_QUERY * msg,
 		      &msg->queries[0],
 		      ntohs(msg->header.size)
 		      - sizeof(GAP_QUERY)
-		      + sizeof(HashCode160))) ) {
+		      + sizeof(HashCode512))) ) {
       /* We have exactly this query pending already.
 	 Replace existing query! */
       oldestIndex = i;     
@@ -903,7 +903,7 @@ static void forwardQuery(const GAP_QUERY * msg,
  * Stop transmitting a certain query (we don't route it anymore or
  * we have learned the answer).
  */
-static int dequeueQuery(const HashCode160 * query) {
+static int dequeueQuery(const HashCode512 * query) {
   int i;
   int ret;
   QueryRecord * qr;
@@ -913,7 +913,7 @@ static int dequeueQuery(const HashCode160 * query) {
   for (i=0;i<QUERY_RECORD_COUNT;i++) {
     qr = &queries[i];
     if( qr->msg != NULL ) {
-      if (equalsHashCode160(query,
+      if (equalsHashCode512(query,
 			    &qr->msg->queries[0])) {
 	qr->expires = 0; /* expire NOW! */
 	ret = OK;
@@ -930,7 +930,7 @@ static int dequeueQuery(const HashCode160 * query) {
 /**
  * Compute the hashtable index of a host id.
  */
-static unsigned int computeRoutingIndex(const HashCode160 * query) {
+static unsigned int computeRoutingIndex(const HashCode512 * query) {
   unsigned int res 
     = (((unsigned int*)query)[0] + 
        ((unsigned int*)query)[1] * random_qsel)
@@ -965,14 +965,14 @@ static void useContentLater(GAP_REPLY * pmsg) {
  * @param result the content that was found
  */
 static void queueReply(const PeerIdentity * sender,
-		       const HashCode160 * primaryKey,
+		       const HashCode512 * primaryKey,
 		       const DataContainer * data) {
   GAP_REPLY * pmsg;
   IndirectionTableEntry * ite;
   unsigned int size;
 
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
-  if (! equalsHashCode160(&ite->primaryKey,
+  if (! equalsHashCode512(&ite->primaryKey,
 			  primaryKey) ) {
     return; /* we don't care for the reply (anymore) */
   }
@@ -1021,7 +1021,7 @@ static void queueReply(const PeerIdentity * sender,
  */
 static int addToSlot(int mode,
 		     IndirectionTableEntry * ite,
-		     const HashCode160 * query,
+		     const HashCode512 * query,
 		     int ttl,
 		     unsigned int priority,
 		     const PeerIdentity * sender) {
@@ -1035,12 +1035,12 @@ static int addToSlot(int mode,
 	 ite->seenIndex,
 	 0);
     ite->seenReplyWasUnique = NO;
-    if (equalsHashCode160(query,
+    if (equalsHashCode512(query,
 			  &ite->primaryKey)) {
       ite->ttl = now + ttl;
       ite->priority += priority;
       for (i=0;i<ite->hostsWaiting;i++)
-	if (equalsHashCode160(&ite->destination[i].hashPubKey,
+	if (equalsHashCode512(&ite->destination[i].hashPubKey,
 			      &sender->hashPubKey)) 
 	  return SYSERR;
     } else {
@@ -1055,10 +1055,10 @@ static int addToSlot(int mode,
       ite->priority = priority;      
     }
   } else { /* GROW mode */
-    GNUNET_ASSERT(equalsHashCode160(query,
+    GNUNET_ASSERT(equalsHashCode512(query,
 				    &ite->primaryKey));
     for (i=0;i<ite->hostsWaiting;i++)
-      if (equalsHashCode160(&sender->hashPubKey,
+      if (equalsHashCode512(&sender->hashPubKey,
 			    &ite->destination[i].hashPubKey)) 
 	return SYSERR; /* already there! */     
     /* extend lifetime */
@@ -1104,7 +1104,7 @@ static int addToSlot(int mode,
  *        forward the query, SYSERR if not
  * @return a case ID for debugging
  */
-static int needsForwarding(const HashCode160 * query,
+static int needsForwarding(const HashCode512 * query,
 			   int ttl,
 			   unsigned int priority,
 			   const PeerIdentity * sender,
@@ -1124,7 +1124,7 @@ static int needsForwarding(const HashCode160 * query,
     return 21; 
   }
   if ( ( ttl < 0) &&
-       (equalsHashCode160(query,
+       (equalsHashCode512(query,
 			  &ite->primaryKey) ) ) {
     /* if ttl is "expired" and we have
        the exact query pending, route 
@@ -1150,7 +1150,7 @@ static int needsForwarding(const HashCode160 * query,
 	 ite->seenIndex,
 	 0);
     ite->seenReplyWasUnique = NO;
-    if ( equalsHashCode160(query,
+    if ( equalsHashCode512(query,
 			   &ite->primaryKey) &&
 	 (YES == ite-> successful_local_lookup_in_delay_loop) ) {
       *isRouted = NO;
@@ -1164,7 +1164,7 @@ static int needsForwarding(const HashCode160 * query,
       return 2;
     }
   }
-  if (equalsHashCode160(query,
+  if (equalsHashCode512(query,
 			&ite->primaryKey) ) {
     if (ite->seenIndex == 0) {
       if (ite->ttl + TTL_DECREMENT < (cron_t)(now + ttl)) { 
@@ -1361,10 +1361,10 @@ struct qLRC {
 };
 
 static int 
-queryLocalResultCallback(const HashCode160 * primaryKey,
+queryLocalResultCallback(const HashCode512 * primaryKey,
 			 const DataContainer * value,
 			 struct qLRC * cls) {
-  HashCode160 hc;
+  HashCode512 hc;
   int i;
   IndirectionTableEntry * ite;
 
@@ -1375,7 +1375,7 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
        ntohl(value->size) - sizeof(DataContainer),
        &hc);
   for (i=0;i<ite->seenIndex;i++) 
-    if (equalsHashCode160(&hc,
+    if (equalsHashCode512(&hc,
 			  &ite->seen[i]))
       return OK; /* drop, duplicate result! */
 
@@ -1461,7 +1461,7 @@ static int execQuery(const PeerIdentity * sender,
 	    ntohl(query->type),
 	    prio,
 	    1 + ( ntohs(query->header.size) 
-		  - sizeof(GAP_QUERY)) / sizeof(HashCode160),
+		  - sizeof(GAP_QUERY)) / sizeof(HashCode512),
 	    &query->queries[0],
 	    (DataProcessor) &queryLocalResultCallback,
 	    &cls);
@@ -1537,7 +1537,7 @@ static int execQuery(const PeerIdentity * sender,
 static int useContent(const PeerIdentity * hostId,
 		      const GAP_REPLY * msg) {
   unsigned int i;
-  HashCode160 contentHC;
+  HashCode512 contentHC;
   IndirectionTableEntry * ite;
   unsigned int size;
   int ret;
@@ -1551,7 +1551,7 @@ static int useContent(const PeerIdentity * hostId,
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
   size = ntohs(msg->header.size) - sizeof(GAP_REPLY);
   MUTEX_LOCK(&ite->lookup_exclusion);
-  if (! equalsHashCode160(&ite->primaryKey,
+  if (! equalsHashCode512(&ite->primaryKey,
 			  &msg->primaryKey) ) {	
     MUTEX_UNLOCK(&ite->lookup_exclusion);
     value = MALLOC(size + sizeof(DataContainer));
@@ -1583,7 +1583,7 @@ static int useContent(const PeerIdentity * hostId,
      (if the sender was waiting for a response) */
   if (hostId != NULL)
     for (i=0;i<ite->hostsWaiting;i++) {
-      if (equalsHashCode160(&hostId->hashPubKey,
+      if (equalsHashCode512(&hostId->hashPubKey,
 			    &ite->destination[i].hashPubKey)) {
 	ite->destination[i] = ite->destination[ite->hostsWaiting-1];
 	GROW(ite->destination,
@@ -1593,7 +1593,7 @@ static int useContent(const PeerIdentity * hostId,
     }
 
   for (i=0;i<ite->seenIndex;i++) {
-    if (equalsHashCode160(&contentHC,
+    if (equalsHashCode512(&contentHC,
 			  &ite->seen[i])) {
       MUTEX_UNLOCK(&ite->lookup_exclusion);
       return 0; /* seen before, useless */
@@ -1685,14 +1685,14 @@ static int init(Blockstore * datastore,
 static int get_start(unsigned int type,
 		     unsigned int anonymityLevel,
 		     unsigned int keyCount,
-		     const HashCode160 * keys,
+		     const HashCode512 * keys,
 		     cron_t timeout,
 		     unsigned int prio) {
   GAP_QUERY * msg;
   unsigned int size;
   int ret;
 
-  size = sizeof(GAP_QUERY) + (keyCount-1) * sizeof(HashCode160);
+  size = sizeof(GAP_QUERY) + (keyCount-1) * sizeof(HashCode512);
   if (size >= MAX_BUFFER_SIZE) {
     BREAK();
     return SYSERR; /* too many keys! */
@@ -1758,7 +1758,7 @@ static int get_start(unsigned int type,
 		      prio));
   memcpy(&msg->queries[0],
 	 keys,
-	 sizeof(HashCode160) * keyCount);
+	 sizeof(HashCode512) * keyCount);
   msg->returnTo 
     = *coreAPI->myIdentity;
   ret = execQuery(NULL,
@@ -1777,7 +1777,7 @@ static int get_start(unsigned int type,
  */
 static int get_stop(unsigned int type,
 		    unsigned int keyCount,
-		    const HashCode160 * keys) {
+		    const HashCode512 * keys) {
   if (keyCount < 1)
     return SYSERR;
   return dequeueQuery(&keys[0]);
@@ -1794,7 +1794,7 @@ static int get_stop(unsigned int type,
  */
 static unsigned int
 tryMigrate(const DataContainer * data,
-	   const HashCode160 * primaryKey,
+	   const HashCode512 * primaryKey,
 	   char * position,
 	   unsigned int padding) {
   GAP_REPLY * reply;
@@ -1837,17 +1837,17 @@ static int handleQuery(const PeerIdentity * sender,
   }
       
   queries = 1 + (ntohs(msg->size) - sizeof(GAP_QUERY)) 
-    / sizeof(HashCode160);
+    / sizeof(HashCode512);
   if ( (queries <= 0) || 
        (ntohs(msg->size) < sizeof(GAP_QUERY)) ||
        (ntohs(msg->size) != sizeof(GAP_QUERY) + 
-	(queries-1) * sizeof(HashCode160)) ) {
+	(queries-1) * sizeof(HashCode512)) ) {
     BREAK();
     return SYSERR; /* malformed query */
   }
   qmsg = MALLOC(ntohs(msg->size));
   memcpy(qmsg, msg, ntohs(msg->size));
-  if (equalsHashCode160(&qmsg->returnTo.hashPubKey,
+  if (equalsHashCode512(&qmsg->returnTo.hashPubKey,
 			&coreAPI->myIdentity->hashPubKey)) {
     /* A to B, B sends back to A without (!) source rewriting,
        in this case, A must just drop; however, this

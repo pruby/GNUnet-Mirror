@@ -38,7 +38,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 		   cron_t expiration,
 		   unsigned long long fileOffset,
 		   unsigned int anonymityLevel,
-		   const HashCode160 * fileId,
+		   const HashCode512 * fileId,
 		   unsigned int size,
 		   const DBlock * content);
 
@@ -52,7 +52,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
  */
 int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 			const Datastore_Value * odb,
-			const HashCode160 * query,
+			const HashCode512 * query,
 			Datastore_Value ** enc);
 
 /**
@@ -67,7 +67,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
  */
 int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 		     unsigned int blocksize,
-		     const HashCode160 * fileId);
+		     const HashCode512 * fileId);
 
 /**
  * Test if the file with the given ID is
@@ -75,7 +75,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
  * @return YES if so, NO if not.
  */
 int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
-			 const HashCode160 * fileId);
+			 const HashCode512 * fileId);
 
 /* end of ondemand.h */
 #endif

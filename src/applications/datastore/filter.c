@@ -84,15 +84,15 @@ void deleteFilter() {
   FREE(fn);
 }
 
-void makeAvailable(const HashCode160 * key) {
+void makeAvailable(const HashCode512 * key) {
   addToBloomfilter(filter, key);
 }
 
-void makeUnavailable(const HashCode160 * key) {
+void makeUnavailable(const HashCode512 * key) {
   delFromBloomfilter(filter, key);
 }
 
-int testAvailable(const HashCode160 * key) {
+int testAvailable(const HashCode512 * key) {
   return testBloomfilter(filter,
 			 key);
 }

@@ -57,7 +57,7 @@ static void processResult(const ECRS_FileInfo * fi,
  * Process results found by ECRS.
  */
 static int spcb(const ECRS_FileInfo * fi,
-		const HashCode160 * key,
+		const HashCode512 * key,
 		FSUI_SearchList * pos) {
   unsigned int i;
   unsigned int j;
@@ -78,7 +78,7 @@ static int spcb(const ECRS_FileInfo * fi,
       if (ECRS_equalsUri(fi->uri,
 			 rp->fi.uri)) {
 	for (j=0;j<rp->matchingKeyCount;j++)
-	  if (equalsHashCode160(key,
+	  if (equalsHashCode512(key,
 				&rp->matchingKeys[j]))
 	    return OK;
 	if (rp->matchingKeyCount + 1 < pos->numberOfURIKeys) {

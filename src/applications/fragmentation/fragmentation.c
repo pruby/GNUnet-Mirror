@@ -390,7 +390,7 @@ static int processFragment(const PeerIdentity * sender,
     return SYSERR;
     
   MUTEX_LOCK(&defragCacheLock);
-  hash = sender->hashPubKey.a % DEFRAG_BUCKET_COUNT;
+  hash = sender->hashPubKey.bits[0] % DEFRAG_BUCKET_COUNT;
   smf = defragmentationCache[hash];
   while (smf != NULL) {
     if (OK == tryJoin(smf, sender, (FRAGMENT_Message*) frag)) {

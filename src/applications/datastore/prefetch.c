@@ -38,7 +38,7 @@
  * Buffer with pre-fetched, encoded random content for migration.
  */
 typedef struct {
-  HashCode160 key;
+  HashCode512 key;
   Datastore_Value * value;
 } ContentBuffer;
 
@@ -71,7 +71,7 @@ static int rCBPos = 0;
 static PTHREAD_T gather_thread;
 
 
-static int aquire(const HashCode160 * key,
+static int aquire(const HashCode512 * key,
 		  const Datastore_Value * value, 
 		  void * closure) {
   int load;
@@ -134,9 +134,9 @@ static void * rcbAcquire(void * unused) {
  *
  * @return SYSERR if the RCB is empty
  */
-int getRandom(const HashCode160 * receiver,
+int getRandom(const HashCode512 * receiver,
 	      unsigned int sizeLimit,
-	      HashCode160 * key,
+	      HashCode512 * key,
 	      Datastore_Value ** value,
 	      unsigned int type) {
   unsigned int dist;
@@ -151,7 +151,7 @@ int getRandom(const HashCode160 * receiver,
     if ( (type != ntohl(randomContentBuffer[i].value->type)) ||
 	 (sizeLimit < ntohl(randomContentBuffer[i].value->size)) )
       continue;
-    dist = distanceHashCode160(&randomContentBuffer[i].key,
+    dist = distanceHashCode512(&randomContentBuffer[i].key,
 			       receiver);
     if (dist < minDist) {
       minIdx = i;

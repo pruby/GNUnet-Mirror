@@ -27,7 +27,7 @@ static Datastore_Value * initValue(int i) {
   return value;
 }
 
-static int checkValue(const HashCode160 * key,
+static int checkValue(const HashCode512 * key,
 		      const Datastore_Value * val,
 		      void * closure) {
   int i;
@@ -53,7 +53,7 @@ static int checkValue(const HashCode160 * key,
   return ret;
 }
 
-static int iterateUp(const HashCode160 * key,
+static int iterateUp(const HashCode512 * key,
 		     const Datastore_Value * val,
 		     int * closure) {
   int ret;
@@ -63,7 +63,7 @@ static int iterateUp(const HashCode160 * key,
   return ret;
 }
 
-static int iterateDown(const HashCode160 * key,
+static int iterateDown(const HashCode512 * key,
 		       const Datastore_Value * val,
 		       int * closure) {
   int ret;
@@ -78,7 +78,7 @@ static int iterateDown(const HashCode160 * key,
  */
 static int test(SQstore_ServiceAPI * api) {
   Datastore_Value * value;
-  HashCode160 key;
+  HashCode512 key;
   unsigned long long oldSize;
   int i;
 
@@ -87,7 +87,7 @@ static int test(SQstore_ServiceAPI * api) {
   oldSize = api->getSize();
   for (i=0;i<256;i++) {
     value = initValue(i);
-    memset(&key, 256-i, sizeof(HashCode160));
+    memset(&key, 256-i, sizeof(HashCode512));
     api->put(&key, value);
     FREE(value);
   }
@@ -99,12 +99,12 @@ static int test(SQstore_ServiceAPI * api) {
 					   NULL,
 					   NULL));
   for (i=255;i>=0;i--) {
-    memset(&key, 256-i, sizeof(HashCode160)); 
+    memset(&key, 256-i, sizeof(HashCode512)); 
     ASSERT(1 == api->get(&key, i, &checkValue, (void*) &i));
   }
   oldSize = api->getSize();
   for (i=255;i>=0;i-=2) {
-    memset(&key, 256-i, sizeof(HashCode160)); 
+    memset(&key, 256-i, sizeof(HashCode512)); 
     value = initValue(i);
     ASSERT(1 == api->del(&key, value));
     FREE(value);

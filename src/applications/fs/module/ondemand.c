@@ -57,11 +57,11 @@ typedef struct {
    * this block?  Used to determine the name
    * of the file in the on-demand datastore.
    */
-  HashCode160 fileId;
+  HashCode512 fileId;
   
 } OnDemandBlock;
 
-static char * getOnDemandFile(const HashCode160 * fileId) {
+static char * getOnDemandFile(const HashCode512 * fileId) {
   EncName enc;
   char * fn;
   char * dir;
@@ -87,7 +87,7 @@ static char * getOnDemandFile(const HashCode160 * fileId) {
  * present in the datastore.  Presence is indicated
  * by aborting the iteration.
  */
-static int checkPresent(const HashCode160 * key,
+static int checkPresent(const HashCode512 * key,
 			const Datastore_Value * value, 
 			void * closure) {
   Datastore_Value * comp = closure;
@@ -114,14 +114,14 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 		   cron_t expiration,
 		   unsigned long long fileOffset,
 		   unsigned int anonymityLevel,
-		   const HashCode160 * fileId,
+		   const HashCode512 * fileId,
 		   unsigned int size,
 		   const DBlock * content) {
   char * fn;
   int fd;
   int ret;
   OnDemandBlock odb;
-  HashCode160 key;
+  HashCode512 key;
   EncName enc;
 
   if (size <= sizeof(DBlock)) {
@@ -218,7 +218,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
  */
 int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 			const Datastore_Value * dbv,
-			const HashCode160 * query,
+			const HashCode512 * query,
 			Datastore_Value ** enc) {
   char * fn;
   char * iobuf;
@@ -315,7 +315,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
  * @return YES if so, NO if not.
  */
 int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
-			 const HashCode160 * fileId) {
+			 const HashCode512 * fileId) {
   char * fn;
   int fd;
 
@@ -336,7 +336,7 @@ int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
  * abort the iteration: we found what we're looing for.  Otherwise
  * continue.
  */
-static int completeValue(const HashCode160 * key,
+static int completeValue(const HashCode512 * key,
 			 const Datastore_Value * value, 
 			 void * closure) {
   Datastore_Value * comp = closure;
@@ -371,12 +371,12 @@ static int completeValue(const HashCode160 * key,
  */
 int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 		     unsigned int blocksize,
-		     const HashCode160 * fileId) {
+		     const HashCode512 * fileId) {
   char * fn;
   int fd;
   int ret;
   OnDemandBlock odb;
-  HashCode160 key;
+  HashCode512 key;
   unsigned long long pos;
   unsigned long long size;
   unsigned long long delta;

@@ -13,18 +13,18 @@ void doneLockingGcrypt();
 #endif
 
 static int test(int number) {
-  HashCode160 h1;
-  HashCode160 h2;
+  HashCode512 h1;
+  HashCode512 h2;
   EncName enc;
 
-  memset(&h1, number, sizeof(HashCode160));
+  memset(&h1, number, sizeof(HashCode512));
   hash2enc(&h1, &enc);
   if (OK != enc2hash((char*)&enc, &h2)) {
     printf("enc2hash failed!\n");
     return 1;
   }
     
-  if (! equalsHashCode160(&h1, &h2)) {
+  if (! equalsHashCode512(&h1, &h2)) {
     return 1;
   }
   return 0;

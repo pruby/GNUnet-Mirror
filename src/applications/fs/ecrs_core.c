@@ -44,9 +44,9 @@
  */
 int fileBlockEncode(const DBlock * data,
 		    unsigned int len,
-		    const HashCode160 * query,
+		    const HashCode512 * query,
 		    Datastore_Value ** value) {
-  HashCode160 hc;
+  HashCode512 hc;
   SESSIONKEY skey;
   INITVECTOR iv;  /* initial value */
   Datastore_Value * val;
@@ -75,7 +75,7 @@ int fileBlockEncode(const DBlock * data,
   hash(&db[1],
        len - sizeof(DBlock),
        &hc);
-  if (equalsHashCode160(query,
+  if (equalsHashCode512(query,
 			&hc)) {
     *value = val;
     return OK;
@@ -93,7 +93,7 @@ int fileBlockEncode(const DBlock * data,
  */
 void fileBlockGetKey(const DBlock * data,
 		     unsigned int len,
-		     HashCode160 * key) {
+		     HashCode512 * key) {
   GNUNET_ASSERT(len >= sizeof(DBlock));
   hash(&data[1],
        len - sizeof(DBlock), 
@@ -106,10 +106,10 @@ void fileBlockGetKey(const DBlock * data,
  */
 void fileBlockGetQuery(const DBlock * db,
 		       unsigned int len,
-		       HashCode160 * query) {
+		       HashCode512 * query) {
   char * tmp;
   const char * data;
-  HashCode160 hc;
+  HashCode512 hc;
   SESSIONKEY skey;
   INITVECTOR iv;
 
@@ -150,7 +150,7 @@ unsigned int getTypeOfBlock(unsigned int size,
  */
 int getQueryFor(unsigned int size,
 		const DBlock * data,
-		HashCode160 * query) {  
+		HashCode512 * query) {  
   unsigned int type;
 
   type = getTypeOfBlock(size, data);
@@ -264,8 +264,8 @@ int isDatumApplicable(unsigned int type,
 		      unsigned int size,
 		      const DBlock * data,
 		      unsigned int keyCount,
-		      const HashCode160 * keys) {
-  HashCode160 hc;
+		      const HashCode512 * keys) {
+  HashCode512 hc;
 
   if (type != getTypeOfBlock(size, data)) {    
     BREAK();
@@ -275,7 +275,7 @@ int isDatumApplicable(unsigned int type,
     BREAK(); /* malformed data */
     return SYSERR;
   }
-  if (! equalsHashCode160(&hc, &keys[0])) {
+  if (! equalsHashCode512(&hc, &keys[0])) {
     BREAK(); /* mismatch between primary queries,
 		we should not even see those here. */
     return SYSERR;    
@@ -289,7 +289,7 @@ int isDatumApplicable(unsigned int type,
     hash(&((SBlock*)data)->subspace,
 	 sizeof(PublicKey),
 	 &hc);	 
-    if (equalsHashCode160(&keys[1],
+    if (equalsHashCode512(&keys[1],
 			  &hc))
       return OK;
     else
@@ -300,7 +300,7 @@ int isDatumApplicable(unsigned int type,
     hash(&((NBlock*)data)->subspace,
 	 sizeof(PublicKey),
 	 &hc);	 
-    if (equalsHashCode160(&keys[1],
+    if (equalsHashCode512(&keys[1],
 			  &hc))
       return OK;
     else

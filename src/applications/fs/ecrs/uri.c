@@ -114,8 +114,8 @@ static char * createKeywordURI(char ** keywords,
 /**
  * Generate a subspace URI.
  */ 
-static char * createSubspaceURI(const HashCode160 * namespace,
-				const HashCode160 * identifier) {
+static char * createSubspaceURI(const HashCode512 * namespace,
+				const HashCode512 * identifier) {
   size_t n;
   char * ret;
   EncName ns;
@@ -253,8 +253,8 @@ static int parseKeywordURI(const char * uri,
  * @return OK on success, SYSERR if this is not a namespace URI
  */
 static int parseSubspaceURI(const char * uri,
-			    HashCode160 * namespace,
-			    HashCode160 * identifier) {
+			    HashCode512 * namespace,
+			    HashCode512 * identifier) {
   unsigned int pos;
   size_t slen;
   char * up;

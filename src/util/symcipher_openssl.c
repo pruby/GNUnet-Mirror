@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,7 +27,7 @@
 
 #include "gnunet_util.h"
 #include "platform.h"
-#include <openssl/blowfish.h>
+#include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
@@ -68,7 +68,7 @@ int encryptBlock(const void * block,
   GNUNET_ASSERT( (block != NULL) && (sessionkey != NULL) );
   /* compute result size by adding block-length, always padded */
   EVP_EncryptInit(&ctx, 
-		  EVP_bf_cfb(), 
+		  EVP_aes_256_cfb(), 
 		  (void*) sessionkey->key, /* cast for old OpenSSL versions */
 		  (void*) iv); /* cast for old OpenSSL versions */
 #if SSL_MICRO >= 6
@@ -128,9 +128,9 @@ int decryptBlock(const SESSIONKEY * sessionkey,
     BREAK();
     return SYSERR;
   }
-  /* use blowfish-cfb */
+  /* use aes-256-cfb */
   EVP_DecryptInit(&ctx, 
-		  EVP_bf_cfb(), 
+		  EVP_aes_256_cfb(), 
 		  (void*)sessionkey->key, /* cast for old OpenSSL versions */
 		  (void*)iv); /* cast for old OpenSSL versions */
 #if SSL_MICRO >= 6

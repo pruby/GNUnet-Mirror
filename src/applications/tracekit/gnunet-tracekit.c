@@ -197,7 +197,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 	     &enc);
     match = NO;
     for (j=0;j<prCount;j++)
-      if (equalsHashCode160(&buffer->responderId.hashPubKey,
+      if (equalsHashCode512(&buffer->responderId.hashPubKey,
 			    &peersResponding[j].hashPubKey))
 	match = YES;
     if (match == NO) {
@@ -240,7 +240,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
       for (i=0;i<count;i++) {
 	match = NO;
 	for (j=0;j<psCount;j++)
-	  if (equalsHashCode160(&((TRACEKIT_CS_REPLY_GENERIC*)buffer)->peerList[i].hashPubKey,
+	  if (equalsHashCode512(&((TRACEKIT_CS_REPLY_GENERIC*)buffer)->peerList[i].hashPubKey,
 				&peersSeen[j].hashPubKey))
 	    match = YES;
 	if (match == NO) {
@@ -285,7 +285,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 
     match = NO;
     for (j=0;j<prCount;j++)
-      if (equalsHashCode160(&peersResponding[j].hashPubKey,
+      if (equalsHashCode512(&peersResponding[j].hashPubKey,
 			    &peersSeen[i].hashPubKey)) {
 	match = YES;
 	break;

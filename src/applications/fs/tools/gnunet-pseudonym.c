@@ -155,7 +155,7 @@ static int parser(int argc,
       break;
     case 'R': {
       EncName enc;
-      HashCode160 hc;
+      HashCode512 hc;
 
       if (SYSERR == enc2hash(GNoptarg,
 			     &hc))
@@ -384,7 +384,7 @@ int main(int argc, char *argv[]) {
 			   EXTRACTOR_OWNER,
 			   pname);
     } else { /* no collection */
-      HashCode160 rootEntry;
+      HashCode512 rootEntry;
       char * root;
       char * keyword;
       struct ECRS_URI * advertisement;
@@ -393,7 +393,7 @@ int main(int argc, char *argv[]) {
       root = getConfigurationString("PSEUDONYM",
 				    "ROOT");
       if (root == NULL) {
-	memset(&rootEntry, 0, sizeof(HashCode160));
+	memset(&rootEntry, 0, sizeof(HashCode512));
       } else {
 	enc2hash(root, &rootEntry);
 	FREE(root);

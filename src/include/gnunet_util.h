@@ -105,9 +105,9 @@
 #define LOG_EVERYTHING 9
 
 /**
- * @brief length of the sessionkey in bytes (128 BIT sessionkey) 
+ * @brief length of the sessionkey in bytes (256 BIT sessionkey) 
  */
-#define SESSIONKEY_LEN (128/8)
+#define SESSIONKEY_LEN (256/8)
 
 /**
  * @brief Default names of the configuration files.
@@ -303,29 +303,25 @@ typedef struct PTHREAD_T {
 } PTHREAD_T;
 
 /**
- * A 160-bit hashcode
+ * @brief A 512-bit hashcode
  */
 typedef struct {
-  int a;
-  int b;
-  int c;
-  int d;
-  int e;
-} HashCode160;
+  unsigned int bits[512 / 8 / sizeof(unsigned int)]; /* = 16 */
+} HashCode512;
 
 /**
  * The identity of the host (basically the RIPE160 hashcode of
  * it's public key).
  */
 typedef struct {
-  HashCode160 hashPubKey;
+  HashCode512 hashPubKey;
 } PeerIdentity;
 
 /**
- * ASCII encoding of a HashCode160.
+ * @brief 0-terminated ASCII encoding of a HashCode512.
  */
 typedef struct {
-  unsigned char encoding[33];
+  unsigned char encoding[104];
 } EncName;
 
 /**
@@ -464,7 +460,7 @@ typedef struct {
  * @brief IV for sym cipher
  *
  * NOTE: must be smaller (!) in size than the
- * HashCode160.
+ * HashCode512.
  */
 typedef struct {
   unsigned char iv[SESSIONKEY_LEN/2];
@@ -502,7 +498,7 @@ struct Bloomfilter;
 /**
  * Iterator over all HashCodes stored in a Bloomfilter.
  */
-typedef HashCode160 * (*ElementIterator)(void * arg);
+typedef HashCode512 * (*ElementIterator)(void * arg);
 
 /**
  * @brief a Vector (ordered variable size set of elements), opaque
@@ -1358,7 +1354,7 @@ int semaphore_up_(Semaphore * s,
  * @param result where to store the encoding (EncName can be
  *  safely cast to char*, a '\0' termination is set).
  */
-void hash2enc(const HashCode160 * block,
+void hash2enc(const HashCode512 * block,
 	      EncName * result);
 
 /**
@@ -1368,7 +1364,7 @@ void hash2enc(const HashCode160 * block,
  * @return OK on success, SYSERR if result has the wrong encoding
  */
 int enc2hash(const char * enc,
-	     HashCode160 * result);
+	     HashCode512 * result);
 
 /**
  * Compute the distance between 2 hashcodes.
@@ -1377,14 +1373,14 @@ int enc2hash(const char * enc,
  * be somewhat consistent. And of course, the
  * result should be a positive number.
  */
-int distanceHashCode160(const HashCode160 * a, 
-			const HashCode160 * b);
+int distanceHashCode512(const HashCode512 * a, 
+			const HashCode512 * b);
  
 /**
  * compare two hashcodes.
  */
-int equalsHashCode160(const HashCode160 * a, 
-		      const HashCode160 * b);
+int equalsHashCode512(const HashCode512 * a, 
+		      const HashCode512 * b);
  
 /**
  * Hash block of given size.
@@ -1392,8 +1388,8 @@ int equalsHashCode160(const HashCode160 * a,
  * @param ret pointer to where to write the hashcode
  */
 void hash(const void * block,
-	  int size,
-	  HashCode160 * ret);
+	  unsigned int size,
+	  HashCode512 * ret);
 
 
 /**
@@ -1401,7 +1397,7 @@ void hash(const void * block,
  * @return OK on success, SYSERR on error
  */
 int getFileHash(const char * filename,
-     	        HashCode160 * ret);
+     	        HashCode512 * ret);
 
 /**
  * Check if 2 hosts are the same (returns 1 if yes)
@@ -1412,27 +1408,27 @@ int getFileHash(const char * filename,
 int hostIdentityEquals(const PeerIdentity * first, 
 		       const PeerIdentity * second);
  
-void makeRandomId(HashCode160 * result);
+void makeRandomId(HashCode512 * result);
 
 /* compute result(delta) = b - a */
-void deltaId(const HashCode160 * a,
-	     const HashCode160 * b,
-	     HashCode160 * result);
+void deltaId(const HashCode512 * a,
+	     const HashCode512 * b,
+	     HashCode512 * result);
 
 /* compute result(b) = a + delta */
-void addHashCodes(const HashCode160 * a,
-		  const HashCode160 * delta,
-		  HashCode160 * result);
+void addHashCodes(const HashCode512 * a,
+		  const HashCode512 * delta,
+		  HashCode512 * result);
 
 /* compute result = a ^ b */
-void xorHashCodes(const HashCode160 * a,
-		  const HashCode160 * b,
-		  HashCode160 * result);
+void xorHashCodes(const HashCode512 * a,
+		  const HashCode512 * b,
+		  HashCode512 * result);
 
 /**
  * Convert a hashcode into a key.
  */
-void hashToKey(const HashCode160 * hc,
+void hashToKey(const HashCode512 * hc,
 	       SESSIONKEY * skey,
 	       INITVECTOR * iv);
 
@@ -1442,7 +1438,7 @@ void hashToKey(const HashCode160 * hc,
  * @param bit index into the hashcode, [0...159]
  * @return Bit \a bit from hashcode \a code, -1 for invalid index
  */
-int getHashCodeBit(const HashCode160 * code, 
+int getHashCodeBit(const HashCode512 * code, 
 		   unsigned int bit);
 
 /**
@@ -1450,17 +1446,17 @@ int getHashCodeBit(const HashCode160 * code,
  * of all hashcodes.
  * @return 1 if h1 > h2, -1 if h1 < h2 and 0 if h1 == h2.
  */
-int hashCodeCompare(const HashCode160 * h1,
-		    const HashCode160 * h2);
+int hashCodeCompare(const HashCode512 * h1,
+		    const HashCode512 * h2);
 
 /**
  * Find out which of the two hash codes is closer to target
  * in the XOR metric (Kademlia).
  * @return -1 if h1 is closer, 1 if h2 is closer and 0 if h1==h2.
  */
-int hashCodeCompareDistance(const HashCode160 * h1,
-			    const HashCode160 * h2,
-			    const HashCode160 * target);
+int hashCodeCompareDistance(const HashCode512 * h1,
+			    const HashCode512 * h2,
+			    const HashCode512 * target);
   
 /**
  * create a new hostkey. Callee must free return value.
@@ -1471,7 +1467,7 @@ struct PrivateKey * makePrivateKey();
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-struct PrivateKey * makeKblockKey(const HashCode160 * input);
+struct PrivateKey * makeKblockKey(const HashCode512 * input);
 
 /**
  * Free memory occupied by hostkey
@@ -2006,7 +2002,7 @@ struct Bloomfilter * loadBloomfilter(const char * filename,
  * @return YES if the element is in the filter, NO if not
  */
 int testBloomfilter(struct Bloomfilter * bf,
-		    const HashCode160 * e);
+		    const HashCode512 * e);
 
 /**
  * Add an element to the filter
@@ -2014,7 +2010,7 @@ int testBloomfilter(struct Bloomfilter * bf,
  * @param e the element
  */
 void addToBloomfilter(struct Bloomfilter * bf,
-		      const HashCode160 * e);
+		      const HashCode512 * e);
 
 /**
  * Remove an element from the filter.
@@ -2022,7 +2018,7 @@ void addToBloomfilter(struct Bloomfilter * bf,
  * @param e the element to remove
  */
 void delFromBloomfilter(struct Bloomfilter * bf,
-			const HashCode160 * e);
+			const HashCode512 * e);
 
 /**
  * Free the space associcated with a filter

@@ -60,7 +60,7 @@ typedef struct {
   /**
    * What are these keys?
    */
-  HashCode160 * matchingKeys;
+  HashCode512 * matchingKeys;
   /**
    * What info do we have about this result?
    */

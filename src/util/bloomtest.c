@@ -13,17 +13,13 @@
 /**
  * Generate a random hashcode.
  */
-static void nextHC(HashCode160 * hc) {
-  hc->a=rand();
-  hc->b=rand();
-  hc->c=rand();
-  hc->d=rand();
-  hc->e=rand();
+static void nextHC(HashCode512 * hc) {
+  makeRandomId(hc);
 }
 
 int main(int argc, char *argv[]) {
   struct Bloomfilter *bf;
-  HashCode160 tmp;
+  HashCode512 tmp;
   int i;
   int ok;
   int falseok;

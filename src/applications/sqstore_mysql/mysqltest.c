@@ -27,7 +27,7 @@ static Datastore_Value * initValue(int i) {
   return value;
 }
 
-static int checkValue(const HashCode160 * key,
+static int checkValue(const HashCode512 * key,
 		      const Datastore_Value * val,
 		      void * closure) {
   int i;
@@ -49,7 +49,7 @@ static int checkValue(const HashCode160 * key,
   return ret;
 }
 
-static int iterateUp(const HashCode160 * key,
+static int iterateUp(const HashCode512 * key,
 		     const Datastore_Value * val,
 		     int * closure) {
   int ret;
@@ -59,7 +59,7 @@ static int iterateUp(const HashCode160 * key,
   return ret;
 }
 
-static int iterateUp1(const HashCode160 * key,
+static int iterateUp1(const HashCode512 * key,
 		      const Datastore_Value * val,
 		      int * closure) {
   int ret;
@@ -69,7 +69,7 @@ static int iterateUp1(const HashCode160 * key,
   return ret;
 }
 
-static int iterateDown(const HashCode160 * key,
+static int iterateDown(const HashCode512 * key,
 		       const Datastore_Value * val,
 		       int * closure) {
   int ret;
@@ -84,7 +84,7 @@ static int iterateDown(const HashCode160 * key,
  */
 static int test(SQstore_ServiceAPI * api) {
   Datastore_Value * value;
-  HashCode160 key;
+  HashCode512 key;
   unsigned long long oldSize;
   int i;
 
@@ -92,7 +92,7 @@ static int test(SQstore_ServiceAPI * api) {
   oldSize = api->getSize();
   for (i=0;i<256;i++) {
     value = initValue(i+1);
-    memset(&key, 256-i, sizeof(HashCode160));
+    memset(&key, 256-i, sizeof(HashCode512));
     api->put(&key, value);
     FREE(value);
   }
@@ -105,13 +105,13 @@ static int test(SQstore_ServiceAPI * api) {
 					(Datum_Iterator) &iterateUp1,
 					&i));
   for (i=255;i>=0;i--) {
-    memset(&key, 256-i, sizeof(HashCode160));     
+    memset(&key, 256-i, sizeof(HashCode512));     
     ASSERT(1 == api->get(&key, i+1, &checkValue, &i));
   }
 
   oldSize = api->getSize();
   for (i=255;i>=0;i-=2) {
-    memset(&key, 256-i, sizeof(HashCode160)); 
+    memset(&key, 256-i, sizeof(HashCode512)); 
     value = initValue(i+1);
     ASSERT(1 == api->del(&key, value));
     FREE(value);
@@ -127,7 +127,7 @@ static int test(SQstore_ServiceAPI * api) {
 					   &i));
   ASSERT(0 == i);
   for (i=254;i>=0;i-=2) {
-    memset(&key, 256-i, sizeof(HashCode160)); 
+    memset(&key, 256-i, sizeof(HashCode512)); 
     value = initValue(i+1);
     ASSERT(1 == api->del(&key, value));
     FREE(value);

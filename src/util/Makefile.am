@@ -50,7 +50,9 @@ EXTRA_DIST = generate \
   random_gcrypt.c \
   random_openssl.c
 
-libgnunetutil_la_LDFLAGS = -export-dynamic $(LIBLTDL) $(CRYPTLIB) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp
+libgnunetutil_la_LDFLAGS = \
+ -export-dynamic $(LIBLTDL) $(CRYPTLIB) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp \
+ -version-info 1:0:0
 
 generate_gnunetd_conf.c: generate
 	./generate $(top_srcdir)/contrib/gnunet.root generate_gnunetd_conf > generate_gnunetd_conf.c

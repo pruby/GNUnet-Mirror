@@ -36,8 +36,8 @@
  * @brief content hash key
  */
 typedef struct {
-  HashCode160 key;
-  HashCode160 query;
+  HashCode512 key;
+  HashCode512 query;
 } CHK;
 
 /**
@@ -100,12 +100,12 @@ typedef struct {
   /**
    * R = H(N-I)^S, used for routing!
    */ 
-  HashCode160 identifier; 
+  HashCode512 identifier; 
   /* from here on encrypted */
   cron_t creationTime; /* in network byte order */
   cron_t updateInterval; /* in network byte order */
-  HashCode160 nextIdentifier; /* N,  20 b */
-  HashCode160 identifierIncrement; /* I, 20 b */
+  HashCode512 nextIdentifier; /* N,  20 b */
+  HashCode512 identifierIncrement; /* I, 20 b */
   /* 0-terminated URI follows here! */
   /* variable-size Meta-Data follows here! */
 } SBlock;
@@ -119,18 +119,18 @@ typedef struct {
   /**
    * Must be all zeros 
    */ 
-  HashCode160 identifier; 
+  HashCode512 identifier; 
   /* The REST (from here on) is encrypted! */
   /**
    * Identifier of the namespace
    */
-  HashCode160 namespace;
+  HashCode512 namespace;
   
   /**
    * Key of an (optional) root entry into the namespace
    * (use all-zeros for not given).
    */
-  HashCode160 rootEntry;
+  HashCode512 rootEntry;
 
   /* variable-size Meta-Data follows here! */
 } NBlock;
@@ -163,7 +163,7 @@ typedef struct {
  */
 int fileBlockEncode(const DBlock * data,
 		    unsigned int len,
-		    const HashCode160 * query,
+		    const HashCode512 * query,
 		    Datastore_Value ** value);
 
 /**
@@ -172,7 +172,7 @@ int fileBlockEncode(const DBlock * data,
  */
 void fileBlockGetQuery(const DBlock * data,
 		       unsigned int len,
-		       HashCode160 * query);
+		       HashCode512 * query);
 
 
 /**
@@ -181,7 +181,7 @@ void fileBlockGetQuery(const DBlock * data,
  */
 void fileBlockGetKey(const DBlock * data,
 		     unsigned int len,
-		     HashCode160 * key);
+		     HashCode512 * key);
 
 /**
  * What is the type of the given block of data?
@@ -202,7 +202,7 @@ unsigned int getTypeOfBlock(unsigned int size,
  */
 int getQueryFor(unsigned int size,
 		const DBlock * data,
-		HashCode160 * query);
+		HashCode512 * query);
 
 /**
  * Verify that the given Datum is a valid response
@@ -221,7 +221,7 @@ int isDatumApplicable(unsigned int type,
 		      unsigned int size,
 		      const DBlock * data,
 		      unsigned int keyCount,
-		      const HashCode160 * keys);
+		      const HashCode512 * keys);
 
 
 #endif

@@ -39,7 +39,7 @@
  */ 
 typedef struct HT_Entry_t {
   struct HT_Entry_t * next;
-  HashCode160 key;
+  HashCode512 key;
   unsigned int count;
   DataContainer ** values;
 } HT_Entry;
@@ -72,7 +72,7 @@ static int lookup(void * closure,
 		  unsigned int type,
 		  unsigned int prio,
 		  unsigned int keyCount,
-		  const HashCode160 * keys,
+		  const HashCode512 * keys,
 		  DataProcessor resultCallback,
 		  void * resCallbackClosure) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
@@ -84,7 +84,7 @@ static int lookup(void * closure,
   MUTEX_LOCK(&ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode160(&keys[0], &pos->key)) {
+    if (equalsHashCode512(&keys[0], &pos->key)) {
       for (i=0;i<pos->count;i++)
 	if (OK != resultCallback(&pos->key,
 				 pos->values[i],
@@ -110,7 +110,7 @@ static int lookup(void * closure,
  * @return OK if the value could be stored, DHT_ERRORCODE or SYSERR if not (i.e. out of space)
  */
 static int store(void * closure,
-		 const HashCode160 * key,
+		 const HashCode512 * key,
 		 const DataContainer * value,
 		 unsigned int prio) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
@@ -124,7 +124,7 @@ static int store(void * closure,
   MUTEX_LOCK(&ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode160(key, &pos->key)) {
+    if (equalsHashCode512(key, &pos->key)) {
       if (ds->max_memory < size) {
 	MUTEX_UNLOCK(&ds->lock);
 	return NO;
@@ -171,7 +171,7 @@ static int store(void * closure,
  * @return OK if the value could be removed, SYSERR if not (i.e. not present)
  */
 static int ds_remove(void * closure,
-		     const HashCode160 * key,
+		     const HashCode512 * key,
 		     const DataContainer * value) {
   MemoryDatastore * ds = closure;
   HT_Entry * pos;
@@ -186,7 +186,7 @@ static int ds_remove(void * closure,
   prev = NULL;
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode160(key, &pos->key)) {
+    if (equalsHashCode512(key, &pos->key)) {
       if (value != NULL) {
 	for (i=0;i<pos->count;i++) {
 	  if ( (pos->values[i]->size == value->size) &&

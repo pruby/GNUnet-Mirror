@@ -29,7 +29,7 @@
 #include "platform.h"
 #include "ecrs.h"
 
-void ECRS_encryptInPlace(const HashCode160 * hc,
+void ECRS_encryptInPlace(const HashCode512 * hc,
 			 void * data,
 			 unsigned int len) {
   char * tmp;
@@ -48,7 +48,7 @@ void ECRS_encryptInPlace(const HashCode160 * hc,
   FREE(tmp);
 }
 
-void ECRS_decryptInPlace(const HashCode160 * hc,
+void ECRS_decryptInPlace(const HashCode512 * hc,
 			 void * data,
 			 unsigned int len) {
   char * tmp;

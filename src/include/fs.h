@@ -62,7 +62,7 @@ typedef struct {
   /**
    * What are the queries?
    */
-  HashCode160 query[1];
+  HashCode512 query[1];
 
 } RequestSearch;
 
@@ -140,7 +140,7 @@ typedef struct {
    * this block?  Used by gnunetd for the name
    * of the file in the on-demand datastore.
    */
-  HashCode160 fileId;
+  HashCode512 fileId;
 
 } RequestIndex;
 
@@ -169,7 +169,7 @@ typedef struct {
    * What is the hash of the file that should be
    * unindexed?
    */
-  HashCode160 fileId;
+  HashCode512 fileId;
 
 } RequestUnindex;
 
@@ -183,7 +183,7 @@ typedef struct {
    * What is the hash of the file that should be
    * unindexed?
    */
-  HashCode160 fileId;
+  HashCode512 fileId;
 
 } RequestTestindex;
 

@@ -69,7 +69,7 @@ static void dyncat(char ** string,
  * require us to run gnunet-update!
  */
 static void getVersionHash(EncName * enc) {
-  HashCode160 hc;
+  HashCode512 hc;
   char * string;
 
   string = STRDUP("");

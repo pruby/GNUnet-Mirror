@@ -420,7 +420,7 @@ int sign(const struct PrivateKey * hostkey,
 #endif
   int rs = RSA_size(hostkey->rsa);
   unsigned int sigSize;
-  HashCode160 hc;
+  HashCode512 hc;
 
   if (block == NULL)
     return SYSERR;
@@ -433,7 +433,7 @@ int sign(const struct PrivateKey * hostkey,
        &hc);
   if (1 != RSA_sign(NID_ripemd160,
 		    (unsigned char*)&hc,
-		    sizeof(HashCode160),
+		    sizeof(HashCode512),
 		    &sig->sig[0],
 		    &sigSize,
 		    hostkey->rsa)) {
@@ -451,7 +451,7 @@ int sign(const struct PrivateKey * hostkey,
 #if EXTRA_CHECKS
   if (1 != RSA_verify(NID_ripemd160,
 		      (unsigned char*)&hc,
-		      sizeof(HashCode160),
+		      sizeof(HashCode512),
 		      &sig->sig[0],
 		      sizeof(Signature),
 		      hostkey->rsa)) 
@@ -462,7 +462,7 @@ int sign(const struct PrivateKey * hostkey,
     BREAK();
     if (1 != RSA_verify(NID_ripemd160,
 			(unsigned char*)&hc,
-			sizeof(HashCode160),
+			sizeof(HashCode512),
 			&sig->sig[0],
 			sizeof(Signature),
 			hostkey->rsa)) 
@@ -488,7 +488,7 @@ int verifySig(const void * block,
 	      const PublicKey * publicKey) {
   struct PrivateKey * hostkey;
   int rs;
-  HashCode160 hc;
+  HashCode512 hc;
  
   hostkey = public2PrivateKey(publicKey);
   if ( (hostkey == NULL) || 
@@ -505,7 +505,7 @@ int verifySig(const void * block,
        &hc);
   if (1 != RSA_verify(NID_ripemd160,
 		      (unsigned char*)&hc,
-		      sizeof(HashCode160),
+		      sizeof(HashCode512),
 		      (unsigned char*) &sig->sig[0], /* cast because OpenSSL may not declare const */
 		      sizeof(Signature),
 		      hostkey->rsa)) {

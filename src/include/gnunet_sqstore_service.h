@@ -53,7 +53,7 @@ typedef struct {
    *  
    * @return OK on success, SYSERR on error
    */
-  int (*put)(const HashCode160 * key, 
+  int (*put)(const HashCode512 * key, 
 	     const Datastore_Value * value);
 
   /**
@@ -67,7 +67,7 @@ typedef struct {
    * @return the number of results, SYSERR if the
    *   iter is non-NULL and aborted the iteration
    */
-  int (*get)(const HashCode160 * key, 
+  int (*get)(const HashCode512 * key, 
 	     unsigned int type,
 	     Datum_Iterator iter,
 	     void * closure);
@@ -94,7 +94,7 @@ typedef struct {
    * @return OK if a match was found and the update
    *     was successful, SYSERR on error
    */
-  int (*update)(const HashCode160 * key, 
+  int (*update)(const HashCode512 * key, 
 		const Datastore_Value * value,
 		int delta);
 
@@ -143,7 +143,7 @@ typedef struct {
    * @return the number of items deleted (at most 1!), 0 if
    *        none were found, SYSERR on errors
    */
-  int (*del)(const HashCode160 * key, 
+  int (*del)(const HashCode512 * key, 
 	     const Datastore_Value * value);
 
   /**

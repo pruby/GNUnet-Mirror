@@ -68,12 +68,12 @@ typedef struct {
   /**
    * The keys (for the search).
    */ 
-  HashCode160 * keys;
+  HashCode512 * keys;
 
   /**
    * The key (for decryption)
    */
-  HashCode160 decryptKey;
+  HashCode512 decryptKey;
 
 } PendingSearch;
 
@@ -121,8 +121,8 @@ typedef struct {
  */
 static void addPS(unsigned int type,
 		  unsigned int keyCount,
-		  const HashCode160 * keys,
-		  const HashCode160 * dkey,
+		  const HashCode512 * keys,
+		  const HashCode512 * dkey,
 		  SendQueriesContext * sqc) {
   PendingSearch * ps;
 
@@ -132,10 +132,10 @@ static void addPS(unsigned int type,
   ps->priority = 5 + randomi(20);
   ps->type = type; 
   ps->keyCount = keyCount; 
-  ps->keys = MALLOC(sizeof(HashCode160) * keyCount);
+  ps->keys = MALLOC(sizeof(HashCode512) * keyCount);
   memcpy(ps->keys,
 	 keys,
-	 sizeof(HashCode160) * keyCount);
+	 sizeof(HashCode512) * keyCount);
   ps->decryptKey = *dkey;
   ps->handle = NULL;
   MUTEX_LOCK(&sqc->lock);
@@ -158,11 +158,11 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 	_("CHK URI not allowed for search.\n"));
     break;
   case sks: {
-    HashCode160 keys[2];
-    HashCode160 hk; /* hk = hash(identifier) */
+    HashCode512 keys[2];
+    HashCode512 hk; /* hk = hash(identifier) */
 
     hash(&uri->data.sks.identifier,
-	 sizeof(HashCode160),
+	 sizeof(HashCode512),
 	 &hk); 
     xorHashCodes(&hk,
 		 &uri->data.sks.namespace,
@@ -176,8 +176,8 @@ static void addQueryForURI(const struct ECRS_URI * uri,
     break;
   }
   case ksk: {
-      HashCode160 hc;
-      HashCode160 query;
+      HashCode512 hc;
+      HashCode512 query;
       struct PrivateKey * pk;
       PublicKey pub;
       int i;
@@ -228,15 +228,15 @@ static void addQueryForURI(const struct ECRS_URI * uri,
  */
 static int computeIdAtTime(const SBlock * sb,
 			   cron_t now,
-			   HashCode160 * c) {
+			   HashCode512 * c) {
   cron_t pos;
-  HashCode160 tmp;
+  HashCode512 tmp;
   unsigned int iter;
 
   if (ntohll(sb->updateInterval) == (cron_t) SBLOCK_UPDATE_SPORADIC) {
     memcpy(c, 
 	   &sb->nextIdentifier, 
-	   sizeof(HashCode160));
+	   sizeof(HashCode512));
     return OK;
   }
   if (ntohll(sb->updateInterval) == (cron_t) SBLOCK_UPDATE_NONE) {
@@ -272,7 +272,7 @@ static int computeIdAtTime(const SBlock * sb,
  * namespace advertisement.
  */
 static int processNBlock(const NBlock * nb,
-			 const HashCode160 * key,
+			 const HashCode512 * key,
 			 unsigned int size,
 			 SendQueriesContext * sqc) {
   ECRS_FileInfo fi;
@@ -306,7 +306,7 @@ static int processNBlock(const NBlock * nb,
  *
  * @return SYSERR if the entry is malformed
  */
-static int receiveReplies(const HashCode160 * key,
+static int receiveReplies(const HashCode512 * key,
 			  const Datastore_Value * value,
 			  SendQueriesContext * sqc) {
   unsigned int type;
@@ -334,14 +334,18 @@ static int receiveReplies(const HashCode160 * key,
       case K_BLOCK: {
 	KBlock * kb;
 	char * dstURI;
+	EncName enc;
 	int j;
 	
 	if (size < sizeof(KBlock))
 	  return SYSERR;
 	kb = (KBlock*) &value[1];
+	IFLOG(LOG_DEBUG,
+	      hash2enc(&ps->decryptKey,
+		       &enc));
 	LOG(LOG_DEBUG,
-	    "Decrypting KBlock with key %u.\n",
-	    ps->decryptKey.a);
+	    "Decrypting KBlock with key %s.\n",
+	    &enc);
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb[1],
 			    size - sizeof(KBlock));
@@ -409,7 +413,7 @@ static int receiveReplies(const HashCode160 * key,
 	char * dstURI;
 	int j;
 	cron_t now;
-	HashCode160 updateId;
+	HashCode512 updateId;
 	URI updateURI;
 	
 	if (size < sizeof(SBlock))
@@ -420,7 +424,7 @@ static int receiveReplies(const HashCode160 * key,
 			    size
 			    - sizeof(Signature)
 			    - sizeof(PublicKey) 
-			    - sizeof(HashCode160));
+			    - sizeof(HashCode512));
 	j = sizeof(SBlock);
 	while ( (j < size) &&
 		(((char*) &sb[1])[j] != '\0') )
@@ -457,7 +461,7 @@ static int receiveReplies(const HashCode160 * key,
 	cronTime(&now);	
 	if (OK != computeIdAtTime(sb, now, &updateId))
 	  return SYSERR;
-	if (equalsHashCode160(&updateId,
+	if (equalsHashCode512(&updateId,
 			      &ps->decryptKey))
 	  return ret; /* have latest version */
 	if (ps->keyCount != 2) {

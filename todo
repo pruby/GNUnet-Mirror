@@ -6,9 +6,6 @@
 - 593??? [ gnunet-setup ]
 
 0.7.0pre1 [4'05] (aka "preview"):
-- util:
-  * switch hash to SHA-512
-  * switch cipher to AES-256
 - testing:
   * sqlite-tests: test update function, concurrency with iterators
   * ECRS-directories (build, iterate)

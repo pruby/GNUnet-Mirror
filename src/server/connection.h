@@ -41,7 +41,7 @@
 typedef struct {
   /* hash of the plaintext, used to verify message integrity;
      ALSO used as the IV for the symmetric cipher! */
-  HashCode160 hash;
+  HashCode512 hash;
   /* sequence number, in network byte order, 0 for plaintext messages! */
   unsigned int sequenceNumber;
   /* timestamp  (network byte order), 0 for plaintext messages! */

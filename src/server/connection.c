@@ -1057,12 +1057,12 @@ static void sendBuffer(BufferEntry * be) {
       int msgCap;
       int l = getCPULoad();
       if (l >= 50) {
-	msgCap = be->session.mtu / sizeof(HashCode160);
+	msgCap = be->session.mtu / sizeof(HashCode512);
       } else {
 	if (l <= 0)
 	  l = 1;
-	msgCap = be->session.mtu / sizeof(HashCode160)
-	  + (MAX_SEND_BUFFER_SIZE - be->session.mtu / sizeof(HashCode160)) / l;
+	msgCap = be->session.mtu / sizeof(HashCode512)
+	  + (MAX_SEND_BUFFER_SIZE - be->session.mtu / sizeof(HashCode512)) / l;
       }
       if (be->max_bpm > 2) {
 	msgCap += 2 * (int) log((double)be->max_bpm);
@@ -1129,8 +1129,8 @@ static void sendBuffer(BufferEntry * be) {
 
   encryptedMsg = MALLOC(p); 
   hash(&p2pHdr->sequenceNumber,
-       p - sizeof(HashCode160),
-       (HashCode160*) encryptedMsg);
+       p - sizeof(HashCode512),
+       (HashCode512*) encryptedMsg);
 #if DEBUG_CONNECTION
   LOG(LOG_DEBUG,
       "Encrypting with key %u and IV %u\n",
@@ -1138,7 +1138,7 @@ static void sendBuffer(BufferEntry * be) {
       *(int*) &encryptedMsg /* IV */);
 #endif
   encryptBlock(&p2pHdr->sequenceNumber,
-	       p - sizeof(HashCode160),
+	       p - sizeof(HashCode512),
 	       &be->skey_local,
 	       (const INITVECTOR*) encryptedMsg, /* IV */
 	       &((P2P_Message*)encryptedMsg)->sequenceNumber);
@@ -1289,7 +1289,7 @@ static BufferEntry * lookForHost(const PeerIdentity * hostId) {
 
   root = CONNECTION_buffer_[computeIndex(hostId)];
   while (root != NULL) {
-    if (equalsHashCode160(&hostId->hashPubKey,
+    if (equalsHashCode512(&hostId->hashPubKey,
 			  &root->session.sender.hashPubKey)) 
       return root;
     root = root->overflowChain;
@@ -1331,7 +1331,7 @@ static BufferEntry * addHost(const PeerIdentity * hostId,
     while (NULL != root) {
       /* settle for entry in the linked list that is down */
       if ( (root->status == STAT_DOWN) ||
-	   (equalsHashCode160(&hostId->hashPubKey,
+	   (equalsHashCode512(&hostId->hashPubKey,
 			      &root->session.sender.hashPubKey)) ) 
 	break;
       prev = root;
@@ -1844,7 +1844,7 @@ int checkHeader(const PeerIdentity * sender,
   unsigned int sequenceNumber;
   TIME_T stamp;
   char * tmp;
-  HashCode160 hc;
+  HashCode512 hc;
   EncName enc;
 
   ENTRY();
@@ -1861,9 +1861,9 @@ int checkHeader(const PeerIdentity * sender,
   hash2enc(&sender->hashPubKey, 
 	   &enc);
   hash(&msg->sequenceNumber,
-       size - sizeof(HashCode160),
+       size - sizeof(HashCode512),
        &hc);
-  if ( equalsHashCode160(&hc,
+  if ( equalsHashCode512(&hc,
 			 &msg->hash) &&
        (msg->sequenceNumber == 0) &&
        (msg->bandwidth == 0) &&
@@ -1890,7 +1890,7 @@ int checkHeader(const PeerIdentity * sender,
     MUTEX_UNLOCK(&lock);
     return SYSERR; /* could not decrypt */
   }
-  tmp = MALLOC(size - sizeof(HashCode160));
+  tmp = MALLOC(size - sizeof(HashCode512));
 #if DEBUG_CONNECTION
   LOG(LOG_DEBUG,
       "Decrypting with key %u and IV %u\n",
@@ -1899,14 +1899,14 @@ int checkHeader(const PeerIdentity * sender,
 #endif
   res = decryptBlock(&be->skey_remote, 
 		     &msg->sequenceNumber,
-		     size - sizeof(HashCode160),
+		     size - sizeof(HashCode512),
 		     (const INITVECTOR*) &msg->hash, /* IV */
 		     tmp);
   hash(tmp,
-       size - sizeof(HashCode160),
+       size - sizeof(HashCode512),
        &hc);
   if ( ! ( (res != OK) &&
-	   equalsHashCode160(&hc,
+	   equalsHashCode512(&hc,
 			     &msg->hash)) ) {
     LOG(LOG_INFO, 
 	"Decrypting message from host '%s' failed, wrong sessionkey!\n",
@@ -1918,7 +1918,7 @@ int checkHeader(const PeerIdentity * sender,
   }
   memcpy(&msg->sequenceNumber,
 	 tmp,
-	 size - sizeof(HashCode160));
+	 size - sizeof(HashCode512));
   FREE(tmp);
   res = YES;
   sequenceNumber = ntohl(msg->sequenceNumber);
@@ -2460,10 +2460,10 @@ void printConnectionBuffer() {
   	      hash2enc(&tmp->session.sender.hashPubKey, 
   	  	       &hostName));
 	IFLOG(LOG_MESSAGE,
-	      hash2enc((HashCode160*) &tmp->skey_local,
+	      hash2enc((HashCode512*) &tmp->skey_local,
 		       &skey_local);)
 	IFLOG(LOG_MESSAGE,
-	      hash2enc((HashCode160*) &tmp->skey_remote,
+	      hash2enc((HashCode512*) &tmp->skey_remote,
 		       &skey_remote));
 	ttype = 0;
 	if (tmp->session.tsession != NULL)
@@ -2599,7 +2599,7 @@ int sendPlaintext(TSession * tsession,
 	 msg,
 	 size);
   hash(&hdr->sequenceNumber,
-       size + sizeof(P2P_Message) - sizeof(HashCode160),
+       size + sizeof(P2P_Message) - sizeof(HashCode512),
        &hdr->hash);  
   ret = transport->send(tsession, 
 			buf, 
@@ -2711,7 +2711,7 @@ int isConnected(const PeerIdentity * hi) {
  * @return the index for this peer in the connection table
  */
 unsigned int computeIndex(const PeerIdentity * hostId) {
-  unsigned int res = (((unsigned int)hostId->hashPubKey.a) & 
+  unsigned int res = (((unsigned int)hostId->hashPubKey.bits[0]) & 
 		      ((unsigned int)(CONNECTION_MAX_HOSTS_ - 1)));
   GNUNET_ASSERT(res <  CONNECTION_MAX_HOSTS_);
   return res;

@@ -363,7 +363,7 @@ int ECRS_createNamespace(const char * name,
 			 unsigned int priority,
 			 cron_t expiration,
 			 const struct ECRS_URI * advertisementURI,
-			 const HashCode160 * rootEntry,
+			 const HashCode512 * rootEntry,
 			 struct ECRS_URI ** rootURI); /* namespace.c */
 
 /**
@@ -373,7 +373,7 @@ int ECRS_createNamespace(const char * name,
  * @return OK if the namespace exists, SYSERR if not
  */
 int ECRS_testNamespaceExists(const char * name,
-			     const HashCode160 * hc);
+			     const HashCode512 * hc);
 
 /**
  * Delete a local namespace.  Only prevents future insertions
@@ -410,8 +410,8 @@ int ECRS_addToNamespace(const char * name,
 			cron_t expirationTime,
 			cron_t creationTime,
 			cron_t updateInterval,
-			const HashCode160 * thisId,
-			const HashCode160 * nextId,
+			const HashCode512 * thisId,
+			const HashCode512 * nextId,
 			const struct ECRS_URI * dst,
 			const struct ECRS_MetaData * md,
 			struct ECRS_URI ** uri); /* namespace.c */
@@ -444,7 +444,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
  */
 typedef int (*ECRS_SearchProgressCallback)
   (const ECRS_FileInfo * fi,
-   const HashCode160 * key,
+   const HashCode512 * key,
    void * closure);
 
 /**

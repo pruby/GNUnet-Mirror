@@ -152,7 +152,7 @@ static int lookup(void * closure,
 		  unsigned int type,
 		  unsigned int prio,
 		  unsigned int keyCount,
-		  const HashCode160 * keys,
+		  const HashCode512 * keys,
 		  DataProcessor processor,
 		  void * pclosure) {
   int ret;
@@ -170,7 +170,7 @@ static int lookup(void * closure,
 }
   
 static int store(void * closure,
-		 const HashCode160 * key,
+		 const HashCode512 * key,
 		 const DataContainer * value,
 		 unsigned int prio) {
   int ret;
@@ -186,7 +186,7 @@ static int store(void * closure,
 }
 
 static int removeDS(void * closure,
-		    const HashCode160 * key,
+		    const HashCode512 * key,
 		    const DataContainer * value) {
   int ret;
   Blockstore * cls = (Blockstore*) closure;
@@ -215,7 +215,7 @@ int main(int argc,
 	 char **argv) {
   char * tableName;
   unsigned int mem;
-  HashCode160 table;
+  HashCode512 table;
   Blockstore myStore;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions)) 

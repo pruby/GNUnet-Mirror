@@ -58,7 +58,7 @@
 
 typedef struct CollectionData {
   DataContainer hdr;
-  HashCode160 nextId;
+  HashCode512 nextId;
   char name[1];
 } CollectionData;
 
@@ -72,7 +72,7 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
 			 const struct ECRS_MetaData * meta) {
   struct ECRS_URI * advertisement;
   struct ECRS_URI * rootURI;
-  HashCode160 nextId;
+  HashCode512 nextId;
   cron_t now;
   unsigned int prio;
   CollectionData * cd;

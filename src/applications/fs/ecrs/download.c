@@ -386,7 +386,7 @@ typedef struct RequestManager {
 
 } RequestManager;
 
-static int nodeReceive(const HashCode160 * query,
+static int nodeReceive(const HashCode512 * query,
 		       const Datastore_Value * reply,
 		       NodeClosure * node);
 
@@ -730,12 +730,12 @@ static int checkPresent(NodeClosure * node) {
 		    data,
 		    size);
   if (res == size) {
-    HashCode160 hc;
+    HashCode512 hc;
     
     hash(data,
 	 size,
 	 &hc);
-    if (equalsHashCode160(&hc,
+    if (equalsHashCode512(&hc,
 			  &node->chk.key)) {
       updateProgress(node, data, size);
       if (node->level > 0) 
@@ -809,7 +809,7 @@ static void iblock_download_children(NodeClosure * node,
  */
 static int decryptContent(const char * data,
 			  unsigned int size,
-			  const HashCode160 * hashcode,
+			  const HashCode512 * hashcode,
 			  char * result){
   INITVECTOR iv;
   SESSIONKEY skey;
@@ -836,10 +836,10 @@ static int decryptContent(const char * data,
  * @param reply the reply
  * @return OK if the reply was valid, SYSERR on error
  */
-static int nodeReceive(const HashCode160 * query,
+static int nodeReceive(const HashCode512 * query,
 		       const Datastore_Value * reply,
 		       NodeClosure * node) {
-  HashCode160 hc;
+  HashCode512 hc;
   unsigned int size;
   int i;
   char * data;
@@ -852,7 +852,7 @@ static int nodeReceive(const HashCode160 * query,
       "Receiving reply to query %s\n",
       &enc);
 
-  GNUNET_ASSERT(equalsHashCode160(query,
+  GNUNET_ASSERT(equalsHashCode512(query,
 				  &node->chk.query));
   size = ntohl(reply->size) - sizeof(Datastore_Value);
   if ( (size <= sizeof(DBlock)) ||
@@ -876,7 +876,7 @@ static int nodeReceive(const HashCode160 * query,
   hash(data,
        size,
        &hc);
-  if (!equalsHashCode160(&hc,
+  if (!equalsHashCode512(&hc,
 			 &node->chk.key)) {
     FREE(data);
     BREAK();

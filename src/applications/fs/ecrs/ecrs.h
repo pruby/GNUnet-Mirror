@@ -44,8 +44,8 @@
 
 typedef struct Location {
   PeerIdentity peer;
-  HashCode160 query;
-  HashCode160 key;
+  HashCode512 query;
+  HashCode512 key;
   unsigned int type;
   unsigned long long size;
 } Location;
@@ -60,8 +60,8 @@ typedef struct ECRS_URI {
       unsigned int keywordCount;
     } ksk;
     struct {
-      HashCode160 namespace;
-      HashCode160 identifier;
+      HashCode512 namespace;
+      HashCode512 identifier;
     } sks;
     FileIdentifier chk;
     Location loc;
@@ -82,11 +82,11 @@ typedef struct ECRS_MetaData {
 } MetaData;
 
 
-void ECRS_encryptInPlace(const HashCode160 * hc,
+void ECRS_encryptInPlace(const HashCode512 * hc,
 			 void * data,
 			 unsigned int len);
 
-void ECRS_decryptInPlace(const HashCode160 * hc,
+void ECRS_decryptInPlace(const HashCode512 * hc,
 			 void * data,
 			 unsigned int len);
  

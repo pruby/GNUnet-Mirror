@@ -163,7 +163,7 @@ static int tcp_get(void * closure,
 		   unsigned int type,
 		   unsigned int prio,
 		   unsigned int keyCount,
-		   const HashCode160 * keys,
+		   const HashCode512 * keys,
 		   DataProcessor resultCallback,
 		   void * resCallbackClosure) {
   DHT_CS_REQUEST_GET * req;
@@ -179,10 +179,10 @@ static int tcp_get(void * closure,
   handlers->resultCallbackClosure = resCallbackClosure;
   handlers->status = 0;
   size = sizeof(DHT_CS_REQUEST_GET) + 
-    (keyCount-1) * sizeof(HashCode160);
+    (keyCount-1) * sizeof(HashCode512);
   if (((unsigned int)size) 
       != sizeof(DHT_CS_REQUEST_GET) + 
-      (keyCount-1) * sizeof(HashCode160)) {
+      (keyCount-1) * sizeof(HashCode512)) {
     SEMAPHORE_UP(handlers->prerequest);
     return SYSERR; /* too many keys, size > rangeof(short) */
   }
@@ -194,7 +194,7 @@ static int tcp_get(void * closure,
   req->table = handlers->table;
   memcpy(&req->keys,
 	 keys,
-	 sizeof(HashCode160) * keyCount);
+	 sizeof(HashCode512) * keyCount);
   req->timeout = htonll(0);
   if (OK != coreAPI->sendToClient(handlers->handler,
 				  &req->header)) {
@@ -218,7 +218,7 @@ static int tcp_get(void * closure,
  * @return OK if the value could be stored, SYSERR if not (i.e. out of space)
  */
 static int tcp_put(void * closure,
-		   const HashCode160 * key,
+		   const HashCode512 * key,
 		   const DataContainer * value,
 		   unsigned int prio) {
   DHT_CS_REQUEST_PUT * req;
@@ -265,7 +265,7 @@ static int tcp_put(void * closure,
  * @return OK if the value could be removed, SYSERR if not (i.e. not present)
  */
 static int tcp_del(void * closure,
-		   const HashCode160 * key,
+		   const HashCode512 * key,
 		   const DataContainer * value) {
   DHT_CS_REQUEST_REMOVE * req;
   CS_TableHandlers * handlers = closure;
@@ -412,7 +412,7 @@ static int csLeave(ClientHandle client,
 
   MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
-    if ( (equalsHashCode160(&csHandlers[i]->table,
+    if ( (equalsHashCode512(&csHandlers[i]->table,
 			    &req->table)) ) {     
       if (OK != dhtAPI->leave(&req->table,
 			      ntohll(req->timeout))) {
@@ -651,7 +651,7 @@ static int csRemove(ClientHandle client,
 
 
 
-static int cs_get_result_callback(const HashCode160 * key,
+static int cs_get_result_callback(const HashCode512 * key,
 				  const DataContainer * value,
 				  CS_GET_RECORD * record) {
   DHT_CS_REPLY_RESULTS * msg;
@@ -736,7 +736,7 @@ static int csGetJob(struct CSGetClosure * cpc) {
   req = cpc->message;
   FREE(cpc);
   
-  keyCount = 1 + ((ntohs(req->header.size) - sizeof(DHT_CS_REQUEST_GET)) / sizeof(HashCode160));
+  keyCount = 1 + ((ntohs(req->header.size) - sizeof(DHT_CS_REQUEST_GET)) / sizeof(HashCode512));
   ptr = MALLOC(sizeof(CS_GET_RECORD));
   ptr->client = client;
   ptr->count = 0;
@@ -804,7 +804,7 @@ static int csACK(ClientHandle client,
   MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
     if ( (csHandlers[i]->handler == client) &&
-	 (equalsHashCode160(&csHandlers[i]->table,
+	 (equalsHashCode512(&csHandlers[i]->table,
 			    &req->table)) ) {     
       SEMAPHORE_DOWN(ptr->postreply);
       ptr = csHandlers[i];
@@ -849,7 +849,7 @@ static int csResults(ClientHandle client,
   MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
     if ( (csHandlers[i]->handler == client) &&
-	 (equalsHashCode160(&csHandlers[i]->table,
+	 (equalsHashCode512(&csHandlers[i]->table,
 			    &req->table)) ) {     
       ptr = csHandlers[i];
       SEMAPHORE_DOWN(ptr->postreply);

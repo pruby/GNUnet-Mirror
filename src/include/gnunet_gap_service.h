@@ -41,7 +41,7 @@
 typedef int (*UniqueReplyIdentifier)(const void * content,
 				     unsigned int size,
 				     unsigned int query_type,
-				     const HashCode160 * primaryKey);
+				     const HashCode512 * primaryKey);
 
 /**
  * Functions of the GAP Service API.
@@ -73,7 +73,7 @@ typedef struct {
   int (*get_start)(unsigned int type,
 		   unsigned int anonymityLevel,
 		   unsigned int keyCount,
-		   const HashCode160 * keys,
+		   const HashCode512 * keys,
 		   cron_t timeout,
 		   unsigned int prio);
 
@@ -84,7 +84,7 @@ typedef struct {
    */
   int (*get_stop)(unsigned int type,
 		  unsigned int keyCount,
-		  const HashCode160 * keys);
+		  const HashCode512 * keys);
 
   /**
    * Try to migrate the given content.
@@ -96,7 +96,7 @@ typedef struct {
    *   that buffer (must be a positive number).
    */
   unsigned int (*tryMigrate)(const DataContainer * data,
-			     const HashCode160 * primaryKey,
+			     const HashCode512 * primaryKey,
 			     char * position,
 			     unsigned int padding);
 

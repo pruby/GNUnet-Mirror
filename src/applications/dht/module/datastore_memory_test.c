@@ -35,7 +35,7 @@
 static int store(Blockstore * s,
 		 char * key,
 		 char * val) {
-  HashCode160 hc;
+  HashCode512 hc;
   DataContainer * cont;
 
   cont = MALLOC(sizeof(DataContainer) + strlen(val));
@@ -61,7 +61,7 @@ static int store(Blockstore * s,
 static int rem(Blockstore * s,
 	       char * key,
 	       char * val) {
-  HashCode160 hc;
+  HashCode512 hc;
   DataContainer * cont;
 
   if (val == NULL) {
@@ -87,7 +87,7 @@ static int rem(Blockstore * s,
   return 0;
 }
 
-static int resCB(const HashCode160 * key,
+static int resCB(const HashCode512 * key,
 		 const DataContainer * val,
 		 void * cls) {
   DataContainer ** trg = cls;
@@ -101,7 +101,7 @@ static int resCB(const HashCode160 * key,
 static int load(Blockstore * s,
 		char * key,
 		char * val) {
-  HashCode160 hc;
+  HashCode512 hc;
   DataContainer * cont;
 
   cont = NULL;
@@ -169,7 +169,7 @@ static int parseCommandLine(int argc,
   return OK;
 }
 
-int main(int args,
+int main(int argc,
 	 char * argv[]) {
   Blockstore * s;
   int i;

@@ -14,7 +14,7 @@
 
 
 static int testMultiKey(const char * word) {
-  HashCode160 in;  
+  HashCode512 in;  
   struct PrivateKey * hostkey;
   PublicKey pkey;
   PublicKey pkey1;
@@ -206,7 +206,7 @@ void doneLockingGcrypt();
 
 int main(int argc, char * argv[]) {
   int failureCount = 0;
-  HashCode160 in;
+  HashCode512 in;
   struct PrivateKey * hostkey;
 
 #if USE_GCRYPT

@@ -41,7 +41,7 @@
 #include "datastore_dht_master.h"
 
 typedef struct {
-  HashCode160 hash;
+  HashCode512 hash;
   cron_t lastRefreshTime;
 } MasterEntry;
 
@@ -50,7 +50,7 @@ typedef struct {
  */ 
 typedef struct HT_Entry_t {
   struct HT_Entry_t * next;
-  HashCode160 key;
+  HashCode512 key;
   unsigned int count;
   MasterEntry * values;
 } HT_Entry;
@@ -77,7 +77,7 @@ static int lookup(void * closure,
 		  unsigned int type,
 		  unsigned int prio,
 		  unsigned int keyCount,
-		  const HashCode160 * keys,
+		  const HashCode512 * keys,
 		  DataProcessor resultCallback,
 		  void * resCallbackClosure) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
@@ -92,7 +92,7 @@ static int lookup(void * closure,
   MUTEX_LOCK(&ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode160(&keys[0], &pos->key)) {
+    if (equalsHashCode512(&keys[0], &pos->key)) {
       int * perm;
 
       if (pos->count > prio)
@@ -111,12 +111,12 @@ static int lookup(void * closure,
 	else
 	  j = perm[i];
 	data = MALLOC(sizeof(DataContainer) + 
-		      sizeof(HashCode160));
+		      sizeof(HashCode512));
 	data->size = htonl(sizeof(DataContainer) + 
-			   sizeof(HashCode160));
+			   sizeof(HashCode512));
 	memcpy(&data[1],
 	       &pos->values[j].hash,
-	       sizeof(HashCode160));	
+	       sizeof(HashCode512));	
 	resultCallback(NULL,
 		       data,
 		       resCallbackClosure);
@@ -136,13 +136,13 @@ static int lookup(void * closure,
  * Store an item in the datastore.
  *
  * @param key the key of the item
- * @param value the value to store, must be of size HashCode160 for 
+ * @param value the value to store, must be of size HashCode512 for 
  *        the master table!
  * @return OK if the value could be stored, SYSERR if not, 
  *         NO for out of space)
  */
 static int store(void * closure,
-		 const HashCode160 * key,
+		 const HashCode512 * key,
 		 const DataContainer * value,
 		 unsigned int prio) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
@@ -152,16 +152,16 @@ static int store(void * closure,
   if ( (ds == NULL) || (value == NULL) )
     return SYSERR;
   if (ntohl(value->size) - sizeof(DataContainer) 
-      != sizeof(HashCode160))
+      != sizeof(HashCode512))
     return SYSERR;
 
   MUTEX_LOCK(&ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode160(key, &pos->key)) {
+    if (equalsHashCode512(key, &pos->key)) {
       for (i=0;i<pos->count;i++)
-	if (equalsHashCode160(&pos->values[i].hash,
-			      (HashCode160*)&value[1])) {
+	if (equalsHashCode512(&pos->values[i].hash,
+			      (HashCode512*)&value[1])) {
 	  pos->values[i].lastRefreshTime = cronTime(NULL);
 	  MUTEX_UNLOCK(&ds->lock);
 	  return OK; /* already present */
@@ -177,7 +177,7 @@ static int store(void * closure,
       pos->values[pos->count-1].lastRefreshTime = cronTime(NULL);
       memcpy(&pos->values[pos->count-1].hash,
 	     &value[1],
-	     sizeof(HashCode160));
+	     sizeof(HashCode512));
       MUTEX_UNLOCK(&ds->lock);  
       return OK;
     } /* end key match */
@@ -195,7 +195,7 @@ static int store(void * closure,
   pos->values = MALLOC(sizeof(MasterEntry));
   memcpy(&pos->values[0].hash,
 	 &value[1],
-	 sizeof(HashCode160));
+	 sizeof(HashCode512));
   pos->values[0].lastRefreshTime = cronTime(NULL);
   pos->next = ds->first;
   ds->first = pos;
@@ -210,7 +210,7 @@ static int store(void * closure,
  * @return OK if the value could be removed, SYSERR if not (i.e. not present)
  */
 static int ds_remove(void * closure,
-		     const HashCode160 * key,
+		     const HashCode512 * key,
 		     const DataContainer * value) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
   HT_Entry * pos;
@@ -221,19 +221,19 @@ static int ds_remove(void * closure,
     return SYSERR;
   if ( (value != NULL) &&
        (ntohl(value->size) - sizeof(DataContainer) 
-	!= sizeof(HashCode160)) )
+	!= sizeof(HashCode512)) )
     return SYSERR;
 
   MUTEX_LOCK(&ds->lock);
   prev = NULL;
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode160(key, &pos->key)) {
+    if (equalsHashCode512(key, &pos->key)) {
       if (value != NULL) {
 	for (i=0;i<pos->count;i++) {
 	  if (0 == memcmp(&pos->values[i].hash,
 			  &value[1],
-			  sizeof(HashCode160))) {
+			  sizeof(HashCode512))) {
 	    pos->values[i] = pos->values[pos->count-1];
 	    GROW(pos->values,
 		 pos->count,
@@ -297,15 +297,15 @@ static int iterate(void * closure,
   MUTEX_LOCK(&ds->lock);
   pos = ds->first;
   ret = 0;
-  cont = MALLOC(sizeof(HashCode160) + sizeof(DataContainer));
-  cont->size = htonl(sizeof(HashCode160) + sizeof(DataContainer));
+  cont = MALLOC(sizeof(HashCode512) + sizeof(DataContainer));
+  cont->size = htonl(sizeof(HashCode512) + sizeof(DataContainer));
   while (pos != NULL) {
     for (i=0;i<pos->count;i++) {
       ret++;
       if (processor != NULL) {
 	memcpy(&cont[1],
 	       &pos->values[i].hash,
-	       sizeof(HashCode160));
+	       sizeof(HashCode512));
 	if (OK != processor(&pos->key,
 			    cont,
 			    cls)) {

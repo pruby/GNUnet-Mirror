@@ -81,10 +81,10 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   fd = OPEN(name, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
-  for (i=0;i<(int) (size - 42 - sizeof(HashCode160));i+=sizeof(HashCode160)) 
-    hash(&buf[i+sizeof(HashCode160)],
+  for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512)) 
+    hash(&buf[i+sizeof(HashCode512)],
 	 42,
-	 (HashCode160*) &buf[i]);
+	 (HashCode512*) &buf[i]);
   write(fd, buf, size);
   FREE(buf);
   CLOSE(fd);
@@ -130,7 +130,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 }
 
 static int searchCB(const ECRS_FileInfo * fi,
-		    const HashCode160 * key,
+		    const HashCode512 * key,
 		    void * closure) {
   struct ECRS_URI ** my = closure;
   char * tmp;
@@ -199,10 +199,10 @@ static int downloadFile(unsigned int size,
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
-    for (i=0;i<(int) (size - 42 - sizeof(HashCode160));i+=sizeof(HashCode160)) 
-      hash(&buf[i+sizeof(HashCode160)],
+    for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512)) 
+      hash(&buf[i+sizeof(HashCode512)],
 	   42,
-	   (HashCode160*) &buf[i]);
+	   (HashCode512*) &buf[i]);
     if (size != read(fd, in, size))
       ret = SYSERR;
     else if (0 == memcmp(buf,

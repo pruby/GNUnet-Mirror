@@ -8,7 +8,7 @@
 #include "platform.h"
 
 #define TESTSTRING "Hello World\0"
-#define MAX_TESTVAL 20
+#define MAX_TESTVAL sizeof(SESSIONKEY)
 #define ITER 10
 
 static int testEncryptDecrypt() {

@@ -54,7 +54,7 @@ struct FS_SEARCH_HANDLE;
 struct FS_SEARCH_HANDLE * FS_start_search(struct FS_SEARCH_CONTEXT * ctx,
 					  unsigned int type,
 					  unsigned int keyCount,
-					  const HashCode160 * keys,
+					  const HashCode512 * keys,
 					  unsigned int anonymityLevel,
 					  unsigned int prio,
 					  cron_t timeout,
@@ -96,7 +96,7 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
  * @return OK on success, SYSERR on error
  */
 int FS_index(GNUNET_TCP_SOCKET * sock,
-	     const HashCode160 * fileHc,	  
+	     const HashCode512 * fileHc,	  
 	     const Datastore_Value * block,
 	     unsigned long long offset);
 
@@ -119,6 +119,6 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
  */
 int FS_unindex(GNUNET_TCP_SOCKET * sock,
 	       unsigned int blocksize,
-	       const HashCode160 * hc);
+	       const HashCode512 * hc);
 
 #endif

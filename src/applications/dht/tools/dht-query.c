@@ -112,7 +112,7 @@ static int parseOptions(int argc,
   return OK;
 }
 
-static int printCallback(const HashCode160 * hash,
+static int printCallback(const HashCode512 * hash,
 			 const DataContainer * data,
 			 char * key) {
   printf("%s(%s): '%.*s'\n",
@@ -126,7 +126,7 @@ static int printCallback(const HashCode160 * hash,
 static void do_get(GNUNET_TCP_SOCKET * sock,
 		   const char * key) {
   int ret;
-  HashCode160 hc;
+  HashCode512 hc;
   
   hash(key,
        strlen(key),
@@ -153,7 +153,7 @@ static void do_put(GNUNET_TCP_SOCKET * sock,
 		   const char * key,
 		   char * value) {
   DataContainer * dc;
-  HashCode160 hc;
+  HashCode512 hc;
 
   hash(key, strlen(key), &hc);
   dc = MALLOC(sizeof(DataContainer)
@@ -185,7 +185,7 @@ static void do_remove(GNUNET_TCP_SOCKET * sock,
 		      const char * key,
 		      char * value) {
   DataContainer * dc;
-  HashCode160 hc;
+  HashCode512 hc;
 
   hash(key, strlen(key), &hc);
   dc = MALLOC(sizeof(DataContainer)

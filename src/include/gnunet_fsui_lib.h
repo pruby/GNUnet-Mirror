@@ -306,8 +306,8 @@ typedef int (*FSUI_SearchIterator)(void * cls,
  */
 typedef int (*FSUI_UpdateIterator)(void * cls,
 				   const ECRS_FileInfo * uri,
-				   const HashCode160 * lastId,
-				   const HashCode160 * nextId,
+				   const HashCode512 * lastId,
+				   const HashCode512 * nextId,
 				   cron_t nextPublicationTime); 
 
 /**
@@ -564,7 +564,7 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
 			 const char * namespaceName,
 			 const struct ECRS_MetaData * meta,
 			 const struct ECRS_URI * advertisementURI,
-			 const HashCode160 * rootEntry,
+			 const HashCode512 * rootEntry,
 			 struct ECRS_URI ** root); /* namespace_info.c */
 
 /**
@@ -627,9 +627,9 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
 			unsigned int anonymityLevel,
 			const char * name,
 			cron_t updateInterval,
-			const HashCode160 * lastId,
-			const HashCode160 * thisId,
-			const HashCode160 * nextId,
+			const HashCode512 * lastId,
+			const HashCode512 * thisId,
+			const HashCode512 * nextId,
 			const struct ECRS_URI * dst,
 			const struct ECRS_MetaData * md,
 			struct ECRS_URI ** uri); /* namespace_info.c */

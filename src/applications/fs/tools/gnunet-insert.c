@@ -66,9 +66,9 @@ int gloKeywordCnt = 0;
  */
 static void postProcess(const struct ECRS_URI * uri) {
   char * pname;
-  HashCode160 prevId;
-  HashCode160 thisId;
-  HashCode160 nextId;
+  HashCode512 prevId;
+  HashCode512 thisId;
+  HashCode512 nextId;
   char * pid;
   char * tid;
   char * nid;
@@ -147,14 +147,14 @@ static void printstatus(int * verboselevel,
 #ifdef MINGW
       _("\nUpload of '%s' complete, %I64u bytes took %I64u seconds (%8.3f kbps).\n"),
 #else
-      _("\nUpload of '%s' complete, %I64u bytes took %I64u seconds (%8.3f kbps).\n"),
+      _("\nUpload of '%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
 #endif
-	     event->data.UploadComplete.filename,
-	     event->data.UploadComplete.total,
-	     delta / cronSECONDS,
-	     (delta == 0)
-	     ? (double) (-1.0)
-	     : (double) (event->data.UploadComplete.total / 1024.0 * cronSECONDS / delta));
+      event->data.UploadComplete.filename,
+      event->data.UploadComplete.total,
+      delta / cronSECONDS,
+      (delta == 0)
+      ? (double) (-1.0)
+      : (double) (event->data.UploadComplete.total / 1024.0 * cronSECONDS / delta));
     }
     fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
     printf(_("File '%s' has URI: %s\n"),
@@ -397,7 +397,7 @@ static int parseOptions(int argc,
       break;
     case 'N': {
       EncName enc;
-      HashCode160 nextId;
+      HashCode512 nextId;
       
       if (enc2hash(GNoptarg,
 		   &nextId) == SYSERR) 
@@ -443,7 +443,7 @@ static int parseOptions(int argc,
       break;
     case 't': {
       EncName enc;
-      HashCode160 thisId;
+      HashCode512 thisId;
       
       if (enc2hash(GNoptarg,
 		   &thisId) == SYSERR) 
@@ -463,7 +463,7 @@ static int parseOptions(int argc,
       break;
     case 'u': {
       EncName enc;
-      HashCode160 nextId;
+      HashCode512 nextId;
       
       if (enc2hash(GNoptarg,
 		   &nextId) == SYSERR) 

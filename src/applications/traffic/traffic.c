@@ -490,7 +490,7 @@ static int trafficReceive(const PeerIdentity * sender,
   checkPort(port);
   updateUse(&counters[port]->receive,
 	    ntohs(header->size),
-	    sender->hashPubKey.a,
+	    sender->hashPubKey.bits[0],
 	    NO);
   MUTEX_UNLOCK(&lock);
   return OK;
@@ -513,7 +513,7 @@ static int trafficSend(const PeerIdentity * receiver,
   checkPort(port);
   updateUse(&counters[port]->send,
 	    ntohs(header->size),
-	    receiver->hashPubKey.a,
+	    receiver->hashPubKey.bits[0],
 	    NO);
   MUTEX_UNLOCK(&lock);
   return OK;

@@ -48,9 +48,9 @@ void donePrefetch();
  *        for any type.
  * @return OK if a value was found, SYSERR if not
  */
-int getRandom(const HashCode160 * receiver,
+int getRandom(const HashCode512 * receiver,
 	      unsigned int sizeLimit,
-	      HashCode160 * key,
+	      HashCode512 * key,
 	      Datastore_Value ** value,
 	      unsigned int type);
 

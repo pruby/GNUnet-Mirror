@@ -620,7 +620,7 @@ int encryptPrivateKey(const void * block,
   size_t erroff;
   int rc;
 
-  GNUNET_ASSERT(size <= sizeof(HashCode160));
+  GNUNET_ASSERT(size <= sizeof(HashCode512));
   pubkey = public2PrivateKey(publicKey);
   isize = size;
   lockGcrypt();
@@ -832,21 +832,21 @@ int sign(const struct PrivateKey * hostkey,
   gcry_sexp_t data;
   size_t ssize;
   gcry_mpi_t rval;
-  HashCode160 hc;
+  HashCode512 hc;
   char * buff;
   int bufSize;
   int rc;
 
   hash(block, size, &hc);
-#define FORMATSTRING "(4:data(5:flags5:pkcs1)(4:hash6:rmd16020:01234567890123456789))"
+#define FORMATSTRING "(4:data(5:flags5:pkcs1)(4:hash6:sha51264:0123456789012345678901234567890123456789012345678901234567890123))"
   bufSize = strlen(FORMATSTRING) + 1;
   buff = MALLOC(bufSize);
   memcpy(buff,
 	 FORMATSTRING,
 	 bufSize);
-  memcpy(&buff[bufSize - strlen("012345678901234567890))")],
+  memcpy(&buff[bufSize - strlen("0123456789012345678901234567890123456789012345678901234567890123))") - 1],
 	 &hc,
-	 sizeof(HashCode160));
+	 sizeof(HashCode512));
   lockGcrypt();
   rc = gcry_sexp_new(&data,
 		     buff,
@@ -912,7 +912,7 @@ int verifySig(const void * block,
   size_t size;
   gcry_mpi_t val;
   struct PrivateKey * hostkey;
-  HashCode160 hc;
+  HashCode512 hc;
   char * buff;
   int bufSize;
   size_t erroff;
@@ -946,9 +946,9 @@ int verifySig(const void * block,
   memcpy(buff,
 	 FORMATSTRING,
 	 bufSize);
-  memcpy(&buff[strlen(FORMATSTRING) - strlen("01234567890123456789))")],
+  memcpy(&buff[strlen(FORMATSTRING) - strlen("0123456789012345678901234567890123456789012345678901234567890123))")],
 	 &hc,
-	 sizeof(HashCode160));
+	 sizeof(HashCode512));
   rc = gcry_sexp_new(&data,
 		     buff,
 		     bufSize, 

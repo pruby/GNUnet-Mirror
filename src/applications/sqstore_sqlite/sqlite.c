@@ -173,7 +173,7 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
     return NULL; /* error */
   }
   
-  if (sqlite3_column_bytes(stmt, 5) > sizeof(HashCode160) * 2 + 1 ||
+  if (sqlite3_column_bytes(stmt, 5) > sizeof(HashCode512) * 2 + 1 ||
       sqlite3_column_bytes(stmt, 6) > contentSize * 2 + 1) {
     
     LOG(LOG_WARNING,
@@ -190,7 +190,7 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   
   if (sqlite_decode_binary_n(sqlite3_column_blob(stmt, 5),
 			     (char *) &datum->key,
-			     sizeof(HashCode160)) != sizeof(HashCode160) ||
+			     sizeof(HashCode512)) != sizeof(HashCode512) ||
       sqlite_decode_binary_n(sqlite3_column_blob(stmt, 6), 
 			     (char *) &datum[1], 
 			     contentSize) != contentSize) {
@@ -310,7 +310,7 @@ static int sqlite_iterate(unsigned int type,
   unsigned long long lastExp;
   unsigned long hashLen;
   char * lastHash;
-  HashCode160 key;
+  HashCode512 key;
 
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: iterating through the database\n");
@@ -351,11 +351,11 @@ static int sqlite_iterate(unsigned int type,
   count    = 0;
   lastPrio = 0;
   lastExp  = 0x8000000000000000LL; /* MIN long long; sqlite does not know about unsigned... */
-  memset(&key, 0, sizeof(HashCode160));
-  lastHash = MALLOC(sizeof(HashCode160)*2 + 2);
+  memset(&key, 0, sizeof(HashCode512));
+  lastHash = MALLOC(sizeof(HashCode512)*2 + 2);
   while (1) {
     hashLen = sqlite_encode_binary((const char *) &key, 
-				   sizeof(HashCode160),
+				   sizeof(HashCode512),
 				   lastHash);
 
     sqlite3_bind_blob(stmt,
@@ -520,7 +520,7 @@ static void drop() {
  * @return the number of results, SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */ 
-static int get(const HashCode160 * key, 
+static int get(const HashCode512 * key, 
 	       unsigned int type,
 	       Datum_Iterator iter,
 	       void * closure) {
@@ -574,9 +574,9 @@ static int get(const HashCode160 * key,
     ret = SQLITE_OK;
   	
   if (key && (ret == SQLITE_OK)) {
-    escapedHash = MALLOC(sizeof(HashCode160)*2 + 2);
+    escapedHash = MALLOC(sizeof(HashCode512)*2 + 2);
     len = sqlite_encode_binary((const char *) key, 
-			       sizeof(HashCode160), 
+			       sizeof(HashCode512), 
 			       escapedHash);    
     ret = sqlite3_bind_blob(stmt,
 			    bind,
@@ -643,7 +643,7 @@ static int get(const HashCode160 * key,
  *
  * @return SYSERR on error, OK if ok.
  */
-static int put(const HashCode160 * key, 
+static int put(const HashCode512 * key, 
 	       const Datastore_Value * value) {
   char *escapedBlock;
   char *escapedHash;
@@ -670,9 +670,9 @@ static int put(const HashCode160 * key,
   rowLen = 0;
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
  
-  escapedHash = MALLOC(2*sizeof(HashCode160)+1);
+  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
   hashLen = sqlite_encode_binary((const char *) key, 
-				 sizeof(HashCode160),
+				 sizeof(HashCode512),
 				 escapedHash);
     
   escapedBlock = MALLOC(2 * contentSize + 1);
@@ -719,7 +719,7 @@ static int put(const HashCode160 * key,
  * @return the number of items deleted, 0 if
  *        none were found, SYSERR on errors
  */
-static int del(const HashCode160 * key, 
+static int del(const HashCode512 * key, 
 	       const Datastore_Value * value) {
   char *escapedHash;
   size_t n;
@@ -739,9 +739,9 @@ static int del(const HashCode160 * key,
   if (dbh->lastSync > 1000)
     syncStats(dbh);
   
-  escapedHash = MALLOC(2 * sizeof(HashCode160) + 1);
+  escapedHash = MALLOC(2 * sizeof(HashCode512) + 1);
   hashLen = sqlite_encode_binary((const char *)key,
-				 sizeof(HashCode160),
+				 sizeof(HashCode512),
 				 escapedHash);
   if (!value) {
     sqlite3_bind_blob(dbh->exists, 
@@ -825,7 +825,7 @@ static int del(const HashCode160 * key,
  * Update the priority for a particular key
  * in the datastore.
  */
-static int update(const HashCode160 * key,
+static int update(const HashCode512 * key,
 		  const Datastore_Value * value,
 		  int delta) {
   char *escapedHash, *escapedBlock;
@@ -841,9 +841,9 @@ static int update(const HashCode160 * key,
 
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   
-  escapedHash = MALLOC(2*sizeof(HashCode160)+1);
+  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
   hashLen = sqlite_encode_binary((const char *) key,
-				 sizeof(HashCode160),
+				 sizeof(HashCode512),
 				 escapedHash);  
   escapedBlock = MALLOC(2*contentSize+1);
   blockLen = sqlite_encode_binary((const char *) &value[1], 

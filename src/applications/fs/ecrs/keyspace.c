@@ -60,7 +60,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   unsigned int size;
   unsigned int mdsize;
   struct PrivateKey * pk;
-  HashCode160 hc;
+  HashCode512 hc;
   char * dstURI;
   KBlock * kb;
   char ** keywords;

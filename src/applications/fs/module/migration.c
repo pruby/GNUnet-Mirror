@@ -70,7 +70,7 @@ activeMigrationCallback(PeerIdentity * receiver,
 			char * position,
 			unsigned int padding) {
   unsigned int ret;
-  HashCode160 key;
+  HashCode512 key;
   Datastore_Value * content;
   GapWrapper * gw;
   unsigned int size;

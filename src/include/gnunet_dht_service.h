@@ -98,7 +98,7 @@ typedef struct {
   struct DHT_GET_RECORD * (*get_start)(const DHT_TableId * table,
 				       unsigned int type,
 				       unsigned int keyCount,
-				       const HashCode160 * keys,
+				       const HashCode512 * keys,
 				       cron_t timeout,
 				       DataProcessor callback,
 				       void * cls,
@@ -125,7 +125,7 @@ typedef struct {
    * @return handle to stop the async put
    */
   struct DHT_PUT_RECORD * (*put_start)(const DHT_TableId * table,
-				       const HashCode160 * key,
+				       const HashCode512 * key,
 				       cron_t timeout,
 				       const DataContainer * value,
 				       DHT_OP_Complete callback,
@@ -151,7 +151,7 @@ typedef struct {
    * @return handle to stop the async remove
    */
   struct DHT_REMOVE_RECORD * (*remove_start)(const DHT_TableId * table,
-					     const HashCode160 * key,
+					     const HashCode512 * key,
 					     cron_t timeout,
 					     const DataContainer * value,
 					     DHT_OP_Complete callback,

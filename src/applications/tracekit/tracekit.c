@@ -85,11 +85,11 @@ static int handlep2pReply(const PeerIdentity * sender,
     if (routeTable[i] == NULL)
       continue;
     if ( (routeTable[i]->timestamp == (TIME_T)ntohl(reply->initiatorTimestamp)) &&
-	 (equalsHashCode160(&routeTable[i]->initiator.hashPubKey,
+	 (equalsHashCode512(&routeTable[i]->initiator.hashPubKey,
 			    &reply->initiatorId.hashPubKey) ) ) {
       LOG(LOG_DEBUG,
 	  "TRACEKIT: found matching entry in routing table\n");
-      if (equalsHashCode160(&coreAPI->myIdentity->hashPubKey,
+      if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			    &routeTable[i]->replyTo.hashPubKey) ) {
 	unsigned int idx;
 	TRACEKIT_CS_REPLY * csReply;
@@ -219,7 +219,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
     if (routeTable[i] == NULL)
       continue;
     if ( (routeTable[i]->timestamp == (TIME_T)ntohl(msg->timestamp)) &&
-	 equalsHashCode160(&routeTable[i]->initiator.hashPubKey,
+	 equalsHashCode512(&routeTable[i]->initiator.hashPubKey,
 			   &msg->initiatorId.hashPubKey) ) {
       LOG(LOG_DEBUG,
 	  "TRACEKIT-PROBE %d from '%s' received twice (slot %d), ignored\n",
@@ -317,7 +317,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
     }
     reply->header.size
       = htons(maxBytes);
-    if (equalsHashCode160(&coreAPI->myIdentity->hashPubKey,
+    if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			  &sender->hashPubKey)) {
       handlep2pReply(coreAPI->myIdentity,
 		     &reply->header);

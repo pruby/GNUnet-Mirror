@@ -106,14 +106,14 @@ static int sendAck(GNUNET_TCP_SOCKET * sock,
 		       &msg.header);
 }
 
-static int sendAllResults(const HashCode160 * key,
+static int sendAllResults(const HashCode512 * key,
 			  const DataContainer * value,
 			  void * cls) {
   TableList * list = (TableList*) cls;
   DHT_CS_REPLY_RESULTS * reply;
  
-  reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode160));
-  reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode160));
+  reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode512));
+  reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode512));
   reply->header.type = htons(DHT_CS_PROTO_REPLY_GET);
   reply->totalResults = htonl(1);
   reply->table = list->table;
@@ -208,7 +208,7 @@ static void * process_thread(TableList * list) {
 	  FREE(buffer);
 	}
 	req = (DHT_CS_REQUEST_GET*) buffer;
-	if (! equalsHashCode160(&req->table,
+	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
 	      _("Received invalid '%s' request (wrong table)\n"),
@@ -220,7 +220,7 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	
-	keyCount = 1 + ( (ntohs(req->header.size) - sizeof(DHT_CS_REQUEST_GET)) / sizeof(HashCode160));
+	keyCount = 1 + ( (ntohs(req->header.size) - sizeof(DHT_CS_REQUEST_GET)) / sizeof(HashCode512));
 	resCount = list->store->get(list->store->closure,
 				    ntohl(req->type),
 				    ntohl(req->priority),
@@ -260,7 +260,7 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	req = (DHT_CS_REQUEST_PUT*) buffer;
-	if (! equalsHashCode160(&req->table,
+	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
 	      _("Received invalid '%s' request (wrong table)\n"),
@@ -314,7 +314,7 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	req = (DHT_CS_REQUEST_REMOVE*) buffer;
-	if (! equalsHashCode160(&req->table,
+	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
 	      _("Received invalid '%s' request (wrong table)\n"),
@@ -426,7 +426,7 @@ int DHT_LIB_join(Blockstore * store,
 
   MUTEX_LOCK(&lock);
   for (i=0;i<tableCount;i++) 
-    if (equalsHashCode160(&tables[i]->table,
+    if (equalsHashCode512(&tables[i]->table,
 			  table)) {
       LOG(LOG_WARNING,
 	  _("This client already participates in the given DHT!\n"));
@@ -489,7 +489,7 @@ int DHT_LIB_leave(DHT_TableId * table,
   list = NULL;
   MUTEX_LOCK(&lock);
   for (i=0;i<tableCount;i++) {
-    if (equalsHashCode160(&tables[i]->table,
+    if (equalsHashCode512(&tables[i]->table,
 			  table)) {
       list = tables[i];
       tables[i] = tables[tableCount-1];
@@ -576,7 +576,7 @@ int DHT_LIB_get(const DHT_TableId * table,
 		unsigned int type,
 		unsigned int prio,
 		unsigned int keyCount,
-		const HashCode160 * keys,
+		const HashCode512 * keys,
 		cron_t timeout,
 		DataProcessor processor,
 		void * closure) {
@@ -593,9 +593,9 @@ int DHT_LIB_get(const DHT_TableId * table,
     return SYSERR;
 
   req = MALLOC(sizeof(DHT_CS_REQUEST_GET) + 
-	       (keyCount-1) * sizeof(HashCode160));
+	       (keyCount-1) * sizeof(HashCode512));
   req->header.size = htons(sizeof(DHT_CS_REQUEST_GET) +
-			   (keyCount-1) * sizeof(HashCode160));
+			   (keyCount-1) * sizeof(HashCode512));
   req->header.type = htons(DHT_CS_PROTO_REQUEST_GET);
   req->type = htonl(type);
   req->timeout = htonll(timeout);
@@ -603,7 +603,7 @@ int DHT_LIB_get(const DHT_TableId * table,
   req->priority = htonl(prio);
   memcpy(&req->keys,
 	 keys,
-	 keyCount * sizeof(HashCode160));
+	 keyCount * sizeof(HashCode512));
   if (OK != writeToSocket(sock,
 			  &req->header)) {
     releaseClientSocket(sock);
@@ -665,7 +665,7 @@ int DHT_LIB_get(const DHT_TableId * table,
  * @return OK on success, SYSERR on error (or timeout)
  */
 int DHT_LIB_put(const DHT_TableId * table,
-		const HashCode160 * key,
+		const HashCode512 * key,
 		unsigned int prio,
 		cron_t timeout,
 		const DataContainer * value) {
@@ -724,7 +724,7 @@ int DHT_LIB_put(const DHT_TableId * table,
  * @return OK on success, SYSERR on error (or timeout)
  */
 int DHT_LIB_remove(const DHT_TableId * table,
-		   const HashCode160 * key,
+		   const HashCode512 * key,
 		   cron_t timeout,
 		   const DataContainer * value) {
   GNUNET_TCP_SOCKET * sock;

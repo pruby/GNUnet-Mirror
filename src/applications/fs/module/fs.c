@@ -94,14 +94,14 @@ static DHT_TableId dht_table;
  *         SYSERR if the value is malformed
  */
 static int gapPut(void * closure,
-		  const HashCode160 * key,
+		  const HashCode512 * key,
 		  const DataContainer * value,
 		  unsigned int prio) {
   Datastore_Value * dv;
   GapWrapper * gw;
   unsigned int size;
   int ret;
-  HashCode160 hc;
+  HashCode512 hc;
   cron_t et;
   cron_t now;
   EncName enc;
@@ -117,7 +117,7 @@ static int gapPut(void * closure,
   if ( (OK != getQueryFor(size - sizeof(Datastore_Value),
 			  (DBlock*)&gw[1],
 			  &hc)) ||
-       (! equalsHashCode160(&hc, key)) ) {
+       (! equalsHashCode512(&hc, key)) ) {
     BREAK(); /* value failed verification! */
     return SYSERR;
   }
@@ -162,7 +162,7 @@ static int gapPut(void * closure,
   return ret;
 }
 
-static int get_result_callback(const HashCode160 * key,
+static int get_result_callback(const HashCode512 * key,
 			       const DataContainer * value,
 			       DHT_GET_CLS * cls) {
   EncName enc;
@@ -215,7 +215,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   trackQuery(&rs->query[0], 
 	     ntohl(rs->type),
 	     sock);
-  keyCount = 1 + (ntohs(req->size) - sizeof(RequestSearch)) / sizeof(HashCode160);
+  keyCount = 1 + (ntohs(req->size) - sizeof(RequestSearch)) / sizeof(HashCode512);
   gap->get_start(ntohl(rs->type),
 		 ntohl(rs->anonymityLevel),		 
 		 keyCount,
@@ -267,7 +267,7 @@ static int csHandleRequestQueryStop(ClientHandle sock,
     /* FIXME 0.7.1: cancel with dht? */
   }
   gap->get_stop(ntohl(rs->type),
-		1 + (ntohs(req->size) - sizeof(RequestSearch)) / sizeof(HashCode160),
+		1 + (ntohs(req->size) - sizeof(RequestSearch)) / sizeof(HashCode512),
 		&rs->query[0]);
   untrackQuery(&rs->query[0], sock);
   return OK;
@@ -283,7 +283,7 @@ static int csHandleRequestInsert(ClientHandle sock,
   const RequestInsert * ri;
   Datastore_Value * datum;
   int ret;
-  HashCode160 query;
+  HashCode512 query;
   unsigned int type;
   EncName enc;
 
@@ -400,7 +400,7 @@ static int csHandleRequestIndex(ClientHandle sock,
  * abort the iteration: we found what we're looing for.  Otherwise
  * continue.
  */
-static int completeValue(const HashCode160 * key,
+static int completeValue(const HashCode512 * key,
 			 const Datastore_Value * value, 
 			 void * closure) {
   Datastore_Value * comp = closure;
@@ -433,7 +433,7 @@ static int csHandleRequestDelete(ClientHandle sock,
   int ret;
   const RequestDelete * rd;
   Datastore_Value * value;
-  HashCode160 query;
+  HashCode512 query;
   unsigned int type;
   EncName enc;
   
@@ -549,7 +549,7 @@ typedef struct {
   DataProcessor resultCallback;
   void * resCallbackClosure;
   unsigned int keyCount;
-  const HashCode160 * keys;
+  const HashCode512 * keys;
   int count;
 } GGC;
 
@@ -558,7 +558,7 @@ typedef struct {
  * from the datastore to Blockstore values for the
  * gap routing protocol.
  */
-static int gapGetConverter(const HashCode160 * key,
+static int gapGetConverter(const HashCode512 * key,
 			   const Datastore_Value * invalue,
 			   void * cls) {
   GGC * ggc = (GGC*) cls;
@@ -703,7 +703,7 @@ static int gapGet(void * closure,
 		  unsigned int type,
 		  unsigned int prio,
 		  unsigned int keyCount,
-		  const HashCode160 * keys,
+		  const HashCode512 * keys,
 		  DataProcessor resultCallback,
 		  void * resCallbackClosure) {
   int ret;
@@ -749,7 +749,7 @@ static int gapGet(void * closure,
  * @return OK if the value could be removed, SYSERR if not (i.e. not present)
  */
 static int gapDel(void * closure,
-		  const HashCode160 * key,
+		  const HashCode512 * key,
 		  const DataContainer * value) {
   BREAK(); /* gap does not use 'del'! */
   return SYSERR;
@@ -775,7 +775,7 @@ static int gapIterate(void * closure,
  * from the datastore to Blockstore values for the
  * DHT routing protocol.
  */
-static int dhtGetConverter(const HashCode160 * key,
+static int dhtGetConverter(const HashCode512 * key,
 			   const Datastore_Value * invalue,
 			   void * cls) {
   GGC * ggc = (GGC*) cls;
@@ -863,7 +863,7 @@ static int dhtGet(void * closure,
 		  unsigned int type,
 		  unsigned int prio,
 		  unsigned int keyCount,
-		  const HashCode160 * keys,
+		  const HashCode512 * keys,
 		  DataProcessor resultCallback,
 		  void * resCallbackClosure) {
   int ret;
@@ -895,8 +895,8 @@ static int dhtGet(void * closure,
 static int uniqueReplyIdentifier(const void * content,
 				 unsigned int size,
 				 unsigned int type,
-				 const HashCode160 * primaryKey) {
-  HashCode160 q;
+				 const HashCode512 * primaryKey) {
+  HashCode512 q;
   unsigned int t;
   const GapWrapper * gw;
 
@@ -908,7 +908,7 @@ static int uniqueReplyIdentifier(const void * content,
   if ( (OK == getQueryFor(size - sizeof(GapWrapper),
 			  (const DBlock*) &gw[1],
 			  &q)) &&
-       (equalsHashCode160(&q,
+       (equalsHashCode512(&q,
 			  primaryKey)) &&
        ( (type == ANY_BLOCK) ||
 	 (type == (t = getTypeOfBlock(size - sizeof(GapWrapper), 

@@ -1,3 +1,7 @@
+Sat Mar  5 00:33:51 EST 2005
+	Changing hash algorithm to SHA-512. 
+	Changing symcipher algorithm to AES-256.
+
 Sun Feb 27 21:59:31 EST 2005
 	All unit testcases pass.  Releasing 0.7.0pre0.
 

@@ -211,7 +211,7 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
     return NULL; /* error */
 
   lens = mysql_fetch_lengths(res); 
-  if ( (lens[5] != sizeof(HashCode160)) ||
+  if ( (lens[5] != sizeof(HashCode512)) ||
        (lens[6] != contentSize) ||
        (sscanf(sql_row[1], "%u", &type) != 1) ||
        (sscanf(sql_row[2], "%u", &prio) != 1) ||
@@ -230,7 +230,7 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
   datum->value.expirationTime = htonll(exp);
   memcpy(&datum->key,
   	 sql_row[5],
-	 sizeof(HashCode160)); 
+	 sizeof(HashCode512)); 
   memcpy(&datum[1], 
          sql_row[6],
 	 contentSize);
@@ -576,7 +576,7 @@ static int iterateExpirationTime(unsigned int type,
  * @return the number of results, SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */
-static int getOLD(const HashCode160 * query,
+static int getOLD(const HashCode512 * query,
 	       unsigned int type,	     
 	       Datum_Iterator iter,
 	       void * closure) {
@@ -592,12 +592,12 @@ static int getOLD(const HashCode160 * query,
     return iterateLowPriority(type, iter, closure);
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  escapedHash = MALLOC(2*sizeof(HashCode160)+1);
+  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
   mysql_real_escape_string(dbh->dbf,
 			   escapedHash, 
 			   (char *) query, 
-			   sizeof(HashCode160));
-  n = sizeof(HashCode160)*2+400+1;
+			   sizeof(HashCode512));
+  n = sizeof(HashCode512)*2+400+1;
   scratch = MALLOC(n);
 
   if (type != 0) {
@@ -676,7 +676,7 @@ static int getOLD(const HashCode160 * query,
  * @return the number of results, SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */
-static int get(const HashCode160 * query,
+static int get(const HashCode512 * query,
 	       unsigned int type,	     
 	       Datum_Iterator iter,
 	       void * closure) {
@@ -691,7 +691,7 @@ static int get(const HashCode160 * query,
   unsigned long datasize;
   unsigned long twenty;
   Datastore_Value * datum;
-  HashCode160 key;
+  HashCode512 key;
   unsigned long hashSize;
   EncName enc;
 
@@ -717,7 +717,7 @@ static int get(const HashCode160 * query,
     else
       stmt = dbh->select;
   }    
-  hashSize = sizeof(HashCode160);
+  hashSize = sizeof(HashCode512);
   dbh->sbind[0].buffer = (char*) query;
   dbh->sbind[1].buffer = (char*) &type;
   dbh->sbind[0].length = &hashSize;
@@ -758,7 +758,7 @@ static int get(const HashCode160 * query,
   }  
   
   datum = MALLOC(sizeof(Datastore_Value) + MAX_DATUM_SIZE);  
-  twenty = sizeof(HashCode160);
+  twenty = sizeof(HashCode512);
   dbh->bind[0].buffer = (char*) &size;
   dbh->bind[1].buffer = (char*) &rtype;
   dbh->bind[2].buffer = (char*) &prio;
@@ -768,7 +768,7 @@ static int get(const HashCode160 * query,
   dbh->bind[6].buffer = (char*) &datum[1];
   dbh->bind[5].length = &twenty;
   dbh->bind[6].length = &datasize;
-  dbh->bind[5].buffer_length = sizeof(HashCode160);
+  dbh->bind[5].buffer_length = sizeof(HashCode512);
   dbh->bind[6].buffer_length = MAX_DATUM_SIZE;
   if (mysql_stmt_bind_result(stmt,
 			     dbh->bind)) {
@@ -796,11 +796,11 @@ static int get(const HashCode160 * query,
   while (! mysql_stmt_fetch(stmt)) {
     count++;
     
-    if (twenty != sizeof(HashCode160)) {
+    if (twenty != sizeof(HashCode512)) {
       BREAK();
       LOG(LOG_WARNING,
 	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
-      twenty = sizeof(HashCode160);
+      twenty = sizeof(HashCode512);
       datasize = MAX_DATUM_SIZE;      
       continue; 
     }
@@ -865,7 +865,7 @@ static int get(const HashCode160 * query,
  *
  * @return OK on success, SYSERR on error
  */
-static int put(const HashCode160 * key, 
+static int put(const HashCode512 * key, 
 	       const Datastore_Value * value) {
   unsigned long contentSize;
   unsigned long hashSize;
@@ -883,7 +883,7 @@ static int put(const HashCode160 * key,
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-  hashSize = sizeof(HashCode160);
+  hashSize = sizeof(HashCode512);
 
   size = ntohl(value->size);
   type = ntohl(value->type);
@@ -940,7 +940,7 @@ static int put(const HashCode160 * key,
  * @return the number of items deleted, 0 if
  *        none were found, SYSERR on errors
  */
-static int del(const HashCode160 * key, 
+static int del(const HashCode512 * key, 
 	       const Datastore_Value * value) {
   char * escapedHash;
   char * escapedBlock;
@@ -959,18 +959,18 @@ static int del(const HashCode160 * key,
       ntohl(value->type));
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-  escapedHash = MALLOC(2*sizeof(HashCode160)+1);
+  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
   mysql_real_escape_string(dbh->dbf,
 			   escapedHash, 
 			   (char *)key, 
-			   sizeof(HashCode160));
+			   sizeof(HashCode512));
   escapedBlock = MALLOC(2*contentSize+1);
   mysql_real_escape_string(dbh->dbf,
 			   escapedBlock, 
 			   (char *)&value[1],
 			   contentSize);
 
-  n = sizeof(HashCode160)*2+contentSize*2+400+1;
+  n = sizeof(HashCode512)*2+contentSize*2+400+1;
   scratch = MALLOC(n);
   if(value == NULL) {
     SNPRINTF(scratch, 
@@ -1019,7 +1019,7 @@ static int del(const HashCode160 * key,
  * in the datastore.
  *
  */
-static int update(const HashCode160 * key,
+static int update(const HashCode512 * key,
 		  const Datastore_Value * value,
 		  int delta) {
   char * escapedHash;
@@ -1031,15 +1031,15 @@ static int update(const HashCode160 * key,
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
 
-  escapedHash = MALLOC(2*sizeof(HashCode160)+1);
+  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
   mysql_escape_string(escapedHash, 
   	              (char *)key, 
- 	     	      sizeof(HashCode160));
+ 	     	      sizeof(HashCode512));
   escapedBlock = MALLOC(2*contentSize+1);
   mysql_escape_string(escapedBlock, 
 		      (char *)&value[1],
 		      contentSize);
-  n = contentSize*2+sizeof(HashCode160)*2+100+1;
+  n = contentSize*2+sizeof(HashCode512)*2+100+1;
   scratch = MALLOC(n);
  
   /* NOTE: as the table entry for 'prio' is defined as unsigned,

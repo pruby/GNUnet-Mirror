@@ -53,7 +53,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
   CS_HEADER * hdr;
   int i;
   ReplyContent * rep;
-  HashCode160 query;
+  HashCode512 query;
   unsigned int size;
   cron_t delay;
 
@@ -83,7 +83,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       }      
       MUTEX_LOCK(ctx->lock);
       for (i=ctx->handleCount-1;i>=0;i--) {
-	if (equalsHashCode160(&query,
+	if (equalsHashCode512(&query,
 			      &ctx->handles[i]->req->query[0])) {
 	  Datastore_Value * value;
 
@@ -165,7 +165,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
 SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 				unsigned int type,
 				unsigned int keyCount,
-				const HashCode160 * keys,
+				const HashCode512 * keys,
 				unsigned int anonymityLevel,
 				unsigned int prio,
 				cron_t timeout,
@@ -176,8 +176,8 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   EncName enc;
 
   ret = MALLOC(sizeof(SEARCH_HANDLE));
-  req = MALLOC(sizeof(RequestSearch) + (keyCount-1) * sizeof(HashCode160));
-  req->header.size = htons(sizeof(RequestSearch) + (keyCount-1) * sizeof(HashCode160));
+  req = MALLOC(sizeof(RequestSearch) + (keyCount-1) * sizeof(HashCode512));
+  req->header.size = htons(sizeof(RequestSearch) + (keyCount-1) * sizeof(HashCode512));
   req->header.type = htons(AFS_CS_PROTO_QUERY_START);
   req->prio = htonl(prio);
   req->anonymityLevel = htonl(anonymityLevel);
@@ -185,7 +185,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   req->type = htonl(type);
   memcpy(&req->query[0],
 	 keys,
-	 keyCount * sizeof(HashCode160));
+	 keyCount * sizeof(HashCode512));
   ret->req = req;
   ret->callback = callback;
   ret->closure = closure;
@@ -301,7 +301,7 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
  * @return OK on success, SYSERR on error
  */
 int FS_index(GNUNET_TCP_SOCKET * sock,
-	     const HashCode160 * fileHc,	  
+	     const HashCode512 * fileHc,	  
 	     const Datastore_Value * block,
 	     unsigned long long offset) {
   int ret;
@@ -380,7 +380,7 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
  */
 int FS_unindex(GNUNET_TCP_SOCKET * sock,
 	       unsigned int blocksize,
-	       const HashCode160 * hc) {
+	       const HashCode512 * hc) {
   int ret;
   RequestUnindex ru;
 

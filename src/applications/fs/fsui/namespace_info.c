@@ -151,7 +151,7 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
 			 const char * namespaceName,
 			 const struct ECRS_MetaData * meta,
 			 const struct ECRS_URI * advertisementURI,
-			 const HashCode160 * rootEntry,
+			 const HashCode512 * rootEntry,
 			 struct ECRS_URI ** root) {
   int ret;
 
@@ -322,16 +322,16 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
 			unsigned int anonymityLevel,
 			const char * name,
 			cron_t updateInterval,
-			const HashCode160 * lastId,
-			const HashCode160 * thisId,
-			const HashCode160 * nextId,
+			const HashCode512 * lastId,
+			const HashCode512 * thisId,
+			const HashCode512 * nextId,
 			const struct ECRS_URI * dst,
 			const struct ECRS_MetaData * md,
 			struct ECRS_URI ** uri) {
   int ret;
   cron_t creationTime;
-  HashCode160 nid;
-  HashCode160 tid;
+  HashCode512 nid;
+  HashCode512 tid;
 
 
   ret = ECRS_addToNamespace(name,

@@ -31,7 +31,7 @@
 #include "querymanager.h"
 
 typedef struct {
-  HashCode160 query;
+  HashCode512 query;
   unsigned int type;
   ClientHandle client;
 } TrackRecord;
@@ -77,7 +77,7 @@ static void ceh(ClientHandle client) {
  * @param msg the query
  * @param client where did the query come from?
  */
-void trackQuery(const HashCode160 * query,
+void trackQuery(const HashCode512 * query,
 		unsigned int type,
 		const ClientHandle client) {
   int i;
@@ -86,7 +86,7 @@ void trackQuery(const HashCode160 * query,
   MUTEX_LOCK(&queryManagerLock);
   for (i=trackerCount-1;i>=0;i--)
     if ( (trackers[i]->client == client) &&
-	 (equalsHashCode160(&trackers[i]->query,
+	 (equalsHashCode512(&trackers[i]->query,
 			    query)) ) {
       MUTEX_UNLOCK(&queryManagerLock);
       return;
@@ -109,14 +109,14 @@ void trackQuery(const HashCode160 * query,
  * @param msg the query
  * @param client where did the query come from?
  */
-void untrackQuery(const HashCode160 * query,
+void untrackQuery(const HashCode512 * query,
 		  const ClientHandle client) {
   int i;
 
   MUTEX_LOCK(&queryManagerLock);
   for (i=trackerCount-1;i>=0;i--)
     if ( (trackers[i]->client == client) &&
-	 (equalsHashCode160(&trackers[i]->query,
+	 (equalsHashCode512(&trackers[i]->query,
 			    query)) ) {
       removeEntry(i);
       MUTEX_UNLOCK(&queryManagerLock);
@@ -131,7 +131,7 @@ void untrackQuery(const HashCode160 * query,
  *
  * @param value the response
  */
-void processResponse(const HashCode160 * key,
+void processResponse(const HashCode512 * key,
 		     const Datastore_Value * value) {
   int i;
   ReplyContent * rc;
@@ -139,7 +139,7 @@ void processResponse(const HashCode160 * key,
   GNUNET_ASSERT(ntohl(value->size) > sizeof(Datastore_Value));
   MUTEX_LOCK(&queryManagerLock);
   for (i=trackerCount-1;i>=0;i--) {
-    if ( (equalsHashCode160(&trackers[i]->query,
+    if ( (equalsHashCode512(&trackers[i]->query,
 			    key)) &&
 	 ( (trackers[i]->type == ANY_BLOCK) ||
 	   (trackers[i]->type == ntohl(value->type)) ) ) {

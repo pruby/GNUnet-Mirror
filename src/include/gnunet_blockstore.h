@@ -48,7 +48,7 @@ typedef struct {
  * @param cls argument passed for context (closure)
  * @return OK to continue with iteration, SYSERR to abort
  */
-typedef int (*DataProcessor)(const HashCode160 * key,
+typedef int (*DataProcessor)(const HashCode512 * key,
 			     const DataContainer * value,
 			     void * cls);
 
@@ -90,7 +90,7 @@ typedef struct {
 	     unsigned int type,
 	     unsigned int prio,
 	     unsigned int keyCount,
-	     const HashCode160 * keys,
+	     const HashCode512 * keys,
 	     DataProcessor resultCallback,
 	     void * resCallbackClosure);
   
@@ -105,7 +105,7 @@ typedef struct {
    *         SYSERR if the value is malformed
    */
   int (*put)(void * closure,
-	     const HashCode160 * key,
+	     const HashCode512 * key,
 	     const DataContainer * value,
 	     unsigned int prio);
 
@@ -117,7 +117,7 @@ typedef struct {
    * @return OK if the value could be removed, SYSERR if not (i.e. not present)
    */
   int (*del)(void * closure,
-	     const HashCode160 * key,
+	     const HashCode512 * key,
 	     const DataContainer * value);
 
   /**

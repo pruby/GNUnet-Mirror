@@ -49,7 +49,7 @@ static int startDownload(struct FSUI_Context * ctx,
 
 static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 				    unsigned int anonymityLevel,
-				    const HashCode160 * key,
+				    const HashCode512 * key,
 				    FSUI_DownloadList * parent) {
   int i;
   FSUI_DownloadList * pos;

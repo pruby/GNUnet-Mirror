@@ -66,7 +66,7 @@ static unsigned long long getSize() {
   return sq->getSize();
 }
 
-static int get(const HashCode160 * query,
+static int get(const HashCode512 * query,
 	       unsigned int type,
 	       Datum_Iterator iter,
 	       void * closure) {
@@ -93,7 +93,7 @@ static int get(const HashCode160 * query,
 /**
  * Explicitly remove some content from the database.
  */  
-static int del(const HashCode160 * query,
+static int del(const HashCode512 * query,
 	       const Datastore_Value * value) {
   int ok;
   EncName enc;
@@ -141,7 +141,7 @@ static int del(const HashCode160 * query,
  *   to justify removing something else, SYSERR on
  *   other serious error (i.e. IO permission denied)
  */
-static int put(const HashCode160 * key,
+static int put(const HashCode512 * key,
 	       const Datastore_Value * value) {
   int ok;
 
@@ -169,7 +169,7 @@ typedef struct {
   Datastore_Value * existing;
 } CE;
 
-static int checkExists(const HashCode160 * key,
+static int checkExists(const HashCode512 * key,
 		       const Datastore_Value * value,
 		       CE * ce) {
   ce->existing = MALLOC(ntohl(value->size));
@@ -190,7 +190,7 @@ static int checkExists(const HashCode160 * key,
  *   to justify removing something else, SYSERR on
  *   other serious error (i.e. IO permission denied)
  */
-static int putUpdate(const HashCode160 * key,
+static int putUpdate(const HashCode512 * key,
 		     const Datastore_Value * value) {
   CE cls;
   int ok;
@@ -240,7 +240,7 @@ static int putUpdate(const HashCode160 * key,
   return ok;
 }
 
-static int freeSpaceExpired(const HashCode160 * key,
+static int freeSpaceExpired(const HashCode512 * key,
 			 const Datastore_Value * value, 
 			 void * closure) {
   int ret; 
@@ -255,7 +255,7 @@ static int freeSpaceExpired(const HashCode160 * key,
   return OK;
 }
 
-static int freeSpaceLow(const HashCode160 * key,
+static int freeSpaceLow(const HashCode512 * key,
 			const Datastore_Value * value, 
 			void * closure) {
   int ret; 
@@ -350,7 +350,7 @@ void release_module_datastore() {
  * Callback that adds all element of the SQStore to the
  * bloomfilter.
  */
-static int filterAddAll(const HashCode160 * key,
+static int filterAddAll(const HashCode512 * key,
 			const Datastore_Value * value, 
 			void * closure) {
   makeAvailable(key);

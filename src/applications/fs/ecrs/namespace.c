@@ -98,7 +98,7 @@ int ECRS_createNamespace(const char * name,
 			 unsigned int priority,
 			 cron_t expiration,
 			 const struct ECRS_URI * advertisementURI,
-			 const HashCode160 * rootEntry,
+			 const HashCode512 * rootEntry,
 			 struct ECRS_URI ** rootURI) {
   char * fileName;
   char tmp;
@@ -106,7 +106,7 @@ int ECRS_createNamespace(const char * name,
   PrivateKeyEncoded * hke;
   char * dst;
   unsigned short len;
-  HashCode160 hc;
+  HashCode512 hc;
   GNUNET_TCP_SOCKET * sock;
   Datastore_Value * value;
   Datastore_Value * knvalue;
@@ -187,7 +187,7 @@ int ECRS_createNamespace(const char * name,
   ret = OK;
     
   /* publish NBlock */
-  memset(&nb->identifier, 0, sizeof(HashCode160));  
+  memset(&nb->identifier, 0, sizeof(HashCode512));  
   getPublicKey(hk,
 	       &nb->subspace);
   hash(&nb->subspace,
@@ -201,7 +201,7 @@ int ECRS_createNamespace(const char * name,
   nb->rootEntry = *rootEntry;
 
   GNUNET_ASSERT(OK == sign(hk,
-			   mdsize + 3 * sizeof(HashCode160),
+			   mdsize + 3 * sizeof(HashCode512),
 			   &nb->identifier,
 			   &nb->signature));
   if (OK != FS_insert(sock, value))
@@ -265,13 +265,13 @@ int ECRS_createNamespace(const char * name,
  * @return OK if the namespace exists, SYSERR if not
  */
 int ECRS_testNamespaceExists(const char * name,
-			     const HashCode160 * hc) {
+			     const HashCode512 * hc) {
   struct PrivateKey * hk;
   char * fileName;
   PrivateKeyEncoded * hke;
   char * dst;
   unsigned short len;
-  HashCode160 namespace;
+  HashCode512 namespace;
   PublicKey pk;
 
   /* FIRST: read and decrypt pseudonym! */
@@ -304,7 +304,7 @@ int ECRS_testNamespaceExists(const char * name,
   freePrivateKey(hk);  
   hash(&pk, sizeof(PublicKey), &namespace);
   if ( (hc == NULL) ||
-       (equalsHashCode160(hc,
+       (equalsHashCode512(hc,
 			  &namespace)))
     return OK;
   else
@@ -326,8 +326,8 @@ int ECRS_addToNamespace(const char * name,
 			cron_t expiration,
 			cron_t creationTime,
 			cron_t updateInterval,
-			const HashCode160 * thisId,
-			const HashCode160 * nextId,
+			const HashCode512 * thisId,
+			const HashCode512 * nextId,
 			const struct ECRS_URI * dstU,
 			const struct ECRS_MetaData * md,
 			struct ECRS_URI ** uri) {
@@ -338,13 +338,13 @@ int ECRS_addToNamespace(const char * name,
   unsigned int mdsize;
   struct PrivateKey * hk;
   SBlock * sb;
-  HashCode160 namespace;
+  HashCode512 namespace;
   char * dstURI;
   char * fileName;
   PrivateKeyEncoded * hke;
   char * dst;
   unsigned short len;
-  HashCode160 hc;
+  HashCode512 hc;
 
   /* FIRST: read and decrypt pseudonym! */
   fileName = getPseudonymFileName(name);
@@ -424,7 +424,7 @@ int ECRS_addToNamespace(const char * name,
 	  nextId,	  
 	  &sb->identifierIncrement);
   hash(thisId,
-       sizeof(HashCode160),
+       sizeof(HashCode512),
        &hc);
   getPublicKey(hk,
 	       &sb->subspace);
@@ -445,7 +445,7 @@ int ECRS_addToNamespace(const char * name,
 		      size
 		      - sizeof(Signature)
 		      - sizeof(PublicKey) 
-		      - sizeof(HashCode160));
+		      - sizeof(HashCode512));
 
   /* FINALLY: sign & publish SBlock */
   GNUNET_ASSERT(OK == sign(hk,

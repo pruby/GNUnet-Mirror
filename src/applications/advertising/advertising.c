@@ -139,7 +139,7 @@ receivedHELO(const p2p_HEADER * message) {
     return SYSERR;
   identity->getPeerIdentity(&msg->publicKey,
 			    &foreignId);
-  if (!equalsHashCode160(&msg->senderIdentity.hashPubKey,
+  if (!equalsHashCode512(&msg->senderIdentity.hashPubKey,
 			 &foreignId.hashPubKey))
     return SYSERR; /* public key and host hash do not match */
   if (SYSERR == verifySig(&msg->senderIdentity,

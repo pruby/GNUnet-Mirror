@@ -165,29 +165,29 @@ static void set_highbit(mpz_t a,
 
 static void mpz_randomize(mpz_t n,
 			  unsigned int nbits,
-			  HashCode160 * rnd) {
-  HashCode160 * tmp;
+			  HashCode512 * rnd) {
+  HashCode512 * tmp;
   int cnt;
   int i;
 
-  cnt = (nbits / sizeof(HashCode160) / 8) + 1;
-  tmp = MALLOC(sizeof(HashCode160) * cnt);
+  cnt = (nbits / sizeof(HashCode512) / 8) + 1;
+  tmp = MALLOC(sizeof(HashCode512) * cnt);
   
   tmp[0] = *rnd;
   for (i=0;i<cnt-1;i++) {
     hash(&tmp[i],
-	 sizeof(HashCode160),
+	 sizeof(HashCode512),
 	 &tmp[i+1]);
   }
   *rnd = tmp[cnt-1];
   /*
   printf("RND: ");
-  for (i=0;i<cnt * sizeof(HashCode160);i++)
+  for (i=0;i<cnt * sizeof(HashCode512);i++)
     printf("%02x", ((unsigned char*) tmp)[i]);
   printf("\n");
   */
 
-  mpz_import(n, cnt * sizeof(HashCode160) / sizeof(unsigned int),
+  mpz_import(n, cnt * sizeof(HashCode512) / sizeof(unsigned int),
 	     1, sizeof(unsigned int), 1, 0, tmp);
   FREE(tmp); 
   i = get_nbits(n);
@@ -200,7 +200,7 @@ static void mpz_randomize(mpz_t n,
  */
 static int is_prime (mpz_t n, 
 		     int steps,
-		     HashCode160 * hc) {
+		     HashCode512 * hc) {
   mpz_t x;
   mpz_t y;
   mpz_t z;
@@ -266,7 +266,7 @@ static int is_prime (mpz_t n,
 
 static void gen_prime(mpz_t ptest,
 		      unsigned int nbits, 
-		      HashCode160 * hc) {
+		      HashCode512 * hc) {
   mpz_t prime, pminus1, val_2, val_3, result;
   int i;
   unsigned x, step;
@@ -366,7 +366,7 @@ static int test_gcd(mpz_t g,
  */
 static void generate_kblock_key(KBlock_secret_key *sk,
 				unsigned int nbits,
-				HashCode160 * hc) {
+				HashCode512 * hc) {
   mpz_t t1, t2;
   mpz_t phi;  /* helper: (p-1)(q-1) */
   mpz_t g;
@@ -426,9 +426,9 @@ static void generate_kblock_key(KBlock_secret_key *sk,
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-struct PrivateKey * makeKblockKey(const HashCode160 * hc) {
+struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
   KBlock_secret_key sk;
-  HashCode160 hx;
+  HashCode512 hx;
   void * pbu[6];
   mpz_t * pkv[6];
   size_t sizes[6];

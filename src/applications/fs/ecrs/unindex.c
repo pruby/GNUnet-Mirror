@@ -117,13 +117,13 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
  * c) copy file, if fails restore symlink
  */
 static int undoSymlinking(const char * fn,
-			  const HashCode160 * fileId,
+			  const HashCode512 * fileId,
 			  GNUNET_TCP_SOCKET * sock) {
   EncName enc;
   char * serverDir;
   char * serverFN;
   char * tmpName;
-  HashCode160 serverFileId;
+  HashCode512 serverFileId;
   struct stat buf;
   int ret;
 
@@ -179,7 +179,7 @@ static int undoSymlinking(const char * fn,
     FREE(serverFN);
     return SYSERR;
   }
-  if (! equalsHashCode160(&serverFileId,
+  if (! equalsHashCode512(&serverFileId,
 			  fileId)) {
     FREE(serverFN);
     BREAK(); /* rather odd... */
@@ -239,7 +239,7 @@ int ECRS_unindexFile(const char * filename,
   DBlock * db;
   Datastore_Value * value;
   GNUNET_TCP_SOCKET * sock;
-  HashCode160 fileId;
+  HashCode512 fileId;
   CHK chk;
   cron_t eta;
   cron_t start;

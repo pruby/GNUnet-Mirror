@@ -48,9 +48,9 @@
  * tables.  The GNUnet DHT infrastructure supports multiple
  * tables, the table to lookup peers is just one of these.
  */
-typedef HashCode160 DHT_TableId; 
+typedef HashCode512 DHT_TableId; 
 
-#define equalsDHT_TableId(a,b) equalsHashCode160(a,b)
+#define equalsDHT_TableId(a,b) equalsHashCode512(a,b)
 
 /**
  * TCP communication: client to gnunetd: join table.
@@ -92,7 +92,7 @@ typedef struct {
 
   unsigned long long timeout;  /* nbo */
   
-  HashCode160 key;
+  HashCode512 key;
 
   unsigned int priority; /* nbo */
 
@@ -115,7 +115,7 @@ typedef struct {
   unsigned int priority; /* nbo */
 
   /* one or more keys */
-  HashCode160 keys;  
+  HashCode512 keys;  
 
 } DHT_CS_REQUEST_GET;
 
@@ -130,7 +130,7 @@ typedef struct {
   
   unsigned long long timeout; /* nbo */
 
-  HashCode160 key;
+  HashCode512 key;
 
 } DHT_CS_REQUEST_REMOVE;
 
@@ -157,7 +157,7 @@ typedef struct {
 
   DHT_TableId table; 
 
-  HashCode160 key;
+  HashCode512 key;
 
   DataContainer data;
 

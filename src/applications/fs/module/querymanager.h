@@ -45,7 +45,7 @@ void doneQueryManager();
  * @param msg the query
  * @param client where did the query come from?
  */
-void trackQuery(const HashCode160 * query,
+void trackQuery(const HashCode512 * query,
 		unsigned int type,
 		const ClientHandle client);
 
@@ -55,7 +55,7 @@ void trackQuery(const HashCode160 * query,
  * @param msg the query
  * @param client where did the query come from?
  */
-void untrackQuery(const HashCode160 * query,
+void untrackQuery(const HashCode512 * query,
 		  const ClientHandle client);
 
 /**
@@ -64,7 +64,7 @@ void untrackQuery(const HashCode160 * query,
  *
  * @param value the response
  */
-void processResponse(const HashCode160 * key,
+void processResponse(const HashCode512 * key,
 		     const Datastore_Value * value);
  
 #endif

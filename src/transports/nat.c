@@ -67,7 +67,7 @@ static int verifyHelo(const HELO_Message * helo) {
 				"YES")) {
       /* if WE are a NAT and this is not our HELO,
 	 it is invalid since NAT-to-NAT is not possible! */
-      if (equalsHashCode160(&coreAPI->myIdentity->hashPubKey,
+      if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			    &helo->senderIdentity.hashPubKey))
 	return OK;
       else

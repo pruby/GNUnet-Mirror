@@ -59,10 +59,10 @@ static void abortSem(Semaphore * sem) {
   SEMAPHORE_UP(sem);
 }
 
-static int searchResultCB(const HashCode160 * key,
+static int searchResultCB(const HashCode512 * key,
 			  const Datastore_Value * value,
 			  TSC * cls) {
-  HashCode160 ekey;
+  HashCode512 ekey;
   Datastore_Value * blk;
   Datastore_Value * eblk;
   int ret;
@@ -79,7 +79,7 @@ static int searchResultCB(const HashCode160 * key,
 				ntohl(blk->size) - sizeof(Datastore_Value),
 				&ekey,
 				&eblk));
-  if ( (equalsHashCode160(&ekey,
+  if ( (equalsHashCode512(&ekey,
 			  key)) &&
        (value->size == blk->size) &&
        (0 == memcmp(value,
@@ -102,7 +102,7 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
 		     int i) {
   struct FS_SEARCH_HANDLE * handle;
   cron_t now;
-  HashCode160 query;
+  HashCode512 query;
   TSC closure;
   Datastore_Value * dv;
   DBlock * db;
@@ -150,8 +150,8 @@ int main(int argc, char * argv[]){
   GNUNET_TCP_SOCKET * sock;
   Datastore_Value * block;
   Datastore_Value * eblock;
-  HashCode160 hc;
-  HashCode160 query;
+  HashCode512 hc;
+  HashCode512 query;
   int i;
 
   cronTime(&now);

@@ -18,7 +18,7 @@ static int parseCommandLine(int argc,
 }
 
 static int testReadWrite() {
-  HashCode160 ha;
+  HashCode512 ha;
   EncName filename;
   char tmp[100];
 

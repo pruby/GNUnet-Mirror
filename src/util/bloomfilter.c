@@ -273,8 +273,8 @@ typedef void (*BitIterator)(Bloomfilter * bf,
 static void iterateBits(Bloomfilter * bf,
 			BitIterator callback,
 			void * arg,
-			const HashCode160 * key) {
-  HashCode160 tmp[2];
+			const HashCode512 * key) {
+  HashCode512 tmp[2];
   int bitCount;
   int round;
   unsigned int slot=0;
@@ -282,10 +282,10 @@ static void iterateBits(Bloomfilter * bf,
   bitCount = bf->addressesPerElement;
   memcpy(&tmp[0],
 	 key,
-	 sizeof(HashCode160));
+	 sizeof(HashCode512));
   round = 0;
   while (bitCount > 0) {
-    while (slot < (sizeof(HashCode160)/sizeof(unsigned int))) {
+    while (slot < (sizeof(HashCode512)/sizeof(unsigned int))) {
       callback(bf, 
 	       (((unsigned int*)&tmp[round&1])[slot]) & ((bf->bitArraySize*8)-1), 
 	       arg);
@@ -296,7 +296,7 @@ static void iterateBits(Bloomfilter * bf,
     }
     if (bitCount > 0) {
       hash(&tmp[round & 1],
-	   sizeof(HashCode160),
+	   sizeof(HashCode512),
 	   &tmp[(round+1) & 1]);
       round++;
       slot = 0;
@@ -481,7 +481,7 @@ void resetBloomfilter(Bloomfilter * bf) {
  * @return YES if the element is in the filter, NO if not
  */
 int testBloomfilter(Bloomfilter * bf,
-		    const HashCode160 * e) {
+		    const HashCode512 * e) {
   int res;
 
   if (NULL == bf) 
@@ -503,7 +503,7 @@ int testBloomfilter(Bloomfilter * bf,
  * @param e the element
  */
 void addToBloomfilter(Bloomfilter * bf,
-		      const HashCode160 * e) {
+		      const HashCode512 * e) {
 
   if (NULL == bf) 
     return;
@@ -522,7 +522,7 @@ void addToBloomfilter(Bloomfilter * bf,
  * @param e the element to remove
  */
 void delFromBloomfilter(Bloomfilter * bf,
-			const HashCode160 * e) {
+			const HashCode512 * e) {
   if(NULL == bf) 
     return;
   MUTEX_LOCK(&bf->lock);
@@ -549,7 +549,7 @@ void resizeBloomfilter(Bloomfilter * bf,
 		       void * iterator_arg,
 		       unsigned int size,
 		       unsigned int k) {
-  HashCode160 * e;
+  HashCode512 * e;
   unsigned int i;
 
   MUTEX_LOCK(&bf->lock);

@@ -24,6 +24,10 @@ Tzvetan Horozov <horozov@motorola.com>
 Uli Luckas <luckas@musoft.de>
 Werner Koch <libgcrypt@g10code.com> [original code of libgcrypt]
 Kevin Vandersloot <kfv101@psu.edu> [original code of gnome-system-monitor]
+Jean-Luc Cooke <jlcooke@certainkey.com> [ SHA-512]
+Andrew McDonald <andrew@mcdonald.org.uk> [ SHA-512]
+Kyle McMartin <kyle@debian.org> [ SHA-512]
+
 
 Original RPC and DHT-module were contributed by:
 Marko Räihä
