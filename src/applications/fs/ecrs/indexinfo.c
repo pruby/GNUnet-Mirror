@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
+#include "gnunet_fs_lib.h"
 #include "gnunet_getoption_lib.h"
 
 /**
@@ -105,8 +106,8 @@ int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
   cls.iterator = iterator;
   cls.closure = closure;
   cls.cnt = 0;
-  scanDirectory((DirectoryEntryCallback) &indexDirectory,
-		&iiHelper,
+  scanDirectory(indexDirectory,
+		(DirectoryEntryCallback) &iiHelper,
 		&cls);
   FREE(indexDirectory);
   return cls.cnt;
