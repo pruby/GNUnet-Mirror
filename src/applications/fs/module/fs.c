@@ -929,14 +929,15 @@ static int dhtGet(void * closure,
   return ret;
 }
 
-static int uniqueReplyIdentifier(const void * content,
-				 unsigned int size,
+static int uniqueReplyIdentifier(const DataContainer * content,
 				 unsigned int type,
 				 const HashCode512 * primaryKey) {
   HashCode512 q;
   unsigned int t;
   const GapWrapper * gw;
+  unsigned int size;
 
+  size = ntohl(content->size);
   if (size < sizeof(GapWrapper)) {
     BREAK();
     return NO;

@@ -153,6 +153,7 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 	   &enc);
   strcat(serverFN,
 	 (char*)&enc);
+  UNLINK(serverFN);
   if (0 != SYMLINK(fn, serverFN)) {
     LOG_FILE_STRERROR(LOG_ERROR, "symlink", fn);
     FREE(serverFN);
@@ -195,8 +196,8 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   }
 
   fn = getOnDemandFile(fileId);
-  if ( (0 != stat(fn,
-		  &sbuf)) 
+  if ( (0 != lstat(fn,
+		   &sbuf)) 
 #ifdef S_ISLNK
        || (! S_ISLNK(sbuf.st_mode)) 
 #endif
