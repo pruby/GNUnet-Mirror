@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Welcome to GNUnet for MacOS X</title>
+</head>
+<body style="background-image: url(Web/grainblue.jpg);">
+<big><span style="font-weight: bold;">GNUnet 0.6.6 for MacOS X (10.3.7)</span></big><br>
+<br>
+X11 and mouse: many functions require you to press the apple key and the mouse
+button at the same time. This corresponds to the right mouse button on a three
+button mouse. Otherwise usage should be self-explanatory.
+<br>
+<br>
+If you are behind a firewall then you may need to edit ~/.gnunet/gnunet.* configuration files. After changing them you will need to stop and start the gnunetd server (daemon).
+<br>
+<br>
+<span style="font-weight: bold;">The executable uses the following packages (GPL, BSD, or other):</span><br>
+<br>
+- GNUnet 0.6.6 (http://www.gnunet.org)<br>
+- Exctractor 4.0 (http://www.gnunet.org)<br>
+- OpenSSL 0.9.7 (via Fink; http://fink.sourceforge.net)<br>
+- gmp 4.1.3 (via Fink; http://fink.sourceforge.net)<br>
+- GTK 2.4.9 (via Fink; http://fink.sourceforge.net)<br>
+- libiconv 1.9.2 (via Fink; http://fink.sourceforge.net)<br>
+- libncurses 5.4 (via Fink; http://fink.sourceforge.net)<br>
+- GDBM 1.8 (via Fink; http://fink.sourceforge.net)<br>
+- Sqlite 3 (via http://www.sqlite.org)<br>
+- GNU Wget 1.9.1 (via Fink; http://fink.sourceforge.net)<br>
+<br>
+The GPL COPYING file is included with the application and can be found from
+GNUnet.app/Contents/MacOS/doc/COPYING.
+<br>
+<br>
+<span style="font-weight: bold;">Relevant files and directories:</span><br>
+<br>
+1. .gnunet directory in your home directory contains all the GNUnet related data (e.g. ~/.gnunet).<br>
+2. That directory has two configuration files: gnunet.conf, which contains GNUnet client related configuration, and gnunet.root, which contains all GNUnet server (daemon) related configuration. For more information on these files, see the <a href="http://www.gnunet.org/">GNUnet homepage</a>.<br>
+3. GNUnet command line utilities can be found from (use shell window) 
+GNUnet.app/Contents/MacOS/bin. You can add this directory to you path
+in ~/.cshrc or ~/.profile file.<br>
+4. GNUnet-downloads in you home directory will contain downloaded files.<br>
+<br>
+The commands are:<br>
+<br>
+gnunet-search &lt;keyword&gt;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; will search for files. Note that it outputs
+suitable lines for download.<br>
+gnunet-download &lt;URI&gt;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; will download file corresponding to URI.<br>
+gnunet-gtk&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; graphical
+interface to GNUnet.<br>
+gnunet-insert &lt;files&gt;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; insert
+content to GNUnet<br>
+<br>
+<br>
+<span style="font-weight: bold;">If something goes wrong and you want to start from scratch:</span><br>
+1. Stop the gnunetd from advanced -menu in the graphical user interface or 
+by using a shell window:<br>
+% cat ~/.gnunet/gnunet.pid<br>
+somenumber is displayed here<br>
+% kill -9 the_number_above_goes_here<br>
+2. Remove you .gnunet directory (be careful not to remove anything else!!!):<br>
+% cd<br>
+% rm -rf .gnunet<br>
+If you are uncomfortable with command line then you can also use Finder to
+remove the .gnunet directory.
+</body>
+</html>

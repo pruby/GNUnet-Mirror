@@ -1,0 +1,5 @@
+#!/bin/bash
+
+LD_LIBRARY_PATH=`dirname $0`/../lib
+export LD_LIBRARY_PATH
+exec $LD_LIBRARY_PATH/../bin/gnunetd.wrap -c ~/.gnunet/gnunet.root $*

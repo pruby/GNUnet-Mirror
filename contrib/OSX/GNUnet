@@ -1,0 +1,86 @@
+#!/bin/bash
+
+HOMEPAGE=http://www.chem.jyu.fi/~eloranta/gnunetmac.html
+NOX=http://www.chem.jyu.fi/~eloranta/gnunetmac-nox.html
+
+# Check for X11 - if not installed then help
+
+if [ ! -d /usr/X11R6 ]; then
+  exec /usr/bin/open /Applications/Safari.app $NOX
+fi  
+
+rootdir=`dirname $0`
+
+if [ ! -d $rootdir ]; then
+  cd ..
+  rootdir=`pwd`
+fi
+
+if [ ! -d $rootdir ]; then
+  echo "Can't locate GNUnet rootdir."
+  exit 0
+fi
+
+if [ ! -d ~/.gnunet ]; then
+  mkdir -p ~/.gnunet
+  mkdir -p ~/.gnunet/data
+  mkdir -p ~/.gnunet/data/hosts
+  cp $rootdir/hosts/* ~/.gnunet/data/hosts
+  /usr/bin/open /Applications/Safari.app $HOMEPAGE
+fi
+
+# Relocate PANGO - everytime since the app may have been moved...
+mkdir -p ~/.gnunet/pango
+PANGO_RC_FILE=~/.gnunet/pango/pango.rc
+export PANGO_RC_FILE
+cat << E_O_F > $PANGO_RC_FILE
+[Pango]
+ModuleFiles=$HOME/.gnunet/pango/pango.modules
+E_O_F
+
+cp $rootdir/etc/pangox.aliases ~/.gnunet/pango
+pth=`fgrep ModulesPath $rootdir/etc/pango.modules | cut -d\  -f4`
+sed -e "s-$pth-$rootdir/pango-g" < $rootdir/etc/pango.modules > ~/.gnunet/pango/pango.modules
+
+# Generate gnunet.root ? TODO: other than ethernet devices?
+if [ ! -f ~/.gnunet/gnunet.root ]; then
+# Locate active network interface (e.g. en0 or en1)
+  act1=`ifconfig en0 2> /dev/null | grep inet | wc -l`
+  act2=`ifconfig en1 2> /dev/null | grep inet | wc -l`
+
+  cd $rootdir/etc
+  if [ $act1 -gt 0 ]; then
+     ip=`ifconfig en0 | grep inet\  | cut -f2 | cut -d\  -f2`
+     sed -e "s/ACTIVE_IFACE/en0/g;s/ACTIVE_IP/$ip/g" < gnunet.root > ~/.gnunet/gnunet.root
+  elif [ $act2 -gt 0 ]; then
+     ip=`ifconfig en1 | grep inet\  | cut -f2 | cut -d\  -f2`
+     sed -e "s/ACTIVE_IFACE/en1/g;s/ACTIVE_IP/$ip/g" < gnunet.root > ~/.gnunet/gnunet.root
+  else
+     echo "Warning: Can\'t find active network interface - assuming en0."
+     ip=`ifconfig en0 | grep inet\  | cut -f2 | cut -d\  -f2`
+     sed -e "s/ACTIVE_IFACE/en0/g;s/ACTIVE_IP/$ip/g" < gnunet.root > ~/.gnunet/gnunet.root
+  fi
+  cd ..
+fi
+
+if [ ! -f ~/.gnunet/gnunet.conf ]; then
+  cp $rootdir/etc/gnunet.user ~/.gnunet/gnunet.conf
+fi
+
+# Do we need the server?
+
+if [ -e ~/.gnunet/gnunetd.pid ]; then
+  pid=`cat ~/.gnunet/gnunetd.pid`
+  if [ `ps -p $pid | wc -l` != 2 ]; then
+    $rootdir/bin/gnunetd &
+  fi
+else
+  $rootdir/bin/gnunetd &
+fi
+
+if [ "$SSH_CLIENT" != "" ]; then
+  $rootdir/bin/gnunet-gtk &
+else
+  /usr/bin/open-x11 $rootdir/bin/gnunet-gtk
+fi
+exit 0

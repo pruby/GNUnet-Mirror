@@ -1,0 +1,8 @@
+#!/bin/bash
+
+PANGO_RC_FILE=~/.gnunet/pango/pango.rc
+export PANGO_RC_FILE
+LD_LIBRARY_PATH=`dirname $0`/../lib
+export LD_LIBRARY_PATH
+
+exec $LD_LIBRARY_PATH/../bin/gnunet-gtk.wrap $*

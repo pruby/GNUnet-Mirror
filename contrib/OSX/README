@@ -1,0 +1,23 @@
+Few notes:
+
+1. Running make will produce .app of GNUnet and dmg image containing the application.
+
+2. To compile you will need bunch of stuff from fink (http://fink.sourceforge.net).
+
+3. Since native GTK+2 does not exist, we have to rely on X11.
+
+4. build_app is quite a hack! It first compiles as everything were to go
+  under /usr/local. Then it uses install_name_tool etc. to relocate shared
+  lib paths in executables and shared libs. It does all this by producing suitable
+  directory stucture for .app. Patching all the binaries
+  takes some time - be patient when running make. All the necessary shared libs
+  will be picked up from fink ($SW variable in build_app).
+  Can someone check Info.plist? I don't think it sets the icon correctly?
+
+5. Better hostlist mechanism. For some reason, esp. behind a firewall,
+the gnunetd hostlist mechanism does not get you anywhere. Hack:
+I am including a static list with the App :-(
+
+
+
+Jussi Eloranta (eloranta@jyu.fi)
