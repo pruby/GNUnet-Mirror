@@ -22,7 +22,7 @@
  * @file applications/fs/ecrs/upload.c
  * @brief Break file that is inserted into blocks and encrypts
  *        them according to the ECRS scheme.
- * @see http://www.ovmj.org/GNUnet/encoding.php3
+ * @see http://gnunet.org/encoding.php3
  * @author Krista Bennett
  * @author Christian Grothoff
  */
@@ -53,6 +53,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   Datastore_Value * value;
   DBlock * db;
   CHK ichk;
+  EncName enc;
 
   size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value) - sizeof(DBlock);
   present = size / sizeof(CHK);
@@ -70,6 +71,12 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 		    size,
 		    &ichk.query,
 		    &value);
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&ichk.query,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"Publishing block (query: %s)\n",
+	&enc);
     if (OK != FS_insert(sock,
 			value)) {
       FREE(value);

@@ -482,6 +482,14 @@ static void requestManagerEndgame(RequestManager * rm) {
 static void addRequest(RequestManager * rm,
 		       NodeClosure * node) {
   RequestEntry * entry;
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(&node->chk.query,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Queuing request (query: %s)\n",
+      &enc);
 
   GNUNET_ASSERT(node != NULL);
   entry
@@ -796,6 +804,14 @@ static int nodeReceive(const HashCode160 * query,
   unsigned int size;
   int i;
   char * data;
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(query,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Receiving reply to query %s\n",
+      &enc);
 
   GNUNET_ASSERT(equalsHashCode160(query,
 				  &node->chk.query));
@@ -867,6 +883,8 @@ static int nodeReceive(const HashCode160 * query,
  */
 static void issueRequest(RequestManager * rm,
 			 int requestIndex) {
+  static unsigned int lastmpriority;
+  static cron_t lastmpritime;
   RequestEntry * entry; 
   cron_t now;
   unsigned int priority;
@@ -874,8 +892,7 @@ static void issueRequest(RequestManager * rm,
   cron_t timeout;
   unsigned int ttl;
   int TTL_DECREMENT;
-  static unsigned int lastmpriority;
-  static cron_t lastmpritime;
+  EncName enc;
 
   cronTime(&now);
   entry = rm->requestList[requestIndex];
@@ -943,6 +960,13 @@ static void issueRequest(RequestManager * rm,
       ttl = (priority+8) * TTL_DECREMENT; /* see adjustTTL in gap */    
     timeout = now + ttl;
   }
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(&entry->node->chk.query,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Starting FS search for %s\n",
+      &enc);
 
   entry->searchHandle
     = FS_start_search(rm->sctx,

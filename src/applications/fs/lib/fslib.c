@@ -169,6 +169,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 				void * closure) {
   SEARCH_HANDLE * ret;
   RequestSearch * req;
+  EncName enc;
 
   ret = MALLOC(sizeof(SEARCH_HANDLE));
   req = MALLOC(sizeof(RequestSearch) + (keyCount-1) * sizeof(HashCode160));
@@ -191,6 +192,12 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   }
   ctx->handles[ctx->handleCount++] = ret;
   MUTEX_UNLOCK(&ctx->lock);
+  IFLOG(LOG_DEBUG,
+	hash2enc(&req->query[0],
+		 &enc));
+  LOG(LOG_DEBUG,
+      "FS initiating search for %s\n",
+      &enc);
   if (OK != writeToSocket(ctx->sock,
 			  &req->header)) {
     FS_stop_search(ctx,

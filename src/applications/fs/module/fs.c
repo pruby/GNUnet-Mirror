@@ -190,15 +190,19 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 				     const CS_HEADER * req) {
   RequestSearch * rs;
   unsigned int keyCount;
+  EncName enc;
 
   if (ntohs(req->size) < sizeof(RequestSearch)) {
     BREAK();
     return SYSERR;
   }
   rs = (RequestSearch*) req;
+  IFLOG(LOG_DEBUG,
+	hash2enc(&rs->query[0],
+		 &enc));
   LOG(LOG_DEBUG,
-      "FS received QUERY START (key: %u)\n",
-      rs->query[0].a);
+      "FS received QUERY START (query: %s)\n",
+      &enc);
   trackQuery(&rs->query[0], 
 	     ntohl(rs->type),
 	     sock);
@@ -268,6 +272,7 @@ static int csHandleRequestInsert(ClientHandle sock,
   int ret;
   HashCode160 query;
   unsigned int type;
+  EncName enc;
 
   if (ntohs(req->size) < sizeof(RequestInsert)) {
     BREAK();
@@ -288,11 +293,14 @@ static int csHandleRequestInsert(ClientHandle sock,
     FREE(datum);
     return SYSERR;
   }
+  IFLOG(LOG_DEBUG,
+	hash2enc(&query,
+		 &enc));
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(RequestInsert),
 			&ri[1]);
   LOG(LOG_DEBUG,
-      "FS received REQUEST INSERT (key: %u, type: %u)\n",
-      query.a,
+      "FS received REQUEST INSERT (query: %s, type: %u)\n",
+      &enc,
       type);
   datum->type = htonl(type);
   memcpy(&datum[1],
@@ -795,7 +803,7 @@ static int uniqueReplyIdentifier(const void * content,
   }
   gw = (const GapWrapper*) content;
   if ( (OK == getQueryFor(size - sizeof(GapWrapper),
-			  &gw[1],
+			  (const char*) &gw[1],
 			  &q)) &&
        (equalsHashCode160(&q,
 			  primaryKey)) &&
