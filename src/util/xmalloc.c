@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -94,6 +94,50 @@ void * xmalloc_unchecked_(size_t size,
     DIE_STRERROR_FL(filename, linenumber, "malloc");
   memset(result, 0, size); /* client code should not rely on this, though... */
   return result;
+}
+
+/**
+ * Reallocate memory. Checks the return value, aborts if no more
+ * memory is available.
+ *
+ * @ptr the pointer to reallocate
+ * @param size how many bytes of memory to allocate, do NOT use
+ *  this function (or MALLOC) to allocate more than several MB
+ *  of memory
+ * @param filename where in the code was the call to REALLOC
+ * @param linenumber where in the code was the call to REALLOC
+ * @return pointer to size bytes of memory
+ */
+void * xrealloc_(void * ptr,
+      const size_t n,
+      const char * filename,
+      const int linenumber) {
+#if DEBUG_MALLOC 
+  MUTEX_LOCK(&lock);
+  printf("%p free %s:%d\n", 
+   ptr, 
+   filename,
+   linenumber);
+  MUTEX_UNLOCK(&lock);
+#endif        
+  
+  ptr = realloc(ptr, n);
+
+  if (!ptr) 
+    DIE_STRERROR_FL(filename, linenumber, "realloc");
+
+#if DEBUG_MALLOC 
+  MUTEX_LOCK(&lock);
+  printf("%p malloc %s:%d (%d bytes)\n", 
+   ptr, 
+   filename,
+   linenumber,
+   n);
+  fflush(stdout);
+  MUTEX_UNLOCK(&lock);
+#endif
+    
+  return ptr;
 }
 
 /**

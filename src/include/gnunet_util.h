@@ -1026,6 +1026,23 @@ void * xmalloc_unchecked_(size_t size,
 #define MALLOC(size) xmalloc_(size, __FILE__,__LINE__)
 
 /**
+ * Reallocate memory. Checks the return value, aborts if no more
+ * memory is available.
+ */
+void * xrealloc_(void * ptr,
+      const size_t n,
+      const char * filename,
+      const int linenumber);
+
+/**
+ * Wrapper around realloc. Rellocates size bytes of memory.
+ * @param ptr the pointer to reallocate
+ * @param size the number of bytes to reallocate
+ * @return pointer to size bytes of memory
+ */
+#define REALLOC(ptr, size) xrealloc_(ptr, size, __FILE__,__LINE__)
+
+/**
  * Free memory. Merely a wrapper for the case that we
  * want to keep track of allocations.  Don't use xfree_
  * directly. Use the FREE macro.
