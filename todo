@@ -1,5 +1,4 @@
 0.6.7 [3?'05] (aka "features"):
-- 835??  [ unknown crash ]
 - 770?   [ use freedback (LOG) in gnunet-gtk via show-messages ]
 - 704?   [ auto-reindex downloaded files ]
 - 678?   [ directory browser ]

@@ -351,6 +351,44 @@ int ECRS_uploadFile(const char * filename,
 		    struct ECRS_URI ** uri); /* upload.c */
 
 /**
+ * Test if a file is indexed.
+ *
+ * This function will ONLY work if gnunetd runs on the
+ * same machine as the current process and if the indexed
+ * files could be symlinked.  If indexed files had to be 
+ * uploaded to a remote machine or copied, the original
+ * names will have been lost.
+ *
+ * @return YES if the file is indexed, NO if not, SYSERR on errors
+ *  (i.e. filename could not be accessed and thus we have problems
+ *  checking; also possible that the file was modified after indexing;
+ *  in either case, if SYSERR is returned the user should probably
+ *  be notified that 'something is wrong')
+ */
+int ECRS_isFileIndexed(const char * filename);
+
+/**
+ * @return OK to continue iteration, SYSERR to abort
+ */
+typedef int (*ECRS_FileIterator)(const char * filename,
+				 void * cls);
+
+/**
+ * Iterate over all indexed files.  
+ *
+ * This function will ONLY work if gnunetd runs on the
+ * same machine as the current process and if the indexed
+ * files could be symlinked.  If indexed files had to be 
+ * uploaded to a remote machine or copied, the original
+ * names will have been lost.  In that case, the iterator
+ * will NOT iterate over these files.
+ *
+ * @return number of files indexed, SYSERR if iterator aborted
+ */
+int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
+			     void * closure);
+
+/**
  * Unindex a file.
  *
  * @return SYSERR if the unindexing failed (i.e. not indexed)

@@ -7,6 +7,7 @@ libgnunetecrs_la_SOURCES = \
   directory.c \
   download.c \
   ecrs.c ecrs.h \
+  indexinfo.c \
   keyspace.c \
   meta.c \
   namespace.c \
