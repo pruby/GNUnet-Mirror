@@ -28,7 +28,7 @@
 #include "gnunet_transport.h"
 #include "platform.h"
 
-#define DEBUG_TCP YES 
+#define DEBUG_TCP NO 
 
 /**
  * after how much time of the core not being associated with a tcp
@@ -794,8 +794,13 @@ static int tcpDirectSend(TCPSession * tcpSession,
   size_t ret;
   int success;
 
-  if (tcp_shutdown == YES)
+  if (tcp_shutdown == YES) {
+#if DEBUG_TCP
+    LOG(LOG_DEBUG,
+        "tcpDirectSend called while TCP transport is shutdown.\n");		    
+#endif	  
     return SYSERR;
+  }
   if (tcpSession->sock == -1) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
@@ -810,6 +815,10 @@ static int tcpDirectSend(TCPSession * tcpSession,
   MUTEX_LOCK(&tcplock);
   if (tcpSession->wpos > 0) {
     /* select already pending... */
+#if DEBUG_TCP
+	  LOG(LOG_DEBUG,
+	"write already pending, will not take additional message.\n");
+#endif    
     MUTEX_UNLOCK(&tcplock);
     return SYSERR;
   }
@@ -1112,17 +1121,27 @@ static int tcpSend(TSession * tsession,
   TCPMessagePack * mp;
   int ok;
 
-  if (size >= MAX_BUFFER_SIZE)
+  if (size >= MAX_BUFFER_SIZE) {
+    BREAK();
     return SYSERR;
+  }
 
-  if (tcp_shutdown == YES)
+  if (tcp_shutdown == YES) {
+#if TCP_DEBUG
+	  LOG(LOG_DEBUG, "tcpSend called while TCP is shutdown.\n");
+#endif	  
     return SYSERR;
+  }   
   if (size == 0) {
     BREAK();
     return SYSERR;
   }
-  if (((TCPSession*)tsession->internal)->sock == -1)
+  if (((TCPSession*)tsession->internal)->sock == -1) {
+#if TCP_DEBUG
+	  LOG(LOG_DEBUG, "tcpSend called after other side closed connection.\n");
+#endif    
     return SYSERR; /* other side closed connection */
+  }  
   mp = MALLOC(sizeof(TCPMessagePack) + size);
   memcpy(&mp[1],
 	 msg,
