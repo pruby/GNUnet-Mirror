@@ -244,7 +244,7 @@ static void testPING(HELO_Message * xhelo,
 	    _(" Connection failed\n"));
     return;
   }
-  if (tsessoin == NULL) {
+  if (tsession == NULL) {
     BREAK();
     fprintf(stderr,
 	    _(" Connection failed (bug?)\n"));
