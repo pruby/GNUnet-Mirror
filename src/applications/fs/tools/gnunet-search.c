@@ -76,12 +76,8 @@ static void eventCallback(SearchClosure * sc,
   uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
   printf("%s:\n",
 	 uri);
-#if 0
-  filename = ECRS_getMetaData(meta,
-			      EXTRACTOR_FILENAME);
-#else
-  filename = "FIXME";
-#endif
+  filename = ECRS_getFromMetaData(meta,
+				  EXTRACTOR_FILENAME);
   if (filename != NULL) 
     printf("gnunet-download -o \"%s\" %s\n",
 	   filename,

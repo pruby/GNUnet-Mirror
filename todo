@@ -10,11 +10,8 @@
 - Missing Features:
   * fs/module/fs+migration: anonymity level and expiration time considerations (Christian)
   * gap: economy for local queries, forwardQuery dead?, anonymityLevel
+  * fsui upload: ETA calculations, tracking URIs
   * ecrs-download: some stats, some details in the heuristics
-  * gnunet-search: dump directory with search results,
-                   get filename from meta-data for -o option,
-                   handle anonymity-level setting
-  * fsui upload: ETA, tracking URIs
   * fsui core (persistence, shutdown, multiple FSUIs)
 - Need testing:
   * ECRS-directories (build, iterate)
@@ -27,13 +24,16 @@
 - gnunet-insert:
   * allow any kind of meta-data to be specified on the
     command-line
+- gnunet-search: 
+  * dump directory with search results
+  * 'handle' anonymity-level setting
 - FSUI:
   * namespace updates
   * collections
 
 0.7.0 [6'05] (aka "compatibility? what's that?"):
 - Missing Features:
-  * topology: do eager bootstrap on first start (Christian)
+  * topology: do aggressive bootstrap on first start (Christian)
   * ecrs-unindex: code cleanup
   * fix dht routing service
      - make dht respect new dht API (long way to go)
