@@ -2,6 +2,10 @@ if HAVE_MYSQL
  MYSQL_DIR = sqstore_mysql
 endif
 
+if HAVE_SQLITE
+ SQLITE_DIR = sqstore_sqlite
+endif
+
 if !MINGW
  TESTBED_DIR = testbed
 endif
@@ -21,6 +25,7 @@ SUBDIRS	= \
  pingpong \
  session \
  $(MYSQL_DIR) \
+ $(SQLITE_DIR) \
  stats \
  tbench \
  template \

@@ -391,6 +391,11 @@
 #define DHT_STRING2STRING_BLOCK 7
 
 /**
+ * Reserved for internal usage
+ */
+#define RESERVED_BLOCK 0xFFFFFFFE
+
+/**
  * Type of OnDemand encoded blocks.
  */
 #define ONDEMAND_BLOCK 0xFFFFFFFF
