@@ -320,6 +320,8 @@ static void testPING(HELO_Message * xhelo,
   SEMAPHORE_FREE(sem);
   sem = NULL;
   transport->disconnect(tsession);
+  if (ok == YES)
+    stats[2]++;
 }
 
 /**
