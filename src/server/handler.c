@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -188,8 +189,6 @@ int unregisterp2pHandler(const unsigned short type,
   return SYSERR; 
 }
 
-
-
 /**
  * Register a method as a handler for specific message types.  Note
  * that it IS possible to register multiple handlers for the same
@@ -297,30 +296,50 @@ void injectMessage(const PeerIdentity * sender,
 		   int wasEncrypted,
 		   TSession * session) {
   unsigned int pos;
-  p2p_HEADER * part;
+  const p2p_HEADER * part;
+  p2p_HEADER cpart;
+  p2p_HEADER * copy;
   EncName enc;
   int last;
 
   pos = 0;
+  copy = NULL;
   while (pos < size) {
     unsigned short plen;
     unsigned short ptyp;
 
-    part = (p2p_HEADER *) &msg[pos];
-    plen = htons(part->size);
+    memcpy(&cpart,
+	   &msg[pos],
+	   sizeof(p2p_HEADER));
+    plen = htons(cpart->size);
     if (pos + plen > size) {
       IFLOG(LOG_WARNING,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));      
       LOG(LOG_WARNING, 
 	  _("Received corrupt message from peer '%s'in %s:%d.\n"),
-	  &enc, __FILE__, __LINE__);
+	  &enc, 
+	  __FILE__, __LINE__);
       return;
+    }
+    if ( (pos % sizeof(int)) != 0) {
+      /* correct misalignment; we allow messages to _not_ be a
+	 multiple of 4 bytes (if absolutely necessary; it should be
+	 avoided where the cost for doing so is not prohibitive);
+	 however we also (need to) guaranteed word-alignment for the
+	 handlers; so we must re-align the message if it is
+	 misaligned. */
+      copy = MALLOC(plen);
+      memcpy(copy,
+	     &msg[pos],
+	     plen);
+      part = copy;
+    } else {
+      part = (const p2p_HEADER*) &msg[pos];
     }
     pos += plen;
 
     ptyp = htons(part->type);
-
     if (YES == wasEncrypted) {
       MessagePartHandler callback;
       
@@ -365,6 +384,8 @@ void injectMessage(const PeerIdentity * sender,
 	last++;
       }
     } /* if plaintext */
+    FREENONNULL(copy);
+    copy = NULL;
   } /* while loop */
 }
 

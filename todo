@@ -1,4 +1,7 @@
 0.6.6b [2?'05] (aka "bugfixes"):
+- 833!
+- 832?
+- 829!
 - 828?
 - 827??
 - 823?
@@ -8,9 +11,10 @@
 - 593???
 
 0.7.0pre0 [3'05] (aka "pre-preview"):
-- padding for insert/return requests: we're currently breaking
-  8-byte alignment!
+- Known bugs:
+  * strange ecrstest bug(s?)
 - Need testing:
+  * fslibtest: implement verify result
   * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
@@ -20,8 +24,10 @@
   * API changes (hostkey struct, other structs? HashCode160)
 
 0.7.0pre1 [4'05] (aka "preview"):
+- util:
+  * switch hash to SHA-512
+  * switch cipher to AES-256
 - testing:
-  * fslibtest: implement verify result
   * sqlite-tests: test update function, concurrency with iterators
 - topology:
   * do aggressive bootstrap on first start (Christian) [ easy ]
@@ -38,7 +44,7 @@
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
 - Missing Features:
-   - resolve "FIXME 0.7"
+  * resolve "FIXME 0.7"
   * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
     linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
   * fsui core (persistence) [ difficult ]

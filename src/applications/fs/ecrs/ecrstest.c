@@ -22,7 +22,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "NOTHING"));
+				     "DEBUG"));
   return OK;
 }
 
@@ -217,11 +217,11 @@ static int unindexFile(unsigned int size) {
 
 int main(int argc, char * argv[]){
   static unsigned int filesizes[] = {
-    1,
+/*    1,
     2,
     4,
     16,
-    32, 
+    32, */ 
     1024,
     DBLOCK_SIZE - 1,
     DBLOCK_SIZE,

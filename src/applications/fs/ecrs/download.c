@@ -566,6 +566,10 @@ typedef struct CommonCtx {
   cron_t TTL_DECREMENT; 
 } CommonCtx;
 
+/**
+ * Compute how many bytes of data are stored in
+ * this node.
+ */
 static unsigned int getNodeSize(const NodeClosure * node) {  
   unsigned int i;
   unsigned int ret;
@@ -573,6 +577,7 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   unsigned long long spos;
   unsigned long long epos;
   
+  GNUNET_ASSERT(node->offset < node->ctx->total);
   if (node->level == 0) {
     ret = DBLOCK_SIZE;
     if (node->offset + (unsigned long long) ret
@@ -587,8 +592,8 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   epos = spos + rsize;
   if (epos > node->ctx->total)
     epos = node->ctx->total;
-  ret = (epos - spos) / (rsize / CHK_PER_INODE);
-  if (ret * (rsize / CHK_PER_INODE) < epos - spos)
+  ret = (epos - spos) / rsize;
+  if (ret * rsize < epos - spos)
     ret++; /* need to round up! */
   return ret * sizeof(CHK);
 }
@@ -835,6 +840,9 @@ static int nodeReceive(const HashCode160 * query,
   size = ntohl(reply->size) - sizeof(Datastore_Value);
   if ( (size <= sizeof(DBlock)) ||
        (size - sizeof(DBlock) != getNodeSize(node)) ) {
+    printf("Received %u bytes, expected %u\n",
+	   size,
+	   getNodeSize(node));
     BREAK();
     return SYSERR; /* invalid size! */
   }

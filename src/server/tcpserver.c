@@ -337,34 +337,37 @@ static int readAndProcess(ClientHandle handle) {
     return SYSERR;
   }
   handle->readBufferPos += ret;
-  if (handle->readBufferPos < sizeof(CS_HEADER))
-    return OK;
-  len = ntohs(((CS_HEADER*)handle->readBuffer)->size);
+  ret = OK;
+  while (ret == OK) {
+    if (handle->readBufferPos < sizeof(CS_HEADER))
+      return OK;
+    len = ntohs(((CS_HEADER*)handle->readBuffer)->size);
 #if DEBUG_TCPHANDLER
-  LOG(LOG_DEBUG,
-      "Total size is %u bytes, have %u.\n",
-      len,
+    LOG(LOG_DEBUG,
+	"Total size is %u bytes, have %u.\n",
+	len,
       handle->readBufferPos);
 #endif
-  if (len > handle->readBufferSize) /* if MTU larger than expected, grow! */
-    GROW(handle->readBuffer,
-	 handle->readBufferSize,
-	 len);
-  if (handle->readBufferPos < len) 
-    return OK;  
-  /* avoid deadlock: give up the lock while
-     the client is processing; since only (!) the
-     select-thread can possibly free handle/readbuffer,
+    if (len > handle->readBufferSize) /* if MTU larger than expected, grow! */
+      GROW(handle->readBuffer,
+	   handle->readBufferSize,
+	   len);
+    if (handle->readBufferPos < len) 
+      return OK;  
+    /* avoid deadlock: give up the lock while
+       the client is processing; since only (!) the
+       select-thread can possibly free handle/readbuffer,
      releasing the lock here is safe. */
-  MUTEX_UNLOCK(&clientlock);
-  ret = processHelper((CS_HEADER*)handle->readBuffer,
+    MUTEX_UNLOCK(&clientlock);
+    ret = processHelper((CS_HEADER*)handle->readBuffer,
 		      handle);
-  MUTEX_LOCK(&clientlock);
-  /* finally, shrink buffer adequately */
-  memmove(&handle->readBuffer[0],
+    MUTEX_LOCK(&clientlock);
+    /* finally, shrink buffer adequately */
+    memmove(&handle->readBuffer[0],
 	  &handle->readBuffer[len],
-	  handle->readBufferPos - len);
-  handle->readBufferPos -= len;	   
+	    handle->readBufferPos - len);
+    handle->readBufferPos -= len;
+  }
   return ret;
 }
 
