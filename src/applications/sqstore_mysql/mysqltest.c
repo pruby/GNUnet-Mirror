@@ -21,7 +21,7 @@ static Datastore_Value * initValue(int i) {
   value->size = htonl(sizeof(Datastore_Value) + 8 * i);
   value->type = htonl(i);
   value->prio = htonl(i);
-  value->anonymityLevel = i;
+  value->anonymityLevel = htonl(i);
   value->expirationTime = htonll(now - i * cronSECONDS);
   memset(&value[1], i, 8*i);
   return value;
@@ -39,10 +39,12 @@ static int checkValue(const HashCode160 * key,
   if ( ( value->size == val->size) &&
        (0 == memcmp(val,
 		    value,
-		    ntohl(val->size)) ) )
+		    ntohl(val->size)) ) ) {
     ret = OK;
-  else
+  } else {
+    fprintf(stderr, "Invalid value!\n");
     ret = SYSERR;		  
+  }
   FREE(value);
   return ret;
 }
@@ -54,6 +56,16 @@ static int iterateUp(const HashCode160 * key,
 
   ret = checkValue(key, val, closure);
   (*closure) += 2;  
+  return ret;
+}
+
+static int iterateUp1(const HashCode160 * key,
+		      const Datastore_Value * val,
+		      int * closure) {
+  int ret;
+
+  ret = checkValue(key, val, closure);
+  (*closure) += 1;  
   return ret;
 }
 
@@ -85,9 +97,16 @@ static int test(SQstore_ServiceAPI * api) {
     FREE(value);
   }
   ASSERT(oldSize < api->getSize());
+  ASSERT(256 == api->iterateLowPriority(ANY_BLOCK,
+					NULL,
+					NULL));
+  i = 0;
+  ASSERT(256 == api->iterateLowPriority(ANY_BLOCK,
+					(Datum_Iterator) &iterateUp1,
+					&i));
   for (i=255;i>=0;i--) {
     memset(&key, 256-i, sizeof(HashCode160));     
-    ASSERT(1 == api->get(&key, i, &checkValue, (void*) &i));
+    ASSERT(1 == api->get(&key, i, &checkValue, &i));
     printf("OK: %d\n", i);
   }
   oldSize = api->getSize();
@@ -117,20 +136,19 @@ static int test(SQstore_ServiceAPI * api) {
   
   /* FIXME: test 'update' here! */
   
-  // api->drop();
+  api->drop();
   return OK;
  FAILURE:
   // api->drop();
   return SYSERR;
 }
 
-#define TEST_DB "/tmp/GNUnet_sqstore_test/"
-
 /**
  * Perform option parsing from the command line. 
  */
 static int parser(int argc, 
 		  char * argv[]) {
+  char * tmp;
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
 				     "YES"));
@@ -146,9 +164,11 @@ static int parser(int argc,
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
 				     "/tmp/gnunet_test/gnunet.conf"));
-  FREENONNULL(setConfigurationString("FS",
-				     "DIR",
-				     TEST_DB));
+  tmp = expandFileName("~/.my-debug.cnf");
+  FREENONNULL(setConfigurationString("MYSQL",
+				     "CONFIG",
+				     tmp));
+  FREE(tmp);
   return OK;
 }
 
@@ -160,6 +180,9 @@ int main(int argc, char *argv[]) {
     errexit(_("Could not initialize libgnunetutil!\n"));
   initCore();
   api = requestService("sqstore_mysql");
+  api->drop();
+  releaseService(api);
+  api = requestService("sqstore_mysql");    
   if (api != NULL) {
     ok = test(api);
     releaseService(api);

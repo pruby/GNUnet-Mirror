@@ -245,8 +245,6 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
  * @return OK on success
  */
 static int iopen(mysqlHandle * dbhI) {
-  char * scratch;
-
   if (dbhI->cnffile == NULL)
     return SYSERR;
   dbhI->dbf = mysql_init(NULL);
@@ -274,34 +272,27 @@ static int iopen(mysqlHandle * dbhI) {
     return SYSERR;
   }
 
-  scratch = MALLOC(1024);
-  SNPRINTF(scratch,
-	   1024,
-	   "CREATE TABLE IF NOT EXISTS gn070 ("
-	   "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	   "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	   "  prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	   "  anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	   "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0," 
-	   "  hash TINYBLOB BINARY NOT NULL DEFAULT '',"
-	   "  value MEDIUMBLOB NOT NULL DEFAULT '',"
-	   "  INDEX (hash(20)),"
-	   "  INDEX (prio),"
-	   "  INDEX (expire)"
-	   ") TYPE=MyISAM");
   mysql_query(dbhI->dbf,
-  	      scratch);
+	      "CREATE TABLE IF NOT EXISTS gn070 ("
+	      "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+	      "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+	      "  prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+	      "  anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+	      "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0," 
+	      "  hash TINYBLOB BINARY NOT NULL DEFAULT '',"
+	      "  value BLOB NOT NULL DEFAULT '',"
+	      "  INDEX (hash(20)),"
+	      "  INDEX (prio),"
+	      "  INDEX (expire)"
+	      ") TYPE=MyISAM");
   if (mysql_error(dbhI->dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, 
 	      "mysql_query",
 	      dbhI);
     mysql_close(dbhI->dbf);
     dbhI->dbf = NULL;
-    FREE(scratch);
     return SYSERR;
   }
-  FREE(scratch);
-
 
   dbhI->insert = mysql_stmt_init(dbhI->dbf);
   dbhI->select = mysql_stmt_init(dbhI->dbf);
@@ -366,7 +357,7 @@ static int iopen(mysqlHandle * dbhI) {
   dbhI->bind[3].buffer_type = MYSQL_TYPE_LONG; /* anon level */
   dbhI->bind[4].buffer_type = MYSQL_TYPE_LONGLONG; /* expiration */
   dbhI->bind[5].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
-  dbhI->bind[6].buffer_type = MYSQL_TYPE_MEDIUM_BLOB; /* value */
+  dbhI->bind[6].buffer_type = MYSQL_TYPE_BLOB; /* value */
   memset(dbhI->sbind,
 	 0,
 	 sizeof(dbhI->sbind));
@@ -465,7 +456,8 @@ static int iterateLowPriority(unsigned int type,
 	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
       continue; 
     }
-    if( SYSERR == iter(&datum->key, &datum->value, closure) ) {
+    if ( (iter != NULL) &&
+	 (SYSERR == iter(&datum->key, &datum->value, closure) ) ) {
       count = SYSERR;
       FREE(datum);
       break;
@@ -549,7 +541,8 @@ static int iterateExpirationTime(unsigned int type,
 	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
       continue; 
     }
-    if (SYSERR == iter(&datum->key, &datum->value, closure) ) {
+    if ( (iter != NULL) &&
+	 (SYSERR == iter(&datum->key, &datum->value, closure) ) ) {
       count = SYSERR;
       FREE(datum);
       break;
@@ -580,7 +573,6 @@ static int get(const HashCode160 * query,
 	       unsigned int type,	     
 	       Datum_Iterator iter,
 	       void * closure) {
-  static unsigned long twenty = sizeof(HashCode160);
   MYSQL_RES * sql_res;
   int count;
   MYSQL_STMT * stmt;
@@ -590,8 +582,10 @@ static int get(const HashCode160 * query,
   unsigned int level;
   unsigned long long expiration;
   unsigned long datasize;
+  unsigned long twenty;
   Datastore_Value * datum;
   HashCode160 key;
+  unsigned long hashSize;
 
   if (query == NULL) 
     return iterateLowPriority(type, iter, closure);
@@ -608,9 +602,10 @@ static int get(const HashCode160 * query,
     else
       stmt = dbh->select;
   }    
+  hashSize = sizeof(HashCode160);
   dbh->sbind[0].buffer = (char*) query;
   dbh->sbind[1].buffer = (char*) &type;
-  dbh->sbind[0].length = &twenty;
+  dbh->sbind[0].length = &hashSize;
   GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 2);
   sql_res = mysql_stmt_result_metadata(stmt);
   if (! sql_res) {
@@ -708,6 +703,13 @@ static int get(const HashCode160 * query,
       datasize = MAX_DATUM_SIZE;
     }  
   }
+  if (mysql_stmt_errno(stmt)) {
+    LOG(LOG_ERROR,
+	_("'%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_fetch",
+	__FILE__, __LINE__,
+	mysql_stmt_error(stmt));    
+  }
   mysql_free_result(sql_res);
   FREE(datum);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
@@ -722,14 +724,13 @@ static int get(const HashCode160 * query,
  */
 static int put(const HashCode160 * key, 
 	       const Datastore_Value * value) {
-  static unsigned long twenty = sizeof(HashCode160);
-  unsigned int contentSize;
-  unsigned long currentSize;
+  unsigned long contentSize;
+  unsigned long hashSize;
   unsigned int size;
   unsigned int type;
   unsigned int prio;
   unsigned int level;
-  unsigned long long expiration;
+  unsigned long long expiration;  
   EncName enc;
 
   if ( (ntohl(value->size) <= sizeof(Datastore_Value)) ) {
@@ -739,6 +740,7 @@ static int put(const HashCode160 * key,
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
+  hashSize = sizeof(HashCode160);
 
   size = ntohl(value->size);
   type = ntohl(value->type);
@@ -760,9 +762,8 @@ static int put(const HashCode160 * key,
   dbh->bind[4].buffer = (char*) &expiration;
   dbh->bind[5].buffer = (char*) key;
   dbh->bind[6].buffer = (char*) &value[1];
-  dbh->bind[5].length = &twenty;
-  dbh->bind[6].length = &currentSize;
-  currentSize = contentSize;
+  dbh->bind[5].length = &hashSize;
+  dbh->bind[6].length = &contentSize;
 
   if (mysql_stmt_bind_param(dbh->insert,
 			    dbh->bind)) {
@@ -774,7 +775,6 @@ static int put(const HashCode160 * key,
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   } 
-
 
   if (mysql_stmt_execute(dbh->insert)) {
     LOG(LOG_ERROR,
@@ -809,15 +809,17 @@ static int del(const HashCode160 * key,
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   escapedHash = MALLOC(2*sizeof(HashCode160)+1);
-  mysql_escape_string(escapedHash, 
-                      (char *)key, 
-		      sizeof(HashCode160));
+  mysql_real_escape_string(dbh->dbf,
+			   escapedHash, 
+			   (char *)key, 
+			   sizeof(HashCode160));
   escapedBlock = MALLOC(2*contentSize+1);
-  mysql_escape_string(escapedBlock, 
-                      (char *)&value[1],
-		      contentSize);
+  mysql_real_escape_string(dbh->dbf,
+			   escapedBlock, 
+			   (char *)&value[1],
+			   contentSize);
 
-  n = sizeof(HashCode160)*2+contentSize*2+200+1;
+  n = sizeof(HashCode160)*2+contentSize*2+400+1;
   scratch=MALLOC(n);
   if(value == NULL) {
     SNPRINTF(scratch, 
@@ -920,7 +922,6 @@ static int update(const HashCode160 * key,
  * @return number of bytes used on disk
  */
 static unsigned long long getSize() {
-  char * scratch;
   MYSQL_RES * sql_res;
   MYSQL_ROW sql_row;
   long long avgRowLen = -1;
@@ -931,16 +932,11 @@ static unsigned long long getSize() {
 
   /* find out average row length in bytes */
   /* FIXME: probably unnecessary to check avg row length every time */
-  scratch = MALLOC(512);
-  SNPRINTF(scratch, 
-	   512,
-	   "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
   mysql_query(dbh->dbf,
-  	      scratch);
+  	      "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
   if (mysql_error(dbh->dbf)[0]) {
     DIE_MYSQL("mysql_query", dbh); /* this MUST not fail... */
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-    FREE(scratch);
     return SYSERR;	/* shouldn't get here */
   }
   if ((sql_res=mysql_store_result(dbh->dbf))) {
@@ -949,8 +945,7 @@ static unsigned long long getSize() {
     if (sql_row == NULL) {
       LOG(LOG_ERROR, 
 	  _("Query '%s' had no results.\n"), 
-	  scratch);
-      FREE(scratch);
+	  "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
       GNUNET_ASSERT(0); /* not allowed to fail*/
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
       return SYSERR;	/* shouldn't get here */
@@ -966,12 +961,8 @@ static unsigned long long getSize() {
   }
   GNUNET_ASSERT(avgRowLen >= 0);
   /* find number of entries (rows) */
-  SNPRINTF(scratch, 
-	   512,
-	   "SELECT count(*) FROM gn070");
   mysql_query(dbh->dbf,
-  	      scratch);
-  FREE(scratch);
+  	      "SELECT count(*) FROM gn070");
   if (!(sql_res=mysql_store_result(dbh->dbf))) {
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     DIE_MYSQL("mysql_store_result", dbh);
@@ -1006,7 +997,7 @@ static unsigned long long getSize() {
  */
 static void drop() {
   mysql_query(dbh->dbf,
-			  "DROP TABLE gn070");
+	      "DROP TABLE gn070");
 }
 
 
@@ -1017,7 +1008,6 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   static SQstore_ServiceAPI api;
 
   MYSQL_RES * sql_res;
-  char * scratch;
   char * cnffile;
   FILE * fp;
   struct passwd * pw;
@@ -1028,11 +1018,15 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   if(!pw) 
     DIE_STRERROR("getpwuid");
   nX = strlen(pw->pw_dir)+1024;
-  cnffile = MALLOC(nX);
-  SNPRINTF(cnffile, nX, "%s/.my.cnf", pw->pw_dir);
+  cnffile = getConfigurationString("MYSQL",
+				   "CONFIG");
+  if (cnffile == NULL) {
+    cnffile = MALLOC(nX);
+    SNPRINTF(cnffile, nX, "%s/.my.cnf", pw->pw_dir);
+  } 
   LOG(LOG_DEBUG, 
       _("Trying to use file '%s' for MySQL configuration.\n"),
-      cnffile);
+      cnffile); 
   fp = FOPEN(cnffile, "r");
   if (!fp) {
     LOG_FILE_STRERROR(LOG_ERROR, "fopen", cnffile);
@@ -1058,16 +1052,10 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     return NULL;
   }
 
-  scratch = MALLOC(1024);
-
   /* Find out which column contains the avg row length field and assume
    * that mysqld always gives it in the same order across calls :) */
-  SNPRINTF(scratch, 
-	   1024,
-	   "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
   mysql_query(dbh->dbf,
-  	      scratch);
-  FREE(scratch);
+  	      "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
   if (mysql_error(dbh->dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, 
 	      "mysql_query",
