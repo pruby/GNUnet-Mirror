@@ -181,30 +181,38 @@ static mysqlHandle * dbh;
  * order, assemble it into a Datastore_Datum representation.
  *
  */
-static Datastore_Datum * assembleDatum(MYSQL_ROW sql_row) {
+static Datastore_Datum * assembleDatum(MYSQL_RES * res,
+				       MYSQL_ROW sql_row) {
   Datastore_Datum * datum;
   int contentSize;
+  unsigned long * lens;
   
   contentSize = atol(sql_row[0]) - sizeof(Datastore_Value);
   if (contentSize < 0)
     return NULL; /* error */
 
+  lens = mysql_fetch_lengths(res); 
+  if ( (lens[5] != sizeof(HashCode160)) ||
+       (lens[6] != contentSize) ) {
+    LOG(LOG_WARNING,
+	"SQL Database corrupt, ignoring result.\n");
+    return NULL;
+  }
+
   datum = MALLOC(sizeof(Datastore_Datum) + contentSize);
   datum->value.size = htonl(contentSize + sizeof(Datastore_Value));
   datum->value.type = htonl(atol(sql_row[1]));
   datum->value.prio = htonl(atol(sql_row[2]));
-  datum->value.anonymityLevel = atol(sql_row[3]);
+  datum->value.anonymityLevel = htonl(atol(sql_row[3]));
   datum->value.expirationTime = htonll(atoll(sql_row[4]));
 
   memcpy(&datum->key,
   	 sql_row[5],
 	 sizeof(HashCode160)); 
-
-  /* NOTE: assumes the db is not corrupt ... */
   memcpy(&datum[1], 
          sql_row[6],
 	 contentSize);
-  return(datum);
+  return datum;
 }
 
 /**
@@ -240,7 +248,7 @@ static int iopen(mysqlHandle * dbhI) {
     dbhI->dbf = NULL;
     return SYSERR;
   }    
-  MUTEX_CREATE_RECURSIVE(&dbhI->DATABASE_Lock_);
+  MUTEX_CREATE(&dbhI->DATABASE_Lock_);
   return OK;
 }
 
@@ -315,7 +323,8 @@ static int iterateLowPriority(unsigned int type,
   }
 
   while ((sql_row=mysql_fetch_row(sql_res))) {   
-    datum = assembleDatum(sql_row);
+    datum = assembleDatum(sql_res,
+			  sql_row);
     if (datum == NULL) {
       LOG(LOG_WARNING,
 	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
@@ -398,7 +407,8 @@ static int iterateExpirationTime(unsigned int type,
   }
 
   while ((sql_row=mysql_fetch_row(sql_res))) {   
-    datum = assembleDatum(sql_row);
+    datum = assembleDatum(sql_res,
+			  sql_row);
     if (datum == NULL) {
       LOG(LOG_WARNING,
 	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
@@ -502,16 +512,23 @@ static int get(const HashCode160 * query,
     if(count == SYSERR) /* we are not allowed to break under mysql_use_result */
       continue;
 
-    if(iter!=NULL) {
+    if (iter!=NULL) {
       Datastore_Datum * datum;
 
-      datum = assembleDatum(sql_row);
+      datum = assembleDatum(sql_res,
+			    sql_row);
       if (datum == NULL) {
 	LOG(LOG_WARNING,
 	    _("Invalid data in MySQL database.  Please verify integrity!\n"));
 	continue; 
       }
-      if( SYSERR == iter(&datum->key,&datum->value, closure) ) {
+      LOG(LOG_DEBUG,
+	  "Found in database block with type %u.\n",
+	  ntohl(*(int*)&((&datum->value)[1])));
+      
+      if( SYSERR == iter(&datum->key,
+			 &datum->value, 
+			 closure) ) {
         count = SYSERR;
 	FREE(datum);
 	break;
@@ -556,6 +573,9 @@ static int put(const HashCode160 * key,
   mysql_escape_string(escapedHash, 
   	              (char *)key, 
  	     	      sizeof(HashCode160));
+  LOG(LOG_DEBUG,
+      "Storing in database block with type %u.\n",
+      ntohl(*(int*)&value[1]));
   escapedBlock = MALLOC(2*contentSize+1);
   mysql_escape_string(escapedBlock, 
 		      (char *)&value[1],
@@ -572,7 +592,7 @@ static int put(const HashCode160 * key,
 	   ntohl(value->size),
 	   ntohl(value->type),
 	   ntohl(value->prio),
-	   value->anonymityLevel,
+	   ntohl(value->anonymityLevel),
 	   ntohll(value->expirationTime),
 	   escapedHash,
 	   escapedBlock);
@@ -633,17 +653,21 @@ static int del(const HashCode160 * key,
 	     " AND anonLevel=%u AND expire=%lld"
 	     " AND value='%s'",
 	     escapedHash,
-	     ntohl(value->size), ntohl(value->type), ntohl(value->prio),
-	     value->anonymityLevel, ntohll(value->expirationTime),
-	     escapedBlock
-	     );
+	     ntohl(value->size),
+	     ntohl(value->type),
+	     ntohl(value->prio),
+	     ntohl(value->anonymityLevel), 
+	     ntohll(value->expirationTime),
+	     escapedBlock);
   }
   mysql_query(dbh->dbf, scratch);
   FREE(escapedHash);
   FREE(escapedBlock);
   FREE(scratch);
   if(mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
+    LOG_MYSQL(LOG_ERROR, 
+	      "mysql_query", 
+	      dbh);
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }

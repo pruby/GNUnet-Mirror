@@ -22,9 +22,6 @@
  * @file applications/afs/module/fileindex.c
  * @brief access to the list of indexed files
  * @author Christian Grothoff
- *
- * TODO:
- * - unindex
  */
 
 #include "platform.h"
@@ -40,6 +37,8 @@
  */
 typedef struct {
   Datastore_Value header;
+
+  unsigned int type;
 
   /**
    * At what offset in the plaintext file is
@@ -159,6 +158,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   odb.header.prio = htonl(prio);
   odb.header.anonymityLevel = htonl(anonymityLevel);
   odb.header.expirationTime = htonll(expiration);
+  odb.type = htonl(ONDEMAND_BLOCK);
   odb.fileOffset = htonll(fileOffset);
   odb.blockSize = htonl(size - sizeof(DBlock));
   odb.fileId = *fileId;

@@ -139,7 +139,19 @@ static int gapPut(void * closure,
   memcpy(&dv[1],
 	 &gw[1],
 	 size - sizeof(Datastore_Value));
+  if (YES != isDatumApplicable(ntohl(dv->type),
+			       ntohl(dv->size) - sizeof(Datastore_Value),
+			       (char*) &dv[1],
+			       0,
+			       key)) {
+    BREAK();
+    FREE(dv);
+    return SYSERR;
+  }
   processResponse(key, dv); 
+  LOG(LOG_DEBUG,
+      "FS received GAP-PUT request (key: %u)\n",
+      key->a);
   ret = datastore->putUpdate(key,
 			     dv);
   FREE(dv);
@@ -149,6 +161,9 @@ static int gapPut(void * closure,
 static int get_result_callback(const HashCode160 * key,
 			       const DataContainer * value,
 			       DHT_GET_CLS * cls) {
+  LOG(LOG_DEBUG,
+      "Found reply to query %u.\n",
+      key->a);
   gapPut(NULL,
 	 key,
 	 value,
@@ -181,6 +196,9 @@ static int csHandleRequestQueryStart(ClientHandle sock,
     return SYSERR;
   }
   rs = (RequestSearch*) req;
+  LOG(LOG_DEBUG,
+      "FS received QUERY START (key: %u)\n",
+      rs->query[0].a);
   trackQuery(&rs->query[0], 
 	     ntohl(rs->type),
 	     sock);
@@ -225,6 +243,9 @@ static int csHandleRequestQueryStop(ClientHandle sock,
     return SYSERR;
   }
   rs = (RequestSearch*) req;
+  LOG(LOG_DEBUG,
+      "FS received QUERY STOP (key: %u)\n",
+      rs->query[0].a);
   if (ntohl(rs->anonymityLevel) == 0) {
     /* FIXME 0.7.1: cancel with dht? */
   }
@@ -269,7 +290,14 @@ static int csHandleRequestInsert(ClientHandle sock,
   }
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(RequestInsert),
 			&ri[1]);
+  LOG(LOG_DEBUG,
+      "FS received REQUEST INSERT (key: %u, type: %u)\n",
+      query.a,
+      type);
   datum->type = htonl(type);
+  memcpy(&datum[1],
+	 &ri[1],
+	 ntohs(req->size) - sizeof(RequestInsert));
   MUTEX_LOCK(&lock);
   ret = datastore->put(&query,
 		       datum);
@@ -397,6 +425,11 @@ static int csHandleRequestDelete(ClientHandle sock,
     BREAK();
     return SYSERR;
   }
+  LOG(LOG_DEBUG,
+      "FS received REQUEST DELETE (key: %u, type: %u)\n",
+      query.a,
+      type);
+
   MUTEX_LOCK(&lock);
   if (SYSERR == datastore->get(&query,
 			       type,
@@ -425,6 +458,8 @@ static int csHandleRequestUnindex(ClientHandle sock,
     return SYSERR;
   }
   ru = (RequestUnindex*) req;  
+  LOG(LOG_DEBUG,
+      "FS received REQUEST UNINDEX\n");
   ret = ONDEMAND_unindex(datastore,
 			 ntohl(ru->blocksize),
 			 &ru->fileId);
@@ -447,6 +482,8 @@ static int csHandleRequestTestIndexed(ClientHandle sock,
     return SYSERR;
   }
   ru = (RequestTestindex*) req;  
+  LOG(LOG_DEBUG,
+      "FS received REQUEST TESTINDEXED\n");
   ret = ONDEMAND_testindexed(datastore,
 			     &ru->fileId);
   return coreAPI->sendValueToClient(sock, 
@@ -459,6 +496,8 @@ static int csHandleRequestTestIndexed(ClientHandle sock,
  */
 static int csHandleRequestGetAvgPriority(ClientHandle sock,
 					 const CS_HEADER * req) {
+  LOG(LOG_DEBUG,
+      "FS received REQUEST GETAVGPRIORITY\n");
   return coreAPI->sendValueToClient(sock, 
 				    gap->getAvgPriority());
 }
@@ -491,7 +530,7 @@ static int gapGetConverter(const HashCode160 * key,
 
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
-			  (char*) &value[1],
+			  (const char*) &value[1],
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR)
@@ -522,7 +561,7 @@ static int gapGetConverter(const HashCode160 * key,
       unsigned int sizes;
       unsigned int timevect;
 
-      level = ntohl(value->anonymityLevel);
+      level = ntohl(value->anonymityLevel) - 1;
       if (OK != traffic->get(5 * cronSECONDS / TRAFFIC_TIME_UNIT, /* TTL_DECREMENT/TTU */
 			     GAP_p2p_PROTO_RESULT,
 			     TC_RECEIVED,
@@ -535,13 +574,22 @@ static int gapGetConverter(const HashCode160 * key,
 	return OK;
       }
       if (level > 1000) {
-	if (peers < level / 1000)
+	if (peers < level / 1000) {
+	  LOG(LOG_DEBUG,
+	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
 	  return OK;
-	if (count < level % 1000)
+	}
+	if (count < level % 1000) {
+	  LOG(LOG_DEBUG,
+	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
 	  return OK;
+	}
       } else {
-	if (count < level)
+	if (count < level) {
+	  LOG(LOG_DEBUG,
+	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
 	  return OK;
+	}
       }
     } else {
       /* traffic required by module not loaded;
@@ -671,7 +719,7 @@ static int dhtGetConverter(const HashCode160 * key,
     sizeof(Datastore_Value);
 
   if (ntohl(value->anonymityLevel) != 0) 
-    return OK;
+    return OK; /* do not allow anonymous content to leak through DHT */
   
   gw = MALLOC(size);
   gw->dc.size = htonl(size);
@@ -738,15 +786,22 @@ static int uniqueReplyIdentifier(const void * content,
 				 unsigned int type,
 				 const HashCode160 * primaryKey) {
   HashCode160 q;
-
   unsigned int t;
-  if ( (OK == getQueryFor(size,
-			  content,
+  const GapWrapper * gw;
+
+  if (size < sizeof(GapWrapper)) { 
+    BREAK();
+    return NO;
+  }
+  gw = (const GapWrapper*) content;
+  if ( (OK == getQueryFor(size - sizeof(GapWrapper),
+			  &gw[1],
 			  &q)) &&
        (equalsHashCode160(&q,
 			  primaryKey)) &&
        ( (type == ANY_BLOCK) ||
-	 (type == (t = getTypeOfBlock(size, content) ) ) ) ) {
+	 (type == (t = getTypeOfBlock(size - sizeof(GapWrapper), 
+				      &gw[1]) ) ) ) ) {
     switch(type) {
     case D_BLOCK:
       return YES;

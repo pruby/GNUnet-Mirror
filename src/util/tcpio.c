@@ -188,6 +188,7 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
   timeout.tv_usec = 0;
   ret = SELECT(sock->socket+1, &rset, &wset, &eset, &timeout);
   if ( (ret == -1) ||
+       (sock->socket == -1) ||
        (! FD_ISSET(sock->socket,
 		   &wset)) ) {
     LOG(LOG_INFO,

@@ -308,11 +308,14 @@ static int receiveReplies(const HashCode160 * key,
 
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
+  LOG(LOG_DEBUG,
+      "Search received reply of type %u and size %u.\n",
+      type, size);
   for (i=0;i<sqc->queryCount;i++) {
     ps = sqc->queries[i];
     if ( ( (ps->type == type) ||
 	   (ps->type == ANY_BLOCK) ) &&
-	 (YES != isDatumApplicable(type,
+	 (YES == isDatumApplicable(type,
 				   size,
 				   (char*) &value[1],
 				   ps->keyCount,
@@ -518,6 +521,11 @@ int ECRS_search(const struct ECRS_URI * uri,
       /* FIXME: checkAnonymityPolicy here */
 
       ps->lastTransmission = now;
+      LOG(LOG_DEBUG,
+	  "ECRS initiating FS search with timeout %llus and priority %u.\n",
+	  (ps->timeout - now) / cronSECONDS, 
+	  ps->priority);
+
       ps->handle 
 	= FS_start_search(ctx.sctx,
 			  ps->type,

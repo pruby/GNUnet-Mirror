@@ -55,11 +55,14 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
   ReplyContent * rep;
   HashCode160 query;
   unsigned int size;
+  cron_t delay;
 
+  delay = 100 * cronMILLIS;
   while (ctx->abort == NO) {
     hdr = NULL;
     if (OK == readFromSocket(ctx->sock,
 			     &hdr)) {
+      delay = 100 * cronMILLIS;
       /* verify hdr, if reply, process, otherwise
 	 signal protocol problem; if ok, find
 	 matching callback, call on value */
@@ -69,7 +72,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	FREE(hdr);
 	continue;
       }
-      rep = (ReplyContent*) ctx;
+      rep = (ReplyContent*) hdr;
       size = ntohs(hdr->size) - sizeof(ReplyContent);
       if (OK != getQueryFor(size,
 			    (char*)&rep[1],
@@ -85,7 +88,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	  Datastore_Value * value;
 
 	  value = MALLOC(sizeof(Datastore_Value) + size);
-	  value->size = htons(size + sizeof(Datastore_Value));
+	  value->size = htonl(size + sizeof(Datastore_Value));
 	  value->type = htonl(getTypeOfBlock(size,
 					     &rep[1]));
 	  value->prio = htonl(0);
@@ -101,6 +104,11 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	}
       }
       MUTEX_UNLOCK(&ctx->lock);      
+    } else {
+      gnunet_util_sleep(delay);
+      delay *= 2;
+      if (delay > 5 * cronSECONDS)
+	delay = 5 * cronSECONDS;
     }
     FREENONNULL(hdr);
   }

@@ -1356,7 +1356,8 @@ static void sendReply(IndirectionTableEntry * ite,
 
 struct qLRC {
   const PeerIdentity * sender;
-  int doForward;
+  DataContainer ** values;
+  unsigned int valueCount;
 };
 
 static int 
@@ -1377,23 +1378,15 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
     if (equalsHashCode160(&hc,
 			  &ite->seen[i]))
       return OK; /* drop, duplicate result! */
-  if (cls->sender != NULL)
-    queueReply(cls->sender,
-	       primaryKey,
-	       value);
-  /* even for local results, always do 'put' 
-     (at least to give back results to local client &
-      to update priority!) */
-  bs->put(bs->closure,
-	  primaryKey,
-	  value,
-	  ite->priority);
-  if (uri(&value[1],
-	  ntohl(value->size) - sizeof(DataContainer),
-	  ite->type,
-	  &ite->primaryKey))
-    cls->doForward = NO; /* we have the one and only answer,
-			    do not bother to forward... */
+
+  GROW(cls->values,
+       cls->valueCount,
+       cls->valueCount+1);
+  cls->values[cls->valueCount-1]
+    = MALLOC(ntohl(value->size));
+  memcpy(cls->values[cls->valueCount-1],
+	 value,
+	 ntohl(value->size));
   return OK;
 }
  
@@ -1421,6 +1414,14 @@ static int execQuery(const PeerIdentity * sender,
   IndirectionTableEntry * ite;
   int isRouted;
   struct qLRC cls;
+  int i;
+  int max;
+  int * perm;
+  int doForward;
+  
+  LOG(LOG_DEBUG,
+      "Executing request %u.\n",
+      query->queries[0].a);
 
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&ite->lookup_exclusion); 
@@ -1431,18 +1432,20 @@ static int execQuery(const PeerIdentity * sender,
 		      prio,
 		      sender,
 		      &isRouted,
-		      &cls.doForward); 
+		      &doForward); 
     } else {
       isRouted = NO;
-      cls.doForward = YES;
+      doForward = YES;
     }
   } else {
     isRouted = YES;
-    cls.doForward = YES;
+    doForward = YES;
   }
   if ( (policy & QUERY_FORWARD) == 0)
-    cls.doForward = NO;
+    doForward = NO;
 
+  cls.values = NULL;
+  cls.valueCount = 0;
   cls.sender = sender;
   if ( (isRouted == YES) && /* if we can't route, lookup useless! */
        ( (policy & QUERY_ANSWER) > 0) ) {
@@ -1455,11 +1458,54 @@ static int execQuery(const PeerIdentity * sender,
 	    (DataProcessor) &queryLocalResultCallback,
 	    &cls);
   }
+
+  if (cls.valueCount > 0) {
+    perm = permute(cls.valueCount);
+    max = getNetworkLoadDown();
+    if (max > 100)
+      max = 100;
+    if (max == -1)
+      max = 50; /* we don't know the load, assume middle-of-the-road */
+    max = max / 10; /* 1 reply per 10% free capacity */
+    max = 1 + (10 - max);
+    if (max > cls.valueCount)
+      max = cls.valueCount; /* can't send more back then
+				what we have */
+    
+    for (i=0;i<cls.valueCount;i++) {
+      if (i < max) {
+	if (cls.sender != NULL)
+	  queueReply(cls.sender,
+		     &query->queries[0],
+		     cls.values[perm[i]]);
+      }
+      /* even for local results, always do 'put' 
+	 (at least to give back results to local client &
+	 to update priority; but only do this for
+	 the first result */
+      bs->put(bs->closure,
+	      &query->queries[0],
+	      cls.values[perm[i]],
+	      ite->priority);
+      
+      if (uri(cls.values[perm[i]],
+	      ntohl(cls.values[perm[i]]->size),
+	      ite->type,
+	      &query->queries[0]))
+	doForward = NO; /* we have the one and only answer,
+				do not bother to forward... */
+      
+      FREE(cls.values[perm[i]]);
+    }
+  }
+
+
+
   MUTEX_UNLOCK(&ite->lookup_exclusion);
-  if (cls.doForward)
+  if (doForward)
     forwardQuery(query,
 		 sender);
-  return cls.doForward; 
+  return doForward; 
 }
 
 /**
@@ -1615,7 +1661,8 @@ static int init(Blockstore * datastore,
  * listening for these puts.
  *
  * @param type the type of the block that we're looking for
- * @param anonymityLevel how much cover traffic is required? 0 for none.
+ * @param anonymityLevel how much cover traffic is required? 1 for none
+ *        (0 does not require GAP, 1 requires GAP but no cover traffic)
  * @param keys the keys to query for
  * @param timeout how long to wait until this operation should
  *        automatically time-out
@@ -1647,6 +1694,7 @@ static int get_start(unsigned int type,
     unsigned int sizes;
     unsigned int timevect;
 
+    anonymityLevel--;
     if (traffic == NULL) {
       LOG(LOG_ERROR,
 	  _("Cover traffic requested but traffic service not loaded.  Rejecting request.\n"));
@@ -1664,13 +1712,22 @@ static int get_start(unsigned int type,
       return SYSERR;
     }
     if (anonymityLevel > 1000) {
-      if (peers < anonymityLevel / 1000)
+      if (peers < anonymityLevel / 1000) {
+	LOG(LOG_WARNING,
+	    _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
-      if (count < anonymityLevel % 1000)
+      }
+      if (count < anonymityLevel % 1000) {
+	LOG(LOG_WARNING,
+	    _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
+      }
     } else {
-      if (count < anonymityLevel)
+      if (count < anonymityLevel) {
+	LOG(LOG_WARNING,
+	    _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
+      }
     }
   }
   

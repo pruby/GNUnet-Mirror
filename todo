@@ -8,12 +8,17 @@
 - 593???
 
 0.7.0pre0 [3'05] (aka "pre-preview"):
+- Investigate KBlocks:
+  generated public keys are fishy 
+  (far to many 0-values in N!)
 - Need testing:
-  * ECRS-directories (build, iterate)
+  * gnunet-insert
+  * gnunet-search
+  * gnunet-download
   * FS/ECRS upload/download
+  * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
-  * gnunet-search
 
 0.7.0pre1 [4'05] (aka "preview"):
 - topology: do aggressive bootstrap on first start (Christian) [ easy ]

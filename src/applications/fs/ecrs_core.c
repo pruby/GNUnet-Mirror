@@ -251,7 +251,8 @@ int getQueryFor(unsigned int size,
  * @param type the type of the query
  * @param size the size of the data
  * @param data the encoded data
- * @param keyCount the number of keys in the query
+ * @param keyCount the number of keys in the query,
+ *        use 0 to match only primary key
  * @param keys the keys of the query
  * @return YES if this data matches the query, otherwise
  *         NO; SYSERR if the keyCount does not match the
@@ -277,6 +278,8 @@ int isDatumApplicable(unsigned int type,
 		we should not even see those here. */
     return SYSERR;    
   }
+  if (keyCount == 0)
+    return YES; /* request was to match only primary key */
   switch (type) {
   case S_BLOCK: 
     if (keyCount != 2) 

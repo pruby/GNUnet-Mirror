@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -72,8 +72,11 @@ static int get(const HashCode160 * query,
 	       void * closure) {
   int ret;
 
-  if (! testAvailable(query))
-    return SYSERR;
+  if (! testAvailable(query)) {
+    LOG(LOG_DEBUG,
+	"Datastore availability pre-test failed for request.\n");
+    return 0;
+  }
 
   ret = sq->get(query,
 		type,
@@ -89,6 +92,8 @@ static int del(const HashCode160 * query,
 	       const Datastore_Value * value) {
   int ok;
 
+  if (! testAvailable(query)) 
+    return 0;
   ok = sq->del(query, value);
   if (OK == ok) {
     makeUnavailable(query); /* update filter! */

@@ -136,6 +136,7 @@ void processResponse(const HashCode160 * key,
   int i;
   ReplyContent * rc;
 
+  GNUNET_ASSERT(ntohl(value->size) > sizeof(Datastore_Value));
   MUTEX_LOCK(&queryManagerLock);
   for (i=trackerCount-1;i>=0;i--) {
     if ( (equalsHashCode160(&trackers[i]->query,
@@ -150,9 +151,16 @@ void processResponse(const HashCode160 * key,
       memcpy(&rc[1],
 	     &value[1],
 	     ntohl(value->size) - sizeof(Datastore_Value));
+      LOG(LOG_DEBUG,
+	  "Sending reply to client waiting in slot %u.\n",
+	  i);
       coreAPI->sendToClient(trackers[i]->client,
 			    &rc->header);
       FREE(rc);
+    } else {
+      LOG(LOG_DEBUG,
+	  "Reply did not match request %u\n",
+	  i);
     }
   }
   MUTEX_UNLOCK(&queryManagerLock);

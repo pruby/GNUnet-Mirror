@@ -133,6 +133,10 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 			     &kb[1],
 			     &kb->signature));
     /* extra check: verify sig */
+    GNUNET_ASSERT(OK == getQueryFor(size,
+				    (char*) kb,
+				    &hc));
+
     freePrivateKey(pk);
     if (OK != FS_insert(sock, value))
       ret = SYSERR;

@@ -628,8 +628,7 @@ int main(int argc, char ** argv) {
 		      topKeywordCnt,
 		      (const char**) topKeywords);
   }
-  FREE(filename);
-
+  FREE(extractors);
   /* wait for completion */
   SEMAPHORE_DOWN(exitSignal);
   SEMAPHORE_FREE(exitSignal);
