@@ -4844,7 +4844,7 @@ msgstr ""
 
 #: src/transports/udp.c:260
 #, c-format
-msgid "Packet received from %d.%d.%d.%d:%d (UDP) failed format check."
+msgid "Packed received from %d.%d.%d.%d:%d (UDP) failed format check."
 msgstr ""
 
 #: src/transports/udp.c:271
@@ -4873,7 +4873,7 @@ msgstr ""
 
 #: src/transports/udp6.c:261
 #, c-format
-msgid "Packet received from %s:%d (UDP6) failed format check."
+msgid "Packed received from %s:%d (UDP6) failed format check."
 msgstr ""
 
 #: src/transports/udp6.c:274

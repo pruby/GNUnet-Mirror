@@ -66,15 +66,44 @@ static void iiHelper(const char * fn,
 		     struct iiC * cls) {
   char * fullName;
   char * lnkName;
+  size_t size;
+  int ret;
 
   if (cls->cnt == SYSERR)
     return;
-
-  // FIXME: implement!
+  fullName = MALLOC(strlen(dir) + strlen(fn) + 4);
+  strcpy(fullName, dir);
+  strcat(fullName, DIR_SEPARATOR_STR);
+  strcat(fullName, fn);
+  size = 256;
+  lnkName = MALLOC(size);
+  while (1) {
+    ret = READLINK(fullName,
+		   lnkName,
+		   size - 1);
+    if (ret == -1) {
+      if (errno == ENAMETOOLONG) {
+	GROW(lnkName,
+	     size,
+	     size * 2);
+	continue;
+      }      
+      if (errno != EINVAL) {
+	LOG_FILE_STRERROR(LOG_WARNING, "readlink", fullName);
+      }
+      FREE(lnkName);
+      FREE(fullName);
+      return; /* error */
+    } else {
+      lnkName[ret] = '\0';
+      break;
+    }
+  }
   cls->cnt++;
   if (OK != cls->iterator(lnkName,
 			  cls->closure))
     cls->cnt = SYSERR;
+  FREE(fullName);      
   FREE(lnkName);
 }
 
@@ -92,6 +121,7 @@ static void iiHelper(const char * fn,
  */
 int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
 			     void * closure) {
+  char * tmp;
   char * indexDirectory;
   GNUNET_TCP_SOCKET * sock;
   struct iiC cls;
@@ -99,10 +129,15 @@ int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
   sock = getClientSocket();
   if (sock == NULL)
     return 0;
-  indexDirectory = getConfigurationOptionValue(sock,
-					       "FIXME",
-					       "FIXME");
+  tmp = getConfigurationOptionValue(sock,
+				    "FS",
+				    "INDEX-DIRECTORY");
   releaseClientSocket(sock);
+  if (tmp == NULL) {
+    return 0;
+  }
+  indexDirectory = expandFileName(tmp);
+  FREE(tmp);
   cls.iterator = iterator;
   cls.closure = closure;
   cls.cnt = 0;
