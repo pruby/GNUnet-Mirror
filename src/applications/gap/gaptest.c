@@ -349,6 +349,9 @@ int main(int argc, char ** argv) {
   ret = 0;
   left = 5;
   /* wait for connection or abort with error */
+#else
+  daemon1 = -1;
+  daemon2 = -1;
 #endif
   initUtil(argc, argv, &parseOptions);
   do {
