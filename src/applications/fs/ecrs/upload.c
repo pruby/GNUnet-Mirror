@@ -319,9 +319,11 @@ int ECRS_uploadFile(const char * filename,
     }
     pos += size;
     cronTime(&now);
-    eta = (cron_t) (start +
-		    (((double)(now - start)/(double)pos)) 
-		    * (double)filesize);
+    if (pos > 0) {
+      eta = (cron_t) (start +
+		      (((double)(now - start)/(double)pos)) 
+		      * (double)filesize);
+    }
   }
   if (tt != NULL)
     if (OK != tt(ttClosure))

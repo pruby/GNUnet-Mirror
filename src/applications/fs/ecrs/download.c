@@ -21,16 +21,6 @@
  * @file applications/fs/ecrs/download.c
  * @brief Download helper methods (which do the real work).
  * @author Christian Grothoff
- *
- * TODO:
- * - eta estimate
- * - currently, code checks for duplicates to do
- *   congestion control, but it can never be notified
- *   about duplicates!
- * - average priority needs to be tracked / obtained
- *   to adjust outgoing priorities 
- * - we keep less stats than we used to, and they are
- *   not all properly updated
  */
 
 #include "platform.h"
@@ -534,7 +524,6 @@ static void delRequest(RequestManager * rm,
       if (NULL != rm->requestList[i]->searchHandle)
 	FS_stop_search(rm->sctx,
 		       rm->requestList[i]->searchHandle);
-      /* FIXME: update stat: currentRetires */
       FREE(rm->requestList[i]);
       rm->requestList[i] 
 	= rm->requestList[--rm->requestListIndex];
@@ -611,7 +600,12 @@ static void updateProgress(const NodeClosure * node,
     cron_t eta;
 
     node->ctx->completed += size;
-    eta = 0; /* FIXME */
+    cronTime(&eta); /* now */
+    if (node->ctx->completed > 0) {
+      eta = (cron_t) (node->ctx->startTime +
+		      (((double)(eta - node->ctx->startTime)/(double)node->ctx->completed)) 
+		      * (double)node->ctx->total);
+    } 
     node->ctx->dpcb(node->ctx->total,
 		    node->ctx->completed,
 		    eta,
@@ -629,25 +623,8 @@ static void updateProgress(const NodeClosure * node,
   for (i=0;i<rm->requestListIndex;i++) 
     if (rm->requestList[i]->node == node)
       pos = i;
-  if (pos == -1) { /* FIXME: this can currently never happen,
-		      since after the first reply we unregister
-		      with gnunetd, so we'll never see dupes here! */
-    TIME_T nowTT;
-
-    TIME(&nowTT);
-    if ( (nowTT - rm->initialTTL) > rm->lastDET) {
-      /* only consider congestion control every
-	 "average" TTL seconds, otherwise the system
-	 reacts to events that are far too old! */
-
-      /* duplicate reply, treat as congestion (RFC 2001) */
-      rm->ssthresh = rm->congestionWindow / 2;
-      if (rm->ssthresh < 2)
-	rm->ssthresh = 2;
-      rm->congestionWindow 
-	= rm->ssthresh + 1;
-      rm->lastDET = nowTT;
-    } 
+  if (pos == -1) {
+    /* BREAK(); */ /* should never happen */
     return;
   }
   entry = rm->requestList[pos];
@@ -689,8 +666,6 @@ static void updateProgress(const NodeClosure * node,
 	= rm->ssthresh + 1;
       rm->lastDET = nowTT;
     }
-    /* cur->nc->stats.totalRetries += entry->tries-1;
-       cur->nc->stats.currentRetries -= (entry->tries - 1); */
   }
 }
 
@@ -900,6 +875,8 @@ static void issueRequest(RequestManager * rm,
   unsigned int type;
   unsigned int ttl;
   int TTL_DECREMENT;
+  static unsigned int lastmpriority;
+  static cron_t lastmpritime;
 
   cronTime(&now);
   entry = rm->requestList[requestIndex];
@@ -908,7 +885,17 @@ static void issueRequest(RequestManager * rm,
 		   entry->searchHandle);
 
   /* compute priority */
-  mpriority = 42; /* FIXME: get current avg. priority here! */
+  if (lastmpritime + 10 * cronSECONDS < now) {
+    /* only update avg. priority at most every
+       10 seconds */
+    GNUNET_TCP_SOCKET * sock;
+
+    sock = getClientSocket();
+    lastmpriority = FS_getAveragePriority(sock);
+    lastmpritime = now;
+    releaseClientSocket(sock);    
+  }
+  mpriority = lastmpriority;
   priority
     = entry->lastPriority + randomi(1 + entry->tries);
   if (priority > mpriority) {

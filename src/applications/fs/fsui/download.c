@@ -416,7 +416,7 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
  * Abort a recursive download (internal function).
  * 
  * FIXME: dirname is currently not used, which means
- * that we may abor the wrong download (if there are
+ * that we may abort the wrong download (if there are
  * multiple downloads for the same uri!).
  *
  * Do NOT call cleanupFSUIThreadList in here -- this

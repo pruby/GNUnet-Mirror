@@ -23,11 +23,6 @@
  * @brief upload functions
  * @author Krista Bennett
  * @author Christian Grothoff
- *
- * TODO:
- * - add ETA computations
- * - test
- * - integrate with URI tracking (file_info::FSUI_trackURI)
  */
 
 #include "platform.h"
@@ -87,8 +82,15 @@ static void progressCallback(unsigned long long totalBytes,
   event.data.UploadProgress.start_time = utc->start_time;
   event.data.UploadProgress.main_completed = utc->main_completed + completedBytes;
   event.data.UploadProgress.main_total = utc->main_total;
-  event.data.UploadProgress.eta = 0; /* FIXME! */
-  event.data.UploadProgress.main_eta = 0; /* FIXME! */
+  event.data.UploadProgress.eta = eta; 
+  if (totalBytes > 0) {
+    event.data.UploadProgress.main_eta 
+      = (cron_t) (utc->start_time +
+		  (((double)(now - utc->start_time/(double)(utc->main_completed+completedBytes))))
+		   * (double)utc->main_total);
+  } else {
+    event.data.UploadProgress.main_eta = eta; /* huh? */
+  }
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
 } 
@@ -163,7 +165,11 @@ static int uploadDirectory(UploadThreadClosure * utc,
 	event.data.UploadComplete.total = utc->main_total;
 	event.data.UploadComplete.filename = utc->filename;
 	event.data.UploadComplete.uri = *uri;
-	event.data.UploadComplete.eta = 42; /* FIXME! */
+	event.data.UploadComplete.eta 
+	  = (cron_t) (utc->start_time +
+		      (((double)(cronTime(NULL) 
+				 - utc->start_time/(double)(utc->main_completed+len))))
+		      * (double)utc->main_total);
 	event.data.UploadComplete.start_time = utc->start_time;
 	event.data.UploadComplete.is_recursive = YES;
 	event.data.UploadComplete.main_filename = utc->main_filename;
@@ -226,13 +232,17 @@ static void dirEntryCallback(const char * filename,
     event.data.UploadComplete.total = utc->main_total;
     event.data.UploadComplete.filename = utc->filename;
     event.data.UploadComplete.uri = uri;
-    event.data.UploadComplete.eta = 42; /* FIXME! */
+    utc->main_completed += getFileSize(fn);
+    event.data.UploadComplete.eta 
+      = (cron_t) (utc->start_time +
+		  (((double)(cronTime(NULL) 
+			     - utc->start_time/(double)(utc->main_completed))))
+		  * (double)utc->main_total);
     event.data.UploadComplete.start_time = utc->start_time;
     event.data.UploadComplete.is_recursive = YES;
     event.data.UploadComplete.main_filename = utc->main_filename;
     utc->ctx->ecb(utc->ctx->ecbClosure,
 		  &event);	
-    utc->main_completed += getFileSize(fn);
     meta = ECRS_createMetaData();
     ECRS_extractMetaData(meta,
 			 fn,
@@ -247,8 +257,7 @@ static void dirEntryCallback(const char * filename,
 			  &uri,
 			  &meta);
   }
-  if (ret == OK) {
-    
+  if (ret == OK) {   
     ECRS_addToMetaData(meta,
 		       EXTRACTOR_FILENAME,
 		       filename);
@@ -275,6 +284,7 @@ static void dirEntryCallback(const char * filename,
 	 utc->dir.fiCount+1);
     utc->dir.fis[utc->dir.fiCount-1].meta = meta;    
     utc->dir.fis[utc->dir.fiCount-1].uri = uri;
+    FSUI_trackURI(&utc->dir.fis[utc->dir.fiCount-1]);
   }
   FREE(fn);
 }
@@ -286,6 +296,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
   struct ECRS_URI * uri;
   struct ECRS_URI * keywordUri;
   FSUI_Event event;
+  ECRS_FileInfo fi;
   int ret;
   char * inboundFN;
 
@@ -359,6 +370,9 @@ static void * uploadThread(UploadThreadClosure * utc) {
     event.data.message = _("Cannot upload directory without using recursion.\n");
   }
   if (ret == OK) { /* publish top-level advertisements */
+    fi.meta = utc->meta;
+    fi.uri = uri;
+    FSUI_trackURI(&fi);
     if (inboundFN != NULL) {
       ECRS_delFromMetaData(utc->meta,
 			   EXTRACTOR_FILENAME,
