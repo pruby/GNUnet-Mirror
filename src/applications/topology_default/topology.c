@@ -254,6 +254,10 @@ static double estimateSaturation() {
   return saturation;
 }
 
+static int allowConnection(const PeerIdentity peer) {
+  return OK; /* allow everything */
+}
+
 Topology_ServiceAPI * 
 provide_module_topology_default(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
@@ -299,6 +303,7 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
+  api.allowConnectionFrom = &allowConnection;
   return &api;
 }
 

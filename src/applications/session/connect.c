@@ -297,6 +297,9 @@ static int exchangeKey(const PeerIdentity * receiver,
   EncName enc;
 
   GNUNET_ASSERT(receiver != NULL);
+  if ( (topology != NULL) &&
+       (topology->allowConnection(receiver) == SYSERR) )
+    return SYSERR;
   hash2enc(&receiver->hashPubKey,
 	   &enc);
   /* first: do we have a HELO for the other guy? */
@@ -435,6 +438,9 @@ static int acceptSessionKey(const PeerIdentity * sender,
   char * plaintext;
   EncName enc;
 
+  if ( (topology != NULL) &&
+       (topology->allowConnection(sender) == SYSERR) )
+    return SYSERR;
   hash2enc(&sender->hashPubKey,
 	   &enc);
 #if DEBUG_SESSION
@@ -581,6 +587,9 @@ static int acceptSessionKey(const PeerIdentity * sender,
  *         NO if we're going to try to establish one asynchronously
  */
 static int tryConnect(const PeerIdentity * peer) {
+  if ( (topology != NULL) &&
+       (topology->allowConnection(peer) == SYSERR) )
+    return SYSERR;
   if (coreAPI->queryBPMfromPeer(peer) != 0)
     return YES; /* trivial case */
   if (OK == exchangeKey(peer, NULL, NULL)) 
@@ -632,6 +641,7 @@ provide_module_session(CoreAPIForApplication * capi) {
     identity = NULL;
     return NULL;
   }
+  topology = capi->requestService("topology");
 
   LOG(LOG_DEBUG,
       _("'%s' registering handler %d (plaintext and ciphertext)\n"),
@@ -653,6 +663,10 @@ int release_module_session() {
 				      &acceptSessionKey);
   coreAPI->unregisterHandler(p2p_PROTO_SKEY,
 			     &acceptSessionKeyUpdate);
+  if (topology != NULL) {
+    coreAPI->releaseService(topology);
+    topology = NULL;
+  }
   coreAPI->releaseService(identity);
   identity = NULL;
   coreAPI->releaseService(transport);

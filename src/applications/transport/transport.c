@@ -406,12 +406,12 @@ static int transportCreateHELO(unsigned short ttype,
 
     perm = permute(tapis_count);
     ttype = tapis_count-1;
-    while ( ((tapis[perm[ttype]] == NULL) ||
-            (tapis[perm[ttype]] != NULL && 
-	     tapis[perm[ttype]]->helo == NULL)) &&
-	    (ttype < 0xFFFF) )
+    while ( (ttype < tapis_count) &&
+	    ( (tapis[perm[ttype]] == NULL) ||
+	      (tapis[perm[ttype]] != NULL && 
+	       tapis[perm[ttype]]->helo == NULL) ) )
       ttype--;
-    if (ttype == 0xFFFF) {
+    if (ttype >= tapis_count) {
       FREE(perm);
       MUTEX_UNLOCK(&tapis_lock);
       return SYSERR;
@@ -604,6 +604,10 @@ Transport_ServiceAPI * provide_module_transport(CoreAPIForApplication * capi) {
 	_("You should specify at least one transport service under option '%s' in section '%s'.\n"),
 	"TRANSPORTS", "GNUNETD");
   } else {
+    LOG(LOG_DEBUG,
+	"Loading transports '%s'\n",
+	dso);
+
     next = dso;
     do {
       pos = next;

@@ -13,6 +13,7 @@ core->transport
 session->transport
 session->identity
 session->pingpong
+session->topology
 
 pingpong->identity
 pingpong->transport

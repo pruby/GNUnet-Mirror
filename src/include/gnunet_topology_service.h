@@ -64,6 +64,13 @@ typedef struct {
    */
   double (*getSaturation)();
 
+  /**
+   * Will the topology allow a connection from the specified peer?
+   * @return OK if a connection maybe established, SYSERR if not.
+   */
+  int (*allowConnectionFrom)(const PeerIdentity * peer);
+
+
 } Topology_ServiceAPI;
 
 #endif

@@ -402,7 +402,7 @@ void readConfiguration() {
   char * expCfgName;
 
   cfgName = getConfigurationString("FILES",
-				   "gnunet.conf");
+				   "gnunet.conf");  
   if (cfgName == NULL) {
     if (testConfigurationString("GNUNETD",
 				"_MAGIC_",

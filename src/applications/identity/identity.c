@@ -274,9 +274,9 @@ static void cronHelper(const char * filename,
   unsigned int protoNumber;
   char * fullname;
 
-  GNUNET_ASSERT(sizeof(EncName) == 33);
+  GNUNET_ASSERT(sizeof(EncName) == 104);
   if (2 == sscanf(filename,
-		  "%32c.%u",
+		  "%103c.%u",
 		  (char*)&id,
 		  &protoNumber)) {
     id.encoding[sizeof(EncName)-1] = '\0';

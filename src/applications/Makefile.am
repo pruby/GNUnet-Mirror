@@ -31,6 +31,7 @@ SUBDIRS	= \
  template \
  $(TESTBED_DIR) \
  topology_default \
+ topology_f2f \
  tracekit \
  traffic \
  transport
