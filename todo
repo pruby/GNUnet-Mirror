@@ -10,9 +10,6 @@
 0.7.0pre0 [3'05] (aka "pre-preview"):
 - padding for insert/return requests: we're currently breaking
   8-byte alignment!
-- Investigate KBlocks:
-  generated public keys are fishy 
-  (far to many 0-values in N!)
 - Need testing:
   * ECRS upload/download: automated test: complete ecrstest.c testcode!
   * ECRS-directories (build, iterate)

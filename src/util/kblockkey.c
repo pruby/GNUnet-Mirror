@@ -30,12 +30,6 @@
  * @brief implementation of RSA-Key generation for KBlocks
  *        (do NOT use for pseudonyms or hostkeys!)
  * @author Christian Grothoff
- *
- * Todo:
- * - testcase
- * - conversion to GNUnet's internal HOSTKEY format
- * - extend gnunet-util API accordingly
- * - link against GNU's GMP library (!)
  */ 
 
 #include "platform.h"
@@ -164,7 +158,7 @@ static void set_highbit(mpz_t a,
   unsigned int nbits;  
 
   nbits = get_nbits(a);
-  while (nbits > 0)
+  while (nbits > n)
     mpz_clrbit(a, nbits--);
   mpz_setbit(a, n);
 }
@@ -179,12 +173,20 @@ static void mpz_randomize(mpz_t n,
   cnt = (nbits / sizeof(HashCode160) / 8) + 1;
   tmp = MALLOC(sizeof(HashCode160) * cnt);
   
-  for (i=0;i<cnt;i++) {
-    hash(rnd,
+  tmp[0] = *rnd;
+  for (i=0;i<cnt-1;i++) {
+    hash(&tmp[i],
 	 sizeof(HashCode160),
-	 &tmp[i]);
-    *rnd = tmp[i];
+	 &tmp[i+1]);
   }
+  *rnd = tmp[cnt-1];
+  /*
+  printf("RND: ");
+  for (i=0;i<cnt * sizeof(HashCode160);i++)
+    printf("%02x", ((unsigned char*) tmp)[i]);
+  printf("\n");
+  */
+
   mpz_import(n, cnt * sizeof(HashCode160) / sizeof(unsigned int),
 	     1, sizeof(unsigned int), 1, 0, tmp);
   FREE(tmp); 
@@ -236,7 +238,7 @@ static int is_prime (mpz_t n,
 	set_highbit(x, nbits-2 );
 	mpz_clrbit( x, nbits-2 );
       }
-      /* GNUNET_ASSERT( mpz_cmp( x, nminus1 ) < 0 && mpz_cmp_ui( x, 1 ) > 0 ); // this assertion from libgcrypt fails (always). Why? */
+      GNUNET_ASSERT( mpz_cmp( x, nminus1 ) < 0 && mpz_cmp_ui( x, 1 ) > 0 );
     }
     mpz_powm ( y, x, q, n);
     if ( mpz_cmp_ui(y, 1) && mpz_cmp( y, nminus1 ) ) {

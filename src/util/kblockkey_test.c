@@ -12,6 +12,47 @@
 #define MAX_TESTVAL 20
 #define ITER 10
 
+
+static int testMultiKey(const char * word) {
+  HashCode160 in;  
+  PrivateKey hostkey;
+  PublicKey pkey;
+  PublicKey pkey1;
+  int i;
+
+  fprintf(stderr, 
+	  "Testing KBlock key uniqueness (%s) ",
+	  word);
+  hash(word, strlen(word), &in);
+  hostkey = makeKblockKey(&in);
+  if (hostkey == NULL) {
+    BREAK();
+    return SYSERR;
+  }
+  getPublicKey(hostkey, &pkey);
+  freePrivateKey(hostkey);
+  for (i=0;i<6;i++) {
+    fprintf(stderr, ".");
+    hostkey = makeKblockKey(&in);
+    if (hostkey == NULL) {
+      BREAK();
+      fprintf(stderr, " ERROR\n");
+      return SYSERR;
+    }
+    getPublicKey(hostkey, &pkey1);
+    freePrivateKey(hostkey);
+    if (0 != memcmp(&pkey, &pkey1, 
+		    sizeof(PublicKey))) {
+      BREAK();
+    fprintf(stderr, " ERROR\n");
+      return SYSERR;
+    }
+  }
+  fprintf(stderr, " OK\n");
+  return OK;
+}
+
+
 static int testEncryptDecrypt(PrivateKey hostkey) {
   PublicKey pkey;
   RSAEncryptedData target;
@@ -176,8 +217,12 @@ int main(int argc, char * argv[]) {
     return 1;
   } 
 
- if (OK != testEncryptDecrypt(hostkey))
-     failureCount++;
+  if (OK != testMultiKey("foo"))
+    failureCount++;
+  if (OK != testMultiKey("bar"))
+    failureCount++;
+  if (OK != testEncryptDecrypt(hostkey))
+    failureCount++;
   if (OK != testSignVerify(hostkey))
     failureCount++;       
   if (OK != testPrivateKeyEncoding(hostkey)) 
