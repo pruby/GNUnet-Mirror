@@ -413,7 +413,7 @@ int mkdirp(const char * dir) {
     if ( (rdir[pos] == DIR_SEPARATOR) || 
 	 (pos == len) ) {
       rdir[pos] = '\0';
-      if (! isDirectory(dir))
+      if (! isDirectory(rdir))
 #ifndef MINGW
 	if (0 != mkdir(rdir,
 		       S_IRUSR | S_IWUSR | 
