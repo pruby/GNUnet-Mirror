@@ -7,7 +7,7 @@ configuring GNUnet (including placing a valid gnunet.conf into
 information necessary (assuming it compiles).
 
 
-Linux (x86):
+GNU/Linux (x86):
 - perfect
 
 FreeBSD (x86):
@@ -16,11 +16,11 @@ FreeBSD (x86):
 OpenBSD/NetBSD:
 - unknown
 
-Linux (Ultra Sparc):
+GNU/Linux (Ultra Sparc):
 - RSA key generation may not work (libgcrypt bug) 
   workarounds: use OpenSSL
 
-Linux (Alpha):
+GNU/Linux (Alpha):
 - RSA key generation may not work (libgcrypt bug)
   workaround: use OpenSSL 
 
