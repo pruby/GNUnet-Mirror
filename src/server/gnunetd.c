@@ -69,7 +69,7 @@ void WINAPI ServiceCtrlHandler(DWORD dwOpcode) {
  * Main method of the windows service
  */
 void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
-  memset(&theServiceStatus, sizeof(theServiceStatus), 0);
+  memset(&theServiceStatus, 0, sizeof(theServiceStatus));
   theServiceStatus.dwServiceType = SERVICE_WIN32;
   theServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
   theServiceStatus.dwCurrentState = SERVICE_RUNNING;

@@ -363,7 +363,7 @@ int PTHREAD_CREATE(PTHREAD_T * pt,
 
   handle = MALLOC(sizeof(pthread_t));
 #ifdef MINGW
-  memset(handle, sizeof(pthread_t), 0);
+  memset(handle, 0, sizeof(pthread_t));
 #endif
 
   pthread_attr_init(&stack_size_custom_attr);
