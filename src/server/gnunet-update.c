@@ -169,10 +169,10 @@ static int updateModule(const char * rpos) {
   char * pos;
 
   for (i=0;i<processedCount;i++)
-    if (0 == strcmp(pos, processed[i]))
+    if (0 == strcmp(rpos, processed[i]))
       return OK; /* already done */
   GROW(processed, processedCount, processedCount+1);
-  processed[processedCount-1] = STRDUP(pos);
+  processed[processedCount-1] = STRDUP(rpos);
 
   pos = getConfigurationString("MODULES",
 			       rpos);
