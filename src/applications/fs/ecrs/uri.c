@@ -451,9 +451,9 @@ int ECRS_isLocationURI(const struct ECRS_URI * uri) {
 unsigned long long ECRS_fileSize(const struct ECRS_URI * uri) {
   switch (uri->type) {
   case chk:
-    return uri->data.chk.file_length;
+    return ntohll(uri->data.chk.file_length);
   case loc:
-    return uri->data.loc.size;
+    return ntohll(uri->data.loc.size);
   default:
     GNUNET_ASSERT(0);
   }

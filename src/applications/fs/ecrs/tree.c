@@ -33,6 +33,10 @@ unsigned int computeDepth(unsigned long long flen) {
   fl = DBLOCK_SIZE;
   while (fl < (unsigned long long)flen) {
     treeDepth++;
+    if (fl * CHK_PER_INODE < fl) {
+      /* integer overflow, this is a HUGE file... */
+      return treeDepth; 
+    }
     fl = fl * CHK_PER_INODE;
   }  
   return treeDepth;

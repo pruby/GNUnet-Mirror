@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -1020,7 +1020,7 @@ static void processRequests(RequestManager * rm) {
   perm = permute(rm->requestListIndex);
   for (i=0;i<rm->requestListIndex;i++) {
     int j = perm[i];
-    if (rm->requestList[i]->lastTimeout < now + TTL_DECREMENT) {
+    if (rm->requestList[i]->lastTimeout + TTL_DECREMENT < now) {
       int pOCWCubed;
       int pendingOverCWin = pending - rm->congestionWindow;
       if (pendingOverCWin <= 0)
@@ -1040,7 +1040,7 @@ static void processRequests(RequestManager * rm) {
 	delta = 0;
       }
     } else {
-      delta = (rm->requestList[j]->lastTimeout - now) + TTL_DECREMENT;
+      delta = (rm->requestList[j]->lastTimeout + TTL_DECREMENT - now);
     }      
     if (delta < minSleep )
       minSleep = delta;
@@ -1076,6 +1076,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   NodeClosure top;
   FileIdentifier fid;
 
+  fid = uri->data.chk;
   if (! ECRS_isFileURI(uri))
     return SYSERR;
 

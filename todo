@@ -12,8 +12,8 @@
   generated public keys are fishy 
   (far to many 0-values in N!)
 - Need testing:
-  * gnunet-insert
-  * gnunet-search
+  * gnunet-insert - ok
+  * gnunet-search - ok
   * gnunet-download
   * FS/ECRS upload/download
   * ECRS-directories (build, iterate)
