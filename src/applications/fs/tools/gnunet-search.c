@@ -76,7 +76,7 @@ static void eventCallback(SearchClosure * sc,
   uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
   printf("%s:\n",
 	 uri);
-  filename = ECRS_getFromMetaData(meta,
+  filename = ECRS_getFromMetaData(event->data.SearchResult.fi.meta,
 				  EXTRACTOR_FILENAME);
   if (filename != NULL) 
     printf("gnunet-download -o \"%s\" %s\n",

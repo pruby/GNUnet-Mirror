@@ -122,6 +122,9 @@ static int uploadDirectory(UploadThreadClosure * utc,
   while ( (lastSlash > 0) &&
 	  (utc->filename[lastSlash] != DIR_SEPARATOR))
     lastSlash--;  
+  ECRS_delFromMetaData(*meta,
+		       EXTRACTOR_FILENAME,
+		       NULL);
   ECRS_addToMetaData(*meta,
 		     EXTRACTOR_FILENAME,
 		     &utc->filename[lastSlash+1]);
@@ -284,7 +287,11 @@ static void * uploadThread(UploadThreadClosure * utc) {
   struct ECRS_URI * keywordUri;
   FSUI_Event event;
   int ret;
+  char * inboundFN;
 
+  inboundFN
+    = ECRS_getFromMetaData(utc->meta,
+			   EXTRACTOR_FILENAME);
   cronTime(&utc->start_time);
   utc->main_total = getFileSize(utc->main_filename);
   utc->main_completed = 0;
@@ -320,6 +327,10 @@ static void * uploadThread(UploadThreadClosure * utc) {
     utc->filename = NULL;
     if (utc->meta == NULL)
       utc->meta = ECRS_createMetaData();
+    else 
+      ECRS_delFromMetaData(utc->meta,
+			   EXTRACTOR_FILENAME,
+			   NULL);
     ECRS_extractMetaData(utc->meta,
 			 utc->filename,
 			 utc->extractors);
@@ -348,6 +359,14 @@ static void * uploadThread(UploadThreadClosure * utc) {
     event.data.message = _("Cannot upload directory without using recursion.\n");
   }
   if (ret == OK) { /* publish top-level advertisements */
+    if (inboundFN != NULL) {
+      ECRS_delFromMetaData(utc->meta,
+			   EXTRACTOR_FILENAME,
+			   NULL);
+      ECRS_addToMetaData(utc->meta,
+			 EXTRACTOR_FILENAME,
+			 inboundFN);
+    }
     keywordUri = ECRS_metaDataToUri(utc->meta);
     if (keywordUri != NULL) {
       ECRS_addToKeyspace(keywordUri,
@@ -388,6 +407,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
   EXTRACTOR_removeAll(utc->extractors);
   utc->tl->isDone = YES;
   FREE(utc);
+  FREE(inboundFN);
   return NULL;
 }
 

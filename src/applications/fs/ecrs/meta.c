@@ -85,19 +85,25 @@ int ECRS_delFromMetaData(MetaData * md,
 			 EXTRACTOR_KeywordType type,
 			 const char * data) {
   int idx;
+  int ret = SYSERR;
   for (idx=0;idx<md->itemCount;idx++) {
     if ( (md->items[idx].type == type) &&
-	 (0 == strcmp(md->items[idx].data,
-		      data)) ) {
+	 ( (data == NULL) ||
+	   (0 == strcmp(md->items[idx].data,
+			data)) ) ) {
       FREE(md->items[idx].data);
       md->items[idx] = md->items[md->itemCount-1];
       GROW(md->items,
 	   md->itemCount,
 	   md->itemCount-1);
+      if (data == NULL) {
+	ret = OK;
+	continue;
+      }
       return OK;
     }      
   }
-  return SYSERR;
+  return ret;
 }
 
 /**

@@ -6,7 +6,7 @@
 - 811?
 - 593???
 
-0.7.0pre0 [4'05] (aka "preview"):
+0.7.0pre0 [4'05] (aka "pre-preview"):
 - Missing Features:
   * fs/module/fs+migration: anonymity level and expiration time considerations (Christian)
   * gap: economy for local queries, forwardQuery dead?, anonymityLevel
@@ -20,7 +20,7 @@
   * gnunet-pseudonym
   * gnunet-search
 
-0.7.0pre1 [5'05]:
+0.7.0pre1 [5'05] (aka "preview"):
 - gnunet-insert:
   * allow any kind of meta-data to be specified on the
     command-line
@@ -52,6 +52,7 @@
   * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
 
 0.7.x (aka "stabilization"):
+- add gnunet-gtk (or some other GUI)
 - gnunet-chat: have a real implementation.
 - DHT optimizations:
   * optional fields (HELOs)
