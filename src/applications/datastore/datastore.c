@@ -361,8 +361,6 @@ static int filterAddAll(const HashCode512 * key,
  * Update Datastore.  Currently only re-builds the bloomfilter.
  * At some point we'll want to add code to convert data between
  * different sqstore's here, too.
- *
- * @return SYSERR on errors
  */
 void update_module_datastore(UpdateAPI * uapi) {
   int quota;

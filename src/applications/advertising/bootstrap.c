@@ -117,14 +117,52 @@ static void downloadHostlistCallback(const HELO_Message * helo,
 	 HELO_Message_size(helo));
 }
 
+#define BOOTSTRAP_INFO "bootstrap-info"
+
 static int needBootstrap() {
-  /* FIXME: better do it based on % connections with
-     respect to connection table size... */
-  /* Maybe it should ALSO be based on how many peers
-     we know (identity).  
-     Sure, in the end it goes to the topology, so
-     probably that API should be extended here... */
-  return (coreAPI->forAllConnectedNodes(NULL, NULL) < 4);  
+  static cron_t lastTest;
+  static cron_t delta;
+  cron_t now;
+  char * data;
+
+  cronTime(&now);
+  if (coreAPI->forAllConnectedNodes(NULL, NULL) > 4) {
+    /* still change delta and lastTest; even
+       if the peer _briefly_ drops below 4 
+       connections, we don't want it to immediately
+       go for the hostlist... */
+    delta = 5 * cronMINUTES;
+    lastTest = now;
+    return NO;
+  }
+  if (lastTest == 0) {
+    /* first run in this process */
+    if (-1 != stateReadContent(BOOTSTRAP_INFO,
+			       (void**)&data)) {
+      /* but not first on this machine */
+      lastTest = cronTime(&now);
+      delta = 2 * cronMINUTES; /* wait 2 minutes */
+      FREE(data);
+    } else {
+      /* first on this machine, too! */
+      stateWriteContent(BOOTSTRAP_INFO,
+			1,
+			"X");
+      delta = 60 * cronSECONDS;
+    }
+  }
+  if (now - lastTest > delta) {
+    lastTest = now;
+    delta *= 2; /* exponential back-off */
+    /* Maybe it should ALSO be based on how many peers
+       we know (identity).  
+       Sure, in the end it goes to the topology, so
+       probably that API should be extended here... */
+    return YES;
+  } else {
+    /* wait a bit longer */
+    return NO;
+  }
 }
 
 static void processThread(void * unused) {

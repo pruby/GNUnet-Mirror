@@ -11,8 +11,6 @@
   * gnunet-pseudonym
 - gnunet-search:
   * multiple search results don't work (yet); test on sqlite, FSLIB and ECRS levels!
-- topology:
-  * do aggressive bootstrap on first start (Christian) [ easy ]
 - gap:
   * economy for local queries (see applications/gap/TODO) [ tricky ]
 - FSUI:

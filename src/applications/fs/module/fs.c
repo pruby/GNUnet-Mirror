@@ -1057,11 +1057,12 @@ void done_module_fs() {
 
 /**
  * Update FS module.
- *
- * @return SYSERR on errors
  */
 void update_module_fs(UpdateAPI * uapi) {
   uapi->updateModule("datastore");
+  uapi->updateModule("dht");
+  uapi->updateModule("gap");
+  uapi->updateModule("traffic");
 }
 
 /* end of fs.c */

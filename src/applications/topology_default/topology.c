@@ -37,8 +37,8 @@
 #include "platform.h"
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
-#include "gnunet_topology_service.h"
 #include "gnunet_identity_service.h"
+#include "gnunet_topology_service.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
@@ -254,13 +254,16 @@ static double estimateSaturation() {
   return saturation;
 }
 
-static int allowConnection(const PeerIdentity peer) {
+static int allowConnection(const PeerIdentity * peer) {
   return OK; /* allow everything */
 }
+
+#define TOPOLOGY_TAG_FILE "topology-070"
 
 Topology_ServiceAPI * 
 provide_module_topology_default(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
+  char * data;
 
   coreAPI = capi;
   identity = capi->requestService("identity");
@@ -290,6 +293,32 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 	     5 * cronSECONDS,
 	     NULL);
 
+  if (-1 == stateReadContent(TOPOLOGY_TAG_FILE,
+			     (void**) &data)) {
+    stateWriteContent(TOPOLOGY_TAG_FILE,
+		      strlen(PACKAGE_VERSION),
+		      PACKAGE_VERSION);    
+  } else {
+    if (0 != strcmp(PACKAGE_VERSION,
+		    data)) {
+      LOG(LOG_FAILURE,
+	  _("Version mismatch ('%s' vs. '%s'), run gnunet-update!\n"),
+	  PACKAGE_VERSION,
+	  data);
+      FREE(data);
+      BREAK();
+      delCronJob(&cronCheckLiveness,
+		 5 * cronSECONDS,
+		 NULL);
+      capi->releaseService(identity);
+      identity = NULL;
+      capi->releaseService(transport);
+      transport = NULL;
+      return NULL;
+    }
+    FREE(data);
+  }
+
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
@@ -309,6 +338,18 @@ int release_module_topology_default() {
   coreAPI = NULL;
   return OK;
 }
+
+/**
+ * Update topology module.
+ */
+void update_module_topology_default(UpdateAPI * uapi) {
+  stateUnlinkFromDB(TOPOLOGY_TAG_FILE);
+  uapi->updateModule("identity");
+  uapi->updateModule("transport");
+  uapi->updateModule("pingpong");
+}
+
+
 
 static CoreAPIForApplication * myCapi;
 static Topology_ServiceAPI * myTopology;
