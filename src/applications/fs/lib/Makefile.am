@@ -7,4 +7,20 @@ libgnunetfs_la_SOURCES = \
   fslib.c 
 libgnunetfs_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- ../libecrs_core.la
+ $(top_builddir)/src/applications/fs/libecrs_core.la
+
+
+################################
+# TESTCASES 
+################################
+
+check_PROGRAMS = \
+  fslibtest
+
+TESTS = $(check_PROGRAMS)
+
+fslibtest_SOURCES = \
+  fslibtest.c
+fslibtest_LDADD = \
+  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
