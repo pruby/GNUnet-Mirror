@@ -18,9 +18,11 @@ gnunet_testbed_SOURCES = \
   socket.c \
   socket.h \
   commands.c \
-  get-stats.c \
-  get-stats.h \
   commands.h
+gnunet_testbed_LDADD = \
+  $(top_builddir)/src/applications/getoption/libgnunetgetoption_api.la \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
 
 
 libgnunetmodule_testbed_la_SOURCES = \

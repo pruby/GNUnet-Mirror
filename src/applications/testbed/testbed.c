@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,20 +19,19 @@
 */
 
 /**
- * Testbed CORE.  This is the code that is plugged
- * into the GNUnet core to enable transport profiling.
- *
+ * @file applications/testbed/testbed.c
  * @author Ronaldo Alves Ferreira
  * @author Christian Grothoff
  * @author Murali Khrisna Ramanathan
- * @file applications/testbed/testbed.c
+ * @brief Testbed CORE.  This is the code that is plugged
+ * into the GNUnet core to enable transport profiling.
  */
 
 
-#include "testbed.h"
 #include "platform.h"
-
-#include <sys/types.h>
+#include "testbed.h"
+#include "gnunet_protocols.h"
+#include "gnunet_identity_service.h"
 
 #define DEBUG_TESTBED YES
 
@@ -40,13 +39,15 @@
 #define HTTP_URL "http://"
 
 /* */
-static CoreAPIForApplication * coreAPI = NULL;
+static CoreAPIForApplication * coreAPI;
+
+static Identity_ServiceAPI * identity;
 
 static void sendAcknowledgement(ClientHandle client,
 				int ack) {
-  if (OK != coreAPI->sendTCPResultToClient(client, ack)) {
+  if (OK != coreAPI->sendValueToClient(client, ack)) {
     LOG(LOG_WARNING,
-	_("Could not send ack back to client.\n"));
+	_("Could not send acknowledgement back to client.\n"));
   }
 }
 
@@ -86,13 +87,13 @@ static void tb_ADD_PEER(ClientHandle client,
     return;
   }
   
-  coreAPI->bindAddress(&hm->helo);
+  identity->addHost(&hm->helo);
   noise.size = htons(sizeof(p2p_HEADER));
   noise.type = htons(p2p_PROTO_NOISE);
-  coreAPI->sendToNode(&hm->helo.senderIdentity,
-		      &noise,
-		      EXTREME_PRIORITY, 
-		      0);
+  coreAPI->unicast(&hm->helo.senderIdentity,
+		   &noise,
+		   EXTREME_PRIORITY, 
+		   0);
   sendAcknowledgement(client, OK);
 }
 
@@ -105,12 +106,18 @@ static void tb_DEL_PEER(ClientHandle client,
   sendAcknowledgement(client, OK);
 }
 
+static void doDisconnect(const PeerIdentity * id,
+			 void * unused) {
+  coreAPI->disconnectFromPeer(id);
+}
+
 /**
  * Disconnect from all other peers.
  */
 static void tb_DEL_ALL_PEERS(ClientHandle client,
 			     TESTBED_DEL_ALL_PEERS_MESSAGE * msg) {
-  coreAPI->disconnectPeers(); 
+  coreAPI->forAllConnectedNodes(&doDisconnect,
+				NULL);
   sendAcknowledgement(client, OK);
 }
 
@@ -122,10 +129,10 @@ static void tb_GET_HELO(ClientHandle client,
   HELO_Message * helo;
   unsigned int proto = ntohs(msg->proto);
   
-  if (SYSERR == coreAPI->identity2Helo(coreAPI->myIdentity, 
-				       proto,
-				       NO, 
-				       &helo)) {
+  if (SYSERR == identity->identity2Helo(coreAPI->myIdentity, 
+					proto,
+					NO, 
+					&helo)) {
     LOG(LOG_WARNING, 
 	_("TESTBED could not generate HELO message for protocol %u\n"),
 	proto);
@@ -157,16 +164,11 @@ static void tb_GET_HELO(ClientHandle client,
  */
 static void tb_SET_TVALUE(ClientHandle client,
 			  TESTBED_SET_TVALUE_MESSAGE * msg) {
-  int trust, chg;
+  int trust;
   
   trust = ntohl(msg->trust);
-  chg = coreAPI->changeTrust(&msg->otherPeer, trust);
-  if (chg != trust) {
-    LOG(LOG_WARNING,
-	_("trust change=%d, required=%d\n"),
-	chg,
-	trust);
-  }
+  identity->changeHostTrust(&msg->otherPeer, 
+			    trust);
   sendAcknowledgement(client, OK);
 }	
 		  
@@ -177,7 +179,7 @@ static void tb_GET_TVALUE(ClientHandle client,
 			  TESTBED_GET_TVALUE_MESSAGE * msg) {    
   unsigned int trust;
   
-  trust = coreAPI->getTrust(&msg->otherPeer);
+  trust = identity->getHostTrust(&msg->otherPeer);
   sendAcknowledgement(client, trust);
 }	
 
@@ -276,20 +278,6 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
 	_("unloading module failed.  Notifying client.\n"));
   FREE(name);
   sendAcknowledgement(client, ok);
-}
-
-/**
- * Set the reliability of the inbound and outbound transfers for this
- * peer (by making it drop a certain percentage of the messages at
- * random).
- */
-static void tb_SET_LOSS_RATE(ClientHandle client,
-			     TESTBED_SET_LOSS_RATE_MESSAGE * msg) {
-  coreAPI->setPercentRandomInboundDrop
-    (ntohl(msg->percentageLossInbound));
-  coreAPI->setPercentRandomOutboundDrop
-    (ntohl(msg->percentageLossOutbound));
-  sendAcknowledgement(client, OK);
 }
 
 /**
@@ -958,7 +946,6 @@ static HD handlers[] = {
   TBSENTRY(GET_TVALUE), 
   TBSENTRY(undefined), 
   TBSENTRY(SET_BW), 
-  TBSENTRY(SET_LOSS_RATE),
   TBDENTRY(LOAD_MODULE),
   TBDENTRY(UNLOAD_MODULE),
   TBDENTRY(UPLOAD_FILE),
@@ -1345,7 +1332,6 @@ static void testbedClientExitHandler(ClientHandle client) {
  */
 int initialize_module_testbed(CoreAPIForApplication * capi) {
   unsigned int i;
-  int ok = OK;
   
   /* some checks */
   for (i=0;i<TESTBED_MAX_MSG;i++)
@@ -1353,18 +1339,20 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
 	 (handlers[i].handler != &tb_undefined) )
       GNUNET_ASSERT(0);
   GNUNET_ASSERT(handlers[TESTBED_MAX_MSG].handler == NULL);
+  identity = capi->requestService("identity");
+  if (identity == NULL)
+    return SYSERR;
+
   MUTEX_CREATE(&lock);
   LOG(LOG_DEBUG,
       "TESTBED registering handler %d!\n",
       TESTBED_CS_PROTO_REQUEST);
   coreAPI = capi;
-  if (SYSERR == capi->registerClientExitHandler(&testbedClientExitHandler))
-    ok = SYSERR;
-  if (SYSERR == capi->registerClientHandler(TESTBED_CS_PROTO_REQUEST,
-					    (CSHandler)&csHandleTestbedRequest))
-    ok = SYSERR;
+  GNUNET_ASSERT(SYSERR != capi->registerClientExitHandler(&testbedClientExitHandler));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(TESTBED_CS_PROTO_REQUEST,
+						      (CSHandler)&csHandleTestbedRequest));
   httpRegister("startup");
-  return ok;
+  return OK;
 }
 
 /**
@@ -1398,6 +1386,8 @@ void done_module_testbed() {
   coreAPI->unregisterClientHandler(TESTBED_CS_PROTO_REQUEST,
 				   (CSHandler)&csHandleTestbedRequest);
   coreAPI->unregisterClientExitHandler(&testbedClientExitHandler);
+  coreAPI->releaseService(identity);
+  identity = NULL;
   coreAPI = NULL;
 }
 

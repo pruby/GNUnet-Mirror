@@ -14,6 +14,9 @@ SUBDIRS	= \
  session \
  sqstore_mysql \
  stats \
+ tbench \
+ template \
+ testbed \
  topology_default \
  traffic \
  transport

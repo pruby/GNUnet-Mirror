@@ -33,10 +33,12 @@
  */
 
 #include "platform.h"
+#include "gnunet_protocols.h"
+#include "gnunet_getoption_lib.h"
+#include "gnunet_stats_lib.h"
 #include "testbed.h"
 #include "commands.h"
 #include "socket.h"
-#include "get-stats.h"
 
 /**
  * @brief struct keeping per-peer information for the testbed
@@ -1066,6 +1068,16 @@ static int setLoss(int argc, char * argv[]) {
   }
 }
 
+static int printStatistic(const char * name,
+			  unsigned long long value,
+			  const char * arg) {
+  if (0 == strcmp(name,
+		  arg))
+    PRINTF("%llu\n",
+	   value);
+  return OK;
+}
+
 /**
  * Obtain statistics from a peer.
  *
@@ -1082,12 +1094,56 @@ static int getStat(int argc, char ** argv) {
     return -1;
   }
   CHECK_PEER(peer, argv[0]);
-  res = requestAndPrintStatistic(&nodes[peer].sock,
-				 argv[1]);
+  res = requestStatistics(&nodes[peer].sock,
+			  (StatisticsProcessor) &printStatistic,
+			  argv[1]);
   if (res == OK)
     return 0;
   else
     return -1;
+}
+
+/**
+ * Print statistics received.
+ *
+ * @param stream where to print the statistics
+ * @return OK on success, SYSERR on error
+ */
+static int printStatistics(const char * name,
+			   unsigned long long value,
+			   void * unused) {
+  PRINTF("%-60s: %16llu\n",
+	 name,
+	 value);
+  return OK;
+}
+
+static int lastIp2p;
+
+static int printProtocols(unsigned short type,
+			  int isP2P,
+			  void * unused) {
+  const char *name = NULL;
+
+  if (isP2P != lastIp2p) {
+    if (isP2P)
+      PRINTF(_("Supported peer-to-peer messages:\n"));
+    else
+      PRINTF(_("Supported client-server messages:\n"));
+    lastIp2p = isP2P;
+  }
+  if (isP2P)
+    name = p2pMessageName(type);
+  else
+    name = csMessageName(type);
+  if (name == NULL)
+    PRINTF("\t%d\n",
+	   type);
+  else
+    PRINTF("\t%d\t(%s)\n", 
+	   type,
+	   name);
+  return OK;
 }
 
 /**
@@ -1098,25 +1154,30 @@ static int getStat(int argc, char ** argv) {
  * @return 0 ok, 1 on error
  */   
 static int getStats(int argc, char ** argv) {
-  int res, peer, printProtocols;
+  int res, peer, printProtocolsOpt;
   
-  printProtocols = NO;
+  printProtocolsOpt = NO;
   if (argc == 2) {
     if (strcmp(argv[0], "-P")) {
       PRINTF("Syntax: get-stats [-P] PEERID\n");
       return -1;
     }
-    printProtocols = YES;
+    printProtocolsOpt = YES;
     CHECK_PEER(peer, argv[1]);
   } else if (argc != 1) {
     PRINTF("Syntax: get-stats [-P] PEERID\n");
     return -1;
   } else
     CHECK_PEER(peer, argv[0]);
-  res = requestAndPrintStatistics(&nodes[peer].sock);
-  if ( (printProtocols == YES) && 
+  res = requestStatistics(&nodes[peer].sock,
+			  (StatisticsProcessor) &printStatistics,
+			  NULL);
+  if ( (printProtocolsOpt == YES) && 
        (res == OK)) {
-    res = requestAndPrintProtocols(&nodes[peer].sock);
+ lastIp2p = 42; /* not YES or NO */
+    res = requestAvailableProtocols(&nodes[peer].sock,
+				    (ProtocolProcessor) &printProtocols,
+				    NULL);
   }
   if (res == OK)
     return 0;
@@ -1134,53 +1195,25 @@ static int getStats(int argc, char ** argv) {
  */   
 static int getOption(int argc, char ** argv) {
   int peer;
-  CS_GET_OPTION_REQUEST req;
-  CS_GET_OPTION_REPLY * reply;
-  int res;
+  char * opt;
   
   if (argc != 3) {
     PRINTF("Syntax: get-option PEERID SECTION OPTION\n");
     return -1;
-  }
+  }  
   CHECK_PEER(peer, argv[0]);
-  memset(&req,
-	 0,
-	 sizeof(CS_GET_OPTION_REQUEST));
-  req.header.type = htons(CS_PROTO_GET_OPTION_REQUEST);
-  req.header.size = htons(sizeof(CS_GET_OPTION_REQUEST));
-  if ( (strlen(argv[1]) >= CS_GET_OPTION_REQUEST_OPT_LEN) ||
-       (strlen(argv[2]) >= CS_GET_OPTION_REQUEST_OPT_LEN) ) {
-    PRINTF("Illegal length of arguments (>= %d characters)",
-	   CS_GET_OPTION_REQUEST_OPT_LEN);
-    return -1;
-  }
-  strcpy(&req.section[0],
-	 argv[1]);
-  strcpy(&req.option[0],
-	 argv[2]);
-  res = writeToSocket(&nodes[peer].sock,
-		      &req.header);
-  if (res != OK) {
+  opt = getConfigurationOptionValue(&nodes[peer].sock,
+				    argv[1],
+				    argv[2]);
+  if (opt == NULL) {
     PRINTF("Error sending request to peer %d\n",
 	   peer);
     return -1;
   }
-  reply = NULL;
-  res = readFromSocket(&nodes[peer].sock,
-		       (CS_HEADER**)&reply);
-  if (res != OK) {
-    PRINTF("Error receiving reply from peer %d\n",
-	   peer);
-    return -1;
-  }
-  PRINTF("%*s\n",
-	 ntohs(reply->header.size) - sizeof(CS_HEADER),
-	 &reply->value[0]);
-  FREE(reply);
-  if (res == OK)
-    return 0;
-  else
-    return -1;
+  PRINTF("%s\n",
+	 opt);
+  FREE(opt);
+  return 0;
 }
 
 

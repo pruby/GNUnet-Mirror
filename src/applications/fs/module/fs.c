@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -360,7 +360,7 @@ static int csHandleRequestInsert(ClientHandle sock,
 static int csHandleRequestIndex(ClientHandle sock,
 				const CS_HEADER * req) {
   int ret;
-  RequestIndex * ri;
+  const RequestIndex * ri;
   
   LOG(LOG_DEBUG,
       "Received index request from client\n");
@@ -368,7 +368,7 @@ static int csHandleRequestIndex(ClientHandle sock,
     BREAK();
     return SYSERR;
   }
-  ri = (RequestIndex*) req;
+  ri = (const RequestIndex*) req;
   ret = ONDEMAND_index(datastore,
 		       ntohl(ri->prio),
 		       ntohll(ri->expiration),
@@ -376,7 +376,7 @@ static int csHandleRequestIndex(ClientHandle sock,
 		       ntohl(ri->anonymityLevel),
 		       &ri->fileId,
 		       ntohs(ri->header.size) - sizeof(RequestIndex),
-		       &ri[1]);
+		       (const char*) &ri[1]);
   LOG(LOG_DEBUG,
       "Sending confirmation of index request to client\n");
   return coreAPI->sendValueToClient(sock,

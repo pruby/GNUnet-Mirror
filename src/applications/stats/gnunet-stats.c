@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,260 +27,56 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_protocols.h"
+#include "gnunet_stats_lib.h"
 #include "statistics.h"
 
-#define STATS_VERSION "3.0.0"
+static int printProtocolsSelected;
 
-static int printProtocols;
-
-/**
- * Return a descriptive name for a p2p message type
- */
-static const char *p2pMessageName( unsigned short type ) {
-  const char *name = NULL;
-
-  switch( type ) {
-  case p2p_PROTO_HELO : 
-    name = "p2p_PROTO_HELO";
-    break;
-  case p2p_PROTO_SKEY : 
-    name = "p2p_PROTO_SKEY";
-    break;
-  case p2p_PROTO_PING : 
-    name = "p2p_PROTO_PING";
-    break;
-  case p2p_PROTO_PONG : 
-    name = "p2p_PROTO_PONG";
-    break;
-  case p2p_PROTO_NOISE : 
-    name = "p2p_PROTO_NOISE";
-    break;
-  case p2p_PROTO_HANGUP : 
-    name = "p2p_PROTO_HANGUP";
-    break;
-  case CHAT_p2p_PROTO_MSG : 
-    name = "CHAT_p2p_PROTO_MSG";
-    break;
-  case TRACEKIT_p2p_PROTO_PROBE : 
-    name = "TRACEKIT_p2p_PROTO_PROBE";
-    break;
-  case TRACEKIT_p2p_PROTO_REPLY : 
-    name = "TRACEKIT_p2p_PROTO_REPLY";
-    break;
-  case TBENCH_p2p_PROTO_REQUEST	: 
-    name = "TBENCH_p2p_PROTO_REQUEST";
-    break;
-  case TBENCH_p2p_PROTO_REPLY	: 
-    name = "TBENCH_p2p_PROTO_REPLY";
-    break;
-  default:
-    name = NULL;
-    break;
-  }
-  return name;
-
-}
+static int lastIp2p = 42; /* not YES or NO */
 
 /**
- * Return a descriptive name for a client server message type
- */
-static const char *csMessageName( unsigned short type ) {
-  const char *name = NULL;
-
-  switch( type ) {
-  case CS_PROTO_RETURN_VALUE : 
-    name = "CS_PROTO_RETURN_VALUE";
-    break;
-  case CS_PROTO_CLIENT_COUNT : 
-    name = "CS_PROTO_CLIENT_COUNT";
-    break;
-  case CS_PROTO_TRAFFIC_QUERY : 
-    name = "CS_PROTO_TRAFFIC_QUERY";
-    break;
-  case CS_PROTO_TRAFFIC_INFO : 
-    name = "CS_PROTO_TRAFFIC_INFO";
-    break;
-  case STATS_CS_PROTO_GET_STATISTICS : 
-    name = "STATS_CS_PROTO_GET_STATISTICS";
-    break;
-  case STATS_CS_PROTO_STATISTICS : 
-    name = "STATS_CS_PROTO_STATISTICS";
-    break;
-  case STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED : 
-    name = "STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED";
-    break;
-  case STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED : 
-    name = "STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED";
-    break;
-  case CHAT_CS_PROTO_MSG : 
-    name = "CHAT_CS_PROTO_MSG";
-    break;
-  case TRACEKIT_CS_PROTO_PROBE : 
-    name = "TRACEKIT_CS_PROTO_PROBE";
-    break;
-  case TRACEKIT_CS_PROTO_REPLY : 
-    name = "TRACEKIT_CS_PROTO_REPLY";
-    break;
-  case TBENCH_CS_PROTO_REQUEST : 
-    name = "TBENCH_CS_PROTO_REQUEST";
-    break;
-  case TBENCH_CS_PROTO_REPLY : 
-    name = "TBENCH_CS_PROTO_REPLY";
-    break;
-  default:
-    name = NULL;
-    break;    
-  }
-  return name;
-}
-
-/**
- * Print statistics received from TCP socket.
+ * Print statistics received.
+ *
  * @param stream where to print the statistics
- * @param sock the socket to use 
  * @return OK on success, SYSERR on error
  */
-static int requestAndPrintStatistics(FILE * stream,
-				     GNUNET_TCP_SOCKET * sock) {
-  STATS_CS_MESSAGE * statMsg;
-  CS_HEADER csHdr;
-  unsigned int count;
-  unsigned int i;
-  int mpos;
-  
-  csHdr.size 
-    = htons(sizeof(CS_HEADER));
-  csHdr.type
-    = htons(STATS_CS_PROTO_GET_STATISTICS);
-  if (SYSERR == writeToSocket(sock,
-			      &csHdr)) {
-    fprintf(stream,
-	    _("Error sending request for statistics to gnunetd.\n"));
-    return SYSERR;
-  }
-  statMsg 
-    = MALLOC(MAX_BUFFER_SIZE);
-  statMsg->totalCounters 
-    = htonl(1); /* to ensure we enter the loop */
-  count = 0;
-  while ( count < ntohl(statMsg->totalCounters) ) {
-    /* printf("reading from socket starting %u of %d\n",
-       count, ntohl(statMsg->totalCounters) );*/
-    if (SYSERR == readFromSocket(sock,
-				 (CS_HEADER**)&statMsg)) {
-      fprintf(stream,
-	      _("Error receiving reply for statistics from gnunetd.\n"));
-      FREE(statMsg);
-      return SYSERR;    
-    }
-    if (ntohs(statMsg->header.size) < sizeof(STATS_CS_MESSAGE)) {
-      BREAK();
-      break;
-    }
-    mpos = sizeof(unsigned long long) * ntohl(statMsg->statCounters);
-    if (count == 0) {
-      fprintf(stream,
-	      "%-60s: %16u\n",
-	      _("Uptime (seconds)"),
-	      (unsigned int) 
-	      ((cronTime(NULL) - ntohll(statMsg->startTime))/cronSECONDS));
-    }
-    for (i=0;i<ntohl(statMsg->statCounters);i++) {
-      if (mpos+strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1 > 
-	  ntohs(statMsg->header.size) - sizeof(STATS_CS_MESSAGE)) {
-	BREAK();
-	break; /* out of bounds! */      
-      }
-      fprintf(stream,
-	      "%-60s: %16llu\n",
-	      &((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos],
-	      ntohll(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values[i]));
-      mpos += strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1;
-    }    
-    count += ntohl(statMsg->statCounters);
-  } /* end while */
-  FREE(statMsg);
+static int printStatistics(const char * name,
+			   unsigned long long value,
+			   FILE * stream) {
+  fprintf(stream,
+	  "%-60s: %16llu\n",
+	  name,
+	  value);
   return OK;
 }
 
-/**
- * Queries the server for what protocol messages are
- * supported and prints a list of them
- * @param stream where to print the statistics
- * @param sock the socket to use 
- * @return OK on success, SYSERR on error
- */
-static int requestAndPrintProtocols(FILE * stream,
-				     GNUNET_TCP_SOCKET * sock) {
-  STATS_CS_GET_MESSAGE_SUPPORTED csStatMsg;
-  int i = 0;
-  int supported = NO;
+static int printProtocols(unsigned short type,
+			  int isP2P,
+			  FILE * stream) {
   const char *name = NULL;
 
-  csStatMsg.header.size 
-    = htons(sizeof(STATS_CS_GET_MESSAGE_SUPPORTED));
-
-
-  fprintf(stream, 
-	  _("Supported Peer to Peer messages:\n"));
-  csStatMsg.header.type
-    = htons(STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED);
-  for (i = 0; i < 500; ++ i)
-  {
-    csStatMsg.type = htons(i);
-
-    if (SYSERR == writeToSocket(sock, &csStatMsg.header)) {
-      fprintf(stream,
-	      _("Error sending request for p2p protocol status to gnunetd.\n"));
-      return SYSERR;
-    }
-    if (SYSERR == readTCPResult(sock, &supported)) {
-      fprintf(stream,
-	      _("Error reading p2p protocol status from gnunetd.\n"));
-      return SYSERR;
-    }
-
-    if (supported == YES)
-    {
-      fprintf(stream, "\t%d", i);
-      name = p2pMessageName( i );
-      if (name != NULL) {
-        fprintf(stream, "\t(%s)", name);
-      }
-      fprintf(stream, "\n");
-    }
+  if (isP2P != lastIp2p) {
+    if (isP2P)
+      fprintf(stream, 
+	      _("Supported peer-to-peer messages:\n"));
+    else
+      fprintf(stream, 
+	      _("Supported client-server messages:\n"));
+    lastIp2p = isP2P;
   }
-  fprintf(stream, 
-	  _("Supported client-server messages:\n"));
-  csStatMsg.header.type
-    = htons(STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED);
-  for (i = 0; i < 500; ++ i)
-  {
-    csStatMsg.type = htons(i);
-
-    if (SYSERR == writeToSocket(sock, &csStatMsg.header)) {
-      fprintf(stream,
-	      _("Error sending request for client-server protocol status to gnunetd.\n"));
-      return SYSERR;
-    }
-    if (SYSERR == readTCPResult(sock, &supported)) {
-      fprintf(stream,
-	      _("Error reading client-server protocol status from gnunetd.\n"));
-      return SYSERR;
-    }
-
-    if (supported == YES)
-    {
-      fprintf(stream, "\t%d", i);
-      name = csMessageName( i );
-      if (name != NULL) {
-        fprintf(stream, "\t(%s)", name);
-      }
-      fprintf(stream, "\n");
-    }
-  }
-
+  if (isP2P)
+    name = p2pMessageName(type);
+  else
+    name = csMessageName(type);
+  if (name == NULL)
+    fprintf(stream, 
+	    "\t%d\n",
+	    type);
+  else
+    fprintf(stream, 
+	    "\t%d\t(%s)\n", 
+	    type,
+	    name);
   return OK;
 }
 
@@ -340,7 +136,7 @@ static int parseOptions(int argc,
       printhelp(); 
       return SYSERR;
     case 'p':
-      printProtocols = YES;
+      printProtocolsSelected = YES;
       break;
     default: 
       LOG(LOG_FAILURE,
@@ -362,19 +158,27 @@ int main(int argc, char ** argv) {
   int res;
   GNUNET_TCP_SOCKET * sock;
 
-  printProtocols = NO;
-
   if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0;
   sock = getClientSocket();
-  res = requestAndPrintStatistics(stdout,
-				  sock);
-  if ((printProtocols == YES) && (res == OK)) {
-    res = requestAndPrintProtocols(stdout,
-				   sock);
+  if (sock == NULL) {
+    fprintf(stderr,
+	    _("Error establishing connection with gnunetd.\n"));
+    return 1;
   }
-  if (sock != NULL)
-    releaseClientSocket(sock);
+  res = requestStatistics(sock,
+			  (StatisticsProcessor) &printStatistics,
+			  stdout);
+  if ((printProtocolsSelected == YES) && 
+      (res == OK)) {
+    res = requestAvailableProtocols(sock,
+				    (ProtocolProcessor) &printProtocols,
+				    stdout);
+  }
+  if (res != OK)
+    fprintf(stderr,
+	    _("Error reading information from gnunetd.\n"));
+  releaseClientSocket(sock);
   doneUtil();
 
   return (res == OK) ? 0 : 1;
