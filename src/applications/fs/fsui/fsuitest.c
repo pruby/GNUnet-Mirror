@@ -109,12 +109,12 @@ int main(int argc, char * argv[]){
   char * fn;
   char * keywords[] = { 
     "foo",
-    "AND",
     "bar",
     NULL,
   };
   int prog;
   struct ECRS_MetaData * meta;
+  struct ECRS_URI * kuri;
 
   daemon = fork();
   if (daemon == 0) {
@@ -148,14 +148,16 @@ int main(int argc, char * argv[]){
 	    strlen("foo bar test!"),
 	    "600");
   meta = ECRS_createMetaData();
+  kuri = FSUI_parseListKeywordURI(3,
+				  (const char**)keywords);
   CHECK(OK ==
 	FSUI_upload(ctx,
 		    fn,
 		    0,
 		    YES,
 		    meta,
-		    3,
-		    (const char**) keywords));
+		    kuri));
+  ECRS_freeUri(kuri);
   ECRS_freeMetaData(meta);
   prog = 0;
   while (lastEvent != upload_complete) {
