@@ -105,6 +105,22 @@ typedef struct {
 } RequestInsert;
 
 /**
+ * Client to server: initialize to index content
+ * (for on-demand encoding).  This struct is followed
+ * by the filename to index.
+ */
+typedef struct {
+  CS_HEADER header;
+
+  /**
+   * What is the hash of the file that contains
+   * this block?
+   */
+  HashCode512 fileId;
+  
+} RequestInitIndex;
+
+/**
  * Client to server: index content (for on-demand
  * encoding).  This struct is followed by a variable
  * number of bytes of content.

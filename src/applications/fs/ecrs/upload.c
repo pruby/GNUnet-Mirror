@@ -110,91 +110,6 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 }
 
 /**
- * sym-linking operation (if allowed by config): 
- * a) check if hash matches,
- * b) rename old file (fn)
- * c) symlink filename to target, if fails,
- *    undo renaming (and abort)
- * d) delete old file
- */
-static void trySymlinking(const char * fn,
-			  const HashCode512 * fileId,
-			  GNUNET_TCP_SOCKET * sock) {
-  EncName enc;
-  char * serverDir;
-  char * serverFN;
-  char * tmpName;
-  HashCode512 serverFileId;
-
-  if (testConfigurationString("FS",
-			      "DISABLE-SYMLINKING",
-			      "YES"))
-    return;
-  serverDir 
-    = getConfigurationOptionValue(sock,
-				  "FS",
-				  "INDEX-DIRECTORY");
-  if (serverDir == NULL)
-    return;
-  serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
-  strcpy(serverFN,
-	 serverDir);
-  FREE(serverDir);
-  strcat(serverFN,
-	 DIR_SEPARATOR_STR);
-  hash2enc(fileId,
-	   &enc);
-  strcat(serverFN,
-	 (char*)&enc);
-  if (OK != getFileHash(serverFN,
-			&serverFileId)) {
-    FREE(serverFN);
-    return;
-  }
-  if (! equalsHashCode512(&serverFileId,
-			  fileId)) {
-    BREAK(); /* rather odd... */
-    return;
-  }
-  tmpName = MALLOC(strlen(fn) + 4);
-  strcpy(tmpName, fn);
-  strcat(tmpName, "_");
-  if (0 != RENAME(fn,
-		  tmpName)) {
-    LOG_FILE_STRERROR(LOG_ERROR, "rename", fn);
-    FREE(tmpName);
-    FREE(serverFN);
-    return;
-  }
-  if (0 != SYMLINK(serverFN,
-		   fn)) {
-    LOG_FILE_STRERROR(LOG_ERROR, "symlink", fn);
-    if (0 != RENAME(tmpName,
-		    fn)) {
-      /* oops, error recovery failed, how can this happen??? 
-	 Well, at least let's give the user some good warning... */
-      LOG_FILE_STRERROR(LOG_ERROR, "rename", fn);
-      LOG(LOG_NOTHING,
-	  _("RISK OF DATA LOSS, READ THIS: "
-	    "I failed to symlink a file and then failed to"
-	    " rename your original file back to its original name.  "
-	    "You should find your file '%s' under the new name '%s'."),
-	  fn,
-	  tmpName);
-      BREAK();
-    }
-    FREE(tmpName);
-    FREE(serverFN);
-    return;
-  }
-  if (0 != UNLINK(tmpName)) 
-    LOG_FILE_STRERROR(LOG_ERROR, "unlink", tmpName);
-  FREE(tmpName);
-  FREE(serverFN);
-}
-
-
-/**
  * Index or insert a file.
  *
  * @param priority what is the priority for OUR node to
@@ -279,6 +194,10 @@ int ECRS_uploadFile(const char * filename,
     LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
     return SYSERR;
   }
+
+  if (FS_initIndex(sock, &fileId, filename) == SYSERR)
+    return SYSERR;
+
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->size = htonl(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->anonymityLevel = htonl(anonymityLevel);
@@ -297,7 +216,7 @@ int ECRS_uploadFile(const char * filename,
     iblocks[i]->expirationTime = htonll(expirationTime);
     ((DBlock*) &iblocks[i][1])->type = htonl(D_BLOCK);
   }
-
+  
   pos = 0;
   while (pos < filesize) {
     if (upcb != NULL)
@@ -421,11 +340,6 @@ int ECRS_uploadFile(const char * filename,
     FREE(value);
     FREE(iblocks[i]);
     iblocks[i] = NULL;
-  }
-  if (doIndex) {
-    trySymlinking(filename,
-		  &fileId,
-		  sock);
   }
   IFLOG(LOG_DEBUG,
 	hash2enc(&chk.query,

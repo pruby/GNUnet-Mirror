@@ -293,6 +293,40 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
 }
 
 /**
+ * Initialize to index a file
+ */
+int FS_initIndex(GNUNET_TCP_SOCKET * sock,
+       const HashCode512 * fileHc,
+       const char *fn) {
+  int ret;
+  RequestInitIndex *ri;
+  unsigned int size, fnSize;
+  
+  fnSize = strlen(fn);
+  size = sizeof(RequestIndex) + fnSize;
+  ri = MALLOC(size);
+  ri->header.size = htons(size);
+  ri->header.type = htons(AFS_CS_PROTO_INIT_INDEX);
+  ri->fileId = *fileHc;
+  memcpy(&ri[1], fn, fnSize);
+  
+  LOG(LOG_DEBUG,
+      "Sending index initialization request to gnunetd\n");
+  if (OK != writeToSocket(sock,
+        &ri->header)) {
+    FREE(ri);
+    return SYSERR; 
+  }
+  FREE(ri);
+  LOG(LOG_DEBUG,
+      "Waiting for confirmation of index initialization request by gnunetd\n");
+  if (OK != readTCPResult(sock,
+        &ret))
+    return SYSERR;
+  return ret;
+}
+
+/**
  * Index a block. 
  * 
  * @param fileHc the hash of the entire file

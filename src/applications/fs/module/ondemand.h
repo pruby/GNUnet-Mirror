@@ -30,6 +30,12 @@
 #include "gnunet_datastore_service.h"
 
 /**
+ * Creates a symlink to the given file in the shared directory
+ */
+int ONDEMAND_initIndex(const HashCode512 * fileId,
+      const char *fn);
+
+/**
  * @return NO if already present, YES on success,
  *  SYSERR on other error (i.e. datastore full)
  */

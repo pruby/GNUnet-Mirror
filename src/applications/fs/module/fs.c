@@ -365,6 +365,28 @@ static int csHandleRequestInsert(ClientHandle sock,
 }
 
 /**
+ * Process a request to symlink a file
+ */
+static int csHandleRequestInitIndex(ClientHandle sock,
+        const CS_HEADER * req) {
+  int ret;
+  
+  if (ntohs(req->size) < sizeof(RequestInitIndex)) {
+    BREAK();
+    return SYSERR;
+  }
+  
+  ret = ONDEMAND_initIndex(&((RequestInitIndex *)req)->fileId,
+          (const char *) &((RequestInitIndex *)req)[1]);
+
+  LOG(LOG_DEBUG,
+      "Sending confirmation (%s) of index initialization request to client\n",
+      ret == OK ? "success" : "failure");
+  return coreAPI->sendValueToClient(sock,
+            ret);
+}
+
+/**
  * Process a request to index content from the client.
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
@@ -979,12 +1001,13 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   } 
 
   LOG(LOG_DEBUG,
-      _("'%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
+      _("'%s' registering client handlers %d %d %d %d %d %d %d %d %d %d\n"),
       "fs",
       AFS_CS_PROTO_QUERY_START,
       AFS_CS_PROTO_QUERY_STOP,
       AFS_CS_PROTO_RESULT,
       AFS_CS_PROTO_INSERT,
+      AFS_CS_PROTO_INIT_INDEX,
       AFS_CS_PROTO_INDEX,
       AFS_CS_PROTO_DELETE,
       AFS_CS_PROTO_UNINDEX,
@@ -999,6 +1022,8 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 						      &csHandleRequestInsert));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_INDEX,
 						      &csHandleRequestIndex));
+  GNUNET_ASSERT(SYSERR != coreAPI->registerClientHandler(AFS_CS_PROTO_INIT_INDEX,
+                 &csHandleRequestInitIndex));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_DELETE,
 						      &csHandleRequestDelete));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_UNINDEX,
@@ -1030,6 +1055,8 @@ void done_module_fs() {
 							   &csHandleRequestInsert));
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_INDEX,
 							   &csHandleRequestIndex));
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_INIT_INDEX,
+                 &csHandleRequestInitIndex));
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_DELETE,
 							   &csHandleRequestDelete));
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_UNINDEX,

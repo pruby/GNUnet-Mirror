@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -101,6 +101,64 @@ static int checkPresent(const HashCode512 * key,
 }
 
 /**
+ * Creates a symlink to the given file in the shared directory
+ * @param fn the file that was indexed
+ * @param fileId the file's hash code
+ * @return SYSERR on error, YES on success
+ */
+int ONDEMAND_initIndex(const HashCode512 * fileId,
+      const char *fn) {
+  EncName enc;
+  char * serverDir;
+  char * serverFN;
+  char unavail_key[_MAX_PATH + 1];
+
+  serverDir 
+    = getConfigurationString(
+          "FS",
+          "INDEX-DIRECTORY");
+  if (!serverDir) {
+    serverDir = getConfigurationString(
+      "",
+      "GNUNETD_HOME");
+    if (!serverDir)
+      return SYSERR;
+      
+    serverDir = REALLOC(serverDir, strlen(serverDir) + 14);
+    strcat(serverDir, "/data/shared/");
+  }
+  
+  serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
+  strcpy(serverFN,
+   serverDir);
+  
+  /* Just in case... */
+  mkdirp(serverDir);
+   
+  FREE(serverDir);
+  strcat(serverFN,
+   DIR_SEPARATOR_STR);
+  hash2enc(fileId,
+     &enc);
+  strcat(serverFN,
+   (char*)&enc);
+  if (0 != SYMLINK(fn, serverFN)) {
+    LOG_FILE_STRERROR(LOG_ERROR, "symlink", fn);
+
+    FREE(serverFN);
+    return SYSERR;
+  }
+  
+  strcpy(unavail_key, "FIRST_UNAVAILABLE-");
+  strcat(unavail_key, (char*)&enc);
+  stateUnlinkFromDB(unavail_key);
+  
+  FREE(serverFN);
+  
+  return YES;
+}
+
+/**
  * Writes the given content to the file at the specified offset
  * and stores an OnDemandBlock into the datastore.
  *
@@ -117,8 +175,6 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 		   const HashCode512 * fileId,
 		   unsigned int size,
 		   const DBlock * content) {
-  char * fn;
-  int fd;
   int ret;
   OnDemandBlock odb;
   HashCode512 key;
@@ -128,38 +184,6 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
     BREAK();
     return SYSERR;
   }
-  fn = getOnDemandFile(fileId);
-  LOG(LOG_DEBUG,
-      "Storing on-demand encoded data in '%s'.\n",
-      fn);
-  fd = OPEN(fn, 
-#ifdef O_LARGEFILE
-	    O_CREAT|O_WRONLY|O_LARGEFILE,
-#else
-	    O_CREAT|O_WRONLY,
-#endif
-	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
-  if(fd == -1) {    
-    LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
-    FREE(fn);    
-    return SYSERR;
-  }  
-  lseek(fd, 
-	fileOffset,
-	SEEK_SET);
-  ret = WRITE(fd,
-	      &content[1],
-	      size - sizeof(DBlock));
-  if (ret == size - sizeof(DBlock)) {
-    ret = OK;
-  } else {
-    LOG_FILE_STRERROR(LOG_ERROR, "write", fn);
-    ret = SYSERR;
-  }
-  CLOSE(fd);
-  FREE(fn);
-  if (ret == SYSERR)
-    return ret;
 
   odb.header.size = htonl(sizeof(OnDemandBlock));
   odb.header.type = htonl(ONDEMAND_BLOCK);
@@ -241,7 +265,47 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   fileHandle = OPEN(fn, O_RDONLY, 0);
 #endif
   if (fileHandle == -1) {
+    char unavail_key[_MAX_PATH + 1];
+    EncName enc;
+    cron_t *first_unavail;
+    struct stat linkStat;
+       
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
+    
+    /* Is the symlink there? */
+    if (LSTAT(fn, &linkStat) == -1) {
+      /* No, we have deleted it previously.
+         Now delete the query that still references the unavailable file. */
+      datastore->del(query, dbv);
+    }
+    else {
+      /* For how long has the file been unavailable? */
+      hash2enc(&odb->fileId,
+        &enc);
+      strcpy(unavail_key, "FIRST_UNVAILABLE-");
+      strcat(unavail_key, (char *) &enc);
+      if (stateReadContent(unavail_key, (void *) &first_unavail) == SYSERR) {
+        unsigned long long now = htonll(cronTime(NULL));
+        stateWriteContent(unavail_key, sizeof(cron_t), (void *) &now);
+      }
+      else {
+        /* Delete it after 3 days */
+        if (*first_unavail - cronTime(NULL) > 259200 * cronSECONDS) {
+          char ofn[_MAX_PATH + 1];
+          
+          if (READLINK(fn, ofn, _MAX_PATH) != -1)
+            LOG(LOG_ERROR, _("Because the file %s has been unavailable for 3 days"
+              " it got removed from your share. Please unindex files before "
+              " deleting them as the index now contains invalid references!"),
+              ofn);
+          
+          datastore->del(query, dbv);
+          stateUnlinkFromDB(unavail_key);
+          UNLINK(fn);
+        }
+      }
+    }
+    
     FREE(fn);
     return SYSERR;
   }
@@ -382,6 +446,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   unsigned long long delta;
   DBlock * block;
   EncName enc;
+  char unavail_key[_MAX_PATH + 1];
 
   fn = getOnDemandFile(fileId);
   LOG(LOG_DEBUG,
@@ -451,6 +516,12 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   FREE(block);
   CLOSE(fd);
   UNLINK(fn);
+  
+  /* Remove information about unavailability */
+  strcpy(unavail_key, "FIRST_UNAVAILABLE-");
+  strcat(unavail_key, (char*)&enc);
+  stateUnlinkFromDB(unavail_key);
+  
   FREE(fn);
   return OK;
 }

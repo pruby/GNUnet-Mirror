@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -159,6 +159,10 @@
  */
 #define AFS_CS_PROTO_GET_AVG_PRIORITY 15
 
+/**
+ * client to gnunetd: initialize to index file
+ */
+#define AFS_CS_PROTO_INIT_INDEX 16
 
 /* *********** messages for traffic module ************* */
 

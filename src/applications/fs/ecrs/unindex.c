@@ -111,10 +111,9 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 
 
 /**
- * Undo sym-linking operation (if allowed by config): 
+ * Undo sym-linking operation: 
  * a) check if we have a symlink
  * b) delete symbolic link
- * c) copy file, if fails restore symlink
  */
 static int undoSymlinking(const char * fn,
 			  const HashCode512 * fileId,
@@ -130,7 +129,7 @@ static int undoSymlinking(const char * fn,
 #ifndef S_ISLNK
   return OK; /* symlinks do not exist? */
 #endif
-  if (0 != lstat(fn,
+  if (0 != LSTAT(fn,
 		 &buf)) {
     LOG_FILE_STRERROR(LOG_ERROR, "stat", fn);
     return SYSERR;
@@ -156,61 +155,14 @@ static int undoSymlinking(const char * fn,
 	   &enc);
   strcat(serverFN,
 	 (char*)&enc);  
-  tmpName = MALLOC(strlen(serverFN) + 5);
-  ret = readlink(fn,
-		 tmpName,
-		 strlen(serverFN) + 4);
-  if (ret == -1) {
-    LOG_FILE_STRERROR(LOG_ERROR, "readlink", fn);
-    FREE(tmpName);
-    FREE(serverFN);
-    return SYSERR;
-  }
-  if ( (ret == strlen(serverFN) + 4) ||
-       (0 != strcmp(tmpName,
-		    serverFN)) ) {
-    FREE(tmpName);
-    FREE(serverFN);
-    return OK; /* symlink elsewhere... */
-  }
-  FREE(tmpName);
-  if (OK != getFileHash(serverFN,
-			&serverFileId)) {
-    FREE(serverFN);
-    return SYSERR;
-  }
-  if (! equalsHashCode512(&serverFileId,
-			  fileId)) {
-    FREE(serverFN);
-    BREAK(); /* rather odd... */
-    return SYSERR;
-  }
-  tmpName = MALLOC(strlen(fn) + 4);
-  strcpy(tmpName, fn);
-  strcat(tmpName, "_");
-#ifdef HAVE_LINK
-  if (0 != link(serverFN, tmpName)) 
-#endif
-    if (OK != copyFile(serverFN, tmpName)) {
-      FREE(serverFN);
-      FREE(tmpName);
-      return SYSERR;
-    }
 
-  if (0 != UNLINK(fn)) {
+  if (0 != UNLINK(serverFN)) {
     FREE(serverFN);
     FREE(tmpName);
     LOG_FILE_STRERROR(LOG_ERROR, "unlink", tmpName);
     return SYSERR;
   }
   
-  if (0 != RENAME(tmpName,
-		  fn)) {
-    LOG_FILE_STRERROR(LOG_ERROR, "rename", tmpName);
-    FREE(tmpName);
-    FREE(serverFN);
-    return SYSERR;
-  }
   FREE(tmpName);
   FREE(serverFN);
   return OK;
