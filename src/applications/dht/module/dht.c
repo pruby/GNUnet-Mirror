@@ -244,7 +244,6 @@ typedef struct {
    * such an operation was not performed).
    */
   struct DHT_GET_RECORD * async_handle;
-  Semaphore * async_handle_done;
 
   /**
    * ASYNC RPC handles.
@@ -312,7 +311,6 @@ typedef struct {
    * such an operation was not performed).
    */
   struct DHT_GET_RECORD * async_handle;
-  Semaphore * async_handle_done;
 
   /**
    * ASYNC RPC handles.
@@ -1454,7 +1452,7 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
     }
     MUTEX_LOCK(&record->lock);
     if (record->callback != NULL)
-      record->resultCallback(&record->keys[0],
+      record->resultCallback(record->keys,
 			     value,
 			     record->resultClosure);
     MUTEX_UNLOCK(&record->lock);
@@ -1488,7 +1486,7 @@ static void send_dht_get_rpc(const PeerIdentity * peer,
 #endif
   if (isNotCloserThanMe(&record->table,
 			peer,		
-			&record->keys[0]))
+			record->keys))
     return; /* refuse! */
   cronTime(&now);
   if (record->timeout > now)
@@ -1505,7 +1503,7 @@ static void send_dht_get_rpc(const PeerIdentity * peer,
   RPC_paramAdd(param,
 	       "keys",
 	       sizeof(HashCode512) * record->keyCount,
-	       &record->keys);
+	       record->keys);
   RPC_paramAdd(param,
 	       "timeout",
 	       sizeof(unsigned long long),
@@ -1803,10 +1801,6 @@ findnodes_dht_master_get_callback(const HashCode512 * key,
   return OK;
 }
 
-static void findnodes_dht_master_complete_callback(FindNodesContext * fnc) {
-  SEMAPHORE_UP(fnc->async_handle_done);
-}
-
 
 /**
  * In the induced sub-structure for the given 'table', find the ALPHA
@@ -1910,8 +1904,6 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 #endif
       /* try finding peers responsible for this table using
 	 the master table */
-      fnc->async_handle_done
-	= SEMAPHORE_NEW(0);
       fnc->async_handle
 	= dht_get_async_start(&masterTableId,
 			      0, /* type */
@@ -1920,8 +1912,8 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 			      timeout,
 			      (DataProcessor) &findnodes_dht_master_get_callback,
 			      fnc,
-			      (DHT_OP_Complete) &findnodes_dht_master_complete_callback,
-			      fnc);
+			      NULL,
+			      NULL);
     }
   }
   return fnc;
@@ -1944,9 +1936,7 @@ static int findNodes_stop(FindNodesContext * fnc,
   ENTER();
   /* stop async DHT get */
   if (fnc->async_handle != NULL) {
-    SEMAPHORE_DOWN(fnc->async_handle_done);
     dht_get_async_stop(fnc->async_handle);
-    SEMAPHORE_FREE(fnc->async_handle_done);
     fnc->async_handle = NULL;
   }
 
@@ -2022,10 +2012,6 @@ static void find_k_nodes_dht_master_get_callback(const HashCode512 * key,
     }
     MUTEX_UNLOCK(&fnc->lock);
   }
-}
-
-static void find_k_nodes_dht_master_get_complete(FindKNodesContext * fnc) {
-  SEMAPHORE_UP(fnc->async_handle_done);
 }
 
 /**
@@ -2132,8 +2118,6 @@ static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
 #endif
     /* try finding peers responsible for this table using
        the master table */
-    fnc->async_handle_done
-      = SEMAPHORE_NEW(0);
     fnc->async_handle
       = dht_get_async_start(&masterTableId,
 			    0, /* type */
@@ -2142,8 +2126,8 @@ static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
 			    timeout,
 			    (DataProcessor)&find_k_nodes_dht_master_get_callback,
 			    fnc,
-			    (DHT_OP_Complete) &find_k_nodes_dht_master_get_complete,
-			    fnc);
+			    NULL,
+			    NULL);
   }
   return fnc;
 }
@@ -2160,8 +2144,6 @@ static int findKNodes_stop(FindKNodesContext * fnc) {
   /* stop async DHT get */
   ENTER();
   if (fnc->async_handle != NULL) {
-    SEMAPHORE_DOWN(fnc->async_handle_done);
-    SEMAPHORE_FREE(fnc->async_handle_done);
     dht_get_async_stop(fnc->async_handle);
     fnc->async_handle = NULL;
   }

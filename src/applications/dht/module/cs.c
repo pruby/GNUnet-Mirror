@@ -797,11 +797,11 @@ static int csACK(ClientHandle client,
       "DHT_CS_REPLY_ACK");
   MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
-    if ( (csHandlers[i]->handler == client) &&
-	 (equalsHashCode512(&csHandlers[i]->table,
+    ptr = csHandlers[i];
+    if ( (ptr->handler == client) &&
+	 (equalsHashCode512(&ptr->table,
 			    &req->table)) ) {
       SEMAPHORE_DOWN(ptr->postreply);
-      ptr = csHandlers[i];
       ptr->status = ntohl(req->status);
       SEMAPHORE_UP(ptr->prereply);
       MUTEX_UNLOCK(&csLock);
