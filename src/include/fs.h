@@ -66,12 +66,6 @@ typedef struct {
 
 } RequestSearch;
 
-typedef struct {
-  RequestSearch rs;
-  char data[1];
-} RequestSearch_GENERIC;
-
-
 /**
  * Server to client: content (in response to a RequestSearch).  The
  * header is followed by variable size data (the data portion
@@ -87,11 +81,6 @@ typedef struct {
   unsigned int type;  
 
 } ReplyContent;
-
-typedef struct {
-  ReplyContent rc;
-  char data[1];
-} ReplyContent_GENERIC;
 
 
 /**
@@ -120,12 +109,6 @@ typedef struct {
   unsigned int anonymityLevel;
 
 } RequestInsert;
-
-typedef struct {
-  RequestInsert ri;
-  char data[1];
-} RequestInsert_GENERIC;
-
 
 /**
  * Client to server: index content (for on-demand
@@ -167,12 +150,6 @@ typedef struct {
 
 } RequestIndex;
 
-typedef struct {
-  RequestIndex ri;
-  char data[1];
-} RequestIndex_GENERIC;
-
-
 /**
  * Client to server: delete content.  This struct is followed by a
  * variable number of bytes of the content that is to be deleted.
@@ -181,11 +158,6 @@ typedef struct {
   CS_HEADER header;
 
 } RequestDelete;
-
-typedef struct {
-  RequestDelete rd;
-  char data[1];
-} RequestDelete_GENERIC;
 
 
 /**

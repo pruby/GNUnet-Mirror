@@ -99,18 +99,6 @@ typedef struct {
 } DHT_CS_REQUEST_PUT;
 
 /**
- * TCP communication: put <key,value>-mapping to table.
- * Reply is an ACK.
- */
-typedef struct {
-
-  DHT_CS_REQUEST_PUT dht_cs_request_put;
-
-  char value[1];
-
-} DHT_CS_REQUEST_PUT_GENERIC;
-
-/**
  * TCP communication: get <key,value>-mappings
  * for given key. Reply is a DHT_CS_REPLY_RESULTS message.
  */
@@ -145,18 +133,6 @@ typedef struct {
   HashCode160 key;
 
 } DHT_CS_REQUEST_REMOVE;
-
-/**
- * remove value.  Reply is just an ACK.
- */
-typedef struct {
-
-  DHT_CS_REQUEST_REMOVE dht_cs_request_remove;
-
-  char value[1];
-
-} DHT_CS_REQUEST_REMOVE_GENERIC;
-
 
 /**
  * gnunetd to client: iterate over all values.  Reply is

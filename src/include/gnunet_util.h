@@ -201,24 +201,6 @@ typedef struct {
 } CS_HEADER;
 
 /**
- * Generic version of CS_HEADER with field for accessing end of struct (use the
- * other version for allocation).
- */
-typedef struct {
-  /**
-   * actual header
-   */
-  CS_HEADER cs_header;
-
-  /**
-   * This is followed by a type specific data block, consisting
-   * of size bytes.
-   */
-  char data[1];
-
-} CS_HEADER_GENERIC;
-
-/**
  * CS communication: simple return value
  */
 typedef struct {
@@ -247,21 +229,6 @@ typedef struct {
    */
   unsigned short type; 
 } p2p_HEADER;
-
-
-/**
- * Generic version of p2p_HEADER with field for accessing end of struct (use 
- * the other version for allocation).
- */
-typedef struct {
-  p2p_HEADER p2p_header;
-
-  /**
-   * this is followed by a type specific data block,
-   * consisting of size bytes. 
-   */
-  char data[1];
-} p2p_HEADER_GENERIC;
 
 typedef void (*NotifyConfigurationUpdateCallback)();
 

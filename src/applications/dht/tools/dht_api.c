@@ -698,7 +698,7 @@ int DHT_LIB_put(const DHT_TableId * table,
   req->key = *key;
   req->priority = htonl(prio);
   req->timeout = htonll(timeout);
-  memcpy(&((DHT_CS_REQUEST_PUT_GENERIC*)req)->value[0],
+  memcpy(&req[1],
 	 &value[1],
 	 ntohl(value->size) - sizeof(DataContainer));
   ret = SYSERR;

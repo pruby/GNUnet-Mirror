@@ -73,7 +73,7 @@ static int noiseHandler(const PeerIdentity *peer,
   if ( (ntohs(msg->size) == 
 	sizeof(p2p_HEADER) + expectedSize) &&
        (0 == memcmp(expectedValue,
-		    &((p2p_HEADER_GENERIC*)msg)->data[0],
+		    &msg[1],
 		    expectedSize)) )
     ok = YES;
   SEMAPHORE_UP(sem);
@@ -129,7 +129,7 @@ static void testTAPI(TransportAPI * tapi,
   noise = MALLOC(expectedSize + sizeof(p2p_HEADER));
   noise->type = htons(p2p_PROTO_NOISE);
   noise->size = htons(expectedSize + sizeof(p2p_HEADER));
-  memcpy(&((p2p_HEADER_GENERIC*)noise)->data[0],
+  memcpy(&noise[1],
 	 expectedValue,
 	 expectedSize);
   while (repeat > 0) {

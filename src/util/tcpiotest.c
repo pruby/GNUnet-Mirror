@@ -122,8 +122,8 @@ static int parseCommandLine(int argc,
 
 static int testTransmission(GNUNET_TCP_SOCKET * a,
 			    GNUNET_TCP_SOCKET * b) {
-  CS_HEADER_GENERIC * hdr;
-  CS_HEADER_GENERIC * buf;
+  CS_HEADER * hdr;
+  CS_HEADER * buf;
   int i;
   int j;
 
@@ -131,15 +131,15 @@ static int testTransmission(GNUNET_TCP_SOCKET * a,
   for (i=0;i<1024-sizeof(CS_HEADER);i+=7) {
     fprintf(stderr, ".");
     for (j=0;j<i;j++) 
-      hdr->data[j] = (char)i+j;      
-    hdr->cs_header.size = htons(i+sizeof(CS_HEADER));
-    hdr->cs_header.type = 0;
-    if (OK != writeToSocket(a, &hdr->cs_header)) {
+      ((char*)&hdr[1])[j] = (char)i+j;      
+    hdr->size = htons(i+sizeof(CS_HEADER));
+    hdr->type = 0;
+    if (OK != writeToSocket(a, hdr)) {
       FREE(hdr);
       return 1; 
     }
     buf = NULL;
-    if (OK != readFromSocket(b, (CS_HEADER**)&buf)) {
+    if (OK != readFromSocket(b, &buf)) {
       FREE(hdr);
       return 2;
     }
@@ -163,7 +163,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
 
   hdr = MALLOC(1024);
   for (i=0;i<1024-sizeof(CS_HEADER);i+=11)
-    ((CS_HEADER_GENERIC*)hdr)->data[i] = (char)i;      
+    ((char*)&hdr[1])[i] = (char)i;      
   hdr->size = htons(64+sizeof(CS_HEADER));
   hdr->type = 0;  
   while (OK == writeToSocketNonBlocking(a,

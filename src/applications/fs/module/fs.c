@@ -376,7 +376,7 @@ static int csHandleRequestIndex(ClientHandle sock,
 		       ntohl(ri->anonymityLevel),
 		       &ri->fileId,
 		       ntohs(ri->header.size) - sizeof(RequestIndex),
-		       &((RequestIndex_GENERIC*)ri)->data[0]);
+		       &ri[1]);
   LOG(LOG_DEBUG,
       "Sending confirmation of index request to client\n");
   return coreAPI->sendValueToClient(sock,
