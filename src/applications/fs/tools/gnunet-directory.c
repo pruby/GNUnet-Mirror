@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -142,12 +142,13 @@ static int parseCommandLine(int argc,
       LONG_DEFAULT_OPTIONS,
       { "kill",    0, 0, 'k' },
       { "list",    0, 0, 'l' },
+      { "track",   0, 0, 't' },
       { 0,0,0,0 }
     };
     
     c = GNgetopt_long(argc,
 		      argv, 
-		      "c:hklL:v",
+		      "c:hklL:tv",
 		      long_options, 
 		      &option_index);    
     if (c == -1) 
@@ -163,6 +164,9 @@ static int parseCommandLine(int argc,
       break;
     case 'l':
       do_list = YES;
+      break;
+    case 't':
+      do_track = YES;
       break;
     case 'v': 
       printf("GNUnet v%s, gnunet-directory v%s\n",
