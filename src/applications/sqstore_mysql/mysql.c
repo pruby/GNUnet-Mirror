@@ -649,7 +649,17 @@ static int get(const HashCode160 * query,
 	_("'%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_result",
 	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->insert));    
+	mysql_stmt_error(stmt));    
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+    FREE(datum);
+    return SYSERR;
+  }
+  if (mysql_stmt_store_result(stmt)) {
+    LOG(LOG_ERROR,
+		_("'%s' failed at %s:%d with error: %s\n"),
+		"mysql_stmt_store_result",
+		__FILE__, __LINE__,
+		mysql_stmt_error(stmt));    
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     FREE(datum);
     return SYSERR;
@@ -742,10 +752,10 @@ static int put(const HashCode160 * key,
   if (mysql_stmt_bind_param(dbh->insert,
 			    dbh->bind)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_bind_param",
-	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->insert));    
+		_("'%s' failed at %s:%d with error: %s\n"),
+		"mysql_stmt_bind_param",
+		__FILE__, __LINE__,
+		mysql_stmt_error(dbh->insert));    
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   } 
@@ -753,10 +763,10 @@ static int put(const HashCode160 * key,
 
   if (mysql_stmt_execute(dbh->insert)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_execute",
-	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->insert));    
+		_("'%s' failed at %s:%d with error: %s\n"),
+		"mysql_stmt_execute",
+		__FILE__, __LINE__,
+		mysql_stmt_error(dbh->insert));    
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }  
@@ -980,15 +990,8 @@ static unsigned long long getSize() {
  * guaranteed to be unloading of the module.
  */
 static void drop() {
-  char * scratch;
-  
-  scratch = MALLOC(128);
-  SNPRINTF(scratch,
-	   128,
-	   "DROP TABLE gn070"); 
   mysql_query(dbh->dbf,
-  	      scratch);
-  FREE(scratch);
+			  "DROP TABLE gn070");
 }
 
 

@@ -352,7 +352,6 @@ static void * process_thread(TableList * list) {
       }
 	
       case DHT_CS_PROTO_REQUEST_ITERATE: {
-	DHT_CS_REPLY_RESULTS * reply;
 	DHT_CS_REQUEST_ITERATE * req;
 	int resCount;
 
@@ -371,10 +370,9 @@ static void * process_thread(TableList * list) {
 	resCount = list->store->iterate(list->store->closure,
 					&sendAllResults,
 					list);
-	if ( (resCount != SYSERR) &&
-	     (OK != sendAck(list->sock,
-			    &list->table,
-			    resCount)) ) {
+	if (OK != sendAck(list->sock,
+					  &list->table,
+					  resCount)) {
 	  LOG(LOG_WARNING,
 	      _("Failed to send '%s'.  Closing connection.\n"),
 	      "ACK");
@@ -383,7 +381,6 @@ static void * process_thread(TableList * list) {
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	}
-	FREE(reply);
 	break;
       }
 

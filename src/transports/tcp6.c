@@ -813,13 +813,13 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
                               mp,
                               ssize,
                               &ret);
+	if (success == SYSERR) {
+	  LOG_STRERROR(LOG_INFO, "send");
+	  MUTEX_UNLOCK(&tcp6lock);
+	  return SYSERR;
+	} else if (success == NO)
+	  ret = 0;
   }
-  if (success == SYSERR) {
-    LOG_STRERROR(LOG_INFO, "send");
-    MUTEX_UNLOCK(&tcp6lock);
-    return SYSERR;
-  } else if (success == NO)
-    ret = 0;
   if ((unsigned int) ret <= ssize) { /* some bytes send or blocked */
     if ((unsigned int)ret < ssize) {
       if (tcp6Session->wbuff == NULL) {

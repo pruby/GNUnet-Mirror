@@ -794,13 +794,13 @@ static int tcpDirectSend(TCPSession * tcpSession,
 			       mp,
 			       ssize,
 			       &ret);
+	if (success == SYSERR) {
+	  LOG_STRERROR(LOG_INFO, "send");
+	  MUTEX_UNLOCK(&tcplock);
+	  return SYSERR;
+	} else if (success == NO)
+	  ret = 0;
   }
-  if (success == SYSERR) {
-    LOG_STRERROR(LOG_INFO, "send");
-    MUTEX_UNLOCK(&tcplock);
-    return SYSERR;
-  } else if (success == NO)
-    ret = 0;
   if ((unsigned int)ret <= ssize) { /* some bytes send or blocked */
     if ((unsigned int)ret < ssize) {
       if (tcpSession->wbuff == NULL) {
