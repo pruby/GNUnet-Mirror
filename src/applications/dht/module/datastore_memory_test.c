@@ -18,7 +18,7 @@
  */
 
 /**
- * @file applications/dht/module/datastore_memory_test.h
+ * @file applications/dht/module/datastore_memory_test.c
  * @brief testcase for the Datastore API (memory).
  * @author Christian Grothoff
  *
@@ -32,147 +32,147 @@
 
 #define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); 
 
-static int store(DHT_Datastore * s,
+static int store(Blockstore * s,
 		 char * key,
-		 char * val,
-		 int flags) {
+		 char * val) {
   HashCode160 hc;
-  DHT_DataContainer cont;
+  DataContainer * cont;
 
-  cont.dataLength = strlen(val);
-  cont.data = val;
+  cont = MALLOC(sizeof(DataContainer) + strlen(val));
+  cont->size = htonl(strlen(val) + sizeof(DataContainer));
+  memcpy(&cont[1],
+	 val,
+	 strlen(val));
   hash(key,
        strlen(key),
        &hc);
-  if (OK != s->store(s->closure,
-		     &hc,
-		     &cont,
-		     flags))
-    { DUMP(s); return 1; }
-  return 0;
-}
-
-static int rem(DHT_Datastore * s,
-	       char * key,
-	       char * val,
-	       int flags) {
-  HashCode160 hc;
-  DHT_DataContainer cont;
-
-  if (val == NULL)
-    cont.dataLength = 0;
-  else
-    cont.dataLength = strlen(val);
-  cont.data = val;
-  hash(key,
-       strlen(key),
-       &hc);
-  if (OK != s->remove(s->closure,
-		      &hc,
-		      &cont,
-		      flags))
-    { DUMP(s); return 1; }
-  return 0;
-}
-
-static int load(DHT_Datastore * s,
-		char * key,
-		char * val,
-		int flags) {
-  HashCode160 hc;
-  DHT_DataContainer cont;
-
-  cont.dataLength = 0;
-  cont.data = NULL;
-  hash(key,
-       strlen(key),
-       &hc);
-  if (OK != s->lookup(s->closure,
-		      &hc,
-		      1,
-		      &cont,
-		      flags))
-    { DUMP(s); return 1; }
-  if (0 != strncmp(val,
-		   (char*)cont.data,
-		   strlen(val)))
+  if (OK != s->put(s->closure,
+		   &hc,
+		   0,
+		   cont,
+		   0)) { 
+    DUMP(s); 
+    FREE(cont);
     return 1;
-  FREENONNULL(cont.data);
+  }    
+  FREE(cont);
+  return 0;
+}
+
+static int rem(Blockstore * s,
+	       char * key,
+	       char * val) {
+  HashCode160 hc;
+  DataContainer * cont;
+
+  if (val == NULL) {
+    cont = NULL;
+  } else {
+    cont = MALLOC(sizeof(DataContainer) + strlen(val));
+    cont->size = htonl(strlen(val) + sizeof(DataContainer));
+    memcpy(&cont[1],
+	   val,
+	   strlen(val));
+  }
+  hash(key,
+       strlen(key),
+       &hc);
+  if (OK != s->del(s->closure,
+		   &hc,
+		   0,
+		   cont)) { 
+    FREE(cont);
+    DUMP(s); 
+    return 1; 
+  }
+  FREE(cont);
+  return 0;
+}
+
+static int resCB(const HashCode160 * key,
+		 const DataContainer * val,
+		 void * cls) {
+  DataContainer ** trg = cls;
+  *trg = MALLOC(ntohl(val->size));
+  memcpy(*trg,
+	 val,
+	 ntohl(val->size));
+  return OK;
+}
+
+static int load(Blockstore * s,
+		char * key,
+		char * val) {
+  HashCode160 hc;
+  DataContainer * cont;
+
+  cont = NULL;
+  hash(key,
+       strlen(key),
+       &hc);
+  if (OK != s->get(s->closure,
+		   0,
+		   0,
+		   1,
+		   &hc,
+		   &resCB,
+		   &cont)) {
+    if (val == NULL)
+      return 0;
+    DUMP(s); 
+    return 1; 
+  } else if (val == NULL) {
+    FREE(cont);
+    DUMP(s);
+    return 1;
+  }
+  if ( (val == NULL) &&
+       (cont == NULL) )
+    return 0;
+  if ( (val == NULL) &&
+       (cont != NULL) ) {
+    DUMP(s);
+    FREE(cont);
+    return 1;
+  }
+  if (cont == NULL) {
+    DUMP(s);
+    return 1;
+  }
+  if (0 != strncmp(val,
+		   (char*) &cont[1],
+		   strlen(val))) {
+    DUMP(s);
+    return 1;
+  }
+  FREE(cont);
   return 0;
 }
 
 
-static int test(DHT_Datastore * s) {
-  DHT_DataContainer containers[4];
-  char data[24];
-  int i;
-  HashCode160 key1;
-  HashCode160 key2;
-
-  for (i=0;i<24;i++)
-    data[i] = i;
-  key1.a = 4;
-  key2.a = 5;
-  containers[0].dataLength = 24;
-  containers[0].data = &data[0];
-  if (OK != s->store(s->closure,
-		     &key1,
-		     &containers[0],
-		     DHT_FLAGS__APPEND))
-    { DUMP(s); return 1; }
-  containers[1].dataLength = 0;
-  containers[1].data = NULL;
-  if (0 != s->lookup(s->closure,
-		     &key2, 3,
-		     &containers[1],
-		     DHT_FLAGS__APPEND))
-    { DUMP(s); return 1; }  
-  if (1 != s->lookup(s->closure,
-		     &key1, 3,
-		     &containers[1],
-		     DHT_FLAGS__APPEND))
-    { DUMP(s); return 1; }
-  if ( (containers[1].dataLength != containers[0].dataLength) ||
-       (0 != memcmp(containers[1].data,
-		    containers[0].data,
-		    containers[1].dataLength)) )
-    { DUMP(s); return 1; }
-  FREE(containers[1].data);
-  containers[1].dataLength = 0;
-  containers[1].data = NULL;
-  if (OK != s->remove(s->closure,
-		      &key1,
-		      NULL,
-		      DHT_FLAGS__APPEND))
-    { DUMP(s); return 1; }
-  if (0 != s->lookup(s->closure,
-		     &key1, 3,
-		     &containers[1],
-		     DHT_FLAGS__APPEND))
-    { DUMP(s); return 1; }  
-
-
-  GNUNET_ASSERT(0 == store(s, "a", "Hello", 0));
-  GNUNET_ASSERT(0 == store(s, "b", "World", 0));
-  GNUNET_ASSERT(0 == load(s, "a", "Hello", 0));
-  GNUNET_ASSERT(0 == load(s, "b", "World", 0));
-  GNUNET_ASSERT(0 == rem(s, "a", "Hello", 0));
-  GNUNET_ASSERT(0 == rem(s, "b", "World", 0));
-
+static int test(Blockstore * s) {
+  GNUNET_ASSERT(0 == store(s, "a", "Hello"));
+  GNUNET_ASSERT(0 == store(s, "b", "World"));
+  GNUNET_ASSERT(0 == load(s, "a", "Hello"));
+  GNUNET_ASSERT(0 == load(s, "b", "World"));
+  GNUNET_ASSERT(0 == rem(s, "a", "Hello"));
+  GNUNET_ASSERT(0 == rem(s, "b", "World"));
+  GNUNET_ASSERT(0 == load(s, "a", NULL));
+  GNUNET_ASSERT(0 == load(s, "b", NULL));
 
   return 0;
 }
 
 int main(int args,
 	 char * argv[]) {
-  DHT_Datastore * s;
+  Blockstore * s;
   int i;
   
-  s = create_datastore_memory(65536);
+  s = create_blockstore_memory(65536);
   for (i=0;i<65536;i++)
     if (0 != test(s))
       { DUMP(s); return 1; }
-  destroy_datastore_memory(s);
+  destroy_blockstore_memory(s);
 
   return 0;
 }

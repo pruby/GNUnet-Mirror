@@ -154,6 +154,7 @@ static int store(void * closure,
   pos->key = *key;
   pos->count = 1;
   pos->values = MALLOC(sizeof(DataContainer*));
+  pos->values[0] = MALLOC(size);
   memcpy(pos->values[0],
 	 value,
 	 size);
@@ -281,7 +282,7 @@ static int iterate(void * closure,
  * Create a DHT Datastore (in memory)
  * @param max_memory do not use more than max_memory memory.
  */
-Blockstore * create_datastore_memory(size_t max_memory) {
+Blockstore * create_blockstore_memory(size_t max_memory) {
   Blockstore * res;
   MemoryDatastore * md;
 
@@ -304,7 +305,7 @@ Blockstore * create_datastore_memory(size_t max_memory) {
  * @param ds the Datastore to destroy; must have been
  *  created by create_datastore_memory.
  */
-void destroy_datastore_memory(Blockstore * ds) {
+void destroy_blockstore_memory(Blockstore * ds) {
   MemoryDatastore * md;
   HT_Entry * pos;
   HT_Entry * next;

@@ -9,7 +9,7 @@
 
 0.7.0pre0 [3'05] (aka "pre-preview"):
 - Missing Features:
-  * fsui core (persistence, shutdown, multiple FSUIs)
+  * fsui core (persistence, shutdown, multiple FSUIs) [ difficult ]
   * mysql sqstore implementation iterator problem (Igor?)
 - Need testing:
   * ECRS-directories (build, iterate)
@@ -20,15 +20,11 @@
 
 0.7.0pre1 [4'05] (aka "preview"):
 - sqlite sqstore implementation does not compile yet (Nils)
-- gnunet-insert:
-  * allow any kind of meta-data to be specified on the
-    command-line
 - gnunet-search: 
-  * dump directory with search results
-  * 'handle' anonymity-level setting
+  * dump directory with search results [ easy ]
+  * 'handle' anonymity-level setting [ easy ]
 - FS:
-  * implement GetAvgPriority (fs.c)
-  * DHT integration (fs.c)
+  * implement GetAvgPriority (fs.c) [ easy ]
 - FSUI:
   * download: various details wrt generated events
   * namespace updates
@@ -36,16 +32,16 @@
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
 - Missing Features:
-  * topology: do aggressive bootstrap on first start (Christian)
-  * ecrs-unindex: code cleanup
+  * topology: do aggressive bootstrap on first start (Christian) [ easy ]
+  * ecrs-unindex: code cleanup [ easy ]
   * fix dht routing service
      - make dht respect new dht API (long way to go)
-     - fs-dht integration
+     - fs-dht integration [ difficult ]
   * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
-    linking the respective modules / libraries (gnunet_util, sqstore_mysql)
+    linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
 - Features removed but to be revived:
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
-    user to specify maximum amount of parallelism)
+    user to specify maximum amount of parallelism) [ tricky ]
 - Need testing:
   * gnunet-dht-join and gnunet-dht-query 
   * gnunet-tracekit, -tbench, -chat 

@@ -26,6 +26,8 @@
 #ifndef GNUNET_BLOCKSTORE_H
 #define GNUNET_BLOCKSTORE_H
 
+#include "gnunet_util.h"
+
 /**
  * Data stored in the blockstore.
  */
@@ -60,7 +62,7 @@ typedef int (*DataProcessor)(const HashCode160 * key,
  * routing, the other parts are just passed along and untouched by the
  * routing code.  The type is typically used to tell what they refer
  * to.  The assumption is that they (including the type) can be
- * reproduced from the DataContainer and thus the Iterator and put
+ * reproduced from the DataContainer and thus the Iterator 
  * methods do not communicate those values.
  *
  * The put method is (ab)used to check an item that is merely routed
@@ -77,7 +79,7 @@ typedef struct {
    * Lookup an item in the datastore.
    *
    * @param type kind of item to look up
-   * @param prio how important is this for the routing code?
+   * @param prio how important is this lookup
    * @param keyCount number of keys given
    * @param keys to look up
    * @param resultCallback function to call for each result that was found
