@@ -10,7 +10,7 @@
 #include "gnunet_sqstore_service.h"
 #include "core.h"
 
-#define ASSERT(x) do { if (! (x)) goto FAILURE; } while (0)
+#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
 static cron_t now;
 
@@ -62,6 +62,7 @@ static int iterateDown(const HashCode160 * key,
 		       int * closure) {
   int ret;
 
+  printf("IDOWN: %u\n", *closure);
   (*closure) -= 2;  
   ret = checkValue(key, val, closure);
   return ret;

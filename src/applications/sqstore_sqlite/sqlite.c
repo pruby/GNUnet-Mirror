@@ -57,39 +57,52 @@
 typedef struct {
   sqlite3 *dbf; 
   Mutex DATABASE_Lock_;
-  char *fn;                /* filename of this bucket */
-  double payload;          /* bytes used */
+  /** filename of this bucket */
+  char *fn;        
+  /** bytes used */
+  double payload;          
   unsigned int lastSync;
   
-  /* Precompiled SQL */
+  /** Precompiled SQL */
   sqlite3_stmt *exists, *countContent, *updPrio, *insertContent, *migr;
   
-  /* Last migrated block */
+  /** Last migrated block */
   cron_t lastExp;
   unsigned int lastPrio;
 } sqliteHandle;
 
 static sqliteHandle *dbh;
 
+static int sq_prepare(const char *zSql,       /* SQL statement, UTF-8 encoded */
+		      sqlite3_stmt **ppStmt) {  /* OUT: Statement handle */
+  char * dummy;
+  return sqlite3_prepare(dbh->dbf,
+			 zSql,
+			 strlen(zSql),
+			 ppStmt,
+			 (const char**) &dummy);
+}
 
-static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt);
-static double getStat(char *key);
-static int setStat(char *key, double val);
-static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
-	void *closure, int sort);
-static int iterateLowPriority(unsigned int type, Datum_Iterator iter,
-	void * closure);
-static int iterateExpirationTime(unsigned int type, Datum_Iterator iter,
-	void * closure);
-static int get(const HashCode160 * key, unsigned int type, Datum_Iterator iter,
-	void * closure);
-static int put(const HashCode160 * key, const Datastore_Value * value);
-static int del(const HashCode160 * key, const Datastore_Value * value);
-static int update(const HashCode160 * key, const Datastore_Value * value,
-	int delta);
-static unsigned long long getSize();
-static void drop();
-static void suspendMigration();
+
+/**
+ * Get the current on-disk size of the SQ store.  Estimates are fine,
+ * if that's the only thing available.
+ *
+ * @return number of bytes used on disk
+ */
+static unsigned long long getSize() {       
+  double ret;
+
+  MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  ret = dbh->payload * 1.0; /* FIXME 0.7: Find magic factor */
+  MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+#if DEBUG_SQLITE
+  LOG(LOG_DEBUG,
+      "SQLite: database size: %.0f\n",
+      ret);
+#endif 
+  return ret;
+}
 
 /**
  * @brief Encode a binary buffer "in" of size n bytes so that it contains
@@ -100,7 +113,9 @@ static void suspendMigration();
  * @param n size of in
  * @param out output
  */
-static int sqlite_encode_binary(const unsigned char *in, int n, unsigned char *out){
+static int sqlite_encode_binary(const unsigned char *in, 
+				int n, 
+				unsigned char *out){
   char c;
   unsigned char *start = out;
   
@@ -130,8 +145,9 @@ static int sqlite_encode_binary(const unsigned char *in, int n, unsigned char *o
  * @param num size of the output buffer
  * @return number of output bytes, -1 on error
  */
-static int sqlite_decode_binary_n(const unsigned char *in, unsigned char *out,
-	unsigned int num){
+static int sqlite_decode_binary_n(const unsigned char *in, 
+				  unsigned char *out,
+				  unsigned int num){
   char c;
   unsigned char *start = out;
   
@@ -139,14 +155,11 @@ static int sqlite_decode_binary_n(const unsigned char *in, unsigned char *out,
     if (c == 1) {
       in++;
       *out = *in - 1;
-    }
-    else
-      *out = c;
-    
+    } else
+      *out = c;    
     in++;
     out++;
-  }
-  
+  } 
   return (int) (out - start);
 }
 
@@ -165,21 +178,20 @@ static void suspendMigration() {
  * assemble it into a Datastore_Datum representation.
  */
 static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
-
   Datastore_Datum * datum;
   int contentSize;
     
   contentSize = sqlite3_column_int(stmt, 0) - sizeof(Datastore_Value);
   
   if (contentSize < 0)
-  	return NULL; /* error */
-  	
+    return NULL; /* error */
+  
   if (sqlite3_column_bytes(stmt, 5) > sizeof(HashCode160) * 2 + 1 ||
-  		sqlite3_column_bytes(stmt, 6) > contentSize * 2 + 1) {
-  			
-		LOG(LOG_WARNING,
-			_("SQL Database corrupt, ignoring result.\n"));
-		return NULL;
+      sqlite3_column_bytes(stmt, 6) > contentSize * 2 + 1) {
+    
+    LOG(LOG_WARNING,
+	_("SQL Database corrupt, ignoring result.\n"));
+    return NULL;
   }
 
   datum = MALLOC(sizeof(Datastore_Datum) + contentSize);
@@ -188,17 +200,18 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   datum->value.prio = htonl(sqlite3_column_int(stmt, 2));
   datum->value.anonymityLevel = htonl(sqlite3_column_int(stmt, 3));
   datum->value.expirationTime = htonll(sqlite3_column_int64(stmt, 4));
-	
-	if (sqlite_decode_binary_n(sqlite3_column_blob(stmt, 5), (char *) &datum->key,
-				sizeof(HashCode160)) != sizeof(HashCode160) ||
-			sqlite_decode_binary_n(sqlite3_column_blob(stmt, 6), (char *) &datum[1], 
-				contentSize) != contentSize) {
-  			
-		LOG(LOG_WARNING,
-			_("SQL Database corrupt, ignoring result.\n"));
-		return NULL;
-	}
-
+  
+  if (sqlite_decode_binary_n(sqlite3_column_blob(stmt, 5),
+			     (char *) &datum->key,
+			     sizeof(HashCode160)) != sizeof(HashCode160) ||
+      sqlite_decode_binary_n(sqlite3_column_blob(stmt, 6), 
+			     (char *) &datum[1], 
+			     contentSize) != contentSize) {
+    
+    LOG(LOG_WARNING,
+	_("SQL Database corrupt, ignoring result.\n"));
+    return NULL;
+  }  
   return datum;
 }
 
@@ -208,19 +221,21 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
  * @param key kind of stat to retrieve
  * @return SYSERR on error, the value otherwise
  */
-static double getStat(char *key) {
+static double getStat(const char * key) {
   int i;
   sqlite3_stmt *stmt;
   double ret = SYSERR;
-  char *dummy;
   
   suspendMigration();
 
-  i = sqlite3_prepare(dbh->dbf, 
-    "Select anonLevel from gn070 where hash = ?", 42, &stmt,
-    (const char **) &dummy);
+  i = sq_prepare("Select anonLevel from gn070 where hash = ?",
+		 &stmt);
   if (i == SQLITE_OK) {
-    sqlite3_bind_text(stmt, 1, key, strlen(key), SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 
+		      1, 
+		      key,
+		      strlen(key), 
+		      SQLITE_STATIC);
     i = sqlite3_step(stmt);
     
     if (i == SQLITE_DONE) {
@@ -236,7 +251,7 @@ static double getStat(char *key) {
   
   if (i != SQLITE_OK) {
     LOG_SQLITE(LOG_ERROR, 
-        "sqlite_getStat");
+	       "sqlite_getStat");
     return SYSERR;
   }
   
@@ -249,28 +264,34 @@ static double getStat(char *key) {
  * @param val value to set
  * @return SYSERR on error, OK otherwise
  */
-static int setStat(char *key, double val) {
+static int setStat(const char *key, 
+		   double val) {
   sqlite3_stmt *stmt;
-  char *dummy;
   
   suspendMigration();
 
-  if (sqlite3_prepare(dbh->dbf,
-        "REPLACE into gn070(hash, anonLevel, type) values (?, ?, ?)", 58,
-        &stmt, (const char **) &dummy) == SQLITE_OK) {
-    sqlite3_bind_text(stmt, 1, key, strlen(key), SQLITE_STATIC);
-    sqlite3_bind_double(stmt, 2, val);
-    sqlite3_bind_int(stmt, 3, RESERVED_BLOCK);
+  if (sq_prepare("REPLACE into gn070(hash, anonLevel, type) values (?, ?, ?)",
+		 &stmt) == SQLITE_OK) {
+    sqlite3_bind_text(stmt,
+		      1, 
+		      key,
+		      strlen(key), 
+		      SQLITE_STATIC);
+    sqlite3_bind_double(stmt,
+			2, 
+			val);
+    sqlite3_bind_int(stmt,
+		     3,
+		     RESERVED_BLOCK);
     if (sqlite3_step(stmt) != SQLITE_DONE) {
-      LOG_SQLITE(LOG_ERROR, "sqlite_setStat");
-
+      LOG_SQLITE(LOG_ERROR, 
+		 "sqlite_setStat");
       return SYSERR;
     }
     sqlite3_finalize(stmt);
-
+    
     return OK;    
-  }
-  else
+  } else
     return SYSERR;
 }
 
@@ -278,157 +299,9 @@ static int setStat(char *key, double val) {
  * @brief write all statistics to the db
  */
 static void syncStats() {
-  setStat("PAYLOAD", dbh->payload);
-  
+  setStat("PAYLOAD", 
+	  dbh->payload);  
   dbh->lastSync = 0;
-}
-
-SQstore_ServiceAPI *
-provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
-  static SQstore_ServiceAPI api;
-
-  char *dummy, *dir, *afsdir;
-  size_t nX;
-  sqlite3_stmt *stmt;
-
-#if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: initializing database\n");
-#endif 
-
-  dbh = MALLOC(sizeof(sqliteHandle));
-  
-  dbh->payload = 0;
-  dbh->lastSync = 0;
-
-  afsdir = getFileName("FS", "DIR",
-						 _("Configuration file must specify directory for "
-						 "storing FS data in section '%s' under '%s'.\n"));
-  dir = MALLOC(strlen(afsdir) + 8 + 2); /* 8 = "content/" */
-  strcpy(dir, afsdir);
-  strcat(dir, "/content/");
-  FREE(afsdir);
-  mkdirp(dir);
-  nX = strlen(dir) + 6 + 4 + 256;  /* 6 = "gnunet", 4 = ".dat" */
-  dbh->fn = MALLOC(strlen(dir) + 6 + 4 + 256);
-  SNPRINTF(dbh->fn, nX, "%s/gnunet.dat", dir);
-
-  if (sqlite3_open(dbh->fn, &dbh->dbf) != SQLITE_OK) {
-    LOG(LOG_ERROR, 
-        _("Unable to initialize SQLite.\n"));
-    FREE(dbh->fn);
-    FREE(dbh);
-    return NULL;
-  }
-  
-  sqlite3_exec(dbh->dbf, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbf, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbf, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
-  
-  sqlite3_prepare(dbh->dbf, "Select 1 from sqlite_master where tbl_name"
-    " = 'gn070'", 52, &stmt, (const char**) &dummy);
-  if (sqlite3_step(stmt) == SQLITE_DONE) {
-    if (sqlite3_exec(dbh->dbf, "CREATE TABLE gn070 ("
-           "  size integer NOT NULL default 0,"
-           "  type integer NOT NULL default 0,"
-           "  prio integer NOT NULL default 0,"
-           "  anonLevel integer NOT NULL default 0,"
-           "  expire integer NOT NULL default 0,"
-           "  hash text NOT NULL default '',"
-           "  value blob NOT NULL default '')", NULL, NULL,
-           NULL) != SQLITE_OK) {
-      LOG_SQLITE(LOG_ERROR, "sqlite_query");
-      FREE(dbh->fn);
-      FREE(dbh);
-      return NULL;
-    }    
-  }
-  sqlite3_finalize(stmt);
-    
-  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_hash ON gn070 (hash)",
-  	NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_prio ON gn070 (prio)",
-  	NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_expire ON gn070 (expire)",
-  	NULL, NULL, NULL);
-
-  if (sqlite3_prepare(dbh->dbf, "SELECT count(*) FROM gn070 where hash=?", 39,
-         &dbh->countContent, (const char **) &dummy) != SQLITE_OK ||
-     
-      sqlite3_prepare(dbh->dbf, "SELECT length(hash), length(value) "
-         "from gn070 WHERE hash=?", 59,
-         &dbh->exists, (const char **) &dummy) != SQLITE_OK ||
-
-      sqlite3_prepare(dbh->dbf, "UPDATE gn070 SET prio = prio + ? where "
-              "hash = ? and value = ? and prio + ? < ?", 78, &dbh->updPrio,
-              (const char **) &dummy) != SQLITE_OK ||
-
-      sqlite3_prepare(dbh->dbf, "insert into gn070 (size, type, prio, "
-              "anonLevel, expire, hash, value) values "
-              "(?, ?, ?, ?, ?, ?, ?)", 97, &dbh->insertContent,
-              (const char **) &dummy) != SQLITE_OK) {
-        
-      LOG_SQLITE(LOG_ERROR, "precompiling");
-      
-      FREE(dbh->fn);
-      FREE(dbh);
-      return NULL;
-  }
-  
-  dbh->payload = getStat("PAYLOAD");
-  
-  dbh->migr = NULL;
-  dbh->lastPrio = 0;
-  dbh->lastExp = 0;
-  
-  if (dbh->payload == SYSERR) {
-    FREE(dbh->fn);
-    FREE(dbh);
-    return NULL;    
-  }
-    
-  MUTEX_CREATE(&dbh->DATABASE_Lock_);  
-
-  api.getSize = &getSize;
-  api.put = &put;
-  api.get = &get;
-  api.iterateLowPriority = &iterateLowPriority;
-  api.iterateExpirationTime = &iterateExpirationTime;
-  api.del = &del;
-  api.drop = &drop;
-  api.update = &update;
-  return &api;
-}
-
-static void sqlite_shutdown() {
-#if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: closing database\n");
-#endif
-  if (! dbh)
-    return;
-  
-  MUTEX_DESTROY(&dbh->DATABASE_Lock_);
-
-  sqlite3_finalize(dbh->countContent);
-  sqlite3_finalize(dbh->exists);
-  sqlite3_finalize(dbh->updPrio);
-  sqlite3_finalize(dbh->insertContent);
-  suspendMigration();
-  
-  syncStats();
-
-  if (sqlite3_close(dbh->dbf) != SQLITE_OK)
-    LOG_SQLITE(LOG_ERROR, "sqlite_close");
-  
-  FREE(dbh->fn);
-  FREE(dbh);
-  dbh = NULL;
-}
-
-/**
- * Shutdown the module.
- */
-void release_module_sqstore_sqlite() {
-  sqlite_shutdown();  
 }
 
 /**
@@ -442,12 +315,13 @@ void release_module_sqstore_sqlite() {
  * @param sort 0 to order by expiration, 1 to order by prio
  * @return the number of items stored in the content database
  */
-static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
-	void *closure, int sort) {
+static int sqlite_iterate(unsigned int type, 
+			  Datum_Iterator iter,
+			  void *closure, 
+			  int sort) {
 	
   sqlite3_stmt *stmt;
   int count = 0;
-  char *dummy;
   char scratch[200], *ptr;
   Datastore_Datum * datum;
   int bind;
@@ -459,19 +333,18 @@ static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   
   if ((sort == 0 && !dbh->migr) || sort != 0) {
-    strcpy(scratch, "SELECT size, type, prio, anonLevel, expire, hash, value "
-             "FROM gn070 ");
+    strcpy(scratch, 
+	   "SELECT size, type, prio, anonLevel, expire, hash, value "
+	   "FROM gn070 ");
     ptr = scratch + 67;
     
     if (type) {
       strcpy(ptr, "where type = :1 ");
       ptr += 16;
-    }
-    
+    }    
     if (sort) {
       strcpy(ptr, "order by prio ASC");
-    }
-    else {
+    } else {
       if (!type) {
         strcpy(ptr, "where ");
         ptr += 6;
@@ -479,38 +352,42 @@ static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
       strcpy(ptr, "expire > :2 and prio >= :3 order by expire ASC, prio ASC");
     }
   
-    if (sqlite3_prepare(dbh->dbf, scratch, -1, &stmt,
-             (const char **) &dummy) != SQLITE_OK) {
+    if (sq_prepare(scratch, 
+		   &stmt) != SQLITE_OK) {
       LOG_SQLITE(LOG_ERROR, "sqlite_query");
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
       return(SYSERR);
     }
     
     dbh->migr = stmt;
-  }
-  else
+  } else
     if (sort == 0)
       stmt = dbh->migr;
   
   bind = 1;
   
-	if (type)
-		sqlite3_bind_int(stmt, bind++, type);
+  if (type)
+    sqlite3_bind_int(stmt, 
+		     bind++,
+		     type);
     
   if (!sort) {
-    sqlite3_bind_int(stmt, bind++, dbh->lastExp);
-    sqlite3_bind_int(stmt, bind, dbh->lastPrio);
+    sqlite3_bind_int(stmt,
+		     bind++,
+		     dbh->lastExp);
+    sqlite3_bind_int(stmt, 
+		     bind, 
+		     dbh->lastPrio);
   }
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-		datum = assembleDatum(stmt);
-		
+    datum = assembleDatum(stmt);
+    
     if (datum == NULL) {
       LOG(LOG_WARNING,
-	  		_("Invalid data in database.  Please verify integrity!\n"));
+	  _("Invalid data in database.  Please verify integrity!\n"));
       continue; 
-    }
-    
+    }    
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
     if( SYSERR == iter(&datum->key, &datum->value, closure) ) {
@@ -535,11 +412,13 @@ static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: reached end of database\n");
+  LOG(LOG_DEBUG,
+      "SQLite: reached end of database\n");
 #endif
 
   return count;
 }
+
 
 /**
  * Call a method for each key in the database and
@@ -554,11 +433,9 @@ static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
  */
 static int iterateLowPriority(unsigned int type,
 			      Datum_Iterator iter,
-			      void * closure) {
-  
+			      void * closure) {  
   return sqlite_iterate(type, iter, closure, 1);
 }
-
 
 /**
  * Call a method for each key in the database and
@@ -573,6 +450,39 @@ static int iterateExpirationTime(unsigned int type,
 				 Datum_Iterator iter,
 				 void * closure) {
   return sqlite_iterate(type, iter, closure, 0);
+}
+
+static void sqlite_shutdown() {
+#if DEBUG_SQLITE
+  LOG(LOG_DEBUG, "SQLite: closing database\n");
+#endif
+  if (! dbh)
+    return;
+  
+  MUTEX_DESTROY(&dbh->DATABASE_Lock_);
+
+  sqlite3_finalize(dbh->countContent);
+  sqlite3_finalize(dbh->exists);
+  sqlite3_finalize(dbh->updPrio);
+  sqlite3_finalize(dbh->insertContent);
+  suspendMigration();  
+  syncStats();
+  if (sqlite3_close(dbh->dbf) != SQLITE_OK)
+    LOG_SQLITE(LOG_ERROR, "sqlite_close");
+  
+  FREE(dbh->fn);
+  FREE(dbh);
+  dbh = NULL;
+}
+
+/**
+ * Delete the database.  The next operation is
+ * guaranteed to be unloading of the module.
+ */
+static void drop() {
+  char *fn = STRDUP(dbh->fn);  
+  sqlite_shutdown();  
+  UNLINK(fn);
 }
 
 
@@ -594,7 +504,7 @@ static int get(const HashCode160 * key,
   char *escapedHash = NULL;
   int len, ret, count = 0;
   sqlite3_stmt *stmt;
-  char scratch[97], *dummy;
+  char scratch[97];
   int bind = 1;
   Datastore_Datum *datum;
 
@@ -606,100 +516,96 @@ static int get(const HashCode160 * key,
   }
 #endif 
 
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  
+  MUTEX_LOCK(&dbh->DATABASE_Lock_); 
   suspendMigration();
   
   strcpy(scratch, "SELECT ");
   
   if (iter == NULL)
-  	strcat(scratch, "count(*)");
+    strcat(scratch, "count(*)");
   else
-  	strcat(scratch, "size, type, prio, anonLevel, expire, hash, value");
-  
+    strcat(scratch, "size, type, prio, anonLevel, expire, hash, value"); 
   strcat(scratch, " FROM gn070");
   
   if (type || key) {
-  	strcat(scratch, " WHERE ");
-  	
-  	if (type) {
-  		strcat(scratch, "type = :1");
-  		
-  		if (key)
-  			strcat(scratch, " and ");
-  	}
-  	
-  	if (key)
-  		strcat(scratch, "hash = :2");
+    strcat(scratch, " WHERE ");    
+    if (type) {
+      strcat(scratch, "type = :1");      
+      if (key)
+	strcat(scratch, " and ");
+    }    
+    if (key)
+      strcat(scratch, "hash = :2");
   }
   
-  if (sqlite3_prepare(dbh->dbf, scratch, -1, &stmt,
-           (const char **) &dummy) != SQLITE_OK) {
+  if (sq_prepare(scratch, 
+		 &stmt) != SQLITE_OK) {
     LOG_SQLITE(LOG_ERROR, "sqlite_query");
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-    return(SYSERR);
+    return SYSERR;
   }  
   
   if (type)
-  	ret = sqlite3_bind_int(stmt, bind++, type);
+    ret = sqlite3_bind_int(stmt,
+			   bind++,
+			   type);
   else
-  	ret = SQLITE_OK;
+    ret = SQLITE_OK;
   	
-  if (key && ret == SQLITE_OK) {
-	  escapedHash = MALLOC(sizeof(HashCode160)*2 + 2);
-	  len = sqlite_encode_binary((char *) key, sizeof(HashCode160), escapedHash);
-	
-	  ret = sqlite3_bind_blob(stmt, bind, escapedHash, len,
-	    SQLITE_TRANSIENT);
+  if (key && (ret == SQLITE_OK)) {
+    escapedHash = MALLOC(sizeof(HashCode160)*2 + 2);
+    len = sqlite_encode_binary((const char *) key, 
+			       sizeof(HashCode160), 
+			       escapedHash);    
+    ret = sqlite3_bind_blob(stmt,
+			    bind,
+			    escapedHash, 
+			    len,
+			    SQLITE_TRANSIENT);
   }
 
-  if (ret == SQLITE_OK) {
-    
+  if (ret == SQLITE_OK) {    
     while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
-			if (iter == NULL) {
-				datum = assembleDatum(stmt);
-				
-		    if (datum == NULL) {
-		      LOG(LOG_WARNING,
-			  		_("Invalid data in database.  Please verify integrity!\n"));
-		      continue; 
-		    }
+      if (iter != NULL) {
+	datum = assembleDatum(stmt);
+	
+	if (datum == NULL) {
+	  LOG(LOG_WARNING,
+	      _("Invalid data in database.  Please verify integrity!\n"));
+	  continue; 
+	}
 #if DEBUG_SQLITE
-				LOG(LOG_DEBUG,
-					"Found in database block with type %u.\n",
-					ntohl(*(int*)&((&datum->value)[1])));
+	LOG(LOG_DEBUG,
+	    "Found in database block with type %u.\n",
+	    ntohl(*(int*)&((&datum->value)[1])));
 #endif
-				if( SYSERR == iter(&datum->key,
-							&datum->value, 
-							closure) ) {
-
-					count = SYSERR;
-		      FREE(datum);
-		      break;
-		    }
-		    FREE(datum);								
-			  
-			  count++;
-			}
-			else
-				count += sqlite3_column_int(stmt, 0);
+	if (SYSERR == iter(&datum->key,
+			   &datum->value, 
+			   closure) ) {
+	  
+	  count = SYSERR;
+	  FREE(datum);
+	  ret = SQLITE_DONE;
+	  break;
+	}
+	FREE(datum);
+	count++;
+      } else
+	count += sqlite3_column_int(stmt, 0);
+    } 
+    FREENONNULL(escapedHash);
+    if (ret != SQLITE_DONE) {
+      LOG_SQLITE(LOG_ERROR, "sqlite_query");
+      sqlite3_finalize(stmt);
+      MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+      return SYSERR;
     }
 
-    FREENONNULL(escapedHash);
-
-	  if (ret != SQLITE_OK) {
-	    LOG_SQLITE(LOG_ERROR, "sqlite_query");
-      sqlite3_finalize(stmt);
-	    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-	    return SYSERR;
-	  }
-
     sqlite3_finalize(stmt);
-  }
-  else
-  	LOG_SQLITE(LOG_ERROR, "sqlite_query");
+  } else
+    LOG_SQLITE(LOG_ERROR, "sqlite_query");
   
-	MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: done reading content\n");
@@ -721,13 +627,12 @@ static int put(const HashCode160 * key,
   int n, hashLen, blockLen;
   sqlite3_stmt *stmt;
   unsigned long rowLen;
-	unsigned int contentSize;
+  unsigned int contentSize;
 	
-  if ( (ntohl(value->size) <= sizeof(Datastore_Value)) ) {
+  if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {
     BREAK();
     return SYSERR;
   }
-
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG,
       "Storing in database block with type %u.\n",
@@ -745,26 +650,31 @@ static int put(const HashCode160 * key,
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
  
   escapedHash = MALLOC(2*sizeof(HashCode160)+1);
-  hashLen = sqlite_encode_binary((char *) key, sizeof(HashCode160), escapedHash);
+  hashLen = sqlite_encode_binary((const char *) key, 
+				 sizeof(HashCode160),
+				 escapedHash);
     
   escapedBlock = MALLOC(2 * contentSize + 1);
-  blockLen = sqlite_encode_binary((char *) &value[1], contentSize, escapedBlock);
-
-	stmt = dbh->insertContent;
-	sqlite3_bind_double(stmt, 1, ntohl(value->size));
-	sqlite3_bind_double(stmt, 2, ntohl(value->type));
-	sqlite3_bind_double(stmt, 3, ntohl(value->prio));
-	sqlite3_bind_double(stmt, 4, ntohl(value->anonymityLevel));
-	sqlite3_bind_double(stmt, 5, ntohll(value->expirationTime));
-	sqlite3_bind_blob(stmt, 6, escapedHash, hashLen, SQLITE_TRANSIENT);
-	sqlite3_bind_blob(stmt, 7, escapedBlock, blockLen, SQLITE_TRANSIENT);
-	
+  blockLen = sqlite_encode_binary((const char *) &value[1],
+				  contentSize, 
+				  escapedBlock);
+  
+  stmt = dbh->insertContent;
+  sqlite3_bind_int(stmt, 1, ntohl(value->size));
+  sqlite3_bind_int(stmt, 2, ntohl(value->type));
+  sqlite3_bind_int(stmt, 3, ntohl(value->prio));
+  sqlite3_bind_int(stmt, 4, ntohl(value->anonymityLevel));
+  sqlite3_bind_int64(stmt, 5, ntohll(value->expirationTime));
+  sqlite3_bind_blob(stmt, 6, escapedHash, hashLen, SQLITE_TRANSIENT);
+  sqlite3_bind_blob(stmt, 7, escapedBlock, blockLen, SQLITE_TRANSIENT);
+  
   n = sqlite3_step(stmt);
   FREE(escapedBlock);
   FREE(escapedHash);
   sqlite3_reset(stmt);
   if(n != SQLITE_DONE) {
-    LOG_SQLITE(LOG_ERROR, "sqlite_query");
+    LOG_SQLITE(LOG_ERROR, 
+	       "sqlite_query");
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -773,7 +683,8 @@ static int put(const HashCode160 * key,
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
  
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: done writing content\n");
+  LOG(LOG_DEBUG,
+      "SQLite: done writing content\n");
 #endif 
 
   return OK;
@@ -789,83 +700,87 @@ static int put(const HashCode160 * key,
  */
 static int del(const HashCode160 * key, 
 	       const Datastore_Value * value) {
-  char *escapedHash, *dummy;
+  char *escapedHash;
   size_t n;
   sqlite3_stmt *stmt;
   unsigned long rowLen;
   int deleted, hashLen;
+  char * escapedBlock;
+  int blockLen;
+  unsigned long contentSize;
 
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: delete block\n");
 #endif 
 
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  
+  MUTEX_LOCK(&dbh->DATABASE_Lock_); 
   suspendMigration();
   
   if (dbh->lastSync > 1000)
     syncStats(dbh);
   
   escapedHash = MALLOC(2 * sizeof(HashCode160) + 1);
-  hashLen = sqlite_encode_binary((char *)key, sizeof(HashCode160), escapedHash);
-
-	if (!value) {
-	  sqlite3_bind_blob(dbh->exists, 1, escapedHash, hashLen,
-	                    SQLITE_TRANSIENT);
-	  while(sqlite3_step(dbh->exists) == SQLITE_ROW) {	  
-	    rowLen = sqlite3_column_int(dbh->exists, 0) + 
-	      sqlite3_column_int(dbh->exists, 1) + 5 * sizeof(int);
-	    
-	    if (dbh->payload > rowLen)
-	      dbh->payload -= rowLen;
-	    else
-	      dbh->payload = 0;
-	    
-	    dbh->lastSync++;
-	  }
-	  sqlite3_reset(dbh->exists);
-
-	  n = sqlite3_prepare(dbh->dbf, "DELETE FROM gn070 WHERE hash = ?", 32, 
-	  	&stmt, (const char **) &dummy);
-	  if (n == SQLITE_OK) {
-	    sqlite3_bind_blob(stmt, 1, escapedHash, hashLen, SQLITE_TRANSIENT);
-	    n = sqlite3_step(stmt);
-	  }
-	}
-	else {
-		sqlite3_stmt *stmt;
-
-	  n = sqlite3_prepare(dbh->dbf, "DELETE FROM gn070 WHERE hash = ? and "
-	  			"value = ? and size = ? and type = ? and prio = ? and anonLevel = ? "
-	  			"expire = ?", 114, &stmt, (const char **) &dummy);
-	  if (n == SQLITE_OK) {
-	  	char *escapedBlock;
-	  	int hashLen, blockLen;
-	  	
-	  	escapedBlock = MALLOC(2 * (ntohl(value->size)-sizeof(Datastore_Value)) + 1);
-	  	
-	  	hashLen = strlen(escapedHash);
-	  	blockLen = strlen(escapedBlock);
-	  	
-	    sqlite3_bind_blob(stmt, 1, escapedHash, hashLen, SQLITE_TRANSIENT);
-	    sqlite3_bind_blob(stmt, 2, escapedBlock, blockLen, SQLITE_TRANSIENT);
-			sqlite3_bind_double(stmt, 3, ntohl(value->size));
-			sqlite3_bind_double(stmt, 4, ntohl(value->type));
-			sqlite3_bind_double(stmt, 5, ntohl(value->prio));
-			sqlite3_bind_double(stmt, 6, ntohl(value->anonymityLevel));
-			sqlite3_bind_double(stmt, 7, ntohll(value->expirationTime));
-
-	    n = sqlite3_step(stmt);
-	    
-	    FREE(escapedBlock);
-	    
-	    if (n == SQLITE_OK)
-	    	dbh->payload -= (hashLen + blockLen + 5 * sizeof(long long));
-	  }
-	}
-	
-  deleted = (n == SQLITE_OK) ? sqlite3_changes(dbh->dbf) : SYSERR;
-	  
+  hashLen = sqlite_encode_binary((const char *)key,
+				 sizeof(HashCode160),
+				 escapedHash);
+  if (!value) {
+    sqlite3_bind_blob(dbh->exists, 
+		      1, 
+		      escapedHash,
+		      hashLen,
+		      SQLITE_TRANSIENT);
+    while(sqlite3_step(dbh->exists) == SQLITE_ROW) {	  
+      rowLen = sqlite3_column_int(dbh->exists, 0) + 
+	sqlite3_column_int(dbh->exists, 1) + 5 * sizeof(int);
+      
+      if (dbh->payload > rowLen)
+	dbh->payload -= rowLen;
+      else
+	dbh->payload = 0;
+      
+      dbh->lastSync++;
+    }
+    sqlite3_reset(dbh->exists);
+    
+    n = sq_prepare("DELETE FROM gn070 WHERE hash = ?", 
+		   &stmt);
+    if (n == SQLITE_OK) {
+      sqlite3_bind_blob(stmt, 
+			1, 
+			escapedHash, 
+			hashLen,
+			SQLITE_TRANSIENT);
+      n = sqlite3_step(stmt);
+    }
+  } else {    
+    n = sq_prepare("DELETE FROM gn070 WHERE hash = ? and "
+		   "value = ? and size = ? and type = ? and prio = ? and anonLevel = ? "
+		   "and expire = ?", 
+		   &stmt);
+    if (n == SQLITE_OK) {      
+      escapedBlock = MALLOC(2 * (ntohl(value->size)-sizeof(Datastore_Value)) + 1);      
+  
+      contentSize = ntohl(value->size)-sizeof(Datastore_Value);
+      blockLen = sqlite_encode_binary((const char *) &value[1], 
+				      contentSize,
+				      escapedBlock);
+      sqlite3_bind_blob(stmt, 1, escapedHash, hashLen, SQLITE_TRANSIENT);
+      sqlite3_bind_blob(stmt, 2, escapedBlock, blockLen, SQLITE_TRANSIENT);
+      sqlite3_bind_int(stmt, 3, ntohl(value->size));
+      sqlite3_bind_int(stmt, 4, ntohl(value->type));
+      sqlite3_bind_int(stmt, 5, ntohl(value->prio));
+      sqlite3_bind_int(stmt, 6, ntohl(value->anonymityLevel));
+      sqlite3_bind_int64(stmt, 7, ntohll(value->expirationTime));     
+      n = sqlite3_step(stmt);      
+      FREE(escapedBlock);      
+      if ( (n == SQLITE_DONE) || (n == SQLITE_ROW) )
+	dbh->payload -= (hashLen + blockLen + 5 * sizeof(long long));
+    } else {
+      LOG_SQLITE(LOG_ERROR, "sqlite3_prepare");
+    }
+  }
+  deleted = ( (n == SQLITE_DONE) || (n == SQLITE_ROW) ) ? sqlite3_changes(dbh->dbf) : SYSERR;
+  
   FREE(escapedHash);
   sqlite3_finalize(stmt);
 
@@ -878,7 +793,9 @@ static int del(const HashCode160 * key,
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: %i block(s) deleted\n", deleted);
+  LOG(LOG_DEBUG, 
+      "SQLite: %d block(s) deleted\n", 
+      deleted);
 #endif 
   
   return deleted;
@@ -896,7 +813,8 @@ static int update(const HashCode160 * key,
   unsigned long contentSize;
 
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: update block\n");
+  LOG(LOG_DEBUG, 
+      "SQLite: update block\n");
 #endif 
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -910,7 +828,7 @@ static int update(const HashCode160 * key,
 				 sizeof(HashCode160),
 				 escapedHash);  
   escapedBlock = MALLOC(2*contentSize+1);
-  blockLen = sqlite_encode_binary((const char *) value, 
+  blockLen = sqlite_encode_binary((const char *) &value[1], 
 				  contentSize,
 				  escapedBlock);
   sqlite3_bind_int(dbh->updPrio,
@@ -948,36 +866,125 @@ static int update(const HashCode160 * key,
   return n == SQLITE_OK ? OK : SYSERR;
 }
 
-/**
- * Get the current on-disk size of the SQ store.
- * Estimates are fine, if that's the only thing
- * available.
- * @return number of bytes used on disk
- */
-static unsigned long long getSize() {       
-	double ret;
 
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  ret = dbh->payload * 1.0; /* FIXME 0.7: Find magic factor */
-  MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+SQstore_ServiceAPI *
+provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
+  static SQstore_ServiceAPI api;
+
+  char *dir, *afsdir;
+  size_t nX;
+  sqlite3_stmt *stmt;
 
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG,
-      "SQLite: database size: %.0f\n",
-      ret);
-#endif
+  LOG(LOG_DEBUG, "SQLite: initializing database\n");
+#endif 
+
+  dbh = MALLOC(sizeof(sqliteHandle));
   
-  return ret;
+  dbh->payload = 0;
+  dbh->lastSync = 0;
+  
+  afsdir = getFileName("FS", "DIR",
+		       _("Configuration file must specify directory for "
+			 "storing FS data in section '%s' under '%s'.\n"));
+  dir = MALLOC(strlen(afsdir) + 8 + 2); /* 8 = "content/" */
+  strcpy(dir, afsdir);
+  strcat(dir, "/content/");
+  FREE(afsdir);
+  mkdirp(dir);
+  nX = strlen(dir) + 6 + 4 + 256;  /* 6 = "gnunet", 4 = ".dat" */
+  dbh->fn = MALLOC(strlen(dir) + 6 + 4 + 256);
+  SNPRINTF(dbh->fn, nX, "%s/gnunet.dat", dir);
+
+  if (sqlite3_open(dbh->fn, &dbh->dbf) != SQLITE_OK) {
+    LOG(LOG_ERROR, 
+        _("Unable to initialize SQLite.\n"));
+    FREE(dbh->fn);
+    FREE(dbh);
+    return NULL;
+  }
+  
+  sqlite3_exec(dbh->dbf, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
+  sqlite3_exec(dbh->dbf, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+  sqlite3_exec(dbh->dbf, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
+  
+  sq_prepare("Select 1 from sqlite_master where tbl_name = 'gn070'", 
+	     &stmt);
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    if (sqlite3_exec(dbh->dbf, 
+		     "CREATE TABLE gn070 ("
+		     "  size integer NOT NULL default 0,"
+		     "  type integer NOT NULL default 0,"
+		     "  prio integer NOT NULL default 0,"
+		     "  anonLevel integer NOT NULL default 0,"
+		     "  expire integer NOT NULL default 0,"
+		     "  hash text NOT NULL default '',"
+		     "  value blob NOT NULL default '')", NULL, NULL,
+		     NULL) != SQLITE_OK) {
+      LOG_SQLITE(LOG_ERROR, "sqlite_query");
+      FREE(dbh->fn);
+      FREE(dbh);
+      return NULL;
+    }    
+  }
+  sqlite3_finalize(stmt);
+    
+  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_hash ON gn070 (hash)",
+	       NULL, NULL, NULL);
+  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_prio ON gn070 (prio)",
+	       NULL, NULL, NULL);
+  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_expire ON gn070 (expire)",
+	       NULL, NULL, NULL);
+  
+  if ( (sq_prepare("SELECT count(*) FROM gn070 where hash=?", 
+		   &dbh->countContent) != SQLITE_OK) ||     
+       (sq_prepare("SELECT length(hash), length(value) "
+		   "from gn070 WHERE hash=?",
+		   &dbh->exists) != SQLITE_OK) ||					   
+       (sq_prepare("UPDATE gn070 SET prio = prio + ? where "
+		   "hash = ? and value = ? and prio + ? < ?", 
+		   &dbh->updPrio) != SQLITE_OK) ||
+       (sq_prepare("insert into gn070 (size, type, prio, "
+		   "anonLevel, expire, hash, value) values "
+		   "(?, ?, ?, ?, ?, ?, ?)",
+		   &dbh->insertContent) != SQLITE_OK) ) {    
+    LOG_SQLITE(LOG_ERROR, 
+	       "precompiling");    
+    FREE(dbh->fn);
+    FREE(dbh);
+    return NULL;
+  }
+  
+  dbh->payload = getStat("PAYLOAD");
+  
+  dbh->migr = NULL;
+  dbh->lastPrio = 0;
+  dbh->lastExp = 0;
+  
+  if (dbh->payload == SYSERR) {
+    FREE(dbh->fn);
+    FREE(dbh);
+    return NULL;    
+  }
+    
+  MUTEX_CREATE(&dbh->DATABASE_Lock_);  
+
+  api.getSize = &getSize;
+  api.put = &put;
+  api.get = &get;
+  api.iterateLowPriority = &iterateLowPriority;
+  api.iterateExpirationTime = &iterateExpirationTime;
+  api.del = &del;
+  api.drop = &drop;
+  api.update = &update;
+  return &api;
 }
 
 /**
- * Delete the database.  The next operation is
- * guaranteed to be unloading of the module.
+ * Shutdown the module.
  */
-static void drop() {
-  char *fn = STRDUP(dbh->fn);  
+void release_module_sqstore_sqlite() {
   sqlite_shutdown();  
-  UNLINK(fn);
 }
- 
+
 /* end of sqlite.c */
