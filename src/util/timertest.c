@@ -60,7 +60,7 @@ static int check() {
     else
       cumDelta += ((last+cronMILLIS*i) - now);
   }
-  fprintf(stdout,
+  FPRINTF(stdout,
 	  "Sleep precision: %llu ms.  ",
 	  cumDelta / cronMILLIS / (MAXV/INCR));
   if (cumDelta <= 10 * cronMILLIS * MAXV / INCR)
@@ -97,13 +97,13 @@ static int check() {
       now = now - (last + i);
     cumDelta += now;
 #if VERBOSE
-    fprintf(stderr,
+    FPRINTF(stderr,
 	    "Sleep interrupted by signal within %llu ms of deadline (intended delay: %d ms).\n",
 	    now,
 	    i);
 #endif
   }
-  fprintf(stdout,
+  FPRINTF(stdout,
 	  "Sleep interrupt precision is %llums. ",
 	  cumDelta / (MAXV2/INCR2) );
   if (cumDelta <= 10 * cronMILLIS * MAXV2 / INCR2)

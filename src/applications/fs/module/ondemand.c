@@ -328,7 +328,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	     n,
 	     "%s/%s", afsDir, TRACKFILE);
     fp = FOPEN(scratch, "a");
-    fprintf(fp,
+    FPRINTF(fp,
 	    "%u %llu\n", 
 	    ntohs(ce->fileNameIndex), 
 	    (unsigned long long)TIME(NULL));

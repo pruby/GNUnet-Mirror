@@ -946,14 +946,14 @@ static void sendBuffer(BufferEntry * be) {
 				       be->session.mtu - sizeof(P2P_Message),
 				       knapsackSolution);
 #if DEBUG_COLLECT_PRIO == YES
-	fprintf(prioFile, "%llu 0 %d\n", cronTime(NULL), priority);
+	FPRINTF(prioFile, "%llu 0 %d\n", cronTime(NULL), priority);
 #endif
       } else {
 	priority = solveKnapsack(be,
 				 be->session.mtu - sizeof(P2P_Message),
 				 knapsackSolution);
 #if DEBUG_COLLECT_PRIO == YES
-	fprintf(prioFile, "%llu 1 %d\n", cronTime(NULL), priority);
+	FPRINTF(prioFile, "%llu 1 %d\n", cronTime(NULL), priority);
 #endif
       }
     } else { /* never approximate < 50% CPU load */
@@ -961,7 +961,7 @@ static void sendBuffer(BufferEntry * be) {
 			       be->session.mtu - sizeof(P2P_Message),
 			       knapsackSolution);
 #if DEBUG_COLLECT_PRIO == YES
-      fprintf(prioFile, "%llu 2 %d\n", cronTime(NULL), priority);
+      FPRINTF(prioFile, "%llu 2 %d\n", cronTime(NULL), priority);
 #endif
     }
     j = 0;

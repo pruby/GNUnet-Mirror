@@ -128,12 +128,8 @@ static void printstatus(int * verboselevel,
   case upload_progress:
     if (*verboselevel == YES) {
       delta = event->data.UploadProgress.eta - cronTime(NULL);
-      printf(
-#ifdef MINGW
-      _("%12I64u of %12I64u bytes inserted (estimating %I64u seconds to completion)                "),
-#else
+      PRINTF(
       _("%16llu of %16llu bytes inserted (estimating %llu seconds to completion)                "),
-#endif
 	     event->data.UploadProgress.main_completed,
 	     event->data.UploadProgress.main_total,
 	     delta / cronSECONDS);      
@@ -143,12 +139,8 @@ static void printstatus(int * verboselevel,
   case upload_complete:
     if (*verboselevel == YES) {
       delta = event->data.UploadComplete.eta - event->data.UploadComplete.start_time;
-      printf(
-#ifdef MINGW
-      _("\nUpload of '%s' complete, %I64u bytes took %I64u seconds (%8.3f kbps).\n"),
-#else
+      PRINTF(
       _("\nUpload of '%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
-#endif
       event->data.UploadComplete.filename,
       event->data.UploadComplete.total,
       delta / cronSECONDS,

@@ -158,7 +158,7 @@ static void testTAPI(TransportAPI * tapi,
 	       sem); 
     resumeCron();
     if (ok != YES) {
-      fprintf(stderr,
+      FPRINTF(stderr,
 	      _("'%s': Did not receive message within %llu ms.\n"),
 	      tapi->transName,
 	      timeout);
@@ -293,7 +293,7 @@ static void testPING(HELO_Message * xhelo,
 			      "VERBOSE",
 			      "YES")) {
     if (ok != YES)
-      fprintf(stderr, 
+      FPRINTF(stderr, 
 	      _("No reply received within %llums.\n"),
 	      timeout);
   }

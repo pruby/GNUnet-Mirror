@@ -584,7 +584,7 @@ static unsigned int getNodeSize(const NodeClosure * node) {
 	> node->ctx->total)
       ret = (unsigned int) (node->ctx->total - node->offset);
 #if 0
-    printf("Node at offset %llu and level %d has size %u\n",
+    PRINTF("Node at offset %llu and level %d has size %u\n",
 	   node->offset,
 	   node->level,
 	   ret);
@@ -602,7 +602,7 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   if (ret * rsize < epos - spos)
     ret++; /* need to round up! */
 #if 0
-  printf("Node at offset %llu and level %d has size %u\n",
+  PRINTF("Node at offset %llu and level %d has size %u\n",
 	 node->offset,
 	 node->level,
 	 ret * sizeof(CHK));

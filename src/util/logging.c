@@ -362,13 +362,13 @@ void breakpoint_(const char * filename,
                  const int linenumber) {
   if (logfile != NULL) {
     printTime();
-    fprintf(logfile, 
+    FPRINTF(logfile, 
 	    _("Failure at %s:%d.\n"),
     	    filename, 
 	    linenumber);
     fflush(logfile);
   } else
-    fprintf(stderr, 
+    FPRINTF(stderr, 
 	    _("Failure at at %s:%d.\n"),
     	    filename,
 	    linenumber);
@@ -423,13 +423,13 @@ void LOG(int minLogLevel,
     
     printTime();
     if (format[0] == ' ')
-      fprintf(logfile, "%s:", gettext(loglevels[minLogLevel]));
+      FPRINTF(logfile, "%s:", gettext(loglevels[minLogLevel]));
     else
-      fprintf(logfile, "%s: ", gettext(loglevels[minLogLevel]));
-    len = vfprintf(logfile, format, args);
+      FPRINTF(logfile, "%s: ", gettext(loglevels[minLogLevel]));
+    len = VFPRINTF(logfile, format, args);
     fflush(logfile);
   } else
-    len = vfprintf(stderr, format, args);
+    len = VFPRINTF(stderr, format, args);
   va_end(args);
   if (bInited)
     MUTEX_UNLOCK(&logMutex);
@@ -438,7 +438,7 @@ void LOG(int minLogLevel,
     char * txt;
     
     txt = MALLOC(len + 1);
-    GNUNET_ASSERT(len == vsnprintf(txt, len, format, args));
+    GNUNET_ASSERT(len == VSNPRINTF(txt, len, format, args));
     customLog(txt);
     FREE(txt);
   }
@@ -458,7 +458,7 @@ void errexit(const char *format, ...) {
   if (logfile != NULL) {
     va_start(args, format);
     printTime();
-    vfprintf(logfile, format, args);
+    VFPRINTF(logfile, format, args);
     fflush(logfile);
     va_end(args); 
   }
@@ -467,7 +467,7 @@ void errexit(const char *format, ...) {
 #ifdef MINGW
     AllocConsole();
 #endif
-    vfprintf(stderr, format, args);
+    VFPRINTF(stderr, format, args);
     va_end(args);
   }
   BREAK();
@@ -483,7 +483,7 @@ int SNPRINTF(char * buf,
   va_list args;
 
   va_start(args, format);
-  ret = vsnprintf(buf,
+  ret = VSNPRINTF(buf,
 		  size,
 		  format,
 		  args);
