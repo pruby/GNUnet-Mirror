@@ -1686,7 +1686,7 @@ static void scheduleInboundTraffic() {
       }
     }
     schedulableBandwidth -= decrementSB;
-    if (didAssign == NO) {
+    if ( (activePeerCount > 0) && (didAssign == NO) ) {
       int * perm = permute(activePeerCount);
       /* assign also to random "worthless" (zero-share) peers */
       for (u=0;u<activePeerCount;u++) {
