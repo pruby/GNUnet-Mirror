@@ -708,7 +708,7 @@ static void * tcpListenMain() {
 	int success;
 
 try_again_1:
-#if TCP_DEBUG
+#if DEBUG_TCP
 	LOG(LOG_DEBUG,
 	    "TCP: trying to send %u bytes\n",
 	    tcpSession->wpos);
@@ -791,7 +791,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
   size_t ret;
   int success;
 
-#if TCP_DEBUG
+#if DEBUG_TCP
   LOG(LOG_DEBUG, 
       "tcpDirectSend called to transmit %u bytes.\n",
       ssize);
@@ -824,7 +824,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
     MUTEX_UNLOCK(&tcplock);
     return SYSERR;
   }
-#if TCP_DEBUG
+#if DEBUG_TCP
 	LOG(LOG_DEBUG,
 	    "TCP: trying to send %u bytes\n",
 	    ssize);
@@ -876,7 +876,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 				 unsigned int ssize) {
   int ok;
 
-#if TCP_DEBUG
+#if DEBUG_TCP
   LOG(LOG_DEBUG, 
       "tcpDirectSendReliable called to transmit %u bytes.\n",
       ssize);
@@ -908,7 +908,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
     memcpy(&tcpSession->wbuff[old],
 	   mp,
 	   ssize);
-#if TCP_DEBUG
+#if DEBUG_TCP
     LOG(LOG_DEBUG, 
 	"tcpDirectSendReliable appended message to send buffer.\n");
 #endif	  
@@ -1143,7 +1143,7 @@ static int tcpSend(TSession * tsession,
   TCPMessagePack * mp;
   int ok;
 
-#if TCP_DEBUG
+#if DEBUG_TCP
   LOG(LOG_DEBUG, 
       "tcpSend called to transmit %u bytes.\n",
       size);
@@ -1154,7 +1154,7 @@ static int tcpSend(TSession * tsession,
   }
 
   if (tcp_shutdown == YES) {
-#if TCP_DEBUG
+#if DEBUG_TCP
     LOG(LOG_DEBUG, 
 	"tcpSend called while TCP is shutdown.\n");
 #endif	  
@@ -1165,7 +1165,7 @@ static int tcpSend(TSession * tsession,
     return SYSERR;
   }
   if (((TCPSession*)tsession->internal)->sock == -1) {
-#if TCP_DEBUG
+#if DEBUG_TCP
     LOG(LOG_DEBUG, 
 	"tcpSend called after other side closed connection.\n");
 #endif    
