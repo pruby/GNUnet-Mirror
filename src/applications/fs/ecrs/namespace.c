@@ -449,7 +449,7 @@ int ECRS_addToNamespace(const char * name,
 
   /* FINALLY: sign & publish SBlock */
   GNUNET_ASSERT(OK == sign(hk,
-			   sizeof(SBlock) - sizeof(Signature) - sizeof(PublicKey),
+			   sizeof(SBlock) - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			   &sb->identifier,
 			   &sb->signature));
   freePrivateKey(hk);  

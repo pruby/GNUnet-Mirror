@@ -255,6 +255,8 @@ static int csHandleRequestInsert(ClientHandle sock,
   ri = (RequestInsert*) req;
   datum = MALLOC(sizeof(Datastore_Value) + 
 		 ntohs(req->size) - sizeof(RequestInsert));
+  datum->size = htonl(sizeof(Datastore_Value) + 
+		      ntohs(req->size) - sizeof(RequestInsert));
   datum->expirationTime = ri->expiration;
   datum->prio = ri->prio;
   datum->anonymityLevel = ri->anonymityLevel;

@@ -381,6 +381,8 @@ static void * uploadThread(UploadThreadClosure * utc) {
 			 EXTRACTOR_FILENAME,
 			 inboundFN);
     }
+    LOG(LOG_DEBUG,
+	"Adding URI to keyspace.\n");
     keywordUri = ECRS_metaDataToUri(utc->meta);
     if (keywordUri != NULL) {
       ECRS_addToKeyspace(keywordUri,

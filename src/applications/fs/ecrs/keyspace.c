@@ -80,7 +80,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     value = MALLOC(sizeof(Datastore_Value) + 
 		   size);
     kb = (KBlock*) &value[1];
-    kb->type = ntohl(K_BLOCK);
+    kb->type = htonl(K_BLOCK);
     memcpy(&kb[1],
 	   dstURI,
 	   strlen(dstURI)+1);
@@ -99,7 +99,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     value = MALLOC(sizeof(Datastore_Value) + 
 		   size);
     kb = (KBlock*) &value[1];
-    kb->type = ntohl(K_BLOCK);
+    kb->type = htonl(K_BLOCK);
     memcpy(&kb[1],
 	   dstURI,
 	   strlen(dstURI)+1);

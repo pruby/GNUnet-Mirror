@@ -148,7 +148,7 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
   }
 
   wasSockBlocking = isSocketBlocking(sock->socket);
-	setBlocking(sock->socket, NO);
+  setBlocking(sock->socket, NO);
 	     
   soaddr.sin_family = AF_INET;
   GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(sock->ip.addr));
@@ -181,6 +181,8 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
   FD_ZERO(&rset);
   FD_ZERO(&wset);
   FD_ZERO(&eset);
+  if (sock->socket < 0) 
+    return SYSERR;  
   FD_SET(sock->socket, &wset);
   timeout.tv_sec = 5;
   timeout.tv_usec = 0;
@@ -193,6 +195,7 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
 	PRIP(ntohl(*(int*)&sock->ip.addr)),
 	sock->port,
 	STRERROR(errno));
+    setBlocking(sock->socket, wasSockBlocking);  
     return SYSERR;
   }
   setBlocking(sock->socket, wasSockBlocking);

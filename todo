@@ -20,6 +20,8 @@
 - sqlite sqstore implementation does not compile yet (Nils)
 - gnunet-search: 
   * dump directory with search results [ easy ]
+- ecrs-search:
+  * anonymity policy is ignored [ easy ]
 - gap:
   * economy for local queries (see applications/gap/TODO) [ tricky ]
 - FSUI:

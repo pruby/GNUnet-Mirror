@@ -136,7 +136,7 @@ unsigned int getTypeOfBlock(unsigned int size,
     BREAK();
     return ANY_BLOCK; /* signal error */
   }
-  return *((const unsigned int*)data);
+  return ntohl(*((const unsigned int*)data));
 }
 
 /**
@@ -168,7 +168,7 @@ int getQueryFor(unsigned int size,
     }
     sb = (SBlock*) data;
     if (OK != verifySig(&sb->identifier,
-			size - sizeof(Signature) - sizeof(PublicKey),
+			size - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			&sb->signature,
 			&sb->subspace)) {
       BREAK();
@@ -185,7 +185,7 @@ int getQueryFor(unsigned int size,
     }
     kb = (KBlock*) data;
     if ( (OK != verifySig(&kb[1],
-			  size - sizeof(Signature) - sizeof(PublicKey),
+			  size - sizeof(KBlock),
 			  &kb->signature,
 			  &kb->keyspace)) ) {
       BREAK();
@@ -204,7 +204,7 @@ int getQueryFor(unsigned int size,
     }
     nb = (NBlock*) data;
     if (OK != verifySig(&nb->identifier,
-			size - sizeof(Signature) - sizeof(PublicKey),
+			size - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			&nb->signature,
 			&nb->subspace)) {
       BREAK();
@@ -221,7 +221,7 @@ int getQueryFor(unsigned int size,
     }
     kb = (KNBlock*) data;
     if ( (OK != verifySig(&kb->nblock,
-			  size - sizeof(Signature) - sizeof(PublicKey),
+			  size - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			  &kb->kblock.signature,
 			  &kb->kblock.keyspace)) ) {
       BREAK();

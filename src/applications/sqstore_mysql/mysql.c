@@ -542,8 +542,12 @@ static int put(const HashCode160 * key,
   char * escapedHash;
   char * scratch;
   int n;
-  int contentSize;
-  
+  unsigned int contentSize;
+
+  if ( (ntohl(value->size) <= sizeof(Datastore_Value)) ) {
+    BREAK();
+    return SYSERR;
+  }
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);

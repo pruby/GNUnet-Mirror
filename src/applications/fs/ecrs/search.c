@@ -180,6 +180,8 @@ static void addQueryForURI(const struct ECRS_URI * uri,
       PublicKey pub;
       int i;
 
+      LOG(LOG_DEBUG,
+	  "Computing queries (this may take a while).\n");
       for (i=0;i<uri->data.ksk.keywordCount;i++) {
 	hash(uri->data.ksk.keywords[i],
 	     strlen(uri->data.ksk.keywords[i]),
@@ -196,6 +198,8 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 	      &hc,
 	      sqc);
       }	
+      LOG(LOG_DEBUG,
+	  "Queries ready.\n");
       break;
   }
   case loc:
@@ -489,7 +493,8 @@ int ECRS_search(const struct ECRS_URI * uri,
     MUTEX_LOCK(&ctx.lock);
     for (i=0;i<ctx.queryCount;i++) {
       ps = ctx.queries[i];
-      if (now > ps->timeout)
+      if ( (now < ps->timeout) &&
+	   (ps->timeout != 0) )
 	continue;
       if (ps->handle != NULL)
 	FS_stop_search(ctx.sctx,
