@@ -111,50 +111,48 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
   EncName enc;
   char * serverDir;
   char * serverFN;
-  char unavail_key[_MAX_PATH + 1];
+  char unavail_key[256];
 
   serverDir 
-    = getConfigurationString(
-          "FS",
-          "INDEX-DIRECTORY");
+    = getConfigurationString("FS",
+			     "INDEX-DIRECTORY");
   if (!serverDir) {
-    serverDir = getConfigurationString(
-      "",
-      "GNUNETD_HOME");
+    serverDir = getConfigurationString("",
+				       "GNUNETD_HOME");
     if (!serverDir)
       return SYSERR;
-      
-    serverDir = REALLOC(serverDir, strlen(serverDir) + 14);
+    
+    serverDir = REALLOC(serverDir, 
+			strlen(serverDir) + 
+			strlen("/data/shared/") + 1);
     strcat(serverDir, "/data/shared/");
   }
   
   serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
   strcpy(serverFN,
-   serverDir);
+	 serverDir);
   
   /* Just in case... */
   mkdirp(serverDir);
    
   FREE(serverDir);
   strcat(serverFN,
-   DIR_SEPARATOR_STR);
+	 DIR_SEPARATOR_STR);
   hash2enc(fileId,
-     &enc);
+	   &enc);
   strcat(serverFN,
-   (char*)&enc);
+	 (char*)&enc);
   if (0 != SYMLINK(fn, serverFN)) {
     LOG_FILE_STRERROR(LOG_ERROR, "symlink", fn);
-
     FREE(serverFN);
     return SYSERR;
   }
-  
-  strcpy(unavail_key, "FIRST_UNAVAILABLE-");
-  strcat(unavail_key, (char*)&enc);
-  stateUnlinkFromDB(unavail_key);
-  
-  FREE(serverFN);
-  
+  SNPRINTF(unavail_key,
+	   256,
+	   "FIRST_UNAVAILABLE-%s",
+	   (char*)&enc);
+  stateUnlinkFromDB(unavail_key);  
+  FREE(serverFN);  
   return YES;
 }
 
@@ -265,7 +263,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   fileHandle = OPEN(fn, O_RDONLY, 0);
 #endif
   if (fileHandle == -1) {
-    char unavail_key[_MAX_PATH + 1];
+    char unavail_key[256];
     EncName enc;
     cron_t *first_unavail;
     struct stat linkStat;
@@ -281,24 +279,37 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     else {
       /* For how long has the file been unavailable? */
       hash2enc(&odb->fileId,
-        &enc);
-      strcpy(unavail_key, "FIRST_UNVAILABLE-");
-      strcat(unavail_key, (char *) &enc);
-      if (stateReadContent(unavail_key, (void *) &first_unavail) == SYSERR) {
+	       &enc);
+      SNPRINTF(unavail_key,
+	       256,
+	       "FIRST_UNVAILABLE-%s",
+	       (char *) &enc);
+      if (stateReadContent(unavail_key,
+			   (void *) &first_unavail) == SYSERR) {
         unsigned long long now = htonll(cronTime(NULL));
         stateWriteContent(unavail_key, sizeof(cron_t), (void *) &now);
-      }
-      else {
+      } else {
         /* Delete it after 3 days */
-        if (*first_unavail - cronTime(NULL) > 259200 * cronSECONDS) {
-          char ofn[_MAX_PATH + 1];
-          
-          if (READLINK(fn, ofn, _MAX_PATH) != -1)
-            LOG(LOG_ERROR, _("Because the file %s has been unavailable for 3 days"
-              " it got removed from your share. Please unindex files before "
-              " deleting them as the index now contains invalid references!"),
-              ofn);
-          
+        if (*first_unavail - cronTime(NULL) > 3 * cronDAYS) {
+	  size_t len;
+	  char * ofn;
+	  int ret;
+
+	  len = 256;
+	  ofn = MALLOC(len);
+	  while ( ((ret = READLINK(fn, ofn, len)) == -1) &&
+		  (errno == ENAMETOOLONG) &&
+		  (len < 4 * 1024 * 1024) ) 
+	    GROW(ofn, len, len*2);
+	  	            
+          if (ret != -1) {
+            LOG(LOG_ERROR, 
+		_("Because the file '%s' has been unavailable for 3 days"
+		  " it got removed from your share.  Please unindex files before"
+		  " deleting them as the index now contains invalid references!"),
+		ofn);
+	  } 
+	  FREE(ofn);
           datastore->del(query, dbv);
           stateUnlinkFromDB(unavail_key);
           UNLINK(fn);
@@ -446,7 +457,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   unsigned long long delta;
   DBlock * block;
   EncName enc;
-  char unavail_key[_MAX_PATH + 1];
+  char unavail_key[256];
 
   fn = getOnDemandFile(fileId);
   LOG(LOG_DEBUG,
@@ -518,8 +529,10 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   UNLINK(fn);
   
   /* Remove information about unavailability */
-  strcpy(unavail_key, "FIRST_UNAVAILABLE-");
-  strcat(unavail_key, (char*)&enc);
+  SNPRINTF(unavail_key,
+	   256,
+	   "FIRST_UNAVAILABLE-%s",
+	   (char*)&enc);
   stateUnlinkFromDB(unavail_key);
   
   FREE(fn);

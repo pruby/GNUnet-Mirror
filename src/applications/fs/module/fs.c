@@ -382,11 +382,13 @@ static int csHandleRequestInitIndex(ClientHandle sock,
   ri = (RequestInitIndex *) req;
   
   fnLen = ntohs(ri->header.size) - sizeof(RequestInitIndex);
+#if CYGWIN
   if (fnLen > _MAX_PATH)
     return SYSERR;
-  fn = (char *) MALLOC(fnLen + 1);
-  strncpy(fn, &ri[1], _MAX_PATH);
-  fn[_MAX_PATH] = 0;
+#endif
+  fn = MALLOC(fnLen + 1);
+  strncpy(fn, (char*) &ri[1], fnLen+1);
+  fn[fnLen] = 0;
   
   ret = ONDEMAND_initIndex(&ri->fileId,
           fn);
