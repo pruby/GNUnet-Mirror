@@ -731,7 +731,7 @@ try_again_1:
         }
 #if DEBUG_TCP
 	LOG(LOG_DEBUG,
-	    "TCP: transmitted %u bytes %u bytes\n",
+	    "TCP: transmitted %u bytes\n",
 	    ret);
 #endif
 	if (ret == 0) {
@@ -863,7 +863,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
 	   ssize - ret);
     tcpSession->wpos = ssize - ret;
     signalSelect(); /* select set changed! */
-  }
+  } 
   cronTime(&tcpSession->lastUse);
   MUTEX_UNLOCK(&tcplock);
   incrementBytesSent(ssize);
