@@ -182,7 +182,9 @@
 /* FIXME: use 'struct PrivateKey' instead! */
 typedef struct {
   void * internal;
-} * PrivateKey;
+} _PrivateKey;
+
+typedef _PrivateKey *PrivateKey;
 
 /**
  * Header for all Client-Server communications.
