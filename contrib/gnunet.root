@@ -424,7 +424,6 @@ PORT = 2088
 # Default port is 1080 and MTU is 1400.
 PORT = 1080
 # BLACKLIST =
-MTU = 1400
 
 
 ###############################################
