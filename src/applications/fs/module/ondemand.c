@@ -329,6 +329,36 @@ int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
   return YES;
 }
 
+
+/**
+ * If the data portion and type of the value match our value in the
+ * closure, copy the header (prio, anonymityLevel, expirationTime) and
+ * abort the iteration: we found what we're looing for.  Otherwise
+ * continue.
+ */
+static int completeValue(const HashCode160 * key,
+			 const Datastore_Value * value, 
+			 void * closure) {
+  Datastore_Value * comp = closure;
+  
+  if ( (comp->size != value->size) ||
+       (0 != memcmp(&value[1],
+		    &comp[1],
+		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
+    LOG(LOG_DEBUG,
+	"'%s' found value that does not match (%u, %u).\n",
+	__FUNCTION__,
+	ntohl(comp->size),
+	ntohl(value->size));
+    return OK;
+  }
+  *comp = *value; /* make copy! */
+  LOG(LOG_DEBUG,
+      "'%s' found value that matches.\n",
+      __FUNCTION__);
+  return SYSERR;
+}
+
 /**
  * Unindex the file with the given ID.  Removes the file from the
  * filesystem and all of the corresponding obd blocks from the
@@ -351,6 +381,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   unsigned long long size;
   unsigned long long delta;
   DBlock * block;
+  EncName enc;
 
   fn = getOnDemandFile(fileId);
   LOG(LOG_DEBUG,
@@ -390,6 +421,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     odb.header.prio = 0;
     odb.header.anonymityLevel = 0;
     odb.header.expirationTime = 0;
+    odb.type = htonl(ONDEMAND_BLOCK);
     odb.fileOffset = htonll(pos);
     odb.blockSize = htonl(delta);
     odb.fileId = *fileId;
@@ -397,11 +429,21 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     fileBlockGetQuery(block,
 		      delta + sizeof(DBlock),
 		      &key);  
-    ret = datastore->del(&key,
-			 &odb.header);
-    if (ret == SYSERR) {
-      LOG(LOG_DEBUG,
-	  "ODB block from offset %llu already missing from datastore.\n",
+    if (SYSERR == datastore->get(&key,
+				 ONDEMAND_BLOCK,
+				 &completeValue,
+				 &odb.header)) /* aborted == found! */
+      ret = datastore->del(&key,
+			   &odb.header);
+    else /* not found */
+      ret = SYSERR;
+    if (ret == SYSERR) { 
+      IFLOG(LOG_WARNING,
+	    hash2enc(&key,
+		     &enc));
+      LOG(LOG_WARNING,
+	  _("Unindexed ODB block '%s' from offset %llu already missing from datastore.\n"),
+	  &enc,
 	  pos);
     }
     pos += delta;

@@ -131,7 +131,7 @@ int main(int argc, char * argv[]){
 		    "gnunetd", /* arg0, path to gnunet binary */
 		    "-d",  /* do not daemonize so we can easily kill you */
 		    "-L", 
-		    "DEBUG",  /* gnunetd loglevel */
+		    "NOTHING",  /* gnunetd loglevel */
 		    "-c",
 		    "check.conf", /* configuration file */
 		    NULL)) {

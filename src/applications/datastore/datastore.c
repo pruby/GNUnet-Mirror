@@ -172,13 +172,6 @@ typedef struct {
 static int checkExists(const HashCode160 * key,
 		       const Datastore_Value * value,
 		       CE * ce) {
-  if ( (value->size != ce->value->size) ||
-       (value->type != ce->value->type) )
-    return OK;
-  if (0 != memcmp(&((char*)value)[sizeof(Datastore_Value)],
-		  &((char*)ce->value)[sizeof(Datastore_Value)],
-		  ntohl(value->size) - sizeof(Datastore_Value)))
-    return OK;
   ce->existing = MALLOC(ntohl(value->size));
   memcpy(ce->existing,
 	 value,
@@ -210,17 +203,20 @@ static int putUpdate(const HashCode160 * key,
 	  ntohl(value->type),
 	  (Datum_Iterator) &checkExists,
 	  &cls);
+  if (ntohl(value->type) == D_BLOCK) 
+    sq->get(key,
+	    ONDEMAND_BLOCK,
+	    (Datum_Iterator) &checkExists,
+	    &cls);
+   
   if (cls.exists) {
-    if ( (0 == memcmp(cls.existing,
-		      value,
-		      sizeof(Datastore_Value))) &&
-	 (htonl(value->prio) == 0) ) {
+    if (htonl(value->prio) == 0) {
       FREE(cls.existing);
       return OK;
     }
     /* update prio */
     sq->update(key, 
-	       value,
+	       cls.existing,
 	       ntohl(value->prio));
     FREE(cls.existing);
     return OK;

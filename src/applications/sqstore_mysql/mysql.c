@@ -979,10 +979,13 @@ static int del(const HashCode160 * key,
 	     "DELETE FROM gn070 WHERE hash='%s'",	
 	     escapedHash);
   } else {
+    /* FIXME: type=%d since the value is a
+       signed int here; it would be clean(er) if
+       we were to use prepared statements here, too */
     SNPRINTF(scratch, 
   	     n,
 	     "DELETE FROM gn070 WHERE hash='%s'"
-	     " AND size=%u AND type=%u AND prio=%u"
+	     " AND size=%u AND type=%d AND prio=%u"
 	     " AND anonLevel=%u AND expire=%lld"
 	     " AND value='%s'",
 	     escapedHash,
