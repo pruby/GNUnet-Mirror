@@ -25,20 +25,12 @@
  * @author Krista Bennett
  * @author James Blackwell
  * @author Igor Wronsky
- *
- *
- * Todo:
- * - implement namespace insertion
- * - check that the various options still work
- * - allow any kind of meta-data attribute (currently only
- *   description, filename and mime-type can be specified)
  */
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
 
 #include <langinfo.h>
-
 
 /* hmm. Man says time.h, but that doesn't yield the
    prototype.  Strange... */
@@ -57,9 +49,9 @@ static struct ECRS_MetaData * meta;
 
 static struct FSUI_Context * ctx;
 
-
 static char ** topKeywords = NULL;
 int topKeywordCnt = 0;
+
 static char ** gloKeywords = NULL;
 int gloKeywordCnt = 0;
 
@@ -85,7 +77,8 @@ static void postProcess(const struct ECRS_URI * uri) {
 				 "PSEUDONYM");
   if (pname == NULL)
     return;
-  pid = NULL; /* FIXME */
+  pid = getConfigurationString("GNUNET-INSERT",
+			       "PREVHASH");
   if (pid != NULL)
     enc2hash(pid, &prevId);
   tid = getConfigurationString("GNUNET-INSERT",
@@ -119,14 +112,14 @@ static void postProcess(const struct ECRS_URI * uri) {
   FREE(pname);
 }
 
-
 /**
  * Print progess message.
  */
 static void printstatus(int * verboselevel,
 			const FSUI_Event * event) {
   unsigned long long delta;
-  
+  char * fstring;
+      
   switch(event->type) {
   case upload_progress:
     if (*verboselevel == YES) {
@@ -149,16 +142,11 @@ static void printstatus(int * verboselevel,
 	     ? (double) (-1.0)
 	     : (double) (event->data.UploadProgress.main_total / 1024.0 * cronSECONDS / delta));
     }
-    if (testConfigurationString("GNUNET-INSERT",
-				"PRINTURL",
-				"YES")) {
-      char * fstring;
-      fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
-      printf(_("File '%s' has URI: %s\n"),
-	     event->data.UploadComplete.filename,
-	     fstring);
-      FREE(fstring);
-    }
+    fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
+    printf(_("File '%s' has URI: %s\n"),
+	   event->data.UploadComplete.filename,
+	   fstring);
+    FREE(fstring);   
     if (0 == strcmp(event->data.DownloadProgress.main_filename,
 		    event->data.DownloadProgress.filename)) {
       postProcess(event->data.DownloadProgress.main_uri);
@@ -185,12 +173,11 @@ static void printstatus(int * verboselevel,
 static void printhelp() {
   static Help help[] = {
     HELP_CONFIG,
-    { 'D', "desc", gettext_noop("DESCRIPTION"),
-      gettext_noop("set description for all files") },
-    { 'E', "extract", NULL,
+    { 'C', "copy", NULL,
+      gettext_noop("even if gnunetd is running on the local machine, force the"
+		   " creation of a copy instead of making a link to the GNUnet share directory") },
+    { 'e', "extract", NULL,
       gettext_noop("print list of extracted keywords that would be used, but do not perform upload") },
-    { 'f', "name", "NAME",
-      gettext_noop("publish NAME as the name of the file or directory") },
     HELP_HELP,
     HELP_HOSTNAME,
     { 'i', "interval", "SECONDS",
@@ -202,22 +189,16 @@ static void printhelp() {
     { 'K', "global-key", "KEYWORD",
       gettext_noop("add an additional keyword for all files and directories"
 		   " (this option can be specified multiple times)") },   
-    { 'l', "link", NULL,
-      gettext_noop("if gnunetd is running on the local machine, create a"
-		   " link instead of making a copy in the GNUnet share directory") },
     HELP_LOGLEVEL,
-    { 'm', "mime", "MIMETYPE",
-      gettext_noop("set the mimetype for the file to be MIMETYPE") },
+    { 'm', "meta", "TYPE:VALUE",
+      gettext_noop("set the meta-data for the given TYPE to the given VALUE") },
     { 'n', "noindex", NULL,
       gettext_noop("do not index, perform full insertion (stores entire "
 		   "file in encrypted form in GNUnet database)") },
     { 'N', "next", "ID",
       gettext_noop("specify ID of an updated version to be published in the future"
 		   " (for namespace insertions only)") },
-    { 'o', "out", "FILENAME",
-      gettext_noop("write the created SBlock in plaintext to FILENAME" 
-		   " (for namespace insertions only)") },
-    { 'p', "prio", "PRIORITY",
+    { 'p', "priority", "PRIORITY",
       gettext_noop("specify the priority of the content") },
     { 'P', "pseudonym", "NAME",
       gettext_noop("publish the files under the pseudonym NAME (place file into namespace)") },
@@ -231,10 +212,8 @@ static void printhelp() {
 		   " (for namespace insertions only)") },
     { 'T', "time", "TIME",
       gettext_noop("specify creation time for SBlock (see man-page for format)") },
-    { 'u', "url", NULL,
-      gettext_noop("print the GNUnet URL of the inserted file(s)") },
-    { 'U', "update", "FILENAME",
-      gettext_noop("filename of the SBlock of a previous version of the content"
+    { 'u', "update", "ID",
+      gettext_noop("ID of the previous version of the content"
 		   " (for namespace update only)") },
     HELP_VERSION,
     HELP_VERBOSE,
@@ -258,31 +237,27 @@ static int parseOptions(int argc,
     int option_index=0;
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
-      { "desc",          1, 0, 'D' },
-      { "name",          1, 0, 'f' },
-      { "extract",       0, 0, 'E' },
+      { "copy",          0, 0, 'C' },
+      { "extract",       0, 0, 'e' },
       { "interval",      1, 0, 'i' },
       { "key",           1, 0, 'k' },
       { "global-key",    1, 0, 'K' },
-      { "link",          0, 0, 'l' },
-      { "mime",          1, 0, 'm' },
+      { "meta",          1, 0, 'm' },
       { "noindex",       0, 0, 'n' },
       { "next",          1, 0, 'N' },
-      { "out",           1, 0, 'o' },
-      { "prio",          1, 0, 'p' },
+      { "priority",      1, 0, 'p' },
       { "pseudonym",     1, 0, 'P' },
       { "recursive",     0, 0, 'R' },
       { "sporadic",      0, 0, 'S' },
       { "this",          1, 0, 't' },
       { "time",          1, 0, 'T' },
-      { "url",           0, 0, 'u' },
-      { "update",        1, 0, 'U' },
+      { "update",        1, 0, 'u' },
       { "verbose",       0, 0, 'V' },
       { 0,0,0,0 }
     };    
     c = GNgetopt_long(argc,
 		      argv, 
-		      "c:dD:Ef:hH:i:lL:k:K:m:nN:o:p:Rs:St:T:uU:vV", 
+		      "c:CdehH:i:L:k:K:m:nN:p:P:RSt:T:u:vV", 
 		      long_options, 
 		      &option_index);    
     if (c == -1) 
@@ -290,31 +265,13 @@ static int parseOptions(int argc,
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
-    case 'e':
-      FREENONNULL(setConfigurationString("GNUNET-INSERT",
-      					 "PREVIOUS_SBLOCK",
-					 GNoptarg));
+    case 'C':
+      FREENONNULL(setConfigurationString("FS",
+					 "DISABLE-SYMLINKING",
+					 "YES"));
       break;
-    case 'D': 
-      tmp = convertToUtf8(GNoptarg,
-			  strlen(GNoptarg),
-			  nl_langinfo(CODESET));
-      ECRS_addToMetaData(meta,
-			 EXTRACTOR_DESCRIPTION,
-			 tmp);
-      FREE(tmp);
-      break;
-    case 'E': 
+    case 'e': 
       printAndReturn = YES;
-      break;
-    case 'f': 
-      tmp = convertToUtf8(GNoptarg,
-			  strlen(GNoptarg),
-			  nl_langinfo(CODESET));
-      ECRS_addToMetaData(meta,
-			 EXTRACTOR_FILENAME,
-			 tmp);
-      FREE(tmp);
       break;
     case 'h': 
       printhelp(); 
@@ -350,20 +307,41 @@ static int parseOptions(int argc,
 			strlen(GNoptarg),
 			nl_langinfo(CODESET));
       break;
-    case 'l':
-      FREENONNULL(setConfigurationString("GNUNET-INSERT",
-					 "LINK",
-					 "YES"));
-      break;
-    case 'm':
+    case 'm': {
+      EXTRACTOR_KeywordType type;
+      const char * typename;
+
       tmp = convertToUtf8(GNoptarg,
 			  strlen(GNoptarg),
 			  nl_langinfo(CODESET));     
-      ECRS_addToMetaData(meta,
-			 EXTRACTOR_MIMETYPE,
-			 tmp);
-      FREE(tmp);
+      type = EXTRACTOR_getHighestKeywordTypeNumber();
+      while (type > 0) {
+	type--;
+	typename = EXTRACTOR_getKeywordTypeAsString(type);
+	if (strlen(tmp) < strlen(typename)+1)
+	  continue;
+	if ( (tmp[strlen(typename)] == ':') &&
+	     (0 == strncmp(typename,
+			   tmp,
+			   strlen(typename))) ) {
+	  ECRS_addToMetaData(meta,
+			     type,
+			     &tmp[strlen(typename)+1]);
+	  FREE(tmp);
+	  tmp = NULL;
+	  break;
+	}	
+      }
+      if (tmp != NULL) {
+	ECRS_addToMetaData(meta,
+			   EXTRACTOR_UNKNOWN,
+			   tmp);
+	FREE(tmp);
+	printf(("Unknown meta-data type in meta-data option '%s'.  Using unknown.\n"),
+	       GNoptarg);
+      }
       break;
+    }
     case 'n':
       FREENONNULL(setConfigurationString("GNUNET-INSERT",
 					 "INDEX-CONTENT",
@@ -384,11 +362,6 @@ static int parseOptions(int argc,
 					 (char*)&enc));
       break;
     }
-    case 'o':
-      FREENONNULL(setConfigurationString("GNUNET-INSERT",
-      					 "OUTPUT_SBLOCK",
-					 GNoptarg));
-      break;
     case 'p': {
       unsigned int contentPriority;
       
@@ -400,8 +373,8 @@ static int parseOptions(int argc,
 	    "-p");
 	return SYSERR;
       }
-      setConfigurationInt("GNUNET-INSERT",
-			  "CONTENT-PRIORITY",
+      setConfigurationInt("FS",
+			  "INSERT-PRIORITY",
 			  contentPriority);
       break;
     }
@@ -440,11 +413,21 @@ static int parseOptions(int argc,
 					 "CREATION-TIME",
 					 GNoptarg));
       break;
-    case 'u':
+    case 'u': {
+      EncName enc;
+      HashCode160 nextId;
+      
+      if (enc2hash(GNoptarg,
+		   &nextId) == SYSERR) 
+	hash(GNoptarg,
+	     strlen(GNoptarg),
+	     &nextId);
+      hash2enc(&nextId, &enc);
       FREENONNULL(setConfigurationString("GNUNET-INSERT",
-					 "PRINTURL",
-					 "YES"));
+					 "PREVHASH",
+					 (char*)&enc));
       break;
+    }
     case 'V':
       FREENONNULL(setConfigurationString("GNUNET-INSERT",
 					 "VERBOSE",
@@ -471,10 +454,8 @@ static int parseOptions(int argc,
 
     ex = getConfigurationString("GNUNET-INSERT",
 				"EXTRACTORS");
-#ifdef EXTRACTOR_DEFAULT_LIBRARIES
     if (ex == NULL)
       ex = STRDUP(EXTRACTOR_DEFAULT_LIBRARIES);
-#endif
     if (ex == NULL)
       l = NULL;
     else
@@ -506,8 +487,6 @@ static int parseOptions(int argc,
   return OK;
 }
 
-
-
 /**
  * The main function to insert files into GNUnet.
  *
@@ -522,7 +501,6 @@ int main(int argc, char ** argv) {
   char * tmp;
   int verbose;
   char * timestr;
-  char * prevname;
   int doIndex;
   int ret;
   char * extractors;
@@ -563,42 +541,28 @@ int main(int argc, char ** argv) {
       }
       FREE(timestr);
     }    
-    prevname = getConfigurationString("GNUNET-INSERT",
-    				      "PREVIOUS_SBLOCK");
-    if (prevname != NULL) {
-      /* FIXME: read SBlock & get options from the previous sblock */
-#if 0
-      if (SYSERR == verifySBlock(&pb)) 
-        errexit(_("Verification of SBlock in file '%s' failed\n"), 
-		prevname);     
-      /* check that it matches the selected pseudonym */
-      if (OK != ECRS_testNamespaceExists(pname, 
-					 &pb.subspace)) 
-	errexit(_("The given SBlock does not belong to the namespace of the selected pseudonym."));      
-      FREE(prevname);
-      interval = ntohl(pb.updateInterval);
-      if (interval == SBLOCK_UPDATE_NONE) 
-	errexit(_("Trying to update nonupdatable SBlock.\n")); 
-#endif
-    }
   } else { /* ordinary insertion checks */
     if (NULL != getConfigurationString("GNUNET-INSERT",
 				       "NEXTHASH"))
       errexit(_("Option '%s' makes no sense without option '%s'.\n"),
-	      "-N", "-s");
+	      "-N", "-P");
+    if (NULL != getConfigurationString("GNUNET-INSERT",
+				       "PREVHASH"))
+      errexit(_("Option '%s' makes no sense without option '%s'.\n"),
+	      "-u", "-P");
     if (NULL != getConfigurationString("GNUNET-INSERT",
 				       "THISHASH"))
       errexit(_("Option '%s' makes no sense without option '%s'.\n"),
-	      "-t", "-s");
+	      "-t", "-P");
     if (0 != getConfigurationInt("GNUNET-INSERT",
 				 "INTERVAL"))
       errexit(_("Option '%s' makes no sense without option '%s'.\n"),
-	      "-i", "-s");
+	      "-i", "-P");
     if (testConfigurationString("GNUNET-INSERT",
 				"SPORADIC",
 				"YES"))
       errexit(_("Option '%s' makes no sense without option '%s'.\n"),
-	      "-S", "-s");
+	      "-S", "-P");
   }
 
   exitSignal = SEMAPHORE_NEW(0);
@@ -619,10 +583,8 @@ int main(int argc, char ** argv) {
     doIndex = YES;
   extractors = getConfigurationString("GNUNET-INSERT",
 				      "EXTRACTORS");
-#ifdef EXTRACTOR_DEFAULT_LIBRARIES
   if (extractors == NULL)
       extractors = STRDUP(EXTRACTOR_DEFAULT_LIBRARIES);
-#endif
 
   if (testConfigurationString("GNUNET-INSERT",
 			      "RECURSIVE",

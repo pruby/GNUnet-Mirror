@@ -79,8 +79,19 @@ EXTRACTORS = libextractor_filename:-libextractor_split:-libextractor_lower
 # Default is /tmp/gnunet-downloads/
 DOWNLOADDIR     = /tmp/gnunet-downloads/
 
-# Disable symlinking.
-DISABLE-SYMLINK = NO
+# Disable symlinking.  When set to YES, GNUnet will always make
+# a copy of the file when files are indexed.  The default is to
+# try to use a symbolic link (if possible).
+# Note that you should NEVER, NEVER simply delete the .gnunet 
+# directory if this is set to 'NO', since all inserted files
+# will have been moved into that directory and replaced with
+# symbolic links.  So if you were to remove ~/.gnunet, you will
+# loose those files unless you first run gnunet-delete to undo
+# the symlinking!
+# It is much more (space)-efficient to set this to NO,
+# but you need to know what you're doing.  This is why the
+# default is 'YES'.
+DISABLE-SYMLINK = YES
 
 
 #################################################

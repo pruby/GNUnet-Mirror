@@ -101,7 +101,7 @@ static void trySymlinking(const char * fn,
   char * tmpName;
   HashCode160 serverFileId;
 
-  if (testConfigurationString("AFS",
+  if (testConfigurationString("FS",
 			      "DISABLE-SYMLINKING",
 			      "YES"))
     return;
