@@ -87,20 +87,24 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 			      &ctx->handles[i]->req->query[0])) {
 	  Datastore_Value * value;
 
-	  value = MALLOC(sizeof(Datastore_Value) + size);
-	  value->size = htonl(size + sizeof(Datastore_Value));
-	  value->type = htonl(getTypeOfBlock(size,
-					     (DBlock*) &rep[1]));
-	  value->prio = htonl(0);
-	  value->anonymityLevel = htonl(0);
-	  value->expirationTime = htonll(0);
-	  memcpy(&value[1],
-		 &rep[1],
-		 size);
-	  ctx->handles[i]->callback(&query,
-				    value,
-				    ctx->handles[i]->closure);
-	  FREE(value);
+	  if (ctx->handles[i]->callback != NULL) {	    
+	    value = MALLOC(sizeof(Datastore_Value) + size);
+	    value->size = htonl(size + sizeof(Datastore_Value));
+	    value->type = htonl(getTypeOfBlock(size,
+					       (DBlock*) &rep[1]));
+	    value->prio = htonl(0);
+	    value->anonymityLevel = htonl(0);
+	    value->expirationTime = htonll(0);
+	    memcpy(&value[1],
+		   &rep[1],
+		   size);
+	    if (SYSERR == ctx->handles[i]->callback(&query,
+						    value,
+						    ctx->handles[i]->closure)) {
+	      ctx->handles[i]->callback = NULL;
+	    }
+	    FREE(value);
+	  }
 	}
       }
       MUTEX_UNLOCK(ctx->lock);      

@@ -28,7 +28,6 @@
 - fslibtest: implement verify result
 - fslibtest/ecrstest: make GNUnet use 'check' database (not main DB!)
 - topology: do aggressive bootstrap on first start (Christian) [ easy ]
-- sqlite sqstore implementation does not compile yet (Nils)
 - gnunet-search: 
   * dump directory with search results [ easy ]
 - ecrs-search:

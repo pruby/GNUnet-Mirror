@@ -110,7 +110,7 @@ static int undoSymlinking(const char * fn,
   char * tmpName;
   HashCode160 serverFileId;
   struct stat buf;
-
+  int ret;
 
 #ifndef S_ISLNK
   return OK; /* symlinks do not exist? */
@@ -140,18 +140,20 @@ static int undoSymlinking(const char * fn,
   hash2enc(fileId,
 	   &enc);
   strcat(serverFN,
-	 (char*)&enc);
+	 (char*)&enc);  
   tmpName = MALLOC(strlen(serverFN + 5));
-  if (0 != readlink(fn,
-		    tmpName,
-		    strlen(serverFN) + 4)) {
+  ret = readlink(fn,
+		 tmpName,
+		 strlen(serverFN) + 4);
+  if (ret == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "readlink", fn);
     FREE(tmpName);
     FREE(serverFN);
     return SYSERR;
   }
-  if (0 != strcmp(tmpName,
-		  serverFN)) {
+  if ( (ret == strlen(serverFN) + 4) ||
+       (0 != strcmp(tmpName,
+		    serverFN)) ) {
     FREE(tmpName);
     FREE(serverFN);
     return OK; /* symlink elsewhere... */
@@ -297,7 +299,7 @@ int ECRS_unindexFile(const char * filename,
   db = (DBlock*) &dblock[1];
   db->type = htonl(D_BLOCK);
   iblocks = MALLOC(sizeof(Datastore_Value*) * treedepth);
-  for (i=0;i<treedepth;i++) {
+  for (i=0;i<=treedepth;i++) {
     iblocks[i] = MALLOC(sizeof(Datastore_Value) + IBLOCK_SIZE + sizeof(DBlock));
     iblocks[i]->size = htonl(sizeof(Datastore_Value) + sizeof(DBlock));
     iblocks[i]->anonymityLevel = htonl(0);

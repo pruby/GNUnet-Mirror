@@ -439,6 +439,7 @@ typedef int (*ECRS_SearchProgressCallback)
 /**
  * Search for content.
  *
+ * @param timeout how long to wait (relative)
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */

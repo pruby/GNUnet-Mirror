@@ -306,6 +306,7 @@ static int receiveReplies(const HashCode160 * key,
   int i;
   unsigned int size;
   PendingSearch * ps;
+  int ret;
 
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
@@ -358,12 +359,12 @@ static int receiveReplies(const HashCode160 * key,
 	  ECRS_freeMetaData(fi.meta);
 	  return SYSERR;
 	}
-	sqc->spcb(&fi, 
-		  &ps->decryptKey,
-		  sqc->spcbClosure);
+	ret = sqc->spcb(&fi, 
+			&ps->decryptKey,
+			sqc->spcbClosure);
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
-	return OK;      
+	return ret;      
       }
       case N_BLOCK: {
 	NBlock * nb;
@@ -429,7 +430,7 @@ static int receiveReplies(const HashCode160 * key,
 	  ECRS_freeMetaData(fi.meta);
 	  return SYSERR;
 	}
-	sqc->spcb(&fi, NULL, sqc->spcbClosure);
+	ret = sqc->spcb(&fi, NULL, sqc->spcbClosure);
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
 
@@ -440,7 +441,7 @@ static int receiveReplies(const HashCode160 * key,
 	  return SYSERR;
 	if (equalsHashCode160(&updateId,
 			      &ps->decryptKey))
-	  return OK; /* have latest version */
+	  return ret; /* have latest version */
 	if (ps->keyCount != 2) {
 	  BREAK();
 	  return SYSERR;
@@ -451,7 +452,7 @@ static int receiveReplies(const HashCode160 * key,
 	updateURI.data.sks.identifier = updateId;
 	addQueryForURI(&updateURI,
 		       sqc);
-	return OK;
+	return ret;
       }
       default:
 	BREAK();
@@ -466,6 +467,7 @@ static int receiveReplies(const HashCode160 * key,
 /**
  * Search for content.
  *
+ * @param timeout how long to wait (relative)
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */
@@ -485,6 +487,8 @@ int ECRS_search(const struct ECRS_URI * uri,
   unsigned int new_priority;
 
   cronTime(&ctx.start);
+  cronTime(&now);
+  timeout += now;
   ctx.timeout = timeout;
   ctx.queryCount = 0;
   ctx.queries = NULL;
@@ -494,7 +498,6 @@ int ECRS_search(const struct ECRS_URI * uri,
   ctx.sctx = FS_SEARCH_makeContext(&ctx.lock);
   addQueryForURI(uri,
 		 &ctx);
-  cronTime(&now);
   while ( (OK == tt(ttClosure)) &&
 	  (timeout > now) ) {
     remTime = timeout - now;
