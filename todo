@@ -14,7 +14,10 @@
 - Need testing:
   * gnunet-insert - ok
   * gnunet-search - ok
-  * gnunet-download
+  * gnunet-download:
+    - type for on-demand content wrong (out of mysql DB,
+      wrong in DB? wrong before put?)
+    - getIndexed (ondemand.c) is not even used yet!
   * FS/ECRS upload/download
   * ECRS-directories (build, iterate)
   * gnunet-directory

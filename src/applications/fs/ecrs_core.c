@@ -268,7 +268,7 @@ int isDatumApplicable(unsigned int type,
 		      const HashCode160 * keys) {
   HashCode160 hc;
 
-  if (type != getTypeOfBlock(size, data)) {
+  if (type != getTypeOfBlock(size, data)) {    
     BREAK();
     return SYSERR; /* type mismatch */
   }

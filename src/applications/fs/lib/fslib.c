@@ -178,6 +178,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   req->prio = htonl(prio);
   req->anonymityLevel = htonl(anonymityLevel);
   req->expiration = htonll(timeout);
+  req->type = htonl(type);
   memcpy(&req->query[0],
 	 keys,
 	 keyCount * sizeof(HashCode160));
@@ -196,8 +197,9 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 	hash2enc(&req->query[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS initiating search for %s\n",
-      &enc);
+      "FS initiating search for %s of type %u\n",
+      &enc,
+      type);
   if (OK != writeToSocket(ctx->sock,
 			  &req->header)) {
     FS_stop_search(ctx,

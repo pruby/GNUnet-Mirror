@@ -1418,10 +1418,14 @@ static int execQuery(const PeerIdentity * sender,
   int max;
   int * perm;
   int doForward;
+  EncName enc;
   
+  IFLOG(LOG_DEBUG,
+        hash2enc(&query->queries[0],
+		 &enc));
   LOG(LOG_DEBUG,
-      "Executing request %u.\n",
-      query->queries[0].a);
+      "Executing request %s.\n",
+      &enc);
 
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&ite->lookup_exclusion); 
