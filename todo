@@ -16,7 +16,7 @@ TESTING / TESTCASES:
   * sqlite: test concurrency with iterators
 - multi-peer: (see sessiontest.c and tbenchtest.c for templates)
   * gap
-  * dht / gnunet-dht-join and gnunet-dht-query 
+  * dht / gnunet-dht-join and gnunet-dht-query
 - FSUI
 - gnunet-pseudonym
 
@@ -41,7 +41,7 @@ TESTING / TESTCASES:
 - DHT optimizations:
   * optional fields (HELOs)
 - #727
-- XFS 
+- XFS
 - #675
 - #747 (sharing stats for gnunet-gtk)
 
@@ -49,7 +49,7 @@ TESTING / TESTCASES:
 - #593 (gnunet-setup)
 - #678 (directory browser)
 - #704 (reindex downloaded files)
-- implement testbed for profiling 
+- implement testbed for profiling
 
 
 Not under control:
@@ -59,27 +59,27 @@ Not under control:
 
 
 
-gnunet-gtk wishlist (unallocated tasks unless mentioned 
+gnunet-gtk wishlist (unallocated tasks unless mentioned
 otherwise, feel free to implement):
 
-- while (!) downloading directory, display already received results 
+- while (!) downloading directory, display already received results
   for download (now supported by libecrs!)
 - add option to list all indexed files and perhaps delete from them
-- for potentially long clists, add option to specify a string 
-  pattern that must be matched for the lines to be displayed 
+- for potentially long clists, add option to specify a string
+  pattern that must be matched for the lines to be displayed
   (to further prune search results, for example)
-- implement search bookmarking (e.g. user could add/edit/delete 
+- implement search bookmarking (e.g. user could add/edit/delete
   favourite namespace/key etc combinations)
 - in Assemble Directory's Files Available/Selected
-    Add sortability 
-    Add multiselection  
+    Add sortability
+    Add multiselection
     Print filenames as well
 - add right button popup menu operations for
     Select by pattern
   in the search result list.
 - a completely new interactive namespace/directory building
   module that would allow importing files/directories from
-  disk and edit various parameters, file descriptions and 
+  disk and edit various parameters, file descriptions and
   the dir tree structure before the insertion.
 - give user opportunity to change namespace rating after
   namespace download succeeded
@@ -87,12 +87,12 @@ otherwise, feel free to implement):
 --------------------------
 
 Igor's check-up list for a release version:
-a) works out of the box on a fresh setup 
-   connects to the network 
-b) local search 
-   nonlocal search 
-   local download 
-   nonlocal download 
-   insert 
+a) works out of the box on a fresh setup
+   connects to the network
+b) local search
+   nonlocal search
+   local download
+   nonlocal download
+   insert
    gnunet-update
    GUI search, insert, download

@@ -34,15 +34,15 @@ Marko Räihä
 Risto Saarelma
 Antti Salonen
 Tuomas Toivonen
-Tomi Tukiainen 
+Tomi Tukiainen
 Simo Viitanen
 
 Translations:
 Chinese  : Di Ma <madi@cs.purdue.edu>
 Danish   : Jens Palsberg <palsberg@cs.ucla.edu>
 Deutsch  : Christian Grothoff <christian@grothoff.org>
-French   : Mathieu <mollo@bghflt.org>, 
-           Eric Haumant <eric.haumant@msg-software.fr>, 
+French   : Mathieu <mollo@bghflt.org>,
+           Eric Haumant <eric.haumant@msg-software.fr>,
            milan@skoid.org
 Japanese : Hiroshi Yamauchi <yamauchi@cs.purdue.edu>
 Polish   : Adam Welc <welc@cs.purdue.edu>
@@ -55,6 +55,6 @@ AFS Face    : Alex Jones <alexrjones@ntlworld.com>
 
 Maintainers:
 FreeBSD Port - Kirill Ponomarew <ponomarew@oberon.net>
-Debian Package - Daniel Baumann <daniel.baumann@panthera-systems.net> and 
-                 Arnaud Kyheng <Arnaud.Kyheng@free.fr> 
+Debian Package - Daniel Baumann <daniel.baumann@panthera-systems.net> and
+                 Arnaud Kyheng <Arnaud.Kyheng@free.fr>
 OS X Port - Jussi Eloranta <eloranta@cc.jyu.fi>

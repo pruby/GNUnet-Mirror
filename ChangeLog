@@ -4,7 +4,7 @@ Tue Mar  8 14:45:55 EST 2005
 	to maintain -- in summary: not worth it).
 
 Sat Mar  5 00:33:51 EST 2005
-	Changing hash algorithm to SHA-512. 
+	Changing hash algorithm to SHA-512.
 	Changing symcipher algorithm to AES-256.
 
 Sun Feb 27 21:59:31 EST 2005
@@ -40,7 +40,7 @@ Sun Nov 21 03:53:22 EST 2004
 	to CVS (which will only happen once at least some parts compile
 	again), this version will no longer be compatible with any
 	previously released version of GNUnet (and highly experimental).
-	Do not yet use the new code on-line, do not expect it to work 
+	Do not yet use the new code on-line, do not expect it to work
 	at all!
 
 Sun Nov 14 16:49:02 EST 2004
@@ -114,11 +114,11 @@ Mon Apr 26 21:13:45 EST 2004
 	more systematic in the future (not perfect, though).
 
 Mon Apr 26 19:27:29 EST 2004
-	Recursive insertion of directories with gnunet-gtk 
+	Recursive insertion of directories with gnunet-gtk
 	now works including the progress bar.
 
 Sun Apr 25 18:24:55 EST 2004
-	Global changes to fix bug #698.  The fix is still 
+	Global changes to fix bug #698.  The fix is still
 	incomplete with respect to pthread.h specific structs.
 	
 Sun Apr 25 15:20:29 EST 2004
@@ -135,9 +135,9 @@ Fri Apr 23 21:49:18 EST 2004
 
 Wed Apr 21 23:32:36 EST 2004
 	Added code to bound priority used by clients by twice the
-	average priority of requests from other peers that are 
+	average priority of requests from other peers that are
 	routed at the moment.  That prevents clients from exposing
-	themselves with excessively high priorities (and also 
+	themselves with excessively high priorities (and also
 	avoids giving too much credit/trust needlessly).
 
 Tue Apr 20 22:27:19 EST 2004
@@ -189,7 +189,7 @@ Sat Feb 28 03:43:34 EST 2004
 	Releasing 0.6.1c.
 
 Sat Feb 21 06:16:47 EST 2004
-	Modified requestmanager to improve performance at the end of the 
+	Modified requestmanager to improve performance at the end of the
 	download.
 
 Thu Feb 19 00:48:33 EST 2004
@@ -281,7 +281,7 @@ Thu Aug 21 19:42:57 EST 2003
 	GNUnet 0.5.5 released.
 
 Tue Aug 12 20:48:39 EST 2003
-	Support for namespaces with updates is there, 
+	Support for namespaces with updates is there,
 	but requires testing.
 
 Sun Jul 27 14:48:19 EST 2003
@@ -339,7 +339,7 @@ Sun Apr 20 23:25:45 EST 2003
 	only had a real chance to occur under BSD in practice).
 
 Sat Apr 19 14:42:37 EST 2003
-	Replaced use of dlopen for plugins with the more 
+	Replaced use of dlopen for plugins with the more
 	portable ltdl from libtool.
 	
 Thu Apr 17 20:36:42 EST 2003
@@ -351,13 +351,13 @@ Mon Apr  7 00:00:07 EST 2003
 	Implemented gnunet-delete.
 
 Sat Apr  5 15:55:31 EST 2003
-	Made directory database use 256 sub-directories 
+	Made directory database use 256 sub-directories
 	(should increase speed a lot, with the new DB
 	manager, this will result in at most 2048
 	files per directory).
 
 Mon Mar 31 16:51:24 EST 2003
-	gnunet-convert and gnunet-check compile again 
+	gnunet-convert and gnunet-check compile again
 	with the new DB code.
 	
 Sun Mar 30 13:14:52 CET 2003
@@ -371,7 +371,7 @@ Tue Mar 18 01:52:18 EST 2003
 
 Sun Mar 16 20:24:24 EST 2003
 	Caching of RSA signatures for HELOs reduced CPU
-	usage dramatically, from an average of 31% to less 
+	usage dramatically, from an average of 31% to less
 	than 5% on my machine.
 
 Sun Mar 16 01:21:16 EST 2003
@@ -430,8 +430,8 @@ Mon Jan 20 17:54:51 EST 2003
 
 Thu Jan 16 00:49:20 EST 2003
 	Nearly finished removing dependencies on OpenSSL
-	(using libgcrypt instead), $FOO-expansion in 
-	configuration parsing and RSA (public key crypto) 
+	(using libgcrypt instead), $FOO-expansion in
+	configuration parsing and RSA (public key crypto)
 	are the only missing pieces.	
 
 Mon Jan 13 01:53:45 EST 2003
@@ -445,17 +445,17 @@ Sun Dec 27 13:34:11 CET 2002
 Sat Dec 21 16:27:11 CET 2002
         Releasing GNUnet 0.5.0.
 
-Sat Dec 14 03:47:05 CET 2002  
+Sat Dec 14 03:47:05 CET 2002
 	Bugfixes over bugfixes. Various memory leaks
 	from gnunetd to gnunet-download, problems
 	with bloomfilters and gnunet-check, enforcing
 	storage limitations set by the user, fixes
-	in the UDP, TCP and SMTP transports; 
+	in the UDP, TCP and SMTP transports;
 	better thread termination (avoid asynchronous
 	cancellation). Not to mention the new
 	tools gnunet-transport-check and gnunet-tbench
 	for the evaulation of correctness and performance
-	of the transport services. 
+	of the transport services.
 
 Wed Nov  6 22:49:24 EST 2002
 	Added load smoothing for network and CPU load
@@ -465,7 +465,7 @@ Wed Nov  6 22:49:24 EST 2002
 	help avoiding 0-1 policies where we always jump
 	up and down between 100% load and no load, letting
 	in one period all traffic through and in the next
-	none. 
+	none.
 
 Wed Nov  6 00:31:39 EST 2002
 	Added port==0 for UDP and TCP transport as an
@@ -474,7 +474,7 @@ Wed Nov  6 00:31:39 EST 2002
 	peers but not as a server-socket (that is,
 	if the port is 0, other GNUnet peers can not
 	connect to the local node's UDP or TCP port,
-	but the local node can still use UDP 
+	but the local node can still use UDP
 	(unidirectional) or TCP (even bi-directional)
 	to talk to other peers. This is useful if a
 	node is behind a NAT box and can not receive
@@ -485,13 +485,13 @@ Wed Nov  6 00:31:39 EST 2002
 	must always provide at least one transport under
 	which the peer can be "actively" reached since
 	otherwise other peers will not keep the public
-	key of that peer and thus not be able to 
+	key of that peer and thus not be able to
 	complete the session key exchange. For NAT-box
 	peers, SMTP might be a viable choice for that
-	"active" protocol. 
+	"active" protocol.
 
 Fri Oct 11 02:16:42 EST 2002
-	Added bloomfilter interface and calls to the BF from 
+	Added bloomfilter interface and calls to the BF from
 	the AFS service implementation. Missing for working
 	bloomfilter are calls from gnunet-insert to update
 	the bloom-filter (top-CHK and super-queries) and the
@@ -503,7 +503,7 @@ Tue Oct  8 20:35:45 EST 2002
 
 Fri Sep 27 02:24:52 EST 2002
 	New content encoding (still only 1k blocks, but with
-	CHK style IBocks and GBlocks for aggressive content 
+	CHK style IBocks and GBlocks for aggressive content
 	migration) now seems to work.
 
 Mon Sep 16 01:57:55 EST 2002
@@ -540,7 +540,7 @@ Fri Sep 13 00:51:01 EST 2002
         * dynamic loading of transports and applications is
           implemented
         * routing much faster since slots are freed earlier
-        * querymanager is more intelligent in where to send 
+        * querymanager is more intelligent in where to send
           queries (presumably, not tested)
 
         Refactoring:
@@ -583,7 +583,7 @@ Sun Aug 25 15:30:56 EST 2002
 	  and core. The typedefs should be placed where they are
 	  used
 	* database does not belong in util, it's AFS specific
-        * AFS: cleaner separation between database, encoding, 
+        * AFS: cleaner separation between database, encoding,
 	  protocol implementation, shell-tools and GUI code.
 	
 	And finally, renaming:
@@ -597,7 +597,7 @@ Sun Aug 25 15:02:31 EST 2002
 	Releasing GNUnet 0.4.6.
 
 Thu Aug 22 01:31:21 EEST 2002
-	gnunet-gtk should now be able to perform multiple 
+	gnunet-gtk should now be able to perform multiple
 	search and download operations simultaneously (atleast a couple).
 
 Tue Aug 20 23:11:10 EEST 2002
@@ -633,7 +633,7 @@ Mon Aug 12 02:28:14 EST 2002
 	as long as needed, plus some other minor bugs).
 
 Mon Aug 12 01:31:03 EST 2002
-	Fixed bug #347 (option "-H" to gnunet-clients for 
+	Fixed bug #347 (option "-H" to gnunet-clients for
 	connecting to a remote gnunetd node).
 
 Mon Aug 12 01:10:17 EST 2002
@@ -658,7 +658,7 @@ Thu Aug  8 18:03:05 EST 2002
 	actually defined outside of netinet/in.h.
 
 Thu Aug  8 17:47:17 EST 2002
-	Fixed gnunetd segfaulting if gnunet.conf is not 
+	Fixed gnunetd segfaulting if gnunet.conf is not
 	available. Also, recvfrom returning -1 with
 	errno == EAGAIN was fixed earlier.
 
@@ -668,7 +668,7 @@ Wed Jul 31 23:38:36 EST 2002
 Wed Jul 31 21:35:53 EST 2002
 	Fixed bug with TCP connection that would not
 	free thread resources and eventually lead to
-	gnunetd not being able to start new threads 
+	gnunetd not being able to start new threads
 	anymore (mantis: #339).
 
 Tue Jul 30 23:38:51 EST 2002
@@ -683,10 +683,10 @@ Tue Jul 30 20:38:47 EST 2002
 	Started writing code to enable re-reading of the
 	configuration file whenever we receive a SIGHUP.
 	Works, except that after we've read the new
-	config file, gnunetd exits (unknown why). 
+	config file, gnunetd exits (unknown why).
 
 Mon Jul 29 18:52:23 EST 2002
-	Added shutdown code that terminates connection when 
+	Added shutdown code that terminates connection when
 	SIGTERM is received (to avoid keeping lots of UDP
 	traffic for the next couple of minutes from hosts
 	that still believe we're up).
@@ -708,7 +708,7 @@ Tue Jul 23 00:41:17 EST 2002
 	
 Sun Jul 21 20:39:20 EST 2002
 	Fixed issue with check_database (index checking too
-	strict if content is available in database and 
+	strict if content is available in database and
 	on-demand encoded; also a bounds check was missing).
 
 Sun Jul 21 16:05:20 EST 2002
@@ -716,15 +716,15 @@ Sun Jul 21 16:05:20 EST 2002
 	recursive lock).
 
 Sun Jul 21 02:02:32 EST 2002
-	Improved routing table. Now does more dynamic memory 
+	Improved routing table. Now does more dynamic memory
         allocation, reducing the fixed-size per slot from 700
 	to 56 bytes. Increased number of slots from 512 to
-	8092 (which is the optimal number for a 56 kbps 
+	8092 (which is the optimal number for a 56 kbps
         modem connection).
 
 Sat Jul 20 23:57:06 EST 2002
 	Fixed bug that caused problems for files
-        that were indexed and that had spaces in 
+        that were indexed and that had spaces in
         the filename.
 
 Wed Jul 17 22:50:24 EST 2002
@@ -736,7 +736,7 @@ Wed Jul 17 01:48:44 EST 2002
 	insertion-tools. Now gnunet-check seems to run like
 	a charm. Running it to detect and fix problems in
 	the GNUnet databases seems now recommendable :-).
-	Note that you must stop gnunetd before running 
+	Note that you must stop gnunetd before running
 	gnunet-check.
 
 Mon Jul 15 22:27:45 EST 2002
@@ -784,7 +784,7 @@ Sun Jun  9 22:56:02 EST 2002
 	Released GNUnet 0.4.1.
 	
 Sat Jun  8 05:00:36 EST 2002
-	Several small bugfixes (list of shared files not updated on 
+	Several small bugfixes (list of shared files not updated on
         insertion, highest-bit of trust not interpreted as dirty,
         rpm dependency on libextractor added.
         Also many improvments to the build process.
@@ -795,7 +795,7 @@ Wed Jun  5 17:01:58 EST 2002
 
 Tue Jun  4 17:17:45 EST 2002
 	The port numbers were not in network-byte order. Fixing
-	this is trivial, but it breaks compatibility with 0.4.0. 
+	this is trivial, but it breaks compatibility with 0.4.0.
 	Thanks to Rick Kennell for reporting the endianess issue.
 	
 Mon Jun  3 20:35:47 EST 2002
@@ -830,7 +830,7 @@ Sat May 18 16:00:06 EST 2002
 Tue May 14 23:59:40 EST 2002
 	New storage database is starting to look good. We can now store
 	the data in a directory (one file per block), a gdbm database,
-	and presumably (not tested) in a tdb database. 
+	and presumably (not tested) in a tdb database.
 
 Sat May 11 22:10:56 EST 2002
 	Completed, deployed and tested the new TCPIO code. This changes
@@ -873,10 +873,10 @@ Fri Apr 12 03:01:06 EST 2002
 
 Thu Apr 11 01:43:28 EST 2002
 	Added sequence numbers to protocol to defend
-	against replay attacks (bug #185). 
+	against replay attacks (bug #185).
 
 Wed Apr 10 02:07:25 EST 2002
-	Bugfix gnunet-insert-mp3 (endless loop). 
+	Bugfix gnunet-insert-mp3 (endless loop).
 	Updated documentation.
 	
 Mon Apr  8 00:07:15 EST 2002
@@ -889,7 +889,7 @@ Fri Apr  5 02:03:13 EST 2002
 Fri Apr  5 00:33:42 EST 2002
         gnunet-gtk, the gtk+ based GUI is now functional and
 	has all the features of gnunet-search and gnunet-download,
-	including boolean queries. In fact, it is a bit better than 
+	including boolean queries. In fact, it is a bit better than
 	gnunet-download as it shows the progress of the download.
 	The manpage for gnunet-gtk was updated. Minor bugfixes.
 	
@@ -911,7 +911,7 @@ Wed Mar 14 05:46:20 EST 2002
 	now in $HOME/GNUnet. RPM installation points to /var/GNUnet
 	and the config file is ~/GNUnet/gnunet.conf
 	Finished port to FreeBSD. This included mostly changes
-	to src/util/statuscalls.c, but also several changes to 
+	to src/util/statuscalls.c, but also several changes to
 	the build system. Added a stat() call in the server code
 	to make sure the config file exists before sending it to
 	the OpenSSL conf code. Added getopt to source to fix
@@ -923,20 +923,20 @@ Wed Mar  6 23:15:36 EST 2002
 	Added code for 'fast scan' of the database for
 	content to discard (should be called partial
 	scan). This improves the startup-time dramatically.
-	Every source file got the GNU header. 
+	Every source file got the GNU header.
 	
 Tue Mar  5 22:42:36 EST 2002
 	Added option for *not* participating in content
 	migration. Added timeout option to gnunet-search.
 	gnunetd now periodically (1h) scans for new content,
-	no restarting required. 
+	no restarting required.
 
 Mon Mar  4 23:21:51 EST 2002
 	Optimized routing and content migration. Distance
 	of the hash to the identity of the local host is
 	now taken into account for routing. Hosts give
 	higher priority to content that is close to their
-	identity (priority towards keeping it). If the 
+	identity (priority towards keeping it). If the
 	network grows, this should significantly improve
 	the performance. Also, the choice of the hosts
 	for routing is now based on proximity (to the
@@ -947,7 +947,7 @@ Sun Mar  3 00:14:58 EST 2002
 	Implemented binary queries ("AND") for gnunet-search.
 	Made sure that content is not downloaded again if
 	already present (if there is other content, we
-	overwrite). Fixed bug in gnunet-download 
+	overwrite). Fixed bug in gnunet-download
 	(uninitialzied time-to-live).
 	
 Sat Mar  2 01:57:37 EST 2002
@@ -956,10 +956,10 @@ Sat Mar  2 01:57:37 EST 2002
 	Released GNUnet v0.3.1.
 
 Wed Feb 20 23:47:19 EST 2002
-	Big CVS moving operation. 
+	Big CVS moving operation.
 
 Sat Feb 16 23:17:27 EST 2002
-	Started migration to GNUnet. 
+	Started migration to GNUnet.
 
 Sun Feb  3 01:20:37 EST 2002
 	Extracted crc32 method from zlib and put only that method into
@@ -967,7 +967,7 @@ Sun Feb  3 01:20:37 EST 2002
 	zlib) and we no longer depend no that library (always good).
 
 Sat Feb  2 22:56:32 EST 2002
-	Building final tarball for v0.3.0. 
+	Building final tarball for v0.3.0.
 
 Wed Jan 30 23:41:04 EST 2002
 	Created mp32gnet, a tool to automaticall index mp3 files
@@ -980,7 +980,7 @@ Tue Jan 29 17:36:48 EST 2002
         circumstances and lead to an exhaustion of the number of
         concurrently open files.
 
-Mon Jan 21 23:34:44 EST 2002 
+Mon Jan 21 23:34:44 EST 2002
 	Bumping version numbers to v0.3.0 (not yet released, needs some
 	more testing to be on the safe side).
 	
@@ -997,11 +997,11 @@ Sun Jan 13 23:17:58 EST 2002
 	EvaluateContent now gets the priority of the
 	query that the content had.
 	
-Sun Jan 13 00:54:56 EST 2002 
+Sun Jan 13 00:54:56 EST 2002
 	Improved choice in number of hosts to forward
 	queries to (now dynamic, depending on priority, etc.)
 	Removed many, many allocations in print statements
-	which also caused memory leaks if active (see 
+	which also caused memory leaks if active (see
 	debugging.h).
 	Added CRC checking of the root node in GProxy. Fixed
 	problem with CRC in IBlocks for large files.
@@ -1014,16 +1014,16 @@ Sat Jan  5 14:25:31 EST 2002
 	semaphore is gone. The table has many more entries (we can
 	afford that now that there is no longer a linear search).
 
-Wed Dec 26 19:30:41 CET 2001 
+Wed Dec 26 19:30:41 CET 2001
 	Created v0.2.0
 
-Tue Dec 25 21:24:18 CET 2001 
+Tue Dec 25 21:24:18 CET 2001
 	Fixed TTL errors that made queries loop. Added host-evaluation
 	to policy (drop packets from untrusted hosts under load). Found that CRC-errors
 	are related to policy decisions ("drop"), cosmetic fix.
 
 Sun Nov 25 08:10:52 EST 2001
-	Added triple-hash functionality and on-demand encoding (lookup.c). 
+	Added triple-hash functionality and on-demand encoding (lookup.c).
 
 Sat Nov 24 07:46:10 EST 2001
 	Added randomized choice of hosts for the hosttable.

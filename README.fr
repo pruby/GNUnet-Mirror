@@ -36,7 +36,7 @@ http://gnunet.org/documentation.php3?xlang=French
 Si vous préférez installer et compiler à partir des sources, vous
 pouvez exécuter le script d'auto-installation en saisissant :
 
-# contrib/autoinstall 
+# contrib/autoinstall
 
 après vous être placé dans le répertoire des sources. Cette procédure
 n'est pas adaptée à une installation pour un seul utilisateur, car
@@ -84,7 +84,7 @@ autoinstall). La configuration concernant les utilisateurs de GNUnet
 qui se trouve dans le fichier "contrib/gnunet.user" devrait être copiée
 dans le répertoire personnel de chaque utilisateur dans
 "~/.gnunet/gnunet.conf", et éventuellement comme modèle
-dans "/etc/skel/.gnunet/gnunet.conf". 
+dans "/etc/skel/.gnunet/gnunet.conf".
 
 Afin de démarrer un noeud "permanent", vous devriez créer un nouvel
 utilisateur "gnunet" et lancer "gnunetd" en tant que cet utilisateur
@@ -158,9 +158,9 @@ $ gnunet-insert
 Si voulez utiliser une interface graphique, lancez simplement
 $ gnunet-gtk
 
-Si vous préferez passer par un shell, tapez 
+Si vous préferez passer par un shell, tapez
 $ gnunet-search <mot-clé>
-Ceci affichera une liste de résultats dans la console. Puis utilisez 
+Ceci affichera une liste de résultats dans la console. Puis utilisez
 $ gnunet-download -o <fichier> --<URI GNUnet> pour télécharger
 du contenu. L'URI GNUnet (identifiant permettant de retrouver
 le fichier) est affichée par gnunet-search avec une description.

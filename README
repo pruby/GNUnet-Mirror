@@ -28,7 +28,7 @@ system.  For a more detailed description, read the installation
 instructions on the webpage at
 http://gnunet.org/documentation.php3.
 
-If you install from source, you need to install libextractor 
+If you install from source, you need to install libextractor
 first (download from http://gnunet.org/libextractor/).  Then
 you can start the actual GNUnet compilation process with:
 
@@ -45,8 +45,8 @@ the first time a user starts a GNUnet user interface.  For more
 general information about the GNU build process read the INSTALL file.
 
 GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
-and libgcrypt.  You can specify the path to 
-libgcrypt using "--with-gcrypt=PATH". 
+and libgcrypt.  You can specify the path to
+libgcrypt using "--with-gcrypt=PATH".
 
 If you are compiling the CVS version, you have to run ". bootstrap"
 before ./configure.  If you receive an error during the running of
@@ -118,7 +118,7 @@ you want to maximize your anonymity.  You may start it as a service
 with "/etc/init.d/gnunetd start".  To insert files into GNUnet, use
 the "gnunet-insert" command.
 
-If want to use a GUI, just invoke 
+If want to use a GUI, just invoke
 
 $ gnunet-gtk
 
