@@ -479,6 +479,10 @@ void writeFile(const char * fileName,
     return;
   handle = OPEN(fileName,
 		O_CREAT|O_WRONLY,S_IRUSR|S_IWUSR);
+  if (handle == -1) {
+    LOG_FILE_STRERROR(LOG_WARNING, "open", fileName);
+    return;
+  }
   /* write the buffer take length from the beginning */
   if (n != WRITE(handle, buffer, n)) 
     LOG_FILE_STRERROR(LOG_WARNING, "write", fileName);

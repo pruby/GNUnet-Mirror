@@ -10,10 +10,6 @@ libgnunetfs_la_LIBADD = \
  $(top_builddir)/src/applications/fs/libecrs_core.la
 
 
-################################
-# TESTCASES 
-################################
-
 check_PROGRAMS = \
   fslibtest
 
@@ -24,3 +20,6 @@ fslibtest_SOURCES = \
 fslibtest_LDADD = \
   $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
   $(top_builddir)/src/util/libgnunetutil.la 
+
+EXTRA_DIST = \
+  check.conf

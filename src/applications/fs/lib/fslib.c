@@ -261,6 +261,10 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
   RequestInsert * ri;
   unsigned int size;
 
+  if (ntohl(block->size) <= sizeof(Datastore_Value)) {
+    BREAK();
+    return SYSERR;
+  }
   size = ntohl(block->size) - sizeof(Datastore_Value);
   ri = MALLOC(sizeof(RequestInsert) + size);
   ri->header.size = htons(sizeof(RequestInsert) + size);

@@ -25,8 +25,9 @@ libgnunetecrs_la_LIBADD = \
 
 
 check_PROGRAMS = \
+  uritest \
   metatest \
-  uritest 
+  ecrstest 
 
 TESTS = $(check_PROGRAMS)
 
@@ -35,9 +36,12 @@ uritest_SOURCES = \
 uritest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
-
 metatest_SOURCES = \
   metatest.c 
 metatest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
 
+ecrstest_SOURCES = \
+  ecrstest.c
+ecrstest_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
