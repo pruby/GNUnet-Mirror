@@ -20,7 +20,13 @@
 /**
  * @file applications/dht/module/datastore_memory.c
  * @brief provides the implementation of the 
- * DHT_Datastore API for keeping the table data in memory.
+ * 
+ * Blockstore implementation for keeping the table
+ * data in memory.  This implementation knows 
+ * nothing about entry types or multiple keys.  
+ * get calls must only use one key and types 
+ * are always ignored.
+ *
  * @author Simo Viitanen, Christian Grothoff
  */
 
@@ -35,7 +41,7 @@ typedef struct HT_Entry_t {
   struct HT_Entry_t * next;
   HashCode160 key;
   unsigned int count;
-  DHT_DataContainer * values;
+  DataContainer ** values;
 } HT_Entry;
 
 /**
@@ -63,41 +69,31 @@ typedef struct {
  * @return number of results, SYSERR on error
  */
 static int lookup(void * closure,
-		  const HashCode160 * key,
-		  unsigned int maxResults,
-		  DHT_DataContainer * results) {
+		  unsigned int type,
+		  unsigned int prio,
+		  unsigned int keyCount,
+		  const HashCode160 * keys,
+		  DataProcessor resultCallback,
+		  void * resCallbackClosure) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
   HT_Entry * pos;
-  int count;
   int i;
 
-  if (ds == NULL)
+  if ( (ds == NULL) || (keyCount != 1) )
     return SYSERR;
   MUTEX_LOCK(&ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode160(key, &pos->key)) {
-      if (pos->count > maxResults)
-	count = maxResults;
-      else
-	count = pos->count;
-      for (i=0;i<count;i++) {
-	if (results[i].dataLength > 0) {
-	  if (results[i].dataLength > pos->values[i].dataLength)
-	    results[i].dataLength = pos->values[i].dataLength;
-	  memcpy(results[i].data,
-		 pos->values[i].data,
-		 results[i].dataLength);
-	} else {
-	  results[i].dataLength = pos->values[i].dataLength;
-	  results[i].data = MALLOC(results[i].dataLength);
-	  memcpy(results[i].data,
-		 pos->values[i].data,
-		 results[i].dataLength);
+    if (equalsHashCode160(&keys[0], &pos->key)) {
+      for (i=0;i<pos->count;i++)
+	if (OK != resultCallback(&pos->key,
+				 pos->values[i],
+				 resCallbackClosure)) {
+	  MUTEX_UNLOCK(&ds->lock);
+	  return SYSERR;
 	}
-      }
       MUTEX_UNLOCK(&ds->lock);
-      return count;
+      return pos->count;
     }
     pos = pos->next;
   }
@@ -115,71 +111,78 @@ static int lookup(void * closure,
  */
 static int store(void * closure,
 		 const HashCode160 * key,
-		 const DHT_DataContainer * value) {
+		 unsigned int type,
+		 const DataContainer * value,
+		 unsigned int prio) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
   HT_Entry * pos;
+  unsigned int size;
+
   if (ds == NULL)
     return SYSERR;
 
+  size = ntohl(value->size);
   MUTEX_LOCK(&ds->lock);
   pos = ds->first;
   while (pos != NULL) {
     if (equalsHashCode160(key, &pos->key)) {
-      if (ds->max_memory + pos->values[0].dataLength < 
-	  value->dataLength) {
+      if (ds->max_memory < size) {
 	MUTEX_UNLOCK(&ds->lock);
-	return DHT_ERRORCODES__OUT_OF_SPACE;	
+	return NO;
       }
-      ds->max_memory -= value->dataLength - pos->values[0].dataLength;
-      FREE(pos->values[0].data);
-      pos->values[0].data = MALLOC(value->dataLength);
-      memcpy(pos->values[0].data,
-	     value->data,
-	     value->dataLength);
+      ds->max_memory -= size;
+      GROW(pos->values,
+	   pos->count,
+	   pos->count+1);
+      pos->values[pos->count-1]
+	= MALLOC(size);
+      memcpy(pos->values[pos->count-1],
+	     value,
+	     size);
       MUTEX_UNLOCK(&ds->lock);  
       return OK;
     } /* end key match */
     pos = pos->next;
   }
   /* no key matched, create fresh entry */
-  if (ds->max_memory < sizeof(HT_Entry) + sizeof(DHT_DataContainer) + value->dataLength) {
+  if (ds->max_memory < sizeof(HT_Entry) + size) {
     MUTEX_UNLOCK(&ds->lock);
-    return DHT_ERRORCODES__OUT_OF_SPACE;
+    return NO;
   }
-  ds->max_memory -= sizeof(HT_Entry) + sizeof(DHT_DataContainer) + value->dataLength;
-
+  ds->max_memory -= sizeof(HT_Entry) + size;
   pos = MALLOC(sizeof(HT_Entry));
   pos->key = *key;
   pos->count = 1;
-  pos->values = MALLOC(sizeof(DHT_DataContainer));
-  pos->values[0].dataLength = value->dataLength;
-  pos->values[0].data = MALLOC(value->dataLength);
-  memcpy(pos->values[0].data,
-	 value->data,
-	 value->dataLength);
+  pos->values = MALLOC(sizeof(DataContainer*));
+  memcpy(pos->values[0],
+	 value,
+	 size);
   pos->next = ds->first;
   ds->first = pos;
   MUTEX_UNLOCK(&ds->lock);
-
   return OK;
 }
 
 /**
  * Remove an item from the datastore.
+ *
  * @param key the key of the item
  * @param value the value to remove, NULL for all values of the key
  * @return OK if the value could be removed, SYSERR if not (i.e. not present)
  */
 static int ds_remove(void * closure,
 		     const HashCode160 * key,
-		     const DHT_DataContainer * value) {
-  MemoryDatastore * ds = (MemoryDatastore*) closure;
+		     unsigned int type,
+		     const DataContainer * value) {
+  MemoryDatastore * ds = closure;
   HT_Entry * pos;
   HT_Entry * prev;
   int i;
+  unsigned int size;
+
   if (ds == NULL)
     return SYSERR;
-
+  size = ntohl(value->size);
   MUTEX_LOCK(&ds->lock);
   prev = NULL;
   pos = ds->first;
@@ -187,17 +190,16 @@ static int ds_remove(void * closure,
     if (equalsHashCode160(key, &pos->key)) {
       if (value != NULL) {
 	for (i=0;i<pos->count;i++) {
-	  if ( (pos->values[i].dataLength == value->dataLength) &&
-	       (0 == memcmp(pos->values[i].data,
-			    value->data,
-			    value->dataLength)) ) {
-	    FREE(pos->values[i].data);
-	    ds->max_memory += value->dataLength;
+	  if ( (pos->values[i]->size == value->size) &&
+	       (0 == memcmp(pos->values[i],
+			    value,
+			    size)) ) {
+	    FREE(pos->values[i]);
+	    ds->max_memory += size;
 	    pos->values[i] = pos->values[pos->count-1];
 	    GROW(pos->values,
 		 pos->count,
 		 pos->count-1);
-	    ds->max_memory += sizeof(DHT_DataContainer);
 	    if (pos->count == 0) {
 	      if (prev == NULL)
 		ds->first = pos->next;
@@ -218,10 +220,9 @@ static int ds_remove(void * closure,
 	  prev->next = pos->next;
 	
 	for (i=0;i<pos->count;i++) {
-	  FREE(pos->values[i].data);
-	  ds->max_memory += pos->values[i].dataLength;
+	  ds->max_memory += ntohl(pos->values[i]->size);
+	  FREE(pos->values[i]);
 	}
-	ds->max_memory += pos->count * sizeof(DHT_DataContainer);
 	GROW(pos->values,
 	     pos->count,
 	     0);
@@ -246,9 +247,9 @@ static int ds_remove(void * closure,
  * @return number of results, SYSERR on error
  */
 static int iterate(void * closure,		 
-		   DHT_DataProcessor processor,
+		   DataProcessor processor,
 		   void * cls) {
-  MemoryDatastore * ds = (MemoryDatastore*) closure;
+  MemoryDatastore * ds = closure;
   int ret;
   HT_Entry * pos;
   int i;
@@ -264,7 +265,7 @@ static int iterate(void * closure,
       ret++;
       if (processor != NULL)
 	if (OK != processor(&pos->key,
-			    &pos->values[i],
+			    pos->values[i],
 			    cls)) {
 	  MUTEX_UNLOCK(&ds->lock);
 	  return ret;
@@ -280,8 +281,8 @@ static int iterate(void * closure,
  * Create a DHT Datastore (in memory)
  * @param max_memory do not use more than max_memory memory.
  */
-DHT_Datastore * create_datastore_memory(size_t max_memory) {
-  DHT_Datastore * res;
+Blockstore * create_datastore_memory(size_t max_memory) {
+  Blockstore * res;
   MemoryDatastore * md;
 
   md = MALLOC(sizeof(MemoryDatastore));
@@ -289,10 +290,10 @@ DHT_Datastore * create_datastore_memory(size_t max_memory) {
   md->first = NULL;
   MUTEX_CREATE_RECURSIVE(&md->lock);
 
-  res = MALLOC(sizeof(DHT_Datastore));
-  res->lookup = &lookup;
-  res->store = &store;
-  res->remove = &ds_remove;
+  res = MALLOC(sizeof(Blockstore));
+  res->get = &lookup;
+  res->put = &store;
+  res->del = &ds_remove;
   res->iterate = &iterate;
   res->closure = md;
   return res;
@@ -303,7 +304,7 @@ DHT_Datastore * create_datastore_memory(size_t max_memory) {
  * @param ds the Datastore to destroy; must have been
  *  created by create_datastore_memory.
  */
-void destroy_datastore_memory(DHT_Datastore * ds) {
+void destroy_datastore_memory(Blockstore * ds) {
   MemoryDatastore * md;
   HT_Entry * pos;
   HT_Entry * next;
@@ -314,7 +315,7 @@ void destroy_datastore_memory(DHT_Datastore * ds) {
   while (pos != NULL) {
     next = pos->next;
     for (i=0;i<pos->count;i++) 
-      FREENONNULL(pos->values[i].data);    
+      FREENONNULL(pos->values[i]);    
     FREE(pos->values);
     FREE(pos);
     pos = next;
