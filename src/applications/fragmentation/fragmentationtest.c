@@ -285,14 +285,14 @@ static void testManyFragmentsMultiId() {
   for (i=0;i<50;i++) {
     for (id=0;id<DEFRAG_BUCKET_COUNT;id++) {
       pep = makeFragment(i*16, 16, 51*16, id+5);
-      mySender.hashPubKey.a = id;
+      mySender.hashPubKey.bits[0] = id;
       processFragment(&mySender, pep);
       GNUNET_ASSERT(myMsg == NULL);
     }
   }
   for (id=0;id<DEFRAG_BUCKET_COUNT;id++) {
     pep = makeFragment(50*16, 16, 51*16, id+5);
-    mySender.hashPubKey.a = id;
+    mySender.hashPubKey.bits[0] = id;
     processFragment(&mySender, pep);
     checkPacket(id+5, 51*16);
   }
@@ -306,14 +306,14 @@ static void testManyFragmentsMultiIdCollisions() {
   for (i=0;i<5;i++) {
     for (id=0;id<DEFRAG_BUCKET_COUNT*4;id++) {
       pep = makeFragment(i*16, 16, 6*16, id+5);
-      mySender.hashPubKey.a = id;
+      mySender.hashPubKey.bits[0] = id;
       processFragment(&mySender, pep);
       GNUNET_ASSERT(myMsg == NULL);
     }
   }
   for (id=0;id<DEFRAG_BUCKET_COUNT*4;id++) {
     pep = makeFragment(5*16, 16, 6*16, id+5);
-    mySender.hashPubKey.a = id;
+    mySender.hashPubKey.bits[0] = id;
     processFragment(&mySender, pep);
     checkPacket(id+5, 6*16);
   }
