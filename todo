@@ -7,7 +7,7 @@
 
 0.7.0pre1 [4'05] (aka "preview"):
 - testing:
-  * sqlite-tests: test update function, concurrency with iterators, multiple results
+  * sqlite-tests: test concurrency with iterators
   * gnunet-pseudonym
   * gnunet-search: multiple search results don't work (yet); test on sqlite, FSLIB and ECRS levels!
 - gap:
