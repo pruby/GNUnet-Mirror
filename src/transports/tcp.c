@@ -76,7 +76,6 @@ typedef struct {
    * This struct is followed by MESSAGE_PARTs - until size is reached 
    * There is no "end of message".
    */
-  p2p_HEADER parts[0];
 } TCPMessagePack;
 
 /**
@@ -473,7 +472,7 @@ static int readAndProcess(int i) {
   mp      = MALLOC(sizeof(MessagePack));
   mp->msg = MALLOC(len);
   memcpy(mp->msg,
-	 &pack->parts[0],
+	 &pack[1],
 	 len - sizeof(TCPMessagePack));
   mp->sender   = tcpSession->sender;
   mp->size     = len - sizeof(TCPMessagePack);
@@ -1073,7 +1072,7 @@ static int tcpSend(TSession * tsession,
   if (((TCPSession*)tsession->internal)->sock == -1) 
     return SYSERR; /* other side closed connection */
   mp = MALLOC(sizeof(TCPMessagePack) + size);
-  memcpy(&mp->parts[0],
+  memcpy(&mp[1],
 	 msg,
 	 size);
   ssize = size + sizeof(TCPMessagePack);
@@ -1112,7 +1111,7 @@ static int tcpSendReliable(TSession * tsession,
   if (((TCPSession*)tsession->internal)->sock == -1)
     return SYSERR; /* other side closed connection */
   mp = MALLOC(sizeof(TCPMessagePack) + size);
-  memcpy(&mp->parts[0],
+  memcpy(&mp[1],
 	 msg,
 	 size);
   ssize = size + sizeof(TCPMessagePack);

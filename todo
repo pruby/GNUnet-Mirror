@@ -9,7 +9,7 @@
 - testing:
   * sqlite-tests: test concurrency with iterators
   * gnunet-pseudonym
-  * gnunet-search: multiple search results don't work (yet); test on sqlite, FSLIB and ECRS levels!
+  * gnunet-search: multiple search results don't work (yet); test on FSLIB and ECRS levels!
 - gap:
   * economy for local queries (see applications/gap/TODO) [ tricky ]
 - FSUI:
@@ -17,9 +17,6 @@
   * namespace updates
   * collections
   * testing
-- configure.ac: 
-  * flags for mysql, gmp, libgcrypt should ONLY be passed when
-    linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
 - multi-peer testing:
   * core
   * gap
