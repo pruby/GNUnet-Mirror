@@ -24,9 +24,6 @@
  * @author Nils Durner
  * @todo Estimation of DB size
  * @todo Apply fixes from MySQL module
- * @todo testcase currently fails 
- *        ("ERROR: 'precompiling' failed at sqlite.c:379 
- *         with error: near "from": syntax error")
  *
  * Database: SQLite
  */
@@ -65,7 +62,11 @@ typedef struct {
   unsigned int lastSync;
   
   /* Precompiled SQL */
-  sqlite3_stmt *exists, *countContent, *updPrio, *insertContent;
+  sqlite3_stmt *exists, *countContent, *updPrio, *insertContent, *migr;
+  
+  /* Last migrated block */
+  cron_t lastExp;
+  unsigned int lastPrio;
 } sqliteHandle;
 
 static sqliteHandle *dbh;
@@ -88,6 +89,7 @@ static int update(const HashCode160 * key, const Datastore_Value * value,
 	int delta);
 static unsigned long long getSize();
 static void drop();
+static void suspendMigration();
 
 /**
  * @brief Encode a binary buffer "in" of size n bytes so that it contains
@@ -121,34 +123,6 @@ static int sqlite_encode_binary(const unsigned char *in, int n, unsigned char *o
   return (int) (out - start);
 }
 
-#if 0
-/**
- * @brief Decode the string "in" into binary data and write it into "out".
- * @param in input
- * @param out output
- * @return number of output bytes, -1 on error
- */
-static int sqlite_decode_binary(const unsigned char *in,
-				unsigned char *out){
-  char c;
-  unsigned char *start = out;
-  
-  while((c = *in)) {
-    if (c == 1) {
-      in++;
-      *out = *in - 1;
-    }
-    else
-      *out = c;
-    
-    in++;
-    out++;
-  }
-  
-  return (int) (out - start);
-}
-#endif
-
 /**
  * @brief Decode the string "in" into binary data and write it into "out".
  * @param in input
@@ -174,6 +148,16 @@ static int sqlite_decode_binary_n(const unsigned char *in, unsigned char *out,
   }
   
   return (int) (out - start);
+}
+
+/**
+ * @brief Suspend migration and unlock table
+ */
+static void suspendMigration() {
+  if (dbh->migr) {
+    sqlite3_finalize(dbh->migr);
+    dbh->migr = NULL;
+  }
 }
 
 /**
@@ -229,6 +213,8 @@ static double getStat(char *key) {
   sqlite3_stmt *stmt;
   double ret = SYSERR;
   char *dummy;
+  
+  suspendMigration();
 
   i = sqlite3_prepare(dbh->dbf, 
     "Select anonLevel from gn070 where hash = ?", 42, &stmt,
@@ -266,6 +252,8 @@ static double getStat(char *key) {
 static int setStat(char *key, double val) {
   sqlite3_stmt *stmt;
   char *dummy;
+  
+  suspendMigration();
 
   if (sqlite3_prepare(dbh->dbf,
         "REPLACE into gn070(hash, anonLevel, type) values (?, ?, ?)", 58,
@@ -388,6 +376,10 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   
   dbh->payload = getStat("PAYLOAD");
   
+  dbh->migr = NULL;
+  dbh->lastPrio = 0;
+  dbh->lastExp = 0;
+  
   if (dbh->payload == SYSERR) {
     FREE(dbh->fn);
     FREE(dbh);
@@ -420,6 +412,7 @@ static void sqlite_shutdown() {
   sqlite3_finalize(dbh->exists);
   sqlite3_finalize(dbh->updPrio);
   sqlite3_finalize(dbh->insertContent);
+  suspendMigration();
   
   syncStats();
 
@@ -455,28 +448,59 @@ static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
   sqlite3_stmt *stmt;
   int count = 0;
   char *dummy;
-  char scratch[107];
+  char scratch[200], *ptr;
   Datastore_Datum * datum;
+  int bind;
 
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: iterating through the database\n");
 #endif 
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
-
-	sprintf(scratch, "SELECT size, type, prio, anonLevel, expire, hash, value "
-					 "FROM gn070 %s order by %s ASC",
-					 type ? "where type = :1" : "", sort ? "prio" : "expire");
-
-  if (sqlite3_prepare(dbh->dbf, scratch, -1, &stmt,
-           (const char **) &dummy) != SQLITE_OK) {
-    LOG_SQLITE(LOG_ERROR, "sqlite_query");
-    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-    return(SYSERR);
+  
+  if ((sort == 0 && !dbh->migr) || sort != 0) {
+    strcpy(scratch, "SELECT size, type, prio, anonLevel, expire, hash, value "
+             "FROM gn070 ");
+    ptr = scratch + 67;
+    
+    if (type) {
+      strcpy(ptr, "where type = :1 ");
+      ptr += 16;
+    }
+    
+    if (sort) {
+      strcpy(ptr, "order by prio ASC");
+    }
+    else {
+      if (!type) {
+        strcpy(ptr, "where ");
+        ptr += 6;
+      }
+      strcpy(ptr, "expire > :2 and prio >= :3 order by expire ASC, prio ASC");
+    }
+  
+    if (sqlite3_prepare(dbh->dbf, scratch, -1, &stmt,
+             (const char **) &dummy) != SQLITE_OK) {
+      LOG_SQLITE(LOG_ERROR, "sqlite_query");
+      MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+      return(SYSERR);
+    }
+    
+    dbh->migr = stmt;
   }
-
+  else
+    if (sort == 0)
+      stmt = dbh->migr;
+  
+  bind = 1;
+  
 	if (type)
-		sqlite3_bind_int(stmt, 1, type);
+		sqlite3_bind_int(stmt, bind++, type);
+    
+  if (!sort) {
+    sqlite3_bind_int(stmt, bind++, dbh->lastExp);
+    sqlite3_bind_int(stmt, bind, dbh->lastPrio);
+  }
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
 		datum = assembleDatum(stmt);
@@ -486,18 +510,28 @@ static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
 	  		_("Invalid data in database.  Please verify integrity!\n"));
       continue; 
     }
+    
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
     if( SYSERR == iter(&datum->key, &datum->value, closure) ) {
       count = SYSERR;
       FREE(datum);
       break;
     }
+    
+    MUTEX_LOCK(&dbh->DATABASE_Lock_);
+    
+    dbh->lastPrio = sqlite3_column_int(stmt, 2);
+    dbh->lastExp = sqlite3_column_int64(stmt, 4);
+    
     FREE(datum);
 
     count++;
   }
+  
+  if (sort)
+    sqlite3_finalize(stmt);
     
-  sqlite3_finalize(stmt);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   
 #if DEBUG_SQLITE
@@ -567,12 +601,14 @@ static int get(const HashCode160 * key,
 #if DEBUG_SQLITE
   {
     char block[33];
-    hash2enc(query, (EncName *) key);
+    hash2enc(block, (EncName *) key);
     LOG(LOG_DEBUG, "SQLite: read content %s\n", key);
   }
 #endif 
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  
+  suspendMigration();
   
   strcpy(scratch, "SELECT ");
   
@@ -692,7 +728,15 @@ static int put(const HashCode160 * key,
     return SYSERR;
   }
 
+#if DEBUG_SQLITE
+  LOG(LOG_DEBUG,
+      "Storing in database block with type %u.\n",
+      ntohl(*(int*)&value[1]));
+#endif
+
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  
+  suspendMigration();
   
   if (dbh->lastSync > 1000)
     syncStats(dbh);
@@ -705,12 +749,6 @@ static int put(const HashCode160 * key,
     
   escapedBlock = MALLOC(2 * contentSize + 1);
   blockLen = sqlite_encode_binary((char *) &value[1], contentSize, escapedBlock);
-
-#if DEBUG_SQLITE
-  LOG(LOG_DEBUG,
-      "Storing in database block with type %u.\n",
-      ntohl(*(int*)&value[1]));
-#endif
 
 	stmt = dbh->insertContent;
 	sqlite3_bind_double(stmt, 1, ntohl(value->size));
@@ -762,6 +800,8 @@ static int del(const HashCode160 * key,
 #endif 
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  
+  suspendMigration();
   
   if (dbh->lastSync > 1000)
     syncStats(dbh);
@@ -854,8 +894,15 @@ static int update(const HashCode160 * key,
   char *escapedHash, *escapedBlock;
   int hashLen, blockLen, n;
   unsigned long contentSize;
-	
+
+#if DEBUG_SQLITE
+  LOG(LOG_DEBUG, "SQLite: update block\n");
+#endif 
+
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  
+  suspendMigration();
+
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   
   escapedHash = MALLOC(2*sizeof(HashCode160)+1);
@@ -893,6 +940,10 @@ static int update(const HashCode160 * key,
   FREE(escapedBlock);
 
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  
+#if DEBUG_SQLITE
+  LOG(LOG_DEBUG, "SQLite: block updated\n");
+#endif
 
   return n == SQLITE_OK ? OK : SYSERR;
 }
