@@ -64,12 +64,56 @@ static char * makeName(unsigned int i) {
   return fn;
 }
 
+static volatile enum FSUI_EventType lastEvent;
+static struct FSUI_Context * ctx;
+
+static void eventCallback(void * cls,
+			  const FSUI_Event * event) {
+  char * fn;
+
+  switch(event->type) {
+  case search_result:
+    printf("Received search result\n");
+    break;
+  case upload_complete:
+    printf("Upload complete.\n");
+    break;
+  case download_complete:
+    printf("Download complete.\n");
+    break;
+  case unindex_complete:
+    printf("Unindex complete.\n");
+    break;
+  default:
+    break;
+  }
+  if (lastEvent == download_complete)
+    return; /* ignore all other events */
+  lastEvent = event->type;  
+  if (event->type == search_result) {
+    fn = makeName(43);
+    FSUI_startDownload(ctx,
+		       0,
+		       event->data.SearchResult.fi.uri,
+		       fn);
+    FREE(fn);
+  }
+}
+
 
 int main(int argc, char * argv[]){
   pid_t daemon;
   int status;
   int ok;
-  struct FSUI_URI * uri;
+  struct ECRS_URI * uri;
+  char * fn;
+  char * keywords[] = { 
+    "foo",
+    "bar",
+    NULL,
+  };
+  int prog;
+  struct ECRS_MetaData * meta;
 
   daemon = fork();
   if (daemon == 0) {
@@ -92,9 +136,53 @@ int main(int argc, char * argv[]){
   gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
 
   /* ACTUAL TEST CODE */
+  ctx = FSUI_start("fsuitest",
+		   NO,
+		   &eventCallback,
+		   NULL);
+  CHECK(ctx != NULL);
+  fn = makeName(42);
+  writeFile(fn,
+	    "foo bar test!",
+	    strlen("foo bar test!"),
+	    "600");
+  meta = ECRS_createMetaData();
+  CHECK(OK ==
+	FSUI_upload(ctx,
+		    fn,
+		    0,
+		    YES,
+		    meta,
+		    2,
+		    (const char**) keywords));
+  ECRS_freeMetaData(meta);
+  prog = 0;
+  while (lastEvent != upload_complete) {
+    prog++;
+    CHECK(prog < 10000) 
+    
+    gnunet_util_sleep(50 * cronMILLIS);
+  }
+  uri = FSUI_parseCharKeywordURI("foo AND bar");
+  CHECK(OK == FSUI_startSearch(ctx,
+			       0,
+			       uri));
+  while (lastEvent != download_complete)
+    gnunet_util_sleep(50 * cronMILLIS);
+  FSUI_stopSearch(ctx,
+		  uri);
+  /* FSUI_unindex(ctx, fn); */
+  UNLINK(fn);
+  FREE(fn);
+  fn = makeName(43);
+  /* FIXME: verify file 'fn(42)' == file 'fn(43)' */
+  UNLINK(fn);
+  FREE(fn);
 
   /* END OF TEST CODE */
  FAILURE:
+  if (ctx != NULL)
+    FSUI_stop(ctx);
   stopCron();
   doneUtil();
   if (daemon != -1) {
