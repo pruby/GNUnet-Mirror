@@ -5,6 +5,7 @@
  */
 
 #include "gnunet_util.h"
+#include "locking_gcrypt.h"
 #include "platform.h"
 
 #define TESTSTRING "Hello World\0"
@@ -228,17 +229,10 @@ static int testPrivateKeyEncoding() {
 
 void initRAND(); /* hostkey_* */
 
-#if ! USE_OPENSSL
-void initLockingGcrypt();
-void doneLockingGcrypt();
-#endif
-
 int main(int argc, char * argv[]) {
   int failureCount = 0;
 
-#if USE_GCRYPT
   initLockingGcrypt();
-#endif
   initRAND();  
   if (OK != testEncryptDecryptSK())
      failureCount++;
@@ -248,9 +242,7 @@ int main(int argc, char * argv[]) {
     failureCount++;       
   if (OK != testPrivateKeyEncoding()) 
     failureCount++;
-#if USE_GCRYPT
   doneLockingGcrypt();
-#endif
 
   if (failureCount == 0)
     return 0;

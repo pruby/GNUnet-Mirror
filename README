@@ -45,9 +45,8 @@ the first time a user starts a GNUnet user interface.  For more
 general information about the GNU build process read the INSTALL file.
 
 GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
-and either libgcrypt or OpenSSL.  You can specify the path to 
-libgcrypt using "--with-gcrypt=PATH".  Similarly, the path to 
-OpenSSL can be specified using "--with-crypto=PATH".
+and libgcrypt.  You can specify the path to 
+libgcrypt using "--with-gcrypt=PATH". 
 
 If you are compiling the CVS version, you have to run ". bootstrap"
 before ./configure.  If you receive an error during the running of

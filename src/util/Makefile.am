@@ -28,31 +28,16 @@ endif
 
 lib_LTLIBRARIES = libgnunetutil.la
 
-if USE_OPENSSL
- cryptofiles = hostkey_openssl.c symcipher_openssl.c random_openssl.c
- CRYPTLIB = -lcrypto
-else
- cryptofiles = hostkey_gcrypt.c symcipher_gcrypt.c locking_gcrypt.c locking_gcrypt.h random_gcrypt.c
- CRYPTLIB = $(LIBGCRYPT_LIBS)
- AM_CPPFLAGS = $(LIBGCRYPT_CFLAGS)
-endif
+AM_CPPFLAGS = $(LIBGCRYPT_CFLAGS)
 
 libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD)
 SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) .
 
 EXTRA_DIST = generate \
-  testconfig.conf\
-  hostkey_gcrypt.c \
-  hostkey_openssl.c \
-  symcipher_gcrypt.c \
-  symcipher_openssl.c \
-  locking_gcrypt.c \
-  locking_gcrypt.h \
-  random_gcrypt.c \
-  random_openssl.c
+  testconfig.conf
 
 libgnunetutil_la_LDFLAGS = \
- -export-dynamic $(LIBLTDL) $(CRYPTLIB) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp \
+ -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(CRYPTLIB) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp \
  -version-info 1:0:0
 
 generate_gnunetd_conf.c: generate
@@ -79,20 +64,24 @@ libgnunetutil_la_SOURCES = \
  generate_gnunetd_conf.c \
  generate_gnunet_conf.c \
  hashing.c \
- $(cryptofiles) \
+ hostkey_gcrypt.c \
  identity.c \
  initialize.c \
  io.c \
  ipcheck.c \
  kblockkey.c \
+ locking_gcrypt.c \
+ locking_gcrypt.h \
  logging.c \
  printhelp.c \
  port.c \
+ random_gcrypt.c \
  semaphore.c \
  shutdown.c \
  state.c \
  statuscalls.c \
  storage.c \
+ symcipher_gcrypt.c \
  tcp_return.c \
  tcpio.c \
  timer.c \

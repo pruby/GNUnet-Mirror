@@ -75,7 +75,7 @@ static int searchFile(const struct ECRS_URI * uri,
 		      int resultCount) {
   ECRS_search(uri,
 	      0,
-	      15 * cronSECONDS,
+	      60 * 15 * cronSECONDS,
 	      &searchCB,
 	      &resultCount,
 	      &testTerminate,
@@ -96,7 +96,7 @@ int main(int argc, char * argv[]){
   struct ECRS_URI * key;
   const char * keywords[6];
 
-  daemon = fork();
+  daemon = -1; // fork();
   if (daemon == 0) {
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
@@ -119,6 +119,34 @@ int main(int argc, char * argv[]){
   CHECK(sock != NULL);
   
   /* ACTUAL TEST CODE */
+#if 1
+
+
+  /* first, simple insertion => one result */
+  /* inserting another URI under the 'XXtest' keyword and under 'binary'
+     should give both URIs since ECRS knows nothing about 'AND'ing: */
+  printf("Testing search for 'binary' with one result.\n");
+  uri = ECRS_stringToUri("gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
+  meta = ECRS_createMetaData();
+  keywords[0] = "binary";
+  keywords[1] = NULL;
+  key = ECRS_keywordsToUri(keywords);
+  CHECK(OK == ECRS_addToKeyspace(key,
+				 0,
+				 0,
+				 cronTime(NULL) + 10 * cronMINUTES, /* expire */
+				 uri,
+				 meta));
+  CHECK(OK == searchFile(key,
+			 1));
+  ECRS_freeUri(key);
+  ECRS_freeUri(uri);
+  ECRS_freeMetaData(meta);
+
+
+#else
+
+
 
   /* first, simple insertion => one result */
   printf("Testing search for 'XXtest' with one result.\n");
@@ -166,9 +194,8 @@ int main(int argc, char * argv[]){
 			 2));
   ECRS_freeUri(key);
   
+#endif
 
-
-  ECRS_freeUri(key);
   /* END OF TEST CODE */
  FAILURE:
   if (sock != NULL)

@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "locking_gcrypt.h"
 
 /* internal prototypes... */
 void initXmalloc();
@@ -93,11 +94,6 @@ void doneAddress();
 void gnunet_util_initIO();
 void gnunet_util_doneIO();
 
-#if ! USE_OPENSSL
-void initLockingGcrypt();
-void doneLockingGcrypt();
-#endif
-
 /**
  * Initialize controlThread.
  */
@@ -123,9 +119,7 @@ int initUtil(int argc,
   textdomain (PACKAGE);
 
   gnunet_util_initIO();
-#if ! USE_OPENSSL
   initLockingGcrypt();
-#endif
   initRAND();
   initXmalloc();
 #ifdef MINGW
@@ -171,9 +165,7 @@ void doneUtil() {
 #ifdef MINGW
   ShutdownWinEnv();
 #endif
-#if ! USE_OPENSSL 
   doneLockingGcrypt();
-#endif
   doneXmalloc();
   gnunet_util_doneIO();
 }

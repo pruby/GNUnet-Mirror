@@ -154,68 +154,15 @@ AC_CHECK_MEMBER(pthread_t.p, AC_DEFINE(HAVE_NEW_PTHREAD_T, 1,
   [Define if you have a post 11/2004 pthread library]), , [#include <pthread.h>])
 
 
-# We have two choices for the crypto stuff.  
-# 1) By default we use whatever is present (OpenSSL or gcrypt)
-# 2) If both are present, we default to libgcrypt
-# 3) If both are present and --with-openssl=PFX is given,
-#    we use OpenSSL
-
-# gcrypt
+# libgcrypt
 gcrypt=0
 AC_MSG_CHECKING(for libgcrypt) 
 AM_PATH_LIBGCRYPT(1.2.0, gcrypt=1)
 
-# openssl
-if test "$build_target" = "mingw"
-then
-  openssl_libs="-lgdi32"
-fi
-
-openssl=0
-AC_ARG_WITH(crypto,
-  [  --with-crypto=PFX        Base of OpenSSL installation],
-  [AC_MSG_RESULT("$with_crypto")
-   case $with_crypto in
-   no) openssl=0
-       ;;
-   yes) AC_CHECK_LIB([crypto], [RSA_generate_key],
-         [AC_CHECK_HEADERS([openssl/rsa.h openssl/blowfish.h],
-          openssl=1;gcrypt=0)], ,["$openssl_libs"])
-       ;;
-   *) LDFLAGS="$LDFLAGS -L$with_crypto/lib"
-      CPPFLAGS="$CPPFLAGS -I$with_crypto/include"
-      AC_CHECK_LIB([crypto], [RSA_generate_key],
-       [AC_CHECK_HEADERS([openssl/rsa.h openssl/blowfish.h], 
-         openssl=1;gcrypt=0)], , ["$openssl_libs"])
-       ;;
-   esac],
-   [AC_CHECK_LIB([crypto], [RSA_generate_key],
-     [AC_CHECK_HEADERS([openssl/rsa.h openssl/blowfish.h],
-      openssl=1)], , ["$openssl_libs"])])
-
-if test $openssl = 0 
-then
 if test $gcrypt = 0
 then
-  AC_MSG_ERROR([GNUnet needs libgcrypt or OpenSSL])
+  AC_MSG_ERROR([GNUnet needs libgcrypt])
 fi
-fi
-
-# Given the choice, the preference is libgcrypt
-if test $openssl = 1
-then
-if test $gcrypt = 1
-then
-openssl=0
-fi
-fi
-
-AM_CONDITIONAL(USE_GCRYPT, test x$gcrypt = x1)
-AC_DEFINE_UNQUOTED(USE_GCRYPT, $gcrypt, [gcrypt available])
-
-AM_CONDITIONAL(USE_OPENSSL, test x$openssl = x1)
-AC_DEFINE_UNQUOTED(USE_OPENSSL, $openssl, [openssl available])
-
 
 
 # test for kvm and kstat (for CPU stats under BSD/Solaris)
@@ -606,13 +553,3 @@ fi
 #fi
 
 AC_MSG_NOTICE([NOTICE: Database support is set to MySQL: $mysql, SQLite: $sqlite])
-
-if test $openssl = 1
-then
-  AC_MSG_NOTICE([NOTICE: Using OpenSSL for cryptographic primitives.])
-fi
-
-if test $gcrypt = 1
-then
-  AC_MSG_NOTICE([NOTICE: Using libgcrypt for cryptographic primitives.])
-fi

@@ -143,7 +143,6 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     GNUNET_ASSERT(OK == getQueryFor(size,
 				    (DBlock*) kb,
 				    &hc));
-
     freePrivateKey(pk);
     if (OK != FS_insert(sock, value))
       ret = SYSERR;

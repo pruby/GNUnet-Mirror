@@ -5,26 +5,21 @@
  * @file test/weakkeytest.c
  */
 
-#if USE_GCRYPT
-  #include <gcrypt.h>
-#endif
-
+#include "platform.h"
 #include "gnunet_util.h"
 
 #define MAX_WEAK_KEY_TRIALS 10000
 #define GENERATE_WEAK_KEYS 0
 #define WEAK_KEY_TESTSTRING "I hate weak keys."
 
-#if USE_GCRYPT
-void printWeakKey(SESSIONKEY* key) {
-    int i;
-    for (i = 0; i < SESSIONKEY_LEN; i++) {
-	printf("%x ", (int)(key->key[i]));
-    }
+static void printWeakKey(SESSIONKEY* key) {
+  int i;
+  for (i = 0; i < SESSIONKEY_LEN; i++) {
+    printf("%x ", (int)(key->key[i]));
+  }
 }
 
-int testWeakKey() {
-
+static int testWeakKey() {
   char result[100];  
   char res[100];
   int size;
@@ -78,8 +73,7 @@ int testWeakKey() {
     return 0;
 }
 
-int getWeakKeys() {
-
+static int getWeakKeys() {
   SESSIONKEY sessionkey;
   int number_of_weak_keys = 0;
   int number_of_runs;
@@ -127,11 +121,8 @@ int getWeakKeys() {
 
   return number_of_weak_keys;
 }
-#endif
 
 int main(int argc, char * argv[]) {
-
-#if USE_GCRYPT
   int weak_keys; 
 
   if (GENERATE_WEAK_KEYS) {
@@ -151,9 +142,6 @@ int main(int argc, char * argv[]) {
     printf("WEAK KEY TEST FAILED.\n");
     return -1;
   }
-#else
-  return 0;
-#endif
 } 
 
 /* end of weakkeytest.c */

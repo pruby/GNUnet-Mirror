@@ -4,8 +4,9 @@
  * @file util/symciphertest.c
  */
 
-#include "gnunet_util.h"
 #include "platform.h"
+#include "gnunet_util.h"
+#include "locking_gcrypt.h"
 
 #define TESTSTRING "Hello World!"
 #define INITVALUE "InitializationVectorValue"
@@ -46,22 +47,13 @@ static int testSymcipher() {
     return 0;
 }
 
-#if ! USE_OPENSSL
-void initLockingGcrypt();
-void doneLockingGcrypt();
-#endif
-
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   
   GNUNET_ASSERT(strlen(INITVALUE) > sizeof(INITVECTOR));
-#if ! USE_OPENSSL
   initLockingGcrypt();
-#endif
   failureCount += testSymcipher();
-#if ! USE_OPENSSL
   doneLockingGcrypt();
-#endif
 
   if (failureCount == 0)
     return 0;

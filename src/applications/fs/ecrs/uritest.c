@@ -65,7 +65,7 @@ static int testNamespace(int i) {
   if (NULL != ECRS_stringToUri("gnunet://ecrs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3V/test"))
     ABORT();
   if (NULL != ECRS_stringToUri("gnunet://ecrs/sks/test"))
-    ABORT();
+     ABORT();
   ret = ECRS_stringToUri("gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   if (ret == NULL)
     ABORT();

@@ -6,7 +6,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-
+#include "locking_gcrypt.h"
 
 #define TESTSTRING "Hello World\0"
 #define MAX_TESTVAL 20
@@ -206,20 +206,13 @@ static int testPrivateKeyEncoding(struct PrivateKey * hostkey) {
 
 void initRAND(); /* hostkey_* */
 
-#if ! USE_OPENSSL
-void initLockingGcrypt();
-void doneLockingGcrypt();
-#endif
-
 
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   HashCode512 in;
   struct PrivateKey * hostkey;
 
-#if USE_GCRYPT
   initLockingGcrypt();
-#endif
   initRAND();  
   makeRandomId(&in);
 
@@ -240,9 +233,7 @@ int main(int argc, char * argv[]) {
   if (OK != testPrivateKeyEncoding(hostkey)) 
     failureCount++;
   freePrivateKey(hostkey);
-#if USE_GCRYPT
   doneLockingGcrypt();
-#endif
 
   if (failureCount == 0) {
     return 0;

@@ -431,7 +431,7 @@ int sign(const struct PrivateKey * hostkey,
   hash(block, 
        size,
        &hc);
-  if (1 != RSA_sign(NID_ripemd160,
+  if (1 != RSA_sign(NID_undef,
 		    (unsigned char*)&hc,
 		    sizeof(HashCode512),
 		    &sig->sig[0],

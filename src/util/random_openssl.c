@@ -43,8 +43,8 @@ unsigned int randomi(unsigned int i) {
   unsigned int ret;
 
   GNUNET_ASSERT(i > 0);
-  ret = rand(); /* in case RAND_bytes fails, we got at least something! */
-  RAND_bytes((unsigned char*)&ret, sizeof(unsigned int));
+  if (1 != RAND_bytes((unsigned char*)&ret, sizeof(unsigned int)))
+    ret = rand(); /* in case RAND_bytes fails, we got at least something! */
   ret = ret % i;
   GNUNET_ASSERT((ret >= 0) && (ret < i));
   return ret;

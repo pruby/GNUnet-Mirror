@@ -1,3 +1,8 @@
+Tue Mar  8 14:45:55 EST 2005
+	OpenSSL cannot fully support SHA-512.  Eliminated as an
+	option (not necessary, GPL incompatible, trouble, work
+	to maintain -- in summary: not worth it).
+
 Sat Mar  5 00:33:51 EST 2005
 	Changing hash algorithm to SHA-512. 
 	Changing symcipher algorithm to AES-256.
