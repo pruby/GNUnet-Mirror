@@ -30,8 +30,6 @@
 typedef struct {
   unsigned int resultCount;
   unsigned int max;
-
-  int buildDirectory;
   ECRS_FileInfo * fis;
   unsigned int fiCount;
 } SearchClosure;
@@ -63,15 +61,14 @@ static void eventCallback(SearchClosure * sc,
   if (event->type != search_result)
     return;
   
-
-  /* collect results to write directory? */
-  if (sc->buildDirectory) {
-    GROW(sc->fis,
-	 sc->fiCount,
-	 sc->fiCount+1);
-    sc->fis[sc->fiCount-1].uri = ECRS_dupUri(event->data.SearchResult.fi.uri);
-    sc->fis[sc->fiCount-1].meta = ECRS_dupMetaData(event->data.SearchResult.fi.meta);
-  }
+  /* retain URIs for possible directory dump later */
+  GROW(sc->fis,
+       sc->fiCount,
+       sc->fiCount+1);
+  sc->fis[sc->fiCount-1].uri
+    = ECRS_dupUri(event->data.SearchResult.fi.uri);
+  sc->fis[sc->fiCount-1].meta
+    = ECRS_dupMetaData(event->data.SearchResult.fi.meta);  
 
   uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
   printf("%s:\n",
@@ -86,9 +83,9 @@ static void eventCallback(SearchClosure * sc,
     printf("gnunet-download %s\n",
 	   uri);
   printMeta(event->data.SearchResult.fi.meta);
+  printf("\n");
   FREENONNULL(filename);
   FREE(uri);
-
   if (0 == --sc->max)
     run_shutdown(0);
 }
@@ -107,8 +104,8 @@ static void printhelp() {
     HELP_LOGLEVEL,
     { 'm', "max", "LIMIT",
       gettext_noop("exit after receiving LIMIT results") },
-    { 'o', "output", "PREFIX",
-      gettext_noop("write encountered (decrypted) search results to the file PREFIX") },
+    { 'o', "output", "FILENAME",
+      gettext_noop("write encountered (decrypted) search results to FILENAME") },
     { 't', "timeout", "TIMEOUT",
       gettext_noop("wait TIMEOUT seconds for search results before aborting") },
     HELP_VERSION,
@@ -141,7 +138,7 @@ static int parseOptions(int argc,
     };    
     c = GNgetopt_long(argc,
 		      argv, 
-		      "a:vhdc:L:H:t:o:m:", 
+		      "a:c:dhH:L:m:o:t:v", 
 		      long_options, 
 		      &option_index);    
     if (c == -1) 
@@ -231,9 +228,11 @@ static int parseOptions(int argc,
  */
 static int runSearch() {
   struct FSUI_Context * ctx;
-  SearchClosure max;
+  SearchClosure sc;
   char * suri;
   struct ECRS_URI * uri;
+  int i;
+  char * prefix;
 
   suri = getConfigurationString("GNUNET-SEARCH",
 				"URI");
@@ -246,18 +245,16 @@ static int runSearch() {
     uri = FSUI_parseCharKeywordURI(suri);
   FREE(suri);
   
-  memset(&max, 0, sizeof(SearchClosure));
-  max.max = getConfigurationInt("FS",
-				"MAXRESULTS");
-  max.resultCount = 0;  
-  if (max.max == 0)
-    max.max = (unsigned int)-1; /* infty */
-  /* FIXME: initialize max.buildDirectory */
-
+  memset(&sc, 0, sizeof(SearchClosure));
+  sc.max = getConfigurationInt("FS",
+			       "MAXRESULTS");
+  sc.resultCount = 0;  
+  if (sc.max == 0)
+    sc.max = (unsigned int)-1; /* infty */
   ctx = FSUI_start("gnunet-search",
 		   NO,
 		   (FSUI_EventCallback) &eventCallback,
-		   &max);
+		   &sc);
   if (ctx == NULL) {
     ECRS_freeUri(uri);
     return SYSERR;
@@ -272,38 +269,38 @@ static int runSearch() {
   ECRS_freeUri(uri);
   FSUI_stop(ctx);
 
-#if 0  
   prefix = getConfigurationString("GNUNET-SEARCH",
   				  "OUTPUT_PREFIX");
   if (prefix != NULL) {
     char * outfile;
     unsigned long long n;
     char * data;
+    struct ECRS_MetaData * meta;
 
+    meta = ECRS_createMetaData();
+    /* ?: anything here to put into meta? */
     if (OK == ECRS_createDirectory(&data,
 				   &n,
-				   42,
-				   fis,
-				   NULL)) {
-      n = strlen(prefix)+16;
-      outfile = MALLOC(n);
-      SNPRINTF(outfile, 
-	       n,
-	       "%s%s", 
-	       prefix, 
-	       ".gnd");
+				   sc.fiCount,
+				   sc.fis,
+				   meta)) {
+      outfile = expandFileName(prefix);
       writeFile(outfile,
-		rootNode,
-		sizeof(RootNode),
+		data,
+		n,
 		"600");
-      FREE(outfile);
-      FREE(prefix);
+      FREE(outfile);    
       FREE(data);
-    }
+    } 
+    FREE(prefix);
   }
-#endif
-
-
+  for (i=0;i<sc.fiCount;i++) {
+    ECRS_freeUri(sc.fis[i].uri);
+    ECRS_freeMetaData(sc.fis[i].meta);    
+  }
+  GROW(sc.fis,
+       sc.fiCount,
+       0);
   return OK;
 }
 

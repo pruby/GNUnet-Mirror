@@ -550,9 +550,6 @@ int ECRS_search(const struct ECRS_URI * uri,
       if (new_priority > 0xFFFFFF)
 	new_priority = randomi(0xFFFFFF); /* if we get to large, reduce! */
       ps->priority = new_priority;
-
-      /* FIXME: checkAnonymityPolicy here */
-
       ps->lastTransmission = now;
       LOG(LOG_DEBUG,
 	  "ECRS initiating FS search with timeout %llus and priority %u.\n",

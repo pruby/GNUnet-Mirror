@@ -86,16 +86,23 @@ static Identity_ServiceAPI * identity;
  * Load the application module named "pos".
  * @return OK on success, SYSERR on error
  */ 
-static int loadApplicationModule(const char * pos) {
+static int loadApplicationModule(const char * rpos) {
   int ok;
   ShutdownList * nxt;
   ApplicationInitMethod mptr;
   void * library;
   char * name;
+  char * pos;
+
+  pos = getConfigurationString("MODULES",
+			       rpos);
+  if (pos == NULL)
+    pos = STRDUP(rpos);
 
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);
+  FREE(pos);    
 
   nxt = shutdownList;
   while (nxt != NULL) {

@@ -728,6 +728,22 @@ char * ECRS_suggestFilename(const char * filename) {
  */
 int ECRS_equalsMetaData(const struct ECRS_MetaData * md1,
 			const struct ECRS_MetaData * md2) {
+  int i;
+  int j;
+  int found;
+
+  if (md1->itemCount != md2->itemCount)
+    return NO;
+  for (i=0;i<md1->itemCount;i++) {
+    found = NO;
+    for (j=0;j<md2->itemCount;j++)
+      if ( (md1->items[i].type == md2->items[j].type) &&
+	   (0 == strcmp(md1->items[i].data,
+			md2->items[j].data)) )
+	found = YES;
+    if (found == NO)
+      return NO;
+  }
   return YES;
 }
 

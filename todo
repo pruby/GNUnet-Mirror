@@ -7,21 +7,19 @@
 
 0.7.0pre1 [4'05] (aka "preview"):
 - testing:
-  * sqlite-tests: test update function, concurrency with iterators
-  * gnunet-directory
+  * sqlite-tests: test update function, concurrency with iterators, multiple results
   * gnunet-pseudonym
+- gnunet-search:
+  * multiple search results don't work (yet); test on sqlite, FSLIB and ECRS levels!
 - topology:
   * do aggressive bootstrap on first start (Christian) [ easy ]
-- gnunet-search: 
-  * dump directory with search results [ easy ]
-- ecrs-search:
-  * anonymity policy is ignored (really?) [ easy ]
 - gap:
   * economy for local queries (see applications/gap/TODO) [ tricky ]
 - FSUI:
   * download: various details wrt generated events
   * namespace updates
   * collections
+  * testing
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
 - Missing Features:
