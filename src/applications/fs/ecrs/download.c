@@ -616,13 +616,15 @@ static void updateProgress(const NodeClosure * node,
 		      (((double)(eta - node->ctx->startTime)/(double)node->ctx->completed)) 
 		      * (double)node->ctx->total);
     } 
-    node->ctx->dpcb(node->ctx->total,
-		    node->ctx->completed,
-		    eta,
-		    node->offset,
-		    data,
-		    size,
-		    node->ctx->dpcbClosure);
+    if (node->ctx->dpcb != NULL) {
+      node->ctx->dpcb(node->ctx->total,
+		      node->ctx->completed,
+		      eta,
+		      node->offset,
+		      data,
+		      size,
+		      node->ctx->dpcbClosure);
+    }
   } 
   rm = node->ctx->rm;
 

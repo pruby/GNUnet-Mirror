@@ -402,7 +402,8 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
 			  size - pos);
 
   if (res != (int)(size - pos)) {  /* error, abort */
-    LOG_STRERROR(LOG_INFO, "recv");
+    if (sock->socket != -1)
+      LOG_STRERROR(LOG_INFO, "recv");
     closeSocketTemporarily(sock);
     if (*buffer == NULL)
       FREE(buf);

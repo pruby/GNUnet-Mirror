@@ -22,7 +22,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "DEBUG"));
+				     "NOTHING"));
   return OK;
 }
 
@@ -250,7 +250,7 @@ int main(int argc, char * argv[]){
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
 		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-L", "DEBUG",
+		    /* "-L", "NOTHING", */
 		    "-c",
 		    "check.conf", /* configuration file */
 		    NULL)) {
