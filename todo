@@ -1,27 +1,34 @@
 0.7.0pre1 [4'05] (aka "preview"):
-TESTING / TESTCASES:
-- multi-peer: (see sessiontest.c and tbenchtest.c for templates)
-  * dht / gnunet-dht-join and gnunet-dht-query
+Testing:
+- multi-peer:
+  * fix dhttest (currently fails)
+  * extend dht test to actually test get/put/del
 - FSUI
 - gnunet-pseudonym
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
+- Features removed but to be revived:
+  * gnunet-gtk
 - Missing Features:
   * resolve "FIXME 0.7"
   * fsui core (persistence) [ difficult ]
   * read 'friends' list for topology_f2f
+  * #593 (gnunet-setup)
+  * #770? (use freedback (LOG) in gnunet-gtk via show-messages)
+- Optimizations:
   * spread out scanning done in topology_*.c?
-- Features removed but to be revived:
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
     user to specify maximum amount of parallelism) [ tricky ]
-  * gnunet-gtk
-- Need testing:
+- Additional testing:
   * gnunet-tracekit
-- Documentation changes (to be documented):
+  * gap and economy
+  * DHT
+  * FSUI (in particular persistence)
+- Documentation:
   * ECRS block format changes (dramatic!)
   * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
-- #593 (gnunet-setup)
-- #770? [ use freedback (LOG) in gnunet-gtk via show-messages ]
+  * Hacking GNUnet
+  * LJ article
 
 0.7.x (aka "stabilization"):
 - gnunet-chat
