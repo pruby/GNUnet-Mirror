@@ -220,6 +220,8 @@ int main(int argc, char * argv[]){
   HashCode512 hc;
   HashCode512 query;
   int i;
+  char * tmpName;
+  int fd;
 
   cronTime(&now);
   daemon = fork();
@@ -269,6 +271,7 @@ int main(int argc, char * argv[]){
     hash(&((DBlock*)&block[1])[1],
 	 ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
 	 &hc);
+    /* indexing without symlink */
     CHECK(OK == FS_index(sock,
 			 &hc,
 			 block,
@@ -277,6 +280,25 @@ int main(int argc, char * argv[]){
     CHECK(OK == FS_unindex(sock,
 			   MAX_BUFFER_SIZE,
 			   &hc));
+    /* indexing with symlink */
+    tmpName = STRDUP("/tmp/symlinkTestXXXXXX");    
+    CHECK(-1 != (fd = mkstemp(tmpName)));
+    CHECK(-1 != WRITE(fd, 
+		      &((DBlock*)&block[1])[1],
+		      ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock)));
+    CLOSE(fd);
+    CHECK(FS_initIndex(sock,
+		       &hc, 
+		       tmpName) == YES);
+    CHECK(OK == FS_index(sock,
+			 &hc,
+			 block,
+			 0));
+    CHECK(OK == trySearch(ctx, i));
+    CHECK(OK == FS_unindex(sock,
+			   MAX_BUFFER_SIZE,
+			   &hc));
+    UNLINK(tmpName);
     FREE(block);
   }
   for (i=32;i<MAX_BUFFER_SIZE;i*=2) {
@@ -336,8 +358,8 @@ int main(int argc, char * argv[]){
 
   /* just to check if it crashes... */
   FS_getAveragePriority(sock);
-
   /* END OF TEST CODE */
+
  FAILURE:
   if (ctx != NULL)
     FS_SEARCH_destroyContext(ctx);

@@ -1071,7 +1071,7 @@ void done_module_fs() {
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_INDEX,
 							   &csHandleRequestIndex));
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_INIT_INDEX,
-                 &csHandleRequestInitIndex));
+							   &csHandleRequestInitIndex));
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_DELETE,
 							   &csHandleRequestDelete));
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_UNINDEX,

@@ -102,16 +102,19 @@ static int checkPresent(const HashCode512 * key,
 
 /**
  * Creates a symlink to the given file in the shared directory
+ *
  * @param fn the file that was indexed
  * @param fileId the file's hash code
- * @return SYSERR on error, YES on success
+ * @return SYSERR on error, NO if symlinking failed,
+ *         YES on success
  */
 int ONDEMAND_initIndex(const HashCode512 * fileId,
-      const char *fn) {
+		       const char *fn) {
   EncName enc;
   char * serverDir;
   char * serverFN;
   char unavail_key[256];
+  HashCode512 linkId;
 
   serverDir
     = getConfigurationString("FS",
@@ -127,6 +130,14 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 			strlen("/data/shared/") + 1);
     strcat(serverDir, "/data/shared/");
   }
+  if ( (SYSERR == getFileHash(fn,
+			      &linkId)) || 
+       (! equalsHashCode512(&linkId,
+			    fileId)) ) {
+    FREE(serverDir);
+    return NO;
+  }
+
 
   serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
   strcpy(serverFN,
@@ -145,7 +156,7 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
   if (0 != SYMLINK(fn, serverFN)) {
     LOG_FILE_STRERROR(LOG_ERROR, "symlink", fn);
     FREE(serverFN);
-    return SYSERR;
+    return NO;
   }
   SNPRINTF(unavail_key,
 	   256,
@@ -159,8 +170,6 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 /**
  * Writes the given content to the file at the specified offset
  * and stores an OnDemandBlock into the datastore.
- *
- *
  *
  * @return NO if already present, YES on success,
  *  SYSERR on other error (i.e. datastore full)
@@ -177,11 +186,58 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   OnDemandBlock odb;
   HashCode512 key;
   EncName enc;
+  struct stat sbuf;
+  char * fn;
 
   if (size <= sizeof(DBlock)) {
     BREAK();
     return SYSERR;
   }
+
+  fn = getOnDemandFile(fileId);
+  if ( (0 != stat(fn,
+		  &sbuf)) 
+#ifdef S_ISLNK
+       || (! S_ISLNK(sbuf.st_mode)) 
+#endif
+       ) {
+    int fd;
+
+    /* not sym-linked, write content to offset! */   
+    LOG(LOG_DEBUG,
+	"Storing on-demand encoded data in '%s'.\n",
+	fn);
+    fd = OPEN(fn,
+#ifdef O_LARGEFILE
+	      O_CREAT|O_WRONLY|O_LARGEFILE,
+#else
+	      O_CREAT|O_WRONLY,
+#endif
+	      S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
+    if(fd == -1) {
+      LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
+      FREE(fn);
+      return SYSERR;
+    }
+    lseek(fd,
+	  fileOffset,
+	  SEEK_SET);
+    ret = WRITE(fd,
+		&content[1],
+		size - sizeof(DBlock));
+    if (ret == size - sizeof(DBlock)) {
+      ret = OK;
+    } else {
+      LOG_FILE_STRERROR(LOG_ERROR, "write", fn);
+      ret = SYSERR;
+    }
+    CLOSE(fd);
+    if (ret == SYSERR) {
+      FREE(fn);    
+      return ret;
+    }
+  } 
+  FREE(fn);
 
   odb.header.size = htonl(sizeof(OnDemandBlock));
   odb.header.type = htonl(ONDEMAND_BLOCK);
@@ -196,7 +252,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   fileBlockGetQuery(content,
 		    size,
 		    &key);
-  /* extra check */
+#if EXTRA_CHECKS
   {
     Datastore_Value * dsvalue;
     if (OK != fileBlockEncode(content,
@@ -208,7 +264,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
       FREE(dsvalue);
     }
   }
-  /* end extra check */
+#endif
 
   IFLOG(LOG_DEBUG,
 	hash2enc(&key, &enc));

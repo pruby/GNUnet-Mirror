@@ -29,8 +29,12 @@
 #include "gnunet_util.h"
 #include "gnunet_datastore_service.h"
 
+#define EXTRA_CHECKS YES
+
 /**
  * Creates a symlink to the given file in the shared directory
+ * @return SYSERR on error, NO if symlinking failed,
+ *         YES on success
  */
 int ONDEMAND_initIndex(const HashCode512 * fileId,
       const char *fn);

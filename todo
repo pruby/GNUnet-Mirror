@@ -1,8 +1,5 @@
 0.7.0pre1 [4'05] (aka "preview"):
 TESTING / TESTCASES:
-- FSLIB:
-  * Nils's symlink "improvements" broke the code, fslibtest fails
-    (first bug, a deadlock due to synchronous del has been fixed)
 - multi-peer: (see sessiontest.c and tbenchtest.c for templates)
   * gap
   * dht / gnunet-dht-join and gnunet-dht-query
