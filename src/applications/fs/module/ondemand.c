@@ -167,6 +167,20 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   fileBlockGetQuery(content,
 		    size,
 		    &key);  
+  /* extra check */
+  { 
+    Datastore_Value * dsvalue;
+    if (OK != fileBlockEncode(content,
+			      size,
+			      &key,
+			      &dsvalue)) {
+      BREAK();
+    } else {
+      FREE(dsvalue);
+    }
+  }
+  /* end extra check */
+
   IFLOG(LOG_DEBUG,
 	hash2enc(&key, &enc));
   LOG(LOG_DEBUG,

@@ -525,19 +525,21 @@ static void addRequest(RequestManager * rm,
 static void delRequest(RequestManager * rm,
 		       NodeClosure * node) {
   int i;
+  RequestEntry * re;
  
   MUTEX_LOCK(&rm->lock);
   for (i=0;i<rm->requestListIndex;i++) {
-    if (rm->requestList[i]->node == node) {
-      if (NULL != rm->requestList[i]->searchHandle)
-	FS_stop_search(rm->sctx,
-		       rm->requestList[i]->searchHandle);
-      FREE(rm->requestList[i]);
+    re = rm->requestList[i];
+    if (re->node == node) {
       rm->requestList[i] 
 	= rm->requestList[--rm->requestListIndex];
       rm->requestList[rm->requestListIndex] 
 	= NULL;
       MUTEX_UNLOCK(&rm->lock);
+      if (NULL != re->searchHandle)
+	FS_stop_search(rm->sctx,
+		       re->searchHandle);
+      FREE(re);
       return; 
     }
   }
@@ -816,13 +818,15 @@ static int nodeReceive(const HashCode160 * query,
   GNUNET_ASSERT(equalsHashCode160(query,
 				  &node->chk.query));
   size = ntohl(reply->size) - sizeof(Datastore_Value);
-  if (size != getNodeSize(node)) {
+  if ( (size <= sizeof(DBlock)) ||
+       (size - sizeof(DBlock) != getNodeSize(node)) ) {
     BREAK();
     return SYSERR; /* invalid size! */
   }
   /* request satisfied, stop requesting! */
   delRequest(node->ctx->rm,
 	     node);
+  size -= sizeof(DBlock);
   data = MALLOC(size);
   if (SYSERR == decryptContent((char*)&reply[1],
 			       size,
@@ -852,7 +856,9 @@ static int nodeReceive(const HashCode160 * query,
     node->ctx->rm->abortFlag = YES;
     return SYSERR;
   }
-  updateProgress(node, data, size);
+  updateProgress(node, 
+		 data, 
+		 size);
   if (node->level > 0)
     iblock_download_children(node,
 			     data,

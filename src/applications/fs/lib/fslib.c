@@ -118,7 +118,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 SEARCH_CONTEXT * FS_SEARCH_makeContext() {
   SEARCH_CONTEXT * ret;
   ret = MALLOC(sizeof(SEARCH_CONTEXT));
-  MUTEX_CREATE(&ret->lock);
+  MUTEX_CREATE_RECURSIVE(&ret->lock);
   ret->sock = getClientSocket();
   ret->handles = NULL;
   ret->handleCount = 0;

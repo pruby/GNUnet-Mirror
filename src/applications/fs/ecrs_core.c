@@ -54,14 +54,12 @@ int fileBlockEncode(const DBlock * data,
 
   GNUNET_ASSERT(len > sizeof(DBlock));
   GNUNET_ASSERT((data!=NULL) && (query != NULL));
-  hash(data, len, &hc);
+  hash(&data[1], len - sizeof(DBlock), &hc);
   hashToKey(&hc,
 	    &skey,
 	    &iv[0]);
-  val = MALLOC(sizeof(Datastore_Value)
-	       + len);
-  val->size = htonl(sizeof(Datastore_Value) + 
-		    len);
+  val = MALLOC(sizeof(Datastore_Value) + len);
+  val->size = htonl(sizeof(Datastore_Value) + len);
   val->type = htonl(D_BLOCK);
   val->prio = htonl(0);
   val->anonymityLevel = htonl(0);
