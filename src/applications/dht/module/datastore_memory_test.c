@@ -22,7 +22,7 @@
  * @brief testcase for the Datastore API (memory).
  * @author Christian Grothoff
  *
- * TODO: test out-of-memory condition, iterator, options
+ * TODO: test out-of-memory condition, iterator
  */
 
 #include "platform.h"
