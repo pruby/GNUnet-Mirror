@@ -286,7 +286,7 @@ int isDatumApplicable(unsigned int type,
   case S_BLOCK: 
     if (keyCount != 2) 
       return SYSERR; /* no match */
-    hash(&((SBlock*)data)->subspace,
+    hash(&((const SBlock*)data)->subspace,
 	 sizeof(PublicKey),
 	 &hc);	 
     if (equalsHashCode512(&keys[1],
@@ -297,7 +297,7 @@ int isDatumApplicable(unsigned int type,
   case N_BLOCK: 
     if (keyCount != 2) 
       return SYSERR; /* no match */
-    hash(&((NBlock*)data)->subspace,
+    hash(&((const NBlock*)data)->subspace,
 	 sizeof(PublicKey),
 	 &hc);	 
     if (equalsHashCode512(&keys[1],

@@ -315,15 +315,22 @@ static int receiveReplies(const HashCode512 * key,
   unsigned int size;
   PendingSearch * ps;
   int ret;
+  HashCode512 query;
 
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
   LOG(LOG_DEBUG,
       "Search received reply of type %u and size %u.\n",
       type, size);
+  if (OK != getQueryFor(size,
+			(const DBlock*) &value[1],
+			&query))
+    return SYSERR;
   for (i=0;i<sqc->queryCount;i++) {
-    ps = sqc->queries[i];
-    if ( ( (ps->type == type) ||
+    ps = sqc->queries[i];    
+    if ( equalsHashCode512(&query,
+			   &ps->keys[0]) &&
+	 ( (ps->type == type) ||
 	   (ps->type == ANY_BLOCK) ) &&
 	 (YES == isDatumApplicable(type,
 				   size,
@@ -332,14 +339,14 @@ static int receiveReplies(const HashCode512 * key,
 				   ps->keys)) ) {
       switch (type) {
       case K_BLOCK: {
-	KBlock * kb;
-	char * dstURI;
+	const KBlock * kb;
+	const char * dstURI;
 	EncName enc;
 	int j;
 	
 	if (size < sizeof(KBlock))
 	  return SYSERR;
-	kb = (KBlock*) &value[1];
+	kb = (const KBlock*) &value[1];
 	IFLOG(LOG_DEBUG,
 	      hash2enc(&ps->decryptKey,
 		       &enc));
@@ -351,13 +358,13 @@ static int receiveReplies(const HashCode512 * key,
 			    size - sizeof(KBlock));
 	j = sizeof(KBlock);
 	while ( (j < size) &&
-		(((char*)kb)[j] != '\0') )
+		(((const char*)kb)[j] != '\0') )
 	  j++;
 	if (j == size) {
 	  BREAK(); /* kblock malformed */
 	  return SYSERR;
 	}
-	dstURI = (char*) &kb[1];
+	dstURI = (const char*) &kb[1];
 	j++;
 	if (OK != ECRS_deserializeMetaData(&fi.meta,
 					   &((char*)kb)[j],
@@ -384,22 +391,22 @@ static int receiveReplies(const HashCode512 * key,
 	return ret;      
       }
       case N_BLOCK: {
-	NBlock * nb;
+	const NBlock * nb;
 	
 	if (size < sizeof(NBlock))
 	  return SYSERR;
-	nb = (NBlock*) &value[1];
+	nb = (const NBlock*) &value[1];
 	return processNBlock(nb,
 			     NULL,
 			     size,
 			     sqc);
       }
       case KN_BLOCK:  {
-	KNBlock * kb;
+	const KNBlock * kb;
 	
 	if (size < sizeof(KNBlock))
 	  return SYSERR;
-	kb = (KNBlock*) &value[1];
+	kb = (const KNBlock*) &value[1];
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb->nblock,
 			    size - sizeof(KBlock));
@@ -409,8 +416,8 @@ static int receiveReplies(const HashCode512 * key,
 			     sqc);
       }
       case S_BLOCK: {
-	SBlock * sb;
-	char * dstURI;
+	const SBlock * sb;
+	const char * dstURI;
 	int j;
 	cron_t now;
 	HashCode512 updateId;
@@ -418,7 +425,7 @@ static int receiveReplies(const HashCode512 * key,
 	
 	if (size < sizeof(SBlock))
 	  return SYSERR;
-	sb = (SBlock*) &value[1];
+	sb = (const SBlock*) &value[1];
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &sb->creationTime,
 			    size
@@ -433,7 +440,7 @@ static int receiveReplies(const HashCode512 * key,
 	  BREAK(); /* sblock malformed */
 	  return SYSERR;
 	}
-	dstURI = (char*) &sb[1];
+	dstURI = (const char*) &sb[1];
 	j++;
 	if (OK != ECRS_deserializeMetaData(&fi.meta,
 					   &dstURI[j],

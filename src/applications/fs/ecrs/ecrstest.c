@@ -257,7 +257,6 @@ int main(int argc, char * argv[]){
   pid_t daemon;
   int status;
   int ok;
-  Mutex lock;
   GNUNET_TCP_SOCKET * sock;
   struct ECRS_URI * uri;
   int i;
@@ -281,7 +280,6 @@ int main(int argc, char * argv[]){
   ok = YES;
   initUtil(argc, argv, &parseCommandLine);
   startCron();
-  MUTEX_CREATE(&lock);
   gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
   sock = getClientSocket();
   CHECK(sock != NULL);
@@ -307,7 +305,6 @@ int main(int argc, char * argv[]){
  FAILURE:
   if (sock != NULL)
     releaseClientSocket(sock);
-  MUTEX_DESTROY(&lock);
   stopCron();
   doneUtil();
   if (daemon != -1) {
