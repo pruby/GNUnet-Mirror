@@ -27,7 +27,7 @@
  *
  * TODO:
  * - code cleanup (share more with
- *   upload.c, move detect index/unindex to FS_lib)
+ *   upload.c)
  */
 
 #include "platform.h"
@@ -196,7 +196,6 @@ int ECRS_unindexFile(const char * filename,
   cron_t start;
   cron_t now;
   int wasIndexed;
-  RequestTestindex rti;
 
   cronTime(&start);
   if (isDirectory(filename)) {
@@ -232,23 +231,9 @@ int ECRS_unindexFile(const char * filename,
   treedepth = computeDepth(filesize);
 
   /* Test if file is indexed! */
-  rti.header.size
-    = htons(sizeof(RequestTestindex));
-  rti.header.type
-    = htons(AFS_CS_PROTO_TESTINDEX);
-  rti.fileId = fileId;
-  if (OK != writeToSocket(sock,
-			  &rti.header)) {
-    releaseClientSocket(sock);
-    BREAK();
-    return SYSERR;
-  }
-  if (OK != readTCPResult(sock,
-			  &wasIndexed)) {
-    releaseClientSocket(sock);
-    BREAK();
-    return SYSERR;
-  }
+  wasIndexed
+    = FS_testIndexed(sock,
+		     &fileId);
 
 #ifdef O_LARGEFILE
   fd = OPEN(filename, O_RDONLY | O_LARGEFILE);

@@ -545,7 +545,6 @@ static int csHandleRequestUnindex(ClientHandle sock,
 				    ret);
 }
 
-
 /**
  * Process a client request to test if certain
  * data is indexed.
