@@ -665,6 +665,8 @@ static int networkUsageAdvancedUp() {
       
       txdiff += txnew - last_net_results[ifnum].last_out;   
       last_net_results[ifnum].last_out = txnew;
+      
+      GlobalFree(pTable);
     }
   }
   else

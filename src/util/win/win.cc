@@ -272,7 +272,12 @@ int PopulateNICCombo(HWND hCombo)
           
         iItm = SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM) szEntry);
         if (iItm == -1)        
+        {
+          GlobalFree(pAddrTable);
+          GlobalFree(pTable);
+
           return NO;
+        }
           
         if (pAddrTable->table[dwIfIdx].dwIndex == dwExternalNIC)
           SendMessage(hCombo, CB_SETCURSEL, iItm, 0);

@@ -266,7 +266,9 @@ static int getAddressFromIOCTL(IPaddr * identity) {
 	  _("Could not find an IP address for "
 	    "interface '%s'.\n"), 
 	  interfaces);
-      
+
+      GlobalFree(pTable);
+      GlobalFree(pAddrTable);
       return SYSERR;
     }
     else if (iAddrCount > 1)
