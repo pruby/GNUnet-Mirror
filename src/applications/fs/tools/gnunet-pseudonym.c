@@ -53,7 +53,7 @@ static void printhelp() {
     { 'R', "root", "IDENTIFIER",
       gettext_noop("specify IDENTIFIER to be the address of the entrypoint to content in the namespace (use when creating a new pseudonym)") },
     { 's', "set-rating", "ID:VALUE",
-      gettext_noop("") },
+      gettext_noop("set the rating of a namespace") },
     { 't', "text", "DESCRIPTION",
       gettext_noop("use DESCRIPTION to describe the content of the namespace (use when creating a new pseudonym)") },
     { 'u', "uri", "URI",
