@@ -62,7 +62,7 @@
 #define ACJ_ALL (ACJ_ANNOUNCE | ACJ_FORWARD)
 
 
-#define DEBUG_HELOEXCHANGE NO
+#define DEBUG_HELOEXCHANGE YES
 
 static CoreAPIForApplication * coreAPI;
 
@@ -211,16 +211,6 @@ receivedHELO(const p2p_HEADER * message) {
       LOG(LOG_DEBUG,
 	  "advertised HELO differs from prior knowledge,"
 	  " requireing ping-pong confirmation.\n");
-      LOG(LOG_EVERYTHING,
-	  "HELO-diff: %d -- %d, %d -- %d, %d -- %d, %d -- %d\n",
-	  msg->senderAddressSize,
-	  copy->senderAddressSize,
-	  msg->protocol,
-	  copy->protocol,
-	  msg->MTU,
-	  copy->MTU,
-	  *(int*)&msg->senderAddress,
-	  *(int*)&copy->senderAddress);
 #endif
     }
     FREE(copy);

@@ -28,7 +28,7 @@
 #include "gnunet_transport.h"
 #include "platform.h"
 
-#define DEBUG_TCP NO 
+#define DEBUG_TCP YES
 
 /**
  * after how much time of the core not being associated with a tcp

@@ -67,7 +67,7 @@ typedef struct {
   int challenge;
 } PINGPONG_Message;
 
-#define DEBUG_PINGPONG NO
+#define DEBUG_PINGPONG YES
 
 #define MAX_PING_PONG 64
 
