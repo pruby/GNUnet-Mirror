@@ -40,6 +40,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_gap_service.h"
 #include "gnunet_identity_service.h"
+#include "gnunet_traffic_service.h"
 #include "gnunet_topology_service.h"
 
 
@@ -413,6 +414,11 @@ static Identity_ServiceAPI * identity;
  * Topology service.
  */
 static Topology_ServiceAPI * topology;
+
+/**
+ * Traffic service.
+ */
+static Traffic_ServiceAPI * traffic;
 
 /**
  * For migration / local stores, local lookup and
@@ -1383,8 +1389,8 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
 	  value,
 	  ite->priority);
   if (equalsHashCode160(&hc, primaryKey)) /* CHK? */
-    cls->doForward = SYSERR; /* we have the one and only answer,
-				do not bother to forward... */
+    cls->doForward = NO; /* we have the one and only answer,
+			    do not bother to forward... */
   return OK;
 }
  
@@ -1400,7 +1406,9 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
  * @param prio the effective priority of the query
  * @param ttl the relative ttl of the query
  * @param query the query itself
- * @return OK if the query should be routed further, SYSERR if not.
+ * @return OK/YES if the query will be routed further, 
+ *         NO if we already found the one and only response,
+ *         SYSERR if not (out of resources)
  */
 static int execQuery(const PeerIdentity * sender,
 		     unsigned int prio,
@@ -1425,8 +1433,7 @@ static int execQuery(const PeerIdentity * sender,
     cls.doForward = YES;
   }
   cls.sender = sender;
-  if ( (sender != NULL) && 
-       (isRouted != YES) ) {
+  if (isRouted != YES) {
     MUTEX_UNLOCK(&ite->lookup_exclusion);
     return SYSERR; /* if we can't route, 
 		      forwarding never makes
@@ -1448,8 +1455,6 @@ static int execQuery(const PeerIdentity * sender,
   return cls.doForward; 
 }
 
-
-
 /**
  * Content has arrived. We must decide if we want to a) forward it to
  * our clients b) indirect it to other nodes. The routing module
@@ -1469,8 +1474,6 @@ static int useContent(const PeerIdentity * hostId,
   unsigned int i;
   HashCode160 contentHC;
   IndirectionTableEntry * ite;
-  int prio = -1;
-  cron_t now;
   unsigned int size;
   int ret;
   DataContainer * value;
@@ -1480,7 +1483,6 @@ static int useContent(const PeerIdentity * hostId,
     BREAK();
     return SYSERR; /* invalid! */
   }
-  cronTime(&now);
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
   size = ntohs(msg->header.size) - sizeof(GAP_REPLY);
   MUTEX_LOCK(&ite->lookup_exclusion);
@@ -1532,7 +1534,6 @@ static int useContent(const PeerIdentity * hostId,
     }
   }
 
-  prio = ite->priority;
   /* also do ds-put */
   value = MALLOC(size + sizeof(DataContainer));
   value->size = htonl(size + sizeof(DataContainer));
@@ -1543,11 +1544,12 @@ static int useContent(const PeerIdentity * hostId,
 		&msg->primaryKey,
 		ntohl(msg->type),
 		value,
-		prio);
+		ite->priority);
   FREE(value);
   if (ret != SYSERR) {
     /* new VALID reply, adjust credits! */
     if (hostId != NULL) { /* if we are the sender, hostId will be NULL */
+      preference = (double) ite->priority;
       identity->changeHostTrust(hostId,
 				ite->priority);
       ite->priority = 0; /* no priority for further replies,
@@ -1555,15 +1557,13 @@ static int useContent(const PeerIdentity * hostId,
       for (i=0;i<ite->hostsWaiting;i++)
 	updateResponseData(&ite->destination[i],
 			   hostId);    
-      preference = (double) prio;
       if (preference < CONTENT_BANDWIDTH_VALUE)
 	preference = CONTENT_BANDWIDTH_VALUE;
       coreAPI->preferTrafficFrom(hostId,
 				 preference);
     }
     sendReply(ite,
-	      &msg->header);
-    
+	      &msg->header);   
     GROW(ite->seen,
 	 ite->seenIndex,
 	 ite->seenIndex+1);
@@ -1597,11 +1597,13 @@ static int init(Blockstore * datastore) {
  * listening for these puts.
  *
  * @param type the type of the block that we're looking for
+ * @param anonymityLevel how much cover traffic is required? 0 for none.
  * @param keys the keys to query for
  * @param timeout how long to wait until this operation should
  *        automatically time-out
  * @return OK if we will start to query, SYSERR if all of our
- *  buffers are full or other error
+ *  buffers are full or other error, NO if we already
+ *  returned the one and only reply (local hit)
  */
 static int get_start(unsigned int type,
 		     unsigned int anonymityLevel,
@@ -1618,6 +1620,43 @@ static int get_start(unsigned int type,
     BREAK();
     return SYSERR; /* too many keys! */
   }
+  
+  /* anonymity level considerations:
+     check cover traffic availability! */
+  if (anonymityLevel > 0) {
+    unsigned int count;
+    unsigned int peers;
+    unsigned int sizes;
+    unsigned int timevect;
+
+    if (traffic == NULL) {
+      LOG(LOG_ERROR,
+	  _("Cover traffic requested but traffic service not loaded.  Rejecting request.\n"));
+      return SYSERR;
+    }
+    if (OK != traffic->get((TTL_DECREMENT + timeout) / TRAFFIC_TIME_UNIT,
+			   GAP_p2p_PROTO_QUERY,
+			   TC_RECEIVED,
+			   &count,
+			   &peers,
+			   &sizes,
+			   &timevect)) {
+      LOG(LOG_WARNING,
+	  _("Failed to get traffic stats.\n"));
+      return SYSERR;
+    }
+    if (anonymityLevel > 1000) {
+      if (peers < anonymityLevel / 1000)
+	return SYSERR;
+      if (count < anonymityLevel % 1000)
+	return SYSERR;
+    } else {
+      if (count < anonymityLevel)
+	return SYSERR;
+    }
+  }
+  
+
   msg = MALLOC(size);
   msg->header.size 
     = htons(size);
@@ -1777,6 +1816,11 @@ provide_module_gap(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(identity != NULL);
   topology = coreAPI->requestService("topology");
   GNUNET_ASSERT(topology != NULL);
+  traffic = coreAPI->requestService("traffic");
+  if (traffic == NULL) {
+    LOG(LOG_WARNING,
+	_("Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"));
+  }
   random_qsel = randomi(0xFFFF);
   indirectionTableSize =
     getConfigurationInt("AFS",
@@ -1867,6 +1911,10 @@ void release_module_gap() {
   identity = NULL;
   coreAPI->releaseService(topology);
   topology = NULL;
+  if (traffic != NULL) {
+    coreAPI->releaseService(traffic);
+    traffic = NULL;
+  }
   lock = NULL;
   coreAPI = NULL;
   bs = NULL;

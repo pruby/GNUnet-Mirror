@@ -10,7 +10,6 @@
 0.7.0pre0 [4'05] (aka "pre-preview"):
 - Missing Features:
   * fs/module/fs+migration: anonymity level and expiration time considerations (Christian)
-  * gap: economy for local queries, forwardQuery dead?, anonymityLevel
   * fsui upload: ETA calculations, tracking URIs
   * ecrs-download: some stats, some details in the heuristics
   * fsui core (persistence, shutdown, multiple FSUIs)

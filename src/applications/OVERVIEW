@@ -36,6 +36,7 @@ fs->datastore
 fs->traffic
 datastore->sqstore
 gap->stats
+gap->traffic
 gap=>blockstore/fs
 dht->rpc
 dht->stats
