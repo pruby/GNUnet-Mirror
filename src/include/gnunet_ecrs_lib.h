@@ -57,6 +57,16 @@
 #define ECRS_LOCATION_INFIX  "loc/"
 
 
+/**
+ * Fixed SBlock updateInterval codes. Positive values 
+ * are interpreted as durations (in seconds) for periodical 
+ * updates.
+ */
+#define ECRS_SBLOCK_UPDATE_SPORADIC  -1 
+#define ECRS_SBLOCK_UPDATE_NONE       0
+
+
+
 /* ***************** metadata API (meta.c) ******************** */
 
 /**

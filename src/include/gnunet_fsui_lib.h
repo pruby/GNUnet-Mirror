@@ -299,8 +299,10 @@ typedef int (*FSUI_SearchIterator)(void * cls,
 /**
  * Iterator over all updateable content.
  *
+ * @param uri URI of the last content published
  * @param lastId the ID of the last publication
  * @param nextId the ID of the next update
+ * @param publicationFrequency how often are updates scheduled?
  * @param nextPublicationTime the scheduled time for the
  *  next update (0 for sporadic updates)
  * @return OK to continue iteration, SYSERR to abort
@@ -309,6 +311,7 @@ typedef int (*FSUI_UpdateIterator)(void * cls,
 				   const ECRS_FileInfo * uri,
 				   const HashCode512 * lastId,
 				   const HashCode512 * nextId,
+				   cron_t publicationFrequency,
 				   cron_t nextPublicationTime); 
 
 /**
@@ -607,7 +610,27 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
 
 /**
  * Add an entry into a namespace (also for publishing
- * updates).
+ * updates).  Typical uses are (all others would be odd):
+ * <ul>
+ *  <li>updateInterval NONE, thisId some user-specified value
+ *      or NULL if user wants system to pick random value;
+ *      nextId and lastId NULL (irrelevant)</li>
+ *  <li>updateInterval SPORADIC, thisId given (initial
+ *      submission), nextId maybe given or NULL, 
+ *      lastId NULL</li>
+ *  <li>updateInterval SPORADIC, lastId given (either
+ *      user-provided or from listNamespaceContent 
+ *      iterator); thisId NULL or given (from lNC);
+ *      nextId maybe given or NULL, depending on user preference</li>
+ *  <li>updateInterval non-NULL, non-SPORADIC; lastId
+ *      is NULL (inital submission), thisId non-NULL or
+ *      rarely NULL (if user does not care about name of
+ *      starting entry), nextId maybe NULL or not</li>
+ *  <li>updateInterval non-NULL, non-SPORADIC; lastId
+ *      is non-NULL (periodic update), thisId NULL (computed!)
+ *      nextID NULL (computed)</li>
+ * </ul> 
+ * And yes, reading the ECRS paper maybe a good idea.
  *
  * @param name in which namespace to publish
  * @param updateInterval the desired frequency for updates

@@ -39,8 +39,8 @@
  * are interpreted as durations (in seconds) for periodical 
  * updates.
  */
-#define SBLOCK_UPDATE_SPORADIC  -1 
-#define SBLOCK_UPDATE_NONE       0
+#define SBLOCK_UPDATE_SPORADIC ECRS_SBLOCK_UPDATE_SPORADIC
+#define SBLOCK_UPDATE_NONE     ECRS_SBLOCK_UPDATE_NONE
 
 
 #define BLOCK_ALIGN_SIZE (DBLOCK_SIZE)

@@ -13,7 +13,6 @@
   * gap
   * dht / gnunet-dht-join and gnunet-dht-query 
 - FSUI:
-  * namespace updates
   * collections
   * testing
 - transport refactoring:

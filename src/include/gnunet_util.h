@@ -1889,7 +1889,7 @@ int readFile(const char * fileName,
  */ 
 void writeFile(const char * fileName, 
 	       const void * buffer,
-	       int n,
+	       unsigned int n,
 	       const char * mode);
 
 /**
