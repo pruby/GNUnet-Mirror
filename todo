@@ -24,8 +24,8 @@
 - gnunet-search: 
   * dump directory with search results [ easy ]
   * 'handle' anonymity-level setting [ easy ]
-- FS:
-  * implement GetAvgPriority (fs.c) [ easy ]
+- gap:
+  * economy for local queries not available (see applications/gap/TODO) [ tricky ]
 - FSUI:
   * download: various details wrt generated events
   * namespace updates
