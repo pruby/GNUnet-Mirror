@@ -118,9 +118,9 @@ static void printhelp() {
       gettext_noop("remove all entries from the directory database and stop tracking URIs") },
     { 'l', "list", NULL,
       gettext_noop("list entries from the directory database") },
+    HELP_LOGLEVEL,
     { 't', "track", NULL,
       gettext_noop("start tracking entries for the directory database") },
-    HELP_LOGLEVEL,
     HELP_VERSION,
     HELP_END,
   };
