@@ -90,8 +90,15 @@ downloadHostlistHelper(char * url,
     curpos++;
   if (curpos == lenHostname)
     port = TCP_HTTP_PORT;
-  else
+  else {
     port = atoi(hostname + curpos + 1);
+    if (!port) {
+    	LOG(LOG_WARNING,
+    		_("Invalid port \"%s\" in hostlist specification, trying port %d.\n"),
+    		TCP_HTTP_PORT);
+    	port = TCP_HTTP_PORT;
+    }
+  }
   
   hostname[curpos] = '\0'; /* terminator for hostname */
   
