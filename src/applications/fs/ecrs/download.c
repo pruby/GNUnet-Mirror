@@ -401,12 +401,12 @@ static RequestManager * createRequestManager() {
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
-  rm->sctx = FS_SEARCH_makeContext();
   rm->abortFlag
     = NO;
   rm->lastDET 
     = 0;
   MUTEX_CREATE_RECURSIVE(&rm->lock);
+  rm->sctx = FS_SEARCH_makeContext(&rm->lock);
   rm->requestListIndex 
     = 0;
   rm->requestListSize  
@@ -828,7 +828,7 @@ static int nodeReceive(const HashCode160 * query,
 	     node);
   size -= sizeof(DBlock);
   data = MALLOC(size);
-  if (SYSERR == decryptContent((char*)&reply[1],
+  if (SYSERR == decryptContent((char*)&((DBlock*)&reply[1])[1],
 			       size,
 			       &node->chk.key,
 			       data))
@@ -874,7 +874,6 @@ static int nodeReceive(const HashCode160 * query,
       requestManagerEndgame(node->ctx->rm);
     }
   }
-  FREE(node);
   FREE(data);
   return OK;
 }

@@ -483,14 +483,14 @@ int ECRS_search(const struct ECRS_URI * uri,
   cron_t new_ttl;
   unsigned int new_priority;
 
-  ctx.sctx = FS_SEARCH_makeContext();
   cronTime(&ctx.start);
   ctx.timeout = timeout;
   ctx.queryCount = 0;
   ctx.queries = NULL;
   ctx.spcb = spcb;
   ctx.spcbClosure = spcbClosure;
-  MUTEX_CREATE(&ctx.lock);
+  MUTEX_CREATE_RECURSIVE(&ctx.lock);
+  ctx.sctx = FS_SEARCH_makeContext(&ctx.lock);
   addQueryForURI(uri,
 		 &ctx);
   cronTime(&now);

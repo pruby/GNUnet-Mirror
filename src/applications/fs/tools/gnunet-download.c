@@ -232,7 +232,7 @@ int main(int argc,
 	filename);
     try_rename = YES;
   }
-
+  FREE(fstring);
   signalFinished = SEMAPHORE_NEW(0);
   ctx = FSUI_start(&progressModel,
 		   &ok);
@@ -266,6 +266,7 @@ int main(int argc,
     }
   }
   FREE(filename);
+  ECRS_freeUri(uri);
 
   stopCron(); 
   doneUtil();

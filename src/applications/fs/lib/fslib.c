@@ -38,7 +38,7 @@ typedef struct FS_SEARCH_HANDLE {
 typedef struct FS_SEARCH_CONTEXT {
   GNUNET_TCP_SOCKET * sock;
   PTHREAD_T thread;
-  Mutex lock;  
+  Mutex * lock;  
   SEARCH_HANDLE ** handles;
   unsigned int handleCount;
   unsigned int handleSize;
@@ -81,7 +81,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	FREE(hdr);
 	continue;
       }      
-      MUTEX_LOCK(&ctx->lock);
+      MUTEX_LOCK(ctx->lock);
       for (i=ctx->handleCount-1;i>=0;i--) {
 	if (equalsHashCode160(&query,
 			      &ctx->handles[i]->req->query[0])) {
@@ -103,7 +103,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	  FREE(value);
 	}
       }
-      MUTEX_UNLOCK(&ctx->lock);      
+      MUTEX_UNLOCK(ctx->lock);      
     } else {
       gnunet_util_sleep(delay);
       delay *= 2;
@@ -115,10 +115,10 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
   return NULL;
 }
 
-SEARCH_CONTEXT * FS_SEARCH_makeContext() {
+SEARCH_CONTEXT * FS_SEARCH_makeContext(Mutex * lock) {
   SEARCH_CONTEXT * ret;
   ret = MALLOC(sizeof(SEARCH_CONTEXT));
-  MUTEX_CREATE_RECURSIVE(&ret->lock);
+  ret->lock = lock;
   ret->sock = getClientSocket();
   ret->handles = NULL;
   ret->handleCount = 0;
@@ -140,7 +140,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   closeSocketTemporarily(ctx->sock);
   PTHREAD_JOIN(&ctx->thread,
 	       &unused);
-  MUTEX_DESTROY(&ctx->lock);
+  ctx->lock = NULL;
   releaseClientSocket(ctx->sock);
   GROW(ctx->handles,
        ctx->handleSize,
@@ -185,14 +185,14 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   ret->req = req;
   ret->callback = callback;
   ret->closure = closure;
-  MUTEX_LOCK(&ctx->lock);
+  MUTEX_LOCK(ctx->lock);
   if (ctx->handleCount == ctx->handleSize) {
     GROW(ctx->handles,
 	 ctx->handleSize,
 	 ctx->handleSize * 2 + 4);    
   }
   ctx->handles[ctx->handleCount++] = ret;
-  MUTEX_UNLOCK(&ctx->lock);
+  MUTEX_UNLOCK(ctx->lock);
   IFLOG(LOG_DEBUG,
 	hash2enc(&req->query[0],
 		 &enc));
@@ -219,13 +219,13 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
   handle->req->header.type = htons(AFS_CS_PROTO_QUERY_STOP);
   writeToSocket(ctx->sock,
 		&handle->req->header);  
-  MUTEX_LOCK(&ctx->lock);
+  MUTEX_LOCK(ctx->lock);
   for (i=ctx->handleCount-1;i>=0;i--)
     if (ctx->handles[i] == handle) {
       ctx->handles[i] = ctx->handles[--ctx->handleCount];
       break;
     }
-  MUTEX_UNLOCK(&ctx->lock);      
+  MUTEX_UNLOCK(ctx->lock);      
   FREE(handle->req);
   FREE(handle);
 }

@@ -35,7 +35,7 @@
 
 struct FS_SEARCH_CONTEXT;
 
-struct FS_SEARCH_CONTEXT * FS_SEARCH_makeContext();
+struct FS_SEARCH_CONTEXT * FS_SEARCH_makeContext(Mutex * lock);
 
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx);
 
