@@ -260,9 +260,12 @@ static int transportSend(TSession * tsession,
 			 const unsigned int size) {
   TransportAPI * tapi;
 
-  if (tsession == NULL)
+  if (tsession == NULL) {
+    LOG(LOG_DEBUG,
+        "transportSend attempted on uni-directional pipe, failing.\n");		    
     return SYSERR; /* can't do that, can happen for unidirectional pipes
 		      that call core with TSession being NULL. */
+  }
   if (tsession->ttype >= tapis_count) {
     LOG(LOG_FAILURE,
 	"%s failed, transport type %d unknown.\n",
