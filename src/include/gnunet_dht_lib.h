@@ -52,8 +52,7 @@ void DHT_LIB_done();
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
-		 DHT_TableId * table,
-		 cron_t timeout);
+		 DHT_TableId * table);
 
 
 /**
@@ -94,6 +93,7 @@ int DHT_LIB_leave(DHT_TableId * table,
  */
 int DHT_LIB_get(const DHT_TableId * table,
 		unsigned int type,
+		unsigned int prio,
 		unsigned int keyCount,
 		const HashCode160 * keys,
 		cron_t timeout,
@@ -114,6 +114,7 @@ int DHT_LIB_get(const DHT_TableId * table,
 int DHT_LIB_put(const DHT_TableId * table,
 		const HashCode160 * key,
 		unsigned int type,
+		unsigned int prio,
 		cron_t timeout,
 		const DataContainer * value);
 

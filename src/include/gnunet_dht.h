@@ -30,6 +30,7 @@
 #define GNUNET_DHT_H 
 
 #include "gnunet_util.h"
+#include "gnunet_blockstore.h"
 
 /* ************* API specific errorcodes *********** */
 
@@ -61,8 +62,6 @@ typedef struct {
 
   CS_HEADER header;
 
-  unsigned long long timeout;  /* nbo */
-
   DHT_TableId table;  
 
 } DHT_CS_REQUEST_JOIN;
@@ -74,9 +73,9 @@ typedef struct {
 
   CS_HEADER header;
   
-  unsigned long long timeout;  /* nbo */
-
   DHT_TableId table;  
+
+  unsigned long long timeout;  /* nbo */
 
 } DHT_CS_REQUEST_LEAVE; 
 
@@ -89,11 +88,15 @@ typedef struct {
 
   CS_HEADER header;
   
-  unsigned long long timeout;  /* nbo */
-  
   DHT_TableId table; 
 
+  unsigned long long timeout;  /* nbo */
+  
   HashCode160 key;
+
+  unsigned int type; /* nbo */
+
+  unsigned int priority; /* nbo */
 
 } DHT_CS_REQUEST_PUT;
 
@@ -117,14 +120,16 @@ typedef struct {
 
   CS_HEADER header;
 
-  unsigned int type;
+  unsigned int type; /* nbo */
 
   unsigned long long timeout;  /* nbo */
 
   DHT_TableId table; 
 
+  unsigned int priority; /* nbo */
+
   /* one or more keys */
-  HashCode160 keys;
+  HashCode160 keys;  
 
 } DHT_CS_REQUEST_GET;
 
@@ -135,10 +140,12 @@ typedef struct {
 
   CS_HEADER header;
   
-  unsigned long long timeout; /* nbo */
-
   DHT_TableId table; 
   
+  unsigned long long timeout; /* nbo */
+
+  unsigned int type; /* nbo */
+
   HashCode160 key;
 
 } DHT_CS_REQUEST_REMOVE;
@@ -178,24 +185,11 @@ typedef struct {
 
   DHT_TableId table; 
 
+  HashCode160 key;
+
+  DataContainer data;
+
 } DHT_CS_REPLY_RESULTS;
-
-/**
- * TCP communication: Results for a request.  If not all results fit
- * into a single message, DHT_CS_REPLY_RESULTS maybe repeated many
- * times.
- */
-typedef struct {
-
-  DHT_CS_REPLY_RESULTS dht_cs_reply_results;
-
-  /**
-   * Results data; serialized version of DataContainer.
-   */
-  char data[1]; 
-
-} DHT_CS_REPLY_RESULTS_GENERIC;
-
 
 /**
  * TCP communication: status response for a request
