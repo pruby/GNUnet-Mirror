@@ -43,7 +43,7 @@
  * 4.0.x: with expiration, variable meta-data, kblocks
  * 5.x.x: who knows? :-)
  */
-#define AFS_VERSION "4.0.0"
+#define AFS_VERSION "4.0.1"
 
 #define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"

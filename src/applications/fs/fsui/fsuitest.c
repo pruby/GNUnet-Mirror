@@ -148,7 +148,7 @@ int main(int argc, char * argv[]){
 	    strlen("foo bar test!"),
 	    "600");
   meta = ECRS_createMetaData();
-  kuri = FSUI_parseListKeywordURI(3,
+  kuri = FSUI_parseListKeywordURI(2,
 				  (const char**)keywords);
   CHECK(OK ==
 	FSUI_upload(ctx,

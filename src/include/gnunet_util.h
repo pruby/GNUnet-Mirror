@@ -55,10 +55,10 @@
  * something changes GNUnet-util.  It does not have
  * to match exactly with the GNUnet version number;
  * especially the least significant bits may change
- * frequently, even between different CVS versions.
+ * frequently, even between different SVN versions.
  */
 
-#define GNUNET_UTIL_VERSION 0x00060902
+#define GNUNET_UTIL_VERSION 0x00060903
 
 /**
  * We use an unsigned short in the protocol header, thus:

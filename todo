@@ -1,7 +1,5 @@
-0.7.0pre1 [4'05] (aka "preview"):
-* package & re-run final tests
-
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
+- gnunet-insert crashes if called with invalid filename?
 - Features removed but to be revived:
   * gnunet-gtk
 - Missing Features:

@@ -21,8 +21,8 @@
 #
 #
 AC_PREREQ(2.57)
-AC_INIT([GNUnet], [0.7.0pre1],[bug-gnunet@gnu.org])
-AM_INIT_AUTOMAKE([GNUnet], [0.7.0pre1])
+AC_INIT([GNUnet], [0.7.0pre2],[bug-gnunet@gnu.org])
+AM_INIT_AUTOMAKE([GNUnet], [0.7.0pre2])
 AM_CONFIG_HEADER([config.h])
 
 AH_TOP([#define _GNU_SOURCE  1])
@@ -203,7 +203,7 @@ then
 fi
 
 SAVE_LDFLAGS=$LDFLAGS
-SAVE_CPPFLGAS=$CPPFLAGS
+SAVE_CPPFLAGS=$CPPFLAGS
 
 # test for sqlite
 sqlite=false
@@ -224,7 +224,7 @@ AC_ARG_WITH(sqlite,
     AC_CHECK_HEADERS(sqlite3.h,
      EXT_LIB_PATH="-L$with_sqlite/lib $EXT_LIB_PATH"
      SQLITE_LDFLAGS="-L$with_sqlite/lib"
-     SQLITE_CPPFLGAS="-I$with_sqlite/include"
+     SQLITE_CPPFLAGS="-I$with_sqlite/include"
      sqlite=true)
     LDFLAGS=$SAVE_LDFLAGS
     CPPFLAGS=$SAVE_CPPFLAGS
