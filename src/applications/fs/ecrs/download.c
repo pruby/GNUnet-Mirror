@@ -1072,8 +1072,8 @@ static void processRequests(RequestManager * rm) {
   FREE(perm);
   if (minSleep < cronMILLIS * 100)
     minSleep = cronMILLIS * 100; /* maximum resolution: 100ms */
-
   MUTEX_UNLOCK(&rm->lock);
+  gnunet_util_sleep(minSleep);
 }
 
 
@@ -1125,7 +1125,8 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   top.level = computeDepth(ctx.total);
   addRequest(rm, &top);
   while ( (OK == tt(ttClosure)) &&
-	  (rm->abortFlag == NO) )
+	  (rm->abortFlag == NO) &&
+	  (rm->requestListIndex != 0) )
     processRequests(rm);
 
   if ( (rm->requestListIndex == 0) &&

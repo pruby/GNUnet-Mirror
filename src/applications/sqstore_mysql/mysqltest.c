@@ -10,7 +10,7 @@
 #include "gnunet_sqstore_service.h"
 #include "core.h"
 
-#define ASSERT(x) do { if (! (x)) goto FAILURE; } while (0)
+#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE; } } while (0)
 
 static cron_t now;
 
@@ -35,7 +35,7 @@ static int checkValue(const HashCode160 * key,
   Datastore_Value * value;
 
   i = *(int*) closure;
-  value = initValue(i);
+  value = initValue(i+1);
   if ( ( value->size == val->size) &&
        (0 == memcmp(val,
 		    value,
@@ -79,20 +79,21 @@ static int test(SQstore_ServiceAPI * api) {
   cronTime(&now);
   oldSize = api->getSize();
   for (i=0;i<256;i++) {
-    value = initValue(i);
+    value = initValue(i+1);
     memset(&key, 256-i, sizeof(HashCode160));
     api->put(&key, value);
     FREE(value);
   }
   ASSERT(oldSize < api->getSize());
   for (i=255;i>=0;i--) {
-    memset(&key, 256-i, sizeof(HashCode160)); 
+    memset(&key, 256-i, sizeof(HashCode160));     
     ASSERT(1 == api->get(&key, i, &checkValue, (void*) &i));
+    printf("OK: %d\n", i);
   }
   oldSize = api->getSize();
   for (i=255;i>=0;i-=2) {
     memset(&key, 256-i, sizeof(HashCode160)); 
-    value = initValue(i);
+    value = initValue(i+1);
     ASSERT(1 == api->del(&key, value));
     FREE(value);
   }
@@ -105,15 +106,21 @@ static int test(SQstore_ServiceAPI * api) {
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
 					   (Datum_Iterator) &iterateDown,
 					   &i));
-  ASSERT(0 == i);
-  
+  ASSERT(1 == i);  
+  for (i=254;i>=0;i-=2) {
+    memset(&key, 256-i, sizeof(HashCode160)); 
+    value = initValue(i+1);
+    ASSERT(1 == api->del(&key, value));
+    FREE(value);
+  }
+
   
   /* FIXME: test 'update' here! */
   
-  api->drop();
+  // api->drop();
   return OK;
  FAILURE:
-  api->drop();
+  // api->drop();
   return SYSERR;
 }
 
@@ -130,6 +137,9 @@ static int parser(int argc,
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGFILE",
 				     NULL));
+  FREENONNULL(setConfigurationString("GNUNETD",
+				     "LOGLEVEL",
+				     "DEBUG"));
   FREENONNULL(setConfigurationString("",
 				     "GNUNETD_HOME",
 				     "/tmp/gnunet_test/"));
