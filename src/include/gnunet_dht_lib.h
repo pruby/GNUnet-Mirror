@@ -69,8 +69,7 @@ int DHT_LIB_join(Blockstore * store,
  *   implies 'use value from gnunet.conf').
  * @return SYSERR on error, OK on success
  */
-int DHT_LIB_leave(DHT_TableId * table,
-		  cron_t timeout);
+int DHT_LIB_leave(DHT_TableId * table);
 
 
 /**

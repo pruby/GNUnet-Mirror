@@ -415,8 +415,6 @@ static void * process_thread(TableList * list) {
  *
  * @param datastore the storage callbacks to use for the table
  * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to
- *   the join request (has no impact on success or failure)
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
@@ -470,14 +468,9 @@ int DHT_LIB_join(Blockstore * store,
  *
  * @param datastore the storage callbacks to use for the table
  * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to
- *   the leave request (has no impact on success or failure);
- *   but only timeout time is available for migrating data, so
- *   pick this value with caution.
  * @return SYSERR on error, OK on success
  */
-int DHT_LIB_leave(DHT_TableId * table,
-		  cron_t timeout) {
+int DHT_LIB_leave(DHT_TableId * table) {
   TableList * list;
   int i;
   void * unused;
@@ -510,7 +503,6 @@ int DHT_LIB_leave(DHT_TableId * table,
   /* send LEAVE message! */
   req.header.size = htons(sizeof(DHT_CS_REQUEST_LEAVE));
   req.header.type = htons(DHT_CS_PROTO_REQUEST_LEAVE);
-  req.timeout = htonll(timeout);
   req.table = *table;
 
   ret = SYSERR;

@@ -394,35 +394,27 @@ static int csJoin(ClientHandle client,
   return ret;
 }
 
-struct cLJC {
-  ClientHandle client;
-  DHT_TableId table;
-  cron_t timeout;
-};
-  
 /**
- * this MUST be done asynchronously since 
- * dhtAPI->leave WILL require synchronous 
- * CS-communication and that cannot happen until
- * the csLevae function returns! 
+ * CS handler for leaving DHT-table.
  */
-static void csLeaveJob(struct cLJC * cls) {
+static int csLeave(ClientHandle client,
+                   const CS_HEADER * message) {
+
+  DHT_CS_REQUEST_LEAVE * req;
   int i;
   CS_TableHandlers * ptr;
+  
+  if (ntohs(message->size) != sizeof(DHT_CS_REQUEST_LEAVE))
+    return SYSERR;
+  req = (DHT_CS_REQUEST_LEAVE*) message;
+  LOG(LOG_EVERYTHING,
+      "Client leaving request received!\n");
 
-  MUTEX_LOCK(&csLock); /* YES, required!
-			  Unlock done in cron-job! */
- 
+  MUTEX_LOCK(&csLock); 
   for (i=0;i<csHandlersCount;i++) {
-    if ( (equalsHashCode512(&csHandlers[i]->table,
-			    &cls->table)) ) {
-      if (OK != dhtAPI->leave(&cls->table,
-			      cls->timeout)) {
-	LOG(LOG_WARNING,
-	    _("'%s' failed!\n"),
-	    "CS_DHT_LEAVE");
-      }
-      ptr = csHandlers[i];
+    ptr = csHandlers[i];      
+    if ( (equalsHashCode512(&ptr->table,
+			    &req->table)) ) {
       csHandlers[i] = csHandlers[csHandlersCount-1];
       GROW(csHandlers,
 	   csHandlersCount,
@@ -438,49 +430,18 @@ static void csLeaveJob(struct cLJC * cls) {
       SEMAPHORE_FREE(ptr->postreply);
       FREE(ptr->store);
       FREE(ptr);
-      if (OK != sendAck(cls->client,
-			&cls->table,
-			OK)) {
-	coreAPI->terminateClientConnection(cls->client);
-      }
-      FREE(cls);
-      return;
+      return sendAck(client,
+		     &req->table,
+		     OK);
     }
   }
   MUTEX_UNLOCK(&csLock);
   LOG(LOG_WARNING,
       _("'%s' failed: table not found!\n"),
       "CS_DHT_LEAVE");
-  if (OK != sendAck(cls->client,
-		    &cls->table,
-		    SYSERR)) {
-    coreAPI->terminateClientConnection(cls->client);
-  }
-  FREE(cls);
-}
-
-/**
- * CS handler for leaving DHT-table.
- */
-static int csLeave(ClientHandle client,
-                   const CS_HEADER * message) {
-
-  DHT_CS_REQUEST_LEAVE * req;
-  struct cLJC * cls;
-
-  if (ntohs(message->size) != sizeof(DHT_CS_REQUEST_LEAVE))
-    return SYSERR;
-  req = (DHT_CS_REQUEST_LEAVE*) message;
-  LOG(LOG_EVERYTHING,
-      "Client leaving request received!\n");
-  cls = MALLOC(sizeof(struct cLJC));
-  cls->client = client;
-  cls->table = req->table;  
-  cls->timeout = ntohll(req->timeout);
-  addCronJob((CronJob) &csLeaveJob,
-	     0, 0,
-	     cls);
-  return OK;
+  return sendAck(client,
+		 &req->table,
+		 SYSERR);
 }
 
 static void cs_put_abort(CS_PUT_RECORD * record) {
@@ -925,7 +886,6 @@ static void csClientExit(ClientHandle client) {
 
       message.header.size = ntohs(sizeof(DHT_CS_REQUEST_LEAVE));
       message.header.type = ntohs(DHT_CS_PROTO_REQUEST_LEAVE);
-      message.timeout = ntohll(0);
       message.table = csHandlers[i]->table;
       csLeave(client,
 	      &message.header);

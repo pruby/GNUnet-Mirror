@@ -43,8 +43,6 @@ static void printHelp() {
       gettext_noop("allow SIZE bytes of memory for the local table") },
     { 't', "table", "NAME",
       gettext_noop("join table called NAME") },
-    { 'T', "timeout", "VALUE",
-      gettext_noop("when leaving table, use VALUEs to migrate data") },
     HELP_VERSION,
     HELP_VERBOSE,
     HELP_END,
@@ -99,20 +97,6 @@ static int parseOptions(int argc,
 					 "TABLE",
 					 GNoptarg));
       break;
-    case 'T': {
-      unsigned int max;
-      if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
-	    "-T");
-	return SYSERR;
-      } else {	
-	setConfigurationInt("DHT-JOIN",
-			    "TIMEOUT",
-			    max);
-      }
-      break;
-    }
     case 'v':
       printf("dht-join v0.0.0\n");
       return SYSERR;
@@ -261,9 +245,7 @@ int main(int argc,
   wait_for_shutdown();
 
   /* shutdown */
-  if (OK != DHT_LIB_leave(&table,
-			  getConfigurationInt("DHT-JOIN",
-					      "TIMEOUT") * cronSECONDS)) {
+  if (OK != DHT_LIB_leave(&table)) {
     LOG(LOG_WARNING,
 	_("Error leaving DHT.\n"));
     destroy_blockstore_memory((Blockstore*)myStore.closure);

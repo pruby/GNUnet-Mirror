@@ -75,8 +75,6 @@ typedef struct {
 
   DHT_TableId table;
 
-  unsigned long long timeout;  /* nbo */
-
 } DHT_CS_REQUEST_LEAVE;
 
 
