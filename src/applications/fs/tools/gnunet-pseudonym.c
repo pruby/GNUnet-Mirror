@@ -227,7 +227,6 @@ static void printMeta(const struct ECRS_MetaData * meta) {
 
 static int namespacePrinter(void * unused,
 			    const char * namespaceName,
-			    const HashCode160 * ns,
 			    const struct ECRS_MetaData * md,
 			    int rating) {
   EncName enc;
@@ -237,10 +236,8 @@ static int namespacePrinter(void * unused,
   set = getConfigurationString("PSEUDONYM",
 			       "SET-RATING");
   
-  hash2enc(ns, &enc);
-  printf(_("Namespace '%s' has ID '%s' and rating %d.\n"),
-	 (namespaceName != NULL) ? namespaceName : "",
-	 (char*) &enc,
+  printf(_("Namespace '%s' has rating %d.\n"),
+	 namespaceName,
 	 rating);
   printMeta(md);
 
@@ -269,7 +266,7 @@ static int namespacePrinter(void * unused,
     
     if (delta != 0) {
       rating = FSUI_rankNamespace(ctx,
-				  ns,
+				  namespaceName,
 				  delta);
       printf(_("\tRating (after update): %d\n"), 
 	     rating);

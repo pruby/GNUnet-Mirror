@@ -30,6 +30,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include <iconv.h>
 
 /* Avoid wasting space on 8-byte longs. */
 #if UINT_MAX >= 0xffffffff
@@ -124,5 +125,54 @@ unsigned long long htonll(unsigned long long n) {
   return (((unsigned long long)htonl(n)) << 32) + htonl(n >> 32);
 #endif
 }
+
+/* ************* character conversion helpers *********** */
+
+/**
+ * Convert the len characters long character sequence
+ * given in input that is in the given charset
+ * to UTF-8.
+ * @return the converted string (0-terminated),
+ *  if conversion fails, a copy of the orignal
+ *  string is returned.
+ */
+char * convertToUtf8(const char * input,
+		     size_t len,
+		     const char * charset) {
+  size_t tmpSize;
+  size_t finSize;
+  char * tmp;
+  char * ret;
+  char * itmp;
+  iconv_t cd;
+  
+  cd = iconv_open("UTF-8", charset);
+  if (cd == (iconv_t) -1)
+    return strdup(charset);
+  tmpSize = 3 * len + 4;
+  tmp = malloc(tmpSize);
+  itmp = tmp;
+  finSize = tmpSize;
+  if (iconv(cd,
+	    (char**) &input,
+	    &len,
+	    &itmp, 
+	    &finSize) == (size_t)-1) {
+    iconv_close(cd);
+    free(tmp);
+    return strdup(charset);
+  }
+  ret = malloc(tmpSize - finSize + 1);
+  memcpy(ret,
+	 tmp,
+	 tmpSize - finSize);
+  ret[tmpSize - finSize] = '\0';
+  free(tmp);
+  iconv_close(cd);
+  return ret;
+}
+
+
+
 
 /* end of checksum.c */

@@ -7,13 +7,9 @@
 - 593???
 
 0.7.0pre0 [4'05] (aka "preview"):
-- AFS:
-  a) complete libfsui:
-     - namespace updates
-     - collections
-  b) complete gnunet-afs-tools:
-     - insert - DONE (very rough cut)
-     - download - COMPILES
+- complete gnunet-afs-tools:
+  * insert - DONE (very rough cut)
+  * download - COMPILES
 - Missing Features:
   * fs/module/fs+migration: anonymity level and expiration time considerations (Christian)
   * gap: economy for local queries, forwardQuery dead?, anonymityLevel
@@ -30,6 +26,14 @@
   * gnunet-directory
   * gnunet-pseudonym
   * gnunet-search
+
+0.7.0pre1 [5'05]:
+- gnunet-insert:
+  * allow any kind of meta-data to be specified on the
+    command-line
+- FSUI:
+  * namespace updates
+  * collections
 
 0.7.0 [6'05] (aka "compatibility? what's that?"):
 - Missing Features:

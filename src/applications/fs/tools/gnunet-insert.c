@@ -20,7 +20,7 @@
 
 /**
  * @file applications/fs/tools/gnunet-insert.c 
- * @brief Tool to insert or index files into GNUnet's AFS.
+ * @brief Tool to insert or index files into GNUnet's FS.
  * @author Christian Grothoff
  * @author Krista Bennett
  * @author James Blackwell
@@ -30,17 +30,15 @@
  * Todo:
  * - implement namespace insertion
  * - check that the various options still work
- * - utf-8 conversion of keywords (from the CMD-line)
  * - allow any kind of meta-data attribute (currently only
  *   description, filename and mime-type can be specified)
- * - do not use plain sleep to wait for completion (better:
- *   use the shutdown semaphore (signal or completion))
  */
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
 
 #include <langinfo.h>
+
 
 /* hmm. Man says time.h, but that doesn't yield the
    prototype.  Strange... */
@@ -53,176 +51,73 @@ static Semaphore * exitSignal;
 static int errorCode = 0;
 
 /**
+ * Meta-data for the main file.
+ */
+static struct ECRS_MetaData * meta;
+
+static struct FSUI_Context * ctx;
+
+
+static char ** topKeywords = NULL;
+int topKeywordCnt = 0;
+static char ** gloKeywords = NULL;
+int gloKeywordCnt = 0;
+
+
+
+
+/**
  * We're done with the upload of the file, do the
  * post-processing.
  */
 static void postProcess(const struct ECRS_URI * uri) {
-#if 0
-  /* if SBlock requested create SBlock */
-  if (pname != NULL) {
-    HashCode160 thisId;
-    HashCode160 nextId;
-    char * hx;
-    SBlock * sb;
-    TIME_T creationTime;
-    TIME_T now;
+  char * pname;
+  HashCode160 prevId;
+  HashCode160 thisId;
+  HashCode160 nextId;
+  char * pid;
+  char * tid;
+  char * nid;
+  struct ECRS_URI * nsuri;
+  unsigned int updateInterval;
 
-    GNUNET_ASSERT(fileNameCount == 1);
-    shortFN = getConfigurationString("GNUNET-INSERT",
-				     "FILENAME");
-    fileName = expandFileName(fileNames[0]);
-    if ( (shortFN == NULL) && (fileName != NULL)) {
-      shortFN = &fileName[strlen(fileName)-1];
-      while ( (shortFN[-1] != DIR_SEPARATOR) &&
-	      (shortFN != fileName) )
-	shortFN--;
-      shortFN = STRDUP(shortFN);
-    }  
-    FREENONNULL(fileName);
-    timestr = getConfigurationString("GNUNET-INSERT",
-                    		     "INSERTTIME");
-    if (timestr != NULL) {
-      struct tm t;
+  pname = getConfigurationString("GNUNET-INSERT",
+				 "PSEUDONYM");
+  if (pname == NULL)
+    return;
+  pid = NULL; /* FIXME */
+  if (pid != NULL)
+    enc2hash(pid, &prevId);
+  tid = getConfigurationString("GNUNET-INSERT",
+			       "THISHASH");
+  if (tid != NULL)
+    enc2hash(tid, &thisId);
+  nid = getConfigurationString("GNUNET-INSERT",
+			       "NEXTHASH");
+  if (nid != NULL)
+    enc2hash(nid, &nextId);   
+  updateInterval = getConfigurationInt("GNUNET-INSERT",
+				       "INTERVAL");
 
-      /* we can assert here: input was verified earlier! */
-      GNUNET_ASSERT(NULL != strptime(timestr, "%j-%m-%Y %R", &t));
-      now = mktime(&t);
-      FREE(timestr);
-      /* On my system, the printed time is in advance +1h 
-	 to what was specified? -- It is in UTC! */
-      timestr = GN_CTIME(&now);
-      LOG(LOG_DEBUG, 
-          "Read time '%s'.\n", 
-	  timestr);
-      FREE(timestr);
-    } else {
-      /* use current time */
-      TIME(&now);
-    }
-
-    /* determine update frequency / policy */
-    prevname = getConfigurationString("GNUNET-INSERT",
-    				      "PREVIOUS_SBLOCK");
-    if (prevname != NULL) {
-      FREE(prevname);
-      /* now, compute CURRENT ID and next ID from SBlock 'pb' */
-      computeIdAtTime(&pb,
-      	              now,
-		      &thisId); 
-      /* interval was read and verified earlier... */
-      if (interval != SBLOCK_UPDATE_SPORADIC) {  
-        int delta;
-	
-        /* periodic update */
-        delta = now - ntohl(pb.creationTime);
-        delta = delta / ntohl(pb.updateInterval);
-        if (delta <= 0)
-          delta = 1; /* force to be in the future from the updated block! */
-        creationTime = ntohl(pb.creationTime) + delta * ntohl(pb.updateInterval);
-
-        /* periodic update, compute _next_ ID as increment! */
-        addHashCodes(&thisId,
-		     &pb.identifierIncrement,
-		     &nextId); /* n = k + inc */
-      } else { /* interval == SBLOCK_UPDATE_SPORADIC */
-        creationTime = now;
-	LOG(LOG_DEBUG,
-	    "Sporadic update in sblock.\n");
-	hx = getConfigurationString("GNUNET-INSERT",
-				    "NEXTHASH");
-	if (hx == NULL) {
-	  makeRandomId(&nextId);
-	} else {
-	  tryhex2hashOrHashString(hx, &nextId);
-	  FREE(hx);
-	}
-      }
-    } else {
-      /* no previous sblock specified */
-      creationTime = now;
-      interval = getConfigurationInt("GNUNET-INSERT",
-	  	 	  	     "INTERVAL");
-      hx = getConfigurationString("GNUNET-INSERT",
- 	 	 	  	  "THISHASH");
-      tryhex2hashOrHashString(hx, &thisId);
-      FREENONNULL(hx);
-      hx = getConfigurationString("GNUNET-INSERT",
- 	  	 	  	  "NEXTHASH");
-      if (hx == NULL) {
-        if (interval == SBLOCK_UPDATE_NONE) {
-	  /* no next id and no interval specified, to be    */
-	  /* consistent with gnunet-gtk, nextId == thisId   */
-	  memcpy(&nextId,
-	  	 &thisId,
-		 sizeof(HashCode160));
-	} else {
-          makeRandomId(&nextId);
-	}
-      } else {
-        tryhex2hashOrHashString(hx, &nextId);
-        if (interval == SBLOCK_UPDATE_NONE) {
-	  /* if next was specified, aperiodic is default */
-  	  interval = SBLOCK_UPDATE_SPORADIC; 
-	}
-        FREE(hx); 
-      }
-      if (testConfigurationString("GNUNET-INSERT",
-  	 	 	  	  "SPORADIC",
-				  "YES"))
-        interval = SBLOCK_UPDATE_SPORADIC;
-    }
-  
-    /* finally we can create the SBlock */
-    sb = buildSBlock(pseudonym,
-		     &fid,
-		     description,
-		     shortFN,
-		     mimetype,
-		     creationTime,
-		     interval,
-		     &thisId,
-		     &nextId);
-    freePrivateKey(pseudonym);
-    hash(&sb->subspace,
-	 sizeof(PublicKey),
-	 &hc);
-    if (OK == insertSBlock(sock,
-			   sb)) {
-      char * outname;
-      char * uri;
-      
-      outname = getConfigurationString("GNUNET-INSERT",
-      				       "OUTPUT_SBLOCK");
-      if (outname != NULL) {
-        SBlock plainSBlock;
-
-	decryptSBlock(&thisId,
-		      sb,
-                      &plainSBlock);
-        writeFile(outname, 
-	          &plainSBlock,
-		  sizeof(SBlock),
-		  "600");
-	FREE(outname);
-      } 
-      uri = createSubspaceURI(&hc,
-			      &thisId);
-      printf(_("File '%s' (%s, %s) successfully inserted into namespace under\n"
-	       "\t'%s'\n"),
-	     shortFN,
-	     description, 
-	     mimetype,
-	     uri);
-      FREE(uri);
-    } else {
-      printf(_("Insertion of file into namespace failed.\n"));
-    }
-    FREE(sb);
-    FREE(shortFN);
-  }
-#endif
+  FSUI_addToNamespace(ctx,
+		      pname,
+		      updateInterval,
+		      pid == NULL ? NULL : &prevId,
+		      tid == NULL ? NULL : &thisId,
+		      nid == NULL ? NULL : &nextId,
+		      uri,
+		      meta,
+		      &nsuri);
+  FREE(pname);
+  FREENONNULL(pid);
+  FREENONNULL(tid);
+  FREENONNULL(nid);
+  pname = ECRS_uriToString(nsuri);
+  ECRS_freeUri(nsuri);
+  printf(_("Created namespace entry '%s'\n"),
+	 pname);
+  FREE(pname);
 }
-
 
 
 /**
@@ -350,17 +245,11 @@ static void printhelp() {
 	     help);
 }
 
-static char ** topKeywords = NULL;
-int topKeywordCnt = 0;
-static char ** gloKeywords = NULL;
-int gloKeywordCnt = 0;
-
-static struct ECRS_MetaData * meta;
-
 static int parseOptions(int argc,
 			char ** argv) {
   int c;
   int printAndReturn = NO;
+  char * tmp;
 
   FREENONNULL(setConfigurationString("GNUNET-INSERT",
 	  		 	     "INDEX-CONTENT",
@@ -406,18 +295,26 @@ static int parseOptions(int argc,
       					 "PREVIOUS_SBLOCK",
 					 GNoptarg));
       break;
-    case 'D':
+    case 'D': 
+      tmp = convertToUtf8(GNoptarg,
+			  strlen(GNoptarg),
+			  nl_langinfo(CODESET));
       ECRS_addToMetaData(meta,
 			 EXTRACTOR_DESCRIPTION,
-			 GNoptarg);
+			 tmp);
+      FREE(tmp);
       break;
     case 'E': 
       printAndReturn = YES;
       break;
     case 'f': 
+      tmp = convertToUtf8(GNoptarg,
+			  strlen(GNoptarg),
+			  nl_langinfo(CODESET));
       ECRS_addToMetaData(meta,
 			 EXTRACTOR_FILENAME,
-			 GNoptarg);
+			 tmp);
+      FREE(tmp);
       break;
     case 'h': 
       printhelp(); 
@@ -439,13 +336,19 @@ static int parseOptions(int argc,
       GROW(topKeywords,
 	   topKeywordCnt,
 	   topKeywordCnt+1);
-      topKeywords[topKeywordCnt-1] = STRDUP(GNoptarg);
+      topKeywords[topKeywordCnt-1]
+	= convertToUtf8(GNoptarg,
+			strlen(GNoptarg),
+			nl_langinfo(CODESET));
       break;
     case 'K':
       GROW(gloKeywords,
 	   gloKeywordCnt,
 	   gloKeywordCnt+1);
-      gloKeywords[gloKeywordCnt-1] = STRDUP(GNoptarg);
+      gloKeywords[gloKeywordCnt-1] 
+	= convertToUtf8(GNoptarg,
+			strlen(GNoptarg),
+			nl_langinfo(CODESET));
       break;
     case 'l':
       FREENONNULL(setConfigurationString("GNUNET-INSERT",
@@ -453,9 +356,13 @@ static int parseOptions(int argc,
 					 "YES"));
       break;
     case 'm':
+      tmp = convertToUtf8(GNoptarg,
+			  strlen(GNoptarg),
+			  nl_langinfo(CODESET));     
       ECRS_addToMetaData(meta,
 			 EXTRACTOR_MIMETYPE,
-			 GNoptarg);
+			 tmp);
+      FREE(tmp);
       break;
     case 'n':
       FREENONNULL(setConfigurationString("GNUNET-INSERT",
@@ -485,7 +392,9 @@ static int parseOptions(int argc,
     case 'p': {
       unsigned int contentPriority;
       
-      if (1 != sscanf(GNoptarg, "%ud", &contentPriority)) {
+      if (1 != sscanf(GNoptarg, 
+		      "%ud",
+		      &contentPriority)) {
 	LOG(LOG_FAILURE,
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-p");
@@ -614,7 +523,6 @@ int main(int argc, char ** argv) {
   int verbose;
   char * timestr;
   char * prevname;
-  struct FSUI_Context * ctx;
   int doIndex;
   int ret;
   char * extractors;

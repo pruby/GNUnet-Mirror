@@ -571,6 +571,15 @@ unsigned long long ntohll(unsigned long long n);
  */
 unsigned long long htonll(unsigned long long n);
 
+/**
+ * Convert the len characters long character sequence
+ * given in input that is in the given charset
+ * to UTF-8.
+ * @return the converted string (0-terminated)
+ */
+char * convertToUtf8(const char * input,
+		     size_t len,
+		     const char * charset);
 
 /**
  * GNU gettext support macro.
