@@ -103,11 +103,12 @@ static const char * printSKEY(const SESSIONKEY * sk) {
  * @param hostId the peer that gave a sign of live
  */
 static void notifyPONG(PeerIdentity * hostId) {
+#if DEBUG_SESSION 
   EncName enc;
-
-  hash2enc(&hostId->hashPubKey,
-	   &enc);
-#if DEBUG_SESSION
+  
+  IFLOG(LOG_DEBUG,
+	hash2enc(&hostId->hashPubKey,
+		 &enc));
   LOG(LOG_DEBUG,
       "Received '%s' from '%s', marking session as up.\n",
       "PONG",
@@ -138,7 +139,6 @@ static SKEY_Message * makeSessionKeySigned(const PeerIdentity * hostId,
   int size;
   SKEY_Message * msg;
   char * pt;
-  EncName enc;
 
   GNUNET_ASSERT(sk != NULL);
   foreignHelo = NULL;
