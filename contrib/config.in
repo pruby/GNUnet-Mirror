@@ -40,7 +40,7 @@ menu "General settings" "GNUNETD"
 
 	config HELOEXPIRES
 	int "How many minutes should peer advertisements last?"
-	default "1440"
+	default 1440
 	depends on ADVANCED
 	help
 		How many minutes is the current IP valid?  (GNUnet will sign HELO
