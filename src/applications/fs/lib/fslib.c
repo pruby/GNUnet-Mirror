@@ -296,8 +296,8 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
  * Initialize to index a file
  */
 int FS_initIndex(GNUNET_TCP_SOCKET * sock,
-       const HashCode512 * fileHc,
-       const char *fn) {
+		 const HashCode512 * fileHc,
+		 const char * fn) {
   int ret;
   RequestInitIndex *ri;
   unsigned int size, fnSize;

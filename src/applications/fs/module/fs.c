@@ -368,7 +368,7 @@ static int csHandleRequestInsert(ClientHandle sock,
  * Process a request to symlink a file
  */
 static int csHandleRequestInitIndex(ClientHandle sock,
-        const CS_HEADER * req) {
+				    const CS_HEADER * req) {
   int ret;
   char *fn;
   RequestInitIndex *ri;

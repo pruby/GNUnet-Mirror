@@ -424,6 +424,17 @@ int ECRS_serializeMetaData(const MetaData * md,
 	 hdr,
 	 size);
   FREE(hdr);
+  /* extra check: deserialize! */
+#if EXTRA_CHECKS
+  {
+    MetaData * md;
+    md = NULL;
+    GNUNET_ASSERT(OK == ECRS_deserializeMetaData(&md,
+						 target,
+						 size));
+    ECRS_freeMetaData(md);    
+  }
+#endif
   return size;
 }
 

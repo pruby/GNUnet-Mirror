@@ -916,6 +916,9 @@ struct CIDR6Network * parseRoutes6(const char * routeList);
    right loglevel */
 #define IFLOG(a,b) {if (getLogLevel() >= a) {b;} }
 
+void LOGHASH(size_t size,
+	     const void * data);
+
 #define PRIP(ip) (unsigned int)(((unsigned int)(ip))>>24), (unsigned int)((((unsigned)(ip)))>>16 & 255), (unsigned int)((((unsigned int)(ip)))>>8 & 255), (unsigned int)((((unsigned int)(ip))) & 255)
 
 /**

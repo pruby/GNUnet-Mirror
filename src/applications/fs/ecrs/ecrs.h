@@ -31,6 +31,8 @@
 #include "tree.h"
 #include <extractor.h>
 
+#define EXTRA_CHECKS YES
+
 
 /**
  * Fixed SBlock updateInterval codes. Positive values 

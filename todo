@@ -9,7 +9,6 @@
 - uni-peer testing:
   * sqlite: test concurrency with iterators
   * gnunet-pseudonym
-  * gnunet-search: multiple search results don't work? Fix searchtest!
 - multi-peer testing: (see sessiontest.c and tbenchtest.c for templates)
   * gap
   * dht / gnunet-dht-join and gnunet-dht-query 

@@ -339,14 +339,15 @@ static int receiveReplies(const HashCode512 * key,
 				   ps->keys)) ) {
       switch (type) {
       case K_BLOCK: {
-	const KBlock * kb;
+	KBlock * kb;
 	const char * dstURI;
 	EncName enc;
 	int j;
 	
 	if (size < sizeof(KBlock))
 	  return SYSERR;
-	kb = (const KBlock*) &value[1];
+	kb = MALLOC(size);
+	memcpy(kb, &value[1], size);
 	IFLOG(LOG_DEBUG,
 	      hash2enc(&ps->decryptKey,
 		       &enc));
@@ -362,6 +363,7 @@ static int receiveReplies(const HashCode512 * key,
 	  j++;
 	if (j == size) {
 	  BREAK(); /* kblock malformed */
+	  FREE(kb);
 	  return SYSERR;
 	}
 	dstURI = (const char*) &kb[1];
@@ -370,12 +372,14 @@ static int receiveReplies(const HashCode512 * key,
 					   &((char*)kb)[j],
 					   size - j)) {
 	  BREAK(); /* kblock malformed */
+	  FREE(kb);
 	  return SYSERR;
 	}
 	fi.uri = ECRS_stringToUri(dstURI);
 	if (fi.uri == NULL) {
 	  BREAK(); /* kblock malformed */
 	  ECRS_freeMetaData(fi.meta);
+	  FREE(kb);
 	  return SYSERR;
 	}
 	if (sqc->spcb != NULL) {
@@ -388,6 +392,7 @@ static int receiveReplies(const HashCode512 * key,
 	  ret = OK;
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
+	FREE(kb);
 	return ret;      
       }
       case N_BLOCK: {
@@ -402,21 +407,25 @@ static int receiveReplies(const HashCode512 * key,
 			     sqc);
       }
       case KN_BLOCK:  {
-	const KNBlock * kb;
+	KNBlock * kb;
+	int ret;
 	
 	if (size < sizeof(KNBlock))
 	  return SYSERR;
-	kb = (const KNBlock*) &value[1];
+	kb = MALLOC(size);
+	memcpy(kb, &value[1], size);
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb->nblock,
 			    size - sizeof(KBlock));
-	return processNBlock(&kb->nblock,
-			     &ps->decryptKey,
-			     size - sizeof(KNBlock) + sizeof(NBlock),
-			     sqc);
+	ret = processNBlock(&kb->nblock,
+			    &ps->decryptKey,
+			    size - sizeof(KNBlock) + sizeof(NBlock),
+			    sqc);
+	FREE(kb);
+	return ret;
       }
       case S_BLOCK: {
-	const SBlock * sb;
+	SBlock * sb;
 	const char * dstURI;
 	int j;
 	cron_t now;
@@ -425,7 +434,8 @@ static int receiveReplies(const HashCode512 * key,
 	
 	if (size < sizeof(SBlock))
 	  return SYSERR;
-	sb = (const SBlock*) &value[1];
+	sb = MALLOC(size);
+	memcpy(sb, &value[1], size);
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &sb->creationTime,
 			    size
@@ -438,6 +448,7 @@ static int receiveReplies(const HashCode512 * key,
 	  j++;
 	if (j == size) {
 	  BREAK(); /* sblock malformed */
+	  FREE(sb);
 	  return SYSERR;
 	}
 	dstURI = (const char*) &sb[1];
@@ -446,12 +457,14 @@ static int receiveReplies(const HashCode512 * key,
 					   &dstURI[j],
 					   size - j)) {
 	  BREAK(); /* kblock malformed */
+	  FREE(sb);
 	  return SYSERR;
 	}
 	fi.uri = ECRS_stringToUri(dstURI);
 	if (fi.uri == NULL) {
 	  BREAK(); /* sblock malformed */
 	  ECRS_freeMetaData(fi.meta);
+	  FREE(sb);
 	  return SYSERR;
 	}
 	if (sqc->spcb != NULL) {
@@ -466,13 +479,18 @@ static int receiveReplies(const HashCode512 * key,
 	/* compute current/NEXT URI (if updateable SBlock) and issue
 	   respective query automatically! */
 	cronTime(&now);	
-	if (OK != computeIdAtTime(sb, now, &updateId))
+	if (OK != computeIdAtTime(sb, now, &updateId)) {
+	  FREE(sb);
 	  return SYSERR;
+	}
 	if (equalsHashCode512(&updateId,
-			      &ps->decryptKey))
+			      &ps->decryptKey)) {
+	  FREE(sb);
 	  return ret; /* have latest version */
+	}
 	if (ps->keyCount != 2) {
 	  BREAK();
+	  FREE(sb);
 	  return SYSERR;
 	}
 
@@ -481,6 +499,7 @@ static int receiveReplies(const HashCode512 * key,
 	updateURI.data.sks.identifier = updateId;
 	addQueryForURI(&updateURI,
 		       sqc);
+	FREE(sb);
 	return ret;
       }
       default:

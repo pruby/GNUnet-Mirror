@@ -122,12 +122,11 @@ static int undoSymlinking(const char * fn,
   char * serverDir;
   char * serverFN;
   char * tmpName;
-  HashCode512 serverFileId;
   struct stat buf;
-  int ret;
 
 #ifndef S_ISLNK
-  return OK; /* symlinks do not exist? */
+  if (1)
+    return OK; /* symlinks do not exist? */
 #endif
   if (0 != LSTAT(fn,
 		 &buf)) {

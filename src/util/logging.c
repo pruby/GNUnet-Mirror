@@ -464,6 +464,20 @@ void errexit(const char *format, ...) {
   exit(-1); /* just in case... */
 }
 
+void LOGHASH(size_t size,
+	     const void * data) {
+  HashCode512 hc;
+  EncName enc;
+  hash(data, size, &hc);
+  hash2enc(&hc, &enc);
+  LOG(LOG_DEBUG,
+      "%u: %s\n",
+      size,
+      &enc);
+}
+
+
+
 int SNPRINTF(char * buf,
 	     size_t size,
 	     const char * format,

@@ -85,6 +85,14 @@ unsigned int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock);
 int FS_insert(GNUNET_TCP_SOCKET * sock,
 	      const Datastore_Value * block);
 
+
+/**
+ * Initialize to index a file.  Tries to do the symlinking.
+ */
+int FS_initIndex(GNUNET_TCP_SOCKET * sock,
+		 const HashCode512 * fileHc,
+		 const char * fn);
+
 /**
  * Index a block.  Note that while the API is VERY similar to
  * FS_insert in terms of signature, the block for FS_index must be in

@@ -38,6 +38,72 @@
  */
 #define MAX_KBLOCK_SIZE 32000
 
+#if EXTRA_CHECKS
+
+/**
+ * Process replies received in response to our
+ * queries.  Verifies, decrypts and passes valid
+ * replies to the callback.
+ *
+ * @return SYSERR if the entry is malformed
+ */
+static int verifyKBlock(const HashCode512 * key,
+			Datastore_Value * value) {
+  unsigned int type;
+  ECRS_FileInfo fi;
+  unsigned int size;
+  HashCode512 query;
+  KBlock * kb;
+  const char * dstURI;
+  EncName enc;
+  int j;
+
+  type = ntohl(value->type);
+  size = ntohl(value->size) - sizeof(Datastore_Value);
+  if (OK != getQueryFor(size,
+			(DBlock*) &value[1],
+			&query))
+    return SYSERR;
+  GNUNET_ASSERT(type == K_BLOCK);
+
+  if (size < sizeof(KBlock))
+    return SYSERR;
+  kb = (KBlock*) &value[1];
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
+  ECRS_decryptInPlace(key,
+		      &kb[1],
+		      size - sizeof(KBlock));  
+  j = sizeof(KBlock);
+  while ( (j < size) &&
+	  (((const char*)kb)[j] != '\0') )
+    j++;
+  if (j == size) {
+    BREAK(); /* kblock malformed */
+    return SYSERR;
+  }
+  dstURI = (const char*) &kb[1];
+  j++;
+  if (OK != ECRS_deserializeMetaData(&fi.meta,
+				     &((char*)kb)[j],
+				     size - j)) {
+    BREAK(); /* kblock malformed */
+    return SYSERR;
+  }
+  fi.uri = ECRS_stringToUri(dstURI);
+  if (fi.uri == NULL) {
+    BREAK(); /* kblock malformed */
+    ECRS_freeMetaData(fi.meta);
+    return SYSERR;
+  }
+  ECRS_freeUri(fi.uri);
+  ECRS_freeMetaData(fi.meta);
+  return OK;      
+}
+
+#endif
+
 
 /**
  * Add an entry into the K-space (keyword space).
@@ -67,6 +133,8 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   unsigned int keywordCount;
   int i;
   EncName enc;
+  HashCode512 key;
+  char * cpy; /* copy of the encrypted portion */
 
   if (! ECRS_isKeywordURI(uri)) {
     BREAK();
@@ -104,10 +172,11 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     memcpy(&kb[1],
 	   dstURI,
 	   strlen(dstURI)+1);
-    ECRS_serializeMetaData(md,
-			   &((char*)&kb[1])[strlen(dstURI)+1],
-			   mdsize,
-			   NO);
+    GNUNET_ASSERT(mdsize ==
+		  ECRS_serializeMetaData(md,
+					 &((char*)&kb[1])[strlen(dstURI)+1],
+					 mdsize,
+					 NO));
   }  
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(K_BLOCK);
@@ -119,35 +188,43 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   
   keywords = uri->data.ksk.keywords;
   keywordCount = uri->data.ksk.keywordCount;
+  cpy = MALLOC(mdsize + strlen(dstURI) + 1);
+  memcpy(cpy, &kb[1], mdsize + strlen(dstURI) + 1);
   for (i=0;i<keywordCount;i++) {
+    memcpy(&kb[1], cpy, mdsize + strlen(dstURI) + 1);
     hash(keywords[i],
 	 strlen(keywords[i]),
-	 &hc);
+	 &key);
     IFLOG(LOG_DEBUG,
-	  hash2enc(&hc,
+	  hash2enc(&key,
 		   &enc));
     LOG(LOG_DEBUG,
 	"Encrypting KBlock with key %s.\n",
 	&enc);
-    ECRS_encryptInPlace(&hc,
+    ECRS_encryptInPlace(&key,
 			&kb[1],
 			mdsize + strlen(dstURI) + 1);
-    pk = makeKblockKey(&hc);
+    pk = makeKblockKey(&key);
     getPublicKey(pk,
 		 &kb->keyspace);
     GNUNET_ASSERT(OK == sign(pk,
 			     mdsize + strlen(dstURI) + 1,
 			     &kb[1],
 			     &kb->signature));
+#if EXTRA_CHECKS
     /* extra check: verify sig */
     GNUNET_ASSERT(OK == getQueryFor(size,
 				    (DBlock*) kb,
 				    &hc));
+#endif
     freePrivateKey(pk);
     if (OK != FS_insert(sock, value))
       ret = SYSERR;
+#if EXTRA_CHECKS
+    GNUNET_ASSERT(OK == verifyKBlock(&key, value))
+#endif
   }
-
+  FREE(cpy);
   FREE(dstURI);
   releaseClientSocket(sock);
   FREE(value);

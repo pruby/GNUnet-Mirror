@@ -165,6 +165,7 @@ static int sqlite_decode_binary_n(const unsigned char *in,
  */
 static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   Datastore_Datum * datum;
+  Datastore_Value * value;
   int contentSize;
     
   contentSize = sqlite3_column_int(stmt, 0) - sizeof(Datastore_Value);
@@ -182,17 +183,18 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   }
 
   datum = MALLOC(sizeof(Datastore_Datum) + contentSize);
-  datum->value.size = htonl(contentSize + sizeof(Datastore_Value));
-  datum->value.type = htonl(sqlite3_column_int(stmt, 1));
-  datum->value.prio = htonl(sqlite3_column_int(stmt, 2));
-  datum->value.anonymityLevel = htonl(sqlite3_column_int(stmt, 3));
-  datum->value.expirationTime = htonll(sqlite3_column_int64(stmt, 4));
+  value = &datum->value;
+  value->size = htonl(contentSize + sizeof(Datastore_Value));
+  value->type = htonl(sqlite3_column_int(stmt, 1));
+  value->prio = htonl(sqlite3_column_int(stmt, 2));
+  value->anonymityLevel = htonl(sqlite3_column_int(stmt, 3));
+  value->expirationTime = htonll(sqlite3_column_int64(stmt, 4));
   
   if (sqlite_decode_binary_n(sqlite3_column_blob(stmt, 5),
 			     (char *) &datum->key,
 			     sizeof(HashCode512)) != sizeof(HashCode512) ||
       sqlite_decode_binary_n(sqlite3_column_blob(stmt, 6), 
-			     (char *) &datum[1], 
+			     (char *) &value[1], 
 			     contentSize) != contentSize) {
     
     LOG(LOG_WARNING,
@@ -657,6 +659,7 @@ static int put(const HashCode512 * key,
     BREAK();
     return SYSERR;
   }
+
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG,
       "Storing in database block with type %u.\n",
