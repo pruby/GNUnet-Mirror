@@ -163,8 +163,14 @@ void processResponse(const HashCode512 * key,
     }
   }
   if (matchCount == 0) {      
+    EncName enc;
+
+    IFLOG(LOG_DEBUG,
+	  hash2enc(key,
+		   &enc));
     LOG(LOG_DEBUG,
-	"Reply did not match any request.\n");
+	"Reply '%s' did not match any request.\n",
+	&enc);
   }
   MUTEX_UNLOCK(&queryManagerLock);
 }

@@ -241,7 +241,6 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   return OK;
 }
 
-
 /**
  * Stop processing a query.
  *
@@ -1038,8 +1037,8 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 						      &csHandleRequestInsert));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_INDEX,
 						      &csHandleRequestIndex));
-  GNUNET_ASSERT(SYSERR != coreAPI->registerClientHandler(AFS_CS_PROTO_INIT_INDEX,
-                 &csHandleRequestInitIndex));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_INIT_INDEX,
+						      &csHandleRequestInitIndex));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_DELETE,
 						      &csHandleRequestDelete));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_UNINDEX,

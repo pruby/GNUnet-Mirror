@@ -38,8 +38,7 @@
  * a given reply is the one and only reply for a given
  * request.
  */
-typedef int (*UniqueReplyIdentifier)(const void * content,
-				     unsigned int size,
+typedef int (*UniqueReplyIdentifier)(const DataContainer * content,
 				     unsigned int query_type,
 				     const HashCode512 * primaryKey);
 

@@ -1974,7 +1974,7 @@ int checkHeader(const PeerIdentity * sender,
     if (res == SYSERR) {
       LOG(LOG_WARNING,
 	  _("Invalid sequence number"
-	    " %u <= %u, dropping rest of packet.\n"),
+	    " %u <= %u, dropping message.\n"),
 	  sequenceNumber,
 	  be->lastSequenceNumberReceived);
       MUTEX_UNLOCK(&lock);

@@ -942,9 +942,6 @@ static void issueRequest(RequestManager * rm,
 
   cronTime(&now);
   entry = rm->requestList[requestIndex];
-  if (entry->searchHandle != NULL)
-    FS_stop_search(rm->sctx,
-		   entry->searchHandle);
 
   /* compute priority */
   if (lastmpritime + 10 * cronSECONDS < now) {
@@ -1014,6 +1011,9 @@ static void issueRequest(RequestManager * rm,
       "Starting FS search for %s\n",
       &enc);
 
+  if (entry->searchHandle != NULL)
+    FS_stop_search(rm->sctx,
+		   entry->searchHandle);
   entry->searchHandle
     = FS_start_search(rm->sctx,
 		      D_BLOCK,
