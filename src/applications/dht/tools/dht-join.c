@@ -147,50 +147,47 @@ static void dump(const char * fmt,
 
 #define LOGRET(ret) dump(_("Call to '%s' returns %d.\n"), __FUNCTION__, ret)
 #define LOGKEY(key) do { EncName kn; hash2enc(key, &kn); dump(_("Call to '%s' with key '%s'.\n"), __FUNCTION__, &kn); } while (0)
-#define LOGVAL(val) dump(_("Call to '%s' with value '%.*s' (%d bytes).\n"), __FUNCTION__, (val == NULL) ? 0 : val->dataLength, (val == NULL) ? NULL : val->data, (val == NULL) ? 0 : val->dataLength)
+#define LOGVAL(val) dump(_("Call to '%s' with value '%.*s' (%d bytes).\n"), __FUNCTION__, (val == NULL) ? 0 : &val[1], (val == NULL) ? NULL : &val[1], (val == NULL) ? 0 : (ntohl(val->size) - sizeof(DataContainer)))
 
 static int lookup(void * closure,
 		  unsigned int type,
+		  unsigned int prio,
 		  unsigned int keyCount,
 		  const HashCode160 * keys,
 		  DataProcessor processor,
-		  void * closure) {
+		  void * pclosure) {
   int ret;
   Blockstore * cls = (Blockstore*) closure;  
-  LOGKEY(key);
+  LOGKEY(&keys[0]);
   ret = cls->get(cls->closure,
 		 type,
-		 0, /* prio */
+		 prio,
 		 keyCount,
 		 keys,
 		 processor,
-		 results);
-  if (ret >= 1)
-    LOGVAL(results);
+		 pclosure);
   LOGRET(ret);  
   return ret;
 }
   
 static int store(void * closure,
 		 const HashCode160 * key,
-		 unsigned int type,
-		 const DataContainer * value) {
+		 const DataContainer * value,
+		 unsigned int prio) {
   int ret;
   Blockstore * cls = (Blockstore*) closure;
   LOGKEY(key);
   LOGVAL(value);
   ret = cls->put(cls->closure,
 		 key,
-		 type,
 		 value,
-		 0 /* prio */);
+		 prio);
   LOGRET(ret);
   return ret;
 }
 
 static int removeDS(void * closure,
 		    const HashCode160 * key,
-		    unsigned int type,
 		    const DataContainer * value) {
   int ret;
   Blockstore * cls = (Blockstore*) closure;
@@ -198,7 +195,6 @@ static int removeDS(void * closure,
   LOGVAL(value);
   ret = cls->del(cls->closure,
 		 key,
-		 type,
 		 value);
   LOGRET(ret);
   return ret;
@@ -243,17 +239,16 @@ int main(int argc,
   mem = getConfigurationInt("DHT-JOIN",
 			    "MEMORY");
   if (mem == 0) mem = 65536; /* default: use 64k */
-  myStore.closure = create_blockstore_memory(em);
-  myStore.lookup = &lookup;
-  myStore.store = &store;
-  myStore.remove = &removeDS;
+  myStore.closure = create_blockstore_memory(mem);
+  myStore.get = &lookup;
+  myStore.put = &store;
+  myStore.del = &removeDS;
   myStore.iterate = &iterate;
 
   DHT_LIB_init();
   initializeShutdownHandlers();
   if (OK != DHT_LIB_join(&myStore,
-			 &table,
-			 0)) {
+			 &table)) {
     LOG(LOG_WARNING,
 	_("Error joining DHT.\n"));
     destroy_blockstore_memory((Blockstore*)myStore.closure);

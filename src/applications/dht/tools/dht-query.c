@@ -24,6 +24,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_protocols.h"
 #include "gnunet_util.h"
 #include "gnunet_dht_lib.h"
 
@@ -111,8 +112,9 @@ static int parseOptions(int argc,
   return OK;
 }
 
-static int printCallback(DataContainer * data,
-			 const char * key) {
+static int printCallback(const HashCode160 * hash,
+			 const DataContainer * data,
+			 char * key) {
   printf("%s(%s): '%.*s'\n",
 	 "get",
 	 key,
@@ -134,12 +136,13 @@ static void do_get(GNUNET_TCP_SOCKET * sock,
       "get", key);
   ret = DHT_LIB_get(&table,
 		    DHT_STRING2STRING_BLOCK,
-		    1,
+		    1, /* prio */
+		    1, /* key count */
 		    &hc,
 		    getConfigurationInt("DHT-QUERY",
 					"TIMEOUT"),
-		    &printCallback,
-		    key);
+		    (DataProcessor) &printCallback,
+		    (void*) key);
   if (ret == 0) 
     printf("%s(%s) operation returned no results.\n",
 	   "get",
@@ -161,12 +164,12 @@ static void do_put(GNUNET_TCP_SOCKET * sock,
   LOG(LOG_DEBUG,
       "Issuing '%s(%s,%s)' command.\n",
       "put", key, value);
-  if (OK == DHT_LIB_put(&table,
+  if (OK == DHT_LIB_put(&table,		       
 			&hc,
-			DHT_STRING2STRING_BLOCK,
+			1, /* prio */
 			getConfigurationInt("DHT-QUERY",
 					    "TIMEOUT"),
-			&dc)) { 
+			dc)) { 
     printf(_("'%s(%s,%s)' succeeded\n"),
 	   "put",
 	   key, value);
@@ -194,11 +197,10 @@ static void do_remove(GNUNET_TCP_SOCKET * sock,
       "Issuing '%s(%s,%s)' command.\n",
       "remove", key, value);
   if (OK == DHT_LIB_remove(&table,
-			   DHT_STRING2STRING_BLOCK,
 			   &hc,
 			   getConfigurationInt("DHT-QUERY",
 					       "TIMEOUT"),
-			   &dc)) { 
+			   dc)) { 
     printf(_("'%s(%s,%s)' succeeded\n"),
 	   "remove",
 	   key, value);
