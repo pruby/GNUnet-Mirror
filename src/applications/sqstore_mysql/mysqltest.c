@@ -148,7 +148,6 @@ static int test(SQstore_ServiceAPI * api) {
  */
 static int parser(int argc, 
 		  char * argv[]) {
-  char * tmp;
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
 				     "YES"));
@@ -178,14 +177,16 @@ int main(int argc, char *argv[]) {
     errexit(_("Could not initialize libgnunetutil!\n"));
   initCore();
   api = requestService("sqstore_mysql");
-  api->drop();
-  releaseService(api);
-  api = requestService("sqstore_mysql");    
-  if (api != NULL) {
-    ok = test(api);
-    releaseService(api);
-  } else 
-    ok = SYSERR;
+  ok = SYSERR;
+  if (api != NULL) {   
+    api->drop();
+    releaseService(api);  
+    api = requestService("sqstore_mysql");    
+    if (api != NULL) {
+      ok = test(api);
+      releaseService(api);
+    }  
+  }
   doneCore();
   doneUtil();
   if (ok == SYSERR) 
