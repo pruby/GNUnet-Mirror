@@ -1,3 +1,23 @@
+/* 
+     This file is part of GNUnet.
+     (C) 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
 /*
  * Copyright (C) 2002 Roman Zippel <zippel@linux-m68k.org>
  * Released under the terms of the GNU GPL v2.0.
@@ -5,8 +25,9 @@
 
 /**
  * @brief GNUnet Setup
- * @file
+ * @file conf/images.c
  * @author Roman Zippel
+ * @author Nils Durner
  */
 
 static const char *xpm_load[] = {
@@ -330,3 +351,98 @@ static const char *xpm_void[] = {
 "            ",
 "            ",
 "            "};
+
+static const char * minus_xpm[] = {
+"9 9 36 1",
+"   c None",
+".  c #B0C2D3",
+"+  c #7898B5",
+"@  c #FFFFFF",
+"#  c #FCFCFB",
+"$  c #FDFDFB",
+"%  c #FCFCFA",
+"&  c #F7F6F3",
+"*  c #F7F7F5",
+"=  c #F7F7F4",
+"-  c #F6F6F4",
+";  c #F1F0EB",
+">  c #E5E1DA",
+",  c #F5F5F1",
+"'  c #000000",
+")  c #DFDBD2",
+"!  c #F2F2EE",
+"~  c #F0F0EC",
+"{  c #EDEDE7",
+"]  c #ECEBE6",
+"^  c #EAE9E3",
+"/  c #E3E0D9",
+"(  c #DBD6CC",
+"_  c #E4E1D9",
+":  c #DCD8CF",
+"<  c #D8D3C9",
+"[  c #D7D2C7",
+"}  c #D6D1C6",
+"|  c #D2CCC0",
+"1  c #CFC8BB",
+"2  c #D2CCBF",
+"3  c #C6BEAE",
+"4  c #C2B8A8",
+"5  c #C1B8A7",
+"6  c #C0B7A6",
+"7  c #C3BAAA",
+".+++++++.",
+"+@@@@@@@+",
+"+#$$$#%&+",
+"+**==-;>+",
+"+,''''')+",
+"+!~{]^/(+",
+"+_:<[}|1+",
+"+2345567+",
+".+++++++."};
+
+static const char * plus_xpm[] = {
+"9 9 34 1",
+"   c None",
+".  c #B0C2D3",
+"+  c #7898B5",
+"@  c #FFFFFF",
+"#  c #FCFCFB",
+"$  c #FDFDFB",
+"%  c #000000",
+"&  c #FCFCFA",
+"*  c #F7F6F3",
+"=  c #F7F7F5",
+"-  c #F7F7F4",
+";  c #F6F6F4",
+">  c #F1F0EB",
+",  c #E5E1DA",
+"'  c #F5F5F1",
+")  c #DFDBD2",
+"!  c #F2F2EE",
+"~  c #F0F0EC",
+"{  c #EDEDE7",
+"]  c #EAE9E3",
+"^  c #E3E0D9",
+"/  c #DBD6CC",
+"(  c #E4E1D9",
+"_  c #DCD8CF",
+":  c #D8D3C9",
+"<  c #D6D1C6",
+"[  c #D2CCC0",
+"}  c #CFC8BB",
+"|  c #D2CCBF",
+"1  c #C6BEAE",
+"2  c #C2B8A8",
+"3  c #C1B8A7",
+"4  c #C0B7A6",
+"5  c #C3BAAA",
+".+++++++.",
+"+@@@@@@@+",
+"+#$$%#&*+",
+"+==-%;>,+",
+"+'%%%%%)+",
+"+!~{%]^/+",
+"+(_:%<[}+",
+"+|123345+",
+".+++++++."};
+

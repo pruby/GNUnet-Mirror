@@ -223,6 +223,44 @@ static void set_help(const char *prompt, const char *name, const char *help)
            NULL);
 }
 
+GtkImage *get_btn_image(GtkButton *button)
+{
+  GList *btn_children, *align;
+  GtkImage *ret = NULL;
+  
+  /* button -> alignment -> hbox -> image */
+  
+  btn_children = gtk_container_get_children(GTK_CONTAINER(button));
+  for (align = btn_children; align; align = g_list_next(align))
+  {
+    if (GTK_IS_ALIGNMENT(align->data))
+    {
+      GList *align_children, *hbox;
+      
+      align_children = gtk_container_get_children(GTK_CONTAINER(align->data));
+      for (hbox = align_children; hbox; hbox = g_list_next(hbox))
+      {
+        if (GTK_IS_HBOX(hbox->data))
+        {
+          GList *hbox_children, *img;
+
+          hbox_children = gtk_container_get_children(GTK_CONTAINER(hbox->data));
+          for (img = hbox_children; img; img = g_list_next(img))
+          {
+            if (GTK_IS_IMAGE(img->data))
+              ret = GTK_IMAGE(img->data);
+          }
+          g_list_free(hbox_children);
+        }
+      }
+      g_list_free(align_children);
+    }
+  }
+  g_list_free(btn_children);
+  
+  return ret;
+}
+
 /* Main Window Initialization */
 
 
@@ -237,6 +275,7 @@ void init_main_window()
   GtkToolbar *toolbar;
   GtkWidget *vbox;
   GtkMenu *options;
+  GtkImage *image;
 
   main_wnd = create_main_wnd ();
   gtk_widget_show(GTK_WIDGET(main_wnd));
@@ -274,35 +313,55 @@ void init_main_window()
 
   style = gtk_widget_get_style(main_wnd);
 
-  pixmap = gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
-                &style->bg[GTK_STATE_NORMAL],
-                (gchar **) xpm_single_view);
-  gtk_image_set_from_pixmap(GTK_IMAGE
-          (((GtkToolbarChild
-             *) (g_list_nth(GTK_TOOLBAR(toolbar)->
-                children,
-                5)->data))->icon),
-          pixmap, mask);
-  pixmap =
-      gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
-           &style->bg[GTK_STATE_NORMAL],
-           (gchar **) xpm_split_view);
-  gtk_image_set_from_pixmap(GTK_IMAGE
-          (((GtkToolbarChild
-             *) (g_list_nth(GTK_TOOLBAR(toolbar)->
-                children,
-                6)->data))->icon),
-          pixmap, mask);
-  pixmap =
-      gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
-           &style->bg[GTK_STATE_NORMAL],
-           (gchar **) xpm_tree_view);
-  gtk_image_set_from_pixmap(GTK_IMAGE
-          (((GtkToolbarChild
-             *) (g_list_nth(GTK_TOOLBAR(toolbar)->
-                children,
-                7)->data))->icon),
-          pixmap, mask);
+  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button4")));
+  if (image)
+  {
+    pixmap = gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
+                  &style->bg[GTK_STATE_NORMAL],
+                  (gchar **) xpm_single_view);
+    gtk_image_set_from_pixmap(image, pixmap, mask);
+  }
+          
+  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button5")));
+  if (image)
+  {
+    pixmap =
+        gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
+             &style->bg[GTK_STATE_NORMAL],
+             (gchar **) xpm_split_view);
+    gtk_image_set_from_pixmap(image, pixmap, mask);
+  }
+  
+  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button6")));
+  if (image)
+  {
+    pixmap =
+        gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
+             &style->bg[GTK_STATE_NORMAL],
+             (gchar **) xpm_tree_view);
+    gtk_image_set_from_pixmap(image, pixmap, mask);
+  }
+
+  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button7")));
+  if (image)
+  {
+    pixmap =
+        gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
+             &style->bg[GTK_STATE_NORMAL],
+             (gchar **) plus_xpm);
+    gtk_image_set_from_pixmap(image, pixmap, mask);
+  }
+
+  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button8")));
+  if (image)
+  {
+    pixmap =
+        gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
+             &style->bg[GTK_STATE_NORMAL],
+             (gchar **) minus_xpm);
+    gtk_image_set_from_pixmap(image, pixmap, mask);
+  }
+
 
   switch (view_mode) {
   case SINGLE_VIEW:
