@@ -466,14 +466,17 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     CLOSE(fileHandle);
     return SYSERR;
   }
+  CLOSE(fileHandle);
   ret = fileBlockEncode(db,
 			ntohl(odb->blockSize) + sizeof(DBlock),
 			query,
 			enc);
   FREE(db);
   FREE(fn);
-  if (ret == SYSERR)
+  if (ret == SYSERR) {
+    BREAK();
     return SYSERR;
+  }
 
   (*enc)->anonymityLevel = dbv->anonymityLevel;
   (*enc)->expirationTime = dbv->expirationTime;
