@@ -117,15 +117,14 @@ typedef struct {
 
   CS_HEADER header;
 
+  unsigned int type;
+
   unsigned long long timeout;  /* nbo */
 
   DHT_TableId table; 
 
-  HashCode160 key;
-
-  unsigned int maxResults; /* nbo */
-
-  unsigned int maxResultSize; /* nbo */
+  /* one or more keys */
+  HashCode160 keys;
 
 } DHT_CS_REQUEST_GET;
 
