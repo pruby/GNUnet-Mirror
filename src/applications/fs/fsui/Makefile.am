@@ -19,14 +19,14 @@ libgnunetfsui_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 
-#check_PROGRAMS = \
-#  footest 
-#
-#TESTS = $(check_PROGRAMS)
-#
-#footest_SOURCES = \
-#  footest.c 
-#footest_LDADD = \
-#  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
-#  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
-#  $(top_builddir)/src/util/libgnunetutil.la 
+check_PROGRAMS = \
+  fsuitest 
+
+TESTS = $(check_PROGRAMS)
+
+fsuitest_SOURCES = \
+  fsuitest.c 
+fsuitest_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
