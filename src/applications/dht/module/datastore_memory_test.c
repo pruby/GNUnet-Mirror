@@ -48,7 +48,6 @@ static int store(Blockstore * s,
        &hc);
   if (OK != s->put(s->closure,
 		   &hc,
-		   0,
 		   cont,
 		   0)) { 
     DUMP(s); 
@@ -79,7 +78,6 @@ static int rem(Blockstore * s,
        &hc);
   if (OK != s->del(s->closure,
 		   &hc,
-		   0,
 		   cont)) { 
     FREE(cont);
     DUMP(s); 
