@@ -108,6 +108,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 
   LOG(LOG_INFO,
       "FSUI shutdown.  This may take a while.\n");
+  FSUI_publishCollectionNow(ctx);
   while (ctx->activeThreads != NULL) {
     tpos = ctx->activeThreads;
     ctx->activeThreads = tpos->next;

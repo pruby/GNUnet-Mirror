@@ -379,6 +379,7 @@ int main(int argc, char *argv[]) {
 			 pname);
       if (OK == FSUI_startCollection(ctx,
 				     0, /* FIXME: anonymity level! */
+				     ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
 				     pname,
 				     meta)) {
 	printf(_("Started collection '%s'.\n"),

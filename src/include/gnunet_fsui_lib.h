@@ -533,6 +533,7 @@ int FSUI_stopDownloadAll(struct FSUI_Context * ctx,
  */
 int FSUI_startCollection(struct FSUI_Context * ctx,
 			 unsigned int anonymityLevel,
+			 cron_t updateInterval,
 			 const char * name,
 			 const struct ECRS_MetaData * meta); /* collection.c */
 
@@ -549,6 +550,42 @@ int FSUI_stopCollection(struct FSUI_Context * ctx); /* collection.c */
  * @return NULL if there is no collection, otherwise its name
  */
 const char * FSUI_getCollection(struct FSUI_Context * ctx); /* collection.c */
+
+/**
+ * Upload an update of the current collection information to the
+ * network now.  The function has no effect if the collection has not
+ * changed since the last publication.  If we are currently not
+ * collecting, this function does nothing.
+ *
+ * Note that clients typically don't have to call this
+ * function explicitly.  FSUI will call the function on 
+ * exit (for sporadically updated collections), on any
+ * change to the collection (for immediately updated
+ * content) or when the publication time has arrived
+ * (for periodically updated collections).
+ *
+ * However, clients may want to call this function if
+ * explicit publication of an update at another
+ * time is desired.
+ */
+void FSUI_publishCollectionNow(struct FSUI_Context * ctx);
+
+/**
+ * If we are currently building a collection, publish
+ * the given file information in that collection.
+ * If we are currently not collecting, this function
+ * does nothing.
+ *
+ * Note that clients typically don't have to call this
+ * function explicitly -- by using the FSUI library it
+ * should be called automatically by FSUI code whenever
+ * needed.  However, the function maybe useful if you're
+ * inserting files using libECRS directly or need other
+ * ways to explicitly extend a collection.
+ */
+void FSUI_publishToCollection(struct FSUI_Context * ctx,
+			      const ECRS_FileInfo * fi);
+
 
 /* ******************** Namespace API ***************** */
 
