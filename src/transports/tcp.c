@@ -808,7 +808,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
   if (tcpSession->wpos > 0) {
     /* select already pending... */
 #if DEBUG_TCP
-	  LOG(LOG_DEBUG,
+    LOG(LOG_DEBUG,
 	"write already pending, will not take additional message.\n");
 #endif    
     MUTEX_UNLOCK(&tcplock);
