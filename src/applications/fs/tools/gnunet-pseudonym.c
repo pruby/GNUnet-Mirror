@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -227,6 +227,7 @@ static void printMeta(const struct ECRS_MetaData * meta) {
 
 static int namespacePrinter(void * unused,
 			    const char * namespaceName,
+			    const HashCode512 * id,
 			    const struct ECRS_MetaData * md,
 			    int rating) {
   EncName enc;
@@ -235,10 +236,17 @@ static int namespacePrinter(void * unused,
 
   set = getConfigurationString("PSEUDONYM",
 			       "SET-RATING");
-  
-  printf(_("Namespace '%s' has rating %d.\n"),
-	 namespaceName,
-	 rating);
+  hash2enc(id,
+	   &enc);
+  if (0 == strcmp(namespaceName, (char*)&enc))
+    printf(_("Namespace '%s' has rating %d.\n"),
+	   namespaceName,
+	   rating);
+  else
+    printf(_("Namespace '%s' (%s) has rating %d.\n"),
+	   namespaceName,
+	   (char*) &enc,
+	   rating);
   printMeta(md);
 
   if (set != NULL) {    

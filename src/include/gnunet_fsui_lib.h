@@ -281,6 +281,7 @@ typedef void (*FSUI_EventCallback)(void * cls,
  */
 typedef int (*FSUI_NamespaceIterator)(void * cls,
 				      const char * namespaceName,
+				      const HashCode512 * namespaceId,
 				      const struct ECRS_MetaData * md,
 				      int rating);
 

@@ -404,22 +404,34 @@ int ECRS_isNamespaceURI(const struct ECRS_URI * uri) {
 }
 
 /**
- * Get the (globally unique) name for the given
- * namespace.
+ * Get the (globally unique) name for the given namespace.
+ *
  * @return the name (hash) of the namespace, caller
  *  must free it.
  */
-char * ECRS_getNamespaceName(const struct ECRS_URI * uri) {
+char * ECRS_getNamespaceName(const HashCode512 * id) {
   char * ret;
   
-  if (! ECRS_isNamespaceURI(uri)) {
-    BREAK();
-    return NULL;
-  }  
   ret = MALLOC(sizeof(EncName));
-  hash2enc(&uri->data.sks.namespace,
+  hash2enc(id,
 	   (EncName*)ret);
   return ret;
+}
+
+/**
+ * Get the (globally unique) ID of the namespace
+ * from the given namespace URI.
+ *
+ * @return OK on success
+ */
+int ECRS_getNamespaceId(const struct ECRS_URI * uri,
+			HashCode512 * id) {
+  if (! ECRS_isNamespaceURI(uri)) {
+    BREAK();
+    return SYSERR;
+  }  
+  *id = uri->data.sks.namespace;
+  return OK;
 }
 
 /**

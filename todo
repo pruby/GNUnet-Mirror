@@ -8,7 +8,6 @@
 0.7.0pre1 [4'05] (aka "preview"):
 - testing:
   * sqlite-tests: test update function, concurrency with iterators
-  * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
 - topology:

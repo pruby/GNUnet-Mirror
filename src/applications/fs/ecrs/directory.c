@@ -43,11 +43,11 @@
  *         directory is malformed
  */
 int ECRS_listDirectory(const char * data,
-		       unsigned int len,
+		       unsigned long long len,
 		       struct ECRS_MetaData ** md,
 		       ECRS_SearchProgressCallback spcb,
 		       void * spcbClosure) {
-  unsigned int pos;
+  unsigned long long pos;
   unsigned long long align;
   unsigned int mdSize;
   unsigned long long epos;
@@ -94,6 +94,10 @@ int ECRS_listDirectory(const char * data,
     pos = epos+1;
     if (fi.uri == NULL) 
       return SYSERR; /* malformed! */
+    if (ECRS_isKeywordURI(fi.uri)) {
+      ECRS_freeUri(fi.uri);
+      return SYSERR; /* illegal in directory! */
+    }
 
     memcpy(&mdSize, &data[pos], sizeof(unsigned int)); 
     mdSize = ntohl(mdSize);
@@ -156,10 +160,16 @@ int ECRS_createDirectory(char ** data,
   char ** ucs;
   int ret;
 
+  for (i=0;i<count;i++) {
+    if (ECRS_isKeywordURI(fis[i].uri)) {
+      BREAK();
+      return SYSERR; /* illegal in directory! */
+    }
+  }
   ucs = MALLOC(sizeof(char*) * count);
-
   size = 8 + sizeof(unsigned int);
   size += ECRS_sizeofMetaData(meta);
+
   for (i=0;i<count;i++) {
     psize = size;
 
@@ -168,11 +178,10 @@ int ECRS_createDirectory(char ** data,
     size += strlen(ucs[i]) + 1;
     size += sizeof(unsigned int);
     size += ECRS_sizeofMetaData(fis[i].meta);
-    
     align = (size / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
     if ( (psize < align) &&
 	 (size > align) ) {
-      size = align + size - psize;
+       size = align + size - psize;
     }
   }
 
@@ -194,28 +203,27 @@ int ECRS_createDirectory(char ** data,
   memcpy(&(*data)[pos],
 	 &ret,
 	 sizeof(unsigned int));
-  pos += ret + sizeof(unsigned int);
+  pos += ntohl(ret) + sizeof(unsigned int);
 
   for (i=0;i<count;i++) {
     psize = pos;
 
     pos += strlen(ucs[i]) + 1 + 
-      ECRS_sizeofMetaData(fis[i].meta) + sizeof(unsigned int);
-    
+      ECRS_sizeofMetaData(fis[i].meta);
+    pos += sizeof(unsigned int);    
     align = (pos / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
     if ( (psize < align) &&
 	 (pos > align) ) {
       pos = align;
     } else
       pos = psize;
-    
     memcpy(&(*data)[pos],
 	   ucs[i],
 	   strlen(ucs[i]) + 1);
     pos += strlen(ucs[i]) + 1;
     FREE(ucs[i]);
-    
-    ret = ECRS_serializeMetaData(meta,
+
+    ret = ECRS_serializeMetaData(fis[i].meta,
 				 &(*data)[pos + sizeof(unsigned int)],
 				 size - pos - sizeof(unsigned int),
 				 NO);
@@ -224,7 +232,7 @@ int ECRS_createDirectory(char ** data,
     memcpy(&(*data)[pos],
 	   &ret,
 	   sizeof(unsigned int));
-    pos += ret + sizeof(unsigned int);   
+    pos += ntohl(ret) + sizeof(unsigned int);   
   }
   FREE(ucs);
   GNUNET_ASSERT(pos == size);

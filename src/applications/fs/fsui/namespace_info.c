@@ -209,6 +209,35 @@ typedef struct {
   int ret;
 } LNClosure;
 
+static int localListNamespaceHelper(const HashCode512 * nsid,
+				    const char * name,
+				    void * cls) {
+  LNClosure * c = cls;
+  int ret;
+  struct ECRS_MetaData * meta;
+  int rating;
+
+  if (c->ret == SYSERR)
+    return SYSERR;
+  if (OK != readNamespaceInfo(name,
+			      &meta,
+			      &rating)) {
+    rating = 0;
+    meta = ECRS_createMetaData();
+  }
+  ret = c->iterator(c->closure,
+		    name,
+		    nsid,
+		    meta,
+		    rating);
+  ECRS_freeMetaData(meta);
+  if (ret == SYSERR)
+    c->ret = ret;
+  else
+    c->ret++;
+  return OK;
+}
+
 static void listNamespaceHelper(const char * fn,
 				const char * dirName,
 				void * cls) {
@@ -216,15 +245,20 @@ static void listNamespaceHelper(const char * fn,
   int ret;
   struct ECRS_MetaData * meta;
   int rating;
+  HashCode512 id;
 
   if (c->ret == SYSERR)
     return;
+  if (OK != enc2hash(fn,
+		     &id)) 
+    return; /* invalid name */
   if (OK != readNamespaceInfo(fn,
 			      &meta,
 			      &rating))
     return; /* ignore entry */
   ret = c->iterator(c->closure,
 		    fn,
+		    &id,
 		    meta,
 		    rating);
   ECRS_freeMetaData(meta);
@@ -244,47 +278,19 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
 			int local,
 			FSUI_NamespaceIterator iterator,
 			void * closure) {
-  int ret;
+  LNClosure cls;
+
+  cls.iterator = iterator;
+  cls.closure = closure;
+  cls.ret = 0;
 
   if (local == YES) {
-    int ret;
-    char ** names;
-    int i;
-    int rating;
-    int aborted;
-    struct ECRS_MetaData * meta;
-    
-    aborted = NO;
-    names = NULL;
-    ret = ECRS_listNamespaces(&names);
-    for (i=0;i<ret;i++) {
-      if (aborted == NO) {
-	if (OK != readNamespaceInfo(names[i],
-				    &meta,
-				    &rating)) {
-	  rating = 0;
-	  meta = ECRS_createMetaData();
-	}
-	if (SYSERR == iterator(closure,
-			       names[i],
-			       meta,
-			       rating))
-	  aborted = YES;      
-	ECRS_freeMetaData(meta);
-      }
-      FREE(names[i]);
-    }
-    GROW(names, ret, 0);
-    if (aborted == YES)
-      ret = -1;
+    ECRS_listNamespaces(&localListNamespaceHelper,
+			&cls);
   } else {
     char * fn;
     char * fnBase;
-    LNClosure cls;
 
-    cls.iterator = iterator;
-    cls.closure = closure;
-    cls.ret = 0;
     fn = getConfigurationString(NULL, "GNUNET_HOME");
     fnBase = expandFileName(fn);
     FREE(fn);
@@ -298,10 +304,9 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
     scanDirectory(fn,
 		  &listNamespaceHelper,
 		  &cls);
-    ret = cls.ret;
     FREE(fn);
   }
-  return ret;
+  return cls.ret;
 }
 
 /**
@@ -381,12 +386,15 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
   char * name;
   int ranking;
   struct ECRS_MetaData * old;
+  HashCode512 id;
 
   if (! ECRS_isNamespaceURI(uri)) {
     BREAK();
     return;
   }
-  name = ECRS_getNamespaceName(uri);
+  ECRS_getNamespaceId(uri,
+		      &id);
+  name = ECRS_getNamespaceName(&id);
   if (name == NULL)
     return;
   ranking = 0;

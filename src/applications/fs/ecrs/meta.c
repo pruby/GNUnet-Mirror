@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -399,9 +399,6 @@ int ECRS_serializeMetaData(const MetaData * md,
       pos += len;
     }
     hdr->size = htonl(size);
-    if (size <= max)
-      break;
-
     pos = tryCompression((char*)&hdr[1],
 			 size - sizeof(MetaDataHeader));
     if (pos < size - sizeof(MetaDataHeader)) {
@@ -413,8 +410,9 @@ int ECRS_serializeMetaData(const MetaData * md,
     FREE(hdr);
     hdr = NULL;
 
-    if (! part) 
+    if (! part) {
       return SYSERR; /* does not fit! */
+    }
 
     /* partial serialization ok, try again with less meta-data */
     if (size > 2 * max) 
@@ -723,6 +721,14 @@ char * ECRS_suggestFilename(const char * filename) {
   EXTRACTOR_freeKeywords(list);
   EXTRACTOR_removeAll(l);    
   return ret;
+}
+
+/**
+ * Test if two MDs are equal.
+ */
+int ECRS_equalsMetaData(const struct ECRS_MetaData * md1,
+			const struct ECRS_MetaData * md2) {
+  return YES;
 }
 
 

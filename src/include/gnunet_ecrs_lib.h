@@ -87,6 +87,13 @@ struct ECRS_MetaData * ECRS_dupMetaData(const struct ECRS_MetaData * meta);
 void ECRS_freeMetaData(struct ECRS_MetaData * md);
 
 /**
+ * Test if two MDs are equal.
+ */
+int ECRS_equalsMetaData(const struct ECRS_MetaData * md1,
+			const struct ECRS_MetaData * md2);
+			
+
+/**
  * Extend metadata.
  * @return OK on success, SYSERR if this entry already exists
  */
@@ -220,6 +227,13 @@ void ECRS_freeUri(struct ECRS_URI * uri);
 struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);
 
 /**
+ * Test if two URIs are equal.
+ */
+int ECRS_equalsUri(const struct ECRS_URI * u1,
+		   const struct ECRS_URI * u2);
+			
+
+/**
  * Is this a namespace URI?
  */
 int ECRS_isNamespaceURI(const struct ECRS_URI * uri);
@@ -231,7 +245,14 @@ int ECRS_isNamespaceURI(const struct ECRS_URI * uri);
  * @return the name (hash) of the namespace, caller
  *  must free it.
  */
-char * ECRS_getNamespaceName(const struct ECRS_URI * uri);
+char * ECRS_getNamespaceName(const HashCode512 * nsid);
+
+/**
+ * Get the ID of a namespace from the given 
+ * namespace URI.
+ */
+int ECRS_getNamespaceId(const struct ECRS_URI * uri,
+			HashCode512 * nsid);
 
 /**
  * Is this a keyword URI?
@@ -253,12 +274,6 @@ unsigned long long ECRS_fileSize(const struct ECRS_URI * uri);
  * Is this a location URI? (DHT specific!)
  */
 int ECRS_isLocationURI(const struct ECRS_URI * uri);
-
-/**
- * Are these two URIs equal?
- */
-int ECRS_equalsUri(const struct ECRS_URI * uri1,
-		   const struct ECRS_URI * uri2);
 
 /**
  * Construct a keyword-URI from meta-data (take all entries
@@ -385,6 +400,15 @@ int ECRS_testNamespaceExists(const char * name,
 int ECRS_deleteNamespace(const char * namespaceName); /* namespace.c */
 
 /**
+ * Callback with information about local (!) namespaces.
+ * Contains the name of the local namespace and the global
+ * ID.
+ */
+typedef int (*ECRS_NamespaceInfoCallback)(const HashCode512 * id,
+					  const char * name,
+					  void * closure);
+
+/**
  * Build a list of all available local (!) namespaces
  * The returned names are only the nicknames since
  * we only iterate over the local namespaces.
@@ -392,7 +416,8 @@ int ECRS_deleteNamespace(const char * namespaceName); /* namespace.c */
  * @param list where to store the names (is allocated, caller frees)
  * @return SYSERR on error, otherwise the number of pseudonyms in list
  */
-int ECRS_listNamespaces(char *** list); /* namespace.c */
+int ECRS_listNamespaces(ECRS_NamespaceInfoCallback cb,
+			void * cls); /* namespace.c */
 
 /**
  * Add an entry into a namespace.
@@ -515,7 +540,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
  *         directory is malformed
  */
 int ECRS_listDirectory(const char * data,
-		       unsigned int len,
+		       unsigned long long len,
 		       struct ECRS_MetaData ** md,
 		       ECRS_SearchProgressCallback spcb,
 		       void * spcbClosure); /* directory.c */

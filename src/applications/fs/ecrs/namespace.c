@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -346,7 +347,7 @@ int ECRS_addToNamespace(const char * name,
   unsigned short len;
   HashCode512 hc;
 
-  /* FIRST: read and decrypt pseudonym! */
+  /* FIRST: read pseudonym! */
   fileName = getPseudonymFileName(name);
   len = getFileSize(fileName);
   if (len < 2) {
@@ -467,21 +468,71 @@ int ECRS_addToNamespace(const char * name,
   return ret;
 }
 
-typedef struct {
-  int pos;
-  int size;
-  char ** list;
-} PList_;
+struct lNCLS {
+  ECRS_NamespaceInfoCallback cb;
+  void * cls;
+  int cnt;
+};
 
-static void addFile_(char * filename,
-                     char * dirName,
-                     PList_ * theList) {
-  if (theList->pos == theList->size) {
-    GROW(theList->list,
-         theList->size,
-         theList->size*2);
+static int processFile_(char * name,
+			char * dirName,
+			void * cls) {
+  struct lNCLS * c = cls;
+  struct PrivateKey * hk;
+  char * fileName;
+  PrivateKeyEncoded * hke;
+  char * dst;
+  unsigned short len;
+  HashCode512 namespace;
+  PublicKey pk;
+
+  if (c->cnt == SYSERR)
+    return SYSERR;
+
+  fileName = getPseudonymFileName(name);
+  len = getFileSize(fileName);
+  if (len < 2) {   
+    LOG(LOG_ERROR,
+        _("File '%s' does not contain a pseudonym.\n"),
+        fileName);
+    FREE(fileName);
+    return OK;
   }
-  theList->list[theList->pos++] = STRDUP(filename);
+  dst = MALLOC(len);
+  len = readFile(fileName, len, dst);
+  hke = (PrivateKeyEncoded*) dst;
+  if ( ntohs(hke->len) != len ) {
+    LOG(LOG_ERROR,
+        _("Format of file '%s' is invalid.\n"),
+        fileName);
+    FREE(hke);
+    FREE(fileName);
+    return OK;
+  }
+  hk = decodePrivateKey(hke);
+  FREE(hke);
+  if (hk == NULL) {
+    LOG(LOG_ERROR,
+        _("Format of file '%s' is invalid.\n"),
+        fileName);
+    FREE(fileName);
+    BREAK();
+    return SYSERR;
+  }
+  FREE(fileName);
+  getPublicKey(hk,
+	       &pk);
+  freePrivateKey(hk);  
+  hash(&pk, sizeof(PublicKey), &namespace);
+  if (c->cb != NULL) {
+    if (OK == c->cb(&namespace,
+		    name,
+		    c->cls))
+      c->cnt++;
+    else
+      c->cnt = SYSERR;
+  }
+  return OK;
 }
 
 /**
@@ -490,33 +541,20 @@ static void addFile_(char * filename,
  * @param list where to store the names (is allocated, caller frees)
  * @return SYSERR on error, otherwise the number of pseudonyms in list
  */
-int ECRS_listNamespaces(char *** list) {
-  int cnt;
-  PList_ myList;
+int ECRS_listNamespaces(ECRS_NamespaceInfoCallback cb,
+			void * cls) {
   char * dirName;
+  struct lNCLS myCLS;
 
-  myList.list = NULL;
-  myList.size = 0;
-  myList.pos = 0;
-  GROW(myList.list,
-       myList.size,
-       8);
+  myCLS.cls = cls;
+  myCLS.cb = cb;
+  myCLS.cnt = 0;
   dirName = getPseudonymFileName("");
-  cnt = scanDirectory(dirName,
-		      (DirectoryEntryCallback)&addFile_,
-		      &myList);
+  scanDirectory(dirName,
+		(DirectoryEntryCallback) &processFile_,
+		&myCLS);
   FREE(dirName);
-  if (cnt != myList.pos) {
-    GROW(myList.list,
-	 myList.size,
-	 0);
-    return SYSERR;
-  }
-  GROW(myList.list,
-       myList.size,
-       myList.pos);
-  *list = myList.list;
-  return myList.pos;
+  return myCLS.cnt;
 }
 
 

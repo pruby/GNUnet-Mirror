@@ -28,6 +28,7 @@
 #define ECRS_H
 
 #include "ecrs_core.h"
+#include "tree.h"
 #include <extractor.h>
 
 
@@ -40,7 +41,7 @@
 #define SBLOCK_UPDATE_NONE       0
 
 
-#define BLOCK_ALIGN_SIZE (32 * 1024)
+#define BLOCK_ALIGN_SIZE (DBLOCK_SIZE)
 
 typedef struct Location {
   PeerIdentity peer;

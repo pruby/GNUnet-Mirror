@@ -122,12 +122,42 @@ static int testMeta(int i) {
   return 0;
 }
 
+int testMetaMore(int i) {
+  struct ECRS_MetaData * meta;
+  int q;
+  char txt[128];
+  char * data;
+  unsigned long long size;
+
+  meta = ECRS_createMetaData();
+  for (q=0;q<=i;q++) {
+    SNPRINTF(txt,
+	     128,
+	     "%u -- %u\n",
+	     i, q);
+    ECRS_addToMetaData(meta,
+		       q % EXTRACTOR_getHighestKeywordTypeNumber(),
+		       txt);
+  }
+  size = ECRS_sizeofMetaData(meta);
+  data = MALLOC(size * 4);
+  if (size != ECRS_serializeMetaData(meta,
+				     data,
+				     size * 4,
+				     NO))
+    ABORT();
+  FREE(data);
+  return 0;
+}
+
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   int i;
   
   for (i=0;i<255;i++) 
     failureCount += testMeta(i);  
+  for (i=1;i<255;i++) 
+    failureCount += testMetaMore(i);  
 
   if (failureCount == 0)
     return 0;
