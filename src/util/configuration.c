@@ -406,10 +406,16 @@ void readConfiguration() {
   if (cfgName == NULL) {
     if (testConfigurationString("GNUNETD",
 				"_MAGIC_",
-				"YES"))
-      expCfgName = STRDUP(DEFAULT_DAEMON_CONFIG_FILE);
-    else
-      expCfgName = expandFileName(DEFAULT_CLIENT_CONFIG_FILE);
+				"YES")) {
+      expCfgName = getenv("GNUNETD_CONFIG");
+      if (expCfgName == NULL)
+	expCfgName = DEFAULT_DAEMON_CONFIG_FILE;
+    } else {
+      expCfgName = getenv("GNUNET_CONFIG");
+      if (expCfgName == NULL)
+	expCfgName = DEFAULT_CLIENT_CONFIG_FILE;
+    }
+    expCfgName = expandFileName(expCfgName);
     setConfigurationString("FILES",
 			   "gnunet.conf",
 			   expCfgName);
