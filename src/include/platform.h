@@ -33,6 +33,11 @@
 #include "config.h"
 #endif
 
+/**
+ * For strptime (glibc2 needs this).
+ */
+#define _XOPEN_SOURCE 
+
 
 /* configuration options */
 
