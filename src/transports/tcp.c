@@ -729,7 +729,11 @@ try_again_1:
   	  gnunet_util_sleep(20);
   	  goto try_again_1;
         }
-
+#if DEBUG_TCP
+	LOG(LOG_DEBUG,
+	    "TCP: transmitted %u bytes %u bytes\n",
+	    ret);
+#endif
 	if (ret == 0) {
           /* send only returns 0 on error (other side closed connection),
 	   * so close the session */
@@ -842,6 +846,11 @@ static int tcpDirectSend(TCPSession * tcpSession,
   }
   if (success == NO)
     ret = 0;
+#if DEBUG_TCP
+  LOG(LOG_DEBUG,
+      "TCP: transmitted %u bytes\n",
+      ret);
+#endif
 
   if (ret < ssize) {/* partial send */
     if (tcpSession->wsize < ssize - ret) {
@@ -905,6 +914,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
     GROW(tcpSession->wbuff,
 	 tcpSession->wsize,
 	 tcpSession->wpos + ssize);
+    tcpSession->wpos += ssize;
     memcpy(&tcpSession->wbuff[old],
 	   mp,
 	   ssize);
