@@ -7,8 +7,6 @@
 
 0.7.0pre1 [4'05] (aka "preview"):
 CODE CHANGES:
-- transport refactoring:
-  * port knocking support? [ tricky ]
 - UI features:
   * date feature (Mantis #789)
   * insert meta-data under URI as keyword (to allow getting meta-data from URI only)
