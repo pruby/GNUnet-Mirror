@@ -439,6 +439,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
  */
 int FSUI_upload(struct FSUI_Context * ctx,
 		const char * filename,
+		unsigned int anonymityLevel,
 		int doIndex,
 		const struct ECRS_MetaData * md,
 		unsigned int keywordCount,
@@ -447,7 +448,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   UploadThreadClosure * utc;
   
   utc = MALLOC(sizeof(UploadThreadClosure));
-  utc->anonymityLevel = ctx->anonymityLevel;
+  utc->anonymityLevel = anonymityLevel;
   utc->priority = getConfigurationInt("FS",
 				      "INSERT-PRIORITY");
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;
@@ -501,6 +502,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
 */
 int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   const char * dirname,
+		   unsigned int anonymityLevel,
 		   int doIndex,
 		   const struct ECRS_MetaData * directoryMetaData,
 		   const char * extractorPluginNames,
@@ -514,7 +516,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   utc = MALLOC(sizeof(UploadThreadClosure));
   utc->ctx = ctx;
   utc->isRecursive = YES;
-  utc->anonymityLevel = ctx->anonymityLevel;
+  utc->anonymityLevel = anonymityLevel;
   utc->priority = getConfigurationInt("FS",
 				      "INSERT-PRIORITY");
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;

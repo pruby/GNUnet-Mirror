@@ -91,6 +91,8 @@ typedef struct FSUI_SearchList {
    */
   struct ECRS_URI * uri;
 
+  unsigned int anonymityLevel;
+
   /**
    * Of how many individual queries does the
    * boolean query consist (1 for non-boolean queries).
@@ -238,11 +240,6 @@ typedef struct FSUI_Context {
    * Extra argument to ecb.
    */
   void * ecbClosure;
-
-  /**
-   * Current anonymity level.
-   */
-  unsigned int anonymityLevel;
 
   /**
    * Collection related data.

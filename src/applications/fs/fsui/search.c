@@ -133,7 +133,7 @@ static int testTerminate(FSUI_SearchList * pos) {
 
 static void * searchThread(FSUI_SearchList * pos) {
   ECRS_search(pos->uri,
-	      pos->ctx->anonymityLevel,
+	      pos->anonymityLevel,
 	      cronTime(NULL) + cronYEARS, /* timeout!?*/
 	      (ECRS_SearchProgressCallback) &spcb,
 	      pos,
@@ -146,6 +146,7 @@ static void * searchThread(FSUI_SearchList * pos) {
  * Start a search.
  */
 int FSUI_startSearch(struct FSUI_Context * ctx,
+		     unsigned int anonymityLevel,
 		     const struct ECRS_URI * uri) {
   FSUI_SearchList * pos;
 
@@ -167,6 +168,7 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
   pos->resultsReceived = NULL;
   pos->sizeUnmatchedResultsReceived = 0;
   pos->unmatchedResultsReceived = 0;
+  pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
   if (0 != PTHREAD_CREATE(&pos->handle,
 			  (PThreadMain) &searchThread,
@@ -253,6 +255,7 @@ int FSUI_listSearches(struct FSUI_Context * ctx,
     if (iter != NULL) {
       if (OK != iter(closure,
 		     pos->uri,
+		     pos->anonymityLevel,
 		     pos->sizeResultsReceived,
 		     pos->resultsReceived)) {
 	MUTEX_UNLOCK(&ctx->lock);

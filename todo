@@ -17,8 +17,6 @@
   * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
-- FSUI:
-  * API changes (Krista discussion, anonymity level)
 
 0.7.0pre1 [4'05] (aka "preview"):
 - util:

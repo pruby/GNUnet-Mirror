@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -254,17 +254,17 @@ static int runSearch() {
     max.max = (unsigned int)-1; /* infty */
   /* FIXME: initialize max.buildDirectory */
 
-  ctx = FSUI_start((FSUI_EventCallback) &eventCallback,
+  ctx = FSUI_start("gnunet-search",
+		   NO,
+		   (FSUI_EventCallback) &eventCallback,
 		   &max);
   if (ctx == NULL) {
     ECRS_freeUri(uri);
     return SYSERR;
   }
-  FSUI_setAnonymityLevel(ctx,
-			 getConfigurationInt("FS",
-					     "ANONYMITY-RECEIVE"));
-
   FSUI_startSearch(ctx,
+		   getConfigurationInt("FS",
+				       "ANONYMITY-RECEIVE"),
 		   uri);  
   wait_for_shutdown();
   FSUI_stopSearch(ctx,

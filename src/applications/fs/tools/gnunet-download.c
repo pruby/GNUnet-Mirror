@@ -234,20 +234,23 @@ int main(int argc,
   }
   FREE(fstring);
   signalFinished = SEMAPHORE_NEW(0);
-  ctx = FSUI_start(&progressModel,
+  ctx = FSUI_start("gnunet-download",
+		   NO,
+		   &progressModel,
 		   &ok);
-  FSUI_setAnonymityLevel(ctx,
-			 getConfigurationInt("FS",
-					     "ANONYMITY-SEND"));
   startCron();
   if (testConfigurationString("GNUNET-DOWNLOAD",
 			      "RECURSIVE",
 			      "YES"))
     ok = FSUI_startDownloadAll(ctx,
+			       getConfigurationInt("FS",
+						   "ANONYMITY-RECEIVE"),
 			       uri,
 			       filename);
   else
     ok = FSUI_startDownload(ctx,
+			    getConfigurationInt("FS",
+						"ANONYMITY-RECEIVE"),
 			    uri,
 			    filename);
   if (OK == ok) 

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -95,6 +95,8 @@ static void postProcess(const struct ECRS_URI * uri) {
 				       "INTERVAL");
 
   FSUI_addToNamespace(ctx,
+		      getConfigurationInt("FS",
+					  "ANONYMITY-SEND"),
 		      pname,
 		      updateInterval,
 		      pid == NULL ? NULL : &prevId,
@@ -612,12 +614,11 @@ int main(int argc, char ** argv) {
 
   exitSignal = SEMAPHORE_NEW(0);
   /* fundamental init */
-  ctx = FSUI_start((FSUI_EventCallback) &printstatus,
+  ctx = FSUI_start("gnunet-insert",
+		   NO,
+		   (FSUI_EventCallback) &printstatus,
 		   &verbose);
-  FSUI_setAnonymityLevel(ctx,
-			 getConfigurationInt("FS",
-					     "ANONYMITY-SEND"));
-  
+ 
   /* first insert all of the top-level files or directories */
   tmp = getConfigurationString("GNUNET-INSERT",
 			       "MAIN-FILE");
@@ -639,6 +640,8 @@ int main(int argc, char ** argv) {
 			      "YES")) {
     ret = FSUI_uploadAll(ctx,
 			 filename,
+			 getConfigurationInt("FS",
+					     "ANONYMITY-SEND"),
 			 doIndex,
 			 meta,
 			 extractors,
@@ -649,6 +652,8 @@ int main(int argc, char ** argv) {
   } else {
     ret = FSUI_upload(ctx,
 		      filename,
+		      getConfigurationInt("FS",
+					  "ANONYMITY-SEND"),
 		      doIndex,
 		      meta,
 		      topKeywordCnt,

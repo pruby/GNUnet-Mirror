@@ -35,7 +35,9 @@
  *
  * @return NULL on error
  */
-struct FSUI_Context * FSUI_start(FSUI_EventCallback cb,
+struct FSUI_Context * FSUI_start(const char * name,
+				 int doResume,
+				 FSUI_EventCallback cb,
 				 void * closure) {
   FSUI_Context * ret;  
   char * fn;
@@ -43,24 +45,27 @@ struct FSUI_Context * FSUI_start(FSUI_EventCallback cb,
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
-  fn = getConfigurationString("",
-			      "GNUNET_HOME");
-  gh = expandFileName(fn);
-  FREE(fn);
-  fn = MALLOC(strlen(gh) + strlen("fsui-lock") + 2);
-  strcpy(fn, gh);
-  FREE(gh);
-  strcat(fn, DIR_SEPARATOR_STR);
-  strcat(fn, "fsui-lock");
-  ret->ipc = IPC_SEMAPHORE_NEW(fn,
-			       1);
-  LOG(LOG_INFO,
-      "Getting IPC lock for FSUI (%s).\n",
-      fn);
-  FREE(fn);
-  IPC_SEMAPHORE_DOWN(ret->ipc);
-  LOG(LOG_INFO,
-      "Aquired IPC lock.\n");
+  if (doResume) {
+    fn = getConfigurationString("",
+				"GNUNET_HOME");
+    gh = expandFileName(fn);
+    FREE(fn);
+    fn = MALLOC(strlen(gh) + strlen(name) + 2);
+    strcpy(fn, gh);
+    FREE(gh);
+    strcat(fn, DIR_SEPARATOR_STR);
+    strcat(fn, "fsui-lock");
+    ret->ipc = IPC_SEMAPHORE_NEW(fn,
+				 1);
+    LOG(LOG_INFO,
+	"Getting IPC lock for FSUI (%s).\n",
+	fn);
+    FREE(fn);
+    IPC_SEMAPHORE_DOWN(ret->ipc);
+    LOG(LOG_INFO,
+	"Aquired IPC lock.\n");
+  } else
+    ret->ipc = NULL;
   MUTEX_CREATE_RECURSIVE(&ret->lock);
   ret->ecb = cb;
   ret->ecbClosure = closure;
@@ -145,31 +150,14 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   /* FIXME: serialize dpos state! */
   freeDownloadList(ctx->activeDownloads);
   ctx->activeDownloads = NULL;
-
-  IPC_SEMAPHORE_UP(ctx->ipc);
-  IPC_SEMAPHORE_FREE(ctx->ipc);
+  if (ctx->ipc != NULL) {
+    IPC_SEMAPHORE_UP(ctx->ipc);
+    IPC_SEMAPHORE_FREE(ctx->ipc);
+  }
   MUTEX_DESTROY(&ctx->lock);
   FREE(ctx);
   LOG(LOG_INFO,
       "FSUI shutdown complete.\n");
-}
-
-/**
- * Set the anonymity level in this FSUI context for
- * all actions that are started from now on (until
- * the next call to setAnonymityLevel).
- */
-void FSUI_setAnonymityLevel(struct FSUI_Context * ctx,
-			    unsigned int anonymityLevel) {
-  ctx->anonymityLevel = anonymityLevel;
-}
-
-/**
- * Get the anonymity level that is currently used
- * by this FSUI context.
- */
-unsigned int FSUI_getAnonymityLevel(const struct FSUI_Context * ctx) {
-  return ctx->anonymityLevel;
 }
 
 

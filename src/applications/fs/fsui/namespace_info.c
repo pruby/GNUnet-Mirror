@@ -147,6 +147,7 @@ static int readNamespaceInfo(const char * namespaceName,
  * @return OK on success, SYSERR on error (namespace already exists)
  */
 int FSUI_createNamespace(struct FSUI_Context * ctx,
+			 unsigned int anonymityLevel,
 			 const char * namespaceName,
 			 const struct ECRS_MetaData * meta,
 			 const struct ECRS_URI * advertisementURI,
@@ -156,7 +157,7 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
 
   ret = ECRS_createNamespace(namespaceName,
 			     meta,
-			     ctx->anonymityLevel,
+			     anonymityLevel,
 			     getConfigurationInt("FS", "INSERT-PRIORITY"),
 			     getConfigurationInt("FS", "INSERT-EXPIRATION") * cronYEARS + cronTime(NULL),
 			     advertisementURI,
@@ -318,6 +319,7 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
  * @param uri set to the resulting URI
  */
 int FSUI_addToNamespace(struct FSUI_Context * ctx,
+			unsigned int anonymityLevel,
 			const char * name,
 			cron_t updateInterval,
 			const HashCode160 * lastId,
@@ -333,7 +335,7 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
 
 
   ret = ECRS_addToNamespace(name,
-			    ctx->anonymityLevel,
+			    anonymityLevel,
 			    getConfigurationInt("FS", "INSERT-PRIORITY"),
 			    getConfigurationInt("FS", "INSERT-EXPIRATION") * cronYEARS + cronTime(NULL),
 			    creationTime,

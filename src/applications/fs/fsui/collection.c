@@ -67,6 +67,7 @@ typedef struct CollectionData {
  * Start collection.
  */
 int FSUI_startCollection(struct FSUI_Context * ctx,
+			 unsigned int anonymityLevel,
 			 const char * name,
 			 const struct ECRS_MetaData * meta) {
   struct ECRS_URI * advertisement;
@@ -88,7 +89,7 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
   makeRandomId(&nextId);
   if (OK != ECRS_createNamespace(name,
 				 meta,
-				 ctx->anonymityLevel,
+				 anonymityLevel,
 				 prio,
 				 now + COLLECTION_ADV_LIFETIME,
 				 advertisement,

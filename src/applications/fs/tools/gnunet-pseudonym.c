@@ -298,7 +298,9 @@ int main(int argc, char *argv[]) {
   if (OK != initUtil(argc, argv, &parser))
     return SYSERR;
 
-  ctx = FSUI_start(&eventCallback,
+  ctx = FSUI_start("gnunet-pseudonym",
+		   NO,
+		   &eventCallback,
 		   NULL);
 
   /* stop collections */
@@ -368,6 +370,7 @@ int main(int argc, char *argv[]) {
 			 EXTRACTOR_OWNER,
 			 pname);
       if (OK == FSUI_startCollection(ctx,
+				     0, /* FIXME: anonymity level! */
 				     pname,
 				     meta)) {
 	printf(_("Started collection '%s'.\n"),
@@ -410,6 +413,7 @@ int main(int argc, char *argv[]) {
       }
       FREE(keyword);
       if (OK != FSUI_createNamespace(ctx,
+				     0, /* FIXME: anonymity level! */
 				     pname,
 				     meta,
 				     advertisement,

@@ -41,12 +41,14 @@
  *  if the disk does not have enough space).
  */
 static int startDownload(struct FSUI_Context * ctx,
+			 unsigned int anonymityLevel,			 
 			 const struct ECRS_URI * uri,
 			 const char * filename,
 			 int is_recursive,
 			 FSUI_DownloadList * parent);
 
 static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
+				    unsigned int anonymityLevel,
 				    const HashCode160 * key,
 				    FSUI_DownloadList * parent) {
   int i;
@@ -83,6 +85,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
   strcat(fullName, filename);
   FREE(filename);
   startDownload(parent->ctx,
+		anonymityLevel,
 		fi->uri,
 		fullName,
 		YES,
@@ -277,6 +280,7 @@ static void * downloadThread(FSUI_DownloadList * dl) {
  *  if the disk does not have enough space).
  */
 static int startDownload(struct FSUI_Context * ctx,
+			 unsigned int anonymityLevel, 
 			 const struct ECRS_URI * uri,
 			 const char * filename,
 			 int is_recursive,
@@ -296,7 +300,7 @@ static int startDownload(struct FSUI_Context * ctx,
   dl->is_recursive = is_recursive;
   dl->parent = parent;
   dl->is_directory = SYSERR; /* don't know */
-  dl->anonymityLevel = ctx->anonymityLevel;
+  dl->anonymityLevel = anonymityLevel;
   dl->ctx = ctx;
   dl->filename = STRDUP(filename);
   dl->uri = ECRS_dupUri(uri);
@@ -332,9 +336,15 @@ static int startDownload(struct FSUI_Context * ctx,
  *  if the disk does not have enough space).
  */
 int FSUI_startDownload(struct FSUI_Context * ctx,
+		       unsigned int anonymityLevel,			 
 		       const struct ECRS_URI * uri,
 		       const char * filename) {
-  return startDownload(ctx, uri, filename, NO, NULL);
+  return startDownload(ctx,
+		       anonymityLevel, 
+		       uri, 
+		       filename,
+		       NO, 
+		       NULL);
 }
 
 /**
@@ -404,9 +414,15 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
  *  SYSERR if the file does not exist
  */
 int FSUI_startDownloadAll(struct FSUI_Context * ctx,
+			  unsigned int anonymityLevel,			 
 			  const struct ECRS_URI * uri,
 			  const char * dirname) {
-  return startDownload(ctx, uri, dirname, YES, NULL);
+  return startDownload(ctx, 
+		       anonymityLevel,
+		       uri, 
+		       dirname, 
+		       YES,
+		       NULL);
 }
 
 /**

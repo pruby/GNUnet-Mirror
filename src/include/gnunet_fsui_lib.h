@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -290,6 +291,7 @@ typedef int (*FSUI_NamespaceIterator)(void * cls,
  */
 typedef int (*FSUI_SearchIterator)(void * cls,
 				   const struct ECRS_URI * searchUri,
+				   unsigned int anonymityLevel,
 				   unsigned int resultCount,
 				   const ECRS_FileInfo * results);
 
@@ -322,39 +324,48 @@ typedef int (*FSUI_DownloadIterator)(void * cls,
 				     unsigned int anonymityLevel);
 
 /**
- * Start FSUI manager.  Use the given progress callback to notify the
- * UI about events.  Start processing pending activities that were
- * running when FSUI_stop was called previously.  There can only be
- * one FSUI_Context open PER USER.  The second time anyone tries to
- * open an FSUI_Context, FSUI_start will BLOCK until the first
- * FSUI_Context is released (with FSUI_stop).  This may seem totally
- * awful, but it is the only way to ensure that everything stays
- * consistent.
+ * @brief Start the FSUI manager.  Use the given progress callback to
+ * notify the UI about events.  May resume processing pending
+ * activities that were running when FSUI_stop was called
+ * previously.<p>
  *
+ * The basic idea is that graphical user interfaces use their UI name
+ * (i.e.  gnunet-gtk) for 'name' and set doResume to YES.  They should
+ * have a command-line switch --resume=NAME to allow the user to
+ * change 'name' to something else (such that the user can resume
+ * state from another GUI).  Shell UIs on the other hand should set
+ * doResume to NO and may hard-wire a 'name' (which has no semantic
+ * meaning, however, the name of the UI would still be a good choice).
+ * <p>
+ *
+ * Note that suspend/resume is not implemented in this version of
+ * GNUnet.  
+ *
+ * @param name name of the tool or set of tools; used to
+ *          resume activities; tools that use the same name here
+ *          and that also use resume cannot run multiple instances
+ *          in parallel (for the same user account); the name
+ *          must be a valid filename (not a path)
+ * @param doResume YES if old activities should be resumed (also
+ *          implies that on shutdown, all pending activities are
+ *          suspended instead of canceled);
+ *          NO if activities should never be resumed
+ * @param cb function to call for events, must not be NULL
+ * @param closure extra argument to cb
  * @return NULL on error
  */
-struct FSUI_Context * FSUI_start(FSUI_EventCallback cb,
+struct FSUI_Context * FSUI_start(const char * name,
+				 int doResume,
+				 FSUI_EventCallback cb,
 				 void * closure); /* fsui.c */
 
 /**
- * Stop all processes under FSUI control (serialize state, continue
- * later if possible).
+ * Stop all processes under FSUI control (may serialize
+ * state to continue later if possible).  Will also let
+ * uninterruptable activities complete (you may want to
+ * signal the user that this may take a while).
  */
 void FSUI_stop(struct FSUI_Context * ctx); /* fsui.c */
-
-/**
- * Set the anonymity level in this FSUI context for
- * all actions that are started from now on (until
- * the next call to setAnonymityLevel).
- */
-void FSUI_setAnonymityLevel(struct FSUI_Context * ctx,
-			    unsigned int anonymityLevel); /* fsui.c */
-
-/**
- * Get the anonymity level that is currently used
- * by this FSUI context.
- */
-unsigned int FSUI_getAnonymityLevel(const struct FSUI_Context * ctx); /* fsui.c */
 
 /* ******************** simple FS API **************** */
 
@@ -385,6 +396,7 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int argc,
  *  success
  */
 int FSUI_startSearch(struct FSUI_Context * ctx,
+		     unsigned int anonymityLevel,
 		     const struct ECRS_URI * uri); /* search.c */
 
 /**
@@ -410,6 +422,7 @@ int FSUI_listSearches(struct FSUI_Context * ctx,
  *  if the disk does not have enough space).
  */
 int FSUI_startDownload(struct FSUI_Context * ctx,
+		       unsigned int anonymityLevel,
 		       const struct ECRS_URI * uri,
 		       const char * filename); /* download.c */
 
@@ -419,8 +432,8 @@ int FSUI_startDownload(struct FSUI_Context * ctx,
  * @return SYSERR if no such download is pending
  */
 int FSUI_stopDownload(struct FSUI_Context * ctx,
-		       const struct ECRS_URI * uri,
-		       const char * filename); /* download.c */
+		      const struct ECRS_URI * uri,
+		      const char * filename); /* download.c */
 
 /**
  * List active downloads.  Will NOT list completed
@@ -444,6 +457,7 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
  */
 int FSUI_upload(struct FSUI_Context * ctx,
 		const char * filename,
+		unsigned int anonymityLevel,
 		int doIndex,
 		const struct ECRS_MetaData * md,
 		unsigned int keywordCount,
@@ -478,6 +492,7 @@ void FSUI_unindex(struct FSUI_Context * ctx,
 */
 int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   const char * dirname,
+		   unsigned int anonymityLevel,
 		   int doIndex,
 		   const struct ECRS_MetaData * directoryMetaData,
 		   const char * extractorPluginNames,
@@ -493,6 +508,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
  *  SYSERR if the file does not exist
  */
 int FSUI_startDownloadAll(struct FSUI_Context * ctx,
+			  unsigned int anonymityLevel,
 			  const struct ECRS_URI * uri,
 			  const char * dirname); /* download.c */
 
@@ -512,6 +528,7 @@ int FSUI_stopDownloadAll(struct FSUI_Context * ctx,
  * Start collection.
  */
 int FSUI_startCollection(struct FSUI_Context * ctx,
+			 unsigned int anonymityLevel,
 			 const char * name,
 			 const struct ECRS_MetaData * meta); /* collection.c */
 
@@ -543,6 +560,7 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx); /* collection.c */
  * @return OK on success, SYSERR on error (namespace already exists)
  */
 int FSUI_createNamespace(struct FSUI_Context * ctx,
+			 unsigned int anonymityLevel,
 			 const char * namespaceName,
 			 const struct ECRS_MetaData * meta,
 			 const struct ECRS_URI * advertisementURI,
@@ -606,6 +624,7 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
  * @param uri set to the resulting URI
  */
 int FSUI_addToNamespace(struct FSUI_Context * ctx,
+			unsigned int anonymityLevel,
 			const char * name,
 			cron_t updateInterval,
 			const HashCode160 * lastId,
