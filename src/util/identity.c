@@ -281,6 +281,9 @@ static int getAddressFromIOCTL(IPaddr * identity) {
         PRIP(ntohl(dwIP)));
 
     identity->addr = dwIP;
+    
+    GlobalFree(pTable);
+    GlobalFree(pAddrTable);
   }
   else /* Win 95 */
   {
