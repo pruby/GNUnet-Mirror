@@ -28,7 +28,7 @@
 
 #include "gnunet_util.h"
 #include "gnunet_core.h"
-
+#include "gnunet_blockstore.h"
 
 /**
  * The function was called successfully and the return values
@@ -190,6 +190,10 @@ void RPC_paramAdd(RPC_Param * param,
 		  unsigned int dataLength, 
 		  const void * data);
 
+void RPC_paramAddDataContainer(RPC_Param * param, 
+			       const char * name, 
+			       const DataContainer * data);
+
 const char * RPC_paramName(RPC_Param * param,
 			   unsigned int i);
 
@@ -211,6 +215,27 @@ int RPC_paramValueByPosition(RPC_Param * param,
 			     unsigned int i,
 			     unsigned int * dataLength,
 			     void ** data);
+
+/**
+ * Return the value of the given parameter in the RPC parameter structure.
+ *
+ * @param param Target RPC parameter structure
+ * @param value set to the value of the parameter
+ */
+DataContainer *
+RPC_paramDataContainerByPosition(RPC_Param *param, 
+				 unsigned int i);
+
+/**
+ * Return the value of the named parameter in the RPC parameter
+ * structure.
+ *
+ * @param param Target RPC parameter structure
+ * @param value set to the value of the named parameter
+ * @return SYSERR on error
+ */
+DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
+					     const char *name);
 
 /**
  * Serialize the param array.  target must point to at least

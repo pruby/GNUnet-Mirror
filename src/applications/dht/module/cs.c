@@ -219,7 +219,6 @@ static int tcp_get(void * closure,
  */
 static int tcp_put(void * closure,
 		   const HashCode160 * key,
-		   unsigned int type,
 		   const DataContainer * value,
 		   unsigned int prio) {
   DHT_CS_REQUEST_PUT * req;
@@ -267,7 +266,6 @@ static int tcp_put(void * closure,
  */
 static int tcp_del(void * closure,
 		   const HashCode160 * key,
-		   unsigned int type,
 		   const DataContainer * value) {
   DHT_CS_REQUEST_REMOVE * req;
   CS_TableHandlers * handlers = closure;
@@ -477,20 +475,6 @@ static void cs_put_abort(CS_PUT_RECORD * record) {
   FREE(record);
 }
 
-/**
- * Notification: peer 'store' agreed to store data.
- */
-static void cs_put_complete_callback(const PeerIdentity * store,
-				     CS_PUT_RECORD * record) {
-  MUTEX_LOCK(&csLock);
-  record->replicas++;
-  MUTEX_UNLOCK(&csLock);
-  /* trigger cron-job early if replication confirmed. */
-  advanceCronJob((CronJob) &cs_put_abort,
-		 0,
-		 record);  
-}
-
 struct CSPutClosure {
   ClientHandle client;
   DHT_CS_REQUEST_PUT * message;
@@ -533,17 +517,12 @@ static void csPutJob(struct CSPutClosure * cpc) {
        putRecordsSize,
        putRecordsSize+1);
   putRecords[putRecordsSize-1] = ptr;
-  addCronJob((CronJob) &cs_put_abort,
-	     ntohll(req->timeout),
-	     0,
-	     ptr);
   MUTEX_UNLOCK(&csLock);
   ptr->put_record = dhtAPI->put_start(&req->table,
 				      &req->key,
-				      ntohl(req->type),
 				      ntohll(req->timeout),
 				      data,
-				      (DHT_OP_Complete) &cs_put_complete_callback,
+				      (DHT_OP_Complete) &cs_put_abort,
 				      ptr);
   FREE(data);
   FREE(req);
@@ -596,20 +575,6 @@ static void cs_remove_abort(CS_REMOVE_RECORD * record) {
   FREE(record);
 }
 
-/**
- * Notification: peer 'store' agreed to store data.
- */
-static void cs_remove_complete_callback(const PeerIdentity * store,
-					CS_REMOVE_RECORD * record) {
-  MUTEX_LOCK(&csLock);
-  record->replicas++;
-  MUTEX_UNLOCK(&csLock);
-  /* trigger cron-job early if remove confirmed. */
-  advanceCronJob((CronJob) &cs_remove_abort,
-		 0,
-		 record);
-}
-
 struct CSRemoveClosure {
   ClientHandle client;
   DHT_CS_REQUEST_REMOVE * message;
@@ -646,10 +611,6 @@ static void csRemoveJob(struct CSRemoveClosure * cpc) {
   ptr->replicas = 0;
   ptr->table = req->table;
   ptr->remove_record = NULL;
-  addCronJob((CronJob) &cs_remove_abort,
-	     ntohll(req->timeout),
-	     0,
-	     ptr);
   MUTEX_LOCK(&csLock);
   GROW(removeRecords,
        removeRecordsSize,
@@ -658,10 +619,9 @@ static void csRemoveJob(struct CSRemoveClosure * cpc) {
   MUTEX_UNLOCK(&csLock);
   ptr->remove_record = dhtAPI->remove_start(&req->table,
 					    &req->key,
-					    ntohl(req->type),
 					    ntohll(req->timeout),
 					    data,
-					    (DHT_OP_Complete) &cs_remove_complete_callback,
+					    (DHT_OP_Complete) &cs_remove_abort,
 					    ptr);
   FREE(req);
   FREE(data);
@@ -758,16 +718,6 @@ static void cs_get_abort(CS_GET_RECORD * record) {
   FREE(record);
 }
 
-/**
- * Notification: peer 'get' operation complete (or timeout)
- */
-static void cs_get_complete_callback(const PeerIdentity * peer,
-				     CS_GET_RECORD * record) {
-  advanceCronJob((CronJob) &cs_get_abort,
-		 0,
-		 record);  
-}
-
 struct CSGetClosure {
   ClientHandle client;
   DHT_CS_REQUEST_GET * message;
@@ -793,10 +743,6 @@ static int csGetJob(struct CSGetClosure * cpc) {
   ptr->table = req->table;
   ptr->get_record = NULL;
 
-  addCronJob((CronJob) &cs_get_abort,
-	     ntohll(req->timeout),
-	     0,
-	     ptr);
   MUTEX_LOCK(&csLock);
   GROW(getRecords,
        getRecordsSize,
@@ -810,7 +756,7 @@ static int csGetJob(struct CSGetClosure * cpc) {
 				      ntohll(req->timeout),
 				      (DataProcessor) &cs_get_result_callback,
 				      ptr,
-				      (DHT_OP_Complete) &cs_get_complete_callback,
+				      (DHT_OP_Complete) &cs_get_abort,
 				      ptr);
   return OK;
 }

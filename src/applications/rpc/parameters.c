@@ -223,6 +223,38 @@ void RPC_paramAdd(RPC_Param *param,
 
 
 /**
+ * Add a new parameter to the RPC parameter structure. The parameter name and
+ * value are copied to memory private to the RPC parameter collection. The
+ * pointers returned by other functions point to this private memory and should
+ * not be freed by the user of the abstraction.
+ *
+ * @param param Target RPC parameter structure
+ * @param name Name of the parameter
+ * @param dataLength Length of the value of the parameter
+ * @param data Value of the parameter
+ */
+void RPC_paramAddDataContainer(RPC_Param *param, 
+			       const char *name,
+			       const DataContainer * data) {
+  Parameter * new;
+
+  if (param == NULL)
+    return;
+  new = MALLOC(sizeof(Parameter));
+  new->name = STRDUP(name);
+  new->dataLength = ntohl(data->size) - sizeof(DataContainer);
+  if (dataLength == 0) {
+    new->data = NULL;
+  } else {
+    new->data = MALLOC(new->dataLength);
+    memcpy(new->data, 
+	   &data[1], 
+	   new->dataLength);
+  }
+  vectorInsertLast(param, new);
+}
+
+/**
  * Return the name of the given parameter in the RPC parameter structure, the
  * first parameter being parameter number zero.
  *
@@ -272,6 +304,38 @@ int RPC_paramValueByName(RPC_Param *param,
 }
 
 /**
+ * Return the value of the named parameter in the RPC parameter structure.
+ *
+ * @param param Target RPC parameter structure
+ * @param value set to the value of the named parameter
+ * @return SYSERR on error
+ */
+DataContainer * RPC_paramDataContainerByName(RPC_Param *param,
+					     const char *name) {
+  Parameter * p;
+  DataContainer * ret;
+
+  if (param == NULL)
+    return NULL;
+  p = vectorGetFirst (param);
+  while (p != NULL) {
+    if (!strcmp (p->name, name)) {
+      ret = MALLOC(sizeof(DataContainer)
+		   + p->dataLength);
+      ret->size = htonl(sizeof(DataContainer)
+			+ p->dataLength);
+      memcpy(&ret[1],
+	     p->data,
+	     p->dataLength);
+      return ret;
+    }
+    p = vectorGetNext(param);
+  }
+		      
+  return NULL;
+}
+
+/**
  * Return the value of the given parameter in the RPC parameter structure.
  *
  * @param param Target RPC parameter structure
@@ -292,6 +356,34 @@ int RPC_paramValueByPosition(RPC_Param *param,
     return OK;
   }
   return SYSERR;
+}
+
+/**
+ * Return the value of the given parameter in the RPC parameter structure.
+ *
+ * @param param Target RPC parameter structure
+ * @param value set to the value of the parameter
+ */
+DataContainer *
+RPC_paramDataContainerByPosition(RPC_Param *param, 
+				 unsigned int i) {
+  Parameter * p;
+  DataContainer * ret;
+ 
+  if (param == NULL)
+    return NULL;
+  p = vectorGetAt(param, i);
+  if (p != NULL) {
+    ret = MALLOC(sizeof(DataContainer)
+		 + p->dataLength);
+    ret->size = htonl(sizeof(DataContainer)
+		      + p->dataLength);
+    memcpy(&ret[1],
+	   p->data,
+	   p->dataLength);
+    return ret;
+  }
+  return NULL;
 }
 
 /* end of parameters.c */

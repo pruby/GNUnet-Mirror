@@ -42,10 +42,9 @@ struct DHT_PUT_RECORD;
 struct DHT_REMOVE_RECORD;
 
 /**
- * @param peer identity of a peer that acknowledged the request
+ * DHT operation 'complete' (i.e timed out)
  */
-typedef void (*DHT_OP_Complete)(const PeerIdentity * peer,
-				void * closure);
+typedef void (*DHT_OP_Complete)(void * closure);
 
 /**
  * Functions of the DHT Service API.
@@ -127,7 +126,6 @@ typedef struct {
    */
   struct DHT_PUT_RECORD * (*put_start)(const DHT_TableId * table,
 				       const HashCode160 * key,
-				       unsigned int type,
 				       cron_t timeout,
 				       const DataContainer * value,
 				       DHT_OP_Complete callback,
@@ -154,7 +152,6 @@ typedef struct {
    */
   struct DHT_REMOVE_RECORD * (*remove_start)(const DHT_TableId * table,
 					     const HashCode160 * key,
-					     unsigned int type,
 					     cron_t timeout,
 					     const DataContainer * value,
 					     DHT_OP_Complete callback,

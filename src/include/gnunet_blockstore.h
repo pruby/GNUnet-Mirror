@@ -106,7 +106,6 @@ typedef struct {
    */
   int (*put)(void * closure,
 	     const HashCode160 * key,
-	     unsigned int type,
 	     const DataContainer * value,
 	     unsigned int prio);
 
@@ -119,7 +118,6 @@ typedef struct {
    */
   int (*del)(void * closure,
 	     const HashCode160 * key,
-	     unsigned int type,
 	     const DataContainer * value);
 
   /**

@@ -30,7 +30,7 @@
  * timed-out after a certain time of inactivity.  Also,
  * duplicate entries are removed.<p>
  *
- * The type and priorities are ignored, except in get where
+ * The priorities are ignored, except in get where
  * the priority is the maximum number of results to return.
  * The number of keys specified in a GET must always be one.
  */
@@ -143,7 +143,6 @@ static int lookup(void * closure,
  */
 static int store(void * closure,
 		 const HashCode160 * key,
-		 unsigned int type,
 		 const DataContainer * value,
 		 unsigned int prio) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
@@ -212,7 +211,6 @@ static int store(void * closure,
  */
 static int ds_remove(void * closure,
 		     const HashCode160 * key,
-		     unsigned int type,
 		     const DataContainer * value) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
   HT_Entry * pos;

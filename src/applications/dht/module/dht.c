@@ -1,5 +1,6 @@
  /*
       This file is part of GNUnet
+      (C) 2004, 2005 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -35,17 +36,9 @@
  * Todo:
  * 1) document (lots!)
  *   
- * Issues to investigate:
- * 1) put: to ensure we hit the replication level with reasonable
- *    precision, we must only store data locally if we're in the
- *    k-best peers for the datum by our best estimate (verify!)
- * 2) put: check consistency between table-replication level
- *    and the user-specified replication level!
- * 
  * Desirable features:
- * 1) error handling: how to communicate errors (RPC vs. DHT errors)
- * 2) security: how to pick priorities?  Access rights? 
- * 3) performance: add optional HELO messages
+ * 1) security: how to pick priorities?  Access rights? 
+ * 2) performance: add optional HELO messages
  */
 
 #include "platform.h"
@@ -69,8 +62,7 @@
 #endif
 
 /**
- * Number of replications for the master table.  At maximum since
- * that table is quite important.
+ * Number of replications / parallel requests.
  */
 #define ALPHA 7
 
@@ -2313,7 +2305,6 @@ static void send_dht_put_rpc(const PeerIdentity * peer,
 static struct DHT_PUT_RECORD * 
 dht_put_async_start(const DHT_TableId * table,
 		    const HashCode160 * key,
-		    unsigned int type, /* REMOVE! */
 		    cron_t timeout,
 		    const DataContainer * value,
 		    DHT_OP_Complete callback,
@@ -2404,7 +2395,6 @@ dht_put_async_start(const DHT_TableId * table,
 			     &hosts[i])) {
 	if (OK == ltd->store->put(ltd->store->closure,
 				  key,
-				  type,
 				  value,
 				  0 /* FIXME: priority */)) 
 	  ret->confirmed_stores++;
@@ -2595,7 +2585,6 @@ static void send_dht_remove_rpc(const PeerIdentity * peer,
 static struct DHT_REMOVE_RECORD * 
 dht_remove_async_start(const DHT_TableId * table,
 		       const HashCode160 * key,
-		       unsigned int type,
 		       cron_t timeout,
 		       const DataContainer * value,
 		       DHT_OP_Complete callback,
@@ -2662,7 +2651,6 @@ dht_remove_async_start(const DHT_TableId * table,
 			     &hosts[i])) {
 	if (OK == ltd->store->del(ltd->store->closure,
 				  key,
-				  type,
 				  value)) 
 	  ret->confirmed_stores++;
 	break;
@@ -2765,7 +2753,6 @@ static int dht_migrate(const HashCode160 * key,
   cls->puts[cls->putsPos] 
     = dht_put_async_start(&cls->table,
 			  key,
-			  0, /* FIXME: type */
 			  cls->timeout,
 			  value,
 			  NULL,
@@ -2838,7 +2825,6 @@ static int dht_leave(const DHT_TableId * table,
 	   sizeof(PeerIdentity));
     remRec = dht_remove_async_start(&masterTableId,
 				    table,
-				    0, /* FIXME: type */
 				    timeout,
 				    value,
 				    NULL,
@@ -3214,7 +3200,6 @@ static void rpc_DHT_store(const PeerIdentity * sender,
   fw_context->put_record 
     = dht_put_async_start(table,
 			  key,
-			  0, /* FIXME: type */
 			  ntohll(*timeout),
 			  value,
 			  (DHT_OP_Complete) &rpc_dht_store_callback,
@@ -3343,7 +3328,6 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
   fw_context->remove_record 
     = dht_remove_async_start(table,
 			     key,
-			     0, /* FIXME, type */
 			     ntohll(*timeout),
 			     value,
 			     (DHT_OP_Complete) &rpc_dht_remove_callback,
@@ -3477,7 +3461,6 @@ static void dhtMaintainJob(void * shutdownFlag) {
       putRecords[putRecordsSize-1] 
 	= dht_put_async_start(&masterTableId,
 			      &tables[i].id,
-			      0, /* FIXME: type */
 			      DHT_MAINTAIN_BUCKET_FREQUENCY,
 			      value,
 			      NULL,

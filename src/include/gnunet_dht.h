@@ -94,8 +94,6 @@ typedef struct {
   
   HashCode160 key;
 
-  unsigned int type; /* nbo */
-
   unsigned int priority; /* nbo */
 
 } DHT_CS_REQUEST_PUT;
@@ -143,8 +141,6 @@ typedef struct {
   DHT_TableId table; 
   
   unsigned long long timeout; /* nbo */
-
-  unsigned int type; /* nbo */
 
   HashCode160 key;
 

@@ -111,7 +111,6 @@ static int lookup(void * closure,
  */
 static int store(void * closure,
 		 const HashCode160 * key,
-		 unsigned int type,
 		 const DataContainer * value,
 		 unsigned int prio) {
   MemoryDatastore * ds = (MemoryDatastore*) closure;
@@ -173,7 +172,6 @@ static int store(void * closure,
  */
 static int ds_remove(void * closure,
 		     const HashCode160 * key,
-		     unsigned int type,
 		     const DataContainer * value) {
   MemoryDatastore * ds = closure;
   HT_Entry * pos;
