@@ -133,7 +133,7 @@ static void cfg_set_entry(struct CFG_ENTRIES * e,
   e->ent_values[i] = STRDUP(value);
 }
 
-static int cfg_parse_file(char *filename) {
+int cfg_parse_file(char *filename) {
   struct CFG_ENTRIES * e = NULL;
   char line[256],tag[64],value[192];
   FILE *fp;
@@ -224,7 +224,7 @@ static int cfg_parse_file(char *filename) {
 
 /* ------------------------------------------------------------------------ */
 
-static char * cfg_get_str(const char * sec,
+char * cfg_get_str(const char * sec,
 			  const char * ent) {
   struct CFG_ENTRIES * e = NULL;
   int i;
@@ -241,7 +241,7 @@ static char * cfg_get_str(const char * sec,
   return NULL;
 }
 
-static int cfg_get_signed_int(const char *sec,
+int cfg_get_signed_int(const char *sec,
 			      const char *ent) {
   char *val;
 
@@ -251,7 +251,7 @@ static int cfg_get_signed_int(const char *sec,
   return atoi(val);
 }
 
-static void doneParseConfig() {
+void doneParseConfig() {
   int i;
   int j;
 

@@ -74,6 +74,9 @@ gnunet_setup_LDFLAGS = \
 gnunet_setup_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
+gnunet_setup_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+
 gnunet_win_tool_SOURCE = \
  gnunet-win-tool.c
 

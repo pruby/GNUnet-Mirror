@@ -2281,6 +2281,17 @@ unsigned int vectorIndexOf(struct Vector * v,
 void ** vectorElements(struct Vector * v);
 
 /**
+ * Configuration
+ */
+int cfg_parse_file(char *filename);
+char * cfg_get_str(const char * sec,
+			  const char * ent);
+int cfg_get_signed_int(const char *sec,
+			      const char *ent);
+void doneParseConfig();
+
+
+/**
  * Enum Windows NICs
  */
 #ifdef WINDOWS

@@ -21,6 +21,9 @@
 #define LKC_DIRECT_LINK
 #include "lkc.h"
 
+#include "platform.h"
+#include "gnunet_util.h"
+
 const char conf_def_dir[] = "/etc/GNUnet/";
 const char conf_def_filename[] = ".config";
 
@@ -101,193 +104,111 @@ void extract_setting(char *line, char **setting, char *sect)
 
 int conf_read(const char *name)
 {
-	FILE *in = NULL;
-	char line[1024];
-	char *p, *p2;
-	int lineno = 0;
+	char *val;
 	struct symbol *sym;
 	struct property *prop;
 	struct expr *e;
-	int i;
-
-	if (name) {
-		in = zconf_fopen(name);
-	} else {
+	int i = 0;
+	
+	if (!name) {
 		const char **names = conf_confnames;
+		
 		while ((name = *names++)) {
 			name = conf_expand_value(name);
-			in = zconf_fopen(name);
-			if (in) {
+			if (cfg_parse_file((char *) name) == 0) {
 				printf("#\n"
 				       "# using defaults found in %s\n"
 				       "#\n", name);
+				i = 1;
 				break;
 			}
 		}
 	}
+	else {
+		i = 1;
+		cfg_parse_file((char *) name);
+	}
 
-	if (!in)
+	if (!i)
 		return 1;
-
+	
 	for_all_symbols(i, sym) {
 	  sym->flags |= SYMBOL_NEW | SYMBOL_CHANGED;
 		sym->flags &= ~SYMBOL_VALID;
-		switch (sym->type) {
-		case S_INT:
-		case S_HEX:
-		case S_STRING:
-			if (sym->user.val)
-				free(sym->user.val);
-		default:
-			sym->user.val = NULL;
-			sym->user.tri = no;
-		}
+		
+		val = cfg_get_str(sym->sect, sym->name);
+		if (val) {
+  		switch (sym->type) {
+  			case S_TRISTATE:
+  				if (*val == 'm') {
+  					sym->user.tri = mod;
+  					sym->flags &= ~SYMBOL_NEW;
+  					break;
+  				}
+  			case S_BOOLEAN:
+  				sym->user.tri = (*val == 'Y') ? yes : no;
+  				sym->flags &= ~SYMBOL_NEW;
+  				break;
+  			case S_STRING:
+  			case S_INT:
+  			case S_HEX:
+  				if (sym->user.val)
+  					free(sym->user.val);
+  
+  				if (sym_string_valid(sym, val)) {
+  					sym->user.val = strdup(val);
+  					sym->flags &= ~SYMBOL_NEW;
+  				}
+  				else {
+  					fprintf(stderr, "%s: symbol value '%s' invalid for %s\n", name, val, sym->name);
+  					doneParseConfig();
+  					exit(1);
+  				}
+
+  				if (!sym_string_within_range(sym, val))
+  					sym->flags |= SYMBOL_NEW;
+
+  				break;
+  			default:
+    			sym->user.val = NULL;
+    			sym->user.tri = no;
+  		}
+  		
+  		if (sym && sym_is_choice_value(sym)) {
+  			struct symbol *cs = prop_get_symbol(sym_get_choice_prop(sym));
+  			switch (sym->user.tri) {
+  			case no:
+  				break;
+  			case mod:
+  				if (cs->user.tri == yes)
+  					/* warn? */;
+  				break;
+  			case yes:
+  				if (cs->user.tri != no)
+  					/* warn? */;
+  				cs->user.val = sym;
+  				break;
+  			}
+  			cs->user.tri = E_OR(cs->user.tri, sym->user.tri);
+  			cs->flags &= ~SYMBOL_NEW;
+  		}
+
+  		sym_calc_value(sym);
+  		if (sym_has_value(sym) && !sym_is_choice_value(sym)) {
+  			if (sym->visible == no)
+  				sym->flags |= SYMBOL_NEW;
+  		}
+  		if (!sym_is_choice(sym))
+  			continue;
+  		prop = sym_get_choice_prop(sym);
+  		for (e = prop->expr; e; e = e->left.expr)
+  			if (e->right.sym->visible != no)
+  				sym->flags |= e->right.sym->flags & SYMBOL_NEW;
+  	}
 	}
-
-	while (fgets(line, sizeof(line), in)) {
-		char sect[251], *setting;
-
-		lineno++;
-		sym = NULL;
-		switch (line[0]) {
-		case '#':
-			if (memcmp(line + 2, "CONFIG_", 7))
-				continue;
-			p = strchr(line + 9, ' ');
-			if (!p)
-				continue;
-			*p++ = 0;
-			if (strncmp(p, "is not set", 10))
-				continue;
-
-			extract_setting(line + 9, &setting, sect);
-			sym = sym_find(setting, sect);
-			if (!sym) {
-				fprintf(stderr, "%s:%d: trying to assign nonexistent symbol %s in section %s\n", name, lineno, line + 9, sect);
-				break;
-			}
-			switch (sym->type) {
-			case S_BOOLEAN:
-			case S_TRISTATE:
-				sym->user.tri = no;
-				sym->flags &= ~SYMBOL_NEW;
-				break;
-			default:
-				;
-			}
-			break;
-		case 'C':
-			if (memcmp(line, "CONFIG_", 7))
-				continue;
-			p = strchr(line + 7, '=');
-			if (!p)
-				continue;
-			*p++ = 0;
-			p2 = strchr(p, '\n');
-			if (p2)
-				*p2 = 0;
-			extract_setting(line + 7, &setting, sect);
-			sym = sym_find(setting, sect);
-			if (!sym) {
-				fprintf(stderr, "%s:%d: trying to assign nonexistent symbol %s in section %s\n", name, lineno, line + 7, sect);
-				break;
-			}
-			switch (sym->type) {
-			case S_TRISTATE:
-				if (p[0] == 'm') {
-					sym->user.tri = mod;
-					sym->flags &= ~SYMBOL_NEW;
-					break;
-				}
-			case S_BOOLEAN:
-				if (p[0] == 'y') {
-					sym->user.tri = yes;
-					sym->flags &= ~SYMBOL_NEW;
-					break;
-				}
-				if (p[0] == 'n') {
-					sym->user.tri = no;
-					sym->flags &= ~SYMBOL_NEW;
-					break;
-				}
-				break;
-			case S_STRING:
-				if (*p++ != '"')
-					break;
-				for (p2 = p; *p2; p2++) {
-					if (*p2 == '"') {
-						*p2 = 0;
-						break;
-					}
-					memmove(p2, p2 + 1, strlen(p2));
-				}
-				if (!p2) {
-					fprintf(stderr, "%s:%d: invalid string found\n", name, lineno);
-					exit(1);
-				}
-			case S_INT:
-			case S_HEX:
-				if (sym_string_valid(sym, p)) {
-					sym->user.val = strdup(p);
-					sym->flags &= ~SYMBOL_NEW;
-				} else {
-					fprintf(stderr, "%s:%d: symbol value '%s' invalid for %s\n", name, lineno, p, sym->name);
-					exit(1);
-				}
-				break;
-			default:
-				;
-			}
-			break;
-		case '\n':
-			break;
-		default:
-			continue;
-		}
-		if (sym && sym_is_choice_value(sym)) {
-			struct symbol *cs = prop_get_symbol(sym_get_choice_prop(sym));
-			switch (sym->user.tri) {
-			case no:
-				break;
-			case mod:
-				if (cs->user.tri == yes)
-					/* warn? */;
-				break;
-			case yes:
-				if (cs->user.tri != no)
-					/* warn? */;
-				cs->user.val = sym;
-				break;
-			}
-			cs->user.tri = E_OR(cs->user.tri, sym->user.tri);
-			cs->flags &= ~SYMBOL_NEW;
-		}
-	}
-	fclose(in);
-
-	for_all_symbols(i, sym) {
-		sym_calc_value(sym);
-		if (sym_has_value(sym) && !sym_is_choice_value(sym)) {
-			if (sym->visible == no)
-				sym->flags |= SYMBOL_NEW;
-			switch (sym->type) {
-			case S_STRING:
-			case S_INT:
-			case S_HEX:
-				if (!sym_string_within_range(sym, sym->user.val))
-					sym->flags |= SYMBOL_NEW;
-			default:
-				break;
-			}
-		}
-		if (!sym_is_choice(sym))
-			continue;
-		prop = sym_get_choice_prop(sym);
-		for (e = prop->expr; e; e = e->left.expr)
-			if (e->right.sym->visible != no)
-				sym->flags |= e->right.sym->flags & SYMBOL_NEW;
-	}
-
+	
+	doneParseConfig();
+	
 	sym_change_count = 1;
 
 	return 0;
@@ -295,12 +216,12 @@ int conf_read(const char *name)
 
 int conf_write(const char *name)
 {
-	FILE *out, *out_h;
+	FILE *out;
 	struct symbol *sym;
 	struct menu *menu;
 	const char *basename;
-	char dirname[128], tmpname[128], tmpname2[128], newname[128];
-	int type, l;
+	char dirname[128], tmpname[128], newname[128];
+	int type;
 	const char *str;
 
 	dirname[0] = 0;
@@ -329,20 +250,10 @@ int conf_write(const char *name)
 	out = FOPEN(newname, "w");
 	if (!out)
 		return 1;
-	out_h = NULL;
-	if (!name) {
-		sprintf(tmpname, "%s.tmpconfig.conf", dirname);
-		out_h = FOPEN(tmpname, "w");
-		if (!out_h)
-			return 1;
-	}
-	fprintf(out, "#\n"
-		     "# Automatically generated by gnunet-setup: don't edit\n"
-		     "#\n");
-	if (out_h)
-		fprintf(out_h, "#\n"
-			       "# Automatically generated by gnunet-setup: don't edit\n"
-			       "#\n");
+
+  fprintf(out, "#%s"
+			       "# Automatically generated by gnunet-setup%s"
+			       "#%s", NEWLINE, NEWLINE, NEWLINE);
 
   sym_clear_all_valid();
 
@@ -351,24 +262,15 @@ int conf_write(const char *name)
 
 		sym = menu->sym;
 		if (!sym) {
-			int printStr;
 
 			str = menu_get_prompt(menu);
-			if ((printStr = (str && strlen(str) > 0)))
-				fprintf(out, "\n"
-				     "#\n"
-				     "# %s\n"
-				     "#\n", str);
-			if (out_h)
-			{
-				if (printStr)
-					fprintf(out_h, "\n"
-						"#\n"
-						"# %s\n"
-						"#\n", str);
-				if (menu->section && strlen(menu->section) > 0)
-					fprintf(out_h, "[%s]\n", menu->section);
-			}
+			if (str && strlen(str) > 0)
+				fprintf(out, "%s"
+					"#%s"
+					"# %s%s"
+					"#%s", NEWLINE, NEWLINE, str, NEWLINE, NEWLINE);
+			if (menu->section && strlen(menu->section) > 0)
+				fprintf(out, "[%s]%s", menu->section, NEWLINE);
 		} else if (!(sym->flags & SYMBOL_CHOICE)) {
 			sym_calc_value_ext(sym, 1);
 			sym->flags &= ~SYMBOL_WRITE;
@@ -383,43 +285,30 @@ int conf_write(const char *name)
 			case S_TRISTATE:
 				switch (sym_get_tristate_value(sym)) {
 				case no:
-					fprintf(out, "# CONFIG_%s!%s is not set\n", sym->sect, sym->name);
-					if (out_h)
-						fprintf(out_h, "%s = NO\n", sym->name);
+					fprintf(out, "%s = NO", sym->name);
 					break;
 				case mod:
-					fprintf(out, "CONFIG_%s!%s=m\n", sym->sect, sym->name);
-					if (out_h)
-						fprintf(out_h, "%s = m\n", sym->name);
+					fprintf(out, "%s = m", sym->name);
 					break;
 				case yes:
-					fprintf(out, "CONFIG_%s!%s=y\n", sym->sect, sym->name);
-					if (out_h)
-						fprintf(out_h, "%s = YES\n", sym->name);
+					fprintf(out, "%s = YES", sym->name);
 					break;
 				}
 				break;
 			case S_STRING:
-				str = sym_get_string_value(sym);
-				fprintf(out, "CONFIG_%s!%s=\"%s\"\n", sym->sect, sym->name, str);
-        if (out_h)
-          fprintf(out_h, "%s = \"%s\"\n", sym->name, str);
+        fprintf(out, "%s = \"%s\"", sym->name, sym_get_string_value(sym));
 				break;
 			case S_HEX:
 				str = sym_get_string_value(sym);
 				if (str[0] != '0' || (str[1] != 'x' && str[1] != 'X')) {
-					fprintf(out, "CONFIG_%s!%s=%s\n", sym->sect, sym->name, str);
-					if (out_h)
-						fprintf(out_h, "%s = 0x%s\n", sym->name, str);
+					fprintf(out, "%s = 0x%s", sym->name, str);
 					break;
 				}
 			case S_INT:
-				str = sym_get_string_value(sym);
-				fprintf(out, "CONFIG_%s!%s=%s\n", sym->sect, sym->name, str);
-				if (out_h)
-					fprintf(out_h, "%s = %s\n", sym->name, str);
+				fprintf(out, "%s = %s", sym->name, sym_get_string_value(sym));
 				break;
 			}
+			fprintf(out, "%s", NEWLINE);
 		}
 
 		if (menu->list) {
@@ -436,12 +325,6 @@ int conf_write(const char *name)
 		}
 	}
 	fclose(out);
-	if (out_h) {
-		fclose(out_h);
-		sprintf(tmpname, "%s.tmpconfig.conf", dirname);
-		sprintf(tmpname2, "%sgnunet.conf", dirname);
-		RENAME(tmpname, tmpname2);
-	}
 	if (!name || basename != conf_def_filename) {
 		if (!name)
 			name = conf_def_filename;

@@ -166,6 +166,7 @@ int OPEN(const char *filename, int oflag, ...);
 #ifndef MINGW
  #define DIR_SEPARATOR '/'
  #define DIR_SEPARATOR_STR "/"
+ #define NEWLINE "\n"
 
  #define CREAT(p, m) creat(p, m)
  #undef FOPEN
@@ -225,6 +226,7 @@ int OPEN(const char *filename, int oflag, ...);
 #else
  #define DIR_SEPARATOR '\\'
  #define DIR_SEPARATOR_STR "\\"
+ #define NEWLINE "\r\n"
 
  #define CREAT(p, m) _win_creat(p, m)
  #define FOPEN(f, m) _win_fopen(f, m)
