@@ -867,7 +867,7 @@ static int update(const HashCode160 * key,
 		   delta);
   sqlite3_bind_int(dbh->updPrio, 
 		   5, 
-		   MAX_PRIORITY);
+		   MAX_PRIO);
   
   n = sqlite3_step(dbh->updPrio);
   sqlite3_reset(dbh->updPrio);

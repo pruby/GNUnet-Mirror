@@ -68,7 +68,7 @@
 /**
  * Highest legal priority or trust value
  */
-#define MAX_PRIORITY 0x7FFFFFFF
+#define MAX_PRIO 0x7FFFFFFF
 
 /**
  * Named constants for return values.
