@@ -54,6 +54,9 @@ Do not print the list of pseudonyms (only perform create or delete operation).
 \fB\-r NAME\fR, \fB\-\-realname=NAME\fR
 Claim that the name of the author of the content in the namespace in 'real' life is NAME (use with \-C).
 .TP
+\fB\-R IDENTIFIER\fR, \fB\-\-root=IDENTIFIER\fR
+Specify the identifier for the root of the namespace.  Used in the namespace advertisement to tell users that find the namespace advertisement about an entry-point into the namespace (use with \-C).
+.TP
 \fB\-s ID:VALUE\fR, \fB\-\-set-rating=ID:VALUE\fR
 Change the rating for the namespace identified by ID by VALUE.  For example, "\-s test:-3" decrements the rating of the pseudonym "test" by 3.  Note that ratings are purely local.  Each user has his own independent rating of namespaces.  The rating is merely a way for each user to keep track of his own experience with a given namespace.
 .TP
