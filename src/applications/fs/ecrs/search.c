@@ -110,6 +110,8 @@ typedef struct {
   
   void * spcbClosure;
 
+  int aborted;
+
   Mutex lock;
 
 } SendQueriesContext;
@@ -287,7 +289,12 @@ static int processNBlock(const NBlock * nb,
   uri.type = sks;
   uri.data.sks.namespace = nb->namespace;
   uri.data.sks.identifier = nb->rootEntry;
-  ret = sqc->spcb(&fi, key, sqc->spcbClosure);
+  if (sqc->spcb != NULL) {
+    ret = sqc->spcb(&fi, key, sqc->spcbClosure);
+    if (ret == SYSERR)
+      sqc->aborted = YES;
+  } else
+    ret = OK;
   ECRS_freeMetaData(fi.meta);
   return ret;
 }
@@ -360,12 +367,14 @@ static int receiveReplies(const HashCode160 * key,
 	  ECRS_freeMetaData(fi.meta);
 	  return SYSERR;
 	}
-	printf("ECRS Search Result...\n");
-	ret = sqc->spcb(&fi, 
-			&ps->decryptKey,
-			sqc->spcbClosure);
-	printf("ECRS Search Result: %d\n",
-	       ret);
+	if (sqc->spcb != NULL) {
+	  ret = sqc->spcb(&fi, 
+			  &ps->decryptKey,
+			  sqc->spcbClosure);
+	  if (ret == SYSERR)
+	    sqc->aborted = YES;
+	} else
+	  ret = OK;
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
 	return ret;      
@@ -434,7 +443,12 @@ static int receiveReplies(const HashCode160 * key,
 	  ECRS_freeMetaData(fi.meta);
 	  return SYSERR;
 	}
-	ret = sqc->spcb(&fi, NULL, sqc->spcbClosure);
+	if (sqc->spcb != NULL) {
+	  ret = sqc->spcb(&fi, NULL, sqc->spcbClosure);
+	  if (ret == SYSERR)
+	    sqc->aborted = YES;
+	} else
+	  ret = OK;
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
 
@@ -498,12 +512,14 @@ int ECRS_search(const struct ECRS_URI * uri,
   ctx.queries = NULL;
   ctx.spcb = spcb;
   ctx.spcbClosure = spcbClosure;
+  ctx.aborted = NO;
   MUTEX_CREATE_RECURSIVE(&ctx.lock);
   ctx.sctx = FS_SEARCH_makeContext(&ctx.lock);
   addQueryForURI(uri,
 		 &ctx);
   while ( (OK == tt(ttClosure)) &&
-	  (timeout > now) ) {
+	  (timeout > now) &&
+	  (ctx.aborted == NO) ) {
     remTime = timeout - now;
 
     MUTEX_LOCK(&ctx.lock);

@@ -316,7 +316,9 @@ int ECRS_uploadFile(const char * filename,
     if (size != READ(fd, 
 		     &db[1], 
 		     size)) {
-      LOG_FILE_STRERROR(LOG_WARNING, "READ", filename);
+      LOG_FILE_STRERROR(LOG_WARNING, 
+			"READ",
+			filename);
       goto FAILURE;
     }   
     if (tt != NULL)

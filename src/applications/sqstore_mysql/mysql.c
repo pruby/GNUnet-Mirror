@@ -975,7 +975,7 @@ static int del(const HashCode160 * key,
   if(value == NULL) {
     SNPRINTF(scratch, 
   	     n,
-	     "DELETE FROM gn070 WHERE hash='%s'",	
+	     "DELETE FROM gn070 WHERE hash='%s' ORDER BY prio ASC LIMIT 1",	
 	     escapedHash);
   } else {
     /* FIXME: type/prio/anon=%d since the value is a
@@ -986,7 +986,7 @@ static int del(const HashCode160 * key,
 	     "DELETE FROM gn070 WHERE hash='%s'"
 	     " AND size=%u AND type=%d AND prio=%d"
 	     " AND anonLevel=%d AND expire=%lld"
-	     " AND value='%s'",
+	     " AND value='%s' ORDER BY prio ASC LIMIT 1",
 	     escapedHash,
 	     ntohl(value->size),
 	     ntohl(value->type),

@@ -140,7 +140,7 @@ typedef struct {
    *   
    * @param value maybe NULL, then all items under the
    *        given key are deleted
-   * @return the number of items deleted, 0 if
+   * @return the number of items deleted (at most 1!), 0 if
    *        none were found, SYSERR on errors
    */
   int (*del)(const HashCode160 * key, 

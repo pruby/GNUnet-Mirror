@@ -40,6 +40,8 @@
 #include "fs.h"
 #include "tree.h"
 
+#define STRICT_CHECKS NO
+
 /**
  * Append the given key and query to the iblock[level].
  * If iblock[level] is already full, compute its chk
@@ -74,17 +76,25 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
     if (OK != pushBlock(sock, 
 			&ichk,
 			level+1, 
-			iblocks))
+			iblocks)) {
+      BREAK();
       return SYSERR;
+    }
     fileBlockEncode(db,
 		    size,
 		    &ichk.query,
 		    &value);
-    if (OK != FS_delete(sock,
-			value)) {
+#if STRICT_CHECKS
+    if (SYSERR == FS_delete(sock,
+			    value)) {
       FREE(value);
+      BREAK();
       return SYSERR;
     }
+#else
+    FS_delete(sock,
+	      value);
+#endif    
     FREE(value);
     size = sizeof(DBlock);
   }
@@ -256,6 +266,7 @@ int ECRS_unindexFile(const char * filename,
   if (SYSERR == getFileHash(filename,
 			    &fileId)) {
     releaseClientSocket(sock);
+    BREAK();
     return SYSERR;
   }
   cronTime(&now);
@@ -278,11 +289,13 @@ int ECRS_unindexFile(const char * filename,
   if (OK != writeToSocket(sock,
 			  &rti.header)) {
     releaseClientSocket(sock);
+    BREAK();
     return SYSERR;
   }
   if (OK != readTCPResult(sock,
 			  &wasIndexed)) {
     releaseClientSocket(sock);
+    BREAK();
     return SYSERR;
   }
 
@@ -319,7 +332,7 @@ int ECRS_unindexFile(const char * filename,
     if (upcb != NULL)
       upcb(filesize, pos, eta, upcbClosure);
     if (tt != NULL)
-      if (OK != tt(ttClosure))
+      if (OK != tt(ttClosure)) 
 	goto FAILURE;
     size = DBLOCK_SIZE;
     if (size > filesize - pos) {
@@ -328,6 +341,7 @@ int ECRS_unindexFile(const char * filename,
 	     0, 
 	     DBLOCK_SIZE);
     }
+    dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
     if (size != READ(fd, 
 		     &db[1], 
 		     size)) {
@@ -348,19 +362,27 @@ int ECRS_unindexFile(const char * filename,
     if (OK != pushBlock(sock,
 			&chk,
 			0, /* dblocks are on level 0 */
-			iblocks))
+			iblocks)) {
+      BREAK();
       goto FAILURE;
+    }
     if (! wasIndexed) {
       fileBlockEncode(db,
 		      size,
 		      &chk.query,
 		      &value);
       *value = *dblock; /* copy options! */
+#if STRICT_CHECKS
       if (OK != FS_delete(sock,
 			  value)) {
 	FREE(value);
+	BREAK();
 	goto FAILURE;
       }
+#else
+      FS_delete(sock,
+		value);
+#endif     
       FREE(value);
     }
     pos += size;
@@ -374,27 +396,35 @@ int ECRS_unindexFile(const char * filename,
       goto FAILURE;  
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
-    db = (DBlock*) &iblocks[i];
+    db = (DBlock*) &iblocks[i][1];
     fileBlockGetKey(db,
-		    size + sizeof(DBlock),
+		    size,
 		    &chk.key);
     fileBlockGetQuery(db,
-		      size + sizeof(DBlock),
+		      size,
 		      &chk.query);   
     if (OK != pushBlock(sock, 
 			&chk,
 			i+1, 
-			iblocks))
+			iblocks)) {
+      BREAK();
       goto FAILURE;
+    }
     fileBlockEncode(db,
 		    size,
 		    &chk.query,
 		    &value);
+#if STRICT_CHECKS
     if (OK != FS_delete(sock,
 			value)) {
       FREE(value);
+      BREAK();
       goto FAILURE;
     }
+#else
+    FS_delete(sock,
+	      value);
+#endif    
     FREE(value);
     FREE(iblocks[i]);
     iblocks[i] = NULL;
@@ -406,10 +436,14 @@ int ECRS_unindexFile(const char * filename,
 			     sock)) {
       if (OK != FS_unindex(sock,
 			   DBLOCK_SIZE,
-			   &fileId))
+			   &fileId)) {
+	BREAK();
 	goto FAILURE;
-    } else
+      }
+    } else {
+      BREAK();
       goto FAILURE;
+    }
   }
 
   /* free resources */
