@@ -385,6 +385,8 @@ int hostIdentityEquals(const PeerIdentity * first,
 void hashToKey(const HashCode160 * hc,
 	       SESSIONKEY * skey,
 	       INITVECTOR * iv) {
+  GNUNET_ASSERT((sizeof(HashCode160) - SESSIONKEY_LEN) * 2 
+		== sizeof(INITVECTOR));
   memcpy(skey,
 	 hc,
 	 sizeof(SESSIONKEY));
@@ -393,11 +395,9 @@ void hashToKey(const HashCode160 * hc,
   memcpy(&iv->iv[0], 
 	 &(((char *)hc)[SESSIONKEY_LEN]), 
 	 sizeof(HashCode160) - SESSIONKEY_LEN);
-  GNUNET_ASSERT(sizeof(HashCode160) - SESSIONKEY_LEN ==
-		sizeof(INITVECTOR) - (sizeof(HashCode160) - SESSIONKEY_LEN));
   memcpy(&iv->iv[sizeof(HashCode160) - SESSIONKEY_LEN],
 	 &(((char *)hc)[SESSIONKEY_LEN]), 
-	 sizeof(HashCode160) - sizeof(SESSIONKEY));
+	 sizeof(HashCode160) - SESSIONKEY_LEN);
 }
 
 
