@@ -162,6 +162,19 @@
 #define TIE_BREAKER_CHANCE 4
 
 /**
+ * For how many _local_ requests do we track the current, non-zero
+ * request priorities for rewarding peers that send replies?  If this
+ * number is too low, we will 'forget' to reward peers for good
+ * replies (and our routing will degrade).  If it is too high, we'll
+ * scan though a large array for each content message and waste
+ * memory.<p>
+ *
+ * A good value reflects the number of concurrent, local queries that
+ * we expect to see.
+ */
+#define MAX_REWARD_TRACKS 128
+
+/**
  * ITE modes for addToSlot.
  */
 #define ITE_REPLACE 0
@@ -391,6 +404,17 @@ typedef struct RTD_ {
   struct RTD_ * next;
 } ReplyTrackData;
 
+/**
+ * Tracking of just reward data (how much trust a peer
+ * can gain for a particular reply).
+ */
+typedef struct {
+  HashCode512 query;
+  unsigned int prio;
+} RewardEntry;
+
+
+
 /* ********************** GLOBALS ******************** */
 
 /**
@@ -460,6 +484,10 @@ static Mutex * lock;
  * the queryManagerLock!
  */
 static ReplyTrackData * rtdList = NULL;
+
+static RewardEntry * rewards = NULL;
+static unsigned int rewardSize = 0;
+static unsigned int rewardPos = 0;
 
 
 /* ****************** helper functions ***************** */
@@ -1005,6 +1033,37 @@ static void queueReply(const PeerIdentity * sender,
 	     pmsg);
 }
 
+static void addReward(const HashCode512 * query,
+		      unsigned int prio) {
+  if (prio == 0)
+    return;
+  MUTEX_LOCK(lock);
+  rewards[rewardPos].query = *query;
+  rewards[rewardPos].prio = prio;  
+  rewardPos++;
+  if (rewardPos == rewardSize)
+    rewardPos = 0;
+  MUTEX_UNLOCK(lock);
+}
+
+static unsigned int claimReward(const HashCode512 * query,
+				const PeerIdentity * peer) {
+  int i;
+  unsigned int ret;
+
+  ret = 0;
+  MUTEX_LOCK(lock);
+  for (i=0;i<rewardSize;i++) {
+    if (equalsHashCode512(query,
+			  &rewards[i].query)) {
+      ret += rewards[i].prio;
+      rewards[i].prio = 0;
+    }
+  }
+  MUTEX_UNLOCK(lock);
+  return ret;
+}
+
 
 /**
  * Add an entry to the routing table. The lock on the ite
@@ -1435,6 +1494,8 @@ static int execQuery(const PeerIdentity * sender,
       doForward = YES;
     }
   } else {
+    addReward(&query->queries[0],
+	      prio);
     isRouted = YES;
     doForward = YES;
   }
@@ -1541,6 +1602,7 @@ static int useContent(const PeerIdentity * hostId,
   IndirectionTableEntry * ite;
   unsigned int size;
   int ret;
+  unsigned int prio;
   DataContainer * value;
   double preference;
 
@@ -1548,50 +1610,16 @@ static int useContent(const PeerIdentity * hostId,
     BREAK();
     return SYSERR; /* invalid! */
   }
+	      
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
   size = ntohs(msg->header.size) - sizeof(GAP_REPLY);
-  MUTEX_LOCK(&ite->lookup_exclusion);
-  if (! equalsHashCode512(&ite->primaryKey,
-			  &msg->primaryKey) ) {	
-    MUTEX_UNLOCK(&ite->lookup_exclusion);
-    value = MALLOC(size + sizeof(DataContainer));
-    value->size = htonl(size + sizeof(DataContainer));
-    memcpy(&value[1],
-	   &msg[1],
-	   size);
-    ret = bs->put(bs->closure,
-		  &msg->primaryKey,
-		  value,
-		  0);
-    FREE(value);
-    if (ret != SYSERR)
-      return OK;
-    else
-      return SYSERR;
-  }
+  prio = 0;
   hash(&msg[1],
        size,
        &contentHC);
-  if (uri(&msg[1],
-	  size,
-	  ite->type,
-	  &ite->primaryKey)) {
-    /* unique reply, stop forwarding! */  
-    dequeueQuery(&ite->primaryKey);
-  }
-  /* remove the sender from the waiting list
-     (if the sender was waiting for a response) */
-  if (hostId != NULL)
-    for (i=0;i<ite->hostsWaiting;i++) {
-      if (equalsHashCode512(&hostId->hashPubKey,
-			    &ite->destination[i].hashPubKey)) {
-	ite->destination[i] = ite->destination[ite->hostsWaiting-1];
-	GROW(ite->destination,
-	     ite->hostsWaiting,
-	     ite->hostsWaiting - 1);
-      }			  
-    }
 
+  /* FIRST: check if seen */
+  MUTEX_LOCK(&ite->lookup_exclusion);
   for (i=0;i<ite->seenIndex;i++) {
     if (equalsHashCode512(&contentHC,
 			  &ite->seen[i])) {
@@ -1599,8 +1627,9 @@ static int useContent(const PeerIdentity * hostId,
       return 0; /* seen before, useless */
     }
   }
+  MUTEX_UNLOCK(&ite->lookup_exclusion);
 
-  /* also do ds-put */
+  /* SECOND: check if valid */
   value = MALLOC(size + sizeof(DataContainer));
   value->size = htonl(size + sizeof(DataContainer));
   memcpy(&value[1],
@@ -1609,26 +1638,32 @@ static int useContent(const PeerIdentity * hostId,
   ret = bs->put(bs->closure,
 		&msg->primaryKey,
 		value,
-		ite->priority);
-  FREE(value);
-  if (ret != SYSERR) {
-    /* new VALID reply, adjust credits! */
-    if (hostId != NULL) { /* if we are the sender, hostId will be NULL */
-      preference = (double) ite->priority;
-      identity->changeHostTrust(hostId,
-				ite->priority);
-      ite->priority = 0; /* no priority for further replies,
-			    because we don't get paid for those... */
-      for (i=0;i<ite->hostsWaiting;i++)
-	updateResponseData(&ite->destination[i],
-			   hostId);    
-      if (preference < CONTENT_BANDWIDTH_VALUE)
-	preference = CONTENT_BANDWIDTH_VALUE;
-      coreAPI->preferTrafficFrom(hostId,
-				 preference);
+		0);
+  if (ret == SYSERR) {
+    FREE(value);
+    return SYSERR; /* invalid */
+  }
+
+  /* THIRD: compute content priority/value and
+     send remote reply (ITE processing) */
+  MUTEX_LOCK(&ite->lookup_exclusion);
+  if (! equalsHashCode512(&ite->primaryKey,
+			  &msg->primaryKey) ) {	
+    prio = ite->priority;
+    ite->priority = 0;
+    /* remove the sender from the waiting list
+       (if the sender was waiting for a response) */
+    if (hostId != NULL) {
+      for (i=0;i<ite->hostsWaiting;i++) {
+	if (equalsHashCode512(&hostId->hashPubKey,
+			      &ite->destination[i].hashPubKey)) {
+	  ite->destination[i] = ite->destination[ite->hostsWaiting-1];
+	  GROW(ite->destination,
+	       ite->hostsWaiting,
+	       ite->hostsWaiting - 1);
+	}			  
+      }
     }
-    sendReply(ite,
-	      &msg->header);   
     GROW(ite->seen,
 	 ite->seenIndex,
 	 ite->seenIndex+1);
@@ -1642,8 +1677,43 @@ static int useContent(const PeerIdentity * hostId,
     } else {
       ite->seenReplyWasUnique = NO;
     }
+    sendReply(ite,
+	      &msg->header);
   }
   MUTEX_UNLOCK(&ite->lookup_exclusion);
+  prio += claimReward(&msg->primaryKey, hostId);
+  FREE(value);
+
+  /* FOURTH: update content priority in local datastore */
+  if (prio > 0) {
+    bs->put(bs->closure,
+	    &msg->primaryKey,
+	    value,
+	    prio);
+  }
+
+  /* FIFTH: if unique reply, stopy querying */
+  if (uri(&msg[1],
+	  size,
+	  ite->type,
+	  &ite->primaryKey)) {
+    /* unique reply, stop forwarding! */  
+    dequeueQuery(&ite->primaryKey);
+  }
+
+  /* SIXTH: adjust traffic preferences */
+  if (hostId != NULL) { /* if we are the sender, hostId will be NULL */
+    preference = (double) prio;
+    identity->changeHostTrust(hostId,
+			      prio);
+    for (i=0;i<ite->hostsWaiting;i++)
+      updateResponseData(&ite->destination[i],
+			 hostId);    
+    if (preference < CONTENT_BANDWIDTH_VALUE)
+      preference = CONTENT_BANDWIDTH_VALUE;
+    coreAPI->preferTrafficFrom(hostId,
+			       preference);
+  }
   return OK;
 }
 
@@ -1937,6 +2007,9 @@ provide_module_gap(CoreAPIForApplication * capi) {
   unsigned int i;
 
   coreAPI = capi;
+  GROW(rewards,
+       rewardSize,
+       MAX_REWARD_TRACKS);
 
   identity = coreAPI->requestService("identity");
   GNUNET_ASSERT(identity != NULL);
@@ -2044,6 +2117,9 @@ void release_module_gap() {
     traffic = NULL;
   }
   FREE(ROUTING_indTable_);
+  GROW(rewards,
+       rewardSize,
+       0);
   lock = NULL;
   coreAPI = NULL;
   bs = NULL;

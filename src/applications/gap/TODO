@@ -1,6 +1,0 @@
-GAP:
-* currently, gap does not track local
-  queries at all; which would be ok, 
-  except that this way we cannot reward
-  peers for answering local queries!
-  [ disables economy! ]
