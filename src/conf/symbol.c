@@ -28,18 +28,22 @@
 
 struct symbol symbol_yes = {
 	.name = "y",
+  .sect = "",
 	.curr = { "y", yes },
 	.flags = SYMBOL_YES|SYMBOL_VALID,
 }, symbol_mod = {
 	.name = "m",
+  .sect = "",
 	.curr = { "m", mod },
 	.flags = SYMBOL_MOD|SYMBOL_VALID,
 }, symbol_no = {
 	.name = "n",
+  .sect = "",
 	.curr = { "n", no },
 	.flags = SYMBOL_NO|SYMBOL_VALID,
 }, symbol_empty = {
 	.name = "",
+  .sect = "",
 	.curr = { "", no },
 	.flags = SYMBOL_VALID,
 };
@@ -52,7 +56,7 @@ void sym_add_default(struct symbol *sym, const char *def, const char *sect)
 {
 	struct property *prop = prop_alloc(P_DEFAULT, sym);
 
-	prop->expr = expr_alloc_symbol(sym_lookup(def, sect, 1));
+	prop->expr = expr_alloc_symbol(sym_lookup((char *) def, (char *) sect, 1));
 }
 
 void sym_init(void)
@@ -613,12 +617,31 @@ bool sym_is_changable(struct symbol *sym)
 	return sym->visible > sym->rev_dep.tri;
 }
 
-struct symbol *sym_lookup(const char *name, const char *sect, int isconst)
+struct symbol *sym_lookup(char *name, char *sect, int isconst)
 {
 	struct symbol *symbol;
 	const char *ptr;
 	char *new_name, *new_sect;
 	int hash = 0;
+  char *scope;
+  int sect_alloc = 0;
+
+  scope = strstr(name, "::");
+  if (scope) {
+    int len;
+    
+    sect = scope;
+    while(sect >= name)
+      sect--;
+      
+    len = scope - name;
+    sect = (char *) malloc(len + 1);
+    memcpy(sect, name, len);
+    sect[len] = 0;
+    sect_alloc = 1;
+
+    name = scope + 2;
+  }
 
 	if (!sect)
 		sect = current_sect;
@@ -642,7 +665,11 @@ struct symbol *sym_lookup(const char *name, const char *sect, int isconst)
 			    !strcmp(symbol->sect, sect)) {
 				if ((isconst && symbol->flags & SYMBOL_CONST) ||
 				    (!isconst && !(symbol->flags & SYMBOL_CONST)))
+        {
+          if (sect_alloc)
+            free(sect);
 					return symbol;
+        }
 			}
 		}
 		new_name = strdup(name);
@@ -664,18 +691,40 @@ struct symbol *sym_lookup(const char *name, const char *sect, int isconst)
 
 	symbol->next = symbol_hash[hash];
 	symbol_hash[hash] = symbol;
+  
+  if (sect_alloc)
+    free(sect);
 
 	return symbol;
 }
 
-struct symbol *sym_find(const char *name, const char *sect)
+struct symbol *sym_find(char *name, char *sect)
 {
 	struct symbol *symbol = NULL;
 	const char *ptr;
 	int hash = 0;
+  char *scope;
+  int sect_alloc = 0;
 
 	if (!name)
 		return NULL;
+
+  scope = strstr(name, "::");
+  if (scope) {
+    int len;
+    
+    sect = scope;
+    while(sect >= name)
+      sect--;
+      
+    len = scope - name;
+    sect = (char *) malloc(len + 1);
+    memcpy(sect, name, len);
+    sect[len] = 0;
+    sect_alloc = 1;
+
+    name = scope + 2;
+  }
 
 	if (!sect)
 		sect = current_sect;
@@ -699,6 +748,9 @@ struct symbol *sym_find(const char *name, const char *sect)
 		    !(symbol->flags & SYMBOL_CONST))
 				break;
 	}
+
+  if (sect_alloc)
+    free(sect);
 
 	return symbol;
 }

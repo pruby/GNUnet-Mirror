@@ -41,7 +41,7 @@ menu "General settings" "GNUNETD"
 	config HELOEXPIRES
 	int "How many minutes should peer advertisements last?"
 	default 1440
-	depends on ADVANCED
+	depends on Meta::ADVANCED
 	help
 		How many minutes is the current IP valid?  (GNUnet will sign HELO
 		messages with this expiration timeline. If you are on dialup, 60
@@ -56,7 +56,7 @@ menu "General settings" "GNUNETD"
   config LOGLEVEL
   string "Log level"
   default "WARNING"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		Loglevel, how much should be logged? You can use NOTHING, FATAL,
 		ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON or EVERYTHING
@@ -66,7 +66,7 @@ menu "General settings" "GNUNETD"
   config LOGFILE
   string "Where should logs go by default"
   default "$GNUNET_HOME/logs"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		In which file should gnunetd write the logs?  If you specify
 		nothing, logs are written to stderr (and note that if gnunetd runs
@@ -76,7 +76,7 @@ menu "General settings" "GNUNETD"
   config PIDFILE
   string "Where should gnunetd write the PID"
   default "$GNUNET_HOME/gnunet.pid"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
 	help
 		In which file should gnunetd write the process-id of the server?  If
 		you run gnunetd as root, you may want to choose
@@ -87,7 +87,7 @@ menu "General settings" "GNUNETD"
   config HOSTS
   string "Where should gnunetd keep the list of peers"
   default "$GNUNET_HOME/data/hosts/"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		This directory should be made available periodically --- it contains
 		information how to join GNUnet that is in no way private to the
@@ -102,7 +102,7 @@ menu "General settings" "GNUNETD"
 
   config HOSTLISTURL
   string "Where can GNUnet find an initial list of peers"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   default "http://www.ovmj.org/GNUnet/download/hostlist http://gnunet.cryss.net/hostlist http://www.woodtick.co.uk/hostlist"
   help
 		GNUnet can automatically update the hostlist from the web. While
@@ -126,7 +126,7 @@ menu "General settings" "GNUNETD"
   config HTTP-PROXY
   string "HTTP Proxy Server"
   default "localhost"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		If you have to use a proxy for outbound HTTP connections,
 		specify the proxy configuration here.  Default is no proxy.
@@ -135,7 +135,7 @@ menu "General settings" "GNUNETD"
   int "HTTP Proxy Port"
   range 1 65535
   default "1080"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		If you have to use a proxy for outbound HTTP connections,
 		specify the proxy configuration here.  Default is no proxy.
@@ -143,7 +143,7 @@ menu "General settings" "GNUNETD"
   config APPLICATIONS
   string "Which applications should gnunetd support?"
   default "afs tbench tracekit"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		Which applications should gnunetd support? Specify the name of the
 		dynamic shared object (DSO) that implements the service in the
@@ -165,7 +165,7 @@ menu "General settings" "GNUNETD"
   config TRANSPORTS
   string "Which transport mechanisms are available?"
   default "udp tcp nat"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		Which transport mechanisms are available? Use space-separated list
 		of the modules, e.g.  "udp smtp tcp". The order is irrelevant, each
@@ -193,7 +193,7 @@ menu "Network" "NETWORK"
   int "Client/Server Port"
   range 1 65535
   default "2087"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		Which is the client-server port that is used between gnunetd and the
 		clients (TCP only).  You may firewall this port for non-local
@@ -232,7 +232,7 @@ menu "Network" "NETWORK"
   config HELOEXCHANGE
   bool "Participate in network topology management"
   default y
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 		If this host is connected to two networks, a private which is not
 		reachable from the Internet and that contains GNUnet clients and to
@@ -247,7 +247,7 @@ menu "Network" "NETWORK"
   config TRUSTED
   string "IPs allowed to use gnunetd server"
   default "127.0.0.0/8;"
-  depends on ADVANCED
+  depends on Meta::ADVANCED
   help
 	  	With this option, you can specify which networks are trusted enough
 		to connect as clients to the TCP port.  This is useful if you run
@@ -283,7 +283,7 @@ menu "Resource limitations" "LOAD"
   config INTERFACES
   string "Network interface to monitor"
   default "eth0"
-  depends on ADVANCEDLIMITING
+  depends on Meta::ADVANCEDLIMITING
   help
 		For which interfaces should we do accounting?  GNUnet will evaluate
 		the total traffic (not only the GNUnet related traffic) and adjust
@@ -366,7 +366,7 @@ menu "Transports" ""
 	  config MTU
 	  int "MTU"
 	  default 1472
-	  depends on RARE
+	  depends on Meta::RARE
 	  help
 		  	The MTU to use. Do not use more than your OS
 			(and firewall) can support. Typically, your 
@@ -415,7 +415,7 @@ menu "Transports" ""
 	  config MTU
 	  int "MTU"
 	  default 1460
-	  depends on RARE
+	  depends on Meta::RARE
 		help
 			The MTU to use (TCP is stream oriented, so we are pretty free to
 			choose what we want, but note that larger MTUs mean more noise if
@@ -441,7 +441,7 @@ menu "Transports" ""
 
 	endmenu
   
-  if EXPERIMENTAL && RARE
+  if Meta::EXPERIMENTAL && Meta::RARE
   
   	menu "UDP over IPv6" "UDP6"
   		  		
@@ -453,7 +453,7 @@ menu "Transports" ""
 			config MTU
 			int "MTU"
 			default 1452
-			depends on RARE
+			depends on Meta::RARE
 			
 			config BLACKLIST
 			string "Disallow connections from"
@@ -470,7 +470,7 @@ menu "Transports" ""
 			config MTU
 			int "MTU"
 			default 1440
-			depends on RARE
+			depends on Meta::RARE
 			
 			config BLACKLIST
 			string "Disallow connections from"
@@ -479,7 +479,7 @@ menu "Transports" ""
   
   endif
   
-  if ADVANCED
+  if Meta::ADVANCED
   
 	  menu "SMTP" "SMTP"
 
@@ -558,7 +558,7 @@ menu "Transports" ""
 		  config MTU
 		  int "MTU"
 		  default 1400
-		  depends on RARE
+		  depends on Meta::RARE
 		  
 		  config BLACKLIST
 		  string "Disallow connections from"
@@ -605,7 +605,7 @@ menu "Applications" ""
 		config ANONYMITY_RECEIVE
 		int "Level of anonymity desired for receiving"
 		default 0
-		depends on RARE && ADVANCED
+		depends on Meta::RARE && Meta::ADVANCED
 		help
 			What degree of receiver anonymity is required?  If set to 0, GNUnet
 			will try to download the file as fast as possible without any
@@ -641,7 +641,7 @@ menu "Applications" ""
 		config ANONYMITY_SEND
 		int "Level of anonymity desired for sending"
 		default 0
-		depends on RARE && ADVANCED
+		depends on Meta::RARE && Meta::ADVANCED
 		help
 			You can also request a certain degree of anonymity for the files and
 			blocks that you are sharing. In this case, only a certain faction of
@@ -655,7 +655,7 @@ menu "Applications" ""
 
 		config ACTIVEMIGRATION
 		string "Allow migrating content"
-		depends on ADVANCED
+		depends on Meta::ADVANCED
 		help
 			Should we participate in content migration?  If you say yes here,
 			GNUnet will migrate content to your server, and you will not be able
@@ -695,14 +695,14 @@ menu "Applications" ""
 		config AFSDIR
 		string "Directory for storing AFS data"
 		default "$GNUNET_HOME/data/afs/"
-		depends on ADVANCED
+		depends on Meta::ADVANCED
 		help
 			Where to store the AFS related data (content, etc)?
 		
 		config INDEX-DIRECTORY
 		string "Where to store indexed files"
 		default "$GNUNETD_HOME/data/shared/"
-		depends on ADVANCED
+		depends on Meta::ADVANCED
 		help
 			Where to store indexed files (NEW!)
 			Note that you MUST not copy files directly to this
@@ -735,7 +735,7 @@ menu "Applications" ""
 		  Indexing quota.  Default is 8192.		
 	endmenu
 	
-	if ADVANCED
+	if Meta::ADVANCED
 	
 		menu "GNUnet Testbed" "TESTBED"
 			
