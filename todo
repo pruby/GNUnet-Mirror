@@ -14,7 +14,7 @@
   generated public keys are fishy 
   (far to many 0-values in N!)
 - Need testing:
-  * ECRS upload/download: automated tests!
+  * ECRS upload/download: automated test: complete ecrstest.c testcode!
   * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym

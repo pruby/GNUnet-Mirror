@@ -226,13 +226,16 @@ int main(int argc, char * argv[]){
   /* ACTUAL TEST CODE */
   i = 0;
   while (filesizes[i] != 0) {
-    printf("Testing filesize %u\n",
-	   filesizes[i]);
+    fprintf(stderr,
+	    "Testing filesize %u",
+	    filesizes[i]);
     uri = uploadFile(filesizes[i]);
     CHECK(NULL != uri);
     CHECK(OK == searchFile(&uri));
     CHECK(OK == downloadFile(filesizes[i], uri));
     CHECK(OK == unindexFile(filesizes[i]));
+    fprintf(stderr,
+	    " Ok.\n");
     i++;
   } 
 
