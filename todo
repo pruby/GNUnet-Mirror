@@ -14,13 +14,15 @@
   generated public keys are fishy 
   (far to many 0-values in N!)
 - Need testing:
-  * FS/ECRS upload/download: automated tests!
+  * ECRS upload/download: automated tests!
   * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
 - Resolve "@todo [WIN]" (Nils)
 
 0.7.0pre1 [4'05] (aka "preview"):
+- fslibtest: implement verify result
+- fslibtest/ecrstest: make GNUnet use 'check' database (not main DB!)
 - topology: do aggressive bootstrap on first start (Christian) [ easy ]
 - sqlite sqstore implementation does not compile yet (Nils)
 - gnunet-search: 

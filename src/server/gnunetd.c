@@ -137,6 +137,7 @@ void gnunet_main() {
   LOG(LOG_MESSAGE,
       _("'%s' startup complete.\n"),
       "gnunetd");
+  
   waitForSignalHandler();
   LOG(LOG_MESSAGE,
       _("'%s' is shutting down.\n"),

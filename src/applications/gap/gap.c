@@ -1505,6 +1505,7 @@ static int execQuery(const PeerIdentity * sender,
       
       FREE(cls.values[perm[i]]);
     }
+    FREE(perm);
   }
 
 
@@ -2039,6 +2040,7 @@ void release_module_gap() {
     coreAPI->releaseService(traffic);
     traffic = NULL;
   }
+  FREE(ROUTING_indTable_);
   lock = NULL;
   coreAPI = NULL;
   bs = NULL;

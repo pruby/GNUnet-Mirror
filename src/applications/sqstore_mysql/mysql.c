@@ -20,13 +20,12 @@
 
 /**
  * @file applications/sqstore_mysql/mysql.c
- * @author Igor Wronsky
+ * @author Igor Wronsky and Christian Grothoff
  *
  * Database: MySQL
  *
- * NOTE: This db module does NOT work with mysql v3.23.49 due to a bug
- * in mysql.  All later versions should be fine, including the 4.0.x
- * series. Current devel version is 4.0.22 on debian/unstable.
+ * NOTE: This db module does NOT work with mysql prior to 4.1 since
+ * it uses prepared statements.
  *
  * HIGHLIGHTS
  *
@@ -979,14 +978,14 @@ static int del(const HashCode160 * key,
 	     "DELETE FROM gn070 WHERE hash='%s'",	
 	     escapedHash);
   } else {
-    /* FIXME: type=%d since the value is a
+    /* FIXME: type/prio/anon=%d since the value is a
        signed int here; it would be clean(er) if
        we were to use prepared statements here, too */
     SNPRINTF(scratch, 
   	     n,
 	     "DELETE FROM gn070 WHERE hash='%s'"
-	     " AND size=%u AND type=%d AND prio=%u"
-	     " AND anonLevel=%u AND expire=%lld"
+	     " AND size=%u AND type=%d AND prio=%d"
+	     " AND anonLevel=%d AND expire=%lld"
 	     " AND value='%s'",
 	     escapedHash,
 	     ntohl(value->size),
@@ -1089,7 +1088,6 @@ static unsigned long long getSize() {
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
 
   /* find out average row length in bytes */
-  /* FIXME: probably unnecessary to check avg row length every time */
   mysql_query(dbh->dbf,
   	      "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
   if (mysql_error(dbh->dbf)[0]) {
@@ -1263,7 +1261,6 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
       FREE(cnffile);
       return NULL;
     }
-    /* FIXME: mysql manual doesn't mention if sql_fields should be freed?*/
   } else {
     LOG(LOG_ERROR, "ERROR: couldn't store res row for SHOW TABLE STATUS\n");
     BREAK();
