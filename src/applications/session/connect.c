@@ -35,6 +35,7 @@
 #include "gnunet_identity_service.h"
 #include "gnunet_pingpong_service.h"
 #include "gnunet_session_service.h"
+#include "gnunet_topology_service.h"
 
 #define HELO_HELPER_TABLE_START_SIZE 64
 
@@ -47,6 +48,8 @@ static Identity_ServiceAPI * identity;
 static Transport_ServiceAPI * transport;
 
 static Pingpong_ServiceAPI * pingpong;
+
+static Topology_ServiceAPI * topology;
 
 /**
  * @brief message for session key exchange.  
@@ -298,7 +301,7 @@ static int exchangeKey(const PeerIdentity * receiver,
 
   GNUNET_ASSERT(receiver != NULL);
   if ( (topology != NULL) &&
-       (topology->allowConnection(receiver) == SYSERR) )
+       (topology->allowConnectionFrom(receiver) == SYSERR) )
     return SYSERR;
   hash2enc(&receiver->hashPubKey,
 	   &enc);
@@ -439,7 +442,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
   EncName enc;
 
   if ( (topology != NULL) &&
-       (topology->allowConnection(sender) == SYSERR) )
+       (topology->allowConnectionFrom(sender) == SYSERR) )
     return SYSERR;
   hash2enc(&sender->hashPubKey,
 	   &enc);
@@ -588,7 +591,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
  */
 static int tryConnect(const PeerIdentity * peer) {
   if ( (topology != NULL) &&
-       (topology->allowConnection(peer) == SYSERR) )
+       (topology->allowConnectionFrom(peer) == SYSERR) )
     return SYSERR;
   if (coreAPI->queryBPMfromPeer(peer) != 0)
     return YES; /* trivial case */
