@@ -243,7 +243,7 @@ void RPC_paramAddDataContainer(RPC_Param *param,
   new = MALLOC(sizeof(Parameter));
   new->name = STRDUP(name);
   new->dataLength = ntohl(data->size) - sizeof(DataContainer);
-  if (dataLength == 0) {
+  if (new->dataLength == 0) {
     new->data = NULL;
   } else {
     new->data = MALLOC(new->dataLength);

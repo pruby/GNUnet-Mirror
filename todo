@@ -11,7 +11,7 @@
 - Missing Features:
   * fsui core (persistence, shutdown, multiple FSUIs) [ difficult ]
   * mysql sqstore implementation iterator problem (Igor?)
-- DHT code does not compile
+- DHT-tools code does not compile
 - Need testing:
   * ECRS-directories (build, iterate)
   * FS/ECRS upload/download

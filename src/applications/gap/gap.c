@@ -1385,7 +1385,6 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
       to update priority!) */
   bs->put(bs->closure,
 	  primaryKey,
-	  ite->type,
 	  value,
 	  ite->priority);
   if (equalsHashCode160(&hc, primaryKey)) /* CHK? */
@@ -1496,7 +1495,6 @@ static int useContent(const PeerIdentity * hostId,
 	   size);
     ret = bs->put(bs->closure,
 		  &msg->primaryKey,
-		  ntohl(msg->type),
 		  value,
 		  0);
     FREE(value);
@@ -1542,7 +1540,6 @@ static int useContent(const PeerIdentity * hostId,
 	 size);
   ret = bs->put(bs->closure,
 		&msg->primaryKey,
-		ntohl(msg->type),
 		value,
 		ite->priority);
   FREE(value);

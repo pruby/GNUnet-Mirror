@@ -4,6 +4,7 @@ SUBDIRS	= \
  chat \
  datastore \
  rpc \
+ dht \
  fragmentation \
  getoption \
  fs \
