@@ -134,7 +134,7 @@ static int searchFile(struct ECRS_URI ** uri) {
   myURI = NULL;
   ret = ECRS_search(*uri,
 		    0,
-		    450 * cronSECONDS,
+		    15 * cronSECONDS,
 		    &searchCB,
 		    &myURI,
 		    &testTerminate,
