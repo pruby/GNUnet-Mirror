@@ -446,8 +446,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
 		unsigned int anonymityLevel,
 		int doIndex,
 		const struct ECRS_MetaData * md,
-		unsigned int keywordCount,
-		const char ** keywords) {
+		const struct ECRS_URI * keyUri) {
   FSUI_ThreadList * tl;
   UploadThreadClosure * utc;
 
@@ -462,8 +461,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   utc->globalUri = NULL;
   utc->filename = NULL;
   utc->main_filename = STRDUP(filename);
-  utc->uri = FSUI_parseArgvKeywordURI(keywordCount,
-				      keywords);
+  utc->uri = ECRS_dupUri(keyUri);
   utc->meta = ECRS_dupMetaData(md);
   utc->doIndex = doIndex;
   tl = MALLOC(sizeof(FSUI_ThreadList));
@@ -499,8 +497,6 @@ int FSUI_upload(struct FSUI_Context * ctx,
  * and the specified directoryMetaData.
  *
  * @param extractorPluginNames list of LE plugins to use
- * @param keywordCount number of keywords
- * @param keywords keywords to use ONLY for the top-level directory
  * @return OK on success (at least we started with it),
  *  SYSERR if the file does not exist
 */
@@ -510,10 +506,8 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   int doIndex,
 		   const struct ECRS_MetaData * directoryMetaData,
 		   const char * extractorPluginNames,
-		   unsigned int globalKeywordCount,
-		   const char ** globalKeywords,
-		   unsigned int keywordCount,
-		   const char ** keywords) {
+		   const struct ECRS_URI * globalURI,
+		   const struct ECRS_URI * topURI) {
   FSUI_ThreadList * tl;
   UploadThreadClosure * utc;
 
@@ -525,12 +519,10 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 				      "INSERT-PRIORITY");
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;
   utc->extractors = EXTRACTOR_loadConfigLibraries(NULL, extractorPluginNames);
-  utc->globalUri = FSUI_parseArgvKeywordURI(globalKeywordCount,
-					    globalKeywords);
+  utc->globalUri = ECRS_dupUri(globalURI);
   utc->filename = NULL;
   utc->main_filename = STRDUP(dirname);
-  utc->uri = FSUI_parseArgvKeywordURI(keywordCount,
-				      keywords);
+  utc->uri = ECRS_dupUri(topURI);
   utc->meta = ECRS_dupMetaData(directoryMetaData);
   utc->doIndex = doIndex;
   tl = MALLOC(sizeof(FSUI_ThreadList));
@@ -544,6 +536,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
     FREE(tl);
     FREE(utc->main_filename);
     ECRS_freeMetaData(utc->meta);
+    ECRS_freeUri(utc->globalUri);
     ECRS_freeUri(utc->uri);
     FREE(utc);
     return SYSERR;

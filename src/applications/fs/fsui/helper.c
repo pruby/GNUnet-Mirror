@@ -140,5 +140,50 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int num_keywords,
   return uri;
 }
 
+/**
+ * Create an ECRS URI from a user-supplied list of keywords.
+ * The keywords are NOT separated by AND but already
+ * given individually.
+ *
+ * @return an ECRS URI for the given keywords, NULL
+ *  if keywords is not legal (i.e. empty).
+ */
+struct ECRS_URI * FSUI_parseListKeywordURI(unsigned int num_keywords,
+					   const char ** keywords) {
+  unsigned int i;
+  unsigned int uriLen;
+  char * uriString;
+  unsigned int uriSize;
+  struct ECRS_URI * uri;
+
+  uriString = NULL;
+  uriSize = 0;
+  GROW(uriString,
+       uriSize,
+       4096);
+  strcpy(uriString, ECRS_URI_PREFIX);
+  strcat(uriString, ECRS_SEARCH_INFIX);
+  uriLen = 1 + strlen(ECRS_URI_PREFIX) + strlen(ECRS_SEARCH_INFIX);
+
+
+  for (i=0;i<num_keywords;i++) {
+    if (uriSize < uriLen + 1 + strlen(keywords[i]))
+      GROW(uriString,
+	   uriSize,
+	   uriSize + 4096 + strlen(keywords[i]));
+    if (i > 0) {
+      strcat(uriString, "+");
+      uriLen++;
+    }
+    strcat(uriString, keywords[i]);
+    uriLen += strlen(keywords[i]);    
+  }
+  uri = ECRS_stringToUri(uriString);
+  GROW(uriString,
+       uriSize,
+       0);
+  return uri;
+}
+
 
 /* end of helper.c */

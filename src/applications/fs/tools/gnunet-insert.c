@@ -620,6 +620,13 @@ int main(int argc, char ** argv) {
   if (testConfigurationString("GNUNET-INSERT",
 			      "RECURSIVE",
 			      "YES")) {
+    struct ECRS_URI * topURI;
+    struct ECRS_URI * gloURI;
+
+    gloURI = FSUI_parseListKeywordURI(gloKeywordCnt,
+				      (const char**) gloKeywords);
+    topURI = FSUI_parseListKeywordURI(topKeywordCnt,
+				      (const char**) topKeywords);    
     ret = FSUI_uploadAll(ctx,
 			 filename,
 			 getConfigurationInt("FS",
@@ -627,19 +634,23 @@ int main(int argc, char ** argv) {
 			 doIndex,
 			 meta,
 			 extractors,
-			 gloKeywordCnt,
-			 (const char**) gloKeywords,
-			 topKeywordCnt,
-			 (const char**) topKeywords);
+			 gloURI,
+			 topURI);
+    ECRS_freeUri(gloURI);
+    ECRS_freeUri(topURI);
   } else {
+    struct ECRS_URI * topURI;
+
+    topURI = FSUI_parseListKeywordURI(topKeywordCnt,
+				      (const char**) topKeywords);    
     ret = FSUI_upload(ctx,
 		      filename,
 		      getConfigurationInt("FS",
 					  "ANONYMITY-SEND"),
 		      doIndex,
 		      meta,
-		      topKeywordCnt,
-		      (const char**) topKeywords);
+		      topURI);
+    ECRS_freeUri(topURI);
   }
   FREE(extractors);
   /* wait for completion */

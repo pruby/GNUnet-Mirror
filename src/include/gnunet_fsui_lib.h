@@ -401,6 +401,17 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int argc,
 					   const char ** argv); /* helper.c */
 
 /**
+ * Create an ECRS URI from a user-supplied list of keywords.
+ * The keywords are NOT separated by AND but already
+ * given individually.
+ *
+ * @return an ECRS URI for the given keywords, NULL
+ *  if keywords is not legal (i.e. empty).
+ */
+struct ECRS_URI * FSUI_parseListKeywordURI(unsigned int num_keywords,
+					   const char ** keywords);
+
+/**
  * Start a search.
  * @return SYSERR if such a search is already pending, OK on
  *  success
@@ -470,8 +481,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
 		unsigned int anonymityLevel,
 		int doIndex,
 		const struct ECRS_MetaData * md,
-		unsigned int keywordCount,
-		const char ** keywords);
+		const struct ECRS_URI * keyUri);
 
 /**
  * "delete" operation for uploaded files.  May fail
@@ -506,10 +516,8 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   int doIndex,
 		   const struct ECRS_MetaData * directoryMetaData,
 		   const char * extractorPluginNames,
-		   unsigned int globalKeywordCount,
-		   const char ** globalKeywords,
-		   unsigned int keywordCount,
-		   const char ** keywords); /* upload.c */
+		   const struct ECRS_URI * globalURI,
+		   const struct ECRS_URI * topURI); /* upload.c */
 
 /**
  * Start to download a file or directory recursively.
