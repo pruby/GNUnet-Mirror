@@ -791,6 +791,11 @@ static int tcpDirectSend(TCPSession * tcpSession,
   size_t ret;
   int success;
 
+#if TCP_DEBUG
+  LOG(LOG_DEBUG, 
+      "tcpDirectSend called to transmit %u bytes.\n",
+      ssize);
+#endif	  
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
     LOG(LOG_DEBUG,
@@ -1123,6 +1128,11 @@ static int tcpSend(TSession * tsession,
   TCPMessagePack * mp;
   int ok;
 
+#if TCP_DEBUG
+  LOG(LOG_DEBUG, 
+      "tcpSend called to transmit %u bytes.\n",
+      size);
+#endif	  
   if (size >= MAX_BUFFER_SIZE) {
     BREAK();
     return SYSERR;
@@ -1130,7 +1140,8 @@ static int tcpSend(TSession * tsession,
 
   if (tcp_shutdown == YES) {
 #if TCP_DEBUG
-	  LOG(LOG_DEBUG, "tcpSend called while TCP is shutdown.\n");
+    LOG(LOG_DEBUG, 
+	"tcpSend called while TCP is shutdown.\n");
 #endif	  
     return SYSERR;
   }   
@@ -1140,7 +1151,8 @@ static int tcpSend(TSession * tsession,
   }
   if (((TCPSession*)tsession->internal)->sock == -1) {
 #if TCP_DEBUG
-	  LOG(LOG_DEBUG, "tcpSend called after other side closed connection.\n");
+    LOG(LOG_DEBUG, 
+	"tcpSend called after other side closed connection.\n");
 #endif    
     return SYSERR; /* other side closed connection */
   }  
