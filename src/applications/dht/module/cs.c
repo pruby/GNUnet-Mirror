@@ -410,6 +410,10 @@ static int csLeave(ClientHandle client,
   LOG(LOG_EVERYTHING,
       "Client leaving request received!\n");
 
+  /* FIXME: this MUST be done asynchronously since
+     dhtAPI->leave WILL require synchronous 
+     CS-communication and that cannot happen until
+     this function returns! */
   MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
     if ( (equalsHashCode512(&csHandlers[i]->table,

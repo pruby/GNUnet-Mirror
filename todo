@@ -1,8 +1,11 @@
 0.7.0pre1 [4'05] (aka "preview"):
+Bugs:
+  * DHT-leave: fix bug in csLeave (dht/module/cs.c)
 Testing:
 - multi-peer:
+  * test RPC (untested!)
   * fix dhttest (currently fails)
-  * extend dht test to actually test get/put/del
+  * extend dht test to actually test get/put/del 
 - FSUI
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):

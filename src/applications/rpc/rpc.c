@@ -901,8 +901,11 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
   }
   if (calls != NULL) {
     PeerInfo * pi = getPeerInfo(sender);
-    if (pi->averageResponseTime < MAX_RPC_TIMEOUT / 2)
-      pi->averageResponseTime *= 2;
+
+    if (pi != NULL) {
+      if (pi->averageResponseTime < MAX_RPC_TIMEOUT / 2)
+	pi->averageResponseTime *= 2;
+    }
     RPC_STATUS("", "received duplicate request", calls);
     calls->expirationTime = cronTime(NULL) + MAX_RPC_TIMEOUT;
     LOG(LOG_DEBUG,
