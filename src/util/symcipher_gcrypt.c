@@ -58,7 +58,6 @@
  * Create a new SessionKey (for AES-256).
  */
 void makeSessionkey(SESSIONKEY * key) {
-  int i;
   lockGcrypt();
   gcry_randomize(&key->key[0],
 		 SESSIONKEY_LEN,
