@@ -1,3 +1,8 @@
+Sat Feb 12 17:35:08 EST 2005
+	Fixed mysql-test.  Changed MySQL to use prepared statements,
+	avoids conversion (mysql_escape_string) and is faster on the
+	server-side, too.
+
 Wed Dec 15 20:47:40 EST 2004
 	Removed support for password encryption of namespace keys.
 	Hardly used and adds hardly any security.  Encrypt /home if
