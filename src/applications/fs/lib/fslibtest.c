@@ -155,7 +155,7 @@ int main(int argc, char * argv[]){
   int i;
 
   cronTime(&now);
-  daemon = -1; // fork();
+  daemon = fork();
   if (daemon == 0) {
     /* FIXME: would be nice to be able to tell
        gnunetd to use the check/debug DB and not
