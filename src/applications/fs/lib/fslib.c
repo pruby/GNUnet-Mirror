@@ -98,9 +98,11 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	    memcpy(&value[1],
 		   &rep[1],
 		   size);
+	    printf("FSLIB calls callback!\n");
 	    if (SYSERR == ctx->handles[i]->callback(&query,
 						    value,
 						    ctx->handles[i]->closure)) {
+	      printf("FSLIB callback returned SYSERR, nulling!\n");
 	      ctx->handles[i]->callback = NULL;
 	    }
 	    FREE(value);

@@ -61,17 +61,20 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   DBlock * db;
   CHK ichk;
 
-  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value) - sizeof(DBlock); 
-  present = size / sizeof(CHK);
+  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value); 
+  present = (size - sizeof(DBlock)) / sizeof(CHK);
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
     fileBlockGetKey(db,
-		    size + sizeof(DBlock),
+		    size,
 		    &ichk.key);
     fileBlockGetQuery(db,
-		      size + sizeof(DBlock),
+		      size,
 		      &ichk.query);
-    if (OK != pushBlock(sock, &ichk, level+1, iblocks))
+    if (OK != pushBlock(sock, 
+			&ichk,
+			level+1, 
+			iblocks))
       return SYSERR;
     fileBlockEncode(db,
 		    size,
@@ -89,7 +92,9 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   memcpy(&((char*)db)[size],
 	 chk,
 	 sizeof(CHK));
-  iblocks[level]->size = htonl(size + sizeof(Datastore_Value));
+  iblocks[level]->size = htonl(size + 
+			       sizeof(CHK) + 
+			       sizeof(Datastore_Value));
   return OK;
 }
 

@@ -275,6 +275,7 @@ static int processNBlock(const NBlock * nb,
 			 SendQueriesContext * sqc) {
   ECRS_FileInfo fi;
   struct ECRS_URI uri;
+  int ret;
 
   if (OK != ECRS_deserializeMetaData(&fi.meta,
 				     (char*)&nb[1],
@@ -286,9 +287,9 @@ static int processNBlock(const NBlock * nb,
   uri.type = sks;
   uri.data.sks.namespace = nb->namespace;
   uri.data.sks.identifier = nb->rootEntry;
-  sqc->spcb(&fi, key, sqc->spcbClosure);
+  ret = sqc->spcb(&fi, key, sqc->spcbClosure);
   ECRS_freeMetaData(fi.meta);
-  return OK;
+  return ret;
 }
 
 /**
@@ -359,9 +360,12 @@ static int receiveReplies(const HashCode160 * key,
 	  ECRS_freeMetaData(fi.meta);
 	  return SYSERR;
 	}
+	printf("ECRS Search Result...\n");
 	ret = sqc->spcb(&fi, 
 			&ps->decryptKey,
 			sqc->spcbClosure);
+	printf("ECRS Search Result: %d\n",
+	       ret);
 	ECRS_freeUri(fi.uri);
 	ECRS_freeMetaData(fi.meta);
 	return ret;      
