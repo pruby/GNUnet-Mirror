@@ -1,8 +1,26 @@
-/*
- *
- * Copyright (C) 2002-2003 Romain Lievin <roms@lpg.ticalc.org>
+/* 
+     This file is part of GNUnet.
+     (C) 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+/**
+ * Portions Copyright (C) 2002-2003 Romain Lievin <roms@lpg.ticalc.org>
  * Released under the terms of the GNU GPL v2.0.
- *
  */
 
 /**
@@ -554,7 +572,7 @@ gboolean on_window1_delete_event(GtkWidget * widget, GdkEvent * event,
   if (config_changed == FALSE)
     return FALSE;
 
-  dialog = gtk_dialog_new_with_buttons("Warning !",
+  dialog = gtk_dialog_new_with_buttons("Warning",
                GTK_WINDOW(main_wnd),
                (GtkDialogFlags)
                (GTK_DIALOG_MODAL |
@@ -568,7 +586,7 @@ gboolean on_window1_delete_event(GtkWidget * widget, GdkEvent * event,
   gtk_dialog_set_default_response(GTK_DIALOG(dialog),
           GTK_RESPONSE_CANCEL);
 
-  label = gtk_label_new("\nSave configuration ?\n");
+  label = gtk_label_new("\nSave configuration?\n");
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog)->vbox), label);
   gtk_widget_show(label);
 
@@ -629,7 +647,7 @@ load_filename(GtkFileSelection * file_selector, gpointer user_data)
                (user_data));
 
   if (conf_read(fn))
-    text_insert_msg("Error", "Unable to load configuration !");
+    text_insert_msg("Error", "Unable to load configuration!");
   else
     display_tree(&rootmenu);
 }
@@ -657,7 +675,7 @@ void on_load1_activate(GtkMenuItem * menuitem, gpointer user_data)
 void on_save1_activate(GtkMenuItem * menuitem, gpointer user_data)
 {
   if (conf_write(NULL))
-    text_insert_msg("Error", "Unable to save configuration !");
+    text_insert_msg("Error", "Unable to save configuration!");
 
   config_changed = FALSE;
 }
@@ -672,7 +690,7 @@ store_filename(GtkFileSelection * file_selector, gpointer user_data)
                (user_data));
 
   if (conf_write(fn))
-    text_insert_msg("Error", "Unable to save configuration !");
+    text_insert_msg("Error", "Unable to save configuration!");
 
   gtk_widget_destroy(GTK_WIDGET(user_data));
 }
@@ -768,10 +786,8 @@ void on_introduction1_activate(GtkMenuItem * menuitem, gpointer user_data)
   const gchar *intro_text =
       "Welcome to GNUnet Setup.\n"
       "For each option, a blank box indicates the feature is disabled, and\n"
-      "check indicates it is enabled.\n"
-      "Clicking on the box will cycle through the three states.\n"
-      "\n"
-      "If you do not see an option (e.g., a device driver) that you\n"
+      "checked one indicates it is enabled.\n"
+      "If you do not see an option that you\n"
       "believe should be present, try turning on Show All Options\n"
       "under the Options menu.\n"
       "Although there is no cross reference yet to help you figure out\n"
@@ -797,8 +813,8 @@ void on_about1_activate(GtkMenuItem * menuitem, gpointer user_data)
 {
   GtkWidget *dialog;
   const gchar *about_text =
-      "gkc is copyright (c) 2002 Romain Lievin <roms@lpg.ticalc.org>.\n"
-      "Based on the source code from Roman Zippel.\n";
+      "(C) 2001-2005 Christian Grothoff (and other contributing authors).\n"
+      "Based on source code from Roman Zippel and Romain Lievin.\n";
 
   dialog = gtk_message_dialog_new(GTK_WINDOW(main_wnd),
           GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -815,7 +831,7 @@ void on_license1_activate(GtkMenuItem * menuitem, gpointer user_data)
 {
   GtkWidget *dialog;
   const gchar *license_text =
-      "gkc is released under the terms of the GNU GPL v2.\n"
+      "GNUnet is released under the terms of the GPL.\n"
       "For more information, please see the source code or\n"
       "visit http://www.fsf.org/licenses/licenses.html\n";
 
@@ -928,9 +944,19 @@ static void renderer_edited(GtkCellRendererText * cell,
   new_def = new_text;
 
   sym_set_string_value(sym, new_def);
+  gtk_tree_model_row_changed(model2, path, &iter);
 
   config_changed = TRUE;
-  update_tree(&rootmenu, NULL);
+  display_tree(menu);
+
+  if (view_mode == FULL_VIEW)
+    update_tree(&rootmenu, NULL);
+  else if (view_mode == SPLIT_VIEW) {
+    update_tree(browsed, NULL);
+    display_list();
+  }
+  else if (view_mode == SINGLE_VIEW)
+    display_tree_part();  /* fixme: keep exp/coll*/
 
   gtk_tree_path_free(path);
 }
