@@ -611,7 +611,22 @@ static int get(const HashCode160 * query,
   dbh->sbind[0].buffer = (char*) query;
   dbh->sbind[1].buffer = (char*) &type;
   dbh->sbind[0].length = &twenty;
-  
+  GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 2);
+  sql_res = mysql_stmt_result_metadata(stmt);
+  if (! sql_res) {
+    LOG(LOG_ERROR,
+	_("'%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_result_metadata",
+	__FILE__, __LINE__,
+	mysql_stmt_error(stmt));    
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+    return SYSERR;
+  }
+  if (7 != mysql_num_fields(sql_res)) {
+    BREAK();
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+    return SYSERR;
+  }
   if (mysql_stmt_bind_param(stmt,
 			    dbh->sbind)) {
     LOG(LOG_ERROR,
@@ -622,12 +637,12 @@ static int get(const HashCode160 * query,
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   } 
-  if (mysql_stmt_execute(dbh->insert)) {
+  if (mysql_stmt_execute(stmt)) {
     LOG(LOG_ERROR,
 	_("'%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->insert));    
+	mysql_stmt_error(stmt));    
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }  
@@ -642,7 +657,6 @@ static int get(const HashCode160 * query,
   dbh->bind[6].buffer = (char*) &datum[1];
   dbh->bind[5].length = &twenty;
   dbh->bind[6].length = &datasize;
-  sql_res = mysql_stmt_result_metadata(stmt);
   if (mysql_stmt_bind_result(stmt,
 			     dbh->bind)) {
     LOG(LOG_ERROR,
@@ -666,16 +680,16 @@ static int get(const HashCode160 * query,
   }
   datasize = MAX_DATUM_SIZE;
   count = 0;
-  while (mysql_stmt_fetch(stmt)) {
+  while (! mysql_stmt_fetch(stmt)) {
     count++;
-
+    
     if (iter != NULL) {
       datum->size = htonl(size);
       datum->type = htonl(rtype);
       datum->prio = htonl(prio);
       datum->anonymityLevel = htonl(level);
       datum->expirationTime = htonll(expiration);
-      if (datasize != size - sizeof(Datastore_Value))
+      if (datasize != size - sizeof(Datastore_Value)) {
 	BREAK();
 	LOG(LOG_WARNING,
 	    _("Invalid data in MySQL database.  Please verify integrity!\n"));
@@ -691,7 +705,8 @@ static int get(const HashCode160 * query,
         count = SYSERR;
 	break;
       } 
-    datasize = MAX_DATUM_SIZE;
+      datasize = MAX_DATUM_SIZE;
+    }  
   }
   mysql_free_result(sql_res);
   FREE(datum);
