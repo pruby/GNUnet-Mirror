@@ -73,7 +73,7 @@ int main(int argc,
     puts("Menuconfig is not available\n");
 #endif
   }
-  else if (strncmp(argv[1], "gconfig", 10) == 0) {
+  else if (strncmp(argv[1], "gconfig", 7) == 0) {
 #if HAVE_GTK
     gconf_main(argc - 1, &argv[1]);
 #else
