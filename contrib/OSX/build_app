@@ -5,8 +5,10 @@
 # structure and make all the executables relocatable.
 
 # Fink root
-SW=/sw
-export SW
+SW=/sw; export SW
+
+# Location of Cocoadialog
+CD=~/Applications; export CD
 
 # Fix a given executable or library to be relocatable
 
@@ -43,13 +45,11 @@ rm -rf /tmp/GNUnet
 mkdir /tmp/GNUnet
 
 cd ../..
-if [ ! -f config.status ]; then
 # TODO: issues with gcrypt vs. openssl. The latter causes gnunetd to core dump
 # in some cases. Do we still need to disable gettext?
-#  ./configure --with-gdbm --without-mysql --without-bdb --with-sqlite=$SW --with-crypto=$SW --disable-nls
-  ./configure --with-gdbm --without-mysql --without-bdb --with-sqlite=$SW --disable-nls
-  make
-fi
+# ./configure --with-gdbm --without-mysql --without-bdb --with-sqlite=$SW --with-crypto=$SW --disable-nls
+./configure --with-gdbm --without-mysql --without-bdb --with-sqlite=$SW --disable-nls
+make
 make install prefix=/tmp/GNUnet
 cd contrib/OSX
 
@@ -60,10 +60,10 @@ rm -rf GNUnet.app
 mkdir GNUnet.app
 mkdir GNUnet.app/Contents
 mkdir GNUnet.app/Contents/{MacOS,Resources}
-mkdir GNUnet.app/Contents/MacOS/{bin,doc,etc,html,lib,man,hosts}
-cp GNUnet.png GNUnet.app/Contents/Resources/GNUnet.icns
+mkdir GNUnet.app/Contents/MacOS/{bin,doc,etc,lib,man,hosts}
+cp GNUnet.icns GNUnet.app/Contents/Resources
 cp Info.plist GNUnet.app/Contents
-cp GNUnet GNUnet.app/Contents/MacOS/GNUnet
+cp GNUnet GNUnet-* GNUnet.app/Contents/MacOS
 cp -r /tmp/GNUnet/man GNUnet.app/Contents/MacOS
 cp /tmp/GNUnet/bin/* GNUnet.app/Contents/MacOS/bin
 mv GNUnet.app/Contents/MacOS/bin/gnunet-gtk GNUnet.app/Contents/MacOS/bin/gnunet-gtk.wrap
@@ -71,22 +71,35 @@ mv GNUnet.app/Contents/MacOS/bin/gnunetd GNUnet.app/Contents/MacOS/bin/gnunetd.w
 mv GNUnet.app/Contents/MacOS/bin/gnunet-peer-info GNUnet.app/Contents/MacOS/bin/gnunet-peer-info.wrap
 cp {gnunet-gtk,gnunetd,gnunet-peer-info} GNUnet.app/Contents/MacOS/bin
 cp /tmp/GNUnet/lib/* GNUnet.app/Contents/MacOS/lib
-sed -e 's-/var/lib/GNUnet-~/.gnunet-g;s-eth0-ACTIVE_IFACE-g' < ../../contrib/gnunet.root > GNUnet.app/Contents/MacOS/etc/gnunet.root
-sed -e 'sX/tmp/gnunet-downloads/X~/gnunet-downloads/Xg' < ../../contrib/gnunet.user > GNUnet.app/Contents/MacOS/etc/gnunet.user
+cp ../gnunet.root GNUnet.app/Contents/MacOS/etc/gnunet.root
+cp ../gnunet.user GNUnet.app/Contents/MacOS/etc/gnunet.user
 cp $SW/etc/pango/* GNUnet.app/Contents/MacOS/etc
 pth=`fgrep ModulesPath $SW/etc/pango/pango.modules | cut -d\  -f4`
 cp -r $pth GNUnet.app/Contents/MacOS/pango
 cp ../../COPYING GNUnet.app/Contents/MacOS/doc
-cp *.html GNUnet.app/Contents/MacOS/html
-cp hosts/* GNUnet.app/Contents/MacOS/hosts
+cp *.txt GNUnet.app/Contents/MacOS/doc
+cp hosts/* GNUnet.app/Contents/MacOS/hosts > /dev/null 2>&1
 
-# Find out libs we need from fink (e.g. $SW)
-libs="`otool -L GNUnet.app/Contents/MacOS/{bin,lib}/* 2> /dev/null | fgrep compatibility | cut -d\( -f1 | grep $SW | sort | uniq`"
-cp -f $libs GNUnet.app/Contents/MacOS/lib
-# Second round, esp. gtk introduced some new deps.. in principle should
-# loop until no changes...
-libs="`otool -L GNUnet.app/Contents/MacOS/{bin,lib}/* 2> /dev/null | fgrep compatibility | cut -d\( -f1 | grep $SW | sort | uniq`"
-cp -f $libs GNUnet.app/Contents/MacOS/lib
+# Include Cocoadialog 
+cp -r $CD/CocoaDialog.app GNUnet.app/Contents/MacOS
+cp GNUnet.icns GNUnet.app/Contents/MacOS/CocoaDialog.app/Contents/Resources/cocoaDialog.icns
+
+# Find out libs we need from fink (e.g. $SW) - loop until no changes
+a=1
+nfiles=0
+endl=true
+while $endl; do
+  echo "Looking for dependencies. Round " $a
+  libs="`otool -L GNUnet.app/Contents/MacOS/{bin,lib}/* 2> /dev/null | fgrep compatibility | cut -d\( -f1 | grep $SW | sort | uniq`"
+  cp -f $libs GNUnet.app/Contents/MacOS/lib
+  let "a+=1"  
+  nnfiles=`ls GNUnet.app/Contents/MacOS/lib | wc -l`
+  if [ $nnfiles = $nfiles ]; then
+    endl=false
+  else
+    nfiles=$nnfiles
+  fi
+done
 
 # Libcrypto comes with the system + fink version does not allow install_name_tool
 rm -f GNUnet.app/Contents/MacOS/lib/*.la GNUnet.app/Contents/MacOS/lib/libcrypto*

@@ -1,86 +1,118 @@
 #!/bin/bash
+#
+# Main task dialog.
+#
+# 0) Start / stop gnunetd
+# 1) Start graphical UI (with starting gnunetd if required)
+# 2) Start a shell with gnunet commands in path
+# 3) Run configuration utility
+# 4) Run help
+# 5) Download Apple's X11 package
+# 6) Check for updates
+# 7) View recent log entries
 
-HOMEPAGE=http://www.chem.jyu.fi/~eloranta/gnunetmac.html
-NOX=http://www.chem.jyu.fi/~eloranta/gnunetmac-nox.html
+# Locate install directory
 
-# Check for X11 - if not installed then help
+ROOTDIR=`dirname $0`
 
-if [ ! -d /usr/X11R6 ]; then
-  exec /usr/bin/open /Applications/Safari.app $NOX
-fi  
-
-rootdir=`dirname $0`
-
-if [ ! -d $rootdir ]; then
-  cd ..
-  rootdir=`pwd`
+if [ `echo $ROOTDIR | cut -c1` = . ]; then
+  ROOTDIR=`pwd`
 fi
 
-if [ ! -d $rootdir ]; then
+if [ ! -d $ROOTDIR ]; then
   echo "Can't locate GNUnet rootdir."
   exit 0
 fi
 
-if [ ! -d ~/.gnunet ]; then
-  mkdir -p ~/.gnunet
-  mkdir -p ~/.gnunet/data
-  mkdir -p ~/.gnunet/data/hosts
-  cp $rootdir/hosts/* ~/.gnunet/data/hosts
-  /usr/bin/open /Applications/Safari.app $HOMEPAGE
-fi
+export ROOTDIR
 
-# Relocate PANGO - everytime since the app may have been moved...
-mkdir -p ~/.gnunet/pango
-PANGO_RC_FILE=~/.gnunet/pango/pango.rc
-export PANGO_RC_FILE
-cat << E_O_F > $PANGO_RC_FILE
-[Pango]
-ModuleFiles=$HOME/.gnunet/pango/pango.modules
-E_O_F
+. $ROOTDIR/GNUnet-funcs
 
-cp $rootdir/etc/pangox.aliases ~/.gnunet/pango
-pth=`fgrep ModulesPath $rootdir/etc/pango.modules | cut -d\  -f4`
-sed -e "s-$pth-$rootdir/pango-g" < $rootdir/etc/pango.modules > ~/.gnunet/pango/pango.modules
+gnetconf
 
-# Generate gnunet.root ? TODO: other than ethernet devices?
-if [ ! -f ~/.gnunet/gnunet.root ]; then
-# Locate active network interface (e.g. en0 or en1)
-  act1=`ifconfig en0 2> /dev/null | grep inet | wc -l`
-  act2=`ifconfig en1 2> /dev/null | grep inet | wc -l`
+checkversion
 
-  cd $rootdir/etc
-  if [ $act1 -gt 0 ]; then
-     ip=`ifconfig en0 | grep inet\  | cut -f2 | cut -d\  -f2`
-     sed -e "s/ACTIVE_IFACE/en0/g;s/ACTIVE_IP/$ip/g" < gnunet.root > ~/.gnunet/gnunet.root
-  elif [ $act2 -gt 0 ]; then
-     ip=`ifconfig en1 | grep inet\  | cut -f2 | cut -d\  -f2`
-     sed -e "s/ACTIVE_IFACE/en1/g;s/ACTIVE_IP/$ip/g" < gnunet.root > ~/.gnunet/gnunet.root
+pango
+
+while true; do
+  cgnunetd
+  if [ $pid != 0 ]; then
+    gnet="Stop gnunetd"
   else
-     echo "Warning: Can\'t find active network interface - assuming en0."
-     ip=`ifconfig en0 | grep inet\  | cut -f2 | cut -d\  -f2`
-     sed -e "s/ACTIVE_IFACE/en0/g;s/ACTIVE_IP/$ip/g" < gnunet.root > ~/.gnunet/gnunet.root
+    gnet="Start gnunetd"
   fi
-  cd ..
-fi
 
-if [ ! -f ~/.gnunet/gnunet.conf ]; then
-  cp $rootdir/etc/gnunet.user ~/.gnunet/gnunet.conf
-fi
+  sel=`$CD dropdown --text "Select function" --items "$gnet" "Start graphical UI" "Start a shell for gnunet commands" "Configure" "Help" "Download X11 from Apple" "Check for updates" "View gnunetd log file" --button1 "Run" --button2 "Quit"`
+  button=`echo $sel | cut -d\  -f1`
+  select=`echo $sel | cut -d\  -f2`
 
-# Do we need the server?
-
-if [ -e ~/.gnunet/gnunetd.pid ]; then
-  pid=`cat ~/.gnunet/gnunetd.pid`
-  if [ `ps -p $pid | wc -l` != 2 ]; then
-    $rootdir/bin/gnunetd &
+  if [ $button = 2 ]; then
+    exit 0
   fi
-else
-  $rootdir/bin/gnunetd &
-fi
 
-if [ "$SSH_CLIENT" != "" ]; then
-  $rootdir/bin/gnunet-gtk &
-else
-  /usr/bin/open-x11 $rootdir/bin/gnunet-gtk
-fi
-exit 0
+  if [ $select = 0 ]; then
+    cgnunetd
+    if [ $pid = 0 ]; then
+      $ROOTDIR/bin/gnunetd &
+    else
+      kill $pid
+    fi
+    sleep 5
+  fi
+
+  if [ $select = 1 ]; then
+    cgnunetd
+    if [ $pid = 0 ]; then
+      $ROOTDIR/bin/gnunetd &
+    fi
+    if [ ! -d /usr/X11R6 ]; then
+      $CD textbox --title "X11 not installed" --text-from-file $ROOTDIR/doc/gnunetmac-nox.txt --button1 Cancel
+    else
+      /usr/bin/open-x11 $ROOTDIR/bin/gnunet-gtk
+    fi
+  fi
+
+  if [ $select = 2 ]; then
+    rm -f /tmp/tmp.$$
+    cat > /tmp/tmp.$$ <<EOF
+#!/bin/bash
+PATH=\$PATH:$ROOTDIR/bin; export PATH
+exec \`nidump passwd . | egrep ^\$USER: | cut -d: -f10\`
+EOF
+    chmod +x /tmp/tmp.$$
+    /usr/bin/open -a /Applications/Utilities/Terminal.app /tmp/tmp.$$
+  fi
+
+  if [ $select = 3 ]; then
+    wasrun=0
+    cgnunetd
+    if [ $pid != 0 ]; then
+      kill $pid
+      sleep 5
+      wasrun=1
+    fi
+    $ROOTDIR/GNUnet-config
+    if [ $wasrun = 1 ]; then
+      $ROOTDIR/bin/gnunetd &
+    fi
+  fi
+
+  if [ $select = 4 ]; then
+    $CD textbox --title "Welcome" --text-from-file $ROOTDIR/doc/gnunetmac.txt --button1 OK
+  fi
+
+  if [ $select = 5 ]; then
+    open /Applications/Safari.app http://www.apple.com/macosx/features/x11/download/
+  fi
+
+  if [ $select = 6 ]; then
+    open /Applications/Safari.app http://www.chem.jyu.fi/~eloranta/GNUnet.html
+  fi
+
+  if [ $select = 7 ]; then
+    open -e ~/gnunet/logs
+  fi
+done
+
+# not reached
+

@@ -2,4 +2,4 @@
 
 LD_LIBRARY_PATH=`dirname $0`/../lib
 export LD_LIBRARY_PATH
-exec $LD_LIBRARY_PATH/../bin/gnunet-peer-info.wrap -c ~/.gnunet/gnunet.root $*
+exec $LD_LIBRARY_PATH/../bin/gnunet-peer-info.wrap -c ~/gnunet/gnunet.root $*
