@@ -13,14 +13,20 @@ check_PROGRAMS = \
 
 TESTS = $(check_PROGRAMS)
 
+if HAVE_ZLIB
+ ZLIB_LNK = -lz
+endif
+
+AM_CPPFLAGS = $(CPPFLAGS) $(MYSQL_CPPFLAGS)
 
 libgnunetmodule_sqstore_mysql_la_SOURCES = \
   mysql.c 
 libgnunetmodule_sqstore_mysql_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  -export-dynamic -avoid-version -module \
+  $(MYSQL_LDFLAGS)
 libgnunetmodule_sqstore_mysql_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- -lmysqlclient -lz
+ -lmysqlclient $(ZLIB_LNK)
 
 
 mysqltest_SOURCES = \

@@ -124,20 +124,35 @@ netbsd*)
 ;;
 esac
 
+AC_MSG_CHECKING([for build target])
+AM_CONDITIONAL(CYGWIN,  test "$build_target" = "cygwin")
+AM_CONDITIONAL(MINGW,   test "$build_target" = "mingw")
+AM_CONDITIONAL(SOLARIS, test "$build_target" = "solaris")
+AC_MSG_RESULT([$build_target])
+
+
+
 CHECK_PTHREAD
 LIBS="$PTHREAD_LIBS $LIBS"
-CPPFLAGS="$PTHREAD_CPPFLAGS $CPPFLAGS $LTDLINCL"
-LDFLAGS="$PTHREAD_LDFLAGS $LDFLAGS"
+
+
+# some other checks for standard libs
+AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(m, log)
+AC_CHECK_LIB(c, getloadavg, AC_DEFINE(HAVE_GETLOADAVG,1,[getloadavg supported]))
+
+# 'save' libs; only those libs found so far will be
+# linked against _everywhere_.  For the others, we
+# will be more selective!
+SAVE_LIBS=$LIBS
+
+AC_CHECK_LIB(gmp, __gmpz_import,, AC_MSG_ERROR([GNUnet requires the GNU MP library (libgmp)]))
 
 # pthread_t is a struct since 11/2004
 AC_CHECK_MEMBER(pthread_t.p, AC_DEFINE(HAVE_NEW_PTHREAD_T, 1,
   [Define if you have a post 11/2004 pthread library]), , [#include <pthread.h>])
 
-AC_MSG_CHECKING([for build target])
-AM_CONDITIONAL(CYGWIN, test "$build_target" = "cygwin")
-AM_CONDITIONAL(MINGW, test "$build_target" = "mingw")
-AM_CONDITIONAL(SOLARIS, test "$build_target" = "solaris")
-AC_MSG_RESULT([$build_target])
 
 # We have two choices for the crypto stuff.  
 # 1) By default we use whatever is present (OpenSSL or gcrypt)
@@ -195,18 +210,6 @@ openssl=0
 fi
 fi
 
-if test $gcrypt = 1
-then
-  if test "x$LIBGCRYPT_LIBS" != "x"
-  then
-    LDFLAGS="$LDFLAGS $LIBGCRYPT_LIBS"
-  fi
-  if test "x$LIBGCRYPT_CFLAGS" != "x"
-  then
-    CPPFLAGS="$CPPFLAGS $LIBGCRYPT_CFLAGS"
-  fi
-fi  
-
 AM_CONDITIONAL(USE_GCRYPT, test x$gcrypt = x1)
 AC_DEFINE_UNQUOTED(USE_GCRYPT, $gcrypt, [gcrypt available])
 
@@ -225,7 +228,7 @@ extractor=0
 AC_MSG_CHECKING(for libextractor)
 AC_ARG_WITH(extractor,
    [  --with-extractor=PFX    Base of libextractor installation],
-   [AC_MSG_RESULT("$with_extractor")
+   [AC_MSG_RESULT([$with_extractor])
     case $with_extractor in
       no)
         ;;
@@ -248,8 +251,6 @@ AC_ARG_WITH(extractor,
     AC_CHECK_HEADERS(extractor.h,
      AC_CHECK_LIB([extractor], [EXTRACTOR_loadDefaultLibraries],
       extractor=1))])
-AM_CONDITIONAL(USE_LIBEXTRACTOR, test x$extractor = x1)
-AC_DEFINE_UNQUOTED(USE_LIBEXTRACTOR, $extractor, [libextractor available])
 if test "$extractor" != 1
 then
  AC_MSG_ERROR([GNUnet requires libextractor])
@@ -270,30 +271,40 @@ AC_ARG_WITH(sqlite,
      sqlite=true)
      ;;
    *)
+    SAVE_LDFLAGS=$LDFLAGS
+    SAVE_CPPFLGAS=$CPPFLAGS
     LDFLAGS="-L$with_sqlite/lib $LDFLAGS"
     CPPFLAGS="-I$with_sqlite/include $CPPFLAGS"
     AC_CHECK_HEADERS(sqlite3.h,
      EXT_LIB_PATH="-L$with_sqlite/lib $EXT_LIB_PATH"
+     SQLITE_LDFLAGS="-L$with_sqlite/lib"
+     SQLITE_CPPFLGAS="-I$with_sqlite/include"
      sqlite=true)
+    LDFLAGS=$SAVE_LDFLAGS
+    CPPFLAGS=$SAVE_CPPFLAGS
     ;;
    esac
   ],
   [AC_MSG_RESULT([--with-sqlite not specified])
     AC_CHECK_HEADERS(sqlite3.h, sqlite=true)])
 AM_CONDITIONAL(HAVE_SQLITE, test x$sqlite = xtrue)
+AC_SUBST(SQLITE_CPPFLAGS)
+AC_SUBST(SQLITE_LDFLAGS)
 
 
 # test for libz (maybe required for linking mysql)
-saveLIBS=$LIBS
 zlib=1
 AC_CHECK_LIB(z, compress,,zlib=0)
-ZLIBS=$LIBS
-LIBS=$saveLIBS
 AM_CONDITIONAL(HAVE_ZLIB, test x$zlib = x1)
 
 # mysql & windows
 AC_CHECK_TYPES([sigset_t, off_t], [], [], [#include <sys/types.h>])
 AC_CHECK_TYPES([size_t], [], [], [#include <stdio.h>])
+
+if test "$build_target" = "mingw"
+then
+  CYGWIN_MYSQL_MAGIC="#include <mysql/my_global.h>"
+fi
 
 # test for mysql
 mysql=false
@@ -304,28 +315,41 @@ AC_ARG_WITH(mysql,
   [AC_MSG_RESULT("$with_mysql")
    if test "$with_mysql" != "no"
    then
+    SAVE_LDFLAGS=$LDFLAGS
+    SAVE_CPPFLGAS=$CPPFLAGS
     LDFLAGS="-L$with_mysql/lib -L$with_mysql/lib/mysql $LDFLAGS $ZLIBS"
     CPPFLAGS="-I$with_mysql/include $CPPFLAGS"
     AC_CHECK_HEADERS(mysql/mysql.h,
      AC_CHECK_LIB(mysqlclient, mysql_init,
-      EXT_LIB_PATH="-L$with_mysql/lib -L$with_mysql/lib/mysql $EXT_LIB_PATH"
-      mysql=true), [], [#include <my_global.h>])
+      MYSQL_LDFLAGS="-L$with_mysql/lib -L$with_mysql/lib/mysql"
+      MYSQL_CPPFLAGS="-I$with_mysql/include"
+
+      mysql=true), [], [$CYGWIN_MYSQL_MAGIC])
+    LDFLAGS=$SAVE_LDFLAGS
+    CPPFLAGS=$SAVE_CPPFLAGS
    fi
   ],
   [AC_MSG_RESULT([--with-mysql not specified])
+   SAFE_LDFLAGS=$LDFLAGS
    LDFLAGS="-L/usr/lib/mysql $LDFLAGS $ZLIBS"
    AC_CHECK_LIB(mysqlclient, mysql_init,
     [AC_CHECK_HEADERS(mysql/mysql.h,
-      EXT_LIB_PATH="-L/usr/lib/mysql $EXT_LIB_PATH"
+      MYSQL_LDFLAGS="-L/usr/lib/mysql"
       mysql=true
-     , [], [#include <my_global.h>])])])
+      
+     , [], [$CYGWIN_MYSQL_MAGIC])])
+   LDFLAGS=$SAVE_LDFLAGS
+  ])
+
+AC_SUBST(MYSQL_LDFLAGS)
+AC_SUBST(MYSQL_CPPFLAGS)
 
 # additional version check for mysql
 if test "$mysql" = "true"
 then
   AC_MSG_CHECKING(mysql version)
   AC_RUN_IFELSE([AC_LANG_PROGRAM(
-    [[#include <mysql/my_global.h>
+    [[$CYGWIN_MYSQL_MAGIC
       #include <mysql/mysql.h>]],
     [[if (MYSQL_VERSION_ID < 40100)
         return(-1);
@@ -351,24 +375,14 @@ AC_CHECK_HEADER([ncurses.h], [AC_DEFINE([CURSES_LOC], [<ncurses.h>], [Curses loc
  [AC_CHECK_HEADER([curses.h], AC_DEFINE([CURSES_LOC], [<curses.h>]),
  [AC_CHECK_HEADER([ncurses/curses.h], AC_DEFINE([CURSES_LOC], [<ncurses/curses.h>]),
  curses=0)])])])
-saveLIBS=$LIBS
 AC_CHECK_LIB(ncurses, scrollok,,curses=0)
-LIBS=$saveLIBS
 AC_DEFINE_UNQUOTED([HAVE_CURSES], $curses, [We have curses])
 AM_CONDITIONAL(HAVE_CURSES, test x$curses = x1)
 
-# some other checks for standard libs
-
-AC_CHECK_LIB(nsl, gethostbyname)
-AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(m, log)
-AC_CHECK_LIB(c, getloadavg, AC_DEFINE(HAVE_GETLOADAVG,1,[getloadavg supported]))
-AC_CHECK_LIB(gmp, __gmpz_import,, AC_MSG_ERROR([GNUnet requires the GNU MP library (libgmp)]))
-
 # check for gtk >= 2.4.0 
-AC_MSG_CHECKING(for gtk)
-AM_PATH_GTK_2_0(2.4.0,without_gtk=false,without_gtk=true)
-AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
+# AC_MSG_CHECKING(for gtk)
+# AM_PATH_GTK_2_0(2.4.0,without_gtk=false,without_gtk=true)
+# AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
 
 # check for gettext
 AM_GNU_GETTEXT_VERSION(0.14)
@@ -413,6 +427,9 @@ AC_HEADER_SYS_WAIT
 AC_TYPE_OFF_T
 AC_TYPE_UID_T
 AC_CHECK_FUNCS([floor gethostname memmove rmdir strncasecmp strrchr strtol atoll dup2 fdatasync ftruncate gethostbyname gettimeofday memset mkdir mkfifo select socket strcasecmp strchr strdup strerror strstr clock_gettime getrusage rand uname setlocale getcwd mktime])
+
+# restore LIBS
+LIBS=$SAVE_LIBS
 
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LIBS)
@@ -583,10 +600,10 @@ then
   AC_MSG_NOTICE([NOTICE: IPv6 support will NOT be compiled.])
 fi
 
-if test "$without_gtk" = "true"
-then 
-  AC_MSG_NOTICE([NOTICE: gnunet-gtk user interface will NOT be compiled.])
-fi
+#if test "$without_gtk" = "true"
+#then 
+#  AC_MSG_NOTICE([NOTICE: gnunet-gtk user interface will NOT be compiled.])
+#fi
 
 AC_MSG_NOTICE([NOTICE: Database support is set to MySQL: $mysql, SQLite: $sqlite])
 

@@ -787,7 +787,8 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
 			  void * mp,
 			  unsigned int ssize) {
   int ok;
-  int ret, success;
+  int ret;
+  int success;
 
   if (tcp6Session->sock == -1) {
 #if DEBUG_TCP6
@@ -809,16 +810,16 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
   if (tcp6Session->wpos > 0) {
     ret = 0;
   } else {
-    sucess = SEND_NONBLOCKING(tcp6Session->sock,
+    success = SEND_NONBLOCKING(tcp6Session->sock,
                               mp,
                               ssize,
                               &ret);
-	if (success == SYSERR) {
-	  LOG_STRERROR(LOG_INFO, "send");
-	  MUTEX_UNLOCK(&tcp6lock);
-	  return SYSERR;
-	} else if (success == NO)
-	  ret = 0;
+    if (success == SYSERR) {
+      LOG_STRERROR(LOG_INFO, "send");
+      MUTEX_UNLOCK(&tcp6lock);
+      return SYSERR;
+    } else if (success == NO)
+      ret = 0;
   }
   if ((unsigned int) ret <= ssize) { /* some bytes send or blocked */
     if ((unsigned int)ret < ssize) {

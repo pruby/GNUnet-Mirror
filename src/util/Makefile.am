@@ -33,7 +33,8 @@ if USE_OPENSSL
  CRYPTLIB = -lcrypto
 else
  cryptofiles = hostkey_gcrypt.c symcipher_gcrypt.c locking_gcrypt.c locking_gcrypt.h random_gcrypt.c
- CRYPTLIB = -lgcrypt
+ CRYPTLIB = $(LIBGCRYPT_LIBS)
+ AM_CPPFLAGS = $(LIBGCRYPT_CFLAGS)
 endif
 
 libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD)
