@@ -37,7 +37,6 @@
   * collections
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
-- ecrs-unindex: code cleanup [ easy ]
 - Missing Features:
    - resolve "FIXME 0.7"
   * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
