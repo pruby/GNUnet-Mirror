@@ -1,3 +1,11 @@
+Sat Apr  2 01:54:23 EST 2005
+	Various bugfixes, some of them critical (segfaults, 
+	protocol errors (resulting in failures to connect), 
+	old version of configuration file would be 
+	generated if configuration was missing,
+	gnunet-insert would not properly work with multiple
+	keywords (-k and -K options)). Releasing 0.7.0pre2.
+
 Thu Mar 31 21:38:06 EST 2005
 	Releasing 0.7.0pre1.
 

@@ -1914,14 +1914,6 @@ int checkHeader(const PeerIdentity * sender,
        (msg->bandwidth == 0) &&
        (msg->timeStamp == 0) )
     return NO; /* plaintext */
-  LOG(LOG_DEBUG,
-      "Not plaintext: %d, %d, %d, %d\n", 
-      equalsHashCode512(&hc,
-			&msg->hash),
-      (msg->sequenceNumber == 0),
-      (msg->bandwidth == 0),
-      (msg->timeStamp == 0));
-
 
 #if DEBUG_CONNECTION
   LOG(LOG_DEBUG,

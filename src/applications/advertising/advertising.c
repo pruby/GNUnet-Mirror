@@ -61,8 +61,7 @@
 #define ACJ_FORWARD 2
 #define ACJ_ALL (ACJ_ANNOUNCE | ACJ_FORWARD)
 
-
-#define DEBUG_HELOEXCHANGE YES
+#define DEBUG_HELOEXCHANGE NO
 
 static CoreAPIForApplication * coreAPI;
 

@@ -129,7 +129,7 @@ int ECRS_createNamespace(const char * name,
   }
   fileName = getPseudonymFileName(name);
   if (1 == readFile(fileName, 1, &tmp)) {
-    LOG(LOG_WARNING,
+    LOG(LOG_ERROR,
         _("Cannot create pseudonym '%s', file '%s' exists.\n"),
         name,
         fileName);

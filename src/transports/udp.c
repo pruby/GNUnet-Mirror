@@ -28,7 +28,7 @@
 #include "gnunet_transport.h"
 #include "platform.h"
 
-#define DEBUG_UDP YES
+#define DEBUG_UDP NO
 
 /**
  * Host-Address in a UDP network.
