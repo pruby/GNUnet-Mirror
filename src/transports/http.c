@@ -957,7 +957,7 @@ static int httpDirectSend(HTTPSession * httpSession,
 		    "/ HTTP/1.1\r\n"
 		    "Host: %u.%u.%u.%u\r\n"
 		    "Transfer-Encoding: chunked\r\n"
-		    "Content-Type: text/html\r\n"
+		    "Content-Type: application/octet-stream\r\n"
 		    "\r\n"
 		    "%x\r\n",
 		    PRIP(ntohl(*(int*)&ip)),
