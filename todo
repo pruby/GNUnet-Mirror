@@ -13,7 +13,6 @@
 - multi-peer testing: (see sessiontest.c and tbenchtest.c for templates)
   * gap
   * dht / gnunet-dht-join and gnunet-dht-query 
-  * fs
 - FSUI:
   * download: various details wrt generated events
   * namespace updates
