@@ -402,11 +402,6 @@ static int sqlite_iterate(unsigned int type,
 	     lastPrio,
 	     lastExp);
       */
-      printf("FOUND %4u: exp %20lld old: %20lld - %d\n",
-	     (ntohl(datum->value.size) - sizeof(Datastore_Value))/8,
-	     ntohll(datum->value.expirationTime),
-	     lastExp,
-	     ntohll(datum->value.expirationTime) > lastExp);
       
       if (iter != NULL) {
 	MUTEX_UNLOCK(&dbh->DATABASE_Lock_);

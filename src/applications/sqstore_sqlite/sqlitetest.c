@@ -21,8 +21,8 @@ static Datastore_Value * initValue(int i) {
   value->size = htonl(sizeof(Datastore_Value) + 8 * i);
   value->type = htonl(i);
   value->prio = htonl(i+1);
-  value->anonymityLevel = i;
-  value->expirationTime = now - i * cronSECONDS;
+  value->anonymityLevel = htonl(i);
+  value->expirationTime = htonll(now - i * cronSECONDS);
   memset(&value[1], i, 8*i);
   return value;
 }
@@ -42,10 +42,11 @@ static int checkValue(const HashCode160 * key,
 		    ntohl(val->size)) ) )
     ret = OK;
   else {
+    /*
     printf("Wanted: %u, %llu; got %u, %llu - %d\n",
 	   ntohl(value->size), ntohll(value->expirationTime),
 	   ntohl(val->size), ntohll(val->expirationTime),
-	   memcmp(val, value, ntohl(val->size)));
+	   memcmp(val, value, ntohl(val->size))); */
     ret = SYSERR;
   }
   FREE(value);
@@ -82,6 +83,7 @@ static int test(SQstore_ServiceAPI * api) {
   int i;
 
   cronTime(&now);
+  now = 1000000;
   oldSize = api->getSize();
   for (i=0;i<256;i++) {
     value = initValue(i);
