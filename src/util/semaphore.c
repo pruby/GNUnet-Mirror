@@ -55,10 +55,12 @@
 typedef struct {
 #if SOLARIS || FREEBSD5 || OSX
   sem_t * internal;
+#elif WINDOWS
+  HANDLE internal;
 #elif LINUX
   int internal;
   char * filename;
-#elif SOMEBSD || MINGW
+#elif SOMEBSD
   int initialValue;
   int fd;
   Mutex internalLock;
@@ -478,7 +480,7 @@ void PTHREAD_KILL(PTHREAD_T * pt,
   };
 #endif
 
-#if SOMEBSD || MINGW
+#if SOMEBSD
 static void FLOCK(int fd,
 		  int operation) {
   int ret;
@@ -542,6 +544,38 @@ IPC_Semaphore * ipc_semaphore_new_(const char * basename,
     DIE_FILE_STRERROR("sem_open", noslashBasename);
   FREE(noslashBasename);
   return rret;
+#elif WINDOWS
+  char * noslashBasename;
+  int i;
+  IPC_Semaphore * rret;
+  IPC_Semaphore_Internal * ret;
+  SECURITY_ATTRIBUTES sec;
+  DWORD dwErr;
+
+  rret = MALLOC(sizeof(IPC_Semaphore));
+  ret = MALLOC(sizeof(IPC_Semaphore_Internal));
+  rret->platform = ret;
+  noslashBasename = STRDUP(basename);
+  for (i=strlen(noslashBasename);i>0;i--)
+    if (noslashBasename[i] == '\\')
+      noslashBasename[i] = '.'; /* must not contain backslashes */  
+
+  sec.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sec.bInheritHandle = TRUE;
+  sec.lpSecurityDescriptor = NULL;
+  
+  ret->internal = CreateSemaphore(&sec, initialValue, LONG_MAX, noslashBasename);
+  dwErr = GetLastError();
+  if (! ret->internal && dwErr == ERROR_ALREADY_EXISTS) {
+    ret->internal = OpenSemaphore(SEMAPHORE_MODIFY_STATE, TRUE, noslashBasename);
+    dwErr = GetLastError();
+  }
+  if (! ret->internal) { 
+    LOG(LOG_FAILURE, _("Can't create semaphore: %i"), dwErr);
+    DIE_FILE_STRERROR("sem_open", noslashBasename);
+  }
+  FREE(noslashBasename);
+  return rret;
 #elif LINUX
   union semun {
       int             val;
@@ -603,7 +637,7 @@ again:
   
   ret->filename = STRDUP(basename);
   return rret;  
-#elif SOMEBSD || MINGW
+#elif SOMEBSD
   int fd;
   int cnt;  
   IPC_Semaphore * rret;
@@ -684,6 +718,13 @@ void ipc_semaphore_up_(IPC_Semaphore * rsem,
 	STRERROR(errno),
 	filename,
 	linenumber);
+#elif WINDOWS
+  if (!ReleaseSemaphore(sem->internal, 1, NULL))
+    LOG(LOG_WARNING,
+      "ReleaseSemaphore signaled error: %i at %s:%d\n",
+      GetLastError(),
+      filename,
+      linenumber);
 #elif LINUX
   {
     struct sembuf sops = {0,1,SEM_UNDO};
@@ -695,7 +736,7 @@ void ipc_semaphore_up_(IPC_Semaphore * rsem,
 	  filename,
 	  linenumber);
   }
-#elif SOMEBSD || MINGW
+#elif SOMEBSD
   { 
     int cnt;
     
@@ -724,7 +765,6 @@ void ipc_semaphore_up_(IPC_Semaphore * rsem,
     FLOCK(sem->fd, LOCK_UN);
     MUTEX_UNLOCK(&sem->internalLock);
   }
-#else
 #endif
 }
 
@@ -764,6 +804,13 @@ void ipc_semaphore_down_(IPC_Semaphore * rsem,
       break;
     }
   }
+#elif WINDOWS
+  if (WaitForSingleObject(sem->internal, INFINITE) == WAIT_FAILED)
+    LOG(LOG_WARNING,
+      "WaitForSingleObject signaled error: %s at %s:%d\n",
+      STRERROR(errno),
+      filename,
+      linenumber);
 #elif LINUX
   {
     struct sembuf sops = {0,-1,SEM_UNDO};
@@ -792,7 +839,7 @@ void ipc_semaphore_down_(IPC_Semaphore * rsem,
       }
     }
   }
-#elif SOMEBSD || MINGW
+#elif SOMEBSD
   {
     int cnt;
     
@@ -849,6 +896,13 @@ void ipc_semaphore_free_(IPC_Semaphore * rsem,
 	STRERROR(errno),
 	filename,
 	linenumber);
+#elif WINDOWS
+  if (!CloseHandle(sem->internal))
+    LOG(LOG_WARNING,
+    "CloseHandle signaled error: %i at %s:%d\n",
+    GetLastError(),
+    filename,
+    linenumber);  
 #elif LINUX
   {
     int pcount;
@@ -889,7 +943,7 @@ void ipc_semaphore_free_(IPC_Semaphore * rsem,
     }
     FREE(sem->filename);  
   }
-#elif SOMEBSD || MINGW
+#elif SOMEBSD
   {
     int cnt;  
     
