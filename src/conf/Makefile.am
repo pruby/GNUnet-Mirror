@@ -43,14 +43,15 @@ endif
 
 if HAVE_GTK
  gconf_libs = $(GTK_LIBS) @EXT_LIB_PATH@ $(LDADD) @EXT_LIBS@ -lgthread-2.0
- 
+
  gconf_src = \
    gconf_callbacks.h \
    gconf_interface.h \
    gconf_support.h \
    gconf_interface.c \
    gconf_support.c \
-   gconf.c
+   gconf.c \
+   images.c 
 endif
 
 

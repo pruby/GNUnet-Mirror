@@ -43,6 +43,10 @@ static void help() {
 extern int mconf_main(int ac, char **av);
 #endif
 
+#if HAVE_GTK
+int gconf_main(int ac, char *av[]);
+#endif
+
 extern int conf_main(int ac, char **av);
 #ifdef MINGW
 extern void InitWinEnv();

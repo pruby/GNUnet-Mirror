@@ -1636,8 +1636,9 @@ static void display_tree(struct menu *menu)
     if (((menu != &rootmenu) && !(menu->flags & MENU_ROOT)) ||
         (view_mode == FULL_VIEW)
         || (view_mode == SPLIT_VIEW))*/
-    if ((view_mode == SINGLE_VIEW) && (menu->flags & MENU_ROOT)
-    || (view_mode == FULL_VIEW) || (view_mode == SPLIT_VIEW)) {
+    if ( (  (view_mode == SINGLE_VIEW) && (menu->flags & MENU_ROOT))
+         || (view_mode == FULL_VIEW) 
+         || (view_mode == SPLIT_VIEW) ) {
       indent++;
       display_tree(child);
       indent--;
