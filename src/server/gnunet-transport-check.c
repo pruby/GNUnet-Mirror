@@ -219,7 +219,7 @@ static void testPING(HELO_Message * xhelo,
   stats[0]++; /* one more seen */
   if (NO == transport->isAvailable(ntohs(helo->protocol))) {
     fprintf(stderr,
-	    " Transport %d not available\n",
+	    _(" Transport %d not available\n"),
 	    ntohs(helo->protocol));
     FREE(helo);
     return;
@@ -241,7 +241,7 @@ static void testPING(HELO_Message * xhelo,
 			       &tsession)) {
     FREE(helo);
     fprintf(stderr,
-	    " Connection failed\n");
+	    _(" Connection failed\n"));
     return;
   }
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
@@ -267,6 +267,8 @@ static void testPING(HELO_Message * xhelo,
   FREE(ping);
   /* send ping */
   ok = NO;
+  LOG(LOG_DEBUG,
+      "Sending PING\n");
   if (OK != transport->sendReliable(tsession,
 				    msg,
 				    len)) {

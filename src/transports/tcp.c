@@ -876,8 +876,18 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 				 unsigned int ssize) {
   int ok;
 
-  if (tcp_shutdown == YES)
+#if TCP_DEBUG
+  LOG(LOG_DEBUG, 
+      "tcpDirectSendReliable called to transmit %u bytes.\n",
+      ssize);
+#endif	  
+  if (tcp_shutdown == YES) {
+#if DEBUG_TCP
+    LOG(LOG_INFO,
+	"tcpDirectSendReliable called, but TCP service is shutdown\n");
+#endif
     return SYSERR;
+  }
   if (tcpSession->sock == -1) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
@@ -898,6 +908,11 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
     memcpy(&tcpSession->wbuff[old],
 	   mp,
 	   ssize);
+#if TCP_DEBUG
+    LOG(LOG_DEBUG, 
+	"tcpDirectSendReliable appended message to send buffer.\n");
+#endif	  
+
     ok = OK;
   } else {
     ok = tcpDirectSend(tcpSession,
