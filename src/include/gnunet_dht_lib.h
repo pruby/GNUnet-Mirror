@@ -113,7 +113,6 @@ int DHT_LIB_get(const DHT_TableId * table,
  */
 int DHT_LIB_put(const DHT_TableId * table,
 		const HashCode160 * key,
-		unsigned int type,
 		unsigned int prio,
 		cron_t timeout,
 		const DataContainer * value);
@@ -131,7 +130,6 @@ int DHT_LIB_put(const DHT_TableId * table,
  */
 int DHT_LIB_remove(const DHT_TableId * table,
 		   const HashCode160 * key,
-		   unsigned int type,
 		   cron_t timeout,
 		   const DataContainer * value);
 

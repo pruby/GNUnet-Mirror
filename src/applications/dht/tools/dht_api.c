@@ -112,17 +112,15 @@ static int sendAllResults(const HashCode160 * key,
   TableList * list = (TableList*) cls;
   DHT_CS_REPLY_RESULTS * reply;
  
-  reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + value->dataLength + sizeof(HashCode160));
-  reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + value->dataLength + sizeof(HashCode160));
+  reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode160));
+  reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode160));
   reply->header.type = htons(DHT_CS_PROTO_REPLY_GET);
   reply->totalResults = htonl(1);
   reply->table = list->table;
-  memcpy(&((DHT_CS_REPLY_RESULTS_GENERIC*)reply)->data[sizeof(HashCode160)],
-	 key,
-	 sizeof(HashCode160));
-  memcpy(&((DHT_CS_REPLY_RESULTS_GENERIC*)reply)->data[sizeof(HashCode160)],
-	 value->data,
-	 value->dataLength);
+  reply->key = *key;
+  memcpy(&reply->data,
+	 value,
+	 ntohl(value->size));
   if (OK != writeToSocket(list->sock,
 			  &reply->header)) {
     LOG(LOG_WARNING,
@@ -152,7 +150,6 @@ static void * process_thread(TableList * list) {
   
   req.header.size = htons(sizeof(DHT_CS_REQUEST_JOIN));
   req.header.type = htons(DHT_CS_PROTO_REQUEST_JOIN);  
-  req.timeout = htonll(5 * cronSECONDS); /* ??? (no timeout needed for join so far...) */
   req.table = list->table;
 
   while (list->leave_request == NO) {
@@ -196,11 +193,8 @@ static void * process_thread(TableList * list) {
       switch (ntohs(buffer->type)) {
       case DHT_CS_PROTO_REQUEST_GET: {
 	DHT_CS_REQUEST_GET * req;
-	DataContainer * results;
-	unsigned int maxResults;       
-	unsigned int maxSize;
-	int i;
 	int resCount;
+	int keyCount;
 
 	if (sizeof(DHT_CS_REQUEST_GET) != ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
@@ -226,62 +220,26 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	
-	resCount = list->store->lookup(list->store->closure,
-				       &req->key,
-				       maxResults,
-				       results);
-	if ( (resCount == SYSERR) ||
-	     (resCount == 0) ) {
-	  if (OK != sendAck(list->sock,
+	keyCount = 1 + ( (ntohs(req->header.size) - sizeof(DHT_CS_REQUEST_GET)) / sizeof(HashCode160));
+	resCount = list->store->get(list->store->closure,
+				    ntohl(req->type),
+				    ntohl(req->priority),
+				    keyCount,
+				    &req->keys,	
+				    &sendAllResults,
+				    list);
+	if ( (resCount != SYSERR) &&
+	     (OK != sendAck(list->sock,
 			    &list->table,
-			    resCount)) {
-	    LOG(LOG_WARNING,
-		_("Failed to send '%s'.  Closing connection.\n"),
-		"ACK");
-	    MUTEX_LOCK(&list->lock);
-	    releaseClientSocket(list->sock);
-	    list->sock = NULL;
-	    MUTEX_UNLOCK(&list->lock);
-	  }
-	} else {
-	  DHT_CS_REPLY_RESULTS * reply;
-	  
-	  for (i=0;i<resCount;i++) {
-	    reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + results[i].dataLength);
-	    reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + results[i].dataLength);
-	    reply->header.type = htons(DHT_CS_PROTO_REPLY_GET);
-	    reply->totalResults = htonl(resCount - i);
-	    reply->table = list->table;
-	    memcpy(&((DHT_CS_REPLY_RESULTS_GENERIC*)reply)->data[0],
-		   results[i].data,
-		   results[i].dataLength);
-	    
-	    LOG(LOG_EVERYTHING,
-		"'%s' transmits %d-th result '%.*s'!\n",
-		__FUNCTION__,
-		i,
-		results[i].dataLength,
-		results[i].data);
-	    
-	    
-	    if (OK != writeToSocket(list->sock,
-				    &reply->header)) {
-	      LOG(LOG_WARNING,
-		  _("Failed to send '%s'.  Closing connection.\n"),
-		  "DHT_CS_REPLY_RESULTS");
-	      MUTEX_LOCK(&list->lock);
-	      releaseClientSocket(list->sock);
-	      list->sock = NULL;
-	      MUTEX_UNLOCK(&list->lock);
-	      break;
-	    }
-	    FREE(reply);
-	  }
+			    resCount)) ) {
+	  LOG(LOG_WARNING,
+	      _("Failed to send '%s'.  Closing connection.\n"),
+	      "ACK");
+	  MUTEX_LOCK(&list->lock);
+	  releaseClientSocket(list->sock);
+	  list->sock = NULL;
+	  MUTEX_UNLOCK(&list->lock);
 	}
-	
-	for (i=0;i<maxResults;i++) 
-	  FREENONNULL(results[i].data);
-	FREE(results);
 	break;
       }
 	
@@ -315,8 +273,8 @@ static void * process_thread(TableList * list) {
 	}
 	value = MALLOC(sizeof(DataContainer) + 
 		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));       
-	value.size = htonl(sizeof(DataContainer) + 
-			   ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
+	value->size = htonl(sizeof(DataContainer) + 
+			    ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
 	memcpy(&value[1],
 	       &req[1],
 	       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
@@ -325,7 +283,8 @@ static void * process_thread(TableList * list) {
 		    &req->table,
 		    list->store->put(list->store->closure,
 				     &req->key,
-				     &value))) {
+				     value,
+				     ntohl(req->priority)))) {
 	  LOG(LOG_ERROR,
 	      _("Failed to send '%s'.  Closing connection.\n"),
 	      "ACK");
@@ -341,7 +300,7 @@ static void * process_thread(TableList * list) {
 
       case DHT_CS_PROTO_REQUEST_REMOVE: {
 	DHT_CS_REQUEST_REMOVE * req;
-	DataContainer value;
+	DataContainer * value;
 	
 	if (sizeof(DHT_CS_REQUEST_REMOVE) > ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
@@ -369,8 +328,8 @@ static void * process_thread(TableList * list) {
 
 	value = MALLOC(sizeof(DataContainer) + 
 		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));       
-	value.size = htonl(sizeof(DataContainer) + 
-			   ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
+	value->size = htonl(sizeof(DataContainer) + 
+			    ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
 	memcpy(&value[1],
 	       &req[1],
 	       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
@@ -379,7 +338,7 @@ static void * process_thread(TableList * list) {
 		    &req->table,
 		    list->store->del(list->store->closure,
 				     &req->key,
-				     value);
+				     value))) {
 	  LOG(LOG_ERROR,
 	      _("Failed to send '%s'.  Closing connection.\n"),
 	      "ACK");
@@ -393,10 +352,8 @@ static void * process_thread(TableList * list) {
       }
 	
       case DHT_CS_PROTO_REQUEST_ITERATE: {
-
 	DHT_CS_REPLY_RESULTS * reply;
 	DHT_CS_REQUEST_ITERATE * req;
-	DataContainer * result;
 	int resCount;
 
 	if (sizeof(DHT_CS_REQUEST_ITERATE) != ntohs(buffer->size)) {
@@ -412,44 +369,21 @@ static void * process_thread(TableList * list) {
 	}
 	req = (DHT_CS_REQUEST_ITERATE*) buffer;
 	resCount = list->store->iterate(list->store->closure,
-					NULL,
-					NULL);
-	resCount = htonl(resCount);
-	result.dataLength = sizeof(int);
-	result.data = &resCount;	
-	reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + result.dataLength);
-	reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + result.dataLength);
-	reply->header.type = htons(DHT_CS_PROTO_REPLY_GET);
-	reply->totalResults = htonl(1);
-	reply->table = list->table;
-	memcpy(&((DHT_CS_REPLY_RESULTS_GENERIC*)reply)->data[0],
-	       result.data,
-	       result.dataLength);
-	if (OK != writeToSocket(list->sock,
-				&reply->header)) {
-	  LOG(LOG_WARNING,
-	      _("Failed to send '%s'.  Closing connection.\n"),
-	      "DHT_CS_REPLY_RESULTS");
-	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
-	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
-	  break;
-	}		
-	FREE(reply);
-	resCount = list->store->iterate(list->store->closure,
 					&sendAllResults,
 					list);
-	if (resCount == -1) {
+	if ( (resCount != SYSERR) &&
+	     (OK != sendAck(list->sock,
+			    &list->table,
+			    resCount)) ) {
 	  LOG(LOG_WARNING,
 	      _("Failed to send '%s'.  Closing connection.\n"),
-	      "DHT_CS_REPLY_RESULTS");
+	      "ACK");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	}
-	
+	FREE(reply);
 	break;
       }
 
@@ -489,8 +423,7 @@ static void * process_thread(TableList * list) {
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
-		 DHT_TableId * table,
-		 cron_t timeout) {
+		 DHT_TableId * table) {
   TableList * list;
   int i;
 
@@ -642,15 +575,16 @@ int DHT_LIB_leave(DHT_TableId * table,
  * @param results where to store the results (on success)
  * @return number of results on success, SYSERR on error (i.e. timeout)
  */
-int DHT_LIB_get(DHT_TableId * table,
+int DHT_LIB_get(const DHT_TableId * table,
 		unsigned int type,
+		unsigned int prio,
 		unsigned int keyCount,
 		HashCode160 * keys,
 		cron_t timeout,
 		DataProcessor processor,
 		void * closure) {
   GNUNET_TCP_SOCKET * sock;
-  DHT_CS_REQUEST_GET req;
+  DHT_CS_REQUEST_GET * req;
   DHT_CS_REPLY_RESULTS * res;
   CS_HEADER * reply;
   int ret;
@@ -660,24 +594,34 @@ int DHT_LIB_get(DHT_TableId * table,
   sock = getClientSocket();
   if (sock == NULL)
     return SYSERR;
-  req.header.size = htons(sizeof(DHT_CS_REQUEST_GET));
-  req.header.type = htons(DHT_CS_PROTO_REQUEST_GET);
-  req.table = *table;
-  req.key = *key;
-  req.maxResults = htonl(maxResults);
-  req.maxResultSize = htonl(0); /* FIXME: get from results! */
-  req.timeout = htonll(timeout);
+
+  req = MALLOC(sizeof(DHT_CS_REQUEST_GET) + 
+	       (keyCount-1) * sizeof(HashCode160));
+  req->header.size = htons(sizeof(DHT_CS_REQUEST_GET) +
+			   (keyCount-1) * sizeof(HashCode160));
+  req->header.type = htons(DHT_CS_PROTO_REQUEST_GET);
+  req->type = htonl(type);
+  req->timeout = htonll(timeout);
+  req->table = *table;
+  req->priority = htonl(prio);
+  memcpy(&req->keys,
+	 keys,
+	 keyCount * sizeof(HashCode160));
   if (OK != writeToSocket(sock,
-			  &req.header)) {
+			  &req->header)) {
     releaseClientSocket(sock);
     return SYSERR;
   }
+  FREE(req);
   reply = NULL;
   if (OK != readFromSocket(sock,
 			   &reply)) {
     releaseClientSocket(sock);
     return SYSERR;
   }
+
+  /* FIXME here! */
+
   if ( (sizeof(DHT_CS_REPLY_ACK) == ntohs(reply->size)) &&
        (DHT_CS_PROTO_REPLY_ACK == ntohs(reply->type)) ) {
     releaseClientSocket(sock);
@@ -768,7 +712,7 @@ int DHT_LIB_get(DHT_TableId * table,
  */
 int DHT_LIB_put(const DHT_TableId * table,
 		const HashCode160 * key,
-		unsigned int type,
+		unsigned int prio,
 		cron_t timeout,
 		const DataContainer * value) {
   GNUNET_TCP_SOCKET * sock;
@@ -784,15 +728,22 @@ int DHT_LIB_put(const DHT_TableId * table,
   sock = getClientSocket();
   if (sock == NULL)
     return SYSERR;
-  req = MALLOC(sizeof(DHT_CS_REQUEST_PUT) + value->dataLength);
-  req->header.size = htons(sizeof(DHT_CS_REQUEST_PUT) + value->dataLength);
-  req->header.type = htons(DHT_CS_PROTO_REQUEST_PUT);
+  req = MALLOC(sizeof(DHT_CS_REQUEST_PUT) + 
+	       ntohl(value->size) - 
+	       sizeof(DataContainer));
+  req->header.size 
+    = htons(sizeof(DHT_CS_REQUEST_PUT) +
+	    ntohl(value->size) -
+	    sizeof(DataContainer));
+  req->header.type 
+    = htons(DHT_CS_PROTO_REQUEST_PUT);
   req->table = *table;
   req->key = *key;
+  req->priority = htonl(prio);
   req->timeout = htonll(timeout);
   memcpy(&((DHT_CS_REQUEST_PUT_GENERIC*)req)->value[0],
-	 value->data,
-	 value->dataLength);
+	 &value[1],
+	 ntohl(value->size) - sizeof(DataContainer));
   ret = SYSERR;
   if (OK == writeToSocket(sock,
 			  &req->header))
@@ -820,7 +771,6 @@ int DHT_LIB_put(const DHT_TableId * table,
  */
 int DHT_LIB_remove(const DHT_TableId * table,
 		   const HashCode160 * key,
-		   unsigned int type,
 		   cron_t timeout,
 		   const DataContainer * value) {
   GNUNET_TCP_SOCKET * sock;
@@ -834,7 +784,7 @@ int DHT_LIB_remove(const DHT_TableId * table,
     return SYSERR;
   n = sizeof(DHT_CS_REQUEST_REMOVE);
   if (value != NULL)
-    n += value->dataLength;
+    n += ntohl(value->size) - sizeof(DataContainer);
   req = MALLOC(n);
   req->header.size = htons(n);
   req->header.type = htons(DHT_CS_PROTO_REQUEST_REMOVE);
@@ -842,9 +792,9 @@ int DHT_LIB_remove(const DHT_TableId * table,
   req->key = *key;
   req->timeout = htonll(timeout);
   if (value != NULL)
-    memcpy(&((DHT_CS_REQUEST_REMOVE_GENERIC*)req)->value[0],
-	   value->data,
-	   value->dataLength);
+    memcpy(&req[1],
+	   &value[1],
+	   ntohl(value->size) - sizeof(DataContainer));
   ret = SYSERR;
   if (OK == writeToSocket(sock,
 			  &req->header))
