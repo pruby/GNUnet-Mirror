@@ -42,7 +42,6 @@ Cygwin (x86):
 - CTRL-C has no effect
 
 MinGW (x86):
-- gettext may make problems, use --disable-nls
 - libgcrypt may not be available
   workaround: use OpenSSL
 - SMTP transport is not available
