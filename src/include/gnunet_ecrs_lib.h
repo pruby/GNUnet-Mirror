@@ -76,6 +76,7 @@ struct ECRS_MetaData;
 
 /**
  * Iterator over meta data.
+ * @return OK to continue to iterate, SYSERR to abort
  */
 typedef int (*ECRS_MetaDataIterator)(EXTRACTOR_KeywordType type,
 				     const char * data,
