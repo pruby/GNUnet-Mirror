@@ -38,7 +38,7 @@
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 #include "gnunet_topology_service.h"
-#include "gnunet_friend_service.h"
+#include "gnunet_identity_service.h"
 #include "gnunet_session_service.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
@@ -82,11 +82,11 @@ static PeerIdentity * friends;
 static unsigned int friendCount;
 
 
-static int allowConnection(const PeerIdentity peer) {
+static int allowConnection(const PeerIdentity * peer) {
   int i;
 
   for (i=friendCount-1;i>=0;i--)
-    if (hostIdentityEquals(&friends[i], id)) 
+    if (hostIdentityEquals(&friends[i], peer)) 
       return OK;
   return SYSERR;
 }
