@@ -9,8 +9,7 @@
 - testing:
   * sqlite-tests: test update function, concurrency with iterators, multiple results
   * gnunet-pseudonym
-- gnunet-search:
-  * multiple search results don't work (yet); test on sqlite, FSLIB and ECRS levels!
+  * gnunet-search: multiple search results don't work (yet); test on sqlite, FSLIB and ECRS levels!
 - gap:
   * economy for local queries (see applications/gap/TODO) [ tricky ]
 - FSUI:
@@ -18,12 +17,24 @@
   * namespace updates
   * collections
   * testing
+- configure.ac: 
+  * flags for mysql, gmp, libgcrypt should ONLY be passed when
+    linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
+- multi-peer testing:
+  * core
+  * gap
+  * dht / gnunet-dht-join and gnunet-dht-query 
+  * fs
+- transport refactoring:
+  * TCP MTU change [ hard ]
+  * port knocking support? [ tricky ]
+- UI features:
+  * date feature (Mantis #789)
+  * insert meta-data under URI as keyword (to allow getting meta-data from URI only)
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
 - Missing Features:
   * resolve "FIXME 0.7"
-  * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
-    linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
   * fsui core (persistence) [ difficult ]
   * read 'friends' list for topology_f2f
   * spread out scanning done in topology_*.c?
@@ -31,8 +42,7 @@
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
     user to specify maximum amount of parallelism) [ tricky ]
 - Need testing:
-  * gnunet-dht-join and gnunet-dht-query 
-  * gnunet-tracekit, -tbench, -chat 
+  * gnunet-tracekit, -tbench, -chat
 - Documentation changes (to be documented):
   * ECRS block format changes (dramatic!)
   * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
