@@ -204,6 +204,8 @@ then
  AC_MSG_ERROR([GNUnet requires libextractor])
 fi
 
+SAVE_LDFLAGS=$LDFLAGS
+SAVE_CPPFLGAS=$CPPFLAGS
 
 # test for sqlite
 sqlite=false
@@ -219,8 +221,6 @@ AC_ARG_WITH(sqlite,
      sqlite=true)
      ;;
    *)
-    SAVE_LDFLAGS=$LDFLAGS
-    SAVE_CPPFLGAS=$CPPFLAGS
     LDFLAGS="-L$with_sqlite/lib $LDFLAGS"
     CPPFLAGS="-I$with_sqlite/include $CPPFLAGS"
     AC_CHECK_HEADERS(sqlite3.h,
@@ -258,7 +258,7 @@ fi
 mysql=false
 mysqlfail=false
 SAVE_LDFLAGS=$LDFLAGS
-SAVE_CPPFLGAS=$CPPFLAGS
+SAVE_CPPFLAGS=$CPPFLAGS
 AC_MSG_CHECKING(for mysql)
 AC_ARG_WITH(mysql,
   [  --with-mysql=PFX   Base of mysql installation],
