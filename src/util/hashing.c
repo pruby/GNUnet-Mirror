@@ -395,7 +395,7 @@ void hashToKey(const HashCode160 * hc,
 	 sizeof(HashCode160) - SESSIONKEY_LEN);
   GNUNET_ASSERT(sizeof(HashCode160) - SESSIONKEY_LEN ==
 		sizeof(INITVECTOR) - (sizeof(HashCode160) - SESSIONKEY_LEN));
-  memcpy(&iv->iv[sizeof(HashCode160) - sizeof(SESSIONKEY)],
+  memcpy(&iv->iv[sizeof(HashCode160) - SESSIONKEY_LEN],
 	 &(((char *)hc)[SESSIONKEY_LEN]), 
 	 sizeof(HashCode160) - sizeof(SESSIONKEY));
 }
