@@ -17,7 +17,7 @@ are common and the documentation may not be adequate for unexperienced
 users.
 
 For a longer description of the GNUnet System see our webpages
-http://www.gnu.org/projects/GNUnet/ and http://ovmj.org/GNUnet/.
+http://www.gnu.org/projects/GNUnet/ and http://gnunet.org/.
 
 
 How to install?
@@ -26,7 +26,7 @@ How to install?
 The fastest way is to use a binary package if it is available for your
 system.  For a more detailed description, read the installation
 instructions on the webpage at
-http://ovmj.org/GNUnet/documentation.php3.
+http://gnunet.org/documentation.php3.
 
 If you just want to go with the sources, you may be fine with
 
@@ -53,7 +53,7 @@ libgcrypt using "--with-gcrypt=PATH".  Similarly, the path to
 OpenSSL can be specified using "--with-crypto=PATH".
 
 If you want to use libextractor (download from
-http://ovmj.org/libextractor/) for automated keyword
+http://gnunet.org/libextractor/) for automated keyword
 extraction (recommended) you may have to pass the additional flag
 "--with-extractor=PATH-TO-LIBEXTRACTOR" to configure.  You should also
 make sure that libextractor is actually found by the linker.
@@ -98,7 +98,7 @@ can be changed at run-time this way (e.g. to change any port number,
 you must fully restart gnunetd).
 
 In order to use the SMTP transport service, you should read
-http://ovmj.org/GNUnet/smtp.php3 first!  Note that if you have a
+http://gnunet.org/smtp.php3 first!  Note that if you have a
 globally addressable IP or full control over your NAT box, the TCP or
 UDP services will suffice.
 
@@ -118,7 +118,7 @@ gnunetd by periodically executing
 
 If the solution with the URL is not feasible for your situation, you
 can also add hosts manually.  The GNUnet webpage has a public
-directory of hostkeys under http://ovmj.org/GNUnet/hosts/.  You
+directory of hostkeys under http://gnunet.org/hosts/.  You
 can of course use any other source for these files.  Copy the hostkeys
 to "$GNUNETD-HOME/.gnunet/data/hosts/" (where $GNUNETD_HOME is the
 directory specified in the /etc/gnunet.conf configuration file).
@@ -150,7 +150,7 @@ Hacking GNUnet
 ==============
 
 Contributions are welcome, please submit bugs to
-http://ovmj.org/~mantis/.  Please make sure to run contrib/report.sh
+http://gnunet.org/mantis/.  Please make sure to run contrib/report.sh
 and include the output with your bug reports.  More about how to
 report bugs can be found in the GNUnet FAQ on the webpage.  Submit
 patches via E-Mail to gnunet-developers@gnu.org.
@@ -160,8 +160,8 @@ Stay tuned
 ==========
 
 * http://www.gnu.org/software/GNUnet/
-* http://ovmj.org/GNUnet/
-* http://ovmj.org/~mantis/
+* http://gnunet.org/
+* https://gnunet.org/mantis/
 * http://mail.gnu.org/mailman/listinfo/gnunet-developers
 * http://mail.gnu.org/mailman/listinfo/help-gnunet
 * http://mail.gnu.org/mailman/listinfo/info-gnunet

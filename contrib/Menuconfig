@@ -778,7 +778,7 @@ EOM
 			cat <<EOM
 
 Please report this to the GNUnet bugtracking system Mantis at
-http://www.ovmj.org/~mantis/
+https://gnunet.org/mantis/
 
 Please indicate the GNUnet version you are trying to configure and
 which menu you were trying to enter when this error occurred.
@@ -840,7 +840,7 @@ the /contrib/lxdialog directory and issuing the "make clean all" command.
 
 If you have verified that your ncurses install is correct, you may report
 the issue to the GNUnet bugtracking system Mantis at
-http://www.ovmj.org/~mantis/ or post a message to
+https://gnunet.org/mantis/ or post a message to
 <help-gnunet@gnu.org> for additional assistance. 
 
 EOM

@@ -21,7 +21,7 @@ des utilisateurs sans expérience.
 Pour une description plus complète du système GNUnet visitez nos
 pages web :
 http://www.gnu.org/projects/GNUnet/
-http://www.ovmj.org/GNUnet/
+http://gnunet.org/
 
 
 Comment installer GNUnet ?
@@ -31,7 +31,7 @@ La manière la plus rapide est d'utiliser les paquetages binaires RPM,
 debian, ou n'importe quel autre paquet si ceux-ci sont disponibles
 pour votre système. Pour une description plus détaillée, lisez les
 instructions d'installation sur la page web :
-http://www.ovmj.org/GNUnet/documentation.php3
+http://gnunet.org/documentation.php3?xlang=French
 
 Si vous préférez installer et compiler à partir des sources, vous
 pouvez exécuter le script d'auto-installation en saisissant :
@@ -62,7 +62,7 @@ des informations générales au sujet du processus d'installation GNU,
 lisez le fichier INSTALL fourni avec les sources.
 
 Si vous voulez employer libextractor (en téléchargement sur
-http://ovmj.org/libextractor/) pour l'extraction automatique de
+http://gnunet.org/libextractor/) pour l'extraction automatique de
 mot-clé (recommandée car très pratique) il est possible que vous
 deviez passer le paramètre "-- with-extractor=<chemin-vers-libextractor>"
 au script ./configure. Vous devriez également vous assurer que
@@ -120,7 +120,7 @@ façon pendant l'exécution (par exemple pour modifier un numéro de
 port, vous devez entièrement redémarrer gnunetd).
 
 Si vous voulez utiliser le protocole SMTP, vous devriez lire
-http://ovmj.org/GNUnet/smtp.php3 d'abord ! Notez que si vous avez
+http://gnunet.org/smtp.php3 d'abord ! Notez que si vous avez
 une adresse IP globalement accessible ou un contrôle total
 de votre NAT, les protocles TCP et UDP suffiront.
 
@@ -143,7 +143,7 @@ Si la solution avec l'URL n'est pas utilisable dans votre situation,
 vous pouvez également ajouter des serveurs manuellement. La page web
 de GNUnet propose un annuaire public de clés d'hôtes
 (hostkey, clé identifiant un noeud) sur
-http://ovmj.org/GNUnet/hosts/. Vous pouvez naturellement employer
+http://gnunet.org/hosts/. Vous pouvez naturellement employer
  n'importe quelle autre source pour ces fichiers. Copiez les clés
 d'hôtes dans "~/.gnunet/data/hosts/" (ou dans un autre répertoire,
 selon votre fichier de configuration "~/.gnunet/gnunet.conf").
@@ -171,7 +171,7 @@ Participer à GNUnet
 ===================
 
 Les contributions sont bienvenues, soumettez svp les bogues à
-http://ovmj.org/~mantis/. Veillez à exécuter "contrib/report.sh"
+https://gnunet.org/mantis/. Veillez à exécuter "contrib/report.sh"
 (distribué avec les sources) et à inclure les messages avec vos
 rapports de bogues.
 
@@ -183,8 +183,8 @@ Rester au courant
 
 Pages web :
 * http://www.gnu.org/software/GNUnet/
-* http://ovmj.org/GNUnet/
-* http://ovmj.org/~mantis/
+* http://gnunet.org/
+* https://gnunet.org/mantis/
 
 Listes de diffusion :
 * http://mail.gnu.org/mailman/listinfo/gnunet-developers
