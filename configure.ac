@@ -257,14 +257,14 @@ fi
 # test for mysql
 mysql=false
 mysqlfail=false
+SAVE_LDFLAGS=$LDFLAGS
+SAVE_CPPFLGAS=$CPPFLAGS
 AC_MSG_CHECKING(for mysql)
 AC_ARG_WITH(mysql,
   [  --with-mysql=PFX   Base of mysql installation],
   [AC_MSG_RESULT("$with_mysql")
    if test "$with_mysql" != "no"
    then
-    SAVE_LDFLAGS=$LDFLAGS
-    SAVE_CPPFLGAS=$CPPFLAGS
     LDFLAGS="-L$with_mysql/lib -L$with_mysql/lib/mysql $LDFLAGS $ZLIBS"
     CPPFLAGS="-I$with_mysql/include $CPPFLAGS"
     AC_CHECK_HEADERS(mysql/mysql.h,
@@ -273,12 +273,9 @@ AC_ARG_WITH(mysql,
       MYSQL_CPPFLAGS="-I$with_mysql/include"
 
       mysql=true), [], [$CYGWIN_MYSQL_MAGIC])
-    LDFLAGS=$SAVE_LDFLAGS
-    CPPFLAGS=$SAVE_CPPFLAGS
    fi
   ],
   [AC_MSG_RESULT([--with-mysql not specified])
-   SAFE_LDFLAGS=$LDFLAGS
    LDFLAGS="-L/usr/lib/mysql $LDFLAGS $ZLIBS"
    AC_CHECK_LIB(mysqlclient, mysql_init,
     [AC_CHECK_HEADERS(mysql/mysql.h,
@@ -286,7 +283,6 @@ AC_ARG_WITH(mysql,
       mysql=true
       
      , [], [$CYGWIN_MYSQL_MAGIC])])
-   LDFLAGS=$SAVE_LDFLAGS
   ])
 
 AC_SUBST(MYSQL_LDFLAGS)
@@ -315,6 +311,8 @@ then
 fi
 AM_CONDITIONAL(HAVE_MYSQL, test x$mysql = xtrue)
 
+LDFLAGS=$SAVE_LDFLAGS
+CPPFLAGS=$SAVE_CPPFLAGS
 
 # GNUnet Setup
 curses=1
