@@ -290,6 +290,8 @@ receivedHELO(const p2p_HEADER * message) {
   /* build message to send, ping must contain return-information,
      such as a selection of our HELOs... */
   mtu = transport->getMTU(tsession->ttype);
+  if (mtu == 0)
+    mtu = 2048; /* bound size */
   buffer = MALLOC(mtu);
   copy = MALLOC(HELO_Message_size(msg));
   memcpy(copy,
@@ -305,8 +307,10 @@ receivedHELO(const p2p_HEADER * message) {
     LOG(LOG_INFO,
 	_("Could not send HELOs+PING, ping buffer full.\n"));
   }
+  GNUNET_ASSERT(mtu > ntohs(ping->size));
   heloEnd = transport->getAdvertisedHELOs(mtu - ntohs(ping->size),
 					  buffer);
+  GNUNET_ASSERT(mtu - ntohs(ping->size) > heloEnd);
   if (heloEnd == -1) {
     LOG(LOG_WARNING,
 	"'%s' failed. Will not send PING.\n",

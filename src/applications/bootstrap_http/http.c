@@ -237,8 +237,14 @@ static void downloadHostlist(HELO_Callback callback,
 
   url = getConfigurationString("GNUNETD",
 			       "HOSTLISTURL");
-  if (url == NULL)
+  if (url == NULL) {
+    LOG(LOG_DEBUG,
+        "No hostlist URL specified in configuration, will not bootstrap.\n");
     return;
+  }
+  LOG(LOG_DEBUG, 
+      "Trying to bootstrap with peers from '%s'\n",
+      url);
   cnt = 1;
   i = strlen(url);
   while (i > 0) {
