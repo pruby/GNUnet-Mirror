@@ -18,6 +18,8 @@
      Boston, MA 02111-1307, USA.
 */
 
+#include "platform.h"
+#include "gnunet_util.h"
 #include "tree.h"
 
 /**
@@ -29,6 +31,8 @@ unsigned int computeDepth(unsigned long long flen) {
   unsigned int treeDepth;
   unsigned long long fl;
 
+  GNUNET_ASSERT(DBLOCK_SIZE < MAX_BUFFER_SIZE);
+  GNUNET_ASSERT(IBLOCK_SIZE < MAX_BUFFER_SIZE);
   treeDepth = 0;
   fl = DBLOCK_SIZE;
   while (fl < flen) {

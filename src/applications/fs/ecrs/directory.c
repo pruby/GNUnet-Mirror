@@ -69,6 +69,7 @@ int ECRS_listDirectory(const char * data,
 				       &data[8 + sizeof(unsigned int)],
 				       mdSize)) {
       *md = NULL;
+      BREAK();
       return SYSERR; /* malformed !*/
     }
     pos = 8 + sizeof(unsigned int);
@@ -87,8 +88,10 @@ int ECRS_listDirectory(const char * data,
     while ( (epos < len) &&
 	    (data[epos] != '\0') )
       epos++;
-    if (epos == len)
+    if (epos == len) {
+      BREAK();
       return SYSERR; /* malformed */
+    }
 
     fi.uri = ECRS_stringToUri(&data[pos]);
     pos = epos+1;
@@ -96,6 +99,7 @@ int ECRS_listDirectory(const char * data,
       return SYSERR; /* malformed! */
     if (ECRS_isKeywordURI(fi.uri)) {
       ECRS_freeUri(fi.uri);
+      BREAK();
       return SYSERR; /* illegal in directory! */
     }
 
@@ -105,6 +109,7 @@ int ECRS_listDirectory(const char * data,
     pos += sizeof(unsigned int);
     if (pos + mdSize > len) {
       ECRS_freeUri(fi.uri);
+      BREAK();
       return SYSERR; /* malformed! */
     }
 
@@ -112,6 +117,7 @@ int ECRS_listDirectory(const char * data,
 				       &data[pos],
 				       mdSize)) {
       ECRS_freeUri(fi.uri);
+      BREAK();
       return SYSERR; /* malformed !*/
     }
     pos += mdSize;

@@ -55,7 +55,11 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   CHK ichk;
   EncName enc;
 
-  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value);
+  size = ntohl(iblocks[level]->size);
+  GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
+  GNUNET_ASSERT(size > sizeof(Datastore_Value));
+  size -= sizeof(Datastore_Value);
+  GNUNET_ASSERT(size - sizeof(DBlock) <= IBLOCK_SIZE);
   present = (size - sizeof(DBlock)) / sizeof(CHK);
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
@@ -103,9 +107,10 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   memcpy(&((char*)db)[size],
 	 chk,
 	 sizeof(CHK));
-  iblocks[level]->size = htonl(size +
-			       sizeof(CHK) +
-			       sizeof(Datastore_Value));
+  size += sizeof(CHK) + sizeof(Datastore_Value);
+  GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
+  iblocks[level]->size = htonl(size);
+			       
   return OK;
 }
 
@@ -231,6 +236,7 @@ int ECRS_uploadFile(const char * filename,
 	     0,
 	     DBLOCK_SIZE);
     }
+    GNUNET_ASSERT(sizeof(Datastore_Value) + size + sizeof(DBlock) < MAX_BUFFER_SIZE);
     dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
     if (size != READ(fd,
 		     &db[1],
@@ -296,6 +302,7 @@ int ECRS_uploadFile(const char * filename,
       treedepth);
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
+    GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
     if (size == sizeof(DBlock)) {
       LOG(LOG_DEBUG,
 	  "Level %u is empty\n",

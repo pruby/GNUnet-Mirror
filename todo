@@ -1,5 +1,6 @@
 0.7.0pre1 [4'05] (aka "preview"):
-* package & final tests
+* directorytest (ECRS) also fails
+* package & re-run final tests
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Features removed but to be revived:

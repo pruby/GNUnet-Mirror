@@ -116,6 +116,7 @@ void fileBlockGetQuery(const DBlock * db,
   GNUNET_ASSERT(len >= sizeof(DBlock));
   data = (const char*) &db[1];
   len -= sizeof(DBlock);
+  GNUNET_ASSERT(len < MAX_BUFFER_SIZE);
   hash(data, len, &hc);
   hashToKey(&hc,
 	    &skey,
