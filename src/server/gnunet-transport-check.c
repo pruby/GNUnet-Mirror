@@ -244,6 +244,12 @@ static void testPING(HELO_Message * xhelo,
 	    _(" Connection failed\n"));
     return;
   }
+  if (tsessoin == NULL) {
+    BREAK();
+    fprintf(stderr,
+	    _(" Connection failed (bug?)\n"));
+    return;
+  }
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
 			      "YES"))

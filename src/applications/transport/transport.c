@@ -299,9 +299,12 @@ static int transportSendReliable(TSession * tsession,
 				 const unsigned int size) {
   TransportAPI * tapi;
 
-  if (tsession == NULL)
+  if (tsession == NULL) {
+    LOG(LOG_DEBUG,
+	"Cannot send reliable on this connection (not bi-directional!)\n");
     return SYSERR; /* can't do that, can happen for unidirectional pipes
 		      that call core with TSession being NULL. */
+  }
   if (tsession->ttype >= tapis_count) {
     LOG(LOG_FAILURE,
 	"%s failed, transport type %d unknown.\n",
