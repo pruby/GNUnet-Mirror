@@ -216,7 +216,7 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
        (sscanf(sql_row[1], "%u", &type) != 1) ||
        (sscanf(sql_row[2], "%u", &prio) != 1) ||
        (sscanf(sql_row[3], "%u", &level) != 1) ||
-       (sscanf(sql_row[4], "%llu", &exp) != 1) ) {
+       (SSCANF(sql_row[4], "%llu", &exp) != 1) ) {
     LOG(LOG_WARNING,
 	"SQL Database corrupt, ignoring result.\n");
     return NULL;

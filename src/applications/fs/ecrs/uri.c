@@ -336,7 +336,7 @@ static int parseFileURI(const char * uri,
 		       &fi->chk.key)) ||
        (OK != enc2hash(&dup[pos+sizeof(EncName)],
 		       &fi->chk.query)) ||
-       (1 != sscanf(&dup[pos+sizeof(EncName)*2],
+       (1 != SSCANF(&dup[pos+sizeof(EncName)*2],
 		    "%llu",
 		    &fi->file_length)) ) {
     FREE(dup);

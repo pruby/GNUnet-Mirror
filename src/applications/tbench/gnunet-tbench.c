@@ -160,7 +160,7 @@ static int parseOptions(int argc,
       }
       break;
     case 't':
-      if(1 != sscanf(GNoptarg, 
+      if(1 != SSCANF(GNoptarg, 
 		     "%llud", 
 		     &messageTimeOut)){
 	LOG(LOG_FAILURE, 
@@ -175,7 +175,7 @@ static int parseOptions(int argc,
 	     TBENCH_VERSION);
       return SYSERR;
     case 'X':
-      if(1 != sscanf(GNoptarg, 
+      if(1 != SSCANF(GNoptarg, 
 		     "%llud",
 		     &messageSpacing)){
 	LOG(LOG_FAILURE, 
@@ -247,9 +247,9 @@ int main(int argc, char ** argv) {
     switch (outputFormat) {
     case OF_HUMAN_READABLE:
       printf(_("Time:\n"));
-      printf(_("\tmax      %llums\n"),
+      PRINTF(_("\tmax      %llums\n"),
 	     ntohll(buffer->max_time));
-      printf(_("\tmin      %llums\n"),
+      PRINTF(_("\tmin      %llums\n"),
 	     ntohll(buffer->min_time));
       printf(_("\tmean     %8.4fms\n"),
 	     buffer->mean_time);

@@ -423,7 +423,7 @@ static int parser(int argc,
       break;
     }
     case 'T':{
-      if (1 != sscanf(GNoptarg, "%llu", &timeout)) {
+      if (1 != SSCANF(GNoptarg, "%llu", &timeout)) {
 	LOG(LOG_FAILURE, 
 	    _("You must pass a number to the '%s' option.\n"),
 	    "-T");

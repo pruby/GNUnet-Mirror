@@ -370,14 +370,28 @@ static int csHandleRequestInsert(ClientHandle sock,
 static int csHandleRequestInitIndex(ClientHandle sock,
         const CS_HEADER * req) {
   int ret;
+  char *fn;
+  RequestInitIndex *ri;
+  int fnLen;
   
   if (ntohs(req->size) < sizeof(RequestInitIndex)) {
     BREAK();
     return SYSERR;
   }
   
-  ret = ONDEMAND_initIndex(&((RequestInitIndex *)req)->fileId,
-          (const char *) &((RequestInitIndex *)req)[1]);
+  ri = (RequestInitIndex *) req;
+  
+  fnLen = ntohs(ri->header.size) - sizeof(RequestInitIndex);
+  if (fnLen > _MAX_PATH)
+    return SYSERR;
+  fn = (char *) MALLOC(fnLen + 1);
+  strncpy(fn, &ri[1], _MAX_PATH);
+  fn[_MAX_PATH] = 0;
+  
+  ret = ONDEMAND_initIndex(&ri->fileId,
+          fn);
+          
+  FREE(fn);
 
   LOG(LOG_DEBUG,
       "Sending confirmation (%s) of index initialization request to client\n",

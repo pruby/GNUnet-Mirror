@@ -423,6 +423,12 @@ int _win_vsprintf(char *dest,const char *format, va_list arg_ptr);
 int _win_vsnprintf(char* str, size_t size, const char *format, va_list arg_ptr);
 int _win_snprintf(char *str,size_t size,const char *format,...);
 int _win_sprintf(char *dest,const char *format,...);
+int _win_vsscanf(const char* str, const char* format, va_list arg_ptr);
+int _win_sscanf(const char *str, const char *format, ...);
+int _win_vfscanf(FILE *stream, const char *format, va_list arg_ptr);
+int _win_vscanf(const char *format, va_list arg_ptr);
+int _win_scanf(const char *format, ...);
+int _win_fscanf(FILE *stream, const char *format, ...);
 int _win_bind(SOCKET s, const struct sockaddr *name, int namelen);
 int _win_connect(SOCKET s,const struct sockaddr *name, int namelen);
 int _win_getpeername(SOCKET s, struct sockaddr *name,
