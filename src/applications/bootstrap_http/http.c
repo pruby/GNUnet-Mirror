@@ -32,7 +32,7 @@
 
 #define TCP_HTTP_PORT 80
 #define HTTP_URL "http://"
-#define GET_COMMAND "GET http://%s%s HTTP/1.0\r\n\r\n"
+#define GET_COMMAND "GET http://%s:%u%s HTTP/1.0\r\n\r\n"
 
 /**
  * The HTTP proxy (optional)
@@ -82,6 +82,17 @@ downloadHostlistHelper(char * url,
     filename = STRDUP(&url[curpos]);
   url[curpos] = '\0'; /* terminator for hostname */
 
+  curpos = 0;
+  while ( (curpos < strlen(hostname)) &&
+          (hostname[curpos] != ':') )
+    curpos++;
+  if (curpos == strlen(hostname))
+    port = TCP_HTTP_PORT;
+  else
+    port = atoi(STRDUP(&hostname[curpos+1]));
+  
+  hostname[curpos] = '\0'; /* terminator for hostname */
+  
   sock = SOCKET(PF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
     LOG(LOG_ERROR,
@@ -107,7 +118,7 @@ downloadHostlistHelper(char * url,
     soaddr.sin_addr.s_addr
       = ((struct in_addr*)(ip_info->h_addr))->s_addr;
     soaddr.sin_port
-      = htons(TCP_HTTP_PORT);
+      = htons(port);
   } else {
     soaddr.sin_addr.s_addr
       = theProxy.sin_addr.s_addr;
@@ -130,12 +141,13 @@ downloadHostlistHelper(char * url,
     return;
   }
 
-  n = strlen(filename) + strlen(GET_COMMAND) + strlen(hostname) + 1;
+  n = strlen(filename) + strlen(GET_COMMAND) + strlen(hostname) + 10;
   command = MALLOC(n);
   SNPRINTF(command,
 	   n,
 	   GET_COMMAND,
 	   hostname,
+	   port,
 	   filename);
   FREE(filename);
   curpos = strlen(command)+1;
