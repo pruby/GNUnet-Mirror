@@ -18,11 +18,15 @@ session->topology
 pingpong->identity
 pingpong->transport
 
-topology_default->bootstrap => bootstrap_http
+topology_default->bootstrap
 topology_default->identity
 topology_default->pingpong
 topology_default->transport
-topology_default->session
+
+topology_f2f->bootstrap
+topology_f2f->identity
+topology_f2f->pingpong
+topology_f2f->transport
 
 transport->identity
 

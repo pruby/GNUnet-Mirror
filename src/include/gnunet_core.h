@@ -289,7 +289,8 @@ typedef struct {
    * Send an encrypted message to another node.
    *
    * @param receiver the target node
-   * @param msg the message to send
+   * @param msg the message to send, NULL to tell
+   *   the core to try to establish a session
    * @param importance how important is the message?
    * @param maxdelay how long can the message be delayed?
    */

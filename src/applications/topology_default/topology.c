@@ -39,7 +39,6 @@
 #include "gnunet_protocols.h"
 #include "gnunet_topology_service.h"
 #include "gnunet_identity_service.h"
-#include "gnunet_session_service.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
@@ -55,8 +54,6 @@ static CoreAPIForApplication * coreAPI;
 static Identity_ServiceAPI * identity;
 
 static Transport_ServiceAPI * transport;
-
-static Session_ServiceAPI * session;
 
 static Pingpong_ServiceAPI * pingpong;
 
@@ -168,7 +165,10 @@ static void scanForHosts(unsigned int index) {
   LOG(LOG_DEBUG,
       "Topology: trying to connect to '%s'.\n",
       &enc);
-  session->tryConnect(&indexMatch.match);
+  coreAPI->unicast(&indexMatch.match,
+		   NULL,
+		   0,
+		   0);
   identity->blacklistHost(&indexMatch.match,
 			  30 + (int) saturation * 60,
 			  NO);
@@ -275,15 +275,6 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
     identity = NULL;
     return NULL;
   }
-  session = capi->requestService("session");
-  if (session == NULL) {
-    BREAK();
-    capi->releaseService(identity);
-    identity = NULL;
-    capi->releaseService(transport);
-    transport = NULL;
-    return NULL;
-  }
   pingpong = capi->requestService("pingpong");
   if (pingpong == NULL) {
     BREAK();
@@ -291,8 +282,6 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
     identity = NULL;
     capi->releaseService(transport);
     transport = NULL;
-    capi->releaseService(session);
-    session = NULL;
     return NULL;
   }
 
@@ -315,8 +304,6 @@ int release_module_topology_default() {
   identity = NULL;
   coreAPI->releaseService(transport);
   transport = NULL;
-  coreAPI->releaseService(session);
-  session = NULL;
   coreAPI->releaseService(pingpong);
   pingpong = NULL;
   coreAPI = NULL;
