@@ -116,8 +116,13 @@ BOOL DereferenceShortcut(char *pszShortcut)
   int iErr, iLen;
   HRESULT hRes;
   HANDLE hLink;
+  char szTarget[_MAX_PATH + 1];
+
+  if (! *pszShortcut)
+    return TRUE;
 
   CoInitialize(NULL);
+  szTarget[0] = 0;
   
   /* Create Shortcut-Object */
   if (CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
@@ -228,7 +233,7 @@ BOOL DereferenceShortcut(char *pszShortcut)
   free(pwszShortcut);
   
   /* Get target file */
-  if (FAILED(hRes = pLink->GetPath(pszShortcut, _MAX_PATH, NULL, 0)))
+  if (FAILED(hRes = pLink->GetPath(szTarget, _MAX_PATH, NULL, 0)))
   {
     pLink->Release();
     pFile->Release();
@@ -247,7 +252,14 @@ BOOL DereferenceShortcut(char *pszShortcut)
   CoUninitialize();
   errno = 0;
   
-  return TRUE;
+  if (szTarget[0] != 0)
+    return TRUE;
+  else
+  {
+    /* GetPath() did not return a valid path */
+    errno = EINVAL;
+    return FALSE;
+  }
 }
 
 /**

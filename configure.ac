@@ -153,6 +153,7 @@ AC_CHECK_LIB(gmp, __gmpz_import,, AC_MSG_ERROR([GNUnet requires the GNU MP libra
 AC_CHECK_MEMBER(pthread_t.p, AC_DEFINE(HAVE_NEW_PTHREAD_T, 1,
   [Define if you have a post 11/2004 pthread library]), , [#include <pthread.h>])
 
+AC_CHECK_HEADER(langinfo.h)
 
 # libgcrypt
 gcrypt=0

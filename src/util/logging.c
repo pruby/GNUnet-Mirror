@@ -135,11 +135,7 @@ static void removeOldLog(const char * fil,
   }
   logdate = &fullname[strlen(def->basename)];
   ret = strptime(logdate,
-#ifndef MINGW
      nl_langinfo(D_FMT),
-#else
-     "%Y%m%d",
-#endif
      &t);
   if ( (ret == NULL) ||
        (ret[0] != '\0') ) {
@@ -180,11 +176,7 @@ void reopenLogFile() {
       time_t curtime;
       char *datefmt;
       
-#ifndef MINGW
       datefmt = nl_langinfo(D_FMT);
-#else
-      datefmt = "%Y%m%d";
-#endif
       time(&curtime);
 #ifdef localtime_r
       localtime_r(&curtime, &def.curtime);

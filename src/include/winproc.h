@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/timeb.h>
+#include <time.h>
 #include <dirent.h>
 #include <windows.h>
 #include <winsock.h>
@@ -41,6 +42,7 @@
 #include <objbase.h>
 #include <sys/param.h>  /* #define BYTE_ORDER */
 #include "gnunet_util.h"
+#include "platform.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -429,6 +431,9 @@ int _win_vfscanf(FILE *stream, const char *format, va_list arg_ptr);
 int _win_vscanf(const char *format, va_list arg_ptr);
 int _win_scanf(const char *format, ...);
 int _win_fscanf(FILE *stream, const char *format, ...);
+#ifndef HAVE_LANGINFO_H
+char *nl_langinfo(int item);
+#endif
 int _win_bind(SOCKET s, const struct sockaddr *name, int namelen);
 int _win_connect(SOCKET s,const struct sockaddr *name, int namelen);
 int _win_getpeername(SOCKET s, struct sockaddr *name,
