@@ -1,4 +1,6 @@
 0.7.0pre1 [4'05] (aka "preview"):
+* implement FSUI_unindex!
+* implement gnunet-unindex (delete?)
 Testing:
 - FSUI
 

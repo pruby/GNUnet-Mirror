@@ -171,18 +171,19 @@ int main(int argc, char * argv[]){
     gnunet_util_sleep(50 * cronMILLIS);
   FSUI_stopSearch(ctx,
 		  uri);
-  /* FSUI_unindex(ctx, fn); */
-  UNLINK(fn);
-  FREE(fn);
-  fn = makeName(43);
-  /* FIXME: verify file 'fn(42)' == file 'fn(43)' */
-  UNLINK(fn);
-  FREE(fn);
+  CHECK(OK == FSUI_unindex(ctx, fn));
 
   /* END OF TEST CODE */
  FAILURE:
   if (ctx != NULL)
     FSUI_stop(ctx);
+  // UNLINK(fn);
+  FREE(fn);
+  fn = makeName(43);
+  /* FIXME: verify file 'fn(42)' == file 'fn(43)' */
+  // UNLINK(fn);
+  FREE(fn);
+
   stopCron();
   doneUtil();
   if (daemon != -1) {

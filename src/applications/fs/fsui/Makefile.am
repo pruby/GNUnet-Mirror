@@ -12,6 +12,7 @@ libgnunetfsui_la_SOURCES = \
   helper.c \
   namespace_info.c \
   search.c \
+  unindex.c \
   upload.c
 libgnunetfsui_la_LIBADD = \
  -lextractor \

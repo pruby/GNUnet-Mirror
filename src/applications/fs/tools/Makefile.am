@@ -9,16 +9,16 @@ bin_PROGRAMS = \
   gnunet-pseudonym \
   gnunet-search \
   gnunet-insert \
-  gnunet-download 
-#  gnunet-delete 
+  gnunet-download \
+  gnunet-unindex
 
 
 
 gnunet_insert_SOURCES = \
   gnunet-insert.c 	
 
-#gnunet_delete_SOURCES = \
-#  gnunet-delete.c 	
+gnunet_unindex_SOURCES = \
+  gnunet-unindex.c 	
 
 gnunet_directory_SOURCES = \
   gnunet-directory.c

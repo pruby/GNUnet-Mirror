@@ -242,10 +242,16 @@ typedef struct {
       char * main_filename;
     } UploadComplete;
     struct {
-      /* FIXME */
+      unsigned long long total;
+      unsigned long long completed;
+      cron_t eta;
+      char * filename;
+      cron_t start_time;
     } UnindexProgress;
     struct {
-      /* FIXME */
+      unsigned long long total;
+      char * filename;
+      cron_t start_time;
     } UnindexComplete;
     /**
      * Used for errors.
@@ -474,8 +480,8 @@ int FSUI_upload(struct FSUI_Context * ctx,
  * @return OK on success (at least we started with it),
  *  SYSERR if the file does not exist
  */
-void FSUI_unindex(struct FSUI_Context * ctx,
-		  const char * filename);
+int FSUI_unindex(struct FSUI_Context * ctx,
+		 const char * filename);
 
 /* ***************** recursive FS API ***************** */
 
