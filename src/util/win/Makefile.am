@@ -5,17 +5,16 @@ noinst_LTLIBRARIES = libwin.la
 if MINGW
   libwin_la_SOURCES = \
      winproc.c \
+     win_printf.c \
      winselect.c \
      winstrptime.c \
      win.cc \
-     inet_pton.c \
-     $(BDB_DLL)
+     inet_pton.c
 endif
 
 if CYGWIN
   libwin_la_SOURCES = \
-     winproc.c \
-     $(BDB_DLL)
+     winproc.c
 endif
 
 if MINGW
