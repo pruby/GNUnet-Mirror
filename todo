@@ -1,10 +1,7 @@
 0.7.0pre1 [4'05] (aka "preview"):
-* implement FSUI_unindex!
-* implement gnunet-unindex (delete?)
-Testing:
-- FSUI
+* FSUI testcase currently fails (unindex?)
 
-0.7.0 [5'05] (aka "compatibility? what's that?"):
+0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Features removed but to be revived:
   * gnunet-gtk
 - Missing Features:
@@ -13,21 +10,25 @@ Testing:
   * read 'friends' list for topology_f2f
   * #593 (gnunet-setup)
   * #770? (use freedback (LOG) in gnunet-gtk via show-messages)
-- Optimizations:
-  * spread out scanning done in topology_*.c?
-  * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
-    user to specify maximum amount of parallelism) [ tricky ]
 - Additional testing:
   * gnunet-tracekit
   * gap and economy
-  * FSUI (in particular persistence)
+  * FSUI:
+    + persistence
+    + collections
+    + recursive uploads and downloads
+    + namespaces
+    + URI tracking
 - Documentation:
   * ECRS block format changes (dramatic!)
   * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
   * Hacking GNUnet
-  * LJ article
 
 0.7.x (aka "stabilization"):
+- Optimizations:
+  * spread out scanning done in topology_*.c?
+  * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
+    user to specify maximum amount of parallelism) [ tricky ]
 - gnunet-chat
 - DHT:
   * make dht tests work
@@ -37,6 +38,8 @@ Testing:
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - #678 (directory browser)
+- Documentation:
+  * LJ article
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling

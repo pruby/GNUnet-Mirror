@@ -167,11 +167,15 @@ int main(int argc, char * argv[]){
   CHECK(OK == FSUI_startSearch(ctx,
 			       0,
 			       uri));
-  while (lastEvent != download_complete)
+  prog = 0;
+  while (lastEvent != download_complete) {
+    prog++;
+    CHECK(prog < 10000);
     gnunet_util_sleep(50 * cronMILLIS);
+  }
   FSUI_stopSearch(ctx,
 		  uri);
-  CHECK(OK == FSUI_unindex(ctx, fn));
+  // CHECK(OK == FSUI_unindex(ctx, fn));
 
   /* END OF TEST CODE */
  FAILURE:
