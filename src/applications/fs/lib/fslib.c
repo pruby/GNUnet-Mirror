@@ -333,10 +333,12 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
 }
 
 /**
- * Delete a block. 
+ * Delete a block.  The arguments are the same as the ones for
+ * FS_insert. 
  * 
  * @param block the block (properly encoded and all)
- * @return OK on success, SYSERR on error
+ * @return number of items deleted on success, 
+ *    SYSERR on error
  */
 int FS_delete(GNUNET_TCP_SOCKET * sock,
 	      const Datastore_Value * block) {

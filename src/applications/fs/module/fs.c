@@ -104,6 +104,7 @@ static int gapPut(void * closure,
   HashCode160 hc;
   cron_t et;
   cron_t now;
+  EncName enc;
 
   if (ntohl(value->size) < sizeof(GapWrapper)) {
     BREAK();
@@ -149,9 +150,12 @@ static int gapPut(void * closure,
     return SYSERR;
   }
   processResponse(key, dv); 
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
   LOG(LOG_DEBUG,
-      "FS received GAP-PUT request (key: %u)\n",
-      key->a);
+      "FS received GAP-PUT request (query: %s)\n",
+      &enc);
   ret = datastore->putUpdate(key,
 			     dv);
   FREE(dv);
@@ -193,7 +197,7 @@ static void put_complete_callback(DHT_PUT_CLS * cls) {
  */ 
 static int csHandleRequestQueryStart(ClientHandle sock,
 				     const CS_HEADER * req) {
-  RequestSearch * rs;
+  const RequestSearch * rs;
   unsigned int keyCount;
   EncName enc;
 
@@ -201,7 +205,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
     BREAK();
     return SYSERR;
   }
-  rs = (RequestSearch*) req;
+  rs = (const RequestSearch*) req;
   IFLOG(LOG_DEBUG,
 	hash2enc(&rs->query[0],
 		 &enc));
@@ -246,15 +250,19 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 static int csHandleRequestQueryStop(ClientHandle sock,
 				    const CS_HEADER * req) {
   RequestSearch * rs;
+  EncName enc;
 
   if (ntohs(req->size) < sizeof(RequestSearch)) {
     BREAK();
     return SYSERR;
   }
   rs = (RequestSearch*) req;
+  IFLOG(LOG_DEBUG,
+	hash2enc(&rs->query[0],
+		 &enc));
   LOG(LOG_DEBUG,
-      "FS received QUERY STOP (key: %u)\n",
-      rs->query[0].a);
+      "FS received QUERY STOP (query: %s)\n",
+      &enc);
   if (ntohl(rs->anonymityLevel) == 0) {
     /* FIXME 0.7.1: cancel with dht? */
   }
@@ -272,7 +280,7 @@ static int csHandleRequestQueryStop(ClientHandle sock,
  */
 static int csHandleRequestInsert(ClientHandle sock,
 				 const CS_HEADER * req) {
-  RequestInsert * ri;
+  const RequestInsert * ri;
   Datastore_Value * datum;
   int ret;
   HashCode160 query;
@@ -283,7 +291,7 @@ static int csHandleRequestInsert(ClientHandle sock,
     BREAK();
     return SYSERR;
   }
-  ri = (RequestInsert*) req;
+  ri = (const RequestInsert*) req;
   datum = MALLOC(sizeof(Datastore_Value) + 
 		 ntohs(req->size) - sizeof(RequestInsert));
   datum->size = htonl(sizeof(Datastore_Value) + 
@@ -380,7 +388,8 @@ static int csHandleRequestIndex(ClientHandle sock,
 		       ntohs(ri->header.size) - sizeof(RequestIndex),
 		       (const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
-      "Sending confirmation of index request to client\n");
+      "Sending confirmation (%s) of index request to client\n",
+      ret == OK ? "success" : "failure");
   return coreAPI->sendValueToClient(sock,
 				    ret);
 }
@@ -399,9 +408,18 @@ static int completeValue(const HashCode160 * key,
   if ( (comp->size != value->size) ||
        (0 != memcmp(&value[1],
 		    &comp[1],
-		    ntohl(value->size) - sizeof(Datastore_Value))) )
+		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
+    LOG(LOG_DEBUG,
+	"'%s' found value that does not match (%u, %u).\n",
+	__FUNCTION__,
+	ntohl(comp->size),
+	ntohl(value->size));
     return OK;
+  }
   *comp = *value; /* make copy! */
+  LOG(LOG_DEBUG,
+      "'%s' found value that matches.\n",
+      __FUNCTION__);
   return SYSERR;
 }
 
@@ -413,16 +431,17 @@ static int completeValue(const HashCode160 * key,
 static int csHandleRequestDelete(ClientHandle sock,
 				 const CS_HEADER * req) {
   int ret;
-  RequestDelete * rd;
+  const RequestDelete * rd;
   Datastore_Value * value;
   HashCode160 query;
   unsigned int type;
+  EncName enc;
   
   if (ntohs(req->size) < sizeof(RequestDelete)) {
     BREAK();
     return SYSERR;
   }
-  rd = (RequestDelete*) req;  
+  rd = (const RequestDelete*) req;  
   value = MALLOC(sizeof(Datastore_Value) +
 		 ntohs(req->size) - sizeof(RequestDelete));
   value->size = ntohl(sizeof(Datastore_Value) +
@@ -430,6 +449,9 @@ static int csHandleRequestDelete(ClientHandle sock,
   type = getTypeOfBlock(ntohs(rd->header.size) - sizeof(RequestDelete),
 			(const DBlock*)&rd[1]);
   value->type = htonl(type);
+  memcpy(&value[1],
+	 &rd[1],
+	 ntohs(req->size) - sizeof(RequestDelete));
   if (OK != getQueryFor(ntohs(rd->header.size) - sizeof(RequestDelete),
 			(const DBlock*)&rd[1],
 			&query)) {
@@ -437,9 +459,12 @@ static int csHandleRequestDelete(ClientHandle sock,
     BREAK();
     return SYSERR;
   }
+  IFLOG(LOG_DEBUG,
+	hash2enc(&query,
+		 &enc));
   LOG(LOG_DEBUG,
-      "FS received REQUEST DELETE (key: %u, type: %u)\n",
-      query.a,
+      "FS received REQUEST DELETE (query: %s, type: %u)\n",
+      &enc,
       type);
 
   MUTEX_LOCK(&lock);
@@ -453,6 +478,9 @@ static int csHandleRequestDelete(ClientHandle sock,
     ret = SYSERR;
   MUTEX_UNLOCK(&lock);
   FREE(value);
+  LOG(LOG_DEBUG,
+      "Sending confirmation (%s) of delete request to client\n",
+      ret != SYSERR ? "success" : "failure");
   return coreAPI->sendValueToClient(sock, 
 				    ret);
 }

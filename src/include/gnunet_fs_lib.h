@@ -74,16 +74,21 @@ void FS_stop_search(struct FS_SEARCH_CONTEXT * ctx,
 unsigned int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock);
 
 /**
- * Insert a block. 
+ * Insert a block.  Note that while the API is VERY similar to
+ * FS_index in terms of signature, the block for FS_index must be in
+ * plaintext, whereas the block passed to FS_insert must be encrypted!
  * 
  * @param block the block (properly encoded and all)
  * @return OK on success, SYSERR on error
+ * @see ecrs_core.h::fileBlockEncode
  */
 int FS_insert(GNUNET_TCP_SOCKET * sock,
 	      const Datastore_Value * block);
 
 /**
- * Index a block. 
+ * Index a block.  Note that while the API is VERY similar to
+ * FS_insert in terms of signature, the block for FS_index must be in
+ * plaintext, whereas the block passed to FS_insert must be encrypted!
  * 
  * @param fileHc the hash of the entire file
  * @param block the data from the file (in plaintext)
@@ -96,10 +101,12 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
 	     unsigned long long offset);
 
 /**
- * Delete a block. 
+ * Delete a block.  The arguments are the same as the ones for
+ * FS_insert.
  * 
  * @param block the block (properly encoded and all)
- * @return OK on success, SYSERR on error
+ * @return number of items deleted on success, 
+ *    SYSERR on error
  */
 int FS_delete(GNUNET_TCP_SOCKET * sock,
 	      const Datastore_Value * block);

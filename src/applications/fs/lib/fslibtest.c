@@ -117,10 +117,11 @@ int main(int argc, char * argv[]){
   Mutex lock;
   GNUNET_TCP_SOCKET * sock;
   Datastore_Value * block;
+  Datastore_Value * eblock;
   HashCode160 hc;
+  HashCode160 query;
   int i;
 
-  memset(&hc, 42, sizeof(HashCode160));
   daemon = fork();
   if (daemon == 0) {
     /* FIXME: would be nice to be able to tell
@@ -154,11 +155,19 @@ int main(int argc, char * argv[]){
   /* ACTUAL TEST CODE */
   for (i=1;i<32;i++) {
     block = makeBlock(i);
+    fileBlockGetQuery((DBlock*) &block[1],
+		      ntohl(block->size) - sizeof(Datastore_Value),
+		      &query);
+    CHECK(OK == fileBlockEncode((DBlock*) &block[1],
+				ntohl(block->size) - sizeof(Datastore_Value),
+				&query,
+				&eblock));
     CHECK(OK == FS_insert(sock, 
-			  block));
+			  eblock));
     CHECK(OK == trySearch(ctx, i));
-    CHECK(OK == FS_delete(sock,
-			  block));
+    CHECK(1 == FS_delete(sock,
+			 eblock));
+    FREE(eblock);
     hash(&((DBlock*)&block[1])[1],
 	 ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
 	 &hc);
@@ -174,11 +183,19 @@ int main(int argc, char * argv[]){
   }
   for (i=32;i<MAX_BUFFER_SIZE;i*=2) {
     block = makeBlock(i);
+    fileBlockGetQuery((DBlock*) &block[1],
+		      ntohl(block->size) - sizeof(Datastore_Value),
+		      &query);
+    CHECK(OK == fileBlockEncode((DBlock*) &block[1],
+				ntohl(block->size) - sizeof(Datastore_Value),
+				&query,
+				&eblock));
     CHECK(OK == FS_insert(sock, 
-			  block));
+			  eblock));
     CHECK(OK == trySearch(ctx, i));
-    CHECK(OK == FS_delete(sock,
-			  block));
+    CHECK(1 == FS_delete(sock,
+			 eblock));
+    FREE(eblock);
     hash(&((DBlock*)&block[1])[1],
 	 ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
 	 &hc);

@@ -96,13 +96,38 @@ static int get(const HashCode160 * query,
 static int del(const HashCode160 * query,
 	       const Datastore_Value * value) {
   int ok;
+  EncName enc;
+  int i;
 
-  if (! testAvailable(query)) 
+  if (! testAvailable(query)) {
+    IFLOG(LOG_WARNING,
+	  hash2enc(query,
+		   &enc));
+    LOG(LOG_WARNING,
+	_("Availability test failed for '%s' at %s:%d.\n"),
+	&enc,
+	__FILE__, __LINE__);
     return 0;
+  }
   ok = sq->del(query, value);
-  if (OK == ok) {
-    makeUnavailable(query); /* update filter! */
-    available += ntohl(value->size);
+  if (0 < ok) {
+    for (i=0;i<ok;i++) {
+      makeUnavailable(query); /* update filter! */ 
+      available += ntohl(value->size);
+    }
+    IFLOG(LOG_DEBUG,
+	  hash2enc(query,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"Deleted '%s' from database.\n",
+	&enc);
+  } else {
+    IFLOG(LOG_WARNING,
+	  hash2enc(query,
+		   &enc));
+    LOG(LOG_WARNING,
+	_("Database failed to delete %s.\n"),
+	&enc);
   }
   return ok;
 }

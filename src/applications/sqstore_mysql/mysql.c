@@ -845,11 +845,19 @@ static int get(const HashCode160 * query,
   IFLOG(LOG_DEBUG,
 	hash2enc(query,
 		 &enc));
-  LOG(LOG_DEBUG,
-      "MySQL found %u results for %s of type %u\n",
-      count,
-      &enc,
-      type);
+  if (count > 0) {
+    LOG(LOG_DEBUG,
+	"MySQL found %d results for '%s' of type %u.\n",
+	count,
+	&enc,
+	type);
+  } else {
+    LOG(LOG_DEBUG,
+	"MySQL iteration aborted looking for '%s' of type %u.\n",
+	&enc,
+	type);
+  }
+      
   return count;
 }
 
@@ -941,7 +949,15 @@ static int del(const HashCode160 * key,
   size_t n;
   int count;
   int contentSize;
-
+  EncName enc;
+  
+  IFLOG(LOG_DEBUG,
+	hash2enc(key, 
+		 &enc));
+  LOG(LOG_DEBUG,
+      "MySQL is executing deletion request for content of query '%s' and type %u\n",
+      &enc,
+      ntohl(value->type));
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   escapedHash = MALLOC(2*sizeof(HashCode160)+1);
@@ -956,7 +972,7 @@ static int del(const HashCode160 * key,
 			   contentSize);
 
   n = sizeof(HashCode160)*2+contentSize*2+400+1;
-  scratch=MALLOC(n);
+  scratch = MALLOC(n);
   if(value == NULL) {
     SNPRINTF(scratch, 
   	     n,
@@ -990,6 +1006,9 @@ static int del(const HashCode160 * key,
   }
   count = mysql_affected_rows(dbh->dbf);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+  LOG(LOG_DEBUG,
+      "MySQL DELETE operation affected %d rows.\n",
+      count);
   return count;
 }
 

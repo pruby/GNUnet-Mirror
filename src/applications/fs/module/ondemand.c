@@ -129,8 +129,15 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
     return SYSERR;
   }
   fn = getOnDemandFile(fileId);
+  LOG(LOG_DEBUG,
+      "Storing on-demand encoded data in '%s'.\n",
+      fn);
   fd = OPEN(fn, 
+#ifdef O_LARGEFILE
+	    O_CREAT|O_WRONLY|O_LARGEFILE,
+#else
 	    O_CREAT|O_WRONLY,
+#endif
 	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
   if(fd == -1) {    
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
@@ -228,7 +235,11 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   odb = (OnDemandBlock*) dbv;
   fn = getOnDemandFile(&odb->fileId);
 
-  fileHandle = OPEN(fn, O_EXCL, S_IRUSR);
+#ifdef O_LARGEFILE
+  fileHandle = OPEN(fn, O_RDONLY|O_LARGEFILE, 0);
+#else
+  fileHandle = OPEN(fn, O_RDONLY, 0);
+#endif
   if (fileHandle == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
     FREE(fn);
@@ -342,8 +353,15 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   DBlock * block;
 
   fn = getOnDemandFile(fileId);
+  LOG(LOG_DEBUG,
+      "Removing on-demand encoded data stored in '%s'.\n",
+      fn);
   fd = OPEN(fn, 
+#ifdef O_LARGEFILE
+	    O_RDONLY | O_LARGEFILE,
+#else
 	    O_RDONLY,
+#endif
 	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
   if(fd == -1) {    
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
@@ -377,7 +395,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     odb.fileId = *fileId;
     /* compute the primary key */
     fileBlockGetQuery(block,
-		      delta,
+		      delta + sizeof(DBlock),
 		      &key);  
     ret = datastore->del(&key,
 			 &odb.header);
