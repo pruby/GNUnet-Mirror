@@ -1,0 +1,30 @@
+.TH GNUNET-GTK "1" "6 Jun 2002" "GNUnet"
+.SH NAME
+gnunet-gtk \- a gtk interface for accessing GNUnet
+.SH SYNOPSIS
+.B gnunet\-gtk
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.PP
+gnunet-gtk is a gtk+ based GUI for searching, downloading and inserting files on GNUnet. It supports queries of the form foo AND bar (notice that AND must be capitalized and that keywords are case-sensitive), just like gnunet-search. It can also be used to create and publish content directories out of search results and inserted files. 
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+load config file (defaults: ~/.gnunet/gnunet.conf)
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.SH NOTES
+.PP
+Multiple files can be downloaded by holding down CTRL while selecting, or by SHIFT, if you wish to select everything between the last selection and the currently pointed row. If you want to insert multiple files at once,
+use \fBgnunet\-insert\fP. Some functionality of gnunet-gtk can be accessed by pressing down the right mouse button in appropriate windows.
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+Users GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet\-search\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Something's wrong with this script, it only mails the diff of the first file that
+# is modified.  How to fix?
+# DEFAULT (echo ""; id -un; echo %{sVv}; set; date; cat) | /home/grothoff/bin/maillog
+read
+read
+USERNAME=$REPLY
+read
+DIFFLINE=$REPLY
+MODULE=`echo $DIFFLINE | awk '{ print $1} '`
+FILE=`echo $DIFFLINE | sed -e "s/,/ /g" | awk '{ print $2 }'`
+REV1=`echo $DIFFLINE | sed -e "s/,/ /g" | awk '{ print $3 }'`
+REV2=`echo $DIFFLINE | sed -e "s/,/ /g" | awk '{ print $4 }'`
+#set | mail -s debug grothoff@cs.purdue.edu
+( echo "$USERNAME changed $FILE (from $REV1 to $REV2)."; date; rcsdiff -r$REV1 -r$REV2 -u /home/cvs/GNUnet/$MODULE/$FILE 2>1 ; cat ) | mail -s "CVS update to $MODULE" gnunetcvs@mail.ovmj.org 

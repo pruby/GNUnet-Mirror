@@ -1,0 +1,18 @@
+#!/bin/sh
+TOTAL=`grep "received query" $1 | wc -l`
+DISTINCT=`grep "received query" $1 | awk '{ print $8 }' | sort | uniq | wc -l`
+PERCENT=`expr $DISTINCT \* 100 / $TOTAL`
+echo "Received $DISTINCT distinct queries out of a total of $TOTAL ($PERCENT%)."
+echo " "
+echo "Frequencies plotted."
+grep "received query" $1 | awk '{ print $8 }' | sort | uniq -c | awk '{ print $1 }' | sort | uniq -c | awk '{ print $2 " " $1 }' | sort -g > /tmp/plot
+gnuplot << EOF
+set terminal postscript
+set output 'graph.ps'
+set xlabel 'frequency query received'
+set yr [0 to ]
+set xr [0 to ]
+set ylabel 'number of queries with this frequency'
+plot "/tmp/plot" with points
+EOF
+gv graph.ps &

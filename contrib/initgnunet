@@ -1,0 +1,78 @@
+#!/bin/sh
+#
+# GNUnet         Start/Stop GNUnet server
+#
+# chkconfig: - 35 65
+# description:	GNUnet is an anonymous distributed secure network
+#               this server is required to connect to the network,
+#               it will open a TCP port to communicate with the
+#               GUI and an UDP port to communicate with the world.
+#               The configuration file /etc/gnunet.conf will be used.
+# processname: gnunetd
+# pidfile: /var/run/gnunetd.pid
+#
+# This script was initially written on/for RH/Zen. You may have
+# to adapt it. 
+#
+# Source function library.
+. /etc/init.d/functions
+
+# Get config.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+if [ ${NETWORKING} = "no" ]
+then
+	exit 0
+fi
+
+[ -x `which gnunetd` ] || exit 0
+
+RETVAL=0
+prog="gnunetd"
+
+start() {
+        echo -n $"Starting $prog: "
+        daemon `which gnunetd` -u gnunet
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/gnunetd
+	return $RETVAL
+}
+
+stop() {
+        echo -n $"Stopping $prog: " 
+        killproc gnunetd
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/gnunetd
+	return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	status gnunetd
+	;;
+  restart|reload)
+	stop
+	start
+	;;
+  condrestart)
+	if [ -f /var/lock/subsys/gnunetd ]; then
+            stop
+            start
+        fi
+	;;
+  *)
+	echo  $"Usage: $0 {start|stop|status|restart|reload|condrestart}"
+	exit 1
+esac
+
+exit $RETVAL

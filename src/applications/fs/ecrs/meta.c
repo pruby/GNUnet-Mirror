@@ -1,0 +1,490 @@
+/*
+     This file is part of GNUnet.
+     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+/**
+ * @file applications/fs/ecrs/meta.c 
+ * @brief Meta-data handling
+ * @author Christian Grothoff
+ */
+
+#include "platform.h"
+#include "ecrs.h"
+#include "gnunet_ecrs_lib.h"
+#include <zlib.h>
+
+/**
+ * Create a fresh MetaData token.
+ */
+MetaData * ECRS_createMetaData() {
+  MetaData * ret;
+  ret = MALLOC(sizeof(MetaData));
+  ret->items = NULL;
+  ret->itemCount = 0;
+  return ret;
+}
+
+/**
+ * Free meta data.
+ */
+void ECRS_freeMetaData(MetaData * md) {
+  int i;
+  for (i=0;i<md->itemCount;i++) 
+    FREE(md->items[i].data);
+  GROW(md->items,
+       md->itemCount,
+       0);
+  FREE(md);
+}
+
+/**
+ * Extend metadata.
+ * @return OK on success, SYSERR if this entry already exists
+ */
+int ECRS_addToMetaData(MetaData * md,
+		       EXTRACTOR_KeywordType type,
+		       const char * data) {
+  int idx;
+
+  for (idx=0;idx<md->itemCount;idx++) {
+    if ( (md->items[idx].type == type) &&
+	 (0 == strcmp(md->items[idx].data,
+		      data)) )
+      return SYSERR;
+  }
+  idx = md->itemCount;
+  GROW(md->items,
+       md->itemCount,
+       md->itemCount+1);
+  md->items[idx].type = type;
+  md->items[idx].data = STRDUP(data);
+  return OK;
+}
+
+/**
+ * Remove an item.
+ * @return OK on success, SYSERR if the item does not exist in md
+ */
+int ECRS_delFromMetaData(MetaData * md,
+			 EXTRACTOR_KeywordType type,
+			 const char * data) {
+  int idx;
+  for (idx=0;idx<md->itemCount;idx++) {
+    if ( (md->items[idx].type == type) &&
+	 (0 == strcmp(md->items[idx].data,
+		      data)) ) {
+      FREE(md->items[idx].data);
+      md->items[idx] = md->items[md->itemCount-1];
+      GROW(md->items,
+	   md->itemCount,
+	   md->itemCount-1);
+      return OK;
+    }      
+  }
+  return SYSERR;
+}
+
+/**
+ * Iterate over MD entries
+ *
+ * @return number of entries 
+ */
+int ECRS_getMetaData(const MetaData * md,
+		     ECRS_MetaDataIterator iterator,
+		     void * closure) {
+  int i;
+
+  if (iterator != NULL) 
+    for (i=md->itemCount-1;i>=0;i--) 
+      if (OK != iterator(md->items[i].type,
+			 md->items[i].data,
+			 closure))
+	return SYSERR;
+  return md->itemCount;
+}
+
+/**
+ * Iterate over MD entries
+ *
+ * @return number of entries 
+ */
+char * ECRS_getFromMetaData(const MetaData * md,
+			    EXTRACTOR_KeywordType type) {
+  int i;
+
+  for (i=md->itemCount-1;i>=0;i--) 
+    if (type == md->items[i].type)
+      return STRDUP(md->items[i].data);
+  return NULL;
+}
+
+/**
+ * Duplicate MetaData.
+ */
+MetaData * ECRS_dupMetaData(const MetaData * md) {
+  int i;
+  MetaData * ret;
+
+  if (md == NULL)
+    return NULL;
+  ret = ECRS_createMetaData();
+  for (i=md->itemCount-1;i>=0;i--) 
+    ECRS_addToMetaData(ret,
+		       md->items[i].type,
+		       md->items[i].data);
+  return ret;
+}
+		   
+/**
+ * Extract meta-data from a file.  
+ * 
+ * @return SYSERR on error, otherwise the number
+ *   of meta-data items obtained
+ */
+int ECRS_extractMetaData(MetaData * md,
+			 const char * filename,
+			 EXTRACTOR_ExtractorList * extractors) {
+  EXTRACTOR_KeywordList * head;
+  EXTRACTOR_KeywordList * pos;
+  int ret;
+
+  if (filename == NULL)
+    return SYSERR;
+  if (extractors == NULL)
+    return 0;
+  head = EXTRACTOR_getKeywords(extractors,
+			       filename);
+  pos = head;
+  ret = 0;
+  while (pos != NULL) {
+    if (OK == ECRS_addToMetaData(md,
+				 pos->keywordType,
+				 pos->keyword))
+      ret++;
+    pos = pos->next;
+  }
+  EXTRACTOR_freeKeywords(head);
+  return ret;
+}
+
+static unsigned int tryCompression(char * data,
+				   unsigned int oldSize) {
+  char * tmp;
+  uLongf dlen;
+
+  tmp = MALLOC(oldSize);
+  dlen = oldSize;
+  if (Z_OK == compress(tmp, &dlen, data, oldSize)) {
+    memcpy(data, tmp, dlen);
+    FREE(tmp);
+    return dlen;
+  } else {
+    FREE(tmp);
+    return oldSize;
+  }
+}
+
+/**
+ * Decompress input, return the decompressed data
+ * as output, set outputSize to the number of bytes
+ * that were found.
+ *
+ * @return NULL on error
+ */
+static char * decompress(const char * input,
+			 unsigned int inputSize,
+			 unsigned int outputSize) {
+  char * output;
+  uLongf olen;
+  
+  olen = outputSize;
+  output = MALLOC(olen);
+  if (Z_OK == uncompress(output,
+			 &olen,
+			 input,
+			 inputSize)) {
+    return output;
+  } else {
+    FREE(output);
+    return NULL;
+  }
+}
+
+/**
+ * Flag in 'version' that indicates compressed meta-data.
+ */
+#define HEADER_COMPRESSED 0x80000000
+
+/**
+ * Bits in 'version' that give the version number.
+ */
+#define HEADER_VERSION_MASK 0x7FFFFFFF
+
+typedef struct {
+  /**
+   * The version of the MD serialization.
+   * The highest bit is used to indicate
+   * compression.
+   */
+  unsigned int version;
+  
+  /**
+   * How many MD entries are there?
+   */
+  unsigned int entries;
+
+  /**
+   * Size of the MD (decompressed)
+   */
+  unsigned int size;
+
+  /**
+   * This is followed by 'entries' values of type 'unsigned int' that
+   * correspond to EXTRACTOR_KeywordTypes.  After that, the meta-data
+   * keywords follow (0-terminated).  The MD block always ends with
+   * 0-termination, padding with 0 until a multiple of 8 bytes.
+   */
+
+} MetaDataHeader;
+
+/**
+ * Serialize meta-data to target.
+ *
+ * @param size maximum number of bytes available
+ * @param part is it ok to just write SOME of the 
+ *        meta-data to match the size constraint,
+ *        possibly discarding some data? YES/NO.
+ * @return number of bytes written on success, 
+ *         SYSERR on error (typically: not enough
+ *         space)
+ */
+int ECRS_serializeMetaData(const MetaData * md,
+			   char * target,
+			   unsigned int max,
+			   int part) {
+  MetaDataHeader * hdr;
+  size_t size;
+  size_t pos;
+  int i;
+  int len;
+  unsigned int ic;  
+
+  if (max < sizeof(MetaDataHeader))
+    return SYSERR; /* far too small */
+  ic = md->itemCount;
+  size = max+1;
+  hdr = NULL;
+  while (size > max) {
+    size = sizeof(MetaDataHeader);
+    size += sizeof(unsigned int) * ic;
+    for (i=0;i<ic;i++)
+      size += 1 + strlen(md->items[i].data);
+    while (size % 8 != 0)
+      size++;
+    hdr = MALLOC(size);
+    hdr->version = htonl(0);
+    hdr->entries = htonl(md->itemCount);
+    for (i=0;i<ic;i++)
+      ((unsigned int*)&hdr[1])[i] = htonl((unsigned int)md->items[i].type);
+    pos = sizeof(MetaDataHeader);
+    pos += sizeof(unsigned int) * md->itemCount;
+    for (i=0;i<ic;i++) {
+      len = strlen(md->items[i].data) + 1; 
+      memcpy(&((char*)hdr)[pos],
+	     md->items[i].data,
+	     len);
+      pos += len;
+    }
+    hdr->size = htonl(size);
+    if (size <= max)
+      break;
+
+    pos = tryCompression((char*)&hdr[1],
+			 size - sizeof(MetaDataHeader));
+    if (pos < size - sizeof(MetaDataHeader)) {
+      hdr->version = htonl(HEADER_COMPRESSED);
+      size = pos + sizeof(MetaDataHeader);
+    }
+    if (size <= max)
+      break;
+    FREE(hdr);
+    hdr = NULL;
+
+    if (! part) 
+      return SYSERR; /* does not fit! */
+
+    /* partial serialization ok, try again with less meta-data */
+    if (size > 2 * max) 
+      ic = ic * 2 / 3; /* stil far too big, make big reductions */
+    else
+      ic--; /* small steps, we're close */
+  }
+  memcpy(target,
+	 hdr,
+	 size);
+  FREE(hdr);
+  return size;
+}
+
+/**
+ * Estimate (!) the size of the meta-data in
+ * serialized form.  The estimate MAY be higher
+ * than what is strictly needed.
+ */
+unsigned int ECRS_sizeofMetaData(const MetaData * md) {
+
+  MetaDataHeader * hdr;
+  size_t size;
+  size_t pos;
+  int i;
+  int len;
+  unsigned int ic;  
+
+  ic = md->itemCount;
+  size = sizeof(MetaDataHeader);
+  size += sizeof(unsigned int) * ic;
+  for (i=0;i<ic;i++)
+    size += 1 + strlen(md->items[i].data);
+  while (size % 8 != 0)
+    size++;
+  hdr = MALLOC(size);
+  hdr->version = htonl(0);
+  hdr->entries = htonl(md->itemCount);
+  for (i=0;i<ic;i++)
+    ((unsigned int*)&hdr[1])[i] = htonl((unsigned int)md->items[i].type);
+  pos = sizeof(MetaDataHeader);
+  pos += sizeof(unsigned int) * md->itemCount;
+  for (i=0;i<ic;i++) {
+    len = strlen(md->items[i].data) + 1; 
+    memcpy(&((char*)hdr)[pos],
+	   md->items[i].data,
+	   len);
+    pos += len;
+  }
+
+  pos = tryCompression((char*)&hdr[1],
+		       size - sizeof(MetaDataHeader));
+  if (pos < size - sizeof(MetaDataHeader)) 
+    size = pos + sizeof(MetaDataHeader);
+
+  FREE(hdr);
+  return size;
+}
+
+/**
+ * Deserialize meta-data.  Initializes md.
+ * @param size number of bytes available
+ * @return OK on success, SYSERR on error (i.e. 
+ *         bad format)
+ */
+int ECRS_deserializeMetaData(MetaData ** md,
+			     const char * input,
+			     unsigned int size) {
+  const MetaDataHeader * hdr;
+  unsigned int ic;
+  char * data;
+  unsigned int dataSize;
+  int compressed;
+  int i;
+  unsigned int pos;
+  int len;
+
+  if (size < sizeof(MetaDataHeader))
+    return SYSERR;
+  hdr = (const MetaDataHeader*) input;
+  if ( (ntohl(hdr->version) & HEADER_VERSION_MASK) != 0)
+    return SYSERR; /* unsupported version */
+  ic = ntohl(hdr->entries);
+  compressed = (ntohl(hdr->version) & HEADER_COMPRESSED) != 0;
+  if (compressed) {
+    dataSize = ntohl(hdr->size) - sizeof(MetaDataHeader);
+    if (dataSize > 2 * 1042 * 1024) {
+      BREAK();
+      return SYSERR; /* only 2 MB allowed [to make sure we don't blow
+			our memory limit because of a mal-formed
+			message... ]*/
+    }
+    data = decompress((char*)&input[sizeof(MetaDataHeader)],
+		      size - sizeof(MetaDataHeader),
+		      dataSize);
+    if (data == NULL) {
+      BREAK(); 
+      return SYSERR; 
+    }
+  } else {
+    data = (char*) &hdr[1];
+    dataSize = size - sizeof(MetaDataHeader);
+    if (size != ntohl(hdr->size)) {
+      BREAK();
+      return SYSERR;
+    }
+  }
+
+  if ( (sizeof(unsigned int) * ic + ic) > dataSize) {
+    BREAK();
+    goto ERROR;
+  }
+  if (data[dataSize-1] != '\0') {
+    BREAK();
+    goto ERROR;
+  }
+
+  *md = ECRS_createMetaData();
+  i = 0;
+  pos = sizeof(unsigned int) * ic;
+  while ( (pos < dataSize) &&
+	  (i < ic) ) {
+    len = strlen(&data[pos])+1;
+    ECRS_addToMetaData(*md,
+		       (EXTRACTOR_KeywordType) ((unsigned int*)data)[i],
+		       &data[pos]);    
+    pos += len;
+    i++;
+  }
+  if (i < ic) { /* oops */
+    ECRS_freeMetaData(*md);
+    goto ERROR;
+  }
+  if (compressed)
+    FREE(data);
+  return OK;
+ ERROR:
+  if (compressed) 
+    FREE(data);
+  return SYSERR; /* size too small */  
+}
+
+/**
+ * Does the meta-data claim that this is a directory?
+ * Checks if the mime-type is that of a GNUnet directory.
+ */ 
+int ECRS_isDirectory(MetaData * md) {
+  int i;
+
+  for (i=md->itemCount-1;i>=0;i--) 
+    if ( (md->items[i].type == EXTRACTOR_MIMETYPE) &&
+	 (0 == strcmp(md->items[i].data,
+		      GNUNET_DIRECTORY_MIME)) )
+      return YES;
+    else
+      return NO;   
+  return SYSERR;
+}
+
+/* end of meta.c */

@@ -1,0 +1,44 @@
+/*
+     This file is part of GNUnet
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+/**
+ * @file applications/afs/gtkui/directory.h
+ * @author Christian Grothoff
+ **/
+
+#ifndef GTKUI_DIRECTORY_H
+#define GTKUI_DIRECTORY_H
+
+
+
+/**
+ * Open a window to allow the user to build a directory.
+ *
+ * @param context selector for a subset of the known RootNodes
+ **/
+void openAssembleDirectoryDialog(GtkWidget * unused,
+				 unsigned int context);
+
+/**
+ * Asks user to select a .gnd directory (from disk) to be displayed
+ **/
+void importDirectory(void);
+
+
+#endif

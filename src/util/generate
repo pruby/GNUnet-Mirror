@@ -1,0 +1,11 @@
+#!/bin/sh
+# Convert an ASCII file into C code that outputs
+# that ASCII file (converts " to \" and puts
+# fprintf and a function around the file).
+echo "#include <stdio.h>"
+echo "void " $2 "(FILE * f) {"
+cat $1 | sed \
+        -e "s/\"/\\\\\"/g" \
+	-e "s/^/ fprintf(f, \"%s\\\\n\",\"/" \
+        -e "s/$/\");/"
+echo "}";

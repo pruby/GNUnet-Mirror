@@ -1,0 +1,51 @@
+.TH GNUNETD "1" "20 Apr 2004" "GNUnet"
+.SH NAME
+gnunetd \- The GNUnet deamon
+.SH SYNOPSIS
+.B gnunetd
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.PP
+The GNUnet deamon, required for any GNUnet operations (searches, downloads, etc). gnunetd does not require root rights.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+load config file (default: /etc/gnunet.conf)
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.TP
+\fB\-d\fR, \fB\-\-debug\fR
+do not detach from the console (for debugging); log messages are written to stderr instead of the logfile in -d mode.
+.TP
+\fB\-u \fIUSER\fR, \fB\-\-user=USER\fR
+run as user USER (and if available as group USER). Note that to use this option, you will probably have to start gnunetd as
+root. It is typically better to directly start gnunetd as that user instead.
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+.SH NOTES
+Before you can share, search or download files from GNUnet you must start the GNUnet server, gnunetd.
+If you start gnunetd as root (which is not required), you can use the -u option such that GNUnet runs as a different user. If a group of the same name exists, GNUnet will also change to that group. If GNUnet cannot change its UID to USER or GID to USER, a warning will be printed and gnunetd will *continue* with the rights of the user that invoked gnunetd.
+.SH FILES
+.TP
+/etc/gnunet.conf
+gnunetd configuration file (default location).  
+.TP
+/var/lib/GNUnet/.hostkey
+Nodes GNUnet RSA private key.  Keep secret.
+.TP
+/var/lib/GNUnet/data/hosts/
+Hostkeys.  GNUnet stores contact information and public keys of other nodes here. You may want to make this directory publically available.
+.TP
+/var/lib/GNUnet/data/afs/content/
+Block database for anonymous file sharing. Depending on how you compiled GNUnet, a gdbm or tdb database or a directory is used.  GNUnet will store isolated blocks of files here. 
+.TP
+/var/lib/GNUnet/data/credit/
+Trust directory.  GNUnet stores economic information about other nodes here, in particular how much useful data we have received from which remote node.
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

@@ -1,0 +1,24 @@
+.TH GNUNET-DOWNLOAD-MANAGER 1 "23 Sept, 2004" "GNUnet"
+
+.SH NAME
+gnunet-download-manager \- manage downloads across sessions
+
+.SH SYNOPSIS
+.B gnunet-download-manager
+.RI [ options ]
+.br
+
+.SH DESCRIPTION
+\fBgnunet-download-manager\fP is a script that can be used to track download sessions.  It makes the process of resuming downloads after a system reboot easier.  A typical use is to define an alias (depending on your shell) of the form
+
+$ alias gnunet-download='gnunet-download-manager.scm download'
+
+Other commands for the download manager include resume (resumes all downloads), status (show status of pending downloads), killall (abort all downloads), settings (for configuration) and help (print help text).
+
+gnunet\-download\-manager is a scheme script and is only installed if guile was found by configure.  
+
+.SH BUGS
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+
+.SH SEE ALSO
+gnunet-download(1)

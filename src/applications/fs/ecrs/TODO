@@ -1,0 +1,12 @@
+uri.c: DONE & tested
+meta.c: DONE & tested
+directory: DONE
+
+upload: DONE
+unindex: DONE, except code cleanup
+
+download: stats details, details in heuristics
+
+keyspace: DONE
+namespace: DONE
+search: DONE

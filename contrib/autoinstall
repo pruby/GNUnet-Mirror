@@ -1,0 +1,46 @@
+#!/bin/sh
+echo "This script compiles, installs and starts GNUnet."
+echo "It must be run as root (sorry)."
+echo "GNUnet will be installed to /usr/local/."
+echo "Configuration files are created in /etc/gnunet.conf"
+echo "and for all users in their home directories"
+echo "(in /home/*/.gnunet/)."
+echo "An init-script will be placed under /etc/init.d/gnunetd"
+echo " "
+touch /etc/gnunet.conf || echo "Not root.  Aborting."
+touch /etc/gnunet.conf || exit -1
+if test -f contrib/gnunet.root
+then
+ echo "Please press CTRL-C now to abort or RETURN to continue."
+ read
+else
+ echo "This script must be run from the GNUnet-VERSION/ directory."
+ exit -1
+fi
+cp contrib/initgnunet /etc/init.d/gnunetd
+chmod +x /etc/init.d/gnunetd
+cp contrib/gnunet.root /etc/gnunet.conf 
+for n in /home/*
+do
+ mkdir -p $n/.gnunet/
+ cp contrib/gnunet.user $n/.gnunet/gnunet.conf
+ chown -R `echo $n | sed -e "s/\/home\///"` $n/.gnunet/
+done
+./configure --prefix=/usr/local
+make -s
+make -s install
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export PATH=/usr/local/bin:$PATH
+gnunetd
+gnunet-gtk &
+echo "Note that you can start GNUnet text-user interfaces"
+echo "with the commands "
+echo " "
+echo "# $HOME/bin/gnunet-search"
+echo "# $HOME/bin/gnunet-download"
+echo "# $HOME/bin/gnunet-insert"
+echo " "
+echo "You will have to edit your startup sequence to"
+echo "automatically start gnunetd whenever your system boots."
+echo " "
+echo "Visit http://www.ovmj.org/GNUnet/ for further information."

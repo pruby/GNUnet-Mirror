@@ -1,0 +1,14 @@
+List of the top known memory users in GNUnet for
+the default configuration:
+
+* Bloomfilters (size depends on DISKQUOTA, think 1-10 MB)
+* AFS routing table (650 kb)
+* connection send buffers (about 200 kb at 50 kbps bandwidth)
+* TCP buffers (1.5k read + up to 1.5k write per connection),
+  - This is a worst-case total of 350 kb for 128 connections
+* querymanager ( 512 byte * (32 + query-size) ) => approx. 64k
+* databases (size depends on DATABASETYPE and DISKQUOTA,
+  think 0-50 MB)
+
+Note that many larger arrays are of static size and will not be
+malloc'ed.

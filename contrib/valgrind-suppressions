@@ -1,0 +1,17 @@
+{
+   <zlib error>
+   Memcheck:Cond
+   obj:/usr/lib/libz.so.1.2.2
+   obj:/usr/lib/libz.so.1.2.2
+   fun:deflate
+   fun:compress2
+}
+
+{
+   <libltdl leak>
+   Memcheck:Leak
+   fun:malloc
+   fun:lt_emalloc
+   fun:canonicalize_path
+   fun:lt_dlpath_insertdir
+}

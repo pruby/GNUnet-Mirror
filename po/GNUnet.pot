@@ -1,0 +1,5284 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Christian Grothoff
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#: src/applications/afs/tools/gnunet-pseudonym.c:60
+#: src/applications/fs/lib/gnunet-pseudonym.c:60
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
+"POT-Creation-Date: 2004-11-29 00:42-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/applications/afs/esed2/block.c:272
+#: src/applications/afs/esed2/block.c:317
+#: src/applications/afs/esed2/block.c:402
+#: src/applications/afs/esed2/block.c:466
+#: src/applications/afs/esed2/block.c:1033
+#: src/applications/afs/esed2/block.c:1114
+#: src/applications/fs/ecrs/block.c:272 src/applications/fs/ecrs/block.c:317
+#: src/applications/fs/ecrs/block.c:402 src/applications/fs/ecrs/block.c:466
+#: src/applications/fs/ecrs/block.c:1033 src/applications/fs/ecrs/block.c:1114
+#, c-format
+msgid "Could not send '%s' request to gnunetd. Is gnunetd running?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:278
+#: src/applications/afs/esed2/block.c:1027
+#: src/applications/afs/esed2/insertutil.c:239
+#: src/applications/afs/esed2/sblock.c:327
+#: src/applications/fs/ecrs/block.c:278 src/applications/fs/ecrs/block.c:1027
+#: src/applications/fs/ecrs/insertutil.c:239
+#: src/applications/fs/ecrs/sblock.c:327
+msgid "Server did not send confirmation of insertion.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:282
+#: src/applications/afs/esed2/block.c:1030
+#: src/applications/afs/esed2/insertutil.c:244
+#: src/applications/afs/esed2/sblock.c:332
+#: src/applications/fs/ecrs/block.c:282 src/applications/fs/ecrs/block.c:1030
+#: src/applications/fs/ecrs/insertutil.c:244
+#: src/applications/fs/ecrs/sblock.c:332
+msgid "Server could not perform insertion.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:323
+#: src/applications/afs/esed2/block.c:1109
+#: src/applications/fs/ecrs/block.c:323 src/applications/fs/ecrs/block.c:1109
+msgid "Server did not send confirmation of deletion.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:327 src/applications/fs/ecrs/block.c:327
+msgid "Server could not perform deletion.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:408 src/applications/fs/ecrs/block.c:408
+msgid "Server did not send confirmation for indexing request.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:412 src/applications/fs/ecrs/block.c:412
+msgid "Server could not perform indexing\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:472 src/applications/fs/ecrs/block.c:472
+msgid "Server did not send confirmation for unindex request.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:476 src/applications/fs/ecrs/block.c:476
+msgid "Server could not perform unindexing (content already removed?).\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:662 src/applications/fs/ecrs/block.c:662
+msgid ""
+"Decrypted content does not match key. This is either a bug or a maliciously "
+"inserted file. Download aborted.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:1837
+#: src/applications/afs/esed2/block.c:1854
+#: src/applications/fs/ecrs/block.c:1837 src/applications/fs/ecrs/block.c:1854
+msgid "File corrupted (or bug)."
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:1891
+#: src/applications/fs/ecrs/block.c:1891
+#, c-format
+msgid ""
+"File '%s': %s of mime-type '%s' (size %u)\n"
+"%s"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:1921
+#: src/applications/fs/ecrs/block.c:1921
+#, c-format
+msgid ""
+"File '%s': %s of mime-type '%s'\n"
+"\tSize is %u bytes, from namespace '%s'\n"
+"\t%s"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:1947
+#: src/applications/fs/ecrs/block.c:1947
+#, c-format
+msgid ""
+"Namespace %s (called '%.*s'):\n"
+"\t'%.*s' with files of type '%.*s'\n"
+"\t(Contact: '%.*s', URI: '%.*s', owner: '%.*s')"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:1966
+#: src/applications/fs/ecrs/block.c:1966
+#, c-format
+msgid ""
+"Namespace %s (called '%.*s'):\n"
+"\t'%.*s' with files of type '%.*s'\n"
+"\t(Contact: '%.*s', URI: '%.*s', owner: '%.*s', root: '%s')"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:1990
+#: src/applications/fs/ecrs/block.c:1990
+#, c-format
+msgid "Unknown format with ID %d:%d"
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:2020
+#: src/applications/afs/esed2/block.c:2073
+#: src/applications/fs/ecrs/block.c:2020 src/applications/fs/ecrs/block.c:2073
+msgid "Unsupported node type."
+msgstr ""
+
+#: src/applications/afs/esed2/block.c:2046
+#: src/applications/fs/ecrs/block.c:2046
+msgid "unknown"
+msgstr ""
+
+#: src/applications/afs/esed2/deleteutil.c:62
+#: src/applications/fs/ecrs/deleteutil.c:62
+msgid "Could not request or receive data from gnunetd. Is gnunetd running?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/insertutil.c:80
+#: src/applications/fs/ecrs/insertutil.c:80
+msgid "Could not request or receive data from gnunetd.  Is gnunetd running?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/insertutil.c:89
+#: src/applications/fs/ecrs/insertutil.c:89
+msgid "gnunetd refused to index file (consult gnunetd logs).\n"
+msgstr ""
+
+#: src/applications/afs/esed2/insertutil.c:177
+#: src/applications/fs/ecrs/insertutil.c:177
+msgid "Could not receive data from gnunetd. Is gnunetd running?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/insertutil.c:230
+#: src/applications/fs/ecrs/insertutil.c:230
+msgid "Could not send data to gnunetd. Is gnunetd running?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/insertutil.c:302
+#: src/applications/fs/ecrs/insertutil.c:302
+msgid "Adding to index list failed, trying insertion!\n"
+msgstr ""
+
+#: src/applications/afs/esed2/insertutil.c:491
+#: src/applications/fs/ecrs/insertutil.c:491
+#, c-format
+msgid ""
+"Error inserting directory %s.\n"
+"You may want to check whether or not you are out of space.\n"
+"Run gnunet-stats | grep \"AFS storage left\" to check.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/insertutil.c:582
+#: src/applications/afs/esed2/insertutil.c:596
+#: src/applications/afs/esed2/insertutil.c:649
+#: src/applications/fs/ecrs/insertutil.c:582
+#: src/applications/fs/ecrs/insertutil.c:596
+#: src/applications/fs/ecrs/insertutil.c:649
+msgid "Failed to insert RBlock. Is gnunetd running and space available?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/policy.c:109
+#: src/applications/traffic/clientapi.c:67
+#: src/applications/fs/ecrs/policy.c:109
+msgid "Failed to query gnunetd about traffic conditions.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/policy.c:117
+#: src/applications/traffic/clientapi.c:74
+#: src/applications/fs/ecrs/policy.c:117
+msgid "Did not receive reply from gnunetd about traffic conditions.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/pseudonym.c:37
+#: src/applications/fs/ecrs/pseudonym.c:37 src/util/state.c:81
+#, c-format
+msgid ""
+"Configuration file must specify a directory for GNUnet to store per-peer "
+"data under %s%s.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/pseudonym.c:67
+#: src/applications/fs/ecrs/pseudonym.c:67
+#, c-format
+msgid "Cannot create pseudonym '%s', file '%s' exists.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/pseudonym.c:152
+#: src/applications/fs/ecrs/pseudonym.c:152
+#, c-format
+msgid "File '%s' does not contain a pseudonym.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/pseudonym.c:181
+#: src/applications/fs/ecrs/pseudonym.c:181
+msgid "Decrypting pseudonym failed.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/pseudonym.c:191
+#: src/applications/fs/ecrs/pseudonym.c:191
+#, c-format
+msgid "Format of pseudonym '%s' is invalid. Wrong password?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/requestmanager.c:322
+#: src/applications/fs/ecrs/requestmanager.c:322
+#, c-format
+msgid "Content '%s' seems to be not available on the network.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/requestmanager.c:350
+#: src/applications/tracekit/gnunet-tracekit.c:387
+#: src/applications/fs/ecrs/requestmanager.c:350
+msgid "Could not send request to gnunetd.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/requestmanager.c:679
+#: src/applications/fs/ecrs/requestmanager.c:679
+#, c-format
+msgid ""
+"Received unexpected message (%d) from gnunetd. (this is a bug, though we can "
+"probably recover gracefully).\n"
+msgstr ""
+
+#: src/applications/afs/esed2/requestmanager.c:739
+#: src/applications/fs/ecrs/requestmanager.c:739
+msgid "Could not create socket to connect to gnunetd.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:499
+#: src/applications/fs/ecrs/sblock.c:499
+msgid "Received invalid reply from gnunetd, retrying.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:509
+#: src/applications/fs/ecrs/sblock.c:509
+msgid "NBlock received from gnunetd belongs to wrong namespace.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:531
+#: src/applications/fs/ecrs/sblock.c:531
+msgid "SBlock received from gnunetd failed verification.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:541
+#: src/applications/fs/ecrs/sblock.c:541
+msgid "SBlock received from gnunetd has wrong identifier.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:553
+#: src/applications/afs/esed2/searchutil.c:349
+#: src/applications/fs/ecrs/sblock.c:553
+#: src/applications/fs/ecrs/searchutil.c:349
+#, c-format
+msgid "Message from server is of unexpected type %d.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:602
+#: src/applications/fs/ecrs/sblock.c:602
+#, c-format
+msgid "%.*s (%.*s) published by '%s'\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:621
+#: src/applications/fs/ecrs/sblock.c:621
+#, c-format
+msgid "\tNext update will be %s.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:626
+#: src/applications/fs/ecrs/sblock.c:626
+#, c-format
+msgid "\tSBlock indicates no updates.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/sblock.c:647
+#: src/applications/fs/ecrs/sblock.c:647
+#, c-format
+msgid "Update due at '%s' has key '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/searchutil.c:303
+#: src/applications/fs/ecrs/searchutil.c:303
+#, c-format
+msgid "Received RBlock has unsupported minor version %d.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/searchutil.c:310
+#: src/applications/fs/ecrs/searchutil.c:310
+msgid "Received SBlock in keyword search, that is not unsupported.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/searchutil.c:315
+#: src/applications/fs/ecrs/searchutil.c:315
+#, c-format
+msgid "Received NBlock has unsupported minor version %d.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/searchutil.c:322
+#: src/applications/fs/ecrs/searchutil.c:322
+#, c-format
+msgid "Received reply has unsupported version %d.%d.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/searchutil.c:342
+#: src/applications/fs/ecrs/searchutil.c:342
+#, c-format
+msgid "Reply '%s' does not match expected hash '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/nblock.c:197
+#: src/applications/fs/ecrs/nblock.c:197
+#, c-format
+msgid "State DB file '%s' corrupt, deleting contents.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/collection.c:79
+#: src/applications/fs/ecrs/collection.c:79
+#, c-format
+msgid "Name for collection is too long (maximum is %u characters).\n"
+msgstr ""
+
+#: src/applications/afs/esed2/collection.c:160
+#: src/applications/fs/ecrs/collection.c:160
+msgid "Collection database corrupt, will stop to collect.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/collection.c:191
+#: src/applications/fs/ecrs/collection.c:191
+#, c-format
+msgid "Could not find pseudonym for collection '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/collection.c:206
+#: src/applications/afs/tools/gnunet-delete.c:142
+#: src/applications/afs/tools/gnunet-insert.c:646
+#: src/applications/afs/tools/gnunet-search.c:534
+#: src/applications/afs/tools/gnunet-pseudonym.c:382
+#: src/applications/chat/gnunet-chat.c:149
+#: src/applications/tbench/gnunet-tbench.c:202
+#: src/applications/tracekit/gnunet-tracekit.c:363
+#: src/applications/fs/ecrs/collection.c:206
+#: src/applications/fs/lib/gnunet-delete.c:142
+#: src/applications/fs/lib/gnunet-insert.c:646
+#: src/applications/fs/lib/gnunet-pseudonym.c:382
+#: src/applications/fs/lib/gnunet-search.c:534 src/util/port.c:72
+msgid "Could not connect to gnunetd.\n"
+msgstr ""
+
+#: src/applications/afs/esed2/collection.c:245
+#: src/applications/fs/ecrs/collection.c:245
+#, c-format
+msgid ""
+"Error inserting collection advertisement under keyword '%s'. Is gnunetd "
+"running and space available?\n"
+msgstr ""
+
+#: src/applications/afs/esed2/collection.c:252
+#: src/applications/fs/ecrs/collection.c:252
+#, c-format
+msgid ""
+"Error inserting SBlock into namespace. Is gnunetd running and space "
+"available?\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/about.c:79
+msgid "translator-credits"
+msgstr ""
+
+#: src/applications/afs/gtkui/delete.c:63
+msgid "Failed to connect to gnunetd.  Consult logs."
+msgstr ""
+
+#: src/applications/afs/gtkui/delete.c:81
+#, c-format
+msgid "Failed to unindex file '%s'\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/delete.c:84
+#, c-format
+msgid "File '%s' unindexed (no longer shared).\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/delete.c:112
+#: src/applications/afs/gtkui/directory.c:688
+msgid "Please select a file!\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/delete.c:121
+msgid "deleted"
+msgstr ""
+
+#: src/applications/afs/gtkui/delete.c:157
+msgid "Choose file to be unindexed"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:70
+#: src/applications/afs/gtkui/directory.c:72
+msgid "Cowardly refusing to build empty directory.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:106
+msgid "Could not write directory to temporary file.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:138
+msgid "processed"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:379
+#: src/applications/afs/gtkui/insert.c:489
+msgid "Keyword(s) used"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:380
+#: src/applications/afs/gtkui/namespace.c:736
+msgid "Files available"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:381
+msgid "Files selected"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:392
+msgid "Assemble directory"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:423
+msgid "Published directory name:"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:448
+#: src/applications/afs/gtkui/insert.c:561
+#: src/applications/afs/gtkui/namespace.c:1643
+#: src/applications/afs/gtkui/pseudonyms.c:367
+msgid "Description:"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:462
+msgid "A GNUnet directory"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:516
+#: src/applications/afs/gtkui/insert.c:696
+#: src/applications/afs/gtkui/insert.c:1098
+msgid "Add keyword"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:517
+#: src/applications/afs/gtkui/insert.c:697
+#: src/applications/afs/gtkui/insert.c:1099
+msgid "Delete keyword"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:649
+#: src/applications/afs/gtkui/download.c:846
+#: src/applications/afs/gtkui/helper.c:222
+#: src/applications/afs/gtkui/insert.c:735
+#: src/applications/afs/gtkui/insert.c:1139
+#: src/applications/afs/gtkui/namespace.c:1058
+#: src/applications/afs/gtkui/pseudonyms.c:529
+#: src/applications/afs/gtkui/search.c:212
+msgid "Ok"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:650
+#: src/applications/afs/gtkui/download.c:847
+#: src/applications/afs/gtkui/insert.c:736
+#: src/applications/afs/gtkui/insert.c:1140
+#: src/applications/afs/gtkui/namespace.c:1059
+#: src/applications/afs/gtkui/namespace.c:1796
+#: src/applications/afs/gtkui/pseudonyms.c:530
+#: src/applications/afs/gtkui/pseudonyms.c:713
+msgid "Cancel"
+msgstr ""
+
+#: src/applications/afs/gtkui/directory.c:709
+msgid "Choose directory to be imported"
+msgstr ""
+
+#: src/applications/afs/gtkui/directorydisplay.c:43
+#: src/applications/afs/gtkui/directorydisplay.c:45
+#, c-format
+msgid "Downloaded directory '%s' has invalid format.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:88
+#: src/applications/afs/gtkui/search.c:43
+msgid "/Select all"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:89
+#: src/applications/afs/gtkui/search.c:44
+msgid "/Unselect all"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:91
+msgid "/Remove selected"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:92
+msgid "/Remove finished"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:94
+msgid "/Hide window"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:135
+#: src/applications/afs/gtkui/download.c:507
+msgid "DONE"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:461
+#, c-format
+msgid ""
+"Could not download file '%s'.\n"
+"Consult logs.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:523
+msgid "FAIL"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:586
+msgid "filename"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:588
+msgid "position"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:589
+msgid "size"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:590
+msgid "active requests"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:591
+msgid "retrie per active request"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:592
+msgid "total retries"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:593
+msgid "BPS"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:601
+msgid "gnunet-gtk: Downloads"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:656
+msgid "Remove selected entries"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:670
+#: src/applications/afs/gtkui/main.c:230
+msgid "/File/Show downloads"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:764
+#, c-format
+msgid "Invalid gnunet AFS URI '%s'."
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:800
+msgid "Download URI"
+msgstr ""
+
+#: src/applications/afs/gtkui/download.c:824
+msgid "GNUnet AFS URI: "
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:204
+msgid "Notification"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:272
+msgid "Messages"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:305
+#: src/applications/afs/gtkui/helper.c:456
+msgid "Close"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:417
+msgid "Statistic"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:418
+msgid "Value"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:428
+msgid "gnunetd statistics"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:512
+#, c-format
+msgid "Error reading '%s' output from file '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:570
+msgid "gnunetd is NOT running.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:635
+#, c-format
+msgid "Attempted path to '%s' was '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:653
+#, c-format
+msgid "Starting gnunetd failed, error code: %d"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:659
+msgid "Starting gnunetd failed (core dumped)."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:665
+msgid "Starting gnunetd failed (aborted by signal)."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:749
+msgid "gnunetd is already running"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:778
+msgid "Error sending shutdown request to gnunetd."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:784
+msgid "Error reading shutdown confirmation from gnunetd."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:789
+msgid "gnunetd agreed to shut down."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:791
+#, c-format
+msgid "gnunetd refused to shut down (error code '%d')."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:795
+msgid "gnunetd is not running."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:809
+msgid ""
+"gnunetd (daemon) doesn't seem to be running.\n"
+"Would you like to start it?\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:813
+msgid "Yes!"
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:814
+msgid "No."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:846
+#, c-format
+msgid ""
+"gnunetd does not seem to be running.\n"
+"Unfortunately, gnunet-gtk cannot identify config entry\n"
+"\n"
+"NETWORK/HOST '%s'\n"
+"\n"
+"as a local machine, so gnunetd cannot be\n"
+"launched by gnunet-gtk."
+msgstr ""
+
+#: src/applications/afs/gtkui/helper.c:898
+msgid "gnunetd is now running."
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:92
+#: src/applications/afs/gtkui/insert.c:168
+msgid "Filename not specified."
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:99
+msgid "Description not given."
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:105
+msgid "Mime-type unknown."
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:126
+#: src/applications/afs/gtkui/insert.c:214
+msgid "indexed"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:128
+#: src/applications/afs/gtkui/insert.c:216
+msgid "inserted"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:175
+msgid "No description specified."
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:501
+#: src/applications/afs/gtkui/insert.c:859
+msgid "Edit attributes"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:525
+msgid "Published filename:"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:543
+msgid "Mimetype:"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:579
+msgid "Insertion method:"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:594
+#: src/applications/afs/gtkui/insert.c:935
+msgid "Index only"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:596
+#: src/applications/afs/gtkui/insert.c:950
+msgid "Copy file to shared directory"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:611
+#: src/applications/afs/gtkui/insert.c:949
+msgid "Full insertion"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:847
+msgid "Keyword(s) used for directory"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:848
+msgid "Keyword(s) used for all files in directory"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:883
+msgid "Published name of the directory:"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:920
+msgid "Insertion method (for files in directory):"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:1218
+#, c-format
+msgid "'%s' is not a file!\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/insert.c:1266
+msgid "Choose file to be inserted"
+msgstr ""
+
+#: src/applications/afs/gtkui/insertprogress.c:177
+#: src/applications/afs/gtkui/insertprogress.c:519
+#, c-format
+msgid ""
+"Successfully processed file '%s'.\n"
+"\tURI is '%s'\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/insertprogress.c:181
+#, c-format
+msgid "Successfully processed file '%s'. URI is '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/insertprogress.c:186
+#: src/applications/afs/gtkui/insertprogress.c:528
+#, c-format
+msgid "Insertion of file '%s' failed!\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/insertprogress.c:298
+#, c-format
+msgid "%%v bytes %s"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:74
+msgid ""
+"This window will show messages and the URIs of inserted content\n"
+" and other information that might be useful elsewhere.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:122
+msgid "You must enter a non-empty search key!\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:195
+msgid "/_File"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:200
+msgid "/File/_Insert"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:205
+msgid "/File/_Download URI"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:210
+msgid "/File/Import di_rectory"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:215 src/applications/afs/gtkui/main.c:225
+#: src/applications/afs/gtkui/main.c:270
+msgid "/File/sep1"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:220
+msgid "/File/_Unindex file"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:235
+msgid "/File/Show messages"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:240
+msgid "/File/Show gnunetd stats"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:245
+msgid "/File/_Plot gnunetd stats"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:250
+msgid "/File/Plot gnunetd stats/_Connectivity"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:255
+msgid "/File/Plot gnunetd stats/C_PU Load"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:260
+msgid "/File/Plot gnunetd stats/_Inbound Traffic"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:265
+msgid "/File/Plot gnunetd stats/_Outbound Traffic"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:275
+msgid "/File/_Quit"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:280
+msgid "/_Advanced"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:286
+msgid "/Advanced/_Assemble Directory"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:291
+msgid "/Advanced/Assemble Directory/from _search results"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:296
+msgid "/Advanced/Assemble Directory/from _inserted files"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:301
+msgid "/Advanced/Assemble Directory/from local _namespaces"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:306
+msgid ""
+"/Advanced/Assemble Directory/from file identifiers from downloaded "
+"_directories"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:311
+msgid "/Advanced/Assemble Directory/sepx1"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:316
+msgid "/Advanced/Assemble Directory/from _all known file identifiers"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:322
+msgid "/Advanced/sep1"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:328
+msgid "/Advanced/Manage _Pseudonyms"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:333
+msgid "/Advanced/Manage Pseudonyms/_Create new pseudonym"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:338
+msgid "/Advanced/Manage Pseudonyms/_Delete pseudonym"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:343
+msgid "/Advanced/_Insert into Namespace"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:348
+msgid "/Advanced/Insert into Namespace/Select from _search results"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:353
+msgid "/Advanced/Insert into Namespace/Select from _inserted files"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:358
+msgid ""
+"/Advanced/Insert into Namespace/Select from results from downloaded "
+"_directories"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:363
+msgid ""
+"/Advanced/Insert into Namespace/Select from results from local _namespaces"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:368
+msgid "/Advanced/Insert into Namespace/sepx2"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:373
+msgid "/Advanced/Insert into Namespace/Select from _all known file identifiers"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:383
+msgid "/Advanced/_Search Namespace"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:389
+msgid "/Advanced/sep2"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:395
+msgid "/Advanced/_Reset File Identifiers"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:400
+msgid "/Advanced/Reset File Identifiers/List of _search results"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:405
+msgid "/Advanced/Reset File Identifiers/List of _inserted files"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:410
+msgid "/Advanced/Reset File Identifiers/List of entries in local _namespaces"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:415
+msgid ""
+"/Advanced/Reset File Identifiers/List of files from downloaded _directories"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:420
+msgid "/Advanced/Reset File Identifiers/sepx3"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:425
+msgid "/Advanced/Reset File Identifiers/_All known file identifiers"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:431
+msgid "/Advanced/sep3"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:437
+msgid "/Advanced/Launch gnunetd"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:443
+msgid "/Advanced/Kill gnunetd"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:461
+msgid "/_Help"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:466
+msgid "/Help/_About"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:723
+msgid "Keyword(s):"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:797
+msgid "Run the GNUnet GTK user interface."
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:803
+#: src/applications/afs/module/gnunet-check.c:970
+#: src/applications/afs/module/gnunet-convert.c:173
+#: src/applications/afs/tools/gnunet-delete.c:111
+#: src/applications/afs/tools/gnunet-insert.c:437
+#: src/applications/afs/tools/gnunet-download.c:146
+#: src/applications/afs/tools/gnunet-search.c:327
+#: src/applications/afs/tools/gnunet-pseudonym.c:208
+#: src/applications/afs/tools/gnunet-directory.c:180
+#: src/applications/chat/gnunet-chat.c:93
+#: src/applications/stats/gnunet-stats.c:347
+#: src/applications/tbench/gnunet-tbench.c:177
+#: src/applications/template/gnunet-template.c:87
+#: src/applications/testbed/gnunet-testbed.c:125
+#: src/applications/testbed/gnunet-testbed.c:542
+#: src/applications/tracekit/gnunet-tracekit.c:153
+#: src/applications/dht/tools/dht-join.c:125
+#: src/applications/dht/tools/dht-query.c:98
+#: src/applications/fs/lib/gnunet-delete.c:111
+#: src/applications/fs/lib/gnunet-directory.c:180
+#: src/applications/fs/lib/gnunet-download.c:146
+#: src/applications/fs/lib/gnunet-insert.c:437
+#: src/applications/fs/lib/gnunet-pseudonym.c:208
+#: src/applications/fs/lib/gnunet-search.c:327 src/server/startup.c:514
+#: src/server/gnunet-peer-info.c:108 src/server/gnunet-update.c:128
+#: src/server/gnunet-transport-check.c:487
+#, c-format
+msgid "Use --help to get a list of options.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/main.c:809
+#: src/applications/afs/module/gnunet-check.c:975
+#: src/applications/afs/module/gnunet-convert.c:178
+#: src/server/gnunet-peer-info.c:114 src/server/gnunet-update.c:138
+#: src/server/gnunet-transport-check.c:493
+#, c-format
+msgid "Invalid arguments: "
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:79
+#: src/applications/afs/gtkui/namespace.c:80
+#: src/applications/afs/gtkui/namespace.c:148
+#: src/applications/afs/gtkui/namespace.c:686
+msgid "minutes"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:83
+#: src/applications/afs/gtkui/namespace.c:84
+#: src/applications/afs/gtkui/namespace.c:147
+#: src/applications/afs/gtkui/namespace.c:688
+msgid "seconds"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:87
+#: src/applications/afs/gtkui/namespace.c:88
+#: src/applications/afs/gtkui/namespace.c:149
+#: src/applications/afs/gtkui/namespace.c:684
+msgid "hours"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:91
+#: src/applications/afs/gtkui/namespace.c:92
+#: src/applications/afs/gtkui/namespace.c:682
+msgid "days"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:135
+msgid "You must specify an update frequency.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:138
+#: src/applications/afs/gtkui/namespace.c:635
+#: src/applications/afs/gtkui/namespace.c:931
+msgid "--no updates--"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:140
+#: src/applications/afs/gtkui/namespace.c:659
+#: src/applications/afs/gtkui/namespace.c:932
+msgid "--sporadic updates--"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:145
+#, c-format
+msgid "Parsing of time interval failed. Use \"(INT [%s|%s|%s])*\" format.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:155
+#: src/applications/afs/gtkui/namespace.c:160
+#: src/applications/afs/gtkui/namespace.c:171
+msgid "You must select a pseudonym.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:180
+msgid "Password specified does not decrypt the pseudonym.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:189
+#: src/applications/afs/gtkui/namespace.c:194
+msgid "You must select a file.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:267
+msgid "Attempt to update an non-updateble SBlock, this should never happen!\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:291
+msgid "Failed to build SBlock. Consult logs."
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:298
+msgid "Failed to connect to gnunetd."
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:303
+msgid "Failed to insert SBlock. Consult logs."
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:330
+#, c-format
+msgid "File '%s' inserted into namespace under URI '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:342
+#, c-format
+msgid "Identifier for the next update to this content will be '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:733
+#: src/applications/afs/gtkui/pseudonyms.c:626
+msgid "Pseudonyms"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:734
+msgid "--no update--"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:735
+msgid "Updateable SBlocks for pseudonym"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:748
+msgid "Insert into Namespace"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:836
+msgid "Pseudonym Password:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:916
+msgid "Update frequency:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:933
+msgid "12 hours"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:934
+msgid "1 days"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:935
+msgid "2 days"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:936
+msgid "7 days"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:937
+msgid "30 days"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:938
+msgid "2 hours 30 minutes"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:956
+msgid "Current keyword: "
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:979
+msgid "Future keyword: "
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1207
+#: src/applications/afs/tools/gnunet-search.c:152
+#: src/applications/fs/lib/gnunet-search.c:152
+msgid "Received RBlock in namespace search.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1254
+#, c-format
+msgid ""
+"Found the most recent version for a hit in your original search in namespace "
+"'%s'."
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1258
+#, c-format
+msgid "Namespace result '%s' is the most recent.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1264
+#, c-format
+msgid "Starting parallel search for the latest version of '%s'\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1274
+#, c-format
+msgid ""
+"Found namespace description block:\n"
+"%s\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1279
+#, c-format
+msgid "Received reply of unsupported type %d in namespace search.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1381
+msgid "You must specify a valid ENC code or nickname for the namespace."
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1387
+msgid "You must specify a non-empty string (or ENC code) for the search key."
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1518
+msgid "Search Namespace"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1550
+msgid "Namespace identifier:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1603
+msgid "Search key identifier:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1667
+#: src/applications/afs/gtkui/pseudonyms.c:391
+msgid "Owner:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1690
+#: src/applications/afs/gtkui/pseudonyms.c:416
+msgid "Mime-type:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1713
+#: src/applications/afs/gtkui/pseudonyms.c:441
+msgid "URI:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1736
+#: src/applications/afs/gtkui/pseudonyms.c:466
+msgid "Contact:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1759
+msgid "Rating:"
+msgstr ""
+
+#: src/applications/afs/gtkui/namespace.c:1795
+msgid "Search"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:68
+msgid "Failed to create pseudonym (see logs).\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:99
+msgid "Could not connect to gnunetd, advertisement not published.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:106
+#: src/applications/afs/tools/gnunet-pseudonym.c:407
+#: src/applications/fs/lib/gnunet-pseudonym.c:407
+#, c-format
+msgid ""
+"Error inserting NBlock into namespace. Is gnunetd running and space "
+"available?\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:111
+#, c-format
+msgid ""
+"Created namespace advertisement:\n"
+"%s\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:121
+#: src/applications/afs/tools/gnunet-pseudonym.c:393
+#: src/applications/fs/lib/gnunet-pseudonym.c:393
+#, c-format
+msgid ""
+"Error inserting NBlock under keyword '%s'. Is gnunetd running and space "
+"available?\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:130
+msgid "Failed to create NBlock!"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:156
+msgid "Refusing to create pseudonym without a nickname.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:224
+msgid "Create Pseudonym"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:255
+msgid "Pseudonym:"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:280
+msgid "Password:"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:315
+msgid "Create advertisement"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:342
+msgid "Keyword:"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:491
+msgid "Root:"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:605
+msgid "Failed to delete pseudonym (see logs).\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/pseudonyms.c:639
+#: src/applications/afs/gtkui/pseudonyms.c:700
+msgid "Delete Pseudonym"
+msgstr ""
+
+#: src/applications/afs/gtkui/saveas.c:117
+#, c-format
+msgid "Unknown format version: %d.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:46
+msgid "/Select by filename"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:47
+msgid "/Select by description"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:48
+msgid "/Select by mimetype"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:50
+msgid "/Download selected"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:52
+msgid "/Abort search"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:171
+msgid "No matches."
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:193
+msgid "Pattern? "
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:303
+msgid "Nothing selected!\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:437
+#, c-format
+msgid ""
+"Discovered namespace:\n"
+"%s\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:443
+#, c-format
+msgid "Search result received of unsupported type %d.\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:506
+msgid "No keywords specified!\n"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:671
+msgid "Description"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:672
+msgid "Size"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:673
+msgid "Filename"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:674
+msgid "Mimetype"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:675
+msgid "URI"
+msgstr ""
+
+#: src/applications/afs/gtkui/search.c:749
+msgid "Download"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:187
+msgid "# currently connected nodes"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:202
+#: src/applications/stats/statistics.c:209
+#, c-format
+msgid "% of allowed cpu load"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:245
+msgid "# bytes decrypted"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:251
+#: src/applications/stats/statistics.c:213
+msgid "# bytes of noise received"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:259
+#: src/applications/afs/gtkui/statistics.c:274
+#: src/applications/afs/gtkui/statistics.c:371
+#: src/applications/traffic/traffic.c:465
+#, c-format
+msgid "# bytes received of type %d"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:342
+msgid "# encrypted bytes sent"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:348
+msgid "# bytes noise sent"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:356
+#: src/applications/traffic/traffic.c:445
+#, c-format
+msgid "# bytes transmitted of type %d"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:429
+msgid "Connectivity"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:430
+msgid "# connected nodes (100% = connection table size)"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:437
+msgid "CPU load"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:438
+msgid "CPU load (in percent of allowed load)"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:445
+msgid "Inbound Traffic"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:446
+#: src/applications/afs/gtkui/statistics.c:454
+msgid "Noise (red), Content (green), Queries (yellow), other (blue)"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:453
+msgid "Outbound Traffic"
+msgstr ""
+
+#: src/applications/afs/gtkui/statistics.c:486
+msgid "/Close display"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:164
+msgid "Program name"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:165
+msgid ""
+"The name of the program. If this is not set, it defaults to "
+"g_get_application_name()"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:172
+msgid "Program version"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:173
+msgid "The version of the program"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:179
+msgid "Copyright string"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:180
+msgid "Copyright information for the program"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:187
+msgid "Comments string"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:188
+msgid "Comments about the program"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:194
+#: src/applications/afs/gtkui/gtk26about.c:1679
+msgid "License"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:195
+msgid "The license of the program"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:202
+msgid "Website URL"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:203
+msgid "The URL for the link to the website of the program"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:210
+msgid "Website label"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:211
+msgid ""
+"The label for the link to the website of the program. If this is not set, it "
+"defaults to the URL"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:218
+msgid "Authors"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:219
+msgid "List of authors of the programs"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:225
+msgid "Documenters"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:226
+msgid "List of people documenting the program"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:233
+msgid "Artists"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:234
+msgid "List of people who have contributed artwork to the program"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:241
+msgid "Translator credits"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:242
+msgid ""
+"Credits to the translators. This string should be marked as translatable"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:249
+msgid "Logo"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:250
+msgid ""
+"A logo for the about box. If this is not set, it defaults to "
+"gtk_window_get_default_icon_list()"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:257
+msgid "Link Color"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:258
+msgid "Color of hyperlinks"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:334
+msgid "_Credits"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:343
+msgid "_License"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:517
+#, c-format
+msgid "About %s"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:1621
+msgid "Credits"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:1644
+msgid "Written by"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:1647
+msgid "Documented by"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:1656
+msgid "Translated by"
+msgstr ""
+
+#: src/applications/afs/gtkui/gtk26about.c:1660
+msgid "Artwork by"
+msgstr ""
+
+#: src/applications/afs/module/afs.c:56 src/applications/gap/afs.c:56
+#: src/applications/fs/module/afs.c:56
+#, c-format
+msgid ""
+"You must specify a postive number for '%s' in the configuration in section '%"
+"s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/afs.c:67 src/applications/gap/afs.c:67
+#: src/applications/fs/module/afs.c:67
+msgid "Please run \"gnunet-check -u\" first!\n"
+msgstr ""
+
+#: src/applications/afs/module/bloomfilter.c:51
+#: src/applications/datastore/filter.c:42
+#, c-format
+msgid ""
+"Configuration must specify directory for AFS data in section '%s' under '%"
+"s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/bloomfilter.c:69
+msgid "AFS-Quota changed, run gnunet-convert!\n"
+msgstr ""
+
+#: src/applications/afs/module/bloomfilter.c:127
+#, c-format
+msgid ""
+"Bloom filter notified of deletion of unexpected type %d of content at %s:%"
+"d.\n"
+msgstr ""
+
+#: src/applications/afs/module/fileindex.c:84
+#: src/applications/fs/module/fileindex.c:84
+#, c-format
+msgid ""
+"Configuration file must specify filename for storing AFS data in section '%"
+"s' under '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/fileindex.c:186
+#: src/applications/fs/module/fileindex.c:186
+msgid "# indexed files"
+msgstr ""
+
+#: src/applications/afs/module/fileindex.c:188
+#: src/applications/fs/module/fileindex.c:188
+msgid "# size of indexed files"
+msgstr ""
+
+#: src/applications/afs/module/fileindex.c:191
+#: src/applications/fs/module/fileindex.c:191
+#, c-format
+msgid "Could not initialize %s module.\n"
+msgstr ""
+
+#: src/applications/afs/module/fileindex.c:274
+#: src/applications/fs/module/fileindex.c:274
+#, c-format
+msgid "List '%s' of directly shared filenames not available!\n"
+msgstr ""
+
+#: src/applications/afs/module/fileindex.c:354
+#: src/applications/fs/module/fileindex.c:354
+msgid "Too many files indexed (limit is 65535).\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:127
+#, c-format
+msgid "Content found in file '%s' at %d does not match expected hash.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:160
+#, c-format
+msgid "Deferred content removal of '%s' failed!\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:182
+msgid "Will fix (deferred).\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:202
+#, c-format
+msgid "Entry '%s' is in wrong bucket %d (expected %d). "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:214
+#, c-format
+msgid "Bad content stored for '%s' (bad length %d). "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:225
+#, c-format
+msgid "Bad CHK content indexed for '%s' "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:238
+#: src/applications/afs/module/gnunet-check.c:279
+#: src/applications/afs/module/gnunet-check.c:298
+#: src/applications/afs/module/gnunet-check.c:317
+#, c-format
+msgid "Bloomfilter test failed for '%s' content '%s' "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:244
+#: src/applications/afs/module/gnunet-check.c:285
+#: src/applications/afs/module/gnunet-check.c:304
+#: src/applications/afs/module/gnunet-check.c:323
+#: src/applications/afs/module/gnunet-check.c:438
+#: src/applications/afs/module/gnunet-check.c:482
+#: src/applications/afs/module/gnunet-check.c:522
+#: src/applications/afs/module/gnunet-check.c:557
+#: src/applications/afs/module/gnunet-check.c:640
+#: src/applications/afs/module/gnunet-check.c:658
+msgid "Fixed.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:264
+#, c-format
+msgid "Bad CHKS content indexed for '%s' "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:330
+#, c-format
+msgid "Unexpected content type %d. "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:351
+msgid "Checking Content Database\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:371
+#, c-format
+msgid ""
+"\n"
+"==> Done checking %d entries in content database.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:422
+#, c-format
+msgid "Content '%s' malformed or missing in database. "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:423
+#, c-format
+msgid "Content '%s' has low priority in database. "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:440
+msgid " cannot fix (database full?)\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:477
+msgid "Super-Hash not listed in super-hash bloom filter "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:513
+#, c-format
+msgid ""
+"Did not find super-hash entry in lookup database for hash %s (or had low "
+"priority). "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:524
+#: src/applications/afs/module/gnunet-check.c:559
+msgid "Failed to fix.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:540
+#, c-format
+msgid ""
+"Entry in database for super-hash does not match expectations (have: %s, %u, %"
+"u, %u; expected: %s, %u, %u, %u). "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:600
+#, c-format
+msgid "Unexpected content index type: %d.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:629
+#, c-format
+msgid "Content '%s' had low priority in lookup database. "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:638
+#: src/applications/afs/module/gnunet-check.c:656
+msgid "Could not fix, insertion failed.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:648
+msgid "Bad value (hash) stored in database "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:793
+#, c-format
+msgid "Problem checking indexing of file '%s' "
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:796
+msgid "Removing file from list.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:819
+msgid "Checking indexed files\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:822
+#, c-format
+msgid "==> Done with %d indexed files.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:834
+msgid "check everything"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:836
+msgid "only check the content database"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:838
+msgid "only check the indexed files"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:842
+msgid "do not fix problems, only report"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:844
+msgid "specifies the priority of the restored content"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:846
+#: src/applications/afs/module/gnunet-convert.c:113
+msgid "be quiet"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:848
+msgid "reset bloom-filters (requires 'a' option, slow)"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:850
+msgid "perform AFS database-updates necessary after GNUnet version change"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:856
+msgid ""
+"Check GNUnet AFS databases.\n"
+"Never run gnunet-check while gnunetd is running!"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:978
+#: src/applications/afs/module/gnunet-convert.c:181
+#: src/server/gnunet-update.c:141
+#, c-format
+msgid ""
+"\n"
+"Exiting.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:982
+msgid "You selected verification only, will not fix problems!\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1031
+#, c-format
+msgid "Could not bind to port %d.  Is gnunetd running?\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1123
+#, c-format
+msgid "Cannot fix indexed content, '%s' option not set!\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1242
+#, c-format
+msgid "Updating from version %x\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1245
+msgid "Errors while updating version!\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1253
+#, c-format
+msgid "State is current, no update required.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1256
+#, c-format
+msgid "Unknown GNUnet version %x.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1280
+#, c-format
+msgid "You must choose what to check (specify '%s', '%s', or '%s').\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-check.c:1317
+#, c-format
+msgid "Cannot use option '%s' without option '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-convert.c:88
+#, c-format
+msgid "Encountered unexpected type %d.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-convert.c:119
+msgid ""
+"Convert GNUnet AFS database to different QUOTA or database type.\n"
+"Never run gnunet-convert while gnunetd is running!"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-convert.c:206
+#, c-format
+msgid ""
+"You must specify available diskspace in the configuration under '%s' in "
+"section '%s'\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-convert.c:213
+msgid "No conversion possible, no old database known.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-convert.c:220
+#, c-format
+msgid ""
+"You must specify the option '%s' in the configuration in section '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-convert.c:225
+msgid ""
+"You need to specify a different database type or quota in the configuration "
+"in order to run gnunet-convert.\n"
+msgstr ""
+
+#: src/applications/afs/module/gnunet-convert.c:277
+#, c-format
+msgid ""
+"\n"
+"Completed processing %d entries in index (%d converted, %d failed).\n"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:72 src/applications/gap/handler.c:72
+#: src/applications/fs/module/handler.c:72
+msgid "# p2p queries received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:74 src/applications/gap/handler.c:74
+#: src/applications/fs/module/handler.c:74
+msgid "# p2p super queries received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:76 src/applications/gap/handler.c:76
+#: src/applications/fs/module/handler.c:76
+msgid "# p2p CHK content received (kb)"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:78 src/applications/gap/handler.c:78
+#: src/applications/fs/module/handler.c:78
+msgid "# p2p search results received (kb)"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:81 src/applications/gap/handler.c:81
+#: src/applications/fs/module/handler.c:81
+msgid "# client queries received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:83 src/applications/gap/handler.c:83
+#: src/applications/fs/module/handler.c:83
+msgid "# client CHK content inserted (kb)"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:85 src/applications/gap/handler.c:85
+#: src/applications/fs/module/handler.c:85
+msgid "# client 3HASH search results inserted (kb)"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:87 src/applications/gap/handler.c:87
+#: src/applications/fs/module/handler.c:87
+msgid "# client file index requests received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:89 src/applications/gap/handler.c:89
+#: src/applications/fs/module/handler.c:89
+msgid "# file index requests received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:91 src/applications/gap/handler.c:91
+#: src/applications/fs/module/handler.c:91
+msgid "# super query index requests received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:93 src/applications/gap/handler.c:93
+#: src/applications/fs/module/handler.c:93
+msgid "# client CHK content deleted (kb)"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:95 src/applications/gap/handler.c:95
+#: src/applications/fs/module/handler.c:95
+msgid "# client 3HASH search results deleted (kb)"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:97 src/applications/gap/handler.c:97
+#: src/applications/fs/module/handler.c:97
+msgid "# client file unindex requests received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:99 src/applications/gap/handler.c:99
+#: src/applications/fs/module/handler.c:99
+msgid "# file unindex requests received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:101
+#: src/applications/gap/handler.c:101 src/applications/fs/module/handler.c:101
+msgid "# super query unindex requests received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:103
+#: src/applications/gap/handler.c:103 src/applications/fs/module/handler.c:103
+msgid "# client SBlock insert requests received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:105
+#: src/applications/gap/handler.c:105 src/applications/fs/module/handler.c:105
+msgid "# client namespace queries received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:107
+#: src/applications/gap/handler.c:107 src/applications/fs/module/handler.c:107
+msgid "# client file upload requests"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:110
+#: src/applications/gap/handler.c:110 src/applications/fs/module/handler.c:110
+msgid "# p2p namespace queries received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:112
+#: src/applications/gap/handler.c:112 src/applications/fs/module/handler.c:112
+msgid "# p2p SBlocks received"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:228
+#: src/applications/afs/module/handler.c:295
+#: src/applications/gap/handler.c:228 src/applications/gap/handler.c:295
+#: src/applications/fs/module/handler.c:228
+#: src/applications/fs/module/handler.c:295
+#, c-format
+msgid "'%s' message received from peer '%s' was malformed.\n"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:393
+#: src/applications/afs/module/handler.c:511
+#: src/applications/afs/module/handler.c:565
+#: src/applications/afs/module/handler.c:609
+#: src/applications/afs/module/handler.c:672
+#: src/applications/gap/handler.c:393 src/applications/gap/handler.c:511
+#: src/applications/gap/handler.c:565 src/applications/gap/handler.c:609
+#: src/applications/gap/handler.c:672 src/applications/fs/module/handler.c:393
+#: src/applications/fs/module/handler.c:511
+#: src/applications/fs/module/handler.c:565
+#: src/applications/fs/module/handler.c:609
+#: src/applications/fs/module/handler.c:672
+#, c-format
+msgid "Received malformed '%s' request from client.\n"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:455
+#: src/applications/gap/handler.c:455 src/applications/fs/module/handler.c:455
+#, c-format
+msgid "Received malformed '%s' request from client\n"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:622
+#: src/applications/afs/module/handler.c:685
+#: src/applications/afs/module/handler.c:909
+#: src/applications/afs/module/handler.c:984
+#: src/applications/gap/handler.c:622 src/applications/gap/handler.c:685
+#: src/applications/gap/handler.c:909 src/applications/gap/handler.c:984
+#: src/applications/fs/module/handler.c:622
+#: src/applications/fs/module/handler.c:685
+#: src/applications/fs/module/handler.c:909
+#: src/applications/fs/module/handler.c:984
+#, c-format
+msgid "Rejecting '%s' request, '%s' option not set!\n"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:635
+#: src/applications/gap/handler.c:635 src/applications/fs/module/handler.c:635
+#, c-format
+msgid "Rejecting file index request, quota exeeded: %d of %d (MB)\n"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:972
+#: src/applications/gap/handler.c:972 src/applications/fs/module/handler.c:972
+#, c-format
+msgid ""
+"File link request '%s' from client pointed to file with the wrong data!\n"
+msgstr ""
+
+#: src/applications/afs/module/handler.c:1011
+#: src/applications/gap/handler.c:1011
+#: src/applications/fs/module/handler.c:1011
+#, c-format
+msgid "Could not create symlink from '%s' to '%s': %s\n"
+msgstr ""
+
+#: src/applications/afs/module/high_mysql.c:174
+#: src/applications/afs/module/high_mysql.c:181
+#: src/applications/afs/module/high_sqlite.c:40
+#: src/applications/afs/module/high_sqlite.c:47
+#: src/applications/sqstore_sqlite/sqlite.c:41
+#: src/applications/sqstore_sqlite/sqlite.c:48
+#: src/applications/sqstore_mysql/high_mysql.c:174
+#: src/applications/sqstore_mysql/high_mysql.c:181
+#: src/util/hostkey_gcrypt.c:52 src/util/hostkey_gcrypt.c:59
+#: src/util/hostkey_openssl.c:53 src/util/hostkey_openssl.c:330
+#: src/util/hostkey_openssl.c:375 src/util/hostkey_openssl.c:424
+#: src/util/storage.c:617 src/util/symcipher_gcrypt.c:47
+#: src/util/symcipher_gcrypt.c:54 src/include/gnunet_util.h:970
+#: src/include/gnunet_util.h:977 src/include/gnunet_util.h:979
+#, c-format
+msgid "'%s' failed at %s:%d with error: %s\n"
+msgstr ""
+
+#: src/applications/afs/module/high_mysql.c:221
+#: src/applications/sqstore_mysql/high_mysql.c:221
+#, c-format
+msgid "Trying to use file '%s' for MySQL configuration.\n"
+msgstr ""
+
+#: src/applications/afs/module/high_mysql.c:237
+#: src/applications/sqstore_mysql/high_mysql.c:237
+msgid "Unable to initialize MySQL.\n"
+msgstr ""
+
+#: src/applications/afs/module/high_mysql.c:1067
+#: src/applications/sqstore_mysql/high_mysql.c:1067
+#, c-format
+msgid "Query '%s' had no results.\n"
+msgstr ""
+
+#: src/applications/afs/module/high_simple.c:111
+#: src/applications/afs/module/manager.c:617
+#: src/applications/afs/module/high_sqlite.c:236
+#: src/applications/fs/module/manager.c:617
+#: src/applications/sqstore_sqlite/sqlite.c:741
+#, c-format
+msgid ""
+"Configuration file must specify directory for storing AFS data in section '%"
+"s' under '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/high_simple.c:280
+#: src/applications/afs/module/high_simple.c:289
+#, c-format
+msgid "pIdx database corrupt (content not indexed) in %s:%d\n"
+msgstr ""
+
+#: src/applications/afs/module/high_simple.c:708
+#, c-format
+msgid "pIdx database corrupt, trying to fix (%d)\n"
+msgstr ""
+
+#: src/applications/afs/module/high_simple_helper.c:147
+#: src/applications/afs/module/high_simple_helper.c:207
+#: src/applications/afs/module/high_simple_helper.c:281
+msgid "pidx database corrupt (file has bad length), trying to fix.\n"
+msgstr ""
+
+#: src/applications/afs/module/large_file_support.c:83
+#, c-format
+msgid "Could not open directory '%s'!\n"
+msgstr ""
+
+#: src/applications/afs/module/large_file_support.c:97
+#, c-format
+msgid "lfs: could not remove entry '%s': %s\n"
+msgstr ""
+
+#: src/applications/afs/module/large_file_support.c:164
+#: src/applications/afs/module/large_file_support.c:241
+#: src/applications/afs/module/large_file_support.c:325
+msgid "lfs database corrupt (file has bad length), trying to fix.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_bdb.c:85
+#: src/applications/afs/module/low_bdb.c:92
+#: src/applications/afs/module/low_gdbm.c:95
+#: src/applications/afs/module/low_gdbm.c:102
+#: src/applications/afs/module/low_tdb.c:67
+#: src/applications/afs/module/low_tdb.c:74 src/include/gnunet_util.h:986
+#: src/include/gnunet_util.h:988 src/include/gnunet_util.h:995
+#, c-format
+msgid "'%s' failed on file '%s' at %s:%d with error: %s\n"
+msgstr ""
+
+#: src/applications/afs/module/low_bdb.c:105
+#: src/applications/afs/module/low_bdb.c:109
+#, c-format
+msgid "BDB panic (%s), aborting.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_bdb.c:249
+#, c-format
+msgid "Cannot load '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_bdb.c:289
+#: src/applications/afs/module/low_gdbm.c:194
+#, c-format
+msgid "Could not open '%s' database '%s'!\n"
+msgstr ""
+
+#: src/applications/afs/module/low_directory.c:195
+#, c-format
+msgid "Content database location '%s' is not a directory.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_gdbm.c:170
+#, c-format
+msgid "Reorganizing database '%s'.  This may take a while.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_gdbm.c:180
+msgid "Done reorganizing database.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_gdbm.c:374
+#, c-format
+msgid "Less than %d blocks free on drive, will not write to GDBM database.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_gdbm.c:382
+msgid "A single gdbm database is limited to 2 GB, cannot store more data.\n"
+msgstr ""
+
+#: src/applications/afs/module/low_gdbm.c:445
+#, c-format
+msgid ""
+"Less than %d blocks free on drive, will not even delete from GDBM database "
+"(may grow in size!)\n"
+msgstr ""
+
+#: src/applications/afs/module/low_tdb.c:298
+msgid "Single tdb database is limited to 2 GB, cannot store more data.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:112
+#: src/applications/afs/module/manager.c:199
+#: src/applications/fs/module/manager.c:112
+#: src/applications/fs/module/manager.c:199
+#, c-format
+msgid ""
+"Configuration file must specify directory for storage of AFS data in section "
+"'%s' under '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:179
+#: src/applications/fs/module/manager.c:179
+#, c-format
+msgid "Database inconsistent! (index points to invalid offset (%u)\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:231
+#: src/applications/fs/module/manager.c:231
+#, c-format
+msgid "Read 0 bytes from file '%s' at %s:%d.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:298
+#: src/applications/fs/module/manager.c:298
+#, c-format
+msgid "Could not find method '%s' in database module '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:316
+#: src/applications/fs/module/manager.c:316
+#, c-format
+msgid ""
+"You must specify the '%s' option in section '%s' in the configuration.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:328
+#: src/applications/fs/module/manager.c:328
+msgid "AFS database type was changed, run gnunet-convert.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:335
+#: src/applications/fs/module/manager.c:335
+#, c-format
+msgid "Failed to load database library '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:401
+#: src/applications/fs/module/manager.c:401
+#, c-format
+msgid "Failed to initialize AFS database %u.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:567
+#: src/applications/fs/module/manager.c:567
+msgid "# lookup (SBlock, search results)"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:569
+#: src/applications/fs/module/manager.c:569
+msgid "# lookup (3HASH, search results)"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:571
+#: src/applications/fs/module/manager.c:571
+msgid "# lookup (CHK, inserted or migrated content)"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:573
+#: src/applications/fs/module/manager.c:573
+msgid "# lookup (ONDEMAND, indexed content)"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:575
+#: src/applications/fs/module/manager.c:575
+msgid "# lookup (data not found)"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:577
+#: src/applications/fs/module/manager.c:577
+msgid "# blocks AFS storage left (estimate)"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:755
+#: src/applications/fs/module/manager.c:755
+#, c-format
+msgid "Manager got unexpected content type %d.\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:763
+#: src/applications/fs/module/manager.c:763
+msgid "Retrieved content but index says on-demand encoded!\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:785
+#: src/applications/fs/module/manager.c:785
+msgid "lfs database inconsistent, trying to fix\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:791
+#: src/applications/fs/module/manager.c:791
+msgid "Failed to fix lfs database inconsistency!\n"
+msgstr ""
+
+#: src/applications/afs/module/manager.c:986
+#: src/applications/afs/module/manager.c:1101
+#: src/applications/fs/module/manager.c:986
+#: src/applications/fs/module/manager.c:1101
+#, c-format
+msgid "Unexpected content type %d.\n"
+msgstr ""
+
+#: src/applications/afs/module/high_sqlite.c:250
+#: src/applications/sqstore_sqlite/sqlite.c:755
+msgid "Unable to initialize SQLite.\n"
+msgstr ""
+
+#: src/applications/afs/module/migration.c:264
+msgid "# kb content pushed out as padding"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:373
+#: src/applications/gap/routing.c:373
+#, c-format
+msgid "Unexpected concurrent CHK lookup of '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1071
+#: src/applications/gap/routing.c:1071
+#, c-format
+msgid "Search result has unexpected type %d at %s:%d.\n"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1193
+#: src/applications/gap/routing.c:1193
+#, c-format
+msgid "Lookup produced result already seen. Case: %d\n"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1259
+#: src/applications/gap/routing.c:1259
+#, c-format
+msgid "Lookup produced unexpected type %d!\n"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1380
+#: src/applications/gap/routing.c:1380
+#, c-format
+msgid ""
+"Namespace mismatch at %s:%d (should be rare but can theoretically happen).\n"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1410
+#: src/applications/gap/routing.c:1410
+msgid "# kb downloaded by clients"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1412
+#: src/applications/gap/routing.c:1412
+msgid "# routing-table entry replaced during delaytime"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1414
+#: src/applications/gap/routing.c:1414
+msgid "# routing-table entry replaced during lookup"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1417
+#: src/applications/gap/routing.c:1417
+msgid "# kb ok content in"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1419
+#: src/applications/gap/routing.c:1419
+msgid "# kb dupe content in"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1421
+#: src/applications/gap/routing.c:1421
+msgid "# kb orphan or pushed content in"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1423
+#: src/applications/gap/routing.c:1423
+msgid "# routing table full"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1425
+#: src/applications/gap/routing.c:1425
+msgid "# routing table entry replaced"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1427
+#: src/applications/gap/routing.c:1427
+msgid "# routing table entry already in place"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1429
+#: src/applications/gap/routing.c:1429
+msgid "# p2p queries sent"
+msgstr ""
+
+#: src/applications/afs/module/routing.c:1791
+#: src/applications/gap/routing.c:1791
+#, c-format
+msgid "Result has unexpected type %d at %s:%d.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-delete.c:37
+#: src/applications/fs/lib/gnunet-delete.c:37
+#, c-format
+msgid "%8u of %8u bytes deleted."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-delete.c:52
+#: src/applications/fs/lib/gnunet-delete.c:52
+msgid "specify the file to delete from GNUnet (obligatory, file must exist)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-delete.c:61
+#: src/applications/fs/lib/gnunet-delete.c:61
+msgid ""
+"Remove file from GNUnet.  The specified file is not removed\n"
+"from the filesystem but just from the local GNUnet datastore."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-delete.c:139
+#: src/applications/fs/lib/gnunet-delete.c:139
+msgid "You must specify a filename (option -f)\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-delete.c:151
+#: src/applications/fs/lib/gnunet-delete.c:151
+#, c-format
+msgid ""
+"Error deleting file %s.\n"
+"Probably a few blocks were already missing from the database.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:46
+#: src/applications/fs/lib/gnunet-insert.c:46
+#, c-format
+msgid "%8u of %8u bytes inserted"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:60
+#: src/applications/fs/lib/gnunet-insert.c:60
+msgid "build a directory listing all processed files"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:62
+#: src/applications/fs/lib/gnunet-insert.c:62
+msgid "DESCRIPTION"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:63
+#: src/applications/fs/lib/gnunet-insert.c:63
+msgid "set description for all files"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:65
+#: src/applications/fs/lib/gnunet-insert.c:65
+msgid ""
+"filename of the SBlock of a previous version of the content (for namespace "
+"insertions only)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:68
+#: src/applications/fs/lib/gnunet-insert.c:68
+msgid ""
+"print list of extracted keywords that would be used, but do not perform "
+"insertion or indexing"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:70
+#: src/applications/fs/lib/gnunet-insert.c:70
+msgid "publish NAME as the name of the file or directory"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:74
+#: src/applications/fs/lib/gnunet-insert.c:74
+msgid ""
+"set interval for availability of updates to SECONDS (for namespace "
+"insertions only)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:77
+#: src/applications/fs/lib/gnunet-insert.c:77
+msgid ""
+"add an additional keyword for the top-level file or directory (this option "
+"can be specified multiple times)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:80
+#: src/applications/fs/lib/gnunet-insert.c:80
+msgid ""
+"add an additional keyword for all files and directories (this option can be "
+"specified multiple times)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:83
+#: src/applications/fs/lib/gnunet-insert.c:83
+msgid ""
+"if gnunetd is running on the local machine, create a link instead of making "
+"a copy in the GNUnet share directory"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:86
+#: src/applications/fs/lib/gnunet-insert.c:86
+msgid "set the mimetype for the file to be MIMETYPE"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:88
+#: src/applications/fs/lib/gnunet-insert.c:88
+msgid ""
+"do not index, perform full insertion (stores entire file in encrypted form "
+"in GNUnet database)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:91
+#: src/applications/fs/lib/gnunet-insert.c:91
+msgid ""
+"specify ID of an updated version to be published in the future (for "
+"namespace insertions only)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:94
+#: src/applications/fs/lib/gnunet-insert.c:94
+msgid ""
+"write the created SBlock in plaintext to FILENAME (for namespace insertions "
+"only)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:97
+#: src/applications/fs/lib/gnunet-insert.c:97
+msgid "specify the priority of the content"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:99
+#: src/applications/fs/lib/gnunet-insert.c:99
+msgid ""
+"use PASSWORD to decrypt the secret key of the pseudonym (for namespace "
+"insertions only)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:102
+#: src/applications/fs/lib/gnunet-insert.c:102
+msgid "process directories recursively"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:104
+#: src/applications/fs/lib/gnunet-insert.c:104
+msgid "publish the files under the pseudonym NAME (place file into namespace)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:106
+#: src/applications/fs/lib/gnunet-insert.c:106
+msgid ""
+"specifies this as an aperiodic but updated publication (for namespace "
+"insertions only)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:109
+#: src/applications/fs/lib/gnunet-insert.c:109
+msgid ""
+"set the ID of this version of the publication (for namespace insertions only)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:112
+#: src/applications/fs/lib/gnunet-insert.c:112
+msgid "specify creation time for SBlock (see man-page for format)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:114
+#: src/applications/fs/lib/gnunet-insert.c:114
+msgid "print the GNUnet URL of the inserted file(s)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:118
+#: src/applications/fs/lib/gnunet-insert.c:118
+msgid "disable automatic metadata extraction"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:120
+#: src/applications/fs/lib/gnunet-insert.c:120
+msgid "disable generation of RBlocks for keywords extracted from each file"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:124
+#: src/applications/fs/lib/gnunet-insert.c:124
+msgid "Make files available to GNUnet for sharing."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:144
+#: src/applications/fs/lib/gnunet-insert.c:144
+#, c-format
+msgid "Working on file '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:151
+#: src/applications/fs/lib/gnunet-insert.c:151
+#, c-format
+msgid ""
+"Error inserting file '%s'.\n"
+"You may want to check whether or not you are out of space.\n"
+"Run gnunet-stats | grep \"AFS storage left\" to check.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:175
+#: src/applications/fs/lib/gnunet-insert.c:175
+#, c-format
+msgid "File '%s' successfully indexed -- %s\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:178
+#: src/applications/fs/lib/gnunet-insert.c:178
+#, c-format
+msgid "Speed was %8.3f kilobyte per second.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:288
+#: src/applications/fs/lib/gnunet-insert.c:288
+#, c-format
+msgid "You must pass a positive number to the '%s' option.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:344
+#: src/applications/afs/tools/gnunet-download.c:95
+#: src/applications/afs/tools/gnunet-download.c:109
+#: src/applications/afs/tools/gnunet-search.c:263
+#: src/applications/afs/tools/gnunet-search.c:279
+#: src/applications/afs/tools/gnunet-search.c:305
+#: src/applications/tbench/gnunet-tbench.c:122
+#: src/applications/tbench/gnunet-tbench.c:130
+#: src/applications/tbench/gnunet-tbench.c:141
+#: src/applications/tbench/gnunet-tbench.c:149
+#: src/applications/tbench/gnunet-tbench.c:157
+#: src/applications/tbench/gnunet-tbench.c:170
+#: src/applications/tracekit/gnunet-tracekit.c:73
+#: src/applications/tracekit/gnunet-tracekit.c:87
+#: src/applications/tracekit/gnunet-tracekit.c:122
+#: src/applications/tracekit/gnunet-tracekit.c:136
+#: src/applications/dht/tools/dht-join.c:88
+#: src/applications/dht/tools/dht-join.c:107
+#: src/applications/dht/tools/dht-query.c:83
+#: src/applications/fs/lib/gnunet-download.c:95
+#: src/applications/fs/lib/gnunet-download.c:109
+#: src/applications/fs/lib/gnunet-insert.c:344
+#: src/applications/fs/lib/gnunet-search.c:263
+#: src/applications/fs/lib/gnunet-search.c:279
+#: src/applications/fs/lib/gnunet-search.c:305
+#: src/server/gnunet-transport-check.c:382
+#: src/server/gnunet-transport-check.c:402
+#: src/server/gnunet-transport-check.c:416
+#: src/server/gnunet-transport-check.c:429
+#, c-format
+msgid "You must pass a number to the '%s' option.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:442
+#: src/applications/fs/lib/gnunet-insert.c:442
+#, c-format
+msgid "You must specify a list of files to insert.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:452
+#: src/applications/fs/lib/gnunet-insert.c:452
+#, c-format
+msgid "Keywords for file '%s':\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:460
+#: src/applications/fs/lib/gnunet-insert.c:460
+#, c-format
+msgid "libextractor not used, no keywords will be extracted.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:484
+#: src/applications/fs/lib/gnunet-insert.c:484
+#, c-format
+msgid "Error inserting RBlock. Is gnunetd running and space available?\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:540
+#: src/applications/fs/lib/gnunet-insert.c:540
+#, c-format
+msgid "Could not read pseudonym '%s' (does not exist or password invalid).\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:557
+#: src/applications/afs/tools/gnunet-insert.c:561
+#: src/applications/afs/tools/gnunet-insert.c:565
+#: src/applications/afs/tools/gnunet-insert.c:569
+#: src/applications/afs/tools/gnunet-insert.c:574
+#: src/applications/fs/lib/gnunet-insert.c:557
+#: src/applications/fs/lib/gnunet-insert.c:561
+#: src/applications/fs/lib/gnunet-insert.c:565
+#: src/applications/fs/lib/gnunet-insert.c:569
+#: src/applications/fs/lib/gnunet-insert.c:574
+#, c-format
+msgid "Option '%s' makes no sense without option '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:581
+#: src/applications/fs/lib/gnunet-insert.c:581
+msgid ""
+"Cannot insert multiple files into namespace in one pass without using "
+"directory."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:591
+#: src/applications/fs/lib/gnunet-insert.c:591
+msgid "Parsing time failed. Use 'DD-MM-YY HH:MM' format.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:605
+#: src/applications/fs/lib/gnunet-insert.c:605
+#, c-format
+msgid "SBlock in file '%s' either does not exist or is malformed.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:614
+#: src/applications/fs/lib/gnunet-insert.c:614
+msgid ""
+"The given SBlock does not belong to the namespace of the selected pseudonym."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:617
+#: src/applications/fs/lib/gnunet-insert.c:617
+#, c-format
+msgid "Verification of SBlock in file '%s' failed\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:624
+#: src/applications/fs/lib/gnunet-insert.c:624
+msgid "Trying to update nonupdatable SBlock.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:634
+#: src/applications/fs/lib/gnunet-insert.c:634
+#, c-format
+msgid "Option '%s' is implied by option '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:692
+#: src/applications/fs/lib/gnunet-insert.c:692
+msgid "no filename specified"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:726
+#: src/applications/fs/lib/gnunet-insert.c:726
+#, c-format
+msgid "Directory %s successfully indexed -- %s\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:773
+#: src/applications/fs/lib/gnunet-insert.c:773
+#, c-format
+msgid ""
+"Filename (option '%s') specified but multiple files given on the command "
+"line and not building directory.  Will use the same filename for multiple "
+"files."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:821
+#: src/applications/afs/tools/gnunet-insert.c:830
+#: src/applications/afs/tools/gnunet-insert.c:841
+#: src/applications/afs/tools/gnunet-insert.c:848
+#: src/applications/fs/lib/gnunet-insert.c:821
+#: src/applications/fs/lib/gnunet-insert.c:830
+#: src/applications/fs/lib/gnunet-insert.c:841
+#: src/applications/fs/lib/gnunet-insert.c:848
+#, c-format
+msgid "Inserting file '%s' (%s, %s) under keyword '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:1019
+#: src/applications/fs/lib/gnunet-insert.c:1019
+#, c-format
+msgid ""
+"File '%s' (%s, %s) successfully inserted into namespace under\n"
+"\t'%s'\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-insert.c:1027
+#: src/applications/fs/lib/gnunet-insert.c:1027
+#, c-format
+msgid "Insertion of file into namespace failed.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:40
+#: src/applications/fs/lib/gnunet-download.c:40
+msgid "LEVEL"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:41
+#: src/applications/afs/tools/gnunet-search.c:203
+#: src/applications/fs/lib/gnunet-download.c:41
+#: src/applications/fs/lib/gnunet-search.c:203
+msgid "set the desired LEVEL of receiver-anonymity"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:46
+#: src/applications/fs/lib/gnunet-download.c:46
+msgid "FILENAME"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:47
+#: src/applications/fs/lib/gnunet-download.c:47
+msgid "write the file to FILENAME"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:49
+#: src/applications/fs/lib/gnunet-download.c:49
+msgid "download a GNUnet directory recursively"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:50
+#: src/applications/fs/lib/gnunet-download.c:50
+msgid "NUMBER"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:51
+#: src/applications/fs/lib/gnunet-download.c:51
+msgid ""
+"specifies the NUMBER of files that maybe downloaded in parallel for a "
+"recursive download"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:57
+#: src/applications/fs/lib/gnunet-download.c:57
+msgid "Download files from GNUnet."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:152
+#: src/applications/fs/lib/gnunet-download.c:152
+msgid "Not enough arguments. You must specify a GNUnet AFS URI\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:184
+#: src/applications/fs/lib/gnunet-download.c:184
+#, c-format
+msgid "Download at %8u out of %8u bytes (%8.3f kbps)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:213
+#: src/applications/fs/lib/gnunet-download.c:213
+#, c-format
+msgid ""
+"Download of file '%s' failed (error messages should have been provided).\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:221
+#: src/applications/fs/lib/gnunet-download.c:221
+#, c-format
+msgid ""
+"\n"
+"Download %s %s.  Speed was %8.3f kilobyte per second.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:224
+#: src/applications/fs/lib/gnunet-download.c:224
+msgid "complete"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:224
+#: src/applications/fs/lib/gnunet-download.c:224
+msgid "incomplete"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:446
+#: src/applications/fs/lib/gnunet-download.c:446
+#, c-format
+msgid "URI '%s' invalid.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:535
+#: src/applications/fs/lib/gnunet-download.c:535
+#, c-format
+msgid "Renaming of file '%s' to '%s' failed: %s\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:539
+#: src/applications/fs/lib/gnunet-download.c:539
+#, c-format
+msgid "File stored as '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-download.c:543
+#: src/applications/fs/lib/gnunet-download.c:543
+#, c-format
+msgid "Could not rename file '%s' to '%s': file exists\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:79
+#: src/applications/fs/lib/gnunet-search.c:79
+#, c-format
+msgid "%s '%s' (description: '%.*s', mimetype: '%.*s')\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:81
+#: src/applications/fs/lib/gnunet-search.c:81
+msgid "Directory"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:81
+#: src/applications/fs/lib/gnunet-search.c:81
+msgid "File"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:106
+#: src/applications/fs/lib/gnunet-search.c:106
+msgid "Received invalid NBlock.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:110
+#: src/applications/afs/tools/gnunet-search.c:167
+#: src/applications/fs/lib/gnunet-search.c:110
+#: src/applications/fs/lib/gnunet-search.c:167
+#, c-format
+msgid "Received reply of unknown type %d.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:209
+#: src/applications/fs/lib/gnunet-search.c:209
+msgid "exit after receiving LIMIT results"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:211
+#: src/applications/fs/lib/gnunet-search.c:211
+msgid "only search the namespace identified by HEX"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:213
+#: src/applications/fs/lib/gnunet-search.c:213
+msgid "write encountered (decrypted) search results to the file PREFIX"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:215
+#: src/applications/fs/lib/gnunet-search.c:215
+msgid "wait TIMEOUT seconds for search results before aborting"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:217
+#: src/applications/fs/lib/gnunet-search.c:217
+msgid "take a GNUnet URI as an argument (instead of keyword)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:222
+#: src/applications/fs/lib/gnunet-search.c:222
+msgid "Search GNUnet for files."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:333
+#: src/applications/fs/lib/gnunet-search.c:333
+msgid "Not enough arguments. You must specify a keyword or identifier.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:358
+#: src/applications/fs/lib/gnunet-search.c:358
+#, c-format
+msgid "Invalid URI specified!\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:412
+#: src/applications/fs/lib/gnunet-search.c:412
+#, c-format
+msgid "Sorry, nothing was found.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:446
+#: src/applications/fs/lib/gnunet-search.c:446
+msgid "Only one URI may be passed.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:480
+#: src/applications/fs/lib/gnunet-search.c:480
+#, c-format
+msgid "Invalid namespace identifier '%s' specified.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:485
+#: src/applications/fs/lib/gnunet-search.c:485
+#, c-format
+msgid "Valid choices are: '%s'\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:495
+#: src/applications/fs/lib/gnunet-search.c:495
+msgid "Only one identifier in the namespace may be passed.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-search.c:513
+#: src/applications/fs/lib/gnunet-search.c:513
+msgid "You must specify a keyword.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:33
+#: src/applications/fs/lib/gnunet-pseudonym.c:33
+msgid "automate creation of a namespace by starting a collection"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:36
+#: src/applications/fs/lib/gnunet-pseudonym.c:36
+msgid ""
+"create a new pseudonym under the given NICKNAME (with the given password if "
+"specified)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:38
+#: src/applications/fs/lib/gnunet-pseudonym.c:38
+msgid "delete the pseudonym with the given NICKNAME"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:40
+#: src/applications/fs/lib/gnunet-pseudonym.c:40
+msgid ""
+"specify the given EMAIL address as the contact address for the pseudonym "
+"(use when creating a new pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:42
+#: src/applications/fs/lib/gnunet-pseudonym.c:42
+msgid "end automated building of a namespace (ends collection)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:46
+#: src/applications/fs/lib/gnunet-pseudonym.c:46
+msgid ""
+"use the given keyword to advertise the namespace (use when creating a new "
+"pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:48
+#: src/applications/fs/lib/gnunet-pseudonym.c:48
+msgid ""
+"specify that the contents of the namespace are of the given MIMETYPE (use "
+"when creating a new pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:50
+#: src/applications/fs/lib/gnunet-pseudonym.c:50
+msgid ""
+"do not generate an advertisement for this namespace (use when creating a new "
+"pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:52
+#: src/applications/fs/lib/gnunet-pseudonym.c:52
+msgid ""
+"use the given password to encrypt or decrypt pseudonyms in the pseudonym "
+"database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:54
+#: src/applications/fs/lib/gnunet-pseudonym.c:54
+msgid "do not list the pseudonyms from the pseudonym database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:56
+#: src/applications/fs/lib/gnunet-pseudonym.c:56
+msgid ""
+"specify NAME to be the realname of the user controlling the namespace (use "
+"when creating a new pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:58
+#: src/applications/fs/lib/gnunet-pseudonym.c:58
+msgid ""
+"specify IDENTIFIER to be the address of the entrypoint to content in the "
+"namespace (use when creating a new pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:62
+#: src/applications/fs/lib/gnunet-pseudonym.c:62
+msgid ""
+"use DESCRIPTION to describe the content of the namespace (use when creating "
+"a new pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:64
+#: src/applications/fs/lib/gnunet-pseudonym.c:64
+msgid ""
+"specify the given URI as an address that contains more information about the "
+"namespace (use when creating a new pseudonym)"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:69
+#: src/applications/fs/lib/gnunet-pseudonym.c:69
+msgid "Create new pseudonyms, delete pseudonyms or list existing pseudonyms."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:215
+#: src/applications/fs/lib/gnunet-pseudonym.c:215
+#, c-format
+msgid "Invalid argument: '%s'\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:217
+#: src/applications/fs/lib/gnunet-pseudonym.c:217
+#: src/server/gnunet-peer-info.c:119 src/server/gnunet-transport-check.c:498
+msgid "Invalid arguments. Exiting.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:244
+#: src/applications/fs/lib/gnunet-pseudonym.c:244
+#, c-format
+msgid "Collection stopped.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:253
+#: src/applications/fs/lib/gnunet-pseudonym.c:253
+#, c-format
+msgid "Pseudonym '%s' deleted.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:257
+#: src/applications/fs/lib/gnunet-pseudonym.c:257
+#, c-format
+msgid "Error deleting pseudonym '%s' (does not exist?).\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:277
+#: src/applications/fs/lib/gnunet-pseudonym.c:277
+#, c-format
+msgid "Starting collection.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:301
+#: src/applications/fs/lib/gnunet-pseudonym.c:301
+msgid "No password supplied.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:306
+#: src/applications/fs/lib/gnunet-pseudonym.c:306
+#, c-format
+msgid "Could not create pseudonym '%s' (exists?).\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:310
+#: src/applications/fs/lib/gnunet-pseudonym.c:310
+#, c-format
+msgid "Pseudonym '%s' created.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:372
+#: src/applications/fs/lib/gnunet-pseudonym.c:372
+#, c-format
+msgid ""
+"Advertising namespace with description:\n"
+"%s\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:426
+#: src/applications/fs/lib/gnunet-pseudonym.c:426
+#, c-format
+msgid "Could not access pseudonym directory.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:441
+#: src/applications/fs/lib/gnunet-pseudonym.c:441
+msgid "not decrypted"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:442
+#: src/applications/fs/lib/gnunet-pseudonym.c:442
+#, c-format
+msgid "Pseudonym with nickname '%s' has ID '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:453
+#: src/applications/fs/lib/gnunet-pseudonym.c:453
+#, c-format
+msgid "Did not find any meta-information about namespaces.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:460
+#: src/applications/fs/lib/gnunet-pseudonym.c:460
+#, c-format
+msgid "Invalid argument '%s' for option '%s', needs a '%s'.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:487
+#: src/applications/fs/lib/gnunet-pseudonym.c:487
+#, c-format
+msgid "\tRating (before): %d\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:493
+#: src/applications/fs/lib/gnunet-pseudonym.c:493
+#, c-format
+msgid "\tRating (after): %d\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-pseudonym.c:498
+#: src/applications/fs/lib/gnunet-pseudonym.c:498
+#, c-format
+msgid "\tRating: %d\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:52
+#: src/applications/fs/lib/gnunet-directory.c:52
+#, c-format
+msgid "==> Directory '%s':\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:56
+#: src/applications/fs/lib/gnunet-directory.c:56
+#, c-format
+msgid "No such file or invalid format for GNUnet directory.\n"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:77
+#: src/applications/fs/lib/gnunet-directory.c:77
+msgid "list all entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:79
+#: src/applications/fs/lib/gnunet-directory.c:79
+msgid "remove all entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:83
+#: src/applications/fs/lib/gnunet-directory.c:83
+msgid "list all insert entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:85
+#: src/applications/fs/lib/gnunet-directory.c:85
+msgid "delete all insert entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:88
+#: src/applications/fs/lib/gnunet-directory.c:88
+msgid "list all namespace entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:90
+#: src/applications/fs/lib/gnunet-directory.c:90
+msgid "delete all namespace entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:92
+#: src/applications/fs/lib/gnunet-directory.c:92
+msgid "list all search result entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:94
+#: src/applications/fs/lib/gnunet-directory.c:94
+msgid "delete all search result entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:97
+#: src/applications/fs/lib/gnunet-directory.c:97
+msgid "list all directory entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:99
+#: src/applications/fs/lib/gnunet-directory.c:99
+msgid "remove all directory entries from the directory database"
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:103
+#: src/applications/fs/lib/gnunet-directory.c:103
+msgid "Perform directory related operations."
+msgstr ""
+
+#: src/applications/afs/tools/gnunet-directory.c:196
+#: src/applications/fs/lib/gnunet-directory.c:196
+#, c-format
+msgid "Listed %d matching entries.\n"
+msgstr ""
+
+#: src/applications/chat/chat.c:87
+msgid "Message received from peer is invalid.\n"
+msgstr ""
+
+#: src/applications/chat/chat.c:133
+msgid "Message received from client is invalid\n"
+msgstr ""
+
+#: src/applications/chat/chat.c:155
+msgid "Maximum number of chat clients reached.\n"
+msgstr ""
+
+#: src/applications/chat/chat.c:159
+#, c-format
+msgid "Now %d of %d chat clients at this node.\n"
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:82
+msgid "specify nickname"
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:87
+msgid "Start GNUnet chat client."
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:153
+#, c-format
+msgid "You must specify a nickname (use option '%s').\n"
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:179
+msgid "Could not send join message to gnunetd\n"
+msgstr ""
+
+#: src/applications/chat/gnunet-chat.c:188
+msgid "Could not send message to gnunetd\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:159
+#, c-format
+msgid "Error sending request for statistics to gnunetd.\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:173
+#, c-format
+msgid "Error receiving reply for statistics from gnunetd.\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:185
+#: src/applications/testbed/get-stats.c:211
+#: src/applications/testbed/get-stats.c:279
+msgid "Uptime (seconds)"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:226
+#: src/applications/testbed/get-stats.c:321
+#, c-format
+msgid "Supported Peer to Peer messages:\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:235
+#: src/applications/testbed/get-stats.c:328
+#, c-format
+msgid "Error sending request for p2p protocol status to gnunetd.\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:240
+#: src/applications/testbed/get-stats.c:333
+#, c-format
+msgid "Error reading p2p protocol status from gnunetd.\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:255
+#, c-format
+msgid "Supported client-server messages:\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:264
+#: src/applications/testbed/get-stats.c:352
+#, c-format
+msgid "Error sending request for client-server protocol status to gnunetd.\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:269
+#: src/applications/testbed/get-stats.c:357
+#, c-format
+msgid "Error reading client-server protocol status from gnunetd.\n"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:297
+msgid "prints supported protocol messages"
+msgstr ""
+
+#: src/applications/stats/gnunet-stats.c:302
+msgid "Print statistics about GNUnet operations."
+msgstr ""
+
+#: src/applications/stats/statistics.c:205
+#, c-format
+msgid "% of allowed network load (up)"
+msgstr ""
+
+#: src/applications/stats/statistics.c:207
+#, c-format
+msgid "% of allowed network load (down)"
+msgstr ""
+
+#: src/applications/stats/statistics.c:211
+msgid "# of connected peers"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:95
+msgid "output in gnuplot format"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:98
+msgid "number of iterations"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:100
+msgid "number of messages to use per iteration"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:102
+msgid "receiver host identifier (ENC file name)"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:104
+msgid "message size"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:106
+msgid "inter-train message spacing"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:108
+msgid "time to wait for the arrival of a response"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:111
+msgid "sleep for SPACE ms after COUNT messages"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:115
+msgid "Start GNUnet transport benchmarking tool."
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:214
+msgid "You must specify a receiver!\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:217
+#, c-format
+msgid "Invalid receiver peer ID specified ('%s' is not valid enc name).\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:239
+#, c-format
+msgid "Time:\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:240
+#: src/applications/tbench/gnunet-tbench.c:250
+#, c-format
+msgid "\tmax      %d\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:242
+#: src/applications/tbench/gnunet-tbench.c:252
+#, c-format
+msgid "\tmin      %d\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:244
+#: src/applications/tbench/gnunet-tbench.c:254
+#, c-format
+msgid "\tmean     %f\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:246
+#: src/applications/tbench/gnunet-tbench.c:256
+#, c-format
+msgid "\tvariance %f\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:249
+#, c-format
+msgid "Loss:\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:265
+#, c-format
+msgid "Output format not known, this should not happen.\n"
+msgstr ""
+
+#: src/applications/tbench/gnunet-tbench.c:268
+#, c-format
+msgid ""
+"\n"
+"Did not receive the message from gnunetd. Is gnunetd running?\n"
+msgstr ""
+
+#: src/applications/template/gnunet-template.c:70
+msgid "helptext for -t"
+msgstr ""
+
+#: src/applications/template/gnunet-template.c:75
+msgid "Template for gnunet-clients."
+msgstr ""
+
+#: src/applications/testbed/get-stats.c:186
+#: src/applications/testbed/get-stats.c:253
+msgid "Error sending request for statistics to peer.\n"
+msgstr ""
+
+#: src/applications/testbed/get-stats.c:197
+#: src/applications/testbed/get-stats.c:264
+#: src/applications/testbed/get-stats.c:269
+msgid "Error receiving reply for statistics from peer.\n"
+msgstr ""
+
+#: src/applications/testbed/get-stats.c:203
+#, c-format
+msgid "Received malformed stats message (%d < %d)\n"
+msgstr ""
+
+#: src/applications/testbed/get-stats.c:220
+#: src/applications/testbed/get-stats.c:289
+#, c-format
+msgid "Received malformed stats message (%d > %d)\n"
+msgstr ""
+
+#: src/applications/testbed/get-stats.c:271
+#, c-format
+msgid "received malformed stats message (%d < %d)\n"
+msgstr ""
+
+#: src/applications/testbed/get-stats.c:346
+msgid "Supported Client Server messages:\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:119
+msgid "Start GNUnet-testbed helper."
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:180
+#, c-format
+msgid "Cannot connect to LOOPBACK port %d: %s\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:279
+#, c-format
+msgid "Could not execute '%s': %s\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:321
+msgid "No client service started. Trying again in 30 seconds.\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:344
+#, c-format
+msgid ""
+"Error (%s) binding the TCP listener to port %d. No proxy service started.\n"
+"Trying again in %d seconds...\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:411 src/server/tcpserver.c:499
+#, c-format
+msgid "Rejected unauthorized connection from %d.%d.%d.%d.\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:424
+#, c-format
+msgid "Protocol violation on socket. Expected command.\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:463
+#, c-format
+msgid "Command '%s' not found!\n"
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:536
+msgid "Start GNUnet testbed controller."
+msgstr ""
+
+#: src/applications/testbed/gnunet-testbed.c:590
+#, c-format
+msgid "Malformed entry in the configuration in section %s under %s: %s\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:49
+msgid "Could not send ack back to client.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:59
+#, c-format
+msgid "Received unknown testbed message of type %u.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:77
+#: src/applications/testbed/testbed.c:819
+#, c-format
+msgid "size of '%s' message is too short. Ignoring.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:84
+#, c-format
+msgid "size of '%s' message is wrong. Ignoring.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:130
+#, c-format
+msgid "TESTBED could not generate HELO message for protocol %u\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:166
+#, c-format
+msgid "trust change=%d, required=%d\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:213
+#: src/applications/testbed/testbed.c:254
+#: src/applications/testbed/testbed.c:371
+#: src/applications/testbed/testbed.c:378
+#: src/applications/testbed/testbed.c:415
+#: src/applications/testbed/testbed.c:422
+#, c-format
+msgid "received invalid '%s' message\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:229
+#: src/applications/testbed/testbed.c:269
+#, c-format
+msgid "received invalid '%s' message (empty module name)\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:236
+#, c-format
+msgid "loading module '%s' failed.  Notifying client.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:276
+msgid "unloading module failed.  Notifying client.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:551
+#, c-format
+msgid "'%s' %s failed: %s\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:637
+#, c-format
+msgid "received invalid '%s' message: %s.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:829
+#, c-format
+msgid "'..' is not allowed in file name (%s).\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:838
+msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:845
+msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:853
+msgid "Upload refused!"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:879
+#, c-format
+msgid "Invalid message received at %s:%d."
+msgstr ""
+
+#: src/applications/testbed/testbed.c:998
+#, c-format
+msgid "received invalid testbed message of size %u\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1015
+#, c-format
+msgid ""
+"Received testbed message of type %u but unexpected size %u, expected %u\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1059
+msgid "No testbed URL given, not registered.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1069 src/transports/http.c:1462
+#, c-format
+msgid "Could not resolve name of HTTP proxy '%s'.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1093
+#: src/applications/bootstrap_http/http.c:69
+#, c-format
+msgid "Invalid URL '%s' (must begin with '%s')\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1132
+#, c-format
+msgid "Malformed http URL: '%s' at '%s'.  Testbed-client not registered.\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1168
+#, c-format
+msgid "Could not register testbed, host '%s' unknown\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1190
+#, c-format
+msgid "Failed to send HTTP request to host '%s': %s\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1243
+#, c-format
+msgid "Failed so send HTTP request '%s' to host '%s': %s\n"
+msgstr ""
+
+#: src/applications/testbed/testbed.c:1280
+msgid "Exit register (error: no http response read).\n"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:101
+msgid "probe network to the given DEPTH"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:103
+msgid ""
+"specify output format; 0 for human readable output, 1 for dot, 2 for vcg"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:107
+msgid "use PRIO for the priority of the trace request"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:110
+msgid "wait DELAY seconds for replies"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:114
+msgid "Trace GNUnet network topology."
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:222
+#, c-format
+msgid "'%s' is not connected to any peer.\n"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:233
+#, c-format
+msgid ""
+"Format specification invalid. Use 0 for user-readable, 1 for dot, 2 for "
+"vcg.\n"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:260
+#, c-format
+msgid "'%s' connected to '%s'.\n"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:275
+#, c-format
+msgid "Format specification invalid. Use 0 for user-readable, 1 for dot\n"
+msgstr ""
+
+#: src/applications/tracekit/gnunet-tracekit.c:298
+#, c-format
+msgid "Peer '%s' did not report back.\n"
+msgstr ""
+
+#: src/applications/tracekit/tracekit.c:69
+#: src/applications/tracekit/tracekit.c:195
+#, c-format
+msgid "Received invalid '%s' message from '%s'.\n"
+msgstr ""
+
+#: src/applications/tracekit/tracekit.c:255
+msgid "TRACEKIT: routing table full, trace request dropped\n"
+msgstr ""
+
+#: src/applications/tracekit/tracekit.c:363
+#, c-format
+msgid "TRACEKIT: received invalid '%s' message\n"
+msgstr ""
+
+#: src/applications/tracekit/tracekit.c:448
+msgid "# client trace requests received"
+msgstr ""
+
+#: src/applications/tracekit/tracekit.c:450
+msgid "# client trace replies sent"
+msgstr ""
+
+#: src/applications/tracekit/tracekit.c:452
+msgid "# p2p trace requests received"
+msgstr ""
+
+#: src/applications/tracekit/tracekit.c:454
+msgid "# p2p trace replies sent"
+msgstr ""
+
+#: src/applications/dht/module/cs.c:432
+#, c-format
+msgid "'%s' failed!\n"
+msgstr ""
+
+#: src/applications/dht/module/cs.c:458
+#, c-format
+msgid "'%s' failed: table not found!\n"
+msgstr ""
+
+#: src/applications/dht/module/cs.c:474 src/applications/dht/module/cs.c:588
+msgid "sendAck failed.  Terminating connection to client.\n"
+msgstr ""
+
+#: src/applications/dht/module/cs.c:721 src/applications/dht/module/cs.c:734
+#, c-format
+msgid "'%s' failed. Terminating connection to client.\n"
+msgstr ""
+
+#: src/applications/dht/module/cs.c:885
+msgid "Failed to deliver csACK signal.\n"
+msgstr ""
+
+#: src/applications/dht/module/cs.c:922
+msgid "Received more results than allowed!\n"
+msgstr ""
+
+#: src/applications/dht/module/cs.c:950
+#, c-format
+msgid "Failed to deliver '%s' content.\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:1034
+#, c-format
+msgid "Malformed optional field '%s' received from peer '%s'.\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:1061
+#, c-format
+msgid "Could not find peer '%s' in routing table!\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:1208
+#: src/applications/dht/module/dht.c:1223
+#, c-format
+msgid "Received malformed response to '%s' from peer '%s'.\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:1534
+#, c-format
+msgid "Invalid response to '%s' from peer '%s'.\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:1664
+#: src/applications/dht/module/dht.c:2404
+#: src/applications/dht/module/dht.c:2685
+#: src/applications/dht/module/dht.c:2888 src/applications/rpc/rpc.c:1264
+#, c-format
+msgid "'%s' called with timeout above 1 hour (bug?)\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:1865
+#, c-format
+msgid "Invalid response to '%s'.\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:2057
+#, c-format
+msgid "Malformed response to '%s' on master table.\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:2268
+#: src/applications/dht/module/dht.c:2576
+#, c-format
+msgid "Invalid response to '%s' from '%s'\n"
+msgstr ""
+
+#: src/applications/dht/module/dht.c:3029
+#: src/applications/dht/module/dht.c:3171
+#: src/applications/dht/module/dht.c:3312
+#: src/applications/dht/module/dht.c:3471
+#, c-format
+msgid "Received invalid RPC '%s'.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:44
+msgid "allow SIZE bytes of memory for the local table"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:46
+msgid "join table called NAME"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:48
+msgid "when leaving table, use VALUEs to migrate data"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:54
+msgid "Join a DHT."
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:132
+msgid "Superflous arguments (ignored).\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:148
+#, c-format
+msgid "Call to '%s' returns %d.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:149
+#, c-format
+msgid "Call to '%s' with key '%s'.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:150
+#, c-format
+msgid "Call to '%s' with value '%.*s' (%d bytes).\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:222
+#: src/applications/dht/tools/dht-query.c:224
+#, c-format
+msgid "No table name specified, using '%s'.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:248
+msgid "Error joining DHT.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:255
+#, c-format
+msgid "Joined DHT.  Press CTRL-C to leave.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-join.c:264
+msgid "Error leaving DHT.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:38
+msgid "query table called NAME"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:40
+msgid "allow TIME ms to process each command"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:45
+msgid "Query (get KEY, put KEY VALUE, remove KEY VALUE) a DHT table."
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:168
+#: src/applications/dht/tools/dht-query.c:198
+#, c-format
+msgid "'%s(%s,%s)' succeeded\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:172
+#: src/applications/dht/tools/dht-query.c:202
+#, c-format
+msgid "'%s(%s,%s)' failed.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:239
+#, c-format
+msgid "failed to connect to gnunetd\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:246
+#, c-format
+msgid "command '%s' requires an argument ('%s')\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:254
+#: src/applications/dht/tools/dht-query.c:264
+#, c-format
+msgid "command '%s' requires two arguments ('%s' and '%s')\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht-query.c:272
+#, c-format
+msgid "Unsupported command '%s'.  Aborting.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:129
+#: src/applications/dht/tools/dht_api.c:251
+#: src/applications/dht/tools/dht_api.c:282
+#: src/applications/dht/tools/dht_api.c:345
+#: src/applications/dht/tools/dht_api.c:401
+#: src/applications/dht/tools/dht_api.c:448
+#: src/applications/dht/tools/dht_api.c:462
+#, c-format
+msgid "Failed to send '%s'.  Closing connection.\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:207
+#: src/applications/dht/tools/dht_api.c:307
+#: src/applications/dht/tools/dht_api.c:363
+#: src/applications/dht/tools/dht_api.c:421
+#, c-format
+msgid "Received invalid '%s' request (size %d)\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:220
+#: src/applications/dht/tools/dht_api.c:320
+#: src/applications/dht/tools/dht_api.c:376
+#, c-format
+msgid "Received invalid '%s' request (wrong table)\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:476
+#, c-format
+msgid "Received unknown request type %d at %s:%d\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:519
+msgid "This client already participates in the given DHT!\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:592
+msgid "Cannot leave DHT: table not known!"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:615
+#, c-format
+msgid "gnunetd signaled error in response to '%s' message\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:620
+#, c-format
+msgid "Failed to receive response to '%s' message from gnunetd\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:625
+#, c-format
+msgid "Failed to send '%s' message to gnunetd\n"
+msgstr ""
+
+#: src/applications/dht/tools/dht_api.c:706
+#: src/applications/dht/tools/dht_api.c:738
+#, c-format
+msgid "Unexpected reply to '%s' operation.\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:129 src/applications/rpc/rpc.c:169
+#, c-format
+msgid ""
+"%s::%s - RPC %s:%p could not be registered: another callback is already "
+"using this name (%p)\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:211 src/applications/rpc/rpc.c:258
+#, c-format
+msgid ""
+"%s::%s - RPC %s:%p could not be unregistered: another callback registered "
+"under that name: %p\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:232
+#, c-format
+msgid "%s::%s - RPC %s:%p could not be unregistered: not found\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:279
+#, c-format
+msgid "%s::%s - async RPC %s:%p could not be unregistered: not found\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:871 src/applications/rpc/rpc.c:999
+#: src/applications/rpc/rpc.c:1081
+#, c-format
+msgid "Invalid message of type %u received.  Dropping.\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:933
+#, c-format
+msgid "Dropping RPC request %u: message malformed.\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:1385
+#, c-format
+msgid "RPC not unregistered: %s:%p\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:1432
+#, c-format
+msgid "Failed to initialize '%s' service.\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:1488
+msgid "RPC async reply invalid.\n"
+msgstr ""
+
+#: src/applications/rpc/rpc.c:1559
+msgid "async RPC reply not received.\n"
+msgstr ""
+
+#: src/applications/pingpong/pingpong.c:102
+#: src/applications/pingpong/pingpong.c:156
+#: src/applications/pingpong/pingpong.c:192
+#: src/applications/pingpong/pingpong.c:229
+#, c-format
+msgid "Received malformed '%s' message. Dropping.\n"
+msgstr ""
+
+#: src/applications/pingpong/pingpong.c:110
+msgid "Received ping for another peer. Dropping.\n"
+msgstr ""
+
+#: src/applications/pingpong/pingpong.c:164
+msgid "Received PING not destined for us!\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:88
+#, c-format
+msgid "'%s' failed at %s:%d with error: '%s'.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:101
+#, c-format
+msgid "Could not download list of peer contacts, host '%s' unknown.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:123
+#: src/applications/bootstrap_http/http.c:147
+#, c-format
+msgid "'%s' to '%s' failed at %s:%d with error: %s\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:183
+#, c-format
+msgid "Parsing HTTP response for URL '%s' failed.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:218
+#, c-format
+msgid "Parsing HELO from '%s' failed.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:284
+#, c-format
+msgid "Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"
+msgstr ""
+
+#: src/applications/fragmentation/fragmentation.c:557
+msgid "# messages defragmented"
+msgstr ""
+
+#: src/applications/fragmentation/fragmentation.c:558
+msgid "# messages fragmented"
+msgstr ""
+
+#: src/applications/fragmentation/fragmentation.c:559
+msgid "# fragments discarded"
+msgstr ""
+
+#: src/applications/identity/identity.c:287
+#, c-format
+msgid ""
+"File '%s' in directory '%s' does not match naming convention. Removed.\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:310
+#, c-format
+msgid "%s '%s' returned no known hosts!\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:447
+#: src/applications/identity/identity.c:468
+#, c-format
+msgid "Removed file '%s' containing invalid peer advertisement.\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:513
+#, c-format
+msgid "Removed file '%s' containing invalid HELO data.\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:527
+#, c-format
+msgid "Removed invalid HELO file '%s'\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:857
+#, c-format
+msgid ""
+"Configuration file must specify directory for network identities in section %"
+"s under %s.\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:862
+#: src/applications/identity/hostkey.c:95
+#, c-format
+msgid ""
+"Configuration file must specify a directory for GNUnet to store per-peer "
+"data under %s%s\n"
+msgstr ""
+
+#: src/applications/identity/hostkey.c:114
+#, c-format
+msgid ""
+"Existing hostkey in file '%s' failed format check, creating new hostkey.\n"
+msgstr ""
+
+#: src/applications/identity/hostkey.c:122
+msgid "Creating new hostkey (this may take a while).\n"
+msgstr ""
+
+#: src/applications/identity/hostkey.c:134
+msgid "Done creating hostkey.\n"
+msgstr ""
+
+#: src/applications/transport/transport.c:423
+#: src/applications/transport/transport.c:431
+#, c-format
+msgid "No transport of type %d known.\n"
+msgstr ""
+
+#: src/applications/transport/transport.c:586
+#, c-format
+msgid "Option '%s' not set in configuration in section '%s', setting to %dm.\n"
+msgstr ""
+
+#: src/applications/transport/transport.c:600
+#, c-format
+msgid ""
+"You should specify at least one transport service under option '%s' in "
+"section '%s'.\n"
+msgstr ""
+
+#: src/applications/transport/transport.c:621
+#, c-format
+msgid "Transport library '%s' did not provide required function '%s%s'.\n"
+msgstr ""
+
+#: src/applications/transport/transport.c:641
+#, c-format
+msgid "I am peer '%s'.\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:157
+#, c-format
+msgid "HELO message from '%s' invalid (signature invalid). Dropping.\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:163
+msgid "HELO message received invalid (expiration time over limit). Dropping.\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:172
+#, c-format
+msgid "HELO advertisement for protocol %d received.\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:306
+msgid "Could not send HELOs+PING, ping buffer full.\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:455
+#, c-format
+msgid "Advertising my transport %d to selected peers.\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:461
+msgid ""
+"Announcing ourselves pointless: no other peers are known to us so far.\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:544
+#, c-format
+msgid "Removing HELO from peer '%s' (expired %ds ago).\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:678
+msgid "# Peer advertisements received"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:679
+msgid "# Self advertisments transmitted"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:680
+msgid "# Foreign advertisements forwarded"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:702
+msgid "Network advertisements disabled by configuration!\n"
+msgstr ""
+
+#: src/applications/session/connect.c:126
+msgid "Cannot encrypt sessionkey, other peer not known!\n"
+msgstr ""
+
+#: src/applications/session/connect.c:269
+#, c-format
+msgid "Session key from peer '%s' could not be verified.\n"
+msgstr ""
+
+#: src/applications/session/connect.c:464
+#, c-format
+msgid "Invalid '%s' message received from peer '%s'.\n"
+msgstr ""
+
+#: src/applications/session/connect.c:472
+#, c-format
+msgid "SKEY from '%s' fails CRC check.\n"
+msgstr ""
+
+#: src/applications/session/connect.c:515
+msgid ""
+"Error parsing encrypted session key, given message part size is invalid.\n"
+msgstr ""
+
+#: src/server/connection.c:909
+#, c-format
+msgid "'%s' selected %d out of %d messages (MTU: %d).\n"
+msgstr ""
+
+#: src/server/connection.c:917
+#, c-format
+msgid "Message details: %u: length %d, priority: %d\n"
+msgstr ""
+
+#: src/server/connection.c:1857
+#, c-format
+msgid "Message from '%s' discarded: invalid format.\n"
+msgstr ""
+
+#: src/server/connection.c:1937
+#, c-format
+msgid "Invalid sequence number %u <= %u, dropping rest of packet.\n"
+msgstr ""
+
+#: src/server/connection.c:1952
+msgid "Message received more than one day old. Dropped.\n"
+msgstr ""
+
+#: src/server/connection.c:2086
+msgid "Session confirmed, but cannot connect! (bug?)"
+msgstr ""
+
+#: src/server/core.c:106
+#, c-format
+msgid "Application module '%s' already initialized!\n"
+msgstr ""
+
+#: src/server/core.c:175
+#, c-format
+msgid "Could not shutdown '%s': application not loaded\n"
+msgstr ""
+
+#: src/server/core.c:182
+#, c-format
+msgid "Could not shutdown application '%s': not initialized\n"
+msgstr ""
+
+#: src/server/core.c:191 src/server/core.c:366
+#, c-format
+msgid "Could not find '%s%s' method in library '%s'.\n"
+msgstr ""
+
+#: src/server/core.c:344
+#, c-format
+msgid "Could not release %p: service not loaded\n"
+msgstr ""
+
+#: src/server/core.c:422 src/server/gnunet-update.c:210
+msgid "No applications defined in configuration!\n"
+msgstr ""
+
+#: src/server/core.c:443
+#, c-format
+msgid "Could not initialize application '%s'\n"
+msgstr ""
+
+#: src/server/core.c:460
+#, c-format
+msgid "Could not properly shutdown application '%s'.\n"
+msgstr ""
+
+#: src/server/core.c:571
+#, c-format
+msgid "Could not properly unload service '%s'!\n"
+msgstr ""
+
+#: src/server/gnunetd.c:107
+#, c-format
+msgid "Configuration or GNUnet version changed.  You need to run '%s'!\n"
+msgstr ""
+
+#: src/server/gnunetd.c:115
+#, c-format
+msgid "'%s' starting\n"
+msgstr ""
+
+#: src/server/gnunetd.c:139
+#, c-format
+msgid "'%s' startup complete.\n"
+msgstr ""
+
+#: src/server/gnunetd.c:144
+#, c-format
+msgid "'%s' is shutting down.\n"
+msgstr ""
+
+#: src/server/handler.c:316
+#, c-format
+msgid "Received corrupt message from peer '%s'in %s:%d.\n"
+msgstr ""
+
+#: src/server/startup.c:126
+#, c-format
+msgid "The '%s' request received from client is malformed.\n"
+msgstr ""
+
+#: src/server/startup.c:275
+#, c-format
+msgid "You must specify a name for the PID file in section '%s' under '%s'.\n"
+msgstr ""
+
+#: src/server/startup.c:290
+#, c-format
+msgid "Could not write PID to file '%s': %s.\n"
+msgstr ""
+
+#: src/server/startup.c:394
+msgid ""
+"run in debug mode; gnunetd will not daemonize and error messages will be "
+"written to stderr instead of a logfile"
+msgstr ""
+
+#: src/server/startup.c:400
+msgid "run as user LOGIN"
+msgstr ""
+
+#: src/server/startup.c:405
+msgid "Starts the gnunetd daemon."
+msgstr ""
+
+#: src/server/startup.c:495
+#, c-format
+msgid "User '%s' not known, cannot change UID to it."
+msgstr ""
+
+#: src/server/startup.c:502
+#, c-format
+msgid "Cannot change user/group to '%s': %s"
+msgstr ""
+
+#: src/server/startup.c:520
+msgid "Invalid command-line arguments:\n"
+msgstr ""
+
+#: src/server/startup.c:523
+#, c-format
+msgid "Argument %d: '%s'\n"
+msgstr ""
+
+#: src/server/startup.c:529
+msgid "Invalid command-line arguments.\n"
+msgstr ""
+
+#: src/server/gnunet-peer-info.c:96
+msgid "Print information about GNUnet peers."
+msgstr ""
+
+#: src/server/gnunet-peer-info.c:146 src/server/gnunet-peer-info.c:161
+#, c-format
+msgid "Could not get address of peer '%s'.\n"
+msgstr ""
+
+#: src/server/gnunet-peer-info.c:155
+msgid "HELO message invalid (signature invalid).\n"
+msgstr ""
+
+#: src/server/gnunet-peer-info.c:166
+#, c-format
+msgid "Peer '%s' with trust %8d and address '%s'\n"
+msgstr ""
+
+#: src/server/tcpserver.c:405
+#, c-format
+msgid "'%s' failed for port %d: %s. Will try again in %d seconds.\n"
+msgstr ""
+
+#: src/server/tcpserver.c:664
+#, c-format
+msgid ""
+"Malformed network specification in the configuration in section '%s' for "
+"entry '%s': %s\n"
+msgstr ""
+
+#: src/server/tcpserver.c:761
+#, c-format
+msgid "%s failed, message type %d already in use.\n"
+msgstr ""
+
+#: src/server/gnunet-update.c:48
+msgid "print a value from the configuration file to stdout"
+msgstr ""
+
+#: src/server/gnunet-update.c:52
+msgid "run in user mode (for getting user configuration values)"
+msgstr ""
+
+#: src/server/gnunet-update.c:58
+msgid "Updates GNUnet datastructures after version change."
+msgstr ""
+
+#: src/server/gnunet-update.c:133
+#, c-format
+msgid "Option '%s' makes no sense without option '%s'."
+msgstr ""
+
+#: src/server/gnunet-update.c:227
+#, c-format
+msgid "Updating data for module '%s'\n"
+msgstr ""
+
+#: src/server/gnunet-update.c:231
+#, c-format
+msgid "Failed to update data for module '%s'\n"
+msgstr ""
+
+#: src/server/gnunet-update.c:282
+#, c-format
+msgid "Updated data for %d applications.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:105
+#, c-format
+msgid "'%s': Could not create HELO.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:114
+#, c-format
+msgid "'%s': Could not connect.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:143
+#, c-format
+msgid "'%s': Could not send.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:163
+#, c-format
+msgid "'%s': Did not receive message within %llu ms.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:177
+#, c-format
+msgid "'%s': Could not disconnect.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:184
+#, c-format
+msgid ""
+"'%s' transport OK.  It took %ums to transmit %d messages of %d bytes each.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:212
+#, c-format
+msgid ""
+"\n"
+"Contacting '%s'."
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:298
+#, c-format
+msgid "No reply received within %llums.\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:461
+msgid "ping peers from HOSTLISTURL that match transports"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:463
+msgid "send COUNT messages"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:465
+msgid "send messages with SIZE bytes payload"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:467
+msgid "specifies which TRANSPORT should be tested"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:469
+msgid "specifies after how many MS to time-out"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:475
+msgid "Tool to test if GNUnet transport services are operational."
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:523
+msgid "You must specify a non-empty set of transports to test!\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:528
+#, c-format
+msgid "Testing transport(s) %s\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:531
+#, c-format
+msgid "Available transport(s): %s\n"
+msgstr ""
+
+#: src/server/gnunet-transport-check.c:577
+#, c-format
+msgid ""
+"%d out of %d peers contacted successfully (%d times transport unavailable).\n"
+msgstr ""
+
+#: src/transports/http.c:628
+msgid "Expected welcome on http connection, got garbage. Closing connection.\n"
+msgstr ""
+
+#: src/transports/http.c:667
+msgid "Received malformed message from http-peer connection. Closing.\n"
+msgstr ""
+
+#: src/transports/http.c:853 src/transports/tcp.c:652
+#, c-format
+msgid "Rejected blacklisted connection from %d.%d.%d.%d.\n"
+msgstr ""
+
+#: src/transports/http.c:1191 src/transports/tcp.c:1000 src/util/tcpio.c:165
+#: src/util/tcpio.c:192
+#, c-format
+msgid "Cannot connect to %d.%d.%d.%d:%d: %s\n"
+msgstr ""
+
+#: src/transports/http.c:1342
+#, c-format
+msgid ""
+"Could not bind the HTTP listener to port %d. No transport service started.\n"
+msgstr ""
+
+#: src/transports/http.c:1452 src/transports/smtp.c:882
+#: src/transports/tcp.c:1290 src/transports/tcp6.c:1347
+#: src/transports/udp.c:621 src/transports/udp6.c:640
+#, c-format
+msgid "MTU for '%s' is probably too low (fragmentation not implemented!)\n"
+msgstr ""
+
+#: src/transports/smtp.c:295
+#, c-format
+msgid "Could not resolve name of SMTP server '%s': %s"
+msgstr ""
+
+#: src/transports/smtp.c:404
+#, c-format
+msgid ""
+"You must specify the name of a pipe for the SMTP transport in section '%s' "
+"under '%s'.\n"
+msgstr ""
+
+#: src/transports/smtp.c:473
+msgid "Received malformed message via SMTP (size mismatch).\n"
+msgstr ""
+
+#: src/transports/smtp.c:562
+msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
+msgstr ""
+
+#: src/transports/smtp.c:569
+#, c-format
+msgid "SMTP filter string to long, capped to '%s'\n"
+msgstr ""
+
+#: src/transports/smtp.c:737
+#, c-format
+msgid "Sending E-mail to '%s' failed.\n"
+msgstr ""
+
+#: src/transports/smtp.c:786
+#, c-format
+msgid "SMTP server send unexpected response at %s:%d.\n"
+msgstr ""
+
+#: src/transports/smtp.c:853
+#, c-format
+msgid "%.*s filter %s (SMTP)"
+msgstr ""
+
+#: src/transports/tcp.c:439 src/transports/tcp6.c:442
+msgid "Expected welcome message on tcp connection, got garbage. Closing.\n"
+msgstr ""
+
+#: src/transports/tcp.c:469
+msgid "Received malformed message from tcp-peer connection. Closing.\n"
+msgstr ""
+
+#: src/transports/tcp.c:928
+msgid "Could not determine my public IP address.\n"
+msgstr ""
+
+#: src/transports/tcp.c:1173 src/transports/tcp6.c:1229
+#, c-format
+msgid "Failed to start transport service on port %d.\n"
+msgstr ""
+
+#: src/transports/tcp6.c:474
+msgid ""
+"Received malformed message from tcp6-peer connection. Closing connection.\n"
+msgstr ""
+
+#: src/transports/tcp6.c:667
+#, c-format
+msgid "Rejected blacklisted connection from address %s.\n"
+msgstr ""
+
+#: src/transports/tcp6.c:986
+msgid "Could not determine my public IPv6 address.\n"
+msgstr ""
+
+#: src/transports/tcp6.c:1037
+#, c-format
+msgid "'%s': unknown service: %s\n"
+msgstr ""
+
+#: src/transports/udp.c:133 src/transports/udp6.c:121
+#, c-format
+msgid ""
+"Cannot determine port to bind to.  Define in configuration file in section '%"
+"s' under '%s' or in '%s' under %s/%s.\n"
+msgstr ""
+
+#: src/transports/udp.c:167
+#, c-format
+msgid "Failed to bind to UDP port %d.\n"
+msgstr ""
+
+#: src/transports/udp.c:237
+#, c-format
+msgid "Received invalid UDP message from %d.%d.%d.%d:%d, dropping.\n"
+msgstr ""
+
+#: src/transports/udp.c:260
+#, c-format
+msgid "Packed received from %d.%d.%d.%d:%d (UDP) failed format check."
+msgstr ""
+
+#: src/transports/udp.c:271
+#, c-format
+msgid "Sender %d.%d.%d.%d is blacklisted, dropping message.\n"
+msgstr ""
+
+#: src/transports/udp.c:340
+msgid "UDP: Could not determine my public IP address.\n"
+msgstr ""
+
+#: src/transports/udp.c:465
+#, c-format
+msgid "Failed to send message of size %d via UDP to %d.%d.%d.%d:%d: %s\n"
+msgstr ""
+
+#: src/transports/udp6.c:157
+#, c-format
+msgid "Failed to bind to UDP6 port %d.\n"
+msgstr ""
+
+#: src/transports/udp6.c:228
+#, c-format
+msgid "Received invalid UDP6 message from %s:%d, dropping.\n"
+msgstr ""
+
+#: src/transports/udp6.c:261
+#, c-format
+msgid "Packed received from %s:%d (UDP6) failed format check."
+msgstr ""
+
+#: src/transports/udp6.c:274
+#, c-format
+msgid "Sender %s is blacklisted, dropping message.\n"
+msgstr ""
+
+#: src/transports/udp6.c:355
+msgid "UDP6: Could not determine my public IPv6 address.\n"
+msgstr ""
+
+#: src/util/io.c:35
+#, c-format
+msgid "Caught signal %d.\n"
+msgstr ""
+
+#: src/util/configuration.c:177
+#, c-format
+msgid "inlining configration file '%s'\n"
+msgstr ""
+
+#: src/util/configuration.c:181
+#, c-format
+msgid "Could not parse configuration file '%s'.\n"
+msgstr ""
+
+#: src/util/configuration.c:213
+#, c-format
+msgid "Syntax error in configuration file '%s' at line %d.\n"
+msgstr ""
+
+#: src/util/configuration.c:434
+#, c-format
+msgid ""
+"Configuration file '%s' not found. I will try to create the default "
+"configuration file at that location.\n"
+msgstr ""
+
+#: src/util/configuration.c:450
+#, c-format
+msgid "Cannot open configuration file '%s'\n"
+msgstr ""
+
+#: src/util/cron.c:228
+msgid "Cron stopped\n"
+msgstr ""
+
+#: src/util/cron.c:363
+#, c-format
+msgid ""
+"'%s' called with cron job not in queue, adding.  This may not be what you "
+"want.\n"
+msgstr ""
+
+#: src/util/dso.c:41
+#, c-format
+msgid "Initialization of plugin mechanism failed: %s!\n"
+msgstr ""
+
+#: src/util/dso.c:93
+#, c-format
+msgid "'%s' failed for library '%s' at %s:%d with error: %s\n"
+msgstr ""
+
+#: src/util/dso.c:141
+#, c-format
+msgid "'%s' failed to resolve method '%s%s' at %s:%d with error: %s\n"
+msgstr ""
+
+#: src/util/getopt.c:641
+#, c-format
+msgid "%s: option `%s' is ambiguous\n"
+msgstr ""
+
+#: src/util/getopt.c:665
+#, c-format
+msgid "%s: option `--%s' does not allow an argument\n"
+msgstr ""
+
+#: src/util/getopt.c:670
+#, c-format
+msgid "%s: option `%c%s' does not allow an argument\n"
+msgstr ""
+
+#: src/util/getopt.c:687 src/util/getopt.c:861
+#, c-format
+msgid "%s: option `%s' requires an argument\n"
+msgstr ""
+
+#: src/util/getopt.c:717
+#, c-format
+msgid "%s: unrecognized option `--%s'\n"
+msgstr ""
+
+#: src/util/getopt.c:721
+#, c-format
+msgid "%s: unrecognized option `%c%s'\n"
+msgstr ""
+
+#: src/util/getopt.c:747
+#, c-format
+msgid "%s: illegal option -- %c\n"
+msgstr ""
+
+#: src/util/getopt.c:750
+#, c-format
+msgid "%s: invalid option -- %c\n"
+msgstr ""
+
+#: src/util/getopt.c:780 src/util/getopt.c:910
+#, c-format
+msgid "%s: option requires an argument -- %c\n"
+msgstr ""
+
+#: src/util/getopt.c:827
+#, c-format
+msgid "%s: option `-W %s' is ambiguous\n"
+msgstr ""
+
+#: src/util/getopt.c:845
+#, c-format
+msgid "%s: option `-W %s' does not allow an argument\n"
+msgstr ""
+
+#: src/util/hostkey_gcrypt.c:776
+#, c-format
+msgid ""
+"Received plaintext not in pkcs-1 block type 2 format (size=%d, *tmp=%d)!\n"
+msgstr ""
+
+#: src/util/hostkey_gcrypt.c:791
+#, c-format
+msgid ""
+"Received plaintext not in pkcs-1 block type 2 format (size=%d, *endp=%d)!\n"
+msgstr ""
+
+#: src/util/hostkey_gcrypt.c:958 src/util/hostkey_openssl.c:496
+#, c-format
+msgid "RSA signature verification failed at %s:%d: %s\n"
+msgstr ""
+
+#: src/util/hostkey_openssl.c:94 src/util/hostkey_openssl.c:100
+#, c-format
+msgid "Function '%s' did not return expected size %u: %s\n"
+msgstr ""
+
+#: src/util/hostkey_openssl.c:336
+#, c-format
+msgid "RSA-Encoding has unexpected length %d (expected %d)!"
+msgstr ""
+
+#: src/util/identity.c:82 src/util/identity.c:122 src/util/tcpio.c:86
+#, c-format
+msgid "Could not find IP of host '%s': %s\n"
+msgstr ""
+
+#: src/util/identity.c:201
+#, c-format
+msgid ""
+"Could not find interface '%s' in '%s', trying to find another interface.\n"
+msgstr ""
+
+#: src/util/identity.c:225
+#, c-format
+msgid "Could not obtain IP for interface '%s' using '%s'.\n"
+msgstr ""
+
+#: src/util/identity.c:264
+#, c-format
+msgid "Could not find an IP address for interface '%s'.\n"
+msgstr ""
+
+#: src/util/identity.c:272
+#, c-format
+msgid ""
+"There is more than one IP address specified for interface '%s'.\n"
+"GNUnet will use %d.%d.%d.%d.\n"
+msgstr ""
+
+#: src/util/identity.c:290
+#, c-format
+msgid "Could not resolve '%s' to determine our IP address: %s\n"
+msgstr ""
+
+#: src/util/identity.c:347 src/util/identity.c:389
+#, c-format
+msgid "Could not resolve '%s': %s\n"
+msgstr ""
+
+#: src/util/identity.c:416
+msgid "Could not determine IP address of the local machine!\n"
+msgstr ""
+
+#: src/util/identity.c:427
+msgid "Could not determine IP(v6) address of the local machine!\n"
+msgstr ""
+
+#: src/util/identity.c:439
+msgid ""
+"Could not find IP(v4) for this host. Please provide the IP in the "
+"configuration file.\n"
+msgstr ""
+
+#: src/util/identity.c:451
+msgid ""
+"Could not find IP(v6) for this host. Please provide the IP in the "
+"configuration file.\n"
+msgstr ""
+
+#: src/util/initialize.c:168
+msgid "Shutdown complete.\n"
+msgstr ""
+
+#: src/util/ipcheck.c:100
+#, c-format
+msgid "Invalid format for IP: '%s'\n"
+msgstr ""
+
+#: src/util/ipcheck.c:150
+#, c-format
+msgid "Invalid network notation ('/%d' is not legal in IPv4 CIDR)."
+msgstr ""
+
+#: src/util/ipcheck.c:164
+#, c-format
+msgid "Invalid network notation (additional characters: '%s')."
+msgstr ""
+
+#: src/util/ipcheck.c:236
+#, c-format
+msgid "Invalid network notation (does not end with ';': '%s')\n"
+msgstr ""
+
+#: src/util/ipcheck.c:268
+#, c-format
+msgid "Wrong format '%s' for netmask: %s\n"
+msgstr ""
+
+#: src/util/ipcheck.c:282
+#, c-format
+msgid "Wrong format '%s' for network: %s\n"
+msgstr ""
+
+#: src/util/logging.c:76
+msgid "LOGLEVEL not specified, that is not ok.\n"
+msgstr ""
+
+#: src/util/logging.c:86
+#, c-format
+msgid "Invalid LOGLEVEL '%s' specified.\n"
+msgstr ""
+
+#: src/util/logging.c:205
+#, c-format
+msgid "Failure at %s:%d.\n"
+msgstr ""
+
+#: src/util/logging.c:211
+#, c-format
+msgid "Failure at at %s:%d.\n"
+msgstr ""
+
+#: src/util/port.c:37
+#, c-format
+msgid ""
+"Cannot determine port of gnunetd server. Define in configuration file in "
+"section '%s' under '%s'.\n"
+msgstr ""
+
+#: src/util/printhelp.c:42
+#, c-format
+msgid ""
+"Usage: %s\n"
+"%s\n"
+"\n"
+msgstr ""
+
+#: src/util/printhelp.c:45
+#, c-format
+msgid ""
+"Arguments mandatory for long options are also mandatory for short options.\n"
+msgstr ""
+
+#: src/util/semaphore.c:185 src/util/semaphore.c:211
+#, c-format
+msgid "Invalid argument for '%s' at %s:%d.\n"
+msgstr ""
+
+#: src/util/semaphore.c:189
+#, c-format
+msgid "Deadlock due to '%s' at %s:%d.\n"
+msgstr ""
+
+#: src/util/semaphore.c:215
+#, c-format
+msgid "Permission denied for '%s' at %s:%d.\n"
+msgstr ""
+
+#: src/util/semaphore.c:661
+#, c-format
+msgid "'%s' failed at %s:%d: %s.  Upgrade to FreeBSD >= 5.0.\n"
+msgstr ""
+
+#: src/util/statuscalls.c:138
+#, c-format
+msgid ""
+"No network interfaces defined in configuration section '%s' under '%s'!\n"
+msgstr ""
+
+#: src/util/statuscalls.c:164
+#, c-format
+msgid ""
+"Interfaces string (%s) in configuration section '%s' under '%s' is "
+"malformed.\n"
+msgstr ""
+
+#: src/util/statuscalls.c:177
+#, c-format
+msgid ""
+"No network interfaces specified in the configuration file in section '%s' "
+"under '%s'.\n"
+msgstr ""
+
+#: src/util/statuscalls.c:398 src/util/statuscalls.c:593
+#, c-format
+msgid "Failed to parse interface data from '%s' at %s:%d.\n"
+msgstr ""
+
+#: src/util/statuscalls.c:475
+#, c-format
+msgid "Failed to parse interface data '%s' output at %s:%d.\n"
+msgstr ""
+
+#: src/util/statuscalls.c:777
+#, c-format
+msgid "Could not decoding file '%s' at %s:%d.\n"
+msgstr ""
+
+#: src/util/statuscalls.c:952
+msgid "Cannot query the CPU usage (Windows NT).\n"
+msgstr ""
+
+#: src/util/statuscalls.c:972
+msgid "Cannot query the CPU usage (Win 9x)\n"
+msgstr ""
+
+#: src/util/storage.c:181
+#, c-format
+msgid "'%s' failed for drive %s: %u\n"
+msgstr ""
+
+#: src/util/storage.c:278
+#, c-format
+msgid "'%s' is not a regular file.\n"
+msgstr ""
+
+#: src/util/storage.c:529
+#, c-format
+msgid "'%s' expected '%s' to be a directory!\n"
+msgstr ""
+
+#: src/util/tcp_return.c:51
+#, c-format
+msgid "'%s' failed, other side closed connection.\n"
+msgstr ""
+
+#: src/util/tcp_return.c:58
+#, c-format
+msgid "'%s' failed, reply invalid!\n"
+msgstr ""
+
+#: src/util/xmalloc.c:71
+#, c-format
+msgid "Unexpected very large allocation (%u bytes) at %s:%d!\n"
+msgstr ""
+
+#: src/util/random_gcrypt.c:38
+#, c-format
+msgid "libgcrypt has not the expected version (version %s is required).\n"
+msgstr ""
+
+#: src/include/gnunet_util.h:148
+msgid "print this help"
+msgstr ""
+
+#: src/include/gnunet_util.h:151
+msgid "set verbosity to LEVEL"
+msgstr ""
+
+#: src/include/gnunet_util.h:154
+msgid "use configuration file FILENAME"
+msgstr ""
+
+#: src/include/gnunet_util.h:157
+msgid "specify host on which gnunetd is running"
+msgstr ""
+
+#: src/include/gnunet_util.h:160
+msgid "print the version number"
+msgstr ""
+
+#: src/include/gnunet_util.h:163
+msgid "be verbose"
+msgstr ""
+
+#: src/include/gnunet_util.h:591 src/include/gnunet_util.h:593
+#, c-format
+msgid "Assertion failed at %s:%d.\n"
+msgstr ""

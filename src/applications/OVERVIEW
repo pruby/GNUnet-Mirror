@@ -1,0 +1,47 @@
+Dependencies for 'core' modules (must be cycle-free!):
+
+advertising->transport
+advertising->identity
+advertising->topology
+advertising->pingpong
+
+core->fragmentation
+core->identity
+core->topology
+core->transport
+
+session->transport
+session->identity
+session->pingpong
+
+pingpong->identity
+pingpong->transport
+
+topology_default->bootstrap => bootstrap_http
+topology_default->identity
+topology_default->pingpong
+topology_default->transport
+topology_default->session
+
+transport->identity
+
+
+
+Application dependencies:
+
+fs->stats
+fs->dht
+fs->gap
+fs->datastore
+fs->traffic
+datastore->sqstore
+gap->stats
+gap=>blockstore/fs
+dht->rpc
+dht->stats
+dht=>blockstore/fs
+
+
+'Weak' dependencies:
+fslib->getoption
+fslib->traffic

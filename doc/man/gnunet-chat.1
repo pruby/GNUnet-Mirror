@@ -1,0 +1,34 @@
+.TH GNUNET-CHAT "1" "24 Apr 2004" "GNUnet"
+.SH NAME
+gnunet-chat \- a command line interface to chat via GNUnet 
+.SH SYNOPSIS
+.B gnunet\-chat
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.PP
+Chat via GNUnet
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+load config file (defaults: ~/.gnunet/gnunet.conf)
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.TP
+\fB\-n\fR \fINICKNAME\fR
+use NICKNAME for the nick
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+.SH NOTES
+gnunet-chat is meant as a demo application for how to implement applications using the GNUnet infrastructure. It is not meant as a serious tool. You need to enable the "chat" in gnunet.conf in order to use gnunet-chat. gnunet-chat is neither efficient nor secure and has serious design flaws. 
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

@@ -1,0 +1,41 @@
+.TH GNUNET-TRACEKIT "1" "25 Sept 2004" "GNUnet"
+.SH NAME
+gnunet\-tracekit \-\- overlay network traceing
+.SH SYNOPSIS
+.B gnunet\-tracekit
+[\fIOPTIONS\fR] 
+.SH DESCRIPTION
+gnunet\-tracekit can be used to visualize the GNUnet overlay network.  This tool broadcasts a message into the network querying every peer about a list of other connected peers. The result is then printed to the screen.
+.PP
+gnunet\-tracekit is primarily useful for developers to determine the structure of the network.  End\-users will find little use for the tool itself (except to satisfy their curiosity) but should at the moment still enable this protocol to help the developers that trace the network.
+.PP
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=\fIFILENAME\fR
+load config file (defaults: ~/.gnunet/gnunet.conf)
+\fB\-D \fIDEPTH\fR, \fB\-\-depth=\fIDEPTH\fR
+until which depth should the network be traced (how many hops)
+\fB\-F \fIFORMAT\fR, \fB\-\-format=\fIFORMAT\fR
+specifies the output format, 0 is human readable, 1 is dot, 2 is vcg
+\fB\-P \fIPRIORITY\fR, \fB\-\-priority=\fIPRIORITY\fR
+what should the priority of the probe be
+\fB\-W \fIWAIT\fR, \fB\-\-wait=\fIWAIT\fR
+set how many seconds to wait for replies
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
+change the loglevel. Possible values for \fILOGLEVEL\fR are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+.SH NOTES
+gnunet\-tracekit may not be supported by all GNUnet peers.  Peers that do not support tracekit will still be discovered and will be marked in the output as non-responding peers.
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+Users GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

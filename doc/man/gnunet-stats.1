@@ -1,0 +1,42 @@
+.TH GNUNET-STATS 1 "April 30, 2003" "GNUnet"
+
+.SH NAME
+gnunet-stats \- Display statistics about your GNUnet server.
+
+.SH SYNOPSIS
+.B gnunet-stats
+.RI [ options ]
+.br
+
+.SH DESCRIPTION
+\fBgnunet-stats\fP is used to display detailed information about various aspect of gnunetd's operation.
+
+.SH OPTIONS
+.B
+.IP -p,  --protocols
+print supported protocol messages
+.B
+.IP -h, --help
+print this page
+.B
+.IP -c FILENAME,  --config=FILENAME
+load config file
+.B
+.IP -v, --version
+print version number
+.B
+.IP -H HOSTNAME, --host=HOSTNAME
+on which host is gnunetd running (default: localhost)
+.B
+.IP -L LOGLEVEL, --loglevel=LOGLEVEL
+set the loglevel
+.B
+.IP -d, --debug
+run in debug mode, write logs to stderr
+
+
+.SH BUGS
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+
+.SH SEE ALSO
+gnunet.conf(5), gnunetd(1)

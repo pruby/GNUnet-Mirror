@@ -1,0 +1,314 @@
+.TH GNUNET-INSERT "1" "19 Sept 2004" "GNUnet"
+.SH NAME
+gnunet-insert \- a command line interface for inserting new content into GNUnet
+.SH SYNOPSIS
+.B gnunet\-insert
+[\fIOPTIONS\fR] FILENAME*
+.SH DESCRIPTION
+.PP
+In order to share files with other GNUnet users, the files must first be made
+available to GNUnet.  GNUnet does not automatically share all files from a
+certain directory.  In fact, even files that are downloaded are not automatically shared.
+.PP
+In order to start sharing files, the files must be added either using
+gnunet\-insert or gnunet\-gtk.  The command line tool gnunet-insert is more
+useful if many files are supposed to be added.  gnunet-insert can
+automatically insert batches of files, recursively insert directories, create
+directories that can be browsed within GNUnet and publish file lists
+in a namespace.
+.PP
+If libextractor was available when GNUnet was compiled, gnunet-insert can
+automatically extract keywords from the files that are shared.  Users that
+want to download files from GNUnet use keywords to search for the appropriate
+content.  You can disable keyword extraction with the \-x option.  You can
+manually add keywords using the \-k and \-K options.
+.PP
+In addition to searching for files by keyword, GNUnet allows organizing
+files into directories.  With directories, the user only needs to find the
+directory in order to be able to download any of the files listed in the
+directory.   Directories can contain pointers to other directories.
+.PP
+With gnunet\-insert, it is easy to create new directories simultaneously
+when adding the files. Simply add the option \-b to create a directory.
+With \-b alone, a directory containing all of the files listed at the command
+line is created.  Together with the \-R (recursive) option, an entire directory
+tree can be added to GNUnet.  The structure of the tree is preserved.
+.PP
+Since keywords can be spammed (any user can add any content under any
+keyword), GNUnet supports namespaces.  A namespace is a subset of the
+searchspace into which only the holder of a certain pseudonym can add content.
+Any GNUnet user can create any number of pseudonyms using
+\fBgnunet\-pseudonym\-create\fR. Pseudonyms are stored in the users GNUnet 
+directory and can  be additionally protected with a password.  While 
+pseudonyms are locally identified with an arbitrary string that 
+the user selects when the pseudonym is created, the namespace is  
+globally known only under the hash of the public key of the pseudonym. 
+Since only the owner of the pseudonym can add content to the namespace, 
+it is impossible for other users to pollute the namespace.  
+gnunet\-insert automatically inserts the top\-directory (or the only
+file if only one file is specified) into the namespace if a pseudonym is
+specified.  If no specific namespace\-identifier is specified (option \-t),
+gnunet\-insert selects a random identifier.
+.PP
+It is possible to update content in GNUnet if that content was placed and
+obtained from a particular namespace.  Updates are only possible for content
+in namespaces since this is the only way to assure that a malicious party can
+not supply counterfeited updates.  GNUnet supports two types of updateable content,
+sporadically updated content and periodically updated content. If content is
+periodically updated (every day, every week, etc.), the period must be passed
+to gnunet-insert with the \-i option. The \-S option is used to indicate
+sporadically updated content. You can use the \-N option to specify the future
+identifier of the update (only for the first update of periodically updated
+content). Without \-N, gnunet\-insert will select (and output) a random
+identifier that must be used for the update.
+.PP
+To update content in a namespace, gnunet-insert options \-e and \-o can be used. 
+On the first insert, \-o can be used to output the namespace block data into a file. 
+On subsequent updates, \-e can be used to read the previous block, which is used
+to automatically calculate the information required for an update. Currently
+the most convenient way to make regular namespace updates efficiently
+remains a bit awkward. The trick is to insert a filesystem directory 
+that instead of containing a possibly very large directory hierarchy, 
+contains only the top level ".gnd" GNUnet directory files you have previously 
+created or downloaded. That is, what is inserted is a flat directory,
+with time cost same as inserting the .gnd files, but the result
+will still be equal to a full-blown directory tree having 
+actual files and further subdirectories.
+.PP
+You can use libextractor or command\-line options to specify a mimetype and a
+description for the files.  The description and keywords are used to help
+users in searching for files on the network.  The keywords are case\-sensitive.
+GNUnet supports two styles of publishing files on the network.  Inserting
+a file means that a copy of the file is made in the local (!) database of
+the node.  Indexing a file means that an index is added to the local (!)
+database with pointers to the file itself.  Since 0.6.2 GNUnet will make
+a copy of the file in the directory specified in gnunet.conf.  The copy
+will be in plaintext and have the RIPE160MD hash of the entire file as
+the filename.  This makes it possible to create links to that file, if
+gnunetd is running locally.  Note that for indexed files a different quota
+is applied than for the normal GNUnet AFS database.  Indexing is generally 
+significantly more efficient and the default choice.  In either case,
+the file is slowly (depending on how often it is requested and on how much
+bandwidth is available) dispersed into the network.  If you insert or index
+a file and then leave the network, it will almost always NOT be available
+anymore.
+
+.TP
+\fB\-b\fR, \fB\-\-builddir\fR
+Build a directory.  With this option, gnunet\-insert will create a directory containing all the files specified at the command-line and insert that directory into GNUnet.  This allows grouping multiple files together.  Together with the \-R option, gnunet\-insert can be used to mirror an entire directory tree in GNUnet.  The directory structure is preserved (not all files are placed at the top\-level directory).  
+
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+Use alternate config file (if this option is not specified, the default is ~/.gnunet/gnunet.conf).
+
+.TP
+\fB\-e \fIFILENAME\fR, \fB\-\-sprev=\fIFILENAME\fR
+Specifies the previous SBlock file that contains the necessary information to update a periodical SBlock. On the first time of inserting a periodical, use \-o to create the file, without \-e. Filenames in \-o and \-e can be the same.
+
+.TP
+\fB\-f \fINAME\fR, \fB\-\-name=\fINAME\fR
+Executive summary: You probably don't need it.
+
+If a single file is inserted with RBlocks or an SBlock, use NAME as the published name for that file.  If multiple files are specified and no directory is created, NAME is again used for all of these files. In both cases, if this option is not given, the default is to preserve the actual filenames without the path.
+
+If a directory is created from multiple files mentioned on the command line, NAME is used for the directory. The names for the individual files are still the original filenames without path. If a directory is created recursively from a single filename on the command line and if NAME is not specified, the last component of the specified filename is used for the directory.  If a directory is created from multiple filenames specified on the command line, "not set" is used for the name of the directory.
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print a brief help page with all the options.
+
+.TP
+\fB\-k \fIKEYWORD\fR, \fB\-\-key=KEYWORD\fR
+additional key to index the content with (to add multiple keys, specify multiple times). Each additional key is case-sensitive. Can be specified multiple times.  The keyword is only applied to the top\-level files or directories.
+
+.TP
+\fB\-K \fIKEYWORD\fR, \fB\-\-global-key=KEYWORD\fR
+additional key to index the content with.  Keywords specified with \-K are applied to files and directories encountered on the command\-line or in the recursive scan.  This is the only difference to the \-k option.  This option can be specified multiple times.
+
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+Print the version number.
+
+.TP
+\fB\-V\fR, \fB\-\-verbose\fR
+Be verbose.  Using this option causes gnunet-insert to print progress information and at the end the file identification that can be used to  download the file from GNUnet.
+
+.TP
+\fB\-R\fR, \fB\-\-recursive\fR
+Process directories recursively.  Without this option, directories are ignored.  With this option, gnunet-insert will process files in directories recursively.  
+
+.TP
+\fB\-E\fR, \fB\-\-extract\fR
+Print the list of keywords that will be extracted.  Do not perform any indexing or insertion.
+
+.TP
+\fB\-l\fR, \fB\-\-link\fR
+When indexing a file, gnunet\-insert will create a copy of the file in the "share" directory of gnunetd.  If that directory happens to be on the local machine (i.e. gnunetd runs on localhost) then gnunet-insert can instead just use a link.  This will not work over the network, if the file-permissions do not allow gnunetd to read the file or if the file maybe changed afterwards.  Hence the default is to be inefficient and to make a copy.  With this option you can cause gnunet\-insert to TRY to make a link.  If the link does not work for some reason that GNUnet can detect, gnunet-insert will fall back to creating a copy.
+
+.TP
+\fB\-s \fINAME\fR, \fB\-\-pseudonym=\fINAME\fR
+For each file at the command line (or, if \-b is specified, for the top\-level directory) create an SBlock that places the file into the namespace specified by the pseudonym NAME.  
+
+.TP
+\fB\-P \fIPASSWORD\fR, \fB\-\-pass=\fIPASSWORD\fR
+Specifies the password for the pseudonym (if needed).  If the password is invalid gnunet-insert aborts with an error.  This option is only valid together with the \-s option.
+
+.TP
+\fB\-t \fIID\fR, \fB\-\-this=\fIID\fR
+Specifies the ID of the SBlock.  This option is only valid together with the\ -s option and together with either the option \-b or only a single filename on the command-line.
+
+The ID can be given in HEX notation, otherwise the HEX code is derived by hashing the given ID string
+which may be a natural language keyword.
+
+.TP
+\fB\-T \fITIME\fR, \fB\-\-time=\fITIME\fR
+Specifies the SBlock creation time. Requires format 
+
+"DAY-MONTHNUMBER\-YEAR HOUR:MINUTE" 
+
+for TIME. This option can be used to publish past and future periodical 
+SBlocks. The option works best when used together with \-e. Default time is the current time.
+
+.TP
+\fB\-N \fIID\fR, \fB\-\-next=\fIID\fR
+Specifies the next ID of a future version of the SBlock.  This option is only valid together with the \-s option and together with either the option -b or only a single filename on the command\-line.  This option can be used to specify what the identifier of an updated version will look like.  Without the \-i option, a one\-shot update SBlock is used (a\-periodic).  With the \-i option, the difference between  the current ID (this) and the next ID is used to compute all future IDs.  Note that specifying \-i and \-N without \-t hardly ever makes sense. 
+
+The ID can be given in HEX notation, otherwise the HEX code is derived by hashing the given ID string.
+
+.TP
+\fB\-o \fIFILENAME\fR, \fB\-\-sout=\fIFILENAME\fR
+Write the created SBlock to a file. This is especially useful with periodical updates done by a script. The SBlock file contains the necessary information to update the periodical SBlock. Filenames in \-o and \-e can be the same.
+
+.TP
+\fB\-i \fISECONDS\fR, \fB\-\-interval=\fISECONDS\fR
+Specifies the update frequency of the content in seconds. This option is only valid together with the \-s option. If no current and next ID are specified, the system picks some random start values for the sequence. 
+
+Most recent update can be found by gnunet\-gtk automatically. gnunet\-search will print all edition ids 
+between the insertion time and the current time. A new search can be then performed with one of the printed keys. 
+Also, using gnunet\-insert for updating content is cumbersome, in the future gnunet\-gtk will provide a more interactive 
+way to manage content updates.
+
+.TP
+\fB\-S\fR, \fB\-\-sporadic\fR
+This option specifies that the file will be updated sporadically but not periodically.  It is only valid in conjunction with the \-s option.  It is implied if  \-N is specified but not \-i.  It cannot be used together with the \-i option.  Use \-S if you intend to publish an update at an unknown point in the future and if you want gnunet\-insert to pick a random  identifier for that future content.  
+
+If you use \-s but not \-S, \-N or \-i, the content will not be updateable.
+
+.TP
+\fB\-m \fIMIMETYPE\fR, \fB\-\-mime=\fIMIMETYPE\fR
+Set the mime\-type of all (!) files to be MIMETYPE.  This option has no effect on directories (option \-b). If not supplied and the option \-x is not specified,  gnunet\-insert will attempt to determine the mime\-type using libextractor and otherwise use "unknown".
+
+.TP
+\fB\-p \fIPRIORITY\fR, \fB\-\-prio=\fIPRIORITY\fR
+Executive summary: You probably don't need it.
+
+Set the priority of the inserted content (default: 65535).  If the local database is full, GNUnet will discard the content with the lowest ranking.  Note that ranks change over time depending on popularity.  The default should be high enough to preserve the locally inserted content in favor of content that migrates from other peers.
+
+.TP
+\fB\-n\fR, \fB\-\-noindex\fR
+Executive summary: You probably don't need it.
+
+Do not index, full insertion.  Note that directories, RBlocks, SBlocks and IBlocks are always inserted (even without this option).  With this option, every block of the actual files is stored in encrypted form in the block database of the local peer.  While this adds security if the local node is compromised (the adversary snags your machine), it is significantly less efficient compared to on\-demand encryption and is definitely not recommended for large files.
+
+.TP
+\fB\-x\fR, \fB\-\-extraction\fR
+Executive summary: You probably don't need it.
+
+Disable automatic keyword extraction.  This option is only available if you compiled GNUnet with libextractor.  With this option, you can disable the use of libextractor to obtain meta\-data (mime\-type, description, keywords) from the files being processed.  In this case, you probably want to manually supply a list of keywords and a description on the command line.  Note that if you process multiple files or do recursive processing, the description, mime\-type and  keywords will be used for all files (and directories).
+
+\-x implies \-X.
+
+
+
+.TP
+\fB\-X\fR, \fB\-\-nodirectindex\fR
+Executive summary: You probably don't need it.
+
+With this option, gnunet\-insert will not create individual RBlocks for all files except for keywords specified with the \-K option.  With \-X, gnunet\-insert will  create an RBlock for each keyword infered from the files.  It does not disable the use of libextractor for finding the description and mime\-types for these files.  
+
+
+.SH EXAMPLES
+.PP
+
+\fBBasic examples\fR
+
+Index a file COPYING:
+
+# gnunet\-insert COPYING
+
+Insert a file COPYING:
+
+# gnunet\-insert \-n COPYING
+
+Index a file COPYING with the keywords \fBgpl\fR and \fBtest\fR:
+
+# gnunet\-insert \-k gpl \-k test COPYING
+
+Index a file COPYING with description "GNU License", mime-type "text/plain" and keywords \fBgpl\fR and \fBtest\fR:
+
+# gnunet\-insert \-D "GNU License" \-k gpl \-k test -m "text/plain" COPYING
+
+\fBUsing directories\fR
+
+Index the files COPYING and AUTHORS with keyword \fBtest\fR and 
+build a directory containing the two files.  
+Make the directory itself available under keyword \fBgnu\fR:
+
+# gnunet\-insert \-K test \-k gnu \-b COPYING AUTHORS
+
+Neatly publish an image gallery in \fBkittendir/\fR and its
+subdirs with keyword \fBkittens\fR for the directory but no 
+keywords for the individual files or subdirs (\-brX). 
+Force description for all files:
+
+# gnunet\-insert \-bRX \-D "Kitten collection" \-k kittens kittendir
+
+\fBSecure publishing with namespaces\fR
+
+Insert file COPYING with pseudonym RIAA (\-s) and password MPAA (\-P) 
+with identifier \fBgpl\fR (\-t) and no updates:
+
+# gnunet\-insert \-s RIAA \-P MPAA \-t gpl COPYING
+
+Recursively (\-R) index /home/ogg and build a matching directory structure (\-b).
+Insert the top\-level directory into the namespace under the pseudonym 
+RIAA (\-s) with password MPAA (\-P) under identifier MUSIC (\-t) and 
+promise to provide an update with identifier VIDEOS (\-N) at an 
+arbitrary point in the future (\-S is implied by lack of \-i 
+and presence of \-N):
+
+# gnunet\-insert \-Rb \-s RIAA \-P MPAA \-t MUSIC \-N VIDEOS /home/ogg
+
+Recursively (\-R) insert (\-n) /var/lib/mysql and build a matching directory
+structure (\-b) but disable the use of libextractor to extract keywords 
+(\-X) while allowing the use of libextractor to provide descriptions (lack
+of \-x).  Print the file identifiers (\-V) that can be used to retrieve
+the files.  This will store a copy of the MySQL database in GNUnet but 
+without adding any keywords to search for it.  Thus only people that
+have been told the secret file identifiers printed with the \-V option
+can retrieve the (secret?) files:
+
+# gnunet\-insert \-RnbXV /var/lib/mysql
+
+Create a periodical SBlock with 24h update interval 
+and store the created block to a file sblock.dat (unencrypted):
+
+# gnunet\-insert \-s RIAA \-P MPAA \-o sblock.dat \-i 86400 \-D "My noisy file" \-t noise noise.mp3
+
+Update the periodical SBlock using settings from a previous time:
+
+# gnunet\-insert \-s RIAA \-P MPAA \-e sblock.dat \-o sblock.dat \-D "My updated noisy file" noise_updated.mp3
+
+
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet\-gtk\fP(1), \fBgnunet\-pseudonym\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

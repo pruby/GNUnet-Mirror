@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "Please wait, trace running."
+gnunet-tracekit --format=1 | dot -Tps > /tmp/gnunet-trace.ps
+gv /tmp/gnunet-trace.ps &

@@ -1,0 +1,44 @@
+.TH GNUNET-UPDATE "1" "31 Jul 2004" "GNUnet"
+.SH NAME
+gnunet-update \- a tool to update GNUnet
+.SH SYNOPSIS
+.B gnunet\-update
+[\fIOPTIONS\fR] 
+.SH DESCRIPTION
+.PP
+gnunet-update updates gnunets databases after software updates
+that change the database format.
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+load config file (default: /etc/gnunet.conf)
+.TP
+\fB\-g \fSECTION:ENTRY\fR, \fB\-\-get=SECTION:ENTRY\fR
+print the value from the configuration in section SECTION under entry ENTRY.  Use :ENTRY to access the global section.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+.TP
+\fB\-u\fR, \fB\-\-user\fR
+run in user mode (required to get values from the user configuration).  This option must be used only together with the \-g option.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.TP
+\fB\-V\fR \fB\-\-verbose\fR
+Be verbose.
+.SH NOTES
+gnunet-update was introduced in version 0.6.3.  Updates from
+much earlier versions may not be handled properly by the tool.
+Always consult the UPDATING file in the GNUnet distribution
+for the necessary update procedure.
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunetd\fP(1), \fBgnunet\-peer\-info\fP(1), \fBgnunet\-transport\-check\fP(1), \fBgnunet\-check\fP(1), \fBgnunet.conf\fP(5)

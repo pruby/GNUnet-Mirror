@@ -1,0 +1,453 @@
+#
+# For a description of the syntax of this configuration file,
+# see linux/Documentation/kbuild/config-language.txt.
+#
+mainmenu "GNUnet Configuration"
+
+menu "Meta-configuration"
+# Three options to toggle what options the user may
+# or may not see.  Essentially, all options are 
+# categorized (and they may fall into any combination
+# of the categories) and only if all corresponding bits
+# are set, the user is prompted.
+# Thus, if you are a beginner in a standard setting,
+# not selecting any of the options should work.
+# If you are a beginner but have special needs,
+# select "rare".  
+# If you are a beginner and don't care about bugs,
+# select "experimental"
+# If you know what you're doing, select "advanced".
+
+# experimental: may not work too well
+config EXPERIMENTAL
+	bool "Prompt for development and/or incomplete code"
+	default n
+	help
+	  Choose this if you want to test the latest developments
+	  no matter how incomplete and buggy they are.
+
+# advanced: may be difficult to understand
+config ADVANCED
+	bool "Show options for advanced users"
+	default n
+	help
+	  Choose this if you want to see options for advanced users
+
+# rare: not useful for most users
+config RARE
+	bool "Show rarely used options"
+	default n
+	help
+	  Choose this if you want to see rarely used options
+
+endmenu
+
+menu "General settings"
+
+config GNUNET_HOME
+	string "Full pathname of GNUnet HOME directory"
+	default ~/.gnunet/
+	help
+	  Where GNUnet stores its data
+
+choice
+	prompt "Log level"
+	default WARNING
+
+config NOTHING
+	bool "Nothing"
+	help
+          Don't log anything
+
+config FATAL
+	bool "Fatal"
+	help
+          Log fatal errors only
+
+config ERROR
+	bool "Failure"
+	help
+	  Log failures only
+
+config WARNING
+	bool "Warning"
+	help
+	  Log warnings
+
+config MESSAGE
+	bool "Message"
+	help
+	  Log GNUnet messsages
+
+config INFO
+	bool "Info"
+	help
+	  Log GNUnet information
+
+config DEBUG
+	bool "Debug"
+	help
+	  Log GNUnet debugging information
+
+config CRON
+	bool "Cron"
+	help
+	  Log GNUnet-Cron status
+
+config EVERYTHING
+	bool "Everything"
+	help
+	  Log all available information
+
+endchoice
+
+config NETWORK_HOSTLISTURL
+	string "Where can GNUnet find an initial list of peers"
+	default "http://www.ovmj.org/GNUnet/download/hostlist"
+	help
+	  GNUnet needs to get an initial list of other nodes.
+          This tells GNUnet where to get it.
+
+config USE_HTTP_PROXY
+	bool "Use HTTP Proxy to download hostlist"
+	default n
+	depends on RARE
+	help 
+	  If you are not connected to the internet directly, you
+          can specify your proxy server here.
+
+config NETWORK_HTTP_PROXY
+	string "HTTP proxy server"
+	depends on USE_HTTP_PROXY
+	default localhost
+	help
+	  The hostname of your proxy server
+
+config NETWORK_HTTP_PROXY_PORT
+	int "HTTP Proxy Port"
+	depends on USE_HTTP_PROXY
+	default 1080
+	help
+	  The port of your proxy server
+
+config NETWORK_HOST
+	string "Default server running gnunetd (for remote clients)"
+	depends on ADVANCED
+	default localhost
+	help
+	  To which host do the GNUnet client tools have to connect to?
+
+config NETWORK_PORT
+	int "CS Port"
+	depends on ADVANCED
+	default 2087
+	help
+	  The port on which gnunetd listens for client connections
+
+config NETWORK_INTERFACE
+	string "Interface to probe for external IP"
+	depends on ADVANCED
+	default eth0
+	help
+	  Specifies the network interface used to determine your
+	  computer's IP-Address.
+
+config NETWORK_IP
+	string "Forced value of external IP"
+	depends on ADVANCED
+	help
+	  If your IP-Address cannot be determined automatically (because
+	  you're behind NAT, for example), you have to specify it here.
+	  You can also use a hostname here.
+
+config NETWORK_HELOEXCHANGE
+	string "Participate in network topology management"
+	depends on ADVANCED
+	default y
+	help
+	  Exchange contact information with other nodes
+
+config NETWORK_TRUSTED
+	string "IPs allowed to use gnunetd server"
+	depends on ADVANCED
+	default 127.0.0.0/8;
+	help
+	  Enter all IP-Adresses/IP-Address-Ranges here, which are allowed to
+	  use this server.
+
+config NETWORK_HELOEXPIRES
+	int "How many minutes should peer advertisements last?"
+	depends on ADVANCED
+	default 1440
+
+config NETWORK_LOGFILE
+	string "Where should logs go by default"
+	depends on ADVANCED
+	default $GNUNET_HOME/logs
+
+config NETWORK_PIDFILE
+	string "Where should gnunetd write the pid"
+	depends on ADVANCED
+	default $GNUNET_HOME/gnunet.pid
+
+config NETWORK_HOSTS
+	string "Where should gnunetd keep the list of peers"
+	depends on ADVANCED
+	default $GNUNET_HOME/data/hosts/
+
+endmenu
+
+menu "Resource limitations"
+
+config LOAD_MAXCPULOAD
+	int "Maximum CPU load (percentage)"
+	default 50
+
+config LOAD_MAXNETDOWNBPSTOTAL
+	int "Maximum download (bytes per second)"
+	default 50000
+
+config LOAD_MAXNETDOWNBPSTOTAL
+	int "Maximum upload (bytes per second)"
+	default 50000
+
+config LOAD_ADVANCEDLIMITING
+	bool "Advanced bandwidth limiting"
+	depends on ADVANCED
+
+config LOAD_INTERFACES
+	string "Network interface to monitor"
+	depends on LOAD_ADVANCEDLIMITING
+
+endmenu
+
+menu "Transports"
+
+config UDP_TRANSPORT
+	bool "UDP Transport"
+	default y
+
+config UDP_PORT
+	int "Port"
+	default 2086
+	depends on UDP_TRANSPORT
+
+config UDP_MTU
+	int "MTU"
+	depends on UDP_TRANSPORT
+	default 1472
+	
+config UDP_BLACKLIST
+	string "Disallow connections from"
+	depends on UDP_TRANSPORT
+	default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
+
+config TCP_TRANSPORT
+	int "Port"
+	depends on TCP_TRANSPORT
+	default 2086
+
+config TCP_MTU
+	int "MTU"
+	depends on TCP_TRANSPORT
+	default 1460
+
+config TCP_BLACKLIST
+	string "Disallow connections from"
+	depends on TCP_BLACKLIST
+	default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
+
+config UDP6_TRANSPORT
+	bool "UDP6 Transport"
+	depends on EXPERIMENTAL && RARE
+
+config UDP6_PORT
+	int "Port"
+	depends on UDP6_TRANSPORT
+	default 2088
+
+config UDP6_MTU
+	int "MTU"
+	depends on UDP6_TRANSPORT
+	default 1452
+
+config UDP6_BLACKLIST
+	string "Disallow connections from"
+	depends on UDP6_TRANSPORT
+ 
+config TCP6_TRANSPORT
+	string "TCP6 Transport"
+	depends on EXPERIMENTAL && RARE
+
+config TCP6_PORT
+	int "Port"
+	depends on TCP6_TRANSPORT
+	default 2088
+
+config TCP6_MTU
+	int "MTU"
+	depends on TCP6_TRANSPORT
+	default 1440
+
+config TCP6_BALCKLIST
+	string "Disallow connections from"
+	depends on TCP6_TRANSPORT
+
+config SMTP_TRANSPORT
+	bool "SMTP Transport"
+	depends on ADVANCED
+
+config SMTP_PORT
+	int "Port of the SMTP server for outbound mail"
+	depends on SMTP_TRANSPORT
+	default 25
+
+config SMTP_SERVER
+	string "Hostname of the SMTP server"
+	depends on SMTP_TRANSPORT
+	default localhost
+
+config SMTP_MTU
+	int "MTU"
+	depends on SMTP_TRANSPORT
+	default 65535
+
+config SMTP_EMAIL_SENDER
+	string "Sender address for outbound E-mail"
+	depends on SMTP_TRANSPORT
+	default "gnunet-smtp@cs.purdue.edu"
+
+config SMTP_EMAIL
+	string "Receiver address for inbound E-mail"
+	depends on SMTP_TRANSPORT
+
+config SMTP_FILTER
+	string "Filter-line to use in the E-mail header"
+	depends on SMTP_TRANSPORT
+	default "X-mailer: 590N"
+
+config SMTP_PIPE
+	string "Name of the pipe via which procmail sends filterd E-mails"
+	depends on SMTP_TRANSPORT
+	default "/tmp/gnunet.smtp"
+
+config HTTP_TRANSPORT
+	bool "HTTP Transport"
+	default y
+
+config HTTP_PORT
+	int "Port"
+	depends on HTTP_TRANSPORT
+	default 1080
+
+config HTTP_MTU
+	int "MTU"
+	depends on HTTP_TRANSPORT
+	default 1400
+
+config HTTP_BLACKLIST
+	string "Disallow connections from"
+	depends on HTTP_TRANSPORT
+	default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
+
+endmenu
+
+menu "Applications"
+
+config APPLICATION_AFS
+	bool "Anonymous file sharing"
+	default y
+
+config AFS_DISKQUOTA
+	int "MB of diskspace GNUnet can use for anonymous file sharing" 
+	depends on APPLICATION_AFS
+	default 1024
+
+config AFS_ANONYMITY_RECEIVE
+	int "Level of anonymity desired for receiving"
+	depends on APPLICATION_AFS && ADVANCED && RARE
+	default 0
+
+config AFS_ANONYMITY_SEND
+	int "Level of anonymity desired for sending"
+	depends on APPLICATION_AFS && ADVANCED && RARE	
+	default 0
+
+config AFS_AFSDIR
+	string "Directory for storing AFS data"
+	depends on APPLICATION_AFS && ADVANCED && RARE
+	default $GNUNET_HOME/data/afs/
+
+config AFS_DOWNLOADDIR
+	string "Directory for saving AFS downloads"
+	depends on APPLICATION_AFS && ADVANCED && RARE && EXPERIMENTAL
+	default /tmp/gnunet-downloads/
+
+config AFS_ACTIVEMIGRATION
+	bool "Allow migrating content"
+	depends on APPLICATION_AFS && ADVANCED
+	default n
+
+config AFS_SEARCHTIMEOUT
+	int "Number of seconds after which searches timeout"
+	depends on APPLICATION_AFS && ADVANCED
+	default 3000
+
+config GNUNET_INSERT_CONTENT_PRIORITY
+	int "Initial proprity for content inserted locally"
+	depends on APPLICATION_AFS && ADVANCED
+	default 65535
+
+config APPLICATION_TRACEKIT
+	bool "Overlay tracing"
+	depends on ADVANCED
+	default n
+
+config GNUNET_TRACEKIT_WAIT
+	int "How long to wait for replies (in seconds)"
+	depends on APPLICATION_TRACEKIT
+	default 30
+
+config GNUNET_TRACEKIT_HOPS
+	int "How many hops should the trace go"
+	depends on APPLICATION_TRACEKIT
+	default 5
+
+config GNUNET_TRACEKIT_PRIORITY
+	int "How important is the trace message"
+	depends on APPLICATION_TRACEKIT
+	default 1000
+
+choice
+	prompt "What is the desired output format"
+	default GNUNET_TRACEKIT_FORMAT_1
+	depends on APPLICATION_TRACEKIT
+
+config GNUNET_TRACEKIT_FORMAT_0
+	bool "Human-readable"
+
+config GNUNET_TRACEKIT_FORMAT_1
+	bool "AT&T dot"
+
+endchoice
+
+config APPLICATION_CHAT
+	bool "Broadcast chat"
+	default n
+
+config GNUNET_CHAT_NICK
+	string "Default nickname"
+	depends on APPLICATION_CHAT
+	default "my nickname"
+
+config APPLICATIONS_TBENCH
+	bool "Transport benchmark"
+	depends on RARE
+	default n
+
+config APPLICATION_TESTBED
+	bool "P2P testbed"
+	depends on RARE
+	default n
+
+endmenu

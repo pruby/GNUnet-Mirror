@@ -1,0 +1,167 @@
+                       Welcome to GNUnet
+
+
+What is GNUnet?
+===============
+
+GNUnet is peer-to-peer framework focusing on security.  The first and
+primary application for GNUnet is anonymous file-sharing.  GNUnet is
+currently developed at Purdue University with support from a worldwide
+group of independent free software developers.  GNUnet is a part of
+the GNU project (http://www.gnu.org/).
+
+This is a BETA release.  The network has not been tested on a large
+scale yet.  While there are no known significant bugs, we are still
+changing significant aspects of the system in any other version.  Bugs
+are common and the documentation may not be adequate for unexperienced
+users.
+
+For a longer description of the GNUnet System see our webpages
+http://www.gnu.org/projects/GNUnet/ and http://ovmj.org/GNUnet/.
+
+
+How to install?
+===============
+
+The fastest way is to use a binary package if it is available for your
+system.  For a more detailed description, read the installation
+instructions on the webpage at
+http://ovmj.org/GNUnet/documentation.php3.
+
+If you just want to go with the sources, you may be fine with
+
+# contrib/autoinstall
+
+which is doing little more than what you would for a single-user
+installation to $HOME which can be achieved with:
+
+$ ./configure --prefix=$HOME
+$ make
+# make install
+# cp contrib/gnunet.root /etc/gnunet.conf
+# cp contrib/initgnunet /etc/init.d/gnunetd
+
+This will compile and install GNUnet to ~/bin/, ~/lib/ and ~/man/ and
+put the configuration file where gnunetd expect it.  Note that
+per-user configuration files (~/.gnunet/gnunet.conf) will be created
+the first time a user starts a GNUnet user interface.  For more
+general information about the GNU build process read the INSTALL file.
+
+GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
+and either libgcrypt or OpenSSL.  You can specify the path to 
+libgcrypt using "--with-gcrypt=PATH".  Similarly, the path to 
+OpenSSL can be specified using "--with-crypto=PATH".
+
+If you want to use libextractor (download from
+http://ovmj.org/libextractor/) for automated keyword
+extraction (recommended) you may have to pass the additional flag
+"--with-extractor=PATH-TO-LIBEXTRACTOR" to configure.  You should also
+make sure that libextractor is actually found by the linker.
+
+If you are compiling the CVS version, you have to run ". bootstrap"
+before ./configure.  If you receive an error during the running of
+". bootstrap" that looks like "macro `AM_PATH_GTK' not found in
+library", you may need to run aclocal by hand with the -I option,
+pointing to your aclocal m4 macros, i.e.
+
+# aclocal -I /usr/local/share/aclocal
+
+In order to start a "permanent" node, you should create a new user
+"gnunet" and start "gnunetd" as that user whenever the system boots.
+The file contrib/initgnunet in the source distribution contains a
+script that may be helpful for that purpose.  Note that you will have
+to enable the service by creating the appropriate links to start
+gnunetd at boot time (if that is desired).
+
+For file sharing GNUnet needs to store data in a database. We
+currently support MySQL and SQLite.
+
+libextractor >= 0.4.0 is required.
+autoconf >= 2.59 is recommended for compiling the CVS version.
+automake >= 1.9.4 is recommended for compiling the CVS version.
+libtool >= 1.5.8 is recommended for compiling the CVS version.
+
+
+Configuration
+=============
+
+The defaults are usually ok, you may want to adjust the limitations
+(space consumption, bandwidth, etc.) though.  If you want to
+configure, edit "/etc/gnunet.conf" and "~/.gnunet/gnunet.conf"
+(whichever applies).
+
+If you want to use a different configuration file, pass the name of
+the configuration file as an argument with the option -c to any GNUnet
+application.  Sending a SIGHUP to the gnunetd process will cause
+gnunetd to re-read the configuration file.  Note that not all options
+can be changed at run-time this way (e.g. to change any port number,
+you must fully restart gnunetd).
+
+In order to use the SMTP transport service, you should read
+http://ovmj.org/GNUnet/smtp.php3 first!  Note that if you have a
+globally addressable IP or full control over your NAT box, the TCP or
+UDP services will suffice.
+
+
+Usage
+=====
+
+First, you must obtain an initial list of GNUnet hosts.  Knowing a
+single peer is sufficient since after that GNUnet propagates
+information about other peers.  Note that the default "gnunet.conf"
+contains a URL from where gnunetd downloads an initial hostlist
+whenever it is started.  If you want to create an alternative URL for
+others to use, the file can be generated on any machine running
+gnunetd by periodically executing
+
+# cat $GNUNETD-HOME/.gnunet/data/hosts/* > the_file
+
+If the solution with the URL is not feasible for your situation, you
+can also add hosts manually.  The GNUnet webpage has a public
+directory of hostkeys under http://ovmj.org/GNUnet/hosts/.  You
+can of course use any other source for these files.  Copy the hostkeys
+to "$GNUNETD-HOME/.gnunet/data/hosts/" (where $GNUNETD_HOME is the
+directory specified in the /etc/gnunet.conf configuration file).
+
+Now start the local node using "gnunetd".  gnunetd should run 24/7 if
+you want to maximize your anonymity.  You may start it as a service
+with "/etc/init.d/gnunetd start".  To insert files into GNUnet, use
+the "gnunet-insert" command.
+
+If want to use a GUI, just invoke 
+
+$ gnunet-gtk
+
+If you want to use the shell, use
+
+$ gnunet-search KEYWORD
+
+This will display a list of results to the console. Then use
+
+$ gnunet-download -o FILENAME -- GNUNET_URI
+
+to retrieve a file.  The GNUNET_URI is printed by gnunet-search
+together with a description.
+
+For further documentation, see our webpage.
+
+
+Hacking GNUnet
+==============
+
+Contributions are welcome, please submit bugs to
+http://ovmj.org/~mantis/.  Please make sure to run contrib/report.sh
+and include the output with your bug reports.  More about how to
+report bugs can be found in the GNUnet FAQ on the webpage.  Submit
+patches via E-Mail to gnunet-developers@gnu.org.
+
+
+Stay tuned
+==========
+
+* http://www.gnu.org/software/GNUnet/
+* http://ovmj.org/GNUnet/
+* http://ovmj.org/~mantis/
+* http://mail.gnu.org/mailman/listinfo/gnunet-developers
+* http://mail.gnu.org/mailman/listinfo/help-gnunet
+* http://mail.gnu.org/mailman/listinfo/info-gnunet

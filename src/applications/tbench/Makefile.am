@@ -1,0 +1,28 @@
+INCLUDES = -I$(top_srcdir)/src/include
+
+plugindir = $(libdir)/GNUnet
+
+LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+bin_PROGRAMS = \
+  gnunet-tbench
+
+plugin_LTLIBRARIES = \
+  libgnunetmodule_tbench.la
+
+
+gnunet_tbench_SOURCES = \
+  gnunet-tbench.c \
+  tbench.h
+
+
+libgnunetmodule_tbench_la_SOURCES = \
+  tbench.c\
+  tbench.h
+
+libgnunetmodule_tbench_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la
+ 
+libgnunetmodule_tbench_la_LDFLAGS = \
+  -export-dynamic -avoid-version -module

@@ -1,0 +1,36 @@
+.TH GNUNET-TESTBED "1" "9 Dec 2003" "GNUnet"
+.SH NAME
+gnunet-testbed \- interactive environment for GNUnet simulations
+.SH SYNOPSIS
+.B gnunet\-testbed
+[\fIOPTIONS\fR]
+.SH DESCRIPTION
+.PP
+gnunet-testbed can be used to control GNUnet peers to perform testing and benchmarking of the system.
+Note that gnunet-testbed is at this point still a very new tool and not functional.
+gnunet-testbed is fully scriptable and uses bash as a scripting language.  All features of bash
+are supported, including the execution of arbitrary shell commands.  gnunet-testbed extends bash
+with additional, testbed specific commands.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+load config file (defaults: ~/.gnunet/gnunet.conf)
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+.SH NOTES
+gnunet-testbed is not yet fully implemented.  Peers that participate in a testbed must load the
+testbed module.
+.SH FILES
+.TP
+~/.gnunet/gnunet.conf
+GNUnet configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

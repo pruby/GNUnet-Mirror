@@ -1,0 +1,27 @@
+Quick terminology lesson:
+
+An "application" is a plugin service that provides functionality
+visible to the user.  Typically applications therefore register some
+kind of client-server functionality with the core and feature
+command-line clients that access that functionality.  Examples for
+applications are anonymous file sharing (afs) and chat (chat).
+
+A "service" is an internal primitive of GNUnet.  A service is not
+directly visible to the user, but is instead used by one or more
+applications.  A service is an extension to the GNUnet core that is
+typically not always required and thus loaded on-demand to avoid
+bloating the GNUnet core code.  Examples for services are remote
+procedure calls (RPC) and distributed hash tables (DHT).  Applications
+can request services using the core API.
+
+A "protocol" refers to both applications and services.  All plugin
+libraries therefore go by the name "libgnunet_XXX_protocol".  The
+implementation of a service and an application can reside in the same
+library (there then must be four exported functions with the
+appropriate names).  This is an unusual construct and typically used
+if a test-application is bundled with the service (see DHT for an
+example).
+
+The prefixes for applications are "initialize_" and "done_", for
+services "provide_" and "release_", followed by the protocol name and
+the postfix "_protocol", for example "initialized_afs_protocol".

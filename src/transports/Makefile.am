@@ -1,0 +1,65 @@
+INCLUDES = -I$(top_srcdir)/src/include
+
+plugindir = $(libdir)/GNUnet
+
+if HAVE_IPV6
+ v6transports = \
+  libgnunettransport_tcp6.la \
+  libgnunettransport_udp6.la
+endif
+
+if !MINGW
+ smtptransport = libgnunettransport_smtp.la
+endif
+
+plugin_LTLIBRARIES = \
+ $(smtptransport) \
+ libgnunettransport_http.la \
+ libgnunettransport_tcp.la \
+ libgnunettransport_udp.la \
+ libgnunettransport_nat.la \
+ $(v6transports)
+
+libgnunettransport_smtp_la_SOURCES = smtp.c
+libgnunettransport_smtp_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransport_smtp_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+ 
+
+libgnunettransport_http_la_SOURCES = http.c
+libgnunettransport_http_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransport_http_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+
+libgnunettransport_tcp_la_SOURCES = tcp.c
+libgnunettransport_tcp_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransport_tcp_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+
+libgnunettransport_nat_la_SOURCES = nat.c
+libgnunettransport_nat_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransport_nat_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+
+libgnunettransport_udp_la_SOURCES = udp.c
+libgnunettransport_udp_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransport_udp_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+
+libgnunettransport_tcp6_la_SOURCES = tcp6.c
+libgnunettransport_tcp6_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransport_tcp6_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+
+libgnunettransport_udp6_la_SOURCES = udp6.c
+libgnunettransport_udp6_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransport_udp6_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+

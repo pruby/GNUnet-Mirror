@@ -1,0 +1,22 @@
+#!/bin/sh
+# script to find the list of memory leaks in the GNUnet output when run with the xmalloc
+# memory leak detector at debug-level 2
+cat out | grep free > out.free
+cat out | grep malloc > out.malloc
+A=`cat out.malloc | awk '{ print $1 }' | sort | uniq`
+for n in $A
+do
+ M=`grep $n out.malloc | wc -l`
+ F=`grep $n out.free | wc -l`
+ if test $M -gt $F
+ then 
+  echo "Address $n allocated $M times, free $F times"
+  grep $n out.malloc | tail -n 1
+ fi
+done
+
+#cat out | grep free | awk '{ print $1 }' | uniq -c | 
+#cat out | grep malloc | awk '{ print $1 } ' | uniq -c 
+#cat out | sort | awk '{ print $1 }' | uniq -c | grep "      1"  | awk '{ print $2 } ' > list
+#
+#cat out | sort | grep -v free | grep -f list

@@ -1,0 +1,23 @@
+.TH GNUNET.CONF "5" "10 Dec 2003" "GNUnet"
+.SH NAME
+gnunet.conf \- GNUnet configuration file
+.SH SYNOPSIS
+~/.gnunet/gnunet.conf and /etc/gnunet.conf
+.SH DESCRIPTION
+.PP
+GNUnet uses two configuation files.  /etc/gnunet.conf is the default location for the configuration file used by gnunetd, the GNUnet daemon.  It contains the network and resource configuration for the peer.  A template can be found in contrib/gnunet.root.  The RPM installs the template to /etc/gnunet.conf.
+.TP
+Another configuration file is used to allow users to customize GNUnet according to their needs.  It is used by all of the GNUnet tools and the default location is ~/.gnunet/gnunet.conf.  The user configuration allows the specification of personal options, such as the nickname in the chat.  A template can be found in contrib/gnunet.user.  The RPM installs a template for this file in /etc/skel/.gnunet/gnunet.conf. 
+.TP
+Both configuration files use the same basic syntax.  The file is split into sections.  Every section begins with [SECTIONNAME] and contains a number of options of the form OPTION=VALUE.  Empty lines and lines beginning with a # are treated as comments.  Some options are optional, in particular certain sections are not used at all unless the corresponding service module is loaded (e.g. you do not have to configure the SMTP transport unless you decide to use it).
+.SH FILES
+.TP
+/etc/gnunet.conf
+gnunetd configuration file
+.TP
+~/.gnunet/gnunet.conf
+GNUnet user configuration file
+.SH "REPORTING BUGS"
+Report bugs by using mantis <http://www.ovmj.org/~mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)

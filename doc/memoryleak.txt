@@ -1,0 +1,77 @@
+This document describes how to debug GNUnet for memory leaks.
+=============================================================
+
+Step 0: learn about valgrind
+----------------------------
+
+* run it, be delighted
+* you may find the VALGRIND option for gnunetd helpful
+  (to stop gnunetd after N seconds without a signal)
+* it should find all and more leaks than the technique
+  below describes.  
+* But valgrind may not be available (sorry, Intel only)
+  on your architecture or you may need some more information
+  about the dynamic allocation behavior than valgrind gives
+  you.  Then read on.
+
+
+Step 1: Activate Memory Leak Debugging
+--------------------------------------
+
+* Edit src/util/xmalloc.c and set 'DEBUG_MALLOC' to 2.
+* Recompile (make install).
+
+
+Step 2: Get profiling information
+---------------------------------
+
+* Run gnunetd or whichever other app you want to profile
+* Turn of all other debugging output (e.g. -d -L NOTHING)
+* Gather the xmalloc output in a file "out" (e.g. > out)
+* Ensure you have enough space, the file may get huge.
+* The one line executive summary:
+
+# bin/gnunetd -d -L NOTHING > out
+
+After you wait a while, do insert, search and download or
+whatever else you want to test, stop the app (CTRL-C will
+do just fine).
+
+
+Step 3: Run the leak detector script
+------------------------------------
+
+* The out file must be in the current directory.
+* It may not be the fastest shell-script in the world,
+  depending on how much output you got
+# bin/getleaks
+
+
+Step 4: How to read the output
+------------------------------
+
+* bin/grepsrc.sh "descriptive string in output"
+  will give you the allocation site where memory
+  was allocated that was not freed
+* you will always (!) get many entries of objects
+  that were not supposed to be freed 
+* various HELOs are stored in pingpong.c and
+  knownhosts.c (often allocated in the transports 
+  and/or heloexchange) and persist there for 
+  a long time (round-robin buffer with 32 or 64
+  entries, freed only when another entry replaces
+  the current one). Those are not leaks! Don't
+  hunt the HELOs for too long!
+* You may NOT see all leaks, especially not leaks
+  of memory allocated not via xmalloc, e.g. by
+  libgcrypt, openssl, tdb or gdbm. You
+  need to watch for these manually.
+* If you have ambiguous allocation sites, disambiguate
+  by making the xmalloc strings unique.
+* Never send developers the whole 'out' trace, the
+  summary printed by getleaks will be fine.
+* You may want to ensure, e.g. with 'top', that
+  you actually have a leak. Fluctuations of a few
+  100k may occur even without a leak. If you have
+  a >20 MB gnunetd (without GDB!) you've probably got
+  one.

@@ -1,0 +1,111 @@
+0.6.6 [1'05] (aka "intermezzo"):
+- Win32 port
+- gnunet-insert bugs (see Mantis)
+
+0.7.0pre0 [4'05] (aka "preview"):
+- AFS:
+  a) complete libfsui:
+     - namespace creation
+     - namespace updates
+     - collections
+  b) complete gnunet-afs-tools:
+     - insert - DONE (very rough cut)
+     - download - COMPILES
+- Missing Features:
+  * fs/module/fs+migration: anonymity level and expiration time considerations (Christian)
+  * gap: economy for local queries, forwardQuery dead?, anonymityLevel
+  * ecrs-download: some stats, some details in the heuristics
+  * gnunet-search: dump directory with search results,
+                   get filename from meta-data for -o option,
+                   handle anonymity-level setting
+  * fsui upload: ETA, tracking URIs
+  * fsui core (persistence, shutdown, multiple FSUIs)
+  * gnunet-insert: namespace insertion, check options, keyword to utf8 conversion
+- Need testing:
+  * ECRS-directories (build, iterate)
+  * FS/ECRS upload/download
+  * gnunet-directory
+  * gnunet-pseudonym
+  * gnunet-search
+
+0.7.0 [6'05] (aka "compatibility? what's that?"):
+- Missing Features:
+  * topology: do eager bootstrap on first start (Christian)
+  * ecrs-unindex: code cleanup
+  * fix dht routing service
+     - make dht respect new dht API (long way to go)
+     - fs-dht integration
+  * sqlite sqstore implementation does not compile yet (Nils)
+  * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
+    linking the respective modules / libraries (gnunet_util, sqstore_mysql)
+- Features removed but to be revived:
+  * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
+    user to specify maximum amount of parallelism)
+- Need testing:
+  * gnunet-dht-join and gnunet-dht-query 
+  * gnunet-tracekit, -tbench, -chat 
+- Documentation changes (to be documented):
+  * ECRS block format changes (dramatic!)
+  * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
+
+0.7.x (aka "stabilization"):
+- gnunet-chat: have a real implementation.
+- DHT optimizations:
+  * optional fields (HELOs)
+- #727
+- XFS 
+- #675
+- #747 (sharing stats for gnunet-gtk)
+
+1.0.0 (aka "userfriendly"):
+- Win32 port
+- #593 (gnunet-setup)
+- #678 (directory browser)
+- #704 (reindex downloaded files)
+- implement testbed for profiling 
+
+
+Not under control:
+- #603 (libgcrypt problem)
+
+
+
+
+
+gnunet-gtk wishlist (unallocated tasks unless mentioned 
+otherwise, feel free to implement):
+
+- while (!) downloading directory, display already received results 
+  for download (now supported by libecrs!)
+- add option to list all indexed files and perhaps delete from them
+- for potentially long clists, add option to specify a string 
+  pattern that must be matched for the lines to be displayed 
+  (to further prune search results, for example)
+- implement search bookmarking (e.g. user could add/edit/delete 
+  favourite namespace/key etc combinations)
+- in Assemble Directory's Files Available/Selected
+    Add sortability 
+    Add multiselection  
+    Print filenames as well
+- add right button popup menu operations for
+    Select by pattern
+  in the search result list.
+- a completely new interactive namespace/directory building
+  module that would allow importing files/directories from
+  disk and edit various parameters, file descriptions and 
+  the dir tree structure before the insertion.
+- give user opportunity to change namespace rating after
+  namespace download succeeded
+
+--------------------------
+
+Igor's check-up list for a release version:
+a) works out of the box on a fresh setup 
+   connects to the network 
+b) local search 
+   nonlocal search 
+   local download 
+   nonlocal download 
+   insert 
+   gnunet-update
+   GUI search, insert, download

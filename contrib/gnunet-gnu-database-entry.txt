@@ -1,0 +1,130 @@
+%%comments:
+<p>
+The copyright licensing notice below applies to this text.  The software
+described in this text has its own copyright notice and license, which can
+usually be found in the distribution itself.
+</p>
+<p>
+Copyright &copy; 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+</p>
+<p>
+Permission is granted to copy, distribute, and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or any
+later version published by the Free Software Foundation; with no Invariant
+Sections, with no Front-Cover Texts, and with no Back-Cover Texts.  A copy
+of this license is included in the file <a href="COPYING.DOC">COPYING.DOC</a>.
+</p>
+
+%%name: GNUnet
+
+%%short-description: Anonymous peer-to-peer file-sharing
+
+%%full-description: GNUnet is a secure, trust-based peer-to-peer framework.
+A first service implemented on top of the networking layer
+allows anonymous censorship-resistant file-sharing.
+
+<p>The goal of the GNUnet project is to become the ultimate system
+for free information exchange in a world hostile toward uncontrolled
+communication. We value free speech above state secrets,
+law-enforcement or intellectual property. GNUnet is supposed to be
+an anarchistic network, where the only limitation for peers is that
+they must contribute enough back to the network such that their
+resource consumption does not have a significant impact on other
+users.</p>
+
+<p>GNUnet's primary design goals are to protect the privacy of its
+users and to guard itself against attacks or abuse. GNUnet does
+not have any mechanisms to control, track or censor users. Instead,
+the GNUnet protocols aim to make it as hard as possible to find
+out what is happening on the network or to disrupt operations.</p>
+
+%%category: nettools
+
+%%license: GPLv2orlater
+
+%%license-verified-by: Janet Casey <jcasey@gnu.org>
+
+%%license-verified-on: 2003-01-17
+
+%%entry-added: 2003-01-17
+
+%%maintainer: Christian Grothoff <grothoff@cs.purdue.edu>
+
+%%touched: 2004-05-05
+
+%%updated: 2003-08-22
+
+%%keywords: peer-to-peer, anonymity, security, file-sharing, framework,
+encryption, deniability, privacy
+
+%%interface: Command line, X Window System, daemon
+
+%%programs:
+	    
+%%GNU: yes
+
+%%web-page: http://www.gnu.org/software/gnunet/
+
+%%support: 
+
+%%doc: User reference in HTML from
+http://www.ovmj.org/GNUnet/documentation.php3
+
+%%developers: <gnunet-developers@gnu.org>
+
+%%contributors:
+
+%%sponsors: 
+
+%%source-tarball: ftp://ftp.gnu.org/gnu/gnunet/gnunet-0.6.2a.tar.bz2
+
+%%source-info: http://www.ovmj.org/GNUnet/download.php3
+
+%%source-template: ftp://ftp.gnu.org/gnu/gnunet/gnunet-VERSION.tar.bz2
+
+%%repository: :pserver:anonymous@ovmj.org:/var/cvs/GNUnet checkout GNUnet
+	      
+%%related: 
+
+%%source-language: C
+
+%%supported-languages:
+
+%%use-requirements:
+
+%%build-prerequisites: autoconf, automake, libtool, gcc, make
+
+%%weak-prerequisites: libextractor, mysql, gdbm, tdb, bdb, libgcrypt, openssl
+
+%%source-prerequisites:
+
+%%version: 0.6.2a beta released on 2004-05-05
+
+%%announce-list: <info-gnunet@gnu.org> 
+		 http://mail.gnu.org/mailman/listinfo/info-gnunet
+
+%%announce-news:
+
+%%help-list: <help-gnunet@gnu.org> 
+	     http://mail.gnu.org/mailman/listinfo/help-gnunet
+
+%%help-news:
+
+%%help-irc-channel: west-tokyo.moo.comt:6667: #gnunet
+
+%%dev-list: <gnunet-developers@gnu.org> 
+	     http://mail.gnu.org/mailman/listinfo/gnunet-developers
+
+%%dev-news:
+
+%%dev-irc-channel: bigwhoop.homeip.net:6669: #gnunet
+
+%%bug-list: <bug-gnunet@gnu.org >
+	    http://mail.gnu.org/mailman/listinfo/bug-gnunet
+
+%%bug-news:
+
+%%bug-database: http://www.ovmj.org/~mantis/
+
+%%entry-compiled-by: Christian Grothoff <grothoff@cs.purdue.edu>
+

@@ -1,0 +1,83 @@
+Design ideas for libecrs:
+
+Hierarchy of blocks (yes, think of object oriented programming here!):
+
+Block (>= 1k, with a 2x2 byte type identification)
+  GBlock (length + data, CHK encoding)
+    IBlock (Meta-data to retrieve set of GBlocks, inner nodes in tree)
+    DBlock (File-data [leaves in tree])
+  EBlock (Encrypted/Signed block, contains description, mime-type; total size 1k 
+          with 20 byte identifier, 256 byte public key + 256 byte signature tailing)
+    FBlock (FileIdentifier block, contains 48 byte FileIdentifier, suggested filename)
+      SBlock (Namespace entry, contains update information)
+      KBlock (global namespace, any difference to FBlock???)
+    NBlock (Namespace metadata, 20 byte identifier must be all-zeros)
+
+
+Block operations:
+- Block:
+  * getType (major version), getVersion (minor version)
+  * toString()
+- GBlock:
+  * getSize()
+  * getSearchkey()
+  * encrypt(key)
+  * decrypt(key)
+  * download
+  * insert
+  * checksum
+- IBlock
+  * create
+- DBlock
+  * create
+- EBlock:
+  * sign(Hostkey)
+  * verify()
+  * getPublicKey()
+  * getNamespaceID()
+  * getIdentifier()
+  * getDescription()
+  * getMimeType()
+- FBlock:
+  * getFileIdentifier()
+  * getFilename()
+- SBlock
+  * create
+  * getNextIdentifier()
+  * getFutureIdentifier(time)
+  * getUpdateFrequency()
+- KBlock
+  * create
+- NBlock
+  * create
+  * getNickname()
+  * getRealname()
+  * getURL()
+  * getContactInfo()
+
+
+Datastore functionality:
+- file (on-demand encryption)
+- store (persistent store on disk)
+- scratch (temporary store on disk)
+- cache (finite-size cache!)
+- lookup (needs different parameters for different block types)
+- get-random (for migration)
+- expire (old entries from cache/store)
+- ranking
+
+Key ideas:
+- content is promoted from scratch to store when the ranking is high enough
+- scratch is small to allow DB reoptimization after remove
+- content from store is 'never' removed (short of gnunet-delete) and
+  hence the problem with insert-remove growth goes away; size difference
+  between current store and target size determines scratch-to-store promotion
+  threshold (minimum is 1, 1/sqrt(limit-x) should give decent curve)
+- in general blocks are varible size
+- KBlocks cannot be promoted to permanent store (local KBlocks have very long
+  timeout, foreign KBlocks are short-lived)
+- Datastore is a SERVICE (applications/datastore)
+- ECRS is a helper library for the datastore service and the datastore
+  tools (insert/index/delete/search)
+
+

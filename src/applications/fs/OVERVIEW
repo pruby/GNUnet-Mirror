@@ -1,0 +1,8 @@
+The FS application is divided into five parts:
+
+ecrs_core: shared code for on-demand encoding and block verification
+module/    plugin into gnunetd
+lib/       code to communicate with the plugin from clients (block-level)
+ecrs/      file-sharing abstraction (file-level)
+fsui/      high-level library for building the user interfaces
+tools/     simple text user interfaces

@@ -1,0 +1,25 @@
+This file describes special operations that must be performed for an
+upgrade between GNUnet versions.  You can obtain version of GNUnet
+that you have installed by running
+
+# gnunetd --version
+
+If no migration procedure is listed for your version, a
+data-preserving migration may not be possible.  For CVS versions,
+you're on your own.
+
+before 0.7.0pre0 to 0.7.0pre0
+=============================
+
+Migration is NOT possible, we're breaking compatibility big time.
+Note that 0.7.0pre0 is a pre-release for 0.7.0, so hands-off if you do
+not want to deal with a ton of bugs and lots of migration problems.
+If you dare to venture here anyway, remember:
+
+$ rm -rf .gnunet
+
+is your friend.
+
+Note that many things have changed in this version, so please read
+the documentation very carefully, but also keep in mind that not
+all of the documentation is up-to-date with the code at this point.

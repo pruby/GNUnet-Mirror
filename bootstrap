@@ -1,0 +1,6 @@
+#!/bin/sh
+export WANT_AUTOMAKE="1.7"
+cd libltdl
+autoreconf -f -i
+cd ..
+autoreconf -f -i
