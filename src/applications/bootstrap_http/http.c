@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -51,7 +51,7 @@ downloadHostlistHelper(char * url,
   unsigned short port;
   char * hostname;
   char * filename;
-  unsigned int curpos;
+  unsigned int curpos, lenHostname, lenUrl;
   struct hostent *ip_info;
   struct sockaddr_in soaddr;
   int sock;
@@ -73,23 +73,25 @@ downloadHostlistHelper(char * url,
   }
   curpos = strlen(HTTP_URL);
   hostname = &url[curpos];
-  while ( (curpos < strlen(url)) &&
+  lenUrl = strlen(url);
+  while ( (curpos < lenUrl) &&
 	  (url[curpos] != '/') )
     curpos++;
-  if (curpos == strlen(url))
+  if (curpos == lenUrl)
     filename = STRDUP("/");
   else
     filename = STRDUP(&url[curpos]);
   url[curpos] = '\0'; /* terminator for hostname */
 
   curpos = 0;
-  while ( (curpos < strlen(hostname)) &&
+  lenHostname = strlen(hostname);
+  while ( (curpos < lenHostname) &&
           (hostname[curpos] != ':') )
     curpos++;
-  if (curpos == strlen(hostname))
+  if (curpos == lenHostname)
     port = TCP_HTTP_PORT;
   else
-    port = atoi(STRDUP(&hostname[curpos+1]));
+    port = atoi(hostname + curpos + 1);
   
   hostname[curpos] = '\0'; /* terminator for hostname */
   
@@ -141,7 +143,8 @@ downloadHostlistHelper(char * url,
     return;
   }
 
-  n = strlen(filename) + strlen(GET_COMMAND) + strlen(hostname) + 10;
+	/* 10: 1 + sizeof(port) */
+  n = strlen(filename) + strlen(GET_COMMAND) + lenHostname + 10;
   command = MALLOC(n);
   SNPRINTF(command,
 	   n,
