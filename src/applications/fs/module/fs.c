@@ -36,6 +36,7 @@
 #include "gnunet_gap_service.h"
 #include "gnunet_dht_service.h"
 #include "gnunet_datastore_service.h"
+#include "gnunet_traffic_service.h"
 #include "ecrs_core.h"
 #include "migration.h"
 #include "ondemand.h"
@@ -67,6 +68,11 @@ static DHT_ServiceAPI * dht;
  * Datastore service.
  */
 static Datastore_ServiceAPI * datastore;
+
+/**
+ * Traffic service.
+ */
+static Traffic_ServiceAPI * traffic;
 
 static Mutex lock;
 
@@ -140,8 +146,6 @@ static int csHandleRequestInsert(ClientHandle sock,
     return SYSERR;
   }
   ri = (RequestInsert*) req;
-  /* FIXME: if anonymity level is 0, also do 
-     DHT insertion! */
   datum = MALLOC(sizeof(Datastore_Value) + 
 		 ntohs(req->size) - sizeof(RequestIndex));
   datum->expirationTime = ri->expiration;
@@ -160,6 +164,10 @@ static int csHandleRequestInsert(ClientHandle sock,
   ret = datastore->put(&query,
 		       datum);
   MUTEX_UNLOCK(&lock);
+  if (ntohl(ri->anonymityLevel) == 0) {
+  /* do DHT put! */
+  }
+
   FREE(datum);
   return coreAPI->sendValueToClient(sock, 
 				    ret);
@@ -335,7 +343,6 @@ static int gapGetConverter(const HashCode160 * key,
   GapWrapper * gw;
   int ret;
   unsigned int size;
-  cron_t et;
 
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
@@ -351,18 +358,62 @@ static int gapGetConverter(const HashCode160 * key,
   size = sizeof(GapWrapper) +
     ntohl(value->size) -
     sizeof(Datastore_Value);
+
+  if (ntohl(value->anonymityLevel) != 0) {
+    /* consider traffic volume before migrating;
+       ok, so this is not 100% clean since it kind-of
+       belongs into the gap code (since it is concerned
+       with anonymity and GAP messages).  So we should
+       probably move it below the callback by passing
+       the anonymity level along.  But that would
+       require changing the DataProcessor somewhat,
+       which would also be ugly.  So to keep things
+       simple, we do the anonymity-level check for
+       outgoing content right here. */
+    if (traffic != NULL) {
+      unsigned int level;
+      unsigned int count;
+      unsigned int peers;
+      unsigned int sizes;
+      unsigned int timevect;
+
+      level = ntohl(value->anonymityLevel);
+      if (OK != traffic->get(5 * cronSECONDS / TRAFFIC_TIME_UNIT, /* TTL_DECREMENT/TTU */
+			     GAP_p2p_PROTO_RESULT,
+			     TC_RECEIVED,
+			     &count,
+			     &peers,
+			     &sizes,
+			     &timevect)) {
+	LOG(LOG_WARNING,
+	    _("Failed to get traffic stats.\n"));
+	return OK;
+      }
+      if (level > 1000) {
+	if (peers < level / 1000)
+	  return OK;
+	if (count < level % 1000)
+	  return OK;
+      } else {
+	if (count < level)
+	  return OK;
+      }
+    } else {
+      /* traffic required by module not loaded;
+	 refuse to hand out data that requires
+	 anonymity! */
+      return OK;
+    }
+  }
+  
   gw = MALLOC(size);
   gw->dc.size = htonl(size);
   gw->type = value->type;
-  et = ntohll(value->expirationTime);
-  /* FIMXE: mingle et? */
-  gw->timeout = htonll(et);
+  gw->timeout = value->expirationTime;
   memcpy(&gw[1],
 	 &value[1],
 	 size - sizeof(GapWrapper));
-  /* FIXME: check anonymity level,
-     if 0, consider using DHT migration instead;
-     if high, consider traffic volume before migrating */
+
   if (ggc->resultCallback != NULL)
     ret = ggc->resultCallback(key,
 			      &gw->dc,
@@ -451,8 +502,12 @@ static int gapPut(void * closure,
   dv->type = gw->type;
   dv->prio = htonl(prio);
   dv->anonymityLevel = htonl(0);
-  if (ntohll(gw->timeout) > cronTime(NULL) + MAX_MIGRATION_EXP)     
-    dv->expirationTime = htonll(cronTime(NULL) + MAX_MIGRATION_EXP);
+  if ( (ntohll(gw->timeout) > cronTime(NULL) + MAX_MIGRATION_EXP) &&
+       (randomi(1+prio) == 0) /* allow _ocasionally_ to keep an extremely high
+				 expiration time, to make it plausible for 
+				 content we originate that it has such high 
+				 expiration times! */ )
+    dv->expirationTime = htonll(cronTime(NULL) + randomi(MAX_MIGRATION_EXP));
   else
     dv->expirationTime = gw->timeout;
   memcpy(&dv[1],
@@ -515,6 +570,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     BREAK();
     return SYSERR;
   }
+  traffic = capi->requestService("traffic");
   gap = capi->requestService("gap");
   if (gap == NULL) {
     BREAK();
@@ -595,6 +651,10 @@ void done_module_fs() {
   if (dht != NULL) {
     coreAPI->releaseService(dht);
     dht = NULL;
+  }
+  if (traffic != NULL) {
+    coreAPI->releaseService(traffic);
+    traffic = NULL;
   }
   coreAPI = NULL;
   MUTEX_DESTROY(&lock);
