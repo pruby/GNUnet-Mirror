@@ -638,6 +638,27 @@ void ShutdownWinEnv()
 }
 
 /**
+ * Dereference a symlink recursively
+ */
+int __win_deref(char *path)
+{
+  int iDepth = 0;
+
+  errno = 0;
+   
+  while (DereferenceShortcut(path))
+  {
+    if (iDepth++ > 10)
+    {
+      errno = ELOOP;
+      return -1;
+    }
+  }
+  
+  return errno ? -1 : 0;
+}
+
+/**
  * Convert a POSIX-sytle path to a Windows-style path
  * @param pszUnix POSIX path
  * @param pszWindows Windows path
@@ -648,11 +669,14 @@ int conv_to_win_path_ex(const char *pszUnix, char *pszWindows, int derefLinks)
 {
   char *pSrc, *pDest;
   long iSpaceUsed;
+  int iUnixLen;
+
+  iUnixLen = strlen(pszUnix);
 
   /* Check if we already have a windows path */
   if((strchr(pszUnix, '\\') != NULL) || (strchr(pszUnix, ':') != NULL))
   {
-    if(strlen(pszUnix) > MAX_PATH)
+    if(iUnixLen > MAX_PATH)
       return ERROR_BUFFER_OVERFLOW;
     strcpy(pszWindows, pszUnix);
   }
@@ -714,7 +738,7 @@ int conv_to_win_path_ex(const char *pszUnix, char *pszWindows, int derefLinks)
   *pDest = 0;
   
   if (derefLinks)
-    DereferenceShortcut(pszWindows);
+    __win_deref(pszWindows);
 
 #if DEBUG_WINPROC
   LOG(LOG_EVERYTHING, "Posix path %s resolved to %s\n", pszUnix, pszWindows);
@@ -1626,27 +1650,6 @@ int _win_rename(const char *oldname, const char *newname)
 }
 
 /**
- * Dereference a symlink recursively
- */
-int __win_deref(const char *path)
-{
-  int iDepth = 0;
-
-  errno = 0;
-   
-  while (DereferenceShortcut(path))
-  {
-    if (iDepth++ > 10)
-    {
-      errno = ELOOP;
-      return -1;
-    }
-  }
-  
-  return errno ? -1 : 0;
-}
-
-/**
  * Get status information on a file
  */
 int __win_stat(const char *path, struct stat *buffer, int iDeref)
@@ -1670,7 +1673,7 @@ int __win_stat(const char *path, struct stat *buffer, int iDeref)
   /* Dereference symlinks */
   if (iDeref)
   {
-    if (__win_deref(szFile) == -1)
+    if (__win_deref(szFile) == -1 && errno != EINVAL)
       return -1;
   }
   
@@ -1862,7 +1865,7 @@ int _win_symlink(const char *path1, const char *path2)
   }  
   
   /* CreateShortcut sets errno */
-  lRet = CreateShortcut(path1, path2);
+  lRet = CreateShortcut(szFile1, szFile2);
   
   return lRet ? 0 : -1;
 }

@@ -115,6 +115,7 @@ BOOL DereferenceShortcut(char *pszShortcut)
   char *pszLnk;
   int iErr, iLen;
   HRESULT hRes;
+  HANDLE hLink;
 
   CoInitialize(NULL);
   
@@ -145,15 +146,46 @@ BOOL DereferenceShortcut(char *pszShortcut)
   iLen = strlen(pszShortcut);
   if (iLen > 4 && (strcmp(pszShortcut + iLen - 4, ".lnk") != 0))
   {
+    HANDLE hLink;
+    
     pszLnk = (char *) malloc(iLen + 5);
     sprintf(pszLnk, "%s.lnk", pszShortcut);
   }
   else
     pszLnk = strdup(pszShortcut);
 
+  /* Make sure the path refers to a file */
+  hLink = CreateFile(pszLnk, FILE_READ_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                   NULL, OPEN_EXISTING, 0, NULL);
+  if (hLink == INVALID_HANDLE_VALUE)
+  {
+    free(pszLnk);
+    SetErrnoFromWinError(GetLastError());
+    
+    if (errno == ENOENT)
+    {
+      /* There's no path with the ".lnk" extension.
+         We don't quit here, because we have to decide whether the path doesn't
+         exist or the path isn't a link. */
+
+      /* Is it a directory? */
+      if (GetFileAttributes(pszShortcut) & FILE_ATTRIBUTE_DIRECTORY)
+      {
+        errno = EINVAL;
+        return FALSE;
+      }
+
+      pszLnk = strdup(pszShortcut);
+      
+      hLink = CreateFile(pszLnk, FILE_READ_DATA, FILE_SHARE_READ |
+                FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+      SetErrnoFromWinError(GetLastError());      
+    }
+    else
+      return FALSE; /* File/link is there but unaccessible */
+  }
+    
   MultiByteToWideChar(CP_ACP, 0, pszLnk, -1, pwszShortcut, _MAX_PATH);
-  
-  free(pszLnk);
   
   /* Open shortcut */
   if (FAILED(hRes = pFile->Load((LPCOLESTR) pwszShortcut, STGM_READ)))
@@ -162,11 +194,37 @@ BOOL DereferenceShortcut(char *pszShortcut)
     pFile->Release();
     free(pwszShortcut);
     CoUninitialize();
-    SetErrnoFromHRESULT(hRes);
     
+    /* For some reason, opening an invalid link sometimes fails with ACCESSDENIED.
+       Since we have opened the file previously, insufficient priviledges
+       are rather not the problem. */
+    if (hRes == E_FAIL || hRes == E_ACCESSDENIED)
+    {
+      /* Check file magic */
+      if (hLink != INVALID_HANDLE_VALUE)
+      {
+        DWORD dwRead;
+        char pMagic[4] = {0, 0, 0, 0};
+        
+        ReadFile(hLink, pMagic, 4, &dwRead, NULL);
+        if (memcmp(pMagic, "L\0\0\0", 4) == 0)
+          SetErrnoFromHRESULT(hRes);
+        else
+          errno = EINVAL; /* No link */
+      }
+      /* else: errno was set above! */
+    }
+    else
+      SetErrnoFromHRESULT(hRes);
+
+    free(pszLnk);
+          
+    CloseHandle(hLink);
     return FALSE;
   }
   
+  CloseHandle(hLink);
+  free(pszLnk);
   free(pwszShortcut);
   
   /* Get target file */
