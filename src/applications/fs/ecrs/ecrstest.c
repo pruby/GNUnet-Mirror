@@ -22,7 +22,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "DEBUG"));
+				     "WARNING"));
   return OK;
 }
 
@@ -114,8 +114,6 @@ static int searchCB(const ECRS_FileInfo * fi,
 		    void * closure) {
   struct ECRS_URI ** my = closure;
 
-  LOG(LOG_DEBUG,
-      "Received search result!\n");
   GNUNET_ASSERT(NULL == *my);
   *my = ECRS_dupUri(fi->uri);
   return SYSERR; /* abort search */
@@ -206,7 +204,7 @@ int main(int argc, char * argv[]){
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
 		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-L", "DEBUG",
+		    "-L", "NOTHING",
 		    "-c",
 		    "check.conf", /* configuration file */
 		    NULL)) {
@@ -228,11 +226,14 @@ int main(int argc, char * argv[]){
   /* ACTUAL TEST CODE */
   i = 0;
   while (filesizes[i] != 0) {
+    printf("Testing filesize %u\n",
+	   filesizes[i]);
     uri = uploadFile(filesizes[i]);
     CHECK(NULL != uri);
     CHECK(OK == searchFile(&uri));
     CHECK(OK == downloadFile(filesizes[i], uri));
     CHECK(OK == unindexFile(filesizes[i]));
+    i++;
   } 
 
   /* END OF TEST CODE */
