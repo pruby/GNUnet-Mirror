@@ -34,9 +34,6 @@
 - Missing Features:
   * topology: do aggressive bootstrap on first start (Christian) [ easy ]
   * ecrs-unindex: code cleanup [ easy ]
-  * fix dht routing service
-     - make dht respect new dht API (long way to go)
-     - fs-dht integration [ difficult ]
   * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
     linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
 - Features removed but to be revived:
