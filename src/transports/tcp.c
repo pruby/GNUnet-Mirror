@@ -62,7 +62,7 @@ typedef struct {
  */
 typedef struct {
   /**
-   * size of the message, in bytes, including this header;
+   * size of the message, in bytes, excluding this header;
    * max 65535; we do NOT want to make this field an int
    * because then a malicious peer could cause us to allocate
    * lots of memory -- this bounds it by 64k/peer.
@@ -86,15 +86,7 @@ typedef struct {
  * must match the CS_HEADER since we are using tcpio.
  */
 typedef struct {
-  /**
-   * size of the handshake message, in nbo, value is 24
-   */
-  unsigned short size;
-
-  /**
-   * "message type", TCP version number, always 0.
-   */
-  unsigned short version;
+  TCPMessagePack header;
 
   /**
    * Identity of the node connecting (TCP client)
@@ -448,12 +440,12 @@ static int readAndProcess(int i) {
 #endif
 
       welcome = (TCPWelcome*) &tcpSession->rbuff[0];
-      if ( (ntohs(welcome->version) != 0) ||
-	   (ntohs(welcome->size) != sizeof(TCPWelcome)) ) {
+      if ( (ntohs(welcome->header.version) != 0) ||
+	   (ntohs(welcome->header.size) != sizeof(TCPWelcome) - sizeof(TCPMessagePack)) ) {
 	LOG(LOG_WARNING,
 	    _("Expected welcome message on tcp connection, got garbage (%u, %u). Closing.\n"),
-	    ntohs(welcome->version),
-	    ntohs(welcome->size));
+	    ntohs(welcome->header.version),
+	    ntohs(welcome->header.size));
 	tcpDisconnect(tsession);
 	return SYSERR;
       }
@@ -1088,8 +1080,8 @@ static int tcpConnect(HELO_Message * helo,
 
   /* send our node identity to the other side to fully establish the
      connection! */
-  welcome.size = htons(sizeof(TCPWelcome));
-  welcome.version = htons(0);
+  welcome.header.size = htons(sizeof(TCPWelcome) - sizeof(TCPMessagePack));
+  welcome.header.version = htons(0);
   welcome.clientIdentity = *(coreAPI->myIdentity);
   if (SYSERR == tcpDirectSend(tcpSession,
 			      &welcome,
