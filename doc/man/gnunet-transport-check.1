@@ -3,7 +3,7 @@
 gnunet-transport-check \- a tool to test a GNUnet transport service
 .SH SYNOPSIS
 .B gnunet\-transport\-check
-[\fIOPTIONS\fR] 
+[\fIOPTIONS\fR]
 .SH DESCRIPTION
 .PP
 gnunet-transport-check can be used to test or profile
@@ -23,7 +23,7 @@ and then try to contact each of the peers.  Note that it is perfectly
 normal that some peers do not respond, but if no peer responds something
 is likely to be wrong.  The configuration is always taken
 from the configuration file.  Do not run gnunetd while running
-gnunet-transport-check since the transport services cannot 
+gnunet-transport-check since the transport services cannot
 be used by two processes at the same time.
 .PP
 gnunet-transport-check will always produce an error-message for
@@ -37,7 +37,7 @@ that is, the peer is behind a NAT box, the message will be
 but exactly what is supposed to happen.
 .PP
 Similarly, a NAT-ed peer should typically configure the TCP transport
-to use port 0 (not listen on any port).  In this case, 
+to use port 0 (not listen on any port).  In this case,
 gnunet-transport-check will print 'could not create HELO' for the
 TCP transport.  This is also ok.  In fact, a correctly configured
 peer using NAT should give just two errors (could not connect for

@@ -36,13 +36,13 @@ Since keywords can be spammed (any user can add any content under any
 keyword), GNUnet supports namespaces.  A namespace is a subset of the
 searchspace into which only the holder of a certain pseudonym can add content.
 Any GNUnet user can create any number of pseudonyms using
-\fBgnunet\-pseudonym\-create\fR. Pseudonyms are stored in the users GNUnet 
-directory and can  be additionally protected with a password.  While 
-pseudonyms are locally identified with an arbitrary string that 
-the user selects when the pseudonym is created, the namespace is  
-globally known only under the hash of the public key of the pseudonym. 
-Since only the owner of the pseudonym can add content to the namespace, 
-it is impossible for other users to pollute the namespace.  
+\fBgnunet\-pseudonym\-create\fR. Pseudonyms are stored in the users GNUnet
+directory and can  be additionally protected with a password.  While
+pseudonyms are locally identified with an arbitrary string that
+the user selects when the pseudonym is created, the namespace is
+globally known only under the hash of the public key of the pseudonym.
+Since only the owner of the pseudonym can add content to the namespace,
+it is impossible for other users to pollute the namespace.
 gnunet\-insert automatically inserts the top\-directory (or the only
 file if only one file is specified) into the namespace if a pseudonym is
 specified.  If no specific namespace\-identifier is specified (option \-t),
@@ -62,7 +62,7 @@ identifier that must be used for the next update.  You can use the option
 \-u to specify the identifier of the previous version of the content that
 you want to update.
 .PP
-You can use automatic meta\-data extraction (based on libextractor) 
+You can use automatic meta\-data extraction (based on libextractor)
 or the command\-line option \-m to specify meta-data.  For the \-m
 option you need to use the form keyword\-type:value.  For example,
 use "\-m os:Linux" to specify that the operating system is Linux.
@@ -79,7 +79,7 @@ a copy of the file in the directory specified in gnunet.conf.  The copy
 will be in plaintext and have the RIPE160MD hash of the entire file as
 the filename.  This makes it possible to create links to that file, if
 gnunetd is running locally.  Note that for indexed files a different quota
-is applied than for the normal GNUnet AFS database.  Indexing is generally 
+is applied than for the normal GNUnet AFS database.  Indexing is generally
 significantly more efficient and the default choice.  In either case,
 the file is slowly (depending on how often it is requested and on how much
 bandwidth is available) dispersed into the network.  If you insert or index
@@ -102,11 +102,11 @@ Print a brief help page with all the options.
 
 .TP
 \fB\-i \fISECONDS\fR, \fB\-\-interval=\fISECONDS\fR
-Specifies the update frequency of the content in seconds. This option is only valid together with the \-s option. If no current and next ID are specified, the system picks some random start values for the sequence. 
+Specifies the update frequency of the content in seconds. This option is only valid together with the \-s option. If no current and next ID are specified, the system picks some random start values for the sequence.
 
-Most recent update can be found by gnunet\-gtk automatically. gnunet\-search will print all edition ids 
-between the insertion time and the current time. A new search can be then performed with one of the printed keys. 
-Also, using gnunet\-insert for updating content is cumbersome, in the future gnunet\-gtk will provide a more interactive 
+Most recent update can be found by gnunet\-gtk automatically. gnunet\-search will print all edition ids
+between the insertion time and the current time. A new search can be then performed with one of the printed keys.
+Also, using gnunet\-insert for updating content is cumbersome, in the future gnunet\-gtk will provide a more interactive
 way to manage content updates.
 
 .TP
@@ -133,7 +133,7 @@ Do not index, full insertion.  Note that directories, RBlocks, SBlocks and IBloc
 
 .TP
 \fB\-N \fIID\fR, \fB\-\-next=\fIID\fR
-Specifies the next ID of a future version of the SBlock.  This option is only valid together with the \-s option and together with either the option -b or only a single filename on the command\-line.  This option can be used to specify what the identifier of an updated version will look like.  Without the \-i option, a one\-shot update SBlock is used (a\-periodic).  With the \-i option, the difference between  the current ID (this) and the next ID is used to compute all future IDs.  Note that specifying \-i and \-N without \-t hardly ever makes sense. 
+Specifies the next ID of a future version of the SBlock.  This option is only valid together with the \-s option and together with either the option -b or only a single filename on the command\-line.  This option can be used to specify what the identifier of an updated version will look like.  Without the \-i option, a one\-shot update SBlock is used (a\-periodic).  With the \-i option, the difference between  the current ID (this) and the next ID is used to compute all future IDs.  Note that specifying \-i and \-N without \-t hardly ever makes sense.
 
 The ID can be given in HEX notation, otherwise the HEX code is derived by hashing the given ID string.
 
@@ -145,15 +145,15 @@ Set the priority of the inserted content (default: 65535).  If the local databas
 
 .TP
 \fB\-P \fINAME\fR, \fB\-\-pseudonym=\fINAME\fR
-For the top\-level directory or file, create an SBlock that places the file into the namespace specified by the pseudonym NAME.  
+For the top\-level directory or file, create an SBlock that places the file into the namespace specified by the pseudonym NAME.
 
 .TP
 \fB\-R\fR, \fB\-\-recursive\fR
-Process directories recursively.  Without this option, directories are ignored.  With this option, gnunet-insert will process files in directories recursively.  
+Process directories recursively.  Without this option, directories are ignored.  With this option, gnunet-insert will process files in directories recursively.
 
 .TP
 \fB\-S\fR, \fB\-\-sporadic\fR
-This option specifies that the file will be updated sporadically but not periodically.  It is only valid in conjunction with the \-s option.  It is implied if  \-N is specified but not \-i.  It cannot be used together with the \-i option.  Use \-S if you intend to publish an update at an unknown point in the future and if you want gnunet\-insert to pick a random  identifier for that future content.  
+This option specifies that the file will be updated sporadically but not periodically.  It is only valid in conjunction with the \-s option.  It is implied if  \-N is specified but not \-i.  It cannot be used together with the \-i option.  Use \-S if you intend to publish an update at an unknown point in the future and if you want gnunet\-insert to pick a random  identifier for that future content.
 
 If you use \-s but not \-S, \-N or \-i, the content will not be updateable.
 
@@ -168,7 +168,7 @@ which may be a natural language keyword.
 \fB\-T \fITIME\fR, \fB\-\-time=\fITIME\fR
 Specifies the SBlock creation time.  The required format depends on your locale.
 
-for TIME. This option can be used to publish past and future periodical 
+for TIME. This option can be used to publish past and future periodical
 SBlocks. The option works best when used together with \-e. Default time is the current time.
 
 .TP
@@ -203,39 +203,39 @@ Index a file COPYING with description "GNU License", mime-type "text/plain" and 
 
 \fBUsing directories\fR
 
-Index the files COPYING and AUTHORS with keyword \fBtest\fR and 
-build a directory containing the two files.  
+Index the files COPYING and AUTHORS with keyword \fBtest\fR and
+build a directory containing the two files.
 Make the directory itself available under keyword \fBgnu\fR:
 
 # gnunet\-insert \-K test \-k gnu \-b COPYING AUTHORS
 
 Neatly publish an image gallery in \fBkittendir/\fR and its
-subdirs with keyword \fBkittens\fR for the directory but no 
-keywords for the individual files or subdirs (\-Rn). 
+subdirs with keyword \fBkittens\fR for the directory but no
+keywords for the individual files or subdirs (\-Rn).
 Force description for all files:
 
 # gnunet\-insert \-Rn \-m "description:Kitten collection" \-k kittens kittendir
 
 \fBSecure publishing with namespaces\fR
 
-Insert file COPYING with pseudonym RIAA (\-s) and password MPAA (\-P) 
+Insert file COPYING with pseudonym RIAA (\-s) and password MPAA (\-P)
 with identifier \fBgpl\fR (\-t) and no updates:
 
 # gnunet\-insert \-s RIAA \-P MPAA \-t gpl COPYING
 
 Recursively (\-R) index /home/ogg and build a matching directory structure.
-Insert the top\-level directory into the namespace under the pseudonym 
-RIAA (\-s) with password MPAA (\-P) under identifier MUSIC (\-t) and 
-promise to provide an update with identifier VIDEOS (\-N) at an 
-arbitrary point in the future (\-S is implied by lack of \-i 
+Insert the top\-level directory into the namespace under the pseudonym
+RIAA (\-s) with password MPAA (\-P) under identifier MUSIC (\-t) and
+promise to provide an update with identifier VIDEOS (\-N) at an
+arbitrary point in the future (\-S is implied by lack of \-i
 and presence of \-N):
 
 # gnunet\-insert \-R \-s RIAA \-P MPAA \-t MUSIC \-N VIDEOS /home/ogg
 
 Recursively (\-R) insert (\-n) /var/lib/mysql and build a matching directory
-structure, but disable the use of libextractor to extract keywords 
+structure, but disable the use of libextractor to extract keywords
 (\-n).  Print the file identifiers (\-V) that can be used to retrieve
-the files.  This will store a copy of the MySQL database in GNUnet but 
+the files.  This will store a copy of the MySQL database in GNUnet but
 without adding any keywords to search for it.  Thus only people that
 have been told the secret file identifiers printed with the \-V option
 can retrieve the (secret?) files:

@@ -2,15 +2,15 @@
 .SH NAME
 gnunet\-pseudonym \- create, delete or list pseudonyms
 .SH SYNOPSIS
-.B gnunet\-pseudonym 
+.B gnunet\-pseudonym
 [options]
 .SH DESCRIPTION
 .PP
-gnunet\-pseudonym is a tool for managing pseudonyms and namespaces.  A pseudonym is the persona that controls a namespace.  As such, it is identical to a public\-private RSA key pair.  A namespace is a collection of files that have been signed by the corresponding private RSA key.  A namespace is typically associated with a nickname and other metadata which is kept in a specially named file in the namespace.  
+gnunet\-pseudonym is a tool for managing pseudonyms and namespaces.  A pseudonym is the persona that controls a namespace.  As such, it is identical to a public\-private RSA key pair.  A namespace is a collection of files that have been signed by the corresponding private RSA key.  A namespace is typically associated with a nickname and other metadata which is kept in a specially named file in the namespace.
 
 Namespaces are an important tool for providing assurances about content integrity and authenticity in GNUnet.  Since all of the content in the namespace must have been provided by the same entity, users can form an opinion about that entity and learn to search (or avoid) certain namespaces.
 
-gnunet\-pseudonym can be used to list all of the pseudonyms that were created locally, to create new pseudonyms, to delete existing pseudonyms (the namespace will continue to exist, but it will be impossible to add additional data to it) and to list all of the namespaces (with their meta-data) known to the local user.  By default, gnunet\-pseudonym lists all pseudonyms created locally and all of the namespaces that were discovered so far.  
+gnunet\-pseudonym can be used to list all of the pseudonyms that were created locally, to create new pseudonyms, to delete existing pseudonyms (the namespace will continue to exist, but it will be impossible to add additional data to it) and to list all of the namespaces (with their meta-data) known to the local user.  By default, gnunet\-pseudonym lists all pseudonyms created locally and all of the namespaces that were discovered so far.
 
 Creating a new pseudonym requires using the \-C option together with a nickname that is to be used for the namespace.  Nicknames must be unique for each user, global uniqueness is desireable but not necessary.  If two namespaces in GNUnet use the same nickname all GNUnet tools will display the nickname together with the unique namespace identifier (which is derived from the public key and hence guaranteed to be unique) to avoid ambiguity.  Additional options can be passed together with the \-C option to provide additional meta-data that describes the namespace.  Possible meta-data includes the 'realname' of the person controlling the namespace, a description, the mime-type for content in the namespace (useful if the namespace is dedicated to some specific type of content) and contact information.  One important piece of meta-data that can be specified is the identifier of a document root, that is the name of a file in the namespace that is a portal to the rest of the content.  This is useful to help users find this root in the absence of conventions.  Note that all of this meta-data is optional and should never be trusted blindly.
 
@@ -22,7 +22,7 @@ For more details about GNUnet namespaces and content encoding please read the 'E
 \fB\-a\fR, \fB\-\-automate\fR
 Start a (new) collection.  Works only in conjunction with the \-C option.  A collection is an automatically managed directory in a namespace.  In essence, after starting the collection every file that you insert into GNUnet will automatically be placed into the collection.  Other users can browse your collection and be certain (thanks to cryptography) that all of these files were inserted into GNUnet by the same user (they do not necessarily know who it is, but if you specify your realname (\-r) they will be able to see that handle).  Collections are useful for establishing a reputation for your GNUnet content, such that readers can form an opinion about quality and availability.  Namespaces can be used to achieve the same thing, but collections are automatic and thus less work for you.
 
-Using collections has some security implications since it is possible for an adversary to see that all of these files originate from the same user.  This may help a correlation attack to break anonymity.  Nevertheless we encourage using collections, they are likely to be the right choice for most users. 
+Using collections has some security implications since it is possible for an adversary to see that all of these files originate from the same user.  This may help a correlation attack to break anonymity.  Nevertheless we encourage using collections, they are likely to be the right choice for most users.
 .TP
 \fB\-C NAME\fR, \fB\-\-create=NAME\fR
 Creates a new pseudonym with the given NAME.

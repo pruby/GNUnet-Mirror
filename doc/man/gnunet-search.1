@@ -1,17 +1,17 @@
 .TH GNUNET-SEARCH "1" "15 Dec 2004" "GNUnet"
 .SH NAME
-gnunet-search \- a command line interface to search for content on GNUnet 
+gnunet-search \- a command line interface to search for content on GNUnet
 .SH SYNOPSIS
 .B gnunet\-search
 [\fIOPTIONS\fR] KEYWORD [AND KEYWORD]*
 .SH DESCRIPTION
 .PP
-Search for content on GNUnet. The keywords are case-sensitive.  gnunet\-search can be used both for a search in the global namespace as well as for searching a private subspace.  
+Search for content on GNUnet. The keywords are case-sensitive.  gnunet\-search can be used both for a search in the global namespace as well as for searching a private subspace.
 .TP
 \fB\-a \fILEVEL\fR, \fB\-\-anonymity=LEVEL\fR
 The \fB-a\fR option can be used to specify additional anonymity constraints.  If set to 0, GNUnet will try to download the file as fast as possible without any additional slowdown for anonymous routing.  Note that you may still have some amount of anonymity depending on the current network load and the power of the adversary.  Use at least 1 to force GNUnet to use anonymous routing.
 
-This option can be used to limit requests further than that. In particular, you can require GNUnet to have a certain amount of cover traffic from other peers before sending your queries. This way, you can gain very high levels of anonymity \- at the expense of much more traffic and much higher latency. So set this option to values beyond 1 only if you really believe you need it. 
+This option can be used to limit requests further than that. In particular, you can require GNUnet to have a certain amount of cover traffic from other peers before sending your queries. This way, you can gain very high levels of anonymity \- at the expense of much more traffic and much higher latency. So set this option to values beyond 1 only if you really believe you need it.
 
 The definition of ANONYMITY-RECEIVE is the following: If the value v is 0, anonymous routing is not required.  For 1, anonymous routing is required, but there is no lower bound on how much cover traffic must be present.  For values > 1 and < 1000, it means that if GNUnet routes n bytes of messages from foreign peers, it may originate n/v bytes of queries in the same time-period. The time\-period is twice the average delay that GNUnet deferrs forwarded queries. If the value v is >= 1000, it means that if GNUnet routes n bytes of QUERIES from at least (v % 1000) peers, it may originate n/v/1000 bytes of queries in the same time\-period.
 
@@ -34,7 +34,7 @@ exit after finding MAXRESULTS results.
 Writes the encountered (unencrypted) RBlocks or SBlocks to files with name PREFIX.XXX, where XXX is a number. This is useful to keep search results around.
 .TP
 \fB\-t\fR \fITIMEOUT\fR
-The \-t option specifies that the query should timeout after approximately TIMEOUT seconds.  A value of zero is interpreted as never.  The default value can be changed via the SEARCHTIMEOUT variable in the GNUnet configuration file.  
+The \-t option specifies that the query should timeout after approximately TIMEOUT seconds.  A value of zero is interpreted as never.  The default value can be changed via the SEARCHTIMEOUT variable in the GNUnet configuration file.
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 print the version number
