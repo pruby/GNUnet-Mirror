@@ -19,13 +19,14 @@
 */
 
 /**
- * @file applications/session/sessiontest.c
- * @brief Session establishment testcase
+ * @file applications/gap/gaptest.c
+ * @brief GAP routing testcase
  * @author Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_protocols.h"
+#include "gnunet_ecrs_lib.h"
 #include "gnunet_stats_lib.h"
 #include <sys/wait.h>
 
@@ -52,6 +53,197 @@ static int waitForConnect(const char * name,
   return OK;
 }
 
+
+static int testTerminate(void * unused) {
+  return OK;
+}
+
+static char * makeName(unsigned int i) {
+  char * name;
+  char * fn;
+
+  fn = STRDUP("/tmp/gnunet-ecrstest");
+  name = expandFileName(fn);
+  mkdirp(name);
+  FREE(fn);
+  fn = MALLOC(strlen(name) + 40);
+  SNPRINTF(fn,
+	   strlen(name) + 40,
+	   "%s%sECRSTEST%u",
+	   DIR_SEPARATOR_STR,
+	   name,
+	   i);
+  FREE(name);
+  return fn;
+}
+
+static struct ECRS_URI * uploadFile(unsigned int size) {
+  int ret;
+  char * name;
+  int fd;
+  char * buf;
+  struct ECRS_URI * uri;
+  int i;
+
+  name = makeName(size);
+  fd = OPEN(name, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
+  buf = MALLOC(size);
+  memset(buf, size + size / 253, size);
+  for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
+    hash(&buf[i+sizeof(HashCode512)],
+	 42,
+	 (HashCode512*) &buf[i]);
+  write(fd, buf, size);
+  FREE(buf);
+  CLOSE(fd);
+  ret = ECRS_uploadFile(name,
+			YES, /* index */
+			0, /* anon */
+			0, /* prio */
+			cronTime(NULL) + 10 * cronMINUTES, /* expire */
+			NULL, /* progress */
+			NULL,
+			&testTerminate,
+			NULL,
+			&uri);
+  if (ret != SYSERR) {
+    struct ECRS_MetaData * meta;
+    struct ECRS_URI * key;
+    const char * keywords[2];
+
+    keywords[0] = name;
+    keywords[1] = NULL;
+
+    meta = ECRS_createMetaData();
+    key = ECRS_keywordsToUri(keywords);
+    ret = ECRS_addToKeyspace(key,
+			     0,
+			     0,
+			     cronTime(NULL) + 10 * cronMINUTES, /* expire */
+			     uri,
+			     meta);
+    ECRS_freeMetaData(meta);
+    ECRS_freeUri(uri);
+    FREE(name);
+    if (ret == OK) {
+      return key;
+    } else {
+      ECRS_freeUri(key);
+      return NULL;
+    }
+  } else {
+    FREE(name);
+    return NULL;
+  }
+}
+
+static int searchCB(const ECRS_FileInfo * fi,
+		    const HashCode512 * key,
+		    void * closure) {
+  struct ECRS_URI ** my = closure;
+  char * tmp;
+
+  tmp = ECRS_uriToString(fi->uri);
+  LOG(LOG_DEBUG,
+      "Search found URI '%s'\n",
+      tmp);
+  FREE(tmp);
+  GNUNET_ASSERT(NULL == *my);
+  *my = ECRS_dupUri(fi->uri);
+  return SYSERR; /* abort search */
+}
+
+/**
+ * @param *uri In: keyword URI, out: file URI
+ * @return OK on success
+ */
+static int searchFile(struct ECRS_URI ** uri) {
+  int ret;
+  struct ECRS_URI * myURI;
+
+  myURI = NULL;
+  ret = ECRS_search(*uri,
+		    0,
+		    15 * cronSECONDS,
+		    &searchCB,
+		    &myURI,
+		    &testTerminate,
+		    NULL);
+  ECRS_freeUri(*uri);
+  *uri = myURI;
+  if ( (ret != SYSERR) &&
+       (myURI != NULL) )
+    return OK;
+  else
+    return SYSERR;
+}
+
+static int downloadFile(unsigned int size,
+			const struct ECRS_URI * uri) {
+  int ret;
+  char * tmpName;
+  int fd;
+  char * buf;
+  char * in;
+  int i;
+  char * tmp;
+
+  tmp = ECRS_uriToString(uri);
+  LOG(LOG_DEBUG,
+      "Starting download of '%s'\n",
+      tmp);
+  FREE(tmp);
+  tmpName = makeName(0);
+  ret = SYSERR;
+  if (OK == ECRS_downloadFile(uri,
+			      tmpName,
+			      0,
+			      NULL,
+			      NULL,
+			      &testTerminate,
+			      NULL)) {
+
+    fd = OPEN(tmpName, O_RDONLY);
+    buf = MALLOC(size);
+    in = MALLOC(size);
+    memset(buf, size + size / 253, size);
+    for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
+      hash(&buf[i+sizeof(HashCode512)],
+	   42,
+	   (HashCode512*) &buf[i]);
+    if (size != read(fd, in, size))
+      ret = SYSERR;
+    else if (0 == memcmp(buf,
+			 in,
+			 size))
+      ret = OK;
+    FREE(buf);
+    FREE(in);
+    CLOSE(fd);
+  }
+  UNLINK(tmpName);
+  FREE(tmpName);
+  return ret;
+}
+
+static int unindexFile(unsigned int size) {
+  int ret;
+  char * name;
+
+  name = makeName(size);
+  ret = ECRS_unindexFile(name,
+			 NULL,
+			 NULL,
+			 &testTerminate,
+			 NULL);
+  if (0 != UNLINK(name))
+    ret = SYSERR;
+  FREE(name);
+  return ret;
+}
+
+#define CHECK(a) if (!(a)) { ret = 1; BREAK(); goto FAILURE; }
+
 /**
  * Testcase to test p2p session key exchange.
  *
@@ -66,6 +258,7 @@ int main(int argc, char ** argv) {
   int status;
   GNUNET_TCP_SOCKET * sock;
   int left;
+  struct ECRS_URI * uri;
 
   GNUNET_ASSERT(OK ==
 		enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
@@ -164,10 +357,7 @@ int main(int argc, char ** argv) {
 	     left);
       sleep(1);
       left--;
-      if (left == 0) {
-	ret = 1;
-	break;
-      }
+      CHECK(left > 0);
     }
   } while (sock == NULL);
 
@@ -179,12 +369,25 @@ int main(int argc, char ** argv) {
 	   left);
     sleep(5);
     left--;
-    if (left == 0) {
-      ret = 1;
-      break;
-    }
+    CHECK(left > 0);
   }
   releaseClientSocket(sock);
+
+  
+  uri = uploadFile(12345);
+  CHECK(NULL != uri);
+  CHECK(OK == searchFile(&uri));
+  setConfigurationInt("NETWORK",
+					  "PORT",
+					  12087);
+  CHECK(OK == downloadFile(12345, uri));
+  ECRS_freeUri(uri);
+  setConfigurationInt("NETWORK",
+					  "PORT",
+					  2087);
+  CHECK(OK == unindexFile(12345));
+
+ FAILURE:
   doneUtil();
 
   /* also shutdown daemons again */

@@ -25,7 +25,8 @@ TESTS = $(check_PROGRAMS)
 gaptest_SOURCES = \
   gaptest.c 
 gaptest_LDADD = \
-  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
