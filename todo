@@ -18,7 +18,6 @@
   * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
-- Resolve "@todo [WIN]" (Nils)
 - FSUI:
   * API changes (Krista discussion, anonymity level)
 - UTIL:
