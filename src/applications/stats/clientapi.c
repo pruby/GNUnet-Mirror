@@ -189,12 +189,7 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 	break; /* out of bounds! */      
       }
       if (ret != SYSERR) {
-	char desc[61];
-	SNPRINTF(desc, 
-		 61, 
-		 "%60s", 
-		 &((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos]);
-	ret = processor(desc,
+	ret = processor(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos],
 			ntohll(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values[i]),
 			cls);
       }

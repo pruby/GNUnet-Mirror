@@ -22,6 +22,8 @@
  * TBench CORE. This is the code that is plugged
  * into the GNUnet core to enable transport profiling.
  *
+ * FIXME: this code needs some serious workover (leaks!)
+ *
  * @author Paul Ruth
  * @file applications/tbench/tbench.c
  */
@@ -54,7 +56,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
   TBENCH_p2p_MESSAGE *pmsg = (TBENCH_p2p_MESSAGE*)message;
   
   LOG(LOG_DEBUG, 
-      "%s received iteration %d, message %d",
+      "%s received iteration %d, message %d\n",
       __FUNCTION__,
       htons(pmsg->iterationNum), 
       htons(pmsg->packetNum));
@@ -69,20 +71,21 @@ static int handleTBenchReply(const PeerIdentity * sender,
   TBENCH_p2p_MESSAGE *pmsg = (TBENCH_p2p_MESSAGE*)message;
   
   LOG(LOG_DEBUG, 
-      "%s",
+      "Entering %s.\n",
       __FUNCTION__);
   MUTEX_LOCK(&lockCnt); 
   if(htons(pmsg->iterationNum) == currIteration) {
     cronTime(&endTime);
     receiveCnt++;
     LOG(LOG_DEBUG,
-	"iteration %d, received reply, %d",
-	currIteration, receiveCnt);
+	"iteration %d, received reply, %d\n",
+	currIteration, 
+	receiveCnt);
     if(receiveCnt >= msgCnt)
       SEMAPHORE_UP(sem);
   } else {
     LOG(LOG_DEBUG,
-	"Old Reply: iteration %d, received reply, %d",
+	"Old Reply: iteration %d, received reply, %d\n",
 	currIteration, receiveCnt);
   }
   MUTEX_UNLOCK(&lockCnt);
@@ -94,8 +97,8 @@ static void semaUp(Semaphore * sem) {
 }
 
 /* */
-static void csHandleTBenchRequest(ClientHandle client,
- 				  const CS_HEADER * message) {
+static int csHandleTBenchRequest(ClientHandle client,
+				 const CS_HEADER * message) {
   int i,j;
   int sum_loss,sum_time;
   double sum_variance_time, sum_variance_loss;
@@ -105,7 +108,7 @@ static void csHandleTBenchRequest(ClientHandle client,
   struct Result *results;
 
   LOG(LOG_DEBUG, 
-      "%s",
+      "Entering %s.\n",
       __FUNCTION__);
   icmsg   = (TBENCH_CS_MESSAGE*)message;
  
@@ -119,8 +122,9 @@ static void csHandleTBenchRequest(ClientHandle client,
   results = MALLOC(msgIter * sizeof(struct Result));
 
   LOG(LOG_DEBUG,
-      "TBENCH: msgCnt %d msgIter %d",
-      msgCnt, msgIter);
+      "TBENCH: msgCnt %d msgIter %d\n",
+      msgCnt, 
+      msgIter);
   sem = SEMAPHORE_NEW(0);
 
   receiveCnt = 0;
@@ -139,7 +143,7 @@ static void csHandleTBenchRequest(ClientHandle client,
     opmsg->iterationNum = htons(currIteration);
     receiveCnt = 0;
     LOG(LOG_DEBUG,
-	"Timeout after %u ms",
+	"Timeout after %ums\n",
 	ntohl(icmsg->timeOut));
     addCronJob((CronJob)&semaUp,
 	       ntohl(icmsg->timeOut) * cronMILLIS,
@@ -179,7 +183,7 @@ static void csHandleTBenchRequest(ClientHandle client,
   /* Lets see what the raw results are */
   for(i = 0; i <  msgIter; i++){
     LOG(LOG_EVERYTHING, 
-	"iter[%d], packets %d/%d, time %d ms",
+	"iter[%d], packets %d/%d, time %dms\n",
 	i,
 	results[i].packets,
 	msgCnt,
@@ -194,7 +198,7 @@ static void csHandleTBenchRequest(ClientHandle client,
   ocmsg->min_time = htons(results[0].time);
   for(i = 1; i < msgIter; i++) {
     LOG(LOG_EVERYTHING, 
-	" iteration=%d", 
+	"iteration=%d\n", 
 	i);
     sum_loss += msgCnt - results[i].packets;
     if(msgCnt-results[i].packets > htons(ocmsg->max_loss))
@@ -217,7 +221,7 @@ static void csHandleTBenchRequest(ClientHandle client,
   sum_variance_loss = 0.0;
   for(i = 0; i < msgIter; i++){
     LOG(LOG_DEBUG,
-	"TBENCH: iteration=%d msgIter=%d", 
+	"TBENCH: iteration=%d msgIter=%d\n", 
 	i,
 	msgIter);
     sum_variance_time += (results[i].time - ocmsg->mean_time)*
@@ -233,15 +237,16 @@ static void csHandleTBenchRequest(ClientHandle client,
   ocmsg->header.type = htons(TBENCH_CS_PROTO_REPLY);
 
   LOG(LOG_DEBUG, 
-      "calling writeToSocket");
+      "calling writeToSocket\n");
   if (SYSERR == coreAPI->sendToClient(client,
 				      &ocmsg->header))
-    return;
+    return SYSERR;
   FREE(opmsg);
   FREE(ocmsg);
   FREE(results);
   LOG(LOG_DEBUG,
-      "finishing benchmark");
+      "finishing benchmark\n");
+  return OK;
 }
 
 /**
@@ -269,9 +274,9 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
 
 void done_module_tbench() {
   coreAPI->unregisterHandler(TBENCH_p2p_PROTO_REQUEST,
-			   &handleTBenchReq);
+			     &handleTBenchReq);
   coreAPI->unregisterHandler(TBENCH_p2p_PROTO_REPLY,
-			   &handleTBenchReply);
+			     &handleTBenchReply);
   coreAPI->unregisterClientHandler(TBENCH_CS_PROTO_REQUEST,
 				   (CSHandler)&csHandleTBenchRequest);
   MUTEX_DESTROY(&lock);

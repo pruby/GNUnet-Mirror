@@ -891,7 +891,7 @@ static void sendBuffer(BufferEntry * be) {
     SendEntry ** entries;
 
     entries = be->sendBuffer;
-    totalMessageSize = 0;
+    totalMessageSize = sizeof(P2P_Message);
     knapsackSolution = MALLOC(sizeof(int) * be->sendBufferSize);
     priority = 0;
     i = 0;
@@ -1046,7 +1046,7 @@ static void sendBuffer(BufferEntry * be) {
   }
   
   /* build message (start with sequence number) */
-  GNUNET_ASSERT(totalMessageSize > sizeof(P2P_Message));
+  GNUNET_ASSERT(totalMessageSize >= sizeof(P2P_Message));
   plaintextMsg = MALLOC(totalMessageSize);
   p2pHdr = (P2P_Message*) plaintextMsg;
   p2pHdr->timeStamp 
@@ -1723,7 +1723,10 @@ static void scheduleInboundTraffic() {
      potentially under-allocated.  Since there's always some
      (unencrypted) traffic that we're not quite accounting for anyway,
      that's probably not so bad. */
-  while (schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) {
+  didAssign = YES;
+  while ( (schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
+	  (activePeerCount > 0) &&
+	  (didAssign == YES) ) {
     didAssign = NO;
     decrementSB = 0;
     for (u=0;u<activePeerCount;u++) {
@@ -1742,7 +1745,8 @@ static void scheduleInboundTraffic() {
       }
     }
     schedulableBandwidth -= decrementSB;
-    if ( (activePeerCount > 0) && (didAssign == NO) ) {
+    if ( (activePeerCount > 0) && 
+	 (didAssign == NO) ) {
       int * perm = permute(activePeerCount);
       /* assign also to random "worthless" (zero-share) peers */
       for (u=0;u<activePeerCount;u++) {
@@ -1776,8 +1780,9 @@ static void scheduleInboundTraffic() {
   /* randomly add the MIN_BPM_PER_PEER to minCon peers; yes, this will
      yield some fluctuation, but some amount of fluctuation should be
      good since it creates opportunities. */
-  for (u=0;u<minCon;u++) 
-    entries[randomi(activePeerCount)]->idealized_limit += MIN_BPM_PER_PEER;  
+  if (activePeerCount > 0)
+    for (u=0;u<minCon;u++) 
+      entries[randomi(activePeerCount)]->idealized_limit += MIN_BPM_PER_PEER;  
 
   /* prepare for next round */
   lastRoundStart = now;
@@ -2136,7 +2141,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	      transport->connect(helo,
 				 &be->session.tsession)) {
 	    be->session.mtu
-	      = transport->getMTU(be->session.tsession->ttype);
+	      = transport->getMTU(be->session.tsession->ttype);	    
 	  } else {
 	    LOG(LOG_WARNING,
 		_("Session confirmed, but cannot connect! (bug?)"));

@@ -31,13 +31,18 @@
 #include <openssl/evp.h>
 #include <openssl/bn.h>
 #include <openssl/err.h>
+#include <openssl/rand.h>
+
 /**
  * Create a new SessionKey (for Blowfish)
  */
 void makeSessionkey(SESSIONKEY * key) {
   int i;
-  for (i=0;i<SESSIONKEY_LEN;i++)
-    key->key[i] = rand();
+  if (1 != RAND_bytes(&key->key[0],
+		      SESSIONKEY_LEN)) {
+    for (i=0;i<SESSIONKEY_LEN;i++)
+      key->key[i] = rand();
+  }
   key->crc32 = htonl(crc32N(key, SESSIONKEY_LEN));
 }
 

@@ -76,6 +76,27 @@ typedef struct {
 
 } SKEY_Message;
 
+#if 0
+/**
+ * Not thread-safe, only use for debugging!
+ */
+static const char * printSKEY(const SESSIONKEY * sk) {
+  static char r[512];
+  static char t[12];
+  int i;
+
+  strcpy(r, "");
+  for (i=0;i<SESSIONKEY_LEN;i++) {
+    SNPRINTF(t,
+	     12,
+	     "%02x",
+	     sk->key[i]);
+    strcat(r,t);
+  }
+  return r;
+}
+#endif
+
 /**
  * We received a sign of life from this host. 
  * 
@@ -117,6 +138,7 @@ static SKEY_Message * makeSessionKeySigned(const PeerIdentity * hostId,
   int size;
   SKEY_Message * msg;
   char * pt;
+  EncName enc;
 
   GNUNET_ASSERT(sk != NULL);
   foreignHelo = NULL;
@@ -478,8 +500,10 @@ static int acceptSessionKey(const PeerIdentity * sender,
   if (key.crc32 !=
       htonl(crc32N(&key, SESSIONKEY_LEN))) {
     LOG(LOG_WARNING, 
-	_("SKEY from '%s' fails CRC check.\n"),
-	&enc);
+	_("SKEY from '%s' fails CRC check (have: %u, want %u).\n"),
+	&enc,
+	ntohl(key.crc32),
+	crc32N(&key, SESSIONKEY_LEN));
     return SYSERR;
   }
 

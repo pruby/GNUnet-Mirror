@@ -264,9 +264,6 @@ int main(int argc, char * argv[]){
 
   daemon = fork();
   if (daemon == 0) {
-    /* FIXME: would be nice to be able to tell
-       gnunetd to use the check/debug DB and not
-       any real DB! */
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
 		    "-d",  /* do not daemonize so we can easily kill you */

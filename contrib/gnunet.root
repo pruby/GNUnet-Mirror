@@ -383,10 +383,6 @@ PORT = 2086
 # BLACKLIST = 127.0.0.1/8;192.168.0.0/16;10.0.0.0/255.0.0.0; 
 BLACKLIST = 127.0.0.1/8;192.168.0.0/16;10.0.0.0/255.0.0.0;
 
-# The MTU to use (TCP is stream oriented, so we are pretty free to
-# choose what we want, but note that larger MTUs mean more noise if
-# traffic is low). Do not use less than 1200.  Default is 1460.
-MTU = 1460
 
 ###############################################
 # Options for NAT transport
@@ -424,7 +420,6 @@ MTU = 1452
 # Default port is 2088 and MTU is 1440.
 PORT = 2088
 # BLACKLIST = 
-MTU = 1440
 
 [HTTP]
 

@@ -55,12 +55,15 @@
 
 
 /**
- * Create a new SessionKey (for Blowfish)
+ * Create a new SessionKey (for AES-256).
  */
 void makeSessionkey(SESSIONKEY * key) {
   int i;
-  for (i=0;i<SESSIONKEY_LEN;i++)
-    key->key[i] = rand();
+  lockGcrypt();
+  gcry_randomize(&key->key[0],
+		 SESSIONKEY_LEN,
+		 GCRY_STRONG_RANDOM);
+  unlockGcrypt();
   key->crc32 = htonl(crc32N(key, SESSIONKEY_LEN));
 }
 

@@ -161,11 +161,12 @@ static UpdateAPI uapi;
  * Allow the module named "pos" to update.
  * @return OK on success, SYSERR on error
  */ 
-static int updateModule(const char * pos) {
+static int updateModule(const char * rpos) {
   UpdateMethod mptr;
   void * library;
   char * name;
   int i;
+  char * pos;
 
   for (i=0;i<processedCount;i++)
     if (0 == strcmp(pos, processed[i]))
@@ -173,13 +174,19 @@ static int updateModule(const char * pos) {
   GROW(processed, processedCount, processedCount+1);
   processed[processedCount-1] = STRDUP(pos);
 
+  pos = getConfigurationString("MODULES",
+			       rpos);
+  if (pos == NULL)
+    pos = STRDUP(rpos);
+
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);
+  FREE(pos);
   library = loadDynamicLibrary(DSO_PREFIX,
 			       name);
   if (library == NULL) {
-    FREE(name);
+    FREE(name);    
     return SYSERR;
   }
   mptr = trybindDynamicMethod(library,
