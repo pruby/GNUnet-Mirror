@@ -24,8 +24,6 @@
  * @author Nils Durner
  * @todo Estimation of DB size
  * @todo Apply fixes from MySQL module
- * @todo can't we avoid the escaping/unescaping of the data/hash? (MySQL prepared
- *       statements certainly don't need it)
  * @todo testcase currently fails 
  *        ("ERROR: 'precompiling' failed at sqlite.c:379 
  *         with error: near "from": syntax error")
@@ -368,7 +366,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   if (sqlite3_prepare(dbh->dbf, "SELECT count(*) FROM gn070 where hash=?", 39,
          &dbh->countContent, (const char **) &dummy) != SQLITE_OK ||
      
-      sqlite3_prepare(dbh->dbf, "SELECT length(hash), length(value), "
+      sqlite3_prepare(dbh->dbf, "SELECT length(hash), length(value) "
          "from gn070 WHERE hash=?", 59,
          &dbh->exists, (const char **) &dummy) != SQLITE_OK ||
 
@@ -382,6 +380,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
               (const char **) &dummy) != SQLITE_OK) {
         
       LOG_SQLITE(LOG_ERROR, "precompiling");
+      
       FREE(dbh->fn);
       FREE(dbh);
       return NULL;
@@ -651,13 +650,15 @@ static int get(const HashCode160 * key,
     }
 
     FREENONNULL(escapedHash);
-    sqlite3_finalize(stmt);
 
 	  if (ret != SQLITE_OK) {
 	    LOG_SQLITE(LOG_ERROR, "sqlite_query");
+      sqlite3_finalize(stmt);
 	    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 	    return SYSERR;
 	  }
+
+    sqlite3_finalize(stmt);
   }
   else
   	LOG_SQLITE(LOG_ERROR, "sqlite_query");
