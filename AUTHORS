@@ -27,7 +27,7 @@ Kevin Vandersloot <kfv101@psu.edu> [original code of gnome-system-monitor]
 Jean-Luc Cooke <jlcooke@certainkey.com> [ SHA-512]
 Andrew McDonald <andrew@mcdonald.org.uk> [ SHA-512]
 Kyle McMartin <kyle@debian.org> [ SHA-512]
-
+Felix von Leitner [ diet libc snprintf for win32 ]
 
 Original RPC and DHT-module were contributed by:
 Marko Räihä
