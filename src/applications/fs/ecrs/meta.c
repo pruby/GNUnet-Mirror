@@ -487,4 +487,156 @@ int ECRS_isDirectory(MetaData * md) {
   return SYSERR;
 }
 
+static char * mimeMap[][2] = {
+  { "application/bz2", ".bz2" },
+  { "application/gnunet-directory", ".gnd" },
+  { "application/java", ".class" },
+  { "application/msword", ".doc" },
+  { "application/ogg", ".ogg" },
+  { "application/pdf", ".pdf" },
+  { "application/pgp-keys", ".key" }, 
+  { "application/pgp-signature", ".pgp" },
+  { "application/postscript", ".ps" },
+  { "application/rar", ".rar" },
+  { "application/rtf", ".rtf" },
+  { "application/xml", ".xml" },
+  { "application/x-debian-package", ".deb" },
+  { "application/x-dvi", ".dvi" },
+  { "applixation/x-flac", ".flac" },
+  { "applixation/x-gzip", ".gz" },
+  { "application/x-java-archive", ".jar" },
+  { "application/x-java-vm", ".class" },
+  { "application/x-python-code", ".pyc" },
+  { "application/x-redhat-package-manager", ".rpm" },
+  { "application/x-rpm", ".rpm" },
+  { "application/x-tar", ".tar" },
+  { "application/x-tex-pk", ".pk" },
+  { "application/x-texinfo", ".texinfo" },
+  { "application/x-xcf", ".xcf" },
+  { "application/x-xfig", ".xfig" },
+  { "application/zip", ".zip" },
+
+  { "audio/midi", ".midi" },
+  { "audio/mpeg", ".mpg" },
+  { "audio/real", ".rm"},
+  { "audio/x-wav", ".wav" },
+
+  { "image/gif", ".gif"},
+  { "image/jpeg", ".jpg"},
+  { "image/pcx", ".pcx"},
+  { "image/png", ".png"}, 
+  { "image/tiff", ".tiff" },
+  { "image/x-ms-bmp", ".bmp"},
+  { "image/x-xpixmap", ".xpm"},
+
+  { "text/css", ".css" },
+  { "text/html", ".html" },
+  { "text/plain", ".txt" },
+  { "text/rtf", ".rtf" },
+  { "text/x-c++hdr", ".h++" },
+  { "text/x-c++src", ".c++" },
+  { "text/x-chdr", ".h" },
+  { "text/x-csrc", ".c" },
+  { "text/x-java", ".java" },
+  { "text/x-moc", ".moc" },
+  { "text/x-pascal", ".pas" },
+  { "text/x-perl", ".pl" },
+  { "text/x-python", ".py" },
+  { "text/x-tex", ".tex" },
+
+  { "video/avi", ".avi" },
+  { "video/mpeg", ".mpeg" },
+  { "video/quicktime", ".qt" },
+  { "video/real", ".rm"},
+  { "video/x-msvideo", ".avi"},
+  { NULL, NULL },
+};
+
+
+/**
+ * Suggest a better filename for a file (and do the
+ * renaming).
+ */
+char * ECRS_suggestFilename(const char * filename) {
+  EXTRACTOR_ExtractorList * l;
+  EXTRACTOR_KeywordList * list;
+  const char * key;
+  const char * mime;
+  int i;
+  char * renameTo;
+  char * ret;
+  
+  ret = NULL;
+  l = EXTRACTOR_loadDefaultLibraries();
+  list = EXTRACTOR_getKeywords(l, filename);
+  key = EXTRACTOR_extractLast(EXTRACTOR_TITLE,
+			      list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast(EXTRACTOR_DESCRIPTION,
+				list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast(EXTRACTOR_COMMENT,
+				list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast(EXTRACTOR_SUBJECT,
+				list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast(EXTRACTOR_ALBUM,
+				list);
+  if (key == NULL)
+    key = EXTRACTOR_extractLast(EXTRACTOR_UNKNOWN,
+				list);
+  mime = EXTRACTOR_extractLast(EXTRACTOR_MIMETYPE,
+			       list);
+  if (mime != NULL) {
+    i = 0;
+    while ( (mimeMap[i][0] != NULL) &&
+	    (0 != strcmp(mime, mimeMap[i][0])) )
+      i++;
+    if (mimeMap[i][1] == NULL)
+      LOG(LOG_DEBUG,
+	  "Did not find mime type '%s' in extension list.\n",
+	  mime);
+    mime = mimeMap[i][1];
+  }
+  if (mime != NULL) {
+    if (0 == strcmp(&key[strlen(key)-strlen(mime)],
+		    mime))
+      mime = NULL;
+  }
+  if (key == NULL)
+    key = filename;
+  if (mime == NULL) {
+    renameTo = STRDUP(key);
+  } else {
+    renameTo = MALLOC(strlen(key) + strlen(mime) + 1);
+    strcpy(renameTo, key);
+    strcat(renameTo, mime);
+  }   
+  for (i=strlen(renameTo)-1;i>=0;i--)
+    if (! isprint(renameTo[i]))
+      renameTo[i] = '_';    
+  if (0 != strcmp(renameTo, filename)) {
+    struct stat filestat;
+    if (0 != STAT(renameTo,
+		  &filestat)) {
+      if (0 != RENAME(filename, renameTo)) 	  
+	LOG(LOG_ERROR,
+	    _("Renaming of file '%s' to '%s' failed: %s\n"),
+	    filename, renameTo, strerror(errno));
+      else
+	ret = STRDUP(renameTo);
+    } else {
+      LOG(LOG_ERROR,
+	  _("Could not rename file '%s' to '%s': file exists\n"),
+	  filename, renameTo);
+    }	
+  }
+  FREE(renameTo);  				  
+  EXTRACTOR_freeKeywords(list);
+  EXTRACTOR_removeAll(l);    
+  return ret;
+}
+
+
 /* end of meta.c */

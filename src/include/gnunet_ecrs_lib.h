@@ -169,6 +169,12 @@ int ECRS_deserializeMetaData(struct ECRS_MetaData ** md,
  */ 
 int ECRS_isDirectory(struct ECRS_MetaData * md);
 
+/**
+ * Suggest a better filename for a file (and do the
+ * renaming).
+ */
+char * ECRS_suggestFilename(const char * filename);
+
 /* ******************** URI (uri.c) ************************ */
 
 /**

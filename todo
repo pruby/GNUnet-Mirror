@@ -7,8 +7,6 @@
 - 593???
 
 0.7.0pre0 [4'05] (aka "preview"):
-- complete gnunet-afs-tools:
-  * download - COMPILES
 - Missing Features:
   * fs/module/fs+migration: anonymity level and expiration time considerations (Christian)
   * gap: economy for local queries, forwardQuery dead?, anonymityLevel
