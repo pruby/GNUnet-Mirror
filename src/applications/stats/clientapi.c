@@ -197,7 +197,6 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 	ret = processor(desc,
 			ntohll(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values[i]),
 			cls);
-	FREE(desc);
       }
       mpos += strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1;
     }    

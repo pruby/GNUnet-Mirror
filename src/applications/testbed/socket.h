@@ -51,7 +51,7 @@ void socketSend(unsigned int len,
 unsigned int readSocket(char ** rbuf,
 			unsigned int * len);
  
-void PRINTF(char * fmt,
+void XPRINTF(char * fmt,
 	    ...);
 
 #endif

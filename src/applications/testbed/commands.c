@@ -83,7 +83,7 @@ int do_quit = NO;
   s = atoi(ss);			\
   d = atoi(ds);				    \
   if (s < 0 || s >= nnodes || d < 0 || d >= nnodes) {  \
-    PRINTF("Invalid src (%s) or dst (%s)\n", ss, ds);  \
+    XPRINTF("Invalid src (%s) or dst (%s)\n", ss, ds);  \
     return -1;					       \
   }
 
@@ -94,7 +94,7 @@ int do_quit = NO;
 #define CHECK_PEER(p, ps)	\
   p = atoi(ps);				\
   if (p < 0 || p >= nnodes) {			\
-    PRINTF("Invalid peer value %s\n", ps);	\
+    XPRINTF("Invalid peer value %s\n", ps);	\
     return -1;					\
   }
 
@@ -129,7 +129,7 @@ static int sendMessage(unsigned msgType,
 			&msg->header);
   FREE(msg);
   if (msgsz == SYSERR) {
-    PRINTF(" Could not send message to peer %s.\n", 
+    XPRINTF(" Could not send message to peer %s.\n", 
 	   nodes[peer].ips);
     return SYSERR;
   }
@@ -146,7 +146,7 @@ static int readResult(int peer,
 		      int * result) {
   if (OK != readTCPResult(&nodes[peer].sock,
 			  result)) {
-    PRINTF(" peer %s is not responding.\n",
+    XPRINTF(" peer %s is not responding.\n",
 	   nodes[peer].ips);
     return SYSERR;
   }
@@ -168,7 +168,7 @@ static int addNode(int argc, char * argv[]) {
   int i;
 
   if (argc != 2) {
-    PRINTF("Syntax: add-node IP PORT.\n");
+    XPRINTF("Syntax: add-node IP PORT.\n");
     return -1;
   }
   port = atoi(argv[1]);
@@ -176,7 +176,7 @@ static int addNode(int argc, char * argv[]) {
     if ( (0 == strcmp(argv[0],
 		      nodes[i].ips)) &&
 	 (port == nodes[i].port) ) {
-      PRINTF("Node already in use!\n");
+      XPRINTF("Node already in use!\n");
       return -1;
     }
   }
@@ -199,7 +199,7 @@ static int addNode(int argc, char * argv[]) {
   if (SYSERR == initGNUnetClientSocket(nodes[currindex].port,
 				       nodes[currindex].ips,
 				       &nodes[currindex].sock)) {
-    PRINTF(" could not connect to %s:%d.\n",
+    XPRINTF(" could not connect to %s:%d.\n",
 	   nodes[currindex].ips,
 	   nodes[currindex].port);
     return -1;
@@ -222,7 +222,7 @@ static int addNode(int argc, char * argv[]) {
   hdr = NULL;
   if (SYSERR == readFromSocket(&nodes[currindex].sock, 
 			       (CS_HEADER**)&hdr)) {
-    PRINTF(" peer %s is not responding.\n",
+    XPRINTF(" peer %s is not responding.\n",
 	   nodes[currindex].ips);
     destroySocket(&nodes[currindex].sock);
     FREE(nodes[currindex].ips);
@@ -242,14 +242,14 @@ static int addNode(int argc, char * argv[]) {
   } else {
     FREE(hdr);
     destroySocket(&nodes[currindex].sock);
-    PRINTF(" peer %s did not respond with proper HELO.\n",
+    XPRINTF(" peer %s did not respond with proper HELO.\n",
 	   nodes[currindex].ips);
     FREE(nodes[currindex].ips);
     GROW(nodes, nnodes, nnodes-1);    
     return -1;
   }
   FREE(hdr);
-  PRINTF("%d\n",
+  XPRINTF("%d\n",
 	 currindex);
   return 0;
 }
@@ -274,7 +274,7 @@ static int addSshNode(int argc, char * argv[]) {
   int status;
     
   if (argc != 3) {
-    PRINTF("Syntax: add-ssh-node LOGIN IP PORT.\n");
+    XPRINTF("Syntax: add-ssh-node LOGIN IP PORT.\n");
     return -1;
   }
   port = atoi(argv[2]);
@@ -282,7 +282,7 @@ static int addSshNode(int argc, char * argv[]) {
     if ( (0 == strcmp(argv[1],
 		      nodes[i].ips)) &&
 	 (port == nodes[i].port) ) {
-      PRINTF("Node already in use!\n");
+      XPRINTF("Node already in use!\n");
       return -1;
     }
   }
@@ -295,7 +295,7 @@ static int addSshNode(int argc, char * argv[]) {
 
     s = SOCKET(PF_INET, SOCK_STREAM, 0);
     if (s == -1) {
-      PRINTF("Cannot open socket: %s\n",
+      XPRINTF("Cannot open socket: %s\n",
 	     strerror(errno));
       return -1;
     }
@@ -323,7 +323,7 @@ static int addSshNode(int argc, char * argv[]) {
     }    
   }
   if (lport == 65535) {
-    PRINTF(" Cannot find available local port!\n");
+    XPRINTF(" Cannot find available local port!\n");
     return -1;
   }
   
@@ -352,7 +352,7 @@ static int addSshNode(int argc, char * argv[]) {
     exit(-1);
   } 
   if (pid == -1) {
-    PRINTF("Failed to fork: %s\n",
+    XPRINTF("Failed to fork: %s\n",
 	   strerror(errno));
     return -1;
   }
@@ -384,7 +384,7 @@ static int addSshNode(int argc, char * argv[]) {
     gnunet_util_sleep(cronSECONDS);
   }
   if (ret == SYSERR) {
-    PRINTF(" could not connect to %s:%d.\n",
+    XPRINTF(" could not connect to %s:%d.\n",
 	   nodes[currindex].ips,
 	   nodes[currindex].port);
     kill(nodes[currindex].ssh,
@@ -419,7 +419,7 @@ static int addSshNode(int argc, char * argv[]) {
   hdr = NULL;
   if (SYSERR == readFromSocket(&nodes[currindex].sock, 
 			       (CS_HEADER**)&hdr)) {
-    PRINTF(" peer %s is not responding.\n",
+    XPRINTF(" peer %s is not responding.\n",
 	   nodes[currindex].ips);
     destroySocket(&nodes[currindex].sock);
     FREE(nodes[currindex].ips);
@@ -445,7 +445,7 @@ static int addSshNode(int argc, char * argv[]) {
   } else {
     FREE(hdr);
     destroySocket(&nodes[currindex].sock);
-    PRINTF(" peer %s did not respond with proper HELO.\n",
+    XPRINTF(" peer %s did not respond with proper HELO.\n",
 	   nodes[currindex].ips);
     FREE(nodes[currindex].ips);
     /* fixme: check error conditions on kill/waidpid! */
@@ -458,7 +458,7 @@ static int addSshNode(int argc, char * argv[]) {
     return -1;
   }
   FREE(hdr);
-  PRINTF("%d\n",
+  XPRINTF("%d\n",
 	 currindex);
   return 0;
 }
@@ -472,7 +472,7 @@ static int delConnection(int argc,
   int src, dst, ack;
   
   if (argc != 2) {
-    PRINTF("Syntax: disconnect PEERID PEERID\n");
+    XPRINTF("Syntax: disconnect PEERID PEERID\n");
     return -1;
   }
   CHECK_SRC_DST(src, dst, argv[0], argv[1]);
@@ -485,10 +485,10 @@ static int delConnection(int argc,
 		       &ack))
     return -1;
   if (ack == OK) {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   } else {
-    PRINTF(" Connection NOT deleted.\n");
+    XPRINTF(" Connection NOT deleted.\n");
     return -1;
   }
 }
@@ -501,7 +501,7 @@ static int delAllConnections(int argc,
   int dst, ack;
   
   if (argc != 1) {
-    PRINTF("Syntax: disconnect-all PEERID\n");
+    XPRINTF("Syntax: disconnect-all PEERID\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -514,10 +514,10 @@ static int delAllConnections(int argc,
 		       &ack))
     return -1;
   if (ack == OK) {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   } else {
-    PRINTF(" Connections NOT deleted.\n");
+    XPRINTF(" Connections NOT deleted.\n");
     return -1;
   }
 }
@@ -530,7 +530,7 @@ static int addConnection(int argc,
   int src, dst, ack;
   
   if (argc != 2) {
-    PRINTF("Syntax: connect PEERID PEERID\n");
+    XPRINTF("Syntax: connect PEERID PEERID\n");
     return -1;
   }
   CHECK_SRC_DST(src, dst, argv[0], argv[1]);
@@ -543,10 +543,10 @@ static int addConnection(int argc,
 		       &ack))
     return -1;  
   if (ack == OK) {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   } else {
-    PRINTF(" peer cannot connect.\n");
+    XPRINTF(" peer cannot connect.\n");
     return -1;
   }
 }
@@ -560,7 +560,7 @@ static int setTrust(int argc, char * argv[]) {
   TESTBED_SET_TVALUE_MESSAGE msg;
   
   if (argc != 3) {
-    PRINTF("Syntax: set-trust PEERID PEERID TRUST\n");
+    XPRINTF("Syntax: set-trust PEERID PEERID TRUST\n");
     return -1;
   }
   CHECK_SRC_DST(src, dst, argv[0], argv[1]);
@@ -578,10 +578,10 @@ static int setTrust(int argc, char * argv[]) {
 		       &ack)) 
     return -1;
   if (htonl(ack) != OK) {
-    PRINTF(" peer could not set trust value.\n");
+    XPRINTF(" peer could not set trust value.\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -593,7 +593,7 @@ static int getTrust(int argc, char *argv[]) {
   int src, dst, value;
   
   if (argc != 2) {
-    PRINTF("Syntax: get-trust PEERID PEERID\n");
+    XPRINTF("Syntax: get-trust PEERID PEERID\n");
     return -1;
   }
   CHECK_SRC_DST(src, dst, argv[0], argv[1]);
@@ -605,10 +605,10 @@ static int getTrust(int argc, char *argv[]) {
   if (SYSERR == readResult(src, &value)) 
     return -1;
   if (value < 0) {
-    PRINTF(" could not get trust value.\n");
+    XPRINTF(" could not get trust value.\n");
     return -1;
   } else {
-    PRINTF("%d\n", 
+    XPRINTF("%d\n", 
 	   value);
     return 0;
   }
@@ -621,7 +621,7 @@ static int disableHELO(int argc, char *argv[]) {
   int dst, value;
   
   if (argc != 1) {
-    PRINTF("Syntax: helo-disable PEERID\n");
+    XPRINTF("Syntax: helo-disable PEERID\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -633,10 +633,10 @@ static int disableHELO(int argc, char *argv[]) {
   if (SYSERR == readResult(dst, &value)) 
     return -1;
   if (value != OK) {
-    PRINTF(" could disable HELO\n");
+    XPRINTF(" could disable HELO\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -648,7 +648,7 @@ static int enableHELO(int argc, char *argv[]) {
   int dst, value;
   
   if (argc != 1) {
-    PRINTF("Syntax: helo-enable PEERID\n");
+    XPRINTF("Syntax: helo-enable PEERID\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -660,10 +660,10 @@ static int enableHELO(int argc, char *argv[]) {
   if (SYSERR == readResult(dst, &value)) 
     return -1;
   if (value != OK) {
-    PRINTF(" could enable HELO\n");
+    XPRINTF(" could enable HELO\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -675,7 +675,7 @@ static int disableAUTOCONNECT(int argc, char *argv[]) {
   int dst, value;
   
   if (argc != 1) {
-    PRINTF("Syntax: autoconnect-disable PEERID\n");
+    XPRINTF("Syntax: autoconnect-disable PEERID\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -687,10 +687,10 @@ static int disableAUTOCONNECT(int argc, char *argv[]) {
   if (SYSERR == readResult(dst, &value)) 
     return -1;
   if (value != OK) {
-    PRINTF(" could disable AUTOCONNECT\n");
+    XPRINTF(" could disable AUTOCONNECT\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -702,7 +702,7 @@ static int enableAUTOCONNECT(int argc, char *argv[]) {
   int dst, value;
   
   if (argc != 1) {
-    PRINTF("Syntax: autoconnect-enable PEERID\n");
+    XPRINTF("Syntax: autoconnect-enable PEERID\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -714,10 +714,10 @@ static int enableAUTOCONNECT(int argc, char *argv[]) {
   if (SYSERR == readResult(dst, &value)) 
     return -1;
   if (value != OK) {
-    PRINTF(" could enable AUTOCONNECT\n");
+    XPRINTF(" could enable AUTOCONNECT\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -733,7 +733,7 @@ static int allowDenyConnectHelper(unsigned int argc,
   
   CHECK_PEER(dst, argv[0]);
   if (argc > (65532 - sizeof(TESTBED_CS_MESSAGE)) / sizeof(PeerIdentity)) {
-    PRINTF("Too many peers specified.  Ask a wizard to enlarge limit.\n");
+    XPRINTF("Too many peers specified.  Ask a wizard to enlarge limit.\n");
     return -1;
   }
 
@@ -759,10 +759,10 @@ static int allowDenyConnectHelper(unsigned int argc,
   if (SYSERR == readResult(dst, &value)) 
     return -1;
   if (value != OK) {
-    PRINTF(" could change setting.\n");
+    XPRINTF(" could change setting.\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -772,7 +772,7 @@ static int allowDenyConnectHelper(unsigned int argc,
  */
 static int denyConnect(int argc, char *argv[]) {
   if (argc < 1) {
-    PRINTF("Syntax: connect-deny PEERID [PEERID]*\n");
+    XPRINTF("Syntax: connect-deny PEERID [PEERID]*\n");
     return -1;
   }
   return allowDenyConnectHelper(argc, argv, 
@@ -784,7 +784,7 @@ static int denyConnect(int argc, char *argv[]) {
  */
 static int allowConnect(int argc, char *argv[]) {
   if (argc < 1) {
-    PRINTF("Syntax: connect-allow PEERID [PEERID]*\n");
+    XPRINTF("Syntax: connect-allow PEERID [PEERID]*\n");
     return -1;
   }
   return allowDenyConnectHelper(argc, argv,
@@ -810,11 +810,11 @@ static int loadModuleHelper(unsigned short type,
 		       &ok)) 
     return -1;
   if (ok != OK) {
-    PRINTF(" peer %s refused.\n",
+    XPRINTF(" peer %s refused.\n",
 	   nodes[dst].ips);
     return -1;
   }
-  PRINTF("OK.\n");
+  XPRINTF("OK.\n");
   return 0;
 }
 
@@ -823,7 +823,7 @@ static int loadModuleHelper(unsigned short type,
  */
 static int loadModule(int argc, char *argv[]) {
   if (argc != 2) {
-    PRINTF("Syntax: load-module PEERID MODULENAME\n");
+    XPRINTF("Syntax: load-module PEERID MODULENAME\n");
     return -1;
   }
   return loadModuleHelper(TESTBED_LOAD_MODULE, 
@@ -836,7 +836,7 @@ static int loadModule(int argc, char *argv[]) {
  */
 static int unloadModule(int argc, char *argv[]) {
   if (argc != 2) {
-    PRINTF("Syntax: unload-module PEERID MODULENAME\n");
+    XPRINTF("Syntax: unload-module PEERID MODULENAME\n");
     return -1;
   }
   return loadModuleHelper(TESTBED_UNLOAD_MODULE,
@@ -859,7 +859,7 @@ static int startProcess(int argc,
   int pos;
 
   if (argc < 2) {
-    PRINTF("Syntax: process-start PEERID COMMAND [ARGUMENTS]\n");
+    XPRINTF("Syntax: process-start PEERID COMMAND [ARGUMENTS]\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -887,11 +887,11 @@ static int startProcess(int argc,
 		       &ack))
     return -1;
   if (ack != SYSERR) {
-    PRINTF("%d\n",
+    XPRINTF("%d\n",
 	   ack);
     return 0;
   } else {
-    PRINTF(" Peer could not fork process.\n");
+    XPRINTF(" Peer could not fork process.\n");
     return -1;
   }  
 }
@@ -912,7 +912,7 @@ static int signalProcess(int argc, char *argv[]) {
   TESTBED_SIGNAL_MESSAGE msg;
 
   if (argc != 3) {
-    PRINTF("Syntax: process-signal PEERID PROCESSID SIGNAL\n");
+    XPRINTF("Syntax: process-signal PEERID PROCESSID SIGNAL\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -927,14 +927,14 @@ static int signalProcess(int argc, char *argv[]) {
 		       &ack))
     return -1;
   if (ntohl(msg.signal) == -1) {
-    PRINTF("%d\n", ack);
+    XPRINTF("%d\n", ack);
     return 0;
   }
   if (ack == OK) {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   } else {
-    PRINTF(" Peer could not signal process.\n");
+    XPRINTF(" Peer could not signal process.\n");
     return -1;
   }  
 }
@@ -949,7 +949,7 @@ static int dumpProcessOutput(int argc,
   unsigned int ack;
 
   if (argc != 2) {
-    PRINTF("Syntax: process-output PEERID PROCESSID\n");
+    XPRINTF("Syntax: process-output PEERID PROCESSID\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
@@ -972,7 +972,7 @@ static int dumpProcessOutput(int argc,
       reply = NULL;
       if (SYSERR == readFromSocket(&nodes[dst].sock, 
 				   (CS_HEADER**)&reply)) {
-	PRINTF(" peer %s is not responding after %d of %d bytes.\n",
+	XPRINTF(" peer %s is not responding after %d of %d bytes.\n",
 	       nodes[dst].ips,
 	       pos,
 	       ack);
@@ -985,7 +985,7 @@ static int dumpProcessOutput(int argc,
 	     &((TESTBED_OUTPUT_REPLY_MESSAGE_GENERIC*)reply)->data[0],
 	     size);
       tmp[size] = '\0';
-      PRINTF("%s", 
+      XPRINTF("%s", 
 	     tmp);	     
       FREE(tmp);
       FREE(reply);
@@ -993,7 +993,7 @@ static int dumpProcessOutput(int argc,
     }    
     return 0;
   } else {
-    PRINTF(" Peer could not return process output.\n");
+    XPRINTF(" Peer could not return process output.\n");
     return -1;
   }  
 }
@@ -1006,14 +1006,14 @@ static int setBW(int argc, char * argv[]) {
   int dst, in, out, ack;
   
   if (argc != 3) {
-    PRINTF("Syntax: set-bw PEERID DOWN-BPS UP-BPS\n");
+    XPRINTF("Syntax: set-bw PEERID DOWN-BPS UP-BPS\n");
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
   in  = atoi(argv[1]);
   out = atoi(argv[2]);
   if ((in < 0) || (out < 0)) {
-    PRINTF(" Invalid bandwidth specification.\n");
+    XPRINTF(" Invalid bandwidth specification.\n");
     return -1;
   }
   msg.in_bw  = htonl(in);
@@ -1026,10 +1026,10 @@ static int setBW(int argc, char * argv[]) {
   if (OK != readResult(dst, &ack)) 
     return -1;
   if (ack != OK) {
-    PRINTF(" peer could not set the specified bandwith.\n");
+    XPRINTF(" peer could not set the specified bandwith.\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -1043,7 +1043,7 @@ static int setLoss(int argc, char * argv[]) {
   TESTBED_SET_LOSS_RATE_MESSAGE msg;
 
   if (argc != 3) {
-    PRINTF("Syntax: set-loss PEERID DOWN-LOSS UP-LOSS\n");
+    XPRINTF("Syntax: set-loss PEERID DOWN-LOSS UP-LOSS\n");
     return -1;
   }  
   CHECK_PEER(dst, argv[0]);
@@ -1060,10 +1060,10 @@ static int setLoss(int argc, char * argv[]) {
   if (OK != readResult(dst, &ack)) 
     return -1;
   if (ack != OK) {
-    PRINTF(" peer could not set the specified loss rates.\n");
+    XPRINTF(" peer could not set the specified loss rates.\n");
     return -1;
   } else {
-    PRINTF("OK.\n");
+    XPRINTF("OK.\n");
     return 0;
   }
 }
@@ -1073,7 +1073,7 @@ static int printStatistic(const char * name,
 			  const char * arg) {
   if (0 == strcmp(name,
 		  arg))
-    PRINTF("%llu\n",
+    XPRINTF("%llu\n",
 	   value);
   return OK;
 }
@@ -1090,7 +1090,7 @@ static int getStat(int argc, char ** argv) {
   
   printProtocols = NO;
   if (argc != 2) {
-    PRINTF("Syntax: get-stat PEERID STATID\n");
+    XPRINTF("Syntax: get-stat PEERID STATID\n");
     return -1;
   }
   CHECK_PEER(peer, argv[0]);
@@ -1112,7 +1112,7 @@ static int getStat(int argc, char ** argv) {
 static int printStatistics(const char * name,
 			   unsigned long long value,
 			   void * unused) {
-  PRINTF("%-60s: %16llu\n",
+  XPRINTF("%-60s: %16llu\n",
 	 name,
 	 value);
   return OK;
@@ -1127,9 +1127,9 @@ static int printProtocols(unsigned short type,
 
   if (isP2P != lastIp2p) {
     if (isP2P)
-      PRINTF(_("Supported peer-to-peer messages:\n"));
+      XPRINTF(_("Supported peer-to-peer messages:\n"));
     else
-      PRINTF(_("Supported client-server messages:\n"));
+      XPRINTF(_("Supported client-server messages:\n"));
     lastIp2p = isP2P;
   }
   if (isP2P)
@@ -1137,10 +1137,10 @@ static int printProtocols(unsigned short type,
   else
     name = csMessageName(type);
   if (name == NULL)
-    PRINTF("\t%d\n",
+    XPRINTF("\t%d\n",
 	   type);
   else
-    PRINTF("\t%d\t(%s)\n", 
+    XPRINTF("\t%d\t(%s)\n", 
 	   type,
 	   name);
   return OK;
@@ -1159,13 +1159,13 @@ static int getStats(int argc, char ** argv) {
   printProtocolsOpt = NO;
   if (argc == 2) {
     if (strcmp(argv[0], "-P")) {
-      PRINTF("Syntax: get-stats [-P] PEERID\n");
+      XPRINTF("Syntax: get-stats [-P] PEERID\n");
       return -1;
     }
     printProtocolsOpt = YES;
     CHECK_PEER(peer, argv[1]);
   } else if (argc != 1) {
-    PRINTF("Syntax: get-stats [-P] PEERID\n");
+    XPRINTF("Syntax: get-stats [-P] PEERID\n");
     return -1;
   } else
     CHECK_PEER(peer, argv[0]);
@@ -1198,7 +1198,7 @@ static int getOption(int argc, char ** argv) {
   char * opt;
   
   if (argc != 3) {
-    PRINTF("Syntax: get-option PEERID SECTION OPTION\n");
+    XPRINTF("Syntax: get-option PEERID SECTION OPTION\n");
     return -1;
   }  
   CHECK_PEER(peer, argv[0]);
@@ -1206,11 +1206,11 @@ static int getOption(int argc, char ** argv) {
 				    argv[1],
 				    argv[2]);
   if (opt == NULL) {
-    PRINTF("Error sending request to peer %d\n",
+    XPRINTF("Error sending request to peer %d\n",
 	   peer);
     return -1;
   }
-  PRINTF("%s\n",
+  XPRINTF("%s\n",
 	 opt);
   FREE(opt);
   return 0;
@@ -1228,19 +1228,19 @@ static int uploadFile(int argc,
   TESTBED_UPLOAD_FILE_MESSAGE * msg;
     
   if (argc != 3) {
-    PRINTF("Syntax: load-file PEERID LOCAL_FILENAME DEST_FILENAME\n");
+    XPRINTF("Syntax: load-file PEERID LOCAL_FILENAME DEST_FILENAME\n");
     return -1;
   }
   CHECK_PEER(peer, argv[0]);
   infile = FOPEN(argv[1], "r");
   if (infile == NULL) {
-    PRINTF(" Could not open file %s\n",
+    XPRINTF(" Could not open file %s\n",
 	   argv[1]);
     return -1;
   }
   flen = strlen(argv[2]) + 1; /* '\0' added in the flen */
   if (flen > TESTBED_FILE_BLK_SIZE) {
-    PRINTF(" destination file name too long (%d characters, limit %d).\n", 
+    XPRINTF(" destination file name too long (%d characters, limit %d).\n", 
 	   flen-1,
 	   TESTBED_FILE_BLK_SIZE);
     return -1;
@@ -1261,7 +1261,7 @@ static int uploadFile(int argc,
 			      &msg->header.header)) {
     fclose(infile);
     FREE(msg);
-    PRINTF(" Could not send message to peer %s.\n", 
+    XPRINTF(" Could not send message to peer %s.\n", 
 	   nodes[peer].ips);
     return -1;
   }
@@ -1269,13 +1269,13 @@ static int uploadFile(int argc,
   if (OK != readTCPResult(&nodes[peer].sock, &ack)) {
     fclose(infile);
     FREE(msg);
-    PRINTF("Peer is not responding\n");
+    XPRINTF("Peer is not responding\n");
     return -1;
   }
   if (ack != OK) {
     fclose(infile);
     FREE(msg);
-    PRINTF(" Peer returned error (delete existing file).\n");
+    XPRINTF(" Peer returned error (delete existing file).\n");
     return -1;
   }
   msg->type = htonl(TESTBED_FILE_APPEND);
@@ -1291,7 +1291,7 @@ static int uploadFile(int argc,
     if (SYSERR == writeToSocket(&nodes[peer].sock, &msg->header.header)) {
       fclose(infile);
       FREE(msg);
-      PRINTF(" could not send file to node %s.\n",
+      XPRINTF(" could not send file to node %s.\n",
 	     nodes[peer].ips);
       return -1;
     }
@@ -1303,19 +1303,19 @@ static int uploadFile(int argc,
     if (ack != OK) {
       fclose(infile);
       FREE(msg);
-      PRINTF(" peer returned error.\n");
+      XPRINTF(" peer returned error.\n");
       return -1;
     }
   }
   if (ferror(infile)) {
     fclose(infile);
     FREE(msg);
-    PRINTF(" could not read source file. Transmission aborted.\n");
+    XPRINTF(" could not read source file. Transmission aborted.\n");
     return -1;
   }
   fclose(infile);
   FREE(msg);
-  PRINTF("OK.\n");
+  XPRINTF("OK.\n");
   return 0;
 }
 
@@ -1327,7 +1327,7 @@ static int printOnlineHelp(int argc,
   int i;
   i = 0;
   while (commands[i].command != NULL) {
-    PRINTF("%-30s%s\n",
+    XPRINTF("%-30s%s\n",
 	   commands[i].command,
 	   commands[i].help);
     i++;
@@ -1353,7 +1353,7 @@ static int processCommands(char * buffer,
       end++;
     if (buffer[end] != '\n') {
       if (start == 0) {
-	PRINTF("Received invalid response from HTTP server!\n");
+	XPRINTF("Received invalid response from HTTP server!\n");
 	return -1;
       } else {
 	memmove(buffer,
@@ -1470,7 +1470,7 @@ static int addAvailable(int argc,
     reg = getConfigurationString("GNUNET-TESTBED",
 				 "REGISTERURL");
     if (reg == NULL) {
-      PRINTF(" no testbed registration URL given.\n");
+      XPRINTF(" no testbed registration URL given.\n");
       return -1;
     }
   } else
@@ -1483,7 +1483,7 @@ static int addAvailable(int argc,
   if (proxy != NULL) {
     ip = GETHOSTBYNAME(proxy);
     if (ip == NULL) {
-      PRINTF(" Couldn't resolve name of HTTP proxy %s\n",
+      XPRINTF(" Couldn't resolve name of HTTP proxy %s\n",
 	     proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
@@ -1506,7 +1506,7 @@ static int addAvailable(int argc,
   if (0 != strncmp(HTTP_URL,
 		   reg, 
 		   strlen(HTTP_URL)) ) {
-    PRINTF(" invalid URL %s (must begin with %s)\n",
+    XPRINTF(" invalid URL %s (must begin with %s)\n",
 	   reg, 
 	   HTTP_URL);
     return -1;
@@ -1544,7 +1544,7 @@ static int addAvailable(int argc,
     }
     port = strtol(pstring, &buffer, 10);
     if ( (port < 0) || (port > 65536) ) {
-      PRINTF(" malformed http URL: %s at %s.\n",
+      XPRINTF(" malformed http URL: %s at %s.\n",
 	     reg,
 	     buffer);
       FREE(hostname);
@@ -1568,7 +1568,7 @@ static int addAvailable(int argc,
 		SOCK_STREAM,
 		0);
   if (sock < 0) {
-    PRINTF(" could not open socket for hostlist download (%s).\n",
+    XPRINTF(" could not open socket for hostlist download (%s).\n",
 	   STRERROR(errno));
     FREE(hostname);   
     FREE(reg);
@@ -1580,7 +1580,7 @@ static int addAvailable(int argc,
     /* no proxy */
     ip_info = GETHOSTBYNAME(hostname);
     if (ip_info == NULL) {
-      PRINTF(" could not download hostlist, host %s unknown\n",
+      XPRINTF(" could not download hostlist, host %s unknown\n",
 	     hostname);
       FREE(reg);
       FREE(hostname);
@@ -1601,7 +1601,7 @@ static int addAvailable(int argc,
   if (CONNECT(sock, 
 	      (struct sockaddr*)&soaddr, 
 	      sizeof(soaddr)) < 0) {
-    PRINTF(" failed to send HTTP request to host %s: %s\n",
+    XPRINTF(" failed to send HTTP request to host %s: %s\n",
 	   hostname,
 	   STRERROR(errno));
     FREE(reg);
@@ -1622,7 +1622,7 @@ static int addAvailable(int argc,
 			     command,
 			     curpos);
   if (SYSERR == (int)curpos) {
-    PRINTF(" failed so send HTTP request %s to host %s (%u - %d) - %s\n",
+    XPRINTF(" failed so send HTTP request %s to host %s (%u - %d) - %s\n",
 	   command,
 	   hostname,
 	   curpos, 
@@ -1661,7 +1661,7 @@ static int addAvailable(int argc,
       curpos=0;    
   }
   if (curpos < 4) { /* invalid response */
-    PRINTF(" exit register (error: no http response read)\n");
+    XPRINTF(" exit register (error: no http response read)\n");
     CLOSE(sock);
     return -1;
   }
@@ -1714,7 +1714,7 @@ static int addAvailable(int argc,
 static int listPeers(int argc, char * argv[]) {
   int i;
   for (i=0;i<nnodes;i++)
-    PRINTF("%4d - %s:%d\n",
+    XPRINTF("%4d - %s:%d\n",
 	   i,
 	   nodes[i].ips,
 	   nodes[i].port);
