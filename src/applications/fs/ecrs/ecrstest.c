@@ -113,12 +113,14 @@ static int searchCB(const ECRS_FileInfo * fi,
 		    const HashCode160 * key,
 		    void * closure) {
   struct ECRS_URI ** my = closure;
+  char * tmp;
   
-  // GNUNET_ASSERT(NULL == *my);
-  if (NULL != *my) {
-    BREAK();
-    return SYSERR;
-  }
+  tmp = ECRS_uriToString(fi->uri);
+  LOG(LOG_DEBUG,
+      "Search found URI '%s'\n",
+      tmp);
+  FREE(tmp);    
+  GNUNET_ASSERT(NULL == *my);
   *my = ECRS_dupUri(fi->uri);
   return SYSERR; /* abort search */
 }
@@ -149,11 +151,51 @@ static int searchFile(struct ECRS_URI ** uri) {
 }
 
 static int downloadFile(unsigned int size,
-			struct ECRS_URI * uri) {
-  /* FIXME: initiate download,
-     verify file */
-  ECRS_freeUri(uri);
-  return OK;
+			const struct ECRS_URI * uri) {
+  int ret;
+  char * tmpName;
+  int fd;
+  char * buf;
+  char * in;
+  int i;
+  char * tmp;
+  
+  tmp = ECRS_uriToString(uri);
+  LOG(LOG_DEBUG,
+      "Starting download of '%s'\n",
+      tmp);
+  FREE(tmp);
+  tmpName = makeName(0);
+  ret = SYSERR;
+  if (OK == ECRS_downloadFile(uri,
+			      tmpName,
+			      0,
+			      NULL,
+			      NULL,
+			      &testTerminate,
+			      NULL)) {
+    
+    fd = OPEN(tmpName, O_RDONLY);
+    buf = MALLOC(size);
+    in = MALLOC(size);
+    memset(buf, size + size / 253, size);
+    for (i=0;i<(int) (size - 42 - sizeof(HashCode160));i+=sizeof(HashCode160)) 
+      hash(&buf[i+sizeof(HashCode160)],
+	   42,
+	   (HashCode160*) &buf[i]);
+    if (size != read(fd, in, size))
+      ret = SYSERR;
+    else if (0 == memcmp(buf,
+			 in,
+			 size))
+      ret = OK;
+    FREE(buf);
+    FREE(in);
+    CLOSE(fd); 
+  }
+  UNLINK(tmpName);
+  FREE(tmpName);
+  return ret;
 }
 
 
@@ -175,11 +217,11 @@ static int unindexFile(unsigned int size) {
 
 int main(int argc, char * argv[]){
   static unsigned int filesizes[] = {
-    /*    1,
+    1,
     2,
     4,
     16,
-    32, */
+    32, 
     1024,
     DBLOCK_SIZE - 1,
     DBLOCK_SIZE,
@@ -237,6 +279,7 @@ int main(int argc, char * argv[]){
     CHECK(NULL != uri);
     CHECK(OK == searchFile(&uri));
     CHECK(OK == downloadFile(filesizes[i], uri));
+    ECRS_freeUri(uri);
     CHECK(OK == unindexFile(filesizes[i]));
     fprintf(stderr,
 	    " Ok.\n");

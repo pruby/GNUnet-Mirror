@@ -356,8 +356,6 @@ int ECRS_uploadFile(const char * filename,
       }
       FREE(value);
     }
-    if (treedepth == 0)
-      goto NOTREE;
     pos += size;
     cronTime(&now);
     if (pos > 0) {
@@ -424,7 +422,6 @@ int ECRS_uploadFile(const char * filename,
     FREE(iblocks[i]);
     iblocks[i] = NULL;
   }
- NOTREE:
   if (doIndex) {
     trySymlinking(filename,
 		  &fileId,
@@ -438,7 +435,9 @@ int ECRS_uploadFile(const char * filename,
       &enc);  
   /* build URI */
   fid.file_length = htonll(filesize);
-  fid.chk = *(CHK*)&((DBlock*) &iblocks[treedepth][1])[1];
+  db = (DBlock*) &iblocks[treedepth][1];
+
+  fid.chk = *(CHK*)&(db[1]);
   uris = createFileURI(&fid);
   *uri = ECRS_stringToUri(uris);
   FREE(uris);

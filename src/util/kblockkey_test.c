@@ -30,6 +30,10 @@ static int testMultiKey(const char * word) {
     return SYSERR;
   }
   getPublicKey(hostkey, &pkey);
+  /*
+  for (i=0;i<sizeof(PublicKey);i++)
+    printf("%02x", ((unsigned char*) &pkey)[i]);
+    printf("\n"); */
   freePrivateKey(hostkey);
   for (i=0;i<6;i++) {
     fprintf(stderr, ".");

@@ -232,7 +232,7 @@ static int is_prime (mpz_t n,
       
       /* Make sure that the number is smaller than the prime and
 	 keep the randomness of the high bit. */
-      if ( mpz_tstbit(x, nbits-2) ) {
+      if (mpz_tstbit(x, nbits-2) ) {
 	set_highbit(x, nbits-2); /* Clear all higher bits. */
       } else {
 	set_highbit(x, nbits-2 );
