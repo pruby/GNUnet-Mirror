@@ -603,7 +603,7 @@ static void * tcpListenMain() {
       }
     } else
       LOG(LOG_DEBUG,
-	  "TCP6 server socket not open!\n");
+	  "TCP server socket not open!\n");
     if (tcp_pipe[0] != -1) {
       if (-1 != FSTAT(tcp_pipe[0], &buf)) {
 	FD_SET(tcp_pipe[0], &readSet);
@@ -652,7 +652,7 @@ static void * tcpListenMain() {
       if (FD_ISSET(tcp_sock, &readSet)) {
 	int sock;
 	
-	lenOfIncomingAddr = sizeof(clientAddr);               
+	lenOfIncomingAddr = sizeof(clientAddr); 
 	sock = ACCEPT(tcp_sock, 
 		      (struct sockaddr *)&clientAddr, 
 		      &lenOfIncomingAddr);
@@ -689,7 +689,6 @@ static void * tcpListenMain() {
     if (FD_ISSET(tcp_pipe[0], &readSet)) {
       /* allow reading multiple signals in one go in case we get many
 	 in one shot... */
-
 #define MAXSIG_BUF 128
       char buf[MAXSIG_BUF];
       /* just a signal to refresh sets, eat and continue */
@@ -710,7 +709,8 @@ static void * tcpListenMain() {
 	}
       }
       if (FD_ISSET(sock, &writeSet)) {
-	int ret, success;
+	int ret;
+	int success;
 
 try_again_1:
 	success = SEND_NONBLOCKING(sock,
@@ -836,8 +836,8 @@ static int tcpDirectSend(TCPSession * tcpSession,
     tcpSession->wpos = ssize - ret;
     signalSelect(); /* select set changed! */
   }
-  MUTEX_UNLOCK(&tcplock);
   cronTime(&tcpSession->lastUse);
+  MUTEX_UNLOCK(&tcplock);
   incrementBytesSent(ssize);
   return OK;
 }
@@ -1005,21 +1005,15 @@ static int tcpConnect(HELO_Message * helo,
   TSession * tsession;
   TCPSession * tcpSession;
   struct sockaddr_in soaddr;
-#if DEBUG_TCP
-  EncName enc;
-#endif
 
   if (tcp_shutdown == YES)
     return SYSERR;
   haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
 #if DEBUG_TCP
-  hash2enc(&coreAPI->myIdentity->hashPubKey,
-	   &enc);
   LOG(LOG_DEBUG,
-      "Creating TCP connection to %u.%u.%u.%u:%u from %s.\n",
+      "Creating TCP connection to %u.%u.%u.%u:%u.\n",
       PRIP(ntohl(*(int*)&haddr->ip.addr)), 
-      ntohs(haddr->port),
-      &enc);
+      ntohs(haddr->port));
 #endif
   sock = SOCKET(PF_INET,
 		SOCK_STREAM, 
@@ -1190,7 +1184,8 @@ static int startTransportServer(void) {
     serverAddr.sin_port        = htons(getGNUnetTCPPort());
 #if DEBUG_TCP
     LOG(LOG_INFO,
-	"starting tcp peer server on port %d\n",
+	"starting %s peer server on port %d\n",
+	"tcp",
 	ntohs(serverAddr.sin_port));
 #endif
     if (BIND(tcp_sock, 
@@ -1334,8 +1329,6 @@ void donetransport_tcp() {
   GROW(tsessions, 
        tsessionArrayLength,
        0);
-  tsessions = NULL;
-  tsessionArrayLength = 0;
   FREENONNULL(filteredNetworks_);
   MUTEX_DESTROY(&tcplock);
 }
