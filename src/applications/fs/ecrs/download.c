@@ -584,11 +584,11 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   for (i=0;i<node->level;i++)
     rsize *= CHK_PER_INODE;
   spos = rsize * (node->offset / sizeof(CHK));
-  epos = rsize * (node->offset / sizeof(CHK) + CHK_PER_INODE);  
+  epos = spos + rsize;
   if (epos > node->ctx->total)
     epos = node->ctx->total;
-  ret = (epos - spos) / rsize; /* rounds down! */
-  if (ret * rsize < epos - spos)
+  ret = (epos - spos) / (rsize / CHK_PER_INODE);
+  if (ret * (rsize / CHK_PER_INODE) < epos - spos)
     ret++; /* need to round up! */
   return ret * sizeof(CHK);
 }
@@ -743,6 +743,9 @@ static void iblock_download_children(NodeClosure * node,
   int i;
   NodeClosure * child;
   unsigned int childcount;
+  CHK * chks;
+  unsigned int levelSize;
+  unsigned long long baseOffset;
  
   GNUNET_ASSERT(node->level > 0);
   childcount = size / sizeof(CHK);
@@ -750,8 +753,18 @@ static void iblock_download_children(NodeClosure * node,
     BREAK();
     return;
   }
+  if (node->level == 1)
+    levelSize = DBLOCK_SIZE;
+  else
+    levelSize = sizeof(CHK);
+  baseOffset = node->offset * CHK_PER_INODE;
+  chks = (CHK*) data;
   for (i=0;i<childcount;i++) {
     child = MALLOC(sizeof(NodeClosure));
+    child->ctx = node->ctx;
+    child->chk = chks[i];
+    child->offset = baseOffset + i * levelSize;
+    child->level = node->level - 1;
     if (NO == checkPresent(child))
       addRequest(node->ctx->rm,
 		 child);
@@ -875,6 +888,7 @@ static int nodeReceive(const HashCode160 * query,
     }
   }
   FREE(data);
+  FREE(node);
   return OK;
 }
 
@@ -1102,7 +1116,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   RequestManager * rm;
   int ret;
   CommonCtx ctx;
-  NodeClosure top;
+  NodeClosure * top;
   FileIdentifier fid;
 
   fid = uri->data.chk;
@@ -1124,11 +1138,12 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   ctx.dpcbClosure = dpcbClosure;
   ctx.total = ntohll(fid.file_length);
   ctx.completed = 0;
-  top.ctx = &ctx;
-  top.chk = fid.chk;
-  top.offset = 0;
-  top.level = computeDepth(ctx.total);
-  addRequest(rm, &top);
+  top = MALLOC(sizeof(NodeClosure));
+  top->ctx = &ctx;
+  top->chk = fid.chk;
+  top->offset = 0;
+  top->level = computeDepth(ctx.total);
+  addRequest(rm, top);
   while ( (OK == tt(ttClosure)) &&
 	  (rm->abortFlag == NO) &&
 	  (rm->requestListIndex != 0) )

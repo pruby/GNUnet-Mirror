@@ -315,7 +315,8 @@ static int csHandleRequestInsert(ClientHandle sock,
   ret = datastore->put(&query,
 		       datum);
   MUTEX_UNLOCK(&lock);
-  if (ntohl(ri->anonymityLevel) == 0) {
+  if ( (ntohl(ri->anonymityLevel) == 0) &&
+       (dht != NULL) ) {
     GapWrapper * gw;
     unsigned int size;
     cron_t now;
@@ -699,7 +700,7 @@ static int gapGet(void * closure,
 			 &gapGetConverter,
 			 &myClosure);
   }
-  if (ret == OK) 
+  if (ret != SYSERR) 
     ret = datastore->get(&keys[0],
 			 type,
 			 &gapGetConverter,

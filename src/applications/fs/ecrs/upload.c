@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -55,15 +55,15 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   CHK ichk;
   EncName enc;
 
-  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value) - sizeof(DBlock);
-  present = size / sizeof(CHK);
+  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value);
+  present = (size - sizeof(DBlock)) / sizeof(CHK);
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
     fileBlockGetKey(db,
-		    size + sizeof(DBlock),
+		    size,
 		    &ichk.key);
     fileBlockGetQuery(db,
-		      size + sizeof(DBlock),
+		      size,
 		      &ichk.query);
     IFLOG(LOG_DEBUG,
 	  hash2enc(&ichk.query,
@@ -72,12 +72,19 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 	"Query for current iblock at level %u is %s\n",
 	level,
 	&enc);
-    if (OK != pushBlock(sock, &ichk, level+1, iblocks))
+    if (OK != pushBlock(sock,
+			&ichk,
+			level+1,
+			iblocks))
       return SYSERR;
     fileBlockEncode(db,
 		    size,
 		    &ichk.query,
 		    &value);
+    if (value == NULL) {
+      BREAK();
+      return SYSERR;
+    }
     IFLOG(LOG_DEBUG,
 	  hash2enc(&ichk.query,
 		   &enc));
@@ -96,7 +103,9 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   memcpy(&((char*)db)[size],
 	 chk,
 	 sizeof(CHK));
-  iblocks[level]->size = htonl(size + sizeof(Datastore_Value) + sizeof(DBlock));
+  iblocks[level]->size = htonl(size + 
+			       sizeof(CHK) + 
+			       sizeof(Datastore_Value));
   return OK;
 }
 
@@ -278,8 +287,8 @@ int ECRS_uploadFile(const char * filename,
   dblock->expirationTime = htonll(expirationTime);
   db = (DBlock*) &dblock[1];
   db->type = htonl(D_BLOCK);
-  iblocks = MALLOC(sizeof(Datastore_Value*) * treedepth);
-  for (i=0;i<treedepth;i++) {
+  iblocks = MALLOC(sizeof(Datastore_Value*) * (treedepth+1));
+  for (i=0;i<=treedepth;i++) {
     iblocks[i] = MALLOC(sizeof(Datastore_Value) + IBLOCK_SIZE + sizeof(DBlock));
     iblocks[i]->size = htonl(sizeof(Datastore_Value) + sizeof(DBlock));
     iblocks[i]->anonymityLevel = htonl(anonymityLevel);
@@ -323,7 +332,8 @@ int ECRS_uploadFile(const char * filename,
 	  hash2enc(&chk.query,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Query for current block is %s\n",
+	"Query for current block of size %u is %s\n",
+	size,
 	&enc);
     if (doIndex) {
       if (SYSERR == FS_index(sock,
@@ -362,27 +372,33 @@ int ECRS_uploadFile(const char * filename,
   if (tt != NULL)
     if (OK != tt(ttClosure))
       goto FAILURE;  
+  LOG(LOG_DEBUG,
+      "Tree depth is %u, walking up tree.\n",
+      treedepth);
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
-    if (size == sizeof(DBlock))
+    if (size == sizeof(DBlock)) {
+      LOG(LOG_DEBUG,
+	  "Level %u is empty\n",
+	  i);
       continue;
-    db = (DBlock*) &iblocks[i];
+    }
+    db = (DBlock*) &iblocks[i][1];
     fileBlockGetKey(db,
-		    size + sizeof(DBlock),
+		    size,
 		    &chk.key);
     LOG(LOG_DEBUG,
-	"Computing query for %u bytes content %.*s\n",
-	size,
-	size, db);
+	"Computing query for %u bytes content.\n",
+	size);
     fileBlockGetQuery(db,
-		      size + sizeof(DBlock),
+		      size,
 		      &chk.query);   
     IFLOG(LOG_DEBUG,
 	  hash2enc(&chk.query,
 		   &enc));
     LOG(LOG_DEBUG,
 	"Query for current block at level %u is %s\n",
-	treedepth,
+	i,
 	&enc);
     if (OK != pushBlock(sock, 
 			&chk,
@@ -393,6 +409,10 @@ int ECRS_uploadFile(const char * filename,
 		    size,
 		    &chk.query,
 		    &value);
+    if (value == NULL) {
+      BREAK();
+      goto FAILURE;
+    }
     if (OK != FS_insert(sock,
 			value)) {
       FREE(value);
@@ -416,7 +436,7 @@ int ECRS_uploadFile(const char * filename,
       &enc);  
   /* build URI */
   fid.file_length = htonll(filesize);
-  fid.chk = chk;
+  fid.chk = *(CHK*)&((DBlock*) &iblocks[treedepth][1])[1];
   uris = createFileURI(&fid);
   *uri = ECRS_stringToUri(uris);
   FREE(uris);
@@ -428,7 +448,7 @@ int ECRS_uploadFile(const char * filename,
   releaseClientSocket(sock);
   return OK;
  FAILURE:
-  for (i=0;i<treedepth;i++)
+  for (i=0;i<=treedepth;i++)
     FREENONNULL(iblocks[i]);
   FREE(iblocks);
   FREE(dblock);

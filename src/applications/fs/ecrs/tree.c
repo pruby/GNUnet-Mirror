@@ -41,3 +41,4 @@ unsigned int computeDepth(unsigned long long flen) {
   }  
   return treeDepth;
 }
+
