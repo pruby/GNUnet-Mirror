@@ -20,7 +20,7 @@ static Datastore_Value * initValue(int i) {
   value = MALLOC(sizeof(Datastore_Value) + 8 * i);
   value->size = htonl(sizeof(Datastore_Value) + 8 * i);
   value->type = htonl(i);
-  value->prio = htonl(i);
+  value->prio = htonl(i+1);
   value->anonymityLevel = i;
   value->expirationTime = now - i * cronSECONDS;
   memset(&value[1], i, 8*i);
@@ -41,8 +41,13 @@ static int checkValue(const HashCode160 * key,
 		    value,
 		    ntohl(val->size)) ) )
     ret = OK;
-  else
-    ret = SYSERR;		  
+  else {
+    printf("Wanted: %u, %llu; got %u, %llu - %d\n",
+	   ntohl(value->size), ntohll(value->expirationTime),
+	   ntohl(val->size), ntohll(val->expirationTime),
+	   memcmp(val, value, ntohl(val->size)));
+    ret = SYSERR;
+  }
   FREE(value);
   return ret;
 }
@@ -62,7 +67,6 @@ static int iterateDown(const HashCode160 * key,
 		       int * closure) {
   int ret;
 
-  printf("IDOWN: %u\n", *closure);
   (*closure) -= 2;  
   ret = checkValue(key, val, closure);
   return ret;
@@ -86,6 +90,12 @@ static int test(SQstore_ServiceAPI * api) {
     FREE(value);
   }
   ASSERT(oldSize < api->getSize());
+  ASSERT(256 == api->iterateLowPriority(ANY_BLOCK,
+					NULL,
+					NULL));
+  ASSERT(256 == api->iterateExpirationTime(ANY_BLOCK,
+					   NULL,
+					   NULL));
   for (i=255;i>=0;i--) {
     memset(&key, 256-i, sizeof(HashCode160)); 
     ASSERT(1 == api->get(&key, i, &checkValue, (void*) &i));

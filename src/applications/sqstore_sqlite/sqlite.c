@@ -64,11 +64,7 @@ typedef struct {
   unsigned int lastSync;
   
   /** Precompiled SQL */
-  sqlite3_stmt *exists, *countContent, *updPrio, *insertContent, *migr;
-  
-  /** Last migrated block */
-  cron_t lastExp;
-  unsigned int lastPrio;
+  sqlite3_stmt *exists, *countContent, *updPrio, *insertContent;
 } sqliteHandle;
 
 static sqliteHandle *dbh;
@@ -164,16 +160,6 @@ static int sqlite_decode_binary_n(const unsigned char *in,
 }
 
 /**
- * @brief Suspend migration and unlock table
- */
-static void suspendMigration() {
-  if (dbh->migr) {
-    sqlite3_finalize(dbh->migr);
-    dbh->migr = NULL;
-  }
-}
-
-/**
  * Given a full row from gn070 table (size,type,prio,anonLevel,expire,hash,value),
  * assemble it into a Datastore_Datum representation.
  */
@@ -226,8 +212,6 @@ static double getStat(const char * key) {
   sqlite3_stmt *stmt;
   double ret = SYSERR;
   
-  suspendMigration();
-
   i = sq_prepare("Select anonLevel from gn070 where hash = ?",
 		 &stmt);
   if (i == SQLITE_OK) {
@@ -268,8 +252,6 @@ static int setStat(const char *key,
 		   double val) {
   sqlite3_stmt *stmt;
   
-  suspendMigration();
-
   if (sq_prepare("REPLACE into gn070(hash, anonLevel, type) values (?, ?, ?)",
 		 &stmt) == SQLITE_OK) {
     sqlite3_bind_text(stmt,
@@ -312,110 +294,149 @@ static void syncStats() {
  *        Use 0 for any type.
  * @param callback the callback method
  * @param data second argument to all callback calls
- * @param sort 0 to order by expiration, 1 to order by prio
+ * @param sortByPriority 0 to order by expiration, 1 to order by prio
  * @return the number of items stored in the content database
  */
 static int sqlite_iterate(unsigned int type, 
 			  Datum_Iterator iter,
-			  void *closure, 
-			  int sort) {
-	
-  sqlite3_stmt *stmt;
-  int count = 0;
-  char scratch[200], *ptr;
+			  void * closure, 
+			  int sortByPriority) {	
+  sqlite3_stmt * stmt;
+  int count;
+  char scratch[512];
   Datastore_Datum * datum;
-  int bind;
+  unsigned int lastPrio;
+  unsigned long long lastExp;
+  unsigned long hashLen;
+  char * lastHash;
+  HashCode160 key;
 
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: iterating through the database\n");
 #endif 
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  
-  if ((sort == 0 && !dbh->migr) || sort != 0) {
-    strcpy(scratch, 
-	   "SELECT size, type, prio, anonLevel, expire, hash, value "
-	   "FROM gn070 ");
-    ptr = scratch + 67;
-    
-    if (type) {
-      strcpy(ptr, "where type = :1 ");
-      ptr += 16;
-    }    
-    if (sort) {
-      strcpy(ptr, "order by prio ASC");
-    } else {
-      if (!type) {
-        strcpy(ptr, "where ");
-        ptr += 6;
-      }
-      strcpy(ptr, "expire > :2 and prio >= :3 order by expire ASC, prio ASC");
-    }
-  
-    if (sq_prepare(scratch, 
-		   &stmt) != SQLITE_OK) {
-      LOG_SQLITE(LOG_ERROR, "sqlite_query");
-      MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-      return(SYSERR);
-    }
-    
-    dbh->migr = stmt;
-  } else
-    if (sort == 0)
-      stmt = dbh->migr;
-  
-  bind = 1;
-  
-  if (type)
-    sqlite3_bind_int(stmt, 
-		     bind++,
-		     type);
-    
-  if (!sort) {
-    sqlite3_bind_int(stmt,
-		     bind++,
-		     dbh->lastExp);
-    sqlite3_bind_int(stmt, 
-		     bind, 
-		     dbh->lastPrio);
-  }
-
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
-    datum = assembleDatum(stmt);
-    
-    if (datum == NULL) {
-      LOG(LOG_WARNING,
-	  _("Invalid data in database.  Please verify integrity!\n"));
-      continue; 
-    }    
+ 
+  strcpy(scratch, 
+	 "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070"
+	 " WHERE ((hash > :1 AND expire == :2 AND prio == :3) OR ");
+  if (sortByPriority) 
+    strcat(scratch,
+	   "(expire > :4 AND prio == :5) OR prio > :6)");
+  else
+    strcat(scratch,
+	   "(prio > :4 AND expire == :5) OR expire > :6)");
+  if (type) 
+    strcat(scratch, " AND type = :7");
+  if (sortByPriority) 
+    strcat(scratch, " ORDER BY prio ASC, expire ASC, hash ASC");
+  else 
+    strcat(scratch, " ORDER BY expire ASC, prio ASC, hash ASC");  
+  strcat(scratch, " LIMIT 1");
+  if (sq_prepare(scratch, 
+		 &stmt) != SQLITE_OK) {
+    LOG_SQLITE(LOG_ERROR, "sqlite3_prepare");
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-
-    if( SYSERR == iter(&datum->key, &datum->value, closure) ) {
-      count = SYSERR;
-      FREE(datum);
-      break;
-    }
-    
-    MUTEX_LOCK(&dbh->DATABASE_Lock_);
-    
-    dbh->lastPrio = sqlite3_column_int(stmt, 2);
-    dbh->lastExp = sqlite3_column_int64(stmt, 4);
-    
-    FREE(datum);
-
-    count++;
+    return SYSERR;
   }
-  
-  if (sort)
-    sqlite3_finalize(stmt);
-    
+
+  count    = 0;
+  lastPrio = 0;
+  lastExp  = 0x8000000000000000LL; /* MIN long long; sqlite does not know about unsigned... */
+  memset(&key, 0, sizeof(HashCode160));
+  lastHash = MALLOC(sizeof(HashCode160)*2 + 2);
+  while (1) {
+    hashLen = sqlite_encode_binary((const char *) &key, 
+				   sizeof(HashCode160),
+				   lastHash);
+
+    sqlite3_bind_blob(stmt,
+		      1,
+		      lastHash,
+		      hashLen,
+		      SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt,
+		       2,
+		       lastExp);
+    sqlite3_bind_int(stmt, 
+		     3,
+		     lastPrio);
+    if (sortByPriority) {
+      sqlite3_bind_int(stmt, 
+		       4,
+		       lastPrio);
+      sqlite3_bind_int64(stmt,
+			 5,
+			 lastExp);
+      sqlite3_bind_int(stmt, 
+		       6,
+		       lastPrio);
+    } else {
+      sqlite3_bind_int64(stmt,
+			 4,
+			 lastExp);
+      sqlite3_bind_int(stmt, 
+		       5,
+		       lastPrio);
+      sqlite3_bind_int64(stmt,
+			 6,
+			 lastExp);
+    }
+    if (type)
+      sqlite3_bind_int(stmt, 
+		       7,
+		       type);   
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+      datum = assembleDatum(stmt);
+      
+      if (datum == NULL) {
+	LOG(LOG_WARNING,
+	    _("Invalid data in database.  Please verify integrity!\n"));
+	continue; 
+      }    
+      
+      /*      printf("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
+	     (ntohl(datum->value.size) - sizeof(Datastore_Value))/8,
+	     ntohl(datum->value.prio),
+	     ntohll(datum->value.expirationTime),
+	     lastPrio,
+	     lastExp);
+      */
+      printf("FOUND %4u: exp %20lld old: %20lld - %d\n",
+	     (ntohl(datum->value.size) - sizeof(Datastore_Value))/8,
+	     ntohll(datum->value.expirationTime),
+	     lastExp,
+	     ntohll(datum->value.expirationTime) > lastExp);
+      
+      if (iter != NULL) {
+	MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+	if (SYSERR == iter(&datum->key, 
+			   &datum->value, 
+			   closure) ) {
+	  count = SYSERR;
+	  FREE(datum);
+	  MUTEX_LOCK(&dbh->DATABASE_Lock_);    
+	  break;
+	}    
+	MUTEX_LOCK(&dbh->DATABASE_Lock_);    
+      }
+      key = datum->key;
+      lastPrio = ntohl(datum->value.prio);
+      lastExp  = ntohll(datum->value.expirationTime);
+      FREE(datum);
+      count++;
+    } else
+      break;
+    sqlite3_reset(stmt);           
+  }
+  FREE(lastHash);
+  sqlite3_finalize(stmt);    
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG,
       "SQLite: reached end of database\n");
 #endif
-
   return count;
 }
 
@@ -465,7 +486,6 @@ static void sqlite_shutdown() {
   sqlite3_finalize(dbh->exists);
   sqlite3_finalize(dbh->updPrio);
   sqlite3_finalize(dbh->insertContent);
-  suspendMigration();  
   syncStats();
   if (sqlite3_close(dbh->dbf) != SQLITE_OK)
     LOG_SQLITE(LOG_ERROR, "sqlite_close");
@@ -517,10 +537,8 @@ static int get(const HashCode160 * key,
 #endif 
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_); 
-  suspendMigration();
   
-  strcpy(scratch, "SELECT ");
-  
+  strcpy(scratch, "SELECT "); 
   if (iter == NULL)
     strcat(scratch, "count(*)");
   else
@@ -593,10 +611,10 @@ static int get(const HashCode160 * key,
       } else
 	count += sqlite3_column_int(stmt, 0);
     } 
-    FREENONNULL(escapedHash);
     if (ret != SQLITE_DONE) {
       LOG_SQLITE(LOG_ERROR, "sqlite_query");
       sqlite3_finalize(stmt);
+      FREENONNULL(escapedHash);
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
       return SYSERR;
     }
@@ -610,6 +628,7 @@ static int get(const HashCode160 * key,
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: done reading content\n");
 #endif 
+  FREENONNULL(escapedHash);
   
   return count;
 }
@@ -639,9 +658,7 @@ static int put(const HashCode160 * key,
       ntohl(*(int*)&value[1]));
 #endif
 
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  
-  suspendMigration();
+  MUTEX_LOCK(&dbh->DATABASE_Lock_);  
   
   if (dbh->lastSync > 1000)
     syncStats(dbh);
@@ -714,7 +731,6 @@ static int del(const HashCode160 * key,
 #endif 
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_); 
-  suspendMigration();
   
   if (dbh->lastSync > 1000)
     syncStats(dbh);
@@ -817,9 +833,7 @@ static int update(const HashCode160 * key,
       "SQLite: update block\n");
 #endif 
 
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  
-  suspendMigration();
+  MUTEX_LOCK(&dbh->DATABASE_Lock_);  
 
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   
@@ -847,9 +861,9 @@ static int update(const HashCode160 * key,
   sqlite3_bind_int(dbh->updPrio,
 		   4,
 		   delta);
-  sqlite3_bind_int64(dbh->updPrio, 
-		     5, 
-		     MAX_PRIORITY);
+  sqlite3_bind_int(dbh->updPrio, 
+		   5, 
+		   MAX_PRIORITY);
   
   n = sqlite3_step(dbh->updPrio);
   sqlite3_reset(dbh->updPrio);
@@ -956,10 +970,6 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   }
   
   dbh->payload = getStat("PAYLOAD");
-  
-  dbh->migr = NULL;
-  dbh->lastPrio = 0;
-  dbh->lastExp = 0;
   
   if (dbh->payload == SYSERR) {
     FREE(dbh->fn);
