@@ -126,15 +126,11 @@ void create_recursive_mutex_(Mutex * mutex) {
   GNUNET_ASSERT(0 == pthread_mutexattr_setkind_np
 		(&attr,  
 		 PTHREAD_MUTEX_RECURSIVE_NP));
-#elif SOMEBSD || FREEBSD
+#elif SOMEBSD || FREEBSD || FREEBSD5
   GNUNET_ASSERT(0 == pthread_mutexattr_setkind_np
 		(&attr,
 		 PTHREAD_MUTEX_RECURSIVE));
-#elif SOLARIS || OSX
-  GNUNET_ASSERT(0 == pthread_mutexattr_settype
-		(&attr,
-		 PTHREAD_MUTEX_RECURSIVE));
-#elif WINDOWS
+#elif SOLARIS || OSX || WINDOWS
   GNUNET_ASSERT(0 == pthread_mutexattr_settype
 		(&attr,
 		 PTHREAD_MUTEX_RECURSIVE));
