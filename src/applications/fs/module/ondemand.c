@@ -229,6 +229,49 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   return ret;
 }
 
+struct adJ {
+  Datastore_ServiceAPI * datastore;
+  Datastore_Value  * dbv;
+  HashCode512 query;
+};
+
+static void asyncDelJob(struct adJ * job) {
+  job->datastore->del(&job->query,
+		      job->dbv);
+  FREE(job->dbv);
+  FREE(job);
+}
+
+/**
+ * Delete the query that still references the unavailable file.  This
+ * must be done asynchronously since we are in the "get" iterator and
+ * a del operation during "get" would deadlock!
+ */
+static void asyncDelete(Datastore_ServiceAPI * datastore,
+			const Datastore_Value * dbv,
+			const HashCode512 * query) {
+  struct adJ * job;
+  EncName enc;
+
+  job = MALLOC(sizeof(struct adJ));
+  job->datastore = datastore;
+  job->query = *query;
+  job->dbv = MALLOC(ntohl(dbv->size));
+  memcpy(job->dbv,
+	 dbv,
+	 ntohl(dbv->size));
+  hash2enc(query,
+	   &enc);
+  LOG(LOG_DEBUG,
+      _("Indexed file disappeared, deleting block for query '%s'\n"),
+      &enc);
+  /* schedule for "immediate" execution */
+  addCronJob((CronJob) &asyncDelJob,
+	     0, 
+	     0, 
+	     job);
+}
+
 /**
  * A query on the datastore resulted in the on-demand
  * block dbv.  On-demand encode the block and return
@@ -272,11 +315,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 
     /* Is the symlink there? */
     if (LSTAT(fn, &linkStat) == -1) {
-      /* No, we have deleted it previously.
-         Now delete the query that still references the unavailable file. */
-      datastore->del(query, dbv);
-    }
-    else {
+      asyncDelete(datastore, dbv, query);
+    } else {
       /* For how long has the file been unavailable? */
       hash2enc(&odb->fileId,
 	       &enc);
@@ -310,7 +350,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 		ofn);
 	  }
 	  FREE(ofn);
-          datastore->del(query, dbv);
+	  asyncDelete(datastore, dbv, query);
           stateUnlinkFromDB(unavail_key);
           UNLINK(fn);
         }

@@ -948,7 +948,7 @@ static int httpDirectSend(HTTPSession * httpSession,
 		     httpSession->wsize - 5,
 		     "http://%u.%u.%u.%u:%u",
 		     PRIP(ntohl(httpSession->hostIP)),
-		     ntohs(httpSession->hostPort)) + 5;
+ 		     ntohs(httpSession->hostPort)) + 5;
     } else {
       len = 5;
     }
