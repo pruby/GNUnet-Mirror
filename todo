@@ -30,6 +30,8 @@
   * configure.ac: flags for mysql, gmp, libgcrypt should ONLY be passed when
     linking the respective modules / libraries (gnunet_util, sqstore_mysql) [ tricky ]
   * fsui core (persistence) [ difficult ]
+  * read 'friends' list for topology_f2f
+  * spread out scanning done in topology_*.c?
 - Features removed but to be revived:
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
     user to specify maximum amount of parallelism) [ tricky ]
