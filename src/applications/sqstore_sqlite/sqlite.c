@@ -71,9 +71,6 @@ static sqliteHandle *dbh;
 static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt);
 static double getStat(char *key);
 static int setStat(char *key, double val);
-static SQstore_ServiceAPI *provide_module_sqstore_sqlite(
-	CoreAPIForApplication *capi);
-static void release_module_sqstore_sqlite();
 static int sqlite_iterate(unsigned int type, Datum_Iterator iter,
 	void *closure, int sort);
 static int iterateLowPriority(unsigned int type, Datum_Iterator iter,
@@ -121,13 +118,15 @@ static int sqlite_encode_binary(const unsigned char *in, int n, unsigned char *o
   return (int) (out - start);
 }
 
+#if 0
 /**
  * @brief Decode the string "in" into binary data and write it into "out".
  * @param in input
  * @param out output
  * @return number of output bytes, -1 on error
  */
-static int sqlite_decode_binary(const unsigned char *in, unsigned char *out){
+static int sqlite_decode_binary(const unsigned char *in,
+				unsigned char *out){
   char c;
   unsigned char *start = out;
   
@@ -145,6 +144,7 @@ static int sqlite_decode_binary(const unsigned char *in, unsigned char *out){
   
   return (int) (out - start);
 }
+#endif
 
 /**
  * @brief Decode the string "in" into binary data and write it into "out".
@@ -407,10 +407,9 @@ static void sqlite_shutdown() {
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: closing database\n");
 #endif
-
-	if (! dbh)
-		return;
-
+  if (! dbh)
+    return;
+  
   MUTEX_DESTROY(&dbh->DATABASE_Lock_);
 
   sqlite3_finalize(dbh->countContent);
@@ -431,8 +430,8 @@ static void sqlite_shutdown() {
 /**
  * Shutdown the module.
  */
-static void release_module_sqstore_sqlite() {
-	sqlite_shutdown();
+void release_module_sqstore_sqlite() {
+  sqlite_shutdown();  
 }
 
 /**
@@ -846,29 +845,43 @@ static int del(const HashCode160 * key,
 static int update(const HashCode160 * key,
 		  const Datastore_Value * value,
 		  int delta) {
-	char *escapedHash, *escapedBlock;
-	int hashLen, blockLen, n;
+  char *escapedHash, *escapedBlock;
+  int hashLen, blockLen, n;
   unsigned long contentSize;
 	
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-
+  
   escapedHash = MALLOC(2*sizeof(HashCode160)+1);
-	hashLen = sqlite_encode_binary((const char *) key, sizeof(HashCode160),
-    escapedHash);
-
+  hashLen = sqlite_encode_binary((const char *) key,
+				 sizeof(HashCode160),
+				 escapedHash);  
   escapedBlock = MALLOC(2*contentSize+1);
-	blockLen = sqlite_encode_binary((const char *) value, contentSize,
-    escapedBlock);
-	
-	sqlite3_bind_int(dbh->updPrio, 1, delta);
-  sqlite3_bind_blob(dbh->updPrio, 2, escapedHash, hashLen, SQLITE_TRANSIENT);
-  sqlite3_bind_blob(dbh->updPrio, 3, escapedBlock, blockLen, SQLITE_TRANSIENT);
-	sqlite3_bind_int(dbh->updPrio, 4, delta);
-	sqlite3_bind_int64(dbh->updPrio, 5, LLONG_MAX);
-	
-	n = sqlite3_step(dbh->updPrio);
-	sqlite3_reset(dbh->updPrio);
+  blockLen = sqlite_encode_binary((const char *) value, 
+				  contentSize,
+				  escapedBlock);
+  sqlite3_bind_int(dbh->updPrio,
+		   1, 
+		   delta);
+  sqlite3_bind_blob(dbh->updPrio, 
+		    2, 
+		    escapedHash, 
+		    hashLen,
+		    SQLITE_TRANSIENT);
+  sqlite3_bind_blob(dbh->updPrio, 
+		    3,
+		    escapedBlock, 
+		    blockLen,
+		    SQLITE_TRANSIENT);
+  sqlite3_bind_int(dbh->updPrio,
+		   4,
+		   delta);
+  sqlite3_bind_int64(dbh->updPrio, 
+		     5, 
+		     MAX_PRIORITY);
+  
+  n = sqlite3_step(dbh->updPrio);
+  sqlite3_reset(dbh->updPrio);
   
   FREE(escapedHash);
   FREE(escapedBlock);
@@ -905,11 +918,9 @@ static unsigned long long getSize() {
  * guaranteed to be unloading of the module.
  */
 static void drop() {
-	char *fn = STRDUP(dbh->fn);
-	
-	sqlite_shutdown();
-	
-	UNLINK(fn);
+  char *fn = STRDUP(dbh->fn);  
+  sqlite_shutdown();  
+  UNLINK(fn);
 }
  
 /* end of sqlite.c */

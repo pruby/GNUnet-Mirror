@@ -43,7 +43,6 @@
 
 #define VERBOSE_STATS 0
 
-
 #ifdef CYGWIN
  #include <sys/reent.h>
  #define _REENT_ONLY

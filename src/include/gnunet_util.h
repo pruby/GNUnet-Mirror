@@ -66,6 +66,11 @@
 #define MAX_BUFFER_SIZE 65536
 
 /**
+ * Highest legal priority or trust value
+ */
+#define MAX_PRIORITY 0x7FFFFFFF
+
+/**
  * Named constants for return values.
  */
 #define OK 1
