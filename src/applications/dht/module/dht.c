@@ -509,15 +509,6 @@ typedef struct DHT_REMOVE_RECORD {
 
 
 typedef struct {
-  DHT_TableId table;
-  cron_t timeout;
-  unsigned int maxPuts;
-  DHT_PUT_RECORD ** puts;
-  unsigned int putsPos;
-} MigrationClosure;
-
-
-typedef struct {
 
   /**
    * Number of results currently received (size of the
@@ -2722,29 +2713,6 @@ static int dht_join(Blockstore * datastore,
   return OK;
 }
 
-
-/**
- * Callback function to migrate content to other peers.
- */
-static int dht_migrate(const HashCode512 * key,
-		       const DataContainer * value,
-		       MigrationClosure * cls) {
-  ENTER();
-  if (cls->puts[cls->putsPos] != NULL)
-    dht_put_async_stop(cls->puts[cls->putsPos]);
-  cls->puts[cls->putsPos]
-    = dht_put_async_start(&cls->table,
-			  key,
-			  cls->timeout,
-			  value,
-			  NULL,
-			  NULL);
-  cls->putsPos = (cls->putsPos + 1) % cls->maxPuts;
-  gnunet_util_sleep(cls->timeout / cls->maxPuts);
-  return OK;
-}
-
-
 /**
  * Leave a table (stop storing data for the table).  Leave
  * fails if the node is not joint with the table.  Blocks
@@ -2752,27 +2720,14 @@ static int dht_migrate(const HashCode512 * key,
  *
  * @param datastore the storage callbacks to use for the table
  * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to
- *   the leave request (has no impact on success or failure);
- *   but only timeout time is available for migrating data, so
- *   pick this value with caution.
  * @return SYSERR on error, OK on success
  */
-static int dht_leave(const DHT_TableId * table,
-		     cron_t timeout) {
+static int dht_leave(const DHT_TableId * table) {
   int i;
   int idx;
   LocalTableData old;
-  MigrationClosure cls;
   DHT_REMOVE_RECORD * remRec;
-  unsigned int count;
 
-  if (timeout > 1 * cronHOURS) {
-    LOG(LOG_WARNING,
-	_("'%s' called with timeout above 1 hour (bug?)\n"),
-	__FUNCTION__);
-    timeout = 1 * cronHOURS;
-  }
   ENTER();
   MUTEX_LOCK(lock);
   idx = -1;
@@ -2807,42 +2762,12 @@ static int dht_leave(const DHT_TableId * table,
 	   sizeof(PeerIdentity));
     remRec = dht_remove_async_start(&masterTableId,
 				    table,
-				    timeout,
+				    0,
 				    value,
 				    NULL,
 				    NULL);
-  } else {
-    remRec = NULL;
-  }
-
-  /* migrate content if applicable! */
-  count = old.store->iterate(old.store->closure,
-			     NULL, NULL);
-  cls.table = *table;
-  cls.maxPuts = getConfigurationInt("DHT",
-				    "MAX-MIGRATION-PARALLELISM");
-  if (cls.maxPuts == 0)
-    cls.maxPuts = 16;
-  /* migration time for each entry:
-     total time times parallelism by count */
-  if ( (count > 0) && (timeout > 0) ) {
-    cls.timeout = timeout * cls.maxPuts / count;
-    cls.puts = MALLOC(sizeof(DHT_PUT_RECORD*)*cls.maxPuts);
-    memset(cls.puts, 0, sizeof(DHT_PUT_RECORD*)*cls.maxPuts);
-    cls.putsPos = 0;
-    old.store->iterate(old.store->closure,
-		       (DataProcessor) &dht_migrate,
-		       &cls);
-    for (i=0;i<cls.maxPuts;i++)
-      if (cls.puts[i] != NULL) {
-	dht_put_async_stop(cls.puts[i]);
-	cls.puts[i] = NULL;
-      }
-    FREE(cls.puts);
-  }
-  /* clean up! */
-  if (remRec != NULL)
     dht_remove_async_stop(remRec);
+  }
   return OK;
 }
 
@@ -3644,8 +3569,7 @@ int release_module_dht() {
     abortTable[0].job(abortTable[0].arg);
   }
   /* leave the master table */
-  dht_leave(&masterTableId,
-	    0);
+  dht_leave(&masterTableId);
   for (i=0;i<bucketCount;i++) {
     bucket = (PeerInfo*) vectorGetFirst(buckets[i].peers);
     while (bucket != NULL) {

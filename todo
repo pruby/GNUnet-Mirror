@@ -1,7 +1,5 @@
 0.7.0pre1 [4'05] (aka "preview"):
 Testing:
-- DHT:
-  * make dht tests work
 - FSUI
 
 0.7.0 [5'05] (aka "compatibility? what's that?"):
@@ -20,7 +18,6 @@ Testing:
 - Additional testing:
   * gnunet-tracekit
   * gap and economy
-  * DHT
   * FSUI (in particular persistence)
 - Documentation:
   * ECRS block format changes (dramatic!)
@@ -30,7 +27,9 @@ Testing:
 
 0.7.x (aka "stabilization"):
 - gnunet-chat
-- XFS [ location URIs ]
+- DHT:
+  * make dht tests work
+  * XFS [ location URIs ]
 - DHT optimizations [ use additional optional fields (HELOs) ]
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)

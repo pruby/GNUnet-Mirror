@@ -993,7 +993,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     capi->releaseService(datastore);
     return SYSERR;
   }
-  // dht = capi->requestService("dht");
+  /* dht = capi->requestService("dht"); */
   dht = NULL;
 
   coreAPI = capi;
@@ -1056,8 +1056,7 @@ void done_module_fs() {
   if (dht != NULL) {
     LOG(LOG_INFO,
 	"Leaving DHT (this may take a while).");
-    dht->leave(&dht_table,
-	       15 * cronSECONDS);
+    dht->leave(&dht_table);
     LOG(LOG_INFO,
 	"Leaving DHT complete.");
 

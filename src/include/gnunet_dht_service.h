@@ -78,8 +78,7 @@ typedef struct {
    *   implies 'use value from gnunet.conf').
    * @return SYSERR on error, OK on success
    */
-  int (*leave)(const DHT_TableId * table,
-	       cron_t timeout);
+  int (*leave)(const DHT_TableId * table);
 
 
   /**
