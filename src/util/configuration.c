@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -200,10 +200,14 @@ static int cfg_parse_file(char *filename) {
 	  i=0;
       }
 #ifdef MINGW
+    {
+      int i2;
+      
       /* Strip LF */
-      nr = strlen(value) - 1;
-      if (nr >= 0 && value[nr] == '\r')
-	value[nr] = 0;
+      i2 = strlen(value) - 1;
+      if (i2 >= 0 && value[i2] == '\r')
+        value[i2] = 0;
+    }
 #endif
       cfg_set_entry(e, tag, &value[i]);
       
