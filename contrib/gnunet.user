@@ -84,8 +84,8 @@ SEARCHTIMEOUT = 300
 # should be just fine for most people. The - before a library name
 # indicates that this should be executed last and makes only sense for
 # the split-library.
-# Default is libextractor_filename:-libextractor_split:-libextractor_lower
-EXTRACTORS = libextractor_filename:-libextractor_split:-libextractor_lower
+# Default is libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail
+EXTRACTORS = libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail
 
 # Where to download files to (by default)?
 # Default is /tmp/gnunet-downloads/
