@@ -217,8 +217,12 @@ static int parseKeywordURI(const char * uri,
 		   strlen(ECRS_SEARCH_INFIX)))
     return SYSERR;
   pos += strlen(ECRS_SEARCH_INFIX);
-  if ( (slen == pos) ||
-       (uri[slen-1] == '+') ||
+  if (slen == pos) {
+    /* no keywords */
+    (*keywords) = NULL;
+    return 0;
+  }
+  if ( (uri[slen-1] == '+') ||
        (uri[pos] == '+') )
     return SYSERR; /* no keywords / malformed */
 
