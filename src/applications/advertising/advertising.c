@@ -322,9 +322,9 @@ receivedHELO(const p2p_HEADER * message) {
 
   /* ok, finally we can send! */
   if ( (res == OK) &&
-       (SYSERR == transport->send(tsession,
-				  buffer,
-				  heloEnd)) )
+       (SYSERR == coreAPI->sendPlaintext(tsession,
+					 buffer,
+					 heloEnd)) )
     res = SYSERR;
   FREE(buffer);
   if (SYSERR == transport->disconnect(tsession))
@@ -443,7 +443,7 @@ broadcastHELOTransport(TransportAPI * tapi,
 			       NULL,
 			       NULL); /* just count */
   if (SYSERR == transport->createHELO(tapi->protocolNumber,
-				    &sd.m))
+				      &sd.m))
     return;
 #if DEBUG_HELOEXCHANGE
   LOG(LOG_INFO,
