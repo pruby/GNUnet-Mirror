@@ -129,4 +129,13 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
 	       unsigned int blocksize,
 	       const HashCode512 * hc);
 
+/**
+ * Test if a file of the given hash is indexed.
+ * 
+ * @param hc the hash of the entire file
+ * @return YES if so, NO if not, SYSERR on error
+ */
+int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
+		   const HashCode512 * hc);
+
 #endif

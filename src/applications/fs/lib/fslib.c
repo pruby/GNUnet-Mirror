@@ -431,4 +431,17 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
   return ret;
 }
 
+/**
+ * Test if a file of the given hash is indexed.
+ * 
+ * @param hc the hash of the entire file
+ * @return YES if so, NO if not, SYSERR on error
+ */
+int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
+		   const HashCode512 * hc) {
+  // FIXME: implement!
+  return SYSERR;
+}
+
+
 /* end of fslib.c */

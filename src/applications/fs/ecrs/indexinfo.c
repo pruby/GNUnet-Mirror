@@ -26,15 +26,10 @@
 
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
+#include "gnunet_getoption_lib.h"
 
 /**
  * Test if a file is indexed.
- *
- * This function will ONLY work if gnunetd runs on the
- * same machine as the current process and if the indexed
- * files could be symlinked.  If indexed files had to be 
- * uploaded to a remote machine or copied, the original
- * names will have been lost.
  *
  * @return YES if the file is indexed, NO if not, SYSERR on errors
  *  (i.e. filename could not be accessed and thus we have problems
@@ -43,7 +38,43 @@
  *  be notified that 'something is wrong')
  */
 int ECRS_isFileIndexed(const char * filename) {
-  return SYSERR;
+  HashCode512 hc;
+  GNUNET_TCP_SOCKET * sock;
+  int ret;
+
+  if (SYSERR == getFileHash(filename,
+			    &hc))
+    return SYSERR;
+  sock = getClientSocket();
+  if (sock == NULL)
+    return SYSERR;
+  ret = FS_testIndexed(sock,
+		       &hc);
+  releaseClientSocket(sock);
+  return ret;
+}
+
+struct iiC {
+  ECRS_FileIterator iterator;
+  void * closure;
+  int cnt;
+};
+
+static void iiHelper(const char * fn,
+		     const char * dir,
+		     struct iiC * cls) {
+  char * fullName;
+  char * lnkName;
+
+  if (cls->cnt == SYSERR)
+    return;
+  
+  // FIXME: implement!
+  cls->cnt++;
+  if (OK != cls->iterator(lnkName,
+			  cls->closure))
+    cls->cnt = SYSERR;
+  FREE(lnkName);
 }
 
 /**
@@ -60,7 +91,25 @@ int ECRS_isFileIndexed(const char * filename) {
  */
 int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
 			     void * closure) {
-  return SYSERR;
+  char * indexDirectory;
+  GNUNET_TCP_SOCKET * sock;
+  struct iiC cls;
+
+  sock = getClientSocket();
+  if (sock == NULL)
+    return 0;
+  indexDirectory = getConfigurationOptionValue(sock,
+					       "FIXME",
+					       "FIXME");
+  releaseClientSocket(sock);
+  cls.iterator = iterator;
+  cls.closure = closure;
+  cls.cnt = 0;
+  scanDirectory((DirectoryEntryCallback) &indexDirectory,
+		&iiHelper,
+		&cls);
+  FREE(indexDirectory);
+  return cls.cnt;
 }
 
 /* end of indexinfo.c */

@@ -353,12 +353,6 @@ int ECRS_uploadFile(const char * filename,
 /**
  * Test if a file is indexed.
  *
- * This function will ONLY work if gnunetd runs on the
- * same machine as the current process and if the indexed
- * files could be symlinked.  If indexed files had to be 
- * uploaded to a remote machine or copied, the original
- * names will have been lost.
- *
  * @return YES if the file is indexed, NO if not, SYSERR on errors
  *  (i.e. filename could not be accessed and thus we have problems
  *  checking; also possible that the file was modified after indexing;
