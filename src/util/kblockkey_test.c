@@ -73,18 +73,18 @@ static int testEncryptDecrypt(struct PrivateKey * hostkey) {
   for (i=0;i<ITER;i++) {
     fprintf(stderr, ".");
     if (SYSERR == encryptPrivateKey(TESTSTRING,
-				 strlen(TESTSTRING)+1,
-				 &pkey,
-				 &target)) {
+				    strlen(TESTSTRING)+1,
+				    &pkey,
+				    &target)) {
       fprintf(stderr, 
 	      "encryptPrivateKey returned SYSERR\n");
       ok++;
       continue;
     }
     if (-1 == decryptPrivateKey(hostkey,
-			     &target, 
-			     result,
-			     MAX_TESTVAL)) {
+				&target, 
+				result,
+				strlen(TESTSTRING)+1)) {
      fprintf(stderr, 
 	      "decryptPrivateKey returned SYSERR\n");
       ok++;
@@ -122,13 +122,18 @@ static int testSignVerify(struct PrivateKey * hostkey) {
   TIME(&start);
   for (i=0;i<ITER;i++) {
     fprintf(stderr, ".");
-    if (SYSERR == sign(hostkey, strlen(TESTSTRING), TESTSTRING, &sig)) {
+    if (SYSERR == sign(hostkey,
+		       strlen(TESTSTRING),
+		       TESTSTRING, &sig)) {
       fprintf(stderr,
 	      "sign returned SYSERR\n");
       ok = SYSERR;
       continue;
     }
-    if (SYSERR == verifySig(TESTSTRING, strlen(TESTSTRING), &sig, &pkey)) {
+    if (SYSERR == verifySig(TESTSTRING, 
+			    strlen(TESTSTRING), 
+			    &sig, 
+			    &pkey)) {
       printf("testSignVerify failed!\n");
       ok = SYSERR;
       continue;
@@ -156,9 +161,9 @@ static int testPrivateKeyEncoding(struct PrivateKey * hostkey) {
     fprintf(stderr, ".");
     getPublicKey(hostkey, &pkey);
     if (SYSERR == encryptPrivateKey(TESTSTRING,
-				 strlen(TESTSTRING)+1,
-				 &pkey,
-				 &target)) {
+				    strlen(TESTSTRING)+1,
+				    &pkey,
+				    &target)) {
       fprintf(stderr,
 	      "encryptPrivateKey returned SYSERR\n");
       ok = SYSERR;
@@ -173,7 +178,10 @@ static int testPrivateKeyEncoding(struct PrivateKey * hostkey) {
     }
     hostkey = decodePrivateKey(encoding);
     FREE(encoding);
-    if (SYSERR == decryptPrivateKey(hostkey, &target, result, MAX_TESTVAL)) {
+    if (SYSERR == decryptPrivateKey(hostkey, 
+				    &target,
+				    result, 
+				    strlen(TESTSTRING)+1)) {
       fprintf(stderr,
 	      "decryptPrivateKey returned SYSERR\n");
       ok = SYSERR;
@@ -232,14 +240,15 @@ int main(int argc, char * argv[]) {
   if (OK != testPrivateKeyEncoding(hostkey)) 
     failureCount++;
   freePrivateKey(hostkey);
-#if ! USE_OPENSSL
+#if USE_GCRYPT
   doneLockingGcrypt();
 #endif
 
-  if (failureCount == 0)
+  if (failureCount == 0) {
     return 0;
-  else {
-    printf("\n\n%d TESTS FAILED!\n\n",failureCount);
+  } else {
+    printf("\n\n%d TESTS FAILED!\n\n",
+	   failureCount);
     return -1;
   }  
 }

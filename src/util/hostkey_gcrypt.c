@@ -700,7 +700,7 @@ int encryptPrivateKey(const void * block,
 int decryptPrivateKey(const struct PrivateKey * hostkey, 
 		      const RSAEncryptedData * block,
 		      void * result,
-		      unsigned int max) {
+		      unsigned short max) {
   gcry_sexp_t resultsexp;
   gcry_sexp_t data;
   size_t erroff;
@@ -774,39 +774,8 @@ int decryptPrivateKey(const struct PrivateKey * hostkey,
   }
 
   endp = tmp;
-  if (*endp == 0) {
-    endp++;
-    size--;
-  }
-  if ( (!size) || 
-       (*endp != 0x02 )) {
-    LOG(LOG_ERROR,
-	_("Received plaintext not in pkcs-1 block type 2 format (size=%d, *tmp=%d)!\n"),
-	size, (int)*tmp);
-    FREE(tmp);
-    unlockGcrypt();
-    return SYSERR;
-  }
-  /* serach the end of the padding */
-  while ( (size > 0) && 
-	  ((*endp) != 0) ) {
-    size--;
-    endp++;
-  }
-  if ( (size == 0) || 
-       (*endp != 0x0) ) {
-    LOG(LOG_ERROR,
-	_("Received plaintext not in pkcs-1 block type 2 format (size=%d, *endp=%d)!\n"),
-	size, (int) *endp);
-    FREE(tmp);
-    unlockGcrypt();
-    return SYSERR;
-  }
-  size--;
-  endp++;
-
-  if (size > max)
-    size = max;
+  endp += (size - max);
+  size = max;
   memcpy(result,
 	 endp,
 	 size);
@@ -946,7 +915,8 @@ int verifySig(const void * block,
   memcpy(buff,
 	 FORMATSTRING,
 	 bufSize);
-  memcpy(&buff[strlen(FORMATSTRING) - strlen("0123456789012345678901234567890123456789012345678901234567890123))")],
+  memcpy(&buff[strlen(FORMATSTRING) - 
+	       strlen("0123456789012345678901234567890123456789012345678901234567890123))")],
 	 &hc,
 	 sizeof(HashCode512));
   rc = gcry_sexp_new(&data,

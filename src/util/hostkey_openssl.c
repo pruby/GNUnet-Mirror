@@ -373,7 +373,7 @@ int encryptPrivateKey(const void * block,
 int decryptPrivateKey(const struct PrivateKey * hostkey, 
 		      const RSAEncryptedData * block,
 		      void * result,
-		      unsigned int max) {
+		      unsigned short max) {
   RSAEncryptedData tmp; /* this is as big as the result can possibly get */
   int size;
 
