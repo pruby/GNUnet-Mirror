@@ -14,6 +14,7 @@ libgnunetfsui_la_SOURCES = \
   search.c \
   upload.c
 libgnunetfsui_la_LIBADD = \
+ -lextractor \
  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 

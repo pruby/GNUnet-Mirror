@@ -18,5 +18,6 @@ gnunet_template_SOURCES = \
 libgnunetmodule_template_la_SOURCES = \
   template.c 
 libgnunetmodule_template_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  -export-dynamic -avoid-version -module \
+  $(LDADD)
 

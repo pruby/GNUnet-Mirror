@@ -30,7 +30,9 @@
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
 
+#ifndef MINGW
 #include <langinfo.h>
+#endif
 
 /* hmm. Man says time.h, but that doesn't yield the
    prototype.  Strange... */
@@ -315,7 +317,12 @@ static int parseOptions(int argc,
       topKeywords[topKeywordCnt-1]
 	= convertToUtf8(GNoptarg,
 			strlen(GNoptarg),
-			nl_langinfo(CODESET));
+#ifndef MINGW
+      nl_langinfo(CODESET)
+#else
+      ""
+#endif
+      );
       break;
     case 'K':
       GROW(gloKeywords,
@@ -324,7 +331,12 @@ static int parseOptions(int argc,
       gloKeywords[gloKeywordCnt-1] 
 	= convertToUtf8(GNoptarg,
 			strlen(GNoptarg),
-			nl_langinfo(CODESET));
+#ifndef MINGW
+        nl_langinfo(CODESET)
+#else
+        ""
+#endif
+        );
       break;
     case 'm': {
       EXTRACTOR_KeywordType type;
@@ -332,7 +344,12 @@ static int parseOptions(int argc,
 
       tmp = convertToUtf8(GNoptarg,
 			  strlen(GNoptarg),
-			  nl_langinfo(CODESET));     
+#ifndef MINGW
+      nl_langinfo(CODESET)
+#else
+      ""
+#endif
+      );     
       type = EXTRACTOR_getHighestKeywordTypeNumber();
       while (type > 0) {
 	type--;
@@ -552,11 +569,20 @@ int main(int argc, char ** argv) {
     if (timestr != NULL) {
       struct tm t;
       if ((NULL == strptime(timestr, 
+#ifndef MINGW
 			    nl_langinfo(D_T_FMT),
+#else
+          "%Y%m%d",
+#endif
 			    &t))) {
 	LOG_STRERROR(LOG_FATAL, "strptime");
         errexit(_("Parsing time failed. Use '%s' format.\n"),
-		nl_langinfo(D_T_FMT));
+#ifndef MINGW
+          nl_langinfo(D_T_FMT)
+#else
+          "%Y%m%d"
+#endif
+          );
       }
       FREE(timestr);
     }    

@@ -1,3 +1,11 @@
+if HAVE_MYSQL
+	MYSQL_DIR = sqstore_mysql
+endif
+
+if !MINGW
+	TESTBED_DIR = testbed
+endif
+
 SUBDIRS	= \
  advertising \
  bootstrap_http \
@@ -12,11 +20,11 @@ SUBDIRS	= \
  identity \
  pingpong \
  session \
- sqstore_mysql \
+ $(MYSQL_DIR) \
  stats \
  tbench \
  template \
- testbed \
+ $(TESTED_DIR) \
  topology_default \
  traffic \
  transport
