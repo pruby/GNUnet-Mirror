@@ -275,9 +275,9 @@ static void testPING(HELO_Message * xhelo,
   ok = NO;
   LOG(LOG_DEBUG,
       "Sending PING\n");
-  if (OK != transport->sendReliable(tsession,
-				    msg,
-				    len)) {
+  if (OK != sendPlaintext(tsession,
+			  msg,
+			  len)) {
     fprintf(stderr,
 	    "Send failed.\n");
     FREE(msg);
