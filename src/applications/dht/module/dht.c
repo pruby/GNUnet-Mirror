@@ -3585,14 +3585,14 @@ DHT_ServiceAPI * provide_module_dht(CoreAPIForApplication * capi) {
     return NULL;
   i = getConfigurationInt("DHT",
 			  "BUCKETCOUNT");
-  if ( (i == 0) || (i > 160) )
-    i = 160;
+  if ( (i == 0) || (i > 512) )
+    i = 512;
   GROW(buckets,
        bucketCount,
        i);
   for (i=0;i<bucketCount;i++) {
-    buckets[i].bstart = 160 * i / bucketCount;
-    buckets[i].bend = 160 * (i+1) / bucketCount;
+    buckets[i].bstart = 512 * i / bucketCount;
+    buckets[i].bend = 512 * (i+1) / bucketCount;
     buckets[i].peers = vectorNew(4);
   }
 
