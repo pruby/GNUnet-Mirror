@@ -105,8 +105,10 @@ static int testDirectory(unsigned int i) {
 			      dlen,
 			      &meta2,
 			      &processor,
-			      &cls))
+			      &cls)) {
+    printf("expected %u\n", i);
     ABORT();
+  }
   if (! ECRS_equalsMetaData(meta,
 			    meta2))
     ABORT();
@@ -124,8 +126,11 @@ int main(int argc, char * argv[]) {
   int failureCount = 0;
   int i;
 
-  for (i=17;i<18;i++)
+  for (i=17;i<10000;i*=2) {
+    fprintf(stderr, ".");
     failureCount += testDirectory(i);
+  }
+  fprintf(stderr, "\n");
 
   if (failureCount == 0)
     return 0;

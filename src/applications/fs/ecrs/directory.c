@@ -72,7 +72,7 @@ int ECRS_listDirectory(const char * data,
       BREAK();
       return SYSERR; /* malformed !*/
     }
-    pos = 8 + sizeof(unsigned int);
+    pos = 8 + sizeof(unsigned int) + mdSize;
   }
   while (pos < len) {
     /* find end of URI */
@@ -81,8 +81,10 @@ int ECRS_listDirectory(const char * data,
 	 skip to next alignment */
       align = ((pos / BLOCK_ALIGN_SIZE)+1) * BLOCK_ALIGN_SIZE;
       pos = align;
-      if (pos >= len)
+      if (pos >= len) {
+	BREAK();
 	break;
+      }
     }
     epos = pos;
     while ( (epos < len) &&

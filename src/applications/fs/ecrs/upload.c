@@ -56,7 +56,6 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   EncName enc;
 
   size = ntohl(iblocks[level]->size);
-  GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
   GNUNET_ASSERT(size > sizeof(Datastore_Value));
   size -= sizeof(Datastore_Value);
   GNUNET_ASSERT(size - sizeof(DBlock) <= IBLOCK_SIZE);
