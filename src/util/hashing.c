@@ -40,6 +40,7 @@
 
 #if USE_GCRYPT
 #include <gcrypt.h>
+#include "locking_gcrypt.h"
 #endif
 
 /**
@@ -55,10 +56,12 @@ void hash(const void * block,
   RIPEMD160(block, size, (unsigned char*) ret);
 #endif
 #if USE_GCRYPT
+  lockGcrypt();
   gcry_md_hash_buffer(GCRY_MD_RMD160,
 		      (char*) ret,
 		      block,
 		      size);
+  unlockGcrypt();
 #endif
 }
 
@@ -80,10 +83,13 @@ int getFileHash(const char * filename,
   gcry_md_hd_t hd;
   char * res;
 
+  lockGcrypt();
   if (0 != gcry_md_open(&hd,
-			GCRY_MD_RMD160,
-			0))
+						GCRY_MD_RMD160,
+						0)) {
+	unlockGcrypt();
     return SYSERR;
+  }
 #endif
 #if USE_OPENSSL
   RIPEMD160_CTX hd;  
@@ -94,6 +100,7 @@ int getFileHash(const char * filename,
   if (fh == -1) {
 #if USE_GCRYPT
     gcry_md_close(hd);
+	unlockGcrypt();
 #endif
 #if USE_OPENSSL
     RIPEMD160_Final((unsigned char*)ret,
@@ -114,6 +121,7 @@ int getFileHash(const char * filename,
       CLOSE(fh);
 #if USE_GCRYPT
       gcry_md_close(hd);
+	  unlockGcrypt();
 #endif
 #if USE_OPENSSL
       RIPEMD160_Final((unsigned char*)ret,
@@ -141,6 +149,7 @@ int getFileHash(const char * filename,
 	 res,
 	 sizeof(HashCode160));
   gcry_md_close(hd);
+  unlockGcrypt();
 #endif
 #if USE_OPENSSL
   RIPEMD160_Final((unsigned char*)ret,
