@@ -28,7 +28,7 @@
 #include "gnunet_transport.h"
 #include "platform.h"
 
-#define DEBUG_TCP NO
+#define DEBUG_TCP YES 
 
 /**
  * after how much time of the core not being associated with a tcp
@@ -497,7 +497,7 @@ static int readAndProcess(int i) {
 #if DEBUG_TCP
     LOG(LOG_DEBUG,
 	"tcp transport received %u bytes, forwarding to core\n",
-	mp->rsize);
+	mp->size);
 #endif
     coreAPI->receive(mp);
     /* finally, shrink buffer adequately */
