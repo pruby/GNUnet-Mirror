@@ -1253,6 +1253,48 @@ void SetErrnoFromWinsockError(long lWinError)
 }
 
 /**
+ * Set errno according to a HRESULT (COM error code)
+ */
+void SetErrnoFromHRESULT(HRESULT hRes)
+{
+  switch(hRes)
+  {
+    case NOERROR:
+      errno = 0;
+      break;
+    case E_UNEXPECTED:
+    case E_FAIL:
+    case S_FALSE:
+      errno = ESTALE;
+    case E_NOTIMPL:
+      errno = ENOSYS;
+      break;
+    case E_OUTOFMEMORY:
+      errno = ENOMEM;
+      break;
+    case E_INVALIDARG:
+    case E_NOINTERFACE:
+      errno = EINVAL;
+      break;
+    case E_POINTER:
+    case E_ABORT:
+      errno = EFAULT;
+      break;
+    case E_HANDLE:
+      errno = EBADF;
+      break;
+    case E_ACCESSDENIED:
+      errno = EACCES;
+      break;
+    case E_PENDING:
+      errno = EBUSY;
+      break;
+    default:
+      SetErrnoFromWinError(HRESULT_CODE(hRes));
+  }
+}
+
+/**
  * Set h_errno according to a Windows error
  * @param lWinError Error code defined in winerror.h
  */
@@ -1584,9 +1626,30 @@ int _win_rename(const char *oldname, const char *newname)
 }
 
 /**
+ * Dereference a symlink recursively
+ */
+int __win_deref(const char *path)
+{
+  int iDepth = 0;
+
+  errno = 0;
+   
+  while (DereferenceShortcut(szFile))
+  {
+    if (iDepth++ > 10)
+    {
+      errno = ELOOP;
+      return -1;
+    }
+  }
+  
+  return errno ? -1 : 0;
+}
+
+/**
  * Get status information on a file
  */
-int _win_stat(const char *path, struct stat *buffer)
+int __win_stat(const char *path, struct stat *buffer, int iDeref)
 {
   char szFile[_MAX_PATH + 1];
   long lRet;
@@ -1604,8 +1667,23 @@ int _win_stat(const char *path, struct stat *buffer)
     szFile[lRet] = 0;
   }
   
+  /* Dereference symlinks */
+  if (iDeref)
+  {
+    if (__win_deref(szFile) == -1)
+      return -1;
+  }
+  
   /* stat sets errno */
   return stat(szFile, buffer);
+}
+
+/**
+ * Get status information on a file
+ */
+int _win_stat(const char *path, struct stat *buffer)
+{
+  return __win_stat(szFile, buffer, 1);
 }
 
 /**
@@ -1783,9 +1861,8 @@ int _win_symlink(const char *path1, const char *path2)
     return -1;
   }  
   
+  /* CreateShortcut sets errno */
   lRet = CreateShortcut(path1, path2);
-  if (lRet != 1)
-   SetErrnoFromWinError(GetLastError());
   
   return lRet ? 0 : -1;
 }
@@ -1871,6 +1948,44 @@ int _win_munmap(void *start, size_t length)
   
   return success ? 0 : -1;
 }
+
+/**
+ * Get symbolic link status
+ */
+int _win_lstat(const char *path, struct stat *buf)
+{
+  return __win_stat(path, buf, 0);  
+}
+
+/**
+ * Read the contents of a symbolic link
+ */
+int _win_readlink(const char *path, char *buf, size_t bufsize)
+{
+  char szDeref[_MAX_PATH + 1];
+  int iLen;
+
+  if(strlen(path) > _MAX_PATH)
+  {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
+    
+  strcpy(szDeref, path);
+  
+  if (__win_deref(szDeref) == -1)
+    return -1;
+    
+  if ((iLen = strlen(szDeref)) > bufsize)
+  {
+    errno = ENAMETOOLONG;
+    return -1;
+  }
+  
+  errno = 0;
+  return iLen;
+}
+
 
 /**
  * Accepts an incoming connection attempt on a socket

@@ -189,6 +189,8 @@ int OPEN(const char *filename, int oflag, ...);
  #define MMAP(s, l, p, f, d, o) mmap(s, l, p, f, d, o)
  #define MUNMAP(s, l) munmap(s, l);
  #define STRERROR(i) strerror(i)
+ #define READLINK(p, b, s) readlink(p, b, s)
+ #define LSTAT(p, b) lstat(p, b)
  #define ACCEPT(s, a, l) accept(s, a, l)
  #define BIND(s, n, l) bind(s, n, l)
  #define CONNECT(s, n, l) connect(s, n, l)
@@ -231,6 +233,8 @@ int OPEN(const char *filename, int oflag, ...);
  #define MMAP(s, l, p, f, d, o) _win_mmap(s, l, p, f, d, o)
  #define MUNMAP(s, l) _win_munmap(s, l);
  #define STRERROR(i) _win_strerror(i)
+ #define READLINK(p, b, s) _win_readlink(p, b, s)
+ #define LSTAT(p, b) _win_lstat(p, b)
  #define ACCEPT(s, a, l) _win_accept(s, a, l)
  #define BIND(s, n, l) _win_bind(s, n, l)
  #define CONNECT(s, n, l) _win_connect(s, n, l)

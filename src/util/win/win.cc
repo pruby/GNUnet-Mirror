@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001 - 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -39,12 +39,15 @@ BOOL CreateShortcut(const char *pszSrc, const char *pszDest)
     IPersistFile *pFile;
     WCHAR *pwszDest;
     char *pszFileLnk;
+    HRESULT hRes;
     
     CoInitialize(NULL);
     
     if ((strlen(pszSrc) > _MAX_PATH) || (strlen(pszDest) + 4 > _MAX_PATH))
     {
       CoUninitialize();
+      errno = ENAMETOOLONG;
+      
       return FALSE;
     }
     
@@ -53,6 +56,8 @@ BOOL CreateShortcut(const char *pszSrc, const char *pszDest)
         IID_IShellLink, (void **) &pLink) != S_OK)
     {
       CoUninitialize();
+      errno = ESTALE;
+      
       return FALSE;
     }
   
@@ -65,6 +70,7 @@ BOOL CreateShortcut(const char *pszSrc, const char *pszDest)
       free(pwszDest);
       pLink->Release();
       CoUninitialize();
+      errno = ESTALE;
      
       return FALSE;
     }
@@ -80,12 +86,13 @@ BOOL CreateShortcut(const char *pszSrc, const char *pszDest)
     free(pszFileLnk);
     
     /* Save shortcut */
-    if (pFile->Save((LPCOLESTR) pwszDest, TRUE) != S_OK)
+    if (FAILED(hRes = pFile->Save((LPCOLESTR) pwszDest, TRUE)))
     {
       free(pwszDest);
       pLink->Release();
       pFile->Release();
       CoUninitialize();
+      SetErrnoFromHRESULT(hRes);
   
       return FALSE;
     }
@@ -95,6 +102,7 @@ BOOL CreateShortcut(const char *pszSrc, const char *pszDest)
     pFile->Release();
     pLink->Release();
     CoUninitialize();
+    errno = 0;
       
     return TRUE;
 }
@@ -106,6 +114,7 @@ BOOL DereferenceShortcut(char *pszShortcut)
   WCHAR *pwszShortcut;
   char *pszLnk;
   int iErr, iLen;
+  HRESULT hRes;
 
   CoInitialize(NULL);
   
@@ -114,6 +123,8 @@ BOOL DereferenceShortcut(char *pszShortcut)
       IID_IShellLink, (void **) &pLink) != S_OK)
   {
     CoUninitialize();
+    errno = ESTALE;
+    
     return FALSE;
   }
 
@@ -122,6 +133,7 @@ BOOL DereferenceShortcut(char *pszShortcut)
   {
     pLink->Release();
     CoUninitialize();
+    errno = ESTALE;
     
     return FALSE;
   }
@@ -144,12 +156,13 @@ BOOL DereferenceShortcut(char *pszShortcut)
   free(pszLnk);
   
   /* Open shortcut */
-  if (pFile->Load((LPCOLESTR) pwszShortcut, STGM_READ) != S_OK)
+  if (FAILED(hRes = pFile->Load((LPCOLESTR) pwszShortcut, STGM_READ)))
   {
     pLink->Release();
     pFile->Release();
     free(pwszShortcut);
     CoUninitialize();
+    SetErrnoFromHRESULT(hRes);
     
     return FALSE;
   }
@@ -157,11 +170,16 @@ BOOL DereferenceShortcut(char *pszShortcut)
   free(pwszShortcut);
   
   /* Get target file */
-  if (pLink->GetPath(pszShortcut, _MAX_PATH, NULL, 0) != S_OK)
+  if (FAILED(hRes = pLink->GetPath(pszShortcut, _MAX_PATH, NULL, 0)))
   {
     pLink->Release();
     pFile->Release();
     CoUninitialize();
+    
+    if (hRes == E_FAIL)
+      errno = EINVAL; /* Not a symlink */
+    else
+      SetErrnoFromHRESULT(hRes);
     
     return FALSE;
   }
@@ -169,6 +187,7 @@ BOOL DereferenceShortcut(char *pszShortcut)
   pFile->Release();
   pLink->Release();
   CoUninitialize();
+  errno = 0;
   
   return TRUE;
 }

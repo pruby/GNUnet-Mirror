@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001 - 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -390,6 +390,7 @@ int conv_to_win_path_ex(const char *pszUnix, char *pszWindows, int derefLinks);
 void _SetErrnoFromWinError(long lWinError, char *pszCaller, int iLine);
 void SetErrnoFromWinsockError(long lWinError);
 void SetHErrnoFromWinError(long lWinError);
+void SetErrnoFromHRESULT(HRESULT hRes);
 FILE *_win_fopen(const char *filename, const char *mode);
 DIR *_win_opendir(const char *dirname);
 int _win_chdir(const char *path);
@@ -411,6 +412,8 @@ int _win_symlink(const char *path1, const char *path2);
 void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
                 unsigned long long offset);
 int _win_munmap(void *start, size_t length);
+int _win_lstat(const char *path, struct stat *buf);
+int _win_readlink(const char *path, char *buf, size_t bufsize);
 int _win_accept(SOCKET s, struct sockaddr *addr, int *addrlen);
 int _win_bind(SOCKET s, const struct sockaddr *name, int namelen);
 int _win_connect(SOCKET s,const struct sockaddr *name, int namelen);
