@@ -114,7 +114,7 @@ static int gapPut(void * closure,
     - sizeof(GapWrapper) 
     + sizeof(Datastore_Value);
   if ( (OK != getQueryFor(size - sizeof(Datastore_Value),
-			  (char*)&gw[1],
+			  (DBlock*)&gw[1],
 			  &hc)) ||
        (! equalsHashCode160(&hc, key)) ) {
     BREAK(); /* value failed verification! */
@@ -124,7 +124,7 @@ static int gapPut(void * closure,
   dv = MALLOC(size);
   dv->size = htonl(size);
   dv->type = htonl(getTypeOfBlock(size - sizeof(Datastore_Value),
-				  &gw[1]));
+				  (DBlock*) &gw[1]));
   dv->prio = htonl(prio);
   dv->anonymityLevel = htonl(0);
   et = ntohll(gw->timeout);
@@ -141,7 +141,7 @@ static int gapPut(void * closure,
 	 size - sizeof(Datastore_Value));
   if (YES != isDatumApplicable(ntohl(dv->type),
 			       ntohl(dv->size) - sizeof(Datastore_Value),
-			       (char*) &dv[1],
+			       (DBlock*) &dv[1],
 			       0,
 			       key)) {
     BREAK();
@@ -292,7 +292,7 @@ static int csHandleRequestInsert(ClientHandle sock,
   datum->prio = ri->prio;
   datum->anonymityLevel = ri->anonymityLevel;
   if (OK != getQueryFor(ntohs(ri->header.size) - sizeof(RequestInsert),
-			(const char*)&ri[1],
+			(const DBlock*)&ri[1],
 			&query)) {
     BREAK();
     FREE(datum);
@@ -302,7 +302,7 @@ static int csHandleRequestInsert(ClientHandle sock,
 	hash2enc(&query,
 		 &enc));
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(RequestInsert),
-			&ri[1]);
+			(const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
       "FS received REQUEST INSERT (query: %s, type: %u)\n",
       &enc,
@@ -428,10 +428,10 @@ static int csHandleRequestDelete(ClientHandle sock,
   value->size = ntohl(sizeof(Datastore_Value) +
 		      ntohs(req->size) - sizeof(RequestDelete));
   type = getTypeOfBlock(ntohs(rd->header.size) - sizeof(RequestDelete),
-			(const char*)&rd[1]);
+			(const DBlock*)&rd[1]);
   value->type = htonl(type);
   if (OK != getQueryFor(ntohs(rd->header.size) - sizeof(RequestDelete),
-			(const char*)&rd[1],
+			(const DBlock*)&rd[1],
 			&query)) {
     FREE(value);
     BREAK();
@@ -556,7 +556,7 @@ static int gapGetConverter(const HashCode160 * key,
 		   
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
-			  (const char*) &value[1],
+			  (const DBlock*) &value[1],
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {
@@ -694,6 +694,7 @@ static int gapGet(void * closure,
   myClosure.keys = keys;
   myClosure.resultCallback = resultCallback;
   myClosure.resCallbackClosure = resCallbackClosure;
+  ret = OK;
   if (type == D_BLOCK) {
     ret = datastore->get(&keys[0],
 			 ONDEMAND_BLOCK,
@@ -772,7 +773,7 @@ static int dhtGetConverter(const HashCode160 * key,
 
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
-			  (char*) &value[1],
+			  (const DBlock*) &value[1],
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {
@@ -877,13 +878,13 @@ static int uniqueReplyIdentifier(const void * content,
   }
   gw = (const GapWrapper*) content;
   if ( (OK == getQueryFor(size - sizeof(GapWrapper),
-			  (const char*) &gw[1],
+			  (const DBlock*) &gw[1],
 			  &q)) &&
        (equalsHashCode160(&q,
 			  primaryKey)) &&
        ( (type == ANY_BLOCK) ||
 	 (type == (t = getTypeOfBlock(size - sizeof(GapWrapper), 
-				      &gw[1]) ) ) ) ) {
+				      (const DBlock*)&gw[1]) ) ) ) ) {
     switch(type) {
     case D_BLOCK:
       return YES;

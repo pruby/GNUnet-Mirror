@@ -187,7 +187,7 @@ void fileBlockGetKey(const DBlock * data,
  * What is the type of the given block of data?
  */
 unsigned int getTypeOfBlock(unsigned int size,
-			    const void * data);
+			    const DBlock * data);
 
 /**
  * What is the main query (the one that is used in
@@ -201,7 +201,7 @@ unsigned int getTypeOfBlock(unsigned int size,
  *   the content type is not known
  */
 int getQueryFor(unsigned int size,
-		const char * data,
+		const DBlock * data,
 		HashCode160 * query);
 
 /**
@@ -219,7 +219,7 @@ int getQueryFor(unsigned int size,
  */
 int isDatumApplicable(unsigned int type,
 		      unsigned int size,
-		      const char * data,
+		      const DBlock * data,
 		      unsigned int keyCount,
 		      const HashCode160 * keys);
 

@@ -75,7 +75,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       rep = (ReplyContent*) hdr;
       size = ntohs(hdr->size) - sizeof(ReplyContent);
       if (OK != getQueryFor(size,
-			    (char*)&rep[1],
+			    (DBlock*)&rep[1],
 			    &query)) {
 	BREAK();
 	FREE(hdr);
@@ -90,7 +90,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	  value = MALLOC(sizeof(Datastore_Value) + size);
 	  value->size = htonl(size + sizeof(Datastore_Value));
 	  value->type = htonl(getTypeOfBlock(size,
-					     &rep[1]));
+					     (DBlock*) &rep[1]));
 	  value->prio = htonl(0);
 	  value->anonymityLevel = htonl(0);
 	  value->expirationTime = htonll(0);

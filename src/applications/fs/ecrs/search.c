@@ -317,7 +317,7 @@ static int receiveReplies(const HashCode160 * key,
 	   (ps->type == ANY_BLOCK) ) &&
 	 (YES == isDatumApplicable(type,
 				   size,
-				   (char*) &value[1],
+				   (const DBlock*) &value[1],
 				   ps->keyCount,
 				   ps->keys)) ) {
       switch (type) {

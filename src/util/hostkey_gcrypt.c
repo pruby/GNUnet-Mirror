@@ -705,7 +705,8 @@ int decryptPrivateKey(const PrivateKey hostkey,
 
   lockGcrypt();
 #if EXTRA_CHECKS
-  if (gcry_pk_testkey(HOSTKEY(hostkey))) {
+  rc = gcry_pk_testkey(HOSTKEY(hostkey));
+  if (rc) {
     LOG_GCRY(LOG_ERROR, "gcry_pk_testkey", rc);
     unlockGcrypt();
     return -1;

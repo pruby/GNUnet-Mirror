@@ -131,7 +131,7 @@ void fileBlockGetQuery(const DBlock * db,
 }
 
 unsigned int getTypeOfBlock(unsigned int size,
-			    const void * data) {
+			    const DBlock * data) {
   if (size <= 4) {
     BREAK();
     return ANY_BLOCK; /* signal error */
@@ -149,7 +149,7 @@ unsigned int getTypeOfBlock(unsigned int size,
  *   the content type is not known
  */
 int getQueryFor(unsigned int size,
-		const char * data,
+		const DBlock * data,
 		HashCode160 * query) {  
   unsigned int type;
 
@@ -158,17 +158,17 @@ int getQueryFor(unsigned int size,
     return SYSERR;
   switch (type) {
   case D_BLOCK: 
-    fileBlockGetKey((const DBlock*)data,
+    fileBlockGetKey(data,
 		    size, 
 		    query);
     return OK;  
   case S_BLOCK: {
-    SBlock * sb;
+    const SBlock * sb;
     if (size < sizeof(SBlock)) {
       BREAK();
       return SYSERR;
     }
-    sb = (SBlock*) data;
+    sb = (const SBlock*) data;
     if (OK != verifySig(&sb->identifier,
 			size - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			&sb->signature,
@@ -180,12 +180,12 @@ int getQueryFor(unsigned int size,
     return OK;
   }
   case K_BLOCK: {
-    KBlock * kb;
+    const KBlock * kb;
     if (size < sizeof(KBlock)) {
       BREAK();
       return SYSERR;
     }
-    kb = (KBlock*) data;
+    kb = (const KBlock*) data;
     if ( (OK != verifySig(&kb[1],
 			  size - sizeof(KBlock),
 			  &kb->signature,
@@ -199,12 +199,12 @@ int getQueryFor(unsigned int size,
     return OK;
   }
   case N_BLOCK: {
-    NBlock * nb;
+    const NBlock * nb;
     if (size < sizeof(NBlock)) {
       BREAK();
       return SYSERR;
     }
-    nb = (NBlock*) data;
+    nb = (const NBlock*) data;
     if (OK != verifySig(&nb->identifier,
 			size - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			&nb->signature,
@@ -216,12 +216,12 @@ int getQueryFor(unsigned int size,
     return OK;
   }
   case KN_BLOCK: {
-    KNBlock * kb;
+    const KNBlock * kb;
     if (size < sizeof(KNBlock)) {
       BREAK();
       return SYSERR;
     }
-    kb = (KNBlock*) data;
+    kb = (const KNBlock*) data;
     if ( (OK != verifySig(&kb->nblock,
 			  size - sizeof(Signature) - sizeof(PublicKey) - sizeof(unsigned int),
 			  &kb->kblock.signature,
@@ -262,7 +262,7 @@ int getQueryFor(unsigned int size,
  */
 int isDatumApplicable(unsigned int type,
 		      unsigned int size,
-		      const char * data,
+		      const DBlock * data,
 		      unsigned int keyCount,
 		      const HashCode160 * keys) {
   HashCode160 hc;
