@@ -13,7 +13,6 @@
   * gap
   * dht / gnunet-dht-join and gnunet-dht-query 
 - FSUI:
-  * download: various details wrt generated events
   * namespace updates
   * collections
   * testing

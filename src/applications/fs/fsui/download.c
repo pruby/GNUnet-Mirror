@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -23,9 +23,6 @@
  * @brief download functions
  * @author Krista Bennett
  * @author Christian Grothoff
- *
- * TODO:
- * - put URI of main download into events
  */
 
 #include "platform.h"
@@ -107,6 +104,11 @@ downloadProgressCallback(unsigned long long totalBytes,
 			 FSUI_DownloadList * dl) {
   FSUI_Event event;
   struct ECRS_MetaData * md;
+  FSUI_DownloadList * root;
+  
+  root = dl;
+  while (root->parent != NULL)
+    root = root->parent;
 
   dl->completed = completedBytes;
   event.type = download_progress;
@@ -120,8 +122,8 @@ downloadProgressCallback(unsigned long long totalBytes,
   event.data.DownloadProgress.uri = dl->uri;
   event.data.DownloadProgress.start_time = dl->startTime;
   event.data.DownloadProgress.is_recursive = dl->is_recursive;
-  event.data.DownloadProgress.main_filename = NULL; /* FIXME! */
-  event.data.DownloadProgress.main_uri = NULL; /* FIXME! */
+  event.data.DownloadProgress.main_filename = root->filename;
+  event.data.DownloadProgress.main_uri = root->uri;
   dl->ctx->ecb(dl->ctx->ecbClosure,
 	       &event);
   if ( (lastBlockOffset == 0) &&
@@ -171,6 +173,11 @@ static void * downloadThread(FSUI_DownloadList * dl) {
   FSUI_DownloadList * prev;
   FSUI_DownloadList * pos;
   struct ECRS_MetaData * md;
+  FSUI_DownloadList * root;
+  
+  root = dl;
+  while (root->parent != NULL)
+    root = root->parent;
   
   totalBytes = ECRS_fileSize(dl->uri);
   ret = ECRS_downloadFile(dl->uri,
@@ -195,8 +202,8 @@ static void * downloadThread(FSUI_DownloadList * dl) {
     event.data.DownloadProgress.uri = dl->uri;
     event.data.DownloadProgress.start_time = dl->startTime;
     event.data.DownloadProgress.is_recursive = dl->is_recursive;
-    event.data.DownloadProgress.main_filename = NULL; /* FIXME! */
-    event.data.DownloadProgress.main_uri = NULL; /* FIXME! */
+    event.data.DownloadProgress.main_filename = root->filename;
+    event.data.DownloadProgress.main_uri = root->uri;
   }
   dl->ctx->ecb(dl->ctx->ecbClosure,
 	       &event);
@@ -428,10 +435,6 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
 /**
  * Abort a recursive download (internal function).
  * 
- * FIXME: dirname is currently not used, which means
- * that we may abort the wrong download (if there are
- * multiple downloads for the same uri!).
- *
  * Do NOT call cleanupFSUIThreadList in here -- this
  * function maybe called recursively!
  *
@@ -446,8 +449,10 @@ static int stopDownloadAll(struct FSUI_Context * ctx,
 
   dl = ctx->activeDownloads;
   while (dl != NULL) {
-    if (ECRS_equalsUri(uri,
-		       dl->uri)) {      
+    if ( (0 == strcmp(dirname,
+		      dl->filename)) &&
+	 (ECRS_equalsUri(uri,
+			 dl->uri)) ) {      
       dl->signalTerminate = YES;
       for (i=0;i<dl->completedDownloadsCount;i++)
 	FSUI_stopDownloadAll(ctx,
