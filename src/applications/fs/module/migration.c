@@ -75,6 +75,7 @@ activeMigrationCallback(PeerIdentity * receiver,
   GapWrapper * gw;
   unsigned int size;
   cron_t et;
+  cron_t now;
  
   ret = 0;
   if (OK == datastore->getRandom(&receiver->hashPubKey,
@@ -85,19 +86,23 @@ activeMigrationCallback(PeerIdentity * receiver,
     size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
     gw = MALLOC(size);
     gw->dc.size = htonl(size);
-    gw->type = content->type;
     et = ntohll(content->expirationTime);
-    /* FIXME: mingle et? */
+    cronTime(&now);
+    if (et > now) {
+      et -= now;
+      et = et % MAX_MIGRATION_EXP;
+      et += now;
+    }
     gw->timeout = htonll(et);
     memcpy(&gw[1],
 	   &content[1],
 	   size - sizeof(GapWrapper));
     /* FIXME: check anonymity level,
        if 0, consider using DHT migration instead;
-       if high, consider traffic volume before migrating */
+       if high, consider traffic volume before 
+       migrating */
     FREE(content);
     ret = gap->tryMigrate(&gw->dc,
-			  ntohl(gw->type),
 			  &key,
 			  position,
 			  padding);  

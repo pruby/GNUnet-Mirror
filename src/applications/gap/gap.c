@@ -216,18 +216,9 @@ typedef struct {
 typedef struct {
   p2p_HEADER header;   
 
-  unsigned int type;
-
   HashCode160 primaryKey;
 
 } GAP_REPLY;
-
-typedef struct {
-  GAP_REPLY gap_reply;
-
-  char data[1];
-
-} GAP_REPLY_GENERIC;
 
 /**
  * In this struct, we store information about a 
@@ -322,6 +313,8 @@ typedef struct {
    * Which replies have we already seen? 
    */
   unsigned int seenIndex; 
+
+  int seenReplyWasUnique; /* YES/NO, only valid if seenIndex == 1 */
 
   /**
    * Hashcodes of the encrypted (!) replies that we have forwarded so far
@@ -425,6 +418,12 @@ static Traffic_ServiceAPI * traffic;
  * content verification.
  */
 static Blockstore * bs;
+
+/**
+ * Function that can be used to identify unique
+ * replies.
+ */
+static UniqueReplyIdentifier uri;
 
 /**
  * The routing table. This table has entries for all
@@ -958,7 +957,7 @@ static void useContentLater(GAP_REPLY * pmsg) {
 }
 
 /**
- * Queue a CHK reply with cron to simulate
+ * Queue a reply with cron to simulate
  * another peer returning the response with
  * some latency (and then route as usual).
  * 
@@ -1035,6 +1034,7 @@ static int addToSlot(int mode,
     GROW(ite->seen,
 	 ite->seenIndex,
 	 0);
+    ite->seenReplyWasUnique = NO;
     if (equalsHashCode160(query,
 			  &ite->primaryKey)) {
       ite->ttl = now + ttl;
@@ -1074,6 +1074,7 @@ static int addToSlot(int mode,
   GROW(ite->seen,
        ite->seenIndex,
        0); 
+  ite->seenReplyWasUnique = NO;
   return OK;
 }
 
@@ -1148,6 +1149,7 @@ static int needsForwarding(const HashCode160 * query,
     GROW(ite->seen,
 	 ite->seenIndex,
 	 0);
+    ite->seenReplyWasUnique = NO;
     if ( equalsHashCode160(query,
 			   &ite->primaryKey) &&
 	 (YES == ite-> successful_local_lookup_in_delay_loop) ) {
@@ -1207,13 +1209,13 @@ static int needsForwarding(const HashCode160 * query,
        more agressively */
 
     /* pending == new! */
-    if ( equalsHashCode160(&ite->primaryKey,
-			   &ite->seen[0])) { /* CHK/unique match only */
+    if (ite->seenReplyWasUnique) {
       if (ite->ttl < (cron_t)(now + ttl)) { /* ttl of new is longer? */
 	/* go again */
 	GROW(ite->seen,
 	     ite->seenIndex,
 	     0);
+	ite->seenReplyWasUnique = NO;
 	addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
 	if (YES == ite->successful_local_lookup_in_delay_loop) {
 	  *isRouted = NO; 
@@ -1273,16 +1275,14 @@ static int needsForwarding(const HashCode160 * query,
     }
   } 
   /* a different query that is expired a bit longer is using
-     the slot; but if it is a CHK query that has received
-     a response already, we can eagerly throw it out 
+     the slot; but if it is a query that has received
+     a unique response already, we can eagerly throw it out 
      anyway, since the request has been satisfied 
      completely */
   if ( (ite->ttl + TTL_DECREMENT < (cron_t)(now + ttl) ) &&
        (ite->ttl < now) && 
-       (ite->seenIndex == 1) &&
-       (equalsHashCode160(&ite->primaryKey,
-			  &ite->seen[0])) ) {
-    /* is CHK and we have seen the answer, get rid of it early */
+       (ite->seenReplyWasUnique) ) {
+    /* we have seen the unique answer, get rid of it early */
     addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
     *isRouted = YES;
     *doForward = YES;
@@ -1369,6 +1369,7 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
 
   /* check seen */
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
+
   hash(&value[1],
        ntohl(value->size) - sizeof(DataContainer),
        &hc);
@@ -1387,7 +1388,10 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
 	  primaryKey,
 	  value,
 	  ite->priority);
-  if (equalsHashCode160(&hc, primaryKey)) /* CHK? */
+  if (uri(&value[1],
+	  ntohl(value->size) - sizeof(DataContainer),
+	  ite->type,
+	  &ite->primaryKey))
     cls->doForward = NO; /* we have the one and only answer,
 			    do not bother to forward... */
   return OK;
@@ -1411,42 +1415,46 @@ queryLocalResultCallback(const HashCode160 * primaryKey,
  */
 static int execQuery(const PeerIdentity * sender,
 		     unsigned int prio,
+		     QUERY_POLICY policy,
 		     int ttl,
 		     const GAP_QUERY * query) {
   IndirectionTableEntry * ite;
-  DataContainer * result;
   int isRouted;
   struct qLRC cls;
 
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&ite->lookup_exclusion); 
   if (sender != NULL) {
-    needsForwarding(&query->queries[0],
-		    ttl,
-		    prio,
-		    sender,
-		    &isRouted,
-		    &cls.doForward); 
+    if ((policy & QUERY_INDIRECT) > 0) {
+      needsForwarding(&query->queries[0],
+		      ttl,
+		      prio,
+		      sender,
+		      &isRouted,
+		      &cls.doForward); 
+    } else {
+      isRouted = NO;
+      cls.doForward = YES;
+    }
   } else {
     isRouted = YES;
     cls.doForward = YES;
   }
+  if ( (policy & QUERY_FORWARD) == 0)
+    cls.doForward = NO;
+
   cls.sender = sender;
-  if (isRouted != YES) {
-    MUTEX_UNLOCK(&ite->lookup_exclusion);
-    return SYSERR; /* if we can't route, 
-		      forwarding never makes
-		      any sense */
+  if ( (isRouted == YES) && /* if we can't route, lookup useless! */
+       ( (policy & QUERY_ANSWER) > 0) ) {
+    bs->get(bs->closure,
+	    ntohl(query->type),
+	    prio,
+	    1 + ( ntohs(query->header.size) 
+		  - sizeof(GAP_QUERY)) / sizeof(HashCode160),
+	    &query->queries[0],
+	    (DataProcessor) &queryLocalResultCallback,
+	    &cls);
   }
-  result = NULL;
-  bs->get(bs->closure,
-	  ntohl(query->type),
-	  prio,
-	  1 + ( ntohs(query->header.size) 
-		- sizeof(GAP_QUERY)) / sizeof(HashCode160),
-	  &query->queries[0],
-	  (DataProcessor) &queryLocalResultCallback,
-	  &cls);
   MUTEX_UNLOCK(&ite->lookup_exclusion);
   if (cls.doForward)
     forwardQuery(query,
@@ -1506,9 +1514,11 @@ static int useContent(const PeerIdentity * hostId,
   hash(&msg[1],
        size,
        &contentHC);
-  if (equalsHashCode160(&ite->primaryKey,
-			&contentHC)) {
-    /* CHK, unique reply, stop forwarding! */  
+  if (uri(&msg[1],
+	  size,
+	  ite->type,
+	  &ite->primaryKey)) {
+    /* unique reply, stop forwarding! */  
     dequeueQuery(&ite->primaryKey);
   }
   /* remove the sender from the waiting list
@@ -1565,6 +1575,15 @@ static int useContent(const PeerIdentity * hostId,
 	 ite->seenIndex,
 	 ite->seenIndex+1);
     ite->seen[ite->seenIndex-1] = contentHC;
+    if (ite->seenIndex == 1) {
+      ite->seenReplyWasUnique 
+	= uri(&msg[1],
+	      size,
+	      ite->type,
+	      &ite->primaryKey);
+    } else {
+      ite->seenReplyWasUnique = NO;
+    }
   }
   MUTEX_UNLOCK(&ite->lookup_exclusion);
   return OK;
@@ -1578,12 +1597,14 @@ static int useContent(const PeerIdentity * hostId,
  * @param datastore the storage callbacks to use for storing data
  * @return SYSERR on error, OK on success
  */
-static int init(Blockstore * datastore) {
+static int init(Blockstore * datastore,
+		UniqueReplyIdentifier uid) {
   if (bs != NULL) {
     BREAK();
     return SYSERR;
   }
   bs = datastore;
+  uri = uid;
   return OK;
 }
 
@@ -1673,6 +1694,7 @@ static int get_start(unsigned int type,
     = *coreAPI->myIdentity;
   ret = execQuery(NULL,
 		  prio,
+		  QUERY_ANSWER|QUERY_FORWARD|QUERY_INDIRECT,
 		  timeout - cronTime(NULL),
 		  msg);
   FREE(msg);
@@ -1703,7 +1725,6 @@ static int get_stop(unsigned int type,
  */
 static unsigned int
 tryMigrate(const DataContainer * data,
-	   unsigned int type,
 	   const HashCode160 * primaryKey,
 	   char * position,
 	   unsigned int padding) {
@@ -1720,8 +1741,6 @@ tryMigrate(const DataContainer * data,
     = htons(GAP_p2p_PROTO_RESULT);
   reply->header.size
     = htons(size);
-  reply->type 
-    = htonl(type);
   reply->primaryKey 
     = *primaryKey;
   memcpy(&reply[1],
@@ -1759,6 +1778,16 @@ static int handleQuery(const PeerIdentity * sender,
   }
   qmsg = MALLOC(ntohs(msg->size));
   memcpy(qmsg, msg, ntohs(msg->size));
+  if (equalsHashCode160(&qmsg->returnTo.hashPubKey,
+			&coreAPI->myIdentity->hashPubKey)) {
+    /* A to B, B sends back to A without (!) source rewriting,
+       in this case, A must just drop; however, this
+       should never happen. */
+    BREAK();
+    FREE(qmsg);
+    return OK;
+  }
+      
 
   /* decrement ttl (always) */
   ttl = ntohl(qmsg->ttl);
@@ -1778,8 +1807,16 @@ static int handleQuery(const PeerIdentity * sender,
     FREE(qmsg);
     return OK; /* straight drop. */
   }
-
   preference = (double) prio;
+  if ((policy & QUERY_INDIRECT) > 0) {
+    qmsg->returnTo 
+      = *coreAPI->myIdentity;
+  } else {
+    /* otherwise we preserve the original sender
+       and kill the priority (since we cannot benefit) */
+    prio = 0;
+  }
+
   if (preference < QUERY_BANDWIDTH_VALUE)
     preference = QUERY_BANDWIDTH_VALUE;
   coreAPI->preferTrafficFrom(sender,
@@ -1793,12 +1830,35 @@ static int handleQuery(const PeerIdentity * sender,
   ttl = ntohl(qmsg->ttl);
   if (ttl < 0)
     ttl = 0;
-  execQuery(sender,
+  execQuery(sender,	    
 	    prio,
+	    policy,
 	    ttl,
 	    qmsg);
   FREE(qmsg);
   return OK;
+}
+
+static unsigned int getAvgPriority() {
+  IndirectionTableEntry * ite;
+  unsigned long long tot;
+  int i;
+  unsigned int active;
+
+  tot = 0;
+  active = 0;
+  for (i=indirectionTableSize-1;i>=0;i--) {
+    ite = &ROUTING_indTable_[i];
+    if ( (ite->hostsWaiting > 0) &&
+	 (ite->seenIndex == 0) ) {
+      tot += ite->priority;
+      active++;
+    }
+  }
+  if (active == 0)
+    return 0;
+  else
+    return (unsigned int) (tot / active);
 }
  
 
@@ -1862,6 +1922,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
   api.get_start = &get_start;
   api.get_stop = &get_stop;
   api.tryMigrate = &tryMigrate;
+  api.getAvgPriority = &getAvgPriority;
   return &api;
 }
 
@@ -1886,6 +1947,7 @@ void release_module_gap() {
     GROW(ROUTING_indTable_[i].seen, 
 	 ROUTING_indTable_[i].seenIndex, 
 	 0);
+    ROUTING_indTable_[i].seenReplyWasUnique = NO;
     GROW(ROUTING_indTable_[i].destination, 
 	 ROUTING_indTable_[i].hostsWaiting,
 	 0);
@@ -1915,6 +1977,7 @@ void release_module_gap() {
   lock = NULL;
   coreAPI = NULL;
   bs = NULL;
+  uri = NULL;
 }
 
 /* end of gap.c */

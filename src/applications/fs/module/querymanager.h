@@ -46,6 +46,7 @@ void doneQueryManager();
  * @param client where did the query come from?
  */
 void trackQuery(const HashCode160 * query,
+		unsigned int type,
 		const ClientHandle client);
 
 /**

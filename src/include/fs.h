@@ -74,12 +74,6 @@ typedef struct {
 typedef struct {
   CS_HEADER header;
 
-  /**
-   * The type of the reply (may not always match
-   * the query!)
-   */
-  unsigned int type;  
-
 } ReplyContent;
 
 
@@ -196,12 +190,11 @@ typedef struct {
 
 /**
  * Encapsulation of the data in the format that is passed through gap.
- * We essentially add the type and timeout value since that part is
- * supposed to be communicated to other peers.
+ * We essentially add the timeout value since that part is supposed to
+ * be communicated to other peers.
  */
 typedef struct {
   DataContainer dc;
-  unsigned int type;
   unsigned long long timeout;
 } GapWrapper;
 

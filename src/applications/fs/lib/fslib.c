@@ -86,7 +86,8 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 
 	  value = MALLOC(sizeof(Datastore_Value) + size);
 	  value->size = htons(size + sizeof(Datastore_Value));
-	  value->type = rep->type;
+	  value->type = htonl(getTypeOfBlock(size,
+					     &rep[1]));
 	  value->prio = htonl(0);
 	  value->anonymityLevel = htonl(0);
 	  value->expirationTime = htonll(0);

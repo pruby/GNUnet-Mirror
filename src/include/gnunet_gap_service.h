@@ -35,6 +35,16 @@
 #include "gnunet_blockstore.h"
 
 /**
+ * Function that helps the routing code to find out if
+ * a given reply is the one and only reply for a given
+ * request.
+ */
+typedef int (*UniqueReplyIdentifier)(const void * content,
+				     unsigned int size,
+				     unsigned int query_type,
+				     const HashCode160 * primaryKey);
+
+/**
  * Functions of the GAP Service API.
  */
 typedef struct {
@@ -45,7 +55,8 @@ typedef struct {
    * @param datastore the storage callbacks to use for storing data
    * @return SYSERR on error, OK on success
    */
-  int (*init)(Blockstore * datastore);
+  int (*init)(Blockstore * datastore,
+	      UniqueReplyIdentifier uri);
   
   /**
    * Perform a GET operation using 'key' as the key.  Note that no
@@ -86,10 +97,15 @@ typedef struct {
    *   that buffer (must be a positive number).
    */
   unsigned int (*tryMigrate)(const DataContainer * data,
-			     unsigned int type,
 			     const HashCode160 * primaryKey,
 			     char * position,
 			     unsigned int padding);
+
+  /**
+   * What is the average priority of requests that we
+   * are currently routing?
+   */
+  unsigned int (*getAvgPriority)();
     
 } GAP_ServiceAPI;
 

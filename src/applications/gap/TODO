@@ -4,6 +4,3 @@ GAP:
   except that this way we cannot reward
   peers for answering local queries!
   [ disables economy! ]
-* anonymityLevel is not used in gap
-* routing policy is not used in gap
-* why is forwardQuery dead code???

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -32,6 +32,7 @@
 
 typedef struct {
   HashCode160 query;
+  unsigned int type;
   ClientHandle client;
 } TrackRecord;
 
@@ -77,6 +78,7 @@ static void ceh(ClientHandle client) {
  * @param client where did the query come from?
  */
 void trackQuery(const HashCode160 * query,
+		unsigned int type,
 		const ClientHandle client) {
   int i;
 
@@ -95,6 +97,7 @@ void trackQuery(const HashCode160 * query,
 	 trackerSize * 2);
   trackers[trackerCount] = MALLOC(sizeof(TrackRecord));
   trackers[trackerCount]->query = *query;
+  trackers[trackerCount]->type = type;
   trackers[trackerCount]->client = client;
   trackerCount++;
   MUTEX_UNLOCK(&queryManagerLock);
@@ -134,24 +137,24 @@ void processResponse(const HashCode160 * key,
   ReplyContent * rc;
 
   MUTEX_LOCK(&queryManagerLock);
-  for (i=trackerCount-1;i>=0;i--)
-    if (equalsHashCode160(&trackers[i]->query,
-			  key)) {
+  for (i=trackerCount-1;i>=0;i--) {
+    if ( (equalsHashCode160(&trackers[i]->query,
+			    key)) &&
+	 ( (trackers[i]->type == ANY_BLOCK) ||
+	   (trackers[i]->type == ntohl(value->type)) ) ) {
       rc = MALLOC(sizeof(ReplyContent) + 
 		  ntohl(value->size) - sizeof(Datastore_Value));
       rc->header.size = htons(sizeof(ReplyContent) + 
 			      ntohl(value->size) - sizeof(Datastore_Value));
       rc->header.type = htons(AFS_CS_PROTO_RESULT);
-      rc->type = value->type;
       memcpy(&rc[1],
 	     &value[1],
 	     ntohl(value->size) - sizeof(Datastore_Value));
       coreAPI->sendToClient(trackers[i]->client,
 			    &rc->header);
-      MUTEX_UNLOCK(&queryManagerLock);
       FREE(rc);
-      return;
     }
+  }
   MUTEX_UNLOCK(&queryManagerLock);
 }
  
