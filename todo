@@ -1,6 +1,5 @@
 0.7.0pre1 [4'05] (aka "preview"):
 Testing:
-- fix namespacetest (currently fails)
 - multi-peer:
   * fix dhttest (currently fails)
   * extend dht test to actually test get/put/del
