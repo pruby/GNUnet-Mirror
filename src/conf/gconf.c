@@ -33,6 +33,7 @@
 #include "platform.h"
 
 #define LKC_DIRECT_LINK
+#define ENABLE_NLS 1
 
 #include "lkc.h"
 #include "images.c"
@@ -42,9 +43,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "gconf_interface.h"
-#undef ENABLE_NLS
 #include "gconf_support.h"
-#define ENABLE_NLS 1
 
 /* #define DEBUG */
 
@@ -177,7 +176,7 @@ const char *dbg_print_ptype(int val)
 {
   static char buf[256];
 
-  bzero(buf, 256);
+  memset(buf, 0, 256);
 
   if (val == P_UNKNOWN)
     strcpy(buf, "unknown");
@@ -240,35 +239,36 @@ void init_main_window()
   GtkMenu *options;
   
   main_wnd = create_main_wnd ();
-  gtk_widget_show (GTK_WINDOW(main_wnd));
+  gtk_widget_show(GTK_WIDGET(main_wnd));
 
-  vbox = lookup_widget(GTK_WINDOW(main_wnd), "vbox1");
-  hpaned = lookup_widget(vbox, "hpaned1");
-  vpaned = lookup_widget(hpaned, "vpaned1");
-  tree1_w = lookup_widget(lookup_widget(hpaned, "scrolledwindow1"),
+  vbox = lookup_widget(GTK_WIDGET(main_wnd), "vbox1");
+  hpaned = lookup_widget(GTK_WIDGET(vbox), "hpaned1");
+  vpaned = lookup_widget(GTK_WIDGET(hpaned), "vpaned1");
+  tree1_w = lookup_widget(lookup_widget(GTK_WIDGET(hpaned), "scrolledwindow1"),
     "treeview1");
-  tree2_w = lookup_widget(lookup_widget(vpaned, "scrolledwindow2"),
+  tree2_w = lookup_widget(lookup_widget(GTK_WIDGET(vpaned), "scrolledwindow2"),
     "treeview2");
-  text_w = lookup_widget(lookup_widget(vpaned, "scrolledwindow3"),
+  text_w = lookup_widget(lookup_widget(GTK_WIDGET(vpaned), "scrolledwindow3"),
     "textview3");
 
-  toolbar = lookup_widget(lookup_widget(vbox, "handlebox1"), "toolbar1");
+  toolbar = GTK_TOOLBAR(lookup_widget(lookup_widget(GTK_WIDGET(vbox),
+    "handlebox1"), "toolbar1"));
 
-  back_btn = lookup_widget(toolbar, "button1");
+  back_btn = lookup_widget(GTK_WIDGET(toolbar), "button1");
   gtk_widget_set_sensitive(back_btn, FALSE);
 
-  options = lookup_widget(lookup_widget(lookup_widget(vbox, "menubar1"),
-    "options1"), "options1_menu");
+  options = GTK_MENU(lookup_widget(lookup_widget(lookup_widget(vbox, "menubar1"),
+    "options1"), "options1_menu"));
 
-  widget = lookup_widget(options, "show_name1");
+  widget = lookup_widget(GTK_WIDGET(options), "show_name1");
   gtk_check_menu_item_set_active((GtkCheckMenuItem *) widget,
                show_name);
 
-  widget = lookup_widget(options, "show_range1");
+  widget = lookup_widget(GTK_WIDGET(options), "show_range1");
   gtk_check_menu_item_set_active((GtkCheckMenuItem *) widget,
                show_range);
 
-  widget = lookup_widget(options, "show_data1");
+  widget = lookup_widget(GTK_WIDGET(options), "show_data1");
   gtk_check_menu_item_set_active((GtkCheckMenuItem *) widget,
                show_value);
 
@@ -306,15 +306,15 @@ void init_main_window()
 
   switch (view_mode) {
   case SINGLE_VIEW:
-    widget = lookup_widget(toolbar, "button4");
+    widget = lookup_widget(GTK_WIDGET(toolbar), "button4");
     gtk_button_clicked(GTK_BUTTON(widget));
     break;
   case SPLIT_VIEW:
-    widget = lookup_widget(toolbar, "button5");
+    widget = lookup_widget(GTK_WIDGET(toolbar), "button5");
     gtk_button_clicked(GTK_BUTTON(widget));
     break;
   case FULL_VIEW:
-    widget = lookup_widget(toolbar, "button6");
+    widget = lookup_widget(GTK_WIDGET(toolbar), "button6");
     gtk_button_clicked(GTK_BUTTON(widget));
     break;
   }
@@ -1222,7 +1222,7 @@ on_treeview1_button_press_event(GtkWidget * widget,
 
   gtk_widget_realize(tree2_w);
   gtk_tree_view_set_cursor(view, path, NULL, FALSE);
-  gtk_widget_grab_focus(GTK_TREE_VIEW(tree2_w));
+  gtk_widget_grab_focus(GTK_WIDGET(tree2_w));
 
   return FALSE;
 }
@@ -1241,13 +1241,13 @@ static gchar **fill_row(struct menu *menu)
   tristate val;
   enum prop_type ptype;
   int i;
-  static gchar *prompt;
+  gchar *prompt;
 
   for (i = COL_OPTION; i <= COL_COLOR; i++)
     g_free(row[i]);
   memset(row, 0, sizeof(row));
 
-  prompt = menu_get_prompt(menu);
+  prompt = (gchar *) menu_get_prompt(menu);
   row[COL_OPTION] =
       g_strdup_printf("%s %s", prompt ? prompt : "(unknown)",
           sym ? (sym->
@@ -1453,7 +1453,6 @@ static void update_tree(struct menu *src, GtkTreeIter * dst)
   struct symbol *sym;
   struct property *prop;
   struct menu *menu1, *menu2;
-  static GtkTreePath *path = NULL;
 
   if (src == &rootmenu)
     indent = 1;
@@ -1634,7 +1633,6 @@ void fixup_rootmenu(struct menu *menu)
 int gconf_main(int ac, char *av[])
 {
   const char *name;
-  gchar *cur_dir, *exe_path;
 
 #ifndef LKC_DIRECT_LINK
   kconfig_load();
