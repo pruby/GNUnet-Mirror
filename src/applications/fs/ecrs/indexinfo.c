@@ -24,6 +24,9 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
+#include "gnunet_ecrs_lib.h"
+
 /**
  * Test if a file is indexed.
  *

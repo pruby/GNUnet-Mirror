@@ -410,13 +410,17 @@ static void * uploadThread(UploadThreadClosure * utc) {
   }
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);    
+  fi.uri = uri;
+  fi.meta = utc->meta;
+  FSUI_publishToCollection(utc->ctx,
+			   &fi);
+			   
   if (uri != NULL)
     ECRS_freeUri(uri);
 
-  
   FREE(utc->main_filename);
   ECRS_freeMetaData(utc->meta);
-  if (utc->globalUri != NULL)
+  if (utc->uri != NULL)
     ECRS_freeUri(utc->uri);
   if (utc->globalUri != NULL)
     ECRS_freeUri(utc->globalUri);
