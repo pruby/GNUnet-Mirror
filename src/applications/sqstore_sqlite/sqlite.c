@@ -24,7 +24,12 @@
  * @author Nils Durner
  * @todo Estimation of DB size
  * @todo Apply fixes from MySQL module
- * 
+ * @todo can't we avoid the escaping/unescaping of the data/hash? (MySQL prepared
+ *       statements certainly don't need it)
+ * @todo testcase currently fails 
+ *        ("ERROR: 'precompiling' failed at sqlite.c:379 
+ *         with error: near "from": syntax error")
+ *
  * Database: SQLite
  */
 
@@ -390,7 +395,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
     return NULL;    
   }
     
-  MUTEX_CREATE_RECURSIVE(&dbh->DATABASE_Lock_);  
+  MUTEX_CREATE(&dbh->DATABASE_Lock_);  
 
   api.getSize = &getSize;
   api.put = &put;
