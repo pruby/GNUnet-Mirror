@@ -1,7 +1,5 @@
 0.7.0pre1 [4'05] (aka "preview"):
 TESTING / TESTCASES:
-- uni-peer:
-  * sqlite: test concurrency with iterators
 - multi-peer: (see sessiontest.c and tbenchtest.c for templates)
   * gap
   * dht / gnunet-dht-join and gnunet-dht-query

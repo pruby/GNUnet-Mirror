@@ -80,6 +80,15 @@ static int iterateDown(const HashCode512 * key,
 }
 
 
+static int iterateDelete(const HashCode512 * key,
+		       const Datastore_Value * val,
+			   SQstore_ServiceAPI * api) {
+  if (1 == api->del(key, val))
+	return OK;
+  else
+	return SYSERR;
+}
+
 static int priorityCheck(const HashCode512 * key,
 			 const Datastore_Value * val,
 			 int * closure) {
@@ -158,6 +167,13 @@ static int test(SQstore_ServiceAPI * api) {
 					   (Datum_Iterator) &iterateDown,
 					   &i));
   ASSERT(0 == i);
+  ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
+										   (Datum_Iterator) &iterateDelete,
+										   api));
+  ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
+										 (Datum_Iterator) &iterateDown,
+										 &i));
+
   for (i=254;i>=0;i-=2) {
     memset(&key, 256-i, sizeof(HashCode512));
     value = initValue(i+1);

@@ -92,6 +92,15 @@ static int iterateDown(const HashCode512 * key,
   return ret;
 }
 
+static int iterateDelete(const HashCode512 * key,
+		       const Datastore_Value * val,
+			   SQstore_ServiceAPI * api) {
+  if (1 == api->del(key, val))
+	return OK;
+  else
+	return SYSERR;
+}
+
 static int priorityCheck(const HashCode512 * key,
 			 const Datastore_Value * val,
 			 int * closure) {
@@ -163,21 +172,19 @@ static int test(SQstore_ServiceAPI * api) {
   ASSERT(oldSize > api->getSize());
   i = 0;
   ASSERT(128 == api->iterateLowPriority(ANY_BLOCK,
-					(Datum_Iterator) &iterateUp,
-					&i));
+										(Datum_Iterator) &iterateUp,
+										&i));
   ASSERT(256 == i);
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
-					   (Datum_Iterator) &iterateDown,
-					   &i));
+										   (Datum_Iterator) &iterateDown,
+										   &i));
   ASSERT(0 == i);
-
-  for (i=0;i<256;i+=2) {
-    memset(&key, 256-i, sizeof(HashCode512));
-    value = initValue(i);
-    ASSERT(1 == api->del(&key, value));
-    FREE(value);
-  }
-
+  ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
+										   (Datum_Iterator) &iterateDelete,
+										   api));
+  ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
+										 (Datum_Iterator) &iterateDown,
+										 &i));
 
   i = 42;
   value = initValue(i);
@@ -210,8 +217,8 @@ static int test(SQstore_ServiceAPI * api) {
   api->del(&key,
 	   NULL);
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
-					 NULL,
-					 NULL));
+										 NULL,
+										 NULL));
   api->drop();
   return OK;
  FAILURE:
