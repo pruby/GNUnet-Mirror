@@ -140,9 +140,9 @@ typedef struct {
   unsigned int pos;  
 
   /**
-   * Current size of the buffer.
+   * Current size of the read buffer.
    */
-  unsigned int size;
+  unsigned int rsize;
 
   /**
    * The read buffer.
@@ -158,6 +158,11 @@ typedef struct {
    * The write buffer.
    */
   char * wbuff;
+
+  /**
+   * Size of the write buffer
+   */
+  unsigned int wsize;
 
 } TCPSession;
 
@@ -376,9 +381,15 @@ static int readAndProcess(int i) {
   if (SYSERR == tcpAssociate(tsession))
     return SYSERR;
   tcpSession = tsession->internal;
+  if (tcpSession->rsize == tcpSession->pos) {
+    /* read buffer too small, grow */
+    GROW(tcpSession->rbuff,
+	 tcpSession->rsize,
+	 tcpSession->rsize * 2);
+  }
   ret = READ(tcpSession->sock,
 	     &tcpSession->rbuff[tcpSession->pos],
-	     tcpSession->size - tcpSession->pos);
+	     tcpSession->rsize - tcpSession->pos);
   cronTime(&tcpSession->lastUse);
   if (ret == 0) {
     tcpDisconnect(tsession);
@@ -407,9 +418,9 @@ static int readAndProcess(int i) {
   incrementBytesReceived(ret);
   tcpSession->pos += ret;
   len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size);
-  if (len > tcpSession->size) /* if MTU larger than expected, grow! */
+  if (len > tcpSession->rsize) /* if message larger than read buffer, grow! */
     GROW(tcpSession->rbuff,
-	 tcpSession->size,
+	 tcpSession->rsize,
 	 len);
 #if DEBUG_TCP
   LOG(LOG_DEBUG,
@@ -479,8 +490,8 @@ static int readAndProcess(int i) {
   mp->tsession = tsession;
 #if DEBUG_TCP
   LOG(LOG_DEBUG,
-      "tcp transport received %d bytes, forwarding to core\n",
-      mp->size);
+      "tcp transport received %u bytes, forwarding to core\n",
+      mp->rsize);
 #endif
   coreAPI->receive(mp);
 
@@ -493,7 +504,14 @@ static int readAndProcess(int i) {
   memmove(&tcpSession->rbuff[0],
 	  &tcpSession->rbuff[len],
 	  tcpSession->pos - len);
-  tcpSession->pos -= len;	   
+  tcpSession->pos -= len;
+  if ( (tcpSession->pos * 4 < tcpSession->rsize) &&
+       (tcpSession->rsize > 4 * 1024) ) {
+    /* read buffer far too large, shrink! */
+    GROW(tcpSession->rbuff,
+	 tcpSession->rsize,
+	 tcpSession->pos + 1024);
+  }
   
   tcpDisconnect(tsession);
   return OK;
@@ -531,10 +549,11 @@ static void createNewSession(int sock) {
 
   tcpSession = MALLOC(sizeof(TCPSession));
   tcpSession->pos = 0;
-  tcpSession->size = tcpAPI.mtu + sizeof(TCPMessagePack);
-  tcpSession->rbuff = MALLOC(tcpSession->size);
+  tcpSession->rsize = 2 * 1024 + sizeof(TCPMessagePack);
+  tcpSession->rbuff = MALLOC(tcpSession->rsize);
   tcpSession->wpos = 0;
   tcpSession->wbuff = NULL;
+  tcpSession->wsize = 0;
   tcpSession->sock = sock;
   /* fill in placeholder identity to mark that we 
      are waiting for the welcome message */
@@ -692,9 +711,9 @@ static void * tcpListenMain() {
 
 try_again_1:	
 	success = SEND_NONBLOCKING(sock,
-			       tcpSession->wbuff,
-			       tcpSession->wpos,
-			       &ret);
+				   tcpSession->wbuff,
+				   tcpSession->wpos,
+				   &ret);
 	if (success == SYSERR) {
 	  LOG_STRERROR(LOG_WARNING, "send");
 	  destroySession(i);
@@ -718,7 +737,8 @@ try_again_1:
 	if ((unsigned int)ret == tcpSession->wpos) {
 	  FREENONNULL(tcpSession->wbuff);
 	  tcpSession->wbuff = NULL;
-	  tcpSession->wpos = 0;
+	  tcpSession->wpos  = 0;
+	  tcpSession->wsize = 0;
 	} else {
 	  memmove(tcpSession->wbuff,
 		  &tcpSession->wbuff[ret],
@@ -779,10 +799,6 @@ static int tcpDirectSend(TCPSession * tcpSession,
     BREAK(); /* size 0 not allowed */
     return SYSERR;
   }
-  if (ssize > tcpAPI.mtu + sizeof(TCPMessagePack)) {
-    BREAK(); /* size > mtu */
-    return SYSERR;
-  }
   ok = SYSERR;
   MUTEX_LOCK(&tcplock);
   if (tcpSession->wpos > 0) {
@@ -793,20 +809,21 @@ static int tcpDirectSend(TCPSession * tcpSession,
 			       mp,
 			       ssize,
 			       &ret);
-	if (success == SYSERR) {
-	  LOG_STRERROR(LOG_INFO, "send");
-	  MUTEX_UNLOCK(&tcplock);
-	  return SYSERR;
-	} else if (success == NO)
-	  ret = 0;
+    if (success == SYSERR) {
+      LOG_STRERROR(LOG_INFO, "send");
+      MUTEX_UNLOCK(&tcplock);
+      return SYSERR;
+    } else if (success == NO)
+      ret = 0;
   }
   if ((unsigned int)ret <= ssize) { /* some bytes send or blocked */
     if ((unsigned int)ret < ssize) {
       if (tcpSession->wbuff == NULL) {
-	tcpSession->wbuff = MALLOC(tcpAPI.mtu + sizeof(TCPMessagePack));
-	tcpSession->wpos = 0;
+	tcpSession->wsize = ssize + sizeof(TCPMessagePack);
+	tcpSession->wbuff = MALLOC(tcpSession->wsize);
+	tcpSession->wpos  = 0;
       }
-      if (ssize + tcpSession->wpos > tcpAPI.mtu + sizeof(TCPMessagePack) + ret) {
+      if (ssize + tcpSession->wpos - ret > tcpSession->wsize) {
 	ssize = 0;
 	ok = SYSERR; /* buffer full, drop */
       } else {
@@ -864,9 +881,8 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
   MUTEX_LOCK(&tcplock);
   if (tcpSession->wpos > 0) {
     unsigned int old = tcpSession->wpos;
-    /* reliable: grow send-buffer above limit! */
     GROW(tcpSession->wbuff,
-	 tcpSession->wpos,
+	 tcpSession->wsize,
 	 tcpSession->wpos + ssize);
     memcpy(&tcpSession->wbuff[old],
 	   mp,
@@ -1013,8 +1029,9 @@ static int tcpConnect(HELO_Message * helo,
   tcpSession->sock = sock;
   tcpSession->wpos = 0;
   tcpSession->wbuff = NULL;
-  tcpSession->size = tcpAPI.mtu + sizeof(TCPMessagePack);
-  tcpSession->rbuff = MALLOC(tcpSession->size);
+  tcpSession->wsize = 0;
+  tcpSession->rsize = 2 * 1024 + sizeof(TCPMessagePack);
+  tcpSession->rbuff = MALLOC(tcpSession->rsize);
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = tcpSession;
   tsession->ttype = tcpAPI.protocolNumber;
@@ -1065,7 +1082,7 @@ static int tcpSend(TSession * tsession,
   
   if (tcp_shutdown == YES)
     return SYSERR;
-  if ( (size == 0) || (size > tcpAPI.mtu) ) {
+  if (size == 0) {
     BREAK();
     return SYSERR;
   }
@@ -1104,7 +1121,7 @@ static int tcpSendReliable(TSession * tsession,
   
   if (tcp_shutdown == YES)
     return SYSERR;
-  if ( (size == 0) || (size > tcpAPI.mtu) ) {
+  if (size == 0) {
     BREAK();
     return SYSERR;
   }
@@ -1276,8 +1293,6 @@ static char * addressToString(const HELO_Message * helo) {
  * via a global and returns the udp transport API.
  */ 
 TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
-  int mtu;
-
   MUTEX_CREATE_RECURSIVE(&tcplock);
   reloadConfiguration();
   tsessionCount = 0;
@@ -1286,17 +1301,8 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
        tsessionArrayLength,
        32);
   coreAPI = core;
-  mtu = getConfigurationInt("TCP",
-			    "MTU");
-  if (mtu == 0)
-    mtu = 1460;
-  if (mtu < 1200)
-    LOG(LOG_ERROR,
-	_("MTU for '%s' is probably too low (fragmentation not implemented!)\n"),
-	"TCP");
- 
   tcpAPI.protocolNumber       = TCP_PROTOCOL_NUMBER;
-  tcpAPI.mtu                  = mtu - sizeof(TCPMessagePack);
+  tcpAPI.mtu                  = 0;
   tcpAPI.cost                 = 20000; /* about equal to udp */
   tcpAPI.verifyHelo           = &verifyHelo;
   tcpAPI.createHELO           = &createHELO;

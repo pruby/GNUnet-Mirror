@@ -21,7 +21,8 @@
   * dht / gnunet-dht-join and gnunet-dht-query 
   * fs
 - transport refactoring:
-  * TCP MTU change [ hard ]
+  * TEST: TCP MTU change [ at this point, it may just work or equally just crash and burn ]
+  * UPDATE: TCP6/HTTP: MTU change!
   * port knocking support? [ tricky ]
 - UI features:
   * date feature (Mantis #789)
