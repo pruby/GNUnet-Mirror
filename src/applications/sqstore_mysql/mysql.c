@@ -558,6 +558,107 @@ static int iterateExpirationTime(unsigned int type,
 
 #define MAX_DATUM_SIZE 65536
 
+#if 0
+/**
+ * Iterate over the results for a particular key
+ * in the datastore.
+ *
+ * @param key maybe NULL (to match all entries)
+ * @param type entries of which type are relevant?
+ *     Use 0 for any type.
+ * @param iter maybe NULL (to just count)
+ * @return the number of results, SYSERR if the
+ *   iter is non-NULL and aborted the iteration
+ */
+static int getOLD(const HashCode160 * query,
+	       unsigned int type,	     
+	       Datum_Iterator iter,
+	       void * closure) {
+  MYSQL_RES * sql_res;
+  MYSQL_ROW sql_row;  
+  int count;
+  Datastore_Datum * datum;
+  char * escapedHash;
+  char * scratch;
+  size_t n;
+
+  if (query == NULL) 
+    return iterateLowPriority(type, iter, closure);
+
+  MUTEX_LOCK(&dbh->DATABASE_Lock_);
+  escapedHash = MALLOC(2*sizeof(HashCode160)+1);
+  mysql_real_escape_string(dbh->dbf,
+			   escapedHash, 
+			   (char *) query, 
+			   sizeof(HashCode160));
+  n = sizeof(HashCode160)*2+400+1;
+  scratch = MALLOC(n);
+
+  if (type != 0) {
+    if (iter == NULL)
+      SNPRINTF(scratch,
+	       n,
+	       "SELECT count(*) FROM gn070 WHERE hash='%s' AND type=%u",
+	       escapedHash,
+	       type);
+    else
+      SNPRINTF(scratch,
+	       n,
+	       "SELECT * FROM gn070 WHERE hash='%s' AND type=%u",
+	       escapedHash,
+	       type);
+  } else {
+    if (iter == NULL)
+      SNPRINTF(scratch,
+	       n,
+	       "SELECT count(*) FROM gn070 WHERE hash='%s'",
+	       escapedHash);
+    else
+      SNPRINTF(scratch,
+	       n,
+	       "SELECT * FROM gn070 WHERE hash='%s'",
+	       escapedHash);
+  }    
+  FREE(escapedHash);
+  mysql_query(dbh->dbf, scratch);
+  FREE(scratch);
+  if (mysql_error(dbh->dbf)[0]) {
+    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+    return SYSERR;
+  }
+  if (!(sql_res = mysql_use_result(dbh->dbf))) {
+    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+    return SYSERR;
+  }
+  count = 0;
+  while ((sql_row=mysql_fetch_row(sql_res))) {   
+    datum = assembleDatum(sql_res,
+			  sql_row);
+    if (datum == NULL) {
+      LOG(LOG_WARNING,
+	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
+      continue; 
+    }
+    if ( (iter != NULL) &&
+	 (SYSERR == iter(&datum->key, 
+			 &datum->value,
+			 closure) ) ) {
+      count = SYSERR;
+      FREE(datum);
+      break;
+    }
+    FREE(datum);
+    count++;
+  }		
+  mysql_free_result(sql_res);
+  MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+ 
+  return count;
+}
+#endif
+
 /**
  * Iterate over the results for a particular key
  * in the datastore.
@@ -643,6 +744,7 @@ static int get(const HashCode160 * query,
   }  
   
   datum = MALLOC(sizeof(Datastore_Value) + MAX_DATUM_SIZE);  
+  twenty = sizeof(HashCode160);
   dbh->bind[0].buffer = (char*) &size;
   dbh->bind[1].buffer = (char*) &rtype;
   dbh->bind[2].buffer = (char*) &prio;
@@ -652,6 +754,8 @@ static int get(const HashCode160 * query,
   dbh->bind[6].buffer = (char*) &datum[1];
   dbh->bind[5].length = &twenty;
   dbh->bind[6].length = &datasize;
+  dbh->bind[5].buffer_length = sizeof(HashCode160);
+  dbh->bind[6].buffer_length = MAX_DATUM_SIZE;
   if (mysql_stmt_bind_result(stmt,
 			     dbh->bind)) {
     LOG(LOG_ERROR,
@@ -678,6 +782,14 @@ static int get(const HashCode160 * query,
   while (! mysql_stmt_fetch(stmt)) {
     count++;
     
+    if (twenty != sizeof(HashCode160)) {
+      BREAK();
+      LOG(LOG_WARNING,
+	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
+      twenty = sizeof(HashCode160);
+      datasize = MAX_DATUM_SIZE;      
+      continue; 
+    }
     if (iter != NULL) {
       datum->size = htonl(size);
       datum->type = htonl(rtype);
@@ -688,6 +800,7 @@ static int get(const HashCode160 * query,
 	BREAK();
 	LOG(LOG_WARNING,
 	    _("Invalid data in MySQL database.  Please verify integrity!\n"));
+	datasize = MAX_DATUM_SIZE;      
 	continue; 
       }
       LOG(LOG_DEBUG,
@@ -700,8 +813,8 @@ static int get(const HashCode160 * query,
         count = SYSERR;
 	break;
       } 
-      datasize = MAX_DATUM_SIZE;
-    }  
+    }
+    datasize = MAX_DATUM_SIZE;      
   }
   if (mysql_stmt_errno(stmt)) {
     LOG(LOG_ERROR,

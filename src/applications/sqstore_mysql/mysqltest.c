@@ -106,9 +106,9 @@ static int test(SQstore_ServiceAPI * api) {
 					&i));
   for (i=255;i>=0;i--) {
     memset(&key, 256-i, sizeof(HashCode160));     
-    ASSERT(1 == api->get(&key, i, &checkValue, &i));
-    printf("OK: %d\n", i);
+    ASSERT(1 == api->get(&key, i+1, &checkValue, &i));
   }
+
   oldSize = api->getSize();
   for (i=255;i>=0;i-=2) {
     memset(&key, 256-i, sizeof(HashCode160)); 
@@ -125,7 +125,7 @@ static int test(SQstore_ServiceAPI * api) {
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
 					   (Datum_Iterator) &iterateDown,
 					   &i));
-  ASSERT(1 == i);  
+  ASSERT(0 == i);
   for (i=254;i>=0;i-=2) {
     memset(&key, 256-i, sizeof(HashCode160)); 
     value = initValue(i+1);
@@ -157,7 +157,7 @@ static int parser(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGLEVEL",
-				     "DEBUG"));
+				     "WARNING"));
   FREENONNULL(setConfigurationString("",
 				     "GNUNETD_HOME",
 				     "/tmp/gnunet_test/"));
