@@ -440,11 +440,11 @@ static int readAndProcess(int i) {
 #endif
 
       welcome = (TCPWelcome*) &tcpSession->rbuff[0];
-      if ( (ntohs(welcome->header.version) != 0) ||
+      if ( (ntohs(welcome->header.reserved) != 0) ||
 	   (ntohs(welcome->header.size) != sizeof(TCPWelcome) - sizeof(TCPMessagePack)) ) {
 	LOG(LOG_WARNING,
 	    _("Expected welcome message on tcp connection, got garbage (%u, %u). Closing.\n"),
-	    ntohs(welcome->header.version),
+	    ntohs(welcome->header.reserved),
 	    ntohs(welcome->header.size));
 	tcpDisconnect(tsession);
 	return SYSERR;
@@ -1081,7 +1081,7 @@ static int tcpConnect(HELO_Message * helo,
   /* send our node identity to the other side to fully establish the
      connection! */
   welcome.header.size = htons(sizeof(TCPWelcome) - sizeof(TCPMessagePack));
-  welcome.header.version = htons(0);
+  welcome.header.reserved = htons(0);
   welcome.clientIdentity = *(coreAPI->myIdentity);
   if (SYSERR == tcpDirectSend(tcpSession,
 			      &welcome,

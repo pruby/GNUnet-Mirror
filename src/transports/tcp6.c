@@ -79,15 +79,7 @@ typedef struct {
  * must match the CS_HEADER since we are using tcp6io.
  */
 typedef struct {
-  /**
-   * size of the handshake message, in nbo, value is 24
-   */
-  unsigned short size;
-
-  /**
-   * "message type", TCP6 version number, always 0.
-   */
-  unsigned short version;
+  TCP6MessagePack header;
 
   /**
    * Identity of the node connecting (TCP6 client)
@@ -437,8 +429,8 @@ static int readAndProcess(int i) {
 #endif
 
       welcome = (TCP6Welcome*) &tcp6Session->rbuff[0];
-      if ( (ntohs(welcome->version) != 0) ||
-	   (ntohs(welcome->size) != sizeof(TCP6Welcome)) ) {
+      if ( (ntohs(welcome->header.reserved) != 0) ||
+	   (ntohs(welcome->header.size) != sizeof(TCP6Welcome) - sizeof(TCP6MessagePack)) ) {
 	LOG(LOG_WARNING,
 	    _("Expected welcome message on tcp connection, got garbage. Closing.\n"));
 	tcp6Disconnect(tsession);
@@ -1088,8 +1080,8 @@ static int tcp6Connect(HELO_Message * helo,
 
   /* send our node identity to the other side to fully establish the
      connection! */
-  welcome.size = htons(sizeof(TCP6Welcome));
-  welcome.version = htons(0);
+  welcome.header.size = htons(sizeof(TCP6Welcome) - sizeof(TCP6MessagePack));
+  welcome.header.reserved = htons(0);
   memcpy(&welcome.clientIdentity,
 	 coreAPI->myIdentity,
 	 sizeof(PeerIdentity));
