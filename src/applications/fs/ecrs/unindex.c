@@ -58,20 +58,22 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   unsigned int size;
   unsigned int present;
   Datastore_Value * value;
+  DBlock * db;
   CHK ichk;
 
-  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value);
+  size = ntohl(iblocks[level]->size) - sizeof(Datastore_Value) - sizeof(DBlock); 
   present = size / sizeof(CHK);
+  db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
-    fileBlockGetKey((char*) &iblocks[level][1],
+    fileBlockGetKey((char*) db,
 		    size,
 		    &ichk.key);
-    fileBlockGetQuery((char*) &iblocks[level][1],
+    fileBlockGetQuery((char*) db,
 		      size,
 		      &ichk.query);
     if (OK != pushBlock(sock, &ichk, level+1, iblocks))
       return SYSERR;
-    fileBlockEncode((char*) &iblocks[level][1],
+    fileBlockEncode(db,
 		    size,
 		    &ichk.query,
 		    &value);
@@ -81,10 +83,10 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
       return SYSERR;
     }
     FREE(value);
-    size = 0;
+    size = sizeof(DBlock);
   }
   /* append CHK */
-  memcpy(&((char*)&iblocks[level][1])[size],
+  memcpy(&((char*)db)[size],
 	 chk,
 	 sizeof(CHK));
   iblocks[level]->size = htonl(size + sizeof(Datastore_Value));
@@ -124,7 +126,7 @@ static int undoSymlinking(const char * fn,
 #endif
   serverDir 
     = getConfigurationOptionValue(sock,
-				  "AFS",
+				  "FS",
 				  "INDEX-DIRECTORY");
   if (serverDir == NULL)
     return OK;
@@ -217,6 +219,7 @@ int ECRS_unindexFile(const char * filename,
   unsigned int size;
   Datastore_Value ** iblocks;
   Datastore_Value * dblock;
+  DBlock * db;
   Datastore_Value * value;
   GNUNET_TCP_SOCKET * sock;
   HashCode160 fileId;
@@ -285,20 +288,23 @@ int ECRS_unindexFile(const char * filename,
     LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
     return SYSERR;
   }
-  dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE);
-  dblock->size = htonl(sizeof(Datastore_Value) + DBLOCK_SIZE);
+  dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
+  dblock->size = htonl(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->anonymityLevel = htonl(0);
   dblock->prio = htonl(0);
   dblock->type = htonl(D_BLOCK);
   dblock->expirationTime = htonll(0);
+  db = (DBlock*) &dblock[1];
+  db->type = htonl(D_BLOCK);
   iblocks = MALLOC(sizeof(Datastore_Value*) * treedepth);
   for (i=0;i<treedepth;i++) {
-    iblocks[i] = MALLOC(sizeof(Datastore_Value) + IBLOCK_SIZE);
-    iblocks[i]->size = htonl(sizeof(Datastore_Value));
+    iblocks[i] = MALLOC(sizeof(Datastore_Value) + IBLOCK_SIZE + sizeof(DBlock));
+    iblocks[i]->size = htonl(sizeof(Datastore_Value) + sizeof(DBlock));
     iblocks[i]->anonymityLevel = htonl(0);
     iblocks[i]->prio = htonl(0);
     iblocks[i]->type = htonl(D_BLOCK);
     iblocks[i]->expirationTime = htonll(0);
+    ((DBlock*) &iblocks[i][1])->type = htonl(D_BLOCK);
   }
 
   pos = 0;
@@ -311,13 +317,19 @@ int ECRS_unindexFile(const char * filename,
     size = DBLOCK_SIZE;
     if (size > filesize - pos) {
       size = filesize - pos;
-      memset(&dblock[1], 0, DBLOCK_SIZE);
+      memset(&db[1],
+	     0, 
+	     DBLOCK_SIZE);
     }
-    if (size != READ(fd, &dblock[1], size)) {
-      LOG_FILE_STRERROR(LOG_WARNING, "READ", filename);
+    if (size != READ(fd, 
+		     &db[1], 
+		     size)) {
+      LOG_FILE_STRERROR(LOG_WARNING,
+			"READ", 
+			filename);
       goto ERROR;
     }   
-    size = DBLOCK_SIZE; /* padding! */
+    size = DBLOCK_SIZE + sizeof(DBlock); /* padding! */
     if (tt != NULL)
       if (OK != tt(ttClosure))
 	goto ERROR;
@@ -333,7 +345,7 @@ int ECRS_unindexFile(const char * filename,
 			iblocks))
       goto ERROR;
     if (! wasIndexed) {
-      fileBlockEncode((char*) &dblock[1],
+      fileBlockEncode(db,
 		      size,
 		      &chk.query,
 		      &value);
@@ -356,10 +368,11 @@ int ECRS_unindexFile(const char * filename,
       goto ERROR;  
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
-    fileBlockGetKey((char*) &iblocks[i],
+    db = (DBlock*) &iblocks[i];
+    fileBlockGetKey((char*) db,
 		    size,
 		    &chk.key);
-    fileBlockGetQuery((char*) &iblocks[i],
+    fileBlockGetQuery((char*) db,
 		      size,
 		      &chk.query);   
     if (OK != pushBlock(sock, 
@@ -367,7 +380,7 @@ int ECRS_unindexFile(const char * filename,
 			i+1, 
 			iblocks))
       goto ERROR;
-    fileBlockEncode((char*) &iblocks[i][1],
+    fileBlockEncode(db,
 		    size,
 		    &chk.query,
 		    &value);

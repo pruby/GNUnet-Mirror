@@ -136,8 +136,8 @@ static int parser(int argc,
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
 				     "/tmp/gnunet_test/gnunet.conf"));
-  FREENONNULL(setConfigurationString("AFS",
-				     "AFSDIR",
+  FREENONNULL(setConfigurationString("FS",
+				     "DIR",
 				     TEST_DB));
   return OK;
 }

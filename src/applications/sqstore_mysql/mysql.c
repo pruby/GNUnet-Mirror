@@ -120,8 +120,8 @@
  * If you suffer from too slow index/insert speeds, 
  * you might try to define /etc/gnunet.conf option
  *
- *   [AFS]
- *   MYSQL_DELAYED = YES
+ *   [MYSQL]
+ *   DELAYED = YES
  *
  * for small efficiency boost. The option will let MySQL bundle multiple 
  * inserts before actually writing them to disk. You shouldn't use this 
@@ -182,11 +182,12 @@ static mysqlHandle * dbh;
  *
  */
 static Datastore_Datum * assembleDatum(MYSQL_ROW sql_row) {
-
   Datastore_Datum * datum;
   int contentSize;
   
   contentSize = atol(sql_row[0]) - sizeof(Datastore_Value);
+  if (contentSize < 0)
+    return NULL; /* error */
 
   datum = MALLOC(sizeof(Datastore_Datum) + contentSize);
   datum->value.size = htonl(contentSize + sizeof(Datastore_Value));
@@ -203,7 +204,6 @@ static Datastore_Datum * assembleDatum(MYSQL_ROW sql_row) {
   memcpy(&datum[1], 
          sql_row[6],
 	 contentSize);
-
   return(datum);
 }
 
@@ -248,11 +248,11 @@ static int iopen(mysqlHandle * dbhI) {
  * Close the database connection.
  */
 static int iclose(mysqlHandle * dbhI) {
-  if (dbh->dbf == NULL)
+  if (dbhI->dbf == NULL)
     return SYSERR;
-  MUTEX_DESTROY(&dbh->DATABASE_Lock_);
-  mysql_close(dbh->dbf);
-  dbh->dbf = NULL;
+  MUTEX_DESTROY(&dbhI->DATABASE_Lock_);
+  mysql_close(dbhI->dbf);
+  dbhI->dbf = NULL;
   return OK;
 }
 
@@ -303,18 +303,24 @@ static int iterateLowPriority(unsigned int type,
   FREE(scratch);
   if (mysql_error(dbhI.dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
-    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);  
+    iclose(&dbhI);
     return(SYSERR);
   }
   
   if (!(sql_res=mysql_use_result(dbhI.dbf))) {
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+    iclose(&dbhI);
     return(SYSERR);
   }
 
-  while ((sql_row=mysql_fetch_row(sql_res))) {
-    
+  while ((sql_row=mysql_fetch_row(sql_res))) {   
     datum = assembleDatum(sql_row);
+    if (datum == NULL) {
+      LOG(LOG_WARNING,
+	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
+      continue; 
+    }
     if( SYSERR == iter(&datum->key, &datum->value, closure) ) {
       count = SYSERR;
       FREE(datum);
@@ -359,9 +365,7 @@ static int iterateExpirationTime(unsigned int type,
   if (OK != iopen(&dbhI))
     return SYSERR;
 
-
   MUTEX_LOCK(&dbhI.DATABASE_Lock_);
-
   if(type==0) {
     typestr[0]=0;
   } else {
@@ -383,26 +387,31 @@ static int iterateExpirationTime(unsigned int type,
   if (mysql_error(dbhI.dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+    iclose(&dbhI);
     return(SYSERR);
   }
   
   if (!(sql_res=mysql_use_result(dbhI.dbf))) {
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+    iclose(&dbhI);
     return(SYSERR);
   }
 
   while ((sql_row=mysql_fetch_row(sql_res))) {   
     datum = assembleDatum(sql_row);
+    if (datum == NULL) {
+      LOG(LOG_WARNING,
+	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
+      continue; 
+    }
     if (SYSERR == iter(&datum->key, &datum->value, closure) ) {
       count = SYSERR;
       FREE(datum);
       break;
     }
     FREE(datum);
-
     count++;
-  }
-		
+  }		
   mysql_free_result(sql_res);
   MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
   iclose(&dbhI);
@@ -439,7 +448,7 @@ static int get(const HashCode160 * query,
     mysql_escape_string(escapedHash, 
   	  	        (char *)query, 
 		        sizeof(HashCode160));
-    if( type!=0) {
+    if (type!=0) {
       SNPRINTF(scratch, 
     	       256,
 	       "SELECT %s FROM gn070"
@@ -457,7 +466,7 @@ static int get(const HashCode160 * query,
     }
     FREE(escapedHash);
   } else { /* query is NULL */
-    if(type==0) {
+    if (type==0) {
       SNPRINTF(scratch, 
     	       256,
 	       "SELECT %s FROM gn070",
@@ -497,6 +506,11 @@ static int get(const HashCode160 * query,
       Datastore_Datum * datum;
 
       datum = assembleDatum(sql_row);
+      if (datum == NULL) {
+	LOG(LOG_WARNING,
+	    _("Invalid data in MySQL database.  Please verify integrity!\n"));
+	continue; 
+      }
       if( SYSERR == iter(&datum->key,&datum->value, closure) ) {
         count = SYSERR;
 	FREE(datum);
@@ -620,7 +634,7 @@ static int del(const HashCode160 * key,
 	     escapedBlock
 	     );
   }
-  mysql_query(dbh->dbf,scratch);
+  mysql_query(dbh->dbf, scratch);
   FREE(escapedHash);
   FREE(escapedBlock);
   FREE(scratch);
@@ -830,8 +844,8 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 
   dbh = MALLOC(sizeof(mysqlHandle));
   dbh->cnffile = cnffile;
-  if (testConfigurationString("AFS",
-			      "MYSQL_DELAYED",
+  if (testConfigurationString("MYSQL",
+			      "DELAYED",
 			      "YES"))
     dbh->useDelayed = YES;
   else

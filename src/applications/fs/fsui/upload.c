@@ -446,8 +446,8 @@ int FSUI_upload(struct FSUI_Context * ctx,
   
   utc = MALLOC(sizeof(UploadThreadClosure));
   utc->anonymityLevel = ctx->anonymityLevel;
-  utc->priority = getConfigurationInt("AFS",
-				      "UPLOAD-PRIORITY");
+  utc->priority = getConfigurationInt("FS",
+				      "INSERT-PRIORITY");
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;
   utc->ctx = ctx;
   utc->isRecursive = NO;
@@ -513,8 +513,8 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   utc->ctx = ctx;
   utc->isRecursive = YES;
   utc->anonymityLevel = ctx->anonymityLevel;
-  utc->priority = getConfigurationInt("AFS",
-				      "UPLOAD-PRIORITY");
+  utc->priority = getConfigurationInt("FS",
+				      "INSERT-PRIORITY");
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;
   utc->extractors = EXTRACTOR_loadConfigLibraries(NULL, extractorPluginNames);
   utc->globalUri = FSUI_parseArgvKeywordURI(globalKeywordCount,

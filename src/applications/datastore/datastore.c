@@ -246,7 +246,7 @@ static int freeSpaceLow(const HashCode160 * key,
  */
 static void cronMaintenance(void * unused) {
   long long tmpAvailable 
-    = getConfigurationInt("AFS", "QUOTA") * 1024 * 1024; /* MB to bytes */
+    = getConfigurationInt("FS", "QUOTA") * 1024 * 1024; /* MB to bytes */
   available = tmpAvailable - sq->getSize();
   if (available < MIN_FREE) {
     sq->iterateExpirationTime(ANY_BLOCK,
@@ -276,8 +276,8 @@ provide_module_datastore(CoreAPIForApplication * capi) {
     return NULL;
   }
   quota
-    = htonl(getConfigurationInt("AFS", "QUOTA"));
-  stateWriteContent("AFS-LAST-QUOTA",
+    = htonl(getConfigurationInt("FS", "QUOTA"));
+  stateWriteContent("FS-LAST-QUOTA",
 		    sizeof(int),
 		    &quota);
 
@@ -339,9 +339,9 @@ void update_module_datastore(UpdateAPI * uapi) {
   int lastQuota;
 
   quota
-    = getConfigurationInt("AFS", "QUOTA");
+    = getConfigurationInt("FS", "QUOTA");
   lq = NULL;
-  if (sizeof(int) != stateReadContent("AFS-LAST-QUOTA",
+  if (sizeof(int) != stateReadContent("FS-LAST-QUOTA",
 				      (void**)&lq)) 
     return; /* first start? */
   lastQuota = ntohl(*lq);

@@ -248,18 +248,18 @@ static int csHandleRequestInsert(ClientHandle sock,
   HashCode160 query;
   unsigned int type;
 
-  if (ntohs(req->size) < sizeof(RequestIndex)) {
+  if (ntohs(req->size) < sizeof(RequestInsert)) {
     BREAK();
     return SYSERR;
   }
   ri = (RequestInsert*) req;
   datum = MALLOC(sizeof(Datastore_Value) + 
-		 ntohs(req->size) - sizeof(RequestIndex));
+		 ntohs(req->size) - sizeof(RequestInsert));
   datum->expirationTime = ri->expiration;
   datum->prio = ri->prio;
   datum->anonymityLevel = ri->anonymityLevel;
   if (OK != getQueryFor(ntohs(ri->header.size) - sizeof(RequestInsert),
-			(char*)&ri[1],
+			(const char*)&ri[1],
 			&query)) {
     BREAK();
     FREE(datum);
@@ -336,7 +336,7 @@ static int csHandleRequestIndex(ClientHandle sock,
 		       ntohl(ri->anonymityLevel),
 		       &ri->fileId,
 		       ntohs(ri->header.size) - sizeof(RequestIndex),
-		       (const char*) &ri[1]);
+		       (const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
       "Sending confirmation of index request to client\n");
   return coreAPI->sendValueToClient(sock,
@@ -769,11 +769,11 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   hash("GNUNET_FS", 
        strlen("GNUNET_FS"), 
        &dht_table);
-  if (getConfigurationInt("AFS",
-			  "DISKQUOTA") <= 0) {
+  if (getConfigurationInt("FS",
+			  "QUOTA") <= 0) {
     LOG(LOG_ERROR,
 	_("You must specify a postive number for '%s' in the configuration in section '%s'.\n"),
-	"DISKQUOTA", "AFS");
+	"QUOTA", "FS");
     return SYSERR;
   }
   datastore = capi->requestService("datastore");

@@ -124,7 +124,7 @@ static void printstatus(int * verboselevel,
   case upload_progress:
     if (*verboselevel == YES) {
       delta = event->data.UploadProgress.eta - cronTime(NULL);
-      printf(_("%16llu of %16llu bytes inserted (estimating %llu seconds to completion)"),
+      printf(_("%16llu of %16llu bytes inserted (estimating %llu seconds to completion)                "),
 	     event->data.UploadProgress.main_completed,
 	     event->data.UploadProgress.main_total,
 	     delta / cronSECONDS);      
@@ -133,23 +133,23 @@ static void printstatus(int * verboselevel,
     break;
   case upload_complete:
     if (*verboselevel == YES) {
-      delta = event->data.UploadProgress.eta - event->data.UploadProgress.start_time;
+      delta = event->data.UploadComplete.eta - event->data.UploadComplete.start_time;
       printf(_("\nUpload of '%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
-	     event->data.UploadProgress.filename,
-	     event->data.UploadProgress.main_total,
+	     event->data.UploadComplete.filename,
+	     event->data.UploadComplete.total,
 	     delta / cronSECONDS,
 	     (delta == 0)
 	     ? (double) (-1.0)
-	     : (double) (event->data.UploadProgress.main_total / 1024.0 * cronSECONDS / delta));
+	     : (double) (event->data.UploadComplete.total / 1024.0 * cronSECONDS / delta));
     }
     fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
     printf(_("File '%s' has URI: %s\n"),
 	   event->data.UploadComplete.filename,
 	   fstring);
     FREE(fstring);   
-    if (0 == strcmp(event->data.DownloadProgress.main_filename,
-		    event->data.DownloadProgress.filename)) {
-      postProcess(event->data.DownloadProgress.main_uri);
+    if (0 == strcmp(event->data.UploadComplete.main_filename,
+		    event->data.UploadComplete.filename)) {
+      postProcess(event->data.UploadComplete.uri);
       SEMAPHORE_UP(exitSignal);
     }
 

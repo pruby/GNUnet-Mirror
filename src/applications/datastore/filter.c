@@ -37,10 +37,10 @@ static char * getFilterName() {
   char * fn;
   char * bf;
 
-  fn = getFileName("AFS",
-                   "AFSDIR",
+  fn = getFileName("FS",
+                   "DIR",
                    _("Configuration must specify directory for "
-		     "AFS data in section '%s' under '%s'.\n"));
+		     "FS data in section '%s' under '%s'.\n"));
   mkdirp(fn);
   bf = MALLOC(strlen(fn)+
 	      strlen("/bloomfilter")+1);
@@ -60,8 +60,8 @@ void initFilters() {
 
   /* read existing quota, check if it changed */
   qt = NULL;
-  quota = getConfigurationInt("AFS",
-			      "DISKQUOTA") * 1024;
+  quota = getConfigurationInt("FS",
+			      "QUOTA") * 1024;
  
   bf_size = quota/8; /* 8 bit per entry, 1 bit per kb in DB */
   filter 

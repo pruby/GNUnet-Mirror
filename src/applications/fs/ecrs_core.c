@@ -42,7 +42,7 @@
  * @return OK on success, SYSERR if data does not
  *  match the query
  */
-int fileBlockEncode(const char * data,
+int fileBlockEncode(const DBlock * data,
 		    unsigned int len,
 		    const HashCode160 * query,
 		    Datastore_Value ** value) {
@@ -50,7 +50,9 @@ int fileBlockEncode(const char * data,
   SESSIONKEY skey;
   unsigned char iv[BLOWFISH_BLOCK_LENGTH];  /* initial value */
   Datastore_Value * val;
+  DBlock * db;
 
+  GNUNET_ASSERT(len > sizeof(DBlock));
   GNUNET_ASSERT((data!=NULL) && (query != NULL));
   hash(data, len, &hc);
   hashToKey(&hc,
@@ -64,12 +66,13 @@ int fileBlockEncode(const char * data,
   val->prio = htonl(0);
   val->anonymityLevel = htonl(0);
   val->expirationTime = htonl(0);
-  ((DBlock*) &val[1])->type = htonl(D_BLOCK);
-  GNUNET_ASSERT(len == encryptBlock(data,
-				    len,
+  db = (DBlock*) &val[1];
+  db->type = htonl(D_BLOCK);
+  GNUNET_ASSERT(len == encryptBlock(&data[1],
+				    len - sizeof(DBlock),
 				    &skey,
 				    iv,
-				    &val[1]));
+				    &db[1]));
   hash(val,
        len,
        &hc);
@@ -79,6 +82,7 @@ int fileBlockEncode(const char * data,
     return OK;
   } else {
     FREE(val);
+    BREAK();
     *value = NULL;
     return SYSERR;
   }
@@ -91,7 +95,10 @@ int fileBlockEncode(const char * data,
 void fileBlockGetKey(const char * data,
 		     unsigned int len,
 		     HashCode160 * key) {
-  hash(data, len, key);
+  GNUNET_ASSERT(len >= sizeof(unsigned int));
+  hash(&data[sizeof(unsigned int)], 
+       len - sizeof(unsigned int), 
+       key);
 }
 
 /**
@@ -106,6 +113,9 @@ void fileBlockGetQuery(const char * data,
   SESSIONKEY skey;
   unsigned char iv[BLOWFISH_BLOCK_LENGTH];
 
+  GNUNET_ASSERT(len >= sizeof(unsigned int));
+  data = &data[sizeof(unsigned int)];
+  len -= sizeof(unsigned int);
   hash(data, len, &hc);
   hashToKey(&hc,
 	    &skey,
@@ -122,7 +132,10 @@ void fileBlockGetQuery(const char * data,
 
 unsigned int getTypeOfBlock(unsigned int size,
 			    const void * data) {
-  GNUNET_ASSERT(size > 4);
+  if (size <= 4) {
+    BREAK();
+    return ANY_BLOCK; /* signal error */
+  }
   return *((const unsigned int*)data);
 }
 
@@ -141,9 +154,11 @@ int getQueryFor(unsigned int size,
   unsigned int type;
 
   type = getTypeOfBlock(size, data);
+  if (type == ANY_BLOCK)
+    return SYSERR;
   switch (type) {
   case D_BLOCK: 
-    hash(data, size, query);
+    fileBlockGetKey(data, size, query);
     return OK;  
   case S_BLOCK: {
     SBlock * sb;

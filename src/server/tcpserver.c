@@ -284,9 +284,13 @@ static int processHelper(CS_HEADER * msg,
 	ptyp);
     MUTEX_UNLOCK(&handlerlock);
     return SYSERR;
-  } else
-    callback(sender,
-	     msg);
+  } else {
+    if (OK != callback(sender,
+		       msg)) {
+      MUTEX_UNLOCK(&handlerlock);
+      return SYSERR;      
+    }
+  }
   MUTEX_UNLOCK(&handlerlock);
   return OK;
 }

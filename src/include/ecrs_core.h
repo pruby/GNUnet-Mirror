@@ -161,7 +161,7 @@ typedef struct {
  * @return OK on success, SYSERR if data does not
  *  match the query
  */
-int fileBlockEncode(const char * data,
+int fileBlockEncode(const DBlock * data,
 		    unsigned int len,
 		    const HashCode160 * query,
 		    Datastore_Value ** value);

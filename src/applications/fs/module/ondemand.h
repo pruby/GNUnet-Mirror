@@ -40,7 +40,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 		   unsigned int anonymityLevel,
 		   const HashCode160 * fileId,
 		   unsigned int size,
-		   const char * content);
+		   const DBlock * content);
 
 /**
  * A query on the datastore resulted in the on-demand

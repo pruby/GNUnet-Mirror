@@ -67,9 +67,9 @@ static char * getOnDemandFile(const HashCode160 * fileId) {
   char * fn;
   char * dir;
 
-  dir = getFileName("AFS",
+  dir = getFileName("FS",
 		    "INDEX-DIRECTORY",
-		    _("You must specify a directory for AFS files in the"
+		    _("You must specify a directory for FS files in the"
 		      " configuration in section '%s' under '%s'."));
   mkdirp(dir); /* just in case */
   hash2enc(fileId,
@@ -117,29 +117,33 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 		   unsigned int anonymityLevel,
 		   const HashCode160 * fileId,
 		   unsigned int size,
-		   const char * content) {
+		   const DBlock * content) {
   char * fn;
   int fd;
   int ret;
   OnDemandBlock odb;
   HashCode160 key;
 
+  if (size <= sizeof(DBlock)) {
+    BREAK();
+    return SYSERR;
+  }
   fn = getOnDemandFile(fileId);
   fd = OPEN(fn, 
 	    O_CREAT|O_WRONLY,
 	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
   if(fd == -1) {    
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
-    FREE(fn);
+    FREE(fn);    
     return SYSERR;
   }  
   lseek(fd, 
 	fileOffset,
 	SEEK_SET);
   ret = WRITE(fd,
-	      content,
-	      size);
-  if (ret == size) {
+	      &content[1],
+	      size - sizeof(DBlock));
+  if (ret == size - sizeof(DBlock)) {
     ret = OK;
   } else {
     LOG_FILE_STRERROR(LOG_ERROR, "write", fn);
@@ -147,6 +151,8 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   }
   CLOSE(fd);
   FREE(fn);
+  if (ret == SYSERR)
+    return ret;
 
   odb.header.size = htonl(sizeof(OnDemandBlock));
   odb.header.type = htonl(ONDEMAND_BLOCK);
@@ -154,7 +160,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   odb.header.anonymityLevel = htonl(anonymityLevel);
   odb.header.expirationTime = htonll(expiration);
   odb.fileOffset = htonll(fileOffset);
-  odb.blockSize = htonl(size);
+  odb.blockSize = htonl(size - sizeof(DBlock));
   odb.fileId = *fileId;
   /* compute the primary key */
   fileBlockGetQuery(content,
@@ -164,13 +170,12 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 		       ONDEMAND_BLOCK,
 		       &checkPresent,
 		       &odb.header);
-  if (ret == SYSERR) {   
+  if (ret <= 0) {   
     ret = datastore->put(&key,
 			 &odb.header);
-    if (ret != YES)
-      ret = SYSERR; /* not stored */
-  } else
+  } else {
     ret = NO; /* already present! */
+  }
   return ret;
 }
 
@@ -193,6 +198,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   int fileHandle;
   int ret;
   OnDemandBlock * odb;
+  DBlock * db;
 
   if (ntohl(dbv->size) != sizeof(OnDemandBlock)) {
     BREAK();
@@ -215,10 +221,10 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     char * scratch;
     int n;
   
-    afsDir = getFileName("AFS",
-			 "AFSDIR",
+    afsDir = getFileName("FS",
+			 "DIR",
 			 _("Configuration file must specify directory for"
-			   " storage of AFS data in section '%s'"
+			   " storage of FS data in section '%s'"
 			   " under '%s'.\n"));
     n = strlen(afsDir)+strlen(TRACKFILE)+8;
     scratch = MALLOC(n);
@@ -243,22 +249,24 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     CLOSE(fileHandle);
     goto ERROR;
   }
-  iobuf = MALLOC(ntohl(odb->blockSize));
+  db = MALLOC(sizeof(DBlock) + ntohl(odb->blockSize));
+  db->type = htonl(D_BLOCK);
+  iobuf = (char*) &db[1];
   blen = READ(fileHandle, 
 	      iobuf,
 	      ntohl(odb->blockSize));
   if (blen != ntohl(odb->blockSize)) {
     LOG_FILE_STRERROR(LOG_ERROR, "read", fn);
     FREE(fn);
-    FREE(iobuf);
+    FREE(db);
     CLOSE(fileHandle);
     goto ERROR;
   }
-  ret = fileBlockEncode(iobuf,
-			ntohl(odb->blockSize),
+  ret = fileBlockEncode(db,
+			ntohl(odb->blockSize) + sizeof(DBlock),
 			query,
 			enc);  
-  FREE(iobuf);
+  FREE(db);
   FREE(fn);
   if (ret == SYSERR)
     goto ERROR;

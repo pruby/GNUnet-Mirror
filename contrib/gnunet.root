@@ -104,8 +104,10 @@ HOSTS   	= $GNUNETD_HOME/data/hosts/
 #
 # If you do not specify a HOSTLISTURL, you must copy valid hostkeys to
 # data/hosts manually.
-# Default: HOSTLISTURL = "http://www.ovmj.org/GNUnet/download/hostlist http://www.woodtick.co.uk/hostlist"
-HOSTLISTURL = "http://www.ovmj.org/GNUnet/download/hostlist http://gnunet.wensley.org.uk/hostlist"
+# Default: HOSTLISTURL = "http://ovmj.org/GNUnet/download/hostlist http://www.woodtick.co.uk/hostlist"
+# The above are currently hostlists for 0.6.x, we'll have to have new ones for
+# 0.7.x -- once we're a bit further along.
+# HOSTLISTURL = "http://gnunet.org/hostlist" # not yet on 0.7, will not yet work
 
 # If you have to use a proxy for outbound HTTP connections,
 # specify the proxy configuration here.  Default is no proxy.
@@ -137,9 +139,8 @@ HOSTLISTURL = "http://www.ovmj.org/GNUnet/download/hostlist http://gnunet.wensle
 # Using the fs tools for downloading may require the traffic module
 # to be loaded!
 #
-# Typical choices are: ""
-# Default: APPLICATIONS = ""
-APPLICATIONS = "advertising topology"
+# Default: APPLICATIONS = "advertising topology fs getoption stats traffic"
+APPLICATIONS = "advertising topology fs getoption stats traffic"
 
 # Which transport mechanisms are available? Use space-separated list
 # of the modules, e.g.  "udp smtp tcp". The order is irrelevant, each
@@ -481,9 +482,9 @@ PIPE = /tmp/gnunet.smtp
 ################################################
 # Options for anonymous filesharing (AFS).
 ################################################
-[AFS]
+[FS]
 
-# How much disk space (MB) is GNUnet allowed to use for anonymous file
+# How much disk space (MB) is GNUnet allowed to use for file
 # sharing?  This does not take indexed files into account, only the
 # space directly used by GNUnet is accounted for.  GNUnet will gather
 # content from the network if the current space-consumption is below
@@ -493,51 +494,7 @@ PIPE = /tmp/gnunet.smtp
 # Note that if you change the quota, you need to run gnunet-convert,
 # otherwise your databases will be inconsistent and gnunetd will
 # refuse to work.  Default is 1024 (1 GB)
-DISKQUOTA 	= 1024
-
-# What degree of receiver anonymity is required?  If set to 0, GNUnet
-# will try to download the file as fast as possible without any
-# additional slowdown by the anonymity code. Note that you will still
-# have a fair degree of anonymity depending on the current network
-# load and the power of the adversary. The download is still unlikely
-# to be terribly fast since the sender may have requested
-# sender-anonymity and since in addition to that, GNUnet will still do
-# the anonymous routing.
-#
-# This option can be used to limit requests further than that. In
-# particular, you can require GNUnet to receive certain amounts of
-# traffic from other peers before sending your queries. This way, you
-# can gain very high levels of anonymity - at the expense of much more
-# traffic and much higher latency. So set it only if you really
-# believe you need it.
-#
-# The definition of ANONYMITY-RECEIVE is the following: 
-#  If the value v # is < 1000, it means that if GNUnet routes n bytes
-#  of messages from # foreign peers, it may originate n/v bytes of
-#  queries in the same # time-period.  The time-period is twice the
-#  average delay that GNUnet # deferrs forwarded queries.
-# 
-#  If the value v is >= 1000, it means that if GNUnet routes n bytes
-#  of QUERIES from at least (v % 1000) peers, it may originate
-#  n/v/1000 bytes of queries in the same time-period.
-#
-# The default is 0 and this should be fine for most users. Also notice
-# that if you choose values above 1000, you may end up having no
-# throughput at all, especially if many of your fellow GNUnet-peers do
-# the same.
-ANONYMITY-RECEIVE = 0
-
-# You can also request a certain degree of anonymity for the files and
-# blocks that you are sharing. In this case, only a certain faction of
-# the traffic that you are routing will be allowed to be replies that
-# originate from your machine. Again, 0 means unlimited.
-#
-# The semantics of ANONYMITY-SEND are equivalent to the semantics of
-# ANONYMITY-RECEIVE.
-#
-# The default is 0 and this should be fine for most users.
-ANONYMITY-SEND = 0
-
+QUOTA 	= 1024
 
 # Should we participate in content migration?  If you say yes here,
 # GNUnet will migrate content to your server, and you will not be able
@@ -575,8 +532,8 @@ ANONYMITY-SEND = 0
 # Default is YES.
 ACTIVEMIGRATION = YES
 
-# Where to store the AFS related data (content, etc)?
-AFSDIR          = $GNUNETD_HOME/data/afs/
+# Where to store the FS related data (content, etc)?
+DIR          = $GNUNETD_HOME/data/fs/
 
 # Where to store indexed files (NEW!)
 # Note that you MUST not copy files directly to this
@@ -607,6 +564,19 @@ INDEX-DIRECTORY = $GNUNETD_HOME/data/shared/
 INDEX-QUOTA = 8192
 
 
+#######################################
+# MySQL specific options.
+#######################################
+
+[MYSQL]
+
+# If you suffer from too slow index/insert speeds, 
+# you might try to set this to YES for a small
+# efficiency boost.  If you run into any trouble
+# because of it, you're on your own.
+# Default: NO
+DELAYED = NO
+
 
 #######################################
 # TESTBED (experimental!)
@@ -633,6 +603,14 @@ UPLOAD-DIR = $GNUNETD_HOME/testbed
 # application port (default: 2087).
 # LOGIN = 
 
+########################################
+# GAP options
+########################################
+
+[GAP]
+# Size of the routing table.
+# Default: 65536
+TABLESIZE = 65536
 
 ########################################
 # DHT (experimental)

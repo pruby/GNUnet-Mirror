@@ -79,7 +79,7 @@ static void getVersionHash(EncName * enc) {
      simple alternative would be to require gnunet-update for any
      configuration change, but that again would be too strict. */
   dyncat(&string, "GNUNETD", "APPLICATIONS"); 
-  dyncat(&string, "AFS", "QUOTA");
+  dyncat(&string, "FS", "QUOTA");
   dyncat(&string, "MODULES", "sqstore");
   hash(string,
        strlen(string),

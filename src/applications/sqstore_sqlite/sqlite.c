@@ -742,10 +742,10 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   dbh->indexed = 0;
   dbh->lastSync = 0;
 
-  afsdir = getFileName("AFS",
-           "AFSDIR",
-           _("Configuration file must specify directory for "
-             "storing AFS data in section '%s' under '%s'.\n"));
+  afsdir = getFileName("FS",
+		       "DIR",
+		       _("Configuration file must specify directory for "
+			 "storing FS data in section '%s' under '%s'.\n"));
   dir = MALLOC(strlen(afsdir) + strlen(CONTENTDIR) + 2);
   strcpy(dir, afsdir);
   strcat(dir, "/");

@@ -1880,8 +1880,8 @@ provide_module_gap(CoreAPIForApplication * capi) {
   }
   random_qsel = randomi(0xFFFF);
   indirectionTableSize =
-    getConfigurationInt("AFS",
-    			"INDIRECTIONTABLESIZE");
+    getConfigurationInt("GAP",
+    			"TABLESIZE");
   if (indirectionTableSize < MIN_INDIRECTION_TABLE_SIZE)
     indirectionTableSize = MIN_INDIRECTION_TABLE_SIZE;
   ROUTING_indTable_ 

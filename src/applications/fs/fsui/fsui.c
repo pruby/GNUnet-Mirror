@@ -43,8 +43,10 @@ struct FSUI_Context * FSUI_start(FSUI_EventCallback cb,
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
-  gh = getConfigurationString("",
+  fn = getConfigurationString("",
 			      "GNUNET_HOME");
+  gh = expandFileName(fn);
+  FREE(fn);
   fn = MALLOC(strlen(gh) + strlen("fsui-lock") + 2);
   strcpy(fn, gh);
   FREE(gh);
