@@ -472,9 +472,11 @@ static void * threadMain(int id) {
  * (receive implementation).
  */
 void core_receive(MessagePack * mp) {
-  if ( (mainShutdownSignal != NULL) ||
+  if ( (threads_running == NO) ||
+       (mainShutdownSignal != NULL) ||
        (SYSERR == SEMAPHORE_DOWN_NONBLOCKING(bufferQueueWrite_)) ) {
-    /* discard message, buffer is full! */
+    /* discard message, buffer is full or
+       we're shut down! */
     FREE(mp->msg);
     FREE(mp);
     return;
