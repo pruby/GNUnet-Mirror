@@ -245,10 +245,7 @@ static int unindexFile(unsigned int size) {
 #define CHECK(a) if (!(a)) { ret = 1; BREAK(); goto FAILURE; }
 
 /**
- * Testcase to test p2p session key exchange.
- *
- * @param argc number of arguments from the command line
- * @param argv command line arguments
+ * Testcase to test gap routing (2 peers only).
  * @return 0: ok, -1: error
  */
 int main(int argc, char ** argv) {
@@ -265,7 +262,8 @@ int main(int argc, char ** argv) {
 			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
-#if 0
+  /* set to 0 if you want to start gnunetd's by hand for debugging */
+#if 1
   daemon1 = fork();
   if (daemon1 == 0) {
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
@@ -410,4 +408,4 @@ int main(int argc, char ** argv) {
   return ret;
 }
 
-/* end of sessiontest.c */
+/* end of gaptest.c */

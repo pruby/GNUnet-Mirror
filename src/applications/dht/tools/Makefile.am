@@ -27,3 +27,23 @@ gnunet_dht_query_LDADD =  \
   $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
+
+
+
+check_PROGRAMS = \
+  dhttest 
+
+TESTS = $(check_PROGRAMS)
+
+dhttest_SOURCES = \
+  dhttest.c 
+dhttest_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+EXTRA_DIST = \
+  peer1.conf \
+  peer2.conf \
+  peer1/.hostkey \
+  peer2/.hostkey 

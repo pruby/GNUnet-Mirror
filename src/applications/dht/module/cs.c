@@ -951,7 +951,7 @@ static void csClientExit(ClientHandle client) {
     resumeCron();
 }
 
-int initialize_dht_protocol(CoreAPIForApplication * capi) {
+int initialize_module_dht(CoreAPIForApplication * capi) {
   int status;
 
   dhtAPI = capi->requestService("dht");
@@ -999,7 +999,7 @@ int initialize_dht_protocol(CoreAPIForApplication * capi) {
 /**
  * Unregisters handlers, cleans memory structures etc when node exits.
  */
-int done_dht_protocol() {
+int done_module_dht() {
   int status;
 
   status = OK;
