@@ -322,7 +322,7 @@ then
   AC_MSG_CHECKING(mysql version)
   AC_RUN_IFELSE([AC_LANG_PROGRAM(
     [[#include <mysql/mysql.h>]],
-    [[if (MYSQL_VERSION_ID < 32356)
+    [[if (MYSQL_VERSION_ID < 40100)
         return(-1);
       else
         return(0);
@@ -331,7 +331,7 @@ then
   if test "$mysql" = "false"
   then
     mysqlfail=true
-    AC_MSG_RESULT([fail, >= 3.23.56 required])
+    AC_MSG_RESULT([fail, >= 4.1 required])
   else
     AC_MSG_RESULT(ok)
   fi

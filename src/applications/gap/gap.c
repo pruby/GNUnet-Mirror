@@ -1420,13 +1420,6 @@ static int execQuery(const PeerIdentity * sender,
   int doForward;
   EncName enc;
   
-  IFLOG(LOG_DEBUG,
-        hash2enc(&query->queries[0],
-		 &enc));
-  LOG(LOG_DEBUG,
-      "Executing request %s.\n",
-      &enc);
-
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&ite->lookup_exclusion); 
   if (sender != NULL) {
@@ -1447,6 +1440,17 @@ static int execQuery(const PeerIdentity * sender,
   }
   if ( (policy & QUERY_FORWARD) == 0)
     doForward = NO;
+
+  IFLOG(LOG_DEBUG,
+        hash2enc(&query->queries[0],
+		 &enc));
+  LOG(LOG_DEBUG,
+      "GAP is executing request for %s: %s %s\n",
+      &enc,
+      doForward ? "forwarding" : "",
+      isRouted ? "routing" : "");
+
+
 
   cls.values = NULL;
   cls.valueCount = 0;

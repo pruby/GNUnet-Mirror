@@ -1,9 +1,9 @@
 if HAVE_MYSQL
-	MYSQL_DIR = sqstore_mysql
+ MYSQL_DIR = sqstore_mysql
 endif
 
 if !MINGW
-	TESTBED_DIR = testbed
+ TESTBED_DIR = testbed
 endif
 
 SUBDIRS	= \

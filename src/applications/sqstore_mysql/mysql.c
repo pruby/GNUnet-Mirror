@@ -274,16 +274,16 @@ static int iopen(mysqlHandle * dbhI) {
 
   mysql_query(dbhI->dbf,
 	      "CREATE TABLE IF NOT EXISTS gn070 ("
-	      "  size INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	      "  type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	      "  prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	      "  anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-	      "  expire BIGINT UNSIGNED NOT NULL DEFAULT 0," 
-	      "  hash TINYBLOB BINARY NOT NULL DEFAULT '',"
-	      "  value BLOB NOT NULL DEFAULT '',"
-	      "  INDEX (hash(20)),"
-	      "  INDEX (prio),"
-	      "  INDEX (expire)"
+	      " size INT(11) NOT NULL DEFAULT 0,"
+	      " type INT(11) NOT NULL DEFAULT 0,"
+	      " prio INT(11) NOT NULL DEFAULT 0,"
+	      " anonLevel INT(11) NOT NULL DEFAULT 0,"
+	      " expire BIGINT NOT NULL DEFAULT 0," 
+	      " hash TINYBLOB BINARY NOT NULL DEFAULT '',"
+	      " value BLOB NOT NULL DEFAULT '',"
+	      " INDEX (hash(20)),"
+	      " INDEX (prio),"
+	      " INDEX (expire)"
 	      ") TYPE=MyISAM");
   if (mysql_error(dbhI->dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, 
@@ -687,10 +687,18 @@ static int get(const HashCode160 * query,
   Datastore_Value * datum;
   HashCode160 key;
   unsigned long hashSize;
+  EncName enc;
 
   if (query == NULL) 
     return iterateLowPriority(type, iter, closure);
 
+  IFLOG(LOG_DEBUG,
+	hash2enc(query,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "MySQL looks for %s of type %u\n",
+      &enc,
+      type);
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   if (type != 0) {
     if (iter == NULL)
@@ -827,6 +835,14 @@ static int get(const HashCode160 * query,
   FREE(datum);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   
+  IFLOG(LOG_DEBUG,
+	hash2enc(query,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "MySQL found %u results for %s of type %u\n",
+      count,
+      &enc,
+      type);
   return count;
 }
 
@@ -881,20 +897,20 @@ static int put(const HashCode160 * key,
   if (mysql_stmt_bind_param(dbh->insert,
 			    dbh->bind)) {
     LOG(LOG_ERROR,
-		_("'%s' failed at %s:%d with error: %s\n"),
-		"mysql_stmt_bind_param",
-		__FILE__, __LINE__,
-		mysql_stmt_error(dbh->insert));    
+	_("'%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_bind_param",
+	__FILE__, __LINE__,
+	mysql_stmt_error(dbh->insert));    
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   } 
 
   if (mysql_stmt_execute(dbh->insert)) {
     LOG(LOG_ERROR,
-		_("'%s' failed at %s:%d with error: %s\n"),
-		"mysql_stmt_execute",
-		__FILE__, __LINE__,
-		mysql_stmt_error(dbh->insert));    
+	_("'%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_execute",
+	__FILE__, __LINE__,
+	mysql_stmt_error(dbh->insert));    
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }  

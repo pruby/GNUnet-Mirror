@@ -161,9 +161,14 @@ static int gapPut(void * closure,
 static int get_result_callback(const HashCode160 * key,
 			       const DataContainer * value,
 			       DHT_GET_CLS * cls) {
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(key, 
+		 &enc));
   LOG(LOG_DEBUG,
-      "Found reply to query %u.\n",
-      key->a);
+      "Found reply to query %s.\n",
+      &enc);
   gapPut(NULL,
 	 key,
 	 value,
@@ -651,6 +656,7 @@ static int gapGetConverter(const HashCode160 * key,
 			      ggc->resCallbackClosure);
   else
     ret = OK;
+  ggc->count++;
   FREE(gw);
   FREENONNULL(xvalue);
   return ret;
@@ -673,15 +679,31 @@ static int gapGet(void * closure,
 		  void * resCallbackClosure) {
   int ret;
   GGC myClosure;
+  EncName enc;
 
+  IFLOG(LOG_DEBUG,
+	hash2enc(&keys[0],
+		 &enc));
+  LOG(LOG_DEBUG,
+      "GAP requests content for %s of type %u\n",
+      &enc,
+      type);
+  myClosure.count = 0;
   myClosure.keyCount = keyCount;
   myClosure.keys = keys;
   myClosure.resultCallback = resultCallback;
   myClosure.resCallbackClosure = resCallbackClosure;
-  ret = datastore->get(&keys[0],
-		       type,
-		       &gapGetConverter,
-		       &myClosure);
+  if (type == D_BLOCK) {
+    ret = datastore->get(&keys[0],
+			 ONDEMAND_BLOCK,
+			 &gapGetConverter,
+			 &myClosure);
+  }
+  if (ret == OK) 
+    ret = datastore->get(&keys[0],
+			 type,
+			 &gapGetConverter,
+			 &myClosure);
   if (ret != SYSERR)
     ret = myClosure.count; /* return number of actual
 			      results (unfiltered) that
@@ -816,7 +838,15 @@ static int dhtGet(void * closure,
 		  void * resCallbackClosure) {
   int ret;
   GGC myClosure;
+  EncName enc;
 
+  IFLOG(LOG_DEBUG,
+	hash2enc(&keys[0],
+		 &enc));
+  LOG(LOG_DEBUG,
+      "DHT requests content for %s of type %u\n",
+      &enc,
+      type);
   myClosure.keyCount = keyCount;
   myClosure.keys = keys;
   myClosure.resultCallback = resultCallback;

@@ -71,10 +71,15 @@ static int get(const HashCode160 * query,
 	       Datum_Iterator iter,
 	       void * closure) {
   int ret;
+  EncName enc;
 
   if (! testAvailable(query)) {
+    IFLOG(LOG_DEBUG,
+	  hash2enc(query,
+		   &enc));
     LOG(LOG_DEBUG,
-	"Datastore availability pre-test failed for request.\n");
+	"Datastore availability pre-test failed for %s.\n",
+	&enc);
     return 0;
   }
 
