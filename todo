@@ -14,7 +14,6 @@
 - Known bugs:
   * strange ecrstest bug(s?)
 - Need testing:
-  * fslibtest: implement verify result
   * ECRS-directories (build, iterate)
   * gnunet-directory
   * gnunet-pseudonym
