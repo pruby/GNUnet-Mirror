@@ -30,10 +30,6 @@
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
 
-#ifndef MINGW
-#include <langinfo.h>
-#endif
-
 /* hmm. Man says time.h, but that doesn't yield the
    prototype.  Strange... */
 extern char *strptime(const char *s,

@@ -29,9 +29,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#ifndef MINGW
-#include <langinfo.h>
-#endif
 #include <time.h>
 
 /**
