@@ -1299,6 +1299,7 @@ static char * addressToString(const HELO_Message * helo) {
  * via a global and returns the udp transport API.
  */
 TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
+  GNUNET_ASSERT(sizeof(TCPWelcome) == 68);
   MUTEX_CREATE_RECURSIVE(&tcplock);
   reloadConfiguration();
   tsessionCount = 0;
