@@ -670,7 +670,7 @@ int _win_vsprintf(char *dest, const char *format, va_list arg_ptr)
 }
 
 static int __fwrite(void*ptr, size_t nmemb, int fd) {
-  return write(fd,ptr,nmemb);
+  return fwrite(ptr, 1, nmemb, fd);
 }
 
 int _win_vfprintf(FILE *stream, const char *format, va_list arg_ptr)
@@ -680,7 +680,7 @@ int _win_vfprintf(FILE *stream, const char *format, va_list arg_ptr)
 }
 
 int __stdio_outs(const char *s, size_t len) {
-  return (write(1,s,len)==(int)len)?1:0;
+  return (fwrite(s, 1, len, stdout)==(int)len)?1:0;
 }
 
 int _win_vprintf(const char *format, va_list ap)
