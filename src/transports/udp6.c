@@ -258,7 +258,7 @@ static void * listenAndDistribute() {
     if (size != ntohs(udp6m.size)) {
       tmp = MALLOC(INET6_ADDRSTRLEN);
       LOG(LOG_WARNING,
-	  _("Packed received from %s:%d (UDP6) failed format check."),
+	  _("Packet received from %s:%d (UDP6) failed format check."),
 	  inet_ntop(AF_INET6,
 		    &incoming,
 		    tmp,

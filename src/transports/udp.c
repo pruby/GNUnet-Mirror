@@ -257,7 +257,7 @@ static void * listenAndDistribute() {
     /* quick test of the packet, if failed, repeat! */
     if (size != ntohs(udpm.size)) {
       LOG(LOG_WARNING,
-	  _("Packed received from %u.%u.%u.%u:%u (UDP) failed format check.\n"),
+	  _("Packet received from %u.%u.%u.%u:%u (UDP) failed format check.\n"),
 	  PRIP(ntohl(*(int*)&incoming.sin_addr)),
 	  ntohs(incoming.sin_port));
       goto RETRY;
