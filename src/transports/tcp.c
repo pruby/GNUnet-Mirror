@@ -708,6 +708,11 @@ static void * tcpListenMain() {
 	int success;
 
 try_again_1:
+#if TCP_DEBUG
+	LOG(LOG_DEBUG,
+	    "TCP: trying to send %u bytes\n",
+	    tcpSession->wpos);
+#endif
 	success = SEND_NONBLOCKING(sock,
 				   tcpSession->wbuff,
 				   tcpSession->wpos,
@@ -814,6 +819,11 @@ static int tcpDirectSend(TCPSession * tcpSession,
     MUTEX_UNLOCK(&tcplock);
     return SYSERR;
   }
+#if TCP_DEBUG
+	LOG(LOG_DEBUG,
+	    "TCP: trying to send %u bytes\n",
+	    ssize);
+#endif
   success = SEND_NONBLOCKING(tcpSession->sock,
 			     mp,
 			     ssize,
