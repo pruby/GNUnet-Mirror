@@ -43,7 +43,7 @@
  *  match the query
  */
 int fileBlockEncode(const DBlock * data,
-		    unsigned int len,
+		    unsigned short len,
 		    const HashCode512 * query,
 		    Datastore_Value ** value) {
   HashCode512 hc;
@@ -92,7 +92,7 @@ int fileBlockEncode(const DBlock * data,
  * a certain block of data.
  */
 void fileBlockGetKey(const DBlock * data,
-		     unsigned int len,
+		     unsigned short len,
 		     HashCode512 * key) {
   GNUNET_ASSERT(len >= sizeof(DBlock));
   hash(&data[1],
@@ -105,7 +105,7 @@ void fileBlockGetKey(const DBlock * data,
  * a certain block of data.
  */
 void fileBlockGetQuery(const DBlock * db,
-		       unsigned int len,
+		       unsigned short len,
 		       HashCode512 * query) {
   char * tmp;
   const char * data;
@@ -131,7 +131,7 @@ void fileBlockGetQuery(const DBlock * db,
   FREE(tmp);
 }
 
-unsigned int getTypeOfBlock(unsigned int size,
+unsigned int getTypeOfBlock(unsigned short size,
 			    const DBlock * data) {
   if (size <= 4) {
     BREAK();
@@ -149,7 +149,7 @@ unsigned int getTypeOfBlock(unsigned int size,
  * @return SYSERR if the content is invalid or
  *   the content type is not known
  */
-int getQueryFor(unsigned int size,
+int getQueryFor(unsigned short size,
 		const DBlock * data,
 		HashCode512 * query) {
   unsigned int type;
@@ -270,7 +270,7 @@ int getQueryFor(unsigned int size,
  *         query type
  */
 int isDatumApplicable(unsigned int type,
-		      unsigned int size,
+		      unsigned short size,
 		      const DBlock * data,
 		      unsigned int keyCount,
 		      const HashCode512 * keys) {

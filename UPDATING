@@ -5,21 +5,24 @@ that you have installed by running
 # gnunetd --version
 
 If no migration procedure is listed for your version, a
-data-preserving migration may not be possible.  For CVS versions,
+data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
-before 0.7.0pre0 to 0.7.0pre0
+before 0.7.0pre1 to 0.7.0pre1
 =============================
 
 Migration is NOT possible, we're breaking compatibility big time.
-Note that 0.7.0pre0 is a pre-release for 0.7.0, so hands-off if you do
-not want to deal with a ton of bugs and lots of migration problems.
-If you dare to venture here anyway, remember:
+Note that 0.7.0pre1 is a pre-release for 0.7.0, so hands-off if you do
+not want to deal with a few bugs and the lack of documentation and
+user interfaces.  Generally, you want to do
 
 $ rm -rf .gnunet
 
-is your friend.
+before starting 0.7.0pre1.  Also, while it maybe possible that 
+migration from 0.7.0pre1 to 0.7.0 will be painless, there's no
+guarantee for that.
 
 Note that many things have changed in this version, so please read
 the documentation very carefully, but also keep in mind that not
 all of the documentation is up-to-date with the code at this point.
+

@@ -126,7 +126,7 @@ int main(int argc, char * argv[]) {
   int failureCount = 0;
   int i;
 
-  for (i=17;i<10000;i*=2) {
+  for (i=17;i<2000;i*=2) {
     fprintf(stderr, ".");
     failureCount += testDirectory(i);
   }

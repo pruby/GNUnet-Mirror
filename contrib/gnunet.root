@@ -104,10 +104,8 @@ HOSTS   	= $GNUNETD_HOME/data/hosts/
 #
 # If you do not specify a HOSTLISTURL, you must copy valid hostkeys to
 # data/hosts manually.
-# Default: HOSTLISTURL = "http://ovmj.org/GNUnet/download/hostlist http://www.woodtick.co.uk/hostlist"
-# The above are currently hostlists for 0.6.x, we'll have to have new ones for
-# 0.7.x -- once we're a bit further along.
-# HOSTLISTURL = "http://gnunet.org/hostlist" # not yet on 0.7, will not yet work
+# Default: HOSTLISTURL = "http://gnunet.org/hostlist"
+HOSTLISTURL = "http://gnunet.org/hostlist"
 
 # If you have to use a proxy for outbound HTTP connections,
 # specify the proxy configuration here.  Default is no proxy.
@@ -159,8 +157,8 @@ APPLICATIONS = "advertising topology fs getoption stats traffic"
 #
 # Usually, the default is just fine for most people.
 # Choices are: "udp tcp udp6 tcp6 nat http smtp"
-# Default: TRANSPORTS = "udp tcp nat"
-TRANSPORTS = "udp tcp nat"
+# Default: TRANSPORTS = "udp tcp http nat"
+TRANSPORTS = "udp tcp http nat"
 
 
 ###########################################
