@@ -18,31 +18,24 @@ OpenBSD/NetBSD:
 
 GNU/Linux (Ultra Sparc):
 - RSA key generation may not work (libgcrypt bug) 
-  workarounds: use OpenSSL
 
 GNU/Linux (Alpha):
 - RSA key generation may not work (libgcrypt bug)
-  workaround: use OpenSSL 
 
 Solaris 8 (SunOS 5.8, Sparc SunFire 880):
 - RSA key generation may not work (libgcrypt bug)
-  workaround: use OpenSSL
 - IPC semaphore test fails (hmm, used to pass, not critical)
 
 OS X (10.3.7, PowerPC):
 - RSA key generation may not work (libgcrypt bug)
-  workaround: use OpenSSL
 
 Cygwin (x86):
 - plugins cannot be loaded (FATAL)
 - difficult to compile (autotools trouble)
-- RSA_private_decrypt (OpenSSL) often fails
 - gnunet-transport-check fails
 - TCP transport does not work ("Transport endpoint is not connected")
 - CTRL-C has no effect
 
 MinGW (x86):
-- libgcrypt may not be available
-  workaround: use OpenSSL
 - SMTP transport is not available
 - gnunet-testbed is not available
