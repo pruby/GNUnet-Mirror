@@ -451,7 +451,9 @@ static int readAndProcess(int i) {
       if ( (ntohs(welcome->version) != 0) ||
 	   (ntohs(welcome->size) != sizeof(TCPWelcome)) ) {
 	LOG(LOG_WARNING,
-	    _("Expected welcome message on tcp connection, got garbage. Closing.\n"));
+	    _("Expected welcome message on tcp connection, got garbage (%u, %u). Closing.\n"),
+	    ntohs(welcome->version),
+	    ntohs(welcome->size));
 	tcpDisconnect(tsession);
 	return SYSERR;
       }
