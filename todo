@@ -1,13 +1,11 @@
 0.6.7 [3?'05] (aka "features"):
 - 770?   [ use freedback (LOG) in gnunet-gtk via show-messages ]
-- 704?   [ auto-reindex downloaded files ]
 - 678?   [ directory browser ]
 - 593??? [ gnunet-setup ]
 
 0.7.0pre1 [4'05] (aka "preview"):
 CODE CHANGES:
 - UI features:
-  * date feature (Mantis #789)
   * insert meta-data under URI as keyword (to allow getting meta-data from URI only)
 
 TESTING / TESTCASES:

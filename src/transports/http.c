@@ -44,8 +44,6 @@
  *   And then transmits an arbitrary number of chunks (CRLF HEX, CRLF, Data)
  *
  * Todo:
- * - fix "sleep on connect": add queue for outbound messages
- *   (at least of size 2 messages)
  * - increase http compliancy; so far, the implementation of the
  *   protocol is very flawed (no good error-responses if non-peers
  *   connect, and even for the P2P basic protocol, I'm not sure how
@@ -58,13 +56,13 @@
 #include "gnunet_transport.h"
 #include "platform.h"
 
-#define DEBUG_HTTP NO
+#define DEBUG_HTTP YES
 
 /**
  * after how much time of the core not being associated with a http
  * connection anymore do we close it?
  */
-#define HTTP_TIMEOUT 30 * cronSECONDS
+#define HTTP_TIMEOUT (30 * cronSECONDS)
 
 /**
  * Host-Address in a HTTP network.
@@ -421,7 +419,7 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
      "HTTP/1.1 200 OK%c%c"
      "Server: Apache/1.3.27%c%c"
      "Transfer-Encoding: chunked%c%c"
-     "Content-Type: text/html%c%c%"
+     "Content-Type: application/octet-stream%c%c%"
      (which we ignore)
 
      or
@@ -429,7 +427,7 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
      POST / HTTP/1.1 CRLF
      Host:IP CRLF
      Transfer-Encoding: chunked CRLF
-     Content-Type: text/html CRLF
+     Content-Type: application/octet-stream CRLF
      (which we also ignore)
 
      or just "CRLF%xCRLF" where "%x" is the length of
@@ -450,6 +448,7 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
 	      (httpSession->httpReadBuff[k] != '\r') )
 	k++;
       if ( (k < httpSession->httpRPos-1) &&
+	   (k > i+2) && 
 	   (httpSession->httpReadBuff[k] == '\r') &&
 	   (httpSession->httpReadBuff[k+1] == '\n') ) {
 	unsigned int len;
@@ -460,20 +459,33 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
 		     &endPtr,
 		     16);
 	httpSession->httpReadBuff[k] = '\r';
-	if (endPtr == &httpSession->httpReadBuff[k]) {	
-	  if (len >= MAX_BUFFER_SIZE) {
-	    BREAK(); /* FIMXE: inline method and do proper
-			error handling! */
-	  } else {	
-	    GROW(httpSession->rbuff,
-		 httpSession->rsize,
+	if ( (endPtr != &httpSession->httpReadBuff[k]) ||
+	     (len == 0) )
+	  continue;
+#if DEBUG_HTTP
+	LOG(LOG_DEBUG, 
+	    "http receiving chunk of %u bytes\n",
+	    len);
+#endif
+	if (len >= MAX_BUFFER_SIZE) {
+	  BREAK(); /* FIMXE: inline method and do proper
+		      error handling! */
+	  httpSession->httpRPos = 0;	  
+	} else {	
+	  GROW(httpSession->rbuff,
+	       httpSession->rsize,
+	       len);
+	  if (len > httpSession->httpRPos - (k+2))
+	    len = httpSession->httpRPos - (k+2);
+	  memcpy(httpSession->rbuff,
+		 &httpSession->httpReadBuff[k+2],
 		 len);
-	    memcpy(httpSession->rbuff,
-		   &httpSession->httpReadBuff[k+2],
-		   httpSession->httpRPos - (k+2));
-	    httpSession->rpos = httpSession->httpRPos - (k+2);
-	  }
-	  httpSession->httpRPos = 0;	
+	  httpSession->rpos = len;	   
+	  memmove(httpSession->httpReadBuff,
+		  &httpSession->httpReadBuff[k+2+len],
+		  httpSession->httpRPos - (k+2+len));
+	  httpSession->httpRPos -= (k+2+len);
+	  return;
 	} 	
       }
     }
@@ -509,6 +521,7 @@ static int readAndProcess(int i) {
     if (ret > 0) {
       httpSession->httpRPos += ret;
       incrementBytesReceived(ret);
+    try_again:
       checkHeaderComplete(httpSession);
     } else {
 #if DEBUG_HTTP
@@ -534,8 +547,18 @@ static int readAndProcess(int i) {
       return SYSERR; /* error! */
     }
   }
-  if (httpSession->rpos != httpSession->rsize) {
+  LOG(LOG_DEBUG,
+      "Got message of %u out of %u bytes\n",
+      httpSession->rpos,
+      httpSession->rsize);
+  
+  if ( (httpSession->rsize == 0) ||
+       (httpSession->rpos != httpSession->rsize) ) {
     /* only have partial message yet */
+    LOG(LOG_DEBUG,
+	"Got partial message of %u out of %u bytes\n",
+	httpSession->rpos,
+	httpSession->rsize);
     httpDisconnect(tsession);
     return OK;
   }
@@ -582,6 +605,8 @@ static int readAndProcess(int i) {
 		   "Content-Type: application/octet-stream\r\n"
 		   "\r\n");
     httpSession->wpos = len;
+    if (httpSession->httpRPos > 0)
+      goto try_again;
     httpDisconnect(tsession);
     return OK;
   }
@@ -590,6 +615,7 @@ static int readAndProcess(int i) {
   mp      = MALLOC(sizeof(MessagePack));
   mp->sender = httpSession->sender;
   mp->tsession = tsession;
+  GNUNET_ASSERT(httpSession->rbuff != NULL);
   mp->msg = httpSession->rbuff;
   mp->size = httpSession->rsize;
   httpSession->rbuff = NULL;
@@ -601,6 +627,8 @@ static int readAndProcess(int i) {
       mp->size);
 #endif
   coreAPI->receive(mp);
+  if (httpSession->httpRPos > 0)
+    goto try_again;
   httpDisconnect(tsession);
   return OK;
 }
@@ -884,6 +912,8 @@ static int httpDirectSend(HTTPSession * httpSession,
 			  const void * mp,
 			  unsigned int ssize) {
   unsigned int len;
+  int success;
+  size_t ret;
 
   if (http_shutdown == YES)
     return SYSERR;
@@ -945,11 +975,44 @@ static int httpDirectSend(HTTPSession * httpSession,
 	 mp,
 	 ssize);
   len += ssize;
+  incrementBytesSent(len);
+#if DEBUG_HTTP
+  LOG(LOG_DEBUG, 
+      "http sending chunk of %u bytes\n",
+      ssize);
+#endif  
+  success = SEND_NONBLOCKING(httpSession->sock,
+			     httpSession->wbuff,
+			     len,
+			     &ret);
+  if (success == SYSERR) {
+#if DEBUG_HTTP
+    LOG_STRERROR(LOG_INFO, "send");
+#endif
+    MUTEX_UNLOCK(&httplock);
+    return SYSERR;
+  }
+  if (success == NO)
+    ret = 0;
+  if (ret > 0) {
+    if (ret < len) {
+      memmove(httpSession->wbuff,
+	      &httpSession->wbuff[ret],
+	      len - ret);
+      len -= ret;
+    } else {
+      GROW(httpSession->wbuff,
+	   httpSession->wsize,
+	   0);
+      len = 0;
+    }
+  }
+    
   httpSession->wpos = len;
-  signalSelect(); /* select set changed! */
+  if (len > 0)
+    signalSelect(); /* select set changed! */
   cronTime(&httpSession->lastUse);
   MUTEX_UNLOCK(&httplock);
-  incrementBytesSent(len);
   return OK;
 }
 
@@ -1002,7 +1065,7 @@ static int createHELO(HELO_Message ** helo) {
   if (SYSERR == getPublicIPAddress(&haddr->ip)) {
     FREE(msg);
     LOG(LOG_WARNING,
-	" Could not determine my public IP address.\n");
+	_("Could not determine my public IP address.\n"));
     return SYSERR;
   }
   haddr->port = htons(port);

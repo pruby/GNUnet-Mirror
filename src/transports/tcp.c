@@ -34,7 +34,7 @@
  * after how much time of the core not being associated with a tcp
  * connection anymore do we close it?
  */
-#define TCP_TIMEOUT 30 * cronSECONDS
+#define TCP_TIMEOUT (30 * cronSECONDS)
 
 /**
  * Host-Address in a TCP network.
@@ -282,6 +282,7 @@ static int tcpDisconnect(TSession * tsession) {
     MUTEX_DESTROY(&tcpsession->lock);
     FREE(tcpsession->rbuff);
     FREENONNULL(tcpsession->wbuff);
+    tcpsession->wbuff = NULL;
     FREE(tcpsession);
   }
   FREE(tsession);
