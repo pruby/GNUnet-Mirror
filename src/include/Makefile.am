@@ -14,6 +14,7 @@ gnunetinclude_HEADERS = \
   gnunet_blockstore.h \
   gnunet_bootstrap_service.h \
   gnunet_core.h \
+  gnunet_datastore_service.h \
   gnunet_dht.h \
   gnunet_dht_datastore_memory.h \
   gnunet_dht_lib.h \

@@ -108,7 +108,7 @@ static int parser(int argc,
 		  char * argv[]) {
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
-				     "/tmp/gnunet_test/gnunet.conf"));
+				     "check.conf"));
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
 				     "YES"));

@@ -6,9 +6,18 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
+/**
+ * Perform option parsing from the command line. 
+ */
+static int parseCommandLine(int argc, 
+			    char * argv[]) {
+  return OK;
+}
+
 int main(int argc, char * argv[]){
   HashCode160 hc;
 
+  initUtil(argc, argv, &parseCommandLine);
   hash("TEST", 4, &hc);
   if ( (hc.a != ntohl(830102737)) ||
        (hc.b != ntohl(-2066785626)) ||
@@ -29,5 +38,6 @@ int main(int argc, char * argv[]){
 	   hc.a, hc.b, hc.c, hc.d, hc.e);
     return -1;
   }
+  doneUtil();
   return 0;
 }

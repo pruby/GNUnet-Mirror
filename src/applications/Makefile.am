@@ -29,6 +29,8 @@ SUBDIRS	= \
  stats \
  tbench \
  template \
+ $(TESTBED_DIR) \
  topology_default \
+ tracekit \
  traffic \
  transport

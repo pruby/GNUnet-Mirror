@@ -9,6 +9,14 @@
 
 #define TESTSTRING "Hello World\0"
 
+/**
+ * Perform option parsing from the command line. 
+ */
+static int parseCommandLine(int argc, 
+			    char * argv[]) {
+  return OK;
+}
+
 static int testReadWrite() {
   HashCode160 ha;
   EncName filename;
@@ -33,8 +41,9 @@ static int testReadWrite() {
 int main(int argc, char * argv[]) {
   int failureCount = 0;
 
+  initUtil(argc, argv, &parseCommandLine);
   failureCount += testReadWrite(); 
-
+  doneUtil();
   if (failureCount == 0)
     return 0;
   else {

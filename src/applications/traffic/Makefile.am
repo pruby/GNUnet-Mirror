@@ -16,7 +16,7 @@ libgnunetmodule_traffic_api_la_LIBADD = \
 
 
 libgnunetmodule_traffic_la_SOURCES = \
-  traffic.c 
+  traffic.c traffic.h
 libgnunetmodule_traffic_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmodule_traffic_la_LDFLAGS = \

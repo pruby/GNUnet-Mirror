@@ -161,16 +161,26 @@ static int test(Blockstore * s) {
   return 0;
 }
 
+/**
+ * Perform option parsing from the command line. 
+ */
+static int parseCommandLine(int argc, 
+			    char * argv[]) {
+  return OK;
+}
+
 int main(int args,
 	 char * argv[]) {
   Blockstore * s;
   int i;
   
+  initUtil(argc, argv, &parseCommandLine);
   s = create_blockstore_memory(65536);
   for (i=0;i<65536;i++)
     if (0 != test(s))
       { DUMP(s); return 1; }
   destroy_blockstore_memory(s);
+  doneUtil();
 
   return 0;
 }

@@ -5,6 +5,8 @@ plugindir = $(libdir)/GNUnet
 plugin_LTLIBRARIES = \
   libgnunetmodule_identity.la 
 
+EXTRA_DIST = \
+  check.conf
 
 libgnunetmodule_identity_la_SOURCES = \
   identity.c \
