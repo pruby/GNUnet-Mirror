@@ -24,6 +24,7 @@
  * @author Christian Grothoff
  */
 
+#include "platform.h"
 #include "gnunet_util.h"
 
 static Mutex gcrypt_shared_lock;

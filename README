@@ -28,14 +28,11 @@ system.  For a more detailed description, read the installation
 instructions on the webpage at
 http://gnunet.org/documentation.php3.
 
-If you just want to go with the sources, you may be fine with
+If you install from source, you need to install libextractor 
+first (download from http://gnunet.org/libextractor/).  Then
+you can start the actual GNUnet compilation process with:
 
-# contrib/autoinstall
-
-which is doing little more than what you would for a single-user
-installation to $HOME which can be achieved with:
-
-$ ./configure --prefix=$HOME
+$ ./configure --prefix=$HOME --with-extractor=$HOME
 $ make
 # make install
 # cp contrib/gnunet.root /etc/gnunet.conf
@@ -51,12 +48,6 @@ GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
 and either libgcrypt or OpenSSL.  You can specify the path to 
 libgcrypt using "--with-gcrypt=PATH".  Similarly, the path to 
 OpenSSL can be specified using "--with-crypto=PATH".
-
-If you want to use libextractor (download from
-http://gnunet.org/libextractor/) for automated keyword
-extraction (recommended) you may have to pass the additional flag
-"--with-extractor=PATH-TO-LIBEXTRACTOR" to configure.  You should also
-make sure that libextractor is actually found by the linker.
 
 If you are compiling the CVS version, you have to run ". bootstrap"
 before ./configure.  If you receive an error during the running of
@@ -162,6 +153,7 @@ Stay tuned
 * http://www.gnu.org/software/GNUnet/
 * http://gnunet.org/
 * https://gnunet.org/mantis/
+* https://gnunet.org/drupal/
 * http://mail.gnu.org/mailman/listinfo/gnunet-developers
 * http://mail.gnu.org/mailman/listinfo/help-gnunet
 * http://mail.gnu.org/mailman/listinfo/info-gnunet

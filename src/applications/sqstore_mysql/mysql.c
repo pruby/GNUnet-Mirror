@@ -327,10 +327,9 @@ static int iterateExpirationTime(unsigned int type,
     return(SYSERR);
   }
 
-  while ((sql_row=mysql_fetch_row(sql_res))) {
-    
+  while ((sql_row=mysql_fetch_row(sql_res))) {   
     datum = assembleDatum(sql_row);
-    if( SYSERR == iter(&datum->key, &datum->value, closure) ) {
+    if (SYSERR == iter(&datum->key, &datum->value, closure) ) {
       count = SYSERR;
       FREE(datum);
       break;

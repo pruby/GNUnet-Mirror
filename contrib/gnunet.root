@@ -495,17 +495,6 @@ PIPE = /tmp/gnunet.smtp
 # refuse to work.  Default is 1024 (1 GB)
 DISKQUOTA 	= 1024
 
-# Which database type should be used for content? Valid types are "bdb",
-# "gdbm", "mysql", "tdb", "sqlite" and "directory". Specified type must have
-# been available at compile time. "directory" is available on all
-# systems but typically uses more space and can also be slower.  mysql
-# will require some additional setup of the database.
-#
-# Note that if you change the databaset type, you need to run
-# gnunet-convert, otherwise your databases will be
-# inconsistent (and gnunetd will refuse to work).  Default is gdbm.
-DATABASETYPE    = "gdbm"
-
 # What degree of receiver anonymity is required?  If set to 0, GNUnet
 # will try to download the file as fast as possible without any
 # additional slowdown by the anonymity code. Note that you will still
@@ -617,24 +606,6 @@ INDEX-DIRECTORY = $GNUNETD_HOME/data/shared/
 # Indexing quota.  Default is 8192.
 INDEX-QUOTA = 8192
 
-
-#######################################
-# Experimental GDBM options
-#######################################
-
-[GDBM]
-
-# Use experimental settings for managing
-# free blocks in gdbm.  Default is YES!
-EXPERIMENTAL = YES
-
-# This option allows avoiding gdbm database reorganization
-# on startup.  It should definitely only be used together
-# with the experimental gdbm free blocks option.  Nevertheless,
-# the option has not been tested extensively yet, so to be
-# safe it should be set to 'YES' (do reorganize).  Default
-# is 'YES'.
-REORGANIZE = YES
 
 
 #######################################

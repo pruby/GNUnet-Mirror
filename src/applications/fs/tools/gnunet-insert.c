@@ -48,6 +48,183 @@ extern char *strptime(const char *s,
 		      const char *format, 
 		      struct tm *tm);
 
+static Semaphore * exitSignal;
+
+static int errorCode = 0;
+
+/**
+ * We're done with the upload of the file, do the
+ * post-processing.
+ */
+static void postProcess(const struct ECRS_URI * uri) {
+#if 0
+  /* if SBlock requested create SBlock */
+  if (pname != NULL) {
+    HashCode160 thisId;
+    HashCode160 nextId;
+    char * hx;
+    SBlock * sb;
+    TIME_T creationTime;
+    TIME_T now;
+
+    GNUNET_ASSERT(fileNameCount == 1);
+    shortFN = getConfigurationString("GNUNET-INSERT",
+				     "FILENAME");
+    fileName = expandFileName(fileNames[0]);
+    if ( (shortFN == NULL) && (fileName != NULL)) {
+      shortFN = &fileName[strlen(fileName)-1];
+      while ( (shortFN[-1] != DIR_SEPARATOR) &&
+	      (shortFN != fileName) )
+	shortFN--;
+      shortFN = STRDUP(shortFN);
+    }  
+    FREENONNULL(fileName);
+    timestr = getConfigurationString("GNUNET-INSERT",
+                    		     "INSERTTIME");
+    if (timestr != NULL) {
+      struct tm t;
+
+      /* we can assert here: input was verified earlier! */
+      GNUNET_ASSERT(NULL != strptime(timestr, "%j-%m-%Y %R", &t));
+      now = mktime(&t);
+      FREE(timestr);
+      /* On my system, the printed time is in advance +1h 
+	 to what was specified? -- It is in UTC! */
+      timestr = GN_CTIME(&now);
+      LOG(LOG_DEBUG, 
+          "Read time '%s'.\n", 
+	  timestr);
+      FREE(timestr);
+    } else {
+      /* use current time */
+      TIME(&now);
+    }
+
+    /* determine update frequency / policy */
+    prevname = getConfigurationString("GNUNET-INSERT",
+    				      "PREVIOUS_SBLOCK");
+    if (prevname != NULL) {
+      FREE(prevname);
+      /* now, compute CURRENT ID and next ID from SBlock 'pb' */
+      computeIdAtTime(&pb,
+      	              now,
+		      &thisId); 
+      /* interval was read and verified earlier... */
+      if (interval != SBLOCK_UPDATE_SPORADIC) {  
+        int delta;
+	
+        /* periodic update */
+        delta = now - ntohl(pb.creationTime);
+        delta = delta / ntohl(pb.updateInterval);
+        if (delta <= 0)
+          delta = 1; /* force to be in the future from the updated block! */
+        creationTime = ntohl(pb.creationTime) + delta * ntohl(pb.updateInterval);
+
+        /* periodic update, compute _next_ ID as increment! */
+        addHashCodes(&thisId,
+		     &pb.identifierIncrement,
+		     &nextId); /* n = k + inc */
+      } else { /* interval == SBLOCK_UPDATE_SPORADIC */
+        creationTime = now;
+	LOG(LOG_DEBUG,
+	    "Sporadic update in sblock.\n");
+	hx = getConfigurationString("GNUNET-INSERT",
+				    "NEXTHASH");
+	if (hx == NULL) {
+	  makeRandomId(&nextId);
+	} else {
+	  tryhex2hashOrHashString(hx, &nextId);
+	  FREE(hx);
+	}
+      }
+    } else {
+      /* no previous sblock specified */
+      creationTime = now;
+      interval = getConfigurationInt("GNUNET-INSERT",
+	  	 	  	     "INTERVAL");
+      hx = getConfigurationString("GNUNET-INSERT",
+ 	 	 	  	  "THISHASH");
+      tryhex2hashOrHashString(hx, &thisId);
+      FREENONNULL(hx);
+      hx = getConfigurationString("GNUNET-INSERT",
+ 	  	 	  	  "NEXTHASH");
+      if (hx == NULL) {
+        if (interval == SBLOCK_UPDATE_NONE) {
+	  /* no next id and no interval specified, to be    */
+	  /* consistent with gnunet-gtk, nextId == thisId   */
+	  memcpy(&nextId,
+	  	 &thisId,
+		 sizeof(HashCode160));
+	} else {
+          makeRandomId(&nextId);
+	}
+      } else {
+        tryhex2hashOrHashString(hx, &nextId);
+        if (interval == SBLOCK_UPDATE_NONE) {
+	  /* if next was specified, aperiodic is default */
+  	  interval = SBLOCK_UPDATE_SPORADIC; 
+	}
+        FREE(hx); 
+      }
+      if (testConfigurationString("GNUNET-INSERT",
+  	 	 	  	  "SPORADIC",
+				  "YES"))
+        interval = SBLOCK_UPDATE_SPORADIC;
+    }
+  
+    /* finally we can create the SBlock */
+    sb = buildSBlock(pseudonym,
+		     &fid,
+		     description,
+		     shortFN,
+		     mimetype,
+		     creationTime,
+		     interval,
+		     &thisId,
+		     &nextId);
+    freePrivateKey(pseudonym);
+    hash(&sb->subspace,
+	 sizeof(PublicKey),
+	 &hc);
+    if (OK == insertSBlock(sock,
+			   sb)) {
+      char * outname;
+      char * uri;
+      
+      outname = getConfigurationString("GNUNET-INSERT",
+      				       "OUTPUT_SBLOCK");
+      if (outname != NULL) {
+        SBlock plainSBlock;
+
+	decryptSBlock(&thisId,
+		      sb,
+                      &plainSBlock);
+        writeFile(outname, 
+	          &plainSBlock,
+		  sizeof(SBlock),
+		  "600");
+	FREE(outname);
+      } 
+      uri = createSubspaceURI(&hc,
+			      &thisId);
+      printf(_("File '%s' (%s, %s) successfully inserted into namespace under\n"
+	       "\t'%s'\n"),
+	     shortFN,
+	     description, 
+	     mimetype,
+	     uri);
+      FREE(uri);
+    } else {
+      printf(_("Insertion of file into namespace failed.\n"));
+    }
+    FREE(sb);
+    FREE(shortFN);
+  }
+#endif
+}
+
+
+
 /**
  * Print progess message.
  */
@@ -87,11 +264,18 @@ static void printstatus(int * verboselevel,
 	     fstring);
       FREE(fstring);
     }
+    if (0 == strcmp(event->data.DownloadProgress.main_filename,
+		    event->data.DownloadProgress.filename)) {
+      postProcess(event->data.DownloadProgress.main_uri);
+      SEMAPHORE_UP(exitSignal);
+    }
 
     break;
   case upload_error:
     printf(_("\nError uploading file: %s\n"),
 	   event->data.message);
+    errorCode = 1;
+    SEMAPHORE_UP(exitSignal); /* always exit main? */
     break;
   default:
     BREAK();
@@ -509,7 +693,7 @@ int main(int argc, char ** argv) {
 	      "-S", "-s");
   }
 
-  
+  exitSignal = SEMAPHORE_NEW(0);
   /* fundamental init */
   ctx = FSUI_start((FSUI_EventCallback) &printstatus,
 		   &verbose);
@@ -553,183 +737,11 @@ int main(int argc, char ** argv) {
 		      (const char**) topKeywords);
   }
   FREE(filename);
+
+  /* wait for completion */
+  SEMAPHORE_DOWN(exitSignal);
+  SEMAPHORE_FREE(exitSignal);
   
-  /* FIXME:
-     wait here for completion,
-     but make sure it is the _main_ download
-     that completes (wait for some signal
-     from printstatus) ! */
-  gnunet_util_sleep(1 * cronYEARS);
-
-  
-#if 0
-  /* we probably want to do this in the printstatus
-     function (upon completion) */
-
-  /* if SBlock requested create SBlock */
-  if (pname != NULL) {
-    HashCode160 thisId;
-    HashCode160 nextId;
-    char * hx;
-    SBlock * sb;
-    TIME_T creationTime;
-    TIME_T now;
-
-    GNUNET_ASSERT(fileNameCount == 1);
-    shortFN = getConfigurationString("GNUNET-INSERT",
-				     "FILENAME");
-    fileName = expandFileName(fileNames[0]);
-    if ( (shortFN == NULL) && (fileName != NULL)) {
-      shortFN = &fileName[strlen(fileName)-1];
-      while ( (shortFN[-1] != DIR_SEPARATOR) &&
-	      (shortFN != fileName) )
-	shortFN--;
-      shortFN = STRDUP(shortFN);
-    }  
-    FREENONNULL(fileName);
-    timestr = getConfigurationString("GNUNET-INSERT",
-                    		     "INSERTTIME");
-    if (timestr != NULL) {
-      struct tm t;
-
-      /* we can assert here: input was verified earlier! */
-      GNUNET_ASSERT(NULL != strptime(timestr, "%j-%m-%Y %R", &t));
-      now = mktime(&t);
-      FREE(timestr);
-      /* On my system, the printed time is in advance +1h 
-	 to what was specified? -- It is in UTC! */
-      timestr = GN_CTIME(&now);
-      LOG(LOG_DEBUG, 
-          "Read time '%s'.\n", 
-	  timestr);
-      FREE(timestr);
-    } else {
-      /* use current time */
-      TIME(&now);
-    }
-
-    /* determine update frequency / policy */
-    prevname = getConfigurationString("GNUNET-INSERT",
-    				      "PREVIOUS_SBLOCK");
-    if (prevname != NULL) {
-      FREE(prevname);
-      /* now, compute CURRENT ID and next ID from SBlock 'pb' */
-      computeIdAtTime(&pb,
-      	              now,
-		      &thisId); 
-      /* interval was read and verified earlier... */
-      if (interval != SBLOCK_UPDATE_SPORADIC) {  
-        int delta;
-	
-        /* periodic update */
-        delta = now - ntohl(pb.creationTime);
-        delta = delta / ntohl(pb.updateInterval);
-        if (delta <= 0)
-          delta = 1; /* force to be in the future from the updated block! */
-        creationTime = ntohl(pb.creationTime) + delta * ntohl(pb.updateInterval);
-
-        /* periodic update, compute _next_ ID as increment! */
-        addHashCodes(&thisId,
-		     &pb.identifierIncrement,
-		     &nextId); /* n = k + inc */
-      } else { /* interval == SBLOCK_UPDATE_SPORADIC */
-        creationTime = now;
-	LOG(LOG_DEBUG,
-	    "Sporadic update in sblock.\n");
-	hx = getConfigurationString("GNUNET-INSERT",
-				    "NEXTHASH");
-	if (hx == NULL) {
-	  makeRandomId(&nextId);
-	} else {
-	  tryhex2hashOrHashString(hx, &nextId);
-	  FREE(hx);
-	}
-      }
-    } else {
-      /* no previous sblock specified */
-      creationTime = now;
-      interval = getConfigurationInt("GNUNET-INSERT",
-	  	 	  	     "INTERVAL");
-      hx = getConfigurationString("GNUNET-INSERT",
- 	 	 	  	  "THISHASH");
-      tryhex2hashOrHashString(hx, &thisId);
-      FREENONNULL(hx);
-      hx = getConfigurationString("GNUNET-INSERT",
- 	  	 	  	  "NEXTHASH");
-      if (hx == NULL) {
-        if (interval == SBLOCK_UPDATE_NONE) {
-	  /* no next id and no interval specified, to be    */
-	  /* consistent with gnunet-gtk, nextId == thisId   */
-	  memcpy(&nextId,
-	  	 &thisId,
-		 sizeof(HashCode160));
-	} else {
-          makeRandomId(&nextId);
-	}
-      } else {
-        tryhex2hashOrHashString(hx, &nextId);
-        if (interval == SBLOCK_UPDATE_NONE) {
-	  /* if next was specified, aperiodic is default */
-  	  interval = SBLOCK_UPDATE_SPORADIC; 
-	}
-        FREE(hx); 
-      }
-      if (testConfigurationString("GNUNET-INSERT",
-  	 	 	  	  "SPORADIC",
-				  "YES"))
-        interval = SBLOCK_UPDATE_SPORADIC;
-    }
-  
-    /* finally we can create the SBlock */
-    sb = buildSBlock(pseudonym,
-		     &fid,
-		     description,
-		     shortFN,
-		     mimetype,
-		     creationTime,
-		     interval,
-		     &thisId,
-		     &nextId);
-    freePrivateKey(pseudonym);
-    hash(&sb->subspace,
-	 sizeof(PublicKey),
-	 &hc);
-    if (OK == insertSBlock(sock,
-			   sb)) {
-      char * outname;
-      char * uri;
-      
-      outname = getConfigurationString("GNUNET-INSERT",
-      				       "OUTPUT_SBLOCK");
-      if (outname != NULL) {
-        SBlock plainSBlock;
-
-	decryptSBlock(&thisId,
-		      sb,
-                      &plainSBlock);
-        writeFile(outname, 
-	          &plainSBlock,
-		  sizeof(SBlock),
-		  "600");
-	FREE(outname);
-      } 
-      uri = createSubspaceURI(&hc,
-			      &thisId);
-      printf(_("File '%s' (%s, %s) successfully inserted into namespace under\n"
-	       "\t'%s'\n"),
-	     shortFN,
-	     description, 
-	     mimetype,
-	     uri);
-      FREE(uri);
-    } else {
-      printf(_("Insertion of file into namespace failed.\n"));
-    }
-    FREE(sb);
-    FREE(shortFN);
-  }
-#endif
-
   /* shutdown */
   FREE(filename);
   for (i=0;i<topKeywordCnt;i++) 
@@ -741,7 +753,7 @@ int main(int argc, char ** argv) {
   ECRS_freeMetaData(meta);
   FSUI_stop(ctx);
   doneUtil();
-  return 0;
+  return errorCode;
 }  
 
 /* end of gnunet-insert.c */

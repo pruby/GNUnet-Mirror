@@ -1,6 +1,10 @@
-0.6.6 [1'05] (aka "intermezzo"):
-- Win32 port
-- gnunet-insert bugs (see Mantis)
+0.6.6a [2?'05] (aka "bugfixes"):
+- 828?
+- 823?
+- 827?
+- 796?
+- 811?
+- 593???
 
 0.7.0pre0 [4'05] (aka "preview"):
 - AFS:
@@ -58,7 +62,6 @@
 - #747 (sharing stats for gnunet-gtk)
 
 1.0.0 (aka "userfriendly"):
-- Win32 port
 - #593 (gnunet-setup)
 - #678 (directory browser)
 - #704 (reindex downloaded files)
