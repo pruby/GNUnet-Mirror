@@ -213,7 +213,7 @@ static double getStat(const char * key) {
   sqlite3_stmt *stmt;
   double ret = SYSERR;
   
-  i = sq_prepare("Select anonLevel from gn070 where hash = ?",
+  i = sq_prepare("SELECT anonLevel FROM gn070 WHERE hash = ?",
 		 &stmt);
   if (i == SQLITE_OK) {
     sqlite3_bind_text(stmt, 
@@ -253,7 +253,7 @@ static int setStat(const char *key,
 		   double val) {
   sqlite3_stmt *stmt;
   
-  if (sq_prepare("REPLACE into gn070(hash, anonLevel, type) values (?, ?, ?)",
+  if (sq_prepare("REPLACE INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
 		 &stmt) == SQLITE_OK) {
     sqlite3_bind_text(stmt,
 		      1, 
@@ -506,6 +506,7 @@ static void drop() {
   char *fn = STRDUP(dbh->fn);  
   sqlite_shutdown();  
   UNLINK(fn);
+  FREE(fn);
 }
 
 
@@ -762,7 +763,7 @@ static int del(const HashCode512 * key,
     }
     sqlite3_reset(dbh->exists);
     
-    n = sq_prepare("DELETE FROM gn070 WHERE hash = ?", 
+    n = sq_prepare("DELETE FROM gn070 WHERE hash = ?", /*  ORDER BY prio ASC LIMIT 1" -- not available */
 		   &stmt);
     if (n == SQLITE_OK) {
       sqlite3_bind_blob(stmt, 
@@ -774,8 +775,8 @@ static int del(const HashCode512 * key,
     }
   } else {    
     n = sq_prepare("DELETE FROM gn070 WHERE hash = ? and "
-		   "value = ? and size = ? and type = ? and prio = ? and anonLevel = ? "
-		   "and expire = ?", 
+		   "value = ? AND size = ? AND type = ? AND prio = ? AND anonLevel = ? "
+		   "AND expire = ?", /* ORDER BY prio ASC LIMIT 1" -- not available in sqlite */
 		   &stmt);
     if (n == SQLITE_OK) {      
       escapedBlock = MALLOC(2 * (ntohl(value->size)-sizeof(Datastore_Value)) + 1);      
@@ -913,6 +914,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   nX = strlen(dir) + 6 + 4 + 256;  /* 6 = "gnunet", 4 = ".dat" */
   dbh->fn = MALLOC(strlen(dir) + 6 + 4 + 256);
   SNPRINTF(dbh->fn, nX, "%s/gnunet.dat", dir);
+  FREE(dir);
 
   if (sqlite3_open(dbh->fn, &dbh->dbf) != SQLITE_OK) {
     LOG(LOG_ERROR, 
@@ -931,13 +933,13 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   if (sqlite3_step(stmt) == SQLITE_DONE) {
     if (sqlite3_exec(dbh->dbf, 
 		     "CREATE TABLE gn070 ("
-		     "  size integer NOT NULL default 0,"
-		     "  type integer NOT NULL default 0,"
-		     "  prio integer NOT NULL default 0,"
-		     "  anonLevel integer NOT NULL default 0,"
-		     "  expire integer NOT NULL default 0,"
-		     "  hash text NOT NULL default '',"
-		     "  value blob NOT NULL default '')", NULL, NULL,
+		     "  size INTEGER NOT NULL DEFAULT 0,"
+		     "  type INTEGER NOT NULL DEFAULT 0,"
+		     "  prio INTEGER NOT NULL DEFAULT 0,"
+		     "  anonLevel INTEGER NOT NULL DEFAULT 0,"
+		     "  expire INTEGER NOT NULL DEFAULT 0,"
+		     "  hash TEXT NOT NULL DEFAULT '',"
+		     "  value BLOB NOT NULL DEFAULT '')", NULL, NULL,
 		     NULL) != SQLITE_OK) {
       LOG_SQLITE(LOG_ERROR, "sqlite_query");
       FREE(dbh->fn);
@@ -954,16 +956,16 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   sqlite3_exec(dbh->dbf, "CREATE INDEX idx_expire ON gn070 (expire)",
 	       NULL, NULL, NULL);
   
-  if ( (sq_prepare("SELECT count(*) FROM gn070 where hash=?", 
+  if ( (sq_prepare("SELECT COUNT(*) FROM gn070 WHERE hash=?", 
 		   &dbh->countContent) != SQLITE_OK) ||     
-       (sq_prepare("SELECT length(hash), length(value) "
-		   "from gn070 WHERE hash=?",
+       (sq_prepare("SELECT LENGTH(hash), LENGTH(value) "
+		   "FROM gn070 WHERE hash=?",
 		   &dbh->exists) != SQLITE_OK) ||					   
-       (sq_prepare("UPDATE gn070 SET prio = prio + ? where "
-		   "hash = ? and value = ? and prio + ? < ?", 
+       (sq_prepare("UPDATE gn070 SET prio = prio + ? WHERE "
+		   "hash = ? AND value = ? AND prio + ? < ?", 
 		   &dbh->updPrio) != SQLITE_OK) ||
-       (sq_prepare("insert into gn070 (size, type, prio, "
-		   "anonLevel, expire, hash, value) values "
+       (sq_prepare("INSERT INTO gn070 (size, type, prio, "
+		   "anonLevel, expire, hash, value) VALUES "
 		   "(?, ?, ?, ?, ?, ?, ?)",
 		   &dbh->insertContent) != SQLITE_OK) ) {    
     LOG_SQLITE(LOG_ERROR, 

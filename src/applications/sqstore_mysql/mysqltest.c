@@ -79,6 +79,38 @@ static int iterateDown(const HashCode512 * key,
   return ret;
 }
 
+
+static int priorityCheck(const HashCode512 * key,
+			 const Datastore_Value * val,
+			 int * closure) {
+  int id;
+
+  id = (*closure);
+  if (id == ntohl(val->prio))
+    return OK;
+  else
+    return SYSERR;
+}
+
+static int multipleCheck(const HashCode512 * key,
+			 const Datastore_Value * val,
+			 Datastore_Value ** last) {
+  if (*last != NULL) {
+    if ( ((*last)->size == val->size) &&
+	 (0 == memcmp(*last,
+		      val,
+		      ntohl(val->size)) ) )
+      return SYSERR; /* duplicate! */
+    FREE(*last);
+  } 
+  *last = MALLOC(ntohl(val->size));
+  memcpy(*last, 
+	 val,
+	 ntohl(val->size));
+  return OK;
+}
+
+
 /**
  * Add testcode here!
  */
@@ -133,8 +165,40 @@ static int test(SQstore_ServiceAPI * api) {
     FREE(value);
   }
 
-  
-  /* FIXME: test 'update' here! */
+
+  i = 42;
+  value = initValue(i);
+  memset(&key, 256-i, sizeof(HashCode512));
+  api->put(&key, value);
+  ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
+					 (Datum_Iterator) &priorityCheck,
+					 &i));  
+  api->update(&key,
+	      value,
+	      4);
+  i += 4;
+  ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
+					 (Datum_Iterator) &priorityCheck,
+					 &i));  
+  FREE(value);
+
+  /* test multiple results */
+  value = initValue(i+1);
+  api->put(&key, value);
+  FREE(value);
+
+  value = NULL;
+  ASSERT(2 == api->iterateExpirationTime(ANY_BLOCK,
+					 (Datum_Iterator) &multipleCheck,
+					 &value));  
+  FREE(value);
+  api->del(&key,
+	   NULL);
+  api->del(&key,
+	   NULL);
+  ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
+					 NULL,
+					 NULL));  
   
   api->drop();
   return OK;

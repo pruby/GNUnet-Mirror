@@ -1,4 +1,23 @@
 /*
+     This file is part of GNUnet.
+     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+/*
  * @file applications/sqstore_sqlite/sqlitetest.c
  * @brief Test for the sqstore implementations.
  * @author Christian Grothoff
@@ -73,6 +92,38 @@ static int iterateDown(const HashCode512 * key,
   return ret;
 }
 
+static int priorityCheck(const HashCode512 * key,
+			 const Datastore_Value * val,
+			 int * closure) {
+  int id;
+
+  id = (*closure);
+  if (id + 1 == ntohl(val->prio))
+    return OK;
+  else
+    return SYSERR;
+}
+
+static int multipleCheck(const HashCode512 * key,
+			 const Datastore_Value * val,
+			 Datastore_Value ** last) {
+  if (*last != NULL) {
+    if ( ((*last)->size == val->size) &&
+	 (0 == memcmp(*last,
+		      val,
+		      ntohl(val->size)) ) )
+      return SYSERR; /* duplicate! */
+    FREE(*last);
+  } 
+  *last = MALLOC(ntohl(val->size));
+  memcpy(*last, 
+	 val,
+	 ntohl(val->size));
+  return OK;
+}
+
+
+
 /**
  * Add testcode here!
  */
@@ -119,10 +170,48 @@ static int test(SQstore_ServiceAPI * api) {
 					   (Datum_Iterator) &iterateDown,
 					   &i));
   ASSERT(0 == i);
-  
-  
-  /* FIXME: test 'update' here! */
-  
+
+  for (i=0;i<256;i+=2) {
+    memset(&key, 256-i, sizeof(HashCode512)); 
+    value = initValue(i);
+    ASSERT(1 == api->del(&key, value));
+    FREE(value);
+  }
+
+
+  i = 42;
+  value = initValue(i);
+  memset(&key, 256-i, sizeof(HashCode512));
+  api->put(&key, value);
+  ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
+					 (Datum_Iterator) &priorityCheck,
+					 &i));  
+  api->update(&key,
+	      value,
+	      4);
+  i += 4;
+  ASSERT(1 == api->iterateExpirationTime(ANY_BLOCK,
+					 (Datum_Iterator) &priorityCheck,
+					 &i));  
+  FREE(value);
+
+  /* test multiple results */
+  value = initValue(i+1);
+  api->put(&key, value);
+  FREE(value);
+
+  value = NULL;
+  ASSERT(2 == api->iterateExpirationTime(ANY_BLOCK,
+					 (Datum_Iterator) &multipleCheck,
+					 &value));  
+  FREE(value);
+  api->del(&key,
+	   NULL);
+  api->del(&key,
+	   NULL);
+  ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
+					 NULL,
+					 NULL));  
   api->drop();
   return OK;
  FAILURE:

@@ -101,9 +101,11 @@ void * loadDynamicLibrary(const char * libprefix,
 }
 
 void unloadDynamicLibrary(void * libhandle) {  
+  /* when valgrinding, comment out these lines
+     to get decent traces for memory leaks on exit */
   lt_dlclose(libhandle);
   if (0 != lt_dlexit())
-    LOG_STRERROR(LOG_WARNING, "lt_dlexit");
+    LOG_STRERROR(LOG_WARNING, "lt_dlexit");  
 }
 
 void * trybindDynamicMethod(void * libhandle,

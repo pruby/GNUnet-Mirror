@@ -140,8 +140,15 @@ typedef struct {
    *   
    * @param value maybe NULL, then all items under the
    *        given key are deleted
-   * @return the number of items deleted (at most 1!), 0 if
-   *        none were found, SYSERR on errors
+   * @return the number of items deleted (if possible, the
+   *        database should delete only ONE matching item and
+   *        pick the one with the lowest priority [and then
+   *        lowest expiration time]; if the DB cannot do that,
+   *        deleting multiple entries will be 'tolerated' for now,
+   *        but the result is a slightly worse performance of the
+   *        peer; however, that there are multiple matches should
+   *        also be rare).
+   *        0 if no matching items were found, SYSERR on errors
    */
   int (*del)(const HashCode512 * key, 
 	     const Datastore_Value * value);

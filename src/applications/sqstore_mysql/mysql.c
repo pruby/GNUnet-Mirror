@@ -604,7 +604,7 @@ static int getOLD(const HashCode512 * query,
     if (iter == NULL)
       SNPRINTF(scratch,
 	       n,
-	       "SELECT count(*) FROM gn070 WHERE hash='%s' AND type=%u",
+	       "SELECT COUNT(*) FROM gn070 WHERE hash='%s' AND type=%u",
 	       escapedHash,
 	       type);
     else
@@ -617,7 +617,7 @@ static int getOLD(const HashCode512 * query,
     if (iter == NULL)
       SNPRINTF(scratch,
 	       n,
-	       "SELECT count(*) FROM gn070 WHERE hash='%s'",
+	       "SELECT COUNT(*) FROM gn070 WHERE hash='%s'",
 	       escapedHash);
     else
       SNPRINTF(scratch,
@@ -956,20 +956,25 @@ static int del(const HashCode512 * key,
   LOG(LOG_DEBUG,
       "MySQL is executing deletion request for content of query '%s' and type %u\n",
       &enc,
-      ntohl(value->type));
+      value == NULL ? 0 : ntohl(value->type));
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  contentSize = ntohl(value->size)-sizeof(Datastore_Value);
+  if (value != NULL) {
+    contentSize = ntohl(value->size)-sizeof(Datastore_Value);
+    escapedBlock = MALLOC(2*contentSize+1);
+    mysql_real_escape_string(dbh->dbf,
+			     escapedBlock, 
+			     (char *)&value[1],
+			     contentSize);
+  } else {
+    escapedBlock = NULL;
+    contentSize = 0;
+  }
+
   escapedHash = MALLOC(2*sizeof(HashCode512)+1);
   mysql_real_escape_string(dbh->dbf,
 			   escapedHash, 
 			   (char *)key, 
 			   sizeof(HashCode512));
-  escapedBlock = MALLOC(2*contentSize+1);
-  mysql_real_escape_string(dbh->dbf,
-			   escapedBlock, 
-			   (char *)&value[1],
-			   contentSize);
-
   n = sizeof(HashCode512)*2+contentSize*2+400+1;
   scratch = MALLOC(n);
   if(value == NULL) {
@@ -997,7 +1002,7 @@ static int del(const HashCode512 * key,
   }
   mysql_query(dbh->dbf, scratch);
   FREE(escapedHash);
-  FREE(escapedBlock);
+  FREENONNULL(escapedBlock);
   FREE(scratch);
   if(mysql_error(dbh->dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, 
@@ -1118,7 +1123,7 @@ static unsigned long long getSize() {
   GNUNET_ASSERT(avgRowLen >= 0);
   /* find number of entries (rows) */
   mysql_query(dbh->dbf,
-  	      "SELECT count(*) FROM gn070");
+  	      "SELECT COUNT(*) FROM gn070");
   if (!(sql_res=mysql_store_result(dbh->dbf))) {
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     DIE_MYSQL("mysql_store_result", dbh);
