@@ -1,3 +1,22 @@
+/*
+     This file is part of GNUnet.
+     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
 /** 
  * @file applications/fs/lib/fslibtest.c
  * @brief testcase for fslib
@@ -49,6 +68,41 @@ static Datastore_Value * makeBlock(int i) {
   return block;
 }
 
+static Datastore_Value * makeKBlock(unsigned int i,
+				    const HashCode512 * key,
+				    HashCode512 * query) {
+  Datastore_Value * block;
+  KBlock * db;
+  struct PrivateKey * kkey;
+
+  block = MALLOC(sizeof(Datastore_Value) +
+		 sizeof(KBlock) + i);
+  block->size = htonl(sizeof(Datastore_Value) +
+		      sizeof(KBlock) + i);
+  block->type = htonl(K_BLOCK);
+  block->prio = htonl(0);
+  block->anonymityLevel = htonl(0);
+  block->expirationTime = htonll(now + 1 * cronHOURS);
+  db = (KBlock*) &block[1];
+  db->type = htonl(K_BLOCK);
+  memset(&db[1],
+	 i + (i /253),
+	 i);
+  kkey = makeKblockKey(key);
+  sign(kkey,
+       i,
+       &db[1],
+       &db->signature);
+  getPublicKey(kkey,
+	       &db->keyspace);
+  hash(&db->keyspace,
+       sizeof(PublicKey),
+       query);
+  freePrivateKey(kkey);  
+  return block;
+}
+
+
 typedef struct {
   Semaphore * sem;
   int found; 
@@ -58,6 +112,18 @@ typedef struct {
 static void abortSem(Semaphore * sem) {
   SEMAPHORE_UP(sem);
 }
+
+/**
+ * Search result callback that just counts down
+ * a counter.
+ */
+static int countCallback(const HashCode512 * key,
+			 const Datastore_Value * value,
+			 int * cnt) {
+  (*cnt)--;
+  return OK;
+}
+
 
 static int searchResultCB(const HashCode512 * key,
 			  const Datastore_Value * value,
@@ -146,6 +212,7 @@ int main(int argc, char * argv[]){
   int status;
   int ok;
   struct FS_SEARCH_CONTEXT * ctx;
+  struct FS_SEARCH_HANDLE * hnd;
   Mutex lock;
   GNUNET_TCP_SOCKET * sock;
   Datastore_Value * block;
@@ -163,8 +230,6 @@ int main(int argc, char * argv[]){
     if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
 		    "gnunetd", /* arg0, path to gnunet binary */
 		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-L", 
-		    "NOTHING",  /* gnunetd loglevel */
 		    "-c",
 		    "check.conf", /* configuration file */
 		    NULL)) {
@@ -184,7 +249,7 @@ int main(int argc, char * argv[]){
   CHECK(sock != NULL);
   ctx = FS_SEARCH_makeContext(&lock);
   CHECK(ctx != NULL);
-  
+
   /* ACTUAL TEST CODE */
   for (i=1;i<32;i++) {
     block = makeBlock(i);
@@ -242,6 +307,32 @@ int main(int argc, char * argv[]){
 			   &hc));
     FREE(block);
   }
+
+  /* multiple search results test */
+  makeRandomId(&hc);
+  block = makeKBlock(40, &hc, &query);
+  CHECK(OK == FS_insert(sock,
+			block));
+  FREE(block);
+  block = makeKBlock(60, &hc, &query);
+  CHECK(OK == FS_insert(sock,
+			block));
+  FREE(block);
+  i = 2;
+  hnd = FS_start_search(ctx,
+			ANY_BLOCK,
+			1,
+			&query,
+			0,
+			0,
+			10 * cronSECONDS,
+			(Datum_Iterator) &countCallback,
+			&i);
+  CHECK(hnd != NULL);
+  gnunet_util_sleep(10 * cronSECONDS);
+  FS_stop_search(ctx, hnd);
+  CHECK(i == 0);
+		 
 
   /* just to check if it crashes... */
   FS_getAveragePriority(sock);

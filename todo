@@ -6,23 +6,21 @@
 - 593??? [ gnunet-setup ]
 
 0.7.0pre1 [4'05] (aka "preview"):
-- testing:
-  * tbench:
-    + CAN TEST: http transport (after MTU change)
-  * sqlite-tests: test concurrency with iterators
+- uni-peer testing:
+  * sqlite: test concurrency with iterators
   * gnunet-pseudonym
-  * gnunet-search: multiple search results don't work (yet); test on FSLIB and ECRS levels!
+  * gnunet-search: multiple search results don't work (yet); test on ECRS level!
+- multi-peer testing: (see sessiontest.c and tbenchtest.c for templates)
+  * gap
+  * dht / gnunet-dht-join and gnunet-dht-query 
+  * fs
 - FSUI:
   * download: various details wrt generated events
   * namespace updates
   * collections
   * testing
-- multi-peer testing: (see sessiontest.c and tbenchtest.c for templates)
-  * gap
-  * dht / gnunet-dht-join and gnunet-dht-query 
-  * fs
 - transport refactoring:
-  * UPDATE: HTTP: MTU change!
+  * HTTP: MTU change! => test with tbench!
   * port knocking support? [ tricky ]
 - UI features:
   * date feature (Mantis #789)
@@ -38,7 +36,7 @@
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
     user to specify maximum amount of parallelism) [ tricky ]
 - Need testing:
-  * gnunet-tracekit, -tbench, -chat
+  * gnunet-tracekit
 - Documentation changes (to be documented):
   * ECRS block format changes (dramatic!)
   * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
