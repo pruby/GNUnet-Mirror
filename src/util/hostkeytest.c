@@ -67,6 +67,63 @@ static int testEncryptDecrypt() {
     return SYSERR;
 }
 
+
+static int testEncryptDecryptSK() {
+  struct PrivateKey * hostkey;
+  PublicKey pkey;
+  RSAEncryptedData target;
+  SESSIONKEY insk;
+  SESSIONKEY outsk;
+  int i;
+  TIME_T start;
+  int ok;
+
+  fprintf(stderr, "W");
+  hostkey = makePrivateKey();
+  getPublicKey(hostkey, &pkey);
+
+  ok = 0;
+  TIME(&start);
+  for (i=0;i<ITER;i++) {
+    fprintf(stderr, ".");
+    makeSessionkey(&insk);
+    if (SYSERR == encryptPrivateKey(&insk,
+				    sizeof(SESSIONKEY),
+				    &pkey,
+				    &target)) {
+      fprintf(stderr, 
+	      "encryptPrivateKey returned SYSERR\n");
+      ok++;
+      continue;
+    }
+    if (-1 == decryptPrivateKey(hostkey,
+				&target, 
+				&outsk,
+				sizeof(SESSIONKEY))) {
+      fprintf(stderr, 
+	      "decryptPrivateKey returned SYSERR\n");
+      ok++;
+      continue;
+    }
+    if (0 != memcmp(&insk,
+		    &outsk,
+		    sizeof(SESSIONKEY))) {
+      printf("testEncryptDecryptSK failed!\n");
+      ok++;
+      continue;
+    }
+  }
+  printf("%d RSA encrypt/decrypt SK operations %ds (%d failures)\n", 
+	 ITER,
+	 (int) (TIME(NULL)-start),
+	 ok);
+  freePrivateKey(hostkey);
+  if (ok == 0)
+    return OK;
+  else
+    return SYSERR;
+}
+
 static int testSignVerify() {
   struct PrivateKey * hostkey;
   Signature sig;
@@ -173,6 +230,8 @@ int main(int argc, char * argv[]) {
   initLockingGcrypt();
 #endif
   initRAND();  
+  if (OK != testEncryptDecryptSK())
+     failureCount++;
   if (OK != testEncryptDecrypt())
      failureCount++;
   if (OK != testSignVerify())
