@@ -113,16 +113,31 @@ static int testFile(int i) {
   return 0;
 }
 
+static int parseCommandLine(int argc, 
+			    char * argv[]) {
+  FREENONNULL(setConfigurationString("GNUNETD",
+				     "_MAGIC_",
+				     "NO"));
+  FREENONNULL(setConfigurationString("GNUNETD",
+				     "LOGFILE",
+				     NULL));
+  FREENONNULL(setConfigurationString("GNUNET",
+				     "LOGLEVEL",
+				     "NOTHING"));
+  return OK;
+}
+
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   int i;
-  
+
+  initUtil(argc, argv, &parseCommandLine);
   failureCount += testKeyword();
   for (i=0;i<255;i++) {
     failureCount += testNamespace(i);
     failureCount += testFile(i);
   }
-
+  doneUtil();
   if (failureCount == 0)
     return 0;
   else 

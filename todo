@@ -1,18 +1,11 @@
-0.6.6b [2?'05] (aka "bugfixes"):
-- 833!
-- 832?
-- 829!
-- 828?
-- 827??
-- 823?
-- 770?
-- 765?
-- 704?
-- 593???
+0.6.7 [3?'05] (aka "features"):
+- 835??  [ unknown crash ]
+- 770?   [ use freedback (LOG) in gnunet-gtk via show-messages ]
+- 704?   [ auto-reindex downloaded files ]
+- 678?   [ directory browser ]
+- 593??? [ gnunet-setup ]
 
-0.7.0pre0 [3'05] (aka "pre-preview"):
-- Known bugs:
-  * strange ecrstest bug(s?)
+0.7.0pre0 [2'05] (aka "pre-preview"):
 - Need testing:
   * ECRS-directories (build, iterate)
   * gnunet-directory

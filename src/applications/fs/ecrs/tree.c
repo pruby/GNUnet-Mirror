@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -31,7 +31,7 @@ unsigned int computeDepth(unsigned long long flen) {
 
   treeDepth = 0;
   fl = DBLOCK_SIZE;
-  while (fl < (unsigned long long)flen) {
+  while (fl < flen) {
     treeDepth++;
     if (fl * CHK_PER_INODE < fl) {
       /* integer overflow, this is a HUGE file... */

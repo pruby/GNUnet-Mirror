@@ -25,9 +25,10 @@
 
 /**
  * Size of a DBlock.  Currently set for debugging.
- * Should be a multiple of 8. [ 32768? ]
+ * Should be a multiple of 8 and larger than 
+ * sizeof(CHK). [ 32768? ]
  */
-#define DBLOCK_SIZE 32
+#define DBLOCK_SIZE (sizeof(CHK) * 2 + 8)
 
 /**
  * Pick a multiple of 2 here to achive 8-byte alignment!

@@ -118,15 +118,16 @@ int ECRS_getMetaData(const MetaData * md,
   int sub;
 
   sub = 0;
-  if (iterator != NULL) 
-    for (i=md->itemCount-1;i>=0;i--) {
-      if (md->items[i].type !=  EXTRACTOR_THUMBNAIL_DATA) {
-	if (OK != iterator(md->items[i].type,
+  for (i=md->itemCount-1;i>=0;i--) {
+    if (md->items[i].type !=  EXTRACTOR_THUMBNAIL_DATA) {
+      if ( (iterator != NULL) &&
+	   (OK != iterator(md->items[i].type,
 			   md->items[i].data,
-			   closure))
-	  return SYSERR;
-      } else
-	sub++;
+			   closure)) )
+	return SYSERR;
+    } else
+      sub++;
+  }
   return md->itemCount - sub;
 }
 

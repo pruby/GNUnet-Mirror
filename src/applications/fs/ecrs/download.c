@@ -583,18 +583,30 @@ static unsigned int getNodeSize(const NodeClosure * node) {
     if (node->offset + (unsigned long long) ret
 	> node->ctx->total)
       ret = (unsigned int) (node->ctx->total - node->offset);
+#if 0
+    printf("Node at offset %llu and level %d has size %u\n",
+	   node->offset,
+	   node->level,
+	   ret);
+#endif
     return ret;
   }
   rsize = DBLOCK_SIZE;
-  for (i=0;i<node->level;i++)
+  for (i=0;i<node->level-1;i++)
     rsize *= CHK_PER_INODE;
-  spos = rsize * (node->offset / sizeof(CHK));
-  epos = spos + rsize;
+  spos = rsize * CHK_PER_INODE * (node->offset / sizeof(CHK));
+  epos = spos + rsize * CHK_PER_INODE;
   if (epos > node->ctx->total)
     epos = node->ctx->total;
   ret = (epos - spos) / rsize;
   if (ret * rsize < epos - spos)
     ret++; /* need to round up! */
+#if 0
+  printf("Node at offset %llu and level %d has size %u\n",
+	 node->offset,
+	 node->level,
+	 ret * sizeof(CHK));
+#endif
   return ret * sizeof(CHK);
 }
 
@@ -760,18 +772,23 @@ static void iblock_download_children(NodeClosure * node,
     BREAK();
     return;
   }
-  if (node->level == 1)
+  if (node->level == 1) {
     levelSize = DBLOCK_SIZE;
-  else
+    baseOffset = node->offset / sizeof(CHK) * CHK_PER_INODE * DBLOCK_SIZE;
+  } else {
     levelSize = sizeof(CHK);
-  baseOffset = node->offset * CHK_PER_INODE;
+    baseOffset = node->offset * CHK_PER_INODE;
+  }
   chks = (CHK*) data;
   for (i=0;i<childcount;i++) {
     child = MALLOC(sizeof(NodeClosure));
     child->ctx = node->ctx;
     child->chk = chks[i];
     child->offset = baseOffset + i * levelSize;
+    GNUNET_ASSERT(child->offset < node->ctx->total);
     child->level = node->level - 1;
+    GNUNET_ASSERT( (child->level != 0) ||
+		   ( (child->offset % DBLOCK_SIZE) == 0) );
     if (NO == checkPresent(child))
       addRequest(node->ctx->rm,
 		 child);
@@ -841,7 +858,7 @@ static int nodeReceive(const HashCode160 * query,
   if ( (size <= sizeof(DBlock)) ||
        (size - sizeof(DBlock) != getNodeSize(node)) ) {
     printf("Received %u bytes, expected %u\n",
-	   size,
+	   size - sizeof(DBlock),
 	   getNodeSize(node));
     BREAK();
     return SYSERR; /* invalid size! */
