@@ -272,7 +272,10 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   ret = fileBlockEncode(db,
 			ntohl(odb->blockSize) + sizeof(DBlock),
 			query,
-			enc);  
+			enc);
+  (*enc)->anonymityLevel = dbv->anonymityLevel;
+  (*enc)->expirationTime = dbv->expirationTime;
+  (*enc)->prio = dbv->prio;
   FREE(db);
   FREE(fn);
   if (ret == SYSERR)
@@ -325,7 +328,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   unsigned long long pos;
   unsigned long long size;
   unsigned long long delta;
-  char * block;
+  DBlock * block;
 
   fn = getOnDemandFile(fileId);
   fd = OPEN(fn, 
@@ -338,13 +341,14 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   }
   pos = 0;
   size = getFileSize(fn);
-  block = MALLOC(blocksize);
+  block = MALLOC(sizeof(DBlock) + blocksize);
+  block->type = htonl(D_BLOCK);
   while (pos < size) {
     delta = size - pos;
     if (delta > blocksize)
       delta = blocksize;
     if (delta != READ(fd,
-		      block,
+		      &block[1],
 		      delta)) {
       LOG_FILE_STRERROR(LOG_ERROR, "read", fn);
       CLOSE(fd);

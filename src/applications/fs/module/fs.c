@@ -525,7 +525,7 @@ typedef struct {
  * gap routing protocol.
  */
 static int gapGetConverter(const HashCode160 * key,
-			   const Datastore_Value * value,
+			   const Datastore_Value * invalue,
 			   void * cls) {
   GGC * ggc = (GGC*) cls;
   GapWrapper * gw;
@@ -533,18 +533,36 @@ static int gapGetConverter(const HashCode160 * key,
   unsigned int size;
   cron_t et;
   cron_t now;
+  const Datastore_Value * value;
+  Datastore_Value * xvalue;
 
+  if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
+    if (OK != ONDEMAND_getIndexed(datastore,
+				  invalue,
+				  key,
+				  &xvalue))
+      return SYSERR;
+    value = xvalue;
+  } else {
+    xvalue = NULL;
+    value = invalue;
+  }
+		   
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
 			  (const char*) &value[1],
 			  ggc->keyCount,
 			  ggc->keys);
-  if (ret == SYSERR)
+  if (ret == SYSERR) {
+    FREENONNULL(xvalue);
     return SYSERR; /* no query will ever match */
-  if (ret == NO)
+  }
+  if (ret == NO) {
+    FREENONNULL(xvalue);
     return OK; /* Additional filtering based on type;
 		  i.e., namespace request and namespace
 		  in reply does not match namespace in query */
+  }
   size = sizeof(GapWrapper) +
     ntohl(value->size) -
     sizeof(Datastore_Value);
@@ -577,23 +595,27 @@ static int gapGetConverter(const HashCode160 * key,
 			     &timevect)) {
 	LOG(LOG_WARNING,
 	    _("Failed to get traffic stats.\n"));
+	FREENONNULL(xvalue);
 	return OK;
       }
       if (level > 1000) {
 	if (peers < level / 1000) {
 	  LOG(LOG_DEBUG,
 	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
+	  FREENONNULL(xvalue);
 	  return OK;
 	}
 	if (count < level % 1000) {
 	  LOG(LOG_DEBUG,
 	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
+	  FREENONNULL(xvalue);
 	  return OK;
 	}
       } else {
 	if (count < level) {
 	  LOG(LOG_DEBUG,
 	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
+	  FREENONNULL(xvalue);
 	  return OK;
 	}
       }
@@ -601,6 +623,7 @@ static int gapGetConverter(const HashCode160 * key,
       /* traffic required by module not loaded;
 	 refuse to hand out data that requires
 	 anonymity! */
+      FREENONNULL(xvalue);
       return OK;
     }
   }
@@ -629,6 +652,7 @@ static int gapGetConverter(const HashCode160 * key,
   else
     ret = OK;
   FREE(gw);
+  FREENONNULL(xvalue);
   return ret;
 }
 
@@ -700,7 +724,7 @@ static int gapIterate(void * closure,
  * DHT routing protocol.
  */
 static int dhtGetConverter(const HashCode160 * key,
-			   const Datastore_Value * value,
+			   const Datastore_Value * invalue,
 			   void * cls) {
   GGC * ggc = (GGC*) cls;
   GapWrapper * gw;
@@ -708,25 +732,45 @@ static int dhtGetConverter(const HashCode160 * key,
   unsigned int size;
   cron_t et;
   cron_t now;
+  const Datastore_Value * value;
+  Datastore_Value * xvalue;
+
+  if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
+    if (OK != ONDEMAND_getIndexed(datastore,
+				  invalue,
+				  key,
+				  &xvalue))
+      return SYSERR;
+    value = xvalue;
+  } else {
+    xvalue = NULL;
+    value = invalue;
+  }
 
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
 			  (char*) &value[1],
 			  ggc->keyCount,
 			  ggc->keys);
-  if (ret == SYSERR)
+  if (ret == SYSERR) {
+    FREENONNULL(xvalue);
     return SYSERR; /* no query will ever match */
-  if (ret == NO)
+  }
+  if (ret == NO) {
+    FREENONNULL(xvalue);
     return OK; /* Additional filtering based on type;
 		  i.e., namespace request and namespace
 		  in reply does not match namespace in query */
+  }
   size = sizeof(GapWrapper) +
     ntohl(value->size) -
     sizeof(Datastore_Value);
 
-  if (ntohl(value->anonymityLevel) != 0) 
+  if (ntohl(value->anonymityLevel) != 0) {
+    FREENONNULL(xvalue);
     return OK; /* do not allow anonymous content to leak through DHT */
-  
+  }
+
   gw = MALLOC(size);
   gw->dc.size = htonl(size);
   et = ntohll(value->expirationTime);
@@ -751,6 +795,7 @@ static int dhtGetConverter(const HashCode160 * key,
   else
     ret = OK;
   FREE(gw);
+  FREENONNULL(xvalue);
   return ret;
 }
 
