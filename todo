@@ -8,8 +8,6 @@
 - 593???
 
 0.7.0pre0 [3'05] (aka "pre-preview"):
-- Known bugs:
-  * Block type field is not set at block creation (NEW, fatal!)
 - Missing Features:
   * fsui core (persistence, shutdown, multiple FSUIs) [ difficult ]
   * mysql sqstore implementation iterator problem (Igor?)
