@@ -1,0 +1,44 @@
+Size estimates for a stripped, minimal-size GNUnet distribution for
+embedded devices (listing only what is required for AFS with DHT, no
+GUI):
+
+binaries:
+gnunetd: 13k
+gnunet-search: 10k
+gnunet-download: 10k
+gnunet-insert: 20k
+TOTAL: 53k
+
+libraries (libgnunet*.so):
+util: 173k (!) [ lots of strings, incl. ~30k gnunet.conf files; could be reduced ]
+ecrs: 60k
+fs: 13k
+fsui: 34k
+core: 52k
+getoption_api: 5k
+dht_datastore_memory: 7k
+TOTAL: 344k
+
+plugins (libgnunetmodule*):
+gap: 20k 
+fs: 28k
+datastore: 14k
+bootstrap: 8k
+advertising: 14k
+fragmentation: 10k
+getoption: 5k
+identity: 17k
+pingpong: 8k
+session: 10k
+sqstore_sqlite: 22k?
+topology: 8k
+traffic: 10k
+transport: 13k
+tcp: 20k
+udp: 13k
+dht: 54k 
+rpc: 23k
+TOTAL: 297k [ dht and rpc are optional, - 77k ]
+
+DISTRIBUTION SIZE: 694k (+ dependencies)
+WITH CHANGES: - 107k = 587k (+ dependencies)
