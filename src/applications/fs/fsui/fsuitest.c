@@ -41,7 +41,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "NOTHING"));
+				     "WARNING"));
   return OK;
 }
 
@@ -109,6 +109,7 @@ int main(int argc, char * argv[]){
   char * fn;
   char * keywords[] = { 
     "foo",
+    "AND",
     "bar",
     NULL,
   };
@@ -153,7 +154,7 @@ int main(int argc, char * argv[]){
 		    0,
 		    YES,
 		    meta,
-		    2,
+		    3,
 		    (const char**) keywords));
   ECRS_freeMetaData(meta);
   prog = 0;
@@ -175,17 +176,17 @@ int main(int argc, char * argv[]){
   }
   FSUI_stopSearch(ctx,
 		  uri);
-  // CHECK(OK == FSUI_unindex(ctx, fn));
+  CHECK(OK == FSUI_unindex(ctx, fn));
 
   /* END OF TEST CODE */
  FAILURE:
   if (ctx != NULL)
     FSUI_stop(ctx);
-  // UNLINK(fn);
+  UNLINK(fn);
   FREE(fn);
   fn = makeName(43);
-  /* FIXME: verify file 'fn(42)' == file 'fn(43)' */
-  // UNLINK(fn);
+  /* TODO: verify file 'fn(42)' == file 'fn(43)' */
+  UNLINK(fn);
   FREE(fn);
 
   stopCron();

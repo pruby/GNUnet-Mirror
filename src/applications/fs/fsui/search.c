@@ -66,8 +66,9 @@ static int spcb(const ECRS_FileInfo * fi,
   FSUI_trackURI(fi);
   for (i=0;i<pos->sizeResultsReceived;i++)
     if (ECRS_equalsUri(fi->uri,
-		       pos->resultsReceived[i].uri))
+		       pos->resultsReceived[i].uri)) {
       return OK; /* seen before */
+    }
   if (pos->numberOfURIKeys > 1) {
     if (key == NULL) {
       BREAK();
@@ -79,9 +80,10 @@ static int spcb(const ECRS_FileInfo * fi,
 			 rp->fi.uri)) {
 	for (j=0;j<rp->matchingKeyCount;j++)
 	  if (equalsHashCode512(key,
-				&rp->matchingKeys[j]))
+				&rp->matchingKeys[j])) {
 	    return OK;
-	if (rp->matchingKeyCount + 1 < pos->numberOfURIKeys) {
+	  }
+	if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
 	  GROW(rp->matchingKeys,
 	       rp->matchingKeyCount,
 	       0);
@@ -163,7 +165,7 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
   pos = MALLOC(sizeof(FSUI_SearchList));
   pos->signalTerminate = NO;
   pos->uri = ECRS_dupUri(uri);
-  pos->numberOfURIKeys = 1; /* FIXME! */
+  pos->numberOfURIKeys = ECRS_countKeywordsOfUri(uri);
   pos->sizeResultsReceived = 0;
   pos->resultsReceived = NULL;
   pos->sizeUnmatchedResultsReceived = 0;

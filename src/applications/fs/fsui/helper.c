@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -113,13 +113,15 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int num_keywords,
 
 
   for (i=0;i<num_keywords;i++) {
-    if (uriSize < uriLen + 1 + strlen(keywords[i]))
+    if (uriSize < uriLen + strlen(_("AND")) + 1 + strlen(keywords[i]))
       GROW(uriString,
 	   uriSize,
-	   uriSize + 4096);
+	   uriSize + 4096 + strlen(keywords[i]));
     if ( (i > 0) &&
 	 (0 == strcmp(keywords[i], _("AND"))) ) {
       strcat(uriString, "+");
+      if (i == num_keywords-1)
+	strcat(uriString, _("AND")); /* last keyword 'AND'? keep it! */
       uriLen += 1;
     } else {
       if ( (i > 0) &&

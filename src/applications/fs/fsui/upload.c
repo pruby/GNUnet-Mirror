@@ -484,7 +484,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
 
   MUTEX_LOCK(&ctx->lock);
   tl->next = ctx->activeThreads;
-  ctx->activeThreads = tl->next;
+  ctx->activeThreads = tl;
   MUTEX_UNLOCK(&ctx->lock);
   cleanupFSUIThreadList(ctx);
   return OK;
@@ -551,7 +551,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 
   MUTEX_LOCK(&ctx->lock);
   tl->next = ctx->activeThreads;
-  ctx->activeThreads = tl->next;
+  ctx->activeThreads = tl;
   MUTEX_UNLOCK(&ctx->lock);
   cleanupFSUIThreadList(ctx);
   return OK;
