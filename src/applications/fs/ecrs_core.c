@@ -59,22 +59,23 @@ int fileBlockEncode(const DBlock * data,
 	    &skey,
 	    &iv[0]);
   val = MALLOC(sizeof(Datastore_Value)
-	       + len + sizeof(DBlock));
+	       + len);
   val->size = htonl(sizeof(Datastore_Value) + 
-		    len + sizeof(DBlock));
+		    len);
   val->type = htonl(D_BLOCK);
   val->prio = htonl(0);
   val->anonymityLevel = htonl(0);
   val->expirationTime = htonl(0);
   db = (DBlock*) &val[1];
   db->type = htonl(D_BLOCK);
-  GNUNET_ASSERT(len == encryptBlock(&data[1],
-				    len - sizeof(DBlock),
-				    &skey,
-				    iv,
-				    &db[1]));
-  hash(val,
-       len,
+  GNUNET_ASSERT(len - sizeof(DBlock)
+		== encryptBlock(&data[1],
+				len - sizeof(DBlock),
+				&skey,
+				iv,
+				&db[1]));
+  hash(&db[1],
+       len - sizeof(DBlock),
        &hc);
   if (equalsHashCode160(query,
 			&hc)) {

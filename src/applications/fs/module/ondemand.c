@@ -209,7 +209,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 
   if (ntohl(dbv->size) != sizeof(OnDemandBlock)) {
     BREAK();
-    goto FAILURE;
+    return SYSERR;
   }
   odb = (OnDemandBlock*) dbv;
   fn = getOnDemandFile(&odb->fileId);
@@ -218,7 +218,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   if (fileHandle == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
     FREE(fn);
-    goto FAILURE;
+    return SYSERR;
   }
 
 #if TRACK_INDEXED_FILES
@@ -254,7 +254,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     LOG_FILE_STRERROR(LOG_WARNING, "lseek", fn);
     FREE(fn);
     CLOSE(fileHandle);
-    goto FAILURE;
+    return SYSERR;
   }
   db = MALLOC(sizeof(DBlock) + ntohl(odb->blockSize));
   db->type = htonl(D_BLOCK);
@@ -267,24 +267,21 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     FREE(fn);
     FREE(db);
     CLOSE(fileHandle);
-    goto FAILURE;
+    return SYSERR;
   }
   ret = fileBlockEncode(db,
 			ntohl(odb->blockSize) + sizeof(DBlock),
 			query,
 			enc);
-  (*enc)->anonymityLevel = dbv->anonymityLevel;
-  (*enc)->expirationTime = dbv->expirationTime;
-  (*enc)->prio = dbv->prio;
   FREE(db);
   FREE(fn);
   if (ret == SYSERR)
-    goto FAILURE;
+    return SYSERR;
+  
+  (*enc)->anonymityLevel = dbv->anonymityLevel;
+  (*enc)->expirationTime = dbv->expirationTime;
+  (*enc)->prio = dbv->prio;
   return OK;   
- FAILURE:
-  datastore->del(query,
-		 dbv);
-  return SYSERR;
 }
 
 /**

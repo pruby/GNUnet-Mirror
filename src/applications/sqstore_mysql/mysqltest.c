@@ -164,11 +164,9 @@ static int parser(int argc,
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
 				     "/tmp/gnunet_test/gnunet.conf"));
-  tmp = expandFileName("~/.my-debug.cnf");
   FREENONNULL(setConfigurationString("MYSQL",
-				     "CONFIG",
-				     tmp));
-  FREE(tmp);
+				     "DATABASE",
+				     "gnunetcheck"));
   return OK;
 }
 

@@ -245,6 +245,8 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
  * @return OK on success
  */
 static int iopen(mysqlHandle * dbhI) {
+  char * dbname;
+
   if (dbhI->cnffile == NULL)
     return SYSERR;
   dbhI->dbf = mysql_init(NULL);
@@ -256,14 +258,19 @@ static int iopen(mysqlHandle * dbhI) {
   mysql_options(dbhI->dbf, 
 		MYSQL_READ_DEFAULT_GROUP, 
 		"client");
+  dbname = getConfigurationString("MYSQL",
+				  "DATABASE");
+  if (dbname == NULL)
+    dbname = STRDUP("gnunet");
   mysql_real_connect(dbhI->dbf,
 		     NULL,
 		     NULL,
 		     NULL,
-		     "gnunet",
+		     dbname,
 		     0,
 		     NULL,
 		     0);
+  FREE(dbname);
   if (mysql_error(dbhI->dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, 
 	      "mysql_real_connect",
