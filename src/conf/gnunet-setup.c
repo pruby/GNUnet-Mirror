@@ -1,6 +1,6 @@
 /* 
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -67,6 +67,13 @@ int main(int argc,
     mconf_main(argc - 1, &argv[1]);
 #else
     puts("Menuconfig is not available\n");
+#endif
+  }
+  else if (strncmp(argv[1], "gconfig", 10) == 0) {
+#if HAVE_GTK
+    gconf_main(argc - 1, &argv[1]);
+#else
+    puts("Gconfig is not available\n");
 #endif 
  } else {
     puts("Unknown configurator\n\n");

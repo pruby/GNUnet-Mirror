@@ -1,5 +1,7 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
+AM_CFLAGS = $(GTK_CFLAGS)
+
 if MINGW
  WINTOOL = gnunet-win-tool
 endif
@@ -39,21 +41,35 @@ mconf_src = \
   mconf_yesno.c
 endif
 
+if HAVE_GTK
+ gconf_libs = $(GTK_LIBS) @EXT_LIB_PATH@ $(LDADD) @EXT_LIBS@ -lgthread-2.0
+ 
+ gconf_src = \
+   gconf_callbacks.h \
+   gconf_interface.h \
+   gconf_support.h \
+   gconf_interface.c \
+   gconf_support.c \
+   gconf.c
+endif
+
+
 gnunet_setup_SOURCES = \
  conf.c \
  confdata.c \
  expr.c \
  expr.h \
  lkc.h \
- $(mconf_src) \
  menu.c \
  symbol.c \
  zconf.tab.h \
  zconf_tab.c \
+ $(mconf_src) \
+ $(gconf_src) \
  gnunet-setup.c
 
 gnunet_setup_LDFLAGS = \
- $(curses_lib)
+ $(curses_lib) $(gconf_libs)
 
 gnunet_setup_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la

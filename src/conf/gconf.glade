@@ -3,7 +3,7 @@
 
 <glade-interface>
 
-<widget class="GtkWindow" id="window1">
+<widget class="GtkWindow" id="main_wnd">
   <property name="visible">True</property>
   <property name="title" translatable="yes">Gtk GNUnet Configurator</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
@@ -13,9 +13,9 @@
   <property name="default_height">480</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
-  <signal name="destroy" handler="on_window1_destroy" object="window1"/>
+  <signal name="destroy" handler="on_window1_destroy" object="main_wnd"/>
   <signal name="size_request" handler="on_window1_size_request" object="vpaned1" last_modification_time="Fri, 11 Jan 2002 16:17:11 GMT"/>
-  <signal name="delete_event" handler="on_window1_delete_event" object="window1" last_modification_time="Sun, 09 Mar 2003 19:42:46 GMT"/>
+  <signal name="delete_event" handler="on_window1_delete_event" object="main_wnd" last_modification_time="Sun, 09 Mar 2003 19:42:46 GMT"/>
 
   <child>
     <widget class="GtkVBox" id="vbox1">
@@ -310,7 +310,7 @@
 	      <property name="tooltips">True</property>
 
 	      <child>
-		<widget class="button" id="button1">
+		<widget class="GtkButton" id="button1">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Goes up of one level (single view)</property>
 		  <property name="label" translatable="yes">Back</property>
@@ -327,7 +327,7 @@
 	      </child>
 
 	      <child>
-		<widget class="button" id="button2">
+		<widget class="GtkButton" id="button2">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Load a config file</property>
 		  <property name="label" translatable="yes">Load</property>
@@ -338,7 +338,7 @@
 	      </child>
 
 	      <child>
-		<widget class="button" id="button3">
+		<widget class="GtkButton" id="button3">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Save a config file</property>
 		  <property name="label" translatable="yes">Save</property>
@@ -355,7 +355,7 @@
 	      </child>
 
 	      <child>
-		<widget class="button" id="button4">
+		<widget class="GtkButton" id="button4">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Single view</property>
 		  <property name="label" translatable="yes">Single</property>
@@ -366,7 +366,7 @@
 	      </child>
 
 	      <child>
-		<widget class="button" id="button5">
+		<widget class="GtkButton" id="button5">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Split view</property>
 		  <property name="label" translatable="yes">Split</property>
@@ -377,7 +377,7 @@
 	      </child>
 
 	      <child>
-		<widget class="button" id="button6">
+		<widget class="GtkButton" id="button6">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Full view</property>
 		  <property name="label" translatable="yes">Full</property>
@@ -394,7 +394,7 @@
 	      </child>
 
 	      <child>
-		<widget class="button" id="button7">
+		<widget class="GtkButton" id="button7">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Collapse the whole tree in the right frame</property>
 		  <property name="label" translatable="yes">Collapse</property>
@@ -404,7 +404,7 @@
 	      </child>
 
 	      <child>
-		<widget class="button" id="button8">
+		<widget class="GtkButton" id="button8">
 		  <property name="visible">True</property>
 		  <property name="tooltip" translatable="yes">Expand the whole tree in the right frame</property>
 		  <property name="label" translatable="yes">Expand</property>
