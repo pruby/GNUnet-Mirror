@@ -27,6 +27,8 @@ static int parseCommandLine(int argc,
   return OK;
 }
 
+static cron_t now;
+
 static Datastore_Value * makeBlock(int i) {
   Datastore_Value * block;
   DBlock * db;
@@ -38,7 +40,7 @@ static Datastore_Value * makeBlock(int i) {
   block->type = htonl(D_BLOCK);
   block->prio = htonl(0);
   block->anonymityLevel = htonl(0);
-  block->expirationTime = cronTime(NULL) + 1 * cronHOURS;
+  block->expirationTime = htonll(now + 1 * cronHOURS);
   db = (DBlock*) &block[1];
   db->type = htonl(D_BLOCK);
   memset(&db[1],
@@ -60,10 +62,40 @@ static void abortSem(Semaphore * sem) {
 static int searchResultCB(const HashCode160 * key,
 			  const Datastore_Value * value,
 			  TSC * cls) {
-  /* FIXME: verify result... */
-  cls->found = YES;
-  SEMAPHORE_UP(cls->sem);
-  return SYSERR;
+  HashCode160 ekey;
+  Datastore_Value * blk;
+  Datastore_Value * eblk;
+  int ret;
+
+  blk = makeBlock(cls->i);
+  blk->prio = htonl(0);
+  blk->anonymityLevel = htonl(0);
+  blk->expirationTime = htonll(0);
+  fileBlockGetQuery((DBlock*) &blk[1],
+		    ntohl(blk->size) - sizeof(Datastore_Value),
+		    &ekey);
+  GNUNET_ASSERT(OK == 
+		fileBlockEncode((DBlock*) &blk[1],
+				ntohl(blk->size) - sizeof(Datastore_Value),
+				&ekey,
+				&eblk));
+  if ( (equalsHashCode160(&ekey,
+			  key)) &&
+       (value->size == blk->size) &&
+       (0 == memcmp(value,
+		    eblk,
+		    ntohl(value->size))) ) {
+    cls->found = YES;
+    SEMAPHORE_UP(cls->sem);
+    ret = SYSERR;
+  } else {
+    BREAK();
+    printf("Received unexpected result.\n");
+    ret = OK;
+  }
+  FREE(eblk);
+  FREE(blk);
+  return ret;
 }
 
 static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
@@ -122,7 +154,8 @@ int main(int argc, char * argv[]){
   HashCode160 query;
   int i;
 
-  daemon = fork();
+  cronTime(&now);
+  daemon = -1; // fork();
   if (daemon == 0) {
     /* FIXME: would be nice to be able to tell
        gnunetd to use the check/debug DB and not
@@ -165,8 +198,8 @@ int main(int argc, char * argv[]){
     CHECK(OK == FS_insert(sock, 
 			  eblock));
     CHECK(OK == trySearch(ctx, i));
-    CHECK(1 == FS_delete(sock,
-			 eblock));
+    CHECK(SYSERR != FS_delete(sock,
+			      eblock));
     FREE(eblock);
     hash(&((DBlock*)&block[1])[1],
 	 ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock),
@@ -222,16 +255,19 @@ int main(int argc, char * argv[]){
   MUTEX_DESTROY(&lock);
   stopCron();
   doneUtil();
-  if (0 != kill(daemon, SIGTERM))
-    DIE_STRERROR("kill");
-  if (daemon != waitpid(daemon, &status, 0)) 
-    DIE_STRERROR("waitpid");
+  if (daemon != -1) {
+    if (0 != kill(daemon, SIGTERM))
+      DIE_STRERROR("kill");
+    if (daemon != waitpid(daemon, &status, 0)) 
+      DIE_STRERROR("waitpid");
   
-  if ( (WEXITSTATUS(status) == 0) && 
-       (ok == YES) )
+    if ( (WEXITSTATUS(status) == 0) && 
+	 (ok == YES) )
+      return 0;
+    else
+      return 1;    
+  } else
     return 0;
-  else
-    return 1;    
 }
 
 /* end of fslibtest.c */

@@ -169,8 +169,9 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
     
   contentSize = sqlite3_column_int(stmt, 0) - sizeof(Datastore_Value);
   
-  if (contentSize < 0)
+  if (contentSize < 0) {
     return NULL; /* error */
+  }
   
   if (sqlite3_column_bytes(stmt, 5) > sizeof(HashCode160) * 2 + 1 ||
       sqlite3_column_bytes(stmt, 6) > contentSize * 2 + 1) {
@@ -328,6 +329,13 @@ static int sqlite_iterate(unsigned int type,
 	   "(prio > :4 AND expire == :5) OR expire > :6)");
   if (type) 
     strcat(scratch, " AND type = :7");
+  else
+    SNPRINTF(&scratch[strlen(scratch)],
+	     512 - strlen(scratch),
+	     " AND type != %d",
+	     RESERVED_BLOCK); /* otherwise we iterate over
+				 the stats entry, which would
+				 be bad */
   if (sortByPriority) 
     strcat(scratch, " ORDER BY prio ASC, expire ASC, hash ASC");
   else 
@@ -587,6 +595,7 @@ static int get(const HashCode160 * key,
 	      _("Invalid data in database.  Please verify integrity!\n"));
 	  continue; 
 	}
+
 #if DEBUG_SQLITE
 	LOG(LOG_DEBUG,
 	    "Found in database block with type %u.\n",
@@ -642,7 +651,7 @@ static int put(const HashCode160 * key,
   sqlite3_stmt *stmt;
   unsigned long rowLen;
   unsigned int contentSize;
-	
+
   if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {
     BREAK();
     return SYSERR;
@@ -693,7 +702,7 @@ static int put(const HashCode160 * key,
   dbh->lastSync++;
   dbh->payload += (hashLen + blockLen + sizeof(long long) * 5);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
- 
+
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG,
       "SQLite: done writing content\n");
