@@ -33,9 +33,6 @@
  *
  * A good way of thinking about a collection is a lazy user's
  * namespace.
- *
- * TODO:
- * - actually have FSUI lib call into collection.c!
  */
 
 #include "platform.h"
