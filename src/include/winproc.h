@@ -415,6 +415,14 @@ int _win_munmap(void *start, size_t length);
 int _win_lstat(const char *path, struct stat *buf);
 int _win_readlink(const char *path, char *buf, size_t bufsize);
 int _win_accept(SOCKET s, struct sockaddr *addr, int *addrlen);
+int _win_printf(const char *format,...);
+int _win_fprintf(FILE *f,const char *format,...);
+int _win_vprintf(const char *format, va_list ap);
+int _win_vfprintf(FILE *stream, const char *format, va_list arg_ptr);
+int _win_vsprintf(char *dest,const char *format, va_list arg_ptr);
+int _win_vsnprintf(char* str, size_t size, const char *format, va_list arg_ptr);
+int _win_snprintf(char *str,size_t size,const char *format,...);
+int _win_sprintf(char *dest,const char *format,...);
 int _win_bind(SOCKET s, const struct sockaddr *name, int namelen);
 int _win_connect(SOCKET s,const struct sockaddr *name, int namelen);
 int _win_getpeername(SOCKET s, struct sockaddr *name,

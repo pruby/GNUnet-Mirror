@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001 - 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -191,6 +191,14 @@ int OPEN(const char *filename, int oflag, ...);
  #define STRERROR(i) strerror(i)
  #define READLINK(p, b, s) readlink(p, b, s)
  #define LSTAT(p, b) lstat(p, b)
+ #define PRINTF(f, ...) printf(f , __VA_ARGS__)
+ #define FPRINTF(fil, fmt, ...) fprintf(fil, fmt, __VA_ARGS__)
+ #define VPRINTF(f, a) vprintf(f, a)
+ #define VFPRINTF(s, f, a) vfprintf(s, f, a)
+ #define VSPRINTF(d, f, a) vsprintf(d, f, a)
+ #define VSNPRINTF(str, size, fmt, a) vsnprintf(str, size, fmt, a)
+ #define _REAL_SNPRINTF(str, size, fmt, ...) snprintf(str, size, fmt, __VA_ARGS__)
+ #define SPRINTF(d, f, ...) sprintf(d, f, __VA_ARGS__)
  #define ACCEPT(s, a, l) accept(s, a, l)
  #define BIND(s, n, l) bind(s, n, l)
  #define CONNECT(s, n, l) connect(s, n, l)
@@ -235,6 +243,14 @@ int OPEN(const char *filename, int oflag, ...);
  #define STRERROR(i) _win_strerror(i)
  #define READLINK(p, b, s) _win_readlink(p, b, s)
  #define LSTAT(p, b) _win_lstat(p, b)
+ #define PRINTF(f, ...) _win_printf(f , __VA_ARGS__)
+ #define FPRINTF(fil, fmt, ...) _win_fprintf(fil, fmt, __VA_ARGS__)
+ #define VPRINTF(f, a) _win_vprintf(f, a)
+ #define VFPRINTF(s, f, a) _win_vfprintf(s, f, a)
+ #define VSPRINTF(d, f, a) _win_vsprintf(d, f, a)
+ #define VSNPRINTF(str, size, fmt, a) _win_vsnprintf(str, size, fmt, a)
+ #define _REAL_SNPRINTF(str, size, fmt, ...) _win_snprintf(str, size, fmt, __VA_ARGS__)
+ #define SPRINTF(d, f, ...) _win_sprintf(d, f, __VA_ARGS__)
  #define ACCEPT(s, a, l) _win_accept(s, a, l)
  #define BIND(s, n, l) _win_bind(s, n, l)
  #define CONNECT(s, n, l) _win_connect(s, n, l)
