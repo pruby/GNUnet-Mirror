@@ -1166,7 +1166,9 @@ void xgrow_(void ** old,
 TIME_T TIME(TIME_T * t);
 
 /**
- * "man ctime".
+ * "man ctime_r".
+ * @return character sequence describing the time,
+ *  must be freed by caller
  */
 char * GN_CTIME(const TIME_T * t);
 

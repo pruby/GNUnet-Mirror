@@ -135,6 +135,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   EncName enc;
   HashCode512 key;
   char * cpy; /* copy of the encrypted portion */
+  struct ECRS_URI * xuri;
 
   if (! ECRS_isKeywordURI(uri)) {
     BREAK();
@@ -186,10 +187,18 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   sock = getClientSocket();
   ret = OK;
 
-  keywords = uri->data.ksk.keywords;
-  keywordCount = uri->data.ksk.keywordCount;
+  if (testConfigurationString("FS",
+			      "DISABLE-CREATION-TIME",
+			      "YES")) 
+    xuri = ECRS_dupUri(uri);
+  else
+    xuri = ECRS_dateExpandKeywordUri(uri);
+  keywords = xuri->data.ksk.keywords;
+  keywordCount = xuri->data.ksk.keywordCount;
   cpy = MALLOC(mdsize + strlen(dstURI) + 1);
-  memcpy(cpy, &kb[1], mdsize + strlen(dstURI) + 1);
+  memcpy(cpy,
+	 &kb[1], 
+	 mdsize + strlen(dstURI) + 1);
   for (i=0;i<keywordCount;i++) {
     memcpy(&kb[1], cpy, mdsize + strlen(dstURI) + 1);
     hash(keywords[i],
@@ -224,6 +233,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     GNUNET_ASSERT(OK == verifyKBlock(&key, value))
 #endif
   }
+  ECRS_freeUri(xuri);
   FREE(cpy);
   FREE(dstURI);
   releaseClientSocket(sock);

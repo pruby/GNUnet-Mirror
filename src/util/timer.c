@@ -163,7 +163,7 @@ TIME_T TIME(TIME_T * t) {
 }
 
 /**
- * "man ctime".  Automagically expands the 32-bit
+ * "man ctime_r".  Automagically expands the 32-bit
  * GNUnet time value to a 64-bit value of the current
  * epoc if needed.
  */
@@ -174,7 +174,11 @@ char * GN_CTIME(const TIME_T * t) {
   tnow = time(NULL);
   now = (TIME_T) tnow;
   tnow = tnow - now + *t;
-  return ctime(&tnow);
+#ifdef ctime_r
+  return ctime_r(&tnow, MALLOC(32));
+#else
+  return STRDUP(ctime(&tnow));
+#endif
 }
 
 

@@ -477,7 +477,7 @@ unsigned long long ECRS_fileSize(const struct ECRS_URI * uri) {
  * Duplicate URI.  FIXME: this is the QnD, costly
  * implementation.
  */
-struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri) {
+URI * ECRS_dupUri(const URI * uri) {
   char * tmp;
   struct ECRS_URI * ret;
 
@@ -486,6 +486,49 @@ struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri) {
   FREE(tmp);
   return ret;
 }
+
+/**
+ * Expand a keyword-URI by duplicating all keywords,
+ * adding the current date (YYYY-MM-DD) after each
+ * keyword.
+ */
+URI * ECRS_dateExpandKeywordUri(const URI * uri) {
+  URI * ret;
+  int i;
+  char * key;
+  char * kd;
+  struct tm t;
+  time_t now;
+  
+  GNUNET_ASSERT(uri->type == ksk);
+  time(&now);
+#ifdef HAVE_GMTIME_R
+  gmtime_r(&now, &t);
+#else
+  t = *gmtime(&now);
+#endif
+
+  ret = MALLOC(sizeof(URI));
+  ret->type = ksk;
+  ret->data.ksk.keywordCount = 2 * uri->data.ksk.keywordCount;
+  ret->data.ksk.keywords = MALLOC(sizeof(char*) * ret->data.ksk.keywordCount);
+  for (i=0;i<uri->data.ksk.keywordCount;i++) {
+    key = uri->data.ksk.keywords[2*i];
+    ret->data.ksk.keywords[2*i]
+      = STRDUP(key);
+    kd = MALLOC(strlen(key) + 13);
+    memset(kd, 0, strlen(key) + 13);
+    strcpy(kd, key);
+    strftime(kd[strlen(key)],
+	     13,
+	     "-%Y-%m-%d",
+	     &t);
+    ret->data.ksk.keywords[2*i+1]
+      = kd;
+  }
+  return ret;
+}
+
 
 /**
  * Construct a keyword-URI from meta-data (take all entries

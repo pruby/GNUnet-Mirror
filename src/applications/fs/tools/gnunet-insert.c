@@ -613,6 +613,10 @@ int main(int argc, char ** argv) {
   if (extractors == NULL)
       extractors = STRDUP(EXTRACTOR_DEFAULT_LIBRARIES);
 
+  if (! testConfigurationString("FS",
+				"DISABLE-CREATION-TIME",
+				"YES")) 
+    ECRS_addPublicationDateToMetaData(meta);  
   if (testConfigurationString("GNUNET-INSERT",
 			      "RECURSIVE",
 			      "YES")) {

@@ -120,6 +120,12 @@ int ECRS_delFromMetaData(struct ECRS_MetaData * md,
 			 const char * data);
 
 /**
+ * Add the current time as the publication date
+ * to the meta-data.
+ */
+void ECRS_addPublicationDateToMetaData(struct ECRS_MetaData * md);
+
+/**
  * Iterate over MD entries, excluding thumbnails.
  *
  * @return number of entries
@@ -237,11 +243,19 @@ void ECRS_freeUri(struct ECRS_URI * uri);
 struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);
 
 /**
+ * Expand a keyword-URI by duplicating all keywords,
+ * adding the current date (YYYY-MM-DD) after each
+ * keyword.
+ */
+struct ECRS_URI * ECRS_dateExpandKeywordUri(const struct ECRS_URI * uri);
+
+/**
  * Test if two URIs are equal.
  */
 int ECRS_equalsUri(const struct ECRS_URI * u1,
 		   const struct ECRS_URI * u2);
-			
+
+		
 
 /**
  * Is this a namespace URI?

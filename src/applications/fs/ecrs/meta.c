@@ -29,6 +29,11 @@
 #include "gnunet_ecrs_lib.h"
 #include <zlib.h>
 
+/* for pre LE 0.4.3 */
+#ifndef EXTRACTOR_PUBLICATION_DATE
+#define EXTRACTOR_PUBLICATION_DATE ((EXTRACTOR_KeywordType)71)
+#endif
+
 /**
  * Create a fresh MetaData token.
  */
@@ -51,6 +56,25 @@ void ECRS_freeMetaData(MetaData * md) {
        md->itemCount,
        0);
   FREE(md);
+}
+
+/**
+ * Add the current time as the publication date
+ * to the meta-data.
+ */
+void ECRS_addPublicationDateToMetaData(MetaData * md) {
+  char * dat;
+  TIME_T t;
+
+  TIME(&t);
+  ECRS_delFromMetaData(md,
+		       EXTRACTOR_PUBLICATION_DATE,
+		       NULL);
+  dat = GN_CTIME(&t);
+  ECRS_addToMetaData(md,
+		     EXTRACTOR_PUBLICATION_DATE,
+		     dat);
+  FREE(dat);
 }
 
 /**
@@ -119,7 +143,7 @@ int ECRS_getMetaData(const MetaData * md,
 
   sub = 0;
   for (i=md->itemCount-1;i>=0;i--) {
-    if (md->items[i].type !=  EXTRACTOR_THUMBNAIL_DATA) {
+    if (md->items[i].type != EXTRACTOR_THUMBNAIL_DATA) {
       if ( (iterator != NULL) &&
 	   (OK != iterator(md->items[i].type,
 			   md->items[i].data,
