@@ -404,6 +404,25 @@ int ECRS_isNamespaceURI(const struct ECRS_URI * uri) {
 }
 
 /**
+ * Get the (globally unique) name for the given
+ * namespace.
+ * @return the name (hash) of the namespace, caller
+ *  must free it.
+ */
+char * ECRS_getNamespaceName(const struct ECRS_URI * uri) {
+  char * ret;
+  
+  if (! ECRS_isNamespaceURI(uri)) {
+    BREAK();
+    return NULL;
+  }  
+  ret = MALLOC(sizeof(EncName));
+  hash2enc(&uri->data.sks.namespace,
+	   (EncName*)ret);
+  return ret;
+}
+
+/**
  * Is this a keyword URI?
  */
 int ECRS_isKeywordURI(const struct ECRS_URI * uri) {

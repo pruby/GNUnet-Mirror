@@ -9,7 +9,6 @@
 0.7.0pre0 [4'05] (aka "preview"):
 - AFS:
   a) complete libfsui:
-     - namespace creation
      - namespace updates
      - collections
   b) complete gnunet-afs-tools:

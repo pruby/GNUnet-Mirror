@@ -202,6 +202,15 @@ struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);
 int ECRS_isNamespaceURI(const struct ECRS_URI * uri);
 
 /**
+ * Get the (globally unique) name for the given
+ * namespace.
+ *
+ * @return the name (hash) of the namespace, caller
+ *  must free it.
+ */
+char * ECRS_getNamespaceName(const struct ECRS_URI * uri);
+
+/**
  * Is this a keyword URI?
  */
 int ECRS_isKeywordURI(const struct ECRS_URI * uri);
@@ -344,7 +353,7 @@ int ECRS_testNamespaceExists(const char * name,
 			     const HashCode160 * hc);
 
 /**
- * Delete a local namespace. Only prevents future insertions
+ * Delete a local namespace.  Only prevents future insertions
  * into the namespace, does not delete any content from
  * the network!
  *
@@ -353,7 +362,9 @@ int ECRS_testNamespaceExists(const char * name,
 int ECRS_deleteNamespace(const char * namespaceName); /* namespace.c */
 
 /**
- * Build a list of all available namespaces
+ * Build a list of all available local (!) namespaces
+ * The returned names are only the nicknames since
+ * we only iterate over the local namespaces.
  *
  * @param list where to store the names (is allocated, caller frees)
  * @return SYSERR on error, otherwise the number of pseudonyms in list
@@ -363,7 +374,8 @@ int ECRS_listNamespaces(char *** list); /* namespace.c */
 /**
  * Add an entry into a namespace.
  *
- * @param name in which namespace to publish
+ * @param name in which namespace to publish, use just the
+ *        nickname of the namespace
  * @param dst to which URI should the namespace entry refer?
  * @param md what meta-data should be associated with the
  *        entry?

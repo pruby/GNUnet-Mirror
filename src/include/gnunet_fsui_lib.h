@@ -280,7 +280,6 @@ typedef void (*FSUI_EventCallback)(void * cls,
  */
 typedef int (*FSUI_NamespaceIterator)(void * cls,
 				      const char * namespaceName,
-				      const HashCode160 * ns,
 				      const struct ECRS_MetaData * md,
 				      int rating);
 
@@ -558,14 +557,24 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
  * Change the ranking of a namespace.
  */
 int FSUI_rankNamespace(struct FSUI_Context * ctx,
-		       const HashCode160 * ns,
+		       const char * ns,
 		       int delta); /* namespace_info.c */
 
 /**
- * List all available (local) namespaces.
+ * Add a namespace to the set of known namespaces.
+ * For all namespace advertisements that we discover
+ * FSUI should automatically call this function.
  * 
- * @param local only list local namespaces (if NO, all
- *   known namespaces are listed)
+ * @param ns the namespace identifier
+ */
+void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
+			   const struct ECRS_MetaData * meta);
+
+/**
+ * List all available (local or non-local) namespaces.
+ * 
+ * @param local only list local namespaces (if NO, only
+ *   non-local known namespaces are listed)
  */
 int FSUI_listNamespaces(struct FSUI_Context * ctx,
 			int local,
@@ -579,16 +588,24 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
  * @param name in which namespace to publish
  * @param updateInterval the desired frequency for updates
  * @param lastId the ID of the last value (maybe NULL)
- * @param thisId the ID of the update
+ *        set if this is an update to an existing entry
+ * @param thisId the ID of the update (maybe NULL if
+ *        lastId determines the value or if no specific value
+ *        is desired)
+ * @param nextId the ID of the next update (maybe NULL);
+ *        set for sporadic updates if a specific next ID is
+ *        desired
  * @param dst to which URI should the namespace entry refer?
  * @param md what meta-data should be associated with the
  *        entry?
  * @param uri set to the resulting URI
  */
-int FSUI_addToNamespace(const char * name,
+int FSUI_addToNamespace(struct FSUI_Context * ctx,
+			const char * name,
 			cron_t updateInterval,
 			const HashCode160 * lastId,
 			const HashCode160 * thisId,
+			const HashCode160 * nextId,
 			const struct ECRS_URI * dst,
 			const struct ECRS_MetaData * md,
 			struct ECRS_URI ** uri); /* namespace_info.c */
@@ -596,7 +613,8 @@ int FSUI_addToNamespace(const char * name,
 /**
  * List all updateable content in a given namespace.
  */
-int FSUI_listNamespaceContent(const char * name,
+int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
+			      const char * name,
 			      FSUI_UpdateIterator iterator,
 			      void * closure); /* namespace_info.c */
 

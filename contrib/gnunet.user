@@ -46,9 +46,16 @@ HOST = localhost
 
 
 ################################################
-# Options for anonymous filesharing (AFS).
+# Options for filesharing (FS).
 ################################################
-[AFS]
+[FS]
+
+# Default priority for locally inserted content
+INSERT-PRIORITY = 50
+
+# Default expiration time for locally inserted content, in days
+# Default is 36500 (100 years)
+INSERT-EXPIRATION = 36500
 
 # How long should gnunet-search try to get an answer to a query before
 # timing out (in seconds).  Default is "3000", which should be enough
@@ -74,15 +81,6 @@ DOWNLOADDIR     = /tmp/gnunet-downloads/
 
 # Disable symlinking.
 DISABLE-SYMLINK = NO
-
-#################################################
-# Default options for the gnunet-insert tool
-#################################################
-[GNUNET-INSERT]
-
-# What is the initial priority of content that is locally inserted? 
-# Default is 65535 which is "very high".
-CONTENT-PRIORITY = 65535
 
 
 #################################################
