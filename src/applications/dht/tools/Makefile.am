@@ -40,6 +40,7 @@ dhttest_SOURCES = \
 dhttest_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/applications/dht/tools/libgnunetdht_api.la \
+  $(top_builddir)/src/applications/dht/module/libgnunetdht_datastore_memory.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \

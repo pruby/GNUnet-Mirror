@@ -502,7 +502,7 @@ int DHT_LIB_leave(DHT_TableId * table,
   MUTEX_UNLOCK(&lock);
   if (list == NULL) {
     LOG(LOG_WARNING,
-	_("Cannot leave DHT: table not known!"));
+	_("Cannot leave DHT: table not known!\n"));
     return SYSERR; /* no such table! */
   }
 
