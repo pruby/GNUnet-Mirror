@@ -263,7 +263,7 @@ int ECRS_uploadFile(const char * filename,
     iblocks[i]->size = htonl(sizeof(Datastore_Value));
     iblocks[i]->anonymityLevel = htonl(anonymityLevel);
     iblocks[i]->prio = htonl(priority);
-    iblocks[i]->type = htonl(I_BLOCK);
+    iblocks[i]->type = htonl(D_BLOCK);
     iblocks[i]->expirationTime = htonll(expirationTime);
   }
 

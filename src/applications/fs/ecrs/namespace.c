@@ -155,6 +155,7 @@ int ECRS_createNamespace(const char * name,
     value = MALLOC(sizeof(Datastore_Value) + 
 		   size);
     nb = (NBlock*) &value[1];
+    nb->type = htonl(N_BLOCK);
     mdsize = size - sizeof(NBlock);
     mdsize = ECRS_serializeMetaData(meta,
 				    (char*)&nb[1],
@@ -171,6 +172,7 @@ int ECRS_createNamespace(const char * name,
     value = MALLOC(sizeof(Datastore_Value) + 
 		   size);
     nb = (NBlock*) &value[1];
+    nb->type = htonl(N_BLOCK);
     ECRS_serializeMetaData(meta,
 			   (char*)&nb[1],
 			   mdsize,
@@ -213,6 +215,7 @@ int ECRS_createNamespace(const char * name,
   knvalue->type = htonl(KN_BLOCK);
   knvalue->size = htonl(sizeof(Datastore_Value) + size);
   knb = (KNBlock*) &knvalue[1];
+  knb->type = htonl(KN_BLOCK);
   memcpy(&knb->nblock,
 	 &nb,
 	 sizeof(NBlock) + mdsize);
@@ -378,6 +381,7 @@ int ECRS_addToNamespace(const char * name,
     value = MALLOC(sizeof(Datastore_Value) + 
 		   size);
     sb = (SBlock*) &value[1];
+    sb->type = htonl(S_BLOCK);
     memcpy(&sb[1],
 	   dstURI,
 	   strlen(dstURI) + 1);
@@ -396,6 +400,7 @@ int ECRS_addToNamespace(const char * name,
     value = MALLOC(sizeof(Datastore_Value) + 
 		   size);
     sb = (SBlock*) &value[1];
+    sb->type = htonl(S_BLOCK);
     memcpy(&sb[1],
 	   dstURI,
 	   strlen(dstURI) + 1);

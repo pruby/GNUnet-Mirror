@@ -71,8 +71,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       }
       rep = (ReplyContent*) ctx;
       size = ntohs(hdr->size) - sizeof(ReplyContent);
-      if (OK != getQueryFor(ntohl(rep->type),
-			    size,
+      if (OK != getQueryFor(size,
 			    (char*)&rep[1],
 			    &query)) {
 	BREAK();
@@ -251,7 +250,6 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
   ri->prio = block->prio;
   ri->expiration = block->expirationTime;
   ri->anonymityLevel = block->anonymityLevel;
-  ri->type = block->type;
   memcpy(&ri[1],
 	 &block[1],
 	 size);
@@ -328,7 +326,6 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
   rd = MALLOC(sizeof(RequestDelete) + size);
   rd->header.size = htons(sizeof(RequestDelete) + size);
   rd->header.type = htons(AFS_CS_PROTO_DELETE);
-  rd->type = block->type;
   memcpy(&rd[1],
 	 &block[1],
 	 size);

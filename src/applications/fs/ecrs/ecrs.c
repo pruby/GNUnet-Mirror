@@ -21,7 +21,7 @@
 /**
  * @file applications/fs/ecrs/ecrs.c
  * @brief ECRS helper functions
- * @see http://www.ovmj.org/GNUnet/encoding.php3
+ * @see http://gnunet.org/encoding.php3
  * @author Krista Bennett
  * @author Christian Grothoff
  */

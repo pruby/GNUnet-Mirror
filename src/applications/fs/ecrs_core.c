@@ -56,12 +56,15 @@ int fileBlockEncode(const char * data,
   hashToKey(&hc,
 	    &skey,
 	    &iv[0]);
-  val = MALLOC(sizeof(Datastore_Value) + len);
-  val->size = htonl(sizeof(Datastore_Value) + len);
-  val->type = htonl(ONDEMAND_BLOCK);
+  val = MALLOC(sizeof(Datastore_Value)
+	       + len + sizeof(DBlock));
+  val->size = htonl(sizeof(Datastore_Value) + 
+		    len + sizeof(DBlock));
+  val->type = htonl(D_BLOCK);
   val->prio = htonl(0);
   val->anonymityLevel = htonl(0);
   val->expirationTime = htonl(0);
+  ((DBlock*) &val[1])->type = htonl(D_BLOCK);
   GNUNET_ASSERT(len == encryptBlock(data,
 				    len,
 				    &skey,
@@ -117,23 +120,29 @@ void fileBlockGetQuery(const char * data,
   FREE(tmp);
 }
 
+unsigned int getTypeOfBlock(unsigned int size,
+			    const void * data) {
+  GNUNET_ASSERT(size > 4);
+  return *((const unsigned int*)data);
+}
+
 /**
  * What is the main query (the one that is used in routing and for the
  * DB lookup) for the given content and block type?
  *
- * @param type the type of the encoding
  * @param data the content (encoded)
  * @param query set to the query for the content
  * @return SYSERR if the content is invalid or
  *   the content type is not known
  */
-int getQueryFor(unsigned int type,
-		unsigned int size,
+int getQueryFor(unsigned int size,
 		const char * data,
 		HashCode160 * query) {  
+  unsigned int type;
+
+  type = getTypeOfBlock(size, data);
   switch (type) {
   case D_BLOCK: 
-  case I_BLOCK: 
     hash(data, size, query);
     return OK;  
   case S_BLOCK: {
@@ -224,8 +233,7 @@ int getQueryFor(unsigned int type,
  * Verify that the given Datum is a valid response
  * to a given query.
  *
- * @param type the type of the datum (and the query,
- *  this match was already confirmed)
+ * @param type the type of the query
  * @param size the size of the data
  * @param data the encoded data
  * @param keyCount the number of keys in the query
@@ -240,7 +248,12 @@ int isDatumApplicable(unsigned int type,
 		      unsigned int keyCount,
 		      const HashCode160 * keys) {
   HashCode160 hc;
-  if (OK != getQueryFor(type, size, data, &hc)) {
+
+  if (type != getTypeOfBlock(size, data)) {
+    BREAK();
+    return SYSERR; /* type mismatch */
+  }
+  if (OK != getQueryFor(size, data, &hc)) {
     BREAK(); /* malformed data */
     return SYSERR;
   }
@@ -273,7 +286,6 @@ int isDatumApplicable(unsigned int type,
     else
       return SYSERR;  
   case D_BLOCK:
-  case I_BLOCK:
   case K_BLOCK:
   case KN_BLOCK: 
     if (keyCount != 1)

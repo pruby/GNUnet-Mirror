@@ -113,11 +113,6 @@ typedef struct {
   cron_t expiration;
 
   /**
-   * Type of the content.
-   */
-  unsigned int type;
-
-  /**
    * What are the anonymity requirements for this content?
    * Use 0 if anonymity is not required (enables direct
    * sharing / DHT routing).
@@ -179,18 +174,11 @@ typedef struct {
 
 
 /**
- * Client to server: delete content.
- * This struct is followed by a variable
- * number of bytes of the content that is
- * to be deleted.
+ * Client to server: delete content.  This struct is followed by a
+ * variable number of bytes of the content that is to be deleted.
  */
 typedef struct {
   CS_HEADER header;
-
-  /**
-   * Type of the content.
-   */
-  unsigned int type;
 
 } RequestDelete;
 

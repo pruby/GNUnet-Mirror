@@ -297,7 +297,7 @@ int ECRS_unindexFile(const char * filename,
     iblocks[i]->size = htonl(sizeof(Datastore_Value));
     iblocks[i]->anonymityLevel = htonl(0);
     iblocks[i]->prio = htonl(0);
-    iblocks[i]->type = htonl(I_BLOCK);
+    iblocks[i]->type = htonl(D_BLOCK);
     iblocks[i]->expirationTime = htonll(0);
   }
 

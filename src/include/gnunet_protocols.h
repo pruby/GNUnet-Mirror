@@ -361,34 +361,29 @@
 #define ANY_BLOCK 0
 
 /**
- * Data block (leaf).
+ * Data block (leaf or inner block).
  */
 #define D_BLOCK 1
 
 /**
- * Inner block in a file tree.
- */
-#define I_BLOCK 2
-
-/**
  * Namespace binding (subspace entry)
  */
-#define S_BLOCK 3
+#define S_BLOCK 2
 
 /**
  * Keyword binding (entry in keyword space)
  */
-#define K_BLOCK 4
+#define K_BLOCK 3
 
 /**
  * Namespace advertisement.
  */
-#define N_BLOCK 5
+#define N_BLOCK 4
 
 /**
  * Namespace advertisement in keyword space.
  */
-#define KN_BLOCK 6
+#define KN_BLOCK 5
 
 /**
  * DHT String2String (for dht-query/dht-join).

@@ -41,16 +41,16 @@ typedef struct {
 } CHK;
 
 /**
- * @brief inner block
+ * @brief data block
  */
 typedef struct {
-  unsigned int crc32;
-} IBlock;
+  unsigned int type;
+} DBlock;
 
 typedef struct {
-  IBlock iblock;
+  DBlock iblock;
   CHK data[1];
-} IBlock_GENERIC;
+} IBlock;
 
 /**
  * @brief information required to download a file from GNUnet
@@ -75,6 +75,8 @@ typedef struct {
  * @brief keyword block (advertising data under a keyword)
  */
 typedef struct {
+  unsigned int type;
+
   Signature signature; /* 256 b */
   /**
    * Key generated (!) from the H(keyword) as the seed!
@@ -86,6 +88,8 @@ typedef struct {
 } KBlock;
 
 typedef struct {
+  unsigned int type;
+
   Signature signature; /* 256 b */
   /**
    * S = H(subspace); 264 b 
@@ -107,7 +111,10 @@ typedef struct {
 } SBlock;
 
 typedef struct {
+  unsigned int type;
+
   Signature signature; /* 256 b */
+
   PublicKey subspace; /* S = H(subspace); 264 b */
   /**
    * Must be all zeros 
@@ -132,6 +139,8 @@ typedef struct {
  * @brief keyword-NBlock (advertising namespace under a keyword)
  */
 typedef struct {
+  unsigned int type;
+
   KBlock kblock;
   NBlock nblock;
 } KNBlock;
@@ -175,6 +184,12 @@ void fileBlockGetKey(const char * data,
 		     HashCode160 * key);
 
 /**
+ * What is the type of the given block of data?
+ */
+unsigned int getTypeOfBlock(unsigned int size,
+			    const void * data);
+
+/**
  * What is the main query (the one that is used in
  * routing and for the DB lookup) for the given
  * content and block type?
@@ -185,8 +200,7 @@ void fileBlockGetKey(const char * data,
  * @return SYSERR if the content is invalid or
  *   the content type is not known
  */
-int getQueryFor(unsigned int type,
-		unsigned int size,
+int getQueryFor(unsigned int size,
 		const char * data,
 		HashCode160 * query);
 
@@ -194,8 +208,7 @@ int getQueryFor(unsigned int type,
  * Verify that the given Datum is a valid response
  * to a given query.
  *
- * @param type the type of the datum (and the query,
- *  this match was already confirmed)
+ * @param type the type of the queryo
  * @param size the size of the data
  * @param data the encoded data
  * @param keyCount the number of keys in the query

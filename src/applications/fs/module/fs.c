@@ -188,15 +188,15 @@ static int csHandleRequestInsert(ClientHandle sock,
   datum->expirationTime = ri->expiration;
   datum->prio = ri->prio;
   datum->anonymityLevel = ri->anonymityLevel;
-  datum->type = ri->type;
-  if (OK != getQueryFor(ntohl(ri->type),
-			ntohs(ri->header.size) - sizeof(RequestInsert),
+  if (OK != getQueryFor(ntohs(ri->header.size) - sizeof(RequestInsert),
 			(char*)&ri[1],
 			&query)) {
     BREAK();
     FREE(datum);
     return SYSERR;
   }
+  datum->type = htonl(getTypeOfBlock(ntohs(ri->header.size) - sizeof(RequestInsert),
+				     &ri[1]));
   MUTEX_LOCK(&lock);
   ret = datastore->put(&query,
 		       datum);
@@ -272,6 +272,7 @@ static int csHandleRequestDelete(ClientHandle sock,
   RequestDelete * rd;
   Datastore_Value * value;
   HashCode160 query;
+  unsigned int type;
   
   if (ntohs(req->size) < sizeof(RequestDelete)) {
     BREAK();
@@ -282,10 +283,11 @@ static int csHandleRequestDelete(ClientHandle sock,
 		 ntohs(req->size) - sizeof(RequestDelete));
   value->size = ntohl(sizeof(Datastore_Value) +
 		      ntohs(req->size) - sizeof(RequestDelete));
-  value->type = rd->type;
-  if (OK != getQueryFor(ntohl(rd->type),
-			ntohs(rd->header.size) - sizeof(RequestDelete),
-			(char*)&rd[1],
+  type = getTypeOfBlock(ntohs(rd->header.size) - sizeof(RequestDelete),
+			(const char*)&rd[1]);
+  value->type = htonl(type);
+  if (OK != getQueryFor(ntohs(rd->header.size) - sizeof(RequestDelete),
+			(const char*)&rd[1],
 			&query)) {
     FREE(value);
     BREAK();
@@ -293,7 +295,7 @@ static int csHandleRequestDelete(ClientHandle sock,
   }
   MUTEX_LOCK(&lock);
   if (SYSERR == datastore->get(&query,
-			       ntohl(rd->type),
+			       type,
 			       &completeValue,
 			       value)) /* aborted == found! */
     ret = datastore->del(&query,
@@ -519,7 +521,6 @@ static int gapGet(void * closure,
  */
 static int gapPut(void * closure,
 		  const HashCode160 * key,
-		  unsigned int type,
 		  const DataContainer * value,
 		  unsigned int prio) {
   Datastore_Value * dv;
@@ -538,9 +539,7 @@ static int gapPut(void * closure,
   size = ntohl(gw->dc.size) 
     - sizeof(GapWrapper) 
     + sizeof(Datastore_Value);
-  if ( (type != htonl(gw->type)) ||
-       (OK != getQueryFor(type,
-			  size - sizeof(Datastore_Value),
+  if ( (OK != getQueryFor(size - sizeof(Datastore_Value),
 			  (char*)&gw[1],
 			  &hc)) ||
        (! equalsHashCode160(&hc, key)) ) {
@@ -581,7 +580,6 @@ static int gapPut(void * closure,
  */
 static int gapDel(void * closure,
 		  const HashCode160 * key,
-		  unsigned int type,
 		  const DataContainer * value) {
   BREAK(); /* gap does not use 'del'! */
   return SYSERR;

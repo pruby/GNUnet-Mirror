@@ -872,7 +872,6 @@ static void issueRequest(RequestManager * rm,
   unsigned int priority;
   unsigned int mpriority;
   cron_t timeout;
-  unsigned int type;
   unsigned int ttl;
   int TTL_DECREMENT;
   static unsigned int lastmpriority;
@@ -945,13 +944,9 @@ static void issueRequest(RequestManager * rm,
     timeout = now + ttl;
   }
 
-  if (entry->node->level == 0)
-    type = D_BLOCK;
-  else
-    type = I_BLOCK;
   entry->searchHandle
     = FS_start_search(rm->sctx,
-		      type,
+		      D_BLOCK,
 		      1,
 		      &entry->node->chk.key,
 		      entry->node->ctx->anonymityLevel,
