@@ -107,7 +107,7 @@ int ECRS_delFromMetaData(MetaData * md,
 }
 
 /**
- * Iterate over MD entries
+ * Iterate over MD entries, excluding thumbnails.
  *
  * @return number of entries 
  */
@@ -115,14 +115,19 @@ int ECRS_getMetaData(const MetaData * md,
 		     ECRS_MetaDataIterator iterator,
 		     void * closure) {
   int i;
+  int sub;
 
+  sub = 0;
   if (iterator != NULL) 
-    for (i=md->itemCount-1;i>=0;i--) 
-      if (OK != iterator(md->items[i].type,
-			 md->items[i].data,
-			 closure))
-	return SYSERR;
-  return md->itemCount;
+    for (i=md->itemCount-1;i>=0;i--) {
+      if (md->items[i].type !=  EXTRACTOR_THUMBNAIL_DATA) {
+	if (OK != iterator(md->items[i].type,
+			   md->items[i].data,
+			   closure))
+	  return SYSERR;
+      } else
+	sub++;
+  return md->itemCount - sub;
 }
 
 /**
@@ -138,6 +143,81 @@ char * ECRS_getFromMetaData(const MetaData * md,
     if (type == md->items[i].type)
       return STRDUP(md->items[i].data);
   return NULL;
+}
+
+/**
+ * This function can be used to decode the binary data
+ * stream produced by the thumbnailextractor. 
+ *
+ * @param in 0-terminated string from the meta-data
+ * @return 1 on error, 0 on success
+ */
+static int decodeThumbnail(const unsigned char * in,
+			   unsigned char ** out,
+			   size_t * outSize) {
+  unsigned char * buf;
+  size_t pos;
+  size_t wpos;
+  unsigned char marker;
+  size_t i;
+  size_t end;
+  size_t inSize;
+  
+  inSize = strlen(in);
+  if (inSize == 0) {
+    *out = NULL;
+    *outSize = 0;
+    return 1;
+  }
+
+  buf = malloc(inSize); /* slightly more than needed ;-) */
+  *out = buf;
+  
+  pos = 0;
+  wpos = 0;
+  while (pos < inSize) {
+    end = pos + 255; /* 255 here: count the marker! */
+    if (end > inSize)
+      end = inSize;
+    marker = in[pos++];
+    for (i=pos;i<end;i++) 
+      buf[wpos++] = (in[i] == marker) ? 0 : in[i];
+    pos = end;
+  }
+  *outSize = wpos;
+  return 0;
+}
+
+/**
+ * Get a thumbnail from the meta-data (if present).
+ *
+ * @param thumb will be set to the thumbnail data.  Must be
+ *        freed by the caller!
+ * @return number of bytes in thumbnail, 0 if not available
+ */
+size_t ECRS_getThumbnailFromMetaData(const struct ECRS_MetaData * md,
+				     unsigned char ** thumb) {
+  char * encoded;
+  int ret;
+  size_t size;
+
+  encoded = ECRS_getFromMetaData(md,
+				 EXTRACTOR_THUMBNAIL_DATA);
+  if (encoded == NULL)
+    return 0;
+  if (strlen(encoded) == 0) {
+    FREE(encoded);
+    return 0; /* invalid */
+  }
+  *thumb = NULL;
+  ret = decodeThumbnail(encoded,
+			thumb,
+			&size);
+  FREE(encoded);
+  if (ret == 0)
+    return size;
+  else
+    return 0;
 }
 
 /**

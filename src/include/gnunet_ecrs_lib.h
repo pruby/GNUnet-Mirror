@@ -103,7 +103,8 @@ int ECRS_delFromMetaData(struct ECRS_MetaData * md,
 			 const char * data);
 
 /**
- * Iterate over MD entries
+ * Iterate over MD entries, excluding thumbnails.
+ *
  * @return number of entries 
  */
 int ECRS_getMetaData(const struct ECRS_MetaData * md,
@@ -117,6 +118,16 @@ int ECRS_getMetaData(const struct ECRS_MetaData * md,
  */
 char * ECRS_getFromMetaData(const struct ECRS_MetaData * md,
 			    EXTRACTOR_KeywordType type);
+
+/**
+ * Get a thumbnail from the meta-data (if present).
+ *
+ * @param thumb will be set to the thumbnail data.  Must be
+ *        freed by the caller!
+ * @return number of bytes in thumbnail, 0 if not available
+ */
+size_t ECRS_getThumbnailFromMetaData(const struct ECRS_MetaData * md,
+				     unsigned char ** thumb);
 		   
 /**
  * Extract meta-data from a file.  
