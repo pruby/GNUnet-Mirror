@@ -196,7 +196,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   }
 
   fn = getOnDemandFile(fileId);
-  if ( (0 != lstat(fn,
+  if ( (0 != LSTAT(fn,
 		   &sbuf)) 
 #ifdef S_ISLNK
        || (! S_ISLNK(sbuf.st_mode)) 
