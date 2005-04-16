@@ -307,9 +307,10 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
 
 /**
  * Lists all network interfaces in a combo box
- * Used by the Windows installer
+ * Used by the basic GTK configurator
+ * @param callback
  */
-int PopulateNICCombo(HWND hCombo)
+int ListNICs(void (*callback) (char *, int))
 {
   PMIB_IFTABLE pTable;
   PMIB_IPADDRTABLE pAddrTable;
@@ -334,6 +335,10 @@ int PopulateNICCombo(HWND hCombo)
       char szEntry[1001];
       DWORD dwIP = 0;
       int iItm;
+			PIP_ADAPTER_INFO pAdapterInfo;
+			PIP_ADAPTER_INFO pAdapter = NULL;
+			DWORD dwRetVal = 0;
+      
       /* Get IP-Address */
       int i;
       for(i = 0; i < pAddrTable->dwNumEntries; i++)
@@ -344,32 +349,63 @@ int PopulateNICCombo(HWND hCombo)
           break;
         }
       }
-      
+
       if (dwIP)
       {
         BYTE bPhysAddr[MAXLEN_PHYSADDR];
-  
+			  char *pszIfName = NULL;
+     
+	      /* Get friendly interface name */
+				pAdapterInfo = (IP_ADAPTER_INFO *) malloc(sizeof(IP_ADAPTER_INFO));
+				ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+				
+				/* Make an initial call to GetAdaptersInfo to get
+				   the necessary size into the ulOutBufLen variable */
+				if (GGetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
+				  free(pAdapterInfo);
+				  pAdapterInfo = (IP_ADAPTER_INFO *) malloc (ulOutBufLen); 
+				}
+				
+				if ((dwRetVal = GGetAdaptersInfo( pAdapterInfo, &ulOutBufLen)) == NO_ERROR) {
+				  pAdapter = pAdapterInfo;
+				  while (pAdapter) {
+				  	if (pTable->table[dwIfIdx].dwIndex == pAdapter->Index)
+				  	{
+				  		char szKey[251];
+				  		long lLen = 250;
+				  		
+				  		sprintf(szKey, "SYSTEM\\CurrentControlSet\\Control\\Network\\"
+				  			"{4D36E972-E325-11CE-BFC1-08002BE10318}\\%s\\Connection",
+				  			pAdapter->AdapterName);
+				  		pszIfName = (char *) malloc(251);
+				  		if (QueryRegistry(HKEY_LOCAL_MACHINE, szKey, "Name", pszIfName,
+				  			&lLen) != ERROR_SUCCESS)
+				  		{
+				  			free(pszIfName);
+				  			pszIfName = NULL;
+				  		}
+				  	}
+				    pAdapter = pAdapter->Next;
+				  }
+				}
+				free(pAdapterInfo);
+
+				/* Set entry */
         memset(bPhysAddr, 0, MAXLEN_PHYSADDR);
         memcpy(bPhysAddr,
           pTable->table[dwIfIdx].bPhysAddr,
           pTable->table[dwIfIdx].dwPhysAddrLen);
           
-        snprintf(szEntry, 1000, "%d.%d.%d.%d - %s - %I64u",
+        snprintf(szEntry, 1000, "%s (%d.%d.%d.%d - %I64u)",
+          pszIfName ? pszIfName : (char *) pTable->table[dwIfIdx].bDescr,
           PRIP(ntohl(dwIP)),
-          pTable->table[dwIfIdx].bDescr, *((unsigned long long *) bPhysAddr));
+          *((unsigned long long *) bPhysAddr));
         szEntry[1000] = 0;
-          
-        iItm = SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM) szEntry);
-        if (iItm == -1)        
-        {
-          GlobalFree(pAddrTable);
-          GlobalFree(pTable);
-
-          return NO;
-        }
-          
-        if (pAddrTable->table[dwIfIdx].dwIndex == dwExternalNIC)
-          SendMessage(hCombo, CB_SETCURSEL, iItm, 0);
+        
+        if (pszIfName)
+       		free(pszIfName);
+        
+        callback(szEntry, pAddrTable->table[dwIfIdx].dwIndex == dwExternalNIC);
       }
     }
     GlobalFree(pAddrTable);

@@ -347,6 +347,8 @@ typedef BOOL WINAPI (*TControlService) (SC_HANDLE hService, DWORD dwControl,
 typedef SC_HANDLE WINAPI (*TOpenService) (SC_HANDLE hSCManager, LPCTSTR lpServiceName,
                           DWORD dwDesiredAccess);
 typedef DWORD WINAPI (*TGetBestInterface) (IPAddr dwDestAddr, PDWORD pdwBestIfIndex);
+typedef DWORD WINAPI (*TGetAdaptersInfo) (PIP_ADAPTER_INFO pAdapterInfo, PULONG pOutBufLen);
+
 
 #define SetErrnoFromWinError(e) _SetErrnoFromWinError(e, __FILE__, __LINE__)
 
@@ -365,9 +367,13 @@ extern TStartServiceCtrlDispatcher GNStartServiceCtrlDispatcher;
 extern TControlService GNControlService;
 extern TOpenService GNOpenService;
 extern TGetBestInterface GNGetBestInterface;
+extern TGetAdaptersInfo GGetAdaptersInfo;
 
 BOOL CreateShortcut(const char *pszSrc, const char *pszDest);
 BOOL DereferenceShortcut(char *pszShortcut);
+long QueryRegistry(HKEY hMainKey, char *pszKey, char *pszSubKey,
+              char *pszBuffer, long *pdLength);
+int ListNICs(void (*callback) (char *, int));
 
 BOOL __win_IsHandleMarkedAsBlocking(SOCKET hHandle);
 void __win_SetHandleBlockingMode(SOCKET s, BOOL bBlocking);

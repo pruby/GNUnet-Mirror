@@ -24,8 +24,8 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
-const char conf_def_dir[] = "/etc/GNUnet/";
-const char conf_def_filename[] = ".config";
+const char conf_def_dir[] = "/etc/";
+const char conf_def_filename[] = "gnunet.conf";
 
 const char conf_defname[] = "defconfig";
 

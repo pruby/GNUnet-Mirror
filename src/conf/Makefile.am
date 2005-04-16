@@ -52,6 +52,14 @@ if HAVE_GTK
    gconf_support.c \
    gconf.c \
    images.c 
+   
+ gbasic_src = \
+   wizard_callbacks.h \
+   wizard_interface.h \
+   wizard_support.h \
+   wizard_callbacks.c \
+   wizard_interface.c \
+   wizard.c
 endif
 
 
@@ -67,6 +75,7 @@ gnunet_setup_SOURCES = \
  zconf_tab.c \
  $(mconf_src) \
  $(gconf_src) \
+ $(gbasic_src) \
  gnunet-setup.c
 
 gnunet_setup_LDFLAGS = \

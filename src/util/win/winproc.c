@@ -75,6 +75,7 @@ TStartServiceCtrlDispatcher GNStartServiceCtrlDispatcher;
 TControlService GNControlService;
 TOpenService GNOpenService;
 TGetBestInterface GNGetBestInterface;
+TGetAdaptersInfo GGetAdaptersInfo;
 
 BOOL __win_IsHandleMarkedAsBlocking(SOCKET hHandle)
 {
@@ -593,6 +594,8 @@ void InitWinEnv()
     GNGetIfTable = (TGetIfTable) GetProcAddress(hIphlpapi, "GetIfTable");
     GNGetBestInterface = (TGetBestInterface) GetProcAddress(hIphlpapi,
       "GetBestInterface");
+    GGetAdaptersInfo = (TGetAdaptersInfo) GetProcAddress(hIphlpapi,
+    	"GetAdaptersInfo");
   }
   else
   {
@@ -600,6 +603,7 @@ void InitWinEnv()
     GNGetIpAddrTable = NULL;
     GNGetIfTable = NULL;
     GNGetBestInterface = NULL;
+    GGetAdaptersInfo = NULL;
   }
 
   /* Service functions */
