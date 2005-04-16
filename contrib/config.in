@@ -17,7 +17,7 @@ menu "Meta-configuration" "Meta"
 		in some special cases. Detailed bug reports from people familiar
 		with the GNUnet internals are usually welcomed by the developers
 		(before submitting bug reports, please read the documents
-		<file://README> and <http://www.ovmj.org/GNUnet/faq.php3>.
+		<file://README> and <http://gnunet.org/faq.php3>.
   
   config ADVANCED
   bool "Show options for advanced users"
@@ -73,6 +73,17 @@ menu "General settings" "GNUNETD"
 		in the background, stderr is closed and all logs are discarded).
 		Default: LOGFILE         = $GNUNETD_HOME/logs
 
+	config KEEPLOG
+	string "How long logs should be kept"
+	default 0
+	depends on Meta::ADVANCED
+	help
+		How long should logs be kept? If you specify a value greater
+		than zero, a log is created each day with the date appended
+		to its filename. These logs are deleted after $KEEPLOG days.
+		To disable this function, set this setting to its default   
+		value 0.
+
   config PIDFILE
   string "Where should gnunetd write the PID"
   default "$GNUNET_HOME/gnunet.pid"
@@ -103,7 +114,7 @@ menu "General settings" "GNUNETD"
   config HOSTLISTURL
   string "Where can GNUnet find an initial list of peers"
   depends on Meta::ADVANCED
-  default "http://www.ovmj.org/GNUnet/download/hostlist http://gnunet.cryss.net/hostlist http://www.woodtick.co.uk/hostlist"
+  default "http://gnunet.org/hostlist"
   help
 		GNUnet can automatically update the hostlist from the web. While
 		GNUnet internally communicates which hosts are online, it is
@@ -121,7 +132,7 @@ menu "General settings" "GNUNETD"
 		
 		If you do not specify a HOSTLISTURL, you must copy valid hostkeys to
 		data/hosts manually.
-		Default: HOSTLISTURL = "http://www.ovmj.org/GNUnet/download/hostlist http://gnunet.cryss.net/hostlist http://www.woodtick.co.uk/hostlist"
+		Default: HOSTLISTURL = "http://gnunet.org/hostlist"
     
   config HTTP-PROXY
   string "HTTP Proxy Server"
@@ -142,29 +153,39 @@ menu "General settings" "GNUNETD"
   
   config APPLICATIONS
   string "Which applications should gnunetd support?"
-  default "afs tbench tracekit"
+  default "advertising topology fs getoption stats traffic"
   depends on Meta::ADVANCED
   help
 		Which applications should gnunetd support? Specify the name of the
 		dynamic shared object (DSO) that implements the service in the
 		gnunetd core here. Separate multiple modules with spaces.
+
+		Whenever this option is changed, you MUST run gnunet-update.
 		
 		Currently, the available applications are:
-		 afs: anonymous file sharing
-		 chat: broadcast chat (demo-application)
-		 tbench: benchmark tool for transport performance
-		 tracekit: GNUnet topology visualization toolkit
+		advertising: always load this one
+		topology: always load this one, too!
+		getoption: probably a good idea, too!
 		
-		All protocols but "afs" are potential security risks
+		stats: statistics - for gnunet-stats
+		traffic: traffic analysis 
+		fs: file sharing
+		chat: broadcast chat (demo-application)
+		tbench: benchmark tool for transport performance
+		tracekit: GNUnet topology visualization toolkit
+		
+		The chat, tbench and tracekit protocols are potential security risks
 		and have been engineered for testing GNUnet or demonstrating how
 		GNUnet works. They should be used with caution.
 		
-		Typical choices are: "afs chat tbench tracekit"
-		Default: APPLICATIONS = "afs tbench tracekit"
+		Using the fs tools for downloading may require the traffic module
+		to be loaded!
+		
+		Default: APPLICATIONS = "advertising topology fs getoption stats traffic"
   
   config TRANSPORTS
   string "Which transport mechanisms are available?"
-  default "udp tcp nat"
+  default "udp tcp http nat"
   depends on Meta::ADVANCED
   help
 		Which transport mechanisms are available? Use space-separated list
@@ -184,8 +205,8 @@ menu "General settings" "GNUNETD"
 		
 		Usually, the default is just fine for most people.
 		Choices are: "udp tcp udp6 tcp6 nat http smtp"
-		Default: TRANSPORTS = "udp tcp nat"
-  
+		Default: TRANSPORTS = "udp tcp http nat"
+
 endmenu
 
 menu "Network" "NETWORK"
