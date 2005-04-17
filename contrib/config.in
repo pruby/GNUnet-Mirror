@@ -209,6 +209,34 @@ menu "General settings" "GNUNETD"
 
 endmenu
 
+if Meta::ADVANCED	
+	menu "Modules" "MODULES"
+		config sqstore
+		string "Which database should be used?"
+		default "sqstore_sqlite"
+		help
+			Which database should be used?  The options
+			are "sqstore_sqlite" and "sqstore_mysql".
+			Default is "sqstore_sqlite".  You must run
+			gnunet-update after changing this value!
+			
+			In order to use sqstore_mysql, you must configure
+			the mysql database, which is non-trivial.
+			Read the file doc/README.mysql for how to setup
+			mysql.
+			The default is "sqstore_sqlite".
+	
+		config topology
+		string "Which topology should be used?"
+		default "topology_default"
+		help
+			Which topology should be used?  The only
+			option at the moment is "topology_default".
+			
+			The default is "topology_default"
+	endmenu
+endif
+
 menu "Network" "NETWORK"
   config PORT
   int "Client/Server Port"
@@ -223,14 +251,12 @@ menu "Network" "NETWORK"
 
   config INTERFACE
   string "Interface to probe for external IP"
-  default "eth0"
   help
 		Set if GNUnet fails to determine your IP.  GNUnet first tries to
 		determine your IP by looking at the IP that matches the interface
 		that is given with the option INTERFACE.
-		Under Windows, specify the index number reported by
+		Under Windows, specify the ID reported by
 		 "gnunet-win-tool -n"
-		Default: INTERFACE = eth0
   
   config IP
   string "Forced value of external IP or hostname"
@@ -270,7 +296,7 @@ menu "Network" "NETWORK"
   default "127.0.0.0/8;"
   depends on Meta::ADVANCED
   help
-	  	With this option, you can specify which networks are trusted enough
+	  With this option, you can specify which networks are trusted enough
 		to connect as clients to the TCP port.  This is useful if you run
 		gnunetd on one host of your network and want to allow all other
 		hosts to use this node as their server. By default, this is set to
@@ -303,7 +329,6 @@ menu "Resource limitations" "LOAD"
 
   config INTERFACES
   string "Network interface to monitor"
-  default "eth0"
   depends on Meta::ADVANCEDLIMITING
   help
 		For which interfaces should we do accounting?  GNUnet will evaluate
@@ -315,7 +340,6 @@ menu "Resource limitations" "LOAD"
 		won't work.
 		Under Windows, specify the index number reported by
 		 "gnunet-win-tool -n".
-		Default is: INTERFACES      = eth0
 
   config MAXNETDOWNBPSTOTAL
   int "Maximum download (bytes per second)"
@@ -358,7 +382,7 @@ menu "Transports" ""
 	  range 1 65535
 	  default 2086
 	  help
-	  		To which port does GNUnet bind? Default is 2086 and there is usually
+	  	To which port does GNUnet bind? Default is 2086 and there is usually
 			no reason to change that.
 
 	  config BLACKLIST
@@ -432,15 +456,6 @@ menu "Transports" ""
 			disposal :-)
 			Example (and default):
 			BLACKLIST = 127.0.0.1/8;192.168.0.0/16;10.0.0.0/255.0.0.0; 
-
-	  config MTU
-	  int "MTU"
-	  default 1460
-	  depends on Meta::RARE
-		help
-			The MTU to use (TCP is stream oriented, so we are pretty free to
-			choose what we want, but note that larger MTUs mean more noise if
-			traffic is low). Do not use less than 1200.  Default is 1460.
 	  
 	endmenu
 	
@@ -526,7 +541,7 @@ menu "Transports" ""
 	  	default 25
 	  	help
 		  	Port of the SMTP server for outbound mail.  If not specified, the
-			TCP/SMTP entry from /etc/services is consulted.  Default is 25.
+				TCP/SMTP entry from /etc/services is consulted.  Default is 25.
 
 		config SERVER
 		string "Hostname of the SMTP server"
@@ -576,11 +591,6 @@ menu "Transports" ""
 	  	range 1 65535
 	  	default 1080
 	  	
-		  config MTU
-		  int "MTU"
-		  default 1400
-		  depends on Meta::RARE
-		  
 		  config BLACKLIST
 		  string "Disallow connections from"
 		  default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"	  	
@@ -592,7 +602,7 @@ endmenu
 
 menu "Applications" ""
 
-	menu "Anonymous file sharing" "AFS"
+	menu "Anonymous file sharing" "FS"
 
 		config DISKQUOTA
 		int "MB of diskspace GNUnet can use for anonymous file sharing"
@@ -609,20 +619,6 @@ menu "Applications" ""
 			otherwise your databases will be inconsistent and gnunetd will
 			refuse to work.  Default is 1024 (1 GB)
 			
-		config DATABASETYPE
-		string "Type of database to be used for content"
-		default "gdbm"
-		help
-			Which database type should be used for content? Valid types are
-			"gdbm", "mysql", "tdb" and "directory". Specified type must have
-			been available at compile time. "directory" is available on all
-			systems but typically uses more space and can also be slower.  mysql
-			will require some additional setup of the database.
-			
-			Note that if you change the databaset type, you need to run
-			gnunet-convert, otherwise your databases will be
-			inconsistent (and gnunetd will refuse to work).  Default is gdbm.
-		
 		config ANONYMITY_RECEIVE
 		int "Level of anonymity desired for receiving"
 		default 0
@@ -675,7 +671,8 @@ menu "Applications" ""
 			The default is 0 and this should be fine for most users.
 
 		config ACTIVEMIGRATION
-		string "Allow migrating content"
+		bool "Allow migrating content"
+		default y
 		depends on Meta::ADVANCED
 		help
 			Should we participate in content migration?  If you say yes here,
@@ -713,12 +710,12 @@ menu "Applications" ""
 			database module already works well even if the db is full.]
 			Default is YES.
 
-		config AFSDIR
-		string "Directory for storing AFS data"
-		default "$GNUNET_HOME/data/afs/"
+		config DIR
+		string "Directory for storing FS data"
+		default "$GNUNET_HOME/data/fs/"
 		depends on Meta::ADVANCED
 		help
-			Where to store the AFS related data (content, etc)?
+			Where to store the FS related data (content, etc)?
 		
 		config INDEX-DIRECTORY
 		string "Where to store indexed files"
@@ -758,6 +755,22 @@ menu "Applications" ""
 	
 	if Meta::ADVANCED
 	
+		menu "MySQL" "MYSQL"
+			config DELAYED
+			bool "Delayed operations"
+			default n
+			help
+				If you suffer from too slow index/insert speeds, 
+				you might try to set this to YES for a small
+				efficiency boost.  If you run into any trouble
+				because of it, you're on your own.
+				Default: NO
+		endmenu
+		
+	endif
+	
+	if Meta::ADVANCED
+	
 		menu "GNUnet Testbed" "TESTBED"
 			
 			config REGISTERURL
@@ -793,6 +806,36 @@ menu "Applications" ""
 			
 		endmenu
 			
+	endif
+	
+	if Meta::RARE
+		menu "GAP" "GAP"
+			config TABLESIZE
+			int "Size of the routing table."
+			default 65536
+			help
+				Size of the routing table.
+				Default: 65536
+		endmenu
+	endif
+	
+	if Meta::EXPERIMENTAL
+		menu "DHT" "DHT"
+			config BUCKETCOUNT
+			int "Number of buckets to use"
+			default 160
+			help
+				Number of buckets to use (determines memory requirements)
+				Default (and maximum) is 160.
+
+			config MASTER-TABLE-SIZE
+			int "Amount of memory (in bytes) to use for the master table"
+			default 65536
+			help
+				Amount of memory (in bytes) to use for the master table
+				(table that caches table-to-peer mappings).
+				Default is 65536.
+		endmenu
 	endif
 	
 endmenu
