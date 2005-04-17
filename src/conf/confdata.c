@@ -30,11 +30,11 @@ const char conf_def_filename[] = "gnunet.conf";
 const char conf_defname[] = "defconfig";
 
 const char *conf_confnames[] = {
-	".config",
+				".config",
         "/tmp/.config",
-        "/etc/GNUnet/.config",
-	conf_defname,
-	NULL,
+        "/etc/gnunet.conf",
+				conf_defname,
+				NULL,
 };
 
 static char *conf_expand_value(const char *in)
