@@ -62,7 +62,7 @@ create_assi_step1 (void)
   gtk_widget_show (scoll_welcome);
   gtk_box_pack_start (GTK_BOX (vbox2), scoll_welcome, TRUE, TRUE, 0);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scoll_welcome),
-				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview11 = gtk_text_view_new ();
   gtk_widget_show (textview11);
@@ -74,7 +74,7 @@ create_assi_step1 (void)
   gtk_text_buffer_set_text (gtk_text_view_get_buffer
 			    (GTK_TEXT_VIEW (textview11)),
 			    _
-			    ("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions in order to configure GNUnet.\n\nPlease visit our homepage at http://www.gnunet.org/ and join our community at\nhttp://www.gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"),
+			    ("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions in order to configure GNUnet.\n\nPlease visit our homepage at\n\thttp://www.gnunet.org\nand join our community at\n\thttp://www.gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"),
 			    -1);
 
   hseparator2 = gtk_hseparator_new ();
@@ -214,7 +214,7 @@ create_assi_step2 (void)
   gtk_widget_show (scrolledwindow5);
   gtk_box_pack_start (GTK_BOX (vbox4), scrolledwindow5, TRUE, TRUE, 0);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow5),
-				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview8 = gtk_text_view_new ();
   gtk_widget_show (textview8);
@@ -231,7 +231,7 @@ create_assi_step2 (void)
 
   hseparator3 = gtk_hseparator_new ();
   gtk_widget_show (hseparator3);
-  gtk_box_pack_start (GTK_BOX (vbox4), hseparator3, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox4), hseparator3, FALSE, FALSE, 0);
 
   vbox5 = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox5);
@@ -241,7 +241,7 @@ create_assi_step2 (void)
   gtk_widget_show (vbox6);
   gtk_box_pack_start (GTK_BOX (vbox5), vbox6, TRUE, TRUE, 0);
 
-  table1 = gtk_table_new (2, 2, FALSE);
+  table1 = gtk_table_new (3, 2, FALSE);
   gtk_widget_show (table1);
   gtk_box_pack_start (GTK_BOX (vbox6), table1, TRUE, TRUE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (table1), 5);
@@ -278,8 +278,9 @@ create_assi_step2 (void)
     gtk_check_button_new_with_mnemonic (_
 					("Computer cannot receive inbound connections (SNAT/Firewall)"));
   gtk_widget_show (chkFW);
-  gtk_box_pack_start (GTK_BOX (vbox6), chkFW, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (chkFW), 5);
+  gtk_table_attach (GTK_TABLE (table1), chkFW, 0, 2, 2, 3,
+		    (GtkAttachOptions) (GTK_FILL),
+		    (GtkAttachOptions) (0), 0, 0);
 
   labelLimit = gtk_label_new (_("Network connection"));
   gtk_widget_show (labelLimit);
@@ -476,7 +477,7 @@ create_assi_step3 (void)
   gtk_widget_show (scrolledwindow6);
   gtk_box_pack_start (GTK_BOX (vbox8), scrolledwindow6, TRUE, TRUE, 0);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow6),
-				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview9 = gtk_text_view_new ();
   gtk_widget_show (textview9);
@@ -798,7 +799,7 @@ create_assi_step4 (void)
   gtk_widget_show (scrolledwindow7);
   gtk_box_pack_start (GTK_BOX (vbox13), scrolledwindow7, TRUE, TRUE, 0);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow7),
-				  GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview10 = gtk_text_view_new ();
   gtk_widget_show (textview10);
@@ -815,7 +816,7 @@ create_assi_step4 (void)
 
   hseparator5 = gtk_hseparator_new ();
   gtk_widget_show (hseparator5);
-  gtk_box_pack_start (GTK_BOX (vbox13), hseparator5, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox13), hseparator5, FALSE, FALSE, 0);
 
   vbox14 = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox14);

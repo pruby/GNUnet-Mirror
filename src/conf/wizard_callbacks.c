@@ -197,15 +197,22 @@ on_cmbNIC_changed (GtkComboBox * combobox, gpointer user_data)
 	GtkTreeIter iter;
 	GValue val;
 	char *entry, *idx;
-	char *dst, nic[21];
+	char *dst;
+#ifdef MINGW
+	char nic[21];
+#else
+	char *nic;
+#endif
 	struct symbol *sym;
 	GtkTreeModel *model;
 	
 	gtk_combo_box_get_active_iter(combobox, &iter);
 	model = gtk_combo_box_get_model(combobox);
+	memset(&val, 0, sizeof(val));
 	gtk_tree_model_get_value(model, &iter, 0, &val);
 	entry = (char *) g_value_get_string(&val);
 
+#ifdef MINGW
 	idx = strrchr(entry, '-');
 	if (! idx)
 		return;
@@ -214,7 +221,9 @@ on_cmbNIC_changed (GtkComboBox * combobox, gpointer user_data)
 	while(*idx)
 		*dst++ = *idx++;
 	dst[-1] = 0;
-	
+#else
+	nic = entry;
+#endif
 	sym = sym_lookup("INTERFACE", "NETWORK", 0);
 	sym_set_string_value(sym, nic);
 	sym = sym_lookup("INTERFACES", "LOAD", 0);
@@ -274,7 +283,6 @@ on_chkMigr_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 	struct symbol *sym = sym_lookup("ACTIVEMIGRATION", "AFS", 0);
 	sym_set_tristate_value(sym,
 		gtk_toggle_button_get_active(togglebutton) ? yes : no);
-printf("Hit: %i\n", gtk_toggle_button_get_active(togglebutton));
 }
 
 void

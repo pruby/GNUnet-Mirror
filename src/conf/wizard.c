@@ -61,7 +61,7 @@ void insert_nic(char *name, int defaultNIC)
   	
   	int niclen = strlen(nic);
   	int inslen = strlen(name);
-  	if (inslen > niclen)
+  	if (inslen >= niclen)
   	{
 #ifdef MINGW
   		if (strncmp(name + inslen - niclen - 1, nic, niclen) == 0)
@@ -77,7 +77,6 @@ void insert_nic(char *name, int defaultNIC)
   {
   	GtkTreeModel *model;
   	GtkTreeIter cur, last;
-  	
   	model = gtk_combo_box_get_model(GTK_COMBO_BOX(cmbNIC));
   	gtk_tree_model_get_iter_first(model, &cur);
   	last = cur;
@@ -106,18 +105,55 @@ void load_step2()
 	
 	cmbNIC = lookup_widget(table1, "cmbNIC");
 	entIP = lookup_widget(table1, "entIP");
-	chkFW = lookup_widget(vbox6, "chkFW");
+	chkFW = lookup_widget(table1, "chkFW");
 
 	sym = sym_find("INTERFACE", "NETWORK");
 	if (sym)
-	{
-		gtk_widget_set_usize(cmbNIC, 10, -1);
-		
+	{		
 #ifdef MINGW
 		ListNICs(insert_nic);
 #else
-		/* TODO: Other platforms! */
+		char entry[11], *dst;
+		FILE *f = popen("ifconfig", "r");
+		if (!f)
+			return;
+			
+		while(1)
+		{
+			int i = 0;
+			int c = fgetc(f);
+			
+			if (c == EOF)
+				break;
+
+			dst = entry;
+			
+			/* Read interface name until the first space (or colon under OS X) */
+			while (c != EOF && c != '\n' &&
+#ifdef OSX
+				c != ':'
+#else
+				c != ' '
 #endif
+				&& i < 10)
+			{
+				*dst++ = c;
+				i++;
+				c = fgetc(f);
+			}
+			*dst = 0;
+
+			if (entry[0])
+				insert_nic(entry, strcmp(entry, "eth0") == 0);
+
+			while(c != '\n' && c != EOF)
+				c = fgetc(f);
+		}
+
+		pclose(f);
+#endif
+
+		gtk_widget_set_usize(cmbNIC, 10, -1);
 	}
 
 	sym = sym_find("IP", "NETWORK");
@@ -244,9 +280,9 @@ int
 wizard_main (int argc, char *argv[])
 {
 #ifdef ENABLE_NLS
-  bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-  bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-  textdomain (GETTEXT_PACKAGE);
+  	setlocale (LC_ALL, "");
+		bindtextdomain(PACKAGE, LOCALEDIR);
+		textdomain(PACKAGE);
 #endif
 
   gtk_set_locale ();
