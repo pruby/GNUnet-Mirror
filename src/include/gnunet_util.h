@@ -2296,7 +2296,9 @@ void doneParseConfig();
  */
 #ifdef WINDOWS
 void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable);
-int PopulateNICCombo(HWND hCombo);
+int ListNICs(void (*callback) (char *, int));
+int InstallAsService();
+int UninstallService();
 #endif
 
 /* ifndef GNUNET_UTIL_H */

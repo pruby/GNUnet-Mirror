@@ -148,6 +148,104 @@ save_conf ()
 void
 on_finish_clicked (GtkButton * button, gpointer user_data)
 {
+#ifdef WINDOWS
+	if (doAutoStart)
+	{
+		if (IsWinNT())
+		{
+			char szErr[250];
+			
+			switch(InstallAsService())
+			{
+				case 0:
+				case 1:
+					break;
+				case 2:
+			    SetErrnoFromWinError(GetLastError());
+			    sprintf(szErr, _("Error: can't open Service Control Manager: %s\n"),
+			    	_win_strerror(errno));
+
+					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
+					return;
+				case 3:
+			    SetErrnoFromWinError(GetLastError());
+			    sprintf(szErr, _("Error: can't create service: %s\n"),
+			    	_win_strerror(errno));
+
+					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
+					return;
+				default:
+					MessageBox(GetActiveWindow(), _("Unknown error"), _("Error"),
+						MB_ICONSTOP | MB_OK);
+			}
+		}
+		else
+		{
+			char szPath[_MAX_PATH + 1];
+			conv_to_win_path("/bin/gnunetd.exe", szPath);
+			
+			if (RegSetValue(HKEY_LOCAL_MACHINE,
+				"Software\\Microsoft\\Windows\\CurrentVersion\\Run", REG_SZ, szPath, 
+				strlen(szPath)) != ERROR_SUCCESS)
+			{
+		  	MessageBox(GetActiveWindow(), _("Cannot write to the regisitry"),
+		  		_("Error"), MB_ICONSTOP | MB_OK);					
+			}
+		}
+	}
+	else
+	{
+		if (IsWinNT())
+		{
+			char szErr[250];
+			
+			switch (UninstallService())
+			{
+				case 0:
+				case 1:
+					break;
+				case 2:
+			    SetErrnoFromWinError(GetLastError());
+			    sprintf(szErr, _("Error: can't open Service Control Manager: %s\n"),
+			    	_win_strerror(errno));
+
+					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
+					return;
+				case 3:
+			    SetErrnoFromWinError(GetLastError());
+			    sprintf(szErr, _("Error: can't access the service: %s\n"),
+			    	_win_strerror(errno));
+
+					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
+					return;
+				case 4:
+			    SetErrnoFromWinError(GetLastError());
+			    sprintf(szErr, _("Error: can't delete the service: %s\n"),
+			    	_win_strerror(errno));
+
+					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
+					break;
+				default:
+					MessageBox(GetActiveWindow(), _("Unknown error"), _("Error"),
+						MB_ICONSTOP | MB_OK);								
+			}
+		}
+		else
+		{
+			HKEY hKey;
+			
+		  if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+		  	"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE,
+		  	&hKey) == ERROR_SUCCESS)
+		  {
+		    RegDeleteValue(hKey, "GNUnet");
+		
+		    RegCloseKey(hKey);
+		  }
+		}
+	}
+#endif
+	
 	if (save_conf())
 		gtk_widget_destroy(curwnd);
 }

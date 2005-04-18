@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001 - 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -101,39 +101,26 @@ void PrintAdapters()
  */
 void Install()
 {
-  HANDLE hManager, hService;
-  char szEXE[_MAX_PATH + 17] = "\"";
-
-  if (! GNOpenSCManager)
-  {
-    printf("This version of Windows doesn't support services.\n");
-    return;
-  }
-
-  conv_to_win_path("/bin/gnunetd.exe", szEXE + 1);
-  strcat(szEXE, "\" --win-service");
-  hManager = GNOpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
-  if (! hManager)
-  {
-    SetErrnoFromWinError(GetLastError());
-    printf("Error: can't open Service Control Manager: %s\n", _win_strerror(errno));
-    return;
-  }
-
-  hService = GNCreateService(hManager, "GNUnet", "GNUnet", 0,
-    SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, szEXE,
-    NULL, NULL, NULL, NULL, NULL);
-
-  if (! hService)
-  {
-    SetErrnoFromWinError(GetLastError());
-    printf("Error: can't create service: %s\n", _win_strerror(errno));
-    return;
-  }
-
-  GNCloseServiceHandle(hService);
-
-  printf("GNUnet service installed successfully.\n");
+	switch(InstallAsService())
+	{
+		case 0:
+			printf(_("GNUnet service installed successfully.\n"));
+			break;
+		case 1:
+			printf(_("This version of Windows doesn't support services.\n"));
+			break;
+		case 2:
+	    SetErrnoFromWinError(GetLastError());
+	    printf(_("Error: can't open Service Control Manager: %s\n"),
+	    	_win_strerror(errno));
+			break;
+		case 3:
+	    SetErrnoFromWinError(GetLastError());
+	    printf(_("Error: can't create service: %s\n"), _win_strerror(errno));
+			break;
+		default:
+			printf(_("Unknown error.\n"));			
+	}
 }
 
 /**
@@ -141,39 +128,30 @@ void Install()
  */
 void Uninstall()
 {
-  HANDLE hManager, hService;
-
-  if (! GNOpenSCManager)
-  {
-    printf("This version of Windows doesn't support services.\n");
-    return;
-  }
-
-  hManager = GNOpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
-  if (! hManager)
-  {
-    SetErrnoFromWinError(GetLastError());
-    printf("Error: can't open Service Control Manager: %s\n", _win_strerror(errno));
-    return;
-  }
-
-  if (! (hService = GNOpenService(hManager, "GNUnet", DELETE)))
-  {
-    SetErrnoFromWinError(GetLastError());
-    printf("Error: can't access service: %s\n", _win_strerror(errno));
-    return;
-  }
-
-  if (! GNDeleteService(hService))
-  {
-    SetErrnoFromWinError(GetLastError());
-    printf("Error: can't delete service: %s\n", _win_strerror(errno));
-    return;
-  }
-
-  GNCloseServiceHandle(hService);
-
-  printf("Service deleted.\n");
+	switch(UninstallService())
+	{
+		case 0:
+		  printf(_("Service deleted.\n"));
+			break;
+		case 1:
+			printf(_("This version of Windows doesn't support services.\n"));
+			break;
+		case 2:
+	    SetErrnoFromWinError(GetLastError());
+	    printf(_("Error: can't open Service Control Manager: %s\n"),
+	    	_win_strerror(errno));
+			break;
+		case 3:
+	    SetErrnoFromWinError(GetLastError());
+	    printf(_("Error: can't access service: %s\n"), _win_strerror(errno));
+			break;
+		case 4:
+	    SetErrnoFromWinError(GetLastError());
+	    printf(_("Error: can't delete service: %s\n"), _win_strerror(errno));
+			break;
+		default:
+			printf(_("Unknown error.\n"));
+	}
 }
 
 /**

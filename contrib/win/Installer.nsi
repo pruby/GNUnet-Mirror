@@ -5,10 +5,9 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.6.6-2"
+!define PRODUCT_VERSION "0.7"
 !define PRODUCT_PUBLISHER "GNU"
-!define PRODUCT_WEB_SITE "http://www.ovmj.org/GNUnet/"
-;!define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\gnunet-gtk.exe"
+!define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PRODUCT_STARTMENU_REGVAL "NSIS:StartMenuDir"
@@ -41,9 +40,6 @@ var ICONS_GROUP
 !insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
-; Configuration file
-Page custom InitStep1
-Page custom InitStep2 DoneStep2
 ; Finish page
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README"
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "ShowReadme"
@@ -68,187 +64,24 @@ InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
 
-Var LANGCODE
-Var STEP2_INI
-Var GNUNET_INI
-
-Function InitStep1
-  Push $R0
-  Push $R1
-  Push $R2
-
-  InstallOptions::initDialog /NOUNLOAD "$PLUGINSDIR\config_$LANGCODE_step1.ini"
-  Pop $R0
-
-  GetDlgItem $R1 $R0 1200 ;1200 + Field number - 1
-
-  ;$R1 contains the HWND of the first field
-  CreateFont $R2 "Tahoma" 14 700
-  SendMessage $R1 ${WM_SETFONT} $R2 0
-
-  GetDlgItem $R1 $R0 1203
-  SetCtlColors $R1 0xFF0000 transparent
-  
-  InstallOptions::show
-  Pop $R0
-
-  Pop $R2
-  Pop $R1
-  Pop $R0
-FunctionEnd
-
-Function InitStep2
-  StrCpy $STEP2_INI "$PLUGINSDIR\config_$LANGCODE_step2.ini"
-  StrCpy $GNUNET_INI "$INSTDIR\etc\gnunet.conf"
-
-  ReadINIStr $R0 $GNUNET_INI "LOAD" "MAXNETUPBPSTOTAL"
-  WriteINIStr $STEP2_INI "Field 4" "State" $R0
-  ReadINIStr $R0 $GNUNET_INI "LOAD" "MAXNETDOWNBPSTOTAL"
-  WriteINIStr $STEP2_INI "Field 6" "State" $R0
-  ReadINIStr $R0 $GNUNET_INI "LOAD" "BASICLIMITING"
-  StrCmp $R0 "YES" 0 adv_limit
-  WriteINIStr $STEP2_INI "Field 8" "State" "1"
-  WriteINIStr $STEP2_INI "Field 9" "State" "0"
-  goto ip
- adv_limit:
-  WriteINIStr $STEP2_INI "Field 8" "State" "0"
-  WriteINIStr $STEP2_INI "Field 9" "State" "1"
- ip:
-  ReadINIStr $R0 $GNUNET_INI "NETWORK" "IP"
-  WriteINIStr $STEP2_INI "Field 11" "State" $R0
-  ReadINIStr $R0 $GNUNET_INI "LOAD" "MAXCPULOAD"
-  WriteINIStr $STEP2_INI "Field 14" "State" $R0
-  ReadINIStr $R0 $GNUNET_INI "AFS" "ACTIVEMIGRATION"
-  StrCmp $R0 "YES" 0 no_mig
-  WriteINIStr $STEP2_INI "Field 15" "State" "1"
-  goto dialog
- no_mig:
-  WriteINIStr $STEP2_INI "Field 15" "State" "0"
- dialog:
-  FlushINI $STEP2_INI
- 
-  Push $R0
-  Push $R1
-  Push $R2
-
-  InstallOptions::initDialog /NOUNLOAD $STEP2_INI
-  Pop $R0
-
-  GetDlgItem $R1 $R0 1215 ;1200 + Field number - 1
-
-  SetOutPath "$INSTDIR\bin"
-  ;  Initialize DLL
-  System::Get "$INSTDIR\bin\libgnunetutil-0.dll::InitWinEnv() ? c"
-  Pop $0
-  System::Call "$0"
-
-  ;$R1 contains the handle of the NIC combo
-  System::Get "$INSTDIR\bin\libgnunetutil-0.dll::PopulateNICCombo(i $R1) ? c"
-  Pop $0
-  System::Call "$0"
-
-  ;  Unitialize DLL
-  System::Get "$INSTDIR\bin\libgnunetutil-0.dll::ShutdownWinEnv() ? c"
-  Pop $0
-  System::Call "$0"
-
-  InstallOptions::show
-  Pop $R0
-
-  Pop $R2
-  Pop $R1
-  Pop $R0
-FunctionEnd
-
-Function DoneStep2
-  ReadINIStr $R0 $STEP2_INI "Field 4" "State"
-  WriteINIStr $GNUNET_INI "LOAD" "MAXNETUPBPSTOTAL" $R0
-  ReadINIStr $R0 $STEP2_INI "Field 6" "State"
-  WriteINIStr $GNUNET_INI "LOAD" "MAXNETDOWNBPSTOTAL" $R0
-  ReadINIStr $R0 $STEP2_INI "Field 8" "State"
-  StrCmp $R0 "1" 0 adv_limit
-  WriteINIStr $GNUNET_INI "LOAD" "BASICLIMITING" "YES"
-  goto nw
- adv_limit:
-  WriteINIStr $GNUNET_INI "LOAD" "BASICLIMITING" "NO"
- nw:
-  ReadINIStr $R0 $STEP2_INI "Field 11" "State"
-  WriteINIStr $GNUNET_INI "NETWORK" "IP" '"$R0"'
-  ReadINIStr $R0 $STEP2_INI "Field 14" "State"
-  WriteINIStr $GNUNET_INI "LOAD" "MAXCPULOAD" $R0
-  ReadINIStr $R0 $STEP2_INI "Field 15" "State"
-  StrCmp $R0 "1" 0 no_mig
-  WriteINIStr $GNUNET_INI "AFS" "ACTIVEMIGRATION" "YES"
-  goto startup
- no_mig:
-  WriteINIStr $GNUNET_INI "AFS" "ACTIVEMIGRATION" "NO"
- startup:
-  ReadINIStr $R0 $STEP2_INI "Field 1" "State"
-  SetOutPath "$INSTDIR\bin"
-  StrCmp $R0 "1" 0 no_start
-  ;Check for NT
-  ClearErrors
-  ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
-  IfErrors startup_win9
-  ExecShell "" "gnunet-win-tool.exe" "-i" SW_SHOWMINIMIZED
-  goto db
- startup_win9:
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "GNUnet" "$INSTDIR\bin\gnunetd.exe"
-  goto db
- no_start:
-  ;Check for NT
-  ClearErrors
-  ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
-  IfErrors no_startup_win9
-  ExecShell "" "gnunet-win-tool.exe" "-u" SW_SHOWMINIMIZED
- no_startup_win9:
-  DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Run" "GNUnet"
- db:
-  WriteINIStr $GNUNET_INI "AFS" "DATABASETYPE" '"sqlite"'
-  ;Get NIC string
-  ReadINIStr $R0 $STEP2_INI "Field 16" "State"
-  ; load length into $R2
-  StrLen $R2 $R0
-  ; init counter $R1
-  StrCpy $R1 "0"
-  rd_idx:
-  ; inc counter $R1
-  IntOp $R1 $R1 + 1
-  ; we want to examine the last $R1 chars
-  IntOp $R4 $R2 - $R1
-  ; get the first char of the substring
-  StrCpy $R3 $R0 1 $R4
-  ; is it a space? yes: we have found the beginning of the NIC index
-  StrCmp $R3 " " 0 rd_idx
-  ; copy NIC index to $R3
-  IntOp $R4 $R4 + 1
-  IntOp $R1 $R1 - 1
-  StrCpy $R3 $R0 $R1 $R4
-
-  WriteINIStr $GNUNET_INI "NETWORK" "INTERFACE" '$R3'
-  WriteINIStr $GNUNET_INI "LOAD" "INTERFACES" '$R3'
-FunctionEnd
-
 Var USR_PROF
 Var DIRLEN
 
 Section "Core files" SEC01
   SetOutPath "$INSTDIR\bin"
   SetOverwrite ifnewer
-  File "C:\GNUnet\bin\gnunet-gtk.exe"
   File "gnu.ico"
   CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
-  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
-  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
-; Microsoft C Runtime
-; Redistribution is permitted, see Microsoft Knowledge Base Article 326922
-  File "C:\GNUnet\bin\msvcr70.dll"
+;  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
+;  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
+
+	; 3rd party
   File "C:\GNUnet\bin\libsqlite3-0.dll"
   File "C:\GNUnet\bin\pthreadGC1.dll"
-  File "C:\GNUnet\bin\libz.dll"
   File "C:\GNUnet\bin\libpng12.dll"
   File "C:\GNUnet\bin\libpango-1.0-0.dll"
   File "C:\GNUnet\bin\libpangowin32-1.0-0.dll"
+  File "C:\GNUnet\bin\libmysql.dll"
   File "C:\GNUnet\bin\libltdl-3.dll"
   File "C:\GNUnet\bin\libintl.dll"
   File "C:\GNUnet\bin\libgtk-win32-2.0-0.dll"
@@ -256,48 +89,67 @@ Section "Core files" SEC01
   File "C:\GNUnet\bin\libgthread-2.0-0.dll"
   File "C:\GNUnet\bin\libgobject-2.0-0.dll"
   File "C:\GNUnet\bin\libgmp.dll"
-  File "C:\GNUnet\bin\libgnunetutil-0.dll"
-  File "C:\GNUnet\bin\libgnunettransport_udp.dll"
-  File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
-  File "C:\GNUnet\bin\libgnunettransport_nat.dll"
-  File "C:\GNUnet\bin\libgnunettransport_http.dll"
-  File "C:\GNUnet\bin\libgnunettracekit_protocol.dll"
-  File "C:\GNUnet\bin\libgnunettbench_protocol.dll"
-  File "C:\GNUnet\bin\libgnunetchat_protocol.dll"
-  File "C:\GNUnet\bin\libgnunetafs_protocol.dll"
-  File "C:\GNUnet\bin\libgnunetafs_database_sqlite.dll"
-  File "C:\GNUnet\bin\libgnunetafs_database_directory.dll"
-  File "C:\GNUnet\bin\libgnunetafs_database_bdb.dll"
-  File "C:\GNUnet\bin\libgnunet_afs_esed2-0.dll"
   File "C:\GNUnet\bin\libgmodule-2.0-0.dll"
   File "C:\GNUnet\bin\libglib-2.0-0.dll"
   File "C:\GNUnet\bin\libgdk_pixbuf-2.0-0.dll"
   File "C:\GNUnet\bin\libgdk-win32-2.0-0.dll"
   File "C:\GNUnet\bin\libgdk-0.dll"
   File "C:\GNUnet\bin\libgcrypt.dll"
-  File "C:\GNUnet\bin\libdb.dll"  
   File "C:\GNUnet\bin\libatk-1.0-0.dll"
   File "C:\GNUnet\bin\intl.dll"
   File "C:\GNUnet\bin\iconv.dll"
   File "C:\GNUnet\bin\libiconv-2.dll"
-  File "C:\GNUnet\bin\gnunet-win-tool.exe"
-  File "C:\GNUnet\bin\gnunet-transport-check.exe"
-  File "C:\GNUnet\bin\gnunet-tracekit.exe"
-  File "C:\GNUnet\bin\gnunet-tbench.exe"
-  File "C:\GNUnet\bin\gnunet-update.exe"
-  File "C:\GNUnet\bin\gnunet-stats.exe"
-  File "C:\GNUnet\bin\gnunet-setup.exe"
-  File "C:\GNUnet\bin\gnunet-search.exe"
-  File "C:\GNUnet\bin\gnunet-pseudonym.exe"
-  File "C:\GNUnet\bin\gnunet-peer-info.exe"
-  File "C:\GNUnet\bin\gnunet-insert.exe"
-  File "C:\GNUnet\bin\gnunet-download.exe"
-  File "C:\GNUnet\bin\gnunet-directory.exe"
-  File "C:\GNUnet\bin\gnunet-delete.exe"
-  File "C:\GNUnet\bin\gnunetd.exe"
-  File "C:\GNUnet\bin\gnunet-convert.exe"
-  File "C:\GNUnet\bin\gnunet-check.exe"
-  File "C:\GNUnet\bin\gnunet-chat.exe"
+
+	; GNUnet
+	File "C:\GNUnet\bin\gnunetd.exe"
+	File "C:\GNUnet\bin\gnunet-directory.exe"
+	File "C:\GNUnet\bin\gnunet-download.exe"
+	File "C:\GNUnet\bin\gnunet-insert.exe"
+	File "C:\GNUnet\bin\gnunet-peer-info.exe"
+	File "C:\GNUnet\bin\gnunet-pseudonym.exe"
+	File "C:\GNUnet\bin\gnunet-search.exe"
+	File "C:\GNUnet\bin\gnunet-setup.exe"
+	File "C:\GNUnet\bin\gnunet-stats.exe"
+	File "C:\GNUnet\bin\gnunet-tbench.exe"
+	File "C:\GNUnet\bin\gnunet-tracekit.exe"
+	File "C:\GNUnet\bin\gnunet-transport-check.exe"
+	File "C:\GNUnet\bin\gnunet-unindex.exe"
+	File "C:\GNUnet\bin\gnunet-update.exe"
+	File "C:\GNUnet\bin\gnunet-win-tool.exe"
+	
+	File "C:\GNUnet\bin\libgnunetcore-0.dll"
+	File "C:\GNUnet\bin\libgnunetdht_datastore_memory-0.dll"
+	File "C:\GNUnet\bin\libgnunetecrs-0.dll"
+	File "C:\GNUnet\bin\libgnunetfs-0.dll"
+	File "C:\GNUnet\bin\libgnunetfsui-0.dll"
+	File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_bootstrap.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_datastore.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_fragmentation.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_fs.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_gap.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_getoption.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_identity.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_pingpong.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_rpc.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_rpc_util-0.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_session.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_sqstore_mysql.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_sqstore_sqlite.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_stats.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_tbench.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_topology_default.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_tracekit.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_traffic_api-0.dll"
+	File "C:\GNUnet\bin\libgnunetmodule_transport.dll"
+	File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
+	File "C:\GNUnet\bin\libgnunettransport_http.dll"
+	File "C:\GNUnet\bin\libgnunettransport_nat.dll"
+	File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
+	File "C:\GNUnet\bin\libgnunettransport_udp.dll"
+	File "C:\GNUnet\bin\libgnunetutil-1.dll"
+
   SetOutPath "$INSTDIR\"
   File "C:\GNUnet\README"
   File "C:\GNUnet\PLATFORMS"
@@ -345,60 +197,15 @@ Section "Configuration files" SEC02
   Rename "$USR_PROF\gnunet.user" "$USR_PROF\gnunet.conf"
 SectionEnd
 
-Section "Extractor" SEC03
-  SetOutPath "$INSTDIR\bin"
-  SetOverwrite ifnewer
-  File "c:\GNUnet\bin\extract.exe"
-  File "c:\GNUnet\bin\libextractor-1.dll"
-  File "c:\GNUnet\bin\libextractor_asf.dll"
-  File "c:\GNUnet\bin\libextractor_deb.dll"
-  File "c:\GNUnet\bin\libextractor_dvi.dll"
-  File "c:\GNUnet\bin\libextractor_elf.dll"
-  File "c:\GNUnet\bin\libextractor_filename.dll"
-  File "c:\GNUnet\bin\libextractor_gif.dll"
-  File "c:\GNUnet\bin\libextractor_hash_md5.dll"
-  File "c:\GNUnet\bin\libextractor_hash_rmd160.dll"
-  File "c:\GNUnet\bin\libextractor_hash_sha1.dll"
-  File "c:\GNUnet\bin\libextractor_html.dll"
-  File "c:\GNUnet\bin\libextractor_id3v2.dll"
-  File "c:\GNUnet\bin\libextractor_id3v23.dll"
-  File "c:\GNUnet\bin\libextractor_id3v24.dll"
-  File "c:\GNUnet\bin\libextractor_jpeg.dll"
-  File "c:\GNUnet\bin\libextractor_lower.dll"
-  File "c:\GNUnet\bin\libextractor_man.dll"
-  File "c:\GNUnet\bin\libextractor_mime.dll"
-  File "c:\GNUnet\bin\libextractor_mp3.dll"
-  File "c:\GNUnet\bin\libextractor_mpeg.dll"
-  File "c:\GNUnet\bin\libextractor_ole2.dll"
-  File "c:\GNUnet\bin\libextractor_oo.dll"
-  File "c:\GNUnet\bin\libextractor_pdf.dll"
-  File "c:\GNUnet\bin\libextractor_png.dll"
-  File "c:\GNUnet\bin\libextractor_printable_da.dll"
-  File "c:\GNUnet\bin\libextractor_printable_de.dll"
-  File "c:\GNUnet\bin\libextractor_printable_en.dll"
-  File "c:\GNUnet\bin\libextractor_printable_es.dll"
-  File "c:\GNUnet\bin\libextractor_printable_it.dll"
-  File "c:\GNUnet\bin\libextractor_printable_no.dll"
-  File "c:\GNUnet\bin\libextractor_ps.dll"
-  File "c:\GNUnet\bin\libextractor_qt.dll"
-  File "c:\GNUnet\bin\libextractor_real.dll"
-  File "c:\GNUnet\bin\libextractor_riff.dll"
-  File "c:\GNUnet\bin\libextractor_rpm.dll"
-  File "c:\GNUnet\bin\libextractor_split.dll"
-  File "c:\GNUnet\bin\libextractor_tar.dll"
-  File "c:\GNUnet\bin\libextractor_tiff.dll"
-  File "c:\GNUnet\bin\libextractor_wav.dll"
-  File "c:\GNUnet\bin\libextractor_zip.dll"
-SectionEnd
-
 Section "DHT" Sec04
   File "c:\GNUnet\bin\gnunet-dht-join.exe"
   File "c:\GNUnet\bin\gnunet-dht-query.exe"
-  File "c:\GNUnet\bin\libgnunetdht_api-0.dll"
-  File "c:\GNUnet\bin\libgnunetdht_datastore_memory-0.dll"
-  File "c:\GNUnet\bin\libgnunetdht_protocol.dll"
-  File "c:\GNUnet\bin\libgnunetrpc_protocol.dll"
-  File "c:\GNUnet\bin\libgnunetrpc_util-0.dll"
+SectionEnd
+
+Section "Chat" Sec05
+  SetOutPath "$INSTDIR\bin\"
+	File "c:\GNUnet\bin\gnunet-chat.exe"
+	File "C:\GNUnet\bin\libgnunetmodule_chat.dll"
 SectionEnd
 
 Section -AdditionalIcons
@@ -409,7 +216,6 @@ SectionEnd
 
 Section -Post
   WriteUninstaller "$INSTDIR\uninst.exe"
-;  WriteRegStr HKLM "${PRODUCT_DIR_REGKEY}" "" "$INSTDIR\bin\gnunet-gtk.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\bin\gnu.ico"
@@ -418,32 +224,19 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   WriteRegStr HKLM "Software\GNU\GNUnet" "InstallDir" "$INSTDIR"
-  WriteRegStr HKLM "Software\GNU\libextractor" "InstallDir" "$INSTDIR"
 SectionEnd
 
 ; Section descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "Required by GNUnet"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "GNUnet configuration files"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "Component to extract meta-data from files"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "Distributed HashTables. Experimental."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC05} "Chat. Experimental."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
 Function .onInit
   InitPluginsDir
-  
-  StrCmp $LANGUAGE "1031" 0 english
-  StrCpy $LANGCODE "de"
-  goto cp
- english:
-  StrCpy $LANGCODE "en"
-
- cp:
-  File /oname=$PLUGINSDIR\config_en_step1.ini config_en_step1.ini
-  File /oname=$PLUGINSDIR\config_en_step2.ini config_en_step2.ini
-  File /oname=$PLUGINSDIR\config_de_step1.ini config_de_step1.ini
-  File /oname=$PLUGINSDIR\config_de_step2.ini config_de_step2.ini
 FunctionEnd
 
 
@@ -505,8 +298,6 @@ Section Uninstall
   Delete "$INSTDIR\bin\intl.dll"
   Delete "$INSTDIR\bin\libatk-1.0-0.dll"
   Delete "$INSTDIR\bin\libcharset.dll"
-  Delete "$INSTDIR\bin\libdb.dll"
-  Delete "$INSTDIR\bin\libeay32-0.dll"
   Delete "$INSTDIR\bin\libgcrypt.dll"
   Delete "$INSTDIR\bin\libgdbm-2.dll"
   Delete "$INSTDIR\bin\libgdk-0.dll"
@@ -536,6 +327,7 @@ Section Uninstall
   Delete "$INSTDIR\bin\libgtk-win32-2.0-0.dll"
   Delete "$INSTDIR\bin\libintl.dll"
   Delete "$INSTDIR\bin\libltdl-3.dll"
+  Delete "$INSTDIR\bin\libmysql.dll"
   Delete "$INSTDIR\bin\libpango-1.0-0.dll"
   Delete "$INSTDIR\bin\libpangowin32-1.0-0.dll"
   Delete "$INSTDIR\bin\libpng12.dll"
@@ -549,50 +341,6 @@ Section Uninstall
   Delete "$INSTDIR\bin\gnunet-gtk.exe"
   Delete "$INSTDIR\bin\gnu.ico"
   
-  Delete "$INSTDIR\bin\extract.exe"
-  Delete "$INSTDIR\bin\libextractor-0.dll"
-  Delete "$INSTDIR\bin\libextractor-1.dll"
-  Delete "$INSTDIR\bin\libextractor_asf.dll"
-  Delete "$INSTDIR\bin\libextractor_deb.dll"
-  Delete "$INSTDIR\bin\libextractor_dvi.dll"
-  Delete "$INSTDIR\bin\libextractor_elf.dll"
-  Delete "$INSTDIR\bin\libextractor_filename.dll"
-  Delete "$INSTDIR\bin\libextractor_gif.dll"
-  Delete "$INSTDIR\bin\libextractor_hash_md5.dll"
-  Delete "$INSTDIR\bin\libextractor_hash_rmd160.dll"
-  Delete "$INSTDIR\bin\libextractor_hash_sha1.dll"
-  Delete "$INSTDIR\bin\libextractor_html.dll"
-  Delete "$INSTDIR\bin\libextractor_id3v2.dll"
-  Delete "$INSTDIR\bin\libextractor_id3v23.dll"
-  Delete "$INSTDIR\bin\libextractor_id3v24.dll"
-  Delete "$INSTDIR\bin\libextractor_jpeg.dll"
-  Delete "$INSTDIR\bin\libextractor_lower.dll"
-  Delete "$INSTDIR\bin\libextractor_man.dll"
-  Delete "$INSTDIR\bin\libextractor_mime.dll"
-  Delete "$INSTDIR\bin\libextractor_mp3.dll"
-  Delete "$INSTDIR\bin\libextractor_mpeg.dll"
-  Delete "$INSTDIR\bin\libextractor_ole2.dll"
-  Delete "$INSTDIR\bin\libextractor_oo.dll"
-  Delete "$INSTDIR\bin\libextractor_pdf.dll"
-  Delete "$INSTDIR\bin\libextractor_png.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_da.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_de.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_en.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_es.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_it.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_no.dll"
-  Delete "$INSTDIR\bin\libextractor_ps.dll"
-  Delete "$INSTDIR\bin\libextractor_qt.dll"
-  Delete "$INSTDIR\bin\libextractor_real.dll"
-  Delete "$INSTDIR\bin\libextractor_riff.dll"
-  Delete "$INSTDIR\bin\libextractor_rpm.dll"
-  Delete "$INSTDIR\bin\libextractor_split.dll"
-  Delete "$INSTDIR\bin\libextractor_tar.dll"
-  Delete "$INSTDIR\bin\libextractor_tiff.dll"
-  Delete "$INSTDIR\bin\libextractor_util-0.dll"
-  Delete "$INSTDIR\bin\libextractor_wav.dll"
-  Delete "$INSTDIR\bin\libextractor_zip.dll"
-
   Delete "$INSTDIR\bin\dht-create.exe"
   Delete "$INSTDIR\bin\dht-fetch.exe"
   Delete "$INSTDIR\bin\dht-insert.exe"
@@ -659,6 +407,5 @@ Section Uninstall
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 ;  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
   DeleteRegKey HKLM "Software\GNU\GNUnet"
-  DeleteRegKey HKLM "Software\GNU\libextractor"
   SetAutoClose true
 SectionEnd

@@ -253,7 +253,6 @@ void load_step4()
 	chkStart = lookup_widget(vbox14, "chkStart");
 	chkEnh = lookup_widget(vbox14, "chkEnh");
 	
-	
 	sym = sym_find("DISKQUOTA", "FS");
 	if (sym)
 	{

@@ -415,6 +415,69 @@ int ListNICs(void (*callback) (char *, int))
   return YES;
 }
 
+/**
+ * @brief Installs the Windows service
+ * @returns 0 on success
+ *          1 if the Windows version doesn't support services
+ *          2 if the SCM could not be opened
+ *          3 if the service could not be created
+ */
+int InstallAsService()
+{
+  SC_HANDLE hManager, hService;
+  char szEXE[_MAX_PATH + 17] = "\"";
+
+  if (! GNOpenSCManager)
+    return 1;
+
+  conv_to_win_path("/bin/gnunetd.exe", szEXE + 1);
+  strcat(szEXE, "\" --win-service");
+  hManager = GNOpenSCManager(NULL, NULL, SC_MANAGER_CREATE_SERVICE);
+  if (! hManager)
+    return 2;
+
+  hService = GNCreateService(hManager, "GNUnet", "GNUnet", 0,
+    SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, szEXE,
+    NULL, NULL, NULL, NULL, NULL);
+
+  if (! hService)
+    return 3;
+
+  GNCloseServiceHandle(hService);
+
+  return 0;
+}
+
+/**
+ * @brief Uninstall Windows service
+ * @returns 0 on success
+ *          1 if the Windows version doesn't support services
+ *          2 if the SCM could not be openend
+ *          3 if the service cannot be accessed
+ *          4 if the service cannot be deleted
+ */
+int UninstallService()
+{
+  SC_HANDLE hManager, hService;
+
+  if (! GNOpenSCManager)
+    return 1;
+
+  hManager = GNOpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+  if (! hManager)
+    return 2;
+
+  if (! (hService = GNOpenService(hManager, "GNUnet", DELETE)))
+    return 3;
+
+  if (! GNDeleteService(hService))
+    return 4;
+
+  GNCloseServiceHandle(hService);
+
+	return 0;
+}
+
 }
 
 #endif
