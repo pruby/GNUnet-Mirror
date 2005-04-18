@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-04-05 13:34-0500\n"
+"POT-Creation-Date: 2005-04-18 14:12-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -429,58 +429,58 @@ msgstr ""
 msgid "Could not send message to gnunetd\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:157
+#: src/applications/advertising/advertising.c:156
 #, c-format
 msgid "HELO message from '%s' invalid (signature invalid). Dropping.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:163
+#: src/applications/advertising/advertising.c:162
 msgid "HELO message received invalid (expiration time over limit). Dropping.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:172
+#: src/applications/advertising/advertising.c:171
 #, c-format
 msgid "HELO advertisement for protocol %d received.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:298
+#: src/applications/advertising/advertising.c:297
 msgid "Could not send HELOs+PING, ping buffer full.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:450
+#: src/applications/advertising/advertising.c:449
 #, c-format
 msgid "Advertising my transport %d to selected peers.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:457
+#: src/applications/advertising/advertising.c:456
 msgid ""
 "Announcing ourselves pointless: no other peers are known to us so far.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:542
+#: src/applications/advertising/advertising.c:541
 #, c-format
 msgid "Removing HELO from peer '%s' (expired %ds ago).\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:700
+#: src/applications/advertising/advertising.c:699
 msgid "# Peer advertisements received"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:701
+#: src/applications/advertising/advertising.c:700
 msgid "# Self advertisments transmitted"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:702
+#: src/applications/advertising/advertising.c:701
 msgid "# Foreign advertisements forwarded"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:706
+#: src/applications/advertising/advertising.c:705
 #: src/applications/session/connect.c:674
 #, c-format
 msgid "'%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:725
+#: src/applications/advertising/advertising.c:724
 msgid "Network advertisements disabled by configuration!\n"
 msgstr ""
 
@@ -2208,33 +2208,38 @@ msgstr ""
 msgid "Template for gnunet-clients."
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:88
+#: src/applications/bootstrap_http/http.c:97
+#, c-format
+msgid "Invalid port \"%s\" in hostlist specification, trying port %d.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:108
 #, c-format
 msgid "'%s' failed at %s:%d with error: '%s'.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:101
+#: src/applications/bootstrap_http/http.c:121
 #, c-format
 msgid "Could not download list of peer contacts, host '%s' unknown.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:123
-#: src/applications/bootstrap_http/http.c:147
+#: src/applications/bootstrap_http/http.c:143
+#: src/applications/bootstrap_http/http.c:169
 #, c-format
 msgid "'%s' to '%s' failed at %s:%d with error: %s\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:183
+#: src/applications/bootstrap_http/http.c:205
 #, c-format
 msgid "Parsing HTTP response for URL '%s' failed.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:218
+#: src/applications/bootstrap_http/http.c:240
 #, c-format
 msgid "Parsing HELO from '%s' failed.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:290
+#: src/applications/bootstrap_http/http.c:312
 #, c-format
 msgid "Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"
 msgstr ""
@@ -2321,16 +2326,16 @@ msgstr ""
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr ""
 
-#: src/server/connection.c:1984
+#: src/server/connection.c:1976
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:1999
+#: src/server/connection.c:1991
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:2129
+#: src/server/connection.c:2121
 msgid "Session confirmed, but cannot connect! (bug?)"
 msgstr ""
 

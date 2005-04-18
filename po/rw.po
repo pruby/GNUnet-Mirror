@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-04-05 13:34-0500\n"
+"POT-Creation-Date: 2005-04-18 14:12-0500\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -570,62 +570,62 @@ msgstr "OYA Kohereza Ubutumwa Kuri"
 msgid "Could not send message to gnunetd\n"
 msgstr "OYA Kohereza Ubutumwa Kuri"
 
-#: src/applications/advertising/advertising.c:157
+#: src/applications/advertising/advertising.c:156
 #, fuzzy, c-format
 msgid "HELO message from '%s' invalid (signature invalid). Dropping.\n"
 msgstr "Ubutumwa Bivuye Sibyo Isinya Sibyo"
 
-#: src/applications/advertising/advertising.c:163
+#: src/applications/advertising/advertising.c:162
 #, fuzzy
 msgid "HELO message received invalid (expiration time over limit). Dropping.\n"
 msgstr "Ubutumwa BYAKIRIWE Sibyo Igihe KURI"
 
-#: src/applications/advertising/advertising.c:172
+#: src/applications/advertising/advertising.c:171
 #, fuzzy, c-format
 msgid "HELO advertisement for protocol %d received.\n"
 msgstr "kugirango Porotokole BYAKIRIWE"
 
-#: src/applications/advertising/advertising.c:298
+#: src/applications/advertising/advertising.c:297
 #, fuzzy
 msgid "Could not send HELOs+PING, ping buffer full.\n"
 msgstr "OYA Kohereza"
 
-#: src/applications/advertising/advertising.c:450
+#: src/applications/advertising/advertising.c:449
 #, fuzzy, c-format
 msgid "Advertising my transport %d to selected peers.\n"
 msgstr "Kuri Byahiswemo"
 
-#: src/applications/advertising/advertising.c:457
+#: src/applications/advertising/advertising.c:456
 #, fuzzy
 msgid ""
 "Announcing ourselves pointless: no other peers are known to us so far.\n"
 msgstr "Oya Ikindi Kuri RW"
 
-#: src/applications/advertising/advertising.c:542
+#: src/applications/advertising/advertising.c:541
 #, fuzzy, c-format
 msgid "Removing HELO from peer '%s' (expired %ds ago).\n"
 msgstr "Bivuye Byarengeje igihe"
 
-#: src/applications/advertising/advertising.c:700
+#: src/applications/advertising/advertising.c:699
 #, fuzzy
 msgid "# Peer advertisements received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/advertising/advertising.c:701
+#: src/applications/advertising/advertising.c:700
 msgid "# Self advertisments transmitted"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:702
+#: src/applications/advertising/advertising.c:701
 msgid "# Foreign advertisements forwarded"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:706
+#: src/applications/advertising/advertising.c:705
 #: src/applications/session/connect.c:674
 #, c-format
 msgid "'%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:725
+#: src/applications/advertising/advertising.c:724
 #, fuzzy
 msgid "Network advertisements disabled by configuration!\n"
 msgstr "Yahagaritswe ku Iboneza"
@@ -2578,33 +2578,38 @@ msgstr "kugirango T"
 msgid "Template for gnunet-clients."
 msgstr "kugirango"
 
-#: src/applications/bootstrap_http/http.c:88
+#: src/applications/bootstrap_http/http.c:97
+#, c-format
+msgid "Invalid port \"%s\" in hostlist specification, trying port %d.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:108
 #, fuzzy, c-format
 msgid "'%s' failed at %s:%d with error: '%s'.\n"
 msgstr "'%s'Byanze ku Na: Ikosa"
 
-#: src/applications/bootstrap_http/http.c:101
+#: src/applications/bootstrap_http/http.c:121
 #, fuzzy, c-format
 msgid "Could not download list of peer contacts, host '%s' unknown.\n"
 msgstr "OYA Gufungura Urutonde Bya Aho kubariza Ubuturo Kitazwi"
 
-#: src/applications/bootstrap_http/http.c:123
-#: src/applications/bootstrap_http/http.c:147
+#: src/applications/bootstrap_http/http.c:143
+#: src/applications/bootstrap_http/http.c:169
 #, fuzzy, c-format
 msgid "'%s' to '%s' failed at %s:%d with error: %s\n"
 msgstr "'%s'Kuri Byanze ku Na: Ikosa"
 
-#: src/applications/bootstrap_http/http.c:183
+#: src/applications/bootstrap_http/http.c:205
 #, fuzzy, c-format
 msgid "Parsing HTTP response for URL '%s' failed.\n"
 msgstr "kugirango Byanze"
 
-#: src/applications/bootstrap_http/http.c:218
+#: src/applications/bootstrap_http/http.c:240
 #, fuzzy, c-format
 msgid "Parsing HELO from '%s' failed.\n"
 msgstr "Bivuye Byanze"
 
-#: src/applications/bootstrap_http/http.c:290
+#: src/applications/bootstrap_http/http.c:312
 #, fuzzy, c-format
 msgid "Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"
 msgstr "OYA Izina: Bya Porogisi a Porogisi"
@@ -2697,17 +2702,17 @@ msgstr "Birambuye Uburebure By'ibanze"
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr "Bivuye Sibyo Imiterere"
 
-#: src/server/connection.c:1984
+#: src/server/connection.c:1976
 #, fuzzy, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Umubare Bya"
 
-#: src/server/connection.c:1999
+#: src/server/connection.c:1991
 #, fuzzy
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "BYAKIRIWE Birenzeho UMUNSI ki/ bishaje"
 
-#: src/server/connection.c:2129
+#: src/server/connection.c:2121
 #, fuzzy
 msgid "Session confirmed, but cannot connect! (bug?)"
 msgstr "Kwihuza"

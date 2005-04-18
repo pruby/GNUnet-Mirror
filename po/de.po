@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.6.3a-cvs\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-04-05 13:34-0500\n"
+"POT-Creation-Date: 2005-04-18 14:12-0500\n"
 "PO-Revision-Date: 2005-04-18 18:33+0530\n"
 "Last-Translator: Nils Durner <n.durner@t-online.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -32,7 +32,8 @@ msgstr ""
 #: src/transports/udp6.c:228
 #, c-format
 msgid "Received invalid UDP6 message from %s:%d, dropping.\n"
-msgstr "Ungültige UDP6 Nachricht von %s:%d empfangen, Nachricht wird ignoriert.\n"
+msgstr ""
+"Ungültige UDP6 Nachricht von %s:%d empfangen, Nachricht wird ignoriert.\n"
 
 #: src/transports/udp6.c:261
 #, c-format
@@ -52,11 +53,15 @@ msgstr "UDP6: Öffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
 #: src/transports/udp.c:621
 #, c-format
 msgid "MTU for '%s' is probably too low (fragmentation not implemented!)\n"
-msgstr "MTU für '%s' ist möglicherweise zu gering (Fragmentierung ist nicht implementiert!)\n"
+msgstr ""
+"MTU für '%s' ist möglicherweise zu gering (Fragmentierung ist nicht "
+"implementiert!)\n"
 
 #: src/transports/http.c:578
 msgid "Expected welcome on http connection, got garbage. Closing connection.\n"
-msgstr "Es wurde eine Willkommensnachricht erwartet, tatsächlich wurde jedoch keine gesendet. HTTP-Verbindung wird geschlossen.\n"
+msgstr ""
+"Es wurde eine Willkommensnachricht erwartet, tatsächlich wurde jedoch keine "
+"gesendet. HTTP-Verbindung wird geschlossen.\n"
 
 #: src/transports/http.c:794 src/transports/tcp.c:669
 #, c-format
@@ -94,15 +99,20 @@ msgstr "Der Name des SMTP servers '%s' konnte nicht aufgelöst werden: %s"
 msgid ""
 "You must specify the name of a pipe for the SMTP transport in section '%s' "
 "under '%s'.\n"
-msgstr "Für den SMTP Transport müssen Sie den Namen einer Pipe in Sektion '%s', Eintrag '%s' eintragen. "
+msgstr ""
+"Für den SMTP Transport müssen Sie den Namen einer Pipe in Sektion '%s', "
+"Eintrag '%s' eintragen.\n"
 
 #: src/transports/smtp.c:482
 msgid "Received malformed message via SMTP (size mismatch).\n"
-msgstr "Es wurde eine ungültige Nachricht per SMTP empfangen (ungültige Größe).\n"
+msgstr ""
+"Es wurde eine ungültige Nachricht per SMTP empfangen (ungültige Größe).\n"
 
 #: src/transports/smtp.c:571
 msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
-msgstr "Kein Filter für E-Mail angegeben, es kann keine Bekanntmachung erstellt werden."
+msgstr ""
+"Kein Filter für E-Mail angegeben, es kann keine Bekanntmachung erstellt "
+"werden.\n"
 
 #: src/transports/smtp.c:578
 #, c-format
@@ -128,13 +138,17 @@ msgstr "%.*s filter %s (SMTP)"
 #, c-format
 msgid ""
 "Expected welcome message on tcp connection, got garbage (%u, %u). Closing.\n"
-msgstr "Es wurde eine Willkommensnachricht erwartet, über die TCP Verbindung wurde aber keine gesendet (%u, %u). Verbindung wird geschlossen.\n"
+msgstr ""
+"Es wurde eine Willkommensnachricht erwartet, über die TCP Verbindung wurde "
+"aber keine gesendet (%u, %u). Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp.c:480
 #, c-format
 msgid ""
 "Received malformed message (size %u) from tcp-peer connection. Closing.\n"
-msgstr "Es wurde per TCP von einem anderen Knoten eine ungültige Nachricht (Größe %u) empfangen. Verbindung wird geschlossen.\n"
+msgstr ""
+"Es wurde per TCP von einem anderen Knoten eine ungültige Nachricht (Größe %"
+"u) empfangen. Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp.c:1266 src/transports/tcp6.c:1209
 #, c-format
@@ -149,17 +163,21 @@ msgstr ""
 #: src/transports/udp.c:237
 #, c-format
 msgid "Received invalid UDP message from %u.%u.%u.%u:%u, dropping.\n"
-msgstr "Es wurde eine ungültige UDP Nachricht von %u.%u.%u.%u:%u empfangen, Nachricht wird ignoriert."
+msgstr ""
+"Es wurde eine ungültige UDP Nachricht von %u.%u.%u.%u:%u empfangen, "
+"Nachricht wird ignoriert.\n"
 
 #: src/transports/udp.c:260
 #, c-format
 msgid "Packet received from %u.%u.%u.%u:%u (UDP) failed format check.\n"
-msgstr "Ein Paket empfangen von %u.%u.%u.%u:%u (UDP) hat ein ungültiges Format.\n"
+msgstr ""
+"Ein Paket empfangen von %u.%u.%u.%u:%u (UDP) hat ein ungültiges Format.\n"
 
 #: src/transports/udp.c:271
 #, c-format
 msgid "Sender %u.%u.%u.%u is blacklisted, dropping message.\n"
-msgstr "Sender %u.%u.%u.%u steht auf schwarzer Liste, Nachricht wird ignoriert.\n"
+msgstr ""
+"Sender %u.%u.%u.%u steht auf schwarzer Liste, Nachricht wird ignoriert.\n"
 
 #: src/transports/udp.c:340
 msgid "UDP: Could not determine my public IP address.\n"
@@ -168,11 +186,15 @@ msgstr "UDP: Öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 #: src/transports/udp.c:465
 #, c-format
 msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
-msgstr "Eine Nachricht der Größe %d konnte nicht per UDP an %u.%u.%u.%u:%u versendet werden: %s\n"
+msgstr ""
+"Eine Nachricht der Größe %d konnte nicht per UDP an %u.%u.%u.%u:%u versendet "
+"werden: %s\n"
 
 #: src/transports/tcp6.c:437
 msgid "Expected welcome message on tcp connection, got garbage. Closing.\n"
-msgstr "Es wurde eine Willkommensnachricht erwartet, über die TCP Verbindung wurde jedoch keine gesendet. Verbindung wird geschlossen.\n"
+msgstr ""
+"Es wurde eine Willkommensnachricht erwartet, über die TCP Verbindung wurde "
+"jedoch keine gesendet. Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp6.c:467
 msgid ""
@@ -182,7 +204,9 @@ msgstr ""
 #: src/transports/tcp6.c:655
 #, c-format
 msgid "Rejected blacklisted connection from address %s.\n"
-msgstr "Verbindung von Adresse %s wird abgewiesen, Sender steht auf schwarzer Liste.\n"
+msgstr ""
+"Verbindung von Adresse %s wird abgewiesen, Sender steht auf schwarzer "
+"Liste.\n"
 
 #: src/transports/tcp6.c:957
 msgid "Could not determine my public IPv6 address.\n"
@@ -430,58 +454,58 @@ msgstr ""
 msgid "Could not send message to gnunetd\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:157
+#: src/applications/advertising/advertising.c:156
 #, c-format
 msgid "HELO message from '%s' invalid (signature invalid). Dropping.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:163
+#: src/applications/advertising/advertising.c:162
 msgid "HELO message received invalid (expiration time over limit). Dropping.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:172
+#: src/applications/advertising/advertising.c:171
 #, c-format
 msgid "HELO advertisement for protocol %d received.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:298
+#: src/applications/advertising/advertising.c:297
 msgid "Could not send HELOs+PING, ping buffer full.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:450
+#: src/applications/advertising/advertising.c:449
 #, c-format
 msgid "Advertising my transport %d to selected peers.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:457
+#: src/applications/advertising/advertising.c:456
 msgid ""
 "Announcing ourselves pointless: no other peers are known to us so far.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:542
+#: src/applications/advertising/advertising.c:541
 #, c-format
 msgid "Removing HELO from peer '%s' (expired %ds ago).\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:700
+#: src/applications/advertising/advertising.c:699
 msgid "# Peer advertisements received"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:701
+#: src/applications/advertising/advertising.c:700
 msgid "# Self advertisments transmitted"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:702
+#: src/applications/advertising/advertising.c:701
 msgid "# Foreign advertisements forwarded"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:706
+#: src/applications/advertising/advertising.c:705
 #: src/applications/session/connect.c:674
 #, c-format
 msgid "'%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:725
+#: src/applications/advertising/advertising.c:724
 msgid "Network advertisements disabled by configuration!\n"
 msgstr ""
 
@@ -2209,33 +2233,38 @@ msgstr ""
 msgid "Template for gnunet-clients."
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:88
+#: src/applications/bootstrap_http/http.c:97
+#, c-format
+msgid "Invalid port \"%s\" in hostlist specification, trying port %d.\n"
+msgstr ""
+
+#: src/applications/bootstrap_http/http.c:108
 #, c-format
 msgid "'%s' failed at %s:%d with error: '%s'.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:101
+#: src/applications/bootstrap_http/http.c:121
 #, c-format
 msgid "Could not download list of peer contacts, host '%s' unknown.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:123
-#: src/applications/bootstrap_http/http.c:147
+#: src/applications/bootstrap_http/http.c:143
+#: src/applications/bootstrap_http/http.c:169
 #, c-format
 msgid "'%s' to '%s' failed at %s:%d with error: %s\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:183
+#: src/applications/bootstrap_http/http.c:205
 #, c-format
 msgid "Parsing HTTP response for URL '%s' failed.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:218
+#: src/applications/bootstrap_http/http.c:240
 #, c-format
 msgid "Parsing HELO from '%s' failed.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:290
+#: src/applications/bootstrap_http/http.c:312
 #, c-format
 msgid "Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"
 msgstr ""
@@ -2322,16 +2351,16 @@ msgstr ""
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr ""
 
-#: src/server/connection.c:1984
+#: src/server/connection.c:1976
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:1999
+#: src/server/connection.c:1991
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:2129
+#: src/server/connection.c:2121
 msgid "Session confirmed, but cannot connect! (bug?)"
 msgstr ""
 
