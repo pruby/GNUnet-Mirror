@@ -254,14 +254,14 @@ void load_step4()
 	chkEnh = lookup_widget(vbox14, "chkEnh");
 	
 	
-	sym = sym_find("DISKQUOTA", "AFS");
+	sym = sym_find("DISKQUOTA", "FS");
 	if (sym)
 	{
 		sym_calc_value_ext(sym, 1);
 		gtk_entry_set_text(GTK_ENTRY(entQuota), sym_get_string_value(sym));
 	}
 
-	sym = sym_find("ACTIVEMIGRATION", "AFS");
+	sym = sym_find("ACTIVEMIGRATION", "FS");
 	if (sym)
 	{
 		sym_calc_value_ext(sym, 1);
