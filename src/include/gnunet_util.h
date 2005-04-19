@@ -2292,13 +2292,18 @@ void doneParseConfig();
 
 
 /**
- * Enum Windows NICs
+ * Helper functions
  */
 #ifdef WINDOWS
 void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable);
 int ListNICs(void (*callback) (char *, int));
 int InstallAsService();
 int UninstallService();
+
+#ifndef LOCALEDIR
+ #define LOCALEDIR "/share/locale"
+#endif
+
 #endif
 
 /* ifndef GNUNET_UTIL_H */
