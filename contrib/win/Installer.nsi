@@ -43,6 +43,9 @@ var ICONS_GROUP
 ; Finish page
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\README"
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "ShowReadme"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\bin\gnunet-setup.exe"
+!define MUI_FINISHPAGE_RUN_TEXT "GNUnet Setup"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "wizard-gtk $INSTDIR\etc\config.in"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -64,6 +67,7 @@ InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
 
+Var LANGCODE
 Var USR_PROF
 Var DIRLEN
 
@@ -83,7 +87,6 @@ Section "Core files" SEC01
   File "C:\GNUnet\bin\libpangowin32-1.0-0.dll"
   File "C:\GNUnet\bin\libmysql.dll"
   File "C:\GNUnet\bin\libltdl-3.dll"
-  File "C:\GNUnet\bin\libintl.dll"
   File "C:\GNUnet\bin\libgtk-win32-2.0-0.dll"
   File "C:\GNUnet\bin\libgtk-0.dll"
   File "C:\GNUnet\bin\libgthread-2.0-0.dll"
@@ -150,6 +153,9 @@ Section "Core files" SEC01
 	File "C:\GNUnet\bin\libgnunettransport_udp.dll"
 	File "C:\GNUnet\bin\libgnunetutil-1.dll"
 
+	SetOutPath "$INSTDIR\etc"
+	File "C:\GNUnet\etc\config.in"
+
   SetOutPath "$INSTDIR\"
   File "C:\GNUnet\README"
   File "C:\GNUnet\PLATFORMS"
@@ -197,6 +203,46 @@ Section "Configuration files" SEC02
   Rename "$USR_PROF\gnunet.user" "$USR_PROF\gnunet.conf"
 SectionEnd
 
+Section "Extractor" SEC03
+  SetOutPath "$INSTDIR\bin"
+  SetOverwrite ifnewer
+  File "c:\GNUnet\bin\extract.exe"
+  File "c:\GNUnet\bin\libextractor-1.dll"
+  File "c:\GNUnet\bin\libextractor_asf.dll"
+  File "c:\GNUnet\bin\libextractor_deb.dll"
+  File "c:\GNUnet\bin\libextractor_dvi.dll"
+  File "c:\GNUnet\bin\libextractor_elf.dll"
+  File "c:\GNUnet\bin\libextractor_filename.dll"
+  File "c:\GNUnet\bin\libextractor_gif.dll"
+  File "c:\GNUnet\bin\libextractor_hash_md5.dll"
+  File "c:\GNUnet\bin\libextractor_hash_rmd160.dll"
+  File "c:\GNUnet\bin\libextractor_hash_sha1.dll"
+  File "c:\GNUnet\bin\libextractor_html.dll"
+  File "c:\GNUnet\bin\libextractor_id3v2.dll"
+  File "c:\GNUnet\bin\libextractor_id3v23.dll"
+  File "c:\GNUnet\bin\libextractor_id3v24.dll"
+  File "c:\GNUnet\bin\libextractor_jpeg.dll"
+  File "c:\GNUnet\bin\libextractor_lower.dll"
+  File "c:\GNUnet\bin\libextractor_man.dll"
+  File "c:\GNUnet\bin\libextractor_mime.dll"
+  File "c:\GNUnet\bin\libextractor_mp3.dll"
+  File "c:\GNUnet\bin\libextractor_mpeg.dll"
+  File "c:\GNUnet\bin\libextractor_ole2.dll"
+  File "c:\GNUnet\bin\libextractor_oo.dll"
+  File "c:\GNUnet\bin\libextractor_pdf.dll"
+  File "c:\GNUnet\bin\libextractor_png.dll"
+  File "c:\GNUnet\bin\libextractor_ps.dll"
+  File "c:\GNUnet\bin\libextractor_qt.dll"
+  File "c:\GNUnet\bin\libextractor_real.dll"
+  File "c:\GNUnet\bin\libextractor_riff.dll"
+  File "c:\GNUnet\bin\libextractor_rpm.dll"
+  File "c:\GNUnet\bin\libextractor_split.dll"
+  File "c:\GNUnet\bin\libextractor_tar.dll"
+  File "c:\GNUnet\bin\libextractor_tiff.dll"
+  File "c:\GNUnet\bin\libextractor_wav.dll"
+  File "c:\GNUnet\bin\libextractor_zip.dll"
+SectionEnd
+
 Section "DHT" Sec04
   File "c:\GNUnet\bin\gnunet-dht-join.exe"
   File "c:\GNUnet\bin\gnunet-dht-query.exe"
@@ -224,12 +270,14 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   WriteRegStr HKLM "Software\GNU\GNUnet" "InstallDir" "$INSTDIR"
+  WriteRegStr HKLM "Software\GNU\libextractor" "InstallDir" "$INSTDIR"
 SectionEnd
 
 ; Section descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "Required by GNUnet"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "GNUnet configuration files"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "Component to extract meta-data from files"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "Distributed HashTables. Experimental."
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC05} "Chat. Experimental."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
@@ -237,6 +285,15 @@ SectionEnd
 
 Function .onInit
   InitPluginsDir
+
+  
+  StrCmp $LANGUAGE "1031" 0 english
+  StrCpy $LANGCODE "de"
+  goto end
+ english:
+  StrCpy $LANGCODE "en"
+
+end:
 FunctionEnd
 
 
@@ -357,6 +414,50 @@ Section Uninstall
   Delete "$INSTDIR\bin\libgnunetdht_protocol.dll"
   Delete "$INSTDIR\bin\libgnunetrpc_protocol.dll"
   Delete "$INSTDIR\bin\libgnunetrpc_util-0.dll"
+
+  Delete "$INSTDIR\bin\extract.exe"
+  Delete "$INSTDIR\bin\libextractor-0.dll"
+  Delete "$INSTDIR\bin\libextractor-1.dll"
+  Delete "$INSTDIR\bin\libextractor_asf.dll"
+  Delete "$INSTDIR\bin\libextractor_deb.dll"
+  Delete "$INSTDIR\bin\libextractor_dvi.dll"
+  Delete "$INSTDIR\bin\libextractor_elf.dll"
+  Delete "$INSTDIR\bin\libextractor_filename.dll"
+  Delete "$INSTDIR\bin\libextractor_gif.dll"
+  Delete "$INSTDIR\bin\libextractor_hash_md5.dll"
+  Delete "$INSTDIR\bin\libextractor_hash_rmd160.dll"
+  Delete "$INSTDIR\bin\libextractor_hash_sha1.dll"
+  Delete "$INSTDIR\bin\libextractor_html.dll"
+  Delete "$INSTDIR\bin\libextractor_id3v2.dll"
+  Delete "$INSTDIR\bin\libextractor_id3v23.dll"
+  Delete "$INSTDIR\bin\libextractor_id3v24.dll"
+  Delete "$INSTDIR\bin\libextractor_jpeg.dll"
+  Delete "$INSTDIR\bin\libextractor_lower.dll"
+  Delete "$INSTDIR\bin\libextractor_man.dll"
+  Delete "$INSTDIR\bin\libextractor_mime.dll"
+  Delete "$INSTDIR\bin\libextractor_mp3.dll"
+  Delete "$INSTDIR\bin\libextractor_mpeg.dll"
+  Delete "$INSTDIR\bin\libextractor_ole2.dll"
+  Delete "$INSTDIR\bin\libextractor_oo.dll"
+  Delete "$INSTDIR\bin\libextractor_pdf.dll"
+  Delete "$INSTDIR\bin\libextractor_png.dll"
+  Delete "$INSTDIR\bin\libextractor_printable_da.dll"
+  Delete "$INSTDIR\bin\libextractor_printable_de.dll"
+  Delete "$INSTDIR\bin\libextractor_printable_en.dll"
+  Delete "$INSTDIR\bin\libextractor_printable_es.dll"
+  Delete "$INSTDIR\bin\libextractor_printable_it.dll"
+  Delete "$INSTDIR\bin\libextractor_printable_no.dll"
+  Delete "$INSTDIR\bin\libextractor_ps.dll"
+  Delete "$INSTDIR\bin\libextractor_qt.dll"
+  Delete "$INSTDIR\bin\libextractor_real.dll"
+  Delete "$INSTDIR\bin\libextractor_riff.dll"
+  Delete "$INSTDIR\bin\libextractor_rpm.dll"
+  Delete "$INSTDIR\bin\libextractor_split.dll"
+  Delete "$INSTDIR\bin\libextractor_tar.dll"
+  Delete "$INSTDIR\bin\libextractor_tiff.dll"
+  Delete "$INSTDIR\bin\libextractor_util-0.dll"
+  Delete "$INSTDIR\bin\libextractor_wav.dll"
+  Delete "$INSTDIR\bin\libextractor_zip.dll"
   
   Delete "$INSTDIR\etc\pango\pango.aliases"
   Delete "$INSTDIR\etc\pango\pango.modules"
@@ -407,5 +508,6 @@ Section Uninstall
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 ;  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
   DeleteRegKey HKLM "Software\GNU\GNUnet"
+  DeleteRegKey HKLM "Software\GNU\libextractor"
   SetAutoClose true
 SectionEnd

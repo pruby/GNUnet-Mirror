@@ -253,9 +253,12 @@ on_finish_clicked (GtkButton * button, gpointer user_data)
 void
 on_saveYes_clicked (GtkButton * button, gpointer user_data)
 {
-	if (save_conf())
+	int i = save_conf();
+	
+	gtk_widget_destroy(msgSave);
+	if (i)
 	{
-		gtk_widget_destroy(msgSave);
+		quit = 1;
 		gtk_widget_destroy(curwnd);
 	}
 }
@@ -263,6 +266,7 @@ on_saveYes_clicked (GtkButton * button, gpointer user_data)
 void
 on_saveNo_clicked (GtkButton * button, gpointer user_data)
 {
+	quit = 1;
 	gtk_widget_destroy(msgSave);
 	gtk_widget_destroy(curwnd);
 }

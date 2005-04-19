@@ -284,6 +284,10 @@ wizard_main (int argc, char *argv[])
 		textdomain(PACKAGE);
 #endif
 
+#ifdef WINDOWS
+	FreeConsole();
+#endif
+
   gtk_set_locale ();
   gtk_init (&argc, &argv);
 
