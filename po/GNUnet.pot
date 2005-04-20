@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-04-18 14:12-0500\n"
+"POT-Creation-Date: 2005-04-20 12:25-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -190,6 +190,46 @@ msgstr ""
 #: src/transports/tcp6.c:1008
 #, c-format
 msgid "'%s': unknown service: %s\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:107
+#, c-format
+msgid "GNUnet service installed successfully.\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:110 src/conf/gnunet-win-tool.c:137
+#, c-format
+msgid "This version of Windows doesn't support services.\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:114 src/conf/gnunet-win-tool.c:141
+#, c-format
+msgid "Error: can't open Service Control Manager: %s\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:119
+#, c-format
+msgid "Error: can't create service: %s\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:122 src/conf/gnunet-win-tool.c:153
+#, c-format
+msgid "Unknown error.\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:134
+#, c-format
+msgid "Service deleted.\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:146
+#, c-format
+msgid "Error: can't access service: %s\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:150
+#, c-format
+msgid "Error: can't delete service: %s\n"
 msgstr ""
 
 #: src/conf/gconf_interface.c:123
