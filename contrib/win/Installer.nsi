@@ -87,6 +87,7 @@ Section "Core files" SEC01
   File "C:\GNUnet\bin\libpangowin32-1.0-0.dll"
   File "C:\GNUnet\bin\libmysql.dll"
   File "C:\GNUnet\bin\libltdl-3.dll"
+  File "C:\GNUnet\bin\libintl-3.dll"
   File "C:\GNUnet\bin\libgtk-win32-2.0-0.dll"
   File "C:\GNUnet\bin\libgtk-0.dll"
   File "C:\GNUnet\bin\libgthread-2.0-0.dll"
