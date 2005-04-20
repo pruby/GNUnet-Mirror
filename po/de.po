@@ -207,7 +207,7 @@ msgstr ""
 msgid ""
 "Received malformed message from tcp6-peer connection. Closing connection.\n"
 msgstr ""
-"Über die TCP6-Verbidnung zu einem anderen Knoten wurde eine ungültige "
+"Über die TCP6-Verbindung zu einem anderen Knoten wurde eine ungültige "
 "Nachricht empfangen. Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp6.c:655
@@ -1072,17 +1072,17 @@ msgstr "Versuche, Datei '%s' für MySQL Konfiguration zu verwenden.\n"
 msgid ""
 "Configuration must specify directory for FS data in section '%s' under '%"
 "s'.\n"
-msgstr ""
+msgstr "Die Konfigurationsdatei muss in der Sektion '%s' unter '%s' ein Verzeichnis für FS Daten angeben.\n"
 
 #: src/applications/datastore/datastore.c:107
 #, c-format
 msgid "Availability test failed for '%s' at %s:%d.\n"
-msgstr ""
+msgstr "Verfügbarkeitstest für '%s' fehlgeschlagen bei %s:%d.\n"
 
 #: src/applications/datastore/datastore.c:129
 #, c-format
 msgid "Database failed to delete %s.\n"
-msgstr ""
+msgstr "Die Datenbank konnte '%s' nicht löschen.\n"
 
 #: src/applications/identity/hostkey.c:98
 #: src/applications/identity/identity.c:861
@@ -1090,145 +1090,147 @@ msgstr ""
 msgid ""
 "Configuration file must specify a directory for GNUnet to store per-peer "
 "data under %s%s\n"
-msgstr ""
+msgstr "Die Konfigurationsdatei muss unter %s%s ein Verzeichnis angeben, in dem "
+"GNUnet knotenspezifische Daten speichern kann.\n"
 
 #: src/applications/identity/hostkey.c:119
 #, c-format
 msgid ""
 "Existing hostkey in file '%s' failed format check, creating new hostkey.\n"
-msgstr ""
+msgstr "Formatüberprüfung schlug für die existierende Hostkeydatei '%s' fehl, es wird ein neuer Hostkey erzeugt.\n"
 
 #: src/applications/identity/hostkey.c:127
 msgid "Creating new hostkey (this may take a while).\n"
-msgstr ""
+msgstr "Ein neuer Hostkey wird erzeugt (dies kann eine Weile dauern).\n"
 
 #: src/applications/identity/hostkey.c:130
 msgid "Could not create hostkey!\n"
-msgstr ""
+msgstr "Hostkey konnte nicht erzeugt werden!\n"
 
 #: src/applications/identity/hostkey.c:139
 msgid "Done creating hostkey.\n"
-msgstr ""
+msgstr "Hostkey wurde erfolgreich erzeugt.\n"
 
 #: src/applications/identity/identity.c:296
 #, c-format
 msgid ""
 "File '%s' in directory '%s' does not match naming convention. Removed.\n"
-msgstr ""
+msgstr "Die Datei '%s' im Verzeichnis '%s' entspricht nicht der Namenskonvention. Datei wurde entfernt.\n"
 
 #: src/applications/identity/identity.c:315
 #, c-format
 msgid "%s '%s' returned no known hosts!\n"
-msgstr ""
+msgstr "%s '%s' ergab keine bekannten Knoten!\n"
 
 #: src/applications/identity/identity.c:446
 #: src/applications/identity/identity.c:467
 #, c-format
 msgid "Removed file '%s' containing invalid peer advertisement.\n"
-msgstr ""
+msgstr "Datei '%s' enthielt eine ungültige Knotenbekanntmachung und wurde entfernt.\n"
 
 #: src/applications/identity/identity.c:512
 #, c-format
 msgid "Removed file '%s' containing invalid HELO data.\n"
-msgstr ""
+msgstr "Datei '%s' enthielt ungültige HELO Daten und wurde entfernt.\n"
 
 #: src/applications/identity/identity.c:526
 #, c-format
 msgid "Removed invalid HELO file '%s'\n"
-msgstr ""
+msgstr "Ungültige HELO Datei '%s' wurde entfernt.\n"
 
 #: src/applications/identity/identity.c:856
 #, c-format
 msgid ""
 "Configuration file must specify directory for network identities in section %"
 "s under %s.\n"
-msgstr ""
+msgstr "Die Konfigurationsdatei muss in Sektion %s unter %s ein Verzeichnis für Identitäten angeben.\n"
 
 #: src/applications/testbed/commands.c:1130
 #: src/applications/stats/gnunet-stats.c:61
 #, c-format
 msgid "Supported peer-to-peer messages:\n"
-msgstr ""
+msgstr "Unterstützte Peer-to-Peer Nachrichten:\n"
 
 #: src/applications/testbed/commands.c:1132
 #: src/applications/stats/gnunet-stats.c:64
 #, c-format
 msgid "Supported client-server messages:\n"
-msgstr ""
+msgstr "Unterstützte Client-Server Nachrichten:\n"
 
 #: src/applications/testbed/gnunet-testbed.c:119
 msgid "Start GNUnet-testbed helper."
-msgstr ""
+msgstr "GNUnet-testbed Helfer starten."
 
 #: src/applications/testbed/gnunet-testbed.c:180
 #, c-format
 msgid "Cannot connect to LOOPBACK port %d: %s\n"
-msgstr ""
+msgstr "Verbindung zum LOOPBACK port %d schlug fehl: %s\n"
 
 #: src/applications/testbed/gnunet-testbed.c:279
 #, c-format
 msgid "Could not execute '%s': %s\n"
-msgstr ""
+msgstr "'%s' konnte nicht ausgeführt werden: %s\n"
 
 #: src/applications/testbed/gnunet-testbed.c:321
 msgid "No client service started. Trying again in 30 seconds.\n"
-msgstr ""
+msgstr "Kein Client Dienst gestartet. Erneuter Versuch in 30 Sekunden.\n"
 
 #: src/applications/testbed/gnunet-testbed.c:344
 #, c-format
 msgid ""
 "Error (%s) binding the TCP listener to port %d. No proxy service started.\n"
 "Trying again in %d seconds...\n"
-msgstr ""
+msgstr "Fehler (%s) beim Binden des TCP Listeners an den Port %d. Der Proxy Dienst wurde nicht gestartet.\n"
+"Erneuter Versuch in %d Sekunden...\n"
 
 #: src/applications/testbed/gnunet-testbed.c:411 src/server/tcpserver.c:519
 #, c-format
 msgid "Rejected unauthorized connection from %u.%u.%u.%u.\n"
-msgstr ""
+msgstr "Unauthorisierte Verbindung von %u.%u.%u.%u. wurde abgewiesen.\n"
 
 #: src/applications/testbed/gnunet-testbed.c:424
 #, c-format
 msgid "Protocol violation on socket. Expected command.\n"
-msgstr ""
+msgstr "Protokollverletzung auf Socket. Kommando erwartet.\n"
 
 #: src/applications/testbed/gnunet-testbed.c:463
 #, c-format
 msgid "Command '%s' not found!\n"
-msgstr ""
+msgstr "Kommando '%s' wurde nicht gefunden!\n"
 
 #: src/applications/testbed/gnunet-testbed.c:536
 msgid "Start GNUnet testbed controller."
-msgstr ""
+msgstr "GNUnet testbed Controller starten."
 
 #: src/applications/testbed/gnunet-testbed.c:590
 #, c-format
 msgid "Malformed entry in the configuration in section %s under %s: %s\n"
-msgstr ""
+msgstr "Beschädigter Eintrag in der Konfigurationsdatei in Sektion %s unter %s: %s\n"
 
 #: src/applications/testbed/testbed.c:50
 msgid "Could not send acknowledgement back to client.\n"
-msgstr ""
+msgstr "Bestätigung konnte nicht an Client zurück gesendet werden.\n"
 
 #: src/applications/testbed/testbed.c:60
 #, c-format
 msgid "Received unknown testbed message of type %u.\n"
-msgstr ""
+msgstr "Es wurde eine unbekannte Testbed Nachricht des Typs %u empfangen.\n"
 
 #: src/applications/testbed/testbed.c:78
 #: src/applications/testbed/testbed.c:807
 #, c-format
 msgid "size of '%s' message is too short. Ignoring.\n"
-msgstr ""
+msgstr "Größe der '%s' Nachricht ist zu kurz. Nachricht wird ignoriert.\n"
 
 #: src/applications/testbed/testbed.c:85
 #, c-format
 msgid "size of '%s' message is wrong. Ignoring.\n"
-msgstr ""
+msgstr "Größe der '%s' Nachricht ist falsch. Nachricht wird ignoriert.\n"
 
 #: src/applications/testbed/testbed.c:137
 #, c-format
 msgid "TESTBED could not generate HELO message for protocol %u\n"
-msgstr ""
+msgstr "Das TESTBED konnte keine HELO Nachricht für das Protokoll %u erzeugen\n"
 
 #: src/applications/testbed/testbed.c:215
 #: src/applications/testbed/testbed.c:256
@@ -1238,105 +1240,105 @@ msgstr ""
 #: src/applications/testbed/testbed.c:410
 #, c-format
 msgid "received invalid '%s' message\n"
-msgstr ""
+msgstr "ungültige '%s' Nachricht empfangen\n"
 
 #: src/applications/testbed/testbed.c:231
 #: src/applications/testbed/testbed.c:271
 #, c-format
 msgid "received invalid '%s' message (empty module name)\n"
-msgstr ""
+msgstr "ungültige '%s' Nachricht empfangen (leerer Modulname)\n"
 
 #: src/applications/testbed/testbed.c:238
 #, c-format
 msgid "loading module '%s' failed.  Notifying client.\n"
-msgstr ""
+msgstr "das Laden von Modul '%s' schlug fehl. Client wird benachrichtigt.\n"
 
 #: src/applications/testbed/testbed.c:278
 msgid "unloading module failed.  Notifying client.\n"
-msgstr ""
+msgstr "das Entladen des Moduls schlug fehl. Client wird benachrichtigt.\n"
 
 #: src/applications/testbed/testbed.c:539
 #, c-format
 msgid "'%s' %s failed: %s\n"
-msgstr ""
+msgstr "'%s' %s schlug fehl: %s\n"
 
 #: src/applications/testbed/testbed.c:625
 #, c-format
 msgid "received invalid '%s' message: %s.\n"
-msgstr ""
+msgstr "ungültige '%s' Nachricht empfangen: %s.\n"
 
 #: src/applications/testbed/testbed.c:817
 #, c-format
 msgid "'..' is not allowed in file name (%s).\n"
-msgstr ""
+msgstr "'..' ist nicht erlaubt in einem Dateinamen (%s).\n"
 
 #: src/applications/testbed/testbed.c:826
 msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
-msgstr ""
+msgstr "Leerer Dateiname für UPLOAD_FILE Nachricht ist ungültig!\n"
 
 #: src/applications/testbed/testbed.c:833
 msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
-msgstr ""
+msgstr "Dateiname für UPLOAD_FILE Nachricht ist nicht Null-terminiert (ungültig!)\n"
 
 #: src/applications/testbed/testbed.c:841
 msgid "Upload refused!"
-msgstr ""
+msgstr "Upload abgewiesen!"
 
 #: src/applications/testbed/testbed.c:867
 #, c-format
 msgid "Invalid message received at %s:%d."
-msgstr ""
+msgstr "Ungültige Nachricht empfangen bei %s:%d."
 
 #: src/applications/testbed/testbed.c:985
 #, c-format
 msgid "received invalid testbed message of size %u\n"
-msgstr ""
+msgstr "ungültige Testbed Nachricht der Größe %u empfangen\n"
 
 #: src/applications/testbed/testbed.c:1002
 #, c-format
 msgid ""
 "Received testbed message of type %u but unexpected size %u, expected %u\n"
-msgstr ""
+msgstr "Empfangene Testbed Nachricht des Typs %u hat die unerwartete Größe %u, es wurde %u erwartet\n"
 
 #: src/applications/testbed/testbed.c:1046
 msgid "No testbed URL given, not registered.\n"
-msgstr ""
+msgstr "Keine Testbed URL angegeben, es wurde keine Registrierung vorgenommen.\n"
 
 #: src/applications/testbed/testbed.c:1080
 #: src/applications/bootstrap_http/http.c:69
 #, c-format
 msgid "Invalid URL '%s' (must begin with '%s')\n"
-msgstr ""
+msgstr "Ungültige URL '%s' (muss mit '%s' beginnen)\n"
 
 #: src/applications/testbed/testbed.c:1119
 #, c-format
 msgid "Malformed http URL: '%s' at '%s'.  Testbed-client not registered.\n"
-msgstr ""
+msgstr "Beschädigte HTTP URL: '%s' bei '%s'. Testbed-Client wurde nicht registriert.\n"
 
 #: src/applications/testbed/testbed.c:1155
 #, c-format
 msgid "Could not register testbed, host '%s' unknown\n"
-msgstr ""
+msgstr "Testbed konnte nicht registriert werden, Host '%s' ist nicht bekannt.\n"
 
 #: src/applications/testbed/testbed.c:1177
 #, c-format
 msgid "Failed to send HTTP request to host '%s': %s\n"
-msgstr ""
+msgstr "HTTP Anfrage konnte nicht an Host '%s' gesendet werden: %s\n"
 
 #: src/applications/testbed/testbed.c:1230
 #, c-format
 msgid "Failed so send HTTP request '%s' to host '%s': %s\n"
-msgstr ""
+msgstr "Fehler beim Senden der HTTP Anfrage '%s' an Host '%s': %s\n"
 
 #: src/applications/testbed/testbed.c:1269
 msgid "Exit register (error: no http response read).\n"
-msgstr ""
+msgstr "Abbruch der Registrierung (Fehler: keine HTTP Antwort gelesen).\n"
 
 #: src/applications/transport/transport.c:430
 #: src/applications/transport/transport.c:438
 #, c-format
 msgid "No transport of type %d known.\n"
-msgstr ""
+msgstr "Kein Transport des Typs %d bekannt.\n"
 
 #: src/applications/transport/transport.c:596
 #, c-format
