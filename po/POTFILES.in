@@ -27,6 +27,8 @@ src/conf/mconf_inputbox.c
 src/conf/gconf.c
 src/conf/gconf_interface.c
 src/conf/gconf_support.c
+src/conf/wizard_callbacks.c
+src/conf/wizard_interface.c
 src/applications/chat/chat.c
 src/applications/chat/gnunet-chat.c
 src/applications/advertising/advertising.c

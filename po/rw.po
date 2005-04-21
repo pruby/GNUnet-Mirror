@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-04-20 12:25-0500\n"
+"POT-Creation-Date: 2005-04-21 18:14+0200\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -325,11 +325,12 @@ msgid "This version of Windows doesn't support services.\n"
 msgstr ""
 
 #: src/conf/gnunet-win-tool.c:114 src/conf/gnunet-win-tool.c:141
+#: src/conf/wizard_callbacks.c:165 src/conf/wizard_callbacks.c:209
 #, c-format
 msgid "Error: can't open Service Control Manager: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:119
+#: src/conf/gnunet-win-tool.c:119 src/conf/wizard_callbacks.c:172
 #, c-format
 msgid "Error: can't create service: %s\n"
 msgstr ""
@@ -528,6 +529,228 @@ msgstr ""
 #: src/conf/gconf_support.c:90 src/conf/gconf_support.c:114
 #, c-format
 msgid "Couldn't find pixmap file: %s"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:168 src/conf/wizard_callbacks.c:175
+#: src/conf/wizard_callbacks.c:178 src/conf/wizard_callbacks.c:192
+#: src/conf/wizard_callbacks.c:212 src/conf/wizard_callbacks.c:219
+#: src/conf/wizard_callbacks.c:226 src/conf/wizard_callbacks.c:229
+#: src/conf/wizard_interface.c:1075
+msgid "Error"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:178 src/conf/wizard_callbacks.c:229
+#, fuzzy
+msgid "Unknown error"
+msgstr "Verisiyo"
+
+#: src/conf/wizard_callbacks.c:191
+msgid "Cannot write to the regisitry"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:216
+#, c-format
+msgid "Error: can't access the service: %s\n"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:223
+#, c-format
+msgid "Error: can't delete the service: %s\n"
+msgstr ""
+
+#: src/conf/wizard_interface.c:54 src/conf/wizard_interface.c:198
+#: src/conf/wizard_interface.c:461 src/conf/wizard_interface.c:783
+#, fuzzy
+msgid "GNUnet configuration assistant"
+msgstr "A bushyinguro"
+
+#: src/conf/wizard_interface.c:77
+msgid ""
+"Welcome to GNUnet!\n"
+"\n"
+"This assistant will ask you a few basic questions in order to configure "
+"GNUnet.\n"
+"\n"
+"Please visit our homepage at\n"
+"\thttp://www.gnunet.org\n"
+"and join our community at\n"
+"\thttp://www.gnunet.org/drupal/\n"
+"\n"
+"Have a lot of fun,\n"
+"\n"
+"the GNUnet team"
+msgstr ""
+
+#: src/conf/wizard_interface.c:106 src/conf/wizard_interface.c:332
+#: src/conf/wizard_interface.c:651
+msgid "Next"
+msgstr ""
+
+#: src/conf/wizard_interface.c:127 src/conf/wizard_interface.c:353
+#: src/conf/wizard_interface.c:672 src/conf/wizard_interface.c:929
+msgid "Cancel"
+msgstr "Kureka"
+
+#: src/conf/wizard_interface.c:229
+msgid ""
+"Enter information about your network connection here.\n"
+"\n"
+"The \"Network interface\" is the device that connects your computer to the "
+"internet. This is usually a modem, an ISDN card or a network card in case "
+"you are using DSL.\n"
+"\n"
+"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
+"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
+"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
+"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
+"enter it here.\n"
+"If in doubt, leave the field empty. GNUnet will then try to determine your "
+"IP-Address.\n"
+"\n"
+"If you are connected to the internet through another computer doing SNAT, a "
+"router or a \"hardware firewall\" and other computers on the internet cannot "
+"connect to this computer, check the last option on this page. Leave it "
+"unchecked on direct connections through modems, ISDN cards and DNAT (also "
+"known as \"port forwarding\")."
+msgstr ""
+
+#: src/conf/wizard_interface.c:251
+msgid "Network interface:"
+msgstr ""
+
+#: src/conf/wizard_interface.c:258
+msgid "IP-Address/Hostname:"
+msgstr ""
+
+#: src/conf/wizard_interface.c:279
+msgid "Computer cannot receive inbound connections (SNAT/Firewall)"
+msgstr ""
+
+#: src/conf/wizard_interface.c:285
+msgid "Network connection"
+msgstr ""
+
+#: src/conf/wizard_interface.c:311 src/conf/wizard_interface.c:630
+#: src/conf/wizard_interface.c:887
+msgid "Back"
+msgstr ""
+
+#: src/conf/wizard_interface.c:492
+msgid ""
+"You can limit GNUnet's ressource usage here.\n"
+"\n"
+"\"Bandwidth limitation\" is how much data may be sent per second. If you "
+"have a flatrate you can set it to the maximum speed of your internet "
+"connection.\n"
+"\n"
+"The \"Max. CPU usage\" is the percentage of processor time GNUnet is allowed "
+"to use."
+msgstr ""
+
+#: src/conf/wizard_interface.c:521
+msgid "Upstream (Bytes/s):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:535
+msgid "Downstream (Bytes/s):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:549
+msgid "Bandwidth limitation"
+msgstr ""
+
+#: src/conf/wizard_interface.c:564
+msgid "Use denoted bandwidth for GNUnet"
+msgstr ""
+
+#: src/conf/wizard_interface.c:573
+msgid "Share denoted bandwidth with other applications"
+msgstr ""
+
+#: src/conf/wizard_interface.c:579
+msgid "Bandwidth sharing"
+msgstr ""
+
+#: src/conf/wizard_interface.c:591
+msgid "Max. CPU usage (%):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:600
+msgid "CPU usage"
+msgstr ""
+
+#: src/conf/wizard_interface.c:604
+msgid "Load limitation"
+msgstr ""
+
+#: src/conf/wizard_interface.c:814
+msgid ""
+"GNUnet is able to store data from other peers in your datastore. This is "
+"useful if an adversary has access to your inserted content and you need to "
+"deny that the content is yours. With \"content migration\" on, the content "
+"could have \"migrated\" over the internet to your node without your "
+"knowledge.\n"
+"It also helps to spread popular content over different peers to enhance "
+"availability.\n"
+"\n"
+"The GNUnet datastore contains all data that GNUnet generates (index data, "
+"inserted and migrated content). Its maximum size can be specified below.\n"
+"\n"
+"If you are an experienced user, you may want to tweak your GNUnet "
+"installation using the enhanced configurator."
+msgstr ""
+
+#: src/conf/wizard_interface.c:829
+#, fuzzy
+msgid "Store migrated content"
+msgstr "#GUSHAKISHA Byinjijwemo Cyangwa Ibikubiyemo"
+
+#: src/conf/wizard_interface.c:838
+msgid "Maximum datastore size (MB):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:849
+msgid "Start the GNUnet background process on computer startup"
+msgstr ""
+
+#: src/conf/wizard_interface.c:856
+#, fuzzy
+msgid "Open the enhanced configurator"
+msgstr "A bushyinguro"
+
+#: src/conf/wizard_interface.c:861
+msgid "Other settings"
+msgstr ""
+
+#: src/conf/wizard_interface.c:908
+msgid "Finish"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1001
+#, fuzzy
+msgid "Question"
+msgstr "Insobanuramiterere"
+
+#: src/conf/wizard_interface.c:1018
+msgid "Do you want to save your settings?"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1033
+#, fuzzy
+msgid "Yes"
+msgstr "Yego"
+
+#: src/conf/wizard_interface.c:1038
+#, fuzzy
+msgid "No"
+msgstr "Oya."
+
+#: src/conf/wizard_interface.c:1092
+msgid "Unable to save configuration!"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1107
+msgid "OK"
 msgstr ""
 
 #: src/applications/chat/chat.c:87
@@ -3796,9 +4019,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #~ msgid "Ok"
 #~ msgstr "Oke"
 
-#~ msgid "Cancel"
-#~ msgstr "Kureka"
-
 #, fuzzy
 #~ msgid "Choose directory to be imported"
 #~ msgstr "bushyinguro Kuri cyavuye ahandi/ cyatumijwe"
@@ -3923,13 +4143,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #~ "gnunetd (daemon) doesn't seem to be running.\n"
 #~ "Would you like to start it?\n"
 #~ msgstr "Kuri nka Kuri Gutangira"
-
-#, fuzzy
-#~ msgid "Yes!"
-#~ msgstr "Yego"
-
-#~ msgid "No."
-#~ msgstr "Oya."
 
 #, fuzzy
 #~ msgid ""
@@ -4437,9 +4650,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #, fuzzy
 #~ msgid "Search result received of unsupported type %d.\n"
 #~ msgstr "Igisubizo BYAKIRIWE Bya Ubwoko"
-
-#~ msgid "Description"
-#~ msgstr "Insobanuramiterere"
 
 #~ msgid "Size"
 #~ msgstr "Ingano"
@@ -5036,10 +5246,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #, fuzzy
 #~ msgid "# lookup (3HASH, search results)"
 #~ msgstr "#GUSHAKISHA Gushaka Ibisubizo ku"
-
-#, fuzzy
-#~ msgid "# lookup (CHK, inserted or migrated content)"
-#~ msgstr "#GUSHAKISHA Byinjijwemo Cyangwa Ibikubiyemo"
 
 #, fuzzy
 #~ msgid "# lookup (ONDEMAND, indexed content)"

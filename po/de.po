@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.6.3a-cvs\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-04-20 12:25-0500\n"
+"POT-Creation-Date: 2005-04-21 18:14+0200\n"
 "PO-Revision-Date: 2005-04-19 23:21+0530\n"
 "Last-Translator: Nils Durner <n.durner@t-online.de>\n"
 "Language-Team: German <de@li.org>\n"
@@ -237,11 +237,12 @@ msgid "This version of Windows doesn't support services.\n"
 msgstr ""
 
 #: src/conf/gnunet-win-tool.c:114 src/conf/gnunet-win-tool.c:141
+#: src/conf/wizard_callbacks.c:165 src/conf/wizard_callbacks.c:209
 #, c-format
 msgid "Error: can't open Service Control Manager: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:119
+#: src/conf/gnunet-win-tool.c:119 src/conf/wizard_callbacks.c:172
 #, c-format
 msgid "Error: can't create service: %s\n"
 msgstr ""
@@ -430,6 +431,223 @@ msgstr "Sorry, für diese Option steht noch keine Hilfe zur Verfügung"
 #, c-format
 msgid "Couldn't find pixmap file: %s"
 msgstr "Pixmapdatei %s konnte nicht gefunden werden"
+
+#: src/conf/wizard_callbacks.c:168 src/conf/wizard_callbacks.c:175
+#: src/conf/wizard_callbacks.c:178 src/conf/wizard_callbacks.c:192
+#: src/conf/wizard_callbacks.c:212 src/conf/wizard_callbacks.c:219
+#: src/conf/wizard_callbacks.c:226 src/conf/wizard_callbacks.c:229
+#: src/conf/wizard_interface.c:1075
+msgid "Error"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:178 src/conf/wizard_callbacks.c:229
+msgid "Unknown error"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:191
+msgid "Cannot write to the regisitry"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:216
+#, c-format
+msgid "Error: can't access the service: %s\n"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:223
+#, c-format
+msgid "Error: can't delete the service: %s\n"
+msgstr ""
+
+#: src/conf/wizard_interface.c:54 src/conf/wizard_interface.c:198
+#: src/conf/wizard_interface.c:461 src/conf/wizard_interface.c:783
+#, fuzzy
+msgid "GNUnet configuration assistant"
+msgstr "Gtk GNUnet Konfigurator"
+
+#: src/conf/wizard_interface.c:77
+msgid ""
+"Welcome to GNUnet!\n"
+"\n"
+"This assistant will ask you a few basic questions in order to configure "
+"GNUnet.\n"
+"\n"
+"Please visit our homepage at\n"
+"\thttp://www.gnunet.org\n"
+"and join our community at\n"
+"\thttp://www.gnunet.org/drupal/\n"
+"\n"
+"Have a lot of fun,\n"
+"\n"
+"the GNUnet team"
+msgstr ""
+
+#: src/conf/wizard_interface.c:106 src/conf/wizard_interface.c:332
+#: src/conf/wizard_interface.c:651
+msgid "Next"
+msgstr ""
+
+#: src/conf/wizard_interface.c:127 src/conf/wizard_interface.c:353
+#: src/conf/wizard_interface.c:672 src/conf/wizard_interface.c:929
+msgid "Cancel"
+msgstr ""
+
+#: src/conf/wizard_interface.c:229
+msgid ""
+"Enter information about your network connection here.\n"
+"\n"
+"The \"Network interface\" is the device that connects your computer to the "
+"internet. This is usually a modem, an ISDN card or a network card in case "
+"you are using DSL.\n"
+"\n"
+"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
+"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
+"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
+"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
+"enter it here.\n"
+"If in doubt, leave the field empty. GNUnet will then try to determine your "
+"IP-Address.\n"
+"\n"
+"If you are connected to the internet through another computer doing SNAT, a "
+"router or a \"hardware firewall\" and other computers on the internet cannot "
+"connect to this computer, check the last option on this page. Leave it "
+"unchecked on direct connections through modems, ISDN cards and DNAT (also "
+"known as \"port forwarding\")."
+msgstr ""
+
+#: src/conf/wizard_interface.c:251
+msgid "Network interface:"
+msgstr ""
+
+#: src/conf/wizard_interface.c:258
+msgid "IP-Address/Hostname:"
+msgstr ""
+
+#: src/conf/wizard_interface.c:279
+msgid "Computer cannot receive inbound connections (SNAT/Firewall)"
+msgstr ""
+
+#: src/conf/wizard_interface.c:285
+msgid "Network connection"
+msgstr ""
+
+#: src/conf/wizard_interface.c:311 src/conf/wizard_interface.c:630
+#: src/conf/wizard_interface.c:887
+msgid "Back"
+msgstr ""
+
+#: src/conf/wizard_interface.c:492
+msgid ""
+"You can limit GNUnet's ressource usage here.\n"
+"\n"
+"\"Bandwidth limitation\" is how much data may be sent per second. If you "
+"have a flatrate you can set it to the maximum speed of your internet "
+"connection.\n"
+"\n"
+"The \"Max. CPU usage\" is the percentage of processor time GNUnet is allowed "
+"to use."
+msgstr ""
+
+#: src/conf/wizard_interface.c:521
+msgid "Upstream (Bytes/s):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:535
+msgid "Downstream (Bytes/s):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:549
+msgid "Bandwidth limitation"
+msgstr ""
+
+#: src/conf/wizard_interface.c:564
+msgid "Use denoted bandwidth for GNUnet"
+msgstr ""
+
+#: src/conf/wizard_interface.c:573
+msgid "Share denoted bandwidth with other applications"
+msgstr ""
+
+#: src/conf/wizard_interface.c:579
+msgid "Bandwidth sharing"
+msgstr ""
+
+#: src/conf/wizard_interface.c:591
+msgid "Max. CPU usage (%):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:600
+msgid "CPU usage"
+msgstr ""
+
+#: src/conf/wizard_interface.c:604
+msgid "Load limitation"
+msgstr ""
+
+#: src/conf/wizard_interface.c:814
+msgid ""
+"GNUnet is able to store data from other peers in your datastore. This is "
+"useful if an adversary has access to your inserted content and you need to "
+"deny that the content is yours. With \"content migration\" on, the content "
+"could have \"migrated\" over the internet to your node without your "
+"knowledge.\n"
+"It also helps to spread popular content over different peers to enhance "
+"availability.\n"
+"\n"
+"The GNUnet datastore contains all data that GNUnet generates (index data, "
+"inserted and migrated content). Its maximum size can be specified below.\n"
+"\n"
+"If you are an experienced user, you may want to tweak your GNUnet "
+"installation using the enhanced configurator."
+msgstr ""
+
+#: src/conf/wizard_interface.c:829
+msgid "Store migrated content"
+msgstr ""
+
+#: src/conf/wizard_interface.c:838
+msgid "Maximum datastore size (MB):"
+msgstr ""
+
+#: src/conf/wizard_interface.c:849
+msgid "Start the GNUnet background process on computer startup"
+msgstr ""
+
+#: src/conf/wizard_interface.c:856
+#, fuzzy
+msgid "Open the enhanced configurator"
+msgstr "Gtk GNUnet Konfigurator"
+
+#: src/conf/wizard_interface.c:861
+msgid "Other settings"
+msgstr ""
+
+#: src/conf/wizard_interface.c:908
+msgid "Finish"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1001
+msgid "Question"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1018
+msgid "Do you want to save your settings?"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1033
+msgid "Yes"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1038
+msgid "No"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1092
+msgid "Unable to save configuration!"
+msgstr ""
+
+#: src/conf/wizard_interface.c:1107
+msgid "OK"
+msgstr ""
 
 #: src/applications/chat/chat.c:87
 msgid "Message received from peer is invalid.\n"
@@ -1072,7 +1290,9 @@ msgstr "Versuche, Datei '%s' für MySQL Konfiguration zu verwenden.\n"
 msgid ""
 "Configuration must specify directory for FS data in section '%s' under '%"
 "s'.\n"
-msgstr "Die Konfigurationsdatei muss in der Sektion '%s' unter '%s' ein Verzeichnis für FS Daten angeben.\n"
+msgstr ""
+"Die Konfigurationsdatei muss in der Sektion '%s' unter '%s' ein Verzeichnis "
+"für FS Daten angeben.\n"
 
 #: src/applications/datastore/datastore.c:107
 #, c-format
@@ -1090,14 +1310,17 @@ msgstr "Die Datenbank konnte '%s' nicht löschen.\n"
 msgid ""
 "Configuration file must specify a directory for GNUnet to store per-peer "
 "data under %s%s\n"
-msgstr "Die Konfigurationsdatei muss unter %s%s ein Verzeichnis angeben, in dem "
+msgstr ""
+"Die Konfigurationsdatei muss unter %s%s ein Verzeichnis angeben, in dem "
 "GNUnet knotenspezifische Daten speichern kann.\n"
 
 #: src/applications/identity/hostkey.c:119
 #, c-format
 msgid ""
 "Existing hostkey in file '%s' failed format check, creating new hostkey.\n"
-msgstr "Formatüberprüfung schlug für die existierende Hostkeydatei '%s' fehl, es wird ein neuer Hostkey erzeugt.\n"
+msgstr ""
+"Formatüberprüfung schlug für die existierende Hostkeydatei '%s' fehl, es "
+"wird ein neuer Hostkey erzeugt.\n"
 
 #: src/applications/identity/hostkey.c:127
 msgid "Creating new hostkey (this may take a while).\n"
@@ -1115,7 +1338,9 @@ msgstr "Hostkey wurde erfolgreich erzeugt.\n"
 #, c-format
 msgid ""
 "File '%s' in directory '%s' does not match naming convention. Removed.\n"
-msgstr "Die Datei '%s' im Verzeichnis '%s' entspricht nicht der Namenskonvention. Datei wurde entfernt.\n"
+msgstr ""
+"Die Datei '%s' im Verzeichnis '%s' entspricht nicht der Namenskonvention. "
+"Datei wurde entfernt.\n"
 
 #: src/applications/identity/identity.c:315
 #, c-format
@@ -1126,7 +1351,8 @@ msgstr "%s '%s' ergab keine bekannten Knoten!\n"
 #: src/applications/identity/identity.c:467
 #, c-format
 msgid "Removed file '%s' containing invalid peer advertisement.\n"
-msgstr "Datei '%s' enthielt eine ungültige Knotenbekanntmachung und wurde entfernt.\n"
+msgstr ""
+"Datei '%s' enthielt eine ungültige Knotenbekanntmachung und wurde entfernt.\n"
 
 #: src/applications/identity/identity.c:512
 #, c-format
@@ -1143,7 +1369,9 @@ msgstr "Ungültige HELO Datei '%s' wurde entfernt.\n"
 msgid ""
 "Configuration file must specify directory for network identities in section %"
 "s under %s.\n"
-msgstr "Die Konfigurationsdatei muss in Sektion %s unter %s ein Verzeichnis für Identitäten angeben.\n"
+msgstr ""
+"Die Konfigurationsdatei muss in Sektion %s unter %s ein Verzeichnis für "
+"Identitäten angeben.\n"
 
 #: src/applications/testbed/commands.c:1130
 #: src/applications/stats/gnunet-stats.c:61
@@ -1180,7 +1408,9 @@ msgstr "Kein Client Dienst gestartet. Erneuter Versuch in 30 Sekunden.\n"
 msgid ""
 "Error (%s) binding the TCP listener to port %d. No proxy service started.\n"
 "Trying again in %d seconds...\n"
-msgstr "Fehler (%s) beim Binden des TCP Listeners an den Port %d. Der Proxy Dienst wurde nicht gestartet.\n"
+msgstr ""
+"Fehler (%s) beim Binden des TCP Listeners an den Port %d. Der Proxy Dienst "
+"wurde nicht gestartet.\n"
 "Erneuter Versuch in %d Sekunden...\n"
 
 #: src/applications/testbed/gnunet-testbed.c:411 src/server/tcpserver.c:519
@@ -1205,7 +1435,8 @@ msgstr "GNUnet testbed Controller starten."
 #: src/applications/testbed/gnunet-testbed.c:590
 #, c-format
 msgid "Malformed entry in the configuration in section %s under %s: %s\n"
-msgstr "Beschädigter Eintrag in der Konfigurationsdatei in Sektion %s unter %s: %s\n"
+msgstr ""
+"Beschädigter Eintrag in der Konfigurationsdatei in Sektion %s unter %s: %s\n"
 
 #: src/applications/testbed/testbed.c:50
 msgid "Could not send acknowledgement back to client.\n"
@@ -1230,7 +1461,8 @@ msgstr "Größe der '%s' Nachricht ist falsch. Nachricht wird ignoriert.\n"
 #: src/applications/testbed/testbed.c:137
 #, c-format
 msgid "TESTBED could not generate HELO message for protocol %u\n"
-msgstr "Das TESTBED konnte keine HELO Nachricht für das Protokoll %u erzeugen\n"
+msgstr ""
+"Das TESTBED konnte keine HELO Nachricht für das Protokoll %u erzeugen\n"
 
 #: src/applications/testbed/testbed.c:215
 #: src/applications/testbed/testbed.c:256
@@ -1278,7 +1510,8 @@ msgstr "Leerer Dateiname für UPLOAD_FILE Nachricht ist ungültig!\n"
 
 #: src/applications/testbed/testbed.c:833
 msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
-msgstr "Dateiname für UPLOAD_FILE Nachricht ist nicht Null-terminiert (ungültig!)\n"
+msgstr ""
+"Dateiname für UPLOAD_FILE Nachricht ist nicht Null-terminiert (ungültig!)\n"
 
 #: src/applications/testbed/testbed.c:841
 msgid "Upload refused!"
@@ -1298,11 +1531,14 @@ msgstr "ungültige Testbed Nachricht der Größe %u empfangen\n"
 #, c-format
 msgid ""
 "Received testbed message of type %u but unexpected size %u, expected %u\n"
-msgstr "Empfangene Testbed Nachricht des Typs %u hat die unerwartete Größe %u, es wurde %u erwartet\n"
+msgstr ""
+"Empfangene Testbed Nachricht des Typs %u hat die unerwartete Größe %u, es "
+"wurde %u erwartet\n"
 
 #: src/applications/testbed/testbed.c:1046
 msgid "No testbed URL given, not registered.\n"
-msgstr "Keine Testbed URL angegeben, es wurde keine Registrierung vorgenommen.\n"
+msgstr ""
+"Keine Testbed URL angegeben, es wurde keine Registrierung vorgenommen.\n"
 
 #: src/applications/testbed/testbed.c:1080
 #: src/applications/bootstrap_http/http.c:69
@@ -1313,12 +1549,15 @@ msgstr "Ungültige URL '%s' (muss mit '%s' beginnen)\n"
 #: src/applications/testbed/testbed.c:1119
 #, c-format
 msgid "Malformed http URL: '%s' at '%s'.  Testbed-client not registered.\n"
-msgstr "Beschädigte HTTP URL: '%s' bei '%s'. Testbed-Client wurde nicht registriert.\n"
+msgstr ""
+"Beschädigte HTTP URL: '%s' bei '%s'. Testbed-Client wurde nicht "
+"registriert.\n"
 
 #: src/applications/testbed/testbed.c:1155
 #, c-format
 msgid "Could not register testbed, host '%s' unknown\n"
-msgstr "Testbed konnte nicht registriert werden, Host '%s' ist nicht bekannt.\n"
+msgstr ""
+"Testbed konnte nicht registriert werden, Host '%s' ist nicht bekannt.\n"
 
 #: src/applications/testbed/testbed.c:1177
 #, c-format
