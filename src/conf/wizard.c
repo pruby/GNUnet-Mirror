@@ -282,6 +282,8 @@ wizard_main (int argc, char *argv[])
   	setlocale (LC_ALL, "");
 		bindtextdomain(PACKAGE, LOCALEDIR);
 		textdomain(PACKAGE);
+		/* GTK uses UTF-8 encoding */
+		bind_textdomain_codeset(PACKAGE, "UTF-8");
 #endif
 
 #ifdef WINDOWS
