@@ -19,7 +19,7 @@
 /**
  * Code originally written by Wez Furlong <wez@thebrainroom.com>
  * who originally placed it under the PHP License Version 3.0.
- * Adapted for GNUnet by Nils Durner <ndurner@persis.de>.
+ * Adapted for GNUnet by Nils Durner <durner@gnunet.org>.
  * GPLed with permission from Wez Furlong (see E-mail on
  * gnunet-developers, also quoted in the CVS logs).
  *

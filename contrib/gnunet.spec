@@ -68,7 +68,7 @@ Authors:
     Glenn McGrath <bug1@iinet.net.au>
     Igor Wronsky <iwronsky@users.sourceforge.net>
     Krista Bennett <krista@grothoff.org>
-    Nils Durner <N.Durner@t-online.de>
+    Nils Durner <durner@gnunet.org>
 
 %prep
 rm -rf $RPM_BUILD_ROOT
