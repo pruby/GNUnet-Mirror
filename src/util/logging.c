@@ -358,7 +358,7 @@ void breakpoint_(const char * filename,
     fflush(logfile);
   } else
     FPRINTF(stderr,
-	    _("Failure at at %s:%d.\n"),
+	    _("Failure at %s:%d.\n"),
     	    filename,
 	    linenumber);
 }
