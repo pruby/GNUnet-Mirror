@@ -509,6 +509,7 @@ void InitWinEnv()
   long lRet;
   WSADATA wsaData;
   enum {ROOT, USER, HOME} eAction = ROOT;
+  UINT uiCP;
 
   /* Init path translation */
   if((lRet = DetermineRootDir()) == ERROR_SUCCESS)
@@ -632,8 +633,9 @@ void InitWinEnv()
   }
 
   /* Use ANSI codepage for console IO */
-  SetConsoleCP(CP_ACP);
-  SetConsoleOutputCP(CP_ACP);
+  uiCP = GetACP();
+  SetConsoleCP(uiCP);
+  SetConsoleOutputCP(uiCP);
   setlocale( LC_ALL, ".OCP" );
 
   /* Initialize COM library */
