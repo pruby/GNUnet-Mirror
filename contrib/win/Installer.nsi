@@ -88,6 +88,7 @@ Section "Core files" SEC01
   File "C:\GNUnet\bin\libmysql.dll"
   File "C:\GNUnet\bin\libltdl-3.dll"
   File "C:\GNUnet\bin\libintl-3.dll"
+  File "C:\GNUnet\bin\libintl-2.dll"
   File "C:\GNUnet\bin\libgtk-win32-2.0-0.dll"
   File "C:\GNUnet\bin\libgtk-0.dll"
   File "C:\GNUnet\bin\libgthread-2.0-0.dll"
@@ -179,6 +180,8 @@ Section "Core files" SEC01
   File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
   File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.plain"  
   CopyFiles "gtkrc.gtkwimp" "gtkrc"
+  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
+  File "C:\GNUnet\share\locale\de\LC_MESSAGES\GNUnet.mo"
   SetOutPath "$INSTDIR\tmp"
 SectionEnd
 
