@@ -105,6 +105,18 @@ void initCron();
 void doneCron();
 
 /**
+ * Get location of gettext catalogs
+ */
+void getLocaleDir(char *dir)
+{
+#ifdef WINDOWS
+	conv_to_win_path("/share/locale/", dir);
+#else
+	strcpy(dir, LOCALEDIR);
+#endif
+}
+
+/**
  * Initialize the util library. Use argc, argv and the given parser
  * for processing command-line options <strong>after</strong> the
  * configuration module was initialized, but <strong>before</strong> logging
@@ -113,18 +125,21 @@ void doneCron();
 int initUtil(int argc,
 	     char * argv[],
 	     CommandLineParser parser) {
+	char lcdir[251];
+
+#ifdef MINGW
+  InitWinEnv();
+#endif
 
   setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
+  getLocaleDir(lcdir);
+  bindtextdomain (PACKAGE, lcdir);
   textdomain (PACKAGE);
 
   gnunet_util_initIO();
   initLockingGcrypt();
   initRAND();
   initXmalloc();
-#ifdef MINGW
-  InitWinEnv();
-#endif
   initConfiguration();
   if (argc > 0)
     setConfigurationString("MAIN",

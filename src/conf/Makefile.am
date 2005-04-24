@@ -4,9 +4,6 @@ AM_CFLAGS = $(GTK_CFLAGS)
 
 # GNU Gettext support
 LIBS = @LIBINTL@ @LIBS@
-# Define a C macro LOCALEDIR indicating where catalogs will be installed.
-localedir = $(datadir)/locale
-DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 
 if MINGW
  WINTOOL = gnunet-win-tool

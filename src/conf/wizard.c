@@ -279,8 +279,11 @@ int
 wizard_main (int argc, char *argv[])
 {
 #ifdef ENABLE_NLS
+		char lcdir[251];
+
   	setlocale (LC_ALL, "");
-		bindtextdomain(PACKAGE, LOCALEDIR);
+  	getLocaleDir(lcdir);
+		bindtextdomain(PACKAGE, lcdir);
 		textdomain(PACKAGE);
 		/* GTK uses UTF-8 encoding */
 		bind_textdomain_codeset(PACKAGE, "UTF-8");
