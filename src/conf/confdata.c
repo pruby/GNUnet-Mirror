@@ -220,7 +220,7 @@ int conf_write(const char *name)
 	struct symbol *sym;
 	struct menu *menu;
 	const char *basename;
-	char dirname[128], tmpname[128], newname[128];
+	char dirname[128], tmpname[128], dstname[128], newname[128];
 	int type;
 	const char *str;
 
@@ -325,16 +325,16 @@ int conf_write(const char *name)
 		}
 	}
 	fclose(out);
-	if (!name || basename != conf_def_filename) {
-		if (!name)
-			name = conf_def_filename;
-		sprintf(tmpname, "%s.old", name);
-    UNLINK(tmpname);
-		RENAME(name, tmpname);
-	}
-	sprintf(tmpname, "%s%s", dirname, basename);
-	if (RENAME(newname, tmpname))
+	
+	sprintf(tmpname, "%s%s.old", dirname, basename);
+	UNLINK(tmpname);
+	sprintf(dstname, "%s%s", dirname, basename);
+	RENAME(dstname, tmpname);
+
+	if (RENAME(newname, dstname))
 		return 1;
+		
+	UNLINK(newname);
 
 	sym_change_count = 0;
 
