@@ -52,6 +52,11 @@ void insert_nic(char *name, int defaultNIC)
   {
   	sym_calc_value_ext(sym, 1);
   	nic = sym_get_string_value(sym);
+#ifdef WINDOWS
+		/* default NIC for unixes */
+		if (strcmp(nic, "eth0") == 0)
+			nic = NULL;
+#endif
   }
 
   if (nic)
@@ -63,7 +68,7 @@ void insert_nic(char *name, int defaultNIC)
   	int inslen = strlen(name);
   	if (inslen >= niclen)
   	{
-#ifdef MINGW
+#ifdef WINDOWS
   		if (strncmp(name + inslen - niclen - 1, nic, niclen) == 0)
 #else
   		if (strcmp(name, nic) == 0)
@@ -267,6 +272,10 @@ void load_step4()
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkMigr),
 			sym_get_tristate_value(sym) != no);
 	}
+	
+#ifdef WINDOWS
+	gtk_widget_set_sensitive(chkStart, TRUE);
+#endif
 
 	if (doAutoStart)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkStart), 1);		
