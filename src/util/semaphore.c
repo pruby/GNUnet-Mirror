@@ -651,13 +651,13 @@ again:
   ret->filename = STRDUP(basename);
   fd = -1;
   while (fd == -1) {
-    fd = OPEN(basename,
+    fd = fileopen(basename,
 	      O_CREAT|O_RDWR|O_EXCL,
 	      S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP /* 660 */);
     if ( (fd == -1) &&
 	 (errno == EEXIST) ) {
       /* try without creation */
-      fd = OPEN(basename,
+      fd = fileopen(basename,
 		O_RDWR,
 		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP /* 660 */);
       /* possibly the file was deleted in the meantime,
@@ -970,7 +970,7 @@ void ipc_semaphore_free_(IPC_Semaphore * rsem,
 	  __LINE__);
     FREE(sem->filename);
     FLOCK(sem->fd, LOCK_UN);
-    CLOSE(sem->fd);
+    closefile(sem->fd);
   }
 #else
 #endif

@@ -103,7 +103,7 @@ static void freeIOC(IOContext * this,
 
   for (i=0;i<=this->treedepth;i++) {
     if (this->handles[i] != -1) {
-      CLOSE(this->handles[i]);
+      closefile(this->handles[i]);
       this->handles[i] = -1;
     }
   }
@@ -163,7 +163,7 @@ static int createIOContext(IOContext * this,
       strcat(fn, ".A");
       fn[strlen(fn)-1] += i;
     }
-    this->handles[i] = OPEN(fn,
+    this->handles[i] = fileopen(fn,
 			    O_CREAT|O_RDWR,
 			    S_IRUSR|S_IWUSR );
     if (this->handles[i] < 0) {

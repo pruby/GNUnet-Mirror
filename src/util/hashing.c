@@ -328,7 +328,7 @@ int getFileHash(const char * filename,
   int fh;
   struct sha512_ctx ctx;
 
-  fh = OPEN(filename,
+  fh = fileopen(filename,
 #ifdef O_LARGEFILE
 	    O_RDONLY | O_LARGEFILE
 #else
@@ -348,7 +348,7 @@ int getFileHash(const char * filename,
     if (delta != READ(fh,
 		      buf,
 		      delta)) {
-      CLOSE(fh);
+      closefile(fh);
       FREE(buf);
       return SYSERR;
     }
@@ -360,7 +360,7 @@ int getFileHash(const char * filename,
     else
       break;
   }
-  CLOSE(fh);
+  closefile(fh);
   sha512_final(&ctx,
 	       (unsigned char*) ret);
   FREE(buf);

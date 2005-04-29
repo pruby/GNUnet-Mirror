@@ -1183,7 +1183,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   home_dir = pw->pw_dir;
 #else
   home_dir = (char *) MALLOC(_MAX_PATH + 1);
-  conv_to_win_path("~/", home_dir);
+  plibc_conv_to_win_path("~/", home_dir);
 #endif
   nX = strlen(home_dir)+1024;
   cnffile = getConfigurationString("MYSQL",

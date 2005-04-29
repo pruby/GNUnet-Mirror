@@ -385,9 +385,9 @@ Bloomfilter * loadBloomfilter(const char * filename,
 
   /* Try to open a bloomfilter file */
 #ifndef _MSC_VER
-  bf->fd = OPEN(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
+  bf->fd = fileopen(filename, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
 #else
-  bf->fd = OPEN(filename, O_WRONLY|O_CREAT, S_IREAD|S_IWRITE);
+  bf->fd = fileopen(filename, O_WRONLY|O_CREAT, S_IREAD|S_IWRITE);
 #endif
   if (-1 == bf->fd) {
     LOG_FILE_STRERROR(LOG_FAILURE, "open", filename);
@@ -449,7 +449,7 @@ void freeBloomfilter(Bloomfilter * bf) {
   if (NULL == bf)
     return;
   MUTEX_DESTROY(&bf->lock);
-  CLOSE(bf->fd);
+  closefile(bf->fd);
   FREE(bf->bitArray);
   FREE(bf);
 }

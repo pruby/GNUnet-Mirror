@@ -352,7 +352,7 @@ static void destroySession(int i) {
   if (httpSession->sock != -1)
     if (0 != SHUTDOWN(httpSession->sock, SHUT_RDWR))
       LOG_STRERROR(LOG_EVERYTHING, "shutdown");
-  CLOSE(httpSession->sock);
+  closefile(httpSession->sock);
   httpSession->sock = -1;
   httpDisconnect(tsessions[i]);
   tsessions[i] = tsessions[--tsessionCount];
@@ -793,7 +793,7 @@ static void * httpListenMain() {
 	    LOG(LOG_INFO,
 		_("Rejected blacklisted connection from %u.%u.%u.%u.\n"),
 		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
-	    CLOSE(sock);
+	    closefile(sock);
 	  } else {
 #if DEBUG_HTTP
 	    LOG(LOG_INFO,
@@ -885,7 +885,7 @@ try_again_1:
   }
   /* shutdown... */
   if (http_sock != -1) {
-    CLOSE(http_sock);
+    closefile(http_sock);
     http_sock = -1;
   }
   /* close all sessions */
@@ -1111,7 +1111,7 @@ static int httpConnect(HELO_Message * helo,
     return SYSERR;
   }
   if (0 != setBlocking(sock, NO)) {
-    CLOSE(sock);
+    closefile(sock);
     LOG_STRERROR(LOG_FAILURE, "setBlocking");
     return SYSERR;
   }
@@ -1141,7 +1141,7 @@ static int httpConnect(HELO_Message * helo,
 	PRIP(ntohl(*(int*)&haddr->ip)),
 	ntohs(haddr->port),
 	STRERROR(errno));
-    CLOSE(sock);
+    closefile(sock);
     return SYSERR;
   }
   httpSession = MALLOC(sizeof(HTTPSession));
@@ -1255,8 +1255,8 @@ static int startTransportServer() {
 		       0);
     if (http_sock < 0) {
       LOG_STRERROR(LOG_FAILURE, "socket");
-      CLOSE(http_pipe[0]);
-      CLOSE(http_pipe[1]);
+      closefile(http_pipe[0]);
+      closefile(http_pipe[1]);
       SEMAPHORE_FREE(serverSignal);
       serverSignal = NULL;
       http_shutdown = YES;
@@ -1288,7 +1288,7 @@ static int startTransportServer() {
 	  _("Could not bind the HTTP listener to port %d. "
 	    "No transport service started.\n"),
 	  getGNUnetHTTPPort());
-      CLOSE(http_sock);
+      closefile(http_sock);
       SEMAPHORE_FREE(serverSignal);
       serverSignal = NULL;
       return SYSERR;
@@ -1303,7 +1303,7 @@ static int startTransportServer() {
   } else {
     LOG_STRERROR(LOG_ERROR,
 		 "pthread_create");
-    CLOSE(http_sock);
+    closefile(http_sock);
     SEMAPHORE_FREE(serverSignal);
     serverSignal = NULL;
     return SYSERR;
@@ -1330,10 +1330,10 @@ static int stopTransportServer() {
   } else
     haveThread = NO;
   serverSignal = NULL;
-  CLOSE(http_pipe[1]);
-  CLOSE(http_pipe[0]);
+  closefile(http_pipe[1]);
+  closefile(http_pipe[0]);
   if (http_sock != -1) {
-    CLOSE(http_sock);
+    closefile(http_sock);
     http_sock = -1;
   }
   if (haveThread == YES)

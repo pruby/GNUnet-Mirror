@@ -125,7 +125,7 @@ int stateReadContent(const char * name,
 	   "%s/%s",
 	   dbh,
 	   name);
-  fd = OPEN(fil,
+  fd = fileopen(fil,
 	    O_RDONLY,
 	    S_IRUSR);
   if (fd == -1) {
@@ -135,7 +135,7 @@ int stateReadContent(const char * name,
   fsize = getFileSize(fil);
   FREE(fil);
   if (fsize == 0) { /* also invalid! */
-    CLOSE(fd);
+    closefile(fd);
     return -1;
   }
 
@@ -143,7 +143,7 @@ int stateReadContent(const char * name,
   size = READ(fd,
 	      *result,
 	      fsize);
-  CLOSE(fd);
+  closefile(fd);
   if (size == -1) {
     FREE(*result);
     *result = NULL;
@@ -176,7 +176,7 @@ int stateAppendContent(const char * name,
 	   "%s/%s",
 	   dbh,
 	   name);
-  fd = OPEN(fil,
+  fd = fileopen(fil,
 	    O_RDWR|O_CREAT,
 	    S_IRUSR|S_IWUSR);
   if (fd == -1) {
@@ -191,7 +191,7 @@ int stateAppendContent(const char * name,
   WRITE(fd,
 	block,
 	len);
-  CLOSE(fd);
+  closefile(fd);
   return OK;
 }
 
@@ -219,7 +219,7 @@ int stateWriteContent(const char * name,
 	   "%s/%s",
 	   dbh,
 	   name);
-  fd = OPEN(fil,
+  fd = fileopen(fil,
 	    O_RDWR|O_CREAT,
 	    S_IRUSR|S_IWUSR);
   if (fd == -1) {
@@ -232,7 +232,7 @@ int stateWriteContent(const char * name,
 	len);
   if (0 != ftruncate(fd, len))
     LOG_FILE_STRERROR(LOG_WARNING, "ftruncate", fil);
-  CLOSE(fd);
+  closefile(fd);
   FREE(fil);
   return OK;
 }

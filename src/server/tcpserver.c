@@ -188,7 +188,7 @@ void terminateClientConnection(ClientHandle session) {
     clientList = session->next;
   else
     prev->next = session->next;
-  CLOSE(session->sock);
+  closefile(session->sock);
   GROW(session->writeBuffer,
        session->writeBufferSize,
        0);
@@ -429,7 +429,7 @@ static void * tcpListenMain() {
 	secs);
     sleep(secs);
     secs += 5; /* slow progression... */
-    CLOSE(listenerFD);
+    closefile(listenerFD);
     goto CREATE_SOCKET;
   }
 
@@ -518,7 +518,7 @@ static void * tcpListenMain() {
 	  LOG(LOG_WARNING,
 	      _("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
 	      PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
-	  CLOSE(sock);
+	  closefile(sock);
 	} else {
 	  ClientHandle ch
 	    = MALLOC(sizeof(ClientThreadHandle));
@@ -660,7 +660,7 @@ try_again:
   } /* while tcpserver_keep_running */
 
   /* shutdown... */
-  CLOSE(listenerFD);
+  closefile(listenerFD);
 
   /* close all sessions */
   while (clientList != NULL)
@@ -753,8 +753,8 @@ int doneTCPServer() {
   LOG(LOG_DEBUG,
       "entering %s\n", __FUNCTION__);
 #endif
-  CLOSE(signalingPipe[0]);
-  CLOSE(signalingPipe[1]);
+  closefile(signalingPipe[0]);
+  closefile(signalingPipe[1]);
   /* free data structures */
   MUTEX_DESTROY(&handlerlock);
   MUTEX_DESTROY(&clientlock);

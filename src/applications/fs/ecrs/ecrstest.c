@@ -78,7 +78,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   int i;
 
   name = makeName(size);
-  fd = OPEN(name, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
+  fd = fileopen(name, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
   for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
@@ -87,7 +87,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 	 (HashCode512*) &buf[i]);
   write(fd, buf, size);
   FREE(buf);
-  CLOSE(fd);
+  closefile(fd);
   ret = ECRS_uploadFile(name,
 			YES, /* index */
 			0, /* anon */
@@ -195,7 +195,7 @@ static int downloadFile(unsigned int size,
 			      &testTerminate,
 			      NULL)) {
 
-    fd = OPEN(tmpName, O_RDONLY);
+    fd = fileopen(tmpName, O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
@@ -211,7 +211,7 @@ static int downloadFile(unsigned int size,
       ret = OK;
     FREE(buf);
     FREE(in);
-    CLOSE(fd);
+    closefile(fd);
   }
   UNLINK(tmpName);
   FREE(tmpName);

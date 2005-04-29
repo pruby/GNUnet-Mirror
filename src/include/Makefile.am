@@ -6,6 +6,7 @@ EXTRA_DIST = \
   fs.h \
   gettext.h \
   platform.h \
+  plibc.h \
   winproc.h 
 
 gnunetincludedir = $(includedir)/GNUnet

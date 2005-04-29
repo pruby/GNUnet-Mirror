@@ -342,7 +342,7 @@ char * expandFileName(const char * fil) {
 #else
   fn = MALLOC(MAX_PATH + 1);
 
-  if ((lRet = conv_to_win_path(fil, buffer)) != ERROR_SUCCESS)
+  if ((lRet = plibc_conv_to_win_path(fil, buffer)) != ERROR_SUCCESS)
   {
   	SetErrnoFromWinError(lRet);
 
@@ -453,11 +453,11 @@ int readFile(const char * fileName,
 
   if ((fileName == NULL) || (result == NULL))
     return -1;
-  handle = OPEN(fileName,O_RDONLY,S_IRUSR);
+  handle = fileopen(fileName,O_RDONLY,S_IRUSR);
   if (handle < 0)
     return -1;
   size = READ(handle, result, len);
-  CLOSE(handle);
+  closefile(handle);
   return size;
 }
 
@@ -477,7 +477,7 @@ void writeFile(const char * fileName,
      present, otherwise overwrite */
   if ((fileName == NULL) || (buffer == NULL))
     return;
-  handle = OPEN(fileName,
+  handle = fileopen(fileName,
 		O_CREAT|O_WRONLY,S_IRUSR|S_IWUSR);
   if (handle == -1) {
     LOG_FILE_STRERROR(LOG_WARNING, "open", fileName);
@@ -487,7 +487,7 @@ void writeFile(const char * fileName,
   if (n != WRITE(handle, buffer, n))
     LOG_FILE_STRERROR(LOG_WARNING, "write", fileName);
   CHMOD(fileName, atoo(mode));
-  CLOSE(handle);
+  closefile(handle);
 }
 
 /**
@@ -608,37 +608,13 @@ int rm_minus_rf(const char * fileName) {
 void close_(int fd,
 	    const char * filename,
 	    int linenumber) {
-#ifdef MINGW
-  /* Windows sockets have to be closed using closesocket() */
-  if (closesocket(fd) != 0) {
-#endif
-    if (0 != close(fd)) {
-#ifdef MINGW
-      /* Close Windows handle */
-      if (! CloseHandle((HANDLE) fd)) {
-#endif
+    if (0 != CLOSE(fd)) {
 	LOG(LOG_INFO,
 	    _("'%s' failed at %s:%d with error: %s\n"),
-#ifdef MINGW
-	    "CloseHandle",
-#else
 	    "close",
-#endif
 	    filename,
 	    linenumber, STRERROR(errno));
       }
-#ifdef MINGW
-    } else {
-      /* discard blocking mode */
-      unsigned int uiIndex;
-      WaitForSingleObject(hSocksLock, INFINITE);
-      for(uiIndex = 0; uiIndex < uiSockCount; uiIndex++)
-        if (pSocks[uiIndex].s == fd)
-          pSocks[uiIndex].s = -1;
-      ReleaseMutex(hSocksLock);
-    }
-  }
-#endif
 }
 
 #define COPY_BLK_SIZE 65536
@@ -658,20 +634,20 @@ int copyFile(const char * src,
 
   buf = MALLOC(COPY_BLK_SIZE);
   pos = 0;
-  in = OPEN(src, O_RDONLY
+  in = fileopen(src, O_RDONLY
 #ifdef O_LARGEFILE
 	     | O_LARGEFILE
 #endif
 	    );
   if (in == -1)
     return SYSERR;
-  out = OPEN(dst, O_WRONLY | O_CREAT | O_EXCL
+  out = fileopen(dst, O_WRONLY | O_CREAT | O_EXCL
 #ifdef O_LARGEFILE
 	     | O_LARGEFILE
 #endif
 	     , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
   if (out == -1) {
-    CLOSE(in);
+    closefile(in);
     return SYSERR;
   }
   size = getFileSize(src);
@@ -685,12 +661,12 @@ int copyFile(const char * src,
       goto FAIL;
     pos += len;
   }
-  CLOSE(in);
-  CLOSE(out);
+  closefile(in);
+  closefile(out);
   return OK;
  FAIL:
-  CLOSE(in);
-  CLOSE(out);
+  closefile(in);
+  closefile(out);
   return SYSERR;
 }
 

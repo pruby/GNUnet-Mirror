@@ -522,14 +522,14 @@ static int pipeReaderThread(ProcessInfo * pi) {
   if (pi->pid == 0) {
     /* make pipe stdout/stderr */
 
-    CLOSE(fd[0]);
-    CLOSE(1);
-    CLOSE(2);
+    closefile(fd[0]);
+    closefile(1);
+    closefile(2);
     if (-1 == dup2(fd[1], 1))
       LOG_STRERROR(LOG_ERROR, "dup2");
     if (-1 == dup2(fd[1], 2))
       LOG_STRERROR(LOG_ERROR, "dup2");
-    CLOSE(fd[1]);
+    closefile(fd[1]);
     CHDIR(dir);
     FREE(dir);
     execvp(pi->argv[0],
@@ -543,12 +543,12 @@ static int pipeReaderThread(ProcessInfo * pi) {
     exit(errno);
   } /* end pi->pid == 0 */
   FREE(dir);
-  CLOSE(fd[1]);
+  closefile(fd[1]);
   for (pos=0;pos<pi->argc;pos++)
     FREE(pi->argv[pos]);
   FREE(pi->argv);
   if (pi->pid == -1) {
-    CLOSE(fd[0]);
+    closefile(fd[0]);
     SEMAPHORE_UP(pi->sem);
     MUTEX_UNLOCK(&lock);
     return -1;
@@ -588,7 +588,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
 	   ret);
     MUTEX_UNLOCK(&lock);
   }
-  CLOSE(pi->outputPipe);
+  closefile(pi->outputPipe);
   MUTEX_LOCK(&lock);
 
   ret = waitpid(pi->pid,
@@ -1179,7 +1179,7 @@ static void httpRegister(char * cmd) {
 	STRERROR(errno));
     FREE(reg);
     FREE(hostname);
-    CLOSE(sock);
+    closefile(sock);
     return;
   }
 
@@ -1233,7 +1233,7 @@ static void httpRegister(char * cmd) {
 	STRERROR(errno));
     FREE(command);
     FREE(hostname);
-    CLOSE(sock);
+    closefile(sock);
     return;
   }
   FREE(command);
@@ -1263,7 +1263,7 @@ static void httpRegister(char * cmd) {
     else
       curpos=0;
   }
-  CLOSE(sock);
+  closefile(sock);
   if (curpos < 4) { /* invalid response */
     LOG(LOG_WARNING,
 	_("Exit register (error: no http response read).\n"));

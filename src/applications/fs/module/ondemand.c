@@ -208,7 +208,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
     LOG(LOG_DEBUG,
 	"Storing on-demand encoded data in '%s'.\n",
 	fn);
-    fd = OPEN(fn,
+    fd = fileopen(fn,
 #ifdef O_LARGEFILE
 	      O_CREAT|O_WRONLY|O_LARGEFILE,
 #else
@@ -232,7 +232,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
       LOG_FILE_STRERROR(LOG_ERROR, "write", fn);
       ret = SYSERR;
     }
-    CLOSE(fd);
+    closefile(fd);
     if (ret == SYSERR) {
       FREE(fn);    
       return ret;
@@ -358,9 +358,9 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   fn = getOnDemandFile(&odb->fileId);
 
 #ifdef O_LARGEFILE
-  fileHandle = OPEN(fn, O_RDONLY|O_LARGEFILE, 0);
+  fileHandle = fileopen(fn, O_RDONLY|O_LARGEFILE, 0);
 #else
-  fileHandle = OPEN(fn, O_RDONLY, 0);
+  fileHandle = fileopen(fn, O_RDONLY, 0);
 #endif
   if (fileHandle == -1) {
     char unavail_key[256];
@@ -450,7 +450,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 				       SEEK_SET)) {
     LOG_FILE_STRERROR(LOG_WARNING, "lseek", fn);
     FREE(fn);
-    CLOSE(fileHandle);
+    closefile(fileHandle);
     return SYSERR;
   }
   db = MALLOC(sizeof(DBlock) + ntohl(odb->blockSize));
@@ -463,10 +463,10 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     LOG_FILE_STRERROR(LOG_ERROR, "read", fn);
     FREE(fn);
     FREE(db);
-    CLOSE(fileHandle);
+    closefile(fileHandle);
     return SYSERR;
   }
-  CLOSE(fileHandle);
+  closefile(fileHandle);
   ret = fileBlockEncode(db,
 			ntohl(odb->blockSize) + sizeof(DBlock),
 			query,
@@ -495,12 +495,12 @@ int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
   int fd;
 
   fn = getOnDemandFile(fileId);
-  fd = OPEN(fn,
+  fd = fileopen(fn,
 	    O_RDONLY);
   FREE(fn);
   if(fd == -1)
     return NO;
-  CLOSE(fd);
+  closefile(fd);
   return YES;
 }
 
@@ -563,7 +563,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   LOG(LOG_DEBUG,
       "Removing on-demand encoded data stored in '%s'.\n",
       fn);
-  fd = OPEN(fn,
+  fd = fileopen(fn,
 #ifdef O_LARGEFILE
 	    O_RDONLY | O_LARGEFILE,
 #else
@@ -587,7 +587,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 		      &block[1],
 		      delta)) {
       LOG_FILE_STRERROR(LOG_ERROR, "read", fn);
-      CLOSE(fd);
+      closefile(fd);
       FREE(fn);
       FREE(block);
       return SYSERR;
@@ -625,7 +625,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     pos += delta;
   }
   FREE(block);
-  CLOSE(fd);
+  closefile(fd);
   UNLINK(fn);
 
   /* Remove information about unavailability */

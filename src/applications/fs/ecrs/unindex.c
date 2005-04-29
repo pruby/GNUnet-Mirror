@@ -236,9 +236,9 @@ int ECRS_unindexFile(const char * filename,
 		     &fileId);
 
 #ifdef O_LARGEFILE
-  fd = OPEN(filename, O_RDONLY | O_LARGEFILE);
+  fd = fileopen(filename, O_RDONLY | O_LARGEFILE);
 #else
-  fd = OPEN(filename, O_RDONLY);
+  fd = fileopen(filename, O_RDONLY);
 #endif
   if (fd == -1) {
     LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
@@ -385,7 +385,7 @@ int ECRS_unindexFile(const char * filename,
   /* free resources */
   FREE(iblocks);
   FREE(dblock);
-  CLOSE(fd);
+  closefile(fd);
   releaseClientSocket(sock);
   return OK;
  FAILURE:
@@ -393,7 +393,7 @@ int ECRS_unindexFile(const char * filename,
     FREENONNULL(iblocks[i]);
   FREE(iblocks);
   FREE(dblock);
-  CLOSE(fd);
+  closefile(fd);
   releaseClientSocket(sock);
   return SYSERR;
 }

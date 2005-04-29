@@ -182,7 +182,7 @@ on_finish_clicked (GtkButton * button, gpointer user_data)
 		else
 		{
 			char szPath[_MAX_PATH + 1];
-			conv_to_win_path("/bin/gnunetd.exe", szPath);
+			plibc_conv_to_win_path("/bin/gnunetd.exe", szPath);
 			
 			if (RegSetValue(HKEY_LOCAL_MACHINE,
 				"Software\\Microsoft\\Windows\\CurrentVersion\\Run", REG_SZ, szPath, 

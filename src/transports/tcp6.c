@@ -295,7 +295,7 @@ static void destroySession(int i) {
   if (-1 != tcp6Session->sock)
     if (0 != SHUTDOWN(tcp6Session->sock, SHUT_RDWR))
       LOG_STRERROR(LOG_EVERYTHING, "shutdown");
-  CLOSE(tcp6Session->sock);
+  closefile(tcp6Session->sock);
   tcp6Session->sock = -1;
   tcp6Disconnect(tsessions[i]);
   tsessions[i] = tsessions[--tsessionCount];
@@ -659,7 +659,7 @@ static void * tcp6ListenMain() {
 			  INET6_ADDRSTRLEN));
 	    FREE(tmp);
 	    SHUTDOWN(sock, 2);
-	    CLOSE(sock);
+	    closefile(sock);
 	  } else
 	    createNewSession(sock);
 	} else {
@@ -744,7 +744,7 @@ try_again_1:
   }
   /* shutdown... */
   if (tcp6_sock != -1) {
-    CLOSE(tcp6_sock);
+    closefile(tcp6_sock);
     tcp6_sock = -1;
   }
   /* close all sessions */
@@ -1033,7 +1033,7 @@ static int tcp6Connect(HELO_Message * helo,
     if (sock < 0)
       continue;
     if (0 != setBlocking(sock, NO)) {
-      CLOSE(sock);
+      closefile(sock);
       LOG_STRERROR(LOG_FAILURE, "setBlocking");
       return SYSERR;
     }
@@ -1045,7 +1045,7 @@ static int tcp6Connect(HELO_Message * helo,
     if ( (i < 0) &&
 	 (errno != EINPROGRESS) ) {
       LOG_STRERROR(LOG_WARNING, "connect");
-      CLOSE(sock);
+      closefile(sock);
       sock = -1;
       continue;
     }
@@ -1058,7 +1058,7 @@ static int tcp6Connect(HELO_Message * helo,
   }
   if (0 != setBlocking(sock, NO)) {
     LOG_STRERROR(LOG_FAILURE, "setBlocking");
-    CLOSE(sock);
+    closefile(sock);
     return SYSERR;
   }
   tcp6Session = MALLOC(sizeof(TCP6Session));
@@ -1176,8 +1176,8 @@ static int startTransportServer(void) {
 		       0);
     if (tcp6_sock < 0) {
       LOG_STRERROR(LOG_FAILURE, "socket");
-      CLOSE(tcp6_pipe[0]);
-      CLOSE(tcp6_pipe[1]);
+      closefile(tcp6_pipe[0]);
+      closefile(tcp6_pipe[1]);
       SEMAPHORE_FREE(serverSignal);
       serverSignal = NULL;
       tcp6_shutdown = YES;
@@ -1208,7 +1208,7 @@ static int startTransportServer(void) {
       LOG(LOG_ERROR,
 	  _("Failed to start transport service on port %d.\n"),
 	  getGNUnetTCP6Port());
-      CLOSE(tcp6_sock);
+      closefile(tcp6_sock);
       tcp6_sock = -1;
       SEMAPHORE_FREE(serverSignal);
       serverSignal = NULL;
@@ -1224,7 +1224,7 @@ static int startTransportServer(void) {
   } else {
     LOG_STRERROR(LOG_ERROR,
 		 "pthread_create");
-    CLOSE(tcp6_sock);
+    closefile(tcp6_sock);
     SEMAPHORE_FREE(serverSignal);
     serverSignal = NULL;
     return SYSERR;
@@ -1251,10 +1251,10 @@ static int stopTransportServer() {
   } else
     haveThread = NO;
   serverSignal = NULL;
-  CLOSE(tcp6_pipe[1]);
-  CLOSE(tcp6_pipe[0]);
+  closefile(tcp6_pipe[1]);
+  closefile(tcp6_pipe[0]);
   if (tcp6_sock != -1) {
-    CLOSE(tcp6_sock);
+    closefile(tcp6_sock);
     tcp6_sock = -1;
   }
   if (haveThread == YES)

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -110,7 +110,7 @@ void doneCron();
 void getLocaleDir(char *dir)
 {
 #ifdef WINDOWS
-	conv_to_win_path("/share/locale/", dir);
+	plibc_conv_to_win_path("/share/locale/", dir);
 #else
 	strcpy(dir, LOCALEDIR);
 #endif

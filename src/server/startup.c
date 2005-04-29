@@ -328,7 +328,7 @@ void detachFromTerminal(int * filedes) {
     int ok;
     char c;
 
-    CLOSE(filedes[1]); /* we only read */
+    closefile(filedes[1]); /* we only read */
     ok = SYSERR;
     while (0 < READ(filedes[0], &c, sizeof(char))) {
       if (c == '.')
@@ -340,8 +340,8 @@ void detachFromTerminal(int * filedes) {
     else
       exit(1); /* child reported error */
   }
-  CLOSE(filedes[0]); /* we only write */
-  nullfd = OPEN("/dev/null",
+  closefile(filedes[0]); /* we only write */
+  nullfd = fileopen("/dev/null",
 		O_CREAT | O_RDWR | O_APPEND);
   if (nullfd < 0) {
     perror("/dev/null");
@@ -367,7 +367,7 @@ void detachFromTerminalComplete(int * filedes) {
 #ifndef MINGW
   char c = '.';
   WRITE(filedes[1], &c, sizeof(char)); /* signal success */
-  CLOSE(filedes[1]);
+  closefile(filedes[1]);
 #endif
 }
 

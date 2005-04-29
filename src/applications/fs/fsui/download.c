@@ -214,10 +214,10 @@ static void * downloadThread(FSUI_DownloadList * dl) {
     int fd;
 
 #ifdef O_LARGEFILE
-    fd = OPEN(dl->filename,
+    fd = fileopen(dl->filename,
 	      O_LARGEFILE | O_RDONLY);
 #else
-    fd = OPEN(dl->filename,
+    fd = fileopen(dl->filename,
 	      O_RDONLY);
 #endif
     if (fd == -1) {
@@ -242,7 +242,7 @@ static void * downloadThread(FSUI_DownloadList * dl) {
       MUTEX_UNLOCK(&dl->ctx->lock);
       ECRS_freeMetaData(md);
       MUNMAP(dirBlock, totalBytes);
-      CLOSE(fd);
+      closefile(fd);
     }
 
     /* wait for recursive downloads (if any) */

@@ -316,10 +316,10 @@ static int addSshNode(int argc, char * argv[]) {
     if (0 == BIND(s,
 		  &addr,
 		  sizeof(addr))) {
-      CLOSE(s);
+      closefile(s);
       break; /* found port! */
     } else {
-      CLOSE(s); /* not available, try another one... */
+      closefile(s); /* not available, try another one... */
     }
   }
   if (lport == 65535) {
@@ -1606,7 +1606,7 @@ static int addAvailable(int argc,
 	   STRERROR(errno));
     FREE(reg);
     FREE(hostname);
-    CLOSE(sock);
+    closefile(sock);
     return -1;
   }
 
@@ -1630,7 +1630,7 @@ static int addAvailable(int argc,
 	   STRERROR(errno));
     FREE(command);
     FREE(hostname);
-    CLOSE(sock);
+    closefile(sock);
     return -1;
   }
   FREE(command);
@@ -1662,7 +1662,7 @@ static int addAvailable(int argc,
   }
   if (curpos < 4) { /* invalid response */
     XPRINTF(" exit register (error: no http response read)\n");
-    CLOSE(sock);
+    closefile(sock);
     return -1;
   }
 
@@ -1693,18 +1693,18 @@ static int addAvailable(int argc,
 
       if (0 != processCommands(buffer, &curpos)) {
 	FREE(buffer);
-	CLOSE(sock);
+	closefile(sock);
 	return -1;
       }
     }
   }
   if (0 != processCommands(buffer, &curpos)) {
     FREE(buffer);
-    CLOSE(sock);
+    closefile(sock);
     return -1;
   }
   FREE(buffer);
-  CLOSE(sock);
+  closefile(sock);
   return 0;
 }
 

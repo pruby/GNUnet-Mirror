@@ -1943,7 +1943,7 @@ int rm_minus_rf(const char * fileName);
 /* use the CLOSE macro... */
 void close_(int fd, const char * filename, int linenumber);
 
-#define CLOSE(fd) close_(fd, __FILE__, __LINE__)
+#define closefile(fd) close_(fd, __FILE__, __LINE__)
 
 /**
  * Stop the application.
@@ -2296,6 +2296,10 @@ void doneParseConfig();
  */
 void getLocaleDir(char *dir);
 
+/**
+ * open() a file
+ */
+int fileopen(const char *filename, int oflag, ...);
 
 /**
  * Helper functions

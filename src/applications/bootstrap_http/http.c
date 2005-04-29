@@ -146,7 +146,7 @@ downloadHostlistHelper(char * url,
 	__FILE__, __LINE__,
 	STRERROR(errno));
     FREE(filename);
-    CLOSE(sock);
+    closefile(sock);
     return;
   }
 
@@ -172,7 +172,7 @@ downloadHostlistHelper(char * url,
 	__FILE__, __LINE__,
 	STRERROR(errno));
     FREE(command);
-    CLOSE(sock);
+    closefile(sock);
     return;
   }
   FREE(command);
@@ -204,7 +204,7 @@ downloadHostlistHelper(char * url,
     LOG(LOG_WARNING,
 	_("Parsing HTTP response for URL '%s' failed.\n"),
 	url);
-    CLOSE(sock);
+    closefile(sock);
     return;
   }
 
@@ -247,7 +247,7 @@ downloadHostlistHelper(char * url,
   }
 
   FREE(buffer);
-  CLOSE(sock);
+  closefile(sock);
 }
 
 

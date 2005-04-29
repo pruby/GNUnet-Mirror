@@ -553,7 +553,7 @@ static int stopTransportServer() {
       PTHREAD_JOIN(&dispatchThread, &unused);
     }
   }
-  CLOSE(udp_sock);
+  closefile(udp_sock);
   udp_sock = -1;
   return OK;
 }

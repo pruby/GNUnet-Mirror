@@ -171,7 +171,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
   
   if (ioctl(sockfd, SIOCGIFCONF, &ifc) == -1) {
     LOG_STRERROR(LOG_WARNING, "ioctl");
-    CLOSE(sockfd);
+    closefile(sockfd);
     FREE(interfaces);
     return SYSERR;
   }
@@ -191,7 +191,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     memcpy(identity,
 	   &(((struct sockaddr_in *)&ifr[i].ifr_addr)->sin_addr),
 	   sizeof(struct in_addr));
-    CLOSE(sockfd);
+    closefile(sockfd);
     FREE(interfaces);
     return OK;
   }
@@ -213,12 +213,12 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     memcpy(identity,
 	   &(((struct sockaddr_in *)&ifr[i].ifr_addr)->sin_addr),
 	   sizeof(struct in_addr));
-    CLOSE(sockfd);
+    closefile(sockfd);
     FREE(interfaces);
     return OK;
   }
 
-  CLOSE(sockfd);
+  closefile(sockfd);
   LOG(LOG_WARNING,
       _("Could not obtain IP for interface '%s' using '%s'.\n"),
       "ioctl",

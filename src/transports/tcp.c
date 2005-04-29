@@ -303,7 +303,7 @@ static void destroySession(int i) {
   if (tcpSession->sock != -1)
     if (0 != SHUTDOWN(tcpSession->sock, SHUT_RDWR))
       LOG_STRERROR(LOG_EVERYTHING, "shutdown");
-  CLOSE(tcpSession->sock);
+  closefile(tcpSession->sock);
   tcpSession->sock = -1;
   tcpDisconnect(tsessions[i]);
   tsessions[i] = tsessions[--tsessionCount];
@@ -669,7 +669,7 @@ static void * tcpListenMain() {
 		_("Rejected blacklisted connection from %u.%u.%u.%u.\n"),
 		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
 	    SHUTDOWN(sock, 2);
-	    CLOSE(sock);
+	    closefile(sock);
 	  } else {
 #if DEBUG_TCP
 	    LOG(LOG_INFO,
@@ -770,7 +770,7 @@ try_again_1:
   }
   /* shutdown... */
   if (tcp_sock != -1) {
-    CLOSE(tcp_sock);
+    closefile(tcp_sock);
     tcp_sock = -1;
   }
   /* close all sessions */
@@ -1069,7 +1069,7 @@ static int tcpConnect(HELO_Message * helo,
     return SYSERR;
   }
   if (0 != setBlocking(sock, NO)) {
-    CLOSE(sock);
+    closefile(sock);
     LOG_STRERROR(LOG_FAILURE, "setBlocking");
     return SYSERR;
   }
@@ -1093,12 +1093,12 @@ static int tcpConnect(HELO_Message * helo,
 	PRIP(ntohl(*(int*)&haddr->ip)),
 	ntohs(haddr->port),
 	STRERROR(errno));
-    CLOSE(sock);
+    closefile(sock);
     return SYSERR;
   }
   if (0 != setBlocking(sock, NO)) {
     LOG_STRERROR(LOG_FAILURE, "setBlocking");
-    CLOSE(sock);
+    closefile(sock);
     return SYSERR;
   }
   tcpSession = MALLOC(sizeof(TCPSession));
@@ -1233,8 +1233,8 @@ static int startTransportServer(void) {
 		      0);
     if (tcp_sock < 0) {
       LOG_STRERROR(LOG_FAILURE, "socket");
-      CLOSE(tcp_pipe[0]);
-      CLOSE(tcp_pipe[1]);
+      closefile(tcp_pipe[0]);
+      closefile(tcp_pipe[1]);
       SEMAPHORE_FREE(serverSignal);
       serverSignal = NULL;
       tcp_shutdown = YES;
@@ -1265,7 +1265,7 @@ static int startTransportServer(void) {
       LOG(LOG_ERROR,
 	  _("Failed to start transport service on port %d.\n"),
 	  getGNUnetTCPPort());
-      CLOSE(tcp_sock);
+      closefile(tcp_sock);
       tcp_sock = -1;
       SEMAPHORE_FREE(serverSignal);
       serverSignal = NULL;
@@ -1281,7 +1281,7 @@ static int startTransportServer(void) {
   } else {
     LOG_STRERROR(LOG_ERROR,
 		 "pthread_create");
-    CLOSE(tcp_sock);
+    closefile(tcp_sock);
     SEMAPHORE_FREE(serverSignal);
     serverSignal = NULL;
     return SYSERR;
@@ -1308,10 +1308,10 @@ static int stopTransportServer() {
   } else
     haveThread = NO;
   serverSignal = NULL;
-  CLOSE(tcp_pipe[1]);
-  CLOSE(tcp_pipe[0]);
+  closefile(tcp_pipe[1]);
+  closefile(tcp_pipe[0]);
   if (tcp_sock != -1) {
-    CLOSE(tcp_sock);
+    closefile(tcp_sock);
     tcp_sock = -1;
   }
   if (haveThread == YES)

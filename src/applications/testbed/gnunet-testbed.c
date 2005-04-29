@@ -180,7 +180,7 @@ static int helper_main(int argc,
 	_("Cannot connect to LOOPBACK port %d: %s\n"),
 	PORT,
 	STRERROR(errno));
-    CLOSE(sock);
+    closefile(sock);
     sock = -1;
     return SYSERR;
   }
@@ -217,7 +217,7 @@ static int helper_main(int argc,
   }
   retVal = *(int*)buf;
   FREE(buf);
-  CLOSE(sock);
+  closefile(sock);
   return retVal;
 }
 
@@ -349,7 +349,7 @@ static int server_main(pid_t bash_pid) {
 	secs);
     sleep(secs);
     secs += 5; /* slow progression... */
-    CLOSE(ssock);
+    closefile(ssock);
     goto CREATE_SOCKET;
   }
 
@@ -410,7 +410,7 @@ static int server_main(pid_t bash_pid) {
       LOG(LOG_WARNING,
 	  _("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
 	  PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
-      CLOSE(sock);
+      closefile(sock);
       continue;
     }
 
@@ -467,7 +467,7 @@ static int server_main(pid_t bash_pid) {
 		 &i);
     }
     FREE(command);
-    CLOSE(sock);
+    closefile(sock);
     sock = -1;
   }
   /* just to be certain, we could have

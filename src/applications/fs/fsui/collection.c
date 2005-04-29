@@ -257,7 +257,7 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
     FREE(tmpName);
     return;
   }
-  CLOSE(fd);
+  closefile(fd);
   if (OK != ECRS_uploadFile(tmpName,
 			    NO, /* indexing */
 			    ntohl(cd->anonymityLevel),

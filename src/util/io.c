@@ -315,7 +315,7 @@ int isSocketValid(int s)
 /**
  * Open a file
  */
-int OPEN(const char *filename, int oflag, ...)
+int fileopen(const char *filename, int oflag, ...)
 {
   int mode;
   char *fn;
@@ -324,7 +324,7 @@ int OPEN(const char *filename, int oflag, ...)
   char szFile[_MAX_PATH + 1];
   long lRet;
 
-  if ((lRet = conv_to_win_path(filename, szFile)) != ERROR_SUCCESS)
+  if ((lRet = plibc_conv_to_win_path(filename, szFile)) != ERROR_SUCCESS)
   {
     errno = ENOENT;
     SetLastError(lRet);

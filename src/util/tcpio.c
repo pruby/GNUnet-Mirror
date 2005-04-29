@@ -166,7 +166,7 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
 	PRIP(ntohl(*(int*)&sock->ip.addr)),
 	sock->port,
 	STRERROR(errno));
-    CLOSE(sock->socket);
+    closefile(sock->socket);
     sock->socket = -1;
     return SYSERR;
   }
@@ -442,7 +442,7 @@ void closeSocketTemporarily(GNUNET_TCP_SOCKET * sock) {
     sock->socket = -1;
     if (0 != SHUTDOWN(i, SHUT_RDWR))
       LOG_STRERROR(LOG_DEBUG, "shutdown");
-    CLOSE(i);
+    closefile(i);
   }
   sock->outBufLen = 0;
   FREENONNULL(sock->outBufPending);

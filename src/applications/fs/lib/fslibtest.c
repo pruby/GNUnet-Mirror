@@ -286,7 +286,7 @@ int main(int argc, char * argv[]){
     CHECK(-1 != WRITE(fd, 
 		      &((DBlock*)&block[1])[1],
 		      ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock)));
-    CLOSE(fd);
+    closefile(fd);
     CHECK(FS_initIndex(sock,
 		       &hc, 
 		       tmpName) == YES);

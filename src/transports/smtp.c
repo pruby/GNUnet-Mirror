@@ -313,7 +313,7 @@ static int connectToSMTPServer() {
 		  (struct sockaddr*)&soaddr,
 		  sizeof(soaddr))) {
     LOG_STRERROR(LOG_FAILURE, "connect");
-    CLOSE(res);
+    closefile(res);
     return -1;
   }
   return res;
@@ -439,7 +439,7 @@ static void * listenAndDistribute() {
     unsigned int size;
     MessagePack * coreMP;
 
-    smtp_pipe = OPEN(pipename, O_RDONLY);
+    smtp_pipe = fileopen(pipename, O_RDONLY);
     fdes = fdopen(smtp_pipe, "r");
     while ( smtp_shutdown == NO ) {
       do {
@@ -783,7 +783,7 @@ static int startTransportServer(void) {
   smtp_sock = connectToSMTPServer();
   if ( smtp_sock == -1) {
     LOG_STRERROR(LOG_ERROR, "connectToSMTPServer");
-    CLOSE(smtp_sock);
+    closefile(smtp_sock);
     return SYSERR;
   }
   LOG(LOG_DEBUG,
@@ -794,7 +794,7 @@ static int startTransportServer(void) {
     LOG(LOG_ERROR,
 	_("SMTP server send unexpected response at %s:%d.\n"),
 	__FILE__, __LINE__);
-    CLOSE(smtp_sock);
+    closefile(smtp_sock);
     return SYSERR;
   }
   email = NULL; /* abusing email as a flag... */
@@ -832,10 +832,10 @@ static int stopTransportServer() {
   void * unused;
 
   smtp_shutdown = YES;
-  CLOSE(smtp_pipe); /* close pipe. Waiting fgets should return NULL*/
+  closefile(smtp_pipe); /* close pipe. Waiting fgets should return NULL*/
   SEMAPHORE_DOWN(serverSignal);
   SEMAPHORE_FREE(serverSignal);
-  CLOSE(smtp_sock);
+  closefile(smtp_sock);
   PTHREAD_JOIN(&dispatchThread, &unused);
   return OK;
 }
