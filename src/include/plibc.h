@@ -27,13 +27,6 @@
 #ifndef _PLIBC_H_
 #define _PLIBC_H_
 
-#include <windows.h>
-#include <time.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-
 #ifndef SIGALRM
  #define SIGALRM 14
 #endif
@@ -47,6 +40,13 @@ extern "C" {
 #endif
 
 #ifdef WINDOWS
+
+#include <windows.h>
+#include <time.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 #define __BYTE_ORDER BYTE_ORDER
 #define __BIG_ENDIAN BIG_ENDIAN

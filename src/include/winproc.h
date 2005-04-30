@@ -44,8 +44,6 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-#include "plibc.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
