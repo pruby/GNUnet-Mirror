@@ -1,15 +1,15 @@
-.TH GNUNET-TRANSPORT-CHECK "1" "19 Dec 2003" "GNUnet"
+.TH GNUNET-TRANSPORT-CHECK "1" "30 Apr 2005" "GNUnet"
 .SH NAME
-gnunet-transport-check \- a tool to test a GNUnet transport service
+gnunet\-transport\-check \- a tool to test a GNUnet transport service
 .SH SYNOPSIS
 .B gnunet\-transport\-check
 [\fIOPTIONS\fR]
 .SH DESCRIPTION
 .PP
-gnunet-transport-check can be used to test or profile
+gnunet\-transport\-check can be used to test or profile
 a GNUnet transport service.  The tool can be used to test
 both the correctness of the software as well as the correctness
-of the configuration.  gnunet-transport-check features two modes,
+of the configuration.  gnunet\-transport\-check features two modes,
 called loopback mode and ping mode.  In loopback mode the test is limited to testing if the
 transport can be used to communicate with itself (loopback).
 This mode does not include communication with other peers which
@@ -23,27 +23,27 @@ and then try to contact each of the peers.  Note that it is perfectly
 normal that some peers do not respond, but if no peer responds something
 is likely to be wrong.  The configuration is always taken
 from the configuration file.  Do not run gnunetd while running
-gnunet-transport-check since the transport services cannot
+gnunet\-transport\-check since the transport services cannot
 be used by two processes at the same time.
 .PP
-gnunet-transport-check will always produce an error-message for
-the NAT transport in loopback mode.  If NAT is configured in accept-mode (as in,
+gnunet\-transport\-check will always produce an error\-message for
+the NAT transport in loopback mode.  If NAT is configured in accept\-mode (as in,
 accept connections from peers using network address translation),
 the check will fail with the message "could not create HELO",
 which is correct since the peer itself is clearly not going to
-advertise itself as a NAT.  If the peer is configured in NAT-mode,
+advertise itself as a NAT.  If the peer is configured in NAT\-mode,
 that is, the peer is behind a NAT box, the message will be
 'could not connect'.  For NAT, both messages are NOT errors
 but exactly what is supposed to happen.
 .PP
-Similarly, a NAT-ed peer should typically configure the TCP transport
+Similarly, a NAT\-ed peer should typically configure the TCP transport
 to use port 0 (not listen on any port).  In this case,
-gnunet-transport-check will print 'could not create HELO' for the
+gnunet\-transport\-check will print 'could not create HELO' for the
 TCP transport.  This is also ok.  In fact, a correctly configured
 peer using NAT should give just two errors (could not connect for
 tcp and could not create HELO for NAT) when tested using
-gnunet-transport-check.  The reason is, that gnunet-transport-check
-only tests loopback connectivity, and for a NAT-ed peer, that just
+gnunet\-transport\-check.  The reason is, that gnunet\-transport\-check
+only tests loopback connectivity, and for a NAT\-ed peer, that just
 does not apply.
 .PP
 Note that in ping mode the HTTP download times out after 5 minutes,
@@ -89,4 +89,4 @@ default gnunetd configuration file
 .SH "REPORTING BUGS"
 Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
 .SH "SEE ALSO"
-\fBgnunet.conf\fP(5), \fBgnunetd\fP(1)
+\fBgnunetd.conf\fP(5), \fBgnunetd\fP(1)

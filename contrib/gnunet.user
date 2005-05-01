@@ -11,7 +11,7 @@
 # GNUnet should not put more than a few of MB there.
 #
 # Default is GNUNET_HOME	= ~/.gnunet
-GNUNET_HOME	= ~/.gnunet
+# GNUNET_HOME	= ~/.gnunet
 
 
 ###############################################

@@ -265,6 +265,76 @@ static double estimateSaturation() {
   return saturation;
 }
 
+static int rereadConfiguration() {
+  char * tmp;
+  char * fn;
+  char * data;
+  size_t size;
+  size_t pos;
+  EncName enc;
+  HashCode512 hc;
+
+  GROW(friends,
+       friendCount,
+       0);
+  tmp = getConfigurationString("F2F",
+			       "FRIENDS");
+  if (tmp == NULL) {
+    LOG(LOG_ERROR,
+	_("Need to have list of friends in configuration under '%s' in section '%s'.\n"),
+	"FRIENDS",
+	"F2F");
+    return SYSERR;
+  }
+  fn = expandFileName(tmp);
+  FREE(tmp);
+  if (0 == assertIsFile(fn)) {
+    FREE(fn);
+    return SYSERR;
+  }
+  size = getFileSize(fn);
+  data = MALLOC(size);
+  if (size != readFile(fn, size, data)) {
+    LOG(LOG_ERROR,
+	_("Failed to read friends list from '%s'\n"),
+	fn);
+    FREE(fn);
+    return SYSERR;
+  }
+  FREE(fn);
+  pos = 0;
+  while ( (pos < size) && 
+	  isspace(data[pos])) 
+    pos++;
+  while (pos <= size - sizeof(EncName)) {
+    memcpy(&enc,
+	   &data[pos],
+	   sizeof(EncName));
+    if (! isspace(enc.encoding[sizeof(EncName)-1])) {
+      LOG(LOG_WARNING,
+	  _("Syntax error in topology specification, skipping bytes.\n"));
+      continue;
+    }
+    enc.encoding[sizeof(EncName)-1] = '\0';
+    if (OK == enc2hash((char*)&enc,
+		       &hc)) {
+      GROW(friends,
+	   friendCount,
+	   friendCount+1);
+      friends[friendCount-1].hashPubKey = hc;
+    } else {
+      LOG(LOG_WARNING,
+	  _("Syntax error in topology specification, skipping bytes '%s'.\n"),
+	  &enc);
+    }
+    pos = pos + sizeof(EncName);
+    while ( (pos < size) && 
+	    isspace(data[pos])) 
+      pos++;
+  }
+  return OK;
+}
+
 Topology_ServiceAPI *
 provide_module_topology_f2f(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
@@ -303,13 +373,23 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
     return NULL;
   }
 
+  if (SYSERR == rereadConfiguration()) {
+    capi->releaseService(identity);
+    identity = NULL;
+    capi->releaseService(transport);
+    transport = NULL;
+    capi->releaseService(session);
+    session = NULL;
+    capi->releaseService(pingpong);
+    pingpong = NULL;
+    return NULL;
+  }
+  registerConfigurationUpdateCallback
+    ((NotifyConfigurationUpdateCallback)&rereadConfiguration);
   addCronJob(&cronCheckLiveness,
 	     5 * cronSECONDS,
 	     5 * cronSECONDS,
 	     NULL);
-
-  /* FIXME: initialize 'friends' from configuration! */
-
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
@@ -320,6 +400,8 @@ int release_module_topology_f2f() {
   delCronJob(&cronCheckLiveness,
 	     5 * cronSECONDS,
 	     NULL);
+  unregisterConfigurationUpdateCallback
+    ((NotifyConfigurationUpdateCallback)&rereadConfiguration);
   coreAPI->releaseService(identity);
   identity = NULL;
   coreAPI->releaseService(transport);

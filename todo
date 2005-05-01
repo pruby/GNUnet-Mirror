@@ -1,12 +1,9 @@
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
-- gnunet-insert crashes if called with invalid filename?
-- gnunet-peer-info does not work if gnunetd is running
 - Features removed but to be revived:
   * gnunet-gtk
 - Missing Features:
   * resolve "FIXME 0.7"
   * fsui core (persistence) [ difficult ]
-  * read 'friends' list for topology_f2f
   * #593 (gnunet-setup)
   * #770? (use freedback (LOG) in gnunet-gtk via show-messages)
 - Additional (automated, make check-style) testing:
@@ -20,7 +17,6 @@
     + URI tracking
 - Documentation:
   * ECRS block format changes (dramatic!)
-  * gnunet-directory (no more categories) and gnunet-pseudonym (no passwords)
   * Hacking GNUnet
 
 0.7.x (aka "stabilization"):
@@ -39,6 +35,7 @@
 - #678 (directory browser)
 - Documentation:
   * LJ article
+- support using -k multiple times in gnunet-pseudonym
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling

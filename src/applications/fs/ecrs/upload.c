@@ -161,7 +161,9 @@ int ECRS_uploadFile(const char * filename,
     return SYSERR;
   }
   if (0 == assertIsFile(filename)) {
-    BREAK();
+    LOG(LOG_ERROR,
+	"'%s' is not a file.\n",
+	filename);
     return SYSERR;
   }
   sock = getClientSocket();

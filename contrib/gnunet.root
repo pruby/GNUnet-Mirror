@@ -32,7 +32,7 @@
 # up to the (global) quota specified below.  Having a few gigabytes
 # of free space is recommended.
 # Default: GNUNETD_HOME     = /var/lib/GNUnet
-GNUNETD_HOME     = /var/lib/GNUnet
+# GNUNETD_HOME     = /var/lib/GNUnet
 
 #########################################
 # Options for the GNUnet server, gnunetd
@@ -556,9 +556,6 @@ DIR          = $GNUNETD_HOME/data/fs/
 # gnunet-delete and GNUnet >= 0.6.2. 
 # Default is $GNUNETD_HOME/data/shared/
 INDEX-DIRECTORY = $GNUNETD_HOME/data/shared/
-
-# Indexing quota.  Default is 8192.
-INDEX-QUOTA = 8192
 
 
 #######################################

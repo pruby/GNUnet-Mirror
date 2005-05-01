@@ -412,12 +412,24 @@ void readConfiguration() {
 				"_MAGIC_",
 				"YES")) {
       expCfgName = getenv("GNUNETD_CONFIG");
-      if (expCfgName == NULL)
-	expCfgName = DEFAULT_DAEMON_CONFIG_FILE;
+      if (expCfgName == NULL) {
+	/* pick default, but try to pick it so
+	   that we can write there (if it does not
+	   exist) */
+	expCfgName = "/etc/gnunetd.conf";
+	if ( access(expCfgName, R_OK) &&
+	     access("/etc", X_OK) ) {
+	  expCfgName = "/var/lib/GNUnet/gnunetd.conf";
+	  if ( access(expCfgName, R_OK) &&
+	       access("/var/lib/GNUnet", X_OK)) {
+	    expCfgName = "~/.gnunet/gnunetd.conf";
+	  }
+	}	  
+      }
     } else {
       expCfgName = getenv("GNUNET_CONFIG");
       if (expCfgName == NULL)
-	expCfgName = DEFAULT_CLIENT_CONFIG_FILE;
+	expCfgName = "~/.gnunet/gnunet.conf";
     }
     expCfgName = expandFileName(expCfgName);
     setConfigurationString("FILES",
@@ -441,7 +453,8 @@ void readConfiguration() {
     FREE(c);
     /* try generating a configuration file */
     LOG(LOG_WARNING,
-	_("Configuration file '%s' not found. I will try to create the default configuration file at that location.\n"),
+	_("Configuration file '%s' not found. "
+	  "I will try to create the default configuration file at that location.\n"),
 	expCfgName);
     f = FOPEN(expCfgName,
 	      "a+");

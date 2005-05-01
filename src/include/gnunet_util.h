@@ -114,6 +114,8 @@
  */
 #define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
 #define DEFAULT_DAEMON_CONFIG_FILE "/etc/gnunet.conf"
+#define VAR_DAEMON_CONFIG_FILE "/var/lib/GNUnet/gnunet.conf"
+#define HOME_DAEMON_CONFIG_FILE "~/.gnunet/gnunet.root"
 
 /**
  * @brief Length of RSA encrypted data (2048 bit)

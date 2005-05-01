@@ -171,6 +171,9 @@ static void printHostInfo(const PeerIdentity * id,
 int main(int argc, char *argv[]) {
   if (OK != initUtil(argc, argv, &parser))
     return SYSERR;
+  FREENONNULL(setConfigurationString("TCPSERVER",
+				     "DISABLE",
+				     "YES"));
   initCore();
   identity = requestService("identity");
   transport = requestService("transport");

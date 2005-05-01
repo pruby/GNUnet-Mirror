@@ -1,23 +1,22 @@
-.TH GNUNET.CONF "5" "10 Dec 2003" "GNUnet"
+.TH GNUNET.CONF "5" "30 Apr 2005" "GNUnet"
 .SH NAME
-gnunet.conf \- GNUnet configuration file
+gnunet.conf \- GNUnet client configuration file
 .SH SYNOPSIS
-~/.gnunet/gnunet.conf and /etc/gnunet.conf
+~/.gnunet/gnunet.conf
 .SH DESCRIPTION
 .PP
-GNUnet uses two configuation files.  /etc/gnunet.conf is the default location for the configuration file used by gnunetd, the GNUnet daemon.  It contains the network and resource configuration for the peer.  A template can be found in contrib/gnunet.root.  The RPM installs the template to /etc/gnunet.conf.
+GNUnet uses two configuation files, one for user interfaces (gnunet.conf) and one for the server (gnunetd) and associated administrative tools.  This man page describes the configuration file for the clients.
+.PP
+~/.gnunet/gnunet.conf is the default location for the configuration file used by the gnunet clients (such as gnunet\-gtk, gnunet\-insert, gnunet\-search, etc.).  When any of the clients is started for the first time by a user, a default configuration file will be written to ~/.gnunet/gnunet.conf (if that file does not yet exist).  The defaults should work immediately for most users.
 .TP
-Another configuration file is used to allow users to customize GNUnet according to their needs.  It is used by all of the GNUnet tools and the default location is ~/.gnunet/gnunet.conf.  The user configuration allows the specification of personal options, such as the nickname in the chat.  A template can be found in contrib/gnunet.user.  The RPM installs a template for this file in /etc/skel/.gnunet/gnunet.conf.
+The configuration file is used to allow users to customize GNUnet according to their needs.  The user configuration allows the specification of personal options, such as the nickname in the chat. 
 .TP
-Both configuration files use the same basic syntax.  The file is split into sections.  Every section begins with [SECTIONNAME] and contains a number of options of the form OPTION=VALUE.  Empty lines and lines beginning with a # are treated as comments.  Some options are optional, in particular certain sections are not used at all unless the corresponding service module is loaded (e.g. you do not have to configure the SMTP transport unless you decide to use it).
+The basic structure of the configuration file is the following.  The file is split into sections.  Every section begins with [SECTIONNAME] and contains a number of options of the form OPTION=VALUE.  Empty lines and lines beginning with a # are treated as comments.  Almost all options are optional and the tools resort to reasonable defaults if they are not present.
 .SH FILES
 .TP
-/etc/gnunet.conf
-gnunetd configuration file
-.TP
 ~/.gnunet/gnunet.conf
-GNUnet user configuration file
+GNUnet client (per local user) configuration file
 .SH "REPORTING BUGS"
 Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
 .SH "SEE ALSO"
-\fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)
+\fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunetd.conf\fP(5), \fBgnunetd\fP(1)

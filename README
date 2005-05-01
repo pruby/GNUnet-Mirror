@@ -25,8 +25,7 @@ How to install?
 
 The fastest way is to use a binary package if it is available for your
 system.  For a more detailed description, read the installation
-instructions on the webpage at
-http://gnunet.org/documentation.php3.
+instructions on the webpage at http://gnunet.org/documentation.php3.
 
 If you install from source, you need to install libextractor
 first (download from http://gnunet.org/libextractor/).  Then
@@ -35,24 +34,27 @@ you can start the actual GNUnet compilation process with:
 $ ./configure --prefix=$HOME --with-extractor=$HOME
 $ make
 # make install
-# cp contrib/gnunet.root /etc/gnunet.conf
-# cp contrib/initgnunet /etc/init.d/gnunetd
+# gnunetd 
 
-This will compile and install GNUnet to ~/bin/, ~/lib/ and ~/man/ and
-put the configuration file where gnunetd expect it.  Note that
-per-user configuration files (~/.gnunet/gnunet.conf) will be created
-the first time a user starts a GNUnet user interface.  For more
-general information about the GNU build process read the INSTALL file.
+This will compile and install GNUnet to ~/bin/, ~/lib/ and ~/man/.
+Starting gnunetd as root the first time will allow the daemon to
+create the default configuration file in /etc/gnunetd.conf.  If you do
+not want to run GNUnet as root, add a user gnunet and give it write
+permissions to /var/lib/GNUnet (and start gnunetd as that user in the
+future).  Note that additional, per-user configuration files
+(~/.gnunet/gnunet.conf) will be created the first time a user starts a
+GNUnet user interface.  For more general information about the GNU
+build process read the INSTALL file.
 
 GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
-and libgcrypt.  You can specify the path to
-libgcrypt using "--with-gcrypt=PATH".
+and libgcrypt.  You can specify the path to libgcrypt by passing
+"--with-gcrypt=PATH" to configure.
 
-If you are compiling the CVS version, you have to run ". bootstrap"
-before ./configure.  If you receive an error during the running of
-". bootstrap" that looks like "macro `AM_PATH_GTK' not found in
-library", you may need to run aclocal by hand with the -I option,
-pointing to your aclocal m4 macros, i.e.
+If you are compiling the code from subversion, you have to run
+". bootstrap" before ./configure.  If you receive an error during the
+running of ". bootstrap" that looks like "macro `AM_PATH_GTK' not
+found in library", you may need to run aclocal by hand with the -I
+option, pointing to your aclocal m4 macros, i.e.
 
 # aclocal -I /usr/local/share/aclocal
 
@@ -67,9 +69,9 @@ For file sharing GNUnet needs to store data in a database. We
 currently support MySQL and SQLite.
 
 libextractor >= 0.4.2 is required
-autoconf >= 2.59 is recommended for compiling the SVN version.
+autoconf >= 2.59 is  recommended for compiling the SVN version.
 automake >= 1.9.4 is recommended for compiling the SVN version.
-libtool >= 1.5.8 is recommended for compiling the SVN version.
+libtool >= 1.5.8 is  recommended for compiling the SVN version.
 
 
 Configuration

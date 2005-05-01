@@ -703,6 +703,10 @@ int initTCPServer() {
 
   MUTEX_CREATE_RECURSIVE(&handlerlock);
   MUTEX_CREATE_RECURSIVE(&clientlock);
+  if (testConfigurationString("TCPSERVER",
+			      "DISABLE",
+			      "YES"))
+    return OK;
   tcpserver_keep_running = YES;
   serverSignal = SEMAPHORE_NEW(0);
   if (0 == PTHREAD_CREATE(&TCPLISTENER_listener_,
@@ -744,6 +748,10 @@ int stopTCPServer() {
     PTHREAD_JOIN(&TCPLISTENER_listener_, &unused);
     return OK;
   } else {
+    if (testConfigurationString("TCPSERVER",
+				"DISABLE",
+				"YES"))
+      return OK;
     return SYSERR;
   }
 }

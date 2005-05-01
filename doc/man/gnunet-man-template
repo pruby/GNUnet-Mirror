@@ -26,18 +26,9 @@ Users GNUnet configuration file
 ~/.gnunet/.hostkey
 Nodes GNUnet RSA private key
 .TP
-~/.gnunet/data/hosts/
-Hostkeys
-.TP
-~/.gnunet/data/content/
-Content directory
-.TP
-~/.gnunet/data/credit/
-Credit Directory
-.TP
 ~/.gnunet/database*
 Database files
 .SH "REPORTING BUGS"
-Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
 .SH "SEE ALSO"
 \fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)
