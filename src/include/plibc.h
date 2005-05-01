@@ -22,6 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
+ * @version $Revision: 1.12 $
  */
 
 #ifndef _PLIBC_H_
@@ -62,6 +63,8 @@ extern "C" {
 #define ssize_t int
 #define ftruncate chsize
 #define off_t int
+#define int64_t long long
+#define int32_t long
 
 /* Thanks to the Cygwin project */
 #define EPERM 1		/* Not super-user */
@@ -205,6 +208,7 @@ extern "C" {
 #define PROT_READ   0x1
 #define PROT_WRITE  0x2
 #define MAP_SHARED  0x1
+#define MAP_PRIVATE 0x2 /* unsupported */
 #define MAP_FIXED   0x10
 
 struct statfs
@@ -326,6 +330,8 @@ const char *hstrerror(int err);
 void gettimeofday(struct timeval *tp, void *tzp);
 int mkstemp(char *tmplate);
 char *strptime (const char *buf, const char *format, struct tm *tm);
+char *ctime(const time_t *clock);
+char *ctime_r(const time_t *clock, char *buf);
 int plibc_init(char *pszOrg, char *pszApp);
 void plibc_shutdown();
 int plibc_conv_to_win_path_ex(const char *pszUnix, char *pszWindows, int derefLinks);
@@ -398,6 +404,13 @@ struct hostent *_win_gethostbyaddr(const char *addr, int len, int type);
 struct hostent *_win_gethostbyname(const char *name);
 char *_win_strerror(int errnum);
 int IsWinNT();
+
+#if !HAVE_STRNDUP
+char *strndup (const char *s, size_t n);
+#endif
+#if !HAVE_STRNLEN
+size_t strnlen (const char *str, size_t maxlen);
+#endif
 
 #endif /* WINDOWS */
 
