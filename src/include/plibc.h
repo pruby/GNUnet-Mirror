@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 
 #ifndef _PLIBC_H_
@@ -441,7 +441,7 @@ size_t strnlen (const char *str, size_t maxlen);
  #define GN_FWRITE(b, s, c, f) fwrite(b, s, c, f)
  #define SYMLINK(a, b) symlink(a, b)
  #define MMAP(s, l, p, f, d, o) mmap(s, l, p, f, d, o)
- #define MUNMAP(s, l) munmap(s, l);
+ #define MUNMAP(s, l) munmap(s, l)
  #define STRERROR(i) strerror(i)
  #define READLINK(p, b, s) readlink(p, b, s)
  #define LSTAT(p, b) lstat(p, b)
