@@ -237,5 +237,3 @@ menu "Defaults for gnunet-testbed" "GNUNET-TESTBED"
 		Default is http://ovmj.org/GNUnet/testbed/
 endmenu
 endif
-
-endmenu
