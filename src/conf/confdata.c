@@ -24,7 +24,6 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
-const char conf_def_dir[] = "/etc/";
 const char conf_def_filename[] = "gnunet.conf";
 
 const char conf_defname[] = "defconfig";
@@ -223,6 +222,10 @@ int conf_write(const char *name)
 	char dirname[128], tmpname[128], dstname[128], newname[128];
 	int type;
 	const char *str;
+	struct symbol *confDefFn;
+
+	confDefFn = sym_find("CONF_DEF_FILE", "Meta");
+	sym_calc_value_ext(confDefFn, 1);	
 
 	dirname[0] = 0;
 	if (name && name[0]) {
@@ -234,14 +237,20 @@ int conf_write(const char *name)
 			if (slash[1])
 				basename = slash + 1;
 			else
-				basename = conf_def_filename;
+				basename = sym_get_string_value(confDefFn);
 		} else
 			basename = name;
 	} else
-		basename = conf_def_filename;
+		basename = sym_get_string_value(confDefFn);
 
-	if (! dirname[0])
-		strcpy(dirname, conf_def_dir);
+	if (! dirname[0]) {
+		struct symbol *confDefDir;
+		
+		confDefDir = sym_find("CONF_DEF_DIR", "Meta");
+		sym_calc_value_ext(confDefDir, 1);
+		
+		strcpy(dirname, sym_get_string_value(confDefDir));
+	}
 
 	sprintf(newname,
 		"%s.tmpconfig.%u",

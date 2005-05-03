@@ -24,6 +24,24 @@ menu "Meta-configuration" "Meta"
   
   config RARE
   bool "Show rarely used options"
+  
+  config CONF_DEF_DIR
+  string "Default configuration directory"
+  depends on RARE
+  default "/etc/"
+  help
+  	This is the directory where gnunet-setup will store the configuration
+  	file by default.
+  	Default: CONF_DEF_DIR			= /etc/
+  
+  config CONF_DEF_FILE
+  string "Default configuration file"
+  depends on RARE
+  default "gnunet.conf"
+  help
+  	This is the filename under which gnunet-setup will store the configuration
+  	by default.
+  	Default: CONF_DEF_FILE		= gnunet.conf
 endmenu
 
 menu "General settings" "GNUNETD"
