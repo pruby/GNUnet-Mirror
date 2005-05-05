@@ -1,29 +1,30 @@
 mainmenu "GNUnet user configuration"
 
+menu "User specific configuration" ""
 menu "Meta-configuration" "Meta"
-  config ADVANCED
-  bool "Show options for advanced users"
-  
-  config RARE
-  bool "Show rarely used options"
-  
-  config CONF_DEF_DIR
+  config config-user.in_CONF_DEF_DIR
   string "Default configuration directory"
-  depends on RARE
+  depends on RARE-CLIENT
   default "/etc/"
   help
   	This is the directory where gnunet-setup will store the configuration
   	file by default.
-  	Default: CONF_DEF_DIR			= ~/.gnunet/
+  	Default: config-user.in_CONF_DEF_DIR			= ~/.gnunet/
   
-  config CONF_DEF_FILE
+  config config-user.in_CONF_DEF_FILE
   string "Default configuration file"
-  depends on RARE
+  depends on RARE-CLIENT
   default "gnunet-user.conf"
   help
   	This is the filename under which gnunet-setup will store the configuration
   	by default.
-  	Default: CONF_DEF_FILE		= gnunet-user.conf
+  	Default: config-user.in_CONF_DEF_FILE		= gnunet-user.conf
+
+  config ADVANCED-CLIENT
+  bool "Show options for advanced users"
+  
+  config RARE-CLIENT
+  bool "Show rarely used options"  
 endmenu
 
 menu "General settings" "GNUNET"
@@ -38,7 +39,7 @@ menu "General settings" "GNUNET"
 	config LOGLEVEL
 	string "What kinds of (debug) output should be printed"
 	default "WARNING"
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		What kinds of (debug) output should be printed? You can 
 		use NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, 
@@ -49,7 +50,7 @@ menu "General settings" "GNUNET"
 	config LOGFILE
 	string "Where to write the messages"
 	default "$GNUNET_HOME/logs"
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		Where to write the messages? Leave the entry unspecified (as
 		default) to make the clients print their messages to stderr.
@@ -57,17 +58,17 @@ menu "General settings" "GNUNET"
 endmenu
 
 menu "Network options for the clients" "NETWORK"
-	config PORT
+	config CLIENT-PORT
 	int "Port to use to talk to gnunetd"
 	default 2087
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		Port to use to talk to gnunetd, default is 2087
 
 	config HOST
 	string "On which machine runs gnunetd (for clients)"
 	default "localhost"
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		On which machine runs gnunetd (for clients) This is equivalent to
 		the -H option.  Default is localhost.
@@ -78,7 +79,7 @@ menu "Options for filesharing (FS)" "FS"
 	config INSERT-PRIORITY
 	int "Default priority for locally inserted content"
 	default 50
-	depends on Meta::RARE
+	depends on Meta::RARE-CLIENT
 	help
 		Default priority for locally inserted content
 		Default: 50
@@ -86,7 +87,7 @@ menu "Options for filesharing (FS)" "FS"
 	config INSERT-EXPIRATION
 	int "Default expiration time for locally inserted content"
 	default 36500
-	depends on Meta::RARE
+	depends on Meta::RARE-CLIENT
 	help
 		Default expiration time for locally inserted content, in days
 		Default is 36500 (100 years)
@@ -94,7 +95,7 @@ menu "Options for filesharing (FS)" "FS"
 	config SEARCHTIMEOUT
 	int "How long should gnunet-search try to get an answer to a query"
 	default 3000
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		How long should gnunet-search try to get an answer to a query before
 		timing out (in seconds).  Default is "3000", which should be enough
@@ -103,28 +104,28 @@ menu "Options for filesharing (FS)" "FS"
 	config ANONYMITY-RECEIVE
 	int "Anonymity level for receiving data (default)"
 	default 1
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		Anonymity level for receiving data (default)
 
 	config ANONYMITY-SEND
 	int "Anonymity level for sharing data (default)"
 	default 1
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		Anonymity level for sharing data (default)
 
 	config MAXRESULTS
 	int "Default limit for the number of search results"
 	default 0
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		Default limit for the number of search results (0 for unlimited)
 
 	config SEARCHTIMEOUT
 	int "Default timeout for searches"
 	default 300
-	depends on Meta::ADVANCED
+	depends on Meta::ADVANCED-CLIENT
 	help
 		Default timeout for searches
 
@@ -132,7 +133,7 @@ menu "Options for filesharing (FS)" "FS"
 	config EXTRACTORS
 	string "Specify which additional extractor libraries should be used"
 	default "libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail"
-	depends on Meta::RARE
+	depends on Meta::RARE-CLIENT
 	help
 		Specify which additional extractor libraries should be used.
 		gnunet-insert uses libextractor to extract keywords from files.
@@ -156,7 +157,7 @@ menu "Options for filesharing (FS)" "FS"
 	config DISABLE-SYMLINK
 	bool "Disable symlinking"
 	default y
-	depends on Meta::RARE
+	depends on Meta::RARE-CLIENT
 	help
 		Disable symlinking.  When set to YES, GNUnet will always make
 		a copy of the file when files are indexed.  The default is to
@@ -191,7 +192,7 @@ menu "Defaults for gnunet-chat" GNUNET-CHAT
 		Default: "my nickname"
 endmenu
 
-if Meta:RARE
+if Meta:RARE-CLIENT
 menu "Defaults for gnunet-tracekit" GNUNET-TRACEKIT
 	config WAIT
 	int "How long to wait for replies"
@@ -237,3 +238,5 @@ menu "Defaults for gnunet-testbed" "GNUNET-TESTBED"
 		Default is http://ovmj.org/GNUnet/testbed/
 endmenu
 endif
+
+endmenu
