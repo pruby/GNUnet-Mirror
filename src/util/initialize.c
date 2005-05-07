@@ -107,12 +107,11 @@ void doneCron();
 /**
  * Get location of gettext catalogs
  */
-void getLocaleDir(char *dir)
-{
+void getLocaleDir(char *dir) {
 #ifdef WINDOWS
-	plibc_conv_to_win_path("/share/locale/", dir);
+  plibc_conv_to_win_path("/share/locale/", dir);
 #else
-	strcpy(dir, LOCALEDIR);
+  strcpy(dir, LOCALEDIR);
 #endif
 }
 

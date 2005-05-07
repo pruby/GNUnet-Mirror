@@ -29,34 +29,32 @@
 #include "platform.h"
 
 static void help() {
-  puts("USAGE: gnunet-setup MODULE DEFFILE\n\n"
+  puts(_("USAGE: gnunet-setup MODULE\n\n"
        "MODULE\n"
        " config\t\ttext-based configuration\n"
        " menuconfig\ttext-based menu\n"
        " xconfig\tX configuration\n"
        " gconfig\tGTK configuration\n\n"
-       " wizard-gtk\tBasic GTK configuration\n\n"
-       "DEFFILE\n"
-       " File which contains the configuration items\n");
+									" wizard-gtk\tBasic GTK configuration\n\n"));
 }
 
 #if HAVE_CURSES
-extern int mconf_main(int ac, char **av);
+int mconf_main(int ac, char **av);
 #endif
 
 #if HAVE_GTK
 int gconf_main(int ac, char *av[]);
 #endif
 
-extern int conf_main(int ac, char **av);
+int conf_main(int ac, char **av);
 #ifdef MINGW
-extern void InitWinEnv();
-extern void ShutdownWinEnv();
+void InitWinEnv();
+void ShutdownWinEnv();
 #endif
 
 int main(int argc,
 	 char *argv[]) {
-  if (argc < 3) {
+  if (argc < 2) {
     help();
     return 0;
   }
