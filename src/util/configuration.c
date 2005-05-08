@@ -347,11 +347,7 @@ static char * expandDollar(const char * section,
   result = MALLOC(strlen(prefix) +
 		  strlen(&orig[i+1]) + 2);
   strcpy(result, prefix);
-#ifndef MINGW
-  strcat(result, "/");
-#else
-  strcat(result, "\\");
-#endif
+  strcat(result, DIR_SEPARATOR_STR);
   strcat(result, &orig[i+1]);
   FREE(prefix);
   FREE(orig);
