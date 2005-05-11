@@ -1,4 +1,4 @@
 mainmenu "GNUnet user configuration"
 
-source "/etc/config.in"
-source "/etc/config-user.in"
+source "$DATADIR/config.in"
+source "$DATADIR/config-user.in"

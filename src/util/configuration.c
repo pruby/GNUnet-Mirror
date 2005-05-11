@@ -322,7 +322,7 @@ static int valuesCount;
  * either in the current section or
  * globally FOO is set to DIRECTORY.
  */
-static char * expandDollar(const char * section,
+char * expandDollar(const char * section,
 			   char * orig) {
   int i;
   char * prefix;
@@ -485,6 +485,9 @@ void readConfiguration() {
     errexit("Failed to parse configuration file '%s'.\n",
 	    configuration_filename);
   parseConfigInit = YES;
+  
+  setConfigurationString("", "DATADIR", DATADIR);
+  
   MUTEX_UNLOCK(&configLock);
 }
 

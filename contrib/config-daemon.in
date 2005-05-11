@@ -18,7 +18,7 @@ menu "Meta-configuration" "Meta"
   help
   	This is the filename under which gnunet-setup will store the configuration
   	by default.
-  	Default: config.in_CONF_DEF_FILE		= gnunet.conf
+  	Default: config.in_CONF_DEF_FILE		= gnunetd.conf
 
   config EXPERIMENTAL
   bool "Prompt for development and/or incomplete code"

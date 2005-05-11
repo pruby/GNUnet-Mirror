@@ -5,8 +5,6 @@ AM_CFLAGS = $(GTK_CFLAGS)
 # GNU Gettext support
 LIBS = @LIBINTL@ @LIBS@
 
-DEFS = -DDATADIR=\"$(pkgdatadir)\" @DEFS@
-
 if MINGW
  WINTOOL = gnunet-win-tool
 endif

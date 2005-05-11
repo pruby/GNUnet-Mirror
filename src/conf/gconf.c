@@ -1692,8 +1692,8 @@ void fixup_rootmenu(struct menu *menu)
 
 int gconf_main(int ac, char *av[])
 {
-		const char * LANG;
-		char * configFile;
+	const char * LANG;
+	char * configFile;
 
 #ifndef LKC_DIRECT_LINK
   kconfig_load();
@@ -1726,22 +1726,22 @@ int gconf_main(int ac, char *av[])
     }
   }
 
-		LANG = getenv("LANG");
-		if (LANG == NULL)
-				LANG = "en";
-		if (strncmp(LANG, "en") == 2)
-				LANG = NULL;
-		configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
-		strcpy(configFile,
-									DATADIR"/config.in");		
-		if (LANG != NULL) {
-				strcat(configFile, ".");
-				strncat(configFile,
-												LANG,
-												2);
-		}
+	LANG = getenv("LANG");
+	if (LANG == NULL)
+			LANG = "en";
+	if (strncmp(LANG, "en", 2) == 0)
+			LANG = NULL;
+	configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
+	strcpy(configFile,
+								DATADIR"/config.in");		
+	if (LANG != NULL) {
+			strcat(configFile, ".");
+			strncat(configFile,
+											LANG,
+											2);
+	}
   conf_parse(configFile);
-		FREE(configFile);
+	FREE(configFile);
   fixup_rootmenu(&rootmenu);
   conf_read(NULL);
 

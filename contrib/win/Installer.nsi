@@ -205,6 +205,11 @@ Section "Configuration files" SEC02
   File "C:\GNUnet\etc\gnunet.root"
   Rename "$INSTDIR\etc\gnunet.root" "$INSTDIR\etc\gnunet.conf"
   Rename "$USR_PROF\gnunet.user" "$USR_PROF\gnunet.conf"
+  
+  SetOutPath "$INSTDIR\share\GNUnet"
+  File "C:\GNUnet\share\GNUnet\config.in"
+  File "C:\GNUnet\share\GNUnet\config-client.in"
+  File "C:\GNUnet\share\GNUnet\config-daemon.in"
 SectionEnd
 
 Section "Extractor" SEC03

@@ -616,6 +616,15 @@ void triggerGlobalConfigurationRefresh();
 void readConfiguration();
 
 /**
+ * Expand an expression of the form
+ * "$FOO/BAR" to "DIRECTORY/BAR" where
+ * either in the current section or
+ * globally FOO is set to DIRECTORY.
+ */
+char * expandDollar(const char * section,
+         char * orig);
+
+/**
  * Obtain a filename from the given section and option.  If the
  * filename is not specified, die with the given error message (do not
  * die if errMsg == NULL).

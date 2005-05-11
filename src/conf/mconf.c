@@ -1,12 +1,26 @@
-/*
+/* 
+     This file is part of GNUnet.
+     (C) 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+/**
  * Copyright (C) 2002 Roman Zippel <zippel@linux-m68k.org>
  * Released under the terms of the GNU GPL v2.0.
- *
- * Introduced single menu mode (show all sub-menus in one large tree).
- * 2002-11-06 Petr Baudis <pasky@ucw.cz>
- *
- * Direct use of liblxdialog library routines.
- * 2003-02-04 Petr Baudis pasky@ucw.cz
  */
 
 /**
@@ -791,7 +805,27 @@ int mconf_main(int ac, char **av)
 {
 	char *mode;
 	int stat;
-	conf_parse(av[1]);
+  const char * LANG;
+  char * configFile;
+
+  LANG = getenv("LANG");
+  if (LANG == NULL)
+      LANG = "en";
+  if (strncmp(LANG, "en", 2) == 0)
+      LANG = NULL;
+  configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
+  strcpy(configFile,
+                DATADIR"/config.in");   
+  if (LANG != NULL) {
+      strcat(configFile, ".");
+      strncat(configFile,
+                      LANG,
+                      2);
+  }
+
+	conf_parse(configFile);
+  FREE(configFile);
+  
 	conf_read(NULL);
 
 	backtitle = malloc(128);
