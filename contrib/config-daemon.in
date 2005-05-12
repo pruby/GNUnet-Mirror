@@ -2,23 +2,23 @@ mainmenu "GNUnet Configuration"
 
 menu "Server configuration" ""
 menu "Meta-configuration" "Meta"
-  config config.in_CONF_DEF_DIR
+  config config-daemon.in_CONF_DEF_DIR
   string "Default configuration directory"
   depends on RARE
   default "/etc/"
   help
   	This is the directory where gnunet-setup will store the configuration
   	file by default.
-  	Default: config.in_CONF_DEF_DIR			= /etc/
+  	Default: config-daemon.in_CONF_DEF_DIR			= /etc/
   
-  config config.in_CONF_DEF_FILE
+  config config-daemon.in_CONF_DEF_FILE
   string "Default configuration file"
   depends on RARE
-  default "gnunet.conf"
+  default "gnunetd.conf"
   help
   	This is the filename under which gnunet-setup will store the configuration
   	by default.
-  	Default: config.in_CONF_DEF_FILE		= gnunetd.conf
+  	Default: config-daemon.in_CONF_DEF_FILE		= gnunetd.conf
 
   config EXPERIMENTAL
   bool "Prompt for development and/or incomplete code"

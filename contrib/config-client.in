@@ -2,23 +2,23 @@ mainmenu "GNUnet user configuration"
 
 menu "User specific configuration" ""
 menu "Meta-configuration" "Meta"
-  config config-user.in_CONF_DEF_DIR
+  config config-client.in_CONF_DEF_DIR
   string "Default configuration directory"
   depends on RARE-CLIENT
-  default "~/.gnunet/"
+  default "/etc/"
   help
   	This is the directory where gnunet-setup will store the configuration
   	file by default.
-  	Default: config-user.in_CONF_DEF_DIR			= ~/.gnunet/
+  	Default: config-client.in_CONF_DEF_DIR			= ~/.gnunet/
   
-  config config-user.in_CONF_DEF_FILE
+  config config-client.in_CONF_DEF_FILE
   string "Default configuration file"
   depends on RARE-CLIENT
   default "gnunet.conf"
   help
   	This is the filename under which gnunet-setup will store the configuration
   	by default.
-  	Default: config-user.in_CONF_DEF_FILE		= gnunet.conf
+  	Default: config-client.in_CONF_DEF_FILE		= gnunet.conf
 
   config ADVANCED-CLIENT
   bool "Show options for advanced users"
