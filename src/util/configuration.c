@@ -486,7 +486,7 @@ void readConfiguration() {
 	    configuration_filename);
   parseConfigInit = YES;
   
-  setConfigurationString("", "DATADIR", DATADIR);
+  setConfigurationString("Meta", "DATADIR", DATADIR);
   
   MUTEX_UNLOCK(&configLock);
 }

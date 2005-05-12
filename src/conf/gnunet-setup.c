@@ -47,10 +47,6 @@ int gconf_main(int ac, char *av[]);
 #endif
 
 int conf_main(int ac, char **av);
-#ifdef MINGW
-void InitWinEnv();
-void ShutdownWinEnv();
-#endif
 
 int main(int argc,
 	 char *argv[]) {
@@ -59,9 +55,7 @@ int main(int argc,
     return 0;
   }
 
-#ifdef MINGW
-  InitWinEnv();
-#endif
+  initUtil(NULL, 0, NULL);
 
   if (strncmp(argv[1], "config", 6) == 0)
     conf_main(argc - 1, &argv[1]);
@@ -90,9 +84,7 @@ int main(int argc,
     help();
   }
 
-#ifdef MINGW
-  ShutdownWinEnv();
-#endif
+  doneUtil();
 
   return 0;
 }

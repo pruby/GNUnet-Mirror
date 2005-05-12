@@ -380,19 +380,18 @@ struct menu *menu_get_parent_menu(struct menu *menu)
 struct file *file_lookup(const char *name)
 {
 	struct file *file;
-	char *realfn;
-	
-	realfn = expandDollar("", name);
-
+  
 	for (file = file_list; file; file = file->next) {
-		if (!strcmp(realfn, file->name))
+		if (!strcmp(name, file->name)) {
 			return file;
+    }
 	}
 
 	file = malloc(sizeof(*file));
 	memset(file, 0, sizeof(*file));
-	file->name = realfn;
+	file->name = name;
 	file->next = file_list;
 	file_list = file;
+  
 	return file;
 }

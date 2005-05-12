@@ -3627,32 +3627,44 @@ void zconf_initscan(const char *name)
 
 void zconf_nextfile(const char *name)
 {
-	struct file *file = file_lookup(name);
-	struct buffer *buf = malloc(sizeof(*buf));
-	memset(buf, 0, sizeof(*buf));
+  char *realfn;
+  struct file *file;
+  struct buffer *buf;
+  
+  realfn = expandDollar("Meta", STRDUP(name));
+  if (strlen(realfn) == 0) {
+    FREE(realfn);
+    realfn = STRDUP(name);
+  }
 
-	current_buf->state = YY_CURRENT_BUFFER;
-	zconfin = zconf_fopen(name);
-	if (!zconfin) {
-		printf("%s:%d: can't open file \"%s\"\n", zconf_curname(), zconf_lineno(), name);
-		exit(1);
-	}
-	zconf_switch_to_buffer(zconf_create_buffer(zconfin,YY_BUF_SIZE));
-	buf->parent = current_buf;
-	current_buf = buf;
+  file = file_lookup(name);
+  buf = malloc(sizeof(*buf));
+  memset(buf, 0, sizeof(*buf));
 
-	if (file->flags & FILE_BUSY) {
-		printf("recursive scan (%s)?\n", name);
-		exit(1);
-	}
-	if (file->flags & FILE_SCANNED) {
-		printf("file %s already scanned?\n", name);
-		exit(1);
-	}
-	file->flags |= FILE_BUSY;
-	file->lineno = 1;
-	file->parent = current_file;
-	current_file = file;
+  current_buf->state = YY_CURRENT_BUFFER;
+  zconfin = zconf_fopen(realfn);
+  if (!zconfin) {
+    printf("%s:%d: can't open file \"%s\"\n", zconf_curname(), zconf_lineno(), realfn);
+    exit(1);
+  }
+  zconf_switch_to_buffer(zconf_create_buffer(zconfin, YY_BUF_SIZE));
+  buf->parent = current_buf;
+  current_buf = buf;
+
+  if (file->flags & FILE_BUSY) {
+    printf("recursive scan (%s)?\n", realfn);
+    exit(1);
+  }
+  if (file->flags & FILE_SCANNED) {
+    printf("file %s already scanned?\n", realfn);
+    exit(1);
+  }
+  file->flags |= FILE_BUSY;
+  file->lineno = 1;
+  file->parent = current_file;
+  current_file = file;
+  
+  FREE(realfn);
 }
 
 static struct buffer *zconf_endfile(void)

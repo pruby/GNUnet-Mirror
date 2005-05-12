@@ -304,14 +304,24 @@ void zconf_initscan(const char *name)
 
 void zconf_nextfile(const char *name)
 {
-	struct file *file = file_lookup(name);
-	struct buffer *buf = malloc(sizeof(*buf));
+  char *realfn;
+	struct file *file;
+	struct buffer *buf;
+  
+  realfn = expandDollar("Meta", STRDUP(name));
+  if (strlen(realfn) == 0) {
+    FREE(realfn);
+    realfn = STRDUP(name);
+  }
+
+	file = file_lookup(name);
+	buf = malloc(sizeof(*buf));
 	memset(buf, 0, sizeof(*buf));
 
 	current_buf->state = YY_CURRENT_BUFFER;
-	yyin = zconf_fopen(name);
+	yyin = zconf_fopen(realfn);
 	if (!yyin) {
-		printf("%s:%d: can't open file \"%s\"\n", zconf_curname(), zconf_lineno(), name);
+		printf("%s:%d: can't open file \"%s\"\n", zconf_curname(), zconf_lineno(), realfn);
 		exit(1);
 	}
 	yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
@@ -319,17 +329,19 @@ void zconf_nextfile(const char *name)
 	current_buf = buf;
 
 	if (file->flags & FILE_BUSY) {
-		printf("recursive scan (%s)?\n", name);
+		printf("recursive scan (%s)?\n", realfn);
 		exit(1);
 	}
 	if (file->flags & FILE_SCANNED) {
-		printf("file %s already scanned?\n", name);
+		printf("file %s already scanned?\n", realfn);
 		exit(1);
 	}
 	file->flags |= FILE_BUSY;
 	file->lineno = 1;
 	file->parent = current_file;
 	current_file = file;
+	
+	FREE(realfn);
 }
 
 static struct buffer *zconf_endfile(void)
