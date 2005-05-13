@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.15 $
  */
 
 #ifndef _PLIBC_H_
@@ -342,6 +342,9 @@ void SetErrnoFromHRESULT(HRESULT hRes);
 FILE *_win_fopen(const char *filename, const char *mode);
 DIR *_win_opendir(const char *dirname);
 int _win_open(const char *filename, int oflag, ...);
+#ifdef ENABLE_NLS
+char *_win_bindtextdomain(const char *domainname, const char *dirname);
+#endif
 int _win_chdir(const char *path);
 int _win_close(int fd);
 int _win_fstat(int handle, struct stat *buffer);
@@ -419,6 +422,9 @@ size_t strnlen (const char *str, size_t maxlen);
  #define DIR_SEPARATOR_STR "/"
  #define NEWLINE "\n"
 
+#ifdef ENABLE_NLS
+ #define BINDTEXTDOMAIN(d, n) bindtextdomain(d, n)
+#endif
  #define CREAT(p, m) creat(p, m)
  #undef FOPEN
  #define FOPEN(f, m) fopen(f, m)
@@ -481,6 +487,9 @@ size_t strnlen (const char *str, size_t maxlen);
  #define DIR_SEPARATOR_STR "\\"
  #define NEWLINE "\r\n"
 
+#ifdef ENABLE_NLS
+ #define BINDTEXTDOMAIN(d, n) _win_bindtextdomain(d, n)
+#endif
  #define CREAT(p, m) _win_creat(p, m)
  #define FOPEN(f, m) _win_fopen(f, m)
  #define OPENDIR(d) _win_opendir(d)

@@ -119,7 +119,7 @@ int initUtil(int argc,
 #endif
 
   setlocale (LC_ALL, "");
-  bindtextdomain (PACKAGE, LOCALEDIR);
+  BINDTEXTDOMAIN(PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
   gnunet_util_initIO();
