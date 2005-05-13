@@ -2,7 +2,7 @@ if HAVE_GUILE
  bin_SCRIPTS = gnunet-download-manager.scm
 endif
 
-pkgdata_DATA \
+pkgdata_DATA = \
  config.in \
  config-client.in \
  config-daemon.in
