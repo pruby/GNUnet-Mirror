@@ -2301,12 +2301,6 @@ int cfg_get_signed_int(const char *sec,
 			      const char *ent);
 void doneParseConfig();
 
-
-/**
- * Location of the gettext catalog
- */
-void getLocaleDir(char *dir);
-
 /**
  * open() a file
  */

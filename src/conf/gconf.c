@@ -1700,6 +1700,7 @@ int gconf_main(int ac, char *av[])
 #endif
 
   /* GTK stuffs */
+  bind_textdomain_codeset(PACKAGE, "UTF-8");
   gtk_set_locale();
   gtk_init(&ac, &av);
 
