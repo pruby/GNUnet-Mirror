@@ -230,7 +230,7 @@ menu "Defaults for gnunet-testbed" "GNUNET-TESTBED"
 		The default is 2089.
 
 	config REGISTERURL
-	int "Registration URL"
+	string "Registration URL"
 	default "http://ovmj.org/GNUnet/testbed/"
 	help
 		At which URL does the registration software
