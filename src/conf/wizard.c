@@ -19,7 +19,7 @@
 */
 
 /**
- * @file conf/gbasic.c
+ * @file conf/wizard.c
  * @brief A easy-to-use configuration assistant
  * @author Nils Durner
  */
@@ -287,10 +287,10 @@ void load_step4()
 int
 wizard_main (int argc, char *argv[])
 {
-#ifdef ENABLE_NLS
-    const char * LANG;
-    char * configFile;
+  const char * LANG;
+  char * configFile;
 
+#ifdef ENABLE_NLS
 		/* GTK uses UTF-8 encoding */
 		bind_textdomain_codeset(PACKAGE, "UTF-8");
 #endif
