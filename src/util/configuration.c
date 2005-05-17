@@ -229,9 +229,10 @@ char * cfg_get_str(const char * sec,
   struct CFG_ENTRIES * e = NULL;
   int i;
 
-  for (i = 0; i < c->sec_count; i++)
-    if (0 == strcasecmp(c->sec_names[i],sec))
-      e = c->sec_entries[i];
+	if (c)
+	  for (i = 0; i < c->sec_count; i++)
+	    if (0 == strcasecmp(c->sec_names[i],sec))
+	      e = c->sec_entries[i];
   if (NULL == e)
     return NULL;
   for (i = 0; i < e->ent_count; i++)
