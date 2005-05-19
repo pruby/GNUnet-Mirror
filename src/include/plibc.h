@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 
 #ifndef _PLIBC_H_
@@ -303,6 +303,11 @@ typedef struct
 
 #define SetErrnoFromWinError(e) _SetErrnoFromWinError(e, __FILE__, __LINE__)
 
+/**
+ * @brief index() - same as strchr()
+ */
+#define index(s, c) strchr(s, c)
+
 BOOL _plibc_CreateShortcut(const char *pszSrc, const char *pszDest);
 BOOL _plibc_DereferenceShortcut(char *pszShortcut);
 long QueryRegistry(HKEY hMainKey, char *pszKey, char *pszSubKey,
@@ -347,6 +352,7 @@ char *_win_bindtextdomain(const char *domainname, const char *dirname);
 #endif
 int _win_chdir(const char *path);
 int _win_close(int fd);
+int _win_creat(const char *path, mode_t mode);
 int _win_fstat(int handle, struct stat *buffer);
 int _win_pipe(int *phandles);
 int _win_rmdir(const char *path);
