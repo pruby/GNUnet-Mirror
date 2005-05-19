@@ -109,17 +109,63 @@ int conf_read(const char *name)
 	struct expr *e;
 	int i = 0;
 	
-	if (!name) {
-		const char **names = conf_confnames;
-		
-		while ((name = *names++)) {
-			name = conf_expand_value(name);
-			if (cfg_parse_file((char *) name) == 0) {
-				printf("#\n"
-				       "# using defaults found in %s\n"
-				       "#\n", name);
-				i = 1;
-				break;
+	if (! name) {
+		/* Read default config files as defined in the templates */
+		if (! name && file_list) {
+			struct file *f;
+			i = 1;
+			
+			/* Go through the list of used template files */
+			for (f = file_list; f; f = f->next) {
+				char *path, *fn, *key;
+				struct symbol *defFile;
+				
+				path = f->name;
+				fn = path + strlen(path);
+				
+				/* Get filename without path */
+				while(*fn != '/' && *fn != '\\' && fn != path)
+					fn--;
+				if (fn != path)
+					fn++;
+				
+				/* Query default config file */
+				key = malloc(strlen(fn) + 16);
+				sprintf(key, "%s_CONF_DEF_DIR", fn);
+				sym = sym_find(key, "Meta");
+				if (sym) {
+					sprintf(key, "%s_CONF_DEF_FILE", fn);
+					defFile = sym_find(key, "Meta");
+					if (defFile) {
+						char *path, *file;
+						
+						sym_calc_value_ext(sym, 1);
+						sym_calc_value_ext(defFile, 1);
+						path = sym_get_string_value(sym);
+						file = sym_get_string_value(defFile);					
+						
+						key = realloc(key, strlen(path) + strlen(file) + 2);
+						sprintf(key, "%s%c%s", path, DIR_SEPARATOR, file);
+						cfg_parse_file(key);
+					}
+				}
+				free(key);
+			}
+		}
+
+		/* Read global default files (only if necessary) */
+		if (!i) {
+			const char **names = conf_confnames;
+			
+			while ((name = *names++)) {
+				name = conf_expand_value(name);
+				if (cfg_parse_file((char *) name) == 0) {
+					printf("#\n"
+					       "# using defaults found in %s\n"
+					       "#\n", name);
+					i = 1;
+					break;
+				}
 			}
 		}
 	}
