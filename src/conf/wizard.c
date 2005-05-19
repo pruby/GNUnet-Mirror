@@ -249,7 +249,6 @@ wizard_main (int argc, char *argv[])
   }
 
   conf_parse(configFile);
-  FREE(configFile);
   
   conf_read(NULL);
 
@@ -257,5 +256,8 @@ wizard_main (int argc, char *argv[])
   gtk_widget_show (curwnd);
 
   gtk_main ();
+
+  FREE(configFile);
+
   return 0;
 }
