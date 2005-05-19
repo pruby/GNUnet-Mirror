@@ -206,8 +206,6 @@ int conf_read(const char *name)
   	}
 	}
 	
-	doneParseConfig();
-	
 	sym_change_count = 1;
 
 	return 0;

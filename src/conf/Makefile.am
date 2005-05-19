@@ -20,15 +20,19 @@ EXTRA_DIST = \
  lex.zconf.c \
  lkc_proto.h \
  qconf.h \
- bool.h
+ bool.h \
+ wizard_util.h
 
 if HAVE_CURSES
+if HAVE_PDCURSES
+ pdcurses_lib = -lpdcurses
+else
  curses_lib = -lncurses
+endif
 endif
 
 lkc_defs.h: $(srcdir)/lkc_proto.h
 	sed < $(srcdir)/lkc_proto.h > $@ 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
-
 
 if HAVE_CURSES
 mconf_src = \
@@ -41,7 +45,8 @@ mconf_src = \
   mconf_msgbox.c \
   mconf_textbox.c \
   mconf_util.c \
-  mconf_yesno.c
+  mconf_yesno.c \
+  wizard_curs.c
 endif
 
 if HAVE_GTK
@@ -79,10 +84,12 @@ gnunet_setup_SOURCES = \
  $(mconf_src) \
  $(gconf_src) \
  $(gbasic_src) \
+ $(wizard_util_src) \
+ wizard_util.c \
  gnunet-setup.c
 
 gnunet_setup_LDFLAGS = \
- $(curses_lib) $(gconf_libs)
+ $(curses_lib) $(pdcurses_lib) $(gconf_libs)
 
 gnunet_setup_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la

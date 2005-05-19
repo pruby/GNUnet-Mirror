@@ -47,35 +47,7 @@ void insert_nic(char *name, int defaultNIC)
 	
   gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
   
-  sym = sym_find("INTERFACE", "NETWORK");
-  if (sym)
-  {
-  	sym_calc_value_ext(sym, 1);
-  	nic = sym_get_string_value(sym);
-#ifdef WINDOWS
-		/* default NIC for unixes */
-		if (strcmp(nic, "eth0") == 0)
-			nic = NULL;
-#endif
-  }
-
-  if (nic)
-  {
-  	/* The user has selected a NIC before */
-  	defaultNIC = 0;
-  	
-  	int niclen = strlen(nic);
-  	int inslen = strlen(name);
-  	if (inslen >= niclen)
-  	{
-#ifdef WINDOWS
-  		if (strncmp(name + inslen - niclen - 1, nic, niclen) == 0)
-#else
-  		if (strcmp(name, nic) == 0)
-#endif
-  			defaultNIC = 1; /* This is the previous selection */
-  	}
-  }
+	defaultNIC = wiz_is_nic_default(name, defaultNIC);
   
   /* Make default selection */
   if (defaultNIC)
@@ -115,48 +87,7 @@ void load_step2()
 	sym = sym_find("INTERFACE", "NETWORK");
 	if (sym)
 	{		
-#ifdef MINGW
-		ListNICs(insert_nic);
-#else
-		char entry[11], *dst;
-		FILE *f = popen("ifconfig", "r");
-		if (!f)
-			return;
-			
-		while(1)
-		{
-			int i = 0;
-			int c = fgetc(f);
-			
-			if (c == EOF)
-				break;
-
-			dst = entry;
-			
-			/* Read interface name until the first space (or colon under OS X) */
-			while (c != EOF && c != '\n' &&
-#ifdef OSX
-				c != ':'
-#else
-				c != ' '
-#endif
-				&& i < 10)
-			{
-				*dst++ = c;
-				i++;
-				c = fgetc(f);
-			}
-			*dst = 0;
-
-			if (entry[0])
-				insert_nic(entry, strcmp(entry, "eth0") == 0);
-
-			while(c != '\n' && c != EOF)
-				c = fgetc(f);
-		}
-
-		pclose(f);
-#endif
+		wiz_enum_nics(insert_nic);
 
 		gtk_widget_set_usize(cmbNIC, 10, -1);
 	}

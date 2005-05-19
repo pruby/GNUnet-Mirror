@@ -220,7 +220,10 @@ void
 do_resize_dialog ()
 {
 	should_resize = 0;
+  /* TODO */
+#ifndef MINGW
 	resizeterm(new_rows, new_cols);
+#endif
 	COLS = new_cols;
 	LINES = new_rows;
 #ifdef KEY_RESIZE
@@ -239,7 +242,7 @@ print_autowrap (WINDOW * win, const char *prompt, int width, int y, int x)
 {
     int newl, cur_x, cur_y;
     int i, prompt_len, room, wlen;
-    char tempstr[MAX_LEN + 1], *word, *sp, *sp2;
+    char tempstr[MAX_LEN + 1], *word, *sp, *sp2, *sp_nl;
 
     strcpy (tempstr, prompt);
 
@@ -248,10 +251,10 @@ print_autowrap (WINDOW * win, const char *prompt, int width, int y, int x)
     /*
      * Remove newlines
      */
-    for(i=0; i<prompt_len; i++) {
+/*    for(i=0; i<prompt_len; i++) {
 	if(tempstr[i] == '\n') tempstr[i] = ' ';
     }
-
+*/
     if (prompt_len <= width - x * 2) {	/* If prompt is short */
 	wmove (win, y, (width - prompt_len) / 2);
 	waddstr (win, tempstr);
@@ -261,34 +264,54 @@ print_autowrap (WINDOW * win, const char *prompt, int width, int y, int x)
 	newl = 1;
 	word = tempstr;
 	while (word && *word) {
-	    sp = index(word, ' ');
-	    if (sp)
+	    sp = strchr(word, ' ');
+	    sp_nl = strchr(word, '\n');
+	    
+	    if (sp_nl && (sp_nl < sp || !sp))
+	    	sp = sp_nl;
+	    else
+	    	sp_nl = NULL;
+	    
+	    if (sp)    	
 	        *sp++ = 0;
 
-	    /* Wrap to next line if either the word does not fit,
-	       or it is the first word of a new sentence, and it is
-	       short, and the next word does not fit. */
-	    room = width - cur_x;
-	    wlen = strlen(word);
-	    if (wlen > room ||
-		(newl && wlen < 4 && sp && wlen+1+strlen(sp) > room
-		&& (!(sp2 = index(sp, ' ')) || wlen+1+(sp2-sp) > room))) {
-		cur_y++;
-		cur_x = x;
-	    }
-	    wmove (win, cur_y, cur_x);
-	    waddstr (win, word);
-	    getyx (win, cur_y, cur_x);
-	    cur_x++;
-	    if (sp && *sp == ' ') {
-	        cur_x++;	/* double space */
-		while (*++sp == ' ');
-		newl = 1;
-	    } else
-	        newl = 0;
-	    word = sp;
+			if (sp_nl) {
+				/* "\n" encountered */
+				wmove (win, cur_y, cur_x);
+				waddstr (win, word);
+				cur_y++;
+				cur_x = x;
+				wmove (win, cur_y, cur_x);
+				newl = 1;
+			}
+			else {
+				/*	Wrap to next line if either the word does not fit,
+						or it is the first word of a new sentence, and it is
+						short, and the next word does not fit. */
+				room = width - cur_x;
+				wlen = strlen (word);
+				if (wlen > room ||
+					(newl && wlen < 4 && sp && wlen + 1 + strlen (sp) > room &&
+					(!(sp2 = strchr (sp, ' ')) || wlen + 1 + (sp2 - sp) > room)))
+				{
+					cur_y++;
+    			cur_x = x;
+				}
+				wmove (win, cur_y, cur_x);
+				waddstr (win, word);
+				getyx (win, cur_y, cur_x);
+				cur_x++;
+				if (sp && *sp == ' ') {
+					cur_x++;			/* double space */
+					while (*++sp == ' ');
+				  newl = 1;
+				}
+				else
+  				newl = 0;
+			}
+			word = sp;
+		}
 	}
-    }
 }
 
 /*

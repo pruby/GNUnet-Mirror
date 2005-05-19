@@ -191,6 +191,9 @@ int dialog_inputbox (const char *title, const char *prompt, int height,
 struct dialog_list_item *first_sel_item(int item_no,
 		struct dialog_list_item **items);
 
+void show_textbox(const char *title, const char *text, int r, int c);
+void show_helptext(const char *title, const char *text);
+
 /*
  * This is the base for fictitious keys, which activate
  * the buttons.

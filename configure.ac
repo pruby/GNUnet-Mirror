@@ -321,14 +321,16 @@ CPPFLAGS=$SAVE_CPPFLAGS
 
 # GNUnet Setup
 curses=1
+pdcurses=0
 AC_CHECK_HEADER([ncurses.h], [AC_DEFINE([CURSES_LOC], [<ncurses.h>], [Curses location])],
  [AC_CHECK_HEADER([ncurses/ncurses.h], AC_DEFINE([CURSES_LOC], [<ncurses/ncurses.h>]),
  [AC_CHECK_HEADER([curses.h], AC_DEFINE([CURSES_LOC], [<curses.h>]),
  [AC_CHECK_HEADER([ncurses/curses.h], AC_DEFINE([CURSES_LOC], [<ncurses/curses.h>]),
  curses=0)])])])
-AC_CHECK_LIB(ncurses, scrollok,,curses=0)
+AC_CHECK_LIB(ncurses, scrollok,,AC_CHECK_LIB(pdcurses, scrollok,pdcurses=1,curses=0))
 AC_DEFINE_UNQUOTED([HAVE_CURSES], $curses, [We have curses])
 AM_CONDITIONAL(HAVE_CURSES, test x$curses = x1)
+AM_CONDITIONAL(HAVE_PDCURSES, test x$pdcurses = x1)
 
 # check for gtk >= 2.4.0
 AC_MSG_CHECKING(for gtk)

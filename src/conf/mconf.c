@@ -31,8 +31,14 @@
  * @author Nils Durner
  */
 
+#include "platform.h"
+#include "gnunet_util.h"
+
+#ifndef MINGW
 #include <sys/ioctl.h>
 #include <sys/wait.h>
+#include <termios.h>
+#endif
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -41,7 +47,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 #include <unistd.h>
 
 #include "mconf_dialog.h"
@@ -250,8 +255,10 @@ readme_text[] =
 
 static char filename[PATH_MAX+1] = "/etc/GNUnet/.config";
 static int indent;
+#ifndef MINGW
 static struct termios ios_org;
-static int rows, cols;
+#endif
+int rows = 0, cols = 0;
 static int child_count;
 static int single_menu_mode;
 
@@ -263,15 +270,17 @@ static void conf_choice(struct menu *menu);
 static void conf_string(struct menu *menu);
 static void conf_load(void);
 static void conf_save(void);
-static void show_textbox(const char *title, const char *text, int r, int c);
-static void show_helptext(const char *title, const char *text);
 static void show_help(struct menu *menu);
 static void show_readme(void);
 
-static void init_wsize(void)
+void init_wsize(void)
 {
-	struct winsize ws;
 	char *env;
+	
+	rows = cols = 0;
+	
+#ifndef MINGW
+  struct winsize ws;
 
 	if (ioctl(1, TIOCGWINSZ, &ws) == -1) {
 		rows = 24;
@@ -279,6 +288,7 @@ static void init_wsize(void)
 	} else {
 		rows = ws.ws_row;
 		cols = ws.ws_col;
+#endif
 		if (!rows) {
 			env = getenv("LINES");
 			if (env)
@@ -293,7 +303,9 @@ static void init_wsize(void)
 			if (!cols)
 				cols = 80;
 		}
+#ifndef MINGW
 	}
+#endif
 
 	if (rows < 19 || cols < 80) {
 		end_dialog();
@@ -636,7 +648,7 @@ static void conf(struct menu *menu)
 	}
 }
 
-static void show_textbox(const char *title, const char *text, int r, int c)
+void show_textbox(const char *title, const char *text, int r, int c)
 {
 	int fd;
 
@@ -648,7 +660,7 @@ static void show_textbox(const char *title, const char *text, int r, int c)
 	UNLINK(".help.tmp");
 }
 
-static void show_helptext(const char *title, const char *text)
+void show_helptext(const char *title, const char *text)
 {
 	show_textbox(title, text, rows, cols);
 }
@@ -796,7 +808,9 @@ static void conf_save(void)
 
 static void conf_cleanup(void)
 {
+#ifndef MINGW
 	tcsetattr(1, TCSAFLUSH, &ios_org);
+#endif
 	UNLINK(".help.tmp");
 	UNLINK("lxdialog.scrltmp");
 }
@@ -807,6 +821,7 @@ int mconf_main(int ac, char **av)
 	int stat;
   const char * LANG;
   char * configFile;
+  struct menu *root;
 
   LANG = getenv("LANG");
   if (LANG == NULL)
@@ -823,7 +838,11 @@ int mconf_main(int ac, char **av)
                       2);
   }
 
-	conf_parse(configFile);
+	/* This configurator is also called from the wizard configurator.
+	 * Check whether the templates are already parsed. */
+	root = menu_get_root_menu(NULL);
+	if (!(root && root->prompt))
+		conf_parse(configFile);
   FREE(configFile);
   
 	conf_read(NULL);
@@ -837,6 +856,7 @@ int mconf_main(int ac, char **av)
 			single_menu_mode = 1;
 	}
 
+#ifndef MINGW
 	{
 		struct sigaction sa;
 		sa.sa_handler = winch_handler;
@@ -846,8 +866,10 @@ int mconf_main(int ac, char **av)
 	}
 
 	tcgetattr(1, &ios_org);
+#endif
 	atexit(conf_cleanup);
 	init_dialog();
+	
 	init_wsize();
 	conf(&rootmenu);
 

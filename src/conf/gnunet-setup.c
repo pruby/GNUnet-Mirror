@@ -34,8 +34,9 @@ static void help() {
        " config\t\ttext-based configuration\n"
        " menuconfig\ttext-based menu\n"
        " xconfig\tX configuration\n"
-       " gconfig\tGTK configuration\n\n"
-									" wizard-gtk\tBasic GTK configuration\n\n"));
+       " gconfig\tGTK configuration\n"
+			" wizard-curses\tBasic text-based graphical configuration\n"
+			" wizard-gtk\tBasic GTK configuration\n\n"));
 }
 
 #if HAVE_CURSES
@@ -55,7 +56,7 @@ int main(int argc,
     return 0;
   }
 
-  initUtil(NULL, 0, NULL);
+  initUtil(0, NULL, NULL);
 
   if (strncmp(argv[1], "config", 6) == 0)
     conf_main(argc - 1, &argv[1]);
@@ -64,6 +65,13 @@ int main(int argc,
     mconf_main(argc - 1, &argv[1]);
 #else
     puts("Menuconfig is not available\n");
+#endif
+  }
+  else if (strncmp(argv[1], "wizard-curses", 13) == 0) {
+#if HAVE_CURSES
+    wizard_curs_main(argc - 1, &argv[1]);
+#else
+    puts("Wizard-curses is not available\n");
 #endif
   }
   else if (strncmp(argv[1], "wizard-gtk", 10) == 0) {
