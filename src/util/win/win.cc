@@ -229,6 +229,7 @@ int InstallAsService()
 int UninstallService()
 {
   SC_HANDLE hManager, hService;
+  
 
   if (! GNOpenSCManager)
     return 1;
@@ -241,7 +242,10 @@ int UninstallService()
     return 3;
 
   if (! GNDeleteService(hService))
-    return 4;
+  {
+  	if (GetLastError() != ERROR_SERVICE_MARKED_FOR_DELETE)
+    	return 4;
+  }
 
   GNCloseServiceHandle(hService);
 
