@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "gnunet_util.h"
 #include "platform.h"
 
 static void help() {

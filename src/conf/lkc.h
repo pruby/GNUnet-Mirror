@@ -13,6 +13,7 @@
 #ifndef LKC_H
 #define LKC_H
 
+#include "gnunet_util.h"
 #include "platform.h"
 #include "expr.h"
 

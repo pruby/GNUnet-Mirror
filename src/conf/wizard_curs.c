@@ -133,7 +133,7 @@ int wizard_curs_main(int argc, char *argv[])
 						*dst++ = *src++;
 					dst[-1] = 0;
 #else
-					nic = entry;
+					nic = nic_items[idx]->name;
 #endif
 					sym = sym_lookup("INTERFACE", "NETWORK", 0);
 					sym_set_string_value(sym, nic);
