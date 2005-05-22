@@ -271,6 +271,7 @@ static int setStat(const char *key,
     if (sqlite3_step(stmt) != SQLITE_DONE) {
       LOG_SQLITE(LOG_ERROR,
 		 "sqlite_setStat");
+      sqlite3_finalize(stmt);
       return SYSERR;
     }
     sqlite3_finalize(stmt);
@@ -902,7 +903,9 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 #endif
 
   dbh = MALLOC(sizeof(sqliteHandle));
-
+  memset(dbh,
+	 0,
+	 sizeof(sqliteHandle));
   dbh->payload = 0;
   dbh->lastSync = 0;
 
@@ -945,6 +948,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 		     "  value BLOB NOT NULL DEFAULT '')", NULL, NULL,
 		     NULL) != SQLITE_OK) {
       LOG_SQLITE(LOG_ERROR, "sqlite_query");
+      sqlite3_finalize(stmt);
       FREE(dbh->fn);
       FREE(dbh);
       return NULL;
@@ -973,6 +977,14 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 		   &dbh->insertContent) != SQLITE_OK) ) {
     LOG_SQLITE(LOG_ERROR,
 	       "precompiling");
+    if (dbh->countContent != NULL)
+      sqlite3_finalize(dbh->countContent);
+    if (dbh->exists != NULL)
+      sqlite3_finalize(dbh->exists);
+    if (dbh->updPrio != NULL)
+      sqlite3_finalize(dbh->updPrio);
+    if (dbh->insertContent != NULL)
+      sqlite3_finalize(dbh->insertContent);
     FREE(dbh->fn);
     FREE(dbh);
     return NULL;

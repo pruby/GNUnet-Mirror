@@ -110,9 +110,9 @@ static int readNamespaceInfo(const char * namespaceName,
     return SYSERR;
   }
   buf = MALLOC(tag);
-  if (size != readFile(fn,
-		       tag,
-		       buf)) {
+  if (tag != readFile(fn,
+		      tag,
+		      buf)) {
     FREE(buf);
     FREE(fn);
     return SYSERR;

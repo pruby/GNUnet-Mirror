@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -605,13 +606,13 @@ typedef struct {
    * The the lock of the connection module. A module that registers
    * callbacks may need this.
    */
-  Mutex * (*getConnectionModuleLock)();
+  Mutex * (*getConnectionModuleLock)(void);
 
   /**
    * Get the current number of slots in the connection table (as computed
    * from the available bandwidth).
    */
-  int (*getSlotCount)();
+  int (*getSlotCount)(void);
 
   /**
    * Is the given slot used?
@@ -643,7 +644,7 @@ typedef int (*ApplicationInitMethod) (CoreAPIForApplication * capi);
  * Type of the shutdown method implemented by GNUnet protocol
  * plugins.
  */
-typedef void (*ApplicationDoneMethod)();
+typedef void (*ApplicationDoneMethod)(void);
 
 /**
  * Type of the initialization method implemented by GNUnet service
@@ -657,7 +658,7 @@ typedef void * (*ServiceInitMethod)(CoreAPIForApplication * capi);
  * Type of the shutdown method implemented by GNUnet service
  * plugins.
  */
-typedef void (*ServiceDoneMethod)();
+typedef void (*ServiceDoneMethod)(void);
 
 
 

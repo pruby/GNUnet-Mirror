@@ -352,9 +352,9 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       "'%s' registering client handlers %d %d %d and p2p handler %d\n",
       "stats",
+      CS_PROTO_CLIENT_COUNT,
       STATS_CS_PROTO_GET_STATISTICS,
       STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED,
-      CS_PROTO_CLIENT_COUNT,
       p2p_PROTO_NOISE);
   capi->registerClientHandler(STATS_CS_PROTO_GET_STATISTICS,
 			      &sendStatistics);

@@ -305,16 +305,20 @@ static void cronHelper(const char * filename,
  * Call this method periodically to scan data/hosts for new hosts.
  */
 static void cronScanDirectoryDataHosts(void * unused) {
+  static int retries;
   int count;
 
   count = scanDirectory(networkIdDirectory,
 			&cronHelper,
 			NULL);
   if (count <= 0) {
-    LOG(LOG_WARNING,
-	_("%s '%s' returned no known hosts!\n"),
-	"scanDirectory",
-	networkIdDirectory);
+    retries++;
+    if (retries > 32) {
+      LOG(LOG_WARNING,
+	  _("%s '%s' returned no known hosts!\n"),
+	  "scanDirectory",
+	  networkIdDirectory);
+    }
   }
 }
 

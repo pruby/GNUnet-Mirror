@@ -338,7 +338,7 @@ char *strptime (const char *buf, const char *format, struct tm *tm);
 char *ctime(const time_t *clock);
 char *ctime_r(const time_t *clock, char *buf);
 int plibc_init(char *pszOrg, char *pszApp);
-void plibc_shutdown();
+void plibc_shutdown(void);
 int plibc_conv_to_win_path_ex(const char *pszUnix, char *pszWindows, int derefLinks);
 void _SetErrnoFromWinError(long lWinError, char *pszCaller, int iLine);
 void SetErrnoFromWinsockError(long lWinError);
@@ -412,7 +412,7 @@ SOCKET _win_socket(int af, int type, int protocol);
 struct hostent *_win_gethostbyaddr(const char *addr, int len, int type);
 struct hostent *_win_gethostbyname(const char *name);
 char *_win_strerror(int errnum);
-int IsWinNT();
+int IsWinNT(void);
 
 #if !HAVE_STRNDUP
 char *strndup (const char *s, size_t n);

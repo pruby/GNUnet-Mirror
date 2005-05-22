@@ -1016,18 +1016,17 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   }
 
   LOG(LOG_DEBUG,
-      _("'%s' registering client handlers %d %d %d %d %d %d %d %d %d %d\n"),
+      _("'%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
       "fs",
       AFS_CS_PROTO_QUERY_START,
       AFS_CS_PROTO_QUERY_STOP,
-      AFS_CS_PROTO_RESULT,
       AFS_CS_PROTO_INSERT,
-      AFS_CS_PROTO_INIT_INDEX,
       AFS_CS_PROTO_INDEX,
       AFS_CS_PROTO_DELETE,
       AFS_CS_PROTO_UNINDEX,
       AFS_CS_PROTO_TESTINDEX,
-      AFS_CS_PROTO_GET_AVG_PRIORITY);
+      AFS_CS_PROTO_GET_AVG_PRIORITY,
+      AFS_CS_PROTO_INIT_INDEX);
 
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_QUERY_START,
 						      &csHandleRequestQueryStart));

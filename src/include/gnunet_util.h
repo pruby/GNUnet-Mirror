@@ -222,7 +222,7 @@ typedef struct {
   unsigned short type;
 } p2p_HEADER;
 
-typedef void (*NotifyConfigurationUpdateCallback)();
+typedef void (*NotifyConfigurationUpdateCallback)(void);
 
 /**
  * Type of a cron-job method.
@@ -599,7 +599,7 @@ void unregisterConfigurationUpdateCallback
  * Call all registered configuration update callbacks,
  * the configuration has changed.
  */
-void triggerGlobalConfigurationRefresh();
+void triggerGlobalConfigurationRefresh(void);
 
 /**
  * Read the specified configuration file. The previous
@@ -613,7 +613,7 @@ void triggerGlobalConfigurationRefresh();
  * default has been overriden) and if gnunetd receives
  * a SIGHUP.
  */
-void readConfiguration();
+void readConfiguration(void);
 
 /**
  * Expand an expression of the form
@@ -720,12 +720,12 @@ void setConfigurationStringList(char ** value,
 /**
  * Start the cron jobs.
  */
-void startCron();
+void startCron(void);
 
 /**
  * Stop the cron service.
  */
-void stopCron();
+void stopCron(void);
 
 /**
  * Stop running cron-jobs for a short time.  This method may only be
@@ -733,29 +733,29 @@ void stopCron();
  * a deadlock if this method is called from within a cron-job.
  * Use with caution.
  */
-void suspendCron();
+void suspendCron(void);
 
 /**
  * Resume running cron-jobs.
  */
-void resumeCron();
+void resumeCron(void);
 
 /**
  * Is the cron-thread currently running?
  */
-int isCronRunning();
+int isCronRunning(void);
 
 /**
  * Like suspendCron, but does nothing if called from
  * within a cron-job.
  */
-void suspendIfNotCron();
+void suspendIfNotCron(void);
 
 /**
  * Like resumeCron, but does nothing if called from
  * within a cron-job.
  */
-void resumeIfNotCron();
+void resumeIfNotCron(void);
 
 /**
  * Get the current time (works just as "time", just
@@ -935,12 +935,12 @@ void LOGHASH(size_t size,
 /**
  * Get the current loglevel.
  */
-int getLogLevel();
+int getLogLevel(void);
 
 /**
  * Return the logfile
  */
-void *getLogfile();
+void *getLogfile(void);
 
 /**
  * errexit - log an error message and exit.
@@ -1477,7 +1477,7 @@ int hashCodeCompareDistance(const HashCode512 * h1,
 /**
  * create a new hostkey. Callee must free return value.
  */
-struct PrivateKey * makePrivateKey();
+struct PrivateKey * makePrivateKey(void);
 
 /**
  * Deterministically (!) create a hostkey using only the
@@ -1586,29 +1586,29 @@ int initUtil(int argc,
  * util modules should check if it has
  * changed for them.
  */
-void resetUtil();
+void resetUtil(void);
 
 /**
  * Shutdown the util services in proper order.
  */
-void doneUtil();
+void doneUtil(void);
 
 /**
  * Configuration: get the GNUnet port for the client to
  * connect to (via TCP).
  */
-unsigned short getGNUnetPort();
+unsigned short getGNUnetPort(void);
 
 /**
  * Configuration: get the GNUnetd host where the client
  * should connect to (via TCP)
  */
-char * getGNUnetdHost();
+char * getGNUnetdHost(void);
 
 /**
  * Get a GNUnet TCP socket that is connected to gnunetd.
  */
-GNUNET_TCP_SOCKET * getClientSocket();
+GNUNET_TCP_SOCKET * getClientSocket(void);
 
 /**
  * Free a Client socket.
@@ -1804,7 +1804,7 @@ int getPublicIP6Address(IP6addr  * address);
  * @return the CPU load as a percentage of allowed
  *        (100 is equivalent to full load)
  */
-int getCPULoad();
+int getCPULoad(void);
 
 /**
  * Get the load of the network relative to what is allowed.
@@ -1814,7 +1814,7 @@ int getCPULoad();
  * @return the network load as a percentage of allowed
  *        (100 is equivalent to full load)
  */
-int getNetworkLoadUp();
+int getNetworkLoadUp(void);
 
 /**
  * Get the load of the network relative to what is allowed.
@@ -1824,7 +1824,7 @@ int getNetworkLoadUp();
  * @return the network load as a percentage of allowed
  *        (100 is equivalent to full load)
  */
-int getNetworkLoadDown();
+int getNetworkLoadDown(void);
 
 /**
  * Tell statuscalls to increment the number of bytes sent
@@ -1966,19 +1966,19 @@ void run_shutdown(int signum);
  * Test if the shutdown has been initiated.
  * @return YES if we are shutting down, NO otherwise
  */
-int testShutdown();
+int testShutdown(void);
 
 /**
  * Initialize the signal handlers, etc.
  */
-void initializeShutdownHandlers();
+void initializeShutdownHandlers(void);
 
 /**
  * Wait until the shutdown has been initiated.
  */
-void wait_for_shutdown();
+void wait_for_shutdown(void);
 
-void doneShutdownHandlers();
+void doneShutdownHandlers(void);
 
 /**
  * Print output of --help in GNU format.
@@ -2299,7 +2299,7 @@ char * cfg_get_str(const char * sec,
 			  const char * ent);
 int cfg_get_signed_int(const char *sec,
 			      const char *ent);
-void doneParseConfig();
+void doneParseConfig(void);
 
 /**
  * open() a file
@@ -2312,8 +2312,8 @@ int fileopen(const char *filename, int oflag, ...);
 #ifdef WINDOWS
 void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable);
 int ListNICs(void (*callback) (char *, int));
-int InstallAsService();
-int UninstallService();
+int InstallAsService(void);
+int UninstallService(void);
 #endif
 
 /* ifndef GNUNET_UTIL_H */

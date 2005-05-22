@@ -121,7 +121,7 @@ int main(int argc, char * argv[]) {
     }
   }
   initUtil(argc, argv, &parseCommandLine);
-
+  gnunet_util_sleep(5 * cronSECONDS);
   
   failureCount += testNamespace();
 

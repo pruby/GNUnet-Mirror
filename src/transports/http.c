@@ -56,7 +56,7 @@
 #include "gnunet_transport.h"
 #include "platform.h"
 
-#define DEBUG_HTTP YES
+#define DEBUG_HTTP NO
 
 /**
  * after how much time of the core not being associated with a http
@@ -547,18 +547,21 @@ static int readAndProcess(int i) {
       return SYSERR; /* error! */
     }
   }
+#if DEBUG_HTTP  
   LOG(LOG_DEBUG,
       "Got message of %u out of %u bytes\n",
       httpSession->rpos,
       httpSession->rsize);
-  
+#endif  
   if ( (httpSession->rsize == 0) ||
        (httpSession->rpos != httpSession->rsize) ) {
     /* only have partial message yet */
+#if DEBUG_HTTP
     LOG(LOG_DEBUG,
 	"Got partial message of %u out of %u bytes\n",
 	httpSession->rpos,
 	httpSession->rsize);
+#endif
     httpDisconnect(tsession);
     return OK;
   }

@@ -401,10 +401,12 @@ void readConfiguration() {
   /* getFileName aquires the mutex, so we better do this first */
   char * cfgName;
   char * expCfgName;
+  char * eName = NULL;
 
   cfgName = getConfigurationString("FILES",
 				   "gnunet.conf");
   if (cfgName == NULL) {
+    eName = expandFileName("~/.gnunet/gnunetd.conf");
     if (testConfigurationString("GNUNETD",
 				"_MAGIC_",
 				"YES")) {
@@ -414,19 +416,27 @@ void readConfiguration() {
 	   that we can write there (if it does not
 	   exist) */
 	expCfgName = "/etc/gnunetd.conf";
-	if ( access(expCfgName, R_OK) &&
-	     access("/etc", X_OK) ) {
+	if (access(expCfgName, R_OK)) {
 	  expCfgName = "/var/lib/GNUnet/gnunetd.conf";
-	  if ( access(expCfgName, R_OK) &&
-	       access("/var/lib/GNUnet", X_OK)) {
-	    expCfgName = "~/.gnunet/gnunetd.conf";
+	  if (access(expCfgName, R_OK)) {
+	    expCfgName = eName;
+	    if (access(expCfgName, R_OK)) {
+	      if (0 == access("/etc/gnunetd.conf", W_OK)) 
+		expCfgName = "/etc/gnunetd.conf";
+	      mkdirp("/var/lib/GNUnet");
+	      if (0 == access("/var/lib/GNUnet/gnunetd.conf", W_OK)) 
+		expCfgName = "/var/lib/GNUnet/gnunetd.conf";
+	      if (0 == access(eName, W_OK)) 
+		expCfgName = eName;
+	    }
 	  }
 	}	  
       }
     } else {
+      eName = expandFileName("~/.gnunet/gnunet.conf");
       expCfgName = getenv("GNUNET_CONFIG");
       if (expCfgName == NULL)
-	expCfgName = "~/.gnunet/gnunet.conf";
+	expCfgName = eName;
     }
     expCfgName = expandFileName(expCfgName);
     setConfigurationString("FILES",
@@ -435,6 +445,7 @@ void readConfiguration() {
   } else {
     expCfgName = expandFileName(cfgName);
   }
+  FREE(eName);
   if (0 == assertIsFile(expCfgName)) {
     FILE * f;
     char * c;

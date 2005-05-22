@@ -734,7 +734,7 @@ void FSUI_trackURIS(int onOff); /* file_info.c */
  *
  * @return YES of tracking is enabled, NO if not
  */
-int FSUI_trackStatus(); /* file_info.c */
+int FSUI_trackStatus(void); /* file_info.c */
 
 /**
  * Makes a URI available for directory building.

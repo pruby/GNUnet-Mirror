@@ -80,7 +80,7 @@ PIDFILE         = $GNUNETD_HOME/gnunetd.pid
 # information how to join GNUnet that is in no way private to the
 # local node.  This directory can be shared between nodes AND should
 # be put on a public web-server (if possible).  You should find a list
-# of known hosts under http://www.ovmj.org/GNUnet/hosts/, you can copy
+# of known hosts under http://gnunet.org/hosts/, you can copy
 # those files into this directory.
 # 
 # If you specify a HOSTLISTURL, the directory will be automatically
@@ -579,8 +579,8 @@ DELAYED = NO
 [TESTBED]
 
 # Where should we register the testbed service?
-# Default is "http://www.ovmj.org/GNUnet/testbed/"
-REGISTERURL = "http://www.ovmj.org/GNUnet/testbed/"
+# Default is "http://gnunet.org/testbed/"
+REGISTERURL = "http://gnunet.org/testbed/"
 
 # Is the testbed operator allowed to load and
 # unload modules? (somewhat of a security risk!)

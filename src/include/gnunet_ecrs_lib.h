@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -85,7 +86,7 @@ typedef int (*ECRS_MetaDataIterator)(EXTRACTOR_KeywordType type,
 /**
  * Create a fresh MetaData token.
  */
-struct ECRS_MetaData * ECRS_createMetaData();
+struct ECRS_MetaData * ECRS_createMetaData(void);
 
 /**
  * Duplicate a MetaData token.

@@ -64,7 +64,7 @@ int ECRS_deleteNamespace(const char * name) {
 
   fileName = getPseudonymFileName(name);
   if (0 != UNLINK(fileName)) {
-    LOG_FILE_STRERROR(LOG_WARNING, "unlink", fileName);
+    LOG_FILE_STRERROR(LOG_EVERYTHING, "unlink", fileName);
     FREE(fileName);
     return SYSERR;
   } else {
