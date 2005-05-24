@@ -135,7 +135,7 @@ AC_MSG_RESULT([$build_target])
 # lead to hard-coded paths ("C:\mingw\mingw\bin...") that do
 # not contain the actual GNUnet installation. GNUnet usually lives in
 # "C:\Program Files\GNU\GNUnet\bin".
-AC_DEFINE_DIR([DATADIR], [datadir/gnunet], [The directory for installing read-only architecture-independent data])
+AC_DEFINE_DIR([DATADIR], [datadir/GNUnet], [The directory for installing read-only architecture-independent data])
 AC_DEFINE_DIR([LOCALEDIR], [datadir/locale], [gettext catalogs])
 
 
