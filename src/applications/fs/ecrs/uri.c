@@ -403,7 +403,7 @@ void ECRS_freeUri(struct ECRS_URI * uri) {
 /**
  * Is this a namespace URI?
  */
-int ECRS_isNamespaceURI(const struct ECRS_URI * uri) {
+int ECRS_isNamespaceUri(const struct ECRS_URI * uri) {
   return uri->type == sks;
 }
 
@@ -430,7 +430,7 @@ char * ECRS_getNamespaceName(const HashCode512 * id) {
  */
 int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 			HashCode512 * id) {
-  if (! ECRS_isNamespaceURI(uri)) {
+  if (! ECRS_isNamespaceUri(uri)) {
     BREAK();
     return SYSERR;
   }
@@ -441,7 +441,7 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 /**
  * Is this a keyword URI?
  */
-int ECRS_isKeywordURI(const struct ECRS_URI * uri) {
+int ECRS_isKeywordUri(const struct ECRS_URI * uri) {
   return uri->type == ksk;
 }
 
@@ -460,14 +460,14 @@ unsigned int ECRS_countKeywordsOfUri(const struct ECRS_URI * uri) {
 /**
  * Is this a file (or directory) URI?
  */
-int ECRS_isFileURI(const struct ECRS_URI * uri) {
+int ECRS_isFileUri(const struct ECRS_URI * uri) {
   return uri->type == chk;
 }
 
 /**
  * Is this a location URI? (DHT specific!)
  */
-int ECRS_isLocationURI(const struct ECRS_URI * uri) {
+int ECRS_isLocationUri(const struct ECRS_URI * uri) {
   return uri->type == loc;
 }
 

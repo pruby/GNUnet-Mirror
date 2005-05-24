@@ -1,10 +1,11 @@
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
-- Features removed but to be revived:
-  * gnunet-gtk: glade II -- control!
 - Missing Features:
   * resolve "FIXME 0.7"
   * fsui core (persistence) [ difficult ]
-  * #593 (gnunet-setup): php-ification for i18n, curses wizard; template path adjustment for non gconf setup
+    - some error handling
+    - actual starting of download/search threads
+  * #593 (gnunet-setup): php-ification for i18n, curses wizard; 
+    template path adjustment for non gconf setup
   * #770? (use freedback (LOG) in gnunet-gtk via show-messages)
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
@@ -45,44 +46,3 @@ Not under control:
 - #603 (libgcrypt problem)
 
 
-
-
-
-gnunet-gtk wishlist (unallocated tasks unless mentioned
-otherwise, feel free to implement):
-
-- while (!) downloading directory, display already received results
-  for download (now supported by libecrs!)
-- add option to list all indexed files and perhaps delete from them
-  (ECRS now supports listing of indexed files!)
-- for potentially long clists, add option to specify a string
-  pattern that must be matched for the lines to be displayed
-  (to further prune search results, for example)
-- implement search bookmarking (e.g. user could add/edit/delete
-  favourite namespace/key etc combinations)
-- in Assemble Directory's Files Available/Selected
-    Add sortability
-    Add multiselection
-    Print filenames as well
-- add right button popup menu operations for
-    Select by pattern
-  in the search result list.
-- a completely new interactive namespace/directory building
-  module that would allow importing files/directories from
-  disk and edit various parameters, file descriptions and
-  the dir tree structure before the insertion.
-- give user opportunity to change namespace rating after
-  namespace download succeeded
-
---------------------------
-
-Igor's check-up list for a release version:
-a) works out of the box on a fresh setup
-   connects to the network
-b) local search
-   nonlocal search
-   local download
-   nonlocal download
-   insert
-   gnunet-update
-   GUI search, insert, download

@@ -209,8 +209,8 @@ int main(int argc,
   				   "URI");
   uri = ECRS_stringToUri(fstring);
   if ( (NULL == uri) ||
-       (! (ECRS_isLocationURI(uri) ||
-	   ECRS_isFileURI(uri)) ) ) {
+       (! (ECRS_isLocationUri(uri) ||
+	   ECRS_isFileUri(uri)) ) ) {
     LOG(LOG_ERROR,
         _("URI '%s' invalid for gnunet-download.\n"),
 	fstring);

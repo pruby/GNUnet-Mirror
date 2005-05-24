@@ -332,15 +332,6 @@ AC_DEFINE_UNQUOTED([HAVE_CURSES], $curses, [We have curses])
 AM_CONDITIONAL(HAVE_CURSES, test x$curses = x1)
 AM_CONDITIONAL(HAVE_PDCURSES, test x$pdcurses = x1)
 
-# check for gtk >= 2.4.0
-AC_MSG_CHECKING(for gtk)
-AM_PATH_GTK_2_0(2.4.0,without_gtk=false,without_gtk=true)
-AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
-if test $without_gtk != true
-then
- AC_DEFINE_UNQUOTED([HAVE_GTK], 1, [We have GTK])
-fi
-
 # check for gettext
 AM_GNU_GETTEXT_VERSION(0.14)
 AM_GNU_GETTEXT([external])
@@ -556,10 +547,5 @@ if test "$ipv6" = "0"
 then
   AC_MSG_NOTICE([NOTICE: IPv6 support will NOT be compiled.])
 fi
-
-#if test "$without_gtk" = "true"
-#then
-#  AC_MSG_NOTICE([NOTICE: gnunet-gtk user interface will NOT be compiled.])
-#fi
 
 AC_MSG_NOTICE([NOTICE: Database support is set to MySQL: $mysql, SQLite: $sqlite])

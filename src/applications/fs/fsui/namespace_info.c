@@ -711,7 +711,7 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
   struct ECRS_MetaData * old;
   HashCode512 id;
 
-  if (! ECRS_isNamespaceURI(uri)) {
+  if (! ECRS_isNamespaceUri(uri)) {
     BREAK();
     return;
   }

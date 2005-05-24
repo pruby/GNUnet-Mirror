@@ -226,6 +226,8 @@ typedef struct FSUI_Context {
 
   IPC_Semaphore * ipc;
 
+  char * name;
+
   /**
    * Lock to synchronize access to the FSUI Context.
    */

@@ -99,7 +99,7 @@ int ECRS_listDirectory(const char * data,
     pos = epos+1;
     if (fi.uri == NULL)
       return SYSERR; /* malformed! */
-    if (ECRS_isKeywordURI(fi.uri)) {
+    if (ECRS_isKeywordUri(fi.uri)) {
       ECRS_freeUri(fi.uri);
       BREAK();
       return SYSERR; /* illegal in directory! */
@@ -169,7 +169,7 @@ int ECRS_createDirectory(char ** data,
   int ret;
 
   for (i=0;i<count;i++) {
-    if (ECRS_isKeywordURI(fis[i].uri)) {
+    if (ECRS_isKeywordUri(fis[i].uri)) {
       BREAK();
       return SYSERR; /* illegal in directory! */
     }

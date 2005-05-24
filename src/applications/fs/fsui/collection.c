@@ -340,7 +340,7 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
 
   if (ctx->collectionData == NULL)
     return;
-  if ((ECRS_isKeywordURI(fi->uri))) {
+  if ((ECRS_isKeywordUri(fi->uri))) {
     BREAK();
     return;
   }

@@ -137,7 +137,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   char * cpy; /* copy of the encrypted portion */
   struct ECRS_URI * xuri;
 
-  if (! ECRS_isKeywordURI(uri)) {
+  if (! ECRS_isKeywordUri(uri)) {
     BREAK();
     return SYSERR;
   }

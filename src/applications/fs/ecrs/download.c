@@ -1147,7 +1147,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   FileIdentifier fid;
 
   fid = uri->data.chk;
-  if (! ECRS_isFileURI(uri))
+  if (! ECRS_isFileUri(uri))
     return SYSERR;
 
   if (OK != createIOContext(&ioc,

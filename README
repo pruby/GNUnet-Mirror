@@ -48,7 +48,8 @@ build process read the INSTALL file.
 
 GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
 and libgcrypt.  You can specify the path to libgcrypt by passing
-"--with-gcrypt=PATH" to configure.
+"--with-gcrypt=PATH" to configure.  You will also need either sqlite
+(version 3 or higher) or MySQL (version 4.1 or higher).
 
 If you are compiling the code from subversion, you have to run
 ". bootstrap" before ./configure.  If you receive an error during the
@@ -56,7 +57,7 @@ running of ". bootstrap" that looks like "macro `AM_PATH_GTK' not
 found in library", you may need to run aclocal by hand with the -I
 option, pointing to your aclocal m4 macros, i.e.
 
-# aclocal -I /usr/local/share/aclocal
+$ aclocal -I /usr/local/share/aclocal
 
 In order to start a "permanent" node, you should create a new user
 "gnunet" and start "gnunetd" as that user whenever the system boots.
@@ -79,8 +80,8 @@ Configuration
 
 The defaults are usually ok, you may want to adjust the limitations
 (space consumption, bandwidth, etc.) though.  If you want to
-configure, edit "/etc/gnunet.conf" and "~/.gnunet/gnunet.conf"
-(whichever applies).
+configure, edit "/etc/gnunetd.conf" (or /var/lib/GNUnet/gnunetd.conf)
+and "~/.gnunet/gnunet.conf" (whichever applies).
 
 If you want to use a different configuration file, pass the name of
 the configuration file as an argument with the option -c to any GNUnet
@@ -100,20 +101,20 @@ Usage
 
 First, you must obtain an initial list of GNUnet hosts.  Knowing a
 single peer is sufficient since after that GNUnet propagates
-information about other peers.  Note that the default "gnunet.conf"
+information about other peers.  Note that the default "gnunetd.conf"
 contains a URL from where gnunetd downloads an initial hostlist
 whenever it is started.  If you want to create an alternative URL for
 others to use, the file can be generated on any machine running
 gnunetd by periodically executing
 
-# cat $GNUNETD-HOME/.gnunet/data/hosts/* > the_file
+$ cat $GNUNETD_HOME/data/hosts/* > the_file
 
 If the solution with the URL is not feasible for your situation, you
 can also add hosts manually.  The GNUnet webpage has a public
 directory of hostkeys under http://gnunet.org/hosts/.  You
 can of course use any other source for these files.  Copy the hostkeys
-to "$GNUNETD-HOME/.gnunet/data/hosts/" (where $GNUNETD_HOME is the
-directory specified in the /etc/gnunet.conf configuration file).
+to "$GNUNETD_HOME/data/hosts/" (where $GNUNETD_HOME is the
+directory specified in the /etc/gnunetd.conf configuration file).
 
 Now start the local node using "gnunetd".  gnunetd should run 24/7 if
 you want to maximize your anonymity.  You may start it as a service
@@ -142,7 +143,7 @@ Hacking GNUnet
 ==============
 
 Contributions are welcome, please submit bugs to
-http://gnunet.org/mantis/.  Please make sure to run contrib/report.sh
+https://gnunet.org/mantis/.  Please make sure to run contrib/report.sh
 and include the output with your bug reports.  More about how to
 report bugs can be found in the GNUnet FAQ on the webpage.  Submit
 patches via E-Mail to gnunet-developers@gnu.org.
@@ -158,3 +159,4 @@ Stay tuned
 * http://mail.gnu.org/mailman/listinfo/gnunet-developers
 * http://mail.gnu.org/mailman/listinfo/help-gnunet
 * http://mail.gnu.org/mailman/listinfo/info-gnunet
+

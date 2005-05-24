@@ -1,8 +1,7 @@
 How to setup the MySQL database for GNUnet.
 
-NOTE: This db module does NOT work with mysql v3.23.49 due to a bug
-in mysql.  All later versions should be fine, including the 4.0.x
-series. Current devel version is 4.0.22 on debian/unstable.
+NOTE: This db module does NOT work with mysql before 4.1 since
+we need prepared statements.
  
 HIGHLIGHTS
 
@@ -21,11 +20,11 @@ Cons
 
 MANUAL SETUP INSTRUCTIONS
 
- 1) in /etc/gnunet.conf, set
+ 1) in /etc/gnunetd.conf, set
     sqstore = "sqstore_mysql"
 
  2) Then access mysql as root,
-    # mysql -u root -p 
+    $ mysql -u root -p 
     and do the following. [You should replace $USER with the username 
     that will be running the gnunetd process].
 
@@ -52,7 +51,7 @@ MANUAL SETUP INSTRUCTIONS
  4) Still, perhaps you should briefly try if the DB connection 
     works. First, login as $USER. Then use,
 
-    # mysql -u $USER
+    $ mysql -u $USER
     mysql> use gnunet;
     
     If you get the message &quot;Database changed&quot; it probably works.
@@ -80,9 +79,9 @@ MANUAL SETUP INSTRUCTIONS
  EFFICIENCY ISSUES
 
  If you suffer from too slow index/insert speeds, 
- you might try to define /etc/gnunet.conf option
+ you might try to define /etc/gnunetd.conf option
 
-   [AFS]
+   [MYSQL]
    MYSQL_DELAYED = YES
 
  for small efficiency boost. The option will let MySQL bundle multiple 

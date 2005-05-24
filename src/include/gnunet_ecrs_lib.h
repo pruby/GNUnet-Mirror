@@ -266,7 +266,7 @@ int ECRS_equalsUri(const struct ECRS_URI * u1,
 /**
  * Is this a namespace URI?
  */
-int ECRS_isNamespaceURI(const struct ECRS_URI * uri);
+int ECRS_isNamespaceUri(const struct ECRS_URI * uri);
 
 /**
  * Get the (globally unique) name for the given
@@ -287,12 +287,12 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 /**
  * Is this a keyword URI?
  */
-int ECRS_isKeywordURI(const struct ECRS_URI * uri);
+int ECRS_isKeywordUri(const struct ECRS_URI * uri);
 
 /**
  * Is this a file (or directory) URI?
  */
-int ECRS_isFileURI(const struct ECRS_URI * uri);
+int ECRS_isFileUri(const struct ECRS_URI * uri);
 
 /**
  * What is the size of the file that this URI
@@ -303,7 +303,7 @@ unsigned long long ECRS_fileSize(const struct ECRS_URI * uri);
 /**
  * Is this a location URI? (DHT specific!)
  */
-int ECRS_isLocationURI(const struct ECRS_URI * uri);
+int ECRS_isLocationUri(const struct ECRS_URI * uri);
 
 /**
  * Construct a keyword-URI from meta-data (take all entries

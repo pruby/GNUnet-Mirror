@@ -294,8 +294,8 @@ static int startDownload(struct FSUI_Context * ctx,
 			 FSUI_DownloadList * parent) {
   FSUI_DownloadList * dl;
 
-  if (! (ECRS_isFileURI(uri) ||
-	 ECRS_isLocationURI(uri)) ) {
+  if (! (ECRS_isFileUri(uri) ||
+	 ECRS_isLocationUri(uri)) ) {
     BREAK(); /* wrong type of URI! */
     return SYSERR;
   }

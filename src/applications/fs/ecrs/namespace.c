@@ -123,7 +123,7 @@ int ECRS_createNamespace(const char * name,
   char * cpy;
 
   if ( (advertisementURI != NULL) &&
-       (! ECRS_isKeywordURI(advertisementURI)) ) {
+       (! ECRS_isKeywordUri(advertisementURI)) ) {
     BREAK();
     return SYSERR;
   }

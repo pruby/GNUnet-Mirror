@@ -40,7 +40,7 @@ static int testKeyword() {
   ret = ECRS_stringToUri("gnunet://ecrs/ksk/foo+bar");
   if (ret == NULL)
     ABORT();
-  if (! ECRS_isKeywordURI(ret))
+  if (! ECRS_isKeywordUri(ret))
     ABORT();
   if ( (2 != ret->data.ksk.keywordCount) ||
        (0 != strcmp("foo", ret->data.ksk.keywords[0])) ||
@@ -69,9 +69,9 @@ static int testNamespace(int i) {
   ret = ECRS_stringToUri("gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   if (ret == NULL)
     ABORT();
-  if (ECRS_isKeywordURI(ret))
+  if (ECRS_isKeywordUri(ret))
     ABORT();
-  if (! ECRS_isNamespaceURI(ret))
+  if (! ECRS_isNamespaceUri(ret))
     ABORT();
 
   uri = ECRS_uriToString(ret);
@@ -96,9 +96,9 @@ static int testFile(int i) {
   ret = ECRS_stringToUri("gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42");
   if (ret == NULL)
     ABORT();
-  if (ECRS_isKeywordURI(ret))
+  if (ECRS_isKeywordUri(ret))
     ABORT();
-  if (ECRS_isNamespaceURI(ret))
+  if (ECRS_isNamespaceUri(ret))
     ABORT();
   if (ntohll(ret->data.chk.file_length) != 42)
     ABORT();
