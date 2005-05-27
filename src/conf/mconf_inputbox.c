@@ -145,6 +145,9 @@ dialog_inputbox (const char *title, const char *prompt, int height, int width,
 		continue;
 	    case KEY_BACKSPACE:
 	    case 127:
+#ifdef MINGW
+			case 8:
+#endif
 		if (input_x || scroll) {
 		    wattrset (dialog, inputbox_attr);
 		    if (!input_x) {
