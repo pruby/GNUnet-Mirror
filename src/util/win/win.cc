@@ -30,6 +30,8 @@
 #include "winproc.h"
 #include "gnunet_util.h"
 
+#include <ntdef.h>
+
 extern "C" {
 
 /**
@@ -187,15 +189,17 @@ int ListNICs(void (*callback) (char *, int))
 
 /**
  * @brief Installs the Windows service
+ * @param username the name of the service's user account
  * @returns 0 on success
  *          1 if the Windows version doesn't support services
  *          2 if the SCM could not be opened
  *          3 if the service could not be created
  */
-int InstallAsService()
+int InstallAsService(char *username)
 {
   SC_HANDLE hManager, hService;
   char szEXE[_MAX_PATH + 17] = "\"";
+  char *user = NULL;
 
   if (! GNOpenSCManager)
     return 1;
@@ -206,9 +210,18 @@ int InstallAsService()
   if (! hManager)
     return 2;
 
+	if (username)
+	{
+		user = (char *) malloc(strlen(username) + 3);
+		sprintf(user, ".\\%s", username);
+	}
+
   hService = GNCreateService(hManager, "GNUnet", "GNUnet", 0,
     SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, szEXE,
-    NULL, NULL, NULL, NULL, NULL);
+    NULL, NULL, NULL, user, user);
+  
+  if (user)
+  	free(user);
 
   if (! hService)
     return 3;
@@ -252,6 +265,236 @@ int UninstallService()
 	return 0;
 }
 
+/**
+ * @author Scott Field, Microsoft
+ * @see http://support.microsoft.com/?scid=kb;en-us;132958
+ * @date 12-Jul-95
+ */
+void _InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String)
+{
+  DWORD StringLength;
+
+  if(String == NULL)
+  {
+    LsaString->Buffer = NULL;
+    LsaString->Length = 0;
+    LsaString->MaximumLength = 0;
+    return;
+  }
+
+  StringLength = wcslen(String);
+  LsaString->Buffer = String;
+  LsaString->Length = (USHORT) StringLength *sizeof(WCHAR);
+  LsaString->MaximumLength = (USHORT) (StringLength + 1) * sizeof(WCHAR);
 }
+
+
+/**
+ * @author Scott Field, Microsoft
+ * @see http://support.microsoft.com/?scid=kb;en-us;132958
+ * @date 12-Jul-95
+ */
+NTSTATUS _OpenPolicy(LPWSTR ServerName, DWORD DesiredAccess, PLSA_HANDLE PolicyHandle)
+{
+  LSA_OBJECT_ATTRIBUTES ObjectAttributes;
+  LSA_UNICODE_STRING ServerString;
+  PLSA_UNICODE_STRING Server = NULL;
+
+  /* Always initialize the object attributes to all zeroes. */
+  ZeroMemory(&ObjectAttributes, sizeof(ObjectAttributes));
+
+  if(ServerName != NULL)
+  {
+    /* Make a LSA_UNICODE_STRING out of the LPWSTR passed in */
+    _InitLsaString(&ServerString, ServerName);
+    Server = &ServerString;
+  }
+
+  /* Attempt to open the policy. */
+  return GNLsaOpenPolicy(Server,
+                       &ObjectAttributes, DesiredAccess, PolicyHandle);
+}
+
+/**
+ * @brief Obtain a SID representing the supplied account on the supplied system
+ * @return TRUE on success, FALSE on failure
+ * @author Scott Field, Microsoft
+ * @date 12-Jul-95
+ * @remarks A buffer is allocated which contains the SID representing the
+ *          supplied account. This buffer should be freed when it is no longer
+ *          needed by calling\n
+ *            HeapFree(GetProcessHeap(), 0, buffer)
+ * @remarks Call GetLastError() to obtain extended error information.
+ * @see http://support.microsoft.com/?scid=kb;en-us;132958
+ */
+BOOL _GetAccountSid(LPTSTR SystemName, LPTSTR AccountName, PSID * Sid)
+{
+  LPTSTR ReferencedDomain = NULL;
+  DWORD cbSid = 128;								/* initial allocation attempt */
+  DWORD cchReferencedDomain = 16;		/* initial allocation size */
+  SID_NAME_USE peUse;
+  BOOL bSuccess = FALSE;						/* assume this function will fail */
+
+  /* initial memory allocations */
+	if ((*Sid = HeapAlloc (GetProcessHeap (), 0, cbSid)) == NULL)
+		return FALSE;
+
+	if ((ReferencedDomain = (LPTSTR) HeapAlloc (GetProcessHeap (),
+					    0,
+					    cchReferencedDomain *
+					    sizeof (TCHAR))) == NULL)
+		return FALSE;
+
+    /* Obtain the SID of the specified account on the specified system. */
+		while (!GNLookupAccountName(SystemName,	/* machine to lookup account on */
+			   AccountName,												/* account to lookup */
+			   *Sid,															/* SID of interest */
+			   &cbSid,														/* size of SID */
+			   ReferencedDomain,									/* domain account was found on */
+			   &cchReferencedDomain, &peUse))
+		{
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				/* reallocate memory */
+				if ((*Sid = HeapReAlloc (GetProcessHeap (), 0, *Sid, cbSid)) == NULL)
+					return FALSE;
+
+				if ((ReferencedDomain = (LPTSTR) HeapReAlloc (GetProcessHeap (),
+						      0,
+						      ReferencedDomain,
+						      cchReferencedDomain
+						      * sizeof (TCHAR))) == NULL)
+					return FALSE;
+      }
+    	else
+      	goto end;
+  }
+  
+  /* Indicate success. */
+	bSuccess = TRUE;
+
+end:
+	/* Cleanup and indicate failure, if appropriate. */
+	HeapFree (GetProcessHeap (), 0, ReferencedDomain);
+
+	if (!bSuccess)
+	{
+  	if (*Sid != NULL)
+    {
+			HeapFree (GetProcessHeap (), 0, *Sid);
+			*Sid = NULL;
+    }
+  }
+
+	return bSuccess;
+}
+
+/**
+ * @author Scott Field, Microsoft
+ * @see http://support.microsoft.com/?scid=kb;en-us;132958
+ * @date 12-Jul-95
+ */
+NTSTATUS _SetPrivilegeOnAccount(LSA_HANDLE PolicyHandle,/* open policy handle */
+                               PSID AccountSid, 				/* SID to grant privilege to */
+                               LPWSTR PrivilegeName,		/* privilege to grant (Unicode) */
+                               BOOL bEnable							/* enable or disable */
+  )
+{
+  LSA_UNICODE_STRING PrivilegeString;
+
+  /* Create a LSA_UNICODE_STRING for the privilege name. */
+  _InitLsaString(&PrivilegeString, PrivilegeName);
+
+  /* grant or revoke the privilege, accordingly */
+  if(bEnable)
+  {
+  	NTSTATUS i;
+  	
+    i = GNLsaAddAccountRights(PolicyHandle,					/* open policy handle */
+                               AccountSid,      				/* target SID */
+                               &PrivilegeString,        /* privileges */
+                               1												/* privilege count */
+      );      
+  }
+  else
+  {
+    return GNLsaRemoveAccountRights(PolicyHandle,				/* open policy handle */
+                                  AccountSid,   				/* target SID */
+                                  FALSE,								/* do not disable all rights */
+                                  &PrivilegeString,			/* privileges */
+                                  1											/* privilege count */
+      );
+  }
+}
+
+/**
+ * @brief Create a Windows service account
+ * @return 0 on success, > 0 otherwise
+ * @param pszName the name of the account
+ * @param pszDesc description of the account
+ */
+int CreateServiceAccount(char *pszName, char *pszDesc)
+{
+	USER_INFO_1 ui;
+	USER_INFO_1008 ui2;
+	NET_API_STATUS nStatus;
+	wchar_t wszName[MAX_NAME_LENGTH], wszDesc[MAX_NAME_LENGTH];
+	DWORD dwErr;
+	LSA_HANDLE hPolicy;
+	PSID pSID;
+	
+	if (! GNNetUserAdd)
+		return 1;
+	mbstowcs(wszName, pszName, strlen(pszName) + 1);
+	mbstowcs(wszDesc, pszDesc, strlen(pszDesc) + 1);
+	
+	memset(&ui, 0, sizeof(ui));
+	ui.usri1_name = wszName;
+	ui.usri1_password = wszName; /* account is locked anyway */
+	ui.usri1_priv = USER_PRIV_USER;
+	ui.usri1_comment = wszDesc;
+	ui.usri1_flags = UF_SCRIPT;
+
+	nStatus = GNNetUserAdd(NULL, 1, (LPBYTE)&ui, NULL);
+	
+	if (nStatus != NERR_Success && nStatus != NERR_UserExists)
+		return 2;
+	
+  ui2.usri1008_flags = UF_ACCOUNTDISABLE | UF_PASSWD_CANT_CHANGE |
+  	UF_DONT_EXPIRE_PASSWD;
+  GNNetUserSetInfo(NULL, wszName, 1008, (LPBYTE)&ui2, NULL);
+	
+	if (_OpenPolicy(NULL, POLICY_ALL_ACCESS, &hPolicy) !=
+											STATUS_SUCCESS)
+		return 3;
+		
+	_GetAccountSid(NULL, pszName, &pSID);
+	
+	if (_SetPrivilegeOnAccount(hPolicy, pSID, L"SeServiceLogonRight", TRUE) != STATUS_SUCCESS)
+		return 4;
+		
+	GNLsaClose(hPolicy);
+	
+	return 0;
+}
+
+char *winErrorStr(char *prefix, DWORD dwErr)
+{
+	char *err, *ret;
+	
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+  	NULL, dwErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &err,
+		0, NULL );
+
+	ret = (char *) malloc(strlen(err) + strlen(prefix) + 20);
+
+  sprintf(ret, "%s: %s (#%u)", prefix, err, dwErr);
+  
+  LocalFree(err);
+  
+  return ret; 
+}
+
+} /* extern "C" */
 
 #endif

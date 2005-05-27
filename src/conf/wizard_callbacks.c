@@ -35,12 +35,15 @@
 #include "wizard_callbacks.h"
 #include "wizard_interface.h"
 #include "wizard_support.h"
+#include "wizard_util.h"
+#include "wizard_gtk.h"
 
 #include "lkc.h"
 
 extern GtkWidget *curwnd;
 extern int doOpenEnhConfigurator;
 extern int doAutoStart;
+extern char *user_name, *group_name;
 
 GtkWidget *msgSave;
 GtkWidget *msgSaveFailed;
@@ -120,14 +123,14 @@ on_step3_next_clicked (GtkButton * button, gpointer user_data)
 
 
 void
-on_step4_back_clicked (GtkButton * button, gpointer user_data)
+on_step5_back_clicked (GtkButton * button, gpointer user_data)
 {
 	quit = 0;
 	gtk_widget_destroy(curwnd);
 	quit = 1;
 	
-	curwnd = create_assi_step3();
-	load_step3();
+	curwnd = create_assi_step4();
+	load_step4();
 	gtk_widget_show(curwnd);
 }
 
@@ -148,7 +151,10 @@ save_conf ()
 void
 on_finish_clicked (GtkButton * button, gpointer user_data)
 {
-	wiz_autostart(doAutoStart);
+	if (doAutoStart && user_name)
+		wiz_addServiceAccount(group_name, user_name);
+
+	wiz_autostart(doAutoStart, user_name, group_name);
 	
 	if (save_conf())
 		gtk_widget_destroy(curwnd);
@@ -310,4 +316,47 @@ void
 on_chkEnh_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
 	doOpenEnhConfigurator = gtk_toggle_button_get_active(togglebutton);
+}
+
+void
+on_step4_back_clicked (GtkButton * button, gpointer user_data)
+{
+	quit = 0;
+	gtk_widget_destroy(curwnd);
+	quit = 1;
+	
+	curwnd = create_assi_step3();
+	load_step3();
+	gtk_widget_show(curwnd);
+}
+
+void
+on_step4_next_clicked (GtkButton * button, gpointer user_data)
+{
+	quit = 0;
+	gtk_widget_destroy(curwnd);
+	quit = 1;
+	
+	curwnd = create_assi_step5();
+	load_step5();
+	gtk_widget_show(curwnd);
+}
+
+void
+on_entUser_changed (GtkEditable * editable, gpointer user_data)
+{
+	if (user_name)
+		free(user_name);
+	
+	user_name = strdup(gtk_editable_get_chars(editable, 0, -1));
+}
+
+
+void
+on_entGroup_changed (GtkEditable * editable, gpointer user_data)
+{
+	if (user_name)
+		free(user_name);
+	
+	group_name = strdup(gtk_editable_get_chars(editable, 0, -1));
 }

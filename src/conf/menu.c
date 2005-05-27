@@ -389,7 +389,7 @@ struct file *file_lookup(const char *name)
 
 	file = malloc(sizeof(*file));
 	memset(file, 0, sizeof(*file));
-	file->name = name;
+	file->name = (char *) name;
 	file->next = file_list;
 	file_list = file;
   

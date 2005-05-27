@@ -31,7 +31,7 @@
 
 #ifdef MINGW
 
-static HINSTANCE hNTDLL, hIphlpapi, hAdvapi;
+static HINSTANCE hNTDLL, hIphlpapi, hAdvapi, hNetapi;
 TNtQuerySystemInformation GNNtQuerySystemInformation;
 TGetIfEntry GNGetIfEntry;
 TGetIpAddrTable GNGetIpAddrTable;
@@ -47,6 +47,13 @@ TControlService GNControlService;
 TOpenService GNOpenService;
 TGetBestInterface GNGetBestInterface;
 TGetAdaptersInfo GGetAdaptersInfo;
+TNetUserAdd GNNetUserAdd;
+TNetUserSetInfo GNNetUserSetInfo;
+TLsaOpenPolicy GNLsaOpenPolicy;
+TLsaAddAccountRights GNLsaAddAccountRights;
+TLsaRemoveAccountRights GNLsaRemoveAccountRights;
+TLsaClose GNLsaClose;
+TLookupAccountName GNLookupAccountName;
 
 /**
  * Log (panic) messages from PlibC
@@ -99,7 +106,7 @@ void InitWinEnv()
     GGetAdaptersInfo = NULL;
   }
 
-  /* Service functions */
+  /* Service & Account functions */
   hAdvapi = LoadLibrary("advapi32.dll");
   if (hAdvapi)
   {
@@ -121,6 +128,50 @@ void InitWinEnv()
       GetProcAddress(hAdvapi, "ControlService");
     GNOpenService = (TOpenService)
       GetProcAddress(hAdvapi, "OpenServiceA");
+      
+  	GNLsaOpenPolicy = (TLsaOpenPolicy)
+  		GetProcAddress(hAdvapi, "LsaOpenPolicy");
+  	GNLsaAddAccountRights = (TLsaAddAccountRights)
+  		GetProcAddress(hAdvapi, "LsaAddAccountRights");
+  	GNLsaRemoveAccountRights = (TLsaRemoveAccountRights)
+  		GetProcAddress(hAdvapi, "LsaRemoveAccountRights");
+  	GNLsaClose = (TLsaClose)
+  		GetProcAddress(hAdvapi, "LsaClose");
+  	GNLookupAccountName = (TLookupAccountName)
+  		GetProcAddress(hAdvapi, "LookupAccountNameA");
+  }
+  else
+  {
+    GNOpenSCManager = NULL;
+    GNCreateService = NULL;
+    GNCloseServiceHandle = NULL;
+    GNDeleteService = NULL;
+    GNRegisterServiceCtrlHandler = NULL;
+    GNSetServiceStatus = NULL;
+    GNStartServiceCtrlDispatcher = NULL;
+    GNControlService = NULL;
+    GNOpenService = NULL;
+      
+  	GNLsaOpenPolicy = NULL;
+  	GNLsaAddAccountRights = NULL;
+  	GNLsaRemoveAccountRights = NULL;
+  	GNLsaClose = NULL;
+  	GNLookupAccountName = NULL;
+  }
+  
+  /* Account function */
+  hNetapi = LoadLibrary("netapi32.dll");
+  if (hNetapi)
+  {
+  	GNNetUserAdd = (TNetUserAdd)
+  		GetProcAddress(hNetapi, "NetUserAdd");
+  	GNNetUserSetInfo = (TNetUserSetInfo)
+  		GetProcAddress(hNetapi, "NetUserSetInfo");
+  }
+  else
+  {
+  	GNNetUserAdd = NULL;
+  	GNNetUserSetInfo = NULL;
   }
 }
 
@@ -134,6 +185,7 @@ void ShutdownWinEnv()
   FreeLibrary(hNTDLL);
   FreeLibrary(hIphlpapi);
   FreeLibrary(hAdvapi);
+  FreeLibrary(hNetapi);
 
   CoUninitialize();
 }

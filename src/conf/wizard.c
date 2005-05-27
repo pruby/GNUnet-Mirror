@@ -33,18 +33,19 @@
 
 #include "wizard_interface.h"
 #include "wizard_support.h"
+#include "wizard_util.h"
 
 GtkWidget *curwnd;
 GtkWidget *cmbNIC;
 
 int doOpenEnhConfigurator = 0;
 int doAutoStart = 0;
+char *user_name = NULL, *group_name = NULL;
+
+int gconf_main(int ac, char *av[]);
 
 void insert_nic(char *name, int defaultNIC)
 {
-	struct symbol *sym;
-	char *nic = NULL;
-	
   gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
   
 	defaultNIC = wiz_is_nic_default(name, defaultNIC);
@@ -172,6 +173,32 @@ void load_step3()
 
 void load_step4()
 {
+		GtkWidget *vbox18, *frame8, *vbox19, *table3, *entUser, *entGroup;
+		int group;
+		
+		vbox18 = lookup_widget(curwnd, "vbox18");
+		frame8 = lookup_widget(vbox18, "frame8");
+		vbox19 = lookup_widget(frame8, "vbox19");
+		table3 = lookup_widget(vbox19, "table3");
+		entUser = lookup_widget(table3, "entUser");
+		entGroup = lookup_widget(table3, "entGroup");
+		
+		if (user_name)
+			gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
+		else
+			user_name = strdup("gnunet");
+		
+		if (group_name)
+			gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
+	
+		gtk_widget_set_sensitive(entUser, wiz_useradd_capable());
+		gtk_widget_set_sensitive(entGroup, group = wiz_groupadd_capable());
+		if (group && !group_name)
+				group_name = strdup("gnunet");
+}
+
+void load_step5()
+{
 	struct symbol *sym;
 	GtkWidget *vbox12, *frame7, *vbox13, *vbox14, *vbox15, *hbox53, *chkMigr,
 		*entQuota, *chkEnh, *chkStart;
@@ -257,7 +284,8 @@ wizard_main (int argc, char *argv[])
 
   gtk_main ();
 
-  FREE(configFile);
+	if (doOpenEnhConfigurator)
+		gconf_main(argc, argv);
 
   return 0;
 }

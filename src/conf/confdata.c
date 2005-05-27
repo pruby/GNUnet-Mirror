@@ -141,8 +141,8 @@ int conf_read(const char *name)
 						
 						sym_calc_value_ext(sym, 1);
 						sym_calc_value_ext(defFile, 1);
-						path = sym_get_string_value(sym);
-						file = sym_get_string_value(defFile);					
+						path = (char *) sym_get_string_value(sym);
+						file = (char *) sym_get_string_value(defFile);					
 						
 						key = realloc(key, strlen(path) + strlen(file) + 2);
 						sprintf(key, "%s%c%s", path, DIR_SEPARATOR, file);
@@ -303,7 +303,7 @@ int conf_write(const char *name)
 						fclose(out);
 					
 					cur_tmpl = menu->file->name;
-					prefix = cur_tmpl + strlen(cur_tmpl);
+					prefix = (char *) cur_tmpl + strlen(cur_tmpl);
 					while(*prefix != '/' && *prefix != '\\')
 						prefix--;
 					prefix++;

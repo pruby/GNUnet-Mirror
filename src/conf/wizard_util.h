@@ -31,7 +31,11 @@
 
 int wiz_enum_nics(void (*callback) (char *, int));
 int wiz_is_nic_default(const char *name, int suggestion);
-void wiz_autostart(int doAutoStart);
+int wiz_autostart_capable();
+int wiz_autostart(int doAutoStart, char *username, char *groupname);
+int wiz_useradd_capable();
+int wiz_groupadd_capable();
+int wiz_addServiceAccount(char *group_name, char *user_name);
 
 #endif //_WIZARD_UTIL_H_
 

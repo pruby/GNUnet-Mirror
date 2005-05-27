@@ -21,7 +21,8 @@ EXTRA_DIST = \
  lkc_proto.h \
  qconf.h \
  bool.h \
- wizard_util.h
+ wizard_util.h \
+ wizard_gtk.h
 
 if HAVE_CURSES
 if HAVE_PDCURSES

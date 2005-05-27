@@ -33,6 +33,7 @@
 #include "wizard_util.h"
 
 extern int cols, rows;
+int mconf_main(int ac, char **av);
 
 static struct dialog_list_item **nic_items;
 static int nic_item_count = 0;
@@ -61,9 +62,9 @@ int wizard_curs_main(int argc, char *argv[])
   const char * LANG;
   char * configFile;
   void *active_ptr = NULL;
-	int idx, ret, autostart, adv = 0;
+	int idx, ret, autostart = 0, adv = 0;
 	struct symbol *sym;
-	char *defval;
+	char *defval, *user_name = NULL, *group_name = NULL;
 
   LANG = getenv("LANG");
   if (LANG == NULL)
@@ -81,7 +82,6 @@ int wizard_curs_main(int argc, char *argv[])
   }
 
   conf_parse(configFile);
-  FREE(configFile);
   
   conf_read(NULL);
 
@@ -156,9 +156,9 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 	
 	/* IP address */
-	if (sym = sym_find("IP", "NETWORK")) {
+	if ((sym = sym_find("IP", "NETWORK"))) {
 		sym_calc_value_ext(sym, 1);
-		defval = sym_get_string_value(sym);
+		defval = (char *) sym_get_string_value(sym);
 	}
 	else
 		defval = NULL;
@@ -208,9 +208,9 @@ int wizard_curs_main(int argc, char *argv[])
 		sym_set_tristate_value(sym, !ret); /* ret is inverted */
 	
 	/* Upstream */
-	if (sym = sym_find("MAXNETUPBPSTOTAL", "LOAD")) {
+	if ((sym = sym_find("MAXNETUPBPSTOTAL", "LOAD"))) {
 		sym_calc_value_ext(sym, 1);
-		defval = sym_get_string_value(sym);
+		defval = (char *) sym_get_string_value(sym);
 	}
 	else
 		defval = NULL;
@@ -240,9 +240,9 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* Downstram */
-	if (sym = sym_find("MAXNETDOWNBPSTOTAL", "LOAD")) {
+	if ((sym = sym_find("MAXNETDOWNBPSTOTAL", "LOAD"))) {
 		sym_calc_value_ext(sym, 1);
-		defval = sym_get_string_value(sym);
+		defval = (char *) sym_get_string_value(sym);
 	}
 	else
 		defval = NULL;
@@ -296,9 +296,9 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* Max CPU */
-	if (sym = sym_find("MAXCPULOAD", "LOAD")) {
+	if ((sym = sym_find("MAXCPULOAD", "LOAD"))) {
 		sym_calc_value_ext(sym, 1);
-		defval = sym_get_string_value(sym);
+		defval = (char *) sym_get_string_value(sym);
 	}
 	else
 		defval = NULL;
@@ -346,9 +346,9 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* Quota */
-	if (sym = sym_find("DISKQUOTA", "FS")) {
+	if ((sym = sym_find("DISKQUOTA", "FS"))) {
 		sym_calc_value_ext(sym, 1);
-		defval = sym_get_string_value(sym);
+		defval = (char *) sym_get_string_value(sym);
 	}
 	else
 		defval = NULL;
@@ -374,22 +374,82 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* Autostart */
-	while(true) {
-		ret = dialog_yesno(_("GNUnet configuration"), _("Do you want to launch "
-				"GNUnet as a system service?"
-				"\n\nIf you say \"yes\" here, the GNUnet background process will be "
-				"automatically started when you turn on your computer. If you say \"no\""
-				" here, you have to launch GNUnet yourself each time you want to use it."),
-				rows, cols - 5);
-				
-		if (ret != -2)
-			break;
+	if (wiz_autostart_capable()) {
+		while(true) {
+			ret = dialog_yesno(_("GNUnet configuration"), _("Do you want to launch "
+					"GNUnet as a system service?"
+					"\n\nIf you say \"yes\" here, the GNUnet background process will be "
+					"automatically started when you turn on your computer. If you say \"no\""
+					" here, you have to launch GNUnet yourself each time you want to use it."),
+					rows, cols - 5);
+					
+			if (ret != -2)
+				break;
+		}
+	
+		if (ret == -1)
+			goto end;
+		else
+			autostart = !ret; /* ret is inverted */
+	
+		dialog_clear();
 	}
+	
+	/* User */
+	if (wiz_useradd_capable()) {
+		while(true) {
+			ret = dialog_inputbox(_("GNUnet configuration"),
+				_("Define the user owning the GNUnet service.\n\n"
+					"For security reasons, it is a good idea to let this setup create "
+					"a new user account under which the GNUnet service is started "
+					"at system startup.\n\n"
+					"You can also specify an already existant user account here.\n\n"
+					"In any case, you should check its permissions to critical files "
+					"on your system.\n\nGNUnet user:"),
+				rows, cols - 5, "gnunet");
+			
+			if (ret == 1) {
+				/* Help */
+			}
+			else if (ret <= 0) {
+				user_name = strdup("gnunet");
+				break;
+			}
+		}
+		
+		if (ret == -1)
+			goto end;
 
-	if (ret == -1)
-		goto end;
-	else
-		autostart = !ret; /* ret is inverted */
+		dialog_clear();
+
+		/* Group */
+		if (wiz_groupadd_capable()) {
+			while(true) {
+				ret = dialog_inputbox(_("GNUnet configuration"),
+					_("Define the group owning the GNUnet service.\n\n"
+						"For security reasons, it is a good idea to let this setup create "
+						"a new group for the chosen user account.\n\n"
+						"You can also specify a already existant group here.\n\n"
+						"Only members of this group will be allowed to start and stop the "
+						"the GNUnet server and have access to GNUnet server data.\n\n"
+						"GNUnet group:"),
+					rows, cols - 5, "gnunet");
+				
+				if (ret == 1) {
+					/* Help */
+				}
+				else if (ret <= 0) {
+					group_name = strdup(dialog_input_result);
+					break;
+				}
+			}
+		
+			if (ret == -1)
+				goto end;
+	
+			dialog_clear();
+		}
+	}
 
 	dialog_clear();
 
@@ -397,7 +457,8 @@ int wizard_curs_main(int argc, char *argv[])
 	while(true) {
 		ret = dialog_yesno(_("GNUnet configuration"), _("If you are an experienced "
 				"user, you may want to tweak your GNUnet installation using the enhanced "
-				"configurator.\n\nDo you want to start it now?"), rows, cols - 5);
+				"configurator.\n\nDo you want to start it after saving your configuration?"),
+				rows, cols - 5);
 				
 		if (ret != -2)
 			break;
@@ -408,8 +469,18 @@ int wizard_curs_main(int argc, char *argv[])
 	else
 		adv = !ret;
 
+	dialog_clear();
+  end_dialog();
+
 	/* Save config */
-	wiz_autostart(autostart);
+	if (user_name && strlen(user_name) > 0)
+		wiz_addServiceAccount(group_name, user_name);
+
+	wiz_autostart(autostart, user_name, group_name);
+
+	init_dialog();
+	dialog_clear();
+
 	while(true) {
 		if (conf_write(NULL) != 0) {
 			ret = dialog_yesno(_("GNUnet configuration"),
@@ -424,6 +495,11 @@ int wizard_curs_main(int argc, char *argv[])
 	
 end:
   end_dialog();
+  
+  if (user_name)
+  	free(user_name);
+  if (group_name)
+  	free(group_name);
 
 	if (adv) {
 		mconf_main(argc, argv);

@@ -41,11 +41,17 @@
 #include <shlobj.h>
 #include <objbase.h>
 #include <sys/param.h>  /* #define BYTE_ORDER */
+#include <Ntsecapi.h>
+#include <lm.h>
 #include "gnunet_util.h"
 #include "platform.h"
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#ifndef MAX_NAME_LENGTH
+	#define MAX_NAME_LENGTH 25
 #endif
 
 typedef DWORD WINAPI (*TNtQuerySystemInformation) (int, PVOID, ULONG, PULONG);
@@ -81,7 +87,18 @@ typedef SC_HANDLE WINAPI (*TOpenService) (SC_HANDLE hSCManager, LPCTSTR lpServic
                           DWORD dwDesiredAccess);
 typedef DWORD WINAPI (*TGetBestInterface) (IPAddr dwDestAddr, PDWORD pdwBestIfIndex);
 typedef DWORD WINAPI (*TGetAdaptersInfo) (PIP_ADAPTER_INFO pAdapterInfo, PULONG pOutBufLen);
-
+typedef NET_API_STATUS WINAPI (*TNetUserAdd) (LPCWSTR,DWORD,PBYTE,PDWORD);
+typedef NET_API_STATUS WINAPI (*TNetUserSetInfo) (LPCWSTR servername, LPCWSTR username,
+	DWORD level, LPBYTE buf, LPDWORD parm_err);
+typedef NTSTATUS NTAPI (*TLsaOpenPolicy) (PLSA_UNICODE_STRING, PLSA_OBJECT_ATTRIBUTES,
+                            ACCESS_MASK,PLSA_HANDLE);
+typedef NTSTATUS NTAPI (*TLsaAddAccountRights) (LSA_HANDLE,PSID,PLSA_UNICODE_STRING,ULONG);
+typedef NTSTATUS NTAPI (*TLsaRemoveAccountRights) (LSA_HANDLE,PSID,BOOLEAN,
+                            PLSA_UNICODE_STRING,ULONG);
+typedef NTSTATUS NTAPI (*TLsaClose) (LSA_HANDLE);
+typedef BOOL WINAPI (*TLookupAccountName) (LPCTSTR lpSystemName, LPCTSTR lpAccountName,
+	PSID Sid, LPDWORD cbSid, LPTSTR ReferencedDomainName,
+	LPDWORD cchReferencedDomainName, PSID_NAME_USE peUse);
 
 extern TNtQuerySystemInformation GNNtQuerySystemInformation;
 extern TGetIfEntry GNGetIfEntry;
@@ -99,6 +116,14 @@ extern TControlService GNControlService;
 extern TOpenService GNOpenService;
 extern TGetBestInterface GNGetBestInterface;
 extern TGetAdaptersInfo GGetAdaptersInfo;
+extern TNetUserAdd GNNetUserAdd;
+extern TNetUserSetInfo GNNetUserSetInfo;
+extern TLsaOpenPolicy GNLsaOpenPolicy;
+extern TLsaAddAccountRights GNLsaAddAccountRights;
+extern TLsaRemoveAccountRights GNLsaRemoveAccountRights;
+extern TLsaClose GNLsaClose;
+extern TLookupAccountName GNLookupAccountName;
+
 
 BOOL CreateShortcut(const char *pszSrc, const char *pszDest);
 BOOL DereferenceShortcut(char *pszShortcut);

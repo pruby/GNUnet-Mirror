@@ -159,6 +159,7 @@ struct dialog_list_item {
  */
 
 void init_dialog (void);
+void init_wsize(void);
 void end_dialog (void);
 void resize_dialog(int rows, int cols);
 void do_resize_dialog(void);

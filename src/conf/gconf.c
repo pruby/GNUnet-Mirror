@@ -1694,6 +1694,7 @@ int gconf_main(int ac, char *av[])
 {
 	const char * LANG;
 	char * configFile;
+  struct menu *root;
 
 #ifndef LKC_DIRECT_LINK
   kconfig_load();
@@ -1741,8 +1742,12 @@ int gconf_main(int ac, char *av[])
 											LANG,
 											2);
 	}
-  conf_parse(configFile);
-	FREE(configFile);
+	
+	/* This configurator is also called from the wizard configurator.
+	 * Check whether the templates are already parsed. */
+	root = menu_get_root_menu(NULL);
+	if (!(root && root->prompt))
+  	conf_parse(configFile);
   fixup_rootmenu(&rootmenu);
   conf_read(NULL);
 

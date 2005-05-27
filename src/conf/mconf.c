@@ -362,6 +362,7 @@ static int cset_tag(char type, void *ptr)
 	return 0;
 }
 
+#ifndef MINGW
 static void winch_handler(int sig)
 {
 	static int lock;
@@ -379,6 +380,7 @@ static void winch_handler(int sig)
 		lock = 0;
 	}
 }
+#endif
 
 static void build_conf(struct menu *menu)
 {
@@ -843,7 +845,6 @@ int mconf_main(int ac, char **av)
 	root = menu_get_root_menu(NULL);
 	if (!(root && root->prompt))
 		conf_parse(configFile);
-  FREE(configFile);
   
 	conf_read(NULL);
 

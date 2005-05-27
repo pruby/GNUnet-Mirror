@@ -42,10 +42,12 @@ static void help() {
 
 #if HAVE_CURSES
 int mconf_main(int ac, char **av);
+int wizard_curs_main(int argc, char *argv[]);
 #endif
 
 #if HAVE_GTK
 int gconf_main(int ac, char *av[]);
+int wizard_main (int argc, char *argv[]);
 #endif
 
 int conf_main(int ac, char **av);

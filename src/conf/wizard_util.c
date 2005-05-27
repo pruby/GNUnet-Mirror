@@ -24,13 +24,11 @@
  * @author Nils Durner
  */
 
-#include "gnunet_util.h"
 #include "platform.h"
+#include "gnunet_util.h"
 
 #define LKC_DIRECT_LINK
 #include "lkc.h"
-
-#include "mconf_dialog.h"
 
 /**
  * @brief Enumerate all network interfaces
@@ -71,7 +69,7 @@ void wiz_enum_nics(void (*callback) (char *, int)) {
 			*dst = 0;
 
 			if (entry[0])
-				insert_nic(entry, strcmp(entry, "eth0") == 0);
+				callback(entry, strcmp(entry, "eth0") == 0);
 
 			while(c != '\n' && c != EOF)
 				c = fgetc(f);
@@ -85,7 +83,7 @@ void wiz_enum_nics(void (*callback) (char *, int)) {
  * @brief Determine whether a NIC makes a good default
  */
 int wiz_is_nic_default(const char *name, int suggestion) {
-	char *nic;	
+	const char *nic = NULL;
 	struct symbol *sym = sym_find("INTERFACE", "NETWORK");
   
   if (sym)
@@ -120,34 +118,60 @@ int wiz_is_nic_default(const char *name, int suggestion) {
   return suggestion;
 }
 
-/* @brief Make GNUnet start automatically */
-void wiz_autostart(int doAutoStart) {
+/**
+ * @brief Checks if we can start GNUnet automatically
+ * @return 1 if yes, 0 otherwise
+ */
+int wiz_autostart_capable() {
+#ifdef WINDOWS
+	return 1;
+#else
+	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
+		/* Debian */
+		if (ACCESS("/etc/init.d/", W_OK) == 0)
+			return 1;
+	}
+	
+	return 0;
+#endif
+}
+
+/**
+ * @brief Make GNUnet start automatically
+ * @param doAutoStart true to enable autostart, false to disable it
+ * @param username name of the user account to use
+ * @param groupname name of the group to use
+ */
+int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 #ifdef WINDOWS
 	if (doAutoStart)
 	{
 		if (IsWinNT())
 		{
 			char szErr[250];
+			DWORD dwErr;
 			
-			switch(InstallAsService())
+			switch(InstallAsService(username))
 			{
 				case 0:
 				case 1:
 					break;
 				case 2:
-			    SetErrnoFromWinError(GetLastError());
-			    sprintf(szErr, _("Error: can't open Service Control Manager: %s\n"),
-			    	_win_strerror(errno));
+					dwErr = GetLastError(); 
+			    SetErrnoFromWinError(dwErr);
+			    sprintf(szErr, _("Error: can't open Service Control Manager: %s (%i)\n"),
+			    	_win_strerror(errno), dwErr);
 
 					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
-					return;
+					return 0;
 				case 3:
-			    SetErrnoFromWinError(GetLastError());
-			    sprintf(szErr, _("Error: can't create service: %s\n"),
-			    	_win_strerror(errno));
+					dwErr = GetLastError(); 
+			    SetErrnoFromWinError(dwErr);
+			    sprintf(szErr, _("Error: can't create service: %s (#%i)\n"),
+			    	_win_strerror(errno), dwErr);
 
 					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
-					return;
+					return 0;
 				default:
 					MessageBox(GetActiveWindow(), _("Unknown error"), _("Error"),
 						MB_ICONSTOP | MB_OK);
@@ -171,41 +195,35 @@ void wiz_autostart(int doAutoStart) {
 	{
 		if (IsWinNT())
 		{
-			char szErr[250];
-			int iErr;
-			
+			char *err = NULL;
+						
 			switch (UninstallService())
 			{
 				case 0:
 				case 1:
 					break;
 				case 2:
-					iErr = GetLastError();
-			    SetErrnoFromWinError(iErr);
-			    sprintf(szErr, _("Error: can't open Service Control Manager: %s (#%i)\n"),
-			    	_win_strerror(errno), iErr);
-
-					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
-					return;
+					err = winErrorStr(_("Can't open Service Control Manager"),
+						GetLastError());				
+					return 0;
 				case 3:
-					iErr = GetLastError();
-			    SetErrnoFromWinError(iErr);
-			    sprintf(szErr, _("Error: can't access the service: %s (#%i)\n"),
-			    	_win_strerror(errno), iErr);
-
-					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
-					return;
+					err = winErrorStr(_("Can't access the service"),
+						GetLastError());				
+					return 0;
 				case 4:
-					iErr = GetLastError();
-			    SetErrnoFromWinError(iErr);
-			    sprintf(szErr, _("Error: can't delete the service: %s (#%i)\n"),
-			    	_win_strerror(errno), iErr);
-
-					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
+					err = winErrorStr(_("Can't delete the service"),
+						GetLastError());
 					break;
 				default:
 					MessageBox(GetActiveWindow(), _("Unknown error"), _("Error"),
 						MB_ICONSTOP | MB_OK);								
+			}
+			
+			if (err)
+			{
+				MessageBox(GetActiveWindow(), err, _("Error"),
+						MB_ICONSTOP | MB_OK);
+				free(err);
 			}
 		}
 		else
@@ -222,7 +240,176 @@ void wiz_autostart(int doAutoStart) {
 		  }
 		}
 	}
+#else
+	/* Unix */
+	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
+		/* Debian */
+		if (doAutoStart) {
+			struct stat buf;
+			if (STAT("/etc/init.d/gnunetd", &buf) == -1) {
+				/* create init file */
+				FILE *f = FOPEN("/etc/init.d/gnunetd", "w");
+				if (! f)
+					return 0;
+					
+				fputs(f,	"#! /bin/sh\n"
+									"#\n"
+									"# Automatically created by gnunet-setup\n"
+									"#\n"
+									"\n"
+									"PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n"
+									"PIDFILE=/var/run/gnunetd/gnunetd.pid\n"
+									"\n"
+									"case \"$1\" in\n"
+									"	start)\n"
+									"		echo -n \"Starting GNUnet: \"\n"
+									"		gnunetd\n"
+									"		echo \"gnunetd\"\n"
+									"		;;\n"
+									"	stop)\n"
+									"		echo -n \"Stopping GNUnet: \"\n"
+									"		kill `cat $PIDFILE`\n"
+									"		echo \"gnunetd\"\n"
+									"		;;\n"
+									"	reload)\n"
+									"		echo -n \"Reloading GNUnet: \"\n"
+									"		kill -HUP `cat $PIDFILE`\n"
+									"		echo \"gnunetd\"\n"
+									"		;;\n"
+									"	restart|force-reload)\n"
+									"		echo \"Restarting GNUnet: gnunetd...\"\n"
+									"		$0 stop\n"
+									"		sleep 1\n"
+									"		$0 start\n"
+									"		;;\n"
+									"	*)\n"
+									"		echo \"Usage: /etc/init.d/gnunetd {start|stop|reload|restart|force-reload}\" >&2\n"
+									"		exit 1\n"
+									"		;;\n"
+									"\n"
+									"esac\n"
+									"exit 0\n");
+					fclose(f);
+					chmod("/etc/init.d/gnunetd", S_IRWXU | S_IRGRP | S_IXGRP |
+						S_IROTH | S_IXOTH);
+			}
+			system("/usr/sbin/update-rc.d gnunetd defaults");
+		}
+		else
+			system("/usr/sbin/update-rc.d gnunetd remove");
+	}
+	else
+		return 0;
+		
 #endif
+	return 1;
+}
+
+/**
+ * @brief Checks if we can add an user for the GNUnet service
+ * @return 1 if yes, 0 otherwise
+ * @todo support for useradd(8)
+ */
+int wiz_useradd_capable(){
+#ifdef WINDOWS
+	return IsWinNT();
+#else
+	if (ACCESS("/usr/sbin/adduser", X_OK) == 0)
+		return 1;
+	else
+		/* TODO: useradd */
+		return 0;
+#endif
+}
+
+/**
+ * @brief Checks if we can add a group for the GNUnet service
+ * @return 1 if yes, 0 otherwise
+ * @todo support for groupadd(8)
+ */
+int wiz_groupadd_capable() {
+#ifndef MINGW
+	if (ACCESS("/usr/sbin/addgroup", X_OK) == 0) {
+		return 1;
+	}
+	/* TODO: groupadd */
+	else
+#endif
+		return 0;
+}
+
+/**
+ * @brief Add a service account for GNUnet
+ * @param group the group of the new user
+ * @param name the name of the new user
+ * @todo Check FreeBSD (adduser(8)), add support for useradd(8)
+ */
+int wiz_addServiceAccount(char *group_name, char *user_name) {
+#ifdef WINDOWS
+	if (IsWinNT())
+	{
+		char *err = NULL;
+
+		switch(CreateServiceAccount(user_name, "GNUnet service account")) {
+			case 0:
+				; /* OK */
+				break;
+			case 1:
+				MessageBox(0, _("This version of Windows does not support "
+					"multiple users."), _("Error"), MB_ICONSTOP | MB_OK);
+				return 0;
+			case 2:
+				err = winErrorStr(_("Error creating user"), GetLastError());
+				break;
+			case 3:
+				err = winErrorStr(_("Error accessing local security policy"), GetLastError());
+				break;
+			case 4:
+				err = winErrorStr(_("Error granting service right to user"), GetLastError());
+				break;
+			default:
+				err = winErrorStr(_("Unknown error while creating a new user"), GetLastError());
+				break;
+		}
+		
+		if (err)
+		{
+			MessageBox(0, err, _("Error"), MB_ICONSTOP | MB_OK);
+			free(err);
+			
+			return 0;
+		}
+	}
+	else
+		return 0;
+#else
+	int haveGroup;
+
+	if (ACCESS("/usr/sbin/adduser", X_OK) == 0) {
+		/* Debian */
+		/* TODO: FreeBSD? http://www.freebsd.org/cgi/man.cgi?query=adduser&sektion=8 */
+		char *cmd;
+		cmd = MALLOC(strlen(group_name) + strlen(user_name) + 64);
+		
+		haveGroup = group_name && strlen(group_name) > 0;		
+		if (haveGroup) {
+			sprintf(cmd, "/usr/sbin/addgroup --quiet --system %s", group_name);		
+			system(cmd);
+		}
+		
+		sprintf(cmd, "/usr/sbin/adduser --quiet --system %s %s "
+			"--no-create-home %s", haveGroup ? "--ingroup" : "",
+			haveGroup ? group_name : "", user_name);
+		system(cmd);
+		
+		FREE(cmd);
+	}
+	/* TODO: useradd */
+	else
+		return 0;
+#endif
+
+	return 1;
 }
 
 /* end of wizard_util.c */

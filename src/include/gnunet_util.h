@@ -2312,8 +2312,15 @@ int fileopen(const char *filename, int oflag, ...);
 #ifdef WINDOWS
 void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable);
 int ListNICs(void (*callback) (char *, int));
-int InstallAsService(void);
+char *winErrorStr(char *prefix, DWORD dwErr);
+int InstallAsService(char *username);
 int UninstallService(void);
+void _InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String);
+NTSTATUS _OpenPolicy(LPWSTR ServerName, DWORD DesiredAccess, PLSA_HANDLE PolicyHandle);
+BOOL _GetAccountSid(LPTSTR SystemName, LPTSTR AccountName, PSID * Sid);
+NTSTATUS _SetPrivilegeOnAccount(LSA_HANDLE PolicyHandle, PSID AccountSid, 
+	LPWSTR PrivilegeName, BOOL bEnable);
+int CreateServiceAccount(char *pszName, char *pszDesc);
 #endif
 
 /* ifndef GNUNET_UTIL_H */

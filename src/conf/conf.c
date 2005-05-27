@@ -546,7 +546,6 @@ int conf_main(int ac, char **av)
   }
 
 	conf_parse(configFile);
-  FREE(configFile);
   
 	switch (input_mode) {
 	case set_default:

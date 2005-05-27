@@ -101,7 +101,7 @@ void PrintAdapters()
  */
 void Install()
 {
-	switch(InstallAsService())
+	switch(InstallAsService(NULL))
 	{
 		case 0:
 			printf(_("GNUnet service installed successfully.\n"));

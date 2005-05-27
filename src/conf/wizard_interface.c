@@ -742,9 +742,9 @@ create_assi_step3 (void)
 }
 
 GtkWidget *
-create_assi_step4 (void)
+create_assi_step5 (void)
 {
-  GtkWidget *assi_step4;
+  GtkWidget *assi_step5;
   GtkWidget *vbox12;
   GtkWidget *frame7;
   GtkWidget *vbox13;
@@ -761,31 +761,31 @@ create_assi_step4 (void)
   GtkWidget *chkEnh;
   GtkWidget *label43;
   GtkWidget *hbuttonbox5;
-  GtkWidget *step4_back;
+  GtkWidget *step5_back;
   GtkWidget *alignment37;
   GtkWidget *hbox60;
   GtkWidget *image70;
   GtkWidget *label91;
-  GtkWidget *step4_next;
+  GtkWidget *step5_next;
   GtkWidget *alignment40;
   GtkWidget *hbox63;
   GtkWidget *image73;
   GtkWidget *label94;
-  GtkWidget *step4_cancel;
+  GtkWidget *step5_cancel;
   GtkWidget *alignment39;
   GtkWidget *hbox62;
   GtkWidget *image72;
   GtkWidget *label93;
 
-  assi_step4 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_size_request (assi_step4, 450, 350);
-  gtk_window_set_title (GTK_WINDOW (assi_step4),
+  assi_step5 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_size_request (assi_step5, 450, 350);
+  gtk_window_set_title (GTK_WINDOW (assi_step5),
 			_("GNUnet configuration assistant"));
-  gtk_window_set_position (GTK_WINDOW (assi_step4), GTK_WIN_POS_CENTER);
+  gtk_window_set_position (GTK_WINDOW (assi_step5), GTK_WIN_POS_CENTER);
 
   vbox12 = gtk_vbox_new (FALSE, 0);
   gtk_widget_show (vbox12);
-  gtk_container_add (GTK_CONTAINER (assi_step4), vbox12);
+  gtk_container_add (GTK_CONTAINER (assi_step5), vbox12);
 
   frame7 = gtk_frame_new (NULL);
   gtk_widget_show (frame7);
@@ -867,14 +867,14 @@ create_assi_step4 (void)
   gtk_box_pack_start (GTK_BOX (vbox12), hbuttonbox5, FALSE, TRUE, 0);
   gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox5), GTK_BUTTONBOX_END);
 
-  step4_back = gtk_button_new ();
-  gtk_widget_show (step4_back);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox5), step4_back);
-  GTK_WIDGET_SET_FLAGS (step4_back, GTK_CAN_DEFAULT);
+  step5_back = gtk_button_new ();
+  gtk_widget_show (step5_back);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox5), step5_back);
+  GTK_WIDGET_SET_FLAGS (step5_back, GTK_CAN_DEFAULT);
 
   alignment37 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment37);
-  gtk_container_add (GTK_CONTAINER (step4_back), alignment37);
+  gtk_container_add (GTK_CONTAINER (step5_back), alignment37);
 
   hbox60 = gtk_hbox_new (FALSE, 2);
   gtk_widget_show (hbox60);
@@ -888,14 +888,14 @@ create_assi_step4 (void)
   gtk_widget_show (label91);
   gtk_box_pack_start (GTK_BOX (hbox60), label91, FALSE, FALSE, 0);
 
-  step4_next = gtk_button_new ();
-  gtk_widget_show (step4_next);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox5), step4_next);
-  GTK_WIDGET_SET_FLAGS (step4_next, GTK_CAN_DEFAULT);
+  step5_next = gtk_button_new ();
+  gtk_widget_show (step5_next);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox5), step5_next);
+  GTK_WIDGET_SET_FLAGS (step5_next, GTK_CAN_DEFAULT);
 
   alignment40 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment40);
-  gtk_container_add (GTK_CONTAINER (step4_next), alignment40);
+  gtk_container_add (GTK_CONTAINER (step5_next), alignment40);
 
   hbox63 = gtk_hbox_new (FALSE, 2);
   gtk_widget_show (hbox63);
@@ -909,14 +909,14 @@ create_assi_step4 (void)
   gtk_widget_show (label94);
   gtk_box_pack_start (GTK_BOX (hbox63), label94, FALSE, FALSE, 0);
 
-  step4_cancel = gtk_button_new ();
-  gtk_widget_show (step4_cancel);
-  gtk_container_add (GTK_CONTAINER (hbuttonbox5), step4_cancel);
-  GTK_WIDGET_SET_FLAGS (step4_cancel, GTK_CAN_DEFAULT);
+  step5_cancel = gtk_button_new ();
+  gtk_widget_show (step5_cancel);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox5), step5_cancel);
+  GTK_WIDGET_SET_FLAGS (step5_cancel, GTK_CAN_DEFAULT);
 
   alignment39 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment39);
-  gtk_container_add (GTK_CONTAINER (step4_cancel), alignment39);
+  gtk_container_add (GTK_CONTAINER (step5_cancel), alignment39);
 
   hbox62 = gtk_hbox_new (FALSE, 2);
   gtk_widget_show (hbox62);
@@ -930,7 +930,7 @@ create_assi_step4 (void)
   gtk_widget_show (label93);
   gtk_box_pack_start (GTK_BOX (hbox62), label93, FALSE, FALSE, 0);
 
-  g_signal_connect ((gpointer) assi_step4, "destroy",
+  g_signal_connect ((gpointer) assi_step5, "destroy",
 		    G_CALLBACK (on_assi_destroy), NULL);
   g_signal_connect ((gpointer) chkMigr, "toggled",
 		    G_CALLBACK (on_chkMigr_toggled), NULL);
@@ -940,48 +940,48 @@ create_assi_step4 (void)
 		    G_CALLBACK (on_chkStart_toggled), NULL);
   g_signal_connect ((gpointer) chkEnh, "toggled",
 		    G_CALLBACK (on_chkEnh_toggled), NULL);
-  g_signal_connect ((gpointer) step4_back, "clicked",
-		    G_CALLBACK (on_step4_back_clicked), NULL);
-  g_signal_connect ((gpointer) step4_next, "clicked",
+  g_signal_connect ((gpointer) step5_back, "clicked",
+		    G_CALLBACK (on_step5_back_clicked), NULL);
+  g_signal_connect ((gpointer) step5_next, "clicked",
 		    G_CALLBACK (on_finish_clicked), NULL);
-  g_signal_connect ((gpointer) step4_cancel, "clicked",
+  g_signal_connect ((gpointer) step5_cancel, "clicked",
 		    G_CALLBACK (on_abort_clicked), NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
-  GLADE_HOOKUP_OBJECT_NO_REF (assi_step4, assi_step4, "assi_step4");
-  GLADE_HOOKUP_OBJECT (assi_step4, vbox12, "vbox12");
-  GLADE_HOOKUP_OBJECT (assi_step4, frame7, "frame7");
-  GLADE_HOOKUP_OBJECT (assi_step4, vbox13, "vbox13");
-  GLADE_HOOKUP_OBJECT (assi_step4, scrolledwindow7, "scrolledwindow7");
-  GLADE_HOOKUP_OBJECT (assi_step4, textview10, "textview10");
-  GLADE_HOOKUP_OBJECT (assi_step4, hseparator5, "hseparator5");
-  GLADE_HOOKUP_OBJECT (assi_step4, vbox14, "vbox14");
-  GLADE_HOOKUP_OBJECT (assi_step4, vbox15, "vbox15");
-  GLADE_HOOKUP_OBJECT (assi_step4, chkMigr, "chkMigr");
-  GLADE_HOOKUP_OBJECT (assi_step4, hbox53, "hbox53");
-  GLADE_HOOKUP_OBJECT (assi_step4, label84, "label84");
-  GLADE_HOOKUP_OBJECT (assi_step4, entQuota, "entQuota");
-  GLADE_HOOKUP_OBJECT (assi_step4, chkStart, "chkStart");
-  GLADE_HOOKUP_OBJECT (assi_step4, chkEnh, "chkEnh");
-  GLADE_HOOKUP_OBJECT (assi_step4, label43, "label43");
-  GLADE_HOOKUP_OBJECT (assi_step4, hbuttonbox5, "hbuttonbox5");
-  GLADE_HOOKUP_OBJECT (assi_step4, step4_back, "step4_back");
-  GLADE_HOOKUP_OBJECT (assi_step4, alignment37, "alignment37");
-  GLADE_HOOKUP_OBJECT (assi_step4, hbox60, "hbox60");
-  GLADE_HOOKUP_OBJECT (assi_step4, image70, "image70");
-  GLADE_HOOKUP_OBJECT (assi_step4, label91, "label91");
-  GLADE_HOOKUP_OBJECT (assi_step4, step4_next, "step4_next");
-  GLADE_HOOKUP_OBJECT (assi_step4, alignment40, "alignment40");
-  GLADE_HOOKUP_OBJECT (assi_step4, hbox63, "hbox63");
-  GLADE_HOOKUP_OBJECT (assi_step4, image73, "image73");
-  GLADE_HOOKUP_OBJECT (assi_step4, label94, "label94");
-  GLADE_HOOKUP_OBJECT (assi_step4, step4_cancel, "step4_cancel");
-  GLADE_HOOKUP_OBJECT (assi_step4, alignment39, "alignment39");
-  GLADE_HOOKUP_OBJECT (assi_step4, hbox62, "hbox62");
-  GLADE_HOOKUP_OBJECT (assi_step4, image72, "image72");
-  GLADE_HOOKUP_OBJECT (assi_step4, label93, "label93");
+  GLADE_HOOKUP_OBJECT_NO_REF (assi_step5, assi_step5, "assi_step5");
+  GLADE_HOOKUP_OBJECT (assi_step5, vbox12, "vbox12");
+  GLADE_HOOKUP_OBJECT (assi_step5, frame7, "frame7");
+  GLADE_HOOKUP_OBJECT (assi_step5, vbox13, "vbox13");
+  GLADE_HOOKUP_OBJECT (assi_step5, scrolledwindow7, "scrolledwindow7");
+  GLADE_HOOKUP_OBJECT (assi_step5, textview10, "textview10");
+  GLADE_HOOKUP_OBJECT (assi_step5, hseparator5, "hseparator5");
+  GLADE_HOOKUP_OBJECT (assi_step5, vbox14, "vbox14");
+  GLADE_HOOKUP_OBJECT (assi_step5, vbox15, "vbox15");
+  GLADE_HOOKUP_OBJECT (assi_step5, chkMigr, "chkMigr");
+  GLADE_HOOKUP_OBJECT (assi_step5, hbox53, "hbox53");
+  GLADE_HOOKUP_OBJECT (assi_step5, label84, "label84");
+  GLADE_HOOKUP_OBJECT (assi_step5, entQuota, "entQuota");
+  GLADE_HOOKUP_OBJECT (assi_step5, chkStart, "chkStart");
+  GLADE_HOOKUP_OBJECT (assi_step5, chkEnh, "chkEnh");
+  GLADE_HOOKUP_OBJECT (assi_step5, label43, "label43");
+  GLADE_HOOKUP_OBJECT (assi_step5, hbuttonbox5, "hbuttonbox5");
+  GLADE_HOOKUP_OBJECT (assi_step5, step5_back, "step5_back");
+  GLADE_HOOKUP_OBJECT (assi_step5, alignment37, "alignment37");
+  GLADE_HOOKUP_OBJECT (assi_step5, hbox60, "hbox60");
+  GLADE_HOOKUP_OBJECT (assi_step5, image70, "image70");
+  GLADE_HOOKUP_OBJECT (assi_step5, label91, "label91");
+  GLADE_HOOKUP_OBJECT (assi_step5, step5_next, "step5_next");
+  GLADE_HOOKUP_OBJECT (assi_step5, alignment40, "alignment40");
+  GLADE_HOOKUP_OBJECT (assi_step5, hbox63, "hbox63");
+  GLADE_HOOKUP_OBJECT (assi_step5, image73, "image73");
+  GLADE_HOOKUP_OBJECT (assi_step5, label94, "label94");
+  GLADE_HOOKUP_OBJECT (assi_step5, step5_cancel, "step5_cancel");
+  GLADE_HOOKUP_OBJECT (assi_step5, alignment39, "alignment39");
+  GLADE_HOOKUP_OBJECT (assi_step5, hbox62, "hbox62");
+  GLADE_HOOKUP_OBJECT (assi_step5, image72, "image72");
+  GLADE_HOOKUP_OBJECT (assi_step5, label93, "label93");
 
-  return assi_step4;
+  return assi_step5;
 }
 
 GtkWidget *
@@ -1123,4 +1123,234 @@ create_msgSaveFailed (void)
   GLADE_HOOKUP_OBJECT (msgSaveFailed, button1, "button1");
 
   return msgSaveFailed;
+}
+
+GtkWidget *
+create_assi_step4 (void)
+{
+  GtkWidget *assi_step4;
+  GtkWidget *vbox18;
+  GtkWidget *frame8;
+  GtkWidget *vbox19;
+  GtkWidget *scrolledwindow8;
+  GtkWidget *textview12;
+  GtkWidget *hseparator7;
+  GtkWidget *table3;
+  GtkWidget *label110;
+  GtkWidget *entUser;
+  GtkWidget *entGroup;
+  GtkWidget *label109;
+  GtkWidget *label101;
+  GtkWidget *hbuttonbox8;
+  GtkWidget *step4_back;
+  GtkWidget *alignment43;
+  GtkWidget *hbox70;
+  GtkWidget *image79;
+  GtkWidget *label102;
+  GtkWidget *step4_next;
+  GtkWidget *alignment48;
+  GtkWidget *hbox78;
+  GtkWidget *image84;
+  GtkWidget *label111;
+  GtkWidget *step4_abort;
+  GtkWidget *alignment45;
+  GtkWidget *hbox72;
+  GtkWidget *image81;
+  GtkWidget *label104;
+
+  assi_step4 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_widget_set_size_request (assi_step4, 450, 350);
+  gtk_window_set_title (GTK_WINDOW (assi_step4),
+			_("GNUnet configuration assistant"));
+  gtk_window_set_position (GTK_WINDOW (assi_step4), GTK_WIN_POS_CENTER);
+
+  vbox18 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox18);
+  gtk_container_add (GTK_CONTAINER (assi_step4), vbox18);
+
+  frame8 = gtk_frame_new (NULL);
+  gtk_widget_show (frame8);
+  gtk_box_pack_start (GTK_BOX (vbox18), frame8, TRUE, TRUE, 0);
+
+  vbox19 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox19);
+  gtk_container_add (GTK_CONTAINER (frame8), vbox19);
+
+  scrolledwindow8 = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_show (scrolledwindow8);
+  gtk_box_pack_start (GTK_BOX (vbox19), scrolledwindow8, TRUE, TRUE, 0);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow8),
+				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+
+  textview12 = gtk_text_view_new ();
+  gtk_widget_show (textview12);
+  gtk_container_add (GTK_CONTAINER (scrolledwindow8), textview12);
+  gtk_text_view_set_editable (GTK_TEXT_VIEW (textview12), FALSE);
+  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview12), GTK_WRAP_WORD);
+  gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview12), FALSE);
+  gtk_text_view_set_left_margin (GTK_TEXT_VIEW (textview12), 2);
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer
+			    (GTK_TEXT_VIEW (textview12)),
+			    _
+			    ("Define the user and the group owning the GNUnet service here.\n\nFor security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.\nYou can also specify existing ones.\nIn any case, you should check its permissions to critical files on your system."),
+			    -1);
+
+  hseparator7 = gtk_hseparator_new ();
+  gtk_widget_show (hseparator7);
+  gtk_box_pack_start (GTK_BOX (vbox19), hseparator7, FALSE, FALSE, 0);
+
+  table3 = gtk_table_new (2, 2, FALSE);
+  gtk_widget_show (table3);
+  gtk_box_pack_start (GTK_BOX (vbox19), table3, TRUE, TRUE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (table3), 5);
+  gtk_table_set_row_spacings (GTK_TABLE (table3), 5);
+  gtk_table_set_col_spacings (GTK_TABLE (table3), 5);
+
+  label110 = gtk_label_new (_("Group:"));
+  gtk_widget_show (label110);
+  gtk_table_attach (GTK_TABLE (table3), label110, 0, 1, 1, 2,
+		    (GtkAttachOptions) (GTK_FILL),
+		    (GtkAttachOptions) (0), 0, 0);
+  gtk_misc_set_alignment (GTK_MISC (label110), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label110), 5, 0);
+
+  entUser = gtk_entry_new ();
+  gtk_widget_show (entUser);
+  gtk_table_attach (GTK_TABLE (table3), entUser, 1, 2, 0, 1,
+		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+		    (GtkAttachOptions) (0), 0, 0);
+  gtk_entry_set_text (GTK_ENTRY (entUser), "gnunet");
+
+  entGroup = gtk_entry_new ();
+  gtk_widget_show (entGroup);
+  gtk_table_attach (GTK_TABLE (table3), entGroup, 1, 2, 1, 2,
+		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+		    (GtkAttachOptions) (0), 0, 0);
+  gtk_entry_set_text (GTK_ENTRY (entGroup), "gnunet");
+
+  label109 = gtk_label_new (_("User account:"));
+  gtk_widget_show (label109);
+  gtk_table_attach (GTK_TABLE (table3), label109, 0, 1, 0, 1,
+		    (GtkAttachOptions) (GTK_FILL),
+		    (GtkAttachOptions) (0), 0, 0);
+  gtk_misc_set_alignment (GTK_MISC (label109), 0, 0.5);
+  gtk_misc_set_padding (GTK_MISC (label109), 5, 0);
+
+  label101 = gtk_label_new (_("Other settings"));
+  gtk_widget_show (label101);
+  gtk_frame_set_label_widget (GTK_FRAME (frame8), label101);
+
+  hbuttonbox8 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox8);
+  gtk_box_pack_start (GTK_BOX (vbox18), hbuttonbox8, FALSE, TRUE, 0);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox8), GTK_BUTTONBOX_END);
+
+  step4_back = gtk_button_new ();
+  gtk_widget_show (step4_back);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox8), step4_back);
+  GTK_WIDGET_SET_FLAGS (step4_back, GTK_CAN_DEFAULT);
+
+  alignment43 = gtk_alignment_new (0.5, 0.5, 0, 0);
+  gtk_widget_show (alignment43);
+  gtk_container_add (GTK_CONTAINER (step4_back), alignment43);
+
+  hbox70 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox70);
+  gtk_container_add (GTK_CONTAINER (alignment43), hbox70);
+
+  image79 = gtk_image_new_from_stock ("gtk-go-back", GTK_ICON_SIZE_BUTTON);
+  gtk_widget_show (image79);
+  gtk_box_pack_start (GTK_BOX (hbox70), image79, FALSE, FALSE, 0);
+
+  label102 = gtk_label_new_with_mnemonic (_("Back"));
+  gtk_widget_show (label102);
+  gtk_box_pack_start (GTK_BOX (hbox70), label102, FALSE, FALSE, 0);
+
+  step4_next = gtk_button_new ();
+  gtk_widget_show (step4_next);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox8), step4_next);
+  GTK_WIDGET_SET_FLAGS (step4_next, GTK_CAN_DEFAULT);
+
+  alignment48 = gtk_alignment_new (0.5, 0.5, 0, 0);
+  gtk_widget_show (alignment48);
+  gtk_container_add (GTK_CONTAINER (step4_next), alignment48);
+
+  hbox78 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox78);
+  gtk_container_add (GTK_CONTAINER (alignment48), hbox78);
+
+  image84 = gtk_image_new_from_stock ("gtk-go-forward", GTK_ICON_SIZE_BUTTON);
+  gtk_widget_show (image84);
+  gtk_box_pack_start (GTK_BOX (hbox78), image84, FALSE, FALSE, 0);
+
+  label111 = gtk_label_new_with_mnemonic (_("Next"));
+  gtk_widget_show (label111);
+  gtk_box_pack_start (GTK_BOX (hbox78), label111, FALSE, FALSE, 0);
+
+  step4_abort = gtk_button_new ();
+  gtk_widget_show (step4_abort);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox8), step4_abort);
+  GTK_WIDGET_SET_FLAGS (step4_abort, GTK_CAN_DEFAULT);
+
+  alignment45 = gtk_alignment_new (0.5, 0.5, 0, 0);
+  gtk_widget_show (alignment45);
+  gtk_container_add (GTK_CONTAINER (step4_abort), alignment45);
+
+  hbox72 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox72);
+  gtk_container_add (GTK_CONTAINER (alignment45), hbox72);
+
+  image81 = gtk_image_new_from_stock ("gtk-cancel", GTK_ICON_SIZE_BUTTON);
+  gtk_widget_show (image81);
+  gtk_box_pack_start (GTK_BOX (hbox72), image81, FALSE, FALSE, 0);
+
+  label104 = gtk_label_new_with_mnemonic (_("Cancel"));
+  gtk_widget_show (label104);
+  gtk_box_pack_start (GTK_BOX (hbox72), label104, FALSE, FALSE, 0);
+
+  g_signal_connect ((gpointer) assi_step4, "destroy",
+		    G_CALLBACK (on_assi_destroy), NULL);
+  g_signal_connect ((gpointer) entUser, "changed",
+		    G_CALLBACK (on_entUser_changed), NULL);
+  g_signal_connect ((gpointer) entGroup, "changed",
+		    G_CALLBACK (on_entGroup_changed), NULL);
+  g_signal_connect ((gpointer) step4_back, "clicked",
+		    G_CALLBACK (on_step4_back_clicked), NULL);
+  g_signal_connect ((gpointer) step4_next, "clicked",
+		    G_CALLBACK (on_step4_next_clicked), NULL);
+  g_signal_connect ((gpointer) step4_abort, "clicked",
+		    G_CALLBACK (on_abort_clicked), NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (assi_step4, assi_step4, "assi_step4");
+  GLADE_HOOKUP_OBJECT (assi_step4, vbox18, "vbox18");
+  GLADE_HOOKUP_OBJECT (assi_step4, frame8, "frame8");
+  GLADE_HOOKUP_OBJECT (assi_step4, vbox19, "vbox19");
+  GLADE_HOOKUP_OBJECT (assi_step4, scrolledwindow8, "scrolledwindow8");
+  GLADE_HOOKUP_OBJECT (assi_step4, textview12, "textview12");
+  GLADE_HOOKUP_OBJECT (assi_step4, hseparator7, "hseparator7");
+  GLADE_HOOKUP_OBJECT (assi_step4, table3, "table3");
+  GLADE_HOOKUP_OBJECT (assi_step4, label110, "label110");
+  GLADE_HOOKUP_OBJECT (assi_step4, entUser, "entUser");
+  GLADE_HOOKUP_OBJECT (assi_step4, entGroup, "entGroup");
+  GLADE_HOOKUP_OBJECT (assi_step4, label109, "label109");
+  GLADE_HOOKUP_OBJECT (assi_step4, label101, "label101");
+  GLADE_HOOKUP_OBJECT (assi_step4, hbuttonbox8, "hbuttonbox8");
+  GLADE_HOOKUP_OBJECT (assi_step4, step4_back, "step4_back");
+  GLADE_HOOKUP_OBJECT (assi_step4, alignment43, "alignment43");
+  GLADE_HOOKUP_OBJECT (assi_step4, hbox70, "hbox70");
+  GLADE_HOOKUP_OBJECT (assi_step4, image79, "image79");
+  GLADE_HOOKUP_OBJECT (assi_step4, label102, "label102");
+  GLADE_HOOKUP_OBJECT (assi_step4, step4_next, "step4_next");
+  GLADE_HOOKUP_OBJECT (assi_step4, alignment48, "alignment48");
+  GLADE_HOOKUP_OBJECT (assi_step4, hbox78, "hbox78");
+  GLADE_HOOKUP_OBJECT (assi_step4, image84, "image84");
+  GLADE_HOOKUP_OBJECT (assi_step4, label111, "label111");
+  GLADE_HOOKUP_OBJECT (assi_step4, step4_abort, "step4_abort");
+  GLADE_HOOKUP_OBJECT (assi_step4, alignment45, "alignment45");
+  GLADE_HOOKUP_OBJECT (assi_step4, hbox72, "hbox72");
+  GLADE_HOOKUP_OBJECT (assi_step4, image81, "image81");
+  GLADE_HOOKUP_OBJECT (assi_step4, label104, "label104");
+
+  return assi_step4;
 }
