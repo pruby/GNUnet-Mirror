@@ -388,7 +388,6 @@ void FSUI_stop(struct FSUI_Context * ctx); /* fsui.c */
  *  if keywords is not legal (i.e. empty).
  */
 struct ECRS_URI * FSUI_parseCharKeywordURI(const char * keywords); /* helper.c */
-
 /**
  * Create an ECRS URI from a user-supplied command line of keywords.
  * The command line may contain the reserved word 'AND' to create a

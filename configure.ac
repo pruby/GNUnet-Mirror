@@ -52,6 +52,18 @@ AC_CONFIG_SUBDIRS(libltdl)
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 
+# check for gtk >= 2.4.0
+AC_MSG_CHECKING(for gtk)
+AM_PATH_GTK_2_0(2.4.0,without_gtk=false,without_gtk=true)
+AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
+if test $without_gtk != true
+then
+ AC_DEFINE_UNQUOTED([HAVE_GTK], 1, [We have GTK])
+else
+ AC_MSG_ERROR(Cannot find GTK: Is gtk-config in path?)
+fi
+
+
 if test "$enable_shared" = "no"
 then
  AC_MSG_ERROR([GNUnet only works with shared libraries. Sorry.])

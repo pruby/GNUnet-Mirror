@@ -113,8 +113,8 @@ DISABLE-SYMLINK = YES
 
 # Path to the gnunet.conf file for gnunetd (for
 # forking gnunetd by gnunet-gtk)
-GNUNETD-CONFIG = /etc/gnunet.conf
-
+# default: not specified!
+# GNUNETD-CONFIG = /etc/gnunetd.conf
 
 
 ##########################################

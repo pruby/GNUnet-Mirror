@@ -268,6 +268,8 @@ struct FSUI_Context * FSUI_start(const char * name,
 				 FSUI_EventCallback cb,
 				 void * closure) {
   FSUI_Context * ret;
+  FSUI_SearchList * list;
+  ResultPending * rp;  
   char * fn;
   char * gh;
   int fd;
@@ -314,20 +316,23 @@ struct FSUI_Context * FSUI_start(const char * name,
 	goto WARN;
       if (ntohl(big) > 16 * 1024 * 1024)
 	goto WARN;
-      ret->collectionData
-	= MALLOC(ntohl(big));
-      if (ntohl(big) - sizeof(unsigned int) !=
-	  READ(fd,
-	       &ret->collectionData[1],
-	       ntohl(big) - sizeof(unsigned int))) {
-	FREE(ret->collectionData);
+      if (big == 0) {
 	ret->collectionData = NULL;
-	goto WARN;
+      } else {
+	ret->collectionData
+	  = MALLOC(ntohl(big));
+	if (ntohl(big) - sizeof(unsigned int) !=
+	    READ(fd,
+		 &ret->collectionData[1],
+		 ntohl(big) - sizeof(unsigned int))) {
+	  FREE(ret->collectionData);
+	  ret->collectionData = NULL;
+	  goto WARN;
+	}
       }
 
       /* deserialize pending searches! */
       while (1) {
-	FSUI_SearchList * list;
 	char * buf;
 
 	if (sizeof(unsigned int) !=
@@ -411,8 +416,6 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  readFileInfo(fd,
 		       &list->resultsReceived[i]);
 	for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
-	  ResultPending * rp;
-	  
 	  rp = &list->unmatchedResultsReceived[i];
 	  readFileInfo(fd,
 		       &rp->fi);
@@ -421,16 +424,14 @@ struct FSUI_Context * FSUI_start(const char * name,
 	      READ(fd, 
 		   &big, 
 		   sizeof(unsigned int))) {
-	    /* FIXME: memory leak! */
-	    goto WARN;
+	    goto WARNL;
 	  }
 	  rp->matchingKeyCount
 	    = ntohl(big);
 	  if ( (rp->matchingKeyCount > 1024) ||
 	       (rp->matchingKeyCount > 
 		list->numberOfURIKeys) ) {
-	    /* FIXME: memory leak! */
-	    goto WARN;
+	    goto WARNL;
 	  }
 	    
 	  if (rp->matchingKeyCount > 0)
@@ -446,8 +447,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 		   rp->matchingKeys,
 		   sizeof(HashCode512) *
 		   rp->matchingKeyCount)) {
-	    /* FIXME: memory leak! */
-	    goto WARN;
+	    goto WARNL;
 	  }
 	}
 	
@@ -459,6 +459,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	/* FIXME: start search threads! */
 	// PTHREAD_CREATE(&list->handle);
 
+	
 	/* finally: prepend to list */
 	list->next 
 	  = ret->activeSearches;
@@ -471,6 +472,28 @@ struct FSUI_Context * FSUI_start(const char * name,
       
       /* success, read complete! */
       goto END;
+    WARNL:
+      for (i=0;i<list->sizeResultsReceived;i++) {
+	if (list->resultsReceived[i].uri != NULL)
+	  ECRS_freeUri(list->resultsReceived[i].uri);
+	if (list->resultsReceived[i].meta != NULL)
+	  ECRS_freeMetaData(list->resultsReceived[i].meta);	
+      }
+      GROW(list->resultsReceived,
+	   list->sizeResultsReceived,
+	   0);
+      for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
+	rp = &list->unmatchedResultsReceived[i];
+	
+	if (rp->fi.uri != NULL)
+	  ECRS_freeUri(rp->fi.uri);
+	if (rp->fi.meta != NULL)
+	  ECRS_freeMetaData(rp->fi.meta);
+	FREENONNULL(rp->matchingKeys);
+      }
+      GROW(list->resultsReceived,
+	   list->sizeResultsReceived,
+	   0);      
     WARN:
       LOG(LOG_WARNING,
 	  _("FSUI state file '%s' had syntax error at offset %u.\n"),
@@ -550,10 +573,14 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     fd = -1;
   }
   if (fd != -1) {
-    /* serialize collection data */
-    WRITE(fd,
-	  ctx->collectionData,
-	  ntohl(ctx->collectionData->size));
+    if (ctx->collectionData == NULL) {
+      WRITEINT(fd, 0);
+    } else {
+      /* serialize collection data */
+      WRITE(fd,
+	    ctx->collectionData,
+	    ntohl(ctx->collectionData->size));
+    }
   }
   while (ctx->activeSearches != NULL) {
     spos = ctx->activeSearches;

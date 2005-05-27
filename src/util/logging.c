@@ -373,6 +373,10 @@ void setCustomLogProc(TLogProc proc) {
   if (bInited)
     MUTEX_LOCK(&logMutex);
 
+  if ( (customLog != NULL) &&
+       (proc != NULL) ) {
+    BREAK();
+  }
   customLog = proc;
 
   if (bInited)
