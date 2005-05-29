@@ -594,6 +594,8 @@ char * getConfigurationString(const char * section,
   UserConf * pos;
   char * retval;
 
+  if ( !(section != NULL) && (option != NULL) )
+    BREAK();
   GNUNET_ASSERT( (section != NULL) && (option != NULL) );
   MUTEX_LOCK(&configLock);
   pos = userconfig;

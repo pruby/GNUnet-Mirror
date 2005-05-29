@@ -117,8 +117,12 @@ static FSUI_DownloadList * readDownloadList(int fd,
   ret->subDownloadsNext = readDownloadList(fd,
 					   ctx);
 
-  /* FIXME: start download thread! */
-  // PTHREAD_CREATE(&ret->handle);
+  /* start download thread! */
+  if (0 != PTHREAD_CREATE(&ret->handle,
+			  (PThreadMain)&downloadThread,
+			  ret,
+			  16 * 1024))
+    DIE_STRERROR("pthread_create");
   return ret;
  ERROR:
   FREE(ret);
@@ -168,7 +172,6 @@ static void writeDownloadList(int fd,
   }
   WRITE(fd, &nonzero, sizeof(char));
 
-  /* FIXME: write rest of list */  
   WRITEINT(fd, list->is_recursive);
   WRITEINT(fd, list->is_directory);
   WRITEINT(fd, list->anonymityLevel);
@@ -277,11 +280,12 @@ struct FSUI_Context * FSUI_start(const char * name,
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
-  fn = getConfigurationString("",
-			      "GNUNET_HOME");
-  gh = expandFileName(fn);
-  FREE(fn);
-  fn = MALLOC(strlen(gh) + strlen(name) + 2);
+  gh = getFileName("",
+		   "GNUNET_HOME",
+		   "You must specify a directory for "
+		   "user-data under '%s%s' at the beginning"
+		   " of the configuration file.\n");
+  fn = MALLOC(strlen(gh) + strlen(name) + 2 + 5);
   strcpy(fn, gh);
   FREE(gh);
   strcat(fn, DIR_SEPARATOR_STR);
@@ -296,7 +300,10 @@ struct FSUI_Context * FSUI_start(const char * name,
     IPC_SEMAPHORE_DOWN(ret->ipc);
     LOG(LOG_INFO,
 	"Aquired IPC lock.\n");
-    fd = fileopen(fn, O_RDONLY);
+    fd = -1;
+    strcat(fn, ".res");
+    if (0 == ACCESS(fn, R_OK))
+      fd = fileopen(fn, O_RDONLY);
     if (fd != -1) {
       char magic[8];
       unsigned int big;
@@ -456,16 +463,19 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  = NO;
 	list->ctx
 	  = ret;
-	/* FIXME: start search threads! */
-	// PTHREAD_CREATE(&list->handle);
-
+	/* start search thread! */
+	if (0 != PTHREAD_CREATE(&list->handle,
+				(PThreadMain)&searchThread,
+				list,
+				16 * 1024))
+	  DIE_STRERROR("pthread_create");
 	
 	/* finally: prepend to list */
 	list->next 
 	  = ret->activeSearches;
 	ret->activeSearches
 	  = list;
-      }
+      } 
       ret->activeDownloads
 	= readDownloadList(fd,
 			   ret);
@@ -502,6 +512,11 @@ struct FSUI_Context * FSUI_start(const char * name,
     END:
       CLOSE(fd);
       UNLINK(fn);
+    } else {
+      if (errno != ENOENT) 
+	LOG_FILE_STRERROR(LOG_ERROR,
+			  "open",
+			  fn);
     }
   } else
     ret->ipc = NULL;
@@ -561,13 +576,14 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     fd = fileopen(ctx->name, 
 		  O_CREAT|O_TRUNC|O_WRONLY, 
 		  S_IRUSR|S_IWUSR);
-    WRITE(fd, 
-	  "FSUI00\n\0",
-	  8); /* magic */
     if (fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR,
 			"open",
 			ctx->name);
+    } else {
+      WRITE(fd, 
+	    "FSUI00\n\0",
+	    8); /* magic */
     }
   } else {
     fd = -1;
@@ -633,12 +649,6 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	      sizeof(HashCode512) * rp->matchingKeyCount);
       }
     }
-    if (fd != -1) {
-      big = htonl(strlen(0));     
-      WRITE(fd,
-	    &big,
-	    sizeof(unsigned int));
-    }
 
     ECRS_freeUri(spos->uri);
     for (i=spos->sizeResultsReceived-1;i>=0;i--) {
@@ -667,6 +677,11 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   }
 
   if (fd != -1) {
+    /* search list terminator */
+    big = htonl(0);     
+    WRITE(fd,
+	  &big,
+	  sizeof(unsigned int));
     writeDownloadList(fd,
 		      ctx->activeDownloads);
   }

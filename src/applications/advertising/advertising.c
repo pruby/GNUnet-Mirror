@@ -428,10 +428,12 @@ broadcastHelper(const PeerIdentity * hi,
  */
 static void
 broadcastHELOTransport(TransportAPI * tapi,
-		       void * unused) {
+		       const int * prob) {
   SendData sd;
   cron_t now;
-
+  
+  if (0 != randomi(*prob))
+    return; /* ignore */
 #if DEBUG_HELOEXCHANGE
   LOG(LOG_CRON,
       "Enter '%s'.\n",
@@ -474,8 +476,12 @@ broadcastHELOTransport(TransportAPI * tapi,
  * that we exist...
  */
 static void broadcastHELO(void * unused) {
+  unsigned int i;
+
+  i = transport->forEach(NULL,
+			 NULL);
   transport->forEach(&broadcastHELOTransport,
-		     NULL);
+		     &i);
 }
 
 typedef struct {

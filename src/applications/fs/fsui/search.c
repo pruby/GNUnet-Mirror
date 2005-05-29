@@ -133,7 +133,10 @@ static int testTerminate(FSUI_SearchList * pos) {
     return SYSERR;
 }
 
-static void * searchThread(FSUI_SearchList * pos) {
+/**
+ * Thread that searches for data.
+ */
+void * searchThread(FSUI_SearchList * pos) {
   ECRS_search(pos->uri,
 	      pos->anonymityLevel,
 	      cronTime(NULL) + cronYEARS, /* timeout!?*/

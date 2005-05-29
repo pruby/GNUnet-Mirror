@@ -1,12 +1,10 @@
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:
-  * resolve "FIXME 0.7"
+  * resolve "FIXME 0.7": only sqlite magic factor missing!
   * fsui core (persistence) [ difficult ]
-    - some error handling
-    - actual starting of download/search threads
+    - testing and debugging!
   * #593 (gnunet-setup): php-ification for i18n, curses wizard; 
-    template path adjustment for non gconf setup
-  * #770? (use freedback (LOG) in gnunet-gtk via show-messages)
+    template path adjustment for non gconf setup [ Nils ]
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy

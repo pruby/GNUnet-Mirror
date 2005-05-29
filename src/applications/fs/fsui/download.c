@@ -38,7 +38,7 @@
  *  if the disk does not have enough space).
  */
 static int startDownload(struct FSUI_Context * ctx,
-			 unsigned int anonymityLevel,			
+			 unsigned int anonymityLevel,
 			 const struct ECRS_URI * uri,
 			 const char * filename,
 			 int is_recursive,
@@ -166,7 +166,7 @@ testTerminate(FSUI_DownloadList * dl) {
 /**
  * Thread that downloads a file.
  */
-static void * downloadThread(FSUI_DownloadList * dl) {
+void * downloadThread(FSUI_DownloadList * dl) {
   int ret;
   FSUI_Event event;
   unsigned long long totalBytes;

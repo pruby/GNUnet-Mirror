@@ -144,13 +144,20 @@ static char * heloToString(const HELO_Message * helo) {
  * @param callback the method to call on each transport API implementation
  * @param data second argument to callback
  */
-static void forEachTransport(TransportCallback callback,
+static int forEachTransport(TransportCallback callback,
 			     void * data) {
   int i;
+  int ret;
 
-  for (i=0;i<tapis_count;i++)
-    if (tapis[i] != NULL)
-      callback(tapis[i], data);
+  ret = 0;
+  for (i=0;i<tapis_count;i++) {
+    if (tapis[i] != NULL) {
+      ret++;
+      if (callback != NULL)
+	callback(tapis[i], data);
+    }
+  }
+  return ret;
 }
 
 /**

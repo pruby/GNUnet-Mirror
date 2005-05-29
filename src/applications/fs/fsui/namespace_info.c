@@ -42,7 +42,7 @@ static void writeNamespaceInfo(const char * namespaceName,
   char * fn;
   char * fnBase;
 
-  fn = getConfigurationString(NULL, "GNUNET_HOME");
+  fn = getConfigurationString("", "GNUNET_HOME");
   fnBase = expandFileName(fn);
   FREE(fn);
   fn = MALLOC(strlen(fnBase) +
@@ -83,7 +83,7 @@ static int readNamespaceInfo(const char * namespaceName,
   char * fnBase;
 
   *meta = NULL;
-  fn = getConfigurationString(NULL, "GNUNET_HOME");
+  fn = getConfigurationString("", "GNUNET_HOME");
   fnBase = expandFileName(fn);
   FREE(fn);
   fn = MALLOC(strlen(fnBase) +
@@ -93,6 +93,7 @@ static int readNamespaceInfo(const char * namespaceName,
   strcpy(fn, fnBase);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, NS_DIR);
+  mkdirp(fn);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, namespaceName);
   FREE(fnBase);
@@ -160,7 +161,9 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
 			     meta,
 			     anonymityLevel,
 			     getConfigurationInt("FS", "INSERT-PRIORITY"),
-			     getConfigurationInt("FS", "INSERT-EXPIRATION") * cronYEARS + cronTime(NULL),
+			     getConfigurationInt("FS", 
+						 "INSERT-EXPIRATION") 
+			     * cronYEARS + cronTime(NULL),
 			     advertisementURI,
 			     rootEntry,
 			     root);
@@ -292,7 +295,7 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
     char * fn;
     char * fnBase;
 
-    fn = getConfigurationString(NULL, "GNUNET_HOME");
+    fn = getConfigurationString("", "GNUNET_HOME");
     fnBase = expandFileName(fn);
     FREE(fn);
     fn = MALLOC(strlen(fnBase) +
@@ -301,7 +304,7 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
     strcpy(fn, fnBase);
     strcat(fn, DIR_SEPARATOR_STR);
     strcat(fn, NS_DIR);
-
+    mkdirp(fn);
     scanDirectory(fn,
 		  &listNamespaceHelper,
 		  &cls);
@@ -320,7 +323,7 @@ static char * getUpdateDataFilename(const char * nsname,
   char * tmp;
   char * ret;
 
-  ret = getConfigurationString(NULL, "GNUNET_HOME");
+  ret = getConfigurationString("", "GNUNET_HOME");
   tmp = expandFileName(ret);
   FREE(ret);
   ret = MALLOC(strlen(tmp) + strlen(NS_UPDATE_DIR) +
@@ -536,7 +539,8 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
 	}
 	if (creationTime > cronTime(NULL) + 7 * cronDAYS) {
 	  LOG(LOG_WARNING,
-	      _("Publishing update for periodically updated content more than a week ahead of schedule.\n"));
+	      _("Publishing update for periodically updated "
+		"content more than a week ahead of schedule.\n"));
 	}
 	if (thisId != NULL)
 	  tid = *thisId; /* allow override! */
@@ -582,7 +586,9 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
   ret = ECRS_addToNamespace(name,
 			    anonymityLevel,
 			    getConfigurationInt("FS", "INSERT-PRIORITY"),
-			    getConfigurationInt("FS", "INSERT-EXPIRATION") * cronYEARS + cronTime(NULL),
+			    getConfigurationInt("FS", 
+						"INSERT-EXPIRATION") 
+			    * cronYEARS + cronTime(NULL),
 			    creationTime,
 			    updateInterval,
 			    &tid,
@@ -680,6 +686,7 @@ int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
   cls.cnt = 0;
   dirName = getUpdateDataFilename(name,
 				  NULL);
+  mkdirp(dirName);
   scanDirectory(dirName,
 		(DirectoryEntryCallback)&lNCHelper,
 		&cls);

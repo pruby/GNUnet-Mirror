@@ -248,9 +248,36 @@ typedef struct {
   unsigned int sendCount;
 
   /**
+   * How many nodes were connected when we initated sending this
+   * query?
+   */
+  unsigned int activeConnections;
+
+  /**
+   * What is the total distance of the query to the connected nodes?
+   */
+  unsigned long long totalDistance;
+
+  /**
    * The message that we are sending.
    */
   GAP_QUERY * msg;
+
+  /**
+   * How important would it be to send the message to all peers in
+   * this bucket?
+   */
+  int * rankings;
+
+  /**
+   * When do we stop forwarding (!) this query?
+   */
+  cron_t expires;
+
+  /**
+   * To which peer will we never send this message?
+   */
+  PeerIdentity noTarget;
 
   /**
    * Bit-map marking the hostIndices (computeIndex) of nodes that have
@@ -263,42 +290,17 @@ typedef struct {
   unsigned char bitmap[BITMAP_SIZE];
 
   /**
-   * When do we stop forwarding (!) this query?
-   */
-  cron_t expires;
-
-  /**
-   * How many nodes were connected when we initated sending this
-   * query?
-   */
-  unsigned int activeConnections;
-
-  /**
-   * What is the total distance of the query to the connected nodes?
-   */
-  unsigned long long totalDistance;
-
-  /**
    * To how many peers has / will this query be transmitted?
    */
   unsigned int transmissionCount;
-
-  /**
-   * To which peer will we never send this message?
-   */
-  PeerIdentity noTarget;
-
-  /**
-   * How important would it be to send the message to all peers in
-   * this bucket?
-   */
-  int * rankings;
 
 } QueryRecord;
 
 /**
  * Indirection table entry. Lists what we're looking for,
  * where to forward it, and how long to keep looking for it.
+ * Keep this struct as small as possible -- an array of these
+ * takes 80% of GNUnet's memory.
  */
 typedef struct {
   /**
@@ -312,17 +314,17 @@ typedef struct {
   unsigned int type;
 
   /**
-   * When can we forget about this entry?
-   */
-  cron_t ttl;
-
-  /**
    * How much is this query worth to us, that is, how much would
    * this node be willing to "pay" for an answer that matches the
    * hash stored in this ITE? (This is NOT the inbound priority,
    * it is the trust-adjusted inbound priority.)
    */
   unsigned int priority;
+
+  /**
+   * When can we forget about this entry?
+   */
+  cron_t ttl;
 
   /**
    * Which replies have we already seen?
@@ -337,15 +339,15 @@ typedef struct {
   HashCode512 * seen;
 
   /**
+   * Who are these hosts?
+   */
+  PeerIdentity * destination;
+
+  /**
    * How many hosts are waiting for an answer to this query (length of
    * destination array)
    */
   unsigned int hostsWaiting;
-
-  /**
-   * Who are these hosts?
-   */
-  PeerIdentity * destination;
 
   /**
    * Do we currently have a response in the delay loop (delays are
@@ -372,9 +374,9 @@ typedef struct {
  * Linked list of peer ids with number of replies received.
  */
 typedef struct RL_ {
+  struct RL_ * next;
   PeerIdentity responder;
   unsigned int responseCount;
-  struct RL_ * next;
 } ResponseList;
 
 /**
@@ -382,17 +384,16 @@ typedef struct RL_ {
  * which clients / other peers.
  */
 typedef struct RTD_ {
+
+  /**
+   * This is a linked list.
+   */
+  struct RTD_ * next;
+
   /**
    * For which client does this entry track replies?
    */
   PeerIdentity queryOrigin;
-
-  /**
-   * Time at which we received the last reply
-   * for this client.  Used to discard old entries
-   * eventually.
-   */
-  TIME_T lastReplyReceived;
 
   /**
    * Linked list of peers that responded, with
@@ -401,9 +402,11 @@ typedef struct RTD_ {
   ResponseList * responseList;
 
   /**
-   * This is a linked list.
+   * Time at which we received the last reply
+   * for this client.  Used to discard old entries
+   * eventually.
    */
-  struct RTD_ * next;
+  TIME_T lastReplyReceived;
 } ReplyTrackData;
 
 /**

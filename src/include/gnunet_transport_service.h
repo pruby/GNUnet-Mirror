@@ -66,8 +66,9 @@ typedef struct {
    * Iterate over all available transport mechanisms.
    * @param callback the method to call on each transport API implementation
    * @param data second argument to callback
+   * @return number of transports, SYSERR on error
    */
-  void (*forEach)(TransportCallback callback,
+  int (*forEach)(TransportCallback callback,
 		  void * data);
 
   /**
