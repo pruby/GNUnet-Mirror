@@ -2307,6 +2307,16 @@ void doneParseConfig(void);
 int fileopen(const char *filename, int oflag, ...);
 
 /**
+ * String functions
+ */
+#if !HAVE_STRLCPY
+size_t strlcpy(char *dest, const char *src, size_t size);
+#endif
+#if !HAVE_STRLCAT
+size_t strlcat(char *dest, const char *src, size_t count);
+#endif
+
+/**
  * Helper functions
  */
 #ifdef WINDOWS

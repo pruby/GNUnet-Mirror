@@ -78,6 +78,7 @@ libgnunetutil_la_SOURCES = \
  state.c \
  statuscalls.c \
  storage.c \
+ string.c \
  symcipher_gcrypt.c \
  tcp_return.c \
  tcpio.c \
