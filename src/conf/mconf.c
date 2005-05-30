@@ -821,30 +821,13 @@ int mconf_main(int ac, char **av)
 {
 	char *mode;
 	int stat;
-  const char * LANG;
-  char * configFile;
   struct menu *root;
-
-  LANG = getenv("LANG");
-  if (LANG == NULL)
-      LANG = "en";
-  if (strncmp(LANG, "en", 2) == 0)
-      LANG = NULL;
-  configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
-  strcpy(configFile,
-                DATADIR"/config.in");   
-  if (LANG != NULL) {
-      strcat(configFile, ".");
-      strncat(configFile,
-                      LANG,
-                      2);
-  }
 
 	/* This configurator is also called from the wizard configurator.
 	 * Check whether the templates are already parsed. */
 	root = menu_get_root_menu(NULL);
 	if (!(root && root->prompt))
-		conf_parse(configFile);
+		conf_parse(DATADIR"/config.in");
   
 	conf_read(NULL);
 

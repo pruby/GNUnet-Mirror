@@ -486,8 +486,6 @@ int conf_main(int ac, char **av)
 {
 	int i = 1;
 	struct stat tmpstat;
-  const char * LANG;
-  char * configFile;
 
 	if (ac > i && av[i][0] == '-') {
 		switch (av[i++][1]) {
@@ -530,22 +528,7 @@ int conf_main(int ac, char **av)
 		}
 	}
 
-  LANG = getenv("LANG");
-  if (LANG == NULL)
-      LANG = "en";
-  if (strncmp(LANG, "en", 2))
-      LANG = NULL;
-  configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
-  strcpy(configFile,
-                DATADIR"/config.in");   
-  if (LANG != NULL) {
-      strcat(configFile, ".");
-      strncat(configFile,
-                      LANG,
-                      2);
-  }
-
-	conf_parse(configFile);
+	conf_parse(DATADIR"/config.in");
   
 	switch (input_mode) {
 	case set_default:

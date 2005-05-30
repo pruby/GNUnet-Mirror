@@ -1692,8 +1692,6 @@ void fixup_rootmenu(struct menu *menu)
 
 int gconf_main(int ac, char *av[])
 {
-	const char * LANG;
-	char * configFile;
   struct menu *root;
 
 #ifndef LKC_DIRECT_LINK
@@ -1728,26 +1726,11 @@ int gconf_main(int ac, char *av[])
     }
   }
 
-	LANG = getenv("LANG");
-	if (LANG == NULL)
-			LANG = "en";
-	if (strncmp(LANG, "en", 2) == 0)
-			LANG = NULL;
-	configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
-	strcpy(configFile,
-								DATADIR"/config.in");		
-	if (LANG != NULL) {
-			strcat(configFile, ".");
-			strncat(configFile,
-											LANG,
-											2);
-	}
-	
 	/* This configurator is also called from the wizard configurator.
 	 * Check whether the templates are already parsed. */
 	root = menu_get_root_menu(NULL);
 	if (!(root && root->prompt))
-  	conf_parse(configFile);
+  	conf_parse(DATADIR"/config.in");
   fixup_rootmenu(&rootmenu);
   conf_read(NULL);
 

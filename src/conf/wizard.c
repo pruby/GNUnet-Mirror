@@ -245,9 +245,6 @@ void load_step5()
 int
 wizard_main (int argc, char *argv[])
 {
-  const char * LANG;
-  char * configFile;
-
 #ifdef ENABLE_NLS
 		/* GTK uses UTF-8 encoding */
 		bind_textdomain_codeset(PACKAGE, "UTF-8");
@@ -260,23 +257,8 @@ wizard_main (int argc, char *argv[])
   gtk_set_locale ();
   gtk_init (&argc, &argv);
 
-  LANG = getenv("LANG");
-  if (LANG == NULL)
-      LANG = "en";
-  if (strncmp(LANG, "en", 2) == 0)
-      LANG = NULL;
-  configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
-  strcpy(configFile,
-                DATADIR"/config.in");   
-  if (LANG != NULL) {
-      strcat(configFile, ".");
-      strncat(configFile,
-                      LANG,
-                      2);
-  }
-
-  conf_parse(configFile);
-  
+	conf_parse(DATADIR"/config.in");
+	  
   conf_read(NULL);
 
   curwnd = create_assi_step1 ();

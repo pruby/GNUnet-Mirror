@@ -1268,8 +1268,6 @@ static void usage(void)
 int qconf_main(int ac, char** av)
 {
 	ConfigMainWindow* v;
-  const char * LANG;
-  char * configFile;
 
 #ifndef LKC_DIRECT_LINK
 	kconfig_load();
@@ -1288,23 +1286,7 @@ int qconf_main(int ac, char** av)
 		}
 	}
   
-  LANG = getenv("LANG");
-  if (LANG == NULL)
-      LANG = "en";
-  if (strncmp(LANG, "en", 2) == 0)
-      LANG = NULL;
-  configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
-  strcpy(configFile,
-                DATADIR"/config.in");   
-  if (LANG != NULL) {
-      strcat(configFile, ".");
-      strncat(configFile,
-                      LANG,
-                      2);
-  }
-  
-	conf_parse(configFile);
-  FREE(configFile);
+	conf_parse(DATADIR"/config.in");
   
 	fixup_rootmenu(&rootmenu);
 	conf_read(NULL);

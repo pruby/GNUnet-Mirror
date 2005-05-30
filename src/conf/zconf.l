@@ -263,26 +263,19 @@ static void zconf_endhelp(void)
 
 
 /*
- * Try to open specified file with following names:
- * ./name
- * $(srctree)/name
- * The latter is used when srctree is separate from objtree
- * when compiling the kernel.
+ * Try to open specified file with $LANG appended
  * Return NULL if file is not found.
  */
 FILE *zconf_fopen(const char *name)
 {
-	char *env, fullname[PATH_MAX+1];
+	char configFile[PATH_MAX+1], lang[3];
 	FILE *f;
-
-	f = FOPEN(name, "r");
-	if (!f && name[0] != DIR_SEPARATOR) {
-		env = getenv(SRCTREE);
-		if (env) {
-			sprintf(fullname, "%s/%s", env, name);
-			f = FOPEN(fullname, "r");
-		}
-	}
+	
+	strlcpy(lang, getenv("LANG"), 3);
+	snprintf(configFile, PATH_MAX + 1, "%s.%s", name, lang);
+	if (!(f = FOPEN(configFile, "r")))
+		f = FOPEN(name, "r");
+	
 	return f;
 }
 

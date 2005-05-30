@@ -59,29 +59,12 @@ void insert_nic_curs(char *name, int defaultNIC)
 
 int wizard_curs_main(int argc, char *argv[])
 {
-  const char * LANG;
-  char * configFile;
   void *active_ptr = NULL;
 	int idx, ret, autostart = 0, adv = 0;
 	struct symbol *sym;
 	char *defval, *user_name = NULL, *group_name = NULL;
 
-  LANG = getenv("LANG");
-  if (LANG == NULL)
-      LANG = "en";
-  if (strncmp(LANG, "en", 2) == 0)
-      LANG = NULL;
-  configFile = MALLOC(strlen(DATADIR"/config.in") + 4);
-  strcpy(configFile,
-                DATADIR"/config.in");   
-  if (LANG != NULL) {
-      strcat(configFile, ".");
-      strncat(configFile,
-                      LANG,
-                      2);
-  }
-
-  conf_parse(configFile);
+	conf_parse(DATADIR"/config.in");
   
   conf_read(NULL);
 
