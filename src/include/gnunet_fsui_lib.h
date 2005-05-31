@@ -103,7 +103,7 @@ typedef struct {
        * File-Info of the data that was found.
        */
       ECRS_FileInfo fi;
-      /**
+     /**
        * The URI of the search for which data was
        * found.
        */
@@ -503,7 +503,6 @@ int FSUI_unindex(struct FSUI_Context * ctx,
  * main directory will furthermore be published with the given keywords
  * and the specified directoryMetaData.
  *
- * @param extractorPluginNames list of LE plugins to use
  * @param keywordCount number of keywords
  * @param keywords keywords to use ONLY for the top-level directory
  * @return OK on success (at least we started with it),
@@ -514,7 +513,6 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   unsigned int anonymityLevel,
 		   int doIndex,
 		   const struct ECRS_MetaData * directoryMetaData,
-		   const char * extractorPluginNames,
 		   const struct ECRS_URI * globalURI,
 		   const struct ECRS_URI * topURI); /* upload.c */
 

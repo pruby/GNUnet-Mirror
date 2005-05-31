@@ -2,7 +2,7 @@ This file describes special operations that must be performed for an
 upgrade between GNUnet versions.  You can obtain version of GNUnet
 that you have installed by running
 
-# gnunetd --version
+$ gnunetd --version
 
 If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,

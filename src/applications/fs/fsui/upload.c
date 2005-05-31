@@ -335,7 +335,6 @@ static void * uploadThread(UploadThreadClosure * utc) {
       event.type = upload_error;
       event.data.message = _("Upload failed.\n");
     }
-    utc->filename = NULL;
     if (utc->meta == NULL)
       utc->meta = ECRS_createMetaData();
     else
@@ -345,6 +344,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
     ECRS_extractMetaData(utc->meta,
 			 utc->filename,
 			 utc->extractors);
+    utc->filename = NULL;
   } else if (utc->isRecursive) {
     scanDirectory(utc->filename,
 		  (DirectoryEntryCallback)&dirEntryCallback,
@@ -449,6 +449,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
 		const struct ECRS_URI * keyUri) {
   FSUI_ThreadList * tl;
   UploadThreadClosure * utc;
+  char * config;
 
   utc = MALLOC(sizeof(UploadThreadClosure));
   utc->anonymityLevel = anonymityLevel;
@@ -457,7 +458,14 @@ int FSUI_upload(struct FSUI_Context * ctx,
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;
   utc->ctx = ctx;
   utc->isRecursive = NO;
-  utc->extractors = NULL;
+  utc->extractors = EXTRACTOR_loadDefaultLibraries();
+  config = getConfigurationString("FS",
+				  "EXTRACTORS");
+  if (config != NULL) {
+    utc->extractors = EXTRACTOR_loadConfigLibraries(utc->extractors,
+						    config);
+    FREE(config);
+  }
   utc->globalUri = NULL;
   utc->filename = NULL;
   utc->main_filename = STRDUP(filename);
@@ -496,7 +504,6 @@ int FSUI_upload(struct FSUI_Context * ctx,
  * main directory will furthermore be published with the given keywords
  * and the specified directoryMetaData.
  *
- * @param extractorPluginNames list of LE plugins to use
  * @return OK on success (at least we started with it),
  *  SYSERR if the file does not exist
 */
@@ -505,11 +512,11 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   unsigned int anonymityLevel,
 		   int doIndex,
 		   const struct ECRS_MetaData * directoryMetaData,
-		   const char * extractorPluginNames,
 		   const struct ECRS_URI * globalURI,
 		   const struct ECRS_URI * topURI) {
   FSUI_ThreadList * tl;
   UploadThreadClosure * utc;
+  char * config;
 
   utc = MALLOC(sizeof(UploadThreadClosure));
   utc->ctx = ctx;
@@ -518,7 +525,15 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   utc->priority = getConfigurationInt("FS",
 				      "INSERT-PRIORITY");
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;
-  utc->extractors = EXTRACTOR_loadConfigLibraries(NULL, extractorPluginNames);
+  utc->extractors = EXTRACTOR_loadDefaultLibraries();
+  config = getConfigurationString("FS",
+				  "EXTRACTORS");
+  
+  if (config != NULL) {
+    utc->extractors = EXTRACTOR_loadConfigLibraries(utc->extractors,
+						    config);
+    FREE(config);
+  }
   utc->globalUri = ECRS_dupUri(globalURI);
   utc->filename = NULL;
   utc->main_filename = STRDUP(dirname);

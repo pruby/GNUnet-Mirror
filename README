@@ -121,7 +121,8 @@ you want to maximize your anonymity.  You may start it as a service
 with "/etc/init.d/gnunetd start".  To insert files into GNUnet, use
 the "gnunet-insert" command.
 
-If want to use a GUI, just invoke
+The GTK user interface is shipped separately from GNUnet.  After
+downloading and installing gnunet-gtk, you can invoke the GUI with:
 
 $ gnunet-gtk
 

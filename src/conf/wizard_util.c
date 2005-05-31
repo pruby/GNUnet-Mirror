@@ -252,7 +252,7 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 				if (! f)
 					return 0;
 					
-				fputs(f,	"#! /bin/sh\n"
+				fputs("#! /bin/sh\n"
 									"#\n"
 									"# Automatically created by gnunet-setup\n"
 									"#\n"
@@ -288,7 +288,7 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 									"		;;\n"
 									"\n"
 									"esac\n"
-									"exit 0\n");
+				      "exit 0\n", f);
 					fclose(f);
 					chmod("/etc/init.d/gnunetd", S_IRWXU | S_IRGRP | S_IXGRP |
 						S_IROTH | S_IXOTH);

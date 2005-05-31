@@ -569,11 +569,6 @@ char * convertToUtf8(const char * input,
 		     const char * charset);
 
 /**
- * GNU gettext support macro.
- */
-#define _(String) gettext (String)
-
-/**
  * Macro for assertions in GNUnet.  Use liberally and instead
  * of specific but cryptic error messages that merely refer
  * to the location of the problem but that would be evident

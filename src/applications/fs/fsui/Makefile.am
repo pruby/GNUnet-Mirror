@@ -25,7 +25,9 @@ EXTRA_DIST = \
 
 check_PROGRAMS = \
   fsuitest \
-  fsuitest2
+  fsuitest2 \
+  searchtest \
+  downloadtest
 
 TESTS = $(check_PROGRAMS)
 
@@ -36,10 +38,24 @@ fsuitest_LDADD = \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
-
 fsuitest2_SOURCES = \
   fsuitest2.c 
 fsuitest2_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
+
+searchtest_SOURCES = \
+  searchtest.c 
+searchtest_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+downloadtest_SOURCES = \
+  downloadtest.c 
+downloadtest_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+

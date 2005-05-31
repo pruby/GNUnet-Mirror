@@ -6,7 +6,6 @@ man_MANS = $(gdmpage) \
 gnunet-chat.1\
 gnunet-directory.1 \
 gnunet-download.1 \
-gnunet-gtk.1 \
 gnunet-insert.1 \
 gnunet-search.1 \
 gnunet-stats.1 \

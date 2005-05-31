@@ -607,8 +607,11 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
   char * u1;
   char * u2;
   int ret;
+  
+  GNUNET_ASSERT(uri1 != NULL);
+  GNUNET_ASSERT(uri2 != NULL);
   u1 = ECRS_uriToString(uri1);
-  u2 = ECRS_uriToString(uri1);
+  u2 = ECRS_uriToString(uri2);
   ret = strcmp(u1, u2);
   FREE(u1);
   FREE(u2);

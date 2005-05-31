@@ -228,10 +228,11 @@ static void printhelp() {
 	     help);
 }
 
+static int printAndReturn = NO;
+
 static int parseOptions(int argc,
 			char ** argv) {
   int c;
-  int printAndReturn = NO;
   char * tmp;
 
   FREENONNULL(setConfigurationString("GNUNET-INSERT",
@@ -472,31 +473,6 @@ static int parseOptions(int argc,
     printf(_("You must specify a list of files to insert.\n"));
     return SYSERR;
   }
-  if (printAndReturn) {
-    EXTRACTOR_ExtractorList * l;
-    char * ex;
-
-    ex = getConfigurationString("FS",
-				"EXTRACTORS");
-    if (ex == NULL)
-      ex = STRDUP(EXTRACTOR_DEFAULT_LIBRARIES);
-    if (ex == NULL)
-      l = NULL;
-    else
-      l = EXTRACTOR_loadConfigLibraries(NULL,
-					ex);
-    for (c=GNoptind;c<argc;c++) {
-      EXTRACTOR_KeywordList * list
-	= EXTRACTOR_getKeywords(l, argv[c]);
-      printf(_("Keywords for file '%s':\n"),
-	     argv[c]);
-      EXTRACTOR_printKeywords(stdout,
-			      list);
-      EXTRACTOR_freeKeywords(list);
-    }
-    EXTRACTOR_removeAll(l);
-    return SYSERR;
-  }
   if (argc - GNoptind > 1) {
     printf(_("Only one file or directory can be specified at a time.\n"));
     return SYSERR;
@@ -527,13 +503,40 @@ int main(int argc, char ** argv) {
   char * timestr;
   int doIndex;
   int ret;
-  char * extractors;
 
   meta = ECRS_createMetaData();
   if (SYSERR == initUtil(argc, argv, &parseOptions)) {
     ECRS_freeMetaData(meta);
     return 0;
   }
+
+  if (printAndReturn) {
+    EXTRACTOR_ExtractorList * l;
+    char * ex;
+    
+    filename = getConfigurationString("GNUNET-INSERT",
+				      "MAIN-FILE");
+    l = EXTRACTOR_loadDefaultLibraries();
+    ex = getConfigurationString("FS",
+				"EXTRACTORS");
+    if (ex != NULL) {
+      l = EXTRACTOR_loadConfigLibraries(l,
+					ex);
+      FREE(ex);
+    }
+    EXTRACTOR_KeywordList * list
+      = EXTRACTOR_getKeywords(l, filename);
+    printf(_("Keywords for file '%s':\n"),
+	   filename);
+    EXTRACTOR_printKeywords(stdout,
+			    list);
+    EXTRACTOR_freeKeywords(list);
+    EXTRACTOR_removeAll(l);
+    FREE(filename);
+    ECRS_freeMetaData(meta);
+    return 0;
+  }
+
 
   verbose = testConfigurationString("GNUNET-INSERT",
 				    "VERBOSE",
@@ -608,11 +611,6 @@ int main(int argc, char ** argv) {
     doIndex = NO;
   else
     doIndex = YES;
-  extractors = getConfigurationString("FS",
-				      "EXTRACTORS");
-  if (extractors == NULL)
-      extractors = STRDUP(EXTRACTOR_DEFAULT_LIBRARIES);
-
   if (! testConfigurationString("FS",
 				"DISABLE-CREATION-TIME",
 				"YES")) 
@@ -633,7 +631,6 @@ int main(int argc, char ** argv) {
 					     "ANONYMITY-SEND"),
 			 doIndex,
 			 meta,
-			 extractors,
 			 gloURI,
 			 topURI);
     ECRS_freeUri(gloURI);
@@ -652,7 +649,6 @@ int main(int argc, char ** argv) {
 		      topURI);
     ECRS_freeUri(topURI);
   }
-  FREE(extractors);
   /* wait for completion */
   SEMAPHORE_DOWN(exitSignal);
   SEMAPHORE_FREE(exitSignal);

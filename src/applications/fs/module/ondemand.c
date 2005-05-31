@@ -130,6 +130,9 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 			strlen("/data/shared/") + 1);
     strcat(serverDir, "/data/shared/");
   }
+  fn = expandFileName(serverDir);
+  FREE(serverDir);
+  serverDir = fn;
   if ( (SYSERR == getFileHash(fn,
 			      &linkId)) || 
        (! equalsHashCode512(&linkId,
@@ -156,6 +159,7 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
   UNLINK(serverFN);
   if (0 != SYMLINK(fn, serverFN)) {
     LOG_FILE_STRERROR(LOG_ERROR, "symlink", fn);
+    LOG_FILE_STRERROR(LOG_ERROR, "symlink", serverFN);
     FREE(serverFN);
     return NO;
   }

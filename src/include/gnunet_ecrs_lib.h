@@ -145,6 +145,15 @@ char * ECRS_getFromMetaData(const struct ECRS_MetaData * md,
 			    EXTRACTOR_KeywordType type);
 
 /**
+ * Get the first matching MD entry of the given types.
+ * @param ... -1-terminated list of types
+ * @return NULL if we do not have any such entry,
+ *  otherwise client is responsible for freeing the value!
+ */
+char * ECRS_getFirstFromMetaData(const struct ECRS_MetaData * md,
+				 ...);
+
+/**
  * Get a thumbnail from the meta-data (if present).
  *
  * @param thumb will be set to the thumbnail data.  Must be

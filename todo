@@ -1,23 +1,29 @@
+0.7.0pre3:
+- gnunet-gtk (see todo list there)
+- gnunet-setup:
+   curses wizard?  [ Nils ];
+   template path adjustment for non gconf setup [ Nils ]
+       
+
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing!
-  * fsui core (persistence) [ difficult ]
-    - testing and debugging!
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
   * FSUI:
-    + persistence
     + collections
-    + recursive uploads and downloads
+    + recursive uploads and downloads (incl. persistence)
     + namespaces
     + URI tracking
 - Documentation:
   * ECRS block format changes (dramatic!)
   * Hacking GNUnet
 
-0.7.x (aka "stabilization"):
+0.7.0a (bugfixes)
+
+0.7.1 (aka "stabilization"):
 - Optimizations:
   * spread out scanning done in topology_*.c?
   * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed

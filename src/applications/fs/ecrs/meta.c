@@ -171,6 +171,33 @@ char * ECRS_getFromMetaData(const MetaData * md,
 }
 
 /**
+ * Iterate over MD entries
+ *
+ * @return number of entries
+ */
+char * ECRS_getFirstFromMetaData(const MetaData * md,
+				 ...) {
+  char * ret;
+  va_list args;
+  EXTRACTOR_KeywordType type;
+
+  ret = NULL;
+  va_start(args, md);
+  while (1) {
+    type = va_arg(args, EXTRACTOR_KeywordType);
+    if (type == -1)
+      break;
+    ret = ECRS_getFromMetaData(md,
+			       type);
+    if (ret != NULL) 
+      break;
+  }
+  va_end(args);
+  return ret;
+}
+
+
+/**
  * This function can be used to decode the binary data
  * stream produced by the thumbnailextractor.
  *
