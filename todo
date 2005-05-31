@@ -3,8 +3,7 @@
   * resolve "FIXME 0.7": only sqlite magic factor missing!
   * fsui core (persistence) [ difficult ]
     - testing and debugging!
-  * #593 (gnunet-setup): php-ification for i18n, curses wizard; 
-    template path adjustment for non gconf setup [ Nils ]
+  * #593 (gnunet-setup): php-ification for i18n [ Nils ]
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
