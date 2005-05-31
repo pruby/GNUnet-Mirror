@@ -137,7 +137,7 @@ on_step5_back_clicked (GtkButton * button, gpointer user_data)
 int
 save_conf ()
 {
-	if (conf_write(NULL))
+	if (conf_write())
 	{
 		msgSaveFailed = create_msgSaveFailed();
 		gtk_widget_show(msgSaveFailed);

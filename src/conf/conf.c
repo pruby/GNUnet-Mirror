@@ -547,7 +547,7 @@ int conf_main(int ac, char **av)
 				"*** You have not yet configured GNUnet!\n"
 				"***\n"
 				"*** Please run some configurator (e.g.\n"
-				"*** \"gnunet-setup menuconfig\" or \"gnunet-setup xconfig\").\n"
+				"*** \"gnunet-setup menuconfig\" or \"gnunet-setup gconfig\").\n"
 				"***\n");
 			exit(1);
 		}
@@ -571,6 +571,6 @@ int conf_main(int ac, char **av)
 		conf_cnt = 0;
 		check_conf(&rootmenu);
 	} while (conf_cnt);
-	conf_write(NULL);
+	conf_write();
 	return 0;
 }

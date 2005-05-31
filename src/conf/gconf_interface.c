@@ -8,7 +8,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 
@@ -38,8 +40,6 @@ create_main_wnd (void)
   GtkWidget *image27;
   GtkWidget *save1;
   GtkWidget *image28;
-  GtkWidget *save_as1;
-  GtkWidget *image29;
   GtkWidget *separator1;
   GtkWidget *quit1;
   GtkWidget *image30;
@@ -61,44 +61,56 @@ create_main_wnd (void)
   GtkWidget *image33;
   GtkWidget *handlebox1;
   GtkWidget *toolbar1;
+  GtkIconSize tmp_toolbar_icon_size;
+  GtkWidget *toolitem1;
   GtkWidget *button1;
   GtkWidget *alignment11;
   GtkWidget *hbox11;
   GtkWidget *image44;
   GtkWidget *label11;
+  GtkWidget *toolitem2;
   GtkWidget *vseparator1;
+  GtkWidget *toolitem3;
   GtkWidget *button2;
   GtkWidget *alignment2;
   GtkWidget *hbox2;
   GtkWidget *image35;
   GtkWidget *label2;
+  GtkWidget *toolitem4;
   GtkWidget *button3;
   GtkWidget *alignment4;
   GtkWidget *hbox4;
   GtkWidget *image37;
   GtkWidget *label4;
+  GtkWidget *toolitem5;
   GtkWidget *vseparator2;
+  GtkWidget *toolitem6;
   GtkWidget *button4;
   GtkWidget *alignment6;
   GtkWidget *hbox6;
   GtkWidget *image39;
   GtkWidget *label6;
+  GtkWidget *toolitem7;
   GtkWidget *button5;
   GtkWidget *alignment7;
   GtkWidget *hbox7;
   GtkWidget *image40;
   GtkWidget *label7;
+  GtkWidget *toolitem8;
   GtkWidget *button6;
   GtkWidget *alignment8;
   GtkWidget *hbox8;
   GtkWidget *image41;
   GtkWidget *label8;
+  GtkWidget *toolitem9;
   GtkWidget *vseparator3;
+  GtkWidget *toolitem10;
   GtkWidget *button7;
   GtkWidget *alignment9;
   GtkWidget *hbox9;
   GtkWidget *image42;
   GtkWidget *label9;
+  GtkWidget *toolitem11;
   GtkWidget *button8;
   GtkWidget *alignment10;
   GtkWidget *hbox10;
@@ -160,16 +172,6 @@ create_main_wnd (void)
   image28 = gtk_image_new_from_stock ("gtk-save", GTK_ICON_SIZE_MENU);
   gtk_widget_show (image28);
   gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save1), image28);
-
-  save_as1 = gtk_image_menu_item_new_with_mnemonic (_("Save _as"));
-  gtk_widget_show (save_as1);
-  gtk_container_add (GTK_CONTAINER (file1_menu), save_as1);
-  gtk_tooltips_set_tip (tooltips, save_as1, _("Save the config in a file"),
-			NULL);
-
-  image29 = gtk_image_new_from_stock ("gtk-save-as", GTK_ICON_SIZE_MENU);
-  gtk_widget_show (image29);
-  gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (save_as1), image29);
 
   separator1 = gtk_menu_item_new ();
   gtk_widget_show (separator1);
@@ -273,12 +275,18 @@ create_main_wnd (void)
   gtk_widget_show (toolbar1);
   gtk_container_add (GTK_CONTAINER (handlebox1), toolbar1);
   gtk_toolbar_set_style (GTK_TOOLBAR (toolbar1), GTK_TOOLBAR_BOTH);
+  tmp_toolbar_icon_size = gtk_toolbar_get_icon_size (GTK_TOOLBAR (toolbar1));
+
+  toolitem1 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem1);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem1);
 
   button1 = gtk_button_new ();
   gtk_widget_show (button1);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button1,
-			     _("Goes up of one level (single view)"), NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem1), button1);
   GTK_WIDGET_UNSET_FLAGS (button1, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button1,
+			_("Goes up of one level (single view)"), NULL);
 
   alignment11 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment11);
@@ -296,15 +304,23 @@ create_main_wnd (void)
   gtk_widget_show (label11);
   gtk_box_pack_start (GTK_BOX (hbox11), label11, FALSE, FALSE, 0);
 
+  toolitem2 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem2);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem2);
+
   vseparator1 = gtk_vseparator_new ();
   gtk_widget_show (vseparator1);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), vseparator1, NULL, NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem2), vseparator1);
+
+  toolitem3 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem3);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem3);
 
   button2 = gtk_button_new ();
   gtk_widget_show (button2);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button2,
-			     _("Load a config file"), NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem3), button2);
   GTK_WIDGET_UNSET_FLAGS (button2, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button2, _("Load a config file"), NULL);
 
   alignment2 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment2);
@@ -322,11 +338,15 @@ create_main_wnd (void)
   gtk_widget_show (label2);
   gtk_box_pack_start (GTK_BOX (hbox2), label2, FALSE, FALSE, 0);
 
+  toolitem4 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem4);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem4);
+
   button3 = gtk_button_new ();
   gtk_widget_show (button3);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button3,
-			     _("Save a config file"), NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem4), button3);
   GTK_WIDGET_UNSET_FLAGS (button3, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button3, _("Save a config file"), NULL);
 
   alignment4 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment4);
@@ -344,15 +364,23 @@ create_main_wnd (void)
   gtk_widget_show (label4);
   gtk_box_pack_start (GTK_BOX (hbox4), label4, FALSE, FALSE, 0);
 
+  toolitem5 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem5);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem5);
+
   vseparator2 = gtk_vseparator_new ();
   gtk_widget_show (vseparator2);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), vseparator2, NULL, NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem5), vseparator2);
+
+  toolitem6 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem6);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem6);
 
   button4 = gtk_button_new ();
   gtk_widget_show (button4);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button4,
-			     _("Single view"), NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem6), button4);
   GTK_WIDGET_UNSET_FLAGS (button4, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button4, _("Single view"), NULL);
 
   alignment6 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment6);
@@ -371,11 +399,15 @@ create_main_wnd (void)
   gtk_widget_show (label6);
   gtk_box_pack_start (GTK_BOX (hbox6), label6, FALSE, FALSE, 0);
 
+  toolitem7 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem7);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem7);
+
   button5 = gtk_button_new ();
   gtk_widget_show (button5);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button5, _("Split view"),
-			     NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem7), button5);
   GTK_WIDGET_UNSET_FLAGS (button5, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button5, _("Split view"), NULL);
 
   alignment7 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment7);
@@ -394,11 +426,15 @@ create_main_wnd (void)
   gtk_widget_show (label7);
   gtk_box_pack_start (GTK_BOX (hbox7), label7, FALSE, FALSE, 0);
 
+  toolitem8 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem8);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem8);
+
   button6 = gtk_button_new ();
   gtk_widget_show (button6);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button6, _("Full view"),
-			     NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem8), button6);
   GTK_WIDGET_UNSET_FLAGS (button6, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button6, _("Full view"), NULL);
 
   alignment8 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment8);
@@ -417,16 +453,25 @@ create_main_wnd (void)
   gtk_widget_show (label8);
   gtk_box_pack_start (GTK_BOX (hbox8), label8, FALSE, FALSE, 0);
 
+  toolitem9 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem9);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem9);
+
   vseparator3 = gtk_vseparator_new ();
   gtk_widget_show (vseparator3);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), vseparator3, NULL, NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem9), vseparator3);
+
+  toolitem10 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem10);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem10);
 
   button7 = gtk_button_new ();
   gtk_widget_show (button7);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button7,
-			     _("Collapse the whole tree in the right frame"),
-			     NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem10), button7);
   GTK_WIDGET_UNSET_FLAGS (button7, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button7,
+			_("Collapse the whole tree in the right frame"),
+			NULL);
 
   alignment9 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment9);
@@ -444,12 +489,16 @@ create_main_wnd (void)
   gtk_widget_show (label9);
   gtk_box_pack_start (GTK_BOX (hbox9), label9, FALSE, FALSE, 0);
 
+  toolitem11 = (GtkWidget *) gtk_tool_item_new ();
+  gtk_widget_show (toolitem11);
+  gtk_container_add (GTK_CONTAINER (toolbar1), toolitem11);
+
   button8 = gtk_button_new ();
   gtk_widget_show (button8);
-  gtk_toolbar_append_widget (GTK_TOOLBAR (toolbar1), button8,
-			     _("Expand the whole tree in the right frame"),
-			     NULL);
+  gtk_container_add (GTK_CONTAINER (toolitem11), button8);
   GTK_WIDGET_UNSET_FLAGS (button8, GTK_CAN_FOCUS);
+  gtk_tooltips_set_tip (tooltips, button8,
+			_("Expand the whole tree in the right frame"), NULL);
 
   alignment10 = gtk_alignment_new (0.5, 0.5, 0, 0);
   gtk_widget_show (alignment10);
@@ -533,8 +582,6 @@ create_main_wnd (void)
 		    G_CALLBACK (on_load1_activate), NULL);
   g_signal_connect ((gpointer) save1, "activate",
 		    G_CALLBACK (on_save1_activate), NULL);
-  g_signal_connect ((gpointer) save_as1, "activate",
-		    G_CALLBACK (on_save_as1_activate), NULL);
   g_signal_connect ((gpointer) quit1, "activate",
 		    G_CALLBACK (on_quit1_activate), NULL);
   g_signal_connect ((gpointer) show_name1, "activate",
@@ -592,8 +639,6 @@ create_main_wnd (void)
   GLADE_HOOKUP_OBJECT (main_wnd, image27, "image27");
   GLADE_HOOKUP_OBJECT (main_wnd, save1, "save1");
   GLADE_HOOKUP_OBJECT (main_wnd, image28, "image28");
-  GLADE_HOOKUP_OBJECT (main_wnd, save_as1, "save_as1");
-  GLADE_HOOKUP_OBJECT (main_wnd, image29, "image29");
   GLADE_HOOKUP_OBJECT (main_wnd, separator1, "separator1");
   GLADE_HOOKUP_OBJECT (main_wnd, quit1, "quit1");
   GLADE_HOOKUP_OBJECT (main_wnd, image30, "image30");
@@ -615,44 +660,55 @@ create_main_wnd (void)
   GLADE_HOOKUP_OBJECT (main_wnd, image33, "image33");
   GLADE_HOOKUP_OBJECT (main_wnd, handlebox1, "handlebox1");
   GLADE_HOOKUP_OBJECT (main_wnd, toolbar1, "toolbar1");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem1, "toolitem1");
   GLADE_HOOKUP_OBJECT (main_wnd, button1, "button1");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment11, "alignment11");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox11, "hbox11");
   GLADE_HOOKUP_OBJECT (main_wnd, image44, "image44");
   GLADE_HOOKUP_OBJECT (main_wnd, label11, "label11");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem2, "toolitem2");
   GLADE_HOOKUP_OBJECT (main_wnd, vseparator1, "vseparator1");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem3, "toolitem3");
   GLADE_HOOKUP_OBJECT (main_wnd, button2, "button2");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment2, "alignment2");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox2, "hbox2");
   GLADE_HOOKUP_OBJECT (main_wnd, image35, "image35");
   GLADE_HOOKUP_OBJECT (main_wnd, label2, "label2");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem4, "toolitem4");
   GLADE_HOOKUP_OBJECT (main_wnd, button3, "button3");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment4, "alignment4");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox4, "hbox4");
   GLADE_HOOKUP_OBJECT (main_wnd, image37, "image37");
   GLADE_HOOKUP_OBJECT (main_wnd, label4, "label4");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem5, "toolitem5");
   GLADE_HOOKUP_OBJECT (main_wnd, vseparator2, "vseparator2");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem6, "toolitem6");
   GLADE_HOOKUP_OBJECT (main_wnd, button4, "button4");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment6, "alignment6");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox6, "hbox6");
   GLADE_HOOKUP_OBJECT (main_wnd, image39, "image39");
   GLADE_HOOKUP_OBJECT (main_wnd, label6, "label6");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem7, "toolitem7");
   GLADE_HOOKUP_OBJECT (main_wnd, button5, "button5");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment7, "alignment7");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox7, "hbox7");
   GLADE_HOOKUP_OBJECT (main_wnd, image40, "image40");
   GLADE_HOOKUP_OBJECT (main_wnd, label7, "label7");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem8, "toolitem8");
   GLADE_HOOKUP_OBJECT (main_wnd, button6, "button6");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment8, "alignment8");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox8, "hbox8");
   GLADE_HOOKUP_OBJECT (main_wnd, image41, "image41");
   GLADE_HOOKUP_OBJECT (main_wnd, label8, "label8");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem9, "toolitem9");
   GLADE_HOOKUP_OBJECT (main_wnd, vseparator3, "vseparator3");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem10, "toolitem10");
   GLADE_HOOKUP_OBJECT (main_wnd, button7, "button7");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment9, "alignment9");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox9, "hbox9");
   GLADE_HOOKUP_OBJECT (main_wnd, image42, "image42");
   GLADE_HOOKUP_OBJECT (main_wnd, label9, "label9");
+  GLADE_HOOKUP_OBJECT (main_wnd, toolitem11, "toolitem11");
   GLADE_HOOKUP_OBJECT (main_wnd, button8, "button8");
   GLADE_HOOKUP_OBJECT (main_wnd, alignment10, "alignment10");
   GLADE_HOOKUP_OBJECT (main_wnd, hbox10, "hbox10");

@@ -257,7 +257,7 @@ int conf_read(const char *name)
 	return 0;
 }
 
-int conf_write(const char *name)
+int conf_write()
 {
 	FILE *out = NULL;
 	struct symbol *sym;
@@ -324,20 +324,7 @@ int conf_write(const char *name)
 						sym_calc_value_ext(fn_sym, 1);
 		
 						dirname[0] = 0;
-						if (name && name[0]) {
-							char *slash = strrchr(name, '/'); /* the path is always '/' delimited */
-							if (slash) {
-								int size = slash - name + 1;
-								memcpy(dirname, name, size);
-								dirname[size] = 0;
-								if (slash[1])
-									basename = slash + 1;
-								else
-									basename = sym_get_string_value(fn_sym);
-							} else
-								basename = name;
-						} else
-							basename = sym_get_string_value(fn_sym);
+						basename = sym_get_string_value(fn_sym);
 					
 						if (! dirname[0]) {
 							SNPRINTF(key, 250, "%s_CONF_DEF_DIR", prefix);

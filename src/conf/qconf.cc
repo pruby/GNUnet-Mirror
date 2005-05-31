@@ -1053,18 +1053,11 @@ void ConfigMainWindow::loadConfig(void)
 
 void ConfigMainWindow::saveConfig(void)
 {
-	if (conf_write(NULL))
+	if (conf_write())
 		QMessageBox::information(this, "qconf", "Unable to save configuration!");
 }
 
-void ConfigMainWindow::saveConfigAs(void)
-{
-	QString s = QFileDialog::getSaveFileName("/etc/GNUnet/.config", NULL, this);
-	if (s.isNull())
-		return;
-	if (conf_write(s.latin1()))
-		QMessageBox::information(this, "qconf", "Unable to save configuration!");
-}
+/* void ConfigMainWindow::saveConfigAs(void) deleted */
 
 void ConfigMainWindow::changeMenu(struct menu *menu)
 {
@@ -1206,7 +1199,7 @@ void ConfigMainWindow::closeEvent(QCloseEvent* e)
 	mb.setButtonText(QMessageBox::Cancel, "Cancel Exit");
 	switch (mb.exec()) {
 	case QMessageBox::Yes:
-		conf_write(NULL);
+		conf_write();
 	case QMessageBox::No:
 		e->accept();
 		break;

@@ -465,7 +465,7 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	while(true) {
-		if (conf_write(NULL) != 0) {
+		if (conf_write() != 0) {
 			ret = dialog_yesno(_("GNUnet configuration"),
 							_("Cannot save configuration.\n\nTry again?"), rows, cols - 5);
 		}

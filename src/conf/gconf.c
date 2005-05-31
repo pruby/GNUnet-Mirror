@@ -733,44 +733,10 @@ void on_load1_activate(GtkMenuItem * menuitem, gpointer user_data)
 
 void on_save1_activate(GtkMenuItem * menuitem, gpointer user_data)
 {
-  if (conf_write(NULL))
+  if (conf_write())
     text_insert_msg("Error", "Unable to save configuration!");
 
   config_changed = FALSE;
-}
-
-
-static void
-store_filename(GtkFileSelection * file_selector, gpointer user_data)
-{
-  const gchar *fn;
-
-  fn = gtk_file_selection_get_filename(GTK_FILE_SELECTION
-               (user_data));
-
-  if (conf_write(fn))
-    text_insert_msg("Error", "Unable to save configuration!");
-
-  gtk_widget_destroy(GTK_WIDGET(user_data));
-}
-
-void on_save_as1_activate(GtkMenuItem * menuitem, gpointer user_data)
-{
-  GtkWidget *fs;
-
-  fs = gtk_file_selection_new("Save file as...");
-  g_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(fs)->ok_button),
-       "clicked",
-       G_CALLBACK(store_filename), (gpointer) fs);
-  g_signal_connect_swapped(GTK_OBJECT
-         (GTK_FILE_SELECTION(fs)->ok_button),
-         "clicked", G_CALLBACK(gtk_widget_destroy),
-         (gpointer) fs);
-  g_signal_connect_swapped(GTK_OBJECT
-         (GTK_FILE_SELECTION(fs)->cancel_button),
-         "clicked", G_CALLBACK(gtk_widget_destroy),
-         (gpointer) fs);
-  gtk_widget_show(fs);
 }
 
 

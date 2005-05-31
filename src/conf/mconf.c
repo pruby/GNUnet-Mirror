@@ -96,20 +96,6 @@ load_config_help[] =
 	"\n"
 	"If you are uncertain, then you have probably never used alternate\n"
 	"configuration files.  You should therefor leave this blank to abort.\n",
-save_config_text[] =
-	"Enter a filename to which this configuration should be saved "
-	"as an alternate.  Leave blank to abort.",
-save_config_help[] =
-	"\n"
-	"For various reasons, one may wish to keep different\n"
-	"configurations available on a single machine.\n"
-	"\n"
-	"Entering a file name here will allow you to later retrieve, modify\n"
-	"and use the current configuration as an alternate to whatever\n"
-	"configuration options you have selected at that time.\n"
-	"\n"
-	"If you are uncertain what all this means then you should probably\n"
-	"leave this blank.\n",
 readme_text[] =
 	"Overview\n"
 	"--------\n"
@@ -269,7 +255,6 @@ static void conf(struct menu *menu);
 static void conf_choice(struct menu *menu);
 static void conf_string(struct menu *menu);
 static void conf_load(void);
-static void conf_save(void);
 static void show_help(struct menu *menu);
 static void show_readme(void);
 
@@ -554,7 +539,6 @@ static void conf(struct menu *menu)
 		if (menu == &rootmenu) {
 			cmake(); cset_tag(':', NULL); cprint_name("--- ");
 			cmake(); cset_tag('L', NULL); cprint_name("Load an Altenatie Configuration File");
-			cmake(); cset_tag('S', NULL); cprint_name("Save Configuration to an Alternate File");
 		}
 		dialog_clear();
 		/* active_item itself can change after any creset() +
@@ -608,9 +592,6 @@ static void conf(struct menu *menu)
 				break;
 			case 'L':
 				conf_load();
-				break;
-			case 'S':
-				conf_save();
 				break;
 			}
 			break;
@@ -780,27 +761,6 @@ static void conf_load(void)
 			break;
 		case 1:
 			show_helptext("Load Alternate Configuration", load_config_help);
-			break;
-		case 255:
-			return;
-		}
-	}
-}
-
-static void conf_save(void)
-{
-	while (1) {
-		switch(dialog_inputbox(NULL, save_config_text, 11, 55,
-					filename)) {
-		case 0:
-			if (!dialog_input_result[0])
-				return;
-			if (!conf_write(dialog_input_result))
-				return;
-			show_textbox(NULL, "Can't create file!  Probably a nonexistent directory.", 5, 60);
-			break;
-		case 1:
-			show_helptext("Save Alternate Configuration", save_config_help);
 			break;
 		case 255:
 			return;
