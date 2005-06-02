@@ -463,7 +463,6 @@ void errexit(const char *format, ...) {
     VFPRINTF(stderr, format, args);
     va_end(args);
   }
-  BREAK();
   abort();
   exit(-1); /* just in case... */
 }

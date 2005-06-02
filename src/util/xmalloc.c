@@ -151,7 +151,8 @@ void * xrealloc_(void * ptr,
 void xfree_(void * ptr,
 	    const char * filename,
 	    const int linenumber) {
-  GNUNET_ASSERT_FL(filename, linenumber, ptr != NULL);
+  GNUNET_ASSERT_FL(ptr != NULL,
+		   filename, linenumber);
 #if DEBUG_MALLOC
   MUTEX_LOCK(&lock);
   printf("%p free %s:%d\n",
@@ -177,7 +178,7 @@ char * xstrdup_(const char * str,
 		const int linenumber) {
   char * res;
 
-  GNUNET_ASSERT_FL(filename, linenumber, str != NULL);
+  GNUNET_ASSERT_FL(str != NULL, filename, linenumber);
   res = (char*)xmalloc_(strlen(str)+1,
 		         filename,
 		         linenumber);
@@ -201,7 +202,7 @@ char * xstrndup_(const char * str,
   char * res;
   size_t min;
 
-  GNUNET_ASSERT_FL(filename, linenumber, str != NULL);
+  GNUNET_ASSERT_FL(str != NULL, filename, linenumber);
   min = 0;
   while ( (min < n) && (str[min] != '\0'))
     min++;
@@ -235,7 +236,8 @@ void xgrow_(void ** old,
   void * tmp;
   size_t size;
 
-  GNUNET_ASSERT_FL(filename, linenumber, INT_MAX / elementSize > newCount);
+  GNUNET_ASSERT_FL(INT_MAX / elementSize > newCount,
+		   filename, linenumber);
   size = newCount * elementSize;
   if (size == 0) {
     tmp = NULL;

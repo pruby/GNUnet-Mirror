@@ -140,6 +140,7 @@ static int createIOContext(IOContext * this,
   char * fn;
   struct stat st;
 
+  GNUNET_ASSERT(filename != NULL);
   this->treedepth = computeDepth(filesize);
   MUTEX_CREATE(&this->lock);
   this->handles = MALLOC(sizeof(int) * (this->treedepth+1));
@@ -1146,6 +1147,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   NodeClosure * top;
   FileIdentifier fid;
 
+  GNUNET_ASSERT(filename != NULL);
   fid = uri->data.chk;
   if (! ECRS_isFileUri(uri))
     return SYSERR;

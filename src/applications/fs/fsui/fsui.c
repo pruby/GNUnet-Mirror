@@ -89,6 +89,11 @@ static FSUI_DownloadList * readDownloadList(int fd,
   READINT(ret->is_directory);
   READINT(ret->anonymityLevel);
   READINT(ret->completedDownloadsCount);
+  READINT(big);
+  ret->filename = MALLOC(big+1);
+  if (big != READ(fd, ret->filename, big))
+    goto ERROR;
+  ret->filename[big] = '\0';
   READLONG(ret->total);
   READLONG(ret->completed);
   READLONG(ret->startTime);
@@ -111,7 +116,8 @@ static FSUI_DownloadList * readDownloadList(int fd,
   
   ret->next = readDownloadList(fd,
 			       ctx);
-  ret->next->parent = ret;
+  if (ret->next != NULL)
+    ret->next->parent = ret;
   ret->subDownloads = readDownloadList(fd,
 				       ctx);
   ret->subDownloadsNext = readDownloadList(fd,
@@ -176,6 +182,10 @@ static void writeDownloadList(int fd,
   WRITEINT(fd, list->is_directory);
   WRITEINT(fd, list->anonymityLevel);
   WRITEINT(fd, list->completedDownloadsCount);
+  WRITEINT(fd, strlen(list->filename));
+  WRITE(fd, 
+	list->filename,
+	strlen(list->filename));
   WRITELONG(fd, list->total);
   WRITELONG(fd, list->completed);
   WRITELONG(fd, cronTime(NULL) - list->startTime);

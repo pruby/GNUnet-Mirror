@@ -458,6 +458,28 @@ unsigned int ECRS_countKeywordsOfUri(const struct ECRS_URI * uri) {
 }
 
 /**
+ * Iterate over all keywords in this keyword URI?
+ * @return -1 if this is not a keyword URI, otherwise number of
+ *   keywords iterated over until iterator aborted
+ */
+int ECRS_getKeywordsFromUri(const struct ECRS_URI * uri,
+			    ECRS_KeywordIterator iterator,
+			    void * cls) {
+  int i;
+  if (uri->type != ksk) {
+    return -1;
+  } else {
+    for (i=0;i<uri->data.ksk.keywordCount;i++) 
+      if (iterator != NULL)
+	if (OK != iterator(uri->data.ksk.keywords[i],
+			   cls))
+	  return i;
+    return i;
+  }
+}
+
+
+/**
  * Is this a file (or directory) URI?
  */
 int ECRS_isFileUri(const struct ECRS_URI * uri) {
@@ -554,6 +576,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
 URI * ECRS_metaDataToUri(const MetaData * md) {
   URI * ret;
   int i;
+  int havePreview;
 
   if (md == NULL)
     return NULL;
@@ -561,11 +584,19 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
   ret->type = ksk;
   ret->data.ksk.keywordCount = 0;
   ret->data.ksk.keywords = NULL;
+  havePreview = 0;
+  for (i=md->itemCount-1;i>=0;i--)
+    if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA)
+      havePreview++;
   GROW(ret->data.ksk.keywords,
        ret->data.ksk.keywordCount,
-       md->itemCount);
-  for (i=0;i<md->itemCount;i++)
-    ret->data.ksk.keywords[i] = STRDUP(md->items[i].data);
+       md->itemCount - havePreview);
+  for (i=md->itemCount-1;i>=0;i--) {
+    if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA) 
+      havePreview--;
+    else
+      ret->data.ksk.keywords[i-havePreview] = STRDUP(md->items[i].data);
+  }
   return ret;
 }
 
@@ -612,6 +643,12 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
   GNUNET_ASSERT(uri2 != NULL);
   u1 = ECRS_uriToString(uri1);
   u2 = ECRS_uriToString(uri2);
+  if ( (u1 == NULL) || (u2 == NULL)) {
+    BREAK();
+    FREENONNULL(u1);
+    FREENONNULL(u2);
+    return NO;
+  }
   ret = strcmp(u1, u2);
   FREE(u1);
   FREE(u2);

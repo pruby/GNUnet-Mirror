@@ -427,7 +427,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
   EXTRACTOR_removeAll(utc->extractors);
   utc->tl->isDone = YES;
   FREE(utc);
-  FREE(inboundFN);
+  FREENONNULL(inboundFN);
   return NULL;
 }
 

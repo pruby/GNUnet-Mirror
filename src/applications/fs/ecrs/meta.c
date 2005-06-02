@@ -29,11 +29,6 @@
 #include "gnunet_ecrs_lib.h"
 #include <zlib.h>
 
-/* for pre LE 0.4.3 */
-#ifndef EXTRACTOR_PUBLICATION_DATE
-#define EXTRACTOR_PUBLICATION_DATE ((EXTRACTOR_KeywordType)71)
-#endif
-
 /**
  * Create a fresh MetaData token.
  */
@@ -746,13 +741,13 @@ char * ECRS_suggestFilename(const char * filename) {
 	  mime);
     mime = mimeMap[i][1];
   }
+  if (key == NULL)
+    key = filename;
   if (mime != NULL) {
     if (0 == strcmp(&key[strlen(key)-strlen(mime)],
 		    mime))
       mime = NULL;
   }
-  if (key == NULL)
-    key = filename;
   if (mime == NULL) {
     renameTo = STRDUP(key);
   } else {

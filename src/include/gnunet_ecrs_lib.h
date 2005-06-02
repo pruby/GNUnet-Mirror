@@ -84,6 +84,13 @@ typedef int (*ECRS_MetaDataIterator)(EXTRACTOR_KeywordType type,
 				     void * closure);
 
 /**
+ * Iterator over keywords
+ * @return OK to continue to iterate, SYSERR to abort
+ */
+typedef int (*ECRS_KeywordIterator)(const char * data,
+				    void * closure);
+
+/**
  * Create a fresh MetaData token.
  */
 struct ECRS_MetaData * ECRS_createMetaData(void);
@@ -253,6 +260,15 @@ void ECRS_freeUri(struct ECRS_URI * uri);
  * @return 0 if this is not a keyword URI
  */
 unsigned int ECRS_countKeywordsOfUri(const struct ECRS_URI * uri);
+
+/**
+ * Iterate over all keywords in this keyword URI?
+ * @return -1 if this is not a keyword URI, otherwise number of
+ *   keywords iterated over until iterator aborted
+ */
+int ECRS_getKeywordsFromUri(const struct ECRS_URI * uri,
+			    ECRS_KeywordIterator iterator,
+			    void * cls);
 
 /**
  * Duplicate URI.

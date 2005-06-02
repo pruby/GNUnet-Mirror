@@ -333,9 +333,9 @@ AC_DEFINE_UNQUOTED([HAVE_CURSES], $curses, [We have curses])
 AM_CONDITIONAL(HAVE_CURSES, test x$curses = x1)
 AM_CONDITIONAL(HAVE_PDCURSES, test x$pdcurses = x1)
 
-# check for gtk >= 2.4.0
+# check for gtk >= 2.6.0
 AC_MSG_CHECKING(for gtk)
-AM_PATH_GTK_2_0(2.4.0,without_gtk=false,without_gtk=true)
+AM_PATH_GTK_2_0(2.6.0,without_gtk=false,without_gtk=true)
 AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
 if test $without_gtk != true
 then

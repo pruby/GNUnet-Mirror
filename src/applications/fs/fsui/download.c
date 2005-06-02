@@ -179,6 +179,7 @@ void * downloadThread(FSUI_DownloadList * dl) {
   while (root->parent != NULL)
     root = root->parent;
 
+  GNUNET_ASSERT(dl->filename != NULL);
   totalBytes = ECRS_fileSize(dl->uri);
   ret = ECRS_downloadFile(dl->uri,
 			  dl->filename,
@@ -346,6 +347,7 @@ int FSUI_startDownload(struct FSUI_Context * ctx,
 		       unsigned int anonymityLevel,			
 		       const struct ECRS_URI * uri,
 		       const char * filename) {
+  GNUNET_ASSERT(filename != NULL);
   return startDownload(ctx,
 		       anonymityLevel,
 		       uri,
@@ -364,6 +366,9 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
 		      const char * filename) {
   FSUI_DownloadList * dl;
 
+  /* FIXME: check that filename matches
+     aborted download! */
+  GNUNET_ASSERT(filename != NULL);
   MUTEX_LOCK(&ctx->lock);
   dl = ctx->activeDownloads;
   while (dl != NULL) {
@@ -424,6 +429,7 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
 			  unsigned int anonymityLevel,			
 			  const struct ECRS_URI * uri,
 			  const char * dirname) {
+  GNUNET_ASSERT(dirname != NULL);
   return startDownload(ctx,
 		       anonymityLevel,
 		       uri,
@@ -447,6 +453,7 @@ static int stopDownloadAll(struct FSUI_Context * ctx,
   FSUI_DownloadList * dl;
   int i;
 
+  GNUNET_ASSERT(dirname != NULL);
   dl = ctx->activeDownloads;
   while (dl != NULL) {
     if ( (0 == strcmp(dirname,
@@ -476,6 +483,7 @@ int FSUI_stopDownloadAll(struct FSUI_Context * ctx,
 			 const char * dirname) {
   int ret;
 
+  GNUNET_ASSERT(dirname != NULL);
   MUTEX_LOCK(&ctx->lock);
   ret = stopDownloadAll(ctx, uri, dirname);
   MUTEX_UNLOCK(&ctx->lock);
