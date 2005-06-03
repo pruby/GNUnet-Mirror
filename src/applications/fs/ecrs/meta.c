@@ -324,13 +324,14 @@ static unsigned int tryCompression(char * data,
   tmp = MALLOC(oldSize);
   dlen = oldSize;
   if (Z_OK == compress(tmp, &dlen, data, oldSize)) {
-    memcpy(data, tmp, dlen);
-    FREE(tmp);
-    return dlen;
-  } else {
-    FREE(tmp);
-    return oldSize;
+    if (dlen < oldSize) {
+      memcpy(data, tmp, dlen);
+      FREE(tmp);
+      return dlen;
+    }
   }
+  FREE(tmp);
+  return oldSize;  
 }
 
 /**
@@ -444,6 +445,7 @@ int ECRS_serializeMetaData(const MetaData * md,
 	     len);
       pos += len;
     }
+
     hdr->size = htonl(size);
     pos = tryCompression((char*)&hdr[1],
 			 size - sizeof(MetaDataHeader));
@@ -459,10 +461,9 @@ int ECRS_serializeMetaData(const MetaData * md,
     if (! part) {
       return SYSERR; /* does not fit! */
     }
-
     /* partial serialization ok, try again with less meta-data */
     if (size > 2 * max)
-      ic = ic * 2 / 3; /* stil far too big, make big reductions */
+      ic = ic * 2 / 3; /* still far too big, make big reductions */
     else
       ic--; /* small steps, we're close */
   }
@@ -473,12 +474,12 @@ int ECRS_serializeMetaData(const MetaData * md,
   /* extra check: deserialize! */
 #if EXTRA_CHECKS
   {
-    MetaData * md;
-    md = NULL;
-    GNUNET_ASSERT(OK == ECRS_deserializeMetaData(&md,
+    MetaData * mdx;
+    mdx = NULL;
+    GNUNET_ASSERT(OK == ECRS_deserializeMetaData(&mdx,
 						 target,
 						 size));
-    ECRS_freeMetaData(md);
+    ECRS_freeMetaData(mdx);
   }
 #endif
   return size;
@@ -526,6 +527,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
     size = pos + sizeof(MetaDataHeader);
 
   FREE(hdr);
+
   return size;
 }
 
@@ -582,7 +584,8 @@ int ECRS_deserializeMetaData(MetaData ** md,
     BREAK();
     goto FAILURE;
   }
-  if (data[dataSize-1] != '\0') {
+  if ( (ic > 0)
+       && (data[dataSize-1] != '\0') ) {
     BREAK();
     goto FAILURE;
   }
