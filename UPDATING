@@ -8,6 +8,13 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+
+0.7.0pre1 and 0.7.0pre2 to 0.7.0pre3
+====================================
+
+Interesting.  You got those to RUN!?
+
+
 before 0.7.0pre1 to 0.7.0pre1
 =============================
 

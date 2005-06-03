@@ -69,7 +69,7 @@ gnunetd at boot time (if that is desired).
 For file sharing GNUnet needs to store data in a database. We
 currently support MySQL and SQLite.
 
-libextractor >= 0.4.2 is required
+libextractor >= 0.5.0 is required
 autoconf >= 2.59 is  recommended for compiling the SVN version.
 automake >= 1.9.4 is recommended for compiling the SVN version.
 libtool >= 1.5.8 is  recommended for compiling the SVN version.
