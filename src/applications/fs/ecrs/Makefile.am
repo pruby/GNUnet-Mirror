@@ -29,6 +29,7 @@ check_PROGRAMS = \
   namespacetest \
   uritest \
   metatest \
+  metatest2 \
   searchtest \
   directorytest \
   ecrstest 
@@ -49,6 +50,12 @@ metatest_SOURCES = \
   metatest.c 
 metatest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
+
+metatest2_SOURCES = \
+  metatest2.c 
+metatest2_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la 
+
 
 ecrstest_SOURCES = \
   ecrstest.c
