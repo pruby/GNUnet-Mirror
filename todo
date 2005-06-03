@@ -1,5 +1,11 @@
 0.7.0pre3:
-- gnunet-gtk (see todo list there)
+- FSUI: 
+  * do NOT use libextractor with
+    FSUI_upload (full control should be with client!)
+- ECRS:
+  * fix bug in meta-data serialization (found existence by
+    inserting doodle SVN directory recursively with gnunet-gtk)
+- gnunet-gtk (debug a bit, add preview encoding for upload)
 - gnunet-setup:
    curses wizard?  [ Nils ];
    template path adjustment for non gconf setup [ Nils ]

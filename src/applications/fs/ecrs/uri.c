@@ -576,7 +576,9 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
 URI * ECRS_metaDataToUri(const MetaData * md) {
   URI * ret;
   int i;
+  int j;
   int havePreview;
+  int add;
 
   if (md == NULL)
     return NULL;
@@ -585,17 +587,39 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
   ret->data.ksk.keywordCount = 0;
   ret->data.ksk.keywords = NULL;
   havePreview = 0;
-  for (i=md->itemCount-1;i>=0;i--)
-    if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA)
+  for (i=md->itemCount-1;i>=0;i--) {
+    if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA) {
       havePreview++;
+    } else {
+      for (j=md->itemCount-1;j>i;j--) {
+	if (0 == strcmp(md->items[i].data,
+			md->items[j].data)) {
+	  havePreview++; /* duplicate! */
+	  break;
+	}
+      }      
+    }
+  }
   GROW(ret->data.ksk.keywords,
        ret->data.ksk.keywordCount,
        md->itemCount - havePreview);
   for (i=md->itemCount-1;i>=0;i--) {
-    if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA) 
+    if (md->items[i].type == EXTRACTOR_THUMBNAIL_DATA) {
       havePreview--;
-    else
-      ret->data.ksk.keywords[i-havePreview] = STRDUP(md->items[i].data);
+    } else {
+      add = 1;
+      for (j=md->itemCount-1;j>i;j--) {
+	if (0 == strcmp(md->items[i].data,
+			md->items[j].data)) {
+	  havePreview--;
+	  add = 0;
+	}
+      }
+      if (add == 1) {
+	ret->data.ksk.keywords[i-havePreview] 
+	  = STRDUP(md->items[i].data);
+      }
+    }
   }
   return ret;
 }

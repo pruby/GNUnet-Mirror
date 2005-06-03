@@ -112,6 +112,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
   int handle;
   DirTrack backup;
 
+  GNUNET_ASSERT(utc->filename != NULL);
   backup = utc->dir;
   memset(&utc->dir, 0, sizeof(DirTrack));
 
@@ -300,6 +301,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
   int ret;
   char * inboundFN;
 
+  GNUNET_ASSERT(utc->main_filename != NULL);
   inboundFN
     = ECRS_getFromMetaData(utc->meta,
 			   EXTRACTOR_FILENAME);
@@ -346,7 +348,8 @@ static void * uploadThread(UploadThreadClosure * utc) {
 			 utc->extractors);
     utc->filename = NULL;
   } else if (utc->isRecursive) {
-    scanDirectory(utc->filename,
+    utc->filename = utc->main_filename;
+    scanDirectory(utc->main_filename,
 		  (DirectoryEntryCallback)&dirEntryCallback,
 		  utc);
     ret = uploadDirectory(utc,
@@ -365,6 +368,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
       event.type = upload_error;
       event.data.message = _("Upload failed.\n");
     }
+    utc->filename = NULL;
   } else {
     event.type = upload_error;
     event.data.message = _("Cannot upload directory without using recursion.\n");
