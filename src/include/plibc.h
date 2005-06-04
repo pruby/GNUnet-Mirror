@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 
 #ifndef _PLIBC_H_
@@ -48,6 +48,7 @@ extern "C" {
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <errno.h>
 
 #define __BYTE_ORDER BYTE_ORDER
 #define __BIG_ENDIAN BIG_ENDIAN
@@ -111,18 +112,21 @@ extern "C" {
 #define EUNATCH 42	/* Protocol driver not attached */
 #define ENOCSI 43	/* No CSI structure available */
 #define EL2HLT 44	/* Level 2 halted */
-#undef  EDEADLK
-#define EDEADLK 45	/* Deadlock condition */
-#undef  ENOLCK
-#define ENOLCK 46	/* No record locks available */
+#ifndef  EDEADLK
+	#define EDEADLK 45	/* Deadlock condition */
+#endif
+#ifndef  ENOLCK
+	#define ENOLCK 46	/* No record locks available */
+#endif
 #define EBADE 50	/* Invalid exchange */
 #define EBADR 51	/* Invalid request descriptor */
 #define EXFULL 52	/* Exchange full */
 #define ENOANO 53	/* No anode */
 #define EBADRQC 54	/* Invalid request code */
 #define EBADSLT 55	/* Invalid slot */
-#undef  EDEADLOCK
-#define EDEADLOCK 56	/* File locking deadlock error */
+#ifndef  EDEADLOCK
+	#define EDEADLOCK 56	/* File locking deadlock error */
+#endif
 #define EBFONT 57	/* Bad font file fmt */
 #define ENOSTR 60	/* Device not a stream */
 #define ENODATA 61	/* No data (for no delay io) */
@@ -148,13 +152,16 @@ extern "C" {
 #define ELIBSCN 85	/* .lib section in a.out corrupted */
 #define ELIBMAX 86	/* Attempting to link in too many libs */
 #define ELIBEXEC 87	/* Attempting to exec a shared library */
-#undef  ENOSYS
-#define ENOSYS 88	/* Function not implemented */
+#ifndef  ENOSYS
+	#define ENOSYS 88	/* Function not implemented */
+#endif
 #define ENMFILE 89      /* No more files */
-#undef  ENOTEMPTY
-#define ENOTEMPTY 90	/* Directory not empty */
-#undef  ENAMETOOLONG
-#define ENAMETOOLONG 91	/* File or path name too long */
+#ifndef  ENOTEMPTY
+	#define ENOTEMPTY 90	/* Directory not empty */
+#endif
+#ifndef  ENAMETOOLONG
+	#define ENAMETOOLONG 91	/* File or path name too long */
+#endif
 #define ELOOP 92	/* Too many symbolic links */
 #define EOPNOTSUPP 95	/* Operation not supported on transport endpoint */
 #define EPFNOSUPPORT 96 /* Protocol family not supported */
@@ -170,8 +177,9 @@ extern "C" {
 #define ECONNABORTED 113	/* Connection aborted */
 #define ENETUNREACH 114		/* Network is unreachable */
 #define ENETDOWN 115		/* Network interface is not configured */
-#undef  ETIMEDOUT
-#define ETIMEDOUT 116		/* Connection timed out */
+#ifndef  ETIMEDOUT
+	#define ETIMEDOUT 116		/* Connection timed out */
+#endif
 #define EHOSTDOWN 117		/* Host is down */
 #define EHOSTUNREACH 118	/* Host is unreachable */
 #define EINPROGRESS 119		/* Connection already in progress */
@@ -189,8 +197,9 @@ extern "C" {
 #define EUSERS 131			/* Too many users */
 #define EDQUOT 132			/* Disk quota exceeded */
 #define ESTALE 133          /* Unknown error */
-#undef  ENOTSUP
-#define ENOTSUP 134		    /* Not supported */
+#ifndef  ENOTSUP
+	#define ENOTSUP 134		    /* Not supported */
+#endif
 #define ENOMEDIUM 135       /* No medium (in tape drive) */
 #define ENOSHARE 136        /* No such host or network path */
 #define ECASECLASH 137      /* Filename exists with different case */
@@ -338,7 +347,7 @@ char *strptime (const char *buf, const char *format, struct tm *tm);
 char *ctime(const time_t *clock);
 char *ctime_r(const time_t *clock, char *buf);
 int plibc_init(char *pszOrg, char *pszApp);
-void plibc_shutdown(void);
+void plibc_shutdown();
 int plibc_conv_to_win_path_ex(const char *pszUnix, char *pszWindows, int derefLinks);
 void _SetErrnoFromWinError(long lWinError, char *pszCaller, int iLine);
 void SetErrnoFromWinsockError(long lWinError);
@@ -412,7 +421,7 @@ SOCKET _win_socket(int af, int type, int protocol);
 struct hostent *_win_gethostbyaddr(const char *addr, int len, int type);
 struct hostent *_win_gethostbyname(const char *name);
 char *_win_strerror(int errnum);
-int IsWinNT(void);
+int IsWinNT();
 
 #if !HAVE_STRNDUP
 char *strndup (const char *s, size_t n);

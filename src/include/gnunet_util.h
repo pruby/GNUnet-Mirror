@@ -32,6 +32,13 @@
 #ifndef GNUNET_UTIL_H
 #define GNUNET_UTIL_H
 
+#ifdef MINGW
+  #include <windows.h>
+  #include <iphlpapi.h>
+  #include <Ntsecapi.h>
+  #include <lm.h>
+#endif
+
 /* we need size_t, and since it can be both unsigned int
    or unsigned long long, this IS platform dependent;
    but "stdlib.h" should be portable 'enough' to be
