@@ -30,12 +30,12 @@
 
 #define READINT(a) \
   if (sizeof(int) != READ(fd, &big, sizeof(int))) \
-    goto ERROR;					  \
+    goto ERR;					  \
   else \
     a = ntohl(big)
 #define READLONG(a) \
   if (sizeof(long long) != READ(fd, &bigl, sizeof(long long))) \
-    goto ERROR;						       \
+    goto ERR;						       \
   else \
     a = ntohll(big)
 
@@ -57,7 +57,7 @@ static struct ECRS_URI * readURI(int fd) {
   ret = ECRS_stringToUri(buf);
   FREE(buf);
   return ret;
- ERROR:
+ ERR:
   return NULL;
 }
 
@@ -92,7 +92,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   READINT(big);
   ret->filename = MALLOC(big+1);
   if (big != READ(fd, ret->filename, big))
-    goto ERROR;
+    goto ERR;
   ret->filename[big] = '\0';
   READLONG(ret->total);
   READLONG(ret->completed);
@@ -130,7 +130,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
 			  16 * 1024))
     DIE_STRERROR("pthread_create");
   return ret;
- ERROR:
+ ERR:
   FREE(ret);
   return NULL;
 }
