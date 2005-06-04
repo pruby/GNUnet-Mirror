@@ -503,8 +503,6 @@ int FSUI_unindex(struct FSUI_Context * ctx,
  * main directory will furthermore be published with the given keywords
  * and the specified directoryMetaData.
  *
- * @param keywordCount number of keywords
- * @param keywords keywords to use ONLY for the top-level directory
  * @return OK on success (at least we started with it),
  *  SYSERR if the file does not exist
 */
