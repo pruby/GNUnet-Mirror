@@ -353,7 +353,6 @@ int fileopen(const char *filename, int oflag, ...)
   oflag |= O_BINARY;
 #endif
 
-LOG(LOG_DEBUG, "DBG: open(%s, %i, %i)\n", fn, oflag, mode);
   return open(fn, oflag, mode);
 }
 
