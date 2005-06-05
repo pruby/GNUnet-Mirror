@@ -52,7 +52,7 @@ int fileBlockEncode(const DBlock * data,
   Datastore_Value * val;
   DBlock * db;
 
-  GNUNET_ASSERT(len > sizeof(DBlock));
+  GNUNET_ASSERT(len >= sizeof(DBlock));
   GNUNET_ASSERT((data!=NULL) && (query != NULL));
   hash(&data[1], len - sizeof(DBlock), &hc);
   hashToKey(&hc,

@@ -645,6 +645,7 @@ int main(int argc, char ** argv) {
 		      getConfigurationInt("FS",
 					  "ANONYMITY-SEND"),
 		      doIndex,
+		      YES,
 		      meta,
 		      topURI);
     ECRS_freeUri(topURI);

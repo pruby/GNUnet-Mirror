@@ -270,10 +270,14 @@ int ECRS_uploadFile(const char * filename,
 			     pos))
 	goto FAILURE;
     } else {
-      fileBlockEncode(db,
-		      size,
-		      &chk.query,
-		      &value);
+      value = NULL;
+      if (OK !=
+	  fileBlockEncode(db,
+			  size + sizeof(DBlock),
+			  &chk.query,
+			  &value))
+	goto FAILURE;
+      GNUNET_ASSERT(value != NULL);
       *value = *dblock; /* copy options! */
       if (SYSERR == FS_insert(sock,
 			      value)) {

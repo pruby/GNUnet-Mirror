@@ -12,6 +12,10 @@
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing!
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
+  * cache kblock-public/private keys 
+    (terribly important, performance sucks already, but
+     without caching it'll be unbearable, espeically for
+     insertion of zip files with hundreds of files/keywords!)
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy

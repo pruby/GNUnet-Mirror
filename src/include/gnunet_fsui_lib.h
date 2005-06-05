@@ -479,6 +479,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
 		const char * filename,
 		unsigned int anonymityLevel,
 		int doIndex,
+		int doExtract,
 		const struct ECRS_MetaData * md,
 		const struct ECRS_URI * keyUri);
 

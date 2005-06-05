@@ -449,6 +449,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
 		const char * filename,
 		unsigned int anonymityLevel,
 		int doIndex,
+		int doExtract,
 		const struct ECRS_MetaData * md,
 		const struct ECRS_URI * keyUri) {
   FSUI_ThreadList * tl;
@@ -462,14 +463,17 @@ int FSUI_upload(struct FSUI_Context * ctx,
   utc->expiration = cronTime(NULL) + 120 * cronYEARS;
   utc->ctx = ctx;
   utc->isRecursive = NO;
-  utc->extractors = EXTRACTOR_loadDefaultLibraries();
-  config = getConfigurationString("FS",
-				  "EXTRACTORS");
-  if (config != NULL) {
-    utc->extractors = EXTRACTOR_loadConfigLibraries(utc->extractors,
-						    config);
-    FREE(config);
-  }
+  if (doExtract) {
+    utc->extractors = EXTRACTOR_loadDefaultLibraries();
+    config = getConfigurationString("FS",
+				    "EXTRACTORS");
+    if (config != NULL) {
+      utc->extractors = EXTRACTOR_loadConfigLibraries(utc->extractors,
+						      config);
+      FREE(config);
+    }
+  } else
+    utc->extractors = NULL;
   utc->globalUri = NULL;
   utc->filename = NULL;
   utc->main_filename = STRDUP(filename);
