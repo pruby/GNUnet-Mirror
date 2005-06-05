@@ -176,6 +176,7 @@ int ECRS_uploadFile(const char * filename,
   if (doIndex) {
     if (SYSERR == getFileHash(filename,
 			      &fileId)) {
+			LOG(LOG_ERROR, _("Cannot hash '%s'.\n"), filename);
       releaseClientSocket(sock);
       return SYSERR;
     }
@@ -201,8 +202,10 @@ int ECRS_uploadFile(const char * filename,
     return SYSERR;
   }
 
-  if (FS_initIndex(sock, &fileId, filename) == SYSERR)
+  if (FS_initIndex(sock, &fileId, filename) == SYSERR) {
+  	LOG(LOG_ERROR, "'%s' failed.\n", _("Initialization"));
     return SYSERR;
+  }
 
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->size = htonl(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
@@ -267,8 +270,10 @@ int ECRS_uploadFile(const char * filename,
       if (SYSERR == FS_index(sock,
 			     &fileId,
 			     dblock,
-			     pos))
-	goto FAILURE;
+			     pos)) {
+				LOG(LOG_ERROR, _("Indexing data failed at position %i.\n"), pos);
+				goto FAILURE;
+			}
     } else {
       value = NULL;
       if (OK !=

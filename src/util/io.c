@@ -350,9 +350,10 @@ int fileopen(const char *filename, int oflag, ...)
 
 #ifdef MINGW
   /* Set binary mode */
-  mode |= O_BINARY;
+  oflag |= O_BINARY;
 #endif
 
+LOG(LOG_DEBUG, "DBG: open(%s, %i, %i)\n", fn, oflag, mode);
   return open(fn, oflag, mode);
 }
 

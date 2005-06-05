@@ -335,8 +335,10 @@ int getFileHash(const char * filename,
 	    O_RDONLY
 #endif
 	    );
-  if (fh == -1)
+  if (fh == -1) {
+		LOG(LOG_ERROR, "Cannot open file\n");
     return SYSERR;
+  }
   sha512_init(&ctx);
   pos = 0;
   buf = MALLOC(65536);
@@ -348,6 +350,7 @@ int getFileHash(const char * filename,
     if (delta != READ(fh,
 		      buf,
 		      delta)) {
+		  LOG(LOG_ERROR, "Error reading from file at position %i\n", pos);
       closefile(fh);
       FREE(buf);
       return SYSERR;
