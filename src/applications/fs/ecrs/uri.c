@@ -97,7 +97,7 @@ static char * createKeywordURI(char ** keywords,
   char * ret;
   unsigned int i;
 
-  n = keywordCount + strlen(ECRS_URI_PREFIX) + strlen(ECRS_SEARCH_INFIX);
+  n = keywordCount + strlen(ECRS_URI_PREFIX) + strlen(ECRS_SEARCH_INFIX) + 1;
   for (i=0;i<keywordCount;i++)
     n += strlen(keywords[i]);
   ret = MALLOC(n);
