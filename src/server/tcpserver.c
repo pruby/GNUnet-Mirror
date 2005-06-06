@@ -745,7 +745,8 @@ int stopTCPServer() {
     SEMAPHORE_DOWN(serverSignal);
     SEMAPHORE_FREE(serverSignal);
     serverSignal = NULL;
-    PTHREAD_JOIN(&TCPLISTENER_listener_, &unused);
+    PTHREAD_JOIN(&TCPLISTENER_listener_,
+		 &unused);
     return OK;
   } else {
     if (testConfigurationString("TCPSERVER",

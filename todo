@@ -1,8 +1,5 @@
 0.7.0pre3:
-- FSUI: 
-  * do NOT use libextractor with
-    FSUI_upload (full control should be with client!)
-- gnunet-gtk (debug a bit, add preview encoding for upload)
+- gnunet-gtk (debug)
 - gnunet-setup:
    curses wizard?  [ Nils ];
    template path adjustment for non gconf setup [ Nils ]
