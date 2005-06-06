@@ -439,7 +439,7 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
 
   hx = *hc;
   generate_kblock_key(&sk,
-		      2048,
+		      1024, //2048,
 		      &hx);
   pkv[0] = &sk.n;
   pkv[1] = &sk.e;

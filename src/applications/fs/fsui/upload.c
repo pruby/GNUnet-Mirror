@@ -486,7 +486,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   if (0 != PTHREAD_CREATE(&tl->handle,
 			  (PThreadMain) &uploadThread,
 			  utc,
-			  16 * 1024)) {
+			  32 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
     FREE(tl);
     FREE(utc->main_filename);

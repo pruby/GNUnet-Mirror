@@ -74,6 +74,7 @@ int initGNUnetClientSocket(unsigned short port,
 			   GNUNET_TCP_SOCKET * result) {
   struct hostent * he;
 
+  GNUNET_ASSERT(hostname != NULL);
 #if DEBUG_TCPIO
   LOG(LOG_DEBUG,
       "Connecting to host '%s:%d'.\n",
