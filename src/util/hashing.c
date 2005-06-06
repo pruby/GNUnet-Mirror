@@ -336,7 +336,7 @@ int getFileHash(const char * filename,
 #endif
 	    );
   if (fh == -1) {
-		LOG(LOG_ERROR, "Cannot open file\n");
+    LOG_FILE_STRERROR(LOG_EVERYTHING, "open", filename);
     return SYSERR;
   }
   sha512_init(&ctx);
