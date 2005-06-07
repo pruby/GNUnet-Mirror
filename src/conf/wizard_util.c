@@ -290,7 +290,7 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 									"esac\n"
 				      "exit 0\n", f);
 					fclose(f);
-					chmod("/etc/init.d/gnunetd", S_IRWXU | S_IRGRP | S_IXGRP |
+					CHMOD("/etc/init.d/gnunetd", S_IRWXU | S_IRGRP | S_IXGRP |
 						S_IROTH | S_IXOTH);
 			}
 			system("/usr/sbin/update-rc.d gnunetd defaults");

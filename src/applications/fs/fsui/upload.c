@@ -145,7 +145,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
     handle = mkstemp(tempName);
     if (handle == -1) {
       LOG_FILE_STRERROR(LOG_ERROR, tempName, "mkstemp");
-    } else if (len != write(handle,
+    } else if (len != WRITE(handle,
 			    data,
 			    len)) {
       LOG_FILE_STRERROR(LOG_ERROR, tempName, "write");

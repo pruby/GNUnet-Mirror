@@ -391,7 +391,7 @@ static int server_main(pid_t bash_pid) {
     FD_ZERO(&wset);
     FD_ZERO(&eset);
     FD_SET(ssock, &rset);
-    sock = select(ssock+1, &rset, &wset, &eset, NULL);
+    sock = SELECT(ssock+1, &rset, &wset, &eset, NULL);
     if (sock == -1)
       continue;
     sock = ACCEPT(ssock,

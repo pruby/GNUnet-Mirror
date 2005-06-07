@@ -2132,7 +2132,7 @@ static int input (void );
 #ifndef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
 	errno=0; \
-	while ( (result = read( fileno(zconfin), (char *) buf, max_size )) < 0 ) \
+	while ( (result = READ( fileno(zconfin), (char *) buf, max_size )) < 0 ) \
 	{ \
 		if( errno != EINTR) \
 		{ \

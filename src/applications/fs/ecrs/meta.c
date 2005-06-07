@@ -768,7 +768,7 @@ char * ECRS_suggestFilename(const char * filename) {
       if (0 != RENAME(filename, renameTo)) 	
 	LOG(LOG_ERROR,
 	    _("Renaming of file '%s' to '%s' failed: %s\n"),
-	    filename, renameTo, strerror(errno));
+	    filename, renameTo, STRERROR(errno));
       else
 	ret = STRDUP(renameTo);
     } else {

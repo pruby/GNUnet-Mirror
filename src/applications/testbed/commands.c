@@ -296,7 +296,7 @@ static int addSshNode(int argc, char * argv[]) {
     s = SOCKET(PF_INET, SOCK_STREAM, 0);
     if (s == -1) {
       XPRINTF("Cannot open socket: %s\n",
-	     strerror(errno));
+	     STRERROR(errno));
       return -1;
     }
     if ( SETSOCKOPT(s,
@@ -348,12 +348,12 @@ static int addSshNode(int argc, char * argv[]) {
 	   sargv);
     LOG(LOG_ERROR,
 	" execvp failed: %s\n",
-	strerror(errno));
+	STRERROR(errno));
     exit(-1);
   }
   if (pid == -1) {
     XPRINTF("Failed to fork: %s\n",
-	   strerror(errno));
+	   STRERROR(errno));
     return -1;
   }
 

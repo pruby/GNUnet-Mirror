@@ -416,17 +416,17 @@ void readConfiguration() {
 	   that we can write there (if it does not
 	   exist) */
 	expCfgName = "/etc/gnunetd.conf";
-	if (access(expCfgName, R_OK)) {
+	if (ACCESS(expCfgName, R_OK)) {
 	  expCfgName = "/var/lib/GNUnet/gnunetd.conf";
-	  if (access(expCfgName, R_OK)) {
+	  if (ACCESS(expCfgName, R_OK)) {
 	    expCfgName = eName;
-	    if (access(expCfgName, R_OK)) {
-	      if (0 == access("/etc/gnunetd.conf", W_OK)) 
+	    if (ACCESS(expCfgName, R_OK)) {
+	      if (0 == ACCESS("/etc/gnunetd.conf", W_OK)) 
 		expCfgName = "/etc/gnunetd.conf";
 	      mkdirp("/var/lib/GNUnet");
-	      if (0 == access("/var/lib/GNUnet/gnunetd.conf", W_OK)) 
+	      if (0 == ACCESS("/var/lib/GNUnet/gnunetd.conf", W_OK)) 
 		expCfgName = "/var/lib/GNUnet/gnunetd.conf";
-	      if (0 == access(eName, W_OK)) 
+	      if (0 == ACCESS(eName, W_OK)) 
 		expCfgName = eName;
 	    }
 	  }

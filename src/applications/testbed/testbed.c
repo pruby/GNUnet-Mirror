@@ -539,7 +539,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
 	    _("'%s' %s failed: %s\n"),
 	    "execvp",
 	    pi->argv[0],
-	    strerror(errno));
+	    STRERROR(errno));
     exit(errno);
   } /* end pi->pid == 0 */
   FREE(dir);
@@ -570,7 +570,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
 #define PRT_BUFSIZE 65536
   buffer = MALLOC(PRT_BUFSIZE);
   while (ret > 0) {
-    ret = read(pi->outputPipe,
+    ret = READ(pi->outputPipe,
 	       buffer,
 	       PRT_BUFSIZE);
     if (ret <= 0)
@@ -853,7 +853,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
 	  ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf,
 	  end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf);
   if (htonl(msg->type) == TESTBED_FILE_DELETE) {
-    if (remove(filename) && errno != ENOENT) {
+    if (REMOVE(filename) && errno != ENOENT) {
       LOG_FILE_STRERROR(LOG_WARNING, "remove", filename);
       ack = SYSERR;
     } else

@@ -252,7 +252,7 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
     return;
   }
   dirLen = ntohl(cd->hdr.size) - sizeof(CollectionData) - strlen(cd->name);
-  if (-1 == write(fd, &cd->name[strlen(cd->name)+1], dirLen)) {
+  if (-1 == WRITE(fd, &cd->name[strlen(cd->name)+1], dirLen)) {
     LOG_STRERROR(LOG_ERROR, "write");
     FREE(tmpName);
     return;

@@ -93,7 +93,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
     hash(&buf[i+sizeof(HashCode512)],
 	 42,
 	 (HashCode512*) &buf[i]);
-  write(fd, buf, size);
+  WRITE(fd, buf, size);
   FREE(buf);
   closefile(fd);
   ret = ECRS_uploadFile(name,
@@ -211,7 +211,7 @@ static int downloadFile(unsigned int size,
       hash(&buf[i+sizeof(HashCode512)],
 	   42,
 	   (HashCode512*) &buf[i]);
-    if (size != read(fd, in, size))
+    if (size != READ(fd, in, size))
       ret = SYSERR;
     else if (0 == memcmp(buf,
 			 in,

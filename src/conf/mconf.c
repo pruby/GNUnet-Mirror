@@ -637,7 +637,7 @@ void show_textbox(const char *title, const char *text, int r, int c)
 
 	fd = CREAT(".help.tmp", 0777);
 	WRITE(fd, text, strlen(text));
-	close(fd);
+	CLOSE(fd);
 	while (dialog_textbox(title, ".help.tmp", r, c) < 0)
 		;
 	UNLINK(".help.tmp");
