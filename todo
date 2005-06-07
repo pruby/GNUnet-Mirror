@@ -1,4 +1,5 @@
 0.7.0pre3:
+- FSUI: directory creation (uploadAll) broken! [ empty directories! ]
 - gnunet-gtk (debug)
 - gnunet-setup:
    curses wizard?  [ Nils ];
