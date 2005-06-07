@@ -113,6 +113,7 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
   EncName enc;
   char * serverDir;
   char * serverFN;
+  char *tmp;
   char unavail_key[256];
   HashCode512 linkId;
 
@@ -130,9 +131,9 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 			strlen("/data/shared/") + 1);
     strcat(serverDir, "/data/shared/");
   }
-  fn = expandFileName(serverDir);
+  tmp = expandFileName(serverDir);
   FREE(serverDir);
-  serverDir = fn;
+  serverDir = tmp;
   if ( (SYSERR == getFileHash(fn,
 			      &linkId)) || 
        (! equalsHashCode512(&linkId,
@@ -140,7 +141,6 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
     FREE(serverDir);
     return NO;
   }
-
 
   serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
   strcpy(serverFN,
