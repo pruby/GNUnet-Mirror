@@ -439,7 +439,15 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
 
   hx = *hc;
   generate_kblock_key(&sk,
-		      1024, //2048,
+		      1024, /* at least 10x as fast than 2048 bits
+			       -- we simply cannot afford 2048 bits
+			       even on modern hardware, and especially
+			       not since clearly a dictionary attack
+			       will still be much cheaper 
+			       than breaking a 1024 bit RSA key.
+			       If an adversary can spend the time to
+			       break a 1024 bit RSA key just to forge
+			       a signature -- SO BE IT. [ CG, 6/2005 ] */
 		      &hx);
   pkv[0] = &sk.n;
   pkv[1] = &sk.e;
