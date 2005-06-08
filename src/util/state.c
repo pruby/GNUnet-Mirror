@@ -84,7 +84,7 @@ void initState() {
   dir = getFileName(baseSect,
 		    base,
 		    _("Configuration file must specify a directory"
-		      " for GNUnet to store per-peer data under %s%s.\n"));
+		      " for GNUnet to store per-peer data under %s\\%s.\n"));
   dbh = getDirectory(dir);
   FREE(dir);
   GNUNET_ASSERT(dbh != NULL);

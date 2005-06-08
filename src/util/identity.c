@@ -278,9 +278,6 @@ static int getAddressFromIOCTL(IPaddr * identity) {
 	    "use %u.%u.%u.%u.\n"), 
 	  interfaces, 
 	  PRIP(ntohl(dwIP)));
-    else
-      LOG(LOG_DEBUG, _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
-        PRIP(ntohl(dwIP)));
 
     identity->addr = dwIP;
     
@@ -321,6 +318,9 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     closesocket(s);    
     identity->addr = theHost.sin_addr.S_un.S_addr;
   }
+
+  LOG(LOG_DEBUG, _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
+    PRIP(ntohl(identity->addr)));
   
   return OK;
 #endif

@@ -2,9 +2,9 @@
 - FSUI: directory creation (uploadAll) broken! [ empty directories! ]
 - gnunet-gtk (debug)
 - gnunet-setup:
-   curses wizard?  [ Nils ];
-   template path adjustment for non gconf setup [ Nils ]
-       
+  * gconfig: fix focus changes
+  * wizards: restrict user & service creation to platforms
+    known to be working.  
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:

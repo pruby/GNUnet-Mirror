@@ -343,7 +343,9 @@ char * expandDollar(const char * section,
   prefix = getConfigurationString(section,
 				  &orig[1]);
   if (prefix == NULL)
-    prefix = getConfigurationString("", &orig[1]);
+    prefix = getConfigurationString("GNUNETD", &orig[1]);
+  if (prefix == NULL)
+    prefix = getConfigurationString("GNUNET", &orig[1]);
   if (prefix == NULL) {
     orig[i] = DIR_SEPARATOR;
     return orig;
