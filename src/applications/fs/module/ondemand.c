@@ -121,7 +121,7 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
     = getConfigurationString("FS",
 			     "INDEX-DIRECTORY");
   if (!serverDir) {
-    serverDir = getConfigurationString("",
+    serverDir = getConfigurationString("GNUNETD",
 				       "GNUNETD_HOME");
     if (!serverDir)
       return SYSERR;

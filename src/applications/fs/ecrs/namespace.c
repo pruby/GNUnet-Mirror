@@ -40,7 +40,7 @@ static char * getPseudonymFileName(const char * name) {
   char * gnHome;
   char * fileName;
 
-  gnHome = getFileName("",
+  gnHome = getFileName("GNUNET",
                        "GNUNET_HOME",
                        _("Configuration file must specify a directory for"
 			 " GNUnet to store per-peer data under %s%s.\n"));

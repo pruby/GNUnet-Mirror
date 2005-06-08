@@ -239,7 +239,7 @@ static int parser(int argc,
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGFILE",
 				     NULL));
-  FREENONNULL(setConfigurationString("",
+  FREENONNULL(setConfigurationString("GNUNETD",
 				     "GNUNETD_HOME",
 				     "/tmp/gnunet_test/"));
   FREENONNULL(setConfigurationString("FILES",

@@ -43,7 +43,7 @@ static int parseCommandLine(int argc,
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "_MAGIC_",
 				     "YES"));
-  FREENONNULL(setConfigurationString("",
+  FREENONNULL(setConfigurationString("GNUNETD",
 				     "GNUNETD_HOME",
 				     "/tmp/gnunet_test/"));
   FREENONNULL(setConfigurationString("FILES",

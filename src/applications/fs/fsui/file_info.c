@@ -42,7 +42,7 @@ static IPC_Semaphore * createIPC() {
   IPC_Semaphore * sem;
   size_t n;
 
-  basename = getConfigurationString("",
+  basename = getConfigurationString("GNUNET",
 				    "GNUNET_HOME");
   n = strlen(basename) + 512;
   tmpname = MALLOC(n);

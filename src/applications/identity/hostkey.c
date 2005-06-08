@@ -93,7 +93,7 @@ void initPrivateKey() {
   unsigned short len;
   int res;
 
-  gnHome = getFileName("",
+  gnHome = getFileName("GNUNETD",
 		       "GNUNETD_HOME",
 		       _("Configuration file must specify a "
 			 "directory for GNUnet to store "

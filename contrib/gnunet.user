@@ -5,7 +5,12 @@
 #
 #
 #################################################
-#
+
+
+###############################################
+# General client options...
+###############################################
+[GNUNET]
 # This line gives the directory where GNUnet is putting
 # user-specific files (such as pseudonyms).  Typically,
 # GNUnet should not put more than a few of MB there.
@@ -13,11 +18,6 @@
 # Default is GNUNET_HOME	= ~/.gnunet
 GNUNET_HOME	= ~/.gnunet
 
-
-###############################################
-# General client options...
-###############################################
-[GNUNET]
 # Loglevel. What kinds of (debug) output should be printed? You can 
 # use NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, 
 # CRON or EVERYTHING (which print more and more messages in this order). 

@@ -860,7 +860,7 @@ Identity_ServiceAPI * provide_module_identity(CoreAPIForApplication * capi) {
 				   _("Configuration file must specify directory for "
 				     "network identities in section %s under %s.\n"));
   mkdirp(networkIdDirectory);
-  gnHome = getFileName("",
+  gnHome = getFileName("GNUNETD",
 		       "GNUNETD_HOME",
 		       _("Configuration file must specify a "
 			 "directory for GNUnet to store "

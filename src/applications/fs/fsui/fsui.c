@@ -290,7 +290,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
-  gh = getFileName("",
+  gh = getFileName("GNUNET",
 		   "GNUNET_HOME",
 		   "You must specify a directory for "
 		   "user-data under '%s%s' at the beginning"

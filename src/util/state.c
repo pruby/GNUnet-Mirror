@@ -69,14 +69,19 @@ void initState() {
   char * dbh;
   char * dir;
   char * base;
+  char * baseSect;
 
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
-			      "YES"))
+			      "YES")) {
     base = "GNUNETD_HOME";
-  else
+    baseSect = "GNUNETD";
+	}
+  else {
     base = "GNUNET_HOME";
-  dir = getFileName("",
+    baseSect = "GNUNET"
+  }
+  dir = getFileName(baseSect,
 		    base,
 		    _("Configuration file must specify a directory"
 		      " for GNUnet to store per-peer data under %s%s.\n"));

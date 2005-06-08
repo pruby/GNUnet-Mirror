@@ -42,7 +42,7 @@ static void writeNamespaceInfo(const char * namespaceName,
   char * fn;
   char * fnBase;
 
-  fn = getConfigurationString("", "GNUNET_HOME");
+  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
   fnBase = expandFileName(fn);
   FREE(fn);
   fn = MALLOC(strlen(fnBase) +
@@ -83,7 +83,7 @@ static int readNamespaceInfo(const char * namespaceName,
   char * fnBase;
 
   *meta = NULL;
-  fn = getConfigurationString("", "GNUNET_HOME");
+  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
   fnBase = expandFileName(fn);
   FREE(fn);
   fn = MALLOC(strlen(fnBase) +
@@ -295,7 +295,7 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
     char * fn;
     char * fnBase;
 
-    fn = getConfigurationString("", "GNUNET_HOME");
+    fn = getConfigurationString("GNUNET", "GNUNET_HOME");
     fnBase = expandFileName(fn);
     FREE(fn);
     fn = MALLOC(strlen(fnBase) +
@@ -323,7 +323,7 @@ static char * getUpdateDataFilename(const char * nsname,
   char * tmp;
   char * ret;
 
-  ret = getConfigurationString("", "GNUNET_HOME");
+  ret = getConfigurationString("GNUNET", "GNUNET_HOME");
   tmp = expandFileName(ret);
   FREE(ret);
   ret = MALLOC(strlen(tmp) + strlen(NS_UPDATE_DIR) +

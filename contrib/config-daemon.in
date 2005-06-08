@@ -84,7 +84,7 @@ menu "General settings" "GNUNETD"
 
   config LOGFILE
   string "Where should logs go by default"
-  default "$GNUNET_HOME/logs"
+  default "$GNUNETD_HOME/logs"
   depends on Meta::ADVANCED
   help
 		In which file should gnunetd write the logs?  If you specify
@@ -105,7 +105,7 @@ menu "General settings" "GNUNETD"
 
   config PIDFILE
   string "Where should gnunetd write the PID"
-  default "$GNUNET_HOME/gnunet.pid"
+  default "$GNUNETD_HOME/gnunet.pid"
   depends on Meta::ADVANCED
 	help
 		In which file should gnunetd write the process-id of the server?  If
@@ -116,7 +116,7 @@ menu "General settings" "GNUNETD"
 
   config HOSTS
   string "Where should gnunetd keep the list of peers"
-  default "$GNUNET_HOME/data/hosts/"
+  default "$GNUNETD_HOME/data/hosts/"
   depends on Meta::ADVANCED
   help
 		This directory should be made available periodically --- it contains
@@ -731,7 +731,7 @@ menu "Applications" ""
 
 		config DIR
 		string "Directory for storing FS data"
-		default "$GNUNET_HOME/data/fs/"
+		default "$GNUNETD_HOME/data/fs/"
 		depends on Meta::ADVANCED
 		help
 			Where to store the FS related data (content, etc)?
