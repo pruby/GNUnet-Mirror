@@ -79,7 +79,7 @@ void initState() {
 	}
   else {
     base = "GNUNET_HOME";
-    baseSect = "GNUNET"
+    baseSect = "GNUNET";
   }
   dir = getFileName(baseSect,
 		    base,
