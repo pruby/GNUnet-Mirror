@@ -164,7 +164,7 @@ menu "General settings" "GNUNETD"
   config HTTP-PROXY-PORT
   int "HTTP Proxy Port"
   range 1 65535
-  default ""
+  default 1080
   depends on Meta::ADVANCED
   help
 		If you have to use a proxy for outbound HTTP connections,
@@ -348,7 +348,7 @@ menu "Resource limitations" "LOAD"
 
   config INTERFACES
   string "Network interface to monitor"
-  depends on Meta::ADVANCEDLIMITING
+  depends on !Meta::BASICLIMITING
   help
 		For which interfaces should we do accounting?  GNUnet will evaluate
 		the total traffic (not only the GNUnet related traffic) and adjust

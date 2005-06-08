@@ -33,6 +33,7 @@
 
 #include "wizard_interface.h"
 #include "wizard_support.h"
+#include "wizard_callbacks.h"
 #include "wizard_util.h"
 
 GtkWidget *curwnd;
@@ -64,6 +65,7 @@ void insert_nic(char *name, int defaultNIC)
   	}
   	
   	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cmbNIC), &last);
+  	on_cmbNIC_changed(GTK_COMBO_BOX(cmbNIC), NULL);
   }
 }
 
@@ -216,7 +218,7 @@ void load_step5()
 	chkStart = lookup_widget(vbox14, "chkStart");
 	chkEnh = lookup_widget(vbox14, "chkEnh");
 	
-	sym = sym_find("DISKQUOTA", "FS");
+	sym = sym_find("QUOTA", "FS");
 	if (sym)
 	{
 		sym_calc_value_ext(sym, 1);
@@ -245,6 +247,8 @@ void load_step5()
 int
 wizard_main (int argc, char *argv[])
 {
+	struct symbol *sym;
+	
 #ifdef ENABLE_NLS
 		/* GTK uses UTF-8 encoding */
 		bind_textdomain_codeset(PACKAGE, "UTF-8");
@@ -260,6 +264,13 @@ wizard_main (int argc, char *argv[])
 	conf_parse(DATADIR"/config.in");
 	  
   conf_read(NULL);
+  
+  sym = sym_find("EXPERIMENTAL", "Meta");
+  sym_set_tristate_value(sym, yes);
+  sym = sym_find("ADVANCED", "Meta");
+  sym_set_tristate_value(sym, yes);
+  sym = sym_find("RARE", "Meta");
+  sym_set_tristate_value(sym, yes);
 
   curwnd = create_assi_step1 ();
   gtk_widget_show (curwnd);

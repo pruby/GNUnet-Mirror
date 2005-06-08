@@ -137,6 +137,15 @@ on_step5_back_clicked (GtkButton * button, gpointer user_data)
 int
 save_conf ()
 {
+	struct symbol *sym;
+	
+  sym = sym_find("EXPERIMENTAL", "Meta");
+  sym_set_tristate_value(sym, no);
+  sym = sym_find("ADVANCED", "Meta");
+  sym_set_tristate_value(sym, no);
+  sym = sym_find("RARE", "Meta");
+  sym_set_tristate_value(sym, no);
+	
 	if (conf_write())
 	{
 		msgSaveFailed = create_msgSaveFailed();
@@ -292,7 +301,7 @@ on_entCPU_changed (GtkEditable * editable, gpointer user_data)
 void
 on_chkMigr_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("ACTIVEMIGRATION", "AFS", 0);
+	struct symbol *sym = sym_lookup("ACTIVEMIGRATION", "FS", 0);
 	sym_set_tristate_value(sym,
 		gtk_toggle_button_get_active(togglebutton) ? yes : no);
 }
@@ -300,7 +309,7 @@ on_chkMigr_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 void
 on_entQuota_changed (GtkEditable * editable, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("DISKQUOTA", "AFS", 0);
+	struct symbol *sym = sym_lookup("QUOTA", "FS", 0);
 	sym_set_string_value(sym, gtk_editable_get_chars(editable, 0, -1));
 }
 
