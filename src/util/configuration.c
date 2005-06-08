@@ -130,7 +130,10 @@ static void cfg_set_entry(struct CFG_ENTRIES * e,
     FREENONNULL(e->ent_values[i]);
   }
   e->ent_names[i]  = STRDUP(name);
-  e->ent_values[i] = STRDUP(value);
+  if (value && *value)
+  	e->ent_values[i] = STRDUP(value);
+  else
+  	e->ent_values[i] = NULL;
 }
 
 int cfg_parse_file(char *filename) {
