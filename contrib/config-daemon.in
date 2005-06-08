@@ -155,7 +155,7 @@ menu "General settings" "GNUNETD"
     
   config HTTP-PROXY
   string "HTTP Proxy Server"
-  default "localhost"
+  default ""
   depends on Meta::ADVANCED
   help
 		If you have to use a proxy for outbound HTTP connections,
@@ -164,7 +164,7 @@ menu "General settings" "GNUNETD"
   config HTTP-PROXY-PORT
   int "HTTP Proxy Port"
   range 1 65535
-  default "1080"
+  default ""
   depends on Meta::ADVANCED
   help
 		If you have to use a proxy for outbound HTTP connections,
@@ -623,7 +623,7 @@ menu "Applications" ""
 
 	menu "Anonymous file sharing" "FS"
 
-		config DISKQUOTA
+		config QUOTA
 		int "MB of diskspace GNUnet can use for anonymous file sharing"
 		default 1024
     help
