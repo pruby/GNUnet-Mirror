@@ -3591,10 +3591,12 @@ static void zconf_endhelp(void)
  */
 FILE *zconf_fopen(const char *name)
 {
+	char *env;
 	char configFile[PATH_MAX+1], lang[3];
 	FILE *f;
 	
-	strlcpy(lang, getenv("LANG"), 3);
+	env = getenv("LANG");
+	strlcpy(lang, env ? env : "", 3);
 	snprintf(configFile, PATH_MAX + 1, "%s.%s", name, lang);
 	if (!(f = FOPEN(configFile, "r")))
 		f = FOPEN(name, "r");
