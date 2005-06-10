@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7"
+!define PRODUCT_VERSION "0.7-pre3"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -45,7 +45,7 @@ var ICONS_GROUP
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "ShowReadme"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\gnunet-setup.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "GNUnet Setup"
-!define MUI_FINISHPAGE_RUN_PARAMETERS "wizard-gtk $INSTDIR\etc\config.in"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "wizard-gtk"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -71,197 +71,336 @@ Var LANGCODE
 Var USR_PROF
 Var DIRLEN
 
-Section "Core files" SEC01
-  SetOutPath "$INSTDIR\bin"
-  SetOverwrite ifnewer
-  File "gnu.ico"
-  CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
-;  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
-;  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
+InstType "User"
+InstType "GNUnet Server"
+InstType "GNUnet Client"
+InstType "Everything"
 
-	; 3rd party
-  File "C:\GNUnet\bin\libsqlite3-0.dll"
-  File "C:\GNUnet\bin\pthreadGC1.dll"
-  File "C:\GNUnet\bin\libpng12.dll"
-  File "C:\GNUnet\bin\libpango-1.0-0.dll"
-  File "C:\GNUnet\bin\libpangowin32-1.0-0.dll"
-  File "C:\GNUnet\bin\libmysql.dll"
-  File "C:\GNUnet\bin\libltdl-3.dll"
-  File "C:\GNUnet\bin\libintl-3.dll"
-  File "C:\GNUnet\bin\libintl-2.dll"
-  File "C:\GNUnet\bin\libgtk-win32-2.0-0.dll"
-  File "C:\GNUnet\bin\libgtk-0.dll"
-  File "C:\GNUnet\bin\libgthread-2.0-0.dll"
-  File "C:\GNUnet\bin\libgobject-2.0-0.dll"
-  File "C:\GNUnet\bin\libgmp.dll"
-  File "C:\GNUnet\bin\libgmodule-2.0-0.dll"
-  File "C:\GNUnet\bin\libglib-2.0-0.dll"
-  File "C:\GNUnet\bin\libgdk_pixbuf-2.0-0.dll"
-  File "C:\GNUnet\bin\libgdk-win32-2.0-0.dll"
-  File "C:\GNUnet\bin\libgdk-0.dll"
-  File "C:\GNUnet\bin\libgcrypt.dll"
-  File "C:\GNUnet\bin\libatk-1.0-0.dll"
-  File "C:\GNUnet\bin\intl.dll"
-  File "C:\GNUnet\bin\iconv.dll"
-  File "C:\GNUnet\bin\libiconv-2.dll"
+SetOverwrite ifnewer
 
-	; GNUnet
-	File "C:\GNUnet\bin\gnunetd.exe"
-	File "C:\GNUnet\bin\gnunet-directory.exe"
-	File "C:\GNUnet\bin\gnunet-download.exe"
-	File "C:\GNUnet\bin\gnunet-insert.exe"
-	File "C:\GNUnet\bin\gnunet-peer-info.exe"
-	File "C:\GNUnet\bin\gnunet-pseudonym.exe"
-	File "C:\GNUnet\bin\gnunet-search.exe"
-	File "C:\GNUnet\bin\gnunet-setup.exe"
-	File "C:\GNUnet\bin\gnunet-stats.exe"
-	File "C:\GNUnet\bin\gnunet-tbench.exe"
-	File "C:\GNUnet\bin\gnunet-tracekit.exe"
-	File "C:\GNUnet\bin\gnunet-transport-check.exe"
-	File "C:\GNUnet\bin\gnunet-unindex.exe"
-	File "C:\GNUnet\bin\gnunet-update.exe"
-	File "C:\GNUnet\bin\gnunet-win-tool.exe"
+SectionGroup "GNUnet" SEC_GNUNET
+	Section "Base" SEC_GNUNET_BASE
+		SectionIn RO
+	  CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
+	  
+	  SetOutPath "$INSTDIR"
+	  File "C:\GNUnet\AUTHORS"
+	  File "C:\GNUnet\ChangeLog"
+	  File "C:\GNUnet\COPYING"
+	  File "C:\GNUnet\PLATFORMS"
+	  File "C:\GNUnet\README"
+	  File "C:\GNUnet\UPDATING"
+	  
+	  SetOutPath "$INSTDIR\bin"
+	  File "gnu.ico"	
+		File "C:\GNUnet\bin\libgnunetutil-1.dll" 
+		File "C:\GNUnet\bin\gnunet-win-tool.exe"
+		File "C:\GNUnet\bin\gnunet-update.exe" 
+		SetOutPath "$INSTDIR\var\lib\GNUnet"
+	SectionEnd
 	
-	File "C:\GNUnet\bin\libgnunetcore-0.dll"
-	File "C:\GNUnet\bin\libgnunetdht_datastore_memory-0.dll"
-	File "C:\GNUnet\bin\libgnunetecrs-0.dll"
-	File "C:\GNUnet\bin\libgnunetfs-0.dll"
-	File "C:\GNUnet\bin\libgnunetfsui-0.dll"
-	File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_bootstrap.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_datastore.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_fragmentation.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_fs.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_gap.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_getoption.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_identity.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_pingpong.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_rpc.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_rpc_util-0.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_session.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_sqstore_mysql.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_sqstore_sqlite.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_stats.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_tbench.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_topology_default.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_tracekit.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_traffic_api-0.dll"
-	File "C:\GNUnet\bin\libgnunetmodule_transport.dll"
-	File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
-	File "C:\GNUnet\bin\libgnunettransport_http.dll"
-	File "C:\GNUnet\bin\libgnunettransport_nat.dll"
-	File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
-	File "C:\GNUnet\bin\libgnunettransport_udp.dll"
-	File "C:\GNUnet\bin\libgnunetutil-1.dll"
+	SectionGroup "Language Support" SEC_LANG
+		Section "German" SEC_LANG_DE
+			SectionIn 1 2 3 4
+		  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
+			File "C:\GNUnet\share\locale\de\LC_MESSAGES\GNUnet.mo" 
+		SectionEnd
+		Section "Kinyarwanda" SEC_LANG_RW
+			SectionIn 1 2 3 4
+		  SetOutPath "$INSTDIR\share\locale\rw\LC_MESSAGES"
+			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\GNUnet.mo" 
+		SectionEnd
+	SectionGroupEnd
+	
+	Section "Setup" SEC_SETUP
+		SectionIn 1 2 3 4
+	  SetOutPath "$INSTDIR\bin"
+		File "C:\GNUnet\bin\gnunet-setup.exe" 		
 
-	SetOutPath "$INSTDIR\etc"
-	File "C:\GNUnet\etc\config.in"
+	  SetOutPath "$INSTDIR\share\GNUnet"
+		File "C:\GNUnet\share\GNUnet\config.in" 
+		File "C:\GNUnet\share\GNUnet\config-client.in" 
+		File "C:\GNUnet\share\GNUnet\config-daemon.in"
+	SectionEnd
+	
+	SectionGroup "Server"
+		Section "!Base" SEC_SERVER_BASE
+			SectionIn 1 2 4
+		  SetOutPath "$INSTDIR\bin"
 
-  SetOutPath "$INSTDIR\"
-  File "C:\GNUnet\README"
-  File "C:\GNUnet\PLATFORMS"
-  File "C:\GNUnet\ChangeLog"
-  File "C:\GNUnet\COPYING"
-  File "C:\GNUnet\AUTHORS"
-  File "C:\GNUnet\UPDATING"
-  SetOutPath "$INSTDIR\etc\pango"
-  File "C:\GNUnet\etc\pango\pango.aliases"
-  File "C:\GNUnet\etc\pango\pango.modules"
-  SetOutPath "$INSTDIR\etc\gtk-2.0"
-  File "C:\GNUnet\etc\gtk-2.0\gdk-pixbuf.loaders"
-  SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
-  File "C:\GNUnet\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
-  SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"
-  File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
-  SetOutPath "$INSTDIR\lib\pango\1.4.0\modules"
-  File "C:\GNUnet\lib\pango\1.4.0\modules\pango-basic-win32.dll"
-  SetOutPath "$INSTDIR\share\themes\Default\gtk-2.0"
-  File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
-  File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.plain"  
-  CopyFiles "gtkrc.gtkwimp" "gtkrc"
-  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
-  File "C:\GNUnet\share\locale\de\LC_MESSAGES\GNUnet.mo"
-  SetOutPath "$INSTDIR\tmp"
-SectionEnd
+			File "C:\GNUnet\bin\libgnunetcore-0.dll"
+			File "C:\GNUnet\bin\gnunetd.exe"
+			File "C:\GNUnet\bin\libgnunetmodule_traffic_api-0.dll"
+			File "C:\GNUnet\bin\libgnunetstats_api-0.dll"
+			File "C:\GNUnet\bin\libgnunettransport_tcp.dll"
+			File "C:\GNUnet\bin\libgnunettransport_udp.dll"
+			File "C:\GNUnet\bin\libgnunettransport_nat.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_advertising.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_bootstrap.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_fragmentation.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_getoption.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_identity.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_pingpong.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_session.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_stats.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_topology_default.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_topology_f2f.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_traffic.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_transport.dll"
+			File "C:\GNUnet\bin\libgnunettransport_http.dll"
+		SectionEnd
 
-Section "Configuration files" SEC02
-  ReadEnvStr $USR_PROF "USERPROFILE"
-  StrLen $DIRLEN $USR_PROF
-  IntCmp $DIRLEN 0 no_profile
-  goto cp_conf
- no_profile:
-  ReadRegStr $USR_PROF "HKCU" "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Personal"
-  StrLen $DIRLEN $USR_PROF
-  IntCmp $DIRLEN 0 gn_dir
-  goto cp_conf
- gn_dir:
-  StrCpy $USR_PROF "$INSTDIR\home"
- cp_conf:
-  StrCpy $USR_PROF "$USR_PROF\.gnunet\"
-  SetOutPath $USR_PROF
-  File "C:\GNUnet\etc\gnunet.user"
-  SetOutPath "$INSTDIR\etc\"
-  File "C:\GNUnet\etc\gnunet.root"
-  Rename "$INSTDIR\etc\gnunet.root" "$INSTDIR\etc\gnunet.conf"
-  Rename "$USR_PROF\gnunet.user" "$USR_PROF\gnunet.conf"
-  
-  SetOutPath "$INSTDIR\share\GNUnet"
-  File "C:\GNUnet\share\GNUnet\config.in"
-  File "C:\GNUnet\share\GNUnet\config-client.in"
-  File "C:\GNUnet\share\GNUnet\config-daemon.in"
-SectionEnd
+		Section "Filesharing" SEC_SERVER_FS
+			SectionIn 1 2 4
+		  SetOutPath "$INSTDIR\bin"
 
-Section "Extractor" SEC03
-  SetOutPath "$INSTDIR\bin"
-  SetOverwrite ifnewer
-  File "c:\GNUnet\bin\extract.exe"
-  File "c:\GNUnet\bin\libextractor-1.dll"
-  File "c:\GNUnet\bin\libextractor_asf.dll"
-  File "c:\GNUnet\bin\libextractor_deb.dll"
-  File "c:\GNUnet\bin\libextractor_dvi.dll"
-  File "c:\GNUnet\bin\libextractor_elf.dll"
-  File "c:\GNUnet\bin\libextractor_filename.dll"
-  File "c:\GNUnet\bin\libextractor_gif.dll"
-  File "c:\GNUnet\bin\libextractor_hash_md5.dll"
-  File "c:\GNUnet\bin\libextractor_hash_rmd160.dll"
-  File "c:\GNUnet\bin\libextractor_hash_sha1.dll"
-  File "c:\GNUnet\bin\libextractor_html.dll"
-  File "c:\GNUnet\bin\libextractor_id3v2.dll"
-  File "c:\GNUnet\bin\libextractor_id3v23.dll"
-  File "c:\GNUnet\bin\libextractor_id3v24.dll"
-  File "c:\GNUnet\bin\libextractor_jpeg.dll"
-  File "c:\GNUnet\bin\libextractor_lower.dll"
-  File "c:\GNUnet\bin\libextractor_man.dll"
-  File "c:\GNUnet\bin\libextractor_mime.dll"
-  File "c:\GNUnet\bin\libextractor_mp3.dll"
-  File "c:\GNUnet\bin\libextractor_mpeg.dll"
-  File "c:\GNUnet\bin\libextractor_ole2.dll"
-  File "c:\GNUnet\bin\libextractor_oo.dll"
-  File "c:\GNUnet\bin\libextractor_pdf.dll"
-  File "c:\GNUnet\bin\libextractor_png.dll"
-  File "c:\GNUnet\bin\libextractor_ps.dll"
-  File "c:\GNUnet\bin\libextractor_qt.dll"
-  File "c:\GNUnet\bin\libextractor_real.dll"
-  File "c:\GNUnet\bin\libextractor_riff.dll"
-  File "c:\GNUnet\bin\libextractor_rpm.dll"
-  File "c:\GNUnet\bin\libextractor_split.dll"
-  File "c:\GNUnet\bin\libextractor_tar.dll"
-  File "c:\GNUnet\bin\libextractor_tiff.dll"
-  File "c:\GNUnet\bin\libextractor_wav.dll"
-  File "c:\GNUnet\bin\libextractor_zip.dll"
-SectionEnd
+			File "C:\GNUnet\bin\libgnunetmodule_fs.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_datastore.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_gap.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_sqstore_sqlite.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_sqstore_mysql.dll"
+		SectionEnd
+	SectionGroupEnd
+	
+	SectionGroup "Client"
+		Section "!Base" SEC_CLIENT_BASE
+			SectionIn 1 3 4
+		
+		  ReadEnvStr $USR_PROF "USERPROFILE"
+		  StrLen $DIRLEN $USR_PROF
+		  IntCmp $DIRLEN 0 no_profile
+		  goto cp_conf
+		 no_profile:
+		  ReadRegStr $USR_PROF "HKCU" "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Personal"
+		  StrLen $DIRLEN $USR_PROF
+		  IntCmp $DIRLEN 0 gn_dir
+		  goto cp_conf
+		 gn_dir:
+		  StrCpy $USR_PROF "$INSTDIR\home"
+		 cp_conf:
+		  StrCpy $USR_PROF "$USR_PROF\.gnunet\"
+		  SetOutPath $USR_PROF
+		  File "C:\GNUnet\etc\gnunet.user"
+		  SetOutPath "$INSTDIR\etc\"
+		  File "C:\GNUnet\etc\gnunet.root"
+		  Rename "$INSTDIR\etc\gnunet.root" "$INSTDIR\etc\gnunet.conf"
+		  Rename "$USR_PROF\gnunet.user" "$USR_PROF\gnunet.conf"  
+		SectionEnd
 
-Section "DHT" Sec04
-  File "c:\GNUnet\bin\gnunet-dht-join.exe"
-  File "c:\GNUnet\bin\gnunet-dht-query.exe"
-SectionEnd
+		SectionGroup "Filesharing" SEC_CLIENT_FS
+			Section "Base"
+			SectionIn 1 3 4
+		  SetOutPath "$INSTDIR\bin"
 
-Section "Chat" Sec05
-  SetOutPath "$INSTDIR\bin\"
-	File "c:\GNUnet\bin\gnunet-chat.exe"
-	File "C:\GNUnet\bin\libgnunetmodule_chat.dll"
-SectionEnd
+			File "C:\GNUnet\bin\libgnunetfs-0.dll"
+			File "C:\GNUnet\bin\libgnunetecrs-0.dll"
+			File "C:\GNUnet\bin\libgnunetfsui-0.dll"
+			SectionEnd
+			
+			Section "!Keyword extractor" SEC_CLIENT_LE
+				SectionIn 1 3 4
+			  SetOutPath "$INSTDIR\bin"
+
+				File "C:\GNUnet\bin\libextractor-1.dll"
+				File "C:\GNUnet\bin\libextractor_filename.dll"
+				File "C:\GNUnet\bin\libextractor_split.dll"
+				File "C:\GNUnet\bin\libextractor_lower.dll"
+				File "C:\GNUnet\bin\libextractor_thumbnail.dll"
+				File "C:\GNUnet\bin\libextractor_translit.dll"
+			SectionEnd			
+
+			Section "Text Interface" SEC_CLIENT_TUI
+				SectionIn 1 3 4
+			  SetOutPath "$INSTDIR\bin"
+
+				File "C:\GNUnet\bin\gnunet-insert.exe"
+				File "C:\GNUnet\bin\gnunet-download.exe"
+				File "C:\GNUnet\bin\gnunet-search.exe"
+				File "C:\GNUnet\bin\gnunet-directory.exe"
+				File "C:\GNUnet\bin\gnunet-pseudonym.exe"
+				File "C:\GNUnet\bin\gnunet-unindex.exe"
+			SectionEnd			
+
+			Section "Graphical Interface" SEC_CLIENT_GUI
+				SectionIn 1 3 4
+			  SetOutPath "$INSTDIR\bin"
+			  
+			  File "C:\GNUnet\bin\gnunet-gtk.exe"
+
+			  SetOutPath "$INSTDIR\share\gnunet-gtk"
+			  File "C:\GNUnet\share\gnunet-gtk\gnunet_logo.png"
+			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk.glade"
+			  File "C:\GNUnet\share\gnunet-gtk\info.png"
+			  File "C:\GNUnet\share\gnunet-gtk\up.png"
+			SectionEnd
+		SectionGroupEnd
+
+		Section "Statistics" SEC_STATS
+			SectionIn 1 2 3 4
+		  SetOutPath "$INSTDIR\bin"
+
+			File "C:\GNUnet\bin\gnunet-stats.exe"
+		SectionEnd		
+	SectionGroupEnd
+
+	SectionGroup "Advanced"
+		Section "Diagnostics" SEC_DIAG
+			SectionIn 4
+		  SetOutPath "$INSTDIR\bin"
+
+			File "C:\GNUnet\bin\gnunet-peer-info.exe"			
+			File "C:\GNUnet\bin\gnunet-transport-check.exe"			
+		SectionEnd
+
+		Section "Tracekit" SEC_TRACE
+			SectionIn 4
+		  SetOutPath "$INSTDIR\bin"
+
+			File "C:\GNUnet\bin\gnunet-tracekit.exe"			
+			File "C:\GNUnet\bin\libgnunetmodule_tracekit.dll"			
+		SectionEnd
+
+		Section "TBench" SEC_TBENCH
+			SectionIn 4
+		  SetOutPath "$INSTDIR\bin"
+
+			File "C:\GNUnet\bin\gnunet-tbench.exe"			
+			File "C:\GNUnet\bin\libgnunetmodule_tbench.dll"			
+		SectionEnd
+
+		Section "Chat" SEC_CHAT
+			SectionIn 4
+		  SetOutPath "$INSTDIR\bin"
+
+			File "C:\GNUnet\bin\gnunet-tbench.exe"			
+			File "C:\GNUnet\bin\libgnunetmodule_chat.dll"			
+		SectionEnd
+
+		Section "DHT" SEC_DHT
+			SectionIn 1 2 4
+		  SetOutPath "$INSTDIR\bin"
+
+			File "C:\GNUnet\bin\libgnunetdht_datastore_memory-0.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_dht.dll"
+			File "C:\GNUnet\bin\libgnunetdht_api-0.dll"
+			File "C:\GNUnet\bin\gnunet-dht-join.exe"
+			File "C:\GNUnet\bin\gnunet-dht-query.exe"
+		SectionEnd
+
+		Section "RPC" SEC_RPC
+			SectionIn 1 2 4
+		  SetOutPath "$INSTDIR\bin"
+
+			File "C:\GNUnet\bin\libgnunetmodule_rpc_util-0.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_rpc.dll"
+		SectionEnd
+	SectionGroupEnd
+SectionGroupEnd
+
+SectionGroup "GNU libextractor"
+	Section "All keyword extractors" SEC_LE_ALL
+		SectionIn 1 3 4
+	  SetOutPath "$INSTDIR\bin"
+
+		File "C:\GNUnet\bin\libextractor-1.dll"
+		File "C:\GNUnet\bin\libogg-0.dll"
+		File "C:\GNUnet\bin\libvorbis-0.dll"
+		File "C:\GNUnet\bin\libvorbisfile-3.dll"
+		File "C:\GNUnet\bin\libextractor_asf.dll"
+		File "C:\GNUnet\bin\libextractor_deb.dll"
+		File "C:\GNUnet\bin\libextractor_dvi.dll"
+		File "C:\GNUnet\bin\libextractor_elf.dll"
+		File "C:\GNUnet\bin\libextractor_gif.dll"
+		File "C:\GNUnet\bin\libextractor_hash_md5.dll"
+		File "C:\GNUnet\bin\libextractor_hash_rmd160.dll"
+		File "C:\GNUnet\bin\libextractor_hash_sha1.dll"
+		File "C:\GNUnet\bin\libextractor_html.dll"
+		File "C:\GNUnet\bin\libextractor_id3v2.dll"
+		File "C:\GNUnet\bin\libextractor_id3v23.dll"
+		File "C:\GNUnet\bin\libextractor_id3v24.dll"
+		File "C:\GNUnet\bin\libextractor_jpeg.dll"
+		File "C:\GNUnet\bin\libextractor_man.dll"
+		File "C:\GNUnet\bin\libextractor_mime.dll"
+		File "C:\GNUnet\bin\libextractor_mp3.dll"
+		File "C:\GNUnet\bin\libextractor_mpeg.dll"
+		File "C:\GNUnet\bin\libextractor_ogg.dll"
+		File "C:\GNUnet\bin\libextractor_ole2.dll"
+		File "C:\GNUnet\bin\libextractor_oo.dll"
+		File "C:\GNUnet\bin\libextractor_pdf.dll"
+		File "C:\GNUnet\bin\libextractor_png.dll"
+		File "C:\GNUnet\bin\libextractor_ps.dll"
+		File "C:\GNUnet\bin\libextractor_qt.dll"
+		File "C:\GNUnet\bin\libextractor_real.dll"
+		File "C:\GNUnet\bin\libextractor_riff.dll"
+		File "C:\GNUnet\bin\libextractor_rpm.dll"
+		File "C:\GNUnet\bin\libextractor_tar.dll"
+		File "C:\GNUnet\bin\libextractor_tiff.dll"
+		File "C:\GNUnet\bin\libextractor_wav.dll"
+		File "C:\GNUnet\bin\libextractor_zip.dll"
+	SectionEnd
+SectionGroupEnd
+
+SectionGroup "Dependencies"
+	Section "Base" SEC_DEPS_BASE
+		SectionIn RO
+
+		SetOutPath "$INSTDIR\bin"
+		File "C:\GNUnet\bin\iconv.dll"
+		File "C:\GNUnet\bin\intl.dll"
+		File "C:\GNUnet\bin\libgcrypt.dll"
+		File "C:\GNUnet\bin\libgmp.dll"
+		File "C:\GNUnet\bin\libiconv-2.dll"
+		File "C:\GNUnet\bin\libintl-2.dll"
+		File "C:\GNUnet\bin\libintl-3.dll"
+		File "C:\GNUnet\bin\libltdl-3.dll"
+		File "C:\GNUnet\bin\libmysql.dll"
+		File "C:\GNUnet\bin\libplibc-1.dll"
+		File "C:\GNUnet\bin\libsqlite3-0.dll"
+		File "C:\GNUnet\bin\pthreadGC1.dll"
+		File "C:\GNUnet\bin\sqlite3.exe"
+		File "C:\GNUnet\bin\zlib1.dll"
+	SectionEnd
+	
+	Section "!GUI libs (GTK, Glade)" SEC_DEPS_GTK
+		SectionIn 1 3 4
+
+		SetOutPath "$INSTDIR\bin"
+		File "C:\GNUnet\bin\libatk-1.0-0.dll"
+		File "C:\GNUnet\bin\libgdk-0.dll"
+		File "C:\GNUnet\bin\libgdk-win32-2.0-0.dll"
+		File "C:\GNUnet\bin\libgdk_pixbuf-2.0-0.dll"
+		File "C:\GNUnet\bin\libglade-2.0-0.dll"
+		File "C:\GNUnet\bin\libglib-2.0-0.dll"
+		File "C:\GNUnet\bin\libgmodule-2.0-0.dll"
+		File "C:\GNUnet\bin\libgobject-2.0-0.dll"
+		File "C:\GNUnet\bin\libgthread-2.0-0.dll"
+		File "C:\GNUnet\bin\libgtk-0.dll"
+		File "C:\GNUnet\bin\libgtk-win32-2.0-0.dll"
+		File "C:\GNUnet\bin\libpango-1.0-0.dll"
+		File "C:\GNUnet\bin\libpangowin32-1.0-0.dll"
+		File "C:\GNUnet\bin\libpng12.dll"
+		File "C:\GNUnet\bin\libxml2.dll"
+
+		SetOutPath "$INSTDIR\etc\gtk-2.0"
+		File "C:\GNUnet\etc\gtk-2.0\gdk-pixbuf.loaders"
+		SetOutPath "$INSTDIR\etc\pango"
+		File "C:\GNUnet\etc\pango\pango.aliases"
+		File "C:\GNUnet\etc\pango\pango.modules"
+		
+		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
+		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-png.dll"
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
+		SetOutPath "$INSTDIR\lib\pango\1.4.0\modules"
+		File "C:\GNUnet\lib\pango\1.4.0\modules\pango-basic-win32.dll"
+		
+		SetOutPath "$INSTDIR\share\themes\Default\gtk-2.0"
+		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc"
+		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
+		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.plain"
+	SectionEnd
+SectionGroupEnd
 
 Section -AdditionalIcons
   WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
@@ -279,16 +418,33 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   WriteRegStr HKLM "Software\GNU\GNUnet" "InstallDir" "$INSTDIR"
-  WriteRegStr HKLM "Software\GNU\libextractor" "InstallDir" "$INSTDIR"
 SectionEnd
 
 ; Section descriptions
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC01} "Required by GNUnet"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "GNUnet configuration files"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC03} "Component to extract meta-data from files"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC04} "Distributed HashTables. Experimental."
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC05} "Chat. Experimental."
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_GNUNET} "GNUnet"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_GNUNET_BASE} "GNUnet core"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG} "Translated messages"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_DE} "German messages"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_RW} "Kinyarwanda messages"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SETUP} "GNUnet configuration application"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_BASE} "GNUnet server core"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_FS} "Support for filesharing"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_BASE} "Client core"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_FS} "Client tools for filesharing"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_LE} "Basic keyword extractors"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_TUI} "Textbased user interfaces"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_GUI} "Graphical user interface (gnunet-gtk)"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_STATS} "Tool to display server statistics"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DIAG} "Advanced diagnostic tools"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TRACE} "Tracekit"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TBENCH} "TBench"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CHAT} "Anonymous broadcast chat"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DHT} "Distributed Hash Tables"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_RPC} "Remote Procedure Calls"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LE_ALL} "Sophisticated keyword extractors (mp3, pdf, zip...)"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_BASE} "3rd party software required by GNUnet"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DEPS_GTK} "3rd party software required by GNUnet Setup and the GUI"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
@@ -327,166 +483,184 @@ Section Uninstall
   Delete "$INSTDIR\etc\gnunet.conf"
   ExpandEnvStrings $USR_PROF "%USERPROFILE%\.gnunet\gnunet.conf"
   Delete $USR_PROF
-  Delete "$INSTDIR\UPDATING"
-  Delete "$INSTDIR\AUTHORS"
-  Delete "$INSTDIR\ChangeLog"
-  Delete "$INSTDIR\COPYING"
-  Delete "$INSTDIR\PLATFORMS"
-  Delete "$INSTDIR\README"
-  Delete "$INSTDIR\bin\gnunet-chat.exe"
-  Delete "$INSTDIR\bin\gnunet-check.exe"
-  Delete "$INSTDIR\bin\gnunet-convert.exe"
-  Delete "$INSTDIR\bin\gnunetd.exe"
-  Delete "$INSTDIR\bin\gnunet-delete.exe"
-  Delete "$INSTDIR\bin\gnunet-directory.exe"
-  Delete "$INSTDIR\bin\gnunet-directory-emptydb.exe"
-  Delete "$INSTDIR\bin\gnunet-directory-listdb.exe"
-  Delete "$INSTDIR\bin\gnunet-directory-print.exe"
-  Delete "$INSTDIR\bin\gnunet-download.exe"
-  Delete "$INSTDIR\bin\gnunet-insert.exe"
-  Delete "$INSTDIR\bin\gnunet-peer-info.exe"
-  Delete "$INSTDIR\bin\gnunet-pseudonym.exe"
-  Delete "$INSTDIR\bin\gnunet-pseudonym-create.exe"
-  Delete "$INSTDIR\bin\gnunet-pseudonym-delete.exe"
-  Delete "$INSTDIR\bin\gnunet-pseudonym-list.exe"
-  Delete "$INSTDIR\bin\gnunet-search.exe"
-  Delete "$INSTDIR\bin\gnunet-search-sblock.exe"
-  Delete "$INSTDIR\bin\gnunet-setup.exe"
-  Delete "$INSTDIR\bin\gnunet-stats.exe"
-  Delete "$INSTDIR\bin\gnunet-tbench.exe"
-  Delete "$INSTDIR\bin\gnunet-testbed.exe"
-  Delete "$INSTDIR\bin\gnunet-tracekit.exe"
-  Delete "$INSTDIR\bin\gnunet-transport-check.exe"
-  Delete "$INSTDIR\bin\gnunet-update.exe"
-  Delete "$INSTDIR\bin\gnunet-win-tool.exe"
-  Delete "$INSTDIR\bin\iconv.dll"
-  Delete "$INSTDIR\bin\libiconv-2.dll"
-  Delete "$INSTDIR\bin\intl.dll"
-  Delete "$INSTDIR\bin\libatk-1.0-0.dll"
-  Delete "$INSTDIR\bin\libcharset.dll"
-  Delete "$INSTDIR\bin\libgcrypt.dll"
-  Delete "$INSTDIR\bin\libgdbm-2.dll"
-  Delete "$INSTDIR\bin\libgdk-0.dll"
-  Delete "$INSTDIR\bin\libgdk_pixbuf-2.0-0.dll"
-  Delete "$INSTDIR\bin\libgdk-win32-2.0-0.dll"
-  Delete "$INSTDIR\bin\libglib-2.0-0.dll"
-  Delete "$INSTDIR\bin\libgmodule-2.0-0.dll"
-  Delete "$INSTDIR\bin\libgnunet_afs_esed2-0.dll"
-  Delete "$INSTDIR\bin\libgnunetafs_database_bdb.dll"
-  Delete "$INSTDIR\bin\libgnunetafs_database_directory.dll"
-  Delete "$INSTDIR\bin\libgnunetafs_database_gdbm.dll"
-  Delete "$INSTDIR\bin\libgnunetafs_database_sqlite.dll"
-  Delete "$INSTDIR\bin\libgnunetafs_protocol.dll"
-  Delete "$INSTDIR\bin\libgnunetchat_protocol.dll"
-  Delete "$INSTDIR\bin\libgnunettbench_protocol.dll"
-  Delete "$INSTDIR\bin\libgnunettestbed_protocol.dll"
-  Delete "$INSTDIR\bin\libgnunettracekit_protocol.dll"
-  Delete "$INSTDIR\bin\libgnunettransport_http.dll"
-  Delete "$INSTDIR\bin\libgnunettransport_nat.dll"
-  Delete "$INSTDIR\bin\libgnunettransport_tcp.dll"
-  Delete "$INSTDIR\bin\libgnunettransport_udp.dll"
-  Delete "$INSTDIR\bin\libgnunetutil-0.dll"
-  Delete "$INSTDIR\bin\libgmp.dll"  
-  Delete "$INSTDIR\bin\libgobject-2.0-0.dll"
-  Delete "$INSTDIR\bin\libgthread-2.0-0.dll"
-  Delete "$INSTDIR\bin\libgtk-0.dll"
-  Delete "$INSTDIR\bin\libgtk-win32-2.0-0.dll"
-  Delete "$INSTDIR\bin\libintl.dll"
-  Delete "$INSTDIR\bin\libltdl-3.dll"
-  Delete "$INSTDIR\bin\libmysql.dll"
-  Delete "$INSTDIR\bin\libpango-1.0-0.dll"
-  Delete "$INSTDIR\bin\libpangowin32-1.0-0.dll"
-  Delete "$INSTDIR\bin\libpng12.dll"
-  Delete "$INSTDIR\bin\libz.dll"
-  Delete "$INSTDIR\bin\pango-basic-fc.dll"
-  Delete "$INSTDIR\bin\pango-basic-win32.dll"
-  Delete "$INSTDIR\bin\pthreadGC.dll"
-  Delete "$INSTDIR\bin\pthreadGC1.dll"
-  Delete "$INSTDIR\bin\libsqlite3-0.dll"
-  Delete "$INSTDIR\bin\msvcr70.dll"
+  
+	Delete "$INSTDIR\AUTHORS"
+	Delete "$INSTDIR\COPYING"
+	Delete "$INSTDIR\ChangeLog"
+	Delete "$INSTDIR\PLATFORMS"
+	Delete "$INSTDIR\README"
+	Delete "$INSTDIR\UPDATING"
+	Delete "$INSTDIR\bin\gnu.ico"	
+	Delete "$INSTDIR\bin\gnunet-dht-join.exe"
+	Delete "$INSTDIR\bin\gnunet-dht-query.exe"
+	Delete "$INSTDIR\bin\gnunet-directory.exe"
+	Delete "$INSTDIR\bin\gnunet-download.exe"
   Delete "$INSTDIR\bin\gnunet-gtk.exe"
-  Delete "$INSTDIR\bin\gnu.ico"
-  
-  Delete "$INSTDIR\bin\dht-create.exe"
-  Delete "$INSTDIR\bin\dht-fetch.exe"
-  Delete "$INSTDIR\bin\dht-insert.exe"
-  Delete "$INSTDIR\bin\dht-inserted-drop.exe"
-  Delete "$INSTDIR\bin\dht-inserted-list.exe"
-  Delete "$INSTDIR\bin\dht-join.exe"
-  Delete "$INSTDIR\bin\dht-leave.exe"
-  Delete "$INSTDIR\bin\dht-list.exe"
-  Delete "$INSTDIR\bin\gnunet-dht-join.exe"
-  Delete "$INSTDIR\bin\gnunet-dht-query.exe"
-  Delete "$INSTDIR\bin\libgnunetdht_api.dll"
-  Delete "$INSTDIR\bin\libgnunetdht_api-0.dll"
-  Delete "$INSTDIR\bin\libgnunetdht_datastore_memory-0.dll"
-  Delete "$INSTDIR\bin\libgnunetdht_protocol.dll"
-  Delete "$INSTDIR\bin\libgnunetrpc_protocol.dll"
-  Delete "$INSTDIR\bin\libgnunetrpc_util-0.dll"
+	Delete "$INSTDIR\bin\gnunet-insert.exe"
+	Delete "$INSTDIR\bin\gnunet-peer-info.exe"			
+	Delete "$INSTDIR\bin\gnunet-pseudonym.exe"
+	Delete "$INSTDIR\bin\gnunet-search.exe"
+	Delete "$INSTDIR\bin\gnunet-setup.exe" 		
+	Delete "$INSTDIR\bin\gnunet-stats.exe"
+	Delete "$INSTDIR\bin\gnunet-tbench.exe"			
+	Delete "$INSTDIR\bin\gnunet-tbench.exe"			
+	Delete "$INSTDIR\bin\gnunet-tracekit.exe"			
+	Delete "$INSTDIR\bin\gnunet-transport-check.exe"			
+	Delete "$INSTDIR\bin\gnunet-unindex.exe"
+	Delete "$INSTDIR\bin\gnunet-update.exe" 
+	Delete "$INSTDIR\bin\gnunet-win-tool.exe"
+	Delete "$INSTDIR\bin\gnunetd.exe"
+	Delete "$INSTDIR\bin\iconv.dll"
+	Delete "$INSTDIR\bin\intl.dll"
+	Delete "$INSTDIR\bin\libatk-1.0-0.dll"
+	Delete "$INSTDIR\bin\libextractor-1.dll"
+	Delete "$INSTDIR\bin\libextractor_asf.dll"
+	Delete "$INSTDIR\bin\libextractor_deb.dll"
+	Delete "$INSTDIR\bin\libextractor_dvi.dll"
+	Delete "$INSTDIR\bin\libextractor_elf.dll"
+	Delete "$INSTDIR\bin\libextractor_Deletename.dll"
+	Delete "$INSTDIR\bin\libextractor_gif.dll"
+	Delete "$INSTDIR\bin\libextractor_hash_md5.dll"
+	Delete "$INSTDIR\bin\libextractor_hash_rmd160.dll"
+	Delete "$INSTDIR\bin\libextractor_hash_sha1.dll"
+	Delete "$INSTDIR\bin\libextractor_html.dll"
+	Delete "$INSTDIR\bin\libextractor_id3v2.dll"
+	Delete "$INSTDIR\bin\libextractor_id3v23.dll"
+	Delete "$INSTDIR\bin\libextractor_id3v24.dll"
+	Delete "$INSTDIR\bin\libextractor_jpeg.dll"
+	Delete "$INSTDIR\bin\libextractor_lower.dll"
+	Delete "$INSTDIR\bin\libextractor_man.dll"
+	Delete "$INSTDIR\bin\libextractor_mime.dll"
+	Delete "$INSTDIR\bin\libextractor_mp3.dll"
+	Delete "$INSTDIR\bin\libextractor_mpeg.dll"
+	Delete "$INSTDIR\bin\libextractor_ogg.dll"
+	Delete "$INSTDIR\bin\libextractor_ole2.dll"
+	Delete "$INSTDIR\bin\libextractor_oo.dll"
+	Delete "$INSTDIR\bin\libextractor_pdf.dll"
+	Delete "$INSTDIR\bin\libextractor_png.dll"
+	Delete "$INSTDIR\bin\libextractor_ps.dll"
+	Delete "$INSTDIR\bin\libextractor_qt.dll"
+	Delete "$INSTDIR\bin\libextractor_real.dll"
+	Delete "$INSTDIR\bin\libextractor_riff.dll"
+	Delete "$INSTDIR\bin\libextractor_rpm.dll"
+	Delete "$INSTDIR\bin\libextractor_split.dll"
+	Delete "$INSTDIR\bin\libextractor_tar.dll"
+	Delete "$INSTDIR\bin\libextractor_thumbnail.dll"
+	Delete "$INSTDIR\bin\libextractor_tiff.dll"
+	Delete "$INSTDIR\bin\libextractor_translit.dll"
+	Delete "$INSTDIR\bin\libextractor_wav.dll"
+	Delete "$INSTDIR\bin\libextractor_zip.dll"
+	Delete "$INSTDIR\bin\libgcrypt.dll"
+	Delete "$INSTDIR\bin\libgdk-0.dll"
+	Delete "$INSTDIR\bin\libgdk-win32-2.0-0.dll"
+	Delete "$INSTDIR\bin\libgdk_pixbuf-2.0-0.dll"
+	Delete "$INSTDIR\bin\libglade-2.0-0.dll"
+	Delete "$INSTDIR\bin\libglib-2.0-0.dll"
+	Delete "$INSTDIR\bin\libgmodule-2.0-0.dll"
+	Delete "$INSTDIR\bin\libgmp.dll"
+	Delete "$INSTDIR\bin\libgnunetcore-0.dll"
+	Delete "$INSTDIR\bin\libgnunetdht_api-0.dll"
+	Delete "$INSTDIR\bin\libgnunetdht_datastore_memory-0.dll"
+	Delete "$INSTDIR\bin\libgnunetecrs-0.dll"
+	Delete "$INSTDIR\bin\libgnunetfs-0.dll"
+	Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_advertising.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_bootstrap.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_chat.dll"			
+	Delete "$INSTDIR\bin\libgnunetmodule_datastore.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_dht.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_fragmentation.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_fs.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_gap.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_getoption.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_identity.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_pingpong.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_rpc.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_rpc_util-0.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_session.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_sqstore_mysql.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_sqstore_sqlite.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_stats.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_tbench.dll"			
+	Delete "$INSTDIR\bin\libgnunetmodule_topology_default.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_topology_f2f.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_tracekit.dll"			
+	Delete "$INSTDIR\bin\libgnunetmodule_traffic.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_traffic_api-0.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_transport.dll"
+	Delete "$INSTDIR\bin\libgnunetstats_api-0.dll"
+	Delete "$INSTDIR\bin\libgnunettransport_http.dll"
+	Delete "$INSTDIR\bin\libgnunettransport_nat.dll"
+	Delete "$INSTDIR\bin\libgnunettransport_tcp.dll"
+	Delete "$INSTDIR\bin\libgnunettransport_udp.dll"
+	Delete "$INSTDIR\bin\libgnunetutil-1.dll" 
+	Delete "$INSTDIR\bin\libgobject-2.0-0.dll"
+	Delete "$INSTDIR\bin\libgthread-2.0-0.dll"
+	Delete "$INSTDIR\bin\libgtk-0.dll"
+	Delete "$INSTDIR\bin\libgtk-win32-2.0-0.dll"
+	Delete "$INSTDIR\bin\libiconv-2.dll"
+	Delete "$INSTDIR\bin\libintl-2.dll"
+	Delete "$INSTDIR\bin\libintl-3.dll"
+	Delete "$INSTDIR\bin\libltdl-3.dll"
+	Delete "$INSTDIR\bin\libmysql.dll"
+	Delete "$INSTDIR\bin\libogg-0.dll"
+	Delete "$INSTDIR\bin\libpango-1.0-0.dll"
+	Delete "$INSTDIR\bin\libpangowin32-1.0-0.dll"
+	Delete "$INSTDIR\bin\libplibc-1.dll"
+	Delete "$INSTDIR\bin\libpng12.dll"
+	Delete "$INSTDIR\bin\libsqlite3-0.dll"
+	Delete "$INSTDIR\bin\libvorbis-0.dll"
+	Delete "$INSTDIR\bin\libvorbisDelete-3.dll"
+	Delete "$INSTDIR\bin\libxml2.dll"
+	Delete "$INSTDIR\bin\pthreadGC1.dll"
+	Delete "$INSTDIR\bin\sqlite3.exe"
+	Delete "$INSTDIR\bin\zlib1.dll"
+	RmDir /REBOOTOK "$INSTDIR\bin"
+	
+	Delete "$INSTDIR\etc\gnunet.root"
+	Delete "$INSTDIR\etc\gnunet.user"
+	Delete "$INSTDIR\etc\gtk-2.0\gdk-pixbuf.loaders"
+	Delete "$INSTDIR\etc\pango\pango.aliases"
+	Delete "$INSTDIR\etc\pango\pango.modules"
+	RmDir /REBOOTOK "$INSTDIR\etc\gtk-2.0"
+	RmDir /REBOOTOK "$INSTDIR\etc\pango"
+	RmDir /REBOOTOK "$INSTDIR\etc"
 
-  Delete "$INSTDIR\bin\extract.exe"
-  Delete "$INSTDIR\bin\libextractor-0.dll"
-  Delete "$INSTDIR\bin\libextractor-1.dll"
-  Delete "$INSTDIR\bin\libextractor_asf.dll"
-  Delete "$INSTDIR\bin\libextractor_deb.dll"
-  Delete "$INSTDIR\bin\libextractor_dvi.dll"
-  Delete "$INSTDIR\bin\libextractor_elf.dll"
-  Delete "$INSTDIR\bin\libextractor_filename.dll"
-  Delete "$INSTDIR\bin\libextractor_gif.dll"
-  Delete "$INSTDIR\bin\libextractor_hash_md5.dll"
-  Delete "$INSTDIR\bin\libextractor_hash_rmd160.dll"
-  Delete "$INSTDIR\bin\libextractor_hash_sha1.dll"
-  Delete "$INSTDIR\bin\libextractor_html.dll"
-  Delete "$INSTDIR\bin\libextractor_id3v2.dll"
-  Delete "$INSTDIR\bin\libextractor_id3v23.dll"
-  Delete "$INSTDIR\bin\libextractor_id3v24.dll"
-  Delete "$INSTDIR\bin\libextractor_jpeg.dll"
-  Delete "$INSTDIR\bin\libextractor_lower.dll"
-  Delete "$INSTDIR\bin\libextractor_man.dll"
-  Delete "$INSTDIR\bin\libextractor_mime.dll"
-  Delete "$INSTDIR\bin\libextractor_mp3.dll"
-  Delete "$INSTDIR\bin\libextractor_mpeg.dll"
-  Delete "$INSTDIR\bin\libextractor_ole2.dll"
-  Delete "$INSTDIR\bin\libextractor_oo.dll"
-  Delete "$INSTDIR\bin\libextractor_pdf.dll"
-  Delete "$INSTDIR\bin\libextractor_png.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_da.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_de.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_en.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_es.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_it.dll"
-  Delete "$INSTDIR\bin\libextractor_printable_no.dll"
-  Delete "$INSTDIR\bin\libextractor_ps.dll"
-  Delete "$INSTDIR\bin\libextractor_qt.dll"
-  Delete "$INSTDIR\bin\libextractor_real.dll"
-  Delete "$INSTDIR\bin\libextractor_riff.dll"
-  Delete "$INSTDIR\bin\libextractor_rpm.dll"
-  Delete "$INSTDIR\bin\libextractor_split.dll"
-  Delete "$INSTDIR\bin\libextractor_tar.dll"
-  Delete "$INSTDIR\bin\libextractor_tiff.dll"
-  Delete "$INSTDIR\bin\libextractor_util-0.dll"
-  Delete "$INSTDIR\bin\libextractor_wav.dll"
-  Delete "$INSTDIR\bin\libextractor_zip.dll"
-  
-  Delete "$INSTDIR\etc\pango\pango.aliases"
-  Delete "$INSTDIR\etc\pango\pango.modules"
-  
-  Delete "$INSTDIR\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
-  Delete "$INSTDIR\lib\pango\1.4.0\modules\pango-basic-win32.dll"
-  Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
-  Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.plain"
-  Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
   RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-png.dll"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
+  RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"
   RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0"
   RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0"
+	Delete "$INSTDIR\lib\pango\1.4.0\modules\pango-basic-win32.dll"
   RmDir /REBOOTOK "$INSTDIR\lib\pango\1.4.0\modules"
-  RmDir /REBOOTOK "$INSTDIR\lib\pango\1.4.0"
-  RmDir /REBOOTOK "$INSTDIR\lib\pango"
   RmDir /REBOOTOK "$INSTDIR\lib"
+  
+  Delete "$INSTDIR\share\gnunet_logo.png"
+  Delete "$INSTDIR\share\gnunet-gtk.glade"
+  Delete "$INSTDIR\share\info.png"
+  Delete "$INSTDIR\share\up.png"
+  
+	Delete "$INSTDIR\share\GNUnet\config-client.in" 
+	Delete "$INSTDIR\share\GNUnet\config-daemon.in"
+	Delete "$INSTDIR\share\GNUnet\config.in" 
+  RmDir /REBOOTOK "$INSTDIR\share\GNUnet"
+	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\GNUnet.mo" 
+  RmDir /REBOOTOK "$INSTDIR\share\locale\de\LC_MESSAGES"
+  RmDir /REBOOTOK "$INSTDIR\share\locale\de"
+	Delete "$INSTDIR\share\locale\rw\LC_MESSAGES\GNUnet.mo" 
+  RmDir /REBOOTOK "$INSTDIR\share\locale\rw\LC_MESSAGES"
+  RmDir /REBOOTOK "$INSTDIR\share\locale\rw"
+  RmDir /REBOOTOK "$INSTDIR\share\locale"
+	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc"
+	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
+	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.plain"
   RmDir /REBOOTOK "$INSTDIR\share\themes\Default\gtk-2.0"
   RmDir /REBOOTOK "$INSTDIR\share\themes\Default"
   RmDir /REBOOTOK "$INSTDIR\share\themes"
   RmDir /REBOOTOK "$INSTDIR\share"
+
 
   Delete "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk"
   Delete "$SMPROGRAMS\$ICONS_GROUP\Website.lnk"
@@ -509,14 +683,9 @@ Section Uninstall
 
   RMDir /REBOOTOK $USR_PROF
   RMDir /REBOOTOK "$SMPROGRAMS\$ICONS_GROUP"
-  RMDir /REBOOTOK "$INSTDIR\etc\pango\"
-  RMDir /REBOOTOK "$INSTDIR\etc\"
-  RMDir /REBOOTOK "$INSTDIR\bin"
-  RMDir /REBOOTOK "$INSTDIR\"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 ;  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
   DeleteRegKey HKLM "Software\GNU\GNUnet"
-  DeleteRegKey HKLM "Software\GNU\libextractor"
   SetAutoClose true
 SectionEnd
