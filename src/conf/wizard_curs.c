@@ -43,18 +43,16 @@ void insert_nic_curs(char *name, int defaultNIC)
 	struct dialog_list_item *item;
 
 	/* Copy NIC data */	
-	nic_items = (nic_item_count) ?
-		realloc(nic_items, (nic_item_count + 1) * sizeof(struct dialog_list_item *)) :
+	nic_items = (nic_item_count++) ?
+		realloc(nic_items, nic_item_count * sizeof(struct dialog_list_item *)) :
 		malloc(sizeof(struct dialog_list_item *));
 
 	item = malloc(sizeof(struct dialog_list_item));
 	memset(item, 0, sizeof(struct dialog_list_item));
-	nic_items[nic_item_count] = item;
+	nic_items[nic_item_count-1] = item;
 	item->name = strdup(name);
 	item->namelen = strlen(name);
   item->selected = wiz_is_nic_default(name, defaultNIC);
-
-	nic_item_count++;
 }
 
 int wizard_curs_main(int argc, char *argv[])
@@ -89,7 +87,7 @@ int wizard_curs_main(int argc, char *argv[])
 		ret = dialog_menu(_("GNUnet configuration"),
 						_("Choose the network interface that connects your computer to "
 							"the internet from the list below."), rows, cols - 5, 10,
-						0, active_ptr, nic_item_count - 1, nic_items);
+						0, active_ptr, nic_item_count, nic_items);
 		
 		if (ret == 2) {
 			/* Help */
