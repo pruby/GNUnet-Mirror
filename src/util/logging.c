@@ -172,6 +172,7 @@ void reopenLogFile() {
       char datestr[80];
       time_t curtime;
       char *datefmt;
+      char c;
 
       datefmt = nl_langinfo(D_FMT);
       time(&curtime);
@@ -191,6 +192,14 @@ void reopenLogFile() {
           datefmt,
           &def.curtime));
       strcat(fn, datestr);
+
+			/* Remove slashes */
+			end = datestr;
+			while(c = *end) {
+				if (c == '\\' || c == '/')
+					*end = '_';
+					end++;
+			}
 
       /* Remove old logs */
       logdir = STRDUP(fn);
