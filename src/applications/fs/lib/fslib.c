@@ -303,7 +303,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   unsigned int size, fnSize;
 
   fnSize = strlen(fn);
-  size = sizeof(RequestIndex) + fnSize;
+  size = sizeof(RequestInitIndex) + fnSize;
   ri = MALLOC(size);
   ri->header.size = htons(size);
   ri->header.type = htons(AFS_CS_PROTO_INIT_INDEX);

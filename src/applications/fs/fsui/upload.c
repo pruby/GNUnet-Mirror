@@ -59,7 +59,7 @@ typedef struct {
   FSUI_ThreadList * tl;
   FSUI_Context * ctx;
   cron_t start_time;
-  DirTrack dir;
+  DirTrack * dir;
 } UploadThreadClosure;
 
 /**
@@ -100,9 +100,10 @@ static void progressCallback(unsigned long long totalBytes,
  * a directory, upload it and store the uri in  *uri.
  */
 static int uploadDirectory(UploadThreadClosure * utc,
+			   const char * dirName,
+			   const DirTrack * backup,
 			   struct ECRS_URI ** uri,
 			   struct ECRS_MetaData ** meta) {
-  int i;
   char * data;
   unsigned long long len;
   int ret;
@@ -110,34 +111,31 @@ static int uploadDirectory(UploadThreadClosure * utc,
   int lastSlash;
   FSUI_Event event;
   int handle;
-  DirTrack backup;
 
   GNUNET_ASSERT(utc->filename != NULL);
-  backup = utc->dir;
-  memset(&utc->dir, 0, sizeof(DirTrack));
 
   ret = SYSERR;
   if (*meta == NULL)
     (*meta) = ECRS_createMetaData();
-  lastSlash = strlen(utc->filename)-1;
-  if (utc->filename[lastSlash] == DIR_SEPARATOR)
+  lastSlash = strlen(dirName)-1;
+  if (dirName[lastSlash] == DIR_SEPARATOR)
     lastSlash--;
   while ( (lastSlash > 0) &&
-	  (utc->filename[lastSlash] != DIR_SEPARATOR))
+	  (dirName[lastSlash] != DIR_SEPARATOR))
     lastSlash--;
   ECRS_delFromMetaData(*meta,
 		       EXTRACTOR_FILENAME,
 		       NULL);
   ECRS_addToMetaData(*meta,
 		     EXTRACTOR_FILENAME,
-		     &utc->filename[lastSlash+1]);
+		     &dirName[lastSlash+1]);
   ECRS_addToMetaData(*meta,
 		     EXTRACTOR_MIMETYPE,
 		     GNUNET_DIRECTORY_MIME);
   if (OK == ECRS_createDirectory(&data,
 				 &len,
-				 utc->dir.fiCount,
-				 utc->dir.fis,
+				 backup->fiCount,
+				 backup->fis,
 				 *meta)) {
     utc->main_total += len;
 
@@ -164,7 +162,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
       if (ret == OK) {
 	event.type = upload_complete;
 	event.data.UploadComplete.total = utc->main_total;
-	event.data.UploadComplete.filename = utc->filename;
+	event.data.UploadComplete.filename = STRDUP(dirName);
 	event.data.UploadComplete.uri = *uri;
 	event.data.UploadComplete.eta
 	  = (cron_t) (utc->start_time +
@@ -176,6 +174,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
 	event.data.UploadComplete.main_filename = utc->main_filename;
 	utc->ctx->ecb(utc->ctx->ecbClosure,
 		      &event);	
+	FREE(event.data.UploadComplete.filename);
 	utc->main_completed += len;
       }
       UNLINK(tempName);
@@ -183,15 +182,6 @@ static int uploadDirectory(UploadThreadClosure * utc,
     FREE(tempName);
   }
 
-  utc->dir = backup;
-
-  for (i=0;i<utc->dir.fiCount;i++) {
-    ECRS_freeMetaData(utc->dir.fis[i].meta);
-    ECRS_freeUri(utc->dir.fis[i].uri);
-  }
-  GROW(utc->dir.fis,
-       utc->dir.fiCount,
-       0);
   if (ret != OK) {
     ECRS_freeMetaData(*meta);
     *meta = NULL;
@@ -250,13 +240,31 @@ static void dirEntryCallback(const char * filename,
 			 utc->extractors);
     ret = OK;
   } else {
+    DirTrack current;
+    DirTrack * prev;
+    int i;
+
+    memset(&current, 0, sizeof(DirTrack));
+    prev = utc->dir;
+    utc->dir = &current;
     scanDirectory(fn,
 		  (DirectoryEntryCallback)&dirEntryCallback,
 		  utc);
     meta = NULL;
+    utc->dir = prev;
     ret = uploadDirectory(utc,
+			  dirName,
+			  &current,
 			  &uri,
 			  &meta);
+
+    for (i=0;i<current.fiCount;i++) {
+      ECRS_freeMetaData(current.fis[i].meta);
+      ECRS_freeUri(current.fis[i].uri);
+    }
+    GROW(current.fis,
+	 current.fiCount,
+	 0);
   }
   if (ret == OK) {
     ECRS_addToMetaData(meta,
@@ -279,13 +287,17 @@ static void dirEntryCallback(const char * filename,
 			 utc->expiration,
 			 uri,
 			 meta);	
-
-    GROW(utc->dir.fis,
-	 utc->dir.fiCount,
-	 utc->dir.fiCount+1);
-    utc->dir.fis[utc->dir.fiCount-1].meta = meta;
-    utc->dir.fis[utc->dir.fiCount-1].uri = uri;
-    FSUI_trackURI(&utc->dir.fis[utc->dir.fiCount-1]);
+    if (utc->dir != NULL) {
+      GROW(utc->dir->fis,
+	   utc->dir->fiCount,
+	   utc->dir->fiCount+1);
+      utc->dir->fis[utc->dir->fiCount-1].meta = meta;
+      utc->dir->fis[utc->dir->fiCount-1].uri = uri;
+    } else {
+      ECRS_freeMetaData(meta);
+      ECRS_freeUri(uri);
+    }
+    FSUI_trackURI(&utc->dir->fis[utc->dir->fiCount-1]);
   }
   FREE(fn);
 }
@@ -308,7 +320,6 @@ static void * uploadThread(UploadThreadClosure * utc) {
   cronTime(&utc->start_time);
   utc->main_total = getFileSize(utc->main_filename);
   utc->main_completed = 0;
-  memset(&utc->dir, 0, sizeof(DirTrack));
   ret = SYSERR;
   uri = NULL;
 
@@ -348,13 +359,28 @@ static void * uploadThread(UploadThreadClosure * utc) {
 			 utc->extractors);
     utc->filename = NULL;
   } else if (utc->isRecursive) {
+    DirTrack current;
+    int i;
+
+    memset(&current, 0, sizeof(DirTrack));
+    utc->dir = &current;
     utc->filename = utc->main_filename;
     scanDirectory(utc->main_filename,
 		  (DirectoryEntryCallback)&dirEntryCallback,
 		  utc);
     ret = uploadDirectory(utc,
+			  utc->main_filename,
+			  &current,
 			  &uri,
 			  &utc->meta);
+    for (i=0;i<current.fiCount;i++) {
+      ECRS_freeMetaData(current.fis[i].meta);
+      ECRS_freeUri(current.fis[i].uri);
+    }
+    GROW(current.fis,
+	 current.fiCount,
+	 0);
+    
     if (ret == OK) {
       event.type = upload_complete;
       event.data.UploadComplete.total = utc->main_total;
@@ -457,6 +483,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   char * config;
 
   utc = MALLOC(sizeof(UploadThreadClosure));
+  utc->dir = NULL;
   utc->anonymityLevel = anonymityLevel;
   utc->priority = getConfigurationInt("FS",
 				      "INSERT-PRIORITY");
