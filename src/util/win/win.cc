@@ -222,7 +222,7 @@ int InstallAsService(char *username)
 
   hService = GNCreateService(hManager, "GNUnet", "GNUnet", 0,
     SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, szEXE,
-    NULL, NULL, NULL, user, NULL);
+    NULL, NULL, NULL, user, username);
   
   if (user)
   	free(user);
@@ -454,6 +454,7 @@ int CreateServiceAccount(char *pszName, char *pszDesc)
 	
 	memset(&ui, 0, sizeof(ui));
 	ui.usri1_name = wszName;
+	ui.usri1_password = wszName; /* account is locked anyway */
 	ui.usri1_priv = USER_PRIV_USER;
 	ui.usri1_comment = wszDesc;
 	ui.usri1_flags = UF_SCRIPT;
@@ -463,8 +464,7 @@ int CreateServiceAccount(char *pszName, char *pszDesc)
 	if (nStatus != NERR_Success && nStatus != NERR_UserExists)
 		return 2;
 	
-  ui2.usri1008_flags = UF_PASSWD_NOTREQD | UF_PASSWD_CANT_CHANGE |
-  	UF_DONT_EXPIRE_PASSWD;
+  ui2.usri1008_flags = UF_PASSWD_CANT_CHANGE | UF_DONT_EXPIRE_PASSWD;
   GNNetUserSetInfo(NULL, wszName, 1008, (LPBYTE)&ui2, NULL);
 	
 	if (_OpenPolicy(NULL, POLICY_ALL_ACCESS, &hPolicy) !=
