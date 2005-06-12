@@ -43,6 +43,7 @@
 #include <sys/param.h>  /* #define BYTE_ORDER */
 #include <Ntsecapi.h>
 #include <lm.h>
+#include <Aclapi.h>
 #include "gnunet_util.h"
 #include "platform.h"
 
@@ -99,6 +100,26 @@ typedef NTSTATUS NTAPI (*TLsaClose) (LSA_HANDLE);
 typedef BOOL WINAPI (*TLookupAccountName) (LPCTSTR lpSystemName, LPCTSTR lpAccountName,
 	PSID Sid, LPDWORD cbSid, LPTSTR ReferencedDomainName,
 	LPDWORD cchReferencedDomainName, PSID_NAME_USE peUse);
+	
+typedef BOOL WINAPI (*TGetFileSecurity) (LPCTSTR lpFileName,
+	SECURITY_INFORMATION RequestedInformation, PSECURITY_DESCRIPTOR pSecurityDescriptor,
+  DWORD nLength, LPDWORD lpnLengthNeeded);
+typedef BOOL WINAPI (*TInitializeSecurityDescriptor) (PSECURITY_DESCRIPTOR pSecurityDescriptor,
+  DWORD dwRevision);
+typedef BOOL WINAPI (*TGetSecurityDescriptorDacl) (PSECURITY_DESCRIPTOR pSecurityDescriptor,
+  LPBOOL lpbDaclPresent, PACL* pDacl, LPBOOL lpbDaclDefaulted);
+typedef BOOL WINAPI (*TGetAclInformation) (PACL pAcl, LPVOID pAclInformation,
+  DWORD nAclInformationLength, ACL_INFORMATION_CLASS dwAclInformationClass);
+typedef BOOL WINAPI (*TInitializeAcl) (PACL pAcl, DWORD nAclLength, DWORD dwAclRevision);
+typedef BOOL WINAPI (*TGetAce) (PACL pAcl, DWORD dwAceIndex, LPVOID* pAce);
+typedef BOOL WINAPI (*TEqualSid) (PSID pSid1, PSID pSid2);
+typedef BOOL WINAPI (*TAddAce) (PACL pAcl, DWORD dwAceRevision, DWORD dwStartingAceIndex,
+  LPVOID pAceList, DWORD nAceListLength);
+typedef BOOL WINAPI (*TAddAccessAllowedAce) (PACL pAcl, DWORD dwAceRevision,
+  DWORD AccessMask, PSID pSid);
+typedef BOOL WINAPI (*TSetNamedSecurityInfo) (LPTSTR pObjectName, SE_OBJECT_TYPE ObjectType,
+  SECURITY_INFORMATION SecurityInfo, PSID psidOwner, PSID psidGroup, PACL pDacl,
+  PACL pSacl);
 
 extern TNtQuerySystemInformation GNNtQuerySystemInformation;
 extern TGetIfEntry GNGetIfEntry;
@@ -123,6 +144,16 @@ extern TLsaAddAccountRights GNLsaAddAccountRights;
 extern TLsaRemoveAccountRights GNLsaRemoveAccountRights;
 extern TLsaClose GNLsaClose;
 extern TLookupAccountName GNLookupAccountName;
+extern TGetFileSecurity GNGetFileSecurity;
+extern TInitializeSecurityDescriptor GNInitializeSecurityDescriptor;
+extern TGetSecurityDescriptorDacl GNGetSecurityDescriptorDacl;
+extern TGetAclInformation GNGetAclInformation;
+extern TInitializeAcl GNInitializeAcl;
+extern TGetAce GNGetAce;
+extern TEqualSid GNEqualSid;
+extern TAddAce GNAddAce;
+extern TAddAccessAllowedAce GNAddAccessAllowedAce;
+extern TSetNamedSecurityInfo GNSetNamedSecurityInfo;
 
 
 BOOL CreateShortcut(const char *pszSrc, const char *pszDest);
@@ -130,6 +161,8 @@ BOOL DereferenceShortcut(char *pszShortcut);
 long QueryRegistry(HKEY hMainKey, char *pszKey, char *pszSubKey,
               char *pszBuffer, long *pdLength);
 int ListNICs(void (*callback) (char *, int));
+BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
+      DWORD dwAccessMask);
 
 void GNInitWinEnv();
 void GNShutdownWinEnv();

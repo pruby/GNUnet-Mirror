@@ -148,7 +148,7 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 	{
 		if (IsWinNT())
 		{
-			char szErr[250];
+			char *err;
 			DWORD dwErr;
 			
 			switch(InstallAsService(username))
@@ -157,24 +157,39 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 				case 1:
 					break;
 				case 2:
-					dwErr = GetLastError(); 
-			    SetErrnoFromWinError(dwErr);
-			    sprintf(szErr, _("Error: can't open Service Control Manager: %s (%i)\n"),
-			    	_win_strerror(errno), dwErr);
-
-					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
-					return 0;
+					err = winErrorStr(_("Can't open Service Control Manager"),
+						GetLastError());
 				case 3:
 					dwErr = GetLastError(); 
-			    SetErrnoFromWinError(dwErr);
-			    sprintf(szErr, _("Error: can't create service: %s (#%i)\n"),
-			    	_win_strerror(errno), dwErr);
-
-					MessageBox(GetActiveWindow(), szErr, _("Error"), MB_ICONSTOP | MB_OK);
-					return 0;
+					if (dwErr != ERROR_SERVICE_EXISTS)
+					{
+						err = winErrorStr(_("Can't create service"),
+							GetLastError());
+					}
+					break;
 				default:
-					MessageBox(GetActiveWindow(), _("Unknown error"), _("Error"),
-						MB_ICONSTOP | MB_OK);
+					err = winErrorStr(_("Unknown error"),
+						GetLastError());
+			}
+			
+			if (!err || dwErr == ERROR_SERVICE_EXISTS)
+			{
+				char szHome[_MAX_PATH + 1];
+
+				plibc_conv_to_win_path("/", szHome);
+
+				if (!AddPathAccessRights(szHome, username, GENERIC_ALL))
+				{
+					err = winErrorStr(_("Error changing the permissions of the GNUnet directory"),
+						GetLastError());
+				}
+			}
+
+			if (err && dwErr != ERROR_SERVICE_EXISTS)
+			{
+				MessageBox(GetActiveWindow(), err, _("Error"), MB_ICONSTOP | MB_OK);
+				free(err);
+				return 0;
 			}
 		}
 		else

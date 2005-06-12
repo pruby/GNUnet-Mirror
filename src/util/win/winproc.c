@@ -54,6 +54,16 @@ TLsaAddAccountRights GNLsaAddAccountRights;
 TLsaRemoveAccountRights GNLsaRemoveAccountRights;
 TLsaClose GNLsaClose;
 TLookupAccountName GNLookupAccountName;
+TGetFileSecurity GNGetFileSecurity;
+TInitializeSecurityDescriptor GNInitializeSecurityDescriptor;
+TGetSecurityDescriptorDacl GNGetSecurityDescriptorDacl;
+TGetAclInformation GNGetAclInformation;
+TInitializeAcl GNInitializeAcl;
+TGetAce GNGetAce;
+TEqualSid GNEqualSid;
+TAddAce GNAddAce;
+TAddAccessAllowedAce GNAddAccessAllowedAce;
+TSetNamedSecurityInfo GNSetNamedSecurityInfo;
 
 /**
  * Log (panic) messages from PlibC
@@ -139,6 +149,27 @@ void InitWinEnv()
   		GetProcAddress(hAdvapi, "LsaClose");
   	GNLookupAccountName = (TLookupAccountName)
   		GetProcAddress(hAdvapi, "LookupAccountNameA");
+
+  	GNGetFileSecurity = (TGetFileSecurity)
+  		GetProcAddress(hAdvapi, "GetFileSecurityA");
+  	GNInitializeSecurityDescriptor = (TInitializeSecurityDescriptor)
+  		GetProcAddress(hAdvapi, "InitializeSecurityDescriptor");
+  	GNGetSecurityDescriptorDacl = (TGetSecurityDescriptorDacl)
+  		GetProcAddress(hAdvapi, "GetSecurityDescriptorDacl");
+  	GNGetAclInformation = (TGetAclInformation)
+  		GetProcAddress(hAdvapi, "GetAclInformation");
+  	GNInitializeAcl = (TInitializeAcl)
+  		GetProcAddress(hAdvapi, "InitializeAcl");
+  	GNGetAce = (TGetAce)
+  		GetProcAddress(hAdvapi, "GetAce");
+  	GNEqualSid = (TEqualSid)
+  		GetProcAddress(hAdvapi, "EqualSid");
+  	GNAddAce = (TAddAce)
+  		GetProcAddress(hAdvapi, "AddAce");
+  	GNAddAccessAllowedAce = (TAddAccessAllowedAce)
+  		GetProcAddress(hAdvapi, "AddAccessAllowedAce");
+  	GNSetNamedSecurityInfo = (TSetNamedSecurityInfo)
+  		GetProcAddress(hAdvapi, "SetNamedSecurityInfoA");
   }
   else
   {
@@ -157,6 +188,17 @@ void InitWinEnv()
   	GNLsaRemoveAccountRights = NULL;
   	GNLsaClose = NULL;
   	GNLookupAccountName = NULL;
+
+  	GNGetFileSecurity = NULL;
+  	GNInitializeSecurityDescriptor = NULL;
+  	GNGetSecurityDescriptorDacl = NULL;
+  	GNGetAclInformation = NULL;
+  	GNInitializeAcl = NULL;
+  	GNGetAce = NULL;
+  	GNEqualSid = NULL;
+  	GNAddAce = NULL;
+  	GNAddAccessAllowedAce = NULL;
+  	GNSetNamedSecurityInfo = NULL;
   }
   
   /* Account function */

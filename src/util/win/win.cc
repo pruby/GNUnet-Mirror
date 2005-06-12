@@ -32,6 +32,10 @@
 
 #include <ntdef.h>
 
+#ifndef INHERITED_ACE
+#define INHERITED_ACE 0x10
+#endif
+
 extern "C" {
 
 /**
@@ -218,7 +222,7 @@ int InstallAsService(char *username)
 
   hService = GNCreateService(hManager, "GNUnet", "GNUnet", 0,
     SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL, szEXE,
-    NULL, NULL, NULL, user, user);
+    NULL, NULL, NULL, user, NULL);
   
   if (user)
   	free(user);
@@ -450,7 +454,6 @@ int CreateServiceAccount(char *pszName, char *pszDesc)
 	
 	memset(&ui, 0, sizeof(ui));
 	ui.usri1_name = wszName;
-	ui.usri1_password = wszName; /* account is locked anyway */
 	ui.usri1_priv = USER_PRIV_USER;
 	ui.usri1_comment = wszDesc;
 	ui.usri1_flags = UF_SCRIPT;
@@ -460,7 +463,7 @@ int CreateServiceAccount(char *pszName, char *pszDesc)
 	if (nStatus != NERR_Success && nStatus != NERR_UserExists)
 		return 2;
 	
-  ui2.usri1008_flags = UF_ACCOUNTDISABLE | UF_PASSWD_CANT_CHANGE |
+  ui2.usri1008_flags = UF_PASSWD_NOTREQD | UF_PASSWD_CANT_CHANGE |
   	UF_DONT_EXPIRE_PASSWD;
   GNNetUserSetInfo(NULL, wszName, 1008, (LPBYTE)&ui2, NULL);
 	
@@ -473,22 +476,323 @@ int CreateServiceAccount(char *pszName, char *pszDesc)
 	if (_SetPrivilegeOnAccount(hPolicy, pSID, L"SeServiceLogonRight", TRUE) != STATUS_SUCCESS)
 		return 4;
 		
+	_SetPrivilegeOnAccount(hPolicy, pSID, L"SeDenyInteractiveLogonRight", TRUE);
+	_SetPrivilegeOnAccount(hPolicy, pSID, L"SeDenyBatchLogonRight", TRUE);
+	_SetPrivilegeOnAccount(hPolicy, pSID, L"SeDenyNetworkLogonRight", TRUE);
+	
 	GNLsaClose(hPolicy);
 	
 	return 0;
 }
 
+/**
+ * @brief Grant permission to a file
+ * @param lpszFileName the name of the file or directory
+ * @param lpszAccountName the user account
+ * @param the desired access (e.g. GENERIC_ALL)
+ * @return TRUE on success
+ * @remark based on http://support.microsoft.com/default.aspx?scid=KB;EN-US;Q102102&
+ */
+BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
+      DWORD dwAccessMask)
+{
+	/* SID variables. */
+	SID_NAME_USE   snuType;
+	TCHAR *        szDomain       = NULL;
+	DWORD          cbDomain       = 0;
+	LPVOID         pUserSID       = NULL;
+	DWORD          cbUserSID      = 0;
+	
+	/* File SD variables. */
+	PSECURITY_DESCRIPTOR pFileSD  = NULL;
+	DWORD          cbFileSD       = 0;
+	
+	/* New SD variables. */
+	SECURITY_DESCRIPTOR  newSD;
+	
+	/* ACL variables. */
+	PACL           pACL           = NULL;
+	BOOL           fDaclPresent;
+	BOOL           fDaclDefaulted;
+	ACL_SIZE_INFORMATION AclInfo;
+	
+	/* New ACL variables. */
+	PACL           pNewACL        = NULL;
+	DWORD          cbNewACL       = 0;
+	
+	/* Temporary ACE. */
+	LPVOID         pTempAce       = NULL;
+	UINT           CurrentAceIndex = 0;
+	
+	UINT           newAceIndex = 0;
+	
+	/* Assume function will fail. */
+	BOOL           fResult        = FALSE;
+	BOOL           fAPISuccess;
+	
+	SECURITY_INFORMATION secInfo = DACL_SECURITY_INFORMATION;
+	
+	/**
+	 * STEP 1: Get SID of the account name specified.
+	 */
+	fAPISuccess = GNLookupAccountName(NULL, lpszAccountName,
+	      pUserSID, &cbUserSID, szDomain, &cbDomain, &snuType);
+	
+	/* API should have failed with insufficient buffer. */
+	if (fAPISuccess)
+	   goto end;
+	else if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+	   goto end;
+	}
+	
+	pUserSID = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, cbUserSID);
+	if (!pUserSID) {
+	   goto end;
+	}
+	
+	szDomain = (TCHAR *) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, cbDomain * sizeof(TCHAR));
+	if (!szDomain) {
+	   goto end;
+	}
+	
+	fAPISuccess = GNLookupAccountName(NULL, lpszAccountName,
+	      pUserSID, &cbUserSID, szDomain, &cbDomain, &snuType);
+	if (!fAPISuccess) {
+	   goto end;
+	}
+	
+	/**
+	 *  STEP 2: Get security descriptor (SD) of the file specified.
+	 */
+	fAPISuccess = GNGetFileSecurity(lpszFileName,
+	      secInfo, pFileSD, 0, &cbFileSD);
+	
+	/* API should have failed with insufficient buffer. */
+	if (fAPISuccess)
+	   goto end;
+	else if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+	   goto end;
+	}
+	
+	pFileSD = (PSECURITY_DESCRIPTOR) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY,
+		cbFileSD);
+	if (!pFileSD) {
+	   goto end;
+	}
+	
+	fAPISuccess = GNGetFileSecurity(lpszFileName,
+	      secInfo, pFileSD, cbFileSD, &cbFileSD);
+	if (!fAPISuccess) {
+	   goto end;
+	}
+	
+	/**
+	 * STEP 3: Initialize new SD.
+	 */
+	if (!GNInitializeSecurityDescriptor(&newSD,
+	      SECURITY_DESCRIPTOR_REVISION)) {
+	   goto end;
+	}
+	
+	/**
+	 * STEP 4: Get DACL from the old SD.
+	 */
+	if (!GNGetSecurityDescriptorDacl(pFileSD, &fDaclPresent, &pACL,
+	      &fDaclDefaulted)) {
+	   goto end;
+	}
+	
+	/**
+	 * STEP 5: Get size information for DACL.
+	 */
+	AclInfo.AceCount = 0; // Assume NULL DACL.
+	AclInfo.AclBytesFree = 0;
+	AclInfo.AclBytesInUse = sizeof(ACL);
+	
+	if (pACL == NULL)
+	   fDaclPresent = FALSE;
+	
+	/* If not NULL DACL, gather size information from DACL. */
+	if (fDaclPresent) {
+	
+	   if (!GNGetAclInformation(pACL, &AclInfo,
+	         sizeof(ACL_SIZE_INFORMATION), AclSizeInformation)) {
+	      goto end;
+	   }
+	}
+	
+	/**
+	 * STEP 6: Compute size needed for the new ACL.
+	 */
+	cbNewACL = AclInfo.AclBytesInUse + sizeof(ACCESS_ALLOWED_ACE)
+	      + GetLengthSid(pUserSID) - sizeof(DWORD);
+	
+	/**
+	 * STEP 7: Allocate memory for new ACL.
+	 */
+	pNewACL = (PACL) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, cbNewACL);
+	if (!pNewACL) {
+	   goto end;
+	}
+	
+	/**
+	 * STEP 8: Initialize the new ACL.
+	 */
+	if (!GNInitializeAcl(pNewACL, cbNewACL, ACL_REVISION2)) {
+	   goto end;
+	}
+	
+	/**
+	 * STEP 9 If DACL is present, copy all the ACEs from the old DACL
+	 * to the new DACL.
+	 * 
+	 * The following code assumes that the old DACL is
+	 * already in Windows 2000 preferred order.  To conform
+	 * to the new Windows 2000 preferred order, first we will
+	 * copy all non-inherited ACEs from the old DACL to the
+	 * new DACL, irrespective of the ACE type.
+	 */
+	
+	newAceIndex = 0;
+	
+	if (fDaclPresent && AclInfo.AceCount) {
+	
+	   for (CurrentAceIndex = 0;
+	         CurrentAceIndex < AclInfo.AceCount;
+	         CurrentAceIndex++) {
+	
+	      /**
+	       * TEP 10: Get an ACE.
+	       */
+	      if (!GNGetAce(pACL, CurrentAceIndex, &pTempAce)) {
+	         goto end;
+	      }
+	
+	      /**
+	       * STEP 11: Check if it is a non-inherited ACE.
+	       * If it is an inherited ACE, break from the loop so
+	       * that the new access allowed non-inherited ACE can
+	       * be added in the correct position, immediately after
+	       * all non-inherited ACEs.
+	       */
+	      if (((ACCESS_ALLOWED_ACE *)pTempAce)->Header.AceFlags
+	         & INHERITED_ACE)
+	         break;
+	
+	      /**
+	       * STEP 12: Skip adding the ACE, if the SID matches
+	       * with the account specified, as we are going to
+	       * add an access allowed ACE with a different access
+	       * mask.
+	       */
+	      if (GNEqualSid(pUserSID,
+	         &(((ACCESS_ALLOWED_ACE *)pTempAce)->SidStart)))
+	         continue;
+	
+	      /**
+	       * STEP 13: Add the ACE to the new ACL.
+	       */
+	      if (!GNAddAce(pNewACL, ACL_REVISION, MAXDWORD, pTempAce,
+	            ((PACE_HEADER) pTempAce)->AceSize)) {
+	         goto end;
+	      }
+	
+	      newAceIndex++;
+	   }
+	}
+	
+	/**
+	 * STEP 14: Add the access-allowed ACE to the new DACL.
+	 * The new ACE added here will be in the correct position,
+	 * immediately after all existing non-inherited ACEs.
+	 */
+	if (!GNAddAccessAllowedAce(pNewACL, ACL_REVISION2, dwAccessMask,
+	      pUserSID)) {
+	   goto end;
+	}
+
+	/**
+	 * STEP 14.5: Make new ACE inheritable
+	 */
+  if (!GetAce(pNewACL, newAceIndex, &pTempAce))
+  	goto end;
+  ((ACCESS_ALLOWED_ACE *)pTempAce)->Header.AceFlags |=
+  	(CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
+	
+	/**
+	 * STEP 15: To conform to the new Windows 2000 preferred order,
+	 * we will now copy the rest of inherited ACEs from the
+	 * old DACL to the new DACL.
+	 */
+	if (fDaclPresent && AclInfo.AceCount) {
+	
+	   for (;
+	        CurrentAceIndex < AclInfo.AceCount;
+	        CurrentAceIndex++) {
+	
+	      /**
+	       * STEP 16: Get an ACE.
+	       */
+	      if (!GNGetAce(pACL, CurrentAceIndex, &pTempAce)) {
+	         goto end;
+	      }
+	
+	      /**
+	       * STEP 17: Add the ACE to the new ACL.
+	       */
+	      if (!GNAddAce(pNewACL, ACL_REVISION, MAXDWORD, pTempAce,
+	            ((PACE_HEADER) pTempAce)->AceSize)) {
+	         goto end;
+	      }
+	   }
+	}
+
+	/**
+	 * STEP 18: Set permissions
+	 */
+  if (GNSetNamedSecurityInfo(lpszFileName, SE_FILE_OBJECT,
+  	DACL_SECURITY_INFORMATION, NULL, NULL, pNewACL, NULL) != ERROR_SUCCESS) {
+  		goto end;
+  }
+	
+	fResult = TRUE;
+	   
+end:
+	   
+	/**	
+	 * STEP 19: Free allocated memory
+	 */
+	if (pUserSID)
+	   HeapFree(GetProcessHeap(), 0, pUserSID);
+	
+	if (szDomain)
+	   HeapFree(GetProcessHeap(), 0, szDomain);
+	
+	if (pFileSD)
+	   HeapFree(GetProcessHeap(), 0, pFileSD);
+	
+	if (pNewACL)
+	   HeapFree(GetProcessHeap(), 0, pNewACL);
+	
+	return fResult;
+}
+
 char *winErrorStr(char *prefix, DWORD dwErr)
 {
 	char *err, *ret;
+	int mem;
 	
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+	if (! FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
   	NULL, dwErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &err,
-		0, NULL );
+		0, NULL ))
+	{
+		err = "";
+	}
 
-	ret = (char *) malloc(strlen(err) + strlen(prefix) + 20);
+	mem = strlen(err) + strlen(prefix) + 20;
+	ret = (char *) malloc(mem);
 
-  sprintf(ret, "%s: %s (#%u)", prefix, err, dwErr);
+  snprintf(ret, mem, "%s: %s (#%u)", prefix, err, dwErr);
   
   LocalFree(err);
   
