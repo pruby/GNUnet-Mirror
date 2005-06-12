@@ -202,10 +202,15 @@ int ECRS_uploadFile(const char * filename,
     return SYSERR;
   }
 
-  if (FS_initIndex(sock, &fileId, filename) == SYSERR) {
-  	LOG(LOG_ERROR, "'%s' failed.\n", _("Initialization"));
-    return SYSERR;
-  }
+	switch(FS_initIndex(sock, &fileId, filename)) {
+		case SYSERR:
+			LOG(LOG_ERROR, "'%s' failed.\n", _("Initialization"));
+    	return SYSERR;
+		case NO:
+			LOG(LOG_ERROR, "Indexing %s failed. Check file permissions and consult "
+				"your GNUnet server's logs.\n", filename);
+    	return SYSERR;			
+	}
 
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->size = htonl(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
