@@ -1,19 +1,25 @@
 0.7.0pre3:
 - FSUI: directory creation (uploadAll) broken! [ empty directories! ]
 - gnunet-gtk (debug)
-- gnunet-setup:
+- gnunet-setup: [Nils]
   * gconfig: fix focus changes
   * wizards: restrict user & service creation to platforms
     known to be working.  
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:
-  * resolve "FIXME 0.7": only sqlite magic factor missing!
+  * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
   * cache kblock-public/private keys 
     (terribly important, performance sucks already, but
      without caching it'll be unbearable, espeically for
      insertion of zip files with hundreds of files/keywords!)
+  * permissions on indexed files? [Nils]
+  * Windows installer [Nils]
+    * Uninstall
+      * Remove service
+      * Remove account
+      * Ask to remove lib/
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
