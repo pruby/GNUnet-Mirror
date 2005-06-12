@@ -381,7 +381,7 @@ static int csHandleRequestInitIndex(ClientHandle sock,
   ri = (RequestInitIndex *) req;
 
   fnLen = ntohs(ri->header.size) - sizeof(RequestInitIndex);
-#if CYGWIN
+#if WINDOWS
   if (fnLen > _MAX_PATH)
     return SYSERR;
 #endif
