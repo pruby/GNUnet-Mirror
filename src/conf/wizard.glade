@@ -2223,8 +2223,10 @@ If you are an experienced user, you may want to tweak your GNUnet installation u
 		      <property name="text" translatable="yes">Define the user and the group owning the GNUnet service here.
 
 For security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.
-You can also specify existing ones.
-In any case, you should check its permissions to critical files on your system.</property>
+
+However, GNUnet may not be able to access files other than its own. This includes files you want to publish in GNUnet. You'll have to grant read permissions to the user specified below.
+
+Leave the fields empty to run GNUnet with system privileges.</property>
 		    </widget>
 		  </child>
 		</widget>
@@ -2287,7 +2289,7 @@ In any case, you should check its permissions to critical files on your system.<
 		      <property name="editable">True</property>
 		      <property name="visibility">True</property>
 		      <property name="max_length">0</property>
-		      <property name="text">gnunet</property>
+		      <property name="text"></property>
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char">*</property>
 		      <property name="activates_default">False</property>
@@ -2308,7 +2310,7 @@ In any case, you should check its permissions to critical files on your system.<
 		      <property name="editable">True</property>
 		      <property name="visibility">True</property>
 		      <property name="max_length">0</property>
-		      <property name="text">gnunet</property>
+		      <property name="text"></property>
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char">*</property>
 		      <property name="activates_default">False</property>

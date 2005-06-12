@@ -148,9 +148,13 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 	{
 		if (IsWinNT())
 		{
-			char *err;
+			char *err = NULL;
 			DWORD dwErr;
 			
+			if (username && !strlen(username))
+				username = NULL;
+			
+			/* Install service */
 			switch(InstallAsService(username))
 			{
 				case 0:
@@ -172,7 +176,8 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 						GetLastError());
 			}
 			
-			if (!err || dwErr == ERROR_SERVICE_EXISTS)
+			/* Grant permissions to the GNUnet directory */
+			if ((!err || dwErr == ERROR_SERVICE_EXISTS) && username)
 			{
 				char szHome[_MAX_PATH + 1];
 
@@ -360,6 +365,10 @@ int wiz_groupadd_capable() {
  * @todo Check FreeBSD (adduser(8)), add support for useradd(8)
  */
 int wiz_addServiceAccount(char *group_name, char *user_name) {
+	
+	if (!user_name || !strlen(user_name))
+		return 1;
+	
 #ifdef WINDOWS
 	if (IsWinNT())
 	{

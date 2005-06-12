@@ -384,10 +384,11 @@ int wizard_curs_main(int argc, char *argv[])
 					"For security reasons, it is a good idea to let this setup create "
 					"a new user account under which the GNUnet service is started "
 					"at system startup.\n\n"
-					"You can also specify an already existant user account here.\n\n"
-					"In any case, you should check its permissions to critical files "
-					"on your system.\n\nGNUnet user:"),
-				rows, cols - 5, "gnunet");
+					"However, GNUnet may not be able to access files other than its own. "
+					"This includes files you want to publish in GNUnet. You'll have to "
+					"grant read permissions to the user specified below.\n\n"
+					"Leave the fields empty to run GNUnet with system privileges.\n\n"
+					"GNUnet user:"), rows, cols - 5, "");
 			
 			if (ret == 1) {
 				/* Help */
@@ -414,7 +415,7 @@ int wizard_curs_main(int argc, char *argv[])
 						"Only members of this group will be allowed to start and stop the "
 						"the GNUnet server and have access to GNUnet server data.\n\n"
 						"GNUnet group:"),
-					rows, cols - 5, "gnunet");
+					rows, cols - 5, "");
 				
 				if (ret == 1) {
 					/* Help */

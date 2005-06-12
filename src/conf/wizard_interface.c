@@ -1192,7 +1192,7 @@ create_assi_step4 (void)
   gtk_text_buffer_set_text (gtk_text_view_get_buffer
 			    (GTK_TEXT_VIEW (textview12)),
 			    _
-			    ("Define the user and the group owning the GNUnet service here.\n\nFor security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.\nYou can also specify existing ones.\nIn any case, you should check its permissions to critical files on your system."),
+			    ("Define the user and the group owning the GNUnet service here.\n\nFor security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.\n\nHowever, GNUnet may not be able to access files other than its own. This includes files you want to publish in GNUnet. You'll have to grant read permissions to the user specified below.\n\nLeave the fields empty to run GNUnet with system privileges."),
 			    -1);
 
   hseparator7 = gtk_hseparator_new ();
@@ -1219,14 +1219,12 @@ create_assi_step4 (void)
   gtk_table_attach (GTK_TABLE (table3), entUser, 1, 2, 0, 1,
 		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 		    (GtkAttachOptions) (0), 0, 0);
-  gtk_entry_set_text (GTK_ENTRY (entUser), "gnunet");
 
   entGroup = gtk_entry_new ();
   gtk_widget_show (entGroup);
   gtk_table_attach (GTK_TABLE (table3), entGroup, 1, 2, 1, 2,
 		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 		    (GtkAttachOptions) (0), 0, 0);
-  gtk_entry_set_text (GTK_ENTRY (entGroup), "gnunet");
 
   label109 = gtk_label_new (_("User account:"));
   gtk_widget_show (label109);
@@ -1310,10 +1308,6 @@ create_assi_step4 (void)
 
   g_signal_connect ((gpointer) assi_step4, "destroy",
 		    G_CALLBACK (on_assi_destroy), NULL);
-  g_signal_connect ((gpointer) entUser, "changed",
-		    G_CALLBACK (on_entUser_changed), NULL);
-  g_signal_connect ((gpointer) entGroup, "changed",
-		    G_CALLBACK (on_entGroup_changed), NULL);
   g_signal_connect ((gpointer) step4_back, "clicked",
 		    G_CALLBACK (on_step4_back_clicked), NULL);
   g_signal_connect ((gpointer) step4_next, "clicked",
