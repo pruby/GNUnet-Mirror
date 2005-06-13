@@ -307,6 +307,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   ri = MALLOC(size);
   ri->header.size = htons(size);
   ri->header.type = htons(AFS_CS_PROTO_INIT_INDEX);
+  ri->reserved = htonl(0);
   ri->fileId = *fileHc;
   memcpy(&ri[1], fn, fnSize);
 
@@ -439,11 +440,12 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
  */
 int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
 		   const HashCode512 * hc) {
-  RequestInitIndex ri;
+  RequestTestindex ri;
   int ret;
 
-  ri.header.size = htons(sizeof(RequestInitIndex));
+  ri.header.size = htons(sizeof(RequestTestindex));
   ri.header.type = htons(AFS_CS_PROTO_TESTINDEX);
+  ri.reserved = htonl(0);
   ri.fileId = *hc;
   if (OK != writeToSocket(sock,
 			  &ri.header))

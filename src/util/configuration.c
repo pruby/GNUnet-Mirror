@@ -327,7 +327,7 @@ static int valuesCount;
  * globally FOO is set to DIRECTORY.
  */
 char * expandDollar(const char * section,
-			   char * orig) {
+		    char * orig) {
   int i;
   char * prefix;
   char * result;
@@ -346,6 +346,8 @@ char * expandDollar(const char * section,
     prefix = getConfigurationString("GNUNETD", &orig[1]);
   if (prefix == NULL)
     prefix = getConfigurationString("GNUNET", &orig[1]);
+  if (prefix == NULL)
+    prefix = getConfigurationString("", &orig[1]);
   if (prefix == NULL) {
     orig[i] = DIR_SEPARATOR;
     return orig;
@@ -450,7 +452,7 @@ void readConfiguration() {
   } else {
     expCfgName = expandFileName(cfgName);
   }
-  FREE(eName);
+  FREENONNULL(eName);
   if (0 == assertIsFile(expCfgName)) {
     FILE * f;
     char * c;
@@ -599,8 +601,6 @@ char * getConfigurationString(const char * section,
   UserConf * pos;
   char * retval;
 
-  if ( !(section != NULL) && (option != NULL) )
-    BREAK();
   GNUNET_ASSERT( (section != NULL) && (option != NULL) );
   MUTEX_LOCK(&configLock);
   pos = userconfig;

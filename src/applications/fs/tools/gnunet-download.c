@@ -75,7 +75,7 @@ static int parseOptions(int argc,
     };
     c = GNgetopt_long(argc,
 		      argv,
-		      "a:cdh:H:L:o:RvV",
+		      "a:cdhH:L:o:RvV",
 		      long_options,
 		      &option_index);
     if (c == -1)
@@ -169,13 +169,13 @@ static void progressModel(void * okVal,
     SEMAPHORE_UP(signalFinished);
     break;
   case download_complete:
-    printf(_("\nDownload of file '%s' comlete.  Speed was %8.3f kilobyte per second.\n"),
+    printf(_("\nDownload of file '%s' complete.  Speed was %8.3f kilobyte per second.\n"),
 	   event->data.DownloadProgress.filename,
 	   (event->data.DownloadProgress.completed/1024.0) /
 	   (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1)))
 	    / (double)cronSECONDS) );
-    if (event->data.DownloadProgress.completed
-	== event->data.DownloadProgress.total) {
+    if (ECRS_equalsUri(event->data.DownloadProgress.main_uri,
+		       event->data.DownloadProgress.uri) ) {
       *ok = OK;
       SEMAPHORE_UP(signalFinished);
     }

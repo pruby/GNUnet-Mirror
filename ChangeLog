@@ -1,3 +1,8 @@
+Sat Jun 11 11:25:24 EST 2005
+	Fixed various problems with recursive upload
+	(thread stack size too small, wrong filenames
+	passed around, wrong list of filenames updated).	
+
 Sat Apr  2 01:54:23 EST 2005
 	Various bugfixes, some of them critical (segfaults, 
 	protocol errors (resulting in failures to connect), 

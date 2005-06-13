@@ -454,6 +454,8 @@ static Blockstore * bs;
  */
 static UniqueReplyIdentifier uri;
 
+static ReplyHashFunction rhf;
+
 /**
  * The routing table. This table has entries for all
  * queries that we have recently send out. It helps
@@ -1476,7 +1478,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
   HashCode512 hc1;
   int i;
   IndirectionTableEntry * ite;
-
+  
 #if EXTRA_CHECKS
   /* verify data is valid */
   uri(value,
@@ -1486,11 +1488,10 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
 
   /* check seen */
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
-  /* FIXME: this computation of the seen-ID
-     includes the timeout (bad!) */
-  hash(&value[1],
-       ntohl(value->size) - sizeof(DataContainer),
-       &hc);
+  if (rhf == NULL)
+    return OK; /* drop, not fully initialized! */
+  rhf(value,
+      &hc);
   for (i=0;i<ite->seenIndex;i++)
     if (equalsHashCode512(&hc,
 			  &ite->seen[i]))
@@ -1687,36 +1688,40 @@ static int useContent(const PeerIdentity * hostId,
   ite->successful_local_lookup_in_delay_loop = NO;
   size = ntohs(msg->header.size) - sizeof(GAP_REPLY);
   prio = 0;
-  /* FIXME: this computation of contentHC
-     includes the timeout, which is bad! */
-  hash(&msg[1],
-       size,
-       &contentHC);
 
+  if (rhf == NULL)
+    return OK; /* not fully initialized! */
+  value = MALLOC(size + sizeof(DataContainer));
+  value->size = htonl(size + sizeof(DataContainer));
+  memcpy(&value[1],
+	 &msg[1],
+	 size);
+  rhf(value,
+      &contentHC);
+  
   /* FIRST: check if seen */
   MUTEX_LOCK(&ite->lookup_exclusion);
   for (i=0;i<ite->seenIndex;i++) {
     if (equalsHashCode512(&contentHC,
 			  &ite->seen[i])) {
       MUTEX_UNLOCK(&ite->lookup_exclusion);
+      FREE(value);
       return 0; /* seen before, useless */
     }
   }
   MUTEX_UNLOCK(&ite->lookup_exclusion);
 
   /* SECOND: check if valid */
-  value = MALLOC(size + sizeof(DataContainer));
-  value->size = htonl(size + sizeof(DataContainer));
-  memcpy(&value[1],
-	 &msg[1],
-	 size);
   ret = bs->put(bs->closure,
 		&msg->primaryKey,
 		value,
 		0);
   if (ret == SYSERR) {
-    FREE(value);
     BREAK();
+    uri(value,
+	ANY_BLOCK,
+	&contentHC);
+    FREE(value);
     return SYSERR; /* invalid */
   }
 
@@ -1800,13 +1805,15 @@ static int useContent(const PeerIdentity * hostId,
  * @return SYSERR on error, OK on success
  */
 static int init(Blockstore * datastore,
-		UniqueReplyIdentifier uid) {
+		UniqueReplyIdentifier uid,
+		ReplyHashFunction rh) {
   if (bs != NULL) {
     BREAK();
     return SYSERR;
   }
   bs = datastore;
   uri = uid;
+  rhf = rh;
   return OK;
 }
 

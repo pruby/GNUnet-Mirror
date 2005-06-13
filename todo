@@ -1,5 +1,4 @@
 0.7.0pre3:
-- FSUI: directory creation (uploadAll) broken! [ empty directories! ]
 - gnunet-gtk (debug)
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
@@ -7,13 +6,10 @@
     known to be working.  
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
+- FSUI: recursive directory download crashes (i.e. on exit)
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
-  * cache kblock-public/private keys 
-    (terribly important, performance sucks already, but
-     without caching it'll be unbearable, espeically for
-     insertion of zip files with hundreds of files/keywords!)
   * permissions on indexed files? [Nils]
   * Windows installer [Nils]
     * Uninstall
@@ -51,6 +47,10 @@
 - Documentation:
   * LJ article
 - support using -k multiple times in gnunet-pseudonym
+- maybe: cache kblock-public/private keys 
+    (1024 bit keys are much better than the 2048 bit keys,
+     but this would give another performance boost, especially for
+     insertion of zip files with hundreds of files/keywords!)
 
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling

@@ -548,7 +548,10 @@ static void freeDownloadList(FSUI_DownloadList * list) {
     freeDownloadList(dpos->subDownloads);
     freeDownloadList(dpos->subDownloadsNext);
     dpos->signalTerminate = YES;
-    PTHREAD_JOIN(&dpos->handle, &unused);
+    if (dpos->threadStarted == YES) {
+      PTHREAD_JOIN(&dpos->handle, &unused);
+      dpos->threadStarted = NO;
+    }
     ECRS_freeUri(dpos->uri);
     FREE(dpos->filename);
     for (i=dpos->completedDownloadsCount-1;i>=0;i--)
@@ -744,10 +747,18 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
     }
   }
 
+#if 0
+  /* FIXME: severely broken:
+     - concurrency issue with FSUI_stop,
+     - does not take tree structure into
+       account (activeDownloads is more 
+       than just a linked list!)
+  */
   dpos = ctx->activeDownloads;
   dprev = NULL;
   while (dpos != NULL) {
-    if (YES == dpos->signalTerminate) {
+    if ( (YES == dpos->signalTerminate) &&
+	 (NO == PTHREAD_SELF_TEST(&dpos->handle)) ) {
       PTHREAD_JOIN(&dpos->handle,
 		   &unused);
       dtmp = dpos->next;
@@ -769,6 +780,7 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
       dpos = dpos->next;
     }
   }
+#endif
   MUTEX_UNLOCK(&ctx->lock);
 }
 

@@ -161,6 +161,8 @@ typedef struct FSUI_DownloadList {
    */
   int signalTerminate;
 
+  int threadStarted;
+
   unsigned long long total;
 
   unsigned long long completed;

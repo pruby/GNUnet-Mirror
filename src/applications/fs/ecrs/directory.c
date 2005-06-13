@@ -124,7 +124,8 @@ int ECRS_listDirectory(const char * data,
     }
     pos += mdSize;
     count++;
-    spcb(&fi, NULL, spcbClosure);
+    if (spcb != NULL)
+      spcb(&fi, NULL, spcbClosure);
     ECRS_freeMetaData(fi.meta);
     ECRS_freeUri(fi.uri);
   }

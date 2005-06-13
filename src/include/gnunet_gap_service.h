@@ -43,6 +43,14 @@ typedef int (*UniqueReplyIdentifier)(const DataContainer * content,
 				     const HashCode512 * primaryKey);
 
 /**
+ * Given some content, compute the unique
+ * hash of the content that can then be used
+ * to sort out duplicates.
+ */
+typedef int (*ReplyHashFunction)(const DataContainer * data,
+				 HashCode512 * hc);
+
+/**
  * Functions of the GAP Service API.
  */
 typedef struct {
@@ -54,7 +62,8 @@ typedef struct {
    * @return SYSERR on error, OK on success
    */
   int (*init)(Blockstore * datastore,
-	      UniqueReplyIdentifier uri);
+	      UniqueReplyIdentifier uri,
+	      ReplyHashFunction rhf);
 
   /**
    * Perform a GET operation using 'key' as the key.  Note that no

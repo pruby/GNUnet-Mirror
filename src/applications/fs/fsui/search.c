@@ -178,7 +178,7 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
   if (0 != PTHREAD_CREATE(&pos->handle,
 			  (PThreadMain) &searchThread,
 			  pos,
-			  16 * 1024)) {
+			  32 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
     ECRS_freeUri(pos->uri);
     FREE(pos);

@@ -40,6 +40,7 @@
 #include "querymanager.h"
 #include "fs.h"
 
+#define EXTRA_CHECKS YES
 
 typedef struct {
   struct DHT_GET_RECORD * rec;
@@ -121,6 +122,10 @@ static int gapPut(void * closure,
     BREAK(); /* value failed verification! */
     return SYSERR;
   }
+#if EXTRA_CHECKS
+  if (closure != NULL)
+    return OK; /* was extra-check */
+#endif
 
   dv = MALLOC(size);
   dv->size = htonl(size);
@@ -334,6 +339,7 @@ static int csHandleRequestInsert(ClientHandle sock,
       ntohs(ri->header.size) - sizeof(RequestInsert) -
       sizeof(Datastore_Value);
     gw = MALLOC(size);
+    gw->reserved = 0;
     gw->dc.size = htonl(size);
     et = ntohll(ri->expiration);
     /* expiration time normalization and randomization */
@@ -714,7 +720,12 @@ static int gapGetConverter(const HashCode512 * key,
   memcpy(&gw[1],
 	 &value[1],
 	 size - sizeof(GapWrapper));
-
+#if EXTRA_CHECKS
+  GNUNET_ASSERT(SYSERR != gapPut("CHECK",
+				 key,
+				 &gw->dc,
+				 0));
+#endif
   if (ggc->resultCallback != NULL)
     ret = ggc->resultCallback(key,
 			      &gw->dc,
@@ -960,6 +971,23 @@ static int uniqueReplyIdentifier(const DataContainer * content,
     return NO;
 }
 
+static void replyHashFunction(const DataContainer * content,
+			      HashCode512 * id) {
+  const GapWrapper * gw;
+  unsigned int size;
+
+  size = ntohl(content->size);
+  if (size < sizeof(GapWrapper)) {
+    BREAK();
+    memset(id, 0, sizeof(HashCode512));
+    return;
+  }
+  gw = (const GapWrapper*) content;
+  hash(&gw[1],
+       size - sizeof(GapWrapper),
+       id);
+}
+
 
 /**
  * Initialize the FS module. This method name must match
@@ -1004,7 +1032,9 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   dsGap.del = &gapDel;
   dsGap.iterate = &gapIterate;
   initQueryManager(capi);
-  gap->init(&dsGap, &uniqueReplyIdentifier);
+  gap->init(&dsGap,
+	    &uniqueReplyIdentifier,
+	    &replyHashFunction);
 
   if (dht != NULL) {
     dsDht.closure = NULL;

@@ -150,7 +150,9 @@ static int createIOContext(IOContext * this,
        ((size_t)st.st_size > filesize ) ) {
     /* if exists and oversized, truncate */
     if (truncate(filename, filesize) != 0) {
-      LOG_FILE_STRERROR(LOG_FAILURE, "truncate", filename);
+      LOG_FILE_STRERROR(LOG_FAILURE, 
+			"truncate", 
+			filename);
       return SYSERR;
     }
   }
@@ -165,10 +167,12 @@ static int createIOContext(IOContext * this,
       fn[strlen(fn)-1] += i;
     }
     this->handles[i] = fileopen(fn,
-			    O_CREAT|O_RDWR,
-			    S_IRUSR|S_IWUSR );
+				O_CREAT|O_RDWR,
+				S_IRUSR|S_IWUSR );
     if (this->handles[i] < 0) {
-      LOG_FILE_STRERROR(LOG_FAILURE, "OPEN", fn);
+      LOG_FILE_STRERROR(LOG_FAILURE, 
+			"OPEN",
+			fn);
       freeIOC(this, NO);
       FREE(fn);
       return SYSERR;
@@ -1149,13 +1153,16 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
 
   GNUNET_ASSERT(filename != NULL);
   fid = uri->data.chk;
-  if (! ECRS_isFileUri(uri))
+  if (! ECRS_isFileUri(uri)) {
+    BREAK();
     return SYSERR;
+  }
 
   if (OK != createIOContext(&ioc,
 			    ntohll(fid.file_length),
-			    filename))
+			    filename)) {
     return SYSERR;
+  }
   rm = createRequestManager();
 
   cronTime(&ctx.startTime);

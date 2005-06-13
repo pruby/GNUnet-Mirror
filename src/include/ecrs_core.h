@@ -142,6 +142,7 @@ typedef struct {
   unsigned int type;
 
   KBlock kblock;
+
   NBlock nblock;
 } KNBlock;
 

@@ -253,7 +253,7 @@ static void dirEntryCallback(const char * filename,
     meta = NULL;
     utc->dir = prev;
     ret = uploadDirectory(utc,
-			  dirName,
+			  fn,
 			  &current,
 			  &uri,
 			  &meta);
@@ -348,6 +348,8 @@ static void * uploadThread(UploadThreadClosure * utc) {
       event.type = upload_error;
       event.data.message = _("Upload failed.\n");
     }
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);
     if (utc->meta == NULL)
       utc->meta = ECRS_createMetaData();
     else
@@ -381,23 +383,18 @@ static void * uploadThread(UploadThreadClosure * utc) {
 	 current.fiCount,
 	 0);
     
-    if (ret == OK) {
-      event.type = upload_complete;
-      event.data.UploadComplete.total = utc->main_total;
-      event.data.UploadComplete.filename = utc->main_filename;
-      event.data.UploadComplete.uri = uri;
-      event.data.UploadComplete.eta = cronTime(NULL);
-      event.data.UploadComplete.start_time = utc->start_time;
-      event.data.UploadComplete.is_recursive = YES;
-      event.data.UploadComplete.main_filename = utc->main_filename;
-    } else {
+    if (ret != OK) {
       event.type = upload_error;
       event.data.message = _("Upload failed.\n");
-    }
+      utc->ctx->ecb(utc->ctx->ecbClosure,
+		    &event);
+    } /* for success, uploadDirectory sends event already! */
     utc->filename = NULL;
   } else {
     event.type = upload_error;
     event.data.message = _("Cannot upload directory without using recursion.\n");
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);
   }
   if (ret == OK) { /* publish top-level advertisements */
     fi.meta = utc->meta;
@@ -438,8 +435,6 @@ static void * uploadThread(UploadThreadClosure * utc) {
 			 uri,
 			 utc->meta);	
   }
-  utc->ctx->ecb(utc->ctx->ecbClosure,
-		&event);
   fi.uri = uri;
   fi.meta = utc->meta;
   FSUI_publishToCollection(utc->ctx,
@@ -513,7 +508,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   if (0 != PTHREAD_CREATE(&tl->handle,
 			  (PThreadMain) &uploadThread,
 			  utc,
-			  32 * 1024)) {
+			  128 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
     FREE(tl);
     FREE(utc->main_filename);
@@ -581,7 +576,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   if (0 != PTHREAD_CREATE(&tl->handle,
 			  (PThreadMain) &uploadThread,
 			  utc,
-			  16 * 1024)) {
+			  128 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
     FREE(tl);
     FREE(utc->main_filename);

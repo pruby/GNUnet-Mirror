@@ -59,6 +59,8 @@ typedef struct {
    */
   unsigned int anonymityLevel;
 
+  unsigned int reserved; /*  for 64-bit alignment */
+
   /**
    * What are the queries?
    */
@@ -112,6 +114,8 @@ typedef struct {
 typedef struct {
   CS_HEADER header;
 
+  unsigned int reserved;
+
   /**
    * What is the hash of the file that contains
    * this block?
@@ -145,18 +149,18 @@ typedef struct {
   unsigned long long fileOffset;
 
   /**
-   * What are the anonymity requirements for this content?
-   * Use 0 if anonymity is not required (enables direct
-   * sharing / DHT routing).
-   */
-  unsigned int anonymityLevel;
-
-  /**
    * What is the hash of the file that contains
    * this block?  Used by gnunetd for the name
    * of the file in the on-demand datastore.
    */
   HashCode512 fileId;
+
+  /**
+   * What are the anonymity requirements for this content?
+   * Use 0 if anonymity is not required (enables direct
+   * sharing / DHT routing).
+   */
+  unsigned int anonymityLevel;
 
 } RequestIndex;
 
@@ -195,6 +199,8 @@ typedef struct {
 typedef struct {
   CS_HEADER header;
 
+  unsigned int reserved;
+
   /**
    * What is the hash of the file that should be
    * unindexed?
@@ -211,6 +217,7 @@ typedef struct {
  */
 typedef struct {
   DataContainer dc;
+  unsigned int reserved; /* for 64-bit alignment */
   unsigned long long timeout;
 } GapWrapper;
 

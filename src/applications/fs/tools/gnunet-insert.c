@@ -152,7 +152,8 @@ static void printstatus(int * verboselevel,
     if (0 == strcmp(event->data.UploadComplete.main_filename,
 		    event->data.UploadComplete.filename)) {
       postProcess(event->data.UploadComplete.uri);
-      SEMAPHORE_UP(exitSignal);
+      if (exitSignal != NULL)
+	SEMAPHORE_UP(exitSignal);
     }
 
     break;
@@ -160,7 +161,8 @@ static void printstatus(int * verboselevel,
     printf(_("\nError uploading file: %s\n"),
 	   event->data.message);
     errorCode = 1;
-    SEMAPHORE_UP(exitSignal); /* always exit main? */
+    if (exitSignal != NULL)
+      SEMAPHORE_UP(exitSignal); /* always exit main? */
     break;
   default:
     BREAK();
@@ -503,6 +505,7 @@ int main(int argc, char ** argv) {
   char * timestr;
   int doIndex;
   int ret;
+  Semaphore * es;
 
   meta = ECRS_createMetaData();
   if (SYSERR == initUtil(argc, argv, &parseOptions)) {
@@ -652,7 +655,9 @@ int main(int argc, char ** argv) {
   }
   /* wait for completion */
   SEMAPHORE_DOWN(exitSignal);
-  SEMAPHORE_FREE(exitSignal);
+  es = exitSignal;
+  exitSignal = NULL;
+  SEMAPHORE_FREE(es);
 
   /* shutdown */
   FREE(filename);
