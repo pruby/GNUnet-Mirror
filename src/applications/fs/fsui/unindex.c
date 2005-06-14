@@ -49,7 +49,7 @@ static void progressCallback(unsigned long long totalBytes,
 			     UnindexThreadClosure * utc) {
   FSUI_Event event;
 
-  event.type = unindex_progress;
+  event.type = FSUI_unindex_progress;
   event.data.UnindexProgress.completed = completedBytes;
   event.data.UnindexProgress.total = totalBytes;
   event.data.UnindexProgress.filename = utc->filename;
@@ -74,12 +74,12 @@ static void * unindexThread(UnindexThreadClosure * utc) {
 			 NULL,
 			 NULL);
   if (ret == OK) {
-    event.type = unindex_complete;
+    event.type = FSUI_unindex_complete;
     event.data.UnindexComplete.total = getFileSize(utc->filename);
     event.data.UnindexComplete.filename = utc->filename;
     event.data.UnindexComplete.start_time = utc->start_time;
   } else {
-    event.type = unindex_error;
+    event.type = FSUI_unindex_error;
     event.data.message = _("Unindex failed.\n");
   }
   FREE(utc->filename);

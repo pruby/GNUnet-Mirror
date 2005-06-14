@@ -149,7 +149,7 @@ static void progressModel(void * okVal,
   int * ok = okVal;
 
   switch (event->type) {
-  case download_progress:
+  case FSUI_download_progress:
     if (YES == testConfigurationString("GNUNET-DOWNLOAD",
 				       "VERBOSE",
 				       "YES")) {
@@ -162,22 +162,38 @@ static void progressModel(void * okVal,
       printf("\r");
     }
     break;
-  case download_error:
+  case FSUI_download_aborted:
+    if (FSUI_getDownloadParent(event->data.DownloadError.pos) == NULL) {
+      /* top-download aborted */
+      printf(_("Error downloading: %s\n"),
+	     event->data.DownloadError.message);
+      *ok = SYSERR;
+      SEMAPHORE_UP(signalFinished);
+    } else {
+      /* child aborted, maybe FSUI thread
+	 policy, ignore?  How can this
+	 happen anyway with gnunet-download? */
+    }
+    break;
+  case FSUI_download_error:
     printf(_("Error downloading: %s\n"),
-	   event->data.message);
+	   event->data.DownloadError.message);
     *ok = SYSERR;
     SEMAPHORE_UP(signalFinished);
     break;
-  case download_complete:
-    printf(_("\nDownload of file '%s' complete.  Speed was %8.3f kilobyte per second.\n"),
-	   event->data.DownloadProgress.filename,
-	   (event->data.DownloadProgress.completed/1024.0) /
-	   (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1)))
-	    / (double)cronSECONDS) );
-    if (ECRS_equalsUri(event->data.DownloadProgress.main_uri,
-		       event->data.DownloadProgress.uri) ) {
-      *ok = OK;
-      SEMAPHORE_UP(signalFinished);
+  case FSUI_download_complete:
+    if ( (event->data.DownloadProgress.completed ==
+	  event->data.DownloadProgress.total) ) {
+      printf(_("\nDownload of file '%s' complete.  Speed was %8.3f kilobyte per second.\n"),
+	     event->data.DownloadProgress.filename,
+	     (event->data.DownloadProgress.completed/1024.0) /
+	     (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1)))
+	      / (double)cronSECONDS) );
+      if (ECRS_equalsUri(event->data.DownloadProgress.main_uri,
+			 event->data.DownloadProgress.uri)) {
+	*ok = OK;
+	SEMAPHORE_UP(signalFinished);
+      }
     }
     break;
   default:

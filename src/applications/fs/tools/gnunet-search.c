@@ -58,7 +58,7 @@ static void eventCallback(SearchClosure * sc,
   char * uri;
   char * filename;
 
-  if (event->type != search_result)
+  if (event->type != FSUI_search_result)
     return;
 
   /* retain URIs for possible directory dump later */

@@ -121,7 +121,7 @@ static void printstatus(int * verboselevel,
   char * fstring;
 
   switch(event->type) {
-  case upload_progress:
+  case FSUI_upload_progress:
     if (*verboselevel == YES) {
       delta = event->data.UploadProgress.eta - cronTime(NULL);
       PRINTF(
@@ -132,7 +132,7 @@ static void printstatus(int * verboselevel,
       printf("\r");
     }
     break;
-  case upload_complete:
+  case FSUI_upload_complete:
     if (*verboselevel == YES) {
       delta = event->data.UploadComplete.eta - event->data.UploadComplete.start_time;
       PRINTF(
@@ -157,7 +157,7 @@ static void printstatus(int * verboselevel,
     }
 
     break;
-  case upload_error:
+  case FSUI_upload_error:
     printf(_("\nError uploading file: %s\n"),
 	   event->data.message);
     errorCode = 1;

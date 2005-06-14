@@ -204,11 +204,12 @@ int ECRS_uploadFile(const char * filename,
 
 	switch(FS_initIndex(sock, &fileId, filename)) {
 		case SYSERR:
-			LOG(LOG_ERROR, "'%s' failed.\n", _("Initialization"));
+			LOG(LOG_ERROR, _("Initialization for indexing file '%s' failed.\n"), filename);
     	return SYSERR;
 		case NO:
-			LOG(LOG_ERROR, "Indexing %s failed. Check file permissions and consult "
-				"your GNUnet server's logs.\n", filename);
+			LOG(LOG_ERROR, 
+			    _("Indexing file '%s' failed. Check file permissions and consult "
+				"your GNUnet server's logs.\n"), filename);
     	return SYSERR;			
 	}
 

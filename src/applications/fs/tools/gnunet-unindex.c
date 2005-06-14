@@ -44,7 +44,7 @@ static void printstatus(int * verboselevel,
   unsigned long long delta;
 
   switch(event->type) {
-  case unindex_progress:
+  case FSUI_unindex_progress:
     if (*verboselevel == YES) {
       delta = event->data.UploadProgress.eta - cronTime(NULL);
       PRINTF(_("%16llu of %16llu bytes unindexed (estimating %llu seconds to completion)                "),
@@ -54,7 +54,7 @@ static void printstatus(int * verboselevel,
       printf("\r");
     }
     break;
-  case unindex_complete:
+  case FSUI_unindex_complete:
     if (*verboselevel == YES) {
       delta = event->data.UploadComplete.eta - event->data.UploadComplete.start_time;
       PRINTF(
@@ -67,7 +67,7 @@ static void printstatus(int * verboselevel,
       : (double) (event->data.UploadComplete.total / 1024.0 * cronSECONDS / delta));
     }
     break;
-  case unindex_error:
+  case FSUI_unindex_error:
     printf(_("\nError unindexing file: %s\n"),
 	   event->data.message);
     errorCode = 1;

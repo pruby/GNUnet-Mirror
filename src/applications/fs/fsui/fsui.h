@@ -34,12 +34,18 @@
  * Linked list of FSUI threads.
  */
 typedef struct FSUI_ThreadList {
+  
+  /**
+   * FSUI threads are kept in a simple
+   * linked list
+   */
   struct FSUI_ThreadList * next;
 
   /**
    * Handle to a thread.
    */
   PTHREAD_T handle;
+
   /**
    * Flag that indicates if it is safe (i.e.
    * non-blocking) to call join on the handle.
@@ -52,15 +58,18 @@ typedef struct FSUI_ThreadList {
  * Track record for a given result.
  */
 typedef struct {
+
   /**
    * For how many keys (hash of keyword) did we
    * get this result?
    */
   unsigned int matchingKeyCount;
+
   /**
    * What are these keys?
    */
   HashCode512 * matchingKeys;
+
   /**
    * What info do we have about this result?
    */
@@ -71,8 +80,15 @@ typedef struct {
  * @brief list of active searches
  */
 typedef struct FSUI_SearchList {
+
+  /**
+   * Searches are kept in a simple linked list.
+   */
   struct FSUI_SearchList * next;
 
+  /**
+   * Context for this search
+   */
   struct FSUI_Context * ctx;
 
   /**
@@ -91,6 +107,9 @@ typedef struct FSUI_SearchList {
    */
   struct ECRS_URI * uri;
 
+  /**
+   * Desired anonymity level for this search
+   */
   unsigned int anonymityLevel;
 
   /**
@@ -99,6 +118,9 @@ typedef struct FSUI_SearchList {
    */
   unsigned int numberOfURIKeys;
 
+  /**
+   * Size of the resultsReceived array
+   */
   unsigned int sizeResultsReceived;
 
   /**
@@ -138,12 +160,7 @@ typedef struct FSUI_DownloadList {
    * list of sub-downloads that are currently
    * going on in parallel.
    */
-  struct FSUI_DownloadList * subDownloads;
-
-  /**
-   * Next entry in the linked list of subdownloads.
-   */
-  struct FSUI_DownloadList * subDownloadsNext;
+  struct FSUI_DownloadList * child;
 
   /**
    * FSUI context for this download.
@@ -151,20 +168,35 @@ typedef struct FSUI_DownloadList {
   struct FSUI_Context * ctx;
 
   /**
-   * Handle to the thread which performs the download.
+   * Set this to YES to signal the download thread that
+   * termination is desired.  Then join on handle.  
+   * Set to NO if thread is running.  Set to SYSERR
+   * if no thread has been assigned to this download
+   * at the moment.
+   */
+  int signalTerminate;
+
+  /**
+   * Is the download of this file finished (not necessarily
+   * transitively for directories, just the directory/file
+   * itself).
+   */
+  int finished;
+
+  /**
+   * Currently assigned thread (if any).
    */
   PTHREAD_T handle;
 
   /**
-   * Set this to YES to signal the download thread that
-   * termination is desired.  Then join on handle.
+   * How many bytes is this download in total
+   * (including files in directory).
    */
-  int signalTerminate;
-
-  int threadStarted;
-
   unsigned long long total;
 
+  /**
+   * How many bytes have been retrieved so far?
+   */
   unsigned long long completed;
 
   /**
@@ -183,7 +215,9 @@ typedef struct FSUI_DownloadList {
   int is_recursive;
 
   /**
-   * When did the download start?
+   * When did the download start?  Note that if a download is resumed,
+   * this time is set such that the total time is accurate, not the
+   * absolute start time.
    */
   cron_t startTime;
 
@@ -226,8 +260,16 @@ typedef struct FSUI_DownloadList {
  */
 typedef struct FSUI_Context {
 
+  /**
+   * IPC semaphore used to ensure mutual exclusion
+   * between different processes of the same name
+   * that all use resume.
+   */
   IPC_Semaphore * ipc;
 
+  /**
+   * Name of the tool using FSUI (used for resume).
+   */
   char * name;
 
   /**
@@ -262,20 +304,48 @@ typedef struct FSUI_Context {
   FSUI_SearchList * activeSearches;
 
   /**
-   * List of active downloads
+   * Root of the tree of downloads.  On shutdown,
+   * FSUI must abort each of these downloads.
    */
-  FSUI_DownloadList * activeDownloads;
+  FSUI_DownloadList activeDownloads;
+
+  /**
+   * Target size of the thread pool for parallel
+   * downloads.
+   */
+  unsigned int threadPoolSize;
+
+  /**
+   * Number of download threads that are
+   * currently active.
+   */
+  unsigned int activeDownloadThreads;
 
 } FSUI_Context;
 
 /**
+ * Starts or stops download threads in accordance with thread pool
+ * size and active downloads.  Call only while holding FSUI lock (or
+ * during start/stop).
+ *
+ * @return YES if change done that may require re-trying
+ */
+int updateDownloadThread(FSUI_DownloadList * list);
+
+/**
+ * Free the subtree (assumes all threads have already been stopped and
+ * that the FSUI lock is either held or that we are in FSUI stop!).
+ */
+void freeDownloadList(FSUI_DownloadList * list);
+
+/**
  * Cleanup the FSUI context (removes dead entries from
- * activeThreads / activeSearches).
+ * activeThreads / activeSearches / activeDownloads).
  */
 void cleanupFSUIThreadList(FSUI_Context * ctx);
 
 
-/* from download.c */
+/* FOR RESUME: from download.c */
 /**
  * Thread that downloads a file.
  */
@@ -283,7 +353,7 @@ void * downloadThread(FSUI_DownloadList * dl);
 
 /* from search.c */
 /**
- * Thread that searches for data.
+ * FOR RESUME: Thread that searches for data.
  */
 void * searchThread(FSUI_SearchList * pos);
 

@@ -23,19 +23,13 @@
  * @brief download functions
  * @author Krista Bennett
  * @author Christian Grothoff
- *
- * BIG FIXME: the download code still has some very serious issues in
- * particular with recursive downloads (and the tree model of them).
- * This may result in segfaults on exit and other bad side-effects.
- *
- * Also, it spawns far, far too many concurrent threads (lots to be
- * fixed, probably including a re-design to clean things up).
  */
 
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
+
 
 /**
  * Start to download a file.
@@ -63,12 +57,12 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
     if (ECRS_equalsUri(parent->completedDownloads[i],
 		       fi->uri))
       return OK; /* already complete! */
-  pos = parent->subDownloads;
+  pos = parent->child;
   while (pos != NULL) {
     if (ECRS_equalsUri(pos->uri,
 		       fi->uri))
       return OK; /* already downloading */
-    pos = pos->subDownloadsNext;
+    pos = pos->next;
   }
   filename = ECRS_getFromMetaData(fi->meta,
 				  EXTRACTOR_FILENAME);
@@ -113,11 +107,12 @@ downloadProgressCallback(unsigned long long totalBytes,
   FSUI_DownloadList * root;
 
   root = dl;
-  while (root->parent != NULL)
+  while ( (root->parent != NULL) &&
+	  (root->parent != &dl->ctx->activeDownloads) )
     root = root->parent;
 
   dl->completed = completedBytes;
-  event.type = download_progress;
+  event.type = FSUI_download_progress;
   event.data.DownloadProgress.total = totalBytes;
   event.data.DownloadProgress.completed = completedBytes;
   event.data.DownloadProgress.last_offset = lastBlockOffset;
@@ -130,6 +125,7 @@ downloadProgressCallback(unsigned long long totalBytes,
   event.data.DownloadProgress.is_recursive = dl->is_recursive;
   event.data.DownloadProgress.main_filename = root->filename;
   event.data.DownloadProgress.main_uri = root->uri;
+  event.data.DownloadProgress.pos = dl;
   dl->ctx->ecb(dl->ctx->ecbClosure,
 	       &event);
   if ( (lastBlockOffset == 0) &&
@@ -175,19 +171,15 @@ testTerminate(FSUI_DownloadList * dl) {
 void * downloadThread(FSUI_DownloadList * dl) {
   int ret;
   FSUI_Event event;
-  unsigned long long totalBytes;
-  FSUI_DownloadList * prev;
-  FSUI_DownloadList * pos;
   struct ECRS_MetaData * md;
   FSUI_DownloadList * root;
+  unsigned long long totalBytes;
 
-  totalBytes = ECRS_fileSize(dl->uri);
+  GNUNET_ASSERT(dl->ctx != NULL);
   root = dl;
-  while (root->parent != NULL) {    
+  while ( (root->parent != NULL) &&
+	  (root->parent != &dl->ctx->activeDownloads) ) {
     root = root->parent;
-    if (root != NULL) {
-      root->total += totalBytes;
-    }
   }
 
   GNUNET_ASSERT(dl->filename != NULL);
@@ -198,24 +190,11 @@ void * downloadThread(FSUI_DownloadList * dl) {
 			  dl,
 			  (ECRS_TestTerminate) &testTerminate,
 			  dl);
-  if (ret != OK) {
-    event.type = download_error;
-    event.data.message = _("Download aborted.");
-  } else {
-    event.type = download_complete;
-    event.data.DownloadProgress.total = root->total;
-    event.data.DownloadProgress.completed = root->completed;
-    event.data.DownloadProgress.last_offset = 0;
-    event.data.DownloadProgress.eta = cronTime(NULL);
-    event.data.DownloadProgress.last_block = NULL;
-    event.data.DownloadProgress.last_size = 0;
-    event.data.DownloadProgress.filename = dl->filename;
-    event.data.DownloadProgress.uri = dl->uri;
-    event.data.DownloadProgress.start_time = dl->startTime;
-    event.data.DownloadProgress.is_recursive = dl->is_recursive;
-    event.data.DownloadProgress.main_filename = root->filename;
-    event.data.DownloadProgress.main_uri = root->uri;
-  }
+  /* MAYBE FIXME: ___ ret == OK possible without download complete or at 
+     least without downloadProgressCallback called with complete?? __ 
+     (possibly only with resumed download???) */
+  if (ret == OK)
+    dl->finished = YES;  
   if ( (ret == OK) &&
        (dl->is_recursive) &&
        (dl->is_directory) ) {
@@ -224,16 +203,18 @@ void * downloadThread(FSUI_DownloadList * dl) {
 
 #ifdef O_LARGEFILE
     fd = fileopen(dl->filename,
-	      O_LARGEFILE | O_RDONLY);
+		  O_LARGEFILE | O_RDONLY);
 #else
     fd = fileopen(dl->filename,
-	      O_RDONLY);
+		  O_RDONLY);
 #endif
     if (fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR,
 			"OPEN",
 			dl->filename);
     } else {
+      totalBytes = ECRS_fileSize(dl->uri);
+
       dirBlock = MMAP(NULL,
 		      totalBytes,
 		      PROT_READ,
@@ -253,42 +234,43 @@ void * downloadThread(FSUI_DownloadList * dl) {
       MUNMAP(dirBlock, totalBytes);
       closefile(fd);
     }
-
-    /* wait for recursive downloads (if any) */
-    while ( (dl->subDownloads != NULL) &&
-	    (dl->signalTerminate != YES) )
-      gnunet_util_sleep(100);
   }
-  dl->ctx->ecb(dl->ctx->ecbClosure,
-	       &event);
-  if (dl->parent != NULL) {
-    /* notify parent that we're done */
-    MUTEX_LOCK(&dl->ctx->lock);
-    GROW(dl->parent->completedDownloads,
-	 dl->parent->completedDownloadsCount,
-	 dl->parent->completedDownloadsCount+1);
-    dl->parent->completedDownloads[dl->parent->completedDownloadsCount-1]
-      = ECRS_dupUri(dl->uri);
-    prev = NULL;
-    pos = dl->parent->subDownloads;
-    while ( (pos != NULL) &&
-	    (pos != dl) ) {
-      prev = pos;
-      pos = pos->subDownloadsNext;
-    }
-    if (pos == NULL) {
-      BREAK();
+  if (ret != OK) {
+    if (dl->signalTerminate == YES) {
+      event.type = FSUI_download_aborted;
+      event.data.DownloadError.message = _("Download aborted.");
     } else {
-      if (prev != NULL)
-	prev->subDownloadsNext 
-	  = pos->subDownloadsNext;
-      else
-	dl->parent->subDownloads
-	  = pos->subDownloadsNext;
+      event.type = FSUI_download_error;
+      event.data.DownloadError.message = _("ECRS download failed (see logs).");
     }
-    MUTEX_UNLOCK(&dl->ctx->lock);
+    event.data.DownloadError.pos = dl;
+    dl->ctx->ecb(dl->ctx->ecbClosure,
+		 &event);
+    dl->signalTerminate = YES;
+  } else {
+    dl->signalTerminate = YES;
+    while ( (dl != NULL) &&
+	    (dl->ctx != NULL) &&
+	    (dl != &dl->ctx->activeDownloads) ) {
+      event.type = FSUI_download_complete;
+      event.data.DownloadProgress.total = root->total;
+      event.data.DownloadProgress.completed = root->completed;
+      event.data.DownloadProgress.last_offset = 0;
+      event.data.DownloadProgress.eta = cronTime(NULL);
+      event.data.DownloadProgress.last_block = NULL;
+      event.data.DownloadProgress.last_size = 0;
+      event.data.DownloadProgress.filename = dl->filename;
+      event.data.DownloadProgress.uri = dl->uri;
+      event.data.DownloadProgress.start_time = dl->startTime;
+      event.data.DownloadProgress.is_recursive = dl->is_recursive;
+      event.data.DownloadProgress.main_filename = root->filename;
+      event.data.DownloadProgress.main_uri = root->uri;
+      event.data.DownloadProgress.pos = dl;
+      dl->ctx->ecb(dl->ctx->ecbClosure,
+		   &event);
+      dl = dl->parent;
+    }
   }
-  dl->signalTerminate = YES;
   return NULL;
 }
 
@@ -306,7 +288,10 @@ static int startDownload(struct FSUI_Context * ctx,
 			 int is_recursive,
 			 FSUI_DownloadList * parent) {
   FSUI_DownloadList * dl;
+  FSUI_DownloadList * root;
+  unsigned long long totalBytes;
 
+  GNUNET_ASSERT(ctx != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
     BREAK(); /* wrong type of URI! */
@@ -316,8 +301,8 @@ static int startDownload(struct FSUI_Context * ctx,
   dl = MALLOC(sizeof(FSUI_DownloadList));
   memset(dl, 0, sizeof(FSUI_DownloadList));
   cronTime(&dl->startTime);
-  dl->signalTerminate = NO;
-  dl->threadStarted = NO;
+  dl->signalTerminate = SYSERR;
+  dl->finished = NO;
   dl->is_recursive = is_recursive;
   dl->parent = parent;
   dl->is_directory = SYSERR; /* don't know */
@@ -326,27 +311,16 @@ static int startDownload(struct FSUI_Context * ctx,
   dl->filename = STRDUP(filename);
   dl->uri = ECRS_dupUri(uri);
   dl->total = ECRS_fileSize(uri);
-  MUTEX_LOCK(&ctx->lock);
-  if (0 != PTHREAD_CREATE(&dl->handle,
-			  (PThreadMain) &downloadThread,
-			  dl,
-			  128 * 1024)) {
-    FREE(dl->filename);
-    ECRS_freeUri(dl->uri);
-    FREE(dl);
-    MUTEX_UNLOCK(&ctx->lock);
-    return SYSERR;
+  dl->next = parent->child;
+  parent->child = dl;
+
+  totalBytes = ECRS_fileSize(uri);
+  root = dl;
+  while ( (root->parent != NULL) &&
+	  (root->parent != &dl->ctx->activeDownloads) ) {
+    root = root->parent;
+    root->total += totalBytes;
   }
-  dl->threadStarted = YES;
-  if (parent != NULL) {
-    /* add to pending downloads of parent! */
-    dl->subDownloadsNext = parent->subDownloads;
-    parent->subDownloads = dl;
-  }
-  dl->next = ctx->activeDownloads;
-  ctx->activeDownloads = dl;
-  MUTEX_UNLOCK(&ctx->lock);
-  cleanupFSUIThreadList(ctx);
   return OK;
 }
 
@@ -361,13 +335,124 @@ int FSUI_startDownload(struct FSUI_Context * ctx,
 		       unsigned int anonymityLevel,			
 		       const struct ECRS_URI * uri,
 		       const char * filename) {
+  int ret;
+
   GNUNET_ASSERT(filename != NULL);
-  return startDownload(ctx,
-		       anonymityLevel,
-		       uri,
-		       filename,
-		       NO,
-		       NULL);
+  GNUNET_ASSERT(ctx != NULL);
+  MUTEX_LOCK(&ctx->lock);
+  ret = startDownload(ctx,
+		      anonymityLevel,
+		      uri,
+		      filename,
+		      NO,
+		      &ctx->activeDownloads);
+  MUTEX_UNLOCK(&ctx->lock);
+  return ret;
+}
+
+/**
+ * Starts or stops download threads in accordance with thread pool
+ * size and active downloads.  Call only while holding FSUI lock (or
+ * during start/stop).
+ *
+ * @return YES if change done that may require re-trying
+ */
+int updateDownloadThread(FSUI_DownloadList * list) {
+  FSUI_DownloadList * dpos;
+  void * unused;
+  int ret;
+
+  if (list == NULL)
+    return NO;
+
+  ret = NO;
+  /* should this one be started? */
+  if ( (list->ctx->threadPoolSize
+	> list->ctx->activeDownloadThreads) &&
+       (list->signalTerminate == SYSERR) &&
+       (list->total > list->completed) &&
+       (list->finished == NO) ) {
+    list->signalTerminate = NO;
+    if (0 == PTHREAD_CREATE(&list->handle,
+			    (PThreadMain)&downloadThread,
+			    list,
+			    32 * 1024)) {
+      list->ctx->activeDownloadThreads++;
+    } else {
+      LOG_STRERROR(LOG_WARNING, "pthread_create");	
+    }
+  }
+  
+  /* should this one be stopped? */
+  if ( (list->ctx->threadPoolSize
+	< list->ctx->activeDownloadThreads) &&
+       (list->signalTerminate == NO) ) {
+    list->signalTerminate = YES;
+    PTHREAD_JOIN(&list->handle,
+		 &unused);
+    list->ctx->activeDownloadThreads--;
+    list->signalTerminate = SYSERR;
+    ret = YES;
+  }
+
+  /* has this one "died naturally"? */
+  if (list->signalTerminate == YES) {
+    PTHREAD_JOIN(&list->handle,
+		 &unused);
+    list->ctx->activeDownloadThreads--;
+    list->signalTerminate = SYSERR;
+    ret = YES;
+  }
+    
+  dpos = list->child;
+  while (dpos != NULL) {
+    if (YES == updateDownloadThread(dpos))
+      ret = YES;
+    dpos = dpos->next;
+  }
+  return ret;
+}
+
+
+/**
+ * Free the subtree (assumes all threads have already been stopped and
+ * that the FSUI lock is either held or that we are in FSUI stop!).
+ */
+void freeDownloadList(FSUI_DownloadList * list) {
+  FSUI_DownloadList * dpos;
+  int i;
+
+  GNUNET_ASSERT(list->signalTerminate != NO);
+
+  /* first, find our predecessor and
+     unlink us from the tree! */
+  dpos = list->parent;
+  if (dpos != NULL) {
+    if (dpos->child == list)
+      dpos->child = list->next;
+    else {
+      dpos = dpos->child;
+      while ( (dpos != NULL) &&
+	      (dpos != list) )
+	dpos = dpos->next;
+      GNUNET_ASSERT(dpos != NULL);
+      dpos->next = list->next;
+    }
+  }
+
+  /* then, free all of our children */
+  while (list->child != NULL)
+    freeDownloadList(list->child);
+
+  /* finally, free this node and its data */
+  ECRS_freeUri(list->uri);
+  FREE(list->filename);
+  for (i=list->completedDownloadsCount-1;i>=0;i--)
+    ECRS_freeUri(list->completedDownloads[i]);
+  GROW(list->completedDownloads,
+       list->completedDownloadsCount,
+       0);
+  FREE(list);
 }
 
 /**
@@ -379,18 +464,22 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
 		      const struct ECRS_URI * uri,
 		      const char * filename) {
   FSUI_DownloadList * dl;
+  unsigned int backup;
 
   /* FIXME: check that filename matches
      aborted download! */
   GNUNET_ASSERT(filename != NULL);
   MUTEX_LOCK(&ctx->lock);
-  dl = ctx->activeDownloads;
+  dl = ctx->activeDownloads.child;
   while (dl != NULL) {
     if (ECRS_equalsUri(uri,
 		       dl->uri)) {
-      dl->signalTerminate = YES;
+      backup = ctx->threadPoolSize;
+      ctx->threadPoolSize = 0;
+      updateDownloadThread(dl);
+      freeDownloadList(dl);
+      ctx->threadPoolSize = backup;
       MUTEX_UNLOCK(&ctx->lock);
-      cleanupFSUIThreadList(ctx);
       return OK;
     }
     dl = dl->next;
@@ -406,17 +495,21 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
  * events.
  */
 int FSUI_listDownloads(struct FSUI_Context * ctx,
+		       const FSUI_DownloadList * root,
 		       FSUI_DownloadIterator iter,
 		       void * closure) {
   FSUI_DownloadList * dl;
   int ret;
 
   ret = 0;
-  cleanupFSUIThreadList(ctx);
   MUTEX_LOCK(&ctx->lock);
-  dl = ctx->activeDownloads;
+  if (root == NULL)
+    dl = ctx->activeDownloads.child;
+  else
+    dl = root->child;
   while (dl != NULL) {
     if (OK != iter(closure,
+		   dl,
 		   dl->filename,
 		   dl->uri,
 		   dl->total,
@@ -434,6 +527,19 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
 }
 
 /**
+ * Get parent of active download. 
+ * @return NULL if there is no parent
+ */
+const FSUI_DownloadList * 
+FSUI_getDownloadParent(const FSUI_DownloadList * child) {
+  if (child->parent ==
+      &child->ctx->activeDownloads)
+    return NULL;
+  else
+    return child->parent;
+}
+
+/**
  * Start to download a file or directory recursively.
  *
  * @return OK on success (at least we started with it),
@@ -443,66 +549,19 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
 			  unsigned int anonymityLevel,			
 			  const struct ECRS_URI * uri,
 			  const char * dirname) {
-  GNUNET_ASSERT(dirname != NULL);
-  return startDownload(ctx,
-		       anonymityLevel,
-		       uri,
-		       dirname,
-		       YES,
-		       NULL);
-}
-
-/**
- * Abort a recursive download (internal function).
- *
- * Do NOT call cleanupFSUIThreadList in here -- this
- * function maybe called recursively!
- *
- * @return OK on success, SYSERR if no such download is
- *  pending
- */
-static int stopDownloadAll(struct FSUI_Context * ctx,
-			   const struct ECRS_URI * uri,
-			   const char * dirname) {
-  FSUI_DownloadList * dl;
-  int i;
-
-  GNUNET_ASSERT(dirname != NULL);
-  dl = ctx->activeDownloads;
-  while (dl != NULL) {
-    if ( (0 == strcmp(dirname,
-		      dl->filename)) &&
-	 (ECRS_equalsUri(uri,
-			 dl->uri)) ) {
-      dl->signalTerminate = YES;
-      for (i=0;i<dl->completedDownloadsCount;i++)
-	FSUI_stopDownloadAll(ctx,
-			     dl->completedDownloads[i],
-			     dirname);
-      return OK;
-    }
-    dl = dl->next;
-  }
-  return SYSERR;
-}
-
-/**
- * Abort a recursive download.
- *
- * @return OK on success, SYSERR if no such download is
- *  pending
- */
-int FSUI_stopDownloadAll(struct FSUI_Context * ctx,
-			 const struct ECRS_URI * uri,
-			 const char * dirname) {
   int ret;
 
   GNUNET_ASSERT(dirname != NULL);
+  GNUNET_ASSERT(ctx != NULL);
   MUTEX_LOCK(&ctx->lock);
-  ret = stopDownloadAll(ctx, uri, dirname);
+  ret = startDownload(ctx,
+		      anonymityLevel,
+		      uri,
+		      dirname,
+		      YES,
+		      &ctx->activeDownloads);
   MUTEX_UNLOCK(&ctx->lock);
-  cleanupFSUIThreadList(ctx);
   return ret;
 }
-	
+
 /* end of download.c */

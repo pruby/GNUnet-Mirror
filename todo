@@ -1,12 +1,16 @@
 0.7.0pre3:
-- gnunet-gtk (debug)
+- gnunet-gtk:
+  * make directories work [ CG ]
+- FSUI:
+  * make (recursive) downloads work (test/debug) [ CG ]
+- GAP:
+  * fix Nils' assertion failure/bug [ CG ]
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
   * wizards: restrict user & service creation to platforms
     known to be working.  
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
-- FSUI: recursive directory download crashes (i.e. on exit)
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
@@ -33,8 +37,6 @@
 0.7.1 (aka "stabilization"):
 - Optimizations:
   * spread out scanning done in topology_*.c?
-  * fsui download: limit parallelism (currently unlimited, old gnunet-download allowed
-    user to specify maximum amount of parallelism) [ tricky ]
 - gnunet-chat
 - DHT:
   * make dht tests work

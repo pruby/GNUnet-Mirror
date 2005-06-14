@@ -62,20 +62,24 @@ static struct ECRS_URI * readURI(int fd) {
 }
 
 /**
- * (Recursively) read a download list from the 
- * given fd.
+ * (Recursively) read a download list from the given fd.  The returned
+ * pointer is expected to be integrated into the tree either as a next
+ * or child pointer such that the given parent becomes the parent of the
+ * returned node.
  *
  * @return NULL on error AND on read of empty
  *  list (these two cannot be distinguished)
  */
 static FSUI_DownloadList * readDownloadList(int fd,
-					    FSUI_Context * ctx) {
+					    FSUI_Context * ctx,
+					    FSUI_DownloadList * parent) {
   char zaro;
   static FSUI_DownloadList * ret;
   unsigned int big;
   unsigned long long bigl;
   int i;
 
+  GNUNET_ASSERT(ctx != NULL);
   if (1 != READ(fd, &zaro, sizeof(char)))
     return NULL; 
   if (zaro == '\0')
@@ -84,11 +88,12 @@ static FSUI_DownloadList * readDownloadList(int fd,
   ret->ctx = ctx;
 
   ret->signalTerminate 
-    = NO;
+    = SYSERR;
   READINT(ret->is_recursive);
   READINT(ret->is_directory);
   READINT(ret->anonymityLevel);
   READINT(ret->completedDownloadsCount);
+  READINT(ret->finished);
   READINT(big);
   ret->filename = MALLOC(big+1);
   if (big != READ(fd, ret->filename, big))
@@ -113,22 +118,14 @@ static FSUI_DownloadList * readDownloadList(int fd,
   }
   /* FIXME: check if URIs were
      all read successfully! */
-  
+  ret->parent = parent;
+  ret->signalTerminate = SYSERR;
   ret->next = readDownloadList(fd,
-			       ctx);
-  if (ret->next != NULL)
-    ret->next->parent = ret;
-  ret->subDownloads = readDownloadList(fd,
-				       ctx);
-  ret->subDownloadsNext = readDownloadList(fd,
-					   ctx);
-
-  /* start download thread! */
-  if (0 != PTHREAD_CREATE(&ret->handle,
-			  (PThreadMain)&downloadThread,
-			  ret,
-			  16 * 1024))
-    DIE_STRERROR("pthread_create");
+			       ctx,
+			       parent);
+  ret->child = readDownloadList(fd,
+				ctx,
+				ret);
   return ret;
  ERR:
   FREE(ret);
@@ -182,6 +179,7 @@ static void writeDownloadList(int fd,
   WRITEINT(fd, list->is_directory);
   WRITEINT(fd, list->anonymityLevel);
   WRITEINT(fd, list->completedDownloadsCount);
+  WRITEINT(fd, list->finished);
   WRITEINT(fd, strlen(list->filename));
   WRITE(fd, 
 	list->filename,
@@ -196,9 +194,7 @@ static void writeDownloadList(int fd,
   writeDownloadList(fd,
 		    list->next);
   writeDownloadList(fd,
-		    list->subDownloads);
-  writeDownloadList(fd,
-		    list->subDownloadsNext);
+		    list->child);
 }
 
 /**
@@ -268,6 +264,19 @@ static void writeFileInfo(int fd,
   writeURI(fd, fi->uri);
 }
 
+static void updateDownloadThreads(void * c) {
+  FSUI_Context * ctx = c;
+  FSUI_DownloadList * dpos;
+
+  MUTEX_LOCK(&ctx->lock);
+  dpos = ctx->activeDownloads.child;
+  while (dpos != NULL) {
+    updateDownloadThread(dpos);
+    dpos = dpos->next;
+  }  
+  MUTEX_UNLOCK(&ctx->lock);
+}
+
 /**
  * Start FSUI manager.  Use the given progress callback to notify the
  * UI about events.  Start processing pending activities that were
@@ -290,6 +299,10 @@ struct FSUI_Context * FSUI_start(const char * name,
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
+  ret->activeDownloads.signalTerminate 
+    = SYSERR;
+  ret->activeDownloads.ctx
+    = ret;
   gh = getFileName("GNUNET",
 		   "GNUNET_HOME",
 		   "You must specify a directory for "
@@ -486,9 +499,13 @@ struct FSUI_Context * FSUI_start(const char * name,
 	ret->activeSearches
 	  = list;
       } 
-      ret->activeDownloads
+      memset(&ret->activeDownloads,
+	     0,
+	     sizeof(FSUI_DownloadList));
+      ret->activeDownloads.child
 	= readDownloadList(fd,
-			   ret);
+			   ret,
+			   &ret->activeDownloads);
       
       /* success, read complete! */
       goto END;
@@ -533,34 +550,16 @@ struct FSUI_Context * FSUI_start(const char * name,
   MUTEX_CREATE_RECURSIVE(&ret->lock);
   ret->ecb = cb;
   ret->ecbClosure = closure;
-
+  ret->threadPoolSize = getConfigurationInt("FS",
+					    "POOL");
+  if (ret->threadPoolSize == 0)
+    ret->threadPoolSize = 32;
+  ret->activeDownloadThreads = 0;
+  addCronJob(&updateDownloadThreads,
+	     0,
+	     2 * cronSECONDS,
+	     ret);  
   return ret;
-}
-
-static void freeDownloadList(FSUI_DownloadList * list) {
-  FSUI_DownloadList * dpos;
-  int i;
-  void * unused;
-
-  while (list != NULL) {
-    dpos = list;
-    list = dpos->next;
-    freeDownloadList(dpos->subDownloads);
-    freeDownloadList(dpos->subDownloadsNext);
-    dpos->signalTerminate = YES;
-    if (dpos->threadStarted == YES) {
-      PTHREAD_JOIN(&dpos->handle, &unused);
-      dpos->threadStarted = NO;
-    }
-    ECRS_freeUri(dpos->uri);
-    FREE(dpos->filename);
-    for (i=dpos->completedDownloadsCount-1;i>=0;i--)
-      ECRS_freeUri(dpos->completedDownloads[i]);
-    GROW(dpos->completedDownloads,
-	 dpos->completedDownloadsCount,
-	 0);
-    FREE(dpos);
-  }
 }
 
 /**
@@ -570,6 +569,7 @@ static void freeDownloadList(FSUI_DownloadList * list) {
 void FSUI_stop(struct FSUI_Context * ctx) {
   FSUI_ThreadList * tpos;
   FSUI_SearchList * spos;
+  FSUI_DownloadList * dpos;
   void * unused;
   int i;
   int fd;
@@ -578,6 +578,22 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   LOG(LOG_INFO,
       "FSUI shutdown.  This may take a while.\n");
   FSUI_publishCollectionNow(ctx);
+
+  suspendCron();
+  delCronJob(&updateDownloadThreads,
+	     5 * cronSECONDS,
+	     ctx);
+  resumeCron();
+  /* first, stop all download threads
+     by reducing the thread pool size to 0 */
+  ctx->threadPoolSize = 0;
+  dpos = ctx->activeDownloads.child;
+  while (dpos != NULL) {
+    updateDownloadThread(dpos);
+    dpos = dpos->next;
+  }
+
+  /* then, wait for all modal threads to complete */
   while (ctx->activeThreads != NULL) {
     tpos = ctx->activeThreads;
     ctx->activeThreads = tpos->next;
@@ -585,6 +601,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     FREE(tpos);
   }
 
+  /* next, serialize all of the FSUI state */
   if (ctx->ipc != NULL) {
     fd = fileopen(ctx->name, 
 		  O_CREAT|O_TRUNC|O_WRONLY, 
@@ -663,6 +680,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
       }
     }
 
+
     ECRS_freeUri(spos->uri);
     for (i=spos->sizeResultsReceived-1;i>=0;i--) {
       ECRS_FileInfo * fi;
@@ -696,12 +714,14 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	  &big,
 	  sizeof(unsigned int));
     writeDownloadList(fd,
-		      ctx->activeDownloads);
+		      ctx->activeDownloads.child);
   }
-  freeDownloadList(ctx->activeDownloads);
-  ctx->activeDownloads = NULL;
   if (fd != -1)
     CLOSE(fd);
+
+  /* finally, free all (remaining) FSUI data */
+  while (ctx->activeDownloads.child != NULL)
+    freeDownloadList(ctx->activeDownloads.child);
   if (ctx->ipc != NULL) {
     IPC_SEMAPHORE_UP(ctx->ipc);
     IPC_SEMAPHORE_FREE(ctx->ipc);
@@ -716,16 +736,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 
 /* *************** internal helper functions *********** */
 
-
+/**
+ * The idea for this function is to clean up
+ * the FSUI structs by freeing up dead entries.
+ */
 void cleanupFSUIThreadList(FSUI_Context * ctx) {
   FSUI_ThreadList * pos;
   FSUI_ThreadList * tmp;
   FSUI_ThreadList * prev;
-  FSUI_DownloadList * dpos;
-  FSUI_DownloadList * dprev;
-  FSUI_DownloadList * dtmp;
   void * unused;
-  int i;
 
   prev = NULL;
   MUTEX_LOCK(&ctx->lock);
@@ -746,41 +765,6 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
       pos = pos->next;
     }
   }
-
-#if 0
-  /* FIXME: severely broken:
-     - concurrency issue with FSUI_stop,
-     - does not take tree structure into
-       account (activeDownloads is more 
-       than just a linked list!)
-  */
-  dpos = ctx->activeDownloads;
-  dprev = NULL;
-  while (dpos != NULL) {
-    if ( (YES == dpos->signalTerminate) &&
-	 (NO == PTHREAD_SELF_TEST(&dpos->handle)) ) {
-      PTHREAD_JOIN(&dpos->handle,
-		   &unused);
-      dtmp = dpos->next;
-      ECRS_freeUri(dpos->uri);
-      FREE(dpos->filename);
-      for (i=0;i<dpos->completedDownloadsCount;i++)
-	ECRS_freeUri(dpos->completedDownloads[i]);
-      GROW(dpos->completedDownloads,
-	   dpos->completedDownloadsCount,
-	   0);
-      FREE(dpos);
-      if (dprev != NULL)
-	dprev->next = dtmp;
-      else
-	ctx->activeDownloads = dtmp;
-      dpos = dtmp;
-    } else {
-      dprev = dpos;
-      dpos = dpos->next;
-    }
-  }
-#endif
   MUTEX_UNLOCK(&ctx->lock);
 }
 

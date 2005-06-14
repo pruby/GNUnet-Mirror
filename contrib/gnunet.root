@@ -562,6 +562,14 @@ DIR          = $GNUNETD_HOME/data/fs/
 # Default is $GNUNETD_HOME/data/shared/
 INDEX-DIRECTORY = $GNUNETD_HOME/data/shared/
 
+# How many (parallel) threads should a given gnunet-download (or
+# gnunet-gtk) process run?  (this limits the amount of parallelism
+# used in the FSUI library).  Smaller values reduce memory and CPU
+# requirements.  Very large values will not be useful since even if
+# that much parallelism is theoretically possible, the local node may
+# not be able to route that many parallel requests anyway.  
+# Default: 32
+POOL = 32
 
 #######################################
 # MySQL specific options.

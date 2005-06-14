@@ -65,31 +65,46 @@
 #include "gnunet_ecrs_lib.h"
 
 /**
+ * Entry representing an FSUI download.  FSUI downloads form a tree
+ * (for properly representing recursive downloads) with an invisible
+ * root (for multiple parallel downloads).
+ *
+ * FSUI hands out references of this type to allow clients to access
+ * information about active downloads.
+ *
+ * Structs of this type MUST NOT be stored in anything but local
+ * variables (!) by FSUI clients.  This will ensure that the
+ * references are always valid.
+ */
+struct FSUI_DownloadList;
+
+/**
  * @brief types of FSUI events.
  */
 enum FSUI_EventType {
   /**
    * We found a new search result.
    */
-  search_result,
-  search_error,
-  download_progress,
-  download_complete,
-  download_error,
-  upload_progress,
-  upload_complete,
-  upload_error,
-  unindex_progress,
-  unindex_complete,
-  unindex_error,
+  FSUI_search_result,
+  FSUI_search_error,
+  FSUI_download_progress,
+  FSUI_download_complete,
+  FSUI_download_aborted,
+  FSUI_download_error,
+  FSUI_upload_progress,
+  FSUI_upload_complete,
+  FSUI_upload_error,
+  FSUI_unindex_progress,
+  FSUI_unindex_complete,
+  FSUI_unindex_error,
   /**
    * Connection status with gnunetd changed.
    */
-  gnunetd_connected,
+  FSUI_gnunetd_connected,
   /**
    * Connection status with gnunetd changed.
    */
-  gnunetd_disconnected,
+  FSUI_gnunetd_disconnected,
 };
 
 /**
@@ -165,7 +180,28 @@ typedef struct {
        * main URI? (otherwise equal to uri);
        */
       struct ECRS_URI * main_uri;
+      /**
+       * What file in the download tree are we
+       * refering to?
+       */
+      struct FSUI_DownloadList * pos;
     } DownloadProgress;
+    /**
+     * DownloadError is used for both
+     * download_aborted and download_error
+     * message types.
+     */
+    struct {
+      /**
+       * Error message.
+       */
+      const char * message;
+      /**
+       * What file in the download tree are we
+       * refering to?
+       */
+      struct FSUI_DownloadList * pos;
+    } DownloadError;
     struct {
       /**
        * How far are we? (for the current file)
@@ -266,15 +302,13 @@ typedef struct {
 struct FSUI_Context;
 
 /**
- * Generic callback for all kinds of FSUI progress
- * and error messages.  This function will be called
- * for download progress, download completion, upload
- * progress and completion, search results, etc.
+ * Generic callback for all kinds of FSUI progress and error messages.
+ * This function will be called for download progress, download
+ * completion, upload progress and completion, search results, etc.
  *
- * The details of the argument format are yet to be
- * defined.  What FSUI guarantees is that only one
- * thread at a time will call the callback (so it
- * need not be re-entrant).
+ * The details of the argument format are yet to be defined.  What
+ * FSUI guarantees is that only one thread at a time will call the
+ * callback (so it need not be re-entrant).
  */
 typedef void (*FSUI_EventCallback)(void * cls,
 				   const FSUI_Event * event);
@@ -323,9 +357,12 @@ typedef int (*FSUI_UpdateIterator)(void * cls,
 /**
  * Iterator over active downloads.
  *
+ * @param pos What file in the download tree are we
+ * refering to?
  * @return OK to continue iteration, SYSERR to abort
  */
 typedef int (*FSUI_DownloadIterator)(void * cls,
+				     const struct FSUI_DownloadList * pos,
 				     const char * filename,
 				     const struct ECRS_URI * uri,
 				     unsigned long long filesize,
@@ -388,6 +425,7 @@ void FSUI_stop(struct FSUI_Context * ctx); /* fsui.c */
  *  if keywords is not legal (i.e. empty).
  */
 struct ECRS_URI * FSUI_parseCharKeywordURI(const char * keywords); /* helper.c */
+
 /**
  * Create an ECRS URI from a user-supplied command line of keywords.
  * The command line may contain the reserved word 'AND' to create a
@@ -447,7 +485,10 @@ int FSUI_startDownload(struct FSUI_Context * ctx,
 		       const char * filename); /* download.c */
 
 /**
- * Abort a download.
+ * Abort a download.  If the URI was for a recursive
+ * download, all sub-downloads will also be aborted.
+ * Cannot be used to terminate a single file download
+ * that is part of a recursive download.
  *
  * @return SYSERR if no such download is pending
  */
@@ -460,10 +501,21 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
  * downloads, FSUI clients should listen closely
  * to the FSUI_EventCallback to not miss completion
  * events.
+ *
+ * @param root subtree to iterate over, use
+ *        NULL for all top-level downloads
  */
 int FSUI_listDownloads(struct FSUI_Context * ctx,
+		       const struct FSUI_DownloadList * root,
 		       FSUI_DownloadIterator iter,
 		       void * closure); /* download.c */
+
+/**
+ * Get parent of active download. 
+ * @return NULL if there is no parent
+ */
+const struct FSUI_DownloadList * 
+FSUI_getDownloadParent(const struct FSUI_DownloadList * child); /* download.c */
 
 /**
  * Start uploading a file.  Note that an upload cannot be stopped once
@@ -526,16 +578,6 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
 			  const struct ECRS_URI * uri,
 			  const char * dirname); /* download.c */
 
-/**
- * Abort a download.
- *
- * @return OK on success, SYSERR if no such download is
- *  pending
- */
-int FSUI_stopDownloadAll(struct FSUI_Context * ctx,
-			 const struct ECRS_URI * uri,
-			 const char * dirname); /* download.c */
-		
 /* ******************** collections API **************** */
 
 /**
@@ -567,31 +609,27 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx); /* collection.c */
  * changed since the last publication.  If we are currently not
  * collecting, this function does nothing.
  *
- * Note that clients typically don't have to call this
- * function explicitly.  FSUI will call the function on
- * exit (for sporadically updated collections), on any
- * change to the collection (for immediately updated
- * content) or when the publication time has arrived
- * (for periodically updated collections).
+ * Note that clients typically don't have to call this function
+ * explicitly.  FSUI will call the function on exit (for sporadically
+ * updated collections), on any change to the collection (for
+ * immediately updated content) or when the publication time has
+ * arrived (for periodically updated collections).
  *
- * However, clients may want to call this function if
- * explicit publication of an update at another
- * time is desired.
+ * However, clients may want to call this function if explicit
+ * publication of an update at another time is desired.
  */
 void FSUI_publishCollectionNow(struct FSUI_Context * ctx);
 
 /**
- * If we are currently building a collection, publish
- * the given file information in that collection.
- * If we are currently not collecting, this function
- * does nothing.
+ * If we are currently building a collection, publish the given file
+ * information in that collection.  If we are currently not
+ * collecting, this function does nothing.
  *
- * Note that clients typically don't have to call this
- * function explicitly -- by using the FSUI library it
- * should be called automatically by FSUI code whenever
- * needed.  However, the function maybe useful if you're
- * inserting files using libECRS directly or need other
- * ways to explicitly extend a collection.
+ * Note that clients typically don't have to call this function
+ * explicitly -- by using the FSUI library it should be called
+ * automatically by FSUI code whenever needed.  However, the function
+ * maybe useful if you're inserting files using libECRS directly or
+ * need other ways to explicitly extend a collection.
  */
 void FSUI_publishToCollection(struct FSUI_Context * ctx,
 			      const ECRS_FileInfo * fi);
@@ -619,9 +657,8 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
 			 struct ECRS_URI ** root); /* namespace_info.c */
 
 /**
- * Delete a local namespace.  Only prevents future insertions
- * into the namespace, does not delete any content from
- * the network!
+ * Delete a local namespace.  Only prevents future insertions into the
+ * namespace, does not delete any content from the network!
  *
  * @return OK on success, SYSERR on error
  */
@@ -635,9 +672,9 @@ int FSUI_rankNamespace(struct FSUI_Context * ctx,
 		       int delta); /* namespace_info.c */
 
 /**
- * Add a namespace to the set of known namespaces.
- * For all namespace advertisements that we discover
- * FSUI should automatically call this function.
+ * Add a namespace to the set of known namespaces.  For all namespace
+ * advertisements that we discover FSUI should automatically call this
+ * function.
  *
  * @param ns the namespace identifier
  */
@@ -724,7 +761,6 @@ int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
  */
 void FSUI_trackURIS(int onOff); /* file_info.c */
 
-
 /**
  * Get the FSUI URI tracking status.
  *
@@ -733,10 +769,9 @@ void FSUI_trackURIS(int onOff); /* file_info.c */
 int FSUI_trackStatus(void); /* file_info.c */
 
 /**
- * Makes a URI available for directory building.
- * This function is automatically called by all FSUI
- * functions and only in the interface for clients that
- * call ECRS directly.
+ * Makes a URI available for directory building.  This function is
+ * automatically called by all FSUI functions and only in the
+ * interface for clients that call ECRS directly.
  */
 void FSUI_trackURI(const ECRS_FileInfo * fi); /* file_info.c */
 

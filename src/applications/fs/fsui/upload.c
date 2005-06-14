@@ -73,7 +73,7 @@ static void progressCallback(unsigned long long totalBytes,
   cron_t now;
 
   cronTime(&now);
-  event.type = upload_progress;
+  event.type = FSUI_upload_progress;
   event.data.UploadProgress.completed = completedBytes;
   event.data.UploadProgress.total = totalBytes;
   event.data.UploadProgress.filename = utc->filename;
@@ -160,7 +160,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
 			    NULL,
 			    uri);
       if (ret == OK) {
-	event.type = upload_complete;
+	event.type = FSUI_upload_complete;
 	event.data.UploadComplete.total = utc->main_total;
 	event.data.UploadComplete.filename = STRDUP(dirName);
 	event.data.UploadComplete.uri = *uri;
@@ -219,7 +219,7 @@ static void dirEntryCallback(const char * filename,
 		    NULL,
 		    NULL,
 		    &uri);
-    event.type = upload_complete;
+    event.type = FSUI_upload_complete;
     event.data.UploadComplete.total = utc->main_total;
     event.data.UploadComplete.filename = utc->filename;
     event.data.UploadComplete.uri = uri;
@@ -336,7 +336,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
 			  NULL,
 			  &uri);
     if (ret == OK) {
-      event.type = upload_complete;
+      event.type = FSUI_upload_complete;
       event.data.UploadComplete.total = utc->main_total;
       event.data.UploadComplete.filename = utc->filename;
       event.data.UploadComplete.uri = uri;
@@ -345,7 +345,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
       event.data.UploadComplete.is_recursive = NO;
       event.data.UploadComplete.main_filename = utc->main_filename;
     } else {
-      event.type = upload_error;
+      event.type = FSUI_upload_error;
       event.data.message = _("Upload failed.\n");
     }
     utc->ctx->ecb(utc->ctx->ecbClosure,
@@ -384,14 +384,14 @@ static void * uploadThread(UploadThreadClosure * utc) {
 	 0);
     
     if (ret != OK) {
-      event.type = upload_error;
+      event.type = FSUI_upload_error;
       event.data.message = _("Upload failed.\n");
       utc->ctx->ecb(utc->ctx->ecbClosure,
 		    &event);
     } /* for success, uploadDirectory sends event already! */
     utc->filename = NULL;
   } else {
-    event.type = upload_error;
+    event.type = FSUI_upload_error;
     event.data.message = _("Cannot upload directory without using recursion.\n");
     utc->ctx->ecb(utc->ctx->ecbClosure,
 		  &event);
