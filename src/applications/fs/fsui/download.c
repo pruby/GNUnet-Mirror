@@ -176,12 +176,6 @@ void * downloadThread(FSUI_DownloadList * dl) {
   unsigned long long totalBytes;
 
   GNUNET_ASSERT(dl->ctx != NULL);
-  root = dl;
-  while ( (root->parent != NULL) &&
-	  (root->parent != &dl->ctx->activeDownloads) ) {
-    root = root->parent;
-  }
-
   GNUNET_ASSERT(dl->filename != NULL);
   ret = ECRS_downloadFile(dl->uri,
 			  dl->filename,
@@ -190,11 +184,17 @@ void * downloadThread(FSUI_DownloadList * dl) {
 			  dl,
 			  (ECRS_TestTerminate) &testTerminate,
 			  dl);
-  /* MAYBE FIXME: ___ ret == OK possible without download complete or at 
-     least without downloadProgressCallback called with complete?? __ 
-     (possibly only with resumed download???) */
   if (ret == OK)
     dl->finished = YES;  
+  totalBytes = ECRS_fileSize(dl->uri);
+  root = dl;
+  while ( (root->parent != NULL) &&
+	  (root->parent != &dl->ctx->activeDownloads) ) {
+    root = root->parent;
+    root->completed += totalBytes;
+  }
+
+
   if ( (ret == OK) &&
        (dl->is_recursive) &&
        (dl->is_directory) ) {
@@ -213,8 +213,6 @@ void * downloadThread(FSUI_DownloadList * dl) {
 			"OPEN",
 			dl->filename);
     } else {
-      totalBytes = ECRS_fileSize(dl->uri);
-
       dirBlock = MMAP(NULL,
 		      totalBytes,
 		      PROT_READ,
@@ -253,8 +251,8 @@ void * downloadThread(FSUI_DownloadList * dl) {
 	    (dl->ctx != NULL) &&
 	    (dl != &dl->ctx->activeDownloads) ) {
       event.type = FSUI_download_complete;
-      event.data.DownloadProgress.total = root->total;
-      event.data.DownloadProgress.completed = root->completed;
+      event.data.DownloadProgress.total = dl->total;
+      event.data.DownloadProgress.completed = dl->completed;
       event.data.DownloadProgress.last_offset = 0;
       event.data.DownloadProgress.eta = cronTime(NULL);
       event.data.DownloadProgress.last_block = NULL;

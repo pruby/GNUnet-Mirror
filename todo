@@ -1,14 +1,13 @@
 0.7.0pre3:
-- gnunet-gtk:
-  * make directories work [ CG ]
-- FSUI:
-  * make (recursive) downloads work (test/debug) [ CG ]
 - GAP:
-  * fix Nils' assertion failure/bug [ CG ]
+  * fix Nils' assertion failure/bug [Nils, CG cannot reproduce]
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
   * wizards: restrict user & service creation to platforms
     known to be working.  
+- Ensure hostlist is working on gnunet.org [ CG ]
+(Note to Nils: AFAIK, the code itself seems to be ready,
+ except for gnunet-setup which is still very unstable for me)
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:

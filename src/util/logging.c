@@ -195,7 +195,7 @@ void reopenLogFile() {
 
 			/* Remove slashes */
 			end = datestr;
-			while(c = *end) {
+			while((c = *end)) {
 				if (c == '\\' || c == '/')
 					*end = '_';
 					end++;

@@ -28,6 +28,8 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
+#define FSUI_UDT_FREQUENCY (2 * cronSECONDS)
+
 #define READINT(a) \
   if (sizeof(int) != READ(fd, &big, sizeof(int))) \
     goto ERR;					  \
@@ -95,9 +97,13 @@ static FSUI_DownloadList * readDownloadList(int fd,
   READINT(ret->completedDownloadsCount);
   READINT(ret->finished);
   READINT(big);
-  ret->filename = MALLOC(big+1);
-  if (big != READ(fd, ret->filename, big))
+  if (big > 1024 * 1024)
     goto ERR;
+  ret->filename = MALLOC(big+1);
+  if (big != READ(fd, ret->filename, big)) {
+    FREE(ret->filename);
+    goto ERR;
+  }
   ret->filename[big] = '\0';
   READLONG(ret->total);
   READLONG(ret->completed);
@@ -557,7 +563,7 @@ struct FSUI_Context * FSUI_start(const char * name,
   ret->activeDownloadThreads = 0;
   addCronJob(&updateDownloadThreads,
 	     0,
-	     2 * cronSECONDS,
+	     FSUI_UDT_FREQUENCY,
 	     ret);  
   return ret;
 }
@@ -579,11 +585,14 @@ void FSUI_stop(struct FSUI_Context * ctx) {
       "FSUI shutdown.  This may take a while.\n");
   FSUI_publishCollectionNow(ctx);
 
-  suspendCron();
+  i = isCronRunning();
+  if (i)
+    suspendCron();
   delCronJob(&updateDownloadThreads,
-	     5 * cronSECONDS,
+	     FSUI_UDT_FREQUENCY,
 	     ctx);
-  resumeCron();
+  if (i)
+    resumeCron();
   /* first, stop all download threads
      by reducing the thread pool size to 0 */
   ctx->threadPoolSize = 0;

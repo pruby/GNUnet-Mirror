@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-05-30 22:55-0500\n"
+"POT-Creation-Date: 2005-06-14 18:17-0500\n"
 "PO-Revision-Date: 2005-05-11 21:35+0200\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -77,8 +77,8 @@ msgstr "%u.%u.%u.%u. steht auf schwarzer Liste, Verbindung wird abgewiesen.\n"
 msgid "Could not determine my public IP address.\n"
 msgstr "Öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/http.c:1143 src/transports/tcp.c:1092 src/util/tcpio.c:165
-#: src/util/tcpio.c:195
+#: src/transports/http.c:1143 src/transports/tcp.c:1092 src/util/tcpio.c:166
+#: src/util/tcpio.c:196
 #, c-format
 msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
 msgstr "Verbindung zu %u.%u.%u.%u:%u fehlgeschlagen: %s\n"
@@ -280,163 +280,155 @@ msgstr "Fehler: auf den Dienst konnte nicht zugegriffen werden: %s\n"
 msgid "Error: can't delete service: %s\n"
 msgstr "Fehler: Dienst konnte nicht gelöscht werden: %s\n"
 
-#: src/conf/gconf_interface.c:123
+#: src/conf/gconf_interface.c:135
 msgid "Gtk GNUnet Configurator"
 msgstr "Gtk GNUnet Konfigurator"
 
-#: src/conf/gconf_interface.c:134
+#: src/conf/gconf_interface.c:146
 msgid "_File"
 msgstr "_Datei"
 
-#: src/conf/gconf_interface.c:141
+#: src/conf/gconf_interface.c:153
 msgid "_Load"
 msgstr "_öffnen"
 
-#: src/conf/gconf_interface.c:144 src/conf/gconf_interface.c:306
+#: src/conf/gconf_interface.c:156 src/conf/gconf_interface.c:323
 msgid "Load a config file"
 msgstr "Eine Konfigurationsdatei laden"
 
-#: src/conf/gconf_interface.c:152
+#: src/conf/gconf_interface.c:164
 msgid "_Save"
 msgstr "_Speichern"
 
-#: src/conf/gconf_interface.c:155
+#: src/conf/gconf_interface.c:167
 msgid "Save the config in .config"
 msgstr "Die Konfiguration in .config speichern"
 
-#: src/conf/gconf_interface.c:164
-msgid "Save _as"
-msgstr "Speichern _unter"
-
-#: src/conf/gconf_interface.c:167
-msgid "Save the config in a file"
-msgstr "Die Konfiguration in einer Datei speichern"
-
-#: src/conf/gconf_interface.c:179
+#: src/conf/gconf_interface.c:181
 msgid "_Quit"
 msgstr "_Beenden"
 
-#: src/conf/gconf_interface.c:189
+#: src/conf/gconf_interface.c:191
 msgid "_Options"
 msgstr "_Optionen"
 
-#: src/conf/gconf_interface.c:196
+#: src/conf/gconf_interface.c:198
 msgid "Show _name"
 msgstr "_Name anzeigen"
 
-#: src/conf/gconf_interface.c:199
+#: src/conf/gconf_interface.c:201
 msgid "Show name"
 msgstr "Name anzeigen"
 
-#: src/conf/gconf_interface.c:201
+#: src/conf/gconf_interface.c:203
 msgid "Show _range"
 msgstr "_Bereich anzeigen"
 
-#: src/conf/gconf_interface.c:204
+#: src/conf/gconf_interface.c:206
 msgid "Show range (Y/M/N)"
 msgstr "Bereich anzeigen (Y/M/N)"
 
-#: src/conf/gconf_interface.c:206
+#: src/conf/gconf_interface.c:208
 msgid "Show _data"
 msgstr "_Daten anzeigen"
 
-#: src/conf/gconf_interface.c:209
+#: src/conf/gconf_interface.c:211
 msgid "Show value of the option"
 msgstr "Wert der Option anzeigen"
 
-#: src/conf/gconf_interface.c:218
+#: src/conf/gconf_interface.c:220
 msgid "Show all _options"
 msgstr "Alle _Optionen anzeigen"
 
-#: src/conf/gconf_interface.c:221
+#: src/conf/gconf_interface.c:223
 msgid "Show all options"
 msgstr "Alle Optionen anzeigen"
 
-#: src/conf/gconf_interface.c:225
+#: src/conf/gconf_interface.c:227
 msgid "Show _debug info"
 msgstr "_Debug Informationen anzeigen"
 
-#: src/conf/gconf_interface.c:228
+#: src/conf/gconf_interface.c:230
 msgid "Show masked options"
 msgstr "Maskierte Optionen anzeigen"
 
-#: src/conf/gconf_interface.c:231
+#: src/conf/gconf_interface.c:233
 msgid "_Help"
 msgstr "_Hilfe"
 
-#: src/conf/gconf_interface.c:238
+#: src/conf/gconf_interface.c:240
 msgid "_Introduction"
 msgstr "_Einführung"
 
-#: src/conf/gconf_interface.c:250
+#: src/conf/gconf_interface.c:252
 msgid "_About"
 msgstr "_über"
 
-#: src/conf/gconf_interface.c:260
+#: src/conf/gconf_interface.c:262
 msgid "_License"
 msgstr "_Lizenz"
 
-#: src/conf/gconf_interface.c:280
+#: src/conf/gconf_interface.c:289
 msgid "Goes up of one level (single view)"
 msgstr "Bewegt sich eine Ebene nach oben (einfache Ansicht)"
 
-#: src/conf/gconf_interface.c:295
+#: src/conf/gconf_interface.c:303
 msgid "Up"
 msgstr "Oben"
 
-#: src/conf/gconf_interface.c:321
+#: src/conf/gconf_interface.c:337
 msgid "Load"
 msgstr "Laden"
 
-#: src/conf/gconf_interface.c:328
+#: src/conf/gconf_interface.c:349
 msgid "Save a config file"
 msgstr "Konfigurationsdatei speichern"
 
-#: src/conf/gconf_interface.c:343
+#: src/conf/gconf_interface.c:363
 msgid "Save"
 msgstr "Speichern"
 
-#: src/conf/gconf_interface.c:354
+#: src/conf/gconf_interface.c:383
 msgid "Single view"
 msgstr "Einfache Ansicht"
 
-#: src/conf/gconf_interface.c:370
+#: src/conf/gconf_interface.c:398
 msgid "Single"
 msgstr "Einfach"
 
-#: src/conf/gconf_interface.c:376
+#: src/conf/gconf_interface.c:410
 msgid "Split view"
 msgstr "Geteilte Ansicht"
 
-#: src/conf/gconf_interface.c:393
+#: src/conf/gconf_interface.c:425
 msgid "Split"
 msgstr "Geteilt"
 
-#: src/conf/gconf_interface.c:399
+#: src/conf/gconf_interface.c:437
 msgid "Full view"
 msgstr "Volle Ansicht"
 
-#: src/conf/gconf_interface.c:416
+#: src/conf/gconf_interface.c:452
 msgid "Full"
 msgstr "Voll"
 
-#: src/conf/gconf_interface.c:427
+#: src/conf/gconf_interface.c:473
 msgid "Collapse the whole tree in the right frame"
 msgstr "Den gesamten Baum im rechten Frame kollabieren"
 
-#: src/conf/gconf_interface.c:443
+#: src/conf/gconf_interface.c:488
 msgid "Collapse"
 msgstr "Kollabieren"
 
-#: src/conf/gconf_interface.c:450
+#: src/conf/gconf_interface.c:501
 msgid "Expand the whole tree in the right frame"
 msgstr "Den gesamten Baum im rechten Frame expandieren"
 
-#: src/conf/gconf_interface.c:466
+#: src/conf/gconf_interface.c:515
 msgid "Expand"
 msgstr "Expandieren"
 
-#: src/conf/gconf_interface.c:520
+#: src/conf/gconf_interface.c:569
 msgid "Sorry, no help available for this option yet."
 msgstr "Sorry, für diese Option steht noch keine Hilfe zur Verfügung"
 
@@ -446,7 +438,7 @@ msgstr "Sorry, für diese Option steht noch keine Hilfe zur Verfügung"
 msgid "GNUnet configuration assistant"
 msgstr "GNUnet Konfigurationsassistent"
 
-#: src/conf/wizard_interface.c:77 src/conf/wizard_curs.c:93
+#: src/conf/wizard_interface.c:77 src/conf/wizard_curs.c:74
 msgid ""
 "Welcome to GNUnet!\n"
 "\n"
@@ -477,13 +469,13 @@ msgstr ""
 "das GNUnet-Team"
 
 #: src/conf/wizard_interface.c:106 src/conf/wizard_interface.c:332
-#: src/conf/wizard_interface.c:651 src/conf/wizard_interface.c:1286
+#: src/conf/wizard_interface.c:651 src/conf/wizard_interface.c:1284
 msgid "Next"
 msgstr "Weiter"
 
 #: src/conf/wizard_interface.c:127 src/conf/wizard_interface.c:353
 #: src/conf/wizard_interface.c:672 src/conf/wizard_interface.c:929
-#: src/conf/wizard_interface.c:1307
+#: src/conf/wizard_interface.c:1305
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -549,7 +541,7 @@ msgid "Network connection"
 msgstr "Netzwerkverbindung"
 
 #: src/conf/wizard_interface.c:311 src/conf/wizard_interface.c:630
-#: src/conf/wizard_interface.c:887 src/conf/wizard_interface.c:1265
+#: src/conf/wizard_interface.c:887 src/conf/wizard_interface.c:1263
 msgid "Back"
 msgstr "Zurück"
 
@@ -659,7 +651,7 @@ msgstr ""
 msgid "Open the enhanced configurator"
 msgstr "Erweiterten Konfigurator starten"
 
-#: src/conf/wizard_interface.c:861 src/conf/wizard_interface.c:1239
+#: src/conf/wizard_interface.c:861 src/conf/wizard_interface.c:1237
 msgid "Other settings"
 msgstr "Weitere Einstellungen"
 
@@ -683,11 +675,10 @@ msgstr "Ja"
 msgid "No"
 msgstr "Nein"
 
-#: src/conf/wizard_interface.c:1075 src/conf/wizard_util.c:165
-#: src/conf/wizard_util.c:173 src/conf/wizard_util.c:176
-#: src/conf/wizard_util.c:190 src/conf/wizard_util.c:218
-#: src/conf/wizard_util.c:224 src/conf/wizard_util.c:359
-#: src/conf/wizard_util.c:377
+#: src/conf/wizard_interface.c:1075 src/conf/wizard_util.c:195
+#: src/conf/wizard_util.c:210 src/conf/wizard_util.c:238
+#: src/conf/wizard_util.c:244 src/conf/wizard_util.c:383
+#: src/conf/wizard_util.c:401
 msgid "Error"
 msgstr "Fehler"
 
@@ -706,16 +697,19 @@ msgid ""
 "For security reasons, it is a good idea to let this setup create a new user "
 "account and a new group under which the GNUnet service is started at system "
 "startup.\n"
-"You can also specify existing ones.\n"
-"In any case, you should check its permissions to critical files on your "
-"system."
+"\n"
+"However, GNUnet may not be able to access files other than its own. This "
+"includes files you want to publish in GNUnet. You'll have to grant read "
+"permissions to the user specified below.\n"
+"\n"
+"Leave the fields empty to run GNUnet with system privileges."
 msgstr ""
 
 #: src/conf/wizard_interface.c:1209
 msgid "Group:"
 msgstr ""
 
-#: src/conf/wizard_interface.c:1231
+#: src/conf/wizard_interface.c:1229
 msgid "User account:"
 msgstr ""
 
@@ -724,46 +718,46 @@ msgstr ""
 msgid "Couldn't find pixmap file: %s"
 msgstr "Pixmapdatei %s konnte nicht gefunden werden"
 
-#: src/conf/wizard_curs.c:92 src/conf/wizard_curs.c:106
-#: src/conf/wizard_curs.c:167 src/conf/wizard_curs.c:194
-#: src/conf/wizard_curs.c:219 src/conf/wizard_curs.c:251
-#: src/conf/wizard_curs.c:276 src/conf/wizard_curs.c:307
-#: src/conf/wizard_curs.c:329 src/conf/wizard_curs.c:357
-#: src/conf/wizard_curs.c:379 src/conf/wizard_curs.c:401
-#: src/conf/wizard_curs.c:428 src/conf/wizard_curs.c:458
-#: src/conf/wizard_curs.c:486
+#: src/conf/wizard_curs.c:73 src/conf/wizard_curs.c:87
+#: src/conf/wizard_curs.c:148 src/conf/wizard_curs.c:175
+#: src/conf/wizard_curs.c:200 src/conf/wizard_curs.c:232
+#: src/conf/wizard_curs.c:257 src/conf/wizard_curs.c:288
+#: src/conf/wizard_curs.c:310 src/conf/wizard_curs.c:338
+#: src/conf/wizard_curs.c:360 src/conf/wizard_curs.c:382
+#: src/conf/wizard_curs.c:410 src/conf/wizard_curs.c:440
+#: src/conf/wizard_curs.c:475
 #, fuzzy
 msgid "GNUnet configuration"
 msgstr "GNUnet Konfigurationsassistent"
 
-#: src/conf/wizard_curs.c:107
+#: src/conf/wizard_curs.c:88
 msgid ""
 "Choose the network interface that connects your computer to the internet "
 "from the list below."
 msgstr ""
 
-#: src/conf/wizard_curs.c:113 src/conf/wizard_curs.c:173
-#: src/conf/wizard_curs.c:224 src/conf/wizard_curs.c:256
-#: src/conf/wizard_curs.c:312
+#: src/conf/wizard_curs.c:94 src/conf/wizard_curs.c:154
+#: src/conf/wizard_curs.c:205 src/conf/wizard_curs.c:237
+#: src/conf/wizard_curs.c:293
 #, fuzzy
 msgid "Help"
 msgstr "_Hilfe"
 
-#: src/conf/wizard_curs.c:113
+#: src/conf/wizard_curs.c:94
 msgid ""
 "The \"Network interface\" is the device that connects your computer to the "
 "internet. This is usually a modem, an ISDN card or a network card in case "
 "you are using DSL."
 msgstr ""
 
-#: src/conf/wizard_curs.c:167
+#: src/conf/wizard_curs.c:148
 msgid ""
 "What is this computer's public IP adress or hostname?\n"
 "\n"
 "If in doubt, leave this empty."
 msgstr ""
 
-#: src/conf/wizard_curs.c:173
+#: src/conf/wizard_curs.c:154
 msgid ""
 "If your provider always assigns the same IP-Address to you (a \"static\" IP-"
 "Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
@@ -774,7 +768,7 @@ msgid ""
 "IP-Address."
 msgstr ""
 
-#: src/conf/wizard_curs.c:194
+#: src/conf/wizard_curs.c:175
 msgid ""
 "Is this machine behind NAT?\n"
 "\n"
@@ -785,11 +779,11 @@ msgid ""
 "forwarding\")."
 msgstr ""
 
-#: src/conf/wizard_curs.c:219
+#: src/conf/wizard_curs.c:200
 msgid "How much upstream (Bytes/s) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:224
+#: src/conf/wizard_curs.c:205
 msgid ""
 "You can limit GNUnet's ressource usage here.\n"
 "\n"
@@ -800,12 +794,12 @@ msgid ""
 "connection."
 msgstr ""
 
-#: src/conf/wizard_curs.c:251
+#: src/conf/wizard_curs.c:232
 #, fuzzy
 msgid "How much downstream (Bytes/s) may be used?"
 msgstr "Downstream (Bytes/s):"
 
-#: src/conf/wizard_curs.c:256
+#: src/conf/wizard_curs.c:237
 msgid ""
 "You can limit GNUnet's ressource usage here.\n"
 "\n"
@@ -816,7 +810,7 @@ msgid ""
 "connection."
 msgstr ""
 
-#: src/conf/wizard_curs.c:276
+#: src/conf/wizard_curs.c:257
 msgid ""
 "Share denoted bandwidth with other applications?\n"
 "\n"
@@ -829,18 +823,18 @@ msgid ""
 "connection whenever your high-speed LAN gets used (e.g. by NFS)."
 msgstr ""
 
-#: src/conf/wizard_curs.c:307
+#: src/conf/wizard_curs.c:288
 msgid "How much CPU (in %) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:312
+#: src/conf/wizard_curs.c:293
 msgid ""
 "You can limit GNUnet's ressource usage here.\n"
 "\n"
 "This is the percentage of processor time GNUnet is allowed to use."
 msgstr ""
 
-#: src/conf/wizard_curs.c:329
+#: src/conf/wizard_curs.c:310
 #, fuzzy
 msgid ""
 "Store migrated content?\n"
@@ -869,7 +863,7 @@ msgstr ""
 "Wenn Sie ein fortgeschrittener Benutzer sind, möchten Sie vielleicht weitere "
 "Feinjustierungen an GNUnet über den \"erweiterten Konfigurator\" vornehmen."
 
-#: src/conf/wizard_curs.c:357
+#: src/conf/wizard_curs.c:338
 msgid ""
 "What's the maximum datastore size in MB?\n"
 "\n"
@@ -877,7 +871,7 @@ msgid ""
 "inserted and migrated content)."
 msgstr ""
 
-#: src/conf/wizard_curs.c:379
+#: src/conf/wizard_curs.c:360
 msgid ""
 "Do you want to launch GNUnet as a system service?\n"
 "\n"
@@ -886,22 +880,23 @@ msgid ""
 "launch GNUnet yourself each time you want to use it."
 msgstr ""
 
-#: src/conf/wizard_curs.c:402
+#: src/conf/wizard_curs.c:383
 msgid ""
 "Define the user owning the GNUnet service.\n"
 "\n"
 "For security reasons, it is a good idea to let this setup create a new user "
 "account under which the GNUnet service is started at system startup.\n"
 "\n"
-"You can also specify an already existant user account here.\n"
+"However, GNUnet may not be able to access files other than its own. This "
+"includes files you want to publish in GNUnet. You'll have to grant read "
+"permissions to the user specified below.\n"
 "\n"
-"In any case, you should check its permissions to critical files on your "
-"system.\n"
+"Leave the fields empty to run GNUnet with system privileges.\n"
 "\n"
 "GNUnet user:"
 msgstr ""
 
-#: src/conf/wizard_curs.c:429
+#: src/conf/wizard_curs.c:411
 msgid ""
 "Define the group owning the GNUnet service.\n"
 "\n"
@@ -916,7 +911,7 @@ msgid ""
 "GNUnet group:"
 msgstr ""
 
-#: src/conf/wizard_curs.c:458
+#: src/conf/wizard_curs.c:440
 msgid ""
 "If you are an experienced user, you may want to tweak your GNUnet "
 "installation using the enhanced configurator.\n"
@@ -924,7 +919,7 @@ msgid ""
 "Do you want to start it after saving your configuration?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:487
+#: src/conf/wizard_curs.c:476
 #, fuzzy
 msgid ""
 "Cannot save configuration.\n"
@@ -932,58 +927,57 @@ msgid ""
 "Try again?"
 msgstr "Konfigurationsdatei '%s' konnte nicht geöffnet werden.\n"
 
-#: src/conf/wizard_util.c:162
-#, fuzzy, c-format
-msgid "Error: can't open Service Control Manager: %s (%i)\n"
-msgstr "Fehler: der Dienstemanager konnte nicht geöffnet werden: %s\n"
-
-#: src/conf/wizard_util.c:170
-#, fuzzy, c-format
-msgid "Error: can't create service: %s (#%i)\n"
-msgstr "Fehler: Dienst konnte nicht angelegt werden: %s\n"
-
-#: src/conf/wizard_util.c:176 src/conf/wizard_util.c:218
-msgid "Unknown error"
-msgstr "Unbekannter Fehler"
-
-#: src/conf/wizard_util.c:189
-msgid "Cannot write to the regisitry"
-msgstr "Konnte nicht in die Registry schreiben"
-
-#: src/conf/wizard_util.c:206
+#: src/conf/wizard_util.c:164 src/conf/wizard_util.c:226
 #, fuzzy
 msgid "Can't open Service Control Manager"
 msgstr "Fehler: der Dienstemanager konnte nicht geöffnet werden: %s\n"
 
-#: src/conf/wizard_util.c:210
+#: src/conf/wizard_util.c:170
+#, fuzzy
+msgid "Can't create service"
+msgstr "Fehler: auf den Dienst konnte nicht zugegriffen werden: %s\n"
+
+#: src/conf/wizard_util.c:175 src/conf/wizard_util.c:238
+msgid "Unknown error"
+msgstr "Unbekannter Fehler"
+
+#: src/conf/wizard_util.c:188
+msgid "Error changing the permissions of the GNUnet directory"
+msgstr ""
+
+#: src/conf/wizard_util.c:209
+msgid "Cannot write to the regisitry"
+msgstr "Konnte nicht in die Registry schreiben"
+
+#: src/conf/wizard_util.c:230
 #, fuzzy
 msgid "Can't access the service"
 msgstr "Fehler: auf den Dienst konnte nicht zugegriffen werden: %s\n"
 
-#: src/conf/wizard_util.c:214
+#: src/conf/wizard_util.c:234
 #, fuzzy
 msgid "Can't delete the service"
 msgstr "Fehler: der Dienst konnte nicht gelöscht werden: %s\n"
 
-#: src/conf/wizard_util.c:358
+#: src/conf/wizard_util.c:382
 #, fuzzy
 msgid "This version of Windows does not support multiple users."
 msgstr "Diese Version von Windows unterstützt keine Dienste.\n"
 
-#: src/conf/wizard_util.c:362
+#: src/conf/wizard_util.c:386
 #, fuzzy
 msgid "Error creating user"
 msgstr "=\tFehler beim Lesen des Verzeichnisses.\n"
 
-#: src/conf/wizard_util.c:365
+#: src/conf/wizard_util.c:389
 msgid "Error accessing local security policy"
 msgstr ""
 
-#: src/conf/wizard_util.c:368
+#: src/conf/wizard_util.c:392
 msgid "Error granting service right to user"
 msgstr ""
 
-#: src/conf/wizard_util.c:371
+#: src/conf/wizard_util.c:395
 msgid "Unknown error while creating a new user"
 msgstr ""
 
@@ -1059,8 +1053,8 @@ msgstr "Eine DHT Tabelle abfragen (get KEY, put KEY VALUE, remove KEY VALUE)."
 #: src/applications/tracekit/gnunet-tracekit.c:87
 #: src/applications/tracekit/gnunet-tracekit.c:122
 #: src/applications/tracekit/gnunet-tracekit.c:136
-#: src/applications/fs/tools/gnunet-insert.c:280
-#: src/applications/fs/tools/gnunet-insert.c:396
+#: src/applications/fs/tools/gnunet-insert.c:283
+#: src/applications/fs/tools/gnunet-insert.c:399
 #: src/applications/fs/tools/gnunet-search.c:156
 #: src/applications/fs/tools/gnunet-search.c:172
 #: src/applications/fs/tools/gnunet-search.c:193
@@ -1084,7 +1078,7 @@ msgstr "Sie müssen für die Option '%s' zusätzlich eine Zahl angeben.\n"
 #: src/applications/fs/tools/gnunet-pseudonym.c:192
 #: src/applications/fs/tools/gnunet-delete.c:111
 #: src/applications/fs/tools/gnunet-directory.c:177
-#: src/applications/fs/tools/gnunet-insert.c:467
+#: src/applications/fs/tools/gnunet-insert.c:470
 #: src/applications/fs/tools/gnunet-search.c:210
 #: src/applications/fs/tools/gnunet-download.c:125
 #: src/applications/fs/tools/gnunet-unindex.c:139
@@ -1482,8 +1476,8 @@ msgstr "Konnte libgnunetutil nicht initialisieren!\n"
 #: src/applications/sqstore_mysql/mysql.c:924 src/util/symcipher_gcrypt.c:47
 #: src/util/symcipher_gcrypt.c:54 src/util/hostkey_gcrypt.c:56
 #: src/util/hostkey_gcrypt.c:63 src/util/storage.c:613
-#: src/include/gnunet_util.h:973 src/include/gnunet_util.h:980
-#: src/include/gnunet_util.h:982
+#: src/include/gnunet_util.h:980 src/include/gnunet_util.h:987
+#: src/include/gnunet_util.h:989
 #, c-format
 msgid "'%s' failed at %s:%d with error: %s\n"
 msgstr "'%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
@@ -2231,25 +2225,25 @@ msgstr "# p2p Trace-Anfragen empfangen"
 msgid "# p2p trace replies sent"
 msgstr "# p2p Trace-Antworten gesendet"
 
-#: src/applications/gap/gap.c:1856
+#: src/applications/gap/gap.c:1863
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 "Verdeckender Netzwerkverkehr angefordert, aber der Verkehrsdienst wurde "
 "nicht geladen. Anfrage wird abgelehnt.\n"
 
-#: src/applications/gap/gap.c:1867 src/applications/fs/module/fs.c:667
+#: src/applications/gap/gap.c:1874 src/applications/fs/module/fs.c:669
 msgid "Failed to get traffic stats.\n"
 msgstr "Statistiken über den Netzwerkverkehr konnten nicht ermittelt werden.\n"
 
-#: src/applications/gap/gap.c:1873 src/applications/gap/gap.c:1878
-#: src/applications/gap/gap.c:1884
+#: src/applications/gap/gap.c:1880 src/applications/gap/gap.c:1885
+#: src/applications/gap/gap.c:1891
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 "Gewünschter Grad an Anonymität kann nicht erreicht werden, Anfrage wird "
 "ignoriert.\n"
 
-#: src/applications/gap/gap.c:2095
+#: src/applications/gap/gap.c:2102
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
@@ -2257,7 +2251,7 @@ msgstr ""
 "Verkehrsdienst konnte nicht geladen werden, GAP kann keinen verdeckenden "
 "Netzwerkverkehr sicherstellen.\n"
 
-#: src/applications/gap/gap.c:2126
+#: src/applications/gap/gap.c:2133
 #, c-format
 msgid "'%s' registering handlers %d %d\n"
 msgstr "'%s' registriert Handler %d %d\n"
@@ -2533,7 +2527,7 @@ msgstr ""
 msgid "File '%s' has URI: %s\n"
 msgstr "Datei '%s' hat URI: %s\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:160
+#: src/applications/fs/tools/gnunet-insert.c:161
 #, c-format
 msgid ""
 "\n"
@@ -2542,11 +2536,11 @@ msgstr ""
 "\n"
 "Fehler beim Uploaden der Datei: %s\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:178
+#: src/applications/fs/tools/gnunet-insert.c:180
 msgid "set the desired LEVEL of sender-anonymity"
 msgstr "Gewünschten Grad an Sender-Anonymität festlegen"
 
-#: src/applications/fs/tools/gnunet-insert.c:181
+#: src/applications/fs/tools/gnunet-insert.c:183
 msgid ""
 "even if gnunetd is running on the local machine, force the creation of a "
 "copy instead of making a link to the GNUnet share directory"
@@ -2555,7 +2549,7 @@ msgstr ""
 "anstelle der Erzeugung eines Links auf das GNUnet Share-Verzeichnis "
 "erzwingen."
 
-#: src/applications/fs/tools/gnunet-insert.c:184
+#: src/applications/fs/tools/gnunet-insert.c:186
 msgid ""
 "print list of extracted keywords that would be used, but do not perform "
 "upload"
@@ -2563,7 +2557,7 @@ msgstr ""
 "Liste der extrahierten Schlüsselworte, die verwendet werden würden, "
 "ausgeben, aber keinen Upload durchführen"
 
-#: src/applications/fs/tools/gnunet-insert.c:188
+#: src/applications/fs/tools/gnunet-insert.c:190
 msgid ""
 "set interval for availability of updates to SECONDS (for namespace "
 "insertions only)"
@@ -2571,7 +2565,7 @@ msgstr ""
 "Intervall der Verfügbarkeit von Updates auf SECONDS setzen (nur für das "
 "Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:191
+#: src/applications/fs/tools/gnunet-insert.c:193
 msgid ""
 "add an additional keyword for the top-level file or directory (this option "
 "can be specified multiple times)"
@@ -2579,7 +2573,7 @@ msgstr ""
 "Ein zusätzliches Schlüsselwort für die Datei oder das Verzeichnis auf der "
 "obersten Ebene hinzufügen (diese Option kann mehrmals angegeben werden)"
 
-#: src/applications/fs/tools/gnunet-insert.c:194
+#: src/applications/fs/tools/gnunet-insert.c:196
 msgid ""
 "add an additional keyword for all files and directories (this option can be "
 "specified multiple times)"
@@ -2587,13 +2581,13 @@ msgstr ""
 "Ein zusätzliches Schlüsselwort für alle Dateien und Verzeichnisse hinzufügen "
 "(diese Option kann mehrmals angegeben werden)"
 
-#: src/applications/fs/tools/gnunet-insert.c:198
+#: src/applications/fs/tools/gnunet-insert.c:200
 msgid "set the meta-data for the given TYPE to the given VALUE"
 msgstr ""
 "Die Meta-Daten des angegebenen Typs TYPE auf den angegebenen Wert VALUE "
 "setzen"
 
-#: src/applications/fs/tools/gnunet-insert.c:200
+#: src/applications/fs/tools/gnunet-insert.c:202
 msgid ""
 "do not index, perform full insertion (stores entire file in encrypted form "
 "in GNUnet database)"
@@ -2601,7 +2595,7 @@ msgstr ""
 "Nicht indizieren, sondern komplett einfügen (speichert die gesamte Datei in "
 "verschlüsselter Form in der GNUnet Datenbank)"
 
-#: src/applications/fs/tools/gnunet-insert.c:203
+#: src/applications/fs/tools/gnunet-insert.c:205
 msgid ""
 "specify ID of an updated version to be published in the future (for "
 "namespace insertions only)"
@@ -2609,21 +2603,21 @@ msgstr ""
 "ID einer aktualisierten Version angeben, die in der Zukunft veröffentlich "
 "werden soll. (nur für das Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:206
+#: src/applications/fs/tools/gnunet-insert.c:208
 msgid "specify the priority of the content"
 msgstr "Die Priorität des Inhalts angeben"
 
-#: src/applications/fs/tools/gnunet-insert.c:208
+#: src/applications/fs/tools/gnunet-insert.c:210
 msgid "publish the files under the pseudonym NAME (place file into namespace)"
 msgstr ""
 "Die Datei unter dem Pseudonym NAME veröffentlichen (platziert die Datei in "
 "einem Namespace)"
 
-#: src/applications/fs/tools/gnunet-insert.c:210
+#: src/applications/fs/tools/gnunet-insert.c:212
 msgid "process directories recursively"
 msgstr "Verzeichnisse rekursiv bearbeiten"
 
-#: src/applications/fs/tools/gnunet-insert.c:212
+#: src/applications/fs/tools/gnunet-insert.c:214
 msgid ""
 "specifies this as an aperiodic but updated publication (for namespace "
 "insertions only)"
@@ -2631,67 +2625,67 @@ msgstr ""
 "Dies als unregelmäßige aber aktualisierbare Veröffentlichung kennzeichnen "
 "(nur für das Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:215
+#: src/applications/fs/tools/gnunet-insert.c:217
 msgid ""
 "set the ID of this version of the publication (for namespace insertions only)"
 msgstr ""
 "die ID dieser Version der Veröffentlichung setzen (nur für das Einfügen in "
 "Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:218
+#: src/applications/fs/tools/gnunet-insert.c:220
 msgid "specify creation time for SBlock (see man-page for format)"
 msgstr "Erstellungszeit für den SBLOCK angeben (s. Manpage zum Format)"
 
-#: src/applications/fs/tools/gnunet-insert.c:220
+#: src/applications/fs/tools/gnunet-insert.c:222
 msgid "ID of the previous version of the content (for namespace update only)"
 msgstr ""
 "ID der vorherigen Version des Inhalts (nur für das Einfügen in Namespaces)"
 
-#: src/applications/fs/tools/gnunet-insert.c:227
+#: src/applications/fs/tools/gnunet-insert.c:229
 msgid "Make files available to GNUnet for sharing."
 msgstr "Dateien GNUnet zum Filesharing zur Verfügung stellen."
 
-#: src/applications/fs/tools/gnunet-insert.c:304
+#: src/applications/fs/tools/gnunet-insert.c:307
 #, c-format
 msgid "You must pass a positive number to the '%s' option.\n"
 msgstr "Sie müssen eine positive Zahl zu der Option '%s' übergeben.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:472
+#: src/applications/fs/tools/gnunet-insert.c:475
 #: src/applications/fs/tools/gnunet-unindex.c:144
 #, c-format
 msgid "You must specify a list of files to insert.\n"
 msgstr "Sie müssen eine Liste von Dateien zum Einfügen angeben.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:491
-#, c-format
-msgid "Keywords for file '%s':\n"
-msgstr "Schlüsselwörter für Datei '%s':\n"
-
-#: src/applications/fs/tools/gnunet-insert.c:501
+#: src/applications/fs/tools/gnunet-insert.c:479
 #, c-format
 msgid "Only one file or directory can be specified at a time.\n"
 msgstr "Nur eine Datei oder Verzeichnis kann auf einmal angegeben werden.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:505
+#: src/applications/fs/tools/gnunet-insert.c:483
 #, c-format
 msgid "You must specify a file or directory to upload.\n"
 msgstr "Sie müssen eine Datei oder Verzeichnis für den Upload angeben.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:548
+#: src/applications/fs/tools/gnunet-insert.c:532
+#, c-format
+msgid "Keywords for file '%s':\n"
+msgstr "Schlüsselwörter für Datei '%s':\n"
+
+#: src/applications/fs/tools/gnunet-insert.c:554
 #, c-format
 msgid "Could not access namespace '%s' (does not exist?).\n"
 msgstr "Konnte nicht auf den Namespace '%s' zugreifen (existiert nicht?).\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:563
+#: src/applications/fs/tools/gnunet-insert.c:569
 #, c-format
 msgid "Parsing time failed. Use '%s' format.\n"
 msgstr "Das Parsen der Zeit schlug fehl. Verwenden Sie das '%s' Format.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:572
-#: src/applications/fs/tools/gnunet-insert.c:576
-#: src/applications/fs/tools/gnunet-insert.c:580
-#: src/applications/fs/tools/gnunet-insert.c:584
-#: src/applications/fs/tools/gnunet-insert.c:589
+#: src/applications/fs/tools/gnunet-insert.c:578
+#: src/applications/fs/tools/gnunet-insert.c:582
+#: src/applications/fs/tools/gnunet-insert.c:586
+#: src/applications/fs/tools/gnunet-insert.c:590
+#: src/applications/fs/tools/gnunet-insert.c:595
 #, c-format
 msgid "Option '%s' makes no sense without option '%s'.\n"
 msgstr "Option '%s' macht keinen Sinn ohne die Option '%s'.\n"
@@ -2753,30 +2747,34 @@ msgid "Not enough arguments. You must specify a GNUnet file URI\n"
 msgstr "Nicht genügend Parameter. Sie müssen eine GNUnet Datei URI angeben\n"
 
 #: src/applications/fs/tools/gnunet-download.c:156
-#, c-format
-msgid "Download at %16llu out of %16llu bytes (%8.3f kbps)"
+#, fuzzy, c-format
+msgid "Download of file '%s' at %16llu out of %16llu bytes (%8.3f kbps)\n"
 msgstr "Download bei %16llu von %16llu Bytes (%8.3f kbps)"
 
-#: src/applications/fs/tools/gnunet-download.c:166
+#: src/applications/fs/tools/gnunet-download.c:168
+#: src/applications/fs/tools/gnunet-download.c:179
 #, c-format
 msgid "Error downloading: %s\n"
 msgstr "Fehler beim Download: %s\n"
 
-#: src/applications/fs/tools/gnunet-download.c:172
-#, c-format
-msgid ""
-"\n"
-"Download of file '%s' comlete.  Speed was %8.3f kilobyte per second.\n"
+#: src/applications/fs/tools/gnunet-download.c:187
+#, fuzzy, c-format
+msgid "Download of file '%s' complete.  Speed was %8.3f kilobyte per second.\n"
 msgstr ""
 "\n"
 "Download der Datei '%s' abgeschlossen. Geschwindigkeit war %8.3f KB/s.\n"
 
-#: src/applications/fs/tools/gnunet-download.c:215
+#: src/applications/fs/tools/gnunet-download.c:198
+#, c-format
+msgid "Recursive download of directory '%s' at %llu of %llu bytes.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-download.c:236
 #, c-format
 msgid "URI '%s' invalid for gnunet-download.\n"
 msgstr "URI '%s' ist ungültig für gnunet-download.\n"
 
-#: src/applications/fs/tools/gnunet-download.c:266
+#: src/applications/fs/tools/gnunet-download.c:287
 #, c-format
 msgid "File stored as '%s'.\n"
 msgstr "Datei wurde als '%s' gespeichert.\n"
@@ -2832,13 +2830,13 @@ msgstr ""
 "Sie müssen ein Verzeichnis für FS Dateien in der Konfigurationsdatei in der "
 "Sektion '%s' unter '%s' angeben."
 
-#: src/applications/fs/module/ondemand.c:323
+#: src/applications/fs/module/ondemand.c:327
 #, c-format
 msgid "Indexed file disappeared, deleting block for query '%s'\n"
 msgstr ""
 "Indizierte Datei ist verschwunden, Block für Anfrage '%s' wird gelöscht\n"
 
-#: src/applications/fs/module/ondemand.c:404
+#: src/applications/fs/module/ondemand.c:408
 #, c-format
 msgid ""
 "Because the file '%s' has been unavailable for 3 days it got removed from "
@@ -2849,7 +2847,7 @@ msgstr ""
 "aus Ihrem Share entfernt. Bitte deindizieren Sie Dateien, bevor Sie sie "
 "löschen, da Ihr Index nun ungültige Referenzen enthält!"
 
-#: src/applications/fs/module/ondemand.c:430
+#: src/applications/fs/module/ondemand.c:434
 #, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section "
@@ -2858,7 +2856,7 @@ msgstr ""
 "Die Konfigurationsdatei muss ein Verzeichnis für die Speicherung von FS "
 "Daten in der Sektion '%s' unter '%s' angeben.\n"
 
-#: src/applications/fs/module/ondemand.c:621
+#: src/applications/fs/module/ondemand.c:625
 #, c-format
 msgid ""
 "Unindexed ODB block '%s' from offset %llu already missing from datastore.\n"
@@ -2866,7 +2864,7 @@ msgstr ""
 "Deindizierter ODB Block '%s' vom Offset %llu fehlt bereits im "
 "Datenspeicher.\n"
 
-#: src/applications/fs/module/fs.c:980
+#: src/applications/fs/module/fs.c:998
 #, c-format
 msgid ""
 "You must specify a postive number for '%s' in the configuration in section '%"
@@ -2875,7 +2873,7 @@ msgstr ""
 "Sie müssen für '%s' in der Sektion '%s' der Konfigurationsdatei eine "
 "positive Zahl angeben.\n"
 
-#: src/applications/fs/module/fs.c:1019
+#: src/applications/fs/module/fs.c:1039
 #, fuzzy, c-format
 msgid "'%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr "'%s' registriert Client-Handler %d %d %d %d %d %d %d %d %d %d\n"
@@ -2889,17 +2887,17 @@ msgstr "Keine Schlüsselwörter angegeben!\n"
 msgid "AND"
 msgstr "UND"
 
-#: src/applications/fs/fsui/upload.c:336 src/applications/fs/fsui/upload.c:366
+#: src/applications/fs/fsui/upload.c:349 src/applications/fs/fsui/upload.c:388
 msgid "Upload failed.\n"
 msgstr "Upload fehlgeschlagen.\n"
 
-#: src/applications/fs/fsui/upload.c:370
+#: src/applications/fs/fsui/upload.c:395
 msgid "Cannot upload directory without using recursion.\n"
 msgstr ""
 "Verzeichnis kann nicht ohne die Verwendung von Rekursion hochgeladen "
 "werden.\n"
 
-#: src/applications/fs/fsui/fsui.c:509
+#: src/applications/fs/fsui/fsui.c:542
 #, c-format
 msgid "FSUI state file '%s' had syntax error at offset %u.\n"
 msgstr ""
@@ -2917,9 +2915,13 @@ msgstr ""
 "Veröffentlichungsdatum für periodisch aktualisierten Inhalt ist mehr als "
 "eine Woche früher als geplant.\n"
 
-#: src/applications/fs/fsui/download.c:192
+#: src/applications/fs/fsui/download.c:239
 msgid "Download aborted."
 msgstr "Download abgebrochen."
+
+#: src/applications/fs/fsui/download.c:242
+msgid "ECRS download failed (see logs)."
+msgstr ""
 
 #: src/applications/fs/fsui/file_info.c:73
 msgid "Collecting file identifiers disabled.\n"
@@ -2937,7 +2939,7 @@ msgstr "CHK URI ist nicht erlaubt für Suchen.\n"
 msgid "LOC URI not allowed for search.\n"
 msgstr "LOC URI ist nicht erlaubt für Suchen.\n"
 
-#: src/applications/fs/ecrs/download.c:884
+#: src/applications/fs/ecrs/download.c:889
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
@@ -2946,10 +2948,32 @@ msgstr ""
 "Bug oder eine mit bösen Absichten eingefügte Datei. Download wurde "
 "abgebrochen.\n"
 
-#: src/applications/fs/ecrs/download.c:1049
+#: src/applications/fs/ecrs/download.c:1054
 #, c-format
 msgid "Content '%s' seems to be not available on the network.\n"
 msgstr "Inhalt '%s' scheint im Netzwerk nicht verfügbar zu sein.\n"
+
+#: src/applications/fs/ecrs/upload.c:180
+#, c-format
+msgid "Cannot hash '%s'.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/upload.c:198
+#, fuzzy, c-format
+msgid "Initialization for indexing file '%s' failed.\n"
+msgstr "Initialisierung des Plugin Mechanismuses fehlgeschlagen: %s!\n"
+
+#: src/applications/fs/ecrs/upload.c:204
+#, c-format
+msgid ""
+"Indexing file '%s' failed. Check file permissions and consult your GNUnet "
+"server's logs.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/upload.c:287
+#, c-format
+msgid "Indexing data failed at position %i.\n"
+msgstr ""
 
 #: src/applications/fs/ecrs/meta.c:772
 #, c-format
@@ -2962,7 +2986,7 @@ msgid "Could not rename file '%s' to '%s': file exists\n"
 msgstr ""
 "Datei '%s' konnte nicht zu '%s' umbenannt werden: Datei existiert bereits\n"
 
-#: src/applications/fs/ecrs/namespace.c:45 src/util/state.c:81
+#: src/applications/fs/ecrs/namespace.c:45
 #, c-format
 msgid ""
 "Configuration file must specify a directory for GNUnet to store per-peer "
@@ -3072,12 +3096,12 @@ msgstr ""
 "Der Name des HTTP Proxies '%s' konnte nicht aufgelöst werden. Es wird ohne "
 "Proxy versucht.\n"
 
-#: src/applications/traffic/traffic.c:443
+#: src/applications/traffic/traffic.c:445
 #, c-format
 msgid "# bytes transmitted of type %d"
 msgstr "# Bytes des Typs %d übertragen"
 
-#: src/applications/traffic/traffic.c:463
+#: src/applications/traffic/traffic.c:465
 #, c-format
 msgid "# bytes received of type %d"
 msgstr "# Bytes des Typs %d empfangen"
@@ -3425,7 +3449,7 @@ msgstr ""
 "Beschädigte Netzwerkangabe in der Konfigurationsdatei in Sektion '%s' für "
 "Eintrag '%s': %s\n"
 
-#: src/server/tcpserver.c:797
+#: src/server/tcpserver.c:798
 #, c-format
 msgid "%s failed, message type %d already in use.\n"
 msgstr "%s schlug fehl, Nachrichten Typ %d ist bereits in Verwendung.\n"
@@ -3692,22 +3716,22 @@ msgstr ""
 "Parameter, die für lange Optionen zwingend sind, sind auch für kurze "
 "Optionen zwingend.\n"
 
-#: src/util/configuration.c:177
+#: src/util/configuration.c:180
 #, c-format
 msgid "inlining configration file '%s'\n"
 msgstr "Binde Konfigurationsdatei '%s' ein\n"
 
-#: src/util/configuration.c:181
+#: src/util/configuration.c:184
 #, c-format
 msgid "Could not parse configuration file '%s'.\n"
 msgstr "Konfigurationsdatei '%s' konnte nicht geparst werden.\n"
 
-#: src/util/configuration.c:217
+#: src/util/configuration.c:220
 #, c-format
 msgid "Syntax error in configuration file '%s' at line %d.\n"
 msgstr "Syntaxfehler in Konfigurationsdatei '%s' in Zeile %d.\n"
 
-#: src/util/configuration.c:464
+#: src/util/configuration.c:471
 #, c-format
 msgid ""
 "Configuration file '%s' not found. I will try to create the default "
@@ -3716,7 +3740,7 @@ msgstr ""
 "Konfigurationsdatei '%s' wurde nicht gefunden. Es wird versucht, an dieser "
 "Stelle eine Standardkonfigurationsdatei anzulegen.\n"
 
-#: src/util/configuration.c:481
+#: src/util/configuration.c:488
 #, c-format
 msgid "Cannot open configuration file '%s'\n"
 msgstr "Konfigurationsdatei '%s' konnte nicht geöffnet werden.\n"
@@ -3727,10 +3751,19 @@ msgid "libgcrypt has not the expected version (version %s is required).\n"
 msgstr ""
 "libgcrypt hat nicht die erwartete Version (Version %s wird vorausgesetzt).\n"
 
-#: src/util/tcpio.c:86 src/util/identity.c:83 src/util/identity.c:123
+#: src/util/tcpio.c:87 src/util/identity.c:83 src/util/identity.c:123
 #, c-format
 msgid "Could not find IP of host '%s': %s\n"
 msgstr "IP des Hosts '%s' konnte nicht ermittelt werden: %s\n"
+
+#: src/util/state.c:86
+#, fuzzy, c-format
+msgid ""
+"Configuration file must specify a directory for GNUnet to store per-peer "
+"data under %s\\%s.\n"
+msgstr ""
+"Die Konfigurationsdatei muss unter %s%s ein Verzeichnis für GNUnet angeben, "
+"in dem Knotenbezogene Daten gespeichert werden.\n"
 
 #: src/util/dso.c:41
 #, c-format
@@ -3788,16 +3821,16 @@ msgstr "CRON"
 msgid "EVERYTHING"
 msgstr "ALLES"
 
-#: src/util/logging.c:239
+#: src/util/logging.c:248
 msgid "LOGLEVEL not specified, that is not ok.\n"
 msgstr "LOGLEVEL wurde nicht angegeben, das ist nicht in Ordnung.\n"
 
-#: src/util/logging.c:250
+#: src/util/logging.c:259
 #, c-format
 msgid "Invalid LOGLEVEL '%s' specified.\n"
 msgstr "Ungültiger LOGLEVEL '%s' angegeben.\n"
 
-#: src/util/logging.c:355 src/util/logging.c:361
+#: src/util/logging.c:364 src/util/logging.c:370
 #, c-format
 msgid "Failure at %s:%d.\n"
 msgstr "Fehler bei %s:%d.\n"
@@ -3831,16 +3864,16 @@ msgstr ""
 "Es ist mehr als eine IP-Adresse für das Gerät '%s' angegeben.\n"
 "GNUnet wird %u.%u.%u.%u. verwenden.\n"
 
-#: src/util/identity.c:282
-#, c-format
-msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
-msgstr "GNUnet verwendet nun die IP-Adresse %u.%u.%u.%u.\n"
-
-#: src/util/identity.c:300
+#: src/util/identity.c:297
 #, c-format
 msgid "Could not resolve '%s' to determine our IP address: %s\n"
 msgstr ""
 "'%s' konnte nicht aufgelöst werden, um unsere IP-Adresse zu ermitteln: %s\n"
+
+#: src/util/identity.c:322
+#, c-format
+msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
+msgstr "GNUnet verwendet nun die IP-Adresse %u.%u.%u.%u.\n"
 
 #: src/util/identity.c:357 src/util/identity.c:399
 #, c-format
@@ -3871,40 +3904,54 @@ msgstr ""
 "IP(v6) dieses Hosts konnte nicht ermittelt werden. Bitte geben Sie die IP in "
 "der Konfigurationsdatei an.\n"
 
-#: src/include/gnunet_util.h:140
+#: src/include/gnunet_util.h:147
 msgid "print this help"
 msgstr "Gibt diese Hilfe aus"
 
-#: src/include/gnunet_util.h:143
+#: src/include/gnunet_util.h:150
 msgid "set verbosity to LEVEL"
 msgstr "Umfang der Meldungen auf LEVEL setzen"
 
-#: src/include/gnunet_util.h:146
+#: src/include/gnunet_util.h:153
 msgid "use configuration file FILENAME"
 msgstr "Konfigurationsdatei FILENAME verwenden"
 
-#: src/include/gnunet_util.h:149
+#: src/include/gnunet_util.h:156
 msgid "specify host on which gnunetd is running"
 msgstr "Gibt an, auf welchem Host gnunetd läuft"
 
-#: src/include/gnunet_util.h:152
+#: src/include/gnunet_util.h:159
 msgid "print the version number"
 msgstr "Versionsnummer ausgeben"
 
-#: src/include/gnunet_util.h:155
+#: src/include/gnunet_util.h:162
 msgid "be verbose"
 msgstr "umfangreiche Meldungen ausgeben"
 
-#: src/include/gnunet_util.h:582 src/include/gnunet_util.h:584
+#: src/include/gnunet_util.h:589 src/include/gnunet_util.h:591
 #, c-format
 msgid "Assertion failed at %s:%d.\n"
 msgstr "Absicherung fehlgeschlagen bei %s:%d.\n"
 
-#: src/include/gnunet_util.h:989 src/include/gnunet_util.h:991
-#: src/include/gnunet_util.h:998
+#: src/include/gnunet_util.h:996 src/include/gnunet_util.h:998
+#: src/include/gnunet_util.h:1005
 #, c-format
 msgid "'%s' failed on file '%s' at %s:%d with error: %s\n"
 msgstr "'%s' schlug bei Datei '%s' fehl. Ort: %s:%d. Fehler: %s\n"
+
+#~ msgid "Save _as"
+#~ msgstr "Speichern _unter"
+
+#~ msgid "Save the config in a file"
+#~ msgstr "Die Konfiguration in einer Datei speichern"
+
+#, fuzzy
+#~ msgid "Error: can't open Service Control Manager: %s (%i)\n"
+#~ msgstr "Fehler: der Dienstemanager konnte nicht geöffnet werden: %s\n"
+
+#, fuzzy
+#~ msgid "Error: can't create service: %s (#%i)\n"
+#~ msgstr "Fehler: Dienst konnte nicht angelegt werden: %s\n"
 
 #~ msgid "Failure at at %s:%d.\n"
 #~ msgstr "Fehler bei %s:%d.\n"

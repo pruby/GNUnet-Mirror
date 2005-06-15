@@ -371,6 +371,8 @@ static int getTrafficStats(unsigned int timePeriod,
   unsigned int nowUnit;
   double totSize;
 
+  if (timePeriod > HISTORY_SIZE) 
+    timePeriod = HISTORY_SIZE;
   MUTEX_LOCK(&lock);
   if ( (messageType >= max_message_type) ||
        (counters[messageType] == NULL) ) {

@@ -18,4 +18,5 @@ EXTRA_DIST = \
  junkinsert.sh \
  junklookup.sh \
  namespacehelper.sh \
- report.sh
+ report.sh \
+ $(pkgdata_DATA)

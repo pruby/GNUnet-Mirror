@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-05-30 22:55-0500\n"
+"POT-Creation-Date: 2005-06-14 18:17-0500\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -99,8 +99,8 @@ msgstr ""
 msgid "Could not determine my public IP address.\n"
 msgstr "OYA Rusange Aderesi"
 
-#: src/transports/http.c:1143 src/transports/tcp.c:1092 src/util/tcpio.c:165
-#: src/util/tcpio.c:195
+#: src/transports/http.c:1143 src/transports/tcp.c:1092 src/util/tcpio.c:166
+#: src/util/tcpio.c:196
 #, fuzzy, c-format
 msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
 msgstr ""
@@ -368,174 +368,166 @@ msgstr ""
 msgid "Error: can't delete service: %s\n"
 msgstr ""
 
-#: src/conf/gconf_interface.c:123
+#: src/conf/gconf_interface.c:135
 #, fuzzy
 msgid "Gtk GNUnet Configurator"
 msgstr "A bushyinguro"
 
-#: src/conf/gconf_interface.c:134
+#: src/conf/gconf_interface.c:146
 #, fuzzy
 msgid "_File"
 msgstr "/Idosiye"
 
-#: src/conf/gconf_interface.c:141
+#: src/conf/gconf_interface.c:153
 msgid "_Load"
 msgstr ""
 
-#: src/conf/gconf_interface.c:144 src/conf/gconf_interface.c:306
+#: src/conf/gconf_interface.c:156 src/conf/gconf_interface.c:323
 msgid "Load a config file"
 msgstr ""
 
-#: src/conf/gconf_interface.c:152
+#: src/conf/gconf_interface.c:164
 msgid "_Save"
 msgstr ""
 
-#: src/conf/gconf_interface.c:155
+#: src/conf/gconf_interface.c:167
 msgid "Save the config in .config"
 msgstr ""
 
-#: src/conf/gconf_interface.c:164
-msgid "Save _as"
-msgstr ""
-
-#: src/conf/gconf_interface.c:167
-msgid "Save the config in a file"
-msgstr ""
-
-#: src/conf/gconf_interface.c:179
+#: src/conf/gconf_interface.c:181
 #, fuzzy
 msgid "_Quit"
 msgstr "/Idosiye"
 
-#: src/conf/gconf_interface.c:189
+#: src/conf/gconf_interface.c:191
 #, fuzzy
 msgid "_Options"
 msgstr "ibirindiro"
 
-#: src/conf/gconf_interface.c:196
+#: src/conf/gconf_interface.c:198
 msgid "Show _name"
 msgstr ""
 
-#: src/conf/gconf_interface.c:199
+#: src/conf/gconf_interface.c:201
 msgid "Show name"
 msgstr ""
 
-#: src/conf/gconf_interface.c:201
+#: src/conf/gconf_interface.c:203
 msgid "Show _range"
 msgstr ""
 
-#: src/conf/gconf_interface.c:204
+#: src/conf/gconf_interface.c:206
 msgid "Show range (Y/M/N)"
 msgstr ""
 
-#: src/conf/gconf_interface.c:206
+#: src/conf/gconf_interface.c:208
 msgid "Show _data"
 msgstr ""
 
-#: src/conf/gconf_interface.c:209
+#: src/conf/gconf_interface.c:211
 msgid "Show value of the option"
 msgstr ""
 
-#: src/conf/gconf_interface.c:218
+#: src/conf/gconf_interface.c:220
 msgid "Show all _options"
 msgstr ""
 
-#: src/conf/gconf_interface.c:221
+#: src/conf/gconf_interface.c:223
 msgid "Show all options"
 msgstr ""
 
-#: src/conf/gconf_interface.c:225
+#: src/conf/gconf_interface.c:227
 msgid "Show _debug info"
 msgstr ""
 
-#: src/conf/gconf_interface.c:228
+#: src/conf/gconf_interface.c:230
 msgid "Show masked options"
 msgstr ""
 
 # sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
-#: src/conf/gconf_interface.c:231
+#: src/conf/gconf_interface.c:233
 #, fuzzy
 msgid "_Help"
 msgstr "/Kugoboka"
 
-#: src/conf/gconf_interface.c:238
+#: src/conf/gconf_interface.c:240
 msgid "_Introduction"
 msgstr ""
 
 # offmgr/source\offapp\intro\intro.hrc:TEXT_DEFAULTABOUT.text
-#: src/conf/gconf_interface.c:250
+#: src/conf/gconf_interface.c:252
 #, fuzzy
 msgid "_About"
 msgstr "Ibyerekeye"
 
-#: src/conf/gconf_interface.c:260
+#: src/conf/gconf_interface.c:262
 msgid "_License"
 msgstr ""
 
-#: src/conf/gconf_interface.c:280
+#: src/conf/gconf_interface.c:289
 msgid "Goes up of one level (single view)"
 msgstr ""
 
-#: src/conf/gconf_interface.c:295
+#: src/conf/gconf_interface.c:303
 msgid "Up"
 msgstr ""
 
-#: src/conf/gconf_interface.c:321
+#: src/conf/gconf_interface.c:337
 msgid "Load"
 msgstr ""
 
-#: src/conf/gconf_interface.c:328
+#: src/conf/gconf_interface.c:349
 msgid "Save a config file"
 msgstr ""
 
-#: src/conf/gconf_interface.c:343
+#: src/conf/gconf_interface.c:363
 msgid "Save"
 msgstr ""
 
-#: src/conf/gconf_interface.c:354
+#: src/conf/gconf_interface.c:383
 msgid "Single view"
 msgstr ""
 
-#: src/conf/gconf_interface.c:370
+#: src/conf/gconf_interface.c:398
 #, fuzzy
 msgid "Single"
 msgstr "Idosiye "
 
-#: src/conf/gconf_interface.c:376
+#: src/conf/gconf_interface.c:410
 msgid "Split view"
 msgstr ""
 
-#: src/conf/gconf_interface.c:393
+#: src/conf/gconf_interface.c:425
 msgid "Split"
 msgstr ""
 
-#: src/conf/gconf_interface.c:399
+#: src/conf/gconf_interface.c:437
 #, fuzzy
 msgid "Full view"
 msgstr "Iyinjizamo"
 
-#: src/conf/gconf_interface.c:416
+#: src/conf/gconf_interface.c:452
 msgid "Full"
 msgstr ""
 
-#: src/conf/gconf_interface.c:427
+#: src/conf/gconf_interface.c:473
 msgid "Collapse the whole tree in the right frame"
 msgstr ""
 
-#: src/conf/gconf_interface.c:443
+#: src/conf/gconf_interface.c:488
 #, fuzzy
 msgid "Collapse"
 msgstr "Gufunga"
 
-#: src/conf/gconf_interface.c:450
+#: src/conf/gconf_interface.c:501
 msgid "Expand the whole tree in the right frame"
 msgstr ""
 
-#: src/conf/gconf_interface.c:466
+#: src/conf/gconf_interface.c:515
 msgid "Expand"
 msgstr ""
 
-#: src/conf/gconf_interface.c:520
+#: src/conf/gconf_interface.c:569
 msgid "Sorry, no help available for this option yet."
 msgstr ""
 
@@ -546,7 +538,7 @@ msgstr ""
 msgid "GNUnet configuration assistant"
 msgstr "A bushyinguro"
 
-#: src/conf/wizard_interface.c:77 src/conf/wizard_curs.c:93
+#: src/conf/wizard_interface.c:77 src/conf/wizard_curs.c:74
 msgid ""
 "Welcome to GNUnet!\n"
 "\n"
@@ -564,13 +556,13 @@ msgid ""
 msgstr ""
 
 #: src/conf/wizard_interface.c:106 src/conf/wizard_interface.c:332
-#: src/conf/wizard_interface.c:651 src/conf/wizard_interface.c:1286
+#: src/conf/wizard_interface.c:651 src/conf/wizard_interface.c:1284
 msgid "Next"
 msgstr ""
 
 #: src/conf/wizard_interface.c:127 src/conf/wizard_interface.c:353
 #: src/conf/wizard_interface.c:672 src/conf/wizard_interface.c:929
-#: src/conf/wizard_interface.c:1307
+#: src/conf/wizard_interface.c:1305
 msgid "Cancel"
 msgstr "Kureka"
 
@@ -614,7 +606,7 @@ msgid "Network connection"
 msgstr ""
 
 #: src/conf/wizard_interface.c:311 src/conf/wizard_interface.c:630
-#: src/conf/wizard_interface.c:887 src/conf/wizard_interface.c:1265
+#: src/conf/wizard_interface.c:887 src/conf/wizard_interface.c:1263
 msgid "Back"
 msgstr ""
 
@@ -701,7 +693,7 @@ msgstr ""
 msgid "Open the enhanced configurator"
 msgstr "A bushyinguro"
 
-#: src/conf/wizard_interface.c:861 src/conf/wizard_interface.c:1239
+#: src/conf/wizard_interface.c:861 src/conf/wizard_interface.c:1237
 msgid "Other settings"
 msgstr ""
 
@@ -728,11 +720,10 @@ msgstr "Yego"
 msgid "No"
 msgstr "Oya."
 
-#: src/conf/wizard_interface.c:1075 src/conf/wizard_util.c:165
-#: src/conf/wizard_util.c:173 src/conf/wizard_util.c:176
-#: src/conf/wizard_util.c:190 src/conf/wizard_util.c:218
-#: src/conf/wizard_util.c:224 src/conf/wizard_util.c:359
-#: src/conf/wizard_util.c:377
+#: src/conf/wizard_interface.c:1075 src/conf/wizard_util.c:195
+#: src/conf/wizard_util.c:210 src/conf/wizard_util.c:238
+#: src/conf/wizard_util.c:244 src/conf/wizard_util.c:383
+#: src/conf/wizard_util.c:401
 msgid "Error"
 msgstr ""
 
@@ -751,16 +742,19 @@ msgid ""
 "For security reasons, it is a good idea to let this setup create a new user "
 "account and a new group under which the GNUnet service is started at system "
 "startup.\n"
-"You can also specify existing ones.\n"
-"In any case, you should check its permissions to critical files on your "
-"system."
+"\n"
+"However, GNUnet may not be able to access files other than its own. This "
+"includes files you want to publish in GNUnet. You'll have to grant read "
+"permissions to the user specified below.\n"
+"\n"
+"Leave the fields empty to run GNUnet with system privileges."
 msgstr ""
 
 #: src/conf/wizard_interface.c:1209
 msgid "Group:"
 msgstr ""
 
-#: src/conf/wizard_interface.c:1231
+#: src/conf/wizard_interface.c:1229
 msgid "User account:"
 msgstr ""
 
@@ -769,47 +763,47 @@ msgstr ""
 msgid "Couldn't find pixmap file: %s"
 msgstr ""
 
-#: src/conf/wizard_curs.c:92 src/conf/wizard_curs.c:106
-#: src/conf/wizard_curs.c:167 src/conf/wizard_curs.c:194
-#: src/conf/wizard_curs.c:219 src/conf/wizard_curs.c:251
-#: src/conf/wizard_curs.c:276 src/conf/wizard_curs.c:307
-#: src/conf/wizard_curs.c:329 src/conf/wizard_curs.c:357
-#: src/conf/wizard_curs.c:379 src/conf/wizard_curs.c:401
-#: src/conf/wizard_curs.c:428 src/conf/wizard_curs.c:458
-#: src/conf/wizard_curs.c:486
+#: src/conf/wizard_curs.c:73 src/conf/wizard_curs.c:87
+#: src/conf/wizard_curs.c:148 src/conf/wizard_curs.c:175
+#: src/conf/wizard_curs.c:200 src/conf/wizard_curs.c:232
+#: src/conf/wizard_curs.c:257 src/conf/wizard_curs.c:288
+#: src/conf/wizard_curs.c:310 src/conf/wizard_curs.c:338
+#: src/conf/wizard_curs.c:360 src/conf/wizard_curs.c:382
+#: src/conf/wizard_curs.c:410 src/conf/wizard_curs.c:440
+#: src/conf/wizard_curs.c:475
 #, fuzzy
 msgid "GNUnet configuration"
 msgstr "A bushyinguro"
 
-#: src/conf/wizard_curs.c:107
+#: src/conf/wizard_curs.c:88
 msgid ""
 "Choose the network interface that connects your computer to the internet "
 "from the list below."
 msgstr ""
 
 # sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
-#: src/conf/wizard_curs.c:113 src/conf/wizard_curs.c:173
-#: src/conf/wizard_curs.c:224 src/conf/wizard_curs.c:256
-#: src/conf/wizard_curs.c:312
+#: src/conf/wizard_curs.c:94 src/conf/wizard_curs.c:154
+#: src/conf/wizard_curs.c:205 src/conf/wizard_curs.c:237
+#: src/conf/wizard_curs.c:293
 #, fuzzy
 msgid "Help"
 msgstr "/Kugoboka"
 
-#: src/conf/wizard_curs.c:113
+#: src/conf/wizard_curs.c:94
 msgid ""
 "The \"Network interface\" is the device that connects your computer to the "
 "internet. This is usually a modem, an ISDN card or a network card in case "
 "you are using DSL."
 msgstr ""
 
-#: src/conf/wizard_curs.c:167
+#: src/conf/wizard_curs.c:148
 msgid ""
 "What is this computer's public IP adress or hostname?\n"
 "\n"
 "If in doubt, leave this empty."
 msgstr ""
 
-#: src/conf/wizard_curs.c:173
+#: src/conf/wizard_curs.c:154
 msgid ""
 "If your provider always assigns the same IP-Address to you (a \"static\" IP-"
 "Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
@@ -820,7 +814,7 @@ msgid ""
 "IP-Address."
 msgstr ""
 
-#: src/conf/wizard_curs.c:194
+#: src/conf/wizard_curs.c:175
 msgid ""
 "Is this machine behind NAT?\n"
 "\n"
@@ -831,11 +825,11 @@ msgid ""
 "forwarding\")."
 msgstr ""
 
-#: src/conf/wizard_curs.c:219
+#: src/conf/wizard_curs.c:200
 msgid "How much upstream (Bytes/s) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:224
+#: src/conf/wizard_curs.c:205
 msgid ""
 "You can limit GNUnet's ressource usage here.\n"
 "\n"
@@ -846,11 +840,11 @@ msgid ""
 "connection."
 msgstr ""
 
-#: src/conf/wizard_curs.c:251
+#: src/conf/wizard_curs.c:232
 msgid "How much downstream (Bytes/s) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:256
+#: src/conf/wizard_curs.c:237
 msgid ""
 "You can limit GNUnet's ressource usage here.\n"
 "\n"
@@ -861,7 +855,7 @@ msgid ""
 "connection."
 msgstr ""
 
-#: src/conf/wizard_curs.c:276
+#: src/conf/wizard_curs.c:257
 msgid ""
 "Share denoted bandwidth with other applications?\n"
 "\n"
@@ -874,18 +868,18 @@ msgid ""
 "connection whenever your high-speed LAN gets used (e.g. by NFS)."
 msgstr ""
 
-#: src/conf/wizard_curs.c:307
+#: src/conf/wizard_curs.c:288
 msgid "How much CPU (in %) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:312
+#: src/conf/wizard_curs.c:293
 msgid ""
 "You can limit GNUnet's ressource usage here.\n"
 "\n"
 "This is the percentage of processor time GNUnet is allowed to use."
 msgstr ""
 
-#: src/conf/wizard_curs.c:329
+#: src/conf/wizard_curs.c:310
 msgid ""
 "Store migrated content?\n"
 "\n"
@@ -898,7 +892,7 @@ msgid ""
 "availability."
 msgstr ""
 
-#: src/conf/wizard_curs.c:357
+#: src/conf/wizard_curs.c:338
 msgid ""
 "What's the maximum datastore size in MB?\n"
 "\n"
@@ -906,7 +900,7 @@ msgid ""
 "inserted and migrated content)."
 msgstr ""
 
-#: src/conf/wizard_curs.c:379
+#: src/conf/wizard_curs.c:360
 msgid ""
 "Do you want to launch GNUnet as a system service?\n"
 "\n"
@@ -915,22 +909,23 @@ msgid ""
 "launch GNUnet yourself each time you want to use it."
 msgstr ""
 
-#: src/conf/wizard_curs.c:402
+#: src/conf/wizard_curs.c:383
 msgid ""
 "Define the user owning the GNUnet service.\n"
 "\n"
 "For security reasons, it is a good idea to let this setup create a new user "
 "account under which the GNUnet service is started at system startup.\n"
 "\n"
-"You can also specify an already existant user account here.\n"
+"However, GNUnet may not be able to access files other than its own. This "
+"includes files you want to publish in GNUnet. You'll have to grant read "
+"permissions to the user specified below.\n"
 "\n"
-"In any case, you should check its permissions to critical files on your "
-"system.\n"
+"Leave the fields empty to run GNUnet with system privileges.\n"
 "\n"
 "GNUnet user:"
 msgstr ""
 
-#: src/conf/wizard_curs.c:429
+#: src/conf/wizard_curs.c:411
 msgid ""
 "Define the group owning the GNUnet service.\n"
 "\n"
@@ -945,7 +940,7 @@ msgid ""
 "GNUnet group:"
 msgstr ""
 
-#: src/conf/wizard_curs.c:458
+#: src/conf/wizard_curs.c:440
 msgid ""
 "If you are an experienced user, you may want to tweak your GNUnet "
 "installation using the enhanced configurator.\n"
@@ -953,7 +948,7 @@ msgid ""
 "Do you want to start it after saving your configuration?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:487
+#: src/conf/wizard_curs.c:476
 #, fuzzy
 msgid ""
 "Cannot save configuration.\n"
@@ -961,55 +956,53 @@ msgid ""
 "Try again?"
 msgstr "Gufungura Iboneza IDOSIYE"
 
-#: src/conf/wizard_util.c:162
-#, c-format
-msgid "Error: can't open Service Control Manager: %s (%i)\n"
+#: src/conf/wizard_util.c:164 src/conf/wizard_util.c:226
+msgid "Can't open Service Control Manager"
 msgstr ""
 
 #: src/conf/wizard_util.c:170
-#, c-format
-msgid "Error: can't create service: %s (#%i)\n"
+msgid "Can't create service"
 msgstr ""
 
-#: src/conf/wizard_util.c:176 src/conf/wizard_util.c:218
+#: src/conf/wizard_util.c:175 src/conf/wizard_util.c:238
 #, fuzzy
 msgid "Unknown error"
 msgstr "Verisiyo"
 
-#: src/conf/wizard_util.c:189
+#: src/conf/wizard_util.c:188
+msgid "Error changing the permissions of the GNUnet directory"
+msgstr ""
+
+#: src/conf/wizard_util.c:209
 msgid "Cannot write to the regisitry"
 msgstr ""
 
-#: src/conf/wizard_util.c:206
-msgid "Can't open Service Control Manager"
-msgstr ""
-
-#: src/conf/wizard_util.c:210
+#: src/conf/wizard_util.c:230
 msgid "Can't access the service"
 msgstr ""
 
-#: src/conf/wizard_util.c:214
+#: src/conf/wizard_util.c:234
 msgid "Can't delete the service"
 msgstr ""
 
-#: src/conf/wizard_util.c:358
+#: src/conf/wizard_util.c:382
 msgid "This version of Windows does not support multiple users."
 msgstr ""
 
-#: src/conf/wizard_util.c:362
+#: src/conf/wizard_util.c:386
 #, fuzzy
 msgid "Error creating user"
 msgstr "Ivugurura Verisiyo"
 
-#: src/conf/wizard_util.c:365
+#: src/conf/wizard_util.c:389
 msgid "Error accessing local security policy"
 msgstr ""
 
-#: src/conf/wizard_util.c:368
+#: src/conf/wizard_util.c:392
 msgid "Error granting service right to user"
 msgstr ""
 
-#: src/conf/wizard_util.c:371
+#: src/conf/wizard_util.c:395
 msgid "Unknown error while creating a new user"
 msgstr ""
 
@@ -1087,8 +1080,8 @@ msgstr "Kubona Gushyira Gukuraho... a imbonerahamwe#"
 #: src/applications/tracekit/gnunet-tracekit.c:87
 #: src/applications/tracekit/gnunet-tracekit.c:122
 #: src/applications/tracekit/gnunet-tracekit.c:136
-#: src/applications/fs/tools/gnunet-insert.c:280
-#: src/applications/fs/tools/gnunet-insert.c:396
+#: src/applications/fs/tools/gnunet-insert.c:283
+#: src/applications/fs/tools/gnunet-insert.c:399
 #: src/applications/fs/tools/gnunet-search.c:156
 #: src/applications/fs/tools/gnunet-search.c:172
 #: src/applications/fs/tools/gnunet-search.c:193
@@ -1112,7 +1105,7 @@ msgstr "a Umubare Kuri i Ihitamo"
 #: src/applications/fs/tools/gnunet-pseudonym.c:192
 #: src/applications/fs/tools/gnunet-delete.c:111
 #: src/applications/fs/tools/gnunet-directory.c:177
-#: src/applications/fs/tools/gnunet-insert.c:467
+#: src/applications/fs/tools/gnunet-insert.c:470
 #: src/applications/fs/tools/gnunet-search.c:210
 #: src/applications/fs/tools/gnunet-download.c:125
 #: src/applications/fs/tools/gnunet-unindex.c:139
@@ -1525,8 +1518,8 @@ msgstr "OYA gutangiza Modire"
 #: src/applications/sqstore_mysql/mysql.c:924 src/util/symcipher_gcrypt.c:47
 #: src/util/symcipher_gcrypt.c:54 src/util/hostkey_gcrypt.c:56
 #: src/util/hostkey_gcrypt.c:63 src/util/storage.c:613
-#: src/include/gnunet_util.h:973 src/include/gnunet_util.h:980
-#: src/include/gnunet_util.h:982
+#: src/include/gnunet_util.h:980 src/include/gnunet_util.h:987
+#: src/include/gnunet_util.h:989
 #, fuzzy, c-format
 msgid "'%s' failed at %s:%d with error: %s\n"
 msgstr "'%s'Byanze ku Na: Ikosa"
@@ -2316,28 +2309,28 @@ msgstr "#BYAKIRIWE"
 msgid "# p2p trace replies sent"
 msgstr "#Yoherejwe:"
 
-#: src/applications/gap/gap.c:1856
+#: src/applications/gap/gap.c:1863
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1867 src/applications/fs/module/fs.c:667
+#: src/applications/gap/gap.c:1874 src/applications/fs/module/fs.c:669
 #, fuzzy
 msgid "Failed to get traffic stats.\n"
 msgstr "Kuri Ikibazo# Ibyerekeye"
 
-#: src/applications/gap/gap.c:1873 src/applications/gap/gap.c:1878
-#: src/applications/gap/gap.c:1884
+#: src/applications/gap/gap.c:1880 src/applications/gap/gap.c:1885
+#: src/applications/gap/gap.c:1891
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2095
+#: src/applications/gap/gap.c:2102
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2126
+#: src/applications/gap/gap.c:2133
 #, c-format
 msgid "'%s' registering handlers %d %d\n"
 msgstr ""
@@ -2621,26 +2614,26 @@ msgstr ""
 msgid "File '%s' has URI: %s\n"
 msgstr "Idosiye Nka"
 
-#: src/applications/fs/tools/gnunet-insert.c:160
+#: src/applications/fs/tools/gnunet-insert.c:161
 #, c-format
 msgid ""
 "\n"
 "Error uploading file: %s\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:178
+#: src/applications/fs/tools/gnunet-insert.c:180
 #, fuzzy
 msgid "set the desired LEVEL of sender-anonymity"
 msgstr "Gushyiraho i Bya Mwakirizi"
 
-#: src/applications/fs/tools/gnunet-insert.c:181
+#: src/applications/fs/tools/gnunet-insert.c:183
 #, fuzzy
 msgid ""
 "even if gnunetd is running on the local machine, force the creation of a "
 "copy instead of making a link to the GNUnet share directory"
 msgstr "NIBA ni ku i Kurema a Ihuza Bya a Gukoporora in i bushyinguro"
 
-#: src/applications/fs/tools/gnunet-insert.c:184
+#: src/applications/fs/tools/gnunet-insert.c:186
 #, fuzzy
 msgid ""
 "print list of extracted keywords that would be used, but do not perform "
@@ -2649,14 +2642,14 @@ msgstr ""
 "Gucapa Urutonde Bya Amagambo fatizo OYA Iyinjizamo Cyangwa gushyiraho "
 "umugereka"
 
-#: src/applications/fs/tools/gnunet-insert.c:188
+#: src/applications/fs/tools/gnunet-insert.c:190
 #, fuzzy
 msgid ""
 "set interval for availability of updates to SECONDS (for namespace "
 "insertions only)"
 msgstr "Gushyiraho Intera kugirango Ukuboneka Bya Kuri kugirango Amayongeramo"
 
-#: src/applications/fs/tools/gnunet-insert.c:191
+#: src/applications/fs/tools/gnunet-insert.c:193
 #, fuzzy
 msgid ""
 "add an additional keyword for the top-level file or directory (this option "
@@ -2665,7 +2658,7 @@ msgstr ""
 "Kongeramo Ijambo- banze kugirango i Hejuru: urwego IDOSIYE Cyangwa "
 "bushyinguro iyi Ihitamo Igikubo Times"
 
-#: src/applications/fs/tools/gnunet-insert.c:194
+#: src/applications/fs/tools/gnunet-insert.c:196
 #, fuzzy
 msgid ""
 "add an additional keyword for all files and directories (this option can be "
@@ -2674,11 +2667,11 @@ msgstr ""
 "Kongeramo Ijambo- banze kugirango Byose Idosiye Na ububiko bw'amaderese iyi "
 "Ihitamo Igikubo Times"
 
-#: src/applications/fs/tools/gnunet-insert.c:198
+#: src/applications/fs/tools/gnunet-insert.c:200
 msgid "set the meta-data for the given TYPE to the given VALUE"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:200
+#: src/applications/fs/tools/gnunet-insert.c:202
 #, fuzzy
 msgid ""
 "do not index, perform full insertion (stores entire file in encrypted form "
@@ -2686,85 +2679,85 @@ msgid ""
 msgstr ""
 "OYA Umubarendanga Iyinjizamo IDOSIYE in Bishunzwe: Ifishi in Ububikoshingiro"
 
-#: src/applications/fs/tools/gnunet-insert.c:203
+#: src/applications/fs/tools/gnunet-insert.c:205
 #, fuzzy
 msgid ""
 "specify ID of an updated version to be published in the future (for "
 "namespace insertions only)"
 msgstr "Bya Verisiyo Kuri in i kugirango Amayongeramo"
 
-#: src/applications/fs/tools/gnunet-insert.c:206
+#: src/applications/fs/tools/gnunet-insert.c:208
 #, fuzzy
 msgid "specify the priority of the content"
 msgstr "i By'ibanze Bya i Ibikubiyemo"
 
-#: src/applications/fs/tools/gnunet-insert.c:208
+#: src/applications/fs/tools/gnunet-insert.c:210
 #, fuzzy
 msgid "publish the files under the pseudonym NAME (place file into namespace)"
 msgstr "Tangaza i Idosiye i IDOSIYE"
 
-#: src/applications/fs/tools/gnunet-insert.c:210
+#: src/applications/fs/tools/gnunet-insert.c:212
 #, fuzzy
 msgid "process directories recursively"
 msgstr "ububiko bw'amaderese"
 
-#: src/applications/fs/tools/gnunet-insert.c:212
+#: src/applications/fs/tools/gnunet-insert.c:214
 #, fuzzy
 msgid ""
 "specifies this as an aperiodic but updated publication (for namespace "
 "insertions only)"
 msgstr "iyi Nka kugirango Amayongeramo"
 
-#: src/applications/fs/tools/gnunet-insert.c:215
+#: src/applications/fs/tools/gnunet-insert.c:217
 #, fuzzy
 msgid ""
 "set the ID of this version of the publication (for namespace insertions only)"
 msgstr "Gushyiraho i Bya iyi Verisiyo Bya i kugirango Amayongeramo"
 
-#: src/applications/fs/tools/gnunet-insert.c:218
+#: src/applications/fs/tools/gnunet-insert.c:220
 #, fuzzy
 msgid "specify creation time for SBlock (see man-page for format)"
 msgstr "Igihe kugirango Ipaji kugirango Imiterere"
 
-#: src/applications/fs/tools/gnunet-insert.c:220
+#: src/applications/fs/tools/gnunet-insert.c:222
 #, fuzzy
 msgid "ID of the previous version of the content (for namespace update only)"
 msgstr ""
 "Izina ry'idosiye: Bya i Bya a Ibanjirije Verisiyo Bya i Ibikubiyemo "
 "kugirango Amayongeramo"
 
-#: src/applications/fs/tools/gnunet-insert.c:227
+#: src/applications/fs/tools/gnunet-insert.c:229
 #, fuzzy
 msgid "Make files available to GNUnet for sharing."
 msgstr "Idosiye Bihari Kuri kugirango Bisangiwe"
 
-#: src/applications/fs/tools/gnunet-insert.c:304
+#: src/applications/fs/tools/gnunet-insert.c:307
 #, fuzzy, c-format
 msgid "You must pass a positive number to the '%s' option.\n"
 msgstr "a Umubare Kuri i Ihitamo"
 
-#: src/applications/fs/tools/gnunet-insert.c:472
+#: src/applications/fs/tools/gnunet-insert.c:475
 #: src/applications/fs/tools/gnunet-unindex.c:144
 #, fuzzy, c-format
 msgid "You must specify a list of files to insert.\n"
 msgstr "a Urutonde Bya Idosiye Kuri Kongeramo"
 
-#: src/applications/fs/tools/gnunet-insert.c:491
-#, fuzzy, c-format
-msgid "Keywords for file '%s':\n"
-msgstr "kugirango IDOSIYE"
-
-#: src/applications/fs/tools/gnunet-insert.c:501
+#: src/applications/fs/tools/gnunet-insert.c:479
 #, c-format
 msgid "Only one file or directory can be specified at a time.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:505
+#: src/applications/fs/tools/gnunet-insert.c:483
 #, fuzzy, c-format
 msgid "You must specify a file or directory to upload.\n"
 msgstr "a Urutonde Bya Idosiye Kuri Kongeramo"
 
-#: src/applications/fs/tools/gnunet-insert.c:548
+#: src/applications/fs/tools/gnunet-insert.c:532
+#, fuzzy, c-format
+msgid "Keywords for file '%s':\n"
+msgstr "kugirango IDOSIYE"
+
+#: src/applications/fs/tools/gnunet-insert.c:554
 #, fuzzy, c-format
 msgid "Could not access namespace '%s' (does not exist?).\n"
 msgstr ""
@@ -2777,16 +2770,16 @@ msgstr ""
 "X- Generator: KBabel 1. 0\n"
 "."
 
-#: src/applications/fs/tools/gnunet-insert.c:563
+#: src/applications/fs/tools/gnunet-insert.c:569
 #, fuzzy, c-format
 msgid "Parsing time failed. Use '%s' format.\n"
 msgstr "Igihe Byanze Imiterere"
 
-#: src/applications/fs/tools/gnunet-insert.c:572
-#: src/applications/fs/tools/gnunet-insert.c:576
-#: src/applications/fs/tools/gnunet-insert.c:580
-#: src/applications/fs/tools/gnunet-insert.c:584
-#: src/applications/fs/tools/gnunet-insert.c:589
+#: src/applications/fs/tools/gnunet-insert.c:578
+#: src/applications/fs/tools/gnunet-insert.c:582
+#: src/applications/fs/tools/gnunet-insert.c:586
+#: src/applications/fs/tools/gnunet-insert.c:590
+#: src/applications/fs/tools/gnunet-insert.c:595
 #, fuzzy, c-format
 msgid "Option '%s' makes no sense without option '%s'.\n"
 msgstr "Oya Ihitamo"
@@ -2879,27 +2872,31 @@ msgstr "ingingo a"
 
 #: src/applications/fs/tools/gnunet-download.c:156
 #, fuzzy, c-format
-msgid "Download at %16llu out of %16llu bytes (%8.3f kbps)"
+msgid "Download of file '%s' at %16llu out of %16llu bytes (%8.3f kbps)\n"
 msgstr "ku Inyuma Bya Bayite"
 
-#: src/applications/fs/tools/gnunet-download.c:166
+#: src/applications/fs/tools/gnunet-download.c:168
+#: src/applications/fs/tools/gnunet-download.c:179
 #, c-format
 msgid "Error downloading: %s\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-download.c:172
+#: src/applications/fs/tools/gnunet-download.c:187
 #, fuzzy, c-format
-msgid ""
-"\n"
-"Download of file '%s' comlete.  Speed was %8.3f kilobyte per second.\n"
+msgid "Download of file '%s' complete.  Speed was %8.3f kilobyte per second.\n"
 msgstr "ISEGONDA"
 
-#: src/applications/fs/tools/gnunet-download.c:215
+#: src/applications/fs/tools/gnunet-download.c:198
+#, c-format
+msgid "Recursive download of directory '%s' at %llu of %llu bytes.\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-download.c:236
 #, fuzzy, c-format
 msgid "URI '%s' invalid for gnunet-download.\n"
 msgstr "Sibyo"
 
-#: src/applications/fs/tools/gnunet-download.c:266
+#: src/applications/fs/tools/gnunet-download.c:287
 #, fuzzy, c-format
 msgid "File stored as '%s'.\n"
 msgstr "Idosiye Nka"
@@ -2948,12 +2945,12 @@ msgid ""
 "s' under '%s'."
 msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
 
-#: src/applications/fs/module/ondemand.c:323
+#: src/applications/fs/module/ondemand.c:327
 #, c-format
 msgid "Indexed file disappeared, deleting block for query '%s'\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:404
+#: src/applications/fs/module/ondemand.c:408
 #, c-format
 msgid ""
 "Because the file '%s' has been unavailable for 3 days it got removed from "
@@ -2961,27 +2958,27 @@ msgid ""
 "contains invalid references!"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:430
+#: src/applications/fs/module/ondemand.c:434
 #, fuzzy, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section "
 "'%s' under '%s'.\n"
 msgstr "IDOSIYE bushyinguro kugirango Bya Ibyatanzwe in Icyiciro"
 
-#: src/applications/fs/module/ondemand.c:621
+#: src/applications/fs/module/ondemand.c:625
 #, c-format
 msgid ""
 "Unindexed ODB block '%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:980
+#: src/applications/fs/module/fs.c:998
 #, fuzzy, c-format
 msgid ""
 "You must specify a postive number for '%s' in the configuration in section '%"
 "s'.\n"
 msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
 
-#: src/applications/fs/module/fs.c:1019
+#: src/applications/fs/module/fs.c:1039
 #, c-format
 msgid "'%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr ""
@@ -2996,15 +2993,15 @@ msgstr "Amagambo fatizo"
 msgid "AND"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:336 src/applications/fs/fsui/upload.c:366
+#: src/applications/fs/fsui/upload.c:349 src/applications/fs/fsui/upload.c:388
 msgid "Upload failed.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:370
+#: src/applications/fs/fsui/upload.c:395
 msgid "Cannot upload directory without using recursion.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/fsui.c:509
+#: src/applications/fs/fsui/fsui.c:542
 #, c-format
 msgid "FSUI state file '%s' had syntax error at offset %u.\n"
 msgstr ""
@@ -3019,10 +3016,15 @@ msgid ""
 "schedule.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/download.c:192
+#: src/applications/fs/fsui/download.c:239
 #, fuzzy
 msgid "Download aborted."
 msgstr "/Byahiswemo"
+
+#: src/applications/fs/fsui/download.c:242
+#, fuzzy
+msgid "ECRS download failed (see logs)."
+msgstr "OYA Gufungura IDOSIYE"
 
 #: src/applications/fs/fsui/file_info.c:73
 msgid "Collecting file identifiers disabled.\n"
@@ -3041,17 +3043,39 @@ msgstr ""
 msgid "LOC URI not allowed for search.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:884
+#: src/applications/fs/ecrs/download.c:889
 #, fuzzy
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
 msgstr "Ibikubiyemo OYA BIHUYE Urufunguzo ni a Cyangwa a Byinjijwemo IDOSIYE"
 
-#: src/applications/fs/ecrs/download.c:1049
+#: src/applications/fs/ecrs/download.c:1054
 #, fuzzy, c-format
 msgid "Content '%s' seems to be not available on the network.\n"
 msgstr "Kuri OYA Bihari ku i urusobe"
+
+#: src/applications/fs/ecrs/upload.c:180
+#, fuzzy, c-format
+msgid "Cannot hash '%s'.\n"
+msgstr "Ibirimo"
+
+#: src/applications/fs/ecrs/upload.c:198
+#, fuzzy, c-format
+msgid "Initialization for indexing file '%s' failed.\n"
+msgstr "Bya in IDOSIYE"
+
+#: src/applications/fs/ecrs/upload.c:204
+#, c-format
+msgid ""
+"Indexing file '%s' failed. Check file permissions and consult your GNUnet "
+"server's logs.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/upload.c:287
+#, c-format
+msgid "Indexing data failed at position %i.\n"
+msgstr ""
 
 #: src/applications/fs/ecrs/meta.c:772
 #, fuzzy, c-format
@@ -3063,7 +3087,7 @@ msgstr "Bya IDOSIYE Kuri Byanze"
 msgid "Could not rename file '%s' to '%s': file exists\n"
 msgstr "OYA Guhindura izina IDOSIYE Kuri IDOSIYE"
 
-#: src/applications/fs/ecrs/namespace.c:45 src/util/state.c:81
+#: src/applications/fs/ecrs/namespace.c:45
 #, fuzzy, c-format
 msgid ""
 "Configuration file must specify a directory for GNUnet to store per-peer "
@@ -3165,12 +3189,12 @@ msgstr "Bivuye Byanze"
 msgid "Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"
 msgstr "OYA Izina: Bya Porogisi a Porogisi"
 
-#: src/applications/traffic/traffic.c:443
+#: src/applications/traffic/traffic.c:445
 #, fuzzy, c-format
 msgid "# bytes transmitted of type %d"
 msgstr "#Bayite Bya Ubwoko"
 
-#: src/applications/traffic/traffic.c:463
+#: src/applications/traffic/traffic.c:465
 #, fuzzy, c-format
 msgid "# bytes received of type %d"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
@@ -3509,7 +3533,7 @@ msgid ""
 "entry '%s': %s\n"
 msgstr "urusobe in i Iboneza in Icyiciro kugirango Icyinjijwe"
 
-#: src/server/tcpserver.c:797
+#: src/server/tcpserver.c:798
 #, fuzzy, c-format
 msgid "%s failed, message type %d already in use.\n"
 msgstr "%sByanze Ubutumwa Ubwoko in Gukoresha"
@@ -3766,22 +3790,22 @@ msgid ""
 "Arguments mandatory for long options are also mandatory for short options.\n"
 msgstr "kugirango Amahitamo kugirango Amahitamo"
 
-#: src/util/configuration.c:177
+#: src/util/configuration.c:180
 #, fuzzy, c-format
 msgid "inlining configration file '%s'\n"
 msgstr "IDOSIYE"
 
-#: src/util/configuration.c:181
+#: src/util/configuration.c:184
 #, fuzzy, c-format
 msgid "Could not parse configuration file '%s'.\n"
 msgstr "OYA Iboneza IDOSIYE"
 
-#: src/util/configuration.c:217
+#: src/util/configuration.c:220
 #, fuzzy, c-format
 msgid "Syntax error in configuration file '%s' at line %d.\n"
 msgstr "Ikosa in Iboneza IDOSIYE ku Umurongo"
 
-#: src/util/configuration.c:464
+#: src/util/configuration.c:471
 #, fuzzy, c-format
 msgid ""
 "Configuration file '%s' not found. I will try to create the default "
@@ -3789,7 +3813,7 @@ msgid ""
 msgstr ""
 "IDOSIYE OYA Byabonetse Kuri Kurema i Mburabuzi Iboneza IDOSIYE ku Ahantu"
 
-#: src/util/configuration.c:481
+#: src/util/configuration.c:488
 #, fuzzy, c-format
 msgid "Cannot open configuration file '%s'\n"
 msgstr "Gufungura Iboneza IDOSIYE"
@@ -3799,10 +3823,17 @@ msgstr "Gufungura Iboneza IDOSIYE"
 msgid "libgcrypt has not the expected version (version %s is required).\n"
 msgstr "OYA i Ikitezwe: Verisiyo Verisiyo ni Bya ngombwa"
 
-#: src/util/tcpio.c:86 src/util/identity.c:83 src/util/identity.c:123
+#: src/util/tcpio.c:87 src/util/identity.c:83 src/util/identity.c:123
 #, fuzzy, c-format
 msgid "Could not find IP of host '%s': %s\n"
 msgstr "OYA Gushaka Bya Ubuturo"
+
+#: src/util/state.c:86
+#, fuzzy, c-format
+msgid ""
+"Configuration file must specify a directory for GNUnet to store per-peer "
+"data under %s\\%s.\n"
+msgstr "IDOSIYE a bushyinguro kugirango Kuri Ibyatanzwe"
 
 #: src/util/dso.c:41
 #, fuzzy, c-format
@@ -3859,17 +3890,17 @@ msgstr ""
 msgid "EVERYTHING"
 msgstr ""
 
-#: src/util/logging.c:239
+#: src/util/logging.c:248
 #, fuzzy
 msgid "LOGLEVEL not specified, that is not ok.\n"
 msgstr "OYA ni OYA YEGO"
 
-#: src/util/logging.c:250
+#: src/util/logging.c:259
 #, c-format
 msgid "Invalid LOGLEVEL '%s' specified.\n"
 msgstr ""
 
-#: src/util/logging.c:355 src/util/logging.c:361
+#: src/util/logging.c:364 src/util/logging.c:370
 #, fuzzy, c-format
 msgid "Failure at %s:%d.\n"
 msgstr "ku"
@@ -3919,15 +3950,15 @@ msgstr ""
 "X- Generator: KBabel 1. 0\n"
 "."
 
-#: src/util/identity.c:282
-#, c-format
-msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
-msgstr ""
-
-#: src/util/identity.c:300
+#: src/util/identity.c:297
 #, fuzzy, c-format
 msgid "Could not resolve '%s' to determine our IP address: %s\n"
 msgstr "OYA Kuri Aderesi"
+
+#: src/util/identity.c:322
+#, c-format
+msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
+msgstr ""
 
 #: src/util/identity.c:357 src/util/identity.c:399
 #, fuzzy, c-format
@@ -3958,42 +3989,42 @@ msgid ""
 "configuration file.\n"
 msgstr "OYA Gushaka kugirango iyi Ubuturo i in i Iboneza IDOSIYE"
 
-#: src/include/gnunet_util.h:140
+#: src/include/gnunet_util.h:147
 #, fuzzy
 msgid "print this help"
 msgstr "Gucapa iyi Ifashayobora"
 
-#: src/include/gnunet_util.h:143
+#: src/include/gnunet_util.h:150
 #, fuzzy
 msgid "set verbosity to LEVEL"
 msgstr "Gushyiraho Kuri"
 
-#: src/include/gnunet_util.h:146
+#: src/include/gnunet_util.h:153
 #, fuzzy
 msgid "use configuration file FILENAME"
 msgstr "Gukoresha Iboneza IDOSIYE"
 
-#: src/include/gnunet_util.h:149
+#: src/include/gnunet_util.h:156
 #, fuzzy
 msgid "specify host on which gnunetd is running"
 msgstr "Ubuturo ku ni"
 
-#: src/include/gnunet_util.h:152
+#: src/include/gnunet_util.h:159
 #, fuzzy
 msgid "print the version number"
 msgstr "Gucapa i Verisiyo Umubare"
 
-#: src/include/gnunet_util.h:155
+#: src/include/gnunet_util.h:162
 msgid "be verbose"
 msgstr ""
 
-#: src/include/gnunet_util.h:582 src/include/gnunet_util.h:584
+#: src/include/gnunet_util.h:589 src/include/gnunet_util.h:591
 #, fuzzy, c-format
 msgid "Assertion failed at %s:%d.\n"
 msgstr "Byanze ku"
 
-#: src/include/gnunet_util.h:989 src/include/gnunet_util.h:991
-#: src/include/gnunet_util.h:998
+#: src/include/gnunet_util.h:996 src/include/gnunet_util.h:998
+#: src/include/gnunet_util.h:1005
 #, fuzzy, c-format
 msgid "'%s' failed on file '%s' at %s:%d with error: %s\n"
 msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
@@ -4334,12 +4365,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #, fuzzy
 #~ msgid "DONE"
 #~ msgstr "Byakozwe"
-
-#, fuzzy
-#~ msgid ""
-#~ "Could not download file '%s'.\n"
-#~ "Consult logs.\n"
-#~ msgstr "OYA Gufungura IDOSIYE"
 
 #, fuzzy
 #~ msgid "filename"
@@ -5447,10 +5472,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #~ msgstr "Ububikoshingiro IDOSIYE Uburebure Kuri"
 
 #, fuzzy
-#~ msgid "Cannot load '%s'.\n"
-#~ msgstr "Ibirimo"
-
-#, fuzzy
 #~ msgid "Could not open '%s' database '%s'!\n"
 #~ msgstr "OYA Gufungura Ububikoshingiro"
 
@@ -5720,10 +5741,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #~ "The given SBlock does not belong to the namespace of the selected "
 #~ "pseudonym."
 #~ msgstr "OYA Kuri i Bya i Byahiswemo"
-
-#, fuzzy
-#~ msgid "Verification of SBlock in file '%s' failed\n"
-#~ msgstr "Bya in IDOSIYE"
 
 #, fuzzy
 #~ msgid "Trying to update nonupdatable SBlock.\n"

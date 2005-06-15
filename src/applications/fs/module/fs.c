@@ -122,10 +122,6 @@ static int gapPut(void * closure,
     BREAK(); /* value failed verification! */
     return SYSERR;
   }
-#if EXTRA_CHECKS
-  if (closure != NULL)
-    return OK; /* was extra-check */
-#endif
 
   dv = MALLOC(size);
   dv->size = htonl(size);
@@ -720,12 +716,6 @@ static int gapGetConverter(const HashCode512 * key,
   memcpy(&gw[1],
 	 &value[1],
 	 size - sizeof(GapWrapper));
-#if EXTRA_CHECKS
-  GNUNET_ASSERT(SYSERR != gapPut("CHECK",
-				 key,
-				 &gw->dc,
-				 0));
-#endif
   if (ggc->resultCallback != NULL)
     ret = ggc->resultCallback(key,
 			      &gw->dc,

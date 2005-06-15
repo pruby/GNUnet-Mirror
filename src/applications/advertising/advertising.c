@@ -480,7 +480,7 @@ static void broadcastHELO(void * unused) {
 
   i = transport->forEach(NULL,
 			 NULL);
-  transport->forEach(&broadcastHELOTransport,
+  transport->forEach((TransportCallback)&broadcastHELOTransport,
 		     &i);
 }
 

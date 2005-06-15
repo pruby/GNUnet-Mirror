@@ -176,7 +176,9 @@ int ECRS_uploadFile(const char * filename,
   if (doIndex) {
     if (SYSERR == getFileHash(filename,
 			      &fileId)) {
-			LOG(LOG_ERROR, _("Cannot hash '%s'.\n"), filename);
+      LOG(LOG_ERROR, 
+	  _("Cannot hash '%s'.\n"), 
+	  filename);
       releaseClientSocket(sock);
       return SYSERR;
     }
@@ -189,6 +191,22 @@ int ECRS_uploadFile(const char * filename,
     start = now;
     /* reset the counter since the formula later does not
        take the time for getFileHash into account */
+
+    switch (FS_initIndex(sock, &fileId, filename)) {
+    case SYSERR:
+      LOG(LOG_ERROR,
+	  _("Initialization for indexing file '%s' failed.\n"), 
+	  filename);
+      releaseClientSocket(sock);
+      return SYSERR;
+    case NO:
+      LOG(LOG_ERROR, 
+	  _("Indexing file '%s' failed. Check file permissions and consult "
+	    "your GNUnet server's logs.\n"),
+	  filename);
+      releaseClientSocket(sock);
+      return SYSERR;			
+    }
   }
   treedepth = computeDepth(filesize);
 
@@ -201,17 +219,6 @@ int ECRS_uploadFile(const char * filename,
     LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
     return SYSERR;
   }
-
-	switch(FS_initIndex(sock, &fileId, filename)) {
-		case SYSERR:
-			LOG(LOG_ERROR, _("Initialization for indexing file '%s' failed.\n"), filename);
-    	return SYSERR;
-		case NO:
-			LOG(LOG_ERROR, 
-			    _("Indexing file '%s' failed. Check file permissions and consult "
-				"your GNUnet server's logs.\n"), filename);
-    	return SYSERR;			
-	}
 
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->size = htonl(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));

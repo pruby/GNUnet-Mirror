@@ -622,13 +622,15 @@ int ECRS_deserializeMetaData(MetaData ** md,
 int ECRS_isDirectory(MetaData * md) {
   int i;
 
-  for (i=md->itemCount-1;i>=0;i--)
-    if ( (md->items[i].type == EXTRACTOR_MIMETYPE) &&
-	 (0 == strcmp(md->items[i].data,
-		      GNUNET_DIRECTORY_MIME)) )
-      return YES;
-    else
-      return NO;
+  for (i=md->itemCount-1;i>=0;i--) {
+    if (md->items[i].type == EXTRACTOR_MIMETYPE) {
+      if (0 == strcmp(md->items[i].data,
+		      GNUNET_DIRECTORY_MIME)) 
+	return YES;
+      else
+	return NO;
+    }
+  }
   return SYSERR;
 }
 

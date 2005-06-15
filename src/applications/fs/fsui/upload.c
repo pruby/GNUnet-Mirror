@@ -444,7 +444,8 @@ static void * uploadThread(UploadThreadClosure * utc) {
     ECRS_freeUri(uri);
 
   FREE(utc->main_filename);
-  ECRS_freeMetaData(utc->meta);
+  if (utc->meta != NULL)
+    ECRS_freeMetaData(utc->meta);
   if (utc->uri != NULL)
     ECRS_freeUri(utc->uri);
   if (utc->globalUri != NULL)
@@ -525,7 +526,6 @@ int FSUI_upload(struct FSUI_Context * ctx,
   cleanupFSUIThreadList(ctx);
   return OK;
 }
-
 /**
  * Start uploading a directory.  Note that an upload cannot be stopped
  * once started (not necessary anyway), but it can fail.  All files
