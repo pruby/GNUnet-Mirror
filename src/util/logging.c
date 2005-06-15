@@ -191,7 +191,6 @@ void reopenLogFile() {
           80,
           datefmt,
           &def.curtime));
-      strcat(fn, datestr);
 
 			/* Remove slashes */
 			end = datestr;
@@ -200,6 +199,8 @@ void reopenLogFile() {
 					*end = '_';
 					end++;
 			}
+
+      strcat(fn, datestr);
 
       /* Remove old logs */
       logdir = STRDUP(fn);
