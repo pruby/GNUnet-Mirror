@@ -36,6 +36,13 @@
  * ECRS_DownloadProgressCallback.  Note that if a directory entry
  * spans multiple blocks, listDirectory may signal an error when
  * run on individual blocks even if the final directory is intact.
+ * <p>
+ *
+ * Note that this function maybe called on parts of directories.
+ * Thus parser errors should not be reported _at all_ (with BREAK).
+ * Of course, returning SYSERR maybe appropriate.  Still, if some
+ * entries can be recovered despite these parsing errors, the
+ * function should try to do this.
  *
  * @param data pointer to the beginning of the directory
  * @param len number of bytes in data
@@ -68,8 +75,7 @@ int ECRS_listDirectory(const char * data,
     if (OK != ECRS_deserializeMetaData(md,
 				       &data[8 + sizeof(unsigned int)],
 				       mdSize)) {
-      *md = NULL;
-      BREAK();
+      *md = NULL;      
       return SYSERR; /* malformed !*/
     }
     pos = 8 + sizeof(unsigned int) + mdSize;
@@ -82,7 +88,7 @@ int ECRS_listDirectory(const char * data,
       align = ((pos / BLOCK_ALIGN_SIZE)+1) * BLOCK_ALIGN_SIZE;
       pos = align;
       if (pos >= len) {
-	BREAK();
+	/* malformed */
 	break;
       }
     }
@@ -91,7 +97,6 @@ int ECRS_listDirectory(const char * data,
 	    (data[epos] != '\0') )
       epos++;
     if (epos == len) {
-      BREAK();
       return SYSERR; /* malformed */
     }
 
@@ -111,7 +116,6 @@ int ECRS_listDirectory(const char * data,
     pos += sizeof(unsigned int);
     if (pos + mdSize > len) {
       ECRS_freeUri(fi.uri);
-      BREAK();
       return SYSERR; /* malformed! */
     }
 
@@ -119,7 +123,6 @@ int ECRS_listDirectory(const char * data,
 				       &data[pos],
 				       mdSize)) {
       ECRS_freeUri(fi.uri);
-      BREAK();
       return SYSERR; /* malformed !*/
     }
     pos += mdSize;

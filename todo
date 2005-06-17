@@ -36,6 +36,12 @@
 0.7.1 (aka "stabilization"):
 - Optimizations:
   * spread out scanning done in topology_*.c?
+  * directories can be compacted -- add heuristic to determine
+    if we should NOT padd with zeros (if we would waste too
+    much space).  Needs some lookahead for size of remaining
+    directory entries. (theoretically can compact some directories
+    by 50% (?) -- incidentially 25% is what gzip can do on the
+    current directories!)
 - gnunet-chat
 - DHT:
   * make dht tests work
