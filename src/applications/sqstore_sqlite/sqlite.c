@@ -399,6 +399,7 @@ static int sqlite_iterate(unsigned int type,
 		       type);
     if (sqlite3_step(stmt) == SQLITE_ROW) {
       datum = assembleDatum(stmt);
+      sqlite3_reset(stmt);
 
       if (datum == NULL) {
 	LOG(LOG_WARNING,
@@ -431,9 +432,10 @@ static int sqlite_iterate(unsigned int type,
       lastExp  = ntohll(datum->value.expirationTime);
       FREE(datum);
       count++;
-    } else
+    } else {
+      sqlite3_reset(stmt);
       break;
-    sqlite3_reset(stmt);
+    }
   }
   FREE(lastHash);
   sqlite3_finalize(stmt);
