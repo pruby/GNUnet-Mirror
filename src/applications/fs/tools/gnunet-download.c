@@ -153,7 +153,7 @@ static void progressModel(void * okVal,
     if (YES == testConfigurationString("GNUNET-DOWNLOAD",
 				       "VERBOSE",
 				       "YES")) {
-      printf(_("Download of file '%s' at %16llu out of %16llu bytes (%8.3f kbps)\n"),
+      PRINTF(_("Download of file '%s' at %16llu out of %16llu bytes (%8.3f kbps)\n"),
 	     event->data.DownloadProgress.filename,
 	     event->data.DownloadProgress.completed,
 	     event->data.DownloadProgress.total,
@@ -195,7 +195,7 @@ static void progressModel(void * okVal,
 	SEMAPHORE_UP(signalFinished);
       }
     } else {
-      printf(_("Recursive download of directory '%s' at %llu of %llu bytes.\n"),
+      PRINTF(_("Recursive download of directory '%s' at %llu of %llu bytes.\n"),
 	     event->data.DownloadProgress.filename,
 	     event->data.DownloadProgress.completed,
 	     event->data.DownloadProgress.total);

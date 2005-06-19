@@ -391,7 +391,7 @@ static int networkUsageAdvancedDown() {
       if (NULL != strstr(line, interfacePtrs[i]) ) {
 	data = (char*)strchr(line, ':');
 	data++;	
-	if (sscanf(data,
+	if (SSCANF(data,
 		   "%llu %*s %*s %*s %*s %*s %*s %*s %llu",
 		  &rxnew, &txnew) != 2) {
 	  fclose(proc_net_dev);	
@@ -494,7 +494,7 @@ static int networkUsageAdvancedDown() {
 	  command);
     for (i=0; i < numInterfaces; i++) {
       if ( NULL != strstr(line, interfacePtrs[i]) ) {
-	if(sscanf(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s",
+	if(SSCANF(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s",
 		  &rxnew, &txnew) != 2 ) {
 	  pclose(command);
 	  errexit(_("Failed to parse interface data '%s' output at %s:%d.\n"),
@@ -611,7 +611,7 @@ static int networkUsageAdvancedUp() {
       if (NULL != strstr(line, interfacePtrs[i]) ) {
 	data = (char*)strchr(line, ':');
 	data++;	
-	if (sscanf(data,
+	if (SSCANF(data,
 		   "%llu %*s %*s %*s %*s %*s %*s %*s %llu",
 		  &rxnew, &txnew) != 2) {
 	  fclose(proc_net_dev);
@@ -714,7 +714,7 @@ static int networkUsageAdvancedUp() {
 	  command);
     for (i=0; i < numInterfaces; i++) {
       if ( NULL != strstr(line, interfacePtrs[i]) ) {
-	if(sscanf(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s",
+	if(SSCANF(line, "%*s %*s %*s %*s %llu %*s %llu %*s %*s",
 		  &rxnew, &txnew) != 2 ) {
 	  pclose(command);
 	  errexit(" reading interface data using netstat\n");

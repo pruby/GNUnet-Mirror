@@ -43,7 +43,7 @@ static int lastIp2p = 42; /* not YES or NO */
 static int printStatistics(const char * name,
 			   unsigned long long value,
 			   FILE * stream) {
-  fprintf(stream,
+  FPRINTF(stream,
 	  "%-60s: %16llu\n",
 	  name,
 	  value);
