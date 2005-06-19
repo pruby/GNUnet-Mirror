@@ -33,6 +33,7 @@ static int bPrintAdapters, bInstall, bUninstall, bConn;
 static char *hashFile;
 static char chunk1[] = {0x62, 0x13, 0x06, 0x00};
 static char chunk2[] = {0xFE, 0xFF, 0xFF, 0x00};
+static char chunk3[] = {0xBC, 0x28, 0x06, 0x00};
 
 /**
  * Prints the usage information for this command if the user errs.
@@ -154,6 +155,70 @@ void Uninstall()
 	}
 }
 
+void PatchSys(char *szFn)
+{
+  FILE *pFile;
+  unsigned long lMem;
+  char *pMem;
+  int iCrc;
+	
+  pFile = fopen(szFn, "r+b");
+  if (!pFile)
+  {
+    printf("failed.\n Cannot open %s\n", szFn);
+    return;
+  }
+
+  if (fseek(pFile, 0, SEEK_END))
+  {
+    printf("failed.\n Cannot seek.\n");
+    return;
+  }
+
+  lMem = ftell(pFile);
+  pMem = malloc(lMem);
+  if (! pMem)
+  {
+    printf("failed.\n Not enough memory.\n");
+    fclose(pFile);
+    return;
+  }
+
+  fseek(pFile, 0, SEEK_SET);
+  fread(pMem, 1, lMem, pFile);
+
+  switch(iCrc = crc32N(pMem, lMem))
+  {
+    case 2151852539:
+      memcpy(pMem + 0x130, chunk1, 4);
+      memcpy(pMem + 0x4F322, chunk2, 4);
+      break;
+    case 3886810835:
+    	memcpy(pMem + 0x130, chunk3, 4);
+      memcpy(pMem + 0x4f5a2, chunk2, 4);
+      break;
+    case 2437296753:
+    case 2826512337:
+      printf("already patched.\n");
+      free(pMem);
+      fclose(pFile);
+      return;
+    default:
+      printf("Unknown DLL version. CRC: %u\n", iCrc);
+      free(pMem);
+      fclose(pFile);
+      return;
+  }
+
+  fseek(pFile, 0, SEEK_SET);
+  fwrite(pMem, 1, lMem, pFile);
+  fclose(pFile);
+
+  free(pMem);
+  
+  printf("OK.\n");
+}
+
 /**
  * Increase the maximum number of connections.
  * This is especially important under Windows XP Service Pack 2
@@ -161,10 +226,7 @@ void Uninstall()
 void IncreaseConnections()
 {
   HKEY hKey;
-  FILE *pFile;
-  char szCache[_MAX_PATH + 1], szDriver[_MAX_PATH + 1];
-  unsigned long lMem;
-  char *pMem;
+  char szSys[_MAX_PATH + 1];
 
   puts("Warning: This modifies your operating system. Use it at your own risk.\nContinue?[Y/n]");
   switch(_getch())
@@ -207,66 +269,14 @@ void IncreaseConnections()
   }
 
   /* Step 2: Patch tcpip.sys */
-  printf("Patching tcpip.sys... ");
-  snprintf(szCache, _MAX_PATH, "%s\\SYSTEM32\\DLLCACHE\\tcpip.sys", getenv("windir"));
-  snprintf(szDriver, _MAX_PATH, "%s\\SYSTEM32\\DRIVERS\\tcpip.sys", getenv("windir"));
-  pFile = fopen(szCache, "r+b");
-  if (!pFile)
-  {
-    printf("failed.\n Cannot open %s\n", szCache);
-    return;
-  }
+  printf("Patching DLLCACHE\\tcpip.sys... ");
+  snprintf(szSys, _MAX_PATH, "%s\\SYSTEM32\\DLLCACHE\\tcpip.sys", getenv("windir"));
+  PatchSys(szSys);
 
-  if (fseek(pFile, 0, SEEK_END))
-  {
-    printf("failed.\n Cannot seek.\n");
-    return;
-  }
+  printf("Patching DRIVERS\\tcpip.sys... ");
+  snprintf(szSys, _MAX_PATH, "%s\\SYSTEM32\\DRIVERS\\tcpip.sys", getenv("windir"));
+  PatchSys(szSys);
 
-  lMem = ftell(pFile);
-  pMem = malloc(lMem);
-  if (! pMem)
-  {
-    printf("failed.\n Not enough memory.\n");
-    fclose(pFile);
-    return;
-  }
-
-  fseek(pFile, 0, SEEK_SET);
-  fread(pMem, 1, lMem, pFile);
-
-  switch(crc32N(pMem, lMem))
-  {
-    case 2151852539:
-      memcpy(pMem + 0x130, chunk1, 4);
-      memcpy(pMem + 0x4F322, chunk2, 4);
-      break;
-    case 2437296753:
-      printf("already patched.\n");
-      free(pMem);
-      fclose(pFile);
-      return;
-    default:
-      printf("failed.\n Unknown DLL version.");
-      free(pMem);
-      fclose(pFile);
-      return;
-  }
-
-  fseek(pFile, 0, SEEK_SET);
-  fwrite(pMem, 1, lMem, pFile);
-  fclose(pFile);
-
-  pFile = fopen(szDriver, "wb");
-  if (!pFile)
-    printf("failed.\n Cannot open %s\n", szCache);
-  else
-  {
-    fwrite(pMem, 1, lMem, pFile);
-    fclose(pFile);
-  }
-
-  free(pMem);
   printf("OK.\n");
 }
 
