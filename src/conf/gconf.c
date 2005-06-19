@@ -1121,7 +1121,9 @@ on_treeview2_button_press_event(GtkWidget * widget,
   if (path == NULL)
     return FALSE;
 
-  gtk_tree_model_get_iter(model2, &iter, path);
+  if (!gtk_tree_model_get_iter(model2, &iter, path))
+  	return FALSE;
+  
   gtk_tree_model_get(model2, &iter, COL_MENU, &menu, -1);
 
   col = column2index(column);
