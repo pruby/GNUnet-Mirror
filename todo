@@ -1,6 +1,4 @@
 0.7.0pre3:
-- GAP:
-  * fix Nils' assertion failure/bug [Nils, CG cannot reproduce]
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
 - Ensure hostlist is working on gnunet.org [ CG ]
