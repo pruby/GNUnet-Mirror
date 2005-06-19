@@ -125,7 +125,8 @@ int wiz_is_nic_default(const char *name, int suggestion) {
 int wiz_autostart_capable() {
 #ifdef WINDOWS
 	return 1;
-#else
+#endif
+#ifdef LINUX
 	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
 		/* Debian */
 		if (ACCESS("/etc/init.d/", W_OK) == 0)
@@ -333,7 +334,8 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 int wiz_useradd_capable(){
 #ifdef WINDOWS
 	return IsWinNT();
-#else
+#endif
+#ifdef LINUX
 	if (ACCESS("/usr/sbin/adduser", X_OK) == 0)
 		return 1;
 	else
@@ -348,7 +350,7 @@ int wiz_useradd_capable(){
  * @todo support for groupadd(8)
  */
 int wiz_groupadd_capable() {
-#ifndef MINGW
+#ifdef LINUX
 	if (ACCESS("/usr/sbin/addgroup", X_OK) == 0) {
 		return 1;
 	}
