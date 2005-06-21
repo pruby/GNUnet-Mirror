@@ -1,6 +1,7 @@
 0.7.0pre3:
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
+- Win98: config generation isn't working [Nils]
 - Ensure hostlist is working on gnunet.org [ CG ]
 (Note to Nils: AFAIK, the code itself seems to be ready,
  except for gnunet-setup which is still very unstable for me)
@@ -12,7 +13,6 @@
   * permissions on indexed files? [Nils]
   * Windows installer [Nils]
     * Uninstall
-      * Remove service
       * Remove account
       * Ask to remove lib/
 - Additional (automated, make check-style) testing:
