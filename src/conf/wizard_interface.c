@@ -1308,6 +1308,10 @@ create_assi_step4 (void)
 
   g_signal_connect ((gpointer) assi_step4, "destroy",
 		    G_CALLBACK (on_assi_destroy), NULL);
+  g_signal_connect ((gpointer) entUser, "changed",
+		    G_CALLBACK (on_entUser_changed), NULL);
+  g_signal_connect ((gpointer) entGroup, "changed",
+		    G_CALLBACK (on_entGroup_changed), NULL);
   g_signal_connect ((gpointer) step4_back, "clicked",
 		    G_CALLBACK (on_step4_back_clicked), NULL);
   g_signal_connect ((gpointer) step4_next, "clicked",

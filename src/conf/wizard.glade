@@ -2293,6 +2293,7 @@ Leave the fields empty to run GNUnet with system privileges.</property>
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char">*</property>
 		      <property name="activates_default">False</property>
+		      <signal name="changed" handler="on_entUser_changed" last_modification_time="Tue, 21 Jun 2005 18:37:05 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="left_attach">1</property>
@@ -2314,6 +2315,7 @@ Leave the fields empty to run GNUnet with system privileges.</property>
 		      <property name="has_frame">True</property>
 		      <property name="invisible_char">*</property>
 		      <property name="activates_default">False</property>
+		      <signal name="changed" handler="on_entGroup_changed" last_modification_time="Tue, 21 Jun 2005 18:37:14 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="left_attach">1</property>

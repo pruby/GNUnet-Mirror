@@ -394,7 +394,7 @@ int wizard_curs_main(int argc, char *argv[])
 				/* Help */
 			}
 			else if (ret <= 0) {
-				user_name = strdup("gnunet");
+				user_name = strdup(dialog_input_result);
 				break;
 			}
 		}

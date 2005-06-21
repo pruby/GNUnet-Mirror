@@ -150,7 +150,7 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 		if (IsWinNT())
 		{
 			char *err = NULL;
-			DWORD dwErr;
+			DWORD dwErr = 0;
 			
 			if (username && !strlen(username))
 				username = NULL;

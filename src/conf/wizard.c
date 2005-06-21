@@ -187,16 +187,12 @@ void load_step4()
 		
 		if (user_name)
 			gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
-		else
-			user_name = strdup("gnunet");
 		
 		if (group_name)
 			gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
 	
 		gtk_widget_set_sensitive(entUser, wiz_useradd_capable());
 		gtk_widget_set_sensitive(entGroup, group = wiz_groupadd_capable());
-		if (group && !group_name)
-				group_name = strdup("gnunet");
 }
 
 void load_step5()

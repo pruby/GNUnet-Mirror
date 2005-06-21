@@ -364,8 +364,8 @@ on_entUser_changed (GtkEditable * editable, gpointer user_data)
 void
 on_entGroup_changed (GtkEditable * editable, gpointer user_data)
 {
-	if (user_name)
-		free(user_name);
+	if (group_name)
+		free(group_name);
 	
 	group_name = strdup(gtk_editable_get_chars(editable, 0, -1));
 }
