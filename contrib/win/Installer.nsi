@@ -98,6 +98,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\bin\gnunet-win-tool.exe"
 		File "C:\GNUnet\bin\gnunet-update.exe" 
 		SetOutPath "$INSTDIR\var\lib\GNUnet"
+		
+	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
+	  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
 	SectionEnd
 	
 	SectionGroup "Language Support" SEC_LANG
@@ -390,7 +393,12 @@ SectionGroup "Dependencies"
 		
 		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
-		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"
+		SetOutPath "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"		
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-bmp.dll"
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-gif.dll"
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-jpeg.dll"
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-pcx.dll"
+		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-tiff.dll"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-png.dll"
 		File "C:\GNUnet\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
 		SetOutPath "$INSTDIR\lib\pango\1.4.0\modules"
@@ -400,6 +408,218 @@ SectionGroup "Dependencies"
 		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc"
 		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
 		File "C:\GNUnet\share\themes\Default\gtk-2.0\gtkrc.plain"
+		
+		SetOutPath "$INSTDIR\share\icons\hicolor"
+		File "C:\GNUnet\share\icons\hicolor\index.theme"
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\actions
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\apps
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\devices
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\filesystems
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\mimetypes
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\chart
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\code
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\data
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\form
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\image
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\io
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\media
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\navigation
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\net
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\object
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\table
+		CreateDirectory $INSTDIR\share\icons\hicolor\128x128\stock\text
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\actions
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\apps
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\devices
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\filesystems
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\mimetypes
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\chart
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\code
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\data
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\form
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\image
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\io
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\media
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\navigation
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\net
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\object
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\table
+		CreateDirectory $INSTDIR\share\icons\hicolor\16x16\stock\text
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\actions
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\apps
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\devices
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\filesystems
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\mimetypes
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\chart
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\code
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\data
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\form
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\image
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\io
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\media
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\navigation
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\net
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\object
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\table
+		CreateDirectory $INSTDIR\share\icons\hicolor\192x192\stock\text
+		CreateDirectory $INSTDIR\share\icons\hicolor\22x22
+		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\actions
+		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\apps
+		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\devices
+		CreateDirectory $INSTDIR\share\icons\hicolor\22x22\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\22x22\stock\text
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\actions
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\apps
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\devices
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\32x32\stock\text
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\actions
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\apps
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\devices
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\36x36\stock\text
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\actions
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\apps
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\devices
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\48x48\stock\text
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\actions
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\apps
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\devices
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\64x64\stock\text
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\actions
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\apps
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\devices
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\72x72\stock\text
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\actions
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\apps
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\devices
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\96x96\stock\text
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\actions
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\apps
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\devices
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\filesystems
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\mimetypes
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\chart
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\code
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\data
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\form
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\image
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\io
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\media
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\navigation
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\net
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\object
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\table
+			CreateDirectory $INSTDIR\share\icons\hicolor\scalable\stock\text
 	SectionEnd
 SectionGroupEnd
 
@@ -478,6 +698,9 @@ Function ShowReadme
 FunctionEnd
 
 Section Uninstall
+	; Uninstall service
+	ExecWait '"$INSTDIR\bin\gnunet-win-tool.exe" -u'
+
   ReadRegStr $ICONS_GROUP ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "${PRODUCT_STARTMENU_REGVAL}"
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
@@ -623,8 +846,8 @@ Section Uninstall
 	Delete "$INSTDIR\etc\gnunet.user"
 	Delete "$INSTDIR\etc\gnunetd.conf"
 	Delete "$INSTDIR\etc\gnunet.conf"
-	Delete "$INSTDIR\etc\gnunetd.old"
-	Delete "$INSTDIR\etc\gnunet.old"
+	Delete "$INSTDIR\etc\gnunetd.conf.old"
+	Delete "$INSTDIR\etc\gnunet.conf.old"
 	Delete "$INSTDIR\etc\gtk-2.0\gdk-pixbuf.loaders"
 	Delete "$INSTDIR\etc\pango\pango.aliases"
 	Delete "$INSTDIR\etc\pango\pango.modules"
@@ -634,6 +857,11 @@ Section Uninstall
 
 	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\engines\libwimp.dll"
   RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0\engines"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-bmp.dll"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-gif.dll"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-jpeg.dll"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-tiff.dll"
+	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-pcx.dll"
 	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-png.dll"
 	Delete "$INSTDIR\lib\gtk-2.0\2.4.0\loaders\libpixbufloader-xpm.dll"
   RmDir /REBOOTOK "$INSTDIR\lib\gtk-2.0\2.4.0\loaders"
@@ -649,6 +877,7 @@ Section Uninstall
   Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk.glade"
   Delete "$INSTDIR\share\gnunet-gtk\info.png"
   Delete "$INSTDIR\share\gnunet-gtk\up.png"
+  RmDir /REBOOTOK "$INSTDIR\share\gnunet-gtk"
   
 	Delete "$INSTDIR\share\GNUnet\config-client.in" 
 	Delete "$INSTDIR\share\GNUnet\config-daemon.in"
@@ -667,8 +896,9 @@ Section Uninstall
   RmDir /REBOOTOK "$INSTDIR\share\themes\Default\gtk-2.0"
   RmDir /REBOOTOK "$INSTDIR\share\themes\Default"
   RmDir /REBOOTOK "$INSTDIR\share\themes"
-  RmDir /REBOOTOK "$INSTDIR\share"
-
+  RmDir /REBOOTOK "$INSTDIR\share"
+	RmDir /r /REBOOTOK $INSTDIR\share\icons
+	RmDir /REBOOTOK $INSTDIR\share
 
   Delete "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk"
   Delete "$SMPROGRAMS\$ICONS_GROUP\Website.lnk"
