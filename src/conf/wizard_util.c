@@ -39,7 +39,7 @@ void wiz_enum_nics(void (*callback) (char *, int)) {
 		ListNICs(callback);
 #else
 		char entry[11], *dst;
-		FILE *f = popen("ifconfig", "r");
+		FILE *f = popen("ifconfig 2> /dev/null", "r");
 		if (!f)
 			return;
 			

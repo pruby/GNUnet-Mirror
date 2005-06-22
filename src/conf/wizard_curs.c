@@ -83,56 +83,84 @@ int wizard_curs_main(int argc, char *argv[])
   wiz_enum_nics(insert_nic_curs);
 
 	/* Network interface */
-	while (true) {
-		ret = dialog_menu(_("GNUnet configuration"),
-						_("Choose the network interface that connects your computer to "
-							"the internet from the list below."), rows, cols - 5, 10,
-						0, active_ptr, nic_item_count, nic_items);
-		
-		if (ret == 2) {
-			/* Help */
-			dialog_msgbox(_("Help"), _("The \"Network interface\" is the device "
-				"that connects your computer to the internet. This is usually a modem, "
-				"an ISDN card or a network card in case you are using DSL."), rows,
-				cols - 5, 1);
-		}
-		else if (ret <= 1) {
-			/* Select or Exit */
-			char *dst;
-#ifdef MINGW
-			char nic[21];
-#else
-			char *nic;
-#endif
-			for(idx = 0; idx < nic_item_count; idx++) {
-				
-				if (nic_items[idx]->selected) {
-#ifdef MINGW
-					char *src = strrchr(nic_items[idx]->name, '-') + 2;
-					dst = nic;
-					while(*src)
-						*dst++ = *src++;
-					dst[-1] = 0;
-#else
-					nic = nic_items[idx]->name;
-#endif
-					sym = sym_lookup("INTERFACE", "NETWORK", 0);
-					sym_set_string_value(sym, nic);
-					sym = sym_lookup("INTERFACES", "LOAD", 0);
-					sym_set_string_value(sym, nic);
-				}
-				
-				free(nic_items[idx]->name);
-				free(nic_items[idx]);
-			}
-			free(nic_items);
+	if (nic_item_count) {
+		while (true) {
+			ret = dialog_menu(_("GNUnet configuration"),
+							_("Choose the network interface that connects your computer to "
+								"the internet from the list below."), rows, cols - 5, 10,
+							0, active_ptr, nic_item_count, nic_items);
 			
-			break;
+			if (ret == 2) {
+				/* Help */
+				dialog_msgbox(_("Help"), _("The \"Network interface\" is the device "
+					"that connects your computer to the internet. This is usually a modem, "
+					"an ISDN card or a network card in case you are using DSL."), rows,
+					cols - 5, 1);
+			}
+			else if (ret <= 1) {
+				/* Select or Exit */
+				char *dst;
+	#ifdef MINGW
+				char nic[21];
+	#else
+				char *nic;
+	#endif
+				for(idx = 0; idx < nic_item_count; idx++) {
+					
+					if (nic_items[idx]->selected) {
+	#ifdef MINGW
+						char *src = strrchr(nic_items[idx]->name, '-') + 2;
+						dst = nic;
+						while(*src)
+							*dst++ = *src++;
+						dst[-1] = 0;
+	#else
+						nic = nic_items[idx]->name;
+	#endif
+						sym = sym_lookup("INTERFACE", "NETWORK", 0);
+						sym_set_string_value(sym, nic);
+						sym = sym_lookup("INTERFACES", "LOAD", 0);
+						sym_set_string_value(sym, nic);
+					}
+					
+					free(nic_items[idx]->name);
+					free(nic_items[idx]);
+				}
+				free(nic_items);
+				
+				break;
+			}
 		}
-	}
 	
-	if (ret == 1 || ret == -1)
-		goto end;
+		if (ret == 1 || ret == -1)
+			goto end;
+	}
+	else {
+		/* We are not root, just ask for the interface */
+		while(true) {
+			ret = dialog_inputbox(_("GNUnet configuration"), _("What is the name of " \
+				"the network interface that connects your computer to the Internet?"),
+				rows, cols - 5, "eth0");
+			
+			if (ret == 1) {
+				/* Help */
+				dialog_msgbox(_("Help"), _("The \"Network interface\" is the device "
+					"that connects your computer to the internet. This is usually a modem, "
+					"an ISDN card or a network card in case you are using DSL."),
+					rows, cols - 5, 1);
+			}
+			else if (ret <= 0)
+				break;
+		}
+		
+		if (ret == -1)
+			goto end;
+
+		sym = sym_lookup("INTERFACE", "NETWORK", 0);
+		sym_set_string_value(sym, dialog_input_result);
+		sym = sym_lookup("INTERFACES", "LOAD", 0);
+		sym_set_string_value(sym, dialog_input_result);
+	}
 	
 	dialog_clear();
 	
