@@ -1134,7 +1134,7 @@ static int tcp6Send(TSession * tsession,
 	 size);
   mp->size = htons(size);
   mp->reserved = 0;
-  if (((TCPSession*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE)
+  if (((TCP6Session*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE)
     ok = tcp6DirectSendReliable(tsession->internal,
 				mp,
 				size + sizeof(TCP6MessagePack));
