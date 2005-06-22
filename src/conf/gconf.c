@@ -52,7 +52,7 @@ enum {
 };
 
 static gint view_mode = SPLIT_VIEW;
-static gboolean show_name = TRUE;
+static gboolean show_name = FALSE;
 static gboolean show_range = FALSE;
 static gboolean show_value = TRUE;
 static gboolean show_all = FALSE;
