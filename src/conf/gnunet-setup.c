@@ -34,7 +34,6 @@ static void help() {
        "MODULE\n"
        " config\t\ttext-based configuration\n"
        " menuconfig\ttext-based menu\n"
-       " xconfig\tX configuration\n"
        " gconfig\tGTK configuration\n"
 			" wizard-curses\tBasic text-based graphical configuration\n"
 			" wizard-gtk\tBasic GTK configuration\n\n"));

@@ -19,7 +19,6 @@ BUILT_SOURCES = \
 EXTRA_DIST = \
  lex.zconf.c \
  lkc_proto.h \
- qconf.h \
  bool.h \
  wizard_util.h \
  wizard_gtk.h
