@@ -691,7 +691,8 @@ static void * tcp6ListenMain() {
 	}
       }
       if (FD_ISSET(sock, &writeSet)) {
-	int ret, success;
+	size_t ret;
+	int success;
 
 try_again_1:
 	success = SEND_NONBLOCKING(sock,
