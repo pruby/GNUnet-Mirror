@@ -1,7 +1,7 @@
 0.7.0pre3:
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
-- Win98: config generation isn't working [Nils]
+  * Mantis #848, #847, #849
 - Ensure hostlist is working on gnunet.org [ CG ]
 (Note to Nils: AFAIK, the code itself seems to be ready,
  except for gnunet-setup which is still very unstable for me)
