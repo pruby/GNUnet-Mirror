@@ -1624,6 +1624,7 @@ static void display_tree_part(void)
   else if(view_mode == SPLIT_VIEW)
     display_tree(browsed);
   gtk_tree_view_expand_all(GTK_TREE_VIEW(tree2_w));
+  gtk_tree_view_columns_autosize(GTK_TREE_VIEW(tree2_w));
 }
 
 /* Display the list in the left frame (split view) */
