@@ -229,9 +229,8 @@ void load_step5()
 			sym_get_tristate_value(sym) != no);
 	}
 	
-#ifdef WINDOWS
-	gtk_widget_set_sensitive(chkStart, TRUE);
-#endif
+	if (wiz_useradd_capable())
+		gtk_widget_set_sensitive(chkStart, TRUE);
 
 	if (doAutoStart)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkStart), 1);		

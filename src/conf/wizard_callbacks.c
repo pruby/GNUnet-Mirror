@@ -186,19 +186,25 @@ save_conf ()
 	{
 		conf = realloc(conf, fileLen + 13);
 		strcpy(conf, "/etc/gnunetd.conf");
-		if (ACCESS(conf, W_OK))
+		errno = 0;
+		/**
+		 * 1. Do we have write permission to /etc/gnunetd.conf?
+		 * 2. If it doesn't exists, check for write permission to /etc/
+		 */
+		if (ACCESS(conf, W_OK) == 0 ||
+			(errno == ENOENT && ACCESS("/etc/", W_OK) == 0))
+		{
+			confDir = strdup("/etc/");
+			confFile = strdup("gnunetd.conf");
+		}
+		else
 		{
 			conf = realloc(conf, fileLen + 11);
 			strcpy(conf, "~/.gnunet/gnunetd.conf");
 			
 			confDir = strdup("~/.gnunet/");
 			confFile = strdup("gnunetd.conf");
-		}
-		else
-		{
-			confDir = strdup("/etc/");
-			confFile = strdup("gnunetd.conf");
-		}
+		}			 
 	}
 
 	sym_set_string_value(sym, confDir);
@@ -241,7 +247,7 @@ on_finish_clicked (GtkButton * button, gpointer user_data)
 
 	if (!wiz_autostart(doAutoStart, user_name, group_name)) {
 #ifndef MINGW
-		showErr(_("Unable to make GNUnet start automatically:", STRERROR(errno)));
+		showErr(_("Unable to make GNUnet start automatically:"), STRERROR(errno));
 #endif
 		return;
 	}	

@@ -68,6 +68,13 @@ int wizard_curs_main(int argc, char *argv[])
   
   conf_read(NULL);
 
+  sym = sym_find("EXPERIMENTAL", "Meta");
+  sym_set_tristate_value(sym, yes);
+  sym = sym_find("ADVANCED", "Meta");
+  sym_set_tristate_value(sym, yes);
+  sym = sym_find("RARE", "Meta");
+  sym_set_tristate_value(sym, yes);
+
   init_dialog();
   init_wsize();
 	dialog_clear();
@@ -493,20 +500,13 @@ int wizard_curs_main(int argc, char *argv[])
 	init_dialog();
 	dialog_clear();
 	
-  sym = sym_find("EXPERIMENTAL", "Meta");
-  sym_set_tristate_value(sym, no);
-  sym = sym_find("ADVANCED", "Meta");
-  sym_set_tristate_value(sym, no);
-  sym = sym_find("RARE", "Meta");
-  sym_set_tristate_value(sym, no);
-
 	while(true) {
 	  /* Check write permission */
-	  sym = sym_find("Meta", "config-daemon.in_CONF_DEF_DIR");
+	  sym = sym_find("config-daemon.in_CONF_DEF_DIR", "Meta");
 	  sym_calc_value_ext(sym, 1);
 	  confDir = strdup(sym_get_string_value(sym));
 	
-	  symFile = sym_find("Meta", "config-daemon.in_CONF_DEF_FILE");
+	  symFile = sym_find("config-daemon.in_CONF_DEF_FILE", "Meta");
 	  sym_calc_value_ext(symFile, 1);
 	  confFile = strdup(sym_get_string_value(symFile));
 	
@@ -544,6 +544,13 @@ int wizard_curs_main(int argc, char *argv[])
 		mkdirp(confDir);
 		free(confDir);
 		free(confFile);
+
+	  sym = sym_find("EXPERIMENTAL", "Meta");
+	  sym_set_tristate_value(sym, no);
+	  sym = sym_find("ADVANCED", "Meta");
+	  sym_set_tristate_value(sym, no);
+	  sym = sym_find("RARE", "Meta");
+	  sym_set_tristate_value(sym, no);
 
 		/* Write conf */
 		if (conf_write() != 0) {

@@ -342,8 +342,8 @@ int wiz_useradd_capable(){
 		return 1;
 	else
 		/* TODO: useradd */
-		return 0;
 #endif
+		return 0;
 }
 
 /**
