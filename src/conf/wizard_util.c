@@ -39,13 +39,18 @@ void wiz_enum_nics(void (*callback) (char *, int)) {
 		ListNICs(callback);
 #else
 		char entry[11], *dst;
-		FILE *f = popen("ifconfig 2> /dev/null", "r");
+		FILE *f;
+		
+		if (system("ifconfig 2> /dev/null"))
+			if (system("/sbin/ifconfig 2> /dev/null") == 0)
+				f = popen("/sbin/ifconfig 2> /dev/null", "r");
+			else
+				f = null;
+		else
+			f = popen("ifconfig 2> /dev/null", "r");
+		
 		if (!f)
-		{
-			f = popen("/sbin/ifconfig 2> /dev/null", "r");
-			if (!f)
-				return;
-		}
+			return;
 			
 		while(1)
 		{
@@ -323,12 +328,13 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 				return 0;
 		}
 		else {
-			if (UNLINK("/etc/init.d/gnunetd") != -1)
+			if (UNLINK("/etc/init.d/gnunetd") != -1) {
 				if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
 					errno = system("/usr/sbin/update-rc.d gnunetd remove");
 					if (errno != 0)
 						return 0;
 				}
+			}
 			else
 				return 0;
 		}
