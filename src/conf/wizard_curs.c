@@ -38,6 +38,17 @@ int mconf_main(int ac, char **av);
 static struct dialog_list_item **nic_items;
 static int nic_item_count = 0;
 
+void showCursErr(char *prefix, char *error) {
+	char *err;
+	
+	err = malloc(strlen(prefix) + strlen(error) + 2);
+	sprintf(err, "%s %s", prefix, error);
+	
+	dialog_msgbox(_("Error"), err, rows, cols - 5, 1);
+	
+	free(err);	
+}
+
 void insert_nic_curs(char *name, int defaultNIC)
 {
 	struct dialog_list_item *item;
@@ -496,9 +507,11 @@ int wizard_curs_main(int argc, char *argv[])
 
 	/* Save config */
 	if (user_name && strlen(user_name) > 0)
-		wiz_addServiceAccount(group_name, user_name);
-
-	wiz_autostart(autostart, user_name, group_name);
+		if (!wiz_addServiceAccount(group_name, user_name))
+			showCursErr(_("Unable to create user account:"), STRERROR(errno));
+	
+	if (!wiz_autostart(autostart, user_name, group_name))
+		showCursErr(_("Unable to change startup process:"), STRERROR(errno));
 
 	init_dialog();
 	dialog_clear();

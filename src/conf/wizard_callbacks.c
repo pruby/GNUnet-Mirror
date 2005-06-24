@@ -242,7 +242,6 @@ on_finish_clicked (GtkButton * button, gpointer user_data)
 #ifndef MINGW
 		showErr(_("Unable to change startup process:"), STRERROR(errno));
 #endif
-		return;
 	}	
 
 	if (!save_conf())
