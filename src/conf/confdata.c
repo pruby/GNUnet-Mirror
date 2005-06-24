@@ -270,6 +270,7 @@ int conf_write()
 	char **tempfiles = NULL;
 	int num_tempfiles = 0;
 	int idx;
+	char *tmp;
 
   sym_clear_all_valid();
 
@@ -338,6 +339,10 @@ int conf_write()
 								strcpy(dirname, "/etc/");
 						}
 					}
+					
+					tmp = expandFileName(dirname);
+					strlcpy(dirname, tmp, 128);
+					free(tmp);
 					
 					/* Create a temporary filename */
 					sprintf(newname,

@@ -5,7 +5,7 @@ menu "Meta-configuration" "Meta"
   config config-client.in_CONF_DEF_DIR
   string "Default configuration directory"
   depends on RARE-CLIENT
-  default "/etc/"
+  default "~/.gnunet/"
   help
   	This is the directory where gnunet-setup will store the configuration
   	file by default.
