@@ -106,7 +106,7 @@ void load_step2()
 			sym_calc_value_ext(sym, 1);
 			nic = sym_get_string_value(sym);
 
-			if (!nic)
+			if (!nic || strlen(nic) == 0)
 				nic = "eth0";
 			gtk_combo_box_append_text(cmbNIC, nic);
 			

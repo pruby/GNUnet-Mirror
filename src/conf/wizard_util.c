@@ -314,11 +314,19 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 					CHMOD("/etc/init.d/gnunetd", S_IRWXU | S_IRGRP | S_IXGRP |
 						S_IROTH | S_IXOTH);
 			}
-			system("/usr/sbin/update-rc.d gnunetd defaults");
+			errno = system("/usr/sbin/update-rc.d gnunetd defaults");
+			if (errno != 0)
+				return 0;
 		}
 		else {
-			if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0)
-				system("/usr/sbin/update-rc.d gnunetd remove");
+			if (UNLINK("/etc/init.d/gnunetd") != -1)
+				if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
+					errno = system("/usr/sbin/update-rc.d gnunetd remove");
+					if (errno != 0)
+						return 0;
+				}
+			else
+				return 0;
 		}
 	}
 	else
@@ -417,9 +425,10 @@ int wiz_addServiceAccount(char *group_name, char *user_name) {
 		/* Debian */
 		/* TODO: FreeBSD? http://www.freebsd.org/cgi/man.cgi?query=adduser&sektion=8 */
 		char *cmd;
-		cmd = MALLOC(strlen(group_name) + strlen(user_name) + 64);
-		
+
 		haveGroup = group_name && strlen(group_name) > 0;		
+		cmd = MALLOC(haveGroup ? strlen(group_name) : 0 + strlen(user_name) + 64);
+		
 		if (haveGroup) {
 			sprintf(cmd, "/usr/sbin/addgroup --quiet --system %s", group_name);		
 			system(cmd);
