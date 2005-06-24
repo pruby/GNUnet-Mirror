@@ -316,8 +316,10 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 			}
 			system("/usr/sbin/update-rc.d gnunetd defaults");
 		}
-		else
-			system("/usr/sbin/update-rc.d gnunetd remove");
+		else {
+			if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0)
+				system("/usr/sbin/update-rc.d gnunetd remove");
+		}
 	}
 	else
 		return 0;

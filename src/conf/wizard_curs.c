@@ -59,8 +59,10 @@ int wizard_curs_main(int argc, char *argv[])
 {
   void *active_ptr = NULL;
 	int idx, ret, autostart = 0, adv = 0;
-	struct symbol *sym;
+	struct symbol *sym, *symFile;
 	char *defval, *user_name = NULL, *group_name = NULL;
+	char *confDir, *confFile, *conf;
+	int fileLen;
 
 	conf_parse(DATADIR"/config.in");
   
@@ -499,12 +501,68 @@ int wizard_curs_main(int argc, char *argv[])
   sym_set_tristate_value(sym, no);
 
 	while(true) {
+	  /* Check write permission */
+	  sym = sym_find("Meta", "config-daemon.in_CONF_DEF_DIR");
+	  sym_calc_value_ext(sym, 1);
+	  confDir = strdup(sym_get_string_value(sym));
+	
+	  symFile = sym_find("Meta", "config-daemon.in_CONF_DEF_FILE");
+	  sym_calc_value_ext(symFile, 1);
+	  confFile = strdup(sym_get_string_value(symFile));
+	
+		fileLen = strlen(confFile);
+		conf = malloc(strlen(confDir) + fileLen + 1);
+		strcpy(conf, confDir);
+		strcat(conf, confFile);
+		if (ACCESS(conf, W_OK))
+		{
+			conf = realloc(conf, fileLen + 13);
+			strcpy(conf, "/etc/gnunetd.conf");
+			errno = 0;
+			/**
+			 * 1. Do we have write permission to /etc/gnunetd.conf?
+			 * 2. If it doesn't exists, check for write permission to /etc/
+			 */
+			if (ACCESS(conf, W_OK) == 0 ||
+				(errno == ENOENT && ACCESS("/etc/", W_OK) == 0))
+			{
+				confDir = strdup("/etc/");
+				confFile = strdup("gnunetd.conf");
+			}
+			else
+			{
+				conf = realloc(conf, fileLen + 11);
+				strcpy(conf, "~/.gnunet/gnunetd.conf");
+				
+				confDir = strdup("~/.gnunet/");
+				confFile = strdup("gnunetd.conf");
+			}			 
+		}
+	
+		sym_set_string_value(sym, confDir);
+		sym_set_string_value(symFile, confFile);
+		mkdirp(confDir);
+		free(confDir);
+		free(confFile);
+
+		/* Write conf */
 		if (conf_write() != 0) {
-			ret = dialog_yesno(_("GNUnet configuration"),
-							_("Cannot save configuration.\n\nTry again?"), rows, cols - 5);
+			char *err, *prefix, *strerr;
+			
+			prefix = _("Unable to save configuration file %s: %s.\n\nTry again?");
+			strerr = STRERROR(errno);
+			
+			err = malloc(strlen(conf) + strlen(prefix) + strlen(strerr) + 1);
+			sprintf(err, prefix, conf, strerr);
+			
+			ret = dialog_yesno(_("GNUnet configuration"), err, rows, cols - 5);
+
+			free(err);
 		}
 		else
 			ret = 1;
+			
+		free(conf);
 			
 		if (ret == 1 || ret == -1)
 			break;

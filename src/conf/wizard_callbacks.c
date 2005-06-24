@@ -134,10 +134,32 @@ on_step5_back_clicked (GtkButton * button, gpointer user_data)
 	gtk_widget_show(curwnd);
 }
 
+void showErr(char *prefix, char *error) {
+	GtkWidget *vbox17, *hbox67, *label98;
+	char *err;
+	
+	msgSaveFailed = create_msgSaveFailed();
+	
+	vbox17 = lookup_widget(msgSaveFailed, "vbox17");
+	hbox67 = lookup_widget(vbox17, "hbox67");
+	label98 = lookup_widget(vbox17, "label98");
+	
+	err = malloc(strlen(prefix) + strlen(error) + 2);
+	sprintf(err, "%s %s", prefix, error);
+	
+	gtk_label_set_text(label98, err);
+	
+	free(err);
+	
+	gtk_widget_show(msgSaveFailed);
+}
+
 int
 save_conf ()
 {
-	struct symbol *sym;
+	struct symbol *sym, *symFile;
+	char *confDir, *confFile, *conf;
+	int fileLen;
 	
   sym = sym_find("EXPERIMENTAL", "Meta");
   sym_set_tristate_value(sym, no);
@@ -145,14 +167,63 @@ save_conf ()
   sym_set_tristate_value(sym, no);
   sym = sym_find("RARE", "Meta");
   sym_set_tristate_value(sym, no);
+  
+  /* Check write permission */
+  sym = sym_find("config-daemon.in_CONF_DEF_DIR", "Meta");
+  sym_calc_value_ext(sym, 1);
+  confDir = strdup(sym_get_string_value(sym));
+
+  symFile = sym_find("config-daemon.in_CONF_DEF_FILE", "Meta");
+  sym_calc_value_ext(symFile, 1);
+  confFile = strdup(sym_get_string_value(symFile));
+
+	fileLen = strlen(confFile);
+	conf = malloc(strlen(confDir) + fileLen + 1);
+	strcpy(conf, confDir);
+	strcat(conf, confFile);
+
+	if (ACCESS(conf, W_OK))
+	{
+		conf = realloc(conf, fileLen + 13);
+		strcpy(conf, "/etc/gnunetd.conf");
+		if (ACCESS(conf, W_OK))
+		{
+			conf = realloc(conf, fileLen + 11);
+			strcpy(conf, "~/.gnunet/gnunetd.conf");
+			
+			confDir = strdup("~/.gnunet/");
+			confFile = strdup("gnunetd.conf");
+		}
+		else
+		{
+			confDir = strdup("/etc/");
+			confFile = strdup("gnunetd.conf");
+		}
+	}
+
+	sym_set_string_value(sym, confDir);
+	sym_set_string_value(symFile, confFile);
+	mkdirp(confDir);
+	free(confDir);
+	free(confFile);
 	
 	if (conf_write())
 	{
-		msgSaveFailed = create_msgSaveFailed();
-		gtk_widget_show(msgSaveFailed);
+		char *err, *prefix;
+		
+		prefix = _("Unable to save configuration file %s:");
+		
+		err = malloc(strlen(conf) + strlen(prefix) + 1);
+		sprintf(err, prefix, conf);
+		showErr(err, STRERROR(errno));
+		free(err);
+
+		free(conf);
 		
 		return 0;
 	}
+	
+	free(conf);
 	
 	return 1;
 }
@@ -161,12 +232,24 @@ void
 on_finish_clicked (GtkButton * button, gpointer user_data)
 {
 	if (doAutoStart && user_name)
-		wiz_addServiceAccount(group_name, user_name);
+		if (!wiz_addServiceAccount(group_name, user_name)) {
+#ifndef MINGW
+			showErr(_("Unable to create user account:"), STRERROR(errno));
+#endif
+			return;
+		}
 
-	wiz_autostart(doAutoStart, user_name, group_name);
-	
-	if (save_conf())
-		gtk_widget_destroy(curwnd);
+	if (!wiz_autostart(doAutoStart, user_name, group_name)) {
+#ifndef MINGW
+		showErr(_("Unable to make GNUnet start automatically:", STRERROR(errno)));
+#endif
+		return;
+	}	
+
+	if (!save_conf())
+		return;
+
+	gtk_widget_destroy(curwnd);
 }
 
 void
