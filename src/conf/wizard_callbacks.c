@@ -161,13 +161,6 @@ save_conf ()
 	char *confDir, *confFile, *conf;
 	int fileLen;
 	
-  sym = sym_find("EXPERIMENTAL", "Meta");
-  sym_set_tristate_value(sym, no);
-  sym = sym_find("ADVANCED", "Meta");
-  sym_set_tristate_value(sym, no);
-  sym = sym_find("RARE", "Meta");
-  sym_set_tristate_value(sym, no);
-  
   /* Check write permission */
   sym = sym_find("config-daemon.in_CONF_DEF_DIR", "Meta");
   sym_calc_value_ext(sym, 1);

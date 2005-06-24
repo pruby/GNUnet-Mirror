@@ -545,13 +545,6 @@ int wizard_curs_main(int argc, char *argv[])
 		free(confDir);
 		free(confFile);
 
-	  sym = sym_find("EXPERIMENTAL", "Meta");
-	  sym_set_tristate_value(sym, no);
-	  sym = sym_find("ADVANCED", "Meta");
-	  sym_set_tristate_value(sym, no);
-	  sym = sym_find("RARE", "Meta");
-	  sym_set_tristate_value(sym, no);
-
 		/* Write conf */
 		if (conf_write() != 0) {
 			char *err, *prefix, *strerr;
