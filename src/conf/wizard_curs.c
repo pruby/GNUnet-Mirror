@@ -208,6 +208,7 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* NAT? */
+	sym = sym_find("LIMITED", "NAT");
 	while(true) {
 		ret = dialog_yesno(_("GNUnet configuration"), _("Is this machine behind "
 				"NAT?\n\nIf you are connected to the internet through another computer "
@@ -290,6 +291,7 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* Bandwidth allocation */
+	sym = sym_find("BASICLIMITING", "LOAD");
 	while (true) {
 		ret = dialog_yesno(_("GNUnet configuration"), _("Share denoted bandwidth "
 				"with other applications?\n\nSay \"yes\" here, if you don't want other "
@@ -343,6 +345,7 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* Migration */
+	sym = sym_find("ACTIVEMIGRATION", "FS");
 	while(true) {
 		ret = dialog_yesno(_("GNUnet configuration"), _("Store migrated content?"
 				"\n\nGNUnet is able to store data from other peers in your datastore. "
