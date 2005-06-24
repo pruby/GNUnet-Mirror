@@ -240,7 +240,7 @@ on_finish_clicked (GtkButton * button, gpointer user_data)
 
 	if (!wiz_autostart(doAutoStart, user_name, group_name)) {
 #ifndef MINGW
-		showErr(_("Unable to make GNUnet start automatically:"), STRERROR(errno));
+		showErr(_("Unable to change startup process:"), STRERROR(errno));
 #endif
 		return;
 	}	

@@ -328,11 +328,17 @@ int wiz_autostart(int doAutoStart, char *username, char *groupname) {
 				return 0;
 		}
 		else {
-			if (UNLINK("/etc/init.d/gnunetd") != -1) {
+			if (UNLINK("/etc/init.d/gnunetd") != -1 || errno == ENOENT) {
 				if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
 					errno = system("/usr/sbin/update-rc.d gnunetd remove");
-					if (errno != 0)
+					if (errno != 0) {
+						errno = EPERM;
 						return 0;
+					}
+				}
+				else {
+					errno = EPERM;
+					return 0;
 				}
 			}
 			else
