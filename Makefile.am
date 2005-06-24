@@ -5,6 +5,7 @@ EXTRA_DIST = \
  ABOUT-NLS \
  config.rpath  \
  README.fr \
+ README.debian \
  UPDATING \
  PLATFORMS \
  acinclude.m4

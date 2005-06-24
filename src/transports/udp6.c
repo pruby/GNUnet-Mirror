@@ -186,7 +186,7 @@ static void * listenAndDistribute() {
   EncName enc;
   MessagePack * mp;
   UDP6Message udp6m;
-  char * tmp;
+  char inet6[INET6_ADDRSTRLEN];
 
   SEMAPHORE_UP(serverSignal);
   while (udp6_shutdown == NO) {
@@ -223,15 +223,13 @@ static void * listenAndDistribute() {
     }
     incrementBytesReceived(size);
     if ((unsigned int)size <= sizeof(UDP6Message)) {
-      char * tmp = MALLOC(INET6_ADDRSTRLEN);
       LOG(LOG_INFO,
 	  _("Received invalid UDP6 message from %s:%d, dropping.\n"),
 	  inet_ntop(AF_INET6,
 		    &incoming,
-		    tmp,
+		    inet6,
 		    INET6_ADDRSTRLEN),
 	  ntohs(incoming.sin6_port));
-      FREE(tmp);
       goto RETRY;
     }
     memcpy(&udp6m,
@@ -242,41 +240,35 @@ static void * listenAndDistribute() {
 	  hash2enc(&udp6m.sender.hashPubKey,
 		   &enc));
 #if DEBUG_UDP6
-    tmp = MALLOC(INET6_ADDRSTRLEN);
     LOG(LOG_DEBUG,
 	"Received %d bytes via UDP6 from %s:%d (%s).\n",
 	size,
 	inet_ntop(AF_INET6,
 		  &incoming,
-		  tmp,
+		  inet6,
 		  INET6_ADDRSTRLEN),
 	ntohs(incoming.sin6_port),
 	&enc);
-    FREE(tmp);
 #endif
     /* quick test of the packet, if failed, repeat! */
     if (size != ntohs(udp6m.size)) {
-      tmp = MALLOC(INET6_ADDRSTRLEN);
       LOG(LOG_WARNING,
 	  _("Packet received from %s:%d (UDP6) failed format check."),
 	  inet_ntop(AF_INET6,
 		    &incoming,
-		    tmp,
+		    inet6,
 		    INET6_ADDRSTRLEN),
 	  ntohs(incoming.sin6_port));
-      FREE(tmp);
       goto RETRY;
     }
     GNUNET_ASSERT(sizeof(struct in6_addr) == sizeof(IP6addr));
     if (YES == isBlacklisted((IP6addr*)&incoming.sin6_addr)) {
-      char * tmp = MALLOC(INET6_ADDRSTRLEN);
       LOG(LOG_WARNING,
 	  _("Sender %s is blacklisted, dropping message.\n"),
 	  inet_ntop(AF_INET6,
 		    &incoming,
-		    tmp,
+		    inet6,
 		    INET6_ADDRSTRLEN));
-      FREE(tmp);
       goto RETRY; /* drop on the floor */
     }
     /* message ok, fill in mp and pass to core */
@@ -315,15 +307,14 @@ static int verifyHelo(const HELO_Message * helo) {
     return SYSERR; /* obviously invalid */
   else {
 #if DEBUG_UDP6
-    char * tmp = MALLOC(INET6_ADDRSTRLEN);
+    char inet6[INET6_ADDRSTRLEN];
     LOG(LOG_DEBUG,
 	"Verified UDP6 helo from %u.%u.%u.%u:%u.\n",
 	inet_ntop(AF_INET6,
 		  &haddr->senderIP,
-		  tmp,
+		  inet6,
 		  INET6_ADDRSTRLEN),
 	ntohs(haddr->senderPort));
-    FREE(tmp);
 #endif
     return OK;
   }
@@ -431,7 +422,7 @@ static int udp6Send(TSession * tsession,
   int ok;
   int ssize;
 #if DEBUG_UDP6
-  char * tmp;
+  char inet6[INET6_ADDRSTRLEN];
 #endif
 
   if (udp6_shutdown == YES)
@@ -469,16 +460,14 @@ static int udp6Send(TSession * tsession,
 	 &haddr->senderIP.addr,
 	 sizeof(IP6addr));
 #if DEBUG_UDP6
-  tmp = MALLOC(INET6_ADDRSTRLEN);
   LOG(LOG_DEBUG,
       "Sending message of %d bytes via UDP6 to %s:%d..\n",
       ssize,
       inet_ntop(AF_INET6,
 		&sin,
-		tmp,
+		inet6,
 		INET6_ADDRSTRLEN),
       ntohs(sin.sin_port));
-  FREE(tmp);
 #endif
   if (ssize == SENDTO(udp6_sock,
 		      msg,
@@ -597,21 +586,19 @@ static void reloadConfiguration(void) {
  */
 static char * addressToString(const HELO_Message * helo) {
   char * ret;
-  char * tmp;
+  char inet6[INET6_ADDRSTRLEN];
   Host6Address * haddr;
 
   haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   ret = MALLOC(INET6_ADDRSTRLEN+16);
-  tmp = MALLOC(INET6_ADDRSTRLEN);
   SNPRINTF(ret,
 	   INET6_ADDRSTRLEN+16,
 	   "%s:%d (UDP6)",
 	   inet_ntop(AF_INET6,
 		     haddr,
-		     tmp,
+		     inet6,
 		     INET6_ADDRSTRLEN),
 	   ntohs(haddr->senderPort));
-  FREE(tmp);
   return ret;
 }
 

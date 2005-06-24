@@ -650,14 +650,13 @@ static void * tcp6ListenMain() {
 	     otherwise we just close and reject the communication! */  	
 	  GNUNET_ASSERT(sizeof(struct in6_addr) == sizeof(IP6addr));
 	  if (YES == isBlacklisted((IP6addr*)&clientAddr.sin6_addr)) {
-	    char * tmp = MALLOC(INET6_ADDRSTRLEN);
+	    char inet6[INET6_ADDRSTRLEN];
 	    LOG(LOG_INFO,
 		_("Rejected blacklisted connection from address %s.\n"),
 		inet_ntop(AF_INET6,
 			  &clientAddr,
-			  tmp,
+			  inet6,
 			  INET6_ADDRSTRLEN));
-	    FREE(tmp);
 	    SHUTDOWN(sock, 2);
 	    closefile(sock);
 	  } else
@@ -982,13 +981,9 @@ static int tcp6Connect(HELO_Message * helo,
   int sock;
   TSession * tsession;
   TCP6Session * tcp6Session;
-  char * hostname;
+  char hostname[INET6_ADDRSTRLEN];
   struct addrinfo hints, *res, *res0;
   int rtn;
-
-#if DEBUG_TCP6
-  char * tmp;
-#endif
 
   if (tcp6_shutdown == YES)
     return SYSERR;
@@ -997,13 +992,11 @@ static int tcp6Connect(HELO_Message * helo,
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_INET6;
   hints.ai_socktype = SOCK_STREAM;
-  hostname = MALLOC(INET6_ADDRSTRLEN);
   inet_ntop(AF_INET6,
 	    haddr,
 	    hostname,
 	    INET6_ADDRSTRLEN);
   rtn = getaddrinfo(hostname, NULL, &hints, &res0);
-  FREE(hostname);
   if (rtn != 0) {
     LOG(LOG_WARNING,	
 	_("'%s': unknown service: %s\n"),
@@ -1013,15 +1006,13 @@ static int tcp6Connect(HELO_Message * helo,
   }
 
 #if DEBUG_TCP6
-  tmp = MALLOC(INET6_ADDRSTRLEN);
   LOG(LOG_DEBUG,
       "Creating TCP6 connection to %s:%d\n",
       inet_ntop(AF_INET6,
 		haddr,
-		tmp,
+		&hostname,
 		INET6_ADDRSTRLEN),
       ntohs(haddr->port));
-  FREE(tmp);
 #endif
 
   sock = -1;
@@ -1288,21 +1279,19 @@ static void reloadConfiguration(void) {
  */
 static char * addressToString(const HELO_Message * helo) {
   char * ret;
-  char * tmp;
+  char inet6[INET6_ADDRSTRLEN];
   Host6Address * haddr;
 
   haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   ret = MALLOC(INET6_ADDRSTRLEN+16);
-  tmp = MALLOC(INET6_ADDRSTRLEN);
   SNPRINTF(ret,
 	   INET6_ADDRSTRLEN+16,
 	   "%s:%d (TCP6)",
 	   inet_ntop(AF_INET6,
 		     haddr,
-		     tmp,
+		     inet6,
 		     INET6_ADDRSTRLEN),
 	   ntohs(haddr->port));
-  FREE(tmp);
   return ret;
 }
 

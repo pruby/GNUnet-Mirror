@@ -1,0 +1,70 @@
+This is a list of debian (sarge) packages that you may want to install
+prior to compiling GNUnet.
+
+Since sarge does not include libextractor 0.5.x, you will also have to
+compile libextractor by hand.  The following list of packages (and
+their dependencies) is what is needed for a complete installation of
+GNUnet and libextractor (to the best of our knowledge):
+
+=====================================================================
+
+Basic compilation tools:
+
+libtool
+gcc
+make
+g++ (for libextractor)
+
+
+GNUnet library dependencies:
+
+libgcrypt11-dev
+libgmp3-dev
+libltdl3-dev
+libgtk2.0-dev
+libsqlite3-dev
+libmysqlclient14-dev
+# libextractor1-dev (not in sarge)
+
+
+Additional libextractor dependencies:
+
+libvorbis-dev
+zlib1g-dev
+python2.3-dev
+libgcj-dev
+
+
+Additional gnunet-gtk dependencies:
+
+libglade2-dev
+
+
+For running GNUnet with the MySQL database:
+
+mysql-server-4.1 
+mysql-client-4.1 (for administration)
+
+
+For gnunet-download-manager (probably no longer needed):
+
+guile-1.6
+
+
+For Subversion access and compilation:
+
+subversion
+autoconf
+automake1.4
+
+
+For changing gnunet-gtk glade user interface (development):
+
+glade-2
+
+
+==============================================
+
+Please notify us if we missed some dependencies
+(note that the list is supposed to only list direct
+dependencies, not transitive dependencies).
