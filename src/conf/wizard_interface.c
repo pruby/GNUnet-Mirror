@@ -172,8 +172,8 @@ create_assi_step2 (void)
   GtkWidget *label23;
   GtkWidget *label24;
   GtkWidget *entIP;
-  GtkWidget *cmbNIC;
   GtkWidget *chkFW;
+  GtkWidget *cmbNIC;
   GtkWidget *labelLimit;
   GtkWidget *hbuttonbox2;
   GtkWidget *step2_back;
@@ -268,12 +268,6 @@ create_assi_step2 (void)
 		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
 		    (GtkAttachOptions) (0), 0, 0);
 
-  cmbNIC = gtk_combo_box_new_text ();
-  gtk_widget_show (cmbNIC);
-  gtk_table_attach (GTK_TABLE (table1), cmbNIC, 1, 2, 0, 1,
-		    (GtkAttachOptions) (GTK_SHRINK | GTK_FILL),
-		    (GtkAttachOptions) (GTK_FILL), 0, 0);
-
   chkFW =
     gtk_check_button_new_with_mnemonic (_
 					("Computer cannot receive inbound connections (SNAT/Firewall)"));
@@ -281,6 +275,12 @@ create_assi_step2 (void)
   gtk_table_attach (GTK_TABLE (table1), chkFW, 0, 2, 2, 3,
 		    (GtkAttachOptions) (GTK_FILL),
 		    (GtkAttachOptions) (0), 0, 0);
+
+  cmbNIC = gtk_combo_box_entry_new_text ();
+  gtk_widget_show (cmbNIC);
+  gtk_table_attach (GTK_TABLE (table1), cmbNIC, 1, 2, 0, 1,
+		    (GtkAttachOptions) (GTK_SHRINK | GTK_FILL),
+		    (GtkAttachOptions) (GTK_FILL), 0, 0);
 
   labelLimit = gtk_label_new (_("Network connection"));
   gtk_widget_show (labelLimit);
@@ -358,10 +358,10 @@ create_assi_step2 (void)
 		    G_CALLBACK (on_assi_destroy), NULL);
   g_signal_connect ((gpointer) entIP, "changed",
 		    G_CALLBACK (on_entIP_changed), NULL);
-  g_signal_connect ((gpointer) cmbNIC, "changed",
-		    G_CALLBACK (on_cmbNIC_changed), NULL);
   g_signal_connect ((gpointer) chkFW, "toggled",
 		    G_CALLBACK (on_chkFW_toggled), NULL);
+  g_signal_connect ((gpointer) cmbNIC, "changed",
+		    G_CALLBACK (on_cmbNIC_changed), NULL);
   g_signal_connect ((gpointer) step2_back, "clicked",
 		    G_CALLBACK (on_step2_back_clicked), NULL);
   g_signal_connect ((gpointer) step2_next, "clicked",
@@ -383,8 +383,8 @@ create_assi_step2 (void)
   GLADE_HOOKUP_OBJECT (assi_step2, label23, "label23");
   GLADE_HOOKUP_OBJECT (assi_step2, label24, "label24");
   GLADE_HOOKUP_OBJECT (assi_step2, entIP, "entIP");
-  GLADE_HOOKUP_OBJECT (assi_step2, cmbNIC, "cmbNIC");
   GLADE_HOOKUP_OBJECT (assi_step2, chkFW, "chkFW");
+  GLADE_HOOKUP_OBJECT (assi_step2, cmbNIC, "cmbNIC");
   GLADE_HOOKUP_OBJECT (assi_step2, labelLimit, "labelLimit");
   GLADE_HOOKUP_OBJECT (assi_step2, hbuttonbox2, "hbuttonbox2");
   GLADE_HOOKUP_OBJECT (assi_step2, step2_back, "step2_back");

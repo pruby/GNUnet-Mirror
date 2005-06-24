@@ -42,12 +42,13 @@ GtkWidget *cmbNIC;
 int doOpenEnhConfigurator = 0;
 int doAutoStart = 0;
 char *user_name = NULL, *group_name = NULL;
+static int nic_item_count = 0;
 
 int gconf_main(int ac, char *av[]);
 
 void insert_nic(char *name, int defaultNIC)
 {
-  gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
+ gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
   
 	defaultNIC = wiz_is_nic_default(name, defaultNIC);
   
@@ -67,6 +68,8 @@ void insert_nic(char *name, int defaultNIC)
   	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cmbNIC), &last);
   	on_cmbNIC_changed(GTK_COMBO_BOX(cmbNIC), NULL);
   }
+
+	nic_item_count++;
 }
 
 void load_step2()
@@ -89,8 +92,29 @@ void load_step2()
 
 	sym = sym_find("INTERFACE", "NETWORK");
 	if (sym)
-	{		
+	{
+		nic_item_count = 0;
 		wiz_enum_nics(insert_nic);
+
+		if (!nic_item_count)
+		{
+			/* ifconfig unavailable */
+	  	GtkTreeIter iter;
+	  	GtkTreeModel *model;
+	  	char *nic;
+	  	
+			sym_calc_value_ext(sym, 1);
+			nic = sym_get_string_value(sym);
+
+			if (!nic)
+				nic = "eth0";
+			gtk_combo_box_append_text(cmbNIC, nic);
+			
+	  	model = gtk_combo_box_get_model(GTK_COMBO_BOX(cmbNIC));  		
+  		gtk_tree_model_get_iter_first(model, &iter);
+	  	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cmbNIC), &iter);
+	  	on_cmbNIC_changed(GTK_COMBO_BOX(cmbNIC), NULL);			
+		}
 
 		gtk_widget_set_usize(cmbNIC, 10, -1);
 	}

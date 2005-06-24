@@ -425,21 +425,6 @@ If you are connected to the internet through another computer doing SNAT, a rout
 			  </child>
 
 			  <child>
-			    <widget class="GtkComboBox" id="cmbNIC">
-			      <property name="visible">True</property>
-			      <signal name="changed" handler="on_cmbNIC_changed" last_modification_time="Sat, 16 Apr 2005 15:40:51 GMT"/>
-			    </widget>
-			    <packing>
-			      <property name="left_attach">1</property>
-			      <property name="right_attach">2</property>
-			      <property name="top_attach">0</property>
-			      <property name="bottom_attach">1</property>
-			      <property name="x_options">shrink|fill</property>
-			      <property name="y_options">fill</property>
-			    </packing>
-			  </child>
-
-			  <child>
 			    <widget class="GtkCheckButton" id="chkFW">
 			      <property name="visible">True</property>
 			      <property name="can_focus">True</property>
@@ -459,6 +444,21 @@ If you are connected to the internet through another computer doing SNAT, a rout
 			      <property name="bottom_attach">3</property>
 			      <property name="x_options">fill</property>
 			      <property name="y_options"></property>
+			    </packing>
+			  </child>
+
+			  <child>
+			    <widget class="GtkComboBoxEntry" id="cmbNIC">
+			      <property name="visible">True</property>
+			      <signal name="changed" handler="on_cmbNIC_changed" last_modification_time="Fri, 24 Jun 2005 19:32:04 GMT"/>
+			    </widget>
+			    <packing>
+			      <property name="left_attach">1</property>
+			      <property name="right_attach">2</property>
+			      <property name="top_attach">0</property>
+			      <property name="bottom_attach">1</property>
+			      <property name="x_options">shrink|fill</property>
+			      <property name="y_options">fill</property>
 			    </packing>
 			  </child>
 			</widget>
