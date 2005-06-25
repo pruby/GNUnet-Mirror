@@ -36,6 +36,8 @@
 # Options for the GNUnet server, gnunetd
 #########################################
 
+[GNUNETD]
+
 # This line gives the root-directory of the GNUnet installation. Make
 # sure there is some space left in that directory. :-)  Users inserting
 # or indexing files will be able to store data in this directory
