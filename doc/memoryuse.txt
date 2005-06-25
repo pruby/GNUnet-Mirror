@@ -1,14 +1,34 @@
 List of the top known memory users in GNUnet for
 the default configuration:
 
-* Bloomfilters (size depends on DISKQUOTA, think 1-10 MB)
-* AFS routing table (650 kb)
-* connection send buffers (about 200 kb at 50 kbps bandwidth)
-* TCP buffers (1.5k read + up to 1.5k write per connection),
-  - This is a worst-case total of 350 kb for 128 connections
-* querymanager ( 512 byte * (32 + query-size) ) => approx. 64k
+* Bloomfilters (size depends on DISKQUOTA, think 64k-1 MB)
+* GAP routing table (100 * TABLESIZE,  think 100k (min) to 7 MB (default) or more)
+* connection send buffers (variable)
+* TCP buffers (variable)
+* querymanager (think 64k)
 * databases (size depends on DATABASETYPE and DISKQUOTA,
   think 0-50 MB)
 
-Note that many larger arrays are of static size and will not be
-malloc'ed.
+
+What can you do to lower gnunetd's memory footprint?
+* reduce GAP routing table size (min is 1024)
+* do not compile with debug symbols (-g)
+* compile with optimizations (-O2)
+* disable internationalization (export LANG=)
+* do not load unused application modules (chat, tbench, etc.)
+
+
+What can you expect to achieve:
+* Low footprints are in the area of 2-3 MB (i386)
+* Normal footprints are in the range of 10-20 MB
+* above 100 MB is a certain sign for memory leaks, try running
+  with valgrind and send reports to the developers about
+  any leaks that were found; you can have gnunetd automatically
+  terminate without a signal using the VALGRIND = SECONDS option
+  in section [GNUNETD].  This can be useful to generate a
+  valgrind trace for gnunetd that should run over exactly that
+  many seconds (typically the longer you can afford to wait,
+  the more likely you are to actually observe a relevant event
+  in the trace -- and make sure to actually USE gnunetd while
+  tracing for leaks).
+
