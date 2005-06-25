@@ -257,11 +257,7 @@ receivedHELO(const p2p_HEADER * message) {
   /* Ok, must play PING-PONG. Add the HELO to the temporary
      (in-memory only) buffer to make it available for a short
      time in order to play PING-PONG */
-  copy = MALLOC(HELO_Message_size(msg));
-  memcpy(copy,
-	 msg,
-	 HELO_Message_size(msg));
-  identity->addHostTemporarily(copy);
+  identity->addHostTemporarily(msg);
 
 
   /* Establish session as advertised in the HELO */
