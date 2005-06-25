@@ -76,25 +76,25 @@ static void eventCallback(void * cls,
   char * fn;
 
   switch(event->type) {
-  case search_result:
+  case FSUI_search_result:
     printf("Received search result\n");
     break;
-  case upload_complete:
+  case FSUI_upload_complete:
     printf("Upload complete.\n");
     break;
-  case download_complete:
+  case FSUI_download_complete:
     printf("Download complete.\n");
     break;
-  case unindex_complete:
+  case FSUI_unindex_complete:
     printf("Unindex complete.\n");
     break;
   default:
     break;
   }
-  if (lastEvent == download_complete)
+  if (lastEvent == FSUI_download_complete)
     return; /* ignore all other events */
   lastEvent = event->type;  
-  if (event->type == search_result) {
+  if (event->type == FSUI_search_result) {
     fn = makeName(43);
     FSUI_startDownload(ctx,
 		       0,
@@ -171,7 +171,7 @@ int main(int argc, char * argv[]){
   ECRS_freeUri(kuri);
   ECRS_freeMetaData(meta);
   prog = 0;
-  while (lastEvent != upload_complete) {
+  while (lastEvent != FSUI_upload_complete) {
     prog++;
     CHECK(prog < 10000) 
     
@@ -182,7 +182,7 @@ int main(int argc, char * argv[]){
 			       0,
 			       uri));
   prog = 0;
-  while (lastEvent != download_complete) {
+  while (lastEvent != FSUI_download_complete) {
     prog++;
     CHECK(prog < 10000);
     gnunet_util_sleep(50 * cronMILLIS);
