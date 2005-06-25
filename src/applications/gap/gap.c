@@ -150,7 +150,7 @@
  * THE VALUE YOU PICK MUST BE A POWER OF 2, for example:
  * 128, 256, 512, 1024, 2048, 4092, 8192, 16384, 32768, 65536
  */
-#define MIN_INDIRECTION_TABLE_SIZE (8192)
+#define MIN_INDIRECTION_TABLE_SIZE 1024
 /* #define MIN_INDIRECTION_TABLE_SIZE 8 */
 
 /**
@@ -360,13 +360,14 @@ typedef struct {
    */
   int successful_local_lookup_in_delay_loop;
 
-  /**
-   * Avoiding concurrent lookups for the same ITE: lock to grant
-   * access to peers to perform a lookup that matches this ITE entry.
-   */
-   Mutex lookup_exclusion;
-
 } IndirectionTableEntry;
+
+/**
+ * Avoiding concurrent lookups for the same ITE: lock to grant
+ * access to peers to perform a lookup that matches this ITE entry.
+ */
+static Mutex lookup_exclusion;
+
 
 /**
  * @brief structure to keep track of which peers send responses
@@ -1546,7 +1547,7 @@ static int execQuery(const PeerIdentity * sender,
   EncName enc;
 
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
-  MUTEX_LOCK(&ite->lookup_exclusion);
+  MUTEX_LOCK(&lookup_exclusion);
   if (sender != NULL) {
     if ((policy & QUERY_INDIRECT) > 0) {
       needsForwarding(&query->queries[0],
@@ -1639,7 +1640,7 @@ static int execQuery(const PeerIdentity * sender,
 
 
 
-  MUTEX_UNLOCK(&ite->lookup_exclusion);
+  MUTEX_UNLOCK(&lookup_exclusion);
   if (doForward)
     forwardQuery(query,
 		 sender);
@@ -1700,16 +1701,16 @@ static int useContent(const PeerIdentity * hostId,
       &contentHC);
   
   /* FIRST: check if seen */
-  MUTEX_LOCK(&ite->lookup_exclusion);
+  MUTEX_LOCK(&lookup_exclusion);
   for (i=0;i<ite->seenIndex;i++) {
     if (equalsHashCode512(&contentHC,
 			  &ite->seen[i])) {
-      MUTEX_UNLOCK(&ite->lookup_exclusion);
+      MUTEX_UNLOCK(&lookup_exclusion);
       FREE(value);
       return 0; /* seen before, useless */
     }
   }
-  MUTEX_UNLOCK(&ite->lookup_exclusion);
+  MUTEX_UNLOCK(&lookup_exclusion);
 
   /* SECOND: check if valid */
   ret = bs->put(bs->closure,
@@ -1727,7 +1728,7 @@ static int useContent(const PeerIdentity * hostId,
 
   /* THIRD: compute content priority/value and
      send remote reply (ITE processing) */
-  MUTEX_LOCK(&ite->lookup_exclusion);
+  MUTEX_LOCK(&lookup_exclusion);
   if (equalsHashCode512(&ite->primaryKey,
 			&msg->primaryKey) ) {	
     prio = ite->priority;
@@ -1760,7 +1761,7 @@ static int useContent(const PeerIdentity * hostId,
     sendReply(ite,
 	      &msg->header);
   }
-  MUTEX_UNLOCK(&ite->lookup_exclusion);
+  MUTEX_UNLOCK(&lookup_exclusion);
   prio += claimReward(&msg->primaryKey, hostId);
 
   /* FOURTH: update content priority in local datastore */
@@ -2107,6 +2108,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
     			"TABLESIZE");
   if (indirectionTableSize < MIN_INDIRECTION_TABLE_SIZE)
     indirectionTableSize = MIN_INDIRECTION_TABLE_SIZE;
+  MUTEX_CREATE(&lookup_exclusion);
   ROUTING_indTable_
     = MALLOC(sizeof(IndirectionTableEntry)
 	     * indirectionTableSize);
@@ -2116,7 +2118,6 @@ provide_module_gap(CoreAPIForApplication * capi) {
 	 * indirectionTableSize);	
   for (i=0;i<indirectionTableSize;i++) {
     ROUTING_indTable_[i].successful_local_lookup_in_delay_loop = NO;
-    MUTEX_CREATE(&ROUTING_indTable_[i].lookup_exclusion);
   }
 
   for (i=0;i<QUERY_RECORD_COUNT;i++) {
@@ -2166,7 +2167,6 @@ void release_module_gap() {
 	     NULL);
 
   for (i=0;i<indirectionTableSize;i++) {
-    MUTEX_DESTROY(&ROUTING_indTable_[i].lookup_exclusion);
     GROW(ROUTING_indTable_[i].seen,
 	 ROUTING_indTable_[i].seenIndex,
 	 0);
@@ -2176,6 +2176,7 @@ void release_module_gap() {
 	 0);
   }
 
+  MUTEX_DESTROY(&lookup_exclusion);
   while (rtdList != NULL) {
     pos = rtdList;
     rtdList = rtdList->next;
