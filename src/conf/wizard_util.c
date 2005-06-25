@@ -41,8 +41,8 @@ void wiz_enum_nics(void (*callback) (char *, int)) {
 		char entry[11], *dst;
 		FILE *f;
 		
-		if (system("ifconfig 2> /dev/null"))
-			if (system("/sbin/ifconfig 2> /dev/null") == 0)
+		if (system("ifconfig > /dev/null 2> /dev/null"))
+			if (system("/sbin/ifconfig > /dev/null 2> /dev/null") == 0)
 				f = popen("/sbin/ifconfig 2> /dev/null", "r");
 			else
 				f = NULL;
