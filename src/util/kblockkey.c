@@ -391,6 +391,8 @@ static void generate_kblock_key(KBlock_secret_key *sk,
 
   do {
     do {
+      mpz_clear(sk->p);
+      mpz_clear(sk->q);
       gen_prime(sk->p, nbits/2, hc);
       gen_prime(sk->q, nbits/2, hc);
 

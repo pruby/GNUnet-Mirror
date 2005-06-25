@@ -10,6 +10,7 @@
 
 #define TESTSTRING "Hello World\0"
 #define MAX_TESTVAL 20
+#define UNIQUE_ITER 6
 #define ITER 10
 
 
@@ -35,7 +36,7 @@ static int testMultiKey(const char * word) {
     printf("%02x", ((unsigned char*) &pkey)[i]);
     printf("\n"); */
   freePrivateKey(hostkey);
-  for (i=0;i<6;i++) {
+  for (i=0;i<UNIQUE_ITER;i++) {
     fprintf(stderr, ".");
     hostkey = makeKblockKey(&in);
     if (hostkey == NULL) {
@@ -185,8 +186,10 @@ static int testPrivateKeyEncoding(struct PrivateKey * hostkey) {
       fprintf(stderr,
 	      "decryptPrivateKey returned SYSERR\n");
       ok = SYSERR;
+      freePrivateKey(hostkey);
       continue;
     }
+    freePrivateKey(hostkey);
     if (strncmp(TESTSTRING, result,
 		strlen(TESTSTRING)) != 0) {
       printf("%s != %.*s - testEncryptDecrypt failed!\n",
