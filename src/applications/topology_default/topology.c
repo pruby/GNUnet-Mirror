@@ -303,6 +303,7 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
     if (0 != strncmp(PACKAGE_VERSION,
 		     data,
 		     len)) {
+      data[len-1] = '\0';
       LOG(LOG_FAILURE,
 	  _("Version mismatch ('%s' vs. '%s'), run gnunet-update!\n"),
 	  PACKAGE_VERSION,
@@ -316,6 +317,8 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
       identity = NULL;
       capi->releaseService(transport);
       transport = NULL;
+      capi->releaseService(pingpong);
+      pingpong = NULL;
       return NULL;
     }
     FREE(data);

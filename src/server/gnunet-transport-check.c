@@ -209,6 +209,7 @@ static void testPING(HELO_Message * xhelo,
   p2p_HEADER * ping;
   char * msg;
   int len;
+  PeerIdentity peer;
 
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
@@ -245,6 +246,7 @@ static void testPING(HELO_Message * xhelo,
 
   stats[1]++; /* one more with transport 'available' */
   tsession = NULL;
+  peer = helo->senderIdentity;
   if (OK != transport->connect(helo,
 			       &tsession)) {
     FREE(helo);
@@ -265,7 +267,7 @@ static void testPING(HELO_Message * xhelo,
 
   sem = SEMAPHORE_NEW(0);
 
-  ping = pingpong->pingUser(&helo->senderIdentity,
+  ping = pingpong->pingUser(&peer,
 			    &pingCallback,
 			    NULL,
 			    YES);

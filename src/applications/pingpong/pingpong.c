@@ -292,9 +292,7 @@ createPing(const PeerIdentity * receiver,
   entry->plaintext = plaintext;
   FREENONNULL(entry->data);
   entry->data = data;
-  memcpy(&entry->receiverIdentity,
-	 receiver,
-	 sizeof(PeerIdentity));
+  entry->receiverIdentity = *receiver;
   pmsg = MALLOC(sizeof(PINGPONG_Message));
   pmsg->header.size = htons(sizeof(PINGPONG_Message));
   pmsg->header.type = htons(p2p_PROTO_PING);

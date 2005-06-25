@@ -3432,7 +3432,7 @@ msgstr "Verfügbare(r) Transport(e): %s\n"
 msgid ""
 "%d out of %d peers contacted successfully (%d times transport unavailable).\n"
 msgstr ""
-"%d von %d Knoten erfolgreich kontaktiert (%dmal war der Transport nicht "
+"%d von %d Knoten erfolgreich kontaktiert (%d mal war der Transport nicht "
 "verfügbar).\n"
 
 #: src/server/tcpserver.c:425
