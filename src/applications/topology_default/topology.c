@@ -309,7 +309,6 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 	  PACKAGE_VERSION,
 	  data);
       FREE(data);
-      BREAK();
       delCronJob(&cronCheckLiveness,
 		 5 * cronSECONDS,
 		 NULL);

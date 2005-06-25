@@ -413,10 +413,10 @@ void readConfiguration() {
   cfgName = getConfigurationString("FILES",
 				   "gnunet.conf");
   if (cfgName == NULL) {
-    eName = expandFileName("~/.gnunet/gnunetd.conf");
     if (testConfigurationString("GNUNETD",
 				"_MAGIC_",
 				"YES")) {
+      eName = expandFileName("~/.gnunet/gnunetd.conf");
       expCfgName = getenv("GNUNETD_CONFIG");
       if (expCfgName == NULL) {
 	/* pick default, but try to pick it so
