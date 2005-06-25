@@ -1,7 +1,6 @@
 0.7.0pre3:
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
-- Ensure hostlist is working on gnunet.org [ CG ]
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:
