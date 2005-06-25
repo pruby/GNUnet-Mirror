@@ -1,15 +1,13 @@
 0.7.0pre3:
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
-  * Mantis #848, #847, #849
 - Ensure hostlist is working on gnunet.org [ CG ]
-(Note to Nils: AFAIK, the code itself seems to be ready,
- except for gnunet-setup which is still very unstable for me)
 
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
+  * #851, #852,#853 (gnunet-setup nitpicks)
   * permissions on indexed files? [Nils]
   * Windows installer [Nils]
     * Uninstall
