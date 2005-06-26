@@ -116,7 +116,7 @@ int main(int argc, char * argv[]){
   int status;
   int ok;
   struct ECRS_URI * uri;
-  char * fn;
+  char * fn = NULL;
   char * keywords[] = { 
     "foo",
     "bar",
@@ -142,7 +142,8 @@ int main(int argc, char * argv[]){
     }
   }
   ok = YES;
-  initUtil(argc, argv, &parseCommandLine);
+  if (OK != initUtil(argc, argv, &parseCommandLine))
+    return -1;
   startCron();
   gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
 

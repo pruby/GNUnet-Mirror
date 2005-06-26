@@ -106,7 +106,7 @@ int main(int argc, char * argv[]){
   int status;
   int ok;
   struct ECRS_URI * uri;
-  char * fn;
+  char * filename = NULL; 
   char * keywords[] = { 
     "foo",
     "bar",
@@ -132,7 +132,8 @@ int main(int argc, char * argv[]){
     }
   }
   ok = YES;
-  initUtil(argc, argv, &parseCommandLine);
+  if (OK != initUtil(argc, argv, &parseCommandLine))
+    return -1;
   startCron();
   gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
 
@@ -142,8 +143,8 @@ int main(int argc, char * argv[]){
 		   &eventCallback,
 		   NULL);
   CHECK(ctx != NULL);
-  fn = makeName(42);
-  writeFile(fn,
+  filename = makeName(42);
+  writeFile(filename,
 	    "foo bar test!",
 	    strlen("foo bar test!"),
 	    "600");
@@ -152,7 +153,7 @@ int main(int argc, char * argv[]){
 				  (const char**)keywords);
   CHECK(OK ==
 	FSUI_upload(ctx,
-		    fn,
+		    filename,
 		    0,
 		    YES,
 		    NO,
@@ -179,18 +180,20 @@ int main(int argc, char * argv[]){
   }
   FSUI_stopSearch(ctx,
 		  uri);
-  CHECK(OK == FSUI_unindex(ctx, fn));
+  CHECK(OK == FSUI_unindex(ctx, filename));
 
   /* END OF TEST CODE */
  FAILURE:
   if (ctx != NULL)
     FSUI_stop(ctx);
-  UNLINK(fn);
-  FREE(fn);
-  fn = makeName(43);
-  /* TODO: verify file 'fn(42)' == file 'fn(43)' */
-  UNLINK(fn);
-  FREE(fn);
+  if (filename != NULL) {
+    UNLINK(filename);
+    FREE(filename);
+  }
+  filename = makeName(43);
+  /* TODO: verify file 'filename(42)' == file 'filename(43)' */
+  UNLINK(filename);
+  FREE(filename);
 
   stopCron();
   doneUtil();
