@@ -34,6 +34,9 @@ static int parseOptions(int argc,
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGFILE",
 				     NULL));
+  FREENONNULL(setConfigurationString("GNUNETD",
+				     "LOGLEVEL",
+				     "DEBUG"));
   return OK;
 }
 
@@ -277,8 +280,8 @@ int main(int argc, char ** argv) {
   daemon2 = startGNUnetDaemon(NO);
   /* in case existing HELOs have expired */
   sleep(5);
-  system("cp peer1/data/hosts/* peer2/data/hosts/");
-  system("cp peer2/data/hosts/* peer1/data/hosts/");
+  system("cp ./peer1/data/hosts/* peer2/data/hosts/");
+  system("cp ./peer2/data/hosts/* peer1/data/hosts/");
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");
@@ -301,13 +304,13 @@ int main(int argc, char ** argv) {
   daemon2 = startGNUnetDaemon(NO);
   sleep(5);
 
-  ret = 0;
-  left = 5;
   /* wait for connection or abort with error */
 #else
   daemon1 = -1;
   daemon2 = -1;
 #endif
+  ret = 0;
+  left = 5;
   do {
     sock = getClientSocket();
     if (sock == NULL) {
