@@ -39,7 +39,7 @@
   if (sizeof(long long) != READ(fd, &bigl, sizeof(long long))) \
     goto ERR;						       \
   else \
-    a = ntohll(big)
+    a = ntohll(bigl)
 
 static struct ECRS_URI * readURI(int fd) {
   char * buf;
@@ -82,10 +82,14 @@ static FSUI_DownloadList * readDownloadList(int fd,
   int i;
 
   GNUNET_ASSERT(ctx != NULL);
-  if (1 != READ(fd, &zaro, sizeof(char)))
+  if (1 != READ(fd, &zaro, sizeof(char))) {
+    BREAK();
     return NULL; 
+  }
   if (zaro == '\0')
     return NULL;
+  LOG(LOG_DEBUG,
+      "FSUI persistence: restoring download\n");
   ret = MALLOC(sizeof(FSUI_DownloadList));
   ret->ctx = ctx;
 
@@ -97,11 +101,14 @@ static FSUI_DownloadList * readDownloadList(int fd,
   READINT(ret->completedDownloadsCount);
   READINT(ret->finished);
   READINT(big);
-  if (big > 1024 * 1024)
+  if (big > 1024 * 1024) {
+    BREAK();
     goto ERR;
+  }
   ret->filename = MALLOC(big+1);
   if (big != READ(fd, ret->filename, big)) {
     FREE(ret->filename);
+    BREAK();
     goto ERR;
   }
   ret->filename[big] = '\0';
@@ -135,6 +142,8 @@ static FSUI_DownloadList * readDownloadList(int fd,
   return ret;
  ERR:
   FREE(ret);
+  LOG(LOG_WARNING,
+      _("FSUI persistence: error restoring download\n"));
   return NULL;
 }
 
@@ -219,20 +228,24 @@ static int readFileInfo(int fd,
   if (sizeof(unsigned int) != 
       READ(fd,
 	   &big,
-	   sizeof(unsigned int)))
+	   sizeof(unsigned int))) {
+    BREAK();
     return SYSERR;
+  }
   size = ntohl(big);
   buf = MALLOC(size);
   if (size != READ(fd,
 		   buf,
 		   size)) {
     FREE(buf);
+    BREAK();
     return SYSERR;
   }
   if (OK != ECRS_deserializeMetaData(&fi->meta,
 				     buf,
 				     size)) {
     FREE(buf);
+    BREAK();
     return SYSERR;
   }
   FREE(buf);
@@ -242,6 +255,7 @@ static int readFileInfo(int fd,
   if (fi->uri == NULL) {
     ECRS_freeMetaData(fi->meta);
     fi->meta = NULL;
+    BREAK();
     return SYSERR;
   }
   return OK;
@@ -338,20 +352,28 @@ struct FSUI_Context * FSUI_start(const char * name,
       unsigned int big;
 
       /* ****** check magic ******* */
-      if (8 != READ(fd, magic, 8))
+      if (8 != READ(fd, magic, 8)) {
+	BREAK();
 	goto WARN;
+      }
       if (0 != memcmp(magic,
 		      "FSUI00\n\0",
-		      8))
+		      8)) {
+	BREAK();
 	goto WARN;
+      }
       /* ******* deserialize state **** */
 
       /* deserialize collection data */
       if (sizeof(unsigned int) !=
-	  READ(fd, &big, sizeof(unsigned int)))
+	  READ(fd, &big, sizeof(unsigned int))) {
+	BREAK();
 	goto WARN;
-      if (ntohl(big) > 16 * 1024 * 1024)
+      }
+      if (ntohl(big) > 16 * 1024 * 1024) {
+	BREAK();
 	goto WARN;
+      }
       if (big == 0) {
 	ret->collectionData = NULL;
       } else {
@@ -363,6 +385,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 		 ntohl(big) - sizeof(unsigned int))) {
 	  FREE(ret->collectionData);
 	  ret->collectionData = NULL;
+	  BREAK();
 	  goto WARN;
 	}
       }
@@ -372,12 +395,16 @@ struct FSUI_Context * FSUI_start(const char * name,
 	char * buf;
 
 	if (sizeof(unsigned int) !=
-	    READ(fd, &big, sizeof(unsigned int)))
+	    READ(fd, &big, sizeof(unsigned int))) {
+	  BREAK();	
 	  goto WARN;
+	}
 	if (ntohl(big) == 0)
 	  break;
-	if (ntohl(big) > 1024 * 1024)
+	if (ntohl(big) > 1024 * 1024) {
+	  BREAK();	
 	  goto WARN;
+	}
 	buf
 	  = MALLOC(ntohl(big)+1);
 	buf[ntohl(big)] = '\0';	
@@ -386,6 +413,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 		 buf,
 		 ntohl(big))) {
 	  FREE(buf);
+	  BREAK();	
 	  goto WARN;
 	}
 	list 
@@ -395,11 +423,13 @@ struct FSUI_Context * FSUI_start(const char * name,
 	FREE(buf);
 	if (list->uri == NULL) {
 	  FREE(list);
+	  BREAK();	
 	  goto WARN;
 	}
 	if (! ECRS_isKeywordUri(list->uri)) {
 	  ECRS_freeUri(list->uri);
 	  FREE(list);
+	  BREAK();		
 	  goto WARN;
 	}
 	list->numberOfURIKeys
@@ -408,6 +438,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	    READ(fd, &big, sizeof(unsigned int))) {
 	  ECRS_freeUri(list->uri);
 	  FREE(list);	  
+	  BREAK();
 	  goto WARN;
 	}
 	list->anonymityLevel
@@ -416,6 +447,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	    READ(fd, &big, sizeof(unsigned int))) {
 	  ECRS_freeUri(list->uri);
 	  FREE(list);
+	  BREAK();
 	  goto WARN;
 	}
 	list->sizeResultsReceived
@@ -424,6 +456,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	    READ(fd, &big, sizeof(unsigned int))) {
 	  ECRS_freeUri(list->uri);
 	  FREE(list);
+	  BREAK();
 	  goto WARN;
 	}
 	list->sizeUnmatchedResultsReceived
@@ -432,6 +465,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	     (list->sizeUnmatchedResultsReceived > 1024*1024) ) {
 	  ECRS_freeUri(list->uri);
 	  FREE(list);
+	  BREAK();
 	  goto WARN;
 	}
 	if (list->sizeResultsReceived > 0)
@@ -460,6 +494,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	      READ(fd, 
 		   &big, 
 		   sizeof(unsigned int))) {
+	    BREAK();
 	    goto WARNL;
 	  }
 	  rp->matchingKeyCount
@@ -467,6 +502,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  if ( (rp->matchingKeyCount > 1024) ||
 	       (rp->matchingKeyCount > 
 		list->numberOfURIKeys) ) {
+	    BREAK();
 	    goto WARNL;
 	  }
 	    
@@ -483,6 +519,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 		   rp->matchingKeys,
 		   sizeof(HashCode512) *
 		   rp->matchingKeyCount)) {
+	    BREAK();
 	    goto WARNL;
 	  }
 	}
@@ -493,6 +530,8 @@ struct FSUI_Context * FSUI_start(const char * name,
 	list->ctx
 	  = ret;
 	/* start search thread! */
+	LOG(LOG_DEBUG,
+	    "FSUI persistence: restarting search\n");
 	if (0 != PTHREAD_CREATE(&list->handle,
 				(PThreadMain)&searchThread,
 				list,

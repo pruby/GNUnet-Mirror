@@ -288,13 +288,16 @@ static int startDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * dl;
   FSUI_DownloadList * root;
   unsigned long long totalBytes;
-
+  
   GNUNET_ASSERT(ctx != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
     BREAK(); /* wrong type of URI! */
     return SYSERR;
   }
+  LOG(LOG_DEBUG,
+      "Starting download of file '%s'\n",
+      filename);
 
   dl = MALLOC(sizeof(FSUI_DownloadList));
   memset(dl, 0, sizeof(FSUI_DownloadList));
