@@ -312,6 +312,7 @@ int semaphore_down_nonblocking_(Semaphore * s,
 int PTHREAD_SELF_TEST(PTHREAD_T * pt) {
   pthread_t * handle;
 
+  GNUNET_ASSERT(pt != NULL);
   handle = pt->internal;
   if (handle == NULL)
     return NO;
@@ -387,8 +388,10 @@ void PTHREAD_JOIN(PTHREAD_T * pt,
   int k;
   pthread_t * handle;
 
+  GNUNET_ASSERT(pt != NULL);
   handle = pt->internal;
   GNUNET_ASSERT(handle != NULL);
+  GNUNET_ASSERT(NO == PTHREAD_SELF_TEST(pt));
   switch ((k=pthread_join(*handle, ret))) {
   case 0:
     FREE(handle);
