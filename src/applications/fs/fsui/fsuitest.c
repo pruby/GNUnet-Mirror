@@ -126,7 +126,7 @@ int main(int argc, char * argv[]){
   GNUNET_ASSERT(daemon > 0);
   ok = YES;
   startCron();
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
+  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
   gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */

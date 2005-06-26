@@ -34,6 +34,8 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 
+static volatile int suspendRestart = 0;
+
 static int parseCommandLine(int argc,
 			    char * argv[]) {
   FREENONNULL(setConfigurationString("GNUNETD",
@@ -44,7 +46,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "WARNING"));
+				     "NOTHING"));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "check.conf"));
@@ -107,14 +109,9 @@ static void eventCallback(void * cls,
     FSUI_startDownload(ctx,
 		       0,
 		       event->data.SearchResult.fi.uri,
-		       fn);
-    FSUI_stop(ctx); /* download possibly incomplete
-		       at this point, thus testing resume */
-    ctx = FSUI_start("fsuidownloadtest",
-		     YES,
-		     &eventCallback,
-		     NULL);
+		       fn);    
     FREE(fn);
+    suspendRestart = 1;
   }
 }
 
@@ -142,7 +139,7 @@ int main(int argc, char * argv[]){
   GNUNET_ASSERT(daemon > 0);
   ok = YES;
   startCron();
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
+  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
   gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
@@ -191,6 +188,17 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 10000);
     gnunet_util_sleep(50 * cronMILLIS);
+    if (suspendRestart > 0) {
+      suspendCron();
+      FSUI_stop(ctx); /* download possibly incomplete
+			 at this point, thus testing resume */
+      ctx = FSUI_start("fsuidownloadtest",
+		       YES,
+		       &eventCallback,
+		       NULL);
+      resumeCron();
+      suspendRestart--;
+    }
   }
   FSUI_stopSearch(ctx,
 		  uri);
