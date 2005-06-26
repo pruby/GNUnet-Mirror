@@ -8,7 +8,6 @@
 
 #include <sys/types.h>
 #ifndef MINGW             /* FIXME MINGW */
- #include <sys/wait.h>
 
 
 static Mutex lock;

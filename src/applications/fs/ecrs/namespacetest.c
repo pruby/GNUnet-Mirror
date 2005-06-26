@@ -28,7 +28,6 @@
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
-#include <sys/wait.h>
 
 #define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; }
 #define CHECK(c) { do { if (!(c)) ABORT(); } while(0); }

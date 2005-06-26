@@ -27,9 +27,6 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
-#ifndef MINGW
- #include <sys/wait.h>
-#endif
 
 
 /** 

@@ -31,7 +31,6 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_fsui_lib.h"
-#include <sys/wait.h>
 
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 

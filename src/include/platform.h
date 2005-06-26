@@ -69,6 +69,7 @@
  #include <netinet/in.h>
  #include <pwd.h>
  #include <sys/ioctl.h>
+ #include <sys/wait.h>
 #else
  #include "winproc.h"
 #endif

@@ -36,7 +36,6 @@
 
 #ifndef MINGW
 #include <sys/ioctl.h>
-#include <sys/wait.h>
 #include <termios.h>
 #endif
 #include <ctype.h>

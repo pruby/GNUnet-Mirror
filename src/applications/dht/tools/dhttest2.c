@@ -29,7 +29,6 @@
 #include "gnunet_dht_lib.h"
 #include "gnunet_dht_datastore_memory.h"
 #include "gnunet_stats_lib.h"
-#include <sys/wait.h>
 
 static int parseOptions(int argc,
 			char ** argv) {

@@ -27,7 +27,7 @@
 #ifndef TESTBED_TESTBED_H
 #define TESTBED_TESTBED_H
 
-#include <sys/wait.h>
+#include "platform.h"
 
 #include "gnunet_core.h"
 

@@ -28,7 +28,6 @@
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
 #include "tree.h"
-#include <sys/wait.h>
 
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 

@@ -28,7 +28,6 @@
 #include "gnunet_protocols.h"
 #include "gnunet_stats_lib.h"
 #include "tbench.h"
-#include <sys/wait.h>
 
 static int parseOptions(int argc,
 			char ** argv) {
