@@ -251,7 +251,6 @@ int main(int argc, char ** argv) {
   pid_t daemon1;
   pid_t daemon2;
   int ret;
-  int status;
   GNUNET_TCP_SOCKET * sock;
   int left;
   struct ECRS_URI * uri;
