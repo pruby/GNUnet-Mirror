@@ -104,11 +104,11 @@ void load_step2()
 	  	char *nic;
 	  	
 			sym_calc_value_ext(sym, 1);
-			nic = sym_get_string_value(sym);
+			nic = (char *) sym_get_string_value(sym);
 
 			if (!nic || strlen(nic) == 0)
 				nic = "eth0";
-			gtk_combo_box_append_text(cmbNIC, nic);
+			gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), nic);
 			
 	  	model = gtk_combo_box_get_model(GTK_COMBO_BOX(cmbNIC));  		
   		gtk_tree_model_get_iter_first(model, &iter);

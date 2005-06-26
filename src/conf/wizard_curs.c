@@ -119,9 +119,9 @@ int wizard_curs_main(int argc, char *argv[])
 			}
 			else if (ret <= 1) {
 				/* Select or Exit */
-				char *dst;
 	#ifdef MINGW
 				char nic[21];
+				char *dst;
 	#else
 				char *nic;
 	#endif

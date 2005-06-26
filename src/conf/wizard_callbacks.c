@@ -147,7 +147,7 @@ void showErr(char *prefix, char *error) {
 	err = malloc(strlen(prefix) + strlen(error) + 2);
 	sprintf(err, "%s %s", prefix, error);
 	
-	gtk_label_set_text(label98, err);
+	gtk_label_set_text(GTK_LABEL(label98), err);
 	
 	free(err);
 	
@@ -298,10 +298,10 @@ on_cmbNIC_changed (GtkComboBox * combobox, gpointer user_data)
 {
 	GtkTreeIter iter;
 	GValue val;
-	char *entry, *idx;
-	char *dst;
+	char *entry;
 #ifdef MINGW
-	char nic[21];
+	char nic[21], *idx;
+	char *dst;
 #else
 	char *nic;
 #endif
