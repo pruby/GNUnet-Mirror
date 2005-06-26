@@ -32,16 +32,18 @@ unsigned short getGNUnetPort() {
   unsigned short port;
   const char *setting;
   
-  if (testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
-		setting = "PORT";
-	else
-		setting = "CLIENT-PORT";
-  
+  if (testConfigurationString("GNUNETD",
+			      "_MAGIC_",
+			      "YES"))
+    setting = "PORT";
+  else
+    setting = "CLIENT-PORT";  
 
   port = (unsigned short) getConfigurationInt("NETWORK",
 					      setting);
-  if (port == 0) { /* try lookup in services */
-    errexit(_("Cannot determine port of gnunetd server. Define in configuration file in section '%s' under '%s'.\n"),
+  if (port == 0) {
+    errexit(_("Cannot determine port of gnunetd server. "
+	      "Define in configuration file in section '%s' under '%s'.\n"),
 	    "NETWORK",
 	    setting);
   }
