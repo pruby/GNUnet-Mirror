@@ -2401,6 +2401,11 @@ int waitForGNUnetDaemonRunning(cron_t timeout);
  */
 int waitForGNUnetDaemonTermination(int pid);
 
+/**
+ * @brief Terminate a process
+ * @return YES on success, NO otherwise
+ */
+int termProcess(int pid);
 
 /* ifndef GNUNET_UTIL_H */
 #endif

@@ -32,6 +32,7 @@
 static void help() {
   puts(_("USAGE: gnunet-setup MODULE\n\n"
        "MODULE\n"
+       " recreate\t\recreate configuration files\n"
        " config\t\ttext-based configuration\n"
        " menuconfig\ttext-based menu\n"
        " gconfig\tGTK configuration\n"
@@ -50,6 +51,7 @@ int wizard_main (int argc, char *argv[]);
 #endif
 
 int conf_main(int ac, char **av);
+int recreate_main(int ac, char **av);
 
 int main(int argc,
 	 char *argv[]) {
@@ -89,7 +91,11 @@ int main(int argc,
 #else
     puts("Gconfig is not available\n");
 #endif
- } else {
+  }
+  else if (strncmp(argv[1], "recreate", 7) == 0) {
+  	recreate_main(argc - 1, &argv[1]);
+  }
+	else {
     puts("Unknown configurator\n\n");
     help();
   }

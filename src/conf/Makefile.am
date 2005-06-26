@@ -78,6 +78,7 @@ gnunet_setup_SOURCES = \
  expr.h \
  lkc.h \
  menu.c \
+ recreate.c \
  symbol.c \
  zconf.tab.h \
  zconf_tab.c \

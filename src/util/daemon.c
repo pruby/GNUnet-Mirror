@@ -314,4 +314,29 @@ int waitForGNUnetDaemonTermination(int pid) {
     return NO;
 }
 
+int termProcess(int pid) {
+#ifndef MINGW
+	return kill(daemon1, SIGTERM) == 0;
+#else
+	int ret;
+	DWORD dwExitCode = 0;
+	
+	HANDLE hProc = OpenProcess(1, 0, pid);
+	GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid);
+	
+	WaitForSingleObject(hProc, 3000);
+	
+	GetExitCodeProcess(hProc, &dwExitCode);
+	if(dwExitCode == STILL_ACTIVE) {
+		ret = TerminateProcess(hProc, 0);
+	}
+	else
+		ret = 1;
+
+	CloseHandle(hProc);
+		
+	return ret;
+#endif
+}
+
 /* end of daemon.c */
