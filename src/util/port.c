@@ -30,13 +30,20 @@
  */
 unsigned short getGNUnetPort() {
   unsigned short port;
+  char *setting;
+  
+  if (testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
+		setting = "PORT";
+	else
+		setting = "CLIENT-PORT";
+  
 
   port = (unsigned short) getConfigurationInt("NETWORK",
-					      "CLIENT-PORT");
+					      setting);
   if (port == 0) { /* try lookup in services */
     errexit(_("Cannot determine port of gnunetd server. Define in configuration file in section '%s' under '%s'.\n"),
 	    "NETWORK",
-	    "CLIENT-PORT");
+	    setting);
   }
   return port;
 }
