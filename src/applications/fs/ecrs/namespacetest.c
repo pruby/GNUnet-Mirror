@@ -109,7 +109,7 @@ int main(int argc, char * argv[]) {
 
   if (OK != initUtil(argc,
 		     argv, 
-		     &parseOptions))
+		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
