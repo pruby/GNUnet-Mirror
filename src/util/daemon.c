@@ -100,8 +100,14 @@ static pid_t launchWithExec(int daemonize) {
 	cp[i+1] = '\0';
 	path = MALLOC(i+1+strlen("gnunetd"));
 	strcpy(path, cp);
-	strcat(path, "gnunetd");      
-	args[0] = path;
+	strcat(path, "gnunetd");
+	if (ACCESS(path, X_OK) == 0) {
+	  args[0] = path;
+	} else {
+	  FREE(path);
+	  path = NULL;
+	  args[0] = "gnunetd";
+	}
 	FREE(cp);
       } else {
 	args[0] = "gnunetd";

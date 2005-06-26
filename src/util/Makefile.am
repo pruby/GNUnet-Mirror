@@ -31,7 +31,8 @@ libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD)
 SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) .
 
 EXTRA_DIST = generate \
-  testconfig.conf
+  testconfig.conf \
+  check.conf
 
 libgnunetutil_la_LDFLAGS = \
  -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp \
@@ -96,6 +97,7 @@ check_PROGRAMS = \
  crctest \
  crontest \
  configtest \
+ daemontest \
  hashtest \
  hashingtest \
  hostkeytest \
@@ -117,6 +119,11 @@ TESTS = $(check_PROGRAMS)
 xmalloctest_SOURCES = \
  xmalloctest.c 
 xmalloctest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+daemontest_SOURCES = \
+ daemontest.c 
+daemontest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  
 
 statetest_SOURCES = \
