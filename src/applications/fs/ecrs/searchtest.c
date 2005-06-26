@@ -93,7 +93,6 @@ static int searchFile(const struct ECRS_URI * uri,
 
 int main(int argc, char * argv[]){
   pid_t daemon;
-  int status;
   int ok;
   GNUNET_TCP_SOCKET * sock;
   struct ECRS_URI * uri;
@@ -103,7 +102,7 @@ int main(int argc, char * argv[]){
 
   if (OK != initUtil(argc,
 		     argv, 
-		     &parseOptions))
+		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);

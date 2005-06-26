@@ -104,7 +104,6 @@ static int parseCommandLine(int argc,
 
 int main(int argc, char * argv[]) {
   pid_t daemon;
-  int status;
   int failureCount = 0; 
 
   if (OK != initUtil(argc,
