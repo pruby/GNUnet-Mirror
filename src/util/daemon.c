@@ -266,7 +266,7 @@ int stopGNUnetDaemon() {
 int waitForGNUnetDaemonRunning(cron_t timeout) {
   timeout += cronTime(NULL);
   while (OK != checkGNUnetDaemonRunning()) {
-    gnunet_util_sleep(50 * cronMILLIS);
+    gnunet_util_sleep(100 * cronMILLIS);
     if (timeout < cronTime(NULL))
       return checkGNUnetDaemonRunning();
   }
