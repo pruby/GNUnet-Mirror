@@ -42,6 +42,9 @@ static int parseCommandLine(int argc,
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
 				     "WARNING"));
+  FREENONNULL(setConfigurationString("GNUNET",
+				     "GNUNETD-CONFIG",
+				     "check.conf"));
   return OK;
 }
 
@@ -57,25 +60,16 @@ int main(int argc, char * argv[]){
   int status;
   int ok;
 
-  daemon = fork();
-  if (daemon == 0) {
-    if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
-		    "gnunetd", /* arg0, path to gnunet binary */
-		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-c",
-		    "check.conf", /* configuration file */
-		    NULL)) {
-      fprintf(stderr,
-	      _("'%s' failed: %s\n"),
-	      "execlp",
-	      STRERROR(errno));
-      return -1;
-    }
-  }
+  if (OK != initUtil(argc,
+		     argv, 
+		     &parseCommandLine))
+    return -1;
+  daemon = startGNUnetDaemon(NO);
+  GNUNET_ASSERT(daemon > 0);
   ok = YES;
-  initUtil(argc, argv, &parseCommandLine);
   startCron();
-  gnunet_util_sleep(30 * cronSECONDS); /* give gnunetd time to start */
+  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
+  gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start("fsuitest2",
@@ -95,21 +89,10 @@ int main(int argc, char * argv[]){
     FSUI_stop(ctx);
 
   stopCron();
+  GNUNET_ASSERT(OK == stopGNUnetDaemon());
+  GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon));
   doneUtil();
-  if (daemon != -1) {
-    if (0 != kill(daemon, SIGTERM))
-      DIE_STRERROR("kill");
-    if (daemon != waitpid(daemon, &status, 0))
-      DIE_STRERROR("waitpid");
-
-    if ( (WEXITSTATUS(status) == 0) &&
-	 (ok == YES) )
-      return 0;
-    else
-      return 1;
-  } else {
-    return 0;
-  }
+  return (ok == YES) ? 0 : 1;
 }
 
 /* end of fsuitest2.c */

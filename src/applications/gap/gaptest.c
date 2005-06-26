@@ -263,37 +263,20 @@ int main(int argc, char ** argv) {
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
   /* set to 0 if you want to start gnunetd's by hand for debugging */
+
+  if (OK != initUtil(argc,
+		     argv, 
+		     &parseOptions))
+    return -1;
 #if 1
-  daemon1 = fork();
-  if (daemon1 == 0) {
-    if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
-		    "gnunetd", /* arg0, path to gnunet binary */
-		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-c",
-		    "peer1.conf", /* configuration file */
-		    NULL)) {
-      fprintf(stderr,
-	      _("'%s' failed: %s\n"),
-	      "execlp",
-	      STRERROR(errno));
-      return -1;
-    }
-  }
-  daemon2 = fork();
-  if (daemon2 == 0) {
-    if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
-		    "gnunetd", /* arg0, path to gnunet binary */
-		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-c",
-		    "peer2.conf", /* configuration file */
-		    NULL)) {
-      fprintf(stderr,
-	      _("'%s' failed: %s\n"),
-	      "execlp",
-	      STRERROR(errno));
-      return -1;
-    }
-  }
+  FREENONNULL(setConfigurationString("GNUNET",
+				     "GNUNETD-CONFIG",
+				     "peer1.conf"));
+  daemon1 = startGNUnetDaemon(NO);
+  FREENONNULL(setConfigurationString("GNUNET",
+				     "GNUNETD-CONFIG",
+				     "peer2.conf"));
+  daemon2 = startGNUnetDaemon(NO);
   /* in case existing HELOs have expired */
   sleep(5);
   system("cp peer1/data/hosts/* peer2/data/hosts/");
@@ -301,47 +284,23 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (0 != kill(daemon1, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon1 != waitpid(daemon1, &status, 0))
-      DIE_STRERROR("waitpid");
+    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
     if (0 != kill(daemon2, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon2 != waitpid(daemon2, &status, 0))
-      DIE_STRERROR("waitpid");
+    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
   }
 
   /* re-start, this time we're sure up-to-date HELOs are available */
-  daemon1 = fork();
-  if (daemon1 == 0) {
-    if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
-		    "gnunetd", /* arg0, path to gnunet binary */
-		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-c",
-		    "peer1.conf", /* configuration file */
-		    NULL)) {
-      fprintf(stderr,
-	      _("'%s' failed: %s\n"),
-	      "execlp",
-	      STRERROR(errno));
-      return -1;
-    }
-  }
-  daemon2 = fork();
-  if (daemon2 == 0) {
-    if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
-		    "gnunetd", /* arg0, path to gnunet binary */
-		    "-d",  /* do not daemonize so we can easily kill you */
-		    "-c",
-		    "peer2.conf", /* configuration file */
-		    NULL)) {
-      fprintf(stderr,
-	      _("'%s' failed: %s\n"),
-	      "execlp",
-	      STRERROR(errno));
-      return -1;
-    }
-  }
+  FREENONNULL(setConfigurationString("GNUNET",
+				     "GNUNETD-CONFIG",
+				     "peer1.conf"));
+  daemon1 = startGNUnetDaemon(NO);
+  FREENONNULL(setConfigurationString("GNUNET",
+				     "GNUNETD-CONFIG",
+				     "peer2.conf"));
+  daemon2 = startGNUnetDaemon(NO);
   sleep(5);
 
   ret = 0;
@@ -351,7 +310,6 @@ int main(int argc, char ** argv) {
   daemon1 = -1;
   daemon2 = -1;
 #endif
-  initUtil(argc, argv, &parseOptions);
   do {
     sock = getClientSocket();
     if (sock == NULL) {
@@ -390,21 +348,18 @@ int main(int argc, char ** argv) {
   CHECK(OK == unindexFile(12345));
 
  FAILURE:
-  doneUtil();
 
-  /* also shutdown daemons again */
   if (daemon1 != -1) {
     if (0 != kill(daemon1, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon1 != waitpid(daemon1, &status, 0))
-      DIE_STRERROR("waitpid");
+    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
     if (0 != kill(daemon2, SIGTERM))
       DIE_STRERROR("kill");
-    if (daemon2 != waitpid(daemon2, &status, 0))
-      DIE_STRERROR("waitpid");
-  }
+    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
+  } 
+  doneUtil();
   return ret;
 }
 

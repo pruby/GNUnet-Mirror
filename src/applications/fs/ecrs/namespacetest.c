@@ -96,6 +96,9 @@ static int parseCommandLine(int argc,
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
 				     "WARNING"));
+  FREENONNULL(setConfigurationString("GNUNET",
+				     "GNUNETD-CONFIG",
+				     "check.conf"));
   return OK;
 }
 
@@ -104,42 +107,20 @@ int main(int argc, char * argv[]) {
   int status;
   int failureCount = 0; 
 
-  daemon = fork();
-  if (daemon == 0) {
-    if (0 != execlp("gnunetd", /* what binary to execute, must be in $PATH! */
-		    "gnunetd", /* arg0, path to gnunet binary */
-		    "-d",  /* do not daemonize so we can easily kill you */
-		    /* "-L", "NOTHING", */
-		    "-c",
-		    "check.conf", /* configuration file */
-		    NULL)) {
-      fprintf(stderr,
-	      _("'%s' failed: %s\n"),
-	      "execlp",
-	      STRERROR(errno));
-      return -1;
-    }
-  }
-  initUtil(argc, argv, &parseCommandLine);
+  if (OK != initUtil(argc,
+		     argv, 
+		     &parseOptions))
+    return -1;
+  daemon = startGNUnetDaemon(NO);
+  GNUNET_ASSERT(daemon > 0);
   gnunet_util_sleep(5 * cronSECONDS);
   
   failureCount += testNamespace();
 
-
+  GNUNET_ASSERT(OK == stopGNUnetDaemon());
+  GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon));
   doneUtil();
-  if (daemon != -1) {
-    if (0 != kill(daemon, SIGTERM))
-      DIE_STRERROR("kill");
-    if (daemon != waitpid(daemon, &status, 0))
-      DIE_STRERROR("waitpid");
-
-    if (WEXITSTATUS(status) != 0)
-      failureCount++;
-  }
-  if (failureCount == 0)
-    return 0;
-  else
-    return 1;
+  return (failureCount == 0) ? 0 : 1;
 }
 
 /* end of namespacetest.c */
