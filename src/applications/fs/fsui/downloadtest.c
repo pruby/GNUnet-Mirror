@@ -46,7 +46,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "DEBUG"));
+				     "NOTHING"));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "check.conf"));
@@ -135,8 +135,12 @@ int main(int argc, char * argv[]){
 		     argv, 
 		     &parseCommandLine))
     return -1;
+#if 1
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
+#else
+  daemon = -1;
+#endif
   ok = YES;
   startCron();
   GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
@@ -169,8 +173,7 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_upload_complete) {
     prog++;
-    CHECK(prog < 10000) 
-    
+    CHECK(prog < 10000);    
     gnunet_util_sleep(50 * cronMILLIS);
   }
   SNPRINTF(keyword,

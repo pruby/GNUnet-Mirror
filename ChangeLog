@@ -1,3 +1,7 @@
+Sun Jun 26 18:21:17 CEST 2005
+	Plenty of bugfixes everywhere, gnunet-setup works
+	now.  Releasing 0.7.0pre3.
+	
 Sat Jun 11 11:25:24 EST 2005
 	Fixed various problems with recursive upload
 	(thread stack size too small, wrong filenames

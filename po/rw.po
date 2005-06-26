@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-06-14 18:17-0500\n"
+"POT-Creation-Date: 2005-06-26 18:43+0200\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -36,27 +36,27 @@ msgstr "Umuyoboro Kuri Kuri in Iboneza IDOSIYE in Icyiciro Cyangwa in"
 msgid "Failed to bind to UDP6 port %d.\n"
 msgstr "Kuri Kuri Umuyoboro"
 
-#: src/transports/udp6.c:228
+#: src/transports/udp6.c:227
 #, fuzzy, c-format
 msgid "Received invalid UDP6 message from %s:%d, dropping.\n"
 msgstr "Sibyo Ubutumwa Bivuye"
 
-#: src/transports/udp6.c:261
+#: src/transports/udp6.c:256
 #, fuzzy, c-format
 msgid "Packet received from %s:%d (UDP6) failed format check."
 msgstr "BYAKIRIWE Bivuye Byanze Imiterere Kugenzura..."
 
-#: src/transports/udp6.c:274
+#: src/transports/udp6.c:267
 #, fuzzy, c-format
 msgid "Sender %s is blacklisted, dropping message.\n"
 msgstr "ni Ubutumwa"
 
-#: src/transports/udp6.c:355
+#: src/transports/udp6.c:346
 #, fuzzy
 msgid "UDP6: Could not determine my public IPv6 address.\n"
 msgstr "OYA Rusange Aderesi"
 
-#: src/transports/udp6.c:640 src/transports/smtp.c:891
+#: src/transports/udp6.c:627 src/transports/smtp.c:891
 #: src/transports/udp.c:621
 #, fuzzy, c-format
 msgid "MTU for '%s' is probably too low (fragmentation not implemented!)\n"
@@ -193,7 +193,7 @@ msgid ""
 "Received malformed message (size %u) from tcp-peer connection. Closing.\n"
 msgstr "Ubutumwa Bivuye Ukwihuza"
 
-#: src/transports/tcp.c:1266 src/transports/tcp6.c:1209
+#: src/transports/tcp.c:1266 src/transports/tcp6.c:1201
 #, fuzzy, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
@@ -309,64 +309,300 @@ msgstr "Ukwihuza Bivuye Aderesi"
 msgid "Could not determine my public IPv6 address.\n"
 msgstr "OYA Rusange Aderesi"
 
-#: src/transports/tcp6.c:1008
+#: src/transports/tcp6.c:1002
 #, fuzzy, c-format
 msgid "'%s': unknown service: %s\n"
 msgstr "'%s':Kitazwi Serivisi"
+
+#: src/conf/wizard_callbacks.c:213
+#, fuzzy, c-format
+msgid "Unable to save configuration file %s:"
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/conf/wizard_callbacks.c:236 src/conf/wizard_curs.c:511
+msgid "Unable to create user account:"
+msgstr ""
+
+#: src/conf/wizard_callbacks.c:243 src/conf/wizard_curs.c:514
+msgid "Unable to change startup process:"
+msgstr ""
 
 #: src/conf/gnunet-setup.c:33
 msgid ""
 "USAGE: gnunet-setup MODULE\n"
 "\n"
 "MODULE\n"
+" recreate\t\recreate configuration files\n"
 " config\t\ttext-based configuration\n"
 " menuconfig\ttext-based menu\n"
-" xconfig\tX configuration\n"
 " gconfig\tGTK configuration\n"
 " wizard-curses\tBasic text-based graphical configuration\n"
 " wizard-gtk\tBasic GTK configuration\n"
 "\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:107
+#: src/conf/gnunet-win-tool.c:108
 #, c-format
 msgid "GNUnet service installed successfully.\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:110 src/conf/gnunet-win-tool.c:137
+#: src/conf/gnunet-win-tool.c:111 src/conf/gnunet-win-tool.c:138
 #, c-format
 msgid "This version of Windows doesn't support services.\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:114 src/conf/gnunet-win-tool.c:141
+#: src/conf/gnunet-win-tool.c:115 src/conf/gnunet-win-tool.c:142
 #, c-format
 msgid "Error: can't open Service Control Manager: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:119
+#: src/conf/gnunet-win-tool.c:120
 #, c-format
 msgid "Error: can't create service: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:122 src/conf/gnunet-win-tool.c:153
+#: src/conf/gnunet-win-tool.c:123 src/conf/gnunet-win-tool.c:154
 #, fuzzy, c-format
 msgid "Unknown error.\n"
 msgstr "Verisiyo"
 
-#: src/conf/gnunet-win-tool.c:134
+#: src/conf/gnunet-win-tool.c:135
 #, fuzzy, c-format
 msgid "Service deleted.\n"
 msgstr "/Byahiswemo"
 
-#: src/conf/gnunet-win-tool.c:146
+#: src/conf/gnunet-win-tool.c:147
 #, c-format
 msgid "Error: can't access service: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:150
+#: src/conf/gnunet-win-tool.c:151
 #, c-format
 msgid "Error: can't delete service: %s\n"
 msgstr ""
+
+#: src/conf/wizard_curs.c:47 src/conf/wizard_interface.c:1075
+#: src/conf/wizard_util.c:205 src/conf/wizard_util.c:220
+#: src/conf/wizard_util.c:248 src/conf/wizard_util.c:254
+#: src/conf/wizard_util.c:411 src/conf/wizard_util.c:429
+msgid "Error"
+msgstr ""
+
+#: src/conf/wizard_curs.c:93 src/conf/wizard_curs.c:108
+#: src/conf/wizard_curs.c:161 src/conf/wizard_curs.c:196
+#: src/conf/wizard_curs.c:224 src/conf/wizard_curs.c:249
+#: src/conf/wizard_curs.c:281 src/conf/wizard_curs.c:307
+#: src/conf/wizard_curs.c:338 src/conf/wizard_curs.c:361
+#: src/conf/wizard_curs.c:389 src/conf/wizard_curs.c:411
+#: src/conf/wizard_curs.c:433 src/conf/wizard_curs.c:461
+#: src/conf/wizard_curs.c:491 src/conf/wizard_curs.c:574
+#, fuzzy
+msgid "GNUnet configuration"
+msgstr "A bushyinguro"
+
+#: src/conf/wizard_curs.c:94 src/conf/wizard_interface.c:77
+msgid ""
+"Welcome to GNUnet!\n"
+"\n"
+"This assistant will ask you a few basic questions in order to configure "
+"GNUnet.\n"
+"\n"
+"Please visit our homepage at\n"
+"\thttp://www.gnunet.org\n"
+"and join our community at\n"
+"\thttp://www.gnunet.org/drupal/\n"
+"\n"
+"Have a lot of fun,\n"
+"\n"
+"the GNUnet team"
+msgstr ""
+
+#: src/conf/wizard_curs.c:109
+msgid ""
+"Choose the network interface that connects your computer to the internet "
+"from the list below."
+msgstr ""
+
+# sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
+#: src/conf/wizard_curs.c:115 src/conf/wizard_curs.c:167
+#: src/conf/wizard_curs.c:202 src/conf/wizard_curs.c:254
+#: src/conf/wizard_curs.c:286 src/conf/wizard_curs.c:343
+#, fuzzy
+msgid "Help"
+msgstr "/Kugoboka"
+
+#: src/conf/wizard_curs.c:115 src/conf/wizard_curs.c:167
+msgid ""
+"The \"Network interface\" is the device that connects your computer to the "
+"internet. This is usually a modem, an ISDN card or a network card in case "
+"you are using DSL."
+msgstr ""
+
+#: src/conf/wizard_curs.c:161
+msgid ""
+"What is the name of the network interface that connects your computer to the "
+"Internet?"
+msgstr ""
+
+#: src/conf/wizard_curs.c:196
+msgid ""
+"What is this computer's public IP adress or hostname?\n"
+"\n"
+"If in doubt, leave this empty."
+msgstr ""
+
+#: src/conf/wizard_curs.c:202
+msgid ""
+"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
+"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
+"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
+"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
+"enter it here.\n"
+"If in doubt, leave the field empty. GNUnet will then try to determine your "
+"IP-Address."
+msgstr ""
+
+#: src/conf/wizard_curs.c:224
+msgid ""
+"Is this machine behind NAT?\n"
+"\n"
+"If you are connected to the internet through another computer doing SNAT, a "
+"router or a \"hardware firewall\" and other computers on the internet cannot "
+"connect to this computer, say \"yes\" here. Answer \"no\" on direct "
+"connections through modems, ISDN cards and DNAT (also known as \"port "
+"forwarding\")."
+msgstr ""
+
+#: src/conf/wizard_curs.c:249
+msgid "How much upstream (Bytes/s) may be used?"
+msgstr ""
+
+#: src/conf/wizard_curs.c:254
+msgid ""
+"You can limit GNUnet's ressource usage here.\n"
+"\n"
+"The \"upstream\" is the data channel through which data is *sent* to the "
+"internet. The limit is either the total maximum for this computer or how "
+"much GNUnet itself is allowed to use. You can specify that later. If you "
+"have a flatrate, you can set it to the maximum speed of your internet "
+"connection."
+msgstr ""
+
+#: src/conf/wizard_curs.c:281
+msgid "How much downstream (Bytes/s) may be used?"
+msgstr ""
+
+#: src/conf/wizard_curs.c:286
+msgid ""
+"You can limit GNUnet's ressource usage here.\n"
+"\n"
+"The \"downstream\" is the data channel through which data is *received* from "
+"the internet. The limit is either the total maximum for this computer or how "
+"much GNUnet itself is allowed to use. You can specify that later. If you "
+"have a flatrate you can set it to the maximum speed of your internet "
+"connection."
+msgstr ""
+
+#: src/conf/wizard_curs.c:307
+msgid ""
+"Share denoted bandwidth with other applications?\n"
+"\n"
+"Say \"yes\" here, if you don't want other network traffic to interfere with "
+"GNUnet's operation, but still wish to constrain GNUnet's bandwidth usage to "
+"values entered in the previous steps, or if you can't reliably measure the "
+"maximum capabilities of your connection. \"No\" can be very useful if other "
+"applications are causing a lot of traffic on your LAN.  In this case, you do "
+"not want to limit the traffic that GNUnet can inflict on your internet "
+"connection whenever your high-speed LAN gets used (e.g. by NFS)."
+msgstr ""
+
+#: src/conf/wizard_curs.c:338
+msgid "How much CPU (in %) may be used?"
+msgstr ""
+
+#: src/conf/wizard_curs.c:343
+msgid ""
+"You can limit GNUnet's ressource usage here.\n"
+"\n"
+"This is the percentage of processor time GNUnet is allowed to use."
+msgstr ""
+
+#: src/conf/wizard_curs.c:361
+msgid ""
+"Store migrated content?\n"
+"\n"
+"GNUnet is able to store data from other peers in your datastore. This is "
+"useful if an adversary has access to your inserted content and you need to "
+"deny that the content is yours. With \"content migration\" on, the content "
+"could have \"migrated\" over the internet to your node without your "
+"knowledge.\n"
+"It also helps to spread popular content over different peers to enhance "
+"availability."
+msgstr ""
+
+#: src/conf/wizard_curs.c:389
+msgid ""
+"What's the maximum datastore size in MB?\n"
+"\n"
+"The GNUnet datastore contains all data that GNUnet generates (index data, "
+"inserted and migrated content)."
+msgstr ""
+
+#: src/conf/wizard_curs.c:411
+msgid ""
+"Do you want to launch GNUnet as a system service?\n"
+"\n"
+"If you say \"yes\" here, the GNUnet background process will be automatically "
+"started when you turn on your computer. If you say \"no\" here, you have to "
+"launch GNUnet yourself each time you want to use it."
+msgstr ""
+
+#: src/conf/wizard_curs.c:434
+msgid ""
+"Define the user owning the GNUnet service.\n"
+"\n"
+"For security reasons, it is a good idea to let this setup create a new user "
+"account under which the GNUnet service is started at system startup.\n"
+"\n"
+"However, GNUnet may not be able to access files other than its own. This "
+"includes files you want to publish in GNUnet. You'll have to grant read "
+"permissions to the user specified below.\n"
+"\n"
+"Leave the fields empty to run GNUnet with system privileges.\n"
+"\n"
+"GNUnet user:"
+msgstr ""
+
+#: src/conf/wizard_curs.c:462
+msgid ""
+"Define the group owning the GNUnet service.\n"
+"\n"
+"For security reasons, it is a good idea to let this setup create a new group "
+"for the chosen user account.\n"
+"\n"
+"You can also specify a already existant group here.\n"
+"\n"
+"Only members of this group will be allowed to start and stop the the GNUnet "
+"server and have access to GNUnet server data.\n"
+"\n"
+"GNUnet group:"
+msgstr ""
+
+#: src/conf/wizard_curs.c:491
+msgid ""
+"If you are an experienced user, you may want to tweak your GNUnet "
+"installation using the enhanced configurator.\n"
+"\n"
+"Do you want to start it after saving your configuration?"
+msgstr ""
+
+#: src/conf/wizard_curs.c:568
+#, fuzzy, c-format
+msgid ""
+"Unable to save configuration file %s: %s.\n"
+"\n"
+"Try again?"
+msgstr "Gufungura Iboneza IDOSIYE"
 
 #: src/conf/gconf_interface.c:135
 #, fuzzy
@@ -538,23 +774,6 @@ msgstr ""
 msgid "GNUnet configuration assistant"
 msgstr "A bushyinguro"
 
-#: src/conf/wizard_interface.c:77 src/conf/wizard_curs.c:74
-msgid ""
-"Welcome to GNUnet!\n"
-"\n"
-"This assistant will ask you a few basic questions in order to configure "
-"GNUnet.\n"
-"\n"
-"Please visit our homepage at\n"
-"\thttp://www.gnunet.org\n"
-"and join our community at\n"
-"\thttp://www.gnunet.org/drupal/\n"
-"\n"
-"Have a lot of fun,\n"
-"\n"
-"the GNUnet team"
-msgstr ""
-
 #: src/conf/wizard_interface.c:106 src/conf/wizard_interface.c:332
 #: src/conf/wizard_interface.c:651 src/conf/wizard_interface.c:1284
 msgid "Next"
@@ -597,7 +816,7 @@ msgstr ""
 msgid "IP-Address/Hostname:"
 msgstr ""
 
-#: src/conf/wizard_interface.c:279
+#: src/conf/wizard_interface.c:273
 msgid "Computer cannot receive inbound connections (SNAT/Firewall)"
 msgstr ""
 
@@ -720,13 +939,6 @@ msgstr "Yego"
 msgid "No"
 msgstr "Oya."
 
-#: src/conf/wizard_interface.c:1075 src/conf/wizard_util.c:195
-#: src/conf/wizard_util.c:210 src/conf/wizard_util.c:238
-#: src/conf/wizard_util.c:244 src/conf/wizard_util.c:383
-#: src/conf/wizard_util.c:401
-msgid "Error"
-msgstr ""
-
 #: src/conf/wizard_interface.c:1092
 msgid "Unable to save configuration!"
 msgstr ""
@@ -763,292 +975,79 @@ msgstr ""
 msgid "Couldn't find pixmap file: %s"
 msgstr ""
 
-#: src/conf/wizard_curs.c:73 src/conf/wizard_curs.c:87
-#: src/conf/wizard_curs.c:148 src/conf/wizard_curs.c:175
-#: src/conf/wizard_curs.c:200 src/conf/wizard_curs.c:232
-#: src/conf/wizard_curs.c:257 src/conf/wizard_curs.c:288
-#: src/conf/wizard_curs.c:310 src/conf/wizard_curs.c:338
-#: src/conf/wizard_curs.c:360 src/conf/wizard_curs.c:382
-#: src/conf/wizard_curs.c:410 src/conf/wizard_curs.c:440
-#: src/conf/wizard_curs.c:475
-#, fuzzy
-msgid "GNUnet configuration"
-msgstr "A bushyinguro"
-
-#: src/conf/wizard_curs.c:88
-msgid ""
-"Choose the network interface that connects your computer to the internet "
-"from the list below."
-msgstr ""
-
-# sfx2/source\appl\newhelp.src:STR_HELP_WINDOW_TITLE.text
-#: src/conf/wizard_curs.c:94 src/conf/wizard_curs.c:154
-#: src/conf/wizard_curs.c:205 src/conf/wizard_curs.c:237
-#: src/conf/wizard_curs.c:293
-#, fuzzy
-msgid "Help"
-msgstr "/Kugoboka"
-
-#: src/conf/wizard_curs.c:94
-msgid ""
-"The \"Network interface\" is the device that connects your computer to the "
-"internet. This is usually a modem, an ISDN card or a network card in case "
-"you are using DSL."
-msgstr ""
-
-#: src/conf/wizard_curs.c:148
-msgid ""
-"What is this computer's public IP adress or hostname?\n"
-"\n"
-"If in doubt, leave this empty."
-msgstr ""
-
-#: src/conf/wizard_curs.c:154
-msgid ""
-"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
-"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
-"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
-"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
-"enter it here.\n"
-"If in doubt, leave the field empty. GNUnet will then try to determine your "
-"IP-Address."
-msgstr ""
-
-#: src/conf/wizard_curs.c:175
-msgid ""
-"Is this machine behind NAT?\n"
-"\n"
-"If you are connected to the internet through another computer doing SNAT, a "
-"router or a \"hardware firewall\" and other computers on the internet cannot "
-"connect to this computer, say \"yes\" here. Answer \"no\" on direct "
-"connections through modems, ISDN cards and DNAT (also known as \"port "
-"forwarding\")."
-msgstr ""
-
-#: src/conf/wizard_curs.c:200
-msgid "How much upstream (Bytes/s) may be used?"
-msgstr ""
-
-#: src/conf/wizard_curs.c:205
-msgid ""
-"You can limit GNUnet's ressource usage here.\n"
-"\n"
-"The \"upstream\" is the data channel through which data is *sent* to the "
-"internet. The limit is either the total maximum for this computer or how "
-"much GNUnet itself is allowed to use. You can specify that later. If you "
-"have a flatrate, you can set it to the maximum speed of your internet "
-"connection."
-msgstr ""
-
-#: src/conf/wizard_curs.c:232
-msgid "How much downstream (Bytes/s) may be used?"
-msgstr ""
-
-#: src/conf/wizard_curs.c:237
-msgid ""
-"You can limit GNUnet's ressource usage here.\n"
-"\n"
-"The \"downstream\" is the data channel through which data is *received* from "
-"the internet. The limit is either the total maximum for this computer or how "
-"much GNUnet itself is allowed to use. You can specify that later. If you "
-"have a flatrate you can set it to the maximum speed of your internet "
-"connection."
-msgstr ""
-
-#: src/conf/wizard_curs.c:257
-msgid ""
-"Share denoted bandwidth with other applications?\n"
-"\n"
-"Say \"yes\" here, if you don't want other network traffic to interfere with "
-"GNUnet's operation, but still wish to constrain GNUnet's bandwidth usage to "
-"values entered in the previous steps, or if you can't reliably measure the "
-"maximum capabilities of your connection. \"No\" can be very useful if other "
-"applications are causing a lot of traffic on your LAN.  In this case, you do "
-"not want to limit the traffic that GNUnet can inflict on your internet "
-"connection whenever your high-speed LAN gets used (e.g. by NFS)."
-msgstr ""
-
-#: src/conf/wizard_curs.c:288
-msgid "How much CPU (in %) may be used?"
-msgstr ""
-
-#: src/conf/wizard_curs.c:293
-msgid ""
-"You can limit GNUnet's ressource usage here.\n"
-"\n"
-"This is the percentage of processor time GNUnet is allowed to use."
-msgstr ""
-
-#: src/conf/wizard_curs.c:310
-msgid ""
-"Store migrated content?\n"
-"\n"
-"GNUnet is able to store data from other peers in your datastore. This is "
-"useful if an adversary has access to your inserted content and you need to "
-"deny that the content is yours. With \"content migration\" on, the content "
-"could have \"migrated\" over the internet to your node without your "
-"knowledge.\n"
-"It also helps to spread popular content over different peers to enhance "
-"availability."
-msgstr ""
-
-#: src/conf/wizard_curs.c:338
-msgid ""
-"What's the maximum datastore size in MB?\n"
-"\n"
-"The GNUnet datastore contains all data that GNUnet generates (index data, "
-"inserted and migrated content)."
-msgstr ""
-
-#: src/conf/wizard_curs.c:360
-msgid ""
-"Do you want to launch GNUnet as a system service?\n"
-"\n"
-"If you say \"yes\" here, the GNUnet background process will be automatically "
-"started when you turn on your computer. If you say \"no\" here, you have to "
-"launch GNUnet yourself each time you want to use it."
-msgstr ""
-
-#: src/conf/wizard_curs.c:383
-msgid ""
-"Define the user owning the GNUnet service.\n"
-"\n"
-"For security reasons, it is a good idea to let this setup create a new user "
-"account under which the GNUnet service is started at system startup.\n"
-"\n"
-"However, GNUnet may not be able to access files other than its own. This "
-"includes files you want to publish in GNUnet. You'll have to grant read "
-"permissions to the user specified below.\n"
-"\n"
-"Leave the fields empty to run GNUnet with system privileges.\n"
-"\n"
-"GNUnet user:"
-msgstr ""
-
-#: src/conf/wizard_curs.c:411
-msgid ""
-"Define the group owning the GNUnet service.\n"
-"\n"
-"For security reasons, it is a good idea to let this setup create a new group "
-"for the chosen user account.\n"
-"\n"
-"You can also specify a already existant group here.\n"
-"\n"
-"Only members of this group will be allowed to start and stop the the GNUnet "
-"server and have access to GNUnet server data.\n"
-"\n"
-"GNUnet group:"
-msgstr ""
-
-#: src/conf/wizard_curs.c:440
-msgid ""
-"If you are an experienced user, you may want to tweak your GNUnet "
-"installation using the enhanced configurator.\n"
-"\n"
-"Do you want to start it after saving your configuration?"
-msgstr ""
-
-#: src/conf/wizard_curs.c:476
-#, fuzzy
-msgid ""
-"Cannot save configuration.\n"
-"\n"
-"Try again?"
-msgstr "Gufungura Iboneza IDOSIYE"
-
-#: src/conf/wizard_util.c:164 src/conf/wizard_util.c:226
+#: src/conf/wizard_util.c:174 src/conf/wizard_util.c:236
 msgid "Can't open Service Control Manager"
 msgstr ""
 
-#: src/conf/wizard_util.c:170
+#: src/conf/wizard_util.c:180
 msgid "Can't create service"
 msgstr ""
 
-#: src/conf/wizard_util.c:175 src/conf/wizard_util.c:238
+#: src/conf/wizard_util.c:185 src/conf/wizard_util.c:248
 #, fuzzy
 msgid "Unknown error"
 msgstr "Verisiyo"
 
-#: src/conf/wizard_util.c:188
+#: src/conf/wizard_util.c:198
 msgid "Error changing the permissions of the GNUnet directory"
 msgstr ""
 
-#: src/conf/wizard_util.c:209
+#: src/conf/wizard_util.c:219
 msgid "Cannot write to the regisitry"
 msgstr ""
 
-#: src/conf/wizard_util.c:230
+#: src/conf/wizard_util.c:240
 msgid "Can't access the service"
 msgstr ""
 
-#: src/conf/wizard_util.c:234
+#: src/conf/wizard_util.c:244
 msgid "Can't delete the service"
 msgstr ""
 
-#: src/conf/wizard_util.c:382
+#: src/conf/wizard_util.c:410
 msgid "This version of Windows does not support multiple users."
 msgstr ""
 
-#: src/conf/wizard_util.c:386
+#: src/conf/wizard_util.c:414
 #, fuzzy
 msgid "Error creating user"
 msgstr "Ivugurura Verisiyo"
 
-#: src/conf/wizard_util.c:389
+#: src/conf/wizard_util.c:417
 msgid "Error accessing local security policy"
 msgstr ""
 
-#: src/conf/wizard_util.c:392
+#: src/conf/wizard_util.c:420
 msgid "Error granting service right to user"
 msgstr ""
 
-#: src/conf/wizard_util.c:395
+#: src/conf/wizard_util.c:423
 msgid "Unknown error while creating a new user"
 msgstr ""
 
-#: src/applications/dht/tools/dhttest2.c:51
-#: src/applications/session/sessiontest.c:49
+#: src/conf/recreate.c:61
+#, fuzzy, c-format
+msgid "Unable to save configuration files to %s.\n"
+msgstr "OYA Iboneza IDOSIYE"
+
+#: src/applications/dht/tools/dhttest2.c:50
+#: src/applications/session/sessiontest.c:48
 #: src/applications/stats/statistics.c:212
-#: src/applications/tbench/tbenchtest.c:113 src/applications/gap/gaptest.c:50
+#: src/applications/tbench/tbenchtest.c:107 src/applications/gap/gaptest.c:52
 #, fuzzy
 msgid "# of connected peers"
 msgstr "#Bya"
 
-#: src/applications/dht/tools/dhttest2.c:94
-#: src/applications/dht/tools/dhttest2.c:109
-#: src/applications/dht/tools/dhttest2.c:142
-#: src/applications/dht/tools/dhttest2.c:157
-#: src/applications/session/sessiontest.c:84
-#: src/applications/session/sessiontest.c:99
-#: src/applications/session/sessiontest.c:132
-#: src/applications/session/sessiontest.c:147
-#: src/applications/tbench/tbenchtest.c:173
-#: src/applications/tbench/tbenchtest.c:188
-#: src/applications/tbench/tbenchtest.c:221
-#: src/applications/tbench/tbenchtest.c:236 src/applications/gap/gaptest.c:276
-#: src/applications/gap/gaptest.c:291 src/applications/gap/gaptest.c:324
-#: src/applications/gap/gaptest.c:339 src/applications/fs/fsui/fsuitest.c:128
-#: src/applications/fs/fsui/searchtest.c:128
-#: src/applications/fs/fsui/fsuitest2.c:69
-#: src/applications/fs/fsui/downloadtest.c:138
-#: src/applications/fs/lib/fslibtest.c:239
-#: src/applications/fs/ecrs/searchtest.c:110
-#: src/applications/fs/ecrs/namespacetest.c:117
-#: src/applications/fs/ecrs/ecrstest.c:271
-#, fuzzy, c-format
-msgid "'%s' failed: %s\n"
-msgstr "'%s'%sByanze"
-
-#: src/applications/dht/tools/dhttest2.c:177
-#: src/applications/session/sessiontest.c:163
-#: src/applications/tbench/tbenchtest.c:252 src/applications/gap/gaptest.c:358
+#: src/applications/dht/tools/dhttest2.c:127
+#: src/applications/session/sessiontest.c:118
+#: src/applications/tbench/tbenchtest.c:200 src/applications/gap/gaptest.c:317
 #, c-format
 msgid "Waiting for gnunetd to start (%u iterations left)...\n"
 msgstr ""
 
-#: src/applications/dht/tools/dhttest2.c:189
-#: src/applications/session/sessiontest.c:178
-#: src/applications/tbench/tbenchtest.c:128 src/applications/gap/gaptest.c:370
+#: src/applications/dht/tools/dhttest2.c:139
+#: src/applications/session/sessiontest.c:133
+#: src/applications/tbench/tbenchtest.c:122 src/applications/gap/gaptest.c:329
 #, c-format
 msgid "Waiting for peers to connect (%u iterations left)...\n"
 msgstr ""
@@ -1086,10 +1085,10 @@ msgstr "Kubona Gushyira Gukuraho... a imbonerahamwe#"
 #: src/applications/fs/tools/gnunet-search.c:172
 #: src/applications/fs/tools/gnunet-search.c:193
 #: src/applications/fs/tools/gnunet-download.c:91
-#: src/server/gnunet-transport-check.c:405
-#: src/server/gnunet-transport-check.c:425
-#: src/server/gnunet-transport-check.c:439
-#: src/server/gnunet-transport-check.c:452
+#: src/server/gnunet-transport-check.c:407
+#: src/server/gnunet-transport-check.c:427
+#: src/server/gnunet-transport-check.c:441
+#: src/server/gnunet-transport-check.c:454
 #, fuzzy, c-format
 msgid "You must pass a number to the '%s' option.\n"
 msgstr "a Umubare Kuri i Ihitamo"
@@ -1111,7 +1110,7 @@ msgstr "a Umubare Kuri i Ihitamo"
 #: src/applications/fs/tools/gnunet-unindex.c:139
 #: src/applications/template/gnunet-template.c:87
 #: src/server/gnunet-update.c:129 src/server/startup.c:512
-#: src/server/gnunet-transport-check.c:510 src/server/gnunet-peer-info.c:107
+#: src/server/gnunet-transport-check.c:512 src/server/gnunet-peer-info.c:107
 #, fuzzy, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr "Ifashayobora Kuri Kubona a Urutonde Bya Amahitamo"
@@ -1389,7 +1388,7 @@ msgstr "Gutangira Umukiriya"
 #: src/applications/chat/gnunet-chat.c:149
 #: src/applications/tbench/gnunet-tbench.c:213
 #: src/applications/tracekit/gnunet-tracekit.c:363
-#: src/applications/fs/tools/gnunet-delete.c:142 src/util/port.c:72
+#: src/applications/fs/tools/gnunet-delete.c:142 src/util/port.c:81
 #, fuzzy
 msgid "Could not connect to gnunetd.\n"
 msgstr "OYA Kwihuza Kuri"
@@ -1424,52 +1423,52 @@ msgstr "Ubutumwa BYAKIRIWE Sibyo Igihe KURI"
 msgid "HELO advertisement for protocol %d received.\n"
 msgstr "kugirango Porotokole BYAKIRIWE"
 
-#: src/applications/advertising/advertising.c:297
+#: src/applications/advertising/advertising.c:293
 #, fuzzy
 msgid "Could not send HELOs+PING, ping buffer full.\n"
 msgstr "OYA Kohereza"
 
-#: src/applications/advertising/advertising.c:451
+#: src/applications/advertising/advertising.c:447
 #, fuzzy, c-format
 msgid "Advertising my transport %d to selected peers.\n"
 msgstr "Kuri Byahiswemo"
 
-#: src/applications/advertising/advertising.c:458
+#: src/applications/advertising/advertising.c:454
 #, fuzzy
 msgid ""
 "Announcing ourselves pointless: no other peers are known to us so far.\n"
 msgstr "Oya Ikindi Kuri RW"
 
-#: src/applications/advertising/advertising.c:547
+#: src/applications/advertising/advertising.c:543
 #, fuzzy, c-format
 msgid "Removing HELO from peer '%s' (expired %ds ago).\n"
 msgstr "Bivuye Byarengeje igihe"
 
-#: src/applications/advertising/advertising.c:705
+#: src/applications/advertising/advertising.c:701
 #, fuzzy
 msgid "# Peer advertisements received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/advertising/advertising.c:706
+#: src/applications/advertising/advertising.c:702
 msgid "# Self advertisments transmitted"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:707
+#: src/applications/advertising/advertising.c:703
 msgid "# Foreign advertisements forwarded"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:711
+#: src/applications/advertising/advertising.c:707
 #: src/applications/session/connect.c:674
 #, c-format
 msgid "'%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:730
+#: src/applications/advertising/advertising.c:726
 #, fuzzy
 msgid "Network advertisements disabled by configuration!\n"
 msgstr "Yahagaritswe ku Iboneza"
 
-#: src/applications/topology_default/topology.c:307
+#: src/applications/topology_default/topology.c:308
 #, c-format
 msgid "Version mismatch ('%s' vs. '%s'), run gnunet-update!\n"
 msgstr ""
@@ -1492,7 +1491,7 @@ msgstr "kugirango"
 msgid "Received PING not destined for us!\n"
 msgstr "OYA kugirango RW"
 
-#: src/applications/pingpong/pingpong.c:396
+#: src/applications/pingpong/pingpong.c:394
 #, c-format
 msgid "'%s' registering handlers %d %d (plaintext and ciphertext)\n"
 msgstr ""
@@ -1530,19 +1529,19 @@ msgstr "'%s'Byanze ku Na: Ikosa"
 msgid "SQL Database corrupt, ignoring result.\n"
 msgstr "Ububikoshingiro Kuri"
 
-#: src/applications/sqstore_sqlite/sqlite.c:405
-#: src/applications/sqstore_sqlite/sqlite.c:599
+#: src/applications/sqstore_sqlite/sqlite.c:406
+#: src/applications/sqstore_sqlite/sqlite.c:601
 msgid "Invalid data in database.  Please verify integrity!\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:913
+#: src/applications/sqstore_sqlite/sqlite.c:915
 #, fuzzy, c-format
 msgid ""
 "Configuration file must specify directory for storing FS data in section '%"
 "s' under '%s'.\n"
 msgstr "IDOSIYE bushyinguro kugirango Ibyatanzwe in Icyiciro"
 
-#: src/applications/sqstore_sqlite/sqlite.c:927
+#: src/applications/sqstore_sqlite/sqlite.c:929
 #, fuzzy
 msgid "Unable to initialize SQLite.\n"
 msgstr "Kuri gutangiza"
@@ -2187,29 +2186,29 @@ msgid ""
 "Did not receive the message from gnunetd. Is gnunetd running?\n"
 msgstr "OYA Akira i Ubutumwa Bivuye"
 
-#: src/applications/tbench/tbenchtest.c:63
+#: src/applications/tbench/tbenchtest.c:57
 #, c-format
 msgid "Using %u messages of size %u for %u times.\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:90
+#: src/applications/tbench/tbenchtest.c:84
 #, c-format
 msgid "Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:95
+#: src/applications/tbench/tbenchtest.c:89
 #, c-format
 msgid "Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:101
+#: src/applications/tbench/tbenchtest.c:95
 #, fuzzy, c-format
 msgid ""
 "\n"
 "Failed to receive reply from gnunetd.\n"
 msgstr "Kuri Akira Kuri Ubutumwa Bivuye"
 
-#: src/applications/tbench/tbenchtest.c:264
+#: src/applications/tbench/tbenchtest.c:212
 #, c-format
 msgid "Running benchmark...\n"
 msgstr ""
@@ -2309,28 +2308,28 @@ msgstr "#BYAKIRIWE"
 msgid "# p2p trace replies sent"
 msgstr "#Yoherejwe:"
 
-#: src/applications/gap/gap.c:1863
+#: src/applications/gap/gap.c:1864
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1874 src/applications/fs/module/fs.c:669
+#: src/applications/gap/gap.c:1875 src/applications/fs/module/fs.c:669
 #, fuzzy
 msgid "Failed to get traffic stats.\n"
 msgstr "Kuri Ikibazo# Ibyerekeye"
 
-#: src/applications/gap/gap.c:1880 src/applications/gap/gap.c:1885
-#: src/applications/gap/gap.c:1891
+#: src/applications/gap/gap.c:1881 src/applications/gap/gap.c:1886
+#: src/applications/gap/gap.c:1892
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2102
+#: src/applications/gap/gap.c:2103
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2133
+#: src/applications/gap/gap.c:2134
 #, c-format
 msgid "'%s' registering handlers %d %d\n"
 msgstr ""
@@ -2431,7 +2430,7 @@ msgid "Invalid argument: '%s'\n"
 msgstr "Inkoresha siyo"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:201
-#: src/server/gnunet-transport-check.c:521 src/server/gnunet-peer-info.c:118
+#: src/server/gnunet-transport-check.c:523 src/server/gnunet-peer-info.c:118
 #, fuzzy
 msgid "Invalid arguments. Exiting.\n"
 msgstr "ingingo"
@@ -2990,6 +2989,9 @@ msgstr "Amagambo fatizo"
 
 #: src/applications/fs/fsui/helper.c:116 src/applications/fs/fsui/helper.c:121
 #: src/applications/fs/fsui/helper.c:124 src/applications/fs/fsui/helper.c:128
+#: src/applications/fs/fsui/fsuitest.c:167
+#: src/applications/fs/fsui/downloadtest.c:183
+#: src/applications/fs/fsui/searchtest.c:143
 msgid "AND"
 msgstr ""
 
@@ -3001,7 +3003,11 @@ msgstr ""
 msgid "Cannot upload directory without using recursion.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/fsui.c:542
+#: src/applications/fs/fsui/fsui.c:146
+msgid "FSUI persistence: error restoring download\n"
+msgstr ""
+
+#: src/applications/fs/fsui/fsui.c:581
 #, c-format
 msgid "FSUI state file '%s' had syntax error at offset %u.\n"
 msgstr ""
@@ -3229,7 +3235,7 @@ msgstr "Nyuma Verisiyo Guhindura>>"
 msgid "Option '%s' makes no sense without option '%s'."
 msgstr "Oya Ihitamo"
 
-#: src/server/gnunet-update.c:139 src/server/gnunet-transport-check.c:516
+#: src/server/gnunet-update.c:139 src/server/gnunet-transport-check.c:518
 #: src/server/gnunet-peer-info.c:113
 #, fuzzy, c-format
 msgid "Invalid arguments: "
@@ -3444,78 +3450,78 @@ msgid ""
 "'%s' transport OK.  It took %ums to transmit %d messages of %d bytes each.\n"
 msgstr "'%s'Kuri Ubutumwa Bya Bayite"
 
-#: src/server/gnunet-transport-check.c:219
+#: src/server/gnunet-transport-check.c:220
 #, c-format
 msgid ""
 "\n"
 "Contacting '%s'."
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:230
+#: src/server/gnunet-transport-check.c:231
 #, c-format
 msgid " Transport %d not available\n"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:252
+#: src/server/gnunet-transport-check.c:254
 #, fuzzy, c-format
 msgid " Connection failed\n"
 msgstr "OYA Iyinjizamo Byanze"
 
-#: src/server/gnunet-transport-check.c:258
+#: src/server/gnunet-transport-check.c:260
 #, c-format
 msgid " Connection failed (bug?)\n"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:319
+#: src/server/gnunet-transport-check.c:321
 #, fuzzy, c-format
 msgid "No reply received within %llums.\n"
 msgstr "Subiza BYAKIRIWE muri"
 
-#: src/server/gnunet-transport-check.c:484
+#: src/server/gnunet-transport-check.c:486
 #, fuzzy
 msgid "ping peers from HOSTLISTURL that match transports"
 msgstr "Bivuye BIHUYE"
 
-#: src/server/gnunet-transport-check.c:486
+#: src/server/gnunet-transport-check.c:488
 #, fuzzy
 msgid "send COUNT messages"
 msgstr "Kohereza Ubutumwa"
 
-#: src/server/gnunet-transport-check.c:488
+#: src/server/gnunet-transport-check.c:490
 #, fuzzy
 msgid "send messages with SIZE bytes payload"
 msgstr "Kohereza Ubutumwa Na: Bayite"
 
-#: src/server/gnunet-transport-check.c:490
+#: src/server/gnunet-transport-check.c:492
 msgid "specifies which TRANSPORT should be tested"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:492
+#: src/server/gnunet-transport-check.c:494
 #, fuzzy
 msgid "specifies after how many MS to time-out"
 msgstr "Nyuma Kuri Igihe Inyuma"
 
-#: src/server/gnunet-transport-check.c:498
+#: src/server/gnunet-transport-check.c:500
 #, fuzzy
 msgid "Tool to test if GNUnet transport services are operational."
 msgstr "Kuri Igerageza NIBA"
 
-#: src/server/gnunet-transport-check.c:546
+#: src/server/gnunet-transport-check.c:548
 #, fuzzy
 msgid "You must specify a non-empty set of transports to test!\n"
 msgstr "a ubusa Gushyiraho Bya Kuri Igerageza"
 
-#: src/server/gnunet-transport-check.c:551
+#: src/server/gnunet-transport-check.c:553
 #, fuzzy, c-format
 msgid "Testing transport(s) %s\n"
 msgstr "S"
 
-#: src/server/gnunet-transport-check.c:554
+#: src/server/gnunet-transport-check.c:556
 #, fuzzy, c-format
 msgid "Available transport(s): %s\n"
 msgstr "S"
 
-#: src/server/gnunet-transport-check.c:598
+#: src/server/gnunet-transport-check.c:600
 #, fuzzy, c-format
 msgid ""
 "%d out of %d peers contacted successfully (%d times transport unavailable).\n"
@@ -3634,7 +3640,7 @@ msgstr "%s:Ihitamo ni"
 msgid "%s: option `-W %s' does not allow an argument\n"
 msgstr "%s:Ihitamo OYA Kwemerera"
 
-#: src/util/port.c:37
+#: src/util/port.c:45
 #, fuzzy, c-format
 msgid ""
 "Cannot determine port of gnunetd server. Define in configuration file in "
@@ -3741,7 +3747,7 @@ msgstr "Kuri ku"
 msgid "Permission denied for '%s' at %s:%d.\n"
 msgstr "kugirango ku"
 
-#: src/util/semaphore.c:574
+#: src/util/semaphore.c:577
 #, c-format
 msgid "Can't create semaphore: %i"
 msgstr ""
@@ -3890,17 +3896,17 @@ msgstr ""
 msgid "EVERYTHING"
 msgstr ""
 
-#: src/util/logging.c:248
+#: src/util/logging.c:249
 #, fuzzy
 msgid "LOGLEVEL not specified, that is not ok.\n"
 msgstr "OYA ni OYA YEGO"
 
-#: src/util/logging.c:259
+#: src/util/logging.c:260
 #, c-format
 msgid "Invalid LOGLEVEL '%s' specified.\n"
 msgstr ""
 
-#: src/util/logging.c:364 src/util/logging.c:370
+#: src/util/logging.c:365 src/util/logging.c:371
 #, fuzzy, c-format
 msgid "Failure at %s:%d.\n"
 msgstr "ku"
@@ -3989,6 +3995,11 @@ msgid ""
 "configuration file.\n"
 msgstr "OYA Gushaka kugirango iyi Ubuturo i in i Iboneza IDOSIYE"
 
+#: src/util/daemon.c:142
+#, fuzzy, c-format
+msgid "Attempted path to '%s' was '%s'.\n"
+msgstr "Inzira Kuri"
+
 #: src/include/gnunet_util.h:147
 #, fuzzy
 msgid "print this help"
@@ -4028,6 +4039,10 @@ msgstr "Byanze ku"
 #, fuzzy, c-format
 msgid "'%s' failed on file '%s' at %s:%d with error: %s\n"
 msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
+
+#, fuzzy
+#~ msgid "'%s' failed: %s\n"
+#~ msgstr "'%s'%sByanze"
 
 #, fuzzy
 #~ msgid "Failure at at %s:%d.\n"
@@ -4413,10 +4428,6 @@ msgstr "'%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #, fuzzy
 #~ msgid "gnunetd is NOT running.\n"
 #~ msgstr "ni"
-
-#, fuzzy
-#~ msgid "Attempted path to '%s' was '%s'.\n"
-#~ msgstr "Inzira Kuri"
 
 #, fuzzy
 #~ msgid "Starting gnunetd failed, error code: %d"

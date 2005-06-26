@@ -1,7 +1,3 @@
-0.7.0pre3:
-- gnunet-setup: [Nils]
-  * gconfig: fix focus changes
-
 0.7.0 [6'05?] (aka "compatibility? what's that?"):
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
@@ -12,6 +8,8 @@
     * Uninstall
       * Remove account
       * Ask to remove lib/
+- gnunet-setup: [Nils]
+  * gconfig: fix focus changes
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
