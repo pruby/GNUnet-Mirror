@@ -56,6 +56,7 @@ libgnunetutil_la_SOURCES = \
  checksum.c \
  configuration.c \
  cron.c \
+ daemon.c \
  dso.c \
  getopt.c \
  generate_gnunetd_conf.c \

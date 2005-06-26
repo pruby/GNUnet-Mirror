@@ -2335,6 +2335,73 @@ NTSTATUS _SetPrivilegeOnAccount(LSA_HANDLE PolicyHandle, PSID AccountSid,
 int CreateServiceAccount(char *pszName, char *pszDesc);
 #endif
 
+
+
+/** 
+ * Checks if gnunetd is running
+ * 
+ * Uses CS_PROTO_CLIENT_COUNT query to determine if gnunetd is
+ * running.
+ *
+ * @return OK if gnunetd is running, SYSERR if not
+ */
+int checkGNUnetDaemonRunning(void);
+
+/**
+ * Start gnunetd process
+ * 
+ * @param daemonize YES if gnunetd should be daemonized
+ * @return pid_t of gnunetd if NOT daemonized, 0 if
+ *  daemonized sucessfully, -1 on error
+ */
+int startGNUnetDaemon(int daemonize);
+
+
+/** 
+ * Stop gnunetd
+ *
+ * Note that returning an error does NOT mean that
+ * gnunetd will continue to run (it may have been
+ * shutdown by something else in the meantime or
+ * crashed).  Call checkDaemonRunning() frequently
+ * to check the status of gnunetd.
+ *
+ * Furthermore, note that this WILL potentially kill
+ * gnunetd processes on remote machines that cannot
+ * be restarted with startGNUnetDaemon!
+ *
+ * This function does NOT need the PID and will also
+ * kill daemonized gnunetd's.
+ *
+ * @return OK successfully stopped, SYSERR: error
+ */
+int stopGNUnetDaemon(void);
+
+
+/**
+ * Wait until the gnunet daemon is
+ * running.
+ * 
+ * @param timeout how long to wait at most
+ * @return OK if gnunetd is now running
+ */
+int waitForGNUnetDaemonRunning(cron_t timeout);
+
+
+/**
+ * Wait until the gnunet daemon (or any other CHILD process for that
+ * matter) with the given PID has terminated.  Assumes that
+ * the daemon was started with startGNUnetDaemon in no-daemonize mode.
+ * On arbitrary PIDs, this function may fail unexpectedly.
+ * 
+ * @return YES if gnunetd shutdown with
+ *  return value 0, SYSERR if waitpid
+ *  failed, NO if gnunetd shutdown with
+ *  some error 
+ */
+int waitForGNUnetDaemonTermination(int pid);
+
+
 /* ifndef GNUNET_UTIL_H */
 #endif
 /* end of gnunet_util.h */

@@ -25,6 +25,11 @@ GNUNET_HOME	= ~/.gnunet
 # is any problems.
 LOGLEVEL        = WARNING
 
+# For clients that want to fork a gnunetd process, which config
+# file should be used? (option -c will not be used if this option
+# is not set, this is the default).
+# EXAMPLE: GNUNETD-CONFIG = "~/.gnunet/gnunetd.conf"
+
 # Where to write the messages? Leave the entry unspecified (as
 # default) to make the clients print their messages to stderr.
 # Default is unspecified (stderr).
