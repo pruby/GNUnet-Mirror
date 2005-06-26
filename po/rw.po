@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-06-26 18:43+0200\n"
+"POT-Creation-Date: 2005-06-26 18:59+0200\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -3268,32 +3268,32 @@ msgstr "Kuri Kuvugurura Ibyatanzwe kugirango Modire"
 msgid "Updated data for %d applications.\n"
 msgstr "Ibyatanzwe kugirango Porogaramu"
 
-#: src/server/connection.c:973
+#: src/server/connection.c:974
 #, fuzzy, c-format
 msgid "'%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "'%s'Byahiswemo Inyuma Bya Ubutumwa"
 
-#: src/server/connection.c:981
+#: src/server/connection.c:982
 #, fuzzy, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Birambuye Uburebure By'ibanze"
 
-#: src/server/connection.c:1902
+#: src/server/connection.c:1903
 #, fuzzy, c-format
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr "Bivuye Sibyo Imiterere"
 
-#: src/server/connection.c:1976
+#: src/server/connection.c:1977
 #, fuzzy, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Umubare Bya"
 
-#: src/server/connection.c:1991
+#: src/server/connection.c:1992
 #, fuzzy
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "BYAKIRIWE Birenzeho UMUNSI ki/ bishaje"
 
-#: src/server/connection.c:2121
+#: src/server/connection.c:2122
 #, fuzzy
 msgid "Session confirmed, but cannot connect! (bug?)"
 msgstr "Kwihuza"

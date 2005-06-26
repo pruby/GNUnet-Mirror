@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-06-26 18:43+0200\n"
+"POT-Creation-Date: 2005-06-26 18:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2880,31 +2880,31 @@ msgstr ""
 msgid "Updated data for %d applications.\n"
 msgstr ""
 
-#: src/server/connection.c:973
+#: src/server/connection.c:974
 #, c-format
 msgid "'%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr ""
 
-#: src/server/connection.c:981
+#: src/server/connection.c:982
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr ""
 
-#: src/server/connection.c:1902
+#: src/server/connection.c:1903
 #, c-format
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr ""
 
-#: src/server/connection.c:1976
+#: src/server/connection.c:1977
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:1991
+#: src/server/connection.c:1992
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:2121
+#: src/server/connection.c:2122
 msgid "Session confirmed, but cannot connect! (bug?)"
 msgstr ""
 

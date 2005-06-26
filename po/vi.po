@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-06-26 18:43+0200\n"
+"POT-Creation-Date: 2005-06-26 18:59+0200\n"
 "PO-Revision-Date: 2005-06-12 15:17+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -3018,31 +3018,31 @@ msgstr "Cập nhật dữ liệu cho môđun '%s' không thành công\n"
 msgid "Updated data for %d applications.\n"
 msgstr "Cập nhật dữ liệu cho %d ứng dụng.\n"
 
-#: src/server/connection.c:973
+#: src/server/connection.c:974
 #, c-format
 msgid "'%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "'%s' đã chọn %d vượt quá %d thông báo (MTU: %d).\n"
 
-#: src/server/connection.c:981
+#: src/server/connection.c:982
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Chi tiết về thông báo: %u: dài %d, ưu tiên: %d\n"
 
-#: src/server/connection.c:1902
+#: src/server/connection.c:1903
 #, c-format
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr "Bỏ đi thông báo từ '%s': định dạng sai.\n"
 
-#: src/server/connection.c:1976
+#: src/server/connection.c:1977
 #, fuzzy, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Số của chuỗi sai %u <= %u, đang bỏ đi phần còn lại của gói.\n"
 
-#: src/server/connection.c:1991
+#: src/server/connection.c:1992
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "Thông báo nhận được cũ hơn một ngày. Đã loại bỏ.\n"
 
-#: src/server/connection.c:2121
+#: src/server/connection.c:2122
 msgid "Session confirmed, but cannot connect! (bug?)"
 msgstr "Buổi làm việc đã xác nhận, nhưng không kết nối được! (lỗi bug?)"
 

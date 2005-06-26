@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-06-26 18:43+0200\n"
+"POT-Creation-Date: 2005-06-26 18:59+0200\n"
 "PO-Revision-Date: 2005-05-11 21:35+0200\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -3175,32 +3175,32 @@ msgstr "Fehler beim Aktualisieren der Daten des Moduls '%s'\n"
 msgid "Updated data for %d applications.\n"
 msgstr "Daten für %d Anwendungen wurden aktualisiert.\n"
 
-#: src/server/connection.c:973
+#: src/server/connection.c:974
 #, c-format
 msgid "'%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "'%s' wählte %d von %d Nachrichten aus (MTU: %d).\n"
 
-#: src/server/connection.c:981
+#: src/server/connection.c:982
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Nachrichten Details: %u: Länge %d, Priorität: %d\n"
 
-#: src/server/connection.c:1902
+#: src/server/connection.c:1903
 #, c-format
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr "Nachricht von '%s' verworfen: ungültiges Format.\n"
 
-#: src/server/connection.c:1976
+#: src/server/connection.c:1977
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Ungültige Sequenznummer %u <= %u, Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:1991
+#: src/server/connection.c:1992
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 "Empfangene Nachricht ist mehr als ein Tag alt. Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:2121
+#: src/server/connection.c:2122
 msgid "Session confirmed, but cannot connect! (bug?)"
 msgstr ""
 "Sitzung ist bestätigt, es kann jedoch keine Verbindung hergestellt werden! "

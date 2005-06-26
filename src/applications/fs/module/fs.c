@@ -961,8 +961,8 @@ static int uniqueReplyIdentifier(const DataContainer * content,
     return NO;
 }
 
-static void replyHashFunction(const DataContainer * content,
-			      HashCode512 * id) {
+static int replyHashFunction(const DataContainer * content,
+	   	             HashCode512 * id) {
   const GapWrapper * gw;
   unsigned int size;
 
@@ -970,12 +970,13 @@ static void replyHashFunction(const DataContainer * content,
   if (size < sizeof(GapWrapper)) {
     BREAK();
     memset(id, 0, sizeof(HashCode512));
-    return;
+    return SYSERR;
   }
   gw = (const GapWrapper*) content;
   hash(&gw[1],
        size - sizeof(GapWrapper),
        id);
+  return OK;
 }
 
 
@@ -1024,7 +1025,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   initQueryManager(capi);
   gap->init(&dsGap,
 	    &uniqueReplyIdentifier,
-	    &replyHashFunction);
+	    (ReplyHashFunction) &replyHashFunction);
 
   if (dht != NULL) {
     dsDht.closure = NULL;
