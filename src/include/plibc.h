@@ -67,6 +67,14 @@ extern "C" {
 #define int64_t long long
 #define int32_t long
 
+#ifndef pid_t
+	#define pid_t int
+#endif
+
+#ifndef WEXITSTATUS
+	#define WEXITSTATUS(status) (((status) & 0xff00) >> 8)
+#endif
+
 /* Thanks to the Cygwin project */
 #define ENOCSI 43	/* No CSI structure available */
 #define EL2HLT 44	/* Level 2 halted */
@@ -356,6 +364,7 @@ int _win_vfscanf(FILE *stream, const char *format, va_list arg_ptr);
 int _win_vscanf(const char *format, va_list arg_ptr);
 int _win_scanf(const char *format, ...);
 int _win_fscanf(FILE *stream, const char *format, ...);
+pid_t _win_waitpid(pid_t pid, int *stat_loc, int options);
 int _win_bind(SOCKET s, const struct sockaddr *name, int namelen);
 int _win_connect(SOCKET s,const struct sockaddr *name, int namelen);
 int _win_getpeername(SOCKET s, struct sockaddr *name,
@@ -439,6 +448,7 @@ size_t strnlen (const char *str, size_t maxlen);
  #define VSCANF(f, a) vscanf(f, a)
  #define SCANF(f, ...) scanf(f, __VA_ARGS__)
  #define FSCANF(s, f, ...) fscanf(s, f, __VA_ARGS__)
+ #define WAITPID(p, s, o) waitpid(p, s, o)
  #define ACCEPT(s, a, l) accept(s, a, l)
  #define BIND(s, n, l) bind(s, n, l)
  #define CONNECT(s, n, l) connect(s, n, l)
@@ -503,6 +513,7 @@ size_t strnlen (const char *str, size_t maxlen);
  #define VSCANF(f, a) _win_vscanf(f, a)
  #define SCANF(f, ...) _win_scanf(f, __VA_ARGS__)
  #define FSCANF(s, f, ...) _win_fscanf(s, f, __VA_ARGS__)
+ #define WAITPID(p, s, o) _win_waitpid(p, s, o)
  #define ACCEPT(s, a, l) _win_accept(s, a, l)
  #define BIND(s, n, l) _win_bind(s, n, l)
  #define CONNECT(s, n, l) _win_connect(s, n, l)

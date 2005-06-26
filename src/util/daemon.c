@@ -189,20 +189,38 @@ int startGNUnetDaemon(int daemonize) {
   return launchWithExec(daemonize);
 #elif MINGW
   char szCall[_MAX_PATH + 1], szWd[_MAX_PATH + 1], szCWd[_MAX_PATH + 1];
-  char *args[1];
+  char *args[1], *cp;
+  int pid;
+  int idx = 0;
 
   plibc_conv_to_win_path("/bin/gnunetd.exe", szCall);
   plibc_conv_to_win_path("/bin", szWd);
   _getcwd(szCWd, _MAX_PATH);
 
   chdir(szWd);
-  args[0] = NULL;
-  spawnvp(_P_NOWAIT, szCall, (const char *const *) args);
+  
+  if (daemonize == NO) {
+	  char *cp;
+
+  	args[0] = "-d";
+ 		idx = 1;
+ 
+    cp = getConfigurationString("GNUNET",
+				"GNUNETD-CONFIG");
+		if (cp) {
+			args[1] = "-c";
+			args[2] = cp;
+			idx=3;
+		}		
+  }
+  
+  args[idx] = NULL;
+  pid = spawnvp(_P_NOWAIT, szCall, (const char *const *) args);
   chdir(szCWd);
   
-  return 0; /* FIXME NILS: return PID if NO == daemonize, also
-	       pass option -d in that case.  And what about
-	       -c CONFIG? */
+  FREENONNULL(cp);
+  
+  return (daemonize == NO) ? pid : 0;
 #else
   /* any system out there that does not support THIS!? */
   system("gnunetd"); /* we may not have nice,
@@ -289,7 +307,7 @@ int waitForGNUnetDaemonTermination(int pid) {
   int status;
 
   p = pid;
-  if (p != waitpid(p, &status, 0)) {
+  if (p != WAITPID(p, &status, 0)) {
     LOG_STRERROR(LOG_ERROR, "waitpid");
     return SYSERR;
   }
