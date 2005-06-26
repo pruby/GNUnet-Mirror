@@ -105,8 +105,8 @@ int main(int argc, char * argv[]){
   pid_t daemon;
   int status;
   int ok;
-  struct ECRS_URI * uri;
-  char * fn;
+  struct ECRS_URI * uri = NULL;
+  char * fn = NULL;
   char * keywords[] = { 
     "search_foo",
     "search_bar",
@@ -198,10 +198,14 @@ int main(int argc, char * argv[]){
 
   /* END OF TEST CODE */
  FAILURE:
+  if (uri != NULL)
+    ECRS_freeUri(uri);
   if (ctx != NULL)
     FSUI_stop(ctx);
-  UNLINK(fn);
-  FREE(fn);
+  if (fn != NULL) {
+    UNLINK(fn);
+    FREE(fn);
+  }
   fn = makeName(43);
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   UNLINK(fn);

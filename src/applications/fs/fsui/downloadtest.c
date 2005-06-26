@@ -203,8 +203,10 @@ int main(int argc, char * argv[]){
  FAILURE:
   if (ctx != NULL)
     FSUI_stop(ctx);
-  UNLINK(fn);
-  FREE(fn);
+  if (fn != NULL) {
+    UNLINK(fn);
+    FREE(fn);
+  }
   fn = makeName(43);
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   UNLINK(fn);
