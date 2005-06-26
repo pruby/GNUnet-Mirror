@@ -20,13 +20,13 @@ SUBDIRS	= \
  fragmentation \
  getoption \
  fs \
+ stats \
  gap \
  identity \
  pingpong \
  session \
  $(MYSQL_DIR) \
  $(SQLITE_DIR) \
- stats \
  tbench \
  template \
  $(TESTBED_DIR) \
