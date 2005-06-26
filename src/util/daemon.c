@@ -98,7 +98,7 @@ static pid_t launchWithExec(int daemonize) {
 	i--;
       if ( i != -1 ) {
 	cp[i+1] = '\0';
-	path = MALLOC(i+1+strlen("gnunetd"));
+	path = MALLOC(i+2+strlen("gnunetd"));
 	strcpy(path, cp);
 	strcat(path, "gnunetd");
 	if (ACCESS(path, X_OK) == 0) {
