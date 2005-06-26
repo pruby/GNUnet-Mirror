@@ -75,7 +75,7 @@ int main(int argc, char * argv[]){
   ok = YES;
   initUtil(argc, argv, &parseCommandLine);
   startCron();
-  gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
+  gnunet_util_sleep(30 * cronSECONDS); /* give gnunetd time to start */
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start("fsuitest2",

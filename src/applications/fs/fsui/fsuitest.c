@@ -108,10 +108,11 @@ int main(int argc, char * argv[]){
   struct ECRS_URI * uri;
   char * filename = NULL; 
   char * keywords[] = { 
-    "foo",
-    "bar",
+    "fsui_foo",
+    "fsui_bar",
     NULL,
   };
+  char keyword[40];
   int prog;
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri;
@@ -135,7 +136,7 @@ int main(int argc, char * argv[]){
   if (OK != initUtil(argc, argv, &parseCommandLine))
     return -1;
   startCron();
-  gnunet_util_sleep(5 * cronSECONDS); /* give gnunetd time to start */
+  gnunet_util_sleep(30 * cronSECONDS); /* give gnunetd time to start */
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start("fsuitest",
@@ -168,7 +169,13 @@ int main(int argc, char * argv[]){
     
     gnunet_util_sleep(50 * cronMILLIS);
   }
-  uri = FSUI_parseCharKeywordURI("foo AND bar");
+  SNPRINTF(keyword,
+	   40,
+	   "%s %s %s",
+	   keywords[0],
+	   _("AND"),
+	   keywords[1]);
+  uri = FSUI_parseCharKeywordURI(keyword);
   CHECK(OK == FSUI_startSearch(ctx,
 			       0,
 			       uri));
