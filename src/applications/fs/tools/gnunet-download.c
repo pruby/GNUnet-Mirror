@@ -75,7 +75,7 @@ static int parseOptions(int argc,
     };
     c = GNgetopt_long(argc,
 		      argv,
-		      "a:cdhH:L:o:RvV",
+		      "a:c:dhH:L:o:RvV",
 		      long_options,
 		      &option_index);
     if (c == -1)
