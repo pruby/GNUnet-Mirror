@@ -36,7 +36,7 @@ LOGLEVEL        = WARNING
 ###############################################
 [NETWORK]
 # Port to use to talk to gnunetd, default is 2087
-PORT = 2087
+CLIENT-PORT = 2087
 
 # On which machine runs gnunetd (for clients) This is equivalent to
 # the -H option.  Default is localhost.
