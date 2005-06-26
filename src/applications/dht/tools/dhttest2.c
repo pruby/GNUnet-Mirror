@@ -96,12 +96,12 @@ int main(int argc, char ** argv) {
   system("cp peer1/data/hosts/* peer2/data/hosts/");
   system("cp peer2/data/hosts/* peer1/data/hosts/");
   if (daemon1 != -1) {
-    if (0 != kill(daemon1, SIGTERM))
+    if (! termProcess(daemon1))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
-    if (0 != kill(daemon2, SIGTERM))
+    if (! termProcess(daemon2))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
   }
@@ -230,12 +230,12 @@ int main(int argc, char ** argv) {
  FAILURE:
   stopCron();
   if (daemon1 != -1) {
-    if (0 != kill(daemon1, SIGTERM))
+    if (! termProcess(daemon1))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
-    if (0 != kill(daemon2, SIGTERM))
+    if (! termProcess(daemon2))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
   } 
