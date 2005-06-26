@@ -28,7 +28,9 @@
 #include "gnunet_fs_lib.h"
 #include "gnunet_protocols.h"
 #include "ecrs_core.h"
-#include <sys/wait.h>
+#ifndef MINGW
+	#include <sys/wait.h>
+#endif
 
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 
