@@ -493,6 +493,7 @@ static BufferEntry * initBufferEntry() {
   BufferEntry * be;
 
   be = (BufferEntry*) MALLOC(sizeof(BufferEntry));
+  memset(be, 0, sizeof(BufferEntry));
   be->isAlive
     = 0;
   be->status
@@ -1391,13 +1392,13 @@ static BufferEntry * addHost(const PeerIdentity * hostId,
       else
 	prev->overflowChain = root;
     }
-    memcpy(&root->session.sender,
-	   hostId,
-	   sizeof(PeerIdentity));	
+    root->session.sender = *hostId;
   }
   if ( (root->status == STAT_DOWN) &&
-       (establishSession == YES) )
+       (establishSession == YES) ) {
+    root->lastSequenceNumberReceived = 0;
     session->tryConnect(hostId);
+  }
   return root;
 }
 
