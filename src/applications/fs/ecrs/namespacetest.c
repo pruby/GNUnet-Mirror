@@ -111,6 +111,7 @@ int main(int argc, char * argv[]) {
     return -1;
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
+  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
   gnunet_util_sleep(5 * cronSECONDS);
   
   failureCount += testNamespace();

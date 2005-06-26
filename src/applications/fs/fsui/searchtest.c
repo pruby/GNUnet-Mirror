@@ -105,7 +105,6 @@ static void eventCallback(void * cls,
 
 int main(int argc, char * argv[]){
   pid_t daemon;
-  int status;
   int ok;
   struct ECRS_URI * uri = NULL;
   char * fn = NULL;

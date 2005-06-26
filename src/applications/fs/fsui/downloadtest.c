@@ -81,11 +81,17 @@ static void eventCallback(void * cls,
   case FSUI_search_result:
     printf("Received search result\n");
     break;
+  case FSUI_upload_progress:
+    printf("Upload is progressing...\n");
+    break;
   case FSUI_upload_complete:
     printf("Upload complete.\n");
     break;
   case FSUI_download_complete:
     printf("Download complete.\n");
+    break;
+  case FSUI_download_progress:
+    printf("Download is progressing...\n");
     break;
   case FSUI_unindex_complete:
     printf("Unindex complete.\n");
@@ -115,7 +121,6 @@ static void eventCallback(void * cls,
 
 int main(int argc, char * argv[]){
   pid_t daemon;
-  int status;
   int ok;
   struct ECRS_URI * uri;
   char * fn = NULL;
