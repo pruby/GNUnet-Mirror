@@ -316,7 +316,7 @@ int waitForGNUnetDaemonTermination(int pid) {
 
 int termProcess(int pid) {
 #ifndef MINGW
-	return kill(daemon1, SIGTERM) == 0;
+	return kill(pid, SIGTERM) == 0;
 #else
 	int ret;
 	DWORD dwExitCode = 0;
