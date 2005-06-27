@@ -57,6 +57,12 @@
  */
 #define LIVE_SCAN_EFFECTIVENESS 10
 
+/**
+ * Value > 1 that determines the chance (1:LPE) that the cron job
+ * actually tries to ping a peer that is about to time-out.
+ */
+#define LIVE_PING_EFFECTIVENESS 100
+
 static CoreAPIForApplication * coreAPI;
 
 static Identity_ServiceAPI * identity;
@@ -261,7 +267,7 @@ static void cronCheckLiveness(void * unused) {
 				    "YES")) )
       scanForHosts(i);
   }
-  if (randomi(LIVE_SCAN_EFFECTIVENESS) == 0)
+  if (randomi(LIVE_PING_EFFECTIVENESS) == 0)
     active = coreAPI->forAllConnectedNodes
       (&checkNeedForPing,
        NULL);

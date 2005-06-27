@@ -509,6 +509,8 @@ static void * tcpListenMain() {
 	   otherwise we just close and reject the communication! */
 
 	IPaddr ipaddr;
+
+	printConnectionBuffer();
 	GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
 	memcpy(&ipaddr,
 	       &clientAddr.sin_addr,

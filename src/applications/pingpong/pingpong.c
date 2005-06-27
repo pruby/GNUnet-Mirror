@@ -183,6 +183,9 @@ static int pongReceived(const PeerIdentity * sender,
   int i;
   PINGPONG_Message * pmsg;
   PingPongEntry * entry;
+#if DEBUG_PINGPONG
+  EncName enc;
+#endif
 
   pmsg = (PINGPONG_Message *) msg;
   if ( (ntohs(msg->size) != sizeof(PINGPONG_Message)) ||
@@ -193,6 +196,13 @@ static int pongReceived(const PeerIdentity * sender,
 	"pong");
     return SYSERR; /* bad pong */
   }
+#if DEBUG_PINGPONG
+  hash2enc(&sender->hashPubKey,
+	   &enc);
+  LOG(LOG_DEBUG,
+      "Received PONG from '%s'.\n",
+      &enc);
+#endif
   MUTEX_LOCK(pingPongLock);
   for (i=0;i<MAX_PING_PONG;i++) {
     entry = &pingPongs[i];

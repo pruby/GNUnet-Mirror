@@ -2178,6 +2178,7 @@ int getLastActivityOf(const PeerIdentity * peer,
 		      cron_t * time) {
   int ret;
   BufferEntry * be;
+
   ret = 0;
   MUTEX_LOCK(&lock);
   be = lookForHost(peer);
@@ -2486,7 +2487,7 @@ void printConnectionBuffer() {
   EncName hostName;
   EncName skey_local;
   EncName skey_remote;
-  unsigned short ttype;
+  unsigned int ttype;
 
   MUTEX_LOCK(&lock);
   ENTRY();
@@ -2496,19 +2497,20 @@ void printConnectionBuffer() {
       if (tmp->status != STAT_DOWN) {
         IFLOG(LOG_MESSAGE,
   	      hash2enc(&tmp->session.sender.hashPubKey,
-  	  	       &hostName));
-	IFLOG(LOG_MESSAGE,
+  	  	       &hostName);
 	      hash2enc((HashCode512*) &tmp->skey_local,
-		       &skey_local);)
-	IFLOG(LOG_MESSAGE,
+		       &skey_local);
 	      hash2enc((HashCode512*) &tmp->skey_remote,
 		       &skey_remote));
+	hostName.encoding[4] = '\0';
+	skey_local.encoding[4] = '\0';
+	skey_remote.encoding[4] = '\0';
 	ttype = 0;
 	if (tmp->session.tsession != NULL)
 	  ttype = tmp->session.tsession->ttype;
 	LOG(LOG_MESSAGE,
   	    "CONNECTION-TABLE: %3d-%1d-%2d-%4ds"
-	    " (of %ds) BPM %4ur %4ut-%3u: %20s-%8s-%8s\n",
+	    " (of %ds) BPM %4llu %8ut-%3u: %s-%s-%s\n",
 	    i,
 	    tmp->status,
 	    ttype,
