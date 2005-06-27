@@ -1,3 +1,11 @@
+Mon Jun 27 17:21:09 CEST 2005
+	Fixed double-free segfault.
+	Fixed problem with session timeout not happening.
+	Fixed issue with too lazy slot reclaim for reconnect.
+	Made reconnect scanning more incremental (1/10th of
+	the work every 500ms instead of full work every 5s).
+	Fixed memory leak in advertisement processing.
+
 Sun Jun 26 18:21:17 CEST 2005
 	Plenty of bugfixes everywhere, gnunet-setup works
 	now.  Releasing 0.7.0pre3.
