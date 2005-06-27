@@ -259,7 +259,7 @@ static void cronCheckLiveness(void * unused) {
   if (minint == 0)
     minint = 1;
   for (i=slotCount-1;i>=0;i--) {
-    if (((double) random() / RAND_MAX) > LIVE_SCAN_EFFECTIVENESS)
+    if (((double) RANDOM() / RAND_MAX) > LIVE_SCAN_EFFECTIVENESS)
       continue;
     if ( (minint > coreAPI->isSlotUsed(i)) &&
 	 (! testConfigurationString("GNUNETD",
@@ -267,7 +267,7 @@ static void cronCheckLiveness(void * unused) {
 				    "YES")) )
       scanForHosts(i);
   }
-  if (((double) random() / RAND_MAX) <= LIVE_PING_EFFECTIVENESS)
+  if (((double) RANDOM() / RAND_MAX) <= LIVE_PING_EFFECTIVENESS)
     active = coreAPI->forAllConnectedNodes
       (&checkNeedForPing,
        NULL);
