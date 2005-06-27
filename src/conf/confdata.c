@@ -137,15 +137,21 @@ int conf_read(const char *name)
 					sprintf(key, "%s_CONF_DEF_FILE", fn);
 					defFile = sym_find(key, "Meta");
 					if (defFile) {
-						char *path, *file;
+						char *path, *file, c;
+						int pathLen;
 						
 						sym_calc_value_ext(sym, 1);
 						sym_calc_value_ext(defFile, 1);
 						path = (char *) sym_get_string_value(sym);
 						file = (char *) sym_get_string_value(defFile);					
 						
-						key = realloc(key, strlen(path) + strlen(file) + 2);
-						sprintf(key, "%s%c%s", path, DIR_SEPARATOR, file);
+						pathLen = strlen(path);
+						key = realloc(key, pathLen + strlen(file) + 2);
+						strcpy(key, path);
+						c = key[pathLen-1];
+						if (c != '\\' && c != '/')
+							strcat(key, DIR_SEPARATOR_STR);
+						strcat(key, file);
 						cfg_parse_file(key);
 					}
 				}
