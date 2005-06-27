@@ -213,15 +213,10 @@ static void notifyPONG(PeerIdentity * hostId) {
  * Check the liveness of the ping and possibly ping it.
  */
 static void checkNeedForPing(const PeerIdentity * peer,
-			     int * lastSlot) {
+			     void * unused) {
   cron_t now;
   cron_t act;
-  int slot;
 
-  slot = coreAPI->computeIndex(peer);
-  if (slot == *lastSlot)
-    return; /* slot already in use twice! */
-  *lastSlot = slot;
   cronTime(&now);
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
     BREAK();
@@ -268,14 +263,14 @@ static void cronCheckLiveness(void * unused) {
 	 (0 == coreAPI->isSlotUsed(i)) )
       scanForHosts(i);
   }
-  if (saturation >= 0.75) {
-    i = -1;
-    active = coreAPI->forAllConnectedNodes((PerNodeCallback)&checkNeedForPing,
-					   &i);
-  } else {
-    active = coreAPI->forAllConnectedNodes(NULL,
-					   NULL);
-  }
+  if (randomi(LIVE_SCAN_EFFECTIVENESS) == 0)
+    active = coreAPI->forAllConnectedNodes
+      (&checkNeedForPing,
+       NULL);
+  else 
+    active = coreAPI->forAllConnectedNodes
+      (NULL,
+       NULL);  
   saturation = 1.0 * slotCount / active;
 }
 

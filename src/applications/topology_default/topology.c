@@ -261,14 +261,14 @@ static void cronCheckLiveness(void * unused) {
 				    "YES")) )
       scanForHosts(i);
   }
-  if (saturation >= 0.75) {
+  if (randomi(LIVE_SCAN_EFFECTIVENESS) == 0)
     active = coreAPI->forAllConnectedNodes
       (&checkNeedForPing,
        NULL);
-  } else {
-    active = coreAPI->forAllConnectedNodes(NULL,
-					   NULL);
-  }
+  else 
+    active = coreAPI->forAllConnectedNodes
+      (NULL,
+       NULL);  
   saturation = 1.0 * slotCount / active;
 }
 
