@@ -304,10 +304,6 @@ receivedHELO(const p2p_HEADER * message) {
     transport->disconnect(tsession);
     return SYSERR;
   }
-  copy = MALLOC(HELO_Message_size(msg));
-  memcpy(copy,
-	 msg,
-	 HELO_Message_size(msg));
   res = OK;
   memcpy(&buffer[heloEnd],
 	 ping,
