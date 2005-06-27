@@ -337,7 +337,9 @@ typedef struct BufferEntry_ {
   SESSIONKEY skey_remote;
   /** at which time was the remote sessionkey created */
   TIME_T skey_remote_created;
-  /** is this host alive? timestamp of the time of the last-active point */
+  /** is this host alive? timestamp of the time of the last-active 
+      point (as witnessed by some higher-level application, typically
+      topology+pingpong) */
   cron_t isAlive;
   /**  Status of the connection (STAT_XXX) */
   unsigned int status;
@@ -2005,8 +2007,6 @@ int checkHeader(const PeerIdentity * sender,
     cronTime(&be->last_bps_update);
   }
   be->recently_received += size;
-  if (be->status == STAT_UP)
-    cronTime(&be->isAlive);
   MUTEX_UNLOCK(&lock);
   return YES;
 }
@@ -2102,6 +2102,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
   MUTEX_LOCK(&lock);
   be = lookForHost(peer);
   if (be != NULL) {
+    cronTime(&be->isAlive);
     if ( ( (be->status & STAT_SKEY_SENT) > 0) &&
 	 ( (be->status & STAT_SKEY_RECEIVED) > 0) ) {
       if (be->session.tsession == NULL) {
