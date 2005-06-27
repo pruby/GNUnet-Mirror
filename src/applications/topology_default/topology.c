@@ -188,6 +188,13 @@ static void scanForHosts(unsigned int index) {
  * @param hostId the peer that gave a sign of live
  */
 static void notifyPONG(PeerIdentity * hostId) {
+  EncName enc;
+
+  hash2enc(&hostId->hashPubKey,
+	   &enc);
+  LOG(LOG_DEBUG,
+      "Received pong from '%s', telling core that peer is still alive.\n",
+      (char*)&enc);  
   coreAPI->confirmSessionUp(hostId);
   FREE(hostId);
 }
@@ -199,6 +206,8 @@ static void checkNeedForPing(const PeerIdentity * peer,
 			     void * unused) {
   cron_t now;
   cron_t act;
+  EncName enc;
+  PeerIdentity * hi;
 
   cronTime(&now);
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
@@ -210,8 +219,13 @@ static void checkNeedForPing(const PeerIdentity * peer,
     /* if we have less than 75% of the number of connections
        that we would like to have, try ping-ing the other side
        to keep the connection open instead of hanging up */
-    PeerIdentity * hi = MALLOC(sizeof(PeerIdentity));
+    hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
+    hash2enc(&hi->hashPubKey, 
+	     &enc);
+    LOG(LOG_DEBUG,
+	"Sending ping to '%s' to prevent connection timeout.\n",
+	(char*)&enc);  
     if (OK != pingpong->ping(peer,
 			     NO,
 			     (CronJob)&notifyPONG,
