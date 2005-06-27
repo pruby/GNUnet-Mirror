@@ -510,7 +510,9 @@ static void * tcpListenMain() {
 
 	IPaddr ipaddr;
 
+#if 0
 	printConnectionBuffer();
+#endif
 	GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
 	memcpy(&ipaddr,
 	       &clientAddr.sin_addr,
