@@ -1650,7 +1650,7 @@ static void scheduleInboundTraffic() {
   for (u=0;u<activePeerCount;u++) {
     adjustedRR[u] = entries[u]->recently_received * cronMINUTES / timeDifference / 2;
 
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
     if (adjustedRR[u] > entries[u]->idealized_limit) {
       EncName enc;
       IFLOG(LOG_INFO,
@@ -1669,7 +1669,7 @@ static void scheduleInboundTraffic() {
      */
     if (adjustedRR[u] > 2 * MAX_BUF_FACT *
 	entries[u]->max_transmitted_limit) {
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
       EncName enc;
       IFLOG(LOG_INFO,
 	    hash2enc(&entries[u]->session.sender.hashPubKey,
@@ -2158,7 +2158,8 @@ int isSlotUsed(int slot) {
   if ( (slot >= 0) && (slot < CONNECTION_MAX_HOSTS_) ) {
     be = CONNECTION_buffer_[slot];
     while (be != NULL) {
-      ret++;
+      if (be->status == STAT_UP)
+	ret++;
       be = be->overflowChain;
     }
   }

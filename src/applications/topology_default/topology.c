@@ -28,10 +28,6 @@
  * application to allow users to force loading it
  * (which is probably a very good idea -- otherwise
  * the peer will end up rather disconnected :-)
- *
- * Todo:
- * - spread out the current 'every-5-second' bulk cron job
- *   over a more continuous interval (as it was in 0.6.5)
  */
 
 #include "platform.h"
@@ -48,6 +44,18 @@
  * connectivity goal.
  */
 #define SECONDS_PINGATTEMPT 120
+
+/**
+ * How often should the cron-job scan for free slots (to establish
+ * new connections)?
+ */
+#define LIVE_SCAN_FREQUENCY 500 * cronMILLIS
+
+/**
+ * Value > 1 that determines the chance (1:LSE) that the cron job
+ * actually tries to do something for a given slot.
+ */
+#define LIVE_SCAN_EFFECTIVENESS 10
 
 static CoreAPIForApplication * coreAPI;
 
@@ -188,15 +196,10 @@ static void notifyPONG(PeerIdentity * hostId) {
  * Check the liveness of the ping and possibly ping it.
  */
 static void checkNeedForPing(const PeerIdentity * peer,
-			     int * lastSlot) {
+			     void * unused) {
   cron_t now;
   cron_t act;
-  int slot;
 
-  slot = coreAPI->computeIndex(peer);
-  if (slot == *lastSlot)
-    return; /* slot already in use twice! */
-  *lastSlot = slot;
   cronTime(&now);
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
     BREAK();
@@ -226,19 +229,28 @@ static void cronCheckLiveness(void * unused) {
   int i;
   int slotCount;
   int active;
+  unsigned int minint;
 
   slotCount = coreAPI->getSlotCount();
+  if (saturation > 0.001)
+    minint = (int) 1 / saturation;
+  else
+    minint = 10;
+  if (minint == 0)
+    minint = 1;
   for (i=slotCount-1;i>=0;i--) {
-    if ( (0 == coreAPI->isSlotUsed(i)) &&
+    if (randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
+      continue;
+    if ( (minint > coreAPI->isSlotUsed(i)) &&
 	 (! testConfigurationString("GNUNETD",
 				    "DISABLE-AUTOCONNECT",
 				    "YES")) )
       scanForHosts(i);
   }
   if (saturation >= 0.75) {
-    i = -1;
-    active = coreAPI->forAllConnectedNodes((PerNodeCallback)&checkNeedForPing,
-					   &i);
+    active = coreAPI->forAllConnectedNodes
+      (&checkNeedForPing,
+       NULL);
   } else {
     active = coreAPI->forAllConnectedNodes(NULL,
 					   NULL);
@@ -290,8 +302,8 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
   }
 
   addCronJob(&cronCheckLiveness,
-	     5 * cronSECONDS,
-	     5 * cronSECONDS,
+	     LIVE_SCAN_FREQUENCY,
+	     LIVE_SCAN_FREQUENCY,
 	     NULL);
 
   if (-1 == (len = stateReadContent(TOPOLOGY_TAG_FILE,
@@ -310,7 +322,7 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 	  data);
       FREE(data);
       delCronJob(&cronCheckLiveness,
-		 5 * cronSECONDS,
+		 LIVE_SCAN_FREQUENCY,
 		 NULL);
       capi->releaseService(identity);
       identity = NULL;
@@ -331,7 +343,7 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 
 int release_module_topology_default() {
   delCronJob(&cronCheckLiveness,
-	     5 * cronSECONDS,
+	     LIVE_SCAN_FREQUENCY,
 	     NULL);
   coreAPI->releaseService(identity);
   identity = NULL;

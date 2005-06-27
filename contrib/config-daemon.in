@@ -123,7 +123,7 @@ menu "General settings" "GNUNETD"
 		information how to join GNUnet that is in no way private to the
 		local node.  This directory can be shared between nodes AND should
 		be put on a public web-server (if possible).  You should find a list
-		of known hosts under http://www.ovmj.org/GNUnet/hosts/, you can copy
+		of known hosts under http://gnunet.org/hosts/, you can copy
 		those files into this directory.
 		
 		If you specify a HOSTLISTURL, the directory will be automatically
@@ -295,6 +295,15 @@ menu "Network" "NETWORK"
 		If you do not know what all this means, try without!
 		Default is no IP specified.
   
+  config F2F
+  string "List of friends for friend-to-friend topology"
+  default "$GNUNETD_HOME/friends"
+  depends on Meta::ADVANCED
+  help
+		No help available at this point.
+		NILS: can we only show this item if 
+		the user selected topology = toplogy_f2f?
+
   config HELOEXCHANGE
   bool "Participate in network topology management"
   default y
@@ -794,10 +803,10 @@ menu "Applications" ""
 			
 			config REGISTERURL
 			string "Where should we register the testbed service?"
-			default "http://www.ovmj.org/GNUnet/testbed/"
+			default "http://gnunet.org/testbed/"
 			help
 				Where should we register the testbed service?
-				Default is "http://www.ovmj.org/GNUnet/testbed/"				
+				Default is "http://gnunet.org/testbed/"				
 			
 			config ALLOW_MODULE_LOADING
 			bool "Allow to load and unload modules"

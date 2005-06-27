@@ -10,6 +10,11 @@
       * Ask to remove lib/
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
+- Investigate:
+  * why do we not connect to more peers?
+    (pre3 has been observed to connect to just 1 peer,
+     whilst gnunet-transport-check -p was able to
+     connect to 4-6 peers at the same time!)
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
@@ -26,7 +31,6 @@
 
 0.7.1 (aka "stabilization"):
 - Optimizations:
-  * spread out scanning done in topology_*.c?
   * directories can be compacted -- add heuristic to determine
     if we should NOT padd with zeros (if we would waste too
     much space).  Needs some lookahead for size of remaining

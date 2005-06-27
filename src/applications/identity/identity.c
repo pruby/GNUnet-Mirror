@@ -632,14 +632,15 @@ static int blacklistHost(const PeerIdentity * identity,
 	hosts_[i].delta
 	  = hosts_[i].delta * 2 + randomi((desperation+1)*cronSECONDS);
 	if (hosts_[i].delta > 4 * cronHOURS)
-	  hosts_[i].delta = 4 *  cronHOURS+randomi(desperation+1);
+	  hosts_[i].delta = 4 *  randomi(cronHOURS * 
+					 randomi(desperation+1));
       }
       cronTime(&hosts_[i].until);
       hosts_[i].until += hosts_[i].delta;
       hosts_[i].strict = strict;
       hash2enc(&identity->hashPubKey,
 	       &hn);
-#if DEBUG_IDENTITY
+#if DEBUG_IDENTITY || 1
       LOG(LOG_INFO,
 	  "Blacklisting host '%s' (%d) for %llu seconds until %llu (strict=%d).\n",
 	  &hn,

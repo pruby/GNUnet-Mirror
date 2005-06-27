@@ -28,10 +28,6 @@
  * application to allow users to force loading it
  * (which is probably a very good idea -- otherwise
  * the peer will end up rather disconnected :-)
- *
- * Todo:
- * - spread out the current 'every-5-second' bulk cron job
- *   over a more continuous interval (as it was in 0.6.5)
  */
 
 #include "platform.h"
@@ -49,6 +45,20 @@
  * connectivity goal.
  */
 #define SECONDS_PINGATTEMPT 120
+
+
+/**
+ * How often should the cron-job scan for free slots (to establish
+ * new connections)?
+ */
+#define LIVE_SCAN_FREQUENCY 500 * cronMILLIS
+
+/**
+ * Value > 1 that determines the chance (1:LSE) that the cron job
+ * actually tries to do something for a given slot.
+ */
+#define LIVE_SCAN_EFFECTIVENESS 10
+
 
 static CoreAPIForApplication * coreAPI;
 
@@ -241,11 +251,23 @@ static void cronCheckLiveness(void * unused) {
   int i;
   int slotCount;
   int active;
+  unsigned int minint;
 
   slotCount = coreAPI->getSlotCount();
-  for (i=slotCount-1;i>=0;i--)
-    if (0 == coreAPI->isSlotUsed(i))
+  if (saturation > 0.001)
+    minint = (int) 1 / saturation;
+  else 
+    minint = 10;
+  if (minint == 0)
+    minint = 1;
+  for (i=slotCount-1;i>=0;i--) {
+    if (randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
+      continue;
+
+    if ( (minint > coreAPI->isSlotUsed(i)) &&
+	 (0 == coreAPI->isSlotUsed(i)) )
       scanForHosts(i);
+  }
   if (saturation >= 0.75) {
     i = -1;
     active = coreAPI->forAllConnectedNodes((PerNodeCallback)&checkNeedForPing,
@@ -387,8 +409,8 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
   registerConfigurationUpdateCallback
     ((NotifyConfigurationUpdateCallback)&rereadConfiguration);
   addCronJob(&cronCheckLiveness,
-	     5 * cronSECONDS,
-	     5 * cronSECONDS,
+	     LIVE_SCAN_FREQUENCY,
+	     LIVE_SCAN_FREQUENCY,
 	     NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
@@ -398,7 +420,7 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
 
 int release_module_topology_f2f() {
   delCronJob(&cronCheckLiveness,
-	     5 * cronSECONDS,
+	     LIVE_SCAN_FREQUENCY,
 	     NULL);
   unregisterConfigurationUpdateCallback
     ((NotifyConfigurationUpdateCallback)&rereadConfiguration);
