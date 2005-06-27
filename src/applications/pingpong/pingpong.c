@@ -238,7 +238,6 @@ static int plaintextPongReceived(const PeerIdentity * sender,
 			    &entry->receiverIdentity) &&
 	 (entry->plaintext == YES) ) {
       entry->method(entry->data);
-      FREENONNULL(entry->data);
       /* entry was valid for one time only */
       memset(entry,
       	     0,
