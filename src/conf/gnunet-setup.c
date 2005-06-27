@@ -93,6 +93,11 @@ int main(int argc,
 #endif
   }
   else if (strncmp(argv[1], "recreate", 7) == 0) {
+  	if (argc < 3) {
+  		puts(_("Please specify a path where the configuration files will be "
+  			"stored."));
+  		return 1;
+  	}
   	recreate_main(argc - 1, &argv[1]);
   }
 	else {

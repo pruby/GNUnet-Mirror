@@ -32,6 +32,14 @@
 
 int recreate_main(int ac, char **av) {
 	struct symbol *sym;
+	const char *dstDir;
+	int dirLen;
+	
+	dirLen = strlen(av[1]);
+	dstDir = MALLOC(dirLen + 2);
+	strcpy(dstDir, av[1]);
+	if (dstDir[dirLen - 1] != DIR_SEPARATOR)
+		strcat(dstDir, DIR_SEPARATOR_STR);
 	
 	conf_parse(DATADIR"/config.in");
 
@@ -45,24 +53,28 @@ int recreate_main(int ac, char **av) {
 
 	/* save new config files to DATADIR */
   sym = sym_find("config-daemon.in_CONF_DEF_DIR", "Meta");
-	sym_set_string_value(sym, DATADIR"/");
+	sym_set_string_value(sym, dstDir);
 
   sym = sym_find("config-daemon.in_CONF_DEF_FILE", "Meta");
 	sym_set_string_value(sym, "gnunet.root");
 
   sym = sym_find("config-client.in_CONF_DEF_DIR", "Meta");
-	sym_set_string_value(sym, DATADIR"/");
+	sym_set_string_value(sym, dstDir);
 
   sym = sym_find("config-client.in_CONF_DEF_FILE", "Meta");
 	sym_set_string_value(sym, "gnunet.user");
+	
+	FREE(dstDir);
 
 	/* Write defaults */
-	if (!conf_write()) {
-		printf(_("Unable to save configuration files to %s.\n"), DATADIR);
+	if (conf_write()) {
+		printf(_("Unable to save configuration files: %s.\n"), STRERROR(errno));
 		return 1;
 	}
-	else
+	else {
+		puts(_("Configuration files (re)created.\n"));
 		return 0;
+	}
 }
 
 /* end of silent.c */

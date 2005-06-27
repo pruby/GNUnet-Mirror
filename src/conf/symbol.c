@@ -316,7 +316,7 @@ void sym_calc_value_ext(struct symbol *sym, int returnInv)
 	case S_STRING:
 	case S_HEX:
 	case S_INT:
-		if (sym->visible != no) {
+		if (sym->visible != no || returnInv) {
 			sym->flags |= SYMBOL_WRITE;
 			if (sym_has_value(sym)) {
 				newval.val = sym->user.val;
