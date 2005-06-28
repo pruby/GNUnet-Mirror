@@ -3201,10 +3201,10 @@ msgstr ""
 "Empfangene Nachricht ist mehr als ein Tag alt. Nachricht wird verworfen.\n"
 
 #: src/server/connection.c:2122
-msgid "Session confirmed, but cannot connect! (bug?)"
+msgid "Session confirmed, but cannot connect! (bug?)\n"
 msgstr ""
 "Sitzung ist bestätigt, es kann jedoch keine Verbindung hergestellt werden! "
-"(Bug?)"
+"(Bug?)\n"
 
 #: src/server/startup.c:123
 #, c-format

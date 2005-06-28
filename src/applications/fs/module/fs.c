@@ -1067,7 +1067,11 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 						      &csHandleRequestTestIndexed));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_GET_AVG_PRIORITY,
 						      &csHandleRequestGetAvgPriority));
-  initMigration(capi, datastore, gap, dht);
+  initMigration(capi, 
+		datastore, 
+		gap, 
+		dht,
+		traffic);
   return OK;
 }
 

@@ -84,7 +84,8 @@
 void initMigration(CoreAPIForApplication * capi,
 		   Datastore_ServiceAPI * s,
 		   GAP_ServiceAPI * g,
-		   DHT_ServiceAPI * d);
+		   DHT_ServiceAPI * d,
+		   Traffic_ServiceAPI * t);
 
 void doneMigration();
 

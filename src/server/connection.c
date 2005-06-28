@@ -2121,7 +2121,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	      = transport->getMTU(be->session.tsession->ttype);	
 	  } else {
 	    LOG(LOG_WARNING,
-		_("Session confirmed, but cannot connect! (bug?)"));
+		_("Session confirmed, but cannot connect! (bug?)\n"));
 	    FREE(helo);
 	  }
 	}

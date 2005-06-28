@@ -467,14 +467,15 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * dl;
   unsigned int backup;
 
-  /* FIXME: check that filename matches
-     aborted download! */
   GNUNET_ASSERT(filename != NULL);
   MUTEX_LOCK(&ctx->lock);
   dl = ctx->activeDownloads.child;
   while (dl != NULL) {
-    if (ECRS_equalsUri(uri,
-		       dl->uri)) {
+    if ( (ECRS_equalsUri(uri,
+		       dl->uri)) &&
+	 ( (filename == NULL) ||
+	   (0 == strcmp(filename,
+			dl->filename)) ) ) {
       backup = ctx->threadPoolSize;
       ctx->threadPoolSize = 0;
       updateDownloadThread(dl);

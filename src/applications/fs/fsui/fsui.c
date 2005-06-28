@@ -80,6 +80,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   unsigned int big;
   unsigned long long bigl;
   int i;
+  int ok;
 
   GNUNET_ASSERT(ctx != NULL);
   if (1 != READ(fd, &zaro, sizeof(char))) {
@@ -91,6 +92,9 @@ static FSUI_DownloadList * readDownloadList(int fd,
   LOG(LOG_DEBUG,
       "FSUI persistence: restoring download\n");
   ret = MALLOC(sizeof(FSUI_DownloadList));
+  memset(ret, 
+	 0,
+	 sizeof(FSUI_DownloadList));
   ret->ctx = ctx;
 
   ret->signalTerminate 
@@ -107,7 +111,6 @@ static FSUI_DownloadList * readDownloadList(int fd,
   }
   ret->filename = MALLOC(big+1);
   if (big != READ(fd, ret->filename, big)) {
-    FREE(ret->filename);
     BREAK();
     goto ERR;
   }
@@ -125,12 +128,17 @@ static FSUI_DownloadList * readDownloadList(int fd,
   else
     ret->completedDownloads
       = NULL;
+  ok = ret->uri != NULL;
   for (i=0;i<ret->completedDownloadsCount;i++) {
     ret->completedDownloads[i]
       = readURI(fd);
+    if (ret->completedDownloads[i] == NULL) 
+      ok = NO;
   }
-  /* FIXME: check if URIs were
-     all read successfully! */
+  if (NO == ok) {
+    BREAK();
+    goto ERR;
+  }
   ret->parent = parent;
   ret->signalTerminate = SYSERR;
   ret->next = readDownloadList(fd,
@@ -141,6 +149,14 @@ static FSUI_DownloadList * readDownloadList(int fd,
 				ret);
   return ret;
  ERR:
+  FREENONNULL(ret->filename);
+  if (ret->uri != NULL)
+    ECRS_freeUri(ret->uri);
+  for (i=0;i<ret->completedDownloadsCount;i++) {
+    if (ret->completedDownloads[i] != NULL)
+      ECRS_freeUri(ret->completedDownloads);
+
+  
   FREE(ret);
   LOG(LOG_WARNING,
       _("FSUI persistence: error restoring download\n"));

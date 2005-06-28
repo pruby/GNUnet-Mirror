@@ -49,6 +49,10 @@ static GAP_ServiceAPI * gap;
  */
 static DHT_ServiceAPI * dht;
 
+/**
+ * Traffic service.
+ */
+static Traffic_ServiceAPI * traffic;
 				
 /**
  * Callback method for pushing content into the network.
@@ -76,6 +80,7 @@ activeMigrationCallback(PeerIdentity * receiver,
   unsigned int size;
   cron_t et;
   cron_t now;
+  unsigned int anonymity;
 
   ret = 0;
   if (OK == datastore->getRandom(&receiver->hashPubKey,
@@ -84,8 +89,6 @@ activeMigrationCallback(PeerIdentity * receiver,
 				 &content,
 				 0)) {
     size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
-    gw = MALLOC(size);
-    gw->dc.size = htonl(size);
     et = ntohll(content->expirationTime);
     cronTime(&now);
     if (et > now) {
@@ -93,20 +96,34 @@ activeMigrationCallback(PeerIdentity * receiver,
       et = et % MAX_MIGRATION_EXP;
       et += now;
     }
-    gw->timeout = htonll(et);
-    memcpy(&gw[1],
-	   &content[1],
-	   size - sizeof(GapWrapper));
-    /* FIXME: check anonymity level,
-       if 0, consider using DHT migration instead;
-       if high, consider traffic volume before
-       migrating */
+    anonymity = ntohl(content->anonymityLevel);
+    ret = SYSERR;
+    if (anonymity == 0) {
+      /* ret = OK; */
+    } 
+    if ( (ret != OK) &&
+	 (traffic != NULL) ) {
+      gw = MALLOC(size);
+      gw->dc.size = htonl(size);
+      gw->timeout = htonll(et);
+      memcpy(&gw[1],
+	     &content[1],
+	     size - sizeof(GapWrapper));
+
+      
+      
+    
+      /* FIXME: check anonymity level,
+	 if 0, consider using DHT migration instead;
+	 if high, consider traffic volume before
+	 migrating */
+      ret = gap->tryMigrate(&gw->dc,
+			    &key,
+			    position,
+			    padding);
+      FREE(gw);
+    }
     FREE(content);
-    ret = gap->tryMigrate(&gw->dc,
-			  &key,
-			  position,
-			  padding);
-    FREE(gw);
   }
   return ret;
 }
@@ -114,11 +131,13 @@ activeMigrationCallback(PeerIdentity * receiver,
 void initMigration(CoreAPIForApplication * capi,
 		   Datastore_ServiceAPI * ds,
 		   GAP_ServiceAPI * g,
-		   DHT_ServiceAPI * d) {
+		   DHT_ServiceAPI * d,
+		   Traffic_ServiceAPI * t) {
   coreAPI = capi;
   datastore = ds;
   gap = g;
   dht = d;
+  traffic = t;
   coreAPI->registerSendCallback(512,
 				(BufferFillCallback)&activeMigrationCallback);
 }
@@ -130,6 +149,7 @@ void doneMigration() {
   gap = NULL;
   dht = NULL;
   coreAPI = NULL;
+  traffic = NULL;
 }
 
 /* end of migration.c */
