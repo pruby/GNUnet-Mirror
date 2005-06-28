@@ -2120,14 +2120,21 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	while (i < MAX_PROTOCOL_NUMBER) {
 	  helo = NULL;
 	  if (OK ==
-	      transport->connect(helo,
-				 &be->session.tsession)) {
-	    be->session.mtu
-	      = transport->getMTU(be->session.tsession->ttype);	
-	    break;
+	      identity->identity2Helo(&be->session.sender,
+				      i,
+				      NO,
+				      &helo)) {
+	    if (OK ==
+		transport->connect(helo,
+				   &be->session.tsession)) {
+	      be->session.mtu
+		= transport->getMTU(be->session.tsession->ttype);	
+	      break;
+	    } else {
+	      FREE(helo);	 
+	      i++;
+	    }
 	  }
-	  FREE(helo);	 
-	  i++;
 	}
 	if (i == MAX_PROTOCOL_NUMBER) {
 	  LOG(LOG_WARNING,
