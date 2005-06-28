@@ -194,7 +194,7 @@ int wizard_curs_main(int argc, char *argv[])
 	
 	while(true) {
 		ret = dialog_inputbox(_("GNUnet configuration"), _("What is this computer's "
-			"public IP adress or hostname?\n\nIf in doubt, leave this empty."),
+			"public IP address or hostname?\n\nIf in doubt, leave this empty."),
 			rows, cols - 5, defval ? defval : "");
 		
 		if (ret == 1) {
@@ -251,7 +251,7 @@ int wizard_curs_main(int argc, char *argv[])
 		
 		if (ret == 1) {
 			/* Help */
-			dialog_msgbox(_("Help"), _("You can limit GNUnet's ressource usage "
+			dialog_msgbox(_("Help"), _("You can limit GNUnet's resource usage "
 				"here.\n\nThe \"upstream\" is the data channel through which data "
 				"is *sent* to the internet. The limit is either the total maximum "
 				"for this computer or how much GNUnet itself is allowed to use. You "
@@ -283,7 +283,7 @@ int wizard_curs_main(int argc, char *argv[])
 		
 		if (ret == 1) {
 			/* Help */
-			dialog_msgbox(_("Help"), _("You can limit GNUnet's ressource usage "
+			dialog_msgbox(_("Help"), _("You can limit GNUnet's resource usage "
 				"here.\n\nThe \"downstream\" is the data channel through which data "
 				"is *received* from the internet. The limit is either the total maximum "
 				"for this computer or how much GNUnet itself is allowed to use. You "
@@ -340,7 +340,7 @@ int wizard_curs_main(int argc, char *argv[])
 		
 		if (ret == 1) {
 			/* Help */
-			dialog_msgbox(_("Help"), _("You can limit GNUnet's ressource usage "
+			dialog_msgbox(_("Help"), _("You can limit GNUnet's resource usage "
 				"here.\n\nThis is the percentage of processor time GNUnet is allowed "
 				"to use."), rows, cols - 5, 1);
 		}
