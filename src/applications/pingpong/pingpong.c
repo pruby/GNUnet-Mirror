@@ -183,6 +183,7 @@ static int pongReceived(const PeerIdentity * sender,
   int i;
   PINGPONG_Message * pmsg;
   PingPongEntry * entry;
+  int matched;
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
@@ -203,6 +204,7 @@ static int pongReceived(const PeerIdentity * sender,
       "Received PONG from '%s'.\n",
       &enc);
 #endif
+  matched = 0;
   MUTEX_LOCK(pingPongLock);
   for (i=0;i<MAX_PING_PONG;i++) {
     entry = &pingPongs[i];
@@ -215,9 +217,23 @@ static int pongReceived(const PeerIdentity * sender,
       memset(entry,
       	     0,
 	     sizeof(PingPongEntry));
+      matched++;
     }
   }
   MUTEX_UNLOCK(pingPongLock);
+#if DEBUG_PINGPONG
+  hash2enc(&sender->hashPubKey,
+	   &enc);
+  LOG(LOG_DEBUG,
+      "Received PONG from '%s' matched %u peers.\n",
+      &enc,
+      matched);
+#endif
+  if (matched == 0) {
+    LOG(LOG_WARNING,
+	_("Could not match PONG against any PING. "
+	  "Try increasing MAX_PING_PONG constant.\n"));
+  }
   return OK;
 }
 
@@ -230,6 +246,10 @@ static int plaintextPongReceived(const PeerIdentity * sender,
   int i;
   PINGPONG_Message * pmsg;
   PingPongEntry * entry;
+  int matched;
+#if DEBUG_PINGPONG
+  EncName enc;
+#endif
 
   pmsg = (PINGPONG_Message *) msg;
   if ( (ntohs(msg->size) != sizeof(PINGPONG_Message)) ||
@@ -240,6 +260,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
 	"pong");
     return SYSERR; /* bad pong */
   }
+  matched = 0;
   MUTEX_LOCK(pingPongLock);
   for (i=0;i<MAX_PING_PONG;i++) {
     entry = &pingPongs[i];
@@ -252,9 +273,23 @@ static int plaintextPongReceived(const PeerIdentity * sender,
       memset(entry,
       	     0,
 	     sizeof(PingPongEntry));
+      matched++;
     }
   }
   MUTEX_UNLOCK(pingPongLock);
+#if DEBUG_PINGPONG
+  hash2enc(&sender->hashPubKey,
+	   &enc);
+  LOG(LOG_DEBUG,
+      "Received PONG from '%s' matched %u peers.\n",
+      &enc,
+      matched);
+#endif
+  if (matched == 0) {
+    LOG(LOG_WARNING,
+	_("Could not match PONG against any PING. "
+	  "Try increasing MAX_PING_PONG constant.\n"));
+  }
   return OK;
 }
 
@@ -292,6 +327,9 @@ createPing(const PeerIdentity * receiver,
       j = i;
     }
   if (j == -1) { /* all send this second!? */
+    LOG(LOG_WARNING,
+	_("Cannot create PING, table full. "
+	  "Try increasing MAX_PING_PONG.\n"));
     MUTEX_UNLOCK(pingPongLock);
     return NULL;
   }
@@ -379,7 +417,8 @@ static int pingPlaintext(const PeerIdentity * receiver,
 /**
  * Initialize the pingpong module.
  */
-Pingpong_ServiceAPI * provide_module_pingpong(CoreAPIForApplication * capi) {
+Pingpong_ServiceAPI * 
+provide_module_pingpong(CoreAPIForApplication * capi) {
   static Pingpong_ServiceAPI ret;
 
   coreAPI = capi;
