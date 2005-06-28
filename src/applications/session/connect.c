@@ -102,7 +102,10 @@ static const char * printSKEY(const SESSIONKEY * sk) {
 static void notifyPONG(PeerIdentity * hostId) {
 #if DEBUG_SESSION
   EncName enc;
+#endif
 
+  GNUNET_ASSERT(hostId != NULL);
+#if DEBUG_SESSION
   IFLOG(LOG_DEBUG,
 	hash2enc(&hostId->hashPubKey,
 		 &enc));
@@ -111,6 +114,7 @@ static void notifyPONG(PeerIdentity * hostId) {
       "PONG",
       &enc);
 #endif
+  GNUNET_ASSERT(hostId != NULL);
   coreAPI->confirmSessionUp(hostId);
   FREE(hostId);
 }
