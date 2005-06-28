@@ -10,7 +10,7 @@
 # Meta-configuration
 #
 [Meta]
-config-daemon.in_CONF_DEF_DIR = "c:\eclipse\workspace\GNUnet\contrib\"
+config-daemon.in_CONF_DEF_DIR = "/etc/"
 config-daemon.in_CONF_DEF_FILE = "gnunet.root"
 EXPERIMENTAL = NO
 ADVANCED = NO
