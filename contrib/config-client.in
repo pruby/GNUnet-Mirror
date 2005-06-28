@@ -49,7 +49,7 @@ menu "General settings" "GNUNET"
 
 	config LOGFILE
 	string "Where to write the messages"
-	default "$GNUNET_HOME/logs"
+	default ""
 	depends on Meta::ADVANCED-CLIENT
 	help
 		Where to write the messages? Leave the entry unspecified (as
@@ -100,20 +100,6 @@ menu "Options for filesharing (FS)" "FS"
 		How long should gnunet-search try to get an answer to a query before
 		timing out (in seconds).  Default is "3000", which should be enough
 		for pretty much anything. Use 0 for no timeout.
-
-	config ANONYMITY-RECEIVE
-	int "Anonymity level for receiving data (default)"
-	default 1
-	depends on Meta::ADVANCED-CLIENT
-	help
-		Anonymity level for receiving data (default)
-
-	config ANONYMITY-SEND
-	int "Anonymity level for sharing data (default)"
-	default 1
-	depends on Meta::ADVANCED-CLIENT
-	help
-		Anonymity level for sharing data (default)
 
 	config MAXRESULTS
 	int "Default limit for the number of search results"
@@ -176,7 +162,7 @@ endmenu
 menu "Default options for gnunet-gtk" GNUNET-GTK
 	config GNUNETD-CONFIG
 	string "Path to the gnunet.conf file"
-	default "/etc/gnunet.conf"
+	default ""
 	help
 		Path to the gnunet.conf file for gnunetd (for
 		forking gnunetd by gnunet-gtk)
@@ -185,7 +171,7 @@ endmenu
 menu "Defaults for gnunet-chat" GNUNET-CHAT
 	config NICK
 	string "Nickname"
-	default "my nickname"
+	default ""
 	help
 		You can specify your nickname here and thus avoid having to pass it
 		with -n NICK at the command-line.  The default is empty.

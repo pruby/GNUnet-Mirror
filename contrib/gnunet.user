@@ -21,7 +21,7 @@ RARE-CLIENT = NO
 [GNUNET]
 GNUNET_HOME = "~/.gnunet"
 LOGLEVEL = "WARNING"
-LOGFILE = "$GNUNET_HOME/logs"
+LOGFILE = ""
 
 #
 # Network options for the clients
@@ -37,8 +37,6 @@ HOST = "localhost"
 INSERT-PRIORITY = 50
 INSERT-EXPIRATION = 36500
 SEARCHTIMEOUT = 3000
-ANONYMITY-RECEIVE = 1
-ANONYMITY-SEND = 1
 MAXRESULTS = 0
 SEARCHTIMEOUT = 3000
 EXTRACTORS = "libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail"
@@ -49,13 +47,13 @@ DISABLE-SYMLINK = YES
 # Default options for gnunet-gtk
 #
 [GNUNET-GTK]
-GNUNETD-CONFIG = "/etc/gnunetd.conf"
+GNUNETD-CONFIG = ""
 
 #
 # Defaults for gnunet-chat
 #
 [GNUNET-CHAT]
-NICK = "my nickname"
+NICK = ""
 
 #
 # Defaults for gnunet-tracekit
