@@ -154,8 +154,8 @@ static FSUI_DownloadList * readDownloadList(int fd,
     ECRS_freeUri(ret->uri);
   for (i=0;i<ret->completedDownloadsCount;i++) {
     if (ret->completedDownloads[i] != NULL)
-      ECRS_freeUri(ret->completedDownloads);
-
+      ECRS_freeUri(ret->completedDownloads[i]);
+  }
   
   FREE(ret);
   LOG(LOG_WARNING,

@@ -32,7 +32,7 @@
 #include "gnunet_datastore_service.h"
 #include "gnunet_dht_service.h"
 #include "gnunet_gap_service.h"
-
+#include "gnunet_traffic_service.h"
 
 
 /**
