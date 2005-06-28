@@ -1691,7 +1691,7 @@ static void scheduleInboundTraffic() {
 #endif
       shutdownConnection(entries[u]);
       identity->blacklistHost(&entries[u]->session.sender,
-			      1 / topology->estimateSaturation(),
+			      1 / topology->getSaturation(),
 			      YES);
       activePeerCount--;
       entries[u]    = entries[activePeerCount];
