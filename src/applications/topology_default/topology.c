@@ -61,7 +61,7 @@
  * Value < 1 that determines the chance (1:(1/LPE)) that the cron job
  * actually tries to ping a peer that is about to time-out.
  */
-#define LIVE_PING_EFFECTIVENESS 0.01
+#define LIVE_PING_EFFECTIVENESS 0.05
 
 static CoreAPIForApplication * coreAPI;
 

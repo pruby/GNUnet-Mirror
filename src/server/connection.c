@@ -2107,23 +2107,25 @@ void confirmSessionUp(const PeerIdentity * peer) {
     if ( ( (be->status & STAT_SKEY_SENT) > 0) &&
 	 ( (be->status & STAT_SKEY_RECEIVED) > 0) ) {
       if (be->session.tsession == NULL) {
+	int i;
 	HELO_Message * helo;
-	helo = NULL;
-	if (OK ==
-	    identity->identity2Helo(&be->session.sender,
-				    ANY_PROTOCOL_NUMBER,
-				    NO,
-				    &helo)) {
+
+	i = 0;
+	while (i < MAX_PROTOCOL_NUMBER) {
+	  helo = NULL;
 	  if (OK ==
 	      transport->connect(helo,
 				 &be->session.tsession)) {
 	    be->session.mtu
 	      = transport->getMTU(be->session.tsession->ttype);	
-	  } else {
-	    LOG(LOG_WARNING,
-		_("Session confirmed, but cannot connect! (bug?)\n"));
-	    FREE(helo);
+	    break;
 	  }
+	  FREE(helo);	 
+	  i++;
+	}
+	if (i == MAX_PROTOCOL_NUMBER) {
+	  LOG(LOG_WARNING,
+	      _("Session confirmed, but cannot connect! (bug?)"));
 	}
       }
       if (be->session.tsession != NULL) {

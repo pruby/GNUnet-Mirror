@@ -85,7 +85,10 @@
  */
 #define SMTP_PROTOCOL_NUMBER 25
 
-
+/**
+ * Largest protocol number.
+ */
+#define MAX_PROTOCOL_NUMBER 26
 
 /* ********* client-server protocol (over TCP) ********** */
 /* ********* CS CORE messages ********** */
