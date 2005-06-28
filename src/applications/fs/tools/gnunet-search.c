@@ -126,6 +126,9 @@ static int parseOptions(int argc,
 			char ** argv) {
   int c;
 
+  setConfigurationInt("FS",
+		      "ANONYMITY-RECEIVE",
+		      1);
   while (1) {
     int option_index = 0;
     static struct GNoption long_options[] = {

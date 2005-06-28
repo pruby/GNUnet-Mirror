@@ -1,6 +1,6 @@
 .TH GNUNET-SEARCH "1" "15 Dec 2004" "GNUnet"
 .SH NAME
-gnunet-search \- a command line interface to search for content on GNUnet
+gnunet\-search \- a command line interface to search for content on GNUnet
 .SH SYNOPSIS
 .B gnunet\-search
 [\fIOPTIONS\fR] KEYWORD [AND KEYWORD]*
@@ -15,7 +15,7 @@ This option can be used to limit requests further than that. In particular, you 
 
 The definition of ANONYMITY-RECEIVE is the following: If the value v is 0, anonymous routing is not required.  For 1, anonymous routing is required, but there is no lower bound on how much cover traffic must be present.  For values > 1 and < 1000, it means that if GNUnet routes n bytes of messages from foreign peers, it may originate n/v bytes of queries in the same time-period. The time\-period is twice the average delay that GNUnet deferrs forwarded queries. If the value v is >= 1000, it means that if GNUnet routes n bytes of QUERIES from at least (v % 1000) peers, it may originate n/v/1000 bytes of queries in the same time\-period.
 
-The default is 0 and this should be fine for most users.  Also notice that if you choose values above 1000, you may end up having no throughput at all, especially if many of your fellow GNUnet\-peers do the same.
+The default is 1 and this should be fine for most users.  Also notice that if you choose values above 1000, you may end up having no throughput at all, especially if many of your fellow GNUnet\-peers do the same.
 
 .TP
 \fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR

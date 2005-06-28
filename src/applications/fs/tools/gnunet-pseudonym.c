@@ -29,7 +29,9 @@
 
 static void printhelp() {
   static Help help[] = {
-    { 'a', "automate", NULL,
+    { 'a', "anonymity", "LEVEL",
+      gettext_noop("set the desired LEVEL of sender-anonymity") },
+    { 'A', "automate", NULL,
       gettext_noop("automate creation of a namespace by starting a collection") },
     HELP_CONFIG,
     { 'C', "create", "NICKNAME",
@@ -73,11 +75,15 @@ static int parser(int argc,
 	   char * argv[]) {
   int c;
 
+  setConfigurationInt("FS",
+		      "ANONYMITY-SEND",
+		      1);
   while (1) {
     int option_index = 0;
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
-      { "automate", 0, 0, 'a' },
+      { "anonymity",     1, 0, 'a' },
+      { "automate", 0, 0, 'A' },
       { "create", 1, 0, 'C' },
       { "delete", 1, 0, 'D' },
       { "end", 0, 0, 'E' },
@@ -95,7 +101,7 @@ static int parser(int argc,
 
     c = GNgetopt_long(argc,
 		      argv,
-		      "ac:C:D:Ehk:L:m:nqr:R:s:t:u:v",
+		      "a:Ac:C:D:Ehk:L:m:nqr:R:s:t:u:v",
 		      long_options,
 		      &option_index);
 
@@ -104,7 +110,23 @@ static int parser(int argc,
     if (YES == parseDefaultOptions(c, GNoptarg))
       continue;
     switch(c) {
-    case 'a':
+    case 'a': {
+      unsigned int receivePolicy;
+
+      if (1 != sscanf(GNoptarg,
+		      "%ud",
+		      &receivePolicy)) {
+        LOG(LOG_FAILURE,
+	  _("You must pass a number to the '%s' option.\n"),
+	    "-a");
+        return -1;
+      }
+      setConfigurationInt("FS",
+                          "ANONYMITY-SEND",
+                          receivePolicy);
+      break;
+    }
+    case 'A':
       FREENONNULL(setConfigurationString("PSEUDONYM",
 					 "AUTOMATE",
 					 "START"));
@@ -378,7 +400,8 @@ int main(int argc, char *argv[]) {
 			 EXTRACTOR_OWNER,
 			 pname);
       if (OK == FSUI_startCollection(ctx,
-				     0, /* FIXME: anonymity level! */
+				     getConfigurationInt("FS",
+							 "ANONYMITY-SEND"),
 				     ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
 				     pname,
 				     meta)) {

@@ -240,6 +240,9 @@ static int parseOptions(int argc,
   FREENONNULL(setConfigurationString("GNUNET-INSERT",
 	  		 	     "INDEX-CONTENT",
 			             "YES"));
+  setConfigurationInt("FS",
+		      "ANONYMITY-SEND",
+		      1);
   while (1) {
     int option_index=0;
     static struct GNoption long_options[] = {

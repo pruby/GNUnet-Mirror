@@ -1,4 +1,4 @@
-.TH GNUNET-PSEUDONYM "1" "04 Nov 2004" "GNUnet"
+.TH GNUNET-PSEUDONYM "1" "28 Jun 2005" "GNUnet"
 .SH NAME
 gnunet\-pseudonym \- create, delete or list pseudonyms
 .SH SYNOPSIS
@@ -19,7 +19,10 @@ gnunet\-pseudonym also lists the meta-data available for other namespaces.  Name
 For more details about GNUnet namespaces and content encoding please read the 'Encoding for Censorship-resistant Sharing' (ECRS) paper which can be found on the GNUnet webpage.
 
 .TP
-\fB\-a\fR, \fB\-\-automate\fR
+\fB\-a \fILEVEL\fR, \fB\-\-anonymity=LEVEL\fR
+set desired level of sender anonymity.  Default is 1.
+.TP
+\fB\-A\fR, \fB\-\-automate\fR
 Start a (new) collection.  Works only in conjunction with the \-C option.  A collection is an automatically managed directory in a namespace.  In essence, after starting the collection every file that you insert into GNUnet will automatically be placed into the collection.  Other users can browse your collection and be certain (thanks to cryptography) that all of these files were inserted into GNUnet by the same user (they do not necessarily know who it is, but if you specify your realname (\-r) they will be able to see that handle).  Collections are useful for establishing a reputation for your GNUnet content, such that readers can form an opinion about quality and availability.  Namespaces can be used to achieve the same thing, but collections are automatic and thus less work for you.
 
 Using collections has some security implications since it is possible for an adversary to see that all of these files originate from the same user.  This may help a correlation attack to break anonymity.  Nevertheless we encourage using collections, they are likely to be the right choice for most users.
