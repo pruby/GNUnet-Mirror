@@ -142,7 +142,8 @@ static void scanHelperSelect(const PeerIdentity * id,
  * transport cost for the hosttable at index index. When called, the
  * mutex of at the given index must not be hold.
  *
- * @param index for which entry in the connection table are we looking for peers?
+ * @param index for which entry in the connection table
+ *   are we looking for peers?
  */
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;

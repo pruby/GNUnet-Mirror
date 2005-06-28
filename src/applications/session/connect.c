@@ -23,9 +23,6 @@
  * @brief module responsible for the sessionkey exchange
  *   which establishes a session with another peer
  * @author Christian Grothoff
- *
- * Todo:
- * - add support for re-keying
  */
 
 #include "platform.h"
@@ -39,7 +36,7 @@
 
 #define HELO_HELPER_TABLE_START_SIZE 64
 
-#define DEBUG_SESSION NO
+#define DEBUG_SESSION YES
 
 static CoreAPIForApplication * coreAPI;
 
@@ -281,10 +278,11 @@ static int verifySKS(const PeerIdentity * hostId,
     FREE(limited);
   }
 
-  if (OK != identity->verifyPeerSignature(hostId,
-					  sks,
-					  sizeof(SKEY_Message) - sizeof(Signature),
-					  &sks->signature)) {
+  if (OK != identity->verifyPeerSignature
+      (hostId,
+       sks,
+       sizeof(SKEY_Message) - sizeof(Signature),
+       &sks->signature)) {
     EncName enc;
 
     IFLOG(LOG_INFO,

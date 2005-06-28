@@ -218,8 +218,8 @@ static void addHostToKnown(const PeerIdentity * identity,
  * Increase the host credit by a value.
  *
  * @param hostId is the identity of the host
- * @param value is the int value by which the host credit is to be increased or
- *        decreased
+ * @param value is the int value by which the 
+ *  host credit is to be increased or decreased
  * @returns the actual change in trust (positive or negative)
  */
 static int changeHostTrust(const PeerIdentity * hostId,
@@ -238,9 +238,11 @@ static int changeHostTrust(const PeerIdentity * hostId,
   }
   if ( ((int) (host->trust & TRUST_ACTUAL_MASK)) + value < 0) {
     value = - (host->trust & TRUST_ACTUAL_MASK);
-    host->trust = 0 | TRUST_REFRESH_MASK; /* 0 remaining */
+    host->trust = 0 
+      | TRUST_REFRESH_MASK; /* 0 remaining */
   } else {
-    host->trust = ( (host->trust & TRUST_ACTUAL_MASK) + value) | TRUST_REFRESH_MASK;
+    host->trust = ( (host->trust & TRUST_ACTUAL_MASK) + value)
+      | TRUST_REFRESH_MASK;
   }
   MUTEX_UNLOCK(&lock_);
   return value;
@@ -294,7 +296,8 @@ static int cronHelper(const char * filename,
   strcat(fullname, filename);
   if (0 == UNLINK(fullname))
     LOG(LOG_WARNING,
-	_("File '%s' in directory '%s' does not match naming convention. Removed.\n"),
+	_("File '%s' in directory '%s' does not match naming convention. "
+	  "Removed.\n"),
 	filename,
 	networkIdDirectory);
   else
@@ -317,7 +320,7 @@ static void cronScanDirectoryDataHosts(void * unused) {
 			NULL);
   if (count <= 0) {
     retries++;
-    if (retries > 32) {
+    if ((retries & 32) > 0) {
       LOG(LOG_WARNING,
 	  _("%s '%s' returned no known hosts!\n"),
 	  "scanDirectory",
@@ -333,7 +336,9 @@ static void addHostTemporarily(const HELO_Message * tmp) {
   HELO_Message * msg;
 
   msg = MALLOC(HELO_Message_size(tmp));
-  memcpy(msg, tmp, HELO_Message_size(tmp));
+  memcpy(msg,
+	 tmp,
+	 HELO_Message_size(tmp));
   MUTEX_LOCK(&lock_);
   FREENONNULL(tempHosts[tempHostsNextSlot]);
   tempHosts[tempHostsNextSlot++] = msg;
@@ -360,7 +365,9 @@ static void delHostFromKnown(const PeerIdentity * identity,
       /* now remove the file */
       fn = getHostFileName(identity, protocol);
       if (0 != UNLINK(fn))
-	LOG_FILE_STRERROR(LOG_WARNING, "unlink", fn);
+	LOG_FILE_STRERROR(LOG_WARNING, 
+			  "unlink",
+			  fn);
       FREE(fn);
       MUTEX_UNLOCK(&lock_);
       return; /* deleted */
@@ -456,7 +463,9 @@ static int identity2HeloHelper(const char * fn,
 	      _("Removed file '%s' containing invalid peer advertisement.\n"),
 	      fileName);
 	else
-	  LOG_FILE_STRERROR(LOG_ERROR, "unlink", fileName);
+	  LOG_FILE_STRERROR(LOG_ERROR, 
+			    "unlink",
+			    fileName);
 	FREE(tmp);
       } else {
 	if (res->result == SYSERR) {
@@ -477,7 +486,9 @@ static int identity2HeloHelper(const char * fn,
 	    _("Removed file '%s' containing invalid peer advertisement.\n"),
 	    fileName);
       } else {
-	LOG_FILE_STRERROR(LOG_ERROR, "unlink", fileName);
+	LOG_FILE_STRERROR(LOG_ERROR,
+			  "unlink",
+			  fileName);
       }
     }
     FREE(fileName);
@@ -523,7 +534,9 @@ static int identity2Helo(const PeerIdentity *  hostId,
 	    _("Removed file '%s' containing invalid HELO data.\n"),
 	    fn);
       else
-	LOG_FILE_STRERROR(LOG_ERROR, "unlink", fn);
+	LOG_FILE_STRERROR(LOG_ERROR, 
+			  "unlink",
+			  fn);
       FREE(fn);
       FREE(*result);
       *result = NULL;
@@ -537,7 +550,9 @@ static int identity2Helo(const PeerIdentity *  hostId,
 	  _("Removed invalid HELO file '%s'\n"),
 	  fn);
     else
-      LOG_FILE_STRERROR(LOG_ERROR, "unlink", fn);
+      LOG_FILE_STRERROR(LOG_ERROR,
+			"unlink", 
+			fn);
   }
   FREE(fn);
 
@@ -583,7 +598,8 @@ static int identity2Helo(const PeerIdentity *  hostId,
 
 
 /**
- * @param signer the identity of the host that presumably signed the message
+ * @param signer the identity of the host that
+ *        presumably signed the message
  * @param message the signed message
  * @param size the size of the message
  * @param sig the signature
@@ -649,7 +665,8 @@ static int blacklistHost(const PeerIdentity * identity,
 	       &hn);
 #if DEBUG_IDENTITY 
       LOG(LOG_INFO,
-	  "Blacklisting host '%s' (%d) for %llu seconds until %llu (strict=%d).\n",
+	  "Blacklisting host '%s' (%d) for %llu seconds"
+	  " until %llu (strict=%d).\n",
 	  &hn,
 	  i,
 	  hosts_[i].delta / cronSECONDS,
@@ -704,6 +721,16 @@ static int whitelistHost(const PeerIdentity * identity) {
   for (i=0;i<count_;i++) {
     if (hostIdentityEquals(identity,
 			   &hosts_[i].identity)) {
+#if DEBUG_IDENTITY 
+      EncName enc;
+
+      IFLOG(LOG_INFO,
+	    hash2enc(&identity->hashPubKey,
+		     &enc));
+      LOG(LOG_INFO,
+	  "Whitelisting host '%s'\n",
+	  &enc);
+#endif
       hosts_[i].delta = 30 * cronSECONDS;
       hosts_[i].until = 0;
       hosts_[i].strict = NO;
@@ -719,7 +746,8 @@ static int whitelistHost(const PeerIdentity * identity) {
  * Call a method for each known host.
  *
  * @param callback the method to call for each host
- * @param now the time to use for excluding hosts due to blacklisting, use 0
+ * @param now the time to use for excluding hosts 
+ *        due to blacklisting, use 0
  *        to go through all hosts.
  * @param data an argument to pass to the method
  * @return the number of hosts matching
@@ -845,7 +873,8 @@ static void getPeerIdentity(const PublicKey * pubKey,
  * @param capi the core API
  * @return NULL on errors, ID_API otherwise
  */
-Identity_ServiceAPI * provide_module_identity(CoreAPIForApplication * capi) {
+Identity_ServiceAPI * 
+provide_module_identity(CoreAPIForApplication * capi) {
   static Identity_ServiceAPI id;
   char * gnHome;
   int i;
@@ -876,10 +905,11 @@ Identity_ServiceAPI * provide_module_identity(CoreAPIForApplication * capi) {
 		  &myIdentity);
 
   MUTEX_CREATE_RECURSIVE(&lock_);
-  networkIdDirectory = getFileName("GNUNETD",
-				   "HOSTS",
-				   _("Configuration file must specify directory for "
-				     "network identities in section %s under %s.\n"));
+  networkIdDirectory
+    = getFileName("GNUNETD",
+		  "HOSTS",
+		  _("Configuration file must specify directory for "
+		    "network identities in section %s under %s.\n"));
   mkdirp(networkIdDirectory);
   gnHome = getFileName("GNUNETD",
 		       "GNUNETD_HOME",
