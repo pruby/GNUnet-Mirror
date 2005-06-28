@@ -792,7 +792,7 @@ int doneTCPServer() {
  * @return OK on success, SYSERR if there is already a
  *         handler for that type
  */
-int registerCSHandler(const unsigned short type,
+int registerCSHandler(unsigned short type,
 		      CSHandler callback) {
   MUTEX_LOCK(&handlerlock);
   if (type < max_registeredType) {
@@ -825,7 +825,7 @@ int registerCSHandler(const unsigned short type,
  * @return OK on success, SYSERR if there is no or another
  *         handler for that type
  */
-int unregisterCSHandler(const unsigned short type,
+int unregisterCSHandler(unsigned short type,
 			CSHandler callback) {
   MUTEX_LOCK(&handlerlock);
   if (type < max_registeredType) {
@@ -864,7 +864,24 @@ int sendTCPResultToClient(ClientHandle sock,
   return sendToClient(sock,
 		      &rv.header);
 }
-				
-
+			
+/**
+ * Check if a handler is registered for a given
+ * message type.
+ *
+ * @param type the message type
+ * @return number of registered handlers (0 or 1)
+ */
+unsigned int isCSHandlerRegistered(unsigned short type) {
+  MUTEX_LOCK(&handlerlock);
+  if (type < max_registeredType) {
+    if (handlers[type] != NULL) {
+      MUTEX_UNLOCK(&handlerlock);
+      return 1;
+    }
+  }
+  MUTEX_UNLOCK(&handlerlock);
+  return 0;
+}
 
 /* end of tcpserver.c */

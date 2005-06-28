@@ -7,7 +7,7 @@
 #include "platform.h"
 
 #include <sys/types.h>
-#ifndef MINGW             /* FIXME MINGW */
+#ifndef MINGW             /* PORT-ME MINGW */
 
 
 static Mutex lock;
@@ -320,7 +320,7 @@ static int parseCommandLine(int argc,
   }
   return OK;
 }
-#endif /* FIXME MINGW */
+#endif /* PORT-ME MINGW */
 
 int main(int argc, char * argv[]){
   int ret = 0;

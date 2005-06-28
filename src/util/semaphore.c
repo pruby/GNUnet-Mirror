@@ -69,7 +69,7 @@ typedef struct {
   int internal; /* KLB_FIX */
   char * filename;
 #else
-  /* FIXME! */
+  /* PORT-ME! */
 #endif
 } IPC_Semaphore_Internal;
 
@@ -450,7 +450,7 @@ void PTHREAD_KILL(PTHREAD_T * pt,
 #if LINUX
   /* IPC semaphore kludging for linux */
 
-  /* FIXME: ugly. why don't we start at count 0 and increment when opening? */
+  /* Why don't we start at count 0 and increment when opening? */
   #define PROCCOUNT 10000
 
   /**

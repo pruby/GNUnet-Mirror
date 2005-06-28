@@ -512,16 +512,29 @@ unsigned long long ECRS_fileSize(const struct ECRS_URI * uri) {
 
 
 /**
- * Duplicate URI.  FIXME: this is the QnD, costly
- * implementation.
+ * Duplicate URI.
  */
 URI * ECRS_dupUri(const URI * uri) {
-  char * tmp;
   struct ECRS_URI * ret;
+  int i;
 
-  tmp = ECRS_uriToString(uri);
-  ret = ECRS_stringToUri(tmp);
-  FREE(tmp);
+  ret = MALLOC(sizeof(URI));
+  memcpy(ret,
+	 uri,
+	 sizeof(URI));
+  switch (ret->type) {
+  case ksk:
+    if (ret->data.ksk.keywordCount > 0) {
+      ret->data.ksk.keywords 
+	= MALLOC(ret->data.ksk.keywordCount * sizeof(char*));
+      for (i=0;i<ret->data.ksk.keywordCount;i++) 
+	ret->data.ksk.keywords[i]
+	  = STRDUP(uri->data.ksk.keywords[i]);      
+    }
+    break;
+  default:
+    break;
+  }
   return ret;
 }
 
@@ -653,33 +666,55 @@ struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]) {
 
 
 /**
- * Are these two URIs equal?  FIXME: not very efficient
- * implementation.  Also, for keyword URIs, we might
- * want to allow permuations.
+ * Are these two URIs equal?
  */
 int ECRS_equalsUri(const struct ECRS_URI * uri1,
 		   const struct ECRS_URI * uri2) {
-  char * u1;
-  char * u2;
   int ret;
+  int i;
+  int j;
   
   GNUNET_ASSERT(uri1 != NULL);
   GNUNET_ASSERT(uri2 != NULL);
-  u1 = ECRS_uriToString(uri1);
-  u2 = ECRS_uriToString(uri2);
-  if ( (u1 == NULL) || (u2 == NULL)) {
-    BREAK();
-    FREENONNULL(u1);
-    FREENONNULL(u2);
+  if (uri1->type != uri2->type)
+    return NO;
+  switch(uri1->type) {
+  case chk:
+    if (0 == memcmp(&uri1->data.chk,
+		    &uri2->data.chk,
+		    sizeof(FileIdentifier)))
+      return YES;
+    else
+      return NO;
+  case sks:
+    if (equalsHashCode512(&uri1->data.sks.namespace,
+			  &uri2->data.sks.namespace) &&
+	equalsHashCode512(&uri1->data.sks.identifier,
+			  &uri2->data.sks.identifier) )
+	
+      return YES;
+    else
+      return NO;
+  case ksk:
+    if (uri1->data.ksk.keywordCount !=
+	uri2->data.ksk.keywordCount)
+      return NO;
+    for (i=0;i<uri1->data.ksk.keywordCount;i++) {
+      ret = NO;
+      for (j=0;j<uri2->data.ksk.keywordCount;j++) {
+	if (0 == strcmp(uri1->data.ksk.keywords[i],
+			uri2->data.ksk.keywords[j])) {
+	  ret = YES;
+	  break;
+	}
+      }
+      if (ret == NO)
+	return NO;			
+    }
+    return YES;
+  default:
     return NO;
   }
-  ret = strcmp(u1, u2);
-  FREE(u1);
-  FREE(u2);
-  if (ret == 0)
-    return YES;
-  else
-    return NO;
 }
 
 

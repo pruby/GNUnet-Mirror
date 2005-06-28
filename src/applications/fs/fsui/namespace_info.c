@@ -76,8 +76,8 @@ static void writeNamespaceInfo(const char * namespaceName,
 static int readNamespaceInfo(const char * namespaceName,
 			     struct ECRS_MetaData ** meta,
 			     int * ranking) {
+  unsigned long long len;
   unsigned int size;
-  unsigned int tag;
   char * buf;
   char * fn;
   char * fnBase;
@@ -98,28 +98,32 @@ static int readNamespaceInfo(const char * namespaceName,
   strcat(fn, namespaceName);
   FREE(fnBase);
 
-  tag = getFileSize(fn);
-  if (tag <= sizeof(int)) {
+  if (OK != getFileSize(fn,
+			&len)) {
     FREE(fn);
     return SYSERR;
   }
-  if (tag > 16 * 1024 * 1024) {
+  if (len <= sizeof(int)) {
+    FREE(fn);
+    return SYSERR;
+  }
+  if (len > 16 * 1024 * 1024) {
     /* too big, must be invalid! remove! */
     BREAK();
     UNLINK(fn);
     FREE(fn);
     return SYSERR;
   }
-  buf = MALLOC(tag);
-  if (tag != readFile(fn,
-		      tag,
+  buf = MALLOC(len);
+  if (len != readFile(fn,
+		      len,
 		      buf)) {
     FREE(buf);
     FREE(fn);
     return SYSERR;
   }
 
-  size = tag - sizeof(int);
+  size = len - sizeof(int);
   *ranking = ntohl(((int *) buf)[0]);
   if (OK != ECRS_deserializeMetaData(meta,
 				     &buf[sizeof(int)],
@@ -210,7 +214,6 @@ int FSUI_rankNamespace(struct FSUI_Context * ctx,
 typedef struct {
   FSUI_NamespaceIterator iterator;
   void * closure;
-  int ret;
 } LNClosure;
 
 static int localListNamespaceHelper(const HashCode512 * nsid,
@@ -221,8 +224,6 @@ static int localListNamespaceHelper(const HashCode512 * nsid,
   struct ECRS_MetaData * meta;
   int rating;
 
-  if (c->ret == SYSERR)
-    return SYSERR;
   if (OK != readNamespaceInfo(name,
 			      &meta,
 			      &rating)) {
@@ -235,41 +236,32 @@ static int localListNamespaceHelper(const HashCode512 * nsid,
 		    meta,
 		    rating);
   ECRS_freeMetaData(meta);
-  if (ret == SYSERR)
-    c->ret = ret;
-  else
-    c->ret++;
-  return OK;
+  return ret;
 }
 
-static void listNamespaceHelper(const char * fn,
-				const char * dirName,
-				void * cls) {
+static int listNamespaceHelper(const char * fn,
+			       const char * dirName,
+			       void * cls) {
   LNClosure * c = cls;
   int ret;
   struct ECRS_MetaData * meta;
   int rating;
   HashCode512 id;
 
-  if (c->ret == SYSERR)
-    return;
   if (OK != enc2hash(fn,
 		     &id))
-    return; /* invalid name */
+    return OK; /* invalid name */
   if (OK != readNamespaceInfo(fn,
 			      &meta,
 			      &rating))
-    return; /* ignore entry */
+    return OK; /* ignore entry */
   ret = c->iterator(c->closure,
 		    fn,
 		    &id,
 		    meta,
 		    rating);
   ECRS_freeMetaData(meta);
-  if (ret == SYSERR)
-    c->ret = ret;
-  else
-    c->ret++;
+  return OK;
 }
 
 /**
@@ -283,14 +275,13 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
 			FSUI_NamespaceIterator iterator,
 			void * closure) {
   LNClosure cls;
+  int ret;
 
   cls.iterator = iterator;
   cls.closure = closure;
-  cls.ret = 0;
-
   if (local == YES) {
-    ECRS_listNamespaces(&localListNamespaceHelper,
-			&cls);
+    ret = ECRS_listNamespaces(&localListNamespaceHelper,
+			      &cls);
   } else {
     char * fn;
     char * fnBase;
@@ -305,12 +296,12 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
     strcat(fn, DIR_SEPARATOR_STR);
     strcat(fn, NS_DIR);
     mkdirp(fn);
-    scanDirectory(fn,
-		  &listNamespaceHelper,
-		  &cls);
+    ret = scanDirectory(fn,
+			&listNamespaceHelper,
+			&cls);
     FREE(fn);
   }
-  return cls.ret;
+  return ret;
 }
 
 /**
@@ -367,22 +358,29 @@ static int readUpdateData(const char * nsname,
   char * fn;
   struct UpdateData * buf;
   char * uri;
-  size_t size;
+  unsigned long long size;
   size_t pos;
 
   fn = getUpdateDataFilename(nsname,
 			     lastId);
-  size = getFileSize(fn);
+  if (OK != getFileSize(fn,
+			&size)) {
+    FREE(fn);
+    return SYSERR;
+  }
   if ( (size == 0) ||
        (size <= sizeof(struct UpdateData)) ||
-       (size > 1024 * 1024 * 16) )
+       (size > 1024 * 1024 * 16) ) {
+    FREE(fn);
     return SYSERR;
+  }
 
   buf = MALLOC(size);
   if (size != readFile(fn,
 		       size,	
 		       buf)) {
     FREE(buf);
+    FREE(fn);
     return SYSERR;
   }
   FREE(fn);
@@ -622,9 +620,10 @@ struct lNCC {
   int cnt;
 };
 
-void lNCHelper(const char * fil,
-	       const char * dir,
-	       struct lNCC * cls) {
+static int lNCHelper(const char * fil,
+		     const char * dir,
+		     void * ptr) {
+  struct lNCC * cls = ptr;
   ECRS_FileInfo fi;
   HashCode512 lastId;
   HashCode512 nextId;
@@ -633,11 +632,9 @@ void lNCHelper(const char * fil,
   cron_t nextTime;
   cron_t now;
 
-  if (cls->cnt == SYSERR)
-    return;
   if (OK != enc2hash(fil,
 		     &lastId))
-    return;
+    return OK;
   fi.uri = NULL;
   fi.meta = NULL;
   if (OK != readUpdateData(cls->name,
@@ -646,7 +643,7 @@ void lNCHelper(const char * fil,
 			   &fi,
 			   &pubFreq,
 			   &lastTime))
-    return;
+    return OK;
   cls->cnt++;
   if (pubFreq == ECRS_SBLOCK_UPDATE_SPORADIC) {
     nextTime = 0;
@@ -663,11 +660,14 @@ void lNCHelper(const char * fil,
 		      &nextId,
 		      pubFreq,
 		      nextTime)) {
-      cls->cnt = SYSERR;
+      ECRS_freeUri(fi.uri);
+      ECRS_freeMetaData(fi.meta);
+      return SYSERR;
     }
   }
   ECRS_freeUri(fi.uri);
   ECRS_freeMetaData(fi.meta);
+  return OK;
 }
 
 /**
@@ -687,9 +687,12 @@ int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
   dirName = getUpdateDataFilename(name,
 				  NULL);
   mkdirp(dirName);
-  scanDirectory(dirName,
-		(DirectoryEntryCallback)&lNCHelper,
-		&cls);
+  if (SYSERR == scanDirectory(dirName,
+			      &lNCHelper,
+			      &cls)) {
+    FREE(dirName);
+    return SYSERR;
+  }
   FREE(dirName);
   return cls.cnt;
 }

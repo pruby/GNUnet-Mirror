@@ -632,9 +632,9 @@ static int tryConnect(const PeerIdentity * peer) {
  */
 static int acceptSessionKeyUpdate(const PeerIdentity * sender,
 				  const p2p_HEADER * msg) {
-  LOG(LOG_WARNING,
-      "rekeying not implemented\n");
-  /* FIXME: verify skey, notify core about new key */
+  acceptSessionKey(sender,
+		   msg,
+		   NULL);
   return OK;
 }
 

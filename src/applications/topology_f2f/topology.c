@@ -286,7 +286,7 @@ static int rereadConfiguration() {
   char * tmp;
   char * fn;
   char * data;
-  size_t size;
+  unsigned long long size;
   size_t pos;
   EncName enc;
   HashCode512 hc;
@@ -309,7 +309,11 @@ static int rereadConfiguration() {
     FREE(fn);
     return SYSERR;
   }
-  size = getFileSize(fn);
+  if (OK != getFileSize(fn,
+			&size)) {
+    FREE(fn);
+    return SYSERR;
+  }
   data = MALLOC(size);
   if (size != readFile(fn, size, data)) {
     LOG(LOG_ERROR,

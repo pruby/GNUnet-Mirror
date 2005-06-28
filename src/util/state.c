@@ -117,7 +117,7 @@ int stateReadContent(const char * name,
   int fd;
   int size;
   char * fil;
-  size_t fsize;
+  unsigned long long fsize;
   size_t n;
 
   GNUNET_ASSERT(handle != NULL);
@@ -130,6 +130,11 @@ int stateReadContent(const char * name,
 	   "%s/%s",
 	   dbh,
 	   name);
+  if (OK != getFileSize(fil,
+			&fsize)) {
+    FREE(fil);
+    return -1;
+  }
   fd = fileopen(fil,
 	    O_RDONLY,
 	    S_IRUSR);
@@ -137,7 +142,6 @@ int stateReadContent(const char * name,
     FREE(fil);
     return -1;
   }
-  fsize = getFileSize(fil);
   FREE(fil);
   if (fsize == 0) { /* also invalid! */
     closefile(fd);

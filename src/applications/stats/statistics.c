@@ -292,6 +292,7 @@ static int sendStatistics(ClientHandle sock,
 static int handlep2pMessageSupported(ClientHandle sock,
 				     const CS_HEADER * message) {
   unsigned short type;
+  unsigned short htype;
   int supported;
   STATS_CS_GET_MESSAGE_SUPPORTED * cmsg;
 
@@ -301,8 +302,8 @@ static int handlep2pMessageSupported(ClientHandle sock,
   }
   cmsg = (STATS_CS_GET_MESSAGE_SUPPORTED *) message;
   type = ntohs(cmsg->type);
-  // FIXME: supported = coreAPI->isHandlerRegistered(type);
-  supported = NO;
+  htype = ntohs(cmsg->handlerType);
+  supported = coreAPI->isHandlerRegistered(type, htype);
   return coreAPI->sendValueToClient(sock, supported);
 }
 

@@ -198,8 +198,9 @@ static void addHostToKnown(const PeerIdentity * identity,
   hosts_[count_].strict   = NO;
   hash2enc(&identity->hashPubKey,
 	   &fil);
-  fn = MALLOC(strlen((char*)trustDirectory)+sizeof(EncName)+1);
-  buildFileName(trustDirectory, &fil, fn);
+  fn = MALLOC(strlen(trustDirectory)+sizeof(EncName)+1);
+  strcpy(fn, trustDirectory);
+  strcat(fn, (char*) &fil);
   if (sizeof(unsigned int) ==
       readFile(fn,
 	       sizeof(unsigned int),
@@ -266,9 +267,9 @@ static unsigned int getHostTrust(const PeerIdentity * hostId) {
 }
 
 
-static void cronHelper(const char * filename,
-		       const char * dirname,
-		       void * unused) {
+static int cronHelper(const char * filename,
+		      const char * dirname,
+		      void * unused) {
   PeerIdentity identity;
   EncName id;
   unsigned int protoNumber;
@@ -284,7 +285,7 @@ static void cronHelper(const char * filename,
 		       &identity.hashPubKey)) {
       addHostToKnown(&identity,
 		     (unsigned short) protoNumber);
-      return;
+      return OK;
     }
   }
 
@@ -297,8 +298,11 @@ static void cronHelper(const char * filename,
 	filename,
 	networkIdDirectory);
   else
-    LOG_FILE_STRERROR(LOG_ERROR, "unlink", fullname);
+    LOG_FILE_STRERROR(LOG_ERROR,
+		      "unlink",
+		      fullname);
   FREE(fullname);
+  return OK;
 }
 
 /**
@@ -419,9 +423,11 @@ struct TempStorage_ {
  * Check if the filename matches the identity that we are searching
  * for. If yes, fill it in.
  */
-static void identity2HeloHelper(const char * fn,
-				const char * dirName,
-				struct TempStorage_ * res) {
+static int identity2HeloHelper(const char * fn,
+			       const char * dirName,
+			       void * ptr) {
+  struct TempStorage_ * res = ptr;
+
   if (strstr(fn, (char*)&res->enc) != NULL) {
     char * fileName;
     HELO_Message buffer;
@@ -476,6 +482,7 @@ static void identity2HeloHelper(const char * fn,
     }
     FREE(fileName);
   }
+  return OK;
 }
 
 /**
@@ -568,7 +575,7 @@ static int identity2Helo(const PeerIdentity *  hostId,
       protocol);
 #endif
   scanDirectory(networkIdDirectory,
-		(DirectoryEntryCallback)&identity2HeloHelper,
+		&identity2HeloHelper,
 		&tempStorage);
   *result = tempStorage.helo;
   return tempStorage.result;
@@ -721,8 +728,11 @@ static int forEachHost(cron_t now,
 		       HostIterator callback,
 		       void * data) {
   int i;
-  int count = 0;
+  int count;
+  PeerIdentity hi;
+  unsigned short proto;
 
+  count = 0;
   MUTEX_LOCK(&lock_);
   for (i=0;i<count_;i++) {
     if (hostIdentityEquals(&hosts_[i].identity,
@@ -732,9 +742,6 @@ static int forEachHost(cron_t now,
 	 (now >= hosts_[i].until) ) {
       count++;
       if (callback != NULL) {
-	PeerIdentity hi;
-	unsigned short proto;
-
 	hi = hosts_[i].identity;
 	proto = hosts_[i].protocol;
 	MUTEX_UNLOCK(&lock_);
@@ -746,7 +753,21 @@ static int forEachHost(cron_t now,
       }
     }
   }
-  /* FIXME: also iterate over temporary list */
+  for (i=0;i<MAX_TEMP_HOSTS;i++) {
+    if (tempHosts[i] == NULL)
+      continue;
+    count++;
+    if (callback != NULL) {
+      hi = tempHosts[i]->senderIdentity;
+      proto = tempHosts[i]->protocol;
+      MUTEX_UNLOCK(&lock_);
+      callback(&hi,
+	       proto,
+	       YES,
+	       data);
+      MUTEX_LOCK(&lock_);
+    }      
+  }
   MUTEX_UNLOCK(&lock_);
   return count;
 }
@@ -765,10 +786,9 @@ static void flushHostCredit(HostEntry * host) {
   host->trust = host->trust & TRUST_ACTUAL_MASK;
   hash2enc(&host->identity.hashPubKey,
 	   &fil);
-  fn = MALLOC(strlen((char*)trustDirectory)+sizeof(EncName)+1);
-  buildFileName(trustDirectory,
-		&fil,
-		fn);
+  fn = MALLOC(strlen(trustDirectory)+sizeof(EncName)+1);
+  strcpy(fn, trustDirectory);
+  strcat(fn, (char*) &fil);
   if (host->trust == 0) {
     if (0 != UNLINK(fn)) {
       if (errno != ENOENT)

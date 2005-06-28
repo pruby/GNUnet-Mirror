@@ -89,6 +89,7 @@ static Identity_ServiceAPI * identity;
 static int loadApplicationModule(const char * rpos) {
   int ok;
   ShutdownList * nxt;
+  ShutdownList * spos;
   ApplicationInitMethod mptr;
   void * library;
   char * name;
@@ -161,9 +162,37 @@ static int loadApplicationModule(const char * rpos) {
   shutdownList = nxt;
   ok = mptr(&applicationCore);
   if (OK != ok) {
+    /* undo loading */
+    LOG(LOG_MESSAGE,
+	_("Failed to load plugin '%s' at %s:%d.  Unloading plugin.\n"),
+	name, __FILE__, __LINE__);
+    /* Note: we cannot assert that shutdownList == nxt here,
+       so we have to traverse the list again! */
     nxt->applicationInitialized = NO;
-    /* FIXME: undo loading? */
-    /* Note: we cannot assert that shutdownList == nxt here! */
+    if (shutdownList == nxt) {
+      spos = NULL;
+    } else {
+      spos = shutdownList;
+      while (spos->next != nxt) {
+	spos = spos->next;
+	if (spos == NULL) {
+	  BREAK(); /* should never happen! */
+	  return ok;
+	}
+      }
+    }
+    if (spos == NULL)
+      shutdownList = nxt->next;
+    else
+      spos->next = nxt->next;
+#if DEBUG_CORE
+    LOG(LOG_DEBUG,
+	"Unloading library '%s' at %s:%d.\n",
+	name, __FILE__, __LINE__);
+#endif
+    unloadDynamicLibrary(library);
+    FREE(name);
+    FREE(nxt);   
   }
   return ok;
 }
@@ -513,6 +542,7 @@ void initCore() {
   applicationCore.unregisterHandler = &unregisterp2pHandler; /* handler.c*/
   applicationCore.registerPlaintextHandler = &registerPlaintextHandler; /* handler.c */
   applicationCore.unregisterPlaintextHandler = &unregisterPlaintextHandler; /* handler.c*/
+  applicationCore.isHandlerRegistered = &isHandlerRegistered; /* handler.c*/
 
   applicationCore.offerTSessionFor = &considerTakeover; /* connection.c */
   applicationCore.assignSessionKey = &assignSessionKey; /* connection.c */

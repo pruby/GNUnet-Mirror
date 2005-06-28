@@ -192,15 +192,17 @@ static int uploadDirectory(UploadThreadClosure * utc,
 /**
  * For each file in the directory, upload (recursively).
  */
-static void dirEntryCallback(const char * filename,
-			     const char * dirName,
-			     UploadThreadClosure * utc) {
+static int dirEntryCallback(const char * filename,
+			    const char * dirName,
+			    void * ptr) {
+  UploadThreadClosure * utc = ptr;
   char * fn;
   struct ECRS_URI * uri;
   struct ECRS_URI * keywordUri;
   struct ECRS_MetaData * meta;
   FSUI_Event event;
   int ret;
+  unsigned long long len;
 
   fn = MALLOC(strlen(filename) + strlen(dirName) + 2);
   strcpy(fn, dirName);
@@ -223,7 +225,8 @@ static void dirEntryCallback(const char * filename,
     event.data.UploadComplete.total = utc->main_total;
     event.data.UploadComplete.filename = utc->filename;
     event.data.UploadComplete.uri = uri;
-    utc->main_completed += getFileSize(fn);
+    if (OK == getFileSize(fn, &len))
+      utc->main_completed += len;
     event.data.UploadComplete.eta
       = (cron_t) (utc->start_time +
 		  (((double)(cronTime(NULL)
@@ -248,7 +251,7 @@ static void dirEntryCallback(const char * filename,
     prev = utc->dir;
     utc->dir = &current;
     scanDirectory(fn,
-		  (DirectoryEntryCallback)&dirEntryCallback,
+		  &dirEntryCallback,
 		  utc);
     meta = NULL;
     utc->dir = prev;
@@ -300,6 +303,7 @@ static void dirEntryCallback(const char * filename,
     FSUI_trackURI(&utc->dir->fis[utc->dir->fiCount-1]);
   }
   FREE(fn);
+  return OK;
 }
 
 /**
@@ -318,7 +322,12 @@ static void * uploadThread(UploadThreadClosure * utc) {
     = ECRS_getFromMetaData(utc->meta,
 			   EXTRACTOR_FILENAME);
   cronTime(&utc->start_time);
-  utc->main_total = getFileSize(utc->main_filename);
+
+  if (OK != getFileSize(utc->main_filename,
+			&utc->main_total)) {
+    utc->main_total = 0;
+    /* or signal error?? */
+  }
   utc->main_completed = 0;
   ret = SYSERR;
   uri = NULL;
@@ -368,7 +377,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
     utc->dir = &current;
     utc->filename = utc->main_filename;
     scanDirectory(utc->main_filename,
-		  (DirectoryEntryCallback)&dirEntryCallback,
+		  &dirEntryCallback,
 		  utc);
     ret = uploadDirectory(utc,
 			  utc->main_filename,

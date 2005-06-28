@@ -2103,6 +2103,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
   be = lookForHost(peer);
   if (be != NULL) {
     cronTime(&be->isAlive);
+    identity->whitelistHost(peer);
     if ( ( (be->status & STAT_SKEY_SENT) > 0) &&
 	 ( (be->status & STAT_SKEY_RECEIVED) > 0) ) {
       if (be->session.tsession == NULL) {

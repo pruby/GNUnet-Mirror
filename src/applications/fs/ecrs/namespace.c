@@ -281,13 +281,17 @@ int ECRS_testNamespaceExists(const char * name,
   char * fileName;
   PrivateKeyEncoded * hke;
   char * dst;
-  unsigned short len;
+  unsigned long long len;
   HashCode512 namespace;
   PublicKey pk;
 
   /* FIRST: read and decrypt pseudonym! */
   fileName = getPseudonymFileName(name);
-  len = getFileSize(fileName);
+  if (OK != getFileSize(fileName,
+			&len)) {
+    FREE(fileName);
+    return SYSERR;
+  }
   if (len < 2) {
     LOG(LOG_ERROR,
         _("File '%s' does not contain a pseudonym.\n"),
@@ -354,12 +358,16 @@ int ECRS_addToNamespace(const char * name,
   char * fileName;
   PrivateKeyEncoded * hke;
   char * dst;
-  unsigned short len;
+  unsigned long long len;
   HashCode512 hc;
 
   /* FIRST: read pseudonym! */
   fileName = getPseudonymFileName(name);
-  len = getFileSize(fileName);
+  if (OK != getFileSize(fileName,
+			&len)) {
+    FREE(fileName);
+    return SYSERR;
+  }
   if (len < 2) {
     LOG(LOG_ERROR,
         _("File '%s' does not contain a pseudonym.\n"),
@@ -487,15 +495,15 @@ struct lNCLS {
   int cnt;
 };
 
-static int processFile_(char * name,
-			char * dirName,
+static int processFile_(const char * name,
+			const char * dirName,
 			void * cls) {
   struct lNCLS * c = cls;
   struct PrivateKey * hk;
   char * fileName;
   PrivateKeyEncoded * hke;
   char * dst;
-  unsigned short len;
+  unsigned long long len;
   HashCode512 namespace;
   PublicKey pk;
 
@@ -503,7 +511,11 @@ static int processFile_(char * name,
     return SYSERR;
 
   fileName = getPseudonymFileName(name);
-  len = getFileSize(fileName);
+  if (OK != getFileSize(fileName,
+			&len)) {
+    FREE(fileName);
+    return OK;
+  }
   if (len < 2) {
     LOG(LOG_ERROR,
         _("File '%s' does not contain a pseudonym.\n"),
@@ -564,7 +576,7 @@ int ECRS_listNamespaces(ECRS_NamespaceInfoCallback cb,
   myCLS.cnt = 0;
   dirName = getPseudonymFileName("");
   scanDirectory(dirName,
-		(DirectoryEntryCallback) &processFile_,
+		&processFile_,
 		&myCLS);
   FREE(dirName);
   return myCLS.cnt;

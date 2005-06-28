@@ -6,7 +6,7 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-/* FIXME: avoid making these non-static altogether! */
+/* OPTIMIZE-ME: avoid making these non-static altogether! */
 
 
 /**

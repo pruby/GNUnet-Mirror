@@ -111,7 +111,7 @@ static Mutex handlerLock;
  * @return OK on success, SYSERR if core threads are running
  *        and updates to the handler list are illegal!
  */
-int registerp2pHandler(const unsigned short type,
+int registerp2pHandler(unsigned short type,
 		       MessagePartHandler callback) {
   int last;
 
@@ -154,7 +154,7 @@ int registerp2pHandler(const unsigned short type,
  *        handler for that type or if core threads are running
  *        and updates to the handler list are illegal!
  */
-int unregisterp2pHandler(const unsigned short type,
+int unregisterp2pHandler(unsigned short type,
 			 MessagePartHandler callback) {
   int pos;
   int last;
@@ -202,7 +202,7 @@ int unregisterp2pHandler(const unsigned short type,
  * @return OK on success, SYSERR if core threads are running
  *        and updates to the handler list are illegal!
  */
-int registerPlaintextHandler(const unsigned short type,
+int registerPlaintextHandler(unsigned short type,
 			     PlaintextMessagePartHandler callback) {
   int last;
 
@@ -245,7 +245,7 @@ int registerPlaintextHandler(const unsigned short type,
  *        handler for that type or if core threads are running
  *        and updates to the handler list are illegal!
  */
-int unregisterPlaintextHandler(const unsigned short type,
+int unregisterPlaintextHandler(unsigned short type,
 			       PlaintextMessagePartHandler callback) {
   int pos;
   int last;
@@ -278,6 +278,52 @@ int unregisterPlaintextHandler(const unsigned short type,
   }
   MUTEX_UNLOCK(&handlerLock);
   return SYSERR;
+}
+
+
+
+/**
+ * Unregister a method as a handler for specific message types. Only
+ * for plaintext messages!
+ *
+ * @param type the message type
+ * @param callback the method to call if a message of
+ *        that type is received
+ * @return OK on success, SYSERR if there is a different
+ *        handler for that type or if core threads are running
+ *        and updates to the handler list are illegal!
+ */
+int isHandlerRegistered(unsigned short type,
+			unsigned short handlerType) {
+  int pos;
+  int ret;
+  
+  if (handlerType == 3)
+    return isCSHandlerRegistered(type);
+  if (handlerType > 3) {
+    BREAK();
+    return SYSERR;
+  }
+  ret = 0;
+  MUTEX_LOCK(&handlerLock);    
+  if (type < plaintextmax_registeredType) {
+    pos = 0;
+    while (plaintextHandlers[type][pos] != NULL)
+      pos++;
+    if ( (handlerType == 0) ||
+	 (handlerType == 2) )
+      ret += pos;
+  }
+  if (type < max_registeredType) {
+    pos = 0;
+    while (handlers[type][pos] != NULL) 
+      pos++;
+    if ( (handlerType == 1) ||
+	 (handlerType == 2) )
+      ret += pos;
+  }
+  MUTEX_UNLOCK(&handlerLock);
+  return ret;
 }
 
 
@@ -400,7 +446,7 @@ void injectMessage(const PeerIdentity * sender,
 static void handleMessage(TSession * tsession,
 			  const PeerIdentity * sender,
 			  const char * msg,
-			  const unsigned int size) {
+			  unsigned int size) {
   int ret;
 
   if (YES == identity->isBlacklistedStrict(sender) ) {

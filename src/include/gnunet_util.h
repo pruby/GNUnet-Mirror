@@ -485,9 +485,14 @@ typedef struct {
  */
 typedef int (*CommandLineParser)(int argc, char * argv[]);
 
-typedef void (*DirectoryEntryCallback)(const char * filename,
-				       const char * dirName,
-				       void * data);
+/**
+ * Function called on each file in a directory.
+ * @return OK to continue to iterate,
+ *  SYSERR to abort iteration with error!
+ */
+typedef int (*DirectoryEntryCallback)(const char * filename,
+				      const char * dirName,
+				      void * data);
 
 /**
  * @brief description of a command line option (helptext)
@@ -1841,14 +1846,20 @@ void incrementBytesReceived(unsigned long long delta);
 /**
  * Get the size of the file (or directory)
  * of the given file (in bytes).
+ *
+ * @return OK on success, SYSERR on error
  */
-unsigned long long getFileSize(const char * filename);
+int getFileSize(const char * filename,
+		unsigned long long * size);
 
 /**
  * Get the size of the file (or directory) without
  * counting symlinks.
+ *
+ * @return OK on success, SYSERR on error
  */
-unsigned long long getFileSizeWithoutSymlinks(const char * filename);
+int getFileSizeWithoutSymlinks(const char * filename,
+			       unsigned long long * size);
 
 /**
  * Get the number of blocks that are left on the partition that
@@ -1901,11 +1912,12 @@ int readFile(const char * fileName,
  * @param buffer the data to write
  * @param n number of bytes to write
  * @param mode the mode for file permissions
+ * @return OK on success, SYSERR on error
  */
-void writeFile(const char * fileName,
-	       const void * buffer,
-	       unsigned int n,
-	       const char * mode);
+int writeFile(const char * fileName,
+	      const void * buffer,
+	      unsigned int n,
+	      const char * mode);
 
 /**
  * Copy a file.
@@ -1913,17 +1925,6 @@ void writeFile(const char * fileName,
  */
 int copyFile(const char * src,
 	     const char * dst);
-
-/**
- * Build a filename from directory and filename, completing like the shell does
- * @param dir the name of the directory, may contain ~/ or other shell stuff. Will
- *        NOT be freed!
- * @param fil the name of the file, will NOT be deallocated anymore!
- * @param result where to store the full file name (must be large enough!)
- */
-void buildFileName(const char * dir,
-		   const EncName * fil,
-		   char * result);
 
 /**
  * Scan a directory for files. The name of the directory

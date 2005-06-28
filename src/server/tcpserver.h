@@ -56,7 +56,7 @@ int doneTCPServer();
  * @return OK on success, SYSERR if there is already a
  *         handler for that type
  */
-int registerCSHandler(const unsigned short type,
+int registerCSHandler(unsigned short type,
 		      CSHandler callback);
 
 /**
@@ -70,7 +70,7 @@ int registerCSHandler(const unsigned short type,
  * @return OK on success, SYSERR if there is no or another
  *         handler for that type
  */
-int unregisterCSHandler(const unsigned short type,
+int unregisterCSHandler(unsigned short type,
 			CSHandler callback);
 
 int registerClientExitHandler(ClientExitHandler callback);
@@ -101,6 +101,15 @@ int sendTCPResultToClient(ClientHandle sock,
 
 
 void terminateClientConnection(ClientHandle sock);
+
+/**
+ * Check if a handler is registered for a given
+ * message type.
+ *
+ * @param type the message type
+ * @return number of registered handlers (0 or 1)
+ */
+unsigned int isCSHandlerRegistered(unsigned short type);
 
 #endif
 /* end of tcpserver.h */

@@ -977,7 +977,7 @@ int cpuUsage(){
         dDiffIdle = dIdle - dLastIdle;
         dDiffUser = dUser - dLastUser;
 
-        /* FIXME MINGW: Multi-processor? */
+        /* PORT-ME MINGW: Multi-processor? */
         lastcpuresult = 100.0 - (dDiffIdle / (dDiffKernel + dDiffUser)) * 100.0;
       }
       else

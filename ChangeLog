@@ -1,3 +1,8 @@
+Tue Jun 28 13:41:58 UTC 2005
+	Fixed various open FIXMEs, including error handling,
+	bad performance and some memory leaks (gnunet-tools
+	only, not in gnunetd).
+	
 Mon Jun 27 17:21:09 CEST 2005
 	Fixed double-free segfault.
 	Fixed problem with session timeout not happening.

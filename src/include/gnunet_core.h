@@ -402,8 +402,22 @@ typedef struct {
    * @return OK on success, SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterHandler)(const unsigned short type,
+  int (*unregisterHandler)(unsigned short type,
 			   MessagePartHandler callback);
+
+  /**
+   * Is a handler registered for messages of the given type?
+   * @param type the message type
+   * @param handlerType 0 for plaintext P2P,
+   *                    1 for ciphertext P2P,
+   *                    2 for either plaintext or ciphertext P2P,
+   *                    3 for client-server
+   *        NO for ciphertext handlers, SYSERR for either
+   * @return number of handlers registered, 0 for none,
+   *        SYSERR for invalid value of handlerType
+   */
+  int (*isHandlerRegistered)(unsigned short type,
+			     unsigned short handlerType);
 
   /**
    * Register a method as a handler for specific message
@@ -414,7 +428,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerPlaintextHandler)(const unsigned short type,
+  int (*registerPlaintextHandler)(unsigned short type,
 				  PlaintextMessagePartHandler callback);
 
   /**
@@ -427,7 +441,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterPlaintextHandler)(const unsigned short type,
+  int (*unregisterPlaintextHandler)(unsigned short type,
 				    PlaintextMessagePartHandler callback);
 
   /* ***************** traffic management ******************* */

@@ -213,6 +213,7 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
 			      void * cls) {
   STATS_CS_GET_MESSAGE_SUPPORTED csStatMsg;
   unsigned short i;
+  unsigned short j;
   int supported;
   int ret;
 
@@ -221,18 +222,23 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
     = htons(sizeof(STATS_CS_GET_MESSAGE_SUPPORTED));
   csStatMsg.header.type
     = htons(STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED);
-  for (i=0;i<65535;i++) {
-    csStatMsg.type = htons(i);
-    if (SYSERR == writeToSocket(sock,
-				&csStatMsg.header))
-      return SYSERR;
-    if (SYSERR == readTCPResult(sock,
-				&supported))
-      return SYSERR;
-    if (supported == YES) {
-      ret = processor(i, YES, cls);
-      if (ret != OK)
-	break;
+  for (j=2;j<4;j++) {
+    csStatMsg.handlerType = htons(j);
+    for (i=0;i<65535;i++) {
+      csStatMsg.type = htons(i);
+      if (SYSERR == writeToSocket(sock,
+				  &csStatMsg.header))
+	return SYSERR;
+      if (SYSERR == readTCPResult(sock,
+				  &supported))
+	return SYSERR;
+      if (supported == YES) {	
+	ret = processor(i, 
+			(j == 2) ? YES : NO,
+			cls);
+	if (ret != OK)
+	  break;
+      }
     }
   }
   csStatMsg.header.type

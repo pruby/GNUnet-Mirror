@@ -129,6 +129,20 @@ int registerPlaintextHandler(const unsigned short type,
 int unregisterPlaintextHandler(const unsigned short type,
 			       PlaintextMessagePartHandler callback);
 
+/**
+ * Is a handler registered for messages of the given type?
+ * @param type the message type
+ * @param handlerType 0 for plaintext P2P,
+ *                    1 for ciphertext P2P,
+ *                    2 for either plaintext or ciphertext P2P,
+ *                    3 for client-server
+ *        NO for ciphertext handlers, SYSERR for either
+ * @return number of handlers registered, 0 for none,
+ *        SYSERR for invalid value of handlerType
+ */
+int isHandlerRegistered(unsigned short type,
+			unsigned short handlerType);
+
 
 #endif
 /* end of handler.h */

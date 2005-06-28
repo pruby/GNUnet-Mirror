@@ -121,7 +121,7 @@ static void scanHelperCount(const PeerIdentity * id,
  * @param im structure responsible for the selection process
  */
 static void scanHelperSelect(const PeerIdentity * id,
-			     const unsigned short proto,
+			     unsigned short proto,
 			     int confirmed,
 			     IndexMatch * im) {
   if (hostIdentityEquals(coreAPI->myIdentity, id))

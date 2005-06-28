@@ -78,9 +78,12 @@ typedef struct {
   unsigned short type;
 
   /**
-   * For 64-bit alignment...
+   * 0 for plaintext P2P,
+   * 1 for ciphertext P2P,
+   * 2 for either plaintext or ciphertext P2P,
+   * 3 for client-server
    */
-  unsigned short reserved;
+  unsigned short handlerType;
 
 } STATS_CS_GET_MESSAGE_SUPPORTED;
 

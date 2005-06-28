@@ -206,10 +206,12 @@ int ECRS_unindexFile(const char * filename,
     BREAK();
     return SYSERR;
   }
+  if (OK != getFileSize(filename,
+			&filesize)) 
+    return SYSERR;
   sock = getClientSocket();
   if (sock == NULL)
     return SYSERR;
-  filesize = getFileSize(filename);
   eta = 0;
   if (upcb != NULL)
     upcb(filesize, 0, eta, upcbClosure);

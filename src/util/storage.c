@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -47,7 +47,7 @@
 #define		_IFLNK		0120000	/* symbolic link */
 #define	S_ISLNK(m)	(((m)&_IFMT) == _IFLNK)
 #else
-#error FIXME: need to port statfs (how much space is left on the drive?)
+#error PORT-ME: need to port statfs (how much space is left on the drive?)
 #endif
 #endif
 #endif
@@ -63,15 +63,15 @@
 #endif
 
 
-/* FIXME: Currently this function does not return errors */
-static void getSizeRec(const char * filename,
-		       const char * dirname,
-		       unsigned long long * size) {
+static int getSizeRec(const char * filename,
+		      const char * dirname,
+		      void * ptr) {
+  unsigned long long * size = ptr;
   struct stat buf;
   char * fn;
 
   if (filename == NULL)
-    return;
+    return SYSERR;
   if (dirname != NULL) {
     fn = MALLOC(strlen(filename) + strlen(dirname) + 2);
     fn[0] = '\0';
@@ -95,27 +95,32 @@ static void getSizeRec(const char * filename,
   if (0 != STAT(fn, &buf)) {
     LOG_FILE_STRERROR(LOG_EVERYTHING, "stat", fn);
     FREE(fn);
-    return;
+    return SYSERR;
   }
   *size += buf.st_size;
   if ( (S_ISDIR(buf.st_mode)) &&
        (!S_ISLNK(buf.st_mode)) ) {
-    scanDirectory(fn,
-		  (DirectoryEntryCallback)&getSizeRec,
-		  size);
+    if (SYSERR ==
+	scanDirectory(fn,
+		      &getSizeRec,
+		      size)) {
+      FREE(fn);
+      return SYSERR;
+    }
   }
   FREE(fn);
+  return OK;
 }
 
-/* FIXME: Currently this function does not return errors */
-static void getSizeWithoutSymlinksRec(const char * filename,
-				      const char * dirname,
-				      unsigned long long * size) {
+static int getSizeWithoutSymlinksRec(const char * filename,
+				     const char * dirname,
+				     void * ptr) {
+  unsigned long long * size = ptr;
   struct stat buf;
   char * fn;
 
   if (filename == NULL)
-    return;
+    return SYSERR;
   if (dirname != NULL) {
     fn = MALLOC(strlen(filename) + strlen(dirname) + 2);
     fn[0] = '\0';
@@ -137,19 +142,26 @@ static void getSizeWithoutSymlinksRec(const char * filename,
     fn = STRDUP(filename);
 
   if (0 != STAT(fn, &buf)) {
-    LOG_FILE_STRERROR(LOG_EVERYTHING, "stat", fn);
+    LOG_FILE_STRERROR(LOG_EVERYTHING, 
+		      "stat", 
+		      fn);
     FREE(fn);
-    return;
+    return SYSERR;
   }
   if (! S_ISLNK(buf.st_mode))
     *size += buf.st_size;
   if ( (S_ISDIR(buf.st_mode)) &&
        (!S_ISLNK(buf.st_mode)) ) {
-    scanDirectory(fn,
-		  (DirectoryEntryCallback)&getSizeRec,
-		  size);
+    if (SYSERR ==
+	scanDirectory(fn,
+		      &getSizeWithoutSymlinksRec,
+		      size)) {
+      FREE(fn);
+      return SYSERR;
+    }
   }
   FREE(fn);
+  return OK;
 }
 
 /**
@@ -202,27 +214,28 @@ long getBlocksLeftOnDrive(const char * part) {
 /**
  * Get the size of the file (or directory)
  * of the given file (in bytes).
- * FIXME: Currently this function does not return errors
+ *
+ * @return SYSERR on error, OK on success
  */
-unsigned long long getFileSize(const char * filename) {
-  unsigned long long size;
-
-  size = 0;
-  getSizeRec(filename, "", &size);
-  return size;
+int getFileSize(const char * filename,
+		unsigned long long * size) {
+  GNUNET_ASSERT(size != NULL);
+  *size = 0;
+  return getSizeRec(filename, "", size);
 }
 
 /**
  * Get the size of the file (or directory) without
  * counting symlinks.
- * FIXME: Currently this function does not return errors
+ *
+ * @return SYSERR on error, OK on success
  */
-unsigned long long getFileSizeWithoutSymlinks(const char * filename) {
-  unsigned long long size;
+int getFileSizeWithoutSymlinks(const char * filename,
+			       unsigned long long * size) {
+  GNUNET_ASSERT(size != NULL);
+  *size = 0;
 
-  size = 0;
-  getSizeWithoutSymlinksRec(filename, "", &size);
-  return size;
+  return getSizeWithoutSymlinksRec(filename, "", size);
 }
 
 
@@ -467,42 +480,39 @@ int readFile(const char * fileName,
  * @param buffer the data to write
  * @param n number of bytes to write
  * @param mode permissions to set on the file
+ * @return OK on success, SYSERR on error
  */
-void writeFile(const char * fileName,
-	       const void * buffer,
-	       unsigned int n,
-	       const char *mode) {
+int writeFile(const char * fileName,
+	      const void * buffer,
+	      unsigned int n,
+	      const char *mode) {
   int handle;
   /* open file, open with 600, create if not
      present, otherwise overwrite */
-  if ((fileName == NULL) || (buffer == NULL))
-    return;
+  if ( (fileName == NULL) ||
+       (buffer == NULL) )
+    return SYSERR;
   handle = fileopen(fileName,
-		O_CREAT|O_WRONLY,S_IRUSR|S_IWUSR);
+		    O_CREAT | O_WRONLY,
+		    S_IRUSR | S_IWUSR);
   if (handle == -1) {
-    LOG_FILE_STRERROR(LOG_WARNING, "open", fileName);
-    return;
+    LOG_FILE_STRERROR(LOG_WARNING,
+		      "open", 
+		      fileName);
+    return SYSERR;
   }
   /* write the buffer take length from the beginning */
-  if (n != WRITE(handle, buffer, n))
-    LOG_FILE_STRERROR(LOG_WARNING, "write", fileName);
-  CHMOD(fileName, atoo(mode));
+  if (n != WRITE(handle, buffer, n)) {
+    LOG_FILE_STRERROR(LOG_WARNING, 
+		      "write", 
+		      fileName);
+    closefile(handle);
+    return SYSERR;
+  }
+  CHMOD(fileName, 
+	atoo(mode));
   closefile(handle);
-}
-
-/**
- * Build a filename from directory and filename, completing like the shell does
- * @param dir the name of the directory, may contain ~/ or other shell stuff. Will
- *        NOT be freed!
- * @param fil the name of the file, will NOT be deallocated anymore!
- * @param result where to store the full file name (must be large enough!)
- */
-void buildFileName(const char * dir,
-		   const EncName * fil,
-		   char * result) {
-  GNUNET_ASSERT((dir != NULL) && (fil != NULL) && (result != NULL));
-  strcpy(result, dir);
-  strcat(result, (char*)fil);
+  return OK;
 }
 
 /**
@@ -512,7 +522,7 @@ void buildFileName(const char * dir,
  * @param callback the method to call for each file,
  *        can be NULL, in that case, we only count
  * @param data argument to pass to callback
- * @return the number of files found, -1 on error
+ * @return the number of files found, SYSERR on error
  */
 int scanDirectory(const char * dirName,
 		  DirectoryEntryCallback callback,
@@ -523,31 +533,39 @@ int scanDirectory(const char * dirName,
   int count = 0;
 
   if (dirName == NULL)
-    return -1;
+    return SYSERR;
   if (0 != STAT(dirName, &istat)) {
-    LOG_FILE_STRERROR(LOG_WARNING, "stat", dirName);
-    return -1;
+    LOG_FILE_STRERROR(LOG_WARNING, 
+		      "stat", 
+		      dirName);
+    return SYSERR;
   }
   if (!S_ISDIR(istat.st_mode)) {
     LOG(LOG_ERROR,
 	_("'%s' expected '%s' to be a directory!\n"),
 	__FUNCTION__,
 	dirName);
-    return -1;
+    return SYSERR;
   }
   errno = 0;
   dinfo = OPENDIR(dirName);
   if ((errno == EACCES) || (dinfo == NULL)) {
-    LOG_FILE_STRERROR(LOG_WARNING, "opendir", dirName);
-    return -1;
+    LOG_FILE_STRERROR(LOG_WARNING, 
+		      "opendir", 
+		      dirName);
+    return SYSERR;
   }
   while ((finfo = readdir(dinfo)) != NULL) {
     if (finfo->d_name[0] == '.')
       continue;
-    if (callback != NULL)
-      callback(finfo->d_name,
-	       dirName,
-	       data);
+    if (callback != NULL) {
+      if (OK != callback(finfo->d_name,
+			 dirName,
+			 data)) {
+	closedir(dinfo);
+	return SYSERR;
+      }
+    }	
     count++;
   }
   closedir(dinfo);
@@ -557,18 +575,25 @@ int scanDirectory(const char * dirName,
 /**
  * Callback for rm_minus_rf.
  */
-static void rmHelper(const char * fil,
-		     const char * dir,
-		     int * ok) {
+static int rmHelper(const char * fil,
+		    const char * dir,
+		    void * unused) {
   char * fn;
   size_t n;
 
   n = strlen(dir) + strlen(fil) + 2;
   fn = MALLOC(n);
-  SNPRINTF(fn, n, "%s/%s", dir, fil);
-  if (SYSERR == rm_minus_rf(fn))
-    *ok = SYSERR;
+  SNPRINTF(fn, 
+	   n, 
+	   "%s/%s",
+	   dir, 
+	   fil);
+  if (SYSERR == rm_minus_rf(fn)) {
+    FREE(fn);
+    return SYSERR;
+  }
   FREE(fn);
+  return OK;
 }
 
 /**
@@ -587,20 +612,22 @@ int rm_minus_rf(const char * fileName) {
 	  sticky /tmp directory may result in EPERM on BSD.
 	  So we also explicitly check "isDirectory" */
        (YES == isDirectory(fileName)) ) {
-    int ok;
-
-    ok = OK;
-    scanDirectory(fileName,
-		  (DirectoryEntryCallback)&rmHelper,
-		  &ok);
-    if (ok == OK)
+    if (OK == scanDirectory(fileName,
+			    &rmHelper,
+			    NULL)) {
       if (0 != RMDIR(fileName)) {
-	LOG_FILE_STRERROR(LOG_WARNING, "rmdir", fileName);
-	ok = SYSERR;
+	LOG_FILE_STRERROR(LOG_WARNING,
+			  "rmdir",
+			  fileName);
+	return SYSERR;
       }
-    return ok;
+      return OK;
+    }
+    return SYSERR;
   } else {
-    LOG_FILE_STRERROR(LOG_WARNING, "unlink", fileName);
+    LOG_FILE_STRERROR(LOG_WARNING, 
+		      "unlink", 
+		      fileName);
     return SYSERR;
   }
 }
@@ -608,13 +635,13 @@ int rm_minus_rf(const char * fileName) {
 void close_(int fd,
 	    const char * filename,
 	    int linenumber) {
-    if (0 != CLOSE(fd)) {
-	LOG(LOG_INFO,
-	    _("'%s' failed at %s:%d with error: %s\n"),
-	    "close",
-	    filename,
-	    linenumber, STRERROR(errno));
-      }
+  if (0 != CLOSE(fd)) {
+    LOG(LOG_INFO,
+	_("'%s' failed at %s:%d with error: %s\n"),
+	"close",
+	filename,
+	linenumber, STRERROR(errno));
+  }
 }
 
 #define COPY_BLK_SIZE 65536
@@ -636,21 +663,26 @@ int copyFile(const char * src,
   pos = 0;
   in = fileopen(src, O_RDONLY
 #ifdef O_LARGEFILE
-	     | O_LARGEFILE
+		| O_LARGEFILE
 #endif
-	    );
+		);
   if (in == -1)
     return SYSERR;
-  out = fileopen(dst, O_WRONLY | O_CREAT | O_EXCL
+  out = fileopen(dst, 
 #ifdef O_LARGEFILE
-	     | O_LARGEFILE
+		 O_LARGEFILE |
 #endif
-	     , S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+		 O_WRONLY | O_CREAT | O_EXCL,
+		 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
   if (out == -1) {
     closefile(in);
     return SYSERR;
   }
-  size = getFileSize(src);
+  if (OK != getFileSize(src,
+			&size)) {
+    closefile(in);
+    return SYSERR;
+  }
   while (pos < size) {
     len = COPY_BLK_SIZE;
     if (len > size - pos)

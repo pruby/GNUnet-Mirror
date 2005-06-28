@@ -124,7 +124,7 @@ typedef struct {
    * @return the number of known hosts matching
    */
   int (*forEachHost)(cron_t now,
-		     HostIterator callback,		
+		     HostIterator callback,
 		     void * data);
 
   /**

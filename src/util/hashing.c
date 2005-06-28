@@ -328,11 +328,14 @@ int getFileHash(const char * filename,
   int fh;
   struct sha512_ctx ctx;
 
+  if (OK != getFileSize(filename, 
+			&len))
+    return SYSERR;
   fh = fileopen(filename,
 #ifdef O_LARGEFILE
-	    O_RDONLY | O_LARGEFILE
+		O_RDONLY | O_LARGEFILE
 #else
-	    O_RDONLY
+		O_RDONLY
 #endif
 	    );
   if (fh == -1) {
@@ -342,7 +345,6 @@ int getFileHash(const char * filename,
   sha512_init(&ctx);
   pos = 0;
   buf = MALLOC(65536);
-  len = getFileSize(filename);
   while (pos < len) {
     delta = 65536;
     if (len - pos < delta)
@@ -573,15 +575,17 @@ int getHashCodeBit(const HashCode512 * code,
  */
 int hashCodeCompare(const HashCode512 * h1,
 		    const HashCode512 * h2) {
+  unsigned int * i1;
+  unsigned int * i2;
   int i;
-  int diff;
-  /* FIXME: we can do this much more efficiently... */
-  for (i = sizeof(HashCode512)*8 - 1; i >= 0; --i) {
-    diff = getHashCodeBit(h2, i) - getHashCodeBit(h1, i);
-    if (diff < 0)
-      return -1;
-    else if (diff > 0)
+
+  i1 = (unsigned int*) h1;
+  i2 = (unsigned int*) h2;
+  for (i=(sizeof(HashCode512) / sizeof(unsigned int))-1;i>=0;i--) {
+    if (i1[i] > i2[i])
       return 1;
+    if (i1[i] < i2[i])
+      return -1;
   }
   return 0;
 }

@@ -111,9 +111,10 @@ struct logfiledef {
 /**
  * Remove file if it is an old log
  */
-static void removeOldLog(const char * fil,
-       const char * dir,
-       struct logfiledef * def) {
+static int removeOldLog(const char * fil,
+			const char * dir,
+			void * ptr) {
+  struct logfiledef * def = ptr;
   struct tm t;
   char * fullname;
   const char * logdate;
@@ -128,7 +129,7 @@ static void removeOldLog(const char * fil,
        fullname,
        strlen(def->basename))) {
     FREE(fullname);
-    return;
+    return OK;
   }
   logdate = &fullname[strlen(def->basename)];
   ret = strptime(logdate,
@@ -137,7 +138,7 @@ static void removeOldLog(const char * fil,
   if ( (ret == NULL) ||
        (ret[0] != '\0') ) {
     FREE(fullname);
-    return; /* not a logfile */
+    return OK; /* not a logfile */
   }
 
   if (t.tm_year*365 + t.tm_yday + keepLog
@@ -145,6 +146,7 @@ static void removeOldLog(const char * fil,
     UNLINK(fullname);
 
   FREE(fullname);
+  return OK;
 }
 
 /**
@@ -209,8 +211,8 @@ void reopenLogFile() {
         end--;
       *end = 0;
       scanDirectory(logdir,
-        (DirectoryEntryCallback) removeOldLog,
-        &def);
+		    &removeOldLog,
+		    &def);
       FREE(def.basename);
       FREE(logdir);
     }

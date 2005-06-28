@@ -64,36 +64,42 @@ static int printNode(const ECRS_FileInfo * fi,
 }
 
 static void printDirectory(const char * filename) {
-  unsigned int len;
+  unsigned long long len;
   struct ECRS_MetaData * md;
   char * data;
   int ret;
   char * name;
+  int fd;
 
   name = expandFileName(filename);
   printf(_("==> Directory '%s':\n"),
 	 name);
-  len = getFileSize(name);
-  if (len <= 0) {
+  if ( (OK != getFileSize(name,
+			  &len)) ||
+       (len == 0) ) {
     printf(_("=\tError reading directory.\n"));
     return;
   }
-  /* directories could be > 40 MB, but we should still support loading
-     them in this tool.  Thus override memory bound.  Note that we
-     might want to use mmap here at some point to avoid this
-     problem... */
-  data = xmalloc_unchecked_(len, __FILE__, __LINE__);
-  if (len != readFile(name, len, data)) {
-    BREAK();
-    FREE(data);
-    FREE(name);
-    return;
-  }
+#ifdef O_LARGEFILE
+  fd = fileopen(name,
+		O_LARGEFILE | O_RDONLY);
+#else
+  fd = fileopen(name,
+		O_RDONLY);
+#endif
+  data = MMAP(NULL,
+	      len,
+	      PROT_READ,
+	      MAP_SHARED,
+	      fd,
+	      0);
   ret = ECRS_listDirectory(data,
 			   len,
 			   &md,
 			   &printNode,
 			   NULL);
+  MUNMAP(data, len);
+  closefile(fd);
   if (ret == -1)
     printf(_("File format error (not a GNUnet directory?)\n"));
   else

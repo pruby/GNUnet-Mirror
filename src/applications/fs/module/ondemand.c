@@ -580,7 +580,11 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     return SYSERR;
   }
   pos = 0;
-  size = getFileSize(fn);
+  if (OK != getFileSize(fn, 
+			&size)) {
+    FREE(fn);
+    return SYSERR;
+  }
   block = MALLOC(sizeof(DBlock) + blocksize);
   block->type = htonl(D_BLOCK);
   while (pos < size) {

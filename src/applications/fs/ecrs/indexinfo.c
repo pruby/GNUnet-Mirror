@@ -61,16 +61,15 @@ struct iiC {
   int cnt;
 };
 
-static void iiHelper(const char * fn,
-		     const char * dir,
-		     struct iiC * cls) {
+static int iiHelper(const char * fn,
+		    const char * dir,
+		    void * ptr) {
+  struct iiC * cls = ptr;
   char * fullName;
   char * lnkName;
   size_t size;
   int ret;
 
-  if (cls->cnt == SYSERR)
-    return;
   fullName = MALLOC(strlen(dir) + strlen(fn) + 4);
   strcpy(fullName, dir);
   strcat(fullName, DIR_SEPARATOR_STR);
@@ -89,11 +88,13 @@ static void iiHelper(const char * fn,
 	continue;
       }      
       if (errno != EINVAL) {
-	LOG_FILE_STRERROR(LOG_WARNING, "readlink", fullName);
+	LOG_FILE_STRERROR(LOG_WARNING, 
+			  "readlink", 
+			  fullName);
       }
       FREE(lnkName);
       FREE(fullName);
-      return; /* error */
+      return OK; /* error */
     } else {
       lnkName[ret] = '\0';
       break;
@@ -101,10 +102,15 @@ static void iiHelper(const char * fn,
   }
   cls->cnt++;
   if (OK != cls->iterator(lnkName,
-			  cls->closure))
+			  cls->closure)) {
     cls->cnt = SYSERR;
+    FREE(fullName);      
+    FREE(lnkName);
+    return SYSERR;
+  }
   FREE(fullName);      
   FREE(lnkName);
+  return OK;
 }
 
 /**
@@ -142,7 +148,7 @@ int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
   cls.closure = closure;
   cls.cnt = 0;
   scanDirectory(indexDirectory,
-		(DirectoryEntryCallback) &iiHelper,
+		&iiHelper,
 		&cls);
   FREE(indexDirectory);
   return cls.cnt;

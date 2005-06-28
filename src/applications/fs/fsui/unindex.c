@@ -66,8 +66,6 @@ static void * unindexThread(UnindexThreadClosure * utc) {
   FSUI_Event event;
   int ret;
 
-  printf("unindexing '%s'\n",
-	 utc->filename);
   ret = ECRS_unindexFile(&utc->filename[1],
 			 (ECRS_UploadProgressCallback) &progressCallback,
 			 utc,
@@ -75,7 +73,11 @@ static void * unindexThread(UnindexThreadClosure * utc) {
 			 NULL);
   if (ret == OK) {
     event.type = FSUI_unindex_complete;
-    event.data.UnindexComplete.total = getFileSize(utc->filename);
+    if (OK != getFileSize(utc->filename,
+			  &event.data.UnindexComplete.total)) {
+      BREAK();
+      event.data.UnindexComplete.total = 0;
+    }
     event.data.UnindexComplete.filename = utc->filename;
     event.data.UnindexComplete.start_time = utc->start_time;
   } else {
