@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/afs/module/migration.c
+ * @file applications/fs/module/migration.c
  * @brief This module is responsible for pushing content out
  * into the network.
  * @author Christian Grothoff
@@ -100,24 +100,17 @@ activeMigrationCallback(PeerIdentity * receiver,
     anonymity = ntohl(content->anonymityLevel);
     ret = SYSERR;
     if (anonymity == 0) {
-      /* ret = OK; */
+      /* ret = OK; (if DHT succeeds) fixme for DHT */
     } 
     if ( (ret != OK) &&
-	 (traffic != NULL) ) {
+	 (OK == checkCoverTraffic(traffic,
+				  anonymity)) ) {
       gw = MALLOC(size);
       gw->dc.size = htonl(size);
       gw->timeout = htonll(et);
       memcpy(&gw[1],
 	     &content[1],
 	     size - sizeof(GapWrapper));
-
-      
-      
-    
-      /* FIXME: check anonymity level,
-	 if 0, consider using DHT migration instead;
-	 if high, consider traffic volume before
-	 migrating */
       ret = gap->tryMigrate(&gw->dc,
 			    &key,
 			    position,

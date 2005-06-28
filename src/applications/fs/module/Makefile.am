@@ -7,6 +7,7 @@ plugin_LTLIBRARIES = \
 
 
 libgnunetmodule_fs_la_SOURCES = \
+  anonymity.c anonymity.h \
   fs.c \
   ondemand.c ondemand.h \
   migration.c migration.h \

@@ -607,6 +607,7 @@ static int gapGetConverter(const HashCode512 * key,
   cron_t now;
   const Datastore_Value * value;
   Datastore_Value * xvalue;
+  unsigned int level;
 
   if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
     if (OK != ONDEMAND_getIndexed(datastore,
@@ -639,67 +640,16 @@ static int gapGetConverter(const HashCode512 * key,
     ntohl(value->size) -
     sizeof(Datastore_Value);
 
-  if (ntohl(value->anonymityLevel) != 0) {
-    /* consider traffic volume before migrating;
-       ok, so this is not 100% clean since it kind-of
-       belongs into the gap code (since it is concerned
-       with anonymity and GAP messages).  So we should
-       probably move it below the callback by passing
-       the anonymity level along.  But that would
-       require changing the DataProcessor somewhat,
-       which would also be ugly.  So to keep things
-       simple, we do the anonymity-level check for
-       outgoing content right here. */
-    if (traffic != NULL) {
-      unsigned int level;
-      unsigned int count;
-      unsigned int peers;
-      unsigned int sizes;
-      unsigned int timevect;
-
-      level = ntohl(value->anonymityLevel) - 1;
-      if (OK != traffic->get(5 * cronSECONDS / TRAFFIC_TIME_UNIT, /* TTL_DECREMENT/TTU */
-			     GAP_p2p_PROTO_RESULT,
-			     TC_RECEIVED,
-			     &count,
-			     &peers,
-			     &sizes,
-			     &timevect)) {
-	LOG(LOG_WARNING,
-	    _("Failed to get traffic stats.\n"));
-	FREENONNULL(xvalue);
-	return OK;
-      }
-      if (level > 1000) {
-	if (peers < level / 1000) {
-	  LOG(LOG_DEBUG,
-	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
-	  FREENONNULL(xvalue);
-	  return OK;
-	}
-	if (count < level % 1000) {
-	  LOG(LOG_DEBUG,
-	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
-	  FREENONNULL(xvalue);
-	  return OK;
-	}
-      } else {
-	if (count < level) {
-	  LOG(LOG_DEBUG,
-	      "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
-	  FREENONNULL(xvalue);
-	  return OK;
-	}
-      }
-    } else {
-      /* traffic required by module not loaded;
-	 refuse to hand out data that requires
-	 anonymity! */
-      FREENONNULL(xvalue);
-      return OK;
-    }
+  level
+    = ntohl(value->anonymityLevel);
+  if (OK != checkCoverTraffic(traffic,
+			      level)) {
+    /* traffic required by module not loaded;
+       refuse to hand out data that requires
+       anonymity! */
+    FREENONNULL(xvalue);
+    return OK;    
   }
-
   gw = MALLOC(size);
   gw->dc.size = htonl(size);
   et = ntohll(value->expirationTime);
