@@ -32,7 +32,7 @@
 static void help() {
   puts(_("USAGE: gnunet-setup MODULE\n\n"
        "MODULE\n"
-       " recreate\t\recreate configuration files\n"
+       " recreate\t\trecreate configuration files\n"
        " config\t\ttext-based configuration\n"
        " menuconfig\ttext-based menu\n"
        " gconfig\tGTK configuration\n"
