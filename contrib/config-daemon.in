@@ -172,7 +172,7 @@ menu "General settings" "GNUNETD"
   
   config APPLICATIONS
   string "Which applications should gnunetd support?"
-  default "advertising topology fs getoption stats traffic"
+  default "advertising fs getoption stats traffic"
   depends on Meta::ADVANCED
   help
 		Which applications should gnunetd support? Specify the name of the
@@ -183,7 +183,6 @@ menu "General settings" "GNUNETD"
 		
 		Currently, the available applications are:
 		advertising: always load this one
-		topology: always load this one, too!
 		getoption: probably a good idea, too!
 		
 		stats: statistics - for gnunet-stats
@@ -200,7 +199,7 @@ menu "General settings" "GNUNETD"
 		Using the fs tools for downloading may require the traffic module
 		to be loaded!
 		
-		Default: APPLICATIONS = "advertising topology fs getoption stats traffic"
+		Default: APPLICATIONS = "advertising fs getoption stats traffic"
   
   config TRANSPORTS
   string "Which transport mechanisms are available?"

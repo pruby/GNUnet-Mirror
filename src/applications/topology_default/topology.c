@@ -280,7 +280,38 @@ static void cronCheckLiveness(void * unused) {
 }
 
 static int estimateNetworkSize() {
-  return 0; /* FIXME: implement this function! */
+  unsigned int active;
+  unsigned int known;
+
+  active = coreAPI->forAllConnectedNodes(NULL, NULL); 
+  if (active == 0)
+    return 0;
+  known = identity->forEachHost(0,
+				NULL,
+				NULL);
+  if (active > known)
+    return active; /* should not be possible */
+  /* Assumption:
+     if we only connect to X% of all machines
+     that we know, we probably also only know X%
+     of all peers that exist;
+
+     Then the total number of machines is 
+     1/X * known, or known * known / active.
+
+     Of course, we may know more than X% of the
+     machines, in which case this estimate is too
+     high.  Well, that is why it is an estimate :-).
+
+     Example:
+     - we connect to all machines we have ever heard
+       of => network size == # active
+     - we connect to only 1% of the machines we have
+       heard of => network size = 100 * # active
+  */
+  if (known * known / active < known) 
+    return 0x7FFFFFFF; /* integer overflow, return max int */
+  return known * known / active;
 }
 
 static double estimateSaturation() {

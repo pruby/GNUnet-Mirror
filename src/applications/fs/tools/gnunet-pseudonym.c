@@ -445,7 +445,8 @@ int main(int argc, char *argv[]) {
       }
       FREE(keyword);
       if (OK != FSUI_createNamespace(ctx,
-				     0, /* FIXME: anonymity level! */
+				     getConfigurationInt("FS",
+							 "ANONYMITY-SEND"),
 				     pname,
 				     meta,
 				     advertisement,

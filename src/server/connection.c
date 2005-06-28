@@ -51,6 +51,7 @@
 #include "gnunet_identity_service.h"
 #include "gnunet_session_service.h"
 #include "gnunet_fragmentation_service.h"
+#include "gnunet_topology_service.h"
 #include "connection.h"
 #include "core.h"
 #include "handler.h"
@@ -441,6 +442,11 @@ static Session_ServiceAPI * session;
  * Fragmentation service
  */
 static Fragmentation_ServiceAPI * fragmentation;
+
+/**
+ * Topology service
+ */
+static Topology_ServiceAPI * topology;
 
 /**
  * The buffer containing all current connections.
@@ -1685,7 +1691,7 @@ static void scheduleInboundTraffic() {
 #endif
       shutdownConnection(entries[u]);
       identity->blacklistHost(&entries[u]->session.sender,
-			      1, /* FIXME: 1? */
+			      1 / topology->estimateSaturation(),
 			      YES);
       activePeerCount--;
       entries[u]    = entries[activePeerCount];
@@ -2403,6 +2409,8 @@ void initConnection() {
   GNUNET_ASSERT(session != NULL);
   fragmentation = requestService("fragmentation");
   GNUNET_ASSERT(fragmentation != NULL);
+  topology = requestService("topology");
+  GNUNET_ASSERT(topology != NULL);
   transport->start(&core_receive);
 }
 
@@ -2453,6 +2461,8 @@ void doneConnection() {
   session = NULL;
   releaseService(fragmentation);
   fragmentation = NULL;
+  releaseService(topology);
+  topology = NULL;
 #if DEBUG_COLLECT_PRIO == YES
   fclose(prioFile);
 #endif

@@ -30,7 +30,7 @@ HOSTS = "$GNUNETD_HOME/data/hosts/"
 HOSTLISTURL = "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist"
 HTTP-PROXY = ""
 HTTP-PROXY-PORT = 1080
-APPLICATIONS = "advertising topology fs getoption stats traffic"
+APPLICATIONS = "advertising fs getoption stats traffic"
 TRANSPORTS = "udp tcp http nat"
 
 #
