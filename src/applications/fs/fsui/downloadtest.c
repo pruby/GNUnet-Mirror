@@ -191,7 +191,7 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_download_complete) {
     prog++;
-    CHECK(prog < 10000);
+    CHECK(prog < 100000);
     gnunet_util_sleep(50 * cronMILLIS);
     if (suspendRestart > 0) {
       suspendCron();
@@ -205,8 +205,8 @@ int main(int argc, char * argv[]){
       suspendRestart--;
     }
   }
-  FSUI_stopSearch(ctx,
-		  uri);  
+  CHECK(OK == FSUI_stopSearch(ctx,
+			      uri));  
   CHECK(OK == FSUI_unindex(ctx, fn));
 
   /* END OF TEST CODE */
@@ -214,8 +214,13 @@ int main(int argc, char * argv[]){
   if (ctx != NULL) {
     FSUI_stopSearch(ctx,
 		    uri);
+    fn = makeName(43);
+    FSUI_stopDownload(ctx,
+		      uri,
+		      fn);
+    FREE(fn);
     FSUI_stop(ctx);
-  }
+  }  
   if (uri != NULL)
     ECRS_freeUri(uri);
   if (kuri != NULL)
