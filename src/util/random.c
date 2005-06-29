@@ -111,16 +111,12 @@ unsigned long long randomi64(unsigned long long u) {
  */
 unsigned int weak_randomi(unsigned int i) {
 	unsigned int ret;
-fprintf(stderr, "radnom\n");
-fflush(NULL);	
   GNUNET_ASSERT(i > 0);
 
 	ret = i * ((double) RANDOM() / RAND_MAX);
 	
 	if (ret >= i)
 		ret = i;
-fflush(NULL);	
-fprintf(stderr, "ret %i\n", ret);	
 	
 	return ret;
 }
