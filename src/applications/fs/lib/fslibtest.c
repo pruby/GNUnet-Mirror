@@ -211,9 +211,8 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
 
 int main(int argc, char * argv[]){
   pid_t daemon;
-  int status;
   int ok;
-  struct FS_SEARCH_CONTEXT * ctx;
+  struct FS_SEARCH_CONTEXT * ctx = NULL;
   struct FS_SEARCH_HANDLE * hnd;
   Mutex lock;
   GNUNET_TCP_SOCKET * sock;
@@ -235,7 +234,7 @@ int main(int argc, char * argv[]){
   ok = YES;
   startCron();
   MUTEX_CREATE(&lock);
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
+  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(60 * cronSECONDS));
   gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
   sock = getClientSocket();
   CHECK(sock != NULL);
