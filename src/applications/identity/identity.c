@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,12 +28,9 @@
  * (used to give the transport module the required information for the
  * PING).
  *
- * Todo:
- * - we may want to cache more HELOs in memory
- * - make sure that the first trust value in hosts_
- *   for each host is the one holding the trust
- *   value and that this one is always used
- *   consistently!
+ * FIXME: make sure that the first trust value in hosts_ for each host
+ * is the one holding the trust value and that this one is always used
+ * consistently!
  *
  * @author Christian Grothoff
  */
@@ -59,6 +56,11 @@
 
 #define TRUST_ACTUAL_MASK  0x7FFFFFFF
 
+#define MAX_DATA_HOST_FREQ (5 * cronMINUTES)
+
+#define CRON_DATA_HOST_FREQ (15 * cronMINUTES)
+
+#define CRON_TRUST_FLUSH_FREQ (5 * cronMINUTES)
 
 typedef struct {
   PeerIdentity identity;
@@ -71,9 +73,9 @@ typedef struct {
    */
   cron_t delta;
   /**
-   * for which protocol is this host known?
+   * HELO for the peer (maybe NULL)!
    */
-  unsigned short protocol;
+  HELO_Message * helo;
   /**
    * should we also reject incoming messages? (YES/NO)
    */
@@ -82,6 +84,10 @@ typedef struct {
    * trust rating for this peer
    */
   unsigned int trust;
+  /**
+   * for which protocol is this host known?
+   */
+  unsigned short protocol;
 } HostEntry;
 
 /**
@@ -196,6 +202,7 @@ static void addHostToKnown(const PeerIdentity * identity,
   hosts_[count_].delta    = 30 * cronSECONDS;
   hosts_[count_].protocol = protocol;
   hosts_[count_].strict   = NO;
+  hosts_[count_].helo     = NULL;
   hash2enc(&identity->hashPubKey,
 	   &fil);
   fn = MALLOC(strlen(trustDirectory)+sizeof(EncName)+1);
@@ -312,9 +319,16 @@ static int cronHelper(const char * filename,
  * Call this method periodically to scan data/hosts for new hosts.
  */
 static void cronScanDirectoryDataHosts(void * unused) {
+  static cron_t lastRun;
   static int retries;
   int count;
+  cron_t now;
 
+  cronTime(&now);
+  if (lastRun + MAX_DATA_HOST_FREQ < now)
+    return; /* prevent scanning more than
+	       once every 5 min */
+  lastRun = now;
   count = scanDirectory(networkIdDirectory,
 			&cronHelper,
 			NULL);
@@ -356,10 +370,11 @@ static void delHostFromKnown(const PeerIdentity * identity,
   int i;
 
   MUTEX_LOCK(&lock_);
-  for (i=0;i<count_;i++)
+  for (i=0;i<count_;i++) {
     if ( (hostIdentityEquals(identity,
 			     &hosts_[i].identity)) &&
 	 (protocol == hosts_[i].protocol) ) {
+      FREENONNULL(hosts_[i].helo);
       hosts_[i] = hosts_[count_-1];
       count_--;
       /* now remove the file */
@@ -372,6 +387,7 @@ static void delHostFromKnown(const PeerIdentity * identity,
       MUTEX_UNLOCK(&lock_);
       return; /* deleted */
     }
+  }
   MUTEX_UNLOCK(&lock_);
 }
 
@@ -385,6 +401,7 @@ static void bindAddress(const HELO_Message * msg) {
   HELO_Message * oldMsg;
   int size;
   EncName enc;
+  HostEntry * host;
 
   GNUNET_ASSERT(msg != NULL);
   IFLOG(LOG_INFO,
@@ -418,82 +435,18 @@ static void bindAddress(const HELO_Message * msg) {
   FREE(buffer);
   addHostToKnown(&msg->senderIdentity,
 		 ntohs(msg->protocol));
-}
 
-struct TempStorage_ {
-  EncName enc;
-  HELO_Message * helo;
-  int result;
-};
-
-/**
- * Check if the filename matches the identity that we are searching
- * for. If yes, fill it in.
- */
-static int identity2HeloHelper(const char * fn,
-			       const char * dirName,
-			       void * ptr) {
-  struct TempStorage_ * res = ptr;
-
-  if (strstr(fn, (char*)&res->enc) != NULL) {
-    char * fileName;
-    HELO_Message buffer;
-    int size;
-    size_t n;
-
-    n = strlen(networkIdDirectory) + strlen(fn) + 1;
-    fileName = MALLOC(n);
-    SNPRINTF(fileName,
-	     n,
-	     "%s%s",
-	     networkIdDirectory,
-	     fn);
-    size = readFile(fileName,
-		    sizeof(HELO_Message),
-		    &buffer);
-    if (size == sizeof(HELO_Message)) {
-      HELO_Message * tmp;
-      tmp = MALLOC(HELO_Message_size(&buffer));
-      size = readFile(fileName,
-		      HELO_Message_size(&buffer),
-		      tmp);
-      if ((unsigned int)size != HELO_Message_size(&buffer)) {
-	if (0 == UNLINK(fileName))	
-	  LOG(LOG_WARNING,
-	      _("Removed file '%s' containing invalid peer advertisement.\n"),
-	      fileName);
-	else
-	  LOG_FILE_STRERROR(LOG_ERROR, 
-			    "unlink",
-			    fileName);
-	FREE(tmp);
-      } else {
-	if (res->result == SYSERR) {
-	  res->result = OK;
-	  res->helo = tmp;
-	} else {
-	  if (randomi(4) > 2) {
-	    FREE(res->helo);
-	    res->helo = tmp;
-	  } else {
-	    FREE(tmp);
-	  }
-	}
-      }
-    } else {
-      if (0 == UNLINK(fileName)) {
-	LOG(LOG_WARNING,
-	    _("Removed file '%s' containing invalid peer advertisement.\n"),
-	    fileName);
-      } else {
-	LOG_FILE_STRERROR(LOG_ERROR,
-			  "unlink",
-			  fileName);
-      }
-    }
-    FREE(fileName);
+  MUTEX_LOCK(&lock_);
+  host = findHost(&msg->senderIdentity, 
+		  ntohs(msg->protocol));  
+  if (host != NULL) {
+    FREENONNULL(host->helo);
+    host->helo = MALLOC(HELO_Message_size(msg));
+    memcpy(host->helo,
+	   msg,
+	   HELO_Message_size(msg));
   }
-  return OK;
+  MUTEX_UNLOCK(&lock_);
 }
 
 /**
@@ -512,53 +465,16 @@ static int identity2Helo(const PeerIdentity *  hostId,
 			 const unsigned short protocol,
 			 int tryTemporaryList,
 			 HELO_Message ** result) {
-  struct TempStorage_ tempStorage;
+  HostEntry * host;
   char * fn;
   HELO_Message buffer;
   int size;
   int i;
 
-  *result = NULL;
-  fn = getHostFileName(hostId, protocol);
-  size = readFile(fn,
-		  sizeof(HELO_Message),
-		  &buffer);
-  if (size == sizeof(HELO_Message)) {
-    *result = MALLOC(HELO_Message_size(&buffer));
-    size = readFile(fn,
-		    HELO_Message_size(&buffer),
-		    *result);
-    if ((unsigned int)size != HELO_Message_size(&buffer)) {
-      if (0 == UNLINK(fn))
-	LOG(LOG_WARNING,
-	    _("Removed file '%s' containing invalid HELO data.\n"),
-	    fn);
-      else
-	LOG_FILE_STRERROR(LOG_ERROR, 
-			  "unlink",
-			  fn);
-      FREE(fn);
-      FREE(*result);
-      *result = NULL;
-      return SYSERR;
-    }
-    FREE(fn);
-    return OK;
-  } else if (size != -1) {
-    if (0 == UNLINK(fn))
-      LOG(LOG_WARNING,
-	  _("Removed invalid HELO file '%s'\n"),
-	  fn);
-    else
-      LOG_FILE_STRERROR(LOG_ERROR,
-			"unlink", 
-			fn);
-  }
-  FREE(fn);
-
+  MUTEX_LOCK(&lock_);
   if (YES == tryTemporaryList) {
-    /* ok, then try temporary hosts */
-    MUTEX_LOCK(&lock_);
+    /* ok, then first try temporary hosts 
+       (in memory, cheapest!) */
     for (i=0;i<MAX_TEMP_HOSTS;i++) {
       if ( (tempHosts[i] != NULL) &&
 	   hostIdentityEquals(hostId,
@@ -573,27 +489,64 @@ static int identity2Helo(const PeerIdentity *  hostId,
 	return OK;
       }
     }
-    MUTEX_UNLOCK(&lock_);
   }
-  if (protocol != ANY_PROTOCOL_NUMBER)
-    return SYSERR; /* nothing found */
-  /* ok, last chance, scan directory! */
-  hash2enc(&hostId->hashPubKey,
-	   &tempStorage.enc);
 
-  tempStorage.result = SYSERR;
-  tempStorage.helo = NULL;
-#if DEBUG_IDENTITY
-  LOG(LOG_DEBUG,
-      "scanning directory %s for peer identity, proto %d\n",
-      networkIdDirectory,
-      protocol);
-#endif
-  scanDirectory(networkIdDirectory,
-		&identity2HeloHelper,
-		&tempStorage);
-  *result = tempStorage.helo;
-  return tempStorage.result;
+  host = findHost(hostId, 
+		  protocol);
+  /* last chance: on disk only */
+  if (host == NULL) {
+    cronScanDirectoryDataHosts(NULL);
+    host = findHost(hostId, 
+		    protocol);
+  }
+  if (host == NULL) {
+    *result = NULL;
+    MUTEX_UNLOCK(&lock_);
+    return SYSERR;
+  }
+  if (host->helo == NULL) {
+    /* do direct read */
+    fn = getHostFileName(hostId, 
+			 host->protocol);
+    size = readFile(fn,
+		    sizeof(HELO_Message),
+		    &buffer);
+    if (size == sizeof(HELO_Message)) {
+      *result = MALLOC(HELO_Message_size(&buffer));
+      size = readFile(fn,
+		      HELO_Message_size(&buffer),
+		      *result);      
+      if ((unsigned int)size != HELO_Message_size(&buffer)) {
+	if (0 == UNLINK(fn))
+	  LOG(LOG_WARNING,
+	      _("Removed file '%s' containing invalid HELO data.\n"),
+	      fn);
+	else
+	  LOG_FILE_STRERROR(LOG_ERROR, 
+			    "unlink",
+			    fn);
+	FREE(fn);
+	FREE(*result);
+	*result = NULL;
+	MUTEX_UNLOCK(&lock_);
+	return SYSERR;
+      }
+      host->helo
+	= MALLOC(HELO_Message_size(&buffer));
+      memcpy(host->helo,
+	     *result,
+	     HELO_Message_size(&buffer));
+      MUTEX_UNLOCK(&lock_);
+      return OK;
+    }
+  }
+  *result
+    = MALLOC(HELO_Message_size(host->helo));
+  memcpy(*result,
+	 host->helo,
+	 HELO_Message_size(host->helo));
+  MUTEX_UNLOCK(&lock_);
+  return OK;
 }
 
 
@@ -925,12 +878,12 @@ provide_module_identity(CoreAPIForApplication * capi) {
 
   cronScanDirectoryDataHosts(NULL);
   addCronJob(&cronScanDirectoryDataHosts,
-	     15 * cronMINUTES,
-	     15 * cronMINUTES,
+	     CRON_DATA_HOST_FREQ,
+	     CRON_DATA_HOST_FREQ,
 	     NULL);
   addCronJob(&cronFlushTrustBuffer,
-	     5 * cronMINUTES,
-	     5 * cronMINUTES,
+	     CRON_TRUST_FLUSH_FREQ,
+	     CRON_TRUST_FLUSH_FREQ,
 	     NULL);
   return &id;
 }
@@ -942,10 +895,10 @@ void release_module_identity() {
   int i;
 
   delCronJob(&cronScanDirectoryDataHosts,
-	     15 * cronMINUTES,
+	     CRON_DATA_HOST_FREQ,
 	     NULL);
   delCronJob(&cronFlushTrustBuffer,
-	     5 * cronMINUTES,
+	     CRON_TRUST_FLUSH_FREQ,
 	     NULL);
   cronFlushTrustBuffer(NULL);
   for (i=0;i<MAX_TEMP_HOSTS;i++)
