@@ -133,7 +133,7 @@ menu "General settings" "GNUNETD"
   config HOSTLISTURL
   string "Where can GNUnet find an initial list of peers"
   depends on Meta::ADVANCED
-  default "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist"
+  default "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist"
   help
 		GNUnet can automatically update the hostlist from the web. While
 		GNUnet internally communicates which hosts are online, it is
