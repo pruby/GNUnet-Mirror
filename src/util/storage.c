@@ -72,20 +72,21 @@ static int getSizeRec(const char * filename,
 
   if (filename == NULL)
     return SYSERR;
-  if (dirname != NULL) {
-    fn = MALLOC(strlen(filename) + strlen(dirname) + 2);
-    fn[0] = '\0';
+  if ( (dirname != NULL) &&
+       (strlen(dirname) > 0) ) {
+    fn = MALLOC(strlen(filename) + strlen(dirname) + 3);
     if (strlen(dirname) > 0) {
-      strcat(fn, dirname);
+      strcpy(fn, dirname);
       if (dirname[strlen(dirname)-1] != DIR_SEPARATOR)
-	strcat(fn, "/"); /* add tailing / if needed */
+	strcat(fn, DIR_SEPARATOR_STR); /* add tailing / if needed */
     }
     /* Windows paths don't start with / */
 #ifndef MINGW
     else
-      strcat(fn, "/");
+      strcpy(fn, DIR_SEPARATOR_STR);
 #endif
-    if (filename[0] == DIR_SEPARATOR) /* if filename starts with a "/", don't copy it */
+    if (filename[0] == DIR_SEPARATOR) 
+      /* if filename starts with a "/", don't copy it */
       strcat(fn, &filename[1]);
     else
       strcat(fn, filename);
@@ -93,7 +94,9 @@ static int getSizeRec(const char * filename,
     fn = STRDUP(filename);
 
   if (0 != STAT(fn, &buf)) {
-    LOG_FILE_STRERROR(LOG_EVERYTHING, "stat", fn);
+    LOG_FILE_STRERROR(LOG_EVERYTHING, 
+		      "stat",
+		      fn);
     FREE(fn);
     return SYSERR;
   }

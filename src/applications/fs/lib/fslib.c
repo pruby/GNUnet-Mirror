@@ -131,7 +131,7 @@ SEARCH_CONTEXT * FS_SEARCH_makeContext(Mutex * lock) {
   if (0 != PTHREAD_CREATE(&ret->thread,
 			  (PThreadMain) &processReplies,
 			  ret,
-			  16 * 1024))
+			  64 * 1024))
     DIE_STRERROR("PTHREAD_CREATE");
   return ret;
 }
