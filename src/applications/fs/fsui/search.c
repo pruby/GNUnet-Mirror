@@ -160,6 +160,9 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
   while (pos != NULL) {
     if (ECRS_equalsUri(uri,
 		       pos->uri)) {
+      LOG(LOG_ERROR,
+	  _("This search is already pending!\n"));
+      BREAK();
       MUTEX_UNLOCK(&ctx->lock);
       return SYSERR;
     }

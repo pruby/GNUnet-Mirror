@@ -262,13 +262,17 @@ static int runSearch() {
     ECRS_freeUri(uri);
     return SYSERR;
   }
-  FSUI_startSearch(ctx,
-		   getConfigurationInt("FS",
-				       "ANONYMITY-RECEIVE"),
-		   uri);
-  wait_for_shutdown();
-  FSUI_stopSearch(ctx,
-		  uri);
+  if (OK !=
+      FSUI_startSearch(ctx,
+		       getConfigurationInt("FS",
+					   "ANONYMITY-RECEIVE"),
+		       uri)) {
+    printf(_("Starting search failed. Consult logs.\n"));
+  } else {
+    wait_for_shutdown();
+    FSUI_stopSearch(ctx,
+		    uri);
+  }
   ECRS_freeUri(uri);
   FSUI_stop(ctx);
 

@@ -46,7 +46,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "NOTHING"));
+				     "EVERYTHING"));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "check.conf"));
@@ -119,7 +119,7 @@ static void eventCallback(void * cls,
 int main(int argc, char * argv[]){
   pid_t daemon;
   int ok;
-  struct ECRS_URI * uri;
+  struct ECRS_URI * uri = NULL;
   char * fn = NULL;
   char * keywords[] = { 
     "down_foo",
@@ -129,7 +129,7 @@ int main(int argc, char * argv[]){
   char keyword[40];
   int prog;
   struct ECRS_MetaData * meta;
-  struct ECRS_URI * kuri;
+  struct ECRS_URI * kuri = NULL;
 
   if (OK != initUtil(argc,
 		     argv, 
@@ -169,6 +169,7 @@ int main(int argc, char * argv[]){
 		    meta,
 		    kuri));
   ECRS_freeUri(kuri);
+  kuri = NULL;
   ECRS_freeMetaData(meta);
   prog = 0;
   while (lastEvent != FSUI_upload_complete) {
@@ -204,13 +205,20 @@ int main(int argc, char * argv[]){
     }
   }
   FSUI_stopSearch(ctx,
-		  uri);
+		  uri);  
   CHECK(OK == FSUI_unindex(ctx, fn));
 
   /* END OF TEST CODE */
  FAILURE:
-  if (ctx != NULL)
+  if (ctx != NULL) {
+    FSUI_stopSearch(ctx,
+		    uri);
     FSUI_stop(ctx);
+  }
+  if (uri != NULL)
+    ECRS_freeUri(uri);
+  if (kuri != NULL)
+    ECRS_freeUri(kuri);
   if (fn != NULL) {
     UNLINK(fn);
     FREE(fn);
