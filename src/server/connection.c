@@ -2134,6 +2134,8 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	      FREE(helo);	 
 	      i++;
 	    }
+	  } else {
+	    i++;
 	  }
 	}
 	if (i == MAX_PROTOCOL_NUMBER) {
