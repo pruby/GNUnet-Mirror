@@ -139,83 +139,83 @@ static void resetStatusCalls() {
 	"LOAD",
 	"INTERFACES");
     numInterfaces = 0;
-    MUTEX_UNLOCK(&statusMutex);
-    return;
   }
+	else {
+		/* The string containing the interfaces is formatted in the following way:
+		 * each comma is replaced by '\0' and the pointers to the beginning of every
+		 * interface are stored
+		 */
+		numInterfaces = 0;
+		start = YES;
+		while (1) {
+			if (*interfaces == '\0') {
+				if (start == NO)
+					numInterfaces++;
+					break;
+				}
+				if ( ((*interfaces>='a') && (*interfaces<='z')) ||
+					((*interfaces>='A') && (*interfaces<='Z')) ||
+					((*interfaces>='0') && (*interfaces<='9')) ) {
 
-  /* The string containing the interfaces is formatted in the following way:
-   * each comma is replaced by '\0' and the pointers to the beginning of every
-   * interface are stored
-   */
-  numInterfaces = 0;
-  start = YES;
-  while (1) {
-    if (*interfaces == '\0') {
-      if (start == NO)
-	numInterfaces++;
-      break;
-    }
-    if ( ((*interfaces>='a') && (*interfaces<='z')) ||
-	 ((*interfaces>='A') && (*interfaces<='Z')) ||
-	 ((*interfaces>='0') && (*interfaces<='9')) ) {
-      start = NO;
-    } else {
-      if (*interfaces != ',')
-	errexit(_("Interfaces string (%s) in configuration section '%s' under '%s' is malformed.\n"),
-		ifcs,
-		"LOAD",
-		"INTERFACES");
-      if (start == NO) {
-	start = YES;
-	numInterfaces++;
-      }
-    }
-    interfaces++;
-  }
-  if (numInterfaces <= 0) {
-    LOG(LOG_ERROR,
-	_("No network interfaces specified in the configuration file in section '%s' under '%s'.\n"),
-	"LOAD",
-	"INTERFACES");
-    MUTEX_UNLOCK(&statusMutex);
-    return;
-  }
-
-  if (interfacePtrs != NULL) {
-    FREE(interfacePtrs[0]);
-    FREE(interfacePtrs);
-  }
-  interfacePtrs = MALLOC(sizeof(char*) * numInterfaces);
-  last_net_results = MALLOC(sizeof(NetworkStats) * numInterfaces);
-  memset(last_net_results, 0,
-	 sizeof(NetworkStats) * numInterfaces);
-
-  /* 2nd pass, this time remember the positions */
-  interfaces = ifcs;
-  numInterfaces = 0;
-  start = YES;
-  while (1) {
-    if (*interfaces=='\0') {
-      if (start == NO)
-	numInterfaces++;
-      break;
-    }
-    if ( ((*interfaces>='a') && (*interfaces<='z')) ||
-	 ((*interfaces>='A') && (*interfaces<='Z')) ||
-	 ((*interfaces>='0') && (*interfaces<='9')) ) {
-      if (start == YES) {
-	start = NO;
-	interfacePtrs[numInterfaces] = interfaces;	
-      }
-    } else {
-      if (start == NO) {
-	start = YES;
-	*interfaces = '\0';	
-	numInterfaces++;
-      }
-    }
-    interfaces++;
-  }
+					start = NO;
+					} else {
+						if (*interfaces != ',')
+							errexit(_("Interfaces string (%s) in configuration section '%s' under '%s' is malformed.\n"),
+								ifcs,
+								"LOAD",
+								"INTERFACES");
+						if (start == NO) {
+							start = YES;
+							numInterfaces++;
+						}
+					}
+				interfaces++;
+			}
+			if (numInterfaces <= 0) {
+				LOG(LOG_ERROR,
+					_("No network interfaces specified in the configuration file in section '%s' under '%s'.\n"),
+					"LOAD",
+					"INTERFACES");
+			}
+			else {
+				if (interfacePtrs != NULL) {
+					FREE(interfacePtrs[0]);
+					FREE(interfacePtrs);
+			}
+			interfacePtrs = MALLOC(sizeof(char*) * numInterfaces);
+			last_net_results = MALLOC(sizeof(NetworkStats) * numInterfaces);
+			memset(last_net_results, 0,
+				sizeof(NetworkStats) * numInterfaces);
+		
+			/* 2nd pass, this time remember the positions */
+			interfaces = ifcs;
+			numInterfaces = 0;
+			start = YES;
+			while (1) {
+				if (*interfaces=='\0') {
+					if (start == NO)
+						numInterfaces++;
+					break;
+				}
+				if ( ((*interfaces>='a') && (*interfaces<='z')) ||
+					((*interfaces>='A') && (*interfaces<='Z')) ||
+					((*interfaces>='0') && (*interfaces<='9')) ) {
+		      
+		      if (start == YES) {
+		      	start = NO;
+		      	interfacePtrs[numInterfaces] = interfaces;	
+		      }
+				} else {
+					if (start == NO) {
+						start = YES;
+						*interfaces = '\0';	
+						numInterfaces++;
+					}
+				}
+				interfaces++;
+			}
+		}
+	}
 
   useBasicMethod
     = testConfigurationString("LOAD",
