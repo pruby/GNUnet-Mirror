@@ -655,8 +655,7 @@ static int blacklistHost(const PeerIdentity * identity,
 	hosts_[i].delta
 	  = hosts_[i].delta * 2 + randomi((desperation+1)*cronSECONDS);
 	if (hosts_[i].delta > 4 * cronHOURS)
-	  hosts_[i].delta = 4 *  randomi(cronHOURS * 
-					 randomi(desperation+1));
+	  hosts_[i].delta = 4 *  randomi(cronHOURS * (desperation+1));
       }
       cronTime(&hosts_[i].until);
       hosts_[i].until += hosts_[i].delta;
