@@ -52,16 +52,16 @@
 #define LIVE_SCAN_FREQUENCY 500 * cronMILLIS
 
 /**
- * Value < 1 that determines the chance (1:(1/LSE)) that the cron job
+ * Value > 1 that determines the chance (1:LSE) that the cron job
  * actually tries to do something for a given slot.
  */
-#define LIVE_SCAN_EFFECTIVENESS 0.1
+#define LIVE_SCAN_EFFECTIVENESS 10
 
 /**
- * Value < 1 that determines the chance (1:(1/LPE)) that the cron job
+ * Value < 1 that determines the chance (1:LPE) that the cron job
  * actually tries to ping a peer that is about to time-out.
  */
-#define LIVE_PING_EFFECTIVENESS 0.05
+#define LIVE_PING_EFFECTIVENESS 20
 
 static CoreAPIForApplication * coreAPI;
 
@@ -260,7 +260,7 @@ static void cronCheckLiveness(void * unused) {
   if (minint == 0)
     minint = 1;
   for (i=slotCount-1;i>=0;i--) {
-    if (((double) RANDOM() / RAND_MAX) > LIVE_SCAN_EFFECTIVENESS)
+    if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
       continue;
     if ( (minint > coreAPI->isSlotUsed(i)) &&
 	 (! testConfigurationString("GNUNETD",
@@ -268,7 +268,7 @@ static void cronCheckLiveness(void * unused) {
 				    "YES")) )
       scanForHosts(i);
   }
-  if (((double) RANDOM() / RAND_MAX) <= LIVE_PING_EFFECTIVENESS)
+  if (weak_randomi(LIVE_PING_EFFECTIVENESS) == 0)
     active = coreAPI->forAllConnectedNodes
       (&checkNeedForPing,
        NULL);

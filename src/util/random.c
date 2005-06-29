@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -20,7 +20,7 @@
 */
 
 /**
- * @file util/random_gcrypt.c
+ * @file util/random.c
  * @brief functions to gather random numbers
  * @author Christian Grothoff
  */
@@ -106,3 +106,23 @@ unsigned long long randomi64(unsigned long long u) {
   return ret % u;
 }
 
+/**
+ * @return a cryptographically weak random value in the interval [0,i[.
+ */
+unsigned int weak_randomi(unsigned int i) {
+	unsigned int ret;
+fprintf(stderr, "radnom\n");
+fflush(NULL);	
+  GNUNET_ASSERT(i > 0);
+
+	ret = i * ((double) RANDOM() / RAND_MAX);
+	
+	if (ret >= i)
+		ret = i;
+fflush(NULL);	
+fprintf(stderr, "ret %i\n", ret);	
+	
+	return ret;
+}
+
+/* end of random.c */

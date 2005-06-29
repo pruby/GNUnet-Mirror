@@ -557,6 +557,14 @@ unsigned long long randomi64(unsigned long long u);
 int * permute(int n);
 
 /**
+ * Produce a cryptographically weak random value.
+ *
+ * @param i the upper limit (exclusive) for the random number
+ * @return a random value in the interval [0,i[.
+ */
+unsigned int weak_randomi(unsigned int i);
+
+/**
  * Convert a long-long to host-byte-order.
  * @param n the value in network byte order
  * @return the same value in host byte order

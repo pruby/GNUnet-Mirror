@@ -256,14 +256,14 @@ static void cronCheckLiveness(void * unused) {
   if (minint == 0)
     minint = 1;
   for (i=slotCount-1;i>=0;i--) {
-    if (randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
+    if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
       continue;
 
     if ( (minint > coreAPI->isSlotUsed(i)) &&
 	 (0 == coreAPI->isSlotUsed(i)) )
       scanForHosts(i);
   }
-  if (randomi(LIVE_SCAN_EFFECTIVENESS) == 0)
+  if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) == 0)
     active = coreAPI->forAllConnectedNodes
       (&checkNeedForPing,
        NULL);

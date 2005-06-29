@@ -74,7 +74,7 @@ libgnunetutil_la_SOURCES = \
  logging.c \
  printhelp.c \
  port.c \
- random_gcrypt.c \
+ random.c \
  semaphore.c \
  shutdown.c \
  state.c \
