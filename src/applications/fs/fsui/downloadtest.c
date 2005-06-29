@@ -46,7 +46,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "EVERYTHING"));
+				     "ERROR"));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "check.conf"));
@@ -106,6 +106,7 @@ static void eventCallback(void * cls,
   lastEvent = event->type;  
   if (event->type == FSUI_search_result) {
     fn = makeName(43);
+    printf("Download started.\n");
     FSUI_startDownload(ctx,
 		       0,
 		       event->data.SearchResult.fi.uri,
