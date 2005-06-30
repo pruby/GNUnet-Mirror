@@ -340,6 +340,8 @@ int getPublicIPAddress(IPaddr * address) {
     if (lastError + 30 * cronSECONDS < now)
       return SYSERR;
     if (SYSERR == getAddress(&myAddress)) {
+      LOG(LOG_WARNING,
+	  _("Failed to obtain my (external) IP address!\n"));
       lastError = now;
       return SYSERR;
     }

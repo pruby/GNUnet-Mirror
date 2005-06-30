@@ -134,6 +134,8 @@ int getPublicIP6Address(IP6addr * address) {
       return SYSERR;
     if (SYSERR == getAddress6(&myAddress)) {
       lastError = now;
+      LOG(LOG_WARNING,
+	  _("Failed to obtain my (external) IPv6 address!\n"));
       return SYSERR;
     }
     last = now;
