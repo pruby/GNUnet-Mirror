@@ -123,13 +123,31 @@ static void printstatus(int * verboselevel,
   switch(event->type) {
   case FSUI_upload_progress:
     if (*verboselevel == YES) {
+      const char * unit = _(/* time unit */ "ms");
+
       delta = event->data.UploadProgress.main_eta - cronTime(NULL);
+      if (delta > 5 * 1000) {
+	delta / 1000;
+	unit = _(/* time unit */ "s");
+	if (delta > 5 * 60) {
+	  delta / 60;
+	  unit = _(/* time unit */ "m");
+	  if (delta > 5 * 60) {
+	    delta / 60;
+	    unit = _(/* time unit */ "h");
+	    if (delta > 5 * 24) {
+	      delta / 24;
+	      unit = _(/* time unit */ " days");	      
+	    }	    
+	  }		
+	}	
+      }	
       PRINTF(_("%16llu of %16llu bytes inserted "
-	       "(estimating %llu seconds to completion)                "),
+	       "(estimating %llu%s to completion)\n"),
 	     event->data.UploadProgress.main_completed,
 	     event->data.UploadProgress.main_total,
-	     delta / cronSECONDS);
-      printf("\r");
+	     delta,
+	     unit);
     }
     break;
   case FSUI_upload_complete:
