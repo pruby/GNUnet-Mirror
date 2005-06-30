@@ -1,3 +1,6 @@
+Thu Jun 30 13:52:17 CEST 2005
+	Enabled IPv6 by default.  Fixed various minor bugs.
+	
 Tue Jun 28 13:41:58 UTC 2005
 	Fixed various open FIXMEs, including error handling,
 	bad performance and some memory leaks (gnunet-tools
