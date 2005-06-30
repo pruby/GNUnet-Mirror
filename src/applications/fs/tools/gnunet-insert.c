@@ -124,8 +124,8 @@ static void printstatus(int * verboselevel,
   case FSUI_upload_progress:
     if (*verboselevel == YES) {
       delta = event->data.UploadProgress.eta - cronTime(NULL);
-      PRINTF(
-      _("%16llu of %16llu bytes inserted (estimating %llu seconds to completion)                "),
+      PRINTF(_("%16llu of %16llu bytes inserted "
+	       "(estimating %llu seconds to completion)                "),
 	     event->data.UploadProgress.main_completed,
 	     event->data.UploadProgress.main_total,
 	     delta / cronSECONDS);
@@ -138,7 +138,7 @@ static void printstatus(int * verboselevel,
 		      event->data.UploadComplete.main_filename)) {
 	delta = event->data.UploadComplete.eta 
 	  - event->data.UploadComplete.start_time;
-	PRINTF(_("\nUpload of '%s' complete, "
+	PRINTF(_("Upload of '%s' complete, "
 		 "%llu bytes took %llu seconds (%8.3f kbps).\n"),
 	       event->data.UploadComplete.filename,
 	       event->data.UploadComplete.total,
@@ -149,17 +149,16 @@ static void printstatus(int * verboselevel,
 			   / 1024.0 * cronSECONDS / delta));
       } else {
 	cron_t now;
-	cronTime(&now);
 
+	cronTime(&now);
 	delta = now - event->data.UploadComplete.start_time;
-	PRINTF(_("\nUpload of '%s' complete, "
+	PRINTF(_("Upload of '%s' complete, "
 		 "current average speed is %8.3f kbps.\n"),
 	       event->data.UploadComplete.filename,
 	       (delta == 0)
 	       ? (double) (-1.0)
-	       : (double) (event->data.UploadComplete.completed,
-			   / 1024.0 * cronSECONDS / delta));
-	
+	       : (double) (event->data.UploadComplete.completed
+			   / 1024.0 * cronSECONDS / delta));	
       }
     }
     fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
