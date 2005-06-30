@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -485,7 +485,7 @@ static void broadcastHELO(void * unused) {
 
 typedef struct {
   unsigned int delay;
-  p2p_HEADER * msg;
+  HELO_Message * msg;
   int prob;
 } FCC;
 
@@ -493,10 +493,14 @@ static void forwardCallback(const PeerIdentity * peer,
 			    FCC * fcc) {
   if (randomi(fcc->prob) != 0)
     return; /* only forward with a certain chance */
+  if (equalsHashCode512(&peer->hashPubKey,
+			&fcc->msg->senderIdentity))
+    return; /* do not bounce the HELO of a peer back
+	       to the same peer! */
   if (stats != NULL)
     stats->change(stat_HELO_fwd, 1);
   coreAPI->unicast(peer,
-		   fcc->msg,
+		   &fcc->msg->header,
 		   0, /* priority */
 		   fcc->delay);
 }
@@ -554,7 +558,7 @@ forwardHELOHelper(const PeerIdentity * peer,
 					NULL);
   if (count > 0) {
     fcc.delay = (*probability) * HELO_BROADCAST_FREQUENCY;  /* send before the next round */
-    fcc.msg = &helo->header;
+    fcc.msg  = helo;
     fcc.prob = count;
     coreAPI->forAllConnectedNodes((PerNodeCallback) &forwardCallback,
 				  &fcc);
