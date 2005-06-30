@@ -680,7 +680,9 @@ static void * tcpListenMain() {
 
 	  if (YES == isBlacklisted(ipaddr)) {
 	    LOG(LOG_INFO,
-		_("Rejected blacklisted connection from %u.%u.%u.%u.\n"),
+		_("%s: Rejected connection from blacklisted "
+		  "address %u.%u.%u.%u.\n"),
+		"TCP",
 		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
 	    SHUTDOWN(sock, 2);
 	    closefile(sock);
@@ -1051,6 +1053,9 @@ static int createHELO(HELO_Message ** helo) {
 	_("Could not determine my public IP address.\n"));
     return SYSERR;
   }
+  LOG(LOG_DEBUG,
+      "TCP uses IP address %u.%u.%u.%u.\n",
+      PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));

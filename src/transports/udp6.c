@@ -265,7 +265,8 @@ static void * listenAndDistribute() {
     GNUNET_ASSERT(sizeof(struct in6_addr) == sizeof(IP6addr));
     if (YES == isBlacklisted((IP6addr*)&incoming.sin6_addr)) {
       LOG(LOG_WARNING,
-	  _("Sender %s is blacklisted, dropping message.\n"),
+	  _("%s: Rejected connection from blacklisted address %s.\n"),
+	  "UDP6",
 	  inet_ntop(AF_INET6,
 		    &incoming,
 		    inet6,

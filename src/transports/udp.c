@@ -269,7 +269,9 @@ static void * listenAndDistribute() {
 	   sizeof(struct in_addr));
     if (YES == isBlacklisted(ipaddr)) {
       LOG(LOG_WARNING,
-	  _("Sender %u.%u.%u.%u is blacklisted, dropping message.\n"),
+	  _("%s: Rejected connection from blacklisted "
+	    "address %u.%u.%u.%u.\n"),
+	  "UDP",
 	  PRIP(ntohl(*(int*)&incoming.sin_addr)));
       goto RETRY; /* drop on the floor */
     }

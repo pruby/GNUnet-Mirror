@@ -795,7 +795,9 @@ static void * httpListenMain() {
 
 	  if (YES == isBlacklisted(ipaddr)) {
 	    LOG(LOG_INFO,
-		_("Rejected blacklisted connection from %u.%u.%u.%u.\n"),
+		_("%s: Rejected connection from blacklisted "
+		  "address %u.%u.%u.%u.\n"),
+		"HTTP",
 		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
 	    closefile(sock);
 	  } else {
@@ -1069,9 +1071,12 @@ static int createHELO(HELO_Message ** helo) {
   if (SYSERR == getPublicIPAddress(&haddr->ip)) {
     FREE(msg);
     LOG(LOG_WARNING,
-	_("Could not determine my public IP address.\n"));
+	_("HTTP: Could not determine my public IP address.\n"));
     return SYSERR;
   }
+  LOG(LOG_DEBUG,
+      "HTTP uses IP address %u.%u.%u.%u.\n",
+      PRIP(ntohl(*(int*)&haddr->ip)));  
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));

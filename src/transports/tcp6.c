@@ -653,7 +653,8 @@ static void * tcp6ListenMain() {
 	  if (YES == isBlacklisted((IP6addr*)&clientAddr.sin6_addr)) {
 	    char inet6[INET6_ADDRSTRLEN];
 	    LOG(LOG_INFO,
-		_("Rejected blacklisted connection from address %s.\n"),
+		_("%s: Rejected connection from blacklisted address %s.\n"),
+		"TCP6",
 		inet_ntop(AF_INET6,
 			  &clientAddr,
 			  inet6,
