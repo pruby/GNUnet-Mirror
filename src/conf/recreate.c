@@ -31,19 +31,19 @@
 
 
 int recreate_main(int ac, char **av) {
-	struct symbol *sym;
-	const char *dstDir;
-	int dirLen;
-	
-	dirLen = strlen(av[1]);
-	dstDir = MALLOC(dirLen + 2);
-	strcpy(dstDir, av[1]);
-	if (dstDir[dirLen - 1] != DIR_SEPARATOR)
-		strcat(dstDir, DIR_SEPARATOR_STR);
-	
-	conf_parse(DATADIR"/config.in");
+  struct symbol *sym;
+  char *dstDir;
+  int dirLen;
+  
+  dirLen = strlen(av[1]);
+  dstDir = MALLOC(dirLen + 2);
+  strcpy(dstDir, av[1]);
+  if (dstDir[dirLen - 1] != DIR_SEPARATOR)
+    strcat(dstDir, DIR_SEPARATOR_STR);
+  
+  conf_parse(DATADIR"/config.in");
 
-	/* we are setting advanced/rare settings below */
+  /* we are setting advanced/rare settings below */
   sym = sym_find("EXPERIMENTAL", "Meta");
   sym_set_tristate_value(sym, yes);
   sym = sym_find("ADVANCED", "Meta");
@@ -51,30 +51,30 @@ int recreate_main(int ac, char **av) {
   sym = sym_find("RARE", "Meta");
   sym_set_tristate_value(sym, yes);
 
-	/* save new config files to DATADIR */
+  /* save new config files to DATADIR */
   sym = sym_find("config-daemon.in_CONF_DEF_DIR", "Meta");
-	sym_set_string_value(sym, dstDir);
+  sym_set_string_value(sym, dstDir);
 
   sym = sym_find("config-daemon.in_CONF_DEF_FILE", "Meta");
-	sym_set_string_value(sym, "gnunet.root");
+  sym_set_string_value(sym, "gnunet.root");
 
   sym = sym_find("config-client.in_CONF_DEF_DIR", "Meta");
-	sym_set_string_value(sym, dstDir);
+  sym_set_string_value(sym, dstDir);
 
   sym = sym_find("config-client.in_CONF_DEF_FILE", "Meta");
-	sym_set_string_value(sym, "gnunet.user");
+  sym_set_string_value(sym, "gnunet.user");
 	
-	FREE(dstDir);
+  FREE(dstDir);
 
-	/* Write defaults */
-	if (conf_write()) {
-		printf(_("Unable to save configuration files: %s.\n"), STRERROR(errno));
-		return 1;
-	}
-	else {
-		puts(_("Configuration files (re)created.\n"));
-		return 0;
-	}
+  /* Write defaults */
+  if (conf_write()) {
+    printf(_("Unable to save configuration files: %s.\n"), STRERROR(errno));
+    return 1;
+  }
+  else {
+    puts(_("Configuration files (re)created.\n"));
+    return 0;
+  }
 }
 
 /* end of silent.c */
