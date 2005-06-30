@@ -67,18 +67,27 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
   if (level > 1000) {
     if (peers < level / 1000) {
       LOG(LOG_DEBUG,
-	  "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");      
+	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
+	  "Result dropped.\n",
+	  level,
+	  peers);      
       return SYSERR;
     }
     if (count < level % 1000) {
       LOG(LOG_DEBUG,
-	  "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");
+	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
+	  "Result dropped.\n",
+	  level,
+	  count);
       return SYSERR;
     }
   } else {
     if (count < level) {
       LOG(LOG_DEBUG,
-	  "Not enough cover traffic to satisfy anonymity requirements. Result dropped.\n");      
+	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
+	  "Result dropped.\n",
+	  level,
+	  count);      
       return SYSERR;
     }
   }
