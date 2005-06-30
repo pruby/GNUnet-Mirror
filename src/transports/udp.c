@@ -26,6 +26,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "gnunet_stats_service.h"
 #include "platform.h"
 #include "ip.h"
 
@@ -83,6 +84,15 @@ typedef struct {
 /* apis (our advertised API and the core api ) */
 static CoreAPIForTransport * coreAPI;
 static TransportAPI udpAPI;
+
+static Stats_ServiceAPI * stats;
+
+static int stat_bytesReceived;
+
+static int stat_bytesSent;
+
+static int stat_bytesDropped;
+
 
 /**
  * thread that listens for inbound messages
@@ -233,6 +243,9 @@ static void * listenAndDistribute() {
       break; /* die/shutdown */
     }
     incrementBytesReceived(size);
+    stats->change(stat_bytesReceived,
+		  size);
+
     if ((unsigned int)size <= sizeof(UDPMessage)) {
       LOG(LOG_INFO,
 	  _("Received invalid UDP message from %u.%u.%u.%u:%u, dropping.\n"),
@@ -466,6 +479,8 @@ static int udpSend(TSession * tsession,
 		      (struct sockaddr*) &sin,
 		      sizeof(sin))) {
     ok = OK;
+    stats->change(stat_bytesSent,
+		  ssize);
   } else {
     LOG(LOG_WARNING,
 	_("Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"),
@@ -473,6 +488,8 @@ static int udpSend(TSession * tsession,
 	PRIP(ntohl(*(int*)&sin.sin_addr)),
 	ntohs(sin.sin_port),
 	STRERROR(errno));
+    stats->change(stat_bytesDropped,
+		  ssize);
   }
   incrementBytesSent(ssize);
   FREE(msg);
@@ -617,6 +634,16 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
 
   GNUNET_ASSERT(sizeof(UDPMessage) == 68);
   coreAPI = core;
+  stats = coreAPI->requestService("stats");
+  if (stats != NULL) {
+    stat_bytesReceived
+      = stats->create(_("# bytes received via UDP"));
+    stat_bytesSent
+      = stats->create(_("# bytes sent via UDP"));
+    stat_bytesDropped
+      = stats->create(_("# bytes dropped by UDP (outgoing)"));
+  }
+  
   MUTEX_CREATE(&configLock);
   reloadConfiguration();
   mtu = getConfigurationInt("UDP",
@@ -647,8 +674,10 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
 }
 
 void donetransport_udp() {
+  coreAPI->releaseService(stats);
   MUTEX_DESTROY(&configLock);
   FREENONNULL(filteredNetworks_);
+  coreAPI = NULL;
 }
 
 /* end of udp.c */

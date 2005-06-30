@@ -842,7 +842,6 @@ static void sendBuffer(BufferEntry * be) {
   char * plaintextMsg;
   void * encryptedMsg;
   cron_t expired;
-  int targetSBLEN;
   int headpos;
   int tailpos;
   int approxProb;
@@ -1108,16 +1107,28 @@ static void sendBuffer(BufferEntry * be) {
       }
     }
 
-  targetSBLEN = 0; /* how many entries in sendBuffer
-		      afterwards? */
   for (i=0;i<be->sendBufferSize;i++) {
     SendEntry * entry = be->sendBuffer[perm[i]];
     if (knapsackSolution[perm[i]] == YES) {
       int ret;
 
-      ret = entry->callback(&plaintextMsg[p],
-			    entry->closure,
-			    entry->len);
+      if (entry->callback == NULL) {
+	memcpy(&plaintextMsg[p],
+	       entry->closure,
+	       entry->len);
+	ret = OK;
+      } else {	
+	ret = entry->callback(&plaintextMsg[p],
+			      entry->closure,
+			      entry->len);
+	if (ret == OK) {
+	  entry->callback = NULL;
+	  entry->closure = MALLOC(entry->len);
+	  memcpy(entry->closure,
+		 &plaintextMsg[p],
+		 entry->len);
+	}
+      }
       if (ret == SYSERR) {	
 	/* should not happen if everything went well,
 	   add random padding instead */
@@ -1130,10 +1141,10 @@ static void sendBuffer(BufferEntry * be) {
 	  = htons(p2p_PROTO_NOISE);
 	for (i=p+sizeof(p2p_HEADER);i<entry->len+p;i++)
 	  plaintextMsg[p] = (char) rand();
+	entry->callback = NULL;
+	entry->closure = NULL;
       }
       p += entry->len;
-      FREE(entry);
-      be->sendBuffer[perm[i]] = NULL;
     } else {
       int msgCap;
       int l = getCPULoad();
@@ -1159,25 +1170,14 @@ static void sendBuffer(BufferEntry * be) {
 	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
 	    remainingBufferSize);
 #endif
-	FREE(entry->closure);
+	FREENONNULL(entry->closure);
 	FREE(entry);
 	be->sendBuffer[perm[i]] = NULL;
 	remainingBufferSize--;
-      } else
-	targetSBLEN++;
+      }
     }
   }
   FREE(perm);
-  FREE(knapsackSolution);
-
-  /* cleanup/compact sendBuffer */
-  j = 0;
-  for (i=0;i<be->sendBufferSize;i++)
-    if (be->sendBuffer[i] != NULL)
-      be->sendBuffer[j++] = be->sendBuffer[i];
-  GROW(be->sendBuffer,
-       be->sendBufferSize,
-       targetSBLEN);
 
   /* still room left? try callbacks! */
   pos = scl_nextHead;
@@ -1248,9 +1248,32 @@ static void sendBuffer(BufferEntry * be) {
 	j += plen;
       }
     }
+    for (i=0;i<be->sendBufferSize;i++) {
+      SendEntry * entry = be->sendBuffer[i];
+      if (knapsackSolution[i] == YES) {
+	GNUNET_ASSERT(entry->callback == NULL);
+	FREENONNULL(entry->closure);
+	FREE(entry);
+	be->sendBuffer[i] = NULL;
+      } else if ( (entry->callback == NULL) &&
+		  (entry->closure == NULL) ) {
+	FREE(entry);
+	be->sendBuffer[i] = NULL;
+      }      
+    }
   }
+  FREE(knapsackSolution);
   FREE(encryptedMsg);
   FREE(plaintextMsg);
+
+  /* cleanup/compact sendBuffer */
+  j = 0;
+  for (i=0;i<be->sendBufferSize;i++)
+    if (be->sendBuffer[i] != NULL) 
+      be->sendBuffer[j++] = be->sendBuffer[i];    
+  GROW(be->sendBuffer,
+       be->sendBufferSize,
+       j);
 }
 
 /**

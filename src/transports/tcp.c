@@ -1225,7 +1225,7 @@ static int tcpSend(TSession * tsession,
 	 size);
   mp->size = htons(size);
   mp->reserved = 0;
-  /* if we would have less than 2k in buffers,
+  /* if we would have less than TARGET_BUFFER_SIZE in buffers,
      do reliable send */
   if (((TCPSession*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE)
     ok = tcpDirectSendReliable(tsession->internal,

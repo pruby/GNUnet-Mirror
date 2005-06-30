@@ -5,8 +5,6 @@
      whilst gnunet-transport-check -p was able to
      connect to 4-6 peers at the same time!)
 - add stats
-- TCP send drops too much
-- connection should keep messages if transport dropped!
 
 
 
