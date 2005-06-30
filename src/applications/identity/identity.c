@@ -325,7 +325,7 @@ static void cronScanDirectoryDataHosts(void * unused) {
   cron_t now;
 
   cronTime(&now);
-  if (lastRun + MAX_DATA_HOST_FREQ < now)
+  if (lastRun + MAX_DATA_HOST_FREQ > now)
     return; /* prevent scanning more than
 	       once every 5 min */
   lastRun = now;
@@ -712,7 +712,7 @@ static int forEachHost(cron_t now,
   PeerIdentity hi;
   unsigned short proto;
 
-  count = 0;
+  count = 0;  
   MUTEX_LOCK(&lock_);
   for (i=0;i<count_;i++) {
     if (hostIdentityEquals(&hosts_[i].identity,
