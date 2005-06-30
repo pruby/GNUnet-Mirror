@@ -129,8 +129,8 @@ int getPublicIP6Address(IP6addr * address) {
   cron_t now;
 
   cronTime(&now);
-  if (last + cronMINUTES < now) {
-    if (lastError + 30 * cronSECONDS < now)
+  if (last + cronMINUTES > now) {
+    if (lastError + 30 * cronSECONDS > now)
       return SYSERR;
     if (SYSERR == getAddress6(&myAddress)) {
       lastError = now;
