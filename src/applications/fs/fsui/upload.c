@@ -162,6 +162,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
       if (ret == OK) {
 	event.type = FSUI_upload_complete;
 	event.data.UploadComplete.total = utc->main_total;
+	event.data.UploadComplete.total = utc->main_completed;
 	event.data.UploadComplete.filename = STRDUP(dirName);
 	event.data.UploadComplete.uri = *uri;
 	event.data.UploadComplete.eta
@@ -223,6 +224,7 @@ static int dirEntryCallback(const char * filename,
 		    &uri);
     event.type = FSUI_upload_complete;
     event.data.UploadComplete.total = utc->main_total;
+    event.data.UploadComplete.completed = utc->main_completed;
     event.data.UploadComplete.filename = utc->filename;
     event.data.UploadComplete.uri = uri;
     if (OK == getFileSize(fn, &len))
@@ -347,6 +349,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
     if (ret == OK) {
       event.type = FSUI_upload_complete;
       event.data.UploadComplete.total = utc->main_total;
+      event.data.UploadComplete.completed = utc->main_completed;
       event.data.UploadComplete.filename = utc->filename;
       event.data.UploadComplete.uri = uri;
       event.data.UploadComplete.eta = cronTime(NULL);

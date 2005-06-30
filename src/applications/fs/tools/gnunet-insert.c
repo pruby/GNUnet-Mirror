@@ -134,15 +134,33 @@ static void printstatus(int * verboselevel,
     break;
   case FSUI_upload_complete:
     if (*verboselevel == YES) {
-      delta = event->data.UploadComplete.eta - event->data.UploadComplete.start_time;
-      PRINTF(
-      _("\nUpload of '%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
-      event->data.UploadComplete.filename,
-      event->data.UploadComplete.total,
-      delta / cronSECONDS,
-      (delta == 0)
-      ? (double) (-1.0)
-      : (double) (event->data.UploadComplete.total / 1024.0 * cronSECONDS / delta));
+      if (0 == strcmp(event->data.UploadComplete.filename,
+		      event->data.UploadComplete.main_filename)) {
+	delta = event->data.UploadComplete.eta 
+	  - event->data.UploadComplete.start_time;
+	PRINTF(_("\nUpload of '%s' complete, "
+		 "%llu bytes took %llu seconds (%8.3f kbps).\n"),
+	       event->data.UploadComplete.filename,
+	       event->data.UploadComplete.total,
+	       delta / cronSECONDS,
+	       (delta == 0)
+	       ? (double) (-1.0)
+	       : (double) (event->data.UploadComplete.total 
+			   / 1024.0 * cronSECONDS / delta));
+      } else {
+	cron_t now;
+	cronTime(&now);
+
+	delta = now - event->data.UploadComplete.start_time;
+	PRINTF(_("\nUpload of '%s' complete, "
+		 "current average speed is %8.3f kbps.\n"),
+	       event->data.UploadComplete.filename,
+	       (delta == 0)
+	       ? (double) (-1.0)
+	       : (double) (event->data.UploadComplete.completed,
+			   / 1024.0 * cronSECONDS / delta));
+	
+      }
     }
     fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
     printf(_("File '%s' has URI: %s\n"),

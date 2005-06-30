@@ -251,6 +251,11 @@ typedef struct {
        */
       unsigned long long total;
       /**
+       * How much has been done so far.
+       */
+      unsigned long long completed;
+     
+      /**
        * Which file was uploaded?
        */
       char * filename;
