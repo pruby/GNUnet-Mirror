@@ -51,6 +51,7 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
 
   if (level == 0)
     return OK;
+  level--;
   if (traffic == NULL)
     return SYSERR;
   if (OK != traffic->get(5 * cronSECONDS / TRAFFIC_TIME_UNIT, /* TTL_DECREMENT/TTU */
