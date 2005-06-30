@@ -26,6 +26,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "gnunet_stats_service.h"
 #include "platform.h"
 #include "ip.h"
 
@@ -171,6 +172,14 @@ typedef struct {
  */
 static CoreAPIForTransport * coreAPI;
 static TransportAPI tcpAPI;
+
+static Stats_ServiceAPI * stats;
+
+static int stat_bytesReceived;
+
+static int stat_bytesSent;
+
+static int stat_bytesDropped;
 
 /**
  * one thread for listening for new connections,
@@ -389,6 +398,10 @@ static int readAndProcess(int i) {
   ret = READ(tcpSession->sock,
 	     &tcpSession->rbuff[tcpSession->pos],
 	     tcpSession->rsize - tcpSession->pos);
+  if ( (ret > 0) && 
+       (stats != NULL) )
+    stats->change(stat_bytesReceived,
+		  ret);
   cronTime(&tcpSession->lastUse);
   if (ret == 0) {
     tcpDisconnect(tsession);
@@ -731,7 +744,11 @@ try_again_1:
   	     Let's sleep and try again. */
   	  gnunet_util_sleep(20);
   	  goto try_again_1;
-        }
+        } 
+	if (stats != NULL) 
+	  stats->change(stat_bytesSent,
+			ret);
+
 #if DEBUG_TCP
 	LOG(LOG_DEBUG,
 	    "TCP: transmitted %u bytes\n",
@@ -828,13 +845,16 @@ static int tcpDirectSend(TCPSession * tcpSession,
     LOG(LOG_DEBUG,
 	"write already pending, will not take additional message.\n");
 #endif    
+    if (stats != NULL) 
+      stats->change(stat_bytesDropped,
+		    ssize);
     MUTEX_UNLOCK(&tcplock);
     return SYSERR;
   }
 #if DEBUG_TCP
-	LOG(LOG_DEBUG,
-	    "TCP: trying to send %u bytes\n",
-	    ssize);
+  LOG(LOG_DEBUG,
+      "TCP: trying to send %u bytes\n",
+      ssize);
 #endif
   success = SEND_NONBLOCKING(tcpSession->sock,
 			     mp,
@@ -849,6 +869,10 @@ static int tcpDirectSend(TCPSession * tcpSession,
   }
   if (success == NO)
     ret = 0;
+  if (stats != NULL) 
+    stats->change(stat_bytesSent,
+		  ret);
+
 #if DEBUG_TCP
   LOG(LOG_DEBUG,
       "TCP: transmitted %u bytes\n",
@@ -1171,6 +1195,9 @@ static int tcpSend(TSession * tsession,
     LOG(LOG_DEBUG, 
 	"tcpSend called while TCP is shutdown.\n");
 #endif	  
+    if (stats != NULL) 
+      stats->change(stat_bytesDropped,
+		    size);
     return SYSERR;
   }   
   if (size == 0) {
@@ -1182,6 +1209,9 @@ static int tcpSend(TSession * tsession,
     LOG(LOG_DEBUG, 
 	"tcpSend called after other side closed connection.\n");
 #endif    
+    if (stats != NULL) 
+      stats->change(stat_bytesDropped,
+		    size);
     return SYSERR; /* other side closed connection */
   }  
   mp = MALLOC(sizeof(TCPMessagePack) + size);
@@ -1376,6 +1406,15 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
        tsessionArrayLength,
        32);
   coreAPI = core;
+  stats = coreAPI->requestService("stats");
+  if (stats != NULL) {
+    stat_bytesReceived
+      = stats->create(_("# bytes received via TCP"));
+    stat_bytesSent
+      = stats->create(_("# bytes sent via TCP"));
+    stat_bytesDropped
+      = stats->create(_("# bytes dropped by TCP (outgoing)"));
+  }
   tcpAPI.protocolNumber       = TCP_PROTOCOL_NUMBER;
   tcpAPI.mtu                  = 0;
   tcpAPI.cost                 = 20000; /* about equal to udp */
@@ -1396,6 +1435,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
 
 void donetransport_tcp() {
   int i;
+  coreAPI->releaseService(stats);
   for (i=tsessionCount-1;i>=0;i--)
     destroySession(i);
   GROW(tsessions,

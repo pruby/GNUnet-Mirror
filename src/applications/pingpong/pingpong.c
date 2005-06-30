@@ -29,6 +29,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_pingpong_service.h"
 #include "gnunet_identity_service.h"
+#include "gnunet_stats_service.h"
 #include "gnunet_transport_service.h"
 
 /**
@@ -90,6 +91,22 @@ static Transport_ServiceAPI * transport;
 
 static Identity_ServiceAPI * identity;
 
+static Stats_ServiceAPI * stats;
+
+static int stat_encryptedPongReceived;
+
+static int stat_plaintextPongReceived;
+
+static int stat_pingReceived;
+
+static int stat_pingCreated;
+
+static int stat_pongSent;
+
+static int stat_plaintextPingSent;
+
+static int stat_ciphertextPingSent;
+
 /**
  * We received a PING message, send the PONG reply.
  */	
@@ -103,6 +120,8 @@ static int pingReceived(const PeerIdentity * sender,
 	"ping");
     return SYSERR;
   }
+  if (stats != NULL)
+    stats->change(stat_pingReceived, 1);
   pmsg = (PINGPONG_Message *) msg;
   if (!hostIdentityEquals(coreAPI->myIdentity,
 			  &pmsg->receiver)) {
@@ -115,6 +134,8 @@ static int pingReceived(const PeerIdentity * sender,
 		   &pmsg->header,
 		   0,
 		   0); /* send now! */
+  if (stats != NULL)
+    stats->change(stat_pongSent, 1);
   return OK;
 }
 
@@ -205,6 +226,8 @@ static int pongReceived(const PeerIdentity * sender,
       &enc);
 #endif
   matched = 0;
+  if (stats != NULL)
+    stats->change(stat_encryptedPongReceived, 1);
   MUTEX_LOCK(pingPongLock);
   for (i=0;i<MAX_PING_PONG;i++) {
     entry = &pingPongs[i];
@@ -260,6 +283,8 @@ static int plaintextPongReceived(const PeerIdentity * sender,
 	"pong");
     return SYSERR; /* bad pong */
   }
+  if (stats != NULL)
+    stats->change(stat_plaintextPongReceived, 1);
   matched = 0;
   MUTEX_LOCK(pingPongLock);
   for (i=0;i<MAX_PING_PONG;i++) {
@@ -349,6 +374,8 @@ createPing(const PeerIdentity * receiver,
   entry->challenge = rand();
   pmsg->challenge = htonl(entry->challenge);
   MUTEX_UNLOCK(pingPongLock);
+  if (stats != NULL)
+    stats->change(stat_pingCreated, 1);
   return &pmsg->header;
 }
 
@@ -375,11 +402,15 @@ static int initiatePing(const PeerIdentity * receiver,
     return SYSERR;
   if (usePlaintext == YES) {
     sendPlaintext(receiver, pmsg);
+    if (stats != NULL)
+      stats->change(stat_plaintextPingSent, 1);
   } else {
     coreAPI->unicast(receiver,
 		     &pmsg->header,
 		     0,
 		     0);
+    if (stats != NULL)
+      stats->change(stat_ciphertextPingSent, 1);
   }
   FREE(pmsg);
   return OK;
@@ -406,6 +437,8 @@ static int pingPlaintext(const PeerIdentity * receiver,
 					YES);
   if (pmsg == NULL)
     return SYSERR;
+  if (stats != NULL)
+    stats->change(stat_plaintextPingSent, 1);
   coreAPI->sendPlaintext(session,
 			 (char*)pmsg,
 			 sizeof(PINGPONG_Message));
@@ -432,6 +465,24 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
     BREAK();
     capi->releaseService(identity);
     return NULL;
+  }
+  stats = capi->requestService("stats");
+  if (stats != NULL) {
+    stat_encryptedPongReceived
+      = stats->create(_("# encrypted PONG messages received"));
+    stat_plaintextPongReceived
+      = stats->create(_("# plaintext PONG messages received"));
+    stat_pingReceived
+      = stats->create(_("# encrypted PING messages received"));
+    stat_pingCreated
+      = stats->create(_("# PING messages created"));
+    stat_pongSent
+      = stats->create(_("# encrypted PONG messages sent"));
+    stat_plaintextPingSent
+      = stats->create(_("# plaintext PING messages sent"));
+    stat_ciphertextPingSent
+      = stats->create(_("# encrypted PING messages sent"));
+
   }
   pingPongLock = capi->getConnectionModuleLock();
   pingPongs = (PingPongEntry*) MALLOC(sizeof(PingPongEntry)*MAX_PING_PONG);
@@ -463,6 +514,8 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
 int release_module_pingpong() {
   int i;
 
+  coreAPI->releaseService(stats);
+  stats = NULL;
   coreAPI->releaseService(transport);
   transport = NULL;
   coreAPI->releaseService(identity);

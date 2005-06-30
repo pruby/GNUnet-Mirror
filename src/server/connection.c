@@ -52,6 +52,7 @@
 #include "gnunet_session_service.h"
 #include "gnunet_fragmentation_service.h"
 #include "gnunet_topology_service.h"
+#include "gnunet_stats_service.h"
 #include "connection.h"
 #include "core.h"
 #include "handler.h"
@@ -449,6 +450,11 @@ static Fragmentation_ServiceAPI * fragmentation;
 static Topology_ServiceAPI * topology;
 
 /**
+ * Stats service (maybe NULL!)
+ */
+static Stats_ServiceAPI * stats;
+
+/**
  * The buffer containing all current connections.
  */
 static BufferEntry ** CONNECTION_buffer_;
@@ -490,6 +496,10 @@ static MessagePartHandler * rsns;
  * Size of rsns.
  */
 static unsigned int rsnSize;
+
+static int stat_messagesDropped;
+
+static int stat_sizeMessagesDropped;
 
 /* ******************** CODE ********************* */
 
@@ -1045,6 +1055,10 @@ static void sendBuffer(BufferEntry * be) {
 	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
 	    be->sendBufferSize);
 #endif
+	if (stats != NULL) {
+	  stats->change(stat_messagesDropped, 1);
+	  stats->change(stat_sizeMessagesDropped, entry->len);
+	}
 	FREE(entry->closure);
 	FREE(entry);
 	be->sendBuffer[i] = be->sendBuffer[be->sendBufferSize-1];
@@ -2420,6 +2434,13 @@ void initConnection() {
   GNUNET_ASSERT(fragmentation != NULL);
   topology = requestService("topology");
   GNUNET_ASSERT(topology != NULL);
+  stats = requestService("stats");
+  if (stats != NULL) {
+    stat_messagesDropped
+      = stats->create(_("# outgoing messages dropped"));
+    stat_sizeMessagesDropped
+      = stats->create(_("# bytes of outgoing messages dropped"));
+  }
   transport->start(&core_receive);
 }
 
@@ -2472,6 +2493,8 @@ void doneConnection() {
   fragmentation = NULL;
   releaseService(topology);
   topology = NULL;
+  releaseService(stats);
+  stats = NULL;
 #if DEBUG_COLLECT_PRIO == YES
   fclose(prioFile);
 #endif
