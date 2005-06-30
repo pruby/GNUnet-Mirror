@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 
 #ifndef _PLIBC_H_
@@ -43,6 +43,7 @@ extern "C" {
 #ifdef WINDOWS
 
 #include <windows.h>
+#include <Ws2tcpip.h>
 #include <time.h>
 #include <stdio.h>
 #include <sys/types.h>
