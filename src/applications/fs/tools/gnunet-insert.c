@@ -127,16 +127,16 @@ static void printstatus(int * verboselevel,
 
       delta = event->data.UploadProgress.main_eta - cronTime(NULL);
       if (delta > 5 * 1000) {
-	delta / 1000;
+	delta = delta / 1000;
 	unit = _(/* time unit */ "s");
 	if (delta > 5 * 60) {
-	  delta / 60;
+	  delta = delta / 60;
 	  unit = _(/* time unit */ "m");
 	  if (delta > 5 * 60) {
-	    delta / 60;
+	    delta = delta / 60;
 	    unit = _(/* time unit */ "h");
 	    if (delta > 5 * 24) {
-	      delta / 24;
+	      delta = delta / 24;
 	      unit = _(/* time unit */ " days");	      
 	    }	    
 	  }		
