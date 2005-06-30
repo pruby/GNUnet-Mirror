@@ -87,8 +87,11 @@ static void progressCallback(unsigned long long totalBytes,
   if (totalBytes > 0) {
     event.data.UploadProgress.main_eta
       = (cron_t) (utc->start_time +
-		  (((double)(now - utc->start_time/(double)(utc->main_completed+completedBytes))))
-		   * (double)utc->main_total);
+		  (((double)( (now - 
+			       utc->start_time) /
+			     (double)(utc->main_completed
+				      + completedBytes))))
+		   * (double) utc->main_total);
   } else {
     event.data.UploadProgress.main_eta = eta; /* huh? */
   }
