@@ -123,13 +123,13 @@ static int getAddress6(IP6addr  * address){
  * @return SYSERR on error, OK on success
  */
 int getPublicIP6Address(IP6addr * address) {
- static IP6addr myAddress;
+  static IP6addr myAddress;
   static cron_t last;
   static cron_t lastError;
   cron_t now;
 
   cronTime(&now);
-  if (last + cronMINUTES > now) {
+  if (last + cronMINUTES < now) {
     if (lastError + 30 * cronSECONDS > now)
       return SYSERR;
     if (SYSERR == getAddress6(&myAddress)) {
@@ -140,7 +140,9 @@ int getPublicIP6Address(IP6addr * address) {
     }
     last = now;
   }
-  *address = myAddress;
+  memcpy(address,
+	 &myAddress,
+	 sizeof(IP6addr));
   return OK;
 }
 

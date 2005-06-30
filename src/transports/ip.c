@@ -336,7 +336,7 @@ int getPublicIPAddress(IPaddr * address) {
   cron_t now;
 
   cronTime(&now);
-  if (last + cronMINUTES > now) {
+  if (last + cronMINUTES < now) {
     if (lastError + 30 * cronSECONDS > now)
       return SYSERR;
     if (SYSERR == getAddress(&myAddress)) {
@@ -347,7 +347,9 @@ int getPublicIPAddress(IPaddr * address) {
     }
     last = now;
   }
-  *address = myAddress;
+  memcpy(address,
+	 &myAddress,
+	 sizeof(IPaddr));
   return OK;
 }
 

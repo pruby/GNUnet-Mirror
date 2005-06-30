@@ -341,6 +341,9 @@ static int createHELO(HELO_Message ** helo) {
 	_("UDP: Could not determine my public IP address.\n"));
     return SYSERR;
   }
+  LOG(LOG_DEBUG,
+      "UDP uses IP address %u.%u.%u.%u.\n",
+      PRIP(ntohl(*(int*)&haddr->senderIP)));
   if (udp_shutdown == YES)
     haddr->senderPort      = htons(getGNUnetUDPPort());
   else
