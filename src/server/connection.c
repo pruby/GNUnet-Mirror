@@ -2695,7 +2695,8 @@ void unicastCallback(const PeerIdentity * hostId,
 	hash2enc(&hostId->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "unicast: sending message to host %s message of size %d\n",
+      "%s: sending message to host %s message of size %d\n",
+      __FUNCTION__,
       &enc,
       len);
 #endif
@@ -2736,6 +2737,9 @@ void unicast(const PeerIdentity * receiver,
   unsigned short len;
 
   if (msg == NULL) {
+    /* little hack for topology,
+       which cannot do this directly
+       due to cyclic dependencies! */
     session->tryConnect(receiver);
     return;
   }
@@ -2801,12 +2805,13 @@ unsigned int getBandwidthAssignedTo(const PeerIdentity * node) {
   MUTEX_LOCK(&lock);
   be = lookForHost(node);
   if ( (be != NULL) &&
-       (be->status != STAT_UP) ) {
+       (be->status == STAT_UP) ) {
     ret = be->idealized_limit;
     if (ret == 0)
       ret = 1;
-  } else
+  } else {
     ret = 0;
+  }
   MUTEX_UNLOCK(&lock);
   return ret;
 }

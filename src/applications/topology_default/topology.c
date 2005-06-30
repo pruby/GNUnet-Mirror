@@ -157,8 +157,12 @@ static void scanForHosts(unsigned int index) {
   identity->forEachHost(now,
 			(HostIterator)&scanHelperCount,
 			&indexMatch);
-  if (indexMatch.matchCount == 0)
+  if (indexMatch.matchCount == 0) {
+    LOG(LOG_EVERYTHING,
+	"No peers found for slot %u\n",
+	index);
     return; /* no matching peers found! */
+  }
   if (indexMatch.costSelector > 0)
     indexMatch.costSelector
       = randomi(indexMatch.costSelector/4)*4;
@@ -178,8 +182,9 @@ static void scanForHosts(unsigned int index) {
   hash2enc(&indexMatch.match.hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Topology: trying to connect to '%s'.\n",
-      &enc);
+      "Topology: trying to connect to '%s' in slot '%u'.\n",
+      &enc,
+      index);
   coreAPI->unicast(&indexMatch.match,
 		   NULL,
 		   0,

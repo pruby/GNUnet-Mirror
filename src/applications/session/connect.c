@@ -616,11 +616,27 @@ static int acceptSessionKey(const PeerIdentity * sender,
  *         NO if we're going to try to establish one asynchronously
  */
 static int tryConnect(const PeerIdentity * peer) {
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(&peer->hashPubKey,
+		 &enc));
   if ( (topology != NULL) &&
-       (topology->allowConnectionFrom(peer) == SYSERR) )
+       (topology->allowConnectionFrom(peer) == SYSERR) ) {
+    LOG(LOG_DEBUG,
+	"Topology rejected connecting to '%s'.\n",
+	&enc);
     return SYSERR;
-  if (coreAPI->queryBPMfromPeer(peer) != 0)
+  }
+  if (coreAPI->queryBPMfromPeer(peer) != 0) {
+    LOG(LOG_DEBUG,
+	"Connection to '%s' already up (have BPM limit)\n",
+	&enc);
     return YES; /* trivial case */
+  }
+  LOG(LOG_DEBUG,
+      "Trying to exchange key with '%s'.\n",
+      &enc);
   if (OK == exchangeKey(peer, NULL, NULL))
     return NO;
   else
