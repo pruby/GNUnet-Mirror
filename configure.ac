@@ -409,8 +409,8 @@ AC_ARG_ENABLE(ipv6,
         ipv6=1
 	;;
   esac],
-  [     AC_MSG_RESULT(no)
-        ipv6=0])
+  [     AC_MSG_RESULT(yes)
+        ipv6=1])
 AM_CONDITIONAL(HAVE_IPV6, test x$ipv6 != x0)
 AC_DEFINE_UNQUOTED(USE_IPV6, $ipv6, [IPV6 available])
 
