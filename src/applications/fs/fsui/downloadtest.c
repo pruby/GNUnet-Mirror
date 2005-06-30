@@ -211,6 +211,10 @@ int main(int argc, char * argv[]){
 
   /* END OF TEST CODE */
  FAILURE:
+  if (fn != NULL) {
+    UNLINK(fn);
+    FREE(fn);
+  }
   if (ctx != NULL) {
     FSUI_stopSearch(ctx,
 		    uri);
@@ -225,10 +229,6 @@ int main(int argc, char * argv[]){
     ECRS_freeUri(uri);
   if (kuri != NULL)
     ECRS_freeUri(kuri);
-  if (fn != NULL) {
-    UNLINK(fn);
-    FREE(fn);
-  }
   fn = makeName(43);
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   UNLINK(fn);

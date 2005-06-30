@@ -198,7 +198,6 @@ int checkIPListed(const CIDRNetwork * list,
   return NO;
 }
 
-#if USE_IPV6
 /**
  * Parse a network specification. The argument specifies
  * a list of networks. The format is
@@ -322,6 +321,5 @@ int checkIP6Listed(const CIDR6Network * list,
   }
   return NO;
 }
-#endif
 
 /* end of ipcheck.c */

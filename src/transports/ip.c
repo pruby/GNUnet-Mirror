@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file util/identity.c
+ * @file transports/ip.c
  * @brief code to determine the IP of the local machine
  *
  *
@@ -33,10 +33,6 @@
  * (dynDNS? static IP? NAT?) and at the end what the user 
  * needs.
  *
- * Todo:
- * * scanning of network devices for IPv6 (first: find good
- *   API to do it, doesn't seem to exist!)
- *
  * @author Christian Grothoff
  * @author Tzvetan Horozov
  */
@@ -44,19 +40,7 @@
 #include <stdlib.h>
 #include "platform.h"
 #include "gnunet_util.h"
-
-/**
- * @brief our current IPv4 address.
- */
-static IPaddr myAddress;
-
-static int ipv4_init = NO;
-
-#if USE_IPV6
-static IP6addr myAddress6;
-
-static int ipv6_init = NO;
-#endif
+#include "ip.h"
 
 /**
  * Obtain the identity information for the current node
@@ -96,48 +80,6 @@ static int getAddressFromHostname(IPaddr * identity) {
 	 sizeof(struct in_addr));
   return OK;
 }
-
-#if USE_IPV6
-/**
- * Obtain the identity information for the current node
- * (connection information), conInfo.
- * @return SYSERR on failure, OK on success
- */
-static int getAddress6FromHostname(IP6addr * identity) {
-  char * hostname;
-  struct hostent * ip;
-  
-  hostname = MALLOC(1024);
-  if (0 != gethostname(hostname, 1024)) {
-    LOG_STRERROR(LOG_ERROR, "gethostname");
-    FREE(hostname);
-    return SYSERR;
-  }
-  /* LOG(LOG_DEBUG,
-      " looking up $HOSTNAME (%s) to obtain local IP\n",
-      hostname); */
-
-  ip = gethostbyname2(hostname, AF_INET6);
-  if (ip == NULL) {
-    LOG(LOG_ERROR,
-	_("Could not find IP of host '%s': %s\n"),
-	hostname, 
-	hstrerror(h_errno));
-    FREE(hostname);
-    return SYSERR;
-  }
-  FREE(hostname);
-  if (ip->h_addrtype != AF_INET6) {
-    BREAK();
-    return SYSERR;
-  }
-  GNUNET_ASSERT(sizeof(struct in6_addr) == sizeof(identity->addr));
-  memcpy(&identity->addr[0],
-	 ip->h_addr_list[0],
-	 sizeof(struct in6_addr));
-  return OK;
-}
-#endif
 
 #if LINUX || SOMEBSD || MINGW
 #define MAX_INTERFACES 16
@@ -196,7 +138,8 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     return OK;
   }
   LOG(LOG_WARNING,
-      _("Could not find interface '%s' in '%s', trying to find another interface.\n"),
+      _("Could not find interface '%s' in '%s', "
+	"trying to find another interface.\n"),
       "ioctl",
       interfaces);
   /* if no such interface exists, take any interface but loopback */
@@ -252,7 +195,8 @@ static int getAddressFromIOCTL(IPaddr * identity) {
 
       if (memcmp(bPhysAddr, &l, sizeof(l)) == 0) {
         for(i = 0; i < pAddrTable->dwNumEntries; i++) {  
-          if (pAddrTable->table[i].dwIndex == pTable->table[dwIfIdx].dwIndex) {
+          if (pAddrTable->table[i].dwIndex 
+	      == pTable->table[dwIfIdx].dwIndex) {
             iAddrCount++;
             dwIP = pAddrTable->table[i].dwAddr;
           }
@@ -304,23 +248,31 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     
     theHost.sin_family = AF_INET;
     theHost.sin_port = htons(80);
-    theHost.sin_addr.S_un.S_addr = *((unsigned long *) pHost->h_addr_list[0]);
-    if (CONNECT(s, (SOCKADDR *) &theHost, sizeof(theHost)) == SOCKET_ERROR) {
-      LOG_STRERROR(LOG_ERROR, "connect");
+    theHost.sin_addr.S_un.S_addr 
+      = *((unsigned long *) pHost->h_addr_list[0]);
+    if (CONNECT(s, 
+		(SOCKADDR *) &theHost, 
+		sizeof(theHost)) == SOCKET_ERROR) {
+      LOG_STRERROR(LOG_ERROR, 
+		   "connect");
       return SYSERR;
     }
     
     i = sizeof(theHost);
-    if (GETSOCKNAME(s, (SOCKADDR *) &theHost, &i) == SOCKET_ERROR) {
-      LOG_STRERROR(LOG_ERROR, "getsockname");
+    if (GETSOCKNAME(s,
+		    (SOCKADDR *) &theHost, 
+		    &i) == SOCKET_ERROR) {
+      LOG_STRERROR(LOG_ERROR, 
+		   "getsockname");
       return SYSERR;
     }    
     closesocket(s);    
     identity->addr = theHost.sin_addr.S_un.S_addr;
   }
 
-  LOG(LOG_DEBUG, _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
-    PRIP(ntohl(identity->addr)));
+  LOG(LOG_DEBUG,
+      _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
+      PRIP(ntohl(identity->addr)));
   
   return OK;
 #endif
@@ -373,149 +325,28 @@ static int getAddress(IPaddr  * address){
   return retval;
 }
 
-#if USE_IPV6
-/**
- * Get the IP address for the local machine.
- * @return SYSERR on error, OK on success
- */
-static int getAddress6(IP6addr  * address){
-  char * ipString;
-  int retval;
-  struct hostent * ip; /* for the lookup of the IP in gnunet.conf */
-
-  retval = SYSERR;
-  ipString = getConfigurationString("NETWORK",
-				    "IP6");
-  if (ipString == NULL) {
-    retval = getAddress6FromHostname(address);
-  } else {
-    /* LOG(LOG_DEBUG,
-	" obtaining local IP address from hostname %s\n",
-	ipString); */
-    ip = gethostbyname2(ipString,
-			AF_INET6);
-    if (ip == NULL) {
-      LOG(LOG_ERROR,
-	  _("Could not resolve '%s': %s\n"),
-	  ipString, 
-	  hstrerror(h_errno));
-      retval = SYSERR;
-    } else {
-      if (ip->h_addrtype != AF_INET6) {
-	BREAK();
-	retval = SYSERR;
-      } else {
-	GNUNET_ASSERT(sizeof(struct in6_addr) == sizeof(address->addr));
-	memcpy(&address->addr[0],
-	       ip->h_addr_list[0],
-	       sizeof(struct in6_addr));
-	retval = OK;
-      }
-    }
-    FREE(ipString);
-  }
-  return retval;
-}
-#endif
-
-static void cronRefreshAddress(void * unused) {
-  LOG(LOG_CRON,
-      "enter cronRefreshAddress\n");
-  if (SYSERR == getAddress(&myAddress))
-    LOG(LOG_FAILURE,
-	_("Could not determine IP address of the local machine!\n"));
-  LOG(LOG_CRON,
-      "exit cronRefreshAddress\n");
-}
-
-#if USE_IPV6
-static void cronRefreshAddress6(void * unused) {
-  LOG(LOG_CRON,
-      "enter cronRefreshAddress6\n");
-  if (SYSERR == getAddress6(&myAddress6))
-    LOG(LOG_FAILURE,
-	_("Could not determine IP(v6) address of the local machine!\n"));
-  LOG(LOG_CRON,
-      "exit cronRefreshAddress6\n");
-}
-#endif
-
-/** 
- * Initialize identity module. Requires configuration.
- */
-int initAddress() {
-  if (SYSERR == getAddress(&myAddress)) {
-    LOG(LOG_ERROR,
-	_("Could not find IP(v4) for this host. Please provide the IP in the configuration file.\n"));  
-    ipv4_init = NO;
-  } else {
-    ipv4_init = YES;
-    addCronJob(&cronRefreshAddress, 
-	       2 * cronMINUTES,
-	       2 * cronMINUTES,
-	       NULL);
-  }
-#if USE_IPV6
-  if (SYSERR == getAddress6(&myAddress6)) {
-    LOG(LOG_ERROR,
-	_("Could not find IP(v6) for this host. Please provide the IP in the configuration file.\n"));
-    ipv6_init = NO;
-  } else {
-    addCronJob(&cronRefreshAddress6, 
-	       2 * cronMINUTES,
-	       2 * cronMINUTES,
-	       NULL);
-    ipv6_init = YES;
-  }
-#endif
-  return OK;
-}
-
-/** 
- * Shutdown identity module.
- */
-void doneAddress() {
-  if (ipv4_init == YES) {
-    delCronJob(&cronRefreshAddress, 
-	       2 * cronMINUTES,
-	       NULL);  
-    ipv4_init = NO;
-  }
-#if USE_IPV6
-  if (ipv6_init == YES) {
-    delCronJob(&cronRefreshAddress6, 
-	       2 * cronMINUTES,
-	       NULL);
-    ipv6_init = NO;
-  }
-#endif
- 
-}
-
 /**
  * Get the IP address for the local machine.
  * @return SYSERR on error, OK on success
  */
 int getPublicIPAddress(IPaddr * address) {
-  if (ipv4_init == NO)
-    return SYSERR;
+  static IPaddr myAddress;
+  static cron_t last;
+  static cron_t lastError;
+  cron_t now;
+
+  cronTime(&now);
+  if (last + cronMINUTES < now) {
+    if (lastError + 30 * cronSECONDS < now)
+      return SYSERR;
+    if (SYSERR == getAddress(&myAddress)) {
+      lastError = now;
+      return SYSERR;
+    }
+    last = now;
+  }
   *address = myAddress;
   return OK;
 }
 
-/**
- * Get the IPv6 address for the local machine.
- * @return SYSERR on error, OK on success
- */
-int getPublicIP6Address(IP6addr * address) {
-#if USE_IPV6
-  if (ipv6_init == NO)
-    return SYSERR;
-  *address = myAddress6;
-  return OK;
-#else
-  return SYSERR;
-#endif
-}
-
-/* end of identity.c */
+/* end of ip.c */

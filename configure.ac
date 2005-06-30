@@ -396,7 +396,7 @@ AC_SUBST(EXT_LIB_PATH)
 AC_SUBST(EXT_LIBS)
 
 # check for IPv6
-ipv6=0
+ipv6=1
 AC_MSG_CHECKING([whether to enable ipv6])
 AC_ARG_ENABLE(ipv6,
  [AC_HELP_STRING([--enable-ipv6],[Enable ipv6 support])

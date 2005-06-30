@@ -27,6 +27,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 #include "platform.h"
+#include "ip.h"
 
 #define DEBUG_UDP NO
 

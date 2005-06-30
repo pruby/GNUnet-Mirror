@@ -1789,30 +1789,6 @@ int readTCPResult(GNUNET_TCP_SOCKET * sock,
 int sendTCPResult(GNUNET_TCP_SOCKET * sock,
 		  int ret);
 
-
-/**
- * @brief Determine the (external) IP of the local machine.
- *
- * We have many ways to get that IP:
- * a) from the interface (ifconfig)
- * b) via DNS from our HOSTNAME (environment)
- * c) from the configuration (HOSTNAME specification or static IP)
- *
- * Which way applies depends on the OS, the configuration
- * (dynDNS? static IP? NAT?) and at the end what the user
- * needs.
- *
- * @return SYSERR on error, OK on success
- */
-int getPublicIPAddress(IPaddr  * address);
-
-/**
- * @brief Get the IPv6 address for the local machine.
- *
- * @return SYSERR on error, OK on success
- */
-int getPublicIP6Address(IP6addr  * address);
-
 /**
  * Get the load of the CPU relative to what is allowed.
  *

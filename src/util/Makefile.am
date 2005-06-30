@@ -64,7 +64,6 @@ libgnunetutil_la_SOURCES = \
  generate_gnunet_conf.c \
  hashing.c \
  hostkey_gcrypt.c \
- identity.c \
  initialize.c \
  io.c \
  ipcheck.c \

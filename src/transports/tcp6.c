@@ -27,6 +27,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 #include "platform.h"
+#include "ip6.h"
 
 #define DEBUG_TCP6 NO
 

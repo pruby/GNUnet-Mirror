@@ -81,16 +81,6 @@ void initStatusCalls();
  */
 void doneStatusCalls();
 
-/**
- * Initialize identity module. Requries configuration.
- */
-int initAddress();
-
-/**
- * Shutdown identity module.
- */
-void doneAddress();
-
 void gnunet_util_initIO();
 void gnunet_util_doneIO();
 
@@ -139,13 +129,8 @@ int initUtil(int argc,
   initLogging();
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
-			      "YES")) {
+			      "YES")) 
     initStatusCalls();
-    if (OK != initAddress()) {
-      initState();
-      return SYSERR;
-    }
-  }
   initState();
   return OK;
 }
@@ -153,10 +138,8 @@ int initUtil(int argc,
 void doneUtil() {
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
-			      "YES")) {
-    doneStatusCalls();
-    doneAddress();
-  }
+			      "YES")) 
+    doneStatusCalls();  
   doneCron();
   doneState();
   LOG(LOG_MESSAGE,
