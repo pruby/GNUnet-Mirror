@@ -123,7 +123,7 @@ static void printstatus(int * verboselevel,
   switch(event->type) {
   case FSUI_upload_progress:
     if (*verboselevel == YES) {
-      delta = event->data.UploadProgress.eta - cronTime(NULL);
+      delta = event->data.UploadProgress.main_eta - cronTime(NULL);
       PRINTF(_("%16llu of %16llu bytes inserted "
 	       "(estimating %llu seconds to completion)                "),
 	     event->data.UploadProgress.main_completed,

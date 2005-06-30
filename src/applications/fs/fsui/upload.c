@@ -68,7 +68,8 @@ typedef struct {
 static void progressCallback(unsigned long long totalBytes,
 			     unsigned long long completedBytes,
 			     cron_t eta,
-			     UploadThreadClosure * utc) {
+			     void * ptr) {
+  UploadThreadClosure * utc = ptr;
   FSUI_Event event;
   cron_t now;
 
@@ -154,7 +155,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
 			    utc->anonymityLevel,
 			    utc->priority,
 			    utc->expiration,
-			    (ECRS_UploadProgressCallback) &progressCallback,
+			    &progressCallback,
 			    utc,
 			    NULL,
 			    NULL,
