@@ -1,3 +1,7 @@
+Thu Jun 30 20:05:15 CEST 2005
+	Added cache for KBlocks (can speed up insertion speed
+	for recursive inserts quite a bit).
+	
 Thu Jun 30 13:52:17 CEST 2005
 	Enabled IPv6 by default.  Fixed various minor bugs.
 	

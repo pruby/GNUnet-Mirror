@@ -68,6 +68,11 @@ typedef struct {
   unsigned short size;
 
   /**
+   * Reserved for alignment, always 0.
+   */
+  unsigned short reserved;
+
+  /**
    * What is the identity of the sender (hash of public key)
    */
   PeerIdentity sender;
@@ -444,10 +449,9 @@ static int udp6Send(TSession * tsession,
   haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
   ssize = size + sizeof(UDP6Message);
   msg = MALLOC(ssize);
-  mp.size        = htons(ssize);
-  memcpy(&mp.sender,
-	 coreAPI->myIdentity,
-	 sizeof(PeerIdentity));
+  mp.size     = htons(ssize);
+  mp.reserved = 0;
+  mp.sender   = *coreAPI->myIdentity;
   memcpy(&msg[size],
 	 &mp,
 	 sizeof(UDP6Message));
@@ -617,6 +621,7 @@ static char * addressToString(const HELO_Message * helo) {
 TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
   int mtu;
 
+  GNUNET_ASSERT(sizeof(UDP6Message) == 68);
   coreAPI = core;
   MUTEX_CREATE(&configLock);
   reloadConfiguration();

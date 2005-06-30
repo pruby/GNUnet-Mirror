@@ -130,6 +130,8 @@ static int pingReceived(const PeerIdentity * sender,
     return SYSERR; /* not for us */
   }
   pmsg->header.type = htons(p2p_PROTO_PONG);
+  if (stats != NULL)
+    stats->change(stat_pingReceived, 1);
   coreAPI->unicast(sender,
 		   &pmsg->header,
 		   0,

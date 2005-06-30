@@ -176,7 +176,7 @@ typedef struct {
    * @param buff where to write the HELO messages
    * @return the number of bytes written to buff, -1 on error
    */
-  int (*getAdvertisedHELOs)(int maxLen,
+  int (*getAdvertisedHELOs)(unsigned int maxLen,
 			    char * buff);
 
 } Transport_ServiceAPI;

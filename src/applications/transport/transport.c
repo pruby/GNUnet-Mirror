@@ -38,8 +38,8 @@ static CoreAPIForApplication * coreAPI;
 static Identity_ServiceAPI * identity;
 
 static TransportAPI ** tapis = NULL;
-static int tapis_count = 0;
-static int helo_live;
+static unsigned int tapis_count = 0;
+static unsigned int helo_live;
 static Mutex tapis_lock;
 
 
@@ -56,6 +56,9 @@ static void createSignedHELO(TransportAPI * tapi) {
   tapi->helo = NULL;
   if (SYSERR == tapi->createHELO(&tapi->helo)) {
     tapi->helo = NULL;
+    LOG(LOG_DEBUG,
+	"Transport %s failed to create HELO\n",
+	tapi->transName);
     MUTEX_UNLOCK(&tapis_lock);
     return;
   }
@@ -77,8 +80,9 @@ static void createSignedHELO(TransportAPI * tapi) {
 				   - sizeof(PublicKey)
 				   - sizeof(p2p_HEADER),
 				   &tapi->helo->signature)) {
-    FREE(tapi->helo);
+    FREE(tapi->helo);    
     tapi->helo = NULL;
+    BREAK();
   }
   MUTEX_UNLOCK(&tapis_lock);
 }
@@ -448,11 +452,9 @@ static int transportCreateHELO(unsigned short ttype,
     return SYSERR;
   }
   if (tapi->helo == NULL) {
-#if DEBUG_TRANSPORT
     LOG(LOG_DEBUG,
-	"Transport of type %d configured for sending only.\n",
+	"Transport of type %d configured for sending only (no HELO).\n",
 	ttype);
-#endif
     MUTEX_UNLOCK(&tapis_lock);
     return SYSERR;
   }
@@ -478,14 +480,14 @@ static int transportCreateHELO(unsigned short ttype,
  * @param buff where to write the HELO messages
  * @return the number of bytes written to buff, -1 on error
  */
-static int getAdvertisedHELOs(int maxLen,
+static int getAdvertisedHELOs(unsigned int maxLen,
 			      char * buff) {
   int i;
-  int j;
   int tcount;
   HELO_Message ** helos;
   int used;
 
+  MUTEX_LOCK(&tapis_lock);
   tcount = 0;
   for (i=0;i<tapis_count;i++)
     if (tapis[i] != NULL)
@@ -495,36 +497,36 @@ static int getAdvertisedHELOs(int maxLen,
   tcount = 0;
   for (i=0;i<tapis_count;i++)
     if (tapis[i] != NULL)
-      if (OK == transportCreateHELO(i, &helos[tcount]))
+      if (OK == transportCreateHELO(i,
+				    &helos[tcount]))
 	tcount++;
-  if (tcount == 0)
+  MUTEX_UNLOCK(&tapis_lock);
+  if (tcount == 0) {
+    LOG(LOG_DEBUG,
+	"%s failed: no transport succeeded in creating a HELO\n");
     return SYSERR;
-  j = 0;
-  used = 0;
-  while (j < 10) {
-    j++;
-    i = randomi(tcount); /* select a HELO at random */
-    if (helos[i] == NULL)
-      continue; /* copied this one already */
-    if ((int)HELO_Message_size(helos[i]) > maxLen - used)
-      continue;
-    memcpy(&buff[used],
-	   helos[i],
-	   HELO_Message_size(helos[i]));
-    used += HELO_Message_size(helos[i]);
-    FREE(helos[i]);
-    helos[i] = NULL;
-    j = 0; /* try until 10 attempts fail, restart after every success! */
   }
-
+  used = 0;
+  while (tcount > 0) {
+    i = weak_randomi(tcount); /* select a HELO at random */
+    if ((unsigned int)HELO_Message_size(helos[i]) <= maxLen - used) {
+      memcpy(&buff[used],
+	     helos[i],
+	     HELO_Message_size(helos[i]));
+      used += HELO_Message_size(helos[i]);
+    }
+    FREE(helos[i]);
+    helos[i] = helos[--tcount];
+  }
   for (i=0;i<tcount;i++)
-    if (helos[i] != NULL)
-      FREE(helos[i]);
+    FREE(helos[i]);
   FREE(helos);
+  if (used == 0) 
+    LOG(LOG_DEBUG,
+	"%s failed: no HELOs fit in %u bytes\n",
+	maxLen);
   return used;
 }
-
-
 
 
 /**
@@ -570,7 +572,8 @@ static void initHelper(TransportAPI * tapi,
 /**
  * Initialize the transport layer.
  */
-Transport_ServiceAPI * provide_module_transport(CoreAPIForApplication * capi) {
+Transport_ServiceAPI * 
+provide_module_transport(CoreAPIForApplication * capi) {
   static Transport_ServiceAPI ret;
   TransportAPI * tapi;
   TransportMainMethod tptr;
@@ -600,21 +603,23 @@ Transport_ServiceAPI * provide_module_transport(CoreAPIForApplication * capi) {
   if (helo_live <= 0) {
     helo_live = 60 * 60;
     LOG(LOG_WARNING,
-	_("Option '%s' not set in configuration in section '%s', setting to %dm.\n"),
+	_("Option '%s' not set in configuration in section '%s',"
+	  " setting to %dm.\n"),
 	"HELOEXPIRES", "GNUNETD", helo_live / 60);
   }
   GROW(tapis,
        tapis_count,
        UDP_PROTOCOL_NUMBER+1);
 
-  MUTEX_CREATE(&tapis_lock);
+  MUTEX_CREATE_RECURSIVE(&tapis_lock);
 
   /* now load transports */
   dso = getConfigurationString("GNUNETD",
 			       "TRANSPORTS");
   if (dso == NULL) {
-    LOG(LOG_FAILURE,
-	_("You should specify at least one transport service under option '%s' in section '%s'.\n"),
+    LOG(LOG_WARNING,
+	_("You should specify at least one transport service"
+	  " under option '%s' in section '%s'.\n"),
 	"TRANSPORTS", "GNUNETD");
   } else {
     LOG(LOG_DEBUG,
@@ -639,7 +644,8 @@ Transport_ServiceAPI * provide_module_transport(CoreAPIForApplication * capi) {
 			       "inittransport_",
 			       pos);
       if (tptr == NULL)
-	errexit(_("Transport library '%s' did not provide required function '%s%s'.\n"),
+	errexit(_("Transport library '%s' did not provide "
+		  "required function '%s%s'.\n"),
 		pos,
 		"inittransport_",
 		pos);

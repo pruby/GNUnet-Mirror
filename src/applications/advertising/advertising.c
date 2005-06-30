@@ -291,15 +291,22 @@ receivedHELO(const p2p_HEADER * message) {
     FREE(buffer);
     LOG(LOG_INFO,
 	_("Could not send HELOs+PING, ping buffer full.\n"));
+    transport->disconnect(tsession);
+    return SYSERR;
   }
-  GNUNET_ASSERT(mtu > ntohs(ping->size));
-  heloEnd = transport->getAdvertisedHELOs(mtu - ntohs(ping->size),
-					  buffer);
-  GNUNET_ASSERT(mtu - ntohs(ping->size) > heloEnd);
-  if (heloEnd == -1) {
+  if (mtu > ntohs(ping->size)) {
+    heloEnd = transport->getAdvertisedHELOs(mtu - ntohs(ping->size),
+					    buffer);
+    GNUNET_ASSERT(mtu - ntohs(ping->size) >= heloEnd);
+  } else {
+    heloEnd = -2;
+  }
+  if (heloEnd <= 0) {
     LOG(LOG_WARNING,
-	"'%s' failed. Will not send PING.\n",
-	"getAdvertisedHELOs");
+	_("'%s' failed (%d, %u). Will not send PING.\n"),
+	"getAdvertisedHELOs",
+	heloEnd,
+	mtu - ntohs(ping->size));
     FREE(buffer);
     transport->disconnect(tsession);
     return SYSERR;
