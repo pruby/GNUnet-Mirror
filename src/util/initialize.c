@@ -33,6 +33,10 @@ void initXmalloc();
 
 void doneXmalloc();
 
+void initKBlockKey();
+
+void doneKBlockKey();
+
 /**
  * Initialize Random number generator.
  */
@@ -116,6 +120,7 @@ int initUtil(int argc,
   initLockingGcrypt();
   initRAND();
   initXmalloc();
+  initKBlockKey();
   initConfiguration();
   if (argc > 0)
     setConfigurationString("MAIN",
@@ -149,6 +154,7 @@ void doneUtil() {
 #ifdef MINGW
   ShutdownWinEnv();
 #endif
+  doneKBlockKey();
   doneLockingGcrypt();
   doneXmalloc();
   gnunet_util_doneIO();

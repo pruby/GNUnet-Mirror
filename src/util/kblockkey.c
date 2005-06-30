@@ -1,7 +1,7 @@
 /*
      This file is part of GNUnet.
      Copyright (C) 1994, 1996, 1998, 2001, 2002, 2003 Free Software Foundation, Inc.
-     Copyright (C) 2004 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -428,7 +428,8 @@ static void generate_kblock_key(KBlock_secret_key *sk,
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
+static PrivateKeyEncoded * 
+makeKblockKeyInternal(const HashCode512 * hc) {
   KBlock_secret_key sk;
   HashCode512 hx;
   void * pbu[6];
@@ -436,7 +437,6 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
   size_t sizes[6];
   PrivateKeyEncoded * retval;
   int i;
-  struct PrivateKey * ret;
   size_t size;
 
   hx = *hc;
@@ -507,11 +507,65 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
     mpz_clear(*pkv[i]);
     free(pbu[i]);
   }
-
-  ret = decodePrivateKey(retval);
-  FREE(retval);
-  return ret;
+  return retval;
 }
 
+typedef struct {
+  HashCode512 hc;
+  PrivateKeyEncoded * pke;
+} KBlockKeyCacheLine;
+
+static KBlockKeyCacheLine ** cache;
+static unsigned int cacheSize;
+static Mutex lock;
+
+/**
+ * Deterministically (!) create a hostkey using only the
+ * given HashCode as input to the PRNG.
+ */
+struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
+  struct PrivateKey * ret;
+  KBlockKeyCacheLine * line;
+  int i;
+
+  MUTEX_LOCK(&lock);
+  for (i=0;i<cacheSize;i++) {
+    if (equalsHashCode512(hc,
+			  &cache[i]->hc)) {
+      ret = decodePrivateKey(cache[i]->pke);
+      MUTEX_UNLOCK(&lock);
+      return ret;
+    }
+  }
+
+  line
+    = MALLOC(sizeof(KBlockKeyCacheLine));
+  line->hc = *hc;
+  line->pke
+    = makeKblockKeyInternal(hc);
+  GROW(cache,
+       cacheSize,
+       cacheSize+1);
+  cache[cacheSize-1]
+    = line;
+  MUTEX_UNLOCK(&lock);
+  return decodePrivateKey(line->pke);
+}
+
+void initKBlockKey() {
+  MUTEX_CREATE(&lock);
+}
+
+void doneKBlockKey() {
+  int i;
+  for (i=0;i<cacheSize;i++) {
+    FREE(cache[i]->pke);
+    FREE(cache[i]);
+  }
+  GROW(cache,
+       cacheSize,
+       0);
+  MUTEX_DESTROY(&lock);
+}
 
 /* end of kblockkey.c */
