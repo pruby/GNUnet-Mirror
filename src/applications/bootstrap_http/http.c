@@ -55,7 +55,8 @@ downloadHostlistHelper(char * url,
   struct hostent *ip_info;
   struct sockaddr_in soaddr;
   int sock;
-  int ret, success;
+  size_t ret;
+  int success;
   char * command;
   cron_t start;
   char c;
