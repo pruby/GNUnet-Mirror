@@ -1,4 +1,16 @@
-0.7.0 [6'05?] (aka "compatibility? what's that?"):
+0.7.0pre4 [7'05]
+- Investigate:
+  * why do we not connect to more peers?
+    (pre3 has been observed to connect to just 1 peer,
+     whilst gnunet-transport-check -p was able to
+     connect to 4-6 peers at the same time!)
+- add stats
+- TCP send drops too much
+- connection should keep messages if transport dropped!
+
+
+
+0.7.0 [7'05?] (aka "compatibility? what's that?"):
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
@@ -15,11 +27,6 @@
    * Linux: if (getConfigurationInt("GNUNETD", "NICE") != 0) nice(getConfigurationInt("GNUNETD", "NICE"))
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
-- Investigate:
-  * why do we not connect to more peers?
-    (pre3 has been observed to connect to just 1 peer,
-     whilst gnunet-transport-check -p was able to
-     connect to 4-6 peers at the same time!)
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
