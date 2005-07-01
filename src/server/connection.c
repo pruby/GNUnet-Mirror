@@ -501,6 +501,8 @@ static int stat_messagesDropped;
 
 static int stat_sizeMessagesDropped;
 
+static int stat_hangupSent;
+
 /* ******************** CODE ********************* */
 
 /**
@@ -1535,21 +1537,37 @@ static void shutdownConnection(BufferEntry * be) {
   if (be->status == STAT_UP) {
     SendEntry * se;
 
-    hangup.header.type = htons(p2p_PROTO_HANGUP);
-    hangup.header.size = htons(sizeof(HANGUP_Message));
+    hangup.header.type
+      = htons(p2p_PROTO_HANGUP);
+    hangup.header.size 
+      = htons(sizeof(HANGUP_Message));
     identity->getPeerIdentity(identity->getPublicPrivateKey(),
 			      &hangup.sender);
     se = MALLOC(sizeof(SendEntry));
-    se->len = sizeof(HANGUP_Message);
-    se->flags = SE_FLAG_PLACE_TAIL;
-    se->pri = EXTREME_PRIORITY;
-    se->transmissionTime = cronTime(NULL); /* now */
-    se->callback = &copyCallback;
-    se->closure = MALLOC(sizeof(HANGUP_Message));
+    se->len 
+      = sizeof(HANGUP_Message);
+    se->flags
+      = SE_FLAG_PLACE_TAIL;
+    se->pri 
+      = EXTREME_PRIORITY;
+    se->transmissionTime
+      = cronTime(NULL); /* now */
+    se->callback
+      = &copyCallback;
+    se->closure
+      = MALLOC(sizeof(HANGUP_Message));
     memcpy(se->closure,
 	   &hangup,
 	   sizeof(HANGUP_Message));
     appendToBuffer(be, se);
+    if (stats != NULL)
+      stats->change(stat_hangupSent,
+		    1);
+    /* override send frequency and
+       really try hard to get the HANGUP
+       out! */
+    be->lastSendAttempt = 0;
+    sendBuffer(be);
   }
   be->skey_remote_created = 0;
   be->status = STAT_DOWN;
@@ -2127,8 +2145,9 @@ void assignSessionKey(const SESSIONKEY * key,
     } else { /* for receiving */
       if ( ((be->status & STAT_SKEY_RECEIVED) == 0) ||
 	   (be->skey_remote_created < age) ) {
-	if (! equalsHashCode512(key,
-				&be->skey_remote)) {
+	if (0 != memcmp(key,
+			&be->skey_remote,
+			sizeof(SESSIONKEY))) {
 	  be->skey_remote = *key;
 	  be->lastSequenceNumberReceived = 0;
 	}
@@ -2468,6 +2487,8 @@ void initConnection() {
       = stats->create(_("# outgoing messages dropped"));
     stat_sizeMessagesDropped
       = stats->create(_("# bytes of outgoing messages dropped"));
+    stat_hangupSent
+      = stats->create(_("# connections closed (HANGUP sent)"));
   }
   transport->start(&core_receive);
 }

@@ -43,6 +43,7 @@
 #define MAX_TEMP_HOSTS 32
 
 #define TRUSTDIR "data/credit/"
+#define HOST_DIR "data/hosts/"
 
 /**
  * Masks to keep track when the trust has changed and
@@ -933,6 +934,7 @@ Identity_ServiceAPI *
 provide_module_identity(CoreAPIForApplication * capi) {
   static Identity_ServiceAPI id;
   char * gnHome;
+  char * tmp;
   int i;
 
   id.getPublicPrivateKey = &getPublicPrivateKey;
@@ -961,21 +963,31 @@ provide_module_identity(CoreAPIForApplication * capi) {
 		  &myIdentity);
 
   MUTEX_CREATE_RECURSIVE(&lock_);
-  networkIdDirectory
-    = getFileName("GNUNETD",
-		  "HOSTS",
-		  _("Configuration file must specify directory for "
-		    "network identities in section %s under %s.\n"));
-  mkdirp(networkIdDirectory);
   gnHome = getFileName("GNUNETD",
 		       "GNUNETD_HOME",
 		       _("Configuration file must specify a "
 			 "directory for GNUnet to store "
 			 "per-peer data under %s%s\n"));
+  networkIdDirectory
+    = getConfigurationString("GNUNETD",
+			     "HOSTS");
+  if (networkIdDirectory == NULL) {
+    networkIdDirectory 
+      = MALLOC(strlen(gnHome) + strlen(HOST_DIR) + 2);
+    strcpy(networkIdDirectory, gnHome);
+    strcat(networkIdDirectory, DIR_SEPARATOR_STR);
+    strcat(networkIdDirectory, HOST_DIR);
+  } else {
+    tmp = 
+      expandFileName(networkIdDirectory);
+    FREE(networkIdDirectory);
+    networkIdDirectory = tmp;
+  }
+  mkdirp(networkIdDirectory);
   trustDirectory = MALLOC(strlen(gnHome) +
 			  strlen(TRUSTDIR)+2);
   strcpy(trustDirectory, gnHome);
-  strcat(trustDirectory, "/");
+  strcat(trustDirectory, DIR_SEPARATOR_STR);
   strcat(trustDirectory, TRUSTDIR);
   mkdirp(trustDirectory);
   FREE(gnHome);
