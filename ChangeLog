@@ -1,3 +1,10 @@
+Fri Jul  1 15:08:42 CEST 2005
+        Added statistics for transports and other connection-
+	related functions.  Prevented core from dropping
+	messages just because transport is (temporarily) 
+	blocked.  Made transport selection in identity random
+	again where necessary.
+	
 Thu Jun 30 20:05:15 CEST 2005
 	Added cache for KBlocks (can speed up insertion speed
 	for recursive inserts quite a bit).

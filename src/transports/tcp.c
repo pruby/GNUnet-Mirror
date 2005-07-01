@@ -1440,7 +1440,9 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
 
 void donetransport_tcp() {
   int i;
+
   coreAPI->releaseService(stats);
+  stats = NULL;
   for (i=tsessionCount-1;i>=0;i--)
     destroySession(i);
   GROW(tsessions,

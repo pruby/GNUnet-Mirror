@@ -577,7 +577,7 @@ static int identity2Helo(const PeerIdentity *  hostId,
   }  
 
   if (protocol == ANY_PROTOCOL_NUMBER)
-    protocol = host->protocols[randomi(host->protocolCount)];
+    protocol = host->protocols[weak_randomi(host->protocolCount)];
 
   for (i=0;i<host->heloCount;i++) {
     if (host->helos[i]->protocol == protocol) {

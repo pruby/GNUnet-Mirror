@@ -54,6 +54,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
+#include "gnunet_stats_service.h"
 #include "platform.h"
 #include "ip.h"
 
@@ -213,6 +214,15 @@ typedef struct {
  */
 static CoreAPIForTransport * coreAPI;
 static TransportAPI httpAPI;
+
+static Stats_ServiceAPI * stats;
+
+static int stat_bytesReceived;
+
+static int stat_bytesSent;
+
+static int stat_bytesDropped;
+
 
 /**
  * one thread for listening for new connections,
@@ -519,6 +529,10 @@ static int readAndProcess(int i) {
     ret = READ(httpSession->sock,
 	       &httpSession->httpReadBuff[httpSession->httpRPos],
 	       httpSession->httpRSize - httpSession->httpRPos);
+    if ( (ret > 0) && 
+	 (stats != NULL) )
+      stats->change(stat_bytesReceived,
+		    ret);
     if (ret > 0) {
       httpSession->httpRPos += ret;
       incrementBytesReceived(ret);
@@ -537,6 +551,10 @@ static int readAndProcess(int i) {
     ret = READ(httpSession->sock,
 	       &httpSession->rbuff[httpSession->rpos],
 	       httpSession->rsize - httpSession->rpos);
+    if ( (ret > 0) && 
+	 (stats != NULL) )
+      stats->change(stat_bytesReceived,
+		    ret);
     if (ret > 0) {
       httpSession->rpos += ret;
       incrementBytesReceived(ret);
@@ -856,6 +874,10 @@ try_again_1:
 	  gnunet_util_sleep(20);
 	  goto try_again_1;
 	}
+	if (stats != NULL) 
+	  stats->change(stat_bytesSent,
+			ret);
+
 
 	if (ret == 0) {
 	  /* send only returns 0 on error (other side closed connection),
@@ -1000,6 +1022,9 @@ static int httpDirectSend(HTTPSession * httpSession,
   }
   if (success == NO)
     ret = 0;
+  if (stats != NULL) 
+    stats->change(stat_bytesSent,
+		  ret);
   if (ret > 0) {
     if (ret < len) {
       memmove(httpSession->wbuff,
@@ -1225,12 +1250,21 @@ static int httpSend(TSession * tsession,
     return SYSERR;
   }
 
-  if (((HTTPSession*)tsession->internal)->sock == -1)
+  if (((HTTPSession*)tsession->internal)->sock == -1) {
+    if (stats != NULL) 
+      stats->change(stat_bytesDropped,
+		    ssize);
     return SYSERR; /* other side closed connection */
+  }
   ok = httpDirectSend(tsession->internal,
 		      NO,
 		      msg,
 		      size);
+  if (ok != OK) {
+    if (stats != NULL) 
+      stats->change(stat_bytesDropped,
+		    ssize);
+  }
   return ok;
 }
 
@@ -1434,6 +1468,15 @@ TransportAPI * inittransport_http(CoreAPIForTransport * core) {
   } else {
     theProxy.sin_addr.s_addr = 0;
   }
+  stats = coreAPI->requestService("stats");
+  if (stats != NULL) {
+    stat_bytesReceived
+      = stats->create(_("# bytes received via HTTP"));
+    stat_bytesSent
+      = stats->create(_("# bytes sent via HTTP"));
+    stat_bytesDropped
+      = stats->create(_("# bytes dropped by HTTP (outgoing)"));
+  }
 
   httpAPI.protocolNumber       = HTTP_PROTOCOL_NUMBER;
   httpAPI.mtu                  = 0;
@@ -1455,6 +1498,9 @@ TransportAPI * inittransport_http(CoreAPIForTransport * core) {
 
 void donetransport_http() {
   int i;
+
+  coreAPI->releaseService(stats);
+  stats = NULL;
   for (i=tsessionCount-1;i>=0;i--)
     destroySession(i);
   GROW(tsessions,
