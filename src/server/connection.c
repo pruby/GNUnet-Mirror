@@ -2127,8 +2127,8 @@ void assignSessionKey(const SESSIONKEY * key,
     } else { /* for receiving */
       if ( ((be->status & STAT_SKEY_RECEIVED) == 0) ||
 	   (be->skey_remote_created < age) ) {
-	if (! equalsHashKey512(key,
-			       &be->skey_remote)) {
+	if (! equalsHashCode512(key,
+				&be->skey_remote)) {
 	  be->skey_remote = *key;
 	  be->lastSequenceNumberReceived = 0;
 	}
