@@ -1263,7 +1263,7 @@ static int httpSend(TSession * tsession,
   if (ok != OK) {
     if (stats != NULL) 
       stats->change(stat_bytesDropped,
-		    ssize);
+		    size);
   }
   return ok;
 }
