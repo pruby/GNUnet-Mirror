@@ -4,8 +4,6 @@
     (pre3 has been observed to connect to just 1 peer,
      whilst gnunet-transport-check -p was able to
      connect to 4-6 peers at the same time!)
-- add stats (ipv6 transports, smtp, bootstrap, identity)
-- no HANGUP send on CTRL-C (and possibly also not otherwise)
 
 
 
