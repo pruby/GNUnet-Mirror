@@ -4,7 +4,8 @@
     (pre3 has been observed to connect to just 1 peer,
      whilst gnunet-transport-check -p was able to
      connect to 4-6 peers at the same time!)
-
+- Why do well-behaved peers go over bandwidth limits?
+  (Nils reported about strict blacklisting!)
 
 
 0.7.0 [7'05?] (aka "compatibility? what's that?"):

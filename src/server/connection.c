@@ -1732,18 +1732,17 @@ static void scheduleInboundTraffic() {
      */
     if (adjustedRR[u] > 2 * MAX_BUF_FACT *
 	entries[u]->max_transmitted_limit) {
-#if DEBUG_CONNECTION || 1
       EncName enc;
       IFLOG(LOG_INFO,
 	    hash2enc(&entries[u]->session.sender.hashPubKey,
 		     &enc));
       LOG(LOG_INFO,
-	  "blacklisting '%s': sent %llu bpm (limit %u bpm, target %u bpm)\n",
+	  "blacklisting '%s': sent %llu bpm "
+	  "(limit %u bpm, target %u bpm)\n",
 	  &enc,
 	  adjustedRR[u],
 	  entries[u]->max_transmitted_limit,
 	  entries[u]->idealized_limit);
-#endif
       shutdownConnection(entries[u]);
       identity->blacklistHost(&entries[u]->session.sender,
 			      1 / topology->getSaturation(),
@@ -1756,8 +1755,9 @@ static void scheduleInboundTraffic() {
     }
 
     if (adjustedRR[u] < MIN_BPM_PER_PEER/2)
-      adjustedRR[u] = MIN_BPM_PER_PEER/2; /* even if we received NO traffic, allow
-					     at least MIN_BPM_PER_PEER */
+      adjustedRR[u] = MIN_BPM_PER_PEER/2; 
+    /* even if we received NO traffic, allow
+       at least MIN_BPM_PER_PEER */
   }
 
   /* now distribute the schedulableBandwidth according
@@ -1901,7 +1901,8 @@ static void cronDecreaseLiveness(void * unused) {
 		hash2enc(&root->session.sender.hashPubKey,
 			 &enc));
 	  LOG(LOG_DEBUG,
-	      "closing connection with '%s': too much inactivity (%llu ms)\n",
+	      "closing connection with '%s': "
+	      "too much inactivity (%llu ms)\n",
 	      &enc,
 	      now - root->isAlive);
 	  shutdownConnection(root);
@@ -1911,7 +1912,6 @@ static void cronDecreaseLiveness(void * unused) {
       default: /* not up, not down - partial SKEY exchange */
 	if ( (now > root->isAlive) &&
 	     (now - root->isAlive > SECONDS_NOPINGPONG_DROP * cronSECONDS) ) {
-#if DEBUG_CONNECTION
 	  EncName enc;
 	  IFLOG(LOG_DEBUG,
 		hash2enc(&root->session.sender.hashPubKey, &enc));
@@ -1919,7 +1919,6 @@ static void cronDecreaseLiveness(void * unused) {
 	      "closing connection to %s: %s not answered.\n",
 	      &enc,
 	      (root->status == STAT_SKEY_SENT) ? "SKEY" : "PING");
-#endif
 	  shutdownConnection(root);
 	}
 	break;
@@ -2095,21 +2094,15 @@ static int handleHANGUP(const PeerIdentity * sender,
   IFLOG(LOG_INFO,
 	hash2enc(&sender->hashPubKey,
 		 &enc));
-#if DEBUG_CONNECTION
   LOG(LOG_INFO,
-      "received HANGUP from %s\n",
+      "received HANGUP from '%s'\n",
       &enc);
-#endif
   MUTEX_LOCK(&lock);
   be = lookForHost(sender);
   if (be == NULL) {
     MUTEX_UNLOCK(&lock);
     return SYSERR;
   }
-#if DEBUG_CONNECTION
-  LOG(LOG_DEBUG,
-      "closing connection, received HANGUP\n");
-#endif
   shutdownConnection(be);
   MUTEX_UNLOCK(&lock);
   return OK;
@@ -2913,12 +2906,20 @@ void updateTrafficPreference(const PeerIdentity * node,
  */
 void disconnectFromPeer(const PeerIdentity *node) {
   BufferEntry * be;
+  EncName enc;
 
   ENTRY();
   MUTEX_LOCK(&lock);
   be = lookForHost(node);
-  if (be != NULL)
+  if (be != NULL) {
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&node->hashPubKey,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"Closing connection to '%s' as requested by application.\n",
+	&enc);
     shutdownConnection(be);
+  }
   MUTEX_UNLOCK(&lock);
 }
 
