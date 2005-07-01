@@ -29,6 +29,7 @@
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 #include "gnunet_bootstrap_service.h"
+#include "gnunet_stats_service.h"
 
 #define TCP_HTTP_PORT 80
 #define HTTP_URL "http://"
@@ -39,6 +40,14 @@
  */
 static struct sockaddr_in theProxy;
 
+/**
+ * Stats service (maybe NULL!)
+ */
+static Stats_ServiceAPI * stats;
+
+static CoreAPIForApplication * coreAPI;
+
+static int stat_HELOdownloaded;
 
 /**
  * Download hostlist from the web and call method
@@ -243,6 +252,9 @@ downloadHostlistHelper(char * url,
       break;
     }
     helo->header.size = htons(HELO_Message_size(helo));
+    if (stats != NULL)
+      stats->change(stat_HELOdownloaded,
+		    1);
     callback(helo,
 	     arg);
   }
@@ -330,11 +342,20 @@ provide_module_bootstrap(CoreAPIForApplication * capi) {
     theProxy.sin_addr.s_addr = 0;
   }
 
+  coreAPI = capi;
+  stats = coreAPI->requestService("stats");
+  if (stats != NULL) {
+    stat_HELOdownloaded
+      = stats->create(_("# HELOs downloaded via http"));
+  }
   api.bootstrap = &downloadHostlist;
   return &api;
 }
 
 void release_module_bootstrap() {
+  if (stats != NULL)
+    coreAPI->releaseService(stats);
+  coreAPI = NULL;
 }
 
 /* end of http.c */

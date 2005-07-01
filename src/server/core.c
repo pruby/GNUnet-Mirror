@@ -384,6 +384,8 @@ int releaseService(void * service) {
   ShutdownList * prev;
   ApplicationDoneMethod mptr;
 
+  if (service == NULL)
+    return OK;
   prev = NULL;
   pos = shutdownList;
   while ( (pos != NULL) &&
