@@ -13,7 +13,7 @@ then
  echo " else";
  echo "  fprintf(f, \"GNUNETD_HOME = /var/lib/GNUnet\\n\");";
 fi
-cat $1 | grep -v "GNUNETD_HOME" | sed \
+cat $1 | grep -v "GNUNETD_HOME =" | sed \
         -e "s/\"/\\\\\"/g" \
 	-e "s/^/ fprintf(f, \"%s\\\\n\",\"/" \
         -e "s/$/\");/"
