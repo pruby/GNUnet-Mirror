@@ -1253,7 +1253,7 @@ static int httpSend(TSession * tsession,
   if (((HTTPSession*)tsession->internal)->sock == -1) {
     if (stats != NULL) 
       stats->change(stat_bytesDropped,
-		    ssize);
+		    size);
     return SYSERR; /* other side closed connection */
   }
   ok = httpDirectSend(tsession->internal,
