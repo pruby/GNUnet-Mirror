@@ -598,14 +598,19 @@ static int identity2Helo(const PeerIdentity *  hostId,
 		  sizeof(HELO_Message),
 		  &buffer);
   if (size != sizeof(HELO_Message)) {
-    if (0 == UNLINK(fn))
-      LOG(LOG_WARNING,
-	  _("Removed file '%s' containing invalid HELO data.\n"),
-	  fn);
-    else
-      LOG_FILE_STRERROR(LOG_ERROR, 
-			"unlink",
-			fn);
+    struct stat buf;
+
+    if (0 == STAT(fn,
+		  &buf)) {
+      if (0 == UNLINK(fn))
+	LOG(LOG_WARNING,
+	    _("Removed file '%s' containing invalid HELO data.\n"),
+	    fn);
+      else
+	LOG_FILE_STRERROR(LOG_ERROR, 
+			  "unlink",
+			  fn);
+    }
     FREE(fn);
     *result = NULL;
     MUTEX_UNLOCK(&lock_);

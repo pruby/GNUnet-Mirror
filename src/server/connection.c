@@ -2159,7 +2159,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	  if (OK ==
 	      identity->identity2Helo(&be->session.sender,
 				      i,
-				      NO,
+				      YES,
 				      &helo)) {
 	    if (OK ==
 		transport->connect(helo,
@@ -2177,7 +2177,7 @@ void confirmSessionUp(const PeerIdentity * peer) {
 	}
 	if (i == MAX_PROTOCOL_NUMBER) {
 	  LOG(LOG_WARNING,
-	      _("Session confirmed, but cannot connect! (bug?)"));
+	      _("Session confirmed, but cannot connect! (bug?)\n"));
 	}
       }
       if (be->session.tsession != NULL) {
