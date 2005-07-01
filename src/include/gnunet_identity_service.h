@@ -139,7 +139,7 @@ typedef struct {
    * @return SYSERR on failure, OK on success
    */
   int (*identity2Helo)(const PeerIdentity *  hostId,
-		       const unsigned short protocol,
+		       unsigned short protocol,
 		       int tryTemporaryList,
 		       HELO_Message ** result);
 
@@ -167,7 +167,7 @@ typedef struct {
    * @return OK on success SYSERR on error
    */
   int (*blacklistHost)(const PeerIdentity * identity,
-		       int desperation,
+		       unsigned int desperation,
 		       int strict);
 
   /**

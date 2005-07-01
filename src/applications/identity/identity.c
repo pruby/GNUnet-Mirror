@@ -28,10 +28,6 @@
  * (used to give the transport module the required information for the
  * PING).
  *
- * FIXME: make sure that the first trust value in hosts_ for each host
- * is the one holding the trust value and that this one is always used
- * consistently!
- *
  * @author Christian Grothoff
  */
 
@@ -68,32 +64,42 @@ typedef struct {
    *how long is this host blacklisted? (if at all)
    */
   cron_t until;
+
   /**
    * what would be the next increment for blacklisting?
    */
   cron_t delta;
+
   /**
-   * HELO for the peer (maybe NULL)!
+   * HELOs for the peer (maybe NULL)!
    */
-  HELO_Message * helo;
+  HELO_Message ** helos;
+
+  unsigned int heloCount;
+  
+  /**
+   * for which protocols is this host known?
+   */
+  unsigned short * protocols;
+  
+  unsigned int protocolCount;
+
   /**
    * should we also reject incoming messages? (YES/NO)
    */
   int strict;
+
   /**
    * trust rating for this peer
    */
   unsigned int trust;
-  /**
-   * for which protocol is this host known?
-   */
-  unsigned short protocol;
+
 } HostEntry;
 
 /**
  * The list of known hosts.
  */
-static HostEntry * hosts_ = NULL;
+static HostEntry ** hosts_ = NULL;
 
 /**
  * The current (allocated) size of knownHosts
@@ -162,17 +168,13 @@ static char * getHostFileName(const PeerIdentity * id,
  * only when synchronized!
  * @return NULL if not found
  */
-static HostEntry * findHost(const PeerIdentity * id,
-			    unsigned short proto) {
+static HostEntry * findHost(const PeerIdentity * id) {
   int i;
 
   for (i=0;i<count_;i++)
     if ( (hostIdentityEquals(id,
-			     &hosts_[i].identity)) &&
-	 ( (proto == ANY_PROTOCOL_NUMBER) ||
-	   (proto == hosts_[i].protocol) ) ) {
-      return &hosts_[i];
-    }
+			     &hosts_[i]->identity)) ) 
+      return hosts_[i];    
   return NULL;
 }
 
@@ -184,40 +186,57 @@ static HostEntry * findHost(const PeerIdentity * id,
  */
 static void addHostToKnown(const PeerIdentity * identity,
 			   unsigned short protocol) {
+  HostEntry * entry;
+  int i;
   EncName fil;
   char * fn;
   unsigned int trust;
 
   MUTEX_LOCK(&lock_);
-  if (NULL != findHost(identity, protocol)) {
-    MUTEX_UNLOCK(&lock_);
-    return; /* already there */
+  entry = findHost(identity);
+  if (entry == NULL) {
+    entry = MALLOC(sizeof(HostEntry));
+    
+    entry->identity = *identity;
+    entry->until    = 0;
+    entry->delta    = 30 * cronSECONDS;
+    entry->protocols = NULL;
+    entry->protocolCount = 0;
+    entry->strict    = NO;
+    entry->helos     = NULL;
+    entry->heloCount = 0;
+    hash2enc(&identity->hashPubKey,
+	     &fil);
+    fn = MALLOC(strlen(trustDirectory)+sizeof(EncName)+1);
+    strcpy(fn, trustDirectory);
+    strcat(fn, (char*) &fil);
+    if (sizeof(unsigned int) ==
+	readFile(fn,
+		 sizeof(unsigned int),
+		 &trust)) {
+      entry->trust = ntohl(trust);
+    } else {
+      entry->trust = 0;
+    }
+    FREE(fn);
+
+    if (count_ == max_)
+      GROW(hosts_,
+	   max_,
+	   max_+32);
+    hosts_[count_++] = entry;
   }
-  if (count_ == max_)
-    GROW(hosts_,
-	 max_,
-	 max_+32);
-  hosts_[count_].identity = *identity;
-  hosts_[count_].until    = 0;
-  hosts_[count_].delta    = 30 * cronSECONDS;
-  hosts_[count_].protocol = protocol;
-  hosts_[count_].strict   = NO;
-  hosts_[count_].helo     = NULL;
-  hash2enc(&identity->hashPubKey,
-	   &fil);
-  fn = MALLOC(strlen(trustDirectory)+sizeof(EncName)+1);
-  strcpy(fn, trustDirectory);
-  strcat(fn, (char*) &fil);
-  if (sizeof(unsigned int) ==
-      readFile(fn,
-	       sizeof(unsigned int),
-	       &trust)) {
-    hosts_[count_].trust = ntohl(trust);
-  } else {
-    hosts_[count_].trust = 0;
+  for (i=0;i<entry->protocolCount;i++) {
+    if (entry->protocols[i] == protocol) {
+      MUTEX_UNLOCK(&lock_);
+      return; /* already there */
+    }
   }
-  FREE(fn);
-  count_++;
+  GROW(entry->protocols,
+       entry->protocolCount,
+       entry->protocolCount+1);
+  entry->protocols[entry->protocolCount-1] 
+    = protocol;
   MUTEX_UNLOCK(&lock_);
 }
 
@@ -237,7 +256,7 @@ static int changeHostTrust(const PeerIdentity * hostId,
     return 0;
 
   MUTEX_LOCK(&lock_);
-  host = findHost(hostId, ANY_PROTOCOL_NUMBER);
+  host = findHost(hostId);
   if (host == NULL) {
     BREAK();
     MUTEX_UNLOCK(&lock_);
@@ -266,7 +285,7 @@ static unsigned int getHostTrust(const PeerIdentity * hostId) {
   unsigned int trust;
 
   MUTEX_LOCK(&lock_);
-  host = findHost(hostId, ANY_PROTOCOL_NUMBER);
+  host = findHost(hostId);
   if (host == NULL)
     trust = 0;
   else
@@ -298,7 +317,8 @@ static int cronHelper(const char * filename,
     }
   }
 
-  fullname = MALLOC(strlen(filename) + strlen(networkIdDirectory) + 1);
+  fullname = MALLOC(strlen(filename) + 
+		    strlen(networkIdDirectory) + 1);
   strcpy(fullname, networkIdDirectory);
   strcat(fullname, filename);
   if (0 == UNLINK(fullname))
@@ -366,24 +386,58 @@ static void addHostTemporarily(const HELO_Message * tmp) {
  */
 static void delHostFromKnown(const PeerIdentity * identity,
 			     const unsigned short protocol) {
+  HostEntry * entry;
   char * fn;
   int i;
+  int j;
 
+  GNUNET_ASSERT(protocol != ANY_PROTOCOL_NUMBER);
   MUTEX_LOCK(&lock_);
   for (i=0;i<count_;i++) {
     if ( (hostIdentityEquals(identity,
-			     &hosts_[i].identity)) &&
-	 (protocol == hosts_[i].protocol) ) {
-      FREENONNULL(hosts_[i].helo);
-      hosts_[i] = hosts_[count_-1];
-      count_--;
-      /* now remove the file */
-      fn = getHostFileName(identity, protocol);
+			     &hosts_[i]->identity)) ) {
+      entry = hosts_[i];
+      for (j=0;j<entry->protocolCount;j++) {
+	if (protocol == entry->protocols[j]) {
+	  entry->protocols[j]
+	    = entry->protocols[entry->protocolCount-1];
+	  GROW(entry->protocols,
+	       entry->protocolCount,
+	       entry->protocolCount-1);
+	}
+      }
+      for (j=0;j<entry->heloCount;j++) {
+	if (protocol == entry->helos[j]->protocol) {
+	  FREE(entry->helos[j]);
+	  entry->helos[j]
+	    = entry->helos[entry->heloCount-1];
+	  GROW(entry->helos,
+	       entry->heloCount,
+	       entry->heloCount-1);
+	}
+      }
+      /* also remove HELO file itself */
+      fn = getHostFileName(identity, 
+			   protocol);
       if (0 != UNLINK(fn))
 	LOG_FILE_STRERROR(LOG_WARNING, 
 			  "unlink",
 			  fn);
       FREE(fn);
+
+      if (entry->protocolCount == 0) {
+	if (entry->heloCount > 0) {
+	  BREAK(); /* very strange: have 
+		      helo but not proto number!? */
+	  for (j=0;j<entry->heloCount;j++)
+	    FREE(entry->helos[j]);
+	  GROW(entry->helos,
+	       entry->heloCount,
+	       0);
+	}
+	hosts_[i] = hosts_[--count_];
+	FREE(entry);
+      }
       MUTEX_UNLOCK(&lock_);
       return; /* deleted */
     }
@@ -402,6 +456,7 @@ static void bindAddress(const HELO_Message * msg) {
   int size;
   EncName enc;
   HostEntry * host;
+  int i;
 
   GNUNET_ASSERT(msg != NULL);
   IFLOG(LOG_INFO,
@@ -433,19 +488,29 @@ static void bindAddress(const HELO_Message * msg) {
 	    "644");
   FREE(fn);
   FREE(buffer);
-  addHostToKnown(&msg->senderIdentity,
-		 ntohs(msg->protocol));
 
   MUTEX_LOCK(&lock_);
-  host = findHost(&msg->senderIdentity, 
-		  ntohs(msg->protocol));  
-  if (host != NULL) {
-    FREENONNULL(host->helo);
-    host->helo = MALLOC(HELO_Message_size(msg));
-    memcpy(host->helo,
-	   msg,
-	   HELO_Message_size(msg));
+  addHostToKnown(&msg->senderIdentity,
+		 ntohs(msg->protocol));
+  host = findHost(&msg->senderIdentity);  
+  GNUNET_ASSERT(host != NULL);
+
+  for (i=0;i<host->heloCount;i++) {
+    if (msg->protocol == host->helos[i]->protocol) {
+      FREE(host->helos[i]);
+      host->helos[i] = NULL;
+      break;
+    }
   }
+  if (i == host->heloCount)
+    GROW(host->helos,
+	 host->heloCount,
+	 host->heloCount+1);
+  host->helos[i]
+    = MALLOC(HELO_Message_size(msg));
+  memcpy(host->helos[i],
+	 msg,
+	 HELO_Message_size(msg));  
   MUTEX_UNLOCK(&lock_);
 }
 
@@ -462,7 +527,7 @@ static void bindAddress(const HELO_Message * msg) {
  * @returns SYSERR on failure, OK on success
  */
 static int identity2Helo(const PeerIdentity *  hostId,
-			 const unsigned short protocol,
+			 unsigned short protocol,
 			 int tryTemporaryList,
 			 HELO_Message ** result) {
   HostEntry * host;
@@ -470,83 +535,112 @@ static int identity2Helo(const PeerIdentity *  hostId,
   HELO_Message buffer;
   int size;
   int i;
+  int j;
+  int * perm;
 
-  MUTEX_LOCK(&lock_);
+  MUTEX_LOCK(&lock_);  
   if (YES == tryTemporaryList) {
+    if (protocol == ANY_PROTOCOL_NUMBER)
+      perm = permute(MAX_TEMP_HOSTS);
+    else
+      perm = NULL;
     /* ok, then first try temporary hosts 
        (in memory, cheapest!) */
     for (i=0;i<MAX_TEMP_HOSTS;i++) {
-      if ( (tempHosts[i] != NULL) &&
+      if (perm == NULL)
+	j = i;
+      else
+	j = perm[i];
+      if ( (tempHosts[j] != NULL) &&
 	   hostIdentityEquals(hostId,
-			      &tempHosts[i]->senderIdentity) &&
-	   ( (ntohs(tempHosts[i]->protocol) == protocol) ||
+			      &tempHosts[j]->senderIdentity) &&
+	   ( (ntohs(tempHosts[j]->protocol) == protocol) ||
 	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
-	*result = MALLOC(HELO_Message_size(tempHosts[i]));
+	*result = MALLOC(HELO_Message_size(tempHosts[j]));
 	memcpy(*result,
-	       tempHosts[i],
-	       HELO_Message_size(tempHosts[i]));	
+	       tempHosts[j],
+	       HELO_Message_size(tempHosts[j]));	
 	MUTEX_UNLOCK(&lock_);
+	FREENONNULL(perm);
 	return OK;
       }
     }
+    FREENONNULL(perm);
   }
 
-  host = findHost(hostId, 
-		  protocol);
-  /* last chance: on disk only */
-  if (host == NULL) {
-    cronScanDirectoryDataHosts(NULL);
-    host = findHost(hostId, 
-		    protocol);
+  host = findHost(hostId);
+  if ( (host == NULL) ||
+       (host->protocolCount == 0) ) {
+    *result = NULL;
+    MUTEX_UNLOCK(&lock_);
+    return SYSERR;
+  }  
+
+  if (protocol == ANY_PROTOCOL_NUMBER)
+    protocol = host->protocols[randomi(host->protocolCount)];
+
+  for (i=0;i<host->heloCount;i++) {
+    if (host->helos[i]->protocol == protocol) {
+      *result
+	= MALLOC(HELO_Message_size(host->helos[i]));
+      memcpy(*result,
+	     host->helos[i],
+	     HELO_Message_size(host->helos[i]));
+      MUTEX_UNLOCK(&lock_);
+      return OK;      
+    }
   }
-  if (host == NULL) {
+  
+  /* do direct read */
+  fn = getHostFileName(hostId, 
+		       protocol);
+  size = readFile(fn,
+		  sizeof(HELO_Message),
+		  &buffer);
+  if (size != sizeof(HELO_Message)) {
+    if (0 == UNLINK(fn))
+      LOG(LOG_WARNING,
+	  _("Removed file '%s' containing invalid HELO data.\n"),
+	  fn);
+    else
+      LOG_FILE_STRERROR(LOG_ERROR, 
+			"unlink",
+			fn);
+    FREE(fn);
+    *result = NULL;
+    MUTEX_UNLOCK(&lock_);
+    return SYSERR;    
+  }
+  *result = MALLOC(HELO_Message_size(&buffer));
+  size = readFile(fn,
+		  HELO_Message_size(&buffer),
+		  *result);      
+  if ((unsigned int)size != HELO_Message_size(&buffer)) {
+    if (0 == UNLINK(fn))
+      LOG(LOG_WARNING,
+	  _("Removed file '%s' containing invalid HELO data.\n"),
+	  fn);
+    else
+      LOG_FILE_STRERROR(LOG_ERROR, 
+			"unlink",
+			fn);
+    FREE(fn);
+    FREE(*result);
     *result = NULL;
     MUTEX_UNLOCK(&lock_);
     return SYSERR;
   }
-  if (host->helo == NULL) {
-    /* do direct read */
-    fn = getHostFileName(hostId, 
-			 host->protocol);
-    size = readFile(fn,
-		    sizeof(HELO_Message),
-		    &buffer);
-    if (size == sizeof(HELO_Message)) {
-      *result = MALLOC(HELO_Message_size(&buffer));
-      size = readFile(fn,
-		      HELO_Message_size(&buffer),
-		      *result);      
-      if ((unsigned int)size != HELO_Message_size(&buffer)) {
-	if (0 == UNLINK(fn))
-	  LOG(LOG_WARNING,
-	      _("Removed file '%s' containing invalid HELO data.\n"),
-	      fn);
-	else
-	  LOG_FILE_STRERROR(LOG_ERROR, 
-			    "unlink",
-			    fn);
-	FREE(fn);
-	FREE(*result);
-	*result = NULL;
-	MUTEX_UNLOCK(&lock_);
-	return SYSERR;
-      }
-      host->helo
-	= MALLOC(HELO_Message_size(&buffer));
-      memcpy(host->helo,
-	     *result,
-	     HELO_Message_size(&buffer));
-      MUTEX_UNLOCK(&lock_);
-      return OK;
-    }
-  }
-  *result
-    = MALLOC(HELO_Message_size(host->helo));
-  memcpy(*result,
-	 host->helo,
-	 HELO_Message_size(host->helo));
+
+  GROW(host->helos,
+       host->heloCount,
+       host->heloCount+1);
+  host->helos[host->heloCount-1]
+    = MALLOC(HELO_Message_size(&buffer));
+  memcpy(host->helos[host->heloCount-1],
+	 *result,
+	 HELO_Message_size(&buffer));
   MUTEX_UNLOCK(&lock_);
-  return OK;
+  return OK;  
 }
 
 
@@ -586,50 +680,44 @@ static int verifyPeerSignature(const PeerIdentity * signer,
  * @return OK on success SYSERR on error
  */
 static int blacklistHost(const PeerIdentity * identity,
-			 int desperation,
+			 unsigned int desperation,
 			 int strict) {
-  int i;
   EncName hn;
-  int ret;
+  HostEntry * entry;
 
-  if (desperation < 0)
-    desperation = 0;
-  ret = SYSERR;
   MUTEX_LOCK(&lock_);
-  for (i=0;i<count_;i++) {
-    if (hostIdentityEquals(identity,
-			   &hosts_[i].identity)) {
-      if (strict == YES) {
-	/* Presumably runs a broken version of GNUnet;
-	   blacklist for 1 day (we hope the other peer
-	   updates the software eventually...) */
-	hosts_[i].delta = 1 * cronDAYS;
-      } else {
-	hosts_[i].delta
-	  = hosts_[i].delta * 2 + randomi((desperation+1)*cronSECONDS);
-	if (hosts_[i].delta > 4 * cronHOURS)
-	  hosts_[i].delta = 4 *  randomi(cronHOURS * (desperation+1));
-      }
-      cronTime(&hosts_[i].until);
-      hosts_[i].until += hosts_[i].delta;
-      hosts_[i].strict = strict;
-      hash2enc(&identity->hashPubKey,
-	       &hn);
-#if DEBUG_IDENTITY 
-      LOG(LOG_INFO,
-	  "Blacklisting host '%s' (%d) for %llu seconds"
-	  " until %llu (strict=%d).\n",
-	  &hn,
-	  i,
-	  hosts_[i].delta / cronSECONDS,
-	  hosts_[i].until,
-	  strict);
-#endif
-      ret = OK;
-    }
+  entry = findHost(identity);
+  if (entry == NULL) {
+    MUTEX_UNLOCK(&lock_);
+    return SYSERR;
   }
+  if (strict == YES) {
+    /* Presumably runs a broken version of GNUnet;
+       blacklist for 1 day (we hope the other peer
+       updates the software eventually...) */
+    entry->delta = 1 * cronDAYS;
+  } else {
+    entry->delta
+      = entry->delta * 2 + randomi((desperation+1)*cronSECONDS);
+    if (entry->delta > 4 * cronHOURS)
+      entry->delta = 4 *  randomi(cronHOURS * (desperation+1));
+  }
+  cronTime(&entry->until);
+  entry->until += entry->delta;
+  entry->strict = strict;
+  hash2enc(&identity->hashPubKey,
+	   &hn);
+#if DEBUG_IDENTITY 
+  LOG(LOG_INFO,
+      "Blacklisting host '%s' for %llu seconds"
+      " until %llu (strict=%d).\n",
+      &hn,
+      entry->delta / cronSECONDS,
+      entry->until,
+      strict);
+#endif
   MUTEX_UNLOCK(&lock_);
-  return ret;
+  return OK;
 }
 
 /**
@@ -639,25 +727,24 @@ static int blacklistHost(const PeerIdentity * identity,
  * @return YES if true, else NO
  */
 static int isBlacklistedStrict(const PeerIdentity * identity) {
-  int i;
   cron_t now;
+  HostEntry * entry;
 
   MUTEX_LOCK(&lock_);
-  for (i=0;i<count_;i++) {
-    if (hostIdentityEquals(identity,
-			   &hosts_[i].identity)) {
-      cronTime(&now);			
-      if ( (now < hosts_[i].until) && (hosts_[i].strict == YES) ) {
-        MUTEX_UNLOCK(&lock_);
-        return YES;
-      } else {
-        MUTEX_UNLOCK(&lock_);
-        return NO;
-      }
-    }
+  entry = findHost(identity);
+  if (entry == NULL) {
+    MUTEX_UNLOCK(&lock_);
+    return NO;
   }
-  MUTEX_UNLOCK(&lock_);
-  return NO;
+  cronTime(&now);			
+  if ( (now < entry->until) && 
+       (entry->strict == YES) ) {
+    MUTEX_UNLOCK(&lock_);
+    return YES;
+  } else {
+    MUTEX_UNLOCK(&lock_);
+    return NO;
+  }
 }
 
 /**
@@ -667,31 +754,30 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
  * @return OK on success SYSERR on error
  */
 static int whitelistHost(const PeerIdentity * identity) {
-  int i;
+  HostEntry * entry;
+#if DEBUG_IDENTITY       
+  EncName enc;
+#endif
 
   MUTEX_LOCK(&lock_);
-  for (i=0;i<count_;i++) {
-    if (hostIdentityEquals(identity,
-			   &hosts_[i].identity)) {
-#if DEBUG_IDENTITY 
-      EncName enc;
-
-      IFLOG(LOG_INFO,
-	    hash2enc(&identity->hashPubKey,
-		     &enc));
-      LOG(LOG_INFO,
-	  "Whitelisting host '%s'\n",
-	  &enc);
-#endif
-      hosts_[i].delta = 30 * cronSECONDS;
-      hosts_[i].until = 0;
-      hosts_[i].strict = NO;
-      MUTEX_UNLOCK(&lock_);
-      return OK;
-    }
+  entry = findHost(identity);
+  if (entry == NULL) {
+    MUTEX_UNLOCK(&lock_);
+    return SYSERR;
   }
+#if DEBUG_IDENTITY 
+  IFLOG(LOG_INFO,
+	hash2enc(&identity->hashPubKey,
+		 &enc));
+  LOG(LOG_INFO,
+      "Whitelisting host '%s'\n",
+      &enc);
+#endif
+  entry->delta = 30 * cronSECONDS;
+  entry->until = 0;
+  entry->strict = NO;
   MUTEX_UNLOCK(&lock_);
-  return SYSERR;
+  return OK;
 }
 
 /**
@@ -708,28 +794,41 @@ static int forEachHost(cron_t now,
 		       HostIterator callback,
 		       void * data) {
   int i;
+  int j;
   int count;
   PeerIdentity hi;
   unsigned short proto;
+  HostEntry * entry;
 
   count = 0;  
   MUTEX_LOCK(&lock_);
   for (i=0;i<count_;i++) {
-    if (hostIdentityEquals(&hosts_[i].identity,
+    entry = hosts_[i];
+    if (hostIdentityEquals(&entry->identity,
 			   &myIdentity))
       continue;
     if ( (now == 0) ||
-	 (now >= hosts_[i].until) ) {
+	 (now >= entry->until) ) {
       count++;
       if (callback != NULL) {
-	hi = hosts_[i].identity;
-	proto = hosts_[i].protocol;
-	MUTEX_UNLOCK(&lock_);
-	callback(&hi,
-		 proto,
-		 YES,
-		 data);
-	MUTEX_LOCK(&lock_);
+	hi = entry->identity;
+	for (j=0;j<entry->protocolCount;j++) {
+	  proto = entry->protocols[j];
+	  MUTEX_UNLOCK(&lock_);
+	  callback(&hi,
+		   proto,
+		   YES,
+		   data);
+	  MUTEX_LOCK(&lock_);
+	  /* we gave up the lock,
+	     need to re-aquire entry (if possible)! */
+	  if (i >= count_)
+	    break;
+	  entry = hosts_[i];
+	  if (hostIdentityEquals(&entry->identity,
+				 &myIdentity))
+	    break;
+	}
       }
     }
   }
@@ -796,7 +895,7 @@ static void cronFlushTrustBuffer(void * unused) {
   int i;
   MUTEX_LOCK(&lock_);
   for (i=0;i<count_;i++)
-    flushHostCredit(&hosts_[i]);
+    flushHostCredit(hosts_[i]);
   MUTEX_UNLOCK(&lock_);
 }
 
@@ -832,20 +931,20 @@ provide_module_identity(CoreAPIForApplication * capi) {
   int i;
 
   id.getPublicPrivateKey = &getPublicPrivateKey;
-  id.getPeerIdentity = &getPeerIdentity;
-  id.signData = &signData;
-  id.decryptData = &decryptData;
-  id.delHostFromKnown = &delHostFromKnown;
-  id.addHostTemporarily = &addHostTemporarily;
-  id.addHost = &bindAddress;
-  id.forEachHost = &forEachHost;
-  id.identity2Helo = &identity2Helo;
+  id.getPeerIdentity     = &getPeerIdentity;
+  id.signData            = &signData;
+  id.decryptData         = &decryptData;
+  id.delHostFromKnown    = &delHostFromKnown;
+  id.addHostTemporarily  = &addHostTemporarily;
+  id.addHost             = &bindAddress;
+  id.forEachHost         = &forEachHost;
+  id.identity2Helo       = &identity2Helo;
   id.verifyPeerSignature = &verifyPeerSignature;
-  id.blacklistHost = &blacklistHost;
+  id.blacklistHost       = &blacklistHost;
   id.isBlacklistedStrict = &isBlacklistedStrict;
-  id.whitelistHost = &whitelistHost;
-  id.changeHostTrust = &changeHostTrust;
-  id.getHostTrust = &getHostTrust;
+  id.whitelistHost       = &whitelistHost;
+  id.changeHostTrust     = &changeHostTrust;
+  id.getHostTrust        = &getHostTrust;
 
   for (i=0;i<MAX_TEMP_HOSTS;i++)
     tempHosts[i] = NULL;
@@ -893,6 +992,8 @@ provide_module_identity(CoreAPIForApplication * capi) {
  */
 void release_module_identity() {
   int i;
+  int j;
+  HostEntry * entry;
 
   delCronJob(&cronScanDirectoryDataHosts,
 	     CRON_DATA_HOST_FREQ,
@@ -904,6 +1005,18 @@ void release_module_identity() {
   for (i=0;i<MAX_TEMP_HOSTS;i++)
     FREENONNULL(tempHosts[i]);
   MUTEX_DESTROY(&lock_);
+  for (i=0;i<count_;i++) {
+    entry = hosts_[i];
+    for (j=0;j<entry->heloCount;j++)
+      FREE(entry->helos[j]);
+    GROW(entry->helos,
+	 entry->heloCount,
+	 0);
+    GROW(entry->protocols,
+	 entry->protocolCount,
+	 0);
+    FREE(entry);
+  }
   GROW(hosts_,
        max_,
        0);
