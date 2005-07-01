@@ -2028,7 +2028,8 @@ int checkHeader(const PeerIdentity * sender,
     }
   } else {
     be->lastPacketsBitmap =
-      be->lastPacketsBitmap << (sequenceNumber - be->lastSequenceNumberReceived);
+      be->lastPacketsBitmap 
+      << (sequenceNumber - be->lastSequenceNumberReceived);
     be->lastSequenceNumberReceived = sequenceNumber;
   }
   stamp = ntohl(msg->timeStamp);
@@ -2126,7 +2127,11 @@ void assignSessionKey(const SESSIONKEY * key,
     } else { /* for receiving */
       if ( ((be->status & STAT_SKEY_RECEIVED) == 0) ||
 	   (be->skey_remote_created < age) ) {
-	be->skey_remote = *key;
+	if (! equalsHashKey512(key,
+			       &be->skey_remote)) {
+	  be->skey_remote = *key;
+	  be->lastSequenceNumberReceived = 0;
+	}
 	be->skey_remote_created = age;
 	be->status |= STAT_SKEY_RECEIVED;
       }
