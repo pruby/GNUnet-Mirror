@@ -428,8 +428,6 @@ static void delHostFromKnown(const PeerIdentity * identity,
 
       if (entry->protocolCount == 0) {
 	if (entry->heloCount > 0) {
-	  BREAK(); /* very strange: have 
-		      helo but not proto number!? */
 	  for (j=0;j<entry->heloCount;j++)
 	    FREE(entry->helos[j]);
 	  GROW(entry->helos,

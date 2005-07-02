@@ -465,11 +465,13 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
 		      const struct ECRS_URI * uri,
 		      const char * filename) {
   FSUI_DownloadList * dl;
+  FSUI_DownloadList * prev;
   unsigned int backup;
 
   GNUNET_ASSERT(filename != NULL);
   MUTEX_LOCK(&ctx->lock);
   dl = ctx->activeDownloads.child;
+  prev = NULL;
   while (dl != NULL) {
     if ( (ECRS_equalsUri(uri,
 		       dl->uri)) &&
@@ -479,11 +481,18 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
       backup = ctx->threadPoolSize;
       ctx->threadPoolSize = 0;
       updateDownloadThread(dl);
+      if (prev == NULL)
+	ctx->activeDownloads.child
+	  = dl->next;
+      else
+	prev->next
+	  = dl->next;
       freeDownloadList(dl);
       ctx->threadPoolSize = backup;
       MUTEX_UNLOCK(&ctx->lock);
       return OK;
     }
+    prev = dl;
     dl = dl->next;
   }
   MUTEX_UNLOCK(&ctx->lock);
@@ -527,6 +536,61 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
   MUTEX_UNLOCK(&ctx->lock);
   return ret;
 }
+
+/**
+ * Clear all completed top-level downloads from the FSUI list.
+ * 
+ * @param callback function to call on each completed download
+ *        that is being cleared.
+ * @return SYSERR on error, otherwise number of downloads cleared
+ */
+int FSUI_clearCompletedDownloads(struct FSUI_Context * ctx,
+				 FSUI_DownloadIterator iter,
+				 void * closure) {
+  FSUI_DownloadList * dl;
+  FSUI_DownloadList * prev;
+  int ret;
+  int stop;
+
+  ret = 0;
+  MUTEX_LOCK(&ctx->lock);
+  dl = ctx->activeDownloads.child;
+  prev = NULL;
+  stop = NO;
+  while ( (dl != NULL) &&
+	  (stop == NO) ) {
+    if ( (dl->completed == dl->total) &&
+	 (dl->signalTerminate == SYSERR) ) {
+      if (prev == NULL)
+	ctx->activeDownloads.child
+	  = dl->next;
+      else
+	prev->next = dl->next;
+      if (iter != NULL)
+	if (OK != iter(closure,
+		       dl,
+		       dl->filename,
+		       dl->uri,
+		       dl->total,
+		       dl->completed,
+		       dl->is_recursive,
+		       dl->anonymityLevel))
+	  stop = YES;
+      freeDownloadList(dl);
+      dl = prev->next;
+      ret++;
+    } else {
+      prev = dl;
+      dl = dl->next;
+    }
+  }
+  MUTEX_UNLOCK(&ctx->lock);
+  if (stop == NO)
+    return ret;
+  else
+    return SYSERR;
+}
+
 
 /**
  * Get parent of active download. 

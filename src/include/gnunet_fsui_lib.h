@@ -516,6 +516,18 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
 		       void * closure); /* download.c */
 
 /**
+ * Clear all completed top-level downloads from the FSUI list.
+ * 
+ * @param callback function to call on each completed download
+ *        that is being cleared.
+ * @return SYSERR on error, otherwise number of downloads cleared
+ */
+int FSUI_clearCompletedDownloads(struct FSUI_Context * ctx,
+				 FSUI_DownloadIterator iter,
+				 void * closure); /* download.c */
+
+
+/**
  * Get parent of active download. 
  * @return NULL if there is no parent
  */
