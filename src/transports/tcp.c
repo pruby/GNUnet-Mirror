@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_TCP NO
+#define DEBUG_TCP YES
 
 /**
  * after how much time of the core not being associated with a tcp
@@ -431,7 +431,8 @@ static int readAndProcess(int i) {
   tcpSession->pos += ret;
 
   while (tcpSession->pos > 2) {
-    len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) + sizeof(TCPMessagePack);
+    len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) 
+      + sizeof(TCPMessagePack);
     if (len > tcpSession->rsize) /* if message larger than read buffer, grow! */
       GROW(tcpSession->rbuff,
 	   tcpSession->rsize,
@@ -457,9 +458,11 @@ static int readAndProcess(int i) {
 
       welcome = (TCPWelcome*) &tcpSession->rbuff[0];
       if ( (ntohs(welcome->header.reserved) != 0) ||
-	   (ntohs(welcome->header.size) != sizeof(TCPWelcome) - sizeof(TCPMessagePack)) ) {
+	   (ntohs(welcome->header.size) 
+	    != sizeof(TCPWelcome) - sizeof(TCPMessagePack)) ) {
 	LOG(LOG_WARNING,
-	    _("Expected welcome message on tcp connection, got garbage (%u, %u). Closing.\n"),
+	    _("Expected welcome message on tcp connection, "
+	      "got garbage (%u, %u). Closing.\n"),
 	    ntohs(welcome->header.reserved),
 	    ntohs(welcome->header.size));
 	tcpDisconnect(tsession);
@@ -472,14 +475,15 @@ static int readAndProcess(int i) {
 	    hash2enc(&tcpSession->sender.hashPubKey,
 		     &enc));
       LOG(LOG_DEBUG,
-	  "tcp welcome message from %s received\n",
+	  "tcp welcome message from '%s' received\n",
 	  &enc);
 #endif
       memmove(&tcpSession->rbuff[0],
 	      &tcpSession->rbuff[sizeof(TCPWelcome)],
 	      tcpSession->pos - sizeof(TCPWelcome));
       tcpSession->pos -= sizeof(TCPWelcome);
-      len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) + sizeof(TCPMessagePack);
+      len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) 
+	+ sizeof(TCPMessagePack);
     }
     if ( (tcpSession->pos < 2) ||
 	 (tcpSession->pos < len) ) {
@@ -491,7 +495,8 @@ static int readAndProcess(int i) {
     /* send msg to core! */
     if (len <= sizeof(TCPMessagePack)) {
       LOG(LOG_WARNING,
-	  _("Received malformed message (size %u) from tcp-peer connection. Closing.\n"),
+	  _("Received malformed message (size %u)"
+	    " from tcp-peer connection. Closing.\n"),
 	  len);
       tcpDisconnect(tsession);
       return SYSERR;
@@ -1152,9 +1157,12 @@ static int tcpConnect(HELO_Message * helo,
 
   /* send our node identity to the other side to fully establish the
      connection! */
-  welcome.header.size = htons(sizeof(TCPWelcome) - sizeof(TCPMessagePack));
-  welcome.header.reserved = htons(0);
-  welcome.clientIdentity = *(coreAPI->myIdentity);
+  welcome.header.size 
+    = htons(sizeof(TCPWelcome) - sizeof(TCPMessagePack));
+  welcome.header.reserved 
+    = htons(0);
+  welcome.clientIdentity 
+    = *(coreAPI->myIdentity);
   if (SYSERR == tcpDirectSend(tcpSession,
 			      &welcome,
 			      sizeof(TCPWelcome))) {

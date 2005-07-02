@@ -261,16 +261,9 @@ receivedHELO(const p2p_HEADER * message) {
 
 
   /* Establish session as advertised in the HELO */
-  copy = MALLOC(HELO_Message_size(msg));
-  memcpy(copy,
-	 msg,
-	 HELO_Message_size(msg));
-  if (SYSERR == transport->connect(copy, /* copy is freed by callee,
-					  except on SYSERR! */
-				   &tsession)) {
-    FREE(copy);
-    return SYSERR; /* could not connect */
-  }
+  tsession = transport->connect(msg);
+  if (tsession == NULL) 
+    return SYSERR; /* could not connect */  
 
   /* build message to send, ping must contain return-information,
      such as a selection of our HELOs... */
@@ -395,10 +388,9 @@ broadcastHelper(const PeerIdentity * hi,
 #endif
     return;
   }
-  if (SYSERR == transport->connect(helo, /* helo is freed by callee,
-					    except on SYSERR! */
-				 &tsession)) {
-    FREE(helo);
+  tsession = transport->connect(helo);
+  FREE(helo);
+  if (tsession == NULL) {
 #if DEBUG_HELOEXCHANGE
     LOG(LOG_DEBUG,
 	"Exit from '%s' (%s error).\n",
@@ -494,7 +486,7 @@ static void forwardCallback(const PeerIdentity * peer,
   if (randomi(fcc->prob) != 0)
     return; /* only forward with a certain chance */
   if (equalsHashCode512(&peer->hashPubKey,
-			&fcc->msg->senderIdentity))
+			&fcc->msg->senderIdentity.hashPubKey))
     return; /* do not bounce the HELO of a peer back
 	       to the same peer! */
   if (stats != NULL)

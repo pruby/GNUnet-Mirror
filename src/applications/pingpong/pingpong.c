@@ -143,26 +143,17 @@ static int pingReceived(const PeerIdentity * sender,
 
 static int sendPlaintext(const PeerIdentity * peer,
 			 const PINGPONG_Message * msg) {
-  HELO_Message * helo;
   TSession * mytsession;
-
-  if (SYSERR == identity->identity2Helo(peer,
-					ANY_PROTOCOL_NUMBER,
-					YES,
-					&helo))
-    return SYSERR;
-  if (SYSERR == transport->connect(helo, &mytsession)) {
-    FREE(helo);
-    return SYSERR;
-  }
-  if (OK != coreAPI->sendPlaintext(mytsession,
-				   (char*)msg,
-				   sizeof(PINGPONG_Message))) {
-    transport->disconnect(mytsession);
-    return SYSERR;
-  }
+  int ret;
+  
+  mytsession = transport->connectFreely(peer, YES);
+  if (mytsession == NULL)
+    return SYSERR;  
+  ret = coreAPI->sendPlaintext(mytsession,
+			       (char*)msg,
+			       sizeof(PINGPONG_Message));  
   transport->disconnect(mytsession);
-  return OK;
+  return ret;
 }
 
 /**

@@ -247,9 +247,9 @@ static void testPING(HELO_Message * xhelo,
   stats[1]++; /* one more with transport 'available' */
   tsession = NULL;
   peer = helo->senderIdentity;
-  if (OK != transport->connect(helo,
-			       &tsession)) {
-    FREE(helo);
+  tsession = transport->connect(helo);
+  FREE(helo);
+  if (tsession == NULL) {
     fprintf(stderr,
 	    _(" Connection failed\n"));
     return;

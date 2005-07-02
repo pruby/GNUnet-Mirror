@@ -1528,10 +1528,15 @@ static int copyCallback(void * buf,
 static void shutdownConnection(BufferEntry * be) {
   HANGUP_Message hangup;
   unsigned int i;
+  EncName enc;
 
   ENTRY();
+  IFLOG(LOG_DEBUG,
+	hash2enc(&be->session.sender.hashPubKey,
+		 &enc));
   LOG(LOG_DEBUG,
-      "Shutting down connection\n");
+      "Shutting down connection with '%s'\n",
+      &enc);
   if (be->status == STAT_DOWN)
     return; /* nothing to do */
   if (be->status == STAT_UP) {
@@ -2159,6 +2164,8 @@ void assignSessionKey(const SESSIONKEY * key,
  */
 void confirmSessionUp(const PeerIdentity * peer) {
   BufferEntry * be;
+  EncName enc;
+
   MUTEX_LOCK(&lock);
   be = lookForHost(peer);
   if (be != NULL) {
@@ -2166,43 +2173,26 @@ void confirmSessionUp(const PeerIdentity * peer) {
     identity->whitelistHost(peer);
     if ( ( (be->status & STAT_SKEY_SENT) > 0) &&
 	 ( (be->status & STAT_SKEY_RECEIVED) > 0) ) {
-      if (be->session.tsession == NULL) {
-	int i;
-	HELO_Message * helo;
-
-	i = 0;
-	while (i < MAX_PROTOCOL_NUMBER) {
-	  helo = NULL;
-	  if (OK ==
-	      identity->identity2Helo(&be->session.sender,
-				      i,
-				      YES,
-				      &helo)) {
-	    if (OK ==
-		transport->connect(helo,
-				   &be->session.tsession)) {
-	      be->session.mtu
-		= transport->getMTU(be->session.tsession->ttype);	
-	      break;
-	    } else {
-	      FREE(helo);	 
-	      i++;
-	    }
-	  } else {
-	    i++;
-	  }
-	}
-	if (i == MAX_PROTOCOL_NUMBER) {
-	  LOG(LOG_WARNING,
-	      _("Session confirmed, but cannot connect! (bug?)\n"));
-	}
-      }
+      if (be->session.tsession == NULL) 
+	be->session.tsession
+	  = transport->connectFreely(&be->session.sender,
+				     YES);      
       if (be->session.tsession != NULL) {
+	be->session.mtu
+	  = transport->getMTU(be->session.tsession->ttype);
 	if (be->status != STAT_UP) {
 	  be->status = STAT_UP;
 	  be->lastSequenceNumberReceived = 0;
 	  be->lastSequenceNumberSend = 1;
 	}
+      } else {
+	IFLOG(LOG_WARNING,
+	      hash2enc(&be->session.sender.hashPubKey,
+		       &enc));
+	LOG(LOG_WARNING,
+	    _("Session with peer '%s' confirmed, "
+	      "but I cannot connect! (bug?)\n"),
+	    &enc);
       }
     }
   }

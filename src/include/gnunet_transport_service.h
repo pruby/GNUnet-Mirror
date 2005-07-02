@@ -76,14 +76,22 @@ typedef struct {
    * layer. This may fail if the appropriate transport mechanism is
    * not available.
    *
-   * @param helo the HELO of the target node. The
-   *        callee is responsible for freeing the HELO (!),
-   *        except if SYSERR is returned!
-   * @param tsession the transport session to create
-   * @return OK on success, SYSERR on error
+   * @param helo the HELO of the target node
+   * @return session handle on success, NULL on error
    */
-  int (*connect)(HELO_Message * helo,
-		 TSession ** tsession);
+  TSession * (*connect)(const HELO_Message * helo);
+
+  /**
+   * Connect to another peer, picking any transport that
+   * works.
+   *
+   * @param peer which peer to connect to
+   * @param allowTempLists may we even select HELOs that have
+   *        not yet been confirmed?
+   * @return session handle on success, NULL on error
+   */
+  TSession * (*connectFreely)(const PeerIdentity * peer,
+			      int allowTempList);
 
   /**
    * A (core) Session is to be associated with a transport session. The

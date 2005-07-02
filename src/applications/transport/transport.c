@@ -172,20 +172,20 @@ static int forEachTransport(TransportCallback callback,
  * @param helo the HELO of the target node. The
  *        callee is responsible for freeing the HELO (!), except
  *        if SYSERR is returned!
- * @param tsession the transport session to create
  * @return OK on success, SYSERR on error
  */
-static int transportConnect(HELO_Message * helo,
-			    TSession ** tsession) {
+static TSession * transportConnect(const HELO_Message * helo) {
   TransportAPI * tapi;
   unsigned short prot;
+  TSession * tsession;
+  HELO_Message * heloCpy;
 
   if (ntohs(helo->protocol) >= tapis_count) {
     LOG(LOG_INFO,
 	"%s failed, transport type %d not supported\n",
 	__FUNCTION__,
 	ntohs(helo->protocol));
-    return SYSERR;
+    return NULL;
   }
   prot = ntohs(helo->protocol);
   tapi = tapis[prot];
@@ -194,21 +194,57 @@ static int transportConnect(HELO_Message * helo,
 	"%s failed, transport type %d not supported\n",
 	__FUNCTION__,
 	ntohs(helo->protocol));
-     return SYSERR;
+     return NULL;
   } else {
-
-    if (OK == tapi->connect(helo,
-			    tsession)) {
-      (*tsession)->ttype = prot;
+    heloCpy = MALLOC(HELO_Message_size(helo));
+    memcpy(heloCpy,
+	   helo,
+	   HELO_Message_size(helo));
+    if (OK == tapi->connect(heloCpy,
+			    &tsession)) {
+      tsession->ttype = prot;
 #if DEBUG_TRANSPORT
       LOG(LOG_DEBUG,
 	  "Core connected to tsession %p.\n",
 	  *tsession);
 #endif
-      return OK;
+      return tsession;
     } else
-      return SYSERR;
+      FREE(heloCpy);
+      return NULL;
   }
+}
+
+static TSession * transportConnectFreely(const PeerIdentity * peer,
+					 int useTempList) {
+  int i;
+  HELO_Message * helo;
+  int * perm;
+  TSession * ret;
+
+  MUTEX_LOCK(&tapis_lock);
+  ret = NULL;
+  perm = permute(tapis_count);
+  for (i=0;i<tapis_count;i++) {
+    if (tapis[perm[i]] == NULL)
+      continue;
+    if (OK ==
+	identity->identity2Helo(peer,
+				perm[i],
+				useTempList,
+				&helo)) {
+      ret = transportConnect(helo);
+      FREE(helo);      
+      if (ret != NULL) {
+	FREE(perm);
+	MUTEX_UNLOCK(&tapis_lock);
+	return ret;
+      }
+    }
+  }
+  FREE(perm);
+  MUTEX_UNLOCK(&tapis_lock);
+  return NULL;
 }
 
 /**
@@ -675,6 +711,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ret.add = &addTransport;
   ret.forEach = &forEachTransport;
   ret.connect = &transportConnect;
+  ret.connectFreely = &transportConnectFreely;
   ret.associate = &transportAssociate;
   ret.getCost = &transportGetCost;
   ret.send = &transportSend;
