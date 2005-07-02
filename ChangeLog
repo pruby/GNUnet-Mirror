@@ -1,3 +1,9 @@
+Sat Jul  2 17:21:07 CEST 2005
+	Fixed bugs in gnunet-pseudonym (listing of namespaces),
+	FSUI (double-free for namespace creation), cleaned up
+	APIs and implemented clearing of completed downloads
+	(FSUI). Releasing 0.7.0pre4.
+	
 Fri Jul  1 15:08:42 CEST 2005
         Added statistics for transports and other connection-
 	related functions.  Prevented core from dropping

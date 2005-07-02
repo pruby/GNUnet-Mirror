@@ -746,6 +746,8 @@ int release_module_session() {
     coreAPI->releaseService(topology);
     topology = NULL;
   }
+  coreAPI->releaseService(stats);
+  stats = NULL;
   coreAPI->releaseService(identity);
   identity = NULL;
   coreAPI->releaseService(transport);
