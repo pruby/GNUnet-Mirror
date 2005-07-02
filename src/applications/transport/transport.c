@@ -42,7 +42,7 @@ static unsigned int tapis_count = 0;
 static unsigned int helo_live;
 static Mutex tapis_lock;
 
-
+#define HELO_RECREATE_FREQ (5 * cronMINUTES)
 
 
 
@@ -56,8 +56,8 @@ static void createSignedHELO(TransportAPI * tapi) {
   tapi->helo = NULL;
   if (SYSERR == tapi->createHELO(&tapi->helo)) {
     tapi->helo = NULL;
-    LOG(LOG_DEBUG,
-	"Transport %s failed to create HELO\n",
+    LOG(LOG_INFO,
+	"Transport '%s' failed to create HELO\n",
 	tapi->transName);
     MUTEX_UNLOCK(&tapis_lock);
     return;
@@ -110,8 +110,8 @@ static int addTransport(TransportAPI * tapi) {
   tapis[tapi->protocolNumber] = tapi;
   tapi->helo = NULL;
   addCronJob((CronJob)&createSignedHELO,
-	     helo_live*cronSECONDS/10,
-	     helo_live*cronSECONDS/10,
+	     HELO_RECREATE_FREQ,
+	     HELO_RECREATE_FREQ,
 	     tapi);
   return OK;
 }
@@ -700,7 +700,7 @@ int release_module_transport() {
   for (i=0;i<tapis_count;i++) {
     if (tapis[i] != NULL) {
       delCronJob((CronJob)&createSignedHELO,
-		 helo_live*cronSECONDS/10,
+		 HELO_RECREATE_FREQ,
 		 tapis[i]);
       ptr = bindDynamicMethod(tapis[i]->libHandle,
 			      "donetransport_",
