@@ -173,9 +173,16 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
 			     root);
   /* store binding of namespaceName to 'meta' in state DB! */
   if (ret == OK) {
-    writeNamespaceInfo(namespaceName,
+    HashCode512 id;
+    char * name;
+
+    ECRS_getNamespaceId(*root,
+			&id);
+    name = ECRS_getNamespaceName(&id);
+    writeNamespaceInfo(name,
 		       meta,
 		       0);
+    FREE(name);
   }
   return ret;
 }

@@ -248,14 +248,12 @@ int ECRS_createNamespace(const char * name,
     freePrivateKey(pk);
     if (OK != FS_insert(sock, knvalue))
       ret = SYSERR;
-    FREE(keywords[i]);
     /* restore nblock to avoid re-encryption! */
     memcpy(&knb->nblock,
 	   cpy, 	   
 	   size - sizeof(KBlock) - sizeof(unsigned int));
   }
   FREE(cpy);
-  GROW(keywords, keywordCount, 0);
   FREE(knvalue);
   releaseClientSocket(sock);
   FREE(value);
@@ -506,9 +504,6 @@ static int processFile_(const char * name,
   unsigned long long len;
   HashCode512 namespace;
   PublicKey pk;
-
-  if (c->cnt == SYSERR)
-    return SYSERR;
 
   fileName = getPseudonymFileName(name);
   if (OK != getFileSize(fileName,
