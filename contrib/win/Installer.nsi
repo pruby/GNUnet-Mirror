@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7-pre3"
+!define PRODUCT_VERSION "0.7-pre4"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -108,11 +108,18 @@ SectionGroup "GNUnet" SEC_GNUNET
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\de\LC_MESSAGES\GNUnet.mo" 
+			File "C:\GNUnet\share\locale\de\LC_MESSAGES\libextractor.mo" 
 		SectionEnd
 		Section "Kinyarwanda" SEC_LANG_RW
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\rw\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\GNUnet.mo" 
+			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\libextractor.mo" 
+		SectionEnd
+		Section "Vietnamese" SEC_LANG_VI
+			SectionIn 1 2 3 4
+		  SetOutPath "$INSTDIR\share\locale\vi\LC_MESSAGES"
+			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
 		SectionEnd
 	SectionGroupEnd
 	
@@ -236,6 +243,11 @@ SectionGroup "GNUnet" SEC_GNUNET
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk.glade"
 			  File "C:\GNUnet\share\gnunet-gtk\info.png"
 			  File "C:\GNUnet\share\gnunet-gtk\up.png"
+			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-chat.png"
+			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-fs.png"
+			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-general.png"
+			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-stats.png"
+			  File "C:\GNUnet\share\gnunet-gtk\gnunet-gtk-welcome.png"
 			SectionEnd
 		SectionGroupEnd
 
@@ -648,6 +660,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG} "Translated messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_DE} "German messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_RW} "Kinyarwanda messages"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_VI} "Vietnamese messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SETUP} "GNUnet configuration application"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_BASE} "GNUnet server core"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_FS} "Support for filesharing"
@@ -877,6 +890,11 @@ Section Uninstall
   Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk.glade"
   Delete "$INSTDIR\share\gnunet-gtk\info.png"
   Delete "$INSTDIR\share\gnunet-gtk\up.png"
+  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-chat.png"
+  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-fs.png"
+  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-general.png"
+  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-stats.png"
+  Delete "$INSTDIR\share\gnunet-gtk\gnunet-gtk-welcome.png"
   RmDir /REBOOTOK "$INSTDIR\share\gnunet-gtk"
   
 	Delete "$INSTDIR\share\GNUnet\config-client.in" 
@@ -884,11 +902,16 @@ Section Uninstall
 	Delete "$INSTDIR\share\GNUnet\config.in" 
   RmDir /REBOOTOK "$INSTDIR\share\GNUnet"
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\GNUnet.mo" 
+	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\de\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\de"
 	Delete "$INSTDIR\share\locale\rw\LC_MESSAGES\GNUnet.mo" 
+	Delete "$INSTDIR\share\locale\rw\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\rw\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\rw"
+	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
+  RmDir /REBOOTOK "$INSTDIR\share\locale\vi\LC_MESSAGES"
+  RmDir /REBOOTOK "$INSTDIR\share\locale\vi"
   RmDir /REBOOTOK "$INSTDIR\share\locale"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
