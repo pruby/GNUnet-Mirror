@@ -390,8 +390,12 @@ void ECRS_freeUri(struct ECRS_URI * uri) {
   int i;
   GNUNET_ASSERT(uri != NULL);
   if (uri->type == ksk) {
-    for (i=0;i<uri->data.ksk.keywordCount;i++)
-      FREE(uri->data.ksk.keywords[i]);
+    for (i=0;i<uri->data.ksk.keywordCount;i++) {
+    	char *key = uri->data.ksk.keywords[i];
+    	
+    	if (key)
+      	FREE(key);
+    }
     GROW(uri->data.ksk.keywords,
 	 uri->data.ksk.keywordCount,
 	 0);
