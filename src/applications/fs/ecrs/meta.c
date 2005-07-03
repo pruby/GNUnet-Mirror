@@ -321,8 +321,8 @@ static unsigned int tryCompression(char * data,
   char * tmp;
   uLongf dlen;
 
-  tmp = MALLOC(oldSize);
-  dlen = oldSize;
+  dlen = oldSize * 1.001 + 13;
+  tmp = MALLOC(dlen);
   if (Z_OK == compress(tmp, &dlen, data, oldSize)) {
     if (dlen < oldSize) {
       memcpy(data, tmp, dlen);
