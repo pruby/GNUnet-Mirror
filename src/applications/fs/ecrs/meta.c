@@ -81,6 +81,7 @@ int ECRS_addToMetaData(MetaData * md,
 		       const char * data) {
   int idx;
 
+  GNUNET_ASSERT(data != NULL);
   for (idx=0;idx<md->itemCount;idx++) {
     if ( (md->items[idx].type == type) &&
 	 (0 == strcmp(md->items[idx].data,
