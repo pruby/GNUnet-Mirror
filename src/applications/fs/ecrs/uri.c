@@ -554,6 +554,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
   char * kd;
   struct tm t;
   time_t now;
+  unsigned int keywordCount;
   
   GNUNET_ASSERT(uri->type == ksk);
   time(&now);
@@ -565,22 +566,28 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
 
   ret = MALLOC(sizeof(URI));
   ret->type = ksk;
-  ret->data.ksk.keywordCount = 2 * uri->data.ksk.keywordCount;
-  ret->data.ksk.keywords = MALLOC(sizeof(char*) * ret->data.ksk.keywordCount);
-  for (i=0;i<uri->data.ksk.keywordCount;i++) {
-    key = uri->data.ksk.keywords[i];
-    ret->data.ksk.keywords[2*i]
-      = STRDUP(key);
-    kd = MALLOC(strlen(key) + 13);
-    memset(kd, 0, strlen(key) + 13);
-    strcpy(kd, key);
-    strftime(&kd[strlen(key)],
-	     13,
-	     "-%Y-%m-%d",
-	     &t);
-    ret->data.ksk.keywords[2*i+1]
-      = kd;
+  keywordCount = uri->data.ksk.keywordCount;
+  ret->data.ksk.keywordCount = 2 * keywordCount;
+  if (keywordCount) {
+	  ret->data.ksk.keywords = MALLOC(sizeof(char*) * keywordCount);
+	  for (i=0;i<keywordCount;i++) {
+	    key = uri->data.ksk.keywords[i];
+	    ret->data.ksk.keywords[2*i]
+	      = key ? STRDUP(key) : STRDUP("");
+	    kd = MALLOC(strlen(key) + 13);
+	    memset(kd, 0, strlen(key) + 13);
+	    strcpy(kd, key);
+	    strftime(&kd[strlen(key)],
+		     13,
+		     "-%Y-%m-%d",
+		     &t);
+	    ret->data.ksk.keywords[2*i+1]
+	      = kd;
+	  }
   }
+  else
+  	ret->data.ksk.keywords = NULL;
+  
   return ret;
 }
 
