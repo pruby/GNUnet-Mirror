@@ -4,7 +4,15 @@
     (pre3 has been observed to connect to just 1 peer,
      whilst gnunet-transport-check -p was able to
      connect to 4-6 peers at the same time!)
-- Why do well-behaved peers go over bandwidth limits?
+- tcpSend (transport send in general) should be able
+  to differenciate between temporary failure (blocking)
+  and persistent failure (closed connection); that way,
+  the core can either decide to open a new connection
+  or drop all of the messages, instead of continuing
+  to hammer tcpSend as it is now; core should probably
+  keep a retry-counter (retry to re-open session X
+  times), and if it failes X times close the session!
+- Do well-behaved peers go over bandwidth limits?
   (Nils reported about strict blacklisting!)
 
 
