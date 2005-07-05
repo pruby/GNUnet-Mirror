@@ -324,7 +324,7 @@ static unsigned int tryCompression(char * data,
 
   dlen = compressBound(oldSize);
   tmp = MALLOC(dlen);
-  if (Z_OK == compress(tmp, &dlen, data, oldSize)) {
+  if (Z_OK == compress2(tmp, &dlen, data, oldSize, 9)) {
     if (dlen < oldSize) {
       memcpy(data, tmp, dlen);
       FREE(tmp);
