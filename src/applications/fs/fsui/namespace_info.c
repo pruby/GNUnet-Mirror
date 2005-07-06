@@ -231,12 +231,13 @@ static int localListNamespaceHelper(const HashCode512 * nsid,
   struct ECRS_MetaData * meta;
   int rating;
 
-  if (OK != readNamespaceInfo(name,
-			      &meta,
-			      &rating)) {
-    rating = 0;
+  meta = NULL;
+  rating = 0;
+  readNamespaceInfo(name,
+		    &meta,
+		    &rating);
+  if (meta == NULL)
     meta = ECRS_createMetaData();
-  }
   ret = c->iterator(c->closure,
 		    name,
 		    nsid,
