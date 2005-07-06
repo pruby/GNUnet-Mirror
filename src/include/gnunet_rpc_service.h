@@ -179,7 +179,7 @@ typedef struct {
 /**
  * RPC argument handling helper functions.
  */
-RPC_Param * RPC_paramNew();
+RPC_Param * RPC_paramNew(void);
 
 void RPC_paramFree(RPC_Param * param);
 

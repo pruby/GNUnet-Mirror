@@ -49,7 +49,7 @@ typedef struct {
   /**
    * Stop the transport services, stop receiving messages.
    */
-  void (*stop)();
+  void (*stop)(void);
 
   /**
    * Is this transport mechanism available (for sending)?
@@ -69,7 +69,7 @@ typedef struct {
    * @return number of transports, SYSERR on error
    */
   int (*forEach)(TransportCallback callback,
-		  void * data);
+		 void * data);
 
   /**
    * Connect to a remote host using the advertised transport
@@ -169,8 +169,7 @@ typedef struct {
    * Create a HELO advertisement for the given
    * transport type for this node.
    */
-  int (*createHELO)(unsigned short ttype,
-		    HELO_Message ** helo);
+  HELO_Message * (*createHELO)(unsigned short ttype);
 
   /**
    * Get a message consisting of (if possible) all addresses that this

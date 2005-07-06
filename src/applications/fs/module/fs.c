@@ -34,6 +34,7 @@
 #include "gnunet_dht_service.h"
 #include "gnunet_datastore_service.h"
 #include "gnunet_traffic_service.h"
+#include "anonymity.h"
 #include "ecrs_core.h"
 #include "migration.h"
 #include "ondemand.h"

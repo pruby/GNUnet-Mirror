@@ -63,7 +63,7 @@ typedef struct {
    *
    * @return reference to the public key. Do not free it!
    */
-  const PublicKey * (*getPublicPrivateKey)();
+  const PublicKey * (*getPublicPrivateKey)(void);
 
   /**
    * Obtain identity from publicPrivateKey.

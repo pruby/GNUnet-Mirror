@@ -55,14 +55,14 @@ typedef struct {
    * Get an estimate of the network size.
    * @return the estimated number of nodes, SYSERR on error
    */
-  int (*estimateNetworkSize)();
+  int (*estimateNetworkSize)(void);
 
   /**
    * How big is our current desire to connect to other peers?
    * @return 1 for ideal, 0 for maximum desire, > 1 for too many
    *    connections (percent of desired number of connections)
    */
-  double (*getSaturation)();
+  double (*getSaturation)(void);
 
   /**
    * Will the topology allow a connection from the specified peer?

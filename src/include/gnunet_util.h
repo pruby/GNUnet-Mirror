@@ -2288,9 +2288,9 @@ void ** vectorElements(struct Vector * v);
  */
 int cfg_parse_file(char *filename);
 char * cfg_get_str(const char * sec,
-			  const char * ent);
+		   const char * ent);
 int cfg_get_signed_int(const char *sec,
-			      const char *ent);
+		       const char *ent);
 void doneParseConfig(void);
 
 /**

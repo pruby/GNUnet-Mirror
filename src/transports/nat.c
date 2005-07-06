@@ -82,23 +82,21 @@ static int verifyHelo(const HELO_Message * helo) {
  * without signature and without a timestamp. The GNUnet core will
  * sign the message and add an expiration time.
  *
- * @param helo where to store the HELO message
- * @return OK on success, SYSERR on error
+ * @return HELO on success, NULL on error
  */
-static int createHELO(HELO_Message ** helo) {
+static HELO_Message * createHELO() {
   HELO_Message * msg;
 
   if (! testConfigurationString("NAT",
 				"LIMITED",
 				"YES"))
-    return SYSERR;
+    return NULL;
 
   msg = MALLOC(sizeof(HELO_Message) + sizeof(HostAddress));
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol          = htons(NAT_PROTOCOL_NUMBER);
   msg->MTU               = htonl(0);
-  *helo = msg;
-  return OK;
+  return msg;
 }
 
 /**
@@ -107,7 +105,7 @@ static int createHELO(HELO_Message ** helo) {
  * @param tsessionPtr the session handle that is to be set
  * @return always fails (returns SYSERR)
  */
-static int natConnect(HELO_Message * helo,
+static int natConnect(const HELO_Message * helo,
 		      TSession ** tsessionPtr) {
   return SYSERR;
 }

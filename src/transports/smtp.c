@@ -546,11 +546,9 @@ static int verifyHelo(const HELO_Message * helo) {
  * without signature and without a timestamp. The GNUnet core will
  * sign the message and add an expiration time.
  *
- * @param helo address where to store the pointer to the HELO
- *        message
- * @return OK on success, SYSERR on error
+ * @return HELO on success, NULL on error
  */
-static int createHELO(HELO_Message ** helo) {
+static HELO_Message * createHELO() {
   HELO_Message * msg;
   char * email;
   char * filter;
@@ -562,7 +560,7 @@ static int createHELO(HELO_Message ** helo) {
   if (email == NULL) {
     LOG(LOG_DEBUG,
 	"No email-address specified, cannot create SMTP advertisement.\n");
-    return SYSERR;
+    return NULL;
   }
   filter = getConfigurationString("SMTP",
 				  "FILTER");
@@ -570,7 +568,7 @@ static int createHELO(HELO_Message ** helo) {
     LOG(LOG_ERROR,
 	_("No filter for E-mail specified, cannot create SMTP advertisement.\n"));
     FREE(email);
-    return SYSERR;
+    return NULL;
   }
   if (strlen(filter) > FILTER_STRING_SIZE) {
     filter[FILTER_STRING_SIZE] = '\0';
@@ -597,11 +595,10 @@ static int createHELO(HELO_Message ** helo) {
   msg->MTU               = htonl(smtpAPI.mtu);
   msg->header.size
       = htons(HELO_Message_size(msg));
-  *helo = msg;
   FREE(email);
-  if (verifyHelo(*helo) == SYSERR)
+  if (verifyHelo(msg) == SYSERR)
     GNUNET_ASSERT(0);
-  return OK;
+  return msg;
 }
 
 /**
@@ -610,12 +607,15 @@ static int createHELO(HELO_Message ** helo) {
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int smtpConnect(HELO_Message * helo,
+static int smtpConnect(const HELO_Message * helo,
 		       TSession ** tsessionPtr) {
   TSession * tsession;
 
   tsession = MALLOC(sizeof(TSession));
-  tsession->internal = helo;
+  tsession->internal = MALLOC(HELO_Message_size(helo));
+  memcpy(tsession->internal,
+	 helo,
+	 HELO_Message_size(helo));
   tsession->ttype = smtpAPI.protocolNumber;
   (*tsessionPtr) = tsession;
   return OK;

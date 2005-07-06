@@ -102,8 +102,8 @@ static void testTAPI(TransportAPI * tapi,
     *res = OK;
     return; /* NAT cannot be tested */
   }
-  helo = NULL;
-  if (OK != tapi->createHELO(&helo)) {
+  helo = tapi->createHELO();
+  if (helo == NULL) {
     fprintf(stderr,
 	    _("'%s': Could not create HELO.\n"),
 	    tapi->transName);
@@ -120,6 +120,7 @@ static void testTAPI(TransportAPI * tapi,
     FREE(helo);
     return;
   }
+  FREE(helo);
   repeat = getConfigurationInt("TRANSPORT-CHECK",
 			       "REPEAT");
   if (repeat == 0) {
@@ -233,9 +234,8 @@ static void testPING(HELO_Message * xhelo,
     FREE(helo);
     return;
   }
-  myHelo = NULL;
-  if (OK != transport->createHELO(ntohs(xhelo->protocol),
-				  &myHelo)) {
+  myHelo = transport->createHELO(ntohs(xhelo->protocol));
+  if (myHelo == NULL) {
     FREE(helo);
     return;
   }

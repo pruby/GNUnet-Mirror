@@ -1,5 +1,5 @@
 /*
-     This file is part of GNUnet
+o     This file is part of GNUnet
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -332,17 +332,16 @@ static int verifyHelo(const HELO_Message * helo) {
  * without signature and without a timestamp. The GNUnet core will
  * sign the message and add an expiration time.
  *
- * @param helo where to store the HELO message
- * @return OK on success, SYSERR on error
+ * @return HELO on success, NULL on error
  */
-static int createHELO(HELO_Message ** helo) {
+static HELO_Message * createHELO() {
   HELO_Message * msg;
   Host6Address * haddr;
   unsigned short port;
 
   port = getGNUnetUDP6Port();
   if (port == 0)
-    return SYSERR; /* UDP6 transport configured send-only */
+    return NULL; /* UDP6 transport configured send-only */
 
   msg = MALLOC(sizeof(HELO_Message) + sizeof(Host6Address));
   haddr = (Host6Address*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
@@ -351,15 +350,14 @@ static int createHELO(HELO_Message ** helo) {
     FREE(msg);
     LOG(LOG_WARNING,
 	_("UDP6: Could not determine my public IPv6 address.\n"));
-    return SYSERR;
+    return NULL;
   }
   haddr->senderPort      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(Host6Address));
   msg->protocol          = htons(UDP6_PROTOCOL_NUMBER);
   msg->MTU               = htonl(udp6API.mtu);
-  *helo = msg;
-  return OK;
+  return msg;
 }
 
 /**
@@ -368,7 +366,7 @@ static int createHELO(HELO_Message ** helo) {
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int udp6Connect(HELO_Message * helo,
+static int udp6Connect(const HELO_Message * helo,
 		       TSession ** tsessionPtr) {
   TSession * tsession;
   Host6Address * haddr;
@@ -377,7 +375,10 @@ static int udp6Connect(HELO_Message * helo,
 #endif
 
   tsession = MALLOC(sizeof(TSession));
-  tsession->internal = helo;
+  tsession->internal = MALLOC(HELO_Message_size(helo));
+  memcpy(tsession->internal,
+	 helo,
+	 HELO_Message_size(helo));
   tsession->ttype = udp6API.protocolNumber;
   haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
 #if DEBUG_UDP6

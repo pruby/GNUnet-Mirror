@@ -434,8 +434,8 @@ broadcastHELOTransport(TransportAPI * tapi,
   sd.n = identity->forEachHost(now,
 			       NULL,
 			       NULL); /* just count */
-  if (SYSERR == transport->createHELO(tapi->protocolNumber,
-				      &sd.m))
+  sd.m = transport->createHELO(tapi->protocolNumber);
+  if (sd.m == NULL)
     return;
 #if DEBUG_HELOEXCHANGE
   LOG(LOG_INFO,

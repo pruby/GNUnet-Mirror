@@ -26,7 +26,6 @@ gnunetinclude_HEADERS = \
   gnunet_fsui_lib.h \
   gnunet_gap_service.h \
   gnunet_getoption_lib.h \
-  gnunet_gnunetd_lib.h \
   gnunet_identity_service.h \
   gnunet_pingpong_service.h \
   gnunet_protocols.h \

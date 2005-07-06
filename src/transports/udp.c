@@ -336,16 +336,15 @@ static int verifyHelo(const HELO_Message * helo) {
  * without signature and without a timestamp. The GNUnet core will
  * sign the message and add an expiration time.
  *
- * @param helo where to store the HELO message
- * @return OK on success, SYSERR on error
+ * @return HELO on success, NULL on error
  */
-static int createHELO(HELO_Message ** helo) {
+static HELO_Message * createHELO() {
   HELO_Message * msg;
   HostAddress * haddr;
 
   if ( ( (udp_shutdown == YES) && (getGNUnetUDPPort() == 0) ) ||
        ( (udp_shutdown == NO) && (port == 0) ) )
-    return SYSERR; /* UDP transport configured send-only */
+    return NULL; /* UDP transport configured send-only */
 
   msg = MALLOC(sizeof(HELO_Message) + sizeof(HostAddress));
   haddr = (HostAddress*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
@@ -354,7 +353,7 @@ static int createHELO(HELO_Message ** helo) {
     FREE(msg);
     LOG(LOG_WARNING,
 	_("UDP: Could not determine my public IP address.\n"));
-    return SYSERR;
+    return NULL;
   }
   LOG(LOG_DEBUG,
       "UDP uses IP address %u.%u.%u.%u.\n",
@@ -367,8 +366,7 @@ static int createHELO(HELO_Message ** helo) {
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol          = htons(UDP_PROTOCOL_NUMBER);
   msg->MTU               = htonl(udpAPI.mtu);
-  *helo = msg;
-  return OK;
+  return msg;
 }
 
 /**
@@ -377,13 +375,16 @@ static int createHELO(HELO_Message ** helo) {
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int udpConnect(HELO_Message * helo,
+static int udpConnect(const HELO_Message * helo,
 		      TSession ** tsessionPtr) {
   TSession * tsession;
   HostAddress * haddr;
 
   tsession = MALLOC(sizeof(TSession));
-  tsession->internal = helo;
+  tsession->internal = MALLOC(HELO_Message_size(helo));
+  memcpy(tsession->internal,
+	 helo,
+	 HELO_Message_size(helo));
   tsession->ttype = udpAPI.protocolNumber;
   haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
 #if DEBUG_UDP

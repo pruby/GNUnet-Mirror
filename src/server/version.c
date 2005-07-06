@@ -19,7 +19,7 @@
 */
 
 /**
- * @file server/version.h
+ * @file server/version.c
  * @brief check if we need to run gnunet-update
  * @author Christian Grothoff
  */

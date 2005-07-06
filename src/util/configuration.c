@@ -228,14 +228,14 @@ int cfg_parse_file(char *filename) {
 /* ------------------------------------------------------------------------ */
 
 char * cfg_get_str(const char * sec,
-			  const char * ent) {
+		   const char * ent) {
   struct CFG_ENTRIES * e = NULL;
   int i;
 
-	if (c)
-	  for (i = 0; i < c->sec_count; i++)
-	    if (0 == strcasecmp(c->sec_names[i],sec))
-	      e = c->sec_entries[i];
+  if (c)
+    for (i = 0; i < c->sec_count; i++)
+      if (0 == strcasecmp(c->sec_names[i],sec))
+	e = c->sec_entries[i];
   if (NULL == e)
     return NULL;
   for (i = 0; i < e->ent_count; i++)

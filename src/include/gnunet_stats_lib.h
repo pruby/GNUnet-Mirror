@@ -78,7 +78,4 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
 			      ProtocolProcessor processor,
 			      void * cls);
 
-
-
-
 #endif

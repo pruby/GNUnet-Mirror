@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "migration.h"
 #include "fs.h"
-
+#include "anonymity.h"
 
 /**
  * Datastore service.
@@ -71,8 +71,8 @@ static Traffic_ServiceAPI * traffic;
  *   that buffer (must be a positive number).
  */
 static unsigned int
-activeMigrationCallback(PeerIdentity * receiver,
-			char * position,
+activeMigrationCallback(const PeerIdentity * receiver,
+			void * position,
 			unsigned int padding) {
   unsigned int ret;
   HashCode512 key;
@@ -133,12 +133,12 @@ void initMigration(CoreAPIForApplication * capi,
   dht = d;
   traffic = t;
   coreAPI->registerSendCallback(512,
-				(BufferFillCallback)&activeMigrationCallback);
+				&activeMigrationCallback);
 }
 
 void doneMigration() {
   coreAPI->unregisterSendCallback(512,
-				  (BufferFillCallback)&activeMigrationCallback);
+				  &activeMigrationCallback);
   datastore = NULL;
   gap = NULL;
   dht = NULL;

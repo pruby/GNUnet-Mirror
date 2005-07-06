@@ -112,7 +112,7 @@ typedef struct {
    * What is the average priority of requests that we
    * are currently routing?
    */
-  unsigned int (*getAvgPriority)();
+  unsigned int (*getAvgPriority)(void);
 
 } GAP_ServiceAPI;
 

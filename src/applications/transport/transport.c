@@ -53,9 +53,8 @@ static Mutex tapis_lock;
 static void createSignedHELO(TransportAPI * tapi) {
   MUTEX_LOCK(&tapis_lock);
   FREENONNULL(tapi->helo);
-  tapi->helo = NULL;
-  if (SYSERR == tapi->createHELO(&tapi->helo)) {
-    tapi->helo = NULL;
+  tapi->helo = tapi->createHELO();
+  if (NULL == tapi->helo) {
     LOG(LOG_INFO,
 	"Transport '%s' failed to create HELO\n",
 	tapi->transName);
@@ -178,7 +177,6 @@ static TSession * transportConnect(const HELO_Message * helo) {
   TransportAPI * tapi;
   unsigned short prot;
   TSession * tsession;
-  HELO_Message * heloCpy;
 
   if (ntohs(helo->protocol) >= tapis_count) {
     LOG(LOG_INFO,
@@ -196,11 +194,7 @@ static TSession * transportConnect(const HELO_Message * helo) {
 	ntohs(helo->protocol));
      return NULL;
   } else {
-    heloCpy = MALLOC(HELO_Message_size(helo));
-    memcpy(heloCpy,
-	   helo,
-	   HELO_Message_size(helo));
-    if (OK == tapi->connect(heloCpy,
+    if (OK == tapi->connect(helo,
 			    &tsession)) {
       tsession->ttype = prot;
 #if DEBUG_TRANSPORT
@@ -210,7 +204,6 @@ static TSession * transportConnect(const HELO_Message * helo) {
 #endif
       return tsession;
     } else
-      FREE(heloCpy);
       return NULL;
   }
 }
@@ -448,12 +441,11 @@ static int transportGetMTU(unsigned short ttype) {
  * Create a HELO advertisement for the given
  * transport type for this node.
  */
-static int transportCreateHELO(unsigned short ttype,
-			       HELO_Message ** helo) {
+static HELO_Message * transportCreateHELO(unsigned short ttype) {
   TransportAPI * tapi;
+  HELO_Message * helo;
 
   MUTEX_LOCK(&tapis_lock);
-  *helo = NULL;
   if (ttype == ANY_PROTOCOL_NUMBER) {
     int * perm;
 
@@ -467,7 +459,7 @@ static int transportCreateHELO(unsigned short ttype,
     if (ttype >= tapis_count) {
       FREE(perm);
       MUTEX_UNLOCK(&tapis_lock);
-      return SYSERR;
+      return NULL;
     }
     ttype = perm[ttype];
     FREE(perm);
@@ -477,7 +469,7 @@ static int transportCreateHELO(unsigned short ttype,
 	_("No transport of type %d known.\n"),
 	ttype);
     MUTEX_UNLOCK(&tapis_lock);
-    return SYSERR;
+    return NULL;
   }
   tapi = tapis[ttype];
   if (tapi == NULL) {
@@ -485,22 +477,22 @@ static int transportCreateHELO(unsigned short ttype,
 	_("No transport of type %d known.\n"),
 	ttype);
     MUTEX_UNLOCK(&tapis_lock);
-    return SYSERR;
+    return NULL;
   }
   if (tapi->helo == NULL) {
     LOG(LOG_DEBUG,
 	"Transport of type %d configured for sending only (no HELO).\n",
 	ttype);
     MUTEX_UNLOCK(&tapis_lock);
-    return SYSERR;
+    return NULL;
   }
 
-  *helo = MALLOC(HELO_Message_size(tapi->helo));
-  memcpy(*helo,
+  helo = MALLOC(HELO_Message_size(tapi->helo));
+  memcpy(helo,
 	 tapi->helo,
 	 HELO_Message_size(tapi->helo));
   MUTEX_UNLOCK(&tapis_lock);
-  return OK;
+  return helo;
 }
 
 /**
@@ -531,11 +523,13 @@ static int getAdvertisedHELOs(unsigned int maxLen,
 
   helos = MALLOC(tcount * sizeof(HELO_Message*));
   tcount = 0;
-  for (i=0;i<tapis_count;i++)
-    if (tapis[i] != NULL)
-      if (OK == transportCreateHELO(i,
-				    &helos[tcount]))
+  for (i=0;i<tapis_count;i++) {
+    if (tapis[i] != NULL) {
+      helos[tcount] = transportCreateHELO(i);
+      if (NULL != helos[tcount])
 	tcount++;
+    }
+  }
   MUTEX_UNLOCK(&tapis_lock);
   if (tcount == 0) {
     LOG(LOG_DEBUG,
@@ -593,14 +587,12 @@ static void initHelper(TransportAPI * tapi,
   HELO_Message * helo;
 
   createSignedHELO(tapi);
-  if (OK == transportCreateHELO(tapi->protocolNumber,
-				&helo)) {
+  helo = transportCreateHELO(tapi->protocolNumber);
+  if (NULL != helo) {
     identity->addHost(helo);
     FREE(helo);
   }
 }
-
-
 
 
 

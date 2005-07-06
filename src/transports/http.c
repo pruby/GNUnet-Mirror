@@ -1075,11 +1075,9 @@ static int verifyHelo(const HELO_Message * helo) {
  * created without signature and without a timestamp. The
  * GNUnet core will sign the message and add an expiration time.
  *
- * @param helo address where to store the pointer to the HELO
- *        message
- * @return OK on success, SYSERR on error
+ * @return HELO on success, NULL on error
  */
-static int createHELO(HELO_Message ** helo) {
+static HELO_Message * createHELO() {
   HELO_Message * msg;
   HostAddress * haddr;
   unsigned short port;
@@ -1088,7 +1086,7 @@ static int createHELO(HELO_Message ** helo) {
   if (0 == port) {
     LOG(LOG_DEBUG,
 	"HTTP port is 0, will only send using HTTP.\n");
-    return SYSERR; /* HTTP transport is configured SEND-only! */
+    return NULL; /* HTTP transport is configured SEND-only! */
   }
   msg = (HELO_Message *) MALLOC(sizeof(HELO_Message) + sizeof(HostAddress));
   haddr = (HostAddress*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
@@ -1097,7 +1095,7 @@ static int createHELO(HELO_Message ** helo) {
     FREE(msg);
     LOG(LOG_WARNING,
 	_("HTTP: Could not determine my public IP address.\n"));
-    return SYSERR;
+    return NULL;
   }
   LOG(LOG_DEBUG,
       "HTTP uses IP address %u.%u.%u.%u.\n",
@@ -1107,8 +1105,7 @@ static int createHELO(HELO_Message ** helo) {
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol = htons(HTTP_PROTOCOL_NUMBER);
   msg->MTU = htonl(httpAPI.mtu);
-  *helo = msg;
-  return OK;
+  return msg;
 }
 
 /**
@@ -1118,8 +1115,8 @@ static int createHELO(HELO_Message ** helo) {
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int httpConnect(HELO_Message * helo,
-		      TSession ** tsessionPtr) {
+static int httpConnect(const HELO_Message * helo,
+		       TSession ** tsessionPtr) {
   int i;
   HostAddress * haddr;
   HTTPWelcome welcome;
@@ -1224,7 +1221,6 @@ static int httpConnect(HELO_Message * helo,
   signalSelect();
 
   *tsessionPtr = tsession;
-  FREE(helo);
   return OK;
 }
 

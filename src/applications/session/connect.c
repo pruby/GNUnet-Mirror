@@ -401,9 +401,8 @@ static int exchangeKey(const PeerIdentity * receiver,
   }
 
   /* create HELO */
-  helo = NULL;
-  if (SYSERR == transport->createHELO(ANY_PROTOCOL_NUMBER,
-				      &helo)) {
+  helo = transport->createHELO(ANY_PROTOCOL_NUMBER);
+  if (NULL == helo) {
     LOG(LOG_INFO,
 	"Could not create any HELO advertisement.  Not good.");
   }

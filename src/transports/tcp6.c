@@ -935,11 +935,9 @@ static int verifyHelo(const HELO_Message * helo) {
  * created without signature and without a timestamp. The
  * GNUnet core will sign the message and add an expiration time.
  *
- * @param helo address where to store the pointer to the HELO
- *        message
- * @return OK on success, SYSERR on error
+ * @return HELO on success, NULL on error
  */
-static int createHELO(HELO_Message ** helo) {
+static HELO_Message * createHELO() {
   HELO_Message * msg;
   Host6Address * haddr;
   unsigned short port;
@@ -948,7 +946,7 @@ static int createHELO(HELO_Message ** helo) {
   if (0 == port) {
     LOG(LOG_DEBUG,
 	"TCP6 port is 0, will only send using TCP6\n");
-    return SYSERR; /* TCP6 transport is configured SEND-only! */
+    return NULL; /* TCP6 transport is configured SEND-only! */
   }
   msg = (HELO_Message *) MALLOC(sizeof(HELO_Message) + sizeof(Host6Address));
   haddr = (Host6Address*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
@@ -957,15 +955,14 @@ static int createHELO(HELO_Message ** helo) {
     FREE(msg);
     LOG(LOG_WARNING,
 	_("Could not determine my public IPv6 address.\n"));
-    return SYSERR;
+    return NULL;
   }
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(Host6Address));
   msg->protocol = htons(TCP6_PROTOCOL_NUMBER);
   msg->MTU = htonl(tcp6API.mtu);
-  *helo = msg;
-  return OK;
+  return msg;
 }
 
 /**
@@ -975,7 +972,7 @@ static int createHELO(HELO_Message ** helo) {
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int tcp6Connect(HELO_Message * helo,
+static int tcp6Connect(const HELO_Message * helo,
 		       TSession ** tsessionPtr) {
   int i;
   Host6Address * haddr;
@@ -1094,7 +1091,6 @@ static int tcp6Connect(HELO_Message * helo,
   signalSelect();
 
   *tsessionPtr = tsession;
-  FREE(helo);
   return OK;
 }
 

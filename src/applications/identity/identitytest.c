@@ -52,8 +52,8 @@ static int runTest() {
 
   transport = requestService("transport");
   identity = requestService("identity");
-  if (OK != transport->createHELO(ANY_PROTOCOL_NUMBER,
-				  &helo)) {
+  helo = transport->createHELO(ANY_PROTOCOL_NUMBER);
+  if (NULL == helo) {
     printf("Cannot run test, failed to create any HELO.\n");
     releaseService(identity);
     releaseService(transport);

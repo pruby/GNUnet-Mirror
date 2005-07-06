@@ -219,7 +219,7 @@ typedef struct {
    * @return OK on success, SYSERR on error (e.g. send-only
    *  transports return SYSERR here)
    */
-  int (*createHELO)(HELO_Message ** helo);
+  HELO_Message * (*createHELO)(void);
 
   /**
    * Establish a connection to a remote node.
@@ -228,7 +228,7 @@ typedef struct {
    * @param tsession the session handle that is to be set
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*connect)(HELO_Message * helo,
+  int (*connect)(const HELO_Message * helo,
 		 TSession ** tsession);
 
   /**

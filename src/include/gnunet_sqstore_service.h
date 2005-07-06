@@ -46,7 +46,7 @@ typedef struct {
    * available.
    * @return number of bytes used on disk
    */
-  unsigned long long (*getSize)();
+  unsigned long long (*getSize)(void);
 
   /**
    * Store an item in the datastore.
@@ -157,10 +157,10 @@ typedef struct {
    * Delete the database.  The next operation is
    * guaranteed to be unloading of the module.
    */
-  void (*drop)();
+  void (*drop)(void);
 
 } SQstore_ServiceAPI;
 
 
-/* end of gnunet_datastore_service.h */
+/* end of gnunet_sqstore_service.h */
 #endif
