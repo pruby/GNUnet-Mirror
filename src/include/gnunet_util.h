@@ -1199,6 +1199,11 @@ TIME_T TIME(TIME_T * t);
 char * GN_CTIME(const TIME_T * t);
 
 /**
+ * Give relative time in human-readable fancy format.
+ */
+char * timeIntervalToFancyString(cron_t delta);
+
+/**
  * Create a new Session key.
  */
 void makeSessionkey(SESSIONKEY * key);

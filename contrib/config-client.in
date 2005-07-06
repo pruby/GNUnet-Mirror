@@ -166,6 +166,19 @@ menu "Default options for gnunet-gtk" GNUNET-GTK
 	help
 		Path to the gnunet.conf file for gnunetd (for
 		forking gnunetd by gnunet-gtk)
+
+
+        config PLUGINS
+        string "Which plugins should gnunet-gtk load?"
+        default "about daemon fs"
+        depends on Meta::ADVANCED
+        help
+		Currently, the available applications are:
+		about: the about dialog
+		daemon: starting and stopping gnunetd		
+		fs: file sharing
+		Default: PLUGINS = "about daemon fs"  
+
 endmenu
 
 menu "Defaults for gnunet-chat" GNUNET-CHAT
