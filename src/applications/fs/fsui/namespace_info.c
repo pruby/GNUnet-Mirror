@@ -125,9 +125,9 @@ static int readNamespaceInfo(const char * namespaceName,
 
   size = len - sizeof(int);
   *ranking = ntohl(((int *) buf)[0]);
-  meta = ECRS_deserializeMetaData(&buf[sizeof(int)],
-				  size);
-  if (meta == NULL) {
+  *meta = ECRS_deserializeMetaData(&buf[sizeof(int)],
+				   size);
+  if ((*meta) == NULL) {
     /* invalid data! remove! */
     BREAK();
     UNLINK(fn);
