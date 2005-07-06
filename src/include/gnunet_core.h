@@ -390,7 +390,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerHandler)(const unsigned short type,
+  int (*registerHandler)(unsigned short type,
 			 MessagePartHandler callback);
 
   /**
@@ -555,7 +555,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is already a
    *         handler for that type
    */
-  int (*registerClientHandler)(const unsigned short type,
+  int (*registerClientHandler)(unsigned short type,
 			       CSHandler callback);
 
   /**
@@ -567,7 +567,7 @@ typedef struct {
    * @return OK on success, SYSERR if there is a different
    *         handler for that type
    */
-  int (*unregisterClientHandler)(const unsigned short type,
+  int (*unregisterClientHandler)(unsigned short type,
 				 CSHandler callback);
 
   /**

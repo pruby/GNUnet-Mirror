@@ -932,8 +932,8 @@ try_again_1:
  * @param doPost should an HTTP post prefix be created?
  * @param mp the message to send
  * @param ssize the size of the message
- * @return OK if message send or queued, SYSERR if queue is full and
- * message was dropped.
+ * @return OK if message send or queued, NO if queue is full and
+ * message was dropped, SYSERR on error
  */
 static int httpDirectSend(HTTPSession * httpSession,
 			  int doPost,
@@ -959,7 +959,7 @@ static int httpDirectSend(HTTPSession * httpSession,
   MUTEX_LOCK(&httplock);
   if (httpSession->wpos > 0) {
     MUTEX_UNLOCK(&httplock);
-    return SYSERR; /* already have msg pending */
+    return NO; /* already have msg pending */
   }
   if (doPost == YES) {
     IPaddr ip;
@@ -1234,7 +1234,7 @@ static int httpConnect(HELO_Message * helo,
  * @param tsession the HELO_Message identifying the remote node
  * @param msg the message
  * @param size the size of the message
- * @return SYSERR on error, OK on success
+ * @return SYSERR on error, OK on success, NO if queue is full
  */
 static int httpSend(TSession * tsession,
 		    const void * msg,

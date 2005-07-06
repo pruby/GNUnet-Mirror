@@ -85,9 +85,9 @@ static int verifyKBlock(const HashCode512 * key,
   }
   dstURI = (const char*) &kb[1];
   j++;
-  if (OK != ECRS_deserializeMetaData(&fi.meta,
-				     &((char*)kb)[j],
-				     size - j)) {
+  fi.meta = ECRS_deserializeMetaData(&((const char*)kb)[j],
+				     size - j);
+  if (fi.meta == NULL) {
     BREAK(); /* kblock malformed */
     return SYSERR;
   }

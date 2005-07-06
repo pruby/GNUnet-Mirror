@@ -179,9 +179,9 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
-    if (OK != ECRS_deserializeMetaData(&fi.meta,
-				       &result[spos],
-				       msize)) {
+    fi.meta = ECRS_deserializeMetaData(&result[spos],
+				       msize);
+    if (fi.meta == NULL) {
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }

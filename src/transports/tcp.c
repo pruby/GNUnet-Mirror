@@ -813,8 +813,8 @@ try_again_1:
  * @param tcpSession the session to use for sending
  * @param mp the message to send
  * @param ssize the size of the message
- * @return OK if message send or queued, SYSERR if queue is full and
- * message was dropped.
+ * @return OK if message send or queued, NO if queue is full and
+ * message was dropped, SYSERR on error
  */
 static int tcpDirectSend(TCPSession * tcpSession,
 			 void * mp,
@@ -856,7 +856,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
       stats->change(stat_bytesDropped,
 		    ssize);
     MUTEX_UNLOCK(&tcplock);
-    return SYSERR;
+    return NO;
   }
 #if DEBUG_TCP
   LOG(LOG_DEBUG,
@@ -911,8 +911,8 @@ static int tcpDirectSend(TCPSession * tcpSession,
  * @param tcpSession the session to use for sending
  * @param mp the message to send
  * @param ssize the size of the message
- * @return OK if message send or queued, SYSERR if queue is full and
- * message was dropped.
+ * @return OK if message send or queued, NO if queue is full and
+ * message was dropped, SYSERR on error
  */
 static int tcpDirectSendReliable(TCPSession * tcpSession,
 				 void * mp,
@@ -975,7 +975,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
  * @param tsession the HELO_Message identifying the remote node
  * @param msg the message
  * @param size the size of the message
- * @return SYSERR on error, OK on success
+ * @return SYSERR on error, OK on success, NO on temporary error
  */
 static int tcpSendReliable(TSession * tsession,
 			   const void * msg,

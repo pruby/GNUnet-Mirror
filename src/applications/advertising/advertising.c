@@ -188,10 +188,10 @@ receivedHELO(const p2p_HEADER * message) {
 
   /* Then check if we have seen this HELO before, if it is identical
      except for the TTL, we trust it and do not play PING-PONG */
-  if (OK == identity->identity2Helo(&foreignId,
-				    ntohs(msg->protocol),
-				    NO,
-				    &copy) ) {
+  copy = identity->identity2Helo(&foreignId,
+				 ntohs(msg->protocol),
+				 NO);
+  if (NULL != copy) {
     if ( (ntohs(copy->senderAddressSize) ==
 	  ntohs(msg->senderAddressSize)) &&
 	 (0 == memcmp(&msg->MTU,
@@ -376,10 +376,10 @@ broadcastHelper(const PeerIdentity * hi,
     return;
 
   /* establish short-lived connection, send, tear down */
-  if (SYSERR == identity->identity2Helo(hi,
-					proto,
-					NO,
-					&helo)) {
+  helo = identity->identity2Helo(hi,
+				 proto,
+				 NO);
+  if (NULL == helo) {
 #if DEBUG_HELOEXCHANGE
     LOG(LOG_DEBUG,
 	"Exit from '%s' (error: '%s' failed).\n",
@@ -521,10 +521,10 @@ forwardHELOHelper(const PeerIdentity * peer,
   LOG(LOG_CRON,
       "forwarding HELOs\n");
 #endif
-  if (SYSERR == identity->identity2Helo(peer,
-					protocol,
-					NO,
-					&helo))
+  helo = identity->identity2Helo(peer,
+				 protocol,
+				 NO);
+  if (NULL == helo)
     return; /* this should not happen */
   helo->header.type
     = htons(p2p_PROTO_HELO);

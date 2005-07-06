@@ -205,12 +205,12 @@ unsigned int ECRS_sizeofMetaData(const struct ECRS_MetaData * md);
 /**
  * Deserialize meta-data.  Initializes md.
  * @param size number of bytes available
- * @return OK on success, SYSERR on error (i.e.
+ * @return MD on success, NULL on error (i.e.
  *         bad format)
  */
-int ECRS_deserializeMetaData(struct ECRS_MetaData ** md,
-			     const char * input,
-			     unsigned int size);
+struct ECRS_MetaData *
+ECRS_deserializeMetaData(const char * input,
+			 unsigned int size);
 
 /**
  * Does the meta-data claim that this is a directory?
@@ -219,7 +219,7 @@ int ECRS_deserializeMetaData(struct ECRS_MetaData ** md,
  * @return YES if it is, NO if it is not, SYSERR if
  *  we have no mime-type information (treat as 'NO')
  */
-int ECRS_isDirectory(struct ECRS_MetaData * md);
+int ECRS_isDirectory(const struct ECRS_MetaData * md);
 
 /**
  * Suggest a better filename for a file (and do the

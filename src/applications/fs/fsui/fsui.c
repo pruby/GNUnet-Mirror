@@ -257,9 +257,9 @@ static int readFileInfo(int fd,
     BREAK();
     return SYSERR;
   }
-  if (OK != ECRS_deserializeMetaData(&fi->meta,
-				     buf,
-				     size)) {
+  fi->meta = ECRS_deserializeMetaData(buf,
+				      size);
+  if (fi->meta == NULL) {
     FREE(buf);
     BREAK();
     return SYSERR;

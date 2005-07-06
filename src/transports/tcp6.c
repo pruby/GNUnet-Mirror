@@ -764,8 +764,8 @@ try_again_1:
  * @param tcp6Session the session to use for sending
  * @param mp the message to send
  * @param ssize the size of the message
- * @return OK if message send or queued, SYSERR if queue is full and
- * message was dropped.
+ * @return OK if message send or queued, NO if queue is full and
+ * message was dropped, SYSERR on error
  */
 static int tcp6DirectSend(TCP6Session * tcp6Session,
 			  void * mp,
@@ -789,7 +789,7 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
   MUTEX_LOCK(&tcp6lock);
   if (tcp6Session->wpos > 0) {
     MUTEX_UNLOCK(&tcp6lock);
-    return SYSERR;
+    return NO;
   }
   success = SEND_NONBLOCKING(tcp6Session->sock,
 			     mp,
@@ -829,8 +829,8 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
  * @param tcp6Session the session to use for sending
  * @param mp the message to send
  * @param ssize the size of the message
- * @return OK if message send or queued, SYSERR if queue is full and
- * message was dropped.
+ * @return OK if message send or queued, NO if queue is full and
+ * message was dropped, SYSERR on error
  */
 static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
 				  void * mp,
@@ -875,7 +875,7 @@ static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
  * @param tsession the HELO_Message identifying the remote node
  * @param msg the message
  * @param size the size of the message
- * @return SYSERR on error, OK on success
+ * @return SYSERR on error, OK on success, NO if queue is full
  */
 static int tcp6SendReliable(TSession * tsession,
 			   const void * msg,

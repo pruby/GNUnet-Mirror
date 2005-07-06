@@ -476,10 +476,9 @@ int ECRS_serializeMetaData(const MetaData * md,
 #if EXTRA_CHECKS
   {
     MetaData * mdx;
-    mdx = NULL;
-    GNUNET_ASSERT(OK == ECRS_deserializeMetaData(&mdx,
-						 target,
-						 size));
+    mdx = ECRS_deserializeMetaData(target,
+				   size);    
+    GNUNET_ASSERT(NULL != mdx);
     ECRS_freeMetaData(mdx);
   }
 #endif
@@ -535,12 +534,13 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
 /**
  * Deserialize meta-data.  Initializes md.
  * @param size number of bytes available
- * @return OK on success, SYSERR on error (i.e.
+ * @return MD on success, NULL on error (i.e.
  *         bad format)
  */
-int ECRS_deserializeMetaData(MetaData ** md,
-			     const char * input,
-			     unsigned int size) {
+struct ECRS_MetaData *
+ECRS_deserializeMetaData(const char * input,
+			 unsigned int size) {
+  MetaData * md;
   const MetaDataHeader * hdr;
   unsigned int ic;
   char * data;
@@ -551,17 +551,17 @@ int ECRS_deserializeMetaData(MetaData ** md,
   int len;
 
   if (size < sizeof(MetaDataHeader))
-    return SYSERR;
+    return NULL;
   hdr = (const MetaDataHeader*) input;
   if ( (ntohl(hdr->version) & HEADER_VERSION_MASK) != 0)
-    return SYSERR; /* unsupported version */
+    return NULL; /* unsupported version */
   ic = ntohl(hdr->entries);
   compressed = (ntohl(hdr->version) & HEADER_COMPRESSED) != 0;
   if (compressed) {
     dataSize = ntohl(hdr->size) - sizeof(MetaDataHeader);
     if (dataSize > 2 * 1042 * 1024) {
       BREAK();
-      return SYSERR; /* only 2 MB allowed [to make sure we don't blow
+      return NULL; /* only 2 MB allowed [to make sure we don't blow
 			our memory limit because of a mal-formed
 			message... ]*/
     }
@@ -570,14 +570,14 @@ int ECRS_deserializeMetaData(MetaData ** md,
 		      dataSize);
     if (data == NULL) {
       BREAK();
-      return SYSERR;
+      return NULL;
     }
   } else {
     data = (char*) &hdr[1];
     dataSize = size - sizeof(MetaDataHeader);
     if (size != ntohl(hdr->size)) {
       BREAK();
-      return SYSERR;
+      return NULL;
     }
   }
 
@@ -591,36 +591,36 @@ int ECRS_deserializeMetaData(MetaData ** md,
     goto FAILURE;
   }
 
-  *md = ECRS_createMetaData();
+  md = ECRS_createMetaData();
   i = 0;
   pos = sizeof(unsigned int) * ic;
   while ( (pos < dataSize) &&
 	  (i < ic) ) {
     len = strlen(&data[pos])+1;
-    ECRS_addToMetaData(*md,
+    ECRS_addToMetaData(md,
 		       (EXTRACTOR_KeywordType) ntohl(((unsigned int*)data)[i]),
 		       &data[pos]);
     pos += len;
     i++;
   }
   if (i < ic) { /* oops */
-    ECRS_freeMetaData(*md);
+    ECRS_freeMetaData(md);
     goto FAILURE;
   }
   if (compressed)
     FREE(data);
-  return OK;
+  return md;
  FAILURE:
   if (compressed)
     FREE(data);
-  return SYSERR; /* size too small */
+  return NULL; /* size too small */
 }
 
 /**
  * Does the meta-data claim that this is a directory?
  * Checks if the mime-type is that of a GNUnet directory.
  */
-int ECRS_isDirectory(MetaData * md) {
+int ECRS_isDirectory(const MetaData * md) {
   int i;
 
   for (i=md->itemCount-1;i>=0;i--) {

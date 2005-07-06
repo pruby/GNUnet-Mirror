@@ -72,12 +72,10 @@ int ECRS_listDirectory(const char * data,
     mdSize = ntohl(mdSize);
     if (mdSize > len - 8 - sizeof(unsigned int) )
       return SYSERR; /* invalid size */
-    if (OK != ECRS_deserializeMetaData(md,
-				       &data[8 + sizeof(unsigned int)],
-				       mdSize)) {
-      *md = NULL;      
+    *md = ECRS_deserializeMetaData(&data[8 + sizeof(unsigned int)],
+				   mdSize);
+    if (*md == NULL) 
       return SYSERR; /* malformed !*/
-    }
     pos = 8 + sizeof(unsigned int) + mdSize;
   }
   while (pos < len) {
@@ -119,9 +117,9 @@ int ECRS_listDirectory(const char * data,
       return SYSERR; /* malformed! */
     }
 
-    if (OK != ECRS_deserializeMetaData(&fi.meta,
-				       &data[pos],
-				       mdSize)) {
+    fi.meta = ECRS_deserializeMetaData(&data[pos],
+				       mdSize);
+    if (fi.meta == NULL) {
       ECRS_freeUri(fi.uri);
       return SYSERR; /* malformed !*/
     }

@@ -1,3 +1,9 @@
+Wed Jul  6 22:34:30 CEST 2005
+	Fixed bugs in core with respect to possible infinite
+	recursion caused by fragmentation callbacks.  Also
+	differenciated between fatal transport sends and
+	transient transport sends.  Cleanup of some APIs.
+	
 Sat Jul  2 17:21:07 CEST 2005
 	Fixed bugs in gnunet-pseudonym (listing of namespaces),
 	FSUI (double-free for namespace creation), cleaned up

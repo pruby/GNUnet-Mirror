@@ -54,9 +54,9 @@ static int testMeta() {
 				     NO))
     ABORT();
   ECRS_freeMetaData(m);
-  if (OK != ECRS_deserializeMetaData(&m,
-				     val,
-				     size))
+  m = ECRS_deserializeMetaData(val,
+			       size);
+  if (m == NULL)
     ABORT();
   FREE(val);
   ECRS_freeMetaData(m);

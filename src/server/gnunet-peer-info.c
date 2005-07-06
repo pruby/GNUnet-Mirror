@@ -136,10 +136,10 @@ static void printHostInfo(const PeerIdentity * id,
 
   hash2enc(&id->hashPubKey,
 	   &enc);
-  if (SYSERR == identity->identity2Helo(id,
-					proto,
-					NO,
-					&helo)) {
+  helo = identity->identity2Helo(id,
+				 proto,
+				 NO);
+  if (NULL == helo) {
     LOG(LOG_WARNING,
 	_("Could not get address of peer '%s'.\n"),
 	&enc);

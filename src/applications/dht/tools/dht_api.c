@@ -418,7 +418,7 @@ static void * process_thread(TableList * list) {
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
-		 DHT_TableId * table) {
+		 const DHT_TableId * table) {
   TableList * list;
   int i;
 
@@ -470,7 +470,7 @@ int DHT_LIB_join(Blockstore * store,
  * @param table the ID of the table
  * @return SYSERR on error, OK on success
  */
-int DHT_LIB_leave(DHT_TableId * table) {
+int DHT_LIB_leave(const DHT_TableId * table) {
   TableList * list;
   int i;
   void * unused;

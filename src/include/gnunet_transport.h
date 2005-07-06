@@ -237,7 +237,8 @@ typedef struct {
    *        or the HELO_message from connect)
    * @param msg the message
    * @param size the size of the message, <= mtu
-   * @return SYSERR on error, OK on success; after any error,
+   * @return SYSERR on error, NO on temporary error (retry),
+   *         YES/OK on success; after any persistent error,
    *         the caller must call "disconnect" and not continue
    *         using the session afterwards (useful if the other
    *         side closed the connection).

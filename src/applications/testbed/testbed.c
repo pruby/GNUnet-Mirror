@@ -129,10 +129,10 @@ static void tb_GET_HELO(ClientHandle client,
   HELO_Message * helo;
   unsigned int proto = ntohs(msg->proto);
 
-  if (SYSERR == identity->identity2Helo(coreAPI->myIdentity,
-					proto,
-					NO,
-					&helo)) {
+  helo = identity->identity2Helo(coreAPI->myIdentity,
+				 proto,
+				 NO);
+  if (NULL == helo) {
     LOG(LOG_WARNING,
 	_("TESTBED could not generate HELO message for protocol %u\n"),
 	proto);

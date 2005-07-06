@@ -525,10 +525,10 @@ static void bindAddress(const HELO_Message * msg) {
  * @param result where to store the result
  * @returns SYSERR on failure, OK on success
  */
-static int identity2Helo(const PeerIdentity *  hostId,
-			 unsigned short protocol,
-			 int tryTemporaryList,
-			 HELO_Message ** result) {
+static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
+				    unsigned short protocol,
+				    int tryTemporaryList) {
+  HELO_Message * result;
   HostEntry * host;
   char * fn;
   HELO_Message buffer;
@@ -555,13 +555,13 @@ static int identity2Helo(const PeerIdentity *  hostId,
 			      &tempHosts[j]->senderIdentity) &&
 	   ( (ntohs(tempHosts[j]->protocol) == protocol) ||
 	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
-	*result = MALLOC(HELO_Message_size(tempHosts[j]));
-	memcpy(*result,
+	result = MALLOC(HELO_Message_size(tempHosts[j]));
+	memcpy(result,
 	       tempHosts[j],
 	       HELO_Message_size(tempHosts[j]));	
 	MUTEX_UNLOCK(&lock_);
 	FREENONNULL(perm);
-	return OK;
+	return result;
       }
     }
     FREENONNULL(perm);
@@ -570,9 +570,8 @@ static int identity2Helo(const PeerIdentity *  hostId,
   host = findHost(hostId);
   if ( (host == NULL) ||
        (host->protocolCount == 0) ) {
-    *result = NULL;
     MUTEX_UNLOCK(&lock_);
-    return SYSERR;
+    return NULL;
   }  
 
   if (protocol == ANY_PROTOCOL_NUMBER)
@@ -580,13 +579,13 @@ static int identity2Helo(const PeerIdentity *  hostId,
 
   for (i=0;i<host->heloCount;i++) {
     if (host->helos[i]->protocol == protocol) {
-      *result
+      result
 	= MALLOC(HELO_Message_size(host->helos[i]));
-      memcpy(*result,
+      memcpy(result,
 	     host->helos[i],
 	     HELO_Message_size(host->helos[i]));
       MUTEX_UNLOCK(&lock_);
-      return OK;      
+      return result;
     }
   }
   
@@ -611,14 +610,13 @@ static int identity2Helo(const PeerIdentity *  hostId,
 			  fn);
     }
     FREE(fn);
-    *result = NULL;
     MUTEX_UNLOCK(&lock_);
-    return SYSERR;    
+    return NULL;  
   }
-  *result = MALLOC(HELO_Message_size(&buffer));
+  result = MALLOC(HELO_Message_size(&buffer));
   size = readFile(fn,
 		  HELO_Message_size(&buffer),
-		  *result);      
+		  result);      
   if ((unsigned int)size != HELO_Message_size(&buffer)) {
     if (0 == UNLINK(fn))
       LOG(LOG_WARNING,
@@ -629,10 +627,9 @@ static int identity2Helo(const PeerIdentity *  hostId,
 			"unlink",
 			fn);
     FREE(fn);
-    FREE(*result);
-    *result = NULL;
+    FREE(result);
     MUTEX_UNLOCK(&lock_);
-    return SYSERR;
+    return NULL;
   }
 
   GROW(host->helos,
@@ -641,10 +638,10 @@ static int identity2Helo(const PeerIdentity *  hostId,
   host->helos[host->heloCount-1]
     = MALLOC(HELO_Message_size(&buffer));
   memcpy(host->helos[host->heloCount-1],
-	 *result,
+	 result,
 	 HELO_Message_size(&buffer));
   MUTEX_UNLOCK(&lock_);
-  return OK;  
+  return result;  
 }
 
 
@@ -663,10 +660,10 @@ static int verifyPeerSignature(const PeerIdentity * signer,
   HELO_Message * helo;
   int res;
 
-  if (SYSERR == identity2Helo(signer,
-			      ANY_PROTOCOL_NUMBER,
-			      YES,
-			      &helo))
+  helo = identity2Helo(signer,
+		       ANY_PROTOCOL_NUMBER,
+		       YES);
+  if (helo == NULL)
     return SYSERR;
   res = verifySig(message, size, sig,
 		  &helo->publicKey);

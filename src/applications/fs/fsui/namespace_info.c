@@ -125,9 +125,9 @@ static int readNamespaceInfo(const char * namespaceName,
 
   size = len - sizeof(int);
   *ranking = ntohl(((int *) buf)[0]);
-  if (OK != ECRS_deserializeMetaData(meta,
-				     &buf[sizeof(int)],
-				     size)) {
+  meta = ECRS_deserializeMetaData(&buf[sizeof(int)],
+				  size);
+  if (meta == NULL) {
     /* invalid data! remove! */
     BREAK();
     UNLINK(fn);
@@ -408,9 +408,9 @@ static int readUpdateData(const char * nsname,
     BREAK();
     return SYSERR;
   }
-  if (OK != ECRS_deserializeMetaData(&fi->meta,
-				     &uri[pos],
-				     size)) {
+  fi->meta = ECRS_deserializeMetaData(&uri[pos],
+				      size);
+  if (fi->meta == NULL) {
     FREE(buf);
     BREAK();
     return SYSERR;

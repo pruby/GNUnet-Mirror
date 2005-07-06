@@ -135,13 +135,11 @@ typedef struct {
    * @param hostId the host id
    * @param protocol the protocol that we need,
    *        ANY_PROTOCOL_NUMBER  if we do not care which protocol
-   * @param result where to store the result
-   * @return SYSERR on failure, OK on success
+   * @return NULL on failure, the HELO on success
    */
-  int (*identity2Helo)(const PeerIdentity *  hostId,
-		       unsigned short protocol,
-		       int tryTemporaryList,
-		       HELO_Message ** result);
+  HELO_Message * (*identity2Helo)(const PeerIdentity *  hostId,
+				  unsigned short protocol,
+				  int tryTemporaryList);
 
   /**
    *

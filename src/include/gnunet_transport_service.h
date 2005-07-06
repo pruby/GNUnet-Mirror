@@ -119,7 +119,8 @@ typedef struct {
    * @param session the session identifying the connection
    * @param msg the message to send
    * @param size the size of the message
-   * @return OK on success, SYSERR on error
+   * @return OK on success, SYSERR on persistent error, NO on
+   *         temporary error
    */
   int (*send)(TSession * session,
 	      const void * msg,

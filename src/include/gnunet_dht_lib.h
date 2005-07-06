@@ -32,12 +32,12 @@
 /**
  * Initialize DHT_LIB. Call first.
  */
-void DHT_LIB_init();
+void DHT_LIB_init(void);
 
 /**
- * Initialize DHT_LIB. Call after leaving all tables!
+ * Shutdown DHT_LIB. Call after leaving all tables!
  */
-void DHT_LIB_done();
+void DHT_LIB_done(void);
 
 /**
  * Join a table (start storing data for the table).  Join
@@ -52,7 +52,7 @@ void DHT_LIB_done();
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
-		 DHT_TableId * table);
+		 const DHT_TableId * table);
 
 
 /**
@@ -69,7 +69,7 @@ int DHT_LIB_join(Blockstore * store,
  *   implies 'use value from gnunet.conf').
  * @return SYSERR on error, OK on success
  */
-int DHT_LIB_leave(DHT_TableId * table);
+int DHT_LIB_leave(const DHT_TableId * table);
 
 
 /**

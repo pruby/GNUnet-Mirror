@@ -234,17 +234,15 @@ static SKEY_Message * makeSessionKeySigned(const PeerIdentity * hostId,
   char * pt;
 
   GNUNET_ASSERT(sk != NULL);
-  foreignHelo = NULL;
-  /* create and encrypt sessionkey */
-  if (SYSERR == identity->identity2Helo(hostId,
+  foreignHelo = identity->identity2Helo(hostId,
 					ANY_PROTOCOL_NUMBER,
-					YES,
-					&foreignHelo)) {
+					YES);
+  /* create and encrypt sessionkey */
+  if (NULL == foreignHelo) {
     LOG(LOG_INFO,
 	_("Cannot encrypt sessionkey, other peer not known!\n"));
     return NULL; /* other host not known */
   }
-  GNUNET_ASSERT(foreignHelo != NULL);
 
   size = sizeof(SKEY_Message);
   if (ping != NULL)

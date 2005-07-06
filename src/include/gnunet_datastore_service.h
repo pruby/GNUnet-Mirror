@@ -126,7 +126,7 @@ typedef struct {
   /**
    * Get the current on-disk size of the datastore.
    */
-  unsigned long long (*getSize)();
+  unsigned long long (*getSize)(void);
 
   /**
    * Store an item in the datastore.  If the item is

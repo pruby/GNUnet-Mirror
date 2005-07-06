@@ -279,9 +279,9 @@ static int processNBlock(const NBlock * nb,
   struct ECRS_URI uri;
   int ret;
 
-  if (OK != ECRS_deserializeMetaData(&fi.meta,
-				     (char*)&nb[1],
-				     size - sizeof(NBlock))) {
+  fi.meta = ECRS_deserializeMetaData((const char*)&nb[1],
+				     size - sizeof(NBlock));
+  if (fi.meta == NULL) {
     BREAK(); /* nblock malformed */
     return SYSERR;
   }
@@ -368,9 +368,9 @@ static int receiveReplies(const HashCode512 * key,
 	}
 	dstURI = (const char*) &kb[1];
 	j++;
-	if (OK != ECRS_deserializeMetaData(&fi.meta,
-					   &((char*)kb)[j],
-					   size - j)) {
+	fi.meta = ECRS_deserializeMetaData(&((const char*)kb)[j],
+					   size - j);
+	if (fi.meta == NULL) {
 	  BREAK(); /* kblock malformed */
 	  FREE(kb);
 	  return SYSERR;
@@ -453,9 +453,9 @@ static int receiveReplies(const HashCode512 * key,
 	}
 	dstURI = (const char*) &sb[1];
 	j++;
-	if (OK != ECRS_deserializeMetaData(&fi.meta,
-					   &dstURI[j],
-					   size - j)) {
+	fi.meta = ECRS_deserializeMetaData(&dstURI[j],
+					   size - j);
+	if (fi.meta == NULL) {
 	  BREAK(); /* kblock malformed */
 	  FREE(sb);
 	  return SYSERR;

@@ -228,11 +228,10 @@ static TSession * transportConnectFreely(const PeerIdentity * peer,
   for (i=0;i<tapis_count;i++) {
     if (tapis[perm[i]] == NULL)
       continue;
-    if (OK ==
-	identity->identity2Helo(peer,
-				perm[i],
-				useTempList,
-				&helo)) {
+    helo = identity->identity2Helo(peer,
+				   perm[i],
+				   useTempList);
+    if (helo != NULL) {
       ret = transportConnect(helo);
       FREE(helo);      
       if (ret != NULL) {
@@ -300,7 +299,8 @@ static unsigned int transportGetCost(int ttype) {
  * @param size the size of the message
  * @param isEncrypted YES if the message is encrypted
  * @param crc the CRC of the (plaintext) message
- * @return OK on success, SYSERR on error
+ * @return OK on success, SYSERR on persistent error, NO on
+ *         temporary error
  */
 static int transportSend(TSession * tsession,
 			 const void * msg,
