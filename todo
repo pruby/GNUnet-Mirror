@@ -6,7 +6,14 @@
      connect to 4-6 peers at the same time!) [ everybody! ]
 - Do well-behaved peers go over bandwidth limits?
   (Nils reported about strict blacklisting!)
-- cleanup API a bit more [ CG ]
+- cleanup API: move #ifdef WINDOWS in gnunet_util to plibc or
+  somewhere! WINDOWS is not always even defined when 
+  gnunet_util maybe included, and we want this to be
+  a clean, stable, platform-independent API;
+  also, there are still the 2 forms for configuration
+  parsing, one of which is not thread-safe and only
+  used by src/conf.  Any reasons why we could not 
+  clean that up? [ Nils??? ]
 
 
 0.7.0 [7'05?] (aka "compatibility? what's that?"):
@@ -56,7 +63,6 @@
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
-- #678 (directory browser)
 - Documentation:
   * LJ article
 - support using -k multiple times in gnunet-pseudonym
@@ -68,8 +74,5 @@
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling
 
-
-Not under control:
-- #603 (libgcrypt problem)
 
 
