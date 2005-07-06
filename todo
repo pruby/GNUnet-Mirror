@@ -1,9 +1,9 @@
-0.7.0pre4 [7'05]
+0.7.0pre5 [7'05] (may not actually be released)
 - Investigate:
   * why do we not connect to more peers?
     (pre3 has been observed to connect to just 1 peer,
      whilst gnunet-transport-check -p was able to
-     connect to 4-6 peers at the same time!)
+     connect to 4-6 peers at the same time!) [ everybody! ]
 - tcpSend (transport send in general) should be able
   to differenciate between temporary failure (blocking)
   and persistent failure (closed connection); that way,
@@ -11,9 +11,10 @@
   or drop all of the messages, instead of continuing
   to hammer tcpSend as it is now; core should probably
   keep a retry-counter (retry to re-open session X
-  times), and if it failes X times close the session!
+  times), and if it failes X times close the session! [ CG ]
 - Do well-behaved peers go over bandwidth limits?
   (Nils reported about strict blacklisting!)
+- cleanup API a bit more [ CG ]
 
 
 0.7.0 [7'05?] (aka "compatibility? what's that?"):
