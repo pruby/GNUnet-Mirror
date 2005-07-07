@@ -105,12 +105,12 @@ static HostEntry ** hosts_ = NULL;
 /**
  * The current (allocated) size of knownHosts
  */
-static int max_ = 0;
+static int sizeOfHosts_ = 0;
 
 /**
  * The number of actual entries in knownHosts
  */
-static int count_;
+static int numberOfHosts_;
 
 /**
  * A lock for accessing knownHosts
@@ -172,7 +172,8 @@ static char * getHostFileName(const PeerIdentity * id,
 static HostEntry * findHost(const PeerIdentity * id) {
   int i;
 
-  for (i=0;i<count_;i++)
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
+  for (i=0;i<numberOfHosts_;i++)
     if ( (hostIdentityEquals(id,
 			     &hosts_[i]->identity)) ) 
       return hosts_[i];    
@@ -193,6 +194,7 @@ static void addHostToKnown(const PeerIdentity * identity,
   char * fn;
   unsigned int trust;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(&lock_);
   entry = findHost(identity);
   if (entry == NULL) {
@@ -221,11 +223,11 @@ static void addHostToKnown(const PeerIdentity * identity,
     }
     FREE(fn);
 
-    if (count_ == max_)
+    if (numberOfHosts_ == sizeOfHosts_)
       GROW(hosts_,
-	   max_,
-	   max_+32);
-    hosts_[count_++] = entry;
+	   sizeOfHosts_,
+	   sizeOfHosts_+32);
+    hosts_[numberOfHosts_++] = entry;
   }
   for (i=0;i<entry->protocolCount;i++) {
     if (entry->protocols[i] == protocol) {
@@ -304,6 +306,7 @@ static int cronHelper(const char * filename,
   unsigned int protoNumber;
   char * fullname;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   GNUNET_ASSERT(sizeof(EncName) == 104);
   if (2 == sscanf(filename,
 		  "%103c.%u",
@@ -362,6 +365,7 @@ static void cronScanDirectoryDataHosts(void * unused) {
 	  networkIdDirectory);
     }
   }
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
 }
 
 /**
@@ -392,9 +396,10 @@ static void delHostFromKnown(const PeerIdentity * identity,
   int i;
   int j;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   GNUNET_ASSERT(protocol != ANY_PROTOCOL_NUMBER);
   MUTEX_LOCK(&lock_);
-  for (i=0;i<count_;i++) {
+  for (i=0;i<numberOfHosts_;i++) {
     if ( (hostIdentityEquals(identity,
 			     &hosts_[i]->identity)) ) {
       entry = hosts_[i];
@@ -434,10 +439,11 @@ static void delHostFromKnown(const PeerIdentity * identity,
 	       entry->heloCount,
 	       0);
 	}
-	hosts_[i] = hosts_[--count_];
+	hosts_[i] = hosts_[--numberOfHosts_];
 	FREE(entry);
       }
       MUTEX_UNLOCK(&lock_);
+      GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
       return; /* deleted */
     }
   }
@@ -457,6 +463,7 @@ static void bindAddress(const HELO_Message * msg) {
   HostEntry * host;
   int i;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   GNUNET_ASSERT(msg != NULL);
   IFLOG(LOG_INFO,
 	hash2enc(&msg->senderIdentity.hashPubKey,
@@ -467,7 +474,7 @@ static void bindAddress(const HELO_Message * msg) {
       &enc,
       ntohs(msg->protocol));
 #endif
-  fn = getHostFileName(&msg->senderIdentity,		
+  fn = getHostFileName(&msg->senderIdentity,
 		       ntohs(msg->protocol));
   buffer = MALLOC(MAX_BUFFER_SIZE);
   size = readFile(fn,
@@ -511,6 +518,7 @@ static void bindAddress(const HELO_Message * msg) {
 	 msg,
 	 HELO_Message_size(msg));  
   MUTEX_UNLOCK(&lock_);
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
 }
 
 /**
@@ -537,6 +545,7 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
   int j;
   int * perm;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(&lock_);  
   if (YES == tryTemporaryList) {
     if (protocol == ANY_PROTOCOL_NUMBER)
@@ -686,6 +695,7 @@ static int blacklistHost(const PeerIdentity * identity,
   EncName hn;
   HostEntry * entry;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(&lock_);
   entry = findHost(identity);
   if (entry == NULL) {
@@ -731,6 +741,7 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
   cron_t now;
   HostEntry * entry;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(&lock_);
   entry = findHost(identity);
   if (entry == NULL) {
@@ -760,6 +771,7 @@ static int whitelistHost(const PeerIdentity * identity) {
   EncName enc;
 #endif
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(&lock_);
   entry = findHost(identity);
   if (entry == NULL) {
@@ -801,9 +813,10 @@ static int forEachHost(cron_t now,
   unsigned short proto;
   HostEntry * entry;
 
+  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   count = 0;  
   MUTEX_LOCK(&lock_);
-  for (i=0;i<count_;i++) {
+  for (i=0;i<numberOfHosts_;i++) {
     entry = hosts_[i];
     if (hostIdentityEquals(&entry->identity,
 			   &myIdentity))
@@ -823,7 +836,7 @@ static int forEachHost(cron_t now,
 	  MUTEX_LOCK(&lock_);
 	  /* we gave up the lock,
 	     need to re-aquire entry (if possible)! */
-	  if (i >= count_)
+	  if (i >= numberOfHosts_)
 	    break;
 	  entry = hosts_[i];
 	  if (hostIdentityEquals(&entry->identity,
@@ -839,7 +852,7 @@ static int forEachHost(cron_t now,
     count++;
     if (callback != NULL) {
       hi = tempHosts[i]->senderIdentity;
-      proto = tempHosts[i]->protocol;
+      proto = ntohs(tempHosts[i]->protocol);
       MUTEX_UNLOCK(&lock_);
       callback(&hi,
 	       proto,
@@ -895,7 +908,7 @@ static void flushHostCredit(HostEntry * host) {
 static void cronFlushTrustBuffer(void * unused) {
   int i;
   MUTEX_LOCK(&lock_);
-  for (i=0;i<count_;i++)
+  for (i=0;i<numberOfHosts_;i++)
     flushHostCredit(hosts_[i]);
   MUTEX_UNLOCK(&lock_);
 }
@@ -951,7 +964,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
   for (i=0;i<MAX_TEMP_HOSTS;i++)
     tempHosts[i] = NULL;
   tempHostsNextSlot = 0;
-  count_ = 0;
+  numberOfHosts_ = 0;
 
   initPrivateKey();
   getPeerIdentity(getPublicPrivateKey(),
@@ -1017,7 +1030,7 @@ void release_module_identity() {
   for (i=0;i<MAX_TEMP_HOSTS;i++)
     FREENONNULL(tempHosts[i]);
   MUTEX_DESTROY(&lock_);
-  for (i=0;i<count_;i++) {
+  for (i=0;i<numberOfHosts_;i++) {
     entry = hosts_[i];
     for (j=0;j<entry->heloCount;j++)
       FREE(entry->helos[j]);
@@ -1030,9 +1043,9 @@ void release_module_identity() {
     FREE(entry);
   }
   GROW(hosts_,
-       max_,
+       sizeOfHosts_,
        0);
-  count_ = 0;
+  numberOfHosts_ = 0;
 
   FREE(networkIdDirectory);
   networkIdDirectory = NULL;

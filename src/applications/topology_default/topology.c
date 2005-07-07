@@ -99,9 +99,11 @@ typedef struct {
  * @param im updated structure used to select the peer
  */
 static void scanHelperCount(const PeerIdentity * id,
-			    const unsigned short proto,	
+			    unsigned short proto,	
 			    int confirmed,
-			    IndexMatch * im) {
+			    void * data) {
+  IndexMatch * im = data;
+
   if (hostIdentityEquals(coreAPI->myIdentity, id))
     return;
   if (coreAPI->computeIndex(id) != im->index)
@@ -123,7 +125,9 @@ static void scanHelperCount(const PeerIdentity * id,
 static void scanHelperSelect(const PeerIdentity * id,
 			     unsigned short proto,
 			     int confirmed,
-			     IndexMatch * im) {
+			     void * data) {
+  IndexMatch * im = data;
+
   if (hostIdentityEquals(coreAPI->myIdentity, id))
     return;
   if (coreAPI->computeIndex(id) != im->index)
@@ -155,7 +159,7 @@ static void scanForHosts(unsigned int index) {
   indexMatch.matchCount = 0;
   indexMatch.costSelector = 0;
   identity->forEachHost(now,
-			(HostIterator)&scanHelperCount,
+			&scanHelperCount,
 			&indexMatch);
   if (indexMatch.matchCount == 0) {
     LOG(LOG_EVERYTHING,
@@ -168,7 +172,7 @@ static void scanForHosts(unsigned int index) {
       = randomi(indexMatch.costSelector/4)*4;
   indexMatch.match = *(coreAPI->myIdentity);
   identity->forEachHost(now,
-			(HostIterator)&scanHelperSelect,
+			&scanHelperSelect,
 			&indexMatch);
   if (hostIdentityEquals(coreAPI->myIdentity,
 			 &indexMatch.match)) {
@@ -256,7 +260,11 @@ static void cronCheckLiveness(void * unused) {
   int slotCount;
   int active;
   unsigned int minint;
+  int autoconnect;
 
+  autoconnect = testConfigurationString("GNUNETD",
+					"DISABLE-AUTOCONNECT",
+					"YES");
   slotCount = coreAPI->getSlotCount();
   if (saturation > 0.001)
     minint = (int) 1 / saturation;
@@ -268,9 +276,7 @@ static void cronCheckLiveness(void * unused) {
     if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
       continue;
     if ( (minint > coreAPI->isSlotUsed(i)) &&
-	 (! testConfigurationString("GNUNETD",
-				    "DISABLE-AUTOCONNECT",
-				    "YES")) )
+	 (! autoconnect) )
       scanForHosts(i);
   }
   if (weak_randomi(LIVE_PING_EFFECTIVENESS) == 0)
@@ -281,7 +287,7 @@ static void cronCheckLiveness(void * unused) {
     active = coreAPI->forAllConnectedNodes
       (NULL,
        NULL);  
-  saturation = 1.0 * slotCount / active;
+  saturation = 1.0 * active / slotCount;
 }
 
 static int estimateNetworkSize() {

@@ -1,3 +1,7 @@
+Thu Jul  7 15:22:21 CEST 2005
+	Fixed bug in identity, missing ntohs for protocol ID.
+	Fixed bug in topology, wrong calculation of saturation.	
+	
 Wed Jul  6 22:34:30 CEST 2005
 	Fixed bugs in core with respect to possible infinite
 	recursion caused by fragmentation callbacks.  Also
