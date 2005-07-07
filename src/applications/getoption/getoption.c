@@ -1,5 +1,6 @@
  /*
       This file is part of GNUnet
+      (C) 2005 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -76,6 +77,10 @@ int initialize_module_getoption(CoreAPIForApplication * capi) {
       CS_PROTO_GET_OPTION_REQUEST);
   capi->registerClientHandler(CS_PROTO_GET_OPTION_REQUEST,
 			      &handleGetOption);
+  setConfigurationString("ABOUT",
+			 "getoption",
+			 _("allows clients to determine gnunetd's"
+			   " configuration"));
   return OK;
 }
 

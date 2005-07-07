@@ -600,6 +600,9 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
   }
   capi->registerClientHandler(CS_PROTO_TRAFFIC_QUERY,
 			      &trafficQueryHandler);
+  setConfigurationString("ABOUT",
+			 "traffic",
+			 _("tracks bandwidth utilization by gnunetd"));
   return OK;				
 }
 

@@ -442,6 +442,10 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(TBENCH_CS_PROTO_REQUEST,
 					    &csHandleTBenchRequest))
     ok = SYSERR;
+  setConfigurationString("ABOUT",
+			 "tbench",
+			 _("allows profiling of direct "
+			   "peer-to-peer connections"));
   return ok;
 }
 

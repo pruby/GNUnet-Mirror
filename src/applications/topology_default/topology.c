@@ -372,10 +372,10 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
     if (0 != strncmp(PACKAGE_VERSION,
 		     data,
 		     len)) {
-      data[len-1] = '\0';
       LOG(LOG_FAILURE,
-	  _("Version mismatch ('%s' vs. '%s'), run gnunet-update!\n"),
+	  _("Version mismatch ('%s' vs. '%*.s'), run gnunet-update!\n"),
 	  PACKAGE_VERSION,
+	  len,
 	  data);
       FREE(data);
       delCronJob(&cronCheckLiveness,

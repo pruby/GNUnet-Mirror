@@ -1352,6 +1352,10 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(TESTBED_CS_PROTO_REQUEST,
 						      (CSHandler)&csHandleTestbedRequest));
   httpRegister("startup");
+  setConfigurationString("ABOUT",
+			 "testbed",
+			 _("allows construction of a P2P-testbed"
+			   " (incomplete)"));
   return OK;
 }
 

@@ -1023,6 +1023,9 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 		gap, 
 		dht,
 		traffic);
+  setConfigurationString("ABOUT",
+			 "fs",
+			 _("enables (anonymous) file-sharing"));
   return OK;
 }
 

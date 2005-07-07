@@ -365,6 +365,9 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
 				&processGetConnectionCountRequest);
   capi->registerHandler(p2p_PROTO_NOISE,
 			&processNoise);
+  setConfigurationString("ABOUT",
+			 "stats",
+			 _("keeps statistics about gnunetd's operation"));
   return OK;
 }
 

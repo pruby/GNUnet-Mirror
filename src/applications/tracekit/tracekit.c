@@ -472,6 +472,9 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(TRACEKIT_CS_PROTO_PROBE,
 					    (CSHandler)&csHandle))
     ok = SYSERR;
+  setConfigurationString("ABOUT",
+			 "tracekit",
+			 _("allows mapping of the network topology"));
   return ok;
 }
 

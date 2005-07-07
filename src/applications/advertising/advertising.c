@@ -740,6 +740,10 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 #endif
 
   startBootstrap(capi);
+  setConfigurationString("ABOUT",
+			 "advertising",
+			 _("ensures that this peer is known by other"
+			   " peers and discovers other peers"));
   return OK;
 }
 

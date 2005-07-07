@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -205,6 +205,9 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(CHAT_CS_PROTO_MSG,
 					    (CSHandler)&csHandleChatRequest))
     ok = SYSERR;
+  setConfigurationString("ABOUT",
+			 "chat",
+			 _("enables P2P-chat (incomplete)"));
   return ok;
 }
 
