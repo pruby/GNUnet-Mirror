@@ -1088,6 +1088,38 @@ static void sendBuffer(BufferEntry * be) {
   p2pHdr->bandwidth
     = htonl(be->idealized_limit);
   p = sizeof(P2P_Message);
+
+  /* first, trigger callbacks on selected entries */
+  for (i=0;i<be->sendBufferSize;i++) {
+    SendEntry * entry = be->sendBuffer[i];
+    if ( (entry->knapsackSolution == YES) &&
+	 (entry->callback != NULL) ) {
+      if (OK == entry->callback(&plaintextMsg[p],
+				entry->closure,
+				entry->len)) {
+	entry->callback = NULL;
+	entry->closure = MALLOC(entry->len);
+	memcpy(entry->closure,
+	       &plaintextMsg[p],
+	       entry->len);
+      } else {
+	/* should not happen if everything went well,
+	   add random padding instead */
+	p2p_HEADER * part;
+	
+	part = (p2p_HEADER *) &plaintextMsg[p];
+	part->size
+	  = htons(entry->len);
+	part->type
+	  = htons(p2p_PROTO_NOISE);
+	for (i=p+sizeof(p2p_HEADER);i<entry->len+p;i++)
+	  plaintextMsg[p] = (char) rand();
+	entry->callback = NULL;
+	entry->closure = NULL;
+      }
+    }
+  }
+
   perm = permute(be->sendBufferSize);
   /* change permutation such that SE_FLAGS
      are obeyed */
@@ -1118,35 +1150,10 @@ static void sendBuffer(BufferEntry * be) {
   for (i=0;i<be->sendBufferSize;i++) {
     SendEntry * entry = be->sendBuffer[perm[i]];
     if (entry->knapsackSolution == YES) {
-      if (entry->callback == NULL) {
-	memcpy(&plaintextMsg[p],
-	       entry->closure,
-	       entry->len);
-      } else {	
-	if (OK == entry->callback(&plaintextMsg[p],
-				  entry->closure,
-				  entry->len)) {
-	  entry->callback = NULL;
-	  entry->closure = MALLOC(entry->len);
-	  memcpy(entry->closure,
-		 &plaintextMsg[p],
-		 entry->len);
-	} else {
-	  /* should not happen if everything went well,
-	     add random padding instead */
-	  p2p_HEADER * part;
-	  
-	  part = (p2p_HEADER *) &plaintextMsg[p];
-	  part->size
-	    = htons(entry->len);
-	  part->type
-	    = htons(p2p_PROTO_NOISE);
-	  for (i=p+sizeof(p2p_HEADER);i<entry->len+p;i++)
-	    plaintextMsg[p] = (char) rand();
-	  entry->callback = NULL;
-	  entry->closure = NULL;
-	}
-      }
+      GNUNET_ASSERT(entry->callback == NULL);
+      memcpy(&plaintextMsg[p],
+	     entry->closure,
+	     entry->len);
       p += entry->len;
     } else {
       int msgCap;
