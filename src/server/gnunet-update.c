@@ -169,8 +169,9 @@ static int updateModule(const char * rpos) {
   char * pos;
 
   for (i=0;i<processedCount;i++)
-    if (0 == strcmp(rpos, processed[i]))
+    if (0 == strcmp(rpos, processed[i])) {
       return OK; /* already done */
+    }
   GROW(processed, processedCount, processedCount+1);
   processed[processedCount-1] = STRDUP(rpos);
 
@@ -178,7 +179,7 @@ static int updateModule(const char * rpos) {
 			       rpos);
   if (pos == NULL)
     pos = STRDUP(rpos);
-
+  
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);
@@ -283,6 +284,7 @@ static void work() {
   updateModule("identity");
   updateModule("session");
   updateModule("fragmentation");
+  updateModule("topology");
   /* then update active application modules */
   updateApplicationModules();
   /* store information about update */
