@@ -365,6 +365,9 @@ broadcastHelper(const PeerIdentity * hi,
 		     &sd->m->header,
 		     prio,
 		     HELO_BROADCAST_FREQUENCY);
+    if (stats != NULL)
+      stats->change(stat_HELO_out,
+		    1);
     return;
   }
   /* with even lower probability (with n peers
