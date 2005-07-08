@@ -1092,6 +1092,7 @@ static void sendBuffer(BufferEntry * be) {
   /* first, trigger callbacks on selected entries */
   for (i=0;i<be->sendBufferSize;i++) {
     SendEntry * entry = be->sendBuffer[i];
+
     if ( (entry->knapsackSolution == YES) &&
 	 (entry->callback != NULL) ) {
       if (OK == entry->callback(&plaintextMsg[p],
@@ -1149,6 +1150,7 @@ static void sendBuffer(BufferEntry * be) {
 
   for (i=0;i<be->sendBufferSize;i++) {
     SendEntry * entry = be->sendBuffer[perm[i]];
+
     if (entry->knapsackSolution == YES) {
       GNUNET_ASSERT(entry->callback == NULL);
       memcpy(&plaintextMsg[p],
@@ -1270,6 +1272,8 @@ static void sendBuffer(BufferEntry * be) {
     }
     for (i=0;i<be->sendBufferSize;i++) {
       SendEntry * entry = be->sendBuffer[i];
+      if (entry == NULL)
+	continue;
       if (entry->knapsackSolution == YES) {
 	GNUNET_ASSERT(entry->callback == NULL);
 	FREENONNULL(entry->closure);
