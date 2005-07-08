@@ -157,7 +157,7 @@ void reopenLogFile() {
 
   logfilename
     = getConfigurationString(base,
-           "LOGFILE");
+			     "LOGFILE");
   if (logfilename != NULL) {
     char * fn;
 
@@ -244,24 +244,23 @@ void *getLogfile() {
  * Convert a textual description of a loglevel into an int.
  */
 static LOG_Level getLoglevel(const char * log) {
-  LOG_Level i;
+  int i;
   char * caplog;
 
-  if (log == NULL)
-    errexit(_("LOGLEVEL not specified, that is not ok.\n"));
+  GNUNET_ASSERT(log != NULL);
   caplog = strdup(log);
   for (i=strlen(caplog)-1;i>=0;i--)
     caplog[i] = toupper(caplog[i]);
   i = LOG_NOTHING;
   while ( (loglevels[i] != NULL) &&
-	  ( (0 != strcmp(caplog, gettext(loglevels[i]))) &&
-	    (0 != strcmp(caplog, loglevels[i]))) )
+	  (0 != strcmp(caplog, gettext(loglevels[i]))) &&
+	  (0 != strcmp(caplog, loglevels[i])) )
     i++;
   free(caplog);
   if (loglevels[i] == NULL)
     errexit(_("Invalid LOGLEVEL '%s' specified.\n"),
 	    log);
-  return i;
+  return (LOG_Level) i;
 }
 
 /**
@@ -274,23 +273,18 @@ static void resetLogging() {
   MUTEX_LOCK(&logMutex);
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
-			      "YES")) {
+			      "YES")) 
     base = "GNUNETD";
-    loglevelname
-      = getConfigurationString("GNUNETD",
-			       "LOGLEVEL");
-  } else {
+  else
     base = "GNUNET";
-    loglevelname
-      = getConfigurationString("GNUNET",
-			       "LOGLEVEL");
-  }
-   if (loglevelname == NULL) 
-     loglevelname = STRDUP("WARNING");
-
+  loglevelname
+    = getConfigurationString(base,
+			     "LOGLEVEL");
+  if (loglevelname == NULL) 
+    loglevelname = strdup("WARNING");
   loglevel__
-    = getLoglevel(loglevelname); /* will errexit if loglevel == NULL */
-  FREE(loglevelname);
+    = getLoglevel(loglevelname);
+  free(loglevelname);
   keepLog
     = getConfigurationInt(base,
 			  "KEEPLOG");
