@@ -1,4 +1,4 @@
-0.7.0pre5 [7'05] (may not actually be released)
+0.7.0pre5 [7'05] ("API cleanup"):
 - Investigate:
   * why do we not connect to more peers?
     (pre3 has been observed to connect to just 1 peer,
@@ -15,9 +15,11 @@
   parsing, one of which is not thread-safe and only
   used by src/conf.  Any reasons why we could not 
   clean that up? [ Nils??? ]
+* cleanup API: FSUI_insertIntoNamespace or whatever,
+  should return URI [ CG ]
 
 
-0.7.0 [7'05?] (aka "compatibility? what's that?"):
+0.7.0 [8'05?] (aka "compatibility? what's that?"):
 - Missing Features:
   * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
