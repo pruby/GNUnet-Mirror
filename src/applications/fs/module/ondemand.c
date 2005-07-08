@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/afs/module/fileindex.c
+ * @file applications/fs/module/ondemand.c
  * @brief access to the list of indexed files
  * @author Christian Grothoff
  */
@@ -214,11 +214,10 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 	fn);
     fd = fileopen(fn,
 #ifdef O_LARGEFILE
-	      O_CREAT|O_WRONLY|O_LARGEFILE,
-#else
-	      O_CREAT|O_WRONLY,
+		  O_LARGEFILE |
 #endif
-	      S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
+		  O_CREAT|O_WRONLY,
+		  S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
     if(fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
       FREE(fn);
@@ -361,15 +360,16 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   odb = (OnDemandBlock*) dbv;
   fn = getOnDemandFile(&odb->fileId);
 
+  fileHandle = fileopen(fn,
 #ifdef O_LARGEFILE
-  fileHandle = fileopen(fn, O_RDONLY|O_LARGEFILE, 0);
-#else
-  fileHandle = fileopen(fn, O_RDONLY, 0);
+			O_LARGEFILE |
 #endif
+			O_RDONLY, 
+			0);
   if (fileHandle == -1) {
     char unavail_key[256];
     EncName enc;
-    cron_t *first_unavail;
+    cron_t * first_unavail;
     struct stat linkStat;
 
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);

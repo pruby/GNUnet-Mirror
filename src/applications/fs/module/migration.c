@@ -54,6 +54,20 @@ static DHT_ServiceAPI * dht;
  * Traffic service.
  */
 static Traffic_ServiceAPI * traffic;
+
+/**
+ * Lock used to access content.
+ */
+static Mutex lock;
+
+/**
+ * The content that we are currently trying
+ * to migrate (used to give us more than one
+ * chance should we fail for some reason the
+ * first time).
+ */
+static Datastore_Value * content;
+
 				
 /**
  * Callback method for pushing content into the network.
@@ -76,49 +90,67 @@ activeMigrationCallback(const PeerIdentity * receiver,
 			unsigned int padding) {
   unsigned int ret;
   HashCode512 key;
-  Datastore_Value * content;
   GapWrapper * gw;
   unsigned int size;
   cron_t et;
   cron_t now;
   unsigned int anonymity;
 
-  ret = 0;
-  if (OK == datastore->getRandom(&receiver->hashPubKey,
-				 padding,
-				 &key,
-				 &content,
-				 0)) {
+  MUTEX_LOCK(&lock);
+  if (content != NULL) {
     size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
-    et = ntohll(content->expirationTime);
-    cronTime(&now);
-    if (et > now) {
-      et -= now;
-      et = et % MAX_MIGRATION_EXP;
-      et += now;
+    if (size > padding) {
+      FREE(content);
+      content = NULL;
     }
-    anonymity = ntohl(content->anonymityLevel);
-    ret = SYSERR;
-    if (anonymity == 0) {
-      /* ret = OK; (if DHT succeeds) fixme for DHT */
-    } 
-    if ( (ret != OK) &&
-	 (OK == checkCoverTraffic(traffic,
-				  anonymity)) ) {
-      gw = MALLOC(size);
-      gw->dc.size = htonl(size);
-      gw->timeout = htonll(et);
-      memcpy(&gw[1],
-	     &content[1],
-	     size - sizeof(GapWrapper));
-      ret = gap->tryMigrate(&gw->dc,
-			    &key,
-			    position,
-			    padding);
-      FREE(gw);
-    }
-    FREE(content);
   }
+  if (content == NULL) {
+    if (OK != datastore->getRandom(&receiver->hashPubKey,
+				   padding,
+				   &key,
+				   &content,
+				   0)) {
+      MUTEX_UNLOCK(&lock);
+      return 0;
+    }
+  }
+  size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
+  if (size > padding) {
+    MUTEX_UNLOCK(&lock);
+    return 0;
+  }
+  et = ntohll(content->expirationTime);
+  cronTime(&now);
+  if (et > now) {
+    et -= now;
+    et = et % MAX_MIGRATION_EXP;
+    et += now;
+  }
+  anonymity = ntohl(content->anonymityLevel);
+  ret = 0;
+  if (anonymity == 0) {
+    /* ret > 0; (if DHT succeeds) fixme for DHT */
+  } 
+  if ( (ret == 0) &&
+       (OK == checkCoverTraffic(traffic,
+				anonymity)) ) {
+    gw = MALLOC(size);
+    gw->dc.size = htonl(size);
+    gw->timeout = htonll(et);
+    memcpy(&gw[1],
+	   &content[1],
+	   size - sizeof(GapWrapper));
+    ret = gap->tryMigrate(&gw->dc,
+			  &key,
+			  position,
+			  padding);
+    FREE(gw);
+  }
+  if (ret > 0) {
+    FREE(content);  
+    content = NULL;
+  }
+  MUTEX_UNLOCK(&lock);
   return ret;
 }
 
@@ -127,6 +159,7 @@ void initMigration(CoreAPIForApplication * capi,
 		   GAP_ServiceAPI * g,
 		   DHT_ServiceAPI * d,
 		   Traffic_ServiceAPI * t) {
+  MUTEX_CREATE(&lock);
   coreAPI = capi;
   datastore = ds;
   gap = g;
@@ -144,6 +177,9 @@ void doneMigration() {
   dht = NULL;
   coreAPI = NULL;
   traffic = NULL;
+  FREENONNULL(content);
+  content = NULL;
+  MUTEX_DESTROY(&lock);
 }
 
 /* end of migration.c */

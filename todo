@@ -15,8 +15,6 @@
   parsing, one of which is not thread-safe and only
   used by src/conf.  Any reasons why we could not 
   clean that up? [ Nils??? ]
-* cleanup API: FSUI_insertIntoNamespace or whatever,
-  should return URI [ CG ]
 
 
 0.7.0 [8'05?] (aka "compatibility? what's that?"):

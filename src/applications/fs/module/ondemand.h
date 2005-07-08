@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -18,7 +19,7 @@
 */
 
 /**
- * @file applications/afs/module/fileindex.h
+ * @file applications/fs/module/ondemand.h
  * @brief On-demand encoding of indexed files
  * @author Christian Grothoff
  */
@@ -37,7 +38,7 @@
  *         YES on success
  */
 int ONDEMAND_initIndex(const HashCode512 * fileId,
-      const char *fn);
+		       const char *fn);
 
 /**
  * @return NO if already present, YES on success,
