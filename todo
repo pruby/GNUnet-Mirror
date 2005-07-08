@@ -6,7 +6,6 @@
      connect to 4-6 peers at the same time!) [ everybody! ]
 - Do well-behaved peers go over bandwidth limits? (#766)
   (Nils reported about strict blacklisting!)
-- Can we improve polling (IO)? [ #762 ]
 - cleanup API: move #ifdef WINDOWS in gnunet_util to plibc or
   somewhere! WINDOWS is not always even defined when 
   gnunet_util maybe included, and we want this to be
