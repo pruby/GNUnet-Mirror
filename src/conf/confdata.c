@@ -152,7 +152,10 @@ int conf_read(const char *name)
 						if (c != '\\' && c != '/')
 							strcat(key, DIR_SEPARATOR_STR);
 						strcat(key, file);
-						cfg_parse_file(key);
+						setConfigurationString("FILES",
+								       "gnunet.conf",
+								       key);
+						readConfiguration();
 					}
 				}
 				free(key);
@@ -163,21 +166,25 @@ int conf_read(const char *name)
 		if (!i) {
 			const char **names = conf_confnames;
 			
-			while ((name = *names++)) {
-				name = conf_expand_value(name);
-				if (cfg_parse_file((char *) name) == 0) {
-					printf("#\n"
-					       "# using defaults found in %s\n"
-					       "#\n", name);
-					i = 1;
-					break;
-				}
+			while ( (name = *names++)) {
+			  name = conf_expand_value(name); 
+			  if (0 == ACCESS(name, R_OK)) {
+			    setConfigurationString("FILES",
+						   "gnunet.conf",
+						   name);
+			    readConfiguration();
+			    i = 1;
+			    break;
+			  }
 			}
 		}
 	}
 	else {
 		i = 1;
-		cfg_parse_file((char *) name);
+		setConfigurationString("FILES",
+				       "gnunet.conf",
+				       name);
+		readConfiguration();
 	}
 
 	if (!i)
@@ -187,7 +194,7 @@ int conf_read(const char *name)
 	  sym->flags |= SYMBOL_NEW | SYMBOL_CHANGED;
 		sym->flags &= ~SYMBOL_VALID;
 		
-		val = cfg_get_str(sym->sect, sym->name);
+		val = getConfigurationString(sym->sect, sym->name);
 		if (val) {
   		switch (sym->type) {
   			case S_TRISTATE:
@@ -212,7 +219,6 @@ int conf_read(const char *name)
   				}
   				else {
   					fprintf(stderr, "%s: symbol value '%s' invalid for %s\n", name, val, sym->name);
-  					doneParseConfig();
   					exit(1);
   				}
 
@@ -223,6 +229,7 @@ int conf_read(const char *name)
   			default:
     			sym->user.val = NULL;
     			sym->user.tri = no;
+			
   		}
   		
   		if (sym && sym_is_choice_value(sym)) {
@@ -255,7 +262,8 @@ int conf_read(const char *name)
   		for (e = prop->expr; e; e = e->left.expr)
   			if (e->right.sym->visible != no)
   				sym->flags |= e->right.sym->flags & SYMBOL_NEW;
-  	}
+		FREE(val);
+		}
 	}
 	
 	sym_change_count = 1;
