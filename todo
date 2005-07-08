@@ -1,9 +1,4 @@
 0.7.0pre5 [7'05] ("API cleanup"):
-- Investigate:
-  * why do we not connect to more peers?
-    (pre3 has been observed to connect to just 1 peer,
-     whilst gnunet-transport-check -p was able to
-     connect to 4-6 peers at the same time!) [ everybody! ]
 - Do well-behaved peers go over bandwidth limits? (#766)
   (Nils reported about strict blacklisting!)
 - cleanup API: move #ifdef WINDOWS in gnunet_util to plibc or
