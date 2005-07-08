@@ -194,13 +194,13 @@ void reopenLogFile() {
           datefmt,
           &def.curtime));
 
-			/* Remove slashes */
-			end = datestr;
-			while((c = *end)) {
-				if (c == '\\' || c == '/')
-					*end = '_';
-					end++;
-			}
+      /* Remove slashes */
+      end = datestr;
+      while((c = *end)) {
+	if (c == '\\' || c == '/')
+	  *end = '_';
+	end++;
+      }
 
       strcat(fn, datestr);
 
