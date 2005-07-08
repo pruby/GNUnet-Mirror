@@ -39,7 +39,7 @@ static FILE * logfile;
 /**
  * Current loglevel.
  */
-static int loglevel__ = LOG_WARNING;
+static LOG_Level loglevel__ = LOG_WARNING;
 
 /**
  * Lock for logging activities.
@@ -62,7 +62,7 @@ static TLogProc customLog;
 /**
  * Highest legal log level.
  */
-static int maxLogLevel = LOG_EVERYTHING;
+static LOG_Level maxLogLevel = LOG_EVERYTHING;
 
 /**
  * Day for which the current logfile is
@@ -229,7 +229,7 @@ void reopenLogFile() {
 /**
  * Return the current logging level
  */
-int getLogLevel() {
+LOG_Level getLogLevel() {
   return loglevel__;
 }
 
@@ -243,8 +243,8 @@ void *getLogfile() {
 /**
  * Convert a textual description of a loglevel into an int.
  */
-static int getLoglevel(const char * log) {
-  int i;
+static LOG_Level getLoglevel(const char * log) {
+  LOG_Level i;
   char * caplog;
 
   if (log == NULL)
@@ -252,7 +252,7 @@ static int getLoglevel(const char * log) {
   caplog = strdup(log);
   for (i=strlen(caplog)-1;i>=0;i--)
     caplog[i] = toupper(caplog[i]);
-  i = 0;
+  i = LOG_NOTHING;
   while ( (loglevels[i] != NULL) &&
 	  ( (0 != strcmp(caplog, gettext(loglevels[i]))) &&
 	    (0 != strcmp(caplog, loglevels[i]))) )
@@ -270,7 +270,6 @@ static int getLoglevel(const char * log) {
  */
 static void resetLogging() {
   char * loglevelname;
-  int levelstatic = 0;
 
   MUTEX_LOCK(&logMutex);
   if (testConfigurationString("GNUNETD",
@@ -280,25 +279,18 @@ static void resetLogging() {
     loglevelname
       = getConfigurationString("GNUNETD",
 			       "LOGLEVEL");
-   if (loglevelname == NULL) {
-      loglevelname = "WARNING";
-      levelstatic = 1;
-    }
   } else {
     base = "GNUNET";
     loglevelname
       = getConfigurationString("GNUNET",
 			       "LOGLEVEL");
-    if (loglevelname == NULL) {
-      loglevelname = "WARNING";
-      levelstatic = 1;
-    }
   }
+   if (loglevelname == NULL) 
+     loglevelname = STRDUP("WARNING");
 
   loglevel__
     = getLoglevel(loglevelname); /* will errexit if loglevel == NULL */
-  if (! levelstatic)
-    FREE(loglevelname);
+  FREE(loglevelname);
   keepLog
     = getConfigurationInt(base,
 			  "KEEPLOG");
@@ -401,7 +393,7 @@ void setCustomLogProc(TLogProc proc) {
  * @param minLogLevel minimum level at which this message should be logged
  * @param format the string describing the error message
  */
-void LOG(int minLogLevel,
+void LOG(LOG_Level minLogLevel,
 	 const char *format, ...) {
   va_list	args;
   size_t len;

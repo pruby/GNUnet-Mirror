@@ -457,16 +457,16 @@ int ECRS_unindexFile(const char * filename,
  * @param rootURI set to the URI of the namespace, NULL if
  *        no advertisement was created
  *
- * @return OK on success, SYSERR on error (namespace already exists)
+ * @return URI on success, NULL on error (namespace already exists)
  */
-int ECRS_createNamespace(const char * name,
-			 const struct ECRS_MetaData * meta,
-			 unsigned int anonymityLevel,
-			 unsigned int priority,
-			 cron_t expiration,
-			 const struct ECRS_URI * advertisementURI,
-			 const HashCode512 * rootEntry,
-			 struct ECRS_URI ** rootURI); /* namespace.c */
+struct ECRS_URI *
+ECRS_createNamespace(const char * name,
+		     const struct ECRS_MetaData * meta,
+		     unsigned int anonymityLevel,
+		     unsigned int priority,
+		     cron_t expiration,
+		     const struct ECRS_URI * advertisementURI,
+		     const HashCode512 * rootEntry); /* namespace.c */
 
 /**
  * Check if the given namespace exists (locally).
@@ -514,19 +514,19 @@ int ECRS_listNamespaces(ECRS_NamespaceInfoCallback cb,
  * @param dst to which URI should the namespace entry refer?
  * @param md what meta-data should be associated with the
  *        entry?
- * @param uri set to the resulting URI
+ * @return URI on success, NULL on error
  */
-int ECRS_addToNamespace(const char * name,
-			unsigned int anonymityLevel,
-			unsigned int priority,
-			cron_t expirationTime,
-			cron_t creationTime,
-			cron_t updateInterval,
-			const HashCode512 * thisId,
-			const HashCode512 * nextId,
-			const struct ECRS_URI * dst,
-			const struct ECRS_MetaData * md,
-			struct ECRS_URI ** uri); /* namespace.c */
+struct ECRS_URI *
+ECRS_addToNamespace(const char * name,
+		    unsigned int anonymityLevel,
+		    unsigned int priority,
+		    cron_t expirationTime,
+		    cron_t creationTime,
+		    cron_t updateInterval,
+		    const HashCode512 * thisId,
+		    const HashCode512 * nextId,
+		    const struct ECRS_URI * dst,
+		    const struct ECRS_MetaData * md); /* namespace.c */
 
 /**
  * Add an entry into the K-space (keyword space).

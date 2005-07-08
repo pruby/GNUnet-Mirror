@@ -93,14 +93,15 @@ int ECRS_deleteNamespace(const char * name) {
  *
  * @return OK on success, SYSERR on error (namespace already exists)
  */
-int ECRS_createNamespace(const char * name,
-			 const struct ECRS_MetaData * meta,
-			 unsigned int anonymityLevel,
-			 unsigned int priority,
-			 cron_t expiration,
-			 const struct ECRS_URI * advertisementURI,
-			 const HashCode512 * rootEntry,
-			 struct ECRS_URI ** rootURI) {
+struct ECRS_URI *
+ECRS_createNamespace(const char * name,
+		     const struct ECRS_MetaData * meta,
+		     unsigned int anonymityLevel,
+		     unsigned int priority,
+		     cron_t expiration,
+		     const struct ECRS_URI * advertisementURI,
+		     const HashCode512 * rootEntry) {
+  struct ECRS_URI * rootURI;
   char * fileName;
   char tmp;
   struct PrivateKey * hk;
@@ -111,7 +112,6 @@ int ECRS_createNamespace(const char * name,
   GNUNET_TCP_SOCKET * sock;
   Datastore_Value * value;
   Datastore_Value * knvalue;
-  int ret;
   unsigned int size;
   unsigned int mdsize;
   struct PrivateKey * pk;
@@ -125,7 +125,7 @@ int ECRS_createNamespace(const char * name,
   if ( (advertisementURI != NULL) &&
        (! ECRS_isKeywordUri(advertisementURI)) ) {
     BREAK();
-    return SYSERR;
+    return NULL;
   }
   fileName = getPseudonymFileName(name);
   if (1 == readFile(fileName, 1, &tmp)) {
@@ -134,7 +134,7 @@ int ECRS_createNamespace(const char * name,
         name,
         fileName);
     FREE(fileName);
-    return SYSERR;
+    return NULL;
   }
   hk  = makePrivateKey();
   hke = encodePrivateKey(hk);
@@ -166,7 +166,7 @@ int ECRS_createNamespace(const char * name,
       BREAK();
       ECRS_deleteNamespace(name);
       freePrivateKey(hk);
-      return SYSERR;
+      return NULL;
     }
     size = sizeof(NBlock) + mdsize;
   } else {
@@ -185,7 +185,6 @@ int ECRS_createNamespace(const char * name,
   value->anonymityLevel = htonl(anonymityLevel);
   value->expirationTime = htonll(expiration);
   sock = getClientSocket();
-  ret = OK;
 
   /* publish NBlock */
   memset(&nb->identifier, 0, sizeof(HashCode512));
@@ -194,10 +193,10 @@ int ECRS_createNamespace(const char * name,
   hash(&nb->subspace,
        sizeof(PublicKey),
        &nb->namespace);
-  *rootURI = MALLOC(sizeof(URI));
-  (*rootURI)->type = sks;
-  (*rootURI)->data.sks.namespace = nb->namespace;
-  (*rootURI)->data.sks.identifier = *rootEntry;
+  rootURI = MALLOC(sizeof(URI));
+  rootURI->type = sks;
+  rootURI->data.sks.namespace = nb->namespace;
+  rootURI->data.sks.identifier = *rootEntry;
 
   nb->rootEntry = *rootEntry;
 
@@ -205,8 +204,14 @@ int ECRS_createNamespace(const char * name,
 			   mdsize + 3 * sizeof(HashCode512),
 			   &nb->identifier,
 			   &nb->signature));
-  if (OK != FS_insert(sock, value))
-    ret = SYSERR;
+  if (OK != FS_insert(sock, value)) {
+    FREE(rootURI);
+    FREE(value);
+    releaseClientSocket(sock);
+    freePrivateKey(hk);
+    ECRS_deleteNamespace(name);
+    return NULL;
+  }
 
 
   /* publish KNBlocks */
@@ -246,8 +251,16 @@ int ECRS_createNamespace(const char * name,
 			     &knb->kblock.signature));
     /* extra check: verify sig */
     freePrivateKey(pk);
-    if (OK != FS_insert(sock, knvalue))
-      ret = SYSERR;
+    if (OK != FS_insert(sock, knvalue)) {
+      FREE(rootURI);
+      ECRS_deleteNamespace(name);
+      FREE(cpy);
+      FREE(knvalue);
+      FREE(value);
+      releaseClientSocket(sock);
+      freePrivateKey(hk);
+      return NULL;
+    }
     /* restore nblock to avoid re-encryption! */
     memcpy(&knb->nblock,
 	   cpy, 	   
@@ -255,15 +268,11 @@ int ECRS_createNamespace(const char * name,
   }
   FREE(cpy);
   FREE(knvalue);
-  releaseClientSocket(sock);
   FREE(value);
-
+  releaseClientSocket(sock);
   freePrivateKey(hk);
-  if (ret != OK) {
-    FREE(*rootURI);
-    ECRS_deleteNamespace(name);
-  }
-  return ret;
+  
+  return rootURI;
 }
 
 
@@ -333,20 +342,20 @@ int ECRS_testNamespaceExists(const char * name,
  * @param md what meta-data should be associated with the
  *        entry?
  */
-int ECRS_addToNamespace(const char * name,
-			unsigned int anonymityLevel,
-			unsigned int priority,
-			cron_t expiration,
-			cron_t creationTime,
-			cron_t updateInterval,
-			const HashCode512 * thisId,
-			const HashCode512 * nextId,
-			const struct ECRS_URI * dstU,
-			const struct ECRS_MetaData * md,
-			struct ECRS_URI ** uri) {
+struct ECRS_URI *
+ECRS_addToNamespace(const char * name,
+		    unsigned int anonymityLevel,
+		    unsigned int priority,
+		    cron_t expiration,
+		    cron_t creationTime,
+		    cron_t updateInterval,
+		    const HashCode512 * thisId,
+		    const HashCode512 * nextId,
+		    const struct ECRS_URI * dstU,
+		    const struct ECRS_MetaData * md) {
+  struct ECRS_URI * uri;
   GNUNET_TCP_SOCKET * sock;
   Datastore_Value * value;
-  int ret;
   unsigned int size;
   unsigned int mdsize;
   struct PrivateKey * hk;
@@ -364,14 +373,14 @@ int ECRS_addToNamespace(const char * name,
   if (OK != getFileSize(fileName,
 			&len)) {
     FREE(fileName);
-    return SYSERR;
+    return NULL;
   }
   if (len < 2) {
     LOG(LOG_ERROR,
         _("File '%s' does not contain a pseudonym.\n"),
         fileName);
     FREE(fileName);
-    return SYSERR;
+    return NULL;
   }
   dst = MALLOC(len);
   len = readFile(fileName, len, dst);
@@ -382,12 +391,12 @@ int ECRS_addToNamespace(const char * name,
         _("Format of pseudonym '%s' is invalid.\n"),
         name);
     FREE(hke);
-    return SYSERR;
+    return NULL;
   }
   hk = decodePrivateKey(hke);
   FREE(hke);
   if (hk == NULL)
-    return SYSERR;
+    return NULL;
 
   /* THEN: construct SBlock */
   dstURI = ECRS_uriToString(dstU);
@@ -410,7 +419,7 @@ int ECRS_addToNamespace(const char * name,
     if (mdsize == -1) {
       BREAK();
       FREE(dstURI);
-      return SYSERR;
+      return NULL;
     }
     size = sizeof(SBlock) + mdsize;
   } else {
@@ -452,10 +461,10 @@ int ECRS_addToNamespace(const char * name,
 	       &namespace,
 	       &sb->identifier); /* sb->identifier = primary key in query! */
 
-  *uri = MALLOC(sizeof(URI));
-  (*uri)->type = sks;
-  (*uri)->data.sks.namespace = namespace;
-  (*uri)->data.sks.identifier = *thisId;
+  uri = MALLOC(sizeof(URI));
+  uri->type = sks;
+  uri->data.sks.namespace = namespace;
+  uri->data.sks.identifier = *thisId;
 
   ECRS_encryptInPlace(thisId,
 		      &sb->creationTime,
@@ -475,16 +484,15 @@ int ECRS_addToNamespace(const char * name,
   freePrivateKey(hk);
 
   sock = getClientSocket();
-  ret = OK;
   if (OK != FS_insert(sock, value)) {
-    ret = SYSERR;
-    FREE(*uri);
+    FREE(uri);
+    uri = NULL;
   }
   releaseClientSocket(sock);
   FREE(value);
   FREE(dstURI);
 
-  return ret;
+  return uri;
 }
 
 struct lNCLS {

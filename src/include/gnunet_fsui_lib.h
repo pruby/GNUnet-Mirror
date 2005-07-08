@@ -660,18 +660,15 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
  * for a while since it must create a public-private key pair!
  *
  * @param meta meta-data about the namespace (maybe NULL)
- * @param root set to the URI of the namespace, NULL if no advertisement
- *        was created
- *
- * @return OK on success, SYSERR on error (namespace already exists)
+ * @return URI on success, NULL on error (namespace already exists)
  */
-int FSUI_createNamespace(struct FSUI_Context * ctx,
-			 unsigned int anonymityLevel,
-			 const char * namespaceName,
-			 const struct ECRS_MetaData * meta,
-			 const struct ECRS_URI * advertisementURI,
-			 const HashCode512 * rootEntry,
-			 struct ECRS_URI ** root); /* namespace_info.c */
+struct ECRS_URI * 
+FSUI_createNamespace(struct FSUI_Context * ctx,
+		     unsigned int anonymityLevel,
+		     const char * namespaceName,
+		     const struct ECRS_MetaData * meta,
+		     const struct ECRS_URI * advertisementURI,
+		     const HashCode512 * rootEntry); /* namespace_info.c */
 
 /**
  * Delete a local namespace.  Only prevents future insertions into the
@@ -746,18 +743,18 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
  * @param dst to which URI should the namespace entry refer?
  * @param md what meta-data should be associated with the
  *        entry?
- * @param uri set to the resulting URI
+ * @return the resulting URI, NULL on error
  */
-int FSUI_addToNamespace(struct FSUI_Context * ctx,
-			unsigned int anonymityLevel,
-			const char * name,
-			cron_t updateInterval,
-			const HashCode512 * lastId,
-			const HashCode512 * thisId,
-			const HashCode512 * nextId,
-			const struct ECRS_URI * dst,
-			const struct ECRS_MetaData * md,
-			struct ECRS_URI ** uri); /* namespace_info.c */
+struct ECRS_URI *
+FSUI_addToNamespace(struct FSUI_Context * ctx,
+		    unsigned int anonymityLevel,
+		    const char * name,
+		    cron_t updateInterval,
+		    const HashCode512 * lastId,
+		    const HashCode512 * thisId,
+		    const HashCode512 * nextId,
+		    const struct ECRS_URI * dst,
+		    const struct ECRS_MetaData * md); /* namespace_info.c */
 
 /**
  * List all updateable content in a given namespace.

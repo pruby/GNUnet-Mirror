@@ -444,14 +444,14 @@ int main(int argc, char *argv[]) {
 	advertisement = FSUI_parseCharKeywordURI(keyword);
       }
       FREE(keyword);
-      if (OK != FSUI_createNamespace(ctx,
+      rootURI = FSUI_createNamespace(ctx,
 				     getConfigurationInt("FS",
 							 "ANONYMITY-SEND"),
 				     pname,
 				     meta,
 				     advertisement,
-				     &rootEntry,
-				     &rootURI)) {
+				     &rootEntry);
+      if (rootURI == NULL) {
 	printf(_("Could not create namespace '%s' (exists?).\n"),
 	       pname);
 	success += 1;

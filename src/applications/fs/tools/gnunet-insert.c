@@ -70,6 +70,7 @@ static void postProcess(const struct ECRS_URI * uri) {
   char * nid;
   struct ECRS_URI * nsuri;
   unsigned int updateInterval;
+  char * us;
 
   pname = getConfigurationString("GNUNET-INSERT",
 				 "PSEUDONYM");
@@ -90,26 +91,31 @@ static void postProcess(const struct ECRS_URI * uri) {
   updateInterval = getConfigurationInt("GNUNET-INSERT",
 				       "INTERVAL");
 
-  FSUI_addToNamespace(ctx,
-		      getConfigurationInt("FS",
-					  "ANONYMITY-SEND"),
-		      pname,
-		      updateInterval,
-		      pid == NULL ? NULL : &prevId,
-		      tid == NULL ? NULL : &thisId,
-		      nid == NULL ? NULL : &nextId,
-		      uri,
-		      meta,
-		      &nsuri);
-  FREE(pname);
+  nsuri = FSUI_addToNamespace(ctx,
+			      getConfigurationInt("FS",
+						  "ANONYMITY-SEND"),
+			      pname,
+			      updateInterval,
+			      pid == NULL ? NULL : &prevId,
+			      tid == NULL ? NULL : &thisId,
+			      nid == NULL ? NULL : &nextId,
+			      uri,
+			      meta);
   FREENONNULL(pid);
   FREENONNULL(tid);
   FREENONNULL(nid);
-  pname = ECRS_uriToString(nsuri);
-  ECRS_freeUri(nsuri);
-  printf(_("Created namespace entry '%s'\n"),
-	 pname);
-  FREE(pname);
+  if (nsuri != NULL) {
+    us = ECRS_uriToString(nsuri);
+    ECRS_freeUri(nsuri);
+    printf(_("Created entry '%s' in namespace '%s'\n"),
+	   us,
+	   pname);
+    FREE(us);
+  } else {
+    printf(_("Failed to add entry to namespace '%s' (does it exist?)\n"),
+	   pname);
+  }
+  FREE(pname);  
 }
 
 /**

@@ -147,19 +147,16 @@ static int readNamespaceInfo(const char * namespaceName,
  * for a while since it must create a public-private key pair!
  *
  * @param meta meta-data about the namespace (maybe NULL)
- * @param root set to the URI of the namespace, NULL if no advertisement
- *        was created
- *
- * @return OK on success, SYSERR on error (namespace already exists)
+ * @return URI on success, NULL on error (namespace already exists)
  */
-int FSUI_createNamespace(struct FSUI_Context * ctx,
-			 unsigned int anonymityLevel,
-			 const char * namespaceName,
-			 const struct ECRS_MetaData * meta,
-			 const struct ECRS_URI * advertisementURI,
-			 const HashCode512 * rootEntry,
-			 struct ECRS_URI ** root) {
-  int ret;
+struct ECRS_URI *
+FSUI_createNamespace(struct FSUI_Context * ctx,
+		     unsigned int anonymityLevel,
+		     const char * namespaceName,
+		     const struct ECRS_MetaData * meta,
+		     const struct ECRS_URI * advertisementURI,
+		     const HashCode512 * rootEntry) {
+  struct ECRS_URI * ret;
 
   ret = ECRS_createNamespace(namespaceName,
 			     meta,
@@ -169,14 +166,13 @@ int FSUI_createNamespace(struct FSUI_Context * ctx,
 						 "INSERT-EXPIRATION") 
 			     * cronYEARS + cronTime(NULL),
 			     advertisementURI,
-			     rootEntry,
-			     root);
+			     rootEntry);
   /* store binding of namespaceName to 'meta' in state DB! */
-  if (ret == OK) {
+  if (ret != NULL) {
     HashCode512 id;
     char * name;
 
-    ECRS_getNamespaceId(*root,
+    ECRS_getNamespaceId(ret,
 			&id);
     name = ECRS_getNamespaceName(&id);
     writeNamespaceInfo(name,
@@ -490,17 +486,16 @@ static int writeUpdateData(const char * nsname,
  *        entry?
  * @param uri set to the resulting URI
  */
-int FSUI_addToNamespace(struct FSUI_Context * ctx,
-			unsigned int anonymityLevel,
-			const char * name,
-			cron_t updateInterval,
-			const HashCode512 * lastId,
-			const HashCode512 * thisId,
-			const HashCode512 * nextId,
-			const struct ECRS_URI * dst,
-			const struct ECRS_MetaData * md,
-			struct ECRS_URI ** uri) {
-  int ret;
+struct ECRS_URI *
+FSUI_addToNamespace(struct FSUI_Context * ctx,
+		    unsigned int anonymityLevel,
+		    const char * name,
+		    cron_t updateInterval,
+		    const HashCode512 * lastId,
+		    const HashCode512 * thisId,
+		    const HashCode512 * nextId,
+		    const struct ECRS_URI * dst,
+		    const struct ECRS_MetaData * md) {
   cron_t creationTime;
   HashCode512 nid;
   HashCode512 tid;
@@ -509,6 +504,7 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
   cron_t lastInterval;
   ECRS_FileInfo fi;
   char * old;
+  struct ECRS_URI * uri;
 
   /* computation of IDs of update(s).  Not as terrible as
      it looks, just enumerating all of the possible cases
@@ -589,7 +585,7 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
       nid = tid;
     }
   }
-  ret = ECRS_addToNamespace(name,
+  uri = ECRS_addToNamespace(name,
 			    anonymityLevel,
 			    getConfigurationInt("FS", "INSERT-PRIORITY"),
 			    getConfigurationInt("FS", 
@@ -600,25 +596,26 @@ int FSUI_addToNamespace(struct FSUI_Context * ctx,
 			    &tid,
 			    &nid,
 			    dst,
-			    md,
-			    uri);
-  if (updateInterval != ECRS_SBLOCK_UPDATE_NONE) {
-    fi.uri = (struct ECRS_URI*) uri;
-    fi.meta = (struct ECRS_MetaData*) md;
-    writeUpdateData(name,
-		    &tid,
-		    &nid,
-		    &fi,
-		    updateInterval,
-		    creationTime);
+			    md);
+  if (uri != NULL) {
+    if (updateInterval != ECRS_SBLOCK_UPDATE_NONE) {
+      fi.uri = uri;
+      fi.meta = (struct ECRS_MetaData*) md;
+      writeUpdateData(name,
+		      &tid,
+		      &nid,
+		      &fi,
+		      updateInterval,
+		      creationTime);
+    }
+    if (lastId != NULL) {
+      old = getUpdateDataFilename(name,
+				  lastId);
+      UNLINK(old);
+      FREE(old);
+    }
   }
-  if (lastId != NULL) {
-    old = getUpdateDataFilename(name,
-				lastId);
-    UNLINK(old);
-    FREE(old);
-  }
-  return ret;
+  return uri;
 }
 
 struct lNCC {

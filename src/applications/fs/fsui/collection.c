@@ -124,14 +124,14 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
   if (prio == 0)
     prio = DEFAULT_ADVERTISEMENT_PRIORITY;
   makeRandomId(&nextId);
-  if (OK != ECRS_createNamespace(name,
+  rootURI = ECRS_createNamespace(name,
 				 meta,
 				 anonymityLevel,
 				 prio,
 				 now + COLLECTION_ADV_LIFETIME,
 				 advertisement,
-				 &nextId,
-				 &rootURI)) {
+				 &nextId);
+  if (rootURI == NULL) {
     ECRS_freeUri(advertisement);
     return SYSERR;
   }
@@ -281,22 +281,22 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
 					 &metaData,
 					 NULL,
 					 NULL));
-  if (OK == ECRS_addToNamespace(cd->name,
-				ntohl(cd->anonymityLevel),
-				getConfigurationInt("FS",
-						    "ADVERTISEMENT-PRIORITY"),
-				now + COLLECTION_ADV_LIFETIME,
-				now,
-				ntohll(cd->updateInterval),
-				&cd->lastId,
-				&cd->nextId,
-				directoryURI,
-				metaData,
-				&uri)) {
+  uri = ECRS_addToNamespace(cd->name,
+			    ntohl(cd->anonymityLevel),
+			    getConfigurationInt("FS",
+						"ADVERTISEMENT-PRIORITY"),
+			    now + COLLECTION_ADV_LIFETIME,
+			    now,
+			    ntohll(cd->updateInterval),
+			    &cd->lastId,
+			    &cd->nextId,
+			    directoryURI,
+			    metaData);
+  if (uri != NULL) {
     cd->lastPublication = htonll(now);
     cd->changed = htonl(NO);
+    ECRS_freeUri(uri);
   }
-  ECRS_freeUri(uri);
   ECRS_freeMetaData(metaData);
 }
 

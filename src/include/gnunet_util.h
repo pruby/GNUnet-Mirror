@@ -20,7 +20,7 @@
 
 /**
  * @file include/gnunet_util.h
- * @brief public interface to libgnunet_util
+ * @brief public interface to libgnunetutil
  *
  * @author Christian Grothoff
  * @author Krista Bennett
@@ -65,7 +65,7 @@
  * frequently, even between different SVN versions.
  */
 
-#define GNUNET_UTIL_VERSION 0x00060903
+#define GNUNET_UTIL_VERSION 0x00070000
 
 /**
  * We use an unsigned short in the protocol header, thus:
@@ -78,7 +78,10 @@
 #define MAX_PRIO 0x7FFFFFFF
 
 /**
- * Named constants for return values.
+ * Named constants for return values.  The following
+ * invariants hold: "NO == 0" (to allow "if (NO)")
+ * "OK != SYSERR", "OK != NO", "NO != SYSERR" 
+ * and finally "YES != NO".
  */
 #define OK      1
 #define SYSERR -1
@@ -100,16 +103,18 @@
 /**
  * @brief log levels
  */
-#define LOG_NOTHING    0
-#define LOG_FATAL      1
-#define LOG_ERROR      2
-#define LOG_FAILURE    3
-#define LOG_WARNING    4
-#define LOG_MESSAGE    5
-#define LOG_INFO       6
-#define LOG_DEBUG      7
-#define LOG_CRON       8
-#define LOG_EVERYTHING 9
+typedef enum LOG_Level {
+  LOG_NOTHING = 0,
+  LOG_FATAL,
+  LOG_ERROR,
+  LOG_FAILURE,
+  LOG_WARNING,
+  LOG_MESSAGE,
+  LOG_INFO,
+  LOG_DEBUG,
+  LOG_CRON,
+  LOG_EVERYTHING,
+} LOG_Level;
 
 /**
  * @brief length of the sessionkey in bytes (256 BIT sessionkey)
@@ -950,7 +955,7 @@ void LOGHASH(size_t size,
 /**
  * Get the current loglevel.
  */
-int getLogLevel(void);
+LOG_Level getLogLevel(void);
 
 /**
  * Return the logfile
@@ -977,7 +982,7 @@ void setCustomLogProc(TLogProc proc);
  * @param minLogLevel the minimum loglevel that we must be at
  * @param format the format string describing the message
  */
-void LOG(int minLogLevel,
+void LOG(LOG_Level minLogLevel,
 	 const char * format,
 	 ...);
 
@@ -2282,16 +2287,6 @@ unsigned int vectorIndexOf(struct Vector * v,
  * possible.
  */
 void ** vectorElements(struct Vector * v);
-
-/**
- * Configuration
- */
-int cfg_parse_file(char *filename);
-char * cfg_get_str(const char * sec,
-		   const char * ent);
-int cfg_get_signed_int(const char *sec,
-		       const char *ent);
-void doneParseConfig(void);
 
 /**
  * open() a file
