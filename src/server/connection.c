@@ -119,16 +119,11 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
 #define EXPECTED_MTU 1500
 
 /**
- * Send limit we announce to peers initially, around 1 MTU for most transp.
- */
-#define START_TRANSMIT_LIMIT 1500
-
-/**
- * How many MTU size messages to we want to transmit
+ * How many ping/pong messages to we want to transmit
  * per SECONDS_INACTIVE_DROP interval? (must be >=4 to
  * keep connection alive with reasonable probability).
  */
-#define TARGET_MSG_SID 32
+#define TARGET_MSG_SID 8
 
 /**
  * Minimum number of sample messages (per peer) before we recompute
@@ -139,7 +134,7 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
 /**
  * What is the minimum number of bytes per minute that
  * we allocate PER peer? (5 minutes inactivity timeout,
- * 1500 MTU, 128 MSGs => 32 * 1500 / 5 = 38400 bpm [ 160 bps])
+ * 1500 MTU, 8 MSGs => 8 * 1500 / 5 = 2400 bpm [ 40 bps])
  */
 #define MIN_BPM_PER_PEER (TARGET_MSG_SID * EXPECTED_MTU * 60 / SECONDS_INACTIVE_DROP)
 
@@ -147,7 +142,6 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  * How often do we expect to re-run the traffic allocation
  * code? (depends on MINIMUM_SAMPLE_COUNT and MIN_BPM_PER_PEER
  * and MTU size).
- * With MSC 16 and 5 minutes inactivity timeout and TMSID 32 about every 148s
  */
 #define MIN_SAMPLE_TIME (MINIMUM_SAMPLE_COUNT * cronMINUTES * EXPECTED_MTU / MIN_BPM_PER_PEER)
 
@@ -409,6 +403,8 @@ typedef struct BufferEntry_ {
   /* what is the limit that we are currently shooting for? (byte per minute) */
   unsigned int idealized_limit;
 
+  unsigned int violations;
+
   /* are we currently in "sendBuffer" for this
      entry? */
   int inSendBuffer;
@@ -508,6 +504,12 @@ static int stat_sizeMessagesDropped;
 
 static int stat_hangupSent;
 
+static int stat_encrypted;
+
+static int stat_decrypted;
+
+static int stat_noise_sent;
+
 /* ******************** CODE ********************* */
 
 /**
@@ -532,7 +534,7 @@ static BufferEntry * initBufferEntry() {
   be->session.tsession
     = NULL;
   be->max_bpm
-    = START_TRANSMIT_LIMIT; /* about 1 MTU for most transports */
+    = MIN_BPM_PER_PEER;
   be->available_send_window
     = be->max_bpm;
   be->recently_received
@@ -540,9 +542,9 @@ static BufferEntry * initBufferEntry() {
   be->current_connection_value
     = 0.0;
   be->idealized_limit
-    = START_TRANSMIT_LIMIT;
+    = MIN_BPM_PER_PEER;
   be->max_transmitted_limit
-    = START_TRANSMIT_LIMIT;
+    = MIN_BPM_PER_PEER;
   be->lastSendAttempt
     = 0; /* never */
   be->MAX_SEND_FREQUENCY
@@ -762,11 +764,6 @@ solveKnapsack(BufferEntry * be,
 
   return max;
 }
-
-#if DEBUG_CONNECTION == 2
-/* for debugging... */
-#include "gnunet_afs_esed2.h"
-#endif
 
 /**
  * A new packet is supposed to be send out. Should it be
@@ -1117,6 +1114,9 @@ static void sendBuffer(BufferEntry * be) {
 	  plaintextMsg[p] = (char) rand();
 	entry->callback = NULL;
 	entry->closure = NULL;
+	if (stats != NULL)
+	  stats->change(stat_noise_sent,
+			entry->len);
       }
     }
   }
@@ -1218,6 +1218,9 @@ static void sendBuffer(BufferEntry * be) {
 	 i++)
       plaintextMsg[i] = (char) rand();
     p = totalMessageSize;
+    if (stats != NULL)
+      stats->change(stat_noise_sent,
+		    noiseLen);
   }
 
   encryptedMsg = MALLOC(p);
@@ -1229,6 +1232,9 @@ static void sendBuffer(BufferEntry * be) {
 	       &be->skey_local,
 	       (const INITVECTOR*) encryptedMsg, /* IV */
 	       &((P2P_Message*)encryptedMsg)->sequenceNumber);
+  if (stats != NULL)
+    stats->change(stat_encrypted,
+		  p - sizeof(HashCode512));
   if (be->session.tsession == NULL)
     be->session.tsession
       = transport->connectFreely(&be->session.sender,
@@ -1604,8 +1610,8 @@ static void shutdownConnection(BufferEntry * be) {
   }
   be->skey_remote_created = 0;
   be->status = STAT_DOWN;
-  be->idealized_limit = START_TRANSMIT_LIMIT;
-  be->max_transmitted_limit = START_TRANSMIT_LIMIT;
+  be->idealized_limit = MIN_BPM_PER_PEER;
+  be->max_transmitted_limit = MIN_BPM_PER_PEER;
   if (be->session.tsession != NULL) {
     transport->disconnect(be->session.tsession);
     be->session.tsession = NULL;
@@ -1735,7 +1741,8 @@ static void scheduleInboundTraffic() {
   minCon = minConnect();
   if (minCon > activePeerCount)
     minCon = activePeerCount;
-  schedulableBandwidth = max_bpm - minCon * MIN_BPM_PER_PEER;
+  schedulableBandwidth 
+    = max_bpm - minCon * MIN_BPM_PER_PEER;
 
   adjustedRR = MALLOC(sizeof(long long) * activePeerCount);
 
@@ -1746,7 +1753,7 @@ static void scheduleInboundTraffic() {
   for (u=0;u<activePeerCount;u++) {
     adjustedRR[u] = entries[u]->recently_received * cronMINUTES / timeDifference / 2;
 
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
     if (adjustedRR[u] > entries[u]->idealized_limit) {
       EncName enc;
       IFLOG(LOG_INFO,
@@ -1766,25 +1773,37 @@ static void scheduleInboundTraffic() {
     if (adjustedRR[u] > 2 * MAX_BUF_FACT *
 	entries[u]->max_transmitted_limit) {
       EncName enc;
-      IFLOG(LOG_INFO,
-	    hash2enc(&entries[u]->session.sender.hashPubKey,
-		     &enc));
-      LOG(LOG_INFO,
-	  "blacklisting '%s': sent %llu bpm "
-	  "(limit %u bpm, target %u bpm)\n",
-	  &enc,
-	  adjustedRR[u],
-	  entries[u]->max_transmitted_limit,
-	  entries[u]->idealized_limit);
-      shutdownConnection(entries[u]);
-      identity->blacklistHost(&entries[u]->session.sender,
-			      1 / topology->getSaturation(),
-			      YES);
-      activePeerCount--;
-      entries[u]    = entries[activePeerCount];
-      shares[u]     = shares[activePeerCount];
-      adjustedRR[u] = adjustedRR[activePeerCount];
-      u--;
+
+      entries[u]->violations++;
+      if (entries[u]->violations > 10) {
+	IFLOG(LOG_INFO,
+	      hash2enc(&entries[u]->session.sender.hashPubKey,
+		       &enc));
+	LOG(LOG_INFO,
+	    "blacklisting '%s': sent repeatedly %llu bpm "
+	    "(limit %u bpm, target %u bpm)\n",
+	    &enc,
+	    adjustedRR[u],
+	    entries[u]->max_transmitted_limit,
+	    entries[u]->idealized_limit);
+	identity->blacklistHost(&entries[u]->session.sender,
+				1 / topology->getSaturation(),
+				YES);
+	shutdownConnection(entries[u]);
+	activePeerCount--;
+	entries[u]    = entries[activePeerCount];
+	shares[u]     = shares[activePeerCount];
+	adjustedRR[u] = adjustedRR[activePeerCount];
+	u--;
+      }
+    } else {
+      if ( (adjustedRR[u] < entries[u]->max_transmitted_limit/2) &&
+	   (entries[u]->violations > 0) ) {
+	/* allow very low traffic volume to
+	   balance out (rare) times of high
+	   volume */
+	entries[u]->violations--;
+      }
     }
 
     if (adjustedRR[u] < MIN_BPM_PER_PEER/2)
@@ -1849,7 +1868,8 @@ static void scheduleInboundTraffic() {
 	/* assign rest disregarding traffic limits */
 	perm = permute(activePeerCount);
 	for (u=0;u<activePeerCount;u++)
-	  entries[perm[u]]->idealized_limit += (unsigned int) (schedulableBandwidth/activePeerCount);	
+	  entries[perm[u]]->idealized_limit 
+	    += (unsigned int) (schedulableBandwidth/activePeerCount);	
 	schedulableBandwidth = 0;
 	FREE(perm);
       }
@@ -1863,7 +1883,8 @@ static void scheduleInboundTraffic() {
      good since it creates opportunities. */
   if (activePeerCount > 0)
     for (u=0;u<minCon;u++)
-      entries[randomi(activePeerCount)]->idealized_limit += MIN_BPM_PER_PEER;
+      entries[randomi(activePeerCount)]->idealized_limit 
+	+= MIN_BPM_PER_PEER;
 
   /* prepare for next round */
   lastRoundStart = now;
@@ -1939,7 +1960,8 @@ static void cronDecreaseLiveness(void * unused) {
 	      &enc,
 	      now - root->isAlive);
 	  shutdownConnection(root);
-	  identity->whitelistHost(&root->session.sender); /* the host may still be worth trying again soon */
+	  /* the host may still be worth trying again soon: */
+	  identity->whitelistHost(&root->session.sender); 
 	}
 	break;
       default: /* not up, not down - partial SKEY exchange */
@@ -2051,6 +2073,9 @@ int checkHeader(const PeerIdentity * sender,
     FREE(tmp);
     return SYSERR;
   }
+  if (stats != NULL)
+    stats->change(stat_decrypted,
+		  size - sizeof(HashCode512));
   memcpy(&msg->sequenceNumber,
 	 tmp,
 	 size - sizeof(HashCode512));
@@ -2398,13 +2423,9 @@ static void connectionConfigChangeCallback() {
     int newMAXHOSTS = 0;
 
     max_bpm = new_max_bpm;
-    /* max-hosts is supposed to allow TARGET_MSG_SID MTU-sized messages
-       per SECONDS_INACTIVE_DROP; maxbps=max_bpm/60 =>
-       byte per SID = maxbpm*SID/60; divide by MTU to
-       get number of messages that can be send per SID */
     newMAXHOSTS
-      = max_bpm / MIN_BPM_PER_PEER;
-    /* => for 50000 bps, we get 78 (rounded DOWN to 64) connections! */
+      = max_bpm / (MIN_BPM_PER_PEER*2);
+    /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
 
     if (newMAXHOSTS < 2)
       newMAXHOSTS = 2; /* strict minimum is 2 */
@@ -2501,6 +2522,12 @@ void initConnection() {
       = stats->create(_("# bytes of outgoing messages dropped"));
     stat_hangupSent
       = stats->create(_("# connections closed (HANGUP sent)"));
+    stat_encrypted
+      = stats->create(_("# bytes encrypted"));
+    stat_decrypted
+      = stats->create(_("# bytes decrypted"));
+    stat_noise_sent
+      = stats->create(_("# bytes noise sent"));
   }
   transport->start(&core_receive);
 }
