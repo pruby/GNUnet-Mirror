@@ -1266,10 +1266,14 @@ static void sendBuffer(BufferEntry * be) {
 	= (be->idealized_limit + be->max_transmitted_limit*3)/4;
 
     if (rsnSize > 0) {
-      j = 0;
+      j = sizeof(P2P_Message);
       while (j < p) {
 	p2p_HEADER * part = (p2p_HEADER*) &plaintextMsg[j];
 	unsigned short plen = htons(part->size);
+	if (plen < sizeof(p2p_HEADER)) {
+	  BREAK();
+	  break;
+	}
 	for (rsi=0;rsi<rsnSize;rsi++)
 	  rsns[rsi](&be->session.sender,
 		    part);
