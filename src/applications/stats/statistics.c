@@ -273,6 +273,8 @@ static int sendStatistics(ClientHandle sock,
       mpos += strlen(descriptions[pos])+1;
     }
     statMsg->statCounters = htonl(end - start);
+    GNUNET_ASSERT(mpos + sizeof(STATS_CS_MESSAGE) < MAX_BUFFER_SIZE);
+
     statMsg->header.size = htons(mpos + sizeof(STATS_CS_MESSAGE));
     /* printf("writing message of size %d with stats %d to %d out of %d to socket\n",
        ntohs(statMsg->header.size),
