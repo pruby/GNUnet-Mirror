@@ -419,7 +419,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
  * Free the subtree (assumes all threads have already been stopped and
  * that the FSUI lock is either held or that we are in FSUI stop!).
  */
-static void freeDownloadList(FSUI_DownloadList * list) {
+void freeDownloadList(FSUI_DownloadList * list) {
   FSUI_DownloadList * dpos;
   int i;
 
