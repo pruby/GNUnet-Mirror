@@ -71,20 +71,26 @@ unsigned int randomi(unsigned int i) {
 }
 
 /**
- * Get an array with a random permutation of the numbers 0...n-1.
+ * Get an array with a random permutation of the
+ * numbers 0...n-1.
+ * @param mode STRONG if the strong (but expensive) PRNG should be used, WEAK otherwise
+ * @param n the size of the array
+ * @return the permutation array (allocated from heap)
  */
-int * permute(int n) {
+int * permute(int mode, int n) {
   int * ret;
   int i;
   int tmp;
   unsigned int x;
+  unsigned int (*prng) (unsigned int u);
 
   GNUNET_ASSERT(n>0);
   ret = (int*)MALLOC(n * sizeof(int));
+  prng = (mode == STRONG) ? randomi : weak_randomi;
   for (i=0;i<n;i++)
     ret[i] = i;
   for (i=0;i<n;i++) {
-    x = randomi(n);
+    x = prng(n);
     tmp = ret[x];
     ret[x] = ret[i];
     ret[i] = tmp;

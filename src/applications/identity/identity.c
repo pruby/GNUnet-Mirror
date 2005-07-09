@@ -549,7 +549,7 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
   MUTEX_LOCK(&lock_);  
   if (YES == tryTemporaryList) {
     if (protocol == ANY_PROTOCOL_NUMBER)
-      perm = permute(MAX_TEMP_HOSTS);
+      perm = permute(WEAK, MAX_TEMP_HOSTS);
     else
       perm = NULL;
     /* ok, then first try temporary hosts 

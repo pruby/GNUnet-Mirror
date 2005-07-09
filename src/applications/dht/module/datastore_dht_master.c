@@ -100,7 +100,7 @@ static int lookup(void * closure,
       else
 	count = pos->count;
       if (count < pos->count)
-	perm = permute(pos->count); /* randomize returned set! */
+	perm = permute(WEAK, pos->count); /* randomize returned set! */
       else
 	perm = NULL;
 

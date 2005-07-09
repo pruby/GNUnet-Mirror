@@ -217,7 +217,7 @@ static TSession * transportConnectFreely(const PeerIdentity * peer,
 
   MUTEX_LOCK(&tapis_lock);
   ret = NULL;
-  perm = permute(tapis_count);
+  perm = permute(WEAK, tapis_count);
   for (i=0;i<tapis_count;i++) {
     if (tapis[perm[i]] == NULL)
       continue;
@@ -449,7 +449,7 @@ static HELO_Message * transportCreateHELO(unsigned short ttype) {
   if (ttype == ANY_PROTOCOL_NUMBER) {
     int * perm;
 
-    perm = permute(tapis_count);
+    perm = permute(WEAK, tapis_count);
     ttype = tapis_count-1;
     while ( (ttype < tapis_count) &&
 	    ( (tapis[perm[ttype]] == NULL) ||

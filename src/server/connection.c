@@ -1121,7 +1121,7 @@ static void sendBuffer(BufferEntry * be) {
     }
   }
 
-  perm = permute(be->sendBufferSize);
+  perm = permute(WEAK, be->sendBufferSize);
   /* change permutation such that SE_FLAGS
      are obeyed */
   headpos = 0;
@@ -1847,7 +1847,7 @@ static void scheduleInboundTraffic() {
     schedulableBandwidth -= decrementSB;
     if ( (activePeerCount > 0) &&
 	 (didAssign == NO) ) {
-      int * perm = permute(activePeerCount);
+      int * perm = permute(WEAK, activePeerCount);
       /* assign also to random "worthless" (zero-share) peers */
       for (u=0;u<activePeerCount;u++) {
 	unsigned int v = perm[u]; /* use perm to avoid preference to low-numbered slots */
@@ -1866,7 +1866,7 @@ static void scheduleInboundTraffic() {
       if ( (schedulableBandwidth > 0) &&
 	   (activePeerCount > 0) ) {
 	/* assign rest disregarding traffic limits */
-	perm = permute(activePeerCount);
+	perm = permute(WEAK, activePeerCount);
 	for (u=0;u<activePeerCount;u++)
 	  entries[perm[u]]->idealized_limit 
 	    += (unsigned int) (schedulableBandwidth/activePeerCount);	

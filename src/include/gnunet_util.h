@@ -88,6 +88,9 @@
 #define YES     1
 #define NO      0
 
+#define STRONG YES
+#define WEAK NO
+
 /**
  * @brief constants to specify time
  */
@@ -556,10 +559,11 @@ unsigned long long randomi64(unsigned long long u);
 /**
  * Get an array with a random permutation of the
  * numbers 0...n-1.
+ * @param mode STRONG if the strong (but expensive) PRNG should be used, WEAK otherwise
  * @param n the size of the array
  * @return the permutation array (allocated from heap)
  */
-int * permute(int n);
+int * permute(int mode, int n);
 
 /**
  * Produce a cryptographically weak random value.

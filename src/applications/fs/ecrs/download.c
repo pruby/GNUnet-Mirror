@@ -1092,7 +1092,7 @@ static void processRequests(RequestManager * rm) {
   }
 
   minSleep = 5000 * cronMILLIS; /* max-sleep! */
-  perm = permute(rm->requestListIndex);
+  perm = permute(STRONG, rm->requestListIndex);
   for (i=0;i<rm->requestListIndex;i++) {
     int j = perm[i];
     if (rm->requestList[j]->lastTimeout + TTL_DECREMENT < now) {
