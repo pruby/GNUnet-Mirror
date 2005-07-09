@@ -640,7 +640,7 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
     MUTEX_UNLOCK(&lock_);
     return NULL;
   }
-
+  FREE(fn);
   GROW(host->helos,
        host->heloCount,
        host->heloCount+1);

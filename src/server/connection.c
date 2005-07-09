@@ -3009,7 +3009,7 @@ int unregisterSendNotify(MessagePartHandler callback) {
       rsns[i] = rsns[rsnSize-1];
       GROW(rsns,
 	   rsnSize,
-	   rsnSize-11);
+	   rsnSize-1);
       MUTEX_UNLOCK(&lock);
       return OK;
     }
