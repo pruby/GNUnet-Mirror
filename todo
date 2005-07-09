@@ -1,4 +1,5 @@
 0.7.0pre5 [7'05] ("API cleanup"):
+- add stats for the different types of outbound messages!
 - Do well-behaved peers go over bandwidth limits? (#766)
   (Nils reported about strict blacklisting!)
 - cleanup API: move #ifdef WINDOWS in gnunet_util to plibc or
