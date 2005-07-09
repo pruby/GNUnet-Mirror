@@ -1128,6 +1128,8 @@ static void sendBuffer(BufferEntry * be) {
   tailpos = be->sendBufferSize-1;
   remainingBufferSize = be->sendBufferSize;
   for (i=0;i<be->sendBufferSize;i++) {
+    if (be->sendBuffer[perm[i]] == NULL)
+      continue;	
     if (be->sendBuffer[perm[i]]->knapsackSolution == YES) {
       remainingBufferSize--;
       switch (be->sendBuffer[perm[i]]->flags & SE_PLACEMENT_FLAG) {
