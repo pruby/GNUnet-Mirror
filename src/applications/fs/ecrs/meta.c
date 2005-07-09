@@ -322,7 +322,13 @@ static unsigned int tryCompression(char * data,
   char * tmp;
   uLongf dlen;
 
+#ifdef compressBound
   dlen = compressBound(oldSize);
+#else
+  dlen = oldSize + (oldSize / 100) + 20;
+  /* documentation says 100.1% oldSize + 12 bytes, but we
+     should be able to overshoot by more to be safe */
+#endif
   tmp = MALLOC(dlen);
   if (Z_OK == compress2(tmp, &dlen, data, oldSize, 9)) {
     if (dlen < oldSize) {
