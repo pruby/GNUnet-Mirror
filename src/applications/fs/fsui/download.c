@@ -419,7 +419,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
  * Free the subtree (assumes all threads have already been stopped and
  * that the FSUI lock is either held or that we are in FSUI stop!).
  */
-void freeDownloadList(FSUI_DownloadList * list) {
+static void freeDownloadList(FSUI_DownloadList * list) {
   FSUI_DownloadList * dpos;
   int i;
 
@@ -481,12 +481,6 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
       backup = ctx->threadPoolSize;
       ctx->threadPoolSize = 0;
       updateDownloadThread(dl);
-      if (prev == NULL)
-	ctx->activeDownloads.child
-	  = dl->next;
-      else
-	prev->next
-	  = dl->next;
       freeDownloadList(dl);
       ctx->threadPoolSize = backup;
       MUTEX_UNLOCK(&ctx->lock);
