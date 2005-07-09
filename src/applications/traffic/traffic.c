@@ -536,7 +536,7 @@ Traffic_ServiceAPI * provide_module_traffic(CoreAPIForApplication * capi) {
 #if KEEP_TRANSMITTED_STATS
   for (i=0;i<MAX_p2p_PROTO_USED;i++)
     stat_traffic_transmitted_by_type[i] = 0;
-  coreAPI->unregisterSendNotify(&trafficSend);
+  coreAPI->registerSendNotify(&trafficSend);
 #endif
 #if KEEP_RECEIVE_STATS
   for (i=0;i<MAX_p2p_PROTO_USED;i++) {
