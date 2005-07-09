@@ -186,7 +186,7 @@ int startGNUnetDaemon(int daemonize) {
   return launchWithExec(daemonize);
 #elif MINGW
   char szCall[_MAX_PATH + 1], szWd[_MAX_PATH + 1], szCWd[_MAX_PATH + 1];
-  char *args[1], *cp;
+  char *args[1], *cp = NULL;
   int pid;
   int idx = 0;
 
@@ -197,8 +197,6 @@ int startGNUnetDaemon(int daemonize) {
   chdir(szWd);
   
   if (daemonize == NO) {
-	  char *cp;
-
   	args[0] = "-d";
  		idx = 1;
  
