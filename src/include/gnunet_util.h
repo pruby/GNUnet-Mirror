@@ -2306,21 +2306,54 @@ size_t strlcat(char *dest, const char *src, size_t count);
 /**
  * Helper functions
  */
-#ifdef WINDOWS
-void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable);
-int ListNICs(void (*callback) (char *, int));
-char *winErrorStr(char *prefix, DWORD dwErr);
-int InstallAsService(char *username);
-int UninstallService(void);
-void _InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String);
-NTSTATUS _OpenPolicy(LPWSTR ServerName, DWORD DesiredAccess, PLSA_HANDLE PolicyHandle);
-BOOL _GetAccountSid(LPTSTR SystemName, LPTSTR AccountName, PSID * Sid);
-NTSTATUS _SetPrivilegeOnAccount(LSA_HANDLE PolicyHandle, PSID AccountSid, 
-	LPWSTR PrivilegeName, BOOL bEnable);
-int CreateServiceAccount(char *pszName, char *pszDesc);
-#endif
 
+/**
+ * @brief Enumerate all network interfaces
+ * @param callback the callback function
+ */
+void enumNetworkIfs(void (*callback) (char *, int));
 
+/**
+ * @brief Checks if we can start GNUnet automatically
+ * @return 1 if yes, 0 otherwise
+ */
+int isOSAutostartCapable();
+
+/**
+ * @brief Make GNUnet start automatically
+ * @param doAutoStart true to enable autostart, false to disable it
+ * @param username name of the user account to use
+ * @param groupname name of the group to use
+ * @return 0 on success
+ */
+int autostartService(int doAutoStart, char *username, char *groupname);
+
+/**
+ * @brief Checks if we can add an user for the GNUnet service
+ * @return 1 if yes, 0 otherwise
+ * @todo support for useradd(8)
+ */
+int isOSUserAddCapable();
+
+/**
+ * @brief Checks if we can add a group for the GNUnet service
+ * @return 1 if yes, 0 otherwise
+ * @todo support for groupadd(8)
+ */
+int isOSGroupAddCapable();
+
+/**
+ * @brief Add a service account for GNUnet
+ * @param group the group of the new user
+ * @param name the name of the new user
+ * @return 0 on success
+ */
+int createGroupUser(char *group_name, char *user_name);
+
+/**
+ * @brief Format a Windows specific error code
+ */
+char *winErrorStr(char *prefix, int dwErr);
 
 /** 
  * Checks if gnunetd is running

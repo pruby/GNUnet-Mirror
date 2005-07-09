@@ -231,14 +231,14 @@ void
 on_finish_clicked (GtkButton * button, gpointer user_data)
 {
 	if (doAutoStart && user_name)
-		if (!wiz_addServiceAccount(group_name, user_name)) {
+		if (!wiz_createGroupUser(group_name, user_name)) {
 #ifndef MINGW
 			showErr(_("Unable to create user account:"), STRERROR(errno));
 #endif
 			return;
 		}
 
-	if (!wiz_autostart(doAutoStart, user_name, group_name)) {
+	if (!wiz_autostartService(doAutoStart, user_name, group_name)) {
 #ifndef MINGW
 		showErr(_("Unable to change startup process:"), STRERROR(errno));
 #endif

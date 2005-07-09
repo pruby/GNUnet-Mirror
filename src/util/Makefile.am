@@ -71,6 +71,7 @@ libgnunetutil_la_SOURCES = \
  locking_gcrypt.c \
  locking_gcrypt.h \
  logging.c \
+ osconfig.c \
  printhelp.c \
  port.c \
  random.c \

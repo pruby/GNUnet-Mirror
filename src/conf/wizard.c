@@ -94,7 +94,7 @@ void load_step2()
 	if (sym)
 	{
 		nic_item_count = 0;
-		wiz_enum_nics(insert_nic);
+		enumNetworkIfs(insert_nic);
 
 		if (!nic_item_count)
 		{
@@ -215,8 +215,8 @@ void load_step4()
 		if (group_name)
 			gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
 	
-		gtk_widget_set_sensitive(entUser, wiz_useradd_capable());
-		gtk_widget_set_sensitive(entGroup, group = wiz_groupadd_capable());
+		gtk_widget_set_sensitive(entUser, isOSUserAddCapable());
+		gtk_widget_set_sensitive(entGroup, group = isOSGroupAddCapable());
 }
 
 void load_step5()
@@ -253,7 +253,7 @@ void load_step5()
 			sym_get_tristate_value(sym) != no);
 	}
 	
-	if (wiz_useradd_capable())
+	if (isOSUserAddCapable())
 		gtk_widget_set_sensitive(chkStart, TRUE);
 
 	if (doAutoStart)

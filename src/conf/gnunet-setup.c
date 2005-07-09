@@ -32,7 +32,7 @@
 static void help() {
   puts(_("USAGE: gnunet-setup MODULE\n\n"
        "MODULE\n"
-       " recreate\t\trecreate configuration files\n"
+       " recreate\trecreate configuration files\n"
        " config\t\ttext-based configuration\n"
        " menuconfig\ttext-based menu\n"
        " gconfig\tGTK configuration\n"
@@ -82,7 +82,7 @@ int main(int argc,
 #if HAVE_GTK
     wizard_main(argc - 1, &argv[1]);
 #else
-    puts("basic-gtk is not available\n");
+    puts("wizard-gtk is not available\n");
 #endif
  	}
   else if (strncmp(argv[1], "gconfig", 7) == 0) {

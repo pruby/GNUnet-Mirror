@@ -100,7 +100,7 @@ int wizard_curs_main(int argc, char *argv[])
 
 	dialog_clear();
   	
-  wiz_enum_nics(insert_nic_curs);
+  enumNetworkIfs(insert_nic_curs);
 
 	/* Network interface */
 	if (nic_item_count) {
@@ -406,7 +406,7 @@ int wizard_curs_main(int argc, char *argv[])
 	dialog_clear();
 
 	/* Autostart */
-	if (wiz_autostart_capable()) {
+	if (isOSAutostartCapable()) {
 		while(true) {
 			ret = dialog_yesno(_("GNUnet configuration"), _("Do you want to launch "
 					"GNUnet as a system service?"
@@ -428,7 +428,7 @@ int wizard_curs_main(int argc, char *argv[])
 	}
 	
 	/* User */
-	if (wiz_useradd_capable()) {
+	if (isOSUserAddCapable()) {
 		while(true) {
 			ret = dialog_inputbox(_("GNUnet configuration"),
 				_("Define the user owning the GNUnet service.\n\n"
@@ -456,7 +456,7 @@ int wizard_curs_main(int argc, char *argv[])
 		dialog_clear();
 
 		/* Group */
-		if (wiz_groupadd_capable()) {
+		if (isOSGroupAddCapable()) {
 			while(true) {
 				ret = dialog_inputbox(_("GNUnet configuration"),
 					_("Define the group owning the GNUnet service.\n\n"
@@ -507,10 +507,10 @@ int wizard_curs_main(int argc, char *argv[])
 
 	/* Save config */
 	if (user_name && strlen(user_name) > 0)
-		if (!wiz_addServiceAccount(group_name, user_name))
+		if (!isOSUserAddCapable(group_name, user_name))
 			showCursErr(_("Unable to create user account:"), STRERROR(errno));
 	
-	if (!wiz_autostart(autostart, user_name, group_name))
+	if (!isOSAutostartCapable(autostart, user_name, group_name))
 		showCursErr(_("Unable to change startup process:"), STRERROR(errno));
 
 	init_dialog();

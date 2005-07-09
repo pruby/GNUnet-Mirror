@@ -777,28 +777,6 @@ end:
 	return fResult;
 }
 
-char *winErrorStr(char *prefix, DWORD dwErr)
-{
-	char *err, *ret;
-	int mem;
-	
-	if (! FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-  	NULL, dwErr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &err,
-		0, NULL ))
-	{
-		err = "";
-	}
-
-	mem = strlen(err) + strlen(prefix) + 20;
-	ret = (char *) malloc(mem);
-
-  snprintf(ret, mem, "%s: %s (#%u)", prefix, err, dwErr);
-  
-  LocalFree(err);
-  
-  return ret; 
-}
-
 } /* extern "C" */
 
 #endif
