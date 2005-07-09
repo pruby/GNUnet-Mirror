@@ -80,7 +80,6 @@ int wiz_is_nic_default(const char *name, int suggestion) {
  */
 int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
 	char *err;
-	DWORD dwErr;
 	int ret = autostartService(doAutoStart, username, groupname);
 	
 	if (ret ) {
@@ -91,8 +90,7 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
 					GetLastError());
 				break;
 			case 2:
-				dwErr = GetLastError(); 
-				if (dwErr != ERROR_SERVICE_EXISTS) {
+				if (GetLastError() != ERROR_SERVICE_EXISTS) {
 					err = winErrorStr(_("Can't create service"),
 					GetLastError());
 				}
