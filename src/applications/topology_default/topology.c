@@ -154,6 +154,9 @@ static void scanForHosts(unsigned int index) {
   cron_t now;
   EncName enc;
 
+  if (getNetworkLoadUp() > 100)
+    return; /* bandwidth saturated, do not
+	       push it higher! */
   cronTime(&now);
   indexMatch.index = index;
   indexMatch.matchCount = 0;

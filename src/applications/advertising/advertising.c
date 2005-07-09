@@ -425,7 +425,9 @@ broadcastHELOTransport(TransportAPI * tapi,
 		       const int * prob) {
   SendData sd;
   cron_t now;
-  
+
+  if (getNetworkLoadUp() > 100)
+    return; /* network load too high... */
   if (0 != randomi(*prob))
     return; /* ignore */
 #if DEBUG_HELOEXCHANGE
@@ -472,6 +474,10 @@ broadcastHELOTransport(TransportAPI * tapi,
 static void broadcastHELO(void * unused) {
   unsigned int i;
 
+  if (getNetworkLoadUp() > 100)
+    return; /* network load too high... */
+  if (getCPULoad() > 100)
+    return; /* CPU load too high... */
   i = transport->forEach(NULL,
 			 NULL);
   transport->forEach((TransportCallback)&broadcastHELOTransport,
@@ -486,6 +492,8 @@ typedef struct {
 
 static void forwardCallback(const PeerIdentity * peer,
 			    FCC * fcc) {
+  if (getNetworkLoadUp() > 100)
+    return; /* network load too high... */
   if (randomi(fcc->prob) != 0)
     return; /* only forward with a certain chance */
   if (equalsHashCode512(&peer->hashPubKey,
@@ -505,14 +513,17 @@ static void forwardCallback(const PeerIdentity * peer,
  */
 static void
 forwardHELOHelper(const PeerIdentity * peer,
-		  const unsigned short protocol,
+		  unsigned short protocol,
 		  int confirmed,
-		  int * probability) {
+		  void * data) {
+  int * probability = data;
   HELO_Message * helo;
   TIME_T now;
   int count;
   FCC fcc;
 
+  if (getNetworkLoadUp() > 100)
+    return; /* network load too high... */
   if (confirmed == NO)
     return;
   if (protocol == NAT_PROTOCOL_NUMBER)
@@ -570,6 +581,8 @@ static void
 forwardHELO(void * unused) {
   int count;
 
+  if (getCPULoad() > 100)
+    return; /* CPU load too high... */
 #if DEBUG_HELOEXCHANGE
   LOG(LOG_CRON,
       "Enter '%s'.\n",
@@ -579,7 +592,7 @@ forwardHELO(void * unused) {
 				NULL,
 				NULL);
   identity->forEachHost(0, /* ignore blacklisting */
-			(HostIterator)&forwardHELOHelper,
+			&forwardHELOHelper,
 			&count);
 #if DEBUG_HELOEXCHANGE
   LOG(LOG_CRON,

@@ -114,7 +114,7 @@ int initUtil(int argc,
 
   setlocale (LC_ALL, "");
   BINDTEXTDOMAIN(PACKAGE, LOCALEDIR);
-  textdomain (PACKAGE);
+  textdomain(PACKAGE);
 
   gnunet_util_initIO();
   initLockingGcrypt();
