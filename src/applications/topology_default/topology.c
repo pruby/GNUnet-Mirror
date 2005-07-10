@@ -104,9 +104,12 @@ static void scanHelperCount(const PeerIdentity * id,
 			    void * data) {
   IndexMatch * im = data;
 
-  if (hostIdentityEquals(coreAPI->myIdentity, id))
+  if (hostIdentityEquals(coreAPI->myIdentity,
+			 id))
     return;
   if (coreAPI->computeIndex(id) != im->index)
+    return;
+  if (0 != coreAPI->queryBPMfromPeer(id))
     return;
   if (YES == transport->isAvailable(proto)) {
     im->matchCount++;
@@ -131,6 +134,8 @@ static void scanHelperSelect(const PeerIdentity * id,
   if (hostIdentityEquals(coreAPI->myIdentity, id))
     return;
   if (coreAPI->computeIndex(id) != im->index)
+    return;
+  if (0 != coreAPI->queryBPMfromPeer(id))
     return;
   if (YES == transport->isAvailable(proto)) {
     im->costSelector -= transport->getCost(proto);
@@ -178,10 +183,8 @@ static void scanForHosts(unsigned int index) {
 			&scanHelperSelect,
 			&indexMatch);
   if (hostIdentityEquals(coreAPI->myIdentity,
-			 &indexMatch.match)) {
-    BREAK(); /* should not happen, at least not often... */
-    return;
-  }
+			 &indexMatch.match)) 
+    return; /* should happen really rarely */  
   if (coreAPI->computeIndex(&indexMatch.match) != index) {
     BREAK(); /* should REALLY not happen */
     return;

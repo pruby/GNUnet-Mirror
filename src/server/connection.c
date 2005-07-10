@@ -2855,18 +2855,21 @@ void unicast(const PeerIdentity * receiver,
   char * closure;
   unsigned short len;
 
-  if (msg == NULL) {
+  if (msg == NULL) {    
     /* little hack for topology,
        which cannot do this directly
        due to cyclic dependencies! */
-    session->tryConnect(receiver);
+    if (getBandwidthAssignedTo(receiver) == 0)
+      session->tryConnect(receiver);
     return;
   }
   len = ntohs(msg->size);
   if (len == 0)
     return;
   closure = MALLOC(len);
-  memcpy(closure, msg, len);
+  memcpy(closure, 
+	 msg,
+	 len);
   unicastCallback(receiver,
 		  &copyCallback,
 		  closure,
