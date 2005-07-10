@@ -50,7 +50,6 @@ static int parseCommandLine(int argc,
 }
 
 int main(int argc, char * argv[]){
-  int i;
   int ret;
   cron_t start;
 
@@ -63,23 +62,13 @@ int main(int argc, char * argv[]){
   while (start + 12 * cronSECONDS > cronTime(NULL))
     sleep(1);
   cronTime(&start);
-  ret = cpuUsage();
+  ret = getCPULoad();
   while (start + 12 * cronSECONDS > cronTime(NULL))
     sqrt(245.2523); /* do some processing to drive load up */
-  if (ret > cpuUsage())
+  if (ret > getCPULoad())
     printf("busy loop decreased CPU load: %d < %d.\n",
 	   ret,
-	   cpuUsage());
-
-  /* make sure we don't leak open files... */
-  for (i=0;i<10000;i++) {
-    if (cpuUsage() == -1)
-      return -1;
-    if (networkUsageUp() == -1)
-      return -1;
-    if (networkUsageDown() == -1)
-      return -1;
-  }
+	   getCPULoad());
   stopCron();
   doneUtil();
 

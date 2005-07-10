@@ -1337,6 +1337,7 @@ static void appendToBuffer(BufferEntry * be,
   ENTRY();
   if ( (se == NULL) || (se->len == 0) ) {
     BREAK();
+    FREENONNULL(se);
     return;
   }
   if ( (be->session.mtu != 0) &&
@@ -1349,6 +1350,7 @@ static void appendToBuffer(BufferEntry * be,
 			    se->len,
 			    se->callback,
 			    se->closure);
+    FREE(se);
     return;
   }
 

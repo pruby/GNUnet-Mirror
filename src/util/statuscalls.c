@@ -676,6 +676,7 @@ int getNetworkLoadUp() {
        this datapoint.  So we return -1 -- AND reset lastSum / lastCall. */
     lastSum = currentLoadSum;
     lastCall = now;
+    MUTEX_UNLOCK(&statusMutex);
     return -1;
   }
   currentLoadSum += overload;
@@ -716,6 +717,7 @@ int getNetworkLoadDown() {
        this datapoint.  So we return -1 -- AND reset lastSum / lastCall. */
     lastSum = currentLoadSum;
     lastCall = now;
+    MUTEX_UNLOCK(&statusMutex);
     return -1;
   }
   currentLoadSum += overload;
@@ -744,6 +746,7 @@ int getCPULoad() {
     lastRet = -1;
     return -1;
   }
+  MUTEX_LOCK(&statusMutex);
   ret = (100 * currentLoad) / maxCPULoad;
 
   cronTime(&now);
@@ -752,17 +755,19 @@ int getCPULoad() {
     /* use smoothing, but do NOT update lastRet at frequencies higher
        than 250ms; this makes the smoothing (mostly) independent from
        the frequency at which getCPULoad is called. */
-    return (ret + 7 * lastRet)/8;
+    ret = (ret + 7 * lastRet)/8;
+    MUTEX_UNLOCK(&statusMutex);
+    return ret;
   }
 
   /* for CPU, we don't do the 'fast increase' since CPU is much
      more jitterish to begin with */
   if (lastRet != -1)
-    lastRet = (ret + 7 * lastRet)/8;
-  else
-    lastRet = ret;
+    ret = (ret + 7 * lastRet)/8;
+  lastRet = ret;
   lastCall = now;
-  return lastRet;
+  MUTEX_UNLOCK(&statusMutex);
+  return ret;
 }
 
 /**
