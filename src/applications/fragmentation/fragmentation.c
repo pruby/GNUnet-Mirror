@@ -393,7 +393,9 @@ static int processFragment(const PeerIdentity * sender,
   hash = sender->hashPubKey.bits[0] % DEFRAG_BUCKET_COUNT;
   smf = defragmentationCache[hash];
   while (smf != NULL) {
-    if (OK == tryJoin(smf, sender, (FRAGMENT_Message*) frag)) {
+    if (OK == tryJoin(smf, 
+		      sender,
+		      (FRAGMENT_Message*) frag)) {
       MUTEX_UNLOCK(&defragCacheLock);
       return OK;
     }
@@ -455,7 +457,8 @@ static int fragmentBMC(void * buf,
   int id;
   unsigned short mlen;
 
-  if (len < ctx->mtu) {
+  if ( (len < ctx->mtu) ||
+       (buf == NULL) ) {
     FREE(ctx);
     return SYSERR;
   }
