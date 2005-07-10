@@ -431,11 +431,6 @@ typedef struct {
   unsigned short len;
   /** when did we intend to transmit? */
   cron_t transmissionTime;
-  /** callback to call to create the message part */
-  BuildMessageCallback callback;
-  /** argument to callback, call FREENONNULL(closure) if we
-      can not transmit this MessagePart. */
-  void * closure;
 } FragmentBMC;
 
 /**
@@ -455,22 +450,12 @@ static int fragmentBMC(void * buf,
 		       FragmentBMC * ctx,
 		       unsigned short len) {
   static int idGen = 0;
-  char * tmp;
-  int ret;
   FRAGMENT_Message * frag;
   unsigned int pos;
   int id;
   unsigned short mlen;
 
   if (len < ctx->mtu) {
-    ctx->callback(NULL, ctx->closure, 0);
-    FREE(ctx);
-    return SYSERR;
-  }
-  tmp = MALLOC(ctx->len);
-  ret = ctx->callback(tmp, ctx->closure, ctx->len);
-  if (ret == SYSERR) {
-    FREE(tmp);
     FREE(ctx);
     return SYSERR;
   }
@@ -485,7 +470,7 @@ static int fragmentBMC(void * buf,
   frag->off = htons(0);
   frag->len = htons(ctx->len);
   memcpy(&((FRAGMENT_Message_GENERIC*)frag)->data[0],
-	 tmp,
+	 &ctx[1],
 	 len - sizeof(FRAGMENT_Message));
 
   /* create remaining fragments, add to queue! */
@@ -502,7 +487,7 @@ static int fragmentBMC(void * buf,
     frag->off = htons(pos);
     frag->len = htons(ctx->len);
     memcpy(&((FRAGMENT_Message_GENERIC*)frag)->data[0],
-	   &tmp[pos],
+	   &ctx[1],
 	   mlen - sizeof(FRAGMENT_Message));
     coreAPI->unicast(&ctx->sender,
 		     &frag->header,
@@ -512,7 +497,6 @@ static int fragmentBMC(void * buf,
   }
   GNUNET_ASSERT(pos == ctx->len);
   FREE(frag);
-  FREE(tmp);
   FREE(ctx);
   return OK;
 }
@@ -535,13 +519,17 @@ void fragment(const PeerIdentity * peer,
 
   GNUNET_ASSERT(len > mtu);
   GNUNET_ASSERT(mtu > sizeof(FRAGMENT_Message));
-  fbmc = MALLOC(sizeof(FragmentBMC));
+  fbmc = MALLOC(sizeof(FragmentBMC) + len);
   fbmc->mtu = mtu;
   fbmc->sender = *peer;
-  fbmc->transmissionTime = targetTime;
-  fbmc->callback = bmc;
-  fbmc->closure = bmcClosure;
+  fbmc->transmissionTime = targetTime;  
   fbmc->len = len;
+  if (SYSERR == bmc(&fbmc[1],
+		    bmcClosure,
+		    len)) {
+    FREE(fbmc);
+    return;
+  }
   xlen = mtu - sizeof(FRAGMENT_Message);
   coreAPI->unicastCallback(peer,
 			   (BuildMessageCallback) &fragmentBMC,
