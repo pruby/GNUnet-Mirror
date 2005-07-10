@@ -112,7 +112,8 @@ static const char * printSKEY(const SESSIONKEY * sk) {
  *
  * @param hostId the peer that gave a sign of live
  */
-static void notifyPONG(PeerIdentity * hostId) {
+static void notifyPONG(void * arg) {
+  PeerIdentity * hostId = arg;
 #if DEBUG_SESSION
   EncName enc;
 #endif
@@ -364,7 +365,7 @@ static int exchangeKey(const PeerIdentity * receiver,
   sndr = MALLOC(sizeof(PeerIdentity));
   *sndr = *receiver;
   ping = pingpong->pingUser(receiver,
-			    (CronJob)&notifyPONG,
+			    &notifyPONG,
 			    sndr,
 			    NO);
   if (ping == NULL) {
@@ -393,8 +394,8 @@ static int exchangeKey(const PeerIdentity * receiver,
 			      age,
 			      ping,
 			      pong);
+  FREE(ping);
   if (skey == NULL) {
-    FREE(ping);
     transport->disconnect(tsession);
     BREAK();
     return SYSERR;
