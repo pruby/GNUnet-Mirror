@@ -6,7 +6,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNUnet 0.7.0pre0\n"
+"Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
 "POT-Creation-Date: 2005-07-03 00:36+0200\n"
 "PO-Revision-Date: 2005-07-03 00:56+0100\n"
