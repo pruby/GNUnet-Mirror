@@ -6,33 +6,6 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-/* OPTIMIZE-ME: avoid making these non-static altogether! */
-
-
-/**
- * The following routine returns a positive number which indicates
- * the percentage CPU usage. 100 corresponds to one runnable process
- * on average.
- */
-int cpuUsage();
-
-/**
- * The following routine returns the percentage of available used
- * bandwidth.  A number from 0-100 is returned.  Example: If 81 is
- * returned this means that 81% of the network bandwidth of the host
- * is consumed.
- */
-int networkUsageUp();
-
-/**
- * The following routine returns the percentage of available used
- * bandwidth. A number from 0-100 is returned.  Example: If 81 is
- * returned this means that 81% of the network bandwidth of the host
- * is consumed.
- */
-int networkUsageDown();
-
-
 /**
  * Perform option parsing from the command line.
  */
@@ -83,22 +56,7 @@ int main(int argc, char * argv[]){
 
   if (OK != initUtil(argc, argv, &parseCommandLine))
     errexit("Error during initialization!\n");
-
-  for (i=0;i<3;i++) {
-    if (cpuUsage() == -1) {
-      printf("cpuUsage == -1\n");
-      return -1;
-    }
-    if (networkUsageUp() == -1) {
-      printf("networkUsageUp == -1\n");
-      return -1;
-    }
-    if (networkUsageDown() == -1) {
-      printf("networkUsageDown == -1\n");
-      return -1;
-    }
-    sleep(1);
-  }
+  startCron();
   /* need to run each phase for more than 10s since
      statuscalls only refreshes that often... */
   cronTime(&start);
@@ -122,6 +80,7 @@ int main(int argc, char * argv[]){
     if (networkUsageDown() == -1)
       return -1;
   }
+  stopCron();
   doneUtil();
 
   return 0;
