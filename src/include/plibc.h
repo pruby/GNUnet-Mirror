@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.24 $
  */
 
 #ifndef _PLIBC_H_
@@ -63,7 +63,9 @@ extern "C" {
 
 #define socklen_t int
 #define ssize_t int
+#ifndef HAVE_FTRUNCATE
 #define ftruncate chsize
+#endif
 #define off_t int
 #define int64_t long long
 #define int32_t long
