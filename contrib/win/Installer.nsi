@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7-pre4-1"
+!define PRODUCT_VERSION "0.7-pre5"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -237,6 +237,11 @@ SectionGroup "GNUnet" SEC_GNUNET
 			  SetOutPath "$INSTDIR\bin"
 			  
 			  File "C:\GNUnet\bin\gnunet-gtk.exe"
+			  File "C:\GNUnet\bin\libgnunetgtk_common-0.dll"
+			  File "C:\GNUnet\bin\libgnunetgtkmodule_stats.dll"
+			  File "C:\GNUnet\bin\libgnunetgtkmodule_fs.dll"
+			  File "C:\GNUnet\bin\libgnunetgtkmodule_daemon.dll"
+			  File "C:\GNUnet\bin\libgnunetgtkmodule_about.dll"
 
 			  SetOutPath "$INSTDIR\share\gnunet-gtk"
 			  File "C:\GNUnet\share\gnunet-gtk\gnunet_logo.png"
@@ -802,6 +807,11 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetfs-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
 	Delete "$INSTDIR\bin\libgnunetgetoption_api-0.dll"
+	Delete "$INSTDIR\bin\libgnunetgtk_common-0.dll"
+	Delete "$INSTDIR\bin\libgnunetgtkmodule_stats.dll"
+	Delete "$INSTDIR\bin\libgnunetgtkmodule_fs.dll"
+	Delete "$INSTDIR\bin\libgnunetgtkmodule_daemon.dll"
+	Delete "$INSTDIR\bin\libgnunetgtkmodule_about.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_advertising.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_bootstrap.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_chat.dll"			
