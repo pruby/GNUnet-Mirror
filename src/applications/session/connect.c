@@ -294,11 +294,15 @@ static SKEY_Message * makeSessionKeySigned(const PeerIdentity * hostId,
     pt = MALLOC(size);
     size = 0;
     if (ping != NULL) {
-      memcpy(&pt[size], ping, ntohs(ping->size));
+      memcpy(&pt[size], 
+	     ping,
+	     ntohs(ping->size));
       size += ntohs(ping->size);
     }
     if (pong != NULL) {
-      memcpy(&pt[size], pong, ntohs(pong->size));
+      memcpy(&pt[size],
+	     pong, 
+	     ntohs(pong->size));
       size += ntohs(pong->size);
     }
 #if DEBUG_SESSION
@@ -312,7 +316,7 @@ static SKEY_Message * makeSessionKeySigned(const PeerIdentity * hostId,
 				     size,
 				     sk,
 				     (const INITVECTOR*) &msg->signature,
-				     &((char*)msg)[sizeof(SKEY_Message)]));
+				     (char*)&msg[1]));
     FREE(pt);
   }
   return msg;
