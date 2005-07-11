@@ -1,3 +1,10 @@
+Mon Jul 11 02:22:24 CEST 2005
+	Fixed long-standing problems in statuscalls wrt 
+	network load estimates, leading to too-high bandwidth
+	consumption on average.  Fixed minor memory leaks.
+	Fixed far too often session-key exchange (was done
+	also for sessions that were already up).
+
 Thu Jul  7 15:22:21 CEST 2005
 	Fixed bug in identity, missing ntohs for protocol ID.
 	Fixed bug in topology, wrong calculation of saturation.	
