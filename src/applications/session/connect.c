@@ -224,11 +224,12 @@ static int verifySKS(const PeerIdentity * hostId,
  *        session key message
  * @return message on success, NULL on failure
  */
-static SKEY_Message * makeSessionKeySigned(const PeerIdentity * hostId,
-					   const SESSIONKEY * sk,
-					   TIME_T created,
-					   const p2p_HEADER * ping,
-					   const p2p_HEADER * pong) {
+static SKEY_Message * 
+makeSessionKeySigned(const PeerIdentity * hostId,
+		     const SESSIONKEY * sk,
+		     TIME_T created,
+		     const p2p_HEADER * ping,
+		     const p2p_HEADER * pong) {
   HELO_Message * foreignHelo;
   int size;
   SKEY_Message * msg;
