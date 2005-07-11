@@ -152,10 +152,10 @@ static void resetBetweenProc() {
 #define MAX_PROC_LINE 5000
 
 static void updateInterfaceTraffic() {
-#ifdef LINUX
-  char line[MAX_PROC_LINE];
   unsigned long long rxnew;
   unsigned long long txnew;
+#ifdef LINUX
+  char line[MAX_PROC_LINE];
   char * data;
   int i;
   int found;
@@ -214,7 +214,7 @@ static void updateInterfaceTraffic() {
     EnumNICs(&pTable, NULL);
     for (i=0;i<ifcsSize;i++) {
       for (dwIfIdx=0; dwIfIdx < pTable->dwNumEntries; dwIfIdx++) {
-        l = _atoi64(ifcs[i]->name);
+        l = _atoi64(ifcs[i].name);
 
         memset(bPhysAddr,
 	       0,
@@ -261,7 +261,7 @@ static void updateInterfaceTraffic() {
 	resetBetweenProc();
 	break;
       } 
-      iline++;
+      iLine++;
     }
     pclose(command);
   }
