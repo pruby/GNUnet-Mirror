@@ -692,7 +692,8 @@ int getNetworkLoadUp() {
     MUTEX_UNLOCK(&statusMutex);
     return ret;
   }
-     
+  currentLoadSum -= lastSum;
+  lastSum += currentLoadSum;
   currentLoadSum += overload;
   maxExpect = ( (now - lastCall) * maxNetDownBPS ) / cronSECONDS;
   lastCall = now;
@@ -702,6 +703,8 @@ int getNetworkLoadUp() {
     overload = currentLoadSum - maxExpect;  
   lastValue = currentLoadSum * 100 / maxExpect;
   ret = lastValue;
+  printf("Up: new overload %llu bytes, use: %d\n",
+	 overload, ret);
   MUTEX_UNLOCK(&statusMutex);
   return ret;
 }
@@ -749,6 +752,8 @@ int getNetworkLoadDown() {
     MUTEX_UNLOCK(&statusMutex);
     return ret;
   }
+  currentLoadSum -= lastSum;
+  lastSum += currentLoadSum;
   currentLoadSum += overload;
   maxExpect = ( (now - lastCall) * maxNetDownBPS ) / cronSECONDS;
   lastCall = now;
