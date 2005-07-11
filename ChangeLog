@@ -1,3 +1,6 @@
+Mon Jul 11 14:41:18 CEST 2005
+	Fixed tiny memory leak in http_bootstrap.
+
 Mon Jul 11 02:22:24 CEST 2005
 	Fixed long-standing problems in statuscalls wrt 
 	network load estimates, leading to too-high bandwidth
