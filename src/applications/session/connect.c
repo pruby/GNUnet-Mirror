@@ -415,7 +415,7 @@ static int exchangeKey(const PeerIdentity * receiver,
     size = HELO_Message_size(helo);
     memcpy(sendBuffer,
 	   helo,
-	   HELO_Message_size(helo));
+	   size);
     FREE(helo);
     helo = NULL;
   } else {
