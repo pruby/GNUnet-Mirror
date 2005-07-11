@@ -703,8 +703,6 @@ int getNetworkLoadUp() {
     overload = currentLoadSum - maxExpect;  
   lastValue = currentLoadSum * 100 / maxExpect;
   ret = lastValue;
-  printf("Up: new overload %llu bytes, use: %d\n",
-	 overload, ret);
   MUTEX_UNLOCK(&statusMutex);
   return ret;
 }
