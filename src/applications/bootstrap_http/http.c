@@ -300,6 +300,7 @@ static void downloadHostlist(HELO_Callback callback,
       downloadHostlistHelper(&url[i+1],
 			     callback,
 			     arg);
+      FREE(url);
       return;
     }
   }
