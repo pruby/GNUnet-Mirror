@@ -658,10 +658,12 @@ int getNetworkLoadUp() {
   static unsigned long long overload;
   static unsigned long long lastSum;
   static cron_t lastCall;
+  static int lastValue;
   cron_t now;
   unsigned long long maxExpect;
   unsigned long long currentLoadSum;
   int i;
+  int ret;
 
   MUTEX_LOCK(&statusMutex);
   currentLoadSum = globalTrafficBetweenProc.last_out;
@@ -679,6 +681,18 @@ int getNetworkLoadUp() {
     MUTEX_UNLOCK(&statusMutex);
     return -1;
   }
+  if (maxNetDownBPS == 0) {
+    MUTEX_UNLOCK(&statusMutex);
+    return -1;
+  }
+  if (lastCall - now < cronSECONDS) {
+    /* increase last load proportional to difference in
+       data transmitted and in relation to the limit */
+    ret = lastValue + 100 * (currentLoadSum - lastSum) / maxNetDownBPS;
+    MUTEX_UNLOCK(&statusMutex);
+    return ret;
+  }
+     
   currentLoadSum += overload;
   maxExpect = ( (lastCall - now) * maxNetDownBPS ) / cronSECONDS;
   lastCall = now;
@@ -686,8 +700,10 @@ int getNetworkLoadUp() {
     overload = 0;
   else 
     overload = currentLoadSum - maxExpect;  
+  lastValue = currentLoadSum * 100 / maxExpect;
+  ret = lastValue;
   MUTEX_UNLOCK(&statusMutex);
-  return currentLoadSum * 100 / maxExpect;
+  return ret;
 }
 
 /**
@@ -699,10 +715,12 @@ int getNetworkLoadDown() {
   static unsigned long long overload;
   static unsigned long long lastSum;
   static cron_t lastCall;
+  static int lastValue;
   cron_t now;
   unsigned long long maxExpect;
   unsigned long long currentLoadSum;
   int i;
+  int ret;
   
   MUTEX_LOCK(&statusMutex);
   currentLoadSum = globalTrafficBetweenProc.last_in;
@@ -720,6 +738,17 @@ int getNetworkLoadDown() {
     MUTEX_UNLOCK(&statusMutex);
     return -1;
   }
+  if (maxNetDownBPS == 0) {
+    MUTEX_UNLOCK(&statusMutex);
+    return -1;
+  }
+  if (lastCall - now < cronSECONDS) {
+    /* increase last load proportional to difference in
+       data transmitted and in relation to the limit */
+    ret = lastValue + 100 * (currentLoadSum - lastSum) / maxNetDownBPS;
+    MUTEX_UNLOCK(&statusMutex);
+    return ret;
+  }
   currentLoadSum += overload;
   maxExpect = ( (lastCall - now) * maxNetDownBPS ) / cronSECONDS;
   lastCall = now;
@@ -727,8 +756,10 @@ int getNetworkLoadDown() {
     overload = 0;
   else 
     overload = currentLoadSum - maxExpect;  
+  lastValue = currentLoadSum * 100 / maxExpect;
+  ret = lastValue;
   MUTEX_UNLOCK(&statusMutex);
-  return currentLoadSum * 100 / maxExpect;
+  return ret;
 }
 
 /**
