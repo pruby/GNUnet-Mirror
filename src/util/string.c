@@ -41,7 +41,12 @@
  */
 size_t strlcpy(char *dest, const char *src, size_t size)
 {
-	size_t ret = strlen(src);
+	size_t ret;
+
+	GNUNET_ASSERT(dest != NULL);
+	GNUNET_ASSERT(size > 0);
+	GNUNET_ASSERT(src != NULL);
+	ret = strlen(src);
 
 	if (size) {
 		size_t len = (ret >= size) ? size-1 : ret;
@@ -62,13 +67,18 @@ size_t strlcpy(char *dest, const char *src, size_t size)
  */
 size_t strlcat(char *dest, const char *src, size_t count)
 {
-	size_t dsize = strlen(dest);
-	size_t len = strlen(src);
-	size_t res = dsize + len;
+	size_t dsize;
+	size_t len;
+	size_t res;
 
+	GNUNET_ASSERT(dest != NULL);
+	GNUNET_ASSERT(src != NULL);
+	GNUNET_ASSERT(count > 0);
+	dsize = strlen(dest);
+	len = strlen(src);
+	res = dsize + len;
 	/* This would be a bug */
-	if(dsize >= count)
-		return 0;
+	GNUNET_ASSERT(dsize < count);
 
 	dest += dsize;
 	count -= dsize;
