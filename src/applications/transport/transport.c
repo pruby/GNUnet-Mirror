@@ -455,7 +455,7 @@ static HELO_Message * transportCreateHELO(unsigned short ttype) {
 	    ( (tapis[perm[ttype]] == NULL) ||
 	      (tapis[perm[ttype]] != NULL &&
 	       tapis[perm[ttype]]->helo == NULL) ) )
-      ttype--;
+      ttype--; /* unsigned, will wrap around! */
     if (ttype >= tapis_count) {
       FREE(perm);
       MUTEX_UNLOCK(&tapis_lock);
