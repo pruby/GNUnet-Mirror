@@ -2835,6 +2835,8 @@ void unicastCallback(const PeerIdentity * hostId,
     entry->closure = closure;
     appendToBuffer(be,
 		   entry);
+  } else {
+    FREENONNULL(closure);
   }
   MUTEX_UNLOCK(&lock);
 }
