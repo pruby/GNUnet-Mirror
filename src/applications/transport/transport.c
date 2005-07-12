@@ -451,12 +451,12 @@ static HELO_Message * transportCreateHELO(unsigned short ttype) {
 
     perm = permute(WEAK, tapis_count);
     ttype = tapis_count-1;
-    while ( (ttype >= 0) &&
+    while ( (ttype < tapis_count) &&
 	    ( (tapis[perm[ttype]] == NULL) ||
 	      (tapis[perm[ttype]] != NULL &&
 	       tapis[perm[ttype]]->helo == NULL) ) )
       ttype--;
-    if (ttype < 0) {
+    if (ttype >= tapis_count) {
       FREE(perm);
       MUTEX_UNLOCK(&tapis_lock);
       return NULL;
