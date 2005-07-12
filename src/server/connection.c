@@ -2493,6 +2493,8 @@ static void connectionConfigChangeCallback() {
  * Initialize this module.
  */
 void initConnection() {
+  GNUNET_ASSERT(P2P_MESSAGE_OVERHEAD
+		== sizeof(P2P_Message));
   ENTRY();
   scl_nextHead
     = NULL;
@@ -2771,6 +2773,11 @@ int sendPlaintext(TSession * tsession,
   int ret;
   P2P_Message * hdr;
 
+  GNUNET_ASSERT(tsession != NULL);
+  if (transport->getMTU(tsession->type) < size + sizeof(P2P_Message)) {
+    BREAK();
+    return SYSERR;
+  }
   buf = MALLOC(size + sizeof(P2P_Message));
   hdr = (P2P_Message*) buf;
   hdr->sequenceNumber = 0;
