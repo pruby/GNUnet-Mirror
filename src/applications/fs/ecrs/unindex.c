@@ -121,7 +121,6 @@ static int undoSymlinking(const char * fn,
   EncName enc;
   char * serverDir;
   char * serverFN;
-  char * tmpName;
   struct stat buf;
 
 #ifndef S_ISLNK
@@ -156,13 +155,10 @@ static int undoSymlinking(const char * fn,
 	 (char*)&enc);
 
   if (0 != UNLINK(serverFN)) {
+    LOG_FILE_STRERROR(LOG_ERROR, "unlink", serverFN);
     FREE(serverFN);
-    FREE(tmpName);
-    LOG_FILE_STRERROR(LOG_ERROR, "unlink", tmpName);
     return SYSERR;
   }
-
-  FREE(tmpName);
   FREE(serverFN);
   return OK;
 }

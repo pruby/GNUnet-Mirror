@@ -59,8 +59,6 @@ typedef struct {
    */
   unsigned int anonymityLevel;
 
-  unsigned int reserved; /*  for 64-bit alignment */
-
   /**
    * What are the queries?
    */
