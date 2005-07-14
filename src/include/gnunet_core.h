@@ -49,7 +49,7 @@
  */
 #define EXTREME_PRIORITY 0xFFFFFF
 
-#define P2P_MESSAGE_OVERHEAD 32
+#define P2P_MESSAGE_OVERHEAD 76
 
 /**
  * Opaque handle for a session representation on the transport

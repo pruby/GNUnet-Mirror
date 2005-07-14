@@ -48,7 +48,7 @@ typedef struct {
   TIME_T timeStamp;
   /* desired bandwidth, 0 for plaintext messages! */
   unsigned int bandwidth;
-} P2P_Message; /* 32 bytes */
+} P2P_Message; /* 76 bytes */
 
 /* ***************** GNUnet core internals ************ */
 
