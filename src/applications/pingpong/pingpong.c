@@ -182,12 +182,12 @@ static int plaintextPingReceived(const PeerIdentity * sender,
   pmsg->header.type = htons(p2p_PROTO_PONG);
   /* allow using a different transport for sending the reply, the
      transport may have been uni-directional! */
-  if (OK != coreAPI->sendPlaintext(tsession,
-				   (char*) pmsg,
-				   sizeof(PINGPONG_Message))) {
-    return sendPlaintext(sender, pmsg);
-  }
-  return OK;
+  if ( (tsession != NULL) &&
+       (OK == coreAPI->sendPlaintext(tsession,
+				     (char*) pmsg,
+				     sizeof(PINGPONG_Message))) )
+    return OK;
+  return sendPlaintext(sender, pmsg);
 }
 
 /**

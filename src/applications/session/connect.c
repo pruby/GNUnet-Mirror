@@ -479,6 +479,11 @@ static int acceptSessionKey(const PeerIdentity * sender,
   if ( (topology != NULL) &&
        (topology->allowConnectionFrom(sender) == SYSERR) )
     return SYSERR;
+  if (equalsHashCode512(&sender->hashPubKey,
+			&coreAPI->myIdentity->hashPubKey)) {
+    BREAK();
+    return SYSERR;
+  }
   hash2enc(&sender->hashPubKey,
 	   &enc);
 #if DEBUG_SESSION
