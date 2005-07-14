@@ -343,7 +343,7 @@ then
 fi
 
 # check for gettext
-AM_GNU_GETTEXT_VERSION(0.14)
+AM_GNU_GETTEXT_VERSION(0.13)
 AM_GNU_GETTEXT([external])
 
 
