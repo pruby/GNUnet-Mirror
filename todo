@@ -1,8 +1,7 @@
 0.7.0pre5 [7'05] ("API cleanup"):
-- cleanup API: could we move util/string.c to
-  plibc? (or, assuming they are also needed
-  on BSD, into conf/ (or avoid using those functions))?
-  Just trying to keep the API small here. [ NILS ? ]
+- rename fest III?
+- change pingpong struct?!
+- other structs???
   
 
 0.7.0 [8'05?] (aka "compatibility? what's that?"):
@@ -30,8 +29,6 @@
     + recursive uploads and downloads (incl. persistence)
     + namespaces
     + URI tracking
-- Documentation:
-  * ECRS block format changes (dramatic!)
 
 0.7.0a (bugfixes)
 
