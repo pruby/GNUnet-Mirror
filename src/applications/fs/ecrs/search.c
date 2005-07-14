@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -416,7 +416,7 @@ static int receiveReplies(const HashCode512 * key,
 	memcpy(kb, &value[1], size);
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb->nblock,
-			    size - sizeof(KBlock));
+			    size - sizeof(KBlock) - sizeof(unsigned int));
 	ret = processNBlock(&kb->nblock,
 			    &ps->decryptKey,
 			    size - sizeof(KNBlock) + sizeof(NBlock),
