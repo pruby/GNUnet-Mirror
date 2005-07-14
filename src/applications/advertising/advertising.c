@@ -267,9 +267,13 @@ receivedHELO(const p2p_HEADER * message) {
 
   /* build message to send, ping must contain return-information,
      such as a selection of our HELOs... */
-  mtu = transport->getMTU(tsession->ttype) - P2P_MESSAGE_OVERHEAD;
-  if (mtu == 0)
+  mtu = transport->getMTU(tsession->ttype);  
+  if (mtu == 0) {
     mtu = 2048; /* bound size */
+  } else {
+    GNUNET_ASSERT(mtu > P2P_MESSAGE_OVERHEAD);
+    mtu -= P2P_MESSAGE_OVERHEAD;
+  }
   buffer = MALLOC(mtu);
   copy = MALLOC(HELO_Message_size(msg));
   memcpy(copy,
