@@ -2774,7 +2774,8 @@ int sendPlaintext(TSession * tsession,
   P2P_Message * hdr;
 
   GNUNET_ASSERT(tsession != NULL);
-  if (transport->getMTU(tsession->ttype) < size + sizeof(P2P_Message)) {
+  if ( (transport->getMTU(tsession->ttype)>0) &&
+       (transport->getMTU(tsession->ttype)<size + sizeof(P2P_Message)) ) {
     BREAK();
     return SYSERR;
   }
