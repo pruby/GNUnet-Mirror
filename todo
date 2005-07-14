@@ -55,7 +55,8 @@
     (1024 bit keys are much better than the 2048 bit keys,
      but this would give another performance boost, especially for
      insertion of zip files with hundreds of files/keywords!)
-
+- Insert/Index a "shared directory" automatically [Nils]
+ - https://gnunet.org/drupal/?q=node/97
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling
 
