@@ -53,19 +53,19 @@ typedef struct {
   p2p_HEADER header;
 
   /**
+   * Which peer is the target of the ping? This is important since for
+   * plaintext-pings, we need to catch faulty advertisements that
+   * advertise a correct address but with the wrong public key.
+   */
+  PeerIdentity receiver;
+
+  /**
    * The challenge is a (pseudo) random number that an adversary that
    * wants to fake a pong message would have to guess. Since even if
    * the number is guessed, the security impact is at most some wasted
    * resources, 32 bit are more than enough.
    */
   int challenge;
-
-  /**
-   * Which peer is the target of the ping? This is important since for
-   * plaintext-pings, we need to catch faulty advertisements that
-   * advertise a correct address but with the wrong public key.
-   */
-  PeerIdentity receiver;
 
 } PINGPONG_Message;
 
