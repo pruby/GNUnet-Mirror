@@ -869,6 +869,19 @@ static void sendBuffer(BufferEntry * be) {
   if (be->max_bpm <= 0)
     be->max_bpm = 1;
 
+  if (be->session.tsession == NULL) {
+    be->session.tsession
+      = transport->connectFreely(&be->session.sender,
+				 YES);
+    if (be->session.tsession == NULL) {
+      be->inSendBuffer = NO;
+      return;
+    }
+    be->session.mtu
+      = transport->getMTU(be->session.tsession->ttype);
+  }
+
+
   if (be->session.mtu == 0) {
     be->MAX_SEND_FREQUENCY = /* ms per message */
       EXPECTED_MTU
@@ -1237,16 +1250,10 @@ static void sendBuffer(BufferEntry * be) {
   if (stats != NULL)
     stats->change(stat_encrypted,
 		  p - sizeof(HashCode512));
-  if (be->session.tsession == NULL)
-    be->session.tsession
-      = transport->connectFreely(&be->session.sender,
-				 YES);
-  if (be->session.tsession == NULL)
-    ret = SYSERR;
-  else
-    ret = transport->send(be->session.tsession,
-			  encryptedMsg,
-			  p);
+  GNUNET_ASSERT(be->session.tsession != NULL);
+  ret = transport->send(be->session.tsession,
+			encryptedMsg,
+			p);
   if ( (ret == NO) &&
        (priority >= EXTREME_PRIORITY) ) {
     ret = transport->sendReliable(be->session.tsession,
