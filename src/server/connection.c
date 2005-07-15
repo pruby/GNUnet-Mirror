@@ -2527,17 +2527,17 @@ void initConnection() {
   stats = requestService("stats");
   if (stats != NULL) {
     stat_messagesDropped
-      = stats->create(_("# outgoing messages dropped"));
+      = stats->create(gettext_noop("# outgoing messages dropped"));
     stat_sizeMessagesDropped
-      = stats->create(_("# bytes of outgoing messages dropped"));
+      = stats->create(gettext_noop("# bytes of outgoing messages dropped"));
     stat_hangupSent
-      = stats->create(_("# connections closed (HANGUP sent)"));
+      = stats->create(gettext_noop("# connections closed (HANGUP sent)"));
     stat_encrypted
-      = stats->create(_("# bytes encrypted"));
+      = stats->create(gettext_noop("# bytes encrypted"));
     stat_decrypted
-      = stats->create(_("# bytes decrypted"));
+      = stats->create(gettext_noop("# bytes decrypted"));
     stat_noise_sent
-      = stats->create(_("# bytes noise sent"));
+      = stats->create(gettext_noop("# bytes noise sent"));
   }
   transport->start(&core_receive);
 }

@@ -463,19 +463,19 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_encryptedPongReceived
-      = stats->create(_("# encrypted PONG messages received"));
+      = stats->create(gettext_noop("# encrypted PONG messages received"));
     stat_plaintextPongReceived
-      = stats->create(_("# plaintext PONG messages received"));
+      = stats->create(gettext_noop("# plaintext PONG messages received"));
     stat_pingReceived
-      = stats->create(_("# encrypted PING messages received"));
+      = stats->create(gettext_noop("# encrypted PING messages received"));
     stat_pingCreated
-      = stats->create(_("# PING messages created"));
+      = stats->create(gettext_noop("# PING messages created"));
     stat_pongSent
-      = stats->create(_("# encrypted PONG messages sent"));
+      = stats->create(gettext_noop("# encrypted PONG messages sent"));
     stat_plaintextPingSent
-      = stats->create(_("# plaintext PING messages sent"));
+      = stats->create(gettext_noop("# plaintext PING messages sent"));
     stat_ciphertextPingSent
-      = stats->create(_("# encrypted PING messages sent"));
+      = stats->create(gettext_noop("# encrypted PING messages sent"));
 
   }
   pingPongLock = capi->getConnectionModuleLock();

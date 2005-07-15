@@ -1467,11 +1467,11 @@ TransportAPI * inittransport_http(CoreAPIForTransport * core) {
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
-      = stats->create(_("# bytes received via HTTP"));
+      = stats->create(gettext_noop("# bytes received via HTTP"));
     stat_bytesSent
-      = stats->create(_("# bytes sent via HTTP"));
+      = stats->create(gettext_noop("# bytes sent via HTTP"));
     stat_bytesDropped
-      = stats->create(_("# bytes dropped by HTTP (outgoing)"));
+      = stats->create(gettext_noop("# bytes dropped by HTTP (outgoing)"));
   }
 
   httpAPI.protocolNumber       = HTTP_PROTOCOL_NUMBER;

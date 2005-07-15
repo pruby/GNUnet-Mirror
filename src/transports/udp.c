@@ -638,11 +638,11 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
-      = stats->create(_("# bytes received via UDP"));
+      = stats->create(gettext_noop("# bytes received via UDP"));
     stat_bytesSent
-      = stats->create(_("# bytes sent via UDP"));
+      = stats->create(gettext_noop("# bytes sent via UDP"));
     stat_bytesDropped
-      = stats->create(_("# bytes dropped by UDP (outgoing)"));
+      = stats->create(gettext_noop("# bytes dropped by UDP (outgoing)"));
   }
   
   MUTEX_CREATE(&configLock);

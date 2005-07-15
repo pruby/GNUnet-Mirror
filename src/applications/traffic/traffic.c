@@ -602,7 +602,7 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
 			      &trafficQueryHandler);
   setConfigurationString("ABOUT",
 			 "traffic",
-			 _("tracks bandwidth utilization by gnunetd"));
+			 gettext_noop("tracks bandwidth utilization by gnunetd"));
   return OK;				
 }
 

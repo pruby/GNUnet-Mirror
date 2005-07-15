@@ -45,7 +45,7 @@ static int printStatistics(const char * name,
 			   FILE * stream) {
   FPRINTF(stream,
 	  "%-60s: %16llu\n",
-	  name,
+	  dgettext("GNUnet", name),
 	  value);
   return OK;
 }

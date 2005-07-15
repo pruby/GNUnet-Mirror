@@ -444,8 +444,8 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
     ok = SYSERR;
   setConfigurationString("ABOUT",
 			 "tbench",
-			 _("allows profiling of direct "
-			   "peer-to-peer connections"));
+			 gettext_noop("allows profiling of direct "
+     			              "peer-to-peer connections"));
   return ok;
 }
 

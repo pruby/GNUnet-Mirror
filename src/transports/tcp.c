@@ -1418,11 +1418,11 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
-      = stats->create(_("# bytes received via TCP"));
+      = stats->create(gettext_noop("# bytes received via TCP"));
     stat_bytesSent
-      = stats->create(_("# bytes sent via TCP"));
+      = stats->create(gettext_noop("# bytes sent via TCP"));
     stat_bytesDropped
-      = stats->create(_("# bytes dropped by TCP (outgoing)"));
+      = stats->create(gettext_noop("# bytes dropped by TCP (outgoing)"));
   }
   tcpAPI.protocolNumber       = TCP_PROTOCOL_NUMBER;
   tcpAPI.mtu                  = 0;

@@ -721,13 +721,13 @@ provide_module_session(CoreAPIForApplication * capi) {
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_skeySent
-      = stats->create(_("# session keys sent"));
+      = stats->create(gettext_noop("# session keys sent"));
     stat_skeyRejected
-      = stats->create(_("# session keys rejected"));
+      = stats->create(gettext_noop("# session keys rejected"));
     stat_skeyAccepted
-      = stats->create(_("# session keys accepted"));
+      = stats->create(gettext_noop("# session keys accepted"));
     stat_sessionEstablished
-      = stats->create(_("# sessions established"));
+      = stats->create(gettext_noop("# sessions established"));
   }
 
   LOG(LOG_DEBUG,

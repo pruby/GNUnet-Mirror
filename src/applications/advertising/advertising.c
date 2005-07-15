@@ -717,9 +717,9 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   }
   stats = capi->requestService("stats");
   if (stats != NULL) {
-    stat_HELO_in = stats->create(_("# Peer advertisements received"));
-    stat_HELO_out = stats->create(_("# Self advertisments transmitted"));
-    stat_HELO_fwd = stats->create(_("# Foreign advertisements forwarded"));
+    stat_HELO_in = stats->create(gettext_noop("# Peer advertisements received"));
+    stat_HELO_out = stats->create(gettext_noop("# Self advertisments transmitted"));
+    stat_HELO_fwd = stats->create(gettext_noop("# Foreign advertisements forwarded"));
   }
 
   LOG(LOG_DEBUG,

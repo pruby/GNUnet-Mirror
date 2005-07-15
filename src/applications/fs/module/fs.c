@@ -1025,7 +1025,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 		traffic);
   setConfigurationString("ABOUT",
 			 "fs",
-			 _("enables (anonymous) file-sharing"));
+			 gettext_noop("enables (anonymous) file-sharing"));
   return OK;
 }
 

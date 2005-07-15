@@ -34,13 +34,6 @@ static Mutex lock;
 static unsigned int clientCount = 0;
 static ClientHandle * clients = NULL;
 
-#if VERBOSE_STATS
-static int stat_cs_requests;
-static int stat_cs_replies;
-static int stat_p2p_requests;
-static int stat_p2p_replies;
-#endif
-
 typedef struct {
   PeerIdentity initiator;
   PeerIdentity replyTo;
@@ -72,9 +65,6 @@ static int handlep2pReply(const PeerIdentity * sender,
     return SYSERR;
   }
   reply = (TRACEKIT_p2p_REPLY*)message;
-#if VERBOSE_STATS
-  statChange(stat_p2p_replies, 1);
-#endif
   hash2enc(&reply->initiatorId.hashPubKey,
 	   &initiator);
   LOG(LOG_DEBUG,
@@ -119,9 +109,6 @@ static int handlep2pReply(const PeerIdentity * sender,
 	memcpy(&((TRACEKIT_CS_REPLY_GENERIC*)csReply)->peerList[0],
 	       &((TRACEKIT_p2p_REPLY_GENERIC*)reply)->peerList[0],
 	       hostCount * sizeof(PeerIdentity));
-#if VERBOSE_STATS
-	statChange(stat_cs_replies, 1);
-#endif
 	coreAPI->sendToClient(clients[idx],
 			      &csReply->header);
 	FREE(csReply);
@@ -133,9 +120,6 @@ static int handlep2pReply(const PeerIdentity * sender,
 	LOG(LOG_DEBUG,
 	    "TRACEKIT: forwarding to next hop '%s'\n",
 	    &hop);
-#if VERBOSE_STATS
-	statChange(stat_p2p_replies, 1);
-#endif
 	coreAPI->unicast(&routeTable[i]->replyTo,
 			 message,
 			 routeTable[i]->priority,
@@ -199,9 +183,6 @@ static int handlep2pProbe(const PeerIdentity * sender,
   }
   LOG(LOG_DEBUG,
       "TRACEKIT: received probe\n");
-#if VERBOSE_STATS
-  statChange(stat_p2p_requests, 1);
-#endif
   TIME(&now);
   msg = (TRACEKIT_p2p_PROBE*) message;
   if ((TIME_T)ntohl(msg->timestamp) > 3600 + now) {
@@ -279,10 +260,6 @@ static int handlep2pProbe(const PeerIdentity * sender,
     msg->hopsToGo = htonl(hops-1);
     coreAPI->forAllConnectedNodes((PerNodeCallback) & transmit,
 				  msg);
-#if VERBOSE_STATS
-    statChange(stat_p2p_requests,
-	       count);
-#endif
   }
   /* build local reply */
   size = sizeof(TRACEKIT_p2p_REPLY) + count*sizeof(PeerIdentity);
@@ -326,9 +303,6 @@ static int handlep2pProbe(const PeerIdentity * sender,
 		       &reply->header,
 		       ntohl(msg->priority),
 		       0);
-#if VERBOSE_STATS
-      statChange(stat_p2p_replies, 1);
-#endif
     }
     rest = size - maxBytes;
     memcpy(&((TRACEKIT_p2p_REPLY_GENERIC*)reply)->peerList[0],
@@ -349,9 +323,6 @@ static int csHandle(ClientHandle client,
   TRACEKIT_CS_PROBE * csProbe;
   TRACEKIT_p2p_PROBE p2pProbe;
 
-#if VERBOSE_STATS
-  statChange(stat_cs_requests, 1);
-#endif
   LOG(LOG_DEBUG,
       "TRACEKIT: client sends probe request\n");
 
@@ -407,10 +378,6 @@ static int csHandle(ClientHandle client,
 	 sizeof(PeerIdentity));
   handlep2pProbe(coreAPI->myIdentity,
 		 &p2pProbe.header); /* FIRST send to myself! */
-#if VERBOSE_STATS
-  statChange(stat_p2p_requests,
-	     coreAPI->forAllConnectedNodes(NULL, NULL));
-#endif
   return OK;
 }
 
@@ -443,16 +410,6 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
 
   MUTEX_CREATE(&lock);
   coreAPI = capi;
-#if VERBOSE_STATS
-  stat_cs_requests
-    = statHandle(_("# client trace requests received"));
-  stat_cs_replies
-    = statHandle(_("# client trace replies sent"));
-  stat_p2p_requests
-    = statHandle(_("# p2p trace requests received"));
-  stat_p2p_replies
-    = statHandle(_("# p2p trace replies sent"));
-#endif
   LOG(LOG_DEBUG,
       "TRACEKIT registering handlers %d %d and %d\n",
       TRACEKIT_p2p_PROTO_PROBE,
@@ -474,7 +431,7 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
     ok = SYSERR;
   setConfigurationString("ABOUT",
 			 "tracekit",
-			 _("allows mapping of the network topology"));
+			 gettext_noop("allows mapping of the network topology"));
   return ok;
 }
 

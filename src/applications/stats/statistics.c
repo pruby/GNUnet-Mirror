@@ -203,15 +203,15 @@ static int stat_connected;
 
 static void initializeStats() {
   stat_handle_network_load_up
-    = statHandle(_("% of allowed network load (up)"));
+    = statHandle(gettext_noop("% of allowed network load (up)"));
   stat_handle_network_load_down
-    = statHandle(_("% of allowed network load (down)"));
+    = statHandle(gettext_noop("% of allowed network load (down)"));
   stat_handle_cpu_load
-    = statHandle(_("% of allowed cpu load"));
+    = statHandle(gettext_noop("% of allowed cpu load"));
   stat_connected
-    = statHandle(_("# of connected peers"));
+    = statHandle(gettext_noop("# of connected peers"));
   stat_bytes_noise_received
-    = statHandle(_("# bytes of noise received"));
+    = statHandle(gettext_noop("# bytes of noise received"));
 }
 
 static void immediateUpdates() {
@@ -369,7 +369,7 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
 			&processNoise);
   setConfigurationString("ABOUT",
 			 "stats",
-			 _("keeps statistics about gnunetd's operation"));
+			 gettext_noop("keeps statistics about gnunetd's operation"));
   return OK;
 }
 

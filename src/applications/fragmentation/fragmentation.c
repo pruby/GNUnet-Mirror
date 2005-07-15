@@ -553,9 +553,9 @@ provide_module_fragmentation(CoreAPIForApplication * capi) {
   coreAPI = capi;
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
-    stat_defragmented = stats->create(_("# messages defragmented"));
-    stat_fragmented = stats->create(_("# messages fragmented"));
-    stat_discarded = stats->create(_("# fragments discarded"));
+    stat_defragmented = stats->create(gettext_noop("# messages defragmented"));
+    stat_fragmented = stats->create(gettext_noop("# messages fragmented"));
+    stat_discarded = stats->create(gettext_noop("# fragments discarded"));
   }
   for (i=0;i<DEFRAG_BUCKET_COUNT;i++)
     defragmentationCache[i] = NULL;

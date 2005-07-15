@@ -1354,7 +1354,7 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   httpRegister("startup");
   setConfigurationString("ABOUT",
 			 "testbed",
-			 _("allows construction of a P2P-testbed"
+			 gettext_noop("allows construction of a P2P-testbed"
 			   " (incomplete)"));
   return OK;
 }
