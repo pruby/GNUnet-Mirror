@@ -840,6 +840,7 @@ static void sendBuffer(BufferEntry * be) {
   P2P_Message * p2pHdr;
   int priority;
   int * perm;
+  char * tmpMsg;
   char * plaintextMsg;
   void * encryptedMsg;
   cron_t expired;
@@ -879,7 +880,38 @@ static void sendBuffer(BufferEntry * be) {
     }
     be->session.mtu
       = transport->getMTU(be->session.tsession->ttype);
+    if (be->session.mtu > 0) {
+      /* MTU change may require new fragmentation! */
+      SendEntry ** entries;
+      SendEntry * entry;
+      
+      entries = be->sendBuffer;
+      i = 0;
+      ret = be->sendBufferSize;
+      /* assumes entries are sorted by priority! */
+      while (i < ret) {
+	entry = entries[i];
+	if (entry->len > be->session.mtu - sizeof(P2P_Message)) {
+	  entries[i] = entries[--ret];
+	  fragmentation->fragment(&be->session.sender,
+				  be->session.mtu - sizeof(P2P_Message),
+				  entry->pri,
+				  entry->transmissionTime,
+				  entry->len,
+				  entry->callback,
+				  entry->closure);
+	  FREE(entry);
+	}
+	i++;
+      } 
+      if (ret != be->sendBufferSize)
+	GROW(be->sendBuffer,
+	     be->sendBufferSize,
+	     ret);
+    }
   }
+  if (be->sendBufferSize == 0)
+    return; /* nothing to send */
 
 
   if (be->session.mtu == 0) {
@@ -938,6 +970,11 @@ static void sendBuffer(BufferEntry * be) {
       }
       i++;
     }
+    if ( (i == 0) &&
+	 (entries[i]->len <= be->available_send_window) )
+      return; /* always wait for the highest-priority
+		 message (otherwise large messages may
+		 starve! */
     while ( (i < be->sendBufferSize) &&
 	    (be->available_send_window > totalMessageSize) ) {
       if ( (entries[i]->len + totalMessageSize <=
@@ -964,7 +1001,7 @@ static void sendBuffer(BufferEntry * be) {
 	   ((totalMessageSize / sizeof(P2P_Message)) < 4) &&
 	   (randomi(16) != 0) ) ) {
       /* randomization necessary to ensure we eventually send
-	 the message if there is nothing else to do! */
+	 a small message if there is nothing else to do! */
       be->inSendBuffer = NO;
       return;
     }
@@ -1087,49 +1124,26 @@ static void sendBuffer(BufferEntry * be) {
     return; /* deferr further */
   }
 
-  /* build message (start with sequence number) */
   GNUNET_ASSERT(totalMessageSize > sizeof(P2P_Message));
-  plaintextMsg = MALLOC(totalMessageSize);
-  p2pHdr = (P2P_Message*) plaintextMsg;
-  p2pHdr->timeStamp
-    = htonl(TIME(NULL));
-  p2pHdr->sequenceNumber
-    = htonl(be->lastSequenceNumberSend);
-  p2pHdr->bandwidth
-    = htonl(be->idealized_limit);
-  p = sizeof(P2P_Message);
 
   /* first, trigger callbacks on selected entries */
   for (i=0;i<be->sendBufferSize;i++) {
     SendEntry * entry = be->sendBuffer[i];
+    tmpMsg = MALLOC(entry->len);
 
     if ( (entry->knapsackSolution == YES) &&
 	 (entry->callback != NULL) ) {
-      if (OK == entry->callback(&plaintextMsg[p],
+      if (OK == entry->callback(tmpMsg,
 				entry->closure,
 				entry->len)) {
 	entry->callback = NULL;
-	entry->closure = MALLOC(entry->len);
-	memcpy(entry->closure,
-	       &plaintextMsg[p],
-	       entry->len);
+	entry->closure = tmpMsg;
       } else {
-	/* should not happen if everything went well,
-	   add random padding instead */
-	p2p_HEADER * part;
-	
-	part = (p2p_HEADER *) &plaintextMsg[p];
-	part->size
-	  = htons(entry->len);
-	part->type
-	  = htons(p2p_PROTO_NOISE);
-	for (i=p+sizeof(p2p_HEADER);i<entry->len+p;i++)
-	  plaintextMsg[p] = (char) rand();
+	FREE(tmpMsg);
 	entry->callback = NULL;
 	entry->closure = NULL;
-	if (stats != NULL)
-	  stats->change(stat_noise_sent,
-			entry->len);
+	FREE(entry);
+	be->sendBuffer[i] = NULL;
       }
     }
   }
@@ -1163,9 +1177,22 @@ static void sendBuffer(BufferEntry * be) {
     }
   }
 
+  /* build message (start with sequence number) */
+  plaintextMsg = MALLOC(totalMessageSize);
+  p2pHdr = (P2P_Message*) plaintextMsg;
+  p2pHdr->timeStamp
+    = htonl(TIME(NULL));
+  p2pHdr->sequenceNumber
+    = htonl(be->lastSequenceNumberSend);
+  p2pHdr->bandwidth
+    = htonl(be->idealized_limit);
+  p = sizeof(P2P_Message);
+
   for (i=0;i<be->sendBufferSize;i++) {
     SendEntry * entry = be->sendBuffer[perm[i]];
-
+    
+    if (entry == NULL)
+      continue;
     if (entry->knapsackSolution == YES) {
       GNUNET_ASSERT(entry->callback == NULL);
       memcpy(&plaintextMsg[p],
@@ -1205,6 +1232,7 @@ static void sendBuffer(BufferEntry * be) {
     }
   }
   FREE(perm);
+  perm = NULL;
 
   /* still room left? try callbacks! */
   pos = scl_nextHead;
@@ -1877,6 +1905,7 @@ static void scheduleInboundTraffic() {
 	}
       }
       FREE(perm);
+      perm = NULL;
 
       if ( (schedulableBandwidth > 0) &&
 	   (activePeerCount > 0) ) {
@@ -1887,6 +1916,7 @@ static void scheduleInboundTraffic() {
 	    += (unsigned int) (schedulableBandwidth/activePeerCount);	
 	schedulableBandwidth = 0;
 	FREE(perm);
+	perm = NULL;
       }
       break;
     } /* didAssign == NO? */
