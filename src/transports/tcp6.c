@@ -853,7 +853,7 @@ static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
     unsigned int old = tcp6Session->wpos;
     /* reliable: grow send-buffer above limit! */
     GROW(tcp6Session->wbuff,
-	 tcp6Session->wpos,
+	 tcp6Session->wsize,
 	 tcp6Session->wpos + ssize);
     tcp6Session->wpos += ssize;
     memcpy(&tcp6Session->wbuff[old],
