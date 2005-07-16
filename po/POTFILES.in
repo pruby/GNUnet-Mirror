@@ -262,7 +262,6 @@ src/include/gnunet_fs_lib.h
 src/include/gnunet_fsui_lib.h
 src/include/gnunet_gap_service.h
 src/include/gnunet_getoption_lib.h
-src/include/gnunet_gnunetd_lib.h
 src/include/gnunet_identity_service.h
 src/include/gnunet_pingpong_service.h
 src/include/gnunet_protocols.h
