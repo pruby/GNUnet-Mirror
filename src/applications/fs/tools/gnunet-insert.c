@@ -349,8 +349,12 @@ static int parseOptions(int argc,
       topKeywords[topKeywordCnt-1]
 	= convertToUtf8(GNoptarg,
 			strlen(GNoptarg),
-      nl_langinfo(CODESET)
-      );
+#if ENABLE_NLS
+			nl_langinfo(CODESET)
+#else
+			"utf-8"
+#endif
+			);
       break;
     case 'K':
       GROW(gloKeywords,
@@ -359,7 +363,11 @@ static int parseOptions(int argc,
       gloKeywords[gloKeywordCnt-1]
 	= convertToUtf8(GNoptarg,
 			strlen(GNoptarg),
-        nl_langinfo(CODESET)
+#if ENABLE_NLS
+			nl_langinfo(CODESET)
+#else
+			"utf-8"
+#endif
         );
       break;
     case 'm': {
@@ -368,7 +376,11 @@ static int parseOptions(int argc,
 
       tmp = convertToUtf8(GNoptarg,
 			  strlen(GNoptarg),
-      nl_langinfo(CODESET)
+#if ENABLE_NLS
+			nl_langinfo(CODESET)
+#else
+			"utf-8"
+#endif
       );
       type = EXTRACTOR_getHighestKeywordTypeNumber();
       while (type > 0) {
@@ -592,12 +604,20 @@ int main(int argc, char ** argv) {
     if (timestr != NULL) {
       struct tm t;
       if ((NULL == strptime(timestr,
+#if ENABLE_NLS
 			    nl_langinfo(D_T_FMT),
+#else
+			    "%Y-%m-%d",
+#endif
 			    &t))) {
 	LOG_STRERROR(LOG_FATAL, "strptime");
         errexit(_("Parsing time failed. Use '%s' format.\n"),
-          nl_langinfo(D_T_FMT)
-          );
+#if ENABLE_NLS
+		nl_langinfo(D_T_FMT)
+#else
+		"%Y-%m-%d"
+#endif
+		);
       }
       FREE(timestr);
     }
