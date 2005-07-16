@@ -152,9 +152,9 @@ static void resetBetweenProc() {
 #define MAX_PROC_LINE 5000
 
 static void updateInterfaceTraffic() {
+#ifdef LINUX
   unsigned long long rxnew;
   unsigned long long txnew;
-#ifdef LINUX
   char line[MAX_PROC_LINE];
   char * data;
   int i;
@@ -199,6 +199,8 @@ static void updateInterfaceTraffic() {
   MUTEX_UNLOCK(&statusMutex);
     
 #elif MINGW
+  unsigned long long rxnew;
+  unsigned long long txnew;
   int i;
   PMIB_IFTABLE pTable;
   DWORD dwIfIdx;

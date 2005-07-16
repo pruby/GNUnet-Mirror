@@ -139,16 +139,21 @@ unsigned long long htonll(unsigned long long n) {
 char * convertToUtf8(const char * input,
 		     size_t len,
 		     const char * charset) {
+  char * ret;
+#if ENABLE_NLS
   size_t tmpSize;
   size_t finSize;
   char * tmp;
-  char * ret;
   char * itmp;
   iconv_t cd;
 
   cd = iconv_open("UTF-8", charset);
-  if (cd == (iconv_t) -1)
-    return strdup(charset);
+  if (cd == (iconv_t) -1) {
+    ret = malloc(len+1);
+    memcpy(ret, input, len);
+    ret[len] = '\0';
+    return ret;
+  }
   tmpSize = 3 * len + 4;
   tmp = malloc(tmpSize);
   itmp = tmp;
@@ -160,7 +165,10 @@ char * convertToUtf8(const char * input,
 	    &finSize) == (size_t)-1) {
     iconv_close(cd);
     free(tmp);
-    return strdup(charset);
+    ret = malloc(len+1);
+    memcpy(ret, input, len);
+    ret[len] = '\0';
+    return ret;
   }
   ret = malloc(tmpSize - finSize + 1);
   memcpy(ret,
@@ -170,6 +178,12 @@ char * convertToUtf8(const char * input,
   free(tmp);
   iconv_close(cd);
   return ret;
+#else
+  ret = malloc(len+1);
+  memcpy(ret, input, len);
+  ret[len] = '\0';
+  return ret;
+#endif
 }
 
 

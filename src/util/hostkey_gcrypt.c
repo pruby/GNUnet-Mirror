@@ -70,8 +70,8 @@ struct PrivateKey {
  * first target-size bytes.
  */
 static void adjust(char * buf,
-		   int size,
-		   int target) {
+		   size_t size,
+		   size_t target) {
   if (size < target) {
     memmove(&buf[target-size],
 	    buf,
@@ -192,7 +192,7 @@ static int key_from_sexp( gcry_mpi_t *array,
 void getPublicKey(const struct PrivateKey * hostkey,
 		  PublicKey * result) {
   gcry_mpi_t skey[2];
-  int size;
+  size_t size;
   int rc;
 
   lockGcrypt();
