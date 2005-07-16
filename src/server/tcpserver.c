@@ -585,7 +585,7 @@ static void * tcpListenMain() {
 	}
       }
       if (FD_ISSET(sock, &writeSet)) {
-	int ret;
+	size_t ret;
 	
 #if DEBUG_TCPHANDLER
 	LOG(LOG_DEBUG,
@@ -635,7 +635,7 @@ try_again:
 	  pos = ch;
 	  continue;
 	}
-	if ((unsigned int)ret == pos->writeBufferSize) {
+	if (ret == pos->writeBufferSize) {
 	  FREENONNULL(pos->writeBuffer);
 	  pos->writeBuffer = NULL;
 	  pos->writeBufferSize = 0;

@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -335,7 +336,7 @@ static int readSMTPLine(int sock,
 			char * expect) {
   int pos;
   char buff[MAX_SMTP_LINE];
-  int i;
+  size_t i;
 
   pos = 0;
 
@@ -352,7 +353,7 @@ try_again:
       goto try_again;
     }
 	
-    if (i <= 0)
+    if ( (i == 0) || (i == (size_t) -1) ) 
       return SYSERR;
     while (i > 0) {
       if (buff[pos++] == '\n')
@@ -362,11 +363,12 @@ try_again:
   }
  END:
   buff[pos] = '\0';
-  if (strncmp(expect, &buff[0], strlen(expect)) == 0)
+  if (strncmp(expect, 
+	      &buff[0], 
+	      strlen(expect)) == 0)
     return OK;
-  else {
+  else 
     return SYSERR;
-  }
 }
 
 /**

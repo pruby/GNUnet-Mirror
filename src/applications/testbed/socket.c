@@ -142,7 +142,8 @@ unsigned int readSocket(char ** rbuf,
 /**
  * Print a message in the testbed-shell.
  */
-void XPRINTF(char * fmt, ...) {
+void XPRINTF(const char * fmt, 
+	     ...) {
   va_list	args;
   int n;
   int size = 1024;

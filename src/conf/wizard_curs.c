@@ -38,15 +38,21 @@ int mconf_main(int ac, char **av);
 static struct dialog_list_item **nic_items;
 static int nic_item_count = 0;
 
-void showCursErr(char *prefix, char *error) {
-	char *err;
+void showCursErr(const char *prefix, 
+		 const char *error) {
+  char *err;
 	
-	err = malloc(strlen(prefix) + strlen(error) + 2);
-	sprintf(err, "%s %s", prefix, error);
-	
-	dialog_msgbox(_("Error"), err, rows, cols - 5, 1);
-	
-	free(err);	
+  err = malloc(strlen(prefix) + strlen(error) + 2);
+  sprintf(err, 
+	  "%s %s", 
+	  prefix, 
+	  error);  
+  dialog_msgbox(_("Error"),
+		err, 
+		rows, 
+		cols - 5, 
+		1);  
+  free(err);	
 }
 
 void insert_nic_curs(char *name, int defaultNIC)
@@ -563,20 +569,25 @@ int wizard_curs_main(int argc, char *argv[])
 
 		/* Write conf */
 		if (conf_write() != 0) {
-			char *err, *prefix, *strerr;
+		  char * err;
+		  const char * prefix;
+		  const char * strerr;
 			
-			prefix = _("Unable to save configuration file %s: %s.\n\nTry again?");
-			strerr = STRERROR(errno);
+		  prefix = _("Unable to save configuration file %s: %s.\n\nTry again?");
+		  strerr = STRERROR(errno);
 			
-			err = malloc(strlen(conf) + strlen(prefix) + strlen(strerr) + 1);
-			sprintf(err, prefix, conf, strerr);
+		  err = malloc(strlen(conf) + strlen(prefix) + strlen(strerr) + 1);
+		  sprintf(err, prefix, conf, strerr);
 			
-			ret = dialog_yesno(_("GNUnet configuration"), err, rows, cols - 5);
+		  ret = dialog_yesno(_("GNUnet configuration"),
+				     err, 
+				     rows, 
+				     cols - 5);
 
-			free(err);
-		}
+		  free(err);
+		} 
 		else
-			ret = 1;
+		  ret = 1;
 			
 		free(conf);
 			

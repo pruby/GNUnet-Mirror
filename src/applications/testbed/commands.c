@@ -314,8 +314,8 @@ static int addSshNode(int argc, char * argv[]) {
     addr.sin_port
       = htons(lport);
     if (0 == BIND(s,
-		  &addr,
-		  sizeof(addr))) {
+		  (const struct sockaddr *) &addr,
+		  sizeof(struct sockaddr_in))) {
       closefile(s);
       break; /* found port! */
     } else {
@@ -1453,7 +1453,7 @@ static int addAvailable(int argc,
   struct hostent *ip_info;
   struct sockaddr_in soaddr;
   int sock;
-  int ret;
+  size_t ret;
   char * command;
   cron_t start;
   char c;
@@ -1653,7 +1653,7 @@ static int addAvailable(int argc,
       gnunet_util_sleep(100 * cronMILLIS);
       continue;
     }
-    if (ret <= 0)
+    if ( (ret == 0) || (ret == (size_t)-1) )
       break; /* end of transmission or error */
     if ((c=='\r') || (c=='\n'))
       curpos += ret;
@@ -1687,7 +1687,7 @@ static int addAvailable(int argc,
         gnunet_util_sleep(20);
 	continue;
       }
-      if (ret <= 0)
+      if ( (ret == 0) || (ret == (size_t)-1) )
 	break; /* end of file or error*/
       curpos += ret;
 

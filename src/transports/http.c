@@ -854,7 +854,7 @@ static void * httpListenMain() {
 	}
       }
       if (FD_ISSET(sock, &writeSet)) {
-	int ret;
+	size_t ret;
 	int success;
 
 try_again_1:
@@ -862,7 +862,7 @@ try_again_1:
 				   httpSession->wbuff,
 				   httpSession->wpos,
 				   &ret);
-	if (success == SYSERR) {
+	if ( (success == SYSERR) || (ret == (size_t) -1) ) {
 	  LOG_STRERROR(LOG_WARNING, "send");
 	  destroySession(i);
 	  i--;
@@ -874,7 +874,7 @@ try_again_1:
 	  gnunet_util_sleep(20);
 	  goto try_again_1;
 	}
-	if (stats != NULL) 
+	if (stats != NULL)
 	  stats->change(stat_bytesSent,
 			ret);
 
@@ -886,7 +886,8 @@ try_again_1:
 	  i--;
 	  continue;
 	}
-	if ((unsigned int)ret == httpSession->wpos) {
+	GNUNET_ASSERT(ret <= httpSession->wpos);
+	if (ret == httpSession->wpos) {
 	  FREENONNULL(httpSession->wbuff);
 	  httpSession->wbuff = NULL;
 	  httpSession->wpos = 0;

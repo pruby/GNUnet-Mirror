@@ -279,8 +279,8 @@ int writeToSocket(GNUNET_TCP_SOCKET * sock,
  */
 int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
 			     const CS_HEADER * buffer) {
-  int res;
-  int size;
+  size_t res;
+  size_t size;
 
   if (SYSERR == checkSocket(sock))
     return SYSERR;
@@ -290,7 +290,7 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
 	             sock->outBufPending,
 		     sock->outBufLen,
 		     &res);
-    if (res < 0) {
+    if (res == (size_t)-1) {
       if ( (errno == EWOULDBLOCK) ||
 	   (errno == EAGAIN) ) {
 	MUTEX_UNLOCK(&sock->writelock);
@@ -301,7 +301,7 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
       MUTEX_UNLOCK(&sock->writelock);
       return SYSERR;
     }
-    if ((unsigned int)res < sock->outBufLen) {
+    if (res < sock->outBufLen) {
       memcpy(sock->outBufPending,
 	     &((char*)sock->outBufPending)[res],
 	     sock->outBufLen - res);
@@ -319,10 +319,10 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
   size = ntohs(buffer->size);
 
   SEND_NONBLOCKING(sock->socket,
-		   (char*)buffer,
-		    size,
-		    &res);
-  if (res < 0) {
+		   (const char*)buffer,
+		   size,
+		   &res);
+  if (res == (size_t) -1) {
     if ( (errno == EWOULDBLOCK) ||
 	 (errno == EAGAIN) ) {
       MUTEX_UNLOCK(&sock->writelock);
@@ -336,10 +336,11 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
     MUTEX_UNLOCK(&sock->writelock);
     return SYSERR;
   }
+  GNUNET_ASSERT(res <= size);
   if (res != size) {
     sock->outBufPending = MALLOC(size - res);
     memcpy(sock->outBufPending,
-	   &((char*)buffer)[res],
+	   &((const char*)buffer)[res],
 	   size - res);
     sock->outBufLen = size - res;
     MUTEX_UNLOCK(&sock->writelock);

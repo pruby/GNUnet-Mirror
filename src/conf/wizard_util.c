@@ -79,48 +79,50 @@ int wiz_is_nic_default(const char *name, int suggestion) {
  * @return 1 on success, 0 on error
  */
 int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
-	char *err;
-	int ret = autostartService(doAutoStart, username, groupname);
-	
-	if (ret ) {
+  int ret = autostartService(doAutoStart, 
+			     username, 
+			     groupname);  
+  if (ret ) {
 #ifdef MINGW
-		switch(ret) {
-			case 1:
-				err = winErrorStr(_("Can't open Service Control Manager"),
-					GetLastError());
-				break;
-			case 2:
-				if (GetLastError() != ERROR_SERVICE_EXISTS) {
-					err = winErrorStr(_("Can't create service"),
-					GetLastError());
-				}
-				break;
-			case 3:
-				err = winErrorStr(_("Error changing the permissions of the GNUnet directory"),
-					GetLastError());
-				break;
-			case 4:
-		  	err = _("Cannot write to the regisitry");
-		  	break;
-			case 5:
-				err = winErrorStr(_("Can't access the service"),
-					GetLastError());
-			case 6:
-				err = winErrorStr(_("Can't delete the service"),
-					GetLastError());
-			default:
-				err = winErrorStr(_("Unknown error"), GetLastError());
-		}
-		
-
-		MessageBox(GetActiveWindow(), err, _("Error"), MB_ICONSTOP | MB_OK);
-		free(err);
+    char *err;
+    switch(ret) {
+    case 1:
+      err = winErrorStr(_("Can't open Service Control Manager"),
+			GetLastError());
+      break;
+    case 2:
+      if (GetLastError() != ERROR_SERVICE_EXISTS) {
+	err = winErrorStr(_("Can't create service"),
+			  GetLastError());
+      }
+      break;
+    case 3:
+      err = winErrorStr(_("Error changing the permissions of"
+			  " the GNUnet directory"),
+			GetLastError());
+      break;
+    case 4:
+      err = _("Cannot write to the regisitry");
+      break;
+    case 5:
+      err = winErrorStr(_("Can't access the service"),
+			GetLastError());
+    case 6:
+      err = winErrorStr(_("Can't delete the service"),
+			GetLastError());
+    default:
+      err = winErrorStr(_("Unknown error"), GetLastError());
+    }  
+    MessageBox(GetActiveWindow(), 
+	       err, 
+	       _("Error"),
+	       MB_ICONSTOP | MB_OK);
+    free(err);
 #endif
-
-		return 0;
-	}
-	
-	return 1;
+    
+    return 0;
+  } 
+  return 1;
 }
 
 /**
@@ -130,39 +132,38 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
  * @return 1 on success
  */
 int wiz_createGroupUser(char *group_name, char *user_name) {
-	char *err;
-	int ret = createGroupUser(group_name, user_name);
-
-	if (ret) {
+  int ret = createGroupUser(group_name, user_name);
+  
+  if (ret) {
 #ifdef MINGW
-		switch(ret) {
-			case 1:
-				err = _("This version of Windows does not support "
-					"multiple users.");
-				break;
-			case 2:
-				err = winErrorStr(_("Error creating user"), GetLastError());
-				break;
-			case 3:
-				err = winErrorStr(_("Error accessing local security policy"), GetLastError());
-				break;
-			case 4:
-				err = winErrorStr(_("Error granting service right to user"), GetLastError());
-				break;
-			default:
-				err = winErrorStr(_("Unknown error while creating a new user"), GetLastError());
-		}
+    char *err;
 
-		if (err) {
-			MessageBox(0, err, _("Error"), MB_ICONSTOP | MB_OK);
-			free(err);
-		}
-#endif
-
-		return 0;
-	}
-	
-	return 1;
+    switch(ret) {
+    case 1:
+      err = _("This version of Windows does not support "
+	      "multiple users.");
+      break;
+    case 2:
+      err = winErrorStr(_("Error creating user"), GetLastError());
+      break;
+    case 3:
+      err = winErrorStr(_("Error accessing local security policy"), GetLastError());
+      break;
+    case 4:
+      err = winErrorStr(_("Error granting service right to user"), GetLastError());
+      break;
+    default:
+      err = winErrorStr(_("Unknown error while creating a new user"), GetLastError());
+    }
+    
+    if (err) {
+      MessageBox(0, err, _("Error"), MB_ICONSTOP | MB_OK);
+      free(err);
+    }
+#endif    
+    return 0;
+  }  
+  return 1;
 }
 
 /* end of wizard_util.c */

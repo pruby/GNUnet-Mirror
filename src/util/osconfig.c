@@ -90,17 +90,15 @@ void enumNetworkIfs(void (*callback) (char *, int)) {
  * @return 1 if yes, 0 otherwise
  */
 int isOSAutostartCapable() {
-#ifdef WINDOWS
-	return 1;
-#endif
 #ifdef LINUX
-	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
-		/* Debian */
-		if (ACCESS("/etc/init.d/", W_OK) == 0)
-			return 1;
-	}
-	
-	return 0;
+  if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
+    /* Debian */
+    if (ACCESS("/etc/init.d/", W_OK) == 0)
+      return 1;
+  }  
+  return 0;
+#else
+  return 1;
 #endif
 }
 
@@ -113,170 +111,169 @@ int isOSAutostartCapable() {
  */
 int autostartService(int doAutoStart, char *username, char *groupname) {
 #ifdef WINDOWS
-	if (doAutoStart)
+  if (doAutoStart)
+    {
+      if (IsWinNT())
 	{
-		if (IsWinNT())
-		{
-			char *err = NULL;
-			DWORD dwErr = 0;
-			
-			if (username && !strlen(username))
-				username = NULL;
-			
-			/* Install service */
-			switch(InstallAsService(username))
-			{
-				case 0:
-				case 1:
-					break;
-				case 2:
-					if (GetLastError() != ERROR_SERVICE_EXISTS)
-						return 1;
-				case 3:
-					return 2;
-				default:
-					return -1;
-			}
-			
-			/* Grant permissions to the GNUnet directory */
-			if ((!err || dwErr == ERROR_SERVICE_EXISTS) && username)
-			{
-				char szHome[_MAX_PATH + 1];
-
-				plibc_conv_to_win_path("/", szHome);
-
-				if (!AddPathAccessRights(szHome, username, GENERIC_ALL))
-					return 3;
-			}
-		}
-		else
-		{
-			char szPath[_MAX_PATH + 1];
-			plibc_conv_to_win_path("/bin/gnunetd.exe", szPath);
-			
-			if (RegSetValue(HKEY_LOCAL_MACHINE,
-				"Software\\Microsoft\\Windows\\CurrentVersion\\Run", REG_SZ, szPath, 
-				strlen(szPath)) != ERROR_SUCCESS)
-			{
-				return 4;
-			}
-		}
-	}
-	else
-	{
-		if (IsWinNT())
-		{
-			char *err = NULL;
-						
-			switch (UninstallService())
-			{
-				case 0:
-				case 1:
-					break;
-				case 2:
-					return 1;
-				case 3:
-					return 5;
-				case 4:
-					return 6;
-				default:
-					return -1;
-			}
-		}
-		else
-		{
-			HKEY hKey;
-			
-		  if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-		  	"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE,
-		  	&hKey) == ERROR_SUCCESS)
-		  {
-		    RegDeleteValue(hKey, "GNUnet");
-		
-		    RegCloseKey(hKey);
-		  }
-		}
-	}
-#else
-	/* Unix */
-	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
-		/* Debian */
-		if (doAutoStart) {
-			struct stat buf;
-			if (STAT("/etc/init.d/gnunetd", &buf) == -1) {
-				/* create init file */
-				FILE *f = FOPEN("/etc/init.d/gnunetd", "w");
-				if (! f)
-					return 1;
-					
-				fputs("#! /bin/sh\n"
-									"#\n"
-									"# Automatically created by gnunet-setup\n"
-									"#\n"
-									"\n"
-									"PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n"
-									"PIDFILE=/var/run/gnunetd/gnunetd.pid\n"
-									"\n"
-									"case \"$1\" in\n"
-									"	start)\n"
-									"		echo -n \"Starting GNUnet: \"\n"
-									"		gnunetd\n"
-									"		echo \"gnunetd\"\n"
-									"		;;\n"
-									"	stop)\n"
-									"		echo -n \"Stopping GNUnet: \"\n"
-									"		kill `cat $PIDFILE`\n"
-									"		echo \"gnunetd\"\n"
-									"		;;\n"
-									"	reload)\n"
-									"		echo -n \"Reloading GNUnet: \"\n"
-									"		kill -HUP `cat $PIDFILE`\n"
-									"		echo \"gnunetd\"\n"
-									"		;;\n"
-									"	restart|force-reload)\n"
-									"		echo \"Restarting GNUnet: gnunetd...\"\n"
-									"		$0 stop\n"
-									"		sleep 1\n"
-									"		$0 start\n"
-									"		;;\n"
-									"	*)\n"
-									"		echo \"Usage: /etc/init.d/gnunetd {start|stop|reload|restart|force-reload}\" >&2\n"
-									"		exit 1\n"
-									"		;;\n"
-									"\n"
-									"esac\n"
-				      "exit 0\n", f);
-					fclose(f);
-					CHMOD("/etc/init.d/gnunetd", S_IRWXU | S_IRGRP | S_IXGRP |
-						S_IROTH | S_IXOTH);
-			}
-			errno = system("/usr/sbin/update-rc.d gnunetd defaults");
-			if (errno != 0)
-				return 1;
-		}
-		else {
-			if (UNLINK("/etc/init.d/gnunetd") != -1 || errno == ENOENT) {
-				if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
-					errno = system("/usr/sbin/update-rc.d gnunetd remove");
-					if (errno != 0) {
-						errno = EPERM;
-						return 1;
-					}
-				}
-				else {
-					errno = EPERM;
-					return 1;
-				}
-			}
-			else
-				return 1;
-		}
-	}
-	else
+	  char *err = NULL;
+	  DWORD dwErr = 0;
+	  
+	  if (username && !strlen(username))
+	    username = NULL;
+	  
+	  /* Install service */
+	  switch(InstallAsService(username))
+	    {
+	    case 0:
+	    case 1:
+	      break;
+	    case 2:
+	      if (GetLastError() != ERROR_SERVICE_EXISTS)
 		return 1;
-		
+	    case 3:
+	      return 2;
+	    default:
+	      return -1;
+	    }
+	  
+	  /* Grant permissions to the GNUnet directory */
+	  if ((!err || dwErr == ERROR_SERVICE_EXISTS) && username)
+	    {
+	      char szHome[_MAX_PATH + 1];
+	      
+	      plibc_conv_to_win_path("/", szHome);
+	      
+	      if (!AddPathAccessRights(szHome, username, GENERIC_ALL))
+		return 3;
+	    }
+	}
+      else
+	{
+	  char szPath[_MAX_PATH + 1];
+	  plibc_conv_to_win_path("/bin/gnunetd.exe", szPath);
+	  
+	  if (RegSetValue(HKEY_LOCAL_MACHINE,
+			  "Software\\Microsoft\\Windows\\CurrentVersion\\Run", REG_SZ, szPath, 
+			  strlen(szPath)) != ERROR_SUCCESS)
+	    {
+	      return 4;
+	    }
+	}
+    }
+  else
+    {
+      if (IsWinNT())
+	{
+	  char *err = NULL;
+	  
+	  switch (UninstallService())
+	    {
+	    case 0:
+	    case 1:
+	      break;
+	    case 2:
+	      return 1;
+	    case 3:
+	      return 5;
+	    case 4:
+	      return 6;
+	    default:
+	      return -1;
+	    }
+	}
+      else
+	{
+	  HKEY hKey;
+	  
+	  if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+			  "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE,
+		  	&hKey) == ERROR_SUCCESS)
+	    {
+	      RegDeleteValue(hKey, "GNUnet");
+	      
+	      RegCloseKey(hKey);
+	    }
+	}
+    }
+#else
+  /* Unix */
+  if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
+    /* Debian */
+    if (doAutoStart) {
+      struct stat buf;
+      if (STAT("/etc/init.d/gnunetd", &buf) == -1) {
+	/* create init file */
+	FILE *f = FOPEN("/etc/init.d/gnunetd", "w");
+	if (! f)
+	  return 1;
+	
+	fputs("#! /bin/sh\n"
+	      "#\n"
+	      "# Automatically created by gnunet-setup\n"
+	      "#\n"
+	      "\n"
+	      "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n"
+	      "PIDFILE=/var/run/gnunetd/gnunetd.pid\n"
+	      "\n"
+	      "case \"$1\" in\n"
+	      "	start)\n"
+	      "		echo -n \"Starting GNUnet: \"\n"
+	      "		gnunetd\n"
+	      "		echo \"gnunetd\"\n"
+	      "		;;\n"
+	      "	stop)\n"
+	      "		echo -n \"Stopping GNUnet: \"\n"
+	      "		kill `cat $PIDFILE`\n"
+	      "		echo \"gnunetd\"\n"
+	      "		;;\n"
+	      "	reload)\n"
+	      "		echo -n \"Reloading GNUnet: \"\n"
+	      "		kill -HUP `cat $PIDFILE`\n"
+	      "		echo \"gnunetd\"\n"
+	      "		;;\n"
+	      "	restart|force-reload)\n"
+	      "		echo \"Restarting GNUnet: gnunetd...\"\n"
+	      "		$0 stop\n"
+	      "		sleep 1\n"
+	      "		$0 start\n"
+	      "		;;\n"
+	      "	*)\n"
+	      "		echo \"Usage: /etc/init.d/gnunetd {start|stop|reload|restart|force-reload}\" >&2\n"
+	      "		exit 1\n"
+	      "		;;\n"
+	      "\n"
+	      "esac\n"
+	      "exit 0\n", f);
+	fclose(f);
+	CHMOD("/etc/init.d/gnunetd", S_IRWXU | S_IRGRP | S_IXGRP |
+	      S_IROTH | S_IXOTH);
+      }
+      errno = system("/usr/sbin/update-rc.d gnunetd defaults");
+      if (errno != 0)
+	return 1;
+    }
+    else {
+      if (UNLINK("/etc/init.d/gnunetd") != -1 || errno == ENOENT) {
+	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
+	  errno = system("/usr/sbin/update-rc.d gnunetd remove");
+	  if (errno != 0) {
+	    errno = EPERM;
+	    return 1;
+	  }
+	}
+	else {
+	  errno = EPERM;
+	  return 1;
+	}
+      }
+      else
+	return 1;
+    }
+  }
+  else
+    return 1;
 #endif
-	return 0;
+  return 0;
 }
 
 /**

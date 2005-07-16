@@ -1022,7 +1022,7 @@ static void httpRegister(char * cmd) {
   struct hostent *ip_info;
   struct sockaddr_in soaddr;
   int sock;
-  int ret;
+  size_t ret;
   char * command;
   char * secure;
   char * trusted;
@@ -1256,7 +1256,7 @@ static void httpRegister(char * cmd) {
       gnunet_util_sleep(100 * cronMILLIS);
       continue;
     }
-    if (ret <= 0)
+    if ( (ret == 0) || (ret == (size_t) -1) )
       break; /* end of transmission or error */
     if ((c=='\r') || (c=='\n'))
       curpos += ret;

@@ -67,7 +67,7 @@ static int iiHelper(const char * fn,
   struct iiC * cls = ptr;
   char * fullName;
   char * lnkName;
-  size_t size;
+  unsigned int size;
   int ret;
 
   fullName = MALLOC(strlen(dir) + strlen(fn) + 4);
@@ -82,6 +82,11 @@ static int iiHelper(const char * fn,
 		   size - 1);
     if (ret == -1) {
       if (errno == ENAMETOOLONG) {
+	if (size * 2 < size) {
+	  FREE(lnkName);
+	  FREE(fullName);
+	  return OK; /* error */
+	}
 	GROW(lnkName,
 	     size,
 	     size * 2);

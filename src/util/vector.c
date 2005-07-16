@@ -70,11 +70,11 @@ void vectorDump(Vector *v) {
 
   for (vs = v->segmentsHead; vs; vs = vs->next) {
     fprintf(stderr,
-	    "Segment-size: %3d / %d [%d...%d]: ",
-	    vs->size,
-	    v->VECTOR_SEGMENT_SIZE,
-	    sum,
-	    sum + vs->size - 1);
+	    "Segment-size: %3llu / %llu [%llu...%llu]: ",
+	    (unsigned long long) vs->size,
+	    (unsigned long long) v->VECTOR_SEGMENT_SIZE,
+	    (unsigned long long) sum,
+	    (unsigned long long) sum + vs->size - 1);
     for (n=0;n<vs->size;n++) {
       fprintf(stderr,
 	      "%p (%d), ",

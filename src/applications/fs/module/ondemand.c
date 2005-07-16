@@ -392,7 +392,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
       } else {
         /* Delete it after 3 days */
         if (*first_unavail - cronTime(NULL) > 3 * cronDAYS) {
-	  size_t len;
+	  unsigned int len;
 	  char * ofn;
 	  int ret;
 
@@ -401,7 +401,15 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	  while ( ((ret = READLINK(fn, ofn, len)) == -1) &&
 		  (errno == ENAMETOOLONG) &&
 		  (len < 4 * 1024 * 1024) )
-	    GROW(ofn, len, len*2);
+	    if (len * 2 < len) {
+	      BREAK();
+	      GROW(ofn, len, 0);
+	      FREE(fn);
+	      return SYSERR;
+	    }
+	    GROW(ofn, 
+		 len, 
+		 len*2);
 	  	
           if (ret != -1) {
             LOG(LOG_ERROR,
