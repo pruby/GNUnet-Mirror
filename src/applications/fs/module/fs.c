@@ -87,7 +87,7 @@ static DHT_TableId dht_table;
 /**
  * Store an item in the datastore.
  *
- * @param key the key of the item
+ * @param query the unique identifier of the item
  * @param value the value to store
  * @param prio how much does our routing code value
  *        this datum?
@@ -96,7 +96,7 @@ static DHT_TableId dht_table;
  *         SYSERR if the value is malformed
  */
 static int gapPut(void * closure,
-		  const HashCode512 * key,
+		  const HashCode512 * query,
 		  const DataContainer * value,
 		  unsigned int prio) {
   Datastore_Value * dv;
@@ -119,7 +119,7 @@ static int gapPut(void * closure,
   if ( (OK != getQueryFor(size - sizeof(Datastore_Value),
 			  (DBlock*)&gw[1],
 			  &hc)) ||
-       (! equalsHashCode512(&hc, key)) ) {
+       (! equalsHashCode512(&hc, query)) ) {
     LOG(LOG_ERROR,
 	"Type: %u\n",
 	ntohl(*(unsigned int*) &gw[1]));
@@ -149,37 +149,37 @@ static int gapPut(void * closure,
 			       ntohl(dv->size) - sizeof(Datastore_Value),
 			       (DBlock*) &dv[1],
 			       0,
-			       key)) {
+			       query)) {
     BREAK();
     FREE(dv);
     return SYSERR;
   }
-  processResponse(key, dv);
+  processResponse(query, dv);
   IFLOG(LOG_DEBUG,
-	hash2enc(key,
+	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
       "FS received GAP-PUT request (query: %s)\n",
       &enc);
-  ret = datastore->putUpdate(key,
+  ret = datastore->putUpdate(query,
 			     dv);
   FREE(dv);
   return ret;
 }
 
-static int get_result_callback(const HashCode512 * key,
+static int get_result_callback(const HashCode512 * query,
 			       const DataContainer * value,
 			       DHT_GET_CLS * cls) {
   EncName enc;
 
   IFLOG(LOG_DEBUG,
-	hash2enc(key,
+	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Found reply to query %s.\n",
+      "Found reply to query '%s'.\n",
       &enc);
   gapPut(NULL,
-	 key,
+	 query,
 	 value,
 	 cls->prio);
   return OK;
@@ -943,6 +943,17 @@ static int replyHashFunction(const DataContainer * content,
 int initialize_module_fs(CoreAPIForApplication * capi) {
   static Blockstore dsGap;
   static Blockstore dsDht;
+
+
+  GNUNET_ASSERT(sizeof(CHK) == 128);
+  GNUNET_ASSERT(sizeof(DBlock) == 4);
+  GNUNET_ASSERT(sizeof(IBlock) == 132);
+  GNUNET_ASSERT(sizeof(FileIdentifier) == 136);
+  GNUNET_ASSERT(sizeof(KBlock) == 524);
+  GNUNET_ASSERT(sizeof(SBlock) == 732);
+  GNUNET_ASSERT(sizeof(NBlock) == 716);
+  GNUNET_ASSERT(sizeof(KNBlock) == 1244);
+
 
   hash("GNUNET_FS",
        strlen("GNUNET_FS"),

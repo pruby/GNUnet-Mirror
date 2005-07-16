@@ -611,6 +611,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   void * lib;
   EncName myself;
 
+  GNUNET_ASSERT(sizeof(HELO_Message) == 600);
   identity = capi->requestService("identity");
   if (identity == NULL) {
     BREAK();

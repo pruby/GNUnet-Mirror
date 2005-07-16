@@ -448,6 +448,7 @@ Pingpong_ServiceAPI *
 provide_module_pingpong(CoreAPIForApplication * capi) {
   static Pingpong_ServiceAPI ret;
 
+  GNUNET_ASSERT(sizeof(PINGPONG_Message) == 72);
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {

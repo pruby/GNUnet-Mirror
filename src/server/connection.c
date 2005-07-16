@@ -823,68 +823,398 @@ static int outgoingCheck(unsigned int priority) {
 }
 
 /**
- * Send a buffer; assumes that access is already synchronized.  This
- * message solves the knapsack problem, assembles the message
- * (callback to build parts from knapsack, callbacks for padding,
- * random noise padding, crc, encryption) and finally hands the
- * message to the transport service.
+ * Check that the send frequency for this
+ * buffer is not too high.
  *
- * @param be connection of the buffer that is to be transmitted
+ * @return OK if sending a message now is acceptable
  */
-static void sendBuffer(BufferEntry * be) {
-  unsigned int i;
-  unsigned int j;
-  unsigned int p;
-  unsigned int rsi;
-  SendCallbackList * pos;
-  P2P_Message * p2pHdr;
-  int priority;
-  int * perm;
-  char * tmpMsg;
-  char * plaintextMsg;
-  void * encryptedMsg;
-  cron_t expired;
-  int headpos;
-  int tailpos;
-  int approxProb;
-  int remainingBufferSize;
-  unsigned int totalMessageSize;
-  int ret;
-
-  ENTRY();
-  /* fast ways out */
-  if (be == NULL) {
-    BREAK();
-    return;
-  }
-  if (be->status != STAT_UP)
-    return; /* status is not up, cannot send! */
-  if (be->sendBufferSize == 0)
-    return; /* nothing to send */
-
-  if (be->inSendBuffer == YES)
-    return; /* must not recurse! */
-  be->inSendBuffer = YES;
-
-  /* recompute max send frequency */
-  if (be->max_bpm <= 0)
+static int checkSendFrequency(BufferEntry * be) {
+  if (be->max_bpm == 0)
     be->max_bpm = 1;
 
+  if (be->session.mtu == 0) {
+    be->MAX_SEND_FREQUENCY = /* ms per message */
+      EXPECTED_MTU
+      / (be->max_bpm * cronMINUTES / cronMILLIS) /* bytes per ms */
+      / 2;
+  } else {
+    be->MAX_SEND_FREQUENCY = /* ms per message */
+      be->session.mtu  /* byte per message */
+      / (be->max_bpm * cronMINUTES / cronMILLIS) /* bytes per ms */
+      / 2; /* some head-room */
+  }
+  /* Also: allow at least MINIMUM_SAMPLE_COUNT knapsack
+     solutions for any MIN_SAMPLE_TIME! */
+  if (be->MAX_SEND_FREQUENCY > MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
+    be->MAX_SEND_FREQUENCY = MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
+  
+  if ( (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > cronTime(NULL)) &&
+       (be->sendBufferSize < MAX_SEND_BUFFER_SIZE/4) ) {
+#if DEBUG_CONNECTION
+    LOG(LOG_DEBUG,
+	"Send frequency too high (CPU load), send deferred.\n");
+#endif
+    return NO; /* frequency too high, wait */
+  }
+  return OK;
+}
+
+/**
+ * Select a subset of the messages for sending.
+ *
+ * @param *priority is set to the achieved message priority
+ * @return total number of bytes of messages selected
+ */
+static unsigned int selectMessagesToSend(BufferEntry * be,
+					 unsigned int * priority) {
+  unsigned int totalMessageSize;
+  SendEntry * entry;
+  int i;
+  int j;
+  int approxProb;
+  
+  totalMessageSize = 0;
+  (*priority) = 0;
+
+  if (be->session.mtu == 0) {
+    totalMessageSize = sizeof(P2P_Message);
+    i = 0;
+    /* assumes entries are sorted by priority! */
+    while (i < be->sendBufferSize) {
+      entry = be->sendBuffer[i];
+      if ( (totalMessageSize + entry->len < MAX_BUFFER_SIZE) &&
+	   (entry->pri >= EXTREME_PRIORITY) ) {
+	entry->knapsackSolution = YES;
+	(*priority) += entry->pri;
+	totalMessageSize += entry->len;
+      } else {
+	entry->knapsackSolution = NO;
+	break;
+      }
+      i++;
+    }
+    if ( (i == 0) &&
+	 (be->sendBuffer[i]->len <= be->available_send_window) )
+      return 0; /* always wait for the highest-priority
+		 message (otherwise large messages may
+		 starve! */
+    while ( (i < be->sendBufferSize) &&
+	    (be->available_send_window > totalMessageSize) ) {
+      entry = be->sendBuffer[i];
+      if ( (entry->len + totalMessageSize <=
+	    be->available_send_window) &&
+	   (totalMessageSize + entry->len < MAX_BUFFER_SIZE) ) {
+	entry->knapsackSolution = YES;
+	totalMessageSize += entry->len;
+	(*priority) += entry->pri;
+      } else {
+	entry->knapsackSolution = NO;
+	if (totalMessageSize == sizeof(P2P_Message)) {	
+	  /* if the highest-priority message does not yet
+	     fit, wait for send window to grow so that
+	     we can get it out (otherwise we would starve
+	     high-priority, large messages) */
+	  return 0;
+	}
+      }
+      i++;
+    }
+    if ( (totalMessageSize == sizeof(P2P_Message)) ||
+	 ( ((*priority) < EXTREME_PRIORITY) &&
+	   ((totalMessageSize / sizeof(P2P_Message)) < 4) &&
+	   (randomi(16) != 0) ) ) {
+      /* randomization necessary to ensure we eventually send
+	 a small message if there is nothing else to do! */
+      return 0;
+    }
+  } else { /* if (be->session.mtu == 0) */
+    /* solve knapsack problem, compute accumulated priority */
+    approxProb = getCPULoad();
+    if (approxProb > 50) {
+      if (approxProb > 100)
+	approxProb = 100;
+      approxProb = 100 - approxProb; /* now value between 0 and 50 */
+      approxProb *= 2; /* now value between 0 [always approx] and 100 [never approx] */
+      /* control CPU load probabilistically! */
+      if (randomi(1+approxProb) == 0) {
+	(*priority) = approximateKnapsack(be,
+					  be->session.mtu - sizeof(P2P_Message));
+#if DEBUG_COLLECT_PRIO == YES
+	FPRINTF(prioFile, "%llu 0 %d\n", cronTime(NULL), priority);
+#endif
+      } else {
+	(*priority) = solveKnapsack(be,
+				    be->session.mtu - sizeof(P2P_Message));
+#if DEBUG_COLLECT_PRIO == YES
+	FPRINTF(prioFile, 
+		"%llu 1 %d\n", 
+		cronTime(NULL),
+		priority);
+#endif
+      }
+    } else { /* never approximate < 50% CPU load */
+      (*priority) = solveKnapsack(be,
+				  be->session.mtu - sizeof(P2P_Message));
+#if DEBUG_COLLECT_PRIO == YES
+      FPRINTF(prioFile,
+	      "%llu 2 %d\n", 
+	      cronTime(NULL), 
+	      priority);
+#endif
+    }
+    j = 0;
+    for (i=0;i<be->sendBufferSize;i++)
+      if (be->sendBuffer[i]->knapsackSolution == YES)
+	j++;
+    if (j == 0) {
+      LOG(LOG_ERROR,
+	  _("'%s' selected %d out of %d messages (MTU: %d).\n"),
+	  "solveKnapsack",
+	  j,
+	  be->sendBufferSize,
+	  be->session.mtu - sizeof(P2P_Message));
+
+      for (j=0;j<be->sendBufferSize;j++)
+	LOG(LOG_ERROR,
+	    _("Message details: %u: length %d, priority: %d\n"),
+	    j,
+	    be->sendBuffer[j]->len,
+	    be->sendBuffer[j]->pri);
+      return 0;
+    }
+
+    if (be->available_send_window < be->session.mtu) {
+      /* if we have a very high priority, we may
+	 want to ignore bandwidth availability (e.g. for HANGUP,
+	 which  has EXTREME_PRIORITY) */
+      if ((*priority) < EXTREME_PRIORITY) {
+#if DEBUG_CONNECTION
+	LOG(LOG_DEBUG,
+	    "bandwidth limits prevent sending (send window %u too small).\n",
+	    be->available_send_window);
+#endif
+	return 0; /* can not send, BPS available is too small */
+      }
+    }
+    totalMessageSize = be->session.mtu;
+  } /* end MTU > 0 */
+  return totalMessageSize;
+}
+
+/**
+ * Expire old messages from SendBuffer (to avoid 
+ * running out of memory).
+ */
+static void expireSendBufferEntries(BufferEntry * be) {
+  int msgCap;
+  int i;
+  SendEntry * entry;
+  cron_t expired;
+  int l;
+  unsigned int freeSlots;
+  int j;
+
+  /* if it's more than one connection "lifetime" old, always kill it! */
+  expired = cronTime(&be->lastSendAttempt) - SECONDS_PINGATTEMPT * cronSECONDS;
+#if DEBUG_CONNECTION
+  LOG(LOG_DEBUG,
+      "policy prevents sending message (priority too low: %d)\n",
+      priority);
+#endif
+  
+  l = getCPULoad();
+  /* cleanup queue */
+  if (l >= 50) {
+    msgCap = EXPECTED_MTU / sizeof(HashCode512);
+  } else {
+    if (l <= 0)
+      l = 1;
+    msgCap = EXPECTED_MTU / sizeof(HashCode512)
+      + (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU / sizeof(HashCode512)) / l;
+  }
+  if (be->max_bpm > 2) {
+    msgCap += 2 * (int) log((double)be->max_bpm);
+    if (msgCap >= MAX_SEND_BUFFER_SIZE-1)
+      msgCap = MAX_SEND_BUFFER_SIZE-2; 
+    /* try to make sure that there
+       is always room... */
+  }
+
+  freeSlots = 0;
+  /* allow at least msgCap msgs in buffer */
+  for (i=0;i<be->sendBufferSize;i++) 
+    if (be->sendBuffer[i] == NULL)
+      freeSlots++;
+
+  for (i=0;i<be->sendBufferSize;i++) { 	
+    entry = be->sendBuffer[i];
+    if (entry == NULL)
+      continue;   
+    if (be->sendBufferSize <= msgCap + freeSlots)
+      break;
+    if (entry->transmissionTime < expired) {
+#if DEBUG_CONNECTION
+      LOG(LOG_DEBUG,
+	  "expiring message, expired %ds ago, queue size is %u (bandwidth stressed)\n",
+	  (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
+	  be->sendBufferSize);
+#endif
+      if (stats != NULL) {
+	stats->change(stat_messagesDropped, 1);
+	stats->change(stat_sizeMessagesDropped, entry->len);
+      }
+      FREENONNULL(entry->closure);
+      FREE(entry);
+      be->sendBuffer[i] = NULL;
+      freeSlots++;
+    }
+  } 
+
+  /* cleanup/compact sendBuffer */
+  j = 0;
+  for (i=0;i<be->sendBufferSize;i++)
+    if (be->sendBuffer[i] != NULL) 
+      be->sendBuffer[j++] = be->sendBuffer[i];    
+  GROW(be->sendBuffer,
+       be->sendBufferSize,
+       j);  
+}
+
+/**
+ * For each SendEntry of the BE that has
+ * been selected by the knapsack solver,
+ * call the callback and make sure that the
+ * bytes are ready in entry->closure for
+ * transmission.<p>
+ *
+ * If the preparation fails for an entry,
+ * free it.
+ * @return number of prepared entries
+ */
+static unsigned int prepareSelectedMessages(BufferEntry * be) {
+  unsigned int ret;
+  int i;
+  char * tmpMsg;
+  SendEntry * entry;
+
+  ret = 0;
+
+  for (i=0;i<be->sendBufferSize;i++) {
+    entry = be->sendBuffer[i];
+    tmpMsg = MALLOC(entry->len);
+
+    if (entry->knapsackSolution == YES) {
+      if (entry->callback != NULL) {
+	if (OK == entry->callback(tmpMsg,
+				  entry->closure,
+				  entry->len)) {
+	  entry->callback = NULL;
+	  entry->closure = tmpMsg;
+	  ret++;
+	} else {
+	  FREE(tmpMsg);
+	  entry->callback = NULL;
+	  entry->closure = NULL;
+	  FREE(entry);
+	  be->sendBuffer[i] = NULL;
+	}
+      } else {
+	ret++;
+      }
+    }
+  }
+  return ret;
+}
+
+/**
+ * Compute a random permuation of the send buffer
+ * entry such that the selected messages obey
+ * the SE flags.
+ */
+static int * permuteSendBuffer(BufferEntry * be) {
+  int * perm;
+  int headpos;
+  int tailpos;
+  int i;
+  int j;
+
+  perm = permute(WEAK, be->sendBufferSize);
+  headpos = 0;
+  tailpos = be->sendBufferSize-1;
+  for (i=0;i<be->sendBufferSize;i++) {
+    if (be->sendBuffer[perm[i]] == NULL)
+      continue;	
+    if (be->sendBuffer[perm[i]]->knapsackSolution == YES) {
+      switch (be->sendBuffer[perm[i]]->flags & SE_PLACEMENT_FLAG) {
+      case SE_FLAG_NONE:
+	break;
+      case SE_FLAG_PLACE_HEAD:
+	/* swap slot with whoever is head now */
+	j = perm[headpos];
+	perm[headpos++] = perm[i];
+	perm[i] = j;
+	break;
+      case SE_FLAG_PLACE_TAIL:
+	/* swap slot with whoever is tail now */
+	j = perm[tailpos];
+	perm[tailpos--] = perm[i];
+	perm[i] = j;
+      }
+    }
+  }
+  return perm;
+}
+
+/**
+ * Free entries in send buffer that were
+ * selected as the knapsack solution or
+ * that are dead (callback and closure NULL).
+ */
+static void freeSelectedEntries(BufferEntry * be) {
+  int i;
+  SendEntry * entry;
+
+  for (i=0;i<be->sendBufferSize;i++) {
+    entry = be->sendBuffer[i];
+    if (entry == NULL)
+      continue;
+    if (entry->knapsackSolution == YES) {
+      GNUNET_ASSERT(entry->callback == NULL);
+      FREENONNULL(entry->closure);
+      FREE(entry);
+      be->sendBuffer[i] = NULL;
+    } else if ( (entry->callback == NULL) &&
+		(entry->closure == NULL) ) {
+      FREE(entry);
+      be->sendBuffer[i] = NULL;
+    }      
+  }
+}
+
+/**
+ * Try to make sure that the transport service for the given buffer is
+ * connected.  If the transport service changes, this function also
+ * ensures that the pending messages are properly fragmented (if
+ * needed).
+ *
+ * @return OK on success, NO on error
+ */
+static int ensureTransportConnected(BufferEntry * be) {
+  SendEntry ** entries;
+  SendEntry * entry;
+  int i;
+  int ret;
+      
   if (be->session.tsession == NULL) {
     be->session.tsession
       = transport->connectFreely(&be->session.sender,
 				 YES);
-    if (be->session.tsession == NULL) {
-      be->inSendBuffer = NO;
-      return;
-    }
+    if (be->session.tsession == NULL)
+      return NO;
     be->session.mtu
       = transport->getMTU(be->session.tsession->ttype);
     if (be->session.mtu > 0) {
       /* MTU change may require new fragmentation! */
-      SendEntry ** entries;
-      SendEntry * entry;
-      
       entries = be->sendBuffer;
       i = 0;
       ret = be->sendBufferSize;
@@ -910,34 +1240,50 @@ static void sendBuffer(BufferEntry * be) {
 	     ret);
     }
   }
-  if (be->sendBufferSize == 0)
-    return; /* nothing to send */
+  return OK;
+}
 
 
-  if (be->session.mtu == 0) {
-    be->MAX_SEND_FREQUENCY = /* ms per message */
-      EXPECTED_MTU
-      / (be->max_bpm * cronMINUTES / cronMILLIS) /* bytes per ms */
-      / 2;
-  } else {
-    be->MAX_SEND_FREQUENCY = /* ms per message */
-      be->session.mtu  /* byte per message */
-      / (be->max_bpm * cronMINUTES / cronMILLIS) /* bytes per ms */
-      / 2; /* some head-room */
+/**
+ * Send a buffer; assumes that access is already synchronized.  This
+ * message solves the knapsack problem, assembles the message
+ * (callback to build parts from knapsack, callbacks for padding,
+ * random noise padding, crc, encryption) and finally hands the
+ * message to the transport service.
+ *
+ * @param be connection of the buffer that is to be transmitted
+ */
+static void sendBuffer(BufferEntry * be) {
+  unsigned int i;
+  unsigned int j;
+  unsigned int p;
+  unsigned int rsi;
+  SendCallbackList * pos;
+  P2P_Message * p2pHdr;
+  int priority;
+  int * perm;
+  char * plaintextMsg;
+  void * encryptedMsg;
+  unsigned int totalMessageSize;
+  int ret;
+
+  ENTRY();
+  /* fast ways out */
+  if (be == NULL) {
+    BREAK();
+    return;
   }
-  /* Also: allow at least MINIMUM_SAMPLE_COUNT knapsack
-     solutions for any MIN_SAMPLE_TIME! */
-  if (be->MAX_SEND_FREQUENCY > MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
-    be->MAX_SEND_FREQUENCY = MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
+  if ( (be->status != STAT_UP) ||
+       (be->sendBufferSize == 0) ||
+       (be->inSendBuffer == YES) )
+    return; /* must not run */
+  be->inSendBuffer = YES;
 
-  if ( (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > cronTime(NULL)) &&
-       (be->sendBufferSize < MAX_SEND_BUFFER_SIZE/4) ) {
-#if DEBUG_CONNECTION
-    LOG(LOG_DEBUG,
-	"Send frequency too high (CPU load), send deferred.\n");
-#endif
+  if ( (OK != ensureTransportConnected(be)) ||
+       (be->sendBufferSize == 0) ||
+       (OK != checkSendFrequency(be)) ) {
     be->inSendBuffer = NO;
-    return; /* frequency too high, wait */
+    return;
   }
 
   /* test if receiver has enough bandwidth available!  */
@@ -949,233 +1295,29 @@ static void sendBuffer(BufferEntry * be) {
       be->session.mtu);
 #endif
 
+  
+  totalMessageSize = selectMessagesToSend(be,
+					  &priority);
+  if (totalMessageSize == 0) {
+    expireSendBufferEntries(be);
+    be->inSendBuffer = NO;
+    return; /* deferr further */
+  }
+  totalMessageSize += sizeof(P2P_Message);
 
-  if (be->session.mtu == 0) {
-    SendEntry ** entries;
-
-    entries = be->sendBuffer;
-    totalMessageSize = sizeof(P2P_Message);
-    priority = 0;
-    i = 0;
-    /* assumes entries are sorted by priority! */
-    while (i < be->sendBufferSize) {
-      if ( (totalMessageSize + entries[i]->len < MAX_BUFFER_SIZE) &&
-	   (entries[i]->pri >= EXTREME_PRIORITY) ) {
-	entries[i]->knapsackSolution = YES;
-	priority += entries[i]->pri;
-	totalMessageSize += entries[i]->len;
-      } else {
-	entries[i]->knapsackSolution = NO;
-	break;
-      }
-      i++;
-    }
-    if ( (i == 0) &&
-	 (entries[i]->len <= be->available_send_window) )
-      return; /* always wait for the highest-priority
-		 message (otherwise large messages may
-		 starve! */
-    while ( (i < be->sendBufferSize) &&
-	    (be->available_send_window > totalMessageSize) ) {
-      if ( (entries[i]->len + totalMessageSize <=
-	    be->available_send_window) &&
-	   (totalMessageSize + entries[i]->len < MAX_BUFFER_SIZE) ) {
-	entries[i]->knapsackSolution = YES;
-	totalMessageSize += entries[i]->len;
-	priority += entries[i]->pri;
-      } else {
-	entries[i]->knapsackSolution = NO;
-	if (totalMessageSize == sizeof(P2P_Message)) {	
-	  /* if the highest-priority message does not yet
-	     fit, wait for send window to grow so that
-	     we can get it out (otherwise we would starve
-	     high-priority, large messages) */
-	  be->inSendBuffer = NO;    
-	  return;
-	}
-      }
-      i++;
-    }
-    if ( (totalMessageSize == sizeof(P2P_Message)) ||
-	 ( (priority < EXTREME_PRIORITY) &&
-	   ((totalMessageSize / sizeof(P2P_Message)) < 4) &&
-	   (randomi(16) != 0) ) ) {
-      /* randomization necessary to ensure we eventually send
-	 a small message if there is nothing else to do! */
-      be->inSendBuffer = NO;
-      return;
-    }
-  } else { /* if (be->session.mtu == 0) */
-    /* solve knapsack problem, compute accumulated priority */
-    approxProb = getCPULoad();
-    if (approxProb > 50) {
-      if (approxProb > 100)
-	approxProb = 100;
-      approxProb = 100 - approxProb; /* now value between 0 and 50 */
-      approxProb *= 2; /* now value between 0 [always approx] and 100 [never approx] */
-      /* control CPU load probabilistically! */
-      if (randomi(1+approxProb) == 0) {
-	priority = approximateKnapsack(be,
-				       be->session.mtu - sizeof(P2P_Message));
-#if DEBUG_COLLECT_PRIO == YES
-	FPRINTF(prioFile, "%llu 0 %d\n", cronTime(NULL), priority);
-#endif
-      } else {
-	priority = solveKnapsack(be,
-				 be->session.mtu - sizeof(P2P_Message));
-#if DEBUG_COLLECT_PRIO == YES
-	FPRINTF(prioFile, "%llu 1 %d\n", cronTime(NULL), priority);
-#endif
-      }
-    } else { /* never approximate < 50% CPU load */
-      priority = solveKnapsack(be,
-			       be->session.mtu - sizeof(P2P_Message));
-#if DEBUG_COLLECT_PRIO == YES
-      FPRINTF(prioFile, "%llu 2 %d\n", cronTime(NULL), priority);
-#endif
-    }
-    j = 0;
-    for (i=0;i<be->sendBufferSize;i++)
-      if (be->sendBuffer[i]->knapsackSolution == YES)
-	j++;
-    if (j == 0) {
-      LOG(LOG_ERROR,
-	  _("'%s' selected %d out of %d messages (MTU: %d).\n"),
-	  "solveKnapsack",
-	  j,
-	  be->sendBufferSize,
-	  be->session.mtu - sizeof(P2P_Message));
-
-      for (j=0;j<be->sendBufferSize;j++)
-	LOG(LOG_ERROR,
-	    _("Message details: %u: length %d, priority: %d\n"),
-	    j,
-	    be->sendBuffer[j]->len,
-	    be->sendBuffer[j]->pri);
-      be->inSendBuffer = NO;
-      return;
-    }
-
-    if (be->available_send_window < be->session.mtu) {
-      /* if we have a very high priority, we may
-	 want to ignore bandwidth availability (e.g. for HANGUP,
-	 which  has EXTREME_PRIORITY) */
-      if (priority < EXTREME_PRIORITY) {
-#if DEBUG_CONNECTION
-	LOG(LOG_DEBUG,
-	    "bandwidth limits prevent sending (send window %u too small).\n",
-	    be->available_send_window);
-#endif
-	be->inSendBuffer = NO;
-	return; /* can not send, BPS available is too small */
-      }
-    }
-    totalMessageSize = be->session.mtu;
-  } /* end MTU > 0 */
-
-  expired = cronTime(NULL) - SECONDS_PINGATTEMPT * cronSECONDS;
-  /* if it's more than one connection "lifetime" old, always kill it! */
-
-  /* check if we (sender) have enough bandwidth available */
-  if (SYSERR == outgoingCheck(priority)) {
-    int msgCap;
-
-    cronTime(&be->lastSendAttempt);
-#if DEBUG_CONNECTION
-    LOG(LOG_DEBUG,
-	"policy prevents sending message (priority too low: %d)\n",
-	priority);
-#endif
-
-    /* cleanup queue */
-    if (getCPULoad() > 50)
-      msgCap = 4;
-    else
-      msgCap = 54 - getCPULoad();
-    if (be->max_bpm > 2)
-      msgCap += 2 * (int) log((double)be->max_bpm);
-    /* allow at least msgCap msgs in buffer */
-    for (i=0;i<be->sendBufferSize;i++) { 	
-      SendEntry * entry = be->sendBuffer[i];
-
-      if (be->sendBufferSize <= msgCap)
-	break;
-      if ( entry->transmissionTime < expired) {
-#if DEBUG_CONNECTION
-	LOG(LOG_DEBUG,
-	    "expiring message, expired %ds ago, queue size is %u (bandwidth stressed)\n",
-	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
-	    be->sendBufferSize);
-#endif
-	if (stats != NULL) {
-	  stats->change(stat_messagesDropped, 1);
-	  stats->change(stat_sizeMessagesDropped, entry->len);
-	}
-	FREE(entry->closure);
-	FREE(entry);
-	be->sendBuffer[i] = be->sendBuffer[be->sendBufferSize-1];
-	GROW(be->sendBuffer,
-	     be->sendBufferSize,
-	     be->sendBufferSize-1);
-	i--; /* go again for this slot */
-      }
-    }
+  /* check if we (sender) have enough bandwidth available 
+     if so, trigger callbacks on selected entries; if either
+     fails, return (but clean up garbage) */
+  if ( (SYSERR == outgoingCheck(priority)) ||
+       (0 == prepareSelectedMessages(be)) ) {
+    expireSendBufferEntries(be);
     be->inSendBuffer = NO;
     return; /* deferr further */
   }
 
-  GNUNET_ASSERT(totalMessageSize > sizeof(P2P_Message));
-
-  /* first, trigger callbacks on selected entries */
-  for (i=0;i<be->sendBufferSize;i++) {
-    SendEntry * entry = be->sendBuffer[i];
-    tmpMsg = MALLOC(entry->len);
-
-    if ( (entry->knapsackSolution == YES) &&
-	 (entry->callback != NULL) ) {
-      if (OK == entry->callback(tmpMsg,
-				entry->closure,
-				entry->len)) {
-	entry->callback = NULL;
-	entry->closure = tmpMsg;
-      } else {
-	FREE(tmpMsg);
-	entry->callback = NULL;
-	entry->closure = NULL;
-	FREE(entry);
-	be->sendBuffer[i] = NULL;
-      }
-    }
-  }
-
-  perm = permute(WEAK, be->sendBufferSize);
-  /* change permutation such that SE_FLAGS
-     are obeyed */
-  headpos = 0;
-  tailpos = be->sendBufferSize-1;
-  remainingBufferSize = be->sendBufferSize;
-  for (i=0;i<be->sendBufferSize;i++) {
-    if (be->sendBuffer[perm[i]] == NULL)
-      continue;	
-    if (be->sendBuffer[perm[i]]->knapsackSolution == YES) {
-      remainingBufferSize--;
-      switch (be->sendBuffer[perm[i]]->flags & SE_PLACEMENT_FLAG) {
-      case SE_FLAG_NONE:
-	break;
-      case SE_FLAG_PLACE_HEAD:
-	/* swap slot with whoever is head now */
-	j = perm[headpos];
-	perm[headpos++] = perm[i];
-	perm[i] = j;
-	break;
-      case SE_FLAG_PLACE_TAIL:
-	/* swap slot with whoever is tail now */
-	j = perm[tailpos];
-	perm[tailpos--] = perm[i];
-	perm[i] = j;
-      }
-    }
-  }
+  /* get permutation of SendBuffer Entries
+     such that SE_FLAGS are obeyed */
+  perm = permuteSendBuffer(be);
 
   /* build message (start with sequence number) */
   plaintextMsg = MALLOC(totalMessageSize);
@@ -1199,36 +1341,6 @@ static void sendBuffer(BufferEntry * be) {
 	     entry->closure,
 	     entry->len);
       p += entry->len;
-    } else {
-      int msgCap;
-      int l = getCPULoad();
-      if (l >= 50) {
-	msgCap = EXPECTED_MTU / sizeof(HashCode512);
-      } else {
-	if (l <= 0)
-	  l = 1;
-	msgCap = EXPECTED_MTU / sizeof(HashCode512)
-	  + (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU / sizeof(HashCode512)) / l;
-      }
-      if (be->max_bpm > 2) {
-	msgCap += 2 * (int) log((double)be->max_bpm);
-	if (msgCap >= MAX_SEND_BUFFER_SIZE-1)
-	  msgCap = MAX_SEND_BUFFER_SIZE-2; /* try to make sure that there
-					      is always room... */
-      }
-      if ( (remainingBufferSize > msgCap) &&
-	   (entry->transmissionTime < expired) ) {
-#if DEBUG_CONNECTION
-	LOG(LOG_DEBUG,
-	    "expiring message, expired %ds ago, queue size is %u (other messages went through)\n",
-	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
-	    remainingBufferSize);
-#endif
-	FREENONNULL(entry->closure);
-	FREE(entry);
-	be->sendBuffer[perm[i]] = NULL;
-	remainingBufferSize--;
-      }
     }
   }
   FREE(perm);
@@ -1317,21 +1429,7 @@ static void sendBuffer(BufferEntry * be) {
 	j += plen;
       }
     }
-    for (i=0;i<be->sendBufferSize;i++) {
-      SendEntry * entry = be->sendBuffer[i];
-      if (entry == NULL)
-	continue;
-      if (entry->knapsackSolution == YES) {
-	GNUNET_ASSERT(entry->callback == NULL);
-	FREENONNULL(entry->closure);
-	FREE(entry);
-	be->sendBuffer[i] = NULL;
-      } else if ( (entry->callback == NULL) &&
-		  (entry->closure == NULL) ) {
-	FREE(entry);
-	be->sendBuffer[i] = NULL;
-      }      
-    }
+    freeSelectedEntries(be);
   }
   if ( (ret == SYSERR) &&
        (be->session.tsession != NULL) ) {
@@ -1341,15 +1439,7 @@ static void sendBuffer(BufferEntry * be) {
 
   FREE(encryptedMsg);
   FREE(plaintextMsg);
-
-  /* cleanup/compact sendBuffer */
-  j = 0;
-  for (i=0;i<be->sendBufferSize;i++)
-    if (be->sendBuffer[i] != NULL) 
-      be->sendBuffer[j++] = be->sendBuffer[i];    
-  GROW(be->sendBuffer,
-       be->sendBufferSize,
-       j);
+  expireSendBufferEntries(be);
   be->inSendBuffer = NO;
 }
 
@@ -2262,7 +2352,6 @@ void assignSessionKey(const SESSIONKEY * key,
  */
 void confirmSessionUp(const PeerIdentity * peer) {
   BufferEntry * be;
-  EncName enc;
 
   MUTEX_LOCK(&lock);
   be = lookForHost(peer);
@@ -2270,28 +2359,12 @@ void confirmSessionUp(const PeerIdentity * peer) {
     cronTime(&be->isAlive);
     identity->whitelistHost(peer);
     if ( ( (be->status & STAT_SKEY_SENT) > 0) &&
-	 ( (be->status & STAT_SKEY_RECEIVED) > 0) ) {
-      if (be->session.tsession == NULL) 
-	be->session.tsession
-	  = transport->connectFreely(&be->session.sender,
-				     YES);      
-      if (be->session.tsession != NULL) {
-	be->session.mtu
-	  = transport->getMTU(be->session.tsession->ttype);
-	if (be->status != STAT_UP) {
-	  be->status = STAT_UP;
-	  be->lastSequenceNumberReceived = 0;
-	  be->lastSequenceNumberSend = 1;
-	}
-      } else {
-	IFLOG(LOG_WARNING,
-	      hash2enc(&be->session.sender.hashPubKey,
-		       &enc));
-	LOG(LOG_WARNING,
-	    _("Session with peer '%s' confirmed, "
-	      "but I cannot connect! (bug?)\n"),
-	    &enc);
-      }
+	 ( (be->status & STAT_SKEY_RECEIVED) > 0) &&
+	 (OK == ensureTransportConnected(be)) &&
+	 (be->status != STAT_UP) ) {
+      be->status = STAT_UP;
+      be->lastSequenceNumberReceived = 0;
+      be->lastSequenceNumberSend = 1;  
     }
   }
   MUTEX_UNLOCK(&lock);
@@ -2532,6 +2605,7 @@ static void connectionConfigChangeCallback() {
 void initConnection() {
   GNUNET_ASSERT(P2P_MESSAGE_OVERHEAD
 		== sizeof(P2P_Message));
+  GNUNET_ASSERT(sizeof(HANGUP_Message) == 68);
   ENTRY();
   scl_nextHead
     = NULL;

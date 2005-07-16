@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -104,6 +105,8 @@ void fileBlockGetKey(const DBlock * data,
 /**
  * Get the query that will be used to query for
  * a certain block of data.
+ *
+ * @param db the block in plaintext
  */
 void fileBlockGetQuery(const DBlock * db,
 		       unsigned int len,
@@ -156,13 +159,16 @@ int getQueryFor(unsigned int size,
   unsigned int type;
 
   type = getTypeOfBlock(size, data);
-  if (type == ANY_BLOCK)
+  if (type == ANY_BLOCK) {
+    BREAK();
     return SYSERR;
+  }
   switch (type) {
   case D_BLOCK:
-    fileBlockGetKey(data,
-		    size,
-		    query);
+    /* CHK: hash of content == query */
+    hash(&data[1],
+	 size - sizeof(DBlock),
+	 query);
     return OK;
   case S_BLOCK: {
     const SBlock * sb;

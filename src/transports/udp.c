@@ -633,6 +633,7 @@ static char * addressToString(const HELO_Message * helo) {
 TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
   int mtu;
 
+  GNUNET_ASSERT(sizeof(HostAddress) == 8);
   GNUNET_ASSERT(sizeof(UDPMessage) == 68);
   coreAPI = core;
   stats = coreAPI->requestService("stats");

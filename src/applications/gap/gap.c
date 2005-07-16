@@ -1,5 +1,6 @@
 /*
       This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -794,9 +795,12 @@ static void sendToSelected(const PeerIdentity * id,
   EncName encq;
   EncName encp;
 
-  if (equalsHashCode512(&id->hashPubKey,
-			&qr->noTarget.hashPubKey))
+  if ( (equalsHashCode512(&id->hashPubKey,
+			  &qr->noTarget.hashPubKey)) ||
+       (equalsHashCode512(&id->hashPubKey,
+			  &qr->msg->returnTo.hashPubKey)) )
     return;
+  
   if (getBit(qr, getIndex(id)) == 1) {
     IFLOG(LOG_DEBUG,
 	  hash2enc(&id->hashPubKey,
@@ -998,7 +1002,8 @@ static int useContent(const PeerIdentity * hostId,
 /**
  * Call useContent "later" and then free the pmsg.
  */
-static void useContentLater(GAP_REPLY * pmsg) {
+static void useContentLater(void * data) {
+  GAP_REPLY * pmsg = data;
   useContent(NULL,
 	     pmsg);
   FREE(pmsg);
@@ -1059,7 +1064,7 @@ static void queueReply(const PeerIdentity * sender,
 	 size - sizeof(GAP_REPLY));
   /* delay reply, delay longer if we are busy (makes it harder
      to predict / analyze, too). */
-  addCronJob((CronJob)&useContentLater,
+  addCronJob(&useContentLater,
 	     randomi(TTL_DECREMENT),
 	     0,
 	     pmsg);
@@ -2001,9 +2006,11 @@ static int handleQuery(const PeerIdentity * sender,
   memcpy(qmsg, msg, ntohs(msg->size));
   if (equalsHashCode512(&qmsg->returnTo.hashPubKey,
 			&coreAPI->myIdentity->hashPubKey)) {
-    /* A to B, B sends back to A without (!) source rewriting,
+    /* A to B, B sends to C without source rewriting,
+       C sends back to A again without source rewriting;
+       (or B directly back to A; also should not happen)
        in this case, A must just drop; however, this
-       should never happen. */
+       should not happen (peers should check). */
     BREAK();
     FREE(qmsg);
     return OK;
@@ -2088,6 +2095,9 @@ provide_module_gap(CoreAPIForApplication * capi) {
   static GAP_ServiceAPI api;
   unsigned int i;
 
+  GNUNET_ASSERT(sizeof(GAP_REPLY) == 68);
+  GNUNET_ASSERT(sizeof(GAP_QUERY) == 144);
+  
   coreAPI = capi;
   GROW(rewards,
        rewardSize,

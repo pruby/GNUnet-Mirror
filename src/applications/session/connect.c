@@ -695,6 +695,7 @@ Session_ServiceAPI *
 provide_module_session(CoreAPIForApplication * capi) {
   static Session_ServiceAPI ret;
 
+  GNUNET_ASSERT(sizeof(SKEY_Message) == 520)
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {
