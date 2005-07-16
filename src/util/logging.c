@@ -132,9 +132,13 @@ static int removeOldLog(const char * fil,
     return OK;
   }
   logdate = &fullname[strlen(def->basename)];
+#if ENABLE_NLS
   ret = strptime(logdate,
      nl_langinfo(D_FMT),
      &t);
+#else
+  ret = strptime(logdate, "%Y-%m-%d", &t);
+#endif
   if ( (ret == NULL) ||
        (ret[0] != '\0') ) {
     FREE(fullname);
@@ -176,7 +180,11 @@ void reopenLogFile() {
       char *datefmt;
       char c;
 
+#if ENABLE_NLS
       datefmt = nl_langinfo(D_FMT);
+#else
+      datefmt = "%Y-%m-%d";
+#endif
       time(&curtime);
 #ifdef localtime_r
       localtime_r(&curtime, &def.curtime);
