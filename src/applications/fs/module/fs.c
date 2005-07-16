@@ -120,6 +120,9 @@ static int gapPut(void * closure,
 			  (DBlock*)&gw[1],
 			  &hc)) ||
        (! equalsHashCode512(&hc, key)) ) {
+    LOG(LOG_ERROR,
+	"Type: %u\n",
+	ntohl(*(unsigned int*) &gw[1]));
     BREAK(); /* value failed verification! */
     return SYSERR;
   }
