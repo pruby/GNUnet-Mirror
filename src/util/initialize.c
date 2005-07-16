@@ -111,11 +111,11 @@ int initUtil(int argc,
 #ifdef MINGW
   InitWinEnv();
 #endif
-
+#if ENABLE_NLS
   setlocale (LC_ALL, "");
   BINDTEXTDOMAIN(PACKAGE, LOCALEDIR);
   textdomain(PACKAGE);
-
+#endif
   gnunet_util_initIO();
   initLockingGcrypt();
   initRAND();
