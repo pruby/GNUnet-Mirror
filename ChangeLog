@@ -1,3 +1,9 @@
+Sat Jul 16 23:55:31 CEST 2005
+	Fixed various minor problems with platforms
+	without gettext/NLS support and for 64-bit size_ts.
+	Also fixed a couple of other compiler warnings.
+	Cleaned up connection.c code.
+
 Mon Jul 11 14:41:18 CEST 2005
 	Fixed tiny memory leak in http_bootstrap.
 
