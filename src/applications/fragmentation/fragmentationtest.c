@@ -81,22 +81,22 @@ static void makeTimeout() {
  * @param length of the data portion
  * @param id the identity of the fragment
  */
-static p2p_HEADER * makeFragment(unsigned short start,
+static P2P_MESSAGE_HEADER * makeFragment(unsigned short start,
 				 unsigned short size,
 				 unsigned short tot,
 				 int id) {
-  FRAGMENT_Message * frag;
+  P2P_fragmentation_MESSAGE * frag;
   int i;
 
-  frag      = (FRAGMENT_Message*) masterBuffer;
+  frag      = (P2P_fragmentation_MESSAGE*) masterBuffer;
   frag->id  = htonl(id);
   frag->off = htons(start);
   frag->len = htons(tot);
   frag->header.size
-    = htons(sizeof(FRAGMENT_Message) + size);
+    = htons(sizeof(P2P_fragmentation_MESSAGE) + size);
 
   for (i=0;i<size;i++)
-    ((FRAGMENT_Message_GENERIC*)frag)->data[i]
+    ((P2P_fragmentation_MESSAGE_GENERIC*)frag)->data[i]
       = (char)i+id+start;
   return &frag->header;
 }
@@ -123,7 +123,7 @@ static void checkPacket(int id,
 /* **************** actual testcases ***************** */
 
 static void testSimpleFragment() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
 
   pep = makeFragment(0, 16, 32, 42);
   processFragment(&mySender, pep);
@@ -134,7 +134,7 @@ static void testSimpleFragment() {
 }
 
 static void testSimpleFragmentTimeout() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
 
   pep = makeFragment(0, 16, 32, 42);
   processFragment(&mySender, pep);
@@ -149,7 +149,7 @@ static void testSimpleFragmentTimeout() {
 }
 
 static void testSimpleFragmentReverse() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
 
   pep = makeFragment(16, 16, 32, 42);
   processFragment(&mySender, pep);
@@ -160,7 +160,7 @@ static void testSimpleFragmentReverse() {
 }
 
 static void testManyFragments() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
 
   for (i=0;i<50;i++) {
@@ -174,7 +174,7 @@ static void testManyFragments() {
 }
 
 static void testManyFragmentsMegaLarge() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
 
   for (i=0;i<4000;i++) {
@@ -188,7 +188,7 @@ static void testManyFragmentsMegaLarge() {
 }
 
 static void testLastFragmentEarly() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
 
   for (i=0;i<5;i++) {
@@ -206,7 +206,7 @@ static void testLastFragmentEarly() {
 }
 
 static void testManyInterleavedFragments() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
 
   for (i=0;i<50;i++) {
@@ -225,7 +225,7 @@ static void testManyInterleavedFragments() {
 }
 
 static void testManyInterleavedOverlappingFragments() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
 
   for (i=0;i<50;i++) {
@@ -244,7 +244,7 @@ static void testManyInterleavedOverlappingFragments() {
 }
 
 static void testManyOverlappingFragments() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
 
   for (i=0;i<50;i++) {
@@ -258,7 +258,7 @@ static void testManyOverlappingFragments() {
 }
 
 static void testManyOverlappingFragmentsTimeout() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
 
   for (i=0;i<50;i++) {
@@ -278,7 +278,7 @@ static void testManyOverlappingFragmentsTimeout() {
 }
 
 static void testManyFragmentsMultiId() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
   int id;
 
@@ -299,7 +299,7 @@ static void testManyFragmentsMultiId() {
 }
 
 static void testManyFragmentsMultiIdCollisions() {
-  p2p_HEADER * pep;
+  P2P_MESSAGE_HEADER * pep;
   int i;
   int id;
 

@@ -51,14 +51,14 @@ int pollSocket(GNUNET_TCP_SOCKET * sock,
 	       unsigned int * avg_size,
 	       unsigned int * peers,
 	       unsigned int * time) {
-  CS_TRAFFIC_INFO * info;
-  CS_TRAFFIC_REQUEST req;
+  CS_traffic_info_MESSAGE * info;
+  CS_traffic_request_MESSAGE req;
   int i;
 
   req.header.size
-    = htons(sizeof(CS_TRAFFIC_REQUEST));
+    = htons(sizeof(CS_traffic_request_MESSAGE));
   req.header.type
-    = htons(CS_PROTO_TRAFFIC_QUERY);
+    = htons(CS_PROTO_traffic_QUERY);
   req.timePeriod
     = htonl(timeframe);
   if (SYSERR == writeToSocket(sock,
@@ -69,21 +69,21 @@ int pollSocket(GNUNET_TCP_SOCKET * sock,
   }
   info = NULL;
   if (SYSERR == readFromSocket(sock,
-			       (CS_HEADER**)&info)) {
+			       (CS_MESSAGE_HEADER**)&info)) {
     LOG(LOG_WARNING,
 	_("Did not receive reply from gnunetd about traffic conditions.\n"));
     return SYSERR;
   }
   if ( (ntohs(info->header.type) !=
-	CS_PROTO_TRAFFIC_INFO) ||
+	CS_PROTO_traffic_INFO) ||
        (ntohs(info->header.size) !=
-	sizeof(CS_TRAFFIC_INFO) + ntohl(info->count)*sizeof(TRAFFIC_COUNTER)) ) {
+	sizeof(CS_traffic_info_MESSAGE) + ntohl(info->count)*sizeof(TRAFFIC_COUNTER)) ) {
     BREAK();
     return SYSERR;
   }
 
   for (i=ntohl(info->count)-1;i>=0;i--) {
-    TRAFFIC_COUNTER * tc = &((CS_TRAFFIC_INFO_GENERIC*)info)->counters[i];
+    TRAFFIC_COUNTER * tc = &((CS_traffic_info_MESSAGE_GENERIC*)info)->counters[i];
     if ((tc->flags & TC_TYPE_MASK) == direction) {
       *count = ntohl(tc->count);
       *avg_size = ntohl(tc->avrg_size);

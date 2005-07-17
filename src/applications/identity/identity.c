@@ -24,7 +24,7 @@
  *
  * Code to maintain the list of currently known hosts (in memory
  * structure of data/hosts) and (temporary) blacklisting information
- * and a list of HELOs that are temporary unless confirmed via PONG
+ * and a list of hellos that are temporary unless confirmed via PONG
  * (used to give the transport module the required information for the
  * PING).
  *
@@ -72,9 +72,9 @@ typedef struct {
   cron_t delta;
 
   /**
-   * HELOs for the peer (maybe NULL)!
+   * hellos for the peer (maybe NULL)!
    */
-  HELO_Message ** helos;
+  P2P_hello_MESSAGE ** helos;
 
   unsigned int heloCount;
   
@@ -118,7 +118,7 @@ static int numberOfHosts_;
 static Mutex lock_;
 
 /**
- * Directory where the HELOs are stored in (data/hosts)
+ * Directory where the hellos are stored in (data/hosts)
  */
 static char * networkIdDirectory;
 
@@ -130,7 +130,7 @@ static char * trustDirectory;
 /**
  * The list of temporarily known hosts
  */
-static HELO_Message * tempHosts[MAX_TEMP_HOSTS];
+static P2P_hello_MESSAGE * tempHosts[MAX_TEMP_HOSTS];
 
 /**
  * tempHosts is a ringbuffer, this is the current
@@ -141,7 +141,7 @@ static int tempHostsNextSlot;
 static PeerIdentity myIdentity;
 
 /**
- * Get the filename under which we would store the HELO_Message
+ * Get the filename under which we would store the P2P_hello_MESSAGE
  * for the given host and protocol.
  * @return filename of the form DIRECTORY/HOSTID.PROTOCOL
  */
@@ -371,13 +371,13 @@ static void cronScanDirectoryDataHosts(void * unused) {
 /**
  * Add a host to the temporary list.
  */
-static void addHostTemporarily(const HELO_Message * tmp) {
-  HELO_Message * msg;
+static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
+  P2P_hello_MESSAGE * msg;
 
-  msg = MALLOC(HELO_Message_size(tmp));
+  msg = MALLOC(P2P_hello_MESSAGE_size(tmp));
   memcpy(msg,
 	 tmp,
-	 HELO_Message_size(tmp));
+	 P2P_hello_MESSAGE_size(tmp));
   MUTEX_LOCK(&lock_);
   FREENONNULL(tempHosts[tempHostsNextSlot]);
   tempHosts[tempHostsNextSlot++] = msg;
@@ -422,7 +422,7 @@ static void delHostFromKnown(const PeerIdentity * identity,
 	       entry->heloCount-1);
 	}
       }
-      /* also remove HELO file itself */
+      /* also remove hello file itself */
       fn = getHostFileName(identity, 
 			   protocol);
       if (0 != UNLINK(fn))
@@ -452,12 +452,12 @@ static void delHostFromKnown(const PeerIdentity * identity,
 
 /**
  * Bind a host address (helo) to a hostId.
- * @param msg the verified (!) HELO message
+ * @param msg the verified (!) hello message
  */
-static void bindAddress(const HELO_Message * msg) {
+static void bindAddress(const P2P_hello_MESSAGE * msg) {
   char * fn;
   char * buffer;
-  HELO_Message * oldMsg;
+  P2P_hello_MESSAGE * oldMsg;
   int size;
   EncName enc;
   HostEntry * host;
@@ -480,17 +480,17 @@ static void bindAddress(const HELO_Message * msg) {
   size = readFile(fn,
 		  MAX_BUFFER_SIZE,
 		  buffer);
-  oldMsg = (HELO_Message*) buffer;
-  if ((unsigned int)size == HELO_Message_size(oldMsg)) {
+  oldMsg = (P2P_hello_MESSAGE*) buffer;
+  if ((unsigned int)size == P2P_hello_MESSAGE_size(oldMsg)) {
     if (ntohl(oldMsg->expirationTime) > ntohl(msg->expirationTime)) {
       FREE(fn);
       FREE(buffer);
-      return; /* have more recent HELO in stock */
+      return; /* have more recent hello in stock */
     }
   }
   writeFile(fn,
 	    msg,
-	    HELO_Message_size(msg),
+	    P2P_hello_MESSAGE_size(msg),
 	    "644");
   FREE(fn);
   FREE(buffer);
@@ -513,33 +513,33 @@ static void bindAddress(const HELO_Message * msg) {
 	 host->heloCount,
 	 host->heloCount+1);
   host->helos[i]
-    = MALLOC(HELO_Message_size(msg));
+    = MALLOC(P2P_hello_MESSAGE_size(msg));
   memcpy(host->helos[i],
 	 msg,
-	 HELO_Message_size(msg));  
+	 P2P_hello_MESSAGE_size(msg));  
   MUTEX_UNLOCK(&lock_);
   GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
 }
 
 /**
  * Obtain the public key and address of a known host.  If no specific
- * protocol is specified (ANY_PROTOCOL_NUMBER), HELOs for cheaper
+ * protocol is specified (ANY_PROTOCOL_NUMBER), hellos for cheaper
  * protocols are returned with preference (randomness!).
  *
  * @param hostId the host id
  * @param protocol the protocol that we need,
  *        ANY_PROTOCOL_NUMBER if we do not care which protocol
- * @param tryTemporaryList is it ok to check the unverified HELOs?
+ * @param tryTemporaryList is it ok to check the unverified hellos?
  * @param result where to store the result
  * @returns SYSERR on failure, OK on success
  */
-static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
+static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 				    unsigned short protocol,
 				    int tryTemporaryList) {
-  HELO_Message * result;
+  P2P_hello_MESSAGE * result;
   HostEntry * host;
   char * fn;
-  HELO_Message buffer;
+  P2P_hello_MESSAGE buffer;
   int size;
   int i;
   int j;
@@ -564,10 +564,10 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
 			      &tempHosts[j]->senderIdentity) &&
 	   ( (ntohs(tempHosts[j]->protocol) == protocol) ||
 	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
-	result = MALLOC(HELO_Message_size(tempHosts[j]));
+	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j]));
 	memcpy(result,
 	       tempHosts[j],
-	       HELO_Message_size(tempHosts[j]));	
+	       P2P_hello_MESSAGE_size(tempHosts[j]));	
 	MUTEX_UNLOCK(&lock_);
 	FREENONNULL(perm);
 	return result;
@@ -589,10 +589,10 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
   for (i=0;i<host->heloCount;i++) {
     if (host->helos[i]->protocol == protocol) {
       result
-	= MALLOC(HELO_Message_size(host->helos[i]));
+	= MALLOC(P2P_hello_MESSAGE_size(host->helos[i]));
       memcpy(result,
 	     host->helos[i],
-	     HELO_Message_size(host->helos[i]));
+	     P2P_hello_MESSAGE_size(host->helos[i]));
       MUTEX_UNLOCK(&lock_);
       return result;
     }
@@ -602,16 +602,16 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
   fn = getHostFileName(hostId, 
 		       protocol);
   size = readFile(fn,
-		  sizeof(HELO_Message),
+		  sizeof(P2P_hello_MESSAGE),
 		  &buffer);
-  if (size != sizeof(HELO_Message)) {
+  if (size != sizeof(P2P_hello_MESSAGE)) {
     struct stat buf;
 
     if (0 == STAT(fn,
 		  &buf)) {
       if (0 == UNLINK(fn))
 	LOG(LOG_WARNING,
-	    _("Removed file '%s' containing invalid HELO data.\n"),
+	    _("Removed file '%s' containing invalid hello data.\n"),
 	    fn);
       else
 	LOG_FILE_STRERROR(LOG_ERROR, 
@@ -622,14 +622,14 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
     MUTEX_UNLOCK(&lock_);
     return NULL;  
   }
-  result = MALLOC(HELO_Message_size(&buffer));
+  result = MALLOC(P2P_hello_MESSAGE_size(&buffer));
   size = readFile(fn,
-		  HELO_Message_size(&buffer),
+		  P2P_hello_MESSAGE_size(&buffer),
 		  result);      
-  if ((unsigned int)size != HELO_Message_size(&buffer)) {
+  if ((unsigned int)size != P2P_hello_MESSAGE_size(&buffer)) {
     if (0 == UNLINK(fn))
       LOG(LOG_WARNING,
-	  _("Removed file '%s' containing invalid HELO data.\n"),
+	  _("Removed file '%s' containing invalid hello data.\n"),
 	  fn);
     else
       LOG_FILE_STRERROR(LOG_ERROR, 
@@ -645,10 +645,10 @@ static HELO_Message * identity2Helo(const PeerIdentity *  hostId,
        host->heloCount,
        host->heloCount+1);
   host->helos[host->heloCount-1]
-    = MALLOC(HELO_Message_size(&buffer));
+    = MALLOC(P2P_hello_MESSAGE_size(&buffer));
   memcpy(host->helos[host->heloCount-1],
 	 result,
-	 HELO_Message_size(&buffer));
+	 P2P_hello_MESSAGE_size(&buffer));
   MUTEX_UNLOCK(&lock_);
   return result;  
 }
@@ -666,7 +666,7 @@ static int verifyPeerSignature(const PeerIdentity * signer,
 			       const void * message,
 			       int size,
 			       const Signature * sig) {
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
   int res;
 
   helo = identity2Helo(signer,

@@ -41,7 +41,7 @@
  * roughly the main GNUnet version scheme, but is
  * more a compatibility ID.
  */
-#define GNUNET_TRANSPORT_VERSION 0x00060900
+#define GNUNET_TRANSPORT_VERSION 0x00070000
 
 /**
  * Type of a struct passed to receive.
@@ -71,7 +71,7 @@ typedef struct {
    */
   unsigned int size;
 
-} MessagePack;
+} P2P_PACKET;
 
 /**
  * Function that is to be used to process messages
@@ -79,7 +79,7 @@ typedef struct {
  *
  * @param mp the message, freed by the callee once processed!
  */
-typedef void (*MessagePackProcessor)(MessagePack * mp);
+typedef void (*P2P_PACKETProcessor)(P2P_PACKET * mp);
 
 /**
  * This header file contains a draft for the gnunetd
@@ -105,7 +105,7 @@ typedef struct {
    * Data was received (potentially encrypted), make the core process
    * it.
    */
-  MessagePackProcessor receive;
+  P2P_PACKETProcessor receive;
 
   /**
    * Load a service module of the given name. This function must be
@@ -167,13 +167,13 @@ typedef struct {
   char * transName;
 
   /**
-   * This field holds a cached HELO for this
-   * transport. HELOs must be signed with RSA,
+   * This field holds a cached hello for this
+   * transport. hellos must be signed with RSA,
    * so caching the result for a while is a good
    * idea.  The field is updated by a cron job
    * periodically.
    */
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
 
   /**
    * The number of the protocol that is supported by this transport
@@ -197,44 +197,44 @@ typedef struct {
   unsigned int cost;
 
   /**
-   * Verify that a HELO-Message is correct (a node
+   * Verify that a hello-Message is correct (a node
    * is potentially reachable at that address). Core
    * will only play ping pong after this verification passed.
-   * @param helo the HELO message to verify
+   * @param helo the hello message to verify
    *        (the signature/crc have been verified before)
    * @return OK if the helo is well-formed
    */
-  int (*verifyHelo)(const HELO_Message * helo);
+  int (*verifyHelo)(const P2P_hello_MESSAGE * helo);
 
   /**
-   * Create a HELO-Message for the current node. The HELO is
+   * Create a hello-Message for the current node. The hello is
    * created without signature, timestamp, senderIdentity
    * or publicKey. The GNUnet core will sign the message
    * and add these other fields. The callee is only
    * responsible for filling in the protocol number,
    * senderAddressSize and the senderAddress itself.
    *
-   * @param helo address where to store the pointer to the HELO
+   * @param helo address where to store the pointer to the hello
    *        message
    * @return OK on success, SYSERR on error (e.g. send-only
    *  transports return SYSERR here)
    */
-  HELO_Message * (*createHELO)(void);
+  P2P_hello_MESSAGE * (*createhello)(void);
 
   /**
    * Establish a connection to a remote node.
    *
-   * @param helo the HELO-Message for the target node
+   * @param helo the hello-Message for the target node
    * @param tsession the session handle that is to be set
    * @return OK on success, SYSERR if the operation failed
    */
-  int (*connect)(const HELO_Message * helo,
+  int (*connect)(const P2P_hello_MESSAGE * helo,
 		 TSession ** tsession);
 
   /**
    * Send a message to the specified remote node.
    * @param tsession an opaque session handle (e.g. a socket
-   *        or the HELO_message from connect)
+   *        or the hello_message from connect)
    * @param msg the message
    * @param size the size of the message, <= mtu
    * @return SYSERR on error, NO on temporary error (retry),
@@ -253,7 +253,7 @@ typedef struct {
    * up to the transport).
    *
    * @param tsession an opaque session handle (e.g. a socket
-   *        or the HELO_message from connect)
+   *        or the hello_message from connect)
    * @param msg the message
    * @param size the size of the message, <= mtu
    * @return SYSERR on error, OK on success; after any error,
@@ -322,7 +322,7 @@ typedef struct {
   /**
    * Convert transport address to human readable string.
    */
-  char * (*addressToString)(const HELO_Message * helo);
+  char * (*addressToString)(const P2P_hello_MESSAGE * helo);
 
 } TransportAPI;
 

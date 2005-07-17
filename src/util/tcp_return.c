@@ -42,17 +42,17 @@
  */
 int readTCPResult(GNUNET_TCP_SOCKET * sock,
 		  int * ret) {
-  CS_RETURN_VALUE * rv;
+  CS_returnvalue_MESSAGE * rv;
 
   rv = NULL;
   if (SYSERR == readFromSocket(sock,
-			       (CS_HEADER **) &rv)) {
+			       (CS_MESSAGE_HEADER **) &rv)) {
     LOG(LOG_WARNING,
 	_("'%s' failed, other side closed connection.\n"),
 	__FUNCTION__);
     return SYSERR;
   }
-  if ( (ntohs(rv->header.size) != sizeof(CS_RETURN_VALUE)) ||
+  if ( (ntohs(rv->header.size) != sizeof(CS_returnvalue_MESSAGE)) ||
        (ntohs(rv->header.type) != CS_PROTO_RETURN_VALUE) ) {
     LOG(LOG_WARNING,
 	_("'%s' failed, reply invalid!\n"),
@@ -75,10 +75,10 @@ int readTCPResult(GNUNET_TCP_SOCKET * sock,
  */
 int sendTCPResult(GNUNET_TCP_SOCKET * sock,
 		  int ret) {
-  CS_RETURN_VALUE rv;
+  CS_returnvalue_MESSAGE rv;
 
   rv.header.size
-    = htons(sizeof(CS_RETURN_VALUE));
+    = htons(sizeof(CS_returnvalue_MESSAGE));
   rv.header.type
     = htons(CS_PROTO_RETURN_VALUE);
   rv.return_value

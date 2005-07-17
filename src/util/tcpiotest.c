@@ -122,17 +122,17 @@ static int parseCommandLine(int argc,
 
 static int testTransmission(GNUNET_TCP_SOCKET * a,
 			    GNUNET_TCP_SOCKET * b) {
-  CS_HEADER * hdr;
-  CS_HEADER * buf;
+  CS_MESSAGE_HEADER * hdr;
+  CS_MESSAGE_HEADER * buf;
   int i;
   int j;
 
   hdr = MALLOC(1024);
-  for (i=0;i<1024-sizeof(CS_HEADER);i+=7) {
+  for (i=0;i<1024-sizeof(CS_MESSAGE_HEADER);i+=7) {
     fprintf(stderr, ".");
     for (j=0;j<i;j++)
       ((char*)&hdr[1])[j] = (char)i+j;
-    hdr->size = htons(i+sizeof(CS_HEADER));
+    hdr->size = htons(i+sizeof(CS_MESSAGE_HEADER));
     hdr->type = 0;
     if (OK != writeToSocket(a, hdr)) {
       FREE(hdr);
@@ -143,7 +143,7 @@ static int testTransmission(GNUNET_TCP_SOCKET * a,
       FREE(hdr);
       return 2;
     }
-    if (0 != memcmp(buf, hdr, i+sizeof(CS_HEADER))) {
+    if (0 != memcmp(buf, hdr, i+sizeof(CS_MESSAGE_HEADER))) {
       FREE(buf);
       FREE(hdr);
       return 4;
@@ -156,15 +156,15 @@ static int testTransmission(GNUNET_TCP_SOCKET * a,
 
 static int testNonblocking(GNUNET_TCP_SOCKET * a,
 			   GNUNET_TCP_SOCKET * b) {
-  CS_HEADER * hdr;
-  CS_HEADER * buf;
+  CS_MESSAGE_HEADER * hdr;
+  CS_MESSAGE_HEADER * buf;
   int i;
   int cnt;
 
   hdr = MALLOC(1024);
-  for (i=0;i<1024-sizeof(CS_HEADER);i+=11)
+  for (i=0;i<1024-sizeof(CS_MESSAGE_HEADER);i+=11)
     ((char*)&hdr[1])[i] = (char)i;
-  hdr->size = htons(64+sizeof(CS_HEADER));
+  hdr->size = htons(64+sizeof(CS_MESSAGE_HEADER));
   hdr->type = 0;
   while (OK == writeToSocketNonBlocking(a,
 					hdr))
@@ -181,7 +181,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
       FREE(hdr);
       return 16;
     }
-    if (0 != memcmp(buf, hdr, 64+sizeof(CS_HEADER))) {
+    if (0 != memcmp(buf, hdr, 64+sizeof(CS_MESSAGE_HEADER))) {
       printf("Failure in message %u.  Headers: %d ? %d\n",
 	     i,
 	     buf->type,
@@ -207,7 +207,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
     FREE(hdr);
     return 128;
   }
-  if (0 != memcmp(buf, hdr, 64+sizeof(CS_HEADER))) {
+  if (0 != memcmp(buf, hdr, 64+sizeof(CS_MESSAGE_HEADER))) {
     FREE(buf);
     FREE(hdr);
     return 256;

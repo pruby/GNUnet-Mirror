@@ -34,17 +34,17 @@
 static CoreAPIForApplication * coreAPI;
 
 static int handleGetOption(ClientHandle sock,
-			   const CS_HEADER * message) {
-  CS_GET_OPTION_REQUEST * req;
-  CS_GET_OPTION_REPLY * rep;
+			   const CS_MESSAGE_HEADER * message) {
+  CS_getoption_request_MESSAGE * req;
+  CS_getoption_reply_MESSAGE * rep;
   char * val;
   int ret;
 
-  if (ntohs(message->size) != sizeof(CS_GET_OPTION_REQUEST))
+  if (ntohs(message->size) != sizeof(CS_getoption_request_MESSAGE))
     return SYSERR;
-  req = (CS_GET_OPTION_REQUEST*)message;
-  req->section[CS_GET_OPTION_REQUEST_OPT_LEN-1] = '\0';
-  req->option[CS_GET_OPTION_REQUEST_OPT_LEN-1] = '\0';
+  req = (CS_getoption_request_MESSAGE*)message;
+  req->section[CS_getoption_request_MESSAGE_OPT_LEN-1] = '\0';
+  req->option[CS_getoption_request_MESSAGE_OPT_LEN-1] = '\0';
   val = getConfigurationString(req->section,
 			       req->option);
   if (val == NULL) {
@@ -56,8 +56,8 @@ static int handleGetOption(ClientHandle sock,
 	     "%d",
 	     ival);
   }
-  rep = MALLOC(sizeof(CS_HEADER) + strlen(val) + 1);
-  rep->header.size = htons(sizeof(CS_HEADER) + strlen(val) + 1);
+  rep = MALLOC(sizeof(CS_MESSAGE_HEADER) + strlen(val) + 1);
+  rep->header.size = htons(sizeof(CS_MESSAGE_HEADER) + strlen(val) + 1);
   memcpy(rep->value,
 	 val,
 	 strlen(val)+1);

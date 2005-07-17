@@ -115,10 +115,10 @@ if (win_service)
 }
 
 static int shutdownHandler(ClientHandle client,
-                           const CS_HEADER * msg) {
+                           const CS_MESSAGE_HEADER * msg) {
   int ret;
 
-  if (ntohs(msg->size) != sizeof(CS_HEADER)) {
+  if (ntohs(msg->size) != sizeof(CS_MESSAGE_HEADER)) {
     LOG(LOG_WARNING,
         _("The '%s' request received from client is malformed.\n"),
 	"shutdown");
@@ -256,8 +256,8 @@ void waitForSignalHandler() {
  * Check if the compiler did a decent job aligning the structs...
  */
 void checkCompiler() {
-  GNUNET_ASSERT(sizeof(HELO_Message) == 600);
-  GNUNET_ASSERT(sizeof(p2p_HEADER) == 4);
+  GNUNET_ASSERT(sizeof(P2P_hello_MESSAGE) == 600);
+  GNUNET_ASSERT(sizeof(P2P_MESSAGE_HEADER) == 4);
 }
 
 /* *********** PID file handling *************** */

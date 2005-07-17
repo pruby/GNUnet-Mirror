@@ -134,7 +134,7 @@ void untrackQuery(const HashCode512 * query,
 void processResponse(const HashCode512 * key,
 		     const Datastore_Value * value) {
   int i;
-  ReplyContent * rc;
+  CS_fs_reply_content_MESSAGE * rc;
   unsigned int matchCount;
 
   GNUNET_ASSERT(ntohl(value->size) > sizeof(Datastore_Value));
@@ -146,11 +146,11 @@ void processResponse(const HashCode512 * key,
 	 ( (trackers[i]->type == ANY_BLOCK) ||
 	   (trackers[i]->type == ntohl(value->type)) ) ) {
       matchCount++;
-      rc = MALLOC(sizeof(ReplyContent) +
+      rc = MALLOC(sizeof(CS_fs_reply_content_MESSAGE) +
 		  ntohl(value->size) - sizeof(Datastore_Value));
-      rc->header.size = htons(sizeof(ReplyContent) +
+      rc->header.size = htons(sizeof(CS_fs_reply_content_MESSAGE) +
 			      ntohl(value->size) - sizeof(Datastore_Value));
-      rc->header.type = htons(AFS_CS_PROTO_RESULT);
+      rc->header.type = htons(CS_PROTO_gap_RESULT);
       memcpy(&rc[1],
 	     &value[1],
 	     ntohl(value->size) - sizeof(Datastore_Value));

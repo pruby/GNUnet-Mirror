@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -83,14 +84,14 @@ typedef struct {
    * This struct is followed by MESSAGE_PARTs - until size is reached
    * There is no "end of message".
    */
-} TCPMessagePack;
+} TCPP2P_PACKET;
 
 /**
  * Initial handshake message. Note that the beginning
- * must match the CS_HEADER since we are using tcpio.
+ * must match the CS_MESSAGE_HEADER since we are using tcpio.
  */
 typedef struct {
-  TCPMessagePack header;
+  TCPP2P_PACKET header;
 
   /**
    * Identity of the node connecting (TCP client)
@@ -382,8 +383,8 @@ static int readAndProcess(int i) {
   TCPSession * tcpSession;
   unsigned int len;
   int ret;
-  TCPMessagePack * pack;
-  MessagePack * mp;
+  TCPP2P_PACKET * pack;
+  P2P_PACKET * mp;
 
   tsession = tsessions[i];
   if (SYSERR == tcpAssociate(tsession))
@@ -431,8 +432,8 @@ static int readAndProcess(int i) {
   tcpSession->pos += ret;
 
   while (tcpSession->pos > 2) {
-    len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) 
-      + sizeof(TCPMessagePack);
+    len = ntohs(((TCPP2P_PACKET*)&tcpSession->rbuff[0])->size) 
+      + sizeof(TCPP2P_PACKET);
     if (len > tcpSession->rsize) /* if message larger than read buffer, grow! */
       GROW(tcpSession->rbuff,
 	   tcpSession->rsize,
@@ -459,7 +460,7 @@ static int readAndProcess(int i) {
       welcome = (TCPWelcome*) &tcpSession->rbuff[0];
       if ( (ntohs(welcome->header.reserved) != 0) ||
 	   (ntohs(welcome->header.size) 
-	    != sizeof(TCPWelcome) - sizeof(TCPMessagePack)) ) {
+	    != sizeof(TCPWelcome) - sizeof(TCPP2P_PACKET)) ) {
 	LOG(LOG_WARNING,
 	    _("Expected welcome message on tcp connection, "
 	      "got garbage (%u, %u). Closing.\n"),
@@ -482,8 +483,8 @@ static int readAndProcess(int i) {
 	      &tcpSession->rbuff[sizeof(TCPWelcome)],
 	      tcpSession->pos - sizeof(TCPWelcome));
       tcpSession->pos -= sizeof(TCPWelcome);
-      len = ntohs(((TCPMessagePack*)&tcpSession->rbuff[0])->size) 
-	+ sizeof(TCPMessagePack);
+      len = ntohs(((TCPP2P_PACKET*)&tcpSession->rbuff[0])->size) 
+	+ sizeof(TCPP2P_PACKET);
     }
     if ( (tcpSession->pos < 2) ||
 	 (tcpSession->pos < len) ) {
@@ -491,9 +492,9 @@ static int readAndProcess(int i) {
       return OK;
     }
 
-    pack = (TCPMessagePack*)&tcpSession->rbuff[0];
+    pack = (TCPP2P_PACKET*)&tcpSession->rbuff[0];
     /* send msg to core! */
-    if (len <= sizeof(TCPMessagePack)) {
+    if (len <= sizeof(TCPP2P_PACKET)) {
       LOG(LOG_WARNING,
 	  _("Received malformed message (size %u)"
 	    " from tcp-peer connection. Closing.\n"),
@@ -501,13 +502,13 @@ static int readAndProcess(int i) {
       tcpDisconnect(tsession);
       return SYSERR;
     }
-    mp      = MALLOC(sizeof(MessagePack));
-    mp->msg = MALLOC(len - sizeof(TCPMessagePack));
+    mp      = MALLOC(sizeof(P2P_PACKET));
+    mp->msg = MALLOC(len - sizeof(TCPP2P_PACKET));
     memcpy(mp->msg,
 	   &pack[1],
-	   len - sizeof(TCPMessagePack));
+	   len - sizeof(TCPP2P_PACKET));
     mp->sender   = tcpSession->sender;
-    mp->size     = len - sizeof(TCPMessagePack);
+    mp->size     = len - sizeof(TCPP2P_PACKET);
     mp->tsession = tsession;
 #if DEBUG_TCP
     LOG(LOG_DEBUG,
@@ -564,7 +565,7 @@ static void createNewSession(int sock) {
 
   tcpSession = MALLOC(sizeof(TCPSession));
   tcpSession->pos = 0;
-  tcpSession->rsize = 2 * 1024 + sizeof(TCPMessagePack);
+  tcpSession->rsize = 2 * 1024 + sizeof(TCPP2P_PACKET);
   tcpSession->rbuff = MALLOC(tcpSession->rsize);
   tcpSession->wpos = 0;
   tcpSession->wbuff = NULL;
@@ -972,7 +973,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
  * increased reliability (i.e. grow TCP send buffer
  * above one frame if needed).
  *
- * @param tsession the HELO_Message identifying the remote node
+ * @param tsession the P2P_hello_MESSAGE identifying the remote node
  * @param msg the message
  * @param size the size of the message
  * @return SYSERR on error, OK on success, NO on temporary error
@@ -980,7 +981,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 static int tcpSendReliable(TSession * tsession,
 			   const void * msg,
 			   const unsigned int size) {
-  TCPMessagePack * mp;
+  TCPP2P_PACKET * mp;
   int ok;
 
   if (size >= MAX_BUFFER_SIZE)
@@ -993,7 +994,7 @@ static int tcpSendReliable(TSession * tsession,
   }
   if (((TCPSession*)tsession->internal)->sock == -1)
     return SYSERR; /* other side closed connection */
-  mp = MALLOC(sizeof(TCPMessagePack) + size);
+  mp = MALLOC(sizeof(TCPP2P_PACKET) + size);
   memcpy(&mp[1],
 	 msg,
 	 size);
@@ -1001,27 +1002,27 @@ static int tcpSendReliable(TSession * tsession,
   mp->reserved = 0;
   ok = tcpDirectSendReliable(tsession->internal,
 			     mp,
-			     size + sizeof(TCPMessagePack));
+			     size + sizeof(TCPP2P_PACKET));
   FREE(mp);
   return ok;
 }
 
 /**
- * Verify that a HELO-Message is correct (a node
+ * Verify that a Hello-Message is correct (a node
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
  * success.
- * @param helo the HELO message to verify
+ * @param helo the Hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHelo(const HELO_Message * helo) {
+static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   HostAddress * haddr;
 
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (HostAddress*) &helo[1];
   if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(helo->header.size) != HELO_Message_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_HELO) ||
+       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
+       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (ntohs(helo->protocol) != TCP_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(haddr->ip)) )
     return SYSERR; /* obviously invalid */
@@ -1030,14 +1031,14 @@ static int verifyHelo(const HELO_Message * helo) {
 }
 
 /**
- * Create a HELO-Message for the current node. The HELO is
+ * Create a hello-Message for the current node. The hello is
  * created without signature and without a timestamp. The
  * GNUnet core will sign the message and add an expiration time.
  *
- * @return HELO on success, NULL on error
+ * @return hello on success, NULL on error
  */
-static HELO_Message * createHELO() {
-  HELO_Message * msg;
+static P2P_hello_MESSAGE * createhello() {
+  P2P_hello_MESSAGE * msg;
   HostAddress * haddr;
   unsigned short port;
 
@@ -1047,8 +1048,8 @@ static HELO_Message * createHELO() {
 	"TCP port is 0, will only send using TCP.\n");
     return NULL; /* TCP transport is configured SEND-only! */
   }
-  msg = (HELO_Message *) MALLOC(sizeof(HELO_Message) + sizeof(HostAddress));
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
+  msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
+  haddr = (HostAddress*) &msg[1];
 
   if (SYSERR == getPublicIPAddress(&haddr->ip)) {
     FREE(msg);
@@ -1070,11 +1071,11 @@ static HELO_Message * createHELO() {
 /**
  * Establish a connection to a remote node.
  *
- * @param helo the HELO-Message for the target node
+ * @param helo the hello-Message for the target node
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int tcpConnect(const HELO_Message * helo,
+static int tcpConnect(const P2P_hello_MESSAGE * helo,
 		      TSession ** tsessionPtr) {
   int i;
   HostAddress * haddr;
@@ -1086,7 +1087,7 @@ static int tcpConnect(const HELO_Message * helo,
 
   if (tcp_shutdown == YES)
     return SYSERR;
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (HostAddress*) &helo[1];
 #if DEBUG_TCP
   LOG(LOG_DEBUG,
       "Creating TCP connection to %u.%u.%u.%u:%u.\n",
@@ -1138,7 +1139,7 @@ static int tcpConnect(const HELO_Message * helo,
   tcpSession->wpos = 0;
   tcpSession->wbuff = NULL;
   tcpSession->wsize = 0;
-  tcpSession->rsize = 2 * 1024 + sizeof(TCPMessagePack);
+  tcpSession->rsize = 2 * 1024 + sizeof(TCPP2P_PACKET);
   tcpSession->rbuff = MALLOC(tcpSession->rsize);
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = tcpSession;
@@ -1155,7 +1156,7 @@ static int tcpConnect(const HELO_Message * helo,
   /* send our node identity to the other side to fully establish the
      connection! */
   welcome.header.size 
-    = htons(sizeof(TCPWelcome) - sizeof(TCPMessagePack));
+    = htons(sizeof(TCPWelcome) - sizeof(TCPP2P_PACKET));
   welcome.header.reserved 
     = htons(0);
   welcome.clientIdentity 
@@ -1178,7 +1179,7 @@ static int tcpConnect(const HELO_Message * helo,
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the HELO_Message identifying the remote node
+ * @param tsession the P2P_hello_MESSAGE identifying the remote node
  * @param msg the message
  * @param size the size of the message
  * @return SYSERR on error, OK on success
@@ -1186,7 +1187,7 @@ static int tcpConnect(const HELO_Message * helo,
 static int tcpSend(TSession * tsession,
 		   const void * msg,
 		   const unsigned int size) {
-  TCPMessagePack * mp;
+  TCPP2P_PACKET * mp;
   int ok;
 
 #if DEBUG_TCP
@@ -1223,7 +1224,7 @@ static int tcpSend(TSession * tsession,
 		    size);
     return SYSERR; /* other side closed connection */
   }  
-  mp = MALLOC(sizeof(TCPMessagePack) + size);
+  mp = MALLOC(sizeof(TCPP2P_PACKET) + size);
   memcpy(&mp[1],
 	 msg,
 	 size);
@@ -1234,11 +1235,11 @@ static int tcpSend(TSession * tsession,
   if (((TCPSession*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE)
     ok = tcpDirectSendReliable(tsession->internal,
 			       mp,
-			       size + sizeof(TCPMessagePack));
+			       size + sizeof(TCPP2P_PACKET));
   else
     ok = tcpDirectSend(tsession->internal,
 		       mp,
-		       size + sizeof(TCPMessagePack));
+		       size + sizeof(TCPP2P_PACKET));
   FREE(mp);
   return ok;
 }
@@ -1382,12 +1383,12 @@ static void reloadConfiguration(void) {
 /**
  * Convert TCP address to a string.
  */
-static char * addressToString(const HELO_Message * helo) {
+static char * addressToString(const P2P_hello_MESSAGE * helo) {
   char * ret;
   HostAddress * haddr;
   size_t n;
 
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (HostAddress*) &helo[1];
   n = 4*4+6+6;
   ret = MALLOC(n);
   SNPRINTF(ret,
@@ -1407,7 +1408,7 @@ static char * addressToString(const HELO_Message * helo) {
  */
 TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   GNUNET_ASSERT(sizeof(HostAddress) == 8);
-  GNUNET_ASSERT(sizeof(TCPMessagePack) == 4);
+  GNUNET_ASSERT(sizeof(TCPP2P_PACKET) == 4);
   GNUNET_ASSERT(sizeof(TCPWelcome) == 68);
   MUTEX_CREATE_RECURSIVE(&tcplock);
   reloadConfiguration();
@@ -1430,7 +1431,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   tcpAPI.mtu                  = 0;
   tcpAPI.cost                 = 20000; /* about equal to udp */
   tcpAPI.verifyHelo           = &verifyHelo;
-  tcpAPI.createHELO           = &createHELO;
+  tcpAPI.createhello           = &createhello;
   tcpAPI.connect              = &tcpConnect;
   tcpAPI.associate            = &tcpAssociate;
   tcpAPI.send                 = &tcpSend;

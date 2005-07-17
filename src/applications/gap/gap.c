@@ -196,7 +196,7 @@ typedef unsigned int QUERY_POLICY;
  * be determined from the header size.
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
 
   /**
    * Type of the query (block type).
@@ -224,17 +224,17 @@ typedef struct {
    */
   HashCode512 queries[1];
 
-} GAP_QUERY;
+} P2P_gap_query_MESSAGE;
 
 /**
  * Return message for search result.
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
 
   HashCode512 primaryKey;
 
-} GAP_REPLY;
+} P2P_gap_reply_MESSAGE;
 
 /**
  * In this struct, we store information about a
@@ -262,7 +262,7 @@ typedef struct {
   /**
    * The message that we are sending.
    */
-  GAP_QUERY * msg;
+  P2P_gap_query_MESSAGE * msg;
 
   /**
    * How important would it be to send the message to all peers in
@@ -721,7 +721,7 @@ fillInQuery(const PeerIdentity * receiver,
   MUTEX_LOCK(lock);
   start = pos;
   delta = 0;
-  while (padding - delta > sizeof(GAP_QUERY)) {
+  while (padding - delta > sizeof(P2P_gap_query_MESSAGE)) {
     if ( (queries[pos].expires > now) &&
 	 (0 == getBit(&queries[pos], getIndex(receiver))) &&
 	 (padding - delta >= ntohs(queries[pos].msg->header.size) ) ) {
@@ -823,7 +823,7 @@ static void sendToSelected(const PeerIdentity * id,
  * Take a query and forward it to the appropriate number of nodes
  * (depending on load, queue, etc).
  */
-static void forwardQuery(const GAP_QUERY * msg,
+static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
 			 const PeerIdentity * excludePeer) {
   cron_t now;
   QueryRecord * qr;
@@ -851,7 +851,7 @@ static void forwardQuery(const GAP_QUERY * msg,
 	 (0 == memcmp(&queries[i].msg->queries[0],
 		      &msg->queries[0],
 		      ntohs(msg->header.size)
-		      - sizeof(GAP_QUERY)
+		      - sizeof(P2P_gap_query_MESSAGE)
 		      + sizeof(HashCode512))) ) {
       /* We have exactly this query pending already.
 	 Replace existing query! */
@@ -997,13 +997,13 @@ static unsigned int computeRoutingIndex(const HashCode512 * query) {
  *     NULL for the local peer
  */
 static int useContent(const PeerIdentity * hostId,
-		      const GAP_REPLY * pmsg);
+		      const P2P_gap_reply_MESSAGE * pmsg);
 
 /**
  * Call useContent "later" and then free the pmsg.
  */
 static void useContentLater(void * data) {
-  GAP_REPLY * pmsg = data;
+  P2P_gap_reply_MESSAGE * pmsg = data;
   useContent(NULL,
 	     pmsg);
   FREE(pmsg);
@@ -1025,7 +1025,7 @@ static void useContentLater(void * data) {
 static void queueReply(const PeerIdentity * sender,
 		       const HashCode512 * primaryKey,
 		       const DataContainer * data) {
-  GAP_REPLY * pmsg;
+  P2P_gap_reply_MESSAGE * pmsg;
   IndirectionTableEntry * ite;
   unsigned int size;
 
@@ -1046,7 +1046,7 @@ static void queueReply(const PeerIdentity * sender,
 	       the same query.  Well, at least we should not also
 	       queue the delayed reply twice... */
   }
-  size = sizeof(GAP_REPLY) + ntohl(data->size) - sizeof(DataContainer);
+  size = sizeof(P2P_gap_reply_MESSAGE) + ntohl(data->size) - sizeof(DataContainer);
   if (size >= MAX_BUFFER_SIZE) {
     BREAK();
     return;
@@ -1056,12 +1056,12 @@ static void queueReply(const PeerIdentity * sender,
   pmsg->header.size
     = htons(size);
   pmsg->header.type
-    = htons(GAP_p2p_PROTO_RESULT);
+    = htons(P2P_PROTO_gap_RESULT);
   pmsg->primaryKey
     = *primaryKey;
   memcpy(&pmsg[1],
 	 &data[1],
-	 size - sizeof(GAP_REPLY));
+	 size - sizeof(P2P_gap_reply_MESSAGE));
   /* delay reply, delay longer if we are busy (makes it harder
      to predict / analyze, too). */
   addCronJob(&useContentLater,
@@ -1430,7 +1430,7 @@ static int needsForwarding(const HashCode512 * query,
  * @param msg the message to route
  */
 static void sendReply(IndirectionTableEntry * ite,
-		      const p2p_HEADER * msg) {
+		      const P2P_MESSAGE_HEADER * msg) {
   unsigned int j;
   unsigned int maxDelay;
   cron_t now;
@@ -1541,7 +1541,7 @@ static int execQuery(const PeerIdentity * sender,
 		     unsigned int prio,
 		     QUERY_POLICY policy,
 		     int ttl,
-		     const GAP_QUERY * query) {
+		     const P2P_gap_query_MESSAGE * query) {
   IndirectionTableEntry * ite;
   int isRouted;
   struct qLRC cls;
@@ -1594,7 +1594,7 @@ static int execQuery(const PeerIdentity * sender,
 	    ntohl(query->type),
 	    prio,
 	    1 + ( ntohs(query->header.size)
-		  - sizeof(GAP_QUERY)) / sizeof(HashCode512),
+		  - sizeof(P2P_gap_query_MESSAGE)) / sizeof(HashCode512),
 	    &query->queries[0],
 	    (DataProcessor) &queryLocalResultCallback,
 	    &cls);
@@ -1667,7 +1667,7 @@ static int execQuery(const PeerIdentity * sender,
  *         priority of the original request)
  */
 static int useContent(const PeerIdentity * hostId,
-		      const GAP_REPLY * msg) {
+		      const P2P_gap_reply_MESSAGE * msg) {
   unsigned int i;
   HashCode512 contentHC;
   IndirectionTableEntry * ite;
@@ -1685,14 +1685,14 @@ static int useContent(const PeerIdentity * hostId,
   LOG(LOG_DEBUG,
       "GAP received content from '%s'\n",
       (hostId != NULL) ? (const char*)&enc : "myself");
-  if (ntohs(msg->header.size) < sizeof(GAP_REPLY)) {
+  if (ntohs(msg->header.size) < sizeof(P2P_gap_reply_MESSAGE)) {
     BREAK();
     return SYSERR; /* invalid! */
   }
 	
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
   ite->successful_local_lookup_in_delay_loop = NO;
-  size = ntohs(msg->header.size) - sizeof(GAP_REPLY);
+  size = ntohs(msg->header.size) - sizeof(P2P_gap_reply_MESSAGE);
   prio = 0;
 
   if (rhf == NULL)
@@ -1845,11 +1845,11 @@ static int get_start(unsigned int type,
 		     const HashCode512 * keys,
 		     cron_t timeout,
 		     unsigned int prio) {
-  GAP_QUERY * msg;
+  P2P_gap_query_MESSAGE * msg;
   unsigned int size;
   int ret;
 
-  size = sizeof(GAP_QUERY) + (keyCount-1) * sizeof(HashCode512);
+  size = sizeof(P2P_gap_query_MESSAGE) + (keyCount-1) * sizeof(HashCode512);
   if (size >= MAX_BUFFER_SIZE) {
     BREAK();
     return SYSERR; /* too many keys! */
@@ -1870,7 +1870,7 @@ static int get_start(unsigned int type,
       return SYSERR;
     }
     if (OK != traffic->get((TTL_DECREMENT + timeout) / TRAFFIC_TIME_UNIT,
-			   GAP_p2p_PROTO_QUERY,
+			   P2P_PROTO_gap_QUERY,
 			   TC_RECEIVED,
 			   &count,
 			   &peers,
@@ -1905,7 +1905,7 @@ static int get_start(unsigned int type,
   msg->header.size
     = htons(size);
   msg->header.type
-    = htons(GAP_p2p_PROTO_QUERY);
+    = htons(P2P_PROTO_gap_QUERY);
   msg->type
     = htonl(type);
   msg->priority
@@ -1954,24 +1954,24 @@ tryMigrate(const DataContainer * data,
 	   const HashCode512 * primaryKey,
 	   char * position,
 	   unsigned int padding) {
-  GAP_REPLY * reply;
+  P2P_gap_reply_MESSAGE * reply;
   unsigned int size;
 
-  size = sizeof(GAP_REPLY) + ntohl(data->size) - sizeof(DataContainer);
+  size = sizeof(P2P_gap_reply_MESSAGE) + ntohl(data->size) - sizeof(DataContainer);
   if (size > padding)
     return 0;
   if (size >= MAX_BUFFER_SIZE)
     return 0;
-  reply = (GAP_REPLY*) position;
+  reply = (P2P_gap_reply_MESSAGE*) position;
   reply->header.type
-    = htons(GAP_p2p_PROTO_RESULT);
+    = htons(P2P_PROTO_gap_RESULT);
   reply->header.size
     = htons(size);
   reply->primaryKey
     = *primaryKey;
   memcpy(&reply[1],
 	 &data[1],
-	 size - sizeof(GAP_REPLY));
+	 size - sizeof(P2P_gap_reply_MESSAGE));
   return size;
 }
 
@@ -1980,9 +1980,9 @@ tryMigrate(const DataContainer * data,
  * lookup, forward or even indirect.
  */
 static int handleQuery(const PeerIdentity * sender,
-		       const p2p_HEADER * msg) {
+		       const P2P_MESSAGE_HEADER * msg) {
   QUERY_POLICY policy;
-  GAP_QUERY * qmsg;
+  P2P_gap_query_MESSAGE * qmsg;
   unsigned int queries;
   int ttl;
   unsigned int prio;
@@ -1993,11 +1993,11 @@ static int handleQuery(const PeerIdentity * sender,
     return 0;
   }
 
-  queries = 1 + (ntohs(msg->size) - sizeof(GAP_QUERY))
+  queries = 1 + (ntohs(msg->size) - sizeof(P2P_gap_query_MESSAGE))
     / sizeof(HashCode512);
   if ( (queries <= 0) ||
-       (ntohs(msg->size) < sizeof(GAP_QUERY)) ||
-       (ntohs(msg->size) != sizeof(GAP_QUERY) +
+       (ntohs(msg->size) < sizeof(P2P_gap_query_MESSAGE)) ||
+       (ntohs(msg->size) != sizeof(P2P_gap_query_MESSAGE) +
 	(queries-1) * sizeof(HashCode512)) ) {
     BREAK();
     return SYSERR; /* malformed query */
@@ -2095,8 +2095,8 @@ provide_module_gap(CoreAPIForApplication * capi) {
   static GAP_ServiceAPI api;
   unsigned int i;
 
-  GNUNET_ASSERT(sizeof(GAP_REPLY) == 68);
-  GNUNET_ASSERT(sizeof(GAP_QUERY) == 144);
+  GNUNET_ASSERT(sizeof(P2P_gap_reply_MESSAGE) == 68);
+  GNUNET_ASSERT(sizeof(P2P_gap_query_MESSAGE) == 144);
   
   coreAPI = capi;
   GROW(rewards,
@@ -2143,13 +2143,13 @@ provide_module_gap(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       _("'%s' registering handlers %d %d\n"),
       "gap",
-      GAP_p2p_PROTO_QUERY,
-      GAP_p2p_PROTO_RESULT);
-  capi->registerHandler(GAP_p2p_PROTO_QUERY,
+      P2P_PROTO_gap_QUERY,
+      P2P_PROTO_gap_RESULT);
+  capi->registerHandler(P2P_PROTO_gap_QUERY,
 			&handleQuery);
-  capi->registerHandler(GAP_p2p_PROTO_RESULT,
+  capi->registerHandler(P2P_PROTO_gap_RESULT,
 			(MessagePartHandler) &useContent);
-  coreAPI->registerSendCallback(sizeof(GAP_QUERY),
+  coreAPI->registerSendCallback(sizeof(P2P_gap_query_MESSAGE),
 				&fillInQuery);
 
   api.init = &init;
@@ -2165,11 +2165,11 @@ void release_module_gap() {
   ResponseList * rpos;
   ReplyTrackData * pos;
 
-  coreAPI->unregisterHandler(GAP_p2p_PROTO_QUERY,
+  coreAPI->unregisterHandler(P2P_PROTO_gap_QUERY,
 			     &handleQuery);
-  coreAPI->unregisterHandler(GAP_p2p_PROTO_RESULT,
+  coreAPI->unregisterHandler(P2P_PROTO_gap_RESULT,
 			     (MessagePartHandler) &useContent);
-  coreAPI->unregisterSendCallback(sizeof(GAP_QUERY),
+  coreAPI->unregisterSendCallback(sizeof(P2P_gap_query_MESSAGE),
 				  &fillInQuery);
 
   delCronJob(&ageRTD,

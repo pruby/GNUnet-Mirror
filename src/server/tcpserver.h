@@ -85,7 +85,7 @@ int unregisterClientExitHandler(ClientExitHandler callback);
  * transfer happens asynchronously.
  */
 int sendToClient(ClientHandle handle,
-		 const CS_HEADER * message);
+		 const CS_MESSAGE_HEADER * message);
 
 
 /**

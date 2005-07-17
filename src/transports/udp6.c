@@ -1,5 +1,6 @@
 /*
-o     This file is part of GNUnet
+     This file is part of GNUnet
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -190,13 +191,13 @@ static void * listenAndDistribute() {
   socklen_t addrlen = sizeof(incoming);
   int size;
   EncName enc;
-  MessagePack * mp;
+  P2P_PACKET * mp;
   UDP6Message udp6m;
   char inet6[INET6_ADDRSTRLEN];
 
   SEMAPHORE_UP(serverSignal);
   while (udp6_shutdown == NO) {
-    mp = MALLOC(sizeof(MessagePack));
+    mp = MALLOC(sizeof(P2P_PACKET));
     mp->msg = MALLOC(udp6API.mtu + sizeof(UDP6Message));
   RETRY:
     memset(&incoming,
@@ -295,21 +296,21 @@ static void * listenAndDistribute() {
 /* *************** API implementation *************** */
 
 /**
- * Verify that a HELO-Message is correct (a node is reachable at that
+ * Verify that a hello-Message is correct (a node is reachable at that
  * address). Since the reply will be asynchronous, a method must be
  * called on success.
  *
- * @param helo the HELO message to verify
+ * @param helo the hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on failure
  */
-static int verifyHelo(const HELO_Message * helo) {
+static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   Host6Address * haddr;
 
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (Host6Address*) &helo[1];
   if ( (ntohs(helo->senderAddressSize) != sizeof(Host6Address)) ||
-       (ntohs(helo->header.size) != HELO_Message_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_HELO) ||
+       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
+       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (YES == isBlacklisted(&haddr->senderIP)) )
     return SYSERR; /* obviously invalid */
   else {
@@ -328,14 +329,14 @@ static int verifyHelo(const HELO_Message * helo) {
 }
 
 /**
- * Create a HELO-Message for the current node. The HELO is created
+ * Create a hello-Message for the current node. The hello is created
  * without signature and without a timestamp. The GNUnet core will
  * sign the message and add an expiration time.
  *
- * @return HELO on success, NULL on error
+ * @return hello on success, NULL on error
  */
-static HELO_Message * createHELO() {
-  HELO_Message * msg;
+static P2P_hello_MESSAGE * createhello() {
+  P2P_hello_MESSAGE * msg;
   Host6Address * haddr;
   unsigned short port;
 
@@ -343,8 +344,8 @@ static HELO_Message * createHELO() {
   if (port == 0)
     return NULL; /* UDP6 transport configured send-only */
 
-  msg = MALLOC(sizeof(HELO_Message) + sizeof(Host6Address));
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
+  msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(Host6Address));
+  haddr = (Host6Address*) &msg[1];
 
   if (SYSERR == getPublicIP6Address(&haddr->senderIP)) {
     FREE(msg);
@@ -362,11 +363,11 @@ static HELO_Message * createHELO() {
 
 /**
  * Establish a connection to a remote node.
- * @param helo the HELO-Message for the target node
+ * @param helo the hello-Message for the target node
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int udp6Connect(const HELO_Message * helo,
+static int udp6Connect(const P2P_hello_MESSAGE * helo,
 		       TSession ** tsessionPtr) {
   TSession * tsession;
   Host6Address * haddr;
@@ -375,12 +376,12 @@ static int udp6Connect(const HELO_Message * helo,
 #endif
 
   tsession = MALLOC(sizeof(TSession));
-  tsession->internal = MALLOC(HELO_Message_size(helo));
+  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(helo));
   memcpy(tsession->internal,
 	 helo,
-	 HELO_Message_size(helo));
+	 P2P_hello_MESSAGE_size(helo));
   tsession->ttype = udp6API.protocolNumber;
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (Host6Address*) &helo[1];
 #if DEBUG_UDP6
   tmp = MALLOC(INET6_ADDRSTRLEN);
   LOG(LOG_DEBUG,
@@ -414,7 +415,7 @@ int udp6Associate(TSession * tsession) {
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the HELO_Message identifying the remote node
+ * @param tsession the P2P_hello_MESSAGE identifying the remote node
  * @param message what to send
  * @param size the size of the message
  * @return SYSERR on error, OK on success
@@ -424,7 +425,7 @@ static int udp6Send(TSession * tsession,
 		    const unsigned int size) {
   char * msg;
   UDP6Message mp;
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
   Host6Address * haddr;
   struct sockaddr_in6 sin; /* an Internet endpoint address */
   int ok;
@@ -443,11 +444,11 @@ static int udp6Send(TSession * tsession,
     BREAK();
     return SYSERR;
   }
-  helo = (HELO_Message*)tsession->internal;
+  helo = (P2P_hello_MESSAGE*)tsession->internal;
   if (helo == NULL)
     return SYSERR;
 
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (Host6Address*) &helo[1];
   ssize = size + sizeof(UDP6Message);
   msg = MALLOC(ssize);
   mp.size     = htons(ssize);
@@ -591,12 +592,12 @@ static void reloadConfiguration(void) {
 /**
  * Convert UDP6 address to a string.
  */
-static char * addressToString(const HELO_Message * helo) {
+static char * addressToString(const P2P_hello_MESSAGE * helo) {
   char * ret;
   char inet6[INET6_ADDRSTRLEN];
   Host6Address * haddr;
 
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (Host6Address*) &helo[1];
   ret = MALLOC(INET6_ADDRSTRLEN+16);
   SNPRINTF(ret,
 	   INET6_ADDRSTRLEN+16,
@@ -639,7 +640,7 @@ TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
   udp6API.mtu                  = mtu - sizeof(UDP6Message);
   udp6API.cost                 = 19950;
   udp6API.verifyHelo           = &verifyHelo;
-  udp6API.createHELO           = &createHELO;
+  udp6API.createhello           = &createhello;
   udp6API.connect              = &udp6Connect;
   udp6API.send                 = &udp6Send;
   udp6API.sendReliable         = &udp6Send;  /* can't increase reliability */

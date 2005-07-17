@@ -20,6 +20,8 @@
 
 /**
  * @file applications/template/template.c
+ * @author Christian Grothoff
+ * @brief template for a GNUnet module
  */
 
 #include "platform.h"
@@ -32,12 +34,12 @@ static ClientHandle client;
 static Mutex lock;
 
 static int handlep2pMSG(const PeerIdentity * sender,
-		        const p2p_HEADER * message) {
+		        const P2P_MESSAGE_HEADER * message) {
   return OK;
 }
 
 static int csHandle(ClientHandle client,
-		    const CS_HEADER * message) {
+		    const CS_MESSAGE_HEADER * message) {
   return OK;
 }
 
@@ -58,24 +60,24 @@ int initialize_module_template(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       _("'%s' registering client handler %d and %d\n"),
       "template",
-      MAX_CS_PROTO_USED,
-      MAX_p2p_PROTO_USED);
-  if (SYSERR == capi->registerHandler(MAX_p2p_PROTO_USED,
+      CS_PROTO_MAX_USED,
+      P2P_PROTO_MAX_USED);
+  if (SYSERR == capi->registerHandler(P2P_PROTO_MAX_USED,
 				      &handlep2pMSG))
     ok = SYSERR;
   if (SYSERR == capi->registerClientExitHandler(&clientExitHandler))
     ok = SYSERR;
-  if (SYSERR == capi->registerClientHandler(MAX_CS_PROTO_USED,
+  if (SYSERR == capi->registerClientHandler(CS_PROTO_MAX_USED,
 					    &csHandle))
     ok = SYSERR;
   return ok;
 }
 
 void done_module_template() {
-  coreAPI->unregisterHandler(MAX_p2p_PROTO_USED,
+  coreAPI->unregisterHandler(P2P_PROTO_MAX_USED,
 			     &handlep2pMSG);
   coreAPI->unregisterClientExitHandler(&clientExitHandler);
-  coreAPI->unregisterClientHandler(MAX_CS_PROTO_USED,
+  coreAPI->unregisterClientHandler(CS_PROTO_MAX_USED,
 				   &csHandle);
   MUTEX_DESTROY(&lock);
   coreAPI = NULL;

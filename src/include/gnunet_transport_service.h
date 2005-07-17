@@ -44,7 +44,7 @@ typedef struct {
    * Actually start the transport services and begin
    * receiving messages.
    */
-  void (*start)(MessagePackProcessor mpp);
+  void (*start)(P2P_PACKETProcessor mpp);
 
   /**
    * Stop the transport services, stop receiving messages.
@@ -76,17 +76,17 @@ typedef struct {
    * layer. This may fail if the appropriate transport mechanism is
    * not available.
    *
-   * @param helo the HELO of the target node
+   * @param helo the hello of the target node
    * @return session handle on success, NULL on error
    */
-  TSession * (*connect)(const HELO_Message * helo);
+  TSession * (*connect)(const P2P_hello_MESSAGE * helo);
 
   /**
    * Connect to another peer, picking any transport that
    * works.
    *
    * @param peer which peer to connect to
-   * @param allowTempLists may we even select HELOs that have
+   * @param allowTempLists may we even select hellos that have
    *        not yet been confirmed?
    * @return session handle on success, NULL on error
    */
@@ -148,17 +148,17 @@ typedef struct {
   int (*disconnect)(TSession * session);
 
   /**
-   * Verify that a HELO is ok. Call a method
+   * Verify that a hello is ok. Call a method
    * if the verification was successful.
    * @return OK if the attempt to verify is on the way,
    *        SYSERR if the transport mechanism is not supported
    */
-  int (*verifyHELO)(const HELO_Message * helo);
+  int (*verifyhello)(const P2P_hello_MESSAGE * helo);
 
   /**
-   * Convert HELO to string.
+   * Convert hello to string.
    */
-  char * (*heloToString)(const HELO_Message * helo);
+  char * (*heloToString)(const P2P_hello_MESSAGE * helo);
 
   /**
    * Get the MTU for a given transport type.
@@ -166,10 +166,10 @@ typedef struct {
   int (*getMTU)(unsigned short ttype);
 
   /**
-   * Create a HELO advertisement for the given
+   * Create a hello advertisement for the given
    * transport type for this node.
    */
-  HELO_Message * (*createHELO)(unsigned short ttype);
+  P2P_hello_MESSAGE * (*createhello)(unsigned short ttype);
 
   /**
    * Get a message consisting of (if possible) all addresses that this
@@ -180,11 +180,11 @@ typedef struct {
    * addresses in one message, thus the caller can bound the size of the
    * advertisements.
    *
-   * @param maxLen the maximum size of the HELO message collection in bytes
-   * @param buff where to write the HELO messages
+   * @param maxLen the maximum size of the hello message collection in bytes
+   * @param buff where to write the hello messages
    * @return the number of bytes written to buff, -1 on error
    */
-  int (*getAdvertisedHELOs)(unsigned int maxLen,
+  int (*getAdvertisedhellos)(unsigned int maxLen,
 			    char * buff);
 
 } Transport_ServiceAPI;

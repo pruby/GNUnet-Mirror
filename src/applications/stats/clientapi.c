@@ -38,11 +38,11 @@ const char * p2pMessageName(unsigned short type) {
   const char *name = NULL;
 
   switch( type ) {
-  case p2p_PROTO_HELO :
-    name = "p2p_PROTO_HELO";
+  case p2p_PROTO_hello :
+    name = "p2p_PROTO_hello";
     break;
-  case p2p_PROTO_SKEY :
-    name = "p2p_PROTO_SKEY";
+  case P2P_PROTO_setkey :
+    name = "P2P_PROTO_setkey";
     break;
   case p2p_PROTO_PING :
     name = "p2p_PROTO_PING";
@@ -50,26 +50,26 @@ const char * p2pMessageName(unsigned short type) {
   case p2p_PROTO_PONG :
     name = "p2p_PROTO_PONG";
     break;
-  case p2p_PROTO_NOISE :
-    name = "p2p_PROTO_NOISE";
+  case P2P_PROTO_noise :
+    name = "P2P_PROTO_noise";
     break;
-  case p2p_PROTO_HANGUP :
-    name = "p2p_PROTO_HANGUP";
+  case P2P_PROTO_hangup :
+    name = "P2P_PROTO_hangup";
     break;
-  case CHAT_p2p_PROTO_MSG :
-    name = "CHAT_p2p_PROTO_MSG";
+  case P2P_PROTO_chat_MSG :
+    name = "P2P_PROTO_chat_MSG";
     break;
-  case TRACEKIT_p2p_PROTO_PROBE :
-    name = "TRACEKIT_p2p_PROTO_PROBE";
+  case P2P_PROTO_tracekit_PROBE :
+    name = "P2P_PROTO_tracekit_PROBE";
     break;
-  case TRACEKIT_p2p_PROTO_REPLY :
-    name = "TRACEKIT_p2p_PROTO_REPLY";
+  case P2P_PROTO_tracekit_REPLY :
+    name = "P2P_PROTO_tracekit_REPLY";
     break;
-  case TBENCH_p2p_PROTO_REQUEST	:
-    name = "TBENCH_p2p_PROTO_REQUEST";
+  case P2P_PROTO_tbench_REQUEST	:
+    name = "P2P_PROTO_tbench_REQUEST";
     break;
-  case TBENCH_p2p_PROTO_REPLY	:
-    name = "TBENCH_p2p_PROTO_REPLY";
+  case P2P_PROTO_tbench_REPLY	:
+    name = "P2P_PROTO_tbench_REPLY";
     break;
   default:
     name = NULL;
@@ -89,41 +89,41 @@ const char *csMessageName(unsigned short type) {
   case CS_PROTO_RETURN_VALUE :
     name = "CS_PROTO_RETURN_VALUE";
     break;
-  case CS_PROTO_CLIENT_COUNT :
-    name = "CS_PROTO_CLIENT_COUNT";
+  case CS_PROTO_traffic_COUNT :
+    name = "CS_PROTO_traffic_COUNT";
     break;
-  case CS_PROTO_TRAFFIC_QUERY :
-    name = "CS_PROTO_TRAFFIC_QUERY";
+  case CS_PROTO_traffic_QUERY :
+    name = "CS_PROTO_traffic_QUERY";
     break;
-  case CS_PROTO_TRAFFIC_INFO :
-    name = "CS_PROTO_TRAFFIC_INFO";
+  case CS_PROTO_traffic_INFO :
+    name = "CS_PROTO_traffic_INFO";
     break;
-  case STATS_CS_PROTO_GET_STATISTICS :
-    name = "STATS_CS_PROTO_GET_STATISTICS";
+  case CS_PROTO_stats_GET_STATISTICS :
+    name = "CS_PROTO_stats_GET_STATISTICS";
     break;
-  case STATS_CS_PROTO_STATISTICS :
-    name = "STATS_CS_PROTO_STATISTICS";
+  case CS_PROTO_stats_STATISTICS :
+    name = "CS_PROTO_stats_STATISTICS";
     break;
-  case STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED :
-    name = "STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED";
+  case CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED :
+    name = "CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED";
     break;
-  case STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED :
-    name = "STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED";
+  case CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED :
+    name = "CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED";
     break;
-  case CHAT_CS_PROTO_MSG :
-    name = "CHAT_CS_PROTO_MSG";
+  case CS_PROTO_chat_MSG :
+    name = "CS_PROTO_chat_MSG";
     break;
-  case TRACEKIT_CS_PROTO_PROBE :
-    name = "TRACEKIT_CS_PROTO_PROBE";
+  case CS_PROTO_tracekit_PROBE :
+    name = "CS_PROTO_tracekit_PROBE";
     break;
-  case TRACEKIT_CS_PROTO_REPLY :
-    name = "TRACEKIT_CS_PROTO_REPLY";
+  case CS_PROTO_tracekit_REPLY :
+    name = "CS_PROTO_tracekit_REPLY";
     break;
-  case TBENCH_CS_PROTO_REQUEST :
-    name = "TBENCH_CS_PROTO_REQUEST";
+  case CS_PROTO_tbench_REQUEST :
+    name = "CS_PROTO_tbench_REQUEST";
     break;
-  case TBENCH_CS_PROTO_REPLY :
-    name = "TBENCH_CS_PROTO_REPLY";
+  case CS_PROTO_tbench_REPLY :
+    name = "CS_PROTO_tbench_REPLY";
     break;
   default:
     name = NULL;
@@ -141,8 +141,8 @@ const char *csMessageName(unsigned short type) {
 int requestStatistics(GNUNET_TCP_SOCKET * sock,
 		      StatisticsProcessor processor,
 		      void * cls) {
-  STATS_CS_MESSAGE * statMsg;
-  CS_HEADER csHdr;
+  CS_stats_reply_MESSAGE * statMsg;
+  CS_MESSAGE_HEADER csHdr;
   unsigned int count;
   unsigned int i;
   int mpos;
@@ -150,9 +150,9 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 
   ret = OK;
   csHdr.size
-    = htons(sizeof(CS_HEADER));
+    = htons(sizeof(CS_MESSAGE_HEADER));
   csHdr.type
-    = htons(STATS_CS_PROTO_GET_STATISTICS);
+    = htons(CS_PROTO_stats_GET_STATISTICS);
   if (SYSERR == writeToSocket(sock,
 			      &csHdr))
     return SYSERR;
@@ -165,11 +165,11 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
     /* printf("reading from socket starting %u of %d\n",
        count, ntohl(statMsg->totalCounters) );*/
     if (SYSERR == readFromSocket(sock,
-				 (CS_HEADER**)&statMsg)) {
+				 (CS_MESSAGE_HEADER**)&statMsg)) {
       FREE(statMsg);
       return SYSERR;
     }
-    if (ntohs(statMsg->header.size) < sizeof(STATS_CS_MESSAGE)) {
+    if (ntohs(statMsg->header.size) < sizeof(CS_stats_reply_MESSAGE)) {
       BREAK();
       ret = SYSERR;
       break;
@@ -182,18 +182,18 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 		      cls);
     }
     for (i=0;i<ntohl(statMsg->statCounters);i++) {
-      if (mpos+strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1 >
-	  ntohs(statMsg->header.size) - sizeof(STATS_CS_MESSAGE)) {
+      if (mpos+strlen(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1 >
+	  ntohs(statMsg->header.size) - sizeof(CS_stats_reply_MESSAGE)) {
 	BREAK();
 	ret = SYSERR;
 	break; /* out of bounds! */
       }
       if (ret != SYSERR) {
-	ret = processor(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos],
-			ntohll(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values[i]),
+	ret = processor(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos],
+			ntohll(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values[i]),
 			cls);
       }
-      mpos += strlen(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1;
+      mpos += strlen(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1;
     }
     count += ntohl(statMsg->statCounters);
   } /* end while */
@@ -211,7 +211,7 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
 			      ProtocolProcessor processor,
 			      void * cls) {
-  STATS_CS_GET_MESSAGE_SUPPORTED csStatMsg;
+  CS_stats_get_supported_MESSAGE csStatMsg;
   unsigned short i;
   unsigned short j;
   int supported;
@@ -219,9 +219,9 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
 
   ret = OK;
   csStatMsg.header.size
-    = htons(sizeof(STATS_CS_GET_MESSAGE_SUPPORTED));
+    = htons(sizeof(CS_stats_get_supported_MESSAGE));
   csStatMsg.header.type
-    = htons(STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED);
+    = htons(CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED);
   for (j=2;j<4;j++) {
     csStatMsg.handlerType = htons(j);
     for (i=0;i<65535;i++) {
@@ -242,7 +242,7 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
     }
   }
   csStatMsg.header.type
-    = htons(STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED);
+    = htons(CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED);
   for (i=0;i<65535;i++) {
     csStatMsg.type = htons(i);
     if (SYSERR == writeToSocket(sock,

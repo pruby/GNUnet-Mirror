@@ -30,7 +30,7 @@
 #include "ecrs_core.h"
 
 typedef struct FS_SEARCH_HANDLE {
-  RequestSearch * req;
+  CS_fs_request_search_MESSAGE * req;
   Datum_Iterator callback;
   void * closure;
 } SEARCH_HANDLE;
@@ -50,9 +50,9 @@ typedef struct FS_SEARCH_CONTEXT {
  * calls the appropriate callback.
  */
 static void * processReplies(SEARCH_CONTEXT * ctx) {
-  CS_HEADER * hdr;
+  CS_MESSAGE_HEADER * hdr;
   int i;
-  ReplyContent * rep;
+  CS_fs_reply_content_MESSAGE * rep;
   HashCode512 query;
   unsigned int size;
   cron_t delay;
@@ -66,14 +66,14 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       /* verify hdr, if reply, process, otherwise
 	 signal protocol problem; if ok, find
 	 matching callback, call on value */
-      if ( (ntohs(hdr->size) < sizeof(ReplyContent)) ||
-	   (ntohs(hdr->type) != AFS_CS_PROTO_RESULT) ) {
+      if ( (ntohs(hdr->size) < sizeof(CS_fs_reply_content_MESSAGE)) ||
+	   (ntohs(hdr->type) != CS_PROTO_gap_RESULT) ) {
 	BREAK();
 	FREE(hdr);
 	continue;
       }
-      rep = (ReplyContent*) hdr;
-      size = ntohs(hdr->size) - sizeof(ReplyContent);
+      rep = (CS_fs_reply_content_MESSAGE*) hdr;
+      size = ntohs(hdr->size) - sizeof(CS_fs_reply_content_MESSAGE);
       if (OK != getQueryFor(size,
 			    (DBlock*)&rep[1],
 			    &query)) {
@@ -172,13 +172,13 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 				Datum_Iterator callback,
 				void * closure) {
   SEARCH_HANDLE * ret;
-  RequestSearch * req;
+  CS_fs_request_search_MESSAGE * req;
   EncName enc;
 
   ret = MALLOC(sizeof(SEARCH_HANDLE));
-  req = MALLOC(sizeof(RequestSearch) + (keyCount-1) * sizeof(HashCode512));
-  req->header.size = htons(sizeof(RequestSearch) + (keyCount-1) * sizeof(HashCode512));
-  req->header.type = htons(AFS_CS_PROTO_QUERY_START);
+  req = MALLOC(sizeof(CS_fs_request_search_MESSAGE) + (keyCount-1) * sizeof(HashCode512));
+  req->header.size = htons(sizeof(CS_fs_request_search_MESSAGE) + (keyCount-1) * sizeof(HashCode512));
+  req->header.type = htons(CS_PROTO_gap_QUERY_START);
   req->prio = htonl(prio);
   req->anonymityLevel = htonl(anonymityLevel);
   req->expiration = htonll(timeout);
@@ -220,7 +220,7 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
 		    SEARCH_HANDLE * handle) {
   int i;
 
-  handle->req->header.type = htons(AFS_CS_PROTO_QUERY_STOP);
+  handle->req->header.type = htons(CS_PROTO_gap_QUERY_STOP);
   writeToSocket(ctx->sock,
 		&handle->req->header);
   MUTEX_LOCK(ctx->lock);
@@ -239,11 +239,11 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
  * in the routing table like?  Returns -1 on error.
  */
 unsigned int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock) {
-  CS_HEADER req;
+  CS_MESSAGE_HEADER req;
   unsigned int ret;
 
-  req.size = htons(sizeof(CS_HEADER));
-  req.type = htons(AFS_CS_PROTO_GET_AVG_PRIORITY);
+  req.size = htons(sizeof(CS_MESSAGE_HEADER));
+  req.type = htons(CS_PROTO_gap_GET_AVG_PRIORITY);
   if (OK != writeToSocket(sock,
 			  &req))
     return -1;
@@ -262,7 +262,7 @@ unsigned int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock) {
 int FS_insert(GNUNET_TCP_SOCKET * sock,
 	      const Datastore_Value * block) {
   int ret;
-  RequestInsert * ri;
+  CS_fs_request_insert_MESSAGE * ri;
   unsigned int size;
 
   if (ntohl(block->size) <= sizeof(Datastore_Value)) {
@@ -270,9 +270,9 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
     return SYSERR;
   }
   size = ntohl(block->size) - sizeof(Datastore_Value);
-  ri = MALLOC(sizeof(RequestInsert) + size);
-  ri->header.size = htons(sizeof(RequestInsert) + size);
-  ri->header.type = htons(AFS_CS_PROTO_INSERT);
+  ri = MALLOC(sizeof(CS_fs_request_insert_MESSAGE) + size);
+  ri->header.size = htons(sizeof(CS_fs_request_insert_MESSAGE) + size);
+  ri->header.type = htons(CS_PROTO_gap_INSERT);
   ri->prio = block->prio;
   ri->expiration = block->expirationTime;
   ri->anonymityLevel = block->anonymityLevel;
@@ -299,14 +299,14 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
 		 const HashCode512 * fileHc,
 		 const char * fn) {
   int ret;
-  RequestInitIndex *ri;
+  CS_fs_request_init_index_MESSAGE *ri;
   unsigned int size, fnSize;
 
   fnSize = strlen(fn);
-  size = sizeof(RequestInitIndex) + fnSize;
+  size = sizeof(CS_fs_request_init_index_MESSAGE) + fnSize;
   ri = MALLOC(size);
   ri->header.size = htons(size);
-  ri->header.type = htons(AFS_CS_PROTO_INIT_INDEX);
+  ri->header.type = htons(CS_PROTO_gap_INIT_INDEX);
   ri->reserved = htonl(0);
   ri->fileId = *fileHc;
   memcpy(&ri[1], fn, fnSize);
@@ -340,13 +340,13 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
 	     const Datastore_Value * block,
 	     unsigned long long offset) {
   int ret;
-  RequestIndex * ri;
+  CS_fs_request_index_MESSAGE * ri;
   unsigned int size;
 
   size = ntohl(block->size) - sizeof(Datastore_Value);
-  ri = MALLOC(sizeof(RequestIndex) + size);
-  ri->header.size = htons(sizeof(RequestIndex) + size);
-  ri->header.type = htons(AFS_CS_PROTO_INDEX);
+  ri = MALLOC(sizeof(CS_fs_request_index_MESSAGE) + size);
+  ri->header.size = htons(sizeof(CS_fs_request_index_MESSAGE) + size);
+  ri->header.type = htons(CS_PROTO_gap_INDEX);
   ri->prio = block->prio;
   ri->expiration = block->expirationTime;
   ri->anonymityLevel = block->anonymityLevel;
@@ -382,13 +382,13 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
 int FS_delete(GNUNET_TCP_SOCKET * sock,
 	      const Datastore_Value * block) {
   int ret;
-  RequestDelete * rd;
+  CS_fs_request_delete_MESSAGE * rd;
   unsigned int size;
 
   size = ntohl(block->size) - sizeof(Datastore_Value);
-  rd = MALLOC(sizeof(RequestDelete) + size);
-  rd->header.size = htons(sizeof(RequestDelete) + size);
-  rd->header.type = htons(AFS_CS_PROTO_DELETE);
+  rd = MALLOC(sizeof(CS_fs_request_delete_MESSAGE) + size);
+  rd->header.size = htons(sizeof(CS_fs_request_delete_MESSAGE) + size);
+  rd->header.type = htons(CS_PROTO_gap_DELETE);
   memcpy(&rd[1],
 	 &block[1],
 	 size);
@@ -417,10 +417,10 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
 	       unsigned int blocksize,
 	       const HashCode512 * hc) {
   int ret;
-  RequestUnindex ru;
+  CS_fs_request_unindex_MESSAGE ru;
 
-  ru.header.size = htons(sizeof(RequestUnindex));
-  ru.header.type = htons(AFS_CS_PROTO_UNINDEX);
+  ru.header.size = htons(sizeof(CS_fs_request_unindex_MESSAGE));
+  ru.header.type = htons(CS_PROTO_gap_UNINDEX);
   ru.blocksize = htonl(blocksize);
   ru.fileId = *hc;
   if (OK != writeToSocket(sock,
@@ -444,7 +444,7 @@ int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
   int ret;
 
   ri.header.size = htons(sizeof(RequestTestindex));
-  ri.header.type = htons(AFS_CS_PROTO_TESTINDEX);
+  ri.header.type = htons(CS_PROTO_gap_TESTINDEX);
   ri.reserved = htonl(0);
   ri.fileId = *hc;
   if (OK != writeToSocket(sock,

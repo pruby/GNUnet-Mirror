@@ -130,7 +130,7 @@ static void printHostInfo(const PeerIdentity * id,
 			  const unsigned short proto,
 			  int verified,
 			  void * data) {
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
   char * info;
   EncName enc;
 
@@ -146,11 +146,11 @@ static void printHostInfo(const PeerIdentity * id,
     return;
   }
   if (SYSERR == verifySig(&helo->senderIdentity,
-			  HELO_Message_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(p2p_HEADER),
+			  P2P_hello_MESSAGE_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(P2P_MESSAGE_HEADER),
 			  &helo->signature,
 			  &helo->publicKey)) {
     LOG(LOG_WARNING,
-	_("HELO message invalid (signature invalid).\n"));
+	_("hello message invalid (signature invalid).\n"));
   }
   info = transport->heloToString(helo);
   FREE(helo);

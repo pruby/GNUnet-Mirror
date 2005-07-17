@@ -42,21 +42,21 @@ static unsigned int tapis_count = 0;
 static unsigned int helo_live;
 static Mutex tapis_lock;
 
-#define HELO_RECREATE_FREQ (5 * cronMINUTES)
+#define hello_RECREATE_FREQ (5 * cronMINUTES)
 
 
 
 /**
- * Create signed HELO for this transport and put it into
+ * Create signed hello for this transport and put it into
  * the cache tapi->helo.
  */
-static void createSignedHELO(TransportAPI * tapi) {
+static void createSignedhello(TransportAPI * tapi) {
   MUTEX_LOCK(&tapis_lock);
   FREENONNULL(tapi->helo);
-  tapi->helo = tapi->createHELO();
+  tapi->helo = tapi->createhello();
   if (NULL == tapi->helo) {
     LOG(LOG_INFO,
-	"Transport '%s' failed to create HELO\n",
+	"Transport '%s' failed to create hello\n",
 	tapi->transName);
     MUTEX_UNLOCK(&tapis_lock);
     return;
@@ -70,14 +70,14 @@ static void createSignedHELO(TransportAPI * tapi) {
   tapi->helo->expirationTime
     = htonl(TIME(NULL) + helo_live);
   tapi->helo->header.type
-    = htons(p2p_PROTO_HELO);
+    = htons(p2p_PROTO_hello);
   tapi->helo->header.size
-    = htons(HELO_Message_size(tapi->helo));
+    = htons(P2P_hello_MESSAGE_size(tapi->helo));
   if (SYSERR == identity->signData(&(tapi->helo)->senderIdentity,
-				   HELO_Message_size(tapi->helo)
+				   P2P_hello_MESSAGE_size(tapi->helo)
 				   - sizeof(Signature)
 				   - sizeof(PublicKey)
-				   - sizeof(p2p_HEADER),
+				   - sizeof(P2P_MESSAGE_HEADER),
 				   &tapi->helo->signature)) {
     FREE(tapi->helo);    
     tapi->helo = NULL;
@@ -108,17 +108,17 @@ static int addTransport(TransportAPI * tapi) {
 	 tapi->protocolNumber+1);
   tapis[tapi->protocolNumber] = tapi;
   tapi->helo = NULL;
-  addCronJob((CronJob)&createSignedHELO,
-	     HELO_RECREATE_FREQ,
-	     HELO_RECREATE_FREQ,
+  addCronJob((CronJob)&createSignedhello,
+	     hello_RECREATE_FREQ,
+	     hello_RECREATE_FREQ,
 	     tapi);
   return OK;
 }
 
 /**
- * Convert HELO to string.
+ * Convert hello to string.
  */
-static char * heloToString(const HELO_Message * helo) {
+static char * heloToString(const P2P_hello_MESSAGE * helo) {
   TransportAPI * tapi;
   unsigned short prot;
 
@@ -168,12 +168,12 @@ static int forEachTransport(TransportCallback callback,
  * transport layer. This may fail if the appropriate
  * transport mechanism is not available.
  *
- * @param helo the HELO of the target node. The
- *        callee is responsible for freeing the HELO (!), except
+ * @param helo the hello of the target node. The
+ *        callee is responsible for freeing the hello (!), except
  *        if SYSERR is returned!
  * @return OK on success, SYSERR on error
  */
-static TSession * transportConnect(const HELO_Message * helo) {
+static TSession * transportConnect(const P2P_hello_MESSAGE * helo) {
   TransportAPI * tapi;
   unsigned short prot;
   TSession * tsession;
@@ -211,7 +211,7 @@ static TSession * transportConnect(const HELO_Message * helo) {
 static TSession * transportConnectFreely(const PeerIdentity * peer,
 					 int useTempList) {
   int i;
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
   int * perm;
   TSession * ret;
 
@@ -396,12 +396,12 @@ static int transportDisconnect(TSession * tsession) {
 }
 
 /**
- * Verify that a HELO is ok. Call a method
+ * Verify that a hello is ok. Call a method
  * if the verification was successful.
  * @return OK if the attempt to verify is on the way,
  *        SYSERR if the transport mechanism is not supported
  */
-static int transportVerifyHelo(const HELO_Message * helo) {
+static int transportVerifyHelo(const P2P_hello_MESSAGE * helo) {
   TransportAPI * tapi;
 
   if (ntohs(helo->protocol) >= tapis_count) {
@@ -438,12 +438,12 @@ static int transportGetMTU(unsigned short ttype) {
 }
 
 /**
- * Create a HELO advertisement for the given
+ * Create a hello advertisement for the given
  * transport type for this node.
  */
-static HELO_Message * transportCreateHELO(unsigned short ttype) {
+static P2P_hello_MESSAGE * transportCreatehello(unsigned short ttype) {
   TransportAPI * tapi;
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
 
   MUTEX_LOCK(&tapis_lock);
   if (ttype == ANY_PROTOCOL_NUMBER) {
@@ -481,16 +481,16 @@ static HELO_Message * transportCreateHELO(unsigned short ttype) {
   }
   if (tapi->helo == NULL) {
     LOG(LOG_DEBUG,
-	"Transport of type %d configured for sending only (no HELO).\n",
+	"Transport of type %d configured for sending only (no hello).\n",
 	ttype);
     MUTEX_UNLOCK(&tapis_lock);
     return NULL;
   }
 
-  helo = MALLOC(HELO_Message_size(tapi->helo));
+  helo = MALLOC(P2P_hello_MESSAGE_size(tapi->helo));
   memcpy(helo,
 	 tapi->helo,
-	 HELO_Message_size(tapi->helo));
+	 P2P_hello_MESSAGE_size(tapi->helo));
   MUTEX_UNLOCK(&tapis_lock);
   return helo;
 }
@@ -504,15 +504,15 @@ static HELO_Message * transportCreateHELO(unsigned short ttype) {
  * addresses in one message, thus the caller can bound the size of the
  * advertisements.
  *
- * @param maxLen the maximum size of the HELO message collection in bytes
- * @param buff where to write the HELO messages
+ * @param maxLen the maximum size of the hello message collection in bytes
+ * @param buff where to write the hello messages
  * @return the number of bytes written to buff, -1 on error
  */
-static int getAdvertisedHELOs(unsigned int maxLen,
+static int getAdvertisedhellos(unsigned int maxLen,
 			      char * buff) {
   int i;
   int tcount;
-  HELO_Message ** helos;
+  P2P_hello_MESSAGE ** helos;
   int used;
 
   MUTEX_LOCK(&tapis_lock);
@@ -521,11 +521,11 @@ static int getAdvertisedHELOs(unsigned int maxLen,
     if (tapis[i] != NULL)
       tcount++;
 
-  helos = MALLOC(tcount * sizeof(HELO_Message*));
+  helos = MALLOC(tcount * sizeof(P2P_hello_MESSAGE*));
   tcount = 0;
   for (i=0;i<tapis_count;i++) {
     if (tapis[i] != NULL) {
-      helos[tcount] = transportCreateHELO(i);
+      helos[tcount] = transportCreatehello(i);
       if (NULL != helos[tcount])
 	tcount++;
     }
@@ -533,17 +533,17 @@ static int getAdvertisedHELOs(unsigned int maxLen,
   MUTEX_UNLOCK(&tapis_lock);
   if (tcount == 0) {
     LOG(LOG_DEBUG,
-	"%s failed: no transport succeeded in creating a HELO\n");
+	"%s failed: no transport succeeded in creating a hello\n");
     return SYSERR;
   }
   used = 0;
   while (tcount > 0) {
-    i = weak_randomi(tcount); /* select a HELO at random */
-    if ((unsigned int)HELO_Message_size(helos[i]) <= maxLen - used) {
+    i = weak_randomi(tcount); /* select a hello at random */
+    if ((unsigned int)P2P_hello_MESSAGE_size(helos[i]) <= maxLen - used) {
       memcpy(&buff[used],
 	     helos[i],
-	     HELO_Message_size(helos[i]));
-      used += HELO_Message_size(helos[i]);
+	     P2P_hello_MESSAGE_size(helos[i]));
+      used += P2P_hello_MESSAGE_size(helos[i]);
     }
     FREE(helos[i]);
     helos[i] = helos[--tcount];
@@ -553,7 +553,7 @@ static int getAdvertisedHELOs(unsigned int maxLen,
   FREE(helos);
   if (used == 0) 
     LOG(LOG_DEBUG,
-	"%s failed: no HELOs fit in %u bytes\n",
+	"%s failed: no hellos fit in %u bytes\n",
 	maxLen);
   return used;
 }
@@ -563,7 +563,7 @@ static int getAdvertisedHELOs(unsigned int maxLen,
  * Actually start the transport services and begin
  * receiving messages.
  */
-static void startTransports(MessagePackProcessor mpp) {
+static void startTransports(P2P_PACKETProcessor mpp) {
   int i;
   ctapi.receive = mpp;
   for (i=0;i<tapis_count;i++)
@@ -584,10 +584,10 @@ static void stopTransports() {
 
 static void initHelper(TransportAPI * tapi,
 		       void * unused) {
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
 
-  createSignedHELO(tapi);
-  helo = transportCreateHELO(tapi->protocolNumber);
+  createSignedhello(tapi);
+  helo = transportCreatehello(tapi->protocolNumber);
   if (NULL != helo) {
     identity->addHost(helo);
     FREE(helo);
@@ -611,7 +611,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   void * lib;
   EncName myself;
 
-  GNUNET_ASSERT(sizeof(HELO_Message) == 600);
+  GNUNET_ASSERT(sizeof(P2P_hello_MESSAGE) == 600);
   identity = capi->requestService("identity");
   if (identity == NULL) {
     BREAK();
@@ -625,16 +625,16 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ctapi.releaseService = coreAPI->releaseService;
 
   helo_live = getConfigurationInt("GNUNETD",
-				  "HELOEXPIRES") * 60; /* minutes to seconds */
-  if (helo_live > MAX_HELO_EXPIRES)
-    helo_live = MAX_HELO_EXPIRES;
+				  "HELLOEXPIRES") * 60; /* minutes to seconds */
+  if (helo_live > MAX_hello_EXPIRES)
+    helo_live = MAX_hello_EXPIRES;
 
   if (helo_live <= 0) {
     helo_live = 60 * 60;
     LOG(LOG_WARNING,
 	_("Option '%s' not set in configuration in section '%s',"
 	  " setting to %dm.\n"),
-	"HELOEXPIRES", "GNUNETD", helo_live / 60);
+	"HELLOEXPIRES", "GNUNETD", helo_live / 60);
   }
   GROW(tapis,
        tapis_count,
@@ -710,11 +710,11 @@ provide_module_transport(CoreAPIForApplication * capi) {
   ret.send = &transportSend;
   ret.sendReliable = &transportSendReliable;
   ret.disconnect = &transportDisconnect;
-  ret.verifyHELO = &transportVerifyHelo;
+  ret.verifyhello = &transportVerifyHelo;
   ret.heloToString = &heloToString;
   ret.getMTU = &transportGetMTU;
-  ret.createHELO = &transportCreateHELO;
-  ret.getAdvertisedHELOs = &getAdvertisedHELOs;
+  ret.createhello = &transportCreatehello;
+  ret.getAdvertisedhellos = &getAdvertisedhellos;
 
   return &ret;
 }
@@ -729,8 +729,8 @@ int release_module_transport() {
 
   for (i=0;i<tapis_count;i++) {
     if (tapis[i] != NULL) {
-      delCronJob((CronJob)&createSignedHELO,
-		 HELO_RECREATE_FREQ,
+      delCronJob((CronJob)&createSignedhello,
+		 hello_RECREATE_FREQ,
 		 tapis[i]);
       ptr = bindDynamicMethod(tapis[i]->libHandle,
 			      "donetransport_",

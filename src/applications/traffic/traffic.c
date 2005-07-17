@@ -57,11 +57,11 @@ static Stats_ServiceAPI * stats;
 #endif
 
 #if KEEP_RECEIVE_STATS
-static int stat_traffic_received_by_type[MAX_p2p_PROTO_USED];
+static int stat_traffic_received_by_type[P2P_PROTO_MAX_USED];
 #endif
 
 #if KEEP_TRANSMITTED_STATS
-static int stat_traffic_transmitted_by_type[MAX_p2p_PROTO_USED];
+static int stat_traffic_transmitted_by_type[P2P_PROTO_MAX_USED];
 #endif
 
 /**
@@ -287,8 +287,8 @@ static void buildSummary(TRAFFIC_COUNTER * res,
 /**
  * Build a reply message for the client.
  */
-static CS_TRAFFIC_INFO * buildReply(unsigned int countTimeUnits) {
-  CS_TRAFFIC_INFO * reply;
+static CS_traffic_info_MESSAGE * buildReply(unsigned int countTimeUnits) {
+  CS_traffic_info_MESSAGE * reply;
   unsigned int count;
   unsigned int i;
 
@@ -301,23 +301,23 @@ static CS_TRAFFIC_INFO * buildReply(unsigned int countTimeUnits) {
       if (counters[i]->receive.slots != 0)
 	count++;
     }
-  reply = MALLOC(sizeof(CS_TRAFFIC_INFO)+
+  reply = MALLOC(sizeof(CS_traffic_info_MESSAGE)+
 		 count * sizeof(TRAFFIC_COUNTER));
-  reply->header.type = htons(CS_PROTO_TRAFFIC_INFO);
-  reply->header.size = htons(sizeof(CS_TRAFFIC_INFO)+
+  reply->header.type = htons(CS_PROTO_traffic_INFO);
+  reply->header.size = htons(sizeof(CS_traffic_info_MESSAGE)+
 			    count * sizeof(TRAFFIC_COUNTER));
   reply->count = htonl(count);
   count = 0;
   for (i=0;i<max_message_type;i++)
     if (counters[i] != NULL) {
       if (counters[i]->send.slots != 0)
-	buildSummary(&((CS_TRAFFIC_INFO_GENERIC*)reply)->counters[count++],
+	buildSummary(&((CS_traffic_info_MESSAGE_GENERIC*)reply)->counters[count++],
 		     &counters[i]->send,
 		     TC_SENT,
 		     countTimeUnits,
 		     i);
       if (counters[i]->receive.slots != 0)
-	buildSummary(&((CS_TRAFFIC_INFO_GENERIC*)reply)->counters[count++],
+	buildSummary(&((CS_traffic_info_MESSAGE_GENERIC*)reply)->counters[count++],
 		     &counters[i]->receive,
 		     TC_RECEIVED,
 		     countTimeUnits,
@@ -329,14 +329,14 @@ static CS_TRAFFIC_INFO * buildReply(unsigned int countTimeUnits) {
 }
 
 static int trafficQueryHandler(ClientHandle sock,
-			       const CS_HEADER * message) {
-  CS_TRAFFIC_REQUEST * msg;
-  CS_TRAFFIC_INFO * reply;
+			       const CS_MESSAGE_HEADER * message) {
+  CS_traffic_request_MESSAGE * msg;
+  CS_traffic_info_MESSAGE * reply;
   int ret;
 
-  if (sizeof(CS_TRAFFIC_REQUEST) != ntohs(message->size))
+  if (sizeof(CS_traffic_request_MESSAGE) != ntohs(message->size))
     return SYSERR;
-  msg = (CS_TRAFFIC_REQUEST*) message;
+  msg = (CS_traffic_request_MESSAGE*) message;
   reply = buildReply(ntohl(msg->timePeriod));
   ret = coreAPI->sendToClient(sock, &reply->header);
   FREE(reply);
@@ -435,7 +435,7 @@ static void checkPort(unsigned short port) {
 static void updateTrafficSendCounter(unsigned short ptyp,
 				     unsigned short plen) {
 #if KEEP_TRANSMITTED_STATS
-  if (ptyp >= MAX_p2p_PROTO_USED)
+  if (ptyp >= P2P_PROTO_MAX_USED)
     return; /* not tracked */
   if (0 == stat_traffic_transmitted_by_type[ptyp]) {
     char * s;
@@ -456,7 +456,7 @@ static void updateTrafficSendCounter(unsigned short ptyp,
 static void updateTrafficReceiveCounter(unsigned short ptyp,
 					unsigned short plen) {
 #if KEEP_RECEIVE_STATS
-  if (ptyp < MAX_p2p_PROTO_USED) {
+  if (ptyp < P2P_PROTO_MAX_USED) {
     if (0 == stat_traffic_received_by_type[ptyp]) {
       char * s;
       s = MALLOC(256);
@@ -482,7 +482,7 @@ static void updateTrafficReceiveCounter(unsigned short ptyp,
  * @param sender the identity of the sender
  */
 static int trafficReceive(const PeerIdentity * sender,
-			  const p2p_HEADER * header) {
+			  const P2P_MESSAGE_HEADER * header) {
   unsigned short port;
 
   port = ntohs(header->type);
@@ -505,7 +505,7 @@ static int trafficReceive(const PeerIdentity * sender,
  * @param receiver the identity of the receiver
  */
 static int trafficSend(const PeerIdentity * receiver,
-		       const p2p_HEADER * header) {
+		       const P2P_MESSAGE_HEADER * header) {
   unsigned short port;
 
   port = ntohs(header->type);
@@ -534,12 +534,12 @@ Traffic_ServiceAPI * provide_module_traffic(CoreAPIForApplication * capi) {
   coreAPI = capi;
   api.get = &getTrafficStats;
 #if KEEP_TRANSMITTED_STATS
-  for (i=0;i<MAX_p2p_PROTO_USED;i++)
+  for (i=0;i<P2P_PROTO_MAX_USED;i++)
     stat_traffic_transmitted_by_type[i] = 0;
   coreAPI->registerSendNotify(&trafficSend);
 #endif
 #if KEEP_RECEIVE_STATS
-  for (i=0;i<MAX_p2p_PROTO_USED;i++) {
+  for (i=0;i<P2P_PROTO_MAX_USED;i++) {
     stat_traffic_received_by_type[i] = 0;
     coreAPI->registerHandler(i,
 			     &trafficReceive);
@@ -561,7 +561,7 @@ void release_module_traffic() {
   unsigned int i;
 
 #if KEEP_RECEIVE_STATS
-  for (i=0;i<MAX_p2p_PROTO_USED;i++)
+  for (i=0;i<P2P_PROTO_MAX_USED;i++)
     coreAPI->unregisterHandler(i,
 			     &trafficReceive);
 #endif
@@ -598,7 +598,7 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
     myCoreAPI = NULL;
     return SYSERR;
   }
-  capi->registerClientHandler(CS_PROTO_TRAFFIC_QUERY,
+  capi->registerClientHandler(CS_PROTO_traffic_QUERY,
 			      &trafficQueryHandler);
   setConfigurationString("ABOUT",
 			 "traffic",
@@ -611,7 +611,7 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
  */
 void done_module_traffic() {
   GNUNET_ASSERT(myCoreAPI != NULL);
-  GNUNET_ASSERT(SYSERR != myCoreAPI->unregisterClientHandler(CS_PROTO_TRAFFIC_QUERY,
+  GNUNET_ASSERT(SYSERR != myCoreAPI->unregisterClientHandler(CS_PROTO_traffic_QUERY,
 							     &trafficQueryHandler));
   myCoreAPI->releaseService(myApi);
   myApi = NULL;

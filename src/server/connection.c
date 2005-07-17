@@ -155,20 +155,20 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  *
  * Protocol goes like this:
  *          DOWN
- *   -> HELO+SKEY+PING(1) ->
+ *   -> hello+SKEY+PING(1) ->
  *        SKEY_SENT
- *  <- HELO+SKEY+PONG(1)+PING(2) <-
+ *  <- hello+SKEY+PONG(1)+PING(2) <-
  *       -> PONG(2) ->
  *           UP
  *
- * Note that the second HELO may not be necessary from a protocol
+ * Note that the second hello may not be necessary from a protocol
  * point of view, but makes sense for symmetry and to provide the
- * other side with an up-to-date HELO.  For the other side, it looks
+ * other side with an up-to-date hello.  For the other side, it looks
  * like this:
  *
  *          DOWN
- *      <- HELO+SKEY+PING(1) <-
- *  -> HELO+SKEY+PONG(1)+PING(2) ->
+ *      <- hello+SKEY+PING(1) <-
+ *  -> hello+SKEY+PONG(1)+PING(2) ->
  *        SKEY_RECEIVED
  *       <- PONG(2) <-
  *           UP
@@ -194,9 +194,9 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  */
 
 #define STAT_DOWN             0
-/* HELO and SKEY sent (PING included) */
+/* hello and SKEY sent (PING included) */
 #define STAT_SKEY_SENT        1
-/* SKEY received, HELO and SKEY sent (PING included) */
+/* SKEY received, hello and SKEY sent (PING included) */
 #define STAT_SKEY_RECEIVED    2
 /* PING confirmed with (encrypted) PONG */
 #define STAT_UP               7
@@ -257,9 +257,9 @@ typedef struct fENHWrap {
  * well-behaved, non-malicious nodes that like each other).
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
   PeerIdentity sender;
-} HANGUP_Message;
+} P2P_hangup_MESSAGE;
 
 
 /* *********** flags for SendEntry.flags ********** */
@@ -877,7 +877,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
   (*priority) = 0;
 
   if (be->session.mtu == 0) {
-    totalMessageSize = sizeof(P2P_Message);
+    totalMessageSize = sizeof(P2P_PACKET_HEADER);
     i = 0;
     /* assumes entries are sorted by priority! */
     while (i < be->sendBufferSize) {
@@ -909,7 +909,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 	(*priority) += entry->pri;
       } else {
 	entry->knapsackSolution = NO;
-	if (totalMessageSize == sizeof(P2P_Message)) {	
+	if (totalMessageSize == sizeof(P2P_PACKET_HEADER)) {	
 	  /* if the highest-priority message does not yet
 	     fit, wait for send window to grow so that
 	     we can get it out (otherwise we would starve
@@ -919,9 +919,9 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       }
       i++;
     }
-    if ( (totalMessageSize == sizeof(P2P_Message)) ||
+    if ( (totalMessageSize == sizeof(P2P_PACKET_HEADER)) ||
 	 ( ((*priority) < EXTREME_PRIORITY) &&
-	   ((totalMessageSize / sizeof(P2P_Message)) < 4) &&
+	   ((totalMessageSize / sizeof(P2P_PACKET_HEADER)) < 4) &&
 	   (randomi(16) != 0) ) ) {
       /* randomization necessary to ensure we eventually send
 	 a small message if there is nothing else to do! */
@@ -938,13 +938,13 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       /* control CPU load probabilistically! */
       if (randomi(1+approxProb) == 0) {
 	(*priority) = approximateKnapsack(be,
-					  be->session.mtu - sizeof(P2P_Message));
+					  be->session.mtu - sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
 	FPRINTF(prioFile, "%llu 0 %d\n", cronTime(NULL), priority);
 #endif
       } else {
 	(*priority) = solveKnapsack(be,
-				    be->session.mtu - sizeof(P2P_Message));
+				    be->session.mtu - sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
 	FPRINTF(prioFile, 
 		"%llu 1 %d\n", 
@@ -954,7 +954,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       }
     } else { /* never approximate < 50% CPU load */
       (*priority) = solveKnapsack(be,
-				  be->session.mtu - sizeof(P2P_Message));
+				  be->session.mtu - sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
       FPRINTF(prioFile,
 	      "%llu 2 %d\n", 
@@ -972,7 +972,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 	  "solveKnapsack",
 	  j,
 	  be->sendBufferSize,
-	  be->session.mtu - sizeof(P2P_Message));
+	  be->session.mtu - sizeof(P2P_PACKET_HEADER));
 
       for (j=0;j<be->sendBufferSize;j++)
 	LOG(LOG_ERROR,
@@ -1221,10 +1221,10 @@ static int ensureTransportConnected(BufferEntry * be) {
       /* assumes entries are sorted by priority! */
       while (i < ret) {
 	entry = entries[i];
-	if (entry->len > be->session.mtu - sizeof(P2P_Message)) {
+	if (entry->len > be->session.mtu - sizeof(P2P_PACKET_HEADER)) {
 	  entries[i] = entries[--ret];
 	  fragmentation->fragment(&be->session.sender,
-				  be->session.mtu - sizeof(P2P_Message),
+				  be->session.mtu - sizeof(P2P_PACKET_HEADER),
 				  entry->pri,
 				  entry->transmissionTime,
 				  entry->len,
@@ -1259,7 +1259,7 @@ static void sendBuffer(BufferEntry * be) {
   unsigned int p;
   unsigned int rsi;
   SendCallbackList * pos;
-  P2P_Message * p2pHdr;
+  P2P_PACKET_HEADER * p2pHdr;
   int priority;
   int * perm;
   char * plaintextMsg;
@@ -1303,7 +1303,7 @@ static void sendBuffer(BufferEntry * be) {
     be->inSendBuffer = NO;
     return; /* deferr further */
   }
-  totalMessageSize += sizeof(P2P_Message);
+  totalMessageSize += sizeof(P2P_PACKET_HEADER);
 
   /* check if we (sender) have enough bandwidth available 
      if so, trigger callbacks on selected entries; if either
@@ -1321,14 +1321,14 @@ static void sendBuffer(BufferEntry * be) {
 
   /* build message (start with sequence number) */
   plaintextMsg = MALLOC(totalMessageSize);
-  p2pHdr = (P2P_Message*) plaintextMsg;
+  p2pHdr = (P2P_PACKET_HEADER*) plaintextMsg;
   p2pHdr->timeStamp
     = htonl(TIME(NULL));
   p2pHdr->sequenceNumber
     = htonl(be->lastSequenceNumberSend);
   p2pHdr->bandwidth
     = htonl(be->idealized_limit);
-  p = sizeof(P2P_Message);
+  p = sizeof(P2P_PACKET_HEADER);
 
   for (i=0;i<be->sendBufferSize;i++) {
     SendEntry * entry = be->sendBuffer[perm[i]];
@@ -1358,17 +1358,17 @@ static void sendBuffer(BufferEntry * be) {
   }
 
   /* finally padd with noise */
-  if ( (p + sizeof(p2p_HEADER) <= totalMessageSize) &&
+  if ( (p + sizeof(P2P_MESSAGE_HEADER) <= totalMessageSize) &&
        (disable_random_padding == NO) ) {
-    p2p_HEADER * part;
+    P2P_MESSAGE_HEADER * part;
     unsigned short noiseLen = totalMessageSize - p;
 
-    part = (p2p_HEADER *) &plaintextMsg[p];
+    part = (P2P_MESSAGE_HEADER *) &plaintextMsg[p];
     part->size
       = htons(noiseLen);
     part->type
-      = htons(p2p_PROTO_NOISE);
-    for (i=p+sizeof(p2p_HEADER);
+      = htons(P2P_PROTO_noise);
+    for (i=p+sizeof(P2P_MESSAGE_HEADER);
 	 i < totalMessageSize;
 	 i++)
       plaintextMsg[i] = (char) rand();
@@ -1386,7 +1386,7 @@ static void sendBuffer(BufferEntry * be) {
 	       p - sizeof(HashCode512),
 	       &be->skey_local,
 	       (const INITVECTOR*) encryptedMsg, /* IV */
-	       &((P2P_Message*)encryptedMsg)->sequenceNumber);
+	       &((P2P_PACKET_HEADER*)encryptedMsg)->sequenceNumber);
   if (stats != NULL)
     stats->change(stat_encrypted,
 		  p - sizeof(HashCode512));
@@ -1415,11 +1415,11 @@ static void sendBuffer(BufferEntry * be) {
 	= (be->idealized_limit + be->max_transmitted_limit*3)/4;
 
     if (rsnSize > 0) {
-      j = sizeof(P2P_Message);
+      j = sizeof(P2P_PACKET_HEADER);
       while (j < p) {
-	p2p_HEADER * part = (p2p_HEADER*) &plaintextMsg[j];
+	P2P_MESSAGE_HEADER * part = (P2P_MESSAGE_HEADER*) &plaintextMsg[j];
 	unsigned short plen = htons(part->size);
-	if (plen < sizeof(p2p_HEADER)) {
+	if (plen < sizeof(P2P_MESSAGE_HEADER)) {
 	  BREAK();
 	  break;
 	}
@@ -1466,10 +1466,10 @@ static void appendToBuffer(BufferEntry * be,
     return;
   }
   if ( (be->session.mtu != 0) &&
-       (se->len > be->session.mtu - sizeof(P2P_Message)) ) {
+       (se->len > be->session.mtu - sizeof(P2P_PACKET_HEADER)) ) {
     /* this message is so big that it must be fragmented! */
     fragmentation->fragment(&be->session.sender,
-			    be->session.mtu - sizeof(P2P_Message),
+			    be->session.mtu - sizeof(P2P_PACKET_HEADER),
 			    se->pri,
 			    se->transmissionTime,
 			    se->len,
@@ -1693,7 +1693,7 @@ static int copyCallback(void * buf,
  * @param be the connection to shutdown
  */
 static void shutdownConnection(BufferEntry * be) {
-  HANGUP_Message hangup;
+  P2P_hangup_MESSAGE hangup;
   unsigned int i;
   EncName enc;
 
@@ -1710,14 +1710,14 @@ static void shutdownConnection(BufferEntry * be) {
     SendEntry * se;
 
     hangup.header.type
-      = htons(p2p_PROTO_HANGUP);
+      = htons(P2P_PROTO_hangup);
     hangup.header.size 
-      = htons(sizeof(HANGUP_Message));
+      = htons(sizeof(P2P_hangup_MESSAGE));
     identity->getPeerIdentity(identity->getPublicPrivateKey(),
 			      &hangup.sender);
     se = MALLOC(sizeof(SendEntry));
     se->len 
-      = sizeof(HANGUP_Message);
+      = sizeof(P2P_hangup_MESSAGE);
     se->flags
       = SE_FLAG_PLACE_TAIL;
     se->pri 
@@ -1727,10 +1727,10 @@ static void shutdownConnection(BufferEntry * be) {
     se->callback
       = &copyCallback;
     se->closure
-      = MALLOC(sizeof(HANGUP_Message));
+      = MALLOC(sizeof(P2P_hangup_MESSAGE));
     memcpy(se->closure,
 	   &hangup,
-	   sizeof(HANGUP_Message));
+	   sizeof(P2P_hangup_MESSAGE));
     appendToBuffer(be, se);
     if (stats != NULL)
       stats->change(stat_hangupSent,
@@ -2135,7 +2135,7 @@ static void cronDecreaseLiveness(void * unused) {
  *         SYSERR if it was malformed
  */
 int checkHeader(const PeerIdentity * sender,
-		P2P_Message * msg,
+		P2P_PACKET_HEADER * msg,
 		unsigned short size) {
   BufferEntry * be;
   int res;
@@ -2150,7 +2150,7 @@ int checkHeader(const PeerIdentity * sender,
   GNUNET_ASSERT(sender != NULL);
   hash2enc(&sender->hashPubKey,
 	   &enc);
-  if (size < sizeof(P2P_Message)) {
+  if (size < sizeof(P2P_PACKET_HEADER)) {
     LOG(LOG_WARNING,
 	_("Message from '%s' discarded: invalid format.\n"),
 	&enc);
@@ -2274,15 +2274,15 @@ int checkHeader(const PeerIdentity * sender,
  * @return OK on success, SYSERR on error
  */
 static int handleHANGUP(const PeerIdentity * sender,
-			const p2p_HEADER * msg) {
+			const P2P_MESSAGE_HEADER * msg) {
   BufferEntry * be;
   EncName enc;
 
   ENTRY();
-  if (ntohs(msg->size) != sizeof(HANGUP_Message))
+  if (ntohs(msg->size) != sizeof(P2P_hangup_MESSAGE))
     return SYSERR;
   if (!hostIdentityEquals(sender,
-			  &((HANGUP_Message*)msg)->sender))
+			  &((P2P_hangup_MESSAGE*)msg)->sender))
     return SYSERR;
   IFLOG(LOG_INFO,
 	hash2enc(&sender->hashPubKey,
@@ -2604,8 +2604,8 @@ static void connectionConfigChangeCallback() {
  */
 void initConnection() {
   GNUNET_ASSERT(P2P_MESSAGE_OVERHEAD
-		== sizeof(P2P_Message));
-  GNUNET_ASSERT(sizeof(HANGUP_Message) == 68);
+		== sizeof(P2P_PACKET_HEADER));
+  GNUNET_ASSERT(sizeof(P2P_hangup_MESSAGE) == 68);
   ENTRY();
   scl_nextHead
     = NULL;
@@ -2615,7 +2615,7 @@ void initConnection() {
   registerConfigurationUpdateCallback(&connectionConfigChangeCallback);
   CONNECTION_MAX_HOSTS_ = 0;
   connectionConfigChangeCallback();
-  registerp2pHandler(p2p_PROTO_HANGUP,
+  registerp2pHandler(P2P_PROTO_hangup,
 		     &handleHANGUP);
   addCronJob(&cronDecreaseLiveness,
 	     1 * cronSECONDS,
@@ -2874,7 +2874,7 @@ int unregisterSendCallback(const unsigned int minimumPadding,
  * from the GNUnet core.
  *
  * @param session the transport session
- * @param msg the message to transmit, should contain p2p_HEADERs
+ * @param msg the message to transmit, should contain P2P_MESSAGE_HEADERs
  * @return OK on success, SYSERR on failure, NO on temporary failure
  */
 int sendPlaintext(TSession * tsession,
@@ -2882,28 +2882,28 @@ int sendPlaintext(TSession * tsession,
 		  unsigned int size) {
   char * buf;
   int ret;
-  P2P_Message * hdr;
+  P2P_PACKET_HEADER * hdr;
 
   GNUNET_ASSERT(tsession != NULL);
   if ( (transport->getMTU(tsession->ttype)>0) &&
-       (transport->getMTU(tsession->ttype)<size + sizeof(P2P_Message)) ) {
+       (transport->getMTU(tsession->ttype)<size + sizeof(P2P_PACKET_HEADER)) ) {
     BREAK();
     return SYSERR;
   }
-  buf = MALLOC(size + sizeof(P2P_Message));
-  hdr = (P2P_Message*) buf;
+  buf = MALLOC(size + sizeof(P2P_PACKET_HEADER));
+  hdr = (P2P_PACKET_HEADER*) buf;
   hdr->sequenceNumber = 0;
   hdr->timeStamp = 0;
   hdr->bandwidth = 0;
-  memcpy(&buf[sizeof(P2P_Message)],
+  memcpy(&buf[sizeof(P2P_PACKET_HEADER)],
 	 msg,
 	 size);
   hash(&hdr->sequenceNumber,
-       size + sizeof(P2P_Message) - sizeof(HashCode512),
+       size + sizeof(P2P_PACKET_HEADER) - sizeof(HashCode512),
        &hdr->hash);
   ret = transport->send(tsession,
 			buf,
-			size + sizeof(P2P_Message));
+			size + sizeof(P2P_PACKET_HEADER));
   FREE(buf);
   return ret;
 }
@@ -2970,7 +2970,7 @@ void unicastCallback(const PeerIdentity * hostId,
  * @param maxdelay how long can the message be delayed?
  */
 void unicast(const PeerIdentity * receiver,
-	     const p2p_HEADER * msg,
+	     const P2P_MESSAGE_HEADER * msg,
 	     unsigned int importance,
 	     unsigned int maxdelay) {
   char * closure;

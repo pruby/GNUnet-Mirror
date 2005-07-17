@@ -43,13 +43,13 @@ typedef struct {
  * transport performance.
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
   unsigned int iterationNum;
   unsigned int packetNum;
   unsigned int priority;
   unsigned int nounce;
   unsigned int crc;
-} TBENCH_p2p_MESSAGE;
+} P2P_tbench_MESSAGE;
 
 /**
  * Lock for access to semaphores.
@@ -128,17 +128,17 @@ static int pollResults(IterationData * results,
  * around and send it back.
  */
 static int handleTBenchReq(const PeerIdentity * sender,
-			   const p2p_HEADER * message) {
-  p2p_HEADER * reply;
-  TBENCH_p2p_MESSAGE * msg;
+			   const P2P_MESSAGE_HEADER * message) {
+  P2P_MESSAGE_HEADER * reply;
+  P2P_tbench_MESSAGE * msg;
 
-  if ( ntohs(message->size) < sizeof(TBENCH_p2p_MESSAGE)) {
+  if ( ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  msg = (TBENCH_p2p_MESSAGE*) message;
+  msg = (P2P_tbench_MESSAGE*) message;
   if (crc32N(&msg[1],
-	     ntohs(message->size) - sizeof(TBENCH_p2p_MESSAGE))
+	     ntohs(message->size) - sizeof(P2P_tbench_MESSAGE))
       != ntohl(msg->crc)) {
     BREAK();
     return SYSERR;
@@ -155,7 +155,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
   memcpy(reply,
 	 message,
 	 ntohs(message->size));
-  reply->type = htons(TBENCH_p2p_PROTO_REPLY);
+  reply->type = htons(P2P_PROTO_tbench_REPLY);
   coreAPI->unicast(sender,
 		   reply,
 		   ntohl(msg->priority), /* medium importance */
@@ -168,16 +168,16 @@ static int handleTBenchReq(const PeerIdentity * sender,
  * We received a tbench-reply.  Check and count stats.
  */
 static int handleTBenchReply(const PeerIdentity * sender,
-			     const p2p_HEADER * message) {
-  TBENCH_p2p_MESSAGE * pmsg;
+			     const P2P_MESSAGE_HEADER * message) {
+  P2P_tbench_MESSAGE * pmsg;
 
-  if (ntohs(message->size) < sizeof(TBENCH_p2p_MESSAGE)) {
+  if (ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  pmsg = (TBENCH_p2p_MESSAGE*) message;
+  pmsg = (P2P_tbench_MESSAGE*) message;
   if (crc32N(&pmsg[1],
-	     ntohs(message->size) - sizeof(TBENCH_p2p_MESSAGE))
+	     ntohs(message->size) - sizeof(P2P_tbench_MESSAGE))
       != ntohl(pmsg->crc)) {
     BREAK();
     return SYSERR;
@@ -223,10 +223,10 @@ static void semaUp(Semaphore * sem) {
  * Handle client request (main function)
  */
 static int csHandleTBenchRequest(ClientHandle client,
-				 const CS_HEADER * message) {
-  TBENCH_CS_MESSAGE * msg;
-  TBENCH_CS_REPLY reply;
-  TBENCH_p2p_MESSAGE * p2p;
+				 const CS_MESSAGE_HEADER * message) {
+  CS_tbench_request_MESSAGE * msg;
+  CS_tbench_reply_MESSAGE reply;
+  P2P_tbench_MESSAGE * p2p;
   unsigned short size;
   unsigned int iteration;
   unsigned int packetNum;
@@ -248,12 +248,12 @@ static int csHandleTBenchRequest(ClientHandle client,
   unsigned int msgCnt;
   unsigned int iterations;
 
-  if ( ntohs(message->size) != sizeof(TBENCH_CS_MESSAGE) )
+  if ( ntohs(message->size) != sizeof(CS_tbench_request_MESSAGE) )
     return SYSERR;
 
-  msg = (TBENCH_CS_MESSAGE*) message;
-  size = sizeof(TBENCH_p2p_MESSAGE) + ntohl(msg->msgSize);
-  if (size < sizeof(TBENCH_p2p_MESSAGE))
+  msg = (CS_tbench_request_MESSAGE*) message;
+  size = sizeof(P2P_tbench_MESSAGE) + ntohl(msg->msgSize);
+  if (size < sizeof(P2P_tbench_MESSAGE))
     return SYSERR;
   delay = ntohll(msg->intPktSpace);
   iterations = ntohl(msg->iterations);
@@ -272,7 +272,7 @@ static int csHandleTBenchRequest(ClientHandle client,
 	 0,
 	 size);
   p2p->header.size = htons(size);
-  p2p->header.type = htons(TBENCH_p2p_PROTO_REQUEST);
+  p2p->header.type = htons(P2P_PROTO_tbench_REQUEST);
   p2p->priority = msg->priority;
 
   MUTEX_LOCK(&lock);
@@ -296,10 +296,10 @@ static int csHandleTBenchRequest(ClientHandle client,
       = htonl(currIteration);
     memset(&p2p[1],
 	   randomi(256),
-	   size - sizeof(TBENCH_p2p_MESSAGE));
+	   size - sizeof(P2P_tbench_MESSAGE));
     p2p->crc
       = htonl(crc32N(&p2p[1],
-		     size - sizeof(TBENCH_p2p_MESSAGE)));
+		     size - sizeof(P2P_tbench_MESSAGE)));
 
     MUTEX_UNLOCK(&lock); /* allow receiving */
 
@@ -408,8 +408,8 @@ static int csHandleTBenchRequest(ClientHandle client,
   }
 
   /* send collected stats back to client */
-  reply.header.size = htons(sizeof(TBENCH_CS_REPLY));
-  reply.header.type = htons(TBENCH_CS_PROTO_REPLY);
+  reply.header.size = htons(sizeof(CS_tbench_reply_MESSAGE));
+  reply.header.type = htons(CS_PROTO_tbench_REPLY);
   reply.max_loss = htonl(max_loss);
   reply.min_loss = htonl(min_loss);
   reply.mean_loss = ((float)sum_loss/(float)iterations);
@@ -433,13 +433,13 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
 
   MUTEX_CREATE(&lock);
   coreAPI = capi;
-  if (SYSERR == capi->registerHandler(TBENCH_p2p_PROTO_REPLY,
+  if (SYSERR == capi->registerHandler(P2P_PROTO_tbench_REPLY,
 				      &handleTBenchReply))
     ok = SYSERR;
-  if (SYSERR == capi->registerHandler(TBENCH_p2p_PROTO_REQUEST,
+  if (SYSERR == capi->registerHandler(P2P_PROTO_tbench_REQUEST,
 				      &handleTBenchReq))
     ok = SYSERR;
-  if (SYSERR == capi->registerClientHandler(TBENCH_CS_PROTO_REQUEST,
+  if (SYSERR == capi->registerClientHandler(CS_PROTO_tbench_REQUEST,
 					    &csHandleTBenchRequest))
     ok = SYSERR;
   setConfigurationString("ABOUT",
@@ -450,11 +450,11 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
 }
 
 void done_module_tbench() {
-  coreAPI->unregisterHandler(TBENCH_p2p_PROTO_REQUEST,
+  coreAPI->unregisterHandler(P2P_PROTO_tbench_REQUEST,
 			     &handleTBenchReq);
-  coreAPI->unregisterHandler(TBENCH_p2p_PROTO_REPLY,
+  coreAPI->unregisterHandler(P2P_PROTO_tbench_REPLY,
 			     &handleTBenchReply);
-  coreAPI->unregisterClientHandler(TBENCH_CS_PROTO_REQUEST,
+  coreAPI->unregisterClientHandler(CS_PROTO_tbench_REQUEST,
 				   &csHandleTBenchRequest);
   MUTEX_DESTROY(&lock);
   coreAPI = NULL;

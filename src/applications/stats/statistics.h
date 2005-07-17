@@ -33,7 +33,7 @@
  * numbers. If needed, several messages are used.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
   /**
    * For 64-bit alignment...
    */
@@ -45,14 +45,14 @@ typedef struct {
   /* number of statistical counters in this message */
   int statCounters;
 
-} STATS_CS_MESSAGE;
+} CS_stats_reply_MESSAGE;
 
 /**
- * Generic version of STATS_CS_MESSAGE with field for finding the end
+ * Generic version of CS_stats_reply_MESSAGE with field for finding the end
  * of the struct. Use the other version for allocation.
  */
 typedef struct {
-  STATS_CS_MESSAGE stats_cs_message;
+  CS_stats_reply_MESSAGE stats_cs_message;
 
   /* values[statCounters] */
   unsigned long long values[1];
@@ -62,14 +62,14 @@ typedef struct {
      last description is also terminated
      by a '\0'; again statCounters entries */
   /* char descriptions[0]; */
-} STATS_CS_MESSAGE_GENERIC;
+} CS_stats_reply_MESSAGE_GENERIC;
 
 /**
  * Query protocol supported message.  Contains the type of
  * the message we are requesting the status of.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * The type of the message (XX_CS_PROTO_XXXX)
@@ -85,6 +85,6 @@ typedef struct {
    */
   unsigned short handlerType;
 
-} STATS_CS_GET_MESSAGE_SUPPORTED;
+} CS_stats_get_supported_MESSAGE;
 
 #endif

@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -97,7 +98,7 @@ typedef struct {
 
 /**
  * Initial handshake message.  Note that the beginning
- * must match the CS_HEADER since we are using tcpio.
+ * must match the CS_MESSAGE_HEADER since we are using tcpio.
  */
 typedef struct {
   /**
@@ -514,7 +515,7 @@ static int readAndProcess(int i) {
   HTTPSession * httpSession;
   unsigned int len;
   int ret;
-  MessagePack * mp;
+  P2P_PACKET * mp;
 
   tsession = tsessions[i];
   if (SYSERR == httpAssociate(tsession))
@@ -634,7 +635,7 @@ static int readAndProcess(int i) {
   }
 
   /* Full normal message received; pass on to core! */
-  mp      = MALLOC(sizeof(MessagePack));
+  mp      = MALLOC(sizeof(P2P_PACKET));
   mp->sender = httpSession->sender;
   mp->tsession = tsession;
   GNUNET_ASSERT(httpSession->rbuff != NULL);
@@ -1049,21 +1050,21 @@ static int httpDirectSend(HTTPSession * httpSession,
 }
 
 /**
- * Verify that a HELO-Message is correct (a node
+ * Verify that a hello-Message is correct (a node
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
  * success.
- * @param helo the HELO message to verify
+ * @param helo the hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHelo(const HELO_Message * helo) {
+static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   HostAddress * haddr;
 
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (HostAddress*) &helo[1];
   if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
-       (ntohs(helo->header.size) != HELO_Message_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_HELO) ||
+       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
+       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (ntohs(helo->protocol) != HTTP_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(haddr->ip)) )
     return SYSERR; /* obviously invalid */
@@ -1072,14 +1073,14 @@ static int verifyHelo(const HELO_Message * helo) {
 }
 
 /**
- * Create a HELO-Message for the current node. The HELO is
+ * Create a hello-Message for the current node. The hello is
  * created without signature and without a timestamp. The
  * GNUnet core will sign the message and add an expiration time.
  *
- * @return HELO on success, NULL on error
+ * @return hello on success, NULL on error
  */
-static HELO_Message * createHELO() {
-  HELO_Message * msg;
+static P2P_hello_MESSAGE * createhello() {
+  P2P_hello_MESSAGE * msg;
   HostAddress * haddr;
   unsigned short port;
 
@@ -1089,8 +1090,8 @@ static HELO_Message * createHELO() {
 	"HTTP port is 0, will only send using HTTP.\n");
     return NULL; /* HTTP transport is configured SEND-only! */
   }
-  msg = (HELO_Message *) MALLOC(sizeof(HELO_Message) + sizeof(HostAddress));
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
+  msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
+  haddr = (HostAddress*) &msg[1];
 
   if (SYSERR == getPublicIPAddress(&haddr->ip)) {
     FREE(msg);
@@ -1112,11 +1113,11 @@ static HELO_Message * createHELO() {
 /**
  * Establish a connection to a remote node.
  *
- * @param helo the HELO-Message for the target node
+ * @param helo the hello-Message for the target node
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int httpConnect(const HELO_Message * helo,
+static int httpConnect(const P2P_hello_MESSAGE * helo,
 		       TSession ** tsessionPtr) {
   int i;
   HostAddress * haddr;
@@ -1128,7 +1129,7 @@ static int httpConnect(const HELO_Message * helo,
 
   if (http_shutdown == YES)
     return SYSERR;
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (HostAddress*) &helo[1];
 #if DEBUG_HTTP
   LOG(LOG_DEBUG,
       "Creating HTTP connection to %u.%u.%u.%u:%u.\n",
@@ -1228,7 +1229,7 @@ static int httpConnect(const HELO_Message * helo,
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the HELO_Message identifying the remote node
+ * @param tsession the P2P_hello_MESSAGE identifying the remote node
  * @param msg the message
  * @param size the size of the message
  * @return SYSERR on error, OK on success, NO if queue is full
@@ -1404,12 +1405,12 @@ static void reloadConfiguration() {
 /**
  * Convert HTTP address to a string.
  */
-static char * addressToString(const HELO_Message * helo) {
+static char * addressToString(const P2P_hello_MESSAGE * helo) {
   char * ret;
   HostAddress * haddr;
   size_t n;
 
-  haddr = (HostAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (HostAddress*) &helo[1];
   n = 4*4+6+16;
   ret = MALLOC(n);
   SNPRINTF(ret,
@@ -1479,7 +1480,7 @@ TransportAPI * inittransport_http(CoreAPIForTransport * core) {
   httpAPI.mtu                  = 0;
   httpAPI.cost                 = 20000; /* about equal to udp */
   httpAPI.verifyHelo           = &verifyHelo;
-  httpAPI.createHELO           = &createHELO;
+  httpAPI.createhello           = &createhello;
   httpAPI.connect              = &httpConnect;
   httpAPI.associate            = &httpAssociate;
   httpAPI.send                 = &httpSend;

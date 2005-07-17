@@ -30,7 +30,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_bootstrap_service.h"
 
-#define HELO_HELPER_TABLE_START_SIZE 64
+#define hello_HELPER_TABLE_START_SIZE 64
 
 static CoreAPIForApplication * coreAPI;
 
@@ -43,15 +43,15 @@ static int ptPID;
 static int abort_bootstrap = YES;
 
 typedef struct {
-  HELO_Message ** helos;
+  P2P_hello_MESSAGE ** helos;
   int helosCount;
   int helosLen;
-} HeloListClosure;
+} HelloListClosure;
 
-static void processHELOs(HeloListClosure * hcq) {
+static void processhellos(HelloListClosure * hcq) {
   int rndidx;
   int i;
-  HELO_Message * msg;
+  P2P_hello_MESSAGE * msg;
 
   if (NULL == hcq) {
     BREAK();
@@ -59,15 +59,15 @@ static void processHELOs(HeloListClosure * hcq) {
   }
   while ( (abort_bootstrap == NO) &&
 	  (hcq->helosCount > 0) ) {
-    /* select HELO by random */
+    /* select hello by random */
     rndidx = randomi(hcq->helosCount);
-#if DEBUG_HELOEXCHANGE
+#if DEBUG_helloEXCHANGE
     LOG(LOG_DEBUG,
-	"%s chose HELO %d of %d\n",
+	"%s chose hello %d of %d\n",
 	__FUNCTION__,
 	rndidx, hcq->helosCount);
 #endif
-    msg = (HELO_Message*) hcq->helos[rndidx];
+    msg = (P2P_hello_MESSAGE*) hcq->helos[rndidx];
     hcq->helos[rndidx]
       = hcq->helos[hcq->helosCount-1];
     GROW(hcq->helos,
@@ -76,7 +76,7 @@ static void processHELOs(HeloListClosure * hcq) {
 
     coreAPI->injectMessage(&msg->senderIdentity,
 			   (char*)msg,
-			   HELO_Message_size(msg),
+			   P2P_hello_MESSAGE_size(msg),
 			   NO,
 			   NULL);
     FREE(msg);
@@ -104,17 +104,17 @@ static void processHELOs(HeloListClosure * hcq) {
        0);
 }
 
-static void downloadHostlistCallback(const HELO_Message * helo,
-				     HeloListClosure * cls) {
+static void downloadHostlistCallback(const P2P_hello_MESSAGE * helo,
+				     HelloListClosure * cls) {
   if (cls->helosCount >= cls->helosLen) {
     GROW(cls->helos,
 	 cls->helosLen,
-	 cls->helosLen + HELO_HELPER_TABLE_START_SIZE);
+	 cls->helosLen + hello_HELPER_TABLE_START_SIZE);
   }
-  cls->helos[cls->helosCount++] = MALLOC(HELO_Message_size(helo));
+  cls->helos[cls->helosCount++] = MALLOC(P2P_hello_MESSAGE_size(helo));
   memcpy(cls->helos[cls->helosCount-1],
 	 helo,
-	 HELO_Message_size(helo));
+	 P2P_hello_MESSAGE_size(helo));
 }
 
 #define BOOTSTRAP_INFO "bootstrap-info"
@@ -166,7 +166,7 @@ static int needBootstrap() {
 }
 
 static void processThread(void * unused) {
-  HeloListClosure cls;
+  HelloListClosure cls;
 
   ptPID = getpid();
   cls.helos = NULL;
@@ -180,12 +180,12 @@ static void processThread(void * unused) {
       break;
     cls.helosLen = 0;
     cls.helosCount = 0;
-    bootstrap->bootstrap((HELO_Callback)&downloadHostlistCallback,
+    bootstrap->bootstrap((hello_Callback)&downloadHostlistCallback,
 			 &cls);
     GROW(cls.helos,
 	 cls.helosLen,
 	 cls.helosCount);
-    processHELOs(&cls);
+    processhellos(&cls);
   }
   ptPID = 0;
 }

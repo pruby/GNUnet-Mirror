@@ -52,8 +52,8 @@ typedef struct {
   char	* ips;
   /** socket to communicate with the peer */
   GNUNET_TCP_SOCKET sock;
-  /** HELO message identifying the peer in the network */
-  HELO_Message * helo;
+  /** hello message identifying the peer in the network */
+  P2P_hello_MESSAGE * helo;
   /** if we're using ssh, what is the PID of the
       ssh process? (-1 for unencrypted direct connections) */
   pid_t ssh;
@@ -119,7 +119,7 @@ static int sendMessage(unsigned msgType,
   msg->header.size
     = htons(msgsz);
   msg->header.type
-    = htons(TESTBED_CS_PROTO_REQUEST);
+    = htons(CS_PROTO_testbed_REQUEST);
   msg->msgType
     = htonl(msgType);
   memcpy(&((TESTBED_CS_MESSAGE_GENERIC*)msg)->data[0],
@@ -162,8 +162,8 @@ static int readResult(int peer,
  */
 static int addNode(int argc, char * argv[]) {
   int currindex;
-  TESTBED_HELO_MESSAGE * hdr;
-  TESTBED_GET_HELO_MESSAGE req;
+  TESTBED_hello_MESSAGE * hdr;
+  TESTBED_GET_hello_MESSAGE req;
   int port;
   int i;
 
@@ -205,10 +205,10 @@ static int addNode(int argc, char * argv[]) {
     return -1;
   }
 
-  /* request HELO */
-  if (OK != sendMessage(TESTBED_GET_HELO,
+  /* request hello */
+  if (OK != sendMessage(TESTBED_GET_hello,
 			currindex,
-			sizeof(TESTBED_GET_HELO_MESSAGE)-sizeof(TESTBED_CS_MESSAGE),
+			sizeof(TESTBED_GET_hello_MESSAGE)-sizeof(TESTBED_CS_MESSAGE),
 			&req.proto)) {
     /* send message already printed an error message */
     destroySocket(&nodes[currindex].sock);
@@ -221,7 +221,7 @@ static int addNode(int argc, char * argv[]) {
 
   hdr = NULL;
   if (SYSERR == readFromSocket(&nodes[currindex].sock,
-			       (CS_HEADER**)&hdr)) {
+			       (CS_MESSAGE_HEADER**)&hdr)) {
     XPRINTF(" peer %s is not responding.\n",
 	   nodes[currindex].ips);
     destroySocket(&nodes[currindex].sock);
@@ -229,20 +229,20 @@ static int addNode(int argc, char * argv[]) {
     GROW(nodes, nnodes, nnodes-1);
     return -1;
   }
-  if ( (ntohs(hdr->header.header.type) == TESTBED_CS_PROTO_REPLY) &&
-       (ntohs(hdr->header.header.size) >= sizeof(TESTBED_HELO_MESSAGE)) &&
-       (ntohl(hdr->header.msgType) == TESTBED_HELO_RESPONSE) &&
-       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) >= sizeof(HELO_Message)) &&
-       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) == HELO_Message_size(&hdr->helo)) ) {
+  if ( (ntohs(hdr->header.header.type) == CS_PROTO_testbed_REPLY) &&
+       (ntohs(hdr->header.header.size) >= sizeof(TESTBED_hello_MESSAGE)) &&
+       (ntohl(hdr->header.msgType) == TESTBED_hello_RESPONSE) &&
+       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) >= sizeof(P2P_hello_MESSAGE)) &&
+       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) == P2P_hello_MESSAGE_size(&hdr->helo)) ) {
     nodes[currindex].helo
-      = MALLOC(HELO_Message_size(&hdr->helo));
+      = MALLOC(P2P_hello_MESSAGE_size(&hdr->helo));
     memcpy(nodes[currindex].helo,
 	   &hdr->helo,
-	   HELO_Message_size(&hdr->helo));
+	   P2P_hello_MESSAGE_size(&hdr->helo));
   } else {
     FREE(hdr);
     destroySocket(&nodes[currindex].sock);
-    XPRINTF(" peer %s did not respond with proper HELO.\n",
+    XPRINTF(" peer %s did not respond with proper hello.\n",
 	   nodes[currindex].ips);
     FREE(nodes[currindex].ips);
     GROW(nodes, nnodes, nnodes-1);
@@ -263,8 +263,8 @@ static int addNode(int argc, char * argv[]) {
  */
 static int addSshNode(int argc, char * argv[]) {
   int currindex;
-  TESTBED_HELO_MESSAGE * hdr;
-  TESTBED_GET_HELO_MESSAGE req;
+  TESTBED_hello_MESSAGE * hdr;
+  TESTBED_GET_hello_MESSAGE req;
   int port;
   int i;
   pid_t pid;
@@ -396,10 +396,10 @@ static int addSshNode(int argc, char * argv[]) {
     return -1;
   }
 
-  /* request HELO */
-  if (OK != sendMessage(TESTBED_GET_HELO,
+  /* request hello */
+  if (OK != sendMessage(TESTBED_GET_hello,
 			currindex,
-			sizeof(TESTBED_GET_HELO_MESSAGE)-sizeof(TESTBED_CS_MESSAGE),
+			sizeof(TESTBED_GET_hello_MESSAGE)-sizeof(TESTBED_CS_MESSAGE),
 			&req.proto)) {
     /* send message already printed an error message */
     destroySocket(&nodes[currindex].sock);
@@ -418,7 +418,7 @@ static int addSshNode(int argc, char * argv[]) {
 
   hdr = NULL;
   if (SYSERR == readFromSocket(&nodes[currindex].sock,
-			       (CS_HEADER**)&hdr)) {
+			       (CS_MESSAGE_HEADER**)&hdr)) {
     XPRINTF(" peer %s is not responding.\n",
 	   nodes[currindex].ips);
     destroySocket(&nodes[currindex].sock);
@@ -432,20 +432,20 @@ static int addSshNode(int argc, char * argv[]) {
     GROW(nodes, nnodes, nnodes-1);
     return -1;
   }
-  if ( (ntohs(hdr->header.header.type) == TESTBED_CS_PROTO_REPLY) &&
-       (ntohs(hdr->header.header.size) >= sizeof(TESTBED_HELO_MESSAGE)) &&
-       (ntohl(hdr->header.msgType) == TESTBED_HELO_RESPONSE) &&
-       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) >= sizeof(HELO_Message)) &&
-       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) == HELO_Message_size(&hdr->helo)) ) {
+  if ( (ntohs(hdr->header.header.type) == CS_PROTO_testbed_REPLY) &&
+       (ntohs(hdr->header.header.size) >= sizeof(TESTBED_hello_MESSAGE)) &&
+       (ntohl(hdr->header.msgType) == TESTBED_hello_RESPONSE) &&
+       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) >= sizeof(P2P_hello_MESSAGE)) &&
+       (ntohs(hdr->header.header.size) - sizeof(TESTBED_CS_MESSAGE) == P2P_hello_MESSAGE_size(&hdr->helo)) ) {
     nodes[currindex].helo
-      = MALLOC(HELO_Message_size(&hdr->helo));
+      = MALLOC(P2P_hello_MESSAGE_size(&hdr->helo));
     memcpy(nodes[currindex].helo,
 	   &hdr->helo,
-	   HELO_Message_size(&hdr->helo));
+	   P2P_hello_MESSAGE_size(&hdr->helo));
   } else {
     FREE(hdr);
     destroySocket(&nodes[currindex].sock);
-    XPRINTF(" peer %s did not respond with proper HELO.\n",
+    XPRINTF(" peer %s did not respond with proper hello.\n",
 	   nodes[currindex].ips);
     FREE(nodes[currindex].ips);
     /* fixme: check error conditions on kill/waidpid! */
@@ -536,7 +536,7 @@ static int addConnection(int argc,
   CHECK_SRC_DST(src, dst, argv[0], argv[1]);
   if (SYSERR == sendMessage(TESTBED_ADD_PEER,
 			    src,
-			    HELO_Message_size(nodes[dst].helo),
+			    P2P_hello_MESSAGE_size(nodes[dst].helo),
 			    nodes[dst].helo))
     return -1;
   if (OK != readResult(src,
@@ -615,9 +615,9 @@ static int getTrust(int argc, char *argv[]) {
 }
 
 /**
- * Disable HELO at a peer.
+ * Disable hello at a peer.
  */
-static int disableHELO(int argc, char *argv[]) {
+static int disablehello(int argc, char *argv[]) {
   int dst, value;
 
   if (argc != 1) {
@@ -625,7 +625,7 @@ static int disableHELO(int argc, char *argv[]) {
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
-  if (SYSERR == sendMessage(TESTBED_DISABLE_HELO,
+  if (SYSERR == sendMessage(TESTBED_DISABLE_hello,
 			    dst,
 			    0,
 			    NULL))
@@ -633,7 +633,7 @@ static int disableHELO(int argc, char *argv[]) {
   if (SYSERR == readResult(dst, &value))
     return -1;
   if (value != OK) {
-    XPRINTF(" could disable HELO\n");
+    XPRINTF(" could disable hello\n");
     return -1;
   } else {
     XPRINTF("OK.\n");
@@ -642,9 +642,9 @@ static int disableHELO(int argc, char *argv[]) {
 }
 
 /**
- * Enable HELO at a peer.
+ * Enable hello at a peer.
  */
-static int enableHELO(int argc, char *argv[]) {
+static int enablehello(int argc, char *argv[]) {
   int dst, value;
 
   if (argc != 1) {
@@ -652,7 +652,7 @@ static int enableHELO(int argc, char *argv[]) {
     return -1;
   }
   CHECK_PEER(dst, argv[0]);
-  if (SYSERR == sendMessage(TESTBED_ENABLE_HELO,
+  if (SYSERR == sendMessage(TESTBED_ENABLE_hello,
 			    dst,
 			    0,
 			    NULL))
@@ -660,7 +660,7 @@ static int enableHELO(int argc, char *argv[]) {
   if (SYSERR == readResult(dst, &value))
     return -1;
   if (value != OK) {
-    XPRINTF(" could enable HELO\n");
+    XPRINTF(" could enable hello\n");
     return -1;
   } else {
     XPRINTF("OK.\n");
@@ -971,7 +971,7 @@ static int dumpProcessOutput(int argc,
 
       reply = NULL;
       if (SYSERR == readFromSocket(&nodes[dst].sock,
-				   (CS_HEADER**)&reply)) {
+				   (CS_MESSAGE_HEADER**)&reply)) {
 	XPRINTF(" peer %s is not responding after %d of %d bytes.\n",
 	       nodes[dst].ips,
 	       pos,
@@ -1250,7 +1250,7 @@ static int uploadFile(int argc,
   msg->header.header.size
     = htons(sizeof(TESTBED_UPLOAD_FILE_MESSAGE)+flen);
   msg->header.header.type
-    = htons(TESTBED_CS_PROTO_REQUEST);
+    = htons(CS_PROTO_testbed_REQUEST);
   msg->header.msgType
     = htonl(TESTBED_UPLOAD_FILE);
   msg->type
@@ -1760,11 +1760,11 @@ CMD_ENTRY commands[] = {
     "destroy all connections between peers",
     &delAllConnections },
   { "helo-disable",
-    "disable HELO advertisements",
-    &disableHELO },
+    "disable hello advertisements",
+    &disablehello },
   { "helo-enable",
-    "enable HELO advertisements",
-    &enableHELO },
+    "enable hello advertisements",
+    &enablehello },
   { "autoconnect-disable", "", &disableAUTOCONNECT },
   { "autoconnect-enable", "", &enableAUTOCONNECT },
   { "process-start",

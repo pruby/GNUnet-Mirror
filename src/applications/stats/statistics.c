@@ -230,17 +230,17 @@ static void immediateUpdates() {
  * @param originalRequestMessage ignored at this point.
  */
 static int sendStatistics(ClientHandle sock,
-			  const CS_HEADER * originalRequestMessage) {
-  STATS_CS_MESSAGE * statMsg;
+			  const CS_MESSAGE_HEADER * originalRequestMessage) {
+  CS_stats_reply_MESSAGE * statMsg;
   int pos; /* position in the values-descriptions */
   int start;
   int end;
   int mpos; /* postion in the message */
 
   immediateUpdates();
-  statMsg = (STATS_CS_MESSAGE*)MALLOC(MAX_BUFFER_SIZE);
+  statMsg = (CS_stats_reply_MESSAGE*)MALLOC(MAX_BUFFER_SIZE);
   statMsg->header.type
-    = htons(STATS_CS_PROTO_STATISTICS);
+    = htons(CS_PROTO_stats_STATISTICS);
   statMsg->totalCounters
     = htonl(statCounters);
   statMsg->statCounters
@@ -257,7 +257,7 @@ static int sendStatistics(ClientHandle sock,
     while ( (pos < statCounters) &&
 	    (mpos + sizeof(unsigned long long)
 	     + strlen(descriptions[pos]) + 1
-	     < MAX_BUFFER_SIZE - sizeof(STATS_CS_MESSAGE)) ) {
+	     < MAX_BUFFER_SIZE - sizeof(CS_stats_reply_MESSAGE)) ) {
       mpos += sizeof(unsigned long long); /* value */
       mpos += strlen(descriptions[pos])+1;
       pos++;
@@ -265,17 +265,17 @@ static int sendStatistics(ClientHandle sock,
     end = pos;
     /* second pass: copy values and messages to message */
     for (pos=start;pos<end;pos++)
-      ((STATS_CS_MESSAGE_GENERIC*)statMsg)->values[pos-start] = htonll(values[pos]);
+      ((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values[pos-start] = htonll(values[pos]);
     mpos = sizeof(unsigned long long) * (end - start);
     for (pos=start;pos<end;pos++) {
-      strcpy(&((char*)(((STATS_CS_MESSAGE_GENERIC*)statMsg))->values)[mpos],
+      strcpy(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg))->values)[mpos],
 	     descriptions[pos]);
       mpos += strlen(descriptions[pos])+1;
     }
     statMsg->statCounters = htonl(end - start);
-    GNUNET_ASSERT(mpos + sizeof(STATS_CS_MESSAGE) < MAX_BUFFER_SIZE);
+    GNUNET_ASSERT(mpos + sizeof(CS_stats_reply_MESSAGE) < MAX_BUFFER_SIZE);
 
-    statMsg->header.size = htons(mpos + sizeof(STATS_CS_MESSAGE));
+    statMsg->header.size = htons(mpos + sizeof(CS_stats_reply_MESSAGE));
     /* printf("writing message of size %d with stats %d to %d out of %d to socket\n",
        ntohs(statMsg->header.size),
        start, end, statCounters);*/
@@ -292,17 +292,17 @@ static int sendStatistics(ClientHandle sock,
  * Handle a request to see if a particular p2p message is supported.
  */
 static int handlep2pMessageSupported(ClientHandle sock,
-				     const CS_HEADER * message) {
+				     const CS_MESSAGE_HEADER * message) {
   unsigned short type;
   unsigned short htype;
   int supported;
-  STATS_CS_GET_MESSAGE_SUPPORTED * cmsg;
+  CS_stats_get_supported_MESSAGE * cmsg;
 
-  if (ntohs(message->size) != sizeof(STATS_CS_GET_MESSAGE_SUPPORTED)) {
+  if (ntohs(message->size) != sizeof(CS_stats_get_supported_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  cmsg = (STATS_CS_GET_MESSAGE_SUPPORTED *) message;
+  cmsg = (CS_stats_get_supported_MESSAGE *) message;
   type = ntohs(cmsg->type);
   htype = ntohs(cmsg->handlerType);
   supported = coreAPI->isHandlerRegistered(type, htype);
@@ -318,8 +318,8 @@ static int handlep2pMessageSupported(ClientHandle sock,
  * @returns OK if ok, SYSERR if not.
  */
 static int processGetConnectionCountRequest(ClientHandle client,
-					    const CS_HEADER * msg) {
-  if (ntohs(msg->size) != sizeof(CS_HEADER)) {
+					    const CS_MESSAGE_HEADER * msg) {
+  if (ntohs(msg->size) != sizeof(CS_MESSAGE_HEADER)) {
     BREAK();
     return SYSERR;
   }
@@ -332,7 +332,7 @@ static int processGetConnectionCountRequest(ClientHandle client,
  * Handler for processing noise.
  */
 static int processNoise(const PeerIdentity * sender,
-			const p2p_HEADER * msg) {
+			const P2P_MESSAGE_HEADER * msg) {
   statChange(stat_bytes_noise_received,
 	     ntohs(msg->size));
   return OK;
@@ -355,17 +355,17 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       "'%s' registering client handlers %d %d %d and p2p handler %d\n",
       "stats",
-      CS_PROTO_CLIENT_COUNT,
-      STATS_CS_PROTO_GET_STATISTICS,
-      STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED,
-      p2p_PROTO_NOISE);
-  capi->registerClientHandler(STATS_CS_PROTO_GET_STATISTICS,
+      CS_PROTO_traffic_COUNT,
+      CS_PROTO_stats_GET_STATISTICS,
+      CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
+      P2P_PROTO_noise);
+  capi->registerClientHandler(CS_PROTO_stats_GET_STATISTICS,
 			      &sendStatistics);
-  capi->registerClientHandler(STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED,
+  capi->registerClientHandler(CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
 			      &handlep2pMessageSupported);
-  capi->registerClientHandler(CS_PROTO_CLIENT_COUNT,
+  capi->registerClientHandler(CS_PROTO_traffic_COUNT,
 				&processGetConnectionCountRequest);
-  capi->registerHandler(p2p_PROTO_NOISE,
+  capi->registerHandler(P2P_PROTO_noise,
 			&processNoise);
   setConfigurationString("ABOUT",
 			 "stats",
@@ -375,13 +375,13 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
 
 int done_module_stats() {
   GNUNET_ASSERT(myCoreAPI != NULL);
-  coreAPI->unregisterClientHandler(STATS_CS_PROTO_GET_STATISTICS,
+  coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_STATISTICS,
 				   &sendStatistics);
-  coreAPI->unregisterClientHandler(STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED,
+  coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
 				   &handlep2pMessageSupported);
-  coreAPI->unregisterClientHandler(CS_PROTO_CLIENT_COUNT,
+  coreAPI->unregisterClientHandler(CS_PROTO_traffic_COUNT,
 				   &processGetConnectionCountRequest);
-  coreAPI->unregisterHandler(p2p_PROTO_NOISE,
+  coreAPI->unregisterHandler(P2P_PROTO_noise,
 			     &processNoise);
   myCoreAPI->releaseService(myApi);
   myApi = NULL;

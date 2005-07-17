@@ -66,7 +66,7 @@ static void tb_undefined(ClientHandle client,
  */
 static void tb_ADD_PEER(ClientHandle client,
 			TESTBED_CS_MESSAGE * msg) {
-  p2p_HEADER noise;
+  P2P_MESSAGE_HEADER noise;
   TESTBED_ADD_PEER_MESSAGE * hm
     = (TESTBED_ADD_PEER_MESSAGE*) msg;
 
@@ -79,7 +79,7 @@ static void tb_ADD_PEER(ClientHandle client,
 	"ADD_PEER");
     return;
   }
-  if (HELO_Message_size(&hm->helo) !=
+  if (P2P_hello_MESSAGE_size(&hm->helo) !=
       ntohs(msg->header.size) - sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_ERROR,
 	_("size of '%s' message is wrong. Ignoring.\n"),
@@ -88,8 +88,8 @@ static void tb_ADD_PEER(ClientHandle client,
   }
 
   identity->addHost(&hm->helo);
-  noise.size = htons(sizeof(p2p_HEADER));
-  noise.type = htons(p2p_PROTO_NOISE);
+  noise.size = htons(sizeof(P2P_MESSAGE_HEADER));
+  noise.type = htons(P2P_PROTO_noise);
   coreAPI->unicast(&hm->helo.senderIdentity,
 		   &noise,
 		   EXTREME_PRIORITY,
@@ -122,11 +122,11 @@ static void tb_DEL_ALL_PEERS(ClientHandle client,
 }
 
 /**
- * Get a HELO message for this peer.
+ * Get a hello message for this peer.
  */
-static void tb_GET_HELO(ClientHandle client,
-			TESTBED_GET_HELO_MESSAGE * msg) {
-  HELO_Message * helo;
+static void tb_GET_hello(ClientHandle client,
+			TESTBED_GET_hello_MESSAGE * msg) {
+  P2P_hello_MESSAGE * helo;
   unsigned int proto = ntohs(msg->proto);
 
   helo = identity->identity2Helo(coreAPI->myIdentity,
@@ -134,18 +134,18 @@ static void tb_GET_HELO(ClientHandle client,
 				 NO);
   if (NULL == helo) {
     LOG(LOG_WARNING,
-	_("TESTBED could not generate HELO message for protocol %u\n"),
+	_("TESTBED could not generate hello message for protocol %u\n"),
 	proto);
     sendAcknowledgement(client, SYSERR);
   } else {
-    TESTBED_HELO_MESSAGE * reply
+    TESTBED_hello_MESSAGE * reply
       = MALLOC(ntohs(helo->header.size) + sizeof(TESTBED_CS_MESSAGE));
     reply->header.header.size
       = htons(ntohs(helo->header.size) + sizeof(TESTBED_CS_MESSAGE));
     reply->header.header.type
-      = htons(TESTBED_CS_PROTO_REPLY);
+      = htons(CS_PROTO_testbed_REPLY);
     reply->header.msgType
-      = htonl(TESTBED_HELO_RESPONSE);
+      = htonl(TESTBED_hello_RESPONSE);
     memcpy(&reply->helo,
 	   helo,
 	   ntohs(helo->header.size));
@@ -313,13 +313,13 @@ static void tb_ENABLE_AUTOCONNECT(ClientHandle client,
  * peer (by making it drop a certain percentage of the messages at
  * random).
  */
-static void tb_DISABLE_HELO(ClientHandle client,
-			    TESTBED_DISABLE_HELO_MESSAGE * msg) {
+static void tb_DISABLE_hello(ClientHandle client,
+			    TESTBED_DISABLE_hello_MESSAGE * msg) {
   FREENONNULL(setConfigurationString("NETWORK",
 				     "DISABLE-ADVERTISEMENTS",
 				     "YES"));
   FREENONNULL(setConfigurationString("NETWORK",
-				     "HELOEXCHANGE",
+				     "helloEXCHANGE",
 				     "NO"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
@@ -330,13 +330,13 @@ static void tb_DISABLE_HELO(ClientHandle client,
  * peer (by making it drop a certain percentage of the messages at
  * random).
  */
-static void tb_ENABLE_HELO(ClientHandle client,
-			   TESTBED_ENABLE_HELO_MESSAGE * msg) {
+static void tb_ENABLE_hello(ClientHandle client,
+			   TESTBED_ENABLE_hello_MESSAGE * msg) {
   FREENONNULL(setConfigurationString("NETWORK",
 				     "DISABLE-ADVERTISEMENTS",
 				     "NO"));
   FREENONNULL(setConfigurationString("NETWORK",
-				     "HELOEXCHANGE",
+				     "helloEXCHANGE",
 				     "YES"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
@@ -756,7 +756,7 @@ static void tb_GET_OUTPUT(ClientHandle client,
 
       msg = MALLOC(65532);
       msg->header.header.type
-	= htons(TESTBED_CS_PROTO_REPLY);
+	= htons(CS_PROTO_testbed_REPLY);
       msg->header.msgType
 	= htonl(TESTBED_OUTPUT_RESPONSE);
 
@@ -938,10 +938,10 @@ typedef struct HD_ {
  */
 static HD handlers[] = {
   TBSENTRY(undefined),	/* For IDs that should never be received */
-  TBDENTRY(ADD_PEER),	/* RF: Why was this as TBDENTRY? Because HELO is variable size! */
+  TBDENTRY(ADD_PEER),	/* RF: Why was this as TBDENTRY? Because hello is variable size! */
   TBSENTRY(DEL_PEER),
   TBSENTRY(DEL_ALL_PEERS),
-  TBSENTRY(GET_HELO),
+  TBSENTRY(GET_hello),
   TBSENTRY(SET_TVALUE),
   TBSENTRY(GET_TVALUE),
   TBSENTRY(undefined),
@@ -949,8 +949,8 @@ static HD handlers[] = {
   TBDENTRY(LOAD_MODULE),
   TBDENTRY(UNLOAD_MODULE),
   TBDENTRY(UPLOAD_FILE),
-  TBSENTRY(DISABLE_HELO),
-  TBSENTRY(ENABLE_HELO),
+  TBSENTRY(DISABLE_hello),
+  TBSENTRY(ENABLE_hello),
   TBSENTRY(DISABLE_AUTOCONNECT),
   TBSENTRY(ENABLE_AUTOCONNECT),
   TBDENTRY(ALLOW_CONNECT),
@@ -970,7 +970,7 @@ static HD handlers[] = {
  * on the testbed-message type.
  */
 static void csHandleTestbedRequest(ClientHandle client,
-				   CS_HEADER * message) {
+				   CS_MESSAGE_HEADER * message) {
   TESTBED_CS_MESSAGE * msg;
   unsigned short size;
   unsigned int id;
@@ -1268,7 +1268,7 @@ static void httpRegister(char * cmd) {
     LOG(LOG_WARNING,
 	_("Exit register (error: no http response read).\n"));
   }
-#if DEBUG_HELOEXCHANGE
+#if DEBUG_helloEXCHANGE
   LOG(LOG_INFO,
       "Exit register (%d seconds before timeout)\n",
       (int)(start + 300 * cronSECONDS - cronTime(NULL))/cronSECONDS);
@@ -1346,10 +1346,10 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   MUTEX_CREATE(&lock);
   LOG(LOG_DEBUG,
       "TESTBED registering handler %d!\n",
-      TESTBED_CS_PROTO_REQUEST);
+      CS_PROTO_testbed_REQUEST);
   coreAPI = capi;
   GNUNET_ASSERT(SYSERR != capi->registerClientExitHandler(&testbedClientExitHandler));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(TESTBED_CS_PROTO_REQUEST,
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_testbed_REQUEST,
 						      (CSHandler)&csHandleTestbedRequest));
   httpRegister("startup");
   setConfigurationString("ABOUT",
@@ -1386,8 +1386,8 @@ void done_module_testbed() {
   MUTEX_DESTROY(&lock);
   LOG(LOG_DEBUG,
       "TESTBED unregistering handler %d\n",
-      TESTBED_CS_PROTO_REQUEST);
-  coreAPI->unregisterClientHandler(TESTBED_CS_PROTO_REQUEST,
+      CS_PROTO_testbed_REQUEST);
+  coreAPI->unregisterClientHandler(CS_PROTO_testbed_REQUEST,
 				   (CSHandler)&csHandleTestbedRequest);
   coreAPI->unregisterClientExitHandler(&testbedClientExitHandler);
   coreAPI->releaseService(identity);

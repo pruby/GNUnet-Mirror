@@ -48,13 +48,13 @@ static int runTest() {
   PeerIdentity pid;
   const PublicKey * pkey;
   Signature sig;
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
 
   transport = requestService("transport");
   identity = requestService("identity");
-  helo = transport->createHELO(ANY_PROTOCOL_NUMBER);
+  helo = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == helo) {
-    printf("Cannot run test, failed to create any HELO.\n");
+    printf("Cannot run test, failed to create any hello.\n");
     releaseService(identity);
     releaseService(transport);
     return OK;
@@ -94,7 +94,7 @@ static int runTest() {
 			 pkey));
 
   /* to test:
-     HELO verification, temporary storage,
+     hello verification, temporary storage,
      permanent storage, blacklisting, etc. */
   releaseService(identity);
   releaseService(transport);

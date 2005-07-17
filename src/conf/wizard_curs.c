@@ -516,7 +516,7 @@ int wizard_curs_main(int argc, char *argv[])
 		if (!isOSUserAddCapable(group_name, user_name))
 			showCursErr(_("Unable to create user account:"), STRERROR(errno));
 	
-	if (!isOSAutostartCapable(autostart, user_name, group_name))
+	if (!isOSAutostartCapable())
 		showCursErr(_("Unable to change startup process:"), STRERROR(errno));
 
 	init_dialog();

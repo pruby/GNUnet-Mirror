@@ -38,7 +38,7 @@ static int forAllConnectedNodes(PerNodeCallback method,
 }
 
 static void sendToNode(const PeerIdentity * hostId,
-		       const p2p_HEADER * message,
+		       const P2P_MESSAGE_HEADER * message,
 		       unsigned int priority,
 		       unsigned int maxdelay) {
 }

@@ -402,7 +402,7 @@ static void agePeerStats(void * unused) {
  * Ensure replies and requests have different IDs when dealing
  * with the same peer.
  */
-#define MINGLE(a,b) (((b) == RPC_p2p_PROTO_RES) ? (a) : (a) ^ 0x12345678)
+#define MINGLE(a,b) (((b) == P2P_PROTO_rpc_RES) ? (a) : (a) ^ 0x12345678)
 
 /**
  * Notification: we sent a message to the peer.
@@ -488,23 +488,23 @@ static void notifyPeerReply(const PeerIdentity * peer,
  * indicate the number of return values.
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
   TIME_T timestamp;
   unsigned int sequenceNumber;
   unsigned int importance;
   unsigned short argumentCount;
   unsigned short functionNameLength;
-} RPC_Message;
+} P2P_rpc_MESSAGE;
 
 
 typedef struct {
-  RPC_Message rpc_message;
+  P2P_rpc_MESSAGE rpc_message;
   /**
    * functionNameLength characters describing the function name
    * followed by a serialization of argumentCount arguments.
    */
   char data[1];
-} RPC_Message_GENERIC;
+} P2P_rpc_MESSAGE_GENERIC;
 
 
 /**
@@ -514,7 +514,7 @@ typedef struct {
  * times out).
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
   /**
    * The number of the original request for which this is the
    * ACK.
@@ -553,7 +553,7 @@ typedef struct CallInstance {
    * The message we are transmitting (either the request or the
    * reply).
    */
-  RPC_Message * msg;
+  P2P_rpc_MESSAGE * msg;
 
   /**
    * Time where this record times out (timeout value for original
@@ -668,12 +668,12 @@ static void retryRPCJob(CallInstance * call) {
 			MINGLE(call->sequenceNumber,
 			       ntohs(call->msg->header.type)));
 #if DEBUG_RPC
-      if (ntohs(call->msg->header.type) == RPC_p2p_PROTO_REQ) {
+      if (ntohs(call->msg->header.type) == P2P_PROTO_rpc_REQ) {
 	LOG(LOG_DEBUG,
 	    "Sending RPC request %p: '%.*s' (expires in %llums, last attempt %llums ago; attempt %u).\n",
 	    call,
 	    ntohs(call->msg->functionNameLength),
-	    &((RPC_Message_GENERIC*)call->msg)->data[0],
+	    &((P2P_rpc_MESSAGE_GENERIC*)call->msg)->data[0],
 	    call->expirationTime - now,
 	    now - call->lastAttempt,
 	    call->attempts);
@@ -713,7 +713,7 @@ static void sendAck(const PeerIdentity * receiver,
   RPC_ACK_Message msg;
 
   msg.header.size = htons(sizeof(RPC_ACK_Message));
-  msg.header.type = htons(RPC_p2p_PROTO_ACK);
+  msg.header.type = htons(P2P_PROTO_rpc_ACK);
   msg.sequenceNumber = htonl(sequenceNumber);
   coreAPI->unicast(receiver,
 		   &msg.header,
@@ -721,33 +721,33 @@ static void sendAck(const PeerIdentity * receiver,
 		   maxDelay);
 }
 
-static char * getFunctionName(RPC_Message * req) {
+static char * getFunctionName(P2P_rpc_MESSAGE * req) {
   char * ret;
   unsigned short slen;
 
   slen = ntohs(req->functionNameLength);
-  if (ntohs(req->header.size) < sizeof(RPC_Message) + slen)
+  if (ntohs(req->header.size) < sizeof(P2P_rpc_MESSAGE) + slen)
     return NULL; /* invalid! */
   ret = MALLOC(slen+1);
   memcpy(ret,
-	 &((RPC_Message_GENERIC*)req)->data[0],
+	 &((P2P_rpc_MESSAGE_GENERIC*)req)->data[0],
 	 slen);
   ret[slen] = '\0';
   return ret;
 }
 
-static RPC_Param * deserializeArguments(RPC_Message * req) {
+static RPC_Param * deserializeArguments(P2P_rpc_MESSAGE * req) {
   unsigned short slen;
   RPC_Param * ret;
 
-  if (ntohs(req->header.type) == RPC_p2p_PROTO_REQ)
+  if (ntohs(req->header.type) == P2P_PROTO_rpc_REQ)
     slen = ntohs(req->functionNameLength);
   else
     slen = 0;
-  if (ntohs(req->header.size) < sizeof(RPC_Message) + slen)
+  if (ntohs(req->header.size) < sizeof(P2P_rpc_MESSAGE) + slen)
     return NULL;  /* invalid! */
-  ret = RPC_paramDeserialize(&((RPC_Message_GENERIC*)req)->data[slen],
-			     ntohs(req->header.size) - sizeof(RPC_Message) - slen);
+  ret = RPC_paramDeserialize(&((P2P_rpc_MESSAGE_GENERIC*)req)->data[slen],
+			     ntohs(req->header.size) - sizeof(P2P_rpc_MESSAGE) - slen);
   if (RPC_paramCount(ret) != ntohs(req->argumentCount)) {
     RPC_paramFree(ret);
     return NULL; /* invalid! */
@@ -765,13 +765,13 @@ static RPC_Param * deserializeArguments(RPC_Message * req) {
  * @param values the arguments or return values, maybe NULL
  * @return the RPC message to transmit, caller must free
  */
-static RPC_Message * buildMessage(unsigned short errorCode,
+static P2P_rpc_MESSAGE * buildMessage(unsigned short errorCode,
 				  const char * name,
 				  unsigned int sequenceNumber,
 				  unsigned int importance,
 				  RPC_Param * values) {
-  RPC_Message * ret;
-  size_t size = sizeof(RPC_Message);
+  P2P_rpc_MESSAGE * ret;
+  size_t size = sizeof(P2P_rpc_MESSAGE);
   int slen;
 
   if (name != NULL) {
@@ -794,17 +794,17 @@ static RPC_Message * buildMessage(unsigned short errorCode,
     ret->functionNameLength = htons(slen);
   ret->argumentCount = htons(RPC_paramCount(values));
   if (name != NULL) {
-    memcpy(&((RPC_Message_GENERIC*)ret)->data[0],
+    memcpy(&((P2P_rpc_MESSAGE_GENERIC*)ret)->data[0],
 	   name,
 	   slen);
   }
   RPC_paramSerialize(values,
-		     &((RPC_Message_GENERIC*)ret)->data[slen]);
+		     &((P2P_rpc_MESSAGE_GENERIC*)ret)->data[slen]);
 
   if (name == NULL)
-    ret->header.type = htons(RPC_p2p_PROTO_RES);
+    ret->header.type = htons(P2P_PROTO_rpc_RES);
   else
-    ret->header.type = htons(RPC_p2p_PROTO_REQ);
+    ret->header.type = htons(P2P_PROTO_rpc_REQ);
 
   return ret;
 }
@@ -854,8 +854,8 @@ static void async_rpc_complete_callback(RPC_Param * results,
  * reply.
  */
 static int handleRPCMessageReq(const PeerIdentity *sender,
-			       const p2p_HEADER * message) {
-  RPC_Message * req;
+			       const P2P_MESSAGE_HEADER * message) {
+  P2P_rpc_MESSAGE * req;
   CallInstance * calls;
   unsigned int sq;
   unsigned short errorCode;
@@ -865,14 +865,14 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
   RegisteredRPC * rpc;
   unsigned int minSQ;
 
-  if ( (ntohs(message->type) != RPC_p2p_PROTO_REQ) ||
-       (ntohs(message->size) < sizeof(RPC_Message)) ) {
+  if ( (ntohs(message->type) != P2P_PROTO_rpc_REQ) ||
+       (ntohs(message->size) < sizeof(P2P_rpc_MESSAGE)) ) {
     LOG (LOG_WARNING,
 	 _("Invalid message of type %u received.  Dropping.\n"),
 	 ntohs(message->type));
     return SYSERR;
   }
-  req = (RPC_Message *) message;
+  req = (P2P_rpc_MESSAGE *) message;
   sq = ntohl(req->sequenceNumber);
 #if DEBUG_RPC
   LOG(LOG_DEBUG,
@@ -992,18 +992,18 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
  * Also always sends an ACK.
  */
 static int handleRPCMessageRes(const PeerIdentity * sender,
-			       const p2p_HEADER * message) {
-  RPC_Message * res;
+			       const P2P_MESSAGE_HEADER * message) {
+  P2P_rpc_MESSAGE * res;
   CallInstance * call;
 
-  if ( (ntohs(message->type) != RPC_p2p_PROTO_RES) ||
-       (ntohs(message->size) < sizeof(RPC_Message)) ) {
+  if ( (ntohs(message->type) != P2P_PROTO_rpc_RES) ||
+       (ntohs(message->size) < sizeof(P2P_rpc_MESSAGE)) ) {
     LOG(LOG_WARNING,
 	_("Invalid message of type %u received.  Dropping.\n"),
 	ntohs(message->type));
     return SYSERR;
   }
-  res = (RPC_Message *) message;
+  res = (P2P_rpc_MESSAGE *) message;
 #if DEBUG_RPC
   LOG(LOG_DEBUG,
       "Received RPC reply with id %u.\n",
@@ -1023,17 +1023,17 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
   }
   if (NULL != call) {
     RPC_Param * reply;
-    RPC_Message_GENERIC * gen;
+    P2P_rpc_MESSAGE_GENERIC * gen;
     unsigned short error;
 
     RPC_STATUS("", "received reply", call);
-    gen = (RPC_Message_GENERIC*)res;
+    gen = (P2P_rpc_MESSAGE_GENERIC*)res;
     reply = NULL;
     error = ntohs(res->functionNameLength);
 
     if (error == RPC_ERROR_OK) {
       reply = RPC_paramDeserialize(&gen->data[0],
-				   ntohs(message->size) - sizeof(RPC_Message));
+				   ntohs(message->size) - sizeof(P2P_rpc_MESSAGE));
       if (ntohs(res->argumentCount) != RPC_paramCount(reply)) {
 	RPC_paramFree(reply);
 	reply = NULL;
@@ -1051,7 +1051,7 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
 		       call);
     notifyPeerReply(sender,
 		    MINGLE(call->sequenceNumber,
-			   RPC_p2p_PROTO_REQ));
+			   P2P_PROTO_rpc_REQ));
     delCronJob((CronJob) &retryRPCJob,
 	       0,
 	       call);
@@ -1071,14 +1071,14 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
 
 
 /**
- * Handle a peer-to-peer message of type RPC_p2p_PROTO_ACK.
+ * Handle a peer-to-peer message of type P2P_PROTO_rpc_ACK.
  */
 static int handleRPCMessageAck(const PeerIdentity *sender,
-			       const p2p_HEADER * message) {
+			       const P2P_MESSAGE_HEADER * message) {
   RPC_ACK_Message * ack;
   CallInstance *call;
 
-  if ( (ntohs(message->type) != RPC_p2p_PROTO_ACK) ||
+  if ( (ntohs(message->type) != P2P_PROTO_rpc_ACK) ||
        (ntohs(message->size) != sizeof(RPC_ACK_Message)) ) {
     LOG (LOG_WARNING,
 	 _("Invalid message of type %u received.  Dropping.\n"),
@@ -1109,7 +1109,7 @@ static int handleRPCMessageAck(const PeerIdentity *sender,
     RPC_STATUS("", "acknowledged reply", call);
     notifyPeerReply(sender,
 		    MINGLE(ntohl(ack->sequenceNumber),
-			   RPC_p2p_PROTO_RES));
+			   P2P_PROTO_rpc_RES));
     delCronJob((CronJob) &retryRPCJob,
 	       0,
 	       call);
@@ -1344,11 +1344,11 @@ void release_module_rpc() {
   delCronJob(&agePeerStats,
 	     PEER_TRACKING_TIME_INTERVAL,
 	     NULL);
-  coreAPI->unregisterHandler(RPC_p2p_PROTO_REQ,
+  coreAPI->unregisterHandler(P2P_PROTO_rpc_REQ,
 			     &handleRPCMessageReq);
-  coreAPI->unregisterHandler(RPC_p2p_PROTO_RES,
+  coreAPI->unregisterHandler(P2P_PROTO_rpc_RES,
 			     &handleRPCMessageRes);
-  coreAPI->unregisterHandler(RPC_p2p_PROTO_ACK,
+  coreAPI->unregisterHandler(P2P_PROTO_rpc_ACK,
 			     &handleRPCMessageAck);
   if (NULL != peerInformation) {
     while(vectorSize(peerInformation) > 0)
@@ -1413,19 +1413,19 @@ RPC_ServiceAPI * provide_module_rpc(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       _("'%s' registering handlers %d %d %d\n"),
       "rpc",
-      RPC_p2p_PROTO_REQ,
-      RPC_p2p_PROTO_RES,
-      RPC_p2p_PROTO_ACK);
+      P2P_PROTO_rpc_REQ,
+      P2P_PROTO_rpc_RES,
+      P2P_PROTO_rpc_ACK);
   rvalue = OK;
-  if (capi->registerHandler(RPC_p2p_PROTO_REQ,
+  if (capi->registerHandler(P2P_PROTO_rpc_REQ,
 			    &handleRPCMessageReq) ==
       SYSERR)
     rvalue = SYSERR;
-  if (capi->registerHandler(RPC_p2p_PROTO_RES,
+  if (capi->registerHandler(P2P_PROTO_rpc_RES,
 			    &handleRPCMessageRes) ==
       SYSERR)
     rvalue = SYSERR;
-  if (capi->registerHandler (RPC_p2p_PROTO_ACK,
+  if (capi->registerHandler (P2P_PROTO_rpc_ACK,
 			     &handleRPCMessageAck) ==
       SYSERR)
     rvalue = SYSERR;

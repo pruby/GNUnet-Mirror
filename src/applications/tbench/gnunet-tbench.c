@@ -202,8 +202,8 @@ static int parseOptions(int argc,
  */
 int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
-  TBENCH_CS_MESSAGE msg;
-  TBENCH_CS_REPLY * buffer;
+  CS_tbench_request_MESSAGE msg;
+  CS_tbench_reply_MESSAGE * buffer;
   float messagesPercentLoss;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions))
@@ -212,8 +212,8 @@ int main(int argc, char ** argv) {
   if (sock == NULL)
     errexit(_("Could not connect to gnunetd.\n"));
 
-  msg.header.size = htons(sizeof(TBENCH_CS_MESSAGE));
-  msg.header.type = htons(TBENCH_CS_PROTO_REQUEST);
+  msg.header.size = htons(sizeof(CS_tbench_request_MESSAGE));
+  msg.header.type = htons(CS_PROTO_tbench_REQUEST);
   msg.msgSize     = htonl(messageSize);
   msg.msgCnt      = htonl(messageCnt);
   msg.iterations  = htonl(messageIterations);
@@ -235,9 +235,9 @@ int main(int argc, char ** argv) {
 
   buffer = NULL;
   if (OK == readFromSocket(sock,
-			   (CS_HEADER**)&buffer)) {
+			   (CS_MESSAGE_HEADER**)&buffer)) {
     GNUNET_ASSERT(ntohs(buffer->header.size) ==
-		  sizeof(TBENCH_CS_REPLY));
+		  sizeof(CS_tbench_reply_MESSAGE));
     if ((float)buffer->mean_loss <= 0){
       BREAK();
       messagesPercentLoss = 0.0;

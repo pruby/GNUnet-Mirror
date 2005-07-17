@@ -20,7 +20,7 @@
 
 /**
  * @file bootstrap_http/http.c
- * @brief HOSTLISTURL support.  Downloads HELOs via http.
+ * @brief HOSTLISTURL support.  Downloads hellos via http.
  *
  * @author Christian Grothoff
  */
@@ -47,15 +47,15 @@ static Stats_ServiceAPI * stats;
 
 static CoreAPIForApplication * coreAPI;
 
-static int stat_HELOdownloaded;
+static int stat_hellodownloaded;
 
 /**
  * Download hostlist from the web and call method
- * on each HELO.
+ * on each hello.
  */
 static void
 downloadHostlistHelper(char * url,
-		       HELO_Callback callback,
+		       hello_Callback callback,
 		       void * arg) {
   unsigned short port;
   char * hostname;
@@ -220,40 +220,40 @@ downloadHostlistHelper(char * url,
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
   while (1) {
-    HELO_Message * helo;
+    P2P_hello_MESSAGE * helo;
 
-    helo = (HELO_Message*) &buffer[0];
-    helo->header.type = htons(p2p_PROTO_HELO);
+    helo = (P2P_hello_MESSAGE*) &buffer[0];
+    helo->header.type = htons(p2p_PROTO_hello);
 
     if (start + 300 * cronSECONDS < cronTime(NULL))
       break; /* exit after 300s */
     curpos = 0;
     helo->senderAddressSize = 0;
-    while (curpos < HELO_Message_size(helo)) {
+    while (curpos < P2P_hello_MESSAGE_size(helo)) {
       if (start + 300 * cronSECONDS < cronTime(NULL))
 	break; /* exit after 300s */
       success = RECV_NONBLOCKING(sock,
 			         &((char*)helo)[curpos],
-			         HELO_Message_size(helo)-curpos,
+			         P2P_hello_MESSAGE_size(helo)-curpos,
 			         &ret);
       if ( success == NO )
 	continue;
       if (ret <= 0)
 	break; /* end of file or error*/
-      if (HELO_Message_size(helo) >= MAX_BUFFER_SIZE)
+      if (P2P_hello_MESSAGE_size(helo) >= MAX_BUFFER_SIZE)
 	break; /* INVALID! Avoid overflow! */
       curpos += ret;
     }
-    if (curpos != HELO_Message_size(helo)) {
+    if (curpos != P2P_hello_MESSAGE_size(helo)) {
       if (curpos != 0)
 	LOG(LOG_WARNING,
-	    _("Parsing HELO from '%s' failed.\n"),
+	    _("Parsing hello from '%s' failed.\n"),
 	    url);
       break;
     }
-    helo->header.size = htons(HELO_Message_size(helo));
+    helo->header.size = htons(P2P_hello_MESSAGE_size(helo));
     if (stats != NULL)
-      stats->change(stat_HELOdownloaded,
+      stats->change(stat_hellodownloaded,
 		    1);
     callback(helo,
 	     arg);
@@ -264,7 +264,7 @@ downloadHostlistHelper(char * url,
 }
 
 
-static void downloadHostlist(HELO_Callback callback,
+static void downloadHostlist(hello_Callback callback,
 			     void * arg) {
   char * url;
   int i;
@@ -346,8 +346,8 @@ provide_module_bootstrap(CoreAPIForApplication * capi) {
   coreAPI = capi;
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
-    stat_HELOdownloaded
-      = stats->create(gettext_noop("# HELOs downloaded via http"));
+    stat_hellodownloaded
+      = stats->create(gettext_noop("# hellos downloaded via http"));
   }
   api.bootstrap = &downloadHostlist;
   return &api;

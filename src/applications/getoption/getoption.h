@@ -20,24 +20,24 @@
 #ifndef GETOPTION_H
 #define GETOPTION_H
 
-#define CS_GET_OPTION_REQUEST_OPT_LEN 32
+#define CS_getoption_request_MESSAGE_OPT_LEN 32
 
 /**
  * Request for option value.
  */
 typedef struct {
-  CS_HEADER header;
-  char section[CS_GET_OPTION_REQUEST_OPT_LEN];
-  char option[CS_GET_OPTION_REQUEST_OPT_LEN];
-} CS_GET_OPTION_REQUEST;
+  CS_MESSAGE_HEADER header;
+  char section[CS_getoption_request_MESSAGE_OPT_LEN];
+  char option[CS_getoption_request_MESSAGE_OPT_LEN];
+} CS_getoption_request_MESSAGE;
 
 /**
  * Reply with option value (variable size,
  * value is 0-terminated).
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
   char value[1];
-} CS_GET_OPTION_REPLY;
+} CS_getoption_reply_MESSAGE;
 
 #endif

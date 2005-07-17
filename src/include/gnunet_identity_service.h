@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -32,11 +33,11 @@
 #include "gnunet_core.h"
 
 /**
- * How long may a HELO be valid (in seconds). We use 10 days, do not
+ * How long may a hello be valid (in seconds). We use 10 days, do not
  * change (would break compatibility with peers that have a different
  * limit).
  */
-#define MAX_HELO_EXPIRES (60 * 60 * 24 * 10)
+#define MAX_hello_EXPIRES (60 * 60 * 24 * 10)
 
 /**
  * Type of an iterator over the hosts.  Note that each
@@ -107,13 +108,13 @@ typedef struct {
   /**
    * Add a host to the temporary list.
    */
-  void (*addHostTemporarily)(const HELO_Message * tmp);
+  void (*addHostTemporarily)(const P2P_hello_MESSAGE * tmp);
 
   /**
    * Add a host to the persistent list.
-   * @param msg the verified (!) HELO message
+   * @param msg the verified (!) hello message
    */
-  void (*addHost)(const HELO_Message * msg);
+  void (*addHost)(const P2P_hello_MESSAGE * msg);
 
   /**
    * Call a method for each known host.
@@ -129,17 +130,17 @@ typedef struct {
 
   /**
    * Obtain the public key and address of a known host. If no specific
-   * protocol is specified (ANY_PROTOCOL_NUMBER), the HELO for the
+   * protocol is specified (ANY_PROTOCOL_NUMBER), the hello for the
    * cheapest confirmed protocol is returned.
    *
    * @param hostId the host id
    * @param protocol the protocol that we need,
    *        ANY_PROTOCOL_NUMBER  if we do not care which protocol
-   * @return NULL on failure, the HELO on success
+   * @return NULL on failure, the hello on success
    */
-  HELO_Message * (*identity2Helo)(const PeerIdentity *  hostId,
-				  unsigned short protocol,
-				  int tryTemporaryList);
+  P2P_hello_MESSAGE * (*identity2Helo)(const PeerIdentity *  hostId,
+				       unsigned short protocol,
+				       int tryTemporaryList);
 
   /**
    *

@@ -10,24 +10,26 @@ information necessary (assuming it compiles).
 GNU/Linux (x86):
 - perfect
 
+GNU/Linux (AMD Athlon64):
+- perfect
+
+GNU/Linux (Ultra Sparc):
+- unknown
+
+GNU/Linux (Alpha):
+- unknown
+
 FreeBSD (x86):
 - perfect
 
 OpenBSD/NetBSD:
 - unknown
 
-GNU/Linux (Ultra Sparc):
-- RSA key generation may not work (libgcrypt bug) 
-
-GNU/Linux (Alpha):
-- RSA key generation may not work (libgcrypt bug)
-
-Solaris 8 (SunOS 5.8, Sparc SunFire 880):
-- RSA key generation may not work (libgcrypt bug)
-- IPC semaphore test fails (hmm, used to pass, not critical)
-
 OS X (10.3.7, PowerPC):
-- RSA key generation may not work (libgcrypt bug)
+- perfect (needs libextractor > 0.5.2)
+
+Solaris:
+- unknown
 
 Cygwin (x86):
 - plugins cannot be loaded (FATAL)

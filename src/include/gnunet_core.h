@@ -40,7 +40,7 @@
  * roughly the main GNUnet version scheme, but is
  * more a compatibility ID.
  */
-#define GNUNET_CORE_VERSION 0x00060900
+#define GNUNET_CORE_VERSION 0x00070000
 
 
 /**
@@ -49,6 +49,12 @@
  */
 #define EXTREME_PRIORITY 0xFFFFFF
 
+/**
+ * Overhead of the core for encapsulating P2P messages.
+ * Should be subtracted from the transport MTU to compute
+ * the amount of space available for an unfragmented
+ * message.
+ */
 #define P2P_MESSAGE_OVERHEAD 76
 
 /**
@@ -61,7 +67,7 @@ typedef struct {
 } TSession;
 
 /**
- * @brief HELO.  A HELO body contains the current HostAddress, the
+ * @brief hello.  A hello body contains the current HostAddress, the
  * host identity (hash), the time how long the HostAddress is valid, a
  * signature signing the information above and the public key of the
  * host.  The hash of the public key must match the host identity.<p>
@@ -71,7 +77,7 @@ typedef struct {
  * long, what is actually signed is the hash of these bytes.
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
 
   /**
    * The signature
@@ -107,25 +113,15 @@ typedef struct {
 
   /**
    * protocol supported by the node (only one protocol
-   * can be advertised by the same HELO)
+   * can be advertised by the same hello)
    * Examples are UDP, TCP, etc. This field is
    * in network byte order
    */
   unsigned short protocol;
 
-} HELO_Message;
+} P2P_hello_MESSAGE;
 
-typedef struct {
-  HELO_Message helo_message;
-
-  /**
-   * address of the node in a protocol specific format
-   */
-  char senderAddress[1];
-
-} HELO_Message_GENERIC;
-
-#define HELO_Message_size(helo) ((sizeof(HELO_Message) + ntohs((helo)->senderAddressSize)))
+#define P2P_hello_MESSAGE_size(helo) ((sizeof(P2P_hello_MESSAGE) + ntohs((helo)->senderAddressSize)))
 
 /**
  * Opaque handle for client connections passed by
@@ -137,7 +133,7 @@ typedef struct ClientH * ClientHandle;
  * Type of a handler for messages from clients.
  */
 typedef int (*CSHandler)(ClientHandle client,
-			 const CS_HEADER * message);
+			 const CS_MESSAGE_HEADER * message);
 
 /**
  * Method called whenever a given client disconnects.
@@ -148,7 +144,7 @@ typedef void (*ClientExitHandler)(ClientHandle client);
  * Type of a handler for some message type.
  */
 typedef int (*MessagePartHandler)(const PeerIdentity * sender,
-				  const p2p_HEADER * message);
+				  const P2P_MESSAGE_HEADER * message);
 
 /**
  * Type of a handler for plaintext messages.  Since we cannot
@@ -156,7 +152,7 @@ typedef int (*MessagePartHandler)(const PeerIdentity * sender,
  * the callback.
  */
 typedef int (*PlaintextMessagePartHandler)(const PeerIdentity * sender,
-					   const p2p_HEADER * message,
+					   const P2P_MESSAGE_HEADER * message,
 					   TSession * session);
 
 /**
@@ -204,7 +200,7 @@ typedef int (*BuildMessageCallback)(void * buf,
  * transfer happens asynchronously.
  */
 typedef int (*SendToClientCallback)(ClientHandle handle,
-                                    const CS_HEADER * message);
+                                    const CS_MESSAGE_HEADER * message);
 
 /**
  * GNUnet CORE API for applications and services that are implemented
@@ -281,7 +277,7 @@ typedef struct {
    * from the GNUnet core.
    *
    * @param session the transport session
-   * @param msg the message to transmit, should contain p2p_HEADERs
+   * @param msg the message to transmit, should contain P2P_MESSAGE_HEADERs
    * @return OK on success, SYSERR on failure
    */
   int (*sendPlaintext)(TSession * session,
@@ -298,7 +294,7 @@ typedef struct {
    * @param maxdelay how long can the message be delayed?
    */
   void (*unicast)(const PeerIdentity * receiver,
-		  const p2p_HEADER * msg,
+		  const P2P_MESSAGE_HEADER * msg,
 		  unsigned int importance,
 		  unsigned int maxdelay);
 

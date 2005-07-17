@@ -50,16 +50,16 @@ static int test(GNUNET_TCP_SOCKET * sock,
 		unsigned int messageTrainSize,
 		cron_t messageTimeOut /* in milli-seconds */) {
   int ret;
-  TBENCH_CS_MESSAGE msg;
-  TBENCH_CS_REPLY * buffer;
+  CS_tbench_request_MESSAGE msg;
+  CS_tbench_reply_MESSAGE * buffer;
   float messagesPercentLoss;
 
   printf(_("Using %u messages of size %u for %u times.\n"),
 	 messageCnt,
 	 messageSize,
 	 messageIterations);
-  msg.header.size = htons(sizeof(TBENCH_CS_MESSAGE));
-  msg.header.type = htons(TBENCH_CS_PROTO_REQUEST);
+  msg.header.size = htons(sizeof(CS_tbench_request_MESSAGE));
+  msg.header.type = htons(CS_PROTO_tbench_REQUEST);
   msg.msgSize     = htonl(messageSize);
   msg.msgCnt      = htonl(messageCnt);
   msg.iterations  = htonl(messageIterations);
@@ -75,7 +75,7 @@ static int test(GNUNET_TCP_SOCKET * sock,
   ret = 0;
 
   buffer = NULL;
-  if (OK == readFromSocket(sock, (CS_HEADER**)&buffer)) {
+  if (OK == readFromSocket(sock, (CS_MESSAGE_HEADER**)&buffer)) {
     if ((float)buffer->mean_loss <= 0){
       messagesPercentLoss = 0.0;
     } else {
@@ -164,7 +164,7 @@ int main(int argc, char ** argv) {
 				     "GNUNETD-CONFIG",
 				     "peer2.conf"));
   daemon2 = startGNUnetDaemon(NO);
-  /* in case existing HELOs have expired */
+  /* in case existing hellos have expired */
   sleep(5);
   system("cp peer1/data/hosts/* peer2/data/hosts/");
   system("cp peer2/data/hosts/* peer1/data/hosts/");
@@ -179,7 +179,7 @@ int main(int argc, char ** argv) {
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
   }
 
-  /* re-start, this time we're sure up-to-date HELOs are available */
+  /* re-start, this time we're sure up-to-date hellos are available */
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "peer1.conf"));

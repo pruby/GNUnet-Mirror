@@ -57,7 +57,7 @@ static Transport_ServiceAPI * transport;
 static Identity_ServiceAPI * identity;
 
 
-static MessagePack * bufferQueue_[QUEUE_LENGTH];
+static P2P_PACKET * bufferQueue_[QUEUE_LENGTH];
 static int bq_firstFree_;
 static int bq_lastFree_;
 static int bq_firstFull_;
@@ -342,9 +342,9 @@ void injectMessage(const PeerIdentity * sender,
 		   int wasEncrypted,
 		   TSession * session) {
   unsigned int pos;
-  const p2p_HEADER * part;
-  p2p_HEADER cpart;
-  p2p_HEADER * copy;
+  const P2P_MESSAGE_HEADER * part;
+  P2P_MESSAGE_HEADER cpart;
+  P2P_MESSAGE_HEADER * copy;
   EncName enc;
   int last;
 
@@ -356,7 +356,7 @@ void injectMessage(const PeerIdentity * sender,
 
     memcpy(&cpart,
 	   &msg[pos],
-	   sizeof(p2p_HEADER));
+	   sizeof(P2P_MESSAGE_HEADER));
     plen = htons(cpart.size);
     if (pos + plen > size) {
       IFLOG(LOG_WARNING,
@@ -381,7 +381,7 @@ void injectMessage(const PeerIdentity * sender,
 	     plen);
       part = copy;
     } else {
-      part = (const p2p_HEADER*) &msg[pos];
+      part = (const P2P_MESSAGE_HEADER*) &msg[pos];
     }
     pos += plen;
 
@@ -460,7 +460,7 @@ static void handleMessage(TSession * tsession,
     return;
   }
   ret = checkHeader(sender,
-		    (P2P_Message*) msg,
+		    (P2P_PACKET_HEADER*) msg,
 		    size);
   if (ret == SYSERR)
     return; /* message malformed */
@@ -468,8 +468,8 @@ static void handleMessage(TSession * tsession,
     if (OK == transport->associate(tsession))
       considerTakeover(sender, tsession);
   injectMessage(sender,
-		&msg[sizeof(P2P_Message)],
-		size - sizeof(P2P_Message),
+		&msg[sizeof(P2P_PACKET_HEADER)],
+		size - sizeof(P2P_PACKET_HEADER),
 		ret,
 		tsession);
 }
@@ -480,7 +480,7 @@ static void handleMessage(TSession * tsession,
  * (defined in handler.c) on the packet.
  */
 static void * threadMain(int id) {
-  MessagePack * mp;
+  P2P_PACKET * mp;
 
   while (mainShutdownSignal == NULL) {
     SEMAPHORE_DOWN(bufferQueueRead_);
@@ -517,7 +517,7 @@ static void * threadMain(int id) {
  * Processing of a message from the transport layer
  * (receive implementation).
  */
-void core_receive(MessagePack * mp) {
+void core_receive(P2P_PACKET * mp) {
   if ( (threads_running == NO) ||
        (mainShutdownSignal != NULL) ||
        (SYSERR == SEMAPHORE_DOWN_NONBLOCKING(bufferQueueWrite_)) ) {

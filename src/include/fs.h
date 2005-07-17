@@ -34,7 +34,7 @@
  * on the type).
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * Priority of the search.
@@ -64,17 +64,17 @@ typedef struct {
    */
   HashCode512 query[1];
 
-} RequestSearch;
+} CS_fs_request_search_MESSAGE;
 
 /**
- * Server to client: content (in response to a RequestSearch).  The
+ * Server to client: content (in response to a CS_fs_request_search_MESSAGE).  The
  * header is followed by variable size data (the data portion
  * of the Datastore_Value).
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
-} ReplyContent;
+} CS_fs_reply_content_MESSAGE;
 
 
 /**
@@ -83,7 +83,7 @@ typedef struct {
  * number of bytes of content.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * Priority for the on-demand encoded entry.
@@ -102,7 +102,7 @@ typedef struct {
    */
   unsigned int anonymityLevel;
 
-} RequestInsert;
+} CS_fs_request_insert_MESSAGE;
 
 /**
  * Client to server: initialize to index content
@@ -110,7 +110,7 @@ typedef struct {
  * by the filename to index.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   unsigned int reserved;
 
@@ -120,7 +120,7 @@ typedef struct {
    */
   HashCode512 fileId;
 
-} RequestInitIndex;
+} CS_fs_request_init_index_MESSAGE;
 
 /**
  * Client to server: index content (for on-demand
@@ -128,7 +128,7 @@ typedef struct {
  * number of bytes of content.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * Priority for the on-demand encoded entry.
@@ -160,23 +160,23 @@ typedef struct {
    */
   unsigned int anonymityLevel;
 
-} RequestIndex;
+} CS_fs_request_index_MESSAGE;
 
 /**
  * Client to server: delete content.  This struct is followed by a
  * variable number of bytes of the content that is to be deleted.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
-} RequestDelete;
+} CS_fs_request_delete_MESSAGE;
 
 
 /**
  * Client to server: unindex file.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * Size of each block of the file.
@@ -189,13 +189,13 @@ typedef struct {
    */
   HashCode512 fileId;
 
-} RequestUnindex;
+} CS_fs_request_unindex_MESSAGE;
 
 /**
  * Client to server: test if file is indexed
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   unsigned int reserved;
 

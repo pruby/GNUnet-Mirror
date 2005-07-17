@@ -38,7 +38,7 @@
  *
  * Desirable features:
  * 1) security: how to pick priorities?  Access rights?
- * 2) performance: add optional HELO messages
+ * 2) performance: add optional hello messages
  */
 
 #include "platform.h"
@@ -599,7 +599,7 @@ typedef struct {
 typedef struct {
   CronJob job;
   void * arg;
-} AbortEntry;
+} DHT_CronJobAbortEntry;
 
 
 /* ***************** prototypes ******************** */
@@ -677,7 +677,7 @@ static Blockstore * masterTableDatastore;
  * before the DHT module can shutdown.  All of these
  * jobs are guaranteed to be triggered during the shutdown.
  */
-static AbortEntry * abortTable;
+static DHT_CronJobAbortEntry * abortTable;
 
 static unsigned int abortTableSize;
 
@@ -916,7 +916,7 @@ static PeerInfo * findPeerInfo(const PeerIdentity * peer) {
  *
  * fields about the responder.  Process those fields (if present).
  * @param results::tables list of tables the responder participates in (optional)
- * @param results::HELOs list of HELOs for responder (optional)
+ * @param results::hellos list of hellos for responder (optional)
  */
 static void processOptionalFields(const PeerIdentity * responder,
 				  RPC_Param * results) {
@@ -1037,7 +1037,7 @@ static void processOptionalFields(const PeerIdentity * responder,
     MUTEX_UNLOCK(lock);
   }
 
-  /* HERE: process other optional fields (HELOs) */
+  /* HERE: process other optional fields (hellos) */
 
 }
 
@@ -1074,7 +1074,7 @@ static void addOptionalFields(RPC_Param * args) {
   }
   FREE(tabs);
 
-  /* FIXME: here: add other optional fields (HELOs) */
+  /* FIXME: here: add other optional fields (hellos) */
 }
 
 /**
@@ -2778,7 +2778,7 @@ static int dht_leave(const DHT_TableId * table) {
  *
  * @param arguments do we need any?
  * @param results::tables the tables we participate in (DHT_TableIds)
- * @param helos::HELOs for this peer (optional)
+ * @param helos::hellos for this peer (optional)
  */
 static void rpc_DHT_ping(const PeerIdentity * sender,
 			 RPC_Param * arguments,

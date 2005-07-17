@@ -46,11 +46,11 @@
  * the underlying protocol and that it is a GNUnet node.
  * <br>
  * The challenge prevents an inept adversary from sending
- * us a HELO and then an arbitrary PONG reply (adversary
+ * us a hello and then an arbitrary PONG reply (adversary
  * must at least be able to sniff our outbound traffic).
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
 
   /**
    * Which peer is the target of the ping? This is important since for
@@ -67,7 +67,7 @@ typedef struct {
    */
   int challenge;
 
-} PINGPONG_Message;
+} P2P_pingpong_MESSAGE;
 
 #define DEBUG_PINGPONG NO
 
@@ -112,10 +112,10 @@ static int stat_ciphertextPingSent;
  * We received a PING message, send the PONG reply.
  */	
 static int pingReceived(const PeerIdentity * sender,
-			const p2p_HEADER * msg) {
-  PINGPONG_Message * pmsg;
+			const P2P_MESSAGE_HEADER * msg) {
+  P2P_pingpong_MESSAGE * pmsg;
 
-  if (ntohs(msg->size) != sizeof(PINGPONG_Message) ) {
+  if (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
     LOG(LOG_WARNING,
 	_("Received malformed '%s' message. Dropping.\n"),
 	"ping");
@@ -123,7 +123,7 @@ static int pingReceived(const PeerIdentity * sender,
   }
   if (stats != NULL)
     stats->change(stat_pingReceived, 1);
-  pmsg = (PINGPONG_Message *) msg;
+  pmsg = (P2P_pingpong_MESSAGE *) msg;
   if (!hostIdentityEquals(coreAPI->myIdentity,
 			  &pmsg->receiver)) {
     LOG(LOG_WARNING,
@@ -143,7 +143,7 @@ static int pingReceived(const PeerIdentity * sender,
 }
 
 static int sendPlaintext(const PeerIdentity * peer,
-			 const PINGPONG_Message * msg) {
+			 const P2P_pingpong_MESSAGE * msg) {
   TSession * mytsession;
   int ret;
   
@@ -152,7 +152,7 @@ static int sendPlaintext(const PeerIdentity * peer,
     return SYSERR;  
   ret = coreAPI->sendPlaintext(mytsession,
 			       (char*)msg,
-			       sizeof(PINGPONG_Message));  
+			       sizeof(P2P_pingpong_MESSAGE));  
   transport->disconnect(mytsession);
   return ret;
 }
@@ -162,17 +162,17 @@ static int sendPlaintext(const PeerIdentity * peer,
  * connection module that the session is still life.
  */	
 static int plaintextPingReceived(const PeerIdentity * sender,
-				 const p2p_HEADER * hmsg,
+				 const P2P_MESSAGE_HEADER * hmsg,
 				 TSession * tsession) {
-  PINGPONG_Message * pmsg;
+  P2P_pingpong_MESSAGE * pmsg;
 
-  if (ntohs(hmsg->size) != sizeof(PINGPONG_Message) ) {
+  if (ntohs(hmsg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
     LOG(LOG_WARNING,
 	_("Received malformed '%s' message. Dropping.\n"),
 	"ping");
     return SYSERR;
   }
-  pmsg = (PINGPONG_Message *) hmsg;
+  pmsg = (P2P_pingpong_MESSAGE *) hmsg;
   if (!hostIdentityEquals(coreAPI->myIdentity,
 			  &pmsg->receiver)) {
     LOG(LOG_INFO,
@@ -185,7 +185,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
   if ( (tsession != NULL) &&
        (OK == coreAPI->sendPlaintext(tsession,
 				     (char*) pmsg,
-				     sizeof(PINGPONG_Message))) )
+				     sizeof(P2P_pingpong_MESSAGE))) )
     return OK;
   return sendPlaintext(sender, pmsg);
 }
@@ -194,17 +194,17 @@ static int plaintextPingReceived(const PeerIdentity * sender,
  * Handler for a pong.
  */ 	
 static int pongReceived(const PeerIdentity * sender,
-			const p2p_HEADER * msg) {
+			const P2P_MESSAGE_HEADER * msg) {
   int i;
-  PINGPONG_Message * pmsg;
+  P2P_pingpong_MESSAGE * pmsg;
   PingPongEntry * entry;
   int matched;
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
 
-  pmsg = (PINGPONG_Message *) msg;
-  if ( (ntohs(msg->size) != sizeof(PINGPONG_Message)) ||
+  pmsg = (P2P_pingpong_MESSAGE *) msg;
+  if ( (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE)) ||
        !hostIdentityEquals(sender,
 			   &pmsg->receiver)) {
     LOG(LOG_WARNING,
@@ -258,18 +258,18 @@ static int pongReceived(const PeerIdentity * sender,
  * Handler for a pong.
  */ 	
 static int plaintextPongReceived(const PeerIdentity * sender,
-				 const p2p_HEADER * msg,
+				 const P2P_MESSAGE_HEADER * msg,
 				 TSession * session) {
   int i;
-  PINGPONG_Message * pmsg;
+  P2P_pingpong_MESSAGE * pmsg;
   PingPongEntry * entry;
   int matched;
 #if DEBUG_PINGPONG
   EncName enc;
 #endif
 
-  pmsg = (PINGPONG_Message *) msg;
-  if ( (ntohs(msg->size) != sizeof(PINGPONG_Message)) ||
+  pmsg = (P2P_pingpong_MESSAGE *) msg;
+  if ( (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE)) ||
        !hostIdentityEquals(sender,
 			   &pmsg->receiver)) {
     LOG(LOG_WARNING,
@@ -324,7 +324,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
  * @param plaintext is the PONG expected to be in plaintext (YES/NO)
  * @returns NULL on error, otherwise the PING message
  */
-static p2p_HEADER *
+static P2P_MESSAGE_HEADER *
 createPing(const PeerIdentity * receiver,
 	   CronJob method,	
 	   void * data,
@@ -334,7 +334,7 @@ createPing(const PeerIdentity * receiver,
   TIME_T min;
   PingPongEntry * entry;
   TIME_T now;
-  PINGPONG_Message * pmsg;
+  P2P_pingpong_MESSAGE * pmsg;
 
   MUTEX_LOCK(pingPongLock);
   now = TIME(&min); /* set both, tricky... */
@@ -359,8 +359,8 @@ createPing(const PeerIdentity * receiver,
   FREENONNULL(entry->data);
   entry->data = data;
   entry->receiverIdentity = *receiver;
-  pmsg = MALLOC(sizeof(PINGPONG_Message));
-  pmsg->header.size = htons(sizeof(PINGPONG_Message));
+  pmsg = MALLOC(sizeof(P2P_pingpong_MESSAGE));
+  pmsg->header.size = htons(sizeof(P2P_pingpong_MESSAGE));
   pmsg->header.type = htons(p2p_PROTO_PING);
   memcpy(&pmsg->receiver,
 	 receiver,
@@ -386,9 +386,9 @@ static int initiatePing(const PeerIdentity * receiver,
 			int usePlaintext,
 			CronJob method,
 			void * data) {
-  PINGPONG_Message * pmsg;
+  P2P_pingpong_MESSAGE * pmsg;
 
-  pmsg = (PINGPONG_Message*) createPing(receiver,
+  pmsg = (P2P_pingpong_MESSAGE*) createPing(receiver,
 					method,
 					data,
 					usePlaintext);
@@ -423,9 +423,9 @@ static int pingPlaintext(const PeerIdentity * receiver,
 			 CronJob method,
 			 void * data,
 			 TSession * session) {
-  PINGPONG_Message * pmsg;
+  P2P_pingpong_MESSAGE * pmsg;
 
-  pmsg = (PINGPONG_Message*) createPing(receiver,
+  pmsg = (P2P_pingpong_MESSAGE*) createPing(receiver,
 					method,
 					data,
 					YES);
@@ -435,7 +435,7 @@ static int pingPlaintext(const PeerIdentity * receiver,
     stats->change(stat_plaintextPingSent, 1);
   coreAPI->sendPlaintext(session,
 			 (char*)pmsg,
-			 sizeof(PINGPONG_Message));
+			 sizeof(P2P_pingpong_MESSAGE));
   FREE(pmsg);
   return OK;
 }
@@ -448,7 +448,7 @@ Pingpong_ServiceAPI *
 provide_module_pingpong(CoreAPIForApplication * capi) {
   static Pingpong_ServiceAPI ret;
 
-  GNUNET_ASSERT(sizeof(PINGPONG_Message) == 72);
+  GNUNET_ASSERT(sizeof(P2P_pingpong_MESSAGE) == 72);
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {

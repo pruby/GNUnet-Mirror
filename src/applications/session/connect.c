@@ -35,7 +35,7 @@
 #include "gnunet_stats_service.h"
 #include "gnunet_topology_service.h"
 
-#define HELO_HELPER_TABLE_START_SIZE 64
+#define hello_HELPER_TABLE_START_SIZE 64
 
 #define DEBUG_SESSION NO
 
@@ -65,7 +65,7 @@ static int stat_sessionEstablished;
  * @brief message for session key exchange.
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
   /**
    * time when this key was created  (network byte order)
    * Must be the first field after the header since
@@ -84,7 +84,7 @@ typedef struct {
    */
   Signature signature;
 
-} SKEY_Message;
+} P2P_setkey_MESSAGE;
 
 #if 0
 /**
@@ -147,7 +147,7 @@ static void notifyPONG(void * arg) {
  * @return SYSERR if invalid, OK if valid
  */
 static int verifySKS(const PeerIdentity * hostId,
-		     SKEY_Message * sks) {
+		     P2P_setkey_MESSAGE * sks) {
   char * limited;
 
   if ( (sks == NULL) ||
@@ -197,7 +197,7 @@ static int verifySKS(const PeerIdentity * hostId,
   if (OK != identity->verifyPeerSignature
       (hostId,
        sks,
-       sizeof(SKEY_Message) - sizeof(Signature),
+       sizeof(P2P_setkey_MESSAGE) - sizeof(Signature),
        &sks->signature)) {
     EncName enc;
 
@@ -224,15 +224,15 @@ static int verifySKS(const PeerIdentity * hostId,
  *        session key message
  * @return message on success, NULL on failure
  */
-static SKEY_Message * 
+static P2P_setkey_MESSAGE * 
 makeSessionKeySigned(const PeerIdentity * hostId,
 		     const SESSIONKEY * sk,
 		     TIME_T created,
-		     const p2p_HEADER * ping,
-		     const p2p_HEADER * pong) {
-  HELO_Message * foreignHelo;
+		     const P2P_MESSAGE_HEADER * ping,
+		     const P2P_MESSAGE_HEADER * pong) {
+  P2P_hello_MESSAGE * foreignHelo;
   int size;
-  SKEY_Message * msg;
+  P2P_setkey_MESSAGE * msg;
   char * pt;
 
   GNUNET_ASSERT(sk != NULL);
@@ -246,7 +246,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
     return NULL; /* other host not known */
   }
 
-  size = sizeof(SKEY_Message);
+  size = sizeof(P2P_setkey_MESSAGE);
   if (ping != NULL)
     size += ntohs(ping->size);
   if (pong != NULL)
@@ -274,11 +274,11 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 
   /* complete header */
   msg->header.size = htons(size);
-  msg->header.type = htons(p2p_PROTO_SKEY);
+  msg->header.type = htons(P2P_PROTO_setkey);
   msg->creationTime = htonl(created);
   GNUNET_ASSERT(SYSERR != 
 		identity->signData(msg,
-				   sizeof(SKEY_Message)
+				   sizeof(P2P_setkey_MESSAGE)
 				   - sizeof(Signature),
 				   &msg->signature));
 #if EXTRA_CHECKS
@@ -324,7 +324,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 }
 
 /**
- * Perform a session key exchange for entry be.  First sends a HELO
+ * Perform a session key exchange for entry be.  First sends a hello
  * and then the new SKEY (in two plaintext packets). When called, the
  * semaphore of at the given index must already be down
  *
@@ -334,13 +334,13 @@ makeSessionKeySigned(const PeerIdentity * hostId,
  */
 static int exchangeKey(const PeerIdentity * receiver,
 		       TSession * tsession,
-		       p2p_HEADER * pong) {
-  HELO_Message * helo;
-  SKEY_Message * skey;
+		       P2P_MESSAGE_HEADER * pong) {
+  P2P_hello_MESSAGE * helo;
+  P2P_setkey_MESSAGE * skey;
   char * sendBuffer;
   SESSIONKEY sk;
   TIME_T age;
-  p2p_HEADER * ping;
+  P2P_MESSAGE_HEADER * ping;
   PeerIdentity * sndr;
   int size;
   EncName enc;
@@ -406,18 +406,18 @@ static int exchangeKey(const PeerIdentity * receiver,
     return SYSERR;
   }
 
-  /* create HELO */
-  helo = transport->createHELO(ANY_PROTOCOL_NUMBER);
+  /* create hello */
+  helo = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == helo) {
     LOG(LOG_INFO,
-	"Could not create any HELO advertisement.  Not good.");
+	"Could not create any hello advertisement.  Not good.");
   }
   size = ntohs(skey->header.size);
   if (helo != NULL)
-    size += HELO_Message_size(helo);
+    size += P2P_hello_MESSAGE_size(helo);
   sendBuffer = MALLOC(size);
   if (helo != NULL) {
-    size = HELO_Message_size(helo);
+    size = P2P_hello_MESSAGE_size(helo);
     memcpy(sendBuffer,
 	   helo,
 	   size);
@@ -465,12 +465,12 @@ static int exchangeKey(const PeerIdentity * receiver,
  * @return SYSERR or OK
  */
 static int acceptSessionKey(const PeerIdentity * sender,
-			    const p2p_HEADER * msg,
+			    const P2P_MESSAGE_HEADER * msg,
 			    TSession * tsession) {
   SESSIONKEY key;
-  p2p_HEADER * ping;
-  p2p_HEADER * pong;
-  SKEY_Message * sessionkeySigned;
+  P2P_MESSAGE_HEADER * ping;
+  P2P_MESSAGE_HEADER * pong;
+  P2P_setkey_MESSAGE * sessionkeySigned;
   int size;
   int pos;
   char * plaintext;
@@ -491,14 +491,14 @@ static int acceptSessionKey(const PeerIdentity * sender,
       "Received session key from peer '%s'.\n",
       &enc);
 #endif
-  if (ntohs(msg->size) < sizeof(SKEY_Message)) {
+  if (ntohs(msg->size) < sizeof(P2P_setkey_MESSAGE)) {
     LOG(LOG_WARNING,
 	"Session key received from peer '%s' "
 	"has invalid format (discarded).\n",
 	&enc);
     return SYSERR;
   }
-  sessionkeySigned = (SKEY_Message *) msg;
+  sessionkeySigned = (P2P_setkey_MESSAGE *) msg;
   if (SYSERR == verifySKS(sender,
 			  sessionkeySigned)) {
     LOG(LOG_INFO,
@@ -546,13 +546,13 @@ static int acceptSessionKey(const PeerIdentity * sender,
 			    sender,
 			    ntohl(sessionkeySigned->creationTime),
 			    NO);
-  pos = sizeof(SKEY_Message);
+  pos = sizeof(P2P_setkey_MESSAGE);
   ping = NULL;
   pong = NULL;
   plaintext = NULL;
   size = ntohs(sessionkeySigned->header.size);
-  if (sizeof(SKEY_Message) < size) {
-    size -= sizeof(SKEY_Message);
+  if (sizeof(P2P_setkey_MESSAGE) < size) {
+    size -= sizeof(P2P_setkey_MESSAGE);
     plaintext = MALLOC(size);
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
@@ -564,15 +564,15 @@ static int acceptSessionKey(const PeerIdentity * sender,
     GNUNET_ASSERT(-1 != 
 		  decryptBlock
 		  (&key,
-		   &((char*)sessionkeySigned)[sizeof(SKEY_Message)],
+		   &((char*)sessionkeySigned)[sizeof(P2P_setkey_MESSAGE)],
 		   size,
 		   (const INITVECTOR*) &sessionkeySigned->signature,
 		   plaintext));
     pos = 0;
     /* find pings & pongs! */
-    while (pos + sizeof(p2p_HEADER) < size) {
-      p2p_HEADER * hdr;
-      hdr = (p2p_HEADER*) &plaintext[pos];
+    while (pos + sizeof(P2P_MESSAGE_HEADER) < size) {
+      P2P_MESSAGE_HEADER * hdr;
+      hdr = (P2P_MESSAGE_HEADER*) &plaintext[pos];
       if (htons(hdr->size) + pos > size) {
 	LOG(LOG_WARNING,
 	    _("Error parsing encrypted session key, "
@@ -680,7 +680,7 @@ static int tryConnect(const PeerIdentity * peer) {
  * value.  (Rekeying).
  */
 static int acceptSessionKeyUpdate(const PeerIdentity * sender,
-				  const p2p_HEADER * msg) {
+				  const P2P_MESSAGE_HEADER * msg) {
   acceptSessionKey(sender,
 		   msg,
 		   NULL);
@@ -695,7 +695,7 @@ Session_ServiceAPI *
 provide_module_session(CoreAPIForApplication * capi) {
   static Session_ServiceAPI ret;
 
-  GNUNET_ASSERT(sizeof(SKEY_Message) == 520)
+  GNUNET_ASSERT(sizeof(P2P_setkey_MESSAGE) == 520)
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {
@@ -734,10 +734,10 @@ provide_module_session(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       _("'%s' registering handler %d (plaintext and ciphertext)\n"),
       "session",
-      p2p_PROTO_SKEY);
-  coreAPI->registerPlaintextHandler(p2p_PROTO_SKEY,
+      P2P_PROTO_setkey);
+  coreAPI->registerPlaintextHandler(P2P_PROTO_setkey,
 				    &acceptSessionKey);
-  coreAPI->registerHandler(p2p_PROTO_SKEY,
+  coreAPI->registerHandler(P2P_PROTO_setkey,
 			   &acceptSessionKeyUpdate);
   ret.tryConnect = &tryConnect;
   return &ret;
@@ -747,9 +747,9 @@ provide_module_session(CoreAPIForApplication * capi) {
  * Shutdown the module.
  */
 int release_module_session() {
-  coreAPI->unregisterPlaintextHandler(p2p_PROTO_SKEY,
+  coreAPI->unregisterPlaintextHandler(P2P_PROTO_setkey,
 				      &acceptSessionKey);
-  coreAPI->unregisterHandler(p2p_PROTO_SKEY,
+  coreAPI->unregisterHandler(P2P_PROTO_setkey,
 			     &acceptSessionKeyUpdate);
   if (topology != NULL) {
     coreAPI->releaseService(topology);

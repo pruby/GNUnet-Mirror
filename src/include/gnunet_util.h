@@ -129,8 +129,8 @@ typedef enum LOG_Level {
  */
 #define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
 #define DEFAULT_DAEMON_CONFIG_FILE "/etc/gnunet.conf"
-#define VAR_DAEMON_CONFIG_FILE "/var/lib/GNUnet/gnunet.conf"
-#define HOME_DAEMON_CONFIG_FILE "~/.gnunet/gnunet.root"
+#define VAR_DAEMON_CONFIG_FILE     "/var/lib/GNUnet/gnunet.conf"
+#define HOME_DAEMON_CONFIG_FILE    "~/.gnunet/gnunet.root"
 
 /**
  * @brief Length of RSA encrypted data (2048 bit)
@@ -205,22 +205,22 @@ typedef struct {
    */
   unsigned short type;
 
-} CS_HEADER;
+} CS_MESSAGE_HEADER;
 
 /**
  * CS communication: simple return value
  */
 typedef struct {
   /**
-   * The CS header (values: sizeof(CS_RETURN_VALUE), CS_PROTO_RETURN_VALUE)
+   * The CS header (values: sizeof(CS_returnvalue_MESSAGE), CS_PROTO_RETURN_VALUE)
    */
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * The return value (network byte order)
    */
   int return_value;
-} CS_RETURN_VALUE;
+} CS_returnvalue_MESSAGE;
 
 /**
  * p2p message part header
@@ -235,7 +235,7 @@ typedef struct {
    * type of the request, XX_p2p_PROTO_XXX (network byte order)
    */
   unsigned short type;
-} p2p_HEADER;
+} P2P_MESSAGE_HEADER;
 
 typedef void (*NotifyConfigurationUpdateCallback)(void);
 
@@ -303,6 +303,9 @@ typedef struct {
   unsigned int addr[4]; /* struct in6_addr addr; */
 } IP6addr;
 
+/**
+ * @brief IPV6 network in CIDR notation.
+ */
 struct CIDR6Network;
 
 /**
@@ -315,12 +318,15 @@ typedef void (*TLogProc)(const char *txt);
  */
 typedef void * (*PThreadMain)(void*);
 
+/**
+ * Encapsulation of a pthread handle.
+ */
 typedef struct PTHREAD_T {
   void * internal;
 } PTHREAD_T;
 
 /**
- * @brief A 512-bit hashcode
+ * @brief 512-bit hashcode
  */
 typedef struct {
   unsigned int bits[512 / 8 / sizeof(unsigned int)]; /* = 16 */
@@ -421,6 +427,9 @@ typedef struct Semaphore {
   void * cond;
 } Semaphore;
 
+/**
+ * @brief Inter-process semaphore.
+ */
 typedef struct IPC_Semaphore{
   void * platform;
 } IPC_Semaphore;
@@ -1064,9 +1073,9 @@ void * xmalloc_unchecked_(size_t size,
  * memory is available.
  */
 void * xrealloc_(void * ptr,
-      const size_t n,
-      const char * filename,
-      const int linenumber);
+		 const size_t n,
+		 const char * filename,
+		 const int linenumber);
 
 /**
  * Wrapper around realloc. Rellocates size bytes of memory.
@@ -1744,7 +1753,7 @@ int checkSocket(GNUNET_TCP_SOCKET * sock);
  *         to re-establish the connection [temporary error]).
  */
 int readFromSocket(GNUNET_TCP_SOCKET * sock,
-		   CS_HEADER ** buffer);
+		   CS_MESSAGE_HEADER ** buffer);
 
 /**
  * Write to a GNUnet TCP socket.
@@ -1753,7 +1762,7 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
  * @return OK if the write was sucessful, otherwise SYSERR.
  */
 int writeToSocket(GNUNET_TCP_SOCKET * sock,
-		  const CS_HEADER * buffer);
+		  const CS_MESSAGE_HEADER * buffer);
 
 /**
  * Write to a GNUnet TCP socket non-blocking.
@@ -1763,7 +1772,7 @@ int writeToSocket(GNUNET_TCP_SOCKET * sock,
  *         otherwise SYSERR.
  */
 int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
-			     const CS_HEADER * buffer);
+			     const CS_MESSAGE_HEADER * buffer);
 
 /**
  * Close a GNUnet TCP socket for now (use to temporarily close
@@ -2308,10 +2317,6 @@ size_t strlcat(char *dest, const char *src, size_t count);
 #endif
 
 /**
- * Helper functions
- */
-
-/**
  * @brief Enumerate all network interfaces
  * @param callback the callback function
  */
@@ -2321,7 +2326,7 @@ void enumNetworkIfs(void (*callback) (char *, int));
  * @brief Checks if we can start GNUnet automatically
  * @return 1 if yes, 0 otherwise
  */
-int isOSAutostartCapable();
+int isOSAutostartCapable(void);
 
 /**
  * @brief Make GNUnet start automatically
@@ -2344,7 +2349,7 @@ int isOSUserAddCapable();
  * @return 1 if yes, 0 otherwise
  * @todo support for groupadd(8)
  */
-int isOSGroupAddCapable();
+int isOSGroupAddCapable(void);
 
 /**
  * @brief Add a service account for GNUnet
@@ -2362,7 +2367,7 @@ char *winErrorStr(char *prefix, int dwErr);
 /** 
  * Checks if gnunetd is running
  * 
- * Uses CS_PROTO_CLIENT_COUNT query to determine if gnunetd is
+ * Uses CS_PROTO_traffic_COUNT query to determine if gnunetd is
  * running.
  *
  * @return OK if gnunetd is running, SYSERR if not

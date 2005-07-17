@@ -46,25 +46,25 @@ typedef struct {
 static RTE * routeTable[MAXROUTE];
 
 static int handlep2pReply(const PeerIdentity * sender,
-			  const p2p_HEADER * message) {
+			  const P2P_MESSAGE_HEADER * message) {
   unsigned int i;
   unsigned int hostCount;
-  TRACEKIT_p2p_REPLY * reply;
+  P2P_tracekit_reply_MESSAGE * reply;
   EncName initiator;
   EncName sen;
 
   hash2enc(&sender->hashPubKey,
 	   &sen);
-  hostCount = (ntohs(message->size)-sizeof(TRACEKIT_p2p_REPLY))/sizeof(PeerIdentity);
+  hostCount = (ntohs(message->size)-sizeof(P2P_tracekit_reply_MESSAGE))/sizeof(PeerIdentity);
   if (ntohs(message->size) !=
-      sizeof(TRACEKIT_p2p_REPLY)+hostCount*sizeof(PeerIdentity)) {
+      sizeof(P2P_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity)) {
     LOG(LOG_WARNING,
 	_("Received invalid '%s' message from '%s'.\n"),
-	"TRACEKIT_p2p_PROBE",
+	"P2P_tracekit_probe_MESSAGE",
 	&sen);
     return SYSERR;
   }
-  reply = (TRACEKIT_p2p_REPLY*)message;
+  reply = (P2P_tracekit_reply_MESSAGE*)message;
   hash2enc(&reply->initiatorId.hashPubKey,
 	   &initiator);
   LOG(LOG_DEBUG,
@@ -82,7 +82,7 @@ static int handlep2pReply(const PeerIdentity * sender,
       if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			    &routeTable[i]->replyTo.hashPubKey) ) {
 	unsigned int idx;
-	TRACEKIT_CS_REPLY * csReply;
+	CS_tracekit_reply_MESSAGE * csReply;
 
 	idx = ntohl(reply->clientId);
 	LOG(LOG_DEBUG,
@@ -98,16 +98,16 @@ static int handlep2pReply(const PeerIdentity * sender,
 	  continue; /* discard */
 	}
 	
-	csReply = MALLOC(sizeof(TRACEKIT_CS_REPLY)+hostCount*sizeof(PeerIdentity));
+	csReply = MALLOC(sizeof(CS_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity));
 	/* build msg */
 	csReply->header.size
-	  = htons(sizeof(TRACEKIT_CS_REPLY)+hostCount*sizeof(PeerIdentity));
+	  = htons(sizeof(CS_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity));
 	csReply->header.type
-	  = htons(TRACEKIT_CS_PROTO_REPLY);
+	  = htons(CS_PROTO_tracekit_REPLY);
 	csReply->responderId
 	  = reply->responderId;
-	memcpy(&((TRACEKIT_CS_REPLY_GENERIC*)csReply)->peerList[0],
-	       &((TRACEKIT_p2p_REPLY_GENERIC*)reply)->peerList[0],
+	memcpy(&((CS_tracekit_reply_MESSAGE_GENERIC*)csReply)->peerList[0],
+	       &((P2P_tracekit_reply_MESSAGE_GENERIC*)reply)->peerList[0],
 	       hostCount * sizeof(PeerIdentity));
 	coreAPI->sendToClient(clients[idx],
 			      &csReply->header);
@@ -133,21 +133,28 @@ static int handlep2pReply(const PeerIdentity * sender,
 
 
 typedef struct {
-  TRACEKIT_p2p_REPLY_GENERIC * reply;
-  int max;
+  PeerIdentity * peers;
+  unsigned int max;
   int pos;
-} Closure;
+} Tracekit_Collect_Trace_Closure;
 
 static void getPeerCallback(const PeerIdentity * id,
-			    Closure * closure) {
+			    void * cls) {
+  Tracekit_Collect_Trace_Closure * closure = cls;
+  if (closure->pos == closure->max) {
+    GROW(closure->peers,
+	 closure->max,
+	 closure->max + 32);
+  }
   if (closure->pos < closure->max) {
     /* check needed since #connections may change anytime! */
-    closure->reply->peerList[closure->pos++] = *id;
+    closure->peers[closure->pos++] = *id;
   }
 }
 
 static void transmit(const PeerIdentity * id,
-		     TRACEKIT_p2p_PROBE * pro) {
+		     void * cls) {
+  P2P_tracekit_probe_MESSAGE * pro = cls;
   if (! hostIdentityEquals(id,
 			   &pro->initiatorId))
     coreAPI->unicast(id,
@@ -157,10 +164,10 @@ static void transmit(const PeerIdentity * id,
 }
 
 static int handlep2pProbe(const PeerIdentity * sender,
-			  const p2p_HEADER * message) {
-  TRACEKIT_p2p_REPLY * reply;
-  TRACEKIT_p2p_PROBE * msg;
-  Closure closure;
+			  const P2P_MESSAGE_HEADER * message) {
+  P2P_tracekit_reply_MESSAGE * reply;
+  P2P_tracekit_probe_MESSAGE * msg;
+  Tracekit_Collect_Trace_Closure closure;
   int i;
   int sel;
   int hops;
@@ -174,17 +181,17 @@ static int handlep2pProbe(const PeerIdentity * sender,
   hash2enc(&sender->hashPubKey,
 	   &sen);
   if (ntohs(message->size) !=
-      sizeof(TRACEKIT_p2p_PROBE)) {
+      sizeof(P2P_tracekit_probe_MESSAGE)) {
     LOG(LOG_WARNING,
 	_("Received invalid '%s' message from '%s'.\n"),
-	"TRACEKIT_p2p_PROBE",
+	"P2P_tracekit_probe_MESSAGE",
 	&sen);
     return SYSERR;
   }
   LOG(LOG_DEBUG,
       "TRACEKIT: received probe\n");
   TIME(&now);
-  msg = (TRACEKIT_p2p_PROBE*) message;
+  msg = (P2P_tracekit_probe_MESSAGE*) message;
   if ((TIME_T)ntohl(msg->timestamp) > 3600 + now) {
     LOG(LOG_DEBUG,
 	"TRACEKIT: probe has timestamp in the far future (%d > %d), dropping\n",
@@ -253,47 +260,40 @@ static int handlep2pProbe(const PeerIdentity * sender,
       &init,
       sel,
       ntohl(msg->hopsToGo));
-  count = coreAPI->forAllConnectedNodes(NULL, NULL);
   hops = ntohl(msg->hopsToGo);
   /* forward? */
   if (hops > 0) {
     msg->hopsToGo = htonl(hops-1);
-    coreAPI->forAllConnectedNodes((PerNodeCallback) & transmit,
+    coreAPI->forAllConnectedNodes(&transmit,
 				  msg);
   }
-  /* build local reply */
-  size = sizeof(TRACEKIT_p2p_REPLY) + count*sizeof(PeerIdentity);
-  reply = MALLOC(size);
-  closure.reply = (TRACEKIT_p2p_REPLY_GENERIC*) reply;
-  closure.max = count;
+  closure.peers = NULL;
+  closure.max = 0;
   closure.pos = 0;
-  coreAPI->forAllConnectedNodes((PerNodeCallback)&getPeerCallback,
+  coreAPI->forAllConnectedNodes(&getPeerCallback,
 				&closure);
-  reply->header.type
-    = htons(TRACEKIT_p2p_PROTO_REPLY);
-  reply->initiatorId
-    = msg->initiatorId;
-  reply->responderId
-    = *(coreAPI->myIdentity);
-  reply->initiatorTimestamp
-    = msg->timestamp;
-  reply->clientId
-    = msg->clientId;
-  /* break up into chunks of MTU size! */
-  while (size >= sizeof(TRACEKIT_p2p_REPLY)) {
-    int rest;
-    int maxBytes;
-    int batchSize;
-
-    if (size > 1024) {
-      batchSize = (1024 - sizeof(TRACEKIT_p2p_REPLY) / sizeof(PeerIdentity));
-      maxBytes = sizeof(TRACEKIT_p2p_REPLY) + sizeof(PeerIdentity) * batchSize;
-    } else {
-      batchSize = (size - sizeof(TRACEKIT_p2p_REPLY)) / sizeof(PeerIdentity);
-      maxBytes = size;
-    }
+  /* build local reply */
+  while (closure.pos > 0) {
+    count = closure.pos;
+    if (count > 60000 / sizeof(PeerIdentity))
+      count = 60000 / sizeof(PeerIdentity);
+    size = sizeof(P2P_tracekit_reply_MESSAGE) + count*sizeof(PeerIdentity);
+    reply = MALLOC(size);
     reply->header.size
-      = htons(maxBytes);
+      = htons(size);   
+    reply->header.type
+      = htons(P2P_PROTO_tracekit_REPLY);
+    reply->initiatorId
+      = msg->initiatorId;
+    reply->responderId
+      = *(coreAPI->myIdentity);
+    reply->initiatorTimestamp
+      = msg->timestamp;
+    reply->clientId
+      = msg->clientId;
+    memcpy(&reply[1],
+	   &closure.peers[closure.pos - count],
+	   count * sizeof(PeerIdentity));
     if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			  &sender->hashPubKey)) {
       handlep2pReply(coreAPI->myIdentity,
@@ -304,35 +304,32 @@ static int handlep2pProbe(const PeerIdentity * sender,
 		       ntohl(msg->priority),
 		       0);
     }
-    rest = size - maxBytes;
-    memcpy(&((TRACEKIT_p2p_REPLY_GENERIC*)reply)->peerList[0],
-	   &((TRACEKIT_p2p_REPLY_GENERIC*)reply)->peerList[maxBytes - sizeof(TRACEKIT_p2p_REPLY)],
-	   rest);
-    size -= maxBytes;
-    if (rest == 0)
-      break;
+    closure.pos -= count;
+    FREE(reply);
   }
-  FREE(reply);
+  GROW(closure.peers,
+       closure.max,
+       0);
   return OK;
 }
 
 static int csHandle(ClientHandle client,
-		    const CS_HEADER * message) {
+		    const CS_MESSAGE_HEADER * message) {
   int i;
   int idx;
-  TRACEKIT_CS_PROBE * csProbe;
-  TRACEKIT_p2p_PROBE p2pProbe;
+  CS_tracekit_probe_MESSAGE * csProbe;
+  P2P_tracekit_probe_MESSAGE p2pProbe;
 
   LOG(LOG_DEBUG,
       "TRACEKIT: client sends probe request\n");
 
   /* build probe, broadcast */
-  csProbe = (TRACEKIT_CS_PROBE*) message;
+  csProbe = (CS_tracekit_probe_MESSAGE*) message;
   if (ntohs(csProbe->header.size) !=
-      sizeof(TRACEKIT_CS_PROBE) ) {
+      sizeof(CS_tracekit_probe_MESSAGE) ) {
     LOG(LOG_WARNING,
 	_("TRACEKIT: received invalid '%s' message\n"),
-	"TRACEKIT_CS_PROBE");
+	"CS_tracekit_probe_MESSAGE");
     return SYSERR;
   }
 
@@ -362,9 +359,9 @@ static int csHandle(ClientHandle client,
       idx);
 
   p2pProbe.header.size
-    = htons(sizeof(TRACEKIT_p2p_PROBE));
+    = htons(sizeof(P2P_tracekit_probe_MESSAGE));
   p2pProbe.header.type
-    = htons(TRACEKIT_p2p_PROTO_PROBE);
+    = htons(P2P_PROTO_tracekit_PROBE);
   p2pProbe.clientId
     = htonl(idx);
   p2pProbe.hopsToGo
@@ -412,21 +409,21 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
   coreAPI = capi;
   LOG(LOG_DEBUG,
       "TRACEKIT registering handlers %d %d and %d\n",
-      TRACEKIT_p2p_PROTO_PROBE,
-      TRACEKIT_p2p_PROTO_REPLY,
-      TRACEKIT_CS_PROTO_PROBE);
+      P2P_PROTO_tracekit_PROBE,
+      P2P_PROTO_tracekit_REPLY,
+      CS_PROTO_tracekit_PROBE);
   memset(routeTable,
 	 0,
 	 MAXROUTE*sizeof(RTE*));
-  if (SYSERR == capi->registerHandler(TRACEKIT_p2p_PROTO_PROBE,
+  if (SYSERR == capi->registerHandler(P2P_PROTO_tracekit_PROBE,
 				      &handlep2pProbe))
     ok = SYSERR;
-  if (SYSERR == capi->registerHandler(TRACEKIT_p2p_PROTO_REPLY,
+  if (SYSERR == capi->registerHandler(P2P_PROTO_tracekit_REPLY,
 				      &handlep2pReply))
     ok = SYSERR;
   if (SYSERR == capi->registerClientExitHandler(&clientExitHandler))
     ok = SYSERR;
-  if (SYSERR == capi->registerClientHandler(TRACEKIT_CS_PROTO_PROBE,
+  if (SYSERR == capi->registerClientHandler(CS_PROTO_tracekit_PROBE,
 					    (CSHandler)&csHandle))
     ok = SYSERR;
   setConfigurationString("ABOUT",
@@ -438,12 +435,12 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
 void done_module_tracekit() {
   int i;
 
-  coreAPI->unregisterHandler(TRACEKIT_p2p_PROTO_PROBE,
+  coreAPI->unregisterHandler(P2P_PROTO_tracekit_PROBE,
 			     &handlep2pProbe);
-  coreAPI->unregisterHandler(TRACEKIT_p2p_PROTO_REPLY,
+  coreAPI->unregisterHandler(P2P_PROTO_tracekit_REPLY,
 			     &handlep2pReply);
   coreAPI->unregisterClientExitHandler(&clientExitHandler);
-  coreAPI->unregisterClientHandler(TRACEKIT_CS_PROTO_PROBE,
+  coreAPI->unregisterClientHandler(CS_PROTO_tracekit_PROBE,
 				   (CSHandler)&csHandle);
   for (i=0;i<MAXROUTE;i++) {
     FREENONNULL(routeTable[i]);

@@ -31,7 +31,7 @@
  * Client requests peer to perform some profiling.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
   /**
    * How big is each message (plus headers).
    * Note that GNUnet is limited to 64k messages.
@@ -69,13 +69,13 @@ typedef struct {
    * Which priority should be used?
    */
   unsigned int priority;
-} TBENCH_CS_MESSAGE;
+} CS_tbench_request_MESSAGE;
 
 /**
  * Response from server with statistics.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
   unsigned int max_loss;
   unsigned int min_loss;
   float mean_loss;
@@ -85,6 +85,6 @@ typedef struct {
   cron_t min_time;
   float mean_time;
   float variance_time;
-} TBENCH_CS_REPLY;
+} CS_tbench_reply_MESSAGE;
 
 #endif

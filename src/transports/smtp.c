@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -439,7 +439,7 @@ static void * listenAndDistribute() {
     char * boundary;
     char * out;
     unsigned int size;
-    MessagePack * coreMP;
+    P2P_PACKET * coreMP;
 
     smtp_pipe = fileopen(pipename, O_RDONLY);
     fdes = fdopen(smtp_pipe, "r");
@@ -488,7 +488,7 @@ static void * listenAndDistribute() {
 	    ntohl(mp->size));
 	goto END;
       }
-      coreMP = MALLOC(sizeof(MessagePack));
+      coreMP = MALLOC(sizeof(P2P_PACKET));
       coreMP->msg = out;
       coreMP->size = size - sizeof(SMTPMessage);
       coreMP->tsession = NULL;
@@ -513,25 +513,25 @@ static void * listenAndDistribute() {
 /* *************** API implementation *************** */
 
 /**
- * Verify that a HELO-Message is correct (a node is reachable at that
+ * Verify that a hello-Message is correct (a node is reachable at that
  * address). Since the reply will be asynchronous, a method must be
  * called on success.
  *
- * @param helo the HELO message to verify
+ * @param helo the hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHelo(const HELO_Message * helo) {
+static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   EmailAddress * maddr;
 
-  maddr = (EmailAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  maddr = (EmailAddress*) &helo[1];
   if ((ntohs(helo->header.size)!=
-       sizeof(HELO_Message)+ntohs(helo->senderAddressSize)) ||
+       sizeof(P2P_hello_MESSAGE)+ntohs(helo->senderAddressSize)) ||
       (maddr->senderAddress[ntohs(helo->senderAddressSize)-1-FILTER_STRING_SIZE]!='\0')) {
     LOG(LOG_WARNING,
-	" received invalid SMTP address advertisement (HELO) %d != %d or %d != 0\n",
+	" received invalid SMTP address advertisement (hello) %d != %d or %d != 0\n",
 	ntohs(helo->header.size),
-	sizeof(HELO_Message)+ntohs(helo->senderAddressSize),
+	sizeof(P2P_hello_MESSAGE)+ntohs(helo->senderAddressSize),
 	maddr->senderAddress[ntohs(helo->senderAddressSize)-1-FILTER_STRING_SIZE]);
     BREAK();
     return SYSERR; /* obviously invalid */
@@ -544,14 +544,14 @@ static int verifyHelo(const HELO_Message * helo) {
 }
 
 /**
- * Create a HELO-Message for the current node. The HELO is created
+ * Create a hello-Message for the current node. The hello is created
  * without signature and without a timestamp. The GNUnet core will
  * sign the message and add an expiration time.
  *
- * @return HELO on success, NULL on error
+ * @return hello on success, NULL on error
  */
-static HELO_Message * createHELO() {
-  HELO_Message * msg;
+static P2P_hello_MESSAGE * createhello() {
+  P2P_hello_MESSAGE * msg;
   char * email;
   char * filter;
   EmailAddress * haddr;
@@ -579,11 +579,11 @@ static HELO_Message * createHELO() {
 	filter);
   }
   i = (strlen(email) + 8) & (~7); /* make multiple of 8 */
-  msg = MALLOC(sizeof(HELO_Message) + sizeof(EmailAddress) + i);
+  msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(EmailAddress) + i);
   memset(msg,
 	 0,
-	 sizeof(HELO_Message) + sizeof(EmailAddress) + i);
-  haddr = (EmailAddress*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
+	 sizeof(P2P_hello_MESSAGE) + sizeof(EmailAddress) + i);
+  haddr = (EmailAddress*) &msg[1];
   memset(&haddr->filter[0],
 	 0,
 	 FILTER_STRING_SIZE);
@@ -596,7 +596,7 @@ static HELO_Message * createHELO() {
   msg->protocol          = htons(SMTP_PROTOCOL_NUMBER);
   msg->MTU               = htonl(smtpAPI.mtu);
   msg->header.size
-      = htons(HELO_Message_size(msg));
+      = htons(P2P_hello_MESSAGE_size(msg));
   FREE(email);
   if (verifyHelo(msg) == SYSERR)
     GNUNET_ASSERT(0);
@@ -605,19 +605,19 @@ static HELO_Message * createHELO() {
 
 /**
  * Establish a connection to a remote node.
- * @param helo the HELO-Message for the target node
+ * @param helo the hello-Message for the target node
  * @param tsessionPtr the session handle that is to be set
  * @return OK on success, SYSERR if the operation failed
  */
-static int smtpConnect(const HELO_Message * helo,
+static int smtpConnect(const P2P_hello_MESSAGE * helo,
 		       TSession ** tsessionPtr) {
   TSession * tsession;
 
   tsession = MALLOC(sizeof(TSession));
-  tsession->internal = MALLOC(HELO_Message_size(helo));
+  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(helo));
   memcpy(tsession->internal,
 	 helo,
-	 HELO_Message_size(helo));
+	 P2P_hello_MESSAGE_size(helo));
   tsession->ttype = smtpAPI.protocolNumber;
   (*tsessionPtr) = tsession;
   return OK;
@@ -643,7 +643,7 @@ int smtpAssociate(TSession * tsession) {
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the HELO_Message identifying the remote node
+ * @param tsession the P2P_hello_MESSAGE identifying the remote node
  * @param message what to send
  * @param size the size of the message
  * @return SYSERR on error, OK on success
@@ -653,7 +653,7 @@ static int smtpSend(TSession * tsession,
 		    const unsigned int size) {
   char * msg;
   SMTPMessage * mp;
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
   EmailAddress * haddr;
   char * ebody;
   int res;
@@ -669,11 +669,11 @@ static int smtpSend(TSession * tsession,
     BREAK();
     return SYSERR;
   }
-  helo = (HELO_Message*)tsession->internal;
+  helo = (P2P_hello_MESSAGE*)tsession->internal;
   if (helo == NULL)
     return SYSERR;
 
-  haddr = (EmailAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (EmailAddress*) &helo[1];
   ssize2 = ssize = size + sizeof(SMTPMessage);
   msg = MALLOC(ssize);
   mp              = (SMTPMessage*) &msg[size];
@@ -801,7 +801,7 @@ static int startTransportServer(void) {
   }
   email = NULL; /* abusing email as a flag... */
   if (OK == writeSMTPLine(smtp_sock,
-			  "HELO %s\r\n",
+			  "hello %s\r\n",
 			  getConfigurationString("SMTP",
 						 "SENDERHOSTNAME")))
     if (OK == readSMTPLine(smtp_sock,
@@ -851,12 +851,12 @@ static void reloadConfiguration(void) {
 /**
  * Convert TCP address to a string.
  */
-static char * addressToString(const HELO_Message * helo) {
+static char * addressToString(const P2P_hello_MESSAGE * helo) {
   char * ret;
   EmailAddress * addr;
   size_t n;
 
-  addr = (EmailAddress*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  addr = (EmailAddress*) &helo[1];
   n = FILTER_STRING_SIZE + strlen(addr->senderAddress) + 16;
   ret = MALLOC(n);
   SNPRINTF(ret,
@@ -897,7 +897,7 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   smtpAPI.mtu                  = mtu - sizeof(SMTPMessage);
   smtpAPI.cost                 = 50;
   smtpAPI.verifyHelo           = &verifyHelo;
-  smtpAPI.createHELO           = &createHELO;
+  smtpAPI.createhello           = &createhello;
   smtpAPI.connect              = &smtpConnect;
   smtpAPI.send                 = &smtpSend;
   smtpAPI.sendReliable         = &smtpSend; /* is always blocking, so we can't really do better */

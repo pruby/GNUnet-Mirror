@@ -39,18 +39,18 @@
 char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
 				   const char * section,
 				   const char * option) {
-  CS_GET_OPTION_REQUEST req;
-  CS_GET_OPTION_REPLY * reply;
+  CS_getoption_request_MESSAGE req;
+  CS_getoption_reply_MESSAGE * reply;
   int res;
   char * ret;
 
   memset(&req,
 	 0,
-	 sizeof(CS_GET_OPTION_REQUEST));
+	 sizeof(CS_getoption_request_MESSAGE));
   req.header.type = htons(CS_PROTO_GET_OPTION_REQUEST);
-  req.header.size = htons(sizeof(CS_GET_OPTION_REQUEST));
-  if ( (strlen(section) >= CS_GET_OPTION_REQUEST_OPT_LEN) ||
-       (strlen(option) >= CS_GET_OPTION_REQUEST_OPT_LEN) )
+  req.header.size = htons(sizeof(CS_getoption_request_MESSAGE));
+  if ( (strlen(section) >= CS_getoption_request_MESSAGE_OPT_LEN) ||
+       (strlen(option) >= CS_getoption_request_MESSAGE_OPT_LEN) )
     return NULL;
   strcpy(&req.section[0],
 	 section);
@@ -62,14 +62,14 @@ char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
     return NULL;
   reply = NULL;
   res = readFromSocket(sock,
-		       (CS_HEADER**)&reply);
+		       (CS_MESSAGE_HEADER**)&reply);
   if (res != OK)
     return NULL;
-  ret = MALLOC(ntohs(reply->header.size) - sizeof(CS_HEADER) + 1);
+  ret = MALLOC(ntohs(reply->header.size) - sizeof(CS_MESSAGE_HEADER) + 1);
   memcpy(ret,
 	 &reply->value[0],
-	 ntohs(reply->header.size) - sizeof(CS_HEADER));
-  ret[ntohs(reply->header.size) - sizeof(CS_HEADER)] = '\0';
+	 ntohs(reply->header.size) - sizeof(CS_MESSAGE_HEADER));
+  ret[ntohs(reply->header.size) - sizeof(CS_MESSAGE_HEADER)] = '\0';
   FREE(reply);
   return ret;
 }

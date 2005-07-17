@@ -72,10 +72,10 @@ static void semUp(Semaphore * sem) {
 }
 
 static int noiseHandler(const PeerIdentity *peer,
-			const p2p_HEADER * msg,
+			const P2P_MESSAGE_HEADER * msg,
 			TSession * s) {
   if ( (ntohs(msg->size) ==
-	sizeof(p2p_HEADER) + expectedSize) &&
+	sizeof(P2P_MESSAGE_HEADER) + expectedSize) &&
        (0 == memcmp(expectedValue,
 		    &msg[1],
 		    expectedSize)) )
@@ -89,12 +89,12 @@ static int noiseHandler(const PeerIdentity *peer,
  */
 static void testTAPI(TransportAPI * tapi,
 		     int * res) {
-  HELO_Message * helo;
+  P2P_hello_MESSAGE * helo;
   TSession * tsession;
   unsigned int repeat;
   cron_t start;
   cron_t end;
-  CS_HEADER * noise;
+  CS_MESSAGE_HEADER * noise;
 
   if (tapi == NULL)
     errexit("Could not initialize transport!\n");
@@ -102,10 +102,10 @@ static void testTAPI(TransportAPI * tapi,
     *res = OK;
     return; /* NAT cannot be tested */
   }
-  helo = tapi->createHELO();
+  helo = tapi->createhello();
   if (helo == NULL) {
     fprintf(stderr,
-	    _("'%s': Could not create HELO.\n"),
+	    _("'%s': Could not create hello.\n"),
 	    tapi->transName);
     *res = SYSERR;
     return;
@@ -131,9 +131,9 @@ static void testTAPI(TransportAPI * tapi,
   }
   sem = SEMAPHORE_NEW(0);
   cronTime(&start);
-  noise = MALLOC(expectedSize + sizeof(p2p_HEADER));
-  noise->type = htons(p2p_PROTO_NOISE);
-  noise->size = htons(expectedSize + sizeof(p2p_HEADER));
+  noise = MALLOC(expectedSize + sizeof(P2P_MESSAGE_HEADER));
+  noise->type = htons(P2P_PROTO_noise);
+  noise->size = htons(expectedSize + sizeof(P2P_MESSAGE_HEADER));
   memcpy(&noise[1],
 	 expectedValue,
 	 expectedSize);
@@ -202,12 +202,12 @@ static void pingCallback(void * unused) {
   SEMAPHORE_UP(sem);
 }
 
-static void testPING(HELO_Message * xhelo,
+static void testPING(P2P_hello_MESSAGE * xhelo,
 		     int * stats) {
   TSession * tsession;
-  HELO_Message * helo;
-  HELO_Message * myHelo;
-  p2p_HEADER * ping;
+  P2P_hello_MESSAGE * helo;
+  P2P_hello_MESSAGE * myHelo;
+  P2P_MESSAGE_HEADER * ping;
   char * msg;
   int len;
   PeerIdentity peer;
@@ -234,7 +234,7 @@ static void testPING(HELO_Message * xhelo,
     FREE(helo);
     return;
   }
-  myHelo = transport->createHELO(ntohs(xhelo->protocol));
+  myHelo = transport->createhello(ntohs(xhelo->protocol));
   if (myHelo == NULL) {
     FREE(helo);
     return;
@@ -576,7 +576,7 @@ int main(int argc, char *argv[]) {
   }
   initCore();
   initConnection();
-  registerPlaintextHandler(p2p_PROTO_NOISE,
+  registerPlaintextHandler(P2P_PROTO_noise,
 			   &noiseHandler);
   enableCoreProcessing();
   identity = requestService("identity");
@@ -595,7 +595,7 @@ int main(int argc, char *argv[]) {
     stats[0] = 0;
     stats[1] = 0;
     stats[2] = 0;
-    bootstrap->bootstrap((HELO_Callback)&testPING,
+    bootstrap->bootstrap((hello_Callback)&testPING,
 			 &stats[0]);
     printf(_("%d out of %d peers contacted successfully (%d times transport unavailable).\n"),
 	   stats[2],
@@ -612,7 +612,7 @@ int main(int argc, char *argv[]) {
   releaseService(transport);
   releaseService(pingpong);
   disableCoreProcessing();
-  unregisterPlaintextHandler(p2p_PROTO_NOISE,
+  unregisterPlaintextHandler(P2P_PROTO_noise,
 			     &noiseHandler);
   doneConnection();
   doneCore();

@@ -78,12 +78,12 @@ typedef struct {
   int next;
   /** data ptr (argument to the method) */
   void * data;
-} DeltaEntry;
+} UTIL_cron_DeltaListEntry;
 
 /**
  * The delta-list of waiting tasks.
  */
-static DeltaEntry * deltaList_;
+static UTIL_cron_DeltaListEntry * deltaList_;
 
 /**
  * The current size of the DeltaList.
@@ -162,7 +162,7 @@ void initCron() {
 
   deltaListSize_ = INIT_CRON_JOBS;
   deltaList_
-    = MALLOC(sizeof(DeltaEntry) * deltaListSize_);
+    = MALLOC(sizeof(UTIL_cron_DeltaListEntry) * deltaListSize_);
   for (i=0;i<deltaListSize_;i++)
     deltaList_[i].next = i-1;
   firstFree_ = deltaListSize_-1;
@@ -344,8 +344,8 @@ static void abortSleep() {
 void advanceCronJob(CronJob method,
 		    unsigned int deltaRepeat,
 		    void * data) {
-  DeltaEntry * job;
-  DeltaEntry * last;
+  UTIL_cron_DeltaListEntry * job;
+  UTIL_cron_DeltaListEntry * last;
   int jobId;
 
 #if DEBUG_CRON
@@ -421,8 +421,8 @@ void addCronJob(CronJob method,
 		unsigned int delta,
 		unsigned int deltaRepeat,
 		void * data) {
-  DeltaEntry * entry;
-  DeltaEntry * pos;
+  UTIL_cron_DeltaListEntry * entry;
+  UTIL_cron_DeltaListEntry * pos;
   int last;
   int current;
 
@@ -499,7 +499,7 @@ void addCronJob(CronJob method,
  */
 void printCronTab() {
   int jobId;
-  DeltaEntry * tab;
+  UTIL_cron_DeltaListEntry * tab;
   cron_t now;
 
   cronTime(&now);
@@ -529,7 +529,7 @@ void printCronTab() {
  * jobs!)
  */
 static void runJob() {
-  DeltaEntry * job;
+  UTIL_cron_DeltaListEntry * job;
   int jobId;
   CronJob method;
   void * data;
@@ -654,8 +654,8 @@ static void * cron() {
 int delCronJob(CronJob method,
 		unsigned int repeat,
 		void * data) {
-  DeltaEntry * job;
-  DeltaEntry * last;
+  UTIL_cron_DeltaListEntry * job;
+  UTIL_cron_DeltaListEntry * last;
   int jobId;
 
 #if DEBUG_CRON

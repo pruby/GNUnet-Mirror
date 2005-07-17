@@ -60,22 +60,22 @@ typedef HashCode512 DHT_TableId;
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   DHT_TableId table;
 
-} DHT_CS_REQUEST_JOIN;
+} CS_dht_request_join_MESSAGE;
 
 /**
  * TCP communication: client to gnunetd: leave table
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   DHT_TableId table;
 
-} DHT_CS_REQUEST_LEAVE;
+} CS_dht_request_leave_MESSAGE;
 
 
 /**
@@ -84,7 +84,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   DHT_TableId table;
 
@@ -94,15 +94,15 @@ typedef struct {
 
   unsigned int priority; /* nbo */
 
-} DHT_CS_REQUEST_PUT;
+} CS_dht_request_put_MESSAGE;
 
 /**
  * TCP communication: get <key,value>-mappings
- * for given key. Reply is a DHT_CS_REPLY_RESULTS message.
+ * for given key. Reply is a CS_dht_reply_results_MESSAGE message.
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   unsigned int type; /* nbo */
 
@@ -115,14 +115,14 @@ typedef struct {
   /* one or more keys */
   HashCode512 keys;
 
-} DHT_CS_REQUEST_GET;
+} CS_dht_request_get_MESSAGE;
 
 /**
  * remove value.  Reply is just an ACK.
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   DHT_TableId table;
 
@@ -130,26 +130,26 @@ typedef struct {
 
   HashCode512 key;
 
-} DHT_CS_REQUEST_REMOVE;
+} CS_dht_request_remove_MESSAGE;
 
 /**
  * gnunetd to client: iterate over all values.  Reply is
- * a DHT_CS_REPLY_RESULTS message.
+ * a CS_dht_reply_results_MESSAGE message.
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
-} DHT_CS_REQUEST_ITERATE;
+} CS_dht_request_iterate_MESSAGE;
 
 /**
  * TCP communication: Results for a request.  Uses a separate message
- * for each result; DHT_CS_REPLY_RESULTS maybe repeated many
+ * for each result; CS_dht_reply_results_MESSAGE maybe repeated many
  * times (the total number is given in totalResults).
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   unsigned int totalResults;
 
@@ -159,19 +159,19 @@ typedef struct {
 
   DataContainer data;
 
-} DHT_CS_REPLY_RESULTS;
+} CS_dht_reply_results_MESSAGE;
 
 /**
  * TCP communication: status response for a request
  */
 typedef struct {
 
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   int status; /* NBO */
 
   DHT_TableId table;
 
-} DHT_CS_REPLY_ACK;
+} CS_dht_reply_ack_MESSAGE;
 
 #endif /* GNUNET_DHT_H */

@@ -20,7 +20,7 @@
 
 /**
  * @file advertising/bootstrap.h
- * @brief Cron-jobs that obtain HELOs if we know
+ * @brief Cron-jobs that obtain hellos if we know
  *   too few peers
  * @author Christian Grothoff
  */

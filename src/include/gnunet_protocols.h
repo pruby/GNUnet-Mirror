@@ -119,71 +119,71 @@
 /**
  * client to gnunetd: send queries
  */
-#define AFS_CS_PROTO_QUERY_START 8
+#define CS_PROTO_gap_QUERY_START 8
 
 /**
  * client to gnunetd: stop query
  */
-#define AFS_CS_PROTO_QUERY_STOP 9
+#define CS_PROTO_gap_QUERY_STOP 9
 
 /**
  * gnunetd to client: here is your answer
  */
-#define AFS_CS_PROTO_RESULT 9
+#define CS_PROTO_gap_RESULT 9
 
 /**
  * client to gnunetd: insert CHK content (no index)
  */
-#define AFS_CS_PROTO_INSERT 10
+#define CS_PROTO_gap_INSERT 10
 
 /**
  * client to gnunetd: index content
  */
-#define AFS_CS_PROTO_INDEX 11
+#define CS_PROTO_gap_INDEX 11
 
 /**
  * client to gnunetd: delete content
  */
-#define AFS_CS_PROTO_DELETE 12
+#define CS_PROTO_gap_DELETE 12
 
 /**
  * client to gnunetd: unindex content
  */
-#define AFS_CS_PROTO_UNINDEX 13
+#define CS_PROTO_gap_UNINDEX 13
 
 /**
  * client to gnunetd: test if content is indexed
  */
-#define AFS_CS_PROTO_TESTINDEX 14
+#define CS_PROTO_gap_TESTINDEX 14
 
 /**
  * Client to gnunetd: what is the average priority of entries in the
  * routing table?
  */
-#define AFS_CS_PROTO_GET_AVG_PRIORITY 15
+#define CS_PROTO_gap_GET_AVG_PRIORITY 15
 
 /**
  * client to gnunetd: initialize to index file
  */
-#define AFS_CS_PROTO_INIT_INDEX 16
+#define CS_PROTO_gap_INIT_INDEX 16
 
 /* *********** messages for traffic module ************* */
 
 /**
  * client to traffic module: to how many nodes are we connected?
- * reply is a CS_RETURN_VALUE message.
+ * reply is a CS_returnvalue_MESSAGE message.
  */
-#define CS_PROTO_CLIENT_COUNT 32
+#define CS_PROTO_traffic_COUNT 32
 
 /**
  * Client to traffic module: how much traffic do we have at the moment?
  */
-#define CS_PROTO_TRAFFIC_QUERY 33
+#define CS_PROTO_traffic_QUERY 33
 
 /**
  * traffic module to client: traffic statistics
  */
-#define CS_PROTO_TRAFFIC_INFO 34
+#define CS_PROTO_traffic_INFO 34
 
 
 /* *********** messages for stats module ************* */
@@ -191,45 +191,45 @@
 /**
  * client to stats module: request statistics
  */
-#define STATS_CS_PROTO_GET_STATISTICS 36
+#define CS_PROTO_stats_GET_STATISTICS 36
 
 /**
  * stats module to client: statistics
  */
-#define STATS_CS_PROTO_STATISTICS 37
+#define CS_PROTO_stats_STATISTICS 37
 
 /**
  * client to stats module: is client server message supported
  */
-#define STATS_CS_PROTO_GET_CS_MESSAGE_SUPPORTED 38
+#define CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED 38
 
 /**
  * client to stats module: is p2p message supported
  */
-#define STATS_CS_PROTO_GET_P2P_MESSAGE_SUPPORTED 39
+#define CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED 39
 
 
 /* ********** CS TBENCH application messages ********** */
 
-#define TBENCH_CS_PROTO_REQUEST	40
-#define TBENCH_CS_PROTO_REPLY	41
+#define CS_PROTO_tbench_REQUEST	40
+#define CS_PROTO_tbench_REPLY	41
 
 
 /* ********** CS TRACEKIT application messages ********* */
 
-#define TRACEKIT_CS_PROTO_PROBE 42
-#define TRACEKIT_CS_PROTO_REPLY 43
+#define CS_PROTO_tracekit_PROBE 42
+#define CS_PROTO_tracekit_REPLY 43
 
 
 /* ********** CS CHAT application messages ********** */
 
-#define CHAT_CS_PROTO_MSG 44
+#define CS_PROTO_chat_MSG 44
 
 
 /* ********** CS TESTBED application messages ********** */
 
-#define TESTBED_CS_PROTO_REQUEST 50
-#define TESTBED_CS_PROTO_REPLY   51
+#define CS_PROTO_testbed_REQUEST 50
+#define CS_PROTO_testbed_REPLY   51
 
 
 /* ********** CS DHT application messages ********** */
@@ -237,45 +237,45 @@
 /**
  * client to CS: join table
  */
-#define DHT_CS_PROTO_REQUEST_JOIN     72
+#define CS_PROTO_dht_REQUEST_JOIN     72
 
 /**
  * client to CS: leave table
  */
-#define DHT_CS_PROTO_REQUEST_LEAVE    73
+#define CS_PROTO_dht_REQUEST_LEAVE    73
 
 /**
  * Client to CS or CS to client: get from table
  */
-#define DHT_CS_PROTO_REQUEST_GET      74
+#define CS_PROTO_dht_REQUEST_GET      74
 
 /**
  * Client to CS or CS to client: put into table
  */
-#define DHT_CS_PROTO_REQUEST_PUT      75
+#define CS_PROTO_dht_REQUEST_PUT      75
 
 /**
  * Client to CS or CS to client: remove from table
  */
-#define DHT_CS_PROTO_REQUEST_REMOVE   76
+#define CS_PROTO_dht_REQUEST_REMOVE   76
 
 /**
  * Client to CS or CS to client: results from get
  */
-#define DHT_CS_PROTO_REPLY_GET        77
+#define CS_PROTO_dht_REPLY_GET        77
 
 /**
  * Client to CS or CS to client: confirmed
  */
-#define DHT_CS_PROTO_REPLY_ACK        78
+#define CS_PROTO_dht_REPLY_ACK        78
 
 /**
  * Client to CS: iterate over table
  */
-#define DHT_CS_PROTO_REQUEST_ITERATE   79
+#define CS_PROTO_dht_REQUEST_ITERATE   79
 
 
-#define MAX_CS_PROTO_USED 80
+#define CS_PROTO_MAX_USED 80
 
 /* ******** node-to-node (p2p) messages (over anything) ********* */
 
@@ -284,12 +284,12 @@
 /**
  * announcement of public key
  */
-#define p2p_PROTO_HELO 0
+#define p2p_PROTO_hello 0
 
 /**
  * session key exchange, session key is encrypted with hostkey
  */
-#define p2p_PROTO_SKEY 1
+#define P2P_PROTO_setkey 1
 
 /**
  * PING
@@ -305,58 +305,58 @@
  * termination of connection (other host is nice
  * and tells us, there is NO requirement to do so!)
  */
-#define p2p_PROTO_HANGUP 4
+#define P2P_PROTO_hangup 4
 
 /**
  * Fragmented message.
  */
-#define p2p_PROTO_FRAGMENT 5
+#define P2P_PROTO_fragment 5
 
 /**
  * noise, used to fill packets to sizes >1k.
  */
-#define p2p_PROTO_NOISE 6
+#define P2P_PROTO_noise 6
 
 /* ************* p2p GAP application messages *********** */
 
 /**
  * Query for content.
  */
-#define GAP_p2p_PROTO_QUERY 16
+#define P2P_PROTO_gap_QUERY 16
 
 /**
  * receive content
  */
-#define GAP_p2p_PROTO_RESULT 17
+#define P2P_PROTO_gap_RESULT 17
 
 /* ************** p2p CHAT application messages *********** */
 
 /**
  * chat message
  */
-#define CHAT_p2p_PROTO_MSG 32
+#define P2P_PROTO_chat_MSG 32
 
 /* *************** p2p TRACEKIT application messages ******** */
 
-#define TRACEKIT_p2p_PROTO_PROBE 36
+#define P2P_PROTO_tracekit_PROBE 36
 
-#define TRACEKIT_p2p_PROTO_REPLY 37
+#define P2P_PROTO_tracekit_REPLY 37
 
 /* ********** p2p TBENCH application messages ********** */
 
 /**
  * benchmark message: send back reply asap
  */
-#define TBENCH_p2p_PROTO_REQUEST 40
-#define TBENCH_p2p_PROTO_REPLY 	 41
+#define P2P_PROTO_tbench_REQUEST 40
+#define P2P_PROTO_tbench_REPLY 	 41
 
 /************** p2p RPC application messages ************/
 
-#define RPC_p2p_PROTO_REQ 42
-#define RPC_p2p_PROTO_RES 43
-#define RPC_p2p_PROTO_ACK 44
+#define P2P_PROTO_rpc_REQ 42
+#define P2P_PROTO_rpc_RES 43
+#define P2P_PROTO_rpc_ACK 44
 
-#define MAX_p2p_PROTO_USED 45
+#define P2P_PROTO_MAX_USED 45
 
 
 

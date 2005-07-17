@@ -70,7 +70,7 @@ typedef struct {
  * if it sends a CS_TRAFFIC_QUERY to gnunetd.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * The number of different message types we have seen
@@ -78,33 +78,27 @@ typedef struct {
    */
   unsigned int count;
 
-} CS_TRAFFIC_INFO;
+} CS_traffic_info_MESSAGE;
 
 /**
- * Generic version of CS_TRAFFIC_INFO with field for accessing end of struct
+ * Generic version of CS_traffic_info_MESSAGE with field for accessing end of struct
  * (use the other version for allocation).
  */
 typedef struct {
-  CS_TRAFFIC_INFO cs_traffic_info;
-
-  /**
-   * The number of different message types we have seen
-   * in the last time.
-   */
-  unsigned int count;
+  CS_traffic_info_MESSAGE cs_traffic_info;
 
   /**
    * "count" traffic counters.
    */
   TRAFFIC_COUNTER counters[1];
 
-} CS_TRAFFIC_INFO_GENERIC;
+} CS_traffic_info_MESSAGE_GENERIC;
 
 /**
- * Request for CS_TRAFFIC_INFO.
+ * Request for CS_traffic_info_MESSAGE.
  */
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
 
   /**
    * How many time units back should the statistics returned contain?
@@ -112,7 +106,7 @@ typedef struct {
    */
   unsigned int timePeriod;
 
-} CS_TRAFFIC_REQUEST;
+} CS_traffic_request_MESSAGE;
 
 
 #endif

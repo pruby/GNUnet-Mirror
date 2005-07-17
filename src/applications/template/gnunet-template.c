@@ -96,7 +96,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
   while (OK == readFromSocket(sock,
-			      (CS_HEADER**)&buffer)) {
+			      (CS_MESSAGE_HEADER**)&buffer)) {
     /* process */
   }
   FREE(buffer);

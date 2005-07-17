@@ -79,12 +79,12 @@ static Mutex lock;
  * Check if the given message is an ACK.  If so,
  * return the status, otherwise SYSERR.
  */
-static int checkACK(CS_HEADER * reply) {
+static int checkACK(CS_MESSAGE_HEADER * reply) {
   LOG(LOG_DEBUG,
       "received ACK from gnunetd\n");
-  if ( (sizeof(DHT_CS_REPLY_ACK) == ntohs(reply->size)) &&
-       (DHT_CS_PROTO_REPLY_ACK == ntohs(reply->type)) )
-    return ntohl(((DHT_CS_REPLY_ACK*)reply)->status);
+  if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
+       (CS_PROTO_dht_REPLY_ACK == ntohs(reply->type)) )
+    return ntohl(((CS_dht_reply_ack_MESSAGE*)reply)->status);
   return SYSERR;
 }
 
@@ -94,12 +94,12 @@ static int checkACK(CS_HEADER * reply) {
 static int sendAck(GNUNET_TCP_SOCKET * sock,
 		   DHT_TableId * table,
 		   int value) {
-  DHT_CS_REPLY_ACK msg;
+  CS_dht_reply_ack_MESSAGE msg;
 
   LOG(LOG_DEBUG,
       "sending ACK to gnunetd\n");
-  msg.header.size = htons(sizeof(DHT_CS_REPLY_ACK));
-  msg.header.type = htons(DHT_CS_PROTO_REPLY_ACK);
+  msg.header.size = htons(sizeof(CS_dht_reply_ack_MESSAGE));
+  msg.header.type = htons(CS_PROTO_dht_REPLY_ACK);
   msg.status = htonl(value);
   msg.table = *table;
   return writeToSocket(sock,
@@ -110,11 +110,11 @@ static int sendAllResults(const HashCode512 * key,
 			  const DataContainer * value,
 			  void * cls) {
   TableList * list = (TableList*) cls;
-  DHT_CS_REPLY_RESULTS * reply;
+  CS_dht_reply_results_MESSAGE * reply;
 
-  reply = MALLOC(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode512));
-  reply->header.size = htons(sizeof(DHT_CS_REPLY_RESULTS) + ntohl(value->size) + sizeof(HashCode512));
-  reply->header.type = htons(DHT_CS_PROTO_REPLY_GET);
+  reply = MALLOC(sizeof(CS_dht_reply_results_MESSAGE) + ntohl(value->size) + sizeof(HashCode512));
+  reply->header.size = htons(sizeof(CS_dht_reply_results_MESSAGE) + ntohl(value->size) + sizeof(HashCode512));
+  reply->header.type = htons(CS_PROTO_dht_REPLY_GET);
   reply->totalResults = htonl(1);
   reply->table = list->table;
   reply->key = *key;
@@ -125,7 +125,7 @@ static int sendAllResults(const HashCode512 * key,
 			  &reply->header)) {
     LOG(LOG_WARNING,
 	_("Failed to send '%s'.  Closing connection.\n"),
-	"DHT_CS_REPLY_RESULTS");
+	"CS_dht_reply_results_MESSAGE");
     MUTEX_LOCK(&list->lock);
     releaseClientSocket(list->sock);
     list->sock = NULL;
@@ -143,13 +143,13 @@ static int sendAllResults(const HashCode512 * key,
  * them to the implementation of list->store).
  */
 static void * process_thread(TableList * list) {
-  CS_HEADER * buffer;
-  CS_HEADER * reply;
-  DHT_CS_REQUEST_JOIN req;
+  CS_MESSAGE_HEADER * buffer;
+  CS_MESSAGE_HEADER * reply;
+  CS_dht_request_join_MESSAGE req;
   int ok;
 
-  req.header.size = htons(sizeof(DHT_CS_REQUEST_JOIN));
-  req.header.type = htons(DHT_CS_PROTO_REQUEST_JOIN);
+  req.header.size = htons(sizeof(CS_dht_request_join_MESSAGE));
+  req.header.type = htons(CS_PROTO_dht_REQUEST_JOIN);
   req.table = list->table;
 
   while (list->leave_request == NO) {
@@ -191,12 +191,12 @@ static void * process_thread(TableList * list) {
 	  ntohs(buffer->type));
 
       switch (ntohs(buffer->type)) {
-      case DHT_CS_PROTO_REQUEST_GET: {
-	DHT_CS_REQUEST_GET * req;
+      case CS_PROTO_dht_REQUEST_GET: {
+	CS_dht_request_get_MESSAGE * req;
 	int resCount;
 	int keyCount;
 
-	if (sizeof(DHT_CS_REQUEST_GET) != ntohs(buffer->size)) {
+	if (sizeof(CS_dht_request_get_MESSAGE) != ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
 	      _("Received invalid '%s' request (size %d)\n"),
 	      "GET",
@@ -207,7 +207,7 @@ static void * process_thread(TableList * list) {
 	  MUTEX_UNLOCK(&list->lock);
 	  FREE(buffer);
 	}
-	req = (DHT_CS_REQUEST_GET*) buffer;
+	req = (CS_dht_request_get_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
@@ -220,7 +220,7 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	
-	keyCount = 1 + ( (ntohs(req->header.size) - sizeof(DHT_CS_REQUEST_GET)) / sizeof(HashCode512));
+	keyCount = 1 + ( (ntohs(req->header.size) - sizeof(CS_dht_request_get_MESSAGE)) / sizeof(HashCode512));
 	resCount = list->store->get(list->store->closure,
 				    ntohl(req->type),
 				    ntohl(req->priority),
@@ -244,11 +244,11 @@ static void * process_thread(TableList * list) {
       }
 	
 	
-      case DHT_CS_PROTO_REQUEST_PUT: {
-	DHT_CS_REQUEST_PUT * req;
+      case CS_PROTO_dht_REQUEST_PUT: {
+	CS_dht_request_put_MESSAGE * req;
 	DataContainer * value;
 	
-	if (sizeof(DHT_CS_REQUEST_PUT) > ntohs(buffer->size)) {
+	if (sizeof(CS_dht_request_put_MESSAGE) > ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
 	      _("Received invalid '%s' request (size %d)\n"),
 	      "PUT",
@@ -259,7 +259,7 @@ static void * process_thread(TableList * list) {
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
 	}
-	req = (DHT_CS_REQUEST_PUT*) buffer;
+	req = (CS_dht_request_put_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
@@ -272,12 +272,12 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	value = MALLOC(sizeof(DataContainer) +
-		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
+		       ntohs(buffer->size) - sizeof(CS_dht_request_put_MESSAGE));
 	value->size = htonl(sizeof(DataContainer) +
-			    ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
+			    ntohs(buffer->size) - sizeof(CS_dht_request_put_MESSAGE));
 	memcpy(&value[1],
 	       &req[1],
-	       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_PUT));
+	       ntohs(buffer->size) - sizeof(CS_dht_request_put_MESSAGE));
 	if (OK !=
 	    sendAck(list->sock,
 		    &req->table,
@@ -298,11 +298,11 @@ static void * process_thread(TableList * list) {
       }
 
 
-      case DHT_CS_PROTO_REQUEST_REMOVE: {
-	DHT_CS_REQUEST_REMOVE * req;
+      case CS_PROTO_dht_REQUEST_REMOVE: {
+	CS_dht_request_remove_MESSAGE * req;
 	DataContainer * value;
 	
-	if (sizeof(DHT_CS_REQUEST_REMOVE) > ntohs(buffer->size)) {
+	if (sizeof(CS_dht_request_remove_MESSAGE) > ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
 	      _("Received invalid '%s' request (size %d)\n"),
 	      "REMOVE",
@@ -313,7 +313,7 @@ static void * process_thread(TableList * list) {
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
 	}
-	req = (DHT_CS_REQUEST_REMOVE*) buffer;
+	req = (CS_dht_request_remove_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
@@ -327,12 +327,12 @@ static void * process_thread(TableList * list) {
 	}
 
 	value = MALLOC(sizeof(DataContainer) +
-		       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
+		       ntohs(buffer->size) - sizeof(CS_dht_request_remove_MESSAGE));
 	value->size = htonl(sizeof(DataContainer) +
-			    ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
+			    ntohs(buffer->size) - sizeof(CS_dht_request_remove_MESSAGE));
 	memcpy(&value[1],
 	       &req[1],
-	       ntohs(buffer->size) - sizeof(DHT_CS_REQUEST_REMOVE));
+	       ntohs(buffer->size) - sizeof(CS_dht_request_remove_MESSAGE));
 	if (OK !=
 	    sendAck(list->sock,
 		    &req->table,
@@ -351,11 +351,11 @@ static void * process_thread(TableList * list) {
 	break;
       }
 	
-      case DHT_CS_PROTO_REQUEST_ITERATE: {
-	DHT_CS_REQUEST_ITERATE * req;
+      case CS_PROTO_dht_REQUEST_ITERATE: {
+	CS_dht_request_iterate_MESSAGE * req;
 	int resCount;
 
-	if (sizeof(DHT_CS_REQUEST_ITERATE) != ntohs(buffer->size)) {
+	if (sizeof(CS_dht_request_iterate_MESSAGE) != ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
 	      _("Received invalid '%s' request (size %d)\n"),
 	      "ITERATE",
@@ -366,7 +366,7 @@ static void * process_thread(TableList * list) {
 	  MUTEX_UNLOCK(&list->lock);
 	  FREE(buffer);
 	}
-	req = (DHT_CS_REQUEST_ITERATE*) buffer;
+	req = (CS_dht_request_iterate_MESSAGE*) buffer;
 	resCount = list->store->iterate(list->store->closure,
 					&sendAllResults,
 					list);
@@ -474,8 +474,8 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   TableList * list;
   int i;
   void * unused;
-  DHT_CS_REQUEST_LEAVE req;
-  CS_HEADER * reply;
+  CS_dht_request_leave_MESSAGE req;
+  CS_MESSAGE_HEADER * reply;
   int ret;
   GNUNET_TCP_SOCKET * sock;
 
@@ -501,8 +501,8 @@ int DHT_LIB_leave(const DHT_TableId * table) {
 
   list->leave_request = YES;
   /* send LEAVE message! */
-  req.header.size = htons(sizeof(DHT_CS_REQUEST_LEAVE));
-  req.header.type = htons(DHT_CS_PROTO_REQUEST_LEAVE);
+  req.header.size = htons(sizeof(CS_dht_request_leave_MESSAGE));
+  req.header.type = htons(CS_PROTO_dht_REQUEST_LEAVE);
   req.table = *table;
 
   ret = SYSERR;
@@ -518,17 +518,17 @@ int DHT_LIB_leave(const DHT_TableId * table) {
 	else
 	  LOG(LOG_WARNING,
 	      _("gnunetd signaled error in response to '%s' message\n"),
-	      "DHT_CS_REQUEST_LEAVE");      	
+	      "CS_dht_request_leave_MESSAGE");      	
 	FREE(reply);
       } else {
 	LOG(LOG_WARNING,
 	    _("Failed to receive response to '%s' message from gnunetd\n"),
-	    "DHT_CS_REQUEST_LEAVE");
+	    "CS_dht_request_leave_MESSAGE");
       }
     } else {
       LOG(LOG_WARNING,
 	  _("Failed to send '%s' message to gnunetd\n"),
-	  "DHT_CS_REQUEST_LEAVE");
+	  "CS_dht_request_leave_MESSAGE");
     }
     releaseClientSocket(sock);
   }
@@ -573,9 +573,9 @@ int DHT_LIB_get(const DHT_TableId * table,
 		DataProcessor processor,
 		void * closure) {
   GNUNET_TCP_SOCKET * sock;
-  DHT_CS_REQUEST_GET * req;
-  DHT_CS_REPLY_RESULTS * res;
-  CS_HEADER * reply;
+  CS_dht_request_get_MESSAGE * req;
+  CS_dht_reply_results_MESSAGE * res;
+  CS_MESSAGE_HEADER * reply;
   int ret;
   unsigned int size;
   DataContainer * result;
@@ -584,11 +584,11 @@ int DHT_LIB_get(const DHT_TableId * table,
   if (sock == NULL)
     return SYSERR;
 
-  req = MALLOC(sizeof(DHT_CS_REQUEST_GET) +
+  req = MALLOC(sizeof(CS_dht_request_get_MESSAGE) +
 	       (keyCount-1) * sizeof(HashCode512));
-  req->header.size = htons(sizeof(DHT_CS_REQUEST_GET) +
+  req->header.size = htons(sizeof(CS_dht_request_get_MESSAGE) +
 			   (keyCount-1) * sizeof(HashCode512));
-  req->header.type = htons(DHT_CS_PROTO_REQUEST_GET);
+  req->header.type = htons(CS_PROTO_dht_REQUEST_GET);
   req->type = htonl(type);
   req->timeout = htonll(timeout);
   req->table = *table;
@@ -609,15 +609,15 @@ int DHT_LIB_get(const DHT_TableId * table,
       releaseClientSocket(sock);
       return SYSERR;
     }
-    if ( (sizeof(DHT_CS_REPLY_ACK) == ntohs(reply->size)) &&
-	 (DHT_CS_PROTO_REPLY_ACK == ntohs(reply->type)) ) {
+    if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
+	 (CS_PROTO_dht_REPLY_ACK == ntohs(reply->type)) ) {
       releaseClientSocket(sock);
       ret = checkACK(reply);
       FREE(reply);
       break; /* termination message, end loop! */
     }
-    if ( (sizeof(DHT_CS_REPLY_RESULTS) > ntohs(reply->size)) ||
-	 (DHT_CS_PROTO_REPLY_GET != ntohs(reply->type)) ) {
+    if ( (sizeof(CS_dht_reply_results_MESSAGE) > ntohs(reply->size)) ||
+	 (CS_PROTO_dht_REPLY_GET != ntohs(reply->type)) ) {
       LOG(LOG_WARNING,
 	_("Unexpected reply to '%s' operation.\n"),
 	  "GET");
@@ -626,10 +626,10 @@ int DHT_LIB_get(const DHT_TableId * table,
       return SYSERR;
     }
     /* ok, we got some replies! */
-    res = (DHT_CS_REPLY_RESULTS*) reply;
+    res = (CS_dht_reply_results_MESSAGE*) reply;
     ret = ntohl(res->totalResults);
 
-    size = ntohs(reply->size) - sizeof(DHT_CS_REPLY_RESULTS);
+    size = ntohs(reply->size) - sizeof(CS_dht_reply_results_MESSAGE);
     result = MALLOC(size + sizeof(DataContainer));
     result->size = htonl(size + sizeof(DataContainer));
     memcpy(&result[1],
@@ -662,8 +662,8 @@ int DHT_LIB_put(const DHT_TableId * table,
 		cron_t timeout,
 		const DataContainer * value) {
   GNUNET_TCP_SOCKET * sock;
-  DHT_CS_REQUEST_PUT * req;
-  CS_HEADER * reply;
+  CS_dht_request_put_MESSAGE * req;
+  CS_MESSAGE_HEADER * reply;
   int ret;
 
   LOG(LOG_DEBUG,
@@ -674,15 +674,15 @@ int DHT_LIB_put(const DHT_TableId * table,
   sock = getClientSocket();
   if (sock == NULL)
     return SYSERR;
-  req = MALLOC(sizeof(DHT_CS_REQUEST_PUT) +
+  req = MALLOC(sizeof(CS_dht_request_put_MESSAGE) +
 	       ntohl(value->size) -
 	       sizeof(DataContainer));
   req->header.size
-    = htons(sizeof(DHT_CS_REQUEST_PUT) +
+    = htons(sizeof(CS_dht_request_put_MESSAGE) +
 	    ntohl(value->size) -
 	    sizeof(DataContainer));
   req->header.type
-    = htons(DHT_CS_PROTO_REQUEST_PUT);
+    = htons(CS_PROTO_dht_REQUEST_PUT);
   req->table = *table;
   req->key = *key;
   req->priority = htonl(prio);
@@ -720,20 +720,20 @@ int DHT_LIB_remove(const DHT_TableId * table,
 		   cron_t timeout,
 		   const DataContainer * value) {
   GNUNET_TCP_SOCKET * sock;
-  DHT_CS_REQUEST_REMOVE * req;
-  CS_HEADER * reply;
+  CS_dht_request_remove_MESSAGE * req;
+  CS_MESSAGE_HEADER * reply;
   int ret;
   size_t n;
 
   sock = getClientSocket();
   if (sock == NULL)
     return SYSERR;
-  n = sizeof(DHT_CS_REQUEST_REMOVE);
+  n = sizeof(CS_dht_request_remove_MESSAGE);
   if (value != NULL)
     n += ntohl(value->size) - sizeof(DataContainer);
   req = MALLOC(n);
   req->header.size = htons(n);
-  req->header.type = htons(DHT_CS_PROTO_REQUEST_REMOVE);
+  req->header.type = htons(CS_PROTO_dht_REQUEST_REMOVE);
   req->table = *table;
   req->key = *key;
   req->timeout = htonll(timeout);

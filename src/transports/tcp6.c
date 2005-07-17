@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -75,14 +76,14 @@ typedef struct {
    */
   unsigned short reserved;
 
-} TCP6MessagePack;
+} TCP6P2P_PACKET;
 
 /**
  * Initial handshake message. Note that the beginning
- * must match the CS_HEADER since we are using tcp6io.
+ * must match the CS_MESSAGE_HEADER since we are using tcp6io.
  */
 typedef struct {
-  TCP6MessagePack header;
+  TCP6P2P_PACKET header;
 
   /**
    * Identity of the node connecting (TCP6 client)
@@ -362,8 +363,8 @@ static int readAndProcess(int i) {
   TCP6Session * tcp6Session;
   unsigned int len;
   int ret;
-  TCP6MessagePack * pack;
-  MessagePack * mp;
+  TCP6P2P_PACKET * pack;
+  P2P_PACKET * mp;
 
   tsession = tsessions[i];
   if (SYSERR == tcp6Associate(tsession))
@@ -407,7 +408,7 @@ static int readAndProcess(int i) {
   tcp6Session->pos += ret;
 
   while (tcp6Session->pos > 2) {
-    len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6MessagePack);
+    len = ntohs(((TCP6P2P_PACKET*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6P2P_PACKET);
     if (len > tcp6Session->rsize) /* if MTU larger than expected, grow! */
       GROW(tcp6Session->rbuff,
 	   tcp6Session->rsize,
@@ -433,7 +434,7 @@ static int readAndProcess(int i) {
 
       welcome = (TCP6Welcome*) &tcp6Session->rbuff[0];
       if ( (ntohs(welcome->header.reserved) != 0) ||
-	   (ntohs(welcome->header.size) != sizeof(TCP6Welcome) - sizeof(TCP6MessagePack)) ) {
+	   (ntohs(welcome->header.size) != sizeof(TCP6Welcome) - sizeof(TCP6P2P_PACKET)) ) {
 	LOG(LOG_WARNING,
 	    _("Expected welcome message on tcp connection, got garbage. Closing.\n"));
 	tcp6Disconnect(tsession);
@@ -453,7 +454,7 @@ static int readAndProcess(int i) {
 	      &tcp6Session->rbuff[sizeof(TCP6Welcome)],
 	      tcp6Session->pos - sizeof(TCP6Welcome));
       tcp6Session->pos -= sizeof(TCP6Welcome);
-      len = ntohs(((TCP6MessagePack*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6MessagePack);
+      len = ntohs(((TCP6P2P_PACKET*)&tcp6Session->rbuff[0])->size) + sizeof(TCP6P2P_PACKET);
     }
     if ( (tcp6Session->pos < 2) ||
 	 (tcp6Session->pos < len) ) {
@@ -461,21 +462,21 @@ static int readAndProcess(int i) {
       return OK;
     }
 
-    pack = (TCP6MessagePack*)&tcp6Session->rbuff[0];
+    pack = (TCP6P2P_PACKET*)&tcp6Session->rbuff[0];
     /* send msg to core! */
-    if (len <= sizeof(TCP6MessagePack)) {
+    if (len <= sizeof(TCP6P2P_PACKET)) {
       LOG(LOG_WARNING,
 	  _("Received malformed message from tcp6-peer connection. Closing connection.\n"));
       tcp6Disconnect(tsession);
       return SYSERR;
     }
-    mp      = MALLOC(sizeof(MessagePack));
-    mp->msg = MALLOC(len - sizeof(TCP6MessagePack));
+    mp      = MALLOC(sizeof(P2P_PACKET));
+    mp->msg = MALLOC(len - sizeof(TCP6P2P_PACKET));
     memcpy(mp->msg,
 	   &pack[1],
-	   len - sizeof(TCP6MessagePack));
+	   len - sizeof(TCP6P2P_PACKET));
     mp->sender   = tcp6Session->sender;
-    mp->size     = len - sizeof(TCP6MessagePack);
+    mp->size     = len - sizeof(TCP6P2P_PACKET);
     mp->tsession = tsession;
 #if DEBUG_TCP6
     LOG(LOG_DEBUG,
@@ -538,7 +539,7 @@ static void createNewSession(int sock) {
 
   tcp6Session = MALLOC(sizeof(TCP6Session));
   tcp6Session->pos = 0;
-  tcp6Session->rsize = 2 * 1024 + sizeof(TCP6MessagePack);
+  tcp6Session->rsize = 2 * 1024 + sizeof(TCP6P2P_PACKET);
   tcp6Session->rbuff = MALLOC(tcp6Session->rsize);
   tcp6Session->wpos = 0;
   tcp6Session->wbuff = NULL;
@@ -872,7 +873,7 @@ static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the HELO_Message identifying the remote node
+ * @param tsession the P2P_hello_MESSAGE identifying the remote node
  * @param msg the message
  * @param size the size of the message
  * @return SYSERR on error, OK on success, NO if queue is full
@@ -880,7 +881,7 @@ static int tcp6DirectSendReliable(TCP6Session * tcp6Session,
 static int tcp6SendReliable(TSession * tsession,
 			   const void * msg,
 			   const unsigned int size) {
-  TCP6MessagePack * mp;
+  TCP6P2P_PACKET * mp;
   int ok;
 
   if (size >= MAX_BUFFER_SIZE)
@@ -893,7 +894,7 @@ static int tcp6SendReliable(TSession * tsession,
   }
   if (((TCP6Session*)tsession->internal)->sock == -1)
     return SYSERR; /* other side closed connection */
-  mp = MALLOC(sizeof(TCP6MessagePack) + size);
+  mp = MALLOC(sizeof(TCP6P2P_PACKET) + size);
   memcpy(&mp[1],
 	 msg,
 	 size);
@@ -901,28 +902,28 @@ static int tcp6SendReliable(TSession * tsession,
   mp->reserved = 0;
   ok = tcp6DirectSendReliable(tsession->internal,
 			      mp,
-			      size + sizeof(TCP6MessagePack));
+			      size + sizeof(TCP6P2P_PACKET));
   FREE(mp);
   return ok;
 }
 
 
 /**
- * Verify that a HELO-Message is correct (a node
+ * Verify that a hello-Message is correct (a node
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
  * success.
- * @param helo the HELO message to verify
+ * @param helo the hello message to verify
  *        (the signature/crc have been verified before)
  * @return OK on success, SYSERR on error
  */
-static int verifyHelo(const HELO_Message * helo) {
+static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   Host6Address * haddr;
 
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (Host6Address*) &helo[1];
   if ( (ntohs(helo->senderAddressSize) != sizeof(Host6Address)) ||
-       (ntohs(helo->header.size) != HELO_Message_size(helo)) ||
-       (ntohs(helo->header.type) != p2p_PROTO_HELO) ||
+       (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
+       (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (ntohs(helo->protocol) != TCP6_PROTOCOL_NUMBER) ||
        (YES == isBlacklisted(&haddr->ip)) )
     return SYSERR; /* obviously invalid */
@@ -931,14 +932,14 @@ static int verifyHelo(const HELO_Message * helo) {
 }
 
 /**
- * Create a HELO-Message for the current node. The HELO is
+ * Create a hello-Message for the current node. The hello is
  * created without signature and without a timestamp. The
  * GNUnet core will sign the message and add an expiration time.
  *
- * @return HELO on success, NULL on error
+ * @return hello on success, NULL on error
  */
-static HELO_Message * createHELO() {
-  HELO_Message * msg;
+static P2P_hello_MESSAGE * createhello() {
+  P2P_hello_MESSAGE * msg;
   Host6Address * haddr;
   unsigned short port;
 
@@ -948,8 +949,8 @@ static HELO_Message * createHELO() {
 	"TCP6 port is 0, will only send using TCP6\n");
     return NULL; /* TCP6 transport is configured SEND-only! */
   }
-  msg = (HELO_Message *) MALLOC(sizeof(HELO_Message) + sizeof(Host6Address));
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)msg)->senderAddress[0];
+  msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(Host6Address));
+  haddr = (Host6Address*) &msg[1];
 
   if (SYSERR == getPublicIP6Address(&haddr->ip)) {
     FREE(msg);
@@ -968,11 +969,11 @@ static HELO_Message * createHELO() {
 /**
  * Establish a connection to a remote node.
  *
- * @param helo the HELO-Message for the target node
+ * @param helo the hello-Message for the target node
  * @param tsessionPtr the session handle that is set
  * @return OK on success, SYSERR if the operation failed
  */
-static int tcp6Connect(const HELO_Message * helo,
+static int tcp6Connect(const P2P_hello_MESSAGE * helo,
 		       TSession ** tsessionPtr) {
   int i;
   Host6Address * haddr;
@@ -986,7 +987,7 @@ static int tcp6Connect(const HELO_Message * helo,
 
   if (tcp6_shutdown == YES)
     return SYSERR;
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (Host6Address*) &helo[1];
 
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_INET6;
@@ -1056,7 +1057,7 @@ static int tcp6Connect(const HELO_Message * helo,
   tcp6Session->sock = sock;
   tcp6Session->wpos = 0;
   tcp6Session->wbuff = NULL;
-  tcp6Session->rsize = 2 * 1024 + sizeof(TCP6MessagePack);
+  tcp6Session->rsize = 2 * 1024 + sizeof(TCP6P2P_PACKET);
   tcp6Session->rbuff = MALLOC(tcp6Session->rsize);
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = tcp6Session;
@@ -1074,7 +1075,7 @@ static int tcp6Connect(const HELO_Message * helo,
 
   /* send our node identity to the other side to fully establish the
      connection! */
-  welcome.header.size = htons(sizeof(TCP6Welcome) - sizeof(TCP6MessagePack));
+  welcome.header.size = htons(sizeof(TCP6Welcome) - sizeof(TCP6P2P_PACKET));
   welcome.header.reserved = htons(0);
   memcpy(&welcome.clientIdentity,
 	 coreAPI->myIdentity,
@@ -1097,7 +1098,7 @@ static int tcp6Connect(const HELO_Message * helo,
 /**
  * Send a message to the specified remote node.
  *
- * @param tsession the HELO_Message identifying the remote node
+ * @param tsession the P2P_hello_MESSAGE identifying the remote node
  * @param msg the message
  * @param size the size of the message
  * @return SYSERR on error, OK on success
@@ -1105,7 +1106,7 @@ static int tcp6Connect(const HELO_Message * helo,
 static int tcp6Send(TSession * tsession,
 		    const void * msg,
 		    const unsigned int size) {
-  TCP6MessagePack * mp;
+  TCP6P2P_PACKET * mp;
   int ok;
 
   if (size >= MAX_BUFFER_SIZE)
@@ -1118,7 +1119,7 @@ static int tcp6Send(TSession * tsession,
   }
   if (((TCP6Session*)tsession->internal)->sock == -1)
     return SYSERR; /* other side closed connection */
-  mp = MALLOC(sizeof(TCP6MessagePack) + size);
+  mp = MALLOC(sizeof(TCP6P2P_PACKET) + size);
   memcpy(&mp[1],
 	 msg,
 	 size);
@@ -1127,11 +1128,11 @@ static int tcp6Send(TSession * tsession,
   if (((TCP6Session*)tsession->internal)->wpos + size < TARGET_BUFFER_SIZE)
     ok = tcp6DirectSendReliable(tsession->internal,
 				mp,
-				size + sizeof(TCP6MessagePack));
+				size + sizeof(TCP6P2P_PACKET));
   else
     ok = tcp6DirectSend(tsession->internal,
 			mp,
-			size + sizeof(TCP6MessagePack));
+			size + sizeof(TCP6P2P_PACKET));
   FREE(mp);
   return ok;
 }
@@ -1275,12 +1276,12 @@ static void reloadConfiguration(void) {
 /**
  * Convert TCP6 address to a string.
  */
-static char * addressToString(const HELO_Message * helo) {
+static char * addressToString(const P2P_hello_MESSAGE * helo) {
   char * ret;
   char inet6[INET6_ADDRSTRLEN];
   Host6Address * haddr;
 
-  haddr = (Host6Address*) &((HELO_Message_GENERIC*)helo)->senderAddress[0];
+  haddr = (Host6Address*) &helo[1];
   ret = MALLOC(INET6_ADDRSTRLEN+16);
   SNPRINTF(ret,
 	   INET6_ADDRSTRLEN+16,
@@ -1313,7 +1314,7 @@ TransportAPI * inittransport_tcp6(CoreAPIForTransport * core) {
   tcp6API.mtu                  = 0;
   tcp6API.cost                 = 19950; /* about equal to udp6 */
   tcp6API.verifyHelo           = &verifyHelo;
-  tcp6API.createHELO           = &createHELO;
+  tcp6API.createhello           = &createhello;
   tcp6API.connect              = &tcp6Connect;
   tcp6API.associate            = &tcp6Associate;
   tcp6API.send                 = &tcp6Send;

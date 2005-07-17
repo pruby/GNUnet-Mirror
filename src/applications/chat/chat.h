@@ -31,16 +31,16 @@
 #define CHAT_MSG_LENGTH 1024
 
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
   char nick[CHAT_NICK_LENGTH];
   char message[CHAT_MSG_LENGTH];
-} CHAT_p2p_MESSAGE;
+} P2P_chat_MESSAGE;
 
 typedef struct {
-  CS_HEADER header;
+  CS_MESSAGE_HEADER header;
   char nick[CHAT_NICK_LENGTH];
   char message[CHAT_MSG_LENGTH];
-} CHAT_CS_MESSAGE;
+} CS_chat_MESSAGE;
 
 
 

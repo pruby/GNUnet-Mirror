@@ -50,7 +50,7 @@ static void markSeen(HashCode512 * hc) {
 }
 
 typedef struct {
-  const p2p_HEADER * message;
+  const P2P_MESSAGE_HEADER * message;
   unsigned int prio;
   unsigned int delay;
 } BCC;
@@ -63,7 +63,7 @@ static void bccHelper(const PeerIdentity * peer,
 		   bcc->delay);
 }
 
-static void broadcastToConnected(const p2p_HEADER * message,
+static void broadcastToConnected(const P2P_MESSAGE_HEADER * message,
 				 unsigned int prio,
 				 unsigned int delay) {
   BCC bcc;
@@ -75,24 +75,24 @@ static void broadcastToConnected(const p2p_HEADER * message,
 }
 
 static int handleChatMSG(const PeerIdentity * sender,
-			 const p2p_HEADER * message) {
+			 const P2P_MESSAGE_HEADER * message) {
   int i;
   int j;
-  CHAT_CS_MESSAGE * cmsg;
-  CHAT_p2p_MESSAGE * pmsg;
+  CS_chat_MESSAGE * cmsg;
+  P2P_chat_MESSAGE * pmsg;
   HashCode512 hc;
 
-  if (ntohs(message->size) != sizeof(CHAT_p2p_MESSAGE)) {
+  if (ntohs(message->size) != sizeof(P2P_chat_MESSAGE)) {
     LOG(LOG_WARNING,
 	_("Message received from peer is invalid.\n"));
     return SYSERR;
   }
-  pmsg = (CHAT_p2p_MESSAGE*)message;
-  cmsg = (CHAT_CS_MESSAGE*) message;
+  pmsg = (P2P_chat_MESSAGE*)message;
+  cmsg = (CS_chat_MESSAGE*) message;
 
   /* check if we have seen this message already */
   hash(pmsg,
-       sizeof(CHAT_p2p_MESSAGE),
+       sizeof(P2P_chat_MESSAGE),
        &hc);
   j = -1;
   MUTEX_LOCK(&chatMutex);
@@ -121,22 +121,22 @@ static int handleChatMSG(const PeerIdentity * sender,
 }
 
 static void csHandleChatRequest(ClientHandle client,
-				const CS_HEADER * message) {
+				const CS_MESSAGE_HEADER * message) {
   int i;
   int j;
-  CHAT_CS_MESSAGE * cmsg;
-  CHAT_p2p_MESSAGE * pmsg;
+  CS_chat_MESSAGE * cmsg;
+  P2P_chat_MESSAGE * pmsg;
   HashCode512 hc;
 
-  if (ntohs(message->size) != sizeof(CHAT_CS_MESSAGE)) {
+  if (ntohs(message->size) != sizeof(CS_chat_MESSAGE)) {
     LOG(LOG_WARNING,
 	_("Message received from client is invalid\n"));
     return; /* invalid message */
   }
-  pmsg = (CHAT_p2p_MESSAGE*)message;
-  cmsg = (CHAT_CS_MESSAGE*) message;
+  pmsg = (P2P_chat_MESSAGE*)message;
+  cmsg = (CS_chat_MESSAGE*) message;
   hash(pmsg,
-       sizeof(CHAT_p2p_MESSAGE),
+       sizeof(P2P_chat_MESSAGE),
        &hc);
   MUTEX_LOCK(&chatMutex);
   markSeen(&hc);
@@ -186,23 +186,23 @@ static void chatClientExitHandler(ClientHandle client) {
 int initialize_module_chat(CoreAPIForApplication * capi) {
   int ok = OK;
 
-  GNUNET_ASSERT(CHAT_p2p_PROTO_MSG == CHAT_CS_PROTO_MSG);
-  GNUNET_ASSERT(sizeof(CHAT_p2p_MESSAGE) == sizeof(CHAT_CS_MESSAGE));
+  GNUNET_ASSERT(P2P_PROTO_chat_MSG == CS_PROTO_chat_MSG);
+  GNUNET_ASSERT(sizeof(P2P_chat_MESSAGE) == sizeof(CS_chat_MESSAGE));
   MUTEX_CREATE(&chatMutex);
   clientCount = 0;
   coreAPI = capi;
   LOG(LOG_DEBUG,
       _("'%s' registering handlers %d and %d\n"),
       "chat",
-      CHAT_p2p_PROTO_MSG,
-      CHAT_CS_PROTO_MSG);
+      P2P_PROTO_chat_MSG,
+      CS_PROTO_chat_MSG);
 
-  if (SYSERR == capi->registerHandler(CHAT_p2p_PROTO_MSG,
+  if (SYSERR == capi->registerHandler(P2P_PROTO_chat_MSG,
 				      &handleChatMSG))
     ok = SYSERR;
   if (SYSERR == capi->registerClientExitHandler(&chatClientExitHandler))
     ok = SYSERR;
-  if (SYSERR == capi->registerClientHandler(CHAT_CS_PROTO_MSG,
+  if (SYSERR == capi->registerClientHandler(CS_PROTO_chat_MSG,
 					    (CSHandler)&csHandleChatRequest))
     ok = SYSERR;
   setConfigurationString("ABOUT",
@@ -212,10 +212,10 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
 }
 
 void done_module_chat() {
-  coreAPI->unregisterHandler(CHAT_p2p_PROTO_MSG,
+  coreAPI->unregisterHandler(P2P_PROTO_chat_MSG,
 			   &handleChatMSG);
   coreAPI->unregisterClientExitHandler(&chatClientExitHandler);
-  coreAPI->unregisterClientHandler(CHAT_CS_PROTO_MSG,
+  coreAPI->unregisterClientHandler(CS_PROTO_chat_MSG,
 				   (CSHandler)&csHandleChatRequest);
   MUTEX_DESTROY(&chatMutex);
   coreAPI = NULL;

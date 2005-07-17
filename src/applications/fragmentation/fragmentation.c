@@ -42,7 +42,7 @@
  * Message fragment.
  */
 typedef struct {
-  p2p_HEADER header;
+  P2P_MESSAGE_HEADER header;
 
   /**
    * Fragment identity.
@@ -59,16 +59,16 @@ typedef struct {
    */
   unsigned short len;
 
-} FRAGMENT_Message;
+} P2P_fragmentation_MESSAGE;
 
 /**
  * Message fragment.
  */
 typedef struct {
-  FRAGMENT_Message fragment_message;
+  P2P_fragmentation_MESSAGE fragment_message;
 
   char data[1];
-} FRAGMENT_Message_GENERIC;
+} P2P_fragmentation_MESSAGE_GENERIC;
 
 /**
  * How many buckets does the fragment hash table
@@ -88,7 +88,7 @@ typedef struct {
  */
 typedef struct FL {
   struct FL * link;
-  FRAGMENT_Message * frag;
+  P2P_fragmentation_MESSAGE * frag;
 } FL;
 
 /**
@@ -102,7 +102,7 @@ typedef struct FC {
   cron_t ttl;
 } FC;
 
-#define FRAGSIZE(fl) ((ntohs(fl->frag->header.size)-sizeof(FRAGMENT_Message)))
+#define FRAGSIZE(fl) ((ntohs(fl->frag->header.size)-sizeof(P2P_fragmentation_MESSAGE)))
 
 static CoreAPIForApplication * coreAPI;
 
@@ -216,7 +216,7 @@ static void checkComplete(FC * pep) {
   pos = pep->head;
   while (pos != NULL) {
     memcpy(&msg[ntohs(pos->frag->off)],
-	   &((FRAGMENT_Message_GENERIC*)pos->frag)->data[0],
+	   &((P2P_fragmentation_MESSAGE_GENERIC*)pos->frag)->data[0],
 	   FRAGSIZE(pos));
     pos = pos->link;
   }
@@ -250,7 +250,7 @@ static void checkComplete(FC * pep) {
  */
 static int tryJoin(FC * entry,
 		   const PeerIdentity * sender,
-		   const FRAGMENT_Message * packet) {
+		   const P2P_fragmentation_MESSAGE * packet) {
   /* frame before ours; may end in the middle of
      our frame or before it starts; NULL if we are
      the earliest position we have received so far */
@@ -288,7 +288,7 @@ static int tryJoin(FC * entry,
   }
 
   /* find the after-frame */
-  end = ntohs(packet->off) + ntohs(packet->header.size) - sizeof(FRAGMENT_Message);
+  end = ntohs(packet->off) + ntohs(packet->header.size) - sizeof(P2P_fragmentation_MESSAGE);
   if (end <= ntohs(packet->off)) {
     LOG(LOG_DEBUG,
 	"Received invalid fragment at %s:%d\n",
@@ -382,11 +382,11 @@ static int tryJoin(FC * entry,
  * @return SYSERR if the fragment is invalid
  */
 static int processFragment(const PeerIdentity * sender,
-			   const p2p_HEADER * frag) {
+			   const P2P_MESSAGE_HEADER * frag) {
   unsigned int hash;
   FC * smf;
 
-  if (ntohs(frag->size) < sizeof(FRAGMENT_Message))
+  if (ntohs(frag->size) < sizeof(P2P_fragmentation_MESSAGE))
     return SYSERR;
 
   MUTEX_LOCK(&defragCacheLock);
@@ -395,7 +395,7 @@ static int processFragment(const PeerIdentity * sender,
   while (smf != NULL) {
     if (OK == tryJoin(smf, 
 		      sender,
-		      (FRAGMENT_Message*) frag)) {
+		      (P2P_fragmentation_MESSAGE*) frag)) {
       MUTEX_UNLOCK(&defragCacheLock);
       return OK;
     }
@@ -413,7 +413,7 @@ static int processFragment(const PeerIdentity * sender,
     smf->ttl = cronTime(NULL) + DEFRAGMENTATION_TIMEOUT;
     smf->sender = *sender;
   }
-  smf->id = ntohl(((FRAGMENT_Message*)frag)->id);
+  smf->id = ntohl(((P2P_fragmentation_MESSAGE*)frag)->id);
   smf->head = MALLOC(sizeof(FL));
   smf->head->link = NULL;
   smf->head->frag = MALLOC(ntohs(frag->size));
@@ -438,7 +438,7 @@ typedef struct {
 /**
  * Send a message that had to be fragmented (right now!).  First grabs
  * the first part of the message (obtained from ctx->se) and stores
- * that in a FRAGMENT_Message envelope.  The remaining fragments are
+ * that in a P2P_fragmentation_MESSAGE envelope.  The remaining fragments are
  * added to the send queue with EXTREME_PRIORITY (to ensure that they
  * will be transmitted next).  The logic here is that if the priority
  * for the first fragment was sufficiently high, the priority should
@@ -452,7 +452,7 @@ static int fragmentBMC(void * buf,
 		       FragmentBMC * ctx,
 		       unsigned short len) {
   static int idGen = 0;
-  FRAGMENT_Message * frag;
+  P2P_fragmentation_MESSAGE * frag;
   unsigned int pos;
   int id;
   unsigned short mlen;
@@ -466,37 +466,37 @@ static int fragmentBMC(void * buf,
     stats->change(stat_fragmented, 1);
   id = (idGen++) + randomi(512);
   /* write first fragment to buf */
-  frag = (FRAGMENT_Message*) buf;
+  frag = (P2P_fragmentation_MESSAGE*) buf;
   frag->header.size = htons(len);
-  frag->header.type = htons(p2p_PROTO_FRAGMENT);
+  frag->header.type = htons(P2P_PROTO_fragment);
   frag->id = id;
   frag->off = htons(0);
   frag->len = htons(ctx->len);
-  memcpy(&((FRAGMENT_Message_GENERIC*)frag)->data[0],
+  memcpy(&((P2P_fragmentation_MESSAGE_GENERIC*)frag)->data[0],
 	 &ctx[1],
-	 len - sizeof(FRAGMENT_Message));
+	 len - sizeof(P2P_fragmentation_MESSAGE));
 
   /* create remaining fragments, add to queue! */
-  pos = len - sizeof(FRAGMENT_Message);
+  pos = len - sizeof(P2P_fragmentation_MESSAGE);
   frag = MALLOC(ctx->mtu);
   while (pos < ctx->len) {
-    mlen = sizeof(FRAGMENT_Message) + ctx->len - pos;
+    mlen = sizeof(P2P_fragmentation_MESSAGE) + ctx->len - pos;
     if (mlen > ctx->mtu)
       mlen = ctx->mtu;
-    GNUNET_ASSERT(mlen > sizeof(FRAGMENT_Message));
+    GNUNET_ASSERT(mlen > sizeof(P2P_fragmentation_MESSAGE));
     frag->header.size = htons(mlen);
-    frag->header.type = htons(p2p_PROTO_FRAGMENT);
+    frag->header.type = htons(P2P_PROTO_fragment);
     frag->id = id;
     frag->off = htons(pos);
     frag->len = htons(ctx->len);
-    memcpy(&((FRAGMENT_Message_GENERIC*)frag)->data[0],
+    memcpy(&((P2P_fragmentation_MESSAGE_GENERIC*)frag)->data[0],
 	   &ctx[1],
-	   mlen - sizeof(FRAGMENT_Message));
+	   mlen - sizeof(P2P_fragmentation_MESSAGE));
     coreAPI->unicast(&ctx->sender,
 		     &frag->header,
 		     EXTREME_PRIORITY,
 		     ctx->transmissionTime - cronTime(NULL));
-    pos += mlen - sizeof(FRAGMENT_Message);
+    pos += mlen - sizeof(P2P_fragmentation_MESSAGE);
   }
   GNUNET_ASSERT(pos == ctx->len);
   FREE(frag);
@@ -521,7 +521,7 @@ void fragment(const PeerIdentity * peer,
   int xlen;
 
   GNUNET_ASSERT(len > mtu);
-  GNUNET_ASSERT(mtu > sizeof(FRAGMENT_Message));
+  GNUNET_ASSERT(mtu > sizeof(P2P_fragmentation_MESSAGE));
   fbmc = MALLOC(sizeof(FragmentBMC) + len);
   fbmc->mtu = mtu;
   fbmc->sender = *peer;
@@ -533,7 +533,7 @@ void fragment(const PeerIdentity * peer,
     FREE(fbmc);
     return;
   }
-  xlen = mtu - sizeof(FRAGMENT_Message);
+  xlen = mtu - sizeof(P2P_fragmentation_MESSAGE);
   coreAPI->unicastCallback(peer,
 			   (BuildMessageCallback) &fragmentBMC,
 			   fbmc,
@@ -567,8 +567,8 @@ provide_module_fragmentation(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       _("'%s' registering handler %d\n"),
       "fragmentation",
-      p2p_PROTO_FRAGMENT);
-  capi->registerHandler(p2p_PROTO_FRAGMENT,
+      P2P_PROTO_fragment);
+  capi->registerHandler(P2P_PROTO_fragment,
 			&processFragment);
 
   ret.fragment = &fragment;
@@ -581,7 +581,7 @@ provide_module_fragmentation(CoreAPIForApplication * capi) {
 void release_module_fragmentation() {
   int i;
 
-  coreAPI->unregisterHandler(p2p_PROTO_FRAGMENT,
+  coreAPI->unregisterHandler(P2P_PROTO_fragment,
 			     &processFragment);
   delCronJob((CronJob) &defragmentationPurgeCron,
 	     60 * cronSECONDS,

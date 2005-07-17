@@ -101,7 +101,7 @@ typedef struct ClientH {
   char * writeBuffer;
   unsigned int writeBufferSize;
 
-  CS_HEADER ** writeQueue;
+  CS_MESSAGE_HEADER ** writeQueue;
   unsigned int writeQueueSize;
 
   ClientHandle next;
@@ -229,8 +229,8 @@ int unregisterClientExitHandler(ClientExitHandler callback) {
  * transfer happens asynchronously.
  */
 int sendToClient(ClientHandle handle,
-		 const CS_HEADER * message) {
-  CS_HEADER * cpy;
+		 const CS_MESSAGE_HEADER * message) {
+  CS_MESSAGE_HEADER * cpy;
 
 #if DEBUG_TCPHANDLER
   LOG(LOG_DEBUG,
@@ -255,7 +255,7 @@ int sendToClient(ClientHandle handle,
  * message by calling the registered handler for
  * each message part.
  */
-static int processHelper(CS_HEADER * msg,
+static int processHelper(CS_MESSAGE_HEADER * msg,
 			 ClientHandle sender) {
   unsigned short ptyp;
   CSHandler callback;
@@ -339,9 +339,9 @@ static int readAndProcess(ClientHandle handle) {
   handle->readBufferPos += ret;
   ret = OK;
   while (ret == OK) {
-    if (handle->readBufferPos < sizeof(CS_HEADER))
+    if (handle->readBufferPos < sizeof(CS_MESSAGE_HEADER))
       return OK;
-    len = ntohs(((CS_HEADER*)handle->readBuffer)->size);
+    len = ntohs(((CS_MESSAGE_HEADER*)handle->readBuffer)->size);
 #if DEBUG_TCPHANDLER
     LOG(LOG_DEBUG,
 	"Total size is %u bytes, have %u.\n",
@@ -359,7 +359,7 @@ static int readAndProcess(ClientHandle handle) {
        select-thread can possibly free handle/readbuffer,
      releasing the lock here is safe. */
     MUTEX_UNLOCK(&clientlock);
-    ret = processHelper((CS_HEADER*)handle->readBuffer,
+    ret = processHelper((CS_MESSAGE_HEADER*)handle->readBuffer,
 		      handle);
     MUTEX_LOCK(&clientlock);
     /* finally, shrink buffer adequately */
@@ -853,10 +853,10 @@ int unregisterCSHandler(unsigned short type,
  */
 int sendTCPResultToClient(ClientHandle sock,
 			  int ret) {
-  CS_RETURN_VALUE rv;
+  CS_returnvalue_MESSAGE rv;
 
   rv.header.size
-    = htons(sizeof(CS_RETURN_VALUE));
+    = htons(sizeof(CS_returnvalue_MESSAGE));
   rv.header.type
     = htons(CS_PROTO_RETURN_VALUE);
   rv.return_value

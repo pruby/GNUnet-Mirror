@@ -79,7 +79,7 @@ typedef struct {
    *   NULL and the ping does not come back, ping will FREE data!
    * @returns NULL on error, otherwise the PING message
    */
-  p2p_HEADER * (*pingUser)(const PeerIdentity * receiver,
+  P2P_MESSAGE_HEADER * (*pingUser)(const PeerIdentity * receiver,
 			   CronJob method,
 			   void * data,
 			   int plaintext);

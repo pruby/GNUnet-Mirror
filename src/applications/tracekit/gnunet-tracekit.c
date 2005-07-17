@@ -158,7 +158,7 @@ static int parseOptions(int argc,
 }
 
 static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
-  TRACEKIT_CS_REPLY * buffer;
+  CS_tracekit_reply_MESSAGE * buffer;
   int format;
   PeerIdentity * peersSeen;
   int psCount;
@@ -184,11 +184,11 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
   if (format == 2)
     printf("graph: {\n");
   while (OK == readFromSocket(sock,
-			      (CS_HEADER**)&buffer)) {
+			      (CS_MESSAGE_HEADER**)&buffer)) {
     int count;
     EncName enc;
 
-    count = ntohs(buffer->header.size) - sizeof(TRACEKIT_CS_REPLY);
+    count = ntohs(buffer->header.size) - sizeof(CS_tracekit_reply_MESSAGE);
     if (count < 0) {
       BREAK();
       break; /* faulty reply */
@@ -211,7 +211,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
     }
     count = count / sizeof(PeerIdentity);
     if (ntohs(buffer->header.size) !=
-	sizeof(TRACEKIT_CS_REPLY) +
+	sizeof(CS_tracekit_reply_MESSAGE) +
 	count * sizeof(PeerIdentity)) {
       BREAK();
       break;
@@ -240,7 +240,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
       for (i=0;i<count;i++) {
 	match = NO;
 	for (j=0;j<psCount;j++)
-	  if (equalsHashCode512(&((TRACEKIT_CS_REPLY_GENERIC*)buffer)->peerList[i].hashPubKey,
+	  if (equalsHashCode512(&((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
 				&peersSeen[j].hashPubKey))
 	    match = YES;
 	if (match == NO) {
@@ -249,11 +249,11 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 		 psSize,
 		 psSize * 2);
 	  memcpy(&peersSeen[psCount++],
-		 &((TRACEKIT_CS_REPLY_GENERIC*)buffer)->peerList[i].hashPubKey,
+		 &((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
 		 sizeof(PeerIdentity));
 	}
 
-	hash2enc(&((TRACEKIT_CS_REPLY_GENERIC*)buffer)->peerList[i].hashPubKey,
+	hash2enc(&((CS_tracekit_reply_MESSAGE_GENERIC*)buffer)->peerList[i].hashPubKey,
 		 &other);
 	switch (format) {
 	case 0:
@@ -352,7 +352,7 @@ int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
   PTHREAD_T messageReceiveThread;
   void * unused;
-  TRACEKIT_CS_PROBE probe;
+  CS_tracekit_probe_MESSAGE probe;
   int sleepTime;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions))
@@ -372,9 +372,9 @@ int main(int argc, char ** argv) {
     DIE_STRERROR("pthread_create");
 
   probe.header.size
-    = htons(sizeof(TRACEKIT_CS_PROBE));
+    = htons(sizeof(CS_tracekit_probe_MESSAGE));
   probe.header.type
-    = htons(TRACEKIT_CS_PROTO_PROBE);
+    = htons(CS_PROTO_tracekit_PROBE);
   probe.hops
     = htonl(getConfigurationInt("GNUNET-TRACEKIT",
 				"HOPS"));

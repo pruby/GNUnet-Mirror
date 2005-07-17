@@ -32,14 +32,14 @@
 /** 
  * Checks if gnunetd is running
  * 
- * Uses CS_PROTO_CLIENT_COUNT query to determine if gnunetd is
+ * Uses CS_PROTO_traffic_COUNT query to determine if gnunetd is
  * running.
  *
  * @return OK if gnunetd is running, SYSERR if not
  */
 int checkGNUnetDaemonRunning() {
   GNUNET_TCP_SOCKET * sock;
-  CS_HEADER csHdr;
+  CS_MESSAGE_HEADER csHdr;
   int ret;
 
   sock = getClientSocket();
@@ -49,9 +49,9 @@ int checkGNUnetDaemonRunning() {
   }    
 
   csHdr.size
-    = htons(sizeof(CS_HEADER));
+    = htons(sizeof(CS_MESSAGE_HEADER));
   csHdr.type
-    = htons(CS_PROTO_CLIENT_COUNT);
+    = htons(CS_PROTO_traffic_COUNT);
   if (SYSERR == writeToSocket(sock,
                               &csHdr)) {
     releaseClientSocket(sock);
@@ -245,14 +245,14 @@ int startGNUnetDaemon(int daemonize) {
  */
 int stopGNUnetDaemon() {
   GNUNET_TCP_SOCKET * sock;
-  CS_HEADER csHdr;
+  CS_MESSAGE_HEADER csHdr;
   int ret;
   
   sock = getClientSocket();
   if (sock == NULL) 
     return SYSERR;  
   csHdr.size 
-    = htons(sizeof(CS_HEADER));
+    = htons(sizeof(CS_MESSAGE_HEADER));
   csHdr.type
     = htons(CS_PROTO_SHUTDOWN_REQUEST);
   if (SYSERR == writeToSocket(sock,

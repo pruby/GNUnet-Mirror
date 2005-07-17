@@ -201,16 +201,16 @@ static void put_complete_callback(DHT_PUT_CLS * cls) {
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
 static int csHandleRequestQueryStart(ClientHandle sock,
-				     const CS_HEADER * req) {
-  const RequestSearch * rs;
+				     const CS_MESSAGE_HEADER * req) {
+  const CS_fs_request_search_MESSAGE * rs;
   unsigned int keyCount;
   EncName enc;
 
-  if (ntohs(req->size) < sizeof(RequestSearch)) {
+  if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  rs = (const RequestSearch*) req;
+  rs = (const CS_fs_request_search_MESSAGE*) req;
   IFLOG(LOG_DEBUG,
 	hash2enc(&rs->query[0],
 		 &enc));
@@ -220,7 +220,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   trackQuery(&rs->query[0],
 	     ntohl(rs->type),
 	     sock);
-  keyCount = 1 + (ntohs(req->size) - sizeof(RequestSearch)) / sizeof(HashCode512);
+  keyCount = 1 + (ntohs(req->size) - sizeof(CS_fs_request_search_MESSAGE)) / sizeof(HashCode512);
   gap->get_start(ntohl(rs->type),
 		 ntohl(rs->anonymityLevel),		
 		 keyCount,
@@ -252,15 +252,15 @@ static int csHandleRequestQueryStart(ClientHandle sock,
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
 static int csHandleRequestQueryStop(ClientHandle sock,
-				    const CS_HEADER * req) {
-  RequestSearch * rs;
+				    const CS_MESSAGE_HEADER * req) {
+  CS_fs_request_search_MESSAGE * rs;
   EncName enc;
 
-  if (ntohs(req->size) < sizeof(RequestSearch)) {
+  if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  rs = (RequestSearch*) req;
+  rs = (CS_fs_request_search_MESSAGE*) req;
   IFLOG(LOG_DEBUG,
 	hash2enc(&rs->query[0],
 		 &enc));
@@ -271,7 +271,7 @@ static int csHandleRequestQueryStop(ClientHandle sock,
     /* FIXME 0.7.1: cancel with dht? */
   }
   gap->get_stop(ntohl(rs->type),
-		1 + (ntohs(req->size) - sizeof(RequestSearch)) / sizeof(HashCode512),
+		1 + (ntohs(req->size) - sizeof(CS_fs_request_search_MESSAGE)) / sizeof(HashCode512),
 		&rs->query[0]);
   untrackQuery(&rs->query[0], sock);
   return OK;
@@ -282,28 +282,28 @@ static int csHandleRequestQueryStop(ClientHandle sock,
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleRequestInsert(ClientHandle sock,
-				 const CS_HEADER * req) {
-  const RequestInsert * ri;
+static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
+				 const CS_MESSAGE_HEADER * req) {
+  const CS_fs_request_insert_MESSAGE * ri;
   Datastore_Value * datum;
   int ret;
   HashCode512 query;
   unsigned int type;
   EncName enc;
 
-  if (ntohs(req->size) < sizeof(RequestInsert)) {
+  if (ntohs(req->size) < sizeof(CS_fs_request_insert_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  ri = (const RequestInsert*) req;
+  ri = (const CS_fs_request_insert_MESSAGE*) req;
   datum = MALLOC(sizeof(Datastore_Value) +
-		 ntohs(req->size) - sizeof(RequestInsert));
+		 ntohs(req->size) - sizeof(CS_fs_request_insert_MESSAGE));
   datum->size = htonl(sizeof(Datastore_Value) +
-		      ntohs(req->size) - sizeof(RequestInsert));
+		      ntohs(req->size) - sizeof(CS_fs_request_insert_MESSAGE));
   datum->expirationTime = ri->expiration;
   datum->prio = ri->prio;
   datum->anonymityLevel = ri->anonymityLevel;
-  if (OK != getQueryFor(ntohs(ri->header.size) - sizeof(RequestInsert),
+  if (OK != getQueryFor(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*)&ri[1],
 			&query)) {
     BREAK();
@@ -313,7 +313,7 @@ static int csHandleRequestInsert(ClientHandle sock,
   IFLOG(LOG_DEBUG,
 	hash2enc(&query,
 		 &enc));
-  type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(RequestInsert),
+  type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
       "FS received REQUEST INSERT (query: %s, type: %u)\n",
@@ -322,7 +322,7 @@ static int csHandleRequestInsert(ClientHandle sock,
   datum->type = htonl(type);
   memcpy(&datum[1],
 	 &ri[1],
-	 ntohs(req->size) - sizeof(RequestInsert));
+	 ntohs(req->size) - sizeof(CS_fs_request_insert_MESSAGE));
   MUTEX_LOCK(&lock);
   ret = datastore->put(&query,
 		       datum);
@@ -336,7 +336,7 @@ static int csHandleRequestInsert(ClientHandle sock,
     DHT_PUT_CLS * cls;
 
     size = sizeof(GapWrapper) +
-      ntohs(ri->header.size) - sizeof(RequestInsert) -
+      ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE) -
       sizeof(Datastore_Value);
     gw = MALLOC(size);
     gw->reserved = 0;
@@ -372,21 +372,21 @@ static int csHandleRequestInsert(ClientHandle sock,
 /**
  * Process a request to symlink a file
  */
-static int csHandleRequestInitIndex(ClientHandle sock,
-				    const CS_HEADER * req) {
+static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
+				    const CS_MESSAGE_HEADER * req) {
   int ret;
   char *fn;
-  RequestInitIndex *ri;
+  CS_fs_request_init_index_MESSAGE *ri;
   int fnLen;
 
-  if (ntohs(req->size) < sizeof(RequestInitIndex)) {
+  if (ntohs(req->size) < sizeof(CS_fs_request_init_index_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
 
-  ri = (RequestInitIndex *) req;
+  ri = (CS_fs_request_init_index_MESSAGE *) req;
 
-  fnLen = ntohs(ri->header.size) - sizeof(RequestInitIndex);
+  fnLen = ntohs(ri->header.size) - sizeof(CS_fs_request_init_index_MESSAGE);
 #if WINDOWS
   if (fnLen > _MAX_PATH)
     return SYSERR;
@@ -412,23 +412,23 @@ static int csHandleRequestInitIndex(ClientHandle sock,
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleRequestIndex(ClientHandle sock,
-				const CS_HEADER * req) {
+static int csHandleCS_fs_request_index_MESSAGE(ClientHandle sock,
+				const CS_MESSAGE_HEADER * req) {
   int ret;
-  const RequestIndex * ri;
+  const CS_fs_request_index_MESSAGE * ri;
 
-  if (ntohs(req->size) < sizeof(RequestIndex)) {
+  if (ntohs(req->size) < sizeof(CS_fs_request_index_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  ri = (const RequestIndex*) req;
+  ri = (const CS_fs_request_index_MESSAGE*) req;
   ret = ONDEMAND_index(datastore,
 		       ntohl(ri->prio),
 		       ntohll(ri->expiration),
 		       ntohll(ri->fileOffset),
 		       ntohl(ri->anonymityLevel),
 		       &ri->fileId,
-		       ntohs(ri->header.size) - sizeof(RequestIndex),
+		       ntohs(ri->header.size) - sizeof(CS_fs_request_index_MESSAGE),
 		       (const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
       "Sending confirmation (%s) of index request to client\n",
@@ -471,31 +471,31 @@ static int completeValue(const HashCode512 * key,
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleRequestDelete(ClientHandle sock,
-				 const CS_HEADER * req) {
+static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
+				 const CS_MESSAGE_HEADER * req) {
   int ret;
-  const RequestDelete * rd;
+  const CS_fs_request_delete_MESSAGE * rd;
   Datastore_Value * value;
   HashCode512 query;
   unsigned int type;
   EncName enc;
 
-  if (ntohs(req->size) < sizeof(RequestDelete)) {
+  if (ntohs(req->size) < sizeof(CS_fs_request_delete_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  rd = (const RequestDelete*) req;
+  rd = (const CS_fs_request_delete_MESSAGE*) req;
   value = MALLOC(sizeof(Datastore_Value) +
-		 ntohs(req->size) - sizeof(RequestDelete));
+		 ntohs(req->size) - sizeof(CS_fs_request_delete_MESSAGE));
   value->size = ntohl(sizeof(Datastore_Value) +
-		      ntohs(req->size) - sizeof(RequestDelete));
-  type = getTypeOfBlock(ntohs(rd->header.size) - sizeof(RequestDelete),
+		      ntohs(req->size) - sizeof(CS_fs_request_delete_MESSAGE));
+  type = getTypeOfBlock(ntohs(rd->header.size) - sizeof(CS_fs_request_delete_MESSAGE),
 			(const DBlock*)&rd[1]);
   value->type = htonl(type);
   memcpy(&value[1],
 	 &rd[1],
-	 ntohs(req->size) - sizeof(RequestDelete));
-  if (OK != getQueryFor(ntohs(rd->header.size) - sizeof(RequestDelete),
+	 ntohs(req->size) - sizeof(CS_fs_request_delete_MESSAGE));
+  if (OK != getQueryFor(ntohs(rd->header.size) - sizeof(CS_fs_request_delete_MESSAGE),
 			(const DBlock*)&rd[1],
 			&query)) {
     FREE(value);
@@ -531,16 +531,16 @@ static int csHandleRequestDelete(ClientHandle sock,
 /**
  * Process a client request unindex content.
  */
-static int csHandleRequestUnindex(ClientHandle sock,
-				  const CS_HEADER * req) {
+static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
+				  const CS_MESSAGE_HEADER * req) {
   int ret;
-  RequestUnindex * ru;
+  CS_fs_request_unindex_MESSAGE * ru;
 
-  if (ntohs(req->size) != sizeof(RequestUnindex)) {
+  if (ntohs(req->size) != sizeof(CS_fs_request_unindex_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  ru = (RequestUnindex*) req;
+  ru = (CS_fs_request_unindex_MESSAGE*) req;
   LOG(LOG_DEBUG,
       "FS received REQUEST UNINDEX\n");
   ret = ONDEMAND_unindex(datastore,
@@ -554,8 +554,8 @@ static int csHandleRequestUnindex(ClientHandle sock,
  * Process a client request to test if certain
  * data is indexed.
  */
-static int csHandleRequestTestIndexed(ClientHandle sock,
-				      const CS_HEADER * req) {
+static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
+				      const CS_MESSAGE_HEADER * req) {
   int ret;
   RequestTestindex * ru;
 
@@ -577,7 +577,7 @@ static int csHandleRequestTestIndexed(ClientHandle sock,
  * averge priority.
  */
 static int csHandleRequestGetAvgPriority(ClientHandle sock,
-					 const CS_HEADER * req) {
+					 const CS_MESSAGE_HEADER * req) {
   LOG(LOG_DEBUG,
       "FS received REQUEST GETAVGPRIORITY\n");
   return coreAPI->sendValueToClient(sock,
@@ -1001,33 +1001,33 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   LOG(LOG_DEBUG,
       _("'%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
       "fs",
-      AFS_CS_PROTO_QUERY_START,
-      AFS_CS_PROTO_QUERY_STOP,
-      AFS_CS_PROTO_INSERT,
-      AFS_CS_PROTO_INDEX,
-      AFS_CS_PROTO_DELETE,
-      AFS_CS_PROTO_UNINDEX,
-      AFS_CS_PROTO_TESTINDEX,
-      AFS_CS_PROTO_GET_AVG_PRIORITY,
-      AFS_CS_PROTO_INIT_INDEX);
+      CS_PROTO_gap_QUERY_START,
+      CS_PROTO_gap_QUERY_STOP,
+      CS_PROTO_gap_INSERT,
+      CS_PROTO_gap_INDEX,
+      CS_PROTO_gap_DELETE,
+      CS_PROTO_gap_UNINDEX,
+      CS_PROTO_gap_TESTINDEX,
+      CS_PROTO_gap_GET_AVG_PRIORITY,
+      CS_PROTO_gap_INIT_INDEX);
 
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_QUERY_START,
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_QUERY_START,
 						      &csHandleRequestQueryStart));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_QUERY_STOP,
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_QUERY_STOP,
 						      &csHandleRequestQueryStop));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_INSERT,
-						      &csHandleRequestInsert));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_INDEX,
-						      &csHandleRequestIndex));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_INIT_INDEX,
-						      &csHandleRequestInitIndex));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_DELETE,
-						      &csHandleRequestDelete));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_UNINDEX,
-						      &csHandleRequestUnindex));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_TESTINDEX,
-						      &csHandleRequestTestIndexed));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(AFS_CS_PROTO_GET_AVG_PRIORITY,
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_INSERT,
+						      &csHandleCS_fs_request_insert_MESSAGE));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_INDEX,
+						      &csHandleCS_fs_request_index_MESSAGE));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_INIT_INDEX,
+						      &csHandleCS_fs_request_init_index_MESSAGE));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_DELETE,
+						      &csHandleCS_fs_request_delete_MESSAGE));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_UNINDEX,
+						      &csHandleCS_fs_request_unindex_MESSAGE));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_TESTINDEX,
+						      &csHandleCS_fs_request_test_index_MESSAGEed));
+  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
 						      &csHandleRequestGetAvgPriority));
   initMigration(capi, 
 		datastore, 
@@ -1050,23 +1050,23 @@ void done_module_fs() {
 	"Leaving DHT complete.");
 
   }
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_QUERY_START,
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_START,
 							   &csHandleRequestQueryStart));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_QUERY_STOP,
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_STOP,
 							   &csHandleRequestQueryStop));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_INSERT,
-							   &csHandleRequestInsert));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_INDEX,
-							   &csHandleRequestIndex));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_INIT_INDEX,
-							   &csHandleRequestInitIndex));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_DELETE,
-							   &csHandleRequestDelete));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_UNINDEX,
-							   &csHandleRequestUnindex));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_TESTINDEX,
-							   &csHandleRequestTestIndexed));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(AFS_CS_PROTO_GET_AVG_PRIORITY,
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INSERT,
+							   &csHandleCS_fs_request_insert_MESSAGE));
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INDEX,
+							   &csHandleCS_fs_request_index_MESSAGE));
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INIT_INDEX,
+							   &csHandleCS_fs_request_init_index_MESSAGE));
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_DELETE,
+							   &csHandleCS_fs_request_delete_MESSAGE));
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_UNINDEX,
+							   &csHandleCS_fs_request_unindex_MESSAGE));
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_TESTINDEX,
+							   &csHandleCS_fs_request_test_index_MESSAGEed));
+  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
 							   &csHandleRequestGetAvgPriority));
   doneQueryManager();
   coreAPI->releaseService(datastore);

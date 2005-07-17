@@ -55,7 +55,7 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
   if (traffic == NULL)
     return SYSERR;
   if (OK != traffic->get(5 * cronSECONDS / TRAFFIC_TIME_UNIT, /* TTL_DECREMENT/TTU */
-			 GAP_p2p_PROTO_RESULT,
+			 P2P_PROTO_gap_RESULT,
 			 TC_RECEIVED,
 			 &count,
 			 &peers,

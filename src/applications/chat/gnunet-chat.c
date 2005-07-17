@@ -98,11 +98,11 @@ static int parseOptions(int argc,
 }
 
 static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
-  CHAT_CS_MESSAGE * buffer;
+  CS_chat_MESSAGE * buffer;
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
   while (OK == readFromSocket(sock,
-			      (CS_HEADER **)&buffer)) {
+			      (CS_MESSAGE_HEADER **)&buffer)) {
     char timebuf[64];
     time_t timetmp;
     struct tm * tmptr;
@@ -114,8 +114,8 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
              "%b %e %H:%M ",
              tmptr);
 			
-   if ( (ntohs(buffer->header.size) != sizeof(CHAT_CS_MESSAGE)) ||
-        (ntohs(buffer->header.type) != CHAT_CS_PROTO_MSG) )
+   if ( (ntohs(buffer->header.size) != sizeof(CS_chat_MESSAGE)) ||
+        (ntohs(buffer->header.type) != CS_PROTO_chat_MSG) )
       continue;
     buffer->nick[CHAT_NICK_LENGTH-1] = '\0';
     buffer->message[CHAT_MSG_LENGTH-1] = '\0';
@@ -139,7 +139,7 @@ int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
   PTHREAD_T messageReceiveThread;
   void * unused;
-  CHAT_CS_MESSAGE msg;
+  CS_chat_MESSAGE msg;
   char * nick;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions))
@@ -161,14 +161,14 @@ int main(int argc, char ** argv) {
 
   memset(&msg,
 	 0,
-	 sizeof(CHAT_CS_MESSAGE));
+	 sizeof(CS_chat_MESSAGE));
   memcpy(&msg.message[0],
 	 "Hi!\n",
 	 strlen("Hi!\n"));
   msg.header.size
-    = htons(sizeof(CHAT_CS_MESSAGE));
+    = htons(sizeof(CS_chat_MESSAGE));
   msg.header.type
-    = htons(CHAT_CS_PROTO_MSG);
+    = htons(CS_PROTO_chat_MSG);
   memcpy(&msg.nick[0],
 	 nick,
 	 strlen(nick));

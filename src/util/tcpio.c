@@ -214,7 +214,7 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
  * @return OK if the write was sucessful, otherwise SYSERR.
  */
 int writeToSocket(GNUNET_TCP_SOCKET * sock,
-		  const CS_HEADER * buffer) {
+		  const CS_MESSAGE_HEADER * buffer) {
   int res;
   int size;
 
@@ -278,7 +278,7 @@ int writeToSocket(GNUNET_TCP_SOCKET * sock,
  *         otherwise SYSERR.
  */
 int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
-			     const CS_HEADER * buffer) {
+			     const CS_MESSAGE_HEADER * buffer) {
   size_t res;
   size_t size;
 
@@ -361,7 +361,7 @@ int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
  *         to re-establish the connection [temporary error]).
  */
 int readFromSocket(GNUNET_TCP_SOCKET * sock,
-		   CS_HEADER ** buffer) {
+		   CS_MESSAGE_HEADER ** buffer) {
   int res;
   unsigned int pos;
   char * buf;
@@ -386,7 +386,7 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
     return SYSERR; /* other side closed socket or invalid header */
   }
   size = ntohs(size);
-  if (size < sizeof(CS_HEADER)) {
+  if (size < sizeof(CS_MESSAGE_HEADER)) {
 #if DEBUG_TCPIO
     LOG_STRERROR(LOG_INFO, "recv");
 #endif
@@ -418,7 +418,7 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
       size);
 #endif
   MUTEX_UNLOCK(&sock->readlock);
-  *buffer = (CS_HEADER*) buf;
+  *buffer = (CS_MESSAGE_HEADER*) buf;
   (*buffer)->size = htons(size);
   return OK; /* success */
 }

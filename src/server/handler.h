@@ -68,7 +68,7 @@ void injectMessage(const PeerIdentity * sender,
  * implementation).  Detects if the message is encrypted, possibly
  * decrypts and calls injectMessage.
  */
-void core_receive(MessagePack * mp);
+void core_receive(P2P_PACKET * mp);
 
 /**
  * Register a method as a handler for specific message
