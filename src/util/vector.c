@@ -74,12 +74,11 @@ void vectorDump(Vector *v) {
 	    (unsigned long long) vs->size,
 	    (unsigned long long) v->VECTOR_SEGMENT_SIZE,
 	    (unsigned long long) sum,
-	    (unsigned long long) sum + vs->size - 1);
+	    (unsigned long long) (sum + vs->size - 1));
     for (n=0;n<vs->size;n++) {
       fprintf(stderr,
-	      "%p (%d), ",
-	      vs->data[n],
-	      (int) vs->data[n]);
+	      "%p, ",
+	      vs->data[n]);
     }
     fprintf(stderr, "\n");
     sum += vs->size;

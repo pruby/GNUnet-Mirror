@@ -227,37 +227,37 @@ static void addQueryForURI(const struct ECRS_URI * uri,
  * @param c the resulting current ID (set)
  */
 static int computeIdAtTime(const SBlock * sb,
-			   cron_t now,
+			   TIME_T now,
 			   HashCode512 * c) {
-  cron_t pos;
+  TIME_T pos;
   HashCode512 tmp;
   unsigned int iter;
 
-  if (ntohll(sb->updateInterval) == (cron_t) SBLOCK_UPDATE_SPORADIC) {
+  if (ntohl(sb->updateInterval) == SBLOCK_UPDATE_SPORADIC) {
     memcpy(c,
 	   &sb->nextIdentifier,
 	   sizeof(HashCode512));
     return OK;
   }
-  if (ntohll(sb->updateInterval) == (cron_t) SBLOCK_UPDATE_NONE) {
+  if (ntohl(sb->updateInterval) == SBLOCK_UPDATE_NONE) {
     /* H(N-I)^S is the current routing key, so N-I = k */
     deltaId(&sb->identifierIncrement,
 	    &sb->nextIdentifier,
 	    c);
     return OK;
   }
-  GNUNET_ASSERT(ntohll(sb->updateInterval) != 0);
-  pos = ntohll(sb->creationTime);
+  GNUNET_ASSERT(ntohl(sb->updateInterval) != 0);
+  pos = ntohl(sb->creationTime);
   deltaId(&sb->identifierIncrement,
 	  &sb->nextIdentifier,
 	  c);
 
-  iter = (now - (pos + ntohll(sb->updateInterval))) / ntohll(sb->updateInterval);
+  iter = (now - (pos + ntohl(sb->updateInterval))) / ntohl(sb->updateInterval);
   if (iter > 0xFFFF)
     /* too many iterators, signal error! */
     return SYSERR;
-  while (pos + ntohll(sb->updateInterval) < now) {
-    pos += ntohll(sb->updateInterval);
+  while (pos + ntohl(sb->updateInterval) < now) {
+    pos += ntohl(sb->updateInterval);
     addHashCodes(c,
 		 &sb->identifierIncrement,
 		 &tmp);
@@ -428,7 +428,7 @@ static int receiveReplies(const HashCode512 * key,
 	SBlock * sb;
 	const char * dstURI;
 	int j;
-	cron_t now;
+	TIME_T now;
 	HashCode512 updateId;
 	URI updateURI;
 	
@@ -478,8 +478,10 @@ static int receiveReplies(const HashCode512 * key,
 
 	/* compute current/NEXT URI (if updateable SBlock) and issue
 	   respective query automatically! */
-	cronTime(&now);	
-	if (OK != computeIdAtTime(sb, now, &updateId)) {
+	TIME(&now);	
+	if (OK != computeIdAtTime(sb, 
+				  now, 
+				  &updateId)) {
 	  FREE(sb);
 	  return SYSERR;
 	}

@@ -103,8 +103,8 @@ typedef struct {
    */
   HashCode512 identifier;
   /* from here on encrypted */
-  cron_t creationTime; /* in network byte order */
-  cron_t updateInterval; /* in network byte order */
+  TIME_T creationTime; /* in network byte order */
+  TIME_T updateInterval; /* in network byte order */
   HashCode512 nextIdentifier; /* N,  20 b */
   HashCode512 identifierIncrement; /* I, 20 b */
   /* 0-terminated URI follows here! */

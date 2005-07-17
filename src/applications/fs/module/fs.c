@@ -943,17 +943,14 @@ static int replyHashFunction(const DataContainer * content,
 int initialize_module_fs(CoreAPIForApplication * capi) {
   static Blockstore dsGap;
   static Blockstore dsDht;
-  SBlock sb;
 
   GNUNET_ASSERT(sizeof(CHK) == 128);
   GNUNET_ASSERT(sizeof(DBlock) == 4);
   GNUNET_ASSERT(sizeof(IBlock) == 132);
-  GNUNET_ASSERT(sizeof(FileIdentifier) == 136);
   GNUNET_ASSERT(sizeof(KBlock) == 524);
-  GNUNET_ASSERT(sizeof(SBlock) == 732);
+  GNUNET_ASSERT(sizeof(SBlock) == 724);
   GNUNET_ASSERT(sizeof(NBlock) == 716);
   GNUNET_ASSERT(sizeof(KNBlock) == 1244);
-  sb.type = 0; /* make sb life */
 
   hash("GNUNET_FS",
        strlen("GNUNET_FS"),

@@ -340,8 +340,8 @@ static char * getUpdateDataFilename(const char * nsname,
 }
 
 struct UpdateData {
-  cron_t updateInterval;
-  cron_t lastPubTime;
+  TIME_T updateInterval;
+  TIME_T lastPubTime;
   HashCode512 nextId;
   HashCode512 thisId;
 };
@@ -357,8 +357,8 @@ static int readUpdateData(const char * nsname,
 			  const HashCode512 * lastId,
 			  HashCode512 * nextId,
 			  ECRS_FileInfo * fi,
-			  cron_t * updateInterval,
-			  cron_t * lastPubTime) {
+			  TIME_T * updateInterval,
+			  TIME_T * lastPubTime) {
   char * fn;
   struct UpdateData * buf;
   char * uri;
@@ -420,8 +420,8 @@ static int readUpdateData(const char * nsname,
     BREAK();
     return SYSERR;
   }
-  *updateInterval = ntohll(buf->updateInterval);
-  *lastPubTime = ntohll(buf->lastPubTime);
+  *updateInterval = ntohl(buf->updateInterval);
+  *lastPubTime = ntohl(buf->lastPubTime);
   *nextId = buf->nextId;
   FREE(buf);
   return OK;
@@ -434,8 +434,8 @@ static int writeUpdateData(const char * nsname,
 			   const HashCode512 * thisId,
 			   const HashCode512 * nextId,
 			   const ECRS_FileInfo * fi,
-			   const cron_t updateInterval,
-			   const cron_t lastPubTime) {
+			   const TIME_T updateInterval,
+			   const TIME_T lastPubTime) {
   char * fn;
   char * uri;
   size_t metaSize;
@@ -448,8 +448,8 @@ static int writeUpdateData(const char * nsname,
   buf = MALLOC(size);
   buf->nextId = *nextId;
   buf->thisId = *thisId;
-  buf->updateInterval = htonll(updateInterval);
-  buf->lastPubTime = htonll(lastPubTime);
+  buf->updateInterval = htonl(updateInterval);
+  buf->lastPubTime = htonl(lastPubTime);
   memcpy(&buf[1],
 	 uri,
 	 strlen(uri)+1);
@@ -490,18 +490,18 @@ struct ECRS_URI *
 FSUI_addToNamespace(struct FSUI_Context * ctx,
 		    unsigned int anonymityLevel,
 		    const char * name,
-		    cron_t updateInterval,
+		    TIME_T updateInterval,
 		    const HashCode512 * lastId,
 		    const HashCode512 * thisId,
 		    const HashCode512 * nextId,
 		    const struct ECRS_URI * dst,
 		    const struct ECRS_MetaData * md) {
-  cron_t creationTime;
+  TIME_T creationTime;
   HashCode512 nid;
   HashCode512 tid;
-  cron_t now;
-  cron_t lastTime;
-  cron_t lastInterval;
+  TIME_T now;
+  TIME_T lastTime;
+  TIME_T lastInterval;
   ECRS_FileInfo fi;
   char * old;
   struct ECRS_URI * uri;
@@ -509,7 +509,7 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
   /* computation of IDs of update(s).  Not as terrible as
      it looks, just enumerating all of the possible cases
      of periodic/sporadic updates and how IDs are computed. */
-  creationTime = cronTime(&now);
+  creationTime = TIME(&now);
   if (updateInterval != ECRS_SBLOCK_UPDATE_NONE) {
     if ( (lastId != NULL) &&
 	 (OK == readUpdateData(name,
@@ -632,10 +632,10 @@ static int lNCHelper(const char * fil,
   ECRS_FileInfo fi;
   HashCode512 lastId;
   HashCode512 nextId;
-  cron_t pubFreq;
-  cron_t lastTime;
-  cron_t nextTime;
-  cron_t now;
+  TIME_T pubFreq;
+  TIME_T lastTime;
+  TIME_T nextTime;
+  TIME_T now;
 
   if (OK != enc2hash(fil,
 		     &lastId))
@@ -653,10 +653,11 @@ static int lNCHelper(const char * fil,
   if (pubFreq == ECRS_SBLOCK_UPDATE_SPORADIC) {
     nextTime = 0;
   } else {
-    cronTime(&now);
+    TIME(&now);
     nextTime = lastTime;
-    while (nextTime + pubFreq < now)
-      nextTime += pubFreq;
+    while ( (nextTime + pubFreq < now) &&
+	    (nextTime + pubFreq > nextTime) ) 
+      nextTime += pubFreq;    
   }
   if (cls->it != NULL) {
     if (OK != cls->it(cls->closure,

@@ -356,8 +356,8 @@ typedef int (*FSUI_UpdateIterator)(void * cls,
 				   const ECRS_FileInfo * uri,
 				   const HashCode512 * lastId,
 				   const HashCode512 * nextId,
-				   cron_t publicationFrequency,
-				   cron_t nextPublicationTime);
+				   TIME_T publicationFrequency,
+				   TIME_T nextPublicationTime);
 
 /**
  * Iterator over active downloads.
@@ -602,7 +602,7 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
  */
 int FSUI_startCollection(struct FSUI_Context * ctx,
 			 unsigned int anonymityLevel,
-			 cron_t updateInterval,
+			 TIME_T updateInterval,
 			 const char * name,
 			 const struct ECRS_MetaData * meta); /* collection.c */
 
@@ -749,7 +749,7 @@ struct ECRS_URI *
 FSUI_addToNamespace(struct FSUI_Context * ctx,
 		    unsigned int anonymityLevel,
 		    const char * name,
-		    cron_t updateInterval,
+		    TIME_T updateInterval,
 		    const HashCode512 * lastId,
 		    const HashCode512 * thisId,
 		    const HashCode512 * nextId,

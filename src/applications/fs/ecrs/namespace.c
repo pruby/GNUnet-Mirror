@@ -347,8 +347,8 @@ ECRS_addToNamespace(const char * name,
 		    unsigned int anonymityLevel,
 		    unsigned int priority,
 		    cron_t expiration,
-		    cron_t creationTime,
-		    cron_t updateInterval,
+		    TIME_T creationTime,
+		    TIME_T updateInterval,
 		    const HashCode512 * thisId,
 		    const HashCode512 * nextId,
 		    const struct ECRS_URI * dstU,
@@ -442,8 +442,8 @@ ECRS_addToNamespace(const char * name,
   value->expirationTime = htonll(expiration);
 
   /* update SBlock specific data */
-  sb->creationTime = htonll(creationTime);
-  sb->updateInterval = htonll(updateInterval);
+  sb->creationTime = htonl(creationTime);
+  sb->updateInterval = htonl(updateInterval);
   sb->nextIdentifier = *nextId;
 
   deltaId(thisId,

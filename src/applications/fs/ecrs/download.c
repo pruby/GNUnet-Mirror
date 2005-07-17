@@ -862,8 +862,8 @@ static int nodeReceive(const HashCode512 * query,
   size = ntohl(reply->size) - sizeof(Datastore_Value);
   if ( (size <= sizeof(DBlock)) ||
        (size - sizeof(DBlock) != getNodeSize(node)) ) {
-    printf("Received %u bytes, expected %u\n",
-	   size - sizeof(DBlock),
+    printf("Received %llu bytes, expected %u\n",
+	   (unsigned long long) (size - sizeof(DBlock)),
 	   getNodeSize(node));
     BREAK();
     return SYSERR; /* invalid size! */

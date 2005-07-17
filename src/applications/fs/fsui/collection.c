@@ -72,11 +72,11 @@ typedef struct CollectionData {
   /**
    * What is the update interval? (NBO!)
    */
-  cron_t updateInterval;
+  TIME_T updateInterval;
   /**
    * What is the update interval? (NBO!)
    */
-  cron_t lastPublication;
+  TIME_T lastPublication;
   /**
    * Anonymity level for the collection. (NBO)
    */
@@ -101,13 +101,13 @@ typedef struct CollectionData {
  */
 int FSUI_startCollection(struct FSUI_Context * ctx,
 			 unsigned int anonymityLevel,
-			 cron_t updateInterval,
+			 TIME_T updateInterval,
 			 const char * name,
 			 const struct ECRS_MetaData * meta) {
   struct ECRS_URI * advertisement;
   struct ECRS_URI * rootURI;
   HashCode512 nextId;
-  cron_t now;
+  TIME_T now;
   unsigned int prio;
   CollectionData * cd;
   unsigned long long dirLen;
@@ -118,7 +118,7 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
   GNUNET_ASSERT(name != NULL);
   advertisement = FSUI_parseCharKeywordURI(COLLECTION);
   GNUNET_ASSERT(advertisement != NULL);
-  cronTime(&now);
+  TIME(&now);
   prio = getConfigurationInt("FS",
 			     "ADVERTISEMENT-PRIORITY");
   if (prio == 0)
@@ -210,7 +210,7 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx) {
  */
 void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
   CollectionData * cd;
-  cron_t now;
+  TIME_T now;
   struct ECRS_URI * uri;
   struct ECRS_URI * directoryURI;
   struct ECRS_MetaData *  metaData;
@@ -224,13 +224,13 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
   if (ntohl(cd->changed) == NO)
     return;
 
-  cronTime(&now);
-  if ( (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
-       (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) &&
-       (ntohll(cd->lastPublication) + ntohll(cd->updateInterval) < now) )
+  TIME(&now);
+  if ( (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
+       (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) &&
+       (ntohl(cd->lastPublication) + ntohl(cd->updateInterval) < now) )
     return;
-  if ( (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
-       (ntohll(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
+  if ( (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
+       (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
     HashCode512 delta;
 
     deltaId(&cd->nextId,
@@ -287,13 +287,13 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
 						"ADVERTISEMENT-PRIORITY"),
 			    now + COLLECTION_ADV_LIFETIME,
 			    now,
-			    ntohll(cd->updateInterval),
+			    ntohl(cd->updateInterval),
 			    &cd->lastId,
 			    &cd->nextId,
 			    directoryURI,
 			    metaData);
   if (uri != NULL) {
-    cd->lastPublication = htonll(now);
+    cd->lastPublication = htonl(now);
     cd->changed = htonl(NO);
     ECRS_freeUri(uri);
   }

@@ -1101,10 +1101,10 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
 
   for (i=0;i<be->sendBufferSize;i++) {
     entry = be->sendBuffer[i];
-    tmpMsg = MALLOC(entry->len);
 
     if (entry->knapsackSolution == YES) {
       if (entry->callback != NULL) {
+	tmpMsg = MALLOC(entry->len);
 	if (OK == entry->callback(tmpMsg,
 				  entry->closure,
 				  entry->len)) {

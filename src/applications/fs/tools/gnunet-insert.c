@@ -69,7 +69,7 @@ static void postProcess(const struct ECRS_URI * uri) {
   char * tid;
   char * nid;
   struct ECRS_URI * nsuri;
-  unsigned int updateInterval;
+  TIME_T updateInterval;
   char * us;
 
   pname = getConfigurationString("GNUNET-INSERT",
