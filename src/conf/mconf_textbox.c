@@ -26,6 +26,8 @@
  * @author Nils Durner
  */
 
+#include "platform.h"
+#include "gnunet_util.h"
 #include "mconf_dialog.h"
 
 static void back_lines (int n);

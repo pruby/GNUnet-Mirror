@@ -42,7 +42,7 @@ static unsigned int tapis_count = 0;
 static unsigned int helo_live;
 static Mutex tapis_lock;
 
-#define hello_RECREATE_FREQ (5 * cronMINUTES)
+#define HELLO_RECREATE_FREQ (5 * cronMINUTES)
 
 
 
@@ -109,8 +109,8 @@ static int addTransport(TransportAPI * tapi) {
   tapis[tapi->protocolNumber] = tapi;
   tapi->helo = NULL;
   addCronJob((CronJob)&createSignedhello,
-	     hello_RECREATE_FREQ,
-	     hello_RECREATE_FREQ,
+	     HELLO_RECREATE_FREQ,
+	     HELLO_RECREATE_FREQ,
 	     tapi);
   return OK;
 }
@@ -626,8 +626,8 @@ provide_module_transport(CoreAPIForApplication * capi) {
 
   helo_live = getConfigurationInt("GNUNETD",
 				  "HELLOEXPIRES") * 60; /* minutes to seconds */
-  if (helo_live > MAX_hello_EXPIRES)
-    helo_live = MAX_hello_EXPIRES;
+  if (helo_live > MAX_HELLO_EXPIRES)
+    helo_live = MAX_HELLO_EXPIRES;
 
   if (helo_live <= 0) {
     helo_live = 60 * 60;
@@ -730,7 +730,7 @@ int release_module_transport() {
   for (i=0;i<tapis_count;i++) {
     if (tapis[i] != NULL) {
       delCronJob((CronJob)&createSignedhello,
-		 hello_RECREATE_FREQ,
+		 HELLO_RECREATE_FREQ,
 		 tapis[i]);
       ptr = bindDynamicMethod(tapis[i]->libHandle,
 			      "donetransport_",

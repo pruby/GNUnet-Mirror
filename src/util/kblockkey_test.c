@@ -228,8 +228,9 @@ static int testPrivateKeyEncoding(const struct PrivateKey * hostkey) {
 }
 
 
-void initRAND(); /* hostkey_* */
-
+void initRAND(void); /* hostkey_* */
+void initKBlockKey(void);
+void doneKBlockKey(void);
 
 int main(int argc, char * argv[]) {
   int failureCount = 0;
@@ -238,6 +239,7 @@ int main(int argc, char * argv[]) {
 
   initLockingGcrypt();
   initRAND();
+  initKBlockKey();
   makeRandomId(&in);
 
   hostkey = makeKblockKey(&in);
@@ -257,6 +259,7 @@ int main(int argc, char * argv[]) {
   if (OK != testPrivateKeyEncoding(hostkey))
     failureCount++;
   freePrivateKey(hostkey);
+  doneKBlockKey();
   doneLockingGcrypt();
 
   if (failureCount == 0) {

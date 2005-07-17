@@ -45,13 +45,13 @@
 /**
  * Send our hello to a random connected host on a regular basis.
  */
-#define hello_BROADCAST_FREQUENCY (2 * cronMINUTES)
+#define HELLO_BROADCAST_FREQUENCY (2 * cronMINUTES)
 
 /**
  * From time to time, forward one hello from one peer to
  * a random other peer.
  */
-#define hello_FORWARD_FREQUENCY (4 * cronMINUTES)
+#define HELLO_FORWARD_FREQUENCY (4 * cronMINUTES)
 
 /**
  * Meanings of the bits in activeCronJobs (ACJ).
@@ -61,7 +61,7 @@
 #define ACJ_FORWARD 2
 #define ACJ_ALL (ACJ_ANNOUNCE | ACJ_FORWARD)
 
-#define DEBUG_helloEXCHANGE NO
+#define DEBUG_ADVERTISING NO
 
 static CoreAPIForApplication * coreAPI;
 
@@ -157,7 +157,7 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
 	(char*)&enc);
     return SYSERR; /* message invalid */
   }
-  if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_hello_EXPIRES) {
+  if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_HELLO_EXPIRES) {
      LOG(LOG_WARNING,
 	 _("hello message received invalid (expiration time over limit). Dropping.\n"));
     return SYSERR;
@@ -166,7 +166,7 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
     return OK; /* not good, but do process rest of message */
   if (stats != NULL)
     stats->change(stat_hello_in, 1);
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_INFO,
       _("hello advertisement for protocol %d received.\n"),
       ntohs(msg->protocol));
@@ -206,7 +206,7 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
       FREE(copy);
       return OK;
     } else {
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
       LOG(LOG_DEBUG,
 	  "advertised hello differs from prior knowledge,"
 	  " requireing ping-pong confirmation.\n");
@@ -352,7 +352,7 @@ broadcastHelper(const PeerIdentity * hi,
     return;
   hash2enc(&hi->hashPubKey,
 	   &other);
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_DEBUG,
       "Entering '%s' with target '%s'.\n",
       __FUNCTION__,
@@ -368,7 +368,7 @@ broadcastHelper(const PeerIdentity * hi,
     coreAPI->unicast(hi,
 		     &sd->m->header,
 		     prio,
-		     hello_BROADCAST_FREQUENCY);
+		     HELLO_BROADCAST_FREQUENCY);
     if (stats != NULL)
       stats->change(stat_hello_out,
 		    1);
@@ -387,7 +387,7 @@ broadcastHelper(const PeerIdentity * hi,
 				 proto,
 				 NO);
   if (NULL == helo) {
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
     LOG(LOG_DEBUG,
 	"Exit from '%s' (error: '%s' failed).\n",
 	__FUNCTION__,
@@ -398,7 +398,7 @@ broadcastHelper(const PeerIdentity * hi,
   tsession = transport->connect(helo);
   FREE(helo);
   if (tsession == NULL) {
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
     LOG(LOG_DEBUG,
 	"Exit from '%s' (%s error).\n",
 	__FUNCTION__,
@@ -413,7 +413,7 @@ broadcastHelper(const PeerIdentity * hi,
 			 (char*)&sd->m->header,
 			 P2P_hello_MESSAGE_size(sd->m));
   transport->disconnect(tsession);
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_DEBUG,
       "Exit from %s.\n",
       __FUNCTION__);
@@ -434,7 +434,7 @@ broadcasthelloTransport(TransportAPI * tapi,
     return; /* network load too high... */
   if (0 != randomi(*prob))
     return; /* ignore */
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_CRON,
       "Enter '%s'.\n",
       __FUNCTION__);
@@ -446,7 +446,7 @@ broadcasthelloTransport(TransportAPI * tapi,
   sd.m = transport->createhello(tapi->protocolNumber);
   if (sd.m == NULL)
     return;
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_INFO,
       _("Advertising my transport %d to selected peers.\n"),
       tapi->protocolNumber);
@@ -464,7 +464,7 @@ broadcasthelloTransport(TransportAPI * tapi,
 		       (HostIterator)&broadcastHelper,
 		       &sd);
   FREE(sd.m);
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_CRON,
       "Exit '%s'.\n",
       __FUNCTION__);
@@ -535,7 +535,7 @@ forwardhelloHelper(const PeerIdentity * peer,
   if (randomi((*probability)+1) != 0)
     return; /* only forward with a certain chance,
 	       (on average: 1 peer per run!) */
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_CRON,
       "forwarding hellos\n");
 #endif
@@ -567,7 +567,7 @@ forwardhelloHelper(const PeerIdentity * peer,
   count = coreAPI->forAllConnectedNodes(NULL,
 					NULL);
   if (count > 0) {
-    fcc.delay = (*probability) * hello_BROADCAST_FREQUENCY;  /* send before the next round */
+    fcc.delay = (*probability) * HELLO_BROADCAST_FREQUENCY;  /* send before the next round */
     fcc.msg  = helo;
     fcc.prob = count;
     coreAPI->forAllConnectedNodes((PerNodeCallback) &forwardCallback,
@@ -587,7 +587,7 @@ forwardhello(void * unused) {
 
   if (getCPULoad() > 100)
     return; /* CPU load too high... */
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_CRON,
       "Enter '%s'.\n",
       __FUNCTION__);
@@ -598,7 +598,7 @@ forwardhello(void * unused) {
   identity->forEachHost(0, /* ignore blacklisting */
 			&forwardhelloHelper,
 			&count);
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   LOG(LOG_CRON,
       "Exit '%s'.\n",
       __FUNCTION__);
@@ -644,25 +644,25 @@ configurationUpdateCallback() {
 				"DISABLE-ADVERTISEMENTS",
 				"YES"))
       delCronJob(&broadcasthello,
-		 hello_BROADCAST_FREQUENCY,
+		 HELLO_BROADCAST_FREQUENCY,
 		 NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   } else {
     if (testConfigurationString("NETWORK",
-				"helloEXCHANGE",
+				"HELLOEXCHANGE",
 				"YES"))
       addCronJob(&broadcasthello,
 		 15 * cronSECONDS,
-		 hello_BROADCAST_FREQUENCY,
+		 HELLO_BROADCAST_FREQUENCY,
 		 NULL);
     activeCronJobs += ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
     if (! testConfigurationString("NETWORK",
-				  "helloEXCHANGE",
+				  "HELLOEXCHANGE",
 				  "YES"))
       delCronJob(&forwardhello,
-		 hello_FORWARD_FREQUENCY,
+		 HELLO_FORWARD_FREQUENCY,
 		 NULL); /* seven minutes: exchange */
     activeCronJobs -= ACJ_FORWARD;
   } else {
@@ -671,7 +671,7 @@ configurationUpdateCallback() {
 				  "YES"))
       addCronJob(&broadcasthello,
 		 15 * cronSECONDS,
-		 hello_BROADCAST_FREQUENCY,
+		 HELLO_BROADCAST_FREQUENCY,
 		 NULL);
     activeCronJobs += ACJ_FORWARD;
   }
@@ -737,7 +737,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 				"YES")) {
     addCronJob(&broadcasthello,
 	       15 * cronSECONDS,
-	       hello_BROADCAST_FREQUENCY,
+	       HELLO_BROADCAST_FREQUENCY,
 	       NULL);
     activeCronJobs += ACJ_ANNOUNCE;
   } else {
@@ -745,15 +745,15 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 	_("Network advertisements disabled by configuration!\n"));
   }
   if (testConfigurationString("NETWORK",
-			      "helloEXCHANGE",
+			      "HELLOEXCHANGE",
 			      "YES") == YES) {
     addCronJob(&forwardhello,
 	       4 * cronMINUTES,
-	       hello_FORWARD_FREQUENCY,
+	       HELLO_FORWARD_FREQUENCY,
 	       NULL);
     activeCronJobs += ACJ_FORWARD;
   }
-#if DEBUG_helloEXCHANGE
+#if DEBUG_ADVERTISING
   else
     LOG(LOG_DEBUG,
 	"hello forwarding disabled!\n");
@@ -774,13 +774,13 @@ void done_module_advertising() {
   stopBootstrap();
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE)) {
     delCronJob(&broadcasthello,
-	       hello_BROADCAST_FREQUENCY,
+	       HELLO_BROADCAST_FREQUENCY,
 	       NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
     delCronJob(&forwardhello,
-	       hello_FORWARD_FREQUENCY,
+	       HELLO_FORWARD_FREQUENCY,
 	       NULL); /* seven minutes: exchange */
     activeCronJobs -= ACJ_FORWARD;
   }

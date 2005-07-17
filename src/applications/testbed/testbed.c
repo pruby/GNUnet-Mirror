@@ -319,7 +319,7 @@ static void tb_DISABLE_hello(ClientHandle client,
 				     "DISABLE-ADVERTISEMENTS",
 				     "YES"));
   FREENONNULL(setConfigurationString("NETWORK",
-				     "helloEXCHANGE",
+				     "HELLOEXCHANGE",
 				     "NO"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
@@ -336,7 +336,7 @@ static void tb_ENABLE_hello(ClientHandle client,
 				     "DISABLE-ADVERTISEMENTS",
 				     "NO"));
   FREENONNULL(setConfigurationString("NETWORK",
-				     "helloEXCHANGE",
+				     "HELLOEXCHANGE",
 				     "YES"));
   triggerGlobalConfigurationRefresh();
   sendAcknowledgement(client, OK);
@@ -1268,7 +1268,7 @@ static void httpRegister(char * cmd) {
     LOG(LOG_WARNING,
 	_("Exit register (error: no http response read).\n"));
   }
-#if DEBUG_helloEXCHANGE
+#if DEBUG_TESTBED
   LOG(LOG_INFO,
       "Exit register (%d seconds before timeout)\n",
       (int)(start + 300 * cronSECONDS - cronTime(NULL))/cronSECONDS);

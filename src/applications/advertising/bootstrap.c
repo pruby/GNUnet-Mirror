@@ -61,7 +61,7 @@ static void processhellos(HelloListClosure * hcq) {
 	  (hcq->helosCount > 0) ) {
     /* select hello by random */
     rndidx = randomi(hcq->helosCount);
-#if DEBUG_helloEXCHANGE
+#if DEBUG_BOOTSTRAP
     LOG(LOG_DEBUG,
 	"%s chose hello %d of %d\n",
 	__FUNCTION__,

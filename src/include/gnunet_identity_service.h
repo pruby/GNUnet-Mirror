@@ -37,7 +37,7 @@
  * change (would break compatibility with peers that have a different
  * limit).
  */
-#define MAX_hello_EXPIRES (60 * 60 * 24 * 10)
+#define MAX_HELLO_EXPIRES (60 * 60 * 24 * 10)
 
 /**
  * Type of an iterator over the hosts.  Note that each

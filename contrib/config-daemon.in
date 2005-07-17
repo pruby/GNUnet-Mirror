@@ -57,12 +57,12 @@ menu "General settings" "GNUNETD"
 		of free space is recommended.
 		Default: GNUNETD_HOME     = /var/lib/GNUnet
 
-	config HELOEXPIRES
+	config HELLOEXPIRES
 	int "How many minutes should peer advertisements last?"
 	default 1440
 	depends on Meta::ADVANCED
 	help
-		How many minutes is the current IP valid?  (GNUnet will sign HELO
+		How many minutes is the current IP valid?  (GNUnet will sign HELLO
 		messages with this expiration timeline. If you are on dialup, 60
 		(for 1 hour) is suggested. If you are having a static IP address,
 		you may want to set this to a large value (say 14400).  The default
@@ -70,7 +70,7 @@ menu "General settings" "GNUNETD"
 		choose the expiration to be smaller than the frequency with which
 		your IP changes.
 		The largest legal value is 14400 (10 days).
-		Default: HELOEXPIRES     = 1440
+		Default: HELLOEXPIRES     = 1440
 
   config LOGLEVEL
   string "Log level"
@@ -303,7 +303,7 @@ menu "Network" "NETWORK"
 		NILS: can we only show this item if 
 		the user selected topology = toplogy_f2f?
 
-  config HELOEXCHANGE
+  config HELLOEXCHANGE
   bool "Participate in network topology management"
   default y
   depends on Meta::ADVANCED
@@ -312,11 +312,11 @@ menu "Network" "NETWORK"
 		reachable from the Internet and that contains GNUnet clients and to
 		a public network, typically the Internet (and is this host is thus
 		in the position of a router, typically doing NAT), then this option
-		should be set to 'NO'. It prevents the node from forwarding HELOs
+		should be set to 'NO'. It prevents the node from forwarding HELLOs
 		other than its own. If you do not know what the above is about, just
 		keep it set to YES (which is also the default when the option is not
 		given).
-		Default is yes: HELOEXCHANGE = YES
+		Default is yes: HELLOEXCHANGE = YES
   
   config TRUSTED
   string "IPs allowed to use gnunetd server"
@@ -580,8 +580,8 @@ menu "Transports" ""
 		string "Hostname of the sender host"
 		default "myhost.example.com"
 		help
-			Hostname of the sender host to use in the HELO message of the SMTP
-			protocol (not to be confused with the HELO in the GNUnet p2p
+			Hostname of the sender host to use in the HELLO message of the SMTP
+			protocol (not to be confused with the HELLO in the GNUnet p2p
 			protocol). Pick a hostname that works for your SMTP server. This
 			hostname has nothing to do with the hostname of the SMTP server or
 			your E-mail sender address (though those names should work in most
