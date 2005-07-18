@@ -35,7 +35,7 @@ EXTRA_DIST = generate \
   check.conf
 
 libgnunetutil_la_LDFLAGS = \
- -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp \
+ -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp -ldl \
  -version-info 1:0:0
 
 generate_gnunetd_conf.c: generate
