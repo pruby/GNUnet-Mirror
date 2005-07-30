@@ -7,7 +7,7 @@
 #               this server is required to connect to the network,
 #               it will open a TCP port to communicate with the
 #               GUI and an UDP port to communicate with the world.
-#               The configuration file /etc/gnunet.conf will be used.
+#               The configuration file /etc/gnunetd.conf will be used.
 # processname: gnunetd
 # pidfile: /var/run/gnunetd.pid
 #
