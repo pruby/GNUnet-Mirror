@@ -109,7 +109,8 @@ int initUtil(int argc,
 	     CommandLineParser parser) {
 
 #ifdef MINGW
-  InitWinEnv();
+  if (InitWinEnv() != ERROR_SUCCESS)
+  	return SYSERR;
 #endif
 #if ENABLE_NLS
   setlocale (LC_ALL, "");

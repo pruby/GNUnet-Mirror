@@ -76,9 +76,11 @@ void plibc_panic(int err, char *msg) {
  * Initialize PlibC and set up Windows environment
  * @return Error code from winerror.h, ERROR_SUCCESS on success
 */
-void InitWinEnv()
+int InitWinEnv()
 {
-	plibc_init("GNU", PACKAGE);
+	int ret;
+	
+	ret = plibc_init("GNU", PACKAGE);
 	plibc_set_panic_proc(plibc_panic);
 
   hNTDLL = LoadLibrary("ntdll.dll");
@@ -215,6 +217,8 @@ void InitWinEnv()
   	GNNetUserAdd = NULL;
   	GNNetUserSetInfo = NULL;
   }
+  
+  return ret;
 }
 
 /**
