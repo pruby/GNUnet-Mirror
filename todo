@@ -6,7 +6,6 @@
 
 0.7.0 [8'05?] (aka "compatibility? what's that?"):
 - Missing Features:
-  * resolve "FIXME 0.7": only sqlite magic factor missing! [Nils]
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
   * #851, #852,#853 (gnunet-setup nitpicks) [Nils]
   * permissions on indexed files? [Nils]
