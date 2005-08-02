@@ -762,6 +762,10 @@ int stopTCPServer() {
 }
 
 int doneTCPServer() {
+  stopTCPServer(); /* just to be sure; used mostly
+		      for the benefit of gnunet-update
+		      and other gnunet-tools that are
+		      not gnunetd */
 #if DEBUG_TCPHANDLER
   LOG(LOG_DEBUG,
       "entering %s\n", __FUNCTION__);

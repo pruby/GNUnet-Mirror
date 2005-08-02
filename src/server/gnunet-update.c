@@ -296,7 +296,6 @@ static void work() {
     printf(_("Updated data for %d applications.\n"),
 	   processedCount);
   GROW(processed, processedCount, 0);
-
   doneCore();
 }
 
