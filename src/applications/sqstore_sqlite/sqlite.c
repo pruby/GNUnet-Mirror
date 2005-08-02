@@ -114,9 +114,11 @@ static unsigned long long getSize() {
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   ret = dbh->payload;
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+#if DEBUG_SQLITE
   LOG(LOG_DEBUG,
       "SQLite: database size: %.0f\n",
       ret);
+#endif
   return ret;
 }
 
@@ -262,8 +264,6 @@ static double getStat(const char * key) {
     return SYSERR;
   }
 
-fprintf(stderr, "Got db size: %f\n", ret);
-
   return ret;
 }
 
@@ -288,7 +288,6 @@ static int setStat(const char *key,
 		 fprintf(stderr, "DELETE suc\n");
 	}
 
-fprintf(stderr, "Writing db size: %f\n", val);
   if (sq_prepare("INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
 		 &stmt) == SQLITE_OK) {
     sqlite3_bind_text(stmt,
@@ -309,8 +308,6 @@ fprintf(stderr, "Writing db size: %f\n", val);
       return SYSERR;
     }
     sqlite3_finalize(stmt);
-
-fprintf(stderr, "Wrote db size: %f\n", val);
 
     return OK;
   } else
