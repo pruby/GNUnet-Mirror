@@ -284,8 +284,7 @@ static int setStat(const char *key,
 		      strlen(key),
 		      SQLITE_STATIC);
 		sqlite3_step(stmt);
-		if (sqlite3_finalize(stmt) == SQLITE_OK)
-		 fprintf(stderr, "DELETE suc\n");
+		sqlite3_finalize(stmt);
 	}
 
   if (sq_prepare("INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
