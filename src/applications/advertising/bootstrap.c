@@ -83,7 +83,7 @@ static void processhellos(HelloListClosure * hcq) {
     if ( (hcq->helosCount > 0) &&
 	 (abort_bootstrap == NO) ) {
       /* wait a bit */
-      int load;
+      unsigned int load;
       int nload;
       load = getCPULoad();
       nload = getNetworkLoadUp();
@@ -94,6 +94,7 @@ static void processhellos(HelloListClosure * hcq) {
 	load = nload;
       if (load > 100)
 	load = 100;
+
       gnunet_util_sleep(50 + randomi((load+1)*(load+1)));
     }
   }
