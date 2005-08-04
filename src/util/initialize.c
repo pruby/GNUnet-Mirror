@@ -111,31 +111,31 @@ void setProcessPrio() {
 	if (str) {
 		/* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
 		 * and the usual numeric nice() increments */
-		if (stricmp(str, "NORMAL") == 0)
+		if (strcmp(str, "NORMAL") == 0)
 #ifdef MINGW
 			prio = NORMAL_PRIORITY_CLASS;
 #else
 			prio = 0;
 #endif
-		else if (stricmp(str, "ABOVE NORMAL") == 0)
+		else if (strcmp(str, "ABOVE NORMAL") == 0)
 #ifdef MINGW
 			prio = ABOVE_NORMAL_PRIORITY_CLASS;
 #else
 			prio = -10;
 #endif
-		else if (stricmp(str, "BELOW NORMAL") == 0)
+		else if (strcmp(str, "BELOW NORMAL") == 0)
 #ifdef MINGW
 			prio = BELOW_NORMAL_PRIORITY_CLASS;
 #else
 			prio = 10;
 #endif
-		else if (stricmp(str, "HIGH") == 0)
+		else if (strcmp(str, "HIGH") == 0)
 #ifdef MINGW
 			prio = HIGH_PRIORITY_CLASS;
 #else
 			prio = -20;
 #endif
-		else if (stricmp(str, "IDLE") == 0)
+		else if (strcmp(str, "IDLE") == 0)
 #ifdef MINGW
 			prio = IDLE_PRIORITY_CLASS;
 #else
