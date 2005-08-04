@@ -178,7 +178,7 @@ menu "General settings" "GNUNETD"
 		Which applications should gnunetd support? Specify the name of the
 		dynamic shared object (DSO) that implements the service in the
 		gnunetd core here. Separate multiple modules with spaces.
-
+		
 		Whenever this option is changed, you MUST run gnunet-update.
 		
 		Currently, the available applications are:
@@ -200,7 +200,7 @@ menu "General settings" "GNUNETD"
 		to be loaded!
 		
 		Default: APPLICATIONS = "advertising fs getoption stats traffic"
-  
+
   config TRANSPORTS
   string "Which transport mechanisms are available?"
   default "udp tcp http nat"
@@ -224,6 +224,18 @@ menu "General settings" "GNUNETD"
 		Usually, the default is just fine for most people.
 		Choices are: "udp tcp udp6 tcp6 nat http smtp"
 		Default: TRANSPORTS = "udp tcp http nat"
+
+	config PROCESS-PRIORITY
+	string "Process priority"
+	default "NORMAL"
+	depends on Meta::ADVANCED
+	help
+		At which priority should the GNUnet server run? If you don't want it
+		to interfere with other applications, set this to "BELOW NORMAL" or "IDLE".
+		Acceptable values are "NORMAL", "BELOW NORMAL", "ABOVE NORMAL", "HIGH",
+		"IDLE" and nice(1) increments (a numeric value between -20 and 19, keep
+		in mind that values smaller than 0 require root privileges).
+		Default is "NORMAL".
 
 endmenu
 

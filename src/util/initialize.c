@@ -99,6 +99,76 @@ void initCron();
 void doneCron();
 
 /**
+ * Set our process priority
+ */
+void setProcessPrio() {
+	char *str;
+	int prio = 0;
+	
+	/* Get setting as string */
+	str = getConfigurationString(testConfigurationString("GNUNETD", "_MAGIC_", "YES") ?
+		"GNUNETD" : "GNUNET", "PROCESS-PRIORITY");
+	if (str) {
+		/* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
+		 * and the usual numeric nice() increments */
+		if (stricmp(str, "NORMAL") == 0)
+#ifdef MINGW
+			prio = NORMAL_PRIORITY_CLASS;
+#else
+			prio = 0;
+#endif
+		else if (stricmp(str, "ABOVE NORMAL") == 0)
+#ifdef MINGW
+			prio = ABOVE_NORMAL_PRIORITY_CLASS;
+#else
+			prio = -10;
+#endif
+		else if (stricmp(str, "BELOW NORMAL") == 0)
+#ifdef MINGW
+			prio = BELOW_NORMAL_PRIORITY_CLASS;
+#else
+			prio = 10;
+#endif
+		else if (stricmp(str, "HIGH") == 0)
+#ifdef MINGW
+			prio = HIGH_PRIORITY_CLASS;
+#else
+			prio = -20;
+#endif
+		else if (stricmp(str, "IDLE") == 0)
+#ifdef MINGW
+			prio = IDLE_PRIORITY_CLASS;
+#else
+			prio = 19;
+#endif
+		else {
+			prio = atoi(str);
+			
+#ifdef MINGW
+			/* Convert the nice increment to a priority class */
+			if (prio == 0)
+				prio = NORMAL_PRIORITY_CLASS;
+			else if (prio > 0 && prio <= 10)
+				prio = BELOW_NORMAL_PRIORITY_CLASS;
+			else if (prio > 0)
+				prio = IDLE_PRIORITY_CLASS;
+			else if (prio < 0 && prio >= -10)
+				prio = ABOVE_NORMAL_PRIORITY_CLASS;
+			else if (prio < 0)
+				prio = HIGH_PRIORITY_CLASS;
+#endif
+		}
+		
+		/* Set process priority */
+#ifdef MINGW
+		SetPriorityClass(GetCurrentProcess(), prio);
+#else
+		nice(prio);
+#endif
+	}
+}
+
+/**
  * Initialize the util library. Use argc, argv and the given parser
  * for processing command-line options <strong>after</strong> the
  * configuration module was initialized, but <strong>before</strong> logging
@@ -132,6 +202,7 @@ int initUtil(int argc,
     if (SYSERR == parser(argc, argv))
       return SYSERR;
   readConfiguration();
+  setProcessPrio();
   initLogging();
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",

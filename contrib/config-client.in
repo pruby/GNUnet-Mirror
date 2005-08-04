@@ -55,6 +55,19 @@ menu "General settings" "GNUNET"
 		Where to write the messages? Leave the entry unspecified (as
 		default) to make the clients print their messages to stderr.
 		Default is unspecified (stderr).
+		
+	config PROCESS-PRIORITY
+	string "Process priority"
+	default "NORMAL"
+	depends on Meta::ADVANCED-CLIENT
+	help
+		At which priority should the client tools run? If you don't want the
+		client-tools to interfere with other applications, set this to
+		"BELOW NORMAL" or "IDLE".
+		Acceptable values are "NORMAL", "BELOW NORMAL", "ABOVE NORMAL", "HIGH",
+		"IDLE" and nice(1) increments (a numeric value between -20 and 19, keep
+		in mind that values smaller than 0 require root privileges).
+		Default is "NORMAL".
 endmenu
 
 menu "Network options for the clients" "NETWORK"
