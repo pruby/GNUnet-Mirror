@@ -107,9 +107,11 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
     case 5:
       err = winErrorStr(_("Can't access the service"),
 			GetLastError());
+	  break;
     case 6:
       err = winErrorStr(_("Can't delete the service"),
 			GetLastError());
+      break;
     default:
       err = winErrorStr(_("Unknown error"), GetLastError());
     }  

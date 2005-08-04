@@ -247,7 +247,6 @@ int UninstallService()
 {
   SC_HANDLE hManager, hService;
   
-
   if (! GNOpenSCManager)
     return 1;
 
@@ -256,14 +255,16 @@ int UninstallService()
     return 2;
 
   if (! (hService = GNOpenService(hManager, "GNUnet", DELETE)))
-    return 3;
+  	if (GetLastError() != ERROR_SERVICE_DOES_NOT_EXIST)
+    	return 3;
+   	else
+   		goto closeSCM;
 
   if (! GNDeleteService(hService))
-  {
   	if (GetLastError() != ERROR_SERVICE_MARKED_FOR_DELETE)
     	return 4;
-  }
 
+closeSCM:
   GNCloseServiceHandle(hService);
 
 	return 0;
