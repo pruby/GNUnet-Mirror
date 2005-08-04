@@ -15,9 +15,6 @@
     * Uninstall
       * Remove account
       * Ask to remove lib/
-  * auto-nice
-   * Windows: SetPriorityClass()
-   * Linux: if (getConfigurationInt("GNUNETD", "NICE") != 0) nice(getConfigurationInt("GNUNETD", "NICE"))
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
 - Additional (automated, make check-style) testing:
