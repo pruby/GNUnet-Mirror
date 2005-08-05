@@ -122,7 +122,7 @@ unsigned int weak_randomi(unsigned int i) {
 	ret = i * ((double) RANDOM() / RAND_MAX);
 	
 	if (ret >= i)
-		ret = i;
+		ret = i - 1;
 	
 	return ret;
 }
