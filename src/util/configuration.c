@@ -682,6 +682,8 @@ int isConfigurationItemSet(const char *section, const char *option)
 	if (! found && parseConfigInit == YES)
 		found = cfg_exists(section, option);
 
+  MUTEX_UNLOCK(&configLock);
+
 	return found;
 }
 
