@@ -245,6 +245,31 @@ static char * cfg_get_str(const char * sec,
   return NULL;
 }
 
+/**
+ * @brief Checks if a setting exists
+ * @return YES or NO
+ */
+static int cfg_exists(const char *sec,
+						const char *ent)
+{
+	struct CFG_ENTRIES *e = NULL;
+	int i;
+
+	if(c)
+		for(i = 0; i < c->sec_count; i++)
+			if(0 == strcasecmp(c->sec_names[i], sec))
+				e = c->sec_entries[i];
+				
+	if(NULL == e)
+		return NO;
+		
+	for(i = 0; i < e->ent_count; i++)
+		if(0 == strcasecmp(e->ent_names[i], ent))
+			return YES;
+		
+	return NO;
+}
+
 static int cfg_get_signed_int(const char *sec,
 			      const char *ent) {
   char *val;
@@ -631,6 +656,33 @@ char * getConfigurationString(const char * section,
     if (retval[0] == '$')
       retval = expandDollar(section, retval);
   return retval;
+}
+
+/**
+ * @brief Check if a setting was specified in a .conf file
+ * @return YES or NO
+ */
+int isConfigurationItemSet(const char *section, const char *option)
+{
+	UserConf *pos;
+	int found = NO;
+
+	GNUNET_ASSERT((section != NULL) && (option != NULL));
+	MUTEX_LOCK(&configLock);
+	pos = userconfig;
+	while(pos != NULL) {
+		if((strcmp(section, pos->section) == 0) &&
+			 (strcmp(option, pos->option) == 0)) {
+			 	found = YES;
+			 	break;
+		}
+		pos = pos->next;
+	}
+
+	if (! found && parseConfigInit == YES)
+		found = cfg_exists(section, option);
+
+	return found;
 }
 
 /**

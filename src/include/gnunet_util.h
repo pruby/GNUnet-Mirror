@@ -751,6 +751,12 @@ void setConfigurationStringList(char ** value,
 				int count);
 
 /**
+ * @brief Check if a setting was specified in a .conf file
+ * @return YES or NO
+ */
+int isConfigurationItemSet(const char *section, const char *option);
+
+/**
  * Start the cron jobs.
  */
 void startCron(void);
