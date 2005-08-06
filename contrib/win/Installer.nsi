@@ -60,6 +60,10 @@ var ICONS_GROUP
 
 ; MUI end ------
 
+; Non-standard texts
+LangString deleteall ${LANG_ENGLISH} "Do you also want to delete all GNUnet configuration files and databases?"
+LangString deleteall ${LANG_GERMAN} "Möchten Sie außerdem alle GNUnet Konfigurationsdateien und Datenbanken löschen?"
+
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "Setup.exe"
 InstallDir "$PROGRAMFILES\GNU\GNUnet"
@@ -958,5 +962,9 @@ Section Uninstall
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 ;  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
   DeleteRegKey HKLM "Software\GNU\GNUnet"
+  
+  MessageBox MB_YESNO "$(deleteall)" IDNO end
+  RmDir /r /REBOOTOK "$INSTDIR"
+ end:
   SetAutoClose true
 SectionEnd

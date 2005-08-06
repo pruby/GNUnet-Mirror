@@ -14,7 +14,6 @@
   * Windows installer [Nils]
     * Uninstall
       * Remove account
-      * Ask to remove lib/
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
 - Additional (automated, make check-style) testing:
