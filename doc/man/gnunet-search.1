@@ -1,4 +1,4 @@
-.TH GNUNET-SEARCH "1" "15 Dec 2004" "GNUnet"
+.TH GNUNET-SEARCH "1" "07 Aug 2005" "GNUnet"
 .SH NAME
 gnunet\-search \- a command line interface to search for content on GNUnet
 .SH SYNOPSIS
@@ -13,7 +13,7 @@ The \fB-a\fR option can be used to specify additional anonymity constraints.  If
 
 This option can be used to limit requests further than that. In particular, you can require GNUnet to have a certain amount of cover traffic from other peers before sending your queries. This way, you can gain very high levels of anonymity \- at the expense of much more traffic and much higher latency. So set this option to values beyond 1 only if you really believe you need it.
 
-The definition of ANONYMITY-RECEIVE is the following: If the value v is 0, anonymous routing is not required.  For 1, anonymous routing is required, but there is no lower bound on how much cover traffic must be present.  For values > 1 and < 1000, it means that if GNUnet routes n bytes of messages from foreign peers, it may originate n/v bytes of queries in the same time-period. The time\-period is twice the average delay that GNUnet deferrs forwarded queries. If the value v is >= 1000, it means that if GNUnet routes n bytes of QUERIES from at least (v % 1000) peers, it may originate n/v/1000 bytes of queries in the same time\-period.
+The definition of ANONYMITY-RECEIVE is the following: If the value v is 0, anonymous routing is not required.  For 1, anonymous routing is required, but there is no lower bound on how much cover traffic must be present.  For values > 1 and < 1000, it means that if GNUnet routes n bytes of messages from foreign peers, it may originate n/v bytes of queries in the same time\-period. The time\-period is twice the average delay that GNUnet deferrs forwarded queries. If the value v is >= 1000, it means that if GNUnet routes n bytes of QUERIES from at least (v % 1000) peers, it may originate n/v/1000 bytes of queries in the same time\-period.
 
 The default is 1 and this should be fine for most users.  Also notice that if you choose values above 1000, you may end up having no throughput at all, especially if many of your fellow GNUnet\-peers do the same.
 
@@ -48,14 +48,14 @@ and
 
 # gnunet\-search "Das Kapital"
 
-are identical. You can use AND to separate keywords. In that case, gnunet-search will only display results that match all the keywords.  gnunet\-search cannot do multiple independent queries ("OR"), you must use multiple processes for that.
+are identical. You can use AND to separate keywords. In that case, gnunet\-search will only display results that match all the keywords.  gnunet\-search cannot do multiple independent queries ("OR"), you must use multiple processes for that.
 Search results are printed by gnunet\-search like this:
 
 gnunet-download -o "COPYING" gnunet://ecrs/chk/N8RCF3TETLRU9CV1PAS7M2H9QDB36AE3.K9JO8IP7KTNFO23S3VB4TFUKLD7SO5AS.17992
 	Description: The GNU Public License
 	Mime-type: text/plain
 
-The first line contains the command to run to download the file.  The suggested filename in the example is COPYING.  The GNUnet URI consists of the key and query hash of the file and finally the size of the file.  After the command to download the file GNUnet will print meta-data about the file as advertised in the search result, here "The GNU Public License" and the mime\-type (see the options for gnunet\-insert on how to supply meta-data by hand).
+The first line contains the command to run to download the file.  The suggested filename in the example is COPYING.  The GNUnet URI consists of the key and query hash of the file and finally the size of the file.  After the command to download the file GNUnet will print meta\-data about the file as advertised in the search result, here "The GNU Public License" and the mime\-type (see the options for gnunet\-insert on how to supply meta-data by hand).
 
 .SH FILES
 .TP
