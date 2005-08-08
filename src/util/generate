@@ -5,14 +5,6 @@
 echo "#include <stdio.h>"
 echo "#include <unistd.h>"
 echo "void " $2 "(FILE * f) {"
-if [ $2 = 'generate_gnunetd_conf' ]
-then
- echo "  fprintf(f, \"[GNUNETD]\\n\");";
- echo " if (access(\"/var/lib/GNUnet\", X_OK))";
- echo "  fprintf(f, \"GNUNETD_HOME = ~/.gnunet\\n\");";
- echo " else";
- echo "  fprintf(f, \"GNUNETD_HOME = /var/lib/GNUnet\\n\");";
-fi
 cat $1 | grep -v "GNUNETD_HOME =" | sed \
         -e "s/\"/\\\\\"/g" \
 	-e "s/^/ fprintf(f, \"%s\\\\n\",\"/" \

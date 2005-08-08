@@ -635,6 +635,14 @@ void unregisterConfigurationUpdateCallback
 void triggerGlobalConfigurationRefresh(void);
 
 /**
+ * @brief Read a specific configuration file. The previous configuration
+ *        will NOT be discarded if this method is invoked twice.
+ * @param fn the file to read
+ * @return YES on success, NO otherwise
+ */ 
+int readConfigFile(const char *fn);
+
+/**
  * Read the specified configuration file. The previous
  * configuration will be discarded if this method is
  * invoked twice. The configuration file that is read

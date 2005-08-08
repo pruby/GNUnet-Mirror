@@ -48,7 +48,7 @@ endmenu
 menu "General settings" "GNUNETD"
   config GNUNETD_HOME
   string "Full pathname of GNUnet HOME directory"
-  default "/var/lib/GNUnet"
+  default ""
   help
 		This gives the root-directory of the GNUnet installation. Make
 		sure there is some space left in that directory. :-)  Users inserting

@@ -121,6 +121,42 @@ void extract_setting(char *line, char **setting, char *sect)
 	*setting = line + idx;
 }
 
+/**
+ * @brief Set default for GNUNETD_HOME if needed
+ */
+void checkGNUNETDHome(const struct symbol *sym)
+{
+	if (strcmp(sym->name, "GNUNETD_HOME") == 0)
+	{
+		char *val;
+		
+		sym_calc_value_ext(sym, 1);
+		val = sym_get_string_value(sym);
+		
+		/* only empty if gnunet-setup is run for the first time */
+		if (!val || !strlen(val))
+		{
+			/* GNUNETD_HOME isn't set yet. Let's choose a sane default */
+			struct stat buf;
+			int var = 0;
+			if (STAT("/var/lib/GNUnet", &buf) != 0)
+			{
+				/* /var/lib/GNUnet doesn't exist. Do we have write permissions to /var? */
+				if (ACCESS("/var", W_OK) == 0)
+					var = 1;
+			}
+			else
+			{
+				/* /var/lib/GNUnet is there, do we have write permissions? */
+				if (ACCESS("/var/lib/GNUnet", W_OK) == 0)
+					var = 1;
+			}
+			
+			sym_set_string_value(sym, var ? "/var/lib/GNUnet" : "~/.gnunet");
+		}
+	}
+}
+
 int conf_read(const char *name)
 {
 	char *val;
@@ -175,7 +211,9 @@ int conf_read(const char *name)
 						setConfigurationString("FILES",
 								       "gnunet.conf",
 								       key);
-						readConfiguration();
+						setConfigurationString("GNUNETD", "_MAGIC_",
+							strcmp(fn, "config-daemon.in") == 0 ? "YES" : "NO");
+						readConfigFile(key);
 					}
 				}
 				free(key);
@@ -192,7 +230,7 @@ int conf_read(const char *name)
 			    setConfigurationString("FILES",
 						   "gnunet.conf",
 						   name);
-			    readConfiguration();
+			    readConfigFile(name);
 			    i = 1;
 			    break;
 			  }
@@ -204,7 +242,7 @@ int conf_read(const char *name)
 		setConfigurationString("FILES",
 				       "gnunet.conf",
 				       name);
-		readConfiguration();
+		readConfigFile(name);
 	}
 
 	if (!i)
@@ -213,6 +251,8 @@ int conf_read(const char *name)
 	for_all_symbols(i, sym) {
 	  sym->flags |= SYMBOL_NEW | SYMBOL_CHANGED;
 		sym->flags &= ~SYMBOL_VALID;
+
+  		checkGNUNETDHome(sym);
 		
 		if (isConfigurationItemSet(sym->sect, sym->name)) {
 		val = getConfigurationString(sym->sect, sym->name);			

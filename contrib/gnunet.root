@@ -20,7 +20,7 @@ RARE = NO
 # General settings
 #
 [GNUNETD]
-GNUNETD_HOME = "/var/lib/GNUnet"
+GNUNETD_HOME = ""
 HELLOEXPIRES = 1440
 LOGLEVEL = "WARNING"
 LOGFILE = "$GNUNETD_HOME/logs"

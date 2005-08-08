@@ -426,6 +426,23 @@ void generate_gnunetd_conf(FILE * f);
 void generate_gnunet_conf(FILE * f);
 
 /**
+ * @brief Read a specific configuration file. The previous configuration
+ *        will NOT be discarded if this method is invoked twice.
+ * @param fn the file to read
+ * @return YES on success, NO otherwise
+ */ 
+int readConfigFile(const char *fn) {
+  if (0 != cfg_parse_file(fn))
+  	return NO;
+
+  parseConfigInit = YES;
+  
+  setConfigurationString("Meta", "DATADIR", DATADIR);
+  
+  return YES;
+}
+
+/**
  * Read the configuration file.  The previous configuration will be
  * discarded if this method is invoked twice.
  */
@@ -525,12 +542,9 @@ void readConfiguration() {
     doneParseConfig();
     parseConfigInit = NO;
   }
-  if (0 != cfg_parse_file(configuration_filename))
+  if (!readConfigFile(configuration_filename))
     errexit("Failed to parse configuration file '%s'.\n",
 	    configuration_filename);
-  parseConfigInit = YES;
-  
-  setConfigurationString("Meta", "DATADIR", DATADIR);
   
   MUTEX_UNLOCK(&configLock);
 }
