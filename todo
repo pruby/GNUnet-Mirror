@@ -16,6 +16,7 @@
       * Remove account
 - gnunet-setup: [Nils]
   * gconfig: fix focus changes
+  * assertion @ configuration.c:577
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
