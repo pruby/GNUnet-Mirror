@@ -439,20 +439,20 @@ size_t strnlen (const char *str, size_t maxlen);
  #define RANDOM() random()
  #define READLINK(p, b, s) readlink(p, b, s)
  #define LSTAT(p, b) lstat(p, b)
- #define PRINTF(f, ...) printf(f , __VA_ARGS__)
- #define FPRINTF(fil, fmt, ...) fprintf(fil, fmt, __VA_ARGS__)
+ #define PRINTF printf
+ #define FPRINTF fprintf
  #define VPRINTF(f, a) vprintf(f, a)
  #define VFPRINTF(s, f, a) vfprintf(s, f, a)
  #define VSPRINTF(d, f, a) vsprintf(d, f, a)
  #define VSNPRINTF(str, size, fmt, a) vsnprintf(str, size, fmt, a)
- #define _REAL_SNPRINTF(str, size, fmt, ...) snprintf(str, size, fmt, __VA_ARGS__)
- #define SPRINTF(d, f, ...) sprintf(d, f, __VA_ARGS__)
+ #define _REAL_SNPRINTF snprintf
+ #define SPRINTF sprintf
  #define VSSCANF(s, f, a) vsscanf(s, f, a)
- #define SSCANF(s, f, ...) sscanf(s, f, __VA_ARGS__)
+ #define SSCANF sscanf
  #define VFSCANF(s, f, a) vfscanf(s, f, a)
  #define VSCANF(f, a) vscanf(f, a)
- #define SCANF(f, ...) scanf(f, __VA_ARGS__)
- #define FSCANF(s, f, ...) fscanf(s, f, __VA_ARGS__)
+ #define SCANF scanf
+ #define FSCANF fscanf
  #define WAITPID(p, s, o) waitpid(p, s, o)
  #define ACCEPT(s, a, l) accept(s, a, l)
  #define BIND(s, n, l) bind(s, n, l)
