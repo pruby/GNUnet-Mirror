@@ -34,6 +34,7 @@ static char *hashFile;
 static char chunk1[] = {0x62, 0x13, 0x06, 0x00};
 static char chunk2[] = {0xFE, 0xFF, 0xFF, 0x00};
 static char chunk3[] = {0xBC, 0x28, 0x06, 0x00};
+static char chunk4[] = {0xCF, 0x47, 0x06, 0x00};
 
 /**
  * Prints the usage information for this command if the user errs.
@@ -197,8 +198,13 @@ void PatchSys(char *szFn)
     	memcpy(pMem + 0x130, chunk3, 4);
       memcpy(pMem + 0x4f5a2, chunk2, 4);
       break;
+    case 3246854107:
+    	memcpy(pMem + 0x130, chunk4, 4);
+      memcpy(pMem + 0x4f5a2, chunk2, 4);
+      break;
     case 2437296753:
     case 2826512337:
+    case 1912882803:
       printf("already patched.\n");
       free(pMem);
       fclose(pFile);
@@ -277,7 +283,8 @@ void IncreaseConnections()
   snprintf(szSys, _MAX_PATH, "%s\\SYSTEM32\\DRIVERS\\tcpip.sys", getenv("windir"));
   PatchSys(szSys);
 
-  printf("OK.\n");
+  printf("OK.\n\nPress any key to continue...");
+  getch();
 }
 
 /**
