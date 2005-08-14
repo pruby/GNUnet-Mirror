@@ -53,29 +53,29 @@ static int testNamespace() {
   meta = ECRS_createMetaData();
   adv = ECRS_keywordsToUri(keys);
   hash("root", 4, &root);
-  CHECK(OK ==
-	ECRS_createNamespace(CHECKNAME,
-			     meta,
-			     0,
-			     0,
-			     cronTime(NULL) + 5 * cronMINUTES,
-			     adv,
-			     &root,
-			     &rootURI));
+  rootURI = 
+    ECRS_createNamespace(CHECKNAME,
+			 meta,
+			 0,
+			 0,
+			 cronTime(NULL) + 5 * cronMINUTES,
+			 adv,
+			 &root);
+  CHECK(NULL != rootURI);
   hash("this", 4, &thisId);
   hash("next", 4, &nextId);
   uri = rootURI; /* just for fun: NS::this advertises NS::root */  
-  CHECK(OK == ECRS_addToNamespace(CHECKNAME,
-				  0,
-				  0,
-				  TIME(NULL) + 300,
-				  TIME(NULL),
-				  1 * cronMINUTES,
-				  &thisId,
-				  &nextId,
-				  uri,
-				  meta,
-				  &advURI));
+  advURI = ECRS_addToNamespace(CHECKNAME,
+			       0,
+			       0,
+			       TIME(NULL) + 300,
+			       TIME(NULL),
+			       1 * cronMINUTES,
+			       &thisId,
+			       &nextId,
+			       uri,
+			       meta);
+  CHECK(NULL != advURI);
   CHECK(OK == ECRS_deleteNamespace(CHECKNAME));
   CHECK(SYSERR == ECRS_deleteNamespace(CHECKNAME));
   ECRS_freeMetaData(meta);

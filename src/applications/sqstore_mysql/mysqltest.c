@@ -107,10 +107,10 @@ static int priorityCheck(const HashCode512 * key,
   int id;
 
   id = (*closure);
-  if (id == ntohl(val->prio))
+  if (id + 1 == ntohl(val->prio))
     return OK;
-  else
-    return SYSERR;
+  else 
+    return SYSERR;  
 }
 
 static int multipleCheck(const HashCode512 * key,

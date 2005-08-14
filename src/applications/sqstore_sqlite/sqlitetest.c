@@ -93,8 +93,8 @@ static int iterateDown(const HashCode512 * key,
 }
 
 static int iterateDelete(const HashCode512 * key,
-		       const Datastore_Value * val,
-			   SQstore_ServiceAPI * api) {
+			 const Datastore_Value * val,
+			 SQstore_ServiceAPI * api) {
   if (1 == api->del(key, val))
 	return OK;
   else
@@ -132,7 +132,6 @@ static int multipleCheck(const HashCode512 * key,
 }
 
 
-
 /**
  * Add testcode here!
  */
@@ -142,7 +141,6 @@ static int test(SQstore_ServiceAPI * api) {
   unsigned long long oldSize;
   int i;
 
-  cronTime(&now);
   now = 1000000;
   oldSize = api->getSize();
   for (i=0;i<256;i++) {
@@ -162,6 +160,7 @@ static int test(SQstore_ServiceAPI * api) {
     memset(&key, 256-i, sizeof(HashCode512));
     ASSERT(1 == api->get(&key, i, &checkValue, (void*) &i));
   }
+
   oldSize = api->getSize();
   for (i=255;i>=0;i-=2) {
     memset(&key, 256-i, sizeof(HashCode512));
@@ -172,19 +171,19 @@ static int test(SQstore_ServiceAPI * api) {
   ASSERT(oldSize > api->getSize());
   i = 0;
   ASSERT(128 == api->iterateLowPriority(ANY_BLOCK,
-										(Datum_Iterator) &iterateUp,
-										&i));
+					(Datum_Iterator) &iterateUp,
+					&i));
   ASSERT(256 == i);
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
-										   (Datum_Iterator) &iterateDown,
-										   &i));
+					   (Datum_Iterator) &iterateDown,
+					   &i));
   ASSERT(0 == i);
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
-										   (Datum_Iterator) &iterateDelete,
-										   api));
+					   (Datum_Iterator) &iterateDelete,
+					   api));
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
-										 (Datum_Iterator) &iterateDown,
-										 &i));
+					 (Datum_Iterator) &iterateDown,
+					 &i));
 
   i = 42;
   value = initValue(i);
@@ -217,8 +216,8 @@ static int test(SQstore_ServiceAPI * api) {
   api->del(&key,
 	   NULL);
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
-										 NULL,
-										 NULL));
+					 NULL,
+					 NULL));
   api->drop();
   return OK;
  FAILURE:
@@ -258,7 +257,7 @@ int main(int argc, char *argv[]) {
   if (OK != initUtil(argc, argv, &parser))
     errexit(_("Could not initialize libgnunetutil!\n"));
   initCore();
-  api = requestService("sqstore_sqlite");
+  api = requestService("sqstore");
   if (api != NULL) {
     ok = test(api);
     releaseService(api);

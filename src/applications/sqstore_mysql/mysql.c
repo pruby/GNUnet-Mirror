@@ -294,7 +294,7 @@ static int iopen(mysqlHandle * dbhI,
 		" INDEX (hash(64)),"
 		" INDEX (prio),"
 		" INDEX (expire)"
-		") TYPE=MyISAM");
+		") TYPE=InnoDB");
     if (mysql_error(dbhI->dbf)[0]) {
       LOG_MYSQL(LOG_ERROR,
 		"mysql_query",
@@ -462,6 +462,9 @@ static int iterateLowPriority(unsigned int type,
 
   MUTEX_LOCK(&dbhI.DATABASE_Lock_);
 
+  mysql_query(dbhI.dbf,
+	      "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
+
   if (type==0) {
     typestr[0] = '\0';
   } else {
@@ -473,8 +476,8 @@ static int iterateLowPriority(unsigned int type,
 
   scratch = MALLOC(256);
   SNPRINTF(scratch,
-	   256,
-	   "SELECT * FROM gn070"
+	   256, // SQL_BIG_RESULT SQL_BUFFER_RESULT
+	   "SELECT SQL_NO_CACHE * FROM gn070"
 	   " %s"
 	   "ORDER BY prio ASC",
 	   typestr);
@@ -556,6 +559,10 @@ static int iterateExpirationTime(unsigned int type,
     return SYSERR;
 
   MUTEX_LOCK(&dbhI.DATABASE_Lock_);
+
+  mysql_query(dbhI.dbf,
+	      "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
+
   if (type==0) {
     typestr[0] = 0;
   } else {
@@ -565,9 +572,9 @@ static int iterateExpirationTime(unsigned int type,
   }
 
   scratch = MALLOC(256);
-  SNPRINTF(scratch,
+  SNPRINTF(scratch, //SQL_BIG_RESULT SQL_BUFFER_RESULT SQL_NO_CACHE
 	   256,
-	   "SELECT * FROM gn070"
+	   "SELECT SQL_NO_CACHE * FROM gn070"
 	   " %s"
 	   " ORDER BY expire ASC",
 	   typestr);
@@ -917,12 +924,6 @@ static int del(const HashCode512 * key,
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
 
   twenty = sizeof(HashCode512);
-  type = ntohl(value->type);
-  size = ntohl(value->size);
-  prio = ntohl(value->prio);
-  anon = ntohl(value->anonymityLevel);
-  expiration = ntohll(value->expirationTime);
-  datasize = ntohl(value->size) - sizeof(Datastore_Value);
 
   if(value == NULL) {
     stmt = dbh->deleteh;
@@ -931,6 +932,12 @@ static int del(const HashCode512 * key,
     GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 1);
   } else {
     stmt = dbh->deleteg;
+    type = ntohl(value->type);
+    size = ntohl(value->size);
+    prio = ntohl(value->prio);
+    anon = ntohl(value->anonymityLevel);
+    expiration = ntohll(value->expirationTime);
+    datasize = ntohl(value->size) - sizeof(Datastore_Value);
     dbh->dbind[0].buffer = (char*) key;
     dbh->dbind[0].length = &twenty;
     dbh->dbind[1].buffer = (char*) &size;
