@@ -1,4 +1,23 @@
 /*
+     This file is part of GNUnet.
+     (C) 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+/*
  * Copyright (C) 2002 Roman Zippel <zippel@linux-m68k.org>
  * Released under the terms of the GNU GPL v2.0.
  */
@@ -12,6 +31,8 @@
 
 #define LKC_DIRECT_LINK
 #include "lkc.h"
+
+#include "confdata.h"
 
 static void conf(struct menu *menu);
 static void check_conf(struct menu *menu);
@@ -482,95 +503,32 @@ static void check_conf(struct menu *menu)
 		check_conf(child);
 }
 
-int conf_main(int ac, char **av)
+int conf_main()
 {
-	int i = 1;
-	struct stat tmpstat;
-
-	if (ac > i && av[i][0] == '-') {
-		switch (av[i++][1]) {
-		case 'o':
-			input_mode = ask_new;
-			break;
-		case 's':
-			input_mode = ask_silent;
-			valid_stdin = isatty(0) && isatty(1) && isatty(2);
-			break;
-		case 'd':
-			input_mode = set_default;
-			break;
-		case 'D':
-			input_mode = set_default;
-			defconfig_file = av[i++];
-			if (!defconfig_file) {
-				printf("%s: No default config file specified\n",
-					av[0]);
-				exit(1);
-			}
-			break;
-		case 'n':
-			input_mode = set_no;
-			break;
-		case 'm':
-			input_mode = set_mod;
-			break;
-		case 'y':
-			input_mode = set_yes;
-			break;
-		case 'r':
-			input_mode = set_random;
-			srand(time(NULL));
-			break;
-		case 'h':
-		case '?':
-			printf("%s [-o|-s] config\n", av[0]);
-			exit(0);
-		}
-	}
-
-	conf_parse(DATADIR"/config.in");
+  char * filename;
   
-	switch (input_mode) {
-	case set_default:
-		if (!defconfig_file)
-			defconfig_file = conf_get_default_confname();
-		if (conf_read(defconfig_file)) {
-			printf("***\n"
-				"*** Can't find default configuration \"%s\"!\n"
-				"***\n", defconfig_file);
-			exit(1);
-		}
-		break;
-	case ask_silent:
-		if (STAT("/etc/GNUnet/.config", &tmpstat)) {
-			printf("***\n"
-				"*** You have not yet configured GNUnet!\n"
-				"***\n"
-				"*** Please run some configurator (e.g.\n"
-				"*** \"gnunet-setup menuconfig\" or \"gnunet-setup gconfig\").\n"
-				"***\n");
-			exit(1);
-		}
-	case ask_all:
-	case ask_new:
-		conf_read(NULL);
-		break;
-	default:
-		break;
-	}
-
-	if (input_mode != ask_silent) {
-		rootEntry = &rootmenu;
-		conf(&rootmenu);
-		if (input_mode == ask_all) {
-			input_mode = ask_silent;
-			valid_stdin = 1;
-		}
-	}
-	do {
-		conf_cnt = 0;
-		check_conf(&rootmenu);
-	} while (conf_cnt);
-	conf_write();
-	return 0;
+  filename = getConfigurationString("GNUNET-SETUP",
+				    "FILENAME");
+  conf_read(filename);
+  input_mode = ask_all; /* for now */
+  rootEntry = &rootmenu;
+  conf(&rootmenu);  
+  do {
+    conf_cnt = 0;
+    check_conf(&rootmenu);
+  } while (conf_cnt);
+   
+  if (conf_write(filename)) {
+    printf(_("Unable to save configuration file '%s': %s.\n"), 
+	   filename,
+	   STRERROR(errno));
+    FREE(filename);
+    return 1;
+  }
+  else {
+    printf(_("Configuration file '%s' created.\n"),
+	   filename);
+    FREE(filename);
+    return 0;
+  }
 }

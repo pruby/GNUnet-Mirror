@@ -36,6 +36,7 @@
 #define ENABLE_NLS 1
 
 #include "lkc.h"
+#include "confdata.h"
 #include "images.c"
 
 #include <gtk/gtk.h>
@@ -733,9 +734,13 @@ void on_load1_activate(GtkMenuItem * menuitem, gpointer user_data)
 
 void on_save1_activate(GtkMenuItem * menuitem, gpointer user_data)
 {
-  if (conf_write())
-    text_insert_msg("Error", "Unable to save configuration!");
-
+  char * filename;
+  filename = getConfigurationString("GNUNET-SETUP",
+				    "FILENAME");
+  if (conf_write(filename))
+    text_insert_msg("Error", 
+		    "Unable to save configuration!");
+  FREE(filename);
   config_changed = FALSE;
 }
 
@@ -1659,18 +1664,13 @@ void fixup_rootmenu(struct menu *menu)
 /* Main */
 
 
-int gconf_main(int ac, char *av[])
+int gconf_main()
 {
-  struct menu *root;
-
-#ifndef LKC_DIRECT_LINK
-  kconfig_load();
-#endif
+  char * filename;
 
   /* GTK stuffs */
   bind_textdomain_codeset(PACKAGE, "UTF-8");
   gtk_set_locale();
-  gtk_init(&ac, &av);
 
   /* add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps"); */
   /* add_pixmap_directory (PACKAGE_SOURCE_DIR "/pixmaps"); */
@@ -1681,27 +1681,11 @@ int gconf_main(int ac, char *av[])
   init_left_tree();
   init_right_tree();
 
-  /* Conf stuffs */
-		
-  if (ac > 1 && av[1][0] == '-') {
-    switch (av[1][1]) {
-    case 'a':
-      /* showAll = 1;*/
-      break;
-    case 'h':
-    case '?':
-      printf("%s <config>\n", av[0]);
-      exit(0);
-    }
-  }
-
-	/* This configurator is also called from the wizard configurator.
-	 * Check whether the templates are already parsed. */
-	root = menu_get_root_menu(NULL);
-	if (!(root && root->prompt))
-  	conf_parse(DATADIR"/config.in");
   fixup_rootmenu(&rootmenu);
-  conf_read(NULL);
+  filename = getConfigurationString("GNUNET-SETUP",
+				    "FILENAME");
+  conf_read(filename);
+  FREE(filename);
 
   switch (view_mode) {
   case SINGLE_VIEW:

@@ -48,6 +48,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "mconf.h"
 #include "mconf_dialog.h"
 
 #define LKC_DIRECT_LINK
@@ -776,62 +777,59 @@ static void conf_cleanup(void)
 	UNLINK("lxdialog.scrltmp");
 }
 
-int mconf_main(int ac, char **av)
+int mconf_main()
 {
 	char *mode;
 	int stat;
-  struct menu *root;
+  char * filename;
 
-	/* This configurator is also called from the wizard configurator.
-	 * Check whether the templates are already parsed. */
-	root = menu_get_root_menu(NULL);
-	if (!(root && root->prompt))
-		conf_parse(DATADIR"/config.in");
+  filename = getConfigurationString("GNUNET-SETUP",
+				    "FILENAME");
+  conf_read(filename);
+  FREE(filename);
   
-	conf_read(NULL);
-
-	backtitle = malloc(128);
-	strcpy(backtitle, "GNUnet Configuration");
-
-	mode = getenv("MENUCONFIG_MODE");
-	if (mode) {
-		if (!strcasecmp(mode, "single_menu"))
-			single_menu_mode = 1;
-	}
-
+  backtitle = malloc(128);
+  strcpy(backtitle, "GNUnet Configuration");
+  
+  mode = getenv("MENUCONFIG_MODE");
+  if (mode) {
+    if (!strcasecmp(mode, "single_menu"))
+      single_menu_mode = 1;
+  }
+  
 #ifndef MINGW
-	{
-		struct sigaction sa;
-		sa.sa_handler = winch_handler;
-		sigemptyset(&sa.sa_mask);
-		sa.sa_flags = SA_RESTART;
-		sigaction(SIGWINCH, &sa, NULL);
-	}
-
-	tcgetattr(1, &ios_org);
+  {
+    struct sigaction sa;
+    sa.sa_handler = winch_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sigaction(SIGWINCH, &sa, NULL);
+  }
+  
+  tcgetattr(1, &ios_org);
 #endif
-	atexit(conf_cleanup);
-	init_dialog();
-	
-	init_wsize();
-	conf(&rootmenu);
-
-	do {
-		stat = dialog_yesno(NULL,
-				"Do you wish to save your new configuration?",
-				5, 60);
-	} while (stat < 0);
-	end_dialog();
-
-	if (stat == 0) {
-		conf_write(NULL);
-		printf("\n\n"
-			"*** End of configuration.\n"
-			"\n\n");
-	} else
-		printf("\n\n"
-			"Your configuration changes were NOT saved."
-			"\n\n");
-
-	return 0;
+  atexit(conf_cleanup);
+  init_dialog();
+  
+  init_wsize();
+  conf(&rootmenu);
+  
+  do {
+    stat = dialog_yesno(NULL,
+			"Do you wish to save your new configuration?",
+			5, 60);
+  } while (stat < 0);
+  end_dialog();
+  
+  if (stat == 0) {
+    conf_write(NULL);
+    printf("\n\n"
+	   "*** End of configuration.\n"
+	   "\n\n");
+  } else {
+    printf("\n\n"
+	   "Your configuration changes were NOT saved."
+	   "\n\n");
+  }
+  return 0;
 }

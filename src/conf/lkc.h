@@ -49,9 +49,6 @@ extern char conf_filename[];
 
 char *conf_get_default_confname(void);
 
-/* kconfig_load.c */
-void kconfig_load(void);
-
 /* menu.c */
 void menu_init(void);
 void menu_add_menu(void);

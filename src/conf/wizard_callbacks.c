@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "confdata.h"
 
 #define LKC_DIRECT_LINK
 #include "lkc.h"
@@ -157,74 +158,26 @@ void showErr(char *prefix, char *error) {
 int
 save_conf ()
 {
-	struct symbol *sym, *symFile;
-	char *confDir, *confFile, *conf;
-	int fileLen;
+  char * filename;
 	
-  /* Check write permission */
-  sym = sym_find("config-daemon.in_CONF_DEF_DIR", "Meta");
-  sym_calc_value_ext(sym, 1);
-  confDir = strdup(sym_get_string_value(sym));
-
-  symFile = sym_find("config-daemon.in_CONF_DEF_FILE", "Meta");
-  sym_calc_value_ext(symFile, 1);
-  confFile = strdup(sym_get_string_value(symFile));
-
-	fileLen = strlen(confFile);
-	conf = malloc(strlen(confDir) + fileLen + 1);
-	strcpy(conf, confDir);
-	strcat(conf, confFile);
-
-	if (ACCESS(conf, W_OK))
-	{
-		conf = realloc(conf, fileLen + 13);
-		strcpy(conf, "/etc/gnunetd.conf");
-		errno = 0;
-		/**
-		 * 1. Do we have write permission to /etc/gnunetd.conf?
-		 * 2. If it doesn't exists, check for write permission to /etc/
-		 */
-		if (ACCESS(conf, W_OK) == 0 ||
-			(errno == ENOENT && ACCESS("/etc/", W_OK) == 0))
-		{
-			confDir = strdup("/etc/");
-			confFile = strdup("gnunetd.conf");
-		}
-		else
-		{
-			conf = realloc(conf, fileLen + 11);
-			strcpy(conf, "~/.gnunet/gnunetd.conf");
-			
-			confDir = strdup("~/.gnunet/");
-			confFile = strdup("gnunetd.conf");
-		}			 
-	}
-
-	sym_set_string_value(sym, confDir);
-	sym_set_string_value(symFile, confFile);
-	mkdirp(confDir);
-	free(confDir);
-	free(confFile);
-	
-	if (conf_write())
-	{
-		char *err, *prefix;
-		
-		prefix = _("Unable to save configuration file %s:");
-		
-		err = malloc(strlen(conf) + strlen(prefix) + 1);
-		sprintf(err, prefix, conf);
-		showErr(err, STRERROR(errno));
-		free(err);
-
-		free(conf);
-		
-		return 0;
-	}
-	
-	free(conf);
-	
-	return 1;
+  filename = getConfigurationString("GNUNET-SETUP",
+				    "FILENAME");
+  if (conf_write(filename)) {
+    char * err;
+    const char * prefix;
+    
+    prefix = _("Unable to save configuration file '%s':");
+    
+    err = malloc(strlen(filename) + strlen(prefix) + 1);
+    sprintf(err, prefix, filename);
+    showErr(err, STRERROR(errno));
+    free(err);
+    
+    free(filename);    
+    return 0;
+  }  
+  free(filename);	
+  return 1;
 }
 
 void

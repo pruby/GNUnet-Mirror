@@ -31,9 +31,11 @@
 
 #include "mconf_dialog.h"
 #include "wizard_util.h"
+#include "mconf.h"
+#include "wizard_curs.h"
+
 
 extern int cols, rows;
-int mconf_main(int ac, char **av);
 
 static struct dialog_list_item **nic_items;
 static int nic_item_count = 0;
@@ -72,19 +74,21 @@ void insert_nic_curs(char *name, int defaultNIC)
   item->selected = wiz_is_nic_default(name, defaultNIC);
 }
 
-int wizard_curs_main(int argc, char *argv[])
+int wizard_curs_main()
 {
   void *active_ptr = NULL;
-	int idx, ret, autostart = 0, adv = 0;
-	struct symbol *sym, *symFile;
-	char *defval, *user_name = NULL, *group_name = NULL;
-	char *confDir, *confFile, *conf;
-	int fileLen;
+  int idx, ret, autostart = 0, adv = 0;
+  struct symbol *sym, *symFile;
+  char *defval, *user_name = NULL, *group_name = NULL;
+  char *confDir, *confFile, *conf;
+  int fileLen;
+  char * filename;
 
-	conf_parse(DATADIR"/config.in");
-  
-  conf_read(NULL);
-
+  filename = getConfigurationString("GNUNET-SETUP",
+				   "FILENAME");
+  conf_read(filename);
+  FREE(filename);
+ 
   sym = sym_find("EXPERIMENTAL", "Meta");
   sym_set_tristate_value(sym, yes);
   sym = sym_find("ADVANCED", "Meta");
@@ -94,292 +98,303 @@ int wizard_curs_main(int argc, char *argv[])
 
   init_dialog();
   init_wsize();
-	dialog_clear();
-
-	if (dialog_msgbox(_("GNUnet configuration"), 
-	  	_("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions "
-	  	  "in order to configure GNUnet.\n\nPlease visit our homepage at\n\t"
-	  	  "http://www.gnunet.org\nand join our community at\n\t"
-	  	  "http://www.gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"),
-	  	rows, cols - 5, 1) == -1)
-		goto end;
-
-	dialog_clear();
+  dialog_clear();
+  
+  if (dialog_msgbox(_("GNUnet configuration"), 
+		    _("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions "
+		      "in order to configure GNUnet.\n\nPlease visit our homepage at\n\t"
+		      "http://gnunet.org/\nand join our community at\n\t"
+		      "http://gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"),
+		    rows, cols - 5, 1) == -1)
+    goto end;
+  
+  dialog_clear();
   	
   enumNetworkIfs(insert_nic_curs);
 
-	/* Network interface */
-	if (nic_item_count) {
-		while (true) {
-			ret = dialog_menu(_("GNUnet configuration"),
-							_("Choose the network interface that connects your computer to "
-								"the internet from the list below."), rows, cols - 5, 10,
-							0, active_ptr, nic_item_count, nic_items);
-			
-			if (ret == 2) {
-				/* Help */
-				dialog_msgbox(_("Help"), _("The \"Network interface\" is the device "
-					"that connects your computer to the internet. This is usually a modem, "
-					"an ISDN card or a network card in case you are using DSL."), rows,
-					cols - 5, 1);
-			}
-			else if (ret <= 1) {
-				/* Select or Exit */
-	#ifdef MINGW
-				char nic[21];
-				char *dst;
-	#else
-				char *nic;
-	#endif
-				for(idx = 0; idx < nic_item_count; idx++) {
-					
-					if (nic_items[idx]->selected) {
-	#ifdef MINGW
-						char *src = strrchr(nic_items[idx]->name, '-') + 2;
-						dst = nic;
-						while(*src)
-							*dst++ = *src++;
-						dst[-1] = 0;
-	#else
-						nic = nic_items[idx]->name;
-	#endif
-						sym = sym_lookup("INTERFACE", "NETWORK", 0);
-						sym_set_string_value(sym, nic);
-						sym = sym_lookup("INTERFACES", "LOAD", 0);
-						sym_set_string_value(sym, nic);
-					}
-					
-					free(nic_items[idx]->name);
-					free(nic_items[idx]);
-				}
-				free(nic_items);
-				
-				break;
-			}
-		}
-	
-		if (ret == 1 || ret == -1)
-			goto end;
+  /* Network interface */
+  if (nic_item_count) {
+    while (true) {
+      ret = dialog_menu(_("GNUnet configuration"),
+			_("Choose the network interface that connects your computer to "
+			  "the internet from the list below."), rows, cols - 5, 10,
+			0, active_ptr, nic_item_count, nic_items);
+      
+      if (ret == 2) {
+	/* Help */
+	dialog_msgbox(_("Help"), _("The \"Network interface\" is the device "
+				   "that connects your computer to the internet. This is usually a modem, "
+				   "an ISDN card or a network card in case you are using DSL."), rows,
+		      cols - 5, 1);
+      }
+      else if (ret <= 1) {
+	/* Select or Exit */
+#ifdef MINGW
+	char nic[21];
+	char *dst;
+#else
+	char *nic;
+#endif
+	for(idx = 0; idx < nic_item_count; idx++) {
+	  
+	  if (nic_items[idx]->selected) {
+#ifdef MINGW
+	    char *src = strrchr(nic_items[idx]->name, '-') + 2;
+	    dst = nic;
+	    while(*src)
+	      *dst++ = *src++;
+	    dst[-1] = 0;
+#else
+	    nic = nic_items[idx]->name;
+#endif
+	    sym = sym_lookup("INTERFACE", "NETWORK", 0);
+	    sym_set_string_value(sym, nic);
+	    sym = sym_lookup("INTERFACES", "LOAD", 0);
+	    sym_set_string_value(sym, nic);
+	  }
+	  
+	  free(nic_items[idx]->name);
+	  free(nic_items[idx]);
 	}
-	else {
-		/* We are not root, just ask for the interface */
-		while(true) {
-			ret = dialog_inputbox(_("GNUnet configuration"), _("What is the name of " \
-				"the network interface that connects your computer to the Internet?"),
-				rows, cols - 5, "eth0");
-			
-			if (ret == 1) {
-				/* Help */
-				dialog_msgbox(_("Help"), _("The \"Network interface\" is the device "
-					"that connects your computer to the internet. This is usually a modem, "
-					"an ISDN card or a network card in case you are using DSL."),
-					rows, cols - 5, 1);
-			}
-			else if (ret <= 0)
-				break;
-		}
-		
-		if (ret == -1)
-			goto end;
-
-		sym = sym_lookup("INTERFACE", "NETWORK", 0);
-		sym_set_string_value(sym, dialog_input_result);
-		sym = sym_lookup("INTERFACES", "LOAD", 0);
-		sym_set_string_value(sym, dialog_input_result);
-	}
+	free(nic_items);
 	
-	dialog_clear();
-	
-	/* IP address */
-	if ((sym = sym_find("IP", "NETWORK"))) {
-		sym_calc_value_ext(sym, 1);
-		defval = (char *) sym_get_string_value(sym);
-	}
-	else
-		defval = NULL;
-	
-	while(true) {
-		ret = dialog_inputbox(_("GNUnet configuration"), _("What is this computer's "
-			"public IP address or hostname?\n\nIf in doubt, leave this empty."),
-			rows, cols - 5, defval ? defval : "");
-		
-		if (ret == 1) {
-			/* Help */
-			dialog_msgbox(_("Help"), _("If your provider always assigns the same "
-				"IP-Address to you (a \"static\" IP-Address), enter it into the "
-				"\"IP-Address\" field. If your IP-Address changes every now and then "
-				"(\"dynamic\" IP-Address) but there's a hostname that always points "
-				"to your actual IP-Address (\"Dynamic DNS\"), you can also enter it "
-				"here.\nIf in doubt, leave the field empty. GNUnet will then try to "
-				"determine your IP-Address."), rows, cols - 5, 1);
-		}
-		else if (ret <= 0)
-			break;
-	}
-	
-	if (ret == -1)
-		goto end;
-		
-	sym_set_string_value(sym, dialog_input_result);
-	
-	dialog_clear();
-
-	/* NAT? */
-	sym = sym_find("LIMITED", "NAT");
-	while(true) {
-		ret = dialog_yesno(_("GNUnet configuration"), _("Is this machine behind "
-				"NAT?\n\nIf you are connected to the internet through another computer "
-				"doing SNAT, a router or a \"hardware firewall\" and other computers "
-				"on the internet cannot connect to this computer, say \"yes\" here. "
-				"Answer \"no\" on direct connections through modems, ISDN cards and "
-				"DNAT (also known as \"port forwarding\")."), rows, cols - 5);
-		
-		if (ret != -2)
-			break;
-	}
-	
-	if (ret == -1)
-		goto end;
-	else
-		sym_set_tristate_value(sym, !ret); /* ret is inverted */
-	
-	/* Upstream */
-	if ((sym = sym_find("MAXNETUPBPSTOTAL", "LOAD"))) {
-		sym_calc_value_ext(sym, 1);
-		defval = (char *) sym_get_string_value(sym);
-	}
-	else
-		defval = NULL;
-
-	while(true) {
-		ret = dialog_inputbox(_("GNUnet configuration"), _("How much upstream "
-			"(Bytes/s) may be used?"), rows, cols - 5, defval ? defval : "");
-		
-		if (ret == 1) {
-			/* Help */
-			dialog_msgbox(_("Help"), _("You can limit GNUnet's resource usage "
-				"here.\n\nThe \"upstream\" is the data channel through which data "
-				"is *sent* to the internet. The limit is either the total maximum "
-				"for this computer or how much GNUnet itself is allowed to use. You "
-				"can specify that later. If you have a flatrate, you can set it to "
-				"the maximum speed of your internet connection."), rows, cols - 5, 1);
-		}
-		else if (ret <= 0)
-			break;
-	}
-
-	if (ret == -1)
-		goto end;
-
-	sym_set_string_value(sym, dialog_input_result);
-
-	dialog_clear();
-
-	/* Downstram */
-	if ((sym = sym_find("MAXNETDOWNBPSTOTAL", "LOAD"))) {
-		sym_calc_value_ext(sym, 1);
-		defval = (char *) sym_get_string_value(sym);
-	}
-	else
-		defval = NULL;
-
-	while(true) {
-		ret = dialog_inputbox(_("GNUnet configuration"), _("How much downstream "
-			"(Bytes/s) may be used?"), rows, cols - 5, defval ? defval : "");
-		
-		if (ret == 1) {
-			/* Help */
-			dialog_msgbox(_("Help"), _("You can limit GNUnet's resource usage "
-				"here.\n\nThe \"downstream\" is the data channel through which data "
-				"is *received* from the internet. The limit is either the total maximum "
-				"for this computer or how much GNUnet itself is allowed to use. You "
-				"can specify that later. If you have a flatrate you can set it to "
-				"the maximum speed of your internet connection."), rows, cols - 5, 1);
-		}
-		else if (ret <= 0)
-			break;
-	}
-	
-	if (ret == -1)
-		goto end;
-
-	sym_set_string_value(sym, dialog_input_result);
-
-	dialog_clear();
-
-	/* Bandwidth allocation */
-	sym = sym_find("BASICLIMITING", "LOAD");
-	while (true) {
-		ret = dialog_yesno(_("GNUnet configuration"), _("Share denoted bandwidth "
-				"with other applications?\n\nSay \"yes\" here, if you don't want other "
-				"network traffic to interfere with GNUnet's operation, but still wish to "
-				"constrain GNUnet's bandwidth usage to values entered in the previous "
-				"steps, or if you can't reliably measure the maximum capabilities "
-				"of your connection. \"No\" can be very useful if other applications "
-				"are causing a lot of traffic on your LAN.  In this case, you do not "
-				"want to limit the traffic that GNUnet can inflict on your internet "
-				"connection whenever your high-speed LAN gets used (e.g. by NFS)."),
-				rows, cols - 5);
-		
-		if (ret != -2)
-			break;
-	}
-	
-	if (ret == -1)
-		goto end;
-	else
-		sym_set_tristate_value(sym, !ret); /* ret is inverted */
-	
-	dialog_clear();
-
-	/* Max CPU */
-	if ((sym = sym_find("MAXCPULOAD", "LOAD"))) {
-		sym_calc_value_ext(sym, 1);
-		defval = (char *) sym_get_string_value(sym);
-	}
-	else
-		defval = NULL;
-
-	while(true) {
-		ret = dialog_inputbox(_("GNUnet configuration"), _("How much CPU (in %) may "
-			"be used?"), rows, cols - 5, defval ? defval : "");
-		
-		if (ret == 1) {
-			/* Help */
-			dialog_msgbox(_("Help"), _("You can limit GNUnet's resource usage "
-				"here.\n\nThis is the percentage of processor time GNUnet is allowed "
-				"to use."), rows, cols - 5, 1);
-		}
-		else if (ret <= 0)
-			break;
-	}
-	
-	if (ret == -1)
-		goto end;
-
-	sym_set_string_value(sym, dialog_input_result);
-	
-	dialog_clear();
-
-	/* Migration */
-	sym = sym_find("ACTIVEMIGRATION", "FS");
-	while(true) {
-		ret = dialog_yesno(_("GNUnet configuration"), _("Store migrated content?"
-				"\n\nGNUnet is able to store data from other peers in your datastore. "
-				"This is useful if an adversary has access to your inserted content and "
-				"you need to deny that the content is yours. With \"content migration\" "
-				"on, the content could have \"migrated\" over the internet to your node"
-				" without your knowledge.\nIt also helps to spread popular content over "
-				"different peers to enhance availability."), rows, cols - 5);
-				
-		if (ret != -2)
-			break;
-	}
-
-	if (ret == -1)
-		goto end;
-	else
-		sym_set_tristate_value(sym, !ret); /* ret is inverted */
+	break;
+      }
+    }
+    
+    if (ret == 1 || ret == -1)
+      goto end;
+  }
+  else {
+    /* We are not root, just ask for the interface */
+    while(true) {
+      ret = dialog_inputbox(_("GNUnet configuration"), 
+			    _("What is the name of "			\
+			      "the network interface that connects your computer to the Internet?"),
+			    rows, cols - 5, "eth0");
+      
+      if (ret == 1) {
+	/* Help */
+	dialog_msgbox(_("Help"), 
+		      _("The \"Network interface\" is the device "
+			"that connects your computer to the internet. This is usually a modem, "
+			"an ISDN card or a network card in case you are using DSL."),
+		      rows, cols - 5, 1);
+      }
+      else if (ret <= 0)
+	break;
+    }
+    
+    if (ret == -1)
+      goto end;
+    
+    sym = sym_lookup("INTERFACE", "NETWORK", 0);
+    sym_set_string_value(sym, dialog_input_result);
+    sym = sym_lookup("INTERFACES", "LOAD", 0);
+    sym_set_string_value(sym, dialog_input_result);
+  }
+  
+  dialog_clear();
+  
+  /* IP address */
+  if ((sym = sym_find("IP", "NETWORK"))) {
+    sym_calc_value_ext(sym, 1);
+    defval = (char *) sym_get_string_value(sym);
+  }
+  else
+    defval = NULL;
+  
+  while(true) {
+    ret = dialog_inputbox(_("GNUnet configuration"), 
+			  _("What is this computer's "
+			    "public IP address or hostname?\n\nIf in doubt, leave this empty."),
+			  rows, cols - 5, defval ? defval : "");
+    
+    if (ret == 1) {
+      /* Help */
+      dialog_msgbox(_("Help"), 
+		    _("If your provider always assigns the same "
+		      "IP-Address to you (a \"static\" IP-Address), enter it into the "
+		      "\"IP-Address\" field. If your IP-Address changes every now and then "
+		      "(\"dynamic\" IP-Address) but there's a hostname that always points "
+		      "to your actual IP-Address (\"Dynamic DNS\"), you can also enter it "
+		      "here.\nIf in doubt, leave the field empty. GNUnet will then try to "
+		      "determine your IP-Address."), rows, cols - 5, 1);
+    }
+    else if (ret <= 0)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  
+  sym_set_string_value(sym, dialog_input_result);
+  
+  dialog_clear();
+  
+  /* NAT? */
+  sym = sym_find("LIMITED", "NAT");
+  while(true) {
+    ret = dialog_yesno(_("GNUnet configuration"),
+		       _("Is this machine behind "
+			 "NAT?\n\nIf you are connected to the internet through another computer "
+			 "doing SNAT, a router or a \"hardware firewall\" and other computers "
+			 "on the internet cannot connect to this computer, say \"yes\" here. "
+			 "Answer \"no\" on direct connections through modems, ISDN cards and "
+			 "DNAT (also known as \"port forwarding\")."), rows, cols - 5);
+    
+    if (ret != -2)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  else
+    sym_set_tristate_value(sym, !ret); /* ret is inverted */
+  
+  /* Upstream */
+  if ((sym = sym_find("MAXNETUPBPSTOTAL", "LOAD"))) {
+    sym_calc_value_ext(sym, 1);
+    defval = (char *) sym_get_string_value(sym);
+  }
+  else
+    defval = NULL;
+  
+  while(true) {
+    ret = dialog_inputbox(_("GNUnet configuration"), 
+			  _("How much upstream "
+			    "(Bytes/s) may be used?"), rows, cols - 5, defval ? defval : "");
+    
+    if (ret == 1) {
+      /* Help */
+      dialog_msgbox(_("Help"), _("You can limit GNUnet's resource usage "
+				 "here.\n\nThe \"upstream\" is the data channel through which data "
+				 "is *sent* to the internet. The limit is either the total maximum "
+				 "for this computer or how much GNUnet itself is allowed to use. You "
+				 "can specify that later. If you have a flatrate, you can set it to "
+				 "the maximum speed of your internet connection."), rows, cols - 5, 1);
+    }
+    else if (ret <= 0)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  
+  sym_set_string_value(sym, dialog_input_result);
+  
+  dialog_clear();
+  
+  /* Downstram */
+  if ((sym = sym_find("MAXNETDOWNBPSTOTAL", "LOAD"))) {
+    sym_calc_value_ext(sym, 1);
+    defval = (char *) sym_get_string_value(sym);
+  }
+  else
+    defval = NULL;
+  
+  while(true) {
+    ret = dialog_inputbox(_("GNUnet configuration"), _("How much downstream "
+						       "(Bytes/s) may be used?"), rows, cols - 5, defval ? defval : "");
+    
+    if (ret == 1) {
+      /* Help */
+      dialog_msgbox(_("Help"), 
+		    _("You can limit GNUnet's resource usage "
+		      "here.\n\nThe \"downstream\" is the data channel through which data "
+		      "is *received* from the internet. The limit is either the total maximum "
+		      "for this computer or how much GNUnet itself is allowed to use. You "
+		      "can specify that later. If you have a flatrate you can set it to "
+		      "the maximum speed of your internet connection."), rows, cols - 5, 1);
+    }
+    else if (ret <= 0)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  
+  sym_set_string_value(sym, dialog_input_result);
+  
+  dialog_clear();
+  
+  /* Bandwidth allocation */
+  sym = sym_find("BASICLIMITING", "LOAD");
+  while (true) {
+    ret = dialog_yesno(_("GNUnet configuration"), 
+		       _("Share denoted bandwidth "
+			 "with other applications?\n\nSay \"yes\" here, if you don't want other "
+			 "network traffic to interfere with GNUnet's operation, but still wish to "
+			 "constrain GNUnet's bandwidth usage to values entered in the previous "
+			 "steps, or if you can't reliably measure the maximum capabilities "
+			 "of your connection. \"No\" can be very useful if other applications "
+			 "are causing a lot of traffic on your LAN.  In this case, you do not "
+			 "want to limit the traffic that GNUnet can inflict on your internet "
+			 "connection whenever your high-speed LAN gets used (e.g. by NFS)."),
+		       rows, cols - 5);
+    
+    if (ret != -2)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  else
+    sym_set_tristate_value(sym, !ret); /* ret is inverted */
+  
+  dialog_clear();
+  
+  /* Max CPU */
+  if ((sym = sym_find("MAXCPULOAD", "LOAD"))) {
+    sym_calc_value_ext(sym, 1);
+    defval = (char *) sym_get_string_value(sym);
+  }
+  else
+    defval = NULL;
+  
+  while(true) {
+    ret = dialog_inputbox(_("GNUnet configuration"), 
+			  _("How much CPU (in %) may "
+			    "be used?"), rows, cols - 5, defval ? defval : "");
+    
+    if (ret == 1) {
+      /* Help */
+      dialog_msgbox(_("Help"),
+		    _("You can limit GNUnet's resource usage "
+		      "here.\n\nThis is the percentage of processor time GNUnet is allowed "
+		      "to use."), rows, cols - 5, 1);
+    }
+    else if (ret <= 0)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  
+  sym_set_string_value(sym, dialog_input_result);
+  
+  dialog_clear();
+  
+  /* Migration */
+  sym = sym_find("ACTIVEMIGRATION", "FS");
+  while(true) {
+    ret = dialog_yesno(_("GNUnet configuration"), 
+		       _("Store migrated content?"
+			 "\n\nGNUnet is able to store data from other peers in your datastore. "
+			 "This is useful if an adversary has access to your inserted content and "
+			 "you need to deny that the content is yours. With \"content migration\" "
+			 "on, the content could have \"migrated\" over the internet to your node"
+			 " without your knowledge.\nIt also helps to spread popular content over "
+			 "different peers to enhance availability."), rows, cols - 5);
+    
+    if (ret != -2)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  else
+    sym_set_tristate_value(sym, !ret); /* ret is inverted */
 
 	dialog_clear();
 
@@ -604,7 +619,7 @@ end:
   	free(group_name);
 
 	if (adv) {
-		mconf_main(argc, argv);
+		mconf_main();
 	}
 
   return 0;

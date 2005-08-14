@@ -36,6 +36,10 @@
 #include "wizard_callbacks.h"
 #include "wizard_util.h"
 
+#include "wizard.h"
+#include "gconf.h"
+#include "confdata.h"
+
 GtkWidget *curwnd;
 GtkWidget *cmbNIC;
 
@@ -43,8 +47,6 @@ int doOpenEnhConfigurator = 0;
 int doAutoStart = 0;
 char *user_name = NULL, *group_name = NULL;
 static int nic_item_count = 0;
-
-int gconf_main(int ac, char *av[]);
 
 void insert_nic(char *name, int defaultNIC)
 {
@@ -264,25 +266,26 @@ void load_step5()
 }
 
 int
-wizard_main (int argc, char *argv[])
+wizard_main ()
 {
-	struct symbol *sym;
+  struct symbol *sym;
+  char * filename;
 	
 #ifdef ENABLE_NLS
-		/* GTK uses UTF-8 encoding */
-		bind_textdomain_codeset(PACKAGE, "UTF-8");
+  /* GTK uses UTF-8 encoding */
+  bind_textdomain_codeset(PACKAGE, "UTF-8");
 #endif
 
 #ifdef WINDOWS
-	FreeConsole();
+  FreeConsole();
 #endif
 
   gtk_set_locale ();
-  gtk_init (&argc, &argv);
-
-	conf_parse(DATADIR"/config.in");
-	  
-  conf_read(NULL);
+  
+  filename = getConfigurationString("GNUNET-SETUP",
+				   "FILENAME");
+  conf_read(filename);
+  FREE(filename);
   
   sym = sym_find("EXPERIMENTAL", "Meta");
   sym_set_tristate_value(sym, yes);
@@ -296,8 +299,8 @@ wizard_main (int argc, char *argv[])
 
   gtk_main ();
 
-	if (doOpenEnhConfigurator)
-		gconf_main(argc, argv);
+  if (doOpenEnhConfigurator)
+    gconf_main();
 
   return 0;
 }

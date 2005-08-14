@@ -3,7 +3,6 @@ if HAVE_GUILE
 endif
 
 pkgdata_DATA = \
- config.in \
  config-client.in \
  config-daemon.in
 

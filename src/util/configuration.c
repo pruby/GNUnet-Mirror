@@ -506,9 +506,9 @@ void readConfiguration() {
     FREE(c);
     /* try generating a configuration file */
     LOG(LOG_WARNING,
-	_("Configuration file '%s' not found.  Run gnunet-setup!"),
+	_("Configuration file '%s' not found.  Run gnunet-setup!\n"),
 	expCfgName);
-    errexit(_("Configuration file '%s' not found.  Run gnunet-setup!"),
+    errexit(_("Configuration file '%s' not found.  Run gnunet-setup!\n"),
 	    expCfgName);
   }
   if (0 == assertIsFile(expCfgName))

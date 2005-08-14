@@ -1,4 +1,0 @@
-mainmenu "GNUnet user configuration"
-
-source "$DATADIR/config-daemon.in"
-source "$DATADIR/config-client.in"

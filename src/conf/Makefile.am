@@ -36,7 +36,7 @@ lkc_defs.h: $(srcdir)/lkc_proto.h
 
 if HAVE_CURSES
 mconf_src = \
-  mconf.c \
+  mconf.c mconf.h \
   mconf_checklist.c \
   mconf_colors.h \
   mconf_dialog.h \
@@ -46,7 +46,7 @@ mconf_src = \
   mconf_textbox.c \
   mconf_util.c \
   mconf_yesno.c \
-  wizard_curs.c
+  wizard_curs.c wizard_curs.h
 endif
 
 if HAVE_GTK
@@ -58,22 +58,22 @@ if HAVE_GTK
    gconf_support.h \
    gconf_interface.c \
    gconf_support.c \
-   gconf.c \
+   gconf.c gconf.h \
    images.c 
-   
+
  gbasic_src = \
    wizard_callbacks.h \
    wizard_interface.h \
    wizard_support.h \
    wizard_callbacks.c \
    wizard_interface.c \
-   wizard.c
+   wizard.c wizard.h
 endif
 
 
 gnunet_setup_SOURCES = \
- conf.c \
- confdata.c \
+ conf.c conf.h \
+ confdata.c confdata.h \
  expr.c \
  expr.h \
  lkc.h \

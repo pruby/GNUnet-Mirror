@@ -19,62 +19,92 @@
 */
 
 /**
- * @file conf/silent.c
+ * @file conf/recreate.c
  * @brief create .conf files from the .in templates
  * @author Nils Durner
  */
 
 #include "gnunet_util.h"
+#include "recreate.h"
+#include "confdata.h"
 
 #define LKC_DIRECT_LINK
 #include "lkc.h"
 
 
-int recreate_main(int ac, char **av) {
-  struct symbol *sym;
-  char *dstDir;
-  int dirLen;
-  
-  dirLen = strlen(av[1]);
-  dstDir = MALLOC(dirLen + 2);
-  strcpy(dstDir, av[1]);
-  if (dstDir[dirLen - 1] != DIR_SEPARATOR)
-    strcat(dstDir, DIR_SEPARATOR_STR);
-  
-  conf_parse(DATADIR"/config.in");
-
-  /* we are setting advanced/rare settings below */
-  sym = sym_find("EXPERIMENTAL", "Meta");
-  sym_set_tristate_value(sym, yes);
-  sym = sym_find("ADVANCED", "Meta");
-  sym_set_tristate_value(sym, yes);
-  sym = sym_find("RARE", "Meta");
-  sym_set_tristate_value(sym, yes);
-
-  /* save new config files to DATADIR */
-  sym = sym_find("config-daemon.in_CONF_DEF_DIR", "Meta");
-  sym_set_string_value(sym, dstDir);
-
-  sym = sym_find("config-daemon.in_CONF_DEF_FILE", "Meta");
-  sym_set_string_value(sym, "gnunet.root");
-
-  sym = sym_find("config-client.in_CONF_DEF_DIR", "Meta");
-  sym_set_string_value(sym, dstDir);
-
-  sym = sym_find("config-client.in_CONF_DEF_FILE", "Meta");
-  sym_set_string_value(sym, "gnunet.user");
-	
-  FREE(dstDir);
-
-  /* Write defaults */
-  if (conf_write()) {
-    printf(_("Unable to save configuration files: %s.\n"), STRERROR(errno));
-    return 1;
-  }
-  else {
-    puts(_("Configuration files (re)created.\n"));
-    return 0;
-  }
+/**
+ * @brief Set reasonable default for GNUNETD_HOME if needed
+ */
+static void checkGNUNETDHome(struct symbol *sym)
+{
+ 
+  if (strcmp(sym->name, "GNUNETD_HOME") == 0)
+    {
+      const char *val;
+      
+      sym_calc_value_ext(sym, 1);
+      val = sym_get_string_value(sym);
+      
+      /* only empty if gnunet-setup is run for the first time */
+      if (!val || !strlen(val))
+	{
+	  /* GNUNETD_HOME isn't set yet. Let's choose a sane default */
+	  struct stat buf;
+	  int var = 0;
+	  if (STAT("/var/lib/GNUnet", &buf) != 0)
+	    {
+	      /* /var/lib/GNUnet doesn't exist. Do we have write permissions to /var? */
+	      if (ACCESS("/var", W_OK) == 0)
+		var = 1;
+	    }
+	  else
+	    {
+	      /* /var/lib/GNUnet is there, do we have write permissions? */
+	      if (ACCESS("/var/lib/GNUnet", W_OK) == 0)
+		var = 1;
+	    }
+	  
+	  sym_set_string_value(sym, var ? "/var/lib/GNUnet" : "~/.gnunet");
+	}
+    }
 }
 
-/* end of silent.c */
+
+int recreate_main() {
+  struct symbol *sym;
+  int i = 0;
+  char * filename;
+  
+  filename = getConfigurationString("GNUNET-SETUP",
+				    "FILENAME");
+  /* we are setting advanced/rare settings below */
+  sym = sym_find("EXPERIMENTAL", "Meta");
+  if (sym != NULL)
+    sym_set_tristate_value(sym, yes);
+  sym = sym_find("ADVANCED", "Meta"); 
+  if (sym != NULL)
+    sym_set_tristate_value(sym, yes);
+  sym = sym_find("RARE", "Meta"); 
+  if (sym != NULL)
+    sym_set_tristate_value(sym, yes);
+
+  /* save new config files to DATADIR */
+  if (testConfigurationString("GNUNETD",
+			      "_MAGIC_",
+			      "YES")) {
+    for_all_symbols(i, sym) 
+      checkGNUNETDHome(sym);
+  }
+  /* Write defaults */
+  if (conf_write(filename)) {
+    printf(_("Unable to save configuration file '%s': %s.\n"), 
+	   filename,
+	   STRERROR(errno));
+    FREE(filename);
+    return 1;
+  }
+  FREE(filename);
+  return 0;  
+}
+
+/* end of recreate.c */

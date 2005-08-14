@@ -6,11 +6,6 @@
  * @author Nils Durner
  **/
 
-/* confdata.c */
-#define conf_parse (*conf_parse_p)
-#define conf_read (*conf_read_p)
-#define conf_write (*conf_write_p)
-
 /* menu.c */
 #define rootmenu (*rootmenu_p)
 
