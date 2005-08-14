@@ -136,7 +136,7 @@ static void cfg_set_entry(struct CFG_ENTRIES * e,
   	e->ent_values[i] = NULL;
 }
 
-static int cfg_parse_file(char *filename) {
+static int cfg_parse_file(const char *filename) {
   struct CFG_ENTRIES * e = NULL;
   char line[256],tag[64],value[192];
   FILE *fp;

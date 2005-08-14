@@ -124,11 +124,11 @@ void extract_setting(char *line, char **setting, char *sect)
 /**
  * @brief Set default for GNUNETD_HOME if needed
  */
-void checkGNUNETDHome(const struct symbol *sym)
+void checkGNUNETDHome(struct symbol *sym)
 {
 	if (strcmp(sym->name, "GNUNETD_HOME") == 0)
 	{
-		char *val;
+	        const char *val;
 		
 		sym_calc_value_ext(sym, 1);
 		val = sym_get_string_value(sym);

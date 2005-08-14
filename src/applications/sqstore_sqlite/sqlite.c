@@ -83,22 +83,22 @@ static int sq_prepare(const char *zSql,       /* SQL statement, UTF-8 encoded */
  * @brief Returns the storage needed for the specfied int
  */
 static unsigned int getIntSize(unsigned long long l) {
-	if (l & 0x7FFFFFFFFFFF == l)
-		if (l & 0x7FFFFFFF == l)
-			if (l & 0x7FFFFF == l)
-				if (l & 0x7FFF == l)
-					if (l & 0x7F == l)
-						return 1;
-					else
-						return 2;
-				else
-					return 3;
-			else
-				return 4;
-		else
-			return 6;
+  if ((l & 0x7FFFFFFFFFFFLL) == l)
+    if ((l & 0x7FFFFFFF) == l)
+      if ((l & 0x7FFFFF) == l)
+	if ((l & 0x7FFF) == l)
+	  if ((l & 0x7F) == l)
+	    return 1;
+	  else
+	    return 2;
 	else
-		return 8;
+	  return 3;
+      else
+	return 4;
+    else
+      return 6;
+  else
+    return 8;
 }
 
 
