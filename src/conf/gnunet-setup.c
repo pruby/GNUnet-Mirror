@@ -46,38 +46,32 @@
 /**
  * Perform option parsing from the command line.
  */
-static int parser(int argc,
-		  char * argv[]) {
+static int parser(int argc, char *argv[])
+{
   int cont = OK;
   int c;
   int daemon = NO;
-  char * filename = NULL;  
-  char * dirname;
+  char *filename = NULL;
+  char *dirname;
 
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  while (1) {
+  FREENONNULL(setConfigurationString("GNUNETD", "LOGFILE", NULL));
+  while(1) {
     int option_index = 0;
     static struct GNoption long_options[] = {
-      { "config",   1, 0, 'c' }, 
-      { "deamon",   0, 0, 'd' },
-      { "help",     0, 0, 'h' },
-      { "version",  0, 0, 'v' },
-      { "verbose",  0, 0, 'V' },
-      { 0,0,0,0 }
+      {"config", 1, 0, 'c'},
+      {"deamon", 0, 0, 'd'},
+      {"help", 0, 0, 'h'},
+      {"version", 0, 0, 'v'},
+      {"verbose", 0, 0, 'V'},
+      {0, 0, 0, 0}
     };
 
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:dhvV",
-		      long_options,
-		      &option_index);
+    c = GNgetopt_long(argc, argv, "c:dhvV", long_options, &option_index);
 
-    if (c == -1)
-      break;  /* No more flags to process */
+    if(c == -1)
+      break;                    /* No more flags to process */
 
-    switch(c) {
+    switch (c) {
     case 'c':
       filename = expandFileName(GNoptarg);
       break;
@@ -85,134 +79,112 @@ static int parser(int argc,
       daemon = YES;
       break;
     case 'v':
-      printf("gnunet-setup v%s\n",
-	     VERSION);
+      printf("gnunet-setup v%s\n", VERSION);
       cont = SYSERR;
       break;
     case 'V':
-      FREENONNULL(setConfigurationString("GNUNET-SETUP",
-					 "VERBOSE",
-					 "YES"));
+      FREENONNULL(setConfigurationString("GNUNET-SETUP", "VERBOSE", "YES"));
       break;
-    case 'h': {
-      static Help help[] = {
-	HELP_CONFIG,
-	{ 'd', "daemon", NULL,
-	  gettext_noop("generate configuration for gnunetd, the GNUnet daemon") },
-	HELP_HELP,
-	HELP_LOGLEVEL,
-	HELP_VERSION,
-        HELP_VERBOSE,
-	HELP_END,
-      };
-      formatHelp("gnunet-daemon [OPTIONS] MODE",
-		 _("Tool to setup GNUnet."),
-		 help);
-      printf(_("Available MODEs:\n"));
-      printf(_(" config\t\ttext-based configuration\n"));
-#if HAVE_CURSES      
-      printf(_(" menuconfig\ttext-based menu\n"));
-      printf(_(" wizard-curses\tBasic text-based graphical configuration\n"));
+    case 'h':{
+        static Help help[] = {
+          HELP_CONFIG,
+          {'d', "daemon", NULL,
+           gettext_noop
+           ("generate configuration for gnunetd, the GNUnet daemon")},
+          HELP_HELP,
+          HELP_LOGLEVEL,
+          HELP_VERSION,
+          HELP_VERBOSE,
+          HELP_END,
+        };
+        formatHelp("gnunet-daemon [OPTIONS] MODE",
+                   _("Tool to setup GNUnet."), help);
+        printf(_("Available MODEs:\n"));
+        printf(_(" config\t\ttext-based configuration\n"));
+#if HAVE_CURSES
+        printf(_(" menuconfig\ttext-based menu\n"));
+        printf(_
+               (" wizard-curses\tBasic text-based graphical configuration\n"));
 #endif
 #if HAVE_GTK
-      printf(_(" gconfig\tGTK configuration\n"));
-      printf(_(" wizard-gtk\tBasic GTK configuration\n\n"));
+        printf(_(" gconfig\tGTK configuration\n"));
+        printf(_(" wizard-gtk\tBasic GTK configuration\n\n"));
 #endif
-      cont = SYSERR;
-      break;
-    }
+        cont = SYSERR;
+        break;
+      }
     default:
-      LOG(LOG_FAILURE,
-	  _("Use --help to get a list of options.\n"));
+      LOG(LOG_FAILURE, _("Use --help to get a list of options.\n"));
       cont = SYSERR;
-    } /* end of parsing commandline */
+    }                           /* end of parsing commandline */
   }
   /* set the 'magic' code that indicates that
      this process is 'gnunetd' (and not any of
      the user-tools).  Needed such that we use
      the right configuration file... */
-  if (daemon) {
-    FREENONNULL(setConfigurationString("GNUNETD",
-				       "_MAGIC_",
-				       "YES"));
-    if (filename == NULL) {
-      if (0 == ACCESS("/etc/gnunetd.conf",
-		      W_OK)) 
-	filename = STRDUP("/etc/gnunetd.conf");
-      else { 	
-	if (0 == ACCESS("/var/lib",
-			W_OK))
-	  mkdirp("/var/lib/GNUnet");
-	if (0 == ACCESS("/var/lib/GNUnet/gnunetd.conf",
-			W_OK)) 
-	  filename = STRDUP("/var/lib/GNUnet/gnunetd.conf");
-	else {
-	  dirname =  expandFileName("~/.gnunet/");
-	  mkdirp(dirname);
-	  FREE(dirname);
-	  filename = expandFileName("~/.gnunet/gnunetd.conf");
-	}
+  if(daemon) {
+    FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "YES"));
+    if(filename == NULL) {
+      if(0 == ACCESS("/etc/gnunetd.conf", W_OK))
+        filename = STRDUP("/etc/gnunetd.conf");
+      else {
+        if(0 == ACCESS("/var/lib", W_OK))
+          mkdirp("/var/lib/GNUnet");
+        if(0 == ACCESS("/var/lib/GNUnet/gnunetd.conf", W_OK))
+          filename = STRDUP("/var/lib/GNUnet/gnunetd.conf");
+        else {
+          dirname = expandFileName("~/.gnunet/");
+          mkdirp(dirname);
+          FREE(dirname);
+          filename = expandFileName("~/.gnunet/gnunetd.conf");
+        }
       }
     }
-    FREENONNULL(setConfigurationString("FILES",
-				       "gnunet.conf",
-				       filename));
-    conf_parse(DATADIR"/config-daemon.in");
-  } else {
-    FREENONNULL(setConfigurationString("GNUNETD",
-				       "_MAGIC_",
-				       "NO"));
-    if (filename == NULL) {
-      dirname =  expandFileName("~/.gnunet/");
+    FREENONNULL(setConfigurationString("FILES", "gnunet.conf", filename));
+    conf_parse(DATADIR "/config-daemon.in");
+  }
+  else {
+    FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "NO"));
+    if(filename == NULL) {
+      dirname = expandFileName("~/.gnunet/");
       mkdirp(dirname);
       FREE(dirname);
       filename = expandFileName("~/.gnunet/gnunet.conf");
     }
-    FREENONNULL(setConfigurationString("FILES",
-				       "gnunet.conf",
-				       filename));
-    conf_parse(DATADIR"/config-client.in");
+    FREENONNULL(setConfigurationString("FILES", "gnunet.conf", filename));
+    conf_parse(DATADIR "/config-client.in");
   }
   dirname = STRDUP(filename);
-  while ( ( strlen(dirname) > 0) &&
-	  (dirname[strlen(dirname)-1] != DIR_SEPARATOR) )
-    dirname[strlen(dirname)-1] = '\0';
-  if (strlen(dirname) > 0) {
-    dirname[strlen(dirname)-1] = '\0';
-    if (strlen(dirname) > 0)
+  while((strlen(dirname) > 0) &&
+        (dirname[strlen(dirname) - 1] != DIR_SEPARATOR))
+    dirname[strlen(dirname) - 1] = '\0';
+  if(strlen(dirname) > 0) {
+    dirname[strlen(dirname) - 1] = '\0';
+    if(strlen(dirname) > 0)
       mkdirp(dirname);
   }
-  if ( (0 != ACCESS(filename,
-		    W_OK)) &&
-       ( (0 == ACCESS(filename,
-		      F_OK)) ||
-	 (0 != ACCESS(dirname,
-		      W_OK)) ) ) {
-    errexit(_("gnunet-setup must have write-access to the configuration file '%s'\n"),
-	    filename);
-  } 
+  if((0 != ACCESS(filename,
+                  W_OK)) &&
+     ((0 == ACCESS(filename, F_OK)) || (0 != ACCESS(dirname, W_OK)))) {
+    errexit(_
+            ("gnunet-setup must have write-access to the configuration file '%s'\n"),
+            filename);
+  }
   FREE(dirname);
-  FREENONNULL(setConfigurationString("GNUNET-SETUP",
-				     "FILENAME",
-				     filename));
-  if (GNoptind < argc) 
+  FREENONNULL(setConfigurationString("GNUNET-SETUP", "FILENAME", filename));
+  if(GNoptind < argc)
     FREENONNULL(setConfigurationString("GNUNET-SETUP",
-				       "OPERATION",
-				       argv[GNoptind++]));
-  if (GNoptind < argc) {
-    LOG(LOG_WARNING,
-	_("Invalid arguments: "));
-    while (GNoptind < argc)
-      LOG(LOG_WARNING,
-	  "%s ", argv[GNoptind++]);
-    LOG(LOG_FATAL,
-	_("Invalid arguments. Exiting.\n"));
+                                       "OPERATION", argv[GNoptind++]));
+  if(GNoptind < argc) {
+    LOG(LOG_WARNING, _("Invalid arguments: "));
+    while(GNoptind < argc)
+      LOG(LOG_WARNING, "%s ", argv[GNoptind++]);
+    LOG(LOG_FATAL, _("Invalid arguments. Exiting.\n"));
     FREE(filename);
     return SYSERR;
   }
 
-  if (0 != ACCESS(filename,
-		  F_OK))
+  if(0 != ACCESS(filename, F_OK))
     recreate_main();
   FREE(filename);
 
@@ -221,59 +193,54 @@ static int parser(int argc,
 }
 
 
-
-int main(int argc,
-	 char *argv[]) {
-  char * operation;
+int main(int argc, char *argv[])
+{
+  char *operation;
 
 #if HAVE_GTK
   gtk_init(&argc, &argv);
 #endif
-  if (OK != initUtil(argc, argv, &parser))
+  if(OK != initUtil(argc, argv, &parser))
     return -1;
-  operation = getConfigurationString("GNUNET-SETUP",
-				     "OPERATION");
-  if (operation == NULL) {
+  operation = getConfigurationString("GNUNET-SETUP", "OPERATION");
+  if(operation == NULL) {
 #if HAVE_GTK
     operation = STRDUP("gconfig");
 #elif HAVE_CURSES
     operation = STRDUP("menuconfig");
 #else
     operation = STRDUP("config");
-#endif    
+#endif
   }
-  if (strcmp(operation, "config") == 0)
+  if(strcmp(operation, "config") == 0)
     conf_main();
-  else if (strcmp(operation, "menuconfig") == 0) {
+  else if(strcmp(operation, "menuconfig") == 0) {
 #if HAVE_CURSES
     mconf_main();
 #else
     printf(_("menuconfig is not available\n"));
 #endif
   }
-  else if (strcmp(operation, "wizard-curses") == 0) {
-    if (! testConfigurationString("GNUNETD",
-				  "_MAGIC_",
-				  "YES"))
+  else if(strcmp(operation, "wizard-curses") == 0) {
+    if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
       errexit(_("Can only run wizard to configure gnunetd.\n"
-		"Did you forget the '%s' option?\n"),
-	      "-d");
+                "Did you forget the '%s' option?\n"), "-d");
 #if HAVE_CURSES
     wizard_curs_main();
 #else
     printf(_("wizard-curses is not available\n"));
 #endif
-  } else if (strcmp(operation, "wizard-gtk") == 0) {
+  }
+  else if(strcmp(operation, "wizard-gtk") == 0) {
     errexit(_("Can only run wizard to configure gnunetd.\n"
-	      "Did you forget the '%s' option?\n"),
-	    "-d");
+              "Did you forget the '%s' option?\n"), "-d");
 #if HAVE_GTK
     wizard_main();
 #else
     printf(_("wizard-gtk is not available\n"));
 #endif
   }
-  else if (strcmp(operation, "gconfig") == 0) {
+  else if(strcmp(operation, "gconfig") == 0) {
 #if HAVE_GTK
     gconf_main();
 #else
@@ -281,8 +248,7 @@ int main(int argc,
 #endif
   }
   else {
-    printf(_("Unknown operation '%s'\n"),
-	   operation);
+    printf(_("Unknown operation '%s'\n"), operation);
     printf(_("Use --help to get a list of options.\n"));
     FREE(operation);
     doneUtil();
