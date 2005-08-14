@@ -46,7 +46,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "ERROR"));
+				     "DEBUG"));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "check.conf"));
@@ -73,6 +73,7 @@ static char * makeName(unsigned int i) {
 }
 
 static volatile enum FSUI_EventType lastEvent;
+static volatile enum FSUI_EventType waitForEvent;
 static struct FSUI_Context * ctx;
 
 static void eventCallback(void * cls,
@@ -95,22 +96,39 @@ static void eventCallback(void * cls,
   case FSUI_download_progress:
     printf("Download is progressing...\n");
     break;
+  case FSUI_unindex_progress:
+    printf("Unindex is progressing...\n");
+    break;
   case FSUI_unindex_complete:
     printf("Unindex complete.\n");
     break;
+  case FSUI_unindex_error:
+  case FSUI_upload_error:
+  case FSUI_download_error:
+  case FSUI_search_error:
+    errexit("Received ERROR: %d\n",
+	    event->type);
   default:
+    printf("Unexpected event: %d\n",
+	   event->type);
     break;
   }
-  if (lastEvent == FSUI_download_complete)
+  if (lastEvent == waitForEvent)
     return; /* ignore all other events */
   lastEvent = event->type;  
   if (event->type == FSUI_search_result) {
+    char * u;
+
     fn = makeName(43);
-    printf("Download started.\n");
-    FSUI_startDownload(ctx,
-		       0,
-		       event->data.SearchResult.fi.uri,
-		       fn);    
+    u = ECRS_uriToString(event->data.SearchResult.fi.uri);
+    printf("Download started: %s.\n", u);
+    FREE(u);
+    if (OK != 
+	FSUI_startDownload(ctx,
+			   0,
+			   event->data.SearchResult.fi.uri,
+			   fn))
+      errexit("Failed to start download.\n");
     FREE(fn);
     suspendRestart = 1;
   }
@@ -136,7 +154,7 @@ int main(int argc, char * argv[]){
 		     argv, 
 		     &parseCommandLine))
     return -1;
-#if 1
+#if 0
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
 #else
@@ -161,6 +179,7 @@ int main(int argc, char * argv[]){
   meta = ECRS_createMetaData();
   kuri = FSUI_parseListKeywordURI(2,
 				  (const char**)keywords);
+  waitForEvent = FSUI_upload_complete;
   CHECK(OK ==
 	FSUI_upload(ctx,
 		    fn,
@@ -175,7 +194,7 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_upload_complete) {
     prog++;
-    CHECK(prog < 10000);    
+    CHECK(prog < 1000);    
     gnunet_util_sleep(50 * cronMILLIS);
   }
   SNPRINTF(keyword,
@@ -185,30 +204,41 @@ int main(int argc, char * argv[]){
 	   _("AND"),
 	   keywords[1]);
   uri = FSUI_parseCharKeywordURI(keyword);
+  waitForEvent = FSUI_download_complete;
   CHECK(OK == FSUI_startSearch(ctx,
 			       0,
 			       uri));
   prog = 0;
   while (lastEvent != FSUI_download_complete) {
     prog++;
-    CHECK(prog < 100000);
+    CHECK(prog < 10000);
     gnunet_util_sleep(50 * cronMILLIS);
     if (suspendRestart > 0) {
       suspendCron();
+#if 0
       FSUI_stop(ctx); /* download possibly incomplete
 			 at this point, thus testing resume */
       ctx = FSUI_start("fsuidownloadtest",
 		       YES,
 		       &eventCallback,
 		       NULL);
+#endif
       resumeCron();
       suspendRestart--;
     }
   }
   CHECK(OK == FSUI_stopSearch(ctx,
 			      uri));  
+  waitForEvent = FSUI_unindex_complete;
   CHECK(OK == FSUI_unindex(ctx, fn));
-
+  prog = 0;
+  while (lastEvent != FSUI_unindex_complete) {
+    prog++;
+    CHECK(prog < 1000);
+    gnunet_util_sleep(50 * cronMILLIS);
+    CHECK(lastEvent != FSUI_unindex_error);
+  }
+  CHECK(lastEvent == FSUI_unindex_complete);
   /* END OF TEST CODE */
  FAILURE:
   if (fn != NULL) {

@@ -84,9 +84,13 @@ static void * unindexThread(UnindexThreadClosure * utc) {
     event.type = FSUI_unindex_error;
     event.data.message = _("Unindex failed.\n");
   }
+  utc->ctx->ecb(utc->ctx->ecbClosure,
+		&event);
   FREE(utc->filename);
   utc->tl->isDone = YES;
   FREE(utc);
+  LOG(LOG_DEBUG,
+      "FSUI unindexThread exits.\n");
   return NULL;
 }
 

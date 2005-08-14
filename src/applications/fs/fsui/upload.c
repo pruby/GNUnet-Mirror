@@ -364,8 +364,6 @@ static void * uploadThread(UploadThreadClosure * utc) {
       event.type = FSUI_upload_error;
       event.data.message = _("Upload failed.\n");
     }
-    utc->ctx->ecb(utc->ctx->ecbClosure,
-		  &event);
     if (utc->meta == NULL)
       utc->meta = ECRS_createMetaData();
     else
@@ -402,15 +400,11 @@ static void * uploadThread(UploadThreadClosure * utc) {
     if (ret != OK) {
       event.type = FSUI_upload_error;
       event.data.message = _("Upload failed.\n");
-      utc->ctx->ecb(utc->ctx->ecbClosure,
-		    &event);
     } /* for success, uploadDirectory sends event already! */
     utc->filename = NULL;
   } else {
     event.type = FSUI_upload_error;
     event.data.message = _("Cannot upload directory without using recursion.\n");
-    utc->ctx->ecb(utc->ctx->ecbClosure,
-		  &event);
   }
   if (ret == OK) { /* publish top-level advertisements */
     fi.meta = utc->meta;
@@ -456,6 +450,8 @@ static void * uploadThread(UploadThreadClosure * utc) {
   FSUI_publishToCollection(utc->ctx,
 			   &fi);
 			
+  utc->ctx->ecb(utc->ctx->ecbClosure,
+		&event);
   if (uri != NULL)
     ECRS_freeUri(uri);
 

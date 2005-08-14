@@ -67,11 +67,15 @@ static int spcb(const ECRS_FileInfo * fi,
   for (i=0;i<pos->sizeResultsReceived;i++)
     if (ECRS_equalsUri(fi->uri,
 		       pos->resultsReceived[i].uri)) {
+      LOG(LOG_DEBUG,
+	  "Received search result that I have seen before.\n");
       return OK; /* seen before */
     }
   if (pos->numberOfURIKeys > 1) {
     if (key == NULL) {
       BREAK();
+      LOG(LOG_DEBUG,
+	  "Received search result without key to decrypt.\n");
       return SYSERR;
     }
     for (i=0;i<pos->sizeUnmatchedResultsReceived;i++) {
@@ -81,9 +85,13 @@ static int spcb(const ECRS_FileInfo * fi,
 	for (j=0;j<rp->matchingKeyCount;j++)
 	  if (equalsHashCode512(key,
 				&rp->matchingKeys[j])) {
+	    LOG(LOG_DEBUG,
+		"Received search result that I have seen before (missing keyword to show client).\n");
 	    return OK;
 	  }
 	if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
+	  LOG(LOG_DEBUG,
+	      "Received search result (showing client)!\n");
 	  GROW(rp->matchingKeys,
 	       rp->matchingKeyCount,
 	       0);
@@ -102,6 +110,9 @@ static int spcb(const ECRS_FileInfo * fi,
 	       rp->matchingKeyCount,
 	       rp->matchingKeyCount+1);
 	  rp->matchingKeys[rp->matchingKeyCount-1] = *key;
+	  LOG(LOG_DEBUG,
+	      "Received search result (waiting for more %u keys before showing client).\n",
+	      pos->numberOfURIKeys - rp->matchingKeyCount);
 	  return OK;
 	}	
       }
@@ -118,8 +129,13 @@ static int spcb(const ECRS_FileInfo * fi,
 	 rp->matchingKeyCount,
 	 1);
     rp->matchingKeys[0] = *key;
+    LOG(LOG_DEBUG,
+	"Received search result (waiting for %u more keys before showing client).\n",
+	pos->numberOfURIKeys  - rp->matchingKeyCount);
     return OK;
   } else {
+    LOG(LOG_DEBUG,
+	"Received search result (showing client)!\n");
     processResult(fi,
 		  pos);
   }
