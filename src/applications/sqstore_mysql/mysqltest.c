@@ -1,4 +1,23 @@
 /*
+     This file is part of GNUnet.
+     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+/*
  * @file applications/sqstore_sqlite/sqlitetest.c
  * @brief Test for the sqstore implementations.
  * @author Christian Grothoff
@@ -20,7 +39,7 @@ static Datastore_Value * initValue(int i) {
   value = MALLOC(sizeof(Datastore_Value) + 8 * i);
   value->size = htonl(sizeof(Datastore_Value) + 8 * i);
   value->type = htonl(i);
-  value->prio = htonl(i);
+  value->prio = htonl(i+1);
   value->anonymityLevel = htonl(i);
   value->expirationTime = htonll(now - i * cronSECONDS);
   memset(&value[1], i, 8*i);
@@ -35,14 +54,18 @@ static int checkValue(const HashCode512 * key,
   Datastore_Value * value;
 
   i = *(int*) closure;
-  value = initValue(i+1);
+  value = initValue(i);
   if ( ( value->size == val->size) &&
        (0 == memcmp(val,
 		    value,
 		    ntohl(val->size)) ) ) {
     ret = OK;
   } else {
-    fprintf(stderr, "Invalid value!\n");
+     /*
+    printf("Wanted: %u, %llu; got %u, %llu - %d\n",
+	   ntohl(value->size), ntohll(value->expirationTime),
+	   ntohl(val->size), ntohll(val->expirationTime),
+	   memcmp(val, value, ntohl(val->size))); */
     ret = SYSERR;		
   }
   FREE(value);
@@ -59,16 +82,6 @@ static int iterateUp(const HashCode512 * key,
   return ret;
 }
 
-static int iterateUp1(const HashCode512 * key,
-		      const Datastore_Value * val,
-		      int * closure) {
-  int ret;
-
-  ret = checkValue(key, val, closure);
-  (*closure) += 1;
-  return ret;
-}
-
 static int iterateDown(const HashCode512 * key,
 		       const Datastore_Value * val,
 		       int * closure) {
@@ -79,14 +92,13 @@ static int iterateDown(const HashCode512 * key,
   return ret;
 }
 
-
 static int iterateDelete(const HashCode512 * key,
-		       const Datastore_Value * val,
-			   SQstore_ServiceAPI * api) {
+			 const Datastore_Value * val,
+			 SQstore_ServiceAPI * api) {
   if (1 == api->del(key, val))
-	return OK;
-  else
-	return SYSERR;
+    return OK;
+  else 
+    return SYSERR;  
 }
 
 static int priorityCheck(const HashCode512 * key,
@@ -129,10 +141,10 @@ static int test(SQstore_ServiceAPI * api) {
   unsigned long long oldSize;
   int i;
 
-  cronTime(&now);
+  now = 1000000;
   oldSize = api->getSize();
   for (i=0;i<256;i++) {
-    value = initValue(i+1);
+    value = initValue(i);
     memset(&key, 256-i, sizeof(HashCode512));
     api->put(&key, value);
     FREE(value);
@@ -141,19 +153,18 @@ static int test(SQstore_ServiceAPI * api) {
   ASSERT(256 == api->iterateLowPriority(ANY_BLOCK,
 					NULL,
 					NULL));
-  i = 0;
-  ASSERT(256 == api->iterateLowPriority(ANY_BLOCK,
-					(Datum_Iterator) &iterateUp1,
-					&i));
+  ASSERT(256 == api->iterateExpirationTime(ANY_BLOCK,
+					   NULL,
+					   NULL));
   for (i=255;i>=0;i--) {
     memset(&key, 256-i, sizeof(HashCode512));
-    ASSERT(1 == api->get(&key, i+1, &checkValue, &i));
+    ASSERT(1 == api->get(&key, i, &checkValue, (void*) &i));
   }
 
   oldSize = api->getSize();
   for (i=255;i>=0;i-=2) {
     memset(&key, 256-i, sizeof(HashCode512));
-    value = initValue(i+1);
+    value = initValue(i);
     ASSERT(1 == api->del(&key, value));
     FREE(value);
   }
@@ -168,19 +179,11 @@ static int test(SQstore_ServiceAPI * api) {
 					   &i));
   ASSERT(0 == i);
   ASSERT(128 == api->iterateExpirationTime(ANY_BLOCK,
-										   (Datum_Iterator) &iterateDelete,
-										   api));
+					   (Datum_Iterator) &iterateDelete,
+					   api));
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
-										 (Datum_Iterator) &iterateDown,
-										 &i));
-
-  for (i=254;i>=0;i-=2) {
-    memset(&key, 256-i, sizeof(HashCode512));
-    value = initValue(i+1);
-    ASSERT(1 == api->del(&key, value));
-    FREE(value);
-  }
-
+					 (Datum_Iterator) &iterateDown,
+					 &i));
 
   i = 42;
   value = initValue(i);
@@ -219,7 +222,7 @@ static int test(SQstore_ServiceAPI * api) {
   api->drop();
   return OK;
  FAILURE:
-  // api->drop();
+  api->drop();
   return SYSERR;
 }
 
@@ -247,12 +250,12 @@ int main(int argc, char *argv[]) {
   if (OK != initUtil(argc, argv, &parser))
     errexit(_("Could not initialize libgnunetutil!\n"));
   initCore();
-  api = requestService("sqstore_mysql");
+  api = requestService("sqstore");
   ok = SYSERR;
   if (api != NULL) {
     api->drop();
     releaseService(api);
-    api = requestService("sqstore_mysql");
+    api = requestService("sqstore");
     if (api != NULL) {
       ok = test(api);
       releaseService(api);

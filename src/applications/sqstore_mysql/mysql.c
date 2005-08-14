@@ -34,10 +34,7 @@
  *   module will have better performance than the other db choices
  *   (according to our tests).
  * + Its often possible to recover the mysql database from internal
- *   inconsistencies. The other db choices do not support repair
- *   (gnunet-check cannot fix problems internal to the dbmgr!).
- *   For example, we have seen several cases where power failure
- *   has ruined a gdbm database beyond repair.
+ *   inconsistencies. The other db choices do not support repair!
  * Cons
  * - Memory usage (Comment: "I have 1G and it never caused me trouble")
  * - Manual setup
@@ -53,7 +50,7 @@
  * 2) Then access mysql as root,
  *    <pre>
  *
- *    # mysql -u root -p
+ *    $ mysql -u root -p
  *
  *    </pre>
  *    and do the following. [You should replace $USER with the username
@@ -88,7 +85,7 @@
  *    works. First, login as $USER. Then use,
  *
  *    <pre>
- *    # mysql -u $USER
+ *    $ mysql -u $USER
  *    mysql> use gnunet;
  *    </pre>
  *
@@ -171,6 +168,7 @@ typedef struct {
                             * in SHOW TABLE STATUS resultset */
   int useDelayed;          /* use potentially unsafe delayed inserts? */
   char * cnffile;
+  int prepare;
   MYSQL_STMT * insert;
   MYSQL_BIND bind[7];
   MYSQL_STMT * select;
@@ -178,7 +176,9 @@ typedef struct {
   MYSQL_STMT * selects;
   MYSQL_STMT * selectsc;
   MYSQL_BIND sbind[2];
-
+  MYSQL_STMT * deleteh;
+  MYSQL_STMT * deleteg;
+  MYSQL_BIND dbind[7];
 } mysqlHandle;
 
 #define INSERT_SAMPLE "INSERT INTO gn070 (size,type,prio,anonLevel,expire,hash,value) VALUES (?,?,?,?,?,?,?)"
@@ -188,6 +188,9 @@ typedef struct {
 #define SELECT_SAMPLE_COUNT "SELECT count(*) FROM gn070 WHERE hash=?"
 #define SELECT_TYPE_SAMPLE "SELECT * FROM gn070 WHERE hash=? AND type=?"
 #define SELECT_TYPE_SAMPLE_COUNT "SELECT count(*) FROM gn070 WHERE hash=? AND type=?"
+
+#define DELETE_HASH_SAMPLE "DELETE FROM gn070 WHERE hash=? ORDER BY prio ASC LIMIT 1"
+#define DELETE_GENERIC_SAMPLE "DELETE FROM gn070 WHERE hash=? AND size=? AND type=? AND prio=? AND anonLevel=? AND expire=? AND value=? ORDER BY prio ASC LIMIT 1"
 
 static mysqlHandle * dbh;
 
@@ -243,7 +246,8 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
  * so that must be set already.
  * @return OK on success
  */
-static int iopen(mysqlHandle * dbhI) {
+static int iopen(mysqlHandle * dbhI,
+		 int prepare) {
   char * dbname;
 
   if (dbhI->cnffile == NULL)
@@ -277,99 +281,128 @@ static int iopen(mysqlHandle * dbhI) {
     dbhI->dbf = NULL;
     return SYSERR;
   }
-
-  mysql_query(dbhI->dbf,
-	      "CREATE TABLE IF NOT EXISTS gn070 ("
-	      " size INT(11) NOT NULL DEFAULT 0,"
-	      " type INT(11) NOT NULL DEFAULT 0,"
-	      " prio INT(11) NOT NULL DEFAULT 0,"
-	      " anonLevel INT(11) NOT NULL DEFAULT 0,"
-	      " expire BIGINT NOT NULL DEFAULT 0,"
-	      " hash TINYBLOB BINARY NOT NULL DEFAULT '',"
-	      " value BLOB NOT NULL DEFAULT '',"
-	      " INDEX (hash(64)),"
-	      " INDEX (prio),"
-	      " INDEX (expire)"
-	      ") TYPE=MyISAM");
-  if (mysql_error(dbhI->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR,
-	      "mysql_query",
-	      dbhI);
-    mysql_close(dbhI->dbf);
-    dbhI->dbf = NULL;
-    return SYSERR;
-  }
-
-  dbhI->insert = mysql_stmt_init(dbhI->dbf);
-  dbhI->select = mysql_stmt_init(dbhI->dbf);
-  dbhI->selectc = mysql_stmt_init(dbhI->dbf);
-  dbhI->selects = mysql_stmt_init(dbhI->dbf);
-  dbhI->selectsc = mysql_stmt_init(dbhI->dbf);
-  if ( (dbhI->insert == NULL) ||
-       (dbhI->select == NULL) ||
-       (dbhI->selectc == NULL) ||
-       (dbhI->selects == NULL) ||
-       (dbhI->selectsc == NULL) ) {
-    BREAK();
-    if (dbhI->insert != NULL)
+  if (prepare) {
+    mysql_query(dbhI->dbf,
+		"CREATE TABLE IF NOT EXISTS gn070 ("
+		" size INT(11) NOT NULL DEFAULT 0,"
+		" type INT(11) NOT NULL DEFAULT 0,"
+		" prio INT(11) NOT NULL DEFAULT 0,"
+		" anonLevel INT(11) NOT NULL DEFAULT 0,"
+		" expire BIGINT NOT NULL DEFAULT 0,"
+		" hash TINYBLOB BINARY NOT NULL DEFAULT '',"
+		" value BLOB NOT NULL DEFAULT '',"
+		" INDEX (hash(64)),"
+		" INDEX (prio),"
+		" INDEX (expire)"
+		") TYPE=MyISAM");
+    if (mysql_error(dbhI->dbf)[0]) {
+      LOG_MYSQL(LOG_ERROR,
+		"mysql_query",
+		dbhI);
+      mysql_close(dbhI->dbf);
+      dbhI->dbf = NULL;
+      return SYSERR;
+    }
+    
+    dbhI->insert = mysql_stmt_init(dbhI->dbf);
+    dbhI->select = mysql_stmt_init(dbhI->dbf);
+    dbhI->selectc = mysql_stmt_init(dbhI->dbf);
+    dbhI->selects = mysql_stmt_init(dbhI->dbf);
+    dbhI->selectsc = mysql_stmt_init(dbhI->dbf);
+    dbhI->deleteh = mysql_stmt_init(dbhI->dbf);
+    dbhI->deleteg = mysql_stmt_init(dbhI->dbf);
+    if ( (dbhI->insert == NULL) ||
+	 (dbhI->select == NULL) ||
+	 (dbhI->selectc == NULL) ||
+	 (dbhI->selects == NULL) ||
+	 (dbhI->selectsc == NULL) ||
+	 (dbhI->deleteh == NULL) ||
+	 (dbhI->deleteg == NULL) ) {
+      BREAK();
+      if (dbhI->insert != NULL)
+	mysql_stmt_close(dbhI->insert);
+      if (dbhI->select != NULL)
+	mysql_stmt_close(dbhI->select);
+      if (dbhI->selectc != NULL)
+	mysql_stmt_close(dbhI->selectc);
+      if (dbhI->selects != NULL)
+	mysql_stmt_close(dbhI->selects);
+      if (dbhI->selectsc != NULL)
+	mysql_stmt_close(dbhI->selectsc);
+      mysql_close(dbhI->dbf);
+      dbhI->dbf = NULL;
+      return SYSERR;
+    }
+    if (mysql_stmt_prepare(dbhI->insert,
+			   dbh->useDelayed
+			   ? INSERT_SAMPLE_DELAYED
+			   : INSERT_SAMPLE,
+			   strlen(dbh->useDelayed
+				  ? INSERT_SAMPLE_DELAYED
+				  : INSERT_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->select,
+			   SELECT_SAMPLE,
+			   strlen(SELECT_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->selectc,
+			   SELECT_SAMPLE_COUNT,
+			   strlen(SELECT_SAMPLE_COUNT)) ||
+	mysql_stmt_prepare(dbhI->selects,
+			   SELECT_TYPE_SAMPLE,
+			   strlen(SELECT_TYPE_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->selectsc,
+			   SELECT_TYPE_SAMPLE_COUNT,
+			   strlen(SELECT_TYPE_SAMPLE_COUNT)) ||
+	mysql_stmt_prepare(dbhI->deleteh,
+			   DELETE_HASH_SAMPLE,
+			   strlen(DELETE_HASH_SAMPLE)) ||
+	mysql_stmt_prepare(dbhI->deleteg,
+			   DELETE_GENERIC_SAMPLE,
+			   strlen(DELETE_GENERIC_SAMPLE)) ) {
+      LOG(LOG_ERROR,
+	  _("'%s' failed at %s:%d with error: %s\n"),
+	  "mysql_stmt_prepare",
+	  __FILE__, __LINE__,
+	  mysql_stmt_error(dbhI->insert));
       mysql_stmt_close(dbhI->insert);
-    if (dbhI->select != NULL)
       mysql_stmt_close(dbhI->select);
-    if (dbhI->selectc != NULL)
       mysql_stmt_close(dbhI->selectc);
-    if (dbhI->selects != NULL)
       mysql_stmt_close(dbhI->selects);
-    if (dbhI->selectsc != NULL)
       mysql_stmt_close(dbhI->selectsc);
-    mysql_close(dbhI->dbf);
-    dbhI->dbf = NULL;
-    return SYSERR;
-  }
-  if (mysql_stmt_prepare(dbhI->insert,
-			 dbh->useDelayed
-			 ? INSERT_SAMPLE_DELAYED
-			 : INSERT_SAMPLE,
-			 strlen(dbh->useDelayed
-				? INSERT_SAMPLE_DELAYED
-				: INSERT_SAMPLE)) ||
-      mysql_stmt_prepare(dbhI->select,
-			 SELECT_SAMPLE,
-			 strlen(SELECT_SAMPLE)) ||
-      mysql_stmt_prepare(dbhI->selectc,
-			 SELECT_SAMPLE_COUNT,
-			 strlen(SELECT_SAMPLE_COUNT)) ||
-      mysql_stmt_prepare(dbhI->selects,
-			 SELECT_TYPE_SAMPLE,
-			 strlen(SELECT_TYPE_SAMPLE)) ||
-      mysql_stmt_prepare(dbhI->selectsc,
-			 SELECT_TYPE_SAMPLE_COUNT,
-			 strlen(SELECT_TYPE_SAMPLE_COUNT)) ) {
-    LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_prepare",
-	__FILE__, __LINE__,
-	mysql_stmt_error(dbhI->insert));
-    mysql_stmt_close(dbhI->insert);
-    mysql_close(dbhI->dbf);
-    dbhI->dbf = NULL;
-    return SYSERR;
-  }
-  memset(dbhI->bind,
+      mysql_stmt_close(dbhI->insert);
+      mysql_stmt_close(dbhI->deleteh);
+      mysql_stmt_close(dbhI->deleteg);
+      mysql_close(dbhI->dbf);
+      dbhI->dbf = NULL;
+      return SYSERR;
+    }
+    memset(dbhI->bind,
 	 0,
 	 sizeof(dbhI->bind));
-  dbhI->bind[0].buffer_type = MYSQL_TYPE_LONG; /* size */
-  dbhI->bind[1].buffer_type = MYSQL_TYPE_LONG; /* type */
-  dbhI->bind[2].buffer_type = MYSQL_TYPE_LONG; /* prio */
-  dbhI->bind[3].buffer_type = MYSQL_TYPE_LONG; /* anon level */
-  dbhI->bind[4].buffer_type = MYSQL_TYPE_LONGLONG; /* expiration */
-  dbhI->bind[5].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
-  dbhI->bind[6].buffer_type = MYSQL_TYPE_BLOB; /* value */
-  memset(dbhI->sbind,
-	 0,
-	 sizeof(dbhI->sbind));
-  dbhI->sbind[0].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
-  dbhI->sbind[1].buffer_type = MYSQL_TYPE_LONG; /* type */
-
+    dbhI->bind[0].buffer_type = MYSQL_TYPE_LONG; /* size */
+    dbhI->bind[1].buffer_type = MYSQL_TYPE_LONG; /* type */
+    dbhI->bind[2].buffer_type = MYSQL_TYPE_LONG; /* prio */
+    dbhI->bind[3].buffer_type = MYSQL_TYPE_LONG; /* anon level */
+    dbhI->bind[4].buffer_type = MYSQL_TYPE_LONGLONG; /* expiration */
+    dbhI->bind[5].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
+    dbhI->bind[6].buffer_type = MYSQL_TYPE_BLOB; /* value */
+    memset(dbhI->sbind,
+	   0,
+	   sizeof(dbhI->sbind));
+    dbhI->sbind[0].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
+    dbhI->sbind[1].buffer_type = MYSQL_TYPE_LONG; /* type */
+    memset(dbhI->dbind,
+	   0,
+	   sizeof(dbhI->dbind));
+    dbhI->dbind[0].buffer_type = MYSQL_TYPE_TINY_BLOB; /* hash */
+    dbhI->dbind[1].buffer_type = MYSQL_TYPE_LONG; /* size */
+    dbhI->dbind[2].buffer_type = MYSQL_TYPE_LONG; /* type */
+    dbhI->dbind[3].buffer_type = MYSQL_TYPE_LONG; /* prio */
+    dbhI->dbind[4].buffer_type = MYSQL_TYPE_LONG; /* anon level */
+    dbhI->dbind[5].buffer_type = MYSQL_TYPE_LONGLONG; /* expiration */
+    dbhI->dbind[6].buffer_type = MYSQL_TYPE_BLOB; /* value */
+    dbhI->prepare = YES;
+  } else    
+    dbhI->prepare = NO;
   MUTEX_CREATE(&dbhI->DATABASE_Lock_);
   return OK;
 }
@@ -380,16 +413,22 @@ static int iopen(mysqlHandle * dbhI) {
 static int iclose(mysqlHandle * dbhI) {
   if (dbhI->dbf == NULL)
     return SYSERR;
-  mysql_stmt_free_result(dbhI->insert);
-  mysql_stmt_free_result(dbhI->select);
-  mysql_stmt_free_result(dbhI->selectc);
-  mysql_stmt_free_result(dbhI->selects);
-  mysql_stmt_free_result(dbhI->selectsc);
-  mysql_stmt_close(dbhI->insert);
-  mysql_stmt_close(dbhI->select);
-  mysql_stmt_close(dbhI->selectc);
-  mysql_stmt_close(dbhI->selects);
-  mysql_stmt_close(dbhI->selectsc);
+  if (dbhI->prepare == YES) {
+    mysql_stmt_free_result(dbhI->insert);
+    mysql_stmt_free_result(dbhI->select);
+    mysql_stmt_free_result(dbhI->selectc);
+    mysql_stmt_free_result(dbhI->selects);
+    mysql_stmt_free_result(dbhI->selectsc);
+    mysql_stmt_free_result(dbhI->deleteh);
+    mysql_stmt_free_result(dbhI->deleteg);
+    mysql_stmt_close(dbhI->insert);
+    mysql_stmt_close(dbhI->select);
+    mysql_stmt_close(dbhI->selectc);
+    mysql_stmt_close(dbhI->selects);
+    mysql_stmt_close(dbhI->selectsc);
+    mysql_stmt_close(dbhI->deleteh);
+    mysql_stmt_close(dbhI->deleteg);
+  }
   MUTEX_DESTROY(&dbhI->DATABASE_Lock_);
   mysql_close(dbhI->dbf);
   dbhI->dbf = NULL;
@@ -418,17 +457,18 @@ static int iterateLowPriority(unsigned int type,
   mysqlHandle dbhI;
 
   dbhI.cnffile = dbh->cnffile; /* shared */
-  if (OK != iopen(&dbhI))
+  if (OK != iopen(&dbhI, NO))
     return SYSERR;
 
   MUTEX_LOCK(&dbhI.DATABASE_Lock_);
 
   if (type==0) {
-    typestr[0] = 0;
+    typestr[0] = '\0';
   } else {
     SNPRINTF(typestr,
              32,
-             "WHERE type=%u", type);
+             "WHERE type=%u ", 
+	     type);
   }
 
   scratch = MALLOC(256);
@@ -436,7 +476,7 @@ static int iterateLowPriority(unsigned int type,
 	   256,
 	   "SELECT * FROM gn070"
 	   " %s"
-	   " ORDER BY prio ASC",
+	   "ORDER BY prio ASC",
 	   typestr);
   mysql_query(dbhI.dbf,
 	      scratch);
@@ -445,13 +485,13 @@ static int iterateLowPriority(unsigned int type,
     LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     iclose(&dbhI);
-    return(SYSERR);
+    return SYSERR;
   }
 
   if (!(sql_res=mysql_use_result(dbhI.dbf))) {
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     iclose(&dbhI);
-    return(SYSERR);
+    return SYSERR;
   }
 
   while ((sql_row=mysql_fetch_row(sql_res))) {
@@ -472,6 +512,14 @@ static int iterateLowPriority(unsigned int type,
 
     count++;
   }
+  if (mysql_error(dbhI.dbf)[0]) {
+    LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
+    mysql_free_result(sql_res);
+    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+    iclose(&dbhI);
+    return SYSERR;
+  }
+
 		
   mysql_free_result(sql_res);
   MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
@@ -504,7 +552,7 @@ static int iterateExpirationTime(unsigned int type,
   mysqlHandle dbhI;
 
   dbhI.cnffile = dbh->cnffile; /* shared */
-  if (OK != iopen(&dbhI))
+  if (OK != iopen(&dbhI, NO))
     return SYSERR;
 
   MUTEX_LOCK(&dbhI.DATABASE_Lock_);
@@ -530,13 +578,13 @@ static int iterateExpirationTime(unsigned int type,
     LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     iclose(&dbhI);
-    return(SYSERR);
+    return SYSERR;
   }
 
   if (!(sql_res=mysql_use_result(dbhI.dbf))) {
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     iclose(&dbhI);
-    return(SYSERR);
+    return SYSERR;
   }
 
   while ((sql_row=mysql_fetch_row(sql_res))) {
@@ -556,6 +604,13 @@ static int iterateExpirationTime(unsigned int type,
     FREE(datum);
     count++;
   }		
+  if (mysql_error(dbhI.dbf)[0]) {
+    LOG_MYSQL(LOG_ERROR, "mysql_query", &dbhI);
+    mysql_free_result(sql_res);
+    MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+    iclose(&dbhI);
+    return SYSERR;
+  }
   mysql_free_result(sql_res);
   MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
   iclose(&dbhI);
@@ -563,107 +618,6 @@ static int iterateExpirationTime(unsigned int type,
 }
 
 #define MAX_DATUM_SIZE 65536
-
-#if 0
-/**
- * Iterate over the results for a particular key
- * in the datastore.
- *
- * @param key maybe NULL (to match all entries)
- * @param type entries of which type are relevant?
- *     Use 0 for any type.
- * @param iter maybe NULL (to just count)
- * @return the number of results, SYSERR if the
- *   iter is non-NULL and aborted the iteration
- */
-static int getOLD(const HashCode512 * query,
-	       unsigned int type,	
-	       Datum_Iterator iter,
-	       void * closure) {
-  MYSQL_RES * sql_res;
-  MYSQL_ROW sql_row;
-  int count;
-  Datastore_Datum * datum;
-  char * escapedHash;
-  char * scratch;
-  size_t n;
-
-  if (query == NULL)
-    return iterateLowPriority(type, iter, closure);
-
-  MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
-  mysql_real_escape_string(dbh->dbf,
-			   escapedHash,
-			   (char *) query,
-			   sizeof(HashCode512));
-  n = sizeof(HashCode512)*2+400+1;
-  scratch = MALLOC(n);
-
-  if (type != 0) {
-    if (iter == NULL)
-      SNPRINTF(scratch,
-	       n,
-	       "SELECT COUNT(*) FROM gn070 WHERE hash='%s' AND type=%u",
-	       escapedHash,
-	       type);
-    else
-      SNPRINTF(scratch,
-	       n,
-	       "SELECT * FROM gn070 WHERE hash='%s' AND type=%u",
-	       escapedHash,
-	       type);
-  } else {
-    if (iter == NULL)
-      SNPRINTF(scratch,
-	       n,
-	       "SELECT COUNT(*) FROM gn070 WHERE hash='%s'",
-	       escapedHash);
-    else
-      SNPRINTF(scratch,
-	       n,
-	       "SELECT * FROM gn070 WHERE hash='%s'",
-	       escapedHash);
-  }
-  FREE(escapedHash);
-  mysql_query(dbh->dbf, scratch);
-  FREE(scratch);
-  if (mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
-    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-    return SYSERR;
-  }
-  if (!(sql_res = mysql_use_result(dbh->dbf))) {
-    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
-    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-    return SYSERR;
-  }
-  count = 0;
-  while ((sql_row=mysql_fetch_row(sql_res))) {
-    datum = assembleDatum(sql_res,
-			  sql_row);
-    if (datum == NULL) {
-      LOG(LOG_WARNING,
-	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
-      continue;
-    }
-    if ( (iter != NULL) &&
-	 (SYSERR == iter(&datum->key,
-			 &datum->value,
-			 closure) ) ) {
-      count = SYSERR;
-      FREE(datum);
-      break;
-    }
-    FREE(datum);
-    count++;
-  }		
-  mysql_free_result(sql_res);
-  MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-
-  return count;
-}
-#endif
 
 /**
  * Iterate over the results for a particular key
@@ -702,7 +656,7 @@ static int get(const HashCode512 * query,
 	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "MySQL looks for %s of type %u\n",
+      "MySQL looks for '%s' of type %u\n",
       &enc,
       type);
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -876,7 +830,7 @@ static int put(const HashCode512 * key,
   unsigned long long expiration;
   EncName enc;
 
-  if ( (ntohl(value->size) <= sizeof(Datastore_Value)) ) {
+  if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {
     BREAK();
     return SYSERR;
   }
@@ -942,12 +896,15 @@ static int put(const HashCode512 * key,
  */
 static int del(const HashCode512 * key,
 	       const Datastore_Value * value) {
-  char * escapedHash;
-  char * escapedBlock;
-  char * scratch;
-  size_t n;
   int count;
-  int contentSize;
+  unsigned long twenty;
+  MYSQL_STMT * stmt;
+  unsigned int size;
+  unsigned int type;
+  unsigned int prio;
+  unsigned int anon;
+  unsigned long long expiration;
+  unsigned long datasize;
   EncName enc;
 
   IFLOG(LOG_DEBUG,
@@ -958,60 +915,53 @@ static int del(const HashCode512 * key,
       &enc,
       value == NULL ? 0 : ntohl(value->type));
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
-  if (value != NULL) {
-    contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-    escapedBlock = MALLOC(2*contentSize+1);
-    mysql_real_escape_string(dbh->dbf,
-			     escapedBlock,
-			     (char *)&value[1],
-			     contentSize);
-  } else {
-    escapedBlock = NULL;
-    contentSize = 0;
-  }
 
-  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
-  mysql_real_escape_string(dbh->dbf,
-			   escapedHash,
-			   (char *)key,
-			   sizeof(HashCode512));
-  n = sizeof(HashCode512)*2+contentSize*2+400+1;
-  scratch = MALLOC(n);
+  twenty = sizeof(HashCode512);
+  type = ntohl(value->type);
+  size = ntohl(value->size);
+  prio = ntohl(value->prio);
+  anon = ntohl(value->anonymityLevel);
+  expiration = ntohll(value->expirationTime);
+  datasize = ntohl(value->size) - sizeof(Datastore_Value);
+
   if(value == NULL) {
-    SNPRINTF(scratch,
-  	     n,
-	     "DELETE FROM gn070 WHERE hash='%s' ORDER BY prio ASC LIMIT 1",	
-	     escapedHash);
+    stmt = dbh->deleteh;
+    dbh->dbind[0].buffer = (char*) key;
+    dbh->dbind[0].length = &twenty;
+    GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 1);
   } else {
-    /* FIXME: type/prio/anon=%d since the value is a
-       signed int here; it would be clean(er) if
-       we were to use prepared statements here, too */
-    SNPRINTF(scratch,
-  	     n,
-	     "DELETE FROM gn070 WHERE hash='%s'"
-	     " AND size=%u AND type=%d AND prio=%d"
-	     " AND anonLevel=%d AND expire=%lld"
-	     " AND value='%s' ORDER BY prio ASC LIMIT 1",
-	     escapedHash,
-	     ntohl(value->size),
-	     ntohl(value->type),
-	     ntohl(value->prio),
-	     ntohl(value->anonymityLevel),
-	     ntohll(value->expirationTime),
-	     escapedBlock);
+    stmt = dbh->deleteg;
+    dbh->dbind[0].buffer = (char*) key;
+    dbh->dbind[0].length = &twenty;
+    dbh->dbind[1].buffer = (char*) &size;
+    dbh->dbind[2].buffer = (char*) &type;
+    dbh->dbind[3].buffer = (char*) &prio;
+    dbh->dbind[4].buffer = (char*) &anon;
+    dbh->dbind[5].buffer = (char*) &expiration;
+    dbh->dbind[6].buffer = (char*) &value[1];
+    dbh->dbind[6].length = &datasize;
+    GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 7);
   }
-  mysql_query(dbh->dbf, scratch);
-  FREE(escapedHash);
-  FREENONNULL(escapedBlock);
-  FREE(scratch);
-  if(mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR,
-	      "mysql_query",
-	      dbh);
+  if (mysql_stmt_bind_param(stmt,
+			    dbh->dbind)) {
+    LOG(LOG_ERROR,
+	_("'%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_bind_param",
+	__FILE__, __LINE__,
+	mysql_stmt_error(stmt));
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+    return SYSERR;
+  }  
+  if (mysql_stmt_execute(stmt)) {
+    LOG(LOG_ERROR,
+	_("'%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_execute",
+	__FILE__, __LINE__,
+	mysql_stmt_error(stmt));
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }
-  count = mysql_affected_rows(dbh->dbf);
+  count = mysql_stmt_affected_rows(stmt);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   LOG(LOG_DEBUG,
       "MySQL DELETE operation affected %d rows.\n",
@@ -1069,7 +1019,7 @@ static int update(const HashCode512 * key,
   if (mysql_error(dbh->dbf)[0]) {
     LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-    return(SYSERR);
+    return SYSERR;
   }
 
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
@@ -1216,7 +1166,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   else
     dbh->useDelayed = NO;
 
-  if (OK != iopen(dbh)) {
+  if (OK != iopen(dbh, YES)) {
     FREE(cnffile);
     FREE(dbh);
     dbh = NULL;
@@ -1244,7 +1194,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 
     num_fields=mysql_num_fields(sql_res);
     if(num_fields<=0) {
-      LOG(LOG_ERROR, "ERROR: num_fields<=0\n");
+      BREAK();
       iclose(dbh);
       FREE(dbh);
       FREE(cnffile);
@@ -1252,7 +1202,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     }
     sql_fields=mysql_fetch_fields(sql_res);
     if(sql_fields==NULL) {
-      LOG(LOG_ERROR, "ERROR: sql_fields==0\n");
+      BREAK();
       iclose(dbh);
       FREE(dbh);
       FREE(cnffile);
@@ -1260,7 +1210,8 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     }
     dbh->avgLength_ID = -1;
     for(j=0;j<num_fields;j++) {
-      if(strcmp(sql_fields[j].name,"Avg_row_length")==0) {
+      if (strcmp(sql_fields[j].name,
+		 "Avg_row_length")==0) {
         found = YES;
         dbh->avgLength_ID=j;
 	break;
@@ -1277,7 +1228,6 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
       return NULL;
     }
   } else {
-    LOG(LOG_ERROR, "ERROR: couldn't store res row for SHOW TABLE STATUS\n");
     BREAK();
     iclose(dbh);
     FREE(dbh);
