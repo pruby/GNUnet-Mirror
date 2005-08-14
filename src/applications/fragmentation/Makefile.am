@@ -17,6 +17,8 @@ libgnunetmodule_fragmentation_la_LDFLAGS = \
 # TESTCASES 
 ################################
 
+EXTRA_DIST = check.conf
+
 check_PROGRAMS = \
  fragmentationtest
 
