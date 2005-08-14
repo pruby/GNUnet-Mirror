@@ -1094,7 +1094,7 @@ static unsigned long long getSize() {
 
   /* find out average row length in bytes */
   mysql_query(dbh->dbf,
-  	      "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
+  	      "SHOW TABLE STATUS LIKE 'gn070'");
   if (mysql_error(dbh->dbf)[0]) {
     DIE_MYSQL("mysql_query", dbh); /* this MUST not fail... */
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
@@ -1104,12 +1104,12 @@ static unsigned long long getSize() {
     int rows = mysql_num_fields(sql_res);
     sql_row = mysql_fetch_row(sql_res);
     if (sql_row == NULL) {
-      LOG(LOG_ERROR,
+      LOG(LOG_WARNING,
 	  _("Query '%s' had no results.\n"),
-	  "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
-      GNUNET_ASSERT(0); /* not allowed to fail*/
+	  "SHOW TABLE STATUS LIKE 'gn070'");
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-      return SYSERR;	/* shouldn't get here */
+      BREAK();
+      return 0;	/* shouldn't get here */
     }
     GNUNET_ASSERT( (dbh->avgLength_ID < rows) &&
  	           (dbh->avgLength_ID >= 0) );
@@ -1226,7 +1226,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   /* Find out which column contains the avg row length field and assume
    * that mysqld always gives it in the same order across calls :) */
   mysql_query(dbh->dbf,
-  	      "SHOW TABLE STATUS FROM gnunet LIKE 'gn070'");
+  	      "SHOW TABLE STATUS LIKE 'gn070'");
   if (mysql_error(dbh->dbf)[0]) {
     LOG_MYSQL(LOG_ERROR,
 	      "mysql_query",

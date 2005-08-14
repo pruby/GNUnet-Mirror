@@ -234,18 +234,9 @@ static int parser(int argc,
   FREENONNULL(setConfigurationString("GNUNETD",
 				     "LOGFILE",
 				     NULL));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGLEVEL",
-				     "WARNING"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "GNUNETD_HOME",
-				     "/tmp/gnunet_test/"));
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
-				     "/tmp/gnunet_test/gnunet.conf"));
-  FREENONNULL(setConfigurationString("MYSQL",
-				     "DATABASE",
-				     "gnunetcheck"));
+				     "check.conf"));
   return OK;
 }
 
