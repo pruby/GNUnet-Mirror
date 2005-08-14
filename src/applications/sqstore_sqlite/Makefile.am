@@ -24,6 +24,7 @@ libgnunetmodule_sqstore_sqlite_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  -lsqlite3
 
+EXTRA_DIST = check.conf
 
 sqlitetest_SOURCES = \
  sqlitetest.c 

@@ -244,7 +244,7 @@ static int parser(int argc,
 				     "/tmp/gnunet_test/"));
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
-				     "/tmp/gnunet_test/gnunet.conf"));
+				     "check.conf"));
   FREENONNULL(setConfigurationString("FS",
 				     "DIR",
 				     TEST_DB));
