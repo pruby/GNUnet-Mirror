@@ -9,8 +9,6 @@ pkgdata_DATA = \
 
 EXTRA_DIST = \
  gnunet-download-manager.scm \
- gnunet.user \
- gnunet.root \
  autoinstall \
  initgnunet \
  visualize_stats.sh \

@@ -32,27 +32,13 @@ AM_CPPFLAGS = $(LIBGCRYPT_CFLAGS)
 libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD)
 SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) .
 
-EXTRA_DIST = generate \
+EXTRA_DIST = \
   testconfig.conf \
   check.conf
 
 libgnunetutil_la_LDFLAGS = \
  -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp $(DLFLAG) \
  -version-info 1:0:0
-
-generate_gnunetd_conf.c: generate
-	./generate $(top_srcdir)/contrib/gnunet.root generate_gnunetd_conf > generate_gnunetd_conf.c
-generate_gnunet_conf.c: generate
-	./generate $(top_srcdir)/contrib/gnunet.user generate_gnunet_conf > generate_gnunet_conf.c
-
-CLEANFILES = \
-  generate_gnunetd_conf.c \
-  generate_gnunet_conf.c
-
-BUILT_SOURCES = \
-  generate_gnunetd_conf.c \
-  generate_gnunet_conf.c
-
 
 libgnunetutil_la_SOURCES = \
  bloomfilter.c \
@@ -62,8 +48,6 @@ libgnunetutil_la_SOURCES = \
  daemon.c \
  dso.c \
  getopt.c \
- generate_gnunetd_conf.c \
- generate_gnunet_conf.c \
  hashing.c \
  hostkey_gcrypt.c \
  initialize.c \

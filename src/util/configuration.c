@@ -422,9 +422,6 @@ char * getFileName(const char * section,
   return fnExpand;
 }
 
-void generate_gnunetd_conf(FILE * f);
-void generate_gnunet_conf(FILE * f);
-
 /**
  * @brief Read a specific configuration file. The previous configuration
  *        will NOT be discarded if this method is invoked twice.
@@ -496,7 +493,6 @@ void readConfiguration() {
   }
   FREENONNULL(eName);
   if (0 == assertIsFile(expCfgName)) {
-    FILE * f;
     char * c;
     int p;
 
@@ -510,24 +506,13 @@ void readConfiguration() {
     FREE(c);
     /* try generating a configuration file */
     LOG(LOG_WARNING,
-	_("Configuration file '%s' not found. "
-	  "I will try to create the default configuration file at that location.\n"),
+	_("Configuration file '%s' not found.  Run gnunet-setup!"),
 	expCfgName);
-    f = FOPEN(expCfgName,
-	      "a+");
-    if (f != NULL) {
-      if (testConfigurationString("GNUNETD",
-				  "_MAGIC_",
-				  "YES")) {
-	generate_gnunetd_conf(f);
-      } else {
-	generate_gnunet_conf(f);
-      }	
-      fclose(f);
-    }
+    errexit(_("Configuration file '%s' not found.  Run gnunet-setup!"),
+	    expCfgName);
   }
   if (0 == assertIsFile(expCfgName))
-    errexit(_("Cannot open configuration file '%s'\n"),
+    errexit(_("Cannot open configuration file '%s'.\n"),
 	    expCfgName);
   FREENONNULL(cfgName);
 
