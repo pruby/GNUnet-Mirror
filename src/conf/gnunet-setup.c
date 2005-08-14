@@ -232,8 +232,9 @@ int main(int argc, char *argv[])
 #endif
   }
   else if(strcmp(operation, "wizard-gtk") == 0) {
-    errexit(_("Can only run wizard to configure gnunetd.\n"
-              "Did you forget the '%s' option?\n"), "-d");
+    if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
+      errexit(_("Can only run wizard to configure gnunetd.\n"
+                "Did you forget the '%s' option?\n"), "-d");
 #if HAVE_GTK
     wizard_main();
 #else
