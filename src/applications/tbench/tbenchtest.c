@@ -141,7 +141,6 @@ static int checkConnected(GNUNET_TCP_SOCKET * sock) {
 int main(int argc, char ** argv) {
   pid_t daemon1;
   pid_t daemon2;
-  int status;
   int ret;
   int left;
   GNUNET_TCP_SOCKET * sock;
