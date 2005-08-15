@@ -21,7 +21,7 @@ static int parseCommandLine(int argc,
 				     "/tmp/gnunet_test/"));
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
-				     "/tmp/gnunet_test/gnunet.conf"));
+				     "check.conf"));
   while (1) {
     int option_index = 0;
     static struct GNoption long_options[] = {
