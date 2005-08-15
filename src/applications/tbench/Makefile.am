@@ -26,7 +26,8 @@ libgnunetmodule_tbench_la_LDFLAGS = \
 
 
 check_PROGRAMS = \
-  tbenchtest 
+  tbenchtest \
+  tbenchtest_udp
 
 TESTS = $(check_PROGRAMS)
 
@@ -36,8 +37,18 @@ tbenchtest_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
+tbenchtest_udp_SOURCES = \
+  tbenchtest_udp.c 
+tbenchtest_udp_LDADD = \
+  $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
 EXTRA_DIST = \
   peer1.conf \
   peer2.conf \
   peer1/.hostkey \
-  peer2/.hostkey 
+  peer2/.hostkey \
+  peer1udp.conf \
+  peer2udp.conf \
+  peer1-udp/.hostkey \
+  peer2-udp/.hostkey 
