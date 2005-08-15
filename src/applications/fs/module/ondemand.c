@@ -645,11 +645,14 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   UNLINK(fn);
 
   /* Remove information about unavailability */
+  hash2enc(fileId,
+	   &enc);
   SNPRINTF(unavail_key,
 	   256,
 	   "FIRST_UNAVAILABLE-%s",
 	   (char*)&enc);
   stateUnlinkFromDB(unavail_key);
+  
 
   FREE(fn);
   return OK;

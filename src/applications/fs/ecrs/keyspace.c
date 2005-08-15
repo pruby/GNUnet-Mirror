@@ -32,6 +32,8 @@
 #include "gnunet_protocols.h"
 #include "ecrs.h"
 
+#define DEBUG_KEYSPACE NO
+
 /**
  * What is the maximum size that we allow for a kblock
  * before we start dropping meta-data?
@@ -132,7 +134,9 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   char ** keywords;
   unsigned int keywordCount;
   int i;
+#if DEBUG_KEYSPACE
   EncName enc;
+#endif
   HashCode512 key;
   char * cpy; /* copy of the encrypted portion */
   struct ECRS_URI * xuri;
@@ -204,12 +208,14 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     hash(keywords[i],
 	 strlen(keywords[i]),
 	 &key);
+#if DEBUG_KEYSPACE
     IFLOG(LOG_DEBUG,
 	  hash2enc(&key,
 		   &enc));
     LOG(LOG_DEBUG,
 	"Encrypting KBlock with key %s.\n",
 	&enc);
+#endif
     ECRS_encryptInPlace(&key,
 			&kb[1],
 			mdsize + strlen(dstURI) + 1);

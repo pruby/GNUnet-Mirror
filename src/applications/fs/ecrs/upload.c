@@ -38,6 +38,8 @@
 #include "uri.h"
 #include "tree.h"
 
+#define DEBUG_UPLOAD NO
+
 /**
  * Append the given key and query to the iblock[level].
  * If iblock[level] is already full, compute its chk
@@ -53,7 +55,9 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   Datastore_Value * value;
   DBlock * db;
   CHK ichk;
+#if DEBUG_UPLOAD
   EncName enc;
+#endif
 
   size = ntohl(iblocks[level]->size);
   GNUNET_ASSERT(size > sizeof(Datastore_Value));
@@ -68,6 +72,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
     fileBlockGetQuery(db,
 		      size,
 		      &ichk.query);
+#if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
 	  hash2enc(&ichk.query,
 		   &enc));
@@ -75,6 +80,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 	"Query for current iblock at level %u is %s\n",
 	level,
 	&enc);
+#endif
     if (OK != pushBlock(sock,
 			&ichk,
 			level+1,
@@ -88,12 +94,14 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
       BREAK();
       return SYSERR;
     }
+#if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
 	  hash2enc(&ichk.query,
 		   &enc));
     LOG(LOG_DEBUG,
 	"Publishing block (query: %s)\n",
 	&enc);
+#endif
     if (OK != FS_insert(sock,
 			value)) {
       FREE(value);
@@ -152,7 +160,9 @@ int ECRS_uploadFile(const char * filename,
   cron_t now;
   char * uris;
   FileIdentifier fid;
+#if DEBUG_UPLOAD
   EncName enc;
+#endif
 
   cronTime(&start);
   memset(&chk, 0, sizeof(CHK));
@@ -162,7 +172,7 @@ int ECRS_uploadFile(const char * filename,
   }
   if (0 == assertIsFile(filename)) {
     LOG(LOG_ERROR,
-	"'%s' is not a file.\n",
+	_("'%s' is not a file.\n"),
 	filename);
     return SYSERR;
   }
@@ -274,6 +284,7 @@ int ECRS_uploadFile(const char * filename,
     fileBlockGetQuery(db,
 		      size + sizeof(DBlock),
 		      &chk.query);
+#if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
 	  hash2enc(&chk.query,
 		   &enc));
@@ -281,6 +292,7 @@ int ECRS_uploadFile(const char * filename,
 	"Query for current block of size %u is %s\n",
 	size,
 	&enc);
+#endif
     if (doIndex) {
       if (SYSERR == FS_index(sock,
 			     &fileId,
@@ -322,35 +334,43 @@ int ECRS_uploadFile(const char * filename,
   if (tt != NULL)
     if (OK != tt(ttClosure))
       goto FAILURE;
+#if DEBUG_UPLOAD
   LOG(LOG_DEBUG,
       "Tree depth is %u, walking up tree.\n",
       treedepth);
+#endif
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
     GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
     if (size == sizeof(DBlock)) {
+#if DEBUG_UPLOAD
       LOG(LOG_DEBUG,
 	  "Level %u is empty\n",
 	  i);
+#endif
       continue;
     }
     db = (DBlock*) &iblocks[i][1];
     fileBlockGetKey(db,
 		    size,
 		    &chk.key);
+#if DEBUG_UPLOAD
     LOG(LOG_DEBUG,
 	"Computing query for %u bytes content.\n",
 	size);
+#endif
     fileBlockGetQuery(db,
 		      size,
 		      &chk.query);
+#if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
 	  hash2enc(&chk.query,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Query for current block at level %u is %s\n",
+	"Query for current block at level %u is '%s'.\n",
 	i,
 	&enc);
+#endif
     if (OK != pushBlock(sock,
 			&chk,
 			i+1,
@@ -373,12 +393,14 @@ int ECRS_uploadFile(const char * filename,
     FREE(iblocks[i]);
     iblocks[i] = NULL;
   }
+#if DEBUG_UPLOAD
   IFLOG(LOG_DEBUG,
 	hash2enc(&chk.query,
 		 &enc));
   LOG(LOG_DEBUG,
       "Query for top block is %s\n",
       &enc);
+#endif
   /* build URI */
   fid.file_length = htonll(filesize);
   db = (DBlock*) &iblocks[treedepth][1];

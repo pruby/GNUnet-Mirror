@@ -23,7 +23,6 @@
  * @brief SQLite based implementation of the sqstore service
  * @author Nils Durner
  * @todo Estimation of DB size
- * @todo Apply fixes from MySQL module
  *
  * Database: SQLite
  */
@@ -34,7 +33,7 @@
 #include "gnunet_protocols.h"
 #include <sqlite3.h>
 
-#define DEBUG_SQLITE NO
+#define DEBUG_SQLITE YES
 
 /**
  * Die with an error message that indicates
@@ -114,11 +113,6 @@ static unsigned long long getSize() {
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   ret = dbh->payload;
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-#if DEBUG_SQLITE
-  LOG(LOG_DEBUG,
-      "SQLite: database size: %.0f\n",
-      ret);
-#endif
   return ret;
 }
 
@@ -347,10 +341,6 @@ static int sqlite_iterate(unsigned int type,
   char * lastHash;
   HashCode512 key;
 
-#if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: iterating through the database\n");
-#endif
-
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
 
   strcpy(scratch,
@@ -473,10 +463,6 @@ static int sqlite_iterate(unsigned int type,
   sqlite3_finalize(stmt);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
-#if DEBUG_SQLITE
-  LOG(LOG_DEBUG,
-      "SQLite: reached end of database\n");
-#endif
   return count;
 }
 
@@ -570,11 +556,13 @@ static int get(const HashCode512 * key,
   Datastore_Datum *datum;
 
 #if DEBUG_SQLITE
-  {
-    char block[33];
-    hash2enc(block, (EncName *) key);
-    LOG(LOG_DEBUG, "SQLite: read content %s\n", key);
-  }
+  EncName enc;
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "SQLite: retrieving content '%s'\n", 
+      &enc);  
 #endif
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -691,17 +679,22 @@ static int put(const HashCode512 * key,
   unsigned int contentSize;
   unsigned int size, type, prio, anon;
   unsigned long long expir;
+#if DEBUG_SQLITE
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Storing in database block with type %u and key '%s'.\n",
+      ntohl(*(int*)&value[1]),
+      &enc);
+#endif
 
   if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {
     BREAK();
     return SYSERR;
   }
-
-#if DEBUG_SQLITE
-  LOG(LOG_DEBUG,
-      "Storing in database block with type %u.\n",
-      ntohl(*(int*)&value[1]));
-#endif
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
 
@@ -779,9 +772,15 @@ static int del(const HashCode512 * key,
   char * escapedBlock;
   int blockLen;
   unsigned long contentSize;
-
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: delete block\n");
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "SQLite: deleting block with key '%s'\n",
+      &enc);
 #endif
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -896,10 +895,15 @@ static int update(const HashCode512 * key,
   char *escapedHash, *escapedBlock;
   int hashLen, blockLen, n;
   unsigned long contentSize;
-
 #if DEBUG_SQLITE
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
   LOG(LOG_DEBUG,
-      "SQLite: update block\n");
+      "SQLite: updating block with key '%s'\n",
+      &enc);
 #endif
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -943,7 +947,8 @@ static int update(const HashCode512 * key,
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: block updated\n");
+  LOG(LOG_DEBUG, 
+      "SQLite: block updated\n");
 #endif
 
   return n == SQLITE_OK ? OK : SYSERR;
@@ -959,7 +964,8 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   sqlite3_stmt *stmt;
 
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite: initializing database\n");
+  LOG(LOG_DEBUG, 
+      "SQLite: initializing database\n");
 #endif
 
   dbh = MALLOC(sizeof(sqliteHandle));
@@ -1076,6 +1082,10 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
  */
 void release_module_sqstore_sqlite() {
   sqlite_shutdown();
+#if DEBUG_SQLITE
+  LOG(LOG_DEBUG, 
+      "SQLite: database shutdown\n");
+#endif
 }
 
 /* end of sqlite.c */

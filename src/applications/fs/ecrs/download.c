@@ -31,6 +31,8 @@
 #include "ecrs.h"
 #include "tree.h"
 
+#define DEBUG_DOWNLOAD NO
+
 /**
  * Highest TTL allowed? (equivalent of 25-50 HOPS distance!)
  */
@@ -116,7 +118,7 @@ static void freeIOC(IOContext * this,
       fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
 	LOG(LOG_WARNING,
-	    "Could not unlink temporary file %s: %s\n",
+	    _("Could not unlink temporary file '%s': %s\n"),
 	    fn, STRERROR(errno));
       FREE(fn);
     }
@@ -244,10 +246,11 @@ int writeToIOC(IOContext * this,
 	      len);
   if (ret != len) {
     LOG(LOG_WARNING,
-	"write(%d, %p, %d failed)!\n",
+	_("Write(%d, %p, %d) failed: %s\n"),
 	this->handles[level],
 	buf,
-	len);
+	len,
+	STRERROR(errno));
   }
   MUTEX_UNLOCK(&this->lock);
   return ret;
@@ -487,6 +490,7 @@ static void requestManagerEndgame(RequestManager * rm) {
 static void addRequest(RequestManager * rm,
 		       NodeClosure * node) {
   RequestEntry * entry;
+#if DEBUG_DOWNLOAD
   EncName enc;
 
   IFLOG(LOG_DEBUG,
@@ -495,6 +499,7 @@ static void addRequest(RequestManager * rm,
   LOG(LOG_DEBUG,
       "Queuing request (query: %s)\n",
       &enc);
+#endif
 
   GNUNET_ASSERT(node != NULL);
   entry
@@ -848,6 +853,7 @@ static int nodeReceive(const HashCode512 * query,
   unsigned int size;
   int i;
   char * data;
+#if DEBUG_DOWNLOAD
   EncName enc;
 
   IFLOG(LOG_DEBUG,
@@ -856,15 +862,13 @@ static int nodeReceive(const HashCode512 * query,
   LOG(LOG_DEBUG,
       "Receiving reply to query %s\n",
       &enc);
+#endif
 
   GNUNET_ASSERT(equalsHashCode512(query,
 				  &node->chk.query));
   size = ntohl(reply->size) - sizeof(Datastore_Value);
   if ( (size <= sizeof(DBlock)) ||
        (size - sizeof(DBlock) != getNodeSize(node)) ) {
-    printf("Received %llu bytes, expected %u\n",
-	   (unsigned long long) (size - sizeof(DBlock)),
-	   getNodeSize(node));
     BREAK();
     return SYSERR; /* invalid size! */
   }
@@ -943,7 +947,9 @@ static void issueRequest(RequestManager * rm,
   cron_t timeout;
   unsigned int ttl;
   int TTL_DECREMENT;
+#if DEBUG_DOWNLOAD 
   EncName enc;
+#endif
 
   cronTime(&now);
   entry = rm->requestList[requestIndex];
@@ -968,7 +974,7 @@ static void issueRequest(RequestManager * rm,
        calculated tpriority is above it, we reduce tpriority
        to random value between the average (mpriority/2) but
        bounded by mpriority */
-    priority = mpriority / 2 + (randomi(1+mpriority/2));
+    priority = 1 + mpriority / 2 + (randomi(2+mpriority/2));
   }
   if (priority > 0x0FFFFFF)
     priority = randomi(0xFFFFFF); /* bound! */
@@ -1009,12 +1015,14 @@ static void issueRequest(RequestManager * rm,
     timeout = now + ttl;
   }
 
+#if DEBUG_DOWNLOAD
   IFLOG(LOG_DEBUG,
 	hash2enc(&entry->node->chk.query,
 		 &enc));
   LOG(LOG_DEBUG,
       "Starting FS search for %s\n",
       &enc);
+#endif
 
   if (entry->searchHandle != NULL)
     FS_stop_search(rm->sctx,
@@ -1151,6 +1159,10 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   NodeClosure * top;
   FileIdentifier fid;
 
+  LOG(LOG_DEBUG,
+      "'%s' running for file '%s'\n",
+      __FUNCTION__,
+      filename);
   GNUNET_ASSERT(filename != NULL);
   fid = uri->data.chk;
   if (! ECRS_isFileUri(uri)) {
@@ -1161,6 +1173,10 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   if (OK != createIOContext(&ioc,
 			    ntohll(fid.file_length),
 			    filename)) {
+    LOG(LOG_DEBUG,
+	"'%s' aborted for file '%s'\n",
+	__FUNCTION__,
+	filename);
     return SYSERR;
   }
   rm = createRequestManager();
@@ -1196,6 +1212,11 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
     freeIOC(&ioc, YES);
   else
     freeIOC(&ioc, NO); /* aborted */
+  LOG(LOG_DEBUG,
+      "'%s' terminating for file '%s' with result %s\n",
+      __FUNCTION__,
+      filename,
+      ret == OK ? "SUCCESS" : "INCOMPLETE");
   return ret;
 }
 

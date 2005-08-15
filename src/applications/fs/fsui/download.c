@@ -30,6 +30,7 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
+#define DEBUG_DTM NO
 
 /**
  * Start to download a file.
@@ -366,6 +367,11 @@ int updateDownloadThread(FSUI_DownloadList * list) {
   if (list == NULL)
     return NO;
 
+#if DEBUG_DTM
+  LOG(LOG_DEBUG,
+      "Download thread manager investigates pending downlod of file '%s'\n",
+      list->filename);
+#endif
   ret = NO;
   /* should this one be started? */
   if ( (list->ctx->threadPoolSize
@@ -373,6 +379,11 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        (list->signalTerminate == SYSERR) &&
        (list->total > list->completed) &&
        (list->finished == NO) ) {
+#if DEBUG_DTM
+    LOG(LOG_DEBUG,
+	"Download thread manager schedules active downlod of file '%s'\n",
+	list->filename);
+#endif
     list->signalTerminate = NO;
     if (0 == PTHREAD_CREATE(&list->handle,
 			    (PThreadMain)&downloadThread,
@@ -388,6 +399,11 @@ int updateDownloadThread(FSUI_DownloadList * list) {
   if ( (list->ctx->threadPoolSize
 	< list->ctx->activeDownloadThreads) &&
        (list->signalTerminate == NO) ) {
+#if DEBUG_DTM
+    LOG(LOG_DEBUG,
+	"Download thread manager aborts active downlod of file '%s'\n",
+	list->filename);
+#endif
     list->signalTerminate = YES;
     PTHREAD_JOIN(&list->handle,
 		 &unused);
@@ -398,6 +414,11 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 
   /* has this one "died naturally"? */
   if (list->signalTerminate == YES) {
+#if DEBUG_DTM
+    LOG(LOG_DEBUG,
+	"Download thread manager collects inactive downlod of file '%s'\n",
+	list->filename);
+#endif
     PTHREAD_JOIN(&list->handle,
 		 &unused);
     list->ctx->activeDownloadThreads--;

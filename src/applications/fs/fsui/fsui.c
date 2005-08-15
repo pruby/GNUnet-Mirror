@@ -28,6 +28,8 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
+#define DEBUG_PERSISTENCE NO
+
 #define FSUI_UDT_FREQUENCY (2 * cronSECONDS)
 
 #define READINT(a) \
@@ -76,7 +78,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
 					    FSUI_Context * ctx,
 					    FSUI_DownloadList * parent) {
   char zaro;
-  static FSUI_DownloadList * ret;
+  FSUI_DownloadList * ret;
   unsigned int big;
   unsigned long long bigl;
   int i;
@@ -89,8 +91,6 @@ static FSUI_DownloadList * readDownloadList(int fd,
   }
   if (zaro == '\0')
     return NULL;
-  LOG(LOG_DEBUG,
-      "FSUI persistence: restoring download\n");
   ret = MALLOC(sizeof(FSUI_DownloadList));
   memset(ret, 
 	 0,
@@ -147,6 +147,12 @@ static FSUI_DownloadList * readDownloadList(int fd,
   ret->child = readDownloadList(fd,
 				ctx,
 				ret);
+#if DEBUG_PERSISTENCE
+  LOG(LOG_DEBUG,
+      "FSUI persistence: restoring download '%s': %s\n",
+      ret->filename,
+      ret->finished == YES ? "finished" : "pending");
+#endif
   return ret;
  ERR:
   FREENONNULL(ret->filename);
@@ -204,6 +210,12 @@ static void writeDownloadList(int fd,
     WRITE(fd, &zero, sizeof(char));
     return;
   }
+#if DEBUG_PERSISTENCE
+  LOG(LOG_DEBUG,
+      "Serializing download state of download '%s': %s\n",
+      list->filename,
+      list->finished == YES ? "finished" : "pending");
+#endif
   WRITE(fd, &nonzero, sizeof(char));
 
   WRITEINT(fd, list->is_recursive);
@@ -306,6 +318,11 @@ static void updateDownloadThreads(void * c) {
 
   MUTEX_LOCK(&ctx->lock);
   dpos = ctx->activeDownloads.child;
+#if DEBUG_PERSISTENCE
+  if (dpos != NULL)
+    LOG(LOG_DEBUG,
+	"Download thread manager schedules pending downloads...\n");
+#endif
   while (dpos != NULL) {
     updateDownloadThread(dpos);
     dpos = dpos->next;
@@ -546,8 +563,10 @@ struct FSUI_Context * FSUI_start(const char * name,
 	list->ctx
 	  = ret;
 	/* start search thread! */
+#if DEBUG_PERSISTENCE
 	LOG(LOG_DEBUG,
 	    "FSUI persistence: restarting search\n");
+#endif
 	if (0 != PTHREAD_CREATE(&list->handle,
 				(PThreadMain)&searchThread,
 				list,
@@ -679,7 +698,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	    "FSUI00\n\0",
 	    8); /* magic */
     }
+#if DEBUG_PERSISTENCE
+    LOG(LOG_DEBUG,
+	"Serializing FSUI state...\n");
+#endif
   } else {
+#if DEBUG_PERSISTENCE
+    LOG(LOG_DEBUG,
+	"NOT serializing FSUI state...\n");
+#endif
     fd = -1;
   }
   if (fd != -1) {
@@ -780,8 +807,13 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     writeDownloadList(fd,
 		      ctx->activeDownloads.child);
   }
-  if (fd != -1)
+  if (fd != -1) {
+#if DEBUG_PERSISTENCE
+    LOG(LOG_DEBUG,
+	"Serializing FSUI state done.\n");
+#endif
     CLOSE(fd);
+  }
 
   /* finally, free all (remaining) FSUI data */
   while (ctx->activeDownloads.child != NULL)

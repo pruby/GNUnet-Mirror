@@ -1028,6 +1028,14 @@ static void queueReply(const PeerIdentity * sender,
   P2P_gap_reply_MESSAGE * pmsg;
   IndirectionTableEntry * ite;
   unsigned int size;
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(primaryKey,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Gap queues reply to query '%s' for later use.\n",
+      &enc);
 
 #if EXTRA_CHECKS
   /* verify data is valid */

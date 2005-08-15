@@ -30,6 +30,8 @@
 #include "fs.h"
 #include "querymanager.h"
 
+#define DEBUG_QUERYMANAGER NO
+
 typedef struct {
   HashCode512 query;
   unsigned int type;
@@ -162,6 +164,7 @@ void processResponse(const HashCode512 * key,
       FREE(rc);
     }
   }
+#if DEBUG_QUERYMANAGER
   if (matchCount == 0) {      
     EncName enc;
 
@@ -172,6 +175,7 @@ void processResponse(const HashCode512 * key,
 	"Reply '%s' did not match any request.\n",
 	&enc);
   }
+#endif
   MUTEX_UNLOCK(&queryManagerLock);
 }
 

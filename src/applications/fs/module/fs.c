@@ -283,7 +283,7 @@ static int csHandleRequestQueryStop(ClientHandle sock,
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
 static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
-				 const CS_MESSAGE_HEADER * req) {
+						const CS_MESSAGE_HEADER * req) {
   const CS_fs_request_insert_MESSAGE * ri;
   Datastore_Value * datum;
   int ret;
@@ -316,7 +316,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
-      "FS received REQUEST INSERT (query: %s, type: %u)\n",
+      "FS received REQUEST INSERT (query: '%s', type: %u)\n",
       &enc,
       type);
   datum->type = htonl(type);
@@ -373,7 +373,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
  * Process a request to symlink a file
  */
 static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
-				    const CS_MESSAGE_HEADER * req) {
+						    const CS_MESSAGE_HEADER * req) {
   int ret;
   char *fn;
   CS_fs_request_init_index_MESSAGE *ri;
@@ -413,7 +413,7 @@ static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
 static int csHandleCS_fs_request_index_MESSAGE(ClientHandle sock,
-				const CS_MESSAGE_HEADER * req) {
+					       const CS_MESSAGE_HEADER * req) {
   int ret;
   const CS_fs_request_index_MESSAGE * ri;
 
@@ -472,7 +472,7 @@ static int completeValue(const HashCode512 * key,
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
 static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
-				 const CS_MESSAGE_HEADER * req) {
+						const CS_MESSAGE_HEADER * req) {
   int ret;
   const CS_fs_request_delete_MESSAGE * rd;
   Datastore_Value * value;
@@ -612,6 +612,14 @@ static int gapGetConverter(const HashCode512 * key,
   const Datastore_Value * value;
   Datastore_Value * xvalue;
   unsigned int level;
+  EncName enc;
+
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Converting reply for query '%s' for gap.\n",
+      &enc);
 
   if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
     if (OK != ONDEMAND_getIndexed(datastore,
@@ -624,17 +632,28 @@ static int gapGetConverter(const HashCode512 * key,
     xvalue = NULL;
     value = invalue;
   }
-		
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
 			  (const DBlock*) &value[1],
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {
+    IFLOG(LOG_WARNING,
+	  hash2enc(key,
+		   &enc));
+    LOG(LOG_WARNING,
+	"Converting reply for query '%s' for gap failed (datum not applicable).\n",
+	&enc);
     FREENONNULL(xvalue);
     return SYSERR; /* no query will ever match */
   }
   if (ret == NO) {
+    IFLOG(LOG_WARNING,
+	  hash2enc(key,
+		   &enc));
+    LOG(LOG_WARNING,
+	"Converting reply for query '%s' for gap failed (type not applicable).\n",
+	&enc);
     FREENONNULL(xvalue);
     return OK; /* Additional filtering based on type;
 		  i.e., namespace request and namespace
@@ -652,6 +671,12 @@ static int gapGetConverter(const HashCode512 * key,
        refuse to hand out data that requires
        anonymity! */
     FREENONNULL(xvalue);
+    IFLOG(LOG_WARNING,
+	  hash2enc(key,
+		   &enc));
+    LOG(LOG_WARNING,
+	"Converting reply for query '%s' for gap failed (insufficient cover traffic).\n",
+	&enc);
     return OK;    
   }
   gw = MALLOC(size);

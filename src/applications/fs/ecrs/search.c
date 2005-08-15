@@ -31,6 +31,8 @@
 #include "ecrs_core.h"
 #include "ecrs.h"
 
+#define DEBUG_SEARCH NO
+
 typedef struct {
 
   /**
@@ -182,8 +184,10 @@ static void addQueryForURI(const struct ECRS_URI * uri,
     PublicKey pub;
     int i;
     
+#if DEBUG_SEARCH
     LOG(LOG_DEBUG,
 	"Computing queries (this may take a while).\n");
+#endif
     for (i=0;i<uri->data.ksk.keywordCount;i++) {
       hash(uri->data.ksk.keywords[i],
 	   strlen(uri->data.ksk.keywords[i]),
@@ -201,8 +205,10 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 	    sqc);
       freePrivateKey(pk);
     }	
+#if DEBUG_SEARCH
     LOG(LOG_DEBUG,
 	"Queries ready.\n");
+#endif
     break;
   }
   case loc:
@@ -319,9 +325,11 @@ static int receiveReplies(const HashCode512 * key,
 
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
+#if DEBUG_SEARCH
   LOG(LOG_DEBUG,
       "Search received reply of type %u and size %u.\n",
       type, size);
+#endif
   if (OK != getQueryFor(size,
 			(const DBlock*) &value[1],
 			&query))
@@ -348,12 +356,14 @@ static int receiveReplies(const HashCode512 * key,
 	  return SYSERR;
 	kb = MALLOC(size);
 	memcpy(kb, &value[1], size);
+#if DEBUG_SEARCH
 	IFLOG(LOG_DEBUG,
 	      hash2enc(&ps->decryptKey,
 		       &enc));
 	LOG(LOG_DEBUG,
 	    "Decrypting KBlock with key %s.\n",
 	    &enc);
+#endif
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb[1],
 			    size - sizeof(KBlock));
@@ -579,11 +589,12 @@ int ECRS_search(const struct ECRS_URI * uri,
 	new_priority = randomi(0xFFFFFF); /* if we get to large, reduce! */
       ps->priority = new_priority;
       ps->lastTransmission = now;
+#if DEBUG_SEARCH
       LOG(LOG_DEBUG,
 	  "ECRS initiating FS search with timeout %llus and priority %u.\n",
 	  (ps->timeout - now) / cronSECONDS,
 	  ps->priority);
-
+#endif
       ps->handle
 	= FS_start_search(ctx.sctx,
 			  ps->type,

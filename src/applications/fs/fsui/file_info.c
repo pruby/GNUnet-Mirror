@@ -32,6 +32,8 @@
 #include "gnunet_fsui_lib.h"
 #include "gnunet_ecrs_lib.h"
 
+#define DEBUG_FILE_INFO NO
+
 #define STATE_NAME "fs_uridb"
 #define TRACK_OPTION "fs_uridb_status"
 
@@ -69,8 +71,10 @@ int FSUI_trackStatus() {
 					(void**)&status)) ||
        (ntohl(*status) != YES) ) {
     FREENONNULL(status);
+#if DEBUG_FILE_INFO
     LOG(LOG_DEBUG,
 	_("Collecting file identifiers disabled.\n"));
+#endif
     return NO;
   } else {
     FREENONNULL(status);

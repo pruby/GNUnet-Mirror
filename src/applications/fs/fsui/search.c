@@ -31,6 +31,8 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
+#define DEBUG_SEARCH NO
+
 /**
  * Pass the result to the client and note it as shown.
  */
@@ -67,15 +69,19 @@ static int spcb(const ECRS_FileInfo * fi,
   for (i=0;i<pos->sizeResultsReceived;i++)
     if (ECRS_equalsUri(fi->uri,
 		       pos->resultsReceived[i].uri)) {
+#if DEBUG_SEARCH
       LOG(LOG_DEBUG,
 	  "Received search result that I have seen before.\n");
+#endif
       return OK; /* seen before */
     }
   if (pos->numberOfURIKeys > 1) {
     if (key == NULL) {
       BREAK();
+#if DEBUG_SEARCH
       LOG(LOG_DEBUG,
 	  "Received search result without key to decrypt.\n");
+#endif
       return SYSERR;
     }
     for (i=0;i<pos->sizeUnmatchedResultsReceived;i++) {
@@ -85,13 +91,17 @@ static int spcb(const ECRS_FileInfo * fi,
 	for (j=0;j<rp->matchingKeyCount;j++)
 	  if (equalsHashCode512(key,
 				&rp->matchingKeys[j])) {
+#if DEBUG_SEARCH
 	    LOG(LOG_DEBUG,
 		"Received search result that I have seen before (missing keyword to show client).\n");
+#endif
 	    return OK;
 	  }
 	if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
+#if DEBUG_SEARCH
 	  LOG(LOG_DEBUG,
 	      "Received search result (showing client)!\n");
+#endif
 	  GROW(rp->matchingKeys,
 	       rp->matchingKeyCount,
 	       0);
@@ -110,9 +120,11 @@ static int spcb(const ECRS_FileInfo * fi,
 	       rp->matchingKeyCount,
 	       rp->matchingKeyCount+1);
 	  rp->matchingKeys[rp->matchingKeyCount-1] = *key;
+#if DEBUG_SEARCH
 	  LOG(LOG_DEBUG,
 	      "Received search result (waiting for more %u keys before showing client).\n",
 	      pos->numberOfURIKeys - rp->matchingKeyCount);
+#endif
 	  return OK;
 	}	
       }
@@ -129,13 +141,17 @@ static int spcb(const ECRS_FileInfo * fi,
 	 rp->matchingKeyCount,
 	 1);
     rp->matchingKeys[0] = *key;
+#if DEBUG_SEARCH
     LOG(LOG_DEBUG,
 	"Received search result (waiting for %u more keys before showing client).\n",
 	pos->numberOfURIKeys  - rp->matchingKeyCount);
+#endif
     return OK;
   } else {
+#if DEBUG_SEARCH
     LOG(LOG_DEBUG,
 	"Received search result (showing client)!\n");
+#endif
     processResult(fi,
 		  pos);
   }

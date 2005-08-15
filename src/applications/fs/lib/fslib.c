@@ -29,6 +29,8 @@
 #include "fs.h"
 #include "ecrs_core.h"
 
+#define DEBUG_FSLIB NO
+
 typedef struct FS_SEARCH_HANDLE {
   CS_fs_request_search_MESSAGE * req;
   Datum_Iterator callback;
@@ -197,6 +199,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   }
   ctx->handles[ctx->handleCount++] = ret;
   MUTEX_UNLOCK(ctx->lock);
+#if DEBUG_FSLIB
   IFLOG(LOG_DEBUG,
 	hash2enc(&req->query[0],
 		 &enc));
@@ -204,6 +207,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
       "FS initiating search for %s of type %u\n",
       &enc,
       type);
+#endif
   if (OK != writeToSocket(ctx->sock,
 			  &req->header)) {
     FS_stop_search(ctx,
@@ -311,16 +315,20 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   ri->fileId = *fileHc;
   memcpy(&ri[1], fn, fnSize);
 
+#if DEBUG_FSLIB
   LOG(LOG_DEBUG,
       "Sending index initialization request to gnunetd\n");
+#endif
   if (OK != writeToSocket(sock,
         &ri->header)) {
     FREE(ri);
     return SYSERR;
   }
   FREE(ri);
+#if DEBUG_FSLIB
   LOG(LOG_DEBUG,
       "Waiting for confirmation of index initialization request by gnunetd\n");
+#endif
   if (OK != readTCPResult(sock,
         &ret))
     return SYSERR;
@@ -355,16 +363,20 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
   memcpy(&ri[1],
 	 &block[1],
 	 size);
+#if DEBUG_FSLIB
   LOG(LOG_DEBUG,
       "Sending index request to gnunetd\n");
+#endif
   if (OK != writeToSocket(sock,
 			  &ri->header)) {
     FREE(ri);
     return SYSERR;
   }
   FREE(ri);
+#if DEBUG_FSLIB
   LOG(LOG_DEBUG,
       "Waiting for confirmation of index request by gnunetd\n");
+#endif
   if (OK != readTCPResult(sock,
 			  &ret))
     return SYSERR;

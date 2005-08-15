@@ -75,6 +75,7 @@ static char * makeName(unsigned int i) {
 static volatile enum FSUI_EventType lastEvent;
 static volatile enum FSUI_EventType waitForEvent;
 static struct FSUI_Context * ctx;
+static struct ECRS_URI * upURI;
 
 static void eventCallback(void * cls,
 			  const FSUI_Event * event) {
@@ -85,19 +86,26 @@ static void eventCallback(void * cls,
     printf("Received search result\n");
     break;
   case FSUI_upload_progress:
-    printf("Upload is progressing...\n");
+    printf("Upload is progressing (%llu/%llu)...\n",
+	   event->data.UploadProgress.completed,
+	   event->data.UploadProgress.total);
     break;
   case FSUI_upload_complete:
+    upURI = ECRS_dupUri(event->data.UploadComplete.uri);
     printf("Upload complete.\n");
     break;
   case FSUI_download_complete:
     printf("Download complete.\n");
     break;
   case FSUI_download_progress:
-    printf("Download is progressing...\n");
+    printf("Download is progressing (%llu/%llu)...\n",
+	   event->data.DownloadProgress.completed,
+	   event->data.DownloadProgress.total);
     break;
   case FSUI_unindex_progress:
-    printf("Unindex is progressing...\n");
+    printf("Unindex is progressing (%llu/%llu)...\n",
+	   event->data.UnindexProgress.completed,
+	   event->data.UnindexProgress.total);
     break;
   case FSUI_unindex_complete:
     printf("Unindex complete.\n");
@@ -108,6 +116,12 @@ static void eventCallback(void * cls,
   case FSUI_search_error:
     errexit("Received ERROR: %d\n",
 	    event->type);
+  case FSUI_download_aborted:
+    printf("Received unexpected download aborted event.\n");
+    break;
+  case FSUI_gnunetd_connected:
+  case FSUI_gnunetd_disconnected:
+    break;
   default:
     printf("Unexpected event: %d\n",
 	   event->type);
@@ -119,6 +133,9 @@ static void eventCallback(void * cls,
   if (event->type == FSUI_search_result) {
     char * u;
 
+    if (! ECRS_equalsUri(upURI,
+			 event->data.SearchResult.fi.uri))
+      return; /* ignore */
     fn = makeName(43);
     u = ECRS_uriToString(event->data.SearchResult.fi.uri);
     printf("Download started: %s.\n", u);
@@ -130,14 +147,17 @@ static void eventCallback(void * cls,
 			   fn))
       errexit("Failed to start download.\n");
     FREE(fn);
-    suspendRestart = 1;
+    suspendRestart = 4;
   }
 }
+
+#define FILESIZE (1024 * 1024 * 2)
 
 
 int main(int argc, char * argv[]){
   pid_t daemon;
   int ok;
+  int i;
   struct ECRS_URI * uri = NULL;
   char * fn = NULL;
   char * keywords[] = { 
@@ -147,6 +167,7 @@ int main(int argc, char * argv[]){
   };
   char keyword[40];
   int prog;
+  char * buf;
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri = NULL;
 
@@ -154,7 +175,7 @@ int main(int argc, char * argv[]){
 		     argv, 
 		     &parseCommandLine))
     return -1;
-#if 0
+#if 1
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
 #else
@@ -172,10 +193,14 @@ int main(int argc, char * argv[]){
 		   NULL);
   CHECK(ctx != NULL);
   fn = makeName(42);
+  buf = MALLOC(FILESIZE);
+  for (i=0;i<FILESIZE;i++)
+    buf[i] = weak_randomi(256);
   writeFile(fn,
-	    "foo bar test!",
-	    strlen("foo bar test!"),
+	    buf,
+	    FILESIZE,
 	    "600");
+  FREE(buf);
   meta = ECRS_createMetaData();
   kuri = FSUI_parseListKeywordURI(2,
 				  (const char**)keywords);
@@ -213,15 +238,18 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 10000);
     gnunet_util_sleep(50 * cronMILLIS);
-    if (suspendRestart > 0) {
+    if ( (suspendRestart > 0) &&
+	 (randomi(4) == 0) ) {
       suspendCron();
-#if 0
+#if 1
+      printf("Testing FSUI suspend-resume\n");
       FSUI_stop(ctx); /* download possibly incomplete
 			 at this point, thus testing resume */
       ctx = FSUI_start("fsuidownloadtest",
 		       YES,
 		       &eventCallback,
 		       NULL);
+      printf("Resumed...\n");
 #endif
       resumeCron();
       suspendRestart--;
@@ -253,6 +281,9 @@ int main(int argc, char * argv[]){
 		      uri,
 		      fn);
     FREE(fn);
+    FSUI_clearCompletedDownloads(ctx,
+				 NULL,
+				 NULL);
     FSUI_stop(ctx);
   }  
   if (uri != NULL)
@@ -263,6 +294,8 @@ int main(int argc, char * argv[]){
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   UNLINK(fn);
   FREE(fn);
+  if (upURI != NULL)
+    ECRS_freeUri(upURI);
 
   stopCron();
   GNUNET_ASSERT(OK == stopGNUnetDaemon());
