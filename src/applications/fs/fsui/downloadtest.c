@@ -32,6 +32,8 @@
 #include "gnunet_util.h"
 #include "gnunet_fsui_lib.h"
 
+#define DEBUG_VERBOSE NO
+
 #define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
 
 static volatile int suspendRestart = 0;
@@ -46,7 +48,7 @@ static int parseCommandLine(int argc,
 				     NULL));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "LOGLEVEL",
-				     "DEBUG"));
+				     "ERROR"));
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "check.conf"));
@@ -86,9 +88,11 @@ static void eventCallback(void * cls,
     printf("Received search result\n");
     break;
   case FSUI_upload_progress:
+#if DEBUG_VERBOSE
     printf("Upload is progressing (%llu/%llu)...\n",
 	   event->data.UploadProgress.completed,
 	   event->data.UploadProgress.total);
+#endif
     break;
   case FSUI_upload_complete:
     upURI = ECRS_dupUri(event->data.UploadComplete.uri);
@@ -98,14 +102,18 @@ static void eventCallback(void * cls,
     printf("Download complete.\n");
     break;
   case FSUI_download_progress:
+#if DEBUG_VERBOSE
     printf("Download is progressing (%llu/%llu)...\n",
 	   event->data.DownloadProgress.completed,
 	   event->data.DownloadProgress.total);
+#endif
     break;
   case FSUI_unindex_progress:
+#if DEBUG_VERBOSE
     printf("Unindex is progressing (%llu/%llu)...\n",
 	   event->data.UnindexProgress.completed,
 	   event->data.UnindexProgress.total);
+#endif
     break;
   case FSUI_unindex_complete:
     printf("Unindex complete.\n");
@@ -117,7 +125,9 @@ static void eventCallback(void * cls,
     errexit("Received ERROR: %d\n",
 	    event->type);
   case FSUI_download_aborted:
-    printf("Received unexpected download aborted event.\n");
+#if DEBUG_VERBOSE
+    printf("Received download aborted event.\n");
+#endif
     break;
   case FSUI_gnunetd_connected:
   case FSUI_gnunetd_disconnected:
@@ -242,14 +252,18 @@ int main(int argc, char * argv[]){
 	 (randomi(4) == 0) ) {
       suspendCron();
 #if 1
+#if DEBUG_VERBOSE
       printf("Testing FSUI suspend-resume\n");
+#endif
       FSUI_stop(ctx); /* download possibly incomplete
 			 at this point, thus testing resume */
       ctx = FSUI_start("fsuidownloadtest",
 		       YES,
 		       &eventCallback,
 		       NULL);
+#if DEBUG_VERBOSE
       printf("Resumed...\n");
+#endif
 #endif
       resumeCron();
       suspendRestart--;

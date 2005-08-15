@@ -450,9 +450,9 @@ void freeDownloadList(FSUI_DownloadList * list) {
      unlink us from the tree! */
   dpos = list->parent;
   if (dpos != NULL) {
-    if (dpos->child == list)
+    if (dpos->child == list) {
       dpos->child = list->next;
-    else {
+    } else {
       dpos = dpos->child;
       while ( (dpos != NULL) &&
 	      (dpos != list) )
@@ -563,24 +563,18 @@ int FSUI_clearCompletedDownloads(struct FSUI_Context * ctx,
 				 FSUI_DownloadIterator iter,
 				 void * closure) {
   FSUI_DownloadList * dl;
-  FSUI_DownloadList * prev;
+  FSUI_DownloadList * tmp;
   int ret;
   int stop;
 
   ret = 0;
   MUTEX_LOCK(&ctx->lock);
   dl = ctx->activeDownloads.child;
-  prev = NULL;
   stop = NO;
   while ( (dl != NULL) &&
 	  (stop == NO) ) {
     if ( (dl->completed == dl->total) &&
 	 (dl->signalTerminate == SYSERR) ) {
-      if (prev == NULL)
-	ctx->activeDownloads.child
-	  = dl->next;
-      else
-	prev->next = dl->next;
       if (iter != NULL)
 	if (OK != iter(closure,
 		       dl,
@@ -591,11 +585,11 @@ int FSUI_clearCompletedDownloads(struct FSUI_Context * ctx,
 		       dl->is_recursive,
 		       dl->anonymityLevel))
 	  stop = YES;
+      tmp = dl->next;
       freeDownloadList(dl);
-      dl = prev->next;
+      dl = tmp;
       ret++;
     } else {
-      prev = dl;
       dl = dl->next;
     }
   }
