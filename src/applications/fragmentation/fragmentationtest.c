@@ -82,9 +82,9 @@ static void makeTimeout() {
  * @param id the identity of the fragment
  */
 static P2P_MESSAGE_HEADER * makeFragment(unsigned short start,
-				 unsigned short size,
-				 unsigned short tot,
-				 int id) {
+					 unsigned short size,
+					 unsigned short tot,
+					 int id) {
   P2P_fragmentation_MESSAGE * frag;
   int i;
 

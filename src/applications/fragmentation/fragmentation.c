@@ -483,7 +483,7 @@ static int fragmentBMC(void * buf,
     frag->off = htons(pos);
     frag->len = htons(ctx->len);
     memcpy(&frag[1],
-	   &ctx[1],
+	   &((char*)(&ctx[1]))[pos],
 	   mlen - sizeof(P2P_fragmentation_MESSAGE));
     coreAPI->unicast(&ctx->sender,
 		     &frag->header,
