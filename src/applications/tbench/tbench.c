@@ -130,13 +130,13 @@ static int pollResults(IterationData * results,
 static int handleTBenchReq(const PeerIdentity * sender,
 			   const P2P_MESSAGE_HEADER * message) {
   P2P_MESSAGE_HEADER * reply;
-  P2P_tbench_MESSAGE * msg;
+  const P2P_tbench_MESSAGE * msg;
 
   if ( ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  msg = (P2P_tbench_MESSAGE*) message;
+  msg = (const P2P_tbench_MESSAGE*) message;
   if (crc32N(&msg[1],
 	     ntohs(message->size) - sizeof(P2P_tbench_MESSAGE))
       != ntohl(msg->crc)) {
@@ -146,7 +146,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
 
 #if DEBUG_TBENCH
   LOG(LOG_DEBUG,
-      "Received message %u from iteration %u/%u\n",
+      "Received request %u from iteration %u/%u\n",
       htonl(msg->packetNum),
       htonl(msg->iterationNum),
       htonl(msg->nounce));
@@ -169,13 +169,13 @@ static int handleTBenchReq(const PeerIdentity * sender,
  */
 static int handleTBenchReply(const PeerIdentity * sender,
 			     const P2P_MESSAGE_HEADER * message) {
-  P2P_tbench_MESSAGE * pmsg;
+  const P2P_tbench_MESSAGE * pmsg;
 
   if (ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
-  pmsg = (P2P_tbench_MESSAGE*) message;
+  pmsg = (const P2P_tbench_MESSAGE*) message;
   if (crc32N(&pmsg[1],
 	     ntohs(message->size) - sizeof(P2P_tbench_MESSAGE))
       != ntohl(pmsg->crc)) {
@@ -184,7 +184,7 @@ static int handleTBenchReply(const PeerIdentity * sender,
   }
 #if DEBUG_TBENCH
   LOG(LOG_DEBUG,
-      "Received message %u from iteration %u/%u\n",
+      "Received response %u from iteration %u/%u\n",
       htonl(pmsg->packetNum),
       htonl(pmsg->iterationNum),
       htonl(pmsg->nounce));
@@ -300,7 +300,6 @@ static int csHandleTBenchRequest(ClientHandle client,
     p2p->crc
       = htonl(crc32N(&p2p[1],
 		     size - sizeof(P2P_tbench_MESSAGE)));
-
     MUTEX_UNLOCK(&lock); /* allow receiving */
 
     cronTime(&startTime);
@@ -319,8 +318,10 @@ static int csHandleTBenchRequest(ClientHandle client,
       p2p->packetNum = htonl(packetNum);
 #if DEBUG_TBENCH
       LOG(LOG_DEBUG,
-	  "Sending message %u in iteration %u\n",
-	  packetNum, iteration);
+	  "Sending message %u of size %u in iteration %u\n",
+	  packetNum, 
+	  size,
+	  iteration);
 #endif
       coreAPI->unicast(&msg->receiverId,
 		       &p2p->header,

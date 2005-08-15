@@ -391,7 +391,7 @@ void injectMessage(const PeerIdentity * sender,
 
       if ( (ptyp >= max_registeredType) ||
 	   (NULL == handlers[ptyp][0]) ) {
-	LOG(LOG_DEBUG,
+	LOG(LOG_EVERYTHING,
 	    "Encrypted message of type '%d' not understood (no handler registered).\n",
 	    ptyp);
 	continue; /* no handler registered, go to next part */
@@ -412,7 +412,7 @@ void injectMessage(const PeerIdentity * sender,
 
       if ( (ptyp >= plaintextmax_registeredType) ||
 	   (NULL == plaintextHandlers[ptyp][0]) ) {
-	LOG(LOG_DEBUG,
+	LOG(LOG_EVERYTHING,
 	    "Plaintext message of type '%d' not understood (no handler registered).\n",
 	    ptyp);
 	continue; /* no handler registered, go to next part */

@@ -486,7 +486,7 @@ static Mutex lock;
  * What is the available downstream bandwidth (in bytes
  * per minute)?
  */
-static long long max_bpm;
+static unsigned long long max_bpm;
 
 /**
  * Registered Send-Notify handlers.
@@ -1275,8 +1275,9 @@ static void sendBuffer(BufferEntry * be) {
   }
   if ( (be->status != STAT_UP) ||
        (be->sendBufferSize == 0) ||
-       (be->inSendBuffer == YES) )
+       (be->inSendBuffer == YES) ) {
     return; /* must not run */
+  }
   be->inSendBuffer = YES;
 
   if ( (OK != ensureTransportConnected(be)) ||
@@ -1815,6 +1816,7 @@ static void scheduleInboundTraffic() {
   long long decrementSB;
   long long * adjustedRR;
   int didAssign;
+  int firstRound;
 
   MUTEX_LOCK(&lock);
   cronTime(&now);
@@ -1829,21 +1831,28 @@ static void scheduleInboundTraffic() {
     return;
   }
 
-  /* if time difference is too small, we don't have enough
-     sample data and should NOT update the limits */
+  activePeerCount = forAllConnectedHosts(NULL, NULL); 
+  if (activePeerCount == 0) {
+    MUTEX_UNLOCK(&lock);
+    return; /* nothing to be done here. */
+  }
+
+
+ /* if time difference is too small, we don't have enough
+     sample data and should NOT update the limits;
+     however, if we have FAR to few peers, reschedule
+     aggressively (since we are unlikely to get close
+     to the limits anyway) */
   timeDifference = now - lastRoundStart;
-  if (timeDifference < MIN_SAMPLE_TIME) {
+  if ( (timeDifference < MIN_SAMPLE_TIME) &&
+       (activePeerCount > CONNECTION_MAX_HOSTS_ / 16) ) {
     MUTEX_UNLOCK(&lock);
     return; /* don't update too frequently, we need at least some
 	       semi-representative sampling! */
   }
 
   /* build an array containing all BEs */
-  activePeerCount = forAllConnectedHosts(NULL, NULL);
-  if (activePeerCount == 0) {
-    MUTEX_UNLOCK(&lock);
-    return; /* nothing to be done here. */
-  }
+
   entries = MALLOC(sizeof(BufferEntry*)*activePeerCount);
   utl.pos = 0;
   utl.e = entries;
@@ -1876,7 +1885,6 @@ static void scheduleInboundTraffic() {
     minCon = activePeerCount;
   schedulableBandwidth 
     = max_bpm - minCon * MIN_BPM_PER_PEER;
-
   adjustedRR = MALLOC(sizeof(long long) * activePeerCount);
 
   /* reset idealized limits; if we want a smoothed-limits
@@ -1957,6 +1965,8 @@ static void scheduleInboundTraffic() {
      (unencrypted) traffic that we're not quite accounting for anyway,
      that's probably not so bad. */
   didAssign = YES;
+  /* in the first round we cap by 2* previous utilization */
+  firstRound = YES;
   while ( (schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
 	  (activePeerCount > 0) &&
 	  (didAssign == YES) ) {
@@ -1964,11 +1974,13 @@ static void scheduleInboundTraffic() {
     decrementSB = 0;
     for (u=0;u<activePeerCount;u++) {
       /* always allow allocating MIN_BPM_PER_PEER */
-      if (entries[u]->idealized_limit < adjustedRR[u] * 2) {
+      if ( (firstRound == NO) ||
+	   (entries[u]->idealized_limit < adjustedRR[u] * 2) ) {
 	unsigned int share;
 
 	share = entries[u]->idealized_limit + (unsigned int) (shares[u] * schedulableBandwidth);
-	if (share > adjustedRR[u] * 2)
+	if ( (share > adjustedRR[u] * 2) &&
+	     (firstRound == YES) )
 	  share = adjustedRR[u] * 2;
 	if (share > entries[u]->idealized_limit) {
 	  decrementSB += share - entries[u]->idealized_limit;
@@ -1984,11 +1996,13 @@ static void scheduleInboundTraffic() {
       /* assign also to random "worthless" (zero-share) peers */
       for (u=0;u<activePeerCount;u++) {
 	unsigned int v = perm[u]; /* use perm to avoid preference to low-numbered slots */
-	if (entries[v]->idealized_limit / 2 < adjustedRR[u]) {
+	if ( (firstRound == NO) ||
+	     (entries[v]->idealized_limit / 2 < adjustedRR[u]) ) {
 	  unsigned int share;
 
 	  share = entries[v]->idealized_limit + (unsigned int) (schedulableBandwidth);
-	  if (share > adjustedRR[u] * 2)
+	  if ( (firstRound == YES) &&
+	       (share > adjustedRR[u] * 2) )
 	    share = adjustedRR[u] * 2;
 	  schedulableBandwidth -= share - entries[v]->idealized_limit;
 	  entries[v]->idealized_limit = share;
@@ -2008,8 +2022,13 @@ static void scheduleInboundTraffic() {
 	FREE(perm);
 	perm = NULL;
       }
-      break;
     } /* didAssign == NO? */
+    if (firstRound == YES) {
+      /* keep some bandwidth off the market 
+	 for new connections */
+      schedulableBandwidth /= 2;
+    }
+    firstRound = NO;
   } /* while bandwidth to distribute */
 
 
@@ -2527,7 +2546,7 @@ void considerTakeover(const PeerIdentity * sender,
  * accordingly.
  */
 static void connectionConfigChangeCallback() {
-  long new_max_bpm;
+  unsigned long long new_max_bpm;
   unsigned int i;
 
   MUTEX_LOCK(&lock);
@@ -2538,15 +2557,16 @@ static void connectionConfigChangeCallback() {
   if (new_max_bpm == 0)
     new_max_bpm = 50000 * 60; /* assume 50 kbps */
   if (max_bpm != new_max_bpm) {
-    int newMAXHOSTS = 0;
+    unsigned int newMAXHOSTS = 0;
 
     max_bpm = new_max_bpm;
     newMAXHOSTS
       = max_bpm / (MIN_BPM_PER_PEER*2);
-    /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
-
+    /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */    
     if (newMAXHOSTS < 2)
       newMAXHOSTS = 2; /* strict minimum is 2 */
+    if (newMAXHOSTS > 256)
+      newMAXHOSTS = 256; /* limit, before we run out of sockets! */
     i = 1;
     while (i <= newMAXHOSTS)
       i*=2;
