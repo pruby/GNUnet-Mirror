@@ -175,7 +175,9 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 				void * closure) {
   SEARCH_HANDLE * ret;
   CS_fs_request_search_MESSAGE * req;
+#if DEBUG_FSLIB
   EncName enc;
+#endif
 
   ret = MALLOC(sizeof(SEARCH_HANDLE));
   req = MALLOC(sizeof(CS_fs_request_search_MESSAGE) + (keyCount-1) * sizeof(HashCode512));

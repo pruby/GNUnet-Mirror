@@ -1,22 +1,21 @@
-0.7.0pre5 [7'05] ("API cleanup"):
-- rename fest III?
-- change pingpong struct?!
-- other structs???
+0.7.0pre6 [8'05] ("API cleanup"):
+- gnunet-setup:
+  * gconfig: fix focus changes [ Nils ]
+  * assertion @ configuration.c:577 (line wrong? fixed?)
+  * #852,#853 (gnunet-setup nitpicks) [Nils / Christian]
+- test remote search/download
+- test UDP transport
   
 
 0.7.0 [8'05?] (aka "compatibility? what's that?"):
 - Missing Features:
   * #593 (gnunet-setup): php-ification for i18n [ Nils ]
-  * #851, #852,#853 (gnunet-setup nitpicks) [Nils]
   * permissions on indexed files? [Nils]
     If gnunetd has insufficient file permissions on files
     to be indexed, copy it to shared dir and index it there.
   * Windows installer [Nils]
     * Uninstall
       * Remove account
-- gnunet-setup: [Nils]
-  * gconfig: fix focus changes
-  * assertion @ configuration.c:577
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
@@ -26,9 +25,15 @@
     + namespaces
     + URI tracking
 
-0.7.0a (bugfixes)
+0.7.0a [9'05] (bugfixes)
 
-0.7.1 (aka "stabilization"):
+0.7.1 [10'05] (aka "stabilization"):
+- DHT:
+  * make dht tests work
+  * XFS [ location URIs ]
+- support using -k multiple times in gnunet-pseudonym
+
+0.7.2 [12'05] (aka "performance"):
 - Optimizations:
   * directories can be compacted -- add heuristic to determine
     if we should NOT padd with zeros (if we would waste too
@@ -36,25 +41,28 @@
     directory entries. (theoretically can compact some directories
     by 50% (?) -- incidentially 25% is what gzip can do on the
     current directories!)
-- gnunet-chat
-- DHT:
-  * make dht tests work
-  * XFS [ location URIs ]
 - DHT optimizations [ use additional optional fields (HELOs) ]
+- maybe: cache kblock-public/private keys 
+    (1024 bit keys are much better than the 2048 bit keys,
+     but this would give another performance boost, especially for
+     insertion of zip files with hundreds of files/keywords!)
+
+0.7.2 [1'06] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Documentation:
   * LJ article
-- support using -k multiple times in gnunet-pseudonym
-- maybe: cache kblock-public/private keys 
-    (1024 bit keys are much better than the 2048 bit keys,
-     but this would give another performance boost, especially for
-     insertion of zip files with hundreds of files/keywords!)
+
+0.7.3 [5'06] (aka "advanced features"):
+- gnunet-chat
 - Insert/Index a "shared directory" automatically [Nils]
- - https://gnunet.org/drupal/?q=node/97
+- https://gnunet.org/drupal/?q=node/97
+
+
 1.0.0 (aka "userfriendly"):
 - implement testbed for profiling
+
 
 
 
