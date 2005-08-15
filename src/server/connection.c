@@ -996,7 +996,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 	return 0; /* can not send, BPS available is too small */
       }
     }
-    totalMessageSize = be->session.mtu;
+    totalMessageSize = be->session.mtu - sizeof(P2P_PACKET_HEADER);
   } /* end MTU > 0 */
   return totalMessageSize;
 }
