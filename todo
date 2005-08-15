@@ -1,7 +1,6 @@
 0.7.0pre6 [8'05] ("API cleanup"):
 - gnunet-setup:
   * gconfig: fix focus changes [ Nils ]
-  * assertion @ configuration.c:577 (line wrong? fixed?)
   * #852,#853 (gnunet-setup nitpicks) [Nils / Christian]
 - test remote search/download
   
@@ -15,6 +14,7 @@
   * Windows installer [Nils]
     * Uninstall
       * Remove account
+- Test on Windows 98 [Nils]
 - Additional (automated, make check-style) testing:
   * gnunet-tracekit
   * gap and economy
