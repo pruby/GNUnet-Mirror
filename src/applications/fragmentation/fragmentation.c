@@ -62,15 +62,6 @@ typedef struct {
 } P2P_fragmentation_MESSAGE;
 
 /**
- * Message fragment.
- */
-typedef struct {
-  P2P_fragmentation_MESSAGE fragment_message;
-
-  char data[1];
-} P2P_fragmentation_MESSAGE_GENERIC;
-
-/**
  * How many buckets does the fragment hash table
  * have?
  */
@@ -216,7 +207,7 @@ static void checkComplete(FC * pep) {
   pos = pep->head;
   while (pos != NULL) {
     memcpy(&msg[ntohs(pos->frag->off)],
-	   &((P2P_fragmentation_MESSAGE_GENERIC*)pos->frag)->data[0],
+	   &pos->frag[1],
 	   FRAGSIZE(pos));
     pos = pos->link;
   }
@@ -330,7 +321,9 @@ static int tryJoin(FC * entry,
   /* allocate pep */
   pep = MALLOC(sizeof(FC));
   pep->frag = MALLOC(ntohs(packet->header.size));
-  memcpy(pep->frag, packet, ntohs(packet->header.size));
+  memcpy(pep->frag,
+	 packet,
+	 ntohs(packet->header.size));
   pep->link = NULL;
 
   if (before == NULL) {
@@ -472,7 +465,7 @@ static int fragmentBMC(void * buf,
   frag->id = id;
   frag->off = htons(0);
   frag->len = htons(ctx->len);
-  memcpy(&((P2P_fragmentation_MESSAGE_GENERIC*)frag)->data[0],
+  memcpy(&frag[1],
 	 &ctx[1],
 	 len - sizeof(P2P_fragmentation_MESSAGE));
 
@@ -489,7 +482,7 @@ static int fragmentBMC(void * buf,
     frag->id = id;
     frag->off = htons(pos);
     frag->len = htons(ctx->len);
-    memcpy(&((P2P_fragmentation_MESSAGE_GENERIC*)frag)->data[0],
+    memcpy(&frag[1],
 	   &ctx[1],
 	   mlen - sizeof(P2P_fragmentation_MESSAGE));
     coreAPI->unicast(&ctx->sender,
