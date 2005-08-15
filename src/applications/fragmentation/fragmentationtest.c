@@ -96,7 +96,7 @@ static P2P_MESSAGE_HEADER * makeFragment(unsigned short start,
     = htons(sizeof(P2P_fragmentation_MESSAGE) + size);
 
   for (i=0;i<size;i++)
-    ((P2P_fragmentation_MESSAGE_GENERIC*)frag)->data[i]
+    ((char*) &frag[1])[i]
       = (char)i+id+start;
   return &frag->header;
 }
