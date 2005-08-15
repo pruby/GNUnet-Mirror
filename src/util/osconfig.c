@@ -287,7 +287,7 @@ int isOSUserAddCapable(){
 #endif
 #ifdef LINUX
 	if (ACCESS("/usr/sbin/adduser", X_OK) == 0)
-		return 1;
+	  return (geteuid() == 0);
 	else
 		/* TODO: useradd */
 #endif
@@ -302,7 +302,7 @@ int isOSUserAddCapable(){
 int isOSGroupAddCapable() {
 #ifdef LINUX
 	if (ACCESS("/usr/sbin/addgroup", X_OK) == 0) {
-		return 1;
+	  return (geteuid() == 0);
 	}
 	/* TODO: groupadd */
 	else
