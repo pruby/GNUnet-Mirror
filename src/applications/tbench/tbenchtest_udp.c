@@ -155,6 +155,7 @@ int main(int argc, char ** argv) {
 		     argv, 
 		     &parseOptions))
     return -1;
+#if 0
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "peer1udp.conf"));
@@ -177,6 +178,7 @@ int main(int argc, char ** argv) {
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
   }
+#endif
 
   /* re-start, this time we're sure up-to-date hellos are available */
   FREENONNULL(setConfigurationString("GNUNET",

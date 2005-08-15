@@ -4,7 +4,6 @@
   * assertion @ configuration.c:577 (line wrong? fixed?)
   * #852,#853 (gnunet-setup nitpicks) [Nils / Christian]
 - test remote search/download
-- test UDP transport
   
 
 0.7.0 [8'05?] (aka "compatibility? what's that?"):
