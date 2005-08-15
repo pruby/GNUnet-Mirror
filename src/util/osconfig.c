@@ -253,7 +253,8 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
 	return 1;
     }
     else {
-      if (UNLINK("/etc/init.d/gnunetd") != -1 || errno == ENOENT) {
+      if ( (UNLINK("/etc/init.d/gnunetd") != -1) || 
+	   (errno != ENOENT)) {
 	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
 	  errno = system("/usr/sbin/update-rc.d gnunetd remove");
 	  if (errno != 0) {

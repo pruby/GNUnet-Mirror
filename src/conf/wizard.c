@@ -26,6 +26,11 @@
 
 #include "gnunet_util.h"
 
+#ifndef MINGW
+#include <grp.h>
+#endif
+
+
 #define LKC_DIRECT_LINK
 #include "lkc.h"
 
@@ -202,7 +207,6 @@ void load_step3()
 void load_step4()
 {
 		GtkWidget *vbox18, *frame8, *vbox19, *table3, *entUser, *entGroup;
-		int group;
 		
 		vbox18 = lookup_widget(curwnd, "vbox18");
 		frame8 = lookup_widget(vbox18, "frame8");
@@ -211,14 +215,38 @@ void load_step4()
 		entUser = lookup_widget(table3, "entUser");
 		entGroup = lookup_widget(table3, "entGroup");
 		
-		if (user_name)
-			gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
 		
+#ifndef MINGW
+		if (NULL == user_name) {
+		  if ( (geteuid() == 0) || 
+		       (NULL != getpwnam("gnunet")) )
+		    user_name = STRDUP("gnunet");
+		  else 
+		    user_name = STRDUP(getenv("USER"));		  
+		}
+		if (NULL == group_name) {
+		  if ( (geteuid() == 0) ||
+		       (NULL != getgrnam("gnunet")) )
+		    group_name = STRDUP("gnunet");
+		  else
+		    group_name = STRDUP(getgrgid(getegid())->gr_name);
+		}
+#else
+#print PORT-ME
+#endif
+
+		if (user_name)
+		  gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
 		if (group_name)
-			gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
-	
-		gtk_widget_set_sensitive(entUser, isOSUserAddCapable());
-		gtk_widget_set_sensitive(entGroup, group = isOSGroupAddCapable());
+		  gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
+		if (isOSUserAddCapable())
+		  gtk_widget_set_sensitive(entUser, TRUE);
+		else
+		  gtk_widget_set_sensitive(entUser, FALSE);
+		if (isOSGroupAddCapable())
+		  gtk_widget_set_sensitive(entGroup, TRUE);
+		else
+		  gtk_widget_set_sensitive(entGroup, FALSE);
 }
 
 void load_step5()
