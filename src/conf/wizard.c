@@ -206,48 +206,49 @@ void load_step3()
 
 void load_step4()
 {
-		GtkWidget *vbox18, *frame8, *vbox19, *table3, *entUser, *entGroup;
-		
-		vbox18 = lookup_widget(curwnd, "vbox18");
-		frame8 = lookup_widget(vbox18, "frame8");
-		vbox19 = lookup_widget(frame8, "vbox19");
-		table3 = lookup_widget(vbox19, "table3");
-		entUser = lookup_widget(table3, "entUser");
-		entGroup = lookup_widget(table3, "entGroup");
-		
-		
+  GtkWidget *vbox18, *frame8, *vbox19, *table3, *entUser, *entGroup;
+
+  vbox18 = lookup_widget(curwnd, "vbox18");
+  frame8 = lookup_widget(vbox18, "frame8");
+  vbox19 = lookup_widget(frame8, "vbox19");
+  table3 = lookup_widget(vbox19, "table3");
+  entUser = lookup_widget(table3, "entUser");
+  entGroup = lookup_widget(table3, "entGroup");
+
+
 #ifndef MINGW
-		if (NULL == user_name) {
-		  if ( (geteuid() == 0) || 
-		       (NULL != getpwnam("gnunet")) )
-		    user_name = STRDUP("gnunet");
-		  else 
-		    user_name = STRDUP(getenv("USER"));		  
-		}
-		if (NULL == group_name) {
-		  if ( (geteuid() == 0) ||
-		       (NULL != getgrnam("gnunet")) )
-		    group_name = STRDUP("gnunet");
-		  else
-		    group_name = STRDUP(getgrgid(getegid())->gr_name);
-		}
+  if(NULL == user_name)
+  {
+    if((geteuid() == 0) || (NULL != getpwnam("gnunet")))
+      user_name = STRDUP("gnunet");
+    else
+      user_name = STRDUP(getenv("USER"));
+  }
+  if(NULL == group_name)
+  {
+    if((geteuid() == 0) || (NULL != getgrnam("gnunet")))
+      group_name = STRDUP("gnunet");
+    else
+      group_name = STRDUP(getgrgid(getegid())->gr_name);
+  }
 #else
 #print PORT-ME
 #endif
 
-		if (user_name)
-		  gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
-		if (group_name)
-		  gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
-		if (isOSUserAddCapable())
-		  gtk_widget_set_sensitive(entUser, TRUE);
-		else
-		  gtk_widget_set_sensitive(entUser, FALSE);
-		if (isOSGroupAddCapable())
-		  gtk_widget_set_sensitive(entGroup, TRUE);
-		else
-		  gtk_widget_set_sensitive(entGroup, FALSE);
+  if(user_name)
+    gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
+  if(group_name)
+    gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
+  if(isOSUserAddCapable())
+    gtk_widget_set_sensitive(entUser, TRUE);
+  else
+    gtk_widget_set_sensitive(entUser, FALSE);
+  if(isOSGroupAddCapable())
+    gtk_widget_set_sensitive(entGroup, TRUE);
+  else
+    gtk_widget_set_sensitive(entGroup, FALSE);
 }
+
 
 void load_step5()
 {
