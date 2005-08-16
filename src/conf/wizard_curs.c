@@ -37,6 +37,7 @@
 #include "wizard_util.h"
 #include "mconf.h"
 #include "wizard_curs.h"
+#include "confdata.h"
 
 
 extern int cols, rows;
@@ -82,10 +83,9 @@ int wizard_curs_main()
 {
   void *active_ptr = NULL;
   int idx, ret, autostart = 0, adv = 0;
-  struct symbol *sym, *symFile;
+  struct symbol *sym;
   char *defval, *user_name = NULL, *group_name = NULL;
   char *confFile;
-  int fileLen;
   char * filename;
 
   filename = getConfigurationString("GNUNET-SETUP",
@@ -461,7 +461,7 @@ int wizard_curs_main()
       if (sym)
       {
         sym_calc_value_ext(sym, 1);
-        user_name = sym_get_string_value(sym);
+        user_name = (char *) sym_get_string_value(sym);
       }
       
 #ifndef MINGW
@@ -516,7 +516,7 @@ int wizard_curs_main()
         if (sym)
         {
           sym_calc_value_ext(sym, 1);
-          group_name = sym_get_string_value(sym);
+          group_name = (char *) sym_get_string_value(sym);
         }
 
 #ifndef MINGW
