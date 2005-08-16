@@ -221,6 +221,7 @@ int main(int argc, char ** argv) {
       ret = test(sock, i, 1+1024/i, 4, 10 * cronMILLIS, 2, 2 * cronSECONDS);
     checkConnected(sock);
   }
+  ret = test(sock, 4096, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
   ret = test(sock, 32768, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
   releaseClientSocket(sock);
   if (daemon1 != -1) {

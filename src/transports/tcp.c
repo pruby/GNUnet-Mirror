@@ -618,9 +618,12 @@ static void * tcpListenMain() {
 	LOG_STRERROR(LOG_ERROR, "isSocketValid");
 	tcp_sock = -1; /* prevent us from error'ing all the time */
       }
-    } else
+    }
+#if DEBUG_TCP
+    else
       LOG(LOG_DEBUG,
 	  "TCP server socket not open!\n");
+#endif
     if (tcp_pipe[0] != -1) {
       if (-1 != FSTAT(tcp_pipe[0], &buf)) {
 	FD_SET(tcp_pipe[0], &readSet);
