@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -399,6 +399,30 @@ static void printhelp() {
 	     help);
 }
 
+#ifndef MINGW
+/**
+ * @brief Change user ID
+ */
+void changeUser(const char *user) {
+  struct passwd * pws;
+
+  pws = getpwnam(user);
+  if(pws == NULL) {
+    LOG(LOG_WARNING,
+        _("User '%s' not known, cannot change UID to it.\n"), user);
+    return;
+  }
+  if((0 != setgid(pws->pw_gid)) ||
+     (0 != setegid(pws->pw_gid)) ||
+     (0 != setuid(pws->pw_uid)) || (0 != seteuid(pws->pw_uid))) {
+    if((0 != setregid(pws->pw_gid, pws->pw_gid)) ||
+       (0 != setreuid(pws->pw_uid, pws->pw_uid)))
+      LOG(LOG_WARNING,
+          _("Cannot change user/group to '%s': %s\n"),
+          user, STRERROR(errno));
+  }
+}
+#endif
 
 /**
  * Perform option parsing from the command line.
@@ -407,9 +431,6 @@ int parseCommandLine(int argc,
 		     char * argv[]) {
   int cont = OK;
   int c;
-#ifndef MINGW
-  struct passwd * pws;
-#endif
 
   /* set the 'magic' code that indicates that
      this process is 'gnunetd' (and not any of
@@ -482,24 +503,7 @@ int parseCommandLine(int argc,
       break;
 #ifndef MINGW	/* not supported */
     case 'u':
-      pws = getpwnam(GNoptarg);
-      if (pws == NULL) {
-        LOG(LOG_WARNING,
-	    _("User '%s' not known, cannot change UID to it."),
-	    GNoptarg);
-        break;
-      }
-      if ( (0 != setgid(pws->pw_gid)) ||
-	   (0 != setegid(pws->pw_gid)) ||
-	   (0 != setuid(pws->pw_uid)) ||
-	   (0 != seteuid(pws->pw_uid)) ) {
-	if ( (0 != setregid(pws->pw_gid, pws->pw_gid)) ||
-	     (0 != setreuid(pws->pw_uid, pws->pw_uid)) )
-	  LOG(LOG_WARNING,
-	      _("Cannot change user/group to '%s': %s"),
-	      GNoptarg,
-	      STRERROR(errno));
-      }
+      changeUser(GNoptarg);
       break;
 #endif
 #ifdef MINGW

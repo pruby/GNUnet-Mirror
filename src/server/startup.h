@@ -84,6 +84,12 @@ void deletePIDFile();
  */
 void loadApplicationModules();
 
+#ifndef MINGW
+/**
+ * @brief Change user ID
+ */
+void changeUser(const char *user);
+#endif
 
 #ifdef MINGW
 BOOL WINAPI win_shutdown_gnunetd(DWORD dwCtrlType);
