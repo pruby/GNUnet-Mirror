@@ -133,7 +133,7 @@ menu "General settings" "GNUNETD"
 		
 		If you do not specify a HOSTLISTURL, you must copy valid hostkeys to
 		data/hosts manually.
-		Default: HOSTLISTURL = "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist"
+		Default: HOSTLISTURL = "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist"
     
   config HTTP-PROXY
   string "HTTP Proxy Server"
@@ -218,6 +218,30 @@ menu "General settings" "GNUNETD"
 		"IDLE" and nice(1) increments (a numeric value between -20 and 19, keep
 		in mind that values smaller than 0 require root privileges).
 		Default is "NORMAL".
+
+	config USER
+	string "GNUnet user"
+	default ""
+	help
+		As which user account should gnunetd run?
+		Empty means "current user". On computer startup, it is root/SYSTEM.
+		Under Windows, this setting affects the creation of a new
+		system service only.
+
+	config GROUP
+	string "GNUnet group"
+	default ""
+	help
+		As which group account should gnunetd run?
+		Empty means current group under Unix. It has no meaning under Windows.
+
+	config AUTOSTART
+	bool "Start GNUnet daemon automatically"
+	default n
+	depends on Meta::RARE
+	help
+		This is used by the configuration wizards to remember whether to start
+		the GNUnet daemon at computer startup.
 
 endmenu
 

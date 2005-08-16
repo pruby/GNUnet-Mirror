@@ -25,6 +25,7 @@
  */
 
 #include "gnunet_util.h"
+#include "platform.h"
 
 #ifndef MINGW
 #include <grp.h>
@@ -206,6 +207,7 @@ void load_step3()
 
 void load_step4()
 {
+  struct symbol *sym;
   GtkWidget *vbox18, *frame8, *vbox19, *table3, *entUser, *entGroup;
 
   vbox18 = lookup_widget(curwnd, "vbox18");
@@ -215,9 +217,28 @@ void load_step4()
   entUser = lookup_widget(table3, "entUser");
   entGroup = lookup_widget(table3, "entGroup");
 
+  if (! user_name)
+  {
+    sym = sym_find("USER", "GNUNETD");
+    if (sym)
+    {
+      sym_calc_value_ext(sym, 1);
+      user_name = sym_get_string_value(sym);
+    }
+  }
+
+  if (! group_name)
+  {
+    sym = sym_find("GROUP", "GNUNETD");
+    if (sym)
+    {
+      sym_calc_value_ext(sym, 1);
+      group_name = sym_get_string_value(sym);
+    }
+  }
 
 #ifndef MINGW
-  if(NULL == user_name)
+  if(NULL == user_name || strlen(user_name) == 0)
   {
     if((geteuid() == 0) || (NULL != getpwnam("gnunet")))
       user_name = STRDUP("gnunet");
@@ -232,7 +253,8 @@ void load_step4()
       group_name = STRDUP(getgrgid(getegid())->gr_name);
   }
 #else
-#print PORT-ME
+  if (NULL == user_name || strlen(user_name) == 0)
+    user_name = STRDUP("");
 #endif
 
   if(user_name)
@@ -287,8 +309,13 @@ void load_step5()
 	if (isOSUserAddCapable())
 		gtk_widget_set_sensitive(chkStart, TRUE);
 
-	if (doAutoStart)
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkStart), 1);		
+  sym = sym_find("AUTOSTART", "GNUNETD");
+  if (sym)
+  {
+    sym_calc_value_ext(sym, 1);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkStart),
+      sym_get_tristate_value(sym) != no);
+  }
 
 	if (doOpenEnhConfigurator)
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkEnh), 1);		

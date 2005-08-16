@@ -351,7 +351,10 @@ on_entQuota_changed (GtkEditable * editable, gpointer user_data)
 void
 on_chkStart_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
+  struct symbol *sym = sym_lookup("AUTOSTART", "GNUNETD", 0);
+
 	doAutoStart = gtk_toggle_button_get_active(togglebutton);
+  sym_set_tristate_value(sym, doAutoStart ? yes : no);
 }
 
 
@@ -388,18 +391,28 @@ on_step4_next_clicked (GtkButton * button, gpointer user_data)
 void
 on_entUser_changed (GtkEditable * editable, gpointer user_data)
 {
+  struct symbol *sym;
+  
 	if (user_name)
 		free(user_name);
 	
 	user_name = strdup(gtk_editable_get_chars(editable, 0, -1));
+  
+  sym = sym_lookup("USER", "GNUNETD", 0);
+  sym_set_string_value(sym, user_name);
 }
 
 
 void
 on_entGroup_changed (GtkEditable * editable, gpointer user_data)
 {
+  struct symbol *sym;
+  
 	if (group_name)
 		free(group_name);
 	
 	group_name = strdup(gtk_editable_get_chars(editable, 0, -1));
+  
+  sym = sym_lookup("GROUP", "GNUNETD", 0);
+  sym_set_string_value(sym, group_name);
 }

@@ -26,6 +26,10 @@
 
 #include "gnunet_util.h"
 
+#ifndef MINGW
+  #include <grp.h>
+#endif
+
 #define LKC_DIRECT_LINK
 #include "lkc.h"
 
@@ -451,6 +455,32 @@ int wizard_curs_main()
 	/* User */
 	if (isOSUserAddCapable()) {
 		while(true) {
+      char *defuser;
+      
+      sym = sym_find("USER", "GNUNETD");
+      if (sym)
+      {
+        sym_calc_value_ext(sym, 1);
+        user_name = sym_get_string_value(sym);
+      }
+      
+#ifndef MINGW
+      if(NULL == user_name || strlen(user_name) == 0)
+      {
+        if((geteuid() == 0) || (NULL != getpwnam("gnunet")))
+          defuser = STRDUP("gnunet");
+        else
+          defuser = STRDUP(getenv("USER"));
+      }
+      else
+        defuser = STRDUP(user_name);
+#else
+      if (NULL == user_name || strlen(user_name) == 0)
+        user_name = STRDUP("");
+      else
+        defuser = STRDUP(user_name);
+#endif
+      
 			ret = dialog_inputbox(_("GNUnet configuration"),
 				_("Define the user owning the GNUnet service.\n\n"
 					"For security reasons, it is a good idea to let this setup create "
@@ -460,7 +490,8 @@ int wizard_curs_main()
 					"This includes files you want to publish in GNUnet. You'll have to "
 					"grant read permissions to the user specified below.\n\n"
 					"Leave the fields empty to run GNUnet with system privileges.\n\n"
-					"GNUnet user:"), rows, cols - 5, "");
+					"GNUnet user:"), rows, cols - 5, defuser);
+      FREE(defuser);
 			
 			if (ret == 1) {
 				/* Help */
@@ -478,7 +509,33 @@ int wizard_curs_main()
 
 		/* Group */
 		if (isOSGroupAddCapable()) {
+      char *defgroup;
+      
 			while(true) {
+        sym = sym_find("GROUP", "GNUNETD");
+        if (sym)
+        {
+          sym_calc_value_ext(sym, 1);
+          group_name = sym_get_string_value(sym);
+        }
+
+#ifndef MINGW
+        if(NULL == group_name)
+        {
+          if((geteuid() == 0) || (NULL != getgrnam("gnunet")))
+            defgroup = STRDUP("gnunet");
+          else
+            defgroup = STRDUP(getgrgid(getegid())->gr_name);
+        }
+        else
+          defgroup = STRDUP(group_name);
+#else
+        if (NULL == group_name || strlen(group_name) == 0)
+          group_name = STRDUP("");
+        else
+          group_name = STRDUP(group_name);
+#endif
+        
 				ret = dialog_inputbox(_("GNUnet configuration"),
 					_("Define the group owning the GNUnet service.\n\n"
 						"For security reasons, it is a good idea to let this setup create "
@@ -487,7 +544,8 @@ int wizard_curs_main()
 						"Only members of this group will be allowed to start and stop the "
 						"the GNUnet server and have access to GNUnet server data.\n\n"
 						"GNUnet group:"),
-					rows, cols - 5, "");
+					rows, cols - 5, defgroup);
+        FREE(defgroup);
 				
 				if (ret == 1) {
 					/* Help */
