@@ -45,7 +45,7 @@ var ICONS_GROUP
 !define MUI_FINISHPAGE_SHOWREADME_FUNCTION "ShowReadme"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\gnunet-setup.exe"
 !define MUI_FINISHPAGE_RUN_TEXT "GNUnet Setup"
-!define MUI_FINISHPAGE_RUN_PARAMETERS "wizard-gtk"
+!define MUI_FINISHPAGE_RUN_PARAMETERS "-d wizard-gtk"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -63,6 +63,12 @@ var ICONS_GROUP
 ; Non-standard texts
 LangString deleteall ${LANG_ENGLISH} "Do you also want to delete all GNUnet configuration files and databases?"
 LangString deleteall ${LANG_GERMAN} "Möchten Sie außerdem alle GNUnet Konfigurationsdateien und Datenbanken löschen?"
+LangString confwizard ${LANG_ENGLISH} "GNUnet Configuration Wizard"
+LangString confwizard ${LANG_GERMAN} "GNUnet Konfigurationsassistent"
+LangString gnunetdconfig ${LANG_ENGLISH} "GNUnet Server configuration"
+LangString gnunetdconfig ${LANG_GERMAN} "GNUnet Server Konfiguration"
+LangString gnunetclientconfig ${LANG_ENGLISH} "GNUnet User configuration"
+LangString gnunetclientconfig ${LANG_GERMAN} "GNUnet Benutzer Konfiguration"
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "Setup.exe"
@@ -97,6 +103,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  
 	  SetOutPath "$INSTDIR\bin"
 	  File "gnu.ico"	
+	  File "config.ico"	
 		File "C:\GNUnet\bin\libgnunetutil-1.dll" 
 		File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
 		File "C:\GNUnet\bin\gnunet-win-tool.exe"
@@ -104,6 +111,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 		SetOutPath "$INSTDIR\var\lib\GNUnet"
 		
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
+	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d wizard-gtk" "$INSTDIR\bin\config.ico"
+	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d gconfig" "$INSTDIR\bin\config.ico"
+	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "gconfig" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$DESKTOP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
 	SectionEnd
 	
