@@ -130,13 +130,7 @@ static char * trustDirectory;
 /**
  * The list of temporarily known hosts
  */
-static P2P_hello_MESSAGE * tempHosts[MAX_TEMP_HOSTS];
-
-/**
- * tempHosts is a ringbuffer, this is the current
- * index into it.
- */
-static int tempHostsNextSlot;
+static HostEntry tempHosts[MAX_TEMP_HOSTS];
 
 static PeerIdentity myIdentity;
 
@@ -372,17 +366,46 @@ static void cronScanDirectoryDataHosts(void * unused) {
  * Add a host to the temporary list.
  */
 static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
-  P2P_hello_MESSAGE * msg;
+  static int tempHostsNextSlot;
+  P2P_hello_MESSAGE * msg;  
+  HostEntry * entry;
+  int i;
+  int slot;
 
   msg = MALLOC(P2P_hello_MESSAGE_size(tmp));
   memcpy(msg,
 	 tmp,
 	 P2P_hello_MESSAGE_size(tmp));
   MUTEX_LOCK(&lock_);
-  FREENONNULL(tempHosts[tempHostsNextSlot]);
-  tempHosts[tempHostsNextSlot++] = msg;
-  if (tempHostsNextSlot >= MAX_TEMP_HOSTS)
-    tempHostsNextSlot = 0;
+  entry = findHost(&msg->senderIdentity);
+  if (entry == NULL) {
+    slot = tempHostsNextSlot;
+    for (i=0;i<MAX_TEMP_HOSTS;i++) 
+      if (hostIdentityEquals(&tmp->senderIdentity,
+			     &tempHosts[i].identity))
+	slot = i;    
+    if (slot == tempHostsNextSlot) {
+      tempHostsNextSlot++;
+      if (tempHostsNextSlot >= MAX_TEMP_HOSTS)
+	tempHostsNextSlot = 0;
+    }  
+    entry = &tempHosts[slot];
+    entry->identity = msg->senderIdentity;
+    entry->until = 0;
+    entry->delta = 0;
+    for (i=0;i<entry->heloCount;i++)
+      FREE(entry->helos[i]);
+    GROW(entry->helos,
+	 entry->heloCount,
+	 1);
+    GROW(entry->protocols,
+	 entry->protocolCount,
+	 1);
+    entry->helos[0] = msg;
+    entry->protocols[0] = ntohs(msg->protocol);
+    entry->strict = NO;
+    entry->trust = 0;
+  }
   MUTEX_UNLOCK(&lock_);
 }
 
@@ -559,15 +582,15 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 	j = i;
       else
 	j = perm[i];
-      if ( (tempHosts[j] != NULL) &&
+      if ( (tempHosts[j].heloCount > 0) &&
 	   hostIdentityEquals(hostId,
-			      &tempHosts[j]->senderIdentity) &&
-	   ( (ntohs(tempHosts[j]->protocol) == protocol) ||
+			      &tempHosts[j].identity) &&
+	   ( (ntohs(tempHosts[j].protocols[0]) == protocol) ||
 	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
-	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j]));
+	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j].helos[0]));
 	memcpy(result,
-	       tempHosts[j],
-	       P2P_hello_MESSAGE_size(tempHosts[j]));	
+	       tempHosts[j].helos[0],
+	       P2P_hello_MESSAGE_size(tempHosts[j].helos[0]));	
 	MUTEX_UNLOCK(&lock_);
 	FREENONNULL(perm);
 	return result;
@@ -694,10 +717,20 @@ static int blacklistHost(const PeerIdentity * identity,
 			 int strict) {
   EncName hn;
   HostEntry * entry;
+  int i;
 
   GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(&lock_);
   entry = findHost(identity);
+  if (entry == NULL) {
+    for (i=0;i<MAX_TEMP_HOSTS;i++) {
+      if (hostIdentityEquals(identity,
+			     &tempHosts[i].identity)) {
+	entry = &tempHosts[i];
+	break;
+      }
+    }
+  }
   if (entry == NULL) {
     MUTEX_UNLOCK(&lock_);
     return SYSERR;
@@ -767,6 +800,7 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
  */
 static int whitelistHost(const PeerIdentity * identity) {
   HostEntry * entry;
+  int i;
 #if DEBUG_IDENTITY       
   EncName enc;
 #endif
@@ -774,6 +808,15 @@ static int whitelistHost(const PeerIdentity * identity) {
   GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   MUTEX_LOCK(&lock_);
   entry = findHost(identity);
+  if (entry == NULL) {
+    for (i=0;i<MAX_TEMP_HOSTS;i++) {
+      if (hostIdentityEquals(identity,
+			     &tempHosts[i].identity)) {
+	entry = &tempHosts[i];
+	break;
+      }
+    }
+  }
   if (entry == NULL) {
     MUTEX_UNLOCK(&lock_);
     return SYSERR;
@@ -847,19 +890,23 @@ static int forEachHost(cron_t now,
     }
   }
   for (i=0;i<MAX_TEMP_HOSTS;i++) {
-    if (tempHosts[i] == NULL)
+    entry = &tempHosts[i];
+    if (entry->heloCount == 0)
       continue;
-    count++;
-    if (callback != NULL) {
-      hi = tempHosts[i]->senderIdentity;
-      proto = ntohs(tempHosts[i]->protocol);
-      MUTEX_UNLOCK(&lock_);
-      callback(&hi,
-	       proto,
-	       YES,
-	       data);
-      MUTEX_LOCK(&lock_);
-    }      
+    if ( (now == 0) ||
+	 (now >= entry->until) ) {
+      count++;
+      if (callback != NULL) {
+	hi = entry->identity;
+	proto = ntohs(entry->protocols[0]);
+	MUTEX_UNLOCK(&lock_);
+	callback(&hi,
+		 proto,
+		 YES,
+		 data);
+	MUTEX_LOCK(&lock_);
+      }      
+    }
   }
   MUTEX_UNLOCK(&lock_);
   return count;
@@ -961,9 +1008,10 @@ provide_module_identity(CoreAPIForApplication * capi) {
   id.changeHostTrust     = &changeHostTrust;
   id.getHostTrust        = &getHostTrust;
 
-  for (i=0;i<MAX_TEMP_HOSTS;i++)
-    tempHosts[i] = NULL;
-  tempHostsNextSlot = 0;
+  for (i=0;i<MAX_TEMP_HOSTS;i++) 
+    memset(&tempHosts[i],
+	   0,
+	   sizeof(HostEntry));
   numberOfHosts_ = 0;
 
   initPrivateKey();
@@ -1020,6 +1068,16 @@ void release_module_identity() {
   int j;
   HostEntry * entry;
 
+  for (i=0;i<MAX_TEMP_HOSTS;i++) {
+    for (j=0;j<tempHosts[i].heloCount;i++)
+      FREE(tempHosts[i].helos[j]);
+    GROW(tempHosts[i].helos,
+	 tempHosts[i].heloCount,
+	 0);
+    GROW(tempHosts[i].protocols,
+	 tempHosts[i].protocolCount,
+	 0);
+  }
   delCronJob(&cronScanDirectoryDataHosts,
 	     CRON_DATA_HOST_FREQ,
 	     NULL);
@@ -1027,8 +1085,6 @@ void release_module_identity() {
 	     CRON_TRUST_FLUSH_FREQ,
 	     NULL);
   cronFlushTrustBuffer(NULL);
-  for (i=0;i<MAX_TEMP_HOSTS;i++)
-    FREENONNULL(tempHosts[i]);
   MUTEX_DESTROY(&lock_);
   for (i=0;i<numberOfHosts_;i++) {
     entry = hosts_[i];
