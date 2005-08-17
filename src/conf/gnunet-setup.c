@@ -125,12 +125,14 @@ static int parser(int argc, char *argv[])
   if(daemon) {
     FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "YES"));
     if(filename == NULL) {
-      if(0 == ACCESS("/etc/gnunetd.conf", W_OK))
+      if(0 == ACCESS("/etc/gnunetd.conf", W_OK) ||
+          (errno == ENOENT && 0 == ACCESS("/etc", W_OK)))
         filename = STRDUP("/etc/gnunetd.conf");
       else {
         if(0 == ACCESS("/var/lib", W_OK))
           mkdirp("/var/lib/GNUnet");
-        if(0 == ACCESS("/var/lib/GNUnet/gnunetd.conf", W_OK))
+        if(0 == ACCESS("/var/lib/GNUnet/gnunetd.conf", W_OK) ||
+            (errno == ENOENT && 0 == ACCESS("/var/lib/GNUnet", W_OK)))
           filename = STRDUP("/var/lib/GNUnet/gnunetd.conf");
         else {
           dirname = expandFileName("~/.gnunet/");
