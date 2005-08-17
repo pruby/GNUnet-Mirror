@@ -84,7 +84,8 @@ int wizard_curs_main()
   void *active_ptr = NULL;
   int idx, ret, autostart = 0, adv = 0;
   struct symbol *sym;
-  char *defval, *user_name = NULL, *group_name = NULL;
+  char *defval;
+  const char *user_name = NULL, *group_name = NULL;
   char *confFile;
   char * filename;
 
@@ -456,16 +457,19 @@ int wizard_curs_main()
 	if (isOSUserAddCapable()) {
 		while(true) {
       char *defuser;
+      const char *confUser;
       
       sym = sym_find("USER", "GNUNETD");
       if (sym)
       {
         sym_calc_value_ext(sym, 1);
-        user_name = (char *) sym_get_string_value(sym);
+        confUser = sym_get_string_value(sym);
       }
+      else
+        confUser = NULL;
       
 #ifndef MINGW
-      if(NULL == user_name || strlen(user_name) == 0)
+      if(NULL == confUser || strlen(confUser) == 0)
       {
         if((geteuid() == 0) || (NULL != getpwnam("gnunet")))
           defuser = STRDUP("gnunet");
@@ -473,10 +477,10 @@ int wizard_curs_main()
           defuser = STRDUP(getenv("USER"));
       }
       else
-        defuser = STRDUP(user_name);
+        defuser = STRDUP(confUser);
 #else
-      if (NULL == user_name || strlen(user_name) == 0)
-        user_name = STRDUP("");
+      if (NULL == confUser || strlen(confUser) == 0)
+        defuser = STRDUP("");
       else
         defuser = STRDUP(user_name);
 #endif
@@ -510,17 +514,20 @@ int wizard_curs_main()
 		/* Group */
 		if (isOSGroupAddCapable()) {
       char *defgroup;
+      const char *confGroup;
       
 			while(true) {
         sym = sym_find("GROUP", "GNUNETD");
         if (sym)
         {
           sym_calc_value_ext(sym, 1);
-          group_name = (char *) sym_get_string_value(sym);
+          confGroup = sym_get_string_value(sym);
         }
+        else
+          confGroup = NULL;
 
 #ifndef MINGW
-        if(NULL == group_name)
+        if(NULL == confGroup || strlen(confGroup) == 0)
         {
           if((geteuid() == 0) || (NULL != getgrnam("gnunet")))
             defgroup = STRDUP("gnunet");
@@ -528,12 +535,12 @@ int wizard_curs_main()
             defgroup = STRDUP(getgrgid(getegid())->gr_name);
         }
         else
-          defgroup = STRDUP(group_name);
+          defgroup = STRDUP(confGroup);
 #else
         if (NULL == group_name || strlen(group_name) == 0)
-          group_name = STRDUP("");
+          defgroup = STRDUP("");
         else
-          group_name = STRDUP(group_name);
+          defgroup = STRDUP(confUser);
 #endif
         
 				ret = dialog_inputbox(_("GNUnet configuration"),
