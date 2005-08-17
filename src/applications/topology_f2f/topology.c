@@ -195,7 +195,7 @@ static void scanForHosts(unsigned int index) {
       &enc);
   session->tryConnect(&indexMatch.match);
   identity->blacklistHost(&indexMatch.match,
-			  30 + (int) saturation * 60,
+			  300 + (int) saturation * 600,
 			  NO);
 }
 

@@ -37,7 +37,7 @@
 
 #define hello_HELPER_TABLE_START_SIZE 64
 
-#define DEBUG_SESSION NO
+#define DEBUG_SESSION YES
 
 #define EXTRA_CHECKS YES
 
@@ -86,7 +86,8 @@ typedef struct {
 
 } P2P_setkey_MESSAGE;
 
-#if 0
+
+#if DEBUG_SESSION
 /**
  * Not thread-safe, only use for debugging!
  */
@@ -255,12 +256,12 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
-      "Sending SKEY %u with %u bytes of data (%s, %s).\n",
-      *(int*) sk,
+      "Sending setkey %s with %u bytes of data (%s, %s).\n",
+      printSKEY(sk),
       size,
       ping != NULL ? "ping":"",
       pong != NULL ? "pong":"");
-#endif
+#endif  
   if (SYSERR == encryptPrivateKey(sk,
 				  sizeof(SESSIONKEY),
 				  &foreignHelo->publicKey,
@@ -308,9 +309,9 @@ makeSessionKeySigned(const PeerIdentity * hostId,
     }
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
-	"Encrypting %d bytes of PINGPONG with key %u and IV %u\n",
+	"Encrypting %d bytes of PINGPONG with key %s and IV %u\n",
 	size,
-	*(int*)sk,
+	printSKEY(sk),
 	*(int*)&msg->signature);
 #endif
     GNUNET_ASSERT(-1 != encryptBlock(pt,
@@ -388,8 +389,8 @@ static int exchangeKey(const PeerIdentity * receiver,
     makeSessionkey(&sk);
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
-	"Created fresh sessionkey %u.\n",
-	*(int*) &sk);
+	"Created fresh sessionkey '%s'.\n",
+	printSKEY(&sk));
 #endif
   }
 
@@ -434,7 +435,8 @@ static int exchangeKey(const PeerIdentity * receiver,
   FREE(skey);
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
-      "Sending session key to peer '%s'.\n",
+      "Sending session key '%s' to peer '%s'.\n",
+      printSKEY(&sk),
       &enc);
 #endif
   if (stats != NULL)
@@ -516,14 +518,15 @@ static int acceptSessionKey(const PeerIdentity * sender,
   if (size != sizeof(SESSIONKEY)) {
     LOG(LOG_WARNING,
 	_("Invalid '%s' message received from peer '%s'.\n"),
-	"SKEY",
+	"setkey",
 	&enc);
     return SYSERR;
   }
   if (key.crc32 !=
       htonl(crc32N(&key, SESSIONKEY_LEN))) {
     LOG(LOG_WARNING,
-	_("SKEY from '%s' fails CRC check (have: %u, want %u).\n"),
+	_("setkey '%s' from '%s' fails CRC check (have: %u, want %u).\n"),
+	printSKEY(&key),
 	&enc,
 	ntohl(key.crc32),
 	crc32N(&key, SESSIONKEY_LEN));
@@ -534,9 +537,9 @@ static int acceptSessionKey(const PeerIdentity * sender,
 
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
-      "Received SKEY message with %u bytes of data and key %u.\n",
+      "Received setkey message with %u bytes of data and key '%s'.\n",
       ntohs(sessionkeySigned->header.size),
-      *(int*)&key);
+      printSKEY(&key));
 #endif
   if (stats != NULL)
     stats->change(stat_skeyAccepted,
@@ -556,9 +559,9 @@ static int acceptSessionKey(const PeerIdentity * sender,
     plaintext = MALLOC(size);
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
-	"Decrypting %d bytes of PINGPONG with key %u and IV %u\n",
+	"Decrypting %d bytes of PINGPONG with key '%s' and IV %u\n",
 	size,
-	*(int*)&key,
+	printSKEY(&key),
 	*(int*)&sessionkeySigned->signature);
 #endif
     GNUNET_ASSERT(-1 != 
@@ -675,7 +678,7 @@ static int tryConnect(const PeerIdentity * peer) {
 }
 
 /**
- * We have received an (encrypted) SKEY message.
+ * We have received an (encrypted) setkey message.
  * The reaction is to update our key to the new
  * value.  (Rekeying).
  */
