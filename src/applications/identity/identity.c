@@ -436,7 +436,7 @@ static void delHostFromKnown(const PeerIdentity * identity,
 	}
       }
       for (j=0;j<entry->heloCount;j++) {
-	if (protocol == entry->helos[j]->protocol) {
+	if (protocol == ntohs(entry->helos[j]->protocol)) {
 	  FREE(entry->helos[j]);
 	  entry->helos[j]
 	    = entry->helos[entry->heloCount-1];
@@ -585,7 +585,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
       if ( (tempHosts[j].heloCount > 0) &&
 	   hostIdentityEquals(hostId,
 			      &tempHosts[j].identity) &&
-	   ( (ntohs(tempHosts[j].protocols[0]) == protocol) ||
+	   ( (tempHosts[j].protocols[0] == protocol) ||
 	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
 	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j].helos[0]));
 	memcpy(result,
@@ -610,7 +610,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
     protocol = host->protocols[weak_randomi(host->protocolCount)];
 
   for (i=0;i<host->heloCount;i++) {
-    if (host->helos[i]->protocol == protocol) {
+    if (ntohs(host->helos[i]->protocol) == protocol) {
       result
 	= MALLOC(P2P_hello_MESSAGE_size(host->helos[i]));
       memcpy(result,
@@ -898,7 +898,7 @@ static int forEachHost(cron_t now,
       count++;
       if (callback != NULL) {
 	hi = entry->identity;
-	proto = ntohs(entry->protocols[0]);
+	proto = entry->protocols[0];
 	MUTEX_UNLOCK(&lock_);
 	callback(&hi,
 		 proto,

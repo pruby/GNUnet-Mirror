@@ -179,6 +179,8 @@ static void processThread(void * unused) {
     }
     if (abort_bootstrap != NO)
       break;
+    LOG(LOG_DEBUG,
+	"Starting bootstrap.\n");
     cls.helosLen = 0;
     cls.helosCount = 0;
     bootstrap->bootstrap((hello_Callback)&downloadHostlistCallback,
