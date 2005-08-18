@@ -1672,6 +1672,10 @@ int gconf_main()
   bind_textdomain_codeset(PACKAGE, "UTF-8");
   gtk_set_locale();
 
+#ifdef WINDOWS
+  FreeConsole();
+#endif
+
   /* add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps"); */
   /* add_pixmap_directory (PACKAGE_SOURCE_DIR "/pixmaps"); */
 
