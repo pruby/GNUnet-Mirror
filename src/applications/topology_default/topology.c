@@ -38,6 +38,8 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
+#define DEBUG_TOPOLOGY NO
+
 /**
  * After 2 minutes on an inactive connection, probe the other
  * node with a ping if we have achieved less than 50% of our
@@ -157,7 +159,9 @@ static void scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
+#if DEBUG_TOPOLOGY
   EncName enc;
+#endif
 
   if (getNetworkLoadUp() > 100)
     return; /* bandwidth saturated, do not
@@ -189,12 +193,14 @@ static void scanForHosts(unsigned int index) {
     BREAK(); /* should REALLY not happen */
     return;
   }
+#if DEBUG_TOPOLOGY
   hash2enc(&indexMatch.match.hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
       "Topology: trying to connect to '%s' in slot '%u'.\n",
       &enc,
       index);
+#endif
   coreAPI->unicast(&indexMatch.match,
 		   NULL,
 		   0,
@@ -210,6 +216,7 @@ static void scanForHosts(unsigned int index) {
  * @param hostId the peer that gave a sign of live
  */
 static void notifyPONG(PeerIdentity * hostId) {
+#if DEBUG_TOPOLOGY
   EncName enc;
 
   hash2enc(&hostId->hashPubKey,
@@ -217,6 +224,7 @@ static void notifyPONG(PeerIdentity * hostId) {
   LOG(LOG_DEBUG,
       "Received pong from '%s', telling core that peer is still alive.\n",
       (char*)&enc);  
+#endif
   coreAPI->confirmSessionUp(hostId);
   FREE(hostId);
 }
@@ -228,8 +236,10 @@ static void checkNeedForPing(const PeerIdentity * peer,
 			     void * unused) {
   cron_t now;
   cron_t act;
-  EncName enc;
   PeerIdentity * hi;
+#if DEBUG_TOPOLOGY
+  EncName enc;
+#endif
 
   cronTime(&now);
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
@@ -243,11 +253,13 @@ static void checkNeedForPing(const PeerIdentity * peer,
        to keep the connection open instead of hanging up */
     hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
+#if DEBUG_TOPOLOGY
     hash2enc(&hi->hashPubKey, 
 	     &enc);
     LOG(LOG_DEBUG,
 	"Sending ping to '%s' to prevent connection timeout.\n",
 	(char*)&enc);  
+#endif
     if (OK != pingpong->ping(peer,
 			     NO,
 			     (CronJob)&notifyPONG,

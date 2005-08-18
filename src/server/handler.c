@@ -386,6 +386,14 @@ void injectMessage(const PeerIdentity * sender,
     pos += plen;
 
     ptyp = htons(part->type);
+    IFLOG(LOG_DEBUG,
+	  hash2enc(&sender->hashPubKey,
+		   &enc));
+    LOG(LOG_DEBUG,
+	"Received %s message of type %u from peer '%s'\n",
+	wasEncrypted ? "encrypted" : "plaintext",
+	ptyp,
+	&enc);
     if (YES == wasEncrypted) {
       MessagePartHandler callback;
 

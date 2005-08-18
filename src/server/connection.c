@@ -1696,15 +1696,19 @@ static int copyCallback(void * buf,
 static void shutdownConnection(BufferEntry * be) {
   P2P_hangup_MESSAGE hangup;
   unsigned int i;
+#if DEBUG_CONNECTION
   EncName enc;
+#endif
 
   ENTRY();
+#if DEBUG_CONNECTION
   IFLOG(LOG_DEBUG,
 	hash2enc(&be->session.sender.hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
       "Shutting down connection with '%s'\n",
       &enc);
+#endif
   if (be->status == STAT_DOWN)
     return; /* nothing to do */
   if (be->status == STAT_UP) {

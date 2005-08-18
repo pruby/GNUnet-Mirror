@@ -37,7 +37,7 @@
 
 #define hello_HELPER_TABLE_START_SIZE 64
 
-#define DEBUG_SESSION YES
+#define DEBUG_SESSION NO
 
 #define EXTRA_CHECKS YES
 
@@ -524,12 +524,15 @@ static int acceptSessionKey(const PeerIdentity * sender,
   }
   if (key.crc32 !=
       htonl(crc32N(&key, SESSIONKEY_LEN))) {
+#if DEBUG_SESSION
     LOG(LOG_WARNING,
 	_("setkey '%s' from '%s' fails CRC check (have: %u, want %u).\n"),
 	printSKEY(&key),
 	&enc,
 	ntohl(key.crc32),
 	crc32N(&key, SESSIONKEY_LEN));
+#endif
+    BREAK();
     stats->change(stat_skeyRejected, 
 		  1);
     return SYSERR;

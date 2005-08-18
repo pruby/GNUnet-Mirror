@@ -30,6 +30,8 @@
 #include "gnunet_protocols.h"
 #include "gnunet_bootstrap_service.h"
 
+#define DEBUG_BOOTSTRAP NO
+
 #define hello_HELPER_TABLE_START_SIZE 64
 
 static CoreAPIForApplication * coreAPI;
@@ -179,8 +181,10 @@ static void processThread(void * unused) {
     }
     if (abort_bootstrap != NO)
       break;
+#if DEBUG_BOOTSTRAP
     LOG(LOG_DEBUG,
 	"Starting bootstrap.\n");
+#endif
     cls.helosLen = 0;
     cls.helosCount = 0;
     bootstrap->bootstrap((hello_Callback)&downloadHostlistCallback,

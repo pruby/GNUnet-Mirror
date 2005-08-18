@@ -31,6 +31,8 @@
 #include "gnunet_bootstrap_service.h"
 #include "gnunet_stats_service.h"
 
+#define DEBUG_HTTP NO
+
 #define TCP_HTTP_PORT 80
 #define HTTP_URL "http://"
 #define GET_COMMAND "GET http://%s:%u%s HTTP/1.0\r\n\r\n"
@@ -277,9 +279,11 @@ static void downloadHostlist(hello_Callback callback,
         "No hostlist URL specified in configuration, will not bootstrap.\n");
     return;
   }
+#if DEBUG_HTTP
   LOG(LOG_DEBUG, 
       "Trying to bootstrap with peers from '%s'\n",
       url);
+#endif
   cnt = 1;
   i = strlen(url);
   while (i > 0) {
