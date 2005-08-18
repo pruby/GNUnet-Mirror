@@ -157,14 +157,20 @@ static int parser(int argc, char *argv[])
     conf_parse(DATADIR "/config-client.in");
   }
   dirname = STRDUP(filename);
-  while((strlen(dirname) > 0) &&
-        (dirname[strlen(dirname) - 1] != DIR_SEPARATOR))
-    dirname[strlen(dirname) - 1] = '\0';
-  if(strlen(dirname) > 0) {
-    dirname[strlen(dirname) - 1] = '\0';
-    if(strlen(dirname) > 0)
-      mkdirp(dirname);
+  
+  c = strlen(dirname) - 1;
+  while(c > -1) {
+    char ch = dirname[c];
+    if (ch == '/' || ch == '\\') {
+      dirname[c + 1] = 0;
+      break;
+    }
+    c--;
   }
+  
+  if (c)
+    mkdirp(dirname);
+  
   if((0 != ACCESS(filename,
                   W_OK)) &&
      ((0 == ACCESS(filename, F_OK)) || (0 != ACCESS(dirname, W_OK)))) {
