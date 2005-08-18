@@ -1,3 +1,7 @@
+Wed Aug 17 20:05:19 PDT 2005
+	Fixed bug that would prevent P2P messages from being
+	transmitted under certain (common) circumstances.
+
 Mon Aug 15 00:08:47 PDT 2005
 	Bugfest.  Fixed various bugs in MySQL, fragmentation,
 	core and fs (see Mantis for more details).
