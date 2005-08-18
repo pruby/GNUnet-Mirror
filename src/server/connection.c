@@ -1120,7 +1120,7 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
       } else {
 	ret++;
       }
-#if 1
+#if 0
       {
 	P2P_MESSAGE_HEADER * hdr;
 	EncName enc;

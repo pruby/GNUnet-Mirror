@@ -34,6 +34,7 @@
 #include "connection.h"
 #include "tcpserver.h"
 
+#define DEBUG_HANDLER NO
 
 /**
  * How many incoming packages do we have in the buffer
@@ -345,8 +346,10 @@ void injectMessage(const PeerIdentity * sender,
   const P2P_MESSAGE_HEADER * part;
   P2P_MESSAGE_HEADER cpart;
   P2P_MESSAGE_HEADER * copy;
-  EncName enc;
   int last;
+#if DEBUG_HANDLER
+  EncName enc;
+#endif
 
   pos = 0;
   copy = NULL;
@@ -386,6 +389,7 @@ void injectMessage(const PeerIdentity * sender,
     pos += plen;
 
     ptyp = htons(part->type);
+#if DEBUG_HANDLER
     IFLOG(LOG_DEBUG,
 	  hash2enc(&sender->hashPubKey,
 		   &enc));
@@ -394,6 +398,7 @@ void injectMessage(const PeerIdentity * sender,
 	wasEncrypted ? "encrypted" : "plaintext",
 	ptyp,
 	&enc);
+#endif
     if (YES == wasEncrypted) {
       MessagePartHandler callback;
 

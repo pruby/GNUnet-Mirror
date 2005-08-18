@@ -44,6 +44,8 @@
 #include "gnunet_traffic_service.h"
 #include "gnunet_topology_service.h"
 
+#define DEBUG_GAP NO
+
 #define EXTRA_CHECKS YES
 
 
@@ -802,6 +804,7 @@ static void sendToSelected(const PeerIdentity * id,
     return;
   
   if (getBit(qr, getIndex(id)) == 1) {
+#if DEBUG_GAP
     IFLOG(LOG_DEBUG,
 	  hash2enc(&id->hashPubKey,
 		   &encp);
@@ -811,6 +814,7 @@ static void sendToSelected(const PeerIdentity * id,
 	"Sending query '%s' to '%s'\n",
 	&encq,
 	&encp);
+#endif
     coreAPI->unicast(id,
 		     &qr->msg->header,
 		     BASE_QUERY_PRIORITY
@@ -1030,12 +1034,14 @@ static void queueReply(const PeerIdentity * sender,
   unsigned int size;
   EncName enc;
 
+#if DEBUG_GAP
   IFLOG(LOG_DEBUG,
 	hash2enc(primaryKey,
 		 &enc));
   LOG(LOG_DEBUG,
       "Gap queues reply to query '%s' for later use.\n",
       &enc);
+#endif
 
 #if EXTRA_CHECKS
   /* verify data is valid */
@@ -1451,12 +1457,14 @@ static void sendReply(IndirectionTableEntry * ite,
     maxDelay = TTL_DECREMENT; /* for expired queries */
   /* send to peers */
   for (j=0;j<ite->hostsWaiting;j++) {
+#if DEBUG_GAP
     IFLOG(LOG_DEBUG,
 	  hash2enc(&ite->destination[j].hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
 	"GAP sending reply to '%s'\n",
 	&enc);
+#endif
     coreAPI->unicast(&ite->destination[j],
 		     msg,
 		     BASE_REPLY_PRIORITY *
@@ -1583,6 +1591,7 @@ static int execQuery(const PeerIdentity * sender,
   if ( (policy & QUERY_FORWARD) == 0)
     doForward = NO;
 
+#if DEBUG_GAP
   IFLOG(LOG_DEBUG,
         hash2enc(&query->queries[0],
 		 &enc));
@@ -1591,7 +1600,7 @@ static int execQuery(const PeerIdentity * sender,
       &enc,
       doForward ? "forwarding" : "",
       isRouted ? "routing" : "");
-
+#endif
   cls.values = NULL;
   cls.valueCount = 0;
   cls.sender = sender;
@@ -1685,6 +1694,7 @@ static int useContent(const PeerIdentity * hostId,
   double preference;
   EncName enc;
 
+#if DEBUG_GAP
   IFLOG(LOG_DEBUG,
 	if (hostId != NULL)
 	  hash2enc(&hostId->hashPubKey,
@@ -1692,6 +1702,7 @@ static int useContent(const PeerIdentity * hostId,
   LOG(LOG_DEBUG,
       "GAP received content from '%s'\n",
       (hostId != NULL) ? (const char*)&enc : "myself");
+#endif
   if (ntohs(msg->header.size) < sizeof(P2P_gap_reply_MESSAGE)) {
     BREAK();
     return SYSERR; /* invalid! */
@@ -2039,16 +2050,20 @@ static int handleQuery(const PeerIdentity * sender,
   prio = ntohl(qmsg->priority);
   policy = evaluateQuery(sender,
 			 &prio);
+#if DEBUG_GAP
   IFLOG(LOG_DEBUG,
 	hash2enc(&qmsg->queries[0],
 		 &enc));
   LOG(LOG_DEBUG,
       "Received GAP query '%s'.\n",
       &enc);
+#endif
   if ((policy & QUERY_DROPMASK) == 0) {
     FREE(qmsg);
+#if DEBUG_GAP
     LOG(LOG_DEBUG,
 	"Dropping query, policy decided that this peer is too busy.\n");
+#endif
     return OK; /* straight drop. */
   }
   preference = (double) prio;
