@@ -150,9 +150,7 @@ src/transports/ip.c
 src/transports/udp6.c
 src/util/bloomfilter.c
 src/util/bloomtest.c
-src/util/generate_gnunetd_conf.c
 src/util/checksum.c
-src/util/generate_gnunet_conf.c
 src/util/configtest.c
 src/util/configuration.c
 src/util/crctest.c

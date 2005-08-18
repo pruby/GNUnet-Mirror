@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-07-18 01:09+0200\n"
+"POT-Creation-Date: 2005-08-17 21:04-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -68,7 +68,7 @@ msgid "# Foreign advertisements forwarded"
 msgstr ""
 
 #: src/applications/advertising/advertising.c:726
-#: src/applications/session/connect.c:735
+#: src/applications/session/connect.c:749
 #, c-format
 msgid "'%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
@@ -82,49 +82,49 @@ msgid ""
 "ensures that this peer is known by other peers and discovers other peers"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:79
+#: src/applications/bootstrap_http/http.c:81
 #: src/applications/testbed/testbed.c:1080
 #, c-format
 msgid "Invalid URL '%s' (must begin with '%s')\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:107
+#: src/applications/bootstrap_http/http.c:109
 #, c-format
 msgid "Invalid port \"%s\" in hostlist specification, trying port %d.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:118
+#: src/applications/bootstrap_http/http.c:120
 #, c-format
 msgid "'%s' failed at %s:%d with error: '%s'.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:131
+#: src/applications/bootstrap_http/http.c:133
 #, c-format
 msgid "Could not download list of peer contacts, host '%s' unknown.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:153
-#: src/applications/bootstrap_http/http.c:179
+#: src/applications/bootstrap_http/http.c:155
+#: src/applications/bootstrap_http/http.c:181
 #, c-format
 msgid "'%s' to '%s' failed at %s:%d with error: %s\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:215
+#: src/applications/bootstrap_http/http.c:217
 #, c-format
 msgid "Parsing HTTP response for URL '%s' failed.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:250
+#: src/applications/bootstrap_http/http.c:252
 #, c-format
 msgid "Parsing hello from '%s' failed.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:326
+#: src/applications/bootstrap_http/http.c:330
 #, c-format
 msgid "Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:350
+#: src/applications/bootstrap_http/http.c:354
 msgid "# hellos downloaded via http"
 msgstr ""
 
@@ -177,9 +177,10 @@ msgstr ""
 #: src/applications/template/gnunet-template.c:87
 #: src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:542
-#: src/applications/tracekit/gnunet-tracekit.c:153
-#: src/server/gnunet-peer-info.c:107 src/server/gnunet-transport-check.c:512
-#: src/server/gnunet-update.c:129 src/server/startup.c:512
+#: src/applications/tracekit/gnunet-tracekit.c:153 src/conf/gnunet-setup.c:117
+#: src/conf/gnunet-setup.c:255 src/server/gnunet-peer-info.c:107
+#: src/server/gnunet-transport-check.c:512 src/server/gnunet-update.c:129
+#: src/server/startup.c:516
 #, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr ""
@@ -497,7 +498,7 @@ msgstr ""
 #: src/applications/dht/tools/dhttest2.c:127
 #: src/applications/gap/gaptest.c:317
 #: src/applications/session/sessiontest.c:118
-#: src/applications/tbench/tbenchtest.c:200
+#: src/applications/tbench/tbenchtest.c:199
 #, c-format
 msgid "Waiting for gnunetd to start (%u iterations left)...\n"
 msgstr ""
@@ -510,30 +511,40 @@ msgstr ""
 msgid "Waiting for peers to connect (%u iterations left)...\n"
 msgstr ""
 
-#: src/applications/fragmentation/fragmentation.c:556
+#: src/applications/fragmentation/fragmentation.c:549
 msgid "# messages defragmented"
 msgstr ""
 
-#: src/applications/fragmentation/fragmentation.c:557
+#: src/applications/fragmentation/fragmentation.c:550
 msgid "# messages fragmented"
 msgstr ""
 
-#: src/applications/fragmentation/fragmentation.c:558
+#: src/applications/fragmentation/fragmentation.c:551
 msgid "# fragments discarded"
 msgstr ""
 
-#: src/applications/fragmentation/fragmentation.c:568
+#: src/applications/fragmentation/fragmentation.c:561
 #, c-format
 msgid "'%s' registering handler %d\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:889
+#: src/applications/fs/ecrs/download.c:121
+#, c-format
+msgid "Could not unlink temporary file '%s': %s\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/download.c:249
+#, c-format
+msgid "Write(%d, %p, %d) failed: %s\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/download.c:893
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/download.c:1054
+#: src/applications/fs/ecrs/download.c:1062
 #, c-format
 msgid "Content '%s' seems to be not available on the network.\n"
 msgstr ""
@@ -579,45 +590,50 @@ msgstr ""
 msgid "Format of file '%s' is invalid.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/search.c:158
+#: src/applications/fs/ecrs/search.c:160
 msgid "CHK URI not allowed for search.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/search.c:210
+#: src/applications/fs/ecrs/search.c:216
 msgid "LOC URI not allowed for search.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/upload.c:182
+#: src/applications/fs/ecrs/upload.c:175
+#, c-format
+msgid "'%s' is not a file.\n"
+msgstr ""
+
+#: src/applications/fs/ecrs/upload.c:192
 #, c-format
 msgid "Cannot hash '%s'.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/upload.c:200
+#: src/applications/fs/ecrs/upload.c:210
 #, c-format
 msgid "Initialization for indexing file '%s' failed.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/upload.c:206
+#: src/applications/fs/ecrs/upload.c:216
 #, c-format
 msgid ""
 "Indexing file '%s' failed. Check file permissions and consult your GNUnet "
 "server's logs.\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/upload.c:289
+#: src/applications/fs/ecrs/upload.c:301
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/download.c:239
+#: src/applications/fs/fsui/download.c:240
 msgid "Download aborted."
 msgstr ""
 
-#: src/applications/fs/fsui/download.c:242
+#: src/applications/fs/fsui/download.c:243
 msgid "ECRS download failed (see logs)."
 msgstr ""
 
-#: src/applications/fs/fsui/downloadtest.c:185
+#: src/applications/fs/fsui/downloadtest.c:239
 #: src/applications/fs/fsui/fsuitest.c:167
 #: src/applications/fs/fsui/helper.c:116 src/applications/fs/fsui/helper.c:121
 #: src/applications/fs/fsui/helper.c:124 src/applications/fs/fsui/helper.c:128
@@ -625,15 +641,15 @@ msgstr ""
 msgid "AND"
 msgstr ""
 
-#: src/applications/fs/fsui/file_info.c:73
+#: src/applications/fs/fsui/file_info.c:76
 msgid "Collecting file identifiers disabled.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/fsui.c:162
+#: src/applications/fs/fsui/fsui.c:168
 msgid "FSUI persistence: error restoring download\n"
 msgstr ""
 
-#: src/applications/fs/fsui/fsui.c:597
+#: src/applications/fs/fsui/fsui.c:616
 #, c-format
 msgid "FSUI state file '%s' had syntax error at offset %u.\n"
 msgstr ""
@@ -652,7 +668,7 @@ msgid ""
 "schedule.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/search.c:164
+#: src/applications/fs/fsui/search.c:196
 msgid "This search is already pending!\n"
 msgstr ""
 
@@ -660,27 +676,27 @@ msgstr ""
 msgid "Unindex failed.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:365 src/applications/fs/fsui/upload.c:404
+#: src/applications/fs/fsui/upload.c:365 src/applications/fs/fsui/upload.c:402
 msgid "Upload failed.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/upload.c:411
+#: src/applications/fs/fsui/upload.c:407
 msgid "Cannot upload directory without using recursion.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:961
+#: src/applications/fs/module/fs.c:988
 #, c-format
 msgid ""
 "You must specify a postive number for '%s' in the configuration in section '%"
 "s'.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1002
+#: src/applications/fs/module/fs.c:1029
 #, c-format
 msgid "'%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1039
+#: src/applications/fs/module/fs.c:1066
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
@@ -717,7 +733,7 @@ msgid ""
 "Unindexed ODB block '%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1880
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1904
 msgid "Failed to get traffic stats.\n"
 msgstr ""
 
@@ -1096,7 +1112,8 @@ msgid "Invalid argument: '%s'\n"
 msgstr ""
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:223
-#: src/server/gnunet-peer-info.c:118 src/server/gnunet-transport-check.c:523
+#: src/conf/gnunet-setup.c:184 src/server/gnunet-peer-info.c:118
+#: src/server/gnunet-transport-check.c:523
 msgid "Invalid arguments. Exiting.\n"
 msgstr ""
 
@@ -1225,23 +1242,23 @@ msgstr ""
 msgid "'%s' failed.  Is '%s' a file?\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1869
+#: src/applications/gap/gap.c:1893
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1886 src/applications/gap/gap.c:1891
-#: src/applications/gap/gap.c:1897
+#: src/applications/gap/gap.c:1910 src/applications/gap/gap.c:1915
+#: src/applications/gap/gap.c:1921
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2113
+#: src/applications/gap/gap.c:2152
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2144
+#: src/applications/gap/gap.c:2183
 #, c-format
 msgid "'%s' registering handlers %d %d\n"
 msgstr ""
@@ -1256,7 +1273,7 @@ msgid "allows clients to determine gnunetd's configuration"
 msgstr ""
 
 #: src/applications/identity/hostkey.c:98
-#: src/applications/identity/identity.c:976
+#: src/applications/identity/identity.c:1024
 #, c-format
 msgid ""
 "Configuration file must specify a directory for GNUnet to store per-peer "
@@ -1281,19 +1298,19 @@ msgstr ""
 msgid "Done creating hostkey.\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:330
+#: src/applications/identity/identity.c:324
 #, c-format
 msgid ""
 "File '%s' in directory '%s' does not match naming convention. Removed.\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:363
+#: src/applications/identity/identity.c:357
 #, c-format
 msgid "%s '%s' returned no known hosts!\n"
 msgstr ""
 
-#: src/applications/identity/identity.c:614
-#: src/applications/identity/identity.c:632
+#: src/applications/identity/identity.c:637
+#: src/applications/identity/identity.c:655
 #, c-format
 msgid "Removed file '%s' containing invalid hello data.\n"
 msgstr ""
@@ -1416,108 +1433,109 @@ msgstr ""
 msgid "async RPC reply not received.\n"
 msgstr ""
 
-#: src/applications/session/connect.c:208
+#: src/applications/session/connect.c:209
 #, c-format
 msgid "Session key from peer '%s' could not be verified.\n"
 msgstr ""
 
-#: src/applications/session/connect.c:245
+#: src/applications/session/connect.c:246
 msgid "Cannot encrypt sessionkey, other peer not known!\n"
 msgstr ""
 
-#: src/applications/session/connect.c:518
+#: src/applications/session/connect.c:520
 #, c-format
 msgid "Invalid '%s' message received from peer '%s'.\n"
 msgstr ""
 
-#: src/applications/session/connect.c:526
+#: src/applications/session/connect.c:529
 #, c-format
-msgid "SKEY from '%s' fails CRC check (have: %u, want %u).\n"
+msgid "setkey '%s' from '%s' fails CRC check (have: %u, want %u).\n"
 msgstr ""
 
-#: src/applications/session/connect.c:578
+#: src/applications/session/connect.c:584
 msgid ""
 "Error parsing encrypted session key, given message part size is invalid.\n"
 msgstr ""
 
-#: src/applications/session/connect.c:725
+#: src/applications/session/connect.c:739
 msgid "# session keys sent"
 msgstr ""
 
-#: src/applications/session/connect.c:727
+#: src/applications/session/connect.c:741
 msgid "# session keys rejected"
 msgstr ""
 
-#: src/applications/session/connect.c:729
+#: src/applications/session/connect.c:743
 msgid "# session keys accepted"
 msgstr ""
 
-#: src/applications/session/connect.c:731
+#: src/applications/session/connect.c:745
 msgid "# sessions established"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:152
-#: src/applications/sqstore_mysql/mysql.c:159
-#: src/applications/sqstore_mysql/mysql.c:348
-#: src/applications/sqstore_mysql/mysql.c:728
-#: src/applications/sqstore_mysql/mysql.c:743
-#: src/applications/sqstore_mysql/mysql.c:752
-#: src/applications/sqstore_mysql/mysql.c:776
-#: src/applications/sqstore_mysql/mysql.c:786
-#: src/applications/sqstore_mysql/mysql.c:835
-#: src/applications/sqstore_mysql/mysql.c:914
-#: src/applications/sqstore_mysql/mysql.c:924
-#: src/applications/sqstore_sqlite/sqlite.c:44
-#: src/applications/sqstore_sqlite/sqlite.c:51 src/util/hostkey_gcrypt.c:56
+#: src/applications/sqstore_mysql/mysql.c:149
+#: src/applications/sqstore_mysql/mysql.c:156
+#: src/applications/sqstore_mysql/mysql.c:362
+#: src/applications/sqstore_mysql/mysql.c:689
+#: src/applications/sqstore_mysql/mysql.c:704
+#: src/applications/sqstore_mysql/mysql.c:713
+#: src/applications/sqstore_mysql/mysql.c:737
+#: src/applications/sqstore_mysql/mysql.c:747
+#: src/applications/sqstore_mysql/mysql.c:796
+#: src/applications/sqstore_mysql/mysql.c:875
+#: src/applications/sqstore_mysql/mysql.c:885
+#: src/applications/sqstore_mysql/mysql.c:955
+#: src/applications/sqstore_mysql/mysql.c:964
+#: src/applications/sqstore_sqlite/sqlite.c:43
+#: src/applications/sqstore_sqlite/sqlite.c:50 src/util/hostkey_gcrypt.c:56
 #: src/util/hostkey_gcrypt.c:63 src/util/storage.c:643
 #: src/util/symcipher_gcrypt.c:47 src/util/symcipher_gcrypt.c:54
-#: src/include/gnunet_util.h:1011 src/include/gnunet_util.h:1018
-#: src/include/gnunet_util.h:1020
+#: src/include/gnunet_util.h:1025 src/include/gnunet_util.h:1032
+#: src/include/gnunet_util.h:1034
 #, c-format
 msgid "'%s' failed at %s:%d with error: %s\n"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:462
-#: src/applications/sqstore_mysql/mysql.c:547
-#: src/applications/sqstore_mysql/mysql.c:647
-#: src/applications/sqstore_mysql/mysql.c:802
-#: src/applications/sqstore_mysql/mysql.c:816
+#: src/applications/sqstore_mysql/mysql.c:505
+#: src/applications/sqstore_mysql/mysql.c:602
+#: src/applications/sqstore_mysql/mysql.c:763
+#: src/applications/sqstore_mysql/mysql.c:777
 msgid "Invalid data in MySQL database.  Please verify integrity!\n"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:1108
+#: src/applications/sqstore_mysql/mysql.c:1065
 #, c-format
 msgid "Query '%s' had no results.\n"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:1199
+#: src/applications/sqstore_mysql/mysql.c:1156
 #, c-format
 msgid "Trying to use file '%s' for MySQL configuration.\n"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysqltest.c:257
-#: src/applications/sqstore_sqlite/sqlitetest.c:259
+#: src/applications/sqstore_mysql/mysqltest.c:251
+#: src/applications/sqstore_sqlite/sqlitetest.c:258
 msgid "Could not initialize libgnunetutil!\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:181
-#: src/applications/sqstore_sqlite/sqlite.c:201
+#: src/applications/sqstore_sqlite/sqlite.c:197
+#: src/applications/sqstore_sqlite/sqlite.c:217
 msgid "SQL Database corrupt, ignoring result.\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:406
-#: src/applications/sqstore_sqlite/sqlite.c:601
+#: src/applications/sqstore_sqlite/sqlite.c:428
+#: src/applications/sqstore_sqlite/sqlite.c:621
 msgid "Invalid data in database.  Please verify integrity!\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:915
+#: src/applications/sqstore_sqlite/sqlite.c:979
 #, c-format
 msgid ""
 "Configuration file must specify directory for storing FS data in section '%"
 "s' under '%s'.\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:929
+#: src/applications/sqstore_sqlite/sqlite.c:993
 msgid "Unable to initialize SQLite.\n"
 msgstr ""
 
@@ -1685,7 +1703,7 @@ msgid ""
 "Did not receive the message from gnunetd. Is gnunetd running?\n"
 msgstr ""
 
-#: src/applications/tbench/tbench.c:447
+#: src/applications/tbench/tbench.c:448
 msgid "allows profiling of direct peer-to-peer connections"
 msgstr ""
 
@@ -1711,7 +1729,7 @@ msgid ""
 "Failed to receive reply from gnunetd.\n"
 msgstr ""
 
-#: src/applications/tbench/tbenchtest.c:212
+#: src/applications/tbench/tbenchtest.c:211
 #, c-format
 msgid "Running benchmark...\n"
 msgstr ""
@@ -1908,7 +1926,7 @@ msgstr ""
 msgid "allows construction of a P2P-testbed (incomplete)"
 msgstr ""
 
-#: src/applications/topology_default/topology.c:388
+#: src/applications/topology_default/topology.c:400
 #, c-format
 msgid "Version mismatch ('%s' vs. '%*.s'), run gnunet-update!\n"
 msgstr ""
@@ -2026,41 +2044,47 @@ msgstr ""
 msgid "tracks bandwidth utilization by gnunetd"
 msgstr ""
 
-#: src/applications/transport/transport.c:469
-#: src/applications/transport/transport.c:477
+#: src/applications/transport/transport.c:471
+#: src/applications/transport/transport.c:479
 #, c-format
 msgid "No transport of type %d known.\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:635
+#: src/applications/transport/transport.c:639
 #, c-format
 msgid "Option '%s' not set in configuration in section '%s', setting to %dm.\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:650
+#: src/applications/transport/transport.c:654
 #, c-format
 msgid ""
 "You should specify at least one transport service under option '%s' in "
 "section '%s'.\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:676
+#: src/applications/transport/transport.c:680
 #, c-format
 msgid "Transport library '%s' did not provide required function '%s%s'.\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:697
+#: src/applications/transport/transport.c:701
 #, c-format
 msgid "I am peer '%s'.\n"
 msgstr ""
 
-#: src/conf/recreate.c:71
+#: src/conf/conf.c:522 src/conf/recreate.c:100
 #, c-format
-msgid "Unable to save configuration files: %s.\n"
+msgid "Unable to save configuration file '%s': %s.\n"
 msgstr ""
 
-#: src/conf/recreate.c:75
-msgid "Configuration files (re)created.\n"
+#: src/conf/conf.c:529
+#, c-format
+msgid "Configuration file '%s' created.\n"
+msgstr ""
+
+#: src/conf/confdata.c:93
+#, c-format
+msgid "%s: symbol value '%s' invalid for %s\n"
 msgstr ""
 
 #: src/conf/gconf_interface.c:135
@@ -2220,94 +2244,159 @@ msgstr ""
 msgid "Couldn't find pixmap file: %s"
 msgstr ""
 
-#: src/conf/gnunet-setup.c:33
+#: src/conf/gnunet-setup.c:93
+msgid "generate configuration for gnunetd, the GNUnet daemon"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:101
+msgid "Tool to setup GNUnet."
+msgstr ""
+
+#: src/conf/gnunet-setup.c:102
+#, c-format
+msgid "Available MODEs:\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:103
+#, c-format
+msgid " config\t\ttext-based configuration\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:105
+#, c-format
+msgid " menuconfig\ttext-based menu\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:107
+#, c-format
+msgid " wizard-curses\tBasic text-based graphical configuration\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:110
+#, c-format
+msgid " gconfig\tGTK configuration\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:111
+#, c-format
 msgid ""
-"USAGE: gnunet-setup MODULE\n"
-"\n"
-"MODULE\n"
-" recreate\trecreate configuration files\n"
-" config\t\ttext-based configuration\n"
-" menuconfig\ttext-based menu\n"
-" gconfig\tGTK configuration\n"
-" wizard-curses\tBasic text-based graphical configuration\n"
 " wizard-gtk\tBasic GTK configuration\n"
 "\n"
 msgstr ""
 
-#: src/conf/gnunet-setup.c:97
-msgid "Please specify a path where the configuration files will be stored."
+#: src/conf/gnunet-setup.c:172
+#, c-format
+msgid "gnunet-setup must have write-access to the configuration file '%s'\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:108
+#: src/conf/gnunet-setup.c:181 src/server/gnunet-peer-info.c:113
+#: src/server/gnunet-transport-check.c:518 src/server/gnunet-update.c:139
+#, c-format
+msgid "Invalid arguments: "
+msgstr ""
+
+#: src/conf/gnunet-setup.c:223
+#, c-format
+msgid "menuconfig is not available\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:228 src/conf/gnunet-setup.c:238
+#, c-format
+msgid ""
+"Can only run wizard to configure gnunetd.\n"
+"Did you forget the '%s' option?\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:233
+#, c-format
+msgid "wizard-curses is not available\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:243
+#, c-format
+msgid "wizard-gtk is not available\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:250
+#, c-format
+msgid "gconfig is not available\n"
+msgstr ""
+
+#: src/conf/gnunet-setup.c:254
+#, c-format
+msgid "Unknown operation '%s'\n"
+msgstr ""
+
+#: src/conf/gnunet-win-tool.c:109
 #, c-format
 msgid "GNUnet service installed successfully.\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:111 src/conf/gnunet-win-tool.c:138
+#: src/conf/gnunet-win-tool.c:112 src/conf/gnunet-win-tool.c:139
 #, c-format
 msgid "This version of Windows doesn't support services.\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:115 src/conf/gnunet-win-tool.c:142
+#: src/conf/gnunet-win-tool.c:116 src/conf/gnunet-win-tool.c:143
 #, c-format
 msgid "Error: can't open Service Control Manager: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:120
+#: src/conf/gnunet-win-tool.c:121
 #, c-format
 msgid "Error: can't create service: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:123 src/conf/gnunet-win-tool.c:154
+#: src/conf/gnunet-win-tool.c:124 src/conf/gnunet-win-tool.c:155
 #, c-format
 msgid "Unknown error.\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:135
+#: src/conf/gnunet-win-tool.c:136
 #, c-format
 msgid "Service deleted.\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:147
+#: src/conf/gnunet-win-tool.c:148
 #, c-format
 msgid "Error: can't access service: %s\n"
 msgstr ""
 
-#: src/conf/gnunet-win-tool.c:151
+#: src/conf/gnunet-win-tool.c:152
 #, c-format
 msgid "Error: can't delete service: %s\n"
 msgstr ""
 
-#: src/conf/wizard_callbacks.c:213
+#: src/conf/wizard_callbacks.c:169
 #, c-format
-msgid "Unable to save configuration file %s:"
+msgid "Unable to save configuration file '%s':"
 msgstr ""
 
-#: src/conf/wizard_callbacks.c:236 src/conf/wizard_curs.c:517
+#: src/conf/wizard_callbacks.c:189 src/conf/wizard_curs.c:613
 msgid "Unable to create user account:"
 msgstr ""
 
-#: src/conf/wizard_callbacks.c:243 src/conf/wizard_curs.c:520
+#: src/conf/wizard_callbacks.c:196 src/conf/wizard_curs.c:616
 msgid "Unable to change startup process:"
 msgstr ""
 
-#: src/conf/wizard_curs.c:50 src/conf/wizard_interface.c:1075
-#: src/conf/wizard_util.c:118 src/conf/wizard_util.c:160
+#: src/conf/wizard_curs.c:57 src/conf/wizard_interface.c:1075
+#: src/conf/wizard_util.c:120 src/conf/wizard_util.c:162
 msgid "Error"
 msgstr ""
 
-#: src/conf/wizard_curs.c:99 src/conf/wizard_curs.c:114
-#: src/conf/wizard_curs.c:167 src/conf/wizard_curs.c:202
-#: src/conf/wizard_curs.c:230 src/conf/wizard_curs.c:255
-#: src/conf/wizard_curs.c:287 src/conf/wizard_curs.c:313
-#: src/conf/wizard_curs.c:344 src/conf/wizard_curs.c:367
-#: src/conf/wizard_curs.c:395 src/conf/wizard_curs.c:417
-#: src/conf/wizard_curs.c:439 src/conf/wizard_curs.c:467
-#: src/conf/wizard_curs.c:497 src/conf/wizard_curs.c:582
+#: src/conf/wizard_curs.c:113 src/conf/wizard_curs.c:128
+#: src/conf/wizard_curs.c:181 src/conf/wizard_curs.c:218
+#: src/conf/wizard_curs.c:248 src/conf/wizard_curs.c:274
+#: src/conf/wizard_curs.c:307 src/conf/wizard_curs.c:334
+#: src/conf/wizard_curs.c:366 src/conf/wizard_curs.c:391
+#: src/conf/wizard_curs.c:420 src/conf/wizard_curs.c:443
+#: src/conf/wizard_curs.c:498 src/conf/wizard_curs.c:560
+#: src/conf/wizard_curs.c:591 src/conf/wizard_curs.c:635
 msgid "GNUnet configuration"
 msgstr ""
 
-#: src/conf/wizard_curs.c:100 src/conf/wizard_interface.c:77
+#: src/conf/wizard_curs.c:114
 msgid ""
 "Welcome to GNUnet!\n"
 "\n"
@@ -2315,48 +2404,48 @@ msgid ""
 "GNUnet.\n"
 "\n"
 "Please visit our homepage at\n"
-"\thttp://www.gnunet.org\n"
+"\thttp://gnunet.org/\n"
 "and join our community at\n"
-"\thttp://www.gnunet.org/drupal/\n"
+"\thttp://gnunet.org/drupal/\n"
 "\n"
 "Have a lot of fun,\n"
 "\n"
 "the GNUnet team"
 msgstr ""
 
-#: src/conf/wizard_curs.c:115
+#: src/conf/wizard_curs.c:129
 msgid ""
 "Choose the network interface that connects your computer to the internet "
 "from the list below."
 msgstr ""
 
-#: src/conf/wizard_curs.c:121 src/conf/wizard_curs.c:173
-#: src/conf/wizard_curs.c:208 src/conf/wizard_curs.c:260
-#: src/conf/wizard_curs.c:292 src/conf/wizard_curs.c:349
+#: src/conf/wizard_curs.c:135 src/conf/wizard_curs.c:188
+#: src/conf/wizard_curs.c:225 src/conf/wizard_curs.c:280
+#: src/conf/wizard_curs.c:312 src/conf/wizard_curs.c:372
 msgid "Help"
 msgstr ""
 
-#: src/conf/wizard_curs.c:121 src/conf/wizard_curs.c:173
+#: src/conf/wizard_curs.c:135 src/conf/wizard_curs.c:189
 msgid ""
 "The \"Network interface\" is the device that connects your computer to the "
 "internet. This is usually a modem, an ISDN card or a network card in case "
 "you are using DSL."
 msgstr ""
 
-#: src/conf/wizard_curs.c:167
+#: src/conf/wizard_curs.c:182
 msgid ""
 "What is the name of the network interface that connects your computer to the "
 "Internet?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:202
+#: src/conf/wizard_curs.c:219
 msgid ""
 "What is this computer's public IP address or hostname?\n"
 "\n"
 "If in doubt, leave this empty."
 msgstr ""
 
-#: src/conf/wizard_curs.c:208
+#: src/conf/wizard_curs.c:226
 msgid ""
 "If your provider always assigns the same IP-Address to you (a \"static\" IP-"
 "Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
@@ -2367,7 +2456,7 @@ msgid ""
 "IP-Address."
 msgstr ""
 
-#: src/conf/wizard_curs.c:230
+#: src/conf/wizard_curs.c:249
 msgid ""
 "Is this machine behind NAT?\n"
 "\n"
@@ -2378,11 +2467,11 @@ msgid ""
 "forwarding\")."
 msgstr ""
 
-#: src/conf/wizard_curs.c:255
+#: src/conf/wizard_curs.c:275
 msgid "How much upstream (Bytes/s) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:260
+#: src/conf/wizard_curs.c:280
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -2393,11 +2482,11 @@ msgid ""
 "connection."
 msgstr ""
 
-#: src/conf/wizard_curs.c:287
+#: src/conf/wizard_curs.c:307
 msgid "How much downstream (Bytes/s) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:292
+#: src/conf/wizard_curs.c:313
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -2408,7 +2497,7 @@ msgid ""
 "connection."
 msgstr ""
 
-#: src/conf/wizard_curs.c:313
+#: src/conf/wizard_curs.c:335
 msgid ""
 "Share denoted bandwidth with other applications?\n"
 "\n"
@@ -2421,18 +2510,18 @@ msgid ""
 "connection whenever your high-speed LAN gets used (e.g. by NFS)."
 msgstr ""
 
-#: src/conf/wizard_curs.c:344
+#: src/conf/wizard_curs.c:367
 msgid "How much CPU (in %) may be used?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:349
+#: src/conf/wizard_curs.c:373
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
 "This is the percentage of processor time GNUnet is allowed to use."
 msgstr ""
 
-#: src/conf/wizard_curs.c:367
+#: src/conf/wizard_curs.c:392
 msgid ""
 "Store migrated content?\n"
 "\n"
@@ -2445,7 +2534,7 @@ msgid ""
 "availability."
 msgstr ""
 
-#: src/conf/wizard_curs.c:395
+#: src/conf/wizard_curs.c:421
 msgid ""
 "What's the maximum datastore size in MB?\n"
 "\n"
@@ -2453,7 +2542,7 @@ msgid ""
 "inserted and migrated content)."
 msgstr ""
 
-#: src/conf/wizard_curs.c:417
+#: src/conf/wizard_curs.c:444
 msgid ""
 "Do you want to launch GNUnet as a system service?\n"
 "\n"
@@ -2462,7 +2551,7 @@ msgid ""
 "launch GNUnet yourself each time you want to use it."
 msgstr ""
 
-#: src/conf/wizard_curs.c:440
+#: src/conf/wizard_curs.c:499
 msgid ""
 "Define the user owning the GNUnet service.\n"
 "\n"
@@ -2478,7 +2567,7 @@ msgid ""
 "GNUnet user:"
 msgstr ""
 
-#: src/conf/wizard_curs.c:468
+#: src/conf/wizard_curs.c:561
 msgid ""
 "Define the group owning the GNUnet service.\n"
 "\n"
@@ -2493,7 +2582,7 @@ msgid ""
 "GNUnet group:"
 msgstr ""
 
-#: src/conf/wizard_curs.c:497
+#: src/conf/wizard_curs.c:592
 msgid ""
 "If you are an experienced user, you may want to tweak your GNUnet "
 "installation using the enhanced configurator.\n"
@@ -2501,7 +2590,7 @@ msgid ""
 "Do you want to start it after saving your configuration?"
 msgstr ""
 
-#: src/conf/wizard_curs.c:576
+#: src/conf/wizard_curs.c:629
 #, c-format
 msgid ""
 "Unable to save configuration file %s: %s.\n"
@@ -2513,6 +2602,23 @@ msgstr ""
 #: src/conf/wizard_interface.c:461 src/conf/wizard_interface.c:783
 #: src/conf/wizard_interface.c:1164
 msgid "GNUnet configuration assistant"
+msgstr ""
+
+#: src/conf/wizard_interface.c:77
+msgid ""
+"Welcome to GNUnet!\n"
+"\n"
+"This assistant will ask you a few basic questions in order to configure "
+"GNUnet.\n"
+"\n"
+"Please visit our homepage at\n"
+"\thttp://www.gnunet.org\n"
+"and join our community at\n"
+"\thttp://www.gnunet.org/drupal/\n"
+"\n"
+"Have a lot of fun,\n"
+"\n"
+"the GNUnet team"
 msgstr ""
 
 #: src/conf/wizard_interface.c:106 src/conf/wizard_interface.c:332
@@ -2726,31 +2832,31 @@ msgstr ""
 msgid "Can't access the service"
 msgstr ""
 
-#: src/conf/wizard_util.c:111
+#: src/conf/wizard_util.c:112
 msgid "Can't delete the service"
 msgstr ""
 
-#: src/conf/wizard_util.c:114
+#: src/conf/wizard_util.c:116
 msgid "Unknown error"
 msgstr ""
 
-#: src/conf/wizard_util.c:143
+#: src/conf/wizard_util.c:145
 msgid "This version of Windows does not support multiple users."
 msgstr ""
 
-#: src/conf/wizard_util.c:147
+#: src/conf/wizard_util.c:149
 msgid "Error creating user"
 msgstr ""
 
-#: src/conf/wizard_util.c:150
+#: src/conf/wizard_util.c:152
 msgid "Error accessing local security policy"
 msgstr ""
 
-#: src/conf/wizard_util.c:153
+#: src/conf/wizard_util.c:155
 msgid "Error granting service right to user"
 msgstr ""
 
-#: src/conf/wizard_util.c:156
+#: src/conf/wizard_util.c:158
 msgid "Unknown error while creating a new user"
 msgstr ""
 
@@ -2764,41 +2870,41 @@ msgstr ""
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr ""
 
-#: src/server/connection.c:2155
+#: src/server/connection.c:2192
 #, c-format
 msgid "Message from '%s' discarded: invalid format.\n"
 msgstr ""
 
-#: src/server/connection.c:2232
+#: src/server/connection.c:2269
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:2248
+#: src/server/connection.c:2285
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:2641
+#: src/server/connection.c:2679
 msgid "# outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:2643
+#: src/server/connection.c:2681
 msgid "# bytes of outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:2645
+#: src/server/connection.c:2683
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:2647
+#: src/server/connection.c:2685
 msgid "# bytes encrypted"
 msgstr ""
 
-#: src/server/connection.c:2649
+#: src/server/connection.c:2687
 msgid "# bytes decrypted"
 msgstr ""
 
-#: src/server/connection.c:2651
+#: src/server/connection.c:2689
 msgid "# bytes noise sent"
 msgstr ""
 
@@ -2857,12 +2963,6 @@ msgstr ""
 
 #: src/server/gnunet-peer-info.c:95
 msgid "Print information about GNUnet peers."
-msgstr ""
-
-#: src/server/gnunet-peer-info.c:113 src/server/gnunet-transport-check.c:518
-#: src/server/gnunet-update.c:139
-#, c-format
-msgid "Invalid arguments: "
 msgstr ""
 
 #: src/server/gnunet-peer-info.c:144 src/server/gnunet-peer-info.c:159
@@ -3020,27 +3120,27 @@ msgstr ""
 msgid "Updated data for %d applications.\n"
 msgstr ""
 
-#: src/server/gnunetd.c:108
+#: src/server/gnunetd.c:115
 #, c-format
 msgid "Configuration or GNUnet version changed.  You need to run '%s'!\n"
 msgstr ""
 
-#: src/server/gnunetd.c:116
+#: src/server/gnunetd.c:123
 #, c-format
 msgid "'%s' starting\n"
 msgstr ""
 
-#: src/server/gnunetd.c:138
+#: src/server/gnunetd.c:145
 #, c-format
 msgid "'%s' startup complete.\n"
 msgstr ""
 
-#: src/server/gnunetd.c:143
+#: src/server/gnunetd.c:150
 #, c-format
 msgid "'%s' is shutting down.\n"
 msgstr ""
 
-#: src/server/handler.c:366
+#: src/server/handler.c:367
 #, c-format
 msgid "Received corrupt message from peer '%s'in %s:%d.\n"
 msgstr ""
@@ -3074,26 +3174,26 @@ msgstr ""
 msgid "Starts the gnunetd daemon."
 msgstr ""
 
-#: src/server/startup.c:488
+#: src/server/startup.c:412
 #, c-format
-msgid "User '%s' not known, cannot change UID to it."
+msgid "User '%s' not known, cannot change UID to it.\n"
 msgstr ""
 
-#: src/server/startup.c:499
+#: src/server/startup.c:421
 #, c-format
-msgid "Cannot change user/group to '%s': %s"
+msgid "Cannot change user/group to '%s': %s\n"
 msgstr ""
 
-#: src/server/startup.c:518
+#: src/server/startup.c:522
 msgid "Invalid command-line arguments:\n"
 msgstr ""
 
-#: src/server/startup.c:521
+#: src/server/startup.c:525
 #, c-format
 msgid "Argument %d: '%s'\n"
 msgstr ""
 
-#: src/server/startup.c:527
+#: src/server/startup.c:531
 msgid "Invalid command-line arguments.\n"
 msgstr ""
 
@@ -3109,7 +3209,7 @@ msgid ""
 "entry '%s': %s\n"
 msgstr ""
 
-#: src/server/tcpserver.c:802
+#: src/server/tcpserver.c:806
 #, c-format
 msgid "%s failed, message type %d already in use.\n"
 msgstr ""
@@ -3132,7 +3232,7 @@ msgstr ""
 msgid "Expected welcome on http connection, got garbage. Closing connection.\n"
 msgstr ""
 
-#: src/transports/http.c:817 src/transports/tcp.c:689 src/transports/udp.c:286
+#: src/transports/http.c:817 src/transports/tcp.c:692 src/transports/udp.c:286
 #, c-format
 msgid "%s: Rejected connection from blacklisted address %u.%u.%u.%u.\n"
 msgstr ""
@@ -3141,7 +3241,7 @@ msgstr ""
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr ""
 
-#: src/transports/http.c:1173 src/transports/tcp.c:1125 src/util/tcpio.c:166
+#: src/transports/http.c:1173 src/transports/tcp.c:1132 src/util/tcpio.c:166
 #: src/util/tcpio.c:196
 #, c-format
 msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
@@ -3223,24 +3323,24 @@ msgid ""
 "Received malformed message (size %u) from tcp-peer connection. Closing.\n"
 msgstr ""
 
-#: src/transports/tcp.c:1057
+#: src/transports/tcp.c:1064
 msgid "Could not determine my public IP address.\n"
 msgstr ""
 
-#: src/transports/tcp.c:1307 src/transports/tcp6.c:1200
+#: src/transports/tcp.c:1314 src/transports/tcp6.c:1200
 #, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr ""
 
-#: src/transports/tcp.c:1424
+#: src/transports/tcp.c:1431
 msgid "# bytes received via TCP"
 msgstr ""
 
-#: src/transports/tcp.c:1426
+#: src/transports/tcp.c:1433
 msgid "# bytes sent via TCP"
 msgstr ""
 
-#: src/transports/tcp.c:1428
+#: src/transports/tcp.c:1435
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr ""
 
@@ -3381,16 +3481,14 @@ msgstr ""
 msgid "Syntax error in configuration file '%s' at line %d.\n"
 msgstr ""
 
-#: src/util/configuration.c:471
+#: src/util/configuration.c:509 src/util/configuration.c:511
 #, c-format
-msgid ""
-"Configuration file '%s' not found. I will try to create the default "
-"configuration file at that location.\n"
+msgid "Configuration file '%s' not found.  Run gnunet-setup!\n"
 msgstr ""
 
-#: src/util/configuration.c:488
+#: src/util/configuration.c:515
 #, c-format
-msgid "Cannot open configuration file '%s'\n"
+msgid "Cannot open configuration file '%s'.\n"
 msgstr ""
 
 #: src/util/cron.c:229
@@ -3479,7 +3577,7 @@ msgstr ""
 msgid "RSA signature verification failed at %s:%d: %s\n"
 msgstr ""
 
-#: src/util/initialize.c:151
+#: src/util/initialize.c:228
 msgid "Shutdown complete.\n"
 msgstr ""
 
@@ -3724,8 +3822,8 @@ msgstr ""
 msgid "Assertion failed at %s:%d.\n"
 msgstr ""
 
-#: src/include/gnunet_util.h:1027 src/include/gnunet_util.h:1029
-#: src/include/gnunet_util.h:1036
+#: src/include/gnunet_util.h:1041 src/include/gnunet_util.h:1043
+#: src/include/gnunet_util.h:1050
 #, c-format
 msgid "'%s' failed on file '%s' at %s:%d with error: %s\n"
 msgstr ""
