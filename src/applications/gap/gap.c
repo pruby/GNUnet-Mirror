@@ -794,8 +794,10 @@ static void hotpathSelectionCode(const PeerIdentity * id,
  */
 static void sendToSelected(const PeerIdentity * id,
 			   const QueryRecord * qr) {
+#if DEBUG_GAP
   EncName encq;
   EncName encp;
+#endif
 
   if ( (equalsHashCode512(&id->hashPubKey,
 			  &qr->noTarget.hashPubKey)) ||
@@ -1032,9 +1034,9 @@ static void queueReply(const PeerIdentity * sender,
   P2P_gap_reply_MESSAGE * pmsg;
   IndirectionTableEntry * ite;
   unsigned int size;
+#if DEBUG_GAP
   EncName enc;
 
-#if DEBUG_GAP
   IFLOG(LOG_DEBUG,
 	hash2enc(primaryKey,
 		 &enc));
@@ -1448,7 +1450,9 @@ static void sendReply(IndirectionTableEntry * ite,
   unsigned int j;
   unsigned int maxDelay;
   cron_t now;
+#if DEBUG_GAP
   EncName enc;
+#endif
 
   cronTime(&now);
   if (now < ite->ttl)
@@ -1566,7 +1570,9 @@ static int execQuery(const PeerIdentity * sender,
   int max;
   int * perm;
   int doForward;
+#if DEBUG_GAP
   EncName enc;
+#endif
 
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&lookup_exclusion);
@@ -1692,9 +1698,9 @@ static int useContent(const PeerIdentity * hostId,
   unsigned int prio;
   DataContainer * value;
   double preference;
+#if DEBUG_GAP
   EncName enc;
 
-#if DEBUG_GAP
   IFLOG(LOG_DEBUG,
 	if (hostId != NULL)
 	  hash2enc(&hostId->hashPubKey,
@@ -2005,7 +2011,9 @@ static int handleQuery(const PeerIdentity * sender,
   int ttl;
   unsigned int prio;
   double preference;
+#if DEBUG_GAP
   EncName enc;
+#endif
 
   if (bs == NULL) {
     BREAK();
