@@ -55,9 +55,11 @@ static void createSignedhello(TransportAPI * tapi) {
   FREENONNULL(tapi->helo);
   tapi->helo = tapi->createhello();
   if (NULL == tapi->helo) {
+#if DEBUG_TRANSPORT
     LOG(LOG_INFO,
 	"Transport '%s' failed to create hello\n",
 	tapi->transName);
+#endif
     MUTEX_UNLOCK(&tapis_lock);
     return;
   }
@@ -480,9 +482,11 @@ static P2P_hello_MESSAGE * transportCreatehello(unsigned short ttype) {
     return NULL;
   }
   if (tapi->helo == NULL) {
+#if DEBUG_TRANSPORT
     LOG(LOG_DEBUG,
 	"Transport of type %d configured for sending only (no hello).\n",
 	ttype);
+#endif
     MUTEX_UNLOCK(&tapis_lock);
     return NULL;
   }

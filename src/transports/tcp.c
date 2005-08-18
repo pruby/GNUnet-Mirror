@@ -1047,8 +1047,12 @@ static P2P_hello_MESSAGE * createhello() {
 
   port = getGNUnetTCPPort();
   if (0 == port) {
-    LOG(LOG_DEBUG,
-	"TCP port is 0, will only send using TCP.\n");
+    static int once = 0;
+    if (once == 0) {
+      once = 1;
+      LOG(LOG_DEBUG,
+	  "TCP port is 0, will only send using TCP.\n");
+    }
     return NULL; /* TCP transport is configured SEND-only! */
   }
   msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
