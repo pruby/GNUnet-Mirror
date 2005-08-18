@@ -41,6 +41,8 @@
 #include "querymanager.h"
 #include "fs.h"
 
+#define DEBUG_FS YES
+
 #define EXTRA_CHECKS YES
 
 typedef struct {
@@ -730,7 +732,7 @@ static int gapGet(void * closure,
 	hash2enc(&keys[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "GAP requests content for %s of type %u\n",
+      "GAP requests content for '%s' of type %u\n",
       &enc,
       type);
   myClosure.count = 0;

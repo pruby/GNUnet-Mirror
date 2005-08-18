@@ -1487,7 +1487,8 @@ struct qLRC {
 static int
 queryLocalResultCallback(const HashCode512 * primaryKey,
 			 const DataContainer * value,
-			 struct qLRC * cls) {
+			 void * closure) {
+  struct qLRC * cls = closure;
   HashCode512 hc;
   HashCode512 hc1;
   int i;
@@ -1586,12 +1587,10 @@ static int execQuery(const PeerIdentity * sender,
         hash2enc(&query->queries[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "GAP is executing request for %s: %s %s\n",
+      "GAP is executing request for '%s': %s %s\n",
       &enc,
       doForward ? "forwarding" : "",
       isRouted ? "routing" : "");
-
-
 
   cls.values = NULL;
   cls.valueCount = 0;
@@ -1604,7 +1603,7 @@ static int execQuery(const PeerIdentity * sender,
 	    1 + ( ntohs(query->header.size)
 		  - sizeof(P2P_gap_query_MESSAGE)) / sizeof(HashCode512),
 	    &query->queries[0],
-	    (DataProcessor) &queryLocalResultCallback,
+	    &queryLocalResultCallback,
 	    &cls);
   }
 
@@ -1995,6 +1994,7 @@ static int handleQuery(const PeerIdentity * sender,
   int ttl;
   unsigned int prio;
   double preference;
+  EncName enc;
 
   if (bs == NULL) {
     BREAK();
@@ -2039,8 +2039,16 @@ static int handleQuery(const PeerIdentity * sender,
   prio = ntohl(qmsg->priority);
   policy = evaluateQuery(sender,
 			 &prio);
+  IFLOG(LOG_DEBUG,
+	hash2enc(&qmsg->queries[0],
+		 &enc));
+  LOG(LOG_DEBUG,
+      "Received GAP query '%s'.\n",
+      &enc);
   if ((policy & QUERY_DROPMASK) == 0) {
     FREE(qmsg);
+    LOG(LOG_DEBUG,
+	"Dropping query, policy decided that this peer is too busy.\n");
     return OK; /* straight drop. */
   }
   preference = (double) prio;
