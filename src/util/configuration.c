@@ -513,7 +513,7 @@ void readConfiguration() {
             "_MAGIC_",
             "YES"))
       MessageBox(0, _("Configuration file not found. Please run GNUnet Setup "
-        "(Client Configuration) first."), _("Error"), MB_IconStop | MB_Ok);
+        "(Client Configuration) first."), _("Error"), MB_ICONSTOP | MB_OK);
 #endif
     errexit(_("Configuration file '%s' not found.  Run gnunet-setup!\n"),
 	    expCfgName);
