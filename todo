@@ -1,6 +1,6 @@
 0.7.0pre6 [8'05] ("API cleanup"):
 - gnunet-setup:
-  * gconfig: fix focus changes [ Nils ]
+  * #873 gconfig: fix focus changes [ Nils ]
   * #852,#853 (gnunet-setup nitpicks) [Nils / Christian]
   
 
