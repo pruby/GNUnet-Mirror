@@ -110,6 +110,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\bin\gnunet-update.exe" 
 		SetOutPath "$INSTDIR\var\lib\GNUnet"
 		
+	  SetOutPath "$INSTDIR\bin"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d wizard-gtk" "$INSTDIR\bin\config.ico"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk" "$INSTDIR\bin\gnunet-setup.exe" "-d gconfig" "$INSTDIR\bin\config.ico"
@@ -188,30 +189,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 	SectionGroupEnd
 	
 	SectionGroup "Client"
-		Section "!Base" SEC_CLIENT_BASE
-			SectionIn 1 3 4
-		
-		  ReadEnvStr $USR_PROF "USERPROFILE"
-		  StrLen $DIRLEN $USR_PROF
-		  IntCmp $DIRLEN 0 no_profile
-		  goto cp_conf
-		 no_profile:
-		  ReadRegStr $USR_PROF "HKCU" "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Personal"
-		  StrLen $DIRLEN $USR_PROF
-		  IntCmp $DIRLEN 0 gn_dir
-		  goto cp_conf
-		 gn_dir:
-		  StrCpy $USR_PROF "$INSTDIR\home"
-		 cp_conf:
-		  StrCpy $USR_PROF "$USR_PROF\.gnunet\"
-		  SetOutPath $USR_PROF
-		  File "C:\GNUnet\etc\gnunet.user"
-		  SetOutPath "$INSTDIR\etc\"
-		  File "C:\GNUnet\etc\gnunet.root"
-		  Rename "$INSTDIR\etc\gnunet.root" "$INSTDIR\etc\gnunet.conf"
-		  Rename "$USR_PROF\gnunet.user" "$USR_PROF\gnunet.conf"  
-		SectionEnd
-
 		SectionGroup "Filesharing" SEC_CLIENT_FS
 			Section "Base"
 			SectionIn 1 3 4
@@ -683,7 +660,6 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SETUP} "GNUnet configuration application"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_BASE} "GNUnet server core"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_FS} "Support for filesharing"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_BASE} "Client core"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_FS} "Client tools for filesharing"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_LE} "Basic keyword extractors"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CLIENT_TUI} "Textbased user interfaces"
@@ -736,9 +712,6 @@ Section Uninstall
   ReadRegStr $ICONS_GROUP ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "${PRODUCT_STARTMENU_REGVAL}"
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
-  Delete "$INSTDIR\etc\gnunet.conf"
-  ExpandEnvStrings $USR_PROF "%USERPROFILE%\.gnunet\gnunet.conf"
-  Delete $USR_PROF
   
 	Delete "$INSTDIR\AUTHORS"
 	Delete "$INSTDIR\COPYING"
@@ -879,8 +852,6 @@ Section Uninstall
 	Delete "$INSTDIR\bin\zlib1.dll"
 	RmDir /REBOOTOK "$INSTDIR\bin"
 	
-	Delete "$INSTDIR\etc\gnunet.root"
-	Delete "$INSTDIR\etc\gnunet.user"
 	Delete "$INSTDIR\etc\gnunetd.conf"
 	Delete "$INSTDIR\etc\gnunet.conf"
 	Delete "$INSTDIR\etc\gnunetd.conf.old"

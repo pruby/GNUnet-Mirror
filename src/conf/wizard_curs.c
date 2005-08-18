@@ -25,6 +25,7 @@
  */
 
 #include "gnunet_util.h"
+#include "platform.h"
 
 #ifndef MINGW
   #include <grp.h>
@@ -550,8 +551,8 @@ int wizard_curs_main()
         else
           defgroup = STRDUP(confGroup);
 #else
-        if ( (NULL == defgroup) || 
-	     (strlen(defgroup) == 0) )
+        if ( (NULL == confGroup) || 
+	     (strlen(confGroup) == 0) )
           defgroup = STRDUP("");
         else
           defgroup = STRDUP(defgroup);

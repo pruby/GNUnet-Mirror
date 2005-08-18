@@ -210,8 +210,8 @@ void load_step4()
 {
   struct symbol *sym;
   GtkWidget *vbox18, *frame8, *vbox19, *table3, *entUser, *entGroup;
-  const char * uname;
-  const char * gname;
+  const char * uname = NULL;
+  const char * gname = NULL;
 
   vbox18 = lookup_widget(curwnd, "vbox18");
   frame8 = lookup_widget(vbox18, "frame8");
