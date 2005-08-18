@@ -33,6 +33,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "confdata.h"
 
 #ifndef MINGW
 #include <sys/ioctl.h>

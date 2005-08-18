@@ -51,7 +51,8 @@ GtkWidget *cmbNIC;
 
 int doOpenEnhConfigurator = 0;
 int doAutoStart = 0;
-char *user_name = NULL, *group_name = NULL;
+char * user_name = NULL;
+char * group_name = NULL;
 static int nic_item_count = 0;
 
 void insert_nic(char *name, int defaultNIC)
@@ -209,6 +210,8 @@ void load_step4()
 {
   struct symbol *sym;
   GtkWidget *vbox18, *frame8, *vbox19, *table3, *entUser, *entGroup;
+  const char * uname;
+  const char * gname;
 
   vbox18 = lookup_widget(curwnd, "vbox18");
   frame8 = lookup_widget(vbox18, "frame8");
@@ -217,44 +220,67 @@ void load_step4()
   entUser = lookup_widget(table3, "entUser");
   entGroup = lookup_widget(table3, "entGroup");
 
-  if (! user_name)
+  if (NULL != user_name)
   {
     sym = sym_find("USER", "GNUNETD");
     if (sym)
     {
       sym_calc_value_ext(sym, 1);
-      user_name = sym_get_string_value(sym);
+      uname = sym_get_string_value(sym);
     }
   }
 
-  if (! group_name)
+  if (NULL != group_name)
   {
     sym = sym_find("GROUP", "GNUNETD");
     if (sym)
     {
       sym_calc_value_ext(sym, 1);
-      group_name = sym_get_string_value(sym);
+      gname = sym_get_string_value(sym);
     }
   }
 
 #ifndef MINGW
-  if(NULL == user_name || strlen(user_name) == 0)
+  if (NULL == uname || strlen(uname) == 0)
   {
     if((geteuid() == 0) || (NULL != getpwnam("gnunet")))
       user_name = STRDUP("gnunet");
-    else
-      user_name = STRDUP(getenv("USER"));
+    else {
+      uname = getenv("USER");
+      if (uname != NULL)
+	user_name = STRDUP(uname);
+      else
+	user_name = NULL;
+    }
+  } else {
+    user_name = STRDUP(uname);
   }
-  if(NULL == group_name)
+  if(NULL == gname || strlen(gname) == 0)
   {
+    struct group * grp;
     if((geteuid() == 0) || (NULL != getgrnam("gnunet")))
       group_name = STRDUP("gnunet");
-    else
-      group_name = STRDUP(getgrgid(getegid())->gr_name);
+    else {
+      grp = getgrgid(getegid());
+      if ( (grp != NULL) &&
+	   (grp->gr_name != NULL) )
+	group_name = STRDUP(grp->gr_name);    
+      else
+	group_name = NULL;
+    }
+  } else {
+    group_name = STRDUP(gname);
   }
+    
 #else
-  if (NULL == user_name || strlen(user_name) == 0)
+  if (NULL == uname || strlen(uname) == 0)
     user_name = STRDUP("");
+  else
+    user_name = STRDUP(uname);
+  if (NULL == gname || strlen(gname) == 0)
+    group_name = STRDUP("");
+  else
+    group_name = STRDUP(gname);
 #endif
 
   if(user_name)

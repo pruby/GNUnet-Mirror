@@ -25,8 +25,8 @@
  * @author Nils Durner
  */
 
-#ifndef GCONF_H
-#define GCONF_H
+#ifndef GNUNET_SETUP_GCONF_H
+#define GNUNET_SETUP_GCONF_H
 
 int gconf_main(void);
 

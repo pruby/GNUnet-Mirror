@@ -74,7 +74,7 @@ void insert_nic_curs(char *name, int defaultNIC)
 	item = malloc(sizeof(struct dialog_list_item));
 	memset(item, 0, sizeof(struct dialog_list_item));
 	nic_items[nic_item_count-1] = item;
-	item->name = strdup(name);
+	item->name = STRDUP(name);
 	item->namelen = strlen(name);
   item->selected = wiz_is_nic_default(name, defaultNIC);
 }
@@ -85,9 +85,14 @@ int wizard_curs_main()
   int idx, ret, autostart = 0, adv = 0;
   struct symbol *sym;
   char *defval;
-  const char *user_name = NULL, *group_name = NULL;
+  char * user_name = NULL;
+  char * group_name = NULL;
   char *confFile;
   char * filename;
+  char *defuser;
+  const char *confUser;
+  char *defgroup;
+  const char *confGroup;  
 
   filename = getConfigurationString("GNUNET-SETUP",
 				   "FILENAME");
@@ -401,247 +406,256 @@ int wizard_curs_main()
   else
     sym_set_tristate_value(sym, !ret); /* ret is inverted */
 
-	dialog_clear();
-
-	/* Quota */
-	if ((sym = sym_find("QUOTA", "FS"))) {
-		sym_calc_value_ext(sym, 1);
-		defval = (char *) sym_get_string_value(sym);
-	}
-	else
-		defval = NULL;
-
-	while(true) {
-		ret = dialog_inputbox(_("GNUnet configuration"), _("What's the maximum "
-			"datastore size in MB?\n\nThe GNUnet datastore contains all data that "
-			"GNUnet generates (index data, inserted and migrated content)."),
-			rows, cols - 5, defval ? defval : "");
-		
-		if (ret == 1) {
-			/* Help - not available */
-		}
-		else if (ret <= 0)
-			break;
-	}
-	
-	if (ret == -1)
-		goto end;
-
-	sym_set_string_value(sym, dialog_input_result);
-
-	dialog_clear();
-
-	/* Autostart */
-	if (isOSAutostartCapable()) {
-		while(true) {
-			ret = dialog_yesno(_("GNUnet configuration"), _("Do you want to launch "
-					"GNUnet as a system service?"
-					"\n\nIf you say \"yes\" here, the GNUnet background process will be "
-					"automatically started when you turn on your computer. If you say \"no\""
-					" here, you have to launch GNUnet yourself each time you want to use it."),
-					rows, cols - 5);
-					
-			if (ret != -2)
-				break;
-		}
-	
-		if (ret == -1)
-			goto end;
-		else
-			autostart = !ret; /* ret is inverted */
-	
-		dialog_clear();
-	}
-	
-	/* User */
-	if (isOSUserAddCapable()) {
-		while(true) {
-      char *defuser;
-      const char *confUser;
+  dialog_clear();
+  
+  /* Quota */
+  if ((sym = sym_find("QUOTA", "FS"))) {
+    sym_calc_value_ext(sym, 1);
+    defval = (char *) sym_get_string_value(sym);
+  }
+  else
+    defval = NULL;
+  
+  while(true) {
+    ret = dialog_inputbox(_("GNUnet configuration"), 
+			  _("What's the maximum "
+			    "datastore size in MB?\n\nThe GNUnet datastore contains all data that "
+			    "GNUnet generates (index data, inserted and migrated content)."),
+			  rows, cols - 5, defval ? defval : "");
+    
+    if (ret == 1) {
+      /* Help - not available */
+    }
+    else if (ret <= 0)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  
+  sym_set_string_value(sym, dialog_input_result);
+  
+  dialog_clear();
+  
+  /* Autostart */
+  if (isOSAutostartCapable()) {
+    while(true) {
+      ret = dialog_yesno(_("GNUnet configuration"),
+			 _("Do you want to launch "
+			   "GNUnet as a system service?"
+			   "\n\nIf you say \"yes\" here, the GNUnet background process will be "
+			   "automatically started when you turn on your computer. If you say \"no\""
+			   " here, you have to launch GNUnet yourself each time you want to use it."),
+			 rows, cols - 5);
+      
+      if (ret != -2)
+	break;
+    }
+    
+    if (ret == -1)
+      goto end;
+    else
+      autostart = !ret; /* ret is inverted */
+    
+    dialog_clear();
+  }
+  
+  /* User */
+  if (isOSUserAddCapable()) {
+    while(true) {
       
       sym = sym_find("USER", "GNUNETD");
       if (sym)
-      {
-        sym_calc_value_ext(sym, 1);
-        confUser = sym_get_string_value(sym);
-      }
+	{
+	  sym_calc_value_ext(sym, 1);
+	  confUser = sym_get_string_value(sym);
+	}
       else
         confUser = NULL;
       
 #ifndef MINGW
-      if(NULL == confUser || strlen(confUser) == 0)
-      {
-        if((geteuid() == 0) || (NULL != getpwnam("gnunet")))
-          defuser = STRDUP("gnunet");
-        else
-          defuser = STRDUP(getenv("USER"));
-      }
+      if ((NULL == confUser) || (strlen(confUser) == 0))
+	{
+	  if((geteuid() == 0) || (NULL != getpwnam("gnunet")))
+	    defuser = STRDUP("gnunet");
+	  else {
+	    confUser = getenv("USER");
+	    if (confUser != NULL)
+	      defuser = STRDUP(confUser);
+	    else
+	      defuser = NULL;
+	  }
+	}
       else
         defuser = STRDUP(confUser);
 #else
       if (NULL == confUser || strlen(confUser) == 0)
         defuser = STRDUP("");
       else
-        defuser = STRDUP(user_name);
+        defuser = STRDUP(confUser);
 #endif
       
-			ret = dialog_inputbox(_("GNUnet configuration"),
-				_("Define the user owning the GNUnet service.\n\n"
-					"For security reasons, it is a good idea to let this setup create "
-					"a new user account under which the GNUnet service is started "
-					"at system startup.\n\n"
-					"However, GNUnet may not be able to access files other than its own. "
-					"This includes files you want to publish in GNUnet. You'll have to "
-					"grant read permissions to the user specified below.\n\n"
-					"Leave the fields empty to run GNUnet with system privileges.\n\n"
-					"GNUnet user:"), rows, cols - 5, defuser);
+      ret = dialog_inputbox(_("GNUnet configuration"),
+			    _("Define the user owning the GNUnet service.\n\n"
+			      "For security reasons, it is a good idea to let this setup create "
+			      "a new user account under which the GNUnet service is started "
+			      "at system startup.\n\n"
+			      "However, GNUnet may not be able to access files other than its own. "
+			      "This includes files you want to publish in GNUnet. You'll have to "
+			      "grant read permissions to the user specified below.\n\n"
+			      "Leave the fields empty to run GNUnet with system privileges.\n\n"
+			      "GNUnet user:"), rows, cols - 5, defuser);
       FREE(defuser);
-			
-			if (ret == 1) {
-				/* Help */
-			}
-			else if (ret <= 0) {
-				user_name = strdup(dialog_input_result);
-				break;
-			}
-		}
-		
-		if (ret == -1)
-			goto end;
-
-		dialog_clear();
-
-		/* Group */
-		if (isOSGroupAddCapable()) {
-      char *defgroup;
-      const char *confGroup;
       
-			while(true) {
+      if (ret == 1) {
+	/* Help */
+      } else if (ret <= 0) {
+	user_name = STRDUP(dialog_input_result);
+	break;
+      }
+    }
+    
+    if (ret == -1)
+      goto end;
+    
+    dialog_clear();
+    
+    /* Group */
+    if (isOSGroupAddCapable()) {
+      while(true) {
         sym = sym_find("GROUP", "GNUNETD");
         if (sym)
-        {
-          sym_calc_value_ext(sym, 1);
-          confGroup = sym_get_string_value(sym);
-        }
+	  {
+	    sym_calc_value_ext(sym, 1);
+	    confGroup = sym_get_string_value(sym);
+	  }
         else
           confGroup = NULL;
-
+	
 #ifndef MINGW
-        if(NULL == confGroup || strlen(confGroup) == 0)
-        {
-          if((geteuid() == 0) || (NULL != getgrnam("gnunet")))
-            defgroup = STRDUP("gnunet");
-          else
-            defgroup = STRDUP(getgrgid(getegid())->gr_name);
-        }
+        if((NULL == confGroup) || (strlen(confGroup) == 0))
+	  {
+	    if((geteuid() == 0) || (NULL != getgrnam("gnunet")))
+	      defgroup = STRDUP("gnunet");
+	    else {
+	      struct group * grp;
+	      grp = getgrgid(getegid());
+	      if ( (grp != NULL) &&
+		   (grp->gr_name != NULL) )
+		defgroup = STRDUP(grp->gr_name);
+	      else
+		defgroup = NULL;
+	    }
+	  }
         else
           defgroup = STRDUP(confGroup);
 #else
-        if (NULL == group_name || strlen(group_name) == 0)
+        if ( (NULL == defgroup) || 
+	     (strlen(defgroup) == 0) )
           defgroup = STRDUP("");
         else
-          defgroup = STRDUP(confUser);
+          defgroup = STRDUP(defgroup);
 #endif
-        
-				ret = dialog_inputbox(_("GNUnet configuration"),
-					_("Define the group owning the GNUnet service.\n\n"
-						"For security reasons, it is a good idea to let this setup create "
-						"a new group for the chosen user account.\n\n"
-						"You can also specify a already existant group here.\n\n"
-						"Only members of this group will be allowed to start and stop the "
-						"the GNUnet server and have access to GNUnet server data.\n\n"
-						"GNUnet group:"),
-					rows, cols - 5, defgroup);
+	
+	ret = dialog_inputbox(_("GNUnet configuration"),
+			      _("Define the group owning the GNUnet service.\n\n"
+				"For security reasons, it is a good idea to let this setup create "
+				"a new group for the chosen user account.\n\n"
+				"You can also specify a already existant group here.\n\n"
+				"Only members of this group will be allowed to start and stop the "
+				"the GNUnet server and have access to GNUnet server data.\n\n"
+				"GNUnet group:"),
+			      rows, cols - 5, defgroup);
         FREE(defgroup);
-				
-				if (ret == 1) {
-					/* Help */
-				}
-				else if (ret <= 0) {
-					group_name = strdup(dialog_input_result);
-					break;
-				}
-			}
-		
-			if (ret == -1)
-				goto end;
 	
-			dialog_clear();
-		}
+	if (ret == 1) {
+	  /* Help */
 	}
-
-	dialog_clear();
-
-	/* Advanced */
-	while(true) {
-		ret = dialog_yesno(_("GNUnet configuration"), _("If you are an experienced "
-				"user, you may want to tweak your GNUnet installation using the enhanced "
-				"configurator.\n\nDo you want to start it after saving your configuration?"),
-				rows, cols - 5);
-				
-		if (ret != -2)
-			break;
+	else if (ret <= 0) {
+	  group_name = STRDUP(dialog_input_result);
+	  break;
 	}
-	
-	if (ret == -1)
-		goto end;
-	else
-		adv = !ret;
-
-	dialog_clear();
+      }
+      
+      if (ret == -1)
+	goto end;
+      
+      dialog_clear();
+    }
+  }
+  
+  dialog_clear();
+  
+  /* Advanced */
+  while(true) {
+    ret = dialog_yesno(_("GNUnet configuration"), 
+		       _("If you are an experienced "
+			 "user, you may want to tweak your GNUnet installation using the enhanced "
+			 "configurator.\n\nDo you want to start it after saving your configuration?"),
+		       rows, cols - 5);
+    
+    if (ret != -2)
+      break;
+  }
+  
+  if (ret == -1)
+    goto end;
+  else
+    adv = !ret;
+  
+  dialog_clear();
   end_dialog();
-
-	/* Save config */
-	if (user_name && strlen(user_name) > 0)
-		if (!isOSUserAddCapable(group_name, user_name))
-			showCursErr(_("Unable to create user account:"), STRERROR(errno));
-	
-	if (!isOSAutostartCapable())
-		showCursErr(_("Unable to change startup process:"), STRERROR(errno));
-
-	init_dialog();
-	dialog_clear();
-	
-	while(true) {
+  
+  /* Save config */
+  if ( (user_name != NULL) && 
+       (strlen(user_name) > 0) )
+    if (!isOSUserAddCapable(group_name, user_name))
+      showCursErr(_("Unable to create user account:"), STRERROR(errno));
+  
+  if (!isOSAutostartCapable())
+    showCursErr(_("Unable to change startup process:"), STRERROR(errno));
+  
+  init_dialog();
+  dialog_clear();
+  
+  while(true) {
     confFile = getConfigurationString("GNUNET-SETUP",
-                "FILENAME");
-		if (conf_write(confFile) != 0) {
-		  char * err;
-		  const char * prefix;
-		  const char * strerr;
-			
-		  prefix = _("Unable to save configuration file %s: %s.\n\nTry again?");
-		  strerr = STRERROR(errno);
-			
-		  err = malloc(strlen(confFile) + strlen(prefix) + strlen(strerr) + 1);
-		  sprintf(err, prefix, confFile, strerr);
-			
-		  ret = dialog_yesno(_("GNUnet configuration"),
-				     err, 
-				     rows, 
-				     cols - 5);
-
-		  free(err);
-		} 
-		else
-		  ret = 1;
-			
-		if (ret == 1 || ret == -1)
-			break;
-	}
-	
+				      "FILENAME");
+    if (conf_write(confFile) != 0) {
+      char * err;
+      const char * prefix;
+      const char * strerr;
+      
+      prefix = _("Unable to save configuration file %s: %s.\n\nTry again?");
+      strerr = STRERROR(errno);
+      
+      err = malloc(strlen(confFile) + strlen(prefix) + strlen(strerr) + 1);
+      sprintf(err, prefix, confFile, strerr);
+      
+      ret = dialog_yesno(_("GNUnet configuration"),
+			 err, 
+			 rows, 
+			 cols - 5);
+      
+      free(err);
+    } 
+    else
+      ret = 1;
+    
+    if (ret == 1 || ret == -1)
+      break;
+  }
+  
 end:
   end_dialog();
   
-  if (user_name)
-  	free(user_name);
-  if (group_name)
-  	free(group_name);
-
-	if (adv) {
-		mconf_main();
-	}
-
+  FREENONNULL(user_name);
+  FREENONNULL(group_name);
+  
+  if (adv) {
+    mconf_main();
+  }
+  
   return 0;
 }
 

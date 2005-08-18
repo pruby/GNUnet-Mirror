@@ -2,7 +2,6 @@
 - gnunet-setup:
   * gconfig: fix focus changes [ Nils ]
   * #852,#853 (gnunet-setup nitpicks) [Nils / Christian]
-- test remote search/download
   
 
 0.7.0 [8'05?] (aka "compatibility? what's that?"):
