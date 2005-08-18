@@ -894,7 +894,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       i++;
     }
     if ( (i == 0) &&
-	 (be->sendBuffer[i]->len <= be->available_send_window) )
+	 (be->sendBuffer[i]->len > be->available_send_window) )
       return 0; /* always wait for the highest-priority
 		 message (otherwise large messages may
 		 starve! */
@@ -1098,7 +1098,6 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
   SendEntry * entry;
 
   ret = 0;
-
   for (i=0;i<be->sendBufferSize;i++) {
     entry = be->sendBuffer[i];
 
@@ -1121,6 +1120,22 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
       } else {
 	ret++;
       }
+#if 1
+      {
+	P2P_MESSAGE_HEADER * hdr;
+	EncName enc;
+
+	hdr = (P2P_MESSAGE_HEADER*) entry->closure;
+	IFLOG(LOG_DEBUG,
+	      hash2enc(&be->session.sender.hashPubKey,
+		       &enc));
+	LOG(LOG_DEBUG,
+	    "Core selected message of type %u and size %u for sending to peer '%s'.\n",
+	    ntohs(hdr->type),
+	    ntohs(hdr->size),
+	    &enc);
+      }
+#endif
     }
   }
   return ret;
@@ -1295,8 +1310,7 @@ static void sendBuffer(BufferEntry * be) {
       be->available_send_window,
       be->session.mtu);
 #endif
-
-  
+ 
   totalMessageSize = selectMessagesToSend(be,
 					  &priority);
   if (totalMessageSize == 0) {
