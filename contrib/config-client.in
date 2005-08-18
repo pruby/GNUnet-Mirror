@@ -2,6 +2,24 @@ mainmenu "GNUnet user configuration"
 
 menu "User specific configuration" ""
 menu "Meta-configuration" "Meta"
+  config EXPERIMENTAL-CLIENT
+  bool "Prompt for development and/or incomplete code"
+  help
+		Some of the various things that GNUnet supports (such as network
+		drivers, network protocols, etc.) can be in a state
+		of development where the functionality, stability, or the level of
+		testing is not yet high enough for general use. This is usually
+		known as the "alpha-test" phase among developers. If a feature is
+		currently in alpha-test, then the developers usually discourage
+		uninformed widespread use of this feature by the general public to
+		avoid "Why doesn't this work?" type mail messages. However, active
+ 		testing and use of these systems is welcomed. Just be aware that it
+		may not meet the normal level of reliability or it may fail to work
+		in some special cases. Detailed bug reports from people familiar
+		with the GNUnet internals are usually welcomed by the developers
+		(before submitting bug reports, please read the documents
+		<file://README> and <http://gnunet.org/faq.php3>.
+
   config ADVANCED-CLIENT
   bool "Show options for advanced users"
   
@@ -165,28 +183,32 @@ menu "Default options for gnunet-gtk" GNUNET-GTK
 
         config PLUGINS
         string "Which plugins should gnunet-gtk load?"
-        default "about daemon fs"
-        depends on Meta::ADVANCED
+        default "about daemon fs stats"
+        depends on Meta::ADVANCED-CLIENT
         help
 		Currently, the available applications are:
 		about: the about dialog
 		daemon: starting and stopping gnunetd		
 		fs: file sharing
-		Default: PLUGINS = "about daemon fs"  
+		stats: statistics
+		Default: PLUGINS = "about daemon fs stats"
 
 endmenu
 
+if Meta::EXPERIMENTAL-CLIENT
 menu "Defaults for gnunet-chat" GNUNET-CHAT
 	config NICK
 	string "Nickname"
 	default ""
+	depends on Meta::EXPERIMENTAL-CLIENT
 	help
 		You can specify your nickname here and thus avoid having to pass it
 		with -n NICK at the command-line.  The default is empty.
 		Default: "my nickname"
 endmenu
+endif
 
-if Meta:RARE-CLIENT
+if Meta::RARE-CLIENT
 menu "Defaults for gnunet-tracekit" GNUNET-TRACEKIT
 	config WAIT
 	int "How long to wait for replies"
