@@ -297,6 +297,7 @@ int FSUI_listNamespaces(struct FSUI_Context * ctx,
 		strlen(NS_DIR) +
 		4);
     strcpy(fn, fnBase);
+    FREE(fnBase);
     strcat(fn, DIR_SEPARATOR_STR);
     strcat(fn, NS_DIR);
     mkdirp(fn);
