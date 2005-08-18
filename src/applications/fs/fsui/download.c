@@ -455,7 +455,7 @@ void freeDownloadList(FSUI_DownloadList * list) {
     } else {
       dpos = dpos->child;
       while ( (dpos != NULL) &&
-	      (dpos != list) )
+	      (dpos->next != list) )
 	dpos = dpos->next;
       GNUNET_ASSERT(dpos != NULL);
       dpos->next = list->next;

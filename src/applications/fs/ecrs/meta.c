@@ -710,16 +710,26 @@ static char * mimeMap[][2] = {
 /**
  * Suggest a better filename for a file (and do the
  * renaming).
+ * @return the new filename
  */
 char * ECRS_suggestFilename(const char * filename) {
   EXTRACTOR_ExtractorList * l;
   EXTRACTOR_KeywordList * list;
   const char * key;
   const char * mime;
+  char * path;
   int i;
+  unsigned int j;
   char * renameTo;
   char * ret;
+  struct stat filestat;
 
+  path = STRDUP(filename);
+  i = strlen(path);
+  while ( (i > 0) &&
+	  (path[i] != DIR_SEPARATOR) )
+    i--;
+  path[i] = '\0';
   ret = NULL;
   l = EXTRACTOR_loadDefaultLibraries();
   list = EXTRACTOR_getKeywords(l, filename);
@@ -761,31 +771,64 @@ char * ECRS_suggestFilename(const char * filename) {
       mime = NULL;
   }
   if (mime == NULL) {
-    renameTo = STRDUP(key);
+    i = strlen(filename);
+    while ( (i>0) &&
+	    (filename[i] != '.') &&
+	    (filename[i] != DIR_SEPARATOR) )
+      i--;
+    if (filename[i] == '.')
+      mime = STRDUP(&filename[i]);
+  }
+  if (mime == NULL) {
+    renameTo = MALLOC(strlen(path) + strlen(key) + strlen(DIR_SEPARATOR_STR) + 20);
+    strcpy(renameTo, path);
+    if (path[strlen(path)-1] != DIR_SEPARATOR)
+      strcat(renameTo, DIR_SEPARATOR_STR);
+    strcat(renameTo, key);
   } else {
-    renameTo = MALLOC(strlen(key) + strlen(mime) + 1);
-    strcpy(renameTo, key);
+    renameTo = MALLOC(strlen(path) + strlen(key) + strlen(mime) + strlen(DIR_SEPARATOR_STR) + 20);
+    strcpy(renameTo, path);
+    if (path[strlen(path)-1] != DIR_SEPARATOR)
+      strcat(renameTo, DIR_SEPARATOR_STR);
+    strcat(renameTo, key);
     strcat(renameTo, mime);
   }
   for (i=strlen(renameTo)-1;i>=0;i--)
     if (! isprint(renameTo[i]))
       renameTo[i] = '_';
+  if (0 == STAT(renameTo,
+		&filestat)) {
+    i = strlen(renameTo);
+    j = 0;
+    do {
+      SNPRINTF(&renameTo[i],
+	       19,
+	       ".%u",
+	       j++);      
+      if (j > 100000)
+	break;
+    } while (0 == STAT(renameTo,
+		       &filestat));
+  }
   if (0 != strcmp(renameTo, filename)) {
-    struct stat filestat;
     if (0 != STAT(renameTo,
 		  &filestat)) {
       if (0 != RENAME(filename, renameTo)) 	
 	LOG(LOG_ERROR,
 	    _("Renaming of file '%s' to '%s' failed: %s\n"),
-	    filename, renameTo, STRERROR(errno));
+	    filename, 
+	    renameTo,
+	    STRERROR(errno));
       else
 	ret = STRDUP(renameTo);
     } else {
       LOG(LOG_ERROR,
 	  _("Could not rename file '%s' to '%s': file exists\n"),
-	  filename, renameTo);
+	  filename, 
+	  renameTo);
     }	
   }
+  FREE(path);
   FREE(renameTo);  				
   EXTRACTOR_freeKeywords(list);
   EXTRACTOR_removeAll(l);
