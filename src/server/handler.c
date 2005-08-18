@@ -347,9 +347,7 @@ void injectMessage(const PeerIdentity * sender,
   P2P_MESSAGE_HEADER cpart;
   P2P_MESSAGE_HEADER * copy;
   int last;
-#if DEBUG_HANDLER
   EncName enc;
-#endif
 
   pos = 0;
   copy = NULL;
