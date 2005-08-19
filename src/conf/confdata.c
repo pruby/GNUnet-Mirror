@@ -53,9 +53,9 @@ int conf_read(const char *name)
   int i = 0;
   
   GNUNET_ASSERT(name != NULL);
-  setConfigurationString("FILES",
-			 "gnunet.conf",
-			 name);
+  FREENONNULL(setConfigurationString("FILES",
+				     "gnunet.conf",
+				     name));
   readConfigFile(name);	
   
   for_all_symbols(i, sym) {

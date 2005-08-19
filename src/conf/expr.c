@@ -616,7 +616,8 @@ struct expr *expr_eliminate_dups(struct expr *e)
 	while (1) {
 		trans_count = 0;
 		switch (e->type) {
-		case E_OR: case E_AND:
+		case E_OR:
+		case E_AND:
 			expr_eliminate_dups1(e->type, &e, &e);
 			expr_eliminate_dups2(e->type, &e, &e);
 		default:
