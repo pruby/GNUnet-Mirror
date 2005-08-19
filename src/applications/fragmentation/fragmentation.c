@@ -520,11 +520,18 @@ void fragment(const PeerIdentity * peer,
   fbmc->sender = *peer;
   fbmc->transmissionTime = targetTime;  
   fbmc->len = len;
-  if (SYSERR == bmc(&fbmc[1],
-		    bmcClosure,
-		    len)) {
-    FREE(fbmc);
-    return;
+  if (bmc == NULL) {
+    memcpy(&fbmc[1],
+	   bmcClosure,
+	   len);
+    FREE(bmcClosure);
+  } else {
+    if (SYSERR == bmc(&fbmc[1],
+		      bmcClosure,
+		      len)) {
+      FREE(fbmc);
+      return;
+    }
   }
   xlen = mtu - sizeof(P2P_fragmentation_MESSAGE);
   coreAPI->unicastCallback(peer,
