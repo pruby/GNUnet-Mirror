@@ -132,8 +132,10 @@ int conf_read(const char *name)
 	if (sym->visible == no)
 	  sym->flags |= SYMBOL_NEW;
       }
-      if (!sym_is_choice(sym))
+      if (!sym_is_choice(sym)) {
+	FREE(val);
 	continue;
+      }
       prop = sym_get_choice_prop(sym);
       for (e = prop->expr; e; e = e->left.expr)
 	if (e->right.sym->visible != no)

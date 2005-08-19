@@ -596,6 +596,7 @@ static void text_insert_help(struct menu *menu)
     name = g_strdup("");
 
   set_help(prompt, name, help);
+  free(name);
 }
 
 

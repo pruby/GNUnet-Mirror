@@ -116,7 +116,7 @@ void expr_free(struct expr *e)
 		break;
 	case E_NOT:
 		expr_free(e->left.expr);
-		return;
+		break;
 	case E_EQUAL:
 	case E_UNEQUAL:
 		break;
@@ -877,7 +877,7 @@ struct expr *expr_trans_compare(struct expr *e, enum expr_type type, struct symb
 
 	if (!e) {
 		e = expr_alloc_symbol(sym);
-		if (type == E_UNEQUAL)
+		if (type == E_UNEQUAL) 
 			e = expr_alloc_one(E_NOT, e);
 		return e;
 	}
