@@ -1069,13 +1069,14 @@ void release_module_identity() {
   HostEntry * entry;
 
   for (i=0;i<MAX_TEMP_HOSTS;i++) {
-    for (j=0;j<tempHosts[i].heloCount;i++)
-      FREE(tempHosts[i].helos[j]);
-    GROW(tempHosts[i].helos,
-	 tempHosts[i].heloCount,
+    entry = &tempHosts[i];
+    for (j=0;j<entry->heloCount;j++)
+      FREE(entry->helos[j]);
+    GROW(entry->helos,
+	 entry->heloCount,
 	 0);
-    GROW(tempHosts[i].protocols,
-	 tempHosts[i].protocolCount,
+    GROW(entry->protocols,
+	 entry->protocolCount,
 	 0);
   }
   delCronJob(&cronScanDirectoryDataHosts,
