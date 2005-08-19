@@ -575,10 +575,10 @@ menu "Transports" ""
 
 			config MTU
 			int "MTU"
-			default 65535
+			default 65528
 			help
 				MTU for the E-mail. How large should the E-mails be that we send
-				out? Default is 65536 (bytes).
+				out? Default is 65528 (bytes).
 
 	  	config PORT
 	  	int "Port of the SMTP server for outbound mail"
@@ -608,7 +608,7 @@ menu "Transports" ""
 
 		config FILTER
 		string "Filter-line to use in the E-mail header"
-		default "X-mailer: 590N"
+		default "X-mailer: GNUnet"
 		help
 			Filter-line to use in the E-mail header. This filter will be
 			included in the GNUnet-generated E-mails and should be used to
@@ -617,8 +617,27 @@ menu "Transports" ""
 			message.
 			
 			Examples:
-			FILTER = "X-mailer: myGNUnetmail"
+			FILTER = "X-mailer: GNUnet"
 			FILTER = "Subject: foobar5252"
+
+			In order to make the SMTP transport work, add the following line
+			to your ~/.procmailrc file:
+
+			:0:
+			* ^X-mailer: GNUnet
+			/tmp/gnunet.smtp
+			# where do you want your other e-mail delivered to
+			# (default: /var/spool/mail/)
+			:0:
+			/var/spool/mail/
+
+			You can test your configuration with
+
+			$ gnunet-transport-check -t smtp -T 60000
+
+			Make sure to poll your e-mail within the minute that
+			gnunet-transport-check waits for a response.
+
 
 		config PIPE
 		string "Name of the pipe via which procmail sends filterd E-mails"
@@ -626,7 +645,7 @@ menu "Transports" ""
 		help
 			Name of the pipe via which procmail sends the filtered E-mails to
 			the node.  Default is /tmp/gnunet.smtp
-													  	
+
 	  endmenu
 	  
 	  menu "HTTP" "HTTP"
