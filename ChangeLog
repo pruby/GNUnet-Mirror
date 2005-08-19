@@ -1,3 +1,6 @@
+Thu Aug 18 21:18:28 PDT 2005
+	Made quotations match GNU standards.
+	
 Wed Aug 17 20:05:19 PDT 2005
 	Fixed bug that would prevent P2P messages from being
 	transmitted under certain (common) circumstances.
