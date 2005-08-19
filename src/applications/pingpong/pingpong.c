@@ -117,7 +117,7 @@ static int pingReceived(const PeerIdentity * sender,
 
   if (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
     LOG(LOG_WARNING,
-	_("Received malformed '%s' message. Dropping.\n"),
+	_("Received malformed `%s' message. Dropping.\n"),
 	"ping");
     return SYSERR;
   }
@@ -168,7 +168,7 @@ static int plaintextPingReceived(const PeerIdentity * sender,
 
   if (ntohs(hmsg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
     LOG(LOG_WARNING,
-	_("Received malformed '%s' message. Dropping.\n"),
+	_("Received malformed `%s' message. Dropping.\n"),
 	"ping");
     return SYSERR;
   }
@@ -208,7 +208,7 @@ static int pongReceived(const PeerIdentity * sender,
        !hostIdentityEquals(sender,
 			   &pmsg->receiver)) {
     LOG(LOG_WARNING,
-	_("Received malformed '%s' message. Dropping.\n"),
+	_("Received malformed `%s' message. Dropping.\n"),
 	"pong");
     return SYSERR; /* bad pong */
   }
@@ -216,7 +216,7 @@ static int pongReceived(const PeerIdentity * sender,
   hash2enc(&sender->hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Received PONG from '%s'.\n",
+      "Received PONG from `%s'.\n",
       &enc);
 #endif
   matched = 0;
@@ -242,7 +242,7 @@ static int pongReceived(const PeerIdentity * sender,
   hash2enc(&sender->hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Received PONG from '%s' matched %u peers.\n",
+      "Received PONG from `%s' matched %u peers.\n",
       &enc,
       matched);
 #endif
@@ -273,7 +273,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
        !hostIdentityEquals(sender,
 			   &pmsg->receiver)) {
     LOG(LOG_WARNING,
-	_("Received malformed '%s' message. Dropping.\n"),
+	_("Received malformed `%s' message. Dropping.\n"),
 	"pong");
     return SYSERR; /* bad pong */
   }
@@ -300,7 +300,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
   hash2enc(&sender->hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Received PONG from '%s' matched %u peers.\n",
+      "Received PONG from `%s' matched %u peers.\n",
       &enc,
       matched);
 #endif
@@ -485,7 +485,7 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
   	 0,
 	 sizeof(PingPongEntry)*MAX_PING_PONG);
   LOG(LOG_DEBUG,
-      _("'%s' registering handlers %d %d (plaintext and ciphertext)\n"),
+      _("`%s' registering handlers %d %d (plaintext and ciphertext)\n"),
       "pingpong",
       p2p_PROTO_PING,
       p2p_PROTO_PONG);

@@ -130,7 +130,7 @@ ECRS_createNamespace(const char * name,
   fileName = getPseudonymFileName(name);
   if (1 == readFile(fileName, 1, &tmp)) {
     LOG(LOG_ERROR,
-        _("Cannot create pseudonym '%s', file '%s' exists.\n"),
+        _("Cannot create pseudonym `%s', file `%s' exists.\n"),
         name,
         fileName);
     FREE(fileName);
@@ -301,7 +301,7 @@ int ECRS_testNamespaceExists(const char * name,
   }
   if (len < 2) {
     LOG(LOG_ERROR,
-        _("File '%s' does not contain a pseudonym.\n"),
+        _("File `%s' does not contain a pseudonym.\n"),
         fileName);
     FREE(fileName);
     return SYSERR;
@@ -312,7 +312,7 @@ int ECRS_testNamespaceExists(const char * name,
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
     LOG(LOG_ERROR,
-        _("Format of pseudonym '%s' is invalid.\n"),
+        _("Format of pseudonym `%s' is invalid.\n"),
         name);
     FREE(hke);
     return SYSERR;
@@ -377,7 +377,7 @@ ECRS_addToNamespace(const char * name,
   }
   if (len < 2) {
     LOG(LOG_ERROR,
-        _("File '%s' does not contain a pseudonym.\n"),
+        _("File `%s' does not contain a pseudonym.\n"),
         fileName);
     FREE(fileName);
     return NULL;
@@ -388,7 +388,7 @@ ECRS_addToNamespace(const char * name,
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
     LOG(LOG_ERROR,
-        _("Format of pseudonym '%s' is invalid.\n"),
+        _("Format of pseudonym `%s' is invalid.\n"),
         name);
     FREE(hke);
     return NULL;
@@ -521,7 +521,7 @@ static int processFile_(const char * name,
   }
   if (len < 2) {
     LOG(LOG_ERROR,
-        _("File '%s' does not contain a pseudonym.\n"),
+        _("File `%s' does not contain a pseudonym.\n"),
         fileName);
     FREE(fileName);
     return OK;
@@ -531,7 +531,7 @@ static int processFile_(const char * name,
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
     LOG(LOG_ERROR,
-        _("Format of file '%s' is invalid.\n"),
+        _("Format of file `%s' is invalid.\n"),
         fileName);
     FREE(hke);
     FREE(fileName);
@@ -541,7 +541,7 @@ static int processFile_(const char * name,
   FREE(hke);
   if (hk == NULL) {
     LOG(LOG_ERROR,
-        _("Format of file '%s' is invalid.\n"),
+        _("Format of file `%s' is invalid.\n"),
         fileName);
     FREE(fileName);
     BREAK();

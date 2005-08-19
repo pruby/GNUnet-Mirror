@@ -276,7 +276,7 @@ static void bash_main() {
   doneUtil();
   execvp(SHELL, argv);
   fprintf(stderr,
-	  _("Could not execute '%s': %s\n"),
+	  _("Could not execute `%s': %s\n"),
 	  SHELL,
 	  STRERROR(errno));
 }
@@ -460,7 +460,7 @@ static int server_main(pid_t bash_pid) {
       /* should never happen unless the user
 	 plays by hand with the aliases... */
       i = -1;
-      PRINTF(_("Command '%s' not found!\n"),
+      PRINTF(_("Command `%s' not found!\n"),
 	     command);
       socketSend(sizeof(unsigned int),
 		 SOCKET_RETVAL,

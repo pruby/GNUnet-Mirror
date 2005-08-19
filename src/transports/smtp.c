@@ -293,7 +293,7 @@ static int connectToSMTPServer() {
   ip = GETHOSTBYNAME(hostname);
   if (ip == NULL) {
     LOG(LOG_ERROR,
-	_("Could not resolve name of SMTP server '%s': %s"),
+	_("Could not resolve name of SMTP server `%s': %s"),
 	hostname, hstrerror(h_errno));
     FREE(hostname);
     return -1;
@@ -413,7 +413,7 @@ static void * listenAndDistribute() {
   pipename = getFileName("SMTP",
 			 "PIPE",
 			 _("You must specify the name of a "
-			   "pipe for the SMTP transport in section '%s' under '%s'.\n"));
+			   "pipe for the SMTP transport in section `%s' under `%s'.\n"));
   GNUNET_ASSERT(pipename != NULL);
   UNLINK(pipename);
   if (0 != mkfifo(pipename,
@@ -575,7 +575,7 @@ static P2P_hello_MESSAGE * createhello() {
   if (strlen(filter) > FILTER_STRING_SIZE) {
     filter[FILTER_STRING_SIZE] = '\0';
     LOG(LOG_WARNING,
-	_("SMTP filter string to long, capped to '%s'\n"),
+	_("SMTP filter string to long, capped to `%s'\n"),
 	filter);
   }
   i = (strlen(email) + 8) & (~7); /* make multiple of 8 */
@@ -745,7 +745,7 @@ static int smtpSend(TSession * tsession,
   MUTEX_UNLOCK(&smtpLock);
   if (res != OK)
     LOG(LOG_WARNING,
-	_("Sending E-mail to '%s' failed.\n"),
+	_("Sending E-mail to `%s' failed.\n"),
 	&haddr->senderAddress[0]);
   incrementBytesSent(ssize);
   FREE(ebody);
@@ -890,7 +890,7 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
     mtu = MESSAGE_SIZE;
   if (mtu < 1200)
     LOG(LOG_ERROR,
-	_("MTU for '%s' is probably too low (fragmentation not implemented!)\n"),
+	_("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
 	"SMTP");
 
   smtpAPI.protocolNumber       = SMTP_PROTOCOL_NUMBER;

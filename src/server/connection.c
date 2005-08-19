@@ -968,7 +968,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 	j++;
     if (j == 0) {
       LOG(LOG_ERROR,
-	  _("'%s' selected %d out of %d messages (MTU: %d).\n"),
+	  _("`%s' selected %d out of %d messages (MTU: %d).\n"),
 	  "solveKnapsack",
 	  j,
 	  be->sendBufferSize,
@@ -1130,7 +1130,7 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
 	      hash2enc(&be->session.sender.hashPubKey,
 		       &enc));
 	LOG(LOG_DEBUG,
-	    "Core selected message of type %u and size %u for sending to peer '%s'.\n",
+	    "Core selected message of type %u and size %u for sending to peer `%s'.\n",
 	    ntohs(hdr->type),
 	    ntohs(hdr->size),
 	    &enc);
@@ -1596,7 +1596,7 @@ static BufferEntry * addHost(const PeerIdentity * hostId,
 	hash2enc(&hostId->hashPubKey,
 		 &enc));
   LOG(LOG_EVERYTHING,
-      "Adding host '%s' to the connection table.\n",
+      "Adding host `%s' to the connection table.\n",
       &enc);
 #endif
 
@@ -1720,7 +1720,7 @@ static void shutdownConnection(BufferEntry * be) {
 	hash2enc(&be->session.sender.hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Shutting down connection with '%s'\n",
+      "Shutting down connection with `%s'\n",
       &enc);
 #endif
   if (be->status == STAT_DOWN)
@@ -1919,7 +1919,7 @@ static void scheduleInboundTraffic() {
 	    hash2enc(&entries[u]->session.sender.hashPubKey,
 		     &enc));
       LOG(LOG_INFO,
-	  "peer '%s' transmitted above limit: %llu bpm > %u bpm\n",
+	  "peer `%s' transmitted above limit: %llu bpm > %u bpm\n",
 	  &enc,
 	  adjustedRR[u],
 	  entries[u]->idealized_limit);
@@ -1939,7 +1939,7 @@ static void scheduleInboundTraffic() {
 	      hash2enc(&entries[u]->session.sender.hashPubKey,
 		       &enc));
 	LOG(LOG_INFO,
-	    "blacklisting '%s': sent repeatedly %llu bpm "
+	    "blacklisting `%s': sent repeatedly %llu bpm "
 	    "(limit %u bpm, target %u bpm)\n",
 	    &enc,
 	    adjustedRR[u],
@@ -2127,7 +2127,7 @@ static void cronDecreaseLiveness(void * unused) {
 		hash2enc(&root->session.sender.hashPubKey,
 			 &enc));
 	  LOG(LOG_DEBUG,
-	      "closing connection with '%s': "
+	      "closing connection with `%s': "
 	      "too much inactivity (%llu ms)\n",
 	      &enc,
 	      now - root->isAlive);
@@ -2189,7 +2189,7 @@ int checkHeader(const PeerIdentity * sender,
 	   &enc);
   if (size < sizeof(P2P_PACKET_HEADER)) {
     LOG(LOG_WARNING,
-	_("Message from '%s' discarded: invalid format.\n"),
+	_("Message from `%s' discarded: invalid format.\n"),
 	&enc);
     return SYSERR;
   }
@@ -2207,7 +2207,7 @@ int checkHeader(const PeerIdentity * sender,
 
 #if DEBUG_CONNECTION
   LOG(LOG_DEBUG,
-      "Decrypting message from host '%s'\n",
+      "Decrypting message from host `%s'\n",
       &enc);
 #endif
   MUTEX_LOCK(&lock);
@@ -2216,7 +2216,7 @@ int checkHeader(const PeerIdentity * sender,
        (be->status == STAT_DOWN) ||
        (be->status == STAT_SKEY_SENT) ) {
     LOG(LOG_INFO,
-	"Decrypting message from host '%s' failed, no sessionkey (yet)!\n",
+	"Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
 	&enc);
     /* try to establish a connection, that way, we don't keep
        getting bogus messages until the other one times out. */
@@ -2238,7 +2238,7 @@ int checkHeader(const PeerIdentity * sender,
 	   equalsHashCode512(&hc,
 			     &msg->hash)) ) {
     LOG(LOG_INFO,
-	"Decrypting message from host '%s' failed, wrong sessionkey!\n",
+	"Decrypting message from host `%s' failed, wrong sessionkey!\n",
 	&enc);
     addHost(sender, YES);
     MUTEX_UNLOCK(&lock);
@@ -2325,7 +2325,7 @@ static int handleHANGUP(const PeerIdentity * sender,
 	hash2enc(&sender->hashPubKey,
 		 &enc));
   LOG(LOG_INFO,
-      "received HANGUP from '%s'\n",
+      "received HANGUP from `%s'\n",
       &enc);
   MUTEX_LOCK(&lock);
   be = lookForHost(sender);
@@ -3132,7 +3132,7 @@ void disconnectFromPeer(const PeerIdentity *node) {
 	  hash2enc(&node->hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Closing connection to '%s' as requested by application.\n",
+	"Closing connection to `%s' as requested by application.\n",
 	&enc);
     shutdownConnection(be);
   }

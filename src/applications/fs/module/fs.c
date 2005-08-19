@@ -161,7 +161,7 @@ static int gapPut(void * closure,
 	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS received GAP-PUT request (query: %s)\n",
+      "FS received GAP-PUT request (query: `%s')\n",
       &enc);
   ret = datastore->putUpdate(query,
 			     dv);
@@ -178,7 +178,7 @@ static int get_result_callback(const HashCode512 * query,
 	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Found reply to query '%s'.\n",
+      "Found reply to query `%s'.\n",
       &enc);
   gapPut(NULL,
 	 query,
@@ -217,7 +217,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 	hash2enc(&rs->query[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS received QUERY START (query: %s)\n",
+      "FS received QUERY START (query: `%s')\n",
       &enc);
   trackQuery(&rs->query[0],
 	     ntohl(rs->type),
@@ -267,7 +267,7 @@ static int csHandleRequestQueryStop(ClientHandle sock,
 	hash2enc(&rs->query[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS received QUERY STOP (query: %s)\n",
+      "FS received QUERY STOP (query: `%s')\n",
       &enc);
   if (ntohl(rs->anonymityLevel) == 0) {
     /* FIXME 0.7.1: cancel with dht? */
@@ -318,7 +318,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
-      "FS received REQUEST INSERT (query: '%s', type: %u)\n",
+      "FS received REQUEST INSERT (query: `%s', type: %u)\n",
       &enc,
       type);
   datum->type = htonl(type);
@@ -455,7 +455,7 @@ static int completeValue(const HashCode512 * key,
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
     LOG(LOG_DEBUG,
-	"'%s' found value that does not match (%u, %u).\n",
+	"`%s' found value that does not match (%u, %u).\n",
 	__FUNCTION__,
 	ntohl(comp->size),
 	ntohl(value->size));
@@ -463,7 +463,7 @@ static int completeValue(const HashCode512 * key,
   }
   *comp = *value; /* make copy! */
   LOG(LOG_DEBUG,
-      "'%s' found value that matches.\n",
+      "`%s' found value that matches.\n",
       __FUNCTION__);
   return SYSERR;
 }
@@ -508,7 +508,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
 	hash2enc(&query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS received REQUEST DELETE (query: %s, type: %u)\n",
+      "FS received REQUEST DELETE (query: `%s', type: %u)\n",
       &enc,
       type);
 
@@ -620,7 +620,7 @@ static int gapGetConverter(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Converting reply for query '%s' for gap.\n",
+      "Converting reply for query `%s' for gap.\n",
       &enc);
 
   if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
@@ -644,7 +644,7 @@ static int gapGetConverter(const HashCode512 * key,
 	  hash2enc(key,
 		   &enc));
     LOG(LOG_WARNING,
-	"Converting reply for query '%s' for gap failed (datum not applicable).\n",
+	"Converting reply for query `%s' for gap failed (datum not applicable).\n",
 	&enc);
     FREENONNULL(xvalue);
     return SYSERR; /* no query will ever match */
@@ -654,7 +654,7 @@ static int gapGetConverter(const HashCode512 * key,
 	  hash2enc(key,
 		   &enc));
     LOG(LOG_WARNING,
-	"Converting reply for query '%s' for gap failed (type not applicable).\n",
+	"Converting reply for query `%s' for gap failed (type not applicable).\n",
 	&enc);
     FREENONNULL(xvalue);
     return OK; /* Additional filtering based on type;
@@ -677,7 +677,7 @@ static int gapGetConverter(const HashCode512 * key,
 	  hash2enc(key,
 		   &enc));
     LOG(LOG_WARNING,
-	"Converting reply for query '%s' for gap failed (insufficient cover traffic).\n",
+	"Converting reply for query `%s' for gap failed (insufficient cover traffic).\n",
 	&enc);
     return OK;    
   }
@@ -732,7 +732,7 @@ static int gapGet(void * closure,
 	hash2enc(&keys[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "GAP requests content for '%s' of type %u\n",
+      "GAP requests content for `%s' of type %u\n",
       &enc,
       type);
   myClosure.count = 0;
@@ -985,7 +985,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   if (getConfigurationInt("FS",
 			  "QUOTA") <= 0) {
     LOG(LOG_ERROR,
-	_("You must specify a postive number for '%s' in the configuration in section '%s'.\n"),
+	_("You must specify a postive number for `%s' in the configuration in section `%s'.\n"),
 	"QUOTA", "FS");
     return SYSERR;
   }
@@ -1026,7 +1026,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   }
 
   LOG(LOG_DEBUG,
-      _("'%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
+      _("`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
       "fs",
       CS_PROTO_gap_QUERY_START,
       CS_PROTO_gap_QUERY_STOP,

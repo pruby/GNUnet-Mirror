@@ -124,7 +124,7 @@ static int sendAllResults(const HashCode512 * key,
   if (OK != writeToSocket(list->sock,
 			  &reply->header)) {
     LOG(LOG_WARNING,
-	_("Failed to send '%s'.  Closing connection.\n"),
+	_("Failed to send `%s'.  Closing connection.\n"),
 	"CS_dht_reply_results_MESSAGE");
     MUTEX_LOCK(&list->lock);
     releaseClientSocket(list->sock);
@@ -198,7 +198,7 @@ static void * process_thread(TableList * list) {
 
 	if (sizeof(CS_dht_request_get_MESSAGE) != ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
-	      _("Received invalid '%s' request (size %d)\n"),
+	      _("Received invalid `%s' request (size %d)\n"),
 	      "GET",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
@@ -211,7 +211,7 @@ static void * process_thread(TableList * list) {
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
-	      _("Received invalid '%s' request (wrong table)\n"),
+	      _("Received invalid `%s' request (wrong table)\n"),
 	      "GET");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
@@ -233,7 +233,7 @@ static void * process_thread(TableList * list) {
 			    &list->table,
 			    resCount)) ) {
 	  LOG(LOG_WARNING,
-	      _("Failed to send '%s'.  Closing connection.\n"),
+	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
@@ -250,7 +250,7 @@ static void * process_thread(TableList * list) {
 	
 	if (sizeof(CS_dht_request_put_MESSAGE) > ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
-	      _("Received invalid '%s' request (size %d)\n"),
+	      _("Received invalid `%s' request (size %d)\n"),
 	      "PUT",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
@@ -263,7 +263,7 @@ static void * process_thread(TableList * list) {
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
-	      _("Received invalid '%s' request (wrong table)\n"),
+	      _("Received invalid `%s' request (wrong table)\n"),
 	      "PUT");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
@@ -286,7 +286,7 @@ static void * process_thread(TableList * list) {
 				     value,
 				     ntohl(req->priority)))) {
 	  LOG(LOG_ERROR,
-	      _("Failed to send '%s'.  Closing connection.\n"),
+	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
@@ -304,7 +304,7 @@ static void * process_thread(TableList * list) {
 	
 	if (sizeof(CS_dht_request_remove_MESSAGE) > ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
-	      _("Received invalid '%s' request (size %d)\n"),
+	      _("Received invalid `%s' request (size %d)\n"),
 	      "REMOVE",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
@@ -317,7 +317,7 @@ static void * process_thread(TableList * list) {
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
 	  LOG(LOG_ERROR,
-	      _("Received invalid '%s' request (wrong table)\n"),
+	      _("Received invalid `%s' request (wrong table)\n"),
 	      "REMOVE");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
@@ -340,7 +340,7 @@ static void * process_thread(TableList * list) {
 				     &req->key,
 				     value))) {
 	  LOG(LOG_ERROR,
-	      _("Failed to send '%s'.  Closing connection.\n"),
+	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
@@ -357,7 +357,7 @@ static void * process_thread(TableList * list) {
 
 	if (sizeof(CS_dht_request_iterate_MESSAGE) != ntohs(buffer->size)) {
 	  LOG(LOG_ERROR,
-	      _("Received invalid '%s' request (size %d)\n"),
+	      _("Received invalid `%s' request (size %d)\n"),
 	      "ITERATE",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
@@ -374,7 +374,7 @@ static void * process_thread(TableList * list) {
 					  &list->table,
 					  resCount)) {
 	  LOG(LOG_WARNING,
-	      _("Failed to send '%s'.  Closing connection.\n"),
+	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
 	  releaseClientSocket(list->sock);
@@ -517,17 +517,17 @@ int DHT_LIB_leave(const DHT_TableId * table) {
 	  ret = OK;	
 	else
 	  LOG(LOG_WARNING,
-	      _("gnunetd signaled error in response to '%s' message\n"),
+	      _("gnunetd signaled error in response to `%s' message\n"),
 	      "CS_dht_request_leave_MESSAGE");      	
 	FREE(reply);
       } else {
 	LOG(LOG_WARNING,
-	    _("Failed to receive response to '%s' message from gnunetd\n"),
+	    _("Failed to receive response to `%s' message from gnunetd\n"),
 	    "CS_dht_request_leave_MESSAGE");
       }
     } else {
       LOG(LOG_WARNING,
-	  _("Failed to send '%s' message to gnunetd\n"),
+	  _("Failed to send `%s' message to gnunetd\n"),
 	  "CS_dht_request_leave_MESSAGE");
     }
     releaseClientSocket(sock);
@@ -619,7 +619,7 @@ int DHT_LIB_get(const DHT_TableId * table,
     if ( (sizeof(CS_dht_reply_results_MESSAGE) > ntohs(reply->size)) ||
 	 (CS_PROTO_dht_REPLY_GET != ntohs(reply->type)) ) {
       LOG(LOG_WARNING,
-	_("Unexpected reply to '%s' operation.\n"),
+	_("Unexpected reply to `%s' operation.\n"),
 	  "GET");
       releaseClientSocket(sock);
       FREE(reply);

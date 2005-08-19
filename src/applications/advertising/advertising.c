@@ -153,7 +153,7 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
 	  hash2enc(&msg->senderIdentity.hashPubKey,
 		   &enc));
     LOG(LOG_WARNING,
-	_("hello message from '%s' invalid (signature invalid). Dropping.\n"),
+	_("hello message from `%s' invalid (signature invalid). Dropping.\n"),
 	(char*)&enc);
     return SYSERR; /* message invalid */
   }
@@ -300,7 +300,7 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
   }
   if (heloEnd <= 0) {
     LOG(LOG_WARNING,
-	_("'%s' failed (%d, %u). Will not send PING.\n"),
+	_("`%s' failed (%d, %u). Will not send PING.\n"),
 	"getAdvertisedhellos",
 	heloEnd,
 	mtu - ntohs(ping->size));
@@ -354,7 +354,7 @@ broadcastHelper(const PeerIdentity * hi,
 	   &other);
 #if DEBUG_ADVERTISING
   LOG(LOG_DEBUG,
-      "Entering '%s' with target '%s'.\n",
+      "Entering `%s' with target `%s'.\n",
       __FUNCTION__,
       &other);
 #endif
@@ -389,7 +389,7 @@ broadcastHelper(const PeerIdentity * hi,
   if (NULL == helo) {
 #if DEBUG_ADVERTISING
     LOG(LOG_DEBUG,
-	"Exit from '%s' (error: '%s' failed).\n",
+	"Exit from `%s' (error: `%s' failed).\n",
 	__FUNCTION__,
 	"identity2Helo");
 #endif
@@ -400,7 +400,7 @@ broadcastHelper(const PeerIdentity * hi,
   if (tsession == NULL) {
 #if DEBUG_ADVERTISING
     LOG(LOG_DEBUG,
-	"Exit from '%s' (%s error).\n",
+	"Exit from `%s' (%s error).\n",
 	__FUNCTION__,
 	"transportConnect");
 #endif
@@ -436,7 +436,7 @@ broadcasthelloTransport(TransportAPI * tapi,
     return; /* ignore */
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
-      "Enter '%s'.\n",
+      "Enter `%s'.\n",
       __FUNCTION__);
 #endif
   cronTime(&now);
@@ -466,7 +466,7 @@ broadcasthelloTransport(TransportAPI * tapi,
   FREE(sd.m);
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
-      "Exit '%s'.\n",
+      "Exit `%s'.\n",
       __FUNCTION__);
 #endif
 }
@@ -557,7 +557,7 @@ forwardhelloHelper(const PeerIdentity * peer,
 	  hash2enc(&peer->hashPubKey,
 		   &enc));
     LOG(LOG_INFO,
-	_("Removing hello from peer '%s' (expired %ds ago).\n"),
+	_("Removing hello from peer `%s' (expired %ds ago).\n"),
 	&enc,
 	now - ntohl(helo->expirationTime));
     identity->delHostFromKnown(peer, protocol);
@@ -589,7 +589,7 @@ forwardhello(void * unused) {
     return; /* CPU load too high... */
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
-      "Enter '%s'.\n",
+      "Enter `%s'.\n",
       __FUNCTION__);
 #endif
   count = identity->forEachHost(0,
@@ -600,7 +600,7 @@ forwardhello(void * unused) {
 			&count);
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
-      "Exit '%s'.\n",
+      "Exit `%s'.\n",
       __FUNCTION__);
 #endif
 }
@@ -723,7 +723,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   }
 
   LOG(LOG_DEBUG,
-      _("'%s' registering handler %d (plaintext and ciphertext)\n"),
+      _("`%s' registering handler %d (plaintext and ciphertext)\n"),
       "advertising",
       p2p_PROTO_hello);
 

@@ -82,7 +82,7 @@ static int parseOptions(int argc,
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-m");
 	return SYSERR;
       } else {	
@@ -128,9 +128,9 @@ static void dump(const char * fmt,
   }
 }
 
-#define LOGRET(ret) dump(_("Call to '%s' returns %d.\n"), __FUNCTION__, ret)
-#define LOGKEY(key) do { EncName kn; hash2enc(key, &kn); dump(_("Call to '%s' with key '%s'.\n"), __FUNCTION__, &kn); } while (0)
-#define LOGVAL(val) dump(_("Call to '%s' with value '%.*s' (%d bytes).\n"), __FUNCTION__, (val == NULL) ? 0 : &val[1], (val == NULL) ? NULL : &val[1], (val == NULL) ? 0 : (ntohl(val->size) - sizeof(DataContainer)))
+#define LOGRET(ret) dump(_("Call to `%s' returns %d.\n"), __FUNCTION__, ret)
+#define LOGKEY(key) do { EncName kn; hash2enc(key, &kn); dump(_("Call to `%s' with key `%s'.\n"), __FUNCTION__, &kn); } while (0)
+#define LOGVAL(val) dump(_("Call to `%s' with value '%.*s' (%d bytes).\n"), __FUNCTION__, (val == NULL) ? 0 : &val[1], (val == NULL) ? NULL : &val[1], (val == NULL) ? 0 : (ntohl(val->size) - sizeof(DataContainer)))
 
 static int lookup(void * closure,
 		  unsigned int type,
@@ -208,7 +208,7 @@ int main(int argc,
   tableName = getConfigurationString("DHT-JOIN",
 				     "TABLE");
   if (tableName == NULL) {
-    printf(_("No table name specified, using '%s'.\n"),
+    printf(_("No table name specified, using `%s'.\n"),
 	   "test");
     tableName = STRDUP("test");
   }

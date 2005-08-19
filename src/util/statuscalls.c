@@ -182,7 +182,7 @@ static void updateInterfaceTraffic() {
 			  &rxnew, 
 			  &txnew)) {
 	    LOG(LOG_ERROR,
-		_("Failed to parse interface data from '%s' at %s:%d.\n"),
+		_("Failed to parse interface data from `%s' at %s:%d.\n"),
 		PROC_NET_DEV, 
 		__FILE__, 
 		__LINE__);
@@ -597,7 +597,7 @@ static void resetStatusCalls() {
   if ( (interfaces == NULL) ||
        (strlen(interfaces) == 0) ) {
     LOG(LOG_ERROR,
-	_("No network interfaces defined in configuration section '%s' under '%s'!\n"),
+	_("No network interfaces defined in configuration section `%s' under `%s'!\n"),
 	"LOAD",
 	"INTERFACES");
   } else {

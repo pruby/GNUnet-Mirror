@@ -139,7 +139,7 @@ static pid_t launchWithExec(int daemonize) {
 	     args);
     LOG_STRERROR(LOG_FAILURE, "exec");
     LOG(LOG_FAILURE,
-	_("Attempted path to '%s' was '%s'.\n"),
+	_("Attempted path to `%s' was `%s'.\n"),
 	"gnunetd",
 	(path == NULL) ? "gnunetd" : path);
     FREENONNULL(path); /* yeah, right, like we're likely to get

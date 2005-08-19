@@ -150,7 +150,7 @@ int main(int argc, char ** argv) {
 
   nick = getConfigurationString("GNUNET-CHAT", "NICK");
   if (nick == NULL)
-    errexit(_("You must specify a nickname (use option '%s').\n"),
+    errexit(_("You must specify a nickname (use option `%s').\n"),
 	    "-n");
 
   doneSem = SEMAPHORE_NEW(0);

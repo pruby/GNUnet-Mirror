@@ -609,7 +609,7 @@ static int readAndProcess(int i) {
 	  hash2enc(&httpSession->sender.hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Http welcome message from peer '%s' received.\n",
+	"Http welcome message from peer `%s' received.\n",
 	&enc);
 #endif
     GROW(httpSession->rbuff,
@@ -1448,7 +1448,7 @@ TransportAPI * inittransport_http(CoreAPIForTransport * core) {
     ip = GETHOSTBYNAME(proxy);
     if (ip == NULL) {
       LOG(LOG_ERROR,
-	  _("Could not resolve name of HTTP proxy '%s'.\n"),
+	  _("Could not resolve name of HTTP proxy `%s'.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {

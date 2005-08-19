@@ -35,6 +35,8 @@
 #include "filter.h"
 #include "prefetch.h"
 
+#define DEBUG_DATASTORE NO
+
 /**
  * Require 1 MB 'free' space.
  */
@@ -74,12 +76,14 @@ static int get(const HashCode512 * query,
   EncName enc;
 
   if (! testAvailable(query)) {
+#if DEBUG_DATASTORE
     IFLOG(LOG_DEBUG,
 	  hash2enc(query,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Datastore availability pre-test failed for %s.\n",
+	"Datastore availability pre-test failed for `%s'.\n",
 	&enc);
+#endif
     return 0;
   }
 
@@ -104,7 +108,7 @@ static int del(const HashCode512 * query,
 	  hash2enc(query,
 		   &enc));
     LOG(LOG_WARNING,
-	_("Availability test failed for '%s' at %s:%d.\n"),
+	_("Availability test failed for `%s' at %s:%d.\n"),
 	&enc,
 	__FILE__, __LINE__);
     return 0;
@@ -115,18 +119,20 @@ static int del(const HashCode512 * query,
       makeUnavailable(query); /* update filter! */
       available += ntohl(value->size);
     }
+#if DEBUG_DATASTORE
     IFLOG(LOG_DEBUG,
 	  hash2enc(query,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Deleted '%s' from database.\n",
+	"Deleted `%s' from database.\n",
 	&enc);
+#endif
   } else {
     IFLOG(LOG_WARNING,
 	  hash2enc(query,
 		   &enc));
     LOG(LOG_WARNING,
-	_("Database failed to delete %s.\n"),
+	_("Database failed to delete `%s'.\n"),
 	&enc);
   }
   return ok;

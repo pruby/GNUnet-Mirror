@@ -120,7 +120,7 @@ static int shutdownHandler(ClientHandle client,
 
   if (ntohs(msg->size) != sizeof(CS_MESSAGE_HEADER)) {
     LOG(LOG_WARNING,
-        _("The '%s' request received from client is malformed.\n"),
+        _("The `%s' request received from client is malformed.\n"),
 	"shutdown");
     return SYSERR;
   }
@@ -266,7 +266,7 @@ static char * getPIDFile() {
   return getFileName("GNUNETD",
 		     "PIDFILE",
 		     _("You must specify a name for the PID file in section"
-		       " '%s' under '%s'.\n"));
+		       " `%s' under `%s'.\n"));
 }
 
 /**
@@ -280,7 +280,7 @@ void writePIDFile() {
   pidfd = FOPEN(pif, "w");
   if (pidfd == NULL) {
     LOG(LOG_WARNING,
-	_("Could not write PID to file '%s': %s.\n"),
+	_("Could not write PID to file `%s': %s.\n"),
 	pif,
 	STRERROR(errno));
   } else {
@@ -409,7 +409,7 @@ void changeUser(const char *user) {
   pws = getpwnam(user);
   if(pws == NULL) {
     LOG(LOG_WARNING,
-        _("User '%s' not known, cannot change UID to it.\n"), user);
+        _("User `%s' not known, cannot change UID to it.\n"), user);
     return;
   }
   if((0 != setgid(pws->pw_gid)) ||
@@ -418,7 +418,7 @@ void changeUser(const char *user) {
     if((0 != setregid(pws->pw_gid, pws->pw_gid)) ||
        (0 != setreuid(pws->pw_uid, pws->pw_uid)))
       LOG(LOG_WARNING,
-          _("Cannot change user/group to '%s': %s\n"),
+          _("Cannot change user/group to `%s': %s\n"),
           user, STRERROR(errno));
   }
 }
@@ -522,7 +522,7 @@ int parseCommandLine(int argc,
 	_("Invalid command-line arguments:\n"));
     while (GNoptind < argc) {
       LOG(LOG_WARNING,
-	  _("Argument %d: '%s'\n"),
+	  _("Argument %d: `%s'\n"),
 	  GNoptind+1,
 	  argv[GNoptind]);
       GNoptind++;

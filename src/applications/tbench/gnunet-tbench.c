@@ -121,7 +121,7 @@ static int parseOptions(int argc,
 		     "%ud",
 		     &messageIterations)){
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-i");
 	return SYSERR;
       }
@@ -131,7 +131,7 @@ static int parseOptions(int argc,
 		     "%ud",
 		     &messageCnt)){
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-n");
 	return SYSERR;
       }
@@ -144,7 +144,7 @@ static int parseOptions(int argc,
 		     "%ud",
 		     &messageSize)){
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-s");
 	return SYSERR;
       }
@@ -154,7 +154,7 @@ static int parseOptions(int argc,
 		     "%ud",
 		     &messageTrainSize)){
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-S");
 	return SYSERR;
       }
@@ -164,7 +164,7 @@ static int parseOptions(int argc,
 		     "%llud",
 		     &messageTimeOut)){
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-t");
 	return SYSERR;
       }
@@ -179,7 +179,7 @@ static int parseOptions(int argc,
 		     "%llud",
 		     &messageSpacing)){
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-X");
 	return SYSERR;
       }
@@ -225,7 +225,7 @@ int main(int argc, char ** argv) {
     errexit(_("You must specify a receiver!\n"));
   if (OK != enc2hash(messageReceiver,
 		     &msg.receiverId.hashPubKey))		
-    errexit(_("Invalid receiver peer ID specified ('%s' is not valid name).\n"),
+    errexit(_("Invalid receiver peer ID specified (`%s' is not valid name).\n"),
 	    messageReceiver);
   FREE(messageReceiver);
 

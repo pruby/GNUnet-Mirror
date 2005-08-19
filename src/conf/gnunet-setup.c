@@ -175,7 +175,7 @@ static int parser(int argc, char *argv[])
                   W_OK)) &&
      ((0 == ACCESS(filename, F_OK)) || (0 != ACCESS(dirname, W_OK)))) {
     errexit(_
-            ("gnunet-setup must have write-access to the configuration file '%s'\n"),
+            ("gnunet-setup must have write-access to the configuration file `%s'\n"),
             filename);
   }
   FREE(dirname);
@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
   else if(strcmp(operation, "wizard-curses") == 0) {
     if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
       errexit(_("Can only run wizard to configure gnunetd.\n"
-                "Did you forget the '%s' option?\n"), "-d");
+                "Did you forget the `%s' option?\n"), "-d");
 #if HAVE_CURSES
     wizard_curs_main();
 #else
@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
   else if(strcmp(operation, "wizard-gtk") == 0) {
     if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
       errexit(_("Can only run wizard to configure gnunetd.\n"
-                "Did you forget the '%s' option?\n"), "-d");
+                "Did you forget the `%s' option?\n"), "-d");
 #if HAVE_GTK
     wizard_main();
 #else
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 #endif
   }
   else {
-    printf(_("Unknown operation '%s'\n"), operation);
+    printf(_("Unknown operation `%s'\n"), operation);
     printf(_("Use --help to get a list of options.\n"));
     FREE(operation);
     doneUtil();

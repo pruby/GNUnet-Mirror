@@ -131,7 +131,7 @@ static int parseCommandLine(int argc,
     } /* end of parsing commandline */
   }
   if (user && (! get)) {
-    printf(_("Option '%s' makes no sense without option '%s'."),
+    printf(_("Option `%s' makes no sense without option `%s'."),
 	   "-u", "-g");
     return SYSERR;
   }
@@ -233,11 +233,11 @@ static void updateApplicationModules() {
     }
     if (strlen(pos) > 0) {
       LOG(LOG_MESSAGE,
-	  _("Updating data for module '%s'\n"),
+	  _("Updating data for module `%s'\n"),
 	  pos);
       if (OK != updateModule(pos))
 	LOG(LOG_ERROR,
-	    _("Failed to update data for module '%s'\n"),
+	    _("Failed to update data for module `%s'\n"),
 	    pos);
     }
   } while (next != NULL);

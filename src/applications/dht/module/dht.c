@@ -823,7 +823,7 @@ static PeerBucket * findBucket(const PeerIdentity * peer) {
   hash2enc(&coreAPI->myIdentity->hashPubKey,
 	   &enc2);
   LOG(LOG_DEBUG,
-      "Bit-distance from '%s' to this peer '%s' is %u bit.\n",
+      "Bit-distance from `%s' to this peer `%s' is %u bit.\n",
       &enc1,
       &enc2,
       index);
@@ -939,7 +939,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       LOG(LOG_WARNING,
-	  _("Malformed optional field '%s' received from peer '%s'.\n"),
+	  _("Malformed optional field `%s' received from peer `%s'.\n"),
 	  "tables",
 	  &enc);
       return;
@@ -952,7 +952,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"updating routing table after learning about peer '%s' who provides %d tables.\n",	
+	"updating routing table after learning about peer `%s' who provides %d tables.\n",	
 	&enc,
 	tableCount);
 #endif
@@ -966,7 +966,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       LOG(LOG_WARNING,
-	  _("Could not find peer '%s' in routing table!\n"),
+	  _("Could not find peer `%s' in routing table!\n"),
 	  &enc);
     }
     GNUNET_ASSERT(bucket != NULL);
@@ -1011,7 +1011,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       LOG(LOG_DEBUG,
-	  "routing table full, not adding peer '%s'.\n",	
+	  "routing table full, not adding peer `%s'.\n",	
 	  &enc);
 #endif
     } else {
@@ -1020,7 +1020,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       LOG(LOG_DEBUG,
-	  "adding peer '%s' to routing table.\n",	
+	  "adding peer `%s' to routing table.\n",	
 	  &enc);
 #endif
 
@@ -1113,7 +1113,7 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     LOG(LOG_WARNING,
-	_("Received malformed response to '%s' from peer '%s'.\n"),
+	_("Received malformed response to `%s' from peer `%s'.\n"),
 	"DHT_findNode",
 	&enc);
     return;
@@ -1128,7 +1128,7 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     LOG(LOG_WARNING,
-	_("Received malformed response to '%s' from peer '%s'.\n"),
+	_("Received malformed response to `%s' from peer `%s'.\n"),
 	"DHT_findNode",
 	&enc);
     return;
@@ -1142,14 +1142,14 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"processing PeerID received from peer '%s' in response to '%s' RPC.\n",
+	"processing PeerID received from peer `%s' in response to `%s' RPC.\n",
 	&enc,
 	"DHT_findNode");
     IFLOG(LOG_DEBUG,
 	  hash2enc(&msg->hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"sending RPC '%s' to learn more about peer '%s'.\n",
+	"sending RPC `%s' to learn more about peer `%s'.\n",
 	"DHT_ping",
 	&enc);
 #endif
@@ -1178,7 +1178,7 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "sending RPC '%s' to peer '%s'.\n",
+      "sending RPC `%s' to peer `%s'.\n",
       "DHT_find_nodes",
       &enc);
 #endif
@@ -1261,7 +1261,7 @@ static void ping_reply_handler(const PeerIdentity * responder,
 	hash2enc(&responder->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "peer '%s' supports table in question, considering the peer for list of %d-best matches.\n",	
+      "peer `%s' supports table in question, considering the peer for list of %d-best matches.\n",	
       &enc,
       ALPHA);
 #endif
@@ -1294,7 +1294,7 @@ static void request_DHT_ping(const PeerIdentity * identity,
 	hash2enc(&identity->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "sending RPC '%s' to peer '%s'.\n",
+      "sending RPC `%s' to peer `%s'.\n",
       "DHT_ping",
       &enc);
 #endif
@@ -1359,7 +1359,7 @@ static unsigned int findLocalNodes(const DHT_TableId * table,
 	hash2enc(table,
 		 &enc));
   LOG(LOG_DEBUG,
-      "searching local table for peers supporting table '%s'.\n",
+      "searching local table for peers supporting table `%s'.\n",
       &enc);
 #endif
   ENTER();
@@ -1380,7 +1380,7 @@ static unsigned int findLocalNodes(const DHT_TableId * table,
 		hash2enc(&pos->id.hashPubKey,
 			 &enc));
 	  LOG(LOG_DEBUG,
-	      "local table search showed peer '%s' is supporting the table.\n",
+	      "local table search showed peer `%s' is supporting the table.\n",
 	      &enc);
 #endif
 	  k_best_insert(k,
@@ -1425,7 +1425,7 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
 	hash2enc(&responder->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "peer '%s' responded to RPC '%s' with %u results.\n",
+      "peer `%s' responded to RPC `%s' with %u results.\n",
       &enc,
       "DHT_findvalue",
       max);
@@ -1437,7 +1437,7 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
       hash2enc(&responder->hashPubKey,
 	       &enc);
       LOG(LOG_WARNING,
-	  _("Invalid response to '%s' from peer '%s'.\n"),
+	  _("Invalid response to `%s' from peer `%s'.\n"),
 	  "DHT_findValue",
 	  &enc);
       return;
@@ -1472,7 +1472,7 @@ static void send_dht_get_rpc(const PeerIdentity * peer,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "sending RPC '%s' to peer '%s'.\n",
+      "sending RPC `%s' to peer `%s'.\n",
       "DHT_findvalue",
       &enc);
 #endif
@@ -1582,7 +1582,7 @@ dht_get_async_start(const DHT_TableId * table,
 	hash2enc(table,
 		 &enc2));
   LOG(LOG_DEBUG,
-      "performing '%s' operation on key '%s' and table '%s'.\n",
+      "performing `%s' operation on key `%s' and table `%s'.\n",
       "DHT_GET",
       &enc,
       &enc2);
@@ -1590,7 +1590,7 @@ dht_get_async_start(const DHT_TableId * table,
 
   if (timeout > 1 * cronHOURS) {
     LOG(LOG_WARNING,
-	_("'%s' called with timeout above 1 hour (bug?)\n"),
+	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
   }
@@ -1624,7 +1624,7 @@ dht_get_async_start(const DHT_TableId * table,
 	  hash2enc(table,
 		   &enc));
     LOG(LOG_DEBUG,
-	"I participate in the table '%s' for the '%s' operation.\n",
+	"I participate in the table `%s' for the `%s' operation.\n",
 	&enc,
 	"DHT_GET");
 #endif
@@ -1665,7 +1665,7 @@ dht_get_async_start(const DHT_TableId * table,
 	      hash2enc(&keys[0],
 		       &enc));
 	LOG(LOG_DEBUG,
-	    "local datastore lookup for key '%s' resulted in %d results.\n",
+	    "local datastore lookup for key `%s' resulted in %d results.\n",
 	    &enc,
 	    res);
 #endif
@@ -1683,7 +1683,7 @@ dht_get_async_start(const DHT_TableId * table,
 		hash2enc(&hosts[i].hashPubKey,
 			 &enc));
 	  LOG(LOG_DEBUG,
-	      "sending RPC '%s' to peer '%s' that also participates in the table.\n",
+	      "sending RPC `%s' to peer `%s' that also participates in the table.\n",
 	      "DHT_GET",
 	      &enc);
 #endif
@@ -1698,7 +1698,7 @@ dht_get_async_start(const DHT_TableId * table,
 	  hash2enc(table,
 		   &enc));
     LOG(LOG_DEBUG,
-	"I do not participate in the table '%s', finding %d other nodes that do.\n",
+	"I do not participate in the table `%s', finding %d other nodes that do.\n",
 	&enc,
 	ALPHA);
 #endif
@@ -1742,7 +1742,7 @@ static int dht_get_async_stop(struct DHT_GET_RECORD * record) {
   FREE(record);
 #if DEBUG_DHT
   LOG(LOG_DEBUG,
-      "'%s' operation completed with %d results.\n",
+      "`%s' operation completed with %d results.\n",
       "DHT_GET",
       resultsFound);
 #endif
@@ -1779,7 +1779,7 @@ findnodes_dht_master_get_callback(const HashCode512 * key,
 	dataLength,
 	sizeof(PeerIdentity));
     LOG(LOG_WARNING,
-	_("Invalid response to '%s'.\n"),
+	_("Invalid response to `%s'.\n"),
 	"DHT_findValue");
     return SYSERR;
   }
@@ -1834,7 +1834,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 	hash2enc(table,
 		 &enc));
   LOG(LOG_DEBUG,
-      "function '%s' called to look for nodes participating in table '%s'.\n",
+      "function `%s' called to look for nodes participating in table `%s'.\n",
       __FUNCTION__,
       &enc);
 #endif
@@ -1890,7 +1890,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 	    hash2enc(table,
 		     &enc));
       LOG(LOG_DEBUG,
-	  "performing RPC '%s' to find other peers participating in table '%s'.\n",
+	  "performing RPC `%s' to find other peers participating in table `%s'.\n",
 	  "DHT_findValue",
 	  &enc);
 #endif
@@ -1977,7 +1977,7 @@ static void find_k_nodes_dht_master_get_callback(const HashCode512 * key,
      which will in turn trigger create_find_nodes_rpc) */
   if ( (dataLength % sizeof(PeerIdentity)) != 0) {
     LOG(LOG_WARNING,
-	_("Malformed response to '%s' on master table.\n"),
+	_("Malformed response to `%s' on master table.\n"),
 	"DHT_findValue");
     return;
   }
@@ -1990,7 +1990,7 @@ static void find_k_nodes_dht_master_get_callback(const HashCode512 * key,
 	  hash2enc(&msg->hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"master table returned peer '%s' in '%s' operation.\n",
+	"master table returned peer `%s' in `%s' operation.\n",
 	&enc,
 	"DHT_findValue");
 #endif
@@ -2052,7 +2052,7 @@ static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
   hash2enc(table,
 	   &enc);
   LOG(LOG_DEBUG,
-      "'%s' called to find %d nodes that participate in table '%s'.\n",
+      "`%s' called to find %d nodes that participate in table `%s'.\n",
       __FUNCTION__,
       k,
       &enc);
@@ -2083,7 +2083,7 @@ static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
   if (found == k) {
 #if DEBUG_DHT
     LOG(LOG_DEBUG,
-	"'%s' found %d nodes in local table, no remote requests needed.\n",
+	"`%s' found %d nodes in local table, no remote requests needed.\n",
 	__FUNCTION__,
 	k);
 #endif
@@ -2104,7 +2104,7 @@ static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
   } else {
  #if DEBUG_DHT
     LOG(LOG_DEBUG,
-	"'%s' sends request to find %d in master table.\n",
+	"`%s' sends request to find %d in master table.\n",
 	__FUNCTION__,
 	k);
 #endif
@@ -2188,7 +2188,7 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
       hash2enc(&responder->hashPubKey,
 	       &enc);
       LOG(LOG_WARNING,
-	  _("Invalid response to '%s' from '%s'\n"),
+	  _("Invalid response to `%s' from `%s'\n"),
 	  "DHT_put",
 	  &enc);
       return;
@@ -2215,7 +2215,7 @@ static void send_dht_put_rpc(const PeerIdentity * peer,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "sending RPC '%s' to peer '%s'.\n",
+      "sending RPC `%s' to peer `%s'.\n",
       "DHT_store",
       &enc);
 #endif
@@ -2304,14 +2304,14 @@ dht_put_async_start(const DHT_TableId * table,
 	hash2enc(table,
 		 &enc2));
   LOG(LOG_DEBUG,
-      "performing '%s' operation on key '%s' and table '%s'.\n",
+      "performing `%s' operation on key `%s' and table `%s'.\n",
       "DHT_PUT",
       &enc,
       &enc2);
 #endif
   if (timeout > 1 * cronHOURS) {
     LOG(LOG_WARNING,
-	_("'%s' called with timeout above 1 hour (bug?)\n"),
+	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
   }
@@ -2340,7 +2340,7 @@ dht_put_async_start(const DHT_TableId * table,
 	  hash2enc(table,
 		   &enc));
     LOG(LOG_DEBUG,
-	"I participate in the table '%s' for the '%s' operation.\n",
+	"I participate in the table `%s' for the `%s' operation.\n",
 	&enc,
 	"DHT_PUT");
 #endif
@@ -2467,7 +2467,7 @@ static void dht_remove_rpc_reply_callback(const PeerIdentity * responder,
       hash2enc(&responder->hashPubKey,
 	       &enc);
       LOG(LOG_WARNING,
-	  _("Invalid response to '%s' from '%s'\n"),
+	  _("Invalid response to `%s' from `%s'\n"),
 	  "DHT_remove",
 	  &enc);
       return;
@@ -2496,7 +2496,7 @@ static void send_dht_remove_rpc(const PeerIdentity * peer,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "sending RPC '%s' to peer '%s'.\n",
+      "sending RPC `%s' to peer `%s'.\n",
       "DHT_remove",
       &enc);
 #endif
@@ -2570,7 +2570,7 @@ dht_remove_async_start(const DHT_TableId * table,
 
   if (timeout > 1 * cronHOURS) {
     LOG(LOG_WARNING,
-	_("'%s' called with timeout above 1 hour (bug?)\n"),
+	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
   }
@@ -2790,7 +2790,7 @@ static void rpc_DHT_ping(const PeerIdentity * sender,
 	hash2enc(&sender->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Received RPC '%s' from peer '%s'.\n",
+      "Received RPC `%s' from peer `%s'.\n",
       "DHT_ping",
       &enc);
 #endif
@@ -2838,7 +2838,7 @@ static void rpc_DHT_findNode(const PeerIdentity * sender,
 				   (void**) &table)) ||
        (dataLength != sizeof(DHT_TableId)) ) {
     LOG(LOG_WARNING,
-	_("Received invalid RPC '%s'.\n"),
+	_("Received invalid RPC `%s'.\n"),
 	"DHT_findNode");
     return;
   }
@@ -2967,7 +2967,7 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 				   (void**) &type)) ||
        (dataLength != sizeof(unsigned int)) ) {
     LOG(LOG_WARNING,
-	_("Received invalid RPC '%s'.\n"),
+	_("Received invalid RPC `%s'.\n"),
 	"DHT_findValue");
     return;
   }
@@ -3083,7 +3083,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
        ((NULL == (value = RPC_paramDataContainerByName(arguments,
 						       "value")))) ) {
     LOG(LOG_WARNING,
-	_("Received invalid RPC '%s'.\n"),
+	_("Received invalid RPC `%s'.\n"),
 	"DHT_store");
     return;
   }
@@ -3095,7 +3095,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
   ltd = getLocalTableData(table);
   if (ltd == NULL) {
     LOG(LOG_WARNING,
-	_("RPC for '%s' received for table that we do not participate in!\n"),
+	_("RPC for `%s' received for table that we do not participate in!\n"),
 	"DHT_store");
   }
   MUTEX_UNLOCK(lock);
@@ -3209,7 +3209,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 				   (void**) &timeout)) ||
        (dataLength != sizeof(unsigned long long)) ) {
     LOG(LOG_WARNING,
-	_("Received invalid RPC '%s'.\n"),
+	_("Received invalid RPC `%s'.\n"),
 	"DHT_remove");
     return;
   }
@@ -3223,7 +3223,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
   ltd = getLocalTableData(table);
   if (ltd == NULL) {
     LOG(LOG_DEBUG,
-	_("RPC for '%s' received for table that we do not participate in!\n"),
+	_("RPC for `%s' received for table that we do not participate in!\n"),
 	"DHT_removed");
   }
   MUTEX_UNLOCK(lock);
@@ -3286,7 +3286,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
   printRoutingTable();
   /* first, free resources from ASYNC calls started last time */
   LOG(LOG_CRON,
-      "'%s' stops async requests from last cron round.\n",
+      "`%s' stops async requests from last cron round.\n",
       __FUNCTION__);
 #endif
   cronTime(&now);
@@ -3350,7 +3350,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
 	 sizeof(PeerIdentity));
 #if DEBUG_DHT
   LOG(LOG_CRON,
-      "'%s' issues DHT_PUTs to advertise tables this peer participates in.\n",
+      "`%s' issues DHT_PUTs to advertise tables this peer participates in.\n",
       __FUNCTION__);
 #endif
 
@@ -3384,7 +3384,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
   */
 #if DEBUG_DHT
   LOG(LOG_CRON,
-      "'%s' issues findNodes for each table that we participate in.\n",
+      "`%s' issues findNodes for each table that we participate in.\n",
       __FUNCTION__);
 #endif
   for (i=0;i<tablesCount;i++) {
@@ -3410,7 +3410,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
   */
 #if DEBUG_DHT
   LOG(LOG_CRON,
-      "'%s' issues put to advertise tables that we participate in.\n",
+      "`%s' issues put to advertise tables that we participate in.\n",
       __FUNCTION__);
 #endif
   request_param = vectorNew(4);
@@ -3439,7 +3439,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
 	      hash2enc(&pos->id.hashPubKey,
 		       &enc));
 	LOG(LOG_DEBUG,
-	    "sending RPC '%s' to peer '%s'.\n",
+	    "sending RPC `%s' to peer `%s'.\n",
 	    "DHT_ping",
 	    &enc);
 #endif

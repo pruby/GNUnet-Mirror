@@ -422,7 +422,7 @@ static void * tcpListenMain() {
 	   (struct sockaddr *) &serverAddr,
 	   sizeof(serverAddr)) < 0) {
     LOG(LOG_ERROR,
-	_("'%s' failed for port %d: %s. Will try again in %d seconds.\n"),
+	_("`%s' failed for port %d: %s. Will try again in %d seconds.\n"),
 	"bind",
 	listenerPort,
 	STRERROR(errno),
@@ -693,7 +693,7 @@ int initTCPServer() {
   } else {
     trustedNetworks_ = parseRoutes(ch);
     if (trustedNetworks_ == NULL)
-      errexit(_("Malformed network specification in the configuration in section '%s' for entry '%s': %s\n"),
+      errexit(_("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
 	      "NETWORK",
 	      "TRUSTED",
 	      ch);

@@ -111,7 +111,7 @@ static int loadApplicationModule(const char * rpos) {
 		    nxt->dsoName)) {
       if (nxt->applicationInitialized == YES) {
 	LOG(LOG_WARNING,
-	    _("Application module '%s' already initialized!\n"),
+	    _("Application module `%s' already initialized!\n"),
 	    name);
 	FREE(name);
 	return SYSERR;
@@ -145,7 +145,7 @@ static int loadApplicationModule(const char * rpos) {
   if (mptr == NULL) {
 #if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Unloading library '%s' at %s:%d.\n",
+	"Unloading library `%s' at %s:%d.\n",
 	name, __FILE__, __LINE__);
 #endif
     unloadDynamicLibrary(library);
@@ -164,7 +164,7 @@ static int loadApplicationModule(const char * rpos) {
   if (OK != ok) {
     /* undo loading */
     LOG(LOG_MESSAGE,
-	_("Failed to load plugin '%s' at %s:%d.  Unloading plugin.\n"),
+	_("Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"),
 	name, __FILE__, __LINE__);
     /* Note: we cannot assert that shutdownList == nxt here,
        so we have to traverse the list again! */
@@ -187,7 +187,7 @@ static int loadApplicationModule(const char * rpos) {
       spos->next = nxt->next;
 #if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Unloading library '%s' at %s:%d.\n",
+	"Unloading library `%s' at %s:%d.\n",
 	name, __FILE__, __LINE__);
 #endif
     unloadDynamicLibrary(library);
@@ -211,14 +211,14 @@ static int unloadApplicationModule(const char * name) {
 
   if (pos == NULL) {
     LOG(LOG_ERROR,
-	_("Could not shutdown '%s': application not loaded\n"),
+	_("Could not shutdown `%s': application not loaded\n"),
 	name);
     return SYSERR;
   }
 
   if (pos->applicationInitialized != YES) {
     LOG(LOG_WARNING,
-	_("Could not shutdown application '%s': not initialized\n"),
+	_("Could not shutdown application `%s': not initialized\n"),
 	name);
     return SYSERR;
   }
@@ -227,7 +227,7 @@ static int unloadApplicationModule(const char * name) {
 			   pos->dsoName);
   if (mptr == NULL) {
     LOG(LOG_ERROR,
-	_("Could not find '%s%s' method in library '%s'.\n"),
+	_("Could not find '%s%s' method in library `%s'.\n"),
 	"done_",
 	pos->dsoName,
 	pos->dsoName);
@@ -239,7 +239,7 @@ static int unloadApplicationModule(const char * name) {
   if (pos->serviceCount > 0) {
 #if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Application shutdown, but service '%s' is still in use.\n",
+	"Application shutdown, but service `%s' is still in use.\n",
 	pos->dsoName);
 #endif	
     return OK;
@@ -260,7 +260,7 @@ static int unloadApplicationModule(const char * name) {
        valgrind */
 #if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Unloading application plugin '%s' at %s:%d.\n",
+	"Unloading application plugin `%s' at %s:%d.\n",
 	pos->dsoName, __FILE__, __LINE__);
 #endif
     unloadDynamicLibrary(pos->library);
@@ -302,7 +302,7 @@ void * requestService(const char * rpos) {
 	FREE(name);
 #if DEBUG_CORE
 	LOG(LOG_DEBUG,
-	    "Already have service '%s' as %p.\n",
+	    "Already have service `%s' as %p.\n",
 	    pos,
 	    nxt->servicePTR);
 #endif
@@ -323,7 +323,7 @@ void * requestService(const char * rpos) {
 	FREE(name);
 #if DEBUG_CORE
 	LOG(LOG_DEBUG,
-	    "Initialized service '%s' as %p.\n",
+	    "Initialized service `%s' as %p.\n",
 	    pos,
 	    nxt->servicePTR);
 #endif
@@ -347,7 +347,7 @@ void * requestService(const char * rpos) {
   if (mptr == NULL) {
 #if DEBUG_CORE
 	LOG(LOG_DEBUG,
-	    "Unloading library '%s' at %s:%d.\n",
+	    "Unloading library `%s' at %s:%d.\n",
 	    name, __FILE__, __LINE__);
 #endif
     unloadDynamicLibrary(library);
@@ -364,14 +364,14 @@ void * requestService(const char * rpos) {
   nxt->servicePTR = NULL;
   shutdownList = nxt;
   LOG(LOG_DEBUG,
-      "Loading service '%s'\n",
+      "Loading service `%s'\n",
       pos);
   api = mptr(&applicationCore);
   if (api != NULL) {
     nxt->servicePTR = api;
   } else {
     LOG(LOG_WARNING,
-	"Failed to load service '%s'\n",
+	"Failed to load service `%s'\n",
 	pos);
     nxt->serviceCount = 0;
   }
@@ -401,7 +401,7 @@ int releaseService(void * service) {
   if (pos->serviceCount > 1) {
 #if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Service '%s' still in use, not unloaded.\n",
+	"Service `%s' still in use, not unloaded.\n",
 	pos->dsoName);
 #endif
     pos->serviceCount--;
@@ -409,14 +409,14 @@ int releaseService(void * service) {
   }
 
   LOG(LOG_DEBUG,
-      "Unloading service '%s'.\n",
+      "Unloading service `%s'.\n",
       pos->dsoName);
   mptr = bindDynamicMethod(pos->library,
 			   "release_",
 			   pos->dsoName);
   if (mptr == NULL) {
     LOG(LOG_ERROR,
-	_("Could not find '%s%s' method in library '%s'.\n"),
+	_("Could not find '%s%s' method in library `%s'.\n"),
 	"release_",
 	pos->dsoName,
 	pos->dsoName);
@@ -434,7 +434,7 @@ int releaseService(void * service) {
   if (pos->applicationInitialized == YES) {
 #if DEBUG_CORE
     LOG(LOG_DEBUG,
-	"Protocol '%s' still in use, not unloaded.\n",
+	"Protocol `%s' still in use, not unloaded.\n",
 	pos->dsoName);
 #endif
     return OK; /* protocol still in use! */
@@ -491,11 +491,11 @@ void loadApplicationModules() {
     }
     if (strlen(pos) > 0) {
       LOG(LOG_DEBUG,
-	  "Loading application '%s'\n",
+	  "Loading application `%s'\n",
 	  pos);
      if (OK != loadApplicationModule(pos))
 	LOG(LOG_ERROR,
-	    _("Could not initialize application '%s'\n"),
+	    _("Could not initialize application `%s'\n"),
 	    pos);
     }
   } while (next != NULL);
@@ -512,7 +512,7 @@ void unloadApplicationModules() {
     if ( (pos->applicationInitialized == YES) &&
 	 (OK != unloadApplicationModule(pos->dsoName)) )
       LOG(LOG_ERROR,
-	  _("Could not properly shutdown application '%s'.\n"),
+	  _("Could not properly shutdown application `%s'.\n"),
 	  pos->dsoName);
     pos = nxt;
   }
@@ -608,7 +608,7 @@ void doneCore() {
 	  /* do not unload plugins if we're using valgrind */
 #if DEBUG_CORE
 	  LOG(LOG_DEBUG,
-	      "Unloading library '%s' at %s:%d.\n",
+	      "Unloading library `%s' at %s:%d.\n",
 	      pos->dsoName, __FILE__, __LINE__);
 #endif	
 	  unloadDynamicLibrary(pos->library);
@@ -629,7 +629,7 @@ void doneCore() {
   pos = shutdownList;
   while (pos != NULL) {
     LOG(LOG_ERROR,
-	_("Could not properly unload service '%s'!\n"),
+	_("Could not properly unload service `%s'!\n"),
 	pos->dsoName);
     pos = pos->next;
   }

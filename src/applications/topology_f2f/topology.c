@@ -191,7 +191,7 @@ static void scanForHosts(unsigned int index) {
   hash2enc(&indexMatch.match.hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Topology: trying to connect to '%s'.\n",
+      "Topology: trying to connect to `%s'.\n",
       &enc);
   session->tryConnect(&indexMatch.match);
   identity->blacklistHost(&indexMatch.match,
@@ -298,7 +298,7 @@ static int rereadConfiguration() {
 			       "FRIENDS");
   if (tmp == NULL) {
     LOG(LOG_ERROR,
-	_("Need to have list of friends in configuration under '%s' in section '%s'.\n"),
+	_("Need to have list of friends in configuration under `%s' in section `%s'.\n"),
 	"FRIENDS",
 	"F2F");
     return SYSERR;
@@ -317,7 +317,7 @@ static int rereadConfiguration() {
   data = MALLOC(size);
   if (size != readFile(fn, size, data)) {
     LOG(LOG_ERROR,
-	_("Failed to read friends list from '%s'\n"),
+	_("Failed to read friends list from `%s'\n"),
 	fn);
     FREE(fn);
     return SYSERR;
@@ -345,7 +345,7 @@ static int rereadConfiguration() {
       friends[friendCount-1].hashPubKey = hc;
     } else {
       LOG(LOG_WARNING,
-	  _("Syntax error in topology specification, skipping bytes '%s'.\n"),
+	  _("Syntax error in topology specification, skipping bytes `%s'.\n"),
 	  &enc);
     }
     pos = pos + sizeof(EncName);

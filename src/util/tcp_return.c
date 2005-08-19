@@ -48,14 +48,14 @@ int readTCPResult(GNUNET_TCP_SOCKET * sock,
   if (SYSERR == readFromSocket(sock,
 			       (CS_MESSAGE_HEADER **) &rv)) {
     LOG(LOG_WARNING,
-	_("'%s' failed, other side closed connection.\n"),
+	_("`%s' failed, other side closed connection.\n"),
 	__FUNCTION__);
     return SYSERR;
   }
   if ( (ntohs(rv->header.size) != sizeof(CS_returnvalue_MESSAGE)) ||
        (ntohs(rv->header.type) != CS_PROTO_RETURN_VALUE) ) {
     LOG(LOG_WARNING,
-	_("'%s' failed, reply invalid!\n"),
+	_("`%s' failed, reply invalid!\n"),
 	__FUNCTION__);
     FREE(rv);
     return SYSERR;

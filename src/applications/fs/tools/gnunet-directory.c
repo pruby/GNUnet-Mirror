@@ -72,7 +72,7 @@ static void printDirectory(const char * filename) {
   int fd;
 
   name = expandFileName(filename);
-  printf(_("==> Directory '%s':\n"),
+  printf(_("==> Directory `%s':\n"),
 	 name);
   if ( (OK != getFileSize(name,
 			  &len)) ||

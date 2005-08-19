@@ -166,7 +166,7 @@ save_conf ()
     char * err;
     const char * prefix;
     
-    prefix = _("Unable to save configuration file '%s':");
+    prefix = _("Unable to save configuration file `%s':");
     
     err = malloc(strlen(filename) + strlen(prefix) + 1);
     sprintf(err, prefix, filename);

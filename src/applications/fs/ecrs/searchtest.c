@@ -60,7 +60,7 @@ static int searchCB(const ECRS_FileInfo * fi,
   char * st;
 
   st = ECRS_uriToString(fi->uri);
-  printf("Got result '%s'\n",
+  printf("Got result `%s'\n",
 	 st);
   FREE(st);
 #endif

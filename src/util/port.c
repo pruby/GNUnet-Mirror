@@ -43,7 +43,7 @@ unsigned short getGNUnetPort() {
 					      setting);
   if (port == 0) {
     errexit(_("Cannot determine port of gnunetd server. "
-	      "Define in configuration file in section '%s' under '%s'.\n"),
+	      "Define in configuration file in section `%s' under `%s'.\n"),
 	    "NETWORK",
 	    setting);
   }

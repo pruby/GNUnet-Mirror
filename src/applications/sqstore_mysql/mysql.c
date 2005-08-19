@@ -146,14 +146,14 @@
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_MYSQL(cmd, dbh) do { errexit(_("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
+#define DIE_MYSQL(cmd, dbh) do { errexit(_("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_MYSQL(level, cmd, dbh) do { LOG(level, _("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
+#define LOG_MYSQL(level, cmd, dbh) do { LOG(level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
 
 
 
@@ -359,7 +359,7 @@ static int iopen(mysqlHandle * dbhI,
 			   DELETE_GENERIC_SAMPLE,
 			   strlen(DELETE_GENERIC_SAMPLE)) ) {
       LOG(LOG_ERROR,
-	  _("'%s' failed at %s:%d with error: %s\n"),
+	  _("`%s' failed at %s:%d with error: %s\n"),
 	  "mysql_stmt_prepare",
 	  __FILE__, __LINE__,
 	  mysql_stmt_error(dbhI->insert));
@@ -663,7 +663,7 @@ static int get(const HashCode512 * query,
 	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "MySQL looks for '%s' of type %u\n",
+      "MySQL looks for `%s' of type %u\n",
       &enc,
       type);
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -686,7 +686,7 @@ static int get(const HashCode512 * query,
   sql_res = mysql_stmt_result_metadata(stmt);
   if (! sql_res) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_result_metadata",
 	__FILE__, __LINE__,
 	mysql_stmt_error(stmt));
@@ -701,7 +701,7 @@ static int get(const HashCode512 * query,
   if (mysql_stmt_bind_param(stmt,
 			    dbh->sbind)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_param",
 	__FILE__, __LINE__,
 	mysql_stmt_error(stmt));
@@ -710,7 +710,7 @@ static int get(const HashCode512 * query,
   }
   if (mysql_stmt_execute(stmt)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
 	mysql_stmt_error(stmt));
@@ -734,7 +734,7 @@ static int get(const HashCode512 * query,
   if (mysql_stmt_bind_result(stmt,
 			     dbh->bind)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_result",
 	__FILE__, __LINE__,
 	mysql_stmt_error(stmt));
@@ -744,7 +744,7 @@ static int get(const HashCode512 * query,
   }
   if (mysql_stmt_store_result(stmt)) {
     LOG(LOG_ERROR,
-		_("'%s' failed at %s:%d with error: %s\n"),
+		_("`%s' failed at %s:%d with error: %s\n"),
 		"mysql_stmt_store_result",
 		__FILE__, __LINE__,
 		mysql_stmt_error(stmt));
@@ -793,7 +793,7 @@ static int get(const HashCode512 * query,
   }
   if (mysql_stmt_errno(stmt)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_fetch",
 	__FILE__, __LINE__,
 	mysql_stmt_error(stmt));
@@ -807,13 +807,13 @@ static int get(const HashCode512 * query,
 		 &enc));
   if (count > 0) {
     LOG(LOG_DEBUG,
-	"MySQL found %d results for '%s' of type %u.\n",
+	"MySQL found %d results for `%s' of type %u.\n",
 	count,
 	&enc,
 	type);
   } else {
     LOG(LOG_DEBUG,
-	"MySQL iteration aborted looking for '%s' of type %u.\n",
+	"MySQL iteration aborted looking for `%s' of type %u.\n",
 	&enc,
 	type);
   }
@@ -872,7 +872,7 @@ static int put(const HashCode512 * key,
   if (mysql_stmt_bind_param(dbh->insert,
 			    dbh->bind)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_param",
 	__FILE__, __LINE__,
 	mysql_stmt_error(dbh->insert));
@@ -882,7 +882,7 @@ static int put(const HashCode512 * key,
 
   if (mysql_stmt_execute(dbh->insert)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
 	mysql_stmt_error(dbh->insert));
@@ -918,7 +918,7 @@ static int del(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "MySQL is executing deletion request for content of query '%s' and type %u\n",
+      "MySQL is executing deletion request for content of query `%s' and type %u\n",
       &enc,
       value == NULL ? 0 : ntohl(value->type));
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -952,7 +952,7 @@ static int del(const HashCode512 * key,
   if (mysql_stmt_bind_param(stmt,
 			    dbh->dbind)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_param",
 	__FILE__, __LINE__,
 	mysql_stmt_error(stmt));
@@ -961,7 +961,7 @@ static int del(const HashCode512 * key,
   }  
   if (mysql_stmt_execute(stmt)) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
 	mysql_stmt_error(stmt));
@@ -1013,8 +1013,8 @@ static int update(const HashCode512 * key,
 	   n,
 	   "UPDATE gn070"
 	   " SET prio=prio+%d"
-	   " WHERE hash='%s'"
-	   " AND value='%s'",
+	   " WHERE hash=`%s'"
+	   " AND value=`%s'",
 	   delta,
 	   escapedHash,
 	   escapedBlock);
@@ -1062,7 +1062,7 @@ static unsigned long long getSize() {
     sql_row = mysql_fetch_row(sql_res);
     if (sql_row == NULL) {
       LOG(LOG_WARNING,
-	  _("Query '%s' had no results.\n"),
+	  _("Query `%s' had no results.\n"),
 	  "SHOW TABLE STATUS LIKE 'gn070'");
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
       BREAK();
@@ -1153,7 +1153,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   FREE(home_dir);
 #endif
   LOG(LOG_DEBUG,
-      _("Trying to use file '%s' for MySQL configuration.\n"),
+      _("Trying to use file `%s' for MySQL configuration.\n"),
       cnffile);
   fp = FOPEN(cnffile, "r");
   if (!fp) {

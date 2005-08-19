@@ -90,7 +90,7 @@ int conf_read(const char *name)
 	}
 	else {
 	  LOG(LOG_ERROR,
-	      _("%s: symbol value '%s' invalid for %s\n"), 
+	      _("%s: symbol value `%s' invalid for %s\n"), 
 	      name, 
 	      val,
 	      sym->name);

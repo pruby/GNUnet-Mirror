@@ -116,7 +116,7 @@ void initPrivateKey() {
 		 encPrivateKey)) {
       FREE(encPrivateKey);
       LOG(LOG_WARNING,
-	  _("Existing hostkey in file '%s' failed format check, creating new hostkey.\n"),
+	  _("Existing hostkey in file `%s' failed format check, creating new hostkey.\n"),
 	  hostkeyfile);
       encPrivateKey = NULL;
     }

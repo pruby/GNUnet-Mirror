@@ -1957,13 +1957,13 @@ const char *zconf_tokenname(int token)
 static bool zconf_endtoken(int token, int starttoken, int endtoken)
 {
 	if (token != endtoken) {
-		zconfprint("unexpected '%s' within %s block", zconf_tokenname(token), zconf_tokenname(starttoken));
+		zconfprint("unexpected `%s' within %s block", zconf_tokenname(token), zconf_tokenname(starttoken));
 		zconfnerrs++;
 		return false;
 	}
 	if (current_menu->file != current_file) {
-		zconfprint("'%s' in different file than '%s'", zconf_tokenname(token), zconf_tokenname(starttoken));
-		zconfprint("location of the '%s'", zconf_tokenname(starttoken));
+		zconfprint("`%s' in different file than `%s'", zconf_tokenname(token), zconf_tokenname(starttoken));
+		zconfprint("location of the `%s'", zconf_tokenname(starttoken));
 		zconfnerrs++;
 		return false;
 	}

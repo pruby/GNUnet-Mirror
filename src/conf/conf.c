@@ -519,14 +519,14 @@ int conf_main()
   } while (conf_cnt);
    
   if (conf_write(filename)) {
-    printf(_("Unable to save configuration file '%s': %s.\n"), 
+    printf(_("Unable to save configuration file `%s': %s.\n"), 
 	   filename,
 	   STRERROR(errno));
     FREE(filename);
     return 1;
   }
   else {
-    printf(_("Configuration file '%s' created.\n"),
+    printf(_("Configuration file `%s' created.\n"),
 	   filename);
     FREE(filename);
     return 0;

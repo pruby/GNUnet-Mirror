@@ -72,7 +72,7 @@ static int handleGetOption(ClientHandle sock,
 int initialize_module_getoption(CoreAPIForApplication * capi) {
   coreAPI = capi;
   LOG(LOG_DEBUG,
-      _("'%s' registering client handler %d\n"),
+      _("`%s' registering client handler %d\n"),
       "getoption",
       CS_PROTO_GET_OPTION_REQUEST);
   capi->registerClientHandler(CS_PROTO_GET_OPTION_REQUEST,

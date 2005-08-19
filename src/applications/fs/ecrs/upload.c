@@ -172,7 +172,7 @@ int ECRS_uploadFile(const char * filename,
   }
   if (0 == assertIsFile(filename)) {
     LOG(LOG_ERROR,
-	_("'%s' is not a file.\n"),
+	_("`%s' is not a file.\n"),
 	filename);
     return SYSERR;
   }
@@ -189,7 +189,7 @@ int ECRS_uploadFile(const char * filename,
     if (SYSERR == getFileHash(filename,
 			      &fileId)) {
       LOG(LOG_ERROR, 
-	  _("Cannot hash '%s'.\n"), 
+	  _("Cannot hash `%s'.\n"), 
 	  filename);
       releaseClientSocket(sock);
       return SYSERR;
@@ -207,13 +207,13 @@ int ECRS_uploadFile(const char * filename,
     switch (FS_initIndex(sock, &fileId, filename)) {
     case SYSERR:
       LOG(LOG_ERROR,
-	  _("Initialization for indexing file '%s' failed.\n"), 
+	  _("Initialization for indexing file `%s' failed.\n"), 
 	  filename);
       releaseClientSocket(sock);
       return SYSERR;
     case NO:
       LOG(LOG_ERROR, 
-	  _("Indexing file '%s' failed. Check file permissions and consult "
+	  _("Indexing file `%s' failed. Check file permissions and consult "
 	    "your GNUnet server's logs.\n"),
 	  filename);
       releaseClientSocket(sock);
@@ -367,7 +367,7 @@ int ECRS_uploadFile(const char * filename,
 	  hash2enc(&chk.query,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Query for current block at level %u is '%s'.\n",
+	"Query for current block at level %u is `%s'.\n",
 	i,
 	&enc);
 #endif

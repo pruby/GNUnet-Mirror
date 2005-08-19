@@ -156,7 +156,7 @@ static int parseOptions(int argc,
 		      "%ud",
 		      &receivePolicy)) {
         LOG(LOG_FAILURE,
-	  _("You must pass a number to the '%s' option.\n"),
+	  _("You must pass a number to the `%s' option.\n"),
 	    "-a");
         return -1;
       }
@@ -172,7 +172,7 @@ static int parseOptions(int argc,
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-m");
 	return SYSERR;
       } else {
@@ -193,7 +193,7 @@ static int parseOptions(int argc,
       unsigned int timeout;
       if (1 != sscanf(GNoptarg, "%ud", &timeout)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-t");
 	return SYSERR;
       } else {

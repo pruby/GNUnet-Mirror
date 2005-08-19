@@ -57,7 +57,7 @@ static int getAddress6FromHostname(IP6addr * identity) {
   ip = gethostbyname2(hostname, AF_INET6);
   if (ip == NULL) {
     LOG(LOG_ERROR,
-	_("Could not find IP of host '%s': %s\n"),
+	_("Could not find IP of host `%s': %s\n"),
 	hostname, 
 	hstrerror(h_errno));
     FREE(hostname);
@@ -97,7 +97,7 @@ static int getAddress6(IP6addr  * address){
 			AF_INET6);
     if (ip == NULL) {
       LOG(LOG_ERROR,
-	  _("Could not resolve '%s': %s\n"),
+	  _("Could not resolve `%s': %s\n"),
 	  ipString, 
 	  hstrerror(h_errno));
       retval = SYSERR;

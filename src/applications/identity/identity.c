@@ -321,7 +321,7 @@ static int cronHelper(const char * filename,
   strcat(fullname, filename);
   if (0 == UNLINK(fullname))
     LOG(LOG_WARNING,
-	_("File '%s' in directory '%s' does not match naming convention. "
+	_("File `%s' in directory `%s' does not match naming convention. "
 	  "Removed.\n"),
 	filename,
 	networkIdDirectory);
@@ -354,7 +354,7 @@ static void cronScanDirectoryDataHosts(void * unused) {
     retries++;
     if ((retries & 32) > 0) {
       LOG(LOG_WARNING,
-	  _("%s '%s' returned no known hosts!\n"),
+	  _("%s `%s' returned no known hosts!\n"),
 	  "scanDirectory",
 	  networkIdDirectory);
     }
@@ -634,7 +634,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 		  &buf)) {
       if (0 == UNLINK(fn))
 	LOG(LOG_WARNING,
-	    _("Removed file '%s' containing invalid hello data.\n"),
+	    _("Removed file `%s' containing invalid hello data.\n"),
 	    fn);
       else
 	LOG_FILE_STRERROR(LOG_ERROR, 
@@ -652,7 +652,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   if ((unsigned int)size != P2P_hello_MESSAGE_size(&buffer)) {
     if (0 == UNLINK(fn))
       LOG(LOG_WARNING,
-	  _("Removed file '%s' containing invalid hello data.\n"),
+	  _("Removed file `%s' containing invalid hello data.\n"),
 	  fn);
     else
       LOG_FILE_STRERROR(LOG_ERROR, 
@@ -753,7 +753,7 @@ static int blacklistHost(const PeerIdentity * identity,
 	   &hn);
 #if DEBUG_IDENTITY 
   LOG(LOG_INFO,
-      "Blacklisting host '%s' for %llu seconds"
+      "Blacklisting host `%s' for %llu seconds"
       " until %llu (strict=%d).\n",
       &hn,
       entry->delta / cronSECONDS,
@@ -826,7 +826,7 @@ static int whitelistHost(const PeerIdentity * identity) {
 	hash2enc(&identity->hashPubKey,
 		 &enc));
   LOG(LOG_INFO,
-      "Whitelisting host '%s'\n",
+      "Whitelisting host `%s'\n",
       &enc);
 #endif
   entry->delta = 30 * cronSECONDS;
@@ -933,7 +933,7 @@ static void flushHostCredit(HostEntry * host) {
     if (0 != UNLINK(fn)) {
       if (errno != ENOENT)
 	LOG(LOG_INFO,
-	    "'%s' of file '%s' at %s:%d failed: %s\n",
+	    "`%s' of file `%s' at %s:%d failed: %s\n",
 	    "unlink",
 	    fn,
 	    __FILE__, __LINE__,

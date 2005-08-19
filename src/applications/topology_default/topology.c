@@ -197,7 +197,7 @@ static void scanForHosts(unsigned int index) {
   hash2enc(&indexMatch.match.hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Topology: trying to connect to '%s' in slot '%u'.\n",
+      "Topology: trying to connect to `%s' in slot '%u'.\n",
       &enc,
       index);
 #endif
@@ -222,7 +222,7 @@ static void notifyPONG(PeerIdentity * hostId) {
   hash2enc(&hostId->hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Received pong from '%s', telling core that peer is still alive.\n",
+      "Received pong from `%s', telling core that peer is still alive.\n",
       (char*)&enc);  
 #endif
   coreAPI->confirmSessionUp(hostId);
@@ -257,7 +257,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
     hash2enc(&hi->hashPubKey, 
 	     &enc);
     LOG(LOG_DEBUG,
-	"Sending ping to '%s' to prevent connection timeout.\n",
+	"Sending ping to `%s' to prevent connection timeout.\n",
 	(char*)&enc);  
 #endif
     if (OK != pingpong->ping(peer,
@@ -397,7 +397,7 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 		     data,
 		     len)) {
       LOG(LOG_FAILURE,
-	  _("Version mismatch ('%s' vs. '%*.s'), run gnunet-update!\n"),
+	  _("Version mismatch (`%s' vs. '%*.s'), run gnunet-update!\n"),
 	  PACKAGE_VERSION,
 	  len,
 	  data);

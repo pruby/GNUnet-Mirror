@@ -107,12 +107,12 @@ static void postProcess(const struct ECRS_URI * uri) {
   if (nsuri != NULL) {
     us = ECRS_uriToString(nsuri);
     ECRS_freeUri(nsuri);
-    printf(_("Created entry '%s' in namespace '%s'\n"),
+    printf(_("Created entry `%s' in namespace `%s'\n"),
 	   us,
 	   pname);
     FREE(us);
   } else {
-    printf(_("Failed to add entry to namespace '%s' (does it exist?)\n"),
+    printf(_("Failed to add entry to namespace `%s' (does it exist?)\n"),
 	   pname);
   }
   FREE(pname);  
@@ -147,7 +147,7 @@ static void printstatus(int * verboselevel,
 		      event->data.UploadComplete.main_filename)) {
 	delta = event->data.UploadComplete.eta 
 	  - event->data.UploadComplete.start_time;
-	PRINTF(_("Upload of '%s' complete, "
+	PRINTF(_("Upload of `%s' complete, "
 		 "%llu bytes took %llu seconds (%8.3f kbps).\n"),
 	       event->data.UploadComplete.filename,
 	       event->data.UploadComplete.total,
@@ -161,7 +161,7 @@ static void printstatus(int * verboselevel,
 
 	cronTime(&now);
 	delta = now - event->data.UploadComplete.start_time;
-	PRINTF(_("Upload of '%s' complete, "
+	PRINTF(_("Upload of `%s' complete, "
 		 "current average speed is %8.3f kbps.\n"),
 	       event->data.UploadComplete.filename,
 	       (delta == 0)
@@ -171,7 +171,7 @@ static void printstatus(int * verboselevel,
       }
     }
     fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
-    printf(_("File '%s' has URI: %s\n"),
+    printf(_("File `%s' has URI: %s\n"),
 	   event->data.UploadComplete.filename,
 	   fstring);
     FREE(fstring);
@@ -309,7 +309,7 @@ static int parseOptions(int argc,
 		      "%ud",
 		      &receivePolicy)) {
         LOG(LOG_FAILURE,
-	  _("You must pass a number to the '%s' option.\n"),
+	  _("You must pass a number to the `%s' option.\n"),
 	    "-a");
         return -1;
       }
@@ -333,7 +333,7 @@ static int parseOptions(int argc,
       unsigned int interval;
       if (1 != sscanf(GNoptarg, "%ud", &interval)) {
         LOG(LOG_FAILURE,
-	    _("You must pass a positive number to the '%s' option.\n"),
+	    _("You must pass a positive number to the `%s' option.\n"),
 	    "-i");
 	return -1;
       } else
@@ -405,7 +405,7 @@ static int parseOptions(int argc,
 			   EXTRACTOR_UNKNOWN,
 			   tmp);
 	FREE(tmp);
-	printf(("Unknown meta-data type in meta-data option '%s'.  Using unknown.\n"),
+	printf(("Unknown meta-data type in meta-data option `%s'.  Using unknown.\n"),
 	       GNoptarg);
       }
       break;
@@ -437,7 +437,7 @@ static int parseOptions(int argc,
 		      "%ud",
 		      &contentPriority)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-p");
 	return SYSERR;
       }
@@ -570,7 +570,7 @@ int main(int argc, char ** argv) {
     }
     EXTRACTOR_KeywordList * list
       = EXTRACTOR_getKeywords(l, filename);
-    printf(_("Keywords for file '%s':\n"),
+    printf(_("Keywords for file `%s':\n"),
 	   filename);
     EXTRACTOR_printKeywords(stdout,
 			    list);
@@ -592,7 +592,7 @@ int main(int argc, char ** argv) {
 				 "PSEUDONYM");
   if (pname != NULL) {
     if (OK != ECRS_testNamespaceExists(pname, NULL)) {
-      printf(_("Could not access namespace '%s' (does not exist?).\n"),
+      printf(_("Could not access namespace `%s' (does not exist?).\n"),
 	     pname);
       FREE(pname);
       doneUtil();
@@ -611,7 +611,7 @@ int main(int argc, char ** argv) {
 #endif
 			    &t))) {
 	LOG_STRERROR(LOG_FATAL, "strptime");
-        errexit(_("Parsing time failed. Use '%s' format.\n"),
+        errexit(_("Parsing time failed. Use `%s' format.\n"),
 #if ENABLE_NLS
 		nl_langinfo(D_T_FMT)
 #else
@@ -624,24 +624,24 @@ int main(int argc, char ** argv) {
   } else { /* ordinary insertion checks */
     if (NULL != getConfigurationString("GNUNET-INSERT",
 				       "NEXTHASH"))
-      errexit(_("Option '%s' makes no sense without option '%s'.\n"),
+      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
 	      "-N", "-P");
     if (NULL != getConfigurationString("GNUNET-INSERT",
 				       "PREVHASH"))
-      errexit(_("Option '%s' makes no sense without option '%s'.\n"),
+      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
 	      "-u", "-P");
     if (NULL != getConfigurationString("GNUNET-INSERT",
 				       "THISHASH"))
-      errexit(_("Option '%s' makes no sense without option '%s'.\n"),
+      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
 	      "-t", "-P");
     if (0 != getConfigurationInt("GNUNET-INSERT",
 				 "INTERVAL"))
-      errexit(_("Option '%s' makes no sense without option '%s'.\n"),
+      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
 	      "-i", "-P");
     if (testConfigurationString("GNUNET-INSERT",
 				"SPORADIC",
 				"YES"))
-      errexit(_("Option '%s' makes no sense without option '%s'.\n"),
+      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
 	      "-S", "-P");
   }
 

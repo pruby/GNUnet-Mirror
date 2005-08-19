@@ -103,7 +103,7 @@ void menu_set_type(int type)
 		sym->type = type;
 		return;
 	}
-	fprintf(stderr, "%s:%d:warning: type of '%s' redefined from '%s' to '%s'\n",
+	fprintf(stderr, "%s:%d:warning: type of `%s' redefined from `%s' to `%s'\n",
 		current_entry->file->name, current_entry->lineno,
 		sym->name ? sym->name : "<choice>", sym_type_name(sym->type), sym_type_name(type));
 }

@@ -169,11 +169,11 @@ void mutex_lock_(Mutex * mutex,
   ret = pthread_mutex_lock(mut);
   if (ret != 0) {
     if (ret == EINVAL)
-      errexit(_("Invalid argument for '%s' at %s:%d.\n"),
+      errexit(_("Invalid argument for `%s' at %s:%d.\n"),
 	      "pthread_mutex_lock",
 	      filename, line);
     if (ret == EDEADLK)
-      errexit(_("Deadlock due to '%s' at %s:%d.\n"),
+      errexit(_("Deadlock due to `%s' at %s:%d.\n"),
 	      "pthread_mutex_lock",
 	      filename, line);
     GNUNET_ASSERT(0);
@@ -195,11 +195,11 @@ void mutex_unlock_(Mutex * mutex,
   ret = pthread_mutex_unlock(mut);
   if (ret != 0) {
     if (ret == EINVAL)
-      errexit(_("Invalid argument for '%s' at %s:%d.\n"),
+      errexit(_("Invalid argument for `%s' at %s:%d.\n"),
 	      "pthread_mutex_unlock",
 	      filename, line);
     if (ret == EPERM)
-      errexit(_("Permission denied for '%s' at %s:%d.\n"),
+      errexit(_("Permission denied for `%s' at %s:%d.\n"),
 	      "pthread_mutex_unlock",
 	      filename, line);
     GNUNET_ASSERT_FL(0, filename, line);
@@ -398,22 +398,22 @@ void PTHREAD_JOIN(PTHREAD_T * pt,
     pt->internal = NULL;
     return;
   case ESRCH:
-    errexit("'%s' failed with error code %s: %s\n",
+    errexit("`%s' failed with error code %s: %s\n",
 	    "pthread_join",
 	    "ESRCH",
 	    STRERROR(errno));
   case EINVAL:
-    errexit("'%s' failed with error code %s: %s\n",
+    errexit("`%s' failed with error code %s: %s\n",
 	    "pthread_join",
 	    "EINVAL",
 	    STRERROR(errno));
   case EDEADLK:
-    errexit("'%s' failed with error code %s: %s\n",
+    errexit("`%s' failed with error code %s: %s\n",
 	    "pthread_join",
 	    "EDEADLK",
 	    STRERROR(errno));
   default:
-    errexit("'%s' failed with error code %d: %s\n",
+    errexit("`%s' failed with error code %d: %s\n",
 	    "pthread_join",
 	    k,
 	    STRERROR(errno));

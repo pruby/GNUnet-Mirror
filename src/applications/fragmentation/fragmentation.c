@@ -558,7 +558,7 @@ provide_module_fragmentation(CoreAPIForApplication * capi) {
 	     60 * cronSECONDS,
 	     NULL);
   LOG(LOG_DEBUG,
-      _("'%s' registering handler %d\n"),
+      _("`%s' registering handler %d\n"),
       "fragmentation",
       P2P_PROTO_fragment);
   capi->registerHandler(P2P_PROTO_fragment,

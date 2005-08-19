@@ -91,7 +91,7 @@ static int parseOptions(int argc,
 
       if (1 != sscanf(GNoptarg, "%ud", &receivePolicy)) {
         LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-a");
 	return -1;
       }
@@ -156,7 +156,7 @@ static void progressModel(void * okVal,
     if (YES == testConfigurationString("GNUNET-DOWNLOAD",
 				       "VERBOSE",
 				       "YES")) {
-      PRINTF(_("Download of file '%s' at "
+      PRINTF(_("Download of file `%s' at "
 	       "%16llu out of %16llu bytes (%8.3f kbps)\n"),
 	     event->data.DownloadProgress.filename,
 	     event->data.DownloadProgress.completed,
@@ -188,7 +188,7 @@ static void progressModel(void * okVal,
   case FSUI_download_complete:
     if ( (event->data.DownloadProgress.completed ==
 	  event->data.DownloadProgress.total) ) {
-      printf(_("Download of file '%s' complete.  "
+      printf(_("Download of file `%s' complete.  "
 	       "Speed was %8.3f kilobyte per second.\n"),
 	     event->data.DownloadProgress.filename,
 	     (event->data.DownloadProgress.completed/1024.0) /
@@ -200,7 +200,7 @@ static void progressModel(void * okVal,
 	SEMAPHORE_UP(signalFinished);
       }
     } else {
-      PRINTF(_("Recursive download of directory '%s' at "
+      PRINTF(_("Recursive download of directory `%s' at "
 	       "%llu of %llu bytes.\n"),
 	     event->data.DownloadProgress.filename,
 	     event->data.DownloadProgress.completed,
@@ -239,7 +239,7 @@ int main(int argc,
        (! (ECRS_isLocationUri(uri) ||
 	   ECRS_isFileUri(uri)) ) ) {
     LOG(LOG_ERROR,
-        _("URI '%s' invalid for gnunet-download.\n"),
+        _("URI `%s' invalid for gnunet-download.\n"),
 	fstring);
     FREE(fstring);
     return -1;
@@ -255,7 +255,7 @@ int main(int argc,
     filename = expandFileName(&fstring[strlen(ECRS_URI_PREFIX)+
 				       strlen(ECRS_FILE_INFIX)]);
     LOG(LOG_DEBUG,
-	"No filename specified, using '%s' instead (for now).\n",
+	"No filename specified, using `%s' instead (for now).\n",
 	filename);
     try_rename = YES;
   }
@@ -290,7 +290,7 @@ int main(int argc,
 
     if (newname != NULL) {
       fprintf(stdout,
-	      _("File stored as '%s'.\n"),
+	      _("File stored as `%s'.\n"),
 	      newname);
       FREE(newname);
     }

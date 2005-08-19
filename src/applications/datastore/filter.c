@@ -40,7 +40,7 @@ static char * getFilterName() {
   fn = getFileName("FS",
                    "DIR",
                    _("Configuration must specify directory for "
-		     "FS data in section '%s' under '%s'.\n"));
+		     "FS data in section `%s' under `%s'.\n"));
   mkdirp(fn);
   bf = MALLOC(strlen(fn)+
 	      strlen("/bloomfilter")+1);

@@ -125,7 +125,7 @@ static void notifyPONG(void * arg) {
 	hash2enc(&hostId->hashPubKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Received '%s' from '%s', marking session as up.\n",
+      "Received `%s' from `%s', marking session as up.\n",
       "PONG",
       &enc);
 #endif
@@ -168,7 +168,7 @@ static int verifySKS(const PeerIdentity * hostId,
 		       (char*) &enc)) {
 #if DEBUG_SESSION
       LOG(LOG_DEBUG,
-	  "Connection from peer '%s' was rejected.\n",
+	  "Connection from peer `%s' was rejected.\n",
 	  &enc);
 #endif
       FREE(limited);
@@ -186,7 +186,7 @@ static int verifySKS(const PeerIdentity * hostId,
 		       (char*) &enc)) {
 #if DEBUG_SESSION
       LOG(LOG_DEBUG,
-	  "Connection from peer '%s' was rejected.\n",
+	  "Connection from peer `%s' was rejected.\n",
 	  &enc);
 #endif
       FREE(limited);
@@ -206,7 +206,7 @@ static int verifySKS(const PeerIdentity * hostId,
 	  hash2enc(&hostId->hashPubKey,
 		   &enc));
     LOG(LOG_INFO,
-	_("Session key from peer '%s' could not be verified.\n"),
+	_("Session key from peer `%s' could not be verified.\n"),
 	&enc);
     return SYSERR; /*reject!*/
   }
@@ -360,7 +360,7 @@ static int exchangeKey(const PeerIdentity * receiver,
     if (tsession == NULL) {
 #if DEBUG_SESSION
       LOG(LOG_DEBUG,
-	  "Key exchange with '%s' failed: could not connect.\n",
+	  "Key exchange with `%s' failed: could not connect.\n",
 	  &enc);
 #endif
       return SYSERR; /* failed to connect */
@@ -389,7 +389,7 @@ static int exchangeKey(const PeerIdentity * receiver,
     makeSessionkey(&sk);
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
-	"Created fresh sessionkey '%s'.\n",
+	"Created fresh sessionkey `%s'.\n",
 	printSKEY(&sk));
 #endif
   }
@@ -435,7 +435,7 @@ static int exchangeKey(const PeerIdentity * receiver,
   FREE(skey);
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
-      "Sending session key '%s' to peer '%s'.\n",
+      "Sending session key `%s' to peer `%s'.\n",
       printSKEY(&sk),
       &enc);
 #endif
@@ -490,12 +490,12 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	   &enc);
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
-      "Received session key from peer '%s'.\n",
+      "Received session key from peer `%s'.\n",
       &enc);
 #endif
   if (ntohs(msg->size) < sizeof(P2P_setkey_MESSAGE)) {
     LOG(LOG_WARNING,
-	"Session key received from peer '%s' "
+	"Session key received from peer `%s' "
 	"has invalid format (discarded).\n",
 	&enc);
     return SYSERR;
@@ -504,7 +504,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
   if (SYSERR == verifySKS(sender,
 			  sessionkeySigned)) {
     LOG(LOG_INFO,
-	"Signature of session key from '%s' failed"
+	"Signature of session key from `%s' failed"
 	" verification (discarded).\n",
 	&enc);
     if (stats != NULL)
@@ -517,7 +517,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 			       sizeof(SESSIONKEY));
   if (size != sizeof(SESSIONKEY)) {
     LOG(LOG_WARNING,
-	_("Invalid '%s' message received from peer '%s'.\n"),
+	_("Invalid `%s' message received from peer `%s'.\n"),
 	"setkey",
 	&enc);
     return SYSERR;
@@ -526,7 +526,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
       htonl(crc32N(&key, SESSIONKEY_LEN))) {
 #if DEBUG_SESSION
     LOG(LOG_WARNING,
-	_("setkey '%s' from '%s' fails CRC check (have: %u, want %u).\n"),
+	_("setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"),
 	printSKEY(&key),
 	&enc,
 	ntohl(key.crc32),
@@ -540,7 +540,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
-      "Received setkey message with %u bytes of data and key '%s'.\n",
+      "Received setkey message with %u bytes of data and key `%s'.\n",
       ntohs(sessionkeySigned->header.size),
       printSKEY(&key));
 #endif
@@ -562,7 +562,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
     plaintext = MALLOC(size);
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
-	"Decrypting %d bytes of PINGPONG with key '%s' and IV %u\n",
+	"Decrypting %d bytes of PINGPONG with key `%s' and IV %u\n",
 	size,
 	printSKEY(&key),
 	*(int*)&sessionkeySigned->signature);
@@ -664,7 +664,7 @@ static int tryConnect(const PeerIdentity * peer) {
        (topology->allowConnectionFrom(peer) == SYSERR) ) {
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
-	"Topology rejected connecting to '%s'.\n",
+	"Topology rejected connecting to `%s'.\n",
 	&enc);
 #endif
     return SYSERR;
@@ -672,14 +672,14 @@ static int tryConnect(const PeerIdentity * peer) {
   if (coreAPI->queryBPMfromPeer(peer) != 0) {
 #if DEBUG_SESSION
     LOG(LOG_DEBUG,
-	"Connection to '%s' already up (have BPM limit)\n",
+	"Connection to `%s' already up (have BPM limit)\n",
 	&enc);
 #endif
     return YES; /* trivial case */
   }
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
-      "Trying to exchange key with '%s'.\n",
+      "Trying to exchange key with `%s'.\n",
       &enc);
 #endif
   if (OK == exchangeKey(peer, NULL, NULL))
@@ -746,7 +746,7 @@ provide_module_session(CoreAPIForApplication * capi) {
   }
 
   LOG(LOG_DEBUG,
-      _("'%s' registering handler %d (plaintext and ciphertext)\n"),
+      _("`%s' registering handler %d (plaintext and ciphertext)\n"),
       "session",
       P2P_PROTO_setkey);
   coreAPI->registerPlaintextHandler(P2P_PROTO_setkey,

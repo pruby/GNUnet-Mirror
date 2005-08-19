@@ -81,7 +81,7 @@ static int parseOptions(int argc,
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-T");
 	return SYSERR;
       } else {	
@@ -228,7 +228,7 @@ int main(int argc,
   tableName = getConfigurationString("DHT-QUERY",
 				     "TABLE");
   if (tableName == NULL) {
-    printf(_("No table name specified, using '%s'.\n"),
+    printf(_("No table name specified, using `%s'.\n"),
 	   "test");
     tableName = STRDUP("test");
   }
@@ -250,7 +250,7 @@ int main(int argc,
   for (i=0;i<count;i++) {
     if (0 == strcmp("get", commands[i])) {
       if (i+2 > count)
-	errexit(_("Command '%s' requires an argument ('%s').\n"),
+	errexit(_("Command `%s' requires an argument (`%s').\n"),
 		"get",
 		"key");
       do_get(handle, commands[++i]);
@@ -258,7 +258,7 @@ int main(int argc,
     }
     if (0 == strcmp("put", commands[i])) {
       if (i+3 > count)
-	errexit(_("Command '%s' requires two arguments ('%s' and '%s').\n"),
+	errexit(_("Command `%s' requires two arguments (`%s' and `%s').\n"),
 		"put",
 		"key",
 		"value");
@@ -268,7 +268,7 @@ int main(int argc,
     }
     if (0 == strcmp("remove", commands[i])) {
       if (i+3 > count)
-	errexit(_("Command '%s' requires two arguments ('%s' and '%s').\n"),
+	errexit(_("Command `%s' requires two arguments (`%s' and `%s').\n"),
 		"remove",
 		"key",
 		"value");
@@ -276,7 +276,7 @@ int main(int argc,
       i+=2;
       continue;
     }
-    printf(_("Unsupported command '%s'.  Aborting.\n"),
+    printf(_("Unsupported command `%s'.  Aborting.\n"),
 	   commands[i]);
     break;
   }

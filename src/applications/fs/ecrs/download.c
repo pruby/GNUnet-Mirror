@@ -118,7 +118,7 @@ static void freeIOC(IOContext * this,
       fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
 	LOG(LOG_WARNING,
-	    _("Could not unlink temporary file '%s': %s\n"),
+	    _("Could not unlink temporary file `%s': %s\n"),
 	    fn, STRERROR(errno));
       FREE(fn);
     }
@@ -1059,7 +1059,7 @@ static void issueRequest(RequestManager * rm,
 	  hash2enc(&entry->node->chk.key,
 		   &enc));
     LOG(LOG_WARNING,
-	_("Content '%s' seems to be not available on the network.\n"),
+	_("Content `%s' seems to be not available on the network.\n"),
 	&enc);
   }
 }
@@ -1160,7 +1160,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   FileIdentifier fid;
 
   LOG(LOG_DEBUG,
-      "'%s' running for file '%s'\n",
+      "`%s' running for file `%s'\n",
       __FUNCTION__,
       filename);
   GNUNET_ASSERT(filename != NULL);
@@ -1174,7 +1174,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
 			    ntohll(fid.file_length),
 			    filename)) {
     LOG(LOG_DEBUG,
-	"'%s' aborted for file '%s'\n",
+	"`%s' aborted for file `%s'\n",
 	__FUNCTION__,
 	filename);
     return SYSERR;
@@ -1213,7 +1213,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   else
     freeIOC(&ioc, NO); /* aborted */
   LOG(LOG_DEBUG,
-      "'%s' terminating for file '%s' with result %s\n",
+      "`%s' terminating for file `%s' with result %s\n",
       __FUNCTION__,
       filename,
       ret == OK ? "SUCCESS" : "INCOMPLETE");

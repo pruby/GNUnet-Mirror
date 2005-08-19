@@ -177,11 +177,11 @@ static int cfg_parse_file(const char *filename) {
     if (1 == sscanf(line, "@INLINE@ %191[^\n]", value) ) {
       char * expanded = expandFileName(value);
       LOG(LOG_DEBUG,
-	  _("inlining configration file '%s'\n"),
+	  _("inlining configration file `%s'\n"),
 	  expanded);
       if (cfg_parse_file(expanded) != 0)
 	LOG(LOG_WARNING,
-	    _("Could not parse configuration file '%s'.\n"),
+	    _("Could not parse configuration file `%s'.\n"),
 	    value);
     } else if (1 == sscanf(line,"[%99[^]]]", value)) {
       /* [section] */
@@ -217,7 +217,7 @@ static int cfg_parse_file(const char *filename) {
     } else {
       /* Huh ? */
       LOG(LOG_ERROR,
-	  _("Syntax error in configuration file '%s' at line %d.\n"),
+	  _("Syntax error in configuration file `%s' at line %d.\n"),
 	  filename, nr);
     }
   }
@@ -506,7 +506,7 @@ void readConfiguration() {
     FREE(c);
     /* try generating a configuration file */
     LOG(LOG_WARNING,
-	_("Configuration file '%s' not found.  Run gnunet-setup!\n"),
+	_("Configuration file `%s' not found.  Run gnunet-setup!\n"),
 	expCfgName);
 #ifdef WINDOWS
     if (! testConfigurationString("GNUNETD",
@@ -515,11 +515,11 @@ void readConfiguration() {
       MessageBox(0, _("Configuration file not found. Please run GNUnet Setup "
         "(Client Configuration) first."), _("Error"), MB_ICONSTOP | MB_OK);
 #endif
-    errexit(_("Configuration file '%s' not found.  Run gnunet-setup!\n"),
+    errexit(_("Configuration file `%s' not found.  Run gnunet-setup!\n"),
 	    expCfgName);
   }
   if (0 == assertIsFile(expCfgName))
-    errexit(_("Cannot open configuration file '%s'.\n"),
+    errexit(_("Cannot open configuration file `%s'.\n"),
 	    expCfgName);
   FREENONNULL(cfgName);
 
@@ -535,7 +535,7 @@ void readConfiguration() {
     parseConfigInit = NO;
   }
   if (!readConfigFile(configuration_filename))
-    errexit("Failed to parse configuration file '%s'.\n",
+    errexit("Failed to parse configuration file `%s'.\n",
 	    configuration_filename);
   
   MUTEX_UNLOCK(&configLock);

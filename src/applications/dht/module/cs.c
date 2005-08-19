@@ -437,7 +437,7 @@ static int csLeave(ClientHandle client,
   }
   MUTEX_UNLOCK(&csLock);
   LOG(LOG_WARNING,
-      _("'%s' failed: table not found!\n"),
+      _("`%s' failed: table not found!\n"),
       "CS_DHT_LEAVE");
   return sendAck(client,
 		 &req->table,
@@ -453,7 +453,7 @@ static void cs_put_abort(DHT_CLIENT_PUT_RECORD * record) {
 		    &record->table,
 		    record->replicas)) {
     LOG(LOG_FAILURE,
-	_("'%s' failed.  Terminating connection to client.\n"),
+	_("`%s' failed.  Terminating connection to client.\n"),
 	"sendAck");
     coreAPI->terminateClientConnection(record->client);
   }
@@ -631,7 +631,7 @@ static int cs_get_result_callback(const HashCode512 * key,
 	 value,
 	 ntohl(value->size));
   LOG(LOG_DEBUG,
-      "'%s' processes reply '%.*s'\n",
+      "`%s' processes reply '%.*s'\n",
       __FUNCTION__,
       ntohl(value->size) - sizeof(DataContainer),
       &value[1]);
@@ -641,7 +641,7 @@ static int cs_get_result_callback(const HashCode512 * key,
   if (OK != coreAPI->sendToClient(record->client,
 				  &msg->header)) {
     LOG(LOG_FAILURE,
-	_("'%s' failed. Terminating connection to client.\n"),
+	_("`%s' failed. Terminating connection to client.\n"),
 	"sendToClient");
     coreAPI->terminateClientConnection(record->client);
   }
@@ -658,7 +658,7 @@ static void cs_get_abort(DHT_CLIENT_GET_RECORD * record) {
 		      &record->table,
 		      SYSERR)) {
       LOG(LOG_FAILURE,
-	  _("'%s' failed. Terminating connection to client.\n"),
+	  _("`%s' failed. Terminating connection to client.\n"),
 	  "sendAck");
       coreAPI->terminateClientConnection(record->client);
     }
@@ -667,7 +667,7 @@ static void cs_get_abort(DHT_CLIENT_GET_RECORD * record) {
 		      &record->table,
 		      record->count)) {
       LOG(LOG_FAILURE,
-	  _("'%s' failed. Terminating connection to client.\n"),
+	  _("`%s' failed. Terminating connection to client.\n"),
 	  "sendAck");
       coreAPI->terminateClientConnection(record->client);
     }
@@ -766,7 +766,7 @@ static int csACK(ClientHandle client,
     return SYSERR;
   req =(CS_dht_reply_ack_MESSAGE*) message;
   LOG(LOG_EVERYTHING,
-      "'%s' received from client.\n",
+      "`%s' received from client.\n",
       "CS_dht_reply_ack_MESSAGE");
   MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
@@ -783,7 +783,7 @@ static int csACK(ClientHandle client,
   }
   MUTEX_UNLOCK(&csLock);
   LOG(LOG_ERROR,
-      _("Failed to deliver '%s' message.\n"),
+      _("Failed to deliver `%s' message.\n"),
       "CS_dht_reply_ack_MESSAGE");
   return SYSERR; /* failed to signal */
 }
@@ -811,7 +811,7 @@ static int csResults(ClientHandle client,
     return SYSERR;
   }
   LOG(LOG_EVERYTHING,
-      "'%s' received from client.\n",
+      "`%s' received from client.\n",
       "CS_dht_reply_results_MESSAGE");
   MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
@@ -821,7 +821,7 @@ static int csResults(ClientHandle client,
       ptr = csHandlers[i];
       SEMAPHORE_DOWN(ptr->postreply);
       LOG(LOG_EVERYTHING,
-	  "'%s' received result '%.*s'!\n",
+	  "`%s' received result '%.*s'!\n",
 	  __FUNCTION__,
 	  dataLength - sizeof(DataContainer),
 	  &(&req->data)[1]);
@@ -836,7 +836,7 @@ static int csResults(ClientHandle client,
   }
   MUTEX_UNLOCK(&csLock);
   LOG(LOG_ERROR,
-      _("Failed to deliver '%s' message.\n"),
+      _("Failed to deliver `%s' message.\n"),
       "CS_dht_reply_results_MESSAGE");
   return SYSERR; /* failed to deliver */
 }

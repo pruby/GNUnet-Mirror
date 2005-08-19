@@ -69,7 +69,7 @@ static char * getOnDemandFile(const HashCode512 * fileId) {
   dir = getFileName("FS",
 		    "INDEX-DIRECTORY",
 		    _("You must specify a directory for FS files in the"
-		      " configuration in section '%s' under '%s'."));
+		      " configuration in section `%s' under `%s'."));
   mkdirp(dir); /* just in case */
   hash2enc(fileId,
 	   &enc);
@@ -210,7 +210,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 
     /* not sym-linked, write content to offset! */   
     LOG(LOG_DEBUG,
-	"Storing on-demand encoded data in '%s'.\n",
+	"Storing on-demand encoded data in `%s'.\n",
 	fn);
     fd = fileopen(fn,
 #ifdef O_LARGEFILE
@@ -273,7 +273,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   IFLOG(LOG_DEBUG,
 	hash2enc(&key, &enc));
   LOG(LOG_DEBUG,
-      "Storing on-demand content for query '%s'\n",
+      "Storing on-demand content for query `%s'\n",
       &enc);
 
   ret = datastore->get(&key,
@@ -323,7 +323,7 @@ static void asyncDelete(Datastore_ServiceAPI * datastore,
   hash2enc(query,
 	   &enc);
   LOG(LOG_DEBUG,
-      _("Indexed file disappeared, deleting block for query '%s'\n"),
+      _("Indexed file disappeared, deleting block for query `%s'\n"),
       &enc);
   /* schedule for "immediate" execution */
   addCronJob((CronJob) &asyncDelJob,
@@ -413,7 +413,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	  	
           if (ret != -1) {
             LOG(LOG_ERROR,
-		_("Because the file '%s' has been unavailable for 3 days"
+		_("Because the file `%s' has been unavailable for 3 days"
 		  " it got removed from your share.  Please unindex files before"
 		  " deleting them as the index now contains invalid references!"),
 		ofn);
@@ -440,8 +440,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     afsDir = getFileName("FS",
 			 "DIR",
 			 _("Configuration file must specify directory for"
-			   " storage of FS data in section '%s'"
-			   " under '%s'.\n"));
+			   " storage of FS data in section `%s'"
+			   " under `%s'.\n"));
     n = strlen(afsDir)+strlen(TRACKFILE)+8;
     scratch = MALLOC(n);
     SNPRINTF(scratch,
@@ -533,7 +533,7 @@ static int completeValue(const HashCode512 * key,
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
     LOG(LOG_DEBUG,
-	"'%s' found value that does not match (%u, %u).\n",
+	"`%s' found value that does not match (%u, %u).\n",
 	__FUNCTION__,
 	ntohl(comp->size),
 	ntohl(value->size));
@@ -541,7 +541,7 @@ static int completeValue(const HashCode512 * key,
   }
   *comp = *value; /* make copy! */
   LOG(LOG_DEBUG,
-      "'%s' found value that matches.\n",
+      "`%s' found value that matches.\n",
       __FUNCTION__);
   return SYSERR;
 }
@@ -573,7 +573,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 
   fn = getOnDemandFile(fileId);
   LOG(LOG_DEBUG,
-      "Removing on-demand encoded data stored in '%s'.\n",
+      "Removing on-demand encoded data stored in `%s'.\n",
       fn);
   fd = fileopen(fn,
 #ifdef O_LARGEFILE
@@ -634,7 +634,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 	    hash2enc(&key,
 		     &enc));
       LOG(LOG_WARNING,
-	  _("Unindexed ODB block '%s' from offset %llu already missing from datastore.\n"),
+	  _("Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"),
 	  &enc,
 	  pos);
     }

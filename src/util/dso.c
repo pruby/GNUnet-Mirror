@@ -91,7 +91,7 @@ void * loadDynamicLibrary(const char * libprefix,
   libhandle = lt_dlopenext(libname);
   if (libhandle == NULL) {
     LOG(LOG_ERROR,
-	_("'%s' failed for library '%s' at %s:%d with error: %s\n"),
+	_("`%s' failed for library `%s' at %s:%d with error: %s\n"),
 	"lt_dlopenext",
 	libname,
 	__FILE__, __LINE__,
@@ -141,7 +141,7 @@ void * bindDynamicMethod(void * libhandle,
 			      dsoname);
   if (mptr == NULL)
     LOG(LOG_ERROR,
-	_("'%s' failed to resolve method '%s%s' at %s:%d with error: %s\n"),
+	_("`%s' failed to resolve method '%s%s' at %s:%d with error: %s\n"),
 	"lt_dlsym",
 	methodprefix, dsoname,
 	__FILE__, __LINE__,

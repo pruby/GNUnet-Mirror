@@ -57,7 +57,7 @@ static void createSignedhello(TransportAPI * tapi) {
   if (NULL == tapi->helo) {
 #if DEBUG_TRANSPORT
     LOG(LOG_INFO,
-	"Transport '%s' failed to create hello\n",
+	"Transport `%s' failed to create hello\n",
 	tapi->transName);
 #endif
     MUTEX_UNLOCK(&tapis_lock);
@@ -636,7 +636,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
   if (helo_live <= 0) {
     helo_live = 60 * 60;
     LOG(LOG_WARNING,
-	_("Option '%s' not set in configuration in section '%s',"
+	_("Option `%s' not set in configuration in section `%s',"
 	  " setting to %dm.\n"),
 	"HELLOEXPIRES", "GNUNETD", helo_live / 60);
   }
@@ -652,11 +652,11 @@ provide_module_transport(CoreAPIForApplication * capi) {
   if (dso == NULL) {
     LOG(LOG_WARNING,
 	_("You should specify at least one transport service"
-	  " under option '%s' in section '%s'.\n"),
+	  " under option `%s' in section `%s'.\n"),
 	"TRANSPORTS", "GNUNETD");
   } else {
     LOG(LOG_DEBUG,
-	"Loading transports '%s'\n",
+	"Loading transports `%s'\n",
 	dso);
 
     next = dso;
@@ -677,7 +677,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
 			       "inittransport_",
 			       pos);
       if (tptr == NULL)
-	errexit(_("Transport library '%s' did not provide "
+	errexit(_("Transport library `%s' did not provide "
 		  "required function '%s%s'.\n"),
 		pos,
 		"inittransport_",
@@ -687,7 +687,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
       tapi->transName = STRDUP(pos);
       addTransport(tapi);
       LOG(LOG_DEBUG,
-	  "Loaded transport '%s'\n",
+	  "Loaded transport `%s'\n",
 	  pos);
     } while (next != NULL);
     FREE(dso);
@@ -698,7 +698,7 @@ provide_module_transport(CoreAPIForApplication * capi) {
 	hash2enc(&coreAPI->myIdentity->hashPubKey,
 		 &myself));
   LOG(LOG_DEBUG,
-      _("I am peer '%s'.\n"),
+      _("I am peer `%s'.\n"),
       &myself);
   forEachTransport(&initHelper, NULL);
 

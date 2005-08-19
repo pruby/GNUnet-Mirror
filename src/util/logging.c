@@ -266,7 +266,7 @@ static LOG_Level getLoglevel(const char * log) {
     i++;
   free(caplog);
   if (loglevels[i] == NULL)
-    errexit(_("Invalid LOGLEVEL '%s' specified.\n"),
+    errexit(_("Invalid LOGLEVEL `%s' specified.\n"),
 	    log);
   return (LOG_Level) i;
 }

@@ -1022,32 +1022,32 @@ void LOG(LOG_Level minLogLevel,
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define LOG_STRERROR(level, cmd) do { LOG(level, _("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, STRERROR(errno)); } while(0);
+#define LOG_STRERROR(level, cmd) do { LOG(level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, STRERROR(errno)); } while(0);
 
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_STRERROR(cmd) do { errexit(_("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, STRERROR(errno)); } while(0);
+#define DIE_STRERROR(cmd) do { errexit(_("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, STRERROR(errno)); } while(0);
 
-#define DIE_STRERROR_FL(cmd, f, l) do { errexit(_("'%s' failed at %s:%d with error: %s\n"), cmd, f, l, STRERROR(errno)); } while(0);
+#define DIE_STRERROR_FL(cmd, f, l) do { errexit(_("`%s' failed at %s:%d with error: %s\n"), cmd, f, l, STRERROR(errno)); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_FILE_STRERROR(level, cmd, filename) do { LOG(level, _("'%s' failed on file '%s' at %s:%d with error: %s\n"), cmd, filename, __FILE__, __LINE__, STRERROR(errno)); } while(0);
+#define LOG_FILE_STRERROR(level, cmd, filename) do { LOG(level, _("`%s' failed on file `%s' at %s:%d with error: %s\n"), cmd, filename, __FILE__, __LINE__, STRERROR(errno)); } while(0);
 
-#define LOG_FILE_STRERROR_FL(level, cmd, filename, f, l) do { LOG(level, _("'%s' failed on file '%s' at %s:%d with error: %s\n"), cmd, filename, f, l, STRERROR(errno)); } while(0);
+#define LOG_FILE_STRERROR_FL(level, cmd, filename, f, l) do { LOG(level, _("`%s' failed on file `%s' at %s:%d with error: %s\n"), cmd, filename, f, l, STRERROR(errno)); } while(0);
 
 /**
  * Die with an error message that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define DIE_FILE_STRERROR(cmd, filename) do { errexit(_("'%s' failed on file '%s' at %s:%d with error: %s\n"), cmd, filename, __FILE__, __LINE__, STRERROR(errno)); } while(0);
+#define DIE_FILE_STRERROR(cmd, filename) do { errexit(_("`%s' failed on file `%s' at %s:%d with error: %s\n"), cmd, filename, __FILE__, __LINE__, STRERROR(errno)); } while(0);
 
 /**
  * gdb breakpoint

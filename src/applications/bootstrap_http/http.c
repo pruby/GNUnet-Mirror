@@ -78,7 +78,7 @@ downloadHostlistHelper(char * url,
 
   if (0 != strncmp(HTTP_URL, url, strlen(HTTP_URL)) ) {
     LOG(LOG_WARNING,
-	_("Invalid URL '%s' (must begin with '%s')\n"),
+	_("Invalid URL `%s' (must begin with `%s')\n"),
 	url,
 	HTTP_URL);
     return;
@@ -117,7 +117,7 @@ downloadHostlistHelper(char * url,
   sock = SOCKET(PF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
     LOG(LOG_ERROR,
-	_("'%s' failed at %s:%d with error: '%s'.\n"),
+	_("`%s' failed at %s:%d with error: `%s'.\n"),
 	"socket",
 	__FILE__, __LINE__,
 	STRERROR(errno));
@@ -130,7 +130,7 @@ downloadHostlistHelper(char * url,
     ip_info = GETHOSTBYNAME(hostname);
     if (ip_info == NULL) {
       LOG(LOG_WARNING,
-	  _("Could not download list of peer contacts, host '%s' unknown.\n"),
+	  _("Could not download list of peer contacts, host `%s' unknown.\n"),
 	  hostname);
       FREE(filename);
       return;
@@ -152,7 +152,7 @@ downloadHostlistHelper(char * url,
 	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr)) < 0) {
     LOG(LOG_WARNING,
-	_("'%s' to '%s' failed at %s:%d with error: %s\n"),
+	_("`%s' to `%s' failed at %s:%d with error: %s\n"),
 	"connect",
 	hostname,
 	__FILE__, __LINE__,
@@ -178,7 +178,7 @@ downloadHostlistHelper(char * url,
 			     curpos);
   if (SYSERR == (int)curpos) {
     LOG(LOG_WARNING,
-	_("'%s' to '%s' failed at %s:%d with error: %s\n"),
+	_("`%s' to `%s' failed at %s:%d with error: %s\n"),
 	"send",
 	hostname,
 	__FILE__, __LINE__,
@@ -214,7 +214,7 @@ downloadHostlistHelper(char * url,
 
   if (curpos < 4) { /* we have not found it */
     LOG(LOG_WARNING,
-	_("Parsing HTTP response for URL '%s' failed.\n"),
+	_("Parsing HTTP response for URL `%s' failed.\n"),
 	url);
     closefile(sock);
     return;
@@ -249,7 +249,7 @@ downloadHostlistHelper(char * url,
     if (curpos != P2P_hello_MESSAGE_size(helo)) {
       if (curpos != 0)
 	LOG(LOG_WARNING,
-	    _("Parsing hello from '%s' failed.\n"),
+	    _("Parsing hello from `%s' failed.\n"),
 	    url);
       break;
     }
@@ -281,7 +281,7 @@ static void downloadHostlist(hello_Callback callback,
   }
 #if DEBUG_HTTP
   LOG(LOG_DEBUG, 
-      "Trying to bootstrap with peers from '%s'\n",
+      "Trying to bootstrap with peers from `%s'\n",
       url);
 #endif
   cnt = 1;
@@ -327,7 +327,7 @@ provide_module_bootstrap(CoreAPIForApplication * capi) {
     ip = GETHOSTBYNAME(proxy);
     if (ip == NULL) {
       LOG(LOG_ERROR,
-	  _("Could not resolve name of HTTP proxy '%s'. Trying without a proxy.\n"),
+	  _("Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {

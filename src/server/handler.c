@@ -364,7 +364,7 @@ void injectMessage(const PeerIdentity * sender,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));
       LOG(LOG_WARNING,
-	  _("Received corrupt message from peer '%s'in %s:%d.\n"),
+	  _("Received corrupt message from peer `%s'in %s:%d.\n"),
 	  &enc,
 	  __FILE__, __LINE__);
       return;
@@ -392,7 +392,7 @@ void injectMessage(const PeerIdentity * sender,
 	  hash2enc(&sender->hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Received %s message of type %u from peer '%s'\n",
+	"Received %s message of type %u from peer `%s'\n",
 	wasEncrypted ? "encrypted" : "plaintext",
 	ptyp,
 	&enc);
@@ -466,7 +466,7 @@ static void handleMessage(TSession * tsession,
           hash2enc(&sender->hashPubKey,
                    &enc));
     LOG(LOG_DEBUG,
-    	"Strictly blacklisted peer '%s' sent message, dropping for now.\n",
+    	"Strictly blacklisted peer `%s' sent message, dropping for now.\n",
 	(char*)&enc);
     return;
   }

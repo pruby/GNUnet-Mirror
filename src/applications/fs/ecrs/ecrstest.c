@@ -139,7 +139,7 @@ static int searchCB(const ECRS_FileInfo * fi,
 
   tmp = ECRS_uriToString(fi->uri);
   LOG(LOG_DEBUG,
-      "Search found URI '%s'\n",
+      "Search found URI `%s'\n",
       tmp);
   FREE(tmp);
   GNUNET_ASSERT(NULL == *my);
@@ -184,7 +184,7 @@ static int downloadFile(unsigned int size,
 
   tmp = ECRS_uriToString(uri);
   LOG(LOG_DEBUG,
-      "Starting download of '%s'\n",
+      "Starting download of `%s'\n",
       tmp);
   FREE(tmp);
   tmpName = makeName(0);

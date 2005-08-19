@@ -63,7 +63,7 @@
 
 
 #if DEBUG_RPC_CLIENT
-#define RPC_STATUS(a,b,c) LOG(LOG_DEBUG, "RPC: '%s' (%p) %s at %s\n", a, c, b, __FUNCTION__);
+#define RPC_STATUS(a,b,c) LOG(LOG_DEBUG, "RPC: `%s' (%p) %s at %s\n", a, c, b, __FUNCTION__);
 #else
 #define RPC_STATUS(a,b,c)
 #endif
@@ -1264,7 +1264,7 @@ static RPC_Record * RPC_start(const PeerIdentity * receiver,
 
   if (timeout > 1 * cronHOURS) {
     LOG(LOG_WARNING,
-	_("'%s' called with timeout above 1 hour (bug?)\n"),
+	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
   }
@@ -1411,7 +1411,7 @@ RPC_ServiceAPI * provide_module_rpc(CoreAPIForApplication * capi) {
   outgoingCalls = vectorNew(16);
   list_of_callbacks = vectorNew(16);
   LOG(LOG_DEBUG,
-      _("'%s' registering handlers %d %d %d\n"),
+      _("`%s' registering handlers %d %d %d\n"),
       "rpc",
       P2P_PROTO_rpc_REQ,
       P2P_PROTO_rpc_RES,
@@ -1432,7 +1432,7 @@ RPC_ServiceAPI * provide_module_rpc(CoreAPIForApplication * capi) {
   if (rvalue == SYSERR) {
     release_module_rpc();
     LOG(LOG_WARNING,
-	_("Failed to initialize '%s' service.\n"),
+	_("Failed to initialize `%s' service.\n"),
 	"rpc");
     return NULL;
   } else {

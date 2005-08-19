@@ -97,7 +97,7 @@ int recreate_main() {
   }
   /* Write defaults */
   if (conf_write(filename)) {
-    printf(_("Unable to save configuration file '%s': %s.\n"), 
+    printf(_("Unable to save configuration file `%s': %s.\n"), 
 	   filename,
 	   STRERROR(errno));
     FREE(filename);

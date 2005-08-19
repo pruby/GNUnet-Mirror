@@ -192,7 +192,7 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
   clientCount = 0;
   coreAPI = capi;
   LOG(LOG_DEBUG,
-      _("'%s' registering handlers %d and %d\n"),
+      _("`%s' registering handlers %d and %d\n"),
       "chat",
       P2P_PROTO_chat_MSG,
       CS_PROTO_chat_MSG);

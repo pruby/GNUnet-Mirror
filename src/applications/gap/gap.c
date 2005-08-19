@@ -813,7 +813,7 @@ static void sendToSelected(const PeerIdentity * id,
 	  hash2enc(&qr->msg->queries[0],
 		   &encq));
     LOG(LOG_DEBUG,
-	"Sending query '%s' to '%s'\n",
+	"Sending query `%s' to `%s'\n",
 	&encq,
 	&encp);
 #endif
@@ -1041,7 +1041,7 @@ static void queueReply(const PeerIdentity * sender,
 	hash2enc(primaryKey,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Gap queues reply to query '%s' for later use.\n",
+      "Gap queues reply to query `%s' for later use.\n",
       &enc);
 #endif
 
@@ -1466,7 +1466,7 @@ static void sendReply(IndirectionTableEntry * ite,
 	  hash2enc(&ite->destination[j].hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"GAP sending reply to '%s'\n",
+	"GAP sending reply to `%s'\n",
 	&enc);
 #endif
     coreAPI->unicast(&ite->destination[j],
@@ -1602,7 +1602,7 @@ static int execQuery(const PeerIdentity * sender,
         hash2enc(&query->queries[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "GAP is executing request for '%s': %s %s\n",
+      "GAP is executing request for `%s': %s %s\n",
       &enc,
       doForward ? "forwarding" : "",
       isRouted ? "routing" : "");
@@ -1706,7 +1706,7 @@ static int useContent(const PeerIdentity * hostId,
 	  hash2enc(&hostId->hashPubKey,
 		   &enc));
   LOG(LOG_DEBUG,
-      "GAP received content from '%s'\n",
+      "GAP received content from `%s'\n",
       (hostId != NULL) ? (const char*)&enc : "myself");
 #endif
   if (ntohs(msg->header.size) < sizeof(P2P_gap_reply_MESSAGE)) {
@@ -2063,7 +2063,7 @@ static int handleQuery(const PeerIdentity * sender,
 	hash2enc(&qmsg->queries[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "Received GAP query '%s'.\n",
+      "Received GAP query `%s'.\n",
       &enc);
 #endif
   if ((policy & QUERY_DROPMASK) == 0) {
@@ -2180,7 +2180,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
 	     NULL);
 
   LOG(LOG_DEBUG,
-      _("'%s' registering handlers %d %d\n"),
+      _("`%s' registering handlers %d %d\n"),
       "gap",
       P2P_PROTO_gap_QUERY,
       P2P_PROTO_gap_RESULT);

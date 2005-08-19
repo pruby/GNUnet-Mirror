@@ -97,7 +97,7 @@ CIDRNetwork * parseRoutes(const char * routeList) {
       for (j=0;j<8;j++)
 	if (temps[j] > 0xFF) {
 	  LOG(LOG_ERROR,
-	      _("Invalid format for IP: '%s'\n"),
+	      _("Invalid format for IP: `%s'\n"),
 	      &routeList[pos]);
 	  FREE(result);
 	  return NULL;
@@ -161,7 +161,7 @@ CIDRNetwork * parseRoutes(const char * routeList) {
   }
   if (pos < strlen(routeList)) {
     LOG(LOG_ERROR,
-	_("Invalid network notation (additional characters: '%s')."),
+	_("Invalid network notation (additional characters: `%s')."),
 	&routeList[pos]);
     FREE(result);
     return NULL; /* oops */
@@ -232,7 +232,7 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
       count++;
   if (routeList[len-1] != ';') {
     LOG(LOG_ERROR,
-	_("Invalid network notation (does not end with ';': '%s')\n"),
+	_("Invalid network notation (does not end with ';': `%s')\n"),
 	routeList);
     FREE(routeList);
     return NULL;
@@ -264,7 +264,7 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
 		      &result[i].netmask);
       if (ret <= 0) {
 	LOG(LOG_ERROR,
-	    _("Wrong format '%s' for netmask: %s\n"),
+	    _("Wrong format `%s' for netmask: %s\n"),
 	    &routeList[slash+1],
 	    STRERROR(errno));
 	FREE(result);
@@ -278,7 +278,7 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
 		    &result[i].network);
     if (ret <= 0) {
       LOG(LOG_ERROR,
-	  _("Wrong format '%s' for network: %s\n"),
+	  _("Wrong format `%s' for network: %s\n"),
 	  &routeList[slash+1],
 	  STRERROR(errno));
       FREE(result);

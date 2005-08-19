@@ -363,7 +363,7 @@ void advanceCronJob(CronJob method,
 	 (deltaRepeat != runningRepeat_) ) {
       BREAK();
       LOG(LOG_WARNING,
-	  _("'%s' called with cron job not in queue, adding.  This may not be what you want.\n"),
+	  _("`%s' called with cron job not in queue, adding.  This may not be what you want.\n"),
 	  __FUNCTION__);
       addCronJob(method,
       		 0,

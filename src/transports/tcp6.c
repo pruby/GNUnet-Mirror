@@ -999,7 +999,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
   rtn = getaddrinfo(hostname, NULL, &hints, &res0);
   if (rtn != 0) {
     LOG(LOG_WARNING,	
-	_("'%s': unknown service: %s\n"),
+	_("`%s': unknown service: %s\n"),
 	__FUNCTION__,
 	gai_strerror(rtn));
     return SYSERR;

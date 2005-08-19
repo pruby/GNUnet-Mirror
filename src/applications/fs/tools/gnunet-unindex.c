@@ -58,7 +58,7 @@ static void printstatus(int * verboselevel,
     if (*verboselevel == YES) {
       delta = event->data.UploadComplete.eta - event->data.UploadComplete.start_time;
       PRINTF(
-      _("\nUnindexing of '%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
+      _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
       event->data.UploadComplete.filename,
       event->data.UploadComplete.total,
       delta / cronSECONDS,
@@ -186,7 +186,7 @@ int main(int argc, char ** argv) {
   FREE(tmp);
   if (OK != FSUI_unindex(ctx,
 			 filename)) {
-    printf(_("'%s' failed.  Is '%s' a file?\n"),
+    printf(_("`%s' failed.  Is `%s' a file?\n"),
 	   "FSUI_unindex",
 	   filename);
     errorCode = 1;

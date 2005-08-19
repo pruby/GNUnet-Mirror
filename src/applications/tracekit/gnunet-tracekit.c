@@ -70,7 +70,7 @@ static int parseOptions(int argc,
       unsigned int depth;
       if (1 != sscanf(GNoptarg, "%ud", &depth)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-D");
 	return SYSERR;
       } else {
@@ -84,7 +84,7 @@ static int parseOptions(int argc,
       unsigned int format;
       if (1 != sscanf(GNoptarg, "%ud", &format)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-F");
 	return SYSERR;
       } else {
@@ -119,7 +119,7 @@ static int parseOptions(int argc,
       unsigned int prio;
       if (1 != sscanf(GNoptarg, "%ud", &prio)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-P");
 	return SYSERR;
       } else {
@@ -133,7 +133,7 @@ static int parseOptions(int argc,
       unsigned int wait;
       if (1 != sscanf(GNoptarg, "%ud", &wait)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-W");
 	return SYSERR;
       } else {
@@ -219,7 +219,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
     if (count == 0) {
       switch (format) {
       case 0:
-	printf(_("'%s' is not connected to any peer.\n"),
+	printf(_("`%s' is not connected to any peer.\n"),
 	       (char*)&enc);
 	break;
       case 1:
@@ -257,7 +257,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 		 &other);
 	switch (format) {
 	case 0:
-	  printf(_("'%s' connected to '%s'.\n"),
+	  printf(_("`%s' connected to `%s'.\n"),
 		 (char*)&enc,
 		 (char*)&other);
 	  break;
@@ -295,7 +295,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 	       &enc);
       switch (format) {
       case 0:
-	printf(_("Peer '%s' did not report back.\n"),
+	printf(_("Peer `%s' did not report back.\n"),
 	       (char*)&enc);
 	break;
       case 1:

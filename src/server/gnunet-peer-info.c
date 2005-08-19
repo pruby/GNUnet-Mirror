@@ -141,7 +141,7 @@ static void printHostInfo(const PeerIdentity * id,
 				 NO);
   if (NULL == helo) {
     LOG(LOG_WARNING,
-	_("Could not get address of peer '%s'.\n"),
+	_("Could not get address of peer `%s'.\n"),
 	&enc);
     return;
   }
@@ -156,12 +156,12 @@ static void printHostInfo(const PeerIdentity * id,
   FREE(helo);
   if (info == NULL) {
     LOG(LOG_WARNING,
-	_("Could not get address of peer '%s'.\n"),
+	_("Could not get address of peer `%s'.\n"),
 	&enc);
     return;
   }
 
-  printf(_("Peer '%s' with trust %8u and address '%s'\n"),
+  printf(_("Peer `%s' with trust %8u and address `%s'\n"),
 	 (char*)&enc,
 	 identity->getHostTrust(id),
 	 info);

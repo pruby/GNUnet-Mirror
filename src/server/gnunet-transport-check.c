@@ -105,7 +105,7 @@ static void testTAPI(TransportAPI * tapi,
   helo = tapi->createhello();
   if (helo == NULL) {
     fprintf(stderr,
-	    _("'%s': Could not create hello.\n"),
+	    _("`%s': Could not create hello.\n"),
 	    tapi->transName);
     *res = SYSERR;
     return;
@@ -114,7 +114,7 @@ static void testTAPI(TransportAPI * tapi,
   if (OK != tapi->connect(helo,
 			  &tsession)) {
     fprintf(stderr,
-	    _("'%s': Could not connect.\n"),
+	    _("`%s': Could not connect.\n"),
 	    tapi->transName);
     *res = SYSERR;
     FREE(helo);
@@ -144,7 +144,7 @@ static void testTAPI(TransportAPI * tapi,
 			    (char*)noise,
 			    ntohs(noise->size))) {
       fprintf(stderr,
-	      _("'%s': Could not send.\n"),
+	      _("`%s': Could not send.\n"),
 	      tapi->transName);
       *res = SYSERR;
       tapi->disconnect(tsession);
@@ -164,7 +164,7 @@ static void testTAPI(TransportAPI * tapi,
     resumeCron();
     if (ok != YES) {
       FPRINTF(stderr,
-	      _("'%s': Did not receive message within %llu ms.\n"),
+	      _("`%s': Did not receive message within %llu ms.\n"),
 	      tapi->transName,
 	      timeout);
       *res = SYSERR;
@@ -178,14 +178,14 @@ static void testTAPI(TransportAPI * tapi,
   cronTime(&end);
   if (OK != tapi->disconnect(tsession)) {
     fprintf(stderr,
-	    _("'%s': Could not disconnect.\n"),
+	    _("`%s': Could not disconnect.\n"),
 	    tapi->transName);
     *res = SYSERR;
     SEMAPHORE_FREE(sem);
     return;
   }
   SEMAPHORE_FREE(sem);
-  printf(_("'%s' transport OK.  It took %ums to transmit %d messages of %d bytes each.\n"),
+  printf(_("`%s' transport OK.  It took %ums to transmit %d messages of %d bytes each.\n"),
 	 tapi->transName,
 	 (unsigned int) ((end - start)/cronMILLIS),
 	 getConfigurationInt("TRANSPORT-CHECK",
@@ -218,7 +218,7 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
     char * str;
     str = transport->heloToString(xhelo);
     fprintf(stderr,
-	    _("\nContacting '%s'."),
+	    _("\nContacting `%s'."),
 	    str);
     FREE(str);
   } else
@@ -404,7 +404,7 @@ static int parser(int argc,
       unsigned int size;
       if (1 != sscanf(GNoptarg, "%ud", &size)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-s");
 	return SYSERR;
       } else {
@@ -424,7 +424,7 @@ static int parser(int argc,
       unsigned int repeat;
       if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-r");
 	return SYSERR;
       } else {
@@ -438,7 +438,7 @@ static int parser(int argc,
       unsigned int repeat;
       if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-X");
 	return SYSERR;
       } else {
@@ -451,7 +451,7 @@ static int parser(int argc,
     case 'T':{
       if (1 != SSCANF(GNoptarg, "%llu", &timeout)) {
 	LOG(LOG_FAILURE,
-	    _("You must pass a number to the '%s' option.\n"),
+	    _("You must pass a number to the `%s' option.\n"),
 	    "-T");
 	return SYSERR;
       }

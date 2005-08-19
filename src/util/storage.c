@@ -193,7 +193,7 @@ long getBlocksLeftOnDrive(const char * part) {
   if(!GetDiskFreeSpace(szDrive, &dwDummy, &dwDummy, &dwBlocks, &dwDummy))
   {
     LOG(LOG_ERROR,
-        _("'%s' failed for drive %s: %u\n"),
+        _("`%s' failed for drive %s: %u\n"),
 	"GetDiskFreeSpace",
         szDrive, GetLastError());
 
@@ -291,7 +291,7 @@ int assertIsFile(const char * fil) {
   }
   if (!S_ISREG(filestat.st_mode)) {
     LOG(LOG_WARNING,
-	_("'%s' is not a regular file.\n"),
+	_("`%s' is not a regular file.\n"),
 	fil);
     return 0;
   }
@@ -545,7 +545,7 @@ int scanDirectory(const char * dirName,
   }
   if (!S_ISDIR(istat.st_mode)) {
     LOG(LOG_ERROR,
-	_("'%s' expected '%s' to be a directory!\n"),
+	_("`%s' expected `%s' to be a directory!\n"),
 	__FUNCTION__,
 	dirName);
     return SYSERR;
@@ -640,7 +640,7 @@ void close_(int fd,
 	    int linenumber) {
   if (0 != CLOSE(fd)) {
     LOG(LOG_INFO,
-	_("'%s' failed at %s:%d with error: %s\n"),
+	_("`%s' failed at %s:%d with error: %s\n"),
 	"close",
 	filename,
 	linenumber, STRERROR(errno));

@@ -476,7 +476,7 @@ static int readAndProcess(int i) {
 	    hash2enc(&tcpSession->sender.hashPubKey,
 		     &enc));
       LOG(LOG_DEBUG,
-	  "tcp welcome message from '%s' received\n",
+	  "tcp welcome message from `%s' received\n",
 	  &enc);
 #endif
       memmove(&tcpSession->rbuff[0],

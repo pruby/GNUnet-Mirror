@@ -353,7 +353,7 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
   }
   initializeStats();
   LOG(LOG_DEBUG,
-      "'%s' registering client handlers %d %d %d and p2p handler %d\n",
+      "`%s' registering client handlers %d %d %d and p2p handler %d\n",
       "stats",
       CS_PROTO_traffic_COUNT,
       CS_PROTO_stats_GET_STATISTICS,

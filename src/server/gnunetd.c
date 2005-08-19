@@ -112,7 +112,7 @@ void gnunet_main() {
      essentially forces running gnunet-update
      whenever the version OR configuration changes. */
   if (OK != checkUpToDate())
-    errexit(_("Configuration or GNUnet version changed.  You need to run '%s'!\n"),
+    errexit(_("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
 	    "gnunet-update");
 
   /* init 2: become deamon, initialize core subsystems */
@@ -120,7 +120,7 @@ void gnunet_main() {
     detachFromTerminal(filedes);
 
   LOG(LOG_MESSAGE,
-      _("'%s' starting\n"),
+      _("`%s' starting\n"),
       "gnunetd");
 
   initCore();
@@ -142,12 +142,12 @@ void gnunet_main() {
      sleep */
   initSignalHandlers();
   LOG(LOG_MESSAGE,
-      _("'%s' startup complete.\n"),
+      _("`%s' startup complete.\n"),
       "gnunetd");
 
   waitForSignalHandler();
   LOG(LOG_MESSAGE,
-      _("'%s' is shutting down.\n"),
+      _("`%s' is shutting down.\n"),
       "gnunetd");
 
   /* init 5: shutdown */

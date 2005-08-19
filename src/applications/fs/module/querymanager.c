@@ -172,7 +172,7 @@ void processResponse(const HashCode512 * key,
 	  hash2enc(key,
 		   &enc));
     LOG(LOG_DEBUG,
-	"Reply '%s' did not match any request.\n",
+	"Reply `%s' did not match any request.\n",
 	&enc);
   }
 #endif

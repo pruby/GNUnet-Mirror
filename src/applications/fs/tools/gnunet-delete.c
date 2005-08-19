@@ -146,7 +146,7 @@ int main(int argc, char ** argv) {
 		  &beVerbose);
   if (ok != OK) {
     LOG(LOG_DEBUG,
-	"Error deleting file '%s'.\n",
+	"Error deleting file `%s'.\n",
 	filename);
     printf(_("Error deleting file %s.\n"
 	     "Probably a few blocks were already missing from the database.\n"),

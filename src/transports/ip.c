@@ -64,7 +64,7 @@ static int getAddressFromHostname(IPaddr * identity) {
   ip = GETHOSTBYNAME(hostname);
   if (ip == NULL) {    
     LOG(LOG_ERROR,
-	_("Could not find IP of host '%s': %s\n"),
+	_("Could not find IP of host `%s': %s\n"),
 	hostname, 
 	hstrerror(h_errno));
     FREE(hostname);
@@ -138,7 +138,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     return OK;
   }
   LOG(LOG_WARNING,
-      _("Could not find interface '%s' in '%s', "
+      _("Could not find interface `%s' in `%s', "
 	"trying to find another interface.\n"),
       "ioctl",
       interfaces);
@@ -163,7 +163,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
 
   closefile(sockfd);
   LOG(LOG_WARNING,
-      _("Could not obtain IP for interface '%s' using '%s'.\n"),
+      _("Could not obtain IP for interface `%s' using `%s'.\n"),
       "ioctl",
       interfaces);
   FREE(interfaces);
@@ -208,7 +208,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
       {
       LOG(LOG_WARNING,
 	  _("Could not find an IP address for "
-	    "interface '%s'.\n"), 
+	    "interface `%s'.\n"), 
 	  interfaces);
 
       GlobalFree(pTable);
@@ -218,7 +218,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     else if (iAddrCount > 1)
       LOG(LOG_WARNING, 
 	  _("There is more than one IP address specified"
-	    " for interface '%s'.\nGNUnet will "
+	    " for interface `%s'.\nGNUnet will "
 	    "use %u.%u.%u.%u.\n"), 
 	  interfaces, 
 	  PRIP(ntohl(dwIP)));
@@ -238,7 +238,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     pHost = GETHOSTBYNAME("www.example.com");
     if (! pHost) {
       LOG(LOG_ERROR, 
-	  _("Could not resolve '%s' to "
+	  _("Could not resolve `%s' to "
 	    "determine our IP address: %s\n"), 
 	  "www.example.com",
 	  STRERROR(errno));
@@ -306,7 +306,7 @@ static int getAddress(IPaddr  * address){
     ip = GETHOSTBYNAME(ipString);
     if (ip == NULL) {     
       LOG(LOG_ERROR,
-	  _("Could not resolve '%s': %s\n"),
+	  _("Could not resolve `%s': %s\n"),
 	  ipString, hstrerror(h_errno));
       retval = SYSERR;
     } else {

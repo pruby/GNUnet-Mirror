@@ -75,14 +75,14 @@ static void tb_ADD_PEER(ClientHandle client,
   if (sizeof(TESTBED_ADD_PEER_MESSAGE) >
       ntohs(msg->header.size) ) {
     LOG(LOG_ERROR,
-	_("size of '%s' message is too short. Ignoring.\n"),
+	_("size of `%s' message is too short. Ignoring.\n"),
 	"ADD_PEER");
     return;
   }
   if (P2P_hello_MESSAGE_size(&hm->helo) !=
       ntohs(msg->header.size) - sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_ERROR,
-	_("size of '%s' message is wrong. Ignoring.\n"),
+	_("size of `%s' message is wrong. Ignoring.\n"),
 	"_ADD_PEER");
     return;
   }
@@ -212,7 +212,7 @@ static void tb_LOAD_MODULE(ClientHandle client,
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message\n"),
+	_("received invalid `%s' message\n"),
 	"LOAD_MODULE");
     return;
   }
@@ -228,14 +228,14 @@ static void tb_LOAD_MODULE(ClientHandle client,
 		 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message (empty module name)\n"),
+	_("received invalid `%s' message (empty module name)\n"),
 	"LOAD_MODULE");
     return;
   }
   ok = coreAPI->loadApplicationModule(name);
   if (ok != OK)
     LOG(LOG_WARNING,
-	_("loading module '%s' failed.  Notifying client.\n"),
+	_("loading module `%s' failed.  Notifying client.\n"),
 	name);
   FREE(name);
   sendAcknowledgement(client, ok);
@@ -253,7 +253,7 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message\n"),
+	_("received invalid `%s' message\n"),
 	"UNLOAD_MODULE");
     return;
   }
@@ -268,7 +268,7 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
 		 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message (empty module name)\n"),
+	_("received invalid `%s' message (empty module name)\n"),
 	"UNLOAD_MODULE");
     return;
   }
@@ -356,14 +356,14 @@ static void tb_ALLOW_CONNECT(ClientHandle client,
   size = ntohs(msg->header.header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message\n"),
+	_("received invalid `%s' message\n"),
 	"ALLOW_CONNECT");
     return;
   }
   count = (size - sizeof(TESTBED_CS_MESSAGE)) / sizeof(PeerIdentity);
   if (count * sizeof(PeerIdentity) + sizeof(TESTBED_CS_MESSAGE) != size) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message\n"),
+	_("received invalid `%s' message\n"),
 	"ALLOW_CONNECT");
     return;
   }
@@ -400,14 +400,14 @@ static void tb_DENY_CONNECT(ClientHandle client,
   size = ntohs(msg->header.header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message\n"),
+	_("received invalid `%s' message\n"),
 	"DENY_CONNECT");
     return;
   }
   count = (size - sizeof(TESTBED_CS_MESSAGE)) / sizeof(PeerIdentity);
   if (count * sizeof(PeerIdentity) + sizeof(TESTBED_CS_MESSAGE) != size) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message\n"),
+	_("received invalid `%s' message\n"),
 	"DENY_CONNECT");
     return;
   }
@@ -536,7 +536,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
 	   &pi->argv[0]);
     LOG_FILE_STRERROR(LOG_ERROR, "execvp", pi->argv[0]);
     fprintf(stderr,
-	    _("'%s' %s failed: %s\n"),
+	    _("`%s' %s failed: %s\n"),
 	    "execvp",
 	    pi->argv[0],
 	    STRERROR(errno));
@@ -622,7 +622,7 @@ static void tb_EXEC(ClientHandle client,
   if ( (size <= sizeof(TESTBED_CS_MESSAGE)) ||
        (((TESTBED_EXEC_MESSAGE_GENERIC*)emsg)->commandLine[size-sizeof(TESTBED_CS_MESSAGE)-1] != '\0') ) {
     LOG(LOG_WARNING,
-	_("received invalid '%s' message: %s.\n"),
+	_("received invalid `%s' message: %s.\n"),
 	"EXEC",
 	(size <= sizeof(TESTBED_CS_MESSAGE))
 	? "size smaller or equal than TESTBED_CS_MESSAGE"
@@ -804,7 +804,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
       "tb_UPLOAD_FILE\n");
   if (sizeof(TESTBED_UPLOAD_FILE_MESSAGE) > ntohs(msg->header.header.size)) {
     LOG(LOG_ERROR,
-	_("size of '%s' message is too short. Ignoring.\n"),
+	_("size of `%s' message is too short. Ignoring.\n"),
 	"UPLOAD_FILE");
     sendAcknowledgement(client, SYSERR);
     return;
@@ -1053,7 +1053,7 @@ static void httpRegister(char * cmd) {
     ip = GETHOSTBYNAME(proxy);
     if (ip == NULL) {
       LOG(LOG_ERROR,
-	  _("Could not resolve name of HTTP proxy '%s'.\n"),
+	  _("Could not resolve name of HTTP proxy `%s'.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
@@ -1077,7 +1077,7 @@ static void httpRegister(char * cmd) {
 		   reg,
 		   strlen(HTTP_URL)) ) {
     LOG(LOG_WARNING,
-	_("Invalid URL '%s' (must begin with '%s')\n"),
+	_("Invalid URL `%s' (must begin with `%s')\n"),
 	reg,
 	HTTP_URL);
     return;
@@ -1116,7 +1116,7 @@ static void httpRegister(char * cmd) {
     port = strtol(pstring, &buffer, 10);
     if ( (port < 0) || (port > 65536) ) {
       LOG(LOG_ERROR,
-	  _("Malformed http URL: '%s' at '%s'.  Testbed-client not registered.\n"),
+	  _("Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"),
 	  reg,
 	  buffer);
       FREE(hostname);
@@ -1152,7 +1152,7 @@ static void httpRegister(char * cmd) {
     ip_info = GETHOSTBYNAME(hostname);
     if (ip_info == NULL) {
       LOG(LOG_WARNING,
-	  _("Could not register testbed, host '%s' unknown\n"),
+	  _("Could not register testbed, host `%s' unknown\n"),
 	  hostname);
       FREE(reg);
       FREE(hostname);
@@ -1174,7 +1174,7 @@ static void httpRegister(char * cmd) {
 	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr)) < 0) {
     LOG(LOG_WARNING,
-	_("Failed to send HTTP request to host '%s': %s\n"),
+	_("Failed to send HTTP request to host `%s': %s\n"),
 	hostname,
 	STRERROR(errno));
     FREE(reg);
@@ -1227,7 +1227,7 @@ static void httpRegister(char * cmd) {
 			     curpos);
   if (SYSERR == (int)curpos) {
     LOG(LOG_WARNING,
-	_("Failed so send HTTP request '%s' to host '%s': %s\n"),
+	_("Failed so send HTTP request `%s' to host `%s': %s\n"),
 	command,
 	hostname,
 	STRERROR(errno));

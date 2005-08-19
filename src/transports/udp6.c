@@ -126,8 +126,8 @@ static unsigned short getGNUnetUDP6Port() {
       port = ntohs(pse->s_port);
     else
       errexit(_("Cannot determine port to bind to. "
-		" Define in configuration file in section '%s' under '%s' "
-		"or in '%s' under %s/%s.\n"),
+		" Define in configuration file in section `%s' under `%s' "
+		"or in `%s' under %s/%s.\n"),
 	      "UDP6",
 	      "PORT",
 	      "/etc/services",
@@ -633,7 +633,7 @@ TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
     mtu = MESSAGE_SIZE;
   if (mtu < 1200)
     LOG(LOG_ERROR,
-	_("MTU for '%s' is probably too low (fragmentation not implemented!)\n"),
+	_("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
 	"UDP6");
 
   udp6API.protocolNumber       = UDP6_PROTOCOL_NUMBER;

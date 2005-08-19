@@ -297,7 +297,7 @@ static int startDownload(struct FSUI_Context * ctx,
     return SYSERR;
   }
   LOG(LOG_DEBUG,
-      "Starting download of file '%s'\n",
+      "Starting download of file `%s'\n",
       filename);
 
   dl = MALLOC(sizeof(FSUI_DownloadList));
@@ -369,7 +369,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 
 #if DEBUG_DTM
   LOG(LOG_DEBUG,
-      "Download thread manager investigates pending downlod of file '%s'\n",
+      "Download thread manager investigates pending downlod of file `%s'\n",
       list->filename);
 #endif
   ret = NO;
@@ -381,7 +381,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        (list->finished == NO) ) {
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
-	"Download thread manager schedules active downlod of file '%s'\n",
+	"Download thread manager schedules active downlod of file `%s'\n",
 	list->filename);
 #endif
     list->signalTerminate = NO;
@@ -401,7 +401,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        (list->signalTerminate == NO) ) {
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
-	"Download thread manager aborts active downlod of file '%s'\n",
+	"Download thread manager aborts active downlod of file `%s'\n",
 	list->filename);
 #endif
     list->signalTerminate = YES;
@@ -416,7 +416,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
   if (list->signalTerminate == YES) {
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
-	"Download thread manager collects inactive downlod of file '%s'\n",
+	"Download thread manager collects inactive downlod of file `%s'\n",
 	list->filename);
 #endif
     PTHREAD_JOIN(&list->handle,

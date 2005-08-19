@@ -84,7 +84,7 @@ int initGNUnetClientSocket(unsigned short port,
   he = GETHOSTBYNAME(hostname);
   if (he == NULL) {
     LOG(LOG_ERROR,
-	_("Could not find IP of host '%s': %s\n"),
+	_("Could not find IP of host `%s': %s\n"),
 	hostname,
 	hstrerror(h_errno));
     return SYSERR;

@@ -58,7 +58,7 @@ int initialize_module_template(CoreAPIForApplication * capi) {
   coreAPI = capi;
 
   LOG(LOG_DEBUG,
-      _("'%s' registering client handler %d and %d\n"),
+      _("`%s' registering client handler %d and %d\n"),
       "template",
       CS_PROTO_MAX_USED,
       P2P_PROTO_MAX_USED);

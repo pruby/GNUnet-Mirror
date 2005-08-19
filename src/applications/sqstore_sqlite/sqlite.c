@@ -40,14 +40,14 @@
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_SQLITE(cmd) do { errexit(_("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbf)); } while(0);
+#define DIE_SQLITE(cmd) do { errexit(_("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbf)); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_SQLITE(level, cmd) do { LOG(level, _("'%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbf)); } while(0);
+#define LOG_SQLITE(level, cmd) do { LOG(level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbf)); } while(0);
 
 
 /**
@@ -561,7 +561,7 @@ static int get(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "SQLite: retrieving content '%s'\n", 
+      "SQLite: retrieving content `%s'\n", 
       &enc);  
 #endif
 
@@ -686,7 +686,7 @@ static int put(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Storing in database block with type %u and key '%s'.\n",
+      "Storing in database block with type %u and key `%s'.\n",
       ntohl(*(int*)&value[1]),
       &enc);
 #endif
@@ -779,7 +779,7 @@ static int del(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "SQLite: deleting block with key '%s'\n",
+      "SQLite: deleting block with key `%s'\n",
       &enc);
 #endif
 
@@ -902,7 +902,7 @@ static int update(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "SQLite: updating block with key '%s'\n",
+      "SQLite: updating block with key `%s'\n",
       &enc);
 #endif
 
@@ -977,7 +977,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 
   afsdir = getFileName("FS", "DIR",
 		       _("Configuration file must specify directory for "
-			 "storing FS data in section '%s' under '%s'.\n"));
+			 "storing FS data in section `%s' under `%s'.\n"));
   dir = MALLOC(strlen(afsdir) + 8 + 2); /* 8 = "content/" */
   strcpy(dir, afsdir);
   strcat(dir, "/content/");

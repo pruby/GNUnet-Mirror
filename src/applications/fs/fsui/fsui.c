@@ -149,7 +149,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
 				ret);
 #if DEBUG_PERSISTENCE
   LOG(LOG_DEBUG,
-      "FSUI persistence: restoring download '%s': %s\n",
+      "FSUI persistence: restoring download `%s': %s\n",
       ret->filename,
       ret->finished == YES ? "finished" : "pending");
 #endif
@@ -212,7 +212,7 @@ static void writeDownloadList(int fd,
   }
 #if DEBUG_PERSISTENCE
   LOG(LOG_DEBUG,
-      "Serializing download state of download '%s': %s\n",
+      "Serializing download state of download `%s': %s\n",
       list->filename,
       list->finished == YES ? "finished" : "pending");
 #endif
@@ -613,7 +613,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	   0);      
     WARN:
       LOG(LOG_WARNING,
-	  _("FSUI state file '%s' had syntax error at offset %u.\n"),
+	  _("FSUI state file `%s' had syntax error at offset %u.\n"),
 	  fn,
 	  lseek(fd, 0, SEEK_CUR));
     END:

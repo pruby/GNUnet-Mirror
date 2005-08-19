@@ -117,7 +117,7 @@ static int parser(int argc,
 		      "%ud",
 		      &receivePolicy)) {
         LOG(LOG_FAILURE,
-	  _("You must pass a number to the '%s' option.\n"),
+	  _("You must pass a number to the `%s' option.\n"),
 	    "-a");
         return -1;
       }
@@ -218,7 +218,7 @@ static int parser(int argc,
   if (GNoptind < argc) {
     while (GNoptind < argc)
       LOG(LOG_WARNING,
-	  _("Invalid argument: '%s'\n"), argv[GNoptind++]);
+	  _("Invalid argument: `%s'\n"), argv[GNoptind++]);
     LOG(LOG_FATAL,
 	_("Invalid arguments. Exiting.\n"));
     return SYSERR;
@@ -261,11 +261,11 @@ static int namespacePrinter(void * unused,
   hash2enc(id,
 	   &enc);
   if (0 == strcmp(namespaceName, (char*)&enc))
-    printf(_("Namespace '%s' has rating %d.\n"),
+    printf(_("Namespace `%s' has rating %d.\n"),
 	   namespaceName,
 	   rating);
   else
-    printf(_("Namespace '%s' (%s) has rating %d.\n"),
+    printf(_("Namespace `%s' (%s) has rating %d.\n"),
 	   namespaceName,
 	   (char*) &enc,
 	   rating);
@@ -348,11 +348,11 @@ int main(int argc, char *argv[]) {
 				 "DELETE");
   if (pname != NULL) {
     if (OK == FSUI_deleteNamespace(pname)) {
-      printf(_("Pseudonym '%s' deleted.\n"),
+      printf(_("Pseudonym `%s' deleted.\n"),
 	     pname);
     } else {
       success += 2;
-      printf(_("Error deleting pseudonym '%s' (does not exist?).\n"),
+      printf(_("Error deleting pseudonym `%s' (does not exist?).\n"),
 	     pname);
     }
     FREE(pname);
@@ -405,7 +405,7 @@ int main(int argc, char *argv[]) {
 				     ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
 				     pname,
 				     meta)) {
-	printf(_("Started collection '%s'.\n"),
+	printf(_("Started collection `%s'.\n"),
 	       pname);
       } else {
 	printf(_("Failed to start collection.\n"));
@@ -452,12 +452,12 @@ int main(int argc, char *argv[]) {
 				     advertisement,
 				     &rootEntry);
       if (rootURI == NULL) {
-	printf(_("Could not create namespace '%s' (exists?).\n"),
+	printf(_("Could not create namespace `%s' (exists?).\n"),
 	       pname);
 	success += 1;
       } else {
 	root = ECRS_uriToString(rootURI);
-	printf(_("Namespace '%s' created (root: %s).\n"),
+	printf(_("Namespace `%s' created (root: %s).\n"),
 	       pname,
 	       root);
 	FREE(root);

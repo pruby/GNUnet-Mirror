@@ -59,7 +59,7 @@ static int handlep2pReply(const PeerIdentity * sender,
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity)) {
     LOG(LOG_WARNING,
-	_("Received invalid '%s' message from '%s'.\n"),
+	_("Received invalid `%s' message from `%s'.\n"),
 	"P2P_tracekit_probe_MESSAGE",
 	&sen);
     return SYSERR;
@@ -68,7 +68,7 @@ static int handlep2pReply(const PeerIdentity * sender,
   hash2enc(&reply->initiatorId.hashPubKey,
 	   &initiator);
   LOG(LOG_DEBUG,
-      "TRACEKIT: Sending reply back to initiator '%s'.\n",
+      "TRACEKIT: Sending reply back to initiator `%s'.\n",
       &initiator);
   MUTEX_LOCK(&lock);
   for (i=0;i<MAXROUTE;i++) {
@@ -118,7 +118,7 @@ static int handlep2pReply(const PeerIdentity * sender,
 	hash2enc(&routeTable[i]->replyTo.hashPubKey,
 		 &hop);
 	LOG(LOG_DEBUG,
-	    "TRACEKIT: forwarding to next hop '%s'\n",
+	    "TRACEKIT: forwarding to next hop `%s'\n",
 	    &hop);
 	coreAPI->unicast(&routeTable[i]->replyTo,
 			 message,
@@ -183,7 +183,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_probe_MESSAGE)) {
     LOG(LOG_WARNING,
-	_("Received invalid '%s' message from '%s'.\n"),
+	_("Received invalid `%s' message from `%s'.\n"),
 	"P2P_tracekit_probe_MESSAGE",
 	&sen);
     return SYSERR;
@@ -210,7 +210,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
 	 equalsHashCode512(&routeTable[i]->initiator.hashPubKey,
 			   &msg->initiatorId.hashPubKey) ) {
       LOG(LOG_DEBUG,
-	  "TRACEKIT-PROBE %d from '%s' received twice (slot %d), ignored\n",
+	  "TRACEKIT-PROBE %d from `%s' received twice (slot %d), ignored\n",
 	  ntohl(msg->timestamp),
 	  &init,
 	  i);
@@ -255,7 +255,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
     = *sender;
   MUTEX_UNLOCK(&lock);
   LOG(LOG_DEBUG,
-      "TRACEKIT-PROBE started at %d by peer '%s' received, processing in slot %d with %u hops\n",
+      "TRACEKIT-PROBE started at %d by peer `%s' received, processing in slot %d with %u hops\n",
       ntohl(msg->timestamp),
       &init,
       sel,
@@ -328,7 +328,7 @@ static int csHandle(ClientHandle client,
   if (ntohs(csProbe->header.size) !=
       sizeof(CS_tracekit_probe_MESSAGE) ) {
     LOG(LOG_WARNING,
-	_("TRACEKIT: received invalid '%s' message\n"),
+	_("TRACEKIT: received invalid `%s' message\n"),
 	"CS_tracekit_probe_MESSAGE");
     return SYSERR;
   }
