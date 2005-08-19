@@ -268,7 +268,7 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
 	}
       }
       else
-	return 1;
+	return 0;
     }
   }
   else
