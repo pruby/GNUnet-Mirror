@@ -429,9 +429,8 @@ int ECRS_serializeMetaData(const MetaData * md,
   if (max < sizeof(MetaDataHeader))
     return SYSERR; /* far too small */
   ic = md->itemCount;
-  size = max+1;
   hdr = NULL;
-  while (size > max) {
+  while (1) {
     size = sizeof(MetaDataHeader);
     size += sizeof(unsigned int) * ic;
     for (i=0;i<ic;i++)
@@ -474,6 +473,7 @@ int ECRS_serializeMetaData(const MetaData * md,
     else
       ic--; /* small steps, we're close */
   }
+  GNUNET_ASSERT(size <= max);
   memcpy(target,
 	 hdr,
 	 size);

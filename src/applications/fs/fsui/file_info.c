@@ -94,7 +94,7 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
   if (NO == FSUI_trackStatus())
     return;
   size = ECRS_sizeofMetaData(fi->meta);
-  data = MALLOC(sizeof(size));
+  data = MALLOC(size);
   GNUNET_ASSERT(size == ECRS_serializeMetaData(fi->meta,
 					       data,
 					       size,
