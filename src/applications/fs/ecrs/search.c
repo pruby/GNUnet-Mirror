@@ -349,7 +349,9 @@ static int receiveReplies(const HashCode512 * key,
       case K_BLOCK: {
 	KBlock * kb;
 	const char * dstURI;
+#if DEBUG_SEARCH
 	EncName enc;
+#endif
 	int j;
 	
 	if (size < sizeof(KBlock))
