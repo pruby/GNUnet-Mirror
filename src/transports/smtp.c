@@ -30,6 +30,8 @@
 #include "gnunet_transport.h"
 #include "platform.h"
 
+#define DEBUG_SMTP NO
+
 #define FILTER_STRING_SIZE 64
 #define CONTENT_TYPE_MULTIPART "Content-Type: Multipart/Mixed;"
 #define BOUNDARY_SPECIFIER "-EL-GNUNET-"
@@ -98,10 +100,6 @@ static PTHREAD_T dispatchThread;
  */
 static int smtp_sock;
 
-/**
- * Pipe used to read from SMTP server
- */
-static int smtp_pipe;
 /**
  * Lock to guard access to smtp_sock
  */
@@ -206,13 +204,15 @@ static unsigned int base64_decode(char * data,
   unsigned int ret=0;
 
 #define CHECK_CRLF	while (data[i] == '\r' || data[i] == '\n') {\
-				LOG(LOG_DEBUG, " ignoring CR/LF\n"); \
+				LOG(LOG_DEBUG, "ignoring CR/LF\n"); \
 				i++; \
 				if (i >= len) goto END;  \
 			}
 
   *output = MALLOC((len * 3 / 4) + 8);
-  LOG(LOG_DEBUG, " base64_decode decoding len=%d\n", len);
+#if DEBUG_SMTP
+  LOG(LOG_DEBUG, "base64_decode decoding len=%d\n", len);
+#endif
   for (i = 0; i < len; ++i) {
     CHECK_CRLF;
     if (data[i] == FILLCHAR)
@@ -425,7 +425,7 @@ static void * listenAndDistribute() {
 
 #define READLINE(l,limit) \
   do { retl = fgets(l, limit, fdes); \
-    if ((retl == NULL) || (smtp_shutdown == YES)) {\
+    if ( (retl == NULL) || (smtp_shutdown == YES)) {\
 	goto END; \
     }\
     incrementBytesReceived(strlen(retl));\
@@ -440,10 +440,16 @@ static void * listenAndDistribute() {
     char * out;
     unsigned int size;
     P2P_PACKET * coreMP;
+    int fd;
 
-    smtp_pipe = fileopen(pipename, O_RDONLY);
-    fdes = fdopen(smtp_pipe, "r");
-    while ( smtp_shutdown == NO ) {
+    fd = fileopen(pipename, O_RDONLY);
+    if (fd == -1) {
+      if (smtp_shutdown == NO)
+	gnunet_util_sleep(5 * cronSECONDS);
+      continue;
+    }
+    fdes = fdopen(fd, "r");
+    while (smtp_shutdown == NO ) {
       do {
 	READLINE(line, LINESIZE);
       } while (0 != strAUTOncmp(line, CONTENT_TYPE_MULTIPART));
@@ -471,9 +477,7 @@ static void * listenAndDistribute() {
 	READLINE(&line[strlen(line)-1], LINESIZE - strlen(line));
       size = base64_decode(line, strlen(line)-1, &out);
       if (size < sizeof(SMTPMessage)) {
-	LOG(LOG_WARNING,
-	    "Received malformed message via SMTP (size %d smaller than encapsulation header).\n",
-	    size);
+	BREAK();
 	FREE(out);
 	goto END;
       }
@@ -482,10 +486,12 @@ static void * listenAndDistribute() {
       if (ntohs(mp->size) != size) {
 	LOG(LOG_WARNING,
 	    _("Received malformed message via SMTP (size mismatch).\n"));
+#if DEBUG_SMTP
 	LOG(LOG_DEBUG,
 	    "Size returned by base64=%d, in the msg=%d.\n",
 	    size,
 	    ntohl(mp->size));
+#endif
 	goto END;
       }
       coreMP = MALLOC(sizeof(P2P_PACKET));
@@ -495,16 +501,21 @@ static void * listenAndDistribute() {
       memcpy(&coreMP->sender,
 	     &mp->sender,
 	     sizeof(PeerIdentity));
+#if DEBUG_SMTP
       LOG(LOG_DEBUG,
 	  "SMTP message passed to the core.\n");
+#endif
 
       coreAPI->receive(coreMP);
       READLINE(line, LINESIZE); /* new line at the end */
     }
   END:
+#if DEBUG_SMTP
     LOG(LOG_DEBUG,
 	"SMTP message processed.\n");
-    fclose(fdes);
+#endif
+    if (fdes != NULL)
+      fclose(fdes);
   }
   SEMAPHORE_UP(serverSignal); /* we are there! */
   return NULL;
@@ -528,17 +539,14 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   if ((ntohs(helo->header.size)!=
        sizeof(P2P_hello_MESSAGE)+ntohs(helo->senderAddressSize)) ||
       (maddr->senderAddress[ntohs(helo->senderAddressSize)-1-FILTER_STRING_SIZE]!='\0')) {
-    LOG(LOG_WARNING,
-	" received invalid SMTP address advertisement (hello) %d != %d or %d != 0\n",
-	ntohs(helo->header.size),
-	sizeof(P2P_hello_MESSAGE)+ntohs(helo->senderAddressSize),
-	maddr->senderAddress[ntohs(helo->senderAddressSize)-1-FILTER_STRING_SIZE]);
     BREAK();
     return SYSERR; /* obviously invalid */
   } else {
+#if DEBUG_SMTP
     LOG(LOG_DEBUG,
-	"Verified SMTP helo from %s.\n",
+	"Verified SMTP helo from `%s'.\n",
 	&maddr->senderAddress[0]);
+#endif
     return OK;
   }
 }
@@ -560,8 +568,12 @@ static P2P_hello_MESSAGE * createhello() {
   email = getConfigurationString("SMTP",
 				 "EMAIL");
   if (email == NULL) {
-    LOG(LOG_DEBUG,
-	"No email-address specified, cannot create SMTP advertisement.\n");
+    static int once;
+    if (once == 0) {
+      LOG(LOG_WARNING,
+	  "No email-address specified, cannot create SMTP advertisement.\n");
+      once = 1;
+    }
     return NULL;
   }
   filter = getConfigurationString("SMTP",
@@ -685,14 +697,17 @@ static int smtpSend(TSession * tsession,
 	 message,
 	 size);
   ebody = NULL;
+#if DEBUG_SMTP
   LOG(LOG_DEBUG,
       "Base64-encoding %d byte message.\n",
       ssize);
+#endif
   ssize = base64_encode(msg, ssize, &ebody);
+#if DEBUG_SMTP
   LOG(LOG_DEBUG,
       "Base64-encoded message size is %d bytes.\n",
       ssize);
-
+#endif
   FREE(msg);
   MUTEX_LOCK(&smtpLock);
   res = SYSERR;
@@ -788,8 +803,10 @@ static int startTransportServer(void) {
     closefile(smtp_sock);
     return SYSERR;
   }
+#if DEBUG_SMTP
   LOG(LOG_DEBUG,
       "Checking SMTP server.\n");
+#endif
   /* read welcome from SMTP server */
   if (SYSERR == readSMTPLine(smtp_sock,
 			     "220 ")) {
@@ -799,24 +816,38 @@ static int startTransportServer(void) {
     closefile(smtp_sock);
     return SYSERR;
   }
-  email = NULL; /* abusing email as a flag... */
   if (OK == writeSMTPLine(smtp_sock,
-			  "hello %s\r\n",
+			  "helo %s\r\n",
 			  getConfigurationString("SMTP",
-						 "SENDERHOSTNAME")))
+						 "SENDERHOSTNAME"))) {
     if (OK == readSMTPLine(smtp_sock,
-			   "250 "))
+			   "250 ")) {
       email = getConfigurationString("SMTP",
 				     "EMAIL");
-
-  if (email == NULL) {
-    LOG(LOG_DEBUG,
-	"No email-address specified, will not advertise SMTP address.\n");
+      if (email == NULL) {
+#if DEBUG_SMTP
+	LOG(LOG_DEBUG,
+	    "No email-address specified, will not advertise SMTP address.\n");
+#endif
+	return OK;
+      }
+      FREE(email);
+    } else {
+      LOG(LOG_ERROR,
+	  _("SMTP server failed to respond with 250 confirmation code to `%s' request.\n"),
+	  "helo");
+      return OK;
+    }
+  } else {
+    LOG(LOG_ERROR,
+	_("Failed to send `%s' request to SMTP server.\n"),
+	"helo");
     return OK;
   }
-  FREE(email);
+#if DEBUG_SMTP
   LOG(LOG_DEBUG,
-      " creating listen thread\n");
+      "creating listen thread\n");
+#endif
   if (0 != PTHREAD_CREATE(&dispatchThread,
 			  (PThreadMain) &listenAndDistribute,
 			  NULL,
@@ -832,13 +863,20 @@ static int startTransportServer(void) {
  */
 static int stopTransportServer() {
   void * unused;
+  char * pipename;
 
   smtp_shutdown = YES;
-  closefile(smtp_pipe); /* close pipe. Waiting fgets should return NULL*/
+  PTHREAD_KILL(&dispatchThread, SIGALRM);
   SEMAPHORE_DOWN(serverSignal);
   SEMAPHORE_FREE(serverSignal);
   closefile(smtp_sock);
   PTHREAD_JOIN(&dispatchThread, &unused);
+  pipename = getFileName("SMTP",
+			 "PIPE",
+			 _("You must specify the name of a "
+			   "pipe for the SMTP transport in section `%s' under `%s'.\n"));
+  UNLINK(pipename);
+  FREE(pipename);
   return OK;
 }
 
@@ -871,7 +909,7 @@ static char * addressToString(const P2P_hello_MESSAGE * helo) {
 /**
  * The default maximum size of each outbound SMTP message.
  */
-#define MESSAGE_SIZE 65536
+#define MESSAGE_SIZE 65528
 
 /**
  * The exported method. Makes the core api available via a global and
@@ -892,12 +930,14 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
     LOG(LOG_ERROR,
 	_("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
 	"SMTP");
+  if (mtu > MESSAGE_SIZE)
+    mtu = MESSAGE_SIZE;
 
   smtpAPI.protocolNumber       = SMTP_PROTOCOL_NUMBER;
   smtpAPI.mtu                  = mtu - sizeof(SMTPMessage);
   smtpAPI.cost                 = 50;
   smtpAPI.verifyHelo           = &verifyHelo;
-  smtpAPI.createhello           = &createhello;
+  smtpAPI.createhello          = &createhello;
   smtpAPI.connect              = &smtpConnect;
   smtpAPI.send                 = &smtpSend;
   smtpAPI.sendReliable         = &smtpSend; /* is always blocking, so we can't really do better */
