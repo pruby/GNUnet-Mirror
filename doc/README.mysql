@@ -61,38 +61,38 @@ MANUAL SETUP INSTRUCTIONS
      &quot;ln -s /var/run/mysqld/mysqld.sock /tmp/mysql.sock&quot;
      so there may be some additional trouble depending on your mysql setup.]
 
- REPAIRING TABLES 
+REPAIRING TABLES 
 
- - Its probably healthy to check your tables for inconsistencies
-   every now and then.
- - If you get odd SEGVs on gnunetd startup, it might be that the mysql
-   databases have been corrupted. 
- - The tables can be verified/fixed in two ways;
-   1) by shutting down mysqld (mandatory!) and running 
-   # myisamchk -r *.MYI 
-   in /var/lib/mysql/gnunet/ (or wherever the tables are stored).
-   Another repair command is "mysqlcheck". The usable command
-   may depend on your mysql build/version. Or,
-   2) by executing 
-   mysql> REPAIR TABLE gn070;
+- Its probably healthy to check your tables for inconsistencies
+  every now and then.
+- If you get odd SEGVs on gnunetd startup, it might be that the mysql
+  databases have been corrupted. 
+- The tables can be verified/fixed in two ways;
+  1) by shutting down mysqld (mandatory!) and running 
+  # myisamchk -r *.MYI 
+  in /var/lib/mysql/gnunet/ (or wherever the tables are stored).
+  Another repair command is "mysqlcheck". The usable command
+  may depend on your mysql build/version. Or,
+  2) by executing 
+  mysql> REPAIR TABLE gn070;
 
- EFFICIENCY ISSUES
+EFFICIENCY ISSUES
 
- If you suffer from too slow index/insert speeds, 
- you might try to define /etc/gnunetd.conf option
+If you suffer from too slow index/insert speeds, 
+you might try to define /etc/gnunetd.conf option
 
-   [MYSQL]
-   MYSQL_DELAYED = YES
+  [MYSQL]
+  MYSQL_DELAYED = YES
 
- for small efficiency boost. The option will let MySQL bundle multiple 
- inserts before actually writing them to disk. You shouldn't use this 
- option unless you're an (my)sql expert and really know what you're doing. 
- Especially, if you run into any trouble due to this, you're on your own.
+for small efficiency boost. The option will let MySQL bundle multiple 
+inserts before actually writing them to disk. You shouldn't use this 
+option unless you're an (my)sql expert and really know what you're doing. 
+Especially, if you run into any trouble due to this, you're on your own.
 
- PROBLEMS?
+PROBLEMS?
 
- If you have problems related to the mysql module, your best 
- friend is probably the mysql manual. The first thing to check 
- is that mysql is basically operational, that you can connect 
- to it, create tables, issue queries etc.
+If you have problems related to the mysql module, your best friend is
+probably the mysql manual. The first thing to check is that mysql is
+basically operational, that you can connect to it, create tables,
+issue queries etc.
 

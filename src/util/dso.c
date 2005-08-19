@@ -27,6 +27,7 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
+static int using_valgrind;
 
 static char * old_dlsearchpath = NULL;
 
@@ -62,7 +63,8 @@ void __attribute__ ((destructor)) gnc_ltdl_fini(void) {
   lt_dlsetsearchpath(old_dlsearchpath);
   if (old_dlsearchpath != NULL)
     free(old_dlsearchpath);
-  lt_dlexit ();
+  if (0 != using_valgrind) 
+    lt_dlexit ();  
 }
 
 
@@ -104,9 +106,13 @@ void * loadDynamicLibrary(const char * libprefix,
 void unloadDynamicLibrary(void * libhandle) {
   /* when valgrinding, comment out these lines
      to get decent traces for memory leaks on exit */
-  lt_dlclose(libhandle);
-  if (0 != lt_dlexit())
-    LOG_STRERROR(LOG_WARNING, "lt_dlexit");
+  if (0 != getConfigurationInt("GNUNETD",
+			       "VALGRIND")) {
+    lt_dlclose(libhandle);
+    if (0 != lt_dlexit())
+      LOG_STRERROR(LOG_WARNING, "lt_dlexit");
+  } else
+    using_valgrind = 1;
 }
 
 void * trybindDynamicMethod(void * libhandle,

@@ -20,12 +20,33 @@ For a longer description of the GNUnet System see our webpages
 http://www.gnu.org/projects/GNUnet/ and http://gnunet.org/.
 
 
+Dependencies:
+=============
+
+For the impatient, here is the list of immediate dependencies for
+running GNUnet:
+
+- libextractor >= 0.5.3
+- libcrypt     >= 1.2
+- libgmp       >= 4.0
+- mysql >= 4.1 OR sqlite >= 3.0
+- libltdl (from libtool)
+
+Recommended autotools for compiling the SVN version are:
+- autoconf >= 2.59
+- automake >= 1.9.4
+- libtool  >= 1.5.8
+
+See also README.debian for a list of Debian packages.
+
+
 How to install?
 ===============
 
 The fastest way is to use a binary package if it is available for your
 system.  For a more detailed description, read the installation
 instructions on the webpage at http://gnunet.org/documentation.php3.
+
 
 If you install from source, you need to install libextractor
 first (download from http://gnunet.org/libextractor/).  Then
@@ -34,17 +55,22 @@ you can start the actual GNUnet compilation process with:
 $ ./configure --prefix=$HOME --with-extractor=$HOME
 $ make
 # make install
+# gnunet-setup -d
 # gnunetd 
 
 This will compile and install GNUnet to ~/bin/, ~/lib/ and ~/man/.
-Starting gnunetd as root the first time will allow the daemon to
-create the default configuration file in /etc/gnunetd.conf.  If you do
-not want to run GNUnet as root, add a user gnunet and give it write
-permissions to /var/lib/GNUnet (and start gnunetd as that user in the
-future).  Note that additional, per-user configuration files
-(~/.gnunet/gnunet.conf) will be created the first time a user starts a
-GNUnet user interface.  For more general information about the GNU
-build process read the INSTALL file.
+gnunet-setup will create the daemon configuration (-d); this step is
+interactive.  You can run gnunet-setup as root for a system-wide
+installation or as a particular user to create a personal
+installation.  If you do not want to run gnunetd as root, gnunet-setup
+can be used to add a user "gnunet".  Data will then be stored in
+/var/lib/GNUnet and gnunetd will run as that user.  Note that
+additional, per-user configuration files (~/.gnunet/gnunet.conf) also
+need to be created by each user by running gnunet-setup without the -d
+option.  Depending on your operating system the wizards of
+gnunet-setup can also be used to create an init script that starts
+gnunetd each time the system boots.  For more general information
+about the GNU build process read the INSTALL file.
 
 GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
 and libgcrypt.  You can specify the path to libgcrypt by passing
@@ -59,21 +85,6 @@ option, pointing to your aclocal m4 macros, i.e.
 
 $ aclocal -I /usr/local/share/aclocal
 
-In order to start a "permanent" node, you should create a new user
-"gnunet" and start "gnunetd" as that user whenever the system boots.
-The file contrib/initgnunet in the source distribution contains a
-script that may be helpful for that purpose.  Note that you will have
-to enable the service by creating the appropriate links to start
-gnunetd at boot time (if that is desired).
-
-For file sharing GNUnet needs to store data in a database. We
-currently support MySQL and SQLite.
-
-libextractor >= 0.5.0 is required
-autoconf >= 2.59 is  recommended for compiling the SVN version.
-automake >= 1.9.4 is recommended for compiling the SVN version.
-libtool >= 1.5.8 is  recommended for compiling the SVN version.
-
 
 Configuration
 =============
@@ -84,16 +95,15 @@ configure, edit "/etc/gnunetd.conf" (or /var/lib/GNUnet/gnunetd.conf)
 and "~/.gnunet/gnunet.conf" (whichever applies).
 
 If you want to use a different configuration file, pass the name of
-the configuration file as an argument with the option -c to any GNUnet
-application.  Sending a SIGHUP to the gnunetd process will cause
-gnunetd to re-read the configuration file.  Note that not all options
-can be changed at run-time this way (e.g. to change any port number,
-you must fully restart gnunetd).
+the configuration file as an argument with the option "-c" to any
+GNUnet application.  Sending a SIGHUP to the gnunetd process will
+cause gnunetd to re-read the configuration file.  Note that not all
+options can be changed at runtime this way (e.g. to change any port
+number, you must fully restart gnunetd).
 
 In order to use the SMTP transport service, you should read
-http://gnunet.org/smtp.php3 first!  Note that if you have a
-globally addressable IP or full control over your NAT box, the TCP or
-UDP services will suffice.
+http://gnunet.org/smtp.php3 first!  Note that SMTP should never
+be required, it is just a neat technical idea at this point.
 
 
 Usage
@@ -102,7 +112,7 @@ Usage
 First, you must obtain an initial list of GNUnet hosts.  Knowing a
 single peer is sufficient since after that GNUnet propagates
 information about other peers.  Note that the default "gnunetd.conf"
-contains a URL from where gnunetd downloads an initial hostlist
+contains URLs from where gnunetd downloads an initial hostlist
 whenever it is started.  If you want to create an alternative URL for
 others to use, the file can be generated on any machine running
 gnunetd by periodically executing

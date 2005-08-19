@@ -1,3 +1,5 @@
+THIS TRANSLATION IS OUTDATED.  PLEASE ALSO READ THE ENGLISH VERSION!
+
                      Bienvenue sous GNUnet
 
 
@@ -99,7 +101,7 @@ supportons actuellement MySQL, GDBM, BerkeleyDB et TDB. Vous pouvez
 également vous servir d'un simple répertoire, mais ce sera lent.
 
 autoconf >= 2.57 est recommandé pour compiler la version CVS.
-libextractor >= 0.3.6 est fortement recommandé.
+libextractor >= 0.5.3 est fortement recommandé.
 
 
 Configuration

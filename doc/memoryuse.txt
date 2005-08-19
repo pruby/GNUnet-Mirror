@@ -30,5 +30,10 @@ What can you expect to achieve:
   many seconds (typically the longer you can afford to wait,
   the more likely you are to actually observe a relevant event
   in the trace -- and make sure to actually USE gnunetd while
-  tracing for leaks).
+  tracing for leaks). 
+  One more note about using valgrind.  Since GNUnet uses
+  plugins that are unloaded on shutdown, the memory traces
+  are likely to be garbeled if nothing is done.  Setting
+  the VALGRIND option will disable unloading plugins (see
+  src/util/dso.c) and thus improve the traces significantly.
 

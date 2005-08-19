@@ -3,7 +3,7 @@ This file lists the known problems with GNUnet on various platforms.
 Let us know if you know more about it then we do.  The test is quite
 easy.  Run "make check" and "gnunet-transport-check" *after*
 configuring GNUnet (including placing a valid gnunet.conf into
-~/.gnunet and /etc/gnunet.conf).  That should yield all the
+~/.gnunet and /etc/gnunetd.conf).  That should yield all the
 information necessary (assuming it compiles).
 
 
@@ -26,7 +26,7 @@ OpenBSD/NetBSD:
 - unknown
 
 OS X (10.3.7, PowerPC):
-- perfect (needs libextractor > 0.5.2)
+- perfect
 
 Solaris:
 - unknown
