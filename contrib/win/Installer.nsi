@@ -925,6 +925,9 @@ Section Uninstall
   Delete "$SMPROGRAMS\$ICONS_GROUP\Website.lnk"
   Delete "$DESKTOP\GNUnet.lnk"
   Delete "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk"
+  Delete "$SMPROGRAMS\$ICONS_GROUP\$(confwizard).lnk"
+  Delete "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk"
+  Delete "$SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk"
 
   ReadEnvStr $USR_PROF "USERPROFILE"
   StrLen $DIRLEN $USR_PROF
