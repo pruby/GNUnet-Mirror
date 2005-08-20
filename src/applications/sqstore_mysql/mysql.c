@@ -1013,8 +1013,8 @@ static int update(const HashCode512 * key,
 	   n,
 	   "UPDATE gn070"
 	   " SET prio=prio+%d"
-	   " WHERE hash=`%s'"
-	   " AND value=`%s'",
+	   " WHERE hash='%s'"
+	   " AND value='%s'",
 	   delta,
 	   escapedHash,
 	   escapedBlock);
