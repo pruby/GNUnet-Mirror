@@ -1,27 +1,44 @@
-0.7.0pre6 [8'05] ("API cleanup"):
-- gnunet-setup:
-  * #873 gconfig: fix focus changes [ Nils ]
-  * #852,#853 (gnunet-setup nitpicks) [Nils / Christian]
-  
+Notes:
+  RC == Release Critical 
 
-0.7.0 [8'05?] (aka "compatibility? what's that?"):
+  All issues that are targetd for the NEXT release
+  should also be filed on Mantis, except for "more testcases"
+  which is always an ongoing issue. 
+
+  Features that are targeted for future releases do not have
+  to be filed on Mantis (no need to bloat the database).
+
+  Oh, and this is of course just a plan.  And plans always change.
+
+
+0.7.0 [30.8.2005?] (aka "compatibility? what's that?"):
 - Missing Features:
-  * #593 (gnunet-setup): php-ification for i18n [ Nils ]
+  * gnunet-gtk namespace stuff (#872, #884)  [ Christian, RC! ]
+  * gnunet-setup: php-ification for i18n [ Nils ]
   * permissions on indexed files? [Nils]
     If gnunetd has insufficient file permissions on files
     to be indexed, copy it to shared dir and index it there.
+    [ NILS: if still there, please elaborate on Mantis!)
   * Windows installer [Nils]
     * Uninstall
       * Remove account
-- Test on Windows 98 [Nils]
-- Additional (automated, make check-style) testing:
-  * gnunet-tracekit
-  * gap and economy
-  * FSUI:
-    + collections
-    + recursive uploads and downloads (incl. persistence)
-    + namespaces
-    + URI tracking
+    [ NILS: if still there, please elaborate on Mantis!)
+  * #893 (mysql prepared statement for update) 
+- known bugs:
+  * gnunet-gtk namespace upload (#885) [ Christian, RC ]
+  * gnunet-setup memory leaks (#878)
+  * gnunet-gtk "clear" button does not always work
+- investigate: 
+  * #890 (valgrind sqlite), #892 (gconfig focus changes)
+- testing:
+  * on Windows 98 [Nils]
+  * more "make check" targets to test:  [ not RC ]
+    + gnunet-tracekit
+    + gap and economy
+    + FSUI collections
+    + FSUI recursive uploads and downloads (incl. persistence)
+    + FSUI namespaces
+    + FSUI URI tracking
 
 0.7.0a [9'05] (bugfixes)
 
