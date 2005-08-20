@@ -86,7 +86,7 @@ void EnumNICs(PMIB_IFTABLE *pIfTable, PMIB_IPADDRTABLE *pAddrTable)
  * Used by the basic GTK configurator
  * @param callback
  */
-int ListNICs(void (*callback) (char *, int))
+  int ListNICs(void (*callback) (const char *, int, void *), void * cls)
 {
   PMIB_IFTABLE pTable;
   PMIB_IPADDRTABLE pAddrTable;
@@ -181,7 +181,7 @@ int ListNICs(void (*callback) (char *, int))
         if (pszIfName)
        		free(pszIfName);
         
-        callback(szEntry, pAddrTable->table[dwIfIdx].dwIndex == dwExternalNIC);
+        callback(szEntry, pAddrTable->table[dwIfIdx].dwIndex == dwExternalNIC, cls);
       }
     }
     GlobalFree(pAddrTable);
