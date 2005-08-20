@@ -1222,6 +1222,8 @@ static int ensureTransportConnected(BufferEntry * be) {
   SendEntry * entry;
   int i;
   int ret;
+  int j;
+  int changed;
       
   if (be->session.tsession == NULL) {
     be->session.tsession
@@ -1233,31 +1235,39 @@ static int ensureTransportConnected(BufferEntry * be) {
       = transport->getMTU(be->session.tsession->ttype);
     if (be->session.mtu > 0) {
       /* MTU change may require new fragmentation! */
-      entries = be->sendBuffer;
-      i = 0;
-      ret = be->sendBufferSize;
-      /* assumes entries are sorted by priority! */
-      while (i < ret) {
-	entry = entries[i];
-	if (entry->len > be->session.mtu - sizeof(P2P_PACKET_HEADER)) {
-	  entries[i] = entries[--ret];
-	  fragmentation->fragment(&be->session.sender,
-				  be->session.mtu - sizeof(P2P_PACKET_HEADER),
-				  entry->pri,
-				  entry->transmissionTime,
-				  entry->len,
-				  entry->callback,
-				  entry->closure);
-	  FREE(entry);
-	}
-	i++;
-      } 
-      if (ret != be->sendBufferSize)
-	GROW(be->sendBuffer,
-	     be->sendBufferSize,
-	     ret);
-    }
-  }
+      changed = YES;
+      while (changed) {
+	entries = be->sendBuffer;
+	i = 0;
+	ret = be->sendBufferSize;
+	while (i < ret) {
+	  entry = entries[i];
+	  if (entry->len > be->session.mtu - sizeof(P2P_PACKET_HEADER)) {
+	    ret--;
+	    for (j=i;j<ret;j++) 
+	      entries[j] = entries[j+1]; /* preserve ordering */
+	    GROW(be->sendBuffer,
+		 be->sendBufferSize,
+		 ret);	    
+	    /* calling fragment will change be->sendBuffer;
+	       thus we need to restart from the beginning afterwards... */
+	    fragmentation->fragment(&be->session.sender,
+				    be->session.mtu - sizeof(P2P_PACKET_HEADER),
+				    entry->pri,
+				    entry->transmissionTime,
+				    entry->len,
+				    entry->callback,
+				    entry->closure);
+	    FREE(entry);
+	    changed = YES;
+	    break;
+	  } else {
+	    i++;
+	  }
+	} /* for all i (until change) */
+      } /* while changed */
+    } /* if MTU changed */
+  } /* if need to reconnect */
   return OK;
 }
 
