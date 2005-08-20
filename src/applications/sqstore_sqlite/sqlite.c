@@ -875,6 +875,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   sqlite3_exec(dbh->dbf, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
   sqlite3_exec(dbh->dbf, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
   sqlite3_exec(dbh->dbf, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
+  sqlite3_exec(dbh->dbf, "PRAGMA page_size=4096", NULL, NULL, NULL);
 
   sq_prepare("Select 1 from sqlite_master where tbl_name = 'gn070'",
 	     &stmt);
