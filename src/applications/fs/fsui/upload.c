@@ -322,6 +322,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
   ECRS_FileInfo fi;
   int ret;
   char * inboundFN;
+  int sendEvent = YES;
 
   GNUNET_ASSERT(utc->main_filename != NULL);
   inboundFN
@@ -400,7 +401,9 @@ static void * uploadThread(UploadThreadClosure * utc) {
     if (ret != OK) {
       event.type = FSUI_upload_error;
       event.data.message = _("Upload failed.\n");
-    } /* for success, uploadDirectory sends event already! */
+    } else { /* for success, uploadDirectory sends event already! */
+      sendEvent = NO;
+    }
     utc->filename = NULL;
   } else {
     event.type = FSUI_upload_error;
@@ -449,9 +452,9 @@ static void * uploadThread(UploadThreadClosure * utc) {
   fi.meta = utc->meta;
   FSUI_publishToCollection(utc->ctx,
 			   &fi);
-			
-  utc->ctx->ecb(utc->ctx->ecbClosure,
-		&event);
+  if (sendEvent)
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);
   if (uri != NULL)
     ECRS_freeUri(uri);
 
@@ -462,7 +465,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
     ECRS_freeUri(utc->uri);
   if (utc->globalUri != NULL)
     ECRS_freeUri(utc->globalUri);
-  EXTRACTOR_removeAll(utc->extractors);
+  //  EXTRACTOR_removeAll(utc->extractors);
   utc->tl->isDone = YES;
   FREE(utc);
   FREENONNULL(inboundFN);
