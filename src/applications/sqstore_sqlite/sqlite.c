@@ -117,65 +117,6 @@ static unsigned long long getSize() {
 }
 
 /**
- * @brief Encode a binary buffer "in" of size n bytes so that it contains
- *        no instances of characters '\'' or '\000'.  The output is
- *        null-terminated and can be used as a string value in an INSERT
- *        or UPDATE statement.
- * @param in input
- * @param n size of in
- * @param out output
- */
-static int sqlite_encode_binary(const unsigned char *in,
-				int n,
-				unsigned char *out){
-  char c;
-  unsigned char *start = out;
-
-  n--;
-  for (; n > -1; n--) {
-    c = *in;
-    in++;
-
-    if (c == 0 || c == 1) {
-      *out = 1;
-      out++;
-      *out = c + 1;
-    } else {
-      *out = c;
-    }
-    out++;
-  }
-  *out = 0;
-
-  return (int) (out - start);
-}
-
-/**
- * @brief Decode the string "in" into binary data and write it into "out".
- * @param in input
- * @param out output
- * @param num size of the output buffer
- * @return number of output bytes, -1 on error
- */
-static int sqlite_decode_binary_n(const unsigned char *in,
-				  unsigned char *out,
-				  unsigned int num){
-  char c;
-  unsigned char *start = out;
-
-  while((c = *in) && (out - start < num)) {
-    if (c == 1) {
-      in++;
-      *out = *in - 1;
-    } else
-      *out = c;
-    in++;
-    out++;
-  }
-  return (int) (out - start);
-}
-
-/**
  * Given a full row from gn070 table (size,type,prio,anonLevel,expire,hash,value),
  * assemble it into a Datastore_Datum representation.
  */
@@ -190,9 +131,8 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
     return NULL; /* error */
   }
 
-  if (sqlite3_column_bytes(stmt, 5) > sizeof(HashCode512) * 2 + 1 ||
-      sqlite3_column_bytes(stmt, 6) > contentSize * 2 + 1) {
-
+  if (sqlite3_column_bytes(stmt, 5) != sizeof(HashCode512) ||
+      sqlite3_column_bytes(stmt, 6) != contentSize) {
     LOG(LOG_WARNING,
 	_("SQL Database corrupt, ignoring result.\n"));
     return NULL;
@@ -204,19 +144,13 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   value->type = htonl(sqlite3_column_int(stmt, 1));
   value->prio = htonl(sqlite3_column_int(stmt, 2));
   value->anonymityLevel = htonl(sqlite3_column_int(stmt, 3));
-  value->expirationTime = htonll(sqlite3_column_int64(stmt, 4));
-
-  if (sqlite_decode_binary_n(sqlite3_column_blob(stmt, 5),
-			     (char *) &datum->key,
-			     sizeof(HashCode512)) != sizeof(HashCode512) ||
-      sqlite_decode_binary_n(sqlite3_column_blob(stmt, 6),
-			     (char *) &value[1],
-			     contentSize) != contentSize) {
-
-    LOG(LOG_WARNING,
-	_("SQL Database corrupt, ignoring result.\n"));
-    return NULL;
-  }
+  value->expirationTime = htonll(sqlite3_column_int64(stmt, 4)); 
+  memcpy(&datum->key,
+	 sqlite3_column_blob(stmt, 5),
+	 sizeof(HashCode512));
+  memcpy(&value[1],
+	 sqlite3_column_blob(stmt, 6),
+	 contentSize);
   return datum;
 }
 
@@ -271,7 +205,7 @@ static int setStat(const char *key,
 		   double val) {
   sqlite3_stmt *stmt;
 
-	if (sq_prepare("DELETE FROM gn070 where hash = ?", &stmt) == SQLITE_OK) {
+  if (sq_prepare("DELETE FROM gn070 where hash = ?", &stmt) == SQLITE_OK) {
     sqlite3_bind_text(stmt,
 		      1,
 		      key,
@@ -279,7 +213,7 @@ static int setStat(const char *key,
 		      SQLITE_STATIC);
 		sqlite3_step(stmt);
 		sqlite3_finalize(stmt);
-	}
+  }
 
   if (sq_prepare("INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
 		 &stmt) == SQLITE_OK) {
@@ -337,8 +271,6 @@ static int sqlite_iterate(unsigned int type,
   Datastore_Datum * datum;
   unsigned int lastPrio;
   unsigned long long lastExp;
-  unsigned long hashLen;
-  char * lastHash;
   HashCode512 key;
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -377,16 +309,11 @@ static int sqlite_iterate(unsigned int type,
   lastPrio = 0;
   lastExp  = 0x8000000000000000LL; /* MIN long long; sqlite does not know about unsigned... */
   memset(&key, 0, sizeof(HashCode512));
-  lastHash = MALLOC(sizeof(HashCode512)*2 + 2);
   while (1) {
-    hashLen = sqlite_encode_binary((const char *) &key,
-				   sizeof(HashCode512),
-				   lastHash);
-
     sqlite3_bind_blob(stmt,
 		      1,
-		      lastHash,
-		      hashLen,
+		      &key,
+		      sizeof(HashCode512),
 		      SQLITE_TRANSIENT);
     sqlite3_bind_int64(stmt,
 		       2,
@@ -428,14 +355,14 @@ static int sqlite_iterate(unsigned int type,
 	    _("Invalid data in database.  Please verify integrity!\n"));
 	continue;
       }
-
-      /*      printf("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
-	     (ntohl(datum->value.size) - sizeof(Datastore_Value))/8,
+#if 0
+      printf("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
+ 	     (ntohl(datum->value.size) - sizeof(Datastore_Value)),
 	     ntohl(datum->value.prio),
 	     ntohll(datum->value.expirationTime),
 	     lastPrio,
 	     lastExp);
-      */
+#endif    
 
       if (iter != NULL) {
 	MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
@@ -459,7 +386,6 @@ static int sqlite_iterate(unsigned int type,
       break;
     }
   }
-  FREE(lastHash);
   sqlite3_finalize(stmt);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
@@ -548,8 +474,7 @@ static int get(const HashCode512 * key,
 	       unsigned int type,
 	       Datum_Iterator iter,
 	       void * closure) {
-  char *escapedHash = NULL;
-  int len, ret, count = 0;
+  int ret, count = 0;
   sqlite3_stmt *stmt;
   char scratch[97];
   int bind = 1;
@@ -600,14 +525,10 @@ static int get(const HashCode512 * key,
     ret = SQLITE_OK;
   	
   if (key && (ret == SQLITE_OK)) {
-    escapedHash = MALLOC(sizeof(HashCode512)*2 + 2);
-    len = sqlite_encode_binary((const char *) key,
-			       sizeof(HashCode512),
-			       escapedHash);
     ret = sqlite3_bind_blob(stmt,
 			    bind,
-			    escapedHash,
-			    len,
+			    key,
+			    sizeof(HashCode512),
 			    SQLITE_TRANSIENT);
   }
 
@@ -644,7 +565,6 @@ static int get(const HashCode512 * key,
     if (ret != SQLITE_DONE) {
       LOG_SQLITE(LOG_ERROR, "sqlite_query");
       sqlite3_finalize(stmt);
-      FREENONNULL(escapedHash);
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
       return SYSERR;
     }
@@ -658,7 +578,6 @@ static int get(const HashCode512 * key,
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, "SQLite: done reading content\n");
 #endif
-  FREENONNULL(escapedHash);
 
   return count;
 }
@@ -671,9 +590,7 @@ static int get(const HashCode512 * key,
  */
 static int put(const HashCode512 * key,
 	       const Datastore_Value * value) {
-  char *escapedBlock;
-  char *escapedHash;
-  int n, hashLen, blockLen;
+  int n;
   sqlite3_stmt *stmt;
   unsigned long rowLen;
   unsigned int contentSize;
@@ -703,17 +620,6 @@ static int put(const HashCode512 * key,
 
   rowLen = 0;
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-
-  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
-  hashLen = sqlite_encode_binary((const char *) key,
-				 sizeof(HashCode512),
-				 escapedHash);
-
-  escapedBlock = MALLOC(2 * contentSize + 1);
-  blockLen = sqlite_encode_binary((const char *) &value[1],
-				  contentSize,
-				  escapedBlock);
-
   stmt = dbh->insertContent;
   
   size = ntohl(value->size);
@@ -727,12 +633,10 @@ static int put(const HashCode512 * key,
   sqlite3_bind_int(stmt, 3, prio);
   sqlite3_bind_int(stmt, 4, anon);
   sqlite3_bind_int64(stmt, 5, expir);
-  sqlite3_bind_blob(stmt, 6, escapedHash, hashLen, SQLITE_TRANSIENT);
-  sqlite3_bind_blob(stmt, 7, escapedBlock, blockLen, SQLITE_TRANSIENT);
+  sqlite3_bind_blob(stmt, 6, key, sizeof(HashCode512), SQLITE_TRANSIENT);
+  sqlite3_bind_blob(stmt, 7, &value[1], contentSize, SQLITE_TRANSIENT);
 
   n = sqlite3_step(stmt);
-  FREE(escapedBlock);
-  FREE(escapedHash);
   sqlite3_reset(stmt);
   if (n != SQLITE_DONE) {
     LOG_SQLITE(LOG_ERROR,
@@ -742,7 +646,7 @@ static int put(const HashCode512 * key,
   }
   dbh->lastSync++;
   /* row length = hash length + block length + numbers + column count + estimated index size + 1 */
-  dbh->payload = dbh->payload + hashLen + blockLen + getIntSize(size) + getIntSize(type) +
+  dbh->payload = dbh->payload + contentSize + sizeof(HashCode512) + getIntSize(size) + getIntSize(type) +
   	getIntSize(prio) + getIntSize(anon) + getIntSize(expir) + 7 + 90 + 1;
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
@@ -764,14 +668,10 @@ static int put(const HashCode512 * key,
  */
 static int del(const HashCode512 * key,
 	       const Datastore_Value * value) {
-  char *escapedHash;
   size_t n;
   sqlite3_stmt *stmt;
   unsigned long rowLen;
-  int deleted, hashLen;
-  char * escapedBlock;
-  int blockLen;
-  unsigned long contentSize;
+  int deleted;
 #if DEBUG_SQLITE
   EncName enc;
 
@@ -788,23 +688,19 @@ static int del(const HashCode512 * key,
   if (dbh->lastSync > 1000)
     syncStats(dbh);
 
-  escapedHash = MALLOC(2 * sizeof(HashCode512) + 1);
-  hashLen = sqlite_encode_binary((const char *)key,
-				 sizeof(HashCode512),
-				 escapedHash);
   if (!value) {
     sqlite3_bind_blob(dbh->exists,
 		      1,
-		      escapedHash,
-		      hashLen,
+		      key,
+		      sizeof(HashCode512),
 		      SQLITE_TRANSIENT);
     while(sqlite3_step(dbh->exists) == SQLITE_ROW) {	
-  		/* row length = hash length + block length + numbers + column count + estimated index size + 1 */
-  		rowLen = sqlite3_column_int(dbh->exists, 0) + sqlite3_column_int(dbh->exists, 1) +
-  			 sqlite3_column_int(dbh->exists, 2) + sqlite3_column_int(dbh->exists, 3) +
-  			 sqlite3_column_int(dbh->exists, 4) + sqlite3_column_int(dbh->exists, 5) +
-  			 sqlite3_column_int(dbh->exists, 6) + 7 + 90 + 1;
-
+      /* row length = hash length + block length + numbers + column count + estimated index size + 1 */
+      rowLen = sqlite3_column_int(dbh->exists, 0) + sqlite3_column_int(dbh->exists, 1) +
+	sqlite3_column_int(dbh->exists, 2) + sqlite3_column_int(dbh->exists, 3) +
+	sqlite3_column_int(dbh->exists, 4) + sqlite3_column_int(dbh->exists, 5) +
+	sqlite3_column_int(dbh->exists, 6) + 7 + 90 + 1;
+      
       if (dbh->payload > rowLen)
 	dbh->payload -= rowLen;
       else
@@ -819,53 +715,47 @@ static int del(const HashCode512 * key,
     if (n == SQLITE_OK) {
       sqlite3_bind_blob(stmt,
 			1,
-			escapedHash,
-			hashLen,
+			key,
+			sizeof(HashCode512),
 			SQLITE_TRANSIENT);
       n = sqlite3_step(stmt);
     }
+    /* FIXME: this operation fails to update dbh->payload properly! */       
   } else {
-	  unsigned int size, type, prio, anon;
-	  unsigned long long expir;
+    unsigned int size, type, prio, anon;
+    unsigned long long expir;
+    unsigned long contentSize;
   	
+    contentSize = ntohl(value->size)-sizeof(Datastore_Value);
     n = sq_prepare("DELETE FROM gn070 WHERE hash = ? and "
 		   "value = ? AND size = ? AND type = ? AND prio = ? AND anonLevel = ? "
 		   "AND expire = ?", /* ORDER BY prio ASC LIMIT 1" -- not available in sqlite */
 		   &stmt);
     if (n == SQLITE_OK) {
-      escapedBlock = MALLOC(2 * (ntohl(value->size)-sizeof(Datastore_Value)) + 1);
-
-      contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-      blockLen = sqlite_encode_binary((const char *) &value[1],
-				      contentSize,
-				      escapedBlock);
-				      
-			size = ntohl(value->size);
-			type = ntohl(value->type);
-			prio = ntohl(value->prio);
-			anon = ntohl(value->anonymityLevel);
-			expir = ntohll(value->expirationTime);
-
-      sqlite3_bind_blob(stmt, 1, escapedHash, hashLen, SQLITE_TRANSIENT);
-      sqlite3_bind_blob(stmt, 2, escapedBlock, blockLen, SQLITE_TRANSIENT);
+      size = ntohl(value->size);
+      type = ntohl(value->type);
+      prio = ntohl(value->prio);
+      anon = ntohl(value->anonymityLevel);
+      expir = ntohll(value->expirationTime);
+      
+      sqlite3_bind_blob(stmt, 1, key, sizeof(HashCode512), SQLITE_TRANSIENT);
+      sqlite3_bind_blob(stmt, 2, &value[1], contentSize, SQLITE_TRANSIENT);
       sqlite3_bind_int(stmt, 3, size);
       sqlite3_bind_int(stmt, 4, type);
       sqlite3_bind_int(stmt, 5, prio);
       sqlite3_bind_int(stmt, 6, anon);
       sqlite3_bind_int64(stmt, 7, expir);
       n = sqlite3_step(stmt);
-      FREE(escapedBlock);
       if ( (n == SQLITE_DONE) || (n == SQLITE_ROW) )
-	  		/* row length = hash length + block length + numbers + column count + estimated index size + 1 */
-	  		dbh->payload = dbh->payload - hashLen - blockLen - getIntSize(size) - getIntSize(type) - getIntSize(prio)
-	  			 - getIntSize(anon) - getIntSize(expir) - 7 - 90 - 1;
+	/* row length = hash length + block length + numbers + column count + estimated index size + 1 */
+	dbh->payload = dbh->payload - sizeof(HashCode512) - contentSize
+	  - getIntSize(size) - getIntSize(type) - getIntSize(prio)
+	  - getIntSize(anon) - getIntSize(expir) - 7 - 90 - 1;
     } else {
       LOG_SQLITE(LOG_ERROR, "sqlite3_prepare");
     }
   }
   deleted = ( (n == SQLITE_DONE) || (n == SQLITE_ROW) ) ? sqlite3_changes(dbh->dbf) : SYSERR;
-
-  FREE(escapedHash);
   sqlite3_finalize(stmt);
 
   if(n != SQLITE_DONE) {
@@ -892,8 +782,7 @@ static int del(const HashCode512 * key,
 static int update(const HashCode512 * key,
 		  const Datastore_Value * value,
 		  int delta) {
-  char *escapedHash, *escapedBlock;
-  int hashLen, blockLen, n;
+  int n;
   unsigned long contentSize;
 #if DEBUG_SQLITE
   EncName enc;
@@ -907,29 +796,19 @@ static int update(const HashCode512 * key,
 #endif
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
-
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-
-  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
-  hashLen = sqlite_encode_binary((const char *) key,
-				 sizeof(HashCode512),
-				 escapedHash);
-  escapedBlock = MALLOC(2*contentSize+1);
-  blockLen = sqlite_encode_binary((const char *) &value[1],
-				  contentSize,
-				  escapedBlock);
   sqlite3_bind_int(dbh->updPrio,
 		   1,
 		   delta);
   sqlite3_bind_blob(dbh->updPrio,
 		    2,
-		    escapedHash,
-		    hashLen,
+		    key,
+		    sizeof(HashCode512),
 		    SQLITE_TRANSIENT);
   sqlite3_bind_blob(dbh->updPrio,
 		    3,
-		    escapedBlock,
-		    blockLen,
+		    &value[1],
+		    contentSize,
 		    SQLITE_TRANSIENT);
   sqlite3_bind_int(dbh->updPrio,
 		   4,
@@ -940,9 +819,6 @@ static int update(const HashCode512 * key,
 
   n = sqlite3_step(dbh->updPrio);
   sqlite3_reset(dbh->updPrio);
-
-  FREE(escapedHash);
-  FREE(escapedBlock);
 
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 

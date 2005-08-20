@@ -14,6 +14,7 @@ you're on your own.
 
 Run
 
+$ rm -f /var/lib/GNUnet/content/gnunet.dat ~/.gnunet/content/gnunet.dat
 $ gnunet-update
 
 (as the same user that also runs gnunetd).
