@@ -424,7 +424,7 @@ menu "Transports" ""
 
 	  config PORT
 	  int "Port"
-	  range 1 65535
+	  range 0 65535
 	  default 2086
 	  help
 	  	To which port does GNUnet bind? Default is 2086 and there is usually
@@ -472,7 +472,7 @@ menu "Transports" ""
 
 	  config PORT
 	  int "Port"
-	  range 1 65535
+	  range 0 65535
 	  default 2086
 	  help
 			To which port does GNUnet bind? Default is 2086 and there is usually
@@ -528,7 +528,7 @@ menu "Transports" ""
   		  		
   		config PORT
   		int "Port"
-  		range 1 65535
+  		range 0 65535
   		default 2088
 
 			config MTU
@@ -545,7 +545,7 @@ menu "Transports" ""
   		  		
   		config PORT
   		int "Port"
-  		range 1 65535
+  		range 0 65535
   		default 2088
 
 			config MTU
@@ -652,7 +652,7 @@ menu "Transports" ""
 	  
 	  	config PORT
 	  	int "Port"
-	  	range 1 65535
+	  	range 0 65535
 	  	default 1080
 	  	
 		  config BLACKLIST
