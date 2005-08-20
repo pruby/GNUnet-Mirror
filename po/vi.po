@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-08-17 21:04-0700\n"
+"POT-Creation-Date: 2005-08-20 13:43-0700\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -184,7 +184,7 @@ msgstr "Chạy máy khách chát của GNUnet."
 #: src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:542
 #: src/applications/tracekit/gnunet-tracekit.c:153 src/conf/gnunet-setup.c:117
-#: src/conf/gnunet-setup.c:255 src/server/gnunet-peer-info.c:107
+#: src/conf/gnunet-setup.c:261 src/server/gnunet-peer-info.c:107
 #: src/server/gnunet-transport-check.c:512 src/server/gnunet-update.c:129
 #: src/server/startup.c:516
 #, c-format
@@ -211,20 +211,20 @@ msgstr "Không gửi được thông báo nhập join tới gnunetd\n"
 msgid "Could not send message to gnunetd\n"
 msgstr "Không gửi được thông báo tới gnunetd\n"
 
-#: src/applications/datastore/datastore.c:107
+#: src/applications/datastore/datastore.c:111
 #, c-format
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr "Thử khả năng cho `%s' không thành công tại %s: %d.\n"
 
-#: src/applications/datastore/datastore.c:129
-#, c-format
-msgid "Database failed to delete %s.\n"
+#: src/applications/datastore/datastore.c:135
+#, fuzzy, c-format
+msgid "Database failed to delete `%s'.\n"
 msgstr "Cơ sở dữ liệu xóa %s không thành công.\n"
 
 #: src/applications/datastore/filter.c:42
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Configuration must specify directory for FS data in section `%s' under '%"
+"Configuration must specify directory for FS data in section `%s' under `%"
 "s'.\n"
 msgstr ""
 "Trong phần `%s' dưới `%s' của cấu hình phải chỉ ra thư mục cho dữ liệu FS.\n"
@@ -518,19 +518,19 @@ msgstr "Đang chờ chạy gnunetd (còn %u lần thử)...\n"
 msgid "Waiting for peers to connect (%u iterations left)...\n"
 msgstr "Đang chờ kết nối các đầu (còn %u lần thử)...\n"
 
-#: src/applications/fragmentation/fragmentation.c:549
+#: src/applications/fragmentation/fragmentation.c:556
 msgid "# messages defragmented"
 msgstr "# thông báo đã gom lại"
 
-#: src/applications/fragmentation/fragmentation.c:550
+#: src/applications/fragmentation/fragmentation.c:557
 msgid "# messages fragmented"
 msgstr "# thông báo đã phân mảnh"
 
-#: src/applications/fragmentation/fragmentation.c:551
+#: src/applications/fragmentation/fragmentation.c:558
 msgid "# fragments discarded"
 msgstr "# các mảnh bị loại bỏ"
 
-#: src/applications/fragmentation/fragmentation.c:561
+#: src/applications/fragmentation/fragmentation.c:568
 #, c-format
 msgid "`%s' registering handler %d\n"
 msgstr "`%s' đăng ký trình điều khiển %d\n"
@@ -558,12 +558,12 @@ msgstr ""
 msgid "Content `%s' seems to be not available on the network.\n"
 msgstr "Nội dung `%s' có vẻ không có trên mạng.\n"
 
-#: src/applications/fs/ecrs/meta.c:779
+#: src/applications/fs/ecrs/meta.c:818
 #, c-format
 msgid "Renaming of file `%s' to `%s' failed: %s\n"
 msgstr "Đổi tên tập tin `%s' thành `%s' thất bại: %s\n"
 
-#: src/applications/fs/ecrs/meta.c:785
+#: src/applications/fs/ecrs/meta.c:826
 #, c-format
 msgid "Could not rename file `%s' to `%s': file exists\n"
 msgstr "Không đổi tên được tập tin `%s' thành `%s': tập tin tồn tại\n"
@@ -671,12 +671,12 @@ msgstr "Tập tin trạng thái FSUI `%s' có lỗi cú pháp tại vùng %u.\n"
 msgid "No keywords specified!\n"
 msgstr "Chưa chỉ ra từ khóa!\n"
 
-#: src/applications/fs/fsui/namespace_info.c:523
+#: src/applications/fs/fsui/namespace_info.c:524
 msgid "Publication interval for periodic publication changed."
 msgstr ""
 "Đã thay đổi khoảng thời gian giữa các lần đưa ra chia sẻ cho chia sẻ định kỳ."
 
-#: src/applications/fs/fsui/namespace_info.c:544
+#: src/applications/fs/fsui/namespace_info.c:545
 msgid ""
 "Publishing update for periodically updated content more than a week ahead of "
 "schedule.\n"
@@ -692,18 +692,18 @@ msgstr "Tìm kiếm này đang chờ đợi!\n"
 msgid "Unindex failed.\n"
 msgstr "Bỏ đánh chỉ mục thất bại.\n"
 
-#: src/applications/fs/fsui/upload.c:365 src/applications/fs/fsui/upload.c:402
+#: src/applications/fs/fsui/upload.c:366 src/applications/fs/fsui/upload.c:403
 msgid "Upload failed.\n"
 msgstr "Tải lên thất bại.\n"
 
-#: src/applications/fs/fsui/upload.c:407
+#: src/applications/fs/fsui/upload.c:410
 msgid "Cannot upload directory without using recursion.\n"
 msgstr "Không tải lên được thư mục khi không dùng đệ quy.\n"
 
 #: src/applications/fs/module/fs.c:988
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"You must specify a postive number for `%s' in the configuration in section '%"
+"You must specify a postive number for `%s' in the configuration in section `%"
 "s'.\n"
 msgstr ""
 "Người dùng phải chỉ ra một số dương cho `%s' trong phần `%s' của cấu hình.\n"
@@ -718,9 +718,9 @@ msgid "enables (anonymous) file-sharing"
 msgstr ""
 
 #: src/applications/fs/module/ondemand.c:71
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"You must specify a directory for FS files in the configuration in section '%"
+"You must specify a directory for FS files in the configuration in section `%"
 "s' under `%s'."
 msgstr ""
 "Người dùng phải chỉ ra một thư mục cho các tập tin FS trong phần `%s' dưới '%"
@@ -745,8 +745,8 @@ msgstr ""
 #: src/applications/fs/module/ondemand.c:442
 #, c-format
 msgid ""
-"Configuration file must specify directory for storage of FS data in section "
-"`%s' under `%s'.\n"
+"Configuration file must specify directory for storage of FS data in section `"
+"%s' under `%s'.\n"
 msgstr ""
 "Tập tin cấu hình phải chỉ ra thư mục để chứa dữ liệu FS trong phần `%s' dưới "
 "`%s'.\n"
@@ -1175,7 +1175,7 @@ msgid "Invalid argument: `%s'\n"
 msgstr "Tham số sai: `%s'\n"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:223
-#: src/conf/gnunet-setup.c:184 src/server/gnunet-peer-info.c:118
+#: src/conf/gnunet-setup.c:190 src/server/gnunet-peer-info.c:118
 #: src/server/gnunet-transport-check.c:523
 msgid "Invalid arguments. Exiting.\n"
 msgstr "Tham số sai. Đang thoát.\n"
@@ -1609,26 +1609,25 @@ msgstr "Đang thử dùng tập tin `%s' cho cấu hình MySQL.\n"
 msgid "Could not initialize libgnunetutil!\n"
 msgstr "Không chạy được libgnunetutil!\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:197
-#: src/applications/sqstore_sqlite/sqlite.c:217
+#: src/applications/sqstore_sqlite/sqlite.c:137
 msgid "SQL Database corrupt, ignoring result.\n"
 msgstr "Cơ sở dữ liệu SQL bị hỏng, đang lờ đi kết quả.\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:428
-#: src/applications/sqstore_sqlite/sqlite.c:621
+#: src/applications/sqstore_sqlite/sqlite.c:355
+#: src/applications/sqstore_sqlite/sqlite.c:542
 msgid "Invalid data in database.  Please verify integrity!\n"
 msgstr "Dữ liệu sai trong cơ sở dữ liệu.  Xin hãy kiểm tra tính trọn vẹn!\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:979
-#, c-format
+#: src/applications/sqstore_sqlite/sqlite.c:855
+#, fuzzy, c-format
 msgid ""
-"Configuration file must specify directory for storing FS data in section '%"
+"Configuration file must specify directory for storing FS data in section `%"
 "s' under `%s'.\n"
 msgstr ""
 "Tập tin cấu hình phải chỉ ra thư mục để chứa dữ liệu PS trong phần `%s' dưới "
 "`%s'.\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:993
+#: src/applications/sqstore_sqlite/sqlite.c:869
 msgid "Unable to initialize SQLite.\n"
 msgstr "Không chạy được SQLite.\n"
 
@@ -2181,7 +2180,7 @@ msgstr "Thư viện giao thông `%s' không cung cấp chức năng yêu cầu '
 msgid "I am peer `%s'.\n"
 msgstr "Tôi là một đầu peer `%s'.\n"
 
-#: src/conf/conf.c:522 src/conf/recreate.c:100
+#: src/conf/conf.c:522 src/conf/recreate.c:135
 #, fuzzy, c-format
 msgid "Unable to save configuration file `%s': %s.\n"
 msgstr "Không ghi được các tập tin cấu hình: %s.\n"
@@ -2195,6 +2194,11 @@ msgstr "Đã tạo (lại) các tập tin cấu hình.\n"
 #, c-format
 msgid "%s: symbol value `%s' invalid for %s\n"
 msgstr ""
+
+#: src/conf/gconf.c:66
+#, fuzzy
+msgid "Sorry, no help is available for this option.\n"
+msgstr "Rất tiếc, chưa có trợ giúp cho tùy chọn này."
 
 #: src/conf/gconf_interface.c:135
 msgid "Gtk GNUnet Configurator"
@@ -2393,45 +2397,45 @@ msgid ""
 "\n"
 msgstr ""
 
-#: src/conf/gnunet-setup.c:172
+#: src/conf/gnunet-setup.c:178
 #, fuzzy, c-format
 msgid "gnunet-setup must have write-access to the configuration file `%s'\n"
 msgstr "Không phân tích được tập tin cấu hình `%s'.\n"
 
-#: src/conf/gnunet-setup.c:181 src/server/gnunet-peer-info.c:113
+#: src/conf/gnunet-setup.c:187 src/server/gnunet-peer-info.c:113
 #: src/server/gnunet-transport-check.c:518 src/server/gnunet-update.c:139
 #, c-format
 msgid "Invalid arguments: "
 msgstr "Tham số sai: "
 
-#: src/conf/gnunet-setup.c:223
+#: src/conf/gnunet-setup.c:229
 #, fuzzy, c-format
 msgid "menuconfig is not available\n"
 msgstr " Giao thông %d là không thể\n"
 
-#: src/conf/gnunet-setup.c:228 src/conf/gnunet-setup.c:238
+#: src/conf/gnunet-setup.c:234 src/conf/gnunet-setup.c:244
 #, c-format
 msgid ""
 "Can only run wizard to configure gnunetd.\n"
 "Did you forget the `%s' option?\n"
 msgstr ""
 
-#: src/conf/gnunet-setup.c:233
+#: src/conf/gnunet-setup.c:239
 #, fuzzy, c-format
 msgid "wizard-curses is not available\n"
 msgstr " Giao thông %d là không thể\n"
 
-#: src/conf/gnunet-setup.c:243
+#: src/conf/gnunet-setup.c:249
 #, fuzzy, c-format
 msgid "wizard-gtk is not available\n"
 msgstr " Giao thông %d là không thể\n"
 
-#: src/conf/gnunet-setup.c:250
+#: src/conf/gnunet-setup.c:256
 #, fuzzy, c-format
 msgid "gconfig is not available\n"
 msgstr " Giao thông %d là không thể\n"
 
-#: src/conf/gnunet-setup.c:254
+#: src/conf/gnunet-setup.c:260
 #, fuzzy, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Không mở được tập tin cấu hình `%s'\n"
@@ -2481,31 +2485,32 @@ msgstr "Lỗi: không xóa được dịch vụ: %s\n"
 msgid "Unable to save configuration file `%s':"
 msgstr "Không ghi được tập tin cấu hình %s:"
 
-#: src/conf/wizard_callbacks.c:189 src/conf/wizard_curs.c:613
+#: src/conf/wizard_callbacks.c:189 src/conf/wizard_curs.c:616
 msgid "Unable to create user account:"
 msgstr "Không tạo được tài khoản người dùng:"
 
-#: src/conf/wizard_callbacks.c:196 src/conf/wizard_curs.c:616
+#: src/conf/wizard_callbacks.c:196 src/conf/wizard_curs.c:619
 msgid "Unable to change startup process:"
 msgstr "Không thay đổi được tiến trình khởi động:"
 
-#: src/conf/wizard_curs.c:57 src/conf/wizard_interface.c:1075
+#: src/conf/wizard_curs.c:58 src/conf/wizard_interface.c:1075
 #: src/conf/wizard_util.c:120 src/conf/wizard_util.c:162
+#: src/util/configuration.c:516
 msgid "Error"
 msgstr "Lỗi"
 
-#: src/conf/wizard_curs.c:113 src/conf/wizard_curs.c:128
-#: src/conf/wizard_curs.c:181 src/conf/wizard_curs.c:218
-#: src/conf/wizard_curs.c:248 src/conf/wizard_curs.c:274
-#: src/conf/wizard_curs.c:307 src/conf/wizard_curs.c:334
-#: src/conf/wizard_curs.c:366 src/conf/wizard_curs.c:391
-#: src/conf/wizard_curs.c:420 src/conf/wizard_curs.c:443
-#: src/conf/wizard_curs.c:498 src/conf/wizard_curs.c:560
-#: src/conf/wizard_curs.c:591 src/conf/wizard_curs.c:635
+#: src/conf/wizard_curs.c:116 src/conf/wizard_curs.c:131
+#: src/conf/wizard_curs.c:184 src/conf/wizard_curs.c:221
+#: src/conf/wizard_curs.c:251 src/conf/wizard_curs.c:277
+#: src/conf/wizard_curs.c:310 src/conf/wizard_curs.c:337
+#: src/conf/wizard_curs.c:369 src/conf/wizard_curs.c:394
+#: src/conf/wizard_curs.c:423 src/conf/wizard_curs.c:446
+#: src/conf/wizard_curs.c:501 src/conf/wizard_curs.c:563
+#: src/conf/wizard_curs.c:594 src/conf/wizard_curs.c:638
 msgid "GNUnet configuration"
 msgstr "Cấu hình GNUnet"
 
-#: src/conf/wizard_curs.c:114
+#: src/conf/wizard_curs.c:117
 #, fuzzy
 msgid ""
 "Welcome to GNUnet!\n"
@@ -2535,20 +2540,20 @@ msgstr ""
 "\n"
 "đội GNUnet"
 
-#: src/conf/wizard_curs.c:129
+#: src/conf/wizard_curs.c:132
 msgid ""
 "Choose the network interface that connects your computer to the internet "
 "from the list below."
 msgstr ""
 "Chọn giao diện mạng kết nối máy tính tới internet từ danh sách dưới đây."
 
-#: src/conf/wizard_curs.c:135 src/conf/wizard_curs.c:188
-#: src/conf/wizard_curs.c:225 src/conf/wizard_curs.c:280
-#: src/conf/wizard_curs.c:312 src/conf/wizard_curs.c:372
+#: src/conf/wizard_curs.c:138 src/conf/wizard_curs.c:191
+#: src/conf/wizard_curs.c:228 src/conf/wizard_curs.c:283
+#: src/conf/wizard_curs.c:315 src/conf/wizard_curs.c:375
 msgid "Help"
 msgstr "Trợ giúp"
 
-#: src/conf/wizard_curs.c:135 src/conf/wizard_curs.c:189
+#: src/conf/wizard_curs.c:138 src/conf/wizard_curs.c:192
 msgid ""
 "The \"Network interface\" is the device that connects your computer to the "
 "internet. This is usually a modem, an ISDN card or a network card in case "
@@ -2557,13 +2562,13 @@ msgstr ""
 "\"Giao diện mạng\" là thiết bị kết nối máy tính với internet. Đây thường là "
 "một môđem, một thẻ ISDN hay một thẻ mạng nếu dùng DSL."
 
-#: src/conf/wizard_curs.c:182
+#: src/conf/wizard_curs.c:185
 msgid ""
 "What is the name of the network interface that connects your computer to the "
 "Internet?"
 msgstr "Tên của giao diện mạng kết nối máy tính tới Internet là gì?"
 
-#: src/conf/wizard_curs.c:219
+#: src/conf/wizard_curs.c:222
 msgid ""
 "What is this computer's public IP address or hostname?\n"
 "\n"
@@ -2573,7 +2578,7 @@ msgstr ""
 "\n"
 "Nếu không biết, hãy để trống."
 
-#: src/conf/wizard_curs.c:226
+#: src/conf/wizard_curs.c:229
 msgid ""
 "If your provider always assigns the same IP-Address to you (a \"static\" IP-"
 "Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
@@ -2591,7 +2596,7 @@ msgstr ""
 "Nếu không biết phải làm gì, thì hãy để trống. GNUnet sẽ thử để nhận ra địa "
 "chỉ IP."
 
-#: src/conf/wizard_curs.c:249
+#: src/conf/wizard_curs.c:252
 msgid ""
 "Is this machine behind NAT?\n"
 "\n"
@@ -2608,11 +2613,11 @@ msgstr ""
 "thể kết nối tới máy này, thì hãy chọn \"yes\". Trả lời \"no\" nếu kết nối "
 "thẳng qua môđem, thẻ ISDN, và DNAT (hay còng gọi là \"chuyển tiếp cổng\")."
 
-#: src/conf/wizard_curs.c:275
+#: src/conf/wizard_curs.c:278
 msgid "How much upstream (Bytes/s) may be used?"
 msgstr "Tốc độ ra giới hạn là bao nhiêu (Byte/giây)?"
 
-#: src/conf/wizard_curs.c:280
+#: src/conf/wizard_curs.c:283
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -2629,11 +2634,11 @@ msgstr ""
 "chỉ ra nó sau này. Nếu có tốc độ đều, thì có thể đặt thành tốc độ kết nối "
 "internet lớn nhất."
 
-#: src/conf/wizard_curs.c:307
+#: src/conf/wizard_curs.c:310
 msgid "How much downstream (Bytes/s) may be used?"
 msgstr "Dùng bao nhiêu (Byte/giây) cho dòng vào?"
 
-#: src/conf/wizard_curs.c:313
+#: src/conf/wizard_curs.c:316
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -2650,7 +2655,7 @@ msgstr ""
 "chỉ ra nó sau này. Nếu có tốc độ đều, thì có thể đặt thành tốc độ kết nối "
 "internet lớn nhất."
 
-#: src/conf/wizard_curs.c:335
+#: src/conf/wizard_curs.c:338
 msgid ""
 "Share denoted bandwidth with other applications?\n"
 "\n"
@@ -2672,11 +2677,11 @@ msgstr ""
 "người dùng không nên giới hạn truyền tải GNUnet phải chịu trên kết nối "
 "internet mỗi khi sử dụng LAN tốc độ cao (ví dụ bởi NFS)."
 
-#: src/conf/wizard_curs.c:367
+#: src/conf/wizard_curs.c:370
 msgid "How much CPU (in %) may be used?"
 msgstr "Sử dụng bao nhiêu CPU (tính theo %)?"
 
-#: src/conf/wizard_curs.c:373
+#: src/conf/wizard_curs.c:376
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -2686,7 +2691,7 @@ msgstr ""
 "\n"
 "Đây là phần trăm thời gian của bộ xử lý cho phép GNUnet sử dụng."
 
-#: src/conf/wizard_curs.c:392
+#: src/conf/wizard_curs.c:395
 msgid ""
 "Store migrated content?\n"
 "\n"
@@ -2708,7 +2713,7 @@ msgstr ""
 "Nó đồng thời giúp chia sẻ nội dung phổ biến qua các đầu peer khác nhau để dễ "
 "dàng truy cập."
 
-#: src/conf/wizard_curs.c:421
+#: src/conf/wizard_curs.c:424
 msgid ""
 "What's the maximum datastore size in MB?\n"
 "\n"
@@ -2720,7 +2725,7 @@ msgstr ""
 "Kho dữ liệu GNUnet chứa tất cả các dữ liệu GNUnet tạo ra (dữ liệu chỉ mục, "
 "nội dung chèn và nhập vào)."
 
-#: src/conf/wizard_curs.c:444
+#: src/conf/wizard_curs.c:447
 msgid ""
 "Do you want to launch GNUnet as a system service?\n"
 "\n"
@@ -2733,7 +2738,7 @@ msgstr ""
 "Nếu chọn \"yes\", tiến trình nền sau GNUnet sẽ tự động chạy khi bật máy "
 "tính. Nếu chọn \"no\", thì cần chạy GNUnet mỗi khi muốn sử dụng."
 
-#: src/conf/wizard_curs.c:499
+#: src/conf/wizard_curs.c:502
 msgid ""
 "Define the user owning the GNUnet service.\n"
 "\n"
@@ -2760,7 +2765,7 @@ msgstr ""
 "Để trống để chạy GNUnet với quyền hệ thống.\n"
 "Người dùng GNUnet:"
 
-#: src/conf/wizard_curs.c:561
+#: src/conf/wizard_curs.c:564
 msgid ""
 "Define the group owning the GNUnet service.\n"
 "\n"
@@ -2786,7 +2791,7 @@ msgstr ""
 "\n"
 "Nhóm GNUnet:"
 
-#: src/conf/wizard_curs.c:592
+#: src/conf/wizard_curs.c:595
 msgid ""
 "If you are an experienced user, you may want to tweak your GNUnet "
 "installation using the enhanced configurator.\n"
@@ -2798,7 +2803,7 @@ msgstr ""
 "\n"
 "Chạy nó sau khi ghi cấu hình?"
 
-#: src/conf/wizard_curs.c:629
+#: src/conf/wizard_curs.c:632
 #, c-format
 msgid ""
 "Unable to save configuration file %s: %s.\n"
@@ -3129,53 +3134,53 @@ msgstr "Lỗi chuyển quyền hạn dịch vụ tới cho người dùng"
 msgid "Unknown error while creating a new user"
 msgstr "Lỗi không rõ khi tạo một người dùng mới"
 
-#: src/server/connection.c:971
+#: src/server/connection.c:974
 #, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "`%s' đã chọn %d vượt quá %d thông báo (MTU: %d).\n"
 
-#: src/server/connection.c:979
+#: src/server/connection.c:982
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Chi tiết về thông báo: %u: dài %d, ưu tiên: %d\n"
 
-#: src/server/connection.c:2192
+#: src/server/connection.c:2209
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Bỏ đi thông báo từ `%s': định dạng sai.\n"
 
-#: src/server/connection.c:2269
+#: src/server/connection.c:2286
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Số của chuỗi sai %u <= %u, đang bỏ đi thông báo.\n"
 
-#: src/server/connection.c:2285
+#: src/server/connection.c:2302
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "Thông báo nhận được cũ hơn một ngày. Đã loại bỏ.\n"
 
-#: src/server/connection.c:2679
+#: src/server/connection.c:2696
 msgid "# outgoing messages dropped"
 msgstr "# thông báo đi ra đã loại bỏ"
 
-#: src/server/connection.c:2681
+#: src/server/connection.c:2698
 msgid "# bytes of outgoing messages dropped"
 msgstr "# byte của các thông báo đi ra đã loại bỏ"
 
-#: src/server/connection.c:2683
+#: src/server/connection.c:2700
 msgid "# connections closed (HANGUP sent)"
 msgstr "# các kết nối đã đóng (gửi HANGUP)"
 
-#: src/server/connection.c:2685
+#: src/server/connection.c:2702
 #, fuzzy
 msgid "# bytes encrypted"
 msgstr "# byte nhận được của dạng %d"
 
-#: src/server/connection.c:2687
+#: src/server/connection.c:2704
 #, fuzzy
 msgid "# bytes decrypted"
 msgstr "# byte nhận được của dạng %d"
 
-#: src/server/connection.c:2689
+#: src/server/connection.c:2706
 #, fuzzy
 msgid "# bytes noise sent"
 msgstr "# byte nhận được do nhiễu đường truyền"
@@ -3401,23 +3406,23 @@ msgstr "Cập nhật dữ liệu cho môđun `%s' không thành công\n"
 msgid "Updated data for %d applications.\n"
 msgstr "Cập nhật dữ liệu cho %d ứng dụng.\n"
 
-#: src/server/gnunetd.c:115
+#: src/server/gnunetd.c:116
 #, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
 msgstr ""
 "Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy `%s'!\n"
 
-#: src/server/gnunetd.c:123
+#: src/server/gnunetd.c:124
 #, c-format
 msgid "`%s' starting\n"
 msgstr "`%s' đang khởi động\n"
 
-#: src/server/gnunetd.c:145
+#: src/server/gnunetd.c:146
 #, c-format
 msgid "`%s' startup complete.\n"
 msgstr "`%s' khởi động thành công.\n"
 
-#: src/server/gnunetd.c:150
+#: src/server/gnunetd.c:151
 #, c-format
 msgid "`%s' is shutting down.\n"
 msgstr "`%s' đang tắt.\n"
@@ -3505,7 +3510,7 @@ msgstr "%s thất bại, dạng thông báo %d đã sử dụng.\n"
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "Không tìm thấy IP của máy `%s': %s\n"
 
-#: src/transports/ip6.c:100 src/transports/ip.c:309
+#: src/transports/ip6.c:100 src/transports/ip.c:310
 #, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr "Không tìm thấy `%s': %s\n"
@@ -3558,7 +3563,7 @@ msgstr "# byte loại bỏ bởi HTTP (đi ra)"
 msgid "Could not resolve name of SMTP server `%s': %s"
 msgstr "Không tìm thấy tên của máy chủ SMTP `%s': %s"
 
-#: src/transports/smtp.c:415
+#: src/transports/smtp.c:415 src/transports/smtp.c:876
 #, c-format
 msgid ""
 "You must specify the name of a pipe for the SMTP transport in section `%s' "
@@ -3567,35 +3572,46 @@ msgstr ""
 "Người dùng phải chỉ ra tên của ống pipe cho truyền tải SMTP trong phần `%s' "
 "dưới `%s'.\n"
 
-#: src/transports/smtp.c:484
+#: src/transports/smtp.c:488
 msgid "Received malformed message via SMTP (size mismatch).\n"
 msgstr "Nhận được thông báo bị hỏng qua SMTP (kích thước không tương ứng).\n"
 
-#: src/transports/smtp.c:571
+#: src/transports/smtp.c:583
 msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
 msgstr "Không chỉ ra đầu lọc cho E-mail, không tạo được quảng cáo SMTP.\n"
 
-#: src/transports/smtp.c:578
+#: src/transports/smtp.c:590
 #, c-format
 msgid "SMTP filter string to long, capped to `%s'\n"
 msgstr "Đầu lọc SMTP quá dài, đổi thành `%s'\n"
 
-#: src/transports/smtp.c:748
+#: src/transports/smtp.c:763
 #, c-format
 msgid "Sending E-mail to `%s' failed.\n"
 msgstr "Gửi E-mail tới `%s' thất bại.\n"
 
-#: src/transports/smtp.c:797
+#: src/transports/smtp.c:814
 #, c-format
 msgid "SMTP server send unexpected response at %s:%d.\n"
 msgstr "Máy chủ SMTP gửi cầu trả lời không mong đợi tại %s: %d.\n"
 
-#: src/transports/smtp.c:864
+#: src/transports/smtp.c:837
+#, c-format
+msgid ""
+"SMTP server failed to respond with 250 confirmation code to `%s' request.\n"
+msgstr ""
+
+#: src/transports/smtp.c:843
+#, fuzzy, c-format
+msgid "Failed to send `%s' request to SMTP server.\n"
+msgstr "Gửi thông báo `%s' tới gnunetd không thành công\n"
+
+#: src/transports/smtp.c:902
 #, c-format
 msgid "%.*s filter %s (SMTP)"
 msgstr "%.*s đầu lọc %s (SMTP)"
 
-#: src/transports/smtp.c:893 src/transports/udp.c:658
+#: src/transports/smtp.c:931 src/transports/udp.c:658
 #: src/transports/udp6.c:636
 #, c-format
 msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
@@ -3662,9 +3678,9 @@ msgid "`%s': unknown service: %s\n"
 msgstr "`%s': không rõ dịch vụ: %s\n"
 
 #: src/transports/udp.c:145 src/transports/udp6.c:128
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Cannot determine port to bind to.  Define in configuration file in section '%"
+"Cannot determine port to bind to.  Define in configuration file in section `%"
 "s' under `%s' or in `%s' under %s/%s.\n"
 msgstr ""
 "Không nhận ra cổng để kết gắn tới.  Hãy xác định trong tập tin cấu hình phần "
@@ -3709,7 +3725,7 @@ msgstr "# byte gửi qua UDP"
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr "# byte loại bỏ bởi UDP (đi ra)"
 
-#: src/transports/ip.c:141
+#: src/transports/ip.c:142
 #, c-format
 msgid ""
 "Could not find interface `%s' in `%s', trying to find another interface.\n"
@@ -3717,17 +3733,17 @@ msgstr ""
 "Không tìm thấy giao diện `%s' trong `%s', đang thử kết gắn tới giao diện "
 "khác.\n"
 
-#: src/transports/ip.c:166
+#: src/transports/ip.c:167
 #, c-format
 msgid "Could not obtain IP for interface `%s' using `%s'.\n"
 msgstr "Không lấy được IP cho giao diện `%s' đang dùng `%s'.\n"
 
-#: src/transports/ip.c:210
+#: src/transports/ip.c:211
 #, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr "Không tìm thấy một địa chỉ IP cho giao diện `%s'.\n"
 
-#: src/transports/ip.c:220
+#: src/transports/ip.c:221
 #, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
@@ -3736,17 +3752,17 @@ msgstr ""
 "Có vài địa chỉ IP chỉ ra cho giao diện `%s'.\n"
 "GNUnet sẽ dùng %u.%u.%u.%u.\n"
 
-#: src/transports/ip.c:241
+#: src/transports/ip.c:242
 #, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr "Không tìm thấy `%s' để nhận ra địa chỉ IP của chúng ta: %s\n"
 
-#: src/transports/ip.c:274
+#: src/transports/ip.c:275
 #, c-format
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr "GNUnet bây giờ sử dụng địa chỉ IP %u.%u.%u.%u.\n"
 
-#: src/transports/ip.c:344
+#: src/transports/ip.c:345
 msgid "Failed to obtain my (external) IP address!\n"
 msgstr "Lấy địa chỉ IP (ngoài) của tôi không thành công!\n"
 
@@ -3784,12 +3800,21 @@ msgstr "Không phân tích được tập tin cấu hình `%s'.\n"
 msgid "Syntax error in configuration file `%s' at line %d.\n"
 msgstr "Lỗi cú pháp trong tập tin cấu hình `%s' trên dòng %d.\n"
 
-#: src/util/configuration.c:509 src/util/configuration.c:511
+#: src/util/configuration.c:509 src/util/configuration.c:518
 #, c-format
 msgid "Configuration file `%s' not found.  Run gnunet-setup!\n"
 msgstr ""
 
 #: src/util/configuration.c:515
+#, fuzzy
+msgid ""
+"Configuration file not found. Please run GNUnet Setup (Client Configuration) "
+"first."
+msgstr ""
+"Không tìm thấy tập tin cấu hình `%s'. Chương trình sẽ thử tạo tập tin cấu "
+"hình mặc định tại vị trí đó.\n"
+
+#: src/util/configuration.c:522
 #, fuzzy, c-format
 msgid "Cannot open configuration file `%s'.\n"
 msgstr "Không mở được tập tin cấu hình `%s'\n"
@@ -3807,17 +3832,17 @@ msgstr ""
 "`%s' gọi với công việc cron không trong hàng đợi, đang thêm.  Đây có thể "
 "không phải cái người dùng muốn.\n"
 
-#: src/util/dso.c:42
+#: src/util/dso.c:43
 #, c-format
 msgid "Initialization of plugin mechanism failed: %s!\n"
 msgstr "Chạy cơ chế plugin không thành công: %s!\n"
 
-#: src/util/dso.c:94
+#: src/util/dso.c:96
 #, c-format
 msgid "`%s' failed for library `%s' at %s:%d with error: %s\n"
 msgstr "`%s' thất bại cho thư viện `%s' tại %s:%d với lỗi: %s\n"
 
-#: src/util/dso.c:144
+#: src/util/dso.c:150
 #, c-format
 msgid "`%s' failed to resolve method '%s%s' at %s:%d with error: %s\n"
 msgstr ""
@@ -4168,13 +4193,6 @@ msgstr "`%s' thất bại trên tập tin`%s' tại %s:%d với lỗi: %s\n"
 
 #~ msgid "Please specify a path where the configuration files will be stored."
 #~ msgstr "Xin hãy chỉ ra một đường dẫn để chứa các tập tin cấu hình."
-
-#~ msgid ""
-#~ "Configuration file `%s' not found. I will try to create the default "
-#~ "configuration file at that location.\n"
-#~ msgstr ""
-#~ "Không tìm thấy tập tin cấu hình `%s'. Chương trình sẽ thử tạo tập tin cấu "
-#~ "hình mặc định tại vị trí đó.\n"
 
 #~ msgid "# client trace requests received"
 #~ msgstr "# nhận được yêu cầu theo vết trace của máy khách"
