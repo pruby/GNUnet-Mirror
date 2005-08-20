@@ -98,10 +98,12 @@ int isOSAutostartCapable() {
       return 1;
   }  
   return 0;
-#elifdef WINDOWS
-  return 1;
 #else
-  return 0;
+  #ifdef WINDOWS
+    return 1;
+  #else
+    return 0;
+  #endif
 #endif
 }
 
@@ -153,14 +155,22 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
       else
 	{
 	  char szPath[_MAX_PATH + 1];
+    HKEY hKey;
+    
 	  plibc_conv_to_win_path("/bin/gnunetd.exe", szPath);
 	  
-	  if (RegSetValue(HKEY_LOCAL_MACHINE,
-			  "Software\\Microsoft\\Windows\\CurrentVersion\\Run", REG_SZ, szPath, 
-			  strlen(szPath)) != ERROR_SUCCESS)
-	    {
-	      return 4;
-	    }
+    if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+        "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_EXECUTE,
+        &hKey) == ERROR_SUCCESS)
+    {
+      if (RegSetValueEx(hKey, "GNUnet", 0, REG_SZ, szPath, strlen(szPath)) !=
+        ERROR_SUCCESS)
+        return 4;
+      
+      RegCloseKey(hKey);
+    }
+    else
+      return 4;    
 	}
     }
   else
