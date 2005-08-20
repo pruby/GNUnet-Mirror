@@ -366,10 +366,10 @@ struct FSUI_Context * FSUI_start(const char * name,
   FREE(gh);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, name);
-  ret->ipc = IPC_SEMAPHORE_NEW(fn,
-			       1);
   ret->name = fn;
   if (doResume) {
+    ret->ipc = IPC_SEMAPHORE_NEW(fn,
+				 1);
     LOG(LOG_INFO,
 	"Getting IPC lock for FSUI (%s).\n",
 	fn);
@@ -625,8 +625,9 @@ struct FSUI_Context * FSUI_start(const char * name,
 			  "open",
 			  fn);
     }
-  } else
+  } else {
     ret->ipc = NULL;
+  }
   MUTEX_CREATE_RECURSIVE(&ret->lock);
   ret->ecb = cb;
   ret->ecbClosure = closure;
