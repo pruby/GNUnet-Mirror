@@ -647,6 +647,7 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   WriteRegStr HKLM "Software\GNU\GNUnet" "InstallDir" "$INSTDIR"
+  SetOutPath "$INSTDIR\bin"
 SectionEnd
 
 ; Section descriptions
