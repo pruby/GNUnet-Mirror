@@ -108,6 +108,7 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
   stateAppendContent(STATE_NAME, ntohl(size), data);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_FREE(sem);
+  FREE(data);
   FREE(suri);
 }
 
@@ -171,21 +172,30 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
     while ( (spos < ret) &&
 	    (result[spos] != '\0') )
       spos++;
-    if (spos + sizeof(int) >= ret)
+    spos++; /* skip '\0' */
+    if (spos + sizeof(int) >= ret) {
+      BREAK();
       goto FORMATERROR;
+    }
     fi.uri = ECRS_stringToUri(&result[pos]);
-    if (fi.uri == NULL)
+    if (fi.uri == NULL) {
+      BREAK();
       goto FORMATERROR;
-    memcpy(&msize, &result[spos], sizeof(int));
+    }
+    memcpy(&msize, 
+	   &result[spos], 
+	   sizeof(int));
     msize = ntohl(msize);
-    spos += 4;
+    spos += sizeof(int);
     if (spos + msize > ret) {
+      BREAK();
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
     fi.meta = ECRS_deserializeMetaData(&result[spos],
 				       msize);
     if (fi.meta == NULL) {
+      BREAK();
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
