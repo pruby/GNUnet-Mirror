@@ -537,7 +537,7 @@ static int getAdvertisedhellos(unsigned int maxLen,
   MUTEX_UNLOCK(&tapis_lock);
   if (tcount == 0) {
     LOG(LOG_DEBUG,
-	"%s failed: no transport succeeded in creating a hello\n");
+	"no transport succeeded in creating a hello\n");
     return SYSERR;
   }
   used = 0;
