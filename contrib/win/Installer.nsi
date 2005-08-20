@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7-pre5"
+!define PRODUCT_VERSION "0.7-pre6"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
