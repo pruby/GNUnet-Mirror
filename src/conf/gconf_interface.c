@@ -50,7 +50,6 @@ create_main_wnd (void)
   GtkWidget *show_data1;
   GtkWidget *separator2;
   GtkWidget *show_all_options1;
-  GtkWidget *show_debug_info1;
   GtkWidget *help1;
   GtkWidget *help1_menu;
   GtkWidget *introduction1;
@@ -221,13 +220,6 @@ create_main_wnd (void)
   gtk_widget_show (show_all_options1);
   gtk_container_add (GTK_CONTAINER (options1_menu), show_all_options1);
   gtk_tooltips_set_tip (tooltips, show_all_options1, _("Show all options"),
-			NULL);
-
-  show_debug_info1 =
-    gtk_check_menu_item_new_with_mnemonic (_("Show _debug info"));
-  gtk_widget_show (show_debug_info1);
-  gtk_container_add (GTK_CONTAINER (options1_menu), show_debug_info1);
-  gtk_tooltips_set_tip (tooltips, show_debug_info1, _("Show masked options"),
 			NULL);
 
   help1 = gtk_menu_item_new_with_mnemonic (_("_Help"));
@@ -592,8 +584,6 @@ create_main_wnd (void)
 		    G_CALLBACK (on_show_data1_activate), NULL);
   g_signal_connect ((gpointer) show_all_options1, "activate",
 		    G_CALLBACK (on_show_all_options1_activate), NULL);
-  g_signal_connect ((gpointer) show_debug_info1, "activate",
-		    G_CALLBACK (on_show_debug_info1_activate), NULL);
   g_signal_connect ((gpointer) introduction1, "activate",
 		    G_CALLBACK (on_introduction1_activate), NULL);
   g_signal_connect ((gpointer) about1, "activate",
@@ -649,7 +639,6 @@ create_main_wnd (void)
   GLADE_HOOKUP_OBJECT (main_wnd, show_data1, "show_data1");
   GLADE_HOOKUP_OBJECT (main_wnd, separator2, "separator2");
   GLADE_HOOKUP_OBJECT (main_wnd, show_all_options1, "show_all_options1");
-  GLADE_HOOKUP_OBJECT (main_wnd, show_debug_info1, "show_debug_info1");
   GLADE_HOOKUP_OBJECT (main_wnd, help1, "help1");
   GLADE_HOOKUP_OBJECT (main_wnd, help1_menu, "help1_menu");
   GLADE_HOOKUP_OBJECT (main_wnd, introduction1, "introduction1");
