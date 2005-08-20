@@ -14,7 +14,7 @@ libtool
 gcc
 make
 g++ (for libextractor)
-
+intltool
 
 GNUnet library dependencies:
 
