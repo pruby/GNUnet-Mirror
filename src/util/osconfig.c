@@ -31,57 +31,58 @@
  * @brief Enumerate all network interfaces
  * @param callback the callback function
  */
-void enumNetworkIfs(void (*callback) (char *, int)) {
+void enumNetworkIfs(void (*callback) (const char *, int, void *),
+		    void * cls) {
 #ifdef MINGW
-		ListNICs(callback);
+  ListNICs(callback, cls);
 #else
-		char entry[11], *dst;
-		FILE *f;
-		
-		if (system("ifconfig > /dev/null 2> /dev/null"))
-			if (system("/sbin/ifconfig > /dev/null 2> /dev/null") == 0)
-				f = popen("/sbin/ifconfig 2> /dev/null", "r");
-			else
-				f = NULL;
-		else
-			f = popen("ifconfig 2> /dev/null", "r");
-		
-		if (!f)
-			return;
-			
-		while(1)
-		{
-			int i = 0;
-			int c = fgetc(f);
-			
-			if (c == EOF)
-				break;
-
-			dst = entry;
-			
-			/* Read interface name until the first space (or colon under OS X) */
-			while (c != EOF && c != '\n' &&
+  char entry[11], *dst;
+  FILE *f;
+  
+  if (system("ifconfig > /dev/null 2> /dev/null"))
+    if (system("/sbin/ifconfig > /dev/null 2> /dev/null") == 0)
+      f = popen("/sbin/ifconfig 2> /dev/null", "r");
+    else
+      f = NULL;
+  else
+    f = popen("ifconfig 2> /dev/null", "r");
+  
+  if (!f)
+    return;
+  
+  while(1)
+    {
+      int i = 0;
+      int c = fgetc(f);
+      
+      if (c == EOF)
+	break;
+      
+      dst = entry;
+      
+      /* Read interface name until the first space (or colon under OS X) */
+      while (c != EOF && c != '\n' &&
 #ifdef OSX
-				c != ':'
+	     c != ':'
 #else
-				c != ' '
+	     c != ' '
 #endif
-				&& i < 10)
-			{
-				*dst++ = c;
-				i++;
-				c = fgetc(f);
-			}
-			*dst = 0;
-
-			if (entry[0])
-				callback(entry, strcmp(entry, "eth0") == 0);
-
-			while(c != '\n' && c != EOF)
-				c = fgetc(f);
-		}
-
-		pclose(f);
+	     && i < 10)
+	{
+	  *dst++ = c;
+	  i++;
+	  c = fgetc(f);
+	}
+      *dst = 0;
+      
+      if (entry[0])
+	callback(entry, strcmp(entry, "eth0") == 0, cls);
+      
+      while(c != '\n' && c != EOF)
+	c = fgetc(f);
+    }
+  
+  pclose(f);
 #endif
 }
 

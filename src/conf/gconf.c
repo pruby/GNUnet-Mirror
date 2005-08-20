@@ -63,7 +63,7 @@ static gboolean resizeable = FALSE;
 static gboolean config_changed = FALSE;
 
 static char nohelp_text[] =
-    "Sorry, no help available for this option yet.\n";
+  gettext_noop("Sorry, no help is available for this option.\n");
 
 GtkWidget *main_wnd = NULL;
 GtkWidget *tree1_w = NULL;  /* left  frame */

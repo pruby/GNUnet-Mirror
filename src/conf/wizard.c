@@ -55,7 +55,9 @@ char * user_name = NULL;
 char * group_name = NULL;
 static int nic_item_count = 0;
 
-void insert_nic(char *name, int defaultNIC)
+void insert_nic(const char *name, 
+                int defaultNIC, 
+                void * cls)
 {
  gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
   
@@ -103,7 +105,7 @@ void load_step2()
 	if (sym)
 	{
 		nic_item_count = 0;
-		enumNetworkIfs(insert_nic);
+		enumNetworkIfs(insert_nic, NULL);
 
 		if (!nic_item_count)
 		{

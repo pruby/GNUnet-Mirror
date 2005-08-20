@@ -63,7 +63,9 @@ void showCursErr(const char *prefix,
   free(err);	
 }
 
-void insert_nic_curs(char *name, int defaultNIC)
+void insert_nic_curs(const char *name, 
+		     int defaultNIC,
+		     void * cls)
 {
 	struct dialog_list_item *item;
 
@@ -121,7 +123,7 @@ int wizard_curs_main()
   
   dialog_clear();
   	
-  enumNetworkIfs(insert_nic_curs);
+  enumNetworkIfs(insert_nic_curs, NULL);
 
   /* Network interface */
   if (nic_item_count) {
@@ -610,7 +612,7 @@ int wizard_curs_main()
   /* Save config */
   if ( (user_name != NULL) && 
        (strlen(user_name) > 0) )
-    if (!isOSUserAddCapable(group_name, user_name))
+    if (!isOSUserAddCapable())
       showCursErr(_("Unable to create user account:"), STRERROR(errno));
   
   if (!isOSAutostartCapable())

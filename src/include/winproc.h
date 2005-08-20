@@ -160,7 +160,7 @@ BOOL CreateShortcut(const char *pszSrc, const char *pszDest);
 BOOL DereferenceShortcut(char *pszShortcut);
 long QueryRegistry(HKEY hMainKey, char *pszKey, char *pszSubKey,
               char *pszBuffer, long *pdLength);
-int ListNICs(void (*callback) (char *, int));
+int ListNICs(void (*callback) (const char *, int, void *), void * cls);
 BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
       DWORD dwAccessMask);
 

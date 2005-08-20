@@ -69,6 +69,39 @@ static void checkGNUNETDHome(struct symbol *sym)
     }
 }
 
+static void insert_nic(const char * name,
+		       int defaultNIC,
+		       void * cls) {
+  struct symbol * sym = cls;
+  if ( (NULL == sym_get_string_value(sym)) ||
+       (defaultNIC) )
+    sym_set_string_value(sym, name);
+}
+
+/**
+ * @brief Set reasonable default for GNUNETD_HOME if needed
+ */
+static void checkDefaultIFC(struct symbol *sym)
+{
+ 
+  if (strncmp(sym->name, 
+	      "INTERFACE",
+	      strlen("INTERFACE")) == 0) /* match also for INTERFACES ! */
+    {
+      const char *val;
+      
+      sym_calc_value_ext(sym, 1);
+      val = sym_get_string_value(sym);
+      
+      /* only empty if gnunet-setup is run for the first time */
+      if (!val || !strlen(val))
+	{
+	  /* INTERFACE isn't set yet. Let's choose a sane default */
+	  enumNetworkIfs(insert_nic, sym);
+	}
+    }
+}
+
 
 int recreate_main() {
   struct symbol *sym;
@@ -92,8 +125,10 @@ int recreate_main() {
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
 			      "YES")) {
-    for_all_symbols(i, sym) 
+    for_all_symbols(i, sym) {
       checkGNUNETDHome(sym);
+      checkDefaultIFC(sym);
+    }
   }
   /* Write defaults */
   if (conf_write(filename)) {

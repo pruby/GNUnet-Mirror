@@ -2334,7 +2334,7 @@ size_t strlcat(char *dest, const char *src, size_t count);
  * @brief Enumerate all network interfaces
  * @param callback the callback function
  */
-void enumNetworkIfs(void (*callback) (char *, int));
+void enumNetworkIfs(void (*callback) (const char *, int, void *), void * cls);
 
 /**
  * @brief Checks if we can start GNUnet automatically
@@ -2356,7 +2356,7 @@ int autostartService(int doAutoStart, char *username, char *groupname);
  * @return 1 if yes, 0 otherwise
  * @todo support for useradd(8)
  */
-int isOSUserAddCapable();
+int isOSUserAddCapable(void);
 
 /**
  * @brief Checks if we can add a group for the GNUnet service
