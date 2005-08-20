@@ -20,7 +20,6 @@ EXTRA_DIST = \
  lex.zconf.c \
  lkc_proto.h \
  bool.h \
- wizard_util.h \
  wizard_gtk.h
 
 if HAVE_CURSES
@@ -78,15 +77,15 @@ gnunet_setup_SOURCES = \
  expr.h \
  lkc.h \
  menu.c \
- recreate.c \
+ recreate.c recreate.h \
  symbol.c \
  zconf.tab.h \
- zconf_tab.c \
+ zconf_tab.c zconf_tab.h \
  $(mconf_src) \
  $(gconf_src) \
  $(gbasic_src) \
  $(wizard_util_src) \
- wizard_util.c \
+ wizard_util.c wizard_util.h \
  gnunet-setup.c
 
 gnunet_setup_LDFLAGS = \
