@@ -108,6 +108,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
     LOG_STRERROR(LOG_ERROR, "socket");
     return SYSERR;
   }
+  memset(ifc, 0, sizeof(struct ifconf));
   ifc.ifc_len = sizeof(ifr);
   ifc.ifc_buf = (char*)&ifr;
   
