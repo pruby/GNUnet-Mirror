@@ -106,6 +106,7 @@ void gnunet_main() {
   char *user = getConfigurationString("GNUNETD", "USER");
   if (user && strlen(user))
     changeUser(user);
+  FREENONNULL(user);
 #endif
 
   /* init 1: version management for GNUnet core,
