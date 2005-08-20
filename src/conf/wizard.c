@@ -333,8 +333,8 @@ void load_step5()
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkMigr),
 			sym_get_tristate_value(sym) != no);
 	}
-	
-	if (isOSUserAddCapable())
+
+	if (isOSAutostartCapable())
 		gtk_widget_set_sensitive(chkStart, TRUE);
 
   sym = sym_find("AUTOSTART", "GNUNETD");

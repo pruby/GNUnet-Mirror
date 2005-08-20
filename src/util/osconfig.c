@@ -98,8 +98,10 @@ int isOSAutostartCapable() {
       return 1;
   }  
   return 0;
-#else
+#elifdef WINDOWS
   return 1;
+#else
+  return 0;
 #endif
 }
 
@@ -165,8 +167,6 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
     {
       if (IsWinNT())
 	{
-	  char *err = NULL;
-	  
 	  switch (UninstallService())
 	    {
 	    case 0:
