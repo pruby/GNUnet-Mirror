@@ -1,3 +1,6 @@
+Sat Aug 20 13:51:01 PDT 2005
+	Releasing 0.7.0pre6.
+
 Sat Aug 20 12:51:27 PDT 2005
 	Changed sqlite data format to avoid encoding-decoding
 	(breaks compatibility with previous datastores, in particular

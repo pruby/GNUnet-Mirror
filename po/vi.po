@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-08-20 13:43-0700\n"
+"POT-Creation-Date: 2005-08-20 13:51-0700\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -2195,160 +2195,152 @@ msgstr "Đã tạo (lại) các tập tin cấu hình.\n"
 msgid "%s: symbol value `%s' invalid for %s\n"
 msgstr ""
 
-#: src/conf/gconf.c:66
+#: src/conf/gconf.c:65
 #, fuzzy
 msgid "Sorry, no help is available for this option.\n"
 msgstr "Rất tiếc, chưa có trợ giúp cho tùy chọn này."
 
-#: src/conf/gconf_interface.c:135
+#: src/conf/gconf_interface.c:134
 msgid "Gtk GNUnet Configurator"
 msgstr "Trình cấu hình Gtk của GNUnet"
 
-#: src/conf/gconf_interface.c:146
+#: src/conf/gconf_interface.c:145
 msgid "_File"
 msgstr "_Tập tin"
 
-#: src/conf/gconf_interface.c:153
+#: src/conf/gconf_interface.c:152
 msgid "_Load"
 msgstr "_Nạp"
 
-#: src/conf/gconf_interface.c:156 src/conf/gconf_interface.c:323
+#: src/conf/gconf_interface.c:155 src/conf/gconf_interface.c:315
 msgid "Load a config file"
 msgstr "Nạp một tập tin cấu hình"
 
-#: src/conf/gconf_interface.c:164
+#: src/conf/gconf_interface.c:163
 msgid "_Save"
 msgstr "_Ghi"
 
-#: src/conf/gconf_interface.c:167
+#: src/conf/gconf_interface.c:166
 msgid "Save the config in .config"
 msgstr "Ghi cấu hình vào .config"
 
-#: src/conf/gconf_interface.c:181
+#: src/conf/gconf_interface.c:180
 msgid "_Quit"
 msgstr "Th_oát"
 
-#: src/conf/gconf_interface.c:191
+#: src/conf/gconf_interface.c:190
 msgid "_Options"
 msgstr "Tùy _chọn"
 
-#: src/conf/gconf_interface.c:198
+#: src/conf/gconf_interface.c:197
 msgid "Show _name"
 msgstr "_Hiện tên"
 
-#: src/conf/gconf_interface.c:201
+#: src/conf/gconf_interface.c:200
 msgid "Show name"
 msgstr "Hiển thị tên"
 
-#: src/conf/gconf_interface.c:203
+#: src/conf/gconf_interface.c:202
 msgid "Show _range"
 msgstr "Hiện _xếp hạng"
 
-#: src/conf/gconf_interface.c:206
+#: src/conf/gconf_interface.c:205
 msgid "Show range (Y/M/N)"
 msgstr "Hiển thị xếp hạng (Y/M/N)"
 
-#: src/conf/gconf_interface.c:208
+#: src/conf/gconf_interface.c:207
 msgid "Show _data"
 msgstr "Hiển thị _dữ liệu"
 
-#: src/conf/gconf_interface.c:211
+#: src/conf/gconf_interface.c:210
 msgid "Show value of the option"
 msgstr "Hiển thị giá trị của tùy chọn"
 
-#: src/conf/gconf_interface.c:220
+#: src/conf/gconf_interface.c:219
 msgid "Show all _options"
 msgstr "Hiển thị mọi _tùy chọn"
 
-#: src/conf/gconf_interface.c:223
+#: src/conf/gconf_interface.c:222
 msgid "Show all options"
 msgstr "Hiển thị mọi tùy chọn"
 
-#: src/conf/gconf_interface.c:227
-msgid "Show _debug info"
-msgstr "Hiển thị thông tin _sửa lỗi"
-
-#: src/conf/gconf_interface.c:230
-msgid "Show masked options"
-msgstr "Hiển thị tùy chọn che giấu"
-
-#: src/conf/gconf_interface.c:233
+#: src/conf/gconf_interface.c:225
 msgid "_Help"
 msgstr "Trợ _giúp"
 
-#: src/conf/gconf_interface.c:240
+#: src/conf/gconf_interface.c:232
 msgid "_Introduction"
 msgstr "_Giới thiệu"
 
-#: src/conf/gconf_interface.c:252
+#: src/conf/gconf_interface.c:244
 msgid "_About"
 msgstr "_Nói về"
 
-#: src/conf/gconf_interface.c:262
+#: src/conf/gconf_interface.c:254
 msgid "_License"
 msgstr "_Giấy phép"
 
-#: src/conf/gconf_interface.c:289
+#: src/conf/gconf_interface.c:281
 msgid "Goes up of one level (single view)"
 msgstr "Đi lên một mức độ (xem đơn)"
 
-#: src/conf/gconf_interface.c:303
+#: src/conf/gconf_interface.c:295
 msgid "Up"
 msgstr "Lên"
 
-#: src/conf/gconf_interface.c:337
+#: src/conf/gconf_interface.c:329
 msgid "Load"
 msgstr "Nạp"
 
-#: src/conf/gconf_interface.c:349
+#: src/conf/gconf_interface.c:341
 msgid "Save a config file"
 msgstr "Ghi một tập tin cấu hình"
 
-#: src/conf/gconf_interface.c:363
+#: src/conf/gconf_interface.c:355
 msgid "Save"
 msgstr "Ghi"
 
-#: src/conf/gconf_interface.c:383
+#: src/conf/gconf_interface.c:375
 msgid "Single view"
 msgstr "Xem đơn"
 
-#: src/conf/gconf_interface.c:398
+#: src/conf/gconf_interface.c:390
 msgid "Single"
 msgstr "Đơn"
 
-#: src/conf/gconf_interface.c:410
+#: src/conf/gconf_interface.c:402
 msgid "Split view"
 msgstr "Xem kép"
 
-#: src/conf/gconf_interface.c:425
+#: src/conf/gconf_interface.c:417
 msgid "Split"
 msgstr "Chia"
 
-#: src/conf/gconf_interface.c:437
+#: src/conf/gconf_interface.c:429
 msgid "Full view"
 msgstr "Xem đầy đủ"
 
-#: src/conf/gconf_interface.c:452
+#: src/conf/gconf_interface.c:444
 msgid "Full"
 msgstr "Đầy đủ"
 
-#: src/conf/gconf_interface.c:473
+#: src/conf/gconf_interface.c:465
 msgid "Collapse the whole tree in the right frame"
 msgstr "Cuộn lên toàn bộ cây trong khung bên phải"
 
-#: src/conf/gconf_interface.c:488
+#: src/conf/gconf_interface.c:480
 msgid "Collapse"
 msgstr "Cuộn lên"
 
-#: src/conf/gconf_interface.c:501
+#: src/conf/gconf_interface.c:493
 msgid "Expand the whole tree in the right frame"
 msgstr "Mở ra toàn bộ cây trong khung bên phải"
 
-#: src/conf/gconf_interface.c:515
+#: src/conf/gconf_interface.c:507
 msgid "Expand"
 msgstr "Mở ra"
 
-#: src/conf/gconf_interface.c:569
+#: src/conf/gconf_interface.c:561
 msgid "Sorry, no help available for this option yet."
 msgstr "Rất tiếc, chưa có trợ giúp cho tùy chọn này."
 
@@ -4166,6 +4158,12 @@ msgstr "Xác nhận thất bại tại %s:%d.\n"
 #, c-format
 msgid "`%s' failed on file `%s' at %s:%d with error: %s\n"
 msgstr "`%s' thất bại trên tập tin`%s' tại %s:%d với lỗi: %s\n"
+
+#~ msgid "Show _debug info"
+#~ msgstr "Hiển thị thông tin _sửa lỗi"
+
+#~ msgid "Show masked options"
+#~ msgstr "Hiển thị tùy chọn che giấu"
 
 #, fuzzy
 #~ msgid ""

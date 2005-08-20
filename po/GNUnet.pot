@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-08-20 13:43-0700\n"
+"POT-Creation-Date: 2005-08-20 13:51-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2086,159 +2086,151 @@ msgstr ""
 msgid "%s: symbol value `%s' invalid for %s\n"
 msgstr ""
 
-#: src/conf/gconf.c:66
+#: src/conf/gconf.c:65
 msgid "Sorry, no help is available for this option.\n"
 msgstr ""
 
-#: src/conf/gconf_interface.c:135
+#: src/conf/gconf_interface.c:134
 msgid "Gtk GNUnet Configurator"
 msgstr ""
 
-#: src/conf/gconf_interface.c:146
+#: src/conf/gconf_interface.c:145
 msgid "_File"
 msgstr ""
 
-#: src/conf/gconf_interface.c:153
+#: src/conf/gconf_interface.c:152
 msgid "_Load"
 msgstr ""
 
-#: src/conf/gconf_interface.c:156 src/conf/gconf_interface.c:323
+#: src/conf/gconf_interface.c:155 src/conf/gconf_interface.c:315
 msgid "Load a config file"
 msgstr ""
 
-#: src/conf/gconf_interface.c:164
+#: src/conf/gconf_interface.c:163
 msgid "_Save"
 msgstr ""
 
-#: src/conf/gconf_interface.c:167
+#: src/conf/gconf_interface.c:166
 msgid "Save the config in .config"
 msgstr ""
 
-#: src/conf/gconf_interface.c:181
+#: src/conf/gconf_interface.c:180
 msgid "_Quit"
 msgstr ""
 
-#: src/conf/gconf_interface.c:191
+#: src/conf/gconf_interface.c:190
 msgid "_Options"
 msgstr ""
 
-#: src/conf/gconf_interface.c:198
+#: src/conf/gconf_interface.c:197
 msgid "Show _name"
 msgstr ""
 
-#: src/conf/gconf_interface.c:201
+#: src/conf/gconf_interface.c:200
 msgid "Show name"
 msgstr ""
 
-#: src/conf/gconf_interface.c:203
+#: src/conf/gconf_interface.c:202
 msgid "Show _range"
 msgstr ""
 
-#: src/conf/gconf_interface.c:206
+#: src/conf/gconf_interface.c:205
 msgid "Show range (Y/M/N)"
 msgstr ""
 
-#: src/conf/gconf_interface.c:208
+#: src/conf/gconf_interface.c:207
 msgid "Show _data"
 msgstr ""
 
-#: src/conf/gconf_interface.c:211
+#: src/conf/gconf_interface.c:210
 msgid "Show value of the option"
 msgstr ""
 
-#: src/conf/gconf_interface.c:220
+#: src/conf/gconf_interface.c:219
 msgid "Show all _options"
 msgstr ""
 
-#: src/conf/gconf_interface.c:223
+#: src/conf/gconf_interface.c:222
 msgid "Show all options"
 msgstr ""
 
-#: src/conf/gconf_interface.c:227
-msgid "Show _debug info"
-msgstr ""
-
-#: src/conf/gconf_interface.c:230
-msgid "Show masked options"
-msgstr ""
-
-#: src/conf/gconf_interface.c:233
+#: src/conf/gconf_interface.c:225
 msgid "_Help"
 msgstr ""
 
-#: src/conf/gconf_interface.c:240
+#: src/conf/gconf_interface.c:232
 msgid "_Introduction"
 msgstr ""
 
-#: src/conf/gconf_interface.c:252
+#: src/conf/gconf_interface.c:244
 msgid "_About"
 msgstr ""
 
-#: src/conf/gconf_interface.c:262
+#: src/conf/gconf_interface.c:254
 msgid "_License"
 msgstr ""
 
-#: src/conf/gconf_interface.c:289
+#: src/conf/gconf_interface.c:281
 msgid "Goes up of one level (single view)"
 msgstr ""
 
-#: src/conf/gconf_interface.c:303
+#: src/conf/gconf_interface.c:295
 msgid "Up"
 msgstr ""
 
-#: src/conf/gconf_interface.c:337
+#: src/conf/gconf_interface.c:329
 msgid "Load"
 msgstr ""
 
-#: src/conf/gconf_interface.c:349
+#: src/conf/gconf_interface.c:341
 msgid "Save a config file"
 msgstr ""
 
-#: src/conf/gconf_interface.c:363
+#: src/conf/gconf_interface.c:355
 msgid "Save"
 msgstr ""
 
-#: src/conf/gconf_interface.c:383
+#: src/conf/gconf_interface.c:375
 msgid "Single view"
 msgstr ""
 
-#: src/conf/gconf_interface.c:398
+#: src/conf/gconf_interface.c:390
 msgid "Single"
 msgstr ""
 
-#: src/conf/gconf_interface.c:410
+#: src/conf/gconf_interface.c:402
 msgid "Split view"
 msgstr ""
 
-#: src/conf/gconf_interface.c:425
+#: src/conf/gconf_interface.c:417
 msgid "Split"
 msgstr ""
 
-#: src/conf/gconf_interface.c:437
+#: src/conf/gconf_interface.c:429
 msgid "Full view"
 msgstr ""
 
-#: src/conf/gconf_interface.c:452
+#: src/conf/gconf_interface.c:444
 msgid "Full"
 msgstr ""
 
-#: src/conf/gconf_interface.c:473
+#: src/conf/gconf_interface.c:465
 msgid "Collapse the whole tree in the right frame"
 msgstr ""
 
-#: src/conf/gconf_interface.c:488
+#: src/conf/gconf_interface.c:480
 msgid "Collapse"
 msgstr ""
 
-#: src/conf/gconf_interface.c:501
+#: src/conf/gconf_interface.c:493
 msgid "Expand the whole tree in the right frame"
 msgstr ""
 
-#: src/conf/gconf_interface.c:515
+#: src/conf/gconf_interface.c:507
 msgid "Expand"
 msgstr ""
 
-#: src/conf/gconf_interface.c:569
+#: src/conf/gconf_interface.c:561
 msgid "Sorry, no help available for this option yet."
 msgstr ""
 
