@@ -689,8 +689,11 @@ solveKnapsack(BufferEntry * be,
      4, this is probably a good idea (TM)  :-) */
   efflen = MALLOC(sizeof(int)*count);
   max = available;
-  for (i=0;i<count;i++)
-    max = gcd(max, entries[i]->len);
+  for (i=0;i<count;i++) {
+    if (entries[i]->len > 0)
+      max = gcd(max, entries[i]->len);
+  }
+  GNUNET_ASSERT(max != 0);
   available = available / max;
   for (i=0;i<count;i++)
     efflen[i] = entries[i]->len / max;
@@ -1535,6 +1538,7 @@ static void appendToBuffer(BufferEntry * be,
   }
   /* grow send buffer, insertion sort! */
   ne = MALLOC( (be->sendBufferSize+1) * sizeof(SendEntry*));
+  GNUNET_ASSERT(se->len != 0);
   apri = (float) se->pri / (float) se->len;
   i=0;
   while ( (i < be->sendBufferSize) &&
@@ -1868,6 +1872,8 @@ static void scheduleInboundTraffic() {
     return; /* don't update too frequently, we need at least some
 	       semi-representative sampling! */
   }
+  if (timeDifference == 0)
+    timeDifference = 1;
 
   /* build an array containing all BEs */
 
@@ -1909,6 +1915,7 @@ static void scheduleInboundTraffic() {
      algorithm, we'd need to compute the new limits separately
      and then merge the values; but for now, let's just go
      hardcore and adjust all values rapidly */
+  GNUNET_ASSERT(timeDifference != 0);
   for (u=0;u<activePeerCount;u++) {
     adjustedRR[u] = entries[u]->recently_received * cronMINUTES / timeDifference / 2;
 
