@@ -580,6 +580,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   const char * dirname,
 		   unsigned int anonymityLevel,
 		   int doIndex,
+		   int individualKeywords,
 		   const struct ECRS_MetaData * directoryMetaData,
 		   const struct ECRS_URI * globalURI,
 		   const struct ECRS_URI * topURI); /* upload.c */

@@ -909,9 +909,9 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   sqlite3_exec(dbh->dbf, "CREATE INDEX idx_expire ON gn070 (expire)",
 	       NULL, NULL, NULL);
   sqlite3_exec(dbh->dbf, "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
-         NULL, NULL, NULL);
+	       NULL, NULL, NULL);
   sqlite3_exec(dbh->dbf, "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
-         NULL, NULL, NULL);
+	       NULL, NULL, NULL);
 
   if ( (sq_prepare("SELECT COUNT(*) FROM gn070 WHERE hash=?",
 		   &dbh->countContent) != SQLITE_OK) ||

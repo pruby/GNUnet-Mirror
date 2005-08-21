@@ -29,6 +29,8 @@
 #include "ecrs_core.h"
 #include "ondemand.h"
 
+#define DEBUG_ONDEMAND NO
+
 #define TRACK_INDEXED_FILES NO
 #define TRACKFILE "indexed_requests.txt"
 
@@ -190,9 +192,12 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   int ret;
   OnDemandBlock odb;
   HashCode512 key;
-  EncName enc;
   struct stat sbuf;
   char * fn;
+#if DEBUG_ONDEMAND
+  EncName enc;
+#endif
+
 
   if (size <= sizeof(DBlock)) {
     BREAK();
@@ -209,9 +214,11 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
     int fd;
 
     /* not sym-linked, write content to offset! */   
+#if DEBUG_ONDEMAND
     LOG(LOG_DEBUG,
 	"Storing on-demand encoded data in `%s'.\n",
 	fn);
+#endif
     fd = fileopen(fn,
 #ifdef O_LARGEFILE
 		  O_LARGEFILE |
@@ -270,11 +277,13 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
   }
 #endif
 
+#if DEBUG_ONDEMAND
   IFLOG(LOG_DEBUG,
 	hash2enc(&key, &enc));
   LOG(LOG_DEBUG,
       "Storing on-demand content for query `%s'\n",
       &enc);
+#endif
 
   ret = datastore->get(&key,
 		       ONDEMAND_BLOCK,
@@ -311,7 +320,9 @@ static void asyncDelete(Datastore_ServiceAPI * datastore,
 			const Datastore_Value * dbv,
 			const HashCode512 * query) {
   struct adJ * job;
+#if DEBUG_ONDEMAND
   EncName enc;
+#endif
 
   job = MALLOC(sizeof(struct adJ));
   job->datastore = datastore;
@@ -320,11 +331,13 @@ static void asyncDelete(Datastore_ServiceAPI * datastore,
   memcpy(job->dbv,
 	 dbv,
 	 ntohl(dbv->size));
+#if DEBUG_ONDEMAND
   hash2enc(query,
 	   &enc);
   LOG(LOG_DEBUG,
       _("Indexed file disappeared, deleting block for query `%s'\n"),
       &enc);
+#endif
   /* schedule for "immediate" execution */
   addCronJob((CronJob) &asyncDelJob,
 	     0, 
@@ -532,17 +545,21 @@ static int completeValue(const HashCode512 * key,
        (0 != memcmp(&value[1],
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
+#if DEBUG_ONDEMAND
     LOG(LOG_DEBUG,
 	"`%s' found value that does not match (%u, %u).\n",
 	__FUNCTION__,
 	ntohl(comp->size),
 	ntohl(value->size));
+#endif
     return OK;
   }
   *comp = *value; /* make copy! */
+#if DEBUG_ONDEMAND
   LOG(LOG_DEBUG,
       "`%s' found value that matches.\n",
       __FUNCTION__);
+#endif
   return SYSERR;
 }
 
@@ -572,9 +589,11 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   char unavail_key[256];
 
   fn = getOnDemandFile(fileId);
+#if DEBUG_ONDEMAND
   LOG(LOG_DEBUG,
       "Removing on-demand encoded data stored in `%s'.\n",
       fn);
+#endif
   fd = fileopen(fn,
 #ifdef O_LARGEFILE
 	    O_RDONLY | O_LARGEFILE,

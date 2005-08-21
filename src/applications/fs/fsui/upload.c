@@ -30,6 +30,8 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
+#define DEBUG_UPLOAD NO
+
 /**
  * Data used to keep track of the files in the
  * current directory.
@@ -60,6 +62,7 @@ typedef struct {
   FSUI_Context * ctx;
   cron_t start_time;
   DirTrack * dir;
+  int individualKeywords;
 } UploadThreadClosure;
 
 /**
@@ -276,18 +279,20 @@ static int dirEntryCallback(const char * filename,
 	 0);
   }
   if (ret == OK) {
-    ECRS_addToMetaData(meta,
-		       EXTRACTOR_FILENAME,
-		       filename);
-    keywordUri = ECRS_metaDataToUri(meta);
-    if (keywordUri != NULL) {
-      ECRS_addToKeyspace(keywordUri,
-			 utc->anonymityLevel,
-			 utc->priority,
-			 utc->expiration,
-			 uri,
-			 meta);	
-      ECRS_freeUri(keywordUri);
+    if (utc->individualKeywords) {
+      ECRS_addToMetaData(meta,
+			 EXTRACTOR_FILENAME,
+			 filename);
+      keywordUri = ECRS_metaDataToUri(meta);
+      if (keywordUri != NULL) {
+	ECRS_addToKeyspace(keywordUri,
+			   utc->anonymityLevel,
+			   utc->priority,
+			   utc->expiration,
+			   uri,
+			   meta);	
+	ECRS_freeUri(keywordUri);
+      }
     }
     if (utc->globalUri != NULL)
       ECRS_addToKeyspace(utc->globalUri,
@@ -295,7 +300,7 @@ static int dirEntryCallback(const char * filename,
 			 utc->priority,
 			 utc->expiration,
 			 uri,
-			 meta);	
+			 meta);	    
     if (utc->dir != NULL) {
       GROW(utc->dir->fis,
 	   utc->dir->fiCount,
@@ -421,8 +426,10 @@ static void * uploadThread(UploadThreadClosure * utc) {
 			 EXTRACTOR_FILENAME,
 			 inboundFN);
     }
+#if DEBUG_UPLOAD
     LOG(LOG_DEBUG,
 	"Adding URI to keyspace.\n");
+#endif
     keywordUri = ECRS_metaDataToUri(utc->meta);
     if (keywordUri != NULL) {
       ECRS_addToKeyspace(keywordUri,
@@ -518,6 +525,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   utc->uri = ECRS_dupUri(keyUri);
   utc->meta = ECRS_dupMetaData(md);
   utc->doIndex = doIndex;
+  utc->individualKeywords = NO;
   tl = MALLOC(sizeof(FSUI_ThreadList));
   utc->tl = tl;
   tl->isDone = NO;
@@ -556,6 +564,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
 		   const char * dirname,
 		   unsigned int anonymityLevel,
 		   int doIndex,
+		   int individualKeywords,
 		   const struct ECRS_MetaData * directoryMetaData,
 		   const struct ECRS_URI * globalURI,
 		   const struct ECRS_URI * topURI) {
@@ -564,6 +573,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   char * config;
 
   utc = MALLOC(sizeof(UploadThreadClosure));
+  utc->individualKeywords = individualKeywords;
   utc->ctx = ctx;
   utc->isRecursive = YES;
   utc->anonymityLevel = anonymityLevel;
