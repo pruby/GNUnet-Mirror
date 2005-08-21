@@ -439,11 +439,11 @@ int ECRS_serializeMetaData(const MetaData * md,
       size++;
     hdr = MALLOC(size);
     hdr->version = htonl(0);
-    hdr->entries = htonl(md->itemCount);
+    hdr->entries = htonl(ic);
     for (i=0;i<ic;i++)
       ((unsigned int*)&hdr[1])[i] = htonl((unsigned int)md->items[i].type);
     pos = sizeof(MetaDataHeader);
-    pos += sizeof(unsigned int) * md->itemCount;
+    pos += sizeof(unsigned int) * ic;
     for (i=0;i<ic;i++) {
       len = strlen(md->items[i].data) + 1;
       memcpy(&((char*)hdr)[pos],
