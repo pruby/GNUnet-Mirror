@@ -303,6 +303,16 @@ static int iopen(mysqlHandle * dbhI,
       dbhI->dbf = NULL;
       return SYSERR;
     }
+    mysql_query(dbhI->dbf,
+		"SET AUTOCOMMIT = 1");
+    if (mysql_error(dbhI->dbf)[0]) {
+      LOG_MYSQL(LOG_ERROR,
+		"mysql_query",
+		dbhI);
+      mysql_close(dbhI->dbf);
+      dbhI->dbf = NULL;
+      return SYSERR;
+    }
     
     dbhI->insert = mysql_stmt_init(dbhI->dbf);
     dbhI->select = mysql_stmt_init(dbhI->dbf);
@@ -654,11 +664,14 @@ static int get(const HashCode512 * query,
   Datastore_Value * datum;
   HashCode512 key;
   unsigned long hashSize;
+#if DEBUG_MYSQL
   EncName enc;
+#endif
 
   if (query == NULL)
     return iterateLowPriority(type, iter, closure);
 
+#if DEBUG_MYSQL
   IFLOG(LOG_DEBUG,
 	hash2enc(query,
 		 &enc));
@@ -666,6 +679,7 @@ static int get(const HashCode512 * query,
       "MySQL looks for `%s' of type %u\n",
       &enc,
       type);
+#endif
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   if (type != 0) {
     if (iter == NULL)
@@ -802,6 +816,7 @@ static int get(const HashCode512 * query,
   FREE(datum);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
+#if DEBUG_MYSQL
   IFLOG(LOG_DEBUG,
 	hash2enc(query,
 		 &enc));
@@ -817,6 +832,7 @@ static int get(const HashCode512 * query,
 	&enc,
 	type);
   }
+#endif
 
   return count;
 }
@@ -835,7 +851,9 @@ static int put(const HashCode512 * key,
   unsigned int prio;
   unsigned int level;
   unsigned long long expiration;
+#if DEBUG_MYSQL
   EncName enc;
+#endif
 
   if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {
     BREAK();
@@ -852,6 +870,7 @@ static int put(const HashCode512 * key,
   level = ntohl(value->anonymityLevel);
   expiration = ntohll(value->expirationTime);
 
+#if DEBUG_MYSQL
   IFLOG(LOG_DEBUG,
 	hash2enc(key,
 		 &enc));
@@ -859,6 +878,7 @@ static int put(const HashCode512 * key,
       "Storing in database block with type %u and key %s.\n",
       type,
       &enc);
+#endif
   dbh->bind[0].buffer = (char*) &size;
   dbh->bind[1].buffer = (char*) &type;
   dbh->bind[2].buffer = (char*) &prio;
@@ -912,6 +932,7 @@ static int del(const HashCode512 * key,
   unsigned int anon;
   unsigned long long expiration;
   unsigned long datasize;
+#if DEBUG_MYSQL
   EncName enc;
 
   IFLOG(LOG_DEBUG,
@@ -921,6 +942,7 @@ static int del(const HashCode512 * key,
       "MySQL is executing deletion request for content of query `%s' and type %u\n",
       &enc,
       value == NULL ? 0 : ntohl(value->type));
+#endif
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
 
   twenty = sizeof(HashCode512);
@@ -970,9 +992,11 @@ static int del(const HashCode512 * key,
   }
   count = mysql_stmt_affected_rows(stmt);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+#if DEBUG_MYSQL
   LOG(LOG_DEBUG,
       "MySQL DELETE operation affected %d rows.\n",
       count);
+#endif
   return count;
 }
 

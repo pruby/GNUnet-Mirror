@@ -108,7 +108,9 @@ static int gapPut(void * closure,
   HashCode512 hc;
   cron_t et;
   cron_t now;
+#if DEBUG_FS
   EncName enc;
+#endif
 
   if (ntohl(value->size) < sizeof(GapWrapper)) {
     BREAK();
@@ -122,9 +124,6 @@ static int gapPut(void * closure,
 			  (DBlock*)&gw[1],
 			  &hc)) ||
        (! equalsHashCode512(&hc, query)) ) {
-    LOG(LOG_ERROR,
-	"Type: %u\n",
-	ntohl(*(unsigned int*) &gw[1]));
     BREAK(); /* value failed verification! */
     return SYSERR;
   }
@@ -157,12 +156,14 @@ static int gapPut(void * closure,
     return SYSERR;
   }
   processResponse(query, dv);
+#if DEBUG_FS
   IFLOG(LOG_DEBUG,
 	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
       "FS received GAP-PUT request (query: `%s')\n",
       &enc);
+#endif
   ret = datastore->putUpdate(query,
 			     dv);
   FREE(dv);
@@ -172,6 +173,7 @@ static int gapPut(void * closure,
 static int get_result_callback(const HashCode512 * query,
 			       const DataContainer * value,
 			       DHT_GET_CLS * cls) {
+#if DEBUG_FS
   EncName enc;
 
   IFLOG(LOG_DEBUG,
@@ -180,6 +182,7 @@ static int get_result_callback(const HashCode512 * query,
   LOG(LOG_DEBUG,
       "Found reply to query `%s'.\n",
       &enc);
+#endif
   gapPut(NULL,
 	 query,
 	 value,
@@ -206,19 +209,23 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 				     const CS_MESSAGE_HEADER * req) {
   const CS_fs_request_search_MESSAGE * rs;
   unsigned int keyCount;
+#if DEBUG_FS
   EncName enc;
+#endif
 
   if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
+#if DEBUG_FS
   IFLOG(LOG_DEBUG,
 	hash2enc(&rs->query[0],
 		 &enc));
   LOG(LOG_DEBUG,
       "FS received QUERY START (query: `%s')\n",
       &enc);
+#endif
   trackQuery(&rs->query[0],
 	     ntohl(rs->type),
 	     sock);
@@ -256,19 +263,23 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 static int csHandleRequestQueryStop(ClientHandle sock,
 				    const CS_MESSAGE_HEADER * req) {
   CS_fs_request_search_MESSAGE * rs;
+#if DEBUG_FS
   EncName enc;
+#endif
 
   if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
     BREAK();
     return SYSERR;
   }
   rs = (CS_fs_request_search_MESSAGE*) req;
+#if DEBUG_FS
   IFLOG(LOG_DEBUG,
 	hash2enc(&rs->query[0],
 		 &enc));
   LOG(LOG_DEBUG,
       "FS received QUERY STOP (query: `%s')\n",
       &enc);
+#endif
   if (ntohl(rs->anonymityLevel) == 0) {
     /* FIXME 0.7.1: cancel with dht? */
   }
@@ -291,7 +302,9 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
   int ret;
   HashCode512 query;
   unsigned int type;
+#if DEBUG_FS
   EncName enc;
+#endif
 
   if (ntohs(req->size) < sizeof(CS_fs_request_insert_MESSAGE)) {
     BREAK();
@@ -312,15 +325,17 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
     FREE(datum);
     return SYSERR;
   }
+  type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
+			(const DBlock*) &ri[1]);
+#if DEBUG_FS
   IFLOG(LOG_DEBUG,
 	hash2enc(&query,
 		 &enc));
-  type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
-			(const DBlock*) &ri[1]);
   LOG(LOG_DEBUG,
       "FS received REQUEST INSERT (query: `%s', type: %u)\n",
       &enc,
       type);
+#endif
   datum->type = htonl(type);
   memcpy(&datum[1],
 	 &ri[1],
@@ -401,10 +416,11 @@ static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
           fn);
 
   FREE(fn);
-
+#if DEBUG_FS
   LOG(LOG_DEBUG,
       "Sending confirmation (%s) of index initialization request to client\n",
       ret == OK ? "success" : "failure");
+#endif
   return coreAPI->sendValueToClient(sock,
             ret);
 }
@@ -432,9 +448,11 @@ static int csHandleCS_fs_request_index_MESSAGE(ClientHandle sock,
 		       &ri->fileId,
 		       ntohs(ri->header.size) - sizeof(CS_fs_request_index_MESSAGE),
 		       (const DBlock*) &ri[1]);
+#if DEBUG_FS
   LOG(LOG_DEBUG,
       "Sending confirmation (%s) of index request to client\n",
       ret == OK ? "success" : "failure");
+#endif
   return coreAPI->sendValueToClient(sock,
 				    ret);
 }
@@ -454,17 +472,21 @@ static int completeValue(const HashCode512 * key,
        (0 != memcmp(&value[1],
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
+#if DEBUG_FS
     LOG(LOG_DEBUG,
 	"`%s' found value that does not match (%u, %u).\n",
 	__FUNCTION__,
 	ntohl(comp->size),
 	ntohl(value->size));
+#endif
     return OK;
   }
   *comp = *value; /* make copy! */
+#if DEBUG_FS
   LOG(LOG_DEBUG,
       "`%s' found value that matches.\n",
       __FUNCTION__);
+#endif
   return SYSERR;
 }
 
@@ -480,7 +502,9 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
   Datastore_Value * value;
   HashCode512 query;
   unsigned int type;
+#if DEBUG_FS
   EncName enc;
+#endif
 
   if (ntohs(req->size) < sizeof(CS_fs_request_delete_MESSAGE)) {
     BREAK();
@@ -504,6 +528,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
     BREAK();
     return SYSERR;
   }
+#if DEBUG_FS
   IFLOG(LOG_DEBUG,
 	hash2enc(&query,
 		 &enc));
@@ -511,7 +536,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
       "FS received REQUEST DELETE (query: `%s', type: %u)\n",
       &enc,
       type);
-
+#endif
   MUTEX_LOCK(&lock);
   if (SYSERR == datastore->get(&query,
 			       type,
@@ -523,9 +548,11 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
     ret = SYSERR;
   MUTEX_UNLOCK(&lock);
   FREE(value);
+#if DEBUG_FS
   LOG(LOG_DEBUG,
       "Sending confirmation (%s) of delete request to client\n",
       ret != SYSERR ? "success" : "failure");
+#endif
   return coreAPI->sendValueToClient(sock,
 				    ret);
 }
@@ -543,8 +570,10 @@ static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
     return SYSERR;
   }
   ru = (CS_fs_request_unindex_MESSAGE*) req;
+#if DEBUG_FS
   LOG(LOG_DEBUG,
       "FS received REQUEST UNINDEX\n");
+#endif
   ret = ONDEMAND_unindex(datastore,
 			 ntohl(ru->blocksize),
 			 &ru->fileId);
@@ -566,8 +595,10 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
     return SYSERR;
   }
   ru = (RequestTestindex*) req;
+#if DEBUG_FS
   LOG(LOG_DEBUG,
       "FS received REQUEST TESTINDEXED\n");
+#endif
   ret = ONDEMAND_testindexed(datastore,
 			     &ru->fileId);
   return coreAPI->sendValueToClient(sock,
@@ -580,8 +611,10 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
  */
 static int csHandleRequestGetAvgPriority(ClientHandle sock,
 					 const CS_MESSAGE_HEADER * req) {
+#if DEBUG_FS
   LOG(LOG_DEBUG,
       "FS received REQUEST GETAVGPRIORITY\n");
+#endif
   return coreAPI->sendValueToClient(sock,
 				    gap->getAvgPriority());
 }
@@ -616,13 +649,14 @@ static int gapGetConverter(const HashCode512 * key,
   unsigned int level;
   EncName enc;
 
+#if DEBUG_FS
   IFLOG(LOG_DEBUG,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
       "Converting reply for query `%s' for gap.\n",
       &enc);
-
+#endif
   if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
     if (OK != ONDEMAND_getIndexed(datastore,
 				  invalue,
@@ -726,6 +760,7 @@ static int gapGet(void * closure,
 		  void * resCallbackClosure) {
   int ret;
   GGC myClosure;
+#if DEBUG_FS
   EncName enc;
 
   IFLOG(LOG_DEBUG,
@@ -735,6 +770,7 @@ static int gapGet(void * closure,
       "GAP requests content for `%s' of type %u\n",
       &enc,
       type);
+#endif
   myClosure.count = 0;
   myClosure.keyCount = keyCount;
   myClosure.keys = keys;
