@@ -279,10 +279,10 @@ static int dirEntryCallback(const char * filename,
 	 0);
   }
   if (ret == OK) {
+    ECRS_addToMetaData(meta,
+		       EXTRACTOR_FILENAME,
+		       filename);
     if (utc->individualKeywords) {
-      ECRS_addToMetaData(meta,
-			 EXTRACTOR_FILENAME,
-			 filename);
       keywordUri = ECRS_metaDataToUri(meta);
       if (keywordUri != NULL) {
 	ECRS_addToKeyspace(keywordUri,
