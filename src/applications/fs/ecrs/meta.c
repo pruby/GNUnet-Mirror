@@ -763,8 +763,14 @@ char * ECRS_suggestFilename(const char * filename) {
 	  mime);
     mime = mimeMap[i][1];
   }
-  if (key == NULL)
-    key = filename;
+  if (key == NULL) {
+    key = &filename[strlen(filename)-1];
+    while ( (key != filename) &&
+	    (key[0] != DIR_SEPARATOR) )
+      key--;
+    if (key[0] == DIR_SEPARATOR)
+      key++;    
+  }
   if (mime != NULL) {
     if (0 == strcmp(&key[strlen(key)-strlen(mime)],
 		    mime))
