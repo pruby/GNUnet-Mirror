@@ -770,10 +770,14 @@ int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
  * Toggle tracking URIs.
  *
  * @param onOff YES to enable tracking, NO to disable
- *  disabling tracking also deletes all entries in the
- *  cache.
+ *  disabling tracking 
  */
 void FSUI_trackURIS(int onOff); /* file_info.c */
+
+/**
+ * Deletes all entries in the FSUI tracking cache.
+ */
+void FSUI_clearTrackedURIS(void); /* file_info.c */
 
 /**
  * Get the FSUI URI tracking status.

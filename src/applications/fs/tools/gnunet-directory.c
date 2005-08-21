@@ -199,8 +199,10 @@ int main(int argc,
     printf(_("Listed %d matching entries.\n"),
 	   FSUI_listURIs(&printNode,
 			 NULL));
-  if (do_kill)
+  if (do_kill) {
     FSUI_trackURIS(NO);
+    FSUI_clearTrackedURIS();
+  }
   if (do_track)
     FSUI_trackURIS(YES);
 

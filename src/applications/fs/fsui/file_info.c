@@ -116,7 +116,7 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
  * Remove all of the root-nodes of a particular type
  * from the tracking database.
  */
-static void emptyTrackDatabase() {
+void FSUI_clearTrackedURIS() {
   IPC_Semaphore * sem;
 
   sem = createIPC();
@@ -130,12 +130,9 @@ static void emptyTrackDatabase() {
  * Toggle tracking URIs.
  *
  * @param onOff YES to enable tracking, NO to disable
- *  disabling tracking also deletes all entries in the
- *  cache.
+ *  disabling tracking
  */
 void FSUI_trackURIS(int onOff) {
-  if (onOff == NO)
-    emptyTrackDatabase();
   onOff = htonl(onOff);
   stateWriteContent(TRACK_OPTION,
 		    sizeof(int),
@@ -221,7 +218,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
  FORMATERROR:
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_FREE(sem);
-  emptyTrackDatabase();
+  FSUI_clearTrackedURIS();
   return SYSERR;
 }
 
