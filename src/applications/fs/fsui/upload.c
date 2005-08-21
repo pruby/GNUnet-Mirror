@@ -465,7 +465,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
     ECRS_freeUri(utc->uri);
   if (utc->globalUri != NULL)
     ECRS_freeUri(utc->globalUri);
-  //  EXTRACTOR_removeAll(utc->extractors);
+  EXTRACTOR_removeAll(utc->extractors);
   utc->tl->isDone = YES;
   FREE(utc);
   FREENONNULL(inboundFN);
