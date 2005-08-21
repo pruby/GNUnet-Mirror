@@ -1237,6 +1237,7 @@ static int ensureTransportConnected(BufferEntry * be) {
       /* MTU change may require new fragmentation! */
       changed = YES;
       while (changed) {
+	changed = NO;
 	entries = be->sendBuffer;
 	i = 0;
 	ret = be->sendBufferSize;
