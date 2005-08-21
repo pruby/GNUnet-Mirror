@@ -275,8 +275,11 @@ static int sqlite_iterate(unsigned int type,
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
 
+  /* For the rowid trick see
+      http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   strcpy(scratch,
 	 "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070"
+   " where rowid in (Select rowid from gn070"
 	 " WHERE ((hash > :1 AND expire == :2 AND prio == :3) OR ");
   if (sortByPriority)
     strcat(scratch,
@@ -297,7 +300,7 @@ static int sqlite_iterate(unsigned int type,
     strcat(scratch, " ORDER BY prio ASC, expire ASC, hash ASC");
   else
     strcat(scratch, " ORDER BY expire ASC, prio ASC, hash ASC");
-  strcat(scratch, " LIMIT 1");
+  strcat(scratch, " LIMIT 1)");
   if (sq_prepare(scratch,
 		 &stmt) != SQLITE_OK) {
     LOG_SQLITE(LOG_ERROR, "sqlite3_prepare");
@@ -905,6 +908,10 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 	       NULL, NULL, NULL);
   sqlite3_exec(dbh->dbf, "CREATE INDEX idx_expire ON gn070 (expire)",
 	       NULL, NULL, NULL);
+  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
+         NULL, NULL, NULL);
+  sqlite3_exec(dbh->dbf, "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
+         NULL, NULL, NULL);
 
   if ( (sq_prepare("SELECT COUNT(*) FROM gn070 WHERE hash=?",
 		   &dbh->countContent) != SQLITE_OK) ||
