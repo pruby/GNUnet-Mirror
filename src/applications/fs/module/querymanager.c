@@ -30,7 +30,7 @@
 #include "fs.h"
 #include "querymanager.h"
 
-#define DEBUG_QUERYMANAGER NO
+#define DEBUG_QUERYMANAGER YES
 
 typedef struct {
   HashCode512 query;

@@ -55,6 +55,7 @@ typedef struct FS_SEARCH_CONTEXT {
 static void * processReplies(SEARCH_CONTEXT * ctx) {
   CS_MESSAGE_HEADER * hdr;
   int i;
+  int matched;
   CS_fs_reply_content_MESSAGE * rep;
   HashCode512 query;
   unsigned int size;
@@ -65,6 +66,10 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
     hdr = NULL;
     if (OK == readFromSocket(ctx->sock,
 			     &hdr)) {
+#if DEBUG_FSLIB
+      LOG(LOG_DEBUG,
+	  "FSLIB: received message from gnunetd\n");
+#endif
       delay = 100 * cronMILLIS;
       /* verify hdr, if reply, process, otherwise
 	 signal protocol problem; if ok, find
@@ -84,12 +89,14 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	FREE(hdr);
 	continue;
       }
+      matched = 0;
       MUTEX_LOCK(ctx->lock);
       for (i=ctx->handleCount-1;i>=0;i--) {
 	if (equalsHashCode512(&query,
 			      &ctx->handles[i]->req->query[0])) {
 	  Datastore_Value * value;
 
+	  matched++;
 	  if (ctx->handles[i]->callback != NULL) {	
 	    value = MALLOC(sizeof(Datastore_Value) + size);
 	    value->size = htonl(size + sizeof(Datastore_Value));
@@ -111,7 +118,17 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	}
       }
       MUTEX_UNLOCK(ctx->lock);
+#if DEBUG_FSLIB
+      if (matched == 0) 
+	LOG(LOG_DEBUG,
+	    "FSLIB: received content but have no pending request\n");
+#endif
     } else {
+#if DEBUG_FSLIB
+      LOG(LOG_DEBUG,
+	  "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
+	  delay);
+#endif
       gnunet_util_sleep(delay);
       delay *= 2;
       if (delay > 5 * cronSECONDS)
@@ -181,6 +198,11 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 #endif
 
   ret = MALLOC(sizeof(SEARCH_HANDLE));
+#if DEBUG_FSLIB
+  LOG(LOG_DEBUG,
+      "FSLIB: start search (%p)\n",
+      ret);
+#endif
   req = MALLOC(sizeof(CS_fs_request_search_MESSAGE) + (keyCount-1) * sizeof(HashCode512));
   req->header.size = htons(sizeof(CS_fs_request_search_MESSAGE) + (keyCount-1) * sizeof(HashCode512));
   req->header.type = htons(CS_PROTO_gap_QUERY_START);
@@ -217,6 +239,11 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 		   ret);
     return NULL;
   }
+#if DEBUG_FSLIB
+  LOG(LOG_DEBUG,
+      "FSLIB: search started (%p)\n",
+      ret);
+#endif
   return ret;
 }
 
@@ -227,6 +254,11 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
 		    SEARCH_HANDLE * handle) {
   int i;
 
+#if DEBUG_FSLIB
+  LOG(LOG_DEBUG,
+      "FSLIB: stop search (%p)\n",
+      handle);
+#endif
   handle->req->header.type = htons(CS_PROTO_gap_QUERY_STOP);
   writeToSocket(ctx->sock,
 		&handle->req->header);
@@ -238,6 +270,11 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
     }
   MUTEX_UNLOCK(ctx->lock);
   FREE(handle->req);
+#if DEBUG_FSLIB
+  LOG(LOG_DEBUG,
+      "FSLIB: search stopped (%p)\n",
+      handle);
+#endif
   FREE(handle);
 }
 

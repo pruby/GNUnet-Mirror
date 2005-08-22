@@ -44,7 +44,7 @@
 #include "gnunet_traffic_service.h"
 #include "gnunet_topology_service.h"
 
-#define DEBUG_GAP NO
+#define DEBUG_GAP YES
 
 #define EXTRA_CHECKS YES
 
@@ -1055,9 +1055,17 @@ static void queueReply(const PeerIdentity * sender,
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
   if (! equalsHashCode512(&ite->primaryKey,
 			  primaryKey) ) {
+#if DEBUG_GAP
+    LOG(LOG_DEBUG,
+	"GAP: Dropping reply, routing table has no query associated with it (anymore)\n");
+#endif
     return; /* we don't care for the reply (anymore) */
   }
   if (YES == ite->successful_local_lookup_in_delay_loop) {
+#if DEBUG_GAP
+    LOG(LOG_DEBUG,
+	"GAP: Dropping reply, found reply locally during delay\n");
+#endif
     return; /* wow, really bad concurrent DB lookup and processing for
 	       the same query.  Well, at least we should not also
 	       queue the delayed reply twice... */
@@ -1139,7 +1147,17 @@ static int addToSlot(int mode,
 		     const PeerIdentity * sender) {
   unsigned int i;
   cron_t now;
+#if DEBUG__GAP
+  EncName enc;
 
+  IFLOG(LOG_DEBUG,
+	hash2enc(query,
+		 &enc));
+  LOG(LOG_DEBUG,
+      "GAP: Queueing query '%s' in slot %p\n",
+      &enc,
+      ite);
+#endif
   GNUNET_ASSERT(sender != NULL); /* do NOT add to RT for local clients! */
   cronTime(&now);
   if (mode == ITE_REPLACE) {
@@ -1576,14 +1594,15 @@ static int execQuery(const PeerIdentity * sender,
 
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&lookup_exclusion);
+  i = -1;
   if (sender != NULL) {
     if ((policy & QUERY_INDIRECT) > 0) {
-      needsForwarding(&query->queries[0],
-		      ttl,
-		      prio,
-		      sender,
-		      &isRouted,
-		      &doForward);
+      i = needsForwarding(&query->queries[0],
+			  ttl,
+			  prio,
+			  sender,
+			  &isRouted,
+			  &doForward);
     } else {
       isRouted = NO;
       doForward = YES;
@@ -1602,10 +1621,11 @@ static int execQuery(const PeerIdentity * sender,
         hash2enc(&query->queries[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "GAP is executing request for `%s': %s %s\n",
+      "GAP is executing request for `%s':%s%s (%d)\n",
       &enc,
-      doForward ? "forwarding" : "",
-      isRouted ? "routing" : "");
+      doForward ? " forwarding" : "",
+      isRouted ? " routing" : "",
+      i);
 #endif
   cls.values = NULL;
   cls.valueCount = 0;
@@ -2069,8 +2089,14 @@ static int handleQuery(const PeerIdentity * sender,
   if ((policy & QUERY_DROPMASK) == 0) {
     FREE(qmsg);
 #if DEBUG_GAP
+    if (sender != NULL) {
+      IFLOG(LOG_DEBUG,
+	    hash2enc(&sender->hashPubKey,
+		     &enc));
+    }
     LOG(LOG_DEBUG,
-	"Dropping query, policy decided that this peer is too busy.\n");
+	"Dropping query from %s, policy decided that this peer is too busy.\n",
+	sender == NULL ? "localhost" : &enc);
 #endif
     return OK; /* straight drop. */
   }

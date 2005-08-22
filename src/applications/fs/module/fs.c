@@ -86,6 +86,44 @@ static Mutex lock;
  */
 static DHT_TableId dht_table;
 
+static Datastore_Value * 
+gapWrapperToDatastoreValue(const DataContainer * value,
+			   int prio) {
+  Datastore_Value * dv;
+  GapWrapper * gw;
+  unsigned int size;
+  cron_t et;
+  cron_t now;
+
+  if (ntohl(value->size) < sizeof(GapWrapper)) {
+    BREAK();
+    return NULL;
+  }
+  gw = (GapWrapper*) value;
+  size = ntohl(gw->dc.size)
+    - sizeof(GapWrapper)
+    + sizeof(Datastore_Value);
+  dv = MALLOC(size);
+  dv->size = htonl(size);
+  dv->type = htonl(getTypeOfBlock(size - sizeof(Datastore_Value),
+				  (DBlock*) &gw[1]));
+  dv->prio = htonl(prio);
+  dv->anonymityLevel = htonl(0);
+  et = ntohll(gw->timeout);
+  cronTime(&now);
+  /* bound ET to MAX_MIGRATION_EXP from now */
+  if (et > now) {
+    et -= now;
+    et = et % MAX_MIGRATION_EXP;
+    et += now;
+  }
+  dv->expirationTime = htonll(et);
+  memcpy(&dv[1],
+	 &gw[1],
+	 size - sizeof(Datastore_Value));
+  return dv;
+}
+
 /**
  * Store an item in the datastore.
  *
@@ -106,46 +144,21 @@ static int gapPut(void * closure,
   unsigned int size;
   int ret;
   HashCode512 hc;
-  cron_t et;
-  cron_t now;
 #if DEBUG_FS
   EncName enc;
 #endif
 
-  if (ntohl(value->size) < sizeof(GapWrapper)) {
-    BREAK();
+  dv = gapWrapperToDatastoreValue(value, prio);
+  if (dv == NULL)
     return SYSERR;
-  }
-  gw = (GapWrapper*) value;
-  size = ntohl(gw->dc.size)
-    - sizeof(GapWrapper)
-    + sizeof(Datastore_Value);
-  if ( (OK != getQueryFor(size - sizeof(Datastore_Value),
-			  (DBlock*)&gw[1],
+  size = ntohl(gw->dc.size) - sizeof(GapWrapper);
+  if ( (OK != getQueryFor(size,
+			  (DBlock*) &gw[1],
 			  &hc)) ||
        (! equalsHashCode512(&hc, query)) ) {
     BREAK(); /* value failed verification! */
     return SYSERR;
   }
-
-  dv = MALLOC(size);
-  dv->size = htonl(size);
-  dv->type = htonl(getTypeOfBlock(size - sizeof(Datastore_Value),
-				  (DBlock*) &gw[1]));
-  dv->prio = htonl(prio);
-  dv->anonymityLevel = htonl(0);
-  et = ntohll(gw->timeout);
-  cronTime(&now);
-  /* bound ET to MAX_MIGRATION_EXP from now */
-  if (et > now) {
-    et -= now;
-    et = et % MAX_MIGRATION_EXP;
-    et += now;
-  }
-  dv->expirationTime = htonll(et);
-  memcpy(&dv[1],
-	 &gw[1],
-	 size - sizeof(Datastore_Value));
   if (YES != isDatumApplicable(ntohl(dv->type),
 			       ntohl(dv->size) - sizeof(Datastore_Value),
 			       (DBlock*) &dv[1],
@@ -198,61 +211,6 @@ static void get_complete_callback(DHT_GET_CLS * cls) {
 static void put_complete_callback(DHT_PUT_CLS * cls) {
   dht->put_stop(cls->rec);
   FREE(cls);
-}
-
-/**
- * Process a query from the client. Forwards to the network.
- *
- * @return SYSERR if the TCP connection should be closed, otherwise OK
- */
-static int csHandleRequestQueryStart(ClientHandle sock,
-				     const CS_MESSAGE_HEADER * req) {
-  const CS_fs_request_search_MESSAGE * rs;
-  unsigned int keyCount;
-#if DEBUG_FS
-  EncName enc;
-#endif
-
-  if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
-    BREAK();
-    return SYSERR;
-  }
-  rs = (const CS_fs_request_search_MESSAGE*) req;
-#if DEBUG_FS
-  IFLOG(LOG_DEBUG,
-	hash2enc(&rs->query[0],
-		 &enc));
-  LOG(LOG_DEBUG,
-      "FS received QUERY START (query: `%s')\n",
-      &enc);
-#endif
-  trackQuery(&rs->query[0],
-	     ntohl(rs->type),
-	     sock);
-  keyCount = 1 + (ntohs(req->size) - sizeof(CS_fs_request_search_MESSAGE)) / sizeof(HashCode512);
-  gap->get_start(ntohl(rs->type),
-		 ntohl(rs->anonymityLevel),		
-		 keyCount,
-		 &rs->query[0],
-		 ntohll(rs->expiration),
-		 ntohl(rs->prio));
-  if ( (ntohl(rs->anonymityLevel) == 0) &&
-       (dht != NULL) ) {
-    DHT_GET_CLS * cls;
-
-    cls = MALLOC(sizeof(DHT_GET_CLS));
-    cls->prio = ntohl(rs->prio);
-    cls->rec = dht->get_start(&dht_table,
-			      ntohl(rs->type),
-			      keyCount,
-			      &rs->query[0],
-			      ntohll(rs->expiration),
-			      (DataProcessor) &get_result_callback,
-			      cls,
-			      (DHT_OP_Complete) &get_complete_callback,
-			      cls);
-  }
-  return OK;
 }
 
 /**
@@ -561,7 +519,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
  * Process a client request unindex content.
  */
 static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
-				  const CS_MESSAGE_HEADER * req) {
+						 const CS_MESSAGE_HEADER * req) {
   int ret;
   CS_fs_request_unindex_MESSAGE * ru;
 
@@ -586,7 +544,7 @@ static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
  * data is indexed.
  */
 static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
-				      const CS_MESSAGE_HEADER * req) {
+						      const CS_MESSAGE_HEADER * req) {
   int ret;
   RequestTestindex * ru;
 
@@ -946,6 +904,24 @@ static int dhtGet(void * closure,
   return ret;
 }
 
+static int replyHashFunction(const DataContainer * content,
+	   	             HashCode512 * id) {
+  const GapWrapper * gw;
+  unsigned int size;
+
+  size = ntohl(content->size);
+  if (size < sizeof(GapWrapper)) {
+    BREAK();
+    memset(id, 0, sizeof(HashCode512));
+    return SYSERR;
+  }
+  gw = (const GapWrapper*) content;
+  hash(&gw[1],
+       size - sizeof(GapWrapper),
+       id);
+  return OK;
+}
+
 static int uniqueReplyIdentifier(const DataContainer * content,
 				 unsigned int type,
 				 const HashCode512 * primaryKey) {
@@ -978,21 +954,97 @@ static int uniqueReplyIdentifier(const DataContainer * content,
     return NO;
 }
 
-static int replyHashFunction(const DataContainer * content,
-	   	             HashCode512 * id) {
-  const GapWrapper * gw;
-  unsigned int size;
+static int fastPathProcessor(const HashCode512 * query,
+			     const DataContainer * value,
+			     void * cls) {
+  int * done = cls;
+  Datastore_Value * dv;
 
-  size = ntohl(content->size);
-  if (size < sizeof(GapWrapper)) {
+  dv = gapWrapperToDatastoreValue(value, 0);
+  if (dv == NULL)
+    return SYSERR;
+  processResponse(query,
+		  dv);
+  if (YES == uniqueReplyIdentifier(value,
+				   ntohl(dv->type),
+				   query))
+    *done = YES;
+  FREE(dv);
+  return OK;
+}
+
+/**
+ * Process a query from the client. Forwards to the network.
+ *
+ * @return SYSERR if the TCP connection should be closed, otherwise OK
+ */
+static int csHandleRequestQueryStart(ClientHandle sock,
+				     const CS_MESSAGE_HEADER * req) {
+  const CS_fs_request_search_MESSAGE * rs;
+  unsigned int keyCount;
+#if DEBUG_FS 
+  EncName enc;
+#endif
+  unsigned int type;
+  int done;
+
+  if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
     BREAK();
-    memset(id, 0, sizeof(HashCode512));
     return SYSERR;
   }
-  gw = (const GapWrapper*) content;
-  hash(&gw[1],
-       size - sizeof(GapWrapper),
-       id);
+  rs = (const CS_fs_request_search_MESSAGE*) req;
+#if DEBUG_FS 
+  IFLOG(LOG_DEBUG,
+	hash2enc(&rs->query[0],
+		 &enc));
+  LOG(LOG_DEBUG,
+      "FS received QUERY START (query: `%s')\n",
+      &enc);
+#endif
+  type = ntohl(rs->type);
+  trackQuery(&rs->query[0],
+	     type,
+	     sock);
+  keyCount = 1 + (ntohs(req->size) - sizeof(CS_fs_request_search_MESSAGE)) / sizeof(HashCode512);
+  
+  /* try a "fast path" avoiding gap/dht if unique reply is locally available */
+  done = NO;
+  gapGet(NULL,
+	 type,
+	 EXTREME_PRIORITY,
+	 keyCount,
+	 &rs->query[0],
+	 &fastPathProcessor,
+	 &done);
+  if (done == YES) {
+#if DEBUG_FS
+    LOG(LOG_DEBUG,
+	"FS successfully took GAP shortcut.\n");
+#endif
+    return OK;	
+  }
+  gap->get_start(type,
+		 ntohl(rs->anonymityLevel),
+		 keyCount,
+		 &rs->query[0],
+		 ntohll(rs->expiration),
+		 ntohl(rs->prio));
+  if ( (ntohl(rs->anonymityLevel) == 0) &&
+       (dht != NULL) ) {
+    DHT_GET_CLS * cls;
+
+    cls = MALLOC(sizeof(DHT_GET_CLS));
+    cls->prio = ntohl(rs->prio);
+    cls->rec = dht->get_start(&dht_table,
+			      type,
+			      keyCount,
+			      &rs->query[0],
+			      ntohll(rs->expiration),
+			      (DataProcessor) &get_result_callback,
+			      cls,
+			      (DHT_OP_Complete) &get_complete_callback,
+			      cls);
+  }
   return OK;
 }
 

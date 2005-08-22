@@ -392,6 +392,8 @@ typedef struct RequestManager {
 
   struct FS_SEARCH_CONTEXT * sctx;
 
+  PTHREAD_T requestThread;
+
 } RequestManager;
 
 static int nodeReceive(const HashCode512 * query,
@@ -409,6 +411,7 @@ static RequestManager * createRequestManager() {
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
+  PTHREAD_GET_SELF(&rm->requestThread);
   rm->abortFlag
     = NO;
   rm->lastDET
@@ -460,7 +463,8 @@ static void destroyRequestManager(RequestManager * rm) {
        rm->requestListSize,
        0);
   FS_SEARCH_destroyContext(rm->sctx);
-    MUTEX_DESTROY(&rm->lock);
+  MUTEX_DESTROY(&rm->lock);
+  PTHREAD_REL_SELF(&rm->requestThread);
   FREE(rm);
 }
 
@@ -860,7 +864,7 @@ static int nodeReceive(const HashCode512 * query,
 	hash2enc(query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Receiving reply to query %s\n",
+      "Receiving reply to query `%s'\n",
       &enc);
 #endif
 
@@ -923,6 +927,8 @@ static int nodeReceive(const HashCode512 * query,
       requestManagerEndgame(node->ctx->rm);
     }
   }
+  PTHREAD_KILL(&node->ctx->rm->requestThread,
+	       SIGALRM);
   FREE(data);
   FREE(node);
   return OK;
@@ -1090,7 +1096,7 @@ static void processRequests(RequestManager * rm) {
     TTL_DECREMENT = rm->requestList[0]->node->ctx->TTL_DECREMENT;
 
   for (i=0;i<rm->requestListIndex;i++) {
-    if (rm->requestList[i]->lastTimeout >= now + TTL_DECREMENT) {
+    if (rm->requestList[i]->lastTimeout >= now - TTL_DECREMENT) {
       pending++;
     } else if (rm->requestList[i]->searchHandle != NULL) {
       FS_stop_search(rm->sctx,
@@ -1117,6 +1123,8 @@ static void processRequests(RequestManager * rm) {
 	   (0 == randomi(rm->requestListIndex *
 			 pOCWCubed)) ) {
 	delta = (rm->requestList[j]->lastTimeout - now) + 10 * cronMILLIS;
+	LOG(LOG_DEBUG,
+	    "Requesting!\n");
 	issueRequest(rm, j);
 	pending++;
       } else {	
@@ -1159,10 +1167,12 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   NodeClosure * top;
   FileIdentifier fid;
 
+#if DEBUG_DOWNLOAD
   LOG(LOG_DEBUG,
       "`%s' running for file `%s'\n",
       __FUNCTION__,
       filename);
+#endif
   GNUNET_ASSERT(filename != NULL);
   fid = uri->data.chk;
   if (! ECRS_isFileUri(uri)) {
