@@ -139,6 +139,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
   ECRS_addToMetaData(*meta,
 		     EXTRACTOR_MIMETYPE,
 		     GNUNET_DIRECTORY_MIME);
+  data = NULL;
   if (OK == ECRS_createDirectory(&data,
 				 &len,
 				 backup->fiCount,
@@ -188,6 +189,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
       UNLINK(tempName);
     }
     FREE(tempName);
+    FREENONNULL(data);
   }
 
   if (ret != OK) {
