@@ -1123,8 +1123,6 @@ static void processRequests(RequestManager * rm) {
 	   (0 == randomi(rm->requestListIndex *
 			 pOCWCubed)) ) {
 	delta = (rm->requestList[j]->lastTimeout - now) + 10 * cronMILLIS;
-	LOG(LOG_DEBUG,
-	    "Requesting!\n");
 	issueRequest(rm, j);
 	pending++;
       } else {	
