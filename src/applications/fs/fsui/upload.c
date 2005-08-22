@@ -170,7 +170,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
       if (ret == OK) {
 	event.type = FSUI_upload_complete;
 	event.data.UploadComplete.total = utc->main_total;
-	event.data.UploadComplete.total = utc->main_completed;
+	event.data.UploadComplete.completed = utc->main_completed;
 	event.data.UploadComplete.filename = STRDUP(dirName);
 	event.data.UploadComplete.uri = *uri;
 	event.data.UploadComplete.eta
