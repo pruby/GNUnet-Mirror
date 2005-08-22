@@ -151,6 +151,7 @@ static int gapPut(void * closure,
   dv = gapWrapperToDatastoreValue(value, prio);
   if (dv == NULL)
     return SYSERR;
+  gw = (GapWrapper*) value;
   size = ntohl(gw->dc.size) - sizeof(GapWrapper);
   if ( (OK != getQueryFor(size,
 			  (DBlock*) &gw[1],
