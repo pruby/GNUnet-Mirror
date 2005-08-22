@@ -44,7 +44,7 @@
 #include "gnunet_traffic_service.h"
 #include "gnunet_topology_service.h"
 
-#define DEBUG_GAP YES
+#define DEBUG_GAP NO
 
 #define EXTRA_CHECKS YES
 
