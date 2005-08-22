@@ -1972,6 +1972,7 @@ static void scheduleInboundTraffic() {
 	shares[u]     = shares[activePeerCount];
 	adjustedRR[u] = adjustedRR[activePeerCount];
 	u--;
+	continue;
       }
     } else {
       if ( (adjustedRR[u] < entries[u]->max_transmitted_limit/2) &&
