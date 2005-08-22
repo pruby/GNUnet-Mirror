@@ -13,7 +13,7 @@ Notes:
 
 0.7.0 [30.8.2005?] (aka "compatibility? what's that?"):
 - Missing Features:
-  * gnunet-gtk namespace stuff (#872, #884)  [ Christian, RC! ]
+  * gnunet-gtk namespace stuff (#872)  [ Christian, RC! ]
   * gnunet-setup: php-ification for i18n [ Nils ]
   * permissions on indexed files? [Nils]
     If gnunetd has insufficient file permissions on files
@@ -24,7 +24,7 @@ Notes:
       * Remove account
     [ NILS: if still there, please elaborate on Mantis!)
 - known bugs:
-  * gnunet-gtk namespace upload (#885) [ Christian, RC ]
+  * gnunet-gtk no-update-call (#885)
   * gnunet-setup memory leaks (#878)
 - investigate: 
   * #892 (gconfig focus changes)
