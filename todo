@@ -23,13 +23,11 @@ Notes:
     * Uninstall
       * Remove account
     [ NILS: if still there, please elaborate on Mantis!)
-  * #893 (mysql prepared statement for update) 
 - known bugs:
   * gnunet-gtk namespace upload (#885) [ Christian, RC ]
   * gnunet-setup memory leaks (#878)
-  * gnunet-gtk "clear" button does not always work
 - investigate: 
-  * #890 (valgrind sqlite), #892 (gconfig focus changes)
+  * #892 (gconfig focus changes)
 - testing:
   * on Windows 98 [Nils]
   * more "make check" targets to test:  [ not RC ]
