@@ -20,6 +20,9 @@
 # Get config.
 . /etc/sysconfig/network
 
+# Just in case gnunetd is in /usr/local and not on the path
+export PATH=/usr/local/bin:$PATH
+
 # Check that networking is up.
 if [ ${NETWORKING} = "no" ]
 then
