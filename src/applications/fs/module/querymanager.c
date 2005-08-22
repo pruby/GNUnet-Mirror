@@ -156,9 +156,11 @@ void processResponse(const HashCode512 * key,
       memcpy(&rc[1],
 	     &value[1],
 	     ntohl(value->size) - sizeof(Datastore_Value));
+#if DEBUG_QUERYMANAGER
       LOG(LOG_DEBUG,
 	  "Sending reply to client waiting in slot %u.\n",
 	  i);
+#endif      
       coreAPI->sendToClient(trackers[i]->client,
 			    &rc->header);
       FREE(rc);
