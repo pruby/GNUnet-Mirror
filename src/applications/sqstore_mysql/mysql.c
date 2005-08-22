@@ -179,6 +179,8 @@ typedef struct {
   MYSQL_STMT * deleteh;
   MYSQL_STMT * deleteg;
   MYSQL_BIND dbind[7];
+  MYSQL_STMT * update;
+  MYSQL_BIND ubind[3];
 } mysqlHandle;
 
 #define INSERT_SAMPLE "INSERT INTO gn070 (size,type,prio,anonLevel,expire,hash,value) VALUES (?,?,?,?,?,?,?)"
@@ -191,6 +193,8 @@ typedef struct {
 
 #define DELETE_HASH_SAMPLE "DELETE FROM gn070 WHERE hash=? ORDER BY prio ASC LIMIT 1"
 #define DELETE_GENERIC_SAMPLE "DELETE FROM gn070 WHERE hash=? AND size=? AND type=? AND prio=? AND anonLevel=? AND expire=? AND value=? ORDER BY prio ASC LIMIT 1"
+
+#define UPDATE_SAMPLE "UPDATE gn070 SET prio=prio+? WHERE hash=? AND value=?"
 
 static mysqlHandle * dbh;
 
@@ -319,9 +323,11 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->selectc = mysql_stmt_init(dbhI->dbf);
     dbhI->selects = mysql_stmt_init(dbhI->dbf);
     dbhI->selectsc = mysql_stmt_init(dbhI->dbf);
+    dbhI->update = mysql_stmt_init(dbhI->dbf);
     dbhI->deleteh = mysql_stmt_init(dbhI->dbf);
     dbhI->deleteg = mysql_stmt_init(dbhI->dbf);
     if ( (dbhI->insert == NULL) ||
+	 (dbhI->update == NULL) ||
 	 (dbhI->select == NULL) ||
 	 (dbhI->selectc == NULL) ||
 	 (dbhI->selects == NULL) ||
@@ -331,6 +337,8 @@ static int iopen(mysqlHandle * dbhI,
       BREAK();
       if (dbhI->insert != NULL)
 	mysql_stmt_close(dbhI->insert);
+      if (dbhI->update != NULL)
+	mysql_stmt_close(dbhI->update);
       if (dbhI->select != NULL)
 	mysql_stmt_close(dbhI->select);
       if (dbhI->selectc != NULL)
@@ -362,6 +370,9 @@ static int iopen(mysqlHandle * dbhI,
 	mysql_stmt_prepare(dbhI->selectsc,
 			   SELECT_TYPE_SAMPLE_COUNT,
 			   strlen(SELECT_TYPE_SAMPLE_COUNT)) ||
+	mysql_stmt_prepare(dbhI->update,
+			   UPDATE_SAMPLE,
+			   strlen(UPDATE_SAMPLE)) ||
 	mysql_stmt_prepare(dbhI->deleteh,
 			   DELETE_HASH_SAMPLE,
 			   strlen(DELETE_HASH_SAMPLE)) ||
@@ -379,6 +390,7 @@ static int iopen(mysqlHandle * dbhI,
       mysql_stmt_close(dbhI->selects);
       mysql_stmt_close(dbhI->selectsc);
       mysql_stmt_close(dbhI->insert);
+      mysql_stmt_close(dbhI->update);
       mysql_stmt_close(dbhI->deleteh);
       mysql_stmt_close(dbhI->deleteg);
       mysql_close(dbhI->dbf);
@@ -410,6 +422,12 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->dbind[4].buffer_type = MYSQL_TYPE_LONG; /* anon level */
     dbhI->dbind[5].buffer_type = MYSQL_TYPE_LONGLONG; /* expiration */
     dbhI->dbind[6].buffer_type = MYSQL_TYPE_BLOB; /* value */
+    memset(dbhI->ubind,
+	   0,
+	   sizeof(dbhI->ubind));
+    dbhI->ubind[0].buffer_type = MYSQL_TYPE_LONG;
+    dbhI->ubind[1].buffer_type = MYSQL_TYPE_BLOB;
+    dbhI->ubind[2].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->prepare = YES;
   } else    
     dbhI->prepare = NO;
@@ -424,6 +442,7 @@ static int iclose(mysqlHandle * dbhI) {
   if (dbhI->dbf == NULL)
     return SYSERR;
   if (dbhI->prepare == YES) {
+    mysql_stmt_free_result(dbhI->update);
     mysql_stmt_free_result(dbhI->insert);
     mysql_stmt_free_result(dbhI->select);
     mysql_stmt_free_result(dbhI->selectc);
@@ -431,6 +450,7 @@ static int iclose(mysqlHandle * dbhI) {
     mysql_stmt_free_result(dbhI->selectsc);
     mysql_stmt_free_result(dbhI->deleteh);
     mysql_stmt_free_result(dbhI->deleteg);
+    mysql_stmt_close(dbhI->update);
     mysql_stmt_close(dbhI->insert);
     mysql_stmt_close(dbhI->select);
     mysql_stmt_close(dbhI->selectc);
@@ -792,10 +812,11 @@ static int get(const HashCode512 * query,
 	datasize = MAX_DATUM_SIZE;
 	continue;
       }
+#if DEBUG_MYSQL
       LOG(LOG_DEBUG,
 	  "Found in database block with type %u.\n",
 	  ntohl(*(int*)&datum[1]));
-
+#endif
       if( SYSERR == iter(&key,
 			 datum,
 			 closure) ) {
@@ -1008,51 +1029,42 @@ static int del(const HashCode512 * key,
 static int update(const HashCode512 * key,
 		  const Datastore_Value * value,
 		  int delta) {
-  char * escapedHash;
-  char * escapedBlock;
-  char * scratch;
-  int n;
-  int contentSize;
+  unsigned long contentSize;
+  unsigned long twenty;
 
+  twenty = sizeof(HashCode512);
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-
-  escapedHash = MALLOC(2*sizeof(HashCode512)+1);
-  mysql_escape_string(escapedHash,
-  	              (char *)key,
- 	     	      sizeof(HashCode512));
-  escapedBlock = MALLOC(2*contentSize+1);
-  mysql_escape_string(escapedBlock,
-		      (char *)&value[1],
-		      contentSize);
-  n = contentSize*2+sizeof(HashCode512)*2+100+1;
-  scratch = MALLOC(n);
-
+  dbh->ubind[0].buffer = (char*) &delta;
+  dbh->ubind[1].buffer = (char*) key;
+  dbh->ubind[1].length = &twenty;
+  dbh->ubind[2].buffer = (char*) &value[1];
+  dbh->ubind[2].length = &contentSize;
+  GNUNET_ASSERT(mysql_stmt_param_count(dbh->update) <= 3);
+  if (mysql_stmt_bind_param(dbh->update,
+			    dbh->ubind)) {
+    LOG(LOG_ERROR,
+	_("`%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_bind_param",
+	__FILE__, __LINE__,
+	mysql_stmt_error(dbh->update));
+    MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+    return SYSERR;
+  }  
   /* NOTE: as the table entry for 'prio' is defined as unsigned,
    * mysql will zero the value if its about to go negative. (This
    * will generate a warning though, but its probably not seen
    * at all in this context.)
    */
-  SNPRINTF(scratch,
-	   n,
-	   "UPDATE gn070"
-	   " SET prio=prio+%d"
-	   " WHERE hash='%s'"
-	   " AND value='%s'",
-	   delta,
-	   escapedHash,
-	   escapedBlock);
-  mysql_query(dbh->dbf,
-	      scratch);
-  FREE(scratch);
-  FREE(escapedHash);
-  FREE(escapedBlock);
-  if (mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
+  if (mysql_stmt_execute(dbh->update)) {
+    LOG(LOG_ERROR,
+	_("`%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_execute",
+	__FILE__, __LINE__,
+	mysql_stmt_error(dbh->update));
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }
-
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   return OK;
 }
@@ -1123,14 +1135,7 @@ static unsigned long long getSize() {
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
   bytesUsed = rowsInTable * avgRowLen;
-
-#if DEBUG_MYSQL
-  LOG(LOG_DEBUG,
-      "estimateContentAvailable (q=%d)\n",
-      kbUsed);
-#endif
-
-  return(bytesUsed);
+  return bytesUsed;
 }
 
 /**

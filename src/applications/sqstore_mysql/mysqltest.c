@@ -251,6 +251,12 @@ int main(int argc, char *argv[]) {
     errexit(_("Could not initialize libgnunetutil!\n"));
   initCore();
   api = requestService("sqstore");
+  if (api == NULL) {
+    BREAK();
+    doneCore();
+    doneUtil();
+    return 1;
+  }
   ok = SYSERR;
   if (api != NULL) {
     api->drop();
@@ -259,6 +265,8 @@ int main(int argc, char *argv[]) {
     if (api != NULL) {
       ok = test(api);
       releaseService(api);
+    } else {
+      BREAK();
     }
   }
   doneCore();
