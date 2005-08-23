@@ -31,7 +31,7 @@
 #include "ecrs.h"
 #include "tree.h"
 
-#define DEBUG_DOWNLOAD NO
+#define DEBUG_DOWNLOAD YES
 
 /**
  * Highest TTL allowed? (equivalent of 25-50 HOPS distance!)
@@ -439,6 +439,11 @@ static RequestManager * createRequestManager() {
     = 1; /* RSS is 1 */
   rm->ssthresh
     = 65535;
+#ifdef DEBUG_DOWNLOAD
+  LOG(LOG_DEBUG,
+      "created request manager %p\n",
+      rm);
+#endif
   return rm;
 }
 
@@ -452,6 +457,12 @@ static RequestManager * createRequestManager() {
 static void destroyRequestManager(RequestManager * rm) {
   int i;
 
+#ifdef DEBUG_DOWNLOAD
+  LOG(LOG_DEBUG,
+      "destroying request manager %p\n",
+      rm);
+#endif
+  MUTEX_LOCK(&rm->lock);
   for (i=0;i<rm->requestListIndex;i++) {
     if (rm->requestList[i]->searchHandle != NULL)
       FS_stop_search(rm->sctx,
@@ -462,6 +473,7 @@ static void destroyRequestManager(RequestManager * rm) {
   GROW(rm->requestList,
        rm->requestListSize,
        0);
+  MUTEX_UNLOCK(&rm->lock);
   FS_SEARCH_destroyContext(rm->sctx);
   MUTEX_DESTROY(&rm->lock);
   PTHREAD_REL_SELF(&rm->requestThread);
@@ -521,6 +533,7 @@ static void addRequest(RequestManager * rm,
   entry->searchHandle
     = NULL;
   MUTEX_LOCK(&rm->lock);
+  GNUNET_ASSERT(rm->requestListSize > 0);
   if (rm->requestListSize == rm->requestListIndex)
     GROW(rm->requestList,
 	 rm->requestListSize,

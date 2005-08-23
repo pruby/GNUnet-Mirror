@@ -229,7 +229,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 	hash2enc(&req->query[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS initiating search for %s of type %u\n",
+      "FSLIB: initiating search for `%s' of type %u\n",
       &enc,
       type);
 #endif

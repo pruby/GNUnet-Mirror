@@ -254,7 +254,6 @@ int main(int argc, char * argv[]){
     0
   };
   pid_t daemon;
-  int status;
   int ok;
   GNUNET_TCP_SOCKET * sock;
   struct ECRS_URI * uri;
