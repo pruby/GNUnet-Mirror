@@ -24,7 +24,6 @@ Notes:
       * Remove account
     [ NILS: if still there, please elaborate on Mantis!)
 - known bugs:
-  * gnunet-gtk no-update-call (#885)
   * gnunet-setup memory leaks (#878)
 - investigate: 
   * #892 (gconfig focus changes)
