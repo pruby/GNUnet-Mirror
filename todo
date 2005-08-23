@@ -14,12 +14,13 @@ Notes:
 0.7.0 [30.8.2005?] (aka "compatibility? what's that?"):
 - Missing Features:
   * gnunet-gtk namespace stuff (#872)  [ Christian, RC! ]
-  * gnunet-setup: php-ification for i18n [ Nils ]
-  * permissions on indexed files? [Nils]
+  * gnunet-setup: php-ification for i18n [ Nils, not RC ]
+  * permissions on indexed files? [Nils, RC!]
     If gnunetd has insufficient file permissions on files
     to be indexed, copy it to shared dir and index it there.
     [ NILS: if still there, please elaborate on Mantis!)
-  * Windows installer [Nils]
+  * improve renaming/moving of downloaded files [ Nils, RC! ]
+  * Windows installer [Nils, not RC]
     * Uninstall
       * Remove account
     [ NILS: if still there, please elaborate on Mantis!)
