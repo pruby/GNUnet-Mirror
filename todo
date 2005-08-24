@@ -24,6 +24,7 @@ Notes:
     * Uninstall
       * Remove account
     [ NILS: if still there, please elaborate on Mantis!)
+  * man page for gnunet-setup
 - known bugs:
   * gnunet-setup memory leaks (#878)
 - investigate: 
