@@ -41,10 +41,10 @@
 #define DEBUG_UPLOAD NO
 
 /**
- * Append the given key and query to the iblock[level].
- * If iblock[level] is already full, compute its chk
- * and push it to level+1.  iblocks is guaranteed to
- * be big enough.
+ * Append the given key and query to the iblock[level].  If
+ * iblock[level] is already full, compute its chk and push it to
+ * level+1 and clear the level.  iblocks is guaranteed to be big
+ * enough.
  */
 static int pushBlock(GNUNET_TCP_SOCKET * sock,
 		     const CHK * chk,	

@@ -390,7 +390,7 @@ static unsigned int getValue__(unsigned char a) {
 /**
  * Convert hash to ASCII encoding.  The ASCII encoding is rather
  * GNUnet specific.  It was chosen such that it only uses characters
- * in [0-9A-Z], can be produced without complex arithmetics and uses a
+ * in [0-9A-V], can be produced without complex arithmetics and uses a
  * small number of characters.  The GNUnet encoding uses 102
  * characters plus a null terminator.
  *
