@@ -1850,6 +1850,7 @@ static void scheduleInboundTraffic() {
   long long * adjustedRR;
   int didAssign;
   int firstRound;
+  int earlyRun;
 
   MUTEX_LOCK(&lock);
   cronTime(&now);
@@ -1877,11 +1878,14 @@ static void scheduleInboundTraffic() {
      aggressively (since we are unlikely to get close
      to the limits anyway) */
   timeDifference = now - lastRoundStart;
-  if ( (timeDifference < MIN_SAMPLE_TIME) &&
-       (activePeerCount > CONNECTION_MAX_HOSTS_ / 16) ) {
-    MUTEX_UNLOCK(&lock);
-    return; /* don't update too frequently, we need at least some
-	       semi-representative sampling! */
+  earlyRun = 0;
+  if (timeDifference < MIN_SAMPLE_TIME) {
+    earlyRun = 1;
+    if  (activePeerCount > CONNECTION_MAX_HOSTS_ / 16) {
+      MUTEX_UNLOCK(&lock);
+      return; /* don't update too frequently, we need at least some
+		 semi-representative sampling! */
+    }
   }
   if (timeDifference == 0)
     timeDifference = 1;
@@ -1947,11 +1951,15 @@ static void scheduleInboundTraffic() {
      * reasonable and make the check against the max value we have
      * sent to this peer (assume announcements may have got lost).
      */
-    if (adjustedRR[u] > 2 * MAX_BUF_FACT *
-	entries[u]->max_transmitted_limit) {
+    if ( (earlyRun == 0) &&
+	 (adjustedRR[u] > 2 * MAX_BUF_FACT *
+	  entries[u]->max_transmitted_limit) &&
+	 (adjustedRR[u] > 2 * MAX_BUF_FACT *
+	  entries[u]->idealized_limit) ) {	 
       EncName enc;
 
       entries[u]->violations++;
+      entries[u]->recently_received = 0; /* "clear" slate */
       if (entries[u]->violations > 10) {
 	IFLOG(LOG_INFO,
 	      hash2enc(&entries[u]->session.sender.hashPubKey,
@@ -1975,7 +1983,8 @@ static void scheduleInboundTraffic() {
 	continue;
       }
     } else {
-      if ( (adjustedRR[u] < entries[u]->max_transmitted_limit/2) &&
+      if ( (earlyRun == 0) &&
+	   (adjustedRR[u] < entries[u]->max_transmitted_limit/2) &&
 	   (entries[u]->violations > 0) ) {
 	/* allow very low traffic volume to
 	   balance out (rare) times of high
@@ -1983,7 +1992,7 @@ static void scheduleInboundTraffic() {
 	entries[u]->violations--;
       }
     }
-
+    
     if (adjustedRR[u] < MIN_BPM_PER_PEER/2)
       adjustedRR[u] = MIN_BPM_PER_PEER/2; 
     /* even if we received NO traffic, allow
