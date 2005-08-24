@@ -428,7 +428,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
             LOG(LOG_ERROR,
 		_("Because the file `%s' has been unavailable for 3 days"
 		  " it got removed from your share.  Please unindex files before"
-		  " deleting them as the index now contains invalid references!"),
+		  " deleting them as the index now contains invalid references!\n"),
 		ofn);
 	  }
 	  FREE(ofn);
