@@ -401,6 +401,7 @@ static int readUpdateData(const char * nsname,
   while ( (pos < size) &&
 	  (uri[pos] != '\0') )
     pos++;
+  pos++;
   size -= pos;
   if (size == 0) {
     FREE(buf);
