@@ -28,6 +28,7 @@ Notes:
   * gnunet-setup memory leaks (#878)
 - investigate: 
   * #892 (gconfig focus changes)
+  * quota code for sqstores: is space estimate correct?
 - testing:
   * on Windows 98 [Nils]
   * more "make check" targets to test:  [ not RC ]
