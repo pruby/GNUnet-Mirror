@@ -29,6 +29,7 @@ Notes:
 - investigate: 
   * #892 (gconfig focus changes)
   * quota code for sqstores: is space estimate correct?
+  * gap:2061 BREAK (bad route)
 - testing:
   * on Windows 98 [Nils]
   * more "make check" targets to test:  [ not RC ]
