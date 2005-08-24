@@ -63,12 +63,12 @@ void ECRS_addPublicationDateToMetaData(MetaData * md) {
 
   TIME(&t);
   ECRS_delFromMetaData(md,
-		       EXTRACTOR_PUBLICATION_DATE,
-		       NULL);
+                       EXTRACTOR_PUBLICATION_DATE,
+                       NULL);
   dat = GN_CTIME(&t);
   ECRS_addToMetaData(md,
-		     EXTRACTOR_PUBLICATION_DATE,
-		     dat);
+                     EXTRACTOR_PUBLICATION_DATE,
+                     dat);
   FREE(dat);
 }
 
@@ -77,15 +77,15 @@ void ECRS_addPublicationDateToMetaData(MetaData * md) {
  * @return OK on success, SYSERR if this entry already exists
  */
 int ECRS_addToMetaData(MetaData * md,
-		       EXTRACTOR_KeywordType type,
-		       const char * data) {
+                       EXTRACTOR_KeywordType type,
+                       const char * data) {
   int idx;
 
   GNUNET_ASSERT(data != NULL);
   for (idx=0;idx<md->itemCount;idx++) {
     if ( (md->items[idx].type == type) &&
-	 (0 == strcmp(md->items[idx].data,
-		      data)) )
+         (0 == strcmp(md->items[idx].data,
+                      data)) )
       return SYSERR;
   }
   idx = md->itemCount;
@@ -102,23 +102,23 @@ int ECRS_addToMetaData(MetaData * md,
  * @return OK on success, SYSERR if the item does not exist in md
  */
 int ECRS_delFromMetaData(MetaData * md,
-			 EXTRACTOR_KeywordType type,
-			 const char * data) {
+                         EXTRACTOR_KeywordType type,
+                         const char * data) {
   int idx;
   int ret = SYSERR;
   for (idx=0;idx<md->itemCount;idx++) {
     if ( (md->items[idx].type == type) &&
-	 ( (data == NULL) ||
-	   (0 == strcmp(md->items[idx].data,
-			data)) ) ) {
+         ( (data == NULL) ||
+           (0 == strcmp(md->items[idx].data,
+                        data)) ) ) {
       FREE(md->items[idx].data);
       md->items[idx] = md->items[md->itemCount-1];
       GROW(md->items,
-	   md->itemCount,
-	   md->itemCount-1);
+           md->itemCount,
+           md->itemCount-1);
       if (data == NULL) {
-	ret = OK;
-	continue;
+        ret = OK;
+        continue;
       }
       return OK;
     }
@@ -132,8 +132,8 @@ int ECRS_delFromMetaData(MetaData * md,
  * @return number of entries
  */
 int ECRS_getMetaData(const MetaData * md,
-		     ECRS_MetaDataIterator iterator,
-		     void * closure) {
+                     ECRS_MetaDataIterator iterator,
+                     void * closure) {
   int i;
   int sub;
 
@@ -141,10 +141,10 @@ int ECRS_getMetaData(const MetaData * md,
   for (i=md->itemCount-1;i>=0;i--) {
     if (md->items[i].type != EXTRACTOR_THUMBNAIL_DATA) {
       if ( (iterator != NULL) &&
-	   (OK != iterator(md->items[i].type,
-			   md->items[i].data,
-			   closure)) )
-	return SYSERR;
+           (OK != iterator(md->items[i].type,
+                           md->items[i].data,
+                           closure)) )
+        return SYSERR;
     } else
       sub++;
   }
@@ -157,7 +157,7 @@ int ECRS_getMetaData(const MetaData * md,
  * @return number of entries
  */
 char * ECRS_getFromMetaData(const MetaData * md,
-			    EXTRACTOR_KeywordType type) {
+                            EXTRACTOR_KeywordType type) {
   int i;
 
   for (i=md->itemCount-1;i>=0;i--)
@@ -172,7 +172,7 @@ char * ECRS_getFromMetaData(const MetaData * md,
  * @return number of entries
  */
 char * ECRS_getFirstFromMetaData(const MetaData * md,
-				 ...) {
+                                 ...) {
   char * ret;
   va_list args;
   EXTRACTOR_KeywordType type;
@@ -184,7 +184,7 @@ char * ECRS_getFirstFromMetaData(const MetaData * md,
     if (type == -1)
       break;
     ret = ECRS_getFromMetaData(md,
-			       type);
+                               type);
     if (ret != NULL) 
       break;
   }
@@ -201,8 +201,8 @@ char * ECRS_getFirstFromMetaData(const MetaData * md,
  * @return 1 on error, 0 on success
  */
 static int decodeThumbnail(const unsigned char * in,
-			   unsigned char ** out,
-			   size_t * outSize) {
+                           unsigned char ** out,
+                           size_t * outSize) {
   unsigned char * buf;
   size_t pos;
   size_t wpos;
@@ -244,13 +244,13 @@ static int decodeThumbnail(const unsigned char * in,
  * @return number of bytes in thumbnail, 0 if not available
  */
 size_t ECRS_getThumbnailFromMetaData(const struct ECRS_MetaData * md,
-				     unsigned char ** thumb) {
+                                     unsigned char ** thumb) {
   char * encoded;
   int ret;
   size_t size;
 
   encoded = ECRS_getFromMetaData(md,
-				 EXTRACTOR_THUMBNAIL_DATA);
+                                 EXTRACTOR_THUMBNAIL_DATA);
   if (encoded == NULL)
     return 0;
   if (strlen(encoded) == 0) {
@@ -259,8 +259,8 @@ size_t ECRS_getThumbnailFromMetaData(const struct ECRS_MetaData * md,
   }
   *thumb = NULL;
   ret = decodeThumbnail(encoded,
-			thumb,
-			&size);
+                        thumb,
+                        &size);
   FREE(encoded);
   if (ret == 0)
     return size;
@@ -280,11 +280,11 @@ MetaData * ECRS_dupMetaData(const MetaData * md) {
   ret = ECRS_createMetaData();
   for (i=md->itemCount-1;i>=0;i--)
     ECRS_addToMetaData(ret,
-		       md->items[i].type,
-		       md->items[i].data);
+                       md->items[i].type,
+                       md->items[i].data);
   return ret;
 }
-		
+                
 /**
  * Extract meta-data from a file.
  *
@@ -292,8 +292,8 @@ MetaData * ECRS_dupMetaData(const MetaData * md) {
  *   of meta-data items obtained
  */
 int ECRS_extractMetaData(MetaData * md,
-			 const char * filename,
-			 EXTRACTOR_ExtractorList * extractors) {
+                         const char * filename,
+                         EXTRACTOR_ExtractorList * extractors) {
   EXTRACTOR_KeywordList * head;
   EXTRACTOR_KeywordList * pos;
   int ret;
@@ -303,13 +303,13 @@ int ECRS_extractMetaData(MetaData * md,
   if (extractors == NULL)
     return 0;
   head = EXTRACTOR_getKeywords(extractors,
-			       filename);
+                               filename);
   pos = head;
   ret = 0;
   while (pos != NULL) {
     if (OK == ECRS_addToMetaData(md,
-				 pos->keywordType,
-				 pos->keyword))
+                                 pos->keywordType,
+                                 pos->keyword))
       ret++;
     pos = pos->next;
   }
@@ -318,7 +318,7 @@ int ECRS_extractMetaData(MetaData * md,
 }
 
 static unsigned int tryCompression(char * data,
-				   unsigned int oldSize) {
+                                   unsigned int oldSize) {
   char * tmp;
   uLongf dlen;
 
@@ -349,17 +349,17 @@ static unsigned int tryCompression(char * data,
  * @return NULL on error
  */
 static char * decompress(const char * input,
-			 unsigned int inputSize,
-			 unsigned int outputSize) {
+                         unsigned int inputSize,
+                         unsigned int outputSize) {
   char * output;
   uLongf olen;
 
   olen = outputSize;
   output = MALLOC(olen);
   if (Z_OK == uncompress(output,
-			 &olen,
-			 input,
-			 inputSize)) {
+                         &olen,
+                         input,
+                         inputSize)) {
     return output;
   } else {
     FREE(output);
@@ -416,9 +416,9 @@ typedef struct {
  *         space)
  */
 int ECRS_serializeMetaData(const MetaData * md,
-			   char * target,
-			   unsigned int max,
-			   int part) {
+                           char * target,
+                           unsigned int max,
+                           int part) {
   MetaDataHeader * hdr;
   size_t size;
   size_t pos;
@@ -447,14 +447,14 @@ int ECRS_serializeMetaData(const MetaData * md,
     for (i=0;i<ic;i++) {
       len = strlen(md->items[i].data) + 1;
       memcpy(&((char*)hdr)[pos],
-	     md->items[i].data,
-	     len);
+             md->items[i].data,
+             len);
       pos += len;
     }
 
     hdr->size = htonl(size);
     pos = tryCompression((char*)&hdr[1],
-			 size - sizeof(MetaDataHeader));
+                         size - sizeof(MetaDataHeader));
     if (pos < size - sizeof(MetaDataHeader)) {
       hdr->version = htonl(HEADER_COMPRESSED);
       size = pos + sizeof(MetaDataHeader);
@@ -475,15 +475,15 @@ int ECRS_serializeMetaData(const MetaData * md,
   }
   GNUNET_ASSERT(size <= max);
   memcpy(target,
-	 hdr,
-	 size);
+         hdr,
+         size);
   FREE(hdr);
   /* extra check: deserialize! */
 #if EXTRA_CHECKS
   {
     MetaData * mdx;
     mdx = ECRS_deserializeMetaData(target,
-				   size);    
+                                   size);    
     GNUNET_ASSERT(NULL != mdx);
     ECRS_freeMetaData(mdx);
   }
@@ -522,13 +522,13 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
   for (i=0;i<ic;i++) {
     len = strlen(md->items[i].data) + 1;
     memcpy(&((char*)hdr)[pos],
-	   md->items[i].data,
-	   len);
+           md->items[i].data,
+           len);
     pos += len;
   }
 
   pos = tryCompression((char*)&hdr[1],
-		       size - sizeof(MetaDataHeader));
+                       size - sizeof(MetaDataHeader));
   if (pos < size - sizeof(MetaDataHeader))
     size = pos + sizeof(MetaDataHeader);
 
@@ -545,7 +545,7 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
  */
 struct ECRS_MetaData *
 ECRS_deserializeMetaData(const char * input,
-			 unsigned int size) {
+                         unsigned int size) {
   MetaData * md;
   const MetaDataHeader * hdr;
   unsigned int ic;
@@ -568,12 +568,12 @@ ECRS_deserializeMetaData(const char * input,
     if (dataSize > 2 * 1042 * 1024) {
       BREAK();
       return NULL; /* only 2 MB allowed [to make sure we don't blow
-			our memory limit because of a mal-formed
-			message... ]*/
+                        our memory limit because of a mal-formed
+                        message... ]*/
     }
     data = decompress((char*)&input[sizeof(MetaDataHeader)],
-		      size - sizeof(MetaDataHeader),
-		      dataSize);
+                      size - sizeof(MetaDataHeader),
+                      dataSize);
     if (data == NULL) {
       BREAK();
       return NULL;
@@ -601,11 +601,11 @@ ECRS_deserializeMetaData(const char * input,
   i = 0;
   pos = sizeof(unsigned int) * ic;
   while ( (pos < dataSize) &&
-	  (i < ic) ) {
+          (i < ic) ) {
     len = strlen(&data[pos])+1;
     ECRS_addToMetaData(md,
-		       (EXTRACTOR_KeywordType) ntohl(((unsigned int*)data)[i]),
-		       &data[pos]);
+                       (EXTRACTOR_KeywordType) ntohl(((unsigned int*)data)[i]),
+                       &data[pos]);
     pos += len;
     i++;
   }
@@ -632,10 +632,10 @@ int ECRS_isDirectory(const MetaData * md) {
   for (i=md->itemCount-1;i>=0;i--) {
     if (md->items[i].type == EXTRACTOR_MIMETYPE) {
       if (0 == strcmp(md->items[i].data,
-		      GNUNET_DIRECTORY_MIME)) 
-	return YES;
+                      GNUNET_DIRECTORY_MIME)) 
+        return YES;
       else
-	return NO;
+        return NO;
     }
   }
   return SYSERR;
@@ -727,60 +727,60 @@ char * ECRS_suggestFilename(const char * filename) {
   path = STRDUP(filename);
   i = strlen(path);
   while ( (i > 0) &&
-	  (path[i] != DIR_SEPARATOR) )
+          (path[i] != DIR_SEPARATOR) )
     i--;
   path[i] = '\0';
   ret = NULL;
   l = EXTRACTOR_loadDefaultLibraries();
   list = EXTRACTOR_getKeywords(l, filename);
   key = EXTRACTOR_extractLast(EXTRACTOR_TITLE,
-			      list);
+                              list);
   if (key == NULL)
     key = EXTRACTOR_extractLast(EXTRACTOR_DESCRIPTION,
-				list);
+                                list);
   if (key == NULL)
     key = EXTRACTOR_extractLast(EXTRACTOR_COMMENT,
-				list);
+                                list);
   if (key == NULL)
     key = EXTRACTOR_extractLast(EXTRACTOR_SUBJECT,
-				list);
+                                list);
   if (key == NULL)
     key = EXTRACTOR_extractLast(EXTRACTOR_ALBUM,
-				list);
+                                list);
   if (key == NULL)
     key = EXTRACTOR_extractLast(EXTRACTOR_UNKNOWN,
-				list);
+                                list);
   mime = EXTRACTOR_extractLast(EXTRACTOR_MIMETYPE,
-			       list);
+                               list);
   if (mime != NULL) {
     i = 0;
     while ( (mimeMap[i][0] != NULL) &&
-	    (0 != strcmp(mime, mimeMap[i][0])) )
+            (0 != strcmp(mime, mimeMap[i][0])) )
       i++;
     if (mimeMap[i][1] == NULL)
       LOG(LOG_DEBUG,
-	  "Did not find mime type `%s' in extension list.\n",
-	  mime);
+          "Did not find mime type `%s' in extension list.\n",
+          mime);
     mime = mimeMap[i][1];
   }
   if (key == NULL) {
     key = &filename[strlen(filename)-1];
     while ( (key != filename) &&
-	    (key[0] != DIR_SEPARATOR) )
+            (key[0] != DIR_SEPARATOR) )
       key--;
     if (key[0] == DIR_SEPARATOR)
       key++;    
   }
   if (mime != NULL) {
     if (0 == strcmp(&key[strlen(key)-strlen(mime)],
-		    mime))
+                    mime))
       mime = NULL;
   }
   if (mime == NULL) {
     i = strlen(filename);
     while ( (i>0) &&
-	    (filename[i] != '.') &&
-	    (filename[i] != DIR_SEPARATOR) )
+            (filename[i] != '.') &&
+            (filename[i] != DIR_SEPARATOR) )
       i--;
     if (filename[i] == '.')
       mime = STRDUP(&filename[i]);
@@ -803,39 +803,39 @@ char * ECRS_suggestFilename(const char * filename) {
     if (! isprint(renameTo[i]))
       renameTo[i] = '_';
   if (0 == STAT(renameTo,
-		&filestat)) {
+                &filestat)) {
     i = strlen(renameTo);
     j = 0;
     do {
       SNPRINTF(&renameTo[i],
-	       19,
-	       ".%u",
-	       j++);      
+               19,
+               ".%u",
+               j++);      
       if (j > 100000)
-	break;
+        break;
     } while (0 == STAT(renameTo,
-		       &filestat));
+                       &filestat));
   }
   if (0 != strcmp(renameTo, filename)) {
     if (0 != STAT(renameTo,
-		  &filestat)) {
-      if (0 != RENAME(filename, renameTo)) 	
-	LOG(LOG_ERROR,
-	    _("Renaming of file `%s' to `%s' failed: %s\n"),
-	    filename, 
-	    renameTo,
-	    STRERROR(errno));
+                  &filestat)) {
+      if (0 != RENAME(filename, renameTo))      
+        LOG(LOG_ERROR,
+            _("Renaming of file `%s' to `%s' failed: %s\n"),
+            filename, 
+            renameTo,
+            STRERROR(errno));
       else
-	ret = STRDUP(renameTo);
+        ret = STRDUP(renameTo);
     } else {
       LOG(LOG_ERROR,
-	  _("Could not rename file `%s' to `%s': file exists\n"),
-	  filename, 
-	  renameTo);
-    }	
+          _("Could not rename file `%s' to `%s': file exists\n"),
+          filename, 
+          renameTo);
+    }   
   }
   FREE(path);
-  FREE(renameTo);  				
+  FREE(renameTo);                               
   EXTRACTOR_freeKeywords(list);
   EXTRACTOR_removeAll(l);
   return ret;
@@ -845,7 +845,7 @@ char * ECRS_suggestFilename(const char * filename) {
  * Test if two MDs are equal.
  */
 int ECRS_equalsMetaData(const struct ECRS_MetaData * md1,
-			const struct ECRS_MetaData * md2) {
+                        const struct ECRS_MetaData * md2) {
   int i;
   int j;
   int found;
@@ -856,9 +856,9 @@ int ECRS_equalsMetaData(const struct ECRS_MetaData * md1,
     found = NO;
     for (j=0;j<md2->itemCount;j++)
       if ( (md1->items[i].type == md2->items[j].type) &&
-	   (0 == strcmp(md1->items[i].data,
-			md2->items[j].data)) )
-	found = YES;
+           (0 == strcmp(md1->items[i].data,
+                        md2->items[j].data)) )
+        found = YES;
     if (found == NO)
       return NO;
   }
