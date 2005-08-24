@@ -59,6 +59,11 @@
  */
 #define LIVE_SCAN_EFFECTIVENESS 10
 
+/**
+ * Value < 1 that determines the chance (1:LPE) that the cron job
+ * actually tries to ping a peer that is about to time-out.
+ */
+#define LIVE_PING_EFFECTIVENESS 20
 
 static CoreAPIForApplication * coreAPI;
 
@@ -217,6 +222,8 @@ static void checkNeedForPing(const PeerIdentity * peer,
   cron_t now;
   cron_t act;
 
+  if (weak_randomi(LIVE_PING_EFFECTIVENESS) != 0)
+    return;
   cronTime(&now);
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
     BREAK();
@@ -263,14 +270,9 @@ static void cronCheckLiveness(void * unused) {
 	 (0 == coreAPI->isSlotUsed(i)) )
       scanForHosts(i);
   }
-  if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) == 0)
-    active = coreAPI->forAllConnectedNodes
-      (&checkNeedForPing,
-       NULL);
-  else 
-    active = coreAPI->forAllConnectedNodes
-      (NULL,
-       NULL);  
+  active = coreAPI->forAllConnectedNodes
+    (&checkNeedForPing,
+     NULL);
   saturation = 1.0 * slotCount / active;
 }
 

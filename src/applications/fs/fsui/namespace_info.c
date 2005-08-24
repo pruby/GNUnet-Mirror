@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -455,7 +456,7 @@ static int writeUpdateData(const char * nsname,
 	 uri,
 	 strlen(uri)+1);
   FREE(uri);
-  GNUNET_ASSERT(OK ==
+  GNUNET_ASSERT(metaSize ==
 		ECRS_serializeMetaData(fi->meta,
 				       &((char*)&buf[1])[strlen(uri)+1],
 				       metaSize,
