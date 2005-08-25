@@ -226,47 +226,49 @@ ECRS_createNamespace(const char * name,
 	 nb,
 	 sizeof(NBlock) + mdsize);
 
-  keywords = advertisementURI->data.ksk.keywords;
-  keywordCount = advertisementURI->data.ksk.keywordCount;
-  cpy = MALLOC(size - sizeof(KBlock) - sizeof(unsigned int));
-  memcpy(cpy, 
-	 &knb->nblock,
-	 size - sizeof(KBlock) - sizeof(unsigned int));
-  for (i=0;i<keywordCount;i++) {
-    hash(keywords[i],
-	 strlen(keywords[i]),
-	 &hc);
-    pk = makeKblockKey(&hc);
-    getPublicKey(pk,
-		 &knb->kblock.keyspace);
-    GNUNET_ASSERT(size - sizeof(KBlock) - sizeof(unsigned int)
-		  == sizeof(NBlock) + mdsize);
-    ECRS_encryptInPlace(&hc,
-			&knb->nblock,
-			size - sizeof(KBlock) - sizeof(unsigned int));
-
-    GNUNET_ASSERT(OK == sign(pk,
-			     sizeof(NBlock) + mdsize,
-			     &knb->nblock,
-			     &knb->kblock.signature));
-    /* extra check: verify sig */
-    freePrivateKey(pk);
-    if (OK != FS_insert(sock, knvalue)) {
-      FREE(rootURI);
-      ECRS_deleteNamespace(name);
-      FREE(cpy);
-      FREE(knvalue);
-      FREE(value);
-      releaseClientSocket(sock);
-      freePrivateKey(hk);
-      return NULL;
-    }
-    /* restore nblock to avoid re-encryption! */
-    memcpy(&knb->nblock,
-	   cpy, 	   
+  if (advertisementURI != NULL) {
+    keywords = advertisementURI->data.ksk.keywords;
+    keywordCount = advertisementURI->data.ksk.keywordCount;
+    cpy = MALLOC(size - sizeof(KBlock) - sizeof(unsigned int));
+    memcpy(cpy, 
+	   &knb->nblock,
 	   size - sizeof(KBlock) - sizeof(unsigned int));
+    for (i=0;i<keywordCount;i++) {
+      hash(keywords[i],
+	   strlen(keywords[i]),
+	   &hc);
+      pk = makeKblockKey(&hc);
+      getPublicKey(pk,
+		   &knb->kblock.keyspace);
+      GNUNET_ASSERT(size - sizeof(KBlock) - sizeof(unsigned int)
+		    == sizeof(NBlock) + mdsize);
+      ECRS_encryptInPlace(&hc,
+			  &knb->nblock,
+			  size - sizeof(KBlock) - sizeof(unsigned int));
+      
+      GNUNET_ASSERT(OK == sign(pk,
+			       sizeof(NBlock) + mdsize,
+			       &knb->nblock,
+			       &knb->kblock.signature));
+      /* extra check: verify sig */
+      freePrivateKey(pk);
+      if (OK != FS_insert(sock, knvalue)) {
+	FREE(rootURI);
+	ECRS_deleteNamespace(name);
+	FREE(cpy);
+	FREE(knvalue);
+	FREE(value);
+	releaseClientSocket(sock);
+	freePrivateKey(hk);
+	return NULL;
+      }
+      /* restore nblock to avoid re-encryption! */
+      memcpy(&knb->nblock,
+	     cpy, 	   
+	     size - sizeof(KBlock) - sizeof(unsigned int));
+    } 
+    FREE(cpy);
   }
-  FREE(cpy);
   FREE(knvalue);
   FREE(value);
   releaseClientSocket(sock);
@@ -552,14 +554,15 @@ static int processFile_(const char * name,
 	       &pk);
   freePrivateKey(hk);
   hash(&pk, sizeof(PublicKey), &namespace);
-  if (c->cb != NULL) {
+  if (NULL != c->cb) {
     if (OK == c->cb(&namespace,
 		    name,
 		    c->cls))
       c->cnt++;
     else
       c->cnt = SYSERR;
-  }
+  } else
+    c->cnt++;
   return OK;
 }
 

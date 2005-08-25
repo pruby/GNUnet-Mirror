@@ -235,11 +235,14 @@ static int localListNamespaceHelper(const HashCode512 * nsid,
 		    &rating);
   if (meta == NULL)
     meta = ECRS_createMetaData();
-  ret = c->iterator(c->closure,
-		    name,
-		    nsid,
-		    meta,
-		    rating);
+  if (c->iterator != NULL) {
+    ret = c->iterator(c->closure,
+		      name,
+		      nsid,
+		      meta,
+		      rating);
+  } else
+    ret = OK;
   ECRS_freeMetaData(meta);
   return ret;
 }
@@ -260,11 +263,14 @@ static int listNamespaceHelper(const char * fn,
 			      &meta,
 			      &rating))
     return OK; /* ignore entry */
-  ret = c->iterator(c->closure,
-		    fn,
-		    &id,
-		    meta,
-		    rating);
+  if (c->iterator != NULL) {
+    ret = c->iterator(c->closure,
+		      fn,
+		      &id,
+		      meta,
+		      rating);
+  } else
+    ret = OK;
   ECRS_freeMetaData(meta);
   return OK;
 }
@@ -408,20 +414,22 @@ static int readUpdateData(const char * nsname,
     BREAK();
     return SYSERR;
   }
-  fi->meta = ECRS_deserializeMetaData(&uri[pos],
-				      size);
-  if (fi->meta == NULL) {
-    FREE(buf);
-    BREAK();
-    return SYSERR;
-  }
-  fi->uri = ECRS_stringToUri(uri);
-  if (fi->uri == NULL) {
-    ECRS_freeMetaData(fi->meta);
-    fi->meta = NULL;
-    FREE(buf);
-    BREAK();
-    return SYSERR;
+  if (fi != NULL) {
+    fi->meta = ECRS_deserializeMetaData(&uri[pos],
+					size);
+    if (fi->meta == NULL) {
+      FREE(buf);
+      BREAK();
+      return SYSERR;
+    }
+    fi->uri = ECRS_stringToUri(uri);
+    if (fi->uri == NULL) {
+      ECRS_freeMetaData(fi->meta);
+      fi->meta = NULL;
+      FREE(buf);
+      BREAK();
+      return SYSERR;
+    }
   }
   *updateInterval = ntohl(buf->updateInterval);
   *lastPubTime = ntohl(buf->lastPubTime);

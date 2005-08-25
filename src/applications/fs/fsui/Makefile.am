@@ -27,7 +27,8 @@ check_PROGRAMS = \
   fsuitest \
   fsuitest2 \
   searchtest \
-  downloadtest
+  downloadtest \
+  namespace_infotest
 
 TESTS = $(check_PROGRAMS)
 
@@ -41,6 +42,13 @@ fsuitest_LDADD = \
 fsuitest2_SOURCES = \
   fsuitest2.c 
 fsuitest2_LDADD = \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+namespace_infotest_SOURCES = \
+  namespace_infotest.c 
+namespace_infotest_LDADD = \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
