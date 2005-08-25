@@ -802,21 +802,22 @@ char * ECRS_suggestFilename(const char * filename) {
   for (i=strlen(renameTo)-1;i>=0;i--)
     if (! isprint(renameTo[i]))
       renameTo[i] = '_';
-  if (0 == STAT(renameTo,
-                &filestat)) {
-    i = strlen(renameTo);
-    j = 0;
-    do {
-      SNPRINTF(&renameTo[i],
-               19,
-               ".%u",
-               j++);      
-      if (j > 100000)
-        break;
-    } while (0 == STAT(renameTo,
-                       &filestat));
-  }
   if (0 != strcmp(renameTo, filename)) {
+    if (0 == STAT(renameTo,
+                  &filestat)) {
+      i = strlen(renameTo);
+      j = 0;
+      do {
+        SNPRINTF(&renameTo[i],
+                 19,
+                 ".%u",
+                 j++);      
+        if (j > 100000)
+          break;
+      } while (0 == STAT(renameTo,
+                         &filestat));
+    }
+
     if (0 != STAT(renameTo,
                   &filestat)) {
       if (0 != RENAME(filename, renameTo))      
