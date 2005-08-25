@@ -193,6 +193,15 @@ menu "Default options for gnunet-gtk" GNUNET-GTK
 		stats: statistics
 		Default: PLUGINS = "about daemon fs stats"
 
+        config DISABLE-PREVIEWS
+        string "Should showing previews be disabled?"
+        default "NO"
+        help
+		When searching, gnunet-gtk can show previews
+		(if the inserting party generated them).
+		This can be disabled with this option.
+		Default: DISABLE-PREVIEWS = "NO"
+
 endmenu
 
 if Meta::EXPERIMENTAL-CLIENT
