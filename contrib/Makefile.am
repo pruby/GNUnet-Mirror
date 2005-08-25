@@ -8,8 +8,7 @@ pkgdata_DATA = \
 
 EXTRA_DIST = \
  gnunet-download-manager.scm \
- autoinstall \
- initgnunet \
+ init_gnunet_redhat init_gnunet_ubuntu \
  visualize_stats.sh \
  gnmessage.sh \
  junkinsert.sh \
