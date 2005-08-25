@@ -464,12 +464,12 @@ static int writeUpdateData(const char * nsname,
   memcpy(&buf[1],
 	 uri,
 	 strlen(uri)+1);
-  FREE(uri);
   GNUNET_ASSERT(metaSize ==
 		ECRS_serializeMetaData(fi->meta,
 				       &((char*)&buf[1])[strlen(uri)+1],
 				       metaSize,
 				       NO));
+  FREE(uri);
   fn = getUpdateDataFilename(nsname,
 			     thisId);
   writeFile(fn,
