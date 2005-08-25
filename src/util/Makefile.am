@@ -3,7 +3,7 @@ INCLUDES = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/GNUnet
 
 AM_CFLAGS = \
-  -DPLUGIN_PATH="\"${plugindir}\""
+  -DPLUGIN_PATH="\"${plugindir}\"" -DPREFIX_PATH="\"${prefix}\""
 
 # GNU Gettext support
 LIBS = @LIBINTL@ @LIBS@

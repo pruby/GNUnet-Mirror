@@ -223,7 +223,7 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
 	      "# Automatically created by gnunet-setup\n"
 	      "#\n"
 	      "\n"
-	      "PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n"
+	      "PATH=$PATH:" PREFIX_PATH 
 	      "PIDFILE=/var/run/gnunetd/gnunetd.pid\n"
 	      "\n"
 	      "case \"$1\" in\n"
