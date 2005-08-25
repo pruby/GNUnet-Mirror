@@ -405,6 +405,8 @@ void hash2enc(const HashCode512 * block,
   unsigned int bits;
   unsigned int vbit;
 
+  GNUNET_ASSERT(block != NULL);
+  GNUNET_ASSERT(result != NULL);
   vbit = 0;
   wpos = 0;
   rpos = 0;

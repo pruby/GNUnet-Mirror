@@ -758,6 +758,18 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
 		    const struct ECRS_MetaData * md); /* namespace_info.c */
 
 /**
+ * Compute the next ID for peridodically updated content.
+ * @param updateInterval MUST be a peridic interval (not NONE or SPORADIC)
+ * @param thisId MUST be known to FSUI
+ * @return OK on success, SYSERR on error
+ */
+int FSUI_computeNextId(const char * name,
+		       const HashCode512 * lastId,
+		       const HashCode512 * thisId,
+		       TIME_T updateInterval,
+		       HashCode512 * nextId);
+
+/**
  * List all updateable content in a given namespace.
  */
 int FSUI_listNamespaceContent(struct FSUI_Context * ctx,

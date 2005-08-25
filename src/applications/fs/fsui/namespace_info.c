@@ -482,6 +482,21 @@ static int writeUpdateData(const char * nsname,
 }
 			
 
+/**
+ * Compute the next ID for peridodically updated content.
+ * @param updateInterval MUST be a peridic interval (not NONE or SPORADIC)
+ * @param thisId MUST be known to FSUI
+ * @return OK on success, SYSERR on error
+ */
+int FSUI_computeNextId(const char * name,
+		       const HashCode512 * lastId,
+		       const HashCode512 * thisId,
+		       TIME_T updateInterval,
+		       HashCode512 * nextId) {
+  BREAK();
+  return SYSERR; /* not implemented -- FIXME! */
+}
+
 
 /**
  * Add an entry into a namespace (also for publishing
@@ -649,8 +664,10 @@ static int lNCHelper(const char * fil,
   TIME_T now;
 
   if (OK != enc2hash(fil,
-		     &lastId))
+		     &lastId)) {
+    BREAK();
     return OK;
+  }
   fi.uri = NULL;
   fi.meta = NULL;
   if (OK != readUpdateData(cls->name,
@@ -658,8 +675,10 @@ static int lNCHelper(const char * fil,
 			   &nextId,
 			   &fi,
 			   &pubFreq,
-			   &lastTime))
+			   &lastTime)) {
+    BREAK();
     return OK;
+  }
   cls->cnt++;
   if (pubFreq == ECRS_SBLOCK_UPDATE_SPORADIC) {
     nextTime = 0;
