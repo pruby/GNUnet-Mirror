@@ -1236,6 +1236,11 @@ char * GN_CTIME(const TIME_T * t);
 char * timeIntervalToFancyString(cron_t delta);
 
 /**
+ * Convert a given filesize into a fancy human-readable format.
+ */
+char * fileSizeToFancyString(unsigned long long size);
+
+/**
  * Create a new Session key.
  */
 void makeSessionkey(SESSIONKEY * key);

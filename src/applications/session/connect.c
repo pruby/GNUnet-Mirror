@@ -591,7 +591,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	pong = hdr;
       else
 	LOG(LOG_WARNING,
-	    "Unknown type in embedded message: %u (size: %u)\n",
+	    _("Unknown type in embedded message: %u (size: %u)\n"),
 	    htons(hdr->type),
 	    htons(hdr->size));
       pos += ntohs(hdr->size);

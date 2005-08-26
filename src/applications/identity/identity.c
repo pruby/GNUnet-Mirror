@@ -255,9 +255,14 @@ static int changeHostTrust(const PeerIdentity * hostId,
   MUTEX_LOCK(&lock_);
   host = findHost(hostId);
   if (host == NULL) {
-    BREAK();
-    MUTEX_UNLOCK(&lock_);
-    return 0;
+    addHostToKnown(hostId,
+		   NAT_PROTOCOL_NUMBER);
+    host = findHost(hostId);
+    if (host == NULL) {
+      BREAK();
+      MUTEX_UNLOCK(&lock_);
+      return 0;
+    }
   }
   if ( ((int) (host->trust & TRUST_ACTUAL_MASK)) + value < 0) {
     value = - (host->trust & TRUST_ACTUAL_MASK);

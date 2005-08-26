@@ -2392,7 +2392,7 @@ void assignSessionKey(const SESSIONKEY * key,
     if (forSending == YES) {
       be->skey_local = *key;
       be->skey_local_created = age;
-      be->status |= STAT_SKEY_SENT;
+      be->status = STAT_SKEY_SENT | (be->status & STAT_SKEY_RECEIVED);
     } else { /* for receiving */
       if ( ((be->status & STAT_SKEY_RECEIVED) == 0) ||
 	   (be->skey_remote_created < age) ) {

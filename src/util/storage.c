@@ -647,6 +647,36 @@ void close_(int fd,
   }
 }
 
+char * fileSizeToFancyString(unsigned long long size) {
+  const char * unit = _(/* size unit */ "b");
+  char * ret;
+
+  if (delta > 5 * 1024) {
+    delta = delta / 1024;
+    unit = _(/* size unit */ "k");
+    if (delta > 5 * 1024) {
+      delta = delta / 1024;
+      unit = _(/* size unit */ "m");
+      if (delta > 5 * 1024) {
+	delta = delta / 1024;
+	unit = _(/* size unit */ "g");
+	if (delta > 5 * 1024) {
+	  delta = delta / 1024;
+	  unit = _(/* size unit */ "t");	      
+	}	    
+      }		
+    }	
+  }	
+  ret = MALLOC(32);
+  SNPRINTF(ret, 
+	   32, 
+	   "%llu%s",
+	   delta, 
+	   unit);
+  return ret;
+}
+
+
 #define COPY_BLK_SIZE 65536
 
 /**
