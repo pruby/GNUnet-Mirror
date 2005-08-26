@@ -785,4 +785,15 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
   FREE(name);
 }
 
+
+/**
+ * Get the root of the namespace (if we have one).
+ * @return SYSERR on error, OK on success
+ */
+int FSUI_getNamespaceRoot(const char * ns,
+			  HashCode512 * root) {
+  return SYSERR; /* FIXME: not implemented */
+}
+
+
 /* end of namespace_info.c */

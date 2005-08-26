@@ -680,7 +680,13 @@ FSUI_createNamespace(struct FSUI_Context * ctx,
 #define FSUI_deleteNamespace ECRS_deleteNamespace
 
 /**
- * Change the ranking of a namespace.
+ * Change the ranking of a (non-local) namespace.
+ *
+ * @param ns the name of the namespace, as obtained
+ *  from ECRS_getNamespaceName
+ * @param delta by how much should the rating be
+ *  changed?
+ * @return new rating of the namespace
  */
 int FSUI_rankNamespace(struct FSUI_Context * ctx,
 		       const char * ns,
@@ -695,6 +701,15 @@ int FSUI_rankNamespace(struct FSUI_Context * ctx,
  */
 void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
 			   const struct ECRS_MetaData * meta);
+
+
+/**
+ * Get the root of the namespace (if we have one).
+ * @return SYSERR on error, OK on success
+ */
+int FSUI_getNamespaceRoot(const char * ns,
+			  HashCode512 * root);
+
 
 /**
  * List all available (local or non-local) namespaces.
