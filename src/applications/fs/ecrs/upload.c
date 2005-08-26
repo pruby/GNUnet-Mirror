@@ -215,7 +215,7 @@ int ECRS_uploadFile(const char * filename,
       LOG(LOG_ERROR, 
 	  _("Indexing file `%s' failed. Trying to insert file...\n"),
 	  filename);
-      doIndex = YES:
+      doIndex = YES;
     }
   }
   treedepth = computeDepth(filesize);
