@@ -213,11 +213,9 @@ int ECRS_uploadFile(const char * filename,
       return SYSERR;
     case NO:
       LOG(LOG_ERROR, 
-	  _("Indexing file `%s' failed. Check file permissions and consult "
-	    "your GNUnet server's logs.\n"),
+	  _("Indexing file `%s' failed. Trying to insert file...\n"),
 	  filename);
-      releaseClientSocket(sock);
-      return SYSERR;			
+      doIndex = YES:
     }
   }
   treedepth = computeDepth(filesize);
