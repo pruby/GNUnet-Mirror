@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.26 $
  */
 
 #ifndef _PLIBC_H_
@@ -289,6 +289,7 @@ typedef struct
 BOOL _plibc_CreateShortcut(const char *pszSrc, const char *pszDest);
 BOOL _plibc_DereferenceShortcut(char *pszShortcut);
 char *plibc_ChooseDir(char *pszTitle, unsigned long ulFlags);
+char *plibc_ChooseFile(char *pszTitle, unsigned long ulFlags);
 long QueryRegistry(HKEY hMainKey, char *pszKey, char *pszSubKey,
               char *pszBuffer, long *pdLength);
 
