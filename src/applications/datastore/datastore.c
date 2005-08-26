@@ -73,10 +73,11 @@ static int get(const HashCode512 * query,
 	       Datum_Iterator iter,
 	       void * closure) {
   int ret;
-  EncName enc;
 
   if (! testAvailable(query)) {
 #if DEBUG_DATASTORE
+    EncName enc;
+
     IFLOG(LOG_DEBUG,
 	  hash2enc(query,
 		   &enc));
