@@ -1,37 +1,47 @@
-mainmenu "GNUnet Configuration"
+mainmenu "GNUnet Server Configuration"
 
-menu "Server configuration" ""
 menu "Meta-configuration" "Meta"
-  config EXPERIMENTAL
-  bool "Prompt for development and/or incomplete code"
-  help
-		Some of the various things that GNUnet supports (such as network
-		drivers, network protocols, etc.) can be in a state
+	config EXPERIMENTAL
+	bool "Prompt for development and/or incomplete code"
+	help
+               	If EXPERIMENTAL is set to NO, options for experimental code are
+                not shown.  If in doubt, use NO.
+
+		Some options apply to experimental code that maybe in a state 
 		of development where the functionality, stability, or the level of
-		testing is not yet high enough for general use. This is usually
-		known as the "alpha-test" phase among developers. If a feature is
-		currently in alpha-test, then the developers usually discourage
-		uninformed widespread use of this feature by the general public to
-		avoid "Why doesn't this work?" type mail messages. However, active
- 		testing and use of these systems is welcomed. Just be aware that it
+		testing is not yet high enough for general use.  These features 
+		are said to be of "alpha" quality.   If a feature is currently in 
+               	alpha, uninformed use is discouraged (since the developers then
+                do not fancy "Why doesn't this work?" type messages).
+
+       	        However, active testing and qualified feedback of these features
+               	is always welcome.  Users should just be aware that alpha features
 		may not meet the normal level of reliability or it may fail to work
-		in some special cases. Detailed bug reports from people familiar
-		with the GNUnet internals are usually welcomed by the developers
-		(before submitting bug reports, please read the documents
-		<file://README> and <http://gnunet.org/faq.php3>.
+		in some special cases.  Bug reports are usually welcomed by the 
+               	developers, but please read the documents <file://README> and 
+                <http://gnunet.org/faq.php3> and use <https://gnunet.org/mantis/>
+       	        for how to report problems.
   
-  config ADVANCED
-  bool "Show options for advanced users"
+	config ADVANCED
+  	bool "Show options for advanced users"
+	help
+		These are options that maybe difficult to understand for the
+		beginner.  These options typically refer to features that
+       	        allow tweaking of the installation.  If in a hurry, say NO.
   
-  config RARE
-  bool "Show rarely used options"
+	config RARE
+	bool "Show rarely used options"
+	help
+		These are options that hardly anyone actually needs.
+		If you plan on doing development on GNUnet, you may want to
+       	        look into these.  If in doubt or in a hurry, say NO.
 endmenu
 
 menu "General settings" "GNUNETD"
-  config GNUNETD_HOME
-  string "Full pathname of GNUnet HOME directory"
-  default ""
-  help
+	config GNUNETD_HOME
+	string "Full pathname of GNUnet HOME directory"
+	default ""
+	help
 		This gives the root-directory of the GNUnet installation. Make
 		sure there is some space left in that directory. :-)  Users inserting
 		or indexing files will be able to store data in this directory
@@ -54,28 +64,28 @@ menu "General settings" "GNUNETD"
 		The largest legal value is 14400 (10 days).
 		Default: HELLOEXPIRES     = 1440
 
-  config LOGLEVEL
-  string "Log level"
-  default "WARNING"
-  depends on Meta::ADVANCED
-  help
+	config LOGLEVEL
+	string "Log level"
+	default "WARNING"
+	depends on Meta::ADVANCED
+	help
 		Loglevel, how much should be logged? You can use NOTHING, FATAL,
 		ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON or EVERYTHING
 		(which log more and more messages in this order). Default is
 		WARNING.
 
-  config LOGFILE
-  string "Where should logs go by default"
-  default "$GNUNETD_HOME/logs"
-  depends on Meta::ADVANCED
-  help
+	config LOGFILE
+	string "Where should logs go by default"
+	default "$GNUNETD_HOME/logs"
+	depends on Meta::ADVANCED
+	help
 		In which file should gnunetd write the logs?  If you specify
 		nothing, logs are written to stderr (and note that if gnunetd runs
 		in the background, stderr is closed and all logs are discarded).
 		Default: LOGFILE         = $GNUNETD_HOME/logs
 
 	config KEEPLOG
-	string "How long logs should be kept"
+	string "How long should logs be kept"
 	default 0
 	depends on Meta::ADVANCED
 	help
@@ -85,10 +95,10 @@ menu "General settings" "GNUNETD"
 		To disable this function, set this setting to its default   
 		value 0.
 
-  config PIDFILE
-  string "Where should gnunetd write the PID"
-  default "$GNUNETD_HOME/gnunet.pid"
-  depends on Meta::ADVANCED
+	config PIDFILE
+	string "Where should gnunetd write the PID"
+	default "$GNUNETD_HOME/gnunet.pid"
+	depends on Meta::ADVANCED
 	help
 		In which file should gnunetd write the process-id of the server?  If
 		you run gnunetd as root, you may want to choose
@@ -96,11 +106,11 @@ menu "General settings" "GNUNETD"
 		have write rights at that location.
 		Default: PIDFILE         = $GNUNETD_HOME/gnunetd.pid
 
-  config HOSTS
-  string "Where should gnunetd keep the list of peers"
-  default "$GNUNETD_HOME/data/hosts/"
-  depends on Meta::ADVANCED
-  help
+	config HOSTS
+	string "Where should gnunetd keep the list of peers"
+	default "$GNUNETD_HOME/data/hosts/"
+	depends on Meta::ADVANCED
+	help
 		This directory should be made available periodically --- it contains
 		information how to join GNUnet that is in no way private to the
 		local node.  This directory can be shared between nodes AND should
@@ -112,11 +122,11 @@ menu "General settings" "GNUNETD"
 		populated by gnunetd with an initial set of nodes.
 		Default: HOSTS   	= $GNUNETD_HOME/data/hosts/
 
-  config HOSTLISTURL
-  string "Where can GNUnet find an initial list of peers"
-  depends on Meta::ADVANCED
-  default "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist"
-  help
+	config HOSTLISTURL
+	string "Where can GNUnet find an initial list of peers"
+	depends on Meta::ADVANCED
+	default "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist"
+	help
 		GNUnet can automatically update the hostlist from the web. While
 		GNUnet internally communicates which hosts are online, it is
 		typically a good idea to get a fresh hostlist whenever gnunetd
@@ -135,28 +145,28 @@ menu "General settings" "GNUNETD"
 		data/hosts manually.
 		Default: HOSTLISTURL = "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist"
     
-  config HTTP-PROXY
-  string "HTTP Proxy Server"
-  default ""
-  depends on Meta::ADVANCED
-  help
+	config HTTP-PROXY
+	string "HTTP Proxy Server"
+	default ""
+	depends on Meta::ADVANCED
+	help
 		If you have to use a proxy for outbound HTTP connections,
 		specify the proxy configuration here.  Default is no proxy.
   
-  config HTTP-PROXY-PORT
-  int "HTTP Proxy Port"
-  range 1 65535
-  default 1080
-  depends on Meta::ADVANCED
-  help
+	config HTTP-PROXY-PORT
+	int "HTTP Proxy Port"
+	range 1 65535
+	default 1080
+	depends on Meta::ADVANCED
+	help
 		If you have to use a proxy for outbound HTTP connections,
 		specify the proxy configuration here.  Default is no proxy.
   
-  config APPLICATIONS
-  string "Which applications should gnunetd support?"
-  default "advertising fs getoption stats traffic"
-  depends on Meta::ADVANCED
-  help
+	config APPLICATIONS
+	string "Which applications should gnunetd support?"
+	default "advertising fs getoption stats traffic"
+	depends on Meta::ADVANCED
+	help
 		Which applications should gnunetd support? Specify the name of the
 		dynamic shared object (DSO) that implements the service in the
 		gnunetd core here. Separate multiple modules with spaces.
@@ -170,7 +180,7 @@ menu "General settings" "GNUNETD"
 		stats: statistics - for gnunet-stats
 		traffic: traffic analysis 
 		fs: file sharing
-		chat: broadcast chat (demo-application)
+		chat: broadcast chat (demo-application, ALPHA quality, at best)
 		tbench: benchmark tool for transport performance
 		tracekit: GNUnet topology visualization toolkit
 		
@@ -179,15 +189,15 @@ menu "General settings" "GNUNETD"
 		GNUnet works. They should be used with caution.
 		
 		Using the fs tools for downloading may require the traffic module
-		to be loaded!
+		to be loaded!  Various GNUnet-tools depend on getoption.
 		
 		Default: APPLICATIONS = "advertising fs getoption stats traffic"
 
-  config TRANSPORTS
-  string "Which transport mechanisms are available?"
-  default "udp tcp http nat"
-  depends on Meta::ADVANCED
-  help
+	config TRANSPORTS
+	string "Which transport mechanisms are available?"
+	default "udp tcp http nat"
+	depends on Meta::ADVANCED
+	help
 		Which transport mechanisms are available? Use space-separated list
 		of the modules, e.g.  "udp smtp tcp". The order is irrelevant, each
 		protocol has a build-in cost-factor and this factor determines which
@@ -222,6 +232,7 @@ menu "General settings" "GNUNETD"
 	config USER
 	string "GNUnet user"
 	default ""
+	depends on Meta::ADVANCED
 	help
 		As which user account should gnunetd run?
 		Empty means "current user". On computer startup, it is root/SYSTEM.
@@ -231,6 +242,7 @@ menu "General settings" "GNUNETD"
 	config GROUP
 	string "GNUnet group"
 	default ""
+	depends on Meta::ADVANCED
 	help
 		As which group account should gnunetd run?
 		Empty means current group under Unix. It has no meaning under Windows.
@@ -257,7 +269,7 @@ if Meta::ADVANCED
 			gnunet-update after changing this value!
 			
 			In order to use sqstore_mysql, you must configure
-			the mysql database, which is non-trivial.
+			the mysql database, which is relatively simple.
 			Read the file doc/README.mysql for how to setup
 			mysql.
 			The default is "sqstore_sqlite".
@@ -267,115 +279,169 @@ if Meta::ADVANCED
 		default "topology_default"
 		help
 			Which topology should be used?  The only
-			option at the moment is "topology_default".
+			options at the moment are "topology_default"
+                        and "topology_f2f".  In default mode, GNUnet
+			will try to connect to a diverse set of peers,
+			and welcome connections from anyone.  In
+			f2f (friend-to-friend) mode, GNUnet will only 
+                        allow connections from peers that are explicitly 
+                        listed in a FRIENDS file.  Note that you can
+                        list peers in the FRIENDS file that run in 
+                        default mode.
+
+                        Use f2f only if you have (trustworthy) friends
+                        that use GNUnet and are afraid of establishing
+                        (direct) connections to unknown peers.
 			
-			The default is "topology_default"
+			The default is "topology_default".
 	endmenu
 endif
 
 menu "Network" "NETWORK"
-  config PORT
-  int "Client/Server Port"
-  range 1 65535
-  default "2087"
-  depends on Meta::ADVANCED
-  help
+	config PORT
+	int "Client/Server Port"
+	range 1 65535
+	default "2087"
+	depends on Meta::ADVANCED
+	help
 		Which is the client-server port that is used between gnunetd and the
 		clients (TCP only).  You may firewall this port for non-local
-		machines.
+		machines (but you do not have to since GNUnet will perform access
+		control and only allow connections from machines that are listed
+		under TRUSTED).
 		Default: PORT = 2087
 
-  config INTERFACE
-  string "Interface to probe for external IP"
-  help
+	config INTERFACE
+	string "Interface to probe for external IP"
+	help
 		Set if GNUnet fails to determine your IP.  GNUnet first tries to
 		determine your IP by looking at the IP that matches the interface
 		that is given with the option INTERFACE.
-		Under Windows, specify the ID reported by
-		 "gnunet-win-tool -n"
+		Under Windows, specify the ID reported by "gnunet-win-tool -n".
   
-  config IP
-  string "Forced value of external IP or hostname"
-  help
-		If this fails, GNUnet will try to do a DNS lookup on your HOSTNAME,
-		which may also fail, in particular if you are on dialup.
+	config IP
+	string "Forced value of external IP or hostname"
+	help
+		If obtaining the external IP from an interface will not result
+		in the right information, use the IP setting.  Setting IP can
+                be used to specify the external IP directly or to make GNUnet
+		lookup the external IP using DNS.
 		
-		If both options are not viable for you, you can specify an IP in
-		this configuration file.  This may be required if you have multiple
-		interfaces (currently GNUnet can only work on one of them) or if you
-		are behind a router/gateway that performs network address
-		translation (NAT). In the latter case, set this IP to the *external*
-		IP of the router (!) and make sure that the router forwards incoming
-		UDP packets on the GNUnet port (default: 2086) to the dedicated
-		GNUnet server in the local network.
+		This is typically the best option if you are behind a router/gateway
+		that performs network address translation (NAT).  If the router has
+		a fixed external IP, use that IP.  If the router itself obtains its
+		IP dynamically (say via DHCP), use the DNS lookup in combination with
+		DynDNS.  In either case make sure that the router forwards incoming
+		UDP and TCP messages on the GNUnet port (default: 2086) to the 
+		GNUnet host in the local network.  If this is not possible, read
+		about the LIMITED option for NAT.
 		
-		If you do not know what all this means, try without!
-		Default is no IP specified.
+		If in doubt, try without.  Default is empty.
   
-  config F2F
-  string "List of friends for friend-to-friend topology"
-  default "$GNUNETD_HOME/friends"
-  depends on Meta::ADVANCED
-  help
-		No help available at this point.
-		NILS: can we only show this item if 
-		the user selected topology = toplogy_f2f?
+	config F2F
+	string "List of friends for friend-to-friend topology"
+	default "$GNUNETD_HOME/friends"
+	depends on Meta::ADVANCED
+	help
+		Specifies the name of a file which contains a list of GNUnet peer IDs
+		that are friends.  If used together with 
 
-  config HELLOEXCHANGE
-  bool "Participate in network topology management"
-  default y
-  depends on Meta::ADVANCED
-  help
+                [MODULES] topology = topology_f2f
+
+                this will ensure that GNUnet only connects to these peers (via
+		any available transport).
+
+	config HELLOEXCHANGE
+	bool "Participate in network topology management"
+	default y
+	depends on Meta::ADVANCED
+	help
 		If this host is connected to two networks, a private which is not
 		reachable from the Internet and that contains GNUnet clients and to
 		a public network, typically the Internet (and is this host is thus
 		in the position of a router, typically doing NAT), then this option
 		should be set to 'NO'. It prevents the node from forwarding HELLOs
-		other than its own. If you do not know what the above is about, just
-		keep it set to YES (which is also the default when the option is not
-		given).
-		Default is yes: HELLOEXCHANGE = YES
+		other than its own. 
+
+                If in doubt, use YES.  Default is YES.
   
-  config TRUSTED
-  string "IPs allowed to use gnunetd server"
-  default "127.0.0.0/8;"
-  depends on Meta::ADVANCED
-  help
-	  With this option, you can specify which networks are trusted enough
-		to connect as clients to the TCP port.  This is useful if you run
+	config TRUSTED
+	string "IPs allowed to use gnunetd server"
+	default "127.0.0.0/8;"
+	depends on Meta::ADVANCED
+	help
+		This option specifies which hosts are trusted enough
+		to connect as clients (to the TCP port).  This is useful if you run
 		gnunetd on one host of your network and want to allow all other
-		hosts to use this node as their server. By default, this is set to
-		'loopback only'. The format is the same as for the BLACKLIST.
-		Default is: TRUSTED = 127.0.0.0/8;
+		hosts to use this node as their server.  By default, this is set to
+		'loopback only'.  The format is IP/NETMASK where the IP is specified in
+		dotted-decimal and the netmask either in CIDR notation (/16) or in
+		dotted decimal (255.255.0.0). Several entries must be separated by a
+		semicolon, spaces are not allowed. 
+
+		Default is "127.0.0.0/8;".
 
 endmenu
 
 menu "Resource limitations" "LOAD"
 
-  config BASICLIMITING
-  bool "Basic bandwidth limiting"
-  default y
-  help
-		Use basic bandwidth limitation? The basic method (YES)
-		notes only GNUnet traffic and can be used to specify simple maximum
-		bandwidth usage of GNUnet.  Choose the basic method if you don't
-		want other network traffic to interfere with GNUnet's operation, but
-		still wish to constrain GNUnet's bandwidth usage, or if you can't
-		reliably measure the maximum capabilities of your connection.  YES
-		can be very useful if other applications are causing a lot of
-		traffic on your LAN.  In this case, you do not want to limit the
-		traffic that GNUnet can inflict on your WAN connection whenever your
-		high-speed LAN gets used (e.g. by NFS).
-		
-		The advanced bandwidth limitation (NO) measures total traffic over
-		the chosen interface (including traffic by other applications), and
-		allows gnunetd to participate if the total traffic is low enough.
+	config BASICLIMITING
+	bool "Basic bandwidth limiting"
+	default y
+	help
+		Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES.
+
+                Basic bandwidth limitation (YES) means simply that the bandwidth limits
+                specified apply to GNUnet and only to GNUnet.  If set to YES, you
+                simply specify the maximum bandwidth (upstream and downstream) 
+                that GNUnet is allowed to use and GNUnet will stick to those
+                limitations.  This is useful if your overall bandwidth is so large that
+                the limit is mostly used to ensure that enough capacity is left for
+                other applications.  Even if you want to dedicate your entire connection
+                to GNUnet you should not set the limits to values higher than what you
+                have since GNUnet uses those limits to determine for example the number
+                of connections to establish (and it would be inefficient if that 
+                computation yields a number that is far too high).  
+
+                While basic bandwidth limitation is simple and always works, there are
+                some situations where it is not perfect.  Suppose you are running
+                another application which performs a larger download.  During that
+                particular time, it would be nice if GNUnet would throttle its
+                bandwidth consumption (automatically) and resume using more bandwidth
+                after the download is complete.  This is obviously advanced magic since
+                GNUnet will have to monitor the behavior of other applications. 
+                Another scenario is a monthly cap on bandwidth imposed by your ISP,
+                which you would want to ensure is obeyed.  Here, you may want
+                GNUnet to monitor the traffic from other applications to ensure that
+                the combined long-term traffic is within the pre-set bounds.  Note
+                that you should probably not set the bounds tightly since GNUnet may
+                observe that the bounds are about to be broken but would be unable to
+                stop other applications from continuing to use bandwidth.
+
+                If either of these two scenarios applies, set BASICLIMITING to NO.
+                Then set the bandwidth limits to the COMBINED amount of traffic that
+                is accepable for both GNUnet and other applications.  GNUnet will
+                then immediately throttle bandwidth consumption if the short-term
+                average is above the limit, and it will also try to ensure that the
+                long-term average is below the limit.  Note however that using NO
+                can have the effect of GNUnet (almost) ceasing operations after
+                other applications perform high-volume downloads that are beyond the
+                defined limits.  GNUnet would reduce consumption until the long-term
+                limits are again within bounds.
+
+                NO only works on platforms where GNUnet can monitor the amount of
+                traffic that the local host puts out on the network.  This is only
+                implemented for Linux and Win32.  In order for the code to work, GNUnet
+                needs to know the specific network interface that is used for the
+                external connection (after all, the amount of traffic on loopback
+                or on the LAN should never be counted since it is irrelevant).
+
 		Default is: BASICLIMITING = YES
 
-  config INTERFACES
-  string "Network interface to monitor"
-  depends on !Meta::BASICLIMITING
-  help
+	config INTERFACES
+	string "Network interface to monitor"
+	depends on !Meta::BASICLIMITING
+	help
 		For which interfaces should we do accounting?  GNUnet will evaluate
 		the total traffic (not only the GNUnet related traffic) and adjust
 		its bandwidth usage accordingly. You can currently only specify a
@@ -386,53 +452,53 @@ menu "Resource limitations" "LOAD"
 		Under Windows, specify the index number reported by
 		 "gnunet-win-tool -n".
 
-  config MAXNETDOWNBPSTOTAL
-  int "Maximum download (bytes per second)"
-  default 50000
-  help
-		Bandwidth limits in bytes per second. These denote the maximum
-		amounts GNUnet is allowed to use.
-		Defaults are: 
-		 MAXNETUPBPSTOTAL	= 50000
-		 MAXNETDOWNBPSTOTAL	= 50000
-  
-  config MAXNETUPBPSTOTAL
-  int "Maximum upload (bytes per second)"
-  default 50000
-  help
-		Bandwidth limits in bytes per second. These denote the maximum
-		amounts GNUnet is allowed to use.
-		Defaults are: 
-		 MAXNETUPBPSTOTAL	= 50000
-		 MAXNETDOWNBPSTOTAL	= 50000
-
-  config MAXCPULOAD
-  int "Maximum CPU load (percentage)"
-  range 0 100
-  default 50
+	config MAXNETDOWNBPSTOTAL
+	int "Maximum download (bytes per second)"
+	default 50000
 	help
-		Which CPU load can be tolerated (total, GNUnet will adapt if the
-		load goes up due to other processes). A value of 50 means that once
-		your 1 minute-load average goes over 50% non-idle, GNUnet will start
-		dropping packets until it goes under that threshold again.
-		Default is MAXCPULOAD		= 50
+		Bandwidth limit for incoming traffic in bytes per second.  
+		Default is 50000.
+  
+	config MAXNETUPBPSTOTAL
+	int "Maximum upload (bytes per second)"
+	default 50000
+	help
+		Bandwidth limit for outgoing traffic in bytes per second. 
+		Default is 50000.
+
+	config MAXCPULOAD
+	int "Maximum CPU load (percentage)"
+	range 0 100
+	default 50
+	help
+		Which CPU load can be tolerated.  Load here always refers to the total
+		system load, that is it includes CPU utilization by other processes.
+		A value of 50 means that once your 1 minute-load average goes over 50%	
+		non-idle, GNUnet will try to reduce CPU consumption until the load goes 
+		under the threshold.  Reasonable values are typically between 50 and 90.
+		Machines dedicated to running GNUnet maybe fine with 99.
+
+		Default is 50.
     
 endmenu
 
-menu "Transports" ""
-  menu "UDP Transport" "UDP"
+menu "Transports" "Transports"
 
-	  config PORT
-	  int "Port"
-	  range 0 65535
-	  default 2086
-	  help
-	  	To which port does GNUnet bind? Default is 2086 and there is usually
+    if Meta::ADVANCED
+
+	menu "UDP Transport" "UDP"
+
+		config PORT
+		int "Port"
+		range 0 65535
+		default 2086
+		help
+			To which port does GNUnet bind? Default is 2086 and there is usually
 			no reason to change that.
 
-	  config BLACKLIST
-	  string "Disallow connections from"
-	  default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
+		config BLACKLIST
+		string "Disallow connections from"
+		default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
 		help
 			With this option, you can specify which networks you do NOT want to
 			connect to. Usually you will want to filter loopback (127.0.0.1,
@@ -453,37 +519,36 @@ menu "Transports" ""
 			Example (and default):
 			127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;
 	  
-	  config MTU
-	  int "MTU"
-	  default 1472
-	  depends on Meta::RARE
-	  help
+		config MTU
+		int "MTU"
+		default 1472
+		depends on Meta::RARE
+		help
 		  	The MTU to use. Do not use more than your OS
 			(and firewall) can support. Typically, your 
 			network-MTU - 28 is optimal, for ethernet, this
 			is 1472, the default. Do not use less than 1200.
-			
-			The default is 1472, which is also used if you specify
-			nothing.
+		
+			The default is 1472, which is also used if you specify nothing.
 
 	endmenu
   
-  menu "TCP Transport" "TCP"
+	menu "TCP Transport" "TCP"
 
-	  config PORT
-	  int "Port"
-	  range 0 65535
-	  default 2086
-	  help
+		config PORT
+		int "Port"
+		range 0 65535
+		default 2086
+		help
 			To which port does GNUnet bind? Default is 2086 and there is usually
 			no reason to change that.  Make sure that this port does not
 			conflict with the port for GNUnet clients (section NETWORK), which
 			defaults to 2087.
 
-	  config BLACKLIST
-	  string "Disallow connections from"
-	  default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
-	  help
+		config BLACKLIST
+		string "Disallow connections from"
+		default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
+		help
 			With this option, you can specify which networks you do NOT want to
 			connect to. Usually you will want to filter loopback (127.0.0.1,
 			misconfigured GNUnet hosts), virtual private networks, [add a class
@@ -503,7 +568,9 @@ menu "Transports" ""
 			BLACKLIST = 127.0.0.1/8;192.168.0.0/16;10.0.0.0/255.0.0.0; 
 	  
 	endmenu
-	
+
+    endif
+
 	menu "NAT" "NAT"
 	
 		config LIMITED
@@ -521,8 +588,8 @@ menu "Transports" ""
 			cannot accept inbound connections.
 
 	endmenu
-  
-  if Meta::EXPERIMENTAL && Meta::RARE
+ 
+    if Meta::EXPERIMENTAL && Meta::RARE && Meta::ADVANCED
   
   	menu "UDP over IPv6" "UDP6"
   		  		
@@ -558,27 +625,27 @@ menu "Transports" ""
   	
   	endmenu
   
-  endif
+    endif
   
-  if Meta::ADVANCED
+    if Meta::ADVANCED
   
 	  menu "SMTP" "SMTP"
 
-			config EMAIL
-			string "Receiver address for inbound E-mail"
-			default "foo@bar.com"
-			help
-				E-mail address to use to receive messages.  Do not specify anything
-				if you do not want to allow SMTP as a receiver protocol; you can
-				still *send* email to establish connections in that case.  Example:
-				EMAIL = foo@bar.com
+		config EMAIL
+		string "Receiver address for inbound E-mail"
+		default "foo@bar.com"
+		help
+			E-mail address to use to receive messages.  Do not specify anything
+			if you do not want to allow SMTP as a receiver protocol; you can
+			still *send* email to establish connections in that case.  Example:
+			EMAIL = foo@bar.com
 
-			config MTU
-			int "MTU"
-			default 65528
-			help
-				MTU for the E-mail. How large should the E-mails be that we send
-				out? Default is 65528 (bytes).
+		config MTU
+		int "MTU"
+		default 65528
+		help
+			MTU for the E-mail. How large should the E-mails be that we send
+			out? Default is 65528 (bytes).
 
 	  	config PORT
 	  	int "Port of the SMTP server for outbound mail"
@@ -586,7 +653,7 @@ menu "Transports" ""
 	  	default 25
 	  	help
 		  	Port of the SMTP server for outbound mail.  If not specified, the
-				TCP/SMTP entry from /etc/services is consulted.  Default is 25.
+			TCP/SMTP entry from /etc/services is consulted.  Default is 25.
 
 		config SERVER
 		string "Hostname of the SMTP server"
@@ -655,13 +722,14 @@ menu "Transports" ""
 	  	range 0 65535
 	  	default 1080
 	  	
-		  config BLACKLIST
-		  string "Disallow connections from"
-		  default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"	  	
+		config BLACKLIST
+		string "Disallow connections from"
+		default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"	  	
 	  
 	  endmenu
   
-  endif
+    endif
+
 endmenu
 
 menu "Applications" ""
@@ -671,7 +739,7 @@ menu "Applications" ""
 		config QUOTA
 		int "MB of diskspace GNUnet can use for anonymous file sharing"
 		default 1024
-    help
+		help
 			How much disk space (MB) is GNUnet allowed to use for anonymous file
 			sharing?  This does not take indexed files into account, only the
 			space directly used by GNUnet is accounted for.  GNUnet will gather
@@ -679,7 +747,7 @@ menu "Applications" ""
 			the number given here (and if content migration is allowed below).
 			
 			IMPORTANT:
-			Note that if you change the quota, you need to run gnunet-convert,
+			Note that if you change the quota, you need to run gnunet-update,
 			otherwise your databases will be inconsistent and gnunetd will
 			refuse to work.  Default is 1024 (1 GB)
 
@@ -751,119 +819,100 @@ menu "Applications" ""
 			content indexing requests (insertion will still be
 			possible).
 			
-			Note that files indexed with GNUnet before Version
-			0.6.2 were not moved/linked to this directory.  But that
-			should not cause any immediate problems (the files
-			will continue to be downloadable).  What will be
-			impossible is unindexing these files with
-			gnunet-delete and GNUnet >= 0.6.2. 
 			Default is $GNUNETD_HOME/data/shared/
 
 		config INDEX-QUOTA
 		int "Indexing quota"
 		default 8192
 		help
-		  Indexing quota.  Default is 8192.
+			Indexing quota.  Default is 8192.
 		
-		config POOL
-		int "Number of parallel threads per gnunet-download"
-		default 32
-		help
-			How many (parallel) threads should a given gnunet-download (or
-			gnunet-gtk) process run?  (this limits the amount of parallelism
-			used in the FSUI library).  Smaller values reduce memory and CPU
-			requirements.  Very large values will not be useful since even if
-			that much parallelism is theoretically possible, the local node may
-			not be able to route that many parallel requests anyway.  
-			Default: 32
 
 	endmenu
 	
-	if Meta::ADVANCED
+    if Meta::ADVANCED
 	
-		menu "MySQL" "MYSQL"
-			config DELAYED
-			bool "Delayed operations"
-			default n
-			help
-				If you suffer from too slow index/insert speeds, 
-				you might try to set this to YES for a small
-				efficiency boost.  If you run into any trouble
-				because of it, you're on your own.
-				Default: NO
-		endmenu
+	menu "MySQL" "MYSQL"
+		config DELAYED
+		bool "Delayed operations"
+		default n
+		help
+			If you suffer from too slow index/insert speeds, 
+			you might try to set this to YES for a small
+			efficiency boost.  If you run into any trouble
+			because of it, you're on your own.
+			Default: NO
+	endmenu
 		
-	endif
+    endif
 	
-	if Meta::ADVANCED
+    if Meta::EXPERIMENTAL && Meta::RARE && Meta::ADVANCED
 	
-		menu "GNUnet Testbed" "TESTBED"
-			
-			config REGISTERURL
-			string "Where should we register the testbed service?"
-			default "http://gnunet.org/testbed/"
-			help
-				Where should we register the testbed service?
-				Default is "http://gnunet.org/testbed/"				
-			
-			config ALLOW_MODULE_LOADING
-			bool "Allow to load and unload modules"
-			default n
-			help
-				Is the testbed operator allowed to load and
-				unload modules? (somewhat of a security risk!)
-				Default is NO.
+	menu "GNUnet Testbed" "TESTBED"
+		
+		config REGISTERURL
+		string "Where should we register the testbed service?"
+		default "http://gnunet.org/testbed/"
+		help
+			Where should we register the testbed service?
+			Default is "http://gnunet.org/testbed/"				
+		
+		config ALLOW_MODULE_LOADING
+		bool "Allow to load and unload modules"
+		default n
+		help
+			Is the testbed operator allowed to load and
+			unload modules? (somewhat of a security risk!)
+			Default is NO.
 
-			config UPLOAD-DIR
-			string "Upload directory"
-			default "$GNUNETD_HOME/testbed"
-			help
-				Where should file-uploads go?
-				Default is $GNUNETD_HOME/testbed
+		config UPLOAD-DIR
+		string "Upload directory"
+		default "$GNUNETD_HOME/testbed"
+		help
+			Where should file-uploads go?
+			Default is $GNUNETD_HOME/testbed
 			
-			config LOGIN
-			string "Login-name for SSH-tunnel"
-			default 2087
-			help
-				Login-name for SSH-tunnel (for secure testbed
-				connections).  Without login name the testbed-server
-				will try to make a direct TCP connection to the
-				application port (default: 2087).
+		config LOGIN
+		string "Login-name for SSH-tunnel"
+		default 2087
+		help
+			Login-name for SSH-tunnel (for secure testbed
+			connections).  Without login name the testbed-server
+			will try to make a direct TCP connection to the
+			application port (default: 2087).
+		
+	endmenu
 			
-		endmenu
-			
-	endif
-	
-	if Meta::RARE
-		menu "GAP" "GAP"
-			config TABLESIZE
-			int "Size of the routing table."
-			default 65536
-			help
-				Size of the routing table.
-				Default: 65536
-		endmenu
-	endif
-	
-	if Meta::EXPERIMENTAL
-		menu "DHT" "DHT"
-			config BUCKETCOUNT
-			int "Number of buckets to use"
-			default 160
-			help
-				Number of buckets to use (determines memory requirements)
-				Default (and maximum) is 160.
+	menu "DHT" "DHT"
+		config BUCKETCOUNT
+		int "Number of buckets to use"
+		default 160
+		help
+			Number of buckets to use (determines memory requirements)
+			Default (and maximum) is 160.
 
-			config MASTER-TABLE-SIZE
-			int "Amount of memory (in bytes) to use for the master table"
-			default 65536
-			help
-				Amount of memory (in bytes) to use for the master table
-				(table that caches table-to-peer mappings).
-				Default is 65536.
-		endmenu
-	endif
+		config MASTER-TABLE-SIZE
+		int "Amount of memory (in bytes) to use for the master table"
+		default 65536
+		help
+			Amount of memory (in bytes) to use for the master table
+			(table that caches table-to-peer mappings).
+			Default is 65536.
+	endmenu
+
+    endif
+	
+    if Meta::RARE
+	menu "GAP" "GAP"
+		config TABLESIZE
+		int "Size of the routing table."
+		default 65536
+		help
+			Size of the routing table.
+			Default: 65536
+	endmenu
+    endif
 	
 endmenu
 	
-endmenu
+

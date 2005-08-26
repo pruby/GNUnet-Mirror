@@ -632,7 +632,7 @@ struct FSUI_Context * FSUI_start(const char * name,
   ret->ecb = cb;
   ret->ecbClosure = closure;
   ret->threadPoolSize = getConfigurationInt("FS",
-					    "POOL");
+					    "DOWNLOAD-POOL");
   if (ret->threadPoolSize == 0)
     ret->threadPoolSize = 32;
   ret->activeDownloadThreads = 0;

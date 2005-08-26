@@ -1851,6 +1851,7 @@ static void scheduleInboundTraffic() {
   int didAssign;
   int firstRound;
   int earlyRun;
+  int load;
 
   MUTEX_LOCK(&lock);
   cronTime(&now);
@@ -1924,6 +1925,16 @@ static void scheduleInboundTraffic() {
     minCon = activePeerCount;
   schedulableBandwidth 
     = max_bpm - minCon * MIN_BPM_PER_PEER;
+  load = getNetworkLoadDown();
+  if (load > 100) {
+    /* take counter measures! */
+    schedulableBandwidth = schedulableBandwidth * 100 / load;
+    /* make sure we do not take it down too far */
+    if ( (scheduleableBandwidth < minCon * MIN_BPM_PER_PEER / 2) &&
+	 (max_bpm > minCon * MIN_BPM_PER_PEER * 2) )
+      scheduleableBandwidth = minCon * MIN_BPM_PER_PEER / 2;
+  }
+
   adjustedRR = MALLOC(sizeof(long long) * activePeerCount);
 
   /* reset idealized limits; if we want a smoothed-limits

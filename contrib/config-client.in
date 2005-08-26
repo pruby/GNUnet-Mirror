@@ -1,36 +1,47 @@
 mainmenu "GNUnet user configuration"
 
-menu "User specific configuration" ""
 menu "Meta-configuration" "Meta"
-  config EXPERIMENTAL-CLIENT
-  bool "Prompt for development and/or incomplete code"
-  help
-		Some of the various things that GNUnet supports (such as network
-		drivers, network protocols, etc.) can be in a state
-		of development where the functionality, stability, or the level of
-		testing is not yet high enough for general use. This is usually
-		known as the "alpha-test" phase among developers. If a feature is
-		currently in alpha-test, then the developers usually discourage
-		uninformed widespread use of this feature by the general public to
-		avoid "Why doesn't this work?" type mail messages. However, active
- 		testing and use of these systems is welcomed. Just be aware that it
-		may not meet the normal level of reliability or it may fail to work
-		in some special cases. Detailed bug reports from people familiar
-		with the GNUnet internals are usually welcomed by the developers
-		(before submitting bug reports, please read the documents
-		<file://README> and <http://gnunet.org/faq.php3>.
+	config EXPERIMENTAL-CLIENT
+	bool "Prompt for development and/or incomplete code"
+	help
+                If EXPERIMENTAL is set to NO, options for experimental code are
+       	        not shown.  If in doubt, use NO.
 
-  config ADVANCED-CLIENT
-  bool "Show options for advanced users"
+		Some options apply to experimental code that maybe in a state 
+		of development where the functionality, stability, or the level of
+		testing is not yet high enough for general use.  These features 
+		are said to be of "alpha" quality.   If a feature is currently in 
+                alpha, uninformed use is discouraged (since the developers then
+       	        do not fancy "Why doesn't this work?" type messages).
+
+               	However, active testing and qualified feedback of these features
+                is always welcome.  Users should just be aware that alpha features
+		may not meet the normal level of reliability or it may fail to work
+		in some special cases.  Bug reports are usually welcomed by the 
+                developers, but please read the documents <file://README> and 
+       	        <http://gnunet.org/faq.php3> and use <https://gnunet.org/mantis/>
+               	for how to report problems.
   
-  config RARE-CLIENT
-  bool "Show rarely used options"  
+	config ADVANCED-CLIENT
+	bool "Show options for advanced users"
+	help
+
+		These are options that maybe difficult to understand for the
+		beginner.  These options typically refer to features that
+       	        allow tweaking of the installation.  If in a hurry, say NO.
+  
+	config RARE-CLIENT
+	bool "Show rarely used options"  
+	help
+		These are options that hardly anyone actually needs.
+		If you plan on doing development on GNUnet, you may want to
+               	look into these.  If in doubt or in a hurry, say NO.
 endmenu
 
 menu "General settings" "GNUNET"
 	config GNUNET_HOME
 	string "Directory of user specific files"
-	default "~/.gnunet"
+	default "~/.gnunet/"
 	help
 		This is the directory where GNUnet is putting
 		user-specific files (such as pseudonyms).  Typically,
@@ -70,22 +81,26 @@ menu "General settings" "GNUNET"
 		Default is "NORMAL".
 endmenu
 
-menu "Network options for the clients" "NETWORK"
-	config CLIENT-PORT
-	int "Port to use to talk to gnunetd"
-	default 2087
-	depends on Meta::ADVANCED-CLIENT
-	help
-		Port to use to talk to gnunetd, default is 2087
+if Meta::ADVANCED-CLIENT
 
-	config HOST
-	string "On which machine runs gnunetd (for clients)"
-	default "localhost"
-	depends on Meta::ADVANCED-CLIENT
-	help
-		On which machine runs gnunetd (for clients) This is equivalent to
-		the -H option.  Default is localhost.
-endmenu
+	menu "Network options for the clients" "NETWORK"
+		config CLIENT-PORT
+		int "Port to use to talk to gnunetd"
+		default 2087
+		depends on Meta::ADVANCED-CLIENT
+		help
+			Port to use to talk to gnunetd, default is 2087
+
+		config HOST
+		string "On which machine runs gnunetd (for clients)"
+		default "localhost"
+		depends on Meta::ADVANCED-CLIENT
+		help
+			On which machine runs gnunetd (for clients) This is equivalent to
+			the -H option.  Default is localhost.
+	endmenu
+
+endif
 
 
 menu "Options for filesharing (FS)" "FS"
@@ -121,18 +136,11 @@ menu "Options for filesharing (FS)" "FS"
 	help
 		Default limit for the number of search results (0 for unlimited)
 
-	config SEARCHTIMEOUT
-	int "Default timeout for searches"
-	default 300
-	depends on Meta::ADVANCED-CLIENT
-	help
-		Default timeout for searches
-
 
 	config EXTRACTORS
 	string "Specify which additional extractor libraries should be used"
 	default "libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail"
-	depends on Meta::RARE-CLIENT
+	depends on Meta::ADVANCED-CLIENT
 	help
 		Specify which additional extractor libraries should be used.
 		gnunet-insert uses libextractor to extract keywords from files.
@@ -148,17 +156,17 @@ menu "Options for filesharing (FS)" "FS"
 
 	config DOWNLOADDIR
 	string "Where to store incomplete downloads"
-	default "$GNUNET_HOME/gnunet-downloads/"
+	default "$GNUNET_HOME/pending-downloads/"
 	help
 		Where to download files to (by default)?
 		Default is $GNUNET_HOME/pending-downloads/
 
 	config INCOMINGDIR
 	string "Where to move complete downloads to"
-	default "$GNUNET_HOME/completed-downloads/"
+	default "$HOME/gnunet-downloads/"
 	help
 		Where to move finished downloads to (by default)?
-		Default is $GNUNET_HOME/completed-downloads/
+		Default is $HOME/completed-downloads/
 		
 	config DISABLE-SYMLINK
 	bool "Disable symlinking"
@@ -177,12 +185,28 @@ menu "Options for filesharing (FS)" "FS"
 		It is much more (space)-efficient to set this to NO,
 		but you need to know what you're doing.  This is why the
 		default is 'YES'.
+
+	config DOWNLOAD-POOL
+	int "Number of parallel threads per gnunet-download"
+	depends on Meta::ADVANCED-CLIENT
+	default 32
+	help
+		How many (parallel) threads should a given gnunet-download (or
+		gnunet-gtk) process run?  (this limits the amount of parallelism
+		used in the FSUI library).  Smaller values reduce memory and CPU
+		requirements.  Very large values will not be useful since even if
+		that much parallelism is theoretically possible, the local node may
+		not be able to route that many parallel requests anyway.  
+		Default: 32
+
+
 endmenu
 
 menu "Default options for gnunet-gtk" GNUNET-GTK
 	config GNUNETD-CONFIG
 	string "Path to the gnunet.conf file"
-	default ""
+	depends on Meta::ADVANCED-CLIENT
+	default "/etc/gnunetd.conf"
 	help
 		Path to the gnunet.conf file for gnunetd (for
 		forking gnunetd by gnunet-gtk)
@@ -212,63 +236,66 @@ menu "Default options for gnunet-gtk" GNUNET-GTK
 endmenu
 
 if Meta::EXPERIMENTAL-CLIENT
-menu "Defaults for gnunet-chat" GNUNET-CHAT
-	config NICK
-	string "Nickname"
-	default ""
-	depends on Meta::EXPERIMENTAL-CLIENT
-	help
-		You can specify your nickname here and thus avoid having to pass it
-		with -n NICK at the command-line.  The default is empty.
-		Default: "my nickname"
-endmenu
+	menu "Defaults for gnunet-chat" GNUNET-CHAT
+		config NICK
+		string "Nickname"
+		default "My nickname"
+		depends on Meta::EXPERIMENTAL-CLIENT
+		help
+			You can specify your nickname here and thus avoid having to pass it
+			with -n NICK at the command-line.  The default is empty.
+			Default: "My nickname"
+	endmenu
 endif
 
 if Meta::RARE-CLIENT
-menu "Defaults for gnunet-tracekit" GNUNET-TRACEKIT
-	config WAIT
-	int "How long to wait for replies"
-	default 30
-	help
-		How long to wait for replies (in seconds)? (default: 30)
+	menu "Defaults for gnunet-tracekit" GNUNET-TRACEKIT
+		config WAIT
+		int "How long to wait for replies"
+		default 30
+		help
+			How long to wait for replies (in seconds)? (default: 30)
 
-	config HOPS
-	int "How many hops should the trace go"
-	default 5
-	help
-		How many hops should the trace go? (default: 5)
+		config HOPS
+		int "How many hops should the trace go"
+		default 5
+		help
+			How many hops should the trace go? (default: 5)
 
-	config PRIORITY
-	int "How important is the trace message"
-	default 1000
-	help
-		How important is the trace message? (default: 1000)
+		config PRIORITY
+		int "How important is the trace message"
+		default 1000
+		help
+			How important is the trace message? (default: 1000)
 
-	config FORMAT
-	int "Output format"
-	default 2
-	help
-		Output format, 0 is human readable, 1 is dot,
-		2 is vcg (default: 2)
-endmenu
+		config FORMAT
+		int "Output format"
+		default 2
+		help
+			Output format, 0 is human readable, 1 is dot,
+			2 is vcg (default: 2)
+	endmenu
 
-menu "Defaults for gnunet-testbed" "GNUNET-TESTBED"
-	config PORT
-	int "Internal port"
-	default 2089
-	help
-		Port used internally by gnunet-testbed
-		(for the IPC in the gnunet-testbed shell).
-		The default is 2089.
-
-	config REGISTERURL
-	string "Registration URL"
-	default "http://ovmj.org/GNUnet/testbed/"
-	help
-		At which URL does the registration software
-		run?
-		Default is http://ovmj.org/GNUnet/testbed/
-endmenu
 endif
 
-endmenu
+if Meta::RARE-CLIENT && Meta::EXPERIMENTAL-CLIENT
+
+	menu "Defaults for gnunet-testbed" "GNUNET-TESTBED"
+		config PORT
+		int "Internal port"
+		default 2089
+		help
+			Port used internally by gnunet-testbed
+			(for the IPC in the gnunet-testbed shell).
+			The default is 2089.
+
+		config REGISTERURL
+		string "Registration URL"
+		default "http://gnunet.org/testbed/"
+		help
+			At which URL does the registration software run?
+			Default is http://gnunet.org/testbed/
+	endmenu
+
+endif
+

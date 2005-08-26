@@ -374,6 +374,11 @@ char * expandDollar(const char * section,
   if (prefix == NULL)
     prefix = getConfigurationString("", &orig[1]);
   if (prefix == NULL) {
+    const char * env = getenv(&orig[1]);
+    if (env != NULL)
+      prefix = STRDUP(env);
+  }
+  if (prefix == NULL) {
     orig[i] = DIR_SEPARATOR;
     return orig;
   }
