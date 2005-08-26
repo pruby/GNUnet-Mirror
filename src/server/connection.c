@@ -1930,9 +1930,9 @@ static void scheduleInboundTraffic() {
     /* take counter measures! */
     schedulableBandwidth = schedulableBandwidth * 100 / load;
     /* make sure we do not take it down too far */
-    if ( (scheduleableBandwidth < minCon * MIN_BPM_PER_PEER / 2) &&
+    if ( (schedulableBandwidth < minCon * MIN_BPM_PER_PEER / 2) &&
 	 (max_bpm > minCon * MIN_BPM_PER_PEER * 2) )
-      scheduleableBandwidth = minCon * MIN_BPM_PER_PEER / 2;
+      schedulableBandwidth = minCon * MIN_BPM_PER_PEER / 2;
   }
 
   adjustedRR = MALLOC(sizeof(long long) * activePeerCount);
