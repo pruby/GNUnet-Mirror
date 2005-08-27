@@ -296,7 +296,7 @@ static int processNBlock(const NBlock * nb,
   uri.data.sks.namespace = nb->namespace;
   uri.data.sks.identifier = nb->rootEntry;
   if (sqc->spcb != NULL) {
-    ret = sqc->spcb(&fi, key, sqc->spcbClosure);
+    ret = sqc->spcb(&fi, key, YES, sqc->spcbClosure);
     if (ret == SYSERR)
       sqc->aborted = YES;
   } else
@@ -397,6 +397,7 @@ static int receiveReplies(const HashCode512 * key,
 	if (sqc->spcb != NULL) {
 	  ret = sqc->spcb(&fi,
 			  &ps->decryptKey,
+			  NO,
 			  sqc->spcbClosure);
 	  if (ret == SYSERR)
 	    sqc->aborted = YES;
@@ -480,7 +481,7 @@ static int receiveReplies(const HashCode512 * key,
 	  return SYSERR;
 	}
 	if (sqc->spcb != NULL) {
-	  ret = sqc->spcb(&fi, NULL, sqc->spcbClosure);
+	  ret = sqc->spcb(&fi, NULL, NO, sqc->spcbClosure);
 	  if (ret == SYSERR)
 	    sqc->aborted = YES;
 	} else

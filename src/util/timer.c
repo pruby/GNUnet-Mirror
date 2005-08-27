@@ -87,6 +87,8 @@ int gnunet_util_sleep(cron_t delay) {
   req.tv_nsec
     = (delay - req.tv_sec * CRON_UNIT_TO_SECONDS)
     * NANOSEC_TO_CRON_UNIT;
+  rem.tv_sec = 0;
+  rem.tv_nsec = 0;
   if (0 != nanosleep(&req, &rem)) {
     if (errno == EINTR) {
       return 1;

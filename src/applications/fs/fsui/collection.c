@@ -307,7 +307,9 @@ struct CCcls {
 
 static int collectCallback(const ECRS_FileInfo * fi,
 			   const HashCode512 * key,
-			   struct CCcls * cls) {
+			   int isRoot,
+			   void * closure) {
+  struct CCcls * cls = closure;
   GROW(cls->fis,
        cls->count,
        cls->count+1);
@@ -352,10 +354,11 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
 		ECRS_listDirectory(&cd->name[strlen(cd->name)+1],
 				   dirLen,
 				   &metaData,
-				   (ECRS_SearchProgressCallback) &collectCallback,
+				   &collectCallback,
 				   &cls));
   collectCallback(fi,
 		  NULL,
+		  NO,
 		  &cls);
   dirData = NULL;
   GNUNET_ASSERT(OK ==

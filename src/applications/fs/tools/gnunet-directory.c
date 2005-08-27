@@ -53,6 +53,7 @@ static void printMeta(const struct ECRS_MetaData * meta) {
 
 static int printNode(const ECRS_FileInfo * fi,
 		     const HashCode512 * key,
+		     int isRoot,
 		     void * unused) {
   char * string;
 

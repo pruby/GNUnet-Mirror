@@ -440,6 +440,21 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 }
 
 /**
+ * Get the content ID of an SKS URI.
+ *
+ * @return OK on success
+ */
+int ECRS_getSKSContentHash(const struct ECRS_URI * uri,
+			   HashCode512 * id) {
+  if (! ECRS_isNamespaceUri(uri)) {
+    BREAK();
+    return SYSERR;
+  }
+  *id = uri->data.sks.identifier;
+  return OK;
+}
+
+/**
  * Is this a keyword URI?
  */
 int ECRS_isKeywordUri(const struct ECRS_URI * uri) {

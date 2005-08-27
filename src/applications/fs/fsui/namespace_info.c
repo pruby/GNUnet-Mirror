@@ -33,6 +33,7 @@
 
 #define NS_DIR "data" DIR_SEPARATOR_STR "namespaces" DIR_SEPARATOR_STR
 #define NS_UPDATE_DIR "data" DIR_SEPARATOR_STR "namespace-updates" DIR_SEPARATOR_STR
+#define NS_ROOTS "data" DIR_SEPARATOR_STR "namespace-root" DIR_SEPARATOR_STR
 
 static void writeNamespaceInfo(const char * namespaceName,
 			       const struct ECRS_MetaData * meta,
@@ -431,9 +432,12 @@ static int readUpdateData(const char * nsname,
       return SYSERR;
     }
   }
-  *updateInterval = ntohl(buf->updateInterval);
-  *lastPubTime = ntohl(buf->lastPubTime);
-  *nextId = buf->nextId;
+  if (updateInterval != NULL)
+    *updateInterval = ntohl(buf->updateInterval);
+  if (lastPubTime != NULL)
+    *lastPubTime = ntohl(buf->lastPubTime);
+  if (nextId != NULL)
+    *nextId = buf->nextId;
   FREE(buf);
   return OK;
 }
@@ -493,8 +497,36 @@ int FSUI_computeNextId(const char * name,
 		       const HashCode512 * thisId,
 		       TIME_T updateInterval,
 		       HashCode512 * nextId) {
-  BREAK();
-  return SYSERR; /* not implemented -- FIXME! */
+  HashCode512 delta;
+  cron_t now;
+  TIME_T tnow;
+  TIME_T lastTime;
+  TIME_T ui;
+
+  if ( (updateInterval == ECRS_SBLOCK_UPDATE_SPORADIC) ||
+       (updateInterval == ECRS_SBLOCK_UPDATE_NONE) )
+    return SYSERR;
+
+  if (OK != readUpdateData(name,
+			   lastId,
+			   NULL,
+			   NULL,
+			   &ui,
+			   &lastTime))
+    return SYSERR;
+  deltaId(lastId,
+	  thisId,
+	  &delta);	
+  cronTime(&now);
+  TIME(&tnow);
+  *nextId = *thisId;
+  while (lastTime < tnow + updateInterval/2) {
+    lastTime += updateInterval;
+    addHashCodes(nextId,
+		 &delta,
+		 nextId);
+  }
+  return OK; 
 }
 
 
@@ -792,7 +824,32 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
  */
 int FSUI_getNamespaceRoot(const char * ns,
 			  HashCode512 * root) {
-  return SYSERR; /* FIXME: not implemented */
+  char * buf;
+  char * fn;
+  char * fnBase;
+  int ret;
+
+  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
+  fnBase = expandFileName(fn);
+  FREE(fn);
+  fn = MALLOC(strlen(fnBase) +
+	      strlen(NS_ROOTS) +
+	      strlen(ns) +
+	      6);
+  strcpy(fn, fnBase);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, NS_ROOTS);
+  mkdirp(fn);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, ns);
+  FREE(fnBase);
+  if (sizeof(HashCode512)
+      == readFile(fn, sizeof(HashCode512), root))
+    ret = OK;
+  else
+    ret = SYSERR;
+  FREE(fn);
+  return ret;
 }
 
 

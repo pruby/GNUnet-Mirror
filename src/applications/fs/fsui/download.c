@@ -48,12 +48,16 @@ static int startDownload(struct FSUI_Context * ctx,
 
 static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 				    const HashCode512 * key,
+				    int isRoot,
 				    void * prnt) {  
   FSUI_DownloadList * parent = prnt;
   int i;
   FSUI_DownloadList * pos;
   char * filename;
   char * fullName;
+  
+  if (isRoot == YES)
+    return OK; /* namespace ad, ignore */
 
   FSUI_trackURI(fi);
   for (i=0;i<parent->completedDownloadsCount;i++)
@@ -228,7 +232,7 @@ void * downloadThread(FSUI_DownloadList * dl) {
       ECRS_listDirectory(dirBlock,
 			 totalBytes,
 			 &md,
-			 (ECRS_SearchProgressCallback) &triggerRecursiveDownload,
+			 &triggerRecursiveDownload,
 			 dl);
       MUTEX_UNLOCK(&dl->ctx->lock);
       ECRS_freeMetaData(md);

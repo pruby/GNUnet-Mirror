@@ -310,6 +310,12 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 			HashCode512 * nsid);
 
 /**
+ * Get the content ID of an SKS URI.
+ */
+int ECRS_getSKSContentHash(const struct ECRS_URI * uri,
+			   HashCode512 * nsid);
+
+/**
  * Is this a keyword URI?
  */
 int ECRS_isKeywordUri(const struct ECRS_URI * uri);
@@ -551,12 +557,14 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
  * @param uri the URI of the datum
  * @param key under which the result was found (hash of keyword),
  *        NULL if no key is known
+ * @param isRoot is this a namespace root advertisement?
  * @param md a description for the URI
  * @return OK, SYSERR to abort
  */
 typedef int (*ECRS_SearchProgressCallback)
   (const ECRS_FileInfo * fi,
    const HashCode512 * key,
+   int isRoot,
    void * closure);
 
 /**

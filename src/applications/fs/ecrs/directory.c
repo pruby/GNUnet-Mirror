@@ -108,7 +108,9 @@ int ECRS_listDirectory(const char * data,
       return SYSERR; /* illegal in directory! */
     }
 
-    memcpy(&mdSize, &data[pos], sizeof(unsigned int));
+    memcpy(&mdSize,
+	   &data[pos], 
+	   sizeof(unsigned int));
     mdSize = ntohl(mdSize);
 
     pos += sizeof(unsigned int);
@@ -126,7 +128,7 @@ int ECRS_listDirectory(const char * data,
     pos += mdSize;
     count++;
     if (spcb != NULL)
-      spcb(&fi, NULL, spcbClosure);
+      spcb(&fi, NULL, NO, spcbClosure);
     ECRS_freeMetaData(fi.meta);
     ECRS_freeUri(fi.uri);
   }

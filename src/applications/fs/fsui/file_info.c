@@ -200,6 +200,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
     if (iterator != NULL) {
       if (OK != iterator(&fi,
 			 NULL,
+			 NO,
 			 closure)) {
 	ECRS_freeMetaData(fi.meta);
 	ECRS_freeUri(fi.uri);

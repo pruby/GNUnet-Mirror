@@ -33,6 +33,9 @@
 
 #define DEBUG_SEARCH NO
 
+/* must match namespace_info.c */
+#define NS_ROOTS "data" DIR_SEPARATOR_STR "namespace-root" DIR_SEPARATOR_STR
+
 /**
  * Pass the result to the client and note it as shown.
  */
@@ -55,17 +58,62 @@ static void processResult(const ECRS_FileInfo * fi,
 		&event);
 }
 
+static void setNamespaceRoot(const ECRS_FileInfo * fi) {
+  char * fn;
+  char * fnBase;
+  HashCode512 ns;
+  char * name;  
+
+  if (OK != ECRS_getNamespaceId(fi->uri,
+				&ns)) {
+    BREAK();
+    return;
+  }
+  name = ECRS_getNamespaceName(&ns);
+  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
+  fnBase = expandFileName(fn);
+  FREE(fn);
+  fn = MALLOC(strlen(fnBase) +
+	      strlen(NS_ROOTS) +
+	      strlen(name) +
+	      6);
+  strcpy(fn, fnBase);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, NS_ROOTS);
+  mkdirp(fn);
+  strcat(fn, DIR_SEPARATOR_STR);
+  strcat(fn, name);
+  FREE(name);
+  FREE(fnBase);
+  if (OK == ECRS_getSKSContentHash(fi->uri,
+				   &ns)) {
+    writeFile(fn,
+	      &ns,
+	      sizeof(HashCode512),
+	      "644");
+  }
+  FREE(fn);  
+}
+
 /**
  * Process results found by ECRS.
  */
 static int spcb(const ECRS_FileInfo * fi,
 		const HashCode512 * key,
-		FSUI_SearchList * pos) {
+		int isRoot,
+		void * cls) {
+  FSUI_SearchList * pos = cls;
   unsigned int i;
   unsigned int j;
   ResultPending * rp;
 
   FSUI_trackURI(fi);
+  if (isRoot) {
+    setNamespaceRoot(fi);
+    FSUI_addNamespaceInfo(fi->uri,
+			  fi->meta);
+    return OK;
+  }
   for (i=0;i<pos->sizeResultsReceived;i++)
     if (ECRS_equalsUri(fi->uri,
 		       pos->resultsReceived[i].uri)) {
@@ -172,7 +220,7 @@ void * searchThread(FSUI_SearchList * pos) {
   ECRS_search(pos->uri,
 	      pos->anonymityLevel,
 	      cronTime(NULL) + cronYEARS, /* timeout!?*/
-	      (ECRS_SearchProgressCallback) &spcb,
+	      &spcb,
 	      pos,
 	      (ECRS_TestTerminate) &testTerminate,
 	      pos);
