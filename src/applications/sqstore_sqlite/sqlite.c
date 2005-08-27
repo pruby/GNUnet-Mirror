@@ -977,11 +977,14 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
  * Shutdown the module.
  */
 void release_module_sqstore_sqlite() {
+  if (stats != NULL)
+    coreAPI->releaseService(stats);  
   sqlite_shutdown();
 #if DEBUG_SQLITE
   LOG(LOG_DEBUG, 
       "SQLite: database shutdown\n");
 #endif
+  coreAPI = NULL;
 }
 
 /* end of sqlite.c */
