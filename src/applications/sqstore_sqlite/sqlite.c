@@ -31,6 +31,7 @@
 #include "gnunet_util.h"
 #include "gnunet_sqstore_service.h"
 #include "gnunet_protocols.h"
+#include "gnunet_stats_service.h"
 #include <sqlite3.h>
 
 #define DEBUG_SQLITE NO
@@ -49,6 +50,9 @@
  */
 #define LOG_SQLITE(level, cmd) do { LOG(level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbf)); } while(0);
 
+static Stats_ServiceAPI * stats;
+static CoreAPIForApplication * coreAPI;
+static unsigned int stat_size;
 
 /**
  * @brief SQLite wrapper
@@ -112,6 +116,8 @@ static unsigned long long getSize() {
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   ret = dbh->payload;
+  if (stats)
+    stats->change(stat_size, ret);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   return ret;
 }
@@ -949,6 +955,12 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   }
 
   MUTEX_CREATE(&dbh->DATABASE_Lock_);
+
+  coreAPI = capi;
+  stats = coreAPI->requestService("stats");
+  if (stats)
+    stat_size
+      = stats->create(gettext_noop("# bytes in datastore"));
 
   api.getSize = &getSize;
   api.put = &put;
