@@ -14,20 +14,18 @@ Notes:
 0.7.0 [30.8.2005?] (aka "compatibility? what's that?"):
 - Missing Features:
   * gnunet-gtk namespace stuff (#911)  [ Christian, RC! ]
-  * gnunet-setup: php-ification for i18n [ Nils, not RC ]
   * improve renaming/moving of downloaded files [ Nils, RC! ]
-  * Windows installer [Nils, not RC]
-    * Uninstall
-      * Remove account
+- investigate: 
+  * quota code for sqstores: is space estimate correct? [ Christian, RC ]
+  * gap:2061 BREAK (bad route)  [ Christian, non-RC ]
+  * failed setkey exchanges, connection timeouts [ Christian, non-RC ]
+
+0.7.0a [9'05] (bugfixes)
 - known bugs:
   * gnunet-setup memory leaks (#878)
-- investigate: 
-  * #892 (gconfig focus changes)
-  * quota code for sqstores: is space estimate correct? [ Christian, RC ]
-  * gap:2061 BREAK (bad route)  [ Christian ]
 - testing:
   * on Windows 98 [Nils]
-  * more "make check" targets to test:  [ not RC ]
+  * more "make check" targets to test: 
     + gnunet-tracekit
     + gap and economy
     + FSUI collections
@@ -35,13 +33,16 @@ Notes:
     + FSUI namespaces
     + FSUI URI tracking
 
-0.7.0a [9'05] (bugfixes)
-
 0.7.1 [10'05] (aka "stabilization"):
+- gnunet-setup:
+  * php-ification for i18n [ Nils, not RC ]
+  * #892 (gconfig focus changes)
 - DHT:
   * make dht tests work
   * XFS [ location URIs ]
 - support using -k multiple times in gnunet-pseudonym
+- Windows installer [Nils, not RC]
+  * Uninstall: Remove account
 
 0.7.2 [12'05] (aka "performance"):
 - Optimizations:
