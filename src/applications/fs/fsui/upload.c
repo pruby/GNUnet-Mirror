@@ -157,6 +157,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
       LOG_FILE_STRERROR(LOG_ERROR, tempName, "write");
     } else {
       closefile(handle);
+      utc->filename = tempName;
       ret = ECRS_uploadFile(tempName,
 			    NO,
 			    utc->anonymityLevel,
