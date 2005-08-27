@@ -883,7 +883,7 @@ msgstr "Upload von `%s' komplett, %llu Bytes brauchten %llu Sekunden (%8.3f KB/s
 #: src/applications/fs/tools/gnunet-insert.c:164
 #, c-format
 msgid "Upload of `%s' complete, current average speed is %8.3f kbps.\n"
-msgstr "Upload con `%s' komplett, derzeitige durchschnittliche Geschwindigkeit beträgt %8.3f KB/s.\n"
+msgstr "Upload von `%s' komplett, derzeitige durchschnittliche Geschwindigkeit beträgt %8.3f KB/s.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:174
 #, c-format
