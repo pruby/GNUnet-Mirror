@@ -13,20 +13,18 @@ Notes:
 
 0.7.0 [30.8.2005?] (aka "compatibility? what's that?"):
 - Missing Features:
-  * gnunet-gtk namespace stuff (#872)  [ Christian, RC! ]
+  * gnunet-gtk namespace stuff (#911)  [ Christian, RC! ]
   * gnunet-setup: php-ification for i18n [ Nils, not RC ]
   * improve renaming/moving of downloaded files [ Nils, RC! ]
   * Windows installer [Nils, not RC]
     * Uninstall
       * Remove account
-    [ NILS: if still there, please elaborate on Mantis!)
-  * man page for gnunet-setup
 - known bugs:
   * gnunet-setup memory leaks (#878)
 - investigate: 
   * #892 (gconfig focus changes)
-  * quota code for sqstores: is space estimate correct?
-  * gap:2061 BREAK (bad route)
+  * quota code for sqstores: is space estimate correct? [ Christian, RC ]
+  * gap:2061 BREAK (bad route)  [ Christian ]
 - testing:
   * on Windows 98 [Nils]
   * more "make check" targets to test:  [ not RC ]
