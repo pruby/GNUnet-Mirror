@@ -18,7 +18,7 @@ load config file (default: /etc/gnunet.conf)
 print the version number
 .TP
 \fB\-d\fR, \fB\-\-debug\fR
-do not detach from the console (for debugging); log messages are written to stderr instead of the logfile in -d mode.
+do not detach from the console (for debugging); log messages are written to stderr instead of the logfile in \-d mode.
 .TP
 \fB\-u \fIUSER\fR, \fB\-\-user=USER\fR
 run as user USER (and if available as group USER). Note that to use this option, you will probably have to start gnunetd as
@@ -28,7 +28,7 @@ root. It is typically better to directly start gnunetd as that user instead.
 change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
 .SH NOTES
 Before you can share, search or download files from GNUnet you must start the GNUnet server, gnunetd.
-If you start gnunetd as root (which is not required), you can use the -u option such that GNUnet runs as a different user. If a group of the same name exists, GNUnet will also change to that group. If GNUnet cannot change its UID to USER or GID to USER, a warning will be printed and gnunetd will *continue* with the rights of the user that invoked gnunetd.
+If you start gnunetd as root (which is not required), you can use the \-u option such that GNUnet runs as a different user. If a group of the same name exists, GNUnet will also change to that group. If GNUnet cannot change its UID to USER or GID to USER, a warning will be printed and gnunetd will *continue* with the rights of the user that invoked gnunetd.
 .SH FILES
 .TP
 /etc/gnunet.conf
@@ -46,6 +46,6 @@ Block database for anonymous file sharing. Depending on how you compiled GNUnet,
 /var/lib/GNUnet/data/credit/
 Trust directory.  GNUnet stores economic information about other nodes here, in particular how much useful data we have received from which remote node.
 .SH "REPORTING BUGS"
-Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet\-developers@gnu.org>
 .SH "SEE ALSO"
 \fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunetd.conf\fP(5), \fBgnunetd\fP(1)

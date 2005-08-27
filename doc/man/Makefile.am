@@ -8,6 +8,7 @@ gnunet-directory.1 \
 gnunet-download.1 \
 gnunet-insert.1 \
 gnunet-search.1 \
+gnunet-setup.1 \
 gnunet-stats.1 \
 gnunet-tbench.1 \
 gnunet-testbed.1 \

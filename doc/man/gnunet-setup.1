@@ -1,0 +1,42 @@
+.TH GNUNET-SETUP "1" "27 Aug 2005" "GNUnet"
+.SH NAME
+gnunet\-setup \- configuring GNUnet
+.SH SYNOPSIS
+.B gnunet-setup
+[\fIOPTIONS\fR] MODE
+.SH DESCRIPTION
+.PP
+gnunet\-setup can be used to generate and edit the configuration files (gnunetd.conf and gnunet.conf) for GNUnet.  gnunet\-setup runs in two basic modes, one for editing gnunet.conf and one for editing gnunetd.conf.  Depending on which libraries were available when gnunet\-setup was build, gnunet\-setup will have a curses or GTK user interface.  A text\-only interface is always available.  For a quick initial configuration gnunet\-setup offers a wizard (curses or GTK only) that can be used to quickly generate a working gnunetd.conf file.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print help page
+.TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+specify location of the configuration file (default: /etc/gnunetd.conf or ~/.gnunet/gnunet.conf, depending on the mode)
+.TP
+\fB\-d\fR, \fB\-\-daemon\fR
+generate configuration for gnunetd (gnunetd.conf).  If run without this option, gnunet\-setup will generate a configuration for GNUnet clients.
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING..TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.TP
+\fB\-V\fR, \fB\-\-verbose\fR
+be verbose
+.TP
+.SH NOTES
+Before you can use any GNUnet application you must run gnunet\-setup to generate the configuration.  First, run gnunet\-setup with the \-d option to generate a configuration for gnunetd.  Later, each user of the system should run gnunet\-setup without \-d to generate his personal configuration.
+.TP
+Depending on your system, gnunet\-setup will have a subset of the following modes: config (text), menuconfig (curses), gconfig (GTK), wizard-curses (curses wizard) and wizard\-gtk (GTK wizard).  The wizards can currently only be used in conjunction with the \-d option to configure gnunetd.
+.SH FILES
+.TP
+/etc/gnunetd.conf
+gnunetd configuration file (default location).
+.TP
+~/.gnunet/gnunet.conf
+client configuration file (default location).
+.SH "REPORTING BUGS"
+Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
+.SH "SEE ALSO"
+\fBgnunetd\fP(1), \fBgnunet\-update\fP(1), \fBgnunetd.conf\fP(5), \fBgnunet.conf\fP(5)
