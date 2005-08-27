@@ -1,6 +1,6 @@
-.TH GNUNET-INSERT "1" "31 Jan 2005" "GNUnet"
+.TH GNUNET-INSERT "1" "27 Aug 2005" "GNUnet"
 .SH NAME
-gnunet-insert \- a command line interface for inserting new content into GNUnet
+gnunet\-insert \- a command line interface for inserting new content into GNUnet
 .SH SYNOPSIS
 .B gnunet\-insert
 [\fIOPTIONS\fR] FILENAME*
@@ -91,6 +91,10 @@ Use alternate config file (if this option is not specified, the default is ~/.gn
 
 \fB\-C\fR, \fB\-\-copy\fR
 Even if using links to the .gnunet directory is generally permitted, make a copy of the file (disables symlinking even if it is possible).  When indexing a file, gnunet\-insert will create a copy of the file in the "share" directory of gnunetd.  If that directory happens to be on the local machine (i.e. gnunetd runs on localhost) then gnunet\-insert can instead just use a link.  This will not work over the network, if the file\-permissions do not allow gnunetd to read the file or if the file maybe changed afterwards.  Hence the default is to be inefficient and to make a copy.  With this option you can force gnunet\-insert to not make a link.  gnunet\-insert will fall back to creating a copy.
+
+.TP
+\fB\-d\fR, \fB\-\-direct\fR
+For a recursive upload, also create direct indexing information that will refer to files inside of directories immediately.  Without \-d, contents of directories can only be found via the directory itself.
 
 .TP
 \fB\-e\fR, \fB\-\-extract\fR
