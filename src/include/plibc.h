@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 
 #ifndef _PLIBC_H_
@@ -32,15 +32,15 @@
  #define SIGALRM 14
 #endif
 
-#if ENABLE_NLS
-#include <langinfo.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifdef WINDOWS
+
+#if ENABLE_NLS
+  #include "langinfo.h"
+#endif
 
 #include <windows.h>
 #include <Ws2tcpip.h>
