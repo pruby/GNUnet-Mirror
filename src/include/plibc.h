@@ -33,7 +33,7 @@
 #endif
 
 #if ENABLE_NLS
-	#include "langinfo.h"
+#include <langinfo.h>
 #endif
 
 #ifdef __cplusplus

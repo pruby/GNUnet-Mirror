@@ -189,8 +189,8 @@ int initUtil(int argc,
 #endif
 #if ENABLE_NLS
   setlocale (LC_ALL, "");
-  BINDTEXTDOMAIN(PACKAGE, LOCALEDIR);
-  textdomain(PACKAGE);
+  BINDTEXTDOMAIN("GNUnet", LOCALEDIR);
+  textdomain("GNUnet");
 #endif
   gnunet_util_initIO();
   initLockingGcrypt();

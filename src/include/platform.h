@@ -151,7 +151,7 @@
 /**
  * GNU gettext support macro.
  */
-#define _(String) dgettext(PACKAGE,String)
+#define _(String) dgettext("GNUnet",String)
 
 #ifdef CYGWIN
  #define SIOCGIFCONF     _IOW('s', 100, struct ifconf) /* get if list */
