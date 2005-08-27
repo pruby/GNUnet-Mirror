@@ -573,6 +573,7 @@ static int stopTransportServer() {
 	     0,
 	     (struct sockaddr*) &sin,
 	     sizeof(sin));
+      PTHREAD_KILL(&dispatchThread, SIGALRM);  /* sometimes LO is firewalled, try alternative */
       SEMAPHORE_DOWN(serverSignal);
       SEMAPHORE_FREE(serverSignal);
       PTHREAD_JOIN(&dispatchThread, &unused);
