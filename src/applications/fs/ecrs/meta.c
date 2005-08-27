@@ -797,7 +797,8 @@ char * ECRS_suggestFilename(const char * filename) {
     if (path[strlen(path)-1] != DIR_SEPARATOR)
       strcat(renameTo, DIR_SEPARATOR_STR);
     strcat(renameTo, key);
-    strcat(renameTo, mime);
+    if (strcasecmp(renameTo + strlen(renameTo) - strlen(mime), mime) != 0)
+      strcat(renameTo, mime);
   }
   for (i=strlen(renameTo)-1;i>=0;i--)
     if (! isprint(renameTo[i]))
