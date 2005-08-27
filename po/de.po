@@ -1533,17 +1533,17 @@ msgstr "Fehler beim Lesen von Informationen von gnunetd.\n"
 #: src/applications/stats/statistics.c:206
 #, c-format
 msgid "% of allowed network load (up)"
-msgstr "% erlaubter Netzwerklast (hoch)"
+msgstr "% of allowed network load (up)"
 
 #: src/applications/stats/statistics.c:208
 #, c-format
 msgid "% of allowed network load (down)"
-msgstr "% erlaubter Netzwerklast (herunter)"
+msgstr "% of allowed network load (down)"
 
 #: src/applications/stats/statistics.c:210
 #, c-format
 msgid "% of allowed cpu load"
-msgstr "% erlaubter CPU Last"
+msgstr "% of allowed cpu load"
 
 #: src/applications/stats/statistics.c:214
 msgid "# bytes of noise received"
