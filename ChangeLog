@@ -1,3 +1,6 @@
+Sun Aug 28 01:46:26 PDT 2005
+	Updated German translation.
+
 Tue Aug 23 00:45:57 PDT 2005
 	Fixed undersynchronization that may result in segv if pending
 	download was cancelled.

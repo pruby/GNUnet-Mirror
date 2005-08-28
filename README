@@ -6,9 +6,8 @@ What is GNUnet?
 
 GNUnet is peer-to-peer framework focusing on security.  The first and
 primary application for GNUnet is anonymous file-sharing.  GNUnet is
-currently developed at Purdue University with support from a worldwide
-group of independent free software developers.  GNUnet is a part of
-the GNU project (http://www.gnu.org/).
+currently developed by a worldwide group of independent free software
+developers.  GNUnet is a part of the GNU project (http://www.gnu.org/).
 
 This is a BETA release.  The network has not been tested on a large
 scale yet.  While there are no known significant bugs, we are still
@@ -17,7 +16,7 @@ are common and the documentation may not be adequate for unexperienced
 users.
 
 For a longer description of the GNUnet System see our webpages
-http://www.gnu.org/projects/GNUnet/ and http://gnunet.org/.
+http://www.gnu.org/software/gnunet/ and http://gnunet.org/.
 
 
 Dependencies:
@@ -26,7 +25,7 @@ Dependencies:
 For the impatient, here is the list of immediate dependencies for
 running GNUnet:
 
-- libextractor >= 0.5.3
+- libextractor >= 0.5.4
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
 - mysql >= 4.1 OR sqlite >= 3.0
@@ -89,10 +88,17 @@ $ aclocal -I /usr/local/share/aclocal
 Configuration
 =============
 
-The defaults are usually ok, you may want to adjust the limitations
-(space consumption, bandwidth, etc.) though.  If you want to
-configure, edit "/etc/gnunetd.conf" (or /var/lib/GNUnet/gnunetd.conf)
-and "~/.gnunet/gnunet.conf" (whichever applies).
+GNUnet uses two types of configuration files, one for the daemon
+(called gnunetd.conf) and one for each user (gnunet.conf).  You can
+create and edit these configuration files with the gnunet-setup tool.
+You need to add the option "-d" to gnunet-setup in order to edit
+gnunetd.conf (by default, gnunet-setup will edit gnunet.conf).  The
+defaults that are created the first time you run gnunet-setup are
+usually ok, you may want to adjust the limitations (space consumption,
+bandwidth, etc.) though.  The configuration files are human-readable;
+gnunetd is typically located at "/etc/gnunetd.conf",
+"~/.gnunet/gnunetd.conf" or "/var/lib/GNUnet/gnunetd.conf".  The
+per-user configuration file should be at "~/.gnunet/gnunet.conf".
 
 If you want to use a different configuration file, pass the name of
 the configuration file as an argument with the option "-c" to any

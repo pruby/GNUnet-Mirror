@@ -22,7 +22,7 @@ des utilisateurs sans expérience.
 
 Pour une description plus complète du système GNUnet visitez nos
 pages web :
-http://www.gnu.org/projects/GNUnet/
+http://www.gnu.org/software/gnunet/
 http://gnunet.org/
 
 
