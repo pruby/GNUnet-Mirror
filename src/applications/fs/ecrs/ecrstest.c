@@ -84,9 +84,9 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
   for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
-    hash(&buf[i+sizeof(HashCode512)],
+    hash(&buf[i],
 	 42,
-	 (HashCode512*) &buf[i]);
+	 (HashCode512*) &buf[i+sizeof(HashCode512)]);
   WRITE(fd, buf, size);
   FREE(buf);
   closefile(fd);
@@ -203,9 +203,9 @@ static int downloadFile(unsigned int size,
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
     for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
-      hash(&buf[i+sizeof(HashCode512)],
+      hash(&buf[i],
 	   42,
-	   (HashCode512*) &buf[i]);
+	   (HashCode512*) &buf[i+sizeof(HashCode512)]);
     if (size != READ(fd, in, size))
       ret = SYSERR;
     else if (0 == memcmp(buf,

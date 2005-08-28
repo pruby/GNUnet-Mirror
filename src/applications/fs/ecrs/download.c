@@ -31,7 +31,7 @@
 #include "ecrs.h"
 #include "tree.h"
 
-#define DEBUG_DOWNLOAD YES
+#define DEBUG_DOWNLOAD NO
 
 /**
  * Highest TTL allowed? (equivalent of 25-50 HOPS distance!)
@@ -1194,10 +1194,12 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   if (OK != createIOContext(&ioc,
 			    ntohll(fid.file_length),
 			    filename)) {
+#if DEBUG_DOWNLOAD
     LOG(LOG_DEBUG,
 	"`%s' aborted for file `%s'\n",
 	__FUNCTION__,
 	filename);
+#endif
     return SYSERR;
   }
   rm = createRequestManager();
@@ -1233,11 +1235,13 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
     freeIOC(&ioc, YES);
   else
     freeIOC(&ioc, NO); /* aborted */
+#if DEBUG_DOWNLOAD
   LOG(LOG_DEBUG,
       "`%s' terminating for file `%s' with result %s\n",
       __FUNCTION__,
       filename,
       ret == OK ? "SUCCESS" : "INCOMPLETE");
+#endif
   return ret;
 }
 
