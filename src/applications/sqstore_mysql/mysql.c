@@ -1249,7 +1249,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
       if (strcmp(sql_fields[j].name,
 		 "Avg_row_length")==0) {
         found = YES;
-        dbh->avgLength_ID=j;
+        dbh->avgLength_ID = j;
 	break;
       }
     }
