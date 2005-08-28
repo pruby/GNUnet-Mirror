@@ -136,6 +136,7 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_sqstore_service.h"
+#include "gnunet_stats_service.h"
 #include <mysql/mysql.h>
 
 #define DEBUG_MYSQL NO
@@ -155,6 +156,9 @@
  */
 #define LOG_MYSQL(level, cmd, dbh) do { LOG(level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
 
+static Stats_ServiceAPI * stats;
+static CoreAPIForApplication * coreAPI;
+static unsigned int stat_size;
 
 
 
@@ -1135,6 +1139,10 @@ static unsigned long long getSize() {
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
   bytesUsed = rowsInTable * avgRowLen;
+  
+  if (stats)
+    stats->set(stat_size, bytesUsed);
+  
   return bytesUsed;
 }
 
@@ -1160,6 +1168,12 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   struct passwd * pw;
   size_t nX;
   char *home_dir;
+
+  coreAPI = capi;
+  stats = coreAPI->requestService("stats");
+  if (stats)
+    stat_size
+      = stats->create(gettext_noop("# Bytes in datastore"));
 
   /* verify that .my.cnf can be found */
 #ifndef WINDOWS
@@ -1290,6 +1304,9 @@ void release_module_sqstore_mysql() {
   FREE(dbh->cnffile);
   FREE(dbh);
   dbh = NULL;
+  
+  if (stats != NULL)
+    coreAPI->releaseService(stats);
 }
 
 /* end of mysql.c */

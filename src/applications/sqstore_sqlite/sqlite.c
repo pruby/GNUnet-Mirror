@@ -117,7 +117,7 @@ static unsigned long long getSize() {
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
   ret = dbh->payload;
   if (stats)
-    stats->change(stat_size, ret);
+    stats->set(stat_size, ret);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
   return ret;
 }
@@ -656,7 +656,7 @@ static int put(const HashCode512 * key,
   dbh->lastSync++;
   /* row length = hash length + block length + numbers + column count + estimated index size + 1 */
   dbh->payload = dbh->payload + contentSize + sizeof(HashCode512) + getIntSize(size) + getIntSize(type) +
-  	getIntSize(prio) + getIntSize(anon) + getIntSize(expir) + 7 + 90 + 1;
+  	getIntSize(prio) + getIntSize(anon) + getIntSize(expir) + 7 + 245 + 1;
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
 #if DEBUG_SQLITE
@@ -708,7 +708,7 @@ static int del(const HashCode512 * key,
       rowLen = sqlite3_column_int(dbh->exists, 0) + sqlite3_column_int(dbh->exists, 1) +
 	sqlite3_column_int(dbh->exists, 2) + sqlite3_column_int(dbh->exists, 3) +
 	sqlite3_column_int(dbh->exists, 4) + sqlite3_column_int(dbh->exists, 5) +
-	sqlite3_column_int(dbh->exists, 6) + 7 + 90 + 1;
+	sqlite3_column_int(dbh->exists, 6) + 7 + 245 + 1;
       
       if (dbh->payload > rowLen)
 	dbh->payload -= rowLen;
@@ -759,7 +759,7 @@ static int del(const HashCode512 * key,
 	/* row length = hash length + block length + numbers + column count + estimated index size + 1 */
 	dbh->payload = dbh->payload - sizeof(HashCode512) - contentSize
 	  - getIntSize(size) - getIntSize(type) - getIntSize(prio)
-	  - getIntSize(anon) - getIntSize(expir) - 7 - 90 - 1;
+	  - getIntSize(anon) - getIntSize(expir) - 7 - 245 - 1;
     } else {
       LOG_SQLITE(LOG_ERROR, "sqlite3_prepare");
     }
@@ -960,7 +960,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   stats = coreAPI->requestService("stats");
   if (stats)
     stat_size
-      = stats->create(gettext_noop("# bytes in datastore"));
+      = stats->create(gettext_noop("# Bytes in datastore"));
 
   api.getSize = &getSize;
   api.put = &put;
