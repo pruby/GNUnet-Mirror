@@ -5,6 +5,7 @@ EXTRA_DIST = \
  ABOUT-NLS \
  config.rpath  \
  README.fr \
+ README.win32 \
  README.debian \
  UPDATING \
  PLATFORMS \
