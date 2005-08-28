@@ -1,0 +1,113 @@
+                       Welcome to GNUnet
+
+
+What is GNUnet?
+===============
+
+GNUnet is peer-to-peer framework focusing on security.  The first and
+primary application for GNUnet is anonymous file-sharing.  GNUnet is
+currently developed by a worldwide group of independent free software
+developers.  GNUnet is a part of the GNU project (http://www.gnu.org/).
+
+This is a BETA release.  The network has not been tested on a large
+scale yet.  While there are no known significant bugs, we are still
+changing significant aspects of the system in any other version.  Bugs
+are common and the documentation may not be adequate for unexperienced
+users.
+
+For a longer description of the GNUnet System see our webpages
+http://www.gnu.org/software/gnunet/ and http://gnunet.org/.
+
+
+Configuration
+=============
+
+GNUnet uses two types of configuration files, one for the daemon
+(called gnunetd.conf) and one for each user (gnunet.conf).  You can
+create and edit these configuration files with the gnunet-setup tool.
+You need to add the option "-d" to gnunet-setup in order to edit
+gnunetd.conf (by default, gnunet-setup will edit gnunet.conf).  The
+defaults that are created the first time you run gnunet-setup are
+usually ok, you may want to adjust the limitations (space consumption,
+bandwidth, etc.) though.  The configuration files are human-readable;
+gnunetd is typically located at "etc\gnunetd.conf",
+"~\.gnunet\gnunetd.conf" or "var/lib/GNUnet/gnunetd.conf".  The
+per-user configuration file should be at "~/.gnunet/gnunet.conf".
+"~" is your user's profile directory.
+
+If you want to use a different configuration file, pass the name of
+the configuration file as an argument with the option "-c" to any
+GNUnet application.  Sending a SIGHUP to the gnunetd process will
+cause gnunetd to re-read the configuration file.  Note that not all
+options can be changed at runtime this way (e.g. to change any port
+number, you must fully restart gnunetd).
+
+In order to use the SMTP transport service, you should read
+http://gnunet.org/smtp.php3 first!  Note that SMTP should never
+be required, it is just a neat technical idea at this point.
+
+
+Usage
+=====
+
+First, you must obtain an initial list of GNUnet hosts.  Knowing a
+single peer is sufficient since after that GNUnet propagates
+information about other peers.  Note that the default "gnunetd.conf"
+contains URLs from where gnunetd downloads an initial hostlist
+whenever it is started.  If you want to create an alternative URL for
+others to use, the file can be generated on any machine running
+gnunetd by periodically executing
+
+$ cat $GNUNETD_HOME/data/hosts/* > the_file
+
+If the solution with the URL is not feasible for your situation, you
+can also add hosts manually.  The GNUnet webpage has a public
+directory of hostkeys under http://gnunet.org/hosts/.  You
+can of course use any other source for these files.  Copy the hostkeys
+to "$GNUNETD_HOME/data/hosts/" (where $GNUNETD_HOME is the
+directory specified in the /etc/gnunetd.conf configuration file).
+
+Now start the local node using "gnunetd".  gnunetd should run 24/7 if
+you want to maximize your anonymity.  You may start it as a service at
+computer startup.  To insert files into GNUnet, use
+the "gnunet-insert" command.
+
+You can invoke the GUI with:
+
+$ gnunet-gtk
+
+If you want to use the command line, use
+
+$ gnunet-search KEYWORD
+
+This will display a list of results to the console. Then use
+
+$ gnunet-download -o FILENAME -- GNUNET_URI
+
+to retrieve a file.  The GNUNET_URI is printed by gnunet-search
+together with a description.
+
+For further documentation, see our webpage.
+
+
+Hacking GNUnet
+==============
+
+Contributions are welcome, please submit bugs to
+https://gnunet.org/mantis/.  Please make sure to run contrib/report.sh
+and include the output with your bug reports.  More about how to
+report bugs can be found in the GNUnet FAQ on the webpage.  Submit
+patches via E-Mail to gnunet-developers@gnu.org.
+
+
+Stay tuned
+==========
+
+* http://www.gnu.org/software/GNUnet/
+* http://gnunet.org/
+* https://gnunet.org/mantis/
+* https://gnunet.org/drupal/
+* http://mail.gnu.org/mailman/listinfo/gnunet-developers
+* http://mail.gnu.org/mailman/listinfo/help-gnunet
+* http://mail.gnu.org/mailman/listinfo/info-gnunet
+
