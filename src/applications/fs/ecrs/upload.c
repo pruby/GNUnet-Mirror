@@ -168,6 +168,8 @@ int ECRS_uploadFile(const char * filename,
   memset(&chk, 0, sizeof(CHK));
   if (isDirectory(filename)) {
     BREAK();
+    /* Should not happen */
+    LOG(LOG_ERROR, "Cannot upload file `%s', it seems to be a directory!", filename);
     return SYSERR;
   }
   if (0 == assertIsFile(filename)) {
@@ -177,11 +179,17 @@ int ECRS_uploadFile(const char * filename,
     return SYSERR;
   }
   if (OK != getFileSize(filename,
-                        &filesize)) 
+                        &filesize)) {
+    LOG(LOG_ERROR, _("Cannot get size of file `%s'"), filename);
+    
     return SYSERR;
+  }
   sock = getClientSocket();
-  if (sock == NULL)
+  if (sock == NULL) {
+    LOG(LOG_ERROR, _("Not connected to gnunetd."));
+
     return SYSERR;
+  }
   eta = 0;
   if (upcb != NULL)
     upcb(filesize, 0, eta, upcbClosure);
