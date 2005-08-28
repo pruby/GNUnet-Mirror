@@ -93,8 +93,8 @@ Use alternate config file (if this option is not specified, the default is ~/.gn
 Even if using links to the .gnunet directory is generally permitted, make a copy of the file (disables symlinking even if it is possible).  When indexing a file, gnunet\-insert will create a copy of the file in the "share" directory of gnunetd.  If that directory happens to be on the local machine (i.e. gnunetd runs on localhost) then gnunet\-insert can instead just use a link.  This will not work over the network, if the file\-permissions do not allow gnunetd to read the file or if the file maybe changed afterwards.  Hence the default is to be inefficient and to make a copy.  With this option you can force gnunet\-insert to not make a link.  gnunet\-insert will fall back to creating a copy.
 
 .TP
-\fB\-d\fR, \fB\-\-direct\fR
-For a recursive upload, also create direct indexing information that will refer to files inside of directories immediately.  Without \-d, contents of directories can only be found via the directory itself.
+\fB\-D\fR, \fB\-\-direct\fR
+For a recursive upload, also create direct indexing information that will refer to files inside of directories immediately.  Without \-D, contents of directories can only be found via the directory itself.
 
 .TP
 \fB\-e\fR, \fB\-\-extract\fR

@@ -208,7 +208,7 @@ static void printhelp() {
     { 'C', "copy", NULL,
       gettext_noop("even if gnunetd is running on the local machine, force the"
 		   " creation of a copy instead of making a link to the GNUnet share directory") },
-    { 'd', "direct", NULL,
+    { 'D', "direct", NULL,
       gettext_noop("use libextractor to add additional direct references to directory entries") },
     { 'e', "extract", NULL,
       gettext_noop("print list of extracted keywords that would be used, but do not perform upload") },
@@ -277,7 +277,7 @@ static int parseOptions(int argc,
       LONG_DEFAULT_OPTIONS,
       { "anonymity",     1, 0, 'a' },
       { "copy",          0, 0, 'C' },
-      { "direct",        0, 0, 'd' },
+      { "direct",        0, 0, 'D' },
       { "extract",       0, 0, 'e' },
       { "interval",      1, 0, 'i' },
       { "key",           1, 0, 'k' },
@@ -297,7 +297,7 @@ static int parseOptions(int argc,
     };
     c = GNgetopt_long(argc,
 		      argv,
-		      "a:c:CdehH:i:L:k:K:m:nN:p:P:RSt:T:u:vV",
+		      "a:c:CDehH:i:L:k:K:m:nN:p:P:RSt:T:u:vV",
 		      long_options,
 		      &option_index);
     if (c == -1)
@@ -326,7 +326,7 @@ static int parseOptions(int argc,
 					 "DISABLE-SYMLINKING",
 					 "YES"));
       break;
-    case 'd':
+    case 'D':
       FREENONNULL(setConfigurationString("FS",
 					 "DIRECT-KEYWORDS",
 					 "YES"));
