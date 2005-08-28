@@ -156,10 +156,10 @@ menu "Options for filesharing (FS)" "FS"
 
 	config DOWNLOADDIR
 	string "Where to store incomplete downloads"
-	default "$GNUNET_HOME/pending-downloads/"
+	default "$HOME/pending-downloads/"
 	help
 		Where to download files to (by default)?
-		Default is $GNUNET_HOME/pending-downloads/
+		Default is $HOME/pending-downloads/
 
 	config INCOMINGDIR
 	string "Where to move complete downloads to"
