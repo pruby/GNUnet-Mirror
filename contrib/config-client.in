@@ -156,17 +156,17 @@ menu "Options for filesharing (FS)" "FS"
 
 	config DOWNLOADDIR
 	string "Where to store incomplete downloads"
-	default "~/pending-downloads/"
+	default "$GNUNET_HOME/pending-downloads/"
 	help
 		Where to download files to (by default)?
-		Default is ~/pending-downloads/
+		Default is $GNUNET_HOME/pending-downloads/
 
 	config INCOMINGDIR
 	string "Where to move complete downloads to"
-	default "~/completed-downloads/"
+	default "~/gnunet-downloads/"
 	help
 		Where to move finished downloads to (by default)?
-		Default is ~/completed-downloads/
+		Default is ~/gnunet-downloads/
 		
 	config DISABLE-SYMLINK
 	bool "Disable symlinking"
