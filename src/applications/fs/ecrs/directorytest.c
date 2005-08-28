@@ -39,6 +39,7 @@ struct PCLS {
 
 static int processor(const ECRS_FileInfo * fi,
 		     const HashCode512 * key,
+		     int isRoot,
 		     void * cls) {
   struct PCLS * p = cls;
 

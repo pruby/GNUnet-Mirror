@@ -133,6 +133,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 
 static int searchCB(const ECRS_FileInfo * fi,
 		    const HashCode512 * key,
+		    int isRoot,
 		    void * closure) {
   struct ECRS_URI ** my = closure;
   char * tmp;

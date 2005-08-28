@@ -54,6 +54,7 @@ static int testTerminate(void * unused) {
 
 static int searchCB(const ECRS_FileInfo * fi,
 		    const HashCode512 * key,
+		    int isRoot,
 		    void * closure) {
   int * cnt = closure;
 #if 0
