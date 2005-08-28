@@ -18,7 +18,6 @@ Notes:
 0.7.0a [9'05] (aka "bugfixes")
 - known bugs (see Mantis for updates):
   * gnunet-setup memory leaks (#878)
-  * gnunet-setup theming bug (#916)
   * gnunet-setup category switch update bug (#892)
   * failed setkey exchanges, connection timeouts (#896, #910) [ Christian ]
 - testing:
