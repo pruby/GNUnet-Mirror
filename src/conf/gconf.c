@@ -35,6 +35,8 @@
 #define LKC_DIRECT_LINK
 #define ENABLE_NLS 1
 
+#define BUG916 NO
+
 #include "lkc.h"
 #include "confdata.h"
 #include "images.c"
@@ -461,8 +463,10 @@ void init_left_tree(void)
   gtk_tree_view_column_set_attributes(GTK_TREE_VIEW_COLUMN(column),
               renderer,
               "text", COL_OPTION,
-              "foreground-gdk",
-              COL_COLOR, NULL);
+#if BUG916
+              "foreground-gdk", COL_COLOR, 
+#endif
+				      NULL);
 
   sel = gtk_tree_view_get_selection(view);
   gtk_tree_selection_set_mode(sel, GTK_SELECTION_SINGLE);
@@ -515,41 +519,52 @@ void init_right_tree(void)
   gtk_tree_view_column_set_attributes(GTK_TREE_VIEW_COLUMN(column),
               renderer,
               "text", COL_OPTION,
-              "foreground-gdk",
-              COL_COLOR, NULL);
-
+#if BUG916
+              "foreground-gdk", COL_COLOR,
+#endif
+				      NULL);
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(view, -1,
                 "Name", renderer,
                 "text", COL_NAME,
-                "foreground-gdk",
-                COL_COLOR, NULL);
+#if BUG916
+                "foreground-gdk", COL_COLOR, 
+#endif
+					      NULL);
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(view, -1,
                 "N", renderer,
                 "text", COL_NO,
-                "foreground-gdk",
-                COL_COLOR, NULL);
+#if BUG916
+                "foreground-gdk", COL_COLOR,
+#endif
+					      NULL);
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(view, -1,
                 "M", renderer,
                 "text", COL_MOD,
-                "foreground-gdk",
-                COL_COLOR, NULL);
+#if BUG916
+                "foreground-gdk", COL_COLOR,
+#endif
+					      NULL);
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(view, -1,
                 "Y", renderer,
                 "text", COL_YES,
-                "foreground-gdk",
-                COL_COLOR, NULL);
+#if BUG916
+                "foreground-gdk",  COL_COLOR,
+#endif
+					      NULL);
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(view, -1,
                 "Value", renderer,
                 "text", COL_VALUE,
                 "editable",
                 COL_EDIT,
-                "foreground-gdk",
-                COL_COLOR, NULL);
+#if BUG916
+                "foreground-gdk", COL_COLOR,
+#endif
+ NULL);
   g_signal_connect(G_OBJECT(renderer), "edited",
        G_CALLBACK(renderer_edited), NULL);
 
