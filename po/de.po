@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre5\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-08-28 01:32-0700\n"
+"POT-Creation-Date: 2005-08-28 14:35-0700\n"
 "PO-Revision-Date: 2005-08-25 23:34+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -512,7 +512,7 @@ msgid "# of connected peers"
 msgstr "# verbundener Knoten"
 
 #: src/applications/dht/tools/dhttest2.c:127
-#: src/applications/gap/gaptest.c:317
+#: src/applications/gap/gaptest.c:318
 #: src/applications/session/sessiontest.c:118
 #: src/applications/tbench/tbenchtest.c:199
 #, c-format
@@ -520,7 +520,7 @@ msgid "Waiting for gnunetd to start (%u iterations left)...\n"
 msgstr "Warte auf den Start von gnunetd (%u Iterationen verbleiben)...\n"
 
 #: src/applications/dht/tools/dhttest2.c:139
-#: src/applications/gap/gaptest.c:329
+#: src/applications/gap/gaptest.c:330
 #: src/applications/session/sessiontest.c:133
 #: src/applications/tbench/tbenchtest.c:122
 #, c-format
@@ -624,27 +624,37 @@ msgstr "CHK URI ist nicht erlaubt für Suchen.\n"
 msgid "LOC URI not allowed for search.\n"
 msgstr "LOC URI ist nicht erlaubt für Suchen.\n"
 
-#: src/applications/fs/ecrs/upload.c:175
+#: src/applications/fs/ecrs/upload.c:177
 #, c-format
 msgid "`%s' is not a file.\n"
 msgstr "`%s' ist keine Datei.\n"
 
-#: src/applications/fs/ecrs/upload.c:192
+#: src/applications/fs/ecrs/upload.c:183
+#, fuzzy, c-format
+msgid "Cannot get size of file `%s'"
+msgstr "Konfigurationsdatei `%s' konnte nicht geöffnet werden.\n"
+
+#: src/applications/fs/ecrs/upload.c:189
+#, fuzzy
+msgid "Not connected to gnunetd."
+msgstr "Verbindung zu gnunetd konnte nicht hergestellt werden.\n"
+
+#: src/applications/fs/ecrs/upload.c:200
 #, c-format
 msgid "Cannot hash `%s'.\n"
 msgstr "`%s' konnte nicht gehashed werden.\n"
 
-#: src/applications/fs/ecrs/upload.c:210
+#: src/applications/fs/ecrs/upload.c:218
 #, c-format
 msgid "Initialization for indexing file `%s' failed.\n"
 msgstr "Initialisierung der Indizierung der Datei `%s' fehlgeschlagen.\n"
 
-#: src/applications/fs/ecrs/upload.c:216
+#: src/applications/fs/ecrs/upload.c:224
 #, c-format
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr "Indizieren der Datei `%s' schlug fehl.  Versuch Datei einzufügen...\n"
 
-#: src/applications/fs/ecrs/upload.c:299
+#: src/applications/fs/ecrs/upload.c:307
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr "Indizierung der Daten schlug an Position %i fehl.\n"
@@ -1622,21 +1632,21 @@ msgstr "# Sitzungsschlüssel akzeptiert"
 msgid "# sessions established"
 msgstr "# Sitzungen aufgebaut"
 
-#: src/applications/sqstore_mysql/mysql.c:149
-#: src/applications/sqstore_mysql/mysql.c:156
-#: src/applications/sqstore_mysql/mysql.c:383
-#: src/applications/sqstore_mysql/mysql.c:723
-#: src/applications/sqstore_mysql/mysql.c:738
-#: src/applications/sqstore_mysql/mysql.c:747
-#: src/applications/sqstore_mysql/mysql.c:771
-#: src/applications/sqstore_mysql/mysql.c:781
-#: src/applications/sqstore_mysql/mysql.c:831
-#: src/applications/sqstore_mysql/mysql.c:916
-#: src/applications/sqstore_mysql/mysql.c:926
-#: src/applications/sqstore_mysql/mysql.c:998
-#: src/applications/sqstore_mysql/mysql.c:1007
-#: src/applications/sqstore_mysql/mysql.c:1047
-#: src/applications/sqstore_mysql/mysql.c:1061
+#: src/applications/sqstore_mysql/mysql.c:150
+#: src/applications/sqstore_mysql/mysql.c:157
+#: src/applications/sqstore_mysql/mysql.c:387
+#: src/applications/sqstore_mysql/mysql.c:727
+#: src/applications/sqstore_mysql/mysql.c:742
+#: src/applications/sqstore_mysql/mysql.c:751
+#: src/applications/sqstore_mysql/mysql.c:775
+#: src/applications/sqstore_mysql/mysql.c:785
+#: src/applications/sqstore_mysql/mysql.c:835
+#: src/applications/sqstore_mysql/mysql.c:920
+#: src/applications/sqstore_mysql/mysql.c:930
+#: src/applications/sqstore_mysql/mysql.c:1002
+#: src/applications/sqstore_mysql/mysql.c:1011
+#: src/applications/sqstore_mysql/mysql.c:1051
+#: src/applications/sqstore_mysql/mysql.c:1065
 #: src/applications/sqstore_sqlite/sqlite.c:44
 #: src/applications/sqstore_sqlite/sqlite.c:51 src/util/hostkey_gcrypt.c:56
 #: src/util/hostkey_gcrypt.c:63 src/util/storage.c:643
@@ -1647,21 +1657,27 @@ msgstr "# Sitzungen aufgebaut"
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
 
-#: src/applications/sqstore_mysql/mysql.c:535
-#: src/applications/sqstore_mysql/mysql.c:632
-#: src/applications/sqstore_mysql/mysql.c:797
-#: src/applications/sqstore_mysql/mysql.c:811
+#: src/applications/sqstore_mysql/mysql.c:539
+#: src/applications/sqstore_mysql/mysql.c:636
+#: src/applications/sqstore_mysql/mysql.c:801
+#: src/applications/sqstore_mysql/mysql.c:815
 msgid "Invalid data in MySQL database.  Please verify integrity!\n"
 msgstr ""
 "Ungültige Daten in der MySQL Datenbank. Bitte überprüfen Sie die "
 "Integrität!\n"
 
-#: src/applications/sqstore_mysql/mysql.c:1101
+#: src/applications/sqstore_mysql/mysql.c:1105
 #, c-format
 msgid "Query `%s' had no results.\n"
 msgstr "Abfrage `%s' hatte keine Ergebnisse.\n"
 
-#: src/applications/sqstore_mysql/mysql.c:1185
+#: src/applications/sqstore_mysql/mysql.c:1176
+#: src/applications/sqstore_sqlite/sqlite.c:963
+#, fuzzy
+msgid "# Bytes in datastore"
+msgstr "# Bytes in der Datenbank"
+
+#: src/applications/sqstore_mysql/mysql.c:1199
 #, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Versuche, Datei `%s' für MySQL Konfiguration zu verwenden.\n"
@@ -1694,10 +1710,6 @@ msgstr ""
 #: src/applications/sqstore_sqlite/sqlite.c:878
 msgid "Unable to initialize SQLite.\n"
 msgstr "SQLite Datenbank konnte nicht initialisiert werden.\n"
-
-#: src/applications/sqstore_sqlite/sqlite.c:963
-msgid "# bytes in datastore"
-msgstr "# Bytes in der Datenbank"
 
 #: src/applications/stats/clientapi.c:179
 msgid "Uptime (seconds)"
