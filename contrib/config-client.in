@@ -156,17 +156,17 @@ menu "Options for filesharing (FS)" "FS"
 
 	config DOWNLOADDIR
 	string "Where to store incomplete downloads"
-	default "$HOME/pending-downloads/"
+	default "~/pending-downloads/"
 	help
 		Where to download files to (by default)?
-		Default is $HOME/pending-downloads/
+		Default is ~/pending-downloads/
 
 	config INCOMINGDIR
 	string "Where to move complete downloads to"
-	default "$HOME/completed-downloads/"
+	default "~/completed-downloads/"
 	help
 		Where to move finished downloads to (by default)?
-		Default is $HOME/completed-downloads/
+		Default is ~/completed-downloads/
 		
 	config DISABLE-SYMLINK
 	bool "Disable symlinking"
