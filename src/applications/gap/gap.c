@@ -718,22 +718,28 @@ fillInQuery(const PeerIdentity * receiver,
   unsigned int start;
   unsigned int delta;
   cron_t now;
+  QueryRecord * qr;
 
   cronTime(&now);
   MUTEX_LOCK(lock);
   start = pos;
   delta = 0;
   while (padding - delta > sizeof(P2P_gap_query_MESSAGE)) {
-    if ( (queries[pos].expires > now) &&
-	 (0 == getBit(&queries[pos], getIndex(receiver))) &&
-	 (padding - delta >= ntohs(queries[pos].msg->header.size) ) ) {
+    qr = &queries[pos];
+    if ( (qr->expires > now) &&
+	 (0 == getBit(qr, getIndex(receiver))) &&
+	 (! (equalsHashCode512(&receiver->hashPubKey,
+			       &qr->noTarget.hashPubKey)) ) &&
+	 (! (equalsHashCode512(&receiver->hashPubKey,
+			       &qr->msg->returnTo.hashPubKey)) ) &&
+	 (padding - delta >= ntohs(qr->msg->header.size) ) ) {
       setBit(&queries[pos],
 	     getIndex(receiver));
       memcpy(&((char*)position)[delta],
-	     queries[pos].msg,
-	     ntohs(queries[pos].msg->header.size));
-      queries[pos].sendCount++;
-      delta += ntohs(queries[pos].msg->header.size);
+	     qr->msg,
+	     ntohs(qr->msg->header.size));
+      qr->sendCount++;
+      delta += ntohs(qr->msg->header.size);
     }
     pos++;
     if (pos >= QUERY_RECORD_COUNT)
@@ -750,12 +756,15 @@ fillInQuery(const PeerIdentity * receiver,
  * on each connected node by the core.
  */
 static void hotpathSelectionCode(const PeerIdentity * id,
-				 QueryRecord * qr) {
+				 void * cls) {
+  QueryRecord * qr = cls;
   ReplyTrackData * pos;
   ResponseList * rp;
   int ranking = 0;
   int distance;
 
+  /* compute some basic ranking based on historical
+     queries from the same origin */
   pos = rtdList;
   while (pos != NULL) {
     if (equalsHashCode512(&pos->queryOrigin.hashPubKey,
@@ -793,7 +802,8 @@ static void hotpathSelectionCode(const PeerIdentity * id,
  * nodes.
  */
 static void sendToSelected(const PeerIdentity * id,
-			   const QueryRecord * qr) {
+			   void * cls) {
+  const QueryRecord * qr = cls;
 #if DEBUG_GAP
   EncName encq;
   EncName encp;
@@ -803,7 +813,7 @@ static void sendToSelected(const PeerIdentity * id,
 			  &qr->noTarget.hashPubKey)) ||
        (equalsHashCode512(&id->hashPubKey,
 			  &qr->msg->returnTo.hashPubKey)) )
-    return;
+    return; /* never send back to source */
   
   if (getBit(qr, getIndex(id)) == 1) {
 #if DEBUG_GAP
@@ -915,7 +925,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
     qr->rankings = MALLOC(sizeof(int)*8*BITMAP_SIZE);
     qr->activeConnections
       = coreAPI->forAllConnectedNodes
-      ((PerNodeCallback)&hotpathSelectionCode,
+      (&hotpathSelectionCode,
        qr);
     /* actual selection, proportional to rankings
        assigned by hotpathSelectionCode ... */
@@ -949,7 +959,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
     qr->rankings = NULL;
     /* now forward to a couple of selected nodes */
     coreAPI->forAllConnectedNodes
-      ((PerNodeCallback)&sendToSelected,
+      (&sendToSelected,
        qr);
     if (qr == &dummy)
       FREE(dummy.msg);
