@@ -14,7 +14,6 @@ Notes:
 0.7.0 [28.8.2005!] (aka "compatibility? what's that?"):
 - last-minute fixes: 
   * quota code for sqstores: is space estimate correct? [ Nils, RC ]
-  * gap:2061 BREAK (bad route)  [ Christian, non-RC ]
 
 0.7.0a [9'05] (aka "bugfixes")
 - known bugs (see Mantis for updates):

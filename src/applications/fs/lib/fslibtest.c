@@ -121,7 +121,8 @@ static void abortSem(Semaphore * sem) {
  */
 static int countCallback(const HashCode512 * key,
 			 const Datastore_Value * value,
-			 int * cnt) {
+			 void * cls) {  
+  int * cnt = cls;
   (*cnt)--;
   return OK;
 }
@@ -337,12 +338,12 @@ int main(int argc, char * argv[]){
 			0,
 			0,
 			10 * cronSECONDS,
-			(Datum_Iterator) &countCallback,
+			&countCallback,
 			&i);
   CHECK(hnd != NULL);
   gnunet_util_sleep(10 * cronSECONDS);
   FS_stop_search(ctx, hnd);
-  CHECK(i == 0);
+  CHECK(i <= 0);
 		
 
   /* just to check if it crashes... */
