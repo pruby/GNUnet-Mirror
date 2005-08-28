@@ -114,7 +114,7 @@
  * EFFICIENCY ISSUES
  *
  * If you suffer from too slow index/insert speeds,
- * you might try to define /etc/gnunet.conf option
+ * you might try to define /etc/gnunetd.conf option
  *
  *   [MYSQL]
  *   DELAYED = YES

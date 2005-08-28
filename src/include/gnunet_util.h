@@ -64,7 +64,6 @@
  * especially the least significant bits may change
  * frequently, even between different SVN versions.
  */
-
 #define GNUNET_UTIL_VERSION 0x00070000
 
 /**
@@ -128,9 +127,13 @@ typedef enum LOG_Level {
  * @brief Default names of the configuration files.
  */
 #define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
-#define DEFAULT_DAEMON_CONFIG_FILE "/etc/gnunet.conf"
-#define VAR_DAEMON_CONFIG_FILE     "/var/lib/GNUnet/gnunet.conf"
-#define HOME_DAEMON_CONFIG_FILE    "~/.gnunet/gnunet.root"
+#define DEFAULT_DAEMON_DIR "/etc"
+#define DEFAULT_DAEMON_CONFIG_FILE "/etc/gnunetd.conf"
+#define VAR_DIRECTORY       "/var/lib"
+#define VAR_DAEMON_DIRECTORY       "/var/lib/GNUnet"
+#define VAR_DAEMON_CONFIG_FILE     "/var/lib/GNUnet/gnunetd.conf"
+#define HOME_DAEMON_CONFIG_FILE    "~/.gnunet/gnunetd.conf"
+#define GNUNET_HOME_DIRECTORY    "~/.gnunet/"
 
 /**
  * @brief Length of RSA encrypted data (2048 bit)

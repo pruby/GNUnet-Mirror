@@ -125,20 +125,20 @@ static int parser(int argc, char *argv[])
   if(daemon) {
     FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "YES"));
     if(filename == NULL) {
-      if(0 == ACCESS("/etc/gnunetd.conf", W_OK) ||
-          (errno == ENOENT && 0 == ACCESS("/etc", W_OK)))
-        filename = STRDUP("/etc/gnunetd.conf");
+      if(0 == ACCESS(DEFAULT_DAEMON_CONFIG_FILE, W_OK) ||
+	 (errno == ENOENT && 0 == ACCESS(DEFAULT_DAEMON_DIR, W_OK)))
+        filename = STRDUP(DEFAULT_DAEMON_CONFIG_FILE);
       else {
-        if(0 == ACCESS("/var/lib", W_OK))
-          mkdirp("/var/lib/GNUnet");
-        if(0 == ACCESS("/var/lib/GNUnet/gnunetd.conf", W_OK) ||
-            (errno == ENOENT && 0 == ACCESS("/var/lib/GNUnet", W_OK)))
-          filename = STRDUP("/var/lib/GNUnet/gnunetd.conf");
+        if(0 == ACCESS(VAR_DIRECTORY, W_OK))
+          mkdirp(VAR_DAEMON_DIRECTORY);
+        if(0 == ACCESS(VAR_DAEMON_CONFIG_FILE, W_OK) ||
+            (errno == ENOENT && 0 == ACCESS(VAR_DAEMON_DIRECTORY, W_OK)))
+          filename = STRDUP(VAR_DAEMON_CONFIG_FILE);
         else {
-          dirname = expandFileName("~/.gnunet/");
+          dirname = expandFileName(GNUNET_HOME_DIRECTORY);
           mkdirp(dirname);
           FREE(dirname);
-          filename = expandFileName("~/.gnunet/gnunetd.conf");
+          filename = expandFileName(HOME_DAEMON_CONFIG_FILE);
         }
       }
     }
@@ -148,10 +148,10 @@ static int parser(int argc, char *argv[])
   else {
     FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "NO"));
     if(filename == NULL) {
-      dirname = expandFileName("~/.gnunet/");
+      dirname = expandFileName(GNUNET_HOME_DIRECTORY);
       mkdirp(dirname);
       FREE(dirname);
-      filename = expandFileName("~/.gnunet/gnunet.conf");
+      filename = expandFileName(DEFAULT_CLIENT_CONFIG_FILE);
     }
     FREENONNULL(setConfigurationString("FILES", "gnunet.conf", filename));
     conf_parse(DATADIR "/config-client.in");

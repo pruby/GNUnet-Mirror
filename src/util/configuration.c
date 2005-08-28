@@ -460,23 +460,22 @@ void readConfiguration() {
     if (testConfigurationString("GNUNETD",
 				"_MAGIC_",
 				"YES")) {
-      eName = expandFileName("~/.gnunet/gnunetd.conf");
+      eName = expandFileName(HOME_DAEMON_CONFIG_FILE);
       expCfgName = getenv("GNUNETD_CONFIG");
       if (expCfgName == NULL) {
 	/* pick default, but try to pick it so
 	   that we can write there (if it does not
 	   exist) */
-	expCfgName = "/etc/gnunetd.conf";
+	expCfgName = DEFAULT_DAEMON_CONFIG_FILE;
 	if (ACCESS(expCfgName, R_OK)) {
-	  expCfgName = "/var/lib/GNUnet/gnunetd.conf";
+	  expCfgName = VAR_DAEMON_CONFIG_FILE;
 	  if (ACCESS(expCfgName, R_OK)) {
 	    expCfgName = eName;
 	    if (ACCESS(expCfgName, R_OK)) {
-	      if (0 == ACCESS("/etc/gnunetd.conf", W_OK)) 
-		expCfgName = "/etc/gnunetd.conf";
-	      mkdirp("/var/lib/GNUnet");
-	      if (0 == ACCESS("/var/lib/GNUnet/gnunetd.conf", W_OK)) 
-		expCfgName = "/var/lib/GNUnet/gnunetd.conf";
+	      if (0 == ACCESS(DEFAULT_DAEMON_CONFIG_FILE, W_OK)) 
+		expCfgName = DEFAULT_DAEMON_CONFIG_FILE;
+	      if (0 == ACCESS(VAR_DAEMON_CONFIG_FILE, W_OK)) 
+		expCfgName = VAR_DAEMON_CONFIG_FILE;
 	      if (0 == ACCESS(eName, W_OK)) 
 		expCfgName = eName;
 	    }
@@ -484,7 +483,7 @@ void readConfiguration() {
 	}	  
       }
     } else {
-      eName = expandFileName("~/.gnunet/gnunet.conf");
+      eName = expandFileName(DEFAULT_CLIENT_CONFIG_FILE);
       expCfgName = getenv("GNUNET_CONFIG");
       if (expCfgName == NULL)
 	expCfgName = eName;
