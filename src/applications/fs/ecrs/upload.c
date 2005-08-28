@@ -47,9 +47,9 @@
  * enough.
  */
 static int pushBlock(GNUNET_TCP_SOCKET * sock,
-		     const CHK * chk,	
-		     unsigned int level,
-		     Datastore_Value ** iblocks) {
+                     const CHK * chk,   
+                     unsigned int level,
+                     Datastore_Value ** iblocks) {
   unsigned int size;
   unsigned int present;
   Datastore_Value * value;
@@ -67,43 +67,43 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
     fileBlockGetKey(db,
-		    size,
-		    &ichk.key);
+                    size,
+                    &ichk.key);
     fileBlockGetQuery(db,
-		      size,
-		      &ichk.query);
+                      size,
+                      &ichk.query);
 #if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
-	  hash2enc(&ichk.query,
-		   &enc));
+          hash2enc(&ichk.query,
+                   &enc));
     LOG(LOG_DEBUG,
-	"Query for current iblock at level %u is %s\n",
-	level,
-	&enc);
+        "Query for current iblock at level %u is %s\n",
+        level,
+        &enc);
 #endif
     if (OK != pushBlock(sock,
-			&ichk,
-			level+1,
-			iblocks))
+                        &ichk,
+                        level+1,
+                        iblocks))
       return SYSERR;
     fileBlockEncode(db,
-		    size,
-		    &ichk.query,
-		    &value);
+                    size,
+                    &ichk.query,
+                    &value);
     if (value == NULL) {
       BREAK();
       return SYSERR;
     }
 #if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
-	  hash2enc(&ichk.query,
-		   &enc));
+          hash2enc(&ichk.query,
+                   &enc));
     LOG(LOG_DEBUG,
-	"Publishing block (query: %s)\n",
-	&enc);
+        "Publishing block (query: %s)\n",
+        &enc);
 #endif
     if (OK != FS_insert(sock,
-			value)) {
+                        value)) {
       FREE(value);
       return SYSERR;
     }
@@ -112,12 +112,12 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   }
   /* append CHK */
   memcpy(&((char*)db)[size],
-	 chk,
-	 sizeof(CHK));
+         chk,
+         sizeof(CHK));
   size += sizeof(CHK) + sizeof(Datastore_Value);
   GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
   iblocks[level]->size = htonl(size);
-			       
+                               
   return OK;
 }
 
@@ -133,15 +133,15 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
  *  or gnunetd not running)
  */
 int ECRS_uploadFile(const char * filename,
-		    int doIndex,
-		    unsigned int anonymityLevel,
-		    unsigned int priority,
-		    cron_t expirationTime,
-		    ECRS_UploadProgressCallback upcb,
-		    void * upcbClosure,
-		    ECRS_TestTerminate tt,
-		    void * ttClosure,
-		    struct ECRS_URI ** uri) {
+                    int doIndex,
+                    unsigned int anonymityLevel,
+                    unsigned int priority,
+                    cron_t expirationTime,
+                    ECRS_UploadProgressCallback upcb,
+                    void * upcbClosure,
+                    ECRS_TestTerminate tt,
+                    void * ttClosure,
+                    struct ECRS_URI ** uri) {
   unsigned long long filesize;
   unsigned long long pos;
   unsigned int treedepth;
@@ -172,12 +172,12 @@ int ECRS_uploadFile(const char * filename,
   }
   if (0 == assertIsFile(filename)) {
     LOG(LOG_ERROR,
-	_("`%s' is not a file.\n"),
-	filename);
+        _("`%s' is not a file.\n"),
+        filename);
     return SYSERR;
   }
   if (OK != getFileSize(filename,
-			&filesize)) 
+                        &filesize)) 
     return SYSERR;
   sock = getClientSocket();
   if (sock == NULL)
@@ -187,10 +187,10 @@ int ECRS_uploadFile(const char * filename,
     upcb(filesize, 0, eta, upcbClosure);
   if (doIndex) {
     if (SYSERR == getFileHash(filename,
-			      &fileId)) {
+                              &fileId)) {
       LOG(LOG_ERROR, 
-	  _("Cannot hash `%s'.\n"), 
-	  filename);
+          _("Cannot hash `%s'.\n"), 
+          filename);
       releaseClientSocket(sock);
       return SYSERR;
     }
@@ -207,14 +207,14 @@ int ECRS_uploadFile(const char * filename,
     switch (FS_initIndex(sock, &fileId, filename)) {
     case SYSERR:
       LOG(LOG_ERROR,
-	  _("Initialization for indexing file `%s' failed.\n"), 
-	  filename);
+          _("Initialization for indexing file `%s' failed.\n"), 
+          filename);
       releaseClientSocket(sock);
       return SYSERR;
     case NO:
       LOG(LOG_ERROR, 
-	  _("Indexing file `%s' failed. Trying to insert file...\n"),
-	  filename);
+          _("Indexing file `%s' failed. Trying to insert file...\n"),
+          filename);
       doIndex = YES;
     }
   }
@@ -255,64 +255,64 @@ int ECRS_uploadFile(const char * filename,
       upcb(filesize, pos, eta, upcbClosure);
     if (tt != NULL)
       if (OK != tt(ttClosure))
-	goto FAILURE;
+        goto FAILURE;
     size = DBLOCK_SIZE;
     if (size > filesize - pos) {
       size = filesize - pos;
       memset(&db[1],
-	     0,
-	     DBLOCK_SIZE);
+             0,
+             DBLOCK_SIZE);
     }
     GNUNET_ASSERT(sizeof(Datastore_Value) + size + sizeof(DBlock) < MAX_BUFFER_SIZE);
     dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
     if (size != READ(fd,
-		     &db[1],
-		     size)) {
+                     &db[1],
+                     size)) {
       LOG_FILE_STRERROR(LOG_WARNING,
-			"READ",
-			filename);
+                        "READ",
+                        filename);
       goto FAILURE;
     }
     if (tt != NULL)
       if (OK != tt(ttClosure))
-	goto FAILURE;
+        goto FAILURE;
     fileBlockGetKey(db,
-		    size + sizeof(DBlock),
-		    &chk.key);
+                    size + sizeof(DBlock),
+                    &chk.key);
     fileBlockGetQuery(db,
-		      size + sizeof(DBlock),
-		      &chk.query);
+                      size + sizeof(DBlock),
+                      &chk.query);
 #if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
-	  hash2enc(&chk.query,
-		   &enc));
+          hash2enc(&chk.query,
+                   &enc));
     LOG(LOG_DEBUG,
-	"Query for current block of size %u is %s\n",
-	size,
-	&enc);
+        "Query for current block of size %u is %s\n",
+        size,
+        &enc);
 #endif
     if (doIndex) {
       if (SYSERR == FS_index(sock,
-			     &fileId,
-			     dblock,
-			     pos)) {
-				LOG(LOG_ERROR, _("Indexing data failed at position %i.\n"), pos);
-				goto FAILURE;
-			}
+                             &fileId,
+                             dblock,
+                             pos)) {
+                                LOG(LOG_ERROR, _("Indexing data failed at position %i.\n"), pos);
+                                goto FAILURE;
+                        }
     } else {
       value = NULL;
       if (OK !=
-	  fileBlockEncode(db,
-			  size + sizeof(DBlock),
-			  &chk.query,
-			  &value))
-	goto FAILURE;
+          fileBlockEncode(db,
+                          size + sizeof(DBlock),
+                          &chk.query,
+                          &value))
+        goto FAILURE;
       GNUNET_ASSERT(value != NULL);
       *value = *dblock; /* copy options! */
       if (SYSERR == FS_insert(sock,
-			      value)) {
-	FREE(value);
-	goto FAILURE;
+                              value)) {
+        FREE(value);
+        goto FAILURE;
       }
       FREE(value);
     }
@@ -320,13 +320,13 @@ int ECRS_uploadFile(const char * filename,
     cronTime(&now);
     if (pos > 0) {
       eta = (cron_t) (start +
-		      (((double)(now - start)/(double)pos))
-		      * (double)filesize);
+                      (((double)(now - start)/(double)pos))
+                      * (double)filesize);
     }
     if (OK != pushBlock(sock,
-			&chk,
-			0, /* dblocks are on level 0 */
-			iblocks))
+                        &chk,
+                        0, /* dblocks are on level 0 */
+                        iblocks))
       goto FAILURE;
   }
   if (tt != NULL)
@@ -343,47 +343,47 @@ int ECRS_uploadFile(const char * filename,
     if (size == sizeof(DBlock)) {
 #if DEBUG_UPLOAD
       LOG(LOG_DEBUG,
-	  "Level %u is empty\n",
-	  i);
+          "Level %u is empty\n",
+          i);
 #endif
       continue;
     }
     db = (DBlock*) &iblocks[i][1];
     fileBlockGetKey(db,
-		    size,
-		    &chk.key);
+                    size,
+                    &chk.key);
 #if DEBUG_UPLOAD
     LOG(LOG_DEBUG,
-	"Computing query for %u bytes content.\n",
-	size);
+        "Computing query for %u bytes content.\n",
+        size);
 #endif
     fileBlockGetQuery(db,
-		      size,
-		      &chk.query);
+                      size,
+                      &chk.query);
 #if DEBUG_UPLOAD
     IFLOG(LOG_DEBUG,
-	  hash2enc(&chk.query,
-		   &enc));
+          hash2enc(&chk.query,
+                   &enc));
     LOG(LOG_DEBUG,
-	"Query for current block at level %u is `%s'.\n",
-	i,
-	&enc);
+        "Query for current block at level %u is `%s'.\n",
+        i,
+        &enc);
 #endif
     if (OK != pushBlock(sock,
-			&chk,
-			i+1,
-			iblocks))
+                        &chk,
+                        i+1,
+                        iblocks))
       goto FAILURE;
     fileBlockEncode(db,
-		    size,
-		    &chk.query,
-		    &value);
+                    size,
+                    &chk.query,
+                    &value);
     if (value == NULL) {
       BREAK();
       goto FAILURE;
     }
     if (OK != FS_insert(sock,
-			value)) {
+                        value)) {
       FREE(value);
       goto FAILURE;
     }
@@ -393,8 +393,8 @@ int ECRS_uploadFile(const char * filename,
   }
 #if DEBUG_UPLOAD
   IFLOG(LOG_DEBUG,
-	hash2enc(&chk.query,
-		 &enc));
+        hash2enc(&chk.query,
+                 &enc));
   LOG(LOG_DEBUG,
       "Query for top block is %s\n",
       &enc);
