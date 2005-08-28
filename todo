@@ -11,17 +11,17 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.0 [30.8.2005?] (aka "compatibility? what's that?"):
-- Missing Features:
-  * gnunet-gtk namespace stuff (#911)  [ Christian, RC! ]
-- investigate: 
+0.7.0 [28.8.2005!] (aka "compatibility? what's that?"):
+- last-minute fixes: 
   * quota code for sqstores: is space estimate correct? [ Nils, RC ]
   * gap:2061 BREAK (bad route)  [ Christian, non-RC ]
-  * failed setkey exchanges, connection timeouts [ Christian, non-RC ]
 
-0.7.0a [9'05] (bugfixes)
-- known bugs:
+0.7.0a [9'05] (aka "bugfixes")
+- known bugs (see Mantis for updates):
   * gnunet-setup memory leaks (#878)
+  * gnunet-setup theming bug (#916)
+  * gnunet-setup category switch update bug (#892)
+  * failed setkey exchanges, connection timeouts (#896, #910) [ Christian ]
 - testing:
   * more "make check" targets to test: 
     + gnunet-tracekit

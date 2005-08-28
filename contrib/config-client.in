@@ -163,10 +163,10 @@ menu "Options for filesharing (FS)" "FS"
 
 	config INCOMINGDIR
 	string "Where to move complete downloads to"
-	default "$GNUNET_HOME/completed-downloads/"
+	default "$HOME/completed-downloads/"
 	help
 		Where to move finished downloads to (by default)?
-		Default is $GNUNET_HOME/completed-downloads/
+		Default is $HOME/completed-downloads/
 		
 	config DISABLE-SYMLINK
 	bool "Disable symlinking"
