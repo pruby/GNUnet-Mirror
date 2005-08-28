@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7-pre6"
+!define PRODUCT_VERSION "0.7.0"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -124,17 +124,20 @@ SectionGroup "GNUnet" SEC_GNUNET
 		  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\de\LC_MESSAGES\GNUnet.mo" 
 			File "C:\GNUnet\share\locale\de\LC_MESSAGES\libextractor.mo" 
+			File "C:\GNUnet\share\locale\de\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
 		Section "Kinyarwanda" SEC_LANG_RW
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\rw\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\GNUnet.mo" 
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\libextractor.mo" 
+			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
 		Section "Vietnamese" SEC_LANG_VI
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\vi\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
+			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
 	SectionGroupEnd
 	
@@ -144,7 +147,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\bin\gnunet-setup.exe" 		
 
 	  SetOutPath "$INSTDIR\share\GNUnet"
-		File "C:\GNUnet\share\GNUnet\config.in" 
 		File "C:\GNUnet\share\GNUnet\config-client.in" 
 		File "C:\GNUnet\share\GNUnet\config-daemon.in"
 	SectionEnd
@@ -189,6 +191,25 @@ SectionGroup "GNUnet" SEC_GNUNET
 	SectionGroupEnd
 	
 	SectionGroup "Client"
+		Section "!Configuration files" SEC_CLIENT_CONFIG
+			SectionIn 1 3 4
+		  ReadEnvStr $USR_PROF "USERPROFILE"
+		  StrLen $DIRLEN $USR_PROF
+		  IntCmp $DIRLEN 0 no_profile
+		  goto cp_conf
+		 no_profile:
+		  ReadRegStr $USR_PROF "HKCU" "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" "Personal"
+		  StrLen $DIRLEN $USR_PROF
+		  IntCmp $DIRLEN 0 gn_dir
+		  goto cp_conf
+		 gn_dir:
+		  StrCpy $USR_PROF "$INSTDIR\home"
+		 cp_conf:
+		  StrCpy $USR_PROF "$USR_PROF\.gnunet\"
+		  SetOutPath $USR_PROF
+		  File "C:\GNUnet\etc\gnunet.conf"
+		SectionEnd
+	
 		SectionGroup "Filesharing" SEC_CLIENT_FS
 			Section "Base"
 			SectionIn 1 3 4
@@ -370,7 +391,6 @@ SectionGroup "Dependencies"
 		File "C:\GNUnet\bin\libplibc-1.dll"
 		File "C:\GNUnet\bin\libsqlite3-0.dll"
 		File "C:\GNUnet\bin\pthreadGC1.dll"
-		File "C:\GNUnet\bin\sqlite3.exe"
 		File "C:\GNUnet\bin\zlib1.dll"
 	SectionEnd
 	
@@ -709,7 +729,9 @@ FunctionEnd
 
 Section Uninstall
 	; Uninstall service
+	SetOutPath "$INSTDIR\bin\"
 	ExecWait '"$INSTDIR\bin\gnunet-win-tool.exe" -u'
+	SetOutPath "$INSTDIR\..\"
 
   ReadRegStr $ICONS_GROUP ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "${PRODUCT_STARTMENU_REGVAL}"
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
@@ -851,7 +873,6 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libvorbisfile-3.dll"
 	Delete "$INSTDIR\bin\libxml2.dll"
 	Delete "$INSTDIR\bin\pthreadGC1.dll"
-	Delete "$INSTDIR\bin\sqlite3.exe"
 	Delete "$INSTDIR\bin\zlib1.dll"
 	RmDir /REBOOTOK "$INSTDIR\bin"
 	
@@ -897,7 +918,6 @@ Section Uninstall
   
 	Delete "$INSTDIR\share\GNUnet\config-client.in" 
 	Delete "$INSTDIR\share\GNUnet\config-daemon.in"
-	Delete "$INSTDIR\share\GNUnet\config.in" 
   RmDir /REBOOTOK "$INSTDIR\share\GNUnet"
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\GNUnet.mo" 
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\libextractor.mo" 
