@@ -109,6 +109,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\bin\gnunet-win-tool.exe"
 		File "C:\GNUnet\bin\gnunet-update.exe" 
 		SetOutPath "$INSTDIR\var\lib\GNUnet"
+		SetOutPath "$INSTDIR\tmp"
 		
 	  SetOutPath "$INSTDIR\bin"
 	  CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\GNUnet.lnk" "$INSTDIR\bin\gnunet-gtk.exe" "" "$INSTDIR\bin\gnu.ico"
