@@ -25,7 +25,7 @@ libgtk2.0-dev
 libsqlite3-dev
 libmysqlclient14-dev
 libncurses5-dev
-# libextractor1-dev (not in sarge)
+libextractor-dev (unstable required!)
 
 
 Additional libextractor dependencies:
@@ -38,8 +38,7 @@ libgcj-dev
 
 Additional gnunet-gtk dependencies:
 
-libglade2-dev  // Note that the "about" dialog requires glade 2.10,
-               // which is NOT in sarge!
+libglade2-dev (unstable required!)
 
 
 For running GNUnet with the MySQL database:
@@ -62,8 +61,7 @@ automake1.8
 
 For changing gnunet-gtk glade user interface (development):
 
-glade-2        // Note that you must use glade 2.10, otherwise
-               // the resulting glade file maybe corrupted!
+glade-2 (unstable required!)
 
 
 ==============================================
