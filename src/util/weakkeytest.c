@@ -38,7 +38,7 @@
 static void printWeakKey(SESSIONKEY* key) {
   int i;
   for (i = 0; i < SESSIONKEY_LEN; i++) {
-    printf("%x ", 
+    printf("%x ",
 	   (int)(key->key[i]));
   }
 }
@@ -129,7 +129,7 @@ static int getWeakKeys() {
   for (number_of_runs = 0; number_of_runs < MAX_WEAK_KEY_TRIALS;
        number_of_runs++) {
 
-    if (number_of_runs % 1000 == 0) 
+    if (number_of_runs % 1000 == 0)
       fprintf(stderr, ".");
       /*printf("Got to run number %d.\n", number_of_runs);*/
     makeSessionkey(&sessionkey);
@@ -141,7 +141,7 @@ static int getWeakKeys() {
 
     if (rc) {
       printf("testweakkey: gcry_cipher_open failed on trial %d. %s\n",
-	     number_of_runs, 
+	     number_of_runs,
 	     gcry_strerror(rc));
       rc = 0;
       continue;
@@ -190,16 +190,16 @@ int main(int argc, char * argv[]) {
     }
     else {
       printf("\n%d weak keys found in %d runs.\n",
-	     weak_keys, 
+	     weak_keys,
 	     MAX_WEAK_KEY_TRIALS);
     }
   }
 
   if (testWeakKey() == 0)
     ret = 0;
-  else 
-    ret = -1;  
-  doneLockingGcrypt();  
+  else
+    ret = -1;
+  doneLockingGcrypt();
   return ret;
 }
 

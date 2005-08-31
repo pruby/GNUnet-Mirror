@@ -150,7 +150,7 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   value->type = htonl(sqlite3_column_int(stmt, 1));
   value->prio = htonl(sqlite3_column_int(stmt, 2));
   value->anonymityLevel = htonl(sqlite3_column_int(stmt, 3));
-  value->expirationTime = htonll(sqlite3_column_int64(stmt, 4)); 
+  value->expirationTime = htonll(sqlite3_column_int64(stmt, 4));
   memcpy(&datum->key,
 	 sqlite3_column_blob(stmt, 5),
 	 sizeof(HashCode512));
@@ -371,7 +371,7 @@ static int sqlite_iterate(unsigned int type,
 	     ntohll(datum->value.expirationTime),
 	     lastPrio,
 	     lastExp);
-#endif    
+#endif
 
       if (iter != NULL) {
 	MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
@@ -495,8 +495,8 @@ static int get(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "SQLite: retrieving content `%s'\n", 
-      &enc);  
+      "SQLite: retrieving content `%s'\n",
+      &enc);
 #endif
 
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -630,13 +630,13 @@ static int put(const HashCode512 * key,
   rowLen = 0;
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   stmt = dbh->insertContent;
-  
+
   size = ntohl(value->size);
   type = ntohl(value->type);
   prio = ntohl(value->prio);
   anon = ntohl(value->anonymityLevel);
   expir = ntohll(value->expirationTime);
-  
+
   sqlite3_bind_int(stmt, 1, size);
   sqlite3_bind_int(stmt, 2, type);
   sqlite3_bind_int(stmt, 3, prio);
@@ -709,7 +709,7 @@ static int del(const HashCode512 * key,
 	sqlite3_column_int(dbh->exists, 2) + sqlite3_column_int(dbh->exists, 3) +
 	sqlite3_column_int(dbh->exists, 4) + sqlite3_column_int(dbh->exists, 5) +
 	sqlite3_column_int(dbh->exists, 6) + 7 + 245 + 1;
-      
+
       if (dbh->payload > rowLen)
 	dbh->payload -= rowLen;
       else
@@ -729,7 +729,7 @@ static int del(const HashCode512 * key,
 			SQLITE_TRANSIENT);
       n = sqlite3_step(stmt);
     }
-    /* FIXME: this operation fails to update dbh->payload properly! */       
+    /* FIXME: this operation fails to update dbh->payload properly! */
   } else {
     unsigned int size, type, prio, anon;
     unsigned long long expir;
@@ -746,7 +746,7 @@ static int del(const HashCode512 * key,
       prio = ntohl(value->prio);
       anon = ntohl(value->anonymityLevel);
       expir = ntohll(value->expirationTime);
-      
+
       sqlite3_bind_blob(stmt, 1, key, sizeof(HashCode512), SQLITE_TRANSIENT);
       sqlite3_bind_blob(stmt, 2, &value[1], contentSize, SQLITE_TRANSIENT);
       sqlite3_bind_int(stmt, 3, size);
@@ -832,7 +832,7 @@ static int update(const HashCode512 * key,
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "SQLite: block updated\n");
 #endif
 
@@ -849,7 +849,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   sqlite3_stmt *stmt;
 
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "SQLite: initializing database\n");
 #endif
 
@@ -978,10 +978,10 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
  */
 void release_module_sqstore_sqlite() {
   if (stats != NULL)
-    coreAPI->releaseService(stats);  
+    coreAPI->releaseService(stats);
   sqlite_shutdown();
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "SQLite: database shutdown\n");
 #endif
   coreAPI = NULL;

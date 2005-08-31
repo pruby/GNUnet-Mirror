@@ -262,12 +262,12 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
 
   /* Establish session as advertised in the hello */
   tsession = transport->connect(msg);
-  if (tsession == NULL) 
-    return SYSERR; /* could not connect */  
+  if (tsession == NULL)
+    return SYSERR; /* could not connect */
 
   /* build message to send, ping must contain return-information,
      such as a selection of our hellos... */
-  mtu = transport->getMTU(tsession->ttype);  
+  mtu = transport->getMTU(tsession->ttype);
   if (mtu == 0) {
     mtu = 2048; /* bound size */
   } else {

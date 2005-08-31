@@ -119,7 +119,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       }
       MUTEX_UNLOCK(ctx->lock);
 #if DEBUG_FSLIB
-      if (matched == 0) 
+      if (matched == 0)
 	LOG(LOG_DEBUG,
 	    "FSLIB: received content but have no pending request\n");
 #endif

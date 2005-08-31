@@ -87,17 +87,17 @@ static FSUI_DownloadList * readDownloadList(int fd,
   GNUNET_ASSERT(ctx != NULL);
   if (1 != READ(fd, &zaro, sizeof(char))) {
     BREAK();
-    return NULL; 
+    return NULL;
   }
   if (zaro == '\0')
     return NULL;
   ret = MALLOC(sizeof(FSUI_DownloadList));
-  memset(ret, 
+  memset(ret,
 	 0,
 	 sizeof(FSUI_DownloadList));
   ret->ctx = ctx;
 
-  ret->signalTerminate 
+  ret->signalTerminate
     = SYSERR;
   READINT(ret->is_recursive);
   READINT(ret->is_directory);
@@ -132,7 +132,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   for (i=0;i<ret->completedDownloadsCount;i++) {
     ret->completedDownloads[i]
       = readURI(fd);
-    if (ret->completedDownloads[i] == NULL) 
+    if (ret->completedDownloads[i] == NULL)
       ok = NO;
   }
   if (NO == ok) {
@@ -162,7 +162,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
     if (ret->completedDownloads[i] != NULL)
       ECRS_freeUri(ret->completedDownloads[i]);
   }
-  
+
   FREE(ret);
   LOG(LOG_WARNING,
       _("FSUI persistence: error restoring download\n"));
@@ -224,14 +224,14 @@ static void writeDownloadList(int fd,
   WRITEINT(fd, list->completedDownloadsCount);
   WRITEINT(fd, list->finished);
   WRITEINT(fd, strlen(list->filename));
-  WRITE(fd, 
+  WRITE(fd,
 	list->filename,
 	strlen(list->filename));
   WRITELONG(fd, list->total);
   WRITELONG(fd, list->completed);
   WRITELONG(fd, cronTime(NULL) - list->startTime);
   writeURI(fd, list->uri);
-  for (i=0;i<list->completedDownloadsCount;i++) 
+  for (i=0;i<list->completedDownloadsCount;i++)
     writeURI(fd, list->completedDownloads[i]);
 
   writeDownloadList(fd,
@@ -253,7 +253,7 @@ static int readFileInfo(int fd,
 
   fi->meta = NULL;
   fi->uri = NULL;
-  if (sizeof(unsigned int) != 
+  if (sizeof(unsigned int) !=
       READ(fd,
 	   &big,
 	   sizeof(unsigned int))) {
@@ -278,7 +278,7 @@ static int readFileInfo(int fd,
   }
   FREE(buf);
 
-  fi->uri 
+  fi->uri
     = readURI(fd);
   if (fi->uri == NULL) {
     ECRS_freeMetaData(fi->meta);
@@ -326,7 +326,7 @@ static void updateDownloadThreads(void * c) {
   while (dpos != NULL) {
     updateDownloadThread(dpos);
     dpos = dpos->next;
-  }  
+  }
   MUTEX_UNLOCK(&ctx->lock);
 }
 
@@ -344,7 +344,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 				 void * closure) {
   FSUI_Context * ret;
   FSUI_SearchList * list;
-  ResultPending * rp;  
+  ResultPending * rp;
   char * fn;
   char * gh;
   int fd;
@@ -352,7 +352,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
-  ret->activeDownloads.signalTerminate 
+  ret->activeDownloads.signalTerminate
     = SYSERR;
   ret->activeDownloads.ctx
     = ret;
@@ -449,7 +449,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  BREAK();	
 	  goto WARN;
 	}
-	list 
+	list
 	  = MALLOC(sizeof(FSUI_SearchList));
 	list->uri
 	  = ECRS_stringToUri(buf);
@@ -470,7 +470,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	if (sizeof(unsigned int) !=
 	    READ(fd, &big, sizeof(unsigned int))) {
 	  ECRS_freeUri(list->uri);
-	  FREE(list);	  
+	  FREE(list);	
 	  BREAK();
 	  goto WARN;
 	}
@@ -522,10 +522,10 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  rp = &list->unmatchedResultsReceived[i];
 	  readFileInfo(fd,
 		       &rp->fi);
-	  
+	
 	  if (sizeof(unsigned int) !=
-	      READ(fd, 
-		   &big, 
+	      READ(fd,
+		   &big,
 		   sizeof(unsigned int))) {
 	    BREAK();
 	    goto WARNL;
@@ -533,12 +533,12 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  rp->matchingKeyCount
 	    = ntohl(big);
 	  if ( (rp->matchingKeyCount > 1024) ||
-	       (rp->matchingKeyCount > 
+	       (rp->matchingKeyCount >
 		list->numberOfURIKeys) ) {
 	    BREAK();
 	    goto WARNL;
 	  }
-	    
+	
 	  if (rp->matchingKeyCount > 0)
 	    rp->matchingKeys
 	      = MALLOC(sizeof(HashCode512) *
@@ -558,7 +558,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	}
 	
 	
-	list->signalTerminate 
+	list->signalTerminate
 	  = NO;
 	list->ctx
 	  = ret;
@@ -574,11 +574,11 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  DIE_STRERROR("pthread_create");
 	
 	/* finally: prepend to list */
-	list->next 
+	list->next
 	  = ret->activeSearches;
 	ret->activeSearches
 	  = list;
-      } 
+      }
       memset(&ret->activeDownloads,
 	     0,
 	     sizeof(FSUI_DownloadList));
@@ -586,7 +586,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	= readDownloadList(fd,
 			   ret,
 			   &ret->activeDownloads);
-      
+
       /* success, read complete! */
       goto END;
     WARNL:
@@ -610,7 +610,7 @@ struct FSUI_Context * FSUI_start(const char * name,
       }
       GROW(list->resultsReceived,
 	   list->sizeResultsReceived,
-	   0);      
+	   0);
     WARN:
       LOG(LOG_WARNING,
 	  _("FSUI state file `%s' had syntax error at offset %u.\n"),
@@ -620,7 +620,7 @@ struct FSUI_Context * FSUI_start(const char * name,
       CLOSE(fd);
       UNLINK(fn);
     } else {
-      if (errno != ENOENT) 
+      if (errno != ENOENT)
 	LOG_FILE_STRERROR(LOG_ERROR,
 			  "open",
 			  fn);
@@ -639,7 +639,7 @@ struct FSUI_Context * FSUI_start(const char * name,
   addCronJob(&updateDownloadThreads,
 	     0,
 	     FSUI_UDT_FREQUENCY,
-	     ret);  
+	     ret);
   return ret;
 }
 
@@ -687,15 +687,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 
   /* next, serialize all of the FSUI state */
   if (ctx->ipc != NULL) {
-    fd = fileopen(ctx->name, 
-		  O_CREAT|O_TRUNC|O_WRONLY, 
+    fd = fileopen(ctx->name,
+		  O_CREAT|O_TRUNC|O_WRONLY,
 		  S_IRUSR|S_IWUSR);
     if (fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR,
 			"open",
 			ctx->name);
     } else {
-      WRITE(fd, 
+      WRITE(fd,
 	    "FSUI00\n\0",
 	    8); /* magic */
     }
@@ -733,7 +733,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 
       tmp = ECRS_uriToString(spos->uri);
       GNUNET_ASSERT(tmp != NULL);
-      big = htonl(strlen(tmp));     
+      big = htonl(strlen(tmp));
       WRITE(fd,
 	    &big,
 	    sizeof(unsigned int));
@@ -801,7 +801,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 
   if (fd != -1) {
     /* search list terminator */
-    big = htonl(0);     
+    big = htonl(0);
     WRITE(fd,
 	  &big,
 	  sizeof(unsigned int));

@@ -506,20 +506,20 @@ static void check_conf(struct menu *menu)
 int conf_main()
 {
   char * filename;
-  
+
   filename = getConfigurationString("GNUNET-SETUP",
 				    "FILENAME");
   conf_read(filename);
   input_mode = ask_all; /* for now */
   rootEntry = &rootmenu;
-  conf(&rootmenu);  
+  conf(&rootmenu);
   do {
     conf_cnt = 0;
     check_conf(&rootmenu);
   } while (conf_cnt);
-   
+
   if (conf_write(filename)) {
-    printf(_("Unable to save configuration file `%s': %s.\n"), 
+    printf(_("Unable to save configuration file `%s': %s.\n"),
 	   filename,
 	   STRERROR(errno));
     FREE(filename);

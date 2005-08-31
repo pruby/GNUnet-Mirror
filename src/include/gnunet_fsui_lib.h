@@ -254,7 +254,7 @@ typedef struct {
        * How much has been done so far.
        */
       unsigned long long completed;
-     
+
       /**
        * Which file was uploaded?
        */
@@ -517,7 +517,7 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
 
 /**
  * Clear all completed top-level downloads from the FSUI list.
- * 
+ *
  * @param callback function to call on each completed download
  *        that is being cleared.
  * @return SYSERR on error, otherwise number of downloads cleared
@@ -528,10 +528,10 @@ int FSUI_clearCompletedDownloads(struct FSUI_Context * ctx,
 
 
 /**
- * Get parent of active download. 
+ * Get parent of active download.
  * @return NULL if there is no parent
  */
-const struct FSUI_DownloadList * 
+const struct FSUI_DownloadList *
 FSUI_getDownloadParent(const struct FSUI_DownloadList * child); /* download.c */
 
 /**
@@ -663,7 +663,7 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
  * @param meta meta-data about the namespace (maybe NULL)
  * @return URI on success, NULL on error (namespace already exists)
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 FSUI_createNamespace(struct FSUI_Context * ctx,
 		     unsigned int anonymityLevel,
 		     const char * namespaceName,
@@ -798,7 +798,7 @@ int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
  * Toggle tracking URIs.
  *
  * @param onOff YES to enable tracking, NO to disable
- *  disabling tracking 
+ *  disabling tracking
  */
 void FSUI_trackURIS(int onOff); /* file_info.c */
 

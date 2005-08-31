@@ -193,7 +193,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 
   if (testConfigurationString("FS",
 			      "DISABLE-CREATION-TIME",
-			      "YES")) 
+			      "YES"))
     xuri = ECRS_dupUri(uri);
   else
     xuri = ECRS_dateExpandKeywordUri(uri);
@@ -201,7 +201,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   keywordCount = xuri->data.ksk.keywordCount;
   cpy = MALLOC(mdsize + strlen(dstURI) + 1);
   memcpy(cpy,
-	 &kb[1], 
+	 &kb[1],
 	 mdsize + strlen(dstURI) + 1);
   for (i=0;i<keywordCount;i++) {
     memcpy(&kb[1], cpy, mdsize + strlen(dstURI) + 1);

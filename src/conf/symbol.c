@@ -629,11 +629,11 @@ struct symbol *sym_lookup(char *name, char *sect, int isconst)
   scope = strstr(name, "::");
   if (scope) {
     int len;
-    
+
     sect = scope;
     while(sect >= name)
       sect--;
-      
+
     len = scope - name;
     sect = (char *) malloc(len + 1);
     memcpy(sect, name, len);
@@ -691,7 +691,7 @@ struct symbol *sym_lookup(char *name, char *sect, int isconst)
 
 	symbol->next = symbol_hash[hash];
 	symbol_hash[hash] = symbol;
-  
+
   if (sect_alloc)
     free(sect);
 
@@ -712,11 +712,11 @@ struct symbol *sym_find(char *name, char *sect)
   scope = strstr(name, "::");
   if (scope) {
     int len;
-    
+
     sect = scope;
     while(sect >= name)
       sect--;
-      
+
     len = scope - name;
     sect = (char *) malloc(len + 1);
     memcpy(sect, name, len);

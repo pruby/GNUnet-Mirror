@@ -47,7 +47,7 @@
  * enough.
  */
 static int pushBlock(GNUNET_TCP_SOCKET * sock,
-                     const CHK * chk,   
+                     const CHK * chk,
                      unsigned int level,
                      Datastore_Value ** iblocks) {
   unsigned int size;
@@ -117,7 +117,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
   size += sizeof(CHK) + sizeof(Datastore_Value);
   GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
   iblocks[level]->size = htonl(size);
-                               
+
   return OK;
 }
 
@@ -181,7 +181,7 @@ int ECRS_uploadFile(const char * filename,
   if (OK != getFileSize(filename,
                         &filesize)) {
     LOG(LOG_ERROR, _("Cannot get size of file `%s'"), filename);
-    
+
     return SYSERR;
   }
   sock = getClientSocket();
@@ -196,8 +196,8 @@ int ECRS_uploadFile(const char * filename,
   if (doIndex) {
     if (SYSERR == getFileHash(filename,
                               &fileId)) {
-      LOG(LOG_ERROR, 
-          _("Cannot hash `%s'.\n"), 
+      LOG(LOG_ERROR,
+          _("Cannot hash `%s'.\n"),
           filename);
       releaseClientSocket(sock);
       return SYSERR;
@@ -215,12 +215,12 @@ int ECRS_uploadFile(const char * filename,
     switch (FS_initIndex(sock, &fileId, filename)) {
     case SYSERR:
       LOG(LOG_ERROR,
-          _("Initialization for indexing file `%s' failed.\n"), 
+          _("Initialization for indexing file `%s' failed.\n"),
           filename);
       releaseClientSocket(sock);
       return SYSERR;
     case NO:
-      LOG(LOG_ERROR, 
+      LOG(LOG_ERROR,
           _("Indexing file `%s' failed. Trying to insert file...\n"),
           filename);
       doIndex = YES;

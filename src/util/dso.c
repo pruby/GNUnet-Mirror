@@ -63,8 +63,8 @@ void __attribute__ ((destructor)) gnc_ltdl_fini(void) {
   lt_dlsetsearchpath(old_dlsearchpath);
   if (old_dlsearchpath != NULL)
     free(old_dlsearchpath);
-  if (0 != using_valgrind) 
-    lt_dlexit ();  
+  if (0 != using_valgrind)
+    lt_dlexit ();
 }
 
 

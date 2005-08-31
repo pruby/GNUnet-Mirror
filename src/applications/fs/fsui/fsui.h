@@ -34,7 +34,7 @@
  * Linked list of FSUI threads.
  */
 typedef struct FSUI_ThreadList {
-  
+
   /**
    * FSUI threads are kept in a simple
    * linked list
@@ -169,7 +169,7 @@ typedef struct FSUI_DownloadList {
 
   /**
    * Set this to YES to signal the download thread that
-   * termination is desired.  Then join on handle.  
+   * termination is desired.  Then join on handle.
    * Set to NO if thread is running.  Set to SYSERR
    * if no thread has been assigned to this download
    * at the moment.

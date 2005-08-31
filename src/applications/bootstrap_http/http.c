@@ -111,9 +111,9 @@ downloadHostlistHelper(char * url,
     	port = TCP_HTTP_PORT;
     }
   }
-  
+
   hostname[curpos] = '\0'; /* terminator for hostname */
-  
+
   sock = SOCKET(PF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
     LOG(LOG_ERROR,
@@ -280,7 +280,7 @@ static void downloadHostlist(hello_Callback callback,
     return;
   }
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "Trying to bootstrap with peers from `%s'\n",
       url);
 #endif

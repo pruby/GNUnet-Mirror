@@ -79,7 +79,7 @@
 /**
  * Named constants for return values.  The following
  * invariants hold: "NO == 0" (to allow "if (NO)")
- * "OK != SYSERR", "OK != NO", "NO != SYSERR" 
+ * "OK != SYSERR", "OK != NO", "NO != SYSERR"
  * and finally "YES != NO".
  */
 #define OK      1
@@ -642,7 +642,7 @@ void triggerGlobalConfigurationRefresh(void);
  *        will NOT be discarded if this method is invoked twice.
  * @param fn the file to read
  * @return YES on success, NO otherwise
- */ 
+ */
 int readConfigFile(const char *fn);
 
 /**
@@ -2386,9 +2386,9 @@ int createGroupUser(char *group_name, char *user_name);
  */
 char *winErrorStr(char *prefix, int dwErr);
 
-/** 
+/**
  * Checks if gnunetd is running
- * 
+ *
  * Uses CS_PROTO_traffic_COUNT query to determine if gnunetd is
  * running.
  *
@@ -2398,7 +2398,7 @@ int checkGNUnetDaemonRunning(void);
 
 /**
  * Start gnunetd process
- * 
+ *
  * @param daemonize YES if gnunetd should be daemonized
  * @return pid_t of gnunetd if NOT daemonized, 0 if
  *  daemonized sucessfully, -1 on error
@@ -2406,7 +2406,7 @@ int checkGNUnetDaemonRunning(void);
 int startGNUnetDaemon(int daemonize);
 
 
-/** 
+/**
  * Stop gnunetd
  *
  * Note that returning an error does NOT mean that
@@ -2430,7 +2430,7 @@ int stopGNUnetDaemon(void);
 /**
  * Wait until the gnunet daemon is
  * running.
- * 
+ *
  * @param timeout how long to wait at most
  * @return OK if gnunetd is now running
  */
@@ -2442,11 +2442,11 @@ int waitForGNUnetDaemonRunning(cron_t timeout);
  * matter) with the given PID has terminated.  Assumes that
  * the daemon was started with startGNUnetDaemon in no-daemonize mode.
  * On arbitrary PIDs, this function may fail unexpectedly.
- * 
+ *
  * @return YES if gnunetd shutdown with
  *  return value 0, SYSERR if waitpid
  *  failed, NO if gnunetd shutdown with
- *  some error 
+ *  some error
  */
 int waitForGNUnetDaemonTermination(int pid);
 

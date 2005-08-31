@@ -391,7 +391,7 @@ void ECRS_freeUri(struct ECRS_URI * uri) {
   int i;
   GNUNET_ASSERT(uri != NULL);
   if (uri->type == ksk) {
-    for (i=0;i<uri->data.ksk.keywordCount;i++) 
+    for (i=0;i<uri->data.ksk.keywordCount;i++)
       FREE(uri->data.ksk.keywords[i]);
     GROW(uri->data.ksk.keywords,
 	 uri->data.ksk.keywordCount,
@@ -493,7 +493,7 @@ int ECRS_getKeywordsFromUri(const struct ECRS_URI * uri,
   if (uri->type != ksk) {
     return -1;
   } else {
-    for (i=0;i<uri->data.ksk.keywordCount;i++) 
+    for (i=0;i<uri->data.ksk.keywordCount;i++)
       if (iterator != NULL)
 	if (OK != iterator(uri->data.ksk.keywords[i],
 			   cls))
@@ -549,11 +549,11 @@ URI * ECRS_dupUri(const URI * uri) {
   switch (ret->type) {
   case ksk:
     if (ret->data.ksk.keywordCount > 0) {
-      ret->data.ksk.keywords 
+      ret->data.ksk.keywords
 	= MALLOC(ret->data.ksk.keywordCount * sizeof(char*));
-      for (i=0;i<ret->data.ksk.keywordCount;i++) 
+      for (i=0;i<ret->data.ksk.keywordCount;i++)
 	ret->data.ksk.keywords[i]
-	  = STRDUP(uri->data.ksk.keywords[i]);      
+	  = STRDUP(uri->data.ksk.keywords[i]);
     }
     break;
   default:
@@ -575,7 +575,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
   struct tm t;
   time_t now;
   unsigned int keywordCount;
-  
+
   GNUNET_ASSERT(uri->type == ksk);
   time(&now);
 #ifdef HAVE_GMTIME_R
@@ -593,7 +593,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
     for (i=0;i<keywordCount;i++) {
       key = uri->data.ksk.keywords[i];
       GNUNET_ASSERT(key != NULL);
-      ret->data.ksk.keywords[2*i] 
+      ret->data.ksk.keywords[2*i]
 	= STRDUP(key);
       kd = MALLOC(strlen(key) + 13);
       memset(kd, 0, strlen(key) + 13);
@@ -607,7 +607,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
     }
   } else
     ret->data.ksk.keywords = NULL;
-  
+
   return ret;
 }
 
@@ -641,7 +641,7 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
 	  havePreview++; /* duplicate! */
 	  break;
 	}
-      }      
+      }
     }
   }
   GROW(ret->data.ksk.keywords,
@@ -662,7 +662,7 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
       }
       if (add == 1) {
 	GNUNET_ASSERT(md->items[i].data != NULL);
-	ret->data.ksk.keywords[i-havePreview] 
+	ret->data.ksk.keywords[i-havePreview]
 	  = STRDUP(md->items[i].data);
       }
     }
@@ -705,7 +705,7 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
   int ret;
   int i;
   int j;
-  
+
   GNUNET_ASSERT(uri1 != NULL);
   GNUNET_ASSERT(uri2 != NULL);
   if (uri1->type != uri2->type)

@@ -203,7 +203,7 @@ int ECRS_unindexFile(const char * filename,
     return SYSERR;
   }
   if (OK != getFileSize(filename,
-			&filesize)) 
+			&filesize))
     return SYSERR;
   sock = getClientSocket();
   if (sock == NULL)

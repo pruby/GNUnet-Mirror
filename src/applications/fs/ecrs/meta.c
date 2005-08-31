@@ -185,7 +185,7 @@ char * ECRS_getFirstFromMetaData(const MetaData * md,
       break;
     ret = ECRS_getFromMetaData(md,
                                type);
-    if (ret != NULL) 
+    if (ret != NULL)
       break;
   }
   va_end(args);
@@ -284,7 +284,7 @@ MetaData * ECRS_dupMetaData(const MetaData * md) {
                        md->items[i].data);
   return ret;
 }
-                
+
 /**
  * Extract meta-data from a file.
  *
@@ -338,7 +338,7 @@ static unsigned int tryCompression(char * data,
     }
   }
   FREE(tmp);
-  return oldSize;  
+  return oldSize;
 }
 
 /**
@@ -483,7 +483,7 @@ int ECRS_serializeMetaData(const MetaData * md,
   {
     MetaData * mdx;
     mdx = ECRS_deserializeMetaData(target,
-                                   size);    
+                                   size);
     GNUNET_ASSERT(NULL != mdx);
     ECRS_freeMetaData(mdx);
   }
@@ -632,7 +632,7 @@ int ECRS_isDirectory(const MetaData * md) {
   for (i=md->itemCount-1;i>=0;i--) {
     if (md->items[i].type == EXTRACTOR_MIMETYPE) {
       if (0 == strcmp(md->items[i].data,
-                      GNUNET_DIRECTORY_MIME)) 
+                      GNUNET_DIRECTORY_MIME))
         return YES;
       else
         return NO;
@@ -769,7 +769,7 @@ char * ECRS_suggestFilename(const char * filename) {
             (key[0] != DIR_SEPARATOR) )
       key--;
     if (key[0] == DIR_SEPARATOR)
-      key++;    
+      key++;
   }
   if (mime != NULL) {
     if (0 == strcmp(&key[strlen(key)-strlen(mime)],
@@ -812,7 +812,7 @@ char * ECRS_suggestFilename(const char * filename) {
         SNPRINTF(&renameTo[i],
                  19,
                  ".%u",
-                 j++);      
+                 j++);
         if (j > 100000)
           break;
       } while (0 == STAT(renameTo,
@@ -821,10 +821,10 @@ char * ECRS_suggestFilename(const char * filename) {
 
     if (0 != STAT(renameTo,
                   &filestat)) {
-      if (0 != RENAME(filename, renameTo))      
+      if (0 != RENAME(filename, renameTo))
         LOG(LOG_ERROR,
             _("Renaming of file `%s' to `%s' failed: %s\n"),
-            filename, 
+            filename,
             renameTo,
             STRERROR(errno));
       else
@@ -832,12 +832,12 @@ char * ECRS_suggestFilename(const char * filename) {
     } else {
       LOG(LOG_ERROR,
           _("Could not rename file `%s' to `%s': file exists\n"),
-          filename, 
+          filename,
           renameTo);
-    }   
+    }
   }
   FREE(path);
-  FREE(renameTo);                               
+  FREE(renameTo);
   EXTRACTOR_freeKeywords(list);
   EXTRACTOR_removeAll(l);
   return ret;

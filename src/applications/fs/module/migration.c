@@ -130,7 +130,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   ret = 0;
   if (anonymity == 0) {
     /* ret > 0; (if DHT succeeds) fixme for DHT */
-  } 
+  }
   if ( (ret == 0) &&
        (OK == checkCoverTraffic(traffic,
 				anonymity)) ) {
@@ -147,7 +147,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
     FREE(gw);
   }
   if (ret > 0) {
-    FREE(content);  
+    FREE(content);
     content = NULL;
   }
   MUTEX_UNLOCK(&lock);

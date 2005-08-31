@@ -140,7 +140,7 @@ int InitWinEnv()
       GetProcAddress(hAdvapi, "ControlService");
     GNOpenService = (TOpenService)
       GetProcAddress(hAdvapi, "OpenServiceA");
-      
+
   	GNLsaOpenPolicy = (TLsaOpenPolicy)
   		GetProcAddress(hAdvapi, "LsaOpenPolicy");
   	GNLsaAddAccountRights = (TLsaAddAccountRights)
@@ -184,7 +184,7 @@ int InitWinEnv()
     GNStartServiceCtrlDispatcher = NULL;
     GNControlService = NULL;
     GNOpenService = NULL;
-      
+
   	GNLsaOpenPolicy = NULL;
   	GNLsaAddAccountRights = NULL;
   	GNLsaRemoveAccountRights = NULL;
@@ -202,7 +202,7 @@ int InitWinEnv()
   	GNAddAccessAllowedAce = NULL;
   	GNSetNamedSecurityInfo = NULL;
   }
-  
+
   /* Account function */
   hNetapi = LoadLibrary("netapi32.dll");
   if (hNetapi)
@@ -217,7 +217,7 @@ int InitWinEnv()
   	GNNetUserAdd = NULL;
   	GNNetUserSetInfo = NULL;
   }
-  
+
   return ret;
 }
 

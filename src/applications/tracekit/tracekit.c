@@ -280,7 +280,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
     size = sizeof(P2P_tracekit_reply_MESSAGE) + count*sizeof(PeerIdentity);
     reply = MALLOC(size);
     reply->header.size
-      = htons(size);   
+      = htons(size);
     reply->header.type
       = htons(P2P_PROTO_tracekit_REPLY);
     reply->initiatorId

@@ -328,7 +328,7 @@ int getFileHash(const char * filename,
   int fh;
   struct sha512_ctx ctx;
 
-  if (OK != getFileSize(filename, 
+  if (OK != getFileSize(filename,
 			&len))
     return SYSERR;
   fh = fileopen(filename,

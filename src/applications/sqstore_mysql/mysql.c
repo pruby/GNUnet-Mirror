@@ -321,7 +321,7 @@ static int iopen(mysqlHandle * dbhI,
       dbhI->dbf = NULL;
       return SYSERR;
     }
-    
+
     dbhI->insert = mysql_stmt_init(dbhI->dbf);
     dbhI->select = mysql_stmt_init(dbhI->dbf);
     dbhI->selectc = mysql_stmt_init(dbhI->dbf);
@@ -433,7 +433,7 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->ubind[1].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->ubind[2].buffer_type = MYSQL_TYPE_BLOB;
     dbhI->prepare = YES;
-  } else    
+  } else
     dbhI->prepare = NO;
   MUTEX_CREATE(&dbhI->DATABASE_Lock_);
   return OK;
@@ -504,7 +504,7 @@ static int iterateLowPriority(unsigned int type,
   } else {
     SNPRINTF(typestr,
              32,
-             "WHERE type=%u ", 
+             "WHERE type=%u ",
 	     type);
   }
 
@@ -1005,7 +1005,7 @@ static int del(const HashCode512 * key,
 	mysql_stmt_error(stmt));
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
-  }  
+  }
   if (mysql_stmt_execute(stmt)) {
     LOG(LOG_ERROR,
 	_("`%s' failed at %s:%d with error: %s\n"),
@@ -1054,7 +1054,7 @@ static int update(const HashCode512 * key,
 	mysql_stmt_error(dbh->update));
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
-  }  
+  }
   /* NOTE: as the table entry for 'prio' is defined as unsigned,
    * mysql will zero the value if its about to go negative. (This
    * will generate a warning though, but its probably not seen
@@ -1139,10 +1139,10 @@ static unsigned long long getSize() {
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
   bytesUsed = rowsInTable * avgRowLen;
-  
+
   if (stats)
     stats->set(stat_size, bytesUsed);
-  
+
   return bytesUsed;
 }
 
@@ -1304,7 +1304,7 @@ void release_module_sqstore_mysql() {
   FREE(dbh->cnffile);
   FREE(dbh);
   dbh = NULL;
-  
+
   if (stats != NULL)
     coreAPI->releaseService(stats);
 }

@@ -233,7 +233,7 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
 				  &supported))
 	return SYSERR;
       if (supported == YES) {	
-	ret = processor(i, 
+	ret = processor(i,
 			(j == 2) ? YES : NO,
 			cls);
 	if (ret != OK)

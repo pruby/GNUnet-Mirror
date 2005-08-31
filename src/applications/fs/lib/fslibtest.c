@@ -121,7 +121,7 @@ static void abortSem(Semaphore * sem) {
  */
 static int countCallback(const HashCode512 * key,
 			 const Datastore_Value * value,
-			 void * cls) {  
+			 void * cls) {
   int * cnt = cls;
   (*cnt)--;
   return OK;
@@ -227,7 +227,7 @@ int main(int argc, char * argv[]){
 
   cronTime(&now);
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);
@@ -271,14 +271,14 @@ int main(int argc, char * argv[]){
 			   MAX_BUFFER_SIZE,
 			   &hc));
     /* indexing with symlink */
-    tmpName = STRDUP("/tmp/symlinkTestXXXXXX");    
+    tmpName = STRDUP("/tmp/symlinkTestXXXXXX");
     CHECK(-1 != (fd = mkstemp(tmpName)));
-    CHECK(-1 != WRITE(fd, 
+    CHECK(-1 != WRITE(fd,
 		      &((DBlock*)&block[1])[1],
 		      ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock)));
     closefile(fd);
     CHECK(FS_initIndex(sock,
-		       &hc, 
+		       &hc,
 		       tmpName) == YES);
     CHECK(OK == FS_index(sock,
 			 &hc,

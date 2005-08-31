@@ -152,8 +152,8 @@ static int createIOContext(IOContext * this,
        ((size_t)st.st_size > filesize ) ) {
     /* if exists and oversized, truncate */
     if (truncate(filename, filesize) != 0) {
-      LOG_FILE_STRERROR(LOG_FAILURE, 
-			"truncate", 
+      LOG_FILE_STRERROR(LOG_FAILURE,
+			"truncate",
 			filename);
       return SYSERR;
     }
@@ -172,7 +172,7 @@ static int createIOContext(IOContext * this,
 				O_CREAT|O_RDWR,
 				S_IRUSR|S_IWUSR );
     if (this->handles[i] < 0) {
-      LOG_FILE_STRERROR(LOG_FAILURE, 
+      LOG_FILE_STRERROR(LOG_FAILURE,
 			"OPEN",
 			fn);
       freeIOC(this, NO);
@@ -966,7 +966,7 @@ static void issueRequest(RequestManager * rm,
   cron_t timeout;
   unsigned int ttl;
   int TTL_DECREMENT;
-#if DEBUG_DOWNLOAD 
+#if DEBUG_DOWNLOAD
   EncName enc;
 #endif
 

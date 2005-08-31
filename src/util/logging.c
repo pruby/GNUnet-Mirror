@@ -281,14 +281,14 @@ static void resetLogging() {
   MUTEX_LOCK(&logMutex);
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
-			      "YES")) 
+			      "YES"))
     base = "GNUNETD";
   else
     base = "GNUNET";
   loglevelname
     = getConfigurationString(base,
 			     "LOGLEVEL");
-  if (loglevelname == NULL) 
+  if (loglevelname == NULL)
     loglevelname = strdup("WARNING");
   loglevel__
     = getLoglevel(loglevelname);

@@ -201,16 +201,16 @@ char * timeIntervalToFancyString(cron_t delta) {
 	unit = _(/* time unit */ "h");
 	if (delta > 5 * 24) {
 	  delta = delta / 24;
-	  unit = _(/* time unit */ " days");	      
-	}	    
+	  unit = _(/* time unit */ " days");	
+	}	
       }		
     }	
   }	
   ret = MALLOC(32);
-  SNPRINTF(ret, 
-	   32, 
+  SNPRINTF(ret,
+	   32,
 	   "%llu%s",
-	   delta, 
+	   delta,
 	   unit);
   return ret;
 }

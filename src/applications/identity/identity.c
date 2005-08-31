@@ -77,12 +77,12 @@ typedef struct {
   P2P_hello_MESSAGE ** helos;
 
   unsigned int heloCount;
-  
+
   /**
    * for which protocols is this host known?
    */
   unsigned short * protocols;
-  
+
   unsigned int protocolCount;
 
   /**
@@ -169,8 +169,8 @@ static HostEntry * findHost(const PeerIdentity * id) {
   GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
   for (i=0;i<numberOfHosts_;i++)
     if ( (hostIdentityEquals(id,
-			     &hosts_[i]->identity)) ) 
-      return hosts_[i];    
+			     &hosts_[i]->identity)) )
+      return hosts_[i];
   return NULL;
 }
 
@@ -193,7 +193,7 @@ static void addHostToKnown(const PeerIdentity * identity,
   entry = findHost(identity);
   if (entry == NULL) {
     entry = MALLOC(sizeof(HostEntry));
-    
+
     entry->identity = *identity;
     entry->until    = 0;
     entry->delta    = 30 * cronSECONDS;
@@ -232,7 +232,7 @@ static void addHostToKnown(const PeerIdentity * identity,
   GROW(entry->protocols,
        entry->protocolCount,
        entry->protocolCount+1);
-  entry->protocols[entry->protocolCount-1] 
+  entry->protocols[entry->protocolCount-1]
     = protocol;
   MUTEX_UNLOCK(&lock_);
 }
@@ -241,7 +241,7 @@ static void addHostToKnown(const PeerIdentity * identity,
  * Increase the host credit by a value.
  *
  * @param hostId is the identity of the host
- * @param value is the int value by which the 
+ * @param value is the int value by which the
  *  host credit is to be increased or decreased
  * @returns the actual change in trust (positive or negative)
  */
@@ -266,7 +266,7 @@ static int changeHostTrust(const PeerIdentity * hostId,
   }
   if ( ((int) (host->trust & TRUST_ACTUAL_MASK)) + value < 0) {
     value = - (host->trust & TRUST_ACTUAL_MASK);
-    host->trust = 0 
+    host->trust = 0
       | TRUST_REFRESH_MASK; /* 0 remaining */
   } else {
     host->trust = ( (host->trust & TRUST_ACTUAL_MASK) + value)
@@ -320,7 +320,7 @@ static int cronHelper(const char * filename,
     }
   }
 
-  fullname = MALLOC(strlen(filename) + 
+  fullname = MALLOC(strlen(filename) +
 		    strlen(networkIdDirectory) + 1);
   strcpy(fullname, networkIdDirectory);
   strcat(fullname, filename);
@@ -372,7 +372,7 @@ static void cronScanDirectoryDataHosts(void * unused) {
  */
 static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
   static int tempHostsNextSlot;
-  P2P_hello_MESSAGE * msg;  
+  P2P_hello_MESSAGE * msg;
   HostEntry * entry;
   int i;
   int slot;
@@ -385,15 +385,15 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
   entry = findHost(&msg->senderIdentity);
   if (entry == NULL) {
     slot = tempHostsNextSlot;
-    for (i=0;i<MAX_TEMP_HOSTS;i++) 
+    for (i=0;i<MAX_TEMP_HOSTS;i++)
       if (hostIdentityEquals(&tmp->senderIdentity,
 			     &tempHosts[i].identity))
-	slot = i;    
+	slot = i;
     if (slot == tempHostsNextSlot) {
       tempHostsNextSlot++;
       if (tempHostsNextSlot >= MAX_TEMP_HOSTS)
 	tempHostsNextSlot = 0;
-    }  
+    }
     entry = &tempHosts[slot];
     entry->identity = msg->senderIdentity;
     entry->until = 0;
@@ -451,10 +451,10 @@ static void delHostFromKnown(const PeerIdentity * identity,
 	}
       }
       /* also remove hello file itself */
-      fn = getHostFileName(identity, 
+      fn = getHostFileName(identity,
 			   protocol);
       if (0 != UNLINK(fn))
-	LOG_FILE_STRERROR(LOG_WARNING, 
+	LOG_FILE_STRERROR(LOG_WARNING,
 			  "unlink",
 			  fn);
       FREE(fn);
@@ -526,7 +526,7 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   MUTEX_LOCK(&lock_);
   addHostToKnown(&msg->senderIdentity,
 		 ntohs(msg->protocol));
-  host = findHost(&msg->senderIdentity);  
+  host = findHost(&msg->senderIdentity);
   GNUNET_ASSERT(host != NULL);
 
   for (i=0;i<host->heloCount;i++) {
@@ -544,7 +544,7 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
     = MALLOC(P2P_hello_MESSAGE_size(msg));
   memcpy(host->helos[i],
 	 msg,
-	 P2P_hello_MESSAGE_size(msg));  
+	 P2P_hello_MESSAGE_size(msg));
   MUTEX_UNLOCK(&lock_);
   GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
 }
@@ -574,13 +574,13 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   int * perm;
 
   GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  MUTEX_LOCK(&lock_);  
+  MUTEX_LOCK(&lock_);
   if (YES == tryTemporaryList) {
     if (protocol == ANY_PROTOCOL_NUMBER)
       perm = permute(WEAK, MAX_TEMP_HOSTS);
     else
       perm = NULL;
-    /* ok, then first try temporary hosts 
+    /* ok, then first try temporary hosts
        (in memory, cheapest!) */
     for (i=0;i<MAX_TEMP_HOSTS;i++) {
       if (perm == NULL)
@@ -609,7 +609,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
        (host->protocolCount == 0) ) {
     MUTEX_UNLOCK(&lock_);
     return NULL;
-  }  
+  }
 
   if (protocol == ANY_PROTOCOL_NUMBER)
     protocol = host->protocols[weak_randomi(host->protocolCount)];
@@ -625,9 +625,9 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
       return result;
     }
   }
-  
+
   /* do direct read */
-  fn = getHostFileName(hostId, 
+  fn = getHostFileName(hostId,
 		       protocol);
   size = readFile(fn,
 		  sizeof(P2P_hello_MESSAGE),
@@ -642,25 +642,25 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 	    _("Removed file `%s' containing invalid hello data.\n"),
 	    fn);
       else
-	LOG_FILE_STRERROR(LOG_ERROR, 
+	LOG_FILE_STRERROR(LOG_ERROR,
 			  "unlink",
 			  fn);
     }
     FREE(fn);
     MUTEX_UNLOCK(&lock_);
-    return NULL;  
+    return NULL;
   }
   result = MALLOC(P2P_hello_MESSAGE_size(&buffer));
   size = readFile(fn,
 		  P2P_hello_MESSAGE_size(&buffer),
-		  result);      
+		  result);
   if ((unsigned int)size != P2P_hello_MESSAGE_size(&buffer)) {
     if (0 == UNLINK(fn))
       LOG(LOG_WARNING,
 	  _("Removed file `%s' containing invalid hello data.\n"),
 	  fn);
     else
-      LOG_FILE_STRERROR(LOG_ERROR, 
+      LOG_FILE_STRERROR(LOG_ERROR,
 			"unlink",
 			fn);
     FREE(fn);
@@ -678,7 +678,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 	 result,
 	 P2P_hello_MESSAGE_size(&buffer));
   MUTEX_UNLOCK(&lock_);
-  return result;  
+  return result;
 }
 
 
@@ -756,7 +756,7 @@ static int blacklistHost(const PeerIdentity * identity,
   entry->strict = strict;
   hash2enc(&identity->hashPubKey,
 	   &hn);
-#if DEBUG_IDENTITY 
+#if DEBUG_IDENTITY
   LOG(LOG_INFO,
       "Blacklisting host `%s' for %llu seconds"
       " until %llu (strict=%d).\n",
@@ -787,7 +787,7 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
     return NO;
   }
   cronTime(&now);			
-  if ( (now < entry->until) && 
+  if ( (now < entry->until) &&
        (entry->strict == YES) ) {
     MUTEX_UNLOCK(&lock_);
     return YES;
@@ -806,7 +806,7 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
 static int whitelistHost(const PeerIdentity * identity) {
   HostEntry * entry;
   int i;
-#if DEBUG_IDENTITY       
+#if DEBUG_IDENTITY
   EncName enc;
 #endif
 
@@ -826,7 +826,7 @@ static int whitelistHost(const PeerIdentity * identity) {
     MUTEX_UNLOCK(&lock_);
     return SYSERR;
   }
-#if DEBUG_IDENTITY 
+#if DEBUG_IDENTITY
   IFLOG(LOG_INFO,
 	hash2enc(&identity->hashPubKey,
 		 &enc));
@@ -845,7 +845,7 @@ static int whitelistHost(const PeerIdentity * identity) {
  * Call a method for each known host.
  *
  * @param callback the method to call for each host
- * @param now the time to use for excluding hosts 
+ * @param now the time to use for excluding hosts
  *        due to blacklisting, use 0
  *        to go through all hosts.
  * @param data an argument to pass to the method
@@ -862,7 +862,7 @@ static int forEachHost(cron_t now,
   HostEntry * entry;
 
   GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  count = 0;  
+  count = 0;
   MUTEX_LOCK(&lock_);
   for (i=0;i<numberOfHosts_;i++) {
     entry = hosts_[i];
@@ -910,7 +910,7 @@ static int forEachHost(cron_t now,
 		 YES,
 		 data);
 	MUTEX_LOCK(&lock_);
-      }      
+      }
     }
   }
   MUTEX_UNLOCK(&lock_);
@@ -990,7 +990,7 @@ static void getPeerIdentity(const PublicKey * pubKey,
  * @param capi the core API
  * @return NULL on errors, ID_API otherwise
  */
-Identity_ServiceAPI * 
+Identity_ServiceAPI *
 provide_module_identity(CoreAPIForApplication * capi) {
   static Identity_ServiceAPI id;
   char * gnHome;
@@ -1013,7 +1013,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
   id.changeHostTrust     = &changeHostTrust;
   id.getHostTrust        = &getHostTrust;
 
-  for (i=0;i<MAX_TEMP_HOSTS;i++) 
+  for (i=0;i<MAX_TEMP_HOSTS;i++)
     memset(&tempHosts[i],
 	   0,
 	   sizeof(HostEntry));
@@ -1033,13 +1033,13 @@ provide_module_identity(CoreAPIForApplication * capi) {
     = getConfigurationString("GNUNETD",
 			     "HOSTS");
   if (networkIdDirectory == NULL) {
-    networkIdDirectory 
+    networkIdDirectory
       = MALLOC(strlen(gnHome) + strlen(HOST_DIR) + 2);
     strcpy(networkIdDirectory, gnHome);
     strcat(networkIdDirectory, DIR_SEPARATOR_STR);
     strcat(networkIdDirectory, HOST_DIR);
   } else {
-    tmp = 
+    tmp =
       expandFileName(networkIdDirectory);
     FREE(networkIdDirectory);
     networkIdDirectory = tmp;

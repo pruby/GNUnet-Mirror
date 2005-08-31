@@ -157,7 +157,7 @@ static int parser(int argc, char *argv[])
     conf_parse(DATADIR "/config-client.in");
   }
   dirname = STRDUP(filename);
-  
+
   c = strlen(dirname) - 1;
   while(c > -1) {
     char ch = dirname[c];
@@ -167,10 +167,10 @@ static int parser(int argc, char *argv[])
     }
     c--;
   }
-  
+
   if (c)
     mkdirp(dirname);
-  
+
   if((0 != ACCESS(filename,
                   W_OK)) &&
      ((0 == ACCESS(filename, F_OK)) || (0 != ACCESS(dirname, W_OK)))) {

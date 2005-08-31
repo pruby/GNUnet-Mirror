@@ -267,7 +267,7 @@ int main(int argc, char ** argv) {
   /* set to 0 if you want to start gnunetd's by hand for debugging */
 
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseOptions))
     return -1;
 #if 1
@@ -335,7 +335,7 @@ int main(int argc, char ** argv) {
   }
   releaseClientSocket(sock);
 
-  
+
   uri = uploadFile(12345);
   CHECK(NULL != uri);
   CHECK(OK == searchFile(&uri));
@@ -360,7 +360,7 @@ int main(int argc, char ** argv) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
-  } 
+  }
   doneUtil();
   return ret;
 }

@@ -179,7 +179,7 @@ static int updateModule(const char * rpos) {
 			       rpos);
   if (pos == NULL)
     pos = STRDUP(rpos);
-  
+
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);

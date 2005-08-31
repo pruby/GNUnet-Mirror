@@ -298,7 +298,7 @@ int isHandlerRegistered(unsigned short type,
 			unsigned short handlerType) {
   int pos;
   int ret;
-  
+
   if (handlerType == 3)
     return isCSHandlerRegistered(type);
   if (handlerType > 3) {
@@ -306,7 +306,7 @@ int isHandlerRegistered(unsigned short type,
     return SYSERR;
   }
   ret = 0;
-  MUTEX_LOCK(&handlerLock);    
+  MUTEX_LOCK(&handlerLock);
   if (type < plaintextmax_registeredType) {
     pos = 0;
     while (plaintextHandlers[type][pos] != NULL)
@@ -317,7 +317,7 @@ int isHandlerRegistered(unsigned short type,
   }
   if (type < max_registeredType) {
     pos = 0;
-    while (handlers[type][pos] != NULL) 
+    while (handlers[type][pos] != NULL)
       pos++;
     if ( (handlerType == 1) ||
 	 (handlerType == 2) )

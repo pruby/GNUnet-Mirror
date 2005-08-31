@@ -137,7 +137,7 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
   FREE(serverDir);
   serverDir = tmp;
   if ( (SYSERR == getFileHash(fn,
-			      &linkId)) || 
+			      &linkId)) ||
        (! equalsHashCode512(&linkId,
 			    fileId)) ) {
     FREE(serverDir);
@@ -206,14 +206,14 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 
   fn = getOnDemandFile(fileId);
   if ( (0 != LSTAT(fn,
-		   &sbuf)) 
+		   &sbuf))
 #ifdef S_ISLNK
-       || (! S_ISLNK(sbuf.st_mode)) 
+       || (! S_ISLNK(sbuf.st_mode))
 #endif
        ) {
     int fd;
 
-    /* not sym-linked, write content to offset! */   
+    /* not sym-linked, write content to offset! */
 #if DEBUG_ONDEMAND
     LOG(LOG_DEBUG,
 	"Storing on-demand encoded data in `%s'.\n",
@@ -244,10 +244,10 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
     }
     closefile(fd);
     if (ret == SYSERR) {
-      FREE(fn);    
+      FREE(fn);
       return ret;
     }
-  } 
+  }
   FREE(fn);
 
   odb.header.size = htonl(sizeof(OnDemandBlock));
@@ -340,8 +340,8 @@ static void asyncDelete(Datastore_ServiceAPI * datastore,
 #endif
   /* schedule for "immediate" execution */
   addCronJob((CronJob) &asyncDelJob,
-	     0, 
-	     0, 
+	     0,
+	     0,
 	     job);
 }
 
@@ -377,7 +377,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 #ifdef O_LARGEFILE
 			O_LARGEFILE |
 #endif
-			O_RDONLY, 
+			O_RDONLY,
 			0);
   if (fileHandle == -1) {
     char unavail_key[256];
@@ -420,8 +420,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	      FREE(fn);
 	      return SYSERR;
 	    }
-	    GROW(ofn, 
-		 len, 
+	    GROW(ofn,
+		 len,
 		 len*2);
 	  	
           if (ret != -1) {
@@ -607,7 +607,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     return SYSERR;
   }
   pos = 0;
-  if (OK != getFileSize(fn, 
+  if (OK != getFileSize(fn,
 			&size)) {
     FREE(fn);
     return SYSERR;
@@ -671,7 +671,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 	   "FIRST_UNAVAILABLE-%s",
 	   (char*)&enc);
   stateUnlinkFromDB(unavail_key);
-  
+
 
   FREE(fn);
   return OK;

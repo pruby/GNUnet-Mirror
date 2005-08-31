@@ -1,4 +1,4 @@
-/* 
+/*
      This file is part of GNUnet.
      (C) 2005 Christian Grothoff (and other contributing authors)
 
@@ -229,16 +229,16 @@ GtkImage *get_btn_image(GtkButton *button)
 {
   GList *btn_children, *align;
   GtkImage *ret = NULL;
-  
+
   /* button -> alignment -> hbox -> image */
-  
+
   btn_children = gtk_container_get_children(GTK_CONTAINER(button));
   for (align = btn_children; align; align = g_list_next(align))
   {
     if (GTK_IS_ALIGNMENT(align->data))
     {
       GList *align_children, *hbox;
-      
+
       align_children = gtk_container_get_children(GTK_CONTAINER(align->data));
       for (hbox = align_children; hbox; hbox = g_list_next(hbox))
       {
@@ -259,7 +259,7 @@ GtkImage *get_btn_image(GtkButton *button)
     }
   }
   g_list_free(btn_children);
-  
+
   return ret;
 }
 
@@ -323,7 +323,7 @@ void init_main_window()
                   (gchar **) xpm_single_view);
     gtk_image_set_from_pixmap(image, pixmap, mask);
   }
-          
+
   image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button5")));
   if (image)
   {
@@ -333,7 +333,7 @@ void init_main_window()
              (gchar **) xpm_split_view);
     gtk_image_set_from_pixmap(image, pixmap, mask);
   }
-  
+
   image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button6")));
   if (image)
   {
@@ -464,7 +464,7 @@ void init_left_tree(void)
               renderer,
               "text", COL_OPTION,
 #if BUG916
-              "foreground-gdk", COL_COLOR, 
+              "foreground-gdk", COL_COLOR,
 #endif
 				      NULL);
 
@@ -528,7 +528,7 @@ void init_right_tree(void)
                 "Name", renderer,
                 "text", COL_NAME,
 #if BUG916
-                "foreground-gdk", COL_COLOR, 
+                "foreground-gdk", COL_COLOR,
 #endif
 					      NULL);
   renderer = gtk_cell_renderer_text_new();
@@ -753,7 +753,7 @@ void on_save1_activate(GtkMenuItem * menuitem, gpointer user_data)
   filename = getConfigurationString("GNUNET-SETUP",
 				    "FILENAME");
   if (conf_write(filename))
-    text_insert_msg("Error", 
+    text_insert_msg("Error",
 		    "Unable to save configuration!");
   FREE(filename);
   config_changed = FALSE;
@@ -1135,7 +1135,7 @@ on_treeview2_button_press_event(GtkWidget * widget,
 
   if (!gtk_tree_model_get_iter(model2, &iter, path))
   	return FALSE;
-  
+
   gtk_tree_model_get(model2, &iter, COL_MENU, &menu, -1);
 
   col = column2index(column);
@@ -1617,7 +1617,7 @@ static void display_tree(struct menu *menu)
         (view_mode == FULL_VIEW)
         || (view_mode == SPLIT_VIEW))*/
     if ( (  (view_mode == SINGLE_VIEW) && (menu->flags & MENU_ROOT))
-         || (view_mode == FULL_VIEW) 
+         || (view_mode == FULL_VIEW)
          || (view_mode == SPLIT_VIEW) ) {
       indent++;
       display_tree(child);

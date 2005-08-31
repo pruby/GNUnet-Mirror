@@ -192,7 +192,7 @@ static int loadApplicationModule(const char * rpos) {
 #endif
     unloadDynamicLibrary(library);
     FREE(name);
-    FREE(nxt);   
+    FREE(nxt);
   }
   return ok;
 }

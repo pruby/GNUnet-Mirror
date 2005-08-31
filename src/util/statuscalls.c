@@ -52,7 +52,7 @@
 
 /**
  * where to read network interface information from
- * under Linux 
+ * under Linux
  */
 #define PROC_NET_DEV "/proc/net/dev"
 
@@ -68,14 +68,14 @@ typedef struct {
 static NetworkStats globalTrafficBetweenProc;
 
 /**
- * tracking 
+ * tracking
  */
-static NetworkStats * ifcs; 
+static NetworkStats * ifcs;
 
 /**
- * how many interfaces do we have? 
+ * how many interfaces do we have?
  */
-static int ifcsSize; 
+static int ifcsSize;
 
 /**
  * Current load of the machine, -1 for error
@@ -101,7 +101,7 @@ static int maxCPULoad;
  * How to measure traffic (YES == only gnunetd,
  * NO == try to include all apps)
  */
-static int useBasicMethod = YES;  
+static int useBasicMethod = YES;
 
 /**
  * Lock.
@@ -179,12 +179,12 @@ static void updateInterfaceTraffic() {
 	  data++;	
 	  if (2 != SSCANF(data,
 			  "%llu %*s %*s %*s %*s %*s %*s %*s %llu",
-			  &rxnew, 
+			  &rxnew,
 			  &txnew)) {
 	    LOG(LOG_ERROR,
 		_("Failed to parse interface data from `%s' at %s:%d.\n"),
-		PROC_NET_DEV, 
-		__FILE__, 
+		PROC_NET_DEV,
+		__FILE__,
 		__LINE__);
 	    continue;
 	  }	
@@ -197,7 +197,7 @@ static void updateInterfaceTraffic() {
     }
   }
   MUTEX_UNLOCK(&statusMutex);
-    
+
 #elif MINGW
   unsigned long long rxnew;
   unsigned long long txnew;
@@ -226,11 +226,11 @@ static void updateInterfaceTraffic() {
 	       pTable->table[dwIfIdx].dwPhysAddrLen);
 
         if (0 == memcmp(bPhysAddr,
-			&l, 
+			&l,
 			sizeof(unsigned long long))) {
-	  ifcs[i].last_in 
+	  ifcs[i].last_in
 	    = pTable->table[dwIfIdx].dwInOctets;
-	  ifcs[i].last_out 
+	  ifcs[i].last_out
 	    = pTable->table[dwIfIdx].dwOutOctets;
 	  resetBetweenProc();
           break;
@@ -240,29 +240,29 @@ static void updateInterfaceTraffic() {
     GlobalFree(pTable);
   } else { /* Win 95 */
     if ( ( command = popen("netstat -e", "rt") ) == NULL ) {
-      LOG_FILE_STRERROR(LOG_ERROR, 
-			"popen", 
+      LOG_FILE_STRERROR(LOG_ERROR,
+			"popen",
 			"netstat -e");
       MUTEX_UNLOCK(&statusMutex);
       return;
     }
     while (!feof(command)) {
-      if (NULL == fgets(line, 
-			MAX_PROC_LINE, 
+      if (NULL == fgets(line,
+			MAX_PROC_LINE,
 			command))
 	break;
       /* PORT-ME: any way to do this per-ifc? */
       if (iLine == 1) {
-        sscanf("%*s%i%i", 
-	       &rxnew, 
+        sscanf("%*s%i%i",
+	       &rxnew,
 	       &txnew);
-	ifcs[0].last_in 
+	ifcs[0].last_in
 	  = rxnew;
-	ifcs[0].last_out 
+	ifcs[0].last_out
 	  = txnew;
 	resetBetweenProc();
 	break;
-      } 
+      }
       iLine++;
     }
     pclose(command);
@@ -287,7 +287,7 @@ static void updateCpuUsage(){
     return;
   }
   MUTEX_LOCK(&statusMutex);
-  
+
 #ifdef LINUX
   /* under linux, first try %idle/usage using /proc/stat;
      if that does not work, disable /proc/stat for the future
@@ -303,18 +303,18 @@ static void updateCpuUsage(){
     rewind(proc_stat);
     fflush(proc_stat);
     if (NULL == fgets(line, 128, proc_stat)) {
-      LOG_FILE_STRERROR(LOG_ERROR, 
+      LOG_FILE_STRERROR(LOG_ERROR,
 			"fgets",
 			"/proc/stat");
       fclose(proc_stat);
       proc_stat = NULL; /* don't try again */
     } else {
       if (sscanf(line, "%*s %i %i %i %i",
-		 &user_read, 
-		 &system_read, 
+		 &user_read,
+		 &system_read,
 		 &nice_read,
 		 &idle_read) != 4) {
-	LOG_FILE_STRERROR(LOG_ERROR, 
+	LOG_FILE_STRERROR(LOG_ERROR,
 			  "fgets-sscanf",
 			  "/proc/stat");
 	fclose(proc_stat);
@@ -402,9 +402,9 @@ static void updateCpuUsage(){
       goto ABORT_KSTAT; /* no stats found => abort */
     deltaidle = idlecount - last_idlecount;
     deltatotal = totalcount - last_totalcount;
-    if ( (deltatotal > 0) && 
+    if ( (deltatotal > 0) &&
 	 (last_totalcount > 0) )
-      currentLoad = (int) (100 * deltaidle / deltatotal);    
+      currentLoad = (int) (100 * deltaidle / deltatotal);
     else
       currentLoad = -1;
     last_idlecount = idlecount;
@@ -456,7 +456,7 @@ static void updateCpuUsage(){
     SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION theInfo;
 
     if (GNNtQuerySystemInformation(SystemProcessorPerformanceInformation,
-				   &theInfo, 
+				   &theInfo,
 				   sizeof(theInfo),
 				   NULL) == NO_ERROR) {
       /* PORT-ME MINGW: Multi-processor? */
@@ -468,7 +468,7 @@ static void updateCpuUsage(){
       dDiffUser = dUser - dLastUser;
 
       if ( ( (dDiffKernel + dDiffUser) > 0) &&
-	   (dLastIdle + dLastKernel + dLastUser > 0) ) 
+	   (dLastIdle + dLastKernel + dLastUser > 0) )
         currentLoad = 100.0 - (dDiffIdle / (dDiffKernel + dDiffUser)) * 100.0;
       else
         currentLoad = -1; /* don't know (yet) */
@@ -494,8 +494,8 @@ static void updateCpuUsage(){
     DWORD dwDataSize, dwType, dwDummy;
 
     /* Start query */
-    if (RegOpenKeyEx(HKEY_DYN_DATA, 
-		     "PerfStats\\StartSrv", 
+    if (RegOpenKeyEx(HKEY_DYN_DATA,
+		     "PerfStats\\StartSrv",
 		     0,
 		     KEY_ALL_ACCESS,
                      &hKey) != ERROR_SUCCESS) {
@@ -508,51 +508,51 @@ static void updateCpuUsage(){
       }
     }
 
-    RegOpenKeyEx(HKEY_DYN_DATA, 
-		 "PerfStats\\StartStat", 
-		 0, 
+    RegOpenKeyEx(HKEY_DYN_DATA,
+		 "PerfStats\\StartStat",
+		 0,
 		 KEY_ALL_ACCESS,
 		 &hKey);
     dwDataSize = sizeof(dwDummy);
     RegQueryValueEx(hKey,
-		    "KERNEL\\CPUUsage", 
-		    NULL, 
-		    &dwType, 
+		    "KERNEL\\CPUUsage",
+		    NULL,
+		    &dwType,
 		    (LPBYTE) &dwDummy,
                     &dwDataSize);
     RegCloseKey(hKey);
 
     /* Get CPU usage */
-    RegOpenKeyEx(HKEY_DYN_DATA, 
+    RegOpenKeyEx(HKEY_DYN_DATA,
 		 "PerfStats\\StatData",
-		 0, 
+		 0,
 		 KEY_ALL_ACCESS,
                  &hKey);
     dwDataSize = sizeof(currentLoad);
     RegQueryValueEx(hKey,
-		    "KERNEL\\CPUUsage", 
-		    NULL, 
+		    "KERNEL\\CPUUsage",
+		    NULL,
 		    &dwType,
                     (LPBYTE) &currentLoad,
 		    &dwDataSize);
     RegCloseKey(hKey);
 
     /* Stop query */
-    RegOpenKeyEx(HKEY_DYN_DATA, 
+    RegOpenKeyEx(HKEY_DYN_DATA,
 		 "PerfStats\\StopStat",
-		 0, 
+		 0,
 		 KEY_ALL_ACCESS,
                  &hKey);
-    RegOpenKeyEx(HKEY_DYN_DATA, 
-		 "PerfStats\\StopSrv", 
-		 0, 
+    RegOpenKeyEx(HKEY_DYN_DATA,
+		 "PerfStats\\StopSrv",
+		 0,
 		 KEY_ALL_ACCESS,
                  &hKey);
     dwDataSize = sizeof(dwDummy);
     RegQueryValueEx(hKey,
-		    "KERNEL\\CPUUsage", 
-		    NULL, 
-		    &dwType, 
+		    "KERNEL\\CPUUsage",
+		    NULL,
+		    &dwType,
 		    (LPBYTE)&dwDummy,
                     &dwDataSize);
     RegCloseKey(hKey);
@@ -587,7 +587,7 @@ static void resetStatusCalls() {
   MUTEX_LOCK(&statusMutex);
   for (i=0;i<ifcsSize;i++)
     FREE(ifcs[i].name);
-  GROW(ifcs, 
+  GROW(ifcs,
        ifcsSize,
        0);
   interfaces
@@ -645,7 +645,7 @@ static void resetStatusCalls() {
     = getConfigurationInt("LOAD",
 			  "MAXCPULOAD");
   if (maxCPULoad == 0)
-    maxCPULoad = 100; 
+    maxCPULoad = 100;
   MUTEX_UNLOCK(&statusMutex);
 }
 
@@ -699,10 +699,10 @@ int getNetworkLoadUp() {
   currentLoadSum += overload;
   maxExpect = ( (now - lastCall) * maxNetDownBPS ) / cronSECONDS;
   lastCall = now;
-  if (currentLoadSum < maxExpect) 
+  if (currentLoadSum < maxExpect)
     overload = 0;
-  else 
-    overload = currentLoadSum - maxExpect;  
+  else
+    overload = currentLoadSum - maxExpect;
   lastValue = currentLoadSum * 100 / maxExpect;
   ret = lastValue;
   MUTEX_UNLOCK(&statusMutex);
@@ -724,7 +724,7 @@ int getNetworkLoadDown() {
   unsigned long long currentLoadSum;
   int i;
   int ret;
-  
+
   MUTEX_LOCK(&statusMutex);
   currentLoadSum = globalTrafficBetweenProc.last_in;
   for (i=0;i<ifcsSize;i++)
@@ -757,10 +757,10 @@ int getNetworkLoadDown() {
   currentLoadSum += overload;
   maxExpect = ( (now - lastCall) * maxNetDownBPS ) / cronSECONDS;
   lastCall = now;
-  if (currentLoadSum < maxExpect) 
+  if (currentLoadSum < maxExpect)
     overload = 0;
-  else 
-    overload = currentLoadSum - maxExpect;  
+  else
+    overload = currentLoadSum - maxExpect;
   lastValue = currentLoadSum * 100 / maxExpect;
   ret = lastValue;
   MUTEX_UNLOCK(&statusMutex);
@@ -819,9 +819,9 @@ void initStatusCalls() {
 		      "fopen",
 		      "/proc/stat");
   proc_net_dev = fopen(PROC_NET_DEV, "r");
-  if (NULL == proc_net_dev) 
-    LOG_FILE_STRERROR(LOG_ERROR, 
-		      "fopen", 
+  if (NULL == proc_net_dev)
+    LOG_FILE_STRERROR(LOG_ERROR,
+		      "fopen",
 		      PROC_NET_DEV);
 #endif
   MUTEX_CREATE_RECURSIVE(&statusMutex);
@@ -843,7 +843,7 @@ void initStatusCalls() {
  */
 void doneStatusCalls() {
   int i;
-  
+
   unregisterConfigurationUpdateCallback(&resetStatusCalls);
   delCronJob(&cronLoadUpdate,
 	     10 * cronSECONDS,

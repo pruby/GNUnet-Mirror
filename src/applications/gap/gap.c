@@ -814,7 +814,7 @@ static void sendToSelected(const PeerIdentity * id,
        (equalsHashCode512(&id->hashPubKey,
 			  &qr->msg->returnTo.hashPubKey)) )
     return; /* never send back to source */
-  
+
   if (getBit(qr, getIndex(id)) == 1) {
 #if DEBUG_GAP
     IFLOG(LOG_DEBUG,
@@ -1060,7 +1060,7 @@ static void queueReply(const PeerIdentity * sender,
   uri(data,
       ANY_BLOCK,
       primaryKey);
-#endif  
+#endif
 
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
   if (! equalsHashCode512(&ite->primaryKey,
@@ -1533,13 +1533,13 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
   HashCode512 hc1;
   int i;
   IndirectionTableEntry * ite;
-  
+
 #if EXTRA_CHECKS
   /* verify data is valid */
   uri(value,
       ANY_BLOCK,
       primaryKey);
-#endif  
+#endif
 
   /* check seen */
   ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
@@ -1664,7 +1664,7 @@ static int execQuery(const PeerIdentity * sender,
     if (max > cls.valueCount)
       max = cls.valueCount; /* can't send more back then
 				what we have */
-    
+
     for (i=0;i<cls.valueCount;i++) {
       if (i < max) {
 	if (cls.sender != NULL)
@@ -1680,7 +1680,7 @@ static int execQuery(const PeerIdentity * sender,
 	      &query->queries[0],
 	      cls.values[perm[i]],
 	      ite->priority);
-      
+
       if (uri(cls.values[perm[i]],
 	      ite->type,
 	      &query->queries[0]))
@@ -1758,7 +1758,7 @@ static int useContent(const PeerIdentity * hostId,
 	 size);
   rhf(value,
       &contentHC);
-  
+
   /* FIRST: check if seen */
   MUTEX_LOCK(&lookup_exclusion);
   for (i=0;i<ite->seenIndex;i++) {
@@ -2172,7 +2172,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
 
   GNUNET_ASSERT(sizeof(P2P_gap_reply_MESSAGE) == 68);
   GNUNET_ASSERT(sizeof(P2P_gap_query_MESSAGE) == 144);
-  
+
   coreAPI = capi;
   GROW(rewards,
        rewardSize,

@@ -30,7 +30,7 @@
 #include "fs.h"
 #include "querymanager.h"
 
-#define DEBUG_QUERYMANAGER NO 
+#define DEBUG_QUERYMANAGER NO
 
 typedef struct {
   HashCode512 query;
@@ -160,14 +160,14 @@ void processResponse(const HashCode512 * key,
       LOG(LOG_DEBUG,
 	  "Sending reply to client waiting in slot %u.\n",
 	  i);
-#endif      
+#endif
       coreAPI->sendToClient(trackers[i]->client,
 			    &rc->header);
       FREE(rc);
     }
   }
 #if DEBUG_QUERYMANAGER
-  if (matchCount == 0) {      
+  if (matchCount == 0) {
     EncName enc;
 
     IFLOG(LOG_DEBUG,

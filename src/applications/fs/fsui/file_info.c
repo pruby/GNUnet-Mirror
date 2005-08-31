@@ -179,8 +179,8 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
       BREAK();
       goto FORMATERROR;
     }
-    memcpy(&msize, 
-	   &result[spos], 
+    memcpy(&msize,
+	   &result[spos],
 	   sizeof(int));
     msize = ntohl(msize);
     spos += sizeof(int);

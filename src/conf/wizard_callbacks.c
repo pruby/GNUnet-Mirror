@@ -165,17 +165,17 @@ save_conf ()
   if (conf_write(filename)) {
     char * err;
     const char * prefix;
-    
+
     prefix = _("Unable to save configuration file `%s':");
-    
+
     err = malloc(strlen(filename) + strlen(prefix) + 1);
     sprintf(err, prefix, filename);
     showErr(err, STRERROR(errno));
     free(err);
-    
-    free(filename);    
+
+    free(filename);
     return 0;
-  }  
+  }
   free(filename);	
   return 1;
 }
@@ -392,12 +392,12 @@ void
 on_entUser_changed (GtkEditable * editable, gpointer user_data)
 {
   struct symbol *sym;
-  
+
 	if (user_name)
 		free(user_name);
 	
 	user_name = strdup(gtk_editable_get_chars(editable, 0, -1));
-  
+
   sym = sym_lookup("USER", "GNUNETD", 0);
   sym_set_string_value(sym, user_name);
 }
@@ -407,12 +407,12 @@ void
 on_entGroup_changed (GtkEditable * editable, gpointer user_data)
 {
   struct symbol *sym;
-  
+
 	if (group_name)
 		free(group_name);
 	
 	group_name = strdup(gtk_editable_get_chars(editable, 0, -1));
-  
+
   sym = sym_lookup("GROUP", "GNUNETD", 0);
   sym_set_string_value(sym, group_name);
 }

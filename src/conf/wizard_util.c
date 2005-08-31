@@ -37,7 +37,7 @@
 int wiz_is_nic_default(const char *name, int suggestion) {
 	const char *nic = NULL;
 	struct symbol *sym = sym_find("INTERFACE", "NETWORK");
-  
+
   if (sym)
   {
   	sym_calc_value_ext(sym, 1);
@@ -66,7 +66,7 @@ int wiz_is_nic_default(const char *name, int suggestion) {
   			suggestion = 1; /* This is the previous selection */
   	}
   }
-  
+
   return suggestion;
 }
 
@@ -79,9 +79,9 @@ int wiz_is_nic_default(const char *name, int suggestion) {
  * @return 1 on success, 0 on error
  */
 int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
-  int ret = autostartService(doAutoStart, 
-			     username, 
-			     groupname);  
+  int ret = autostartService(doAutoStart,
+			     username,
+			     groupname);
   if (ret ) {
 #ifdef MINGW
     char *err;
@@ -114,16 +114,16 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
       break;
     default:
       err = winErrorStr(_("Unknown error"), GetLastError());
-    }  
-    MessageBox(GetActiveWindow(), 
-	       err, 
+    }
+    MessageBox(GetActiveWindow(),
+	       err,
 	       _("Error"),
 	       MB_ICONSTOP | MB_OK);
     free(err);
 #endif
-    
+
     return 0;
-  } 
+  }
   return 1;
 }
 
@@ -135,7 +135,7 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
  */
 int wiz_createGroupUser(char *group_name, char *user_name) {
   int ret = createGroupUser(group_name, user_name);
-  
+
   if (ret) {
 #ifdef MINGW
     char *err;
@@ -157,14 +157,14 @@ int wiz_createGroupUser(char *group_name, char *user_name) {
     default:
       err = winErrorStr(_("Unknown error while creating a new user"), GetLastError());
     }
-    
+
     if (err) {
       MessageBox(0, err, _("Error"), MB_ICONSTOP | MB_OK);
       free(err);
     }
-#endif    
+#endif
     return 0;
-  }  
+  }
   return 1;
 }
 

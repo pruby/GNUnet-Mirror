@@ -225,7 +225,7 @@ static int verifySKS(const PeerIdentity * hostId,
  *        session key message
  * @return message on success, NULL on failure
  */
-static P2P_setkey_MESSAGE * 
+static P2P_setkey_MESSAGE *
 makeSessionKeySigned(const PeerIdentity * hostId,
 		     const SESSIONKEY * sk,
 		     TIME_T created,
@@ -261,7 +261,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
       size,
       ping != NULL ? "ping":"",
       pong != NULL ? "pong":"");
-#endif  
+#endif
   if (SYSERR == encryptPrivateKey(sk,
 				  sizeof(SESSIONKEY),
 				  &foreignHelo->publicKey,
@@ -277,7 +277,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   msg->header.size = htons(size);
   msg->header.type = htons(P2P_PROTO_setkey);
   msg->creationTime = htonl(created);
-  GNUNET_ASSERT(SYSERR != 
+  GNUNET_ASSERT(SYSERR !=
 		identity->signData(msg,
 				   sizeof(P2P_setkey_MESSAGE)
 				   - sizeof(Signature),
@@ -296,14 +296,14 @@ makeSessionKeySigned(const PeerIdentity * hostId,
     pt = MALLOC(size);
     size = 0;
     if (ping != NULL) {
-      memcpy(&pt[size], 
+      memcpy(&pt[size],
 	     ping,
 	     ntohs(ping->size));
       size += ntohs(ping->size);
     }
     if (pong != NULL) {
       memcpy(&pt[size],
-	     pong, 
+	     pong,
 	     ntohs(pong->size));
       size += ntohs(pong->size);
     }
@@ -508,7 +508,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	" verification (discarded).\n",
 	&enc);
     if (stats != NULL)
-      stats->change(stat_skeyRejected, 
+      stats->change(stat_skeyRejected,
 		    1);
     return SYSERR;  /* rejected */
   }
@@ -533,7 +533,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	crc32N(&key, SESSIONKEY_LEN));
 #endif
     BREAK();
-    stats->change(stat_skeyRejected, 
+    stats->change(stat_skeyRejected,
 		  1);
     return SYSERR;
   }
@@ -567,7 +567,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	printSKEY(&key),
 	*(int*)&sessionkeySigned->signature);
 #endif
-    GNUNET_ASSERT(-1 != 
+    GNUNET_ASSERT(-1 !=
 		  decryptBlock
 		  (&key,
 		   &((char*)sessionkeySigned)[sizeof(P2P_setkey_MESSAGE)],

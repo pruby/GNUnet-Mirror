@@ -319,7 +319,7 @@ static int csHandleTBenchRequest(ClientHandle client,
 #if DEBUG_TBENCH
       LOG(LOG_DEBUG,
 	  "Sending message %u of size %u in iteration %u\n",
-	  packetNum, 
+	  packetNum,
 	  size,
 	  iteration);
 #endif

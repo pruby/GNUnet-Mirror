@@ -230,7 +230,7 @@ ECRS_createNamespace(const char * name,
     keywords = advertisementURI->data.ksk.keywords;
     keywordCount = advertisementURI->data.ksk.keywordCount;
     cpy = MALLOC(size - sizeof(KBlock) - sizeof(unsigned int));
-    memcpy(cpy, 
+    memcpy(cpy,
 	   &knb->nblock,
 	   size - sizeof(KBlock) - sizeof(unsigned int));
     for (i=0;i<keywordCount;i++) {
@@ -245,7 +245,7 @@ ECRS_createNamespace(const char * name,
       ECRS_encryptInPlace(&hc,
 			  &knb->nblock,
 			  size - sizeof(KBlock) - sizeof(unsigned int));
-      
+
       GNUNET_ASSERT(OK == sign(pk,
 			       sizeof(NBlock) + mdsize,
 			       &knb->nblock,
@@ -264,16 +264,16 @@ ECRS_createNamespace(const char * name,
       }
       /* restore nblock to avoid re-encryption! */
       memcpy(&knb->nblock,
-	     cpy, 	   
+	     cpy, 	
 	     size - sizeof(KBlock) - sizeof(unsigned int));
-    } 
+    }
     FREE(cpy);
   }
   FREE(knvalue);
   FREE(value);
   releaseClientSocket(sock);
   freePrivateKey(hk);
-  
+
   return rootURI;
 }
 
@@ -478,7 +478,7 @@ ECRS_addToNamespace(const char * name,
   /* FINALLY: sign & publish SBlock */
   GNUNET_ASSERT(OK == sign(hk,
 			   size
-			   - sizeof(Signature) 
+			   - sizeof(Signature)
 			   - sizeof(PublicKey)
 			   - sizeof(unsigned int),
 			   &sb->identifier,

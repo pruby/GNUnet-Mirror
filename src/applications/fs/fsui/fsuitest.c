@@ -91,7 +91,7 @@ static void eventCallback(void * cls,
   }
   if (lastEvent == FSUI_download_complete)
     return; /* ignore all other events */
-  lastEvent = event->type;  
+  lastEvent = event->type;
   if (event->type == FSUI_search_result) {
     fn = makeName(43);
     FSUI_startDownload(ctx,
@@ -107,8 +107,8 @@ int main(int argc, char * argv[]){
   pid_t daemon;
   int ok;
   struct ECRS_URI * uri;
-  char * filename = NULL; 
-  char * keywords[] = { 
+  char * filename = NULL;
+  char * keywords[] = {
     "fsui_foo",
     "fsui_bar",
     NULL,
@@ -118,10 +118,10 @@ int main(int argc, char * argv[]){
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri;
 
-  if (OK != initUtil(argc, 
-		     argv, 
+  if (OK != initUtil(argc,
+		     argv,
 		     &parseCommandLine))
-    return -1;  
+    return -1;
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
   ok = YES;
@@ -156,8 +156,8 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_upload_complete) {
     prog++;
-    CHECK(prog < 10000) 
-    
+    CHECK(prog < 10000)
+
     gnunet_util_sleep(50 * cronMILLIS);
   }
   SNPRINTF(keyword,

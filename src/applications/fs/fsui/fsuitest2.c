@@ -59,7 +59,7 @@ int main(int argc, char * argv[]){
   int ok;
 
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);

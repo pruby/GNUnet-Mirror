@@ -1,4 +1,4 @@
-/* 
+/*
      This file is part of GNUnet.
      (C) 2005 Christian Grothoff (and other contributing authors)
 
@@ -788,16 +788,16 @@ int mconf_main()
 				    "FILENAME");
   conf_read(filename);
   FREE(filename);
-  
+
   backtitle = malloc(128);
   strcpy(backtitle, "GNUnet Configuration");
-  
+
   mode = getenv("MENUCONFIG_MODE");
   if (mode) {
     if (!strcasecmp(mode, "single_menu"))
       single_menu_mode = 1;
   }
-  
+
 #ifndef MINGW
   {
     struct sigaction sa;
@@ -806,22 +806,22 @@ int mconf_main()
     sa.sa_flags = SA_RESTART;
     sigaction(SIGWINCH, &sa, NULL);
   }
-  
+
   tcgetattr(1, &ios_org);
 #endif
   atexit(conf_cleanup);
   init_dialog();
-  
+
   init_wsize();
   conf(&rootmenu);
-  
+
   do {
     stat = dialog_yesno(NULL,
 			"Do you wish to save your new configuration?",
 			5, 60);
   } while (stat < 0);
   end_dialog();
-  
+
   if (stat == 0) {
     conf_write(NULL);
     printf("\n\n"

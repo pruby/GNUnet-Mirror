@@ -45,10 +45,10 @@ static int parseCommandLine(int argc,
 int main(int argc, char *argv[]) {
   int daemon;
 
-  if (OK != initUtil(argc, 
-		     argv, 
+  if (OK != initUtil(argc,
+		     argv,
 		     &parseCommandLine))
-    return -1;  
+    return -1;
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
   GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));

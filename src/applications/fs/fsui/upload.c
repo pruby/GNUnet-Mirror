@@ -90,7 +90,7 @@ static void progressCallback(unsigned long long totalBytes,
   if (totalBytes > 0) {
     event.data.UploadProgress.main_eta
       = (cron_t) (utc->start_time +
-		  (((double)( (now - 
+		  (((double)( (now -
 			       utc->start_time) /
 			     (double)(utc->main_completed
 				      + completedBytes))))
@@ -303,7 +303,7 @@ static int dirEntryCallback(const char * filename,
 			 utc->priority,
 			 utc->expiration,
 			 uri,
-			 meta);	    
+			 meta);	
     if (utc->dir != NULL) {
       GROW(utc->dir->fis,
 	   utc->dir->fiCount,
@@ -405,7 +405,7 @@ static void * uploadThread(UploadThreadClosure * utc) {
     GROW(current.fis,
 	 current.fiCount,
 	 0);
-    
+
     if (ret != OK) {
       event.type = FSUI_upload_error;
       event.data.message = _("Upload failed.\n");
@@ -587,7 +587,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   utc->extractors = EXTRACTOR_loadDefaultLibraries();
   config = getConfigurationString("FS",
 				  "EXTRACTORS");
-  
+
   if (config != NULL) {
     utc->extractors = EXTRACTOR_loadConfigLibraries(utc->extractors,
 						    config);

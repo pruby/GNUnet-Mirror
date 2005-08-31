@@ -47,13 +47,13 @@ static int testNamespace() {
     "testNamespace",
     NULL,
   };
-  
+
 
   ECRS_deleteNamespace(CHECKNAME); /* make sure old one is deleted */
   meta = ECRS_createMetaData();
   adv = ECRS_keywordsToUri(keys);
   hash("root", 4, &root);
-  rootURI = 
+  rootURI =
     ECRS_createNamespace(CHECKNAME,
 			 meta,
 			 0,
@@ -64,7 +64,7 @@ static int testNamespace() {
   CHECK(NULL != rootURI);
   hash("this", 4, &thisId);
   hash("next", 4, &nextId);
-  uri = rootURI; /* just for fun: NS::this advertises NS::root */  
+  uri = rootURI; /* just for fun: NS::this advertises NS::root */
   advURI = ECRS_addToNamespace(CHECKNAME,
 			       0,
 			       0,
@@ -103,17 +103,17 @@ static int parseCommandLine(int argc,
 
 int main(int argc, char * argv[]) {
   pid_t daemon;
-  int failureCount = 0; 
+  int failureCount = 0;
 
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);
   GNUNET_ASSERT(daemon > 0);
   GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
   gnunet_util_sleep(30 * cronSECONDS);
-  
+
   failureCount += testNamespace();
 
   GNUNET_ASSERT(OK == stopGNUnetDaemon());

@@ -100,7 +100,7 @@ void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
  */
 void gnunet_main() {
   int filedes[2]; /* pipe between client and parent */
-  
+
   /* init 0: change user */
 #ifndef MINGW
   char *user = getConfigurationString("GNUNETD", "USER");

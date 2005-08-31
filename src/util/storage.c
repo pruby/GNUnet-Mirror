@@ -85,7 +85,7 @@ static int getSizeRec(const char * filename,
     else
       strcpy(fn, DIR_SEPARATOR_STR);
 #endif
-    if (filename[0] == DIR_SEPARATOR) 
+    if (filename[0] == DIR_SEPARATOR)
       /* if filename starts with a "/", don't copy it */
       strcat(fn, &filename[1]);
     else
@@ -94,7 +94,7 @@ static int getSizeRec(const char * filename,
     fn = STRDUP(filename);
 
   if (0 != STAT(fn, &buf)) {
-    LOG_FILE_STRERROR(LOG_EVERYTHING, 
+    LOG_FILE_STRERROR(LOG_EVERYTHING,
 		      "stat",
 		      fn);
     FREE(fn);
@@ -145,8 +145,8 @@ static int getSizeWithoutSymlinksRec(const char * filename,
     fn = STRDUP(filename);
 
   if (0 != STAT(fn, &buf)) {
-    LOG_FILE_STRERROR(LOG_EVERYTHING, 
-		      "stat", 
+    LOG_FILE_STRERROR(LOG_EVERYTHING,
+		      "stat",
 		      fn);
     FREE(fn);
     return SYSERR;
@@ -500,19 +500,19 @@ int writeFile(const char * fileName,
 		    S_IRUSR | S_IWUSR);
   if (handle == -1) {
     LOG_FILE_STRERROR(LOG_WARNING,
-		      "open", 
+		      "open",
 		      fileName);
     return SYSERR;
   }
   /* write the buffer take length from the beginning */
   if (n != WRITE(handle, buffer, n)) {
-    LOG_FILE_STRERROR(LOG_WARNING, 
-		      "write", 
+    LOG_FILE_STRERROR(LOG_WARNING,
+		      "write",
 		      fileName);
     closefile(handle);
     return SYSERR;
   }
-  CHMOD(fileName, 
+  CHMOD(fileName,
 	atoo(mode));
   closefile(handle);
   return OK;
@@ -538,8 +538,8 @@ int scanDirectory(const char * dirName,
   if (dirName == NULL)
     return SYSERR;
   if (0 != STAT(dirName, &istat)) {
-    LOG_FILE_STRERROR(LOG_WARNING, 
-		      "stat", 
+    LOG_FILE_STRERROR(LOG_WARNING,
+		      "stat",
 		      dirName);
     return SYSERR;
   }
@@ -553,8 +553,8 @@ int scanDirectory(const char * dirName,
   errno = 0;
   dinfo = OPENDIR(dirName);
   if ((errno == EACCES) || (dinfo == NULL)) {
-    LOG_FILE_STRERROR(LOG_WARNING, 
-		      "opendir", 
+    LOG_FILE_STRERROR(LOG_WARNING,
+		      "opendir",
 		      dirName);
     return SYSERR;
   }
@@ -586,10 +586,10 @@ static int rmHelper(const char * fil,
 
   n = strlen(dir) + strlen(fil) + 2;
   fn = MALLOC(n);
-  SNPRINTF(fn, 
-	   n, 
+  SNPRINTF(fn,
+	   n,
 	   "%s/%s",
-	   dir, 
+	   dir,
 	   fil);
   if (SYSERR == rm_minus_rf(fn)) {
     FREE(fn);
@@ -628,8 +628,8 @@ int rm_minus_rf(const char * fileName) {
     }
     return SYSERR;
   } else {
-    LOG_FILE_STRERROR(LOG_WARNING, 
-		      "unlink", 
+    LOG_FILE_STRERROR(LOG_WARNING,
+		      "unlink",
 		      fileName);
     return SYSERR;
   }
@@ -665,16 +665,16 @@ const char * unit = _(/* size unit */ "b");
 	unit = _(/* size unit */ "g");
 	if (size > 5 * 1024) {
 	  size = size / 1024;
-	  unit = _(/* size unit */ "t");	      
-	}	    
+	  unit = _(/* size unit */ "t");	
+	}	
       }		
     }	
   }	
   ret = MALLOC(32);
-  SNPRINTF(ret, 
-	   32, 
+  SNPRINTF(ret,
+	   32,
 	   "%llu%s",
-	   size, 
+	   size,
 	   unit);
   return ret;
 }
@@ -704,7 +704,7 @@ int copyFile(const char * src,
 		);
   if (in == -1)
     return SYSERR;
-  out = fileopen(dst, 
+  out = fileopen(dst,
 #ifdef O_LARGEFILE
 		 O_LARGEFILE |
 #endif

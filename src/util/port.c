@@ -31,13 +31,13 @@
 unsigned short getGNUnetPort() {
   unsigned short port;
   const char *setting;
-  
+
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
 			      "YES"))
     setting = "PORT";
   else
-    setting = "CLIENT-PORT";  
+    setting = "CLIENT-PORT";
 
   port = (unsigned short) getConfigurationInt("NETWORK",
 					      setting);

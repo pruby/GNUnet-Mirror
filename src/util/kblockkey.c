@@ -428,7 +428,7 @@ static void generate_kblock_key(KBlock_secret_key *sk,
  * Deterministically (!) create a hostkey using only the
  * given HashCode as input to the PRNG.
  */
-static PrivateKeyEncoded * 
+static PrivateKeyEncoded *
 makeKblockKeyInternal(const HashCode512 * hc) {
   KBlock_secret_key sk;
   HashCode512 hx;
@@ -445,7 +445,7 @@ makeKblockKeyInternal(const HashCode512 * hc) {
 			       -- we simply cannot afford 2048 bits
 			       even on modern hardware, and especially
 			       not since clearly a dictionary attack
-			       will still be much cheaper 
+			       will still be much cheaper
 			       than breaking a 1024 bit RSA key.
 			       If an adversary can spend the time to
 			       break a 1024 bit RSA key just to forge

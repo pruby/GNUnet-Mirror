@@ -55,14 +55,14 @@ char * user_name = NULL;
 char * group_name = NULL;
 static int nic_item_count = 0;
 
-void insert_nic(const char *name, 
-                int defaultNIC, 
+void insert_nic(const char *name,
+                int defaultNIC,
                 void * cls)
 {
  gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
-  
+
 	defaultNIC = wiz_is_nic_default(name, defaultNIC);
-  
+
   /* Make default selection */
   if (defaultNIC)
   {
@@ -266,14 +266,14 @@ void load_step4()
       grp = getgrgid(getegid());
       if ( (grp != NULL) &&
 	   (grp->gr_name != NULL) )
-	group_name = STRDUP(grp->gr_name);    
+	group_name = STRDUP(grp->gr_name);
       else
 	group_name = NULL;
     }
   } else {
     group_name = STRDUP(gname);
   }
-    
+
 #else
   if (NULL == uname || strlen(uname) == 0)
     user_name = STRDUP("");
@@ -365,12 +365,12 @@ wizard_main ()
 #endif
 
   gtk_set_locale ();
-  
+
   filename = getConfigurationString("GNUNET-SETUP",
 				   "FILENAME");
   conf_read(filename);
   FREE(filename);
-  
+
   sym = sym_find("EXPERIMENTAL", "Meta");
   sym_set_tristate_value(sym, yes);
   sym = sym_find("ADVANCED", "Meta");

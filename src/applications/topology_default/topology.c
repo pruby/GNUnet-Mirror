@@ -187,8 +187,8 @@ static void scanForHosts(unsigned int index) {
 			&scanHelperSelect,
 			&indexMatch);
   if (hostIdentityEquals(coreAPI->myIdentity,
-			 &indexMatch.match)) 
-    return; /* should happen really rarely */  
+			 &indexMatch.match))
+    return; /* should happen really rarely */
   if (coreAPI->computeIndex(&indexMatch.match) != index) {
     BREAK(); /* should REALLY not happen */
     return;
@@ -223,7 +223,7 @@ static void notifyPONG(PeerIdentity * hostId) {
 	   &enc);
   LOG(LOG_DEBUG,
       "Received pong from `%s', telling core that peer is still alive.\n",
-      (char*)&enc);  
+      (char*)&enc);
 #endif
   coreAPI->confirmSessionUp(hostId);
   FREE(hostId);
@@ -256,11 +256,11 @@ static void checkNeedForPing(const PeerIdentity * peer,
     hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
 #if DEBUG_TOPOLOGY
-    hash2enc(&hi->hashPubKey, 
+    hash2enc(&hi->hashPubKey,
 	     &enc);
     LOG(LOG_DEBUG,
 	"Sending ping to `%s' to prevent connection timeout.\n",
-	(char*)&enc);  
+	(char*)&enc);
 #endif
     if (OK != pingpong->ping(peer,
 			     NO,
@@ -309,7 +309,7 @@ static int estimateNetworkSize() {
   unsigned int active;
   unsigned int known;
 
-  active = coreAPI->forAllConnectedNodes(NULL, NULL); 
+  active = coreAPI->forAllConnectedNodes(NULL, NULL);
   if (active == 0)
     return 0;
   known = identity->forEachHost(0,
@@ -322,7 +322,7 @@ static int estimateNetworkSize() {
      that we know, we probably also only know X%
      of all peers that exist;
 
-     Then the total number of machines is 
+     Then the total number of machines is
      1/X * known, or known * known / active.
 
      Of course, we may know more than X% of the
@@ -335,7 +335,7 @@ static int estimateNetworkSize() {
      - we connect to only 1% of the machines we have
        heard of => network size = 100 * # active
   */
-  if (known * known / active < known) 
+  if (known * known / active < known)
     return 0x7FFFFFFF; /* integer overflow, return max int */
   return known * known / active;
 }

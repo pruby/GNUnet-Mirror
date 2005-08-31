@@ -647,7 +647,7 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
     stat_bytesDropped
       = stats->create(gettext_noop("# bytes dropped by UDP (outgoing)"));
   }
-  
+
   MUTEX_CREATE(&configLock);
   reloadConfiguration();
   mtu = getConfigurationInt("UDP",

@@ -39,7 +39,7 @@
  * require changing the DataProcessor somewhat,
  * which would also be ugly.  So to keep things
  * simple, we do the anonymity-level check for
- * outgoing content right here. 
+ * outgoing content right here.
  *
  * @return OK if cover traffic is sufficient
  */

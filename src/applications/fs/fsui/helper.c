@@ -176,7 +176,7 @@ struct ECRS_URI * FSUI_parseListKeywordURI(unsigned int num_keywords,
       uriLen++;
     }
     strcat(uriString, keywords[i]);
-    uriLen += strlen(keywords[i]);    
+    uriLen += strlen(keywords[i]);
   }
   uri = ECRS_stringToUri(uriString);
   GROW(uriString,

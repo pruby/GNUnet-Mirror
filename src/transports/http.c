@@ -460,7 +460,7 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
 	      (httpSession->httpReadBuff[k] != '\r') )
 	k++;
       if ( (k < httpSession->httpRPos-1) &&
-	   (k > i+2) && 
+	   (k > i+2) &&
 	   (httpSession->httpReadBuff[k] == '\r') &&
 	   (httpSession->httpReadBuff[k+1] == '\n') ) {
 	unsigned int len;
@@ -475,14 +475,14 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
 	     (len == 0) )
 	  continue;
 #if DEBUG_HTTP
-	LOG(LOG_DEBUG, 
+	LOG(LOG_DEBUG,
 	    "http receiving chunk of %u bytes\n",
 	    len);
 #endif
 	if (len >= MAX_BUFFER_SIZE) {
 	  BREAK(); /* FIMXE: inline method and do proper
 		      error handling! */
-	  httpSession->httpRPos = 0;	  
+	  httpSession->httpRPos = 0;	
 	} else {	
 	  GROW(httpSession->rbuff,
 	       httpSession->rsize,
@@ -492,7 +492,7 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
 	  memcpy(httpSession->rbuff,
 		 &httpSession->httpReadBuff[k+2],
 		 len);
-	  httpSession->rpos = len;	   
+	  httpSession->rpos = len;	
 	  memmove(httpSession->httpReadBuff,
 		  &httpSession->httpReadBuff[k+2+len],
 		  httpSession->httpRPos - (k+2+len));
@@ -530,7 +530,7 @@ static int readAndProcess(int i) {
     ret = READ(httpSession->sock,
 	       &httpSession->httpReadBuff[httpSession->httpRPos],
 	       httpSession->httpRSize - httpSession->httpRPos);
-    if ( (ret > 0) && 
+    if ( (ret > 0) &&
 	 (stats != NULL) )
       stats->change(stat_bytesReceived,
 		    ret);
@@ -552,7 +552,7 @@ static int readAndProcess(int i) {
     ret = READ(httpSession->sock,
 	       &httpSession->rbuff[httpSession->rpos],
 	       httpSession->rsize - httpSession->rpos);
-    if ( (ret > 0) && 
+    if ( (ret > 0) &&
 	 (stats != NULL) )
       stats->change(stat_bytesReceived,
 		    ret);
@@ -567,12 +567,12 @@ static int readAndProcess(int i) {
       return SYSERR; /* error! */
     }
   }
-#if DEBUG_HTTP  
+#if DEBUG_HTTP
   LOG(LOG_DEBUG,
       "Got message of %u out of %u bytes\n",
       httpSession->rpos,
       httpSession->rsize);
-#endif  
+#endif
   if ( (httpSession->rsize == 0) ||
        (httpSession->rpos != httpSession->rsize) ) {
     /* only have partial message yet */
@@ -1007,10 +1007,10 @@ static int httpDirectSend(HTTPSession * httpSession,
   len += ssize;
   incrementBytesSent(len);
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "http sending chunk of %u bytes\n",
       ssize);
-#endif  
+#endif
   success = SEND_NONBLOCKING(httpSession->sock,
 			     httpSession->wbuff,
 			     len,
@@ -1024,7 +1024,7 @@ static int httpDirectSend(HTTPSession * httpSession,
   }
   if (success == NO)
     ret = 0;
-  if (stats != NULL) 
+  if (stats != NULL)
     stats->change(stat_bytesSent,
 		  ret);
   if (ret > 0) {
@@ -1040,7 +1040,7 @@ static int httpDirectSend(HTTPSession * httpSession,
       len = 0;
     }
   }
-    
+
   httpSession->wpos = len;
   if (len > 0)
     signalSelect(); /* select set changed! */
@@ -1101,7 +1101,7 @@ static P2P_hello_MESSAGE * createhello() {
   }
   LOG(LOG_DEBUG,
       "HTTP uses IP address %u.%u.%u.%u.\n",
-      PRIP(ntohl(*(int*)&haddr->ip)));  
+      PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
@@ -1249,7 +1249,7 @@ static int httpSend(TSession * tsession,
   }
 
   if (((HTTPSession*)tsession->internal)->sock == -1) {
-    if (stats != NULL) 
+    if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    size);
     return SYSERR; /* other side closed connection */
@@ -1259,7 +1259,7 @@ static int httpSend(TSession * tsession,
 		      msg,
 		      size);
   if (ok != OK) {
-    if (stats != NULL) 
+    if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    size);
   }

@@ -152,7 +152,7 @@ int main(int argc, char ** argv) {
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseOptions))
     return -1;
 #if 0
@@ -233,7 +233,7 @@ int main(int argc, char ** argv) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
-  } 
+  }
   doneUtil();
   return ret;
 }

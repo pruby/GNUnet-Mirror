@@ -115,7 +115,7 @@ static void postProcess(const struct ECRS_URI * uri) {
     printf(_("Failed to add entry to namespace `%s' (does it exist?)\n"),
 	   pname);
   }
-  FREE(pname);  
+  FREE(pname);
 }
 
 /**
@@ -145,7 +145,7 @@ static void printstatus(int * verboselevel,
     if (*verboselevel == YES) {
       if (0 == strcmp(event->data.UploadComplete.filename,
 		      event->data.UploadComplete.main_filename)) {
-	delta = event->data.UploadComplete.eta 
+	delta = event->data.UploadComplete.eta
 	  - event->data.UploadComplete.start_time;
 	PRINTF(_("Upload of `%s' complete, "
 		 "%llu bytes took %llu seconds (%8.3f kbps).\n"),
@@ -154,7 +154,7 @@ static void printstatus(int * verboselevel,
 	       delta / cronSECONDS,
 	       (delta == 0)
 	       ? (double) (-1.0)
-	       : (double) (event->data.UploadComplete.total 
+	       : (double) (event->data.UploadComplete.total
 			   / 1024.0 * cronSECONDS / delta));
       } else {
 	cron_t now;
@@ -565,7 +565,7 @@ int main(int argc, char ** argv) {
   if (printAndReturn) {
     EXTRACTOR_ExtractorList * l;
     char * ex;
-    
+
     filename = getConfigurationString("GNUNET-INSERT",
 				      "MAIN-FILE");
     l = EXTRACTOR_loadDefaultLibraries();
@@ -673,8 +673,8 @@ int main(int argc, char ** argv) {
     doIndex = YES;
   if (! testConfigurationString("FS",
 				"DISABLE-CREATION-TIME",
-				"YES")) 
-    ECRS_addPublicationDateToMetaData(meta);  
+				"YES"))
+    ECRS_addPublicationDateToMetaData(meta);
   if (testConfigurationString("GNUNET-INSERT",
 			      "RECURSIVE",
 			      "YES")) {
@@ -684,7 +684,7 @@ int main(int argc, char ** argv) {
     gloURI = FSUI_parseListKeywordURI(gloKeywordCnt,
 				      (const char**) gloKeywords);
     topURI = FSUI_parseListKeywordURI(topKeywordCnt,
-				      (const char**) topKeywords);    
+				      (const char**) topKeywords);
     ret = FSUI_uploadAll(ctx,
 			 filename,
 			 getConfigurationInt("FS",
@@ -702,7 +702,7 @@ int main(int argc, char ** argv) {
     struct ECRS_URI * topURI;
 
     topURI = FSUI_parseListKeywordURI(topKeywordCnt,
-				      (const char**) topKeywords);    
+				      (const char**) topKeywords);
     ret = FSUI_upload(ctx,
 		      filename,
 		      getConfigurationInt("FS",

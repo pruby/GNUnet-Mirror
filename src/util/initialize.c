@@ -104,13 +104,13 @@ void doneCron();
 void setProcessPrio() {
   char *str;
   int prio = 0;
-  
+
   /* Get setting as string */
-  str = getConfigurationString(testConfigurationString("GNUNETD", 
-						       "_MAGIC_", 
-						       "YES") 
-			       ? "GNUNETD" 
-			       : "GNUNET", 
+  str = getConfigurationString(testConfigurationString("GNUNETD",
+						       "_MAGIC_",
+						       "YES")
+			       ? "GNUNETD"
+			       : "GNUNET",
 			       "PROCESS-PRIORITY");
   if (str) {
     /* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
@@ -147,7 +147,7 @@ void setProcessPrio() {
 #endif
     else {
       prio = atoi(str);
-      
+
 #ifdef MINGW
       /* Convert the nice increment to a priority class */
       if (prio == 0)
@@ -162,7 +162,7 @@ void setProcessPrio() {
 	prio = HIGH_PRIORITY_CLASS;
 #endif
     }
-    
+
     /* Set process priority */
 #ifdef MINGW
     SetPriorityClass(GetCurrentProcess(), prio);
@@ -170,7 +170,7 @@ void setProcessPrio() {
     nice(prio);
 #endif
     FREE(str);
-  }  
+  }
 }
 
 /**
@@ -211,7 +211,7 @@ int initUtil(int argc,
   initLogging();
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
-			      "YES")) 
+			      "YES"))
     initStatusCalls();
   initState();
   return OK;
@@ -220,8 +220,8 @@ int initUtil(int argc,
 void doneUtil() {
   if (testConfigurationString("GNUNETD",
 			      "_MAGIC_",
-			      "YES")) 
-    doneStatusCalls();  
+			      "YES"))
+    doneStatusCalls();
   doneCron();
   doneState();
   LOG(LOG_MESSAGE,

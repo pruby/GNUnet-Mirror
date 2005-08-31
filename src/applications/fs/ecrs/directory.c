@@ -74,7 +74,7 @@ int ECRS_listDirectory(const char * data,
       return SYSERR; /* invalid size */
     *md = ECRS_deserializeMetaData(&data[8 + sizeof(unsigned int)],
 				   mdSize);
-    if (*md == NULL) 
+    if (*md == NULL)
       return SYSERR; /* malformed !*/
     pos = 8 + sizeof(unsigned int) + mdSize;
   }
@@ -109,7 +109,7 @@ int ECRS_listDirectory(const char * data,
     }
 
     memcpy(&mdSize,
-	   &data[pos], 
+	   &data[pos],
 	   sizeof(unsigned int));
     mdSize = ntohl(mdSize);
 

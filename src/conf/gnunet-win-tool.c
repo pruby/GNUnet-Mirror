@@ -221,7 +221,7 @@ void PatchSys(char *szFn)
   fclose(pFile);
 
   free(pMem);
-  
+
   printf("OK.\n");
 }
 

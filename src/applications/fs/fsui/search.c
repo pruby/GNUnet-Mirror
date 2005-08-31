@@ -62,7 +62,7 @@ static void setNamespaceRoot(const ECRS_FileInfo * fi) {
   char * fn;
   char * fnBase;
   HashCode512 ns;
-  char * name;  
+  char * name;
 
   if (OK != ECRS_getNamespaceId(fi->uri,
 				&ns)) {
@@ -92,7 +92,7 @@ static void setNamespaceRoot(const ECRS_FileInfo * fi) {
 	      sizeof(HashCode512),
 	      "644");
   }
-  FREE(fn);  
+  FREE(fn);
 }
 
 /**

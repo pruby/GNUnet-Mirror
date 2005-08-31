@@ -380,7 +380,7 @@ struct menu *menu_get_parent_menu(struct menu *menu)
 struct file *file_lookup(const char *name)
 {
 	struct file *file;
-  
+
 	for (file = file_list; file; file = file->next) {
 		if (!strcmp(name, file->name)) {
 			return file;
@@ -392,6 +392,6 @@ struct file *file_lookup(const char *name)
 	file->name = (char *) name;
 	file->next = file_list;
 	file_list = file;
-  
+
 	return file;
 }

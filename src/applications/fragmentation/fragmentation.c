@@ -386,7 +386,7 @@ static int processFragment(const PeerIdentity * sender,
   hash = sender->hashPubKey.bits[0] % DEFRAG_BUCKET_COUNT;
   smf = defragmentationCache[hash];
   while (smf != NULL) {
-    if (OK == tryJoin(smf, 
+    if (OK == tryJoin(smf,
 		      sender,
 		      (P2P_fragmentation_MESSAGE*) frag)) {
       MUTEX_UNLOCK(&defragCacheLock);
@@ -518,7 +518,7 @@ void fragment(const PeerIdentity * peer,
   fbmc = MALLOC(sizeof(FragmentBMC) + len);
   fbmc->mtu = mtu;
   fbmc->sender = *peer;
-  fbmc->transmissionTime = targetTime;  
+  fbmc->transmissionTime = targetTime;
   fbmc->len = len;
   if (bmc == NULL) {
     memcpy(&fbmc[1],

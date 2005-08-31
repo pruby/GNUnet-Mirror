@@ -38,7 +38,7 @@ void enumNetworkIfs(void (*callback) (const char *, int, void *),
 #else
   char entry[11], *dst;
   FILE *f;
-  
+
   if (system("ifconfig > /dev/null 2> /dev/null"))
     if (system("/sbin/ifconfig > /dev/null 2> /dev/null") == 0)
       f = popen("/sbin/ifconfig 2> /dev/null", "r");
@@ -46,20 +46,20 @@ void enumNetworkIfs(void (*callback) (const char *, int, void *),
       f = NULL;
   else
     f = popen("ifconfig 2> /dev/null", "r");
-  
+
   if (!f)
     return;
-  
+
   while(1)
     {
       int i = 0;
       int c = fgetc(f);
-      
+
       if (c == EOF)
 	break;
-      
+
       dst = entry;
-      
+
       /* Read interface name until the first space (or colon under OS X) */
       while (c != EOF && c != '\n' &&
 #ifdef OSX
@@ -74,14 +74,14 @@ void enumNetworkIfs(void (*callback) (const char *, int, void *),
 	  c = fgetc(f);
 	}
       *dst = 0;
-      
+
       if (entry[0])
 	callback(entry, strcmp(entry, "eth0") == 0, cls);
-      
+
       while(c != '\n' && c != EOF)
 	c = fgetc(f);
     }
-  
+
   pclose(f);
 #endif
 }
@@ -96,7 +96,7 @@ int isOSAutostartCapable() {
     /* Debian */
     if (ACCESS("/etc/init.d/", W_OK) == 0)
       return 1;
-  }  
+  }
   return 0;
 #else
   #ifdef WINDOWS
@@ -122,10 +122,10 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
 	{
 	  char *err = NULL;
 	  DWORD dwErr = 0;
-	  
+	
 	  if (username && !strlen(username))
 	    username = NULL;
-	  
+	
 	  /* Install service */
 	  switch(InstallAsService(username))
 	    {
@@ -140,14 +140,14 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
 	    default:
 	      return -1;
 	    }
-	  
+	
 	  /* Grant permissions to the GNUnet directory */
 	  if ((!err || dwErr == ERROR_SERVICE_EXISTS) && username)
 	    {
 	      char szHome[_MAX_PATH + 1];
-	      
+	
 	      plibc_conv_to_win_path("/", szHome);
-	      
+	
 	      if (!AddPathAccessRights(szHome, username, GENERIC_ALL))
 		return 3;
 	    }
@@ -156,9 +156,9 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
 	{
 	  char szPath[_MAX_PATH + 1];
     HKEY hKey;
-    
+
 	  plibc_conv_to_win_path("/bin/gnunetd.exe", szPath);
-	  
+	
     if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
         "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_EXECUTE,
         &hKey) == ERROR_SUCCESS)
@@ -166,11 +166,11 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
       if (RegSetValueEx(hKey, "GNUnet", 0, REG_SZ, szPath, strlen(szPath)) !=
         ERROR_SUCCESS)
         return 4;
-      
+
       RegCloseKey(hKey);
     }
     else
-      return 4;    
+      return 4;
 	}
     }
   else
@@ -195,13 +195,13 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
       else
 	{
 	  HKEY hKey;
-	  
+	
 	  if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 			  "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE,
 		  	&hKey) == ERROR_SUCCESS)
 	    {
 	      RegDeleteValue(hKey, "GNUnet");
-	      
+	
 	      RegCloseKey(hKey);
 	    }
 	}
@@ -264,7 +264,7 @@ int autostartService(int doAutoStart, char *username, char *groupname) {
 	return 1;
     }
     else {
-      if ( (UNLINK("/etc/init.d/gnunetd") != -1) || 
+      if ( (UNLINK("/etc/init.d/gnunetd") != -1) ||
 	   (errno != ENOENT)) {
 	if (ACCESS("/usr/sbin/update-rc.d", X_OK) == 0) {
 	  errno = system("/usr/sbin/update-rc.d gnunetd remove");
@@ -386,9 +386,9 @@ char *winErrorStr(char *prefix, int dwErr)
 	ret = (char *) malloc(mem);
 
   snprintf(ret, mem, "%s: %s (#%u)", prefix, err, dwErr);
-  
+
   LocalFree(err);
-  
+
   return ret;
 #else
 	return NULL;

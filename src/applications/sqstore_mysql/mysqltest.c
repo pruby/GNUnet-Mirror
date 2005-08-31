@@ -97,8 +97,8 @@ static int iterateDelete(const HashCode512 * key,
 			 SQstore_ServiceAPI * api) {
   if (1 == api->del(key, val))
     return OK;
-  else 
-    return SYSERR;  
+  else
+    return SYSERR;
 }
 
 static int priorityCheck(const HashCode512 * key,
@@ -109,8 +109,8 @@ static int priorityCheck(const HashCode512 * key,
   id = (*closure);
   if (id + 1 == ntohl(val->prio))
     return OK;
-  else 
-    return SYSERR;  
+  else
+    return SYSERR;
 }
 
 static int multipleCheck(const HashCode512 * key,

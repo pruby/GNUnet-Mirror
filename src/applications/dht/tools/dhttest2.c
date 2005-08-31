@@ -80,7 +80,7 @@ int main(int argc, char ** argv) {
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseOptions))
     return -1;
   FREENONNULL(setConfigurationString("GNUNET",
@@ -164,7 +164,7 @@ int main(int argc, char ** argv) {
 			     &key,
 			     0,
 			     5 * cronSECONDS,
-			     value));   
+			     value));
     CHECK2(1 == DHT_LIB_get(&table,
 			    0,
 			    0,
@@ -187,10 +187,10 @@ int main(int argc, char ** argv) {
     DHT_LIB_leave(&table);
     destroy_blockstore_memory(store);
     DHT_LIB_done();
-    stopCron();  
-    doneUtil();    
+    stopCron();
+    doneUtil();
     exit(ret);
-  } 
+  }
   DHT_LIB_join(store,
 	       &table);
   hash("key2", 4, &key);
@@ -200,7 +200,7 @@ int main(int argc, char ** argv) {
 			  &key,
 			  0,
 			  5 * cronSECONDS,
-			  value));   
+			  value));
   CHECK(1 == DHT_LIB_get(&table,
 			 0,
 			 0,
@@ -238,7 +238,7 @@ int main(int argc, char ** argv) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
-  } 
+  }
   doneUtil();
   return ret;
 }

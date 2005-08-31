@@ -258,7 +258,7 @@ static void cronCheckLiveness(void * unused) {
   slotCount = coreAPI->getSlotCount();
   if (saturation > 0.001)
     minint = (int) 1 / saturation;
-  else 
+  else
     minint = 10;
   if (minint == 0)
     minint = 1;
@@ -326,8 +326,8 @@ static int rereadConfiguration() {
   }
   FREE(fn);
   pos = 0;
-  while ( (pos < size) && 
-	  isspace(data[pos])) 
+  while ( (pos < size) &&
+	  isspace(data[pos]))
     pos++;
   while (pos <= size - sizeof(EncName)) {
     memcpy(&enc,
@@ -351,8 +351,8 @@ static int rereadConfiguration() {
 	  &enc);
     }
     pos = pos + sizeof(EncName);
-    while ( (pos < size) && 
-	    isspace(data[pos])) 
+    while ( (pos < size) &&
+	    isspace(data[pos]))
       pos++;
   }
   return OK;

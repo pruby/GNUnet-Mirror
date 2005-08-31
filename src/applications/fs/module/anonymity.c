@@ -38,7 +38,7 @@
  * require changing the DataProcessor somewhat,
  * which would also be ugly.  So to keep things
  * simple, we do the anonymity-level check for
- * outgoing content right here. 
+ * outgoing content right here.
  *
  * @return OK if cover traffic is sufficient
  */
@@ -71,7 +71,7 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
 	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
 	  "Result dropped.\n",
 	  level,
-	  peers);      
+	  peers);
       return SYSERR;
     }
     if (count < level % 1000) {
@@ -88,11 +88,11 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
 	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
 	  "Result dropped.\n",
 	  level,
-	  count);      
+	  count);
       return SYSERR;
     }
   }
   return OK;
 }
-		      
+		
 /* end of anonymity.c */

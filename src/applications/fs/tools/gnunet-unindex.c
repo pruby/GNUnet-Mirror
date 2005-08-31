@@ -166,7 +166,7 @@ int main(int argc, char ** argv) {
   int verbose;
   char * tmp;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions)) 
+  if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0;
 
   verbose = testConfigurationString("GNUNET-INSERT",

@@ -91,10 +91,10 @@ static int iiHelper(const char * fn,
 	     size,
 	     size * 2);
 	continue;
-      }      
+      }
       if (errno != EINVAL) {
-	LOG_FILE_STRERROR(LOG_WARNING, 
-			  "readlink", 
+	LOG_FILE_STRERROR(LOG_WARNING,
+			  "readlink",
 			  fullName);
       }
       FREE(lnkName);
@@ -109,11 +109,11 @@ static int iiHelper(const char * fn,
   if (OK != cls->iterator(lnkName,
 			  cls->closure)) {
     cls->cnt = SYSERR;
-    FREE(fullName);      
+    FREE(fullName);
     FREE(lnkName);
     return SYSERR;
   }
-  FREE(fullName);      
+  FREE(fullName);
   FREE(lnkName);
   return OK;
 }

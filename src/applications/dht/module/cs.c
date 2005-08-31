@@ -403,16 +403,16 @@ static int csLeave(ClientHandle client,
   CS_dht_request_leave_MESSAGE * req;
   int i;
   DHT_CLIENT_TableHandlers * ptr;
-  
+
   if (ntohs(message->size) != sizeof(CS_dht_request_leave_MESSAGE))
     return SYSERR;
   req = (CS_dht_request_leave_MESSAGE*) message;
   LOG(LOG_EVERYTHING,
       "Client leaving request received!\n");
 
-  MUTEX_LOCK(&csLock); 
+  MUTEX_LOCK(&csLock);
   for (i=0;i<csHandlersCount;i++) {
-    ptr = csHandlers[i];      
+    ptr = csHandlers[i];
     if ( (equalsHashCode512(&ptr->table,
 			    &req->table)) ) {
       csHandlers[i] = csHandlers[csHandlersCount-1];

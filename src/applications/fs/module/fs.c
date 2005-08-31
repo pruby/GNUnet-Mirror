@@ -86,7 +86,7 @@ static Mutex lock;
  */
 static DHT_TableId dht_table;
 
-static Datastore_Value * 
+static Datastore_Value *
 gapWrapperToDatastoreValue(const DataContainer * value,
 			   int prio) {
   Datastore_Value * dv;
@@ -672,7 +672,7 @@ static int gapGetConverter(const HashCode512 * key,
     LOG(LOG_WARNING,
 	"Converting reply for query `%s' for gap failed (insufficient cover traffic).\n",
 	&enc);
-    return OK;    
+    return OK;
   }
   gw = MALLOC(size);
   gw->dc.size = htonl(size);
@@ -983,7 +983,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 				     const CS_MESSAGE_HEADER * req) {
   const CS_fs_request_search_MESSAGE * rs;
   unsigned int keyCount;
-#if DEBUG_FS 
+#if DEBUG_FS
   EncName enc;
 #endif
   unsigned int type;
@@ -994,7 +994,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
     return SYSERR;
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
-#if DEBUG_FS 
+#if DEBUG_FS
   IFLOG(LOG_DEBUG,
 	hash2enc(&rs->query[0],
 		 &enc));
@@ -1007,7 +1007,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 	     type,
 	     sock);
   keyCount = 1 + (ntohs(req->size) - sizeof(CS_fs_request_search_MESSAGE)) / sizeof(HashCode512);
-  
+
   /* try a "fast path" avoiding gap/dht if unique reply is locally available */
   done = NO;
   gapGet(NULL,
@@ -1145,9 +1145,9 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 						      &csHandleCS_fs_request_test_index_MESSAGEed));
   GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
 						      &csHandleRequestGetAvgPriority));
-  initMigration(capi, 
-		datastore, 
-		gap, 
+  initMigration(capi,
+		datastore,
+		gap,
 		dht,
 		traffic);
   setConfigurationString("ABOUT",

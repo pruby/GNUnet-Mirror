@@ -146,13 +146,13 @@ static int sendPlaintext(const PeerIdentity * peer,
 			 const P2P_pingpong_MESSAGE * msg) {
   TSession * mytsession;
   int ret;
-  
+
   mytsession = transport->connectFreely(peer, YES);
   if (mytsession == NULL)
-    return SYSERR;  
+    return SYSERR;
   ret = coreAPI->sendPlaintext(mytsession,
 			       (char*)msg,
-			       sizeof(P2P_pingpong_MESSAGE));  
+			       sizeof(P2P_pingpong_MESSAGE));
   transport->disconnect(mytsession);
   return ret;
 }
@@ -444,7 +444,7 @@ static int pingPlaintext(const PeerIdentity * receiver,
 /**
  * Initialize the pingpong module.
  */
-Pingpong_ServiceAPI * 
+Pingpong_ServiceAPI *
 provide_module_pingpong(CoreAPIForApplication * capi) {
   static Pingpong_ServiceAPI ret;
 

@@ -81,7 +81,7 @@ static void createSignedhello(TransportAPI * tapi) {
 				   - sizeof(PublicKey)
 				   - sizeof(P2P_MESSAGE_HEADER),
 				   &tapi->helo->signature)) {
-    FREE(tapi->helo);    
+    FREE(tapi->helo);
     tapi->helo = NULL;
     BREAK();
   }
@@ -228,7 +228,7 @@ static TSession * transportConnectFreely(const PeerIdentity * peer,
 				   useTempList);
     if (helo != NULL) {
       ret = transportConnect(helo);
-      FREE(helo);      
+      FREE(helo);
       if (ret != NULL) {
 	FREE(perm);
 	MUTEX_UNLOCK(&tapis_lock);
@@ -304,7 +304,7 @@ static int transportSend(TSession * tsession,
 
   if (tsession == NULL) {
     LOG(LOG_DEBUG,
-        "transportSend attempted on uni-directional pipe, failing.\n");		    
+        "transportSend attempted on uni-directional pipe, failing.\n");		
     return SYSERR; /* can't do that, can happen for unidirectional pipes
 		      that call core with TSession being NULL. */
   }
@@ -555,7 +555,7 @@ static int getAdvertisedhellos(unsigned int maxLen,
   for (i=0;i<tcount;i++)
     FREE(helos[i]);
   FREE(helos);
-  if (used == 0) 
+  if (used == 0)
     LOG(LOG_DEBUG,
 	"%s failed: no hellos fit in %u bytes\n",
 	maxLen);
@@ -604,7 +604,7 @@ static void initHelper(TransportAPI * tapi,
 /**
  * Initialize the transport layer.
  */
-Transport_ServiceAPI * 
+Transport_ServiceAPI *
 provide_module_transport(CoreAPIForApplication * capi) {
   static Transport_ServiceAPI ret;
   TransportAPI * tapi;

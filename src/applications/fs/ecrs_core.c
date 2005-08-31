@@ -178,9 +178,9 @@ int getQueryFor(unsigned int size,
     }
     sb = (const SBlock*) data;
     if (OK != verifySig(&sb->identifier,
-			size 
-			- sizeof(Signature) 
-			- sizeof(PublicKey) 
+			size
+			- sizeof(Signature)
+			- sizeof(PublicKey)
 			- sizeof(unsigned int),
 			&sb->signature,
 			&sb->subspace)) {
@@ -217,8 +217,8 @@ int getQueryFor(unsigned int size,
     }
     nb = (const NBlock*) data;
     if (OK != verifySig(&nb->identifier,
-			size 
-			- sizeof(Signature) 
+			size
+			- sizeof(Signature)
 			- sizeof(PublicKey)
 			- sizeof(unsigned int),
 			&nb->signature,
@@ -237,7 +237,7 @@ int getQueryFor(unsigned int size,
     }
     kb = (const KNBlock*) data;
     if ( (OK != verifySig(&kb->nblock,
-			  size 
+			  size
 			  - sizeof(KBlock)
 			  - sizeof(unsigned int),
 			  &kb->kblock.signature,

@@ -101,7 +101,7 @@ int main(int argc, char * argv[]){
   const char * keywords[6];
 
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);

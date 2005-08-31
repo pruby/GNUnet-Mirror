@@ -49,13 +49,13 @@ static int startDownload(struct FSUI_Context * ctx,
 static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 				    const HashCode512 * key,
 				    int isRoot,
-				    void * prnt) {  
+				    void * prnt) {
   FSUI_DownloadList * parent = prnt;
   int i;
   FSUI_DownloadList * pos;
   char * filename;
   char * fullName;
-  
+
   if (isRoot == YES)
     return OK; /* namespace ad, ignore */
 
@@ -192,7 +192,7 @@ void * downloadThread(FSUI_DownloadList * dl) {
 			  (ECRS_TestTerminate) &testTerminate,
 			  dl);
   if (ret == OK)
-    dl->finished = YES;  
+    dl->finished = YES;
   totalBytes = ECRS_fileSize(dl->uri);
   root = dl;
   while ( (root->parent != NULL) &&
@@ -295,7 +295,7 @@ static int startDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * dl;
   FSUI_DownloadList * root;
   unsigned long long totalBytes;
-  
+
   GNUNET_ASSERT(ctx != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
@@ -400,7 +400,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
       LOG_STRERROR(LOG_WARNING, "pthread_create");	
     }
   }
-  
+
   /* should this one be stopped? */
   if ( (list->ctx->threadPoolSize
 	< list->ctx->activeDownloadThreads) &&
@@ -431,7 +431,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
     list->signalTerminate = SYSERR;
     ret = YES;
   }
-    
+
   dpos = list->child;
   while (dpos != NULL) {
     if (YES == updateDownloadThread(dpos))
@@ -560,7 +560,7 @@ int FSUI_listDownloads(struct FSUI_Context * ctx,
 
 /**
  * Clear all completed top-level downloads from the FSUI list.
- * 
+ *
  * @param callback function to call on each completed download
  *        that is being cleared.
  * @return SYSERR on error, otherwise number of downloads cleared
@@ -608,10 +608,10 @@ int FSUI_clearCompletedDownloads(struct FSUI_Context * ctx,
 
 
 /**
- * Get parent of active download. 
+ * Get parent of active download.
  * @return NULL if there is no parent
  */
-const FSUI_DownloadList * 
+const FSUI_DownloadList *
 FSUI_getDownloadParent(const FSUI_DownloadList * child) {
   if (child->parent ==
       &child->ctx->activeDownloads)

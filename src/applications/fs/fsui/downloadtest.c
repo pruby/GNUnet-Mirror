@@ -139,7 +139,7 @@ static void eventCallback(void * cls,
   }
   if (lastEvent == waitForEvent)
     return; /* ignore all other events */
-  lastEvent = event->type;  
+  lastEvent = event->type;
   if (event->type == FSUI_search_result) {
     char * u;
 
@@ -150,7 +150,7 @@ static void eventCallback(void * cls,
     u = ECRS_uriToString(event->data.SearchResult.fi.uri);
     printf("Download started: %s.\n", u);
     FREE(u);
-    if (OK != 
+    if (OK !=
 	FSUI_startDownload(ctx,
 			   0,
 			   event->data.SearchResult.fi.uri,
@@ -170,7 +170,7 @@ int main(int argc, char * argv[]){
   int i;
   struct ECRS_URI * uri = NULL;
   char * fn = NULL;
-  char * keywords[] = { 
+  char * keywords[] = {
     "down_foo",
     "down_bar",
     NULL,
@@ -182,7 +182,7 @@ int main(int argc, char * argv[]){
   struct ECRS_URI * kuri = NULL;
 
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseCommandLine))
     return -1;
 #if 1
@@ -229,7 +229,7 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_upload_complete) {
     prog++;
-    CHECK(prog < 1000);    
+    CHECK(prog < 1000);
     gnunet_util_sleep(50 * cronMILLIS);
   }
   SNPRINTF(keyword,
@@ -270,7 +270,7 @@ int main(int argc, char * argv[]){
     }
   }
   CHECK(OK == FSUI_stopSearch(ctx,
-			      uri));  
+			      uri));
   waitForEvent = FSUI_unindex_complete;
   CHECK(OK == FSUI_unindex(ctx, fn));
   prog = 0;
@@ -299,7 +299,7 @@ int main(int argc, char * argv[]){
 				 NULL,
 				 NULL);
     FSUI_stop(ctx);
-  }  
+  }
   if (uri != NULL)
     ECRS_freeUri(uri);
   if (kuri != NULL)

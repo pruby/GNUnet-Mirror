@@ -432,15 +432,15 @@ char * getFileName(const char * section,
  *        will NOT be discarded if this method is invoked twice.
  * @param fn the file to read
  * @return YES on success, NO otherwise
- */ 
+ */
 int readConfigFile(const char *fn) {
   if (0 != cfg_parse_file(fn))
   	return NO;
 
   parseConfigInit = YES;
-  
+
   setConfigurationString("Meta", "DATADIR", DATADIR);
-  
+
   return YES;
 }
 
@@ -472,15 +472,15 @@ void readConfiguration() {
 	  if (ACCESS(expCfgName, R_OK)) {
 	    expCfgName = eName;
 	    if (ACCESS(expCfgName, R_OK)) {
-	      if (0 == ACCESS(DEFAULT_DAEMON_CONFIG_FILE, W_OK)) 
+	      if (0 == ACCESS(DEFAULT_DAEMON_CONFIG_FILE, W_OK))
 		expCfgName = DEFAULT_DAEMON_CONFIG_FILE;
-	      if (0 == ACCESS(VAR_DAEMON_CONFIG_FILE, W_OK)) 
+	      if (0 == ACCESS(VAR_DAEMON_CONFIG_FILE, W_OK))
 		expCfgName = VAR_DAEMON_CONFIG_FILE;
-	      if (0 == ACCESS(eName, W_OK)) 
+	      if (0 == ACCESS(eName, W_OK))
 		expCfgName = eName;
 	    }
 	  }
-	}	  
+	}	
       }
     } else {
       eName = expandFileName(DEFAULT_CLIENT_CONFIG_FILE);
@@ -541,7 +541,7 @@ void readConfiguration() {
   if (!readConfigFile(configuration_filename))
     errexit("Failed to parse configuration file `%s'.\n",
 	    configuration_filename);
-  
+
   MUTEX_UNLOCK(&configLock);
 }
 

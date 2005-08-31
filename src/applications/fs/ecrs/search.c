@@ -183,7 +183,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
     struct PrivateKey * pk;
     PublicKey pub;
     int i;
-    
+
 #if DEBUG_SEARCH
     LOG(LOG_DEBUG,
 	"Computing queries (this may take a while).\n");
@@ -492,8 +492,8 @@ static int receiveReplies(const HashCode512 * key,
 	/* compute current/NEXT URI (if updateable SBlock) and issue
 	   respective query automatically! */
 	TIME(&now);	
-	if (OK != computeIdAtTime(sb, 
-				  now, 
+	if (OK != computeIdAtTime(sb,
+				  now,
 				  &updateId)) {
 	  FREE(sb);
 	  return SYSERR;

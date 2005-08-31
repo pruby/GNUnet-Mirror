@@ -266,12 +266,12 @@ print_autowrap (WINDOW * win, const char *prompt, int width, int y, int x)
 	while (word && *word) {
 	    sp = strchr(word, ' ');
 	    sp_nl = strchr(word, '\n');
-	    
+	
 	    if (sp_nl && (sp_nl < sp || !sp))
 	    	sp = sp_nl;
 	    else
 	    	sp_nl = NULL;
-	    
+	
 	    if (sp)    	
 	        *sp++ = 0;
 

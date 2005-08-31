@@ -71,7 +71,7 @@ int main(int argc, char ** argv) {
 			 "OPDA8F1VIKESLSNBO",
 			 &peer2.hashPubKey));
   if (OK != initUtil(argc,
-		     argv, 
+		     argv,
 		     &parseOptions))
     return -1;
   FREENONNULL(setConfigurationString("GNUNET",
@@ -85,7 +85,7 @@ int main(int argc, char ** argv) {
   /* in case existing hellos have expired */
   gnunet_util_sleep(30 * cronSECONDS);
   system("cp peer1/data/hosts/* peer2/data/hosts/");
-  system("cp peer2/data/hosts/* peer1/data/hosts/");  
+  system("cp peer2/data/hosts/* peer1/data/hosts/");
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");
@@ -149,7 +149,7 @@ int main(int argc, char ** argv) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
-  } 
+  }
   doneUtil();
   return ret;
 }

@@ -399,7 +399,7 @@ static int readAndProcess(int i) {
   ret = READ(tcpSession->sock,
 	     &tcpSession->rbuff[tcpSession->pos],
 	     tcpSession->rsize - tcpSession->pos);
-  if ( (ret > 0) && 
+  if ( (ret > 0) &&
        (stats != NULL) )
     stats->change(stat_bytesReceived,
 		  ret);
@@ -432,7 +432,7 @@ static int readAndProcess(int i) {
   tcpSession->pos += ret;
 
   while (tcpSession->pos > 2) {
-    len = ntohs(((TCPP2P_PACKET*)&tcpSession->rbuff[0])->size) 
+    len = ntohs(((TCPP2P_PACKET*)&tcpSession->rbuff[0])->size)
       + sizeof(TCPP2P_PACKET);
     if (len > tcpSession->rsize) /* if message larger than read buffer, grow! */
       GROW(tcpSession->rbuff,
@@ -459,7 +459,7 @@ static int readAndProcess(int i) {
 
       welcome = (TCPWelcome*) &tcpSession->rbuff[0];
       if ( (ntohs(welcome->header.reserved) != 0) ||
-	   (ntohs(welcome->header.size) 
+	   (ntohs(welcome->header.size)
 	    != sizeof(TCPWelcome) - sizeof(TCPP2P_PACKET)) ) {
 	LOG(LOG_WARNING,
 	    _("Expected welcome message on tcp connection, "
@@ -483,7 +483,7 @@ static int readAndProcess(int i) {
 	      &tcpSession->rbuff[sizeof(TCPWelcome)],
 	      tcpSession->pos - sizeof(TCPWelcome));
       tcpSession->pos -= sizeof(TCPWelcome);
-      len = ntohs(((TCPP2P_PACKET*)&tcpSession->rbuff[0])->size) 
+      len = ntohs(((TCPP2P_PACKET*)&tcpSession->rbuff[0])->size)
 	+ sizeof(TCPP2P_PACKET);
     }
     if ( (tcpSession->pos < 2) ||
@@ -755,8 +755,8 @@ try_again_1:
   	     Let's sleep and try again. */
   	  gnunet_util_sleep(20);
   	  goto try_again_1;
-        } 
-	if (stats != NULL) 
+        }
+	if (stats != NULL)
 	  stats->change(stat_bytesSent,
 			ret);
 
@@ -827,15 +827,15 @@ static int tcpDirectSend(TCPSession * tcpSession,
   int success;
 
 #if DEBUG_TCP
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "tcpDirectSend called to transmit %u bytes.\n",
       ssize);
-#endif	  
+#endif	
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
     LOG(LOG_DEBUG,
-        "tcpDirectSend called while TCP transport is shutdown.\n");		    
-#endif	  
+        "tcpDirectSend called while TCP transport is shutdown.\n");		
+#endif	
     return SYSERR;
   }
   if (tcpSession->sock == -1) {
@@ -855,8 +855,8 @@ static int tcpDirectSend(TCPSession * tcpSession,
 #if DEBUG_TCP
     LOG(LOG_DEBUG,
 	"write already pending, will not take additional message.\n");
-#endif    
-    if (stats != NULL) 
+#endif
+    if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    ssize);
     MUTEX_UNLOCK(&tcplock);
@@ -880,7 +880,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
   }
   if (success == NO)
     ret = 0;
-  if (stats != NULL) 
+  if (stats != NULL)
     stats->change(stat_bytesSent,
 		  ret);
 
@@ -901,7 +901,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
 	   ssize - ret);
     tcpSession->wpos = ssize - ret;
     signalSelect(); /* select set changed! */
-  } 
+  }
   cronTime(&tcpSession->lastUse);
   MUTEX_UNLOCK(&tcplock);
   incrementBytesSent(ssize);
@@ -924,10 +924,10 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
   int ok;
 
 #if DEBUG_TCP
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "tcpDirectSendReliable called to transmit %u bytes.\n",
       ssize);
-#endif	  
+#endif	
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
@@ -957,9 +957,9 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 	   mp,
 	   ssize);
 #if DEBUG_TCP
-    LOG(LOG_DEBUG, 
+    LOG(LOG_DEBUG,
 	"tcpDirectSendReliable appended message to send buffer.\n");
-#endif	  
+#endif	
 
     ok = OK;
   } else {
@@ -1162,11 +1162,11 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 
   /* send our node identity to the other side to fully establish the
      connection! */
-  welcome.header.size 
+  welcome.header.size
     = htons(sizeof(TCPWelcome) - sizeof(TCPP2P_PACKET));
-  welcome.header.reserved 
+  welcome.header.reserved
     = htons(0);
-  welcome.clientIdentity 
+  welcome.clientIdentity
     = *(coreAPI->myIdentity);
   if (SYSERR == tcpDirectSend(tcpSession,
 			      &welcome,
@@ -1198,10 +1198,10 @@ static int tcpSend(TSession * tsession,
   int ok;
 
 #if DEBUG_TCP
-  LOG(LOG_DEBUG, 
+  LOG(LOG_DEBUG,
       "tcpSend called to transmit %u bytes.\n",
       size);
-#endif	  
+#endif	
   if (size >= MAX_BUFFER_SIZE) {
     BREAK();
     return SYSERR;
@@ -1209,28 +1209,28 @@ static int tcpSend(TSession * tsession,
 
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
-    LOG(LOG_DEBUG, 
+    LOG(LOG_DEBUG,
 	"tcpSend called while TCP is shutdown.\n");
-#endif	  
-    if (stats != NULL) 
+#endif	
+    if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    size);
     return SYSERR;
-  }   
+  }
   if (size == 0) {
     BREAK();
     return SYSERR;
   }
   if (((TCPSession*)tsession->internal)->sock == -1) {
 #if DEBUG_TCP
-    LOG(LOG_DEBUG, 
+    LOG(LOG_DEBUG,
 	"tcpSend called after other side closed connection.\n");
-#endif    
-    if (stats != NULL) 
+#endif
+    if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    size);
     return SYSERR; /* other side closed connection */
-  }  
+  }
   mp = MALLOC(sizeof(TCPP2P_PACKET) + size);
   memcpy(&mp[1],
 	 msg,

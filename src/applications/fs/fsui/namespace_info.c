@@ -164,8 +164,8 @@ FSUI_createNamespace(struct FSUI_Context * ctx,
 			     meta,
 			     anonymityLevel,
 			     getConfigurationInt("FS", "INSERT-PRIORITY"),
-			     getConfigurationInt("FS", 
-						 "INSERT-EXPIRATION") 
+			     getConfigurationInt("FS",
+						 "INSERT-EXPIRATION")
 			     * cronYEARS + cronTime(NULL),
 			     advertisementURI,
 			     rootEntry);
@@ -526,7 +526,7 @@ int FSUI_computeNextId(const char * name,
 		 &delta,
 		 nextId);
   }
-  return OK; 
+  return OK;
 }
 
 
@@ -646,8 +646,8 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
   uri = ECRS_addToNamespace(name,
 			    anonymityLevel,
 			    getConfigurationInt("FS", "INSERT-PRIORITY"),
-			    getConfigurationInt("FS", 
-						"INSERT-EXPIRATION") 
+			    getConfigurationInt("FS",
+						"INSERT-EXPIRATION")
 			    * cronYEARS + cronTime(NULL),
 			    creationTime,
 			    updateInterval,
@@ -718,8 +718,8 @@ static int lNCHelper(const char * fil,
     TIME(&now);
     nextTime = lastTime;
     while ( (nextTime + pubFreq < now) &&
-	    (nextTime + pubFreq > nextTime) ) 
-      nextTime += pubFreq;    
+	    (nextTime + pubFreq > nextTime) )
+      nextTime += pubFreq;
   }
   if (cls->it != NULL) {
     if (OK != cls->it(cls->closure,

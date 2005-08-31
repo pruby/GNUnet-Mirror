@@ -353,7 +353,7 @@ try_again:
       goto try_again;
     }
 	
-    if ( (i == 0) || (i == (size_t) -1) ) 
+    if ( (i == 0) || (i == (size_t) -1) )
       return SYSERR;
     while (i > 0) {
       if (buff[pos++] == '\n')
@@ -363,11 +363,11 @@ try_again:
   }
  END:
   buff[pos] = '\0';
-  if (strncmp(expect, 
-	      &buff[0], 
+  if (strncmp(expect,
+	      &buff[0],
 	      strlen(expect)) == 0)
     return OK;
-  else 
+  else
     return SYSERR;
 }
 
