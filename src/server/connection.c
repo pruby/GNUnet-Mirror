@@ -155,9 +155,9 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  *
  * Protocol goes like this:
  *          DOWN
- *   -> hello+SKEY+PING(1) ->
- *        SKEY_SENT
- *  <- hello+SKEY+PONG(1)+PING(2) <-
+ *   -> hello+SETKEY+PING(1) ->
+ *        SETKEY_SENT
+ *  <- hello+SETKEY+PONG(1)+PING(2) <-
  *       -> PONG(2) ->
  *           UP
  *
@@ -167,9 +167,9 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  * like this:
  *
  *          DOWN
- *      <- hello+SKEY+PING(1) <-
- *  -> hello+SKEY+PONG(1)+PING(2) ->
- *        SKEY_RECEIVED
+ *      <- hello+SETKEY+PING(1) <-
+ *  -> hello+SETKEY+PONG(1)+PING(2) ->
+ *        SETKEY_RECEIVED
  *       <- PONG(2) <-
  *           UP
  *
@@ -194,10 +194,10 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
  */
 
 #define STAT_DOWN             0
-/* hello and SKEY sent (PING included) */
-#define STAT_SKEY_SENT        1
-/* SKEY received, hello and SKEY sent (PING included) */
-#define STAT_SKEY_RECEIVED    2
+/* hello and SETKEY sent (PING included) */
+#define STAT_SETKEY_SENT        1
+/* SETKEY received, hello and SETKEY sent (PING included) */
+#define STAT_SETKEY_RECEIVED    2
 /* PING confirmed with (encrypted) PONG */
 #define STAT_UP               7
 
@@ -2175,7 +2175,7 @@ static void cronDecreaseLiveness(void * unused) {
 	  identity->whitelistHost(&root->session.sender); 
 	}
 	break;
-      default: /* not up, not down - partial SKEY exchange */
+      default: /* not up, not down - partial SETKEY exchange */
 	if ( (now > root->isAlive) &&
 	     (now - root->isAlive > SECONDS_NOPINGPONG_DROP * cronSECONDS) ) {
 	  EncName enc;
@@ -2184,7 +2184,7 @@ static void cronDecreaseLiveness(void * unused) {
 	  LOG(LOG_DEBUG,
 	      "closing connection to %s: %s not answered.\n",
 	      &enc,
-	      (root->status == STAT_SKEY_SENT) ? "SKEY" : "PING");
+	      (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
 	  shutdownConnection(root);
 	}
 	break;
@@ -2253,7 +2253,7 @@ int checkHeader(const PeerIdentity * sender,
   be = lookForHost(sender);
   if ( (be == NULL) ||
        (be->status == STAT_DOWN) ||
-       (be->status == STAT_SKEY_SENT) ) {
+       (be->status == STAT_SETKEY_SENT) ) {
     LOG(LOG_INFO,
 	"Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
 	&enc);
@@ -2403,9 +2403,9 @@ void assignSessionKey(const SESSIONKEY * key,
     if (forSending == YES) {
       be->skey_local = *key;
       be->skey_local_created = age;
-      be->status = STAT_SKEY_SENT | (be->status & STAT_SKEY_RECEIVED);
+      be->status = STAT_SETKEY_SENT | (be->status & STAT_SETKEY_RECEIVED);
     } else { /* for receiving */
-      if ( ((be->status & STAT_SKEY_RECEIVED) == 0) ||
+      if ( ((be->status & STAT_SETKEY_RECEIVED) == 0) ||
 	   (be->skey_remote_created < age) ) {
 	if (0 != memcmp(key,
 			&be->skey_remote,
@@ -2414,7 +2414,7 @@ void assignSessionKey(const SESSIONKEY * key,
 	  be->lastSequenceNumberReceived = 0;
 	}
 	be->skey_remote_created = age;
-	be->status |= STAT_SKEY_RECEIVED;
+	be->status |= STAT_SETKEY_RECEIVED;
       }
     }
   }
@@ -2434,8 +2434,8 @@ void confirmSessionUp(const PeerIdentity * peer) {
   if (be != NULL) {
     cronTime(&be->isAlive);
     identity->whitelistHost(peer);
-    if ( ( (be->status & STAT_SKEY_SENT) > 0) &&
-	 ( (be->status & STAT_SKEY_RECEIVED) > 0) &&
+    if ( ( (be->status & STAT_SETKEY_SENT) > 0) &&
+	 ( (be->status & STAT_SETKEY_RECEIVED) > 0) &&
 	 (OK == ensureTransportConnected(be)) &&
 	 (be->status != STAT_UP) ) {
       be->status = STAT_UP;
@@ -2525,13 +2525,13 @@ int getCurrentSessionKey(const PeerIdentity * peer,
   be = lookForHost(peer);
   if (be != NULL) {
     if (forSending == YES) {
-      if ((be->status & STAT_SKEY_SENT) > 0) {
+      if ((be->status & STAT_SETKEY_SENT) > 0) {
 	*key = be->skey_local;
 	*age = be->skey_local_created;
 	ret = OK;
       }
     } else { /* for receiving */
-      if ((be->status & STAT_SKEY_RECEIVED) > 0) {
+      if ((be->status & STAT_SETKEY_RECEIVED) > 0) {
 	*key = be->skey_remote;
 	*age = be->skey_remote_created;
 	ret = OK;
