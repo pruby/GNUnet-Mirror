@@ -671,7 +671,7 @@ static char * mimeMap[][2] = {
   { "application/zip", ".zip" },
 
   { "audio/midi", ".midi" },
-  { "audio/mpeg", ".mpg" },
+  { "audio/mpeg", ".mp3" },
   { "audio/real", ".rm"},
   { "audio/x-wav", ".wav" },
 
