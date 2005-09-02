@@ -205,13 +205,10 @@ int main(int argc, char *argv[])
 {
   char *operation;
 
-#if HAVE_GTK
-  gtk_init(&argc, &argv);
-#endif
   if(OK != initUtil(argc, argv, &parser))
     return -1;
   operation = getConfigurationString("GNUNET-SETUP", "OPERATION");
-  if(operation == NULL) {
+  if (operation == NULL) {
 #if HAVE_GTK
     operation = STRDUP("gconfig");
 #elif HAVE_CURSES
@@ -219,6 +216,9 @@ int main(int argc, char *argv[])
 #else
     operation = STRDUP("config");
 #endif
+    LOG(LOG_WARNING,
+	"No interface specified, defaulting to `%s'\n",
+	operation);
   }
   if(strcmp(operation, "config") == 0)
     conf_main();
@@ -244,6 +244,7 @@ int main(int argc, char *argv[])
       errexit(_("Can only run wizard to configure gnunetd.\n"
                 "Did you forget the `%s' option?\n"), "-d");
 #if HAVE_GTK
+    gtk_init(&argc, &argv);
     wizard_main();
 #else
     printf(_("wizard-gtk is not available\n"));
@@ -251,6 +252,7 @@ int main(int argc, char *argv[])
   }
   else if(strcmp(operation, "gconfig") == 0) {
 #if HAVE_GTK
+    gtk_init(&argc, &argv);
     gconf_main();
 #else
     printf(_("gconfig is not available\n"));
