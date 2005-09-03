@@ -55,7 +55,7 @@ if test -n "$TEST"; then
   autoconf --version |\
     head -n 1 |\
     awk '{\
-	if (length($4) = 0) {\
+	if (length($4) == 0) {\
 		print "autoconf       : "$3\
 	} else {\
 		print "autoconf       : "$4\
