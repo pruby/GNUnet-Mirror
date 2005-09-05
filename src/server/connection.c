@@ -867,6 +867,7 @@ static int checkSendFrequency(BufferEntry * be) {
  *
  * @param *priority is set to the achieved message priority
  * @return total number of bytes of messages selected
+ *   including P2P message header.
  */
 static unsigned int selectMessagesToSend(BufferEntry * be,
 					 unsigned int * priority) {
@@ -999,7 +1000,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 	return 0; /* can not send, BPS available is too small */
       }
     }
-    totalMessageSize = be->session.mtu - sizeof(P2P_PACKET_HEADER);
+    totalMessageSize = be->session.mtu;
   } /* end MTU > 0 */
   return totalMessageSize;
 }
@@ -1332,7 +1333,7 @@ static void sendBuffer(BufferEntry * be) {
     be->inSendBuffer = NO;
     return; /* deferr further */
   }
-  totalMessageSize += sizeof(P2P_PACKET_HEADER);
+  GNUNET_ASSERT(totalMessageSize > sizeof(P2P_PACKET_HEADER));
 
   /* check if we (sender) have enough bandwidth available
      if so, trigger callbacks on selected entries; if either
@@ -1366,6 +1367,7 @@ static void sendBuffer(BufferEntry * be) {
       continue;
     if (entry->knapsackSolution == YES) {
       GNUNET_ASSERT(entry->callback == NULL);
+      GNUNET_ASSERT(p + entry->len <= totalMessageSize);
       memcpy(&plaintextMsg[p],
 	     entry->closure,
 	     entry->len);
@@ -1762,6 +1764,8 @@ static void shutdownConnection(BufferEntry * be) {
       = &copyCallback;
     se->closure
       = MALLOC(sizeof(P2P_hangup_MESSAGE));
+    se->knapsackSolution 
+      = NO;
     memcpy(se->closure,
 	   &hangup,
 	   sizeof(P2P_hangup_MESSAGE));
@@ -3029,6 +3033,7 @@ void unicastCallback(const PeerIdentity * hostId,
     entry->transmissionTime = cronTime(NULL) + maxdelay;
     entry->callback = callback;
     entry->closure = closure;
+    entry->knapsackSolution = NO;
     appendToBuffer(be,
 		   entry);
   } else {
