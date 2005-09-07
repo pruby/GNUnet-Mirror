@@ -66,7 +66,7 @@ static void * unindexThread(UnindexThreadClosure * utc) {
   FSUI_Event event;
   int ret;
 
-  ret = ECRS_unindexFile(&utc->filename[1],
+  ret = ECRS_unindexFile(utc->filename,
 			 (ECRS_UploadProgressCallback) &progressCallback,
 			 utc,
 			 NULL,
