@@ -37,7 +37,7 @@ EXTRA_DIST = \
   check.conf
 
 libgnunetutil_la_LDFLAGS = \
- -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp $(DLFLAG) \
+ -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp -liconv $(DLFLAG) \
  -version-info 1:0:0
 
 libgnunetutil_la_SOURCES = \
