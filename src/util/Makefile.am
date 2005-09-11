@@ -13,7 +13,7 @@ if SOLARIS
 endif
 
 if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -luuid -lstdc++ -lcomdlg32 -lgdi32
+ WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -luuid -liconv -lstdc++ -lcomdlg32 -lgdi32
  WINSUBDIRS = win
  WINLIBADD = $(top_builddir)/src/util/win/libwin.la 
 else
@@ -37,7 +37,7 @@ EXTRA_DIST = \
   check.conf
 
 libgnunetutil_la_LDFLAGS = \
- -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp -liconv $(DLFLAG) \
+ -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp $(DLFLAG) \
  -version-info 1:0:0
 
 libgnunetutil_la_SOURCES = \
