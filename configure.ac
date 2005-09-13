@@ -271,8 +271,10 @@ AC_ARG_WITH(mysql,
   [AC_MSG_RESULT("$with_mysql")
    if test "$with_mysql" != "no"
    then
-    LDFLAGS="-L$with_mysql/lib -L$with_mysql/lib/mysql $LDFLAGS $ZLIBS"
-    CPPFLAGS="-I$with_mysql/include $CPPFLAGS"
+    if test "$with_mysql" != "yes"
+      LDFLAGS="-L$with_mysql/lib -L$with_mysql/lib/mysql $LDFLAGS $ZLIBS"
+      CPPFLAGS="-I$with_mysql/include $CPPFLAGS"
+    fi
     AC_CHECK_HEADERS(mysql/mysql.h,
      AC_CHECK_LIB(mysqlclient, mysql_init,
       MYSQL_LDFLAGS="-L$with_mysql/lib -L$with_mysql/lib/mysql"
