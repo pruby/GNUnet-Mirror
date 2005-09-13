@@ -410,6 +410,8 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
     entry->protocols[0] = ntohs(msg->protocol);
     entry->strict = NO;
     entry->trust = 0;
+  } else {
+    FREE(msg);
   }
   MUTEX_UNLOCK(&lock_);
 }
