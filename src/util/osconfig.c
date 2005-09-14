@@ -329,7 +329,8 @@ int isOSGroupAddCapable() {
  * @return 0 on success
  */
 int createGroupUser(char *group_name, char *user_name) {
-	
+	int haveGroup;
+
 	if (!user_name || !strlen(user_name))
 		return 0;
 	
@@ -339,7 +340,6 @@ int createGroupUser(char *group_name, char *user_name) {
 		return CreateServiceAccount(user_name, "GNUnet service account");
 	}
 #else
-	int haveGroup;
 
 	if (ACCESS("/usr/sbin/adduser", X_OK) == 0) {
 		/* Debian */
