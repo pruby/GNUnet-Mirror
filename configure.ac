@@ -272,6 +272,7 @@ AC_ARG_WITH(mysql,
    if test "$with_mysql" != "no"
    then
     if test "$with_mysql" != "yes"
+    then
       LDFLAGS="-L$with_mysql/lib -L$with_mysql/lib/mysql $LDFLAGS $ZLIBS"
       CPPFLAGS="-I$with_mysql/include $CPPFLAGS"
     fi
