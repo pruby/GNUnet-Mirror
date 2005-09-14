@@ -565,7 +565,8 @@ int main(int argc, char ** argv) {
   if (printAndReturn) {
     EXTRACTOR_ExtractorList * l;
     char * ex;
-
+    EXTRACTOR_KeywordList * list;
+	    
     filename = getConfigurationString("GNUNET-INSERT",
 				      "MAIN-FILE");
     l = EXTRACTOR_loadDefaultLibraries();
@@ -576,7 +577,7 @@ int main(int argc, char ** argv) {
 					ex);
       FREE(ex);
     }
-    EXTRACTOR_KeywordList * list
+    list
       = EXTRACTOR_getKeywords(l, filename);
     printf(_("Keywords for file `%s':\n"),
 	   filename);

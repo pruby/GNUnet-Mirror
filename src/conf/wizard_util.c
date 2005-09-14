@@ -52,11 +52,10 @@ int wiz_is_nic_default(const char *name, int suggestion) {
   if (nic)
   {
   	/* The user has selected a NIC before */
-  	suggestion = 0;
-  	
   	int niclen = strlen(nic);
   	int inslen = strlen(name);
-  	if (inslen >= niclen)
+	suggestion = 0;
+	if (inslen >= niclen)
   	{
 #ifdef WINDOWS
   		if (strncmp(name + inslen - niclen - 1, nic, niclen) == 0)

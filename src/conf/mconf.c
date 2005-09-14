@@ -263,8 +263,6 @@ void init_wsize(void)
 {
 	char *env;
 	
-	rows = cols = 0;
-	
 #ifndef MINGW
   struct winsize ws;
 
@@ -274,6 +272,8 @@ void init_wsize(void)
 	} else {
 		rows = ws.ws_row;
 		cols = ws.ws_col;
+#else
+	       rows = cols = 0;
 #endif
 		if (!rows) {
 			env = getenv("LINES");
