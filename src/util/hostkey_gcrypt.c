@@ -69,7 +69,7 @@ struct PrivateKey {
  * end of the size-sized buffer and zero out the
  * first target-size bytes.
  */
-static void adjust(char * buf,
+static void adjust(unsigned char * buf,
 		   size_t size,
 		   size_t target) {
   if (size < target) {
@@ -451,7 +451,7 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
   lockGcrypt();
   rc = gcry_mpi_scan(&n,
 		     GCRYMPI_FMT_USG,
-		     &((char*)(&encoding[1]))[pos],
+		     &((const unsigned char*)(&encoding[1]))[pos],
 		     size,
 		     &size);
   pos += ntohs(encoding->sizen);
@@ -463,7 +463,7 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->sizee);
   rc = gcry_mpi_scan(&e,
 		     GCRYMPI_FMT_USG,
-		     &((char*)(&encoding[1]))[pos],
+		     &((const unsigned char*)(&encoding[1]))[pos],
 		     size,
 		     &size);
   pos += ntohs(encoding->sizee);
@@ -476,7 +476,7 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
   size = ntohs(encoding->sized);
   rc = gcry_mpi_scan(&d,
 		     GCRYMPI_FMT_USG,
-		     &((char*)(&encoding[1]))[pos],
+		     &((const unsigned char*)(&encoding[1]))[pos],
 		     size,
 		     &size);
   pos += ntohs(encoding->sized);
@@ -492,7 +492,7 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
   if (size > 0) {
     rc = gcry_mpi_scan(&q,
 		       GCRYMPI_FMT_USG,
-		       &((char*)(&encoding[1]))[pos],
+		       &((const unsigned char*)(&encoding[1]))[pos],
 		       size,
 		       &size);
     pos += ntohs(encoding->sizep);
@@ -510,7 +510,7 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
   if (size > 0) {
     rc = gcry_mpi_scan(&p,
 		       GCRYMPI_FMT_USG,
-		       &((char*)(&encoding[1]))[pos],
+		       &((const unsigned char*)(&encoding[1]))[pos],
 		       size,
 		       &size);
     pos += ntohs(encoding->sizeq);
@@ -533,7 +533,7 @@ struct PrivateKey * decodePrivateKey(const PrivateKeyEncoded * encoding) {
   if (size > 0) {
     rc = gcry_mpi_scan(&u,
 		       GCRYMPI_FMT_USG,
-		       &((char*)(&encoding[1]))[pos],
+		       &((const unsigned char*)(&encoding[1]))[pos],
 		       size,
 		       &size);
     if (rc) {
@@ -670,7 +670,7 @@ int encryptPrivateKey(const void * block,
   }
   isize = sizeof(RSAEncryptedData);
   rc = gcry_mpi_print(GCRYMPI_FMT_USG,
-		      (char*)target,
+		      (unsigned char*)target,
 		      isize,
 		      &isize,
 		      rval);
@@ -707,8 +707,8 @@ int decryptPrivateKey(const struct PrivateKey * hostkey,
   size_t size;
   gcry_mpi_t val;
   int rc;
-  char * endp;
-  char * tmp;
+  unsigned char * endp;
+  unsigned char * tmp;
 
   lockGcrypt();
 #if EXTRA_CHECKS
@@ -846,7 +846,7 @@ int sign(const struct PrivateKey * hostkey,
   }
   ssize = sizeof(Signature);
   rc = gcry_mpi_print(GCRYMPI_FMT_USG,
-		      (char*)sig,
+		      (unsigned char*)sig,
 		      ssize,
 		      &ssize,
 		      rval);
@@ -891,7 +891,7 @@ int verifySig(const void * block,
   lockGcrypt();
   rc = gcry_mpi_scan(&val,
 		     GCRYMPI_FMT_USG,
-		     (char*)sig,
+		     (const unsigned char*)sig,
 		     size,
 		     &size);
   if (rc) {
