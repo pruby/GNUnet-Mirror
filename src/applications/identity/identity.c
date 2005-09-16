@@ -105,12 +105,12 @@ static HostEntry ** hosts_ = NULL;
 /**
  * The current (allocated) size of knownHosts
  */
-static int sizeOfHosts_ = 0;
+static unsigned int sizeOfHosts_ = 0;
 
 /**
  * The number of actual entries in knownHosts
  */
-static int numberOfHosts_;
+static unsigned int numberOfHosts_;
 
 /**
  * A lock for accessing knownHosts

@@ -46,8 +46,8 @@ static int abort_bootstrap = YES;
 
 typedef struct {
   P2P_hello_MESSAGE ** helos;
-  int helosCount;
-  int helosLen;
+  unsigned int helosCount;
+  unsigned int helosLen;
 } HelloListClosure;
 
 static void processhellos(HelloListClosure * hcq) {
