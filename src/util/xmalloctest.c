@@ -12,6 +12,7 @@ static int check() {
   int i;
   int j;
   int k;
+  unsigned int ui;
 
   /* MALLOC/FREE test */
   k = 352; /* random start value */
@@ -51,21 +52,21 @@ static int check() {
 
   /* GROW tests */
   ptrs[0] = NULL;
-  i=0;
+  ui=0;
   GROW(ptrs[0],
-       i,
+       ui,
        42);
-  if (i != 42)
+  if (ui != 42)
     return 4;
   GROW(ptrs[0],
-       i,
+       ui,
        22);
-  if (i != 22)
+  if (ui != 22)
     return 5;
   for (j=0;j<22;j++)
     ptrs[0][j] = j;
   GROW(ptrs[0],
-       i,
+       ui,
        32);
   for (j=0;j<22;j++)
     if (ptrs[0][j] != j)
@@ -74,7 +75,7 @@ static int check() {
     if (ptrs[0][j] != 0)
       return 7;
   GROW(ptrs[0],
-       i,
+       ui,
        0);
   if (i != 0)
     return 8;

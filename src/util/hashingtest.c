@@ -36,9 +36,11 @@ static int testEncoding() {
 
 int main(int argc, char * argv[]) {
   int failureCount = 0;
+  int i;
 
   initLockingGcrypt();
-  failureCount += testEncoding();
+  for (i=0;i<10000;i++)
+    failureCount += testEncoding();
   doneLockingGcrypt();
   if (failureCount == 0)
     return 0;

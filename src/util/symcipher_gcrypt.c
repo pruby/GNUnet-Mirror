@@ -117,10 +117,9 @@ int encryptBlock(const void * block,
     unlockGcrypt();
     return -1;
   }
-  rc != gcry_cipher_setiv(handle,
-			  iv,
-			  sizeof(INITVECTOR));
-
+  rc = gcry_cipher_setiv(handle,
+			 iv,
+			 sizeof(INITVECTOR));  
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(LOG_FAILURE, "gcry_cipher_setiv", rc);
     gcry_cipher_close(handle);
