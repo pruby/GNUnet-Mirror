@@ -735,7 +735,8 @@ static void conf_string(struct menu *menu)
 			heading, 10, 75,
 			sym_get_string_value(menu->sym))) {
 		case 0:
-			if (sym_set_string_value(menu->sym, dialog_input_result))
+		  if (sym_set_string_value(menu->sym, 
+					   dialog_input_result))
 				return;
 			show_textbox(NULL, "You have made an invalid entry.", 5, 43);
 			break;
