@@ -146,7 +146,7 @@ void XPRINTF(const char * fmt,
 	     ...) {
   va_list	args;
   int n;
-  int size = 1024;
+  unsigned int size = 1024;
   char * p;
 
   p = MALLOC(size);
@@ -163,7 +163,7 @@ void XPRINTF(const char * fmt,
     }
     /* Else try again with more space. */
     if (n > -1)    /* glibc 2.1 */
-      GROW(p, size, n+1); /* precisely what is needed */
+      GROW(p, size, (unsigned int) n+1); /* precisely what is needed */
     else           /* glibc 2.0 */
       GROW(p, size, size*2);  /* twice the old size */
   }

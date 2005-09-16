@@ -42,7 +42,7 @@ static CSHandler * handlers = NULL;
  * Number of handlers in the array (max, there
  * may be NULL pointers in it!)
  */
-static int max_registeredType = 0;
+static unsigned int max_registeredType = 0;
 
 /**
  * Mutex to guard access to the handler array.
@@ -72,7 +72,7 @@ static ClientExitHandler * exitHandlers = NULL;
 /**
  * How many entries are in exitHandlers?
  */
-static int exitHandlerCount = 0;
+static unsigned int exitHandlerCount = 0;
 
 /**
  * Signals for control-thread to server-thread communication
@@ -378,7 +378,7 @@ static void * tcpListenMain() {
   int max;
   int ret;
   int listenerFD;
-  int lenOfIncomingAddr;
+  socklen_t lenOfIncomingAddr;
   int listenerPort;
   struct sockaddr_in serverAddr, clientAddr;
   int secs = 5;

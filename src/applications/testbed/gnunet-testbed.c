@@ -142,7 +142,10 @@ static int helperParseOptions(int argc, char *argv[]) {
  */
 static int helper_main(int argc,
 		       char * argv[]) {
-  int    i, retVal, len, res;
+  int i;
+  int retVal;
+  unsigned int len;
+  int res;
   char  *buf;
   struct sockaddr_in soaddr;
 
@@ -303,7 +306,8 @@ static int isWhitelisted(IPaddr ip) {
  * @param bash_pid the process ID of the child that is bash
  */
 static int server_main(pid_t bash_pid) {
-  int   i, status, ssock, lenOfIncomingAddr;
+  int   i, status, ssock;
+  socklen_t lenOfIncomingAddr;
   int   secs = 5;
   const int on = 1;
   struct sockaddr_in serverAddr, clientAddr;
@@ -374,7 +378,7 @@ static int server_main(pid_t bash_pid) {
 	  (0 == waitpid(bash_pid,
 			&status,
 			WNOHANG)) ) {
-    int   argc;
+    unsigned int argc;
     char *command;
     char **args;
     char *buf;
