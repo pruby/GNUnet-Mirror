@@ -205,8 +205,8 @@ static int tcp_pipe[2];
  * Array of currently active TCP sessions.
  */
 static TSession ** tsessions = NULL;
-static int tsessionCount;
-static int tsessionArrayLength;
+static unsigned int tsessionCount;
+static unsigned int tsessionArrayLength;
 
 /* configuration */
 static struct CIDRNetwork * filteredNetworks_;
@@ -540,8 +540,8 @@ static int readAndProcess(int i) {
  * calling.  It is ok to call this function without holding tcplock if
  * the return value is ignored.
  */
-static int addTSession(TSession * tsession) {
-  int i;
+static unsigned int addTSession(TSession * tsession) {
+  unsigned int i;
 
   MUTEX_LOCK(&tcplock);
   if (tsessionCount == tsessionArrayLength)
@@ -597,7 +597,7 @@ static void * tcpListenMain() {
   fd_set errorSet;
   fd_set writeSet;
   struct stat buf;
-  int lenOfIncomingAddr;
+  socklen_t lenOfIncomingAddr;
   int i;
   int max;
   int ret;

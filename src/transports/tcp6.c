@@ -189,8 +189,8 @@ static int tcp6_pipe[2];
  * Array of currently active TCP6 sessions.
  */
 static TSession ** tsessions = NULL;
-static int tsessionCount;
-static int tsessionArrayLength;
+static unsigned int tsessionCount;
+static unsigned int tsessionArrayLength;
 
 /* configuration */
 static struct CIDR6Network * filteredNetworks_;
@@ -514,8 +514,8 @@ static int readAndProcess(int i) {
  * calling.  It is ok to call this function without holding tcp6lock if
  * the return value is ignored.
  */
-static int addTSession(TSession * tsession) {
-  int i;
+static unsigned int addTSession(TSession * tsession) {
+  unsigned int i;
 
   MUTEX_LOCK(&tcp6lock);
   if (tsessionCount == tsessionArrayLength)
@@ -570,7 +570,7 @@ static void * tcp6ListenMain() {
   fd_set errorSet;
   fd_set writeSet;
   struct stat buf;
-  int lenOfIncomingAddr;
+  socklen_t lenOfIncomingAddr;
   int i;
   int max;
   int ret;
