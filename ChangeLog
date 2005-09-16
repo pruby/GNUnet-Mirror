@@ -1,3 +1,6 @@
+Thu Sep 15 23:56:39 PDT 2005
+	Fixed various gcc 4.0 warnings.
+
 Sun Aug 28 15:29:56 PDT 2005
 	Releasing GNUnet 0.7.0.
 

@@ -72,7 +72,7 @@ void FS_stop_search(struct FS_SEARCH_CONTEXT * ctx,
  * What is the current average priority of entries
  * in the routing table like?  Returns -1 on error.
  */
-unsigned int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock);
+int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to
