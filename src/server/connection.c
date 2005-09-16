@@ -1290,7 +1290,7 @@ static void sendBuffer(BufferEntry * be) {
   unsigned int rsi;
   SendCallbackList * pos;
   P2P_PACKET_HEADER * p2pHdr;
-  int priority;
+  unsigned int priority;
   int * perm;
   char * plaintextMsg;
   void * encryptedMsg;

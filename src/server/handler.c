@@ -80,7 +80,7 @@ static MessagePartHandler ** handlers = NULL;
  * Number of handlers in the array (max, there
  * may be NULL pointers in it!)
  */
-static int max_registeredType = 0;
+static unsigned int max_registeredType = 0;
 
 /**
  * Array of arrays of the message handlers for plaintext messages.
@@ -91,7 +91,7 @@ static PlaintextMessagePartHandler ** plaintextHandlers = NULL;
  * Number of handlers in the plaintextHandlers array (max, there
  * may be NULL pointers in it!)
  */
-static int plaintextmax_registeredType = 0;
+static unsigned int plaintextmax_registeredType = 0;
 
 /**
  * Mutex to guard access to the handler array.
@@ -114,7 +114,7 @@ static Mutex handlerLock;
  */
 int registerp2pHandler(unsigned short type,
 		       MessagePartHandler callback) {
-  int last;
+  unsigned int last;
 
   MUTEX_LOCK(&handlerLock);
   if (threads_running == YES) {
@@ -157,8 +157,8 @@ int registerp2pHandler(unsigned short type,
  */
 int unregisterp2pHandler(unsigned short type,
 			 MessagePartHandler callback) {
-  int pos;
-  int last;
+  unsigned int pos;
+  unsigned int last;
 
   MUTEX_LOCK(&handlerLock);
   if (threads_running == YES) {
@@ -205,7 +205,7 @@ int unregisterp2pHandler(unsigned short type,
  */
 int registerPlaintextHandler(unsigned short type,
 			     PlaintextMessagePartHandler callback) {
-  int last;
+  unsigned int last;
 
   MUTEX_LOCK(&handlerLock);
   if (threads_running == YES) {
@@ -248,8 +248,8 @@ int registerPlaintextHandler(unsigned short type,
  */
 int unregisterPlaintextHandler(unsigned short type,
 			       PlaintextMessagePartHandler callback) {
-  int pos;
-  int last;
+  unsigned int pos;
+  unsigned int last;
 
   MUTEX_LOCK(&handlerLock);
   if (threads_running == YES) {
@@ -616,7 +616,7 @@ void initHandler() {
  * Shutdown message handling module.
  */
 void doneHandler() {
-  int i;
+  unsigned int i;
 
   /* free datastructures */
   SEMAPHORE_FREE(bufferQueueRead_);
@@ -630,7 +630,7 @@ void doneHandler() {
 
   MUTEX_DESTROY(&handlerLock);
   for (i=0;i<max_registeredType;i++) {
-    int last = 0;
+    unsigned int last = 0;
     while (handlers[i][last] != NULL)
       last++;
     last++;
@@ -642,7 +642,7 @@ void doneHandler() {
        max_registeredType,
        0);
   for (i=0;i<plaintextmax_registeredType;i++) {
-    int last = 0;
+    unsigned int last = 0;
     while (plaintextHandlers[i][last] != NULL)
       last++;
     GROW(plaintextHandlers[i],
