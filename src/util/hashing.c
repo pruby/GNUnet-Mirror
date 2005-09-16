@@ -321,7 +321,7 @@ void hash(const void * block,
  */
 int getFileHash(const char * filename,
 		HashCode512 * ret) {
-  char * buf;
+  unsigned char * buf;
   unsigned long long len;
   unsigned long long pos;
   unsigned int delta;
@@ -377,7 +377,7 @@ int getFileHash(const char * filename,
 /**
  * 32 characters for encoding (hash => 32 characters)
  */
-static unsigned char * encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+static char * encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
 static unsigned int getValue__(unsigned char a) {
   if ( (a >= '0') && (a <= '9') )

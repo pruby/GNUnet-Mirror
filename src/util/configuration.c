@@ -35,13 +35,13 @@
 #include "platform.h"
 
 struct CFG_ENTRIES {
-  int  ent_count;
+  unsigned int ent_count;
   char **ent_names;
   char **ent_values;
 };
 
 struct CFG_SECTIONS {
-  int                 sec_count;
+  unsigned int          sec_count;
   char                **sec_names;
   struct CFG_ENTRIES  **sec_entries;
 };
@@ -76,7 +76,7 @@ static struct CFG_ENTRIES * cfg_init_entries() {
 static struct CFG_ENTRIES * cfg_find_section(struct CFG_SECTIONS *c,
 					     const char * name) {
   struct CFG_ENTRIES * e;
-  int i;
+  unsigned int i;
 
   for (i=0; i<c->sec_count; i++)
     if (0 == strcasecmp(c->sec_names[i], name))
@@ -103,7 +103,7 @@ static struct CFG_ENTRIES * cfg_find_section(struct CFG_SECTIONS *c,
 static void cfg_set_entry(struct CFG_ENTRIES * e,
 			  const char * name,
 			  const char * value) {
-  int i;
+  unsigned int i;
 
   for (i=0; i<e->ent_count; i++)
     if (0 == strcasecmp(e->ent_names[i],
@@ -138,7 +138,9 @@ static void cfg_set_entry(struct CFG_ENTRIES * e,
 
 static int cfg_parse_file(const char *filename) {
   struct CFG_ENTRIES * e = NULL;
-  char line[256],tag[64],value[192];
+  char line[256];
+  char tag[64];
+  char value[192];
   FILE *fp;
   int nr;
   int i;
@@ -546,7 +548,7 @@ void readConfiguration() {
 }
 
 static NotifyConfigurationUpdateCallback * cbl = NULL;
-static int cbCnt = 0;
+static unsigned int cbCnt = 0;
 
 /**
  * Register a callback that is called when the configuration

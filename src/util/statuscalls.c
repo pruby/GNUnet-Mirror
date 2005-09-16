@@ -75,7 +75,7 @@ static NetworkStats * ifcs;
 /**
  * how many interfaces do we have?
  */
-static int ifcsSize;
+static unsigned int ifcsSize;
 
 /**
  * Current load of the machine, -1 for error

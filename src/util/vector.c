@@ -177,17 +177,15 @@ static void vectorSegmentRemove(Vector *v,
  * If possible, an unused index at the end of a segment is returned, as this
  * is also a requirement for adding data in an empty vector.
  */
-static void vectorFindNewIndex(Vector *v,
-			       unsigned int index,
-			       VectorSegment **vs,
-			       int *segmentIndex) {
+static int vectorFindNewIndex(Vector * v,
+			      unsigned int index,
+			      VectorSegment **vs) {
   VectorSegment *segment;
   int segmentStartIndex;
 
   if (index > v->size) {
     *vs = NULL;
-    *segmentIndex = -1;
-    return;
+    return -1;
   }
   if (index <= v->size / 2) { /* empty vector included */
     segment = v->segmentsHead;
@@ -205,7 +203,7 @@ static void vectorFindNewIndex(Vector *v,
     }
   }
   *vs = segment;
-  *segmentIndex = index - segmentStartIndex;
+  return index - segmentStartIndex;
 }
 
 
@@ -213,17 +211,15 @@ static void vectorFindNewIndex(Vector *v,
  * Find the segment and segmentIndex of the element
  * with the given index.
  */
-static void vectorFindIndex(Vector *v,
-			    unsigned int index,
-			    VectorSegment **vs,
-			    int *segmentIndex) {
+static int vectorFindIndex(Vector *v,
+			   unsigned int index,
+			   VectorSegment **vs) {
   VectorSegment *segment;
   int segmentStartIndex;
 
   if (index >= v->size) {
     *vs = NULL;
-    *segmentIndex = -1;
-    return;
+    return -1;
   }
   if (index < v->size / 2) {
     segment = v->segmentsHead;
@@ -241,7 +237,7 @@ static void vectorFindIndex(Vector *v,
     }
   }
   *vs = segment;
-  *segmentIndex = index - segmentStartIndex;
+  return index - segmentStartIndex;
 }
 
 
@@ -329,14 +325,15 @@ int vectorInsertAt(Vector *v,
 		   void *object,
 		   unsigned int index) {
   VectorSegment *segment;
-  unsigned int segmentIndex;
+  int segmentIndex;
   int i;
 
   if (index > v->size)
     return SYSERR;
   v->iteratorSegment = NULL;
-  vectorFindNewIndex(v, index, &segment, &segmentIndex);
-
+  segmentIndex = vectorFindNewIndex(v, index, &segment);
+  if (segmentIndex == -1)
+    return SYSERR;
   for (i = segment->size; i > segmentIndex; i--)
     segment->data[i] = segment->data[i - 1];
   segment->data[segmentIndex] = object;
@@ -364,13 +361,16 @@ void vectorInsertLast(Vector *v, void *object) {
  */
 void * vectorGetAt(Vector *v,
 		   unsigned int index) {
+  int ret;
   if ( (index < 0) || (index >= v->size) )
     return NULL;
-  vectorFindIndex(v,
-		  index,
-		  &v->iteratorSegment,
-		  &v->iteratorIndex);
-  return v->iteratorSegment->data[v->iteratorIndex];
+  ret = vectorFindIndex(v,
+			index,
+			&v->iteratorSegment);
+  if (ret == -1)
+    return NULL;
+  v->iteratorIndex = ret;
+  return v->iteratorSegment->data[ret];
 }
 
 /**
@@ -451,7 +451,9 @@ void * vectorRemoveAt(Vector *v,
   if (index >= v->size)
      return NULL;
   v->iteratorSegment = NULL;
-  vectorFindIndex(v, index, &segment, &segmentIndex);
+  segmentIndex = vectorFindIndex(v, index, &segment);
+  if (segmentIndex == -1) 
+    return NULL;
   rvalue = vectorSegmentRemoveAtIndex(segment,
 				      segmentIndex);
   /* If the segment ends empty remove it, otherwise
@@ -531,7 +533,9 @@ void *vectorSetAt (Vector *v,
   if (index >= v->size)
     return NULL;
   v->iteratorSegment = NULL;
-  vectorFindIndex(v, index, &segment, &segmentIndex);
+  segmentIndex = vectorFindIndex(v, index, &segment);
+  if (segmentIndex == -1)
+    return NULL;
   rvalue = segment->data[segmentIndex];
   segment->data[segmentIndex] = object;
   return rvalue;
@@ -568,16 +572,19 @@ int vectorSwap(Vector *v,
 	       unsigned int index2) {
   VectorSegment * segment1;
   VectorSegment * segment2;
-  unsigned int segmentIndex1;
-  unsigned int segmentIndex2;
+  int segmentIndex1;
+  int segmentIndex2;
   void *temp;
 
   if ( (index1 >= v->size) ||
        (index2 >= v->size) )
     return SYSERR;
   v->iteratorSegment= NULL;
-  vectorFindIndex(v, index1, &segment1, &segmentIndex1);
-  vectorFindIndex(v, index2, &segment2, &segmentIndex2);
+  segmentIndex1 = vectorFindIndex(v, index1, &segment1);
+  segmentIndex2 = vectorFindIndex(v, index2, &segment2);
+  if( (segmentIndex1 == -1) ||
+      (segmentIndex2 == -1) )
+    return SYSERR;
   temp = segment1->data[segmentIndex1];
   segment1->data[segmentIndex1] = segment2->data[segmentIndex2];
   segment2->data[segmentIndex2] = temp;
