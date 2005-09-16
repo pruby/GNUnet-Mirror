@@ -200,7 +200,7 @@ char * ECRS_getFirstFromMetaData(const MetaData * md,
  * @param in 0-terminated string from the meta-data
  * @return 1 on error, 0 on success
  */
-static int decodeThumbnail(const unsigned char * in,
+static int decodeThumbnail(const char * in,
                            unsigned char ** out,
                            size_t * outSize) {
   unsigned char * buf;
@@ -330,7 +330,11 @@ static unsigned int tryCompression(char * data,
      should be able to overshoot by more to be safe */
 #endif
   tmp = MALLOC(dlen);
-  if (Z_OK == compress2(tmp, &dlen, data, oldSize, 9)) {
+  if (Z_OK == compress2((Bytef*) tmp,
+			&dlen,
+			(const Bytef*) data,
+			oldSize,
+			9)) {
     if (dlen < oldSize) {
       memcpy(data, tmp, dlen);
       FREE(tmp);
@@ -356,9 +360,9 @@ static char * decompress(const char * input,
 
   olen = outputSize;
   output = MALLOC(olen);
-  if (Z_OK == uncompress(output,
+  if (Z_OK == uncompress((Bytef*) output,
                          &olen,
-                         input,
+                         (const Bytef*) input,
                          inputSize)) {
     return output;
   } else {

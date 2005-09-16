@@ -445,7 +445,7 @@ typedef struct {
   /** thread that reads the output of the process */
   PTHREAD_T reader;
   /** how many bytes of output did the process produce? */
-  int outputSize;
+  unsigned int outputSize;
   /** the output of the process */
   char * output;
   /** did the process exit? (YES/NO) */
@@ -473,7 +473,7 @@ static ProcessInfo ** pt = NULL;
 /**
  * Number of entries in the process table.
  */
-static int ptSize = 0;
+static unsigned int ptSize = 0;
 
 /**
  * Lock for accessing the PT

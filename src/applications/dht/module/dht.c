@@ -858,7 +858,7 @@ static PeerBucket * findBucket(const PeerIdentity * peer) {
  * @param *k the current number of entries in the set
  */
 static void k_best_insert(unsigned int limit,
-			  int * k,
+			  unsigned int * k,
 			  const HashCode512 * key,
 			  HashCode512 * kbest,
 			  const HashCode512 * newValue) {

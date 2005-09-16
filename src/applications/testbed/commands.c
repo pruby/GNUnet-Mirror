@@ -67,7 +67,7 @@ static NODE_INFO * nodes = NULL;
 /**
  * Number of known nodes, size of the nodes array.
  */
-static int nnodes = 0;
+static unsigned int nnodes = 0;
 
 /**
  * Should the driver exit?

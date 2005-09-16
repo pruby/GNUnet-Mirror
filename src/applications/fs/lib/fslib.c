@@ -282,9 +282,9 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
  * What is the current average priority of entries
  * in the routing table like?  Returns -1 on error.
  */
-unsigned int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock) {
+int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock) {
   CS_MESSAGE_HEADER req;
-  unsigned int ret;
+  int ret;
 
   req.size = htons(sizeof(CS_MESSAGE_HEADER));
   req.type = htons(CS_PROTO_gap_GET_AVG_PRIORITY);

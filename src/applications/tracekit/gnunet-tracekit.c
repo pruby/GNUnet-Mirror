@@ -161,11 +161,11 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
   CS_tracekit_reply_MESSAGE * buffer;
   int format;
   PeerIdentity * peersSeen;
-  int psCount;
-  int psSize;
+  unsigned int psCount;
+  unsigned int psSize;
   PeerIdentity * peersResponding;
-  int prCount;
-  int prSize;
+  unsigned int prCount;
+  unsigned int prSize;
   int i;
   int j;
   int match;

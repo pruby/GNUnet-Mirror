@@ -824,7 +824,6 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
  */
 int FSUI_getNamespaceRoot(const char * ns,
 			  HashCode512 * root) {
-  char * buf;
   char * fn;
   char * fnBase;
   int ret;
