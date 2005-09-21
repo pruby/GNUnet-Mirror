@@ -148,7 +148,7 @@ int stateReadContent(const char * name,
     return -1;
   }
 
-  *result = MALLOC(fsize);
+  *result = xmalloc_unchecked_(fsize, __FILE__, __SIZE__);
   size = READ(fd,
 	      *result,
 	      fsize);
