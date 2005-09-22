@@ -148,7 +148,7 @@ int stateReadContent(const char * name,
     return -1;
   }
 
-  *result = xmalloc_unchecked_(fsize, __FILE__, __SIZE__);
+  *result = xmalloc_unchecked_(fsize, __FILE__, __LINE__);
   size = READ(fd,
 	      *result,
 	      fsize);
