@@ -82,10 +82,7 @@ typedef struct {
   unsigned int handle_count;
   
   /* List of open handles */
-  sqliteHandle *handles;
-  
-  /* Mutex for *handles */
-  Mutex handle_lock;
+  sqliteHandle *handles;  
 } sqliteDatabase;
 
 
@@ -120,8 +117,6 @@ static sqliteHandle *getDBHandle() {
   sqliteHandle *ret = NULL;
   sqlite3_stmt *stmt;
   
-  MUTEX_LOCK(&db->handle_lock);
-  
   /* Is the DB already open? */
   this_tid = pthread_self();
   for(idx = 0; idx < db->handle_count; idx++)
@@ -144,7 +139,6 @@ static sqliteHandle *getDBHandle() {
     if (sqlite3_open(db->fn, &ret->dbh) != SQLITE_OK) {
       LOG(LOG_ERROR,
           _("Unable to initialize SQLite.\n"));
-      MUTEX_UNLOCK(&db->handle_lock);
       
       FREE(db->fn);
       FREE(db);
@@ -155,8 +149,6 @@ static sqliteHandle *getDBHandle() {
     sqlite3_exec(ret->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
     sqlite3_exec(ret->dbh, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
     sqlite3_exec(ret->dbh, "PRAGMA page_size=4096", NULL, NULL, NULL);
-
-    MUTEX_UNLOCK(&db->handle_lock);
 
     /* We have to do it here, because otherwise precompiling SQL might fail */
     sq_prepare("Select 1 from sqlite_master where tbl_name = 'gn070'",
@@ -205,8 +197,6 @@ static sqliteHandle *getDBHandle() {
       return NULL;
     }
   }
-  else
-    MUTEX_UNLOCK(&db->handle_lock);
 
   return ret;
 }
@@ -589,7 +579,6 @@ static void sqlite_shutdown() {
   syncStats();
 
   MUTEX_DESTROY(&db->DATABASE_Lock_);
-  MUTEX_DESTROY(&db->handle_lock);
   FREE(db->fn);
   FREE(db);
   db = NULL;
@@ -1021,7 +1010,6 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   FREE(dir);
 
   MUTEX_CREATE(&db->DATABASE_Lock_);
-  MUTEX_CREATE(&db->handle_lock);
 
   dbh = getDBHandle();
   if (!dbh) {
