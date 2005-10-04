@@ -2296,8 +2296,8 @@ int checkHeader(const PeerIdentity * sender,
       *dst = 0;
       
       LOG(LOG_DEBUG,
-          "Wrong sessionkey from `%s': `%s'\n",
-          &enc, skey);
+          "Wrong sessionkey from `%s': `%s', IV: %u\n",
+          &enc, skey, *(int*)&msg->hash);
     }
 #endif
     addHost(sender, YES);
