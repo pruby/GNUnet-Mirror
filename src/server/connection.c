@@ -2283,6 +2283,24 @@ int checkHeader(const PeerIdentity * sender,
     LOG(LOG_INFO,
 	"Decrypting message from host `%s' failed, wrong sessionkey!\n",
 	&enc);
+#if DEBUG_CONNECTION
+    {
+      char skey[65];
+      char *dst;
+      int idx;
+      
+      dst = skey;
+      for (idx=0; idx < SESSIONKEY_LEN; idx++) {
+        sprintf(dst, "%02x", be->skey_remote[idx]);
+        dst += 2;
+      }
+      *dst = 0;
+      
+      LOG(LOG_DEBUG,
+          "Wrong sessionkey: `%s'\n",
+          &enc);
+    }
+#endif
     addHost(sender, YES);
     MUTEX_UNLOCK(&lock);
     FREE(tmp);
