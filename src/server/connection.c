@@ -1022,8 +1022,7 @@ static void expireSendBufferEntries(BufferEntry * be) {
   expired = cronTime(&be->lastSendAttempt) - SECONDS_PINGATTEMPT * cronSECONDS;
 #if DEBUG_CONNECTION
   LOG(LOG_DEBUG,
-      "policy prevents sending message (priority too low: %d)\n",
-      priority);
+      "policy prevents sending message\n");
 #endif
 
   l = getCPULoad();
@@ -2291,7 +2290,7 @@ int checkHeader(const PeerIdentity * sender,
       
       dst = skey;
       for (idx=0; idx < SESSIONKEY_LEN; idx++) {
-        sprintf(dst, "%02x", be->skey_remote[idx]);
+        sprintf(dst, "%02x", be->skey_remote.key[idx]);
         dst += 2;
       }
       *dst = 0;
