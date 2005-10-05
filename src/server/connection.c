@@ -512,6 +512,29 @@ static int stat_noise_sent;
 
 /* ******************** CODE ********************* */
 
+#if DEBUG_CONNECTION
+static void printMsg(const char *prefix, PeerIdentity *sender,
+                     SESSIONKEY *key, const INITVECTOR *iv, int crc) {
+  char skey[65];
+  char *dst;
+  int idx;
+  EncName enc;
+  
+  hash2enc(&sender->hashPubKey, &enc);
+  
+  dst = skey;
+  for (idx=0; idx < SESSIONKEY_LEN; idx++) {
+    sprintf(dst, "%02x", key->key[idx]);
+    dst += 2;
+  }
+  *dst = 0;
+  
+  LOG(LOG_DEBUG,
+      "%s: Sender `%s', key `%s', IV %u msg CRC %u\n",
+      prefix, &enc, skey, *((int *)iv), crc);
+}
+#endif
+
 /**
  * This allocates and initializes a BufferEntry.
  * @return the initialized BufferEntry
@@ -1412,11 +1435,16 @@ static void sendBuffer(BufferEntry * be) {
   hash(&p2pHdr->sequenceNumber,
        p - sizeof(HashCode512),
        (HashCode512*) encryptedMsg);
-  encryptBlock(&p2pHdr->sequenceNumber,
+  ret = encryptBlock(&p2pHdr->sequenceNumber,
 	       p - sizeof(HashCode512),
 	       &be->skey_local,
 	       (const INITVECTOR*) encryptedMsg, /* IV */
 	       &((P2P_PACKET_HEADER*)encryptedMsg)->sequenceNumber);
+#if DEBUG_CONNECTION
+  printMsg("Encrypting P2P data", &be->session.sender,
+    &be->skey_local, (const INITVECTOR*) encryptedMsg,
+    crc32N(&((P2P_PACKET_HEADER*)encryptedMsg)->sequenceNumber, ret));
+#endif
   if (stats != NULL)
     stats->change(stat_encrypted,
 		  p - sizeof(HashCode512));
@@ -2283,22 +2311,9 @@ int checkHeader(const PeerIdentity * sender,
 	"Decrypting message from host `%s' failed, wrong sessionkey!\n",
 	&enc);
 #if DEBUG_CONNECTION
-    {
-      char skey[65];
-      char *dst;
-      int idx;
-      
-      dst = skey;
-      for (idx=0; idx < SESSIONKEY_LEN; idx++) {
-        sprintf(dst, "%02x", be->skey_remote.key[idx]);
-        dst += 2;
-      }
-      *dst = 0;
-      
-      LOG(LOG_DEBUG,
-          "Wrong sessionkey from `%s': `%s', IV: %u\n",
-          &enc, skey, *(int*)&msg->hash);
-    }
+    printMsg("Wrong sessionkey", sender,
+      &be->skey_remote, (const INITVECTOR *) &msg->hash,
+      crc32N(&msg->sequenceNumber, size - sizeof(HashCode512)));
 #endif
     addHost(sender, YES);
     MUTEX_UNLOCK(&lock);
