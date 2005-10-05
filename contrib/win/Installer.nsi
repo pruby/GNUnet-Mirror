@@ -336,6 +336,8 @@ SectionGroup "GNU libextractor"
 		SectionIn 1 3 4
 	  SetOutPath "$INSTDIR\bin"
 
+		File "C:\GNUnet\bin\jpeg62.dll"
+		File "C:\GNUnet\bin\bzip2.dll"
 		File "C:\GNUnet\bin\libextractor-1.dll"
 		File "C:\GNUnet\bin\libogg-0.dll"
 		File "C:\GNUnet\bin\libvorbis-0.dll"
@@ -391,7 +393,7 @@ SectionGroup "Dependencies"
 		File "C:\GNUnet\bin\libmysql.dll"
 		File "C:\GNUnet\bin\libplibc-1.dll"
 		File "C:\GNUnet\bin\libsqlite3-0.dll"
-		File "C:\GNUnet\bin\pthreadGC1.dll"
+		File "C:\GNUnet\bin\pthreadGC2.dll"
 		File "C:\GNUnet\bin\zlib1.dll"
 	SectionEnd
 	
@@ -745,6 +747,7 @@ Section Uninstall
 	Delete "$INSTDIR\README"
 	Delete "$INSTDIR\UPDATING"
 	Delete "$INSTDIR\bin\gnu.ico"	
+	Delete "$INSTDIR\bin\bzip2.dll"
 	Delete "$INSTDIR\bin\gnunet-dht-join.exe"
 	Delete "$INSTDIR\bin\gnunet-dht-query.exe"
 	Delete "$INSTDIR\bin\gnunet-directory.exe"
@@ -766,6 +769,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\gnunetd.exe"
 	Delete "$INSTDIR\bin\iconv.dll"
 	Delete "$INSTDIR\bin\intl.dll"
+	Delete "$INSTDIR\bin\jpeg62.dll"
 	Delete "$INSTDIR\bin\libatk-1.0-0.dll"
 	Delete "$INSTDIR\bin\libextractor-1.dll"
 	Delete "$INSTDIR\bin\libextractor_asf.dll"
@@ -874,6 +878,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libvorbisfile-3.dll"
 	Delete "$INSTDIR\bin\libxml2.dll"
 	Delete "$INSTDIR\bin\pthreadGC1.dll"
+	Delete "$INSTDIR\bin\pthreadGC2.dll"
 	Delete "$INSTDIR\bin\zlib1.dll"
 	RmDir /REBOOTOK "$INSTDIR\bin"
 	
