@@ -35,7 +35,6 @@
 #include "gnunet_protocols.h"
 #include "gnunet_topology_service.h"
 #include "gnunet_identity_service.h"
-#include "gnunet_session_service.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
@@ -93,23 +92,6 @@ typedef struct {
 
 static PeerIdentity * friends;
 static unsigned int friendCount;
-
-/**
- * @brief Get the session service
- */
-static Session_ServiceAPI* getSession() {
-  static Session_ServiceAPI * session = NULL;
-  
-  /* We don't do that during init because that'd lead
-   * to a circular dependency */
-  if (!session) {
-    session = coreAPI->requestService("session");
-    if (!session)
-      LOG(LOG_ERROR, _("Module `%s' not loaded yet\n"), "session");
-  }
-  
-  return session;
-}
 
 static int allowConnection(const PeerIdentity * peer) {
   int i;
@@ -181,7 +163,6 @@ static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
   EncName enc;
-  Session_ServiceAPI * session;
 
   cronTime(&now);
   indexMatch.index = index;
@@ -213,9 +194,10 @@ static void scanForHosts(unsigned int index) {
   LOG(LOG_DEBUG,
       "Topology: trying to connect to `%s'.\n",
       &enc);
-  session = getSession();
-  if (session)
-    session->tryConnect(&indexMatch.match);
+  coreAPI->unicast(&indexMatch.match,
+		   NULL,
+		   0,
+		   0);
   identity->blacklistHost(&indexMatch.match,
 			  300 + (int) saturation * 600,
 			  NO);
@@ -424,8 +406,6 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
 }
 
 int release_module_topology_f2f() {
-  Session_ServiceAPI * session;
-  
   delCronJob(&cronCheckLiveness,
 	     LIVE_SCAN_FREQUENCY,
 	     NULL);
@@ -435,8 +415,6 @@ int release_module_topology_f2f() {
   identity = NULL;
   coreAPI->releaseService(transport);
   transport = NULL;
-  if ((session = getSession()))
-    coreAPI->releaseService(session);
   coreAPI->releaseService(pingpong);
   pingpong = NULL;
   coreAPI = NULL;
