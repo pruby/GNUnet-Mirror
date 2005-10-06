@@ -105,7 +105,7 @@ static Session_ServiceAPI* getSession() {
   if (!session) {
     session = coreAPI->requestService("session");
     if (!session)
-      LOG(LOG_ERROR, _("Module `%s' not loaded yet\n"));
+      LOG(LOG_ERROR, _("Module `%s' not loaded yet\n"), "session");
   }
   
   return session;
