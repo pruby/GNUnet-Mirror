@@ -71,8 +71,6 @@ static Identity_ServiceAPI * identity;
 
 static Transport_ServiceAPI * transport;
 
-static Session_ServiceAPI * session;
-
 static Pingpong_ServiceAPI * pingpong;
 
 /**
@@ -96,6 +94,22 @@ typedef struct {
 static PeerIdentity * friends;
 static unsigned int friendCount;
 
+/**
+ * @brief Get the session service
+ */
+static Session_ServiceAPI* getSession() {
+  static Session_ServiceAPI * session = NULL;
+  
+  /* We don't do that during init because that'd lead
+   * to a circular dependency */
+  if (!session) {
+    session = coreAPI->requestService("session");
+    if (!session)
+      LOG(LOG_ERROR, _("Module `%s' not loaded yet\n"));
+  }
+  
+  return session;
+}
 
 static int allowConnection(const PeerIdentity * peer) {
   int i;
@@ -167,6 +181,7 @@ static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
   EncName enc;
+  Session_ServiceAPI * session;
 
   cronTime(&now);
   indexMatch.index = index;
@@ -198,7 +213,9 @@ static void scanForHosts(unsigned int index) {
   LOG(LOG_DEBUG,
       "Topology: trying to connect to `%s'.\n",
       &enc);
-  session->tryConnect(&indexMatch.match);
+  session = getSession();
+  if (session)
+    session->tryConnect(&indexMatch.match);
   identity->blacklistHost(&indexMatch.match,
 			  300 + (int) saturation * 600,
 			  NO);
@@ -375,15 +392,6 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
     identity = NULL;
     return NULL;
   }
-  session = capi->requestService("session");
-  if (session == NULL) {
-    BREAK();
-    capi->releaseService(identity);
-    identity = NULL;
-    capi->releaseService(transport);
-    transport = NULL;
-    return NULL;
-  }
   pingpong = capi->requestService("pingpong");
   if (pingpong == NULL) {
     BREAK();
@@ -391,8 +399,6 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
     identity = NULL;
     capi->releaseService(transport);
     transport = NULL;
-    capi->releaseService(session);
-    session = NULL;
     return NULL;
   }
 
@@ -401,8 +407,6 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
     identity = NULL;
     capi->releaseService(transport);
     transport = NULL;
-    capi->releaseService(session);
-    session = NULL;
     capi->releaseService(pingpong);
     pingpong = NULL;
     return NULL;
@@ -420,6 +424,8 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
 }
 
 int release_module_topology_f2f() {
+  Session_ServiceAPI * session;
+  
   delCronJob(&cronCheckLiveness,
 	     LIVE_SCAN_FREQUENCY,
 	     NULL);
@@ -429,8 +435,8 @@ int release_module_topology_f2f() {
   identity = NULL;
   coreAPI->releaseService(transport);
   transport = NULL;
-  coreAPI->releaseService(session);
-  session = NULL;
+  if ((session = getSession()))
+    coreAPI->releaseService(session);
   coreAPI->releaseService(pingpong);
   pingpong = NULL;
   coreAPI = NULL;
