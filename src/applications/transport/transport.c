@@ -415,11 +415,22 @@ static int transportVerifyHelo(const P2P_hello_MESSAGE * helo) {
   }
   tapi = tapis[ntohs(helo->protocol)];
   if (tapi == NULL) {
-    LOG(LOG_EVERYTHING,
+    if (ntohs(helo->protocol) != NAT_PROTOCOL_NUMBER) {
+      LOG(LOG_EVERYTHING,
 	"Advertised transport type %d"
 	" does not match any known transport.\n",
 	ntohs(helo->protocol));
-    return SYSERR;
+      return SYSERR;
+    } else {
+      LOG(LOG_EVERYTHING,
+	"Advertised transport type is NAT,"
+	" but nat module is not loaded."
+	" Rudimentary sanity check enforced.\n");
+      if ((ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
+	(ntohs(helo->header.type) != p2p_PROTO_hello) )
+	return SYSERR; /* obviously invalid */
+      return OK;
+    }
   } else
     return tapi->verifyHelo(helo);
 }
