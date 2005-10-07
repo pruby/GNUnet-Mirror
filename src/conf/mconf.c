@@ -824,7 +824,7 @@ int mconf_main()
   end_dialog();
 
   if (stat == 0) {
-    conf_write(NULL);
+    conf_write(filename);
     printf("\n\n"
 	   "*** End of configuration.\n"
 	   "\n\n");
