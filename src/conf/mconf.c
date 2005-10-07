@@ -788,7 +788,6 @@ int mconf_main()
   filename = getConfigurationString("GNUNET-SETUP",
 				    "FILENAME");
   conf_read(filename);
-  FREE(filename);
 
   backtitle = malloc(128);
   strcpy(backtitle, "GNUnet Configuration");
@@ -833,5 +832,7 @@ int mconf_main()
 	   "Your configuration changes were NOT saved."
 	   "\n\n");
   }
+  FREE(filename);
+
   return 0;
 }
