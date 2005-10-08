@@ -511,9 +511,15 @@ static int readAndProcess(int i) {
     mp->size     = len - sizeof(TCPP2P_PACKET);
     mp->tsession = tsession;
 #if DEBUG_TCP
+  {
+    EncName enc;
+    
+    hash2enc(&mp->sender.hashPubKey, &enc);
+    
     LOG(LOG_DEBUG,
-	"tcp transport received %u bytes, forwarding to core\n",
-	mp->size);
+      "tcp transport received %u bytes from %s (CRC %u), forwarding to core\n",
+      mp->size, &enc, crc32N(mp->msg, mp->size));
+  }
 #endif
     coreAPI->receive(mp);
     /* finally, shrink buffer adequately */
@@ -827,9 +833,15 @@ static int tcpDirectSend(TCPSession * tcpSession,
   int success;
 
 #if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "tcpDirectSend called to transmit %u bytes.\n",
-      ssize);
+  {
+    EncName enc;
+    
+    hash2enc(&tcpSession->sender.hashPubKey, &enc);
+    
+    LOG(LOG_DEBUG,
+        "tcpDirectSend called to transmit %u bytes to %s (CRC %u).\n",
+        ssize, &enc, crc32N(mp, ssize));
+  }
 #endif	
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
@@ -924,9 +936,15 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
   int ok;
 
 #if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "tcpDirectSendReliable called to transmit %u bytes.\n",
-      ssize);
+  {
+    EncName enc;
+    
+    hash2enc(&tcpSession->sender.hashPubKey, &enc);
+    
+    LOG(LOG_DEBUG,
+        "tcpDirectSendReliable called to transmit %u bytes to %s (CRC %u).\n",
+        ssize, &enc, crc32N(mp, ssize));
+  }
 #endif	
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
