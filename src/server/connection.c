@@ -2136,7 +2136,7 @@ static void scheduleInboundTraffic() {
 	  hash2enc(&entries[u]->session.sender.hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
-	"inbound limit for peer %u: %s set to %d bpm\n",
+	"inbound limit for peer %u: %s set to %u bpm\n",
 	u,
 	&enc,
 	entries[u]->idealized_limit);
