@@ -893,9 +893,9 @@ static int checkSendFrequency(BufferEntry * be) {
  *   including P2P message header.
  */
 static unsigned int selectMessagesToSend(BufferEntry * be,
-					 unsigned int * priority) {
+                                         unsigned int *priority) {
   unsigned int totalMessageSize;
-  SendEntry * entry;
+  SendEntry *entry;
   int i;
   int j;
   int approxProb;
@@ -903,130 +903,128 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
   totalMessageSize = 0;
   (*priority) = 0;
 
-  if (be->session.mtu == 0) {
+  if(be->session.mtu == 0) {
     totalMessageSize = sizeof(P2P_PACKET_HEADER);
     i = 0;
     /* assumes entries are sorted by priority! */
-    while (i < be->sendBufferSize) {
+    while(i < be->sendBufferSize) {
       entry = be->sendBuffer[i];
-      if ( (totalMessageSize + entry->len < MAX_BUFFER_SIZE) &&
-	   (entry->pri >= EXTREME_PRIORITY) ) {
-	entry->knapsackSolution = YES;
-	(*priority) += entry->pri;
-	totalMessageSize += entry->len;
-      } else {
-	entry->knapsackSolution = NO;
-	break;
+      if((totalMessageSize + entry->len < MAX_BUFFER_SIZE) &&
+         (entry->pri >= EXTREME_PRIORITY)) {
+        entry->knapsackSolution = YES;
+        (*priority) += entry->pri;
+        totalMessageSize += entry->len;
+      }
+      else {
+        entry->knapsackSolution = NO;
+        break;
       }
       i++;
     }
-    if ( (i == 0) &&
-	 (be->sendBuffer[i]->len > be->available_send_window) )
-      return 0; /* always wait for the highest-priority
-		 message (otherwise large messages may
-		 starve! */
-    while ( (i < be->sendBufferSize) &&
-	    (be->available_send_window > totalMessageSize) ) {
+    if((i == 0) && (be->sendBuffer[i]->len > be->available_send_window))
+      return 0;                 /* always wait for the highest-priority
+                                   message (otherwise large messages may
+                                   starve! */
+    while((i < be->sendBufferSize) &&
+          (be->available_send_window > totalMessageSize)) {
       entry = be->sendBuffer[i];
-      if ( (entry->len + totalMessageSize <=
-	    be->available_send_window) &&
-	   (totalMessageSize + entry->len < MAX_BUFFER_SIZE) ) {
-	entry->knapsackSolution = YES;
-	totalMessageSize += entry->len;
-	(*priority) += entry->pri;
-      } else {
-	entry->knapsackSolution = NO;
-	if (totalMessageSize == sizeof(P2P_PACKET_HEADER)) {	
-	  /* if the highest-priority message does not yet
-	     fit, wait for send window to grow so that
-	     we can get it out (otherwise we would starve
-	     high-priority, large messages) */
-	  return 0;
-	}
+      if((entry->len + totalMessageSize <=
+          be->available_send_window) &&
+         (totalMessageSize + entry->len < MAX_BUFFER_SIZE)) {
+        entry->knapsackSolution = YES;
+        totalMessageSize += entry->len;
+        (*priority) += entry->pri;
+      }
+      else {
+        entry->knapsackSolution = NO;
+        if(totalMessageSize == sizeof(P2P_PACKET_HEADER)) {
+          /* if the highest-priority message does not yet
+             fit, wait for send window to grow so that
+             we can get it out (otherwise we would starve
+             high-priority, large messages) */
+          return 0;
+        }
       }
       i++;
     }
-    if ( (totalMessageSize == sizeof(P2P_PACKET_HEADER)) ||
-	 ( ((*priority) < EXTREME_PRIORITY) &&
-	   ((totalMessageSize / sizeof(P2P_PACKET_HEADER)) < 4) &&
-	   (randomi(16) != 0) ) ) {
+    if((totalMessageSize == sizeof(P2P_PACKET_HEADER)) ||
+       (((*priority) < EXTREME_PRIORITY) &&
+        ((totalMessageSize / sizeof(P2P_PACKET_HEADER)) < 4) &&
+        (randomi(16) != 0))) {
       /* randomization necessary to ensure we eventually send
-	 a small message if there is nothing else to do! */
+         a small message if there is nothing else to do! */
       return 0;
     }
-  } else { /* if (be->session.mtu == 0) */
+  }
+  else {                        /* if (be->session.mtu == 0) */
     /* solve knapsack problem, compute accumulated priority */
     approxProb = getCPULoad();
-    if (approxProb > 50) {
-      if (approxProb > 100)
-	approxProb = 100;
-      approxProb = 100 - approxProb; /* now value between 0 and 50 */
-      approxProb *= 2; /* now value between 0 [always approx] and 100 [never approx] */
+    if(approxProb > 50) {
+      if(approxProb > 100)
+        approxProb = 100;
+      approxProb = 100 - approxProb;  /* now value between 0 and 50 */
+      approxProb *= 2;          /* now value between 0 [always approx] and 100 [never approx] */
       /* control CPU load probabilistically! */
-      if (randomi(1+approxProb) == 0) {
-	(*priority) = approximateKnapsack(be,
-					  be->session.mtu - sizeof(P2P_PACKET_HEADER));
+      if(randomi(1 + approxProb) == 0) {
+        (*priority) = approximateKnapsack(be,
+                                          be->session.mtu -
+                                          sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
-	FPRINTF(prioFile, "%llu 0 %d\n", cronTime(NULL), priority);
-#endif
-      } else {
-	(*priority) = solveKnapsack(be,
-				    be->session.mtu - sizeof(P2P_PACKET_HEADER));
-#if DEBUG_COLLECT_PRIO == YES
-	FPRINTF(prioFile,
-		"%llu 1 %d\n",
-		cronTime(NULL),
-		priority);
+        FPRINTF(prioFile, "%llu 0 %d\n", cronTime(NULL), priority);
 #endif
       }
-    } else { /* never approximate < 50% CPU load */
-      (*priority) = solveKnapsack(be,
-				  be->session.mtu - sizeof(P2P_PACKET_HEADER));
+      else {
+        (*priority) = solveKnapsack(be,
+                                    be->session.mtu -
+                                    sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
-      FPRINTF(prioFile,
-	      "%llu 2 %d\n",
-	      cronTime(NULL),
-	      priority);
+        FPRINTF(prioFile, "%llu 1 %d\n", cronTime(NULL), priority);
+#endif
+      }
+    }
+    else {                      /* never approximate < 50% CPU load */
+      (*priority) = solveKnapsack(be,
+                                  be->session.mtu -
+                                  sizeof(P2P_PACKET_HEADER));
+#if DEBUG_COLLECT_PRIO == YES
+      FPRINTF(prioFile, "%llu 2 %d\n", cronTime(NULL), priority);
 #endif
     }
     j = 0;
-    for (i=0;i<be->sendBufferSize;i++)
-      if (be->sendBuffer[i]->knapsackSolution == YES)
-	j++;
-    if (j == 0) {
+    for(i = 0; i < be->sendBufferSize; i++)
+      if(be->sendBuffer[i]->knapsackSolution == YES)
+        j++;
+    if(j == 0) {
       LOG(LOG_ERROR,
-	  _("`%s' selected %d out of %d messages (MTU: %d).\n"),
-	  "solveKnapsack",
-	  j,
-	  be->sendBufferSize,
-	  be->session.mtu - sizeof(P2P_PACKET_HEADER));
+          _("`%s' selected %d out of %d messages (MTU: %d).\n"),
+          "solveKnapsack",
+          j, be->sendBufferSize, be->session.mtu - sizeof(P2P_PACKET_HEADER));
 
-      for (j=0;j<be->sendBufferSize;j++)
-	LOG(LOG_ERROR,
-	    _("Message details: %u: length %d, priority: %d\n"),
-	    j,
-	    be->sendBuffer[j]->len,
-	    be->sendBuffer[j]->pri);
+      for(j = 0; j < be->sendBufferSize; j++)
+        LOG(LOG_ERROR,
+            _("Message details: %u: length %d, priority: %d\n"),
+            j, be->sendBuffer[j]->len, be->sendBuffer[j]->pri);
       return 0;
     }
 
-    if (be->available_send_window < be->session.mtu) {
+    if(be->available_send_window < be->session.mtu) {
       /* if we have a very high priority, we may
-	 want to ignore bandwidth availability (e.g. for HANGUP,
-	 which  has EXTREME_PRIORITY) */
-      if ((*priority) < EXTREME_PRIORITY) {
+         want to ignore bandwidth availability (e.g. for HANGUP,
+         which  has EXTREME_PRIORITY) */
+      if((*priority) < EXTREME_PRIORITY) {
 #if DEBUG_CONNECTION
-	LOG(LOG_DEBUG,
-	    "bandwidth limits prevent sending (send window %u too small).\n",
-	    be->available_send_window);
+        LOG(LOG_DEBUG,
+            "bandwidth limits prevent sending (send window %u too small).\n",
+            be->available_send_window);
 #endif
-	return 0; /* can not send, BPS available is too small */
+        return 0;               /* can not send, BPS available is too small */
       }
     }
     totalMessageSize = be->session.mtu;
-  } /* end MTU > 0 */
+  }                             /* end MTU > 0 */
   return totalMessageSize;
 }
+
 
 /**
  * Expire old messages from SendBuffer (to avoid
