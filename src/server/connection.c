@@ -2053,6 +2053,8 @@ static void scheduleInboundTraffic() {
   didAssign = YES;
   /* in the first round we cap by 2* previous utilization */
   firstRound = YES;
+  for (u=0;u<activePeerCount;u++)
+    entries[u]->idealized_limit = 0;
   while ( (schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
 	  (activePeerCount > 0) &&
 	  (didAssign == YES) ) {
@@ -2065,6 +2067,8 @@ static void scheduleInboundTraffic() {
 	unsigned int share;
 
 	share = entries[u]->idealized_limit + (unsigned int) (shares[u] * schedulableBandwidth);
+	if (share < entries[u]->idealized_limit) 
+	  share = 0xFFFFFFFF;  /* int overflow */
 	if ( (share > adjustedRR[u] * 2) &&
 	     (firstRound == YES) )
 	  share = adjustedRR[u] * 2;
@@ -2083,10 +2087,12 @@ static void scheduleInboundTraffic() {
       for (u=0;u<activePeerCount;u++) {
 	unsigned int v = perm[u]; /* use perm to avoid preference to low-numbered slots */
 	if ( (firstRound == NO) ||
-	     (entries[v]->idealized_limit / 2 < adjustedRR[u]) ) {
+	     (entries[v]->idealized_limit < adjustedRR[u] * 2) ) {
 	  unsigned int share;
 
 	  share = entries[v]->idealized_limit + (unsigned int) (schedulableBandwidth);
+	  if (share < entries[u]->idealized_limit) 
+	    share = 0xFFFFFFFF;  /* int overflow */
 	  if ( (firstRound == YES) &&
 	       (share > adjustedRR[u] * 2) )
 	    share = adjustedRR[u] * 2;
@@ -2101,9 +2107,13 @@ static void scheduleInboundTraffic() {
 	   (activePeerCount > 0) ) {
 	/* assign rest disregarding traffic limits */
 	perm = permute(WEAK, activePeerCount);
-	for (u=0;u<activePeerCount;u++)
-	  entries[perm[u]]->idealized_limit
-	    += (unsigned int) (schedulableBandwidth/activePeerCount);	
+	for (u=0;u<activePeerCount;u++) {
+	  unsigned int share;
+
+	  share = entries[perm[u]]->idealized_limit + (unsigned int) (schedulableBandwidth/activePeerCount);	
+	  if (share > entries[perm[u]]->idealized_limit) /* no int-overflow? */
+	    entries[perm[u]]->idealized_limit = share;
+	}
 	schedulableBandwidth = 0;
 	FREE(perm);
 	perm = NULL;
