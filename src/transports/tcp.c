@@ -518,7 +518,7 @@ static int readAndProcess(int i) {
     
     LOG(LOG_DEBUG,
       "tcp transport received %u bytes from %s (CRC %u), forwarding to core\n",
-      mp->size, &enc, crc32N(mp->msg, mp->size));
+      mp->size, &enc, crc32N(tcpSession->rbuff, tcpSession->pos));
   }
 #endif
     coreAPI->receive(mp);
@@ -909,7 +909,7 @@ static int tcpDirectSend(TCPSession * tcpSession,
 	   ssize - ret);
     }
     memcpy(tcpSession->wbuff,
-	   mp,
+	   mp + ret,
 	   ssize - ret);
     tcpSession->wpos = ssize - ret;
     signalSelect(); /* select set changed! */
