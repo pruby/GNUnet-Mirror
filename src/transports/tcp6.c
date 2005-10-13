@@ -811,7 +811,7 @@ static int tcp6DirectSend(TCP6Session * tcp6Session,
 	   ssize - ret);
     }
     memcpy(tcp6Session->wbuff,
-	   mp,
+	   mp + ret,
 	   ssize - ret);
     tcp6Session->wpos = ssize - ret;
     signalSelect(); /* select set changed! */
