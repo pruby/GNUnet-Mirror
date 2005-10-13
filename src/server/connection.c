@@ -913,6 +913,9 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
          (entry->pri >= EXTREME_PRIORITY)) {
         entry->knapsackSolution = YES;
         (*priority) += entry->pri;
+#if DEBUG_CONNECTION
+        LOG(LOG_DEBUG, "Selecting msg %u with length %u\n", i, entry->len);
+#endif
         totalMessageSize += entry->len;
       }
       else {
@@ -932,6 +935,9 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
           be->available_send_window) &&
          (totalMessageSize + entry->len < MAX_BUFFER_SIZE)) {
         entry->knapsackSolution = YES;
+#if DEBUG_CONNECTION
+        LOG(LOG_DEBUG, "Selecting msg %u with length %u\n", i, entry->len);
+#endif
         totalMessageSize += entry->len;
         (*priority) += entry->pri;
       }
@@ -1386,6 +1392,9 @@ static void sendBuffer(BufferEntry * be) {
     if (entry == NULL)
       continue;
     if (entry->knapsackSolution == YES) {
+#if DEBUG_CONNECTION
+        LOG(LOG_DEBUG, "Queuing msg %u with length %u\n", perm[i], entry->len);
+#endif
       GNUNET_ASSERT(entry->callback == NULL);
       GNUNET_ASSERT(p + entry->len <= totalMessageSize);
       memcpy(&plaintextMsg[p],
