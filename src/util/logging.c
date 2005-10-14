@@ -133,9 +133,25 @@ static int removeOldLog(const char * fil,
   }
   logdate = &fullname[strlen(def->basename)];
 #if ENABLE_NLS
-  ret = strptime(logdate,
-     nl_langinfo(D_FMT),
-     &t);
+  {
+    char *idx;
+    char c;
+    char *datefmt = STRDUP(nl_langinfo(D_FMT));
+  
+    /* Remove slashes */
+    idx = datefmt;
+    while((c = *idx)) {
+      if(c == '\\' || c == '/')
+        *idx = '_';
+      idx++;
+    }
+  
+    ret = strptime(logdate,
+       datefmt,
+       &t);
+       
+    FREE(datefmt);
+  }
 #else
   ret = strptime(logdate, "%Y-%m-%d", &t);
 #endif
