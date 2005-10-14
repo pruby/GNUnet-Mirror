@@ -935,12 +935,14 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
     rankingSum = 0;
     for (i=0;i<8*BITMAP_SIZE;i++)
       rankingSum += qr->rankings[i];
-    if ( (rankingSum != 0) &&
-	 (qr->activeConnections > 0) ) {
+    if (qr->activeConnections > 0) {
       /* select 4 peers for forwarding */
       for (i=0;i<4;i++) {
 	unsigned long long sel;
 	unsigned long long pos;
+
+	if (rankingSum == 0)
+	  break;
 	sel = randomi64(rankingSum);
 	pos = 0;	
 	for (j=0;j<8*BITMAP_SIZE;j++) {
@@ -954,12 +956,6 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
 	  }
 	}
       }
-    } else {
-      /* no bias available, go random! */
-      if (qr->activeConnections > 0) {
-	for (i=4*BITMAP_SIZE*8/qr->activeConnections-1;i>=0;i--)
-	  setBit(qr, randomi(BITMAP_SIZE)*8); /* select 4 random nodes */
-      }	
     }
     FREE(qr->rankings);
     qr->rankings = NULL;
