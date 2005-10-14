@@ -793,8 +793,11 @@ static void hotpathSelectionCode(const PeerIdentity * id,
   if (distance <= 0)
     distance = 1;
   ranking += 0xFFFF / (1 + randomi(distance));
-  ranking += randomi(0xFF); /* small random chance for everyone */
-  qr->rankings[getIndex(id)] = ranking;
+  ranking += 1 + randomi(0xFF); /* small random chance for everyone */
+  if (equalsHashCode512(&id->hashPubKey,
+			&qr->noTarget.hashPubKey))
+    ranking = 0; /* no chance for blocked peers */
+  qr->rankings[getIndex(id)] = ranking; 
 }
 
 /**
@@ -944,6 +947,9 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
 	  pos += qr->rankings[j];
 	  if (pos > sel) {
 	    setBit(qr, j);
+	    if (rankingSum>qr->rankings[j])
+	      rankingSum -= qr->rankings[j];
+	    qr->rankings[j] = 0;
 	    break;
 	  }
 	}
