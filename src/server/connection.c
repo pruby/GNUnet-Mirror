@@ -903,6 +903,9 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
   totalMessageSize = 0;
   (*priority) = 0;
 
+  for (i=be->sendBufferSize-1;i>=0;i--)
+    be->sendBuffer[i]->knapsackSolution = NO;
+
   if(be->session.mtu == 0) {
     totalMessageSize = sizeof(P2P_PACKET_HEADER);
     i = 0;
