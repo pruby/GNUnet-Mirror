@@ -85,7 +85,7 @@ menu "General settings" "GNUNETD"
 		Default: LOGFILE         = $GNUNETD_HOME/logs
 
 	config KEEPLOG
-	string "How long should logs be kept"
+	int "How long should logs be kept"
 	default 0
 	depends on Meta::ADVANCED
 	help
