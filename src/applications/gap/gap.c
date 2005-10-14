@@ -949,8 +949,8 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
 	  pos += qr->rankings[j];
 	  if (pos > sel) {
 	    setBit(qr, j);
-	    if (rankingSum>qr->rankings[j])
-	      rankingSum -= qr->rankings[j];
+	    GNUNET_ASSERT(rankingSum >= qr->rankings[j]);
+	    rankingSum -= qr->rankings[j];
 	    qr->rankings[j] = 0;
 	    break;
 	  }
