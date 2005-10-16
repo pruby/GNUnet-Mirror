@@ -562,6 +562,8 @@ static void sqlite_shutdown() {
   if (! db)
     return;
 
+  syncStats();
+
   for (idx = 0; idx < db->handle_count; idx++) {
     sqliteHandle *h = db->handles + idx;
     
@@ -575,8 +577,6 @@ static void sqlite_shutdown() {
   }
   FREE(db->handles);
   db->handle_count = 0;
-
-  syncStats();
 
   MUTEX_DESTROY(&db->DATABASE_Lock_);
   FREE(db->fn);
