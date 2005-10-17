@@ -56,7 +56,7 @@ static void printstatus(int * verboselevel,
     break;
   case FSUI_unindex_complete:
     if (*verboselevel == YES) {
-      delta = event->data.UnindexComplete.eta - event->data.UnindexComplete.start_time;
+      delta = event->data.UnindexProgress.eta - event->data.UnindexProgress.start_time;
       PRINTF(
       _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
       event->data.UnindexComplete.filename,
