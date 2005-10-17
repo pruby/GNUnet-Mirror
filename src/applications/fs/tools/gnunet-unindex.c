@@ -66,6 +66,7 @@ static void printstatus(int * verboselevel,
       ? (double) (-1.0)
       : (double) (event->data.UnindexComplete.total / 1024.0 * cronSECONDS / delta));
     }
+    SEMAPHORE_UP(exitSignal);
     break;
   case FSUI_unindex_error:
     printf(_("\nError unindexing file: %s\n"),
