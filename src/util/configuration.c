@@ -514,15 +514,19 @@ void readConfiguration() {
     LOG(LOG_WARNING,
 	_("Configuration file `%s' not found.  Run gnunet-setup!\n"),
 	expCfgName);
-#ifdef WINDOWS
     if (! testConfigurationString("GNUNETD",
             "_MAGIC_",
             "YES"))
+#ifdef WINDOWS
       MessageBox(0, _("Configuration file not found. Please run GNUnet Setup "
         "(Client Configuration) first."), _("Error"), MB_ICONSTOP | MB_OK);
+#else
+      errexit(_("Configuration file `%s' not found.  Run gnunet-setup!\n"),
+        expCfgName);
 #endif
-    errexit(_("Configuration file `%s' not found.  Run gnunet-setup!\n"),
-	    expCfgName);
+    else
+      errexit(_("Configuration file `%s' not found.  Run `gnunet-setup -d'!\n"),
+  	    expCfgName);
   }
   if (0 == assertIsFile(expCfgName))
     errexit(_("Cannot open configuration file `%s'.\n"),
