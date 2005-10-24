@@ -297,7 +297,7 @@ static int iopen(mysqlHandle * dbhI,
 		" prio INT(11) NOT NULL DEFAULT 0,"
 		" anonLevel INT(11) NOT NULL DEFAULT 0,"
 		" expire BIGINT NOT NULL DEFAULT 0,"
-		" hash TINYBLOB BINARY NOT NULL DEFAULT '',"
+		" hash TINYBLOB NOT NULL DEFAULT '',"
 		" value BLOB NOT NULL DEFAULT '',"
 		" INDEX (hash(64)),"
 		" INDEX (prio),"
