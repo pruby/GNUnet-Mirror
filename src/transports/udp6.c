@@ -183,6 +183,15 @@ static int isBlacklisted(IP6addr * ip) {
 }
 
 /**
+ * Cron job to get IP address
+ */
+static void getAddress(void *ip) {
+  if (SYSERR == getPublicIP6Address(*(IP6addr **)ip))
+    LOG(LOG_WARNING,
+      _("Could not determine my public IPv6 address.\n"));
+}
+
+/**
  * Listen on the given socket and distribute the packets to the UDP6
  * handler.
  */
@@ -339,6 +348,7 @@ static P2P_hello_MESSAGE * createhello() {
   P2P_hello_MESSAGE * msg;
   Host6Address * haddr;
   unsigned short port;
+  IP6addr **addr;
 
   port = getGNUnetUDP6Port();
   if (port == 0)
@@ -347,12 +357,13 @@ static P2P_hello_MESSAGE * createhello() {
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(Host6Address));
   haddr = (Host6Address*) &msg[1];
 
-  if (SYSERR == getPublicIP6Address(&haddr->senderIP)) {
-    FREE(msg);
-    LOG(LOG_WARNING,
-	_("UDP6: Could not determine my public IPv6 address.\n"));
-    return NULL;
-  }
+  /* Get address later, don't block startup by 
+     name resolution here */
+  memset(&haddr->senderIP, 0, sizeof(IP6addr));
+  addr = (IP6addr **) MALLOC(sizeof(IP6addr *));
+  *addr = &haddr->senderIP;
+  addCronJob(getAddress, 0, 0, (void *) addr);
+
   haddr->senderPort      = htons(port);
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(Host6Address));
