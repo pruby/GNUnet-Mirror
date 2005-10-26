@@ -155,22 +155,6 @@ static unsigned short getGNUnetUDPPort() {
 }
 
 /**
- * Cron job to get IP address
- */
-/**
- * Cron job to get IP address
- */
-static void getAddress(void *ip) {
-  if (SYSERR == getPublicIPAddress(* ((IPaddr **) ip)))
-    LOG(LOG_WARNING,
-      _("Could not determine my public IP address.\n"));
-  else
-    LOG(LOG_DEBUG,
-      "UDP uses IP address %u.%u.%u.%u.\n",
-      PRIP(ntohl(*(int*) *((IPaddr **) ip))));
-}
-
-/**
  * Allocate and bind a server socket for the UDP transport.
  */
 static int passivesock(unsigned short port) {
@@ -358,7 +342,6 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
 static P2P_hello_MESSAGE * createhello() {
   P2P_hello_MESSAGE * msg;
   HostAddress * haddr;
-  IPaddr **addr;
 
   if ( ( (udp_shutdown == YES) && (getGNUnetUDPPort() == 0) ) ||
        ( (udp_shutdown == NO) && (port == 0) ) )
@@ -367,13 +350,15 @@ static P2P_hello_MESSAGE * createhello() {
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   haddr = (HostAddress*) &msg[1];
 
-  /* Get address later, don't block startup by 
-     name resolution here */
-  memset(&haddr->senderIP, 0, sizeof(IPaddr));
-  addr = (IPaddr **) MALLOC(sizeof(IPaddr *));
-  *addr = &haddr->senderIP;
-  addCronJob(getAddress, 0, 0, (void *) addr);
-
+  if (SYSERR == getPublicIPAddress(&haddr->senderIP)) {
+    FREE(msg);
+    LOG(LOG_WARNING,
+	_("UDP: Could not determine my public IP address.\n"));
+    return NULL;
+  }
+  LOG(LOG_DEBUG,
+      "UDP uses IP address %u.%u.%u.%u.\n",
+      PRIP(ntohl(*(int*)&haddr->senderIP)));
   if (udp_shutdown == YES)
     haddr->senderPort      = htons(getGNUnetUDPPort());
   else

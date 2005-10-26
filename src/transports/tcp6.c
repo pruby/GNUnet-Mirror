@@ -248,15 +248,6 @@ static void signalSelect() {
 }
 
 /**
- * Cron job to get IP address
- */
-static void getAddress(void *ip) {
-  if (SYSERR == getPublicIP6Address(*(IP6addr **)ip))
-    LOG(LOG_WARNING,
-      _("Could not determine my public IPv6 address.\n"));
-}
-
-/**
  * Disconnect from a remote node. May only be called
  * on sessions that were aquired by the caller first.
  * For the core, aquiration means to call associate or
@@ -951,7 +942,6 @@ static P2P_hello_MESSAGE * createhello() {
   P2P_hello_MESSAGE * msg;
   Host6Address * haddr;
   unsigned short port;
-  IP6addr **addr;
 
   port = getGNUnetTCP6Port();
   if (0 == port) {
@@ -962,12 +952,12 @@ static P2P_hello_MESSAGE * createhello() {
   msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(Host6Address));
   haddr = (Host6Address*) &msg[1];
 
-  /* Get address later, don't block startup by 
-     name resolution here */
-  memset(&haddr->ip, 0, sizeof(IP6addr));
-  addr = (IP6addr **) MALLOC(sizeof(IP6addr *));
-  *addr = &haddr->ip;
-  addCronJob(getAddress, 0, 0, (void *) addr);
+  if (SYSERR == getPublicIP6Address(&haddr->ip)) {
+    FREE(msg);
+    LOG(LOG_WARNING,
+	_("Could not determine my public IPv6 address.\n"));
+    return NULL;
+  }
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(Host6Address));

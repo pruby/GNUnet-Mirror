@@ -312,19 +312,6 @@ static void signalSelect() {
 }
 
 /**
- * Cron job to get IP address
- */
-static void getAddress(void *ip) {
-  if (SYSERR == getPublicIPAddress(* ((IPaddr **) ip)))
-    LOG(LOG_WARNING,
-      _("Could not determine my public IP address.\n"));
-  else
-    LOG(LOG_DEBUG,
-      "HTTP uses IP address %u.%u.%u.%u.\n",
-      PRIP(ntohl(*(int*) *((IPaddr **) ip))));
-}
-
-/**
  * Disconnect from a remote node. May only be called
  * on sessions that were aquired by the caller first.
  * For the core, aquiration means to call associate or
@@ -1096,7 +1083,6 @@ static P2P_hello_MESSAGE * createhello() {
   P2P_hello_MESSAGE * msg;
   HostAddress * haddr;
   unsigned short port;
-  IPaddr **addr;
 
   port = getGNUnetHTTPPort();
   if (0 == port) {
@@ -1107,13 +1093,15 @@ static P2P_hello_MESSAGE * createhello() {
   msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   haddr = (HostAddress*) &msg[1];
 
-  /* Get address later, don't block startup by 
-     name resolution here */
-  memset(&haddr->ip, 0, sizeof(IPaddr));
-  addr = (IPaddr **) MALLOC(sizeof(IPaddr *));
-  *addr = &haddr->ip;
-  addCronJob(getAddress, 0, 0, (void *) addr);
-
+  if (SYSERR == getPublicIPAddress(&haddr->ip)) {
+    FREE(msg);
+    LOG(LOG_WARNING,
+	_("HTTP: Could not determine my public IP address.\n"));
+    return NULL;
+  }
+  LOG(LOG_DEBUG,
+      "HTTP uses IP address %u.%u.%u.%u.\n",
+      PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
