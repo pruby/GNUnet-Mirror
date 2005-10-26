@@ -51,6 +51,10 @@
  */
 #define USE_CHECKING_MUTEX 1
 
+/**
+ * Enable gprof workaround for multi-threaded apps
+ */
+#define ENABLE_PROFILER 0
 
 typedef struct {
 #if SOLARIS || FREEBSD5 || OSX
@@ -89,6 +93,43 @@ typedef struct {
 #ifndef _MSC_VER
 extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr, int kind);
 #endif
+
+#if ENABLE_PROFILER
+/**
+ * @brief Passed to wrapper_routine by PTHREAD_CREATE
+ */
+typedef struct wrapper_s {
+  void *(*start_routine) (void *);
+  void *arg;
+
+  pthread_mutex_t lock;
+  pthread_cond_t wait;
+
+  struct itimerval itimer;
+
+} wrapper_t;
+
+/**
+ * @brief Workaround for gprof, see comment in PTHREAD_CREATE()
+ */
+static void *wrapper_routine(void *data) {
+  /* Put user data in thread-local variables */
+  void *(*start_routine) (void *) = ((wrapper_t *) data)->start_routine;
+  void *arg = ((wrapper_t *) data)->arg;
+
+  /* Set the profile timer value */
+  setitimer(ITIMER_PROF, &((wrapper_t *) data)->itimer, NULL);
+
+  /* Tell the calling thread that we don't need its data anymore */
+  pthread_mutex_lock(&((wrapper_t *) data)->lock);
+  pthread_cond_signal(&((wrapper_t *) data)->wait);
+  pthread_mutex_unlock(&((wrapper_t *) data)->lock);
+
+  /* Call the real function */
+  return start_routine(arg);
+}
+#endif
+
 /* ********************* public methods ******************* */
 
 void create_mutex_(Mutex * mutex) {
@@ -361,6 +402,23 @@ int PTHREAD_CREATE(PTHREAD_T * pt,
   pthread_t * handle;
   pthread_attr_t stack_size_custom_attr;
   int ret;
+#if ENABLE_PROFILER
+  wrapper_t wrapper_data;
+  int i_return;
+
+  /* This works around gprof's inability to profile multi-threaded
+     applications (based on http://sam.zoy.org/writings/programming/gprof.html).
+     It uses a wrapper for the thread's real main function to set
+     the thread's itimer value to the main thread's itimer value. */
+
+  /* Initialize the wrapper structure */
+  wrapper_data.start_routine = main;
+  wrapper_data.arg = arg;
+  getitimer(ITIMER_PROF, &wrapper_data.itimer);
+  pthread_cond_init(&wrapper_data.wait, NULL);
+  pthread_mutex_init(&wrapper_data.lock, NULL);
+  pthread_mutex_lock(&wrapper_data.lock);
+#endif
 
   handle = MALLOC(sizeof(pthread_t));
 #ifdef MINGW
@@ -372,8 +430,23 @@ int PTHREAD_CREATE(PTHREAD_T * pt,
 			    stackSize);
   ret = pthread_create(handle,
 		       &stack_size_custom_attr,
+#if !ENABLE_PROFILER
 		       main,
-		       arg);			
+		       arg);
+#else
+           &wrapper_routine,
+           &wrapper_data);
+  
+  /* If the thread was successfully spawned, wait for the data
+     to be released */
+  if(ret == 0)
+    pthread_cond_wait(&wrapper_data.wait, &wrapper_data.lock);
+
+  pthread_mutex_unlock(&wrapper_data.lock);
+  pthread_mutex_destroy(&wrapper_data.lock);
+  pthread_cond_destroy(&wrapper_data.wait);
+#endif
+
   if (ret != 0) {
     FREE(handle);
     pt->internal = NULL;
