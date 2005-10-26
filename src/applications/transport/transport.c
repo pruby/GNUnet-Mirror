@@ -597,8 +597,7 @@ static void stopTransports() {
   ctapi.receive = NULL;
 }
 
-static void initHelper(TransportAPI * tapi,
-		       void * unused) {
+static void initHello(TransportAPI * tapi) {
   P2P_hello_MESSAGE * helo;
 
   createSignedhello(tapi);
@@ -607,6 +606,21 @@ static void initHelper(TransportAPI * tapi,
     identity->addHost(helo);
     FREE(helo);
   }
+}
+
+static void initHelper(TransportAPI * tapi,
+		       void * unused) {
+  /* Creation of HELLOs takes longer if a locally
+     unresolvable hostname ((Dyn)DNS) was specified
+     as this host's address and we have no network
+     connection at the moment. gethostbyname()
+     blocks the startup process in this case.
+     This is why we create the HELLOs in another
+     thread. */
+  addCronJob((CronJob)&initHello,
+       0,
+       0,
+       tapi);
 }
 
 
