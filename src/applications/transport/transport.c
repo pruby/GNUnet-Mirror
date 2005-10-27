@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -597,7 +598,8 @@ static void stopTransports() {
   ctapi.receive = NULL;
 }
 
-static void initHello(TransportAPI * tapi) {
+static void initHello(void * cls) {
+  TransportAPI * tapi = cls;
   P2P_hello_MESSAGE * helo;
 
   createSignedhello(tapi);
@@ -617,8 +619,18 @@ static void initHelper(TransportAPI * tapi,
      blocks the startup process in this case.
      This is why we create the HELLOs in another
      thread. */
-  addCronJob((CronJob)&initHello,
+  addCronJob(&initHello,
        0,
+       0,
+       tapi);
+}
+
+static void doneHelper(TransportAPI * tapi,
+		       void * unused) {
+  /* In the (rare) case that we shutdown transports
+     before the cron-jobs had a chance to run, stop
+     the cron-jobs */
+  delCronJob(&initHello,
        0,
        tapi);
 }
@@ -756,6 +768,7 @@ int release_module_transport() {
   int i;
   void (*ptr)();
 
+  forEachTransport(&doneHelper, NULL);
   for (i=0;i<tapis_count;i++) {
     if (tapis[i] != NULL) {
       delCronJob((CronJob)&createSignedhello,
