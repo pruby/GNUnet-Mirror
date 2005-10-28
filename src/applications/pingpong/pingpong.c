@@ -130,6 +130,14 @@ static int pingReceived(const PeerIdentity * sender,
 	_("Received ping for another peer. Dropping.\n"));
     return SYSERR; /* not for us */
   }
+
+#if DEBUG_PINGPONG  
+  EncName enc;
+
+  hash2enc(&sender->hashPubKey, &enc);
+  LOG(LOG_DEBUG, "Received ping from peer %s.\n", &enc);
+#endif
+  
   pmsg->header.type = htons(p2p_PROTO_PONG);
   if (stats != NULL)
     stats->change(stat_pingReceived, 1);
@@ -179,6 +187,14 @@ static int plaintextPingReceived(const PeerIdentity * sender,
 	_("Received PING not destined for us!\n"));
     return SYSERR; /* not for us */
   }
+
+#if DEBUG_PINGPONG  
+  EncName enc;
+
+  hash2enc(&sender->hashPubKey, &enc);
+  LOG(LOG_DEBUG, "Received plaintext ping from peer %s.\n", &enc);
+#endif
+  
   pmsg->header.type = htons(p2p_PROTO_PONG);
   /* allow using a different transport for sending the reply, the
      transport may have been uni-directional! */
@@ -300,7 +316,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
   hash2enc(&sender->hashPubKey,
 	   &enc);
   LOG(LOG_DEBUG,
-      "Received PONG from `%s' matched %u peers.\n",
+      "Received plaintext PONG from `%s' matched %u peers.\n",
       &enc,
       matched);
 #endif
