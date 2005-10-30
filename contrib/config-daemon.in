@@ -338,19 +338,6 @@ menu "Network" "NETWORK"
 		
 		If in doubt, try without.  Default is empty.
   
-	config F2F
-	string "List of friends for friend-to-friend topology"
-	default "$GNUNETD_HOME/friends"
-	depends on Meta::ADVANCED
-	help
-		Specifies the name of a file which contains a list of GNUnet peer IDs
-		that are friends.  If used together with 
-
-                [MODULES] topology = topology_f2f
-
-                this will ensure that GNUnet only connects to these peers (via
-		any available transport).
-
 	config HELLOEXCHANGE
 	bool "Participate in network topology management"
 	default y
@@ -381,6 +368,21 @@ menu "Network" "NETWORK"
 
 		Default is "127.0.0.0/8;".
 
+endmenu
+
+menu "Friend-to-Friend" "F2F"
+	config FRIENDS
+	string "List of friends for friend-to-friend topology"
+	default "$GNUNETD_HOME/friends"
+	depends on Meta::ADVANCED
+	help
+		Specifies the name of a file which contains a list of GNUnet peer IDs
+		that are friends.  If used together with 
+
+                [MODULES] topology = topology_f2f
+
+                this will ensure that GNUnet only connects to these peers (via
+		any available transport).
 endmenu
 
 menu "Resource limitations" "LOAD"
