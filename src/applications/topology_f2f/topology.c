@@ -38,6 +38,8 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
 
+#define DEBUG_TOPOLOGY NO
+
 /**
  * After 2 minutes on an inactive connection, probe the other
  * node with a ping if we have achieved less than 50% of our
@@ -209,6 +211,15 @@ static void scanForHosts(unsigned int index) {
  * @param hostId the peer that gave a sign of live
  */
 static void notifyPONG(PeerIdentity * hostId) {
+#if DEBUG_TOPOLOGY
+  EncName enc;
+
+  hash2enc(&hostId->hashPubKey,
+     &enc);
+  LOG(LOG_DEBUG,
+      "Received pong from `%s', telling core that peer is still alive.\n",
+      (char*)&enc);
+#endif
   coreAPI->confirmSessionUp(hostId);
   FREE(hostId);
 }
@@ -220,6 +231,9 @@ static void checkNeedForPing(const PeerIdentity * peer,
 			     void * unused) {
   cron_t now;
   cron_t act;
+#if DEBUG_TOPOLOGY
+  EncName enc;
+#endif
 
   if (weak_randomi(LIVE_PING_EFFECTIVENESS) != 0)
     return;
@@ -235,6 +249,13 @@ static void checkNeedForPing(const PeerIdentity * peer,
        to keep the connection open instead of hanging up */
     PeerIdentity * hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
+#if DEBUG_TOPOLOGY
+    hash2enc(&hi->hashPubKey,
+       &enc);
+    LOG(LOG_DEBUG,
+  "Sending ping to `%s' to prevent connection timeout.\n",
+  (char*)&enc);
+#endif
     if (OK != pingpong->ping(peer,
 			     NO,
 			     (CronJob)&notifyPONG,
