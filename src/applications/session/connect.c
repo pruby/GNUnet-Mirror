@@ -625,7 +625,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
       ping->type = htons(p2p_PROTO_PONG);
       coreAPI->unicast(sender,
 		       ping,
-		       0,
+		       EXTREME_PRIORITY,
 		       0);
     }
   } else {

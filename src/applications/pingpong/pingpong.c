@@ -417,7 +417,7 @@ static int initiatePing(const PeerIdentity * receiver,
   } else {
     coreAPI->unicast(receiver,
 		     &pmsg->header,
-		     0,
+		     EXTREME_PRIORITY,
 		     0);
     if (stats != NULL)
       stats->change(stat_ciphertextPingSent, 1);
