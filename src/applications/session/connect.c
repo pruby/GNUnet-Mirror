@@ -478,16 +478,20 @@ static int acceptSessionKey(const PeerIdentity * sender,
   char * plaintext;
   EncName enc;
 
+  hash2enc(&sender->hashPubKey,
+     &enc);
   if ( (topology != NULL) &&
-       (topology->allowConnectionFrom(sender) == SYSERR) )
+       (topology->allowConnectionFrom(sender) == SYSERR) ) {
+    LOG(LOG_DEBUG, "Rejected session key from peer `%s'.\n",
+                   &enc);
+        
     return SYSERR;
+  }
   if (equalsHashCode512(&sender->hashPubKey,
 			&coreAPI->myIdentity->hashPubKey)) {
     BREAK();
     return SYSERR;
   }
-  hash2enc(&sender->hashPubKey,
-	   &enc);
 #if DEBUG_SESSION
   LOG(LOG_DEBUG,
       "Received session key from peer `%s'.\n",
