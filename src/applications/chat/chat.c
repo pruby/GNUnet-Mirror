@@ -121,8 +121,8 @@ static int handleChatMSG(const PeerIdentity * sender,
   return OK;
 }
 
-static void csHandleChatRequest(ClientHandle client,
-				const CS_MESSAGE_HEADER * message) {
+static int csHandleChatRequest(ClientHandle client,
+			       const CS_MESSAGE_HEADER * message) {
   int i;
   int j;
   CS_chat_MESSAGE * cmsg;
@@ -132,7 +132,7 @@ static void csHandleChatRequest(ClientHandle client,
   if (ntohs(message->size) != sizeof(CS_chat_MESSAGE)) {
     LOG(LOG_WARNING,
 	_("Message received from client is invalid\n"));
-    return; /* invalid message */
+    return SYSERR; /* invalid message */
   }
   pmsg = (P2P_chat_MESSAGE*)message;
   cmsg = (CS_chat_MESSAGE*) message;
@@ -165,6 +165,7 @@ static void csHandleChatRequest(ClientHandle client,
   pmsg->header.type = htons(P2P_PROTO_chat_MSG);
   broadcastToConnected(&pmsg->header, 5, 1);
   MUTEX_UNLOCK(&chatMutex);
+  return OK;
 }
 
 static void chatClientExitHandler(ClientHandle client) {
@@ -204,7 +205,7 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientExitHandler(&chatClientExitHandler))
     ok = SYSERR;
   if (SYSERR == capi->registerClientHandler(CS_PROTO_chat_MSG,
-					    (CSHandler)&csHandleChatRequest))
+					    &csHandleChatRequest))
     ok = SYSERR;
   setConfigurationString("ABOUT",
 			 "chat",
@@ -217,7 +218,7 @@ void done_module_chat() {
 			   &handleChatMSG);
   coreAPI->unregisterClientExitHandler(&chatClientExitHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_chat_MSG,
-				   (CSHandler)&csHandleChatRequest);
+				   &csHandleChatRequest);
   MUTEX_DESTROY(&chatMutex);
   coreAPI = NULL;
 }

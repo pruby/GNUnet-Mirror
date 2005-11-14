@@ -97,7 +97,8 @@ static int parseOptions(int argc,
   return OK;
 }
 
-static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
+static void * receiveThread(void * arg) {
+  GNUNET_TCP_SOCKET * sock = arg;
   CS_chat_MESSAGE * buffer;
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
@@ -126,6 +127,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
   }
   FREE(buffer);
   SEMAPHORE_UP(doneSem);
+  printf("CHAT receive loop ends!\n");
   return NULL;
 }
 
@@ -154,10 +156,11 @@ int main(int argc, char ** argv) {
 	    "-n");
 
   doneSem = SEMAPHORE_NEW(0);
-  PTHREAD_CREATE(&messageReceiveThread,
-		 (PThreadMain) &receiveThread,
-		 sock,
-		 128 * 1024);
+  if (0 != PTHREAD_CREATE(&messageReceiveThread,
+			  &receiveThread,
+			  sock,
+			  128 * 1024))
+    DIE_STRERROR("pthread_create");
 
   memset(&msg,
 	 0,
