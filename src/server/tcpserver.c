@@ -374,14 +374,13 @@ static int readAndProcess(ClientHandle handle) {
 /**
  * Initialize the TCP port and listen for incoming connections.
  */
-static void * tcpListenMain() {
+static void * tcpListenMain(void * unused) {
   int max;
   int ret;
   int listenerFD;
   socklen_t lenOfIncomingAddr;
   int listenerPort;
   struct sockaddr_in serverAddr, clientAddr;
-  int secs = 5;
   const int on = 1;
   ClientHandle pos;
   struct stat buf;
@@ -392,11 +391,10 @@ static void * tcpListenMain() {
 
   listenerPort = getGNUnetPort();
   /* create the socket */
- CREATE_SOCKET:
   while ( (listenerFD = SOCKET(PF_INET,
 			       SOCK_STREAM,
 			       0)) < 0) {
-    LOG_STRERROR(LOG_ERROR, "socket");
+    DIE_STRERROR("socket");
     sleep(30);
   }
 
@@ -421,16 +419,10 @@ static void * tcpListenMain() {
   if (BIND(listenerFD,
 	   (struct sockaddr *) &serverAddr,
 	   sizeof(serverAddr)) < 0) {
-    LOG(LOG_ERROR,
-	_("`%s' failed for port %d: %s. Will try again in %d seconds.\n"),
-	"bind",
-	listenerPort,
-	STRERROR(errno),
-	secs);
-    sleep(secs);
-    secs += 5; /* slow progression... */
-    closefile(listenerFD);
-    goto CREATE_SOCKET;
+    errexit(_("`%s' failed for port %d: %s. Is gnunetd already running?\n"),
+	    "bind",
+	    listenerPort,
+	    STRERROR(errno));
   }
 
   /* start listening for new connections */
@@ -714,7 +706,7 @@ int initTCPServer() {
   tcpserver_keep_running = YES;
   serverSignal = SEMAPHORE_NEW(0);
   if (0 == PTHREAD_CREATE(&TCPLISTENER_listener_,
-			  (PThreadMain)&tcpListenMain,
+			  &tcpListenMain,
 			  NULL,
 			  64*1024)) {
     SEMAPHORE_DOWN(serverSignal);
