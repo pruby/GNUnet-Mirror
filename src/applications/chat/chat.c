@@ -103,10 +103,11 @@ static int handleChatMSG(const PeerIdentity * sender,
     /* we have not seen it before, send to all TCP clients
        and broadcast to all peers */
     markSeen(&hc);
+    broadcastToConnected(message, 5, 1);
+    cmsg->header.type = htons(CS_PROTO_chat_MSG);
     for (j=0;j<clientCount;j++)
       coreAPI->sendToClient(clients[j],
 		    &cmsg->header);
-    broadcastToConnected(message, 5, 1);
     pmsg->nick[CHAT_NICK_LENGTH-1] = '\0';
     pmsg->message[CHAT_MSG_LENGTH-1] = '\0';
     /*
@@ -161,6 +162,7 @@ static void csHandleChatRequest(ClientHandle client,
     }
   }
   /* forward to all other nodes in the network */
+  pmsg->header.type = htons(P2P_PROTO_chat_MSG);
   broadcastToConnected(&pmsg->header, 5, 1);
   MUTEX_UNLOCK(&chatMutex);
 }
@@ -186,7 +188,6 @@ static void chatClientExitHandler(ClientHandle client) {
 int initialize_module_chat(CoreAPIForApplication * capi) {
   int ok = OK;
 
-  GNUNET_ASSERT(P2P_PROTO_chat_MSG == CS_PROTO_chat_MSG);
   GNUNET_ASSERT(sizeof(P2P_chat_MESSAGE) == sizeof(CS_chat_MESSAGE));
   MUTEX_CREATE(&chatMutex);
   clientCount = 0;
