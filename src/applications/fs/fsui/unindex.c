@@ -82,7 +82,7 @@ static void * unindexThread(UnindexThreadClosure * utc) {
     event.data.UnindexComplete.start_time = utc->start_time;
   } else {
     event.type = FSUI_unindex_error;
-    event.data.message = _("Unindex failed.\n");
+    event.data.message = _("Unindex failed.");
   }
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
@@ -123,7 +123,7 @@ int FSUI_unindex(struct FSUI_Context * ctx,
   if (0 != PTHREAD_CREATE(&tl->handle,
 			  (PThreadMain) &unindexThread,
 			  utc,
-			  16 * 1024)) {
+			  32 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
     FREE(tl);
     FREE(utc->filename);

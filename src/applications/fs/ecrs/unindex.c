@@ -301,23 +301,27 @@ int ECRS_unindexFile(const char * filename,
       goto FAILURE;
     }
     if (! wasIndexed) {
-      fileBlockEncode(db,
-		      size,
-		      &chk.query,
-		      &value);
-      *value = *dblock; /* copy options! */
+      if (OK == 
+	  fileBlockEncode(db,
+			  size,
+			  &chk.query,
+			  &value)) {
+	*value = *dblock; /* copy options! */
 #if STRICT_CHECKS
-      if (OK != FS_delete(sock,
-			  value)) {
+	if (OK != FS_delete(sock,
+			    value)) {
+	  FREE(value);
+	  BREAK();
+	  goto FAILURE;
+	}
+#else
+	FS_delete(sock,
+		  value);
+#endif
 	FREE(value);
-	BREAK();
+      } else {
 	goto FAILURE;
       }
-#else
-      FS_delete(sock,
-		value);
-#endif
-      FREE(value);
     }
     pos += size;
     cronTime(&now);
