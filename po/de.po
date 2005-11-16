@@ -13,23 +13,23 @@ msgstr ""
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/applications/advertising/advertising.c:156
 #, c-format
 msgid "hello message from `%s' invalid (signature invalid). Dropping.\n"
-msgstr "Hello Nachricht von `%s' ist ungültig (Signatur ist ungültig). Nachricht wurde verworfen.\n"
+msgstr "Hello Nachricht von `%s' ist ungÃ¼ltig (Signatur ist ungÃ¼ltig). Nachricht wurde verworfen.\n"
 
 #: src/applications/advertising/advertising.c:162
 msgid "hello message received invalid (expiration time over limit). Dropping.\n"
-msgstr "Empfangene Hello Nachricht ist ungültig (Ablaufzeit über Limit). Nachricht wurde verworfen.\n"
+msgstr "Empfangene Hello Nachricht ist ungÃ¼ltig (Ablaufzeit Ã¼ber Limit). Nachricht wurde verworfen.\n"
 
 #: src/applications/advertising/advertising.c:171
 #, c-format
 msgid "hello advertisement for protocol %d received.\n"
-msgstr "Hello Ankündigung für Protokoll %d empfangen.\n"
+msgstr "Hello AnkÃ¼ndigung fÃ¼r Protokoll %d empfangen.\n"
 
 #: src/applications/advertising/advertising.c:290
 msgid "Could not send hellos+PING, ping buffer full.\n"
@@ -43,7 +43,7 @@ msgstr "`%s' fehlgeschlagen (%d, %u). PING wird nicht gesendet.\n"
 #: src/applications/advertising/advertising.c:451
 #, c-format
 msgid "Advertising my transport %d to selected peers.\n"
-msgstr "Transport %d wird ausgewählten anderen Knoten bekannt gegeben.\n"
+msgstr "Transport %d wird ausgewÃ¤hlten anderen Knoten bekannt gegeben.\n"
 
 #: src/applications/advertising/advertising.c:458
 msgid "Announcing ourselves pointless: no other peers are known to us so far.\n"
@@ -56,15 +56,15 @@ msgstr "Hello von Knoten `%s' wird entfernt (lief vor %ds ab).\n"
 
 #: src/applications/advertising/advertising.c:720
 msgid "# Peer advertisements received"
-msgstr "# Knotenankündigungen empfangen"
+msgstr "# KnotenankÃ¼ndigungen empfangen"
 
 #: src/applications/advertising/advertising.c:721
 msgid "# Self advertisments transmitted"
-msgstr "# Selbstbekanntmachungen übertragen"
+msgstr "# Selbstbekanntmachungen Ã¼bertragen"
 
 #: src/applications/advertising/advertising.c:722
 msgid "# Foreign advertisements forwarded"
-msgstr "# Bekanntmachungen von anderen übertragen"
+msgstr "# Bekanntmachungen von anderen Ã¼bertragen"
 
 #: src/applications/advertising/advertising.c:726
 #: src/applications/session/connect.c:749
@@ -84,12 +84,12 @@ msgstr "Stellt sicher, dass dieser Knoten anderen Knoten bekannt ist und entdeck
 #: src/applications/testbed/testbed.c:1080
 #, c-format
 msgid "Invalid URL `%s' (must begin with `%s')\n"
-msgstr "Ungültige URL `%s' (muss mit `%s' beginnen)\n"
+msgstr "UngÃ¼ltige URL `%s' (muss mit `%s' beginnen)\n"
 
 #: src/applications/bootstrap_http/http.c:109
 #, c-format
 msgid "Invalid port \"%s\" in hostlist specification, trying port %d.\n"
-msgstr "Ungültiger Port \"%s\" in Angabe der Hostlist, versuche Port %d.\n"
+msgstr "UngÃ¼ltiger Port \"%s\" in Angabe der Hostlist, versuche Port %d.\n"
 
 #: src/applications/bootstrap_http/http.c:120
 #, c-format
@@ -110,7 +110,7 @@ msgstr "`%s' an `%s' schlug fehl bei %s:%d mit dem Fehler: %s\n"
 #: src/applications/bootstrap_http/http.c:217
 #, c-format
 msgid "Parsing HTTP response for URL `%s' failed.\n"
-msgstr "Das Parsen der HTTP Antwort für die URL `%s' schlug fehl.\n"
+msgstr "Das Parsen der HTTP Antwort fÃ¼r die URL `%s' schlug fehl.\n"
 
 #: src/applications/bootstrap_http/http.c:252
 #, c-format
@@ -120,7 +120,7 @@ msgstr "Das Parsen des Hello von `%s' schlug fehl.\n"
 #: src/applications/bootstrap_http/http.c:330
 #, c-format
 msgid "Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"
-msgstr "Der Name des HTTP Proxies `%s' konnte nicht aufgelöst werden. Es wird ohne Proxy versucht.\n"
+msgstr "Der Name des HTTP Proxies `%s' konnte nicht aufgelÃ¶st werden. Es wird ohne Proxy versucht.\n"
 
 #: src/applications/bootstrap_http/http.c:354
 msgid "# hellos downloaded via http"
@@ -128,11 +128,11 @@ msgstr "# Hellos per HTTP heruntergeladen"
 
 #: src/applications/chat/chat.c:87
 msgid "Message received from peer is invalid.\n"
-msgstr "Empfangene Nachricht ist ungültig.\n"
+msgstr "Empfangene Nachricht ist ungÃ¼ltig.\n"
 
 #: src/applications/chat/chat.c:133
 msgid "Message received from client is invalid\n"
-msgstr "Empfangene Client-Nachricht ist ungültig.\n"
+msgstr "Empfangene Client-Nachricht ist ungÃ¼ltig.\n"
 
 #: src/applications/chat/chat.c:155
 msgid "Maximum number of chat clients reached.\n"
@@ -150,7 +150,7 @@ msgstr "`%s' registriert Handler %d und %d\n"
 
 #: src/applications/chat/chat.c:210
 msgid "enables P2P-chat (incomplete)"
-msgstr "Ermöglicht P2P-Chat"
+msgstr "ErmÃ¶glicht P2P-Chat"
 
 #: src/applications/chat/gnunet-chat.c:82
 msgid "specify nickname"
@@ -197,7 +197,7 @@ msgstr "Verbindung zu gnunetd konnte nicht hergestellt werden.\n"
 #: src/applications/chat/gnunet-chat.c:153
 #, c-format
 msgid "You must specify a nickname (use option `%s').\n"
-msgstr "Sie müssen einen Spitznamen angeben (verwenden Sie die Option `%s').\n"
+msgstr "Sie mÃ¼ssen einen Spitznamen angeben (verwenden Sie die Option `%s').\n"
 
 #: src/applications/chat/gnunet-chat.c:179
 msgid "Could not send join message to gnunetd\n"
@@ -210,17 +210,17 @@ msgstr "Nachricht konnte nicht an gnunetd gesendet werden.\n"
 #: src/applications/datastore/datastore.c:112
 #, c-format
 msgid "Availability test failed for `%s' at %s:%d.\n"
-msgstr "Verfügbarkeitstest für `%s' fehlgeschlagen bei %s:%d.\n"
+msgstr "VerfÃ¼gbarkeitstest fÃ¼r `%s' fehlgeschlagen bei %s:%d.\n"
 
 #: src/applications/datastore/datastore.c:136
 #, c-format
 msgid "Database failed to delete `%s'.\n"
-msgstr "Die Datenbank konnte `%s' nicht löschen.\n"
+msgstr "Die Datenbank konnte `%s' nicht lÃ¶schen.\n"
 
 #: src/applications/datastore/filter.c:42
 #, c-format
 msgid "Configuration must specify directory for FS data in section `%s' under `%s'.\n"
-msgstr "Die Konfigurationsdatei muss in der Sektion `%s' unter `%s' ein Verzeichnis für FS Daten angeben.\n"
+msgstr "Die Konfigurationsdatei muss in der Sektion `%s' unter `%s' ein Verzeichnis fÃ¼r FS Daten angeben.\n"
 
 #: src/applications/dht/module/cs.c:440
 #, c-format
@@ -252,7 +252,7 @@ msgstr "Zustellung der Nachricht `%s' fehlgeschlagen.\n"
 #: src/applications/dht/module/dht.c:942
 #, c-format
 msgid "Malformed optional field `%s' received from peer `%s'.\n"
-msgstr "Ungültiges optionales Feld `%s' empfangen von Knoten `%s'.\n"
+msgstr "UngÃ¼ltiges optionales Feld `%s' empfangen von Knoten `%s'.\n"
 
 #: src/applications/dht/module/dht.c:969
 #, c-format
@@ -263,12 +263,12 @@ msgstr "Knoten `%s' konnte nicht in der Routing Tabelle gefunden werden!\n"
 #: src/applications/dht/module/dht.c:1131
 #, c-format
 msgid "Received malformed response to `%s' from peer `%s'.\n"
-msgstr "Beschädigte Antwort auf `%s' von Knoten `%s' empfangen.\n"
+msgstr "BeschÃ¤digte Antwort auf `%s' von Knoten `%s' empfangen.\n"
 
 #: src/applications/dht/module/dht.c:1440
 #, c-format
 msgid "Invalid response to `%s' from peer `%s'.\n"
-msgstr "Ungültige Antwort auf `%s' von Knoten `%s' empfangen.\n"
+msgstr "UngÃ¼ltige Antwort auf `%s' von Knoten `%s' empfangen.\n"
 
 #: src/applications/dht/module/dht.c:1593
 #: src/applications/dht/module/dht.c:2314
@@ -276,23 +276,23 @@ msgstr "Ungültige Antwort auf `%s' von Knoten `%s' empfangen.\n"
 #: src/applications/rpc/rpc.c:1267
 #, c-format
 msgid "`%s' called with timeout above 1 hour (bug?)\n"
-msgstr "`%s' mit einem Timeout von über einer Stunde aufgerufen (Fehler?)\n"
+msgstr "`%s' mit einem Timeout von Ã¼ber einer Stunde aufgerufen (Fehler?)\n"
 
 #: src/applications/dht/module/dht.c:1782
 #, c-format
 msgid "Invalid response to `%s'.\n"
-msgstr "Ungültige Antwort auf `%s'.\n"
+msgstr "UngÃ¼ltige Antwort auf `%s'.\n"
 
 #: src/applications/dht/module/dht.c:1980
 #, c-format
 msgid "Malformed response to `%s' on master table.\n"
-msgstr "Beschädigte Antwort auf `%s' in Master Tabelle.\n"
+msgstr "BeschÃ¤digte Antwort auf `%s' in Master Tabelle.\n"
 
 #: src/applications/dht/module/dht.c:2191
 #: src/applications/dht/module/dht.c:2470
 #, c-format
 msgid "Invalid response to `%s' from `%s'\n"
-msgstr "Ungültige Antwort auf `%s' von `%s'\n"
+msgstr "UngÃ¼ltige Antwort auf `%s' von `%s'\n"
 
 #: src/applications/dht/module/dht.c:2841
 #: src/applications/dht/module/dht.c:2970
@@ -300,25 +300,25 @@ msgstr "Ungültige Antwort auf `%s' von `%s'\n"
 #: src/applications/dht/module/dht.c:3212
 #, c-format
 msgid "Received invalid RPC `%s'.\n"
-msgstr "Ungültiger RPC `%s' empfangen.\n"
+msgstr "UngÃ¼ltiger RPC `%s' empfangen.\n"
 
 #: src/applications/dht/module/dht.c:3098
 #: src/applications/dht/module/dht.c:3226
 #, c-format
 msgid "RPC for `%s' received for table that we do not participate in!\n"
-msgstr "RPC für `%s' empfangen für eine Tabelle, an der wir nicht beteiligt sind!\n"
+msgstr "RPC fÃ¼r `%s' empfangen fÃ¼r eine Tabelle, an der wir nicht beteiligt sind!\n"
 
 #: src/applications/dht/tools/dht-join.c:43
 msgid "allow SIZE bytes of memory for the local table"
-msgstr "SIZE bytes an Speicher für die lokale Tabelle erlauben"
+msgstr "SIZE bytes an Speicher fÃ¼r die lokale Tabelle erlauben"
 
 #: src/applications/dht/tools/dht-join.c:45
 msgid "join table called NAME"
-msgstr "Tabelle NAME anschließen"
+msgstr "Tabelle NAME anschlieÃŸen"
 
 #: src/applications/dht/tools/dht-join.c:51
 msgid "Join a DHT."
-msgstr "Einer DHT anschließen."
+msgstr "Einer DHT anschlieÃŸen."
 
 #: src/applications/dht/tools/dht-join.c:85
 #: src/applications/dht/tools/dht-query.c:84
@@ -345,21 +345,21 @@ msgstr "Einer DHT anschließen."
 #: src/server/gnunet-transport-check.c:454
 #, c-format
 msgid "You must pass a number to the `%s' option.\n"
-msgstr "Sie müssen für die Option `%s' zusätzlich eine Zahl angeben.\n"
+msgstr "Sie mÃ¼ssen fÃ¼r die Option `%s' zusÃ¤tzlich eine Zahl angeben.\n"
 
 #: src/applications/dht/tools/dht-join.c:115
 msgid "Superflous arguments (ignored).\n"
-msgstr "überflüssige Parameter (werden ignoriert).\n"
+msgstr "Ã¼berflÃ¼ssige Parameter (werden ignoriert).\n"
 
 #: src/applications/dht/tools/dht-join.c:131
 #, c-format
 msgid "Call to `%s' returns %d.\n"
-msgstr "Aufruf von `%s' gibt %d zurück.\n"
+msgstr "Aufruf von `%s' gibt %d zurÃ¼ck.\n"
 
 #: src/applications/dht/tools/dht-join.c:132
 #, c-format
 msgid "Call to `%s' with key `%s'.\n"
-msgstr "Aufruf von `%s' mit Schlüssel `%s'.\n"
+msgstr "Aufruf von `%s' mit SchlÃ¼ssel `%s'.\n"
 
 #: src/applications/dht/tools/dht-join.c:133
 #, c-format
@@ -379,7 +379,7 @@ msgstr "Fehler beim Beitreten zu der DHT.\n"
 #: src/applications/dht/tools/dht-join.c:243
 #, c-format
 msgid "Joined DHT.  Press CTRL-C to leave.\n"
-msgstr "Der DHT beigetreten. Drücken Sie STRG-C, um sie zu verlassen.\n"
+msgstr "Der DHT beigetreten. DrÃ¼cken Sie STRG-C, um sie zu verlassen.\n"
 
 #: src/applications/dht/tools/dht-join.c:250
 msgid "Error leaving DHT.\n"
@@ -421,18 +421,18 @@ msgstr "Es konnte keine Verbindung mit gnunetd hergestellt werden.\n"
 #: src/applications/dht/tools/dht-query.c:253
 #, c-format
 msgid "Command `%s' requires an argument (`%s').\n"
-msgstr "Kommando `%s' benötigt eine zusätzliche Angabe (`%s').\n"
+msgstr "Kommando `%s' benÃ¶tigt eine zusÃ¤tzliche Angabe (`%s').\n"
 
 #: src/applications/dht/tools/dht-query.c:261
 #: src/applications/dht/tools/dht-query.c:271
 #, c-format
 msgid "Command `%s' requires two arguments (`%s' and `%s').\n"
-msgstr "Kommando `%s' benötigt zwei zusätzliche Angaben (`%s' und `%s').\n"
+msgstr "Kommando `%s' benÃ¶tigt zwei zusÃ¤tzliche Angaben (`%s' und `%s').\n"
 
 #: src/applications/dht/tools/dht-query.c:279
 #, c-format
 msgid "Unsupported command `%s'.  Aborting.\n"
-msgstr "Kommando `%s' wird nicht unterstützt. Vorgang wird abgebrochen.\n"
+msgstr "Kommando `%s' wird nicht unterstÃ¼tzt. Vorgang wird abgebrochen.\n"
 
 #: src/applications/dht/tools/dht_api.c:127
 #: src/applications/dht/tools/dht_api.c:236
@@ -449,14 +449,14 @@ msgstr "Fehler beim Senden von `%s'. Verbindung wird geschlossen.\n"
 #: src/applications/dht/tools/dht_api.c:360
 #, c-format
 msgid "Received invalid `%s' request (size %d)\n"
-msgstr "Ungültige Anfrage `%s' empfangen (Größe %d)\n"
+msgstr "UngÃ¼ltige Anfrage `%s' empfangen (GrÃ¶ÃŸe %d)\n"
 
 #: src/applications/dht/tools/dht_api.c:214
 #: src/applications/dht/tools/dht_api.c:266
 #: src/applications/dht/tools/dht_api.c:320
 #, c-format
 msgid "Received invalid `%s' request (wrong table)\n"
-msgstr "Ungültige Anfrage `%s' empfangen (falsche Tabelle)\n"
+msgstr "UngÃ¼ltige Anfrage `%s' empfangen (falsche Tabelle)\n"
 
 #: src/applications/dht/tools/dht_api.c:390
 #, c-format
@@ -474,7 +474,7 @@ msgstr "DHT kann nicht verlassen werden: Tabelle unbekannt!\n"
 #: src/applications/dht/tools/dht_api.c:520
 #, c-format
 msgid "gnunetd signaled error in response to `%s' message\n"
-msgstr "gnunetd gab in Bezug auf die `%s' Nachricht einen Fehler zurück.\n"
+msgstr "gnunetd gab in Bezug auf die `%s' Nachricht einen Fehler zurÃ¼ck.\n"
 
 #: src/applications/dht/tools/dht_api.c:525
 #, c-format
@@ -535,7 +535,7 @@ msgstr "`%s' registriert Handler %d\n"
 #: src/applications/fs/ecrs/download.c:121
 #, c-format
 msgid "Could not unlink temporary file `%s': %s\n"
-msgstr "Temporäre Datei `%s' konnte nicht gelöscht werden: %s\n"
+msgstr "TemporÃ¤re Datei `%s' konnte nicht gelÃ¶scht werden: %s\n"
 
 #: src/applications/fs/ecrs/download.c:249
 #, c-format
@@ -544,12 +544,12 @@ msgstr "Write(%d, %p, %d) schlug fehl: %s\n"
 
 #: src/applications/fs/ecrs/download.c:910
 msgid "Decrypted content does not match key. This is either a bug or a maliciously inserted file. Download aborted.\n"
-msgstr "Entschlüsselter Inhalt entspricht nicht dem Schlüssel. Dies ist entweder ein Bug oder eine mit bösen Absichten eingefügte Datei. Download wurde abgebrochen.\n"
+msgstr "EntschlÃ¼sselter Inhalt entspricht nicht dem SchlÃ¼ssel. Dies ist entweder ein Bug oder eine mit bÃ¶sen Absichten eingefÃ¼gte Datei. Download wurde abgebrochen.\n"
 
 #: src/applications/fs/ecrs/download.c:1081
 #, c-format
 msgid "Content `%s' seems to be not available on the network.\n"
-msgstr "Inhalt `%s' scheint im Netzwerk nicht verfügbar zu sein.\n"
+msgstr "Inhalt `%s' scheint im Netzwerk nicht verfÃ¼gbar zu sein.\n"
 
 #: src/applications/fs/ecrs/meta.c:826
 #, c-format
@@ -564,7 +564,7 @@ msgstr "Datei `%s' konnte nicht zu `%s' umbenannt werden: Datei existiert bereit
 #: src/applications/fs/ecrs/namespace.c:45
 #, c-format
 msgid "Configuration file must specify a directory for GNUnet to store per-peer data under %s%s.\n"
-msgstr "Die Konfigurationsdatei muss unter %s%s ein Verzeichnis für GNUnet angeben, in dem Knotenbezogene Daten gespeichert werden.\n"
+msgstr "Die Konfigurationsdatei muss unter %s%s ein Verzeichnis fÃ¼r GNUnet angeben, in dem Knotenbezogene Daten gespeichert werden.\n"
 
 #: src/applications/fs/ecrs/namespace.c:133
 #, c-format
@@ -576,27 +576,27 @@ msgstr "Pseudonym `%s' kann nicht erstellt werden, da die Datei `%s' bereits exi
 #: src/applications/fs/ecrs/namespace.c:526
 #, c-format
 msgid "File `%s' does not contain a pseudonym.\n"
-msgstr "Die Datei `%s' enthält kein Pseudonym.\n"
+msgstr "Die Datei `%s' enthÃ¤lt kein Pseudonym.\n"
 
 #: src/applications/fs/ecrs/namespace.c:317
 #: src/applications/fs/ecrs/namespace.c:393
 #, c-format
 msgid "Format of pseudonym `%s' is invalid.\n"
-msgstr "Format des Pseudonyms `%s' ist ungültig.\n"
+msgstr "Format des Pseudonyms `%s' ist ungÃ¼ltig.\n"
 
 #: src/applications/fs/ecrs/namespace.c:536
 #: src/applications/fs/ecrs/namespace.c:546
 #, c-format
 msgid "Format of file `%s' is invalid.\n"
-msgstr "Format der Datei `%s' ist ungültig.\n"
+msgstr "Format der Datei `%s' ist ungÃ¼ltig.\n"
 
 #: src/applications/fs/ecrs/search.c:160
 msgid "CHK URI not allowed for search.\n"
-msgstr "CHK URI ist nicht erlaubt für Suchen.\n"
+msgstr "CHK URI ist nicht erlaubt fÃ¼r Suchen.\n"
 
 #: src/applications/fs/ecrs/search.c:216
 msgid "LOC URI not allowed for search.\n"
-msgstr "LOC URI ist nicht erlaubt für Suchen.\n"
+msgstr "LOC URI ist nicht erlaubt fÃ¼r Suchen.\n"
 
 #: src/applications/fs/ecrs/upload.c:177
 #, c-format
@@ -606,7 +606,7 @@ msgstr "`%s' ist keine Datei.\n"
 #: src/applications/fs/ecrs/upload.c:183
 #, c-format
 msgid "Cannot get size of file `%s'"
-msgstr "Die Größe der Datei `%s' konnte nicht ermittelt werden"
+msgstr "Die GrÃ¶ÃŸe der Datei `%s' konnte nicht ermittelt werden"
 
 #: src/applications/fs/ecrs/upload.c:189
 msgid "Not connected to gnunetd."
@@ -625,7 +625,7 @@ msgstr "Initialisierung der Indizierung der Datei `%s' fehlgeschlagen.\n"
 #: src/applications/fs/ecrs/upload.c:224
 #, c-format
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
-msgstr "Indizieren der Datei `%s' schlug fehl.  Versuch Datei einzufügen...\n"
+msgstr "Indizieren der Datei `%s' schlug fehl.  Versuch Datei einzufÃ¼gen...\n"
 
 #: src/applications/fs/ecrs/upload.c:307
 #, c-format
@@ -656,7 +656,7 @@ msgstr "Einsammeln von Dateibezeichnern deaktiviert.\n"
 
 #: src/applications/fs/fsui/fsui.c:168
 msgid "FSUI persistence: error restoring download\n"
-msgstr "FSUI Beständigkeit: Fehler beim Wiederherstellen des Downloads\n"
+msgstr "FSUI BestÃ¤ndigkeit: Fehler beim Wiederherstellen des Downloads\n"
 
 #: src/applications/fs/fsui/fsui.c:616
 #, c-format
@@ -665,19 +665,19 @@ msgstr "FSUI Statusdatei `%s' hatte einen Syntaxfehler bei Offset %u.\n"
 
 #: src/applications/fs/fsui/helper.c:67
 msgid "No keywords specified!\n"
-msgstr "Keine Schlüsselwörter angegeben!\n"
+msgstr "Keine SchlÃ¼sselwÃ¶rter angegeben!\n"
 
 #: src/applications/fs/fsui/namespace_info.c:581
 msgid "Publication interval for periodic publication changed."
-msgstr "Veröffentlichungsintervall für periodische Veröffentlichung wurde geändert."
+msgstr "VerÃ¶ffentlichungsintervall fÃ¼r periodische VerÃ¶ffentlichung wurde geÃ¤ndert."
 
 #: src/applications/fs/fsui/namespace_info.c:602
 msgid "Publishing update for periodically updated content more than a week ahead of schedule.\n"
-msgstr "Veröffentlichungsdatum für periodisch aktualisierten Inhalt ist mehr als eine Woche früher als geplant.\n"
+msgstr "VerÃ¶ffentlichungsdatum fÃ¼r periodisch aktualisierten Inhalt ist mehr als eine Woche frÃ¼her als geplant.\n"
 
 #: src/applications/fs/fsui/search.c:244
 msgid "This search is already pending!\n"
-msgstr "Diese Suche läuft bereits!\n"
+msgstr "Diese Suche lÃ¤uft bereits!\n"
 
 #: src/applications/fs/fsui/unindex.c:85
 msgid "Unindex failed.\n"
@@ -695,7 +695,7 @@ msgstr "Verzeichnis kann nicht ohne die Verwendung von Rekursion hochgeladen wer
 #: src/applications/fs/module/fs.c:1077
 #, c-format
 msgid "You must specify a postive number for `%s' in the configuration in section `%s'.\n"
-msgstr "Sie müssen für `%s' in der Sektion `%s' der Konfigurationsdatei eine positive Zahl angeben.\n"
+msgstr "Sie mÃ¼ssen fÃ¼r `%s' in der Sektion `%s' der Konfigurationsdatei eine positive Zahl angeben.\n"
 
 #: src/applications/fs/module/fs.c:1118
 #, c-format
@@ -704,27 +704,27 @@ msgstr "`%s' registriert die Client Handler %d %d %d %d %d %d %d %d %d\n"
 
 #: src/applications/fs/module/fs.c:1155
 msgid "enables (anonymous) file-sharing"
-msgstr "Ermöglicht (anonymes) Filesharing"
+msgstr "ErmÃ¶glicht (anonymes) Filesharing"
 
 #: src/applications/fs/module/ondemand.c:73
 #, c-format
 msgid "You must specify a directory for FS files in the configuration in section `%s' under `%s'."
-msgstr "Sie müssen ein Verzeichnis für FS Dateien in der Konfigurationsdatei in der Sektion `%s' unter `%s' angeben."
+msgstr "Sie mÃ¼ssen ein Verzeichnis fÃ¼r FS Dateien in der Konfigurationsdatei in der Sektion `%s' unter `%s' angeben."
 
 #: src/applications/fs/module/ondemand.c:338
 #, c-format
 msgid "Indexed file disappeared, deleting block for query `%s'\n"
-msgstr "Indizierte Datei ist verschwunden, Block für Anfrage `%s' wird gelöscht\n"
+msgstr "Indizierte Datei ist verschwunden, Block fÃ¼r Anfrage `%s' wird gelÃ¶scht\n"
 
 #: src/applications/fs/module/ondemand.c:429
 #, c-format
 msgid "Because the file `%s' has been unavailable for 3 days it got removed from your share.  Please unindex files before deleting them as the index now contains invalid references!\n"
-msgstr "Weil die Datei `%s' nun seit 3 Tagen nicht zur Verfügung steht, wurde Sie aus Ihrem Share entfernt. Bitte deindizieren Sie Dateien, bevor Sie sie löschen, da Ihr Index nun ungültige Referenzen enthält!\n"
+msgstr "Weil die Datei `%s' nun seit 3 Tagen nicht zur VerfÃ¼gung steht, wurde Sie aus Ihrem Share entfernt. Bitte deindizieren Sie Dateien, bevor Sie sie lÃ¶schen, da Ihr Index nun ungÃ¼ltige Referenzen enthÃ¤lt!\n"
 
 #: src/applications/fs/module/ondemand.c:455
 #, c-format
 msgid "Configuration file must specify directory for storage of FS data in section `%s' under `%s'.\n"
-msgstr "Die Konfigurationsdatei muss ein Verzeichnis für die Speicherung von FS Daten in der Sektion `%s' unter `%s' angeben.\n"
+msgstr "Die Konfigurationsdatei muss ein Verzeichnis fÃ¼r die Speicherung von FS Daten in der Sektion `%s' unter `%s' angeben.\n"
 
 #: src/applications/fs/module/ondemand.c:656
 #, c-format
@@ -734,26 +734,26 @@ msgstr "Deindizierter ODB Block `%s' vom Offset %llu fehlt bereits im Datenspeic
 #: src/applications/fs/module/anonymity.c:65
 #: src/applications/gap/gap.c:1934
 msgid "Failed to get traffic stats.\n"
-msgstr "Statistiken über den Netzwerkverkehr konnten nicht ermittelt werden.\n"
+msgstr "Statistiken Ã¼ber den Netzwerkverkehr konnten nicht ermittelt werden.\n"
 
 #: src/applications/fs/tools/gnunet-delete.c:37
 #, c-format
 msgid "%8u of %8u bytes deleted."
-msgstr "%8u von %8u Bytes gelöscht."
+msgstr "%8u von %8u Bytes gelÃ¶scht."
 
 #: src/applications/fs/tools/gnunet-delete.c:52
 msgid "specify the file to delete from GNUnet (obligatory, file must exist)"
-msgstr "vom GNUnet zu löschende Datei angeben (obgligatorisch, Datei muss existieren)"
+msgstr "vom GNUnet zu lÃ¶schende Datei angeben (obgligatorisch, Datei muss existieren)"
 
 #: src/applications/fs/tools/gnunet-delete.c:61
 msgid ""
 "Remove file from GNUnet.  The specified file is not removed\n"
 "from the filesystem but just from the local GNUnet datastore."
-msgstr "Datei auf GNUnet löschen. Die angegebene Datei wird nicht aus dem Dateisystem gelöscht, sondern aus dem lokalen GNUnet Datenspeicher."
+msgstr "Datei auf GNUnet lÃ¶schen. Die angegebene Datei wird nicht aus dem Dateisystem gelÃ¶scht, sondern aus dem lokalen GNUnet Datenspeicher."
 
 #: src/applications/fs/tools/gnunet-delete.c:139
 msgid "You must specify a filename (option -f)\n"
-msgstr "Sie müssen eine Datei angeben (Option -f)\n"
+msgstr "Sie mÃ¼ssen eine Datei angeben (Option -f)\n"
 
 #: src/applications/fs/tools/gnunet-delete.c:151
 #, c-format
@@ -761,8 +761,8 @@ msgid ""
 "Error deleting file %s.\n"
 "Probably a few blocks were already missing from the database.\n"
 msgstr ""
-"Fehler beim Löschen der Datei %s.\n"
-"Möglicherweise fehlen bereits einige wenige Datenblöcke in der Datenbank.\n"
+"Fehler beim LÃ¶schen der Datei %s.\n"
+"MÃ¶glicherweise fehlen bereits einige wenige DatenblÃ¶cke in der Datenbank.\n"
 
 #: src/applications/fs/tools/gnunet-directory.c:76
 #, c-format
@@ -786,15 +786,15 @@ msgstr "%d Dateien im Verzeichnis gefunden.\n"
 
 #: src/applications/fs/tools/gnunet-directory.c:125
 msgid "remove all entries from the directory database and stop tracking URIs"
-msgstr "Alle Einträge aus der Verzeichnis Datenbank löschen und das Verfolgen von URIs abbrechen"
+msgstr "Alle EintrÃ¤ge aus der Verzeichnis Datenbank lÃ¶schen und das Verfolgen von URIs abbrechen"
 
 #: src/applications/fs/tools/gnunet-directory.c:127
 msgid "list entries from the directory database"
-msgstr "Einträge aus der Verzeichnis Datenbank auflisten"
+msgstr "EintrÃ¤ge aus der Verzeichnis Datenbank auflisten"
 
 #: src/applications/fs/tools/gnunet-directory.c:130
 msgid "start tracking entries for the directory database"
-msgstr "Anfangen, Einträge für die Verzeichnis Datenbank zu verfolgen"
+msgstr "Anfangen, EintrÃ¤ge fÃ¼r die Verzeichnis Datenbank zu verfolgen"
 
 #: src/applications/fs/tools/gnunet-directory.c:134
 msgid "gnunet-directory [OPTIONS] [FILENAMES]"
@@ -802,12 +802,12 @@ msgstr "gnunet-directory [OPTIONEN] [DATEINAMEN]"
 
 #: src/applications/fs/tools/gnunet-directory.c:135
 msgid "Perform directory related operations."
-msgstr "Verzeichnisbezogene Operationen durchführen."
+msgstr "Verzeichnisbezogene Operationen durchfÃ¼hren."
 
 #: src/applications/fs/tools/gnunet-directory.c:200
 #, c-format
 msgid "Listed %d matching entries.\n"
-msgstr "%d übereinstimmende Einträge aufgelistet.\n"
+msgstr "%d Ã¼bereinstimmende EintrÃ¤ge aufgelistet.\n"
 
 #: src/applications/fs/tools/gnunet-download.c:39
 msgid "LEVEL"
@@ -816,7 +816,7 @@ msgstr "GRAD"
 #: src/applications/fs/tools/gnunet-download.c:40
 #: src/applications/fs/tools/gnunet-search.c:100
 msgid "set the desired LEVEL of receiver-anonymity"
-msgstr "Den Grad LEVEL der gewünschten Empfänger-Anonymität setzen"
+msgstr "Den Grad LEVEL der gewÃ¼nschten EmpfÃ¤nger-AnonymitÃ¤t setzen"
 
 #: src/applications/fs/tools/gnunet-download.c:45
 msgid "FILENAME"
@@ -836,7 +836,7 @@ msgstr "Dateien aus dem GNUnet herunterladen."
 
 #: src/applications/fs/tools/gnunet-download.c:134
 msgid "Not enough arguments. You must specify a GNUnet file URI\n"
-msgstr "Nicht genügend Parameter. Sie müssen eine GNUnet Datei URI angeben\n"
+msgstr "Nicht genÃ¼gend Parameter. Sie mÃ¼ssen eine GNUnet Datei URI angeben\n"
 
 #: src/applications/fs/tools/gnunet-download.c:159
 #, c-format
@@ -862,7 +862,7 @@ msgstr "Rekursiver Download des Verzeichnisses `%s' bei %llu von %llu Bytes.\n"
 #: src/applications/fs/tools/gnunet-download.c:242
 #, c-format
 msgid "URI `%s' invalid for gnunet-download.\n"
-msgstr "URI `%s' ist ungültig für gnunet-download.\n"
+msgstr "URI `%s' ist ungÃ¼ltig fÃ¼r gnunet-download.\n"
 
 #: src/applications/fs/tools/gnunet-download.c:293
 #, c-format
@@ -877,12 +877,12 @@ msgstr "Eintag `%s' in Namespace `%s' wurde erstellt\n"
 #: src/applications/fs/tools/gnunet-insert.c:115
 #, c-format
 msgid "Failed to add entry to namespace `%s' (does it exist?)\n"
-msgstr "Der Eintrag konnte dem Namespace `%s' nicht hinzugefügt werden (existiert er?)\n"
+msgstr "Der Eintrag konnte dem Namespace `%s' nicht hinzugefÃ¼gt werden (existiert er?)\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:136
 #, c-format
 msgid "%16llu of %16llu bytes inserted (estimating %s to completion)\n"
-msgstr "%16llu von %16llu Bytes eingefügt (geschätzte %s bis Fertigstellung)\n"
+msgstr "%16llu von %16llu Bytes eingefÃ¼gt (geschÃ¤tzte %s bis Fertigstellung)\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:150
 #, c-format
@@ -892,7 +892,7 @@ msgstr "Upload von `%s' komplett, %llu Bytes brauchten %llu Sekunden (%8.3f KB/s
 #: src/applications/fs/tools/gnunet-insert.c:164
 #, c-format
 msgid "Upload of `%s' complete, current average speed is %8.3f kbps.\n"
-msgstr "Upload von `%s' komplett, derzeitige durchschnittliche Geschwindigkeit beträgt %8.3f KB/s.\n"
+msgstr "Upload von `%s' komplett, derzeitige durchschnittliche Geschwindigkeit betrÃ¤gt %8.3f KB/s.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:174
 #, c-format
@@ -911,11 +911,11 @@ msgstr ""
 #: src/applications/fs/tools/gnunet-insert.c:206
 #: src/applications/fs/tools/gnunet-pseudonym.c:33
 msgid "set the desired LEVEL of sender-anonymity"
-msgstr "Gewünschten Grad an Sender-Anonymität festlegen"
+msgstr "GewÃ¼nschten Grad an Sender-AnonymitÃ¤t festlegen"
 
 #: src/applications/fs/tools/gnunet-insert.c:209
 msgid "even if gnunetd is running on the local machine, force the creation of a copy instead of making a link to the GNUnet share directory"
-msgstr "Obwohl gnunetd auf der lokalen Maschiene läuft die Erstellung einer Kopie anstelle der Erzeugung eines Links auf das GNUnet Share-Verzeichnis erzwingen."
+msgstr "Obwohl gnunetd auf der lokalen Maschiene lÃ¤uft die Erstellung einer Kopie anstelle der Erzeugung eines Links auf das GNUnet Share-Verzeichnis erzwingen."
 
 #: src/applications/fs/tools/gnunet-insert.c:212
 msgid "use libextractor to add additional direct references to directory entries"
@@ -923,19 +923,19 @@ msgstr "benutze libextractor um weitere direkte Referenzen zu Dateien in Verzeic
 
 #: src/applications/fs/tools/gnunet-insert.c:214
 msgid "print list of extracted keywords that would be used, but do not perform upload"
-msgstr "Liste der extrahierten Schlüsselworte, die verwendet werden würden, ausgeben, aber keinen Upload durchführen"
+msgstr "Liste der extrahierten SchlÃ¼sselworte, die verwendet werden wÃ¼rden, ausgeben, aber keinen Upload durchfÃ¼hren"
 
 #: src/applications/fs/tools/gnunet-insert.c:218
 msgid "set interval for availability of updates to SECONDS (for namespace insertions only)"
-msgstr "Intervall der Verfügbarkeit von Updates auf SECONDS setzen (nur für das Einfügen in Namespaces)"
+msgstr "Intervall der VerfÃ¼gbarkeit von Updates auf SECONDS setzen (nur fÃ¼r das EinfÃ¼gen in Namespaces)"
 
 #: src/applications/fs/tools/gnunet-insert.c:221
 msgid "add an additional keyword for the top-level file or directory (this option can be specified multiple times)"
-msgstr "Ein zusätzliches Schlüsselwort für die Datei oder das Verzeichnis auf der obersten Ebene hinzufügen (diese Option kann mehrmals angegeben werden)"
+msgstr "Ein zusÃ¤tzliches SchlÃ¼sselwort fÃ¼r die Datei oder das Verzeichnis auf der obersten Ebene hinzufÃ¼gen (diese Option kann mehrmals angegeben werden)"
 
 #: src/applications/fs/tools/gnunet-insert.c:224
 msgid "add an additional keyword for all files and directories (this option can be specified multiple times)"
-msgstr "Ein zusätzliches Schlüsselwort für alle Dateien und Verzeichnisse hinzufügen (diese Option kann mehrmals angegeben werden)"
+msgstr "Ein zusÃ¤tzliches SchlÃ¼sselwort fÃ¼r alle Dateien und Verzeichnisse hinzufÃ¼gen (diese Option kann mehrmals angegeben werden)"
 
 #: src/applications/fs/tools/gnunet-insert.c:228
 msgid "set the meta-data for the given TYPE to the given VALUE"
@@ -943,19 +943,19 @@ msgstr "Die Meta-Daten des angegebenen Typs TYPE auf den angegebenen Wert VALUE 
 
 #: src/applications/fs/tools/gnunet-insert.c:230
 msgid "do not index, perform full insertion (stores entire file in encrypted form in GNUnet database)"
-msgstr "Nicht indizieren, sondern komplett einfügen (speichert die gesamte Datei in verschlüsselter Form in der GNUnet Datenbank)"
+msgstr "Nicht indizieren, sondern komplett einfÃ¼gen (speichert die gesamte Datei in verschlÃ¼sselter Form in der GNUnet Datenbank)"
 
 #: src/applications/fs/tools/gnunet-insert.c:233
 msgid "specify ID of an updated version to be published in the future (for namespace insertions only)"
-msgstr "ID einer aktualisierten Version angeben, die in der Zukunft veröffentlich werden soll. (nur für das Einfügen in Namespaces)"
+msgstr "ID einer aktualisierten Version angeben, die in der Zukunft verÃ¶ffentlich werden soll. (nur fÃ¼r das EinfÃ¼gen in Namespaces)"
 
 #: src/applications/fs/tools/gnunet-insert.c:236
 msgid "specify the priority of the content"
-msgstr "Die Priorität des Inhalts angeben"
+msgstr "Die PrioritÃ¤t des Inhalts angeben"
 
 #: src/applications/fs/tools/gnunet-insert.c:238
 msgid "publish the files under the pseudonym NAME (place file into namespace)"
-msgstr "Die Datei unter dem Pseudonym NAME veröffentlichen (platziert die Datei in einem Namespace)"
+msgstr "Die Datei unter dem Pseudonym NAME verÃ¶ffentlichen (platziert die Datei in einem Namespace)"
 
 #: src/applications/fs/tools/gnunet-insert.c:240
 msgid "process directories recursively"
@@ -963,34 +963,34 @@ msgstr "Verzeichnisse rekursiv bearbeiten"
 
 #: src/applications/fs/tools/gnunet-insert.c:242
 msgid "specifies this as an aperiodic but updated publication (for namespace insertions only)"
-msgstr "Dies als unregelmäßige aber aktualisierbare Veröffentlichung kennzeichnen (nur für das Einfügen in Namespaces)"
+msgstr "Dies als unregelmÃ¤ÃŸige aber aktualisierbare VerÃ¶ffentlichung kennzeichnen (nur fÃ¼r das EinfÃ¼gen in Namespaces)"
 
 #: src/applications/fs/tools/gnunet-insert.c:245
 msgid "set the ID of this version of the publication (for namespace insertions only)"
-msgstr "die ID dieser Version der Veröffentlichung setzen (nur für das Einfügen in Namespaces)"
+msgstr "die ID dieser Version der VerÃ¶ffentlichung setzen (nur fÃ¼r das EinfÃ¼gen in Namespaces)"
 
 #: src/applications/fs/tools/gnunet-insert.c:248
 msgid "specify creation time for SBlock (see man-page for format)"
-msgstr "Erstellungszeit für den SBLOCK angeben (s. Manpage zum Format)"
+msgstr "Erstellungszeit fÃ¼r den SBLOCK angeben (s. Manpage zum Format)"
 
 #: src/applications/fs/tools/gnunet-insert.c:250
 msgid "ID of the previous version of the content (for namespace update only)"
-msgstr "ID der vorherigen Version des Inhalts (nur für das Einfügen in Namespaces)"
+msgstr "ID der vorherigen Version des Inhalts (nur fÃ¼r das EinfÃ¼gen in Namespaces)"
 
 #: src/applications/fs/tools/gnunet-insert.c:257
 msgid "Make files available to GNUnet for sharing."
-msgstr "Dateien GNUnet zum Filesharing zur Verfügung stellen."
+msgstr "Dateien GNUnet zum Filesharing zur VerfÃ¼gung stellen."
 
 #: src/applications/fs/tools/gnunet-insert.c:344
 #, c-format
 msgid "You must pass a positive number to the `%s' option.\n"
-msgstr "Sie müssen eine positive Zahl zu der Option `%s' übergeben.\n"
+msgstr "Sie mÃ¼ssen eine positive Zahl zu der Option `%s' Ã¼bergeben.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:524
 #: src/applications/fs/tools/gnunet-unindex.c:144
 #, c-format
 msgid "You must specify a list of files to insert.\n"
-msgstr "Sie müssen eine Liste von Dateien zum Einfügen angeben.\n"
+msgstr "Sie mÃ¼ssen eine Liste von Dateien zum EinfÃ¼gen angeben.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:528
 #, c-format
@@ -1000,12 +1000,12 @@ msgstr "Nur eine Datei oder Verzeichnis kann auf einmal angegeben werden.\n"
 #: src/applications/fs/tools/gnunet-insert.c:532
 #, c-format
 msgid "You must specify a file or directory to upload.\n"
-msgstr "Sie müssen eine Datei oder Verzeichnis für den Upload angeben.\n"
+msgstr "Sie mÃ¼ssen eine Datei oder Verzeichnis fÃ¼r den Upload angeben.\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:581
 #, c-format
 msgid "Keywords for file `%s':\n"
-msgstr "Schlüsselwörter für Datei `%s':\n"
+msgstr "SchlÃ¼sselwÃ¶rter fÃ¼r Datei `%s':\n"
 
 #: src/applications/fs/tools/gnunet-insert.c:603
 #, c-format
@@ -1036,7 +1036,7 @@ msgstr "Neues Pseudonym unter dem angegebenen NICKNAME erstellen"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:40
 msgid "delete the pseudonym with the given NICKNAME"
-msgstr "Pseudonym mit dem angegeben NICKNAME löschen"
+msgstr "Pseudonym mit dem angegeben NICKNAME lÃ¶schen"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:42
 msgid "end automated building of a namespace (ends collection)"
@@ -1044,7 +1044,7 @@ msgstr "Automatisierte Erstellung eines Namespaces beenden (beendet Collection)"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:46
 msgid "use the given keyword to advertise the namespace (use when creating a new pseudonym)"
-msgstr "Das angegebene schlüsselwort verwenden, um den Namespace bekanntzumachen (zu verwenden, wenn ein neues Pseudonym erstellt wird)"
+msgstr "Das angegebene schlÃ¼sselwort verwenden, um den Namespace bekanntzumachen (zu verwenden, wenn ein neues Pseudonym erstellt wird)"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:48
 msgid "specify that the contents of the namespace are of the given MIMETYPE (use when creating a new pseudonym)"
@@ -1052,7 +1052,7 @@ msgstr "Angeben, dass die Inhalte des Namespaces vom angegebenen MIMETYOE sind (
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:50
 msgid "do not generate an advertisement for this namespace (use when creating a new pseudonym)"
-msgstr "Keine Bekanntmachung für diesen Namespace erstellen (zu verwenden, wenn ein neues Pseudonym erstellt wird)"
+msgstr "Keine Bekanntmachung fÃ¼r diesen Namespace erstellen (zu verwenden, wenn ein neues Pseudonym erstellt wird)"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:52
 msgid "do not list the pseudonyms from the pseudonym database"
@@ -1076,23 +1076,23 @@ msgstr "DESCRIPTION als Beschreibung der Inhalte des Namespaces verwenden (zu ve
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:62
 msgid "specify the given URI as an address that contains more information about the namespace (use when creating a new pseudonym)"
-msgstr "die angegebene URI als die Adresse angeben, die weitere Informationen über den Namespace enthält (zu verwenden, wenn ein neues Pseudonym erstellt wird)"
+msgstr "die angegebene URI als die Adresse angeben, die weitere Informationen Ã¼ber den Namespace enthÃ¤lt (zu verwenden, wenn ein neues Pseudonym erstellt wird)"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:67
 msgid "Create new pseudonyms, delete pseudonyms or list existing pseudonyms."
-msgstr "Erstellen von neuen Pseudonymen, Löschen von Pseudonymen und Auflisten von bestehenden Pseudonymen."
+msgstr "Erstellen von neuen Pseudonymen, LÃ¶schen von Pseudonymen und Auflisten von bestehenden Pseudonymen."
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:221
 #, c-format
 msgid "Invalid argument: `%s'\n"
-msgstr "Ungültiger Parameter: `%s'\n"
+msgstr "UngÃ¼ltiger Parameter: `%s'\n"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:223
 #: src/conf/gnunet-setup.c:190
 #: src/server/gnunet-peer-info.c:118
 #: src/server/gnunet-transport-check.c:523
 msgid "Invalid arguments. Exiting.\n"
-msgstr "Ungültige Parameter. Abbruch.\n"
+msgstr "UngÃ¼ltige Parameter. Abbruch.\n"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:264
 #, c-format
@@ -1122,12 +1122,12 @@ msgstr "Fehler beim Beenden der Collection (nicht aktiv?).\n"
 #: src/applications/fs/tools/gnunet-pseudonym.c:351
 #, c-format
 msgid "Pseudonym `%s' deleted.\n"
-msgstr "Pseudonym `%s' wurde gelöscht.\n"
+msgstr "Pseudonym `%s' wurde gelÃ¶scht.\n"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:355
 #, c-format
 msgid "Error deleting pseudonym `%s' (does not exist?).\n"
-msgstr "Fehler beim Löschen des Pseudonyms `%s' (existiert nicht?).\n"
+msgstr "Fehler beim LÃ¶schen des Pseudonyms `%s' (existiert nicht?).\n"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:408
 #, c-format
@@ -1160,7 +1160,7 @@ msgstr "Abbrechen, nachdem LIMIT Ergebnisse empfangen wurden"
 
 #: src/applications/fs/tools/gnunet-search.c:108
 msgid "write encountered (decrypted) search results to FILENAME"
-msgstr "Begegnete (entschlüsselte) Suchergebnisse in FILENAME schreiben"
+msgstr "Begegnete (entschlÃ¼sselte) Suchergebnisse in FILENAME schreiben"
 
 #: src/applications/fs/tools/gnunet-search.c:110
 msgid "wait TIMEOUT seconds for search results before aborting"
@@ -1172,7 +1172,7 @@ msgstr "Das GNUnet nach Dateien durchsuchen."
 
 #: src/applications/fs/tools/gnunet-search.c:219
 msgid "Not enough arguments. You must specify a keyword or identifier.\n"
-msgstr "Nicht genügend Parameter. Sie müssen ein Schlüsselwort oder einen Bezeichner angeben.\n"
+msgstr "Nicht genÃ¼gend Parameter. Sie mÃ¼ssen ein SchlÃ¼sselwort oder einen Bezeichner angeben.\n"
 
 #: src/applications/fs/tools/gnunet-search.c:270
 #, c-format
@@ -1187,7 +1187,7 @@ msgstr "Fehler beim Konvertieren von Parametern in URI!\n"
 #: src/applications/fs/tools/gnunet-unindex.c:50
 #, c-format
 msgid "%16llu of %16llu bytes unindexed (estimating %llu seconds to completion)                "
-msgstr "%16llu von %16llu Bytes deindiziert (schätze %llu Sekunden bis Fertigstellung)            "
+msgstr "%16llu von %16llu Bytes deindiziert (schÃ¤tze %llu Sekunden bis Fertigstellung)            "
 
 #: src/applications/fs/tools/gnunet-unindex.c:61
 #, c-format
@@ -1196,7 +1196,7 @@ msgid ""
 "Unindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"
 msgstr ""
 "\n"
-"Deindizierung von `%s' abgeschlossen, %llu Bytes benötigten %llu Sekunden (%8.3f kbps).\n"
+"Deindizierung von `%s' abgeschlossen, %llu Bytes benÃ¶tigten %llu Sekunden (%8.3f kbps).\n"
 
 #: src/applications/fs/tools/gnunet-unindex.c:71
 #, c-format
@@ -1214,7 +1214,7 @@ msgstr "Dateien deindizieren."
 #: src/applications/fs/tools/gnunet-unindex.c:148
 #, c-format
 msgid "You must specify one and only one file to unindex.\n"
-msgstr "Sie dürfen nur eine Datei zum Deindizieren angeben.\n"
+msgstr "Sie dÃ¼rfen nur eine Datei zum Deindizieren angeben.\n"
 
 #: src/applications/fs/tools/gnunet-unindex.c:189
 #, c-format
@@ -1229,7 +1229,7 @@ msgstr "Verdeckender Netzwerkverkehr angefordert, aber der Verkehrsdienst wurde 
 #: src/applications/gap/gap.c:1945
 #: src/applications/gap/gap.c:1951
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
-msgstr "Gewünschter Grad an Anonymität kann nicht erreicht werden, Anfrage wird ignoriert.\n"
+msgstr "GewÃ¼nschter Grad an AnonymitÃ¤t kann nicht erreicht werden, Anfrage wird ignoriert.\n"
 
 #: src/applications/gap/gap.c:2188
 msgid "Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"
@@ -1258,7 +1258,7 @@ msgstr "Die Konfigurationsdatei muss unter %s%s ein Verzeichnis angeben, in dem 
 #: src/applications/identity/hostkey.c:119
 #, c-format
 msgid "Existing hostkey in file `%s' failed format check, creating new hostkey.\n"
-msgstr "Formatüberprüfung schlug für die existierende Hostkeydatei `%s' fehl, es wird ein neuer Hostkey erzeugt.\n"
+msgstr "FormatÃ¼berprÃ¼fung schlug fÃ¼r die existierende Hostkeydatei `%s' fehl, es wird ein neuer Hostkey erzeugt.\n"
 
 #: src/applications/identity/hostkey.c:127
 msgid "Creating new hostkey (this may take a while).\n"
@@ -1286,7 +1286,7 @@ msgstr "%s `%s' ergab keine bekannten Knoten!\n"
 #: src/applications/identity/identity.c:660
 #, c-format
 msgid "Removed file `%s' containing invalid hello data.\n"
-msgstr "Datei `%s' enthielt ungültige Hello Daten und wurde entfernt.\n"
+msgstr "Datei `%s' enthielt ungÃ¼ltige Hello Daten und wurde entfernt.\n"
 
 #: src/applications/pingpong/pingpong.c:120
 #: src/applications/pingpong/pingpong.c:171
@@ -1294,11 +1294,11 @@ msgstr "Datei `%s' enthielt ungültige Hello Daten und wurde entfernt.\n"
 #: src/applications/pingpong/pingpong.c:276
 #, c-format
 msgid "Received malformed `%s' message. Dropping.\n"
-msgstr "Beschädigte `%s' Nachricht empfangen. Nachricht wird verworfen.\n"
+msgstr "BeschÃ¤digte `%s' Nachricht empfangen. Nachricht wird verworfen.\n"
 
 #: src/applications/pingpong/pingpong.c:130
 msgid "Received ping for another peer. Dropping.\n"
-msgstr "Ping für einen anderen Knoten empfangen. Ping wird verworfen.\n"
+msgstr "Ping fÃ¼r einen anderen Knoten empfangen. Ping wird verworfen.\n"
 
 #: src/applications/pingpong/pingpong.c:179
 msgid "Received PING not destined for us!\n"
@@ -1315,7 +1315,7 @@ msgstr "PING konnte nicht erstellt werden, da die Tabelle voll ist. Versuchen Si
 
 #: src/applications/pingpong/pingpong.c:467
 msgid "# encrypted PONG messages received"
-msgstr "# verschlüsselter PONG Nachrichten empfangen"
+msgstr "# verschlÃ¼sselter PONG Nachrichten empfangen"
 
 #: src/applications/pingpong/pingpong.c:469
 msgid "# plaintext PONG messages received"
@@ -1323,7 +1323,7 @@ msgstr "# Klartext PONG Nachrichten empfangen"
 
 #: src/applications/pingpong/pingpong.c:471
 msgid "# encrypted PING messages received"
-msgstr "# verschlüsselter PING Nachrichten empfangen"
+msgstr "# verschlÃ¼sselter PING Nachrichten empfangen"
 
 #: src/applications/pingpong/pingpong.c:473
 msgid "# PING messages created"
@@ -1331,7 +1331,7 @@ msgstr "# PING Nachrichten erstellt"
 
 #: src/applications/pingpong/pingpong.c:475
 msgid "# encrypted PONG messages sent"
-msgstr "# verschlüsselter PONG Nachrichten gesendet"
+msgstr "# verschlÃ¼sselter PONG Nachrichten gesendet"
 
 #: src/applications/pingpong/pingpong.c:477
 msgid "# plaintext PING messages sent"
@@ -1339,7 +1339,7 @@ msgstr "# Klartext PING Nachrichten gesendet"
 
 #: src/applications/pingpong/pingpong.c:479
 msgid "# encrypted PING messages sent"
-msgstr "# verschlüsselter PING Nachrichten gesendet"
+msgstr "# verschlÃ¼sselter PING Nachrichten gesendet"
 
 #: src/applications/pingpong/pingpong.c:488
 #, c-format
@@ -1373,12 +1373,12 @@ msgstr "%s::%s - async RPC %s:%p konnte nicht unregistriert werden: nicht gefund
 #: src/applications/rpc/rpc.c:1084
 #, c-format
 msgid "Invalid message of type %u received.  Dropping.\n"
-msgstr "Ungültige Nachricht des Typs %u empfangen. Nachricht wird verworfen.\n"
+msgstr "UngÃ¼ltige Nachricht des Typs %u empfangen. Nachricht wird verworfen.\n"
 
 #: src/applications/rpc/rpc.c:936
 #, c-format
 msgid "Dropping RPC request %u: message malformed.\n"
-msgstr "RPC Anfrage %u wird verworfen: Nachricht ist beschädigt.\n"
+msgstr "RPC Anfrage %u wird verworfen: Nachricht ist beschÃ¤digt.\n"
 
 #: src/applications/rpc/rpc.c:1388
 #, c-format
@@ -1397,7 +1397,7 @@ msgstr "`%s' Dienst konnte nicht initialisiert werden.\n"
 
 #: src/applications/rpc/rpc.c:1491
 msgid "RPC async reply invalid.\n"
-msgstr "RPC async Antwort ungültig.\n"
+msgstr "RPC async Antwort ungÃ¼ltig.\n"
 
 #: src/applications/rpc/rpc.c:1562
 msgid "async RPC reply not received.\n"
@@ -1406,25 +1406,25 @@ msgstr "async RPC Antwort nicht empfangen.\n"
 #: src/applications/session/connect.c:209
 #, c-format
 msgid "Session key from peer `%s' could not be verified.\n"
-msgstr "Sitzungsschlüssel von Knoten `%s' konnte nicht überprüft werden.\n"
+msgstr "SitzungsschlÃ¼ssel von Knoten `%s' konnte nicht Ã¼berprÃ¼ft werden.\n"
 
 #: src/applications/session/connect.c:246
 msgid "Cannot encrypt sessionkey, other peer not known!\n"
-msgstr "Sitzungsschlüssel kann nicht verschlüsselt werden, der andere Knoten ist uns nicht bekannt!\n"
+msgstr "SitzungsschlÃ¼ssel kann nicht verschlÃ¼sselt werden, der andere Knoten ist uns nicht bekannt!\n"
 
 #: src/applications/session/connect.c:520
 #, c-format
 msgid "Invalid `%s' message received from peer `%s'.\n"
-msgstr "Ungültige `%s' Nachricht von Knoten `%s' empfangen.\n"
+msgstr "UngÃ¼ltige `%s' Nachricht von Knoten `%s' empfangen.\n"
 
 #: src/applications/session/connect.c:529
 #, c-format
 msgid "setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"
-msgstr "setkey `%s' von `%s' hat eine ungültige CRC Prüfsumme (tatsächlich: %u, erwartet: %u).\n"
+msgstr "setkey `%s' von `%s' hat eine ungÃ¼ltige CRC PrÃ¼fsumme (tatsÃ¤chlich: %u, erwartet: %u).\n"
 
 #: src/applications/session/connect.c:584
 msgid "Error parsing encrypted session key, given message part size is invalid.\n"
-msgstr "Fehler beim Parsen des Verschlüsselten Sitzungsschlüssels, gegebene Nachrichtenteilgröße ist ungültig.\n"
+msgstr "Fehler beim Parsen des VerschlÃ¼sselten SitzungsschlÃ¼ssels, gegebene NachrichtenteilgrÃ¶ÃŸe ist ungÃ¼ltig.\n"
 
 #: src/applications/session/connect.c:594
 #, c-format
@@ -1433,15 +1433,15 @@ msgstr "Unbekannter Typ in engebetteter Nachricht: %u (%u bytes)\n"
 
 #: src/applications/session/connect.c:739
 msgid "# session keys sent"
-msgstr "# Sitzungsschlüssel gesendet"
+msgstr "# SitzungsschlÃ¼ssel gesendet"
 
 #: src/applications/session/connect.c:741
 msgid "# session keys rejected"
-msgstr "# Sitzungsschlüssel abgelehnt"
+msgstr "# SitzungsschlÃ¼ssel abgelehnt"
 
 #: src/applications/session/connect.c:743
 msgid "# session keys accepted"
-msgstr "# Sitzungsschlüssel akzeptiert"
+msgstr "# SitzungsschlÃ¼ssel akzeptiert"
 
 #: src/applications/session/connect.c:745
 msgid "# sessions established"
@@ -1481,7 +1481,7 @@ msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
 #: src/applications/sqstore_mysql/mysql.c:801
 #: src/applications/sqstore_mysql/mysql.c:815
 msgid "Invalid data in MySQL database.  Please verify integrity!\n"
-msgstr "Ungültige Daten in der MySQL Datenbank. Bitte überprüfen Sie die Integrität!\n"
+msgstr "UngÃ¼ltige Daten in der MySQL Datenbank. Bitte Ã¼berprÃ¼fen Sie die IntegritÃ¤t!\n"
 
 #: src/applications/sqstore_mysql/mysql.c:1105
 #, c-format
@@ -1496,7 +1496,7 @@ msgstr "# Bytes in der Datenbank"
 #: src/applications/sqstore_mysql/mysql.c:1199
 #, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
-msgstr "Versuche, Datei `%s' für MySQL Konfiguration zu verwenden.\n"
+msgstr "Versuche, Datei `%s' fÃ¼r MySQL Konfiguration zu verwenden.\n"
 
 #: src/applications/sqstore_mysql/mysqltest.c:251
 #: src/applications/sqstore_sqlite/sqlitetest.c:258
@@ -1505,12 +1505,12 @@ msgstr "Konnte libgnunetutil nicht initialisieren!\n"
 
 #: src/applications/sqstore_sqlite/sqlite.c:143
 msgid "SQL Database corrupt, ignoring result.\n"
-msgstr "SQL Datenbank beschädigt, Ergebnis wird ignoriert.\n"
+msgstr "SQL Datenbank beschÃ¤digt, Ergebnis wird ignoriert.\n"
 
 #: src/applications/sqstore_sqlite/sqlite.c:364
 #: src/applications/sqstore_sqlite/sqlite.c:551
 msgid "Invalid data in database.  Please verify integrity!\n"
-msgstr "Es befinden sich ungültige Daten in Datenbank. Bitte überprüfen Sie die Integrität!\n"
+msgstr "Es befinden sich ungÃ¼ltige Daten in Datenbank. Bitte Ã¼berprÃ¼fen Sie die IntegritÃ¤t!\n"
 
 #: src/applications/sqstore_sqlite/sqlite.c:864
 #, c-format
@@ -1529,21 +1529,21 @@ msgstr "Laufzeit (Sekunden)"
 #: src/applications/testbed/commands.c:1130
 #, c-format
 msgid "Supported peer-to-peer messages:\n"
-msgstr "unterstützte Peer-to-Peer Nachrichten:\n"
+msgstr "unterstÃ¼tzte Peer-to-Peer Nachrichten:\n"
 
 #: src/applications/stats/gnunet-stats.c:64
 #: src/applications/testbed/commands.c:1132
 #, c-format
 msgid "Supported client-server messages:\n"
-msgstr "unterstützte Client-Server Nachrichten:\n"
+msgstr "unterstÃ¼tzte Client-Server Nachrichten:\n"
 
 #: src/applications/stats/gnunet-stats.c:93
 msgid "prints supported protocol messages"
-msgstr "gibt unterstützte Protokollnachrichten aus"
+msgstr "gibt unterstÃ¼tzte Protokollnachrichten aus"
 
 #: src/applications/stats/gnunet-stats.c:98
 msgid "Print statistics about GNUnet operations."
-msgstr "Statistiken der GNUnet Aktivitäten ausgeben."
+msgstr "Statistiken der GNUnet AktivitÃ¤ten ausgeben."
 
 #: src/applications/stats/gnunet-stats.c:166
 #, c-format
@@ -1576,7 +1576,7 @@ msgstr "# Bytes Rauschen empfangen"
 
 #: src/applications/stats/statistics.c:372
 msgid "keeps statistics about gnunetd's operation"
-msgstr "Hält Statistiken über Betrieb von gnunetd"
+msgstr "HÃ¤lt Statistiken Ã¼ber Betrieb von gnunetd"
 
 #: src/applications/tbench/gnunet-tbench.c:95
 msgid "output in gnuplot format"
@@ -1584,7 +1584,7 @@ msgstr "Ausgabe im gnuplot Format"
 
 #: src/applications/tbench/gnunet-tbench.c:98
 msgid "number of iterations"
-msgstr "Anzahl an Durchläufen"
+msgstr "Anzahl an DurchlÃ¤ufen"
 
 #: src/applications/tbench/gnunet-tbench.c:100
 msgid "number of messages to use per iteration"
@@ -1592,15 +1592,15 @@ msgstr "Anzahl an Nachrichten, die pro Durchlauf verwendet wird"
 
 #: src/applications/tbench/gnunet-tbench.c:102
 msgid "receiver host identifier (ENC file name)"
-msgstr "Bezeichner des Empfängerhosts (ENC Dateiname)"
+msgstr "Bezeichner des EmpfÃ¤ngerhosts (ENC Dateiname)"
 
 #: src/applications/tbench/gnunet-tbench.c:104
 msgid "message size"
-msgstr "Nachrichtengröße"
+msgstr "NachrichtengrÃ¶ÃŸe"
 
 #: src/applications/tbench/gnunet-tbench.c:106
 msgid "sleep for SPACE ms after each a message block"
-msgstr "Für SPACE ms nach jedem Nachrichtenblock pausieren"
+msgstr "FÃ¼r SPACE ms nach jedem Nachrichtenblock pausieren"
 
 #: src/applications/tbench/gnunet-tbench.c:108
 msgid "time to wait for the completion of an iteration (in ms)"
@@ -1616,12 +1616,12 @@ msgstr "GNUnet Transport Benchmarking Werkzeug starten."
 
 #: src/applications/tbench/gnunet-tbench.c:225
 msgid "You must specify a receiver!\n"
-msgstr "Sie müssen einen Empfänger angeben!\n"
+msgstr "Sie mÃ¼ssen einen EmpfÃ¤nger angeben!\n"
 
 #: src/applications/tbench/gnunet-tbench.c:228
 #, c-format
 msgid "Invalid receiver peer ID specified (`%s' is not valid name).\n"
-msgstr "Ungültige Empfängerknoten ID angegeben (`%s' ist kein gültiger Name).\n"
+msgstr "UngÃ¼ltige EmpfÃ¤ngerknoten ID angegeben (`%s' ist kein gÃ¼ltiger Name).\n"
 
 #: src/applications/tbench/gnunet-tbench.c:249
 #, c-format
@@ -1685,16 +1685,16 @@ msgid ""
 "Did not receive the message from gnunetd. Is gnunetd running?\n"
 msgstr ""
 "\n"
-"Es wurde keine Nachricht von gnunetd empfangen. Läuft gnunetd?\n"
+"Es wurde keine Nachricht von gnunetd empfangen. LÃ¤uft gnunetd?\n"
 
 #: src/applications/tbench/tbench.c:448
 msgid "allows profiling of direct peer-to-peer connections"
-msgstr "Ermöglicht das Untersuchen direkter Peer-to-Peer Verbindungen"
+msgstr "ErmÃ¶glicht das Untersuchen direkter Peer-to-Peer Verbindungen"
 
 #: src/applications/tbench/tbenchtest.c:57
 #, c-format
 msgid "Using %u messages of size %u for %u times.\n"
-msgstr "Verwende %u Nachrichten der Größe %u %umal.\n"
+msgstr "Verwende %u Nachrichten der GrÃ¶ÃŸe %u %umal.\n"
 
 #: src/applications/tbench/tbenchtest.c:84
 #, c-format
@@ -1718,15 +1718,15 @@ msgstr ""
 #: src/applications/tbench/tbenchtest.c:211
 #, c-format
 msgid "Running benchmark...\n"
-msgstr "Benchmark läuft...\n"
+msgstr "Benchmark lÃ¤uft...\n"
 
 #: src/applications/template/gnunet-template.c:70
 msgid "helptext for -t"
-msgstr "Hilfetext für -t"
+msgstr "Hilfetext fÃ¼r -t"
 
 #: src/applications/template/gnunet-template.c:75
 msgid "Template for gnunet-clients."
-msgstr "Vorlage für gnunet-clients."
+msgstr "Vorlage fÃ¼r gnunet-clients."
 
 #: src/applications/template/template.c:61
 #, c-format
@@ -1745,7 +1745,7 @@ msgstr "Verbindung zum LOOPBACK port %d schlug fehl: %s\n"
 #: src/applications/testbed/gnunet-testbed.c:279
 #, c-format
 msgid "Could not execute `%s': %s\n"
-msgstr "`%s' konnte nicht ausgeführt werden: %s\n"
+msgstr "`%s' konnte nicht ausgefÃ¼hrt werden: %s\n"
 
 #: src/applications/testbed/gnunet-testbed.c:321
 msgid "No client service started. Trying again in 30 seconds.\n"
@@ -1783,11 +1783,11 @@ msgstr "GNUnet testbed Controller starten."
 #: src/applications/testbed/gnunet-testbed.c:590
 #, c-format
 msgid "Malformed entry in the configuration in section %s under %s: %s\n"
-msgstr "Beschädigter Eintrag in der Konfigurationsdatei in Sektion %s unter %s: %s\n"
+msgstr "BeschÃ¤digter Eintrag in der Konfigurationsdatei in Sektion %s unter %s: %s\n"
 
 #: src/applications/testbed/testbed.c:50
 msgid "Could not send acknowledgement back to client.\n"
-msgstr "Bestätigung konnte nicht an Client zurück gesendet werden.\n"
+msgstr "BestÃ¤tigung konnte nicht an Client zurÃ¼ck gesendet werden.\n"
 
 #: src/applications/testbed/testbed.c:60
 #, c-format
@@ -1798,17 +1798,17 @@ msgstr "Es wurde eine unbekannte Testbed Nachricht des Typs %u empfangen.\n"
 #: src/applications/testbed/testbed.c:807
 #, c-format
 msgid "size of `%s' message is too short. Ignoring.\n"
-msgstr "Größe der `%s' Nachricht ist zu kurz. Nachricht wird ignoriert.\n"
+msgstr "GrÃ¶ÃŸe der `%s' Nachricht ist zu kurz. Nachricht wird ignoriert.\n"
 
 #: src/applications/testbed/testbed.c:85
 #, c-format
 msgid "size of `%s' message is wrong. Ignoring.\n"
-msgstr "Größe der `%s' Nachricht ist falsch. Nachricht wird ignoriert.\n"
+msgstr "GrÃ¶ÃŸe der `%s' Nachricht ist falsch. Nachricht wird ignoriert.\n"
 
 #: src/applications/testbed/testbed.c:137
 #, c-format
 msgid "TESTBED could not generate hello message for protocol %u\n"
-msgstr "Das TESTBED konnte keine Hello Nachricht für das Protokoll %u erzeugen\n"
+msgstr "Das TESTBED konnte keine Hello Nachricht fÃ¼r das Protokoll %u erzeugen\n"
 
 #: src/applications/testbed/testbed.c:215
 #: src/applications/testbed/testbed.c:256
@@ -1818,13 +1818,13 @@ msgstr "Das TESTBED konnte keine Hello Nachricht für das Protokoll %u erzeugen\n
 #: src/applications/testbed/testbed.c:410
 #, c-format
 msgid "received invalid `%s' message\n"
-msgstr "ungültige `%s' Nachricht empfangen\n"
+msgstr "ungÃ¼ltige `%s' Nachricht empfangen\n"
 
 #: src/applications/testbed/testbed.c:231
 #: src/applications/testbed/testbed.c:271
 #, c-format
 msgid "received invalid `%s' message (empty module name)\n"
-msgstr "ungültige `%s' Nachricht empfangen (leerer Modulname)\n"
+msgstr "ungÃ¼ltige `%s' Nachricht empfangen (leerer Modulname)\n"
 
 #: src/applications/testbed/testbed.c:238
 #, c-format
@@ -1843,7 +1843,7 @@ msgstr "`%s' %s schlug fehl: %s\n"
 #: src/applications/testbed/testbed.c:625
 #, c-format
 msgid "received invalid `%s' message: %s.\n"
-msgstr "ungültige `%s' Nachricht empfangen: %s.\n"
+msgstr "ungÃ¼ltige `%s' Nachricht empfangen: %s.\n"
 
 #: src/applications/testbed/testbed.c:817
 #, c-format
@@ -1852,11 +1852,11 @@ msgstr "'..' ist nicht erlaubt in einem Dateinamen (%s).\n"
 
 #: src/applications/testbed/testbed.c:826
 msgid "Empty filename for UPLOAD_FILE message is invalid!\n"
-msgstr "Leerer Dateiname für UPLOAD_FILE Nachricht ist ungültig!\n"
+msgstr "Leerer Dateiname fÃ¼r UPLOAD_FILE Nachricht ist ungÃ¼ltig!\n"
 
 #: src/applications/testbed/testbed.c:833
 msgid "Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"
-msgstr "Dateiname für UPLOAD_FILE Nachricht ist nicht Null-terminiert (ungültig!)\n"
+msgstr "Dateiname fÃ¼r UPLOAD_FILE Nachricht ist nicht Null-terminiert (ungÃ¼ltig!)\n"
 
 #: src/applications/testbed/testbed.c:841
 msgid "Upload refused!"
@@ -1865,17 +1865,17 @@ msgstr "Upload abgewiesen!"
 #: src/applications/testbed/testbed.c:867
 #, c-format
 msgid "Invalid message received at %s:%d."
-msgstr "Ungültige Nachricht empfangen bei %s:%d."
+msgstr "UngÃ¼ltige Nachricht empfangen bei %s:%d."
 
 #: src/applications/testbed/testbed.c:985
 #, c-format
 msgid "received invalid testbed message of size %u\n"
-msgstr "ungültige Testbed Nachricht der Größe %u empfangen\n"
+msgstr "ungÃ¼ltige Testbed Nachricht der GrÃ¶ÃŸe %u empfangen\n"
 
 #: src/applications/testbed/testbed.c:1002
 #, c-format
 msgid "Received testbed message of type %u but unexpected size %u, expected %u\n"
-msgstr "Empfangene Testbed Nachricht des Typs %u hat die unerwartete Größe %u, es wurde %u erwartet\n"
+msgstr "Empfangene Testbed Nachricht des Typs %u hat die unerwartete GrÃ¶ÃŸe %u, es wurde %u erwartet\n"
 
 #: src/applications/testbed/testbed.c:1046
 msgid "No testbed URL given, not registered.\n"
@@ -1885,12 +1885,12 @@ msgstr "Keine Testbed URL angegeben, es wurde keine Registrierung vorgenommen.\n
 #: src/transports/http.c:1451
 #, c-format
 msgid "Could not resolve name of HTTP proxy `%s'.\n"
-msgstr "Der Name des HTTP Proxies `%s' konnte nicht aufgelöst werden.\n"
+msgstr "Der Name des HTTP Proxies `%s' konnte nicht aufgelÃ¶st werden.\n"
 
 #: src/applications/testbed/testbed.c:1119
 #, c-format
 msgid "Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"
-msgstr "Beschädigte HTTP URL: `%s' bei `%s'. Testbed-Client wurde nicht registriert.\n"
+msgstr "BeschÃ¤digte HTTP URL: `%s' bei `%s'. Testbed-Client wurde nicht registriert.\n"
 
 #: src/applications/testbed/testbed.c:1155
 #, c-format
@@ -1913,12 +1913,12 @@ msgstr "Abbruch der Registrierung (Fehler: keine HTTP Antwort gelesen).\n"
 
 #: src/applications/testbed/testbed.c:1357
 msgid "allows construction of a P2P-testbed (incomplete)"
-msgstr "Ermöglicht die Konstruktion einer P2P-Testumgebung (inkomplett)"
+msgstr "ErmÃ¶glicht die Konstruktion einer P2P-Testumgebung (inkomplett)"
 
 #: src/applications/topology_default/topology.c:397
 #, c-format
 msgid "Version mismatch (`%s' vs. '%*.s'), run gnunet-update!\n"
-msgstr "Versionen stimmen nicht überein (`%s' vs. '%*.s'), lassen Sie gnunet-update laufen!\n"
+msgstr "Versionen stimmen nicht Ã¼berein (`%s' vs. '%*.s'), lassen Sie gnunet-update laufen!\n"
 
 #: src/applications/topology_f2f/topology.c:303
 #, c-format
@@ -1932,12 +1932,12 @@ msgstr "Fehler beim Lesen der Freunde-Liste von `%s'\n"
 
 #: src/applications/topology_f2f/topology.c:338
 msgid "Syntax error in topology specification, skipping bytes.\n"
-msgstr "Syntaxfehler in Topolgieangabe, Bytes werden übersprungen.\n"
+msgstr "Syntaxfehler in Topolgieangabe, Bytes werden Ã¼bersprungen.\n"
 
 #: src/applications/topology_f2f/topology.c:350
 #, c-format
 msgid "Syntax error in topology specification, skipping bytes `%s'.\n"
-msgstr "Syntaxfehler in Topologieangabe, überspringe Bytes `%s'.\n"
+msgstr "Syntaxfehler in Topologieangabe, Ã¼berspringe Bytes `%s'.\n"
 
 #: src/applications/tracekit/gnunet-tracekit.c:101
 msgid "probe network to the given DEPTH"
@@ -1945,11 +1945,11 @@ msgstr "Netzwerk bis zur angegebenen Tiefe DEPTH sondieren"
 
 #: src/applications/tracekit/gnunet-tracekit.c:103
 msgid "specify output format; 0 for human readable output, 1 for dot, 2 for vcg"
-msgstr "Gibt das Ausgabeformat an: 0 für menschen-lesbar, 1 für dot, 2 für vcg"
+msgstr "Gibt das Ausgabeformat an: 0 fÃ¼r menschen-lesbar, 1 fÃ¼r dot, 2 fÃ¼r vcg"
 
 #: src/applications/tracekit/gnunet-tracekit.c:107
 msgid "use PRIO for the priority of the trace request"
-msgstr "PRIO als Priorität für die Trace Anfragen verwenden"
+msgstr "PRIO als PrioritÃ¤t fÃ¼r die Trace Anfragen verwenden"
 
 #: src/applications/tracekit/gnunet-tracekit.c:110
 msgid "wait DELAY seconds for replies"
@@ -1967,7 +1967,7 @@ msgstr "`%s' ist zu keinem Knoten verbunden.\n"
 #: src/applications/tracekit/gnunet-tracekit.c:233
 #, c-format
 msgid "Format specification invalid. Use 0 for user-readable, 1 for dot, 2 for vcg.\n"
-msgstr "Formatangabe ungültig. Verwenden Sie 0 für menschen-lesbar, 1 für dot und 2 für vcg.\n"
+msgstr "Formatangabe ungÃ¼ltig. Verwenden Sie 0 fÃ¼r menschen-lesbar, 1 fÃ¼r dot und 2 fÃ¼r vcg.\n"
 
 #: src/applications/tracekit/gnunet-tracekit.c:260
 #, c-format
@@ -1977,12 +1977,12 @@ msgstr "`%s' hat sich mit `%s' verbunden.\n"
 #: src/applications/tracekit/gnunet-tracekit.c:275
 #, c-format
 msgid "Format specification invalid. Use 0 for user-readable, 1 for dot\n"
-msgstr "Formatangabe ungültig. Verwenden Sie 0 für menschen-lesbar und 1 für dot\n"
+msgstr "Formatangabe ungÃ¼ltig. Verwenden Sie 0 fÃ¼r menschen-lesbar und 1 fÃ¼r dot\n"
 
 #: src/applications/tracekit/gnunet-tracekit.c:298
 #, c-format
 msgid "Peer `%s' did not report back.\n"
-msgstr "Knoten `%s' hat sich nicht zurückgemeldet.\n"
+msgstr "Knoten `%s' hat sich nicht zurÃ¼ckgemeldet.\n"
 
 #: src/applications/tracekit/gnunet-tracekit.c:387
 msgid "Could not send request to gnunetd.\n"
@@ -1992,7 +1992,7 @@ msgstr "Anfrage konnte nicht an gnunetd gesendet werden.\n"
 #: src/applications/tracekit/tracekit.c:186
 #, c-format
 msgid "Received invalid `%s' message from `%s'.\n"
-msgstr "Ungültige `%s' Anfrage von `%s' empfangen.\n"
+msgstr "UngÃ¼ltige `%s' Anfrage von `%s' empfangen.\n"
 
 #: src/applications/tracekit/tracekit.c:243
 msgid "TRACEKIT: routing table full, trace request dropped\n"
@@ -2001,7 +2001,7 @@ msgstr "TRACEKIT: Routing-Tabelle ist voll, Trace-Anfrage wird verworfen\n"
 #: src/applications/tracekit/tracekit.c:331
 #, c-format
 msgid "TRACEKIT: received invalid `%s' message\n"
-msgstr "TRACEKIT: ungültige `%s' Nachricht empfangen\n"
+msgstr "TRACEKIT: ungÃ¼ltige `%s' Nachricht empfangen\n"
 
 #: src/applications/tracekit/tracekit.c:431
 msgid "allows mapping of the network topology"
@@ -2013,12 +2013,12 @@ msgstr "Fehler beim Abfragen der Netzwerkverkehrsbedingungen von gnunetd.\n"
 
 #: src/applications/traffic/clientapi.c:74
 msgid "Did not receive reply from gnunetd about traffic conditions.\n"
-msgstr "Keine Antwort von gnunetd über die Netzwerkverkehrsbedingungen.\n"
+msgstr "Keine Antwort von gnunetd Ã¼ber die Netzwerkverkehrsbedingungen.\n"
 
 #: src/applications/traffic/traffic.c:445
 #, c-format
 msgid "# bytes transmitted of type %d"
-msgstr "# Bytes des Typs %d übertragen"
+msgstr "# Bytes des Typs %d Ã¼bertragen"
 
 #: src/applications/traffic/traffic.c:465
 #, c-format
@@ -2048,7 +2048,7 @@ msgstr "Sie sollten mindestens einen Transport Dienst unter der Option `%s' in d
 #: src/applications/transport/transport.c:680
 #, c-format
 msgid "Transport library `%s' did not provide required function '%s%s'.\n"
-msgstr "Transport Bibliothek `%s' stellt nicht die benötigte Funktion '%s%s' zur Verfügung.\n"
+msgstr "Transport Bibliothek `%s' stellt nicht die benÃ¶tigte Funktion '%s%s' zur VerfÃ¼gung.\n"
 
 #: src/applications/transport/transport.c:701
 #, c-format
@@ -2069,11 +2069,11 @@ msgstr "Konfigurationsdatei `%s' wurde erzeugt.\n"
 #: src/conf/confdata.c:93
 #, c-format
 msgid "%s: symbol value `%s' invalid for %s\n"
-msgstr "%s: Symbolwert `%s' ist ungültig für %s\n"
+msgstr "%s: Symbolwert `%s' ist ungÃ¼ltig fÃ¼r %s\n"
 
 #: src/conf/gconf.c:67
 msgid "Sorry, no help is available for this option.\n"
-msgstr "Sorry, für diese Option steht keine Hilfe zur Verfügung.\n"
+msgstr "Sorry, fÃ¼r diese Option steht keine Hilfe zur VerfÃ¼gung.\n"
 
 #: src/conf/gconf_interface.c:134
 msgid "Gtk GNUnet Configurator"
@@ -2085,7 +2085,7 @@ msgstr "_Datei"
 
 #: src/conf/gconf_interface.c:152
 msgid "_Load"
-msgstr "_öffnen"
+msgstr "_Ã¶ffnen"
 
 #: src/conf/gconf_interface.c:155
 #: src/conf/gconf_interface.c:315
@@ -2146,11 +2146,11 @@ msgstr "_Hilfe"
 
 #: src/conf/gconf_interface.c:232
 msgid "_Introduction"
-msgstr "_Einführung"
+msgstr "_EinfÃ¼hrung"
 
 #: src/conf/gconf_interface.c:244
 msgid "_About"
-msgstr "_über"
+msgstr "_Ã¼ber"
 
 #: src/conf/gconf_interface.c:254
 msgid "_License"
@@ -2218,7 +2218,7 @@ msgstr "Expandieren"
 
 #: src/conf/gconf_interface.c:561
 msgid "Sorry, no help available for this option yet."
-msgstr "Sorry, für diese Option steht noch keine Hilfe zur Verfügung"
+msgstr "Sorry, fÃ¼r diese Option steht noch keine Hilfe zur VerfÃ¼gung"
 
 #: src/conf/gconf_support.c:90
 #: src/conf/gconf_support.c:114
@@ -2228,16 +2228,16 @@ msgstr "Pixmapdatei %s konnte nicht gefunden werden"
 
 #: src/conf/gnunet-setup.c:93
 msgid "generate configuration for gnunetd, the GNUnet daemon"
-msgstr "Generiere Konfiguration für gnunetd, den GNUnet Daemon"
+msgstr "Generiere Konfiguration fÃ¼r gnunetd, den GNUnet Daemon"
 
 #: src/conf/gnunet-setup.c:101
 msgid "Tool to setup GNUnet."
-msgstr "Werkzeug für die Einrichtung von GNUnet."
+msgstr "Werkzeug fÃ¼r die Einrichtung von GNUnet."
 
 #: src/conf/gnunet-setup.c:102
 #, c-format
 msgid "Available MODEs:\n"
-msgstr "Verfügbare MODEs:\n"
+msgstr "VerfÃ¼gbare MODEs:\n"
 
 #: src/conf/gnunet-setup.c:103
 #, c-format
@@ -2247,7 +2247,7 @@ msgstr " config\t\ttext-basierte Konfiguration\n"
 #: src/conf/gnunet-setup.c:105
 #, c-format
 msgid " menuconfig\ttext-based menu\n"
-msgstr "menuconfig\ttext-basiertes Menü\n"
+msgstr "menuconfig\ttext-basiertes MenÃ¼\n"
 
 #: src/conf/gnunet-setup.c:107
 #, c-format
@@ -2271,7 +2271,7 @@ msgstr ""
 #: src/conf/gnunet-setup.c:178
 #, c-format
 msgid "gnunet-setup must have write-access to the configuration file `%s'\n"
-msgstr "gnunet-setup benötigt Schreibberechtigungen für die Konfigurationsdatei `%s'\n"
+msgstr "gnunet-setup benÃ¶tigt Schreibberechtigungen fÃ¼r die Konfigurationsdatei `%s'\n"
 
 #: src/conf/gnunet-setup.c:187
 #: src/server/gnunet-peer-info.c:113
@@ -2279,12 +2279,12 @@ msgstr "gnunet-setup benötigt Schreibberechtigungen für die Konfigurationsdatei 
 #: src/server/gnunet-update.c:139
 #, c-format
 msgid "Invalid arguments: "
-msgstr "Ungültige Parameter: "
+msgstr "UngÃ¼ltige Parameter: "
 
 #: src/conf/gnunet-setup.c:229
 #, c-format
 msgid "menuconfig is not available\n"
-msgstr " menuconfig ist nicht verfügbar\n"
+msgstr " menuconfig ist nicht verfÃ¼gbar\n"
 
 #: src/conf/gnunet-setup.c:234
 #: src/conf/gnunet-setup.c:244
@@ -2299,17 +2299,17 @@ msgstr ""
 #: src/conf/gnunet-setup.c:239
 #, c-format
 msgid "wizard-curses is not available\n"
-msgstr "wizard-curses ist nicht verfügbar\n"
+msgstr "wizard-curses ist nicht verfÃ¼gbar\n"
 
 #: src/conf/gnunet-setup.c:249
 #, c-format
 msgid "wizard-gtk is not available\n"
-msgstr "wizard-gtk ist nicht verfügbar\n"
+msgstr "wizard-gtk ist nicht verfÃ¼gbar\n"
 
 #: src/conf/gnunet-setup.c:256
 #, c-format
 msgid "gconfig is not available\n"
-msgstr "gconfig ist nicht verfügbar\n"
+msgstr "gconfig ist nicht verfÃ¼gbar\n"
 
 #: src/conf/gnunet-setup.c:260
 #, c-format
@@ -2325,13 +2325,13 @@ msgstr "Der GNUnet Dienst wurde erfolgreich installiert.\n"
 #: src/conf/gnunet-win-tool.c:139
 #, c-format
 msgid "This version of Windows doesn't support services.\n"
-msgstr "Diese Version von Windows unterstützt keine Dienste.\n"
+msgstr "Diese Version von Windows unterstÃ¼tzt keine Dienste.\n"
 
 #: src/conf/gnunet-win-tool.c:116
 #: src/conf/gnunet-win-tool.c:143
 #, c-format
 msgid "Error: can't open Service Control Manager: %s\n"
-msgstr "Fehler: der Dienstemanager konnte nicht geöffnet werden: %s\n"
+msgstr "Fehler: der Dienstemanager konnte nicht geÃ¶ffnet werden: %s\n"
 
 #: src/conf/gnunet-win-tool.c:121
 #, c-format
@@ -2347,7 +2347,7 @@ msgstr "Unbekannter Fehler.\n"
 #: src/conf/gnunet-win-tool.c:136
 #, c-format
 msgid "Service deleted.\n"
-msgstr "Dienst gelöscht.\n"
+msgstr "Dienst gelÃ¶scht.\n"
 
 #: src/conf/gnunet-win-tool.c:148
 #, c-format
@@ -2357,7 +2357,7 @@ msgstr "Fehler: auf den Dienst konnte nicht zugegriffen werden: %s\n"
 #: src/conf/gnunet-win-tool.c:152
 #, c-format
 msgid "Error: can't delete service: %s\n"
-msgstr "Fehler: Dienst konnte nicht gelöscht werden: %s\n"
+msgstr "Fehler: Dienst konnte nicht gelÃ¶scht werden: %s\n"
 
 #: src/conf/wizard_callbacks.c:169
 #, c-format
@@ -2372,7 +2372,7 @@ msgstr "Fehler beim Anlegen des Benutzerkontos:"
 #: src/conf/wizard_callbacks.c:196
 #: src/conf/wizard_curs.c:619
 msgid "Unable to change startup process:"
-msgstr "Startprozeß konnte nicht geändert werden:"
+msgstr "StartprozeÃŸ konnte nicht geÃ¤ndert werden:"
 
 #: src/conf/wizard_curs.c:58
 #: src/conf/wizard_interface.c:1075
@@ -2422,16 +2422,16 @@ msgstr ""
 "\n"
 "Bitte besuchen Sie unsere Homepage\n"
 "\thttp://gnunet.org\n"
-"und schließen Sie sich unserer Community an:\n"
+"und schlieÃŸen Sie sich unserer Community an:\n"
 "\thttps://gnunet.org/drupal/\n"
 "\n"
-"Viel Spaß,\n"
+"Viel SpaÃŸ,\n"
 "\n"
 "das GNUnet-Team"
 
 #: src/conf/wizard_curs.c:132
 msgid "Choose the network interface that connects your computer to the internet from the list below."
-msgstr "Wählen Sie das Netzwerkgerät, das Ihren Computer mit dem Internet verbindet, aus unten stehender Liste."
+msgstr "WÃ¤hlen Sie das NetzwerkgerÃ¤t, das Ihren Computer mit dem Internet verbindet, aus unten stehender Liste."
 
 #: src/conf/wizard_curs.c:138
 #: src/conf/wizard_curs.c:191
@@ -2445,11 +2445,11 @@ msgstr "Hilfe"
 #: src/conf/wizard_curs.c:138
 #: src/conf/wizard_curs.c:192
 msgid "The \"Network interface\" is the device that connects your computer to the internet. This is usually a modem, an ISDN card or a network card in case you are using DSL."
-msgstr "Das \"Netzwerkgerät\" ist das Gerät, das Ihren Computer mit dem Internet verbindet. Dies ist üblicherweise ein Modem, eine ISDN-Karte oder eine Netzwerkkarte falls Sie DSL nutzen."
+msgstr "Das \"NetzwerkgerÃ¤t\" ist das GerÃ¤t, das Ihren Computer mit dem Internet verbindet. Dies ist Ã¼blicherweise ein Modem, eine ISDN-Karte oder eine Netzwerkkarte falls Sie DSL nutzen."
 
 #: src/conf/wizard_curs.c:185
 msgid "What is the name of the network interface that connects your computer to the Internet?"
-msgstr "Was ist der Name des Netzwerkgerätes, das Ihren Computer mit dem Internet verbindet?"
+msgstr "Was ist der Name des NetzwerkgerÃ¤tes, das Ihren Computer mit dem Internet verbindet?"
 
 #: src/conf/wizard_curs.c:222
 msgid ""
@@ -2457,7 +2457,7 @@ msgid ""
 "\n"
 "If in doubt, leave this empty."
 msgstr ""
-"Wie heißt die öffentliche IP-Adresse oder der öffentliche Name dieses Computers?\n"
+"Wie heiÃŸt die Ã¶ffentliche IP-Adresse oder der Ã¶ffentliche Name dieses Computers?\n"
 "Wenn Sie nicht sicher sind, lassen Sie dieses Feld leer."
 
 #: src/conf/wizard_curs.c:229
@@ -2465,8 +2465,8 @@ msgid ""
 "If your provider always assigns the same IP-Address to you (a \"static\" IP-Address), enter it into the \"IP-Address\" field. If your IP-Address changes every now and then (\"dynamic\" IP-Address) but there's a hostname that always points to your actual IP-Address (\"Dynamic DNS\"), you can also enter it here.\n"
 "If in doubt, leave the field empty. GNUnet will then try to determine your IP-Address."
 msgstr ""
-"Wenn Ihr Provider Ihnen immer die gleiche IP-Adresse zuweist (eine \"statische\" IP-Adresse), so geben Sie diese in das \"IP-Adresse\"-Feld ein. Wenn sich Ihre IP-Adresse immer wieder ändert (\"dynamische\" IP-Adresse), es jedoch einen Rechnernamen gibt, der immer auf Ihre aktuelle IP-Adresse verweist, so können Sie diesen ebenfalls eintragen.\n"
-"Wenn Sie nicht sicher sind, so können Sie das Feld leer lassen. GNUnet wird dann versuchen, Ihre IP-Adresse automatisch zu bestimmen."
+"Wenn Ihr Provider Ihnen immer die gleiche IP-Adresse zuweist (eine \"statische\" IP-Adresse), so geben Sie diese in das \"IP-Adresse\"-Feld ein. Wenn sich Ihre IP-Adresse immer wieder Ã¤ndert (\"dynamische\" IP-Adresse), es jedoch einen Rechnernamen gibt, der immer auf Ihre aktuelle IP-Adresse verweist, so kÃ¶nnen Sie diesen ebenfalls eintragen.\n"
+"Wenn Sie nicht sicher sind, so kÃ¶nnen Sie das Feld leer lassen. GNUnet wird dann versuchen, Ihre IP-Adresse automatisch zu bestimmen."
 
 #: src/conf/wizard_curs.c:252
 msgid ""
@@ -2476,7 +2476,7 @@ msgid ""
 msgstr ""
 "Ist diese Maschine hinter NAT?\n"
 "\n"
-"Wenn Sie mit dem Internet über einen anderen Computer per SNAT, einem Router oder einer \"Hardware Firewall\" verbunden sind und andere Computer im Internet keine Verbindung zu diesem Computer herstellen können, so sagen Sie hier \"Ja\". Antworten Sie \"Nein\" bei direkten Verbindungen über Modem, ISDN-Karten und DNAT (auch bekannt als \"Port forwarding\")."
+"Wenn Sie mit dem Internet Ã¼ber einen anderen Computer per SNAT, einem Router oder einer \"Hardware Firewall\" verbunden sind und andere Computer im Internet keine Verbindung zu diesem Computer herstellen kÃ¶nnen, so sagen Sie hier \"Ja\". Antworten Sie \"Nein\" bei direkten Verbindungen Ã¼ber Modem, ISDN-Karten und DNAT (auch bekannt als \"Port forwarding\")."
 
 #: src/conf/wizard_curs.c:278
 msgid "How much upstream (Bytes/s) may be used?"
@@ -2488,9 +2488,9 @@ msgid ""
 "\n"
 "The \"upstream\" is the data channel through which data is *sent* to the internet. The limit is either the total maximum for this computer or how much GNUnet itself is allowed to use. You can specify that later. If you have a flatrate, you can set it to the maximum speed of your internet connection."
 msgstr ""
-"Hier können Sie GNUnets Ressourcenverwendung einschränken.\n"
+"Hier kÃ¶nnen Sie GNUnets Ressourcenverwendung einschrÃ¤nken.\n"
 "\n"
-"Der \"Upstream\" ist der Datenkanal, durch den Daten an das Internet *gesendet* werden. Das Limit ist entweder das gesamte Maximum für diesem Computer oder wieviel GNUnet selbst verwenden darf. Dies können Sie später festlegen. Wenn Sie eine Flatrate haben, können Sie die maximale Geschwindigkeit Ihrer Internetverbindung angeben."
+"Der \"Upstream\" ist der Datenkanal, durch den Daten an das Internet *gesendet* werden. Das Limit ist entweder das gesamte Maximum fÃ¼r diesem Computer oder wieviel GNUnet selbst verwenden darf. Dies kÃ¶nnen Sie spÃ¤ter festlegen. Wenn Sie eine Flatrate haben, kÃ¶nnen Sie die maximale Geschwindigkeit Ihrer Internetverbindung angeben."
 
 #: src/conf/wizard_curs.c:310
 msgid "How much downstream (Bytes/s) may be used?"
@@ -2502,9 +2502,9 @@ msgid ""
 "\n"
 "The \"downstream\" is the data channel through which data is *received* from the internet. The limit is either the total maximum for this computer or how much GNUnet itself is allowed to use. You can specify that later. If you have a flatrate you can set it to the maximum speed of your internet connection."
 msgstr ""
-"Hier können Sie GNUnets Ressourcenverwendung einschränken.\n"
+"Hier kÃ¶nnen Sie GNUnets Ressourcenverwendung einschrÃ¤nken.\n"
 "\n"
-"Der \"Downstream\" ist der Datenkanal, durch den Daten vom Internet *empfangen* werden. Das Limit ist entweder das gesamte Maximum für diesem Computer oder wieviel GNUnet selbst verwenden darf. Dies können Sie später festlegen. Wenn Sie eine Flatrate haben, können Sie die maximale Geschwindigkeit Ihrer Internetverbindung angeben."
+"Der \"Downstream\" ist der Datenkanal, durch den Daten vom Internet *empfangen* werden. Das Limit ist entweder das gesamte Maximum fÃ¼r diesem Computer oder wieviel GNUnet selbst verwenden darf. Dies kÃ¶nnen Sie spÃ¤ter festlegen. Wenn Sie eine Flatrate haben, kÃ¶nnen Sie die maximale Geschwindigkeit Ihrer Internetverbindung angeben."
 
 #: src/conf/wizard_curs.c:338
 msgid ""
@@ -2514,7 +2514,7 @@ msgid ""
 msgstr ""
 "Angegebene Bandbreite mit anderen Anwendungen teilen?\n"
 "\n"
-"Sagen Sie hier \"Ja\", wenn Sie nicht möchten, dass anderer Netzwerkverkehr GNUnets Funktion stört aber dennoch GNUnets Bandbreite gemäß den Angaben in den vorherigen Schritten einschränken möchten oder Sie die maximalen Möglichkeiten Ihrer Internetverbindung nicht zuverlässig messen können. \"Nein\" kann nützlich sein, wenn andere Anwendungen viel Netzwerkverkehr in Ihrem LAN verursachen. In diesem Fall möchten Sie nicht GNUnets Netzwerkverkehr über die Internetverbindung einschränken, wann immer Ihre Hochgeschwindigkeits-LAN-Verbindung verwendet wird (z.B. durch NFS)."
+"Sagen Sie hier \"Ja\", wenn Sie nicht mÃ¶chten, dass anderer Netzwerkverkehr GNUnets Funktion stÃ¶rt aber dennoch GNUnets Bandbreite gemÃ¤ÃŸ den Angaben in den vorherigen Schritten einschrÃ¤nken mÃ¶chten oder Sie die maximalen MÃ¶glichkeiten Ihrer Internetverbindung nicht zuverlÃ¤ssig messen kÃ¶nnen. \"Nein\" kann nÃ¼tzlich sein, wenn andere Anwendungen viel Netzwerkverkehr in Ihrem LAN verursachen. In diesem Fall mÃ¶chten Sie nicht GNUnets Netzwerkverkehr Ã¼ber die Internetverbindung einschrÃ¤nken, wann immer Ihre Hochgeschwindigkeits-LAN-Verbindung verwendet wird (z.B. durch NFS)."
 
 #: src/conf/wizard_curs.c:370
 msgid "How much CPU (in %) may be used?"
@@ -2526,7 +2526,7 @@ msgid ""
 "\n"
 "This is the percentage of processor time GNUnet is allowed to use."
 msgstr ""
-"Hier können Sie GNUnets Ressourcenverwendung einschränken.\n"
+"Hier kÃ¶nnen Sie GNUnets Ressourcenverwendung einschrÃ¤nken.\n"
 "\n"
 "Dies ist der Prozentsatz an Prozessorzeit, den GNUnet verwenden darf."
 
@@ -2538,8 +2538,8 @@ msgid ""
 "It also helps to spread popular content over different peers to enhance availability."
 msgstr ""
 "Sollen migrierte Inhalte gespeichert werden?\n"
-"GNUnet ist in der Lage, Daten von anderen Knoten in Ihrem Datenspeicher zu speichern. Das ist nützlich, wenn ein Widersacher Zugriff auf Ihre eingefügten Inhalte erlangt und Sie abstreiten müssen, dass diese Daten Ihnen gehören. Ist die \"Inhaltsmigration\" angeschaltet, so können die Inhalte über das Internet von einem anderen Knoten zu Ihrem Rechner ohne Ihr Wissen \"gewandert\" sein.\n"
-"Außerdem hilft es, beliebte Inhalte über verschiedene Netzteilnehmer zu verteilen, um so die Verfügbarkeit zu erhöhen."
+"GNUnet ist in der Lage, Daten von anderen Knoten in Ihrem Datenspeicher zu speichern. Das ist nÃ¼tzlich, wenn ein Widersacher Zugriff auf Ihre eingefÃ¼gten Inhalte erlangt und Sie abstreiten mÃ¼ssen, dass diese Daten Ihnen gehÃ¶ren. Ist die \"Inhaltsmigration\" angeschaltet, so kÃ¶nnen die Inhalte Ã¼ber das Internet von einem anderen Knoten zu Ihrem Rechner ohne Ihr Wissen \"gewandert\" sein.\n"
+"AuÃŸerdem hilft es, beliebte Inhalte Ã¼ber verschiedene Netzteilnehmer zu verteilen, um so die VerfÃ¼gbarkeit zu erhÃ¶hen."
 
 #: src/conf/wizard_curs.c:424
 msgid ""
@@ -2547,8 +2547,8 @@ msgid ""
 "\n"
 "The GNUnet datastore contains all data that GNUnet generates (index data, inserted and migrated content)."
 msgstr ""
-"Was ist die maximale Größe des GNUnet Datenspeichers (in MB)?\n"
-"Der GNUnet Datenspeicher enthält alle Daten, die GNUnet erzeugt (Indexdaten, eingefügte und migrierte Inhalte)."
+"Was ist die maximale GrÃ¶ÃŸe des GNUnet Datenspeichers (in MB)?\n"
+"Der GNUnet Datenspeicher enthÃ¤lt alle Daten, die GNUnet erzeugt (Indexdaten, eingefÃ¼gte und migrierte Inhalte)."
 
 #: src/conf/wizard_curs.c:447
 msgid ""
@@ -2556,9 +2556,9 @@ msgid ""
 "\n"
 "If you say \"yes\" here, the GNUnet background process will be automatically started when you turn on your computer. If you say \"no\" here, you have to launch GNUnet yourself each time you want to use it."
 msgstr ""
-"Möchten Sie GNUnet als Systemdienst starten?\n"
+"MÃ¶chten Sie GNUnet als Systemdienst starten?\n"
 "\n"
-"Wenn Sie hier \"Ja\" sagen, so wird der GNUnet Hintergrundprozess jedesmal automatisch gestartet, wenn Sie Ihren Computer einschalten. Wenn Sie hier \"Nein\" sagen, so müssen Sie GNUnet jedesmal selbst starten, wenn Sie es verwenden möchten."
+"Wenn Sie hier \"Ja\" sagen, so wird der GNUnet Hintergrundprozess jedesmal automatisch gestartet, wenn Sie Ihren Computer einschalten. Wenn Sie hier \"Nein\" sagen, so mÃ¼ssen Sie GNUnet jedesmal selbst starten, wenn Sie es verwenden mÃ¶chten."
 
 #: src/conf/wizard_curs.c:502
 msgid ""
@@ -2572,13 +2572,13 @@ msgid ""
 "\n"
 "GNUnet user:"
 msgstr ""
-"Geben Sie den Benutzer an, dem der GNUnet Dienst gehören soll.\n"
+"Geben Sie den Benutzer an, dem der GNUnet Dienst gehÃ¶ren soll.\n"
 "\n"
-"Aus Sicherheitsgründen ist es eine gute Idee, dieses Setup ein neues Benutzerkonto anlegen zu lassen, unter dem der GNUnet Dienst beim Systemstart läuft.\n"
+"Aus SicherheitsgrÃ¼nden ist es eine gute Idee, dieses Setup ein neues Benutzerkonto anlegen zu lassen, unter dem der GNUnet Dienst beim Systemstart lÃ¤uft.\n"
 "\n"
-"Natürlich kann GNUnet dann nur auf seine eigenen Dateien zugreifen. Dies betrifft auch Dateien, die Sie im GNUnet veröffentlichen möchten. Sie müssen dann dem unten angegebenen Benutzerkonto zuerst Leseberechtigungen geben.\n"
+"NatÃ¼rlich kann GNUnet dann nur auf seine eigenen Dateien zugreifen. Dies betrifft auch Dateien, die Sie im GNUnet verÃ¶ffentlichen mÃ¶chten. Sie mÃ¼ssen dann dem unten angegebenen Benutzerkonto zuerst Leseberechtigungen geben.\n"
 "\n"
-"Lassen Sie dieses Feld leer, wenn Sie GNUnet mit Systemprivilegien laufen lassen möchten.\n"
+"Lassen Sie dieses Feld leer, wenn Sie GNUnet mit Systemprivilegien laufen lassen mÃ¶chten.\n"
 "\n"
 "GNUnet Benutzer:"
 
@@ -2594,13 +2594,13 @@ msgid ""
 "\n"
 "GNUnet group:"
 msgstr ""
-"Definieren Sie eine Gruppe, der der GNUnet Dienst gehört.\n"
+"Definieren Sie eine Gruppe, der der GNUnet Dienst gehÃ¶rt.\n"
 "\n"
-"Aus Sicherheitsgründen ist es eine gute Idee, dieses Setup eine neue Gruppe für das gewählte Benutzerkonto anlegen zu lassen.\n"
+"Aus SicherheitsgrÃ¼nden ist es eine gute Idee, dieses Setup eine neue Gruppe fÃ¼r das gewÃ¤hlte Benutzerkonto anlegen zu lassen.\n"
 "\n"
-"Sie können hier auch eine bestehende Gruppe angeben.\n"
+"Sie kÃ¶nnen hier auch eine bestehende Gruppe angeben.\n"
 "\n"
-"Nur Mitglieder dieser Gruppe dürfen den GNUnet Server starten und anhalten und haben Zugriff auf die Daten des GNUnet Servers.\n"
+"Nur Mitglieder dieser Gruppe dÃ¼rfen den GNUnet Server starten und anhalten und haben Zugriff auf die Daten des GNUnet Servers.\n"
 "\n"
 "GNUnet Gruppe:"
 
@@ -2610,9 +2610,9 @@ msgid ""
 "\n"
 "Do you want to start it after saving your configuration?"
 msgstr ""
-"Wenn Sie ein erfahrener Benutzer sind, so möchten Sie vielleicht Ihre GNUnet Installation über den erweiterten Konfigurator optimieren.\n"
+"Wenn Sie ein erfahrener Benutzer sind, so mÃ¶chten Sie vielleicht Ihre GNUnet Installation Ã¼ber den erweiterten Konfigurator optimieren.\n"
 "\n"
-"Möchten Sie ihn starten, nachdem Ihre Konfiguration gespeichert wurde?"
+"MÃ¶chten Sie ihn starten, nachdem Ihre Konfiguration gespeichert wurde?"
 
 #: src/conf/wizard_curs.c:632
 #, c-format
@@ -2654,10 +2654,10 @@ msgstr ""
 "\n"
 "Bitte besuchen Sie unsere Homepage\n"
 "\thttp://gnunet.org\n"
-"und schließen Sie sich unserer Community an:\n"
+"und schlieÃŸen Sie sich unserer Community an:\n"
 "\thttps://gnunet.org/drupal/\n"
 "\n"
-"Viel Spaß,\n"
+"Viel SpaÃŸ,\n"
 "\n"
 "das GNUnet-Team"
 
@@ -2689,16 +2689,16 @@ msgid ""
 msgstr ""
 "Geben Sie hier Ihre Netzwerkinformationen ein.\n"
 "\n"
-"Das \"Netzwerkgerät\" ist das Gerät, das Ihren Computer mit dem Internet verbindet. Dies ist normalerweise ein Modem, eine ISDN-Karte oder eine Netzwerkkarte für den Fall, dass Sie DSL benutzen.\n"
+"Das \"NetzwerkgerÃ¤t\" ist das GerÃ¤t, das Ihren Computer mit dem Internet verbindet. Dies ist normalerweise ein Modem, eine ISDN-Karte oder eine Netzwerkkarte fÃ¼r den Fall, dass Sie DSL benutzen.\n"
 "\n"
-"Wenn Ihnen Ihr Provider immer die gleiche IP-Adresse zuweist (eine \"statische\" IP-Adresse), geben Sie diese in das \"IP-Adresse\"-Feld ein. Wenn Ihre IP-Adresse sich hin und wieder ändert (\"dynamische\" IP-Adresse), es jedoch einen Hostnamen gibt, der immer auf Ihre aktuelle IP-Adresse zeigt (\"Dynamisches DNS\"), so können Sie ihn auch eingeben.\n"
+"Wenn Ihnen Ihr Provider immer die gleiche IP-Adresse zuweist (eine \"statische\" IP-Adresse), geben Sie diese in das \"IP-Adresse\"-Feld ein. Wenn Ihre IP-Adresse sich hin und wieder Ã¤ndert (\"dynamische\" IP-Adresse), es jedoch einen Hostnamen gibt, der immer auf Ihre aktuelle IP-Adresse zeigt (\"Dynamisches DNS\"), so kÃ¶nnen Sie ihn auch eingeben.\n"
 "Im Zweifel lassen Sie das Feld leer. GNUnet wird dann versuchen, die IP-Adresse automatisch zu bestimmen.\n"
 "\n"
-"Wenn Sie nicht direkt mit dem Internet verbunden sind, sondern dies über einen anderen Rechner mit SNAT, einem Router oder einer \"Hardware Firewall\" geschieht und andere Computer im Internet keine Verbindung mit diesem Computer herstellen können, so aktivieren Sie die letzte Option auf dieser Seite. Lassen Sie sie jedoch deaktiviert, wenn Sie eine direkte Verbindung über ein Modem, eine ISDN-Karte oder einen anderen Rechner mit DNAT (auch bekannt als \"Port forwarding\") zum Internet haben."
+"Wenn Sie nicht direkt mit dem Internet verbunden sind, sondern dies Ã¼ber einen anderen Rechner mit SNAT, einem Router oder einer \"Hardware Firewall\" geschieht und andere Computer im Internet keine Verbindung mit diesem Computer herstellen kÃ¶nnen, so aktivieren Sie die letzte Option auf dieser Seite. Lassen Sie sie jedoch deaktiviert, wenn Sie eine direkte Verbindung Ã¼ber ein Modem, eine ISDN-Karte oder einen anderen Rechner mit DNAT (auch bekannt als \"Port forwarding\") zum Internet haben."
 
 #: src/conf/wizard_interface.c:251
 msgid "Network interface:"
-msgstr "Netzwerkgerät:"
+msgstr "NetzwerkgerÃ¤t:"
 
 #: src/conf/wizard_interface.c:258
 msgid "IP-Address/Hostname:"
@@ -2717,7 +2717,7 @@ msgstr "Netzwerkverbindung"
 #: src/conf/wizard_interface.c:887
 #: src/conf/wizard_interface.c:1263
 msgid "Back"
-msgstr "Zurück"
+msgstr "ZurÃ¼ck"
 
 #: src/conf/wizard_interface.c:492
 msgid ""
@@ -2727,11 +2727,11 @@ msgid ""
 "\n"
 "The \"Max. CPU usage\" is the percentage of processor time GNUnet is allowed to use."
 msgstr ""
-"Hier können Sie GNUnet's Ressourcennutzung einschränken.\n"
+"Hier kÃ¶nnen Sie GNUnet's Ressourcennutzung einschrÃ¤nken.\n"
 "\n"
-"\"Bandbreitenbeschränkung\" gibt an, wieviele Daten maximal pro Sekunde übetragen werden dürfen. Wenn Sie eine Flatrate haben, können Sie diese Werte auf die maximal erreichbare Geschwindigkeit Ihrer Internetverbindung setzen.\n"
+"\"BandbreitenbeschrÃ¤nkung\" gibt an, wieviele Daten maximal pro Sekunde Ã¼betragen werden dÃ¼rfen. Wenn Sie eine Flatrate haben, kÃ¶nnen Sie diese Werte auf die maximal erreichbare Geschwindigkeit Ihrer Internetverbindung setzen.\n"
 "\n"
-"Die \"Max. CPU Nutzung\" gibt den Prozentsatz an CPU-Zeit an, den GNUnet für sich verwenden darf."
+"Die \"Max. CPU Nutzung\" gibt den Prozentsatz an CPU-Zeit an, den GNUnet fÃ¼r sich verwenden darf."
 
 #: src/conf/wizard_interface.c:521
 msgid "Upstream (Bytes/s):"
@@ -2743,11 +2743,11 @@ msgstr "Downstream (Bytes/s):"
 
 #: src/conf/wizard_interface.c:549
 msgid "Bandwidth limitation"
-msgstr "Bandbreitenbeschränkung"
+msgstr "BandbreitenbeschrÃ¤nkung"
 
 #: src/conf/wizard_interface.c:564
 msgid "Use denoted bandwidth for GNUnet"
-msgstr "Angegebene Bandbreite für GNUnet verwenden"
+msgstr "Angegebene Bandbreite fÃ¼r GNUnet verwenden"
 
 #: src/conf/wizard_interface.c:573
 msgid "Share denoted bandwidth with other applications"
@@ -2767,7 +2767,7 @@ msgstr "CPU Nutzung"
 
 #: src/conf/wizard_interface.c:604
 msgid "Load limitation"
-msgstr "Lastbeschränkung"
+msgstr "LastbeschrÃ¤nkung"
 
 #: src/conf/wizard_interface.c:814
 msgid ""
@@ -2778,12 +2778,12 @@ msgid ""
 "\n"
 "If you are an experienced user, you may want to tweak your GNUnet installation using the enhanced configurator."
 msgstr ""
-"GNUnet ist in der Lage, Daten von anderen Knoten in Ihrem Datenspeicher zu speichern. Das ist nützlich, wenn ein Widersacher Zugriff auf Ihre eingefügten Inhalte erlangt und Sie abstreiten müssen, dass diese Daten Ihnen gehören. Mit \"Inhaltsmigration\" angeschaltet können die Inhalte über das Internet von einem anderen Knoten zu Ihrem Rechner ohne Ihr Wissen \"gewandert\" sein.\n"
-"Außerdem hilft es, beliebte Inhalte über verschiedene Netzteilnehmer zu verteilen, um so die Verfügbarkeit zu erhöhen.\n"
+"GNUnet ist in der Lage, Daten von anderen Knoten in Ihrem Datenspeicher zu speichern. Das ist nÃ¼tzlich, wenn ein Widersacher Zugriff auf Ihre eingefÃ¼gten Inhalte erlangt und Sie abstreiten mÃ¼ssen, dass diese Daten Ihnen gehÃ¶ren. Mit \"Inhaltsmigration\" angeschaltet kÃ¶nnen die Inhalte Ã¼ber das Internet von einem anderen Knoten zu Ihrem Rechner ohne Ihr Wissen \"gewandert\" sein.\n"
+"AuÃŸerdem hilft es, beliebte Inhalte Ã¼ber verschiedene Netzteilnehmer zu verteilen, um so die VerfÃ¼gbarkeit zu erhÃ¶hen.\n"
 "\n"
-"Der GNUnet Datenspeicher enthält alle Daten, die GNUnet erzeugt (Indexdaten, eingefügte und migrierte Inhalte). Seine maximale Größe kann unten angegeben werden.\n"
+"Der GNUnet Datenspeicher enthÃ¤lt alle Daten, die GNUnet erzeugt (Indexdaten, eingefÃ¼gte und migrierte Inhalte). Seine maximale GrÃ¶ÃŸe kann unten angegeben werden.\n"
 "\n"
-"Wenn Sie ein fortgeschrittener Benutzer sind, möchten Sie vielleicht weitere Feinjustierungen an GNUnet über den \"erweiterten Konfigurator\" vornehmen."
+"Wenn Sie ein fortgeschrittener Benutzer sind, mÃ¶chten Sie vielleicht weitere Feinjustierungen an GNUnet Ã¼ber den \"erweiterten Konfigurator\" vornehmen."
 
 #: src/conf/wizard_interface.c:829
 msgid "Store migrated content"
@@ -2791,11 +2791,11 @@ msgstr "Migrierte Inhalte speichern"
 
 #: src/conf/wizard_interface.c:838
 msgid "Maximum datastore size (MB):"
-msgstr "Maximale Größe des Datenspeichers (MB):"
+msgstr "Maximale GrÃ¶ÃŸe des Datenspeichers (MB):"
 
 #: src/conf/wizard_interface.c:849
 msgid "Start the GNUnet background process on computer startup"
-msgstr "GNUnet Hintergrundprozeß beim Starten des Computers automatisch starten"
+msgstr "GNUnet HintergrundprozeÃŸ beim Starten des Computers automatisch starten"
 
 #: src/conf/wizard_interface.c:856
 msgid "Open the enhanced configurator"
@@ -2816,7 +2816,7 @@ msgstr "Frage"
 
 #: src/conf/wizard_interface.c:1018
 msgid "Do you want to save your settings?"
-msgstr "Möchten Sie Ihre Einstellungen speichern?"
+msgstr "MÃ¶chten Sie Ihre Einstellungen speichern?"
 
 #: src/conf/wizard_interface.c:1033
 msgid "Yes"
@@ -2844,13 +2844,13 @@ msgid ""
 "\n"
 "Leave the fields empty to run GNUnet with system privileges."
 msgstr ""
-"Geben Sie den Benutzer und die Gruppe an, der der GNUnet Dienst gehören soll.\n"
+"Geben Sie den Benutzer und die Gruppe an, der der GNUnet Dienst gehÃ¶ren soll.\n"
 "\n"
-"Aus Sicherheitsgründen ist es eine gute Idee, dieses Setup ein neues Benutzerkonto und eine neue Gruppe anlegen zu lassen, unter der der GNUnet Dienst beim Systemstart läuft.\n"
+"Aus SicherheitsgrÃ¼nden ist es eine gute Idee, dieses Setup ein neues Benutzerkonto und eine neue Gruppe anlegen zu lassen, unter der der GNUnet Dienst beim Systemstart lÃ¤uft.\n"
 "\n"
-"Natürlich kann GNUnet dann nur auf seine eigenen Dateien zugreifen. Dies betrifft auch Dateien, die Sie im GNUnet veröffentlichen möchten. Sie müssen dann dem unten angegebenen Benutzerkonto zuerst Leseberechtigungen geben.\n"
+"NatÃ¼rlich kann GNUnet dann nur auf seine eigenen Dateien zugreifen. Dies betrifft auch Dateien, die Sie im GNUnet verÃ¶ffentlichen mÃ¶chten. Sie mÃ¼ssen dann dem unten angegebenen Benutzerkonto zuerst Leseberechtigungen geben.\n"
 "\n"
-"Lassen Sie dieses Feld leer, wenn Sie GNUnet mit Systemprivilegien laufen lassen möchten."
+"Lassen Sie dieses Feld leer, wenn Sie GNUnet mit Systemprivilegien laufen lassen mÃ¶chten."
 
 #: src/conf/wizard_interface.c:1209
 msgid "Group:"
@@ -2862,7 +2862,7 @@ msgstr "Benutzerkonto:"
 
 #: src/conf/wizard_util.c:90
 msgid "Can't open Service Control Manager"
-msgstr "Der Dienstemanager konnte nicht geöffnet werden"
+msgstr "Der Dienstemanager konnte nicht geÃ¶ffnet werden"
 
 #: src/conf/wizard_util.c:95
 msgid "Can't create service"
@@ -2870,7 +2870,7 @@ msgstr "Der Dienst konnte nicht angelegt werden"
 
 #: src/conf/wizard_util.c:100
 msgid "Error changing the permissions of the GNUnet directory"
-msgstr "Fehler beim Ändern der Berechtigungen des GNUnet Verzeichnisses"
+msgstr "Fehler beim Ã„ndern der Berechtigungen des GNUnet Verzeichnisses"
 
 #: src/conf/wizard_util.c:105
 msgid "Cannot write to the regisitry"
@@ -2882,7 +2882,7 @@ msgstr "Auf den Dienst konnte nicht zugegriffen werden"
 
 #: src/conf/wizard_util.c:112
 msgid "Can't delete the service"
-msgstr "Dienst konnte nicht gelöscht werden"
+msgstr "Dienst konnte nicht gelÃ¶scht werden"
 
 #: src/conf/wizard_util.c:116
 msgid "Unknown error"
@@ -2890,7 +2890,7 @@ msgstr "Unbekannter Fehler"
 
 #: src/conf/wizard_util.c:145
 msgid "This version of Windows does not support multiple users."
-msgstr "Diese Version von Windows ist nicht Mehrbenutzerfähig."
+msgstr "Diese Version von Windows ist nicht MehrbenutzerfÃ¤hig."
 
 #: src/conf/wizard_util.c:149
 msgid "Error creating user"
@@ -2911,22 +2911,22 @@ msgstr "Unbekannter Fehler beim Anlegen des neuen Benutzers"
 #: src/server/connection.c:974
 #, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
-msgstr "`%s' wählte %d von %d Nachrichten aus (MTU: %d).\n"
+msgstr "`%s' wÃ¤hlte %d von %d Nachrichten aus (MTU: %d).\n"
 
 #: src/server/connection.c:982
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
-msgstr "Nachrichten Details: %u: Länge %d, Priorität: %d\n"
+msgstr "Nachrichten Details: %u: LÃ¤nge %d, PrioritÃ¤t: %d\n"
 
 #: src/server/connection.c:2231
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
-msgstr "Nachricht von `%s' verworfen: ungültiges Format.\n"
+msgstr "Nachricht von `%s' verworfen: ungÃ¼ltiges Format.\n"
 
 #: src/server/connection.c:2308
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
-msgstr "Ungültige Sequenznummer %u <= %u, Nachricht wird verworfen.\n"
+msgstr "UngÃ¼ltige Sequenznummer %u <= %u, Nachricht wird verworfen.\n"
 
 #: src/server/connection.c:2324
 msgid "Message received more than one day old. Dropped.\n"
@@ -2946,11 +2946,11 @@ msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
 #: src/server/connection.c:2724
 msgid "# bytes encrypted"
-msgstr "# Bytes verschlüsselt"
+msgstr "# Bytes verschlÃ¼sselt"
 
 #: src/server/connection.c:2726
 msgid "# bytes decrypted"
-msgstr "# Bytes entschlüsselt"
+msgstr "# Bytes entschlÃ¼sselt"
 
 #: src/server/connection.c:2728
 msgid "# bytes noise sent"
@@ -3013,7 +3013,7 @@ msgstr "Dienst `%s' konnte nicht ordentlich entladen werden!\n"
 
 #: src/server/gnunet-peer-info.c:95
 msgid "Print information about GNUnet peers."
-msgstr "Informationen über andere GNUnet Knoten ausgeben."
+msgstr "Informationen Ã¼ber andere GNUnet Knoten ausgeben."
 
 #: src/server/gnunet-peer-info.c:144
 #: src/server/gnunet-peer-info.c:159
@@ -3023,7 +3023,7 @@ msgstr "Adresse des Knotens `%s' konnte nicht ermittelt werden.\n"
 
 #: src/server/gnunet-peer-info.c:153
 msgid "hello message invalid (signature invalid).\n"
-msgstr "Hello Nachricht ist ungültig (Signatur ist ungültig).\n"
+msgstr "Hello Nachricht ist ungÃ¼ltig (Signatur ist ungÃ¼ltig).\n"
 
 #: src/server/gnunet-peer-info.c:164
 #, c-format
@@ -3058,7 +3058,7 @@ msgstr "`%s': Verbindung konnte nicht getrennt werden.\n"
 #: src/server/gnunet-transport-check.c:188
 #, c-format
 msgid "`%s' transport OK.  It took %ums to transmit %d messages of %d bytes each.\n"
-msgstr "`%s' Transport funktioniert. Es dauerte %ums, um %d Nachrichten zu je %d Bytes zu übertragen.\n"
+msgstr "`%s' Transport funktioniert. Es dauerte %ums, um %d Nachrichten zu je %d Bytes zu Ã¼bertragen.\n"
 
 #: src/server/gnunet-transport-check.c:221
 #, c-format
@@ -3072,7 +3072,7 @@ msgstr ""
 #: src/server/gnunet-transport-check.c:232
 #, c-format
 msgid " Transport %d not available\n"
-msgstr " Transport %d ist nicht verfügbar\n"
+msgstr " Transport %d ist nicht verfÃ¼gbar\n"
 
 #: src/server/gnunet-transport-check.c:254
 #, c-format
@@ -3111,11 +3111,11 @@ msgstr "Gibt an, nach wievielen MS die Zeit abgelaufen sein soll"
 
 #: src/server/gnunet-transport-check.c:500
 msgid "Tool to test if GNUnet transport services are operational."
-msgstr "Werkzeug, mit dem getestet werden kann, ob die GNUnet Transport Dienste funktionsfähig sind."
+msgstr "Werkzeug, mit dem getestet werden kann, ob die GNUnet Transport Dienste funktionsfÃ¤hig sind."
 
 #: src/server/gnunet-transport-check.c:548
 msgid "You must specify a non-empty set of transports to test!\n"
-msgstr "Sie müssen eine Menge an Transporten angeben, die getestet werden sollen!\n"
+msgstr "Sie mÃ¼ssen eine Menge an Transporten angeben, die getestet werden sollen!\n"
 
 #: src/server/gnunet-transport-check.c:553
 #, c-format
@@ -3125,12 +3125,12 @@ msgstr "Teste Transport(e) %s\n"
 #: src/server/gnunet-transport-check.c:556
 #, c-format
 msgid "Available transport(s): %s\n"
-msgstr "Verfügbare(r) Transport(e): %s\n"
+msgstr "VerfÃ¼gbare(r) Transport(e): %s\n"
 
 #: src/server/gnunet-transport-check.c:600
 #, c-format
 msgid "%d out of %d peers contacted successfully (%d times transport unavailable).\n"
-msgstr "%d von %d Knoten erfolgreich kontaktiert (%d mal war der Transport nicht verfügbar).\n"
+msgstr "%d von %d Knoten erfolgreich kontaktiert (%d mal war der Transport nicht verfÃ¼gbar).\n"
 
 #: src/server/gnunet-update.c:49
 msgid "print a value from the configuration file to stdout"
@@ -3142,7 +3142,7 @@ msgstr "Im Benuter-Modus laufen (um benutzerspezifische Konfigurationseinstellun
 
 #: src/server/gnunet-update.c:59
 msgid "Updates GNUnet datastructures after version change."
-msgstr "GNUnet Datenstrukturen nach einer Versionsänderung aktualisieren."
+msgstr "GNUnet Datenstrukturen nach einer VersionsÃ¤nderung aktualisieren."
 
 #: src/server/gnunet-update.c:134
 #, c-format
@@ -3171,12 +3171,12 @@ msgstr "Fehler beim Aktualisieren der Daten des Moduls `%s'\n"
 #: src/server/gnunet-update.c:296
 #, c-format
 msgid "Updated data for %d applications.\n"
-msgstr "Daten für %d Anwendungen wurden aktualisiert.\n"
+msgstr "Daten fÃ¼r %d Anwendungen wurden aktualisiert.\n"
 
 #: src/server/gnunetd.c:116
 #, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
-msgstr "Konfiguration oder die GNUnet Version hat sich geändert. Sie müssen `%s' ausführen!\n"
+msgstr "Konfiguration oder die GNUnet Version hat sich geÃ¤ndert. Sie mÃ¼ssen `%s' ausfÃ¼hren!\n"
 
 #: src/server/gnunetd.c:124
 #, c-format
@@ -3191,22 +3191,22 @@ msgstr "`%s' Startvorgang abgeschlossen.\n"
 #: src/server/gnunetd.c:151
 #, c-format
 msgid "`%s' is shutting down.\n"
-msgstr "`%s' fährt herunter.\n"
+msgstr "`%s' fÃ¤hrt herunter.\n"
 
 #: src/server/handler.c:367
 #, c-format
 msgid "Received corrupt message from peer `%s'in %s:%d.\n"
-msgstr "Beschädigte Nachricht von Knoten `%s' in %s:%d empfangen.\n"
+msgstr "BeschÃ¤digte Nachricht von Knoten `%s' in %s:%d empfangen.\n"
 
 #: src/server/startup.c:123
 #, c-format
 msgid "The `%s' request received from client is malformed.\n"
-msgstr "Die `%s' Anfrage, die vom Client empfangen wurde, ist beschädigt.\n"
+msgstr "Die `%s' Anfrage, die vom Client empfangen wurde, ist beschÃ¤digt.\n"
 
 #: src/server/startup.c:268
 #, c-format
 msgid "You must specify a name for the PID file in section `%s' under `%s'.\n"
-msgstr "Sie müssen einen Namen für die PID Datei in Sektion `%s' unter `%s' angeben.\n"
+msgstr "Sie mÃ¼ssen einen Namen fÃ¼r die PID Datei in Sektion `%s' unter `%s' angeben.\n"
 
 #: src/server/startup.c:283
 #, c-format
@@ -3215,11 +3215,11 @@ msgstr "PID konnte nicht in Datei `%s' geschrieben werden: %s.\n"
 
 #: src/server/startup.c:387
 msgid "run in debug mode; gnunetd will not daemonize and error messages will be written to stderr instead of a logfile"
-msgstr "Im Debug-Modus ausführen. gnunetd wird nicht im Hintergrund laufen und Fehlermeldungen werden nicht in die Protokolldatei, sondern auf die Standardfehlerausgabe (stderr) geschrieben."
+msgstr "Im Debug-Modus ausfÃ¼hren. gnunetd wird nicht im Hintergrund laufen und Fehlermeldungen werden nicht in die Protokolldatei, sondern auf die Standardfehlerausgabe (stderr) geschrieben."
 
 #: src/server/startup.c:393
 msgid "run as user LOGIN"
-msgstr "als Benutzer LOGIN ausführen"
+msgstr "als Benutzer LOGIN ausfÃ¼hren"
 
 #: src/server/startup.c:398
 msgid "Starts the gnunetd daemon."
@@ -3237,7 +3237,7 @@ msgstr "Benutzer/Gruppe kann nicht zu `%s' gewechselt werden: %s\n"
 
 #: src/server/startup.c:522
 msgid "Invalid command-line arguments:\n"
-msgstr "Ungültige Kommandozeilen Parameter:\n"
+msgstr "UngÃ¼ltige Kommandozeilen Parameter:\n"
 
 #: src/server/startup.c:525
 #, c-format
@@ -3246,17 +3246,17 @@ msgstr "Parameter %d: `%s'\n"
 
 #: src/server/startup.c:531
 msgid "Invalid command-line arguments.\n"
-msgstr "Ungültige Kommandozeilen Parameter.\n"
+msgstr "UngÃ¼ltige Kommandozeilen Parameter.\n"
 
 #: src/server/tcpserver.c:425
 #, c-format
 msgid "`%s' failed for port %d: %s. Will try again in %d seconds.\n"
-msgstr "`%s' schlug fehl für Port %d: %s. Erneuter Versuch in %d Sekunden.\n"
+msgstr "`%s' schlug fehl fÃ¼r Port %d: %s. Erneuter Versuch in %d Sekunden.\n"
 
 #: src/server/tcpserver.c:696
 #, c-format
 msgid "Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"
-msgstr "Beschädigte Netzwerkangabe in der Konfigurationsdatei in Sektion `%s' für Eintrag `%s': %s\n"
+msgstr "BeschÃ¤digte Netzwerkangabe in der Konfigurationsdatei in Sektion `%s' fÃ¼r Eintrag `%s': %s\n"
 
 #: src/server/tcpserver.c:806
 #, c-format
@@ -3274,15 +3274,15 @@ msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
 #: src/transports/ip.c:310
 #, c-format
 msgid "Could not resolve `%s': %s\n"
-msgstr "`%s' konnte nicht aufgelöst werden: %s\n"
+msgstr "`%s' konnte nicht aufgelÃ¶st werden: %s\n"
 
 #: src/transports/ip6.c:138
 msgid "Failed to obtain my (external) IPv6 address!\n"
-msgstr "Die öffentliche IPv6-Adresse konnte nicht ermittelt werden!\n"
+msgstr "Die Ã¶ffentliche IPv6-Adresse konnte nicht ermittelt werden!\n"
 
 #: src/transports/http.c:601
 msgid "Expected welcome on http connection, got garbage. Closing connection.\n"
-msgstr "Es wurde eine Willkommensnachricht erwartet, tatsächlich wurde jedoch keine gesendet. HTTP-Verbindung wird geschlossen.\n"
+msgstr "Es wurde eine Willkommensnachricht erwartet, tatsÃ¤chlich wurde jedoch keine gesendet. HTTP-Verbindung wird geschlossen.\n"
 
 #: src/transports/http.c:817
 #: src/transports/tcp.c:692
@@ -3293,7 +3293,7 @@ msgstr "%s: Abgewiesene Verbindung von schwarzgelisteter Adresse %u.%u.%u.%u.\n"
 
 #: src/transports/http.c:1099
 msgid "HTTP: Could not determine my public IP address.\n"
-msgstr "HTTP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
+msgstr "HTTP: Ã¶ffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
 #: src/transports/http.c:1173
 #: src/transports/tcp.c:1132
@@ -3310,11 +3310,11 @@ msgstr "HTTP-Listener konnte nicht an Port %d gebunden werden. Der Transport Die
 
 #: src/transports/http.c:1472
 msgid "# bytes received via HTTP"
-msgstr "# Bytes empfangen über HTTP"
+msgstr "# Bytes empfangen Ã¼ber HTTP"
 
 #: src/transports/http.c:1474
 msgid "# bytes sent via HTTP"
-msgstr "# Bytes gesendet über HTTP"
+msgstr "# Bytes gesendet Ã¼ber HTTP"
 
 #: src/transports/http.c:1476
 msgid "# bytes dropped by HTTP (outgoing)"
@@ -3323,21 +3323,21 @@ msgstr "# Bytes verworfen von HTTP"
 #: src/transports/smtp.c:296
 #, c-format
 msgid "Could not resolve name of SMTP server `%s': %s"
-msgstr "Der Name des SMTP servers `%s' konnte nicht aufgelöst werden: %s"
+msgstr "Der Name des SMTP servers `%s' konnte nicht aufgelÃ¶st werden: %s"
 
 #: src/transports/smtp.c:415
 #: src/transports/smtp.c:876
 #, c-format
 msgid "You must specify the name of a pipe for the SMTP transport in section `%s' under `%s'.\n"
-msgstr "Für den SMTP Transport müssen Sie den Namen einer Pipe in Sektion `%s', Eintrag `%s' eintragen.\n"
+msgstr "FÃ¼r den SMTP Transport mÃ¼ssen Sie den Namen einer Pipe in Sektion `%s', Eintrag `%s' eintragen.\n"
 
 #: src/transports/smtp.c:488
 msgid "Received malformed message via SMTP (size mismatch).\n"
-msgstr "Es wurde eine ungültige Nachricht per SMTP empfangen (ungültige Größe).\n"
+msgstr "Es wurde eine ungÃ¼ltige Nachricht per SMTP empfangen (ungÃ¼ltige GrÃ¶ÃŸe).\n"
 
 #: src/transports/smtp.c:583
 msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
-msgstr "Kein Filter für E-Mail angegeben, es kann keine Bekanntmachung erstellt werden.\n"
+msgstr "Kein Filter fÃ¼r E-Mail angegeben, es kann keine Bekanntmachung erstellt werden.\n"
 
 #: src/transports/smtp.c:590
 #, c-format
@@ -3357,7 +3357,7 @@ msgstr "Der SMTP server sendete eine unerwartete Antwort bei %s:%d.\n"
 #: src/transports/smtp.c:837
 #, c-format
 msgid "SMTP server failed to respond with 250 confirmation code to `%s' request.\n"
-msgstr "SMTP Server antwortete nicht mit einem 250 Bestätigungscode auf eine `%s' Anfrage.\n"
+msgstr "SMTP Server antwortete nicht mit einem 250 BestÃ¤tigungscode auf eine `%s' Anfrage.\n"
 
 #: src/transports/smtp.c:843
 #, c-format
@@ -3374,21 +3374,21 @@ msgstr "%.*s filter %s (SMTP)"
 #: src/transports/udp6.c:637
 #, c-format
 msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
-msgstr "MTU für `%s' ist möglicherweise zu gering (Fragmentierung ist nicht implementiert!)\n"
+msgstr "MTU fÃ¼r `%s' ist mÃ¶glicherweise zu gering (Fragmentierung ist nicht implementiert!)\n"
 
 #: src/transports/tcp.c:465
 #, c-format
 msgid "Expected welcome message on tcp connection, got garbage (%u, %u). Closing.\n"
-msgstr "Es wurde eine Willkommensnachricht erwartet, über die TCP Verbindung wurde aber keine gesendet (%u, %u). Verbindung wird geschlossen.\n"
+msgstr "Es wurde eine Willkommensnachricht erwartet, Ã¼ber die TCP Verbindung wurde aber keine gesendet (%u, %u). Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp.c:499
 #, c-format
 msgid "Received malformed message (size %u) from tcp-peer connection. Closing.\n"
-msgstr "Es wurde per TCP von einem anderen Knoten eine ungültige Nachricht (Größe %u) empfangen. Verbindung wird geschlossen.\n"
+msgstr "Es wurde per TCP von einem anderen Knoten eine ungÃ¼ltige Nachricht (GrÃ¶ÃŸe %u) empfangen. Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp.c:1064
 msgid "Could not determine my public IP address.\n"
-msgstr "Öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
+msgstr "Ã–ffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
 #: src/transports/tcp.c:1314
 #: src/transports/tcp6.c:1200
@@ -3398,11 +3398,11 @@ msgstr "Der Transportdienst auf Port %d konnte nicht gestartet werden.\n"
 
 #: src/transports/tcp.c:1431
 msgid "# bytes received via TCP"
-msgstr "# Bytes empfangen über TCP"
+msgstr "# Bytes empfangen Ã¼ber TCP"
 
 #: src/transports/tcp.c:1433
 msgid "# bytes sent via TCP"
-msgstr "# Bytes gesendet über TCP"
+msgstr "# Bytes gesendet Ã¼ber TCP"
 
 #: src/transports/tcp.c:1435
 msgid "# bytes dropped by TCP (outgoing)"
@@ -3410,21 +3410,21 @@ msgstr "# Bytes verworfen von TCP (ausgehend)"
 
 #: src/transports/tcp6.c:439
 msgid "Expected welcome message on tcp connection, got garbage. Closing.\n"
-msgstr "Es wurde eine Willkommensnachricht erwartet, über die TCP Verbindung wurde jedoch keine gesendet. Verbindung wird geschlossen.\n"
+msgstr "Es wurde eine Willkommensnachricht erwartet, Ã¼ber die TCP Verbindung wurde jedoch keine gesendet. Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp6.c:469
 msgid "Received malformed message from tcp6-peer connection. Closing connection.\n"
-msgstr "über die TCP6-Verbindung zu einem anderen Knoten wurde eine ungültige Nachricht empfangen. Verbindung wird geschlossen.\n"
+msgstr "Ã¼ber die TCP6-Verbindung zu einem anderen Knoten wurde eine ungÃ¼ltige Nachricht empfangen. Verbindung wird geschlossen.\n"
 
 #: src/transports/tcp6.c:657
 #: src/transports/udp6.c:274
 #, c-format
 msgid "%s: Rejected connection from blacklisted address %s.\n"
-msgstr "%s: Zurückgewiesene Verbindung von schwarzgelisteter Adresse %s.\n"
+msgstr "%s: ZurÃ¼ckgewiesene Verbindung von schwarzgelisteter Adresse %s.\n"
 
 #: src/transports/tcp6.c:958
 msgid "Could not determine my public IPv6 address.\n"
-msgstr "Die öffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
+msgstr "Die Ã¶ffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
 
 #: src/transports/tcp6.c:1002
 #, c-format
@@ -3445,29 +3445,29 @@ msgstr "Fehler beim Binden an UDP Port %d.\n"
 #: src/transports/udp.c:252
 #, c-format
 msgid "Received invalid UDP message from %u.%u.%u.%u:%u, dropping.\n"
-msgstr "Es wurde eine ungültige UDP Nachricht von %u.%u.%u.%u:%u empfangen, Nachricht wird ignoriert.\n"
+msgstr "Es wurde eine ungÃ¼ltige UDP Nachricht von %u.%u.%u.%u:%u empfangen, Nachricht wird ignoriert.\n"
 
 #: src/transports/udp.c:275
 #, c-format
 msgid "Packet received from %u.%u.%u.%u:%u (UDP) failed format check.\n"
-msgstr "Ein Paket empfangen von %u.%u.%u.%u:%u (UDP) hat ein ungültiges Format.\n"
+msgstr "Ein Paket empfangen von %u.%u.%u.%u:%u (UDP) hat ein ungÃ¼ltiges Format.\n"
 
 #: src/transports/udp.c:356
 msgid "UDP: Could not determine my public IP address.\n"
-msgstr "UDP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
+msgstr "UDP: Ã¶ffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
 #: src/transports/udp.c:488
 #, c-format
 msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
-msgstr "Eine Nachricht der Größe %d konnte nicht per UDP an %u.%u.%u.%u:%u versendet werden: %s\n"
+msgstr "Eine Nachricht der GrÃ¶ÃŸe %d konnte nicht per UDP an %u.%u.%u.%u:%u versendet werden: %s\n"
 
 #: src/transports/udp.c:644
 msgid "# bytes received via UDP"
-msgstr "# Bytes empfangen über UDP"
+msgstr "# Bytes empfangen Ã¼ber UDP"
 
 #: src/transports/udp.c:646
 msgid "# bytes sent via UDP"
-msgstr "# Bytes gesendet über UDP"
+msgstr "# Bytes gesendet Ã¼ber UDP"
 
 #: src/transports/udp.c:648
 msgid "# bytes dropped by UDP (outgoing)"
@@ -3476,17 +3476,17 @@ msgstr "# Bytes verworfen von UDP (outgoing)"
 #: src/transports/ip.c:142
 #, c-format
 msgid "Could not find interface `%s' in `%s', trying to find another interface.\n"
-msgstr "Gerät `%s' konnte in `%s' nicht gefunden werden, es wird versucht, ein anderes Gerät zu finden.\n"
+msgstr "GerÃ¤t `%s' konnte in `%s' nicht gefunden werden, es wird versucht, ein anderes GerÃ¤t zu finden.\n"
 
 #: src/transports/ip.c:167
 #, c-format
 msgid "Could not obtain IP for interface `%s' using `%s'.\n"
-msgstr "Es konnte keine IP für das Gerät `%s' unter Verwendung von `%s' ermittelt werden.\n"
+msgstr "Es konnte keine IP fÃ¼r das GerÃ¤t `%s' unter Verwendung von `%s' ermittelt werden.\n"
 
 #: src/transports/ip.c:211
 #, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
-msgstr "Es konnte keine IP-Adresse für das Gerät `%s' ermittelt werden.\n"
+msgstr "Es konnte keine IP-Adresse fÃ¼r das GerÃ¤t `%s' ermittelt werden.\n"
 
 #: src/transports/ip.c:221
 #, c-format
@@ -3494,13 +3494,13 @@ msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
 "GNUnet will use %u.%u.%u.%u.\n"
 msgstr ""
-"Es ist mehr als eine IP-Adresse für das Gerät `%s' angegeben.\n"
+"Es ist mehr als eine IP-Adresse fÃ¼r das GerÃ¤t `%s' angegeben.\n"
 "GNUnet wird %u.%u.%u.%u. verwenden.\n"
 
 #: src/transports/ip.c:242
 #, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
-msgstr "`%s' konnte nicht aufgelöst werden, um unsere IP-Adresse zu ermitteln: %s\n"
+msgstr "`%s' konnte nicht aufgelÃ¶st werden, um unsere IP-Adresse zu ermitteln: %s\n"
 
 #: src/transports/ip.c:275
 #, c-format
@@ -3519,16 +3519,16 @@ msgstr "Fehler beim Binden an UDP6 Port %d.\n"
 #: src/transports/udp6.c:234
 #, c-format
 msgid "Received invalid UDP6 message from %s:%d, dropping.\n"
-msgstr "Ungültige UDP6 Nachricht von %s:%d empfangen, Nachricht wird ignoriert.\n"
+msgstr "UngÃ¼ltige UDP6 Nachricht von %s:%d empfangen, Nachricht wird ignoriert.\n"
 
 #: src/transports/udp6.c:263
 #, c-format
 msgid "Packet received from %s:%d (UDP6) failed format check."
-msgstr "Die Formatüberprüfung des Pakets, das von %s:%d (UDP6) empfangen wurde, schlug fehl."
+msgstr "Die FormatÃ¼berprÃ¼fung des Pakets, das von %s:%d (UDP6) empfangen wurde, schlug fehl."
 
 #: src/transports/udp6.c:353
 msgid "UDP6: Could not determine my public IPv6 address.\n"
-msgstr "UDP6: Öffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
+msgstr "UDP6: Ã–ffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
 
 #: src/util/configuration.c:180
 #, c-format
@@ -3549,16 +3549,16 @@ msgstr "Syntaxfehler in Konfigurationsdatei `%s' in Zeile %d.\n"
 #: src/util/configuration.c:522
 #, c-format
 msgid "Configuration file `%s' not found.  Run gnunet-setup!\n"
-msgstr "Konfigurationsdatei `%s' nicht gefunden. Bitte führen Sie gnunet-setup aus!\n"
+msgstr "Konfigurationsdatei `%s' nicht gefunden. Bitte fÃ¼hren Sie gnunet-setup aus!\n"
 
 #: src/util/configuration.c:519
 msgid "Configuration file not found. Please run GNUnet Setup (Client Configuration) first."
-msgstr "Die Konfigurationsdatei wurde nicht gefunden. Bitte führen Sie zuerst GNUnet Setup (Client Konfiguration) aus."
+msgstr "Die Konfigurationsdatei wurde nicht gefunden. Bitte fÃ¼hren Sie zuerst GNUnet Setup (Client Konfiguration) aus."
 
 #: src/util/configuration.c:526
 #, c-format
 msgid "Cannot open configuration file `%s'.\n"
-msgstr "Konfigurationsdatei `%s' konnte nicht geöffnet werden.\n"
+msgstr "Konfigurationsdatei `%s' konnte nicht geÃ¶ffnet werden.\n"
 
 #: src/util/cron.c:229
 msgid "Cron stopped\n"
@@ -3567,7 +3567,7 @@ msgstr "Cron angehalten\n"
 #: src/util/cron.c:366
 #, c-format
 msgid "`%s' called with cron job not in queue, adding.  This may not be what you want.\n"
-msgstr "`%s' aufgerufen wobei Cron Job nicht Warteschlange ist. Er wird hinzugefügt. Das ist möglicherweise nicht, was Sie wollen.\n"
+msgstr "`%s' aufgerufen wobei Cron Job nicht Warteschlange ist. Er wird hinzugefÃ¼gt. Das ist mÃ¶glicherweise nicht, was Sie wollen.\n"
 
 #: src/util/dso.c:43
 #, c-format
@@ -3577,12 +3577,12 @@ msgstr "Initialisierung des Plugin Mechanismuses fehlgeschlagen: %s!\n"
 #: src/util/dso.c:96
 #, c-format
 msgid "`%s' failed for library `%s' at %s:%d with error: %s\n"
-msgstr "`%s' fehlgeschlagen für die Bibliothek `%s'. Ort: %s:%d. Fehler: %s\n"
+msgstr "`%s' fehlgeschlagen fÃ¼r die Bibliothek `%s'. Ort: %s:%d. Fehler: %s\n"
 
 #: src/util/dso.c:150
 #, c-format
 msgid "`%s' failed to resolve method '%s%s' at %s:%d with error: %s\n"
-msgstr "`%s' konnte die Methode '%s%s' nicht auflösen. Ort: %s:%d. Fehler: %s\n"
+msgstr "`%s' konnte die Methode '%s%s' nicht auflÃ¶sen. Ort: %s:%d. Fehler: %s\n"
 
 #: src/util/getopt.c:641
 #, c-format
@@ -3603,7 +3603,7 @@ msgstr "%s: Option '%c%s' erlaubt keinen Parameter\n"
 #: src/util/getopt.c:861
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
-msgstr "%s: Option `%s' benötigt einen Parameter\n"
+msgstr "%s: Option `%s' benÃ¶tigt einen Parameter\n"
 
 #: src/util/getopt.c:717
 #, c-format
@@ -3623,13 +3623,13 @@ msgstr "%s: unerlaubte Option -- %c\n"
 #: src/util/getopt.c:750
 #, c-format
 msgid "%s: invalid option -- %c\n"
-msgstr "%s: ungültige Option -- %c\n"
+msgstr "%s: ungÃ¼ltige Option -- %c\n"
 
 #: src/util/getopt.c:780
 #: src/util/getopt.c:910
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
-msgstr "%s: Option benötigt einen Parameter -- %c\n"
+msgstr "%s: Option benÃ¶tigt einen Parameter -- %c\n"
 
 #: src/util/getopt.c:827
 #, c-format
@@ -3644,7 +3644,7 @@ msgstr "%s: Option '-W %s' erlaubt keinen Parameter\n"
 #: src/util/hostkey_gcrypt.c:936
 #, c-format
 msgid "RSA signature verification failed at %s:%d: %s\n"
-msgstr "RSA Signaturüberprüfung fehlgeschlagen bei %s:%d: %s\n"
+msgstr "RSA SignaturÃ¼berprÃ¼fung fehlgeschlagen bei %s:%d: %s\n"
 
 #: src/util/initialize.c:228
 msgid "Shutdown complete.\n"
@@ -3663,32 +3663,32 @@ msgstr "libgcrypt hat nicht die erwartete Version (Version %s wird vorausgesetzt
 #: src/util/ipcheck.c:100
 #, c-format
 msgid "Invalid format for IP: `%s'\n"
-msgstr "Ungültiges Format für IP: `%s'\n"
+msgstr "UngÃ¼ltiges Format fÃ¼r IP: `%s'\n"
 
 #: src/util/ipcheck.c:150
 #, c-format
 msgid "Invalid network notation ('/%d' is not legal in IPv4 CIDR)."
-msgstr "Ungültige Netzwerk Notation ('/%d ist nicht gültig in IPv4 CIDR)."
+msgstr "UngÃ¼ltige Netzwerk Notation ('/%d ist nicht gÃ¼ltig in IPv4 CIDR)."
 
 #: src/util/ipcheck.c:164
 #, c-format
 msgid "Invalid network notation (additional characters: `%s')."
-msgstr "Ungültige Netzwerk Notation (zusätzliche Zeichen: `%s')."
+msgstr "UngÃ¼ltige Netzwerk Notation (zusÃ¤tzliche Zeichen: `%s')."
 
 #: src/util/ipcheck.c:235
 #, c-format
 msgid "Invalid network notation (does not end with ';': `%s')\n"
-msgstr "Ungültige Netzwerk Notation (endet nicht mit ';': `%s')\n"
+msgstr "UngÃ¼ltige Netzwerk Notation (endet nicht mit ';': `%s')\n"
 
 #: src/util/ipcheck.c:267
 #, c-format
 msgid "Wrong format `%s' for netmask: %s\n"
-msgstr "Falsches Format `%s' für Netzmaske: %s\n"
+msgstr "Falsches Format `%s' fÃ¼r Netzmaske: %s\n"
 
 #: src/util/ipcheck.c:281
 #, c-format
 msgid "Wrong format `%s' for network: %s\n"
-msgstr "Falsches Format `%s' für Netzwerk: %s\n"
+msgstr "Falsches Format `%s' fÃ¼r Netzwerk: %s\n"
 
 #: src/util/logging.c:90
 msgid "NOTHING"
@@ -3733,7 +3733,7 @@ msgstr "ALLES"
 #: src/util/logging.c:269
 #, c-format
 msgid "Invalid LOGLEVEL `%s' specified.\n"
-msgstr "Ungültiger LOGLEVEL `%s' angegeben.\n"
+msgstr "UngÃ¼ltiger LOGLEVEL `%s' angegeben.\n"
 
 #: src/util/logging.c:361
 #: src/util/logging.c:367
@@ -3760,13 +3760,13 @@ msgstr ""
 #: src/util/printhelp.c:45
 #, c-format
 msgid "Arguments mandatory for long options are also mandatory for short options.\n"
-msgstr "Parameter, die für lange Optionen zwingend sind, sind auch für kurze Optionen zwingend.\n"
+msgstr "Parameter, die fÃ¼r lange Optionen zwingend sind, sind auch fÃ¼r kurze Optionen zwingend.\n"
 
 #: src/util/semaphore.c:172
 #: src/util/semaphore.c:198
 #, c-format
 msgid "Invalid argument for `%s' at %s:%d.\n"
-msgstr "Ungültiger Parameter für `%s' bei %s:%d.\n"
+msgstr "UngÃ¼ltiger Parameter fÃ¼r `%s' bei %s:%d.\n"
 
 #: src/util/semaphore.c:176
 #, c-format
@@ -3776,7 +3776,7 @@ msgstr "Durch `%s' ist ein Deadlock bei %s:%d entstanden\n"
 #: src/util/semaphore.c:202
 #, c-format
 msgid "Permission denied for `%s' at %s:%d.\n"
-msgstr "Zugriff verweigert für `%s' bei %s:%d.\n"
+msgstr "Zugriff verweigert fÃ¼r `%s' bei %s:%d.\n"
 
 #: src/util/semaphore.c:577
 #, c-format
@@ -3786,12 +3786,12 @@ msgstr "Semaphore konnte nicht angelegt werden: %i"
 #: src/util/state.c:86
 #, c-format
 msgid "Configuration file must specify a directory for GNUnet to store per-peer data under %s\\%s.\n"
-msgstr "Die Konfigurationsdatei muss unter %s\\%s ein Verzeichnis für GNUnet angeben, in dem knotenbezogene Daten gespeichert werden.\n"
+msgstr "Die Konfigurationsdatei muss unter %s\\%s ein Verzeichnis fÃ¼r GNUnet angeben, in dem knotenbezogene Daten gespeichert werden.\n"
 
 #: src/util/statuscalls.c:185
 #, c-format
 msgid "Failed to parse interface data from `%s' at %s:%d.\n"
-msgstr "Fehler beim Parsen der Gerätedaten von `%s' bei %s:%d.\n"
+msgstr "Fehler beim Parsen der GerÃ¤tedaten von `%s' bei %s:%d.\n"
 
 #: src/util/statuscalls.c:489
 msgid "Cannot query the CPU usage (Windows NT).\n"
@@ -3804,12 +3804,12 @@ msgstr "CPU Nutzung kann nicht ermittelt werden (Win 9x).\n"
 #: src/util/statuscalls.c:600
 #, c-format
 msgid "No network interfaces defined in configuration section `%s' under `%s'!\n"
-msgstr "Es sind keine Netzwerkgeräte in der Konfigurationsdatei in der Sektion `%s' unter `%s' definiert!\n"
+msgstr "Es sind keine NetzwerkgerÃ¤te in der Konfigurationsdatei in der Sektion `%s' unter `%s' definiert!\n"
 
 #: src/util/storage.c:196
 #, c-format
 msgid "`%s' failed for drive %s: %u\n"
-msgstr "`%s' fehlgeschlagen für Laufwerk %s: %u\n"
+msgstr "`%s' fehlgeschlagen fÃ¼r Laufwerk %s: %u\n"
 
 #: src/util/storage.c:294
 #, c-format
@@ -3850,7 +3850,7 @@ msgstr "`%s' fehlgeschlagen, die andere Seite hat die Verbindung geschlossen\n"
 #: src/util/tcp_return.c:58
 #, c-format
 msgid "`%s' failed, reply invalid!\n"
-msgstr "`%s' fehlgeschlagen, Antwort ist ungültig!\n"
+msgstr "`%s' fehlgeschlagen, Antwort ist ungÃ¼ltig!\n"
 
 #: src/util/timer.c:190
 msgid "ms"
@@ -3871,12 +3871,12 @@ msgstr " Tage"
 #: src/util/daemon.c:142
 #, c-format
 msgid "Attempted path to `%s' was `%s'.\n"
-msgstr "Versuchter Pfad für `%s' war `%s'.\n"
+msgstr "Versuchter Pfad fÃ¼r `%s' war `%s'.\n"
 
 #: src/util/xmalloc.c:71
 #, c-format
 msgid "Unexpected very large allocation (%u bytes) at %s:%d!\n"
-msgstr "Unerwartete sehr große Allokierung (%u Bytes) bei %s:%d!\n"
+msgstr "Unerwartete sehr groÃŸe Allokierung (%u Bytes) bei %s:%d!\n"
 
 #: src/include/gnunet_util.h:158
 msgid "print this help"
@@ -3892,7 +3892,7 @@ msgstr "Konfigurationsdatei FILENAME verwenden"
 
 #: src/include/gnunet_util.h:167
 msgid "specify host on which gnunetd is running"
-msgstr "Gibt an, auf welchem Host gnunetd läuft"
+msgstr "Gibt an, auf welchem Host gnunetd lÃ¤uft"
 
 #: src/include/gnunet_util.h:170
 msgid "print the version number"
@@ -3937,17 +3937,17 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ "\n"
 #~ "Bitte besuchen Sie unsere Homepage\n"
 #~ "\thttp://gnunet.org\n"
-#~ "und schließen Sie sich unserer Community an:\n"
+#~ "und schlieÃŸen Sie sich unserer Community an:\n"
 #~ "\thttps://gnunet.org/drupal/\n"
 #~ "\n"
-#~ "Viel Spaß,\n"
+#~ "Viel SpaÃŸ,\n"
 #~ "\n"
 #~ "das GNUnet-Team"
 #~ msgid ""
 #~ "Indexing file `%s' failed. Check file permissions and consult your GNUnet "
 #~ "server's logs.\n"
 #~ msgstr ""
-#~ "Indizierung der Datei `%s' schlug fehl. Bitte prüfen Sie die "
+#~ "Indizierung der Datei `%s' schlug fehl. Bitte prÃ¼fen Sie die "
 #~ "Dateiberechtigungen und ziehen Sie die Protokolldateien des GNUnet-"
 #~ "Servers zu Rate.\n"
 #~ msgid "Show _debug info"
@@ -3971,7 +3971,7 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ "MODUL\n"
 #~ " recreate\tKonfigurationsdateien neu erzeugen\n"
 #~ " config\t\tText-basierte Konfiguration\n"
-#~ " menuconfig\tText-basiertes Menü\n"
+#~ " menuconfig\tText-basiertes MenÃ¼\n"
 #~ " gconfig\tGTK Konfiguration\n"
 #~ " wizard-curses\tEinfache text-basierte grafische Konfiguration\n"
 #~ " wizard-gtk\tEinfache GTK Konfiguration\n"
@@ -3990,7 +3990,7 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ msgstr "# p2p Trace-Antworten gesendet"
 #~ msgid "Session with peer `%s' confirmed, but I cannot connect! (bug?)\n"
 #~ msgstr ""
-#~ "Sitzung mit Knoten `%s' ist bestätigt es kann jedoch nicht verbunden "
+#~ "Sitzung mit Knoten `%s' ist bestÃ¤tigt es kann jedoch nicht verbunden "
 #~ "werden! (Bug?)\n"
 #~ msgid "LOGLEVEL not specified, that is not ok.\n"
 #~ msgstr "LOGLEVEL wurde nicht angegeben, das ist nicht in Ordnung.\n"
@@ -3998,24 +3998,24 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ "Interfaces string (%s) in configuration section `%s' under `%s' is "
 #~ "malformed.\n"
 #~ msgstr ""
-#~ "Geräteangabe (%s) in der Konfigurationssektion `%s' unter `%s' ist "
-#~ "beschädigt.\n"
+#~ "GerÃ¤teangabe (%s) in der Konfigurationssektion `%s' unter `%s' ist "
+#~ "beschÃ¤digt.\n"
 #~ msgid ""
 #~ "No network interfaces specified in the configuration file in section `%s' "
 #~ "under `%s'.\n"
 #~ msgstr ""
-#~ "Es sind keine Netzwerkgeräte in der Konfigurationsdatei in der Sektion '%"
+#~ "Es sind keine NetzwerkgerÃ¤te in der Konfigurationsdatei in der Sektion '%"
 #~ "s' unter `%s' definiert.\n"
 #~ msgid "Failed to parse interface data `%s' output at %s:%d.\n"
-#~ msgstr "Fehler beim Parsen der Gerätedaten `%s' Ausgabe bei %s:%d.\n"
+#~ msgstr "Fehler beim Parsen der GerÃ¤tedaten `%s' Ausgabe bei %s:%d.\n"
 #~ msgid "Could not decoding file `%s' at %s:%d.\n"
 #~ msgstr "Datei `%s' konnte nicht dekodiert werden bei %s:%d.\n"
 #~ msgid ""
 #~ "Configuration file must specify directory for network identities in "
 #~ "section %s under %s.\n"
 #~ msgstr ""
-#~ "Die Konfigurationsdatei muss in Sektion %s unter %s ein Verzeichnis für "
-#~ "Identitäten angeben.\n"
+#~ "Die Konfigurationsdatei muss in Sektion %s unter %s ein Verzeichnis fÃ¼r "
+#~ "IdentitÃ¤ten angeben.\n"
 #~ msgid "Sender %u.%u.%u.%u is blacklisted, dropping message.\n"
 #~ msgstr ""
 #~ "Sender %u.%u.%u.%u steht auf schwarzer Liste, Nachricht wird ignoriert.\n"
@@ -4023,10 +4023,10 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ msgstr "Sender %s steht auf schwarzer Liste, Nachricht wird ignoriert.\n"
 #~ msgid "Removed file `%s' containing invalid peer advertisement.\n"
 #~ msgstr ""
-#~ "Datei `%s' enthielt eine ungültige Knotenbekanntmachung und wurde "
+#~ "Datei `%s' enthielt eine ungÃ¼ltige Knotenbekanntmachung und wurde "
 #~ "entfernt.\n"
 #~ msgid "Removed invalid HELO file `%s'\n"
-#~ msgstr "Ungültige HELO Datei `%s' wurde entfernt.\n"
+#~ msgstr "UngÃ¼ltige HELO Datei `%s' wurde entfernt.\n"
 #~ msgid "Could not determine IP address of the local machine!\n"
 #~ msgstr "IP-Adresse der lokalen Maschiene konnte nicht ermittelt werden!\n"
 #~ msgid "Could not determine IP(v6) address of the local machine!\n"
@@ -4051,7 +4051,7 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ msgid "Save the config in a file"
 #~ msgstr "Die Konfiguration in einer Datei speichern"
 #~ msgid "Error: can't open Service Control Manager: %s (%i)\n"
-#~ msgstr "Fehler: der Dienstemanager konnte nicht geöffnet werden: %s (%i)\n"
+#~ msgstr "Fehler: der Dienstemanager konnte nicht geÃ¶ffnet werden: %s (%i)\n"
 #~ msgid "Error: can't create service: %s (#%i)\n"
 #~ msgstr "Fehler: Dienst konnte nicht erzeugt werden: %s (#%i)\n"
 #~ msgid "Failure at at %s:%d.\n"
