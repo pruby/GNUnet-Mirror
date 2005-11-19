@@ -63,6 +63,11 @@ static unsigned int minPriority;
 static long long available;
 
 /**
+ * Quota from config file.
+ */
+static unsigned long long quota;
+
+/**
  */
 static unsigned long long getSize() {
   return sq->getSize();
@@ -283,9 +288,7 @@ static int freeSpaceLow(const HashCode512 * key,
  * Also updates available and minPriority.
  */
 static void cronMaintenance(void * unused) {
-  long long tmpAvailable
-    = getConfigurationInt("FS", "QUOTA") * 1024 * 1024; /* MB to bytes */
-  available = tmpAvailable - sq->getSize();
+  available = quota - sq->getSize();
   if (available < MIN_FREE) {
     sq->iterateExpirationTime(ANY_BLOCK,
 			      &freeSpaceExpired,
@@ -306,17 +309,20 @@ static void cronMaintenance(void * unused) {
 Datastore_ServiceAPI *
 provide_module_datastore(CoreAPIForApplication * capi) {
   static Datastore_ServiceAPI api;
-  int quota;
+  unsigned int lquota;
 
+  lquota
+    = getConfigurationInt("FS", "QUOTA");
+  quota
+    = lquota * 1024 * 1024; /* MB to bytes */
   sq = capi->requestService("sqstore");
   if (sq == NULL) {
     BREAK();
     return NULL;
   }
-  quota
-    = htonl(getConfigurationInt("FS", "QUOTA"));
+  lquota = htonl(lquota);
   stateWriteContent("FS-LAST-QUOTA",
-		    sizeof(int),
+		    sizeof(unsigned int),
 		    &quota);
 
   coreAPI = capi;
