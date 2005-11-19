@@ -752,7 +752,7 @@ unsigned int getConfigurationInt(const char * section,
 				 const char * option) {
   UserConf * pos;
   unsigned int retval;
-
+  
   GNUNET_ASSERT( (section != NULL) && (option != NULL) );
   MUTEX_LOCK(&configLock);
   pos = userconfig;

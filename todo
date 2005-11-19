@@ -1,7 +1,7 @@
 Notes:
   RC == Release Critical 
 
-  All issues that are targetd for the NEXT release
+  All issues that are targeted for the NEXT release
   should also be filed on Mantis, except for "more testcases"
   which is always an ongoing issue. 
 
@@ -11,11 +11,11 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.0a [10'05] (aka "bugfixes")
+0.7.0b [12'05] (aka "bugfixes")
 - known bugs (see Mantis for updates):
   * gnunet-setup memory leaks (#878)
   * gnunet-setup category switch update bug (#892)
-  * failed setkey exchanges, connection timeouts (#896, #910) [ Christian ]
+  * 0 bandwidth cap (#971)
 - testing:
   * more "make check" targets to test: 
     + gnunet-tracekit
@@ -28,7 +28,6 @@ Notes:
 0.7.1 [12'05] (aka "stabilization"):
 - gnunet-setup:
   * php-ification for i18n [ Nils, not RC ]
-  * #892 (gconfig focus changes)
 - DHT:
   * make dht tests work
   * XFS [ location URIs ]
