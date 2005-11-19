@@ -64,7 +64,7 @@
  * especially the least significant bits may change
  * frequently, even between different SVN versions.
  */
-#define GNUNET_UTIL_VERSION 0x00070000
+#define GNUNET_UTIL_VERSION 0x00070001
 
 /**
  * We use an unsigned short in the protocol header, thus:
