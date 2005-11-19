@@ -40,7 +40,7 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-#define DEBUG_TCPIO 0
+#define DEBUG_TCPIO NO
 
 /**
  * Initialize a GNUnet client socket.

@@ -28,6 +28,8 @@
 #include "gnunet_fsui_lib.h"
 
 
+static int verbose = NO;
+
 static Semaphore * signalFinished;
 
 /**
@@ -153,9 +155,7 @@ static void progressModel(void * okVal,
 
   switch (event->type) {
   case FSUI_download_progress:
-    if (YES == testConfigurationString("GNUNET-DOWNLOAD",
-				       "VERBOSE",
-				       "YES")) {
+    if (YES == verbose) {
       PRINTF(_("Download of file `%s' at "
 	       "%16llu out of %16llu bytes (%8.3f kbps)\n"),
 	     event->data.DownloadProgress.filename,
@@ -226,6 +226,7 @@ int main(int argc,
   if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0;
 
+  verbose = testConfigurationString("GNUNET-DOWNLOAD", "VERBOSE", "YES");
   fstring = getConfigurationString("GNUNET-DOWNLOAD",
   				   "URI");
   uri = ECRS_stringToUri(fstring);

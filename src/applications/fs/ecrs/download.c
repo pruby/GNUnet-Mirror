@@ -41,7 +41,7 @@
 /**
  * After how many retries do we print a warning?
  */
-#define MAX_TRIES 50
+#define MAX_TRIES 500
 
 
 /* ****************** IO context **************** */

@@ -215,7 +215,7 @@ int RECV_BLOCKING_ALL(int s,
 int SEND_NONBLOCKING(int s,
 		     const void * buf,
 		     size_t max,
-		     size_t *sent) {
+		     size_t * sent) {
   int flags;
 
   setBlocking(s, NO);

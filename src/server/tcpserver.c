@@ -607,7 +607,7 @@ try_again:
 	if (success == SYSERR) {
 	  ClientHandle ch
 	    = pos->next;
-	  LOG_STRERROR(LOG_WARNING, "send");
+	  LOG_STRERROR(LOG_INFO, "send");
 	  terminateClientConnection(pos);
 	  pos = ch;
 	  continue;

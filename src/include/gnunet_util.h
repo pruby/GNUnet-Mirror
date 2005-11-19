@@ -1660,12 +1660,6 @@ void doneUtil(void);
 unsigned short getGNUnetPort(void);
 
 /**
- * Configuration: get the GNUnetd host where the client
- * should connect to (via TCP)
- */
-char * getGNUnetdHost(void);
-
-/**
  * Get a GNUnet TCP socket that is connected to gnunetd.
  */
 GNUNET_TCP_SOCKET * getClientSocket(void);
