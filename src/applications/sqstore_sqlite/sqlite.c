@@ -119,7 +119,7 @@ static sqliteHandle *getDBHandle() {
   
   /* Is the DB already open? */
   this_tid = pthread_self();
-  for(idx = 0; idx < db->handle_count; idx++)
+  for (idx = 0; idx < db->handle_count; idx++)
     if (pthread_equal(db->handles[idx].tid, this_tid)) {
       ret = db->handles + idx;
       break;
@@ -127,12 +127,10 @@ static sqliteHandle *getDBHandle() {
   
   if (idx == db->handle_count) {
     /* we haven't opened the DB for this thread yet */
-    if (!db->handle_count)
-      db->handles = MALLOC(sizeof(sqliteHandle));
-    else
-      db->handles = REALLOC(db->handles, (db->handle_count + 1) * sizeof(sqliteHandle));
-    
-    ret = db->handles + db->handle_count++;
+    GROW(db->handles,
+	 db->handle_count,
+	 db->handle_count + 1);
+    ret = db->handles + db->handle_count - 1;
     ret->tid = this_tid;
 
     /* Open database and precompile statements */
@@ -144,7 +142,21 @@ static sqliteHandle *getDBHandle() {
       FREE(db);
       return NULL;
     }
-    
+
+    if (db->handle_count == 1) {
+      /* first open: create indices! */
+      sqlite3_exec(ret->dbh, "CREATE INDEX idx_hash ON gn070 (hash)",
+		   NULL, NULL, NULL);
+      sqlite3_exec(ret->dbh, "CREATE INDEX idx_prio ON gn070 (prio)",
+		   NULL, NULL, NULL);
+      sqlite3_exec(ret->dbh, "CREATE INDEX idx_expire ON gn070 (expire)",
+		   NULL, NULL, NULL);
+      sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
+		   NULL, NULL, NULL);
+      sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
+		   NULL, NULL, NULL);
+    }
+
     sqlite3_exec(ret->dbh, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
     sqlite3_exec(ret->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
     sqlite3_exec(ret->dbh, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
@@ -1020,25 +1032,15 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   }
 
   db->payload = getStat("PAYLOAD");
-
   if (db->payload == SYSERR) {
     LOG_SQLITE(LOG_ERROR, "sqlite_payload");
-
     FREE(db->fn);
     FREE(db);
     return NULL;
   }
-
-  sqlite3_exec(dbh->dbh, "CREATE INDEX idx_hash ON gn070 (hash)",
-         NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbh, "CREATE INDEX idx_prio ON gn070 (prio)",
-         NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbh, "CREATE INDEX idx_expire ON gn070 (expire)",
-         NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbh, "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
-         NULL, NULL, NULL);
-  sqlite3_exec(dbh->dbh, "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
-         NULL, NULL, NULL);
+  
+  
+  
 
   coreAPI = capi;
   stats = coreAPI->requestService("stats");
