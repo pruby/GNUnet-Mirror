@@ -146,7 +146,7 @@ static int test(SQstore_ServiceAPI * api) {
   for (i=0;i<256;i++) {
     value = initValue(i);
     memset(&key, 256-i, sizeof(HashCode512));
-    api->put(&key, value);
+    ASSERT(OK == api->put(&key, value));
     FREE(value);
   }
   ASSERT(oldSize < api->getSize());
