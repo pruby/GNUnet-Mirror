@@ -169,7 +169,7 @@ static void progressModel(void * okVal,
   case FSUI_download_aborted:
     if (FSUI_getDownloadParent(event->data.DownloadError.pos) == NULL) {
       /* top-download aborted */
-      printf(_("Error downloading: %s\n"),
+      PRINTF(_("Error downloading: %s\n"),
 	     event->data.DownloadError.message);
       *ok = SYSERR;
       SEMAPHORE_UP(signalFinished);
@@ -188,7 +188,7 @@ static void progressModel(void * okVal,
   case FSUI_download_complete:
     if ( (event->data.DownloadProgress.completed ==
 	  event->data.DownloadProgress.total) ) {
-      printf(_("Download of file `%s' complete.  "
+      PRINTF(_("Download of file `%s' complete.  "
 	       "Speed was %8.3f kilobyte per second.\n"),
 	     event->data.DownloadProgress.filename,
 	     (event->data.DownloadProgress.completed/1024.0) /
@@ -199,12 +199,6 @@ static void progressModel(void * okVal,
 	*ok = OK;
 	SEMAPHORE_UP(signalFinished);
       }
-    } else {
-      PRINTF(_("Recursive download of directory `%s' at "
-	       "%llu of %llu bytes.\n"),
-	     event->data.DownloadProgress.filename,
-	     event->data.DownloadProgress.completed,
-	     event->data.DownloadProgress.total);
     }
     break;
   default:

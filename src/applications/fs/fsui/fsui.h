@@ -200,6 +200,11 @@ typedef struct FSUI_DownloadList {
   unsigned long long completed;
 
   /**
+   * How many bytes have been retrieved so far for this particular file only.
+   */
+  unsigned long long completedFile;
+
+  /**
    * URI for this download.
    */
   struct ECRS_URI * uri;
@@ -349,7 +354,7 @@ void cleanupFSUIThreadList(FSUI_Context * ctx);
 /**
  * Thread that downloads a file.
  */
-void * downloadThread(FSUI_DownloadList * dl);
+void * downloadThread(void * dl);
 
 /* from search.c */
 /**

@@ -30,7 +30,7 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
-#define DEBUG_DTM NO
+#define DEBUG_DTM YES
 
 /**
  * Start to download a file.
@@ -88,6 +88,11 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
   strcat(fullName, DIR_SEPARATOR_STR);
   strcat(fullName, filename);
   FREE(filename);
+#if DEBUG_DTM
+  LOG(LOG_DEBUG,
+      "Starting recursive download of `%s'\n",
+      fullName);
+#endif
   startDownload(parent->ctx,
 		parent->anonymityLevel,
 		fi->uri,
@@ -108,7 +113,8 @@ downloadProgressCallback(unsigned long long totalBytes,
 			 unsigned long long lastBlockOffset,
 			 const char * lastBlock,
 			 unsigned int lastBlockSize,
-			 FSUI_DownloadList * dl) {
+			 void * cls) {
+  FSUI_DownloadList * dl = cls;
   FSUI_Event event;
   struct ECRS_MetaData * md;
   FSUI_DownloadList * root;
@@ -118,10 +124,10 @@ downloadProgressCallback(unsigned long long totalBytes,
 	  (root->parent != &dl->ctx->activeDownloads) )
     root = root->parent;
 
-  dl->completed = completedBytes;
+  dl->completedFile = completedBytes;
   event.type = FSUI_download_progress;
   event.data.DownloadProgress.total = totalBytes;
-  event.data.DownloadProgress.completed = completedBytes;
+  event.data.DownloadProgress.completed = dl->completed + completedBytes;
   event.data.DownloadProgress.last_offset = lastBlockOffset;
   event.data.DownloadProgress.eta = eta;
   event.data.DownloadProgress.last_block = lastBlock;
@@ -165,7 +171,8 @@ downloadProgressCallback(unsigned long long totalBytes,
  * Check if termination of this download is desired.
  */
 static int
-testTerminate(FSUI_DownloadList * dl) {
+testTerminate(void * cls) {
+  FSUI_DownloadList * dl = cls;
   if (dl->signalTerminate == YES)
     return SYSERR;
   else
@@ -175,7 +182,8 @@ testTerminate(FSUI_DownloadList * dl) {
 /**
  * Thread that downloads a file.
  */
-void * downloadThread(FSUI_DownloadList * dl) {
+void * downloadThread(void * cls) {
+  FSUI_DownloadList * dl = cls;
   int ret;
   FSUI_Event event;
   struct ECRS_MetaData * md;
@@ -187,20 +195,20 @@ void * downloadThread(FSUI_DownloadList * dl) {
   ret = ECRS_downloadFile(dl->uri,
 			  dl->filename,
 			  dl->anonymityLevel,
-			  (ECRS_DownloadProgressCallback)&downloadProgressCallback,
+			  &downloadProgressCallback,
 			  dl,
-			  (ECRS_TestTerminate) &testTerminate,
+			  &testTerminate,
 			  dl);
   if (ret == OK)
     dl->finished = YES;
   totalBytes = ECRS_fileSize(dl->uri);
   root = dl;
-  while ( (root->parent != NULL) &&
-	  (root->parent != &dl->ctx->activeDownloads) ) {
-    root = root->parent;
+  while (root->parent != &dl->ctx->activeDownloads) {
     root->completed += totalBytes;
+    root = root->parent;
   }
-
+  root->completed += totalBytes;
+    
 
   if ( (ret == OK) &&
        (dl->is_recursive) &&
@@ -254,6 +262,7 @@ void * downloadThread(FSUI_DownloadList * dl) {
     dl->signalTerminate = YES;
   } else {
     dl->signalTerminate = YES;
+    GNUNET_ASSERT(dl != &dl->ctx->activeDownloads);
     while ( (dl != NULL) &&
 	    (dl->ctx != NULL) &&
 	    (dl != &dl->ctx->activeDownloads) ) {
@@ -375,8 +384,10 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 
 #if DEBUG_DTM
   LOG(LOG_DEBUG,
-      "Download thread manager investigates pending downlod of file `%s'\n",
-      list->filename);
+      "Download thread manager investigates pending downlod of file `%s' (%u/%u downloads)\n",
+      list->filename,
+      list->ctx->activeDownloadThreads,
+      list->ctx->threadPoolSize);
 #endif
   ret = NO;
   /* should this one be started? */
@@ -392,7 +403,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 #endif
     list->signalTerminate = NO;
     if (0 == PTHREAD_CREATE(&list->handle,
-			    (PThreadMain)&downloadThread,
+			    &downloadThread,
 			    list,
 			    32 * 1024)) {
       list->ctx->activeDownloadThreads++;
@@ -407,8 +418,10 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        (list->signalTerminate == NO) ) {
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
-	"Download thread manager aborts active downlod of file `%s'\n",
-	list->filename);
+	"Download thread manager aborts active downlod of file `%s' (%u/%u downloads)\n",
+	list->filename,
+	list->ctx->activeDownloadThreads,
+	list->ctx->threadPoolSize);
 #endif
     list->signalTerminate = YES;
     PTHREAD_JOIN(&list->handle,
