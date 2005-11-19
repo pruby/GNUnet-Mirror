@@ -1135,8 +1135,8 @@ static void processRequests(RequestManager * rm) {
 	   /* avoid no-start: override congestionWindow occasionally... */
 	   (0 == randomi(rm->requestListIndex *
 			 pOCWCubed)) ) {
-	delta = (rm->requestList[j]->lastTimeout - now) + 10 * cronMILLIS;
 	issueRequest(rm, j);
+	delta = (rm->requestList[j]->lastTimeout - now) + TTL_DECREMENT;
 	pending++;
       } else {	
 	delta = 0;
