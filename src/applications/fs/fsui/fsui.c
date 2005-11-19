@@ -117,6 +117,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   ret->filename[big] = '\0';
   READLONG(ret->total);
   READLONG(ret->completed);
+  ret->completedFile = 0;
   READLONG(ret->startTime);
   ret->startTime = cronTime(NULL) - ret->startTime;
   ret->uri
@@ -149,9 +150,11 @@ static FSUI_DownloadList * readDownloadList(int fd,
 				ret);
 #if DEBUG_PERSISTENCE
   LOG(LOG_DEBUG,
-      "FSUI persistence: restoring download `%s': %s\n",
+      "FSUI persistence: restoring download `%s': %s (%llu, %llu)\n",
       ret->filename,
-      ret->finished == YES ? "finished" : "pending");
+      ret->finished == YES ? "finished" : "pending",
+      ret->completed,
+      ret->total);
 #endif
   return ret;
  ERR:
@@ -212,9 +215,11 @@ static void writeDownloadList(int fd,
   }
 #if DEBUG_PERSISTENCE
   LOG(LOG_DEBUG,
-      "Serializing download state of download `%s': %s\n",
+      "Serializing download state of download `%s': %s (%llu, %llu)\n",
       list->filename,
-      list->finished == YES ? "finished" : "pending");
+      list->finished == YES ? "finished" : "pending",
+      list->completed,
+      list->total);
 #endif
   WRITE(fd, &nonzero, sizeof(char));
 

@@ -30,7 +30,7 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
-#define DEBUG_DTM YES
+#define DEBUG_DTM NO
 
 /**
  * Start to download a file.
@@ -190,6 +190,11 @@ void * downloadThread(void * cls) {
   FSUI_DownloadList * root;
   unsigned long long totalBytes;
 
+#if DEBUG_DTM
+  LOG(LOG_DEBUG,
+      "Download thread for `%s' started...\n",
+      dl->filename);
+#endif
   GNUNET_ASSERT(dl->ctx != NULL);
   GNUNET_ASSERT(dl->filename != NULL);
   ret = ECRS_downloadFile(dl->uri,
@@ -199,9 +204,12 @@ void * downloadThread(void * cls) {
 			  dl,
 			  &testTerminate,
 			  dl);
-  if (ret == OK)
+  if (ret == OK) {
     dl->finished = YES;
-  totalBytes = ECRS_fileSize(dl->uri);
+    totalBytes = ECRS_fileSize(dl->uri);
+  } else {
+    totalBytes = 0;
+  }
   root = dl;
   while (root->parent != &dl->ctx->activeDownloads) {
     root->completed += totalBytes;
@@ -285,6 +293,12 @@ void * downloadThread(void * cls) {
       dl = dl->parent;
     }
   }
+#if DEBUG_DTM
+  LOG(LOG_DEBUG,
+      "Download thread for `%s' terminated (%s)...\n",
+      dl->filename,
+      ret == OK ? "COMPLETED" : "ABORTED");
+#endif
   return NULL;
 }
 
@@ -389,6 +403,13 @@ int updateDownloadThread(FSUI_DownloadList * list) {
       list->ctx->activeDownloadThreads,
       list->ctx->threadPoolSize);
 #endif
+  LOG(LOG_DEBUG,
+      "Download thread manager investigates pending downlod of file `%s' (%d, %llu/%llu, %d)\n",
+      list->filename,
+      list->signalTerminate,
+      list->completed,
+      list->total,
+      list->finished);
   ret = NO;
   /* should this one be started? */
   if ( (list->ctx->threadPoolSize
