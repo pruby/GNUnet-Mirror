@@ -237,7 +237,7 @@ static int putUpdate(const HashCode512 * key,
   /* check if we have enough space / priority */
   if ( (available < ntohl(value->size) ) &&
        (minPriority > ntohl(value->prio)) )
-    return SYSERR; /* new content has such a low priority that
+    return NO; /* new content has such a low priority that
 		      we should not even bother! */
   if (ntohl(value->prio) < minPriority)
     minPriority = ntohl(value->prio);
