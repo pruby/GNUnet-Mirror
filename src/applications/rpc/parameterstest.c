@@ -53,17 +53,17 @@ int main(int argc, char * argv[]){
   p = RPC_paramDeserialize(buf,
 			   size);
   FREE(buf);
-  if (p == NULL)
+  if (p == NULL) 
     return 1;
-
+  buf = NULL;
   if (OK != RPC_paramValueByName(p,
 				 "foo",
 				 &len,
 				 &buf))
     return 1;
-  if (strcmp("bar", buf) != 0)
+  if (strcmp("bar", buf) != 0) 
     return 1;
-  FREE(buf);
+  buf = NULL;
   if (4 != len)
     return 1;
   if (OK != RPC_paramValueByPosition(p,
@@ -71,21 +71,20 @@ int main(int argc, char * argv[]){
 				     &len,
 				     &buf))
     return 1;
-  if (strcmp("foo", buf) != 0)
+  if (strcmp("foo", buf) != 0) 
     return 1;
-  FREE(buf);
   if (4 != len)
     return 1;
   if (SYSERR != RPC_paramValueByPosition(p,
 					 2,
 					 &len,
-					 &buf))
+					 &buf)) 
     return 1;
 
   if (SYSERR != RPC_paramValueByName(p,
 				     "not there",
 				     &len,
-				     &buf))
+				     &buf)) 
     return 1;
   RPC_paramFree(p);
 
