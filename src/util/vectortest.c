@@ -80,7 +80,7 @@ static int test(int size) {
 }
 
 static int test2(int size) {
-  int i;
+  long i;
   struct Vector * v;
 
   v = vectorNew(size);
@@ -91,21 +91,21 @@ static int test2(int size) {
   if (500 != vectorSize(v))
     { DUMP(v); return 1; }
   for (i=0;i<500;i++)
-    if (499 - i != (int) vectorGetAt(v, i))
+    if (499 - i != (long) vectorGetAt(v, i))
       { DUMP(v); return 1; }
-  if (499 != (int) vectorGetFirst(v))
+  if (499 != (long) vectorGetFirst(v))
     { DUMP(v); return 1; }
   for (i=498;i>=0;i--)
-    if (i != (int) vectorGetNext(v))
+    if (i != (long) vectorGetNext(v))
       { DUMP(v); return 1; }
 
-  if (499 != (int) vectorGetFirst(v))
+  if (499 != (long) vectorGetFirst(v))
     { DUMP(v); return 1; }
   for (i=498;i>=250;i--)
-    if (i != (int) vectorGetNext(v))
+    if (i != (long) vectorGetNext(v))
       { DUMP(v); return 1; }
   for (i=251;i<499;i++)
-    if (i != (int) vectorGetPrevious(v))
+    if (i != (long) vectorGetPrevious(v))
       { DUMP(v); return 1; }
 
   vectorFree(v);
