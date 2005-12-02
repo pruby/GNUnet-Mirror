@@ -80,6 +80,7 @@ freebsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
      AC_DEFINE_UNQUOTED(FREEBSD,1,[This is a FreeBSD system])
      CFLAGS="-D_THREAD_SAFE $CFLAGS"
+     build_target="freebsd"
      ;;
 openbsd*)
      AC_DEFINE_UNQUOTED(SOMEBSD,1,[This is a BSD system])
@@ -129,6 +130,7 @@ AC_MSG_CHECKING([for build target])
 AM_CONDITIONAL(CYGWIN,  test "$build_target" = "cygwin")
 AM_CONDITIONAL(MINGW,   test "$build_target" = "mingw")
 AM_CONDITIONAL(SOLARIS, test "$build_target" = "solaris")
+AM_CONDITIONAL(XFREEBSD, test "$build_target" = "freebsd")
 AC_MSG_RESULT([$build_target])
 
 # We define the paths here, because MinGW/GCC expands paths

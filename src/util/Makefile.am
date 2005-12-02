@@ -20,6 +20,10 @@ else
  DLFLAG = -ldl
 endif
 
+if XFREEBSD
+ DLFLAG=
+endif
+
 if CYGWIN
  CYGSUBDIRS = win
  CYGLIBADD = $(top_builddir)/src/util/win/libwin.la 
