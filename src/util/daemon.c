@@ -144,7 +144,6 @@ static pid_t launchWithExec(int daemonize) {
 	(path == NULL) ? "gnunetd" : path);
     FREENONNULL(path); /* yeah, right, like we're likely to get
 			  here... */
-    FREENONNULL(args[1]);
     _exit(-1);
   } else if (daemonize) {
     pid_t ret;
