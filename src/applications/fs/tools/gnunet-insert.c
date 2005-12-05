@@ -691,9 +691,9 @@ int main(int argc, char ** argv) {
 			 getConfigurationInt("FS",
 					     "ANONYMITY-SEND"),
 			 doIndex,
-			 testConfigurationString("FS",
+			 !testConfigurationString("FS",
 						 "DIRECT-KEYWORDS",
-						 "YES"),
+						 "NO"),
 			 meta,
 			 gloURI,
 			 topURI);
@@ -709,7 +709,9 @@ int main(int argc, char ** argv) {
 		      getConfigurationInt("FS",
 					  "ANONYMITY-SEND"),
 		      doIndex,
-		      YES,
+		      !testConfigurationString("FS",
+					      "TOP-KEYWORDS",
+					      "NO"),
 		      meta,
 		      topURI);
     ECRS_freeUri(topURI);
