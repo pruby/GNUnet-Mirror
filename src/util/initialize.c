@@ -173,6 +173,8 @@ void setProcessPrio() {
   }
 }
 
+static int initStatus;
+
 /**
  * Initialize the util library. Use argc, argv and the given parser
  * for processing command-line options <strong>after</strong> the
@@ -209,19 +211,20 @@ int initUtil(int argc,
   readConfiguration();
   setProcessPrio();
   initLogging();
-  if (testConfigurationString("GNUNETD",
-			      "_MAGIC_",
-			      "YES"))
+  initStatus = testConfigurationString("GNUNETD",
+				       "_MAGIC_",
+				       "YES");
+  if (initStatus)
     initStatusCalls();
   initState();
   return OK;
 }
 
 void doneUtil() {
-  if (testConfigurationString("GNUNETD",
-			      "_MAGIC_",
-			      "YES"))
+  if (initStatus) {
     doneStatusCalls();
+    initStatus = 0;
+  }
   doneCron();
   doneState();
   LOG(LOG_MESSAGE,

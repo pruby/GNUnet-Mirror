@@ -844,16 +844,22 @@ void initStatusCalls() {
 void doneStatusCalls() {
   int i;
 
+  if (initialized_ == NO)
+    return;
   unregisterConfigurationUpdateCallback(&resetStatusCalls);
   delCronJob(&cronLoadUpdate,
 	     10 * cronSECONDS,
 	     NULL);
   initialized_ = NO;
 #ifdef LINUX
-  if (proc_stat != NULL)
+  if (proc_stat != NULL) {
     fclose(proc_stat);
-  if (proc_net_dev != NULL)
+    proc_stat = NULL;
+  }
+  if (proc_net_dev != NULL) {
     fclose(proc_net_dev);
+    proc_net_dev = NULL;
+  }
 #endif
   for (i=0;i<ifcsSize;i++)
     FREE(ifcs[i].name);
