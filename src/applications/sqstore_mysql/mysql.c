@@ -792,7 +792,7 @@ static int get(const HashCode512 * query,
   }
   datasize = MAX_DATUM_SIZE;
   count = 0;
-  while (! mysql_stmt_fetch(stmt)) {
+  while (0 == mysql_stmt_fetch(stmt)) {
     count++;
 
     if (twenty != sizeof(HashCode512)) {
