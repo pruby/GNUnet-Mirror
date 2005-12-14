@@ -1219,6 +1219,8 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   if (OK != iopen(dbh, YES)) {
     FREE(cnffile);
     FREE(dbh);
+    LOG(LOG_ERROR,
+	_("Failed to load MySQL database module.  Check that MySQL is running and configured properly!\n"));
     dbh = NULL;
     return NULL;
   }
