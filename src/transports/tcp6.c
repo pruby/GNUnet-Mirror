@@ -495,7 +495,7 @@ static int readAndProcess(int i) {
 	    &tcp6Session->rbuff[len],
 	    tcp6Session->pos - len);
     tcp6Session->pos -= len;	
-    if ( (tcp6Session->pos * 4 < tcp6Session->rsize) &&
+    if ( (tcp6Session->pos + 1024 < tcp6Session->rsize) &&
 	 (tcp6Session->rsize > 4 * 1024) ) {
       /* read buffer far too large, shrink! */
       GROW(tcp6Session->rbuff,

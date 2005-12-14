@@ -511,15 +511,15 @@ static int readAndProcess(int i) {
     mp->size     = len - sizeof(TCPP2P_PACKET);
     mp->tsession = tsession;
 #if DEBUG_TCP
-  {
-    EncName enc;
-    
-    hash2enc(&mp->sender.hashPubKey, &enc);
-    
-    LOG(LOG_DEBUG,
-      "tcp transport received %u bytes from %s (CRC %u), forwarding to core\n",
-      mp->size, &enc, crc32N(tcpSession->rbuff, tcpSession->pos));
-  }
+    {
+      EncName enc;
+      
+      hash2enc(&mp->sender.hashPubKey, &enc);
+      
+      LOG(LOG_DEBUG,
+	  "tcp transport received %u bytes from %s (CRC %u), forwarding to core\n",
+	  mp->size, &enc, crc32N(tcpSession->rbuff, tcpSession->pos));
+    }
 #endif
     coreAPI->receive(mp);
     /* finally, shrink buffer adequately */
@@ -527,7 +527,7 @@ static int readAndProcess(int i) {
 	    &tcpSession->rbuff[len],
 	    tcpSession->pos - len);
     tcpSession->pos -= len;
-    if ( (tcpSession->pos * 4 < tcpSession->rsize) &&
+    if ( (tcpSession->pos + 1024 < tcpSession->rsize) &&
 	 (tcpSession->rsize > 4 * 1024) ) {
       /* read buffer far too large, shrink! */
       GROW(tcpSession->rbuff,
