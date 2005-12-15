@@ -397,6 +397,10 @@ typedef struct BufferEntry_ {
   /* are we currently in "sendBuffer" for this
      entry? */
   int inSendBuffer;
+  
+  /* when were old entries expired last? */
+  cron_t lastExpiry;
+  
 } BufferEntry;
 
 typedef struct {
@@ -564,6 +568,8 @@ static BufferEntry * initBufferEntry() {
   be->inSendBuffer
     = NO;
   cronTime(&be->last_bps_update); /* now */
+  be->lastExpiry = be->last_bps_update;
+
   return be;
 }
 
@@ -1036,6 +1042,11 @@ static void expireSendBufferEntries(BufferEntry * be) {
   int l;
   unsigned long long usedBytes;
   int j;
+
+  if (cronTime(NULL) < be->lastExpiry + SECONDS_PINGATTEMPT * cronSECONDS)
+    return;
+  else
+    cronTime(&be->lastExpiry);
 
   /* if it's more than one connection "lifetime" old, always kill it! */
   expired = cronTime(&be->lastSendAttempt) - SECONDS_PINGATTEMPT * cronSECONDS;
