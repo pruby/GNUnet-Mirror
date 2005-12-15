@@ -986,17 +986,17 @@ static void issueRequest(RequestManager * rm,
   }
   mpriority = lastmpriority;
   priority
-    = entry->lastPriority + randomi(1 + entry->tries);
+    = entry->lastPriority + weak_randomi(1 + entry->tries);
   if (priority > mpriority) {
     /* mpriority is (2 * (current average priority + 2)) and
        is used as the maximum priority that we use; if the
        calculated tpriority is above it, we reduce tpriority
        to random value between the average (mpriority/2) but
        bounded by mpriority */
-    priority = 1 + mpriority / 2 + (randomi(2+mpriority/2));
+    priority = 1 + mpriority / 2 + (weak_randomi(2+mpriority/2));
   }
   if (priority > 0x0FFFFFF)
-    priority = randomi(0xFFFFFF); /* bound! */
+    priority = weak_randomi(0xFFFFFF); /* bound! */
 
   /* compute TTL */
 
@@ -1010,7 +1010,7 @@ static void issueRequest(RequestManager * rm,
   } else {
     ttl = entry->lastTimeout - entry->lasttime;
     if (ttl > MAX_TTL) {
-      ttl = MAX_TTL + randomi(2*TTL_DECREMENT);
+      ttl = MAX_TTL + weak_randomi(2*TTL_DECREMENT);
     } else if (ttl > rm->initialTTL) {
       /* switch to slow back-off */
       unsigned int rd;
@@ -1023,11 +1023,11 @@ static void issueRequest(RequestManager * rm,
       rd = TTL_DECREMENT / rd;
       if (rd == 0)
 	rd = 1;
-      ttl += randomi(50 * cronMILLIS + rd);
+      ttl += weak_randomi(50 * cronMILLIS + rd);
       /* rd == TTL_DECREMENT / (con->ttl / rm->initialTTL) + saveguards
 	 50ms: minimum increment */
     } else {
-      ttl += randomi(ttl + 2 * TTL_DECREMENT); /* exponential backoff with random factor */
+      ttl += weak_randomi(ttl + 2 * TTL_DECREMENT); /* exponential backoff with random factor */
     }
     if (ttl > (priority+8)* TTL_DECREMENT)
       ttl = (priority+8) * TTL_DECREMENT; /* see adjustTTL in gap */
@@ -1060,14 +1060,14 @@ static void issueRequest(RequestManager * rm,
     entry->lastPriority = priority;
     entry->lastTimeout = timeout;
     entry->lasttime = now + 2 * TTL_DECREMENT;
-    if (randomi(1+entry->tries) > 1) {
+    if (weak_randomi(1+entry->tries) > 1) {
       /* do linear (in tries) extra back-off (in addition to ttl)
 	 to avoid repeatedly tie-ing with other peers; rm is somewhat
 	 equivalent to what ethernet is doing, only that 'tries' is our
 	 (rough) indicator for collisions.  For ethernet back-off, see:
 	 http://www.industrialethernetuniversity.com/courses/101_4.htm
       */
-      entry->lasttime += randomi(TTL_DECREMENT * (1+entry->tries));
+      entry->lasttime += weak_randomi(TTL_DECREMENT * (1+entry->tries));
     }
     entry->tries++;
   }
@@ -1133,8 +1133,8 @@ static void processRequests(RequestManager * rm) {
       if ( (pOCWCubed <= 0) ||
 	   (pOCWCubed * rm->requestListIndex <= 0) /* see #642 */ ||
 	   /* avoid no-start: override congestionWindow occasionally... */
-	   (0 == randomi(rm->requestListIndex *
-			 pOCWCubed)) ) {
+	   (0 == weak_randomi(rm->requestListIndex *
+			      pOCWCubed)) ) {
 	issueRequest(rm, j);
 	delta = (rm->requestList[j]->lastTimeout - now) + TTL_DECREMENT;
 	pending++;

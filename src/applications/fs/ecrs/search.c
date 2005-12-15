@@ -131,7 +131,7 @@ static void addPS(unsigned int type,
   ps = MALLOC(sizeof(PendingSearch));
   ps->timeout = 0;
   ps->lastTransmission = 0;
-  ps->priority = 5 + randomi(20);
+  ps->priority = 5 + weak_randomi(20);
   ps->type = type;
   ps->keyCount = keyCount;
   ps->keys = MALLOC(sizeof(HashCode512) * keyCount);
@@ -579,17 +579,17 @@ int ECRS_search(const struct ECRS_URI * uri,
       /* increase ttl/priority */
       new_ttl = ps->timeout - ps->lastTransmission;
       if (new_ttl < 4 * 5 * cronSECONDS)
-	new_ttl = 4 * 5 * cronSECONDS + randomi(5 * cronSECONDS);
-      new_ttl = new_ttl + randomi(5 * cronSECONDS + 2 * new_ttl);
+	new_ttl = 4 * 5 * cronSECONDS + weak_randomi(5 * cronSECONDS);
+      new_ttl = new_ttl + weak_randomi(5 * cronSECONDS + 2 * new_ttl);
       if (new_ttl > 0xFFFFFF)
-	new_ttl = randomi(0xFFFFFF); /* if we get to large, reduce! */
+	new_ttl = weak_randomi(0xFFFFFF); /* if we get to large, reduce! */
       if (remTime < new_ttl)
 	new_ttl = remTime;
       ps->timeout = new_ttl + now;
       new_priority = ps->priority;
-      new_priority = new_priority + randomi(4 + 2 * new_priority);
+      new_priority = new_priority + weak_randomi(4 + 2 * new_priority);
       if (new_priority > 0xFFFFFF)
-	new_priority = randomi(0xFFFFFF); /* if we get to large, reduce! */
+	new_priority = weak_randomi(0xFFFFFF); /* if we get to large, reduce! */
       ps->priority = new_priority;
       ps->lastTransmission = now;
 #if DEBUG_SEARCH
