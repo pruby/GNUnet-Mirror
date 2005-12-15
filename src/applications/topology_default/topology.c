@@ -215,7 +215,8 @@ static void scanForHosts(unsigned int index) {
  *
  * @param hostId the peer that gave a sign of live
  */
-static void notifyPONG(PeerIdentity * hostId) {
+static void notifyPONG(void * cls) {
+  PeerIdentity * hostId = cls;
 #if DEBUG_TOPOLOGY
   EncName enc;
 
@@ -230,7 +231,7 @@ static void notifyPONG(PeerIdentity * hostId) {
 }
 
 /**
- * Check the liveness of the ping and possibly ping it.
+ * Check the liveness of the peer and possibly ping it.
  */
 static void checkNeedForPing(const PeerIdentity * peer,
 			     void * unused) {
@@ -264,7 +265,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
 #endif
     if (OK != pingpong->ping(peer,
 			     NO,
-			     (CronJob)&notifyPONG,
+			     &notifyPONG,
 			     hi))
       FREE(hi);
   }

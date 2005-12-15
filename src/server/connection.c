@@ -87,18 +87,6 @@
 #define SECONDS_PINGATTEMPT 120
 
 /**
- * How big do we estimate should the send buffer be?  (can grow bigger
- * if we have many requests in a short time, but if it is larger than
- * this, we start do discard expired entries.)  Computed as "MTU /
- * querySize" plus a bit with the goal to be able to have at least
- * enough small entries to fill a message completely *and* to have
- * some room to manouver.
- */
-#define TARGET_SBUF_SIZE 40
-
-unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
-
-/**
  * High priority message that needs to go through fast,
  * but not if policies would be disregarded.
  */
@@ -114,9 +102,9 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
 #define MAX_BUF_FACT 2
 
 /**
- * Expected MTU for a connection (1500 for Ethernet)
+ * Expected MTU for a streaming connection.
  */
-#define EXPECTED_MTU 1500
+#define EXPECTED_MTU 32768
 
 /**
  * How many ping/pong messages to we want to transmit
@@ -134,7 +122,7 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
 /**
  * What is the minimum number of bytes per minute that
  * we allocate PER peer? (5 minutes inactivity timeout,
- * 1500 MTU, 8 MSGs => 8 * 1500 / 5 = 2400 bpm [ 40 bps])
+ * 32768 MTU, 8 MSGs => 8 * 32768 / 5 = ~50000 bpm [ ~800 bps])
  */
 #define MIN_BPM_PER_PEER (TARGET_MSG_SID * EXPECTED_MTU * 60 / SECONDS_INACTIVE_DROP)
 
@@ -146,9 +134,10 @@ unsigned int MAX_SEND_FREQUENCY = 50 * cronMILLIS;
 #define MIN_SAMPLE_TIME (MINIMUM_SAMPLE_COUNT * cronMINUTES * EXPECTED_MTU / MIN_BPM_PER_PEER)
 
 /**
- * Hard limit on the send buffer size
+ * Hard limit on the send buffer size (per connection, in bytes),
+ * Must be larger than EXPECTED_MTU.
  */
-#define MAX_SEND_BUFFER_SIZE 256
+#define MAX_SEND_BUFFER_SIZE (EXPECTED_MTU * 8)
 
 /**
  * Status constants
@@ -874,8 +863,7 @@ static int checkSendFrequency(BufferEntry * be) {
   if (be->MAX_SEND_FREQUENCY > MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
     be->MAX_SEND_FREQUENCY = MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
 
-  if ( (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > cronTime(NULL)) &&
-       (be->sendBufferSize < MAX_SEND_BUFFER_SIZE/4) ) {
+  if (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > cronTime(NULL)) {
 #if DEBUG_CONNECTION
     LOG(LOG_DEBUG,
 	"Send frequency too high (CPU load), send deferred.\n");
@@ -1040,12 +1028,13 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
  * running out of memory).
  */
 static void expireSendBufferEntries(BufferEntry * be) {
-  int msgCap;
+  unsigned long long msgCap;
   int i;
   SendEntry * entry;
   cron_t expired;
+  cron_t next_expired;
   int l;
-  unsigned int freeSlots;
+  unsigned long long usedBytes;
   int j;
 
   /* if it's more than one connection "lifetime" old, always kill it! */
@@ -1057,51 +1046,51 @@ static void expireSendBufferEntries(BufferEntry * be) {
 
   l = getCPULoad();
   /* cleanup queue */
-  if (l >= 50) {
-    msgCap = EXPECTED_MTU / sizeof(HashCode512);
-  } else {
+  msgCap = be->max_bpm; /* have minute of msgs, but at least one MTU */
+  if (msgCap < EXPECTED_MTU)
+    msgCap = EXPECTED_MTU;
+  if (l < 50) { /* afford more if CPU load is low */
     if (l <= 0)
       l = 1;
-    msgCap = EXPECTED_MTU / sizeof(HashCode512)
-      + (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU / sizeof(HashCode512)) / l;
-  }
-  if (be->max_bpm > 2) {
-    msgCap += 2 * (int) log((double)be->max_bpm);
-    if (msgCap >= MAX_SEND_BUFFER_SIZE-1)
-      msgCap = MAX_SEND_BUFFER_SIZE-2;
-    /* try to make sure that there
-       is always room... */
+    msgCap += (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU) / l;
   }
 
-  freeSlots = 0;
-  /* allow at least msgCap msgs in buffer */
+  usedBytes = 0;
+  /* allow at least msgCap bytes in buffer */
   for (i=0;i<be->sendBufferSize;i++)
-    if (be->sendBuffer[i] == NULL)
-      freeSlots++;
+    if (be->sendBuffer[i] != NULL)
+      usedBytes += be->sendBuffer[i]->len;
 
-  for (i=0;i<be->sendBufferSize;i++) { 	
-    entry = be->sendBuffer[i];
-    if (entry == NULL)
-      continue;
-    if (be->sendBufferSize <= msgCap + freeSlots)
-      break;
-    if (entry->transmissionTime < expired) {
+  while (usedBytes > msgCap) {
+    next_expired = cronTime(NULL) +7 * cronDAYS; /* 'infinity' */
+    for (i=0;i<be->sendBufferSize;i++) { 	
+      entry = be->sendBuffer[i];
+      if (entry == NULL)
+	continue;
+      if (usedBytes <= msgCap)
+	break;
+      if (entry->transmissionTime <= expired) {
 #if DEBUG_CONNECTION
-      LOG(LOG_DEBUG,
-	  "expiring message, expired %ds ago, queue size is %u (bandwidth stressed)\n",
-	  (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
-	  be->sendBufferSize);
+	LOG(LOG_DEBUG,
+	    "expiring message, expired %ds ago, queue size is %llu (bandwidth stressed)\n",
+	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
+	    usedBytes);
 #endif
-      if (stats != NULL) {
-	stats->change(stat_messagesDropped, 1);
-	stats->change(stat_sizeMessagesDropped, entry->len);
+	if (stats != NULL) {
+	  stats->change(stat_messagesDropped, 1);
+	  stats->change(stat_sizeMessagesDropped, entry->len);
+	}
+	FREENONNULL(entry->closure);
+	usedBytes -= entry->len;
+	FREE(entry);
+	be->sendBuffer[i] = NULL;
+      } else if (entry->transmissionTime < next_expired) {
+	next_expired = entry->transmissionTime; /* compute min! */
       }
-      FREENONNULL(entry->closure);
-      FREE(entry);
-      be->sendBuffer[i] = NULL;
-      freeSlots++;
     }
+    expired = next_expired;
   }
+  GNUNET_ASSERT(usedBytes <= msgCap);
 
   /* cleanup/compact sendBuffer */
   j = 0;
@@ -1526,6 +1515,7 @@ static void appendToBuffer(BufferEntry * be,
   float apri;
   unsigned int i;
   SendEntry ** ne;
+  unsigned long long queueSize;
 
   ENTRY();
   if ( (se == NULL) || (se->len == 0) ) {
@@ -1569,16 +1559,26 @@ static void appendToBuffer(BufferEntry * be,
     FREE(se);
     return;
   }
-  if (be->sendBufferSize >= MAX_SEND_BUFFER_SIZE) {
+  queueSize = 0;
+  for (i=0;i<be->sendBufferSize;i++)
+    queueSize += be->sendBuffer[i]->len;
+
+  if (queueSize >= MAX_SEND_BUFFER_SIZE) {
     /* first, try to remedy! */
     sendBuffer(be);
     /* did it work? */
-    if (be->sendBufferSize >= MAX_SEND_BUFFER_SIZE) {
+
+    queueSize = 0;
+    for (i=0;i<be->sendBufferSize;i++)
+      queueSize += be->sendBuffer[i]->len;
+
+    if (queueSize >= MAX_SEND_BUFFER_SIZE) {
       /* we need to enforce some hard limit here, otherwise we may take
 	 FAR too much memory (200 MB easily) */
 #if DEBUG_CONNECTION
       LOG(LOG_DEBUG,
-	  "sendBufferSize >= %d, refusing to queue message.\n",
+	  "queueSize (%llu) >= %d, refusing to queue message.\n",
+	  queueSize,
 	  MAX_SEND_BUFFER_SIZE);
 #endif
       FREE(se->closure);
