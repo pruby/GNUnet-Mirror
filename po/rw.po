@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2005-11-19 16:05-0800\n"
+"POT-Creation-Date: 2005-12-15 04:36-0800\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -545,21 +545,21 @@ msgstr ""
 msgid "Waiting for peers to connect (%u iterations left)...\n"
 msgstr ""
 
-#: src/applications/fragmentation/fragmentation.c:556
+#: src/applications/fragmentation/fragmentation.c:557
 #, fuzzy
 msgid "# messages defragmented"
 msgstr "#Ubutumwa"
 
-#: src/applications/fragmentation/fragmentation.c:557
+#: src/applications/fragmentation/fragmentation.c:558
 #, fuzzy
 msgid "# messages fragmented"
 msgstr "#Ubutumwa"
 
-#: src/applications/fragmentation/fragmentation.c:558
+#: src/applications/fragmentation/fragmentation.c:559
 msgid "# fragments discarded"
 msgstr ""
 
-#: src/applications/fragmentation/fragmentation.c:568
+#: src/applications/fragmentation/fragmentation.c:569
 #, c-format
 msgid "`%s' registering handler %d\n"
 msgstr ""
@@ -733,19 +733,19 @@ msgstr ""
 msgid "Cannot upload directory without using recursion.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1077
+#: src/applications/fs/module/fs.c:1079
 #, fuzzy, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
 "s'.\n"
 msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
 
-#: src/applications/fs/module/fs.c:1118
+#: src/applications/fs/module/fs.c:1120
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1155
+#: src/applications/fs/module/fs.c:1157
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
@@ -1705,6 +1705,12 @@ msgstr "#Bayite Bya BYAKIRIWE"
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Kuri Gukoresha IDOSIYE kugirango Iboneza"
 
+#: src/applications/sqstore_mysql/mysql.c:1223
+msgid ""
+"Failed to load MySQL database module.  Check that MySQL is running and "
+"configured properly!\n"
+msgstr ""
+
 #: src/applications/sqstore_mysql/mysqltest.c:251
 #: src/applications/sqstore_sqlite/sqlitetest.c:258
 #, fuzzy
@@ -2197,7 +2203,7 @@ msgstr "Kwiyandikisha Ikosa Oya HTTP Gusoma"
 msgid "allows construction of a P2P-testbed (incomplete)"
 msgstr ""
 
-#: src/applications/topology_default/topology.c:397
+#: src/applications/topology_default/topology.c:398
 #, c-format
 msgid "Version mismatch (`%s' vs. '%*.s'), run gnunet-update!\n"
 msgstr ""
@@ -3161,12 +3167,12 @@ msgstr ""
 msgid "Unknown error while creating a new user"
 msgstr ""
 
-#: src/server/connection.c:1008
+#: src/server/connection.c:996
 #, fuzzy, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "`%s'Byahiswemo Inyuma Bya Ubutumwa"
 
-#: src/server/connection.c:1014
+#: src/server/connection.c:1002
 #, fuzzy, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Birambuye Uburebure By'ibanze"
@@ -3984,12 +3990,12 @@ msgstr "`%s'Na: OYA in Umurongo Wongera Gicurasi OYA"
 msgid "Initialization of plugin mechanism failed: %s!\n"
 msgstr "Bya Byanze"
 
-#: src/util/dso.c:96
+#: src/util/dso.c:98
 #, fuzzy, c-format
 msgid "`%s' failed for library `%s' at %s:%d with error: %s\n"
 msgstr "`%s'Byanze kugirango Isomero ku Na: Ikosa"
 
-#: src/util/dso.c:150
+#: src/util/dso.c:152
 #, fuzzy, c-format
 msgid "`%s' failed to resolve method '%s%s' at %s:%d with error: %s\n"
 msgstr "`%s'Byanze Kuri Uburyo ku Na: Ikosa"
@@ -4054,7 +4060,7 @@ msgstr "%s:Ihitamo OYA Kwemerera"
 msgid "RSA signature verification failed at %s:%d: %s\n"
 msgstr "Isinya Byanze ku"
 
-#: src/util/initialize.c:228
+#: src/util/initialize.c:231
 #, fuzzy
 msgid "Shutdown complete.\n"
 msgstr "Byuzuye"
