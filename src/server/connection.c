@@ -92,6 +92,10 @@
  */
 #define ADMIN_PRIORITY 0xFFFF
 
+/**
+ * How often should we expire messages (frees memory).
+ */
+#define MAX_EXPIRATION_FREQUENCY (200 * cronMILLIS)
 
 /**
  * If we under-shoot our bandwidth limitation in one time period, how
@@ -1038,15 +1042,14 @@ static void expireSendBufferEntries(BufferEntry * be) {
   int i;
   SendEntry * entry;
   cron_t expired;
-  cron_t next_expired;
   int l;
   unsigned long long usedBytes;
   int j;
 
-  if (cronTime(NULL) < be->lastExpiry + SECONDS_PINGATTEMPT * cronSECONDS)
+  if (cronTime(NULL) < be->lastExpiry + MAX_EXPIRATION_FREQUENCY)
     return;
-  else
-    cronTime(&be->lastExpiry);
+  
+  cronTime(&be->lastExpiry);
 
   /* if it's more than one connection "lifetime" old, always kill it! */
   expired = cronTime(&be->lastSendAttempt) - SECONDS_PINGATTEMPT * cronSECONDS;
@@ -1072,34 +1075,28 @@ static void expireSendBufferEntries(BufferEntry * be) {
     if (be->sendBuffer[i] != NULL)
       usedBytes += be->sendBuffer[i]->len;
 
-  while (usedBytes > msgCap) {
-    next_expired = cronTime(NULL) +7 * cronDAYS; /* 'infinity' */
-    for (i=0;i<be->sendBufferSize;i++) { 	
-      entry = be->sendBuffer[i];
-      if (entry == NULL)
-	continue;
-      if (usedBytes <= msgCap)
-	break;
-      if (entry->transmissionTime <= expired) {
+  for (i=0;i<be->sendBufferSize;i++) { 	
+    entry = be->sendBuffer[i];
+    if (entry == NULL)
+      continue;
+    if (usedBytes <= msgCap)
+      break;
+    if (entry->transmissionTime <= expired) {
 #if DEBUG_CONNECTION
-	LOG(LOG_DEBUG,
-	    "expiring message, expired %ds ago, queue size is %llu (bandwidth stressed)\n",
-	    (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
-	    usedBytes);
+      LOG(LOG_DEBUG,
+	  "expiring message, expired %ds ago, queue size is %llu (bandwidth stressed)\n",
+	  (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
+	  usedBytes);
 #endif
-	if (stats != NULL) {
-	  stats->change(stat_messagesDropped, 1);
-	  stats->change(stat_sizeMessagesDropped, entry->len);
-	}
-	FREENONNULL(entry->closure);
-	usedBytes -= entry->len;
-	FREE(entry);
-	be->sendBuffer[i] = NULL;
-      } else if (entry->transmissionTime < next_expired) {
-	next_expired = entry->transmissionTime; /* compute min! */
+      if (stats != NULL) {
+	stats->change(stat_messagesDropped, 1);
+	stats->change(stat_sizeMessagesDropped, entry->len);
       }
+      FREENONNULL(entry->closure);
+      usedBytes -= entry->len;
+      FREE(entry);
+      be->sendBuffer[i] = NULL;
     }
-    expired = next_expired;
   }
   GNUNET_ASSERT(usedBytes <= msgCap);
 
