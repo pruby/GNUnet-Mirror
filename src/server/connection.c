@@ -93,11 +93,6 @@
 #define ADMIN_PRIORITY 0xFFFF
 
 /**
- * How often should we expire messages (frees memory).
- */
-#define MAX_EXPIRATION_FREQUENCY (200 * cronMILLIS)
-
-/**
  * If we under-shoot our bandwidth limitation in one time period, how
  * much of that limit are we allowed to 'roll-over' into the next
  * period?  The number given here is a factor of the total per-minute
@@ -402,9 +397,6 @@ typedef struct BufferEntry_ {
      entry? */
   int inSendBuffer;
   
-  /* when were old entries expired last? */
-  cron_t lastExpiry;
-  
 } BufferEntry;
 
 typedef struct {
@@ -572,8 +564,6 @@ static BufferEntry * initBufferEntry() {
   be->inSendBuffer
     = NO;
   cronTime(&be->last_bps_update); /* now */
-  be->lastExpiry = be->last_bps_update;
-
   return be;
 }
 
@@ -1046,11 +1036,6 @@ static void expireSendBufferEntries(BufferEntry * be) {
   unsigned long long usedBytes;
   int j;
 
-  if (cronTime(NULL) < be->lastExpiry + MAX_EXPIRATION_FREQUENCY)
-    return;
-  
-  cronTime(&be->lastExpiry);
-
   /* if it's more than one connection "lifetime" old, always kill it! */
   expired = cronTime(&be->lastSendAttempt) - SECONDS_PINGATTEMPT * cronSECONDS;
 #if DEBUG_CONNECTION
@@ -1079,8 +1064,6 @@ static void expireSendBufferEntries(BufferEntry * be) {
     entry = be->sendBuffer[i];
     if (entry == NULL)
       continue;
-    if (usedBytes <= msgCap)
-      break;
     if (entry->transmissionTime <= expired) {
 #if DEBUG_CONNECTION
       LOG(LOG_DEBUG,
@@ -1098,7 +1081,6 @@ static void expireSendBufferEntries(BufferEntry * be) {
       be->sendBuffer[i] = NULL;
     }
   }
-  GNUNET_ASSERT(usedBytes <= msgCap);
 
   /* cleanup/compact sendBuffer */
   j = 0;
@@ -1221,8 +1203,7 @@ static void freeSelectedEntries(BufferEntry * be) {
 
   for (i=0;i<be->sendBufferSize;i++) {
     entry = be->sendBuffer[i];
-    if (entry == NULL)
-      continue;
+    GNUNET_ASSERT(entry != NULL);
     if (entry->knapsackSolution == YES) {
       GNUNET_ASSERT(entry->callback == NULL);
       FREENONNULL(entry->closure);
