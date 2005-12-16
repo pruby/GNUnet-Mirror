@@ -32,6 +32,11 @@
 
 #define DEBUG_UPLOAD NO
 
+/* LE <= 0.5.8 compatibility code */
+#ifndef EXTRACTOR_SPLIT
+#define EXTRACTOR_SPLIT 90
+#endif
+
 /**
  * Data used to keep track of the files in the
  * current directory.
@@ -308,6 +313,10 @@ static int dirEntryCallback(const char * filename,
       GROW(utc->dir->fis,
 	   utc->dir->fiCount,
 	   utc->dir->fiCount+1);
+      /* remove split keywords! */
+      ECRS_delFromMetaData(meta,
+			   EXTRACTOR_SPLIT,
+			   NULL);
       utc->dir->fis[utc->dir->fiCount-1].meta = meta;
       utc->dir->fis[utc->dir->fiCount-1].uri = uri;
     } else {
@@ -459,6 +468,9 @@ static void * uploadThread(UploadThreadClosure * utc) {
 			 utc->meta);	
   }
   fi.uri = uri;
+  ECRS_delFromMetaData(utc->meta,
+		       EXTRACTOR_SPLIT,
+		       NULL);
   fi.meta = utc->meta;
   FSUI_publishToCollection(utc->ctx,
 			   &fi);
