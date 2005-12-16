@@ -640,9 +640,6 @@ approximateKnapsack(BufferEntry * be,
   max = 0;
 
   for (i=0;i<count;i++) {
-    if (!entries[i])
-      continue;
-    
     if (entries[i]->len <= left) {
       entries[i]->knapsackSolution = YES;
       left -= entries[i]->len;
@@ -693,16 +690,14 @@ solveKnapsack(BufferEntry * be,
   /* fast test: schedule everything? */
   max = 0;
   for (i=0;i<count;i++)
-    if (entries[i])
-      max += entries[i]->len;
+    max += entries[i]->len;
   if (max <= available) {
     /* short cut: take everything! */
+    for (i=0;i<count;i++)
+      entries[i]->knapsackSolution = YES;
     max = 0;
     for (i=0;i<count;i++)
-      if (entries[i]) {
-        entries[i]->knapsackSolution = YES;
-        max += entries[i]->pri;
-      }
+      max += entries[i]->pri;
     return max;
   }
 
@@ -713,14 +708,13 @@ solveKnapsack(BufferEntry * be,
   efflen = MALLOC(sizeof(int)*count);
   max = available;
   for (i=0;i<count;i++) {
-    if (entries && entries[i]->len > 0)
+    if (entries[i]->len > 0)
       max = gcd(max, entries[i]->len);
   }
   GNUNET_ASSERT(max != 0);
   available = available / max;
   for (i=0;i<count;i++)
-    if (entries)
-      efflen[i] = entries[i]->len / max;
+    efflen[i] = entries[i]->len / max;
 
   /* dynamic programming:
      VARR(i,j) stores the maximum value of any subset
@@ -740,13 +734,13 @@ solveKnapsack(BufferEntry * be,
       take_val = -1;
       leave_val = VARR(i-1,j);
       if (j >= efflen[i-1]) {
-        take_val = entries ? entries[i-1]->pri : 0 + VARR(i-1, j-efflen[i-1]);
-        if (leave_val > take_val)
-          VARR(i,j) = leave_val;
-        else
-          VARR(i,j) = take_val;
+	take_val = entries[i-1]->pri + VARR(i-1, j-efflen[i-1]);
+	if (leave_val > take_val)
+	  VARR(i,j) = leave_val;
+	else
+	  VARR(i,j) = take_val;
       } else
-        VARR(i,j) = leave_val;
+	VARR(i,j) = leave_val;
       /*
       printf("i: %d j: %d (of %d) efflen: %d take: %d "
              "leave %d e[i-1]->pri %d VAR(i-1,j-eff) %lld VAR(i,j) %lld\n",
@@ -774,14 +768,13 @@ solveKnapsack(BufferEntry * be,
   }
 
   /* reconstruct selection */
-  for(i = 0; i < count; i++)
-    if (entries[i])
-      entries[i]->knapsackSolution = NO;
-  for(i = count; i > 0; i--) {
-    if(entries[i] && j >= efflen[i - 1]) {
-      if(VARR(i - 1, j - efflen[i - 1]) + entries[i - 1]->pri == VARR(i, j)) {
-        j -= efflen[i - 1];
-        entries[i - 1]->knapsackSolution = YES;
+  for (i=0;i<count;i++)
+    entries[i]->knapsackSolution = NO;
+  for (i=count;i>0;i--) {
+    if (j >= efflen[i-1]) {
+      if (VARR(i-1, j-efflen[i-1]) + entries[i-1]->pri == VARR(i,j)) {
+	j -= efflen[i-1];
+	entries[i-1]->knapsackSolution = YES;
       }
     }
   }
@@ -905,8 +898,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
   (*priority) = 0;
 
   for (i=be->sendBufferSize-1;i>=0;i--)
-    if (be->sendBuffer[i])
-      be->sendBuffer[i]->knapsackSolution = NO;
+    be->sendBuffer[i]->knapsackSolution = NO;
 
   if(be->session.mtu == 0) {
     totalMessageSize = sizeof(P2P_PACKET_HEADER);
@@ -914,10 +906,6 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
     /* assumes entries are sorted by priority! */
     while(i < be->sendBufferSize) {
       entry = be->sendBuffer[i];
-      
-      if (!entry)
-        continue;
-      
       if((totalMessageSize + entry->len < MAX_BUFFER_SIZE) &&
          (entry->pri >= EXTREME_PRIORITY)) {
         entry->knapsackSolution = YES;
@@ -933,17 +921,13 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       }
       i++;
     }
-    if((i == 0) && (be->sendBuffer[i] && (be->sendBuffer[i]->len > be->available_send_window)))
+    if((i == 0) && (be->sendBuffer[i]->len > be->available_send_window))
       return 0;                 /* always wait for the highest-priority
                                    message (otherwise large messages may
                                    starve! */
     while((i < be->sendBufferSize) &&
           (be->available_send_window > totalMessageSize)) {
       entry = be->sendBuffer[i];
-      
-      if (!entry)
-        continue;
-      
       if((entry->len + totalMessageSize <=
           be->available_send_window) &&
          (totalMessageSize + entry->len < MAX_BUFFER_SIZE)) {
@@ -1011,7 +995,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
     }
     j = 0;
     for(i = 0; i < be->sendBufferSize; i++)
-      if(be->sendBuffer[i] && be->sendBuffer[i]->knapsackSolution == YES)
+      if(be->sendBuffer[i]->knapsackSolution == YES)
         j++;
     if(j == 0) {
       LOG(LOG_ERROR,
@@ -1020,10 +1004,9 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
           j, be->sendBufferSize, be->session.mtu - sizeof(P2P_PACKET_HEADER));
 
       for(j = 0; j < be->sendBufferSize; j++)
-        if (be->sendBuffer[j])
-          LOG(LOG_ERROR,
-              _("Message details: %u: length %d, priority: %d\n"),
-              j, be->sendBuffer[j]->len, be->sendBuffer[j]->pri);
+        LOG(LOG_ERROR,
+            _("Message details: %u: length %d, priority: %d\n"),
+            j, be->sendBuffer[j]->len, be->sendBuffer[j]->pri);
       return 0;
     }
 
@@ -1150,9 +1133,6 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
   ret = 0;
   for (i=0;i<be->sendBufferSize;i++) {
     entry = be->sendBuffer[i];
-
-    if (entry)
-      continue;
 
     if (entry->knapsackSolution == YES) {
       if (entry->callback != NULL) {
@@ -1293,7 +1273,7 @@ static int ensureTransportConnected(BufferEntry * be) {
 	ret = be->sendBufferSize;
 	while (i < ret) {
 	  entry = entries[i];
-	  if (entry && entry->len > be->session.mtu - sizeof(P2P_PACKET_HEADER)) {
+	  if (entry->len > be->session.mtu - sizeof(P2P_PACKET_HEADER)) {
 	    ret--;
 	    for (j=i;j<ret;j++)
 	      entries[j] = entries[j+1]; /* preserve ordering */
@@ -1592,8 +1572,7 @@ static void appendToBuffer(BufferEntry * be,
   }
   queueSize = 0;
   for (i=0;i<be->sendBufferSize;i++)
-    if (be->sendBuffer[i])
-      queueSize += be->sendBuffer[i]->len;
+    queueSize += be->sendBuffer[i]->len;
 
   if (queueSize >= MAX_SEND_BUFFER_SIZE) {
     /* first, try to remedy! */
@@ -1602,8 +1581,7 @@ static void appendToBuffer(BufferEntry * be,
 
     queueSize = 0;
     for (i=0;i<be->sendBufferSize;i++)
-      if (be->sendBuffer[i])
-        queueSize += be->sendBuffer[i]->len;
+      queueSize += be->sendBuffer[i]->len;
 
     if (queueSize >= MAX_SEND_BUFFER_SIZE) {
       /* we need to enforce some hard limit here, otherwise we may take
@@ -1625,7 +1603,6 @@ static void appendToBuffer(BufferEntry * be,
   apri = (float) se->pri / (float) se->len;
   i=0;
   while ( (i < be->sendBufferSize) &&
-          (be->sendBuffer[i]) &&
 	  ( ((float)be->sendBuffer[i]->pri /
 	     (float)be->sendBuffer[i]->len) >= apri) ) {
     ne[i] = be->sendBuffer[i];
@@ -1859,10 +1836,8 @@ static void shutdownConnection(BufferEntry * be) {
     be->session.tsession = NULL;
   }
   for (i=0;i<be->sendBufferSize;i++) {
-    if (be->sendBuffer[i]) {
-      FREENONNULL(be->sendBuffer[i]->closure);
-      FREE(be->sendBuffer[i]);
-    }
+    FREENONNULL(be->sendBuffer[i]->closure);
+    FREE(be->sendBuffer[i]);
   }
   GROW(be->sendBuffer,
        be->sendBufferSize,
