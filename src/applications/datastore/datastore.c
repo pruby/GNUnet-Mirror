@@ -328,7 +328,10 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   coreAPI = capi;
 
   initPrefetch(sq);
-  initFilters();
+  if (OK != initFilters()) {
+    donePrefetch();
+    return NULL;
+  }
   cronMaintenance(NULL);
   addCronJob(&cronMaintenance,
 	     10 * cronSECONDS,

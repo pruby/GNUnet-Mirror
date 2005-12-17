@@ -26,7 +26,7 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-void initFilters();
+int initFilters();
 
 void doneFilters();
 

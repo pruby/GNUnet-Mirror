@@ -50,7 +50,7 @@ static char * getFilterName() {
   return bf;
 }
 
-void initFilters() {
+int initFilters() {
   char * bf;
   unsigned int quota; /* in kb */
   unsigned int * qt;
@@ -69,10 +69,14 @@ void initFilters() {
 		      bf_size,
 		      5); /* approx. 3% false positives at max use */
   FREE(bf);
+  if (filter == NULL)
+    return SYSERR;
+  return OK;
 }
 
 void doneFilters() {
-  freeBloomfilter(filter);
+  if (filter != NULL)
+    freeBloomfilter(filter);
 }
 
 void deleteFilter() {
