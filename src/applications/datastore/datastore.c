@@ -159,9 +159,14 @@ static int put(const HashCode512 * key,
 
   /* check if we have enough space / priority */
   if ( (available < ntohl(value->size) ) &&
-       (minPriority > ntohl(value->prio)) )
+       (minPriority > ntohl(value->prio)) ) {
+    LOG(LOG_WARNING,
+	"Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
+	sq->getSize(), 
+	quota);
     return SYSERR; /* new content has such a low priority that
 		      we should not even bother! */
+  }
   if (ntohl(value->prio) < minPriority)
     minPriority = ntohl(value->prio);
 
