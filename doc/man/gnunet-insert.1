@@ -74,12 +74,10 @@ users in searching for files on the network.  The keywords are case\-sensitive.
 GNUnet supports two styles of publishing files on the network.  Inserting
 a file means that a copy of the file is made in the local (!) database of
 the node.  Indexing a file means that an index is added to the local (!)
-database with pointers to the file itself.  Since 0.6.2 GNUnet will make
-a copy of the file in the directory specified in gnunet.conf.  The copy
-will be in plaintext and have the RIPE160MD hash of the entire file as
-the filename.  This makes it possible to create links to that file, if
-gnunetd is running locally.  Note that for indexed files a different quota
-is applied than for the normal GNUnet AFS database.  Indexing is generally
+database with symbolic links to the file itself.  
+The links will use the SHA-512 hash of the entire file as
+the filename.  Note that for indexed files a different quota
+is applied than for the normal GNUnet FS database.  Indexing is generally
 significantly more efficient and the default choice.  In either case,
 the file is slowly (depending on how often it is requested and on how much
 bandwidth is available) dispersed into the network.  If you insert or index
