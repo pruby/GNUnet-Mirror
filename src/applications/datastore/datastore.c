@@ -319,7 +319,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   lquota
     = getConfigurationInt("FS", "QUOTA");
   quota
-    = lquota * 1024 * 1024; /* MB to bytes */
+    = ((unsigned long long)lquota) * 1024L * 1024L; /* MB to bytes */
   sq = capi->requestService("sqstore");
   if (sq == NULL) {
     BREAK();
@@ -328,7 +328,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   lquota = htonl(lquota);
   stateWriteContent("FS-LAST-QUOTA",
 		    sizeof(unsigned int),
-		    &quota);
+		    &lquota);
 
   coreAPI = capi;
 
