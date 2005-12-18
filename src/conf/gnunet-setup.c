@@ -222,10 +222,13 @@ int dyn_config(const char *module, const char *mainfunc, int argc, char **argv) 
 int main(int argc, char *argv[])
 {
   char *operation;
-  int def;
+  int def, done;
 
   if(OK != initUtil(argc, argv, &parser))
     return -1;
+
+  done = NO;
+
   operation = getConfigurationString("GNUNET-SETUP", "OPERATION");
   if (operation == NULL) {
     operation = STRDUP("");
@@ -233,8 +236,10 @@ int main(int argc, char *argv[])
       _("No interface specified, using default\n"));
     def = YES;
   }
-  else
+  else {
     def = NO;
+    done = YES;
+  }
   
   if(strcmp(operation, "gconfig") == 0 || def) {
     if (dyn_config("setup_gtk", "gconf_main",
@@ -244,8 +249,10 @@ int main(int argc, char *argv[])
         errexit(_("`%s' is not available."), "gconfig");
       }
     }
-    else
+    else {
       def = NO;
+      done = YES;
+    }
   }
   
   if(strcmp(operation, "menuconfig") == 0 || def) {
@@ -256,8 +263,10 @@ int main(int argc, char *argv[])
         errexit(_("`%s' is not available."), "menuconfig");
       }
     }
-    else
+    else {
       def = NO;
+      done = YES;
+    }
   }
   
   if(strcmp(operation, "config") == 0 || def)
@@ -284,7 +293,7 @@ int main(int argc, char *argv[])
       errexit(_("`%s' is not available."), "wizard-gtk");
     }
   }
-  else if (strcmp(operation, "") != 0) {
+  else if (!done) {
     printf(_("Unknown operation `%s'\n"), operation);
     printf(_("Use --help to get a list of options.\n"));
     FREE(operation);
