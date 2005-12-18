@@ -28,6 +28,6 @@
 #ifndef MCONF_H
 #define MCONF_H
 
-int mconf_main(void);
+int mconf_main(int argc, char **argv);
 
 #endif

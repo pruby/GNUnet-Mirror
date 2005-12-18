@@ -349,12 +349,13 @@ void load_step5()
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkEnh), 1);		
 }
 
-int
-wizard_main ()
+int wizard_main (int argc, char **argv)
 {
   struct symbol *sym;
   char * filename;
 	
+  gtk_init(&argc, &argv);
+  
 #ifdef ENABLE_NLS
   /* GTK uses UTF-8 encoding */
   bind_textdomain_codeset(PACKAGE, "UTF-8");
@@ -384,7 +385,7 @@ wizard_main ()
   gtk_main ();
 
   if (doOpenEnhConfigurator)
-    gconf_main();
+    gconf_main(argc, argv);
 
   return 0;
 }

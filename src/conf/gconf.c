@@ -1671,11 +1671,12 @@ void fixup_rootmenu(struct menu *menu)
 /* Main */
 
 
-int gconf_main()
+int gconf_main(int argc, char **argv)
 {
   char * filename;
 
   /* GTK stuffs */
+  gtk_init(&argc, &argv);
   bind_textdomain_codeset(PACKAGE, "UTF-8");
   gtk_set_locale();
 

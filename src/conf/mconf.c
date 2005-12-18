@@ -779,7 +779,7 @@ static void conf_cleanup(void)
 	UNLINK("lxdialog.scrltmp");
 }
 
-int mconf_main()
+int mconf_main(int argc, char **argv)
 {
 	char *mode;
 	int stat;

@@ -28,6 +28,6 @@
 #ifndef GNUNET_SETUP_GCONF_H
 #define GNUNET_SETUP_GCONF_H
 
-int gconf_main(void);
+int gconf_main(int argc, char **argv);
 
 #endif

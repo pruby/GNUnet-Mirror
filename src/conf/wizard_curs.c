@@ -82,7 +82,7 @@ void insert_nic_curs(const char *name,
   item->selected = wiz_is_nic_default(name, defaultNIC);
 }
 
-int wizard_curs_main()
+int wizard_curs_main(int argc, char **argv)
 {
   void *active_ptr = NULL;
   int idx, ret, autostart = 0, adv = 0;
@@ -656,7 +656,7 @@ end:
   FREENONNULL(group_name);
 
   if (adv) {
-    mconf_main();
+    mconf_main(argc, argv);
   }
 
   return 0;

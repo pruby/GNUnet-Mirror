@@ -28,6 +28,6 @@
 #ifndef GCONF_H
 #define GCONF_H
 
-int wizard_curs_main(void);
+int wizard_curs_main(int argc, char **argv);
 
 #endif

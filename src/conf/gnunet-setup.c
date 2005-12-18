@@ -200,65 +200,91 @@ static int parser(int argc, char *argv[])
   return cont;
 }
 
+int dyn_config(const char *module, const char *mainfunc, int argc, char **argv) {
+  void (*mptr)(int, char **);
+  void *library;
+
+  library = loadDynamicLibrary("libgnunet", module);
+  if (!library)    
+    return SYSERR;
+  
+  mptr = bindDynamicMethod(library, mainfunc, "");
+  if (! mptr)
+    return SYSERR;
+  
+  mptr(argc, argv);
+  
+  unloadDynamicLibrary(library);
+  
+  return YES;
+}
 
 int main(int argc, char *argv[])
 {
   char *operation;
+  int def;
 
   if(OK != initUtil(argc, argv, &parser))
     return -1;
   operation = getConfigurationString("GNUNET-SETUP", "OPERATION");
   if (operation == NULL) {
-#if HAVE_GTK
-    operation = STRDUP("gconfig");
-#elif HAVE_CURSES
-    operation = STRDUP("menuconfig");
-#else
-    operation = STRDUP("config");
-#endif
+    operation = STRDUP("");
     LOG(LOG_WARNING,
-	"No interface specified, defaulting to `%s'\n",
-	operation);
+      _("No interface specified, using default\n"));
+    def = YES;
   }
-  if(strcmp(operation, "config") == 0)
+  else
+    def = NO;
+  
+  if(strcmp(operation, "gconfig") == 0 || def) {
+    if (dyn_config("setup_gtk", "gconf_main",
+          argc, argv) != YES) {
+      if (!def) {
+        FREE(operation);
+        errexit(_("`%s' is not available."), "gconfig");
+      }
+    }
+    else
+      def = NO;
+  }
+  
+  if(strcmp(operation, "menuconfig") == 0 || def) {
+    if (dyn_config("setup_curses", "mconf_main",
+          argc, argv) != YES) {
+      if (!def) {
+        FREE(operation);
+        errexit(_("`%s' is not available."), "menuconfig");
+      }
+    }
+    else
+      def = NO;
+  }
+  
+  if(strcmp(operation, "config") == 0 || def)
     conf_main();
-  else if(strcmp(operation, "menuconfig") == 0) {
-#if HAVE_CURSES
-    mconf_main();
-#else
-    printf(_("menuconfig is not available\n"));
-#endif
-  }
   else if(strcmp(operation, "wizard-curses") == 0) {
     if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
       errexit(_("Can only run wizard to configure gnunetd.\n"
                 "Did you forget the `%s' option?\n"), "-d");
-#if HAVE_CURSES
-    wizard_curs_main();
-#else
-    printf(_("wizard-curses is not available\n"));
-#endif
+                
+    if (dyn_config("setup_curses", "wizard_curs_main",
+          argc, argv) != YES) {
+      FREE(operation);
+      errexit(_("`%s' is not available."), "wizard-curses");
+    }
   }
   else if(strcmp(operation, "wizard-gtk") == 0) {
     if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
       errexit(_("Can only run wizard to configure gnunetd.\n"
                 "Did you forget the `%s' option?\n"), "-d");
-#if HAVE_GTK
-    gtk_init(&argc, &argv);
-    wizard_main();
-#else
-    printf(_("wizard-gtk is not available\n"));
-#endif
+
+    if (dyn_config("setup_gtk", "wizard_main",
+          argc, argv) != YES) {
+      FREE(operation);
+      errexit(_("`%s' is not available."), "wizard-gtk");
+    }
   }
-  else if(strcmp(operation, "gconfig") == 0) {
-#if HAVE_GTK
-    gtk_init(&argc, &argv);
-    gconf_main();
-#else
-    printf(_("gconfig is not available\n"));
-#endif
-  }
-  else {
+  else if (strcmp(operation, "") != 0) {
     printf(_("Unknown operation `%s'\n"), operation);
     printf(_("Use --help to get a list of options.\n"));
     FREE(operation);

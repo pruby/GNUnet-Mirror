@@ -28,6 +28,6 @@
 #ifndef WIZARD_H
 #define WIZARD_H
 
-int wizard_main(void);
+int wizard_main(int argc, char **argv);
 
 #endif
