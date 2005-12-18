@@ -25,8 +25,9 @@ if HAVE_GTK
 	libgnunetsetup_gtk.la
 endif
 
+lib_LTLIBRARIES = libgnunetsetup.la
+
 plugin_LTLIBRARIES = \
- libgnunetsetup.la \
  $(curses_libs) \
  $(gtk_libs)
 
