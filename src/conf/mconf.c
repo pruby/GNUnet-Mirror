@@ -539,7 +539,7 @@ static void conf(struct menu *menu)
 			break;
 		if (menu == &rootmenu) {
 			cmake(); cset_tag(':', NULL); cprint_name("--- ");
-			cmake(); cset_tag('L', NULL); cprint_name("Load an Altenatie Configuration File");
+			cmake(); cset_tag('L', NULL); cprint_name("Load an Alternate Configuration File");
 		}
 		dialog_clear();
 		/* active_item itself can change after any creset() +
