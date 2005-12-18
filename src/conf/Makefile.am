@@ -109,7 +109,7 @@ libgnunetsetup_gtk_la_SOURCES = \
  wizard.c wizard.h
 
 libgnunetsetup_gtk_la_LDFLAGS = \
- $(GTK_LIBS) @EXT_LIB_PATH@ $(LDADD) @EXT_LIBS@ -lgthread-2.0 \
+ $(GTK_LIBS) @EXT_LIB_PATH@ @EXT_LIBS@ -lgthread-2.0 \
  -export-dynamic -avoid-version -module
  
 libgnunetsetup_gtk_la_LIBADD = \
