@@ -218,7 +218,12 @@ static void * listenAndDistribute() {
     if (! FD_ISSET(udp6_sock, &readSet))
       continue;
     pending = 0;
+    /* @todo FIXME in PlibC */
+#ifdef MINGW
+    error = ioctlsocket(udp_sock,
+#else
     error = ioctl(udp6_sock,
+#endif
 		  FIONREAD,
 		  &pending);
     if (error != 0) {
