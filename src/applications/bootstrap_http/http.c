@@ -291,7 +291,7 @@ static void downloadHostlist(hello_Callback callback,
     if (url[i] == ' ')
       cnt++;
   }
-  cnt = randomi(cnt); /* pick random hostlist of the pack */
+  cnt = weak_randomi(cnt); /* pick random hostlist of the pack */
   i = strlen(url);
   while (i > 0) {
     i--;

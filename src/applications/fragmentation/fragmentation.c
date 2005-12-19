@@ -458,7 +458,7 @@ static int fragmentBMC(void * buf,
   }
   if (stats != NULL)
     stats->change(stat_fragmented, 1);
-  id = (idGen++) + randomi(512);
+  id = (idGen++) + weak_randomi(512);
   /* write first fragment to buf */
   frag = (P2P_fragmentation_MESSAGE*) buf;
   frag->header.size = htons(len);

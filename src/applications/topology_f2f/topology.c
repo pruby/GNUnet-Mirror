@@ -177,7 +177,7 @@ static void scanForHosts(unsigned int index) {
     return; /* no matching peers found! */
   if (indexMatch.costSelector > 0)
     indexMatch.costSelector
-      = randomi(indexMatch.costSelector/4)*4;
+      = weak_randomi(indexMatch.costSelector/4)*4;
   indexMatch.match = *(coreAPI->myIdentity);
   identity->forEachHost(now,
 			(HostIterator)&scanHelperSelect,

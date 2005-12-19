@@ -792,8 +792,8 @@ static void hotpathSelectionCode(const PeerIdentity * id,
 			  &id->hashPubKey);
   if (distance <= 0)
     distance = 1;
-  ranking += 0xFFFF / (1 + randomi(distance));
-  ranking += 1 + randomi(0xFF); /* small random chance for everyone */
+  ranking += 0xFFFF / (1 + weak_randomi(distance));
+  ranking += 1 + weak_randomi(0xFF); /* small random chance for everyone */
   if (equalsHashCode512(&id->hashPubKey,
 			&qr->noTarget.hashPubKey))
     ranking = 0; /* no chance for blocked peers */
@@ -876,7 +876,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
 	 Replace existing query! */
       oldestIndex = i;
       if ( (queries[i].expires > now - 4 * TTL_DECREMENT) && /* not long expired */
-	   (randomi(4) != 0) ) {
+	   (weak_randomi(4) != 0) ) {
 	/* do not clear the bitmap describing which peers we have
 	   forwarded the query to already; but do this only with high
 	   probability since we may want to try again if the query is
@@ -943,7 +943,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
 
 	if (rankingSum == 0)
 	  break;
-	sel = randomi64(rankingSum);
+	sel = weak_randomi64(rankingSum);
 	pos = 0;	
 	for (j=0;j<8*BITMAP_SIZE;j++) {
 	  pos += qr->rankings[j];
@@ -1101,7 +1101,7 @@ static void queueReply(const PeerIdentity * sender,
   /* delay reply, delay longer if we are busy (makes it harder
      to predict / analyze, too). */
   addCronJob(&useContentLater,
-	     randomi(TTL_DECREMENT),
+	     weak_randomi(TTL_DECREMENT),
 	     0,
 	     pmsg);
 }
@@ -1455,7 +1455,7 @@ static int needsForwarding(const HashCode512 * query,
     *doForward = YES;
     return 17;
   }
-  if (randomi(TIE_BREAKER_CHANCE) == 0) {
+  if (weak_randomi(TIE_BREAKER_CHANCE) == 0) {
     addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
     *isRouted = YES;
     *doForward = YES;
@@ -2079,13 +2079,13 @@ static int handleQuery(const PeerIdentity * sender,
   /* decrement ttl (always) */
   ttl = ntohl(qmsg->ttl);
   if (ttl < 0) {
-    ttl = ttl - 2*TTL_DECREMENT - randomi(TTL_DECREMENT);
+    ttl = ttl - 2*TTL_DECREMENT - weak_randomi(TTL_DECREMENT);
     if (ttl > 0) {
       FREE(qmsg);
       return OK; /* just abort */
     }
   } else {
-    ttl = ttl - 2*TTL_DECREMENT - randomi(TTL_DECREMENT);
+    ttl = ttl - 2*TTL_DECREMENT - weak_randomi(TTL_DECREMENT);
   }
   prio = ntohl(qmsg->priority);
   policy = evaluateQuery(sender,
@@ -2189,7 +2189,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
     LOG(LOG_WARNING,
 	_("Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"));
   }
-  random_qsel = randomi(0xFFFF);
+  random_qsel = weak_randomi(0xFFFF);
   indirectionTableSize =
     getConfigurationInt("GAP",
     			"TABLESIZE");

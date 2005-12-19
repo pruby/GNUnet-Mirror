@@ -568,6 +568,8 @@ unsigned int randomi(unsigned int i);
  */
 unsigned long long randomi64(unsigned long long u);
 
+unsigned long long weak_randomi64(unsigned long long u);
+
 /**
  * Get an array with a random permutation of the
  * numbers 0...n-1.

@@ -326,7 +326,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
       et -= now;
       et = et % MAX_MIGRATION_EXP;
       if (et > 0)
-	et = randomi(et);
+	et = weak_randomi(et);
       et = et + now;
     }
     gw->timeout = htonll(et);
@@ -685,7 +685,7 @@ static int gapGetConverter(const HashCode512 * key,
     et -= now;
     et = et % MAX_MIGRATION_EXP;
     if (et > 0)
-      et = randomi(et);
+      et = weak_randomi(et);
     et = et + now;
   }
   gw->timeout = htonll(et);
@@ -847,7 +847,7 @@ static int dhtGetConverter(const HashCode512 * key,
     et -= now;
     et = et % MAX_MIGRATION_EXP;
     if (et > 0)
-      et = randomi(et);
+      et = weak_randomi(et);
     et = et + now;
   }
   gw->timeout = htonll(et);

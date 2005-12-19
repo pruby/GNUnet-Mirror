@@ -62,7 +62,7 @@ static void processhellos(HelloListClosure * hcq) {
   while ( (abort_bootstrap == NO) &&
 	  (hcq->helosCount > 0) ) {
     /* select hello by random */
-    rndidx = randomi(hcq->helosCount);
+    rndidx = weak_randomi(hcq->helosCount);
 #if DEBUG_BOOTSTRAP
     LOG(LOG_DEBUG,
 	"%s chose hello %d of %d\n",
@@ -97,7 +97,7 @@ static void processhellos(HelloListClosure * hcq) {
       if (load > 100)
 	load = 100;
 
-      gnunet_util_sleep(50 + randomi((load+1)*(load+1)));
+      gnunet_util_sleep(50 + weak_randomi((load+1)*(load+1)));
     }
   }
   for (i=0;i<hcq->helosCount;i++)

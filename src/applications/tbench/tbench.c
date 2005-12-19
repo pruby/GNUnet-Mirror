@@ -288,14 +288,14 @@ static int csHandleTBenchRequest(ClientHandle client,
     earlyEnd = 0;
     presem = SEMAPHORE_NEW(1);
     postsem = SEMAPHORE_NEW(0);
-    currNounce = randomi(0xFFFFFF);
+    currNounce = weak_randomi(0xFFFFFF);
     p2p->nounce
       = htonl(currNounce);
     currIteration = iteration;
     p2p->iterationNum
       = htonl(currIteration);
     memset(&p2p[1],
-	   randomi(256),
+	   weak_randomi(256),
 	   size - sizeof(P2P_tbench_MESSAGE));
     p2p->crc
       = htonl(crc32N(&p2p[1],

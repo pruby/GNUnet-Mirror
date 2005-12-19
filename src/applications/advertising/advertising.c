@@ -348,7 +348,7 @@ broadcastHelper(const PeerIdentity * hi,
     return;
   if (proto == NAT_PROTOCOL_NUMBER)
     return; /* don't advertise NAT addresses via broadcast */
-  if (randomi(sd->n) != 0)
+  if (weak_randomi(sd->n) != 0)
     return;
   hash2enc(&hi->hashPubKey,
 	   &other);
@@ -379,7 +379,7 @@ broadcastHelper(const PeerIdentity * hi,
      we get a probability of 1/n for this, which
      is what we want: fewer attempts to contact fresh
      peers as the network grows): */
-  if (randomi(sd->n) != 0)
+  if (weak_randomi(sd->n) != 0)
     return;
 
   /* establish short-lived connection, send, tear down */
@@ -432,7 +432,7 @@ broadcasthelloTransport(TransportAPI * tapi,
 
   if (getNetworkLoadUp() > 100)
     return; /* network load too high... */
-  if (0 != randomi(*prob))
+  if (0 != weak_randomi(*prob))
     return; /* ignore */
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
@@ -498,7 +498,7 @@ static void forwardCallback(const PeerIdentity * peer,
 			    FCC * fcc) {
   if (getNetworkLoadUp() > 100)
     return; /* network load too high... */
-  if (randomi(fcc->prob) != 0)
+  if (weak_randomi(fcc->prob) != 0)
     return; /* only forward with a certain chance */
   if (equalsHashCode512(&peer->hashPubKey,
 			&fcc->msg->senderIdentity.hashPubKey))
@@ -532,7 +532,7 @@ forwardhelloHelper(const PeerIdentity * peer,
     return;
   if (protocol == NAT_PROTOCOL_NUMBER)
     return; /* don't forward NAT addresses */
-  if (randomi((*probability)+1) != 0)
+  if (weak_randomi((*probability)+1) != 0)
     return; /* only forward with a certain chance,
 	       (on average: 1 peer per run!) */
 #if DEBUG_ADVERTISING

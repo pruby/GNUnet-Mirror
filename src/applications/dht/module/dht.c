@@ -1065,8 +1065,8 @@ static void addOptionalFields(RPC_Param * args) {
      if greater than 1k, only add with exponentially
      decreasing probability */
   if ( (s < 1024) ||
-       ( (s*s < randomi(32768)*randomi(32768)) &&
-	 (s*s < randomi(32768)*randomi(32768)) ) ) {
+       ( (s*s < weak_randomi(32768)*weak_randomi(32768)) &&
+	 (s*s < weak_randomi(32768)*weak_randomi(32768)) ) ) {
     RPC_paramAdd(args,
 		 "tables",
 		 sizeof(DHT_TableId) * tc,

@@ -249,7 +249,7 @@ int main(int argc, char * argv[]){
     CHECK(prog < 10000);
     gnunet_util_sleep(50 * cronMILLIS);
     if ( (suspendRestart > 0) &&
-	 (randomi(4) == 0) ) {
+	 (weak_randomi(4) == 0) ) {
       suspendCron();
 #if 1
 #if DEBUG_VERBOSE

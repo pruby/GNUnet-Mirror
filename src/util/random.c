@@ -104,6 +104,7 @@ int * permute(int mode, int n) {
 unsigned long long randomi64(unsigned long long u) {
   unsigned long long ret;
 
+  GNUNET_ASSERT(u > 0);
   lockGcrypt();
   gcry_randomize((unsigned char *) &ret,
 		 sizeof(unsigned long long),
@@ -124,6 +125,15 @@ unsigned int weak_randomi(unsigned int i) {
 	if (ret >= i)
 		ret = i - 1;
 	
+	return ret;
+}
+
+unsigned long long weak_randomi64(unsigned long long u) {
+	unsigned long long ret;
+	GNUNET_ASSERT(u > 0);
+	ret = u * ((double) RANDOM() / RAND_MAX);
+	if (ret >= u)
+		ret = u-1;
 	return ret;
 }
 
