@@ -1655,7 +1655,7 @@ static int execQuery(const PeerIdentity * sender,
   }
 
   if (cls.valueCount > 0) {
-    perm = permute(STRONG, cls.valueCount);
+    perm = permute(WEAK, cls.valueCount);
     max = getNetworkLoadDown();
     if (max > 100)
       max = 100;
