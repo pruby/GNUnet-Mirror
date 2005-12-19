@@ -429,12 +429,6 @@ Bloomfilter * loadBloomfilter(const char * filename,
     pos += BUFFSIZE * 2; /* 2 bits per byte in the buffer */
   }
   FREE(rbuff);
-  /* find last component of file path */
-  for (i=strlen(filename);i>0;i--)
-    if (filename[i] == DIR_SEPARATOR) {
-      i++;
-      break;
-    }
   return bf;
 }
 
