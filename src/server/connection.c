@@ -1875,7 +1875,7 @@ static void scheduleInboundTraffic() {
   double shareSum;
   unsigned int u;
   unsigned int minCon;
-  long long schedulableBandwidth; /* MUST be unsigned! */
+  long long schedulableBandwidth;
   long long decrementSB;
   long long * adjustedRR;
   int didAssign;
@@ -1942,8 +1942,8 @@ static void scheduleInboundTraffic() {
 
   /* normalize distribution */
   if (shareSum >= 0.00001) { /* avoid numeric glitches... */
-    for (u=0;u<activePeerCount;u++)
-      shares[u] = shares[u] / shareSum;
+    for (u=0;u<activePeerCount;u++) 
+      shares[u] = shares[u] / shareSum;    
   } else {
     for (u=0;u<activePeerCount;u++)
       shares[u] = 1 / activePeerCount;
@@ -2077,10 +2077,22 @@ static void scheduleInboundTraffic() {
 	  decrementSB += share - entries[u]->idealized_limit;
 	  didAssign = YES;	
 	}
+	if ( (share < MIN_BPM_PER_PEER) &&
+	     (minCon > 0) ) {
+	  /* use one of the minCon's to keep the connection! */
+	  decrementSB -= share;
+	  share = MIN_BPM_PER_PEER;
+	  minCon--;
+	} 
 	entries[u]->idealized_limit = share;
       }
     }
-    schedulableBandwidth -= decrementSB;
+    if (decrementSB > schedulableBandwidth) {
+      schedulableBandwidth -= decrementSB;
+    } else {
+      schedulableBandwidth = 0;
+      break;
+    }
     if ( (activePeerCount > 0) &&
 	 (didAssign == NO) ) {
       int * perm = permute(WEAK, activePeerCount);
@@ -2129,7 +2141,7 @@ static void scheduleInboundTraffic() {
   } /* while bandwidth to distribute */
 
 
-  /* randomly add the MIN_BPM_PER_PEER to minCon peers; yes, this will
+  /* randomly add the remaining MIN_BPM_PER_PEER to minCon peers; yes, this will
      yield some fluctuation, but some amount of fluctuation should be
      good since it creates opportunities. */
   if (activePeerCount > 0)
@@ -2160,6 +2172,26 @@ static void scheduleInboundTraffic() {
   FREE(adjustedRR);
   FREE(shares);
   FREE(entries);
+  for (u=0;u<CONNECTION_MAX_HOSTS_;u++) {
+    BufferEntry * be = CONNECTION_buffer_[u];
+    if (be == NULL)
+      continue;
+    if (be->idealized_limit < MIN_BPM_PER_PEER) {
+#if DEBUG_CONNECTION || 1
+      EncName enc;
+      
+      IFLOG(LOG_DEBUG,
+	    hash2enc(&be->session.sender.hashPubKey,
+		     &enc));
+      LOG(LOG_DEBUG,
+	  "Number of connections too high, shutting down low-traffic connection to %s (had only %u bpm)\n",
+	  &enc,
+	  be->idealized_limit);
+#endif
+      shutdownConnection(be);
+    }
+  }
+
   MUTEX_UNLOCK(&lock);
 }
 
