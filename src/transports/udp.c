@@ -209,12 +209,48 @@ static void * listenAndDistribute() {
   P2P_PACKET * mp;
   UDPMessage udpm;
   IPaddr ipaddr;
+  int error;
+  int pending;
+  int ret;
+  fd_set readSet;
+  fd_set errorSet;
+  fd_set writeSet;
 
   SEMAPHORE_UP(serverSignal);
   while (udp_shutdown == NO) {
+    FD_ZERO(&readSet);
+    FD_ZERO(&writeSet);
+    FD_ZERO(&errorSet);
+    FD_SET(udp_sock, &readSet);
+    ret = SELECT(udp_sock + 1, &readSet, &writeSet, &errorSet, NULL);
+    if (ret == -1) {
+      if (udp_shutdown == YES)
+	break;
+      if (errno == EINTR)
+	continue;
+      DIE_STRERROR("select");
+    }
+    if (! FD_ISSET(udp_sock, &readSet))
+      continue;
+    pending = 0;
+    error = ioctl(udp_sock,
+		  FIONREAD,
+		  &pending);
+    if (error != 0) {
+      LOG_STRERROR(LOG_ERROR, "ioctl");
+      continue;
+    }
+    if (pending <= 0) {
+      LOG(LOG_WARNING,
+	  _("UDP: select returned, but ioctl reports 0 bytes available!\n"));
+      continue;
+    }   
+    if (pending >= 65536) {
+      BREAK();
+      continue;
+    }   
     mp = MALLOC(sizeof(P2P_PACKET));
-    mp->msg = MALLOC(udpAPI.mtu + sizeof(UDPMessage));
-  RETRY:
+    mp->msg = MALLOC(pending);    
     memset(&incoming,
 	   0,
 	   sizeof(struct sockaddr_in));
@@ -225,20 +261,20 @@ static void * listenAndDistribute() {
     }
     size = RECVFROM(udp_sock,
 		    mp->msg,
-		    udpAPI.mtu + sizeof(UDPMessage),
+		    pending,
 		    0,
 		    (struct sockaddr * )&incoming,
 		    &addrlen);
     if ( (size < 0) ||
 	 (udp_shutdown == YES) ) {
+      FREE(mp->msg);
+      FREE(mp);
       if (udp_shutdown == NO) {
 	if ( (errno == EINTR) ||
 	     (errno == EAGAIN) ||
-	     (errno == ECONNREFUSED) )
-	  goto RETRY;
+	     (errno == ECONNREFUSED) ) 
+	  continue;	
       }
-      FREE(mp->msg);
-      FREE(mp);
       if (udp_shutdown == NO)
 	LOG_STRERROR(LOG_ERROR, "recvfrom");
       break; /* die/shutdown */
@@ -252,7 +288,9 @@ static void * listenAndDistribute() {
 	  _("Received invalid UDP message from %u.%u.%u.%u:%u, dropping.\n"),
 	  PRIP(ntohl(*(int*)&incoming.sin_addr)),
 	  ntohs(incoming.sin_port));
-      goto RETRY;
+      FREE(mp->msg);
+      FREE(mp);
+      continue;
     }
     memcpy(&udpm,
 	   &((char*)mp->msg)[size - sizeof(UDPMessage)],
@@ -275,7 +313,9 @@ static void * listenAndDistribute() {
 	  _("Packet received from %u.%u.%u.%u:%u (UDP) failed format check.\n"),
 	  PRIP(ntohl(*(int*)&incoming.sin_addr)),
 	  ntohs(incoming.sin_port));
-      goto RETRY;
+      FREE(mp->msg);
+      FREE(mp);
+      continue;
     }
     GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
     memcpy(&ipaddr,
@@ -287,7 +327,9 @@ static void * listenAndDistribute() {
 	    "address %u.%u.%u.%u.\n"),
 	  "UDP",
 	  PRIP(ntohl(*(int*)&incoming.sin_addr)));
-      goto RETRY; /* drop on the floor */
+      FREE(mp->msg);
+      FREE(mp);
+      continue;
     }
     /* message ok, fill in mp and pass to core */
     mp->tsession = NULL;

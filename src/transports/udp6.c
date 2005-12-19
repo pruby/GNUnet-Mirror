@@ -194,12 +194,43 @@ static void * listenAndDistribute() {
   P2P_PACKET * mp;
   UDP6Message udp6m;
   char inet6[INET6_ADDRSTRLEN];
+  int error;
+  int pending;
+  int ret;
+  fd_set readSet;
+  fd_set errorSet;
+  fd_set writeSet;
 
   SEMAPHORE_UP(serverSignal);
   while (udp6_shutdown == NO) {
+    FD_ZERO(&readSet);
+    FD_ZERO(&writeSet);
+    FD_ZERO(&errorSet);
+    FD_SET(udp6_sock, &readSet);
+    ret = SELECT(udp6_sock + 1, &readSet, &writeSet, &errorSet, NULL);
+    if (ret == -1) {
+      if (udp6_shutdown == YES)
+	break;
+      if (errno == EINTR)
+	continue;
+      DIE_STRERROR("select");
+    }
+    if (! FD_ISSET(udp6_sock, &readSet))
+      continue;
+    pending = 0;
+    error = ioctl(udp6_sock,
+		  FIONREAD,
+		  &pending);
+    if (error != 0) {
+      LOG_STRERROR(LOG_ERROR, "ioctl");
+      continue;
+    }
+    if (pending >= 65536) {
+      BREAK();
+      continue;
+    }   
     mp = MALLOC(sizeof(P2P_PACKET));
-    mp->msg = MALLOC(udp6API.mtu + sizeof(UDP6Message));
-  RETRY:
+    mp->msg = MALLOC(pending);    
     memset(&incoming,
 	   0,
 	   sizeof(struct sockaddr_in6));
@@ -210,20 +241,21 @@ static void * listenAndDistribute() {
     }
     size = RECVFROM(udp6_sock,
 		    mp->msg,
-		    udp6API.mtu + sizeof(UDP6Message),
+		    pending,
 		    0,
 		    (struct sockaddr * )&incoming,
 		    &addrlen);
     if ( (size < 0) ||
 	 (udp6_shutdown == YES) ) {
+      FREE(mp->msg);
+      FREE(mp);
       if (udp6_shutdown == NO) {
 	if ( (errno == EINTR) ||
 	     (errno == EAGAIN) ||
-	     (errno == ECONNREFUSED) )
-	  goto RETRY;
+	     (errno == ECONNREFUSED) ) {
+	  continue;
+	}
       }
-      FREE(mp->msg);
-      FREE(mp);
       if (udp6_shutdown == NO)
 	LOG_STRERROR(LOG_ERROR, "recvfrom");
       break; /* die/shutdown */
@@ -237,7 +269,9 @@ static void * listenAndDistribute() {
 		    inet6,
 		    INET6_ADDRSTRLEN),
 	  ntohs(incoming.sin6_port));
-      goto RETRY;
+      FREE(mp->msg);
+      FREE(mp);
+      continue;
     }
     memcpy(&udp6m,
 	   &((char*)mp->msg)[size - sizeof(UDP6Message)],
@@ -266,7 +300,9 @@ static void * listenAndDistribute() {
 		    inet6,
 		    INET6_ADDRSTRLEN),
 	  ntohs(incoming.sin6_port));
-      goto RETRY;
+      FREE(mp->msg);
+      FREE(mp);
+      continue;
     }
     GNUNET_ASSERT(sizeof(struct in6_addr) == sizeof(IP6addr));
     if (YES == isBlacklisted((IP6addr*)&incoming.sin6_addr)) {
@@ -277,7 +313,9 @@ static void * listenAndDistribute() {
 		    &incoming,
 		    inet6,
 		    INET6_ADDRSTRLEN));
-      goto RETRY; /* drop on the floor */
+      FREE(mp->msg);
+      FREE(mp);
+      continue;
     }
     /* message ok, fill in mp and pass to core */
     mp->tsession     = NULL;

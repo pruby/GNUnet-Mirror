@@ -409,9 +409,7 @@ static int parser(int argc,
 	return SYSERR;
       } else {
 	if (size == 0)
-	  size = 2;
-	else
-	  size++;
+	  size = 1;
 	expectedSize = size;
 	expectedValue = MALLOC(size);
 	expectedValue[--size] = '\0';
