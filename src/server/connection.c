@@ -947,7 +947,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
     if((totalMessageSize == sizeof(P2P_PACKET_HEADER)) ||
        (((*priority) < EXTREME_PRIORITY) &&
         ((totalMessageSize / sizeof(P2P_PACKET_HEADER)) < 4) &&
-        (randomi(16) != 0))) {
+        (weak_randomi(16) != 0))) {
       /* randomization necessary to ensure we eventually send
          a small message if there is nothing else to do! */
       return 0;
@@ -962,7 +962,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       approxProb = 100 - approxProb;  /* now value between 0 and 50 */
       approxProb *= 2;          /* now value between 0 [always approx] and 100 [never approx] */
       /* control CPU load probabilistically! */
-      if(randomi(1 + approxProb) == 0) {
+      if(weak_randomi(1 + approxProb) == 0) {
         (*priority) = approximateKnapsack(be,
                                           be->session.mtu -
                                           sizeof(P2P_PACKET_HEADER));
@@ -2146,7 +2146,7 @@ static void scheduleInboundTraffic() {
      good since it creates opportunities. */
   if (activePeerCount > 0)
     for (u=0;u<minCon;u++)
-      entries[randomi(activePeerCount)]->idealized_limit
+      entries[weak_randomi(activePeerCount)]->idealized_limit
 	+= MIN_BPM_PER_PEER;
 
   /* prepare for next round */
