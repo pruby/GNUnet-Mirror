@@ -63,21 +63,16 @@ typedef struct {
 
 } OnDemandBlock;
 
+static char * index_directory;
+
 static char * getOnDemandFile(const HashCode512 * fileId) {
   EncName enc;
   char * fn;
-  char * dir;
 
-  dir = getFileName("FS",
-		    "INDEX-DIRECTORY",
-		    _("You must specify a directory for FS files in the"
-		      " configuration in section `%s' under `%s'."));
-  mkdirp(dir); /* just in case */
   hash2enc(fileId,
 	   &enc);
-  fn = MALLOC(strlen(dir) + sizeof(EncName) + 1);
-  strcpy(fn, dir);
-  FREE(dir);
+  fn = MALLOC(strlen(index_directory) + sizeof(EncName) + 1);
+  strcpy(fn, index_directory);
   strcat(fn, "/");
   strcat(fn, (char*) &enc);
   return fn;
@@ -113,45 +108,20 @@ static int checkPresent(const HashCode512 * key,
 int ONDEMAND_initIndex(const HashCode512 * fileId,
 		       const char *fn) {
   EncName enc;
-  char * serverDir;
   char * serverFN;
-  char *tmp;
   char unavail_key[256];
   HashCode512 linkId;
 
-  serverDir
-    = getConfigurationString("FS",
-			     "INDEX-DIRECTORY");
-  if (!serverDir) {
-    serverDir = getConfigurationString("GNUNETD",
-				       "GNUNETD_HOME");
-    if (!serverDir)
-      return SYSERR;
-
-    serverDir = REALLOC(serverDir,
-			strlen(serverDir) +
-			strlen("/data/shared/") + 1);
-    strcat(serverDir, "/data/shared/");
-  }
-  tmp = expandFileName(serverDir);
-  FREE(serverDir);
-  serverDir = tmp;
   if ( (SYSERR == getFileHash(fn,
 			      &linkId)) ||
        (! equalsHashCode512(&linkId,
 			    fileId)) ) {
-    FREE(serverDir);
     return NO;
   }
 
-  serverFN = MALLOC(strlen(serverDir) + 2 + sizeof(EncName));
+  serverFN = MALLOC(strlen(index_directory) + 2 + sizeof(EncName));
   strcpy(serverFN,
-	 serverDir);
-
-  /* Just in case... */
-  mkdirp(serverDir);
-
-  FREE(serverDir);
+	 index_directory);
   strcat(serverFN,
 	 DIR_SEPARATOR_STR);
   hash2enc(fileId,
@@ -677,5 +647,29 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   return OK;
 }
 
+int ONDEMAND_init() {
+  char * tmp;
+
+
+  tmp
+    = getConfigurationString("FS",
+			     "INDEX-DIRECTORY");
+  if (NULL == tmp) {
+    tmp = getConfigurationString("GNUNETD",
+				 "GNUNETD_HOME");
+    GNUNET_ASSERT(NULL != tmp);
+    tmp = REALLOC(tmp,
+			      strlen(tmp) +
+			      strlen("/data/shared/") + 1);
+    strcat(tmp, "/data/shared/");
+  }
+  index_directory = expandFileName(tmp);
+  FREE(tmp);
+  mkdirp(index_directory); /* just in case */  
+}
+
+int ONDEMAND_done() {
+  FREE(index_directory);
+}
 
 /* end of ondemand.c */

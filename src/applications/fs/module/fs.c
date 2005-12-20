@@ -1096,6 +1096,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   dht = NULL;
 
   coreAPI = capi;
+  ONDEMAND_init();
   MUTEX_CREATE(&lock);
   dsGap.closure = NULL;
   dsGap.get = &gapGet;
@@ -1201,6 +1202,7 @@ void done_module_fs() {
   }
   coreAPI = NULL;
   MUTEX_DESTROY(&lock);
+  ONDEMAND_done();
 }
 
 /**
