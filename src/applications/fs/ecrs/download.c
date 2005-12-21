@@ -1184,6 +1184,16 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
       __FUNCTION__,
       filename);
 #endif
+  if (0 == ECRS_fileSize(uri)) {
+    ret = fileopen(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR|S_IWUSR);
+    if (ret == -1) {
+      LOG_FILE_STRERROR(LOG_ERROR, "open", filename);
+      return SYSERR;
+    }
+    CLOSE(ret);
+    dpcb(0, 0, cronTime(NULL), 0, NULL, 0, dpcbClosure);
+    return OK;
+  }
   GNUNET_ASSERT(filename != NULL);
   fid = uri->data.chk;
   if (! ECRS_isFileUri(uri)) {
