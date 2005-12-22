@@ -75,10 +75,16 @@ static void eventCallback(SearchClosure * sc,
 	 uri);
   filename = ECRS_getFromMetaData(event->data.SearchResult.fi.meta,
 				  EXTRACTOR_FILENAME);
-  if (filename != NULL)
+  if (filename != NULL) {
+    char dotdot;
+    
+    while(dotdot = strstr(filename, ".."))
+      dotdot[0] = dotdot[1] = '_';
+    
     printf("gnunet-download -o \"%s\" %s\n",
 	   filename,
 	   uri);
+  }
   else
     printf("gnunet-download %s\n",
 	   uri);
