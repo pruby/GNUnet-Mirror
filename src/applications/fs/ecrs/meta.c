@@ -807,6 +807,11 @@ char * ECRS_suggestFilename(const char * filename) {
   for (i=strlen(renameTo)-1;i>=0;i--)
     if (! isprint(renameTo[i]))
       renameTo[i] = '_';
+    else if (renameTo[i] == '.' && i > 0 && renameTo[i-1] == '.') {
+      /* remove .. to avoid directory traversal */
+      renameTo[i-1] = renameTo[i] = '_';
+      i--;
+    }
   if (0 != strcmp(renameTo, filename)) {
     if (0 == STAT(renameTo,
                   &filestat)) {
