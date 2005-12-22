@@ -55,6 +55,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
   FSUI_DownloadList * pos;
   char * filename;
   char * fullName;
+  char * dotdot;
 
   if (isRoot == YES)
     return OK; /* namespace ad, ignore */
@@ -84,8 +85,12 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 		    + strlen(filename));
   strcpy(fullName, parent->filename);
   strcat(fullName, GNUNET_DIRECTORY_EXT);
+  while(dotdot = strstr(fullname, ".."))
+    dotdot[0] = dotdot[1] = '_';
   mkdirp(fullName);
   strcat(fullName, DIR_SEPARATOR_STR);
+  while(dotdot = strstr(filename, ".."))
+    dotdot[0] = dotdot[1] = '_';
   strcat(fullName, filename);
   FREE(filename);
 #if DEBUG_DTM
