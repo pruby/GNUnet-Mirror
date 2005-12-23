@@ -37,6 +37,7 @@
 #include "core.h"
 #include "connection.h"
 #include "handler.h"
+#include "startup.h"
 
 #define DEBUG_TRANSPORT_CHECK NO
 
@@ -355,18 +356,21 @@ static int parser(int argc,
   while (1) {
     int option_index = 0;
     static struct GNoption long_options[] = {
-      { "loglevel",1, 0, 'L' },
       { "config",  1, 0, 'c' },
-      { "version", 0, 0, 'v' },
       { "help",    0, 0, 'h' },
-      { "transport", 1, 0, 't' },
-      { "repeat",  1, 0, 'r' },
-      { "size",    1, 0, 's'},
-      { "Xrepeat", 1, 0, 'x' },
-      { "timeout", 1, 0, 'T' },
+      { "loglevel",1, 0, 'L' },
       { "ping",    0, 0, 'p' },
       { "Xport",   1, 0, 'P' },
+      { "repeat",  1, 0, 'r' },
+      { "size",    1, 0, 's'},
+      { "transport", 1, 0, 't' },
+      { "timeout", 1, 0, 'T' },
+#ifndef MINGW	/* not supported */ 
+      { "user", 0, 0, 'u' },
+#endif
+      { "version", 0, 0, 'v' },
       { "verbose", 0, 0, 'V' },
+      { "Xrepeat", 1, 0, 'X' },
       { 0,0,0,0 }
     };
 
@@ -380,6 +384,45 @@ static int parser(int argc,
       break;  /* No more flags to process */
 
     switch(c) {
+    case 'c':
+      FREENONNULL(setConfigurationString("FILES",
+					 "gnunet.conf",
+					 GNoptarg));
+      break;
+    case 'h': {
+      static Help help[] = {
+	HELP_CONFIG,
+	HELP_HELP,
+	HELP_LOGLEVEL,
+	{ 'p', "ping", NULL,
+	  gettext_noop("ping peers from HOSTLISTURL that match transports") },
+	{ 'r', "repeat", "COUNT",
+	  gettext_noop("send COUNT messages") },
+	{ 's', "size", "SIZE",
+	  gettext_noop("send messages with SIZE bytes payload") },
+	{ 't', "transport", "TRANSPORT",
+	  gettext_noop("specifies which TRANSPORT should be tested") },
+	{ 'T', "timeout", "MS",
+	  gettext_noop("specifies after how many MS to time-out") },
+#ifndef MINGW	/* not supported */
+    { 'u', "user", "LOGIN",
+      gettext_noop("run as user LOGIN") },
+#endif
+	HELP_VERSION,
+        HELP_VERBOSE,
+	HELP_END,
+      };
+      formatHelp("gnunet-transport-check [OPTIONS]",
+		 _("Tool to test if GNUnet transport services are operational."),
+		 help);
+      cont = SYSERR;
+      break;
+    }
+    case 'L':
+      FREENONNULL(setConfigurationString("GNUNETD",
+					 "LOGLEVEL",
+					 GNoptarg));
+      break;
     case 'p':
       FREENONNULL(setConfigurationString("TRANSPORT-CHECK",
 					 "PING",
@@ -397,6 +440,20 @@ static int parser(int argc,
 	setConfigurationInt("TCP6", "PORT", port);
 	setConfigurationInt("UDP6", "PORT", port);
 	setConfigurationInt("HTTP", "PORT", port);
+      }
+      break;
+    }
+    case 'r':{
+      unsigned int repeat;
+      if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
+	LOG(LOG_FAILURE,
+	    _("You must pass a number to the `%s' option.\n"),
+	    "-r");
+	return SYSERR;
+      } else {
+	setConfigurationInt("TRANSPORT-CHECK",
+			    "REPEAT",
+			    repeat);
       }
       break;
     }
@@ -418,20 +475,35 @@ static int parser(int argc,
       }
       break;
     }
-    case 'r':{
-      unsigned int repeat;
-      if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
+    case 'T':{
+      if (1 != SSCANF(GNoptarg, "%llu", &timeout)) {
 	LOG(LOG_FAILURE,
 	    _("You must pass a number to the `%s' option.\n"),
-	    "-r");
+	    "-T");
 	return SYSERR;
-      } else {
-	setConfigurationInt("TRANSPORT-CHECK",
-			    "REPEAT",
-			    repeat);
       }
       break;
     }
+    case 't':
+      FREENONNULL(setConfigurationString("GNUNETD",
+					 "TRANSPORTS",
+					 GNoptarg));
+      break;
+#ifndef MINGW	/* not supported */
+    case 'u':
+      changeUser(GNoptarg);
+      break;
+#endif
+    case 'v':
+      printf("gnunet-transport-check v%s\n",
+	     VERSION);
+      cont = SYSERR;
+      break;
+    case 'V':
+      FREENONNULL(setConfigurationString("GNUNET-TRANSPORT-CHECK",
+					 "VERBOSE",
+					 "YES"));
+      break;
     case 'X':{
       unsigned int repeat;
       if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
@@ -446,65 +518,6 @@ static int parser(int argc,
       }
       break;
     }
-    case 'T':{
-      if (1 != SSCANF(GNoptarg, "%llu", &timeout)) {
-	LOG(LOG_FAILURE,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-T");
-	return SYSERR;
-      }
-      break;
-    }
-    case 'c':
-      FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
-      break;
-    case 't':
-      FREENONNULL(setConfigurationString("GNUNETD",
-					 "TRANSPORTS",
-					 GNoptarg));
-      break;
-    case 'v':
-      printf("gnunet-transport-check v%s\n",
-	     VERSION);
-      cont = SYSERR;
-      break;
-    case 'V':
-      FREENONNULL(setConfigurationString("GNUNET-TRANSPORT-CHECK",
-					 "VERBOSE",
-					 "YES"));
-      break;
-    case 'h': {
-      static Help help[] = {
-	HELP_CONFIG,
-	HELP_HELP,
-	HELP_LOGLEVEL,
-	{ 'p', "ping", NULL,
-	  gettext_noop("ping peers from HOSTLISTURL that match transports") },
-	{ 'r', "repeat", "COUNT",
-	  gettext_noop("send COUNT messages") },
-	{ 's', "size", "SIZE",
-	  gettext_noop("send messages with SIZE bytes payload") },
-	{ 't', "transport", "TRANSPORT",
-	  gettext_noop("specifies which TRANSPORT should be tested") },
-	{ 'T', "timeout", "MS",
-	  gettext_noop("specifies after how many MS to time-out") },
-	HELP_VERSION,
-        HELP_VERBOSE,
-	HELP_END,
-      };
-      formatHelp("gnunet-transport-check [OPTIONS]",
-		 _("Tool to test if GNUnet transport services are operational."),
-		 help);
-      cont = SYSERR;
-      break;
-    }
-    case 'L':
-      FREENONNULL(setConfigurationString("GNUNETD",
-					 "LOGLEVEL",
-					 GNoptarg));
-      break;
     default:
       LOG(LOG_FAILURE,
 	  _("Use --help to get a list of options.\n"));
@@ -529,12 +542,20 @@ int main(int argc, char *argv[]) {
   int res;
   int Xrepeat;
   char * trans;
+  char * user;
   int ping;
   int stats[3];
 
   if (OK != initUtil(argc, argv, &parser)) {
     return SYSERR;
   }
+#ifndef MINGW
+  user = getConfigurationString("GNUNETD", "USER");
+  if (user && strlen(user))
+    changeUser(user);
+  FREENONNULL(user);
+#endif
+
   if (expectedValue == NULL) {
     expectedValue = STRDUP(DEFAULT_MSG);
     expectedSize = strlen(DEFAULT_MSG);

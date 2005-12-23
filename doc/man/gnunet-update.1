@@ -21,8 +21,12 @@ print help page
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
 change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
 .TP
-\fB\-u\fR, \fB\-\-user\fR
-run in user mode (required to get values from the user configuration).  This option must be used only together with the \-g option.
+\fB\-U\fR, \fB\-\-client\fR
+run in client mode (required to get values from the client configuration).  This option must be used only together with the \-g option.
+.TP
+\fB\-u \fIUSER\fR, \fB\-\-user=USER\fR
+run as user USER (and if available as group USER). Note that to use this option, you will probably have to start gnunet-update as
+root. It is typically better to directly start gnunet-update as that user instead.
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 print the version number

@@ -39,7 +39,28 @@
 #include "tcpserver.h"
 #include "core.h"
 
-extern int debug_flag, win_service;
+
+
+/**
+ * This flag is set if gnunetd is not (to be) detached from the
+ * console.
+ */
+static int debug_flag_ = NO;
+
+/**
+ * This flag is set if gnunetd was started as windows service
+ */
+static int win_service_ = NO;
+
+int debug_flag() {
+  return debug_flag_;
+}
+
+int win_service() {
+  return win_service_;
+}
+
+
 #ifdef MINGW
 extern SERVICE_STATUS theServiceStatus;
 extern SERVICE_STATUS_HANDLE hService;
@@ -389,8 +410,10 @@ static void printhelp() {
 		   "be written to stderr instead of a logfile") },
     HELP_HELP,
     HELP_LOGLEVEL,
+#ifndef MINGW	/* not supported */
     { 'u', "user", "LOGIN",
       gettext_noop("run as user LOGIN") },
+#endif
     HELP_VERSION,
     HELP_END,
   };
@@ -427,8 +450,8 @@ void changeUser(const char *user) {
 /**
  * Perform option parsing from the command line.
  */
-int parseCommandLine(int argc,
-		     char * argv[]) {
+int parseGnunetdCommandLine(int argc,
+			    char * argv[]) {
   int cont = OK;
   int c;
 
@@ -496,7 +519,7 @@ int parseCommandLine(int argc,
 					 GNoptarg));
       break;
     case 'd':
-      debug_flag = YES;
+      debug_flag_ = YES;
       FREENONNULL(setConfigurationString("GNUNETD",
 					 "LOGFILE",
 					 NULL));
@@ -508,7 +531,7 @@ int parseCommandLine(int argc,
 #endif
 #ifdef MINGW
     case '@':
-      win_service = YES;
+      win_service_ = YES;
       break;
 #endif
     default:

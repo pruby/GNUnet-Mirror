@@ -28,6 +28,7 @@
 #include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "core.h"
+#include "startup.h"
 #include "version.h"
 
 /**
@@ -49,8 +50,12 @@ static void printhelp() {
       gettext_noop("print a value from the configuration file to stdout") },
     HELP_HELP,
     HELP_LOGLEVEL,
-    { 'u', "user", NULL,
-      gettext_noop("run in user mode (for getting user configuration values)") },
+#ifndef MINGW	/* not supported */
+    { 'u', "user", "LOGIN",
+      gettext_noop("run as user LOGIN") },
+#endif
+    { 'U', "client", NULL,
+      gettext_noop("run in client mode (for getting client configuration values)") },
     HELP_VERSION,
     HELP_VERBOSE,
     HELP_END,
@@ -83,7 +88,10 @@ static int parseCommandLine(int argc,
     static struct GNoption long_options[] = {
       LONG_DEFAULT_OPTIONS,
       { "get", 1, 0, 'g' },
+#ifndef MINGW	/* not supported */
       { "user", 0, 0, 'u' },
+#endif
+      { "client", 0, 0, 'U' },
       { "verbose", 0, 0, 'V' },
       { 0,0,0,0 }
     };
@@ -112,7 +120,12 @@ static int parseCommandLine(int argc,
     case 'h':
       printhelp();
       return SYSERR;
+#ifndef MINGW	/* not supported */
     case 'u':
+      changeUser(GNoptarg);
+      break;
+#endif
+    case 'U':
       FREENONNULL(setConfigurationString("GNUNETD",
 					 "_MAGIC_",
 					 "NO"));
@@ -302,9 +315,17 @@ static void work() {
 int main(int argc,
 	 char * argv[]) {
   char * get;
+  char * user;
 
   if (SYSERR == initUtil(argc, argv, &parseCommandLine))
     return 0;
+#ifndef MINGW
+  user = getConfigurationString("GNUNETD", "USER");
+  if (user && strlen(user))
+    changeUser(user);
+  FREENONNULL(user);
+#endif
+
   get = getConfigurationString("GNUNET-UPDATE",
 			       "GET");
   if (get != NULL)

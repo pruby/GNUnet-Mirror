@@ -36,17 +36,6 @@
 #include "startup.h"
 #include "version.h"
 
-/**
- * This flag is set if gnunetd is not (to be) detached from the
- * console.
- */
-int debug_flag = NO;
-
-/**
- * This flag is set if gnunetd was started as windows service
- */
-int win_service = NO;
-
 void gnunet_main();
 
 #ifdef MINGW
@@ -174,7 +163,7 @@ int main(int argc, char * argv[]) {
   checkCompiler();
   umask(0);
   /* init 1: get options and basic services up */
-  if (SYSERR == initUtil(argc, argv, &parseCommandLine))
+  if (SYSERR == initUtil(argc, argv, &parseGnunetdCommandLine))
     return 0; /* parse error, --help, etc. */
 
 #ifdef MINGW

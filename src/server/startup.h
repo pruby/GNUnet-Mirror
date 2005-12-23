@@ -34,6 +34,10 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
+int debug_flag();
+
+int win_service();
+
 /**
  * Check if the compiler did a decent job.
  **/
@@ -42,8 +46,8 @@ void checkCompiler();
 /**
  * Perform option parsing from the command line.
  **/
-int parseCommandLine(int argc,
-		     char * argv[]);
+int parseGnunetdCommandLine(int argc,
+			    char * argv[]);
 
 /**
  * Initialize signal handlers

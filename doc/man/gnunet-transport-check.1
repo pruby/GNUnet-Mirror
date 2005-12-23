@@ -73,6 +73,10 @@ test using the specified message size, default is 11
 run using the specified transport, if not given the transports
 configured in the configuration file are used.
 .TP
+\fB\-u \fIUSER\fR, \fB\-\-user=USER\fR
+run as user USER (and if available as group USER). Note that to use this option, you will probably have to start gnunet-transport-check as
+root. It is typically better to directly start gnunet-transport-check as that user instead.
+.TP
 \fB\-v\fR, \fB\-\-version\fR
 print the version number
 .TP

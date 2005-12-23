@@ -15,13 +15,13 @@ libgnunetcore_la_SOURCES = \
  core.c \
  handler.c handler.h \
  tcpserver.c tcpserver.h \
+ startup.c startup.h \
  version.c version.h
 libgnunetcore_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 gnunetd_SOURCES = \
- gnunetd.c \
- startup.c startup.h 
+ gnunetd.c 
 gnunetd_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/server/libgnunetcore.la
