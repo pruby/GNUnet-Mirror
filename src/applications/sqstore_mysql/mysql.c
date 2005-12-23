@@ -111,19 +111,6 @@
  *   2) by executing
  *   mysql> REPAIR TABLE gn070;
  *
- * EFFICIENCY ISSUES
- *
- * If you suffer from too slow index/insert speeds,
- * you might try to define /etc/gnunetd.conf option
- *
- *   [MYSQL]
- *   DELAYED = YES
- *
- * for small efficiency boost. The option will let MySQL bundle multiple
- * inserts before actually writing them to disk. You shouldn't use this
- * option unless you're an (my)sql expert and really know what you're doing.
- * Especially, if you run into any trouble due to this, you're on your own.
- *
  * PROBLEMS?
  *
  * If you have problems related to the mysql module, your best
@@ -170,7 +157,6 @@ typedef struct {
   Mutex DATABASE_Lock_;
   int avgLength_ID;	   /* which column contains the Avg_row_length
                             * in SHOW TABLE STATUS resultset */
-  int useDelayed;          /* use potentially unsafe delayed inserts? */
   char * cnffile;
   int prepare;
   MYSQL_STMT * insert;
@@ -188,7 +174,6 @@ typedef struct {
 } mysqlHandle;
 
 #define INSERT_SAMPLE "INSERT INTO gn070 (size,type,prio,anonLevel,expire,hash,value) VALUES (?,?,?,?,?,?,?)"
-#define INSERT_SAMPLE_DELAYED "INSERT DELAYED INTO gn070 (size,type,prio,anonLevel,expire,hash,value) VALUES (?,?,?,?,?,?,?)"
 
 #define SELECT_SAMPLE "SELECT * FROM gn070 WHERE hash=?"
 #define SELECT_SAMPLE_COUNT "SELECT count(*) FROM gn070 WHERE hash=?"
@@ -374,12 +359,8 @@ static int iopen(mysqlHandle * dbhI,
       return SYSERR;
     }
     if (mysql_stmt_prepare(dbhI->insert,
-			   dbh->useDelayed
-			   ? INSERT_SAMPLE_DELAYED
-			   : INSERT_SAMPLE,
-			   strlen(dbh->useDelayed
-				  ? INSERT_SAMPLE_DELAYED
-				  : INSERT_SAMPLE)) ||
+			   INSERT_SAMPLE,
+			   strlen(INSERT_SAMPLE)) ||
 	mysql_stmt_prepare(dbhI->select,
 			   SELECT_SAMPLE,
 			   strlen(SELECT_SAMPLE)) ||
@@ -411,7 +392,6 @@ static int iopen(mysqlHandle * dbhI,
       mysql_stmt_close(dbhI->selectc);
       mysql_stmt_close(dbhI->selects);
       mysql_stmt_close(dbhI->selectsc);
-      mysql_stmt_close(dbhI->insert);
       mysql_stmt_close(dbhI->update);
       mysql_stmt_close(dbhI->deleteh);
       mysql_stmt_close(dbhI->deleteg);
@@ -1213,6 +1193,10 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   if (cnffile == NULL) {
     cnffile = MALLOC(nX);
     SNPRINTF(cnffile, nX, "%s/.my.cnf", home_dir);
+  } else {
+    char * ex = expandFileName(cnffile);
+    FREE(cnffile);
+    cnffile = ex;
   }
 #ifdef WINDOWS
   FREE(home_dir);
@@ -1231,12 +1215,6 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 
   dbh = MALLOC(sizeof(mysqlHandle));
   dbh->cnffile = cnffile;
-  if (testConfigurationString("MYSQL",
-			      "DELAYED",
-			      "YES"))
-    dbh->useDelayed = YES;
-  else
-    dbh->useDelayed = NO;
 
   if (OK != iopen(dbh, YES)) {
     FREE(cnffile);

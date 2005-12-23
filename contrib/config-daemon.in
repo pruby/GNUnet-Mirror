@@ -883,20 +883,6 @@ menu "Applications" ""
 
 	endmenu
 	
-    if Meta::ADVANCED
-	
-	menu "MySQL" "MYSQL"
-		config DELAYED
-		bool "Delayed operations"
-		default n
-		help
-			If you suffer from too slow index/insert speeds, 
-			you might try to set this to YES for a small
-			efficiency boost.  If you run into any trouble
-			because of it, you're on your own.
-			Default: NO
-	endmenu
-		
     endif
 	
     if Meta::EXPERIMENTAL && Meta::RARE && Meta::ADVANCED
