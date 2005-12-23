@@ -483,10 +483,10 @@ print_line (WINDOW * win, int row, int width)
     char *line;
 
     line = get_line ();
-    line += MIN ((int)strlen (line), hscroll);	/* Scroll horizontally */
+    line += GNUNET_MIN ((int)strlen (line), hscroll);	/* Scroll horizontally */
     wmove (win, row, 0);	/* move cursor to correct line */
     waddch (win, ' ');
-    waddnstr (win, line, MIN ((int)strlen (line), width - 2));
+    waddnstr (win, line, GNUNET_MIN ((int)strlen (line), width - 2));
 
     getyx (win, y, x);
     /* Clear 'residue' of previous line */

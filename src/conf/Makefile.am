@@ -100,7 +100,6 @@ libgnunetsetup_gtk_la_SOURCES = \
  gconf_interface.c \
  gconf_support.c \
  gconf.c gconf.h \
- images.c  \
  wizard_callbacks.h \
  wizard_interface.h \
  wizard_support.h \

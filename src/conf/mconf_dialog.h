@@ -64,8 +64,8 @@
 #define TAB 9
 #define MAX_LEN 2048
 #define BUF_SIZE (10*1024)
-#define MIN(x,y) (x < y ? x : y)
-#define MAX(x,y) (x > y ? x : y)
+#define GNUNET_MIN(x,y) (x < y ? x : y)
+#define GNUNET_MAX(x,y) (x > y ? x : y)
 
 
 #ifndef ACS_ULCORNER

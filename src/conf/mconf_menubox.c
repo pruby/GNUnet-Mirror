@@ -179,7 +179,7 @@ dialog_menu (const char *title, const char *prompt, int height, int width,
     WINDOW *dialog, *menu;
     FILE *f;
 
-    max_choice = MIN (menu_height, item_no);
+    max_choice = GNUNET_MIN (menu_height, item_no);
 
     /* center dialog box on screen */
     x = (COLS - width) / 2;
@@ -236,7 +236,7 @@ dialog_menu (const char *title, const char *prompt, int height, int width,
      */
     item_x = 0;
     for (i = 0; i < item_no; i++) {
-      item_x = MAX (item_x, MIN(menu_width, (int) strlen (items[i]->name) + 2));
+      item_x = GNUNET_MAX (item_x, GNUNET_MIN(menu_width, (int) strlen (items[i]->name) + 2));
 	if (choice_type == items[i]->type && choice_ptr == items[i]->data)
 		choice = i;
     }
@@ -346,7 +346,7 @@ dialog_menu (const char *title, const char *prompt, int height, int width,
                                max_choice-1, FALSE,
                                (items[scroll_i + max_choice - 1]->type != ':'));
                 } else
-                    choice = MIN(choice+1, max_choice-1);
+                    choice = GNUNET_MIN(choice+1, max_choice-1);
 
 	    } else if (key == KEY_PPAGE) {
 	        scrollok (menu, TRUE);

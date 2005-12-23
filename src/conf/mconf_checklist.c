@@ -149,7 +149,7 @@ dialog_checklist (const char *title, const char *prompt, int height, int width,
             choice = i;
     }
 
-    max_choice = MIN (list_height, item_no);
+    max_choice = GNUNET_MIN (list_height, item_no);
 
     /* center dialog box on screen */
     x = (COLS - width) / 2;
@@ -202,7 +202,7 @@ dialog_checklist (const char *title, const char *prompt, int height, int width,
     /* Find length of longest item in order to center checklist */
     check_x = 0;
     for (i = 0; i < item_no; i++)
-      check_x = MAX (check_x, + (int) strlen (items[i]->name) + 4);
+      check_x = GNUNET_MAX (check_x, + (int) strlen (items[i]->name) + 4);
 
     check_x = (list_width - check_x) / 2;
     item_x = check_x + 4;
