@@ -174,22 +174,73 @@ menu "General settings" "GNUNETD"
 		Whenever this option is changed, you MUST run gnunet-update.
 		
 		Currently, the available applications are:
-		advertising: always load this one
-		getoption: probably a good idea, too!
-		
-		stats: statistics - for gnunet-stats
+
+		advertising: tell peers about peers
+			This module will advertise your peer to other peers.
+			Without it, your peer will not participate in 
+			informing peers about other peers.  You should 
+			always load this module.
+		getoption: configuration
+			This module allows clients to query gnunetd about
+			the values of various configuration options.  Many
+			tools need this.  You should always load this module.
+		stats: statistics 
+			This module allows tools like gnunet-stats
+			and gnunet-gtk to query gnunetd about various
+			statistics.  This information is usually quite
+			useful to diagnose errors, hence it is recommended
+			that you load this module.
 		traffic: traffic analysis 
+			This module keeps track of how many messages of
+			which type and size were recently received and
+			transmitted.  This information can then be used
+			by your peer to establish how much cover traffic
+			is currently available.  The amount of cover 
+			traffic becomes important if you want to make
+			anonymous requests with an anonymity level that
+			is greater than one.  This module does not add
+			support for any new peer-to-peer messages itself.
+			It is recommended that you always load this module,
+			unless you are really short on memory and are
+			certain that you do not require good anonymity.
 		fs: file sharing
-		chat: broadcast chat (demo-application, ALPHA quality, at best)
+			The file sharing module is needed for downloading
+			files, for caching content within the network and
+			for being the source of content.  At this point,
+			pretty much everybody should load this module.
+		chat: broadcast chat (demo-application, ALPHA quality)
+			If this module is loaded, you can run gnunet-chat
+			(text-mode only) to chat with other GNUnet users.
+			However, there are no channels and no list of users
+			on-line, the code simply broadcasts your messages.
 		tbench: benchmark tool for transport performance
-		tracekit: GNUnet topology visualization toolkit
+			If two peers load this module and establish a direct
+			connection, the gnunet-tbench tool can be used to
+			measure the quality of the connection between the
+			two peers.  Useful mostly for testing new transports.
+		tracekit: topology visualization toolkit
+			Peers that load this module can be queried for their
+			active connections (in fact, this is transitive for
+			all peers that load this module).  Using the
+			gnunet-tracekit tool it is possible to create a
+			picture of the network topology.  Note that the
+			picture maybe incomplete since peers that do not
+			load the tracekit module will not respond to such
+			requests and thus cut off the trace.  Also, some
+			peers may fail to respond within the specified
+			timeout.  Note that while tracing the topology
+			maybe fun, loading tracekit may make it easier 
+			for an adversary to compromise your anonymity.
 		
-		The chat, tbench and tracekit protocols are potential security risks
-		and have been engineered for testing GNUnet or demonstrating how
+		Again, the chat, tbench and tracekit protocols are potential security 
+		risks and have been engineered for testing GNUnet or demonstrating how
 		GNUnet works. They should be used with caution.
 		
-		Using the fs tools for downloading may require the traffic module
-		to be loaded!  Various GNUnet-tools depend on getoption.
+		In order to download or share files with GNUnet, you must load the
+		fs module which in turn requires or recommends getoption, stats
+		and traffic.  
+
+		Everybody should run advertising.
 		
 		Default: APPLICATIONS = "advertising fs getoption stats traffic"
 
