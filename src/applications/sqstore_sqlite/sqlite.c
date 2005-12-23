@@ -265,13 +265,42 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   contentSize = sqlite3_column_int(stmt, 0) - sizeof(Datastore_Value);
 
   if (contentSize < 0) {
+    sqlite3_stmt * stmt;
+
+    LOG(LOG_WARNING,
+	_("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	_("sqlite datastore"));
+    if (sq_prepare("DELETE FROM gn070 WHERE size < ?", &stmt) == SQLITE_OK) {
+      sqlite3_bind_int(stmt,
+		       1,
+		       sizeof(Datastore_Value));
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    } else
+      LOG_SQLITE(LOG_ERROR, "sq_prepare");
     return NULL; /* error */
   }
 
   if (sqlite3_column_bytes(stmt, 5) != sizeof(HashCode512) ||
       sqlite3_column_bytes(stmt, 6) != contentSize) {
+    sqlite3_stmt * stmt;
+
     LOG(LOG_WARNING,
-	_("SQL Database corrupt, ignoring result.\n"));
+	_("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	_("sqlite datastore"));
+    if (sq_prepare("DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))", 
+                   &stmt) == SQLITE_OK) {
+      sqlite3_bind_int(stmt,
+		       1,
+		       sizeof(HashCode512));
+      sqlite3_bind_int(stmt,
+		       2,
+		       sizeof(Datastore_Value));
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    } else
+      LOG_SQLITE(LOG_ERROR, "sq_prepare");
+
     return NULL;
   }
 
@@ -348,8 +377,8 @@ static int setStat(const char *key,
 		      key,
 		      strlen(key),
 		      SQLITE_STATIC);
-		sqlite3_step(stmt);
-		sqlite3_finalize(stmt);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
   }
 
   if (sq_prepare("INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
@@ -490,11 +519,8 @@ static int sqlite_iterate(unsigned int type,
       datum = assembleDatum(stmt);
       sqlite3_reset(stmt);
 
-      if (datum == NULL) {
-	LOG(LOG_WARNING,
-	    _("Invalid data in database.  Please verify integrity!\n"));
-	continue;
-      }
+      if (datum == NULL) 
+	continue;      
 #if 0
       printf("FOUND %4u prio %4u exp %20llu old: %4u, %20llu\n",
  	     (ntohl(datum->value.size) - sizeof(Datastore_Value)),
@@ -686,11 +712,8 @@ static int get(const HashCode512 * key,
       if (iter != NULL) {
 	datum = assembleDatum(stmt);
 	
-	if (datum == NULL) {
-	  LOG(LOG_WARNING,
-	      _("Invalid data in database.  Please verify integrity!\n"));
+	if (datum == NULL) 
 	  continue;
-	}
 
 #if DEBUG_SQLITE
 	LOG(LOG_DEBUG,

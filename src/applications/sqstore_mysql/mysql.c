@@ -208,7 +208,8 @@ static mysqlHandle * dbh;
  *
  */
 static Datastore_Datum * assembleDatum(MYSQL_RES * res,
-				       MYSQL_ROW sql_row) {
+				       MYSQL_ROW sql_row,
+				       mysqlHandle * dbhI) {
   Datastore_Datum * datum;
   int contentSize;
   unsigned long * lens;
@@ -228,8 +229,25 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
        (sscanf(sql_row[2], "%u", &prio) != 1) ||
        (sscanf(sql_row[3], "%u", &level) != 1) ||
        (SSCANF(sql_row[4], "%llu", &exp) != 1) ) {
-    LOG(LOG_WARNING,
-	"SQL Database corrupt, ignoring result.\n");
+    mysql_free_result(res);
+    if ( (lens[5] != sizeof(HashCode512)) ||
+	 (lens[6] != contentSize) ) {
+      char scratch[512];
+
+      LOG(LOG_WARNING,
+	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	  _("mysql datastore"));
+      SNPRINTF(scratch, 
+	       512,
+	       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash)=%u) AND (size=%u + LENGTH(value)))",
+	       sizeof(HashCode512),
+	       sizeof(Datastore_Value));
+      if (0 != mysql_query(dbhI->dbf, scratch))
+	LOG_MYSQL(LOG_ERROR, "mysql_query", dbhI);
+    } else {
+      BREAK(); /* should really never happen */
+    }
+
     return NULL;
   }
 
@@ -533,11 +551,12 @@ static int iterateLowPriority(unsigned int type,
 
   while ((sql_row=mysql_fetch_row(sql_res))) {
     datum = assembleDatum(sql_res,
-			  sql_row);
+			  sql_row,
+			  &dbhI);
     if (datum == NULL) {
-      LOG(LOG_WARNING,
-	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
-      continue;
+      MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+      iclose(&dbhI);
+      return count;
     }
     if ( (iter != NULL) &&
 	 (SYSERR == iter(&datum->key, &datum->value, closure) ) ) {
@@ -555,9 +574,7 @@ static int iterateLowPriority(unsigned int type,
     MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
     iclose(&dbhI);
     return SYSERR;
-  }
-
-		
+  }		
   mysql_free_result(sql_res);
   MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
   iclose(&dbhI);
@@ -630,11 +647,12 @@ static int iterateExpirationTime(unsigned int type,
 
   while ((sql_row=mysql_fetch_row(sql_res))) {
     datum = assembleDatum(sql_res,
-			  sql_row);
+			  sql_row,
+			  &dbhI);
     if (datum == NULL) {
-      LOG(LOG_WARNING,
-	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
-      continue;
+      MUTEX_UNLOCK(&dbhI.DATABASE_Lock_);
+      iclose(&dbhI);
+      return count;
     }
     if ( (iter != NULL) &&
 	 (SYSERR == iter(&datum->key, &datum->value, closure) ) ) {
@@ -782,10 +800,10 @@ static int get(const HashCode512 * query,
   }
   if (mysql_stmt_store_result(stmt)) {
     LOG(LOG_ERROR,
-		_("`%s' failed at %s:%d with error: %s\n"),
-		"mysql_stmt_store_result",
-		__FILE__, __LINE__,
-		mysql_stmt_error(stmt));
+	_("`%s' failed at %s:%d with error: %s\n"),
+	"mysql_stmt_store_result",
+	__FILE__, __LINE__,
+	mysql_stmt_error(stmt));
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     FREE(datum);
     return SYSERR;
@@ -793,29 +811,33 @@ static int get(const HashCode512 * query,
   datasize = MAX_DATUM_SIZE;
   count = 0;
   while (0 == mysql_stmt_fetch(stmt)) {
-    count++;
+    if ( (twenty != sizeof(HashCode512)) ||
+	 (datasize != size - sizeof(Datastore_Value)) ) {
+      char scratch[512];
 
-    if (twenty != sizeof(HashCode512)) {
-      BREAK();
+      mysql_free_result(sql_res); 
       LOG(LOG_WARNING,
-	  _("Invalid data in MySQL database.  Please verify integrity!\n"));
-      twenty = sizeof(HashCode512);
-      datasize = MAX_DATUM_SIZE;
-      continue;
+	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	  _("mysql datastore"));
+      SNPRINTF(scratch, 
+	       512,
+	       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash)=%u) AND (size=%u + LENGTH(value)))",
+	       sizeof(HashCode512),
+	       sizeof(Datastore_Value));
+      if (0 != mysql_query(dbh->dbf, scratch))
+	LOG_MYSQL(LOG_ERROR, "mysql_query", dbh);
+      
+      FREE(datum);
+      MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
+      return count;
     }
+    count++;
     if (iter != NULL) {
       datum->size = htonl(size);
       datum->type = htonl(rtype);
       datum->prio = htonl(prio);
       datum->anonymityLevel = htonl(level);
       datum->expirationTime = htonll(expiration);
-      if (datasize != size - sizeof(Datastore_Value)) {
-	BREAK();
-	LOG(LOG_WARNING,
-	    _("Invalid data in MySQL database.  Please verify integrity!\n"));
-	datasize = MAX_DATUM_SIZE;
-	continue;
-      }
 #if DEBUG_MYSQL
       LOG(LOG_DEBUG,
 	  "Found in database block with type %u.\n",
