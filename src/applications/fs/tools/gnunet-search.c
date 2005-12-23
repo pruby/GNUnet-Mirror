@@ -78,7 +78,7 @@ static void eventCallback(SearchClosure * sc,
   if (filename != NULL) {
     char *dotdot;
     
-    while(dotdot = strstr(filename, ".."))
+    while (NULL != (dotdot = strstr(filename, "..")))
       dotdot[0] = dotdot[1] = '_';
     
     printf("gnunet-download -o \"%s\" %s\n",

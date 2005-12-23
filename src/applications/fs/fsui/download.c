@@ -85,11 +85,11 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 		    + strlen(filename));
   strcpy(fullName, parent->filename);
   strcat(fullName, GNUNET_DIRECTORY_EXT);
-  while(dotdot = strstr(fullName, ".."))
+  while (NULL != (dotdot = strstr(fullName, "..")))
     dotdot[0] = dotdot[1] = '_';
   mkdirp(fullName);
   strcat(fullName, DIR_SEPARATOR_STR);
-  while(dotdot = strstr(filename, ".."))
+  while (NULL != (dotdot = strstr(filename, "..")))
     dotdot[0] = dotdot[1] = '_';
   strcat(fullName, filename);
   FREE(filename);

@@ -960,7 +960,7 @@ static int dumpProcessOutput(int argc,
 			&pid))
     return -1;
   if (OK != readResult(dst,
-		       &ack))
+		       (int*) &ack))
     return -1;
   if (ack != SYSERR) {
     char * tmp;

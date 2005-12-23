@@ -666,10 +666,12 @@ int ONDEMAND_init() {
   index_directory = expandFileName(tmp);
   FREE(tmp);
   mkdirp(index_directory); /* just in case */  
+  return OK;
 }
 
 int ONDEMAND_done() {
   FREE(index_directory);
+  return OK;
 }
 
 /* end of ondemand.c */
