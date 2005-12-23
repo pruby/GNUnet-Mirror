@@ -325,7 +325,7 @@ dialog_menu (const char *title, const char *prompt, int height, int width,
                     print_item (menu, items[scroll_i]->name, 0, FALSE,
                                (items[scroll_i]->type != ':'));
 		} else
-		    choice = MAX(choice - 1, 0);
+		    choice = GNUNET_MAX(choice - 1, 0);
 
 	    } else if (key == KEY_DOWN || key == '+')  {
 
