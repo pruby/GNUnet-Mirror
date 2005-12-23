@@ -76,18 +76,6 @@ REPAIRING TABLES
   2) by executing 
   mysql> REPAIR TABLE gn070;
 
-EFFICIENCY ISSUES
-
-If you suffer from too slow index/insert speeds, 
-you might try to define /etc/gnunetd.conf option
-
-  [MYSQL]
-  MYSQL_DELAYED = YES
-
-for small efficiency boost. The option will let MySQL bundle multiple 
-inserts before actually writing them to disk. You shouldn't use this 
-option unless you're an (my)sql expert and really know what you're doing. 
-Especially, if you run into any trouble due to this, you're on your own.
 
 PROBLEMS?
 
