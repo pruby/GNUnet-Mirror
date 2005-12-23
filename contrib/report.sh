@@ -18,14 +18,6 @@ echo "OS RELEASE     : $REL"
 HW=`uname -m 2>/dev/null`
 echo "HARDWARE       : $HW"
 
-TEST=`$WHICH openssl 2>/dev/null`
-if test -n "$TEST"; then
-  VERS=`openssl version 2>/dev/null | sed -e "s/OpenSSL //"`
-  echo "OpenSSL        : $VERS"
-else
-  echo "OpenSSL        : Not Found"
-fi
-
 TEST=`$WHICH gcc 2>/dev/null`
 if test -n "$TEST"; then
   VERS=`gcc --version 2>/dev/null | head -n 1`
@@ -115,23 +107,15 @@ else
   echo "mysql          : Not Found"
 fi
 
-TEST=`$WHICH db_stat 2> /dev/null`
+TEST=`$WHICH pkg-config 2> /dev/null`
 if test -n "$TEST"; then
-  db_stat -V | sed -e "s/://" 2> /dev/null \
-    awk '{print "Berkeley DB    : "$5}'
+  pkg-config --version 2> /dev/null | \
+    awk '{print "pkg-config     : "$1}'
 else
-  echo "Berkeley DB    : Not Found"
+  echo "pkg-config     : Not Found"
 fi
 
-TEST=`$WHICH glib-config 2> /dev/null`
-if test -n "$TEST"; then
-  glib-config --version 2> /dev/null | \
-    awk '{print "glib1          : "$1}'
-else
-  echo "glib1          : Not Found"
-fi
-
-#TEST=`$WHICH glib-config2 2> /dev/null`
+TEST=`$WHICH pkg-config 2> /dev/null`
 if test -n "$TEST"; then
   pkg-config --modversion glib-2.0 2> /dev/null | \
     awk '{print "glib2          : "$1}'
@@ -139,17 +123,7 @@ else
   echo "glib2          : Not Found"
 fi
 
-
-TEST=`$WHICH gtk-config 2> /dev/null`
-if test -n "$TEST"; then
-  gtk-config --version -V 2> /dev/null | \
-    awk '{print "gtk+           : "$1}'
-else
-  echo "gtk+           : Not Found"
-fi
-
-
-TEST=`$WHICH gtk-config 2> /dev/null`
+TEST=`$WHICH pkg-config 2> /dev/null`
 if test -n "$TEST"; then
   pkg-config --modversion gtk+-2.0 2> /dev/null | \
     awk '{print "gtk2+          : "$1}'
