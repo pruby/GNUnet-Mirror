@@ -883,8 +883,6 @@ menu "Applications" ""
 
 	endmenu
 	
-    endif
-	
     if Meta::EXPERIMENTAL && Meta::RARE && Meta::ADVANCED
 	
 	menu "GNUnet Testbed" "TESTBED"
