@@ -65,6 +65,7 @@ int main(int argc, char * argv[]){
   struct ECRS_MetaData * meta = NULL;
   HashCode512 root;
   int old;
+  int newVal;
   struct FSUI_Context * ctx;
 
   if (OK != initUtil(argc,
@@ -110,6 +111,7 @@ int main(int argc, char * argv[]){
 				  "test",
 				  NULL,
 				  NULL);
+  printf("%d\n", old);
   euri = FSUI_addToNamespace(ctx,
 			     1,
 			     "test",
@@ -120,10 +122,12 @@ int main(int argc, char * argv[]){
 			     uri,
 			     meta);
   CHECK(euri != NULL);
-  CHECK(old + 1 == FSUI_listNamespaceContent(ctx,
-					     "test",
-					     NULL,
-					     NULL));
+  newVal = FSUI_listNamespaceContent(ctx,
+				     "test",
+				     NULL,
+				     NULL);
+  printf("%d\n", newVal);
+  CHECK(old + 1 == newVal);
   CHECK(OK == ECRS_deleteNamespace("test"));
   /* END OF TEST CODE */
  FAILURE:

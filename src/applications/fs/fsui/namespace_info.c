@@ -717,9 +717,9 @@ static int lNCHelper(const char * fil,
   } else {
     TIME(&now);
     nextTime = lastTime;
-    while ( (nextTime + pubFreq < now) &&
+    if ( (nextTime + pubFreq < now) &&
 	    (nextTime + pubFreq > nextTime) )
-      nextTime += pubFreq;
+      nextTime += pubFreq * ((now - nextTime) / pubFreq);  
   }
   if (cls->it != NULL) {
     if (OK != cls->it(cls->closure,
