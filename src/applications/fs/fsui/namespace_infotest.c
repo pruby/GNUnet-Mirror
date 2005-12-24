@@ -95,7 +95,7 @@ int main(int argc, char * argv[]){
   ECRS_addToMetaData(meta,
 		     0,
 		     "test");
-  hash("root", 4, &root);
+  makeRandomId(&root);
   uri = FSUI_createNamespace(ctx,
 			     1,
 			     "test",
@@ -111,7 +111,6 @@ int main(int argc, char * argv[]){
 				  "test",
 				  NULL,
 				  NULL);
-  printf("%d\n", old);
   euri = FSUI_addToNamespace(ctx,
 			     1,
 			     "test",
@@ -126,7 +125,6 @@ int main(int argc, char * argv[]){
 				     "test",
 				     NULL,
 				     NULL);
-  printf("%d\n", newVal);
   CHECK(old + 1 == newVal);
   CHECK(OK == ECRS_deleteNamespace("test"));
   /* END OF TEST CODE */
