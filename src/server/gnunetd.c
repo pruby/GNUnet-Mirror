@@ -106,7 +106,7 @@ void gnunet_main() {
 	    "gnunet-update");
 
   /* init 2: become deamon, initialize core subsystems */
-  if (NO == debug_flag)
+  if (NO == debug_flag())
     detachFromTerminal(filedes);
 
   LOG(LOG_MESSAGE,
@@ -118,7 +118,7 @@ void gnunet_main() {
   loadApplicationModules(); /* still single-threaded! */
 
   /* initialize signal handler (CTRL-C / SIGTERM) */
-  if (NO == debug_flag)
+  if (NO == debug_flag())
     detachFromTerminalComplete(filedes);
   writePIDFile();
 
@@ -167,7 +167,7 @@ int main(int argc, char * argv[]) {
     return 0; /* parse error, --help, etc. */
 
 #ifdef MINGW
-  if (win_service) {
+  if (win_service()) {
     SERVICE_TABLE_ENTRY DispatchTable[] =
       {{"GNUnet", ServiceMain}, {NULL, NULL}};
     GNStartServiceCtrlDispatcher(DispatchTable);
