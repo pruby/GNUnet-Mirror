@@ -35,6 +35,7 @@ BUILT_SOURCES = \
  lkc_defs.h
 
 EXTRA_DIST = \
+ images.c \
  lex.zconf.c \
  lkc_proto.h \
  bool.h \
