@@ -28,6 +28,8 @@ void on_assi_destroy (GtkObject * object, gpointer user_data);
 
 void on_saveFailedOK_clicked (GtkButton * button, gpointer user_data);
 
+void on_updateFailedOK_clicked (GtkButton * button, gpointer user_data);
+
 void on_entIP_changed (GtkEditable * editable, gpointer user_data);
 
 void on_cmbNIC_changed (GtkComboBox * combobox, gpointer user_data);
@@ -52,6 +54,8 @@ void on_entQuota_changed (GtkEditable * editable, gpointer user_data);
 void on_chkStart_toggled (GtkToggleButton * togglebutton, gpointer user_data);
 
 void on_chkEnh_toggled (GtkToggleButton * togglebutton, gpointer user_data);
+
+void on_chkUpdate_toggled (GtkToggleButton * togglebutton, gpointer user_data);
 
 void on_step4_back_clicked (GtkButton * button, gpointer user_data);
 

@@ -8,9 +8,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif
 #include <string.h>
 #include <stdio.h>
 
@@ -28,7 +26,7 @@
 #define GLADE_HOOKUP_OBJECT_NO_REF(component,widget,name) \
   g_object_set_data (G_OBJECT (component), name, widget)
 
-GtkWidget *
+GtkWidget*
 create_assi_step1 (void)
 {
   GtkWidget *assi_step1;
@@ -50,8 +48,7 @@ create_assi_step1 (void)
 
   assi_step1 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (assi_step1, 450, 350);
-  gtk_window_set_title (GTK_WINDOW (assi_step1),
-			_("GNUnet configuration assistant"));
+  gtk_window_set_title (GTK_WINDOW (assi_step1), _("GNUnet configuration assistant"));
   gtk_window_set_position (GTK_WINDOW (assi_step1), GTK_WIN_POS_CENTER);
 
   vbox2 = gtk_vbox_new (FALSE, 0);
@@ -61,8 +58,7 @@ create_assi_step1 (void)
   scoll_welcome = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scoll_welcome);
   gtk_box_pack_start (GTK_BOX (vbox2), scoll_welcome, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scoll_welcome),
-				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scoll_welcome), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview11 = gtk_text_view_new ();
   gtk_widget_show (textview11);
@@ -71,11 +67,7 @@ create_assi_step1 (void)
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview11), GTK_WRAP_WORD);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview11), FALSE);
   gtk_text_view_set_indent (GTK_TEXT_VIEW (textview11), 2);
-  gtk_text_buffer_set_text (gtk_text_view_get_buffer
-			    (GTK_TEXT_VIEW (textview11)),
-			    _
-			    ("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions in order to configure GNUnet.\n\nPlease visit our homepage at\n\thttp://gnunet.org\nand join our community at\n\thttps://gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"),
-			    -1);
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview11)), _("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions in order to configure GNUnet.\n\nPlease visit our homepage at\n\thttp://www.gnunet.org\nand join our community at\n\thttp://www.gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"), -1);
 
   hseparator2 = gtk_hseparator_new ();
   gtk_widget_show (hseparator2);
@@ -129,11 +121,14 @@ create_assi_step1 (void)
   gtk_box_pack_start (GTK_BOX (hbox55), label86, FALSE, FALSE, 0);
 
   g_signal_connect ((gpointer) assi_step1, "destroy",
-		    G_CALLBACK (on_assi_destroy), NULL);
+                    G_CALLBACK (on_assi_destroy),
+                    NULL);
   g_signal_connect ((gpointer) step1_next, "clicked",
-		    G_CALLBACK (on_step1_next_clicked), NULL);
+                    G_CALLBACK (on_step1_next_clicked),
+                    NULL);
   g_signal_connect ((gpointer) abort, "clicked",
-		    G_CALLBACK (on_abort_clicked), NULL);
+                    G_CALLBACK (on_abort_clicked),
+                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (assi_step1, assi_step1, "assi_step1");
@@ -156,7 +151,7 @@ create_assi_step1 (void)
   return assi_step1;
 }
 
-GtkWidget *
+GtkWidget*
 create_assi_step2 (void)
 {
   GtkWidget *assi_step2;
@@ -194,8 +189,7 @@ create_assi_step2 (void)
 
   assi_step2 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (assi_step2, 450, 350);
-  gtk_window_set_title (GTK_WINDOW (assi_step2),
-			_("GNUnet configuration assistant"));
+  gtk_window_set_title (GTK_WINDOW (assi_step2), _("GNUnet configuration assistant"));
   gtk_window_set_position (GTK_WINDOW (assi_step2), GTK_WIN_POS_CENTER);
 
   vbox3 = gtk_vbox_new (FALSE, 0);
@@ -213,8 +207,7 @@ create_assi_step2 (void)
   scrolledwindow5 = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scrolledwindow5);
   gtk_box_pack_start (GTK_BOX (vbox4), scrolledwindow5, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow5),
-				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow5), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview8 = gtk_text_view_new ();
   gtk_widget_show (textview8);
@@ -223,11 +216,7 @@ create_assi_step2 (void)
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview8), GTK_WRAP_WORD);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview8), FALSE);
   gtk_text_view_set_left_margin (GTK_TEXT_VIEW (textview8), 2);
-  gtk_text_buffer_set_text (gtk_text_view_get_buffer
-			    (GTK_TEXT_VIEW (textview8)),
-			    _
-			    ("Enter information about your network connection here.\n\nThe \"Network interface\" is the device that connects your computer to the internet. This is usually a modem, an ISDN card or a network card in case you are using DSL.\n\nIf your provider always assigns the same IP-Address to you (a \"static\" IP-Address), enter it into the \"IP-Address\" field. If your IP-Address changes every now and then (\"dynamic\" IP-Address) but there's a hostname that always points to your actual IP-Address (\"Dynamic DNS\"), you can also enter it here.\nIf in doubt, leave the field empty. GNUnet will then try to determine your IP-Address.\n\nIf you are connected to the internet through another computer doing SNAT, a router or a \"hardware firewall\" and other computers on the internet cannot connect to this computer, check the last option on this page. Leave it unchecked on direct connections through modems, ISDN cards and DNAT (also known as \"port forwarding\")."),
-			    -1);
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview8)), _("Enter information about your network connection here.\n\nThe \"Network interface\" is the device that connects your computer to the internet. This is usually a modem, an ISDN card or a network card in case you are using DSL.\n\nIf your provider always assigns the same IP-Address to you (a \"static\" IP-Address), enter it into the \"IP-Address\" field. If your IP-Address changes every now and then (\"dynamic\" IP-Address) but there's a hostname that always points to your actual IP-Address (\"Dynamic DNS\"), you can also enter it here.\nIf in doubt, leave the field empty. GNUnet will then try to determine your IP-Address.\n\nIf you are connected to the internet through another computer doing SNAT, a router or a \"hardware firewall\" and other computers on the internet cannot connect to this computer, check the last option on this page. Leave it unchecked on direct connections through modems, ISDN cards and DNAT (also known as \"port forwarding\")."), -1);
 
   hseparator3 = gtk_hseparator_new ();
   gtk_widget_show (hseparator3);
@@ -251,36 +240,34 @@ create_assi_step2 (void)
   label23 = gtk_label_new (_("Network interface:"));
   gtk_widget_show (label23);
   gtk_table_attach (GTK_TABLE (table1), label23, 0, 1, 0, 1,
-		    (GtkAttachOptions) (GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
   gtk_misc_set_alignment (GTK_MISC (label23), 0, 0.5);
 
   label24 = gtk_label_new (_("IP-Address/Hostname:"));
   gtk_widget_show (label24);
   gtk_table_attach (GTK_TABLE (table1), label24, 0, 1, 1, 2,
-		    (GtkAttachOptions) (GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
   gtk_misc_set_alignment (GTK_MISC (label24), 0, 0.5);
 
   entIP = gtk_entry_new ();
   gtk_widget_show (entIP);
   gtk_table_attach (GTK_TABLE (table1), entIP, 1, 2, 1, 2,
-		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
-  chkFW =
-    gtk_check_button_new_with_mnemonic (_
-					("Computer cannot receive inbound connections (SNAT/Firewall)"));
+  chkFW = gtk_check_button_new_with_mnemonic (_("Computer cannot receive inbound connections (SNAT/Firewall)"));
   gtk_widget_show (chkFW);
   gtk_table_attach (GTK_TABLE (table1), chkFW, 0, 2, 2, 3,
-		    (GtkAttachOptions) (GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
   cmbNIC = gtk_combo_box_entry_new_text ();
   gtk_widget_show (cmbNIC);
   gtk_table_attach (GTK_TABLE (table1), cmbNIC, 1, 2, 0, 1,
-		    (GtkAttachOptions) (GTK_SHRINK | GTK_FILL),
-		    (GtkAttachOptions) (GTK_FILL), 0, 0);
+                    (GtkAttachOptions) (GTK_SHRINK | GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
 
   labelLimit = gtk_label_new (_("Network connection"));
   gtk_widget_show (labelLimit);
@@ -355,19 +342,26 @@ create_assi_step2 (void)
   gtk_box_pack_start (GTK_BOX (hbox68), label99, FALSE, FALSE, 0);
 
   g_signal_connect ((gpointer) assi_step2, "destroy",
-		    G_CALLBACK (on_assi_destroy), NULL);
+                    G_CALLBACK (on_assi_destroy),
+                    NULL);
   g_signal_connect ((gpointer) entIP, "changed",
-		    G_CALLBACK (on_entIP_changed), NULL);
+                    G_CALLBACK (on_entIP_changed),
+                    NULL);
   g_signal_connect ((gpointer) chkFW, "toggled",
-		    G_CALLBACK (on_chkFW_toggled), NULL);
+                    G_CALLBACK (on_chkFW_toggled),
+                    NULL);
   g_signal_connect ((gpointer) cmbNIC, "changed",
-		    G_CALLBACK (on_cmbNIC_changed), NULL);
+                    G_CALLBACK (on_cmbNIC_changed),
+                    NULL);
   g_signal_connect ((gpointer) step2_back, "clicked",
-		    G_CALLBACK (on_step2_back_clicked), NULL);
+                    G_CALLBACK (on_step2_back_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step2_next, "clicked",
-		    G_CALLBACK (on_step2_next_clicked), NULL);
+                    G_CALLBACK (on_step2_next_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step2_abort, "clicked",
-		    G_CALLBACK (on_abort_clicked), NULL);
+                    G_CALLBACK (on_abort_clicked),
+                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (assi_step2, assi_step2, "assi_step2");
@@ -406,7 +400,7 @@ create_assi_step2 (void)
   return assi_step2;
 }
 
-GtkWidget *
+GtkWidget*
 create_assi_step3 (void)
 {
   GtkWidget *assi_step3;
@@ -457,8 +451,7 @@ create_assi_step3 (void)
 
   assi_step3 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (assi_step3, 450, 350);
-  gtk_window_set_title (GTK_WINDOW (assi_step3),
-			_("GNUnet configuration assistant"));
+  gtk_window_set_title (GTK_WINDOW (assi_step3), _("GNUnet configuration assistant"));
   gtk_window_set_position (GTK_WINDOW (assi_step3), GTK_WIN_POS_CENTER);
 
   vbox7 = gtk_vbox_new (FALSE, 0);
@@ -476,8 +469,7 @@ create_assi_step3 (void)
   scrolledwindow6 = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scrolledwindow6);
   gtk_box_pack_start (GTK_BOX (vbox8), scrolledwindow6, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow6),
-				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow6), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview9 = gtk_text_view_new ();
   gtk_widget_show (textview9);
@@ -486,11 +478,7 @@ create_assi_step3 (void)
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview9), GTK_WRAP_WORD);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview9), FALSE);
   gtk_text_view_set_left_margin (GTK_TEXT_VIEW (textview9), 2);
-  gtk_text_buffer_set_text (gtk_text_view_get_buffer
-			    (GTK_TEXT_VIEW (textview9)),
-			    _
-			    ("You can limit GNUnet's ressource usage here.\n\n\"Bandwidth limitation\" is how much data may be sent per second. If you have a flatrate you can set it to the maximum speed of your internet connection.\n\nThe \"Max. CPU usage\" is the percentage of processor time GNUnet is allowed to use."),
-			    -1);
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview9)), _("You can limit GNUnet's ressource usage here.\n\n\"Bandwidth limitation\" is how much data may be sent per second. If you have a flatrate you can set it to the maximum speed of your internet connection.\n\nThe \"Max. CPU usage\" is the percentage of processor time GNUnet is allowed to use."), -1);
 
   hseparator4 = gtk_hseparator_new ();
   gtk_widget_show (hseparator4);
@@ -521,30 +509,30 @@ create_assi_step3 (void)
   label32 = gtk_label_new (_("Upstream (Bytes/s):"));
   gtk_widget_show (label32);
   gtk_table_attach (GTK_TABLE (table2), label32, 0, 1, 0, 1,
-		    (GtkAttachOptions) (GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
   gtk_misc_set_alignment (GTK_MISC (label32), 0, 0.5);
   gtk_misc_set_padding (GTK_MISC (label32), 5, 0);
 
   entUp = gtk_entry_new ();
   gtk_widget_show (entUp);
   gtk_table_attach (GTK_TABLE (table2), entUp, 1, 2, 0, 1,
-		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
   label33 = gtk_label_new (_("Downstream (Bytes/s):"));
   gtk_widget_show (label33);
   gtk_table_attach (GTK_TABLE (table2), label33, 0, 1, 1, 2,
-		    (GtkAttachOptions) (GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
   gtk_misc_set_alignment (GTK_MISC (label33), 0, 0.5);
   gtk_misc_set_padding (GTK_MISC (label33), 5, 0);
 
   entDown = gtk_entry_new ();
   gtk_widget_show (entDown);
   gtk_table_attach (GTK_TABLE (table2), entDown, 1, 2, 1, 2,
-		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
   label31 = gtk_label_new (_("Bandwidth limitation"));
   gtk_widget_show (label31);
@@ -558,19 +546,13 @@ create_assi_step3 (void)
   gtk_widget_show (vbox11);
   gtk_container_add (GTK_CONTAINER (frame5), vbox11);
 
-  radGNUnet =
-    gtk_radio_button_new_with_mnemonic (NULL,
-					_
-					("Use denoted bandwidth for GNUnet"));
+  radGNUnet = gtk_radio_button_new_with_mnemonic (NULL, _("Use denoted bandwidth for GNUnet"));
   gtk_widget_show (radGNUnet);
   gtk_box_pack_start (GTK_BOX (vbox11), radGNUnet, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radGNUnet), radGNUnet_group);
   radGNUnet_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radGNUnet));
 
-  radShare =
-    gtk_radio_button_new_with_mnemonic (NULL,
-					_
-					("Share denoted bandwidth with other applications"));
+  radShare = gtk_radio_button_new_with_mnemonic (NULL, _("Share denoted bandwidth with other applications"));
   gtk_widget_show (radShare);
   gtk_box_pack_start (GTK_BOX (vbox11), radShare, FALSE, FALSE, 0);
   gtk_radio_button_set_group (GTK_RADIO_BUTTON (radShare), radGNUnet_group);
@@ -674,23 +656,32 @@ create_assi_step3 (void)
   gtk_box_pack_start (GTK_BOX (hbox59), label90, FALSE, FALSE, 0);
 
   g_signal_connect ((gpointer) assi_step3, "destroy",
-		    G_CALLBACK (on_assi_destroy), NULL);
+                    G_CALLBACK (on_assi_destroy),
+                    NULL);
   g_signal_connect ((gpointer) entUp, "changed",
-		    G_CALLBACK (on_entUp_changed), NULL);
+                    G_CALLBACK (on_entUp_changed),
+                    NULL);
   g_signal_connect ((gpointer) entDown, "changed",
-		    G_CALLBACK (on_entDown_changed), NULL);
+                    G_CALLBACK (on_entDown_changed),
+                    NULL);
   g_signal_connect ((gpointer) radGNUnet, "toggled",
-		    G_CALLBACK (on_radGNUnet_toggled), NULL);
+                    G_CALLBACK (on_radGNUnet_toggled),
+                    NULL);
   g_signal_connect ((gpointer) radShare, "toggled",
-		    G_CALLBACK (on_radShare_toggled), NULL);
+                    G_CALLBACK (on_radShare_toggled),
+                    NULL);
   g_signal_connect ((gpointer) entCPU, "changed",
-		    G_CALLBACK (on_entCPU_changed), NULL);
+                    G_CALLBACK (on_entCPU_changed),
+                    NULL);
   g_signal_connect ((gpointer) step3_back, "clicked",
-		    G_CALLBACK (on_step3_back_clicked), NULL);
+                    G_CALLBACK (on_step3_back_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step3_next, "clicked",
-		    G_CALLBACK (on_step3_next_clicked), NULL);
+                    G_CALLBACK (on_step3_next_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step3_abort, "clicked",
-		    G_CALLBACK (on_abort_clicked), NULL);
+                    G_CALLBACK (on_abort_clicked),
+                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (assi_step3, assi_step3, "assi_step3");
@@ -741,7 +732,7 @@ create_assi_step3 (void)
   return assi_step3;
 }
 
-GtkWidget *
+GtkWidget*
 create_assi_step5 (void)
 {
   GtkWidget *assi_step5;
@@ -759,6 +750,7 @@ create_assi_step5 (void)
   GtkWidget *entQuota;
   GtkWidget *chkStart;
   GtkWidget *chkEnh;
+  GtkWidget *chkUpdate;
   GtkWidget *label43;
   GtkWidget *hbuttonbox5;
   GtkWidget *step5_back;
@@ -779,8 +771,7 @@ create_assi_step5 (void)
 
   assi_step5 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (assi_step5, 450, 350);
-  gtk_window_set_title (GTK_WINDOW (assi_step5),
-			_("GNUnet configuration assistant"));
+  gtk_window_set_title (GTK_WINDOW (assi_step5), _("GNUnet configuration assistant"));
   gtk_window_set_position (GTK_WINDOW (assi_step5), GTK_WIN_POS_CENTER);
 
   vbox12 = gtk_vbox_new (FALSE, 0);
@@ -798,8 +789,7 @@ create_assi_step5 (void)
   scrolledwindow7 = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scrolledwindow7);
   gtk_box_pack_start (GTK_BOX (vbox13), scrolledwindow7, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow7),
-				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow7), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview10 = gtk_text_view_new ();
   gtk_widget_show (textview10);
@@ -808,11 +798,7 @@ create_assi_step5 (void)
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview10), GTK_WRAP_WORD);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview10), FALSE);
   gtk_text_view_set_left_margin (GTK_TEXT_VIEW (textview10), 2);
-  gtk_text_buffer_set_text (gtk_text_view_get_buffer
-			    (GTK_TEXT_VIEW (textview10)),
-			    _
-			    ("GNUnet is able to store data from other peers in your datastore. This is useful if an adversary has access to your inserted content and you need to deny that the content is yours. With \"content migration\" on, the content could have \"migrated\" over the internet to your node without your knowledge.\nIt also helps to spread popular content over different peers to enhance availability.\n\nThe GNUnet datastore contains all data that GNUnet generates (index data, inserted and migrated content). Its maximum size can be specified below.\n\nIf you are an experienced user, you may want to tweak your GNUnet installation using the enhanced configurator."),
-			    -1);
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview10)), _("GNUnet is able to store data from other peers in your datastore. This is useful if an adversary has access to your inserted content and you need to deny that the content is yours. With \"content migration\" on, the content could have \"migrated\" over the internet to your node without your knowledge.\nIt also helps to spread popular content over different peers to enhance availability.\n\nThe GNUnet datastore contains all data that GNUnet generates (index data, inserted and migrated content). Its maximum size can be specified below.\n\nIf you are an experienced user, you may want to tweak your GNUnet installation using the enhanced configurator.\n\nAfter changing the configuration and/or updating GNUnet, it is sometimes required to run gnunet-update to update internal data structures. Depending on the changes made, this may take some time."), -1);
 
   hseparator5 = gtk_hseparator_new ();
   gtk_widget_show (hseparator5);
@@ -844,19 +830,22 @@ create_assi_step5 (void)
   gtk_widget_show (entQuota);
   gtk_box_pack_start (GTK_BOX (hbox53), entQuota, TRUE, TRUE, 0);
 
-  chkStart =
-    gtk_check_button_new_with_mnemonic (_
-					("Start the GNUnet background process on computer startup"));
+  chkStart = gtk_check_button_new_with_mnemonic (_("Start the GNUnet background process on computer startup"));
   gtk_widget_show (chkStart);
   gtk_box_pack_start (GTK_BOX (vbox15), chkStart, FALSE, FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (chkStart), 4);
+  gtk_container_set_border_width (GTK_CONTAINER (chkStart), 5);
   gtk_widget_set_sensitive (chkStart, FALSE);
 
-  chkEnh =
-    gtk_check_button_new_with_mnemonic (_("Open the enhanced configurator"));
+  chkEnh = gtk_check_button_new_with_mnemonic (_("Open the enhanced configurator"));
   gtk_widget_show (chkEnh);
   gtk_box_pack_start (GTK_BOX (vbox15), chkEnh, FALSE, FALSE, 0);
   gtk_container_set_border_width (GTK_CONTAINER (chkEnh), 5);
+
+  chkUpdate = gtk_check_button_new_with_mnemonic (_("Run gnunet-update"));
+  gtk_widget_show (chkUpdate);
+  gtk_box_pack_start (GTK_BOX (vbox15), chkUpdate, FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (chkUpdate), 5);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (chkUpdate), TRUE);
 
   label43 = gtk_label_new (_("Other settings"));
   gtk_widget_show (label43);
@@ -931,21 +920,32 @@ create_assi_step5 (void)
   gtk_box_pack_start (GTK_BOX (hbox62), label93, FALSE, FALSE, 0);
 
   g_signal_connect ((gpointer) assi_step5, "destroy",
-		    G_CALLBACK (on_assi_destroy), NULL);
+                    G_CALLBACK (on_assi_destroy),
+                    NULL);
   g_signal_connect ((gpointer) chkMigr, "toggled",
-		    G_CALLBACK (on_chkMigr_toggled), NULL);
+                    G_CALLBACK (on_chkMigr_toggled),
+                    NULL);
   g_signal_connect ((gpointer) entQuota, "changed",
-		    G_CALLBACK (on_entQuota_changed), NULL);
+                    G_CALLBACK (on_entQuota_changed),
+                    NULL);
   g_signal_connect ((gpointer) chkStart, "toggled",
-		    G_CALLBACK (on_chkStart_toggled), NULL);
+                    G_CALLBACK (on_chkStart_toggled),
+                    NULL);
   g_signal_connect ((gpointer) chkEnh, "toggled",
-		    G_CALLBACK (on_chkEnh_toggled), NULL);
+                    G_CALLBACK (on_chkEnh_toggled),
+                    NULL);
+  g_signal_connect ((gpointer) chkUpdate, "toggled",
+                    G_CALLBACK (on_chkUpdate_toggled),
+                    NULL);
   g_signal_connect ((gpointer) step5_back, "clicked",
-		    G_CALLBACK (on_step5_back_clicked), NULL);
+                    G_CALLBACK (on_step5_back_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step5_next, "clicked",
-		    G_CALLBACK (on_finish_clicked), NULL);
+                    G_CALLBACK (on_finish_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step5_cancel, "clicked",
-		    G_CALLBACK (on_abort_clicked), NULL);
+                    G_CALLBACK (on_abort_clicked),
+                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (assi_step5, assi_step5, "assi_step5");
@@ -963,6 +963,7 @@ create_assi_step5 (void)
   GLADE_HOOKUP_OBJECT (assi_step5, entQuota, "entQuota");
   GLADE_HOOKUP_OBJECT (assi_step5, chkStart, "chkStart");
   GLADE_HOOKUP_OBJECT (assi_step5, chkEnh, "chkEnh");
+  GLADE_HOOKUP_OBJECT (assi_step5, chkUpdate, "chkUpdate");
   GLADE_HOOKUP_OBJECT (assi_step5, label43, "label43");
   GLADE_HOOKUP_OBJECT (assi_step5, hbuttonbox5, "hbuttonbox5");
   GLADE_HOOKUP_OBJECT (assi_step5, step5_back, "step5_back");
@@ -984,7 +985,7 @@ create_assi_step5 (void)
   return assi_step5;
 }
 
-GtkWidget *
+GtkWidget*
 create_msgSave (void)
 {
   GtkWidget *msgSave;
@@ -1009,8 +1010,7 @@ create_msgSave (void)
   gtk_widget_show (hbox65);
   gtk_box_pack_start (GTK_BOX (vbox16), hbox65, TRUE, TRUE, 0);
 
-  image75 =
-    gtk_image_new_from_stock ("gtk-dialog-question", GTK_ICON_SIZE_BUTTON);
+  image75 = gtk_image_new_from_stock ("gtk-dialog-question", GTK_ICON_SIZE_BUTTON);
   gtk_widget_show (image75);
   gtk_box_pack_start (GTK_BOX (hbox65), image75, FALSE, TRUE, 15);
   gtk_misc_set_padding (GTK_MISC (image75), 0, 15);
@@ -1041,9 +1041,11 @@ create_msgSave (void)
   GTK_WIDGET_SET_FLAGS (saveNo, GTK_CAN_DEFAULT);
 
   g_signal_connect ((gpointer) saveYes, "clicked",
-		    G_CALLBACK (on_saveYes_clicked), NULL);
+                    G_CALLBACK (on_saveYes_clicked),
+                    NULL);
   g_signal_connect ((gpointer) saveNo, "clicked",
-		    G_CALLBACK (on_saveNo_clicked), NULL);
+                    G_CALLBACK (on_saveNo_clicked),
+                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (msgSave, msgSave, "msgSave");
@@ -1059,7 +1061,7 @@ create_msgSave (void)
   return msgSave;
 }
 
-GtkWidget *
+GtkWidget*
 create_msgSaveFailed (void)
 {
   GtkWidget *msgSaveFailed;
@@ -1083,8 +1085,7 @@ create_msgSaveFailed (void)
   gtk_widget_show (hbox67);
   gtk_box_pack_start (GTK_BOX (vbox17), hbox67, TRUE, TRUE, 0);
 
-  image77 =
-    gtk_image_new_from_stock ("gtk-dialog-error", GTK_ICON_SIZE_BUTTON);
+  image77 = gtk_image_new_from_stock ("gtk-dialog-error", GTK_ICON_SIZE_BUTTON);
   gtk_widget_show (image77);
   gtk_box_pack_start (GTK_BOX (hbox67), image77, FALSE, TRUE, 15);
   gtk_misc_set_padding (GTK_MISC (image77), 0, 15);
@@ -1110,7 +1111,8 @@ create_msgSaveFailed (void)
   GTK_WIDGET_SET_FLAGS (button1, GTK_CAN_DEFAULT);
 
   g_signal_connect ((gpointer) button1, "clicked",
-		    G_CALLBACK (on_saveFailedOK_clicked), NULL);
+                    G_CALLBACK (on_saveFailedOK_clicked),
+                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (msgSaveFailed, msgSaveFailed, "msgSaveFailed");
@@ -1125,7 +1127,7 @@ create_msgSaveFailed (void)
   return msgSaveFailed;
 }
 
-GtkWidget *
+GtkWidget*
 create_assi_step4 (void)
 {
   GtkWidget *assi_step4;
@@ -1160,8 +1162,7 @@ create_assi_step4 (void)
 
   assi_step4 = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_size_request (assi_step4, 450, 350);
-  gtk_window_set_title (GTK_WINDOW (assi_step4),
-			_("GNUnet configuration assistant"));
+  gtk_window_set_title (GTK_WINDOW (assi_step4), _("GNUnet configuration assistant"));
   gtk_window_set_position (GTK_WINDOW (assi_step4), GTK_WIN_POS_CENTER);
 
   vbox18 = gtk_vbox_new (FALSE, 0);
@@ -1179,8 +1180,7 @@ create_assi_step4 (void)
   scrolledwindow8 = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_show (scrolledwindow8);
   gtk_box_pack_start (GTK_BOX (vbox19), scrolledwindow8, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow8),
-				  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolledwindow8), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
   textview12 = gtk_text_view_new ();
   gtk_widget_show (textview12);
@@ -1189,11 +1189,7 @@ create_assi_step4 (void)
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview12), GTK_WRAP_WORD);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview12), FALSE);
   gtk_text_view_set_left_margin (GTK_TEXT_VIEW (textview12), 2);
-  gtk_text_buffer_set_text (gtk_text_view_get_buffer
-			    (GTK_TEXT_VIEW (textview12)),
-			    _
-			    ("Define the user and the group owning the GNUnet service here.\n\nFor security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.\n\nHowever, GNUnet may not be able to access files other than its own. This includes files you want to publish in GNUnet. You'll have to grant read permissions to the user specified below.\n\nLeave the fields empty to run GNUnet with system privileges."),
-			    -1);
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview12)), _("Define the user and the group owning the GNUnet service here.\n\nFor security reasons, it is a good idea to let this setup create a new user account and a new group under which the GNUnet service is started at system startup.\n\nHowever, GNUnet may not be able to access files other than its own. This includes files you want to publish in GNUnet. You'll have to grant read permissions to the user specified below.\n\nLeave the fields empty to run GNUnet with system privileges."), -1);
 
   hseparator7 = gtk_hseparator_new ();
   gtk_widget_show (hseparator7);
@@ -1209,28 +1205,28 @@ create_assi_step4 (void)
   label110 = gtk_label_new (_("Group:"));
   gtk_widget_show (label110);
   gtk_table_attach (GTK_TABLE (table3), label110, 0, 1, 1, 2,
-		    (GtkAttachOptions) (GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
   gtk_misc_set_alignment (GTK_MISC (label110), 0, 0.5);
   gtk_misc_set_padding (GTK_MISC (label110), 5, 0);
 
   entUser = gtk_entry_new ();
   gtk_widget_show (entUser);
   gtk_table_attach (GTK_TABLE (table3), entUser, 1, 2, 0, 1,
-		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
   entGroup = gtk_entry_new ();
   gtk_widget_show (entGroup);
   gtk_table_attach (GTK_TABLE (table3), entGroup, 1, 2, 1, 2,
-		    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
 
   label109 = gtk_label_new (_("User account:"));
   gtk_widget_show (label109);
   gtk_table_attach (GTK_TABLE (table3), label109, 0, 1, 0, 1,
-		    (GtkAttachOptions) (GTK_FILL),
-		    (GtkAttachOptions) (0), 0, 0);
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
   gtk_misc_set_alignment (GTK_MISC (label109), 0, 0.5);
   gtk_misc_set_padding (GTK_MISC (label109), 5, 0);
 
@@ -1307,17 +1303,23 @@ create_assi_step4 (void)
   gtk_box_pack_start (GTK_BOX (hbox72), label104, FALSE, FALSE, 0);
 
   g_signal_connect ((gpointer) assi_step4, "destroy",
-		    G_CALLBACK (on_assi_destroy), NULL);
+                    G_CALLBACK (on_assi_destroy),
+                    NULL);
   g_signal_connect ((gpointer) entUser, "changed",
-		    G_CALLBACK (on_entUser_changed), NULL);
+                    G_CALLBACK (on_entUser_changed),
+                    NULL);
   g_signal_connect ((gpointer) entGroup, "changed",
-		    G_CALLBACK (on_entGroup_changed), NULL);
+                    G_CALLBACK (on_entGroup_changed),
+                    NULL);
   g_signal_connect ((gpointer) step4_back, "clicked",
-		    G_CALLBACK (on_step4_back_clicked), NULL);
+                    G_CALLBACK (on_step4_back_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step4_next, "clicked",
-		    G_CALLBACK (on_step4_next_clicked), NULL);
+                    G_CALLBACK (on_step4_next_clicked),
+                    NULL);
   g_signal_connect ((gpointer) step4_abort, "clicked",
-		    G_CALLBACK (on_abort_clicked), NULL);
+                    G_CALLBACK (on_abort_clicked),
+                    NULL);
 
   /* Store pointers to all widgets, for use by lookup_widget(). */
   GLADE_HOOKUP_OBJECT_NO_REF (assi_step4, assi_step4, "assi_step4");
@@ -1352,3 +1354,70 @@ create_assi_step4 (void)
 
   return assi_step4;
 }
+
+GtkWidget*
+create_msgUpdateFailed (void)
+{
+  GtkWidget *msgUpdateFailed;
+  GtkWidget *vbox20;
+  GtkWidget *hbox79;
+  GtkWidget *image85;
+  GtkWidget *label112;
+  GtkWidget *hseparator8;
+  GtkWidget *hbuttonbox9;
+  GtkWidget *button2;
+
+  msgUpdateFailed = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (msgUpdateFailed), _("Error"));
+  gtk_window_set_position (GTK_WINDOW (msgUpdateFailed), GTK_WIN_POS_CENTER);
+
+  vbox20 = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (vbox20);
+  gtk_container_add (GTK_CONTAINER (msgUpdateFailed), vbox20);
+
+  hbox79 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox79);
+  gtk_box_pack_start (GTK_BOX (vbox20), hbox79, TRUE, TRUE, 0);
+
+  image85 = gtk_image_new_from_stock ("gtk-dialog-error", GTK_ICON_SIZE_BUTTON);
+  gtk_widget_show (image85);
+  gtk_box_pack_start (GTK_BOX (hbox79), image85, FALSE, TRUE, 15);
+  gtk_misc_set_padding (GTK_MISC (image85), 0, 15);
+
+  label112 = gtk_label_new (_("gnunet-update failed!"));
+  gtk_widget_show (label112);
+  gtk_box_pack_start (GTK_BOX (hbox79), label112, FALSE, FALSE, 5);
+  gtk_label_set_line_wrap (GTK_LABEL (label112), TRUE);
+  gtk_misc_set_padding (GTK_MISC (label112), 0, 15);
+
+  hseparator8 = gtk_hseparator_new ();
+  gtk_widget_show (hseparator8);
+  gtk_box_pack_start (GTK_BOX (vbox20), hseparator8, FALSE, TRUE, 0);
+
+  hbuttonbox9 = gtk_hbutton_box_new ();
+  gtk_widget_show (hbuttonbox9);
+  gtk_box_pack_start (GTK_BOX (vbox20), hbuttonbox9, FALSE, TRUE, 0);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox9), GTK_BUTTONBOX_END);
+
+  button2 = gtk_button_new_with_mnemonic (_("OK"));
+  gtk_widget_show (button2);
+  gtk_container_add (GTK_CONTAINER (hbuttonbox9), button2);
+  GTK_WIDGET_SET_FLAGS (button2, GTK_CAN_DEFAULT);
+
+  g_signal_connect ((gpointer) button2, "clicked",
+                    G_CALLBACK (on_updateFailedOK_clicked),
+                    NULL);
+
+  /* Store pointers to all widgets, for use by lookup_widget(). */
+  GLADE_HOOKUP_OBJECT_NO_REF (msgUpdateFailed, msgUpdateFailed, "msgUpdateFailed");
+  GLADE_HOOKUP_OBJECT (msgUpdateFailed, vbox20, "vbox20");
+  GLADE_HOOKUP_OBJECT (msgUpdateFailed, hbox79, "hbox79");
+  GLADE_HOOKUP_OBJECT (msgUpdateFailed, image85, "image85");
+  GLADE_HOOKUP_OBJECT (msgUpdateFailed, label112, "label112");
+  GLADE_HOOKUP_OBJECT (msgUpdateFailed, hseparator8, "hseparator8");
+  GLADE_HOOKUP_OBJECT (msgUpdateFailed, hbuttonbox9, "hbuttonbox9");
+  GLADE_HOOKUP_OBJECT (msgUpdateFailed, button2, "button2");
+
+  return msgUpdateFailed;
+}
+

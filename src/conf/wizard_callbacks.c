@@ -45,9 +45,11 @@ extern GtkWidget *curwnd;
 extern int doOpenEnhConfigurator;
 extern int doAutoStart;
 extern char *user_name, *group_name;
+static int doUpdate = YES;
 
 GtkWidget *msgSave;
 GtkWidget *msgSaveFailed;
+GtkWidget *msgUpdateFailed;
 
 /* 1 = terminate app on "assi_destroy" */
 int quit;
@@ -182,7 +184,7 @@ save_conf ()
 
 void
 on_finish_clicked (GtkButton * button, gpointer user_data)
-{
+{  
 	if (doAutoStart && user_name)
 		if (!wiz_createGroupUser(group_name, user_name)) {
 #ifndef MINGW
@@ -199,8 +201,17 @@ on_finish_clicked (GtkButton * button, gpointer user_data)
 
 	if (!save_conf())
 		return;
-
-	gtk_widget_destroy(curwnd);
+    
+  if (doUpdate) {
+    if (system("gnunet-update") != 0) {
+      msgUpdateFailed = create_msgUpdateFailed();
+      gtk_widget_show(msgUpdateFailed);
+    }
+    else
+      gtk_widget_destroy(curwnd);
+  }
+  else
+    gtk_widget_destroy(curwnd);
 }
 
 void
@@ -236,6 +247,12 @@ void
 on_saveFailedOK_clicked (GtkButton * button, gpointer user_data)
 {
 	gtk_widget_destroy(msgSaveFailed);
+}
+
+void
+on_updateFailedOK_clicked (GtkButton * button, gpointer user_data)
+{
+  gtk_widget_destroy(msgUpdateFailed);
 }
 
 void
@@ -362,6 +379,12 @@ void
 on_chkEnh_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
 	doOpenEnhConfigurator = gtk_toggle_button_get_active(togglebutton);
+}
+
+void
+on_chkUpdate_toggled (GtkToggleButton * togglebutton, gpointer user_data)
+{
+  doUpdate = gtk_toggle_button_get_active(togglebutton);
 }
 
 void

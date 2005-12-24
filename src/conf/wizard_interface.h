@@ -8,4 +8,5 @@ GtkWidget *create_assi_step3 (void);
 GtkWidget *create_assi_step5 (void);
 GtkWidget *create_msgSave (void);
 GtkWidget *create_msgSaveFailed (void);
+GtkWidget *create_msgUpdateFailed (void);
 GtkWidget *create_assi_step4 (void);
