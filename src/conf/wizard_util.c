@@ -83,7 +83,7 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
 			     groupname);
   if (ret ) {
 #ifdef MINGW
-    char *err;
+    char *err = NULL;
     switch(ret) {
     case 1:
       err = winErrorStr(_("Can't open Service Control Manager"),
@@ -114,11 +114,13 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
     default:
       err = winErrorStr(_("Unknown error"), GetLastError());
     }
-    MessageBox(GetActiveWindow(),
-	       err,
-	       _("Error"),
-	       MB_ICONSTOP | MB_OK);
-    free(err);
+    if (err) {
+      MessageBox(GetActiveWindow(),
+  	       err,
+  	       _("Error"),
+  	       MB_ICONSTOP | MB_OK);
+      free(err);
+    }
 #endif
 
     return 0;
