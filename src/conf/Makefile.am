@@ -70,7 +70,7 @@ libgnunetsetup_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunetsetup_la_LDFLAGS = \
- -export-dynamic -avoid-version
+ -export-dynamic
 
 libgnunetsetup_curses_la_SOURCES = \
  mconf.c mconf.h \
