@@ -62,8 +62,11 @@ int win_service() {
 
 
 #ifdef MINGW
-extern SERVICE_STATUS theServiceStatus;
-extern SERVICE_STATUS_HANDLE hService;
+  /**
+   * Windows service information
+   */
+  static SERVICE_STATUS theServiceStatus;
+  static SERVICE_STATUS_HANDLE hService;
 #endif
 
 /**
@@ -96,13 +99,62 @@ static void reread_config(int signum) {
 	     NULL);
 }
 
+#ifdef MINGW
+static void shutdown_gnunetd(int signum);
+
+BOOL WINAPI win_shutdown_gnunetd(DWORD dwCtrlType)
+{
+  switch(dwCtrlType)
+  {
+    case CTRL_C_EVENT:
+    case CTRL_CLOSE_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+    case CTRL_LOGOFF_EVENT:
+    case SERVICE_CONTROL_STOP:
+      shutdown_gnunetd(dwCtrlType);
+  }
+
+  return TRUE;
+}
+
+/**
+ * This function is called from the Windows Service Control Manager
+ * when a service has to shutdown
+ */
+void WINAPI ServiceCtrlHandler(DWORD dwOpcode) {
+  if (dwOpcode == SERVICE_CONTROL_STOP)
+    win_shutdown_gnunetd(SERVICE_CONTROL_STOP);
+}
+
+/**
+ * called by gnunetd.c::ServiceMain()
+ */
+void win_service_main(void (*gn_main)()) {
+  memset(&theServiceStatus, 0, sizeof(theServiceStatus));
+  theServiceStatus.dwServiceType = SERVICE_WIN32;
+  theServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+  theServiceStatus.dwCurrentState = SERVICE_RUNNING;
+
+  hService = GNRegisterServiceCtrlHandler("GNUnet", ServiceCtrlHandler);
+  if (! hService)
+    return;
+
+  GNSetServiceStatus(hService, &theServiceStatus);
+
+  gn_main();
+
+  theServiceStatus.dwCurrentState = SERVICE_STOPPED;
+  GNSetServiceStatus(hService, &theServiceStatus);
+}
+#endif
+
 /**
  * Try a propper shutdown of gnunetd.
  */
 static void shutdown_gnunetd(int signum) {
 
 #ifdef MINGW
-if (win_service)
+if (win_service())
 {
   /* If GNUnet runs as service, only the
      Service Control Manager is allowed
@@ -156,23 +208,6 @@ static int shutdownHandler(ClientHandle client,
   shutdown_gnunetd(0);
   return ret;
 }
-
-#ifdef MINGW
-BOOL WINAPI win_shutdown_gnunetd(DWORD dwCtrlType)
-{
-  switch(dwCtrlType)
-  {
-    case CTRL_C_EVENT:
-    case CTRL_CLOSE_EVENT:
-    case CTRL_SHUTDOWN_EVENT:
-    case CTRL_LOGOFF_EVENT:
-    case SERVICE_CONTROL_STOP:
-      shutdown_gnunetd(dwCtrlType);
-  }
-
-  return TRUE;
-}
-#endif
 
 /**
  * Initialize signal handlers

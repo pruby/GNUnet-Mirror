@@ -97,6 +97,7 @@ void changeUser(const char *user);
 
 #ifdef MINGW
 BOOL WINAPI win_shutdown_gnunetd(DWORD dwCtrlType);
+void win_service_main(void (*gn_main)());
 #endif
 
 #endif

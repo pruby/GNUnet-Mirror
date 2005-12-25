@@ -40,39 +40,10 @@ void gnunet_main();
 
 #ifdef MINGW
 /**
- * Windows service information
- */
-SERVICE_STATUS theServiceStatus;
-SERVICE_STATUS_HANDLE hService;
-
-/**
- * This function is called from the Windows Service Control Manager
- * when a service has to shutdown
- */
-void WINAPI ServiceCtrlHandler(DWORD dwOpcode) {
-  if (dwOpcode == SERVICE_CONTROL_STOP)
-    win_shutdown_gnunetd(SERVICE_CONTROL_STOP);
-}
-
-/**
  * Main method of the windows service
  */
 void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
-  memset(&theServiceStatus, 0, sizeof(theServiceStatus));
-  theServiceStatus.dwServiceType = SERVICE_WIN32;
-  theServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
-  theServiceStatus.dwCurrentState = SERVICE_RUNNING;
-
-  hService = GNRegisterServiceCtrlHandler("GNUnet", ServiceCtrlHandler);
-  if (! hService)
-    return;
-
-  GNSetServiceStatus(hService, &theServiceStatus);
-
-  gnunet_main();
-
-  theServiceStatus.dwCurrentState = SERVICE_STOPPED;
-  GNSetServiceStatus(hService, &theServiceStatus);
+  win_service_main(gnunet_main);
 }
 #endif
 
