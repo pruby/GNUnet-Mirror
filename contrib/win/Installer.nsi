@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.0a"
+!define PRODUCT_VERSION "0.7.0b"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -146,6 +146,9 @@ SectionGroup "GNUnet" SEC_GNUNET
 		SectionIn 1 2 3 4
 	  SetOutPath "$INSTDIR\bin"
 		File "C:\GNUnet\bin\gnunet-setup.exe" 		
+		File "C:\GNUnet\bin\libgnunetsetup.dll"
+		File "C:\GNUnet\bin\libgnunetsetup_curses.dll"
+		File "C:\GNUnet\bin\libgnunetsetup_gtk.dll"
 
 	  SetOutPath "$INSTDIR\share\GNUnet"
 		File "C:\GNUnet\share\GNUnet\config-client.in" 
@@ -756,6 +759,10 @@ Section Uninstall
 	Delete "$INSTDIR\bin\gnunet-pseudonym.exe"
 	Delete "$INSTDIR\bin\gnunet-search.exe"
 	Delete "$INSTDIR\bin\gnunet-setup.exe" 		
+	Delete "$INSTDIR\bin\libgnunetsetup.dll" 
+	Delete "$INSTDIR\bin\libgnunetsetup_curses.dll"
+	Delete "$INSTDIR\bin\libgnunetsetup_gtk.dll"
+		
 	Delete "$INSTDIR\bin\gnunet-stats.exe"
 	Delete "$INSTDIR\bin\gnunet-tbench.exe"			
 	Delete "$INSTDIR\bin\gnunet-tbench.exe"			
