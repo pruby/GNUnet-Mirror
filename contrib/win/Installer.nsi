@@ -888,8 +888,6 @@ Section Uninstall
 	Delete "$INSTDIR\bin\zlib1.dll"
 	RmDir /REBOOTOK "$INSTDIR\bin"
 	
-	Delete "$INSTDIR\etc\gnunetd.conf"
-	Delete "$INSTDIR\etc\gnunet.conf"
 	Delete "$INSTDIR\etc\gnunetd.conf.old"
 	Delete "$INSTDIR\etc\gnunet.conf.old"
 	Delete "$INSTDIR\etc\gtk-2.0\gdk-pixbuf.loaders"
@@ -964,6 +962,11 @@ Section Uninstall
   Delete "$SMPROGRAMS\$ICONS_GROUP\$(gnunetdconfig).lnk"
   Delete "$SMPROGRAMS\$ICONS_GROUP\$(gnunetclientconfig).lnk"
 
+  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
+;  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
+  DeleteRegKey HKLM "Software\GNU\GNUnet"
+  
+  MessageBox MB_YESNO "$(deleteall)" IDNO end
   ReadEnvStr $USR_PROF "USERPROFILE"
   StrLen $DIRLEN $USR_PROF
   IntCmp $DIRLEN 0 no_profile
@@ -980,12 +983,6 @@ Section Uninstall
 
   RMDir /REBOOTOK $USR_PROF
   RMDir /REBOOTOK "$SMPROGRAMS\$ICONS_GROUP"
-
-  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
-;  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
-  DeleteRegKey HKLM "Software\GNU\GNUnet"
-  
-  MessageBox MB_YESNO "$(deleteall)" IDNO end
   RmDir /r /REBOOTOK "$INSTDIR"
  end:
   SetAutoClose true
