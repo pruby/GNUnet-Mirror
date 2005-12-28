@@ -966,8 +966,10 @@ static int httpDirectSend(HTTPSession * httpSession,
   if (doPost == YES) {
     IPaddr ip;
 
-    if (SYSERR == getPublicIPAddress(&ip))
+    if (SYSERR == getPublicIPAddress(&ip)) {
+	  MUTEX_UNLOCK(&httplock);
       return SYSERR;
+    }
     GROW(httpSession->wbuff,
 	 httpSession->wsize,
 	 256 + ssize);
