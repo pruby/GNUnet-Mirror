@@ -1,3 +1,6 @@
+Wen Dec 28 00:22:54 CET 2005
+	Fixed deadlock in http transport.
+
 Fri Dec 23 17:17:18 PST 2005
 	Releasing GNUnet 0.7.0b.
 	
