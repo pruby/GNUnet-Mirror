@@ -11,53 +11,48 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.0b [12'05] (aka "bugfixes")
+0.7.1 [2'06] (aka "stabilization")
 - known bugs (see Mantis for updates):
   * gnunet-setup memory leaks (#878)
-  * gnunet-setup category switch update bug (#892)
-  * 0 bandwidth cap (#971)
+  * gnunet-setup category switch update bug (#892)  [ RC ]
+  * file/socket leak
+  * Windows installer, uninstall: Remove account [Nils, RC]
 - testing:
+  * make dht tests work (and write more) [ CG, RC ]
   * more "make check" targets to test: 
-    + gnunet-tracekit
-    + gap and economy
-    + FSUI collections
-    + FSUI recursive uploads and downloads (incl. persistence)
+    + gap and economy  [ RC ]
+    + FSUI URI tracking [ RC ]
+    + FSUI recursive uploads and downloads (incl. persistence) [ RC ]
     + FSUI namespaces
-    + FSUI URI tracking
+    + FSUI collections
+    + gnunet-tracekit
 
-0.7.1 [12'05] (aka "stabilization"):
-- gnunet-setup:
-  * php-ification for i18n [ Nils, not RC ]
-- DHT:
-  * make dht tests work
-  * XFS [ location URIs ]
-- support using -k multiple times in gnunet-pseudonym
-- Windows installer [Nils, not RC]
-  * Uninstall: Remove account
-
-0.7.2 [1'06] (aka "performance"):
+0.7.2 [4'06] (aka "performance"):
 - Optimizations:
+  * cache some kblock-public/private keys in memory [ CG, RC ]
+    (1024 bit keys are much better than the 2048 bit keys,
+     but this would give another performance boost, especially for
+     insertion of zip files with hundreds of files/keywords!)
   * directories can be compacted -- add heuristic to determine
     if we should NOT padd with zeros (if we would waste too
     much space).  Needs some lookahead for size of remaining
     directory entries. (theoretically can compact some directories
     by 50% (?) -- incidentially 25% is what gzip can do on the
-    current directories!)
-- DHT optimizations [ use additional optional fields (HELOs) ]
-- maybe: cache kblock-public/private keys 
-    (1024 bit keys are much better than the 2048 bit keys,
-     but this would give another performance boost, especially for
-     insertion of zip files with hundreds of files/keywords!)
+    current directories!) [ CG ]
+  * DHT: use additional optional fields (HELLOs) [ CG ]
+- XFS / support for location URIs [CG, RC]
+- gnunet-setup:
+  * php-ification for i18n [ Nils, RC? ]
 
-0.7.2 [3'06] (aka "features"):
+0.7.3 [5'06] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Documentation:
   * LJ article
 
-0.7.3 [5'06] (aka "advanced features"):
-- gnunet-chat
+0.7.4 [6'06] (aka "advanced features"):
+- gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
 - https://gnunet.org/drupal/?q=node/97
 

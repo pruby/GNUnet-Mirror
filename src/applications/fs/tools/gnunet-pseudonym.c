@@ -146,12 +146,30 @@ static int parser(int argc,
 					 "AUTOMATE",
 					 "STOP"));
       break;
-    case 'k':
-      /* TODO: support using -k multiple times! */
+    case 'k': {
+      char * old;
+      char * nw;
+      size_t s;
+
+      old = getConfigurationString("PSEUDONYM",
+				   "KEYWORD");
+      if (old == NULL) {
+	nw = STRDUP(GNoptarg);
+      } else {
+	s = strlen(old) + strlen(GNoptarg) + 3 + strlen(_("AND"));
+	nw = MALLOC(s);
+	SNPRINTF(nw, 
+		 s,
+		 "%s %s %s",
+		 old, _("AND"), GNoptarg);
+	FREE(old);
+      }
       FREENONNULL(setConfigurationString("PSEUDONYM",
 					 "KEYWORD",
-					 GNoptarg));
+					 nw));
+      FREE(nw);
       break;
+    }
     case 'h':
       printhelp();
       return SYSERR;

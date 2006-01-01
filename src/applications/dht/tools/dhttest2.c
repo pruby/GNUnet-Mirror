@@ -83,6 +83,7 @@ int main(int argc, char ** argv) {
 		     argv,
 		     &parseOptions))
     return -1;
+  printf("Starting daemons (1st round)\n");
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
 				     "peer1.conf"));
@@ -105,7 +106,7 @@ int main(int argc, char ** argv) {
       DIE_STRERROR("kill");
     GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
   }
-
+  printf("Re-starting daemons.\n");
   /* re-start, this time we're sure up-to-date hellos are available */
   FREENONNULL(setConfigurationString("GNUNET",
 				     "GNUNETD-CONFIG",
@@ -115,7 +116,7 @@ int main(int argc, char ** argv) {
 				     "GNUNETD-CONFIG",
 				     "peer2.conf"));
   daemon2 = startGNUnetDaemon(NO);
-    gnunet_util_sleep(5 * cronSECONDS);
+  gnunet_util_sleep(5 * cronSECONDS);
 
   ret = 0;
   left = 5;
@@ -143,7 +144,8 @@ int main(int argc, char ** argv) {
     CHECK(left > 0);
   }
   releaseClientSocket(sock);
-
+  printf("Peers connected.  Running actual test.\n");
+  
   memset(&table, 33, sizeof(DHT_TableId));
   DHT_LIB_init();
   store = create_blockstore_memory(65536);
@@ -155,16 +157,19 @@ int main(int argc, char ** argv) {
     setConfigurationInt("NETWORK",
 			"PORT",
 			12087);
+    printf("Peer2 joins DHT\n");
     DHT_LIB_join(store,
 		 &table);
     hash("key", 3, &key);
     value = MALLOC(8);
     value->size = ntohl(8);
+    printf("Peer2 stores key.\n");
     CHECK2(OK == DHT_LIB_put(&table,
 			     &key,
 			     0,
 			     5 * cronSECONDS,
 			     value));
+    printf("Peer2 gets key.\n");
     CHECK2(1 == DHT_LIB_get(&table,
 			    0,
 			    0,
@@ -175,6 +180,7 @@ int main(int argc, char ** argv) {
 			    NULL));
 
     hash("key2", 4, &key);
+    printf("Peer2 gets key2.\n");
     CHECK2(1 == DHT_LIB_get(&table,
 			    0,
 			    0,
@@ -183,6 +189,8 @@ int main(int argc, char ** argv) {
 			    60 * cronSECONDS,
 			    NULL,
 			    NULL));
+    printf("Peer2 tests successful.\n");
+    gnunet_util_sleep(30 * cronSECONDS);
   FAILURE2:
     DHT_LIB_leave(&table);
     destroy_blockstore_memory(store);
@@ -191,16 +199,19 @@ int main(int argc, char ** argv) {
     doneUtil();
     exit(ret);
   }
+  printf("Peer1 joints DHT\n");
   DHT_LIB_join(store,
 	       &table);
   hash("key2", 4, &key);
   value = MALLOC(8);
   value->size = ntohl(8);
+  printf("Peer1 stores key2\n");
   CHECK(OK == DHT_LIB_put(&table,
 			  &key,
 			  0,
 			  5 * cronSECONDS,
 			  value));
+  printf("Peer1 gets key2\n");
   CHECK(1 == DHT_LIB_get(&table,
 			 0,
 			 0,
@@ -210,6 +221,7 @@ int main(int argc, char ** argv) {
 			 NULL,
 			 NULL));
   hash("key", 3, &key);
+  printf("Peer1 gets key\n");
   CHECK(1 == DHT_LIB_get(&table,
 			 0,
 			 0,
@@ -218,7 +230,7 @@ int main(int argc, char ** argv) {
 			 60 * cronSECONDS,
 			 NULL,
 			 NULL));
-
+  printf("Peer1 tests successful, shutting down.\n");
   DHT_LIB_leave(&table);
   destroy_blockstore_memory(store);
   DHT_LIB_done();

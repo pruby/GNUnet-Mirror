@@ -14,7 +14,7 @@ gnunet\-pseudonym can be used to list all of the pseudonyms that were created lo
 
 Creating a new pseudonym requires using the \-C option together with a nickname that is to be used for the namespace.  Nicknames must be unique for each user, global uniqueness is desireable but not necessary.  If two namespaces in GNUnet use the same nickname all GNUnet tools will display the nickname together with the unique namespace identifier (which is derived from the public key and hence guaranteed to be unique) to avoid ambiguity.  Additional options can be passed together with the \-C option to provide additional meta-data that describes the namespace.  Possible meta-data includes the 'realname' of the person controlling the namespace, a description, the mime-type for content in the namespace (useful if the namespace is dedicated to some specific type of content) and contact information.  One important piece of meta-data that can be specified is the identifier of a document root, that is the name of a file in the namespace that is a portal to the rest of the content.  This is useful to help users find this root in the absence of conventions.  Note that all of this meta-data is optional and should never be trusted blindly.
 
-gnunet\-pseudonym also lists the meta-data available for other namespaces.  Namespaces can be discovered whenever the peer obtains the namespace advertisement that is created at the time where the pseudonym is created.  Namespace advertisements can be found in directories (not implemented), ordinary keyword-based searches (by default gnunet\-pseudonym publishes the namespace advertisement under the keyword 'namespace', but the \-k option can be used to specify another keyword) and under the 'all-zeros' identifier of the respective namespace (using a namespace-search if the namespace ID is already known).
+gnunet\-pseudonym also lists the meta-data available for other namespaces.  Namespaces can be discovered whenever the peer obtains the namespace advertisement that is created at the time where the pseudonym is created.  Namespace advertisements can be found in directories (not implemented), ordinary keyword-based searches (by default gnunet\-pseudonym publishes the namespace advertisement under the keyword 'namespace', but the \-k option can be used to specify other keywords) and under the 'all-zeros' identifier of the respective namespace (using a namespace-search if the namespace ID is already known).
 
 For more details about GNUnet namespaces and content encoding please read the 'Encoding for Censorship-resistant Sharing' (ECRS) paper which can be found on the GNUnet webpage.
 
@@ -43,7 +43,7 @@ End a collection.  This option is the opposite of the \-a option in that it stop
 print help page
 .TP
 \fB\-k KEYWORD\fR, \fB\-\-keyword=KEYWORD\fR
-Publish the namespace advertisement under the keyword 'KEYWORD'.  Default is 'namespace' (use with \-C).
+Publish the namespace advertisement under the keyword 'KEYWORD'.  Default is 'namespace' (use with \-C).  You can specify \-k multiple times.  In that case, the namespace will be published under each of those keywords.
 .TP
 \fB\-m MIMETYPE\fR, \fB\-\-mimetype=MIMETYPE\fR
 Advertise that the namespace contains files of the given MIMETYPE (use with \-C).

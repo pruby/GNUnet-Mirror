@@ -1,6 +1,6 @@
  /*
       This file is part of GNUnet
-      (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -35,10 +35,14 @@
  *
  * Todo:
  * 1) document (lots!)
+ * 2) test & debug & complete code
+ * 3) look into threading issues (deadlock? data races?)
  *
  * Desirable features:
  * 1) security: how to pick priorities?  Access rights?
  * 2) performance: add optional hello messages
+ * 3) allow clients to modify data that is stored/retrieved
+ *    on-the-fly (i.e. to implement signed paths for locations!)
  */
 
 #include "platform.h"
@@ -610,7 +614,7 @@ typedef struct {
  * This is just the prototype, the function is below.
  */
 static void request_DHT_ping(const PeerIdentity * identity,
-			     FindNodesContext * fnc);
+			     void * fnc);
 
 static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
 					    const HashCode512 * key,
@@ -1225,9 +1229,11 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
  * We received a reply from a peer that we ping'ed.  Update
  * the FNC's kbest list and the buckets accordingly.
  */
-static void ping_reply_handler(const PeerIdentity * responder,
-			       RPC_Param * results,
-			       FindNodesContext * fnc) {
+static void 
+ping_reply_handler(const PeerIdentity * responder,
+		   RPC_Param * results,
+		   void * cls) {
+  FindNodesContext * fnc = cls;
   int i;
   EncName enc;
   PeerInfo * pos;
@@ -1282,7 +1288,8 @@ static void ping_reply_handler(const PeerIdentity * responder,
  * information.  Note that this is done asynchronously.
  */
 static void request_DHT_ping(const PeerIdentity * identity,
-			     FindNodesContext * fnc) {
+			     void * cls) {
+  FindNodesContext * fnc = cls;
   RPC_Param * request_param;
   PeerInfo * pos;
   cron_t now;
@@ -1457,8 +1464,10 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
  * processed by the callback in record.  The RPC async handle is to be
  * stored in the records rpc list.  Locking is not required.
  */
-static void send_dht_get_rpc(const PeerIdentity * peer,
-			     DHT_GET_RECORD * record) {
+static int
+send_dht_get_rpc(const PeerIdentity * peer,
+		 void * cls) {
+  DHT_GET_RECORD * record = cls;
   RPC_Param * param;
   unsigned long long timeout;
   unsigned int type;
@@ -1479,7 +1488,7 @@ static void send_dht_get_rpc(const PeerIdentity * peer,
   if (isNotCloserThanMe(&record->table,
 			peer,		
 			record->keys))
-    return; /* refuse! */
+    return OK; /* refuse! */
   cronTime(&now);
   if (record->timeout > now)
     delta = (record->timeout - now) / 2;
@@ -1517,6 +1526,7 @@ static void send_dht_get_rpc(const PeerIdentity * peer,
 			(RPC_Complete) &dht_findvalue_rpc_reply_callback,
 			record);
   RPC_paramFree(param);
+  return OK;
 }
 
 /**
@@ -1713,7 +1723,7 @@ dht_get_async_start(const DHT_TableId * table,
 			 &keys[0],
 			 timeout,
 			 ALPHA,
-			 (NodeFoundCallback) &send_dht_get_rpc,
+			 &send_dht_get_rpc,
 			 ret);
   }
   MUTEX_UNLOCK(lock);
@@ -1765,7 +1775,8 @@ static int dht_get_async_stop(struct DHT_GET_RECORD * record) {
 static int
 findnodes_dht_master_get_callback(const HashCode512 * key,
 				  const DataContainer * cont,
-				  FindNodesContext * fnc) {
+				  void * cls) {
+  FindNodesContext * fnc = cls;
   unsigned int dataLength;
   const PeerIdentity * id;
   int i;
@@ -1882,7 +1893,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
      /* No or too few other DHT peers known, search
 	 for more by sending a PING to all connected peers
 	 that are not in the table already */
-      coreAPI->forAllConnectedNodes((PerNodeCallback)&request_DHT_ping,
+      coreAPI->forAllConnectedNodes(&request_DHT_ping,
 				    fnc);
     } else {
 #if DEBUG_DHT
@@ -1902,7 +1913,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 			      1, /* 1 key */
 			      table, /* key */
 			      timeout,
-			      (DataProcessor) &findnodes_dht_master_get_callback,
+			      &findnodes_dht_master_get_callback,
 			      fnc,
 			      NULL,
 			      NULL);
@@ -1957,9 +1968,11 @@ static int findNodes_stop(FindNodesContext * fnc,
  *  looking for; pass those Helos to the core *and* to the callback
  *  as peers supporting the table.
  */
-static void find_k_nodes_dht_master_get_callback(const HashCode512 * key,
-						 const DataContainer * cont,
-						 FindKNodesContext * fnc) {
+static int
+find_k_nodes_dht_master_get_callback(const HashCode512 * key,
+				     const DataContainer * cont,
+				     void * cls) {
+  FindKNodesContext * fnc = cls;
   unsigned int pos;
   unsigned int dataLength;
   const PeerIdentity * value;
@@ -1979,7 +1992,7 @@ static void find_k_nodes_dht_master_get_callback(const HashCode512 * key,
     LOG(LOG_WARNING,
 	_("Malformed response to `%s' on master table.\n"),
 	"DHT_findValue");
-    return;
+    return SYSERR;
   }
   for (pos = 0;pos<dataLength/sizeof(PeerIdentity);pos++) {
     const PeerIdentity * msg;
@@ -2004,6 +2017,7 @@ static void find_k_nodes_dht_master_get_callback(const HashCode512 * key,
     }
     MUTEX_UNLOCK(&fnc->lock);
   }
+  return OK;
 }
 
 /**
@@ -2035,12 +2049,13 @@ static void find_k_nodes_dht_master_get_callback(const HashCode512 * key,
  * @param closure extra argument to the callback
  * @return context for findKNodes_stop
  */
-static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
-					    const HashCode512 * key,
-					    cron_t timeout,
-					    unsigned int k,
-					    NodeFoundCallback callback,
-					    void * closure) {
+static FindKNodesContext * 
+findKNodes_start(const DHT_TableId * table,
+		 const HashCode512 * key,
+		 cron_t timeout,
+		 unsigned int k,
+		 NodeFoundCallback callback,
+		 void * closure) {
   FindKNodesContext * fnc;
   int i;
   int found;
@@ -2116,7 +2131,7 @@ static FindKNodesContext * findKNodes_start(const DHT_TableId * table,
 			    1, /* key count */
 			    table, /* keys */
 			    timeout,
-			    (DataProcessor)&find_k_nodes_dht_master_get_callback,
+			    &find_k_nodes_dht_master_get_callback,
 			    fnc,
 			    NULL,
 			    NULL);
@@ -2159,7 +2174,8 @@ static int findKNodes_stop(FindKNodesContext * fnc) {
  */
 static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
 				       RPC_Param * results,
-				       DHT_PUT_RECORD * record) {
+				       void * cls) {
+  DHT_PUT_RECORD * record = cls;
   PeerIdentity * peer;
   unsigned int dataLength;
   PeerInfo * pos;
@@ -2202,8 +2218,10 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
  * processed by the callback in record.  The RPC async handle is to be
  * stored in the records rpc list.  Locking is not required.
  */
-static void send_dht_put_rpc(const PeerIdentity * peer,
-			     DHT_PUT_RECORD * record) {
+static int 
+send_dht_put_rpc(const PeerIdentity * peer,
+		 void * cls) {
+  DHT_PUT_RECORD * record = cls;
   RPC_Param * param;
   unsigned long long timeout;
   cron_t delta;
@@ -2223,7 +2241,7 @@ static void send_dht_put_rpc(const PeerIdentity * peer,
   if (isNotCloserThanMe(&record->table,
 			peer,		
 			&record->key))
-    return;
+    return OK;
   cronTime(&now);
   if (record->timeout > now)
     delta = (record->timeout - now) / 2;
@@ -2256,9 +2274,17 @@ static void send_dht_put_rpc(const PeerIdentity * peer,
 			param,
 			0,
 			delta,
-			(RPC_Complete) &dht_put_rpc_reply_callback,
+			&dht_put_rpc_reply_callback,
 			record);
   RPC_paramFree(param);
+  return OK;
+}
+
+static void
+dht_put_async_timeout(void * cls) {
+  struct DHT_PUT_RECORD * dpr = cls;
+  dpr->callback(dpr->closure);
+  delAbortJob(&dht_put_async_timeout, cls);
 }
 
 
@@ -2394,11 +2420,17 @@ dht_put_async_start(const DHT_TableId * table,
 			 key,
 			 timeout,
 			 ALPHA,
-			 (NodeFoundCallback) &send_dht_put_rpc,
+			 &send_dht_put_rpc,
 			 ret);
   }
-  /* FIXME: ensure we call OP_Complete callback
-     after timeout! */
+
+  /* call OP_Complete callback after timeout! */
+  addAbortJob(&dht_put_async_timeout,
+	      ret);
+  addCronJob(&dht_put_async_timeout,
+	     timeout,
+	     0,
+	     ret);
   MUTEX_UNLOCK(lock);
   return ret;
 }
@@ -2413,6 +2445,9 @@ static int dht_put_async_stop(struct DHT_PUT_RECORD * record) {
   if (record == NULL)
     return SYSERR;
 
+  /* cancel timeout cron job (if still live) */
+  delAbortJob(&dht_put_async_timeout, record);
+  delCronJob(&dht_put_async_timeout, 0, record);
   /* abort findKNodes (if running) - it may cause
      the addition of additional RPCs otherwise! */
   if (record->kfnc != NULL)
@@ -2437,9 +2472,11 @@ static int dht_put_async_stop(struct DHT_PUT_RECORD * record) {
  *
  * @param results::peer created in rpc_DHT_store_abort
  */
-static void dht_remove_rpc_reply_callback(const PeerIdentity * responder,
-					  RPC_Param * results,
-					  DHT_REMOVE_RECORD * record) {
+static void 
+dht_remove_rpc_reply_callback(const PeerIdentity * responder,
+			      RPC_Param * results,
+			      void * cls) {
+  DHT_REMOVE_RECORD * record = cls;
   PeerIdentity * peer;
   unsigned int dataLength;
   PeerInfo * pos;
@@ -2482,8 +2519,10 @@ static void dht_remove_rpc_reply_callback(const PeerIdentity * responder,
  * processed by the callback in record.  The RPC async handle is to be
  * stored in the records rpc list.  Locking is not required.
  */
-static void send_dht_remove_rpc(const PeerIdentity * peer,
-				DHT_REMOVE_RECORD * record) {
+static int
+send_dht_remove_rpc(const PeerIdentity * peer,
+		    void * cls) {
+  DHT_REMOVE_RECORD * record = cls;
   RPC_Param * param;
   unsigned long long timeout;
   cron_t delta;
@@ -2503,7 +2542,7 @@ static void send_dht_remove_rpc(const PeerIdentity * peer,
   if (isNotCloserThanMe(&record->table,
 			peer,		
 			&record->key))
-    return; /* refuse! */
+    return OK; /* refuse! */
   cronTime(&now);
   if (record->timeout > now)
     delta = (record->timeout - now) / 2;
@@ -2537,9 +2576,10 @@ static void send_dht_remove_rpc(const PeerIdentity * peer,
 			param,
 			0,
 			delta,
-			(RPC_Complete) &dht_remove_rpc_reply_callback,
+			&dht_remove_rpc_reply_callback,
 			record);
   RPC_paramFree(param);
+  return OK;
 }
 
 /**
@@ -2649,7 +2689,7 @@ dht_remove_async_start(const DHT_TableId * table,
 			 key,
 			 timeout,
 			 ALPHA,
-			 (NodeFoundCallback) &send_dht_remove_rpc,
+			 &send_dht_remove_rpc,
 			 ret);
   }
   MUTEX_UNLOCK(lock);
@@ -2914,8 +2954,19 @@ static int rpc_dht_findValue_callback(const HashCode512 * key,
 }
 
 static void rpc_dht_findValue_complete(RPC_DHT_FindValue_Context * ctx) {
-  /* FIXME! */
+  RPC_Param * param;
+  int i;
 
+  param = RPC_paramNew();
+  for (i=0;i<ctx->count;i++)
+    RPC_paramAdd(param,
+		 "data",
+		 ntohl(ctx->results[i]->size),
+		 &ctx->results[i][1]);
+  ctx->callback(param,
+		0, /* error code */
+		ctx->rpc_context);
+  RPC_paramFree(param);
 }
 
 /**
@@ -2995,8 +3046,6 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 			  fw_context,
 			  (DHT_OP_Complete) &rpc_dht_findValue_complete,
 			  fw_context);
-  /* FIXME: manage abort properly, also fix
-     rpc_dht_findValue_complete! */
   addAbortJob((CronJob)&rpc_DHT_findValue_abort,
 	      fw_context);
   addCronJob((CronJob)&rpc_DHT_findValue_abort,
@@ -3013,11 +3062,12 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
  *
  * The result is parsed in dht_put_rpc_reply_callback.
  */
-static void rpc_DHT_store_abort(RPC_DHT_store_Context * fw) {
+static void rpc_DHT_store_abort(void * cls) {
+  RPC_DHT_store_Context * fw = cls;
   RPC_Param * results;
 
   ENTER();
-  delAbortJob((CronJob) &rpc_DHT_store_abort,
+  delAbortJob(&rpc_DHT_store_abort,
 	      fw);
   MUTEX_LOCK(&fw->lock);
   if (fw->done == YES) {
@@ -3047,9 +3097,21 @@ static void rpc_DHT_store_abort(RPC_DHT_store_Context * fw) {
  * sending the cummulative reply via RPC.
  */
 static void rpc_dht_store_callback(RPC_DHT_store_Context * fw) {
-  /* FIXME: shutdown coordination! */
+  RPC_Param * param;
+  
+  delCronJob(&rpc_DHT_store_abort, 0, fw);
+  delAbortJob(&rpc_DHT_store_abort, fw);
+  param = RPC_paramNew();
+  fw->callback(param,
+	       0,
+	       fw->rpc_context);
+  RPC_paramFree(param);
+  FREE(fw);
 }
 
+/**
+ * DHT store request.
+ */
 static void rpc_DHT_store(const PeerIdentity * sender,
 			  RPC_Param * arguments,
 			  Async_RPC_Complete_Callback callback,
@@ -3112,11 +3174,9 @@ static void rpc_DHT_store(const PeerIdentity * sender,
 			  value,
 			  (DHT_OP_Complete) &rpc_dht_store_callback,
 			  fw_context);
-  /* FIXME: fix shutdown
-     (also fix rpc_dht_store_callback) */
-  addAbortJob((CronJob)&rpc_DHT_store_abort,
+  addAbortJob(&rpc_DHT_store_abort,
 	      fw_context);
-  addCronJob((CronJob)&rpc_DHT_store_abort,
+  addCronJob(&rpc_DHT_store_abort,
 	     ntohll(*timeout),
 	     0,
 	     fw_context);
@@ -3164,7 +3224,17 @@ static void rpc_DHT_remove_abort(RPC_DHT_remove_Context * fw) {
  * sending the cummulative reply via RPC.
  */
 static void rpc_dht_remove_callback(RPC_DHT_remove_Context * fw) {
-  /* FIXME: shutdown sequence! */
+  RPC_Param * param;
+  
+  delCronJob(&rpc_DHT_store_abort, 0, fw);
+  delAbortJob(&rpc_DHT_store_abort, fw);
+  param = RPC_paramNew();
+
+  fw->callback(param,
+	       0,
+	       fw->rpc_context);
+  RPC_paramFree(param);
+  FREE(fw);
 }
 
 /**
@@ -3240,7 +3310,6 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 			     value,
 			     (DHT_OP_Complete) &rpc_dht_remove_callback,
 			     fw_context);
-  /* FIXME: shutdown sequence! */
   addAbortJob((CronJob)&rpc_DHT_remove_abort,
 	      fw_context);
   addCronJob((CronJob)&rpc_DHT_remove_abort,
@@ -3456,7 +3525,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
 			      request_param,
 			      0,
 			      DHT_PING_FREQUENCY,
-			      (RPC_Complete) &ping_reply_handler,
+			      &ping_reply_handler,
 			      NULL);
 	pingTimes[pingTimesSize-1]
 	  = now;

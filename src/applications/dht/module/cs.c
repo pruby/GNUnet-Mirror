@@ -171,8 +171,10 @@ static int tcp_get(void * closure,
   DHT_CLIENT_TableHandlers * handlers = closure;
   int ret;
 
-  if (keyCount < 1)
+  if (keyCount < 1) {
+    BREAK();
     return SYSERR;
+  }
 
   SEMAPHORE_DOWN(handlers->prerequest);
   handlers->resultCallback = resultCallback;
@@ -357,8 +359,10 @@ static int csJoin(ClientHandle client,
   CS_dht_request_join_MESSAGE * req;
   int ret;
 
-  if (ntohs(message->size) != sizeof(CS_dht_request_join_MESSAGE))
+  if (ntohs(message->size) != sizeof(CS_dht_request_join_MESSAGE)) {
+    BREAK();
     return SYSERR;
+  }
   req = (CS_dht_request_join_MESSAGE*) message;
   MUTEX_LOCK(&csLock);
   ptr = MALLOC(sizeof(DHT_CLIENT_TableHandlers));
@@ -404,8 +408,10 @@ static int csLeave(ClientHandle client,
   int i;
   DHT_CLIENT_TableHandlers * ptr;
 
-  if (ntohs(message->size) != sizeof(CS_dht_request_leave_MESSAGE))
+  if (ntohs(message->size) != sizeof(CS_dht_request_leave_MESSAGE)) {
+    BREAK();
     return SYSERR;
+  }
   req = (CS_dht_request_leave_MESSAGE*) message;
   LOG(LOG_EVERYTHING,
       "Client leaving request received!\n");
@@ -444,9 +450,13 @@ static int csLeave(ClientHandle client,
 		 SYSERR);
 }
 
-static void cs_put_abort(DHT_CLIENT_PUT_RECORD * record) {
+static void cs_put_abort(void * cls) {
+  DHT_CLIENT_PUT_RECORD * record = cls;
   int i;
 
+  LOG(LOG_DEBUG,
+      "Signaling client put completion: %d\n",
+      record->replicas);
   MUTEX_LOCK(&csLock);
   dhtAPI->put_stop(record->put_record);
   if (OK != sendAck(record->client,
@@ -479,8 +489,10 @@ static int csPut(ClientHandle client,
   DHT_CLIENT_PUT_RECORD * ptr;
   unsigned int size;
 
-  if (ntohs(message->size) < sizeof(CS_dht_request_put_MESSAGE))
+  if (ntohs(message->size) < sizeof(CS_dht_request_put_MESSAGE)) {
+    BREAK();
     return SYSERR;
+  }
   req = (CS_dht_request_put_MESSAGE*) message;
   size = ntohs(req->header.size)
     - sizeof(CS_dht_request_put_MESSAGE)
@@ -507,11 +519,13 @@ static int csPut(ClientHandle client,
        putRecordsSize+1);
   putRecords[putRecordsSize-1] = ptr;
   MUTEX_UNLOCK(&csLock);
+  LOG(LOG_DEBUG,
+      "Starting DHT put\n");
   ptr->put_record = dhtAPI->put_start(&req->table,
 				      &req->key,
 				      ntohll(req->timeout),
 				      data,
-				      (DHT_OP_Complete) &cs_put_abort,
+				      &cs_put_abort,
 				      ptr);
   FREE(data);
   return OK;
@@ -601,8 +615,10 @@ static int csRemove(ClientHandle client,
 		    const CS_MESSAGE_HEADER * message) {
   struct CSRemoveClosure * cpc;
 
-  if (ntohs(message->size) < sizeof(CS_dht_request_remove_MESSAGE))
+  if (ntohs(message->size) < sizeof(CS_dht_request_remove_MESSAGE)) {
+    BREAK();
     return SYSERR;
+  }
   cpc = MALLOC(sizeof(struct CSRemoveClosure));
   cpc->message = MALLOC(ntohs(message->size));
   memcpy(cpc->message,
@@ -620,7 +636,8 @@ static int csRemove(ClientHandle client,
 
 static int cs_get_result_callback(const HashCode512 * key,
 				  const DataContainer * value,
-				  DHT_CLIENT_GET_RECORD * record) {
+				  void * cls) {
+  DHT_CLIENT_GET_RECORD * record = cls;
   CS_dht_reply_results_MESSAGE * msg;
   size_t n;
 
@@ -649,7 +666,8 @@ static int cs_get_result_callback(const HashCode512 * key,
   return OK;
 }
 				
-static void cs_get_abort(DHT_CLIENT_GET_RECORD * record) {
+static void cs_get_abort(void * cls) {
+  DHT_CLIENT_GET_RECORD * record = cls;
   int i;
 
   dhtAPI->get_stop(record->get_record);
@@ -721,9 +739,9 @@ static int csGetJob(struct CSGetClosure * cpc) {
 				      keyCount,
 				      &req->keys,
 				      ntohll(req->timeout),
-				      (DataProcessor) &cs_get_result_callback,
+				      &cs_get_result_callback,
 				      ptr,
-				      (DHT_OP_Complete) &cs_get_abort,
+				      &cs_get_abort,
 				      ptr);
   return OK;
 }
@@ -735,8 +753,10 @@ static int csGet(ClientHandle client,
 		 const CS_MESSAGE_HEADER * message) {
   struct CSGetClosure * cpc;
 
-  if (ntohs(message->size) != sizeof(CS_dht_request_get_MESSAGE))
+  if (ntohs(message->size) != sizeof(CS_dht_request_get_MESSAGE)) {
+    BREAK();
     return SYSERR;
+  }
 
   cpc = MALLOC(sizeof(struct CSGetClosure));
   cpc->message = MALLOC(ntohs(message->size));
@@ -762,8 +782,10 @@ static int csACK(ClientHandle client,
   CS_dht_reply_ack_MESSAGE * req;
   int i;
 
-  if (ntohs(message->size) != sizeof(CS_dht_reply_ack_MESSAGE))
+  if (ntohs(message->size) != sizeof(CS_dht_reply_ack_MESSAGE)) {
+    BREAK();
     return SYSERR;
+  }
   req =(CS_dht_reply_ack_MESSAGE*) message;
   LOG(LOG_EVERYTHING,
       "`%s' received from client.\n",
@@ -874,7 +896,7 @@ static void csClientExit(ClientHandle client) {
     if (getRecords[i]->client == client) {
       gr = getRecords[i];
 
-      delCronJob((CronJob) &cs_get_abort,
+      delCronJob(&cs_get_abort,
 		 0,
 		 gr);
       dhtAPI->get_stop(gr->get_record);
@@ -888,7 +910,7 @@ static void csClientExit(ClientHandle client) {
     if (putRecords[i]->client == client) {
       pr = putRecords[i];
 
-      delCronJob((CronJob) &cs_put_abort,
+      delCronJob(&cs_put_abort,
 		 0,
 		 pr);
       dhtAPI->put_stop(pr->put_record);
@@ -996,7 +1018,7 @@ int done_module_dht() {
     status = SYSERR;
 
   while (putRecordsSize > 0) {
-    delCronJob((CronJob) &cs_put_abort,
+    delCronJob(&cs_put_abort,
 	       0,
 	       putRecords[0]);
     cs_put_abort(putRecords[0]);
@@ -1010,7 +1032,7 @@ int done_module_dht() {
   }
 
   while (getRecordsSize > 0) {
-    delCronJob((CronJob) &cs_get_abort,
+    delCronJob(&cs_get_abort,
 	       0,
 	       getRecords[0]);
     cs_get_abort(getRecords[0]);
