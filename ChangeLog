@@ -1,3 +1,8 @@
+Sun Jan  1 21:35:59 PST 2006
+	Reduced amount of hashing done to be O(n) and not O(n^2) for
+	n local search results (for example, for 100 results, this can
+	make the difference between hashing 200 MB and hashing 20 MB).
+
 Sat Dec 31 17:02:37 PST 2005
 	Added support for using -k multiple times in gnunet-pseudonym.
 

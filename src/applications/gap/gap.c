@@ -1512,6 +1512,8 @@ struct qLRC {
   const PeerIdentity * sender;
   DataContainer ** values;
   unsigned int valueCount;
+  HashCode512 * hashes;
+  unsigned int hashCount;
 };
 
 /**
@@ -1532,7 +1534,6 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
 			 void * closure) {
   struct qLRC * cls = closure;
   HashCode512 hc;
-  HashCode512 hc1;
   int i;
   IndirectionTableEntry * ite;
 
@@ -1553,14 +1554,10 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
     if (equalsHashCode512(&hc,
 			  &ite->seen[i]))
       return OK; /* drop, duplicate result! */
-  for (i=0;i<cls->valueCount;i++) {
-    hash(&cls->values[i][1],
-	 ntohl(cls->values[i]->size) - sizeof(DataContainer),
-	 &hc1);
+  for (i=0;i<cls->valueCount;i++) 
     if (equalsHashCode512(&hc,
-			  &hc1))
-      return OK; /* drop, duplicate entry in DB! */
-  }
+			  &cls->hashes[i]))
+      return OK; /* drop, duplicate entry in DB! */  
   GROW(cls->values,
        cls->valueCount,
        cls->valueCount+1);
@@ -1569,6 +1566,11 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
   memcpy(cls->values[cls->valueCount-1],
 	 value,
 	 ntohl(value->size));
+  if (cls->hashCount < cls->valueCount) 
+    GROW(cls->hashes,
+	 cls->hashCount,
+	 cls->hashCount * 2 + 8);
+  cls->hashes[cls->valueCount-1] = hc;
   return OK;
 }
 
@@ -1641,6 +1643,8 @@ static int execQuery(const PeerIdentity * sender,
 #endif
   cls.values = NULL;
   cls.valueCount = 0;
+  cls.hashes = NULL;
+  cls.hashCount = 0;
   cls.sender = sender;
   if ( (isRouted == YES) && /* if we can't route, lookup useless! */
        ( (policy & QUERY_ANSWER) > 0) ) {
@@ -1696,7 +1700,9 @@ static int execQuery(const PeerIdentity * sender,
   GROW(cls.values,
        cls.valueCount,
        0);
-
+  GROW(cls.hashes,
+       cls.hashCount,
+       0);
 
 
   MUTEX_UNLOCK(&lookup_exclusion);
