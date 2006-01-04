@@ -853,6 +853,9 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
   int i;
   int noclear = NO;
 
+  if (getCPULoad() > 100 || getNetworkLoadUp() > 100)
+    return; /* load too high */
+
   cronTime(&now);
   MUTEX_LOCK(lock);
 
