@@ -812,6 +812,9 @@ static void sendToSelected(const PeerIdentity * id,
   EncName encp;
 #endif
 
+  if (getCPULoad() > 100 || getNetworkLoadUp() > 100)
+    return; /* load too high */
+
   if ( (equalsHashCode512(&id->hashPubKey,
 			  &qr->noTarget.hashPubKey)) ||
        (equalsHashCode512(&id->hashPubKey,
@@ -852,9 +855,6 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
   int oldestIndex;
   int i;
   int noclear = NO;
-
-  if (getCPULoad() > 100 || getNetworkLoadUp() > 100)
-    return; /* load too high */
 
   cronTime(&now);
   MUTEX_LOCK(lock);
