@@ -812,9 +812,6 @@ static void sendToSelected(const PeerIdentity * id,
   EncName encp;
 #endif
 
-  if (getCPULoad() > 100 || getNetworkLoadUp() > 100)
-    return; /* load too high */
-
   if ( (equalsHashCode512(&id->hashPubKey,
 			  &qr->noTarget.hashPubKey)) ||
        (equalsHashCode512(&id->hashPubKey,
