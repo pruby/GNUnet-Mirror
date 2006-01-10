@@ -500,6 +500,11 @@ static RewardEntry * rewards = NULL;
 static unsigned int rewardSize = 0;
 static unsigned int rewardPos = 0;
 
+/**
+ * Hard CPU limit
+ */
+static unsigned int hardCPULimit;
+static unsigned int hardUpLimit;
 
 /* ****************** helper functions ***************** */
 
@@ -817,6 +822,11 @@ static void sendToSelected(const PeerIdentity * id,
        (equalsHashCode512(&id->hashPubKey,
 			  &qr->msg->returnTo.hashPubKey)) )
     return; /* never send back to source */
+
+  /* Load above hard limit? */
+  if ((hardLimit && getCPULoad() >= hardCPULimit) ||
+        (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) )
+    return;
 
   if (getBit(qr, getIndex(id)) == 1) {
 #if DEBUG_GAP
@@ -2185,6 +2195,9 @@ provide_module_gap(CoreAPIForApplication * capi) {
   GROW(rewards,
        rewardSize,
        MAX_REWARD_TRACKS);
+       
+  hardCPULimit = getConfigurationInt("LOAD", "HARDCPULIMIT");
+  hardUpLimit = getConfigurationInt("LOAD", "HARDUPLIMIT");
 
   identity = coreAPI->requestService("identity");
   GNUNET_ASSERT(identity != NULL);
