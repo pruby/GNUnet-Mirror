@@ -824,7 +824,7 @@ static void sendToSelected(const PeerIdentity * id,
     return; /* never send back to source */
 
   /* Load above hard limit? */
-  if ((hardLimit && getCPULoad() >= hardCPULimit) ||
+  if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
         (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) )
     return;
 
