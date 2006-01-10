@@ -1616,6 +1616,13 @@ static int execQuery(const PeerIdentity * sender,
   EncName enc;
 #endif
 
+  /* Load above hard limit? */
+  if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
+        (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) ) {
+
+    return SYSERR;
+  }
+
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&lookup_exclusion);
   i = -1;
@@ -1717,14 +1724,6 @@ static int execQuery(const PeerIdentity * sender,
 
   MUTEX_UNLOCK(&lookup_exclusion);
   if (doForward) {
-    
-    /* Load above hard limit? */
-    if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
-          (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) ) {
-
-      return SYSERR;
-    }
-    
     forwardQuery(query,
 		 sender);
   }
