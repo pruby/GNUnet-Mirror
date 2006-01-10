@@ -1716,9 +1716,18 @@ static int execQuery(const PeerIdentity * sender,
 
 
   MUTEX_UNLOCK(&lookup_exclusion);
-  if (doForward)
+  if (doForward) {
+    
+    /* Load above hard limit? */
+    if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
+          (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) ) {
+
+      return SYSERR;
+    }
+    
     forwardQuery(query,
 		 sender);
+  }
   return doForward;
 }
 
