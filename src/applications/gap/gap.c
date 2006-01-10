@@ -2067,6 +2067,22 @@ static int handleQuery(const PeerIdentity * sender,
     BREAK();
     return 0;
   }
+  
+  /* Load above hard limit? */
+  if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
+        (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) ) {
+#if DEBUG_GAP
+    if (sender != NULL) {
+      IFLOG(LOG_DEBUG,
+        hash2enc(&sender->hashPubKey,
+             &enc));
+    }
+    LOG(LOG_DEBUG,
+        "Dropping query from %s, this peer is too busy.\n",
+        sender == NULL ? "localhost" : &enc);
+#endif
+    return OK;
+  }
 
   queries = 1 + (ntohs(msg->size) - sizeof(P2P_gap_query_MESSAGE))
     / sizeof(HashCode512);
