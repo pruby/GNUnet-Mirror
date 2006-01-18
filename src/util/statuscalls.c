@@ -683,21 +683,21 @@ int getNetworkLoadUp() {
     MUTEX_UNLOCK(&statusMutex);
     return -1;
   }
-  if (maxNetDownBPS == 0) {
+  if (maxNetUpBPS == 0) {
     MUTEX_UNLOCK(&statusMutex);
     return -1;
   }
   if (now - lastCall < cronSECONDS) {
     /* increase last load proportional to difference in
        data transmitted and in relation to the limit */
-    ret = lastValue + 100 * (currentLoadSum - lastSum) / maxNetDownBPS;
+    ret = lastValue + 100 * (currentLoadSum - lastSum) / maxNetUpBPS;
     MUTEX_UNLOCK(&statusMutex);
     return ret;
   }
   currentLoadSum -= lastSum;
   lastSum += currentLoadSum;
   currentLoadSum += overload;
-  maxExpect = ( (now - lastCall) * maxNetDownBPS ) / cronSECONDS;
+  maxExpect = ( (now - lastCall) * maxNetUpBPS ) / cronSECONDS;
   lastCall = now;
   if (currentLoadSum < maxExpect)
     overload = 0;
