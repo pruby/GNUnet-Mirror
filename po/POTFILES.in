@@ -12,7 +12,6 @@ src/applications/dht/module/datastore_dht_master.c
 src/applications/dht/module/datastore_memory.c
 src/applications/dht/module/datastore_memory_test.c
 src/applications/dht/module/dht.c
-src/applications/dht/module/dht_test.c
 src/applications/dht/tools/dht-join.c
 src/applications/dht/tools/dht-query.c
 src/applications/dht/tools/dht_api.c
