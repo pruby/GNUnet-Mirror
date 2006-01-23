@@ -43,8 +43,8 @@ libglade2-dev (unstable required!)
 
 For running GNUnet with the MySQL database:
 
-mysql-server-4.1 
-mysql-client-4.1 (for administration)
+mysql-server-5.0
+mysql-client-5.0 (for administration)
 
 
 For gnunet-download-manager (probably no longer needed):
@@ -61,7 +61,7 @@ automake1.8
 
 For changing gnunet-gtk glade user interface (development):
 
-glade-2 (unstable required!)
+glade (unstable required!)
 
 
 ==============================================
