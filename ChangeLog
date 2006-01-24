@@ -1,3 +1,6 @@
+Mon Jan 23 19:04:17 PST 2006
+	Added Swedish translation.
+
 Sun Jan  1 21:35:59 PST 2006
 	Reduced amount of hashing done to be O(n) and not O(n^2) for
 	n local search results (for example, for 100 results, this can
