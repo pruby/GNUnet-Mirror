@@ -33,6 +33,22 @@
 #include "gnunet_core.h"
 
 /**
+ * @brief Handle to a Key/Value-Table
+ */
+typedef struct
+{
+  char *table;
+} KVHandle;
+
+/**
+ * @brief Callback for multiple results from Key/Value-Tables
+ * @param closure optional parameter
+ * @param val the value retrieved
+ * @return OK on success
+ */
+typedef int (*KVCallback)(void *closure, void *val);
+
+/**
  * A value in the datastore.
  */
 typedef struct {
@@ -199,6 +215,63 @@ typedef struct {
    */
   int (*del)(const HashCode512 * key,
 	     const Datastore_Value * value);
+
+  /* *** Key/Value-Table support *** */
+  
+  /**
+   * @brief Open a Key/Value-Table
+   * @param table the name of the Key/Value-Table
+   * @return a handle
+   */
+  KVHandle *(*kvGetTable)(const char *table);
+
+  /**
+   * @brief Get data from a Key/Value-Table
+   * @param kv handle to the table
+   * @param key the key to retrieve
+   * @param keylen length of the key
+   * @param sort 0 = dont, sort, 1 = random, 2 = sort by age
+   * @param limit limit result set to n rows
+   * @param handler callback function to be called for every result (may be NULL)
+   * @param closure optional parameter for handler
+   */
+  void * (*kvGet)(KVHandle *kv, void *key, int keylen, unsigned int sort,
+    unsigned int limit, KVCallback handler, void *closure);
+
+  /**
+   * @brief Store Key/Value-Pair in a table
+   * @param kv handle to the table
+   * @param key key of the pair
+   * @param keylen length of the key (int because of SQLite!)
+   * @param val value of the pair
+   * @param vallen length of the value (int because of SQLite!)
+   * @param optional creation time
+   * @return OK on success, SYSERR otherwise
+   */
+  int (* kvPut)(KVHandle *kv, void *key, int keylen, void *val, int vallen,
+    unsigned long long age);
+  
+  /**
+   * @brief Delete values from a Key/Value-Table
+   * @param key key to delete (may be NULL)
+   * @param keylen length of the key
+   * @param age age of the items to delete (may be 0)
+   * @return OK on success, SYSERR otherwise
+   */
+  int (* kvDel)(KVHandle *kv, void *key, int keylen, unsigned long long age);
+  
+  /**
+   * @brief Close a handle to a Key/Value-Table
+   * @param kv the handle to close
+   */
+  void (* kvClose)(KVHandle *kv);
+
+  /**
+   * @brief Drop a Key/Value-Table
+   * @param the handle to the table
+   * @return OK on success, SYSERR otherwise
+   */
+  int (*kvDropTable) (KVHandle *kv);
 
 } Datastore_ServiceAPI;
 

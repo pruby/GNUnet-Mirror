@@ -140,6 +140,10 @@ static int test(SQstore_ServiceAPI * api) {
   HashCode512 key;
   unsigned long long oldSize;
   int i;
+  KVHandle *kv;
+  HashCode512 k, v;
+  HashCode512 *r;
+  cron_t timeStmp;
 
   now = 1000000;
   oldSize = api->getSize();
@@ -219,7 +223,29 @@ static int test(SQstore_ServiceAPI * api) {
 					 NULL,
 					 NULL));
   api->drop();
+  
+  /* test Key/Value-Tables */
+  kv = api->kvGetTable("KVTEST");
+  ASSERT(kv != NULL);
+  
+  hash("Some key", 9, &k);
+  hash("Some value", 11, &v);
+  cronTime(&timeStmp);
+  ASSERT(api->kvPut(kv, (void *) &k, sizeof(k), (void *) &v, sizeof(v),
+    timeStmp) == OK);
+  
+  r = api->kvGet(kv, (void *) &k, sizeof(k), 0, 0, NULL, NULL);
+  ASSERT(memcmp(&v, r, sizeof(v)) == 0);
+  free(r);
+  
+  ASSERT(api->kvDel(kv, (void *) &k, sizeof(k), 0) == 0);
+  
+  ASSERT(api->kvGet(kv, (void *) &k, sizeof(k), 0, 0, NULL, NULL) == NULL);
+  
+  ASSERT(api->kvDropTable(kv) == OK);
+
   return OK;
+  
  FAILURE:
   api->drop();
   return SYSERR;

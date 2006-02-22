@@ -1010,6 +1010,283 @@ static int update(const HashCode512 * key,
   return n == SQLITE_OK ? OK : SYSERR;
 }
 
+/**
+ * @brief Open a Key/Value-Table
+ * @param table the name of the Key/Value-Table
+ * @return a handle
+ */
+KVHandle *kvGetTable(const char *table)
+{
+  sqlite3_stmt *stmt;
+  unsigned int len;
+  KVHandle *ret;
+  sqliteHandle *dbh;
+  
+  dbh = getDBHandle();
+  MUTEX_LOCK(&db->DATABASE_Lock_);
+  
+  sq_prepare("Select 1 from sqlite_master where tbl_name = ?",
+       &stmt);
+  len = strlen(table);
+  sqlite3_bind_text(stmt, 1, table, len, SQLITE_STATIC);
+  if (sqlite3_step(stmt) == SQLITE_DONE)
+  {
+    char *create = malloc(len + 58);
+    
+    sprintf(create, "CREATE TABLE %s (gn_key BLOB, gn_val BLOB, gn_age BIGINT)", table);
+    
+    if (sqlite3_exec(dbh->dbh, create, NULL, NULL, NULL) != SQLITE_OK)
+    {
+      LOG_SQLITE(LOG_ERROR, "sqlite_create");
+      sqlite3_finalize(stmt);
+      free(create);
+      MUTEX_UNLOCK(&db->DATABASE_Lock_);
+      return NULL;
+    }
+    
+    free(create);
+  }
+  sqlite3_finalize(stmt);  
+  
+  MUTEX_UNLOCK(&db->DATABASE_Lock_);
+
+  ret = malloc(sizeof(KVHandle));
+  ret->table = strdup(table);
+  
+  return ret;
+}
+
+/**
+ * @brief Get data from a Key/Value-Table
+ * @param kv handle to the table
+ * @param key the key to retrieve
+ * @param keylen length of the key
+ * @param sort 0 = dont, sort, 1 = random, 2 = sort by age
+ * @param limit limit result set to n rows
+ * @param handler callback function to be called for every result (may be NULL)
+ * @param closure optional parameter for handler
+ */
+void *kvGet(KVHandle *kv, void *key, int keylen, unsigned int sort,
+  unsigned int limit, KVCallback handler, void *closure)
+{
+  unsigned int len;
+  char *sel, *order, *where, limit_spec[30];
+  sqlite3_stmt *stmt;
+  void *ret;
+  sqliteHandle *dbh;
+  
+  ret = NULL;
+ 
+  len = strlen(kv->table); 
+  sel = malloc(len + 45);
+  
+  if (key)
+    where = "WHERE gn_key = ?";
+  else
+    where = "";
+  
+  switch(sort)
+  {
+    case 1:
+      order = "BY RANDOM()";
+      break;
+    case 2:
+      order = "BY gn_age desc";
+      break;
+    default:
+      order = "";
+      break;
+  }
+  
+  if (limit != 0)
+    sprintf(limit_spec, "LIMIT %u", limit);
+  else
+    *limit_spec = 0;
+  
+  sprintf(sel, "SELECT gn_val FROM %s %s %s %s", where, order, limit_spec);
+  
+  dbh = getDBHandle();
+  MUTEX_LOCK(&db->DATABASE_Lock_);
+
+  sq_prepare(sel, &stmt);
+  sqlite3_bind_blob(stmt, 1, &key, keylen, SQLITE_STATIC);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    ret = (void *) sqlite3_column_blob(stmt, 0);
+    if (handler)
+      if (handler(closure, ret) != OK)
+      {
+        free(sel);
+        MUTEX_UNLOCK(&db->DATABASE_Lock_);
+        sqlite3_finalize(stmt);
+        
+        return ret;      
+      }
+  }
+  
+  sqlite3_finalize(stmt);
+
+  MUTEX_UNLOCK(&db->DATABASE_Lock_);
+  
+  free(sel);
+  
+  return ret;
+}
+
+/**
+ * @brief Store Key/Value-Pair in a table
+ * @param kv handle to the table
+ * @param key key of the pair
+ * @param keylen length of the key (int because of SQLite!)
+ * @param val value of the pair
+ * @param vallen length of the value (int because of SQLite!)
+ * @param optional creation time
+ * @return OK on success, SYSERR otherwise
+ */
+int kvPut(KVHandle *kv, void *key, int keylen, void *val, int vallen,
+  unsigned long long age)
+{
+  unsigned int len;
+  char *ins;
+  sqlite3_stmt *stmt;
+  sqliteHandle *dbh;
+ 
+  len = strlen(kv->table); 
+  ins = malloc(len + 61);
+  
+  sprintf(ins, "INSERT INTO %s(gn_key, gn_value, gn_age) (?, ?, ?)", kv->table);
+  
+  dbh = getDBHandle();
+  MUTEX_LOCK(&db->DATABASE_Lock_);
+
+  sq_prepare(ins, &stmt);
+  sqlite3_bind_blob(stmt, 1, &key, keylen, SQLITE_STATIC);
+  sqlite3_bind_blob(stmt, 2, &val, vallen, SQLITE_STATIC);
+  sqlite3_bind_int64(stmt, 3, age);
+  if (sqlite3_step(stmt) != SQLITE_OK)
+  {
+    free(ins);
+    MUTEX_UNLOCK(&db->DATABASE_Lock_);
+    sqlite3_finalize(stmt);
+    
+    return SYSERR;      
+  }
+  
+  sqlite3_finalize(stmt);
+
+  MUTEX_UNLOCK(&db->DATABASE_Lock_);
+  
+  free(ins);
+  
+  return OK;  
+}
+
+/**
+ * @brief Delete values from a Key/Value-Table
+ * @param key key to delete (may be NULL)
+ * @param keylen length of the key
+ * @param age age of the items to delete (may be 0)
+ * @return OK on success, SYSERR otherwise
+ */
+int kvDel(KVHandle *kv, void *key, int keylen, unsigned long long age)
+{
+  unsigned int len;
+  char *del, *key_where, *age_where;
+  sqlite3_stmt *stmt;
+  int bind;
+  sqliteHandle *dbh;
+ 
+  len = strlen(kv->table); 
+  del = malloc(len + 52);
+  bind = 1;
+  
+  if (key)
+    key_where = "gn_key = ?";
+  else
+    key_where = "";
+  
+  if (age)
+    age_where = "gn_age = ?";
+  else
+    age_where = "";
+  
+  sprintf(del, "DELETE from %s where %s %s %s", kv->table, key_where, key ? "or" : "", age_where);
+  
+  dbh = getDBHandle();
+  MUTEX_LOCK(&db->DATABASE_Lock_);
+
+  sq_prepare(del, &stmt);
+  if (key)
+  {
+    sqlite3_bind_blob(stmt, 1, &key, keylen, SQLITE_STATIC);
+    bind++;
+  }
+  
+  if (age)
+    sqlite3_bind_int64(stmt, bind, age);
+
+  if (sqlite3_step(stmt) != SQLITE_OK)
+  {
+    free(del);
+    MUTEX_UNLOCK(&db->DATABASE_Lock_);
+    sqlite3_finalize(stmt);
+    
+    return SYSERR;      
+  }
+  
+  sqlite3_finalize(stmt);
+
+  MUTEX_UNLOCK(&db->DATABASE_Lock_);
+  
+  free(del);
+  
+  return OK;  
+}
+
+/**
+ * @brief Close a handle to a Key/Value-Table
+ * @param kv the handle to close
+ */
+void kvClose(KVHandle *kv)
+{
+  free(kv->table);
+}
+
+/**
+ * @brief Drop a Key/Value-Table
+ * @param the handle to the table
+ * @return OK on success, SYSERR otherwise
+ */
+int kvDropTable(KVHandle *kv)
+{
+  sqlite3_stmt *stmt;
+  sqliteHandle *dbh;
+
+  char *drop = (void *) malloc(11 + strlen(kv->table));
+  
+  sprintf(drop, "DROP TABLE %s", kv->table);
+  dbh = getDBHandle();
+  MUTEX_LOCK(&db->DATABASE_Lock_);
+
+  sq_prepare(drop, &stmt);
+
+  if (sqlite3_step(stmt) != SQLITE_OK)
+  {
+    free(drop);
+    MUTEX_UNLOCK(&db->DATABASE_Lock_);
+    sqlite3_finalize(stmt);
+    
+    return SYSERR;      
+  }
+  
+  sqlite3_finalize(stmt);
+
+  MUTEX_UNLOCK(&db->DATABASE_Lock_);
+
+  free(drop);
+
+  return OK;
+}
 
 SQstore_ServiceAPI *
 provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
@@ -1079,6 +1356,11 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   api.del = &del;
   api.drop = &drop;
   api.update = &update;
+  api.kvClose = &kvClose;
+  api.kvDel = &kvDel;
+  api.kvGet = &kvGet;
+  api.kvGetTable = &kvGetTable;
+  api.kvPut = &kvPut;
   return &api;
 }
 
