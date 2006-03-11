@@ -123,6 +123,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
   int lastSlash;
   FSUI_Event event;
   int handle;
+  char * mdn;
 
   GNUNET_ASSERT(utc->filename != NULL);
 
@@ -138,9 +139,14 @@ static int uploadDirectory(UploadThreadClosure * utc,
   ECRS_delFromMetaData(*meta,
 		       EXTRACTOR_FILENAME,
 		       NULL);
+  mdn = MALLOC(strlen(&dirName[lastSlash+1]) + 3);
+  strcpy(mdn, &dirName[lastSlash+1]);
+  if (mdn[strlen(mdn)-1] != '/')
+    strcat(mdn, "/");  
   ECRS_addToMetaData(*meta,
 		     EXTRACTOR_FILENAME,
-		     &dirName[lastSlash+1]);
+		     mdn);
+  FREE(mdn);
   ECRS_addToMetaData(*meta,
 		     EXTRACTOR_MIMETYPE,
 		     GNUNET_DIRECTORY_MIME);
@@ -290,7 +296,7 @@ static int dirEntryCallback(const char * filename,
     char * mfilename = MALLOC(strlen(filename) + 2);
     strcpy(mfilename, filename);
     if (YES == isDirectory(fn))
-      strcat(mfilename, '/');    
+      strcat(mfilename, "/");    
     ECRS_addToMetaData(meta,
 		       EXTRACTOR_FILENAME,
 		       mfilename);
