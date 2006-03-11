@@ -1583,7 +1583,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
 			  &cls->hashes[i]))
       return OK; /* drop, duplicate entry in DB! */  
   if ( (cls->valueCount > MAX_SEEN_VALUES) &&
-       (randomi_weak(cls->valueCount) > 8) )
+       (weak_randomi(cls->valueCount) > 8) )
       return OK; /* statistical drop, too many replies to keep in memory */  
   GROW(cls->values,
        cls->valueCount,

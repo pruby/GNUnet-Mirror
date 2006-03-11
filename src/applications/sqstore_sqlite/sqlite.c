@@ -34,7 +34,7 @@
 #include "gnunet_stats_service.h"
 #include <sqlite3.h>
 
-#define DEBUG_SQLITE YES
+#define DEBUG_SQLITE NO
 
 /**
  * Die with an error message that indicates
