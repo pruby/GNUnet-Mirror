@@ -164,6 +164,8 @@ static int createIOContext(IOContext * this,
   for (i=0;i<=this->treedepth;i++) {
     fn = MALLOC(strlen(filename) + 3);
     strcpy(fn, filename);
+    if (fn[strlen(fn)-1] == DIR_SEPARATOR)
+      fn[strlen(fn)-1] = '\0';
     if (i > 0) {
       strcat(fn, ".A");
       fn[strlen(fn)-1] += i;
@@ -173,7 +175,7 @@ static int createIOContext(IOContext * this,
 				S_IRUSR|S_IWUSR );
     if (this->handles[i] < 0) {
       LOG_FILE_STRERROR(LOG_FAILURE,
-			"OPEN",
+			"open",
 			fn);
       freeIOC(this, NO);
       FREE(fn);
