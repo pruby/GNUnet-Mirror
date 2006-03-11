@@ -84,7 +84,10 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 		    + strlen(GNUNET_DIRECTORY_EXT) + 2
 		    + strlen(filename));
   strcpy(fullName, parent->filename);
-  strcat(fullName, GNUNET_DIRECTORY_EXT);
+  if (fullName[strlen(fullName)-1] == '/')
+    fullName[strlen(fullName)-1] = '\0';
+  else
+    strcat(fullName, GNUNET_DIRECTORY_EXT);
   while (NULL != (dotdot = strstr(fullName, "..")))
     dotdot[0] = dotdot[1] = '_';
   mkdirp(fullName);
@@ -228,18 +231,25 @@ void * downloadThread(void * cls) {
        (dl->is_directory) ) {
     char * dirBlock;
     int fd;
+    char * fn;
 
+    fn = MALLOC(strlen(dl->filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
+    strcpy(fn, dl->filename);
+    if (fn[strlen(fn)-1] == '/') {
+      fn[strlen(fn)-1] = '\0';
+      strcat(fn, GNUNET_DIRECTORY_EXT);
+    } 
 #ifdef O_LARGEFILE
-    fd = fileopen(dl->filename,
+    fd = fileopen(fn,
 		  O_LARGEFILE | O_RDONLY);
 #else
-    fd = fileopen(dl->filename,
+    fd = fileopen(fn,
 		  O_RDONLY);
 #endif
     if (fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR,
 			"OPEN",
-			dl->filename);
+			fn);
     } else {
       dirBlock = MMAP(NULL,
 		      totalBytes,
@@ -247,19 +257,24 @@ void * downloadThread(void * cls) {
 		      MAP_SHARED,
 		      fd,
 		      0);
-      /* load directory, start downloads */
-      md = NULL;
-      MUTEX_LOCK(&dl->ctx->lock);
-      ECRS_listDirectory(dirBlock,
-			 totalBytes,
-			 &md,
-			 &triggerRecursiveDownload,
-			 dl);
-      MUTEX_UNLOCK(&dl->ctx->lock);
-      ECRS_freeMetaData(md);
-      MUNMAP(dirBlock, totalBytes);
+      if (MAP_FAILED == dirBlock) {
+	LOG_FILE_STRERROR(LOG_ERROR, "MMAP", fn);	
+      } else {
+	/* load directory, start downloads */
+	md = NULL;
+	MUTEX_LOCK(&dl->ctx->lock);
+	ECRS_listDirectory(dirBlock,
+			   totalBytes,
+			   &md,
+			   &triggerRecursiveDownload,
+			   dl);
+	MUTEX_UNLOCK(&dl->ctx->lock);
+	ECRS_freeMetaData(md);
+	MUNMAP(dirBlock, totalBytes);
+      }
       closefile(fd);
     }
+    FREE(fn);
   }
   if (ret != OK) {
     if (dl->signalTerminate == YES) {

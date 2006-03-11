@@ -287,9 +287,14 @@ static int dirEntryCallback(const char * filename,
 	 0);
   }
   if (ret == OK) {
+    char * mfilename = MALLOC(strlen(filename) + 2);
+    strcpy(mfilename, filename);
+    if (YES == isDirectory(fn))
+      strcat(mfilename, '/');    
     ECRS_addToMetaData(meta,
 		       EXTRACTOR_FILENAME,
-		       filename);
+		       mfilename);
+    FREE(mfilename);
     if (utc->individualKeywords) {
       keywordUri = ECRS_metaDataToUri(meta);
       if (keywordUri != NULL) {

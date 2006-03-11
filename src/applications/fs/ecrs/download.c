@@ -112,8 +112,12 @@ static void freeIOC(IOContext * this,
   MUTEX_DESTROY(&this->lock);
   if (YES == unlinkTreeFiles) {
     for (i=1;i<= this->treedepth;i++) {
-      fn = MALLOC(strlen(this->filename) + 3);
+      fn = MALLOC(strlen(this->filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
       strcpy(fn, this->filename);
+      if (fn[strlen(fn)-1] == '/') {
+	fn[strlen(fn)-1] = '\0';
+	strcat(fn, GNUNET_DIRECTORY_EXT);
+      }
       strcat(fn, ".A");
       fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
@@ -162,10 +166,12 @@ static int createIOContext(IOContext * this,
     this->handles[i] = -1;
 
   for (i=0;i<=this->treedepth;i++) {
-    fn = MALLOC(strlen(filename) + 3);
+    fn = MALLOC(strlen(filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
     strcpy(fn, filename);
-    if (fn[strlen(fn)-1] == DIR_SEPARATOR)
+    if (fn[strlen(fn)-1] == '/') {
       fn[strlen(fn)-1] = '\0';
+      strcat(fn, GNUNET_DIRECTORY_EXT);
+    }
     if (i > 0) {
       strcat(fn, ".A");
       fn[strlen(fn)-1] += i;
