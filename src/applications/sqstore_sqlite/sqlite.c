@@ -34,7 +34,7 @@
 #include "gnunet_stats_service.h"
 #include <sqlite3.h>
 
-#define DEBUG_SQLITE NO
+#define DEBUG_SQLITE YES
 
 /**
  * Die with an error message that indicates
@@ -1103,7 +1103,7 @@ void *kvGet(KVHandle *kv, void *key, int keylen, unsigned int sort,
   else
     *limit_spec = 0;
   
-  sprintf(sel, "SELECT gn_val FROM %s %s %s %s", where, order, limit_spec);
+  sprintf(sel, "SELECT gn_val FROM %s %s %s", where, order, limit_spec);
   
   dbh = getDBHandle();
   MUTEX_LOCK(&db->DATABASE_Lock_);
