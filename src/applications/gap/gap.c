@@ -14,8 +14,8 @@
 
       You should have received a copy of the GNU General Public License
       along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+      Boston, MA 02110-1301, USA.
  */
 
 /**
@@ -56,6 +56,18 @@
  * charge at all?
  */
 #define IDLE_LOAD_THRESHOLD 50
+
+/**
+ * For how many different hosts can we have a query pending (at most).
+ * If this threshold is crossed, the hosts waiting list is reset.
+ */
+#define MAX_HOSTS_WAITING 16
+
+/**
+ * How many seen values do we keep at most for any given query before
+ * we kill it (or at least start to do a probabilistic drop).
+ */
+#define MAX_SEEN_VALUES 32
 
 /**
  * By which amount do we decrement the TTL for simple forwarding /
@@ -1195,6 +1207,8 @@ static int addToSlot(int mode,
 	if (equalsHashCode512(&ite->destination[i].hashPubKey,
 			      &sender->hashPubKey))
 	  return SYSERR;
+      if (ite->hostsWaiting >= MAX_HOSTS_WAITING)
+	ite->hostsWaiting = 0; /* RESET to avoid unbounded growth (#1014) */
     } else {
       ite->successful_local_lookup_in_delay_loop = NO;
       /* different request, flush pending queues */
@@ -1568,6 +1582,9 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
     if (equalsHashCode512(&hc,
 			  &cls->hashes[i]))
       return OK; /* drop, duplicate entry in DB! */  
+  if ( (cls->valueCount > MAX_SEEN_VALUES) &&
+       (randomi_weak(cls->valueCount) > 8) )
+      return OK; /* statistical drop, too many replies to keep in memory */  
   GROW(cls->values,
        cls->valueCount,
        cls->valueCount+1);
@@ -1845,6 +1862,20 @@ static int useContent(const PeerIdentity * hostId,
     }
     sendReply(ite,
 	      &msg->header);
+    if (ite->seenIndex > MAX_SEEN_VALUES * 2) {
+      /* kill routing entry -- we have seen so many different
+	 replies already that we cannot afford to continue
+	 to keep track of all of the responses seen (#1014) */
+      GROW(ite->destination,
+	   ite->hostsWaiting,
+	   0);
+      GROW(ite->seen,
+	   ite->seenIndex,
+	   0);
+      ite->priority = 0;
+      ite->type = 0;
+      ite->ttl = 0;
+    }
   }
   MUTEX_UNLOCK(&lookup_exclusion);
   prio += claimReward(&msg->primaryKey, hostId);

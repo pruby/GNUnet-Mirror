@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
 */
 
 /**
@@ -80,6 +80,8 @@ static Datastore_ServiceAPI * datastore;
 static Traffic_ServiceAPI * traffic;
 
 static Mutex lock;
+
+static int migration;
 
 /**
  * ID of the FS table in the DHT infrastructure.
@@ -180,8 +182,9 @@ static int gapPut(void * closure,
       "FS received GAP-PUT request (query: `%s')\n",
       &enc);
 #endif
-  ret = datastore->putUpdate(query,
-			     dv);
+  if (migration)
+    ret = datastore->putUpdate(query,
+			       dv);
   FREE(dv);
   return ret;
 }
@@ -1070,6 +1073,9 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(sizeof(NBlock) == 716);
   GNUNET_ASSERT(sizeof(KNBlock) == 1244);
 
+  migration = testConfigurationString("FS",
+				      "ACTIVEMIGRATION",
+				      "YES");
   hash("GNUNET_FS",
        strlen("GNUNET_FS"),
        &dht_table);
