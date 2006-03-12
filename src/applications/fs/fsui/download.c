@@ -213,11 +213,16 @@ void * downloadThread(void * cls) {
 			  &downloadProgressCallback,
 			  dl,
 			  &testTerminate,
-			  dl);
+			  dl);  
   if (ret == OK) {
     dl->finished = YES;
     totalBytes = ECRS_fileSize(dl->uri);
   } else {
+#if DEBUG_DTM
+    LOG(LOG_ERROR,
+	"Download thread for `%s' failed (aborted or error)!\n",
+	dl->filename);
+#endif
     totalBytes = 0;
   }
   root = dl;
@@ -290,13 +295,7 @@ void * downloadThread(void * cls) {
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
     dl->signalTerminate = YES;
-    LOG(LOG_DEBUG,
-	"ECRS returned SYSERR for download, setting sig terminate for %p\n",
-	dl);
   } else {
-    LOG(LOG_DEBUG,
-	"ECRS returned OK for download, setting sig terminate for %p\n",
-	dl);
     dl->signalTerminate = YES;
     GNUNET_ASSERT(dl != &dl->ctx->activeDownloads);
     while ( (dl != NULL) &&
@@ -321,7 +320,7 @@ void * downloadThread(void * cls) {
       dl = dl->parent;
     }
   }
-#if DEBUG_DTM || 1
+#if DEBUG_DTM
   LOG(LOG_DEBUG,
       "Download thread for `%s' terminated (%s)...\n",
       dl->filename,
@@ -347,9 +346,6 @@ static int startDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * root;
   unsigned long long totalBytes;
 
-  LOG(LOG_DEBUG,
-      "Scheduling download of '%s'\n",
-      filename);
   GNUNET_ASSERT(ctx != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
@@ -438,7 +434,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        ( (list->total > list->completed) ||
          (list->total == 0) ) &&
        (list->finished == NO) ) {
-#if DEBUG_DTM || 1
+#if DEBUG_DTM
     LOG(LOG_DEBUG,
 	"Download thread manager starts downlod of file `%s'\n",
 	list->filename);
@@ -475,7 +471,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 
   /* has this one "died naturally"? */
   if (list->signalTerminate == YES) {
-#if DEBUG_DTM || 1
+#if DEBUG_DTM
     LOG(LOG_DEBUG,
 	"Download thread manager collects inactive download of file `%s'\n",
 	list->filename);

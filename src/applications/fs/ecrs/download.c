@@ -31,7 +31,7 @@
 #include "ecrs.h"
 #include "tree.h"
 
-#define DEBUG_DOWNLOAD YES
+#define DEBUG_DOWNLOAD NO
 
 /**
  * Highest TTL allowed? (equivalent of 25-50 HOPS distance!)
@@ -897,9 +897,6 @@ static int nodeReceive(const HashCode512 * query,
     BREAK();
     return SYSERR; /* invalid size! */
   }
-  /* request satisfied, stop requesting! */
-  delRequest(node->ctx->rm,
-	     node);
   size -= sizeof(DBlock);
   data = MALLOC(size);
   if (SYSERR == decryptContent((char*)&((DBlock*)&reply[1])[1],
@@ -912,6 +909,8 @@ static int nodeReceive(const HashCode512 * query,
        &hc);
   if (!equalsHashCode512(&hc,
 			 &node->chk.key)) {
+    delRequest(node->ctx->rm,
+	       node);
     FREE(data);
     BREAK();
     LOG(LOG_ERROR,
@@ -937,7 +936,9 @@ static int nodeReceive(const HashCode512 * query,
     iblock_download_children(node,
 			     data,
 			     size);
-
+  /* request satisfied, stop requesting! */
+  delRequest(node->ctx->rm,
+	     node);
 
   for (i=0;i<10;i++) {
     if ( (node->ctx->completed * 10000L >
@@ -1244,10 +1245,20 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
 
   if ( (rm->requestListIndex == 0) &&
        (ctx.completed == ctx.total) &&
-       (rm->abortFlag == NO) )
+       (rm->abortFlag == NO) ) {
     ret = OK;
-  else
+  } else {
+#if 0
+    LOG(LOG_ERROR,
+	"Download ends prematurely: %d %llu == %llu %d TT: %d\n",
+	rm->requestListIndex,
+	ctx.completed,
+	ctx.total,
+	rm->abortFlag,
+	tt(ttClosure));
+#endif
     ret = SYSERR;
+  }
   destroyRequestManager(rm);
   if (ret == OK)
     freeIOC(&ioc, YES);

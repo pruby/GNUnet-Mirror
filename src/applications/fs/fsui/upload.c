@@ -29,12 +29,13 @@
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
+#include <extractor.h>
 
 #define DEBUG_UPLOAD NO
 
 /* LE <= 0.5.8/0.5.12 compatibility code */
 #ifndef EXTRACTOR_SPLIT
-#define EXTRACTOR_SPLIT 90
+#define EXTRACTOR_SPLIT 89
 #endif
 #ifndef EXTRACTOR_LOWERCASE
 #define EXTRACTOR_LOWERCASE 101
