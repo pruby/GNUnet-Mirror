@@ -81,6 +81,7 @@ static void printDirectory(const char * filename) {
     printf(_("=\tError reading directory.\n"));
     return;
   }
+  md = NULL;
 #ifdef O_LARGEFILE
   fd = fileopen(name,
 		O_LARGEFILE | O_RDONLY);
