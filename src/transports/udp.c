@@ -403,9 +403,11 @@ static P2P_hello_MESSAGE * createhello() {
 	_("UDP: Could not determine my public IP address.\n"));
     return NULL;
   }
+#if DEBUG_UDP
   LOG(LOG_DEBUG,
       "UDP uses IP address %u.%u.%u.%u.\n",
       PRIP(ntohl(*(int*)&haddr->senderIP)));
+#endif
   if (udp_shutdown == YES)
     haddr->senderPort      = htons(getGNUnetUDPPort());
   else

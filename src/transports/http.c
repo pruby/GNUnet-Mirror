@@ -1101,9 +1101,11 @@ static P2P_hello_MESSAGE * createhello() {
 	_("HTTP: Could not determine my public IP address.\n"));
     return NULL;
   }
+#if DEBUG_HTTP
   LOG(LOG_DEBUG,
       "HTTP uses IP address %u.%u.%u.%u.\n",
       PRIP(ntohl(*(int*)&haddr->ip)));
+#endif
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
