@@ -181,10 +181,12 @@ downloadProgressCallback(unsigned long long totalBytes,
 static int
 testTerminate(void * cls) {
   FSUI_DownloadList * dl = cls;
-  if (dl->signalTerminate == YES)
+
+  if (dl->signalTerminate == YES) {
     return SYSERR;
-  else
+  } else {
     return OK;
+  }
 }
 
 /**
@@ -288,7 +290,13 @@ void * downloadThread(void * cls) {
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
     dl->signalTerminate = YES;
+    LOG(LOG_DEBUG,
+	"ECRS returned SYSERR for download, setting sig terminate for %p\n",
+	dl);
   } else {
+    LOG(LOG_DEBUG,
+	"ECRS returned OK for download, setting sig terminate for %p\n",
+	dl);
     dl->signalTerminate = YES;
     GNUNET_ASSERT(dl != &dl->ctx->activeDownloads);
     while ( (dl != NULL) &&
@@ -313,7 +321,7 @@ void * downloadThread(void * cls) {
       dl = dl->parent;
     }
   }
-#if DEBUG_DTM 
+#if DEBUG_DTM || 1
   LOG(LOG_DEBUG,
       "Download thread for `%s' terminated (%s)...\n",
       dl->filename,
@@ -339,15 +347,15 @@ static int startDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * root;
   unsigned long long totalBytes;
 
+  LOG(LOG_DEBUG,
+      "Scheduling download of '%s'\n",
+      filename);
   GNUNET_ASSERT(ctx != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
     BREAK(); /* wrong type of URI! */
     return SYSERR;
   }
-  LOG(LOG_DEBUG,
-      "Starting download of file `%s'\n",
-      filename);
   dl = MALLOC(sizeof(FSUI_DownloadList));
   memset(dl, 0, sizeof(FSUI_DownloadList));
   cronTime(&dl->startTime); 
@@ -422,13 +430,6 @@ int updateDownloadThread(FSUI_DownloadList * list) {
       list->ctx->activeDownloadThreads,
       list->ctx->threadPoolSize);
 #endif
-  LOG(LOG_DEBUG,
-      "Download thread manager investigates pending downlod of file `%s' (%d, %llu/%llu, %d)\n",
-      list->filename,
-      list->signalTerminate,
-      list->completed,
-      list->total,
-      list->finished);
   ret = NO;
   /* should this one be started? */
   if ( (list->ctx->threadPoolSize
@@ -437,9 +438,9 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        ( (list->total > list->completed) ||
          (list->total == 0) ) &&
        (list->finished == NO) ) {
-#if DEBUG_DTM
+#if DEBUG_DTM || 1
     LOG(LOG_DEBUG,
-	"Download thread manager schedules active downlod of file `%s'\n",
+	"Download thread manager starts downlod of file `%s'\n",
 	list->filename);
 #endif
     list->signalTerminate = NO;
@@ -459,7 +460,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        (list->signalTerminate == NO) ) {
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
-	"Download thread manager aborts active downlod of file `%s' (%u/%u downloads)\n",
+	"Download thread manager aborts active download of file `%s' (%u/%u downloads)\n",
 	list->filename,
 	list->ctx->activeDownloadThreads,
 	list->ctx->threadPoolSize);
@@ -474,9 +475,9 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 
   /* has this one "died naturally"? */
   if (list->signalTerminate == YES) {
-#if DEBUG_DTM
+#if DEBUG_DTM || 1
     LOG(LOG_DEBUG,
-	"Download thread manager collects inactive downlod of file `%s'\n",
+	"Download thread manager collects inactive download of file `%s'\n",
 	list->filename);
 #endif
     PTHREAD_JOIN(&list->handle,

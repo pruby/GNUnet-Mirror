@@ -32,9 +32,12 @@
 
 #define DEBUG_UPLOAD NO
 
-/* LE <= 0.5.8 compatibility code */
+/* LE <= 0.5.8/0.5.12 compatibility code */
 #ifndef EXTRACTOR_SPLIT
 #define EXTRACTOR_SPLIT 90
+#endif
+#ifndef EXTRACTOR_LOWERCASE
+#define EXTRACTOR_LOWERCASE 101
 #endif
 
 /**
@@ -328,6 +331,9 @@ static int dirEntryCallback(const char * filename,
       ECRS_delFromMetaData(meta,
 			   EXTRACTOR_SPLIT,
 			   NULL);
+      ECRS_delFromMetaData(meta,
+			   EXTRACTOR_LOWERCASE,
+			   NULL);
       utc->dir->fis[utc->dir->fiCount-1].meta = meta;
       utc->dir->fis[utc->dir->fiCount-1].uri = uri;
     } else {
@@ -343,7 +349,8 @@ static int dirEntryCallback(const char * filename,
 /**
  * Thread that does the upload.
  */
-static void * uploadThread(UploadThreadClosure * utc) {
+static void * uploadThread(void * cls) {
+  UploadThreadClosure * utc = cls;
   struct ECRS_URI * uri;
   struct ECRS_URI * keywordUri;
   FSUI_Event event;
@@ -557,7 +564,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   utc->tl = tl;
   tl->isDone = NO;
   if (0 != PTHREAD_CREATE(&tl->handle,
-			  (PThreadMain) &uploadThread,
+			  &uploadThread,
 			  utc,
 			  128 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
@@ -626,7 +633,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   utc->tl = tl;
   tl->isDone = NO;
   if (0 != PTHREAD_CREATE(&tl->handle,
-			  (PThreadMain) &uploadThread,
+			  &uploadThread,
 			  utc,
 			  128 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
