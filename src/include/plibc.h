@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 
 #ifndef _PLIBC_H_
@@ -188,6 +188,7 @@ extern "C" {
 #define MAP_SHARED  0x1
 #define MAP_PRIVATE 0x2 /* unsupported */
 #define MAP_FIXED   0x10
+#define MAP_FAILED  ((void *)-1)
 
 struct statfs
 {
