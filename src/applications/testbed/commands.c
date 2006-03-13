@@ -1450,7 +1450,6 @@ static int addAvailable(int argc,
   long int port;
   char * hostname;
   unsigned int curpos;
-  struct hostent *ip_info;
   struct sockaddr_in soaddr;
   int sock;
   size_t ret;
@@ -1463,7 +1462,7 @@ static int addAvailable(int argc,
   int k;
   struct sockaddr_in theProxy;
   char *proxy, *proxyPort;
-  struct hostent *ip;
+  IPaddr ip;
   size_t n;
 
   if (argc == 0) {
@@ -1481,14 +1480,15 @@ static int addAvailable(int argc,
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
-    ip = GETHOSTBYNAME(proxy);
-    if (ip == NULL) {
-      XPRINTF(" Couldn't resolve name of HTTP proxy %s\n",
-	     proxy);
+    if (OK != GN_getHostByName(proxy,
+			       &ip)) {
+      XPRINTF(" Couldn't resolve name of HTTP proxy '%s'\n",
+	      proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
-      theProxy.sin_addr.s_addr
-	= ((struct in_addr *)ip->h_addr)->s_addr;
+      memcpy(&theProxy.sin_addr.s_addr,
+	     &ip,
+	     sizeof(IPaddr));
       proxyPort = getConfigurationString("GNUNETD",
 					 "HTTP-PROXY-PORT");
       if (proxyPort == NULL) {
@@ -1578,16 +1578,17 @@ static int addAvailable(int argc,
   /* Do we need to connect through a proxy? */
   if (theProxy.sin_addr.s_addr == 0) {
     /* no proxy */
-    ip_info = GETHOSTBYNAME(hostname);
-    if (ip_info == NULL) {
-      XPRINTF(" could not download hostlist, host %s unknown\n",
+    if (OK != GN_getHostByName(hostname,
+			       &ip)) {
+      XPRINTF(" could not download hostlist, host '%s' unknown\n",
 	     hostname);
       FREE(reg);
       FREE(hostname);
       return -1;
     }
-    soaddr.sin_addr.s_addr
-      = ((struct in_addr*)(ip_info->h_addr))->s_addr;
+    memcpy(&soaddr.sin_addr.s_addr,
+	   &ip,
+	   sizeof(IPaddr));
     soaddr.sin_port
       = htons((unsigned short)port);
   } else {

@@ -283,15 +283,16 @@ static int connectToSMTPServer() {
   int res;
   struct sockaddr_in soaddr;
   char * hostname;
-  struct hostent * ip; /* for the lookup of the IP in gnunet.conf */
+  IPaddr ip;
   int one = 1;
 
   hostname = getConfigurationString("SMTP",
 				    "SERVER");
   if (hostname == NULL)
     hostname = STRDUP("localhost");
-  ip = GETHOSTBYNAME(hostname);
-  if (ip == NULL) {
+
+  if (OK != GN_getHostByName(hostname,
+			     &ip)) {
     LOG(LOG_ERROR,
 	_("Could not resolve name of SMTP server `%s': %s"),
 	hostname, hstrerror(h_errno));
@@ -307,8 +308,8 @@ static int connectToSMTPServer() {
   SETSOCKOPT(res, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
   soaddr.sin_family = AF_INET;
   memcpy(&soaddr.sin_addr,
-	 &((struct in_addr*)ip->h_addr)->s_addr,
-	 sizeof(struct in_addr));
+	 &ip,
+	 sizeof(IPaddr));
   soaddr.sin_port = htons(getSMTPPort());
   if (0 > CONNECT(res,
 		  (struct sockaddr*)&soaddr,

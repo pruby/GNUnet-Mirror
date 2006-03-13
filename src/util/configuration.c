@@ -252,7 +252,7 @@ static char * cfg_get_str(const char * sec,
  * @return YES or NO
  */
 static int cfg_exists(const char *sec,
-						const char *ent)
+		      const char *ent)
 {
 	struct CFG_ENTRIES *e = NULL;
 	int i;
@@ -908,5 +908,38 @@ void setConfigurationStringList(char ** value,
   values = value;
   valuesCount = count;
 }
+
+/**
+ * Get the IP address of the given host.
+ * @return OK on success, SYSERR on error
+ */
+int GN_getHostByName(const char * hostname,
+		     IPaddr * ip) {
+  struct hostent * he;
+  
+  /* slight hack: re-use config lock */
+  MUTEX_LOCK(&configLock);
+  he = GETHOSTBYNAME(hostname);
+  if (he == NULL) {    
+    LOG(LOG_ERROR,
+	_("Could not find IP of host `%s': %s\n"),
+	hostname, 
+	hstrerror(h_errno));
+    MUTEX_UNLOCK(&configLock);
+    return SYSERR;
+  }
+  if (he->h_addrtype != AF_INET) {
+    BREAK();
+    MUTEX_UNLOCK(&configLock);
+    return SYSERR;
+  }
+  memcpy(ip,
+	 &((struct in_addr*)he->h_addr_list[0])->s_addr,
+	 sizeof(struct in_addr));
+  MUTEX_UNLOCK(&configLock);
+  return OK;
+}
+		      
+
 
 /* end of configuration.c */

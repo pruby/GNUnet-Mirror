@@ -72,8 +72,6 @@ int initGNUnetClientSocketIP(unsigned short port,
 int initGNUnetClientSocket(unsigned short port,
 			   const char * hostname,
 			   GNUNET_TCP_SOCKET * result) {
-  struct hostent * he;
-
   GNUNET_ASSERT(hostname != NULL);
 #if DEBUG_TCPIO
   LOG(LOG_DEBUG,
@@ -81,15 +79,9 @@ int initGNUnetClientSocket(unsigned short port,
       hostname,
       port);
 #endif
-  he = GETHOSTBYNAME(hostname);
-  if (he == NULL) {
-    LOG(LOG_ERROR,
-	_("Could not find IP of host `%s': %s\n"),
-	hostname,
-	hstrerror(h_errno));
+  if (OK != GN_getHostByName(hostname,
+			     &result->ip)) 
     return SYSERR;
-  }
-  result->ip.addr = (unsigned int) ((struct in_addr*)he->h_addr)->s_addr;
   result->port = port;
   result->socket = -1; /* closed */
   result->outBufLen = 0;

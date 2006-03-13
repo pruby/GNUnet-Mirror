@@ -1019,7 +1019,7 @@ static void httpRegister(char * cmd) {
   long int port;
   char * hostname;
   unsigned int curpos;
-  struct hostent *ip_info;
+  IPaddr ip_info;
   struct sockaddr_in soaddr;
   int sock;
   size_t ret;
@@ -1050,15 +1050,15 @@ static void httpRegister(char * cmd) {
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
-    ip = GETHOSTBYNAME(proxy);
-    if (ip == NULL) {
+    if (OK != GN_getHostByName(proxy, &ip_info)) {
       LOG(LOG_ERROR,
 	  _("Could not resolve name of HTTP proxy `%s'.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
-      theProxy.sin_addr.s_addr
-	= ((struct in_addr *)ip->h_addr)->s_addr;
+      memcpy(&theProxy.sin_addr.s_addr,
+	     &ip_info,
+	     sizeof(IPaddr));
       proxyPort = getConfigurationString("GNUNETD",
 					 "HTTP-PROXY-PORT");
       if (proxyPort == NULL) {
@@ -1149,8 +1149,8 @@ static void httpRegister(char * cmd) {
   /* Do we need to connect through a proxy? */
   if (theProxy.sin_addr.s_addr == 0) {
     /* no proxy */
-    ip_info = GETHOSTBYNAME(hostname);
-    if (ip_info == NULL) {
+    if (OK != GN_getHostByName(hostname,
+			       &ip_info)) {
       LOG(LOG_WARNING,
 	  _("Could not register testbed, host `%s' unknown\n"),
 	  hostname);
@@ -1158,8 +1158,9 @@ static void httpRegister(char * cmd) {
       FREE(hostname);
       return;
     }
-    soaddr.sin_addr.s_addr
-      = ((struct in_addr*)(ip_info->h_addr))->s_addr;
+    memcpy(&soaddr.sin_addr.s_addr,
+	   &ip_info,
+	   sizeof(IPaddr));
     soaddr.sin_port
       = htons((unsigned short)port);
   } else {

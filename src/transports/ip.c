@@ -49,7 +49,7 @@
  */
 static int getAddressFromHostname(IPaddr * identity) {
   char * hostname;
-  struct hostent * ip;
+  int ret;
 
   hostname = MALLOC(1024);
   if (0 != gethostname(hostname, 1024)) {
@@ -57,28 +57,10 @@ static int getAddressFromHostname(IPaddr * identity) {
     LOG_STRERROR(LOG_ERROR, "gethostname");
     return SYSERR;
   }
-  /* LOG(LOG_DEBUG,
-      " looking up $HOSTNAME (%s) to obtain local IP\n",
-      hostname); */
-
-  ip = GETHOSTBYNAME(hostname);
-  if (ip == NULL) {    
-    LOG(LOG_ERROR,
-	_("Could not find IP of host `%s': %s\n"),
-	hostname, 
-	hstrerror(h_errno));
-    FREE(hostname);
-    return SYSERR;
-  }
+  ret = GN_getHostByName(hostname,
+			 identity);
   FREE(hostname);
-  if (ip->h_addrtype != AF_INET) {
-    BREAK();
-    return SYSERR;
-  }
-  memcpy(identity,
-	 &((struct in_addr*)ip->h_addr_list[0])->s_addr,
-	 sizeof(struct in_addr));
-  return OK;
+  return ret;
 }
 
 #if LINUX || SOMEBSD || MINGW
@@ -242,8 +224,7 @@ static int getAddressFromIOCTL(IPaddr * identity) {
 	  _("Could not resolve `%s' to "
 	    "determine our IP address: %s\n"), 
 	  "www.example.com",
-	  STRERROR(errno));
-        
+	  STRERROR(errno));        
       return SYSERR;
     }
     
@@ -288,12 +269,10 @@ static int getAddressFromIOCTL(IPaddr * identity) {
 static int getAddress(IPaddr  * address){
   char * ipString;
   int retval;
-  struct hostent * ip; /* for the lookup of the IP in gnunet.conf */
 
-  retval = SYSERR;
   ipString = getConfigurationString("NETWORK",
 				    "IP");
-  if (ipString == NULL || !ipString[0]) {
+  if ( (ipString == NULL) || (ipString[0] == '\0') ) {
 #if LINUX || SOMEBSD || MINGW
     if (OK == getAddressFromIOCTL(address))
       retval = OK;
@@ -301,28 +280,10 @@ static int getAddress(IPaddr  * address){
 #endif
       retval = getAddressFromHostname(address);
   } else {
-    /* LOG(LOG_DEBUG,
-        "obtaining local IP address from hostname %s\n",
-	ipString); */
-    ip = GETHOSTBYNAME(ipString);
-    if (ip == NULL) {     
-      LOG(LOG_ERROR,
-	  _("Could not resolve `%s': %s\n"),
-	  ipString, hstrerror(h_errno));
-      retval = SYSERR;
-    } else {
-      if (ip->h_addrtype != AF_INET) {
-	BREAK();
-	retval = SYSERR;
-      } else {
-	memcpy (address,
-		&((struct in_addr*) ip->h_addr_list[0])->s_addr,
-		sizeof(struct in_addr));
-	retval = OK;
-      }
-    }
-    FREE(ipString);
+    retval = GN_getHostByName(ipString,
+			      address);
   }
+  FREENONNULL(ipString);
   return retval;
 }
 

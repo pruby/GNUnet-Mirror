@@ -63,7 +63,7 @@ downloadHostlistHelper(char * url,
   char * hostname;
   char * filename;
   unsigned int curpos, lenHostname, lenUrl;
-  struct hostent *ip_info;
+  IPaddr ip_info;
   struct sockaddr_in soaddr;
   int sock;
   size_t ret;
@@ -127,8 +127,7 @@ downloadHostlistHelper(char * url,
 
   /* Do we need to connect through a proxy? */
   if (theProxy.sin_addr.s_addr == 0) {
-    ip_info = GETHOSTBYNAME(hostname);
-    if (ip_info == NULL) {
+    if (OK != GN_getHostByName(hostname, &ip_info)) {
       LOG(LOG_WARNING,
 	  _("Could not download list of peer contacts, host `%s' unknown.\n"),
 	  hostname);
@@ -136,8 +135,9 @@ downloadHostlistHelper(char * url,
       return;
     }
 
-    soaddr.sin_addr.s_addr
-      = ((struct in_addr*)(ip_info->h_addr))->s_addr;
+    memcpy(&soaddr.sin_addr.s_addr,
+	   &ip_info,
+	   sizeof(IPaddr));
     soaddr.sin_port
       = htons(port);
   } else {
@@ -319,20 +319,21 @@ Bootstrap_ServiceAPI *
 provide_module_bootstrap(CoreAPIForApplication * capi) {
   static Bootstrap_ServiceAPI api;
   char *proxy, *proxyPort;
-  struct hostent *ip;
+  IPaddr ip;
 
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
-    ip = GETHOSTBYNAME(proxy);
-    if (ip == NULL) {
+    if (OK != GN_getHostByName(proxy,
+			       &ip)) {
       LOG(LOG_ERROR,
 	  _("Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
-      theProxy.sin_addr.s_addr
-	= ((struct in_addr *)ip->h_addr)->s_addr;
+      memcpy(&theProxy.sin_addr.s_addr,
+	     &ip,
+	     sizeof(IPaddr));
       proxyPort = getConfigurationString("GNUNETD",
 					 "HTTP-PROXY-PORT");
       if (proxyPort == NULL) {

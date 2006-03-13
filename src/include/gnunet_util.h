@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -64,7 +64,7 @@
  * especially the least significant bits may change
  * frequently, even between different SVN versions.
  */
-#define GNUNET_UTIL_VERSION 0x00070001
+#define GNUNET_UTIL_VERSION 0x00070002
 
 /**
  * We use an unsigned short in the protocol header, thus:
@@ -1234,6 +1234,13 @@ TIME_T TIME(TIME_T * t);
  *  must be freed by caller
  */
 char * GN_CTIME(const TIME_T * t);
+
+/**
+ * Get the IP address of the given host.
+ * @return OK on success, SYSERR on error
+ */
+int GN_getHostByName(const char * hostname,
+		     IPaddr * ip);
 
 /**
  * Give relative time in human-readable fancy format.
