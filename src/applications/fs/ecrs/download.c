@@ -1081,14 +1081,16 @@ static void issueRequest(RequestManager * rm,
     entry->tries++;
   }
   /* warn if number of attempts goes too high */
-  if (0 == (entry->tries % MAX_TRIES)) {
+  if ( (0 == (entry->tries % MAX_TRIES)) &&
+       (entry->tries > 0) )  {
     EncName enc;
     IFLOG(LOG_WARNING,
 	  hash2enc(&entry->node->chk.key,
 		   &enc));
     LOG(LOG_WARNING,
-	_("Content `%s' seems to be not available on the network.\n"),
-	&enc);
+	_("Content `%s' seems to be not available on the network (tried %u times).\n"),
+	&enc,
+	entry->tries);
   }
 }
 
