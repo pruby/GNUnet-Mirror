@@ -173,15 +173,8 @@ menu "Options for filesharing (FS)" "FS"
 		the split-library.
 		Default is libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail
 
-	config DOWNLOADDIR
-	string "Where to store incomplete downloads"
-	default "$GNUNET_HOME/pending-downloads/"
-	help
-		Where to download files to (by default)?
-		Default is $GNUNET_HOME/pending-downloads/
-
 	config INCOMINGDIR
-	string "Where to move complete downloads to"
+	string "Where to safe downloads to"
 	default "~/gnunet-downloads/"
 	help
 		Where to move finished downloads to (by default)?
