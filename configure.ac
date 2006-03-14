@@ -522,6 +522,7 @@ src/applications/fs/tools/Makefile
 src/applications/gap/Makefile
 src/applications/getoption/Makefile
 src/applications/identity/Makefile
+src/applications/kvstore_sqlite/Makefile
 src/applications/pingpong/Makefile
 src/applications/rpc/Makefile
 src/applications/session/Makefile

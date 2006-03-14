@@ -27,6 +27,7 @@ gnunetinclude_HEADERS = \
   gnunet_gap_service.h \
   gnunet_getoption_lib.h \
   gnunet_identity_service.h \
+  gnunet_kvstore_service.h \
   gnunet_pingpong_service.h \
   gnunet_protocols.h \
   gnunet_rpc_service.h \

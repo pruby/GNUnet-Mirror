@@ -3,7 +3,7 @@ if HAVE_MYSQL
 endif
 
 if HAVE_SQLITE
- SQLITE_DIR = sqstore_sqlite
+ SQLITE_DIR = sqstore_sqlite kvstore_sqlite
 endif
 
 if !MINGW
