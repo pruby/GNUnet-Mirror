@@ -28,8 +28,10 @@
 #include "platform.h"
 #include "prefetch.h"
 
+#define DEBUG_PREFETCH YES
+
 /* use a 64-entry RCB buffer */
-#define RCB_SIZE 128
+#define RCB_SIZE 64
 
 /* how many blocks to cache from on-demand files in a row */
 #define RCB_ONDEMAND_MAX 16
@@ -40,6 +42,13 @@
 typedef struct {
   HashCode512 key;
   Datastore_Value * value;
+  /**
+   * 0 if we have never used this content with any peer.  Otherwise
+   * the value is set to the lowest 32 bit of the peer ID (to avoid 
+   * sending it to the same peer twice).  After sending out the
+   * content twice, it is discarded.
+   */
+  int used;
 } ContentBuffer;
 
 
@@ -92,7 +101,13 @@ static int aquire(const HashCode512 * key,
       return SYSERR;
     }
   }  
+#if DEBUG_PREFETCH
+  LOG(LOG_DEBUG,
+      "Adding content to prefetch buffer (%u)\n",
+      rCBPos);
+#endif
   randomContentBuffer[rCBPos].key = *key;
+  randomContentBuffer[rCBPos].used = 0;
   randomContentBuffer[rCBPos].value
     = MALLOC(ntohl(value->size));
   memcpy(randomContentBuffer[rCBPos].value,
@@ -156,9 +171,11 @@ int getRandom(const HashCode512 * receiver,
   minIdx = -1;
   minDist = -1; /* max */
   MUTEX_LOCK(&lock);
-  for (i=0;i<rCBPos;i++) {
+  for (i=0;i<RCB_SIZE;i++) {
     if (randomContentBuffer[i].value == NULL)
       continue;
+    if (randomContentBuffer[i].used == *(int*) receiver)
+      continue; /* used this content for this peer already! */
     if ( ( ( (type != ntohl(randomContentBuffer[i].value->type)) &&
 	     (type != 0) ) ) ||
 	 (sizeLimit < ntohl(randomContentBuffer[i].value->size)) )
@@ -172,16 +189,34 @@ int getRandom(const HashCode512 * receiver,
   }
   if (minIdx == -1) {
     MUTEX_UNLOCK(&lock);
+#if DEBUG_PREFETCH
+    LOG(LOG_DEBUG,
+	"Failed to find content in prefetch buffer\n");
+#endif
     return SYSERR;
   }
+#if DEBUG_PREFETCH
+    LOG(LOG_DEBUG,
+	"Found content in prefetch buffer (%u)\n",
+	minIdx);
+#endif
   *key = randomContentBuffer[minIdx].key;
   *value = randomContentBuffer[minIdx].value;
 
-  randomContentBuffer[minIdx]
-    = randomContentBuffer[rCBPos];
-  randomContentBuffer[rCBPos].value = NULL;
+  if ( (randomContentBuffer[minIdx].used == 0) &&
+       (0 != *(int*) receiver) ) {
+    /* re-use once more! */
+    randomContentBuffer[minIdx].used = *(int*) receiver;
+    randomContentBuffer[minIdx].value = MALLOC(ntohl((*value)->size));
+    memcpy(randomContentBuffer[minIdx].value,
+	   *value,
+	   ntohl((*value)->size));
+  } else {
+    randomContentBuffer[minIdx].used = 0;
+    randomContentBuffer[minIdx].value = NULL;
+    SEMAPHORE_UP(acquireMoreSignal);
+  }
   MUTEX_UNLOCK(&lock);
-  SEMAPHORE_UP(acquireMoreSignal);
   return OK;
 }
 				
