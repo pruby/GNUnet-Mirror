@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -82,13 +82,22 @@ static int aquire(const HashCode512 * key,
   if (doneSignal != NULL)
     return SYSERR;
   MUTEX_LOCK(&lock);
+  load = 0;
+  while (randomContentBuffer[rCBPos].value != NULL) {
+    rCBPos = (rCBPos + 1) % RCB_SIZE;
+    load++;
+    if (load > RCB_SIZE) {
+      BREAK();
+      MUTEX_UNLOCK(&lock);
+      return SYSERR;
+    }
+  }  
   randomContentBuffer[rCBPos].key = *key;
   randomContentBuffer[rCBPos].value
     = MALLOC(ntohl(value->size));
   memcpy(randomContentBuffer[rCBPos].value,
 	 value,
 	 ntohl(value->size));
-  rCBPos = (rCBPos + 1) % RCB_SIZE;
   MUTEX_UNLOCK(&lock);
   load = getCPULoad(); /* FIXME: should use 'IO load' here */
   if (load < 10)
