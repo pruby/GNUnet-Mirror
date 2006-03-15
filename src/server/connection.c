@@ -2246,6 +2246,34 @@ static void cronDecreaseLiveness(void * unused) {
 	  /* the host may still be worth trying again soon: */
 	  identity->whitelistHost(&root->session.sender);
 	}
+	if ( (root->available_send_window >= 60000) &&
+	     (root->sendBufferSize < 4) &&
+	     (scl_nextHead != NULL) &&
+	     (getNetworkLoadUp() < 25) &&
+	     (getCPULoad() < 50) ) {
+	  /* create some traffic by force! */
+	  char * msgBuf;
+	  unsigned int mSize;
+	  SendCallbackList * pos;
+
+	  msgBuf = MALLOC(60000);
+	  pos = scl_nextHead;
+	  while (pos != NULL) {
+	    if (pos->minimumPadding + mSize <= 60000) {
+	      mSize = pos->callback(&root->session.sender,
+				    msgBuf,
+				    60000);
+	      if (mSize > 0)
+		unicast(&root->session.sender,
+			(P2P_MESSAGE_HEADER*) msgBuf,
+			0,
+			5 * cronMINUTES);
+	    }	    
+	    pos = pos->next;
+	  }
+	  FREE(msgBuf);
+	}
+
 	break;
       default: /* not up, not down - partial SETKEY exchange */
 	if ( (now > root->isAlive) &&

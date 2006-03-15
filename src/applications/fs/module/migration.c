@@ -29,6 +29,9 @@
 #include "migration.h"
 #include "fs.h"
 #include "anonymity.h"
+#include "gnunet_stats_service.h"
+
+#define DEBUG_MIGRATION NO
 
 /**
  * Datastore service.
@@ -54,6 +57,10 @@ static DHT_ServiceAPI * dht;
  * Traffic service.
  */
 static Traffic_ServiceAPI * traffic;
+
+static Stats_ServiceAPI * stats;
+
+static int stat_migration_count;
 
 /**
  * Lock used to access content.
@@ -111,12 +118,22 @@ activeMigrationCallback(const PeerIdentity * receiver,
 				   &content,
 				   0)) {
       MUTEX_UNLOCK(&lock);
+#if DEBUG_MIGRATION
+      LOG(LOG_DEBUG,
+	  "Migration: random lookup in datastore failed.\n");
+#endif
       return 0;
     }
   }
   size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
   if (size > padding) {
     MUTEX_UNLOCK(&lock);
+#if DEBUG_MIGRATION
+    LOG(LOG_DEBUG,
+	"Available content of size %u too big for available space (%u)\n",
+	size, 
+	padding);
+#endif
     return 0;
   }
   et = ntohll(content->expirationTime);
@@ -145,12 +162,26 @@ activeMigrationCallback(const PeerIdentity * receiver,
 			  position,
 			  padding);
     FREE(gw);
+#if DEBUG_MIGRATION
+    LOG(LOG_DEBUG,
+	"gap's tryMigrate returned %u\n",
+	ret);
+#endif
+
+  } else {
+#if DEBUG_MIGRATION
+    LOG(LOG_DEBUG,
+	"Migration: anonymity requirements not satisfied.\n");
+#endif
   }
   if (ret > 0) {
     FREE(content);
     content = NULL;
   }
   MUTEX_UNLOCK(&lock);
+  if (ret > 0)
+    stats->change(stat_migration_count, 1);
+
   return ret;
 }
 
@@ -167,11 +198,19 @@ void initMigration(CoreAPIForApplication * capi,
   traffic = t;
   coreAPI->registerSendCallback(512,
 				&activeMigrationCallback);
+  stats = capi->requestService("stats");
+  if (stats != NULL) 
+    stat_migration_count = stats->create(gettext_noop("# blocks migrated"));
+
 }
 
 void doneMigration() {
   coreAPI->unregisterSendCallback(512,
 				  &activeMigrationCallback);
+  if (stats != NULL) {
+    coreAPI->releaseService(stats);
+    stats = NULL;
+  }
   datastore = NULL;
   gap = NULL;
   dht = NULL;
