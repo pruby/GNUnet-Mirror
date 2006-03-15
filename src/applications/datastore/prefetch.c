@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "prefetch.h"
 
-#define DEBUG_PREFETCH YES
+#define DEBUG_PREFETCH NO
 
 /* use a 64-entry RCB buffer */
 #define RCB_SIZE 64
