@@ -88,7 +88,7 @@ static int aquire(const HashCode512 * key,
   memcpy(randomContentBuffer[rCBPos].value,
 	 value,
 	 ntohl(value->size));
-  rCBPos++;
+  rCBPos = (rCBPos + 1) % RCB_SIZE;
   MUTEX_UNLOCK(&lock);
   load = getCPULoad(); /* FIXME: should use 'IO load' here */
   if (load < 10)
@@ -200,10 +200,10 @@ void donePrefetch() {
   SEMAPHORE_DOWN(doneSignal);
   SEMAPHORE_FREE(acquireMoreSignal);
   SEMAPHORE_FREE(doneSignal);
-  MUTEX_DESTROY(&lock);
+  PTHREAD_JOIN(&gather_thread, &unused);
   for (i=0;i<rCBPos;i++)
     FREENONNULL(randomContentBuffer[i].value);
-  PTHREAD_JOIN(&gather_thread, &unused);
+  MUTEX_DESTROY(&lock);
 }
 
 /* end of prefetch.c */
