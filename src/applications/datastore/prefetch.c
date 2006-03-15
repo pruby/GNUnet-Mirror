@@ -148,7 +148,10 @@ int getRandom(const HashCode512 * receiver,
   minDist = -1; /* max */
   MUTEX_LOCK(&lock);
   for (i=0;i<rCBPos;i++) {
-    if ( (type != ntohl(randomContentBuffer[i].value->type)) ||
+    if (randomContentBuffer[i].value == NULL)
+      continue;
+    if ( ( ( (type != ntohl(randomContentBuffer[i].value->type)) &&
+	     (type != 0) ) ) ||
 	 (sizeLimit < ntohl(randomContentBuffer[i].value->size)) )
       continue;
     dist = distanceHashCode512(&randomContentBuffer[i].key,
@@ -175,7 +178,7 @@ int getRandom(const HashCode512 * receiver,
 				
 void initPrefetch(SQstore_ServiceAPI * s) {
   sq = s;
-  memset(&randomContentBuffer,
+  memset(randomContentBuffer,
 	 0,
 	 sizeof(ContentBuffer *)*RCB_SIZE);
   acquireMoreSignal = SEMAPHORE_NEW(RCB_SIZE);
