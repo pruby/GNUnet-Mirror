@@ -671,7 +671,7 @@ static int dequeueQuery(const HashCode512 * query) {
 static unsigned int computeRoutingIndex(const HashCode512 * query) {
   unsigned int res
     = (((unsigned int*)query)[0] ^
-       ((unsigned int*)query)[1] * random_qsel)
+       ((unsigned int*)query)[1] / (1 + random_qsel))
     % indirectionTableSize;
   GNUNET_ASSERT(res < indirectionTableSize);
 #if DO_HISTOGRAM
