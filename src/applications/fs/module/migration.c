@@ -179,8 +179,9 @@ activeMigrationCallback(const PeerIdentity * receiver,
     content = NULL;
   }
   MUTEX_UNLOCK(&lock);
-  if (ret > 0)
-    stats->change(stat_migration_count, 1);
+  if ( (ret > 0)&&
+       (stats != NULL) )
+      stats->change(stat_migration_count, 1); 
 
   return ret;
 }
