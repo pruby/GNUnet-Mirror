@@ -100,7 +100,7 @@
 /**
  * Bandwidth value of an (effectively) 0-priority query.
  */
-#define QUERY_BANDWIDTH_VALUE 0.01
+#define QUERY_BANDWIDTH_VALUE 0.001
 
 /**
  * Bandwidth value of a 0-priority content (must be
@@ -1526,7 +1526,7 @@ static void sendReply(IndirectionTableEntry * ite,
     coreAPI->unicast(&ite->destination[j],
 		     msg,
 		     BASE_REPLY_PRIORITY *
-		     (ite->priority+1),
+		     (ite->priority+5),
 		     /* weigh priority */
 		     maxDelay);
   }
