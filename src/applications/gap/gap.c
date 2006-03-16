@@ -35,8 +35,12 @@
  *
  */
 
-
 #include "gap.h"
+
+/**
+ * Only for debugging / system analysis!
+ */
+#define DO_HISTOGRAM NO
 
 /* ********************** GLOBALS ******************** */
 
@@ -153,6 +157,11 @@ static unsigned int rewardPos = 0;
 static unsigned int hardCPULimit;
 
 static unsigned int hardUpLimit;
+
+#if DO_HISTOGRAM
+static int histogram[65536];
+static int hist_total;
+#endif
 
 /* ****************** helper functions ***************** */
 
@@ -661,10 +670,21 @@ static int dequeueQuery(const HashCode512 * query) {
  */
 static unsigned int computeRoutingIndex(const HashCode512 * query) {
   unsigned int res
-    = (((unsigned int*)query)[0] +
+    = (((unsigned int*)query)[0] ^
        ((unsigned int*)query)[1] * random_qsel)
     % indirectionTableSize;
   GNUNET_ASSERT(res < indirectionTableSize);
+#if DO_HISTOGRAM
+  histogram[res % 65536]++;
+  if (++hist_total % 10000 == 0) {
+    int i;
+    for (i=0;i<65536;i++)
+      if (histogram[i] != 0) {
+	printf("%d: %d\n",
+	       i, histogram[i]);
+      }
+  }
+#endif
   return res;
 }
 
