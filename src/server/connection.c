@@ -2259,7 +2259,7 @@ static void cronDecreaseLiveness(void * unused) {
 	  msgBuf = MALLOC(60000);
 	  pos = scl_nextHead;
 	  while (pos != NULL) {
-	    if (pos->minimumPadding + mSize <= 60000) {
+	    if (pos->minimumPadding <= 60000) {
 	      mSize = pos->callback(&root->session.sender,
 				    msgBuf,
 				    60000);
