@@ -140,7 +140,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
-		Section "Spanish (El Salvador)" SEC_LANG_SV
+		Section "Swedish" SEC_LANG_SV
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
@@ -688,7 +688,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG} "Translated messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_DE} "German messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_RW} "Kinyarwanda messages"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_SV} "Spanish (El Salvador) messages"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_SV} "Swedish messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_VI} "Vietnamese messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SETUP} "GNUnet configuration application"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_BASE} "GNUnet server core"
