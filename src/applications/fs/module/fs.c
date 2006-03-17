@@ -185,6 +185,8 @@ static int gapPut(void * closure,
   if (migration)
     ret = datastore->putUpdate(query,
 			       dv);
+  else
+    ret = OK;
   FREE(dv);
   return ret;
 }
