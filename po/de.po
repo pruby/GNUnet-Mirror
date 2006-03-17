@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
 "POT-Creation-Date: 2006-03-15 23:35-0800\n"
-"PO-Revision-Date: 2006-03-17 20:57+0100\n"
+"PO-Revision-Date: 2006-03-17 21:04+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -709,7 +709,7 @@ msgstr "Ermöglicht (anonymes) Filesharing"
 
 #: src/applications/fs/module/migration.c:203
 msgid "# blocks migrated"
-msgstr ""
+msgstr "# Blöcke migriert"
 
 #: src/applications/fs/module/ondemand.c:308
 #, c-format
