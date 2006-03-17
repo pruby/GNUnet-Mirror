@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.0b"
+!define PRODUCT_VERSION "0.7.0c"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -140,13 +140,18 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
+		Section "Spanish (El Salvador)" SEC_LANG_SV
+			SectionIn 1 2 3 4
+		  SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
+			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
+		SectionEnd
 	SectionGroupEnd
 	
 	Section "Setup" SEC_SETUP
 		SectionIn 1 2 3 4
 	  SetOutPath "$INSTDIR\bin"
 		File "C:\GNUnet\bin\gnunet-setup.exe" 		
-		File "C:\GNUnet\bin\libgnunetsetup.dll"
+		File "C:\GNUnet\bin\libgnunetsetup-0.dll"
 		File "C:\GNUnet\bin\libgnunetsetup_curses.dll"
 		File "C:\GNUnet\bin\libgnunetsetup_gtk.dll"
 
@@ -191,6 +196,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\bin\libgnunetmodule_gap.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_sqstore_sqlite.dll"
 			File "C:\GNUnet\bin\libgnunetmodule_sqstore_mysql.dll"
+			File "C:\GNUnet\bin\libgnunetmodule_kvstore_sqlite.dll"
 		SectionEnd
 	SectionGroupEnd
 	
@@ -682,6 +688,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG} "Translated messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_DE} "German messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_RW} "Kinyarwanda messages"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_SV} "Spanish (El Salvador) messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LANG_VI} "Vietnamese messages"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SETUP} "GNUnet configuration application"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SERVER_BASE} "GNUnet server core"
@@ -761,6 +768,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\gnunet-search.exe"
 	Delete "$INSTDIR\bin\gnunet-setup.exe" 		
 	Delete "$INSTDIR\bin\libgnunetsetup.dll" 
+	Delete "$INSTDIR\bin\libgnunetsetup-0.dll" 
 	Delete "$INSTDIR\bin\libgnunetsetup_curses.dll"
 	Delete "$INSTDIR\bin\libgnunetsetup_gtk.dll"
 		
@@ -851,6 +859,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetmodule_session.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_sqstore_mysql.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_sqstore_sqlite.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_kvstore_sqlite.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_stats.dll"
 	Delete "$INSTDIR\bin\libgnunetmodule_tbench.dll"			
 	Delete "$INSTDIR\bin\libgnunetmodule_topology_default.dll"
@@ -943,6 +952,9 @@ Section Uninstall
 	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\vi\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\vi"
+	Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
+  RmDir /REBOOTOK "$INSTDIR\share\locale\sv\LC_MESSAGES"
+  RmDir /REBOOTOK "$INSTDIR\share\locale\sv"
   RmDir /REBOOTOK "$INSTDIR\share\locale"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
