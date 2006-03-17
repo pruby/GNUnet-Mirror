@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-03-15 23:35-0800\n"
+"POT-Creation-Date: 2006-03-17 12:25-0800\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -227,12 +227,12 @@ msgstr "OYA Kohereza Ubutumwa Kuri"
 msgid "Could not send message to gnunetd\n"
 msgstr "OYA Kohereza Ubutumwa Kuri"
 
-#: src/applications/datastore/datastore.c:117
+#: src/applications/datastore/datastore.c:122
 #, fuzzy, c-format
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr "kugirango ku"
 
-#: src/applications/datastore/datastore.c:141
+#: src/applications/datastore/datastore.c:146
 #, fuzzy, c-format
 msgid "Database failed to delete `%s'.\n"
 msgstr "Kuri Ibikubiyemo"
@@ -736,23 +736,23 @@ msgstr ""
 msgid "Cannot upload directory without using recursion.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1085
+#: src/applications/fs/module/fs.c:1090
 #, fuzzy, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
 "s'.\n"
 msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
 
-#: src/applications/fs/module/fs.c:1127
+#: src/applications/fs/module/fs.c:1134
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1164
+#: src/applications/fs/module/fs.c:1171
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
-#: src/applications/fs/module/migration.c:203
+#: src/applications/fs/module/migration.c:204
 msgid "# blocks migrated"
 msgstr ""
 
@@ -782,7 +782,7 @@ msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1991
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1719
 #, fuzzy
 msgid "Failed to get traffic stats.\n"
 msgstr "Kuri Ikibazo# Ibyerekeye"
@@ -1406,23 +1406,86 @@ msgstr "a Urutonde Bya Idosiye Kuri Kongeramo"
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr "`%s'ntabwo ari idosiye"
 
-#: src/applications/gap/gap.c:1980
+#: src/applications/gap/gap.c:1708
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1997 src/applications/gap/gap.c:2002
-#: src/applications/gap/gap.c:2008
+#: src/applications/gap/gap.c:1725 src/applications/gap/gap.c:1730
+#: src/applications/gap/gap.c:1736
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2264
+#: src/applications/gap/gap.c:1987
+#, fuzzy
+msgid "# gap requests total received"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/gap/gap.c:1988
+msgid "# gap requests policy: immediate drop"
+msgstr ""
+
+#: src/applications/gap/gap.c:1989
+msgid "# gap requests policy: not routed"
+msgstr ""
+
+#: src/applications/gap/gap.c:1990
+msgid "# gap requests policy: not answered"
+msgstr ""
+
+#: src/applications/gap/gap.c:1991
+msgid "# gap requests processed: attempted add to RT"
+msgstr ""
+
+#: src/applications/gap/gap.c:1992
+msgid "# gap requests processed: local result"
+msgstr ""
+
+#: src/applications/gap/gap.c:1993
+msgid "# gap routing successes (total)"
+msgstr ""
+
+#: src/applications/gap/gap.c:1994
+msgid "# gap requests dropped: collision in RT"
+msgstr ""
+
+#: src/applications/gap/gap.c:1995
+msgid "# gap requests forwarded (counting each peer)"
+msgstr ""
+
+#: src/applications/gap/gap.c:1996
+msgid "# gap duplicate requests (pending)"
+msgstr ""
+
+#: src/applications/gap/gap.c:1997
+#, fuzzy
+msgid "# gap duplicate requests that were re-tried"
+msgstr "#BYAKIRIWE"
+
+#: src/applications/gap/gap.c:1998
+msgid "# gap re-try ttl difference (cummulative)"
+msgstr ""
+
+#: src/applications/gap/gap.c:1999
+msgid "# gap reply duplicates"
+msgstr ""
+
+#: src/applications/gap/gap.c:2000
+#, fuzzy
+msgid "# gap spurious replies"
+msgstr "#hejuru Ibibazo BYAKIRIWE"
+
+#: src/applications/gap/gap.c:2001
+msgid "# gap routing slots currently in use"
+msgstr ""
+
+#: src/applications/gap/gap.c:2017
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2295
+#: src/applications/gap/gap.c:2048
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr ""
@@ -4380,10 +4443,6 @@ msgstr "`%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #~ msgstr "#Umukiriya Yoherejwe:"
 
 #, fuzzy
-#~ msgid "# p2p trace requests received"
-#~ msgstr "#BYAKIRIWE"
-
-#, fuzzy
 #~ msgid "# p2p trace replies sent"
 #~ msgstr "#Yoherejwe:"
 
@@ -5748,10 +5807,6 @@ msgstr "`%s'Byanze ku IDOSIYE ku Na: Ikosa"
 #, fuzzy
 #~ msgid "# p2p queries received"
 #~ msgstr "#Ibibazo BYAKIRIWE"
-
-#, fuzzy
-#~ msgid "# p2p super queries received"
-#~ msgstr "#hejuru Ibibazo BYAKIRIWE"
 
 #, fuzzy
 #~ msgid "# p2p CHK content received (kb)"
