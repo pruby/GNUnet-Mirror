@@ -71,6 +71,12 @@ static int stat_routing_direct_drops;
 
 static int stat_routing_successes;
 
+static int stat_routing_request_repeat;
+
+static int stat_routing_request_duplicates;
+
+static int stat_routing_request_repeat_dttl;
+
 static int stat_routing_totals;
 
 static int stat_routing_slots_used;
@@ -939,20 +945,27 @@ static int needsForwarding(const HashCode512 * query,
 			   int * doForward) {
   IndirectionTableEntry * ite;
   cron_t now;
+  cron_t new_ttl;
+  int equal_to_pending;
 
   cronTime(&now);
   ite = &ROUTING_indTable_[computeRoutingIndex(query)];
-
-  if ( ( ite->ttl < now - TTL_DECREMENT * 10) &&
-       ( ttl > - TTL_DECREMENT * 5) ) {
+  equal_to_pending = equalsHashCode512(query, &ite->primaryKey);
+  if ( (stats != NULL) &&
+       (equal_to_pending) ) 
+    stats->change(stat_routing_request_duplicates, 1);    
+  
+  new_ttl = now + ttl;
+  if ( (ite->ttl < now) && 
+       (ite->ttl < now - (cron_t) (TTL_DECREMENT * 10L)) &&
+       (ttl > - TTL_DECREMENT * 5) ) {
     addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
     *isRouted = YES;
     *doForward = YES;
     return 21;
   }
   if ( ( ttl < 0) &&
-       (equalsHashCode512(query,
-			  &ite->primaryKey) ) ) {
+       (equal_to_pending) ) {
     /* if ttl is "expired" and we have
        the exact query pending, route
        replies but do NOT forward _again_! */
@@ -966,8 +979,9 @@ static int needsForwarding(const HashCode512 * query,
     return 0;
   }
 
-  if ( (ite->ttl + (TTL_DECREMENT * topology->estimateNetworkSize()) <
-	(cron_t)(now + ttl)) &&
+  if ( (ite->ttl < new_ttl) &&
+       (ite->ttl + (cron_t) (TTL_DECREMENT * topology->estimateNetworkSize()) < new_ttl) &&
+       (ite->ttl + (cron_t) (TTL_DECREMENT * 10L) < new_ttl) &&
        (ite->ttl < now) ) {
     /* expired AND is significantly (!)
        longer expired than new query */
@@ -977,8 +991,7 @@ static int needsForwarding(const HashCode512 * query,
 	 ite->seenIndex,
 	 0);
     ite->seenReplyWasUnique = NO;
-    if ( equalsHashCode512(query,
-			   &ite->primaryKey) &&
+    if ( (equal_to_pending) &&
 	 (YES == ite-> successful_local_lookup_in_delay_loop) ) {
       *isRouted = NO;
       *doForward = NO;
@@ -987,25 +1000,39 @@ static int needsForwarding(const HashCode512 * query,
     } else {
       *isRouted = YES;
       *doForward = YES;
+      if ( (stats != NULL) &&
+	   (equal_to_pending) ) {
+	stats->change(stat_routing_request_repeat, 1);
+	if (ite->ttl != 0) {
+	  stats->change(stat_routing_request_repeat_dttl, new_ttl - ite->ttl);
+	}
+      }
       addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
       return 2;
     }
   }
-  if (equalsHashCode512(query,
-			&ite->primaryKey) ) {
+  if (equal_to_pending) {
     if (ite->seenIndex == 0) {
-      if (ite->ttl + TTL_DECREMENT < (cron_t)(now + ttl)) {
+      if ( (ite->ttl < new_ttl) &&
+	   (ite->ttl + (cron_t) TTL_DECREMENT < new_ttl) ) {
 	/* ttl of new is SIGNIFICANTLY longer? */
 	/* query again */
-	addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
 	if (YES == ite->successful_local_lookup_in_delay_loop) {
 	  *isRouted = NO; /* don't go again, we are already
 			     processing a local lookup! */
 	  *doForward = NO;
+	  addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
 	  return 3;
 	} else {
 	  *isRouted = YES;
 	  *doForward = YES;
+	  if (stats != NULL) {
+	    stats->change(stat_routing_request_repeat, 1);
+	    if (ite->ttl != 0) {
+	      stats->change(stat_routing_request_repeat_dttl, new_ttl - ite->ttl);
+	    }
+	  }
+	  addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);	
 	  return 4;
 	}
       } else {
@@ -1037,25 +1064,32 @@ static int needsForwarding(const HashCode512 * query,
 
     /* pending == new! */
     if (ite->seenReplyWasUnique) {
-      if (ite->ttl < (cron_t)(now + ttl)) { /* ttl of new is longer? */
+      if (ite->ttl < new_ttl) { /* ttl of new is longer? */
 	/* go again */
 	GROW(ite->seen,
 	     ite->seenIndex,
 	     0);
 	ite->seenReplyWasUnique = NO;
-	addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
 	if (YES == ite->successful_local_lookup_in_delay_loop) {
 	  *isRouted = NO;
 	  /* don't go again, we are already processing a local lookup! */
 	  *doForward = NO;
+	  addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
 	  return 8;
 	} else {
 	  *isRouted = YES;
 	  /* only forward if new TTL is significantly higher */
-	  if (ite->ttl + TTL_DECREMENT < (cron_t)(now + ttl))
+	  if (ite->ttl + TTL_DECREMENT < new_ttl) {
 	    *doForward = YES;
-	  else
+	    if (stats != NULL) {
+	      stats->change(stat_routing_request_repeat, 1);
+	      if (ite->ttl != 0) {
+		stats->change(stat_routing_request_repeat_dttl, new_ttl - ite->ttl);
+	      }
+	    }
+	  } else
 	    *doForward = NO;
+	  addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
 	  return 9;
 	}
       } else {
@@ -1083,7 +1117,7 @@ static int needsForwarding(const HashCode512 * query,
 	 answers that we get from now on to this additional
 	 receiver */
       int isttlHigher;
-      if (ite->ttl < (cron_t) now+ttl)
+      if (ite->ttl < new_ttl)
 	isttlHigher = NO;
       else
 	isttlHigher = YES;
@@ -1106,7 +1140,7 @@ static int needsForwarding(const HashCode512 * query,
      a unique response already, we can eagerly throw it out
      anyway, since the request has been satisfied
      completely */
-  if ( (ite->ttl + TTL_DECREMENT < (cron_t)(now + ttl) ) &&
+  if ( (ite->ttl + TTL_DECREMENT < new_ttl) &&
        (ite->ttl < now) &&
        (ite->seenReplyWasUnique) ) {
     /* we have seen the unique answer, get rid of it early */
@@ -1120,6 +1154,8 @@ static int needsForwarding(const HashCode512 * query,
   if (ttl < 0) {
     *isRouted = NO;
     *doForward = NO;
+    if (stats != NULL)
+      stats->change(stat_routing_collisions, 1);
     return 16; /* if new ttl is "expired", don't bother with priorities */
   }
 
@@ -1150,6 +1186,8 @@ static int needsForwarding(const HashCode512 * query,
      not even add ourselves to the reply set */
   *isRouted = NO;
   *doForward = NO;
+  if (stats != NULL)
+    stats->change(stat_routing_collisions, 1);
 
   return 18;
 }
@@ -1314,9 +1352,6 @@ static int execQuery(const PeerIdentity * sender,
 			  sender,
 			  &isRouted,
 			  &doForward);
-      if ( (stats != NULL) &&
-	   (isRouted == NO) )
-	stats->change(stat_routing_collisions, 1);
     } else {
       isRouted = NO;
       doForward = YES;
@@ -1935,6 +1970,9 @@ provide_module_gap(CoreAPIForApplication * capi) {
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_routing_collisions = stats->create(gettext_noop("# gap routing table collisions resulting in drops"));
+    stat_routing_request_duplicates = stats->create(gettext_noop("# gap duplicate requests (received while pending)")); 
+    stat_routing_request_repeat = stats->create(gettext_noop("# gap requests re-issued while pending"));
+    stat_routing_request_repeat_dttl = stats->create(gettext_noop("# gap re-issue ttl difference (cummulative)"));
     stat_routing_successes = stats->create(gettext_noop("# gap routing successes"));
     stat_routing_direct_drops = stats->create(gettext_noop("# gap requests immediately dropped"));
     stat_routing_reply_drops = stats->create(gettext_noop("# gap replies without routing table entry"));
