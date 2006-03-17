@@ -1,3 +1,7 @@
+Thu Mar 16 22:14:01 PST 2006
+	Fixing various routing problems (resulting in better utilization
+	of bandwidth by routing more content and less queries).
+
 Wed Mar 15 00:00:14 PST 2006
 	Fixing various content migration bugs (one that disabled it,
 	one that made it unlikely that migration was even tried, and
