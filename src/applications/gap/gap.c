@@ -93,6 +93,8 @@ static int stat_routing_no_answer_policy;
 
 static int stat_routing_local_results;
 
+static int stat_routing_processed;
+
 /**
  * Topology service.
  */
@@ -1386,6 +1388,8 @@ static int execQuery(const PeerIdentity * sender,
       isRouted ? " routing" : "",
       i);
 #endif
+  if (stats != NULL)
+    stats->change(stat_routing_processed, 1);
   cls.values = NULL;
   cls.valueCount = 0;
   cls.hashes = NULL;
@@ -1875,7 +1879,7 @@ static int handleQuery(const PeerIdentity * sender,
   ttl = ntohl(qmsg->ttl);
   if (ttl < 0) {
     ttl = ttl - 2*TTL_DECREMENT - weak_randomi(TTL_DECREMENT);
-    if (ttl > 0) {
+    if (ttl > 0) { /* integer underflow => drop (should be very rare)! */
       FREE(qmsg);
       if (stats != NULL)
 	stats->change(stat_routing_direct_drops, 1);
@@ -1895,7 +1899,9 @@ static int handleQuery(const PeerIdentity * sender,
       "Received GAP query `%s'.\n",
       &enc);
 #endif
-  if ((policy & QUERY_DROPMASK) == 0) {
+  if ((policy & QUERY_DROPMASK) == 0) { 
+    /* policy says no answer/forward/indirect => direct drop;
+       this happens if the peer is too busy (netload-up >= 100%).  */
     FREE(qmsg);
 #if DEBUG_GAP
     if (sender != NULL) {
@@ -1977,20 +1983,21 @@ provide_module_gap(CoreAPIForApplication * capi) {
   coreAPI = capi;
   stats = capi->requestService("stats");
   if (stats != NULL) {
-    stat_routing_collisions = stats->create(gettext_noop("# gap routing table collisions resulting in drops"));
-    stat_routing_request_duplicates = stats->create(gettext_noop("# gap duplicate requests (received while pending)")); 
-    stat_routing_request_repeat = stats->create(gettext_noop("# gap requests re-issued while pending"));
-    stat_routing_request_repeat_dttl = stats->create(gettext_noop("# gap re-issue ttl difference (cummulative)"));
-    stat_routing_successes = stats->create(gettext_noop("# gap routing successes"));
-    stat_routing_direct_drops = stats->create(gettext_noop("# gap requests immediately dropped"));
-    stat_routing_reply_drops = stats->create(gettext_noop("# gap replies without routing table entry"));
-    stat_routing_reply_dups = stats->create(gettext_noop("# gap routed reply duplicates"));
-    stat_routing_forwards = stats->create(gettext_noop("# gap queries forwarded (counting each peer)"));
-    stat_routing_local_results = stats->create(gettext_noop("# gap queries received with local result"));
-    stat_routing_totals = stats->create(gettext_noop("# gap total routing requests received"));
-    stat_routing_no_answer_policy = stats->create(gettext_noop("# gap requests not answered by policy"));
-    stat_routing_no_route_policy = stats->create(gettext_noop("# gap requests not routed by policy"));
-    stat_routing_slots_used = stats->create(gettext_noop("# gap routing slots currently in use"));
+    stat_routing_totals             = stats->create(gettext_noop("# gap requests total received"));
+    stat_routing_direct_drops       = stats->create(gettext_noop("# gap requests policy: immediate drop"));
+    stat_routing_no_route_policy    = stats->create(gettext_noop("# gap requests policy: not routed"));
+    stat_routing_no_answer_policy   = stats->create(gettext_noop("# gap requests policy: not answered"));
+    stat_routing_processed          = stats->create(gettext_noop("# gap requests processed: attempted add to RT"));
+    stat_routing_local_results      = stats->create(gettext_noop("# gap requests processed: local result")); 
+    stat_routing_successes          = stats->create(gettext_noop("# gap routing successes (total)"));
+    stat_routing_collisions         = stats->create(gettext_noop("# gap requests dropped: collision in RT"));
+    stat_routing_forwards           = stats->create(gettext_noop("# gap requests forwarded (counting each peer)"));
+    stat_routing_request_duplicates = stats->create(gettext_noop("# gap duplicate requests (pending)")); 
+    stat_routing_request_repeat     = stats->create(gettext_noop("# gap duplicate requests that were re-tried"));
+    stat_routing_request_repeat_dttl= stats->create(gettext_noop("# gap re-try ttl difference (cummulative)"));
+    stat_routing_reply_dups         = stats->create(gettext_noop("# gap reply duplicates"));
+    stat_routing_reply_drops        = stats->create(gettext_noop("# gap spurious replies"));
+    stat_routing_slots_used         = stats->create(gettext_noop("# gap routing slots currently in use"));
   }
   GROW(rewards,
        rewardSize,
