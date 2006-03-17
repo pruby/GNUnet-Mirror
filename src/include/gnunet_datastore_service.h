@@ -172,6 +172,11 @@ typedef struct {
 	     void * closure);
 
   /**
+   * Do a quick test if we MAY have the content.
+   */ 
+  int (*fast_get)(const HashCode512 * key);
+
+  /**
    * Get a random value from the datastore that has
    * a key close to the given approx value.
    *

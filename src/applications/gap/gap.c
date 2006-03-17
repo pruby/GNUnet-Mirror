@@ -89,6 +89,8 @@ static int stat_routing_reply_dups;
 
 static int stat_routing_no_route_policy;
 
+static int stat_routing_no_answer_policy;
+
 static int stat_routing_local_results;
 
 /**
@@ -1345,7 +1347,9 @@ static int execQuery(const PeerIdentity * sender,
   MUTEX_LOCK(&lookup_exclusion);
   i = -1;
   if (sender != NULL) {
-    if ((policy & QUERY_INDIRECT) > 0) {
+    if ( ( (policy & QUERY_ANSWER) > 0) &&
+	 ( ((policy & QUERY_INDIRECT) > 0) ||
+	   (bs->fast_get(&query->queries[0])) ) )  {
       i = needsForwarding(&query->queries[0],
 			  ttl,
 			  prio,
@@ -1354,9 +1358,13 @@ static int execQuery(const PeerIdentity * sender,
 			  &doForward);
     } else {
       isRouted = NO;
-      doForward = YES;
-      if (stats != NULL) 
-	stats->change(stat_routing_no_route_policy, 1);
+      doForward = NO;
+      if (stats != NULL) {
+	if ((policy & QUERY_ANSWER) > 0)
+	  stats->change(stat_routing_no_route_policy, 1);
+	else
+	  stats->change(stat_routing_no_answer_policy, 1);
+      }
     }
   } else {
     addReward(&query->queries[0],
@@ -1980,6 +1988,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
     stat_routing_forwards = stats->create(gettext_noop("# gap queries forwarded (counting each peer)"));
     stat_routing_local_results = stats->create(gettext_noop("# gap queries received with local result"));
     stat_routing_totals = stats->create(gettext_noop("# gap total routing requests received"));
+    stat_routing_no_answer_policy = stats->create(gettext_noop("# gap requests not answered by policy"));
     stat_routing_no_route_policy = stats->create(gettext_noop("# gap requests not routed by policy"));
     stat_routing_slots_used = stats->create(gettext_noop("# gap routing slots currently in use"));
   }

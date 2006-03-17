@@ -73,6 +73,11 @@ static unsigned long long getSize() {
   return sq->getSize();
 }
 
+static int fastGet(const HashCode512 * query) {
+  return testAvailable(query);
+}
+
+
 static int get(const HashCode512 * query,
 	       unsigned int type,
 	       Datum_Iterator iter,
@@ -358,6 +363,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
 
   api.getSize = &getSize;
   api.put = &put;
+  api.fast_get = &fastGet;
   api.putUpdate = &putUpdate;
   api.get = &get;
   api.getRandom = &getRandom; /* in prefetch.c */

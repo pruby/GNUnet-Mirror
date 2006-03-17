@@ -1054,6 +1054,9 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   return OK;
 }
 
+static int fastGet(const HashCode512 * key) {
+  return datastore->fast_get(key);
+}
 
 /**
  * Initialize the FS module. This method name must match
@@ -1109,6 +1112,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   dsGap.put = &gapPut;
   dsGap.del = &gapDel;
   dsGap.iterate = &gapIterate;
+  dsGap.fast_get = &fastGet;
   initQueryManager(capi);
   gap->init(&dsGap,
 	    &uniqueReplyIdentifier,
@@ -1120,6 +1124,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     dsDht.put = &gapPut; /* exactly the same method for gap/dht*/
     dsDht.del = &gapDel; /* exactly the same method for gap/dht*/
     dsDht.iterate = &gapIterate;  /* exactly the same method for gap/dht*/
+    dsDht.fast_get = &fastGet;
     dht->join(&dsDht, &dht_table);
   }
 

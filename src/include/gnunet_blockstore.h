@@ -77,6 +77,11 @@ typedef struct {
   void * closure;
 
   /**
+   * Do a quick test if we MAY have the content.
+   */ 
+  int (*fast_get)(const HashCode512 * key);
+
+  /**
    * Lookup an item in the datastore.
    *
    * @param type kind of item to look up

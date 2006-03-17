@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-01-18 17:21-0800\n"
+"POT-Creation-Date: 2006-03-15 23:35-0800\n"
 "PO-Revision-Date: 2005-12-24 02:16+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -106,7 +106,7 @@ msgstr "Ungültiger Port \"%s\" in Angabe der Hostlist, versuche Port %d.\n"
 msgid "`%s' failed at %s:%d with error: `%s'.\n"
 msgstr "`%s' schlug fehl bei %s:%d mit dem Fehler: `%s'.\n"
 
-#: src/applications/bootstrap_http/http.c:133
+#: src/applications/bootstrap_http/http.c:132
 #, c-format
 msgid "Could not download list of peer contacts, host `%s' unknown.\n"
 msgstr ""
@@ -136,7 +136,7 @@ msgstr ""
 "Der Name des HTTP Proxies `%s' konnte nicht aufgelöst werden. Es wird ohne "
 "Proxy versucht.\n"
 
-#: src/applications/bootstrap_http/http.c:354
+#: src/applications/bootstrap_http/http.c:355
 msgid "# hellos downloaded via http"
 msgstr "# Hellos per HTTP heruntergeladen"
 
@@ -178,7 +178,7 @@ msgstr "GNUnet chat client starten"
 #: src/applications/dht/tools/dht-join.c:108
 #: src/applications/dht/tools/dht-query.c:99
 #: src/applications/fs/tools/gnunet-delete.c:111
-#: src/applications/fs/tools/gnunet-directory.c:184
+#: src/applications/fs/tools/gnunet-directory.c:195
 #: src/applications/fs/tools/gnunet-download.c:130
 #: src/applications/fs/tools/gnunet-insert.c:519
 #: src/applications/fs/tools/gnunet-pseudonym.c:232
@@ -545,17 +545,17 @@ msgstr "# verworfener Nachrichten"
 msgid "`%s' registering handler %d\n"
 msgstr "`%s' registriert Handler %d\n"
 
-#: src/applications/fs/ecrs/download.c:121
+#: src/applications/fs/ecrs/download.c:125
 #, c-format
 msgid "Could not unlink temporary file `%s': %s\n"
 msgstr "Temporäre Datei `%s' konnte nicht gelöscht werden: %s\n"
 
-#: src/applications/fs/ecrs/download.c:249
+#: src/applications/fs/ecrs/download.c:257
 #, c-format
 msgid "Write(%d, %p, %d) failed: %s\n"
 msgstr "Write(%d, %p, %d) schlug fehl: %s\n"
 
-#: src/applications/fs/ecrs/download.c:910
+#: src/applications/fs/ecrs/download.c:917
 msgid ""
 "Decrypted content does not match key. This is either a bug or a maliciously "
 "inserted file. Download aborted.\n"
@@ -564,9 +564,10 @@ msgstr ""
 "Bug oder eine mit bösen Absichten eingefügte Datei. Download wurde "
 "abgebrochen.\n"
 
-#: src/applications/fs/ecrs/download.c:1081
-#, c-format
-msgid "Content `%s' seems to be not available on the network.\n"
+#: src/applications/fs/ecrs/download.c:1091
+#, fuzzy, c-format
+msgid ""
+"Content `%s' seems to be not available on the network (tried %u times).\n"
 msgstr "Inhalt `%s' scheint im Netzwerk nicht verfügbar zu sein.\n"
 
 #: src/applications/fs/ecrs/meta.c:835
@@ -657,11 +658,11 @@ msgstr "Indizieren der Datei `%s' schlug fehl.  Versuch Datei einzufügen...\n"
 msgid "Indexing data failed at position %i.\n"
 msgstr "Indizierung der Daten schlug an Position %i fehl.\n"
 
-#: src/applications/fs/fsui/download.c:267
+#: src/applications/fs/fsui/download.c:289
 msgid "Download aborted."
 msgstr "Download abgebrochen."
 
-#: src/applications/fs/fsui/download.c:270
+#: src/applications/fs/fsui/download.c:292
 msgid "ECRS download failed (see logs)."
 msgstr "ECRS Download schlug fehl (siehe Protokolldateien)."
 
@@ -713,17 +714,17 @@ msgstr "Diese Suche läuft bereits!\n"
 msgid "Unindex failed."
 msgstr "Deindizierung schlug fehl."
 
-#: src/applications/fs/fsui/upload.c:383 src/applications/fs/fsui/upload.c:420
+#: src/applications/fs/fsui/upload.c:402 src/applications/fs/fsui/upload.c:439
 msgid "Upload failed.\n"
 msgstr "Upload fehlgeschlagen.\n"
 
-#: src/applications/fs/fsui/upload.c:427
+#: src/applications/fs/fsui/upload.c:446
 msgid "Cannot upload directory without using recursion.\n"
 msgstr ""
 "Verzeichnis kann nicht ohne die Verwendung von Rekursion hochgeladen "
 "werden.\n"
 
-#: src/applications/fs/module/fs.c:1079
+#: src/applications/fs/module/fs.c:1085
 #, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
@@ -732,14 +733,18 @@ msgstr ""
 "Sie müssen für `%s' in der Sektion `%s' der Konfigurationsdatei eine "
 "positive Zahl angeben.\n"
 
-#: src/applications/fs/module/fs.c:1121
+#: src/applications/fs/module/fs.c:1127
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr "`%s' registriert die Client Handler %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/module/fs.c:1158
+#: src/applications/fs/module/fs.c:1164
 msgid "enables (anonymous) file-sharing"
 msgstr "Ermöglicht (anonymes) Filesharing"
+
+#: src/applications/fs/module/migration.c:203
+msgid "# blocks migrated"
+msgstr ""
 
 #: src/applications/fs/module/ondemand.c:308
 #, c-format
@@ -775,7 +780,7 @@ msgstr ""
 "Deindizierter ODB Block `%s' vom Offset %llu fehlt bereits im "
 "Datenspeicher.\n"
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1960
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1991
 msgid "Failed to get traffic stats.\n"
 msgstr "Statistiken über den Netzwerkverkehr konnten nicht ermittelt werden.\n"
 
@@ -820,39 +825,39 @@ msgstr "==> Verzeichnis `%s':\n"
 msgid "=\tError reading directory.\n"
 msgstr "=\tFehler beim Lesen des Verzeichnisses.\n"
 
-#: src/applications/fs/tools/gnunet-directory.c:105
+#: src/applications/fs/tools/gnunet-directory.c:116
 #, c-format
 msgid "File format error (not a GNUnet directory?)\n"
 msgstr "Dateiformat fehlerhaft (kein GNUnet Verzeichnis?)\n"
 
-#: src/applications/fs/tools/gnunet-directory.c:107
+#: src/applications/fs/tools/gnunet-directory.c:118
 #, c-format
 msgid "%d files found in directory.\n"
 msgstr "%d Dateien im Verzeichnis gefunden.\n"
 
-#: src/applications/fs/tools/gnunet-directory.c:125
+#: src/applications/fs/tools/gnunet-directory.c:136
 msgid "remove all entries from the directory database and stop tracking URIs"
 msgstr ""
 "Alle Einträge aus der Verzeichnis Datenbank löschen und das Verfolgen von "
 "URIs abbrechen"
 
-#: src/applications/fs/tools/gnunet-directory.c:127
+#: src/applications/fs/tools/gnunet-directory.c:138
 msgid "list entries from the directory database"
 msgstr "Einträge aus der Verzeichnis Datenbank auflisten"
 
-#: src/applications/fs/tools/gnunet-directory.c:130
+#: src/applications/fs/tools/gnunet-directory.c:141
 msgid "start tracking entries for the directory database"
 msgstr "Anfangen, Einträge für die Verzeichnis Datenbank zu verfolgen"
 
-#: src/applications/fs/tools/gnunet-directory.c:134
+#: src/applications/fs/tools/gnunet-directory.c:145
 msgid "gnunet-directory [OPTIONS] [FILENAMES]"
 msgstr "gnunet-directory [OPTIONEN] [DATEINAMEN]"
 
-#: src/applications/fs/tools/gnunet-directory.c:135
+#: src/applications/fs/tools/gnunet-directory.c:146
 msgid "Perform directory related operations."
 msgstr "Verzeichnisbezogene Operationen durchführen."
 
-#: src/applications/fs/tools/gnunet-directory.c:200
+#: src/applications/fs/tools/gnunet-directory.c:211
 #, c-format
 msgid "Listed %d matching entries.\n"
 msgstr "%d übereinstimmende Einträge aufgelistet.\n"
@@ -1355,21 +1360,21 @@ msgstr "Sie dürfen nur eine Datei zum Deindizieren angeben.\n"
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr "`%s' schlug fehl. Ist `%s' eine Datei?\n"
 
-#: src/applications/gap/gap.c:1949
+#: src/applications/gap/gap.c:1980
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 "Verdeckender Netzwerkverkehr angefordert, aber der Verkehrsdienst wurde "
 "nicht geladen. Anfrage wird abgelehnt.\n"
 
-#: src/applications/gap/gap.c:1966 src/applications/gap/gap.c:1971
-#: src/applications/gap/gap.c:1977
+#: src/applications/gap/gap.c:1997 src/applications/gap/gap.c:2002
+#: src/applications/gap/gap.c:2008
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 "Gewünschter Grad an Anonymität kann nicht erreicht werden, Anfrage wird "
 "ignoriert.\n"
 
-#: src/applications/gap/gap.c:2233
+#: src/applications/gap/gap.c:2264
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
@@ -1377,7 +1382,7 @@ msgstr ""
 "Verkehrsdienst konnte nicht geladen werden, GAP kann keinen verdeckenden "
 "Netzwerkverkehr sicherstellen.\n"
 
-#: src/applications/gap/gap.c:2264
+#: src/applications/gap/gap.c:2295
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr "`%s' registriert Handler %d %d\n"
@@ -1662,7 +1667,7 @@ msgid "Query `%s' had no results.\n"
 msgstr "Abfrage `%s' hatte keine Ergebnisse.\n"
 
 #: src/applications/sqstore_mysql/mysql.c:1178
-#: src/applications/sqstore_sqlite/sqlite.c:1072
+#: src/applications/sqstore_sqlite/sqlite.c:1071
 msgid "# Bytes in datastore"
 msgstr "# Bytes in der Datenbank"
 
@@ -1680,7 +1685,7 @@ msgstr ""
 "richtig eingerichtet ist!\n"
 
 #: src/applications/sqstore_mysql/mysqltest.c:251
-#: src/applications/sqstore_sqlite/sqlitetest.c:258
+#: src/applications/sqstore_sqlite/sqlitetest.c:260
 msgid "Could not initialize libgnunetutil!\n"
 msgstr "Konnte libgnunetutil nicht initialisieren!\n"
 
@@ -1693,7 +1698,7 @@ msgstr "SQLite Datenbank konnte nicht initialisiert werden.\n"
 msgid "sqlite datastore"
 msgstr "sqlite Datenspeicher"
 
-#: src/applications/sqstore_sqlite/sqlite.c:1035
+#: src/applications/sqstore_sqlite/sqlite.c:1034
 #, c-format
 msgid ""
 "Configuration file must specify directory for storing FS data in section `%"
@@ -2070,7 +2075,7 @@ msgid "No testbed URL given, not registered.\n"
 msgstr ""
 "Keine Testbed URL angegeben, es wurde keine Registrierung vorgenommen.\n"
 
-#: src/applications/testbed/testbed.c:1056 src/transports/http.c:1453
+#: src/applications/testbed/testbed.c:1055 src/transports/http.c:1455
 #, c-format
 msgid "Could not resolve name of HTTP proxy `%s'.\n"
 msgstr "Der Name des HTTP Proxies `%s' konnte nicht aufgelöst werden.\n"
@@ -2088,21 +2093,21 @@ msgid "Could not register testbed, host `%s' unknown\n"
 msgstr ""
 "Testbed konnte nicht registriert werden, Host `%s' ist nicht bekannt.\n"
 
-#: src/applications/testbed/testbed.c:1177
+#: src/applications/testbed/testbed.c:1178
 #, c-format
 msgid "Failed to send HTTP request to host `%s': %s\n"
 msgstr "HTTP Anfrage konnte nicht an Host `%s' gesendet werden: %s\n"
 
-#: src/applications/testbed/testbed.c:1230
+#: src/applications/testbed/testbed.c:1231
 #, c-format
 msgid "Failed so send HTTP request `%s' to host `%s': %s\n"
 msgstr "Fehler beim Senden der HTTP Anfrage `%s' an Host `%s': %s\n"
 
-#: src/applications/testbed/testbed.c:1269
+#: src/applications/testbed/testbed.c:1270
 msgid "Exit register (error: no http response read).\n"
 msgstr "Abbruch der Registrierung (Fehler: keine HTTP Antwort gelesen).\n"
 
-#: src/applications/testbed/testbed.c:1357
+#: src/applications/testbed/testbed.c:1358
 msgid "allows construction of a P2P-testbed (incomplete)"
 msgstr "Ermöglicht die Konstruktion einer P2P-Testumgebung (inkomplett)"
 
@@ -3259,42 +3264,42 @@ msgstr "`%s' wählte %d von %d Nachrichten aus (MTU: %d).\n"
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Nachrichten Details: %u: Länge %d, Priorität: %d\n"
 
-#: src/server/connection.c:2303
+#: src/server/connection.c:2331
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Nachricht von `%s' verworfen: ungültiges Format.\n"
 
-#: src/server/connection.c:2385
+#: src/server/connection.c:2413
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Ungültige Sequenznummer %u <= %u, Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:2401
+#: src/server/connection.c:2429
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 "Empfangene Nachricht ist mehr als ein Tag alt. Nachricht wird verworfen.\n"
 
-#: src/server/connection.c:2795
+#: src/server/connection.c:2823
 msgid "# outgoing messages dropped"
 msgstr "# ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:2797
+#: src/server/connection.c:2825
 msgid "# bytes of outgoing messages dropped"
 msgstr "# Bytes ausgehender Nachrichten verworfen"
 
-#: src/server/connection.c:2799
+#: src/server/connection.c:2827
 msgid "# connections closed (HANGUP sent)"
 msgstr "# geschlossener Verbindungen (HANGUP gesendet)"
 
-#: src/server/connection.c:2801
+#: src/server/connection.c:2829
 msgid "# bytes encrypted"
 msgstr "# Bytes verschlüsselt"
 
-#: src/server/connection.c:2803
+#: src/server/connection.c:2831
 msgid "# bytes decrypted"
 msgstr "# Bytes entschlüsselt"
 
-#: src/server/connection.c:2805
+#: src/server/connection.c:2833
 msgid "# bytes noise sent"
 msgstr "# Bytes Rauschen gesendet"
 
@@ -3630,12 +3635,12 @@ msgstr ""
 msgid "%s failed, message type %d already in use.\n"
 msgstr "%s schlug fehl, Nachrichten Typ %d ist bereits in Verwendung.\n"
 
-#: src/transports/ip6.c:60 src/transports/ip.c:67 src/util/tcpio.c:87
+#: src/transports/ip6.c:60 src/util/configuration.c:925
 #, c-format
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
 
-#: src/transports/ip6.c:100 src/transports/ip.c:310
+#: src/transports/ip6.c:100
 #, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr "`%s' konnte nicht aufgelöst werden: %s\n"
@@ -3660,13 +3665,13 @@ msgstr ""
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "HTTP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/http.c:1175 src/transports/tcp.c:1150 src/util/tcpio.c:166
-#: src/util/tcpio.c:196
+#: src/transports/http.c:1177 src/transports/tcp.c:1150 src/util/tcpio.c:158
+#: src/util/tcpio.c:188
 #, c-format
 msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
 msgstr "Verbindung zu %u.%u.%u.%u:%u fehlgeschlagen: %s\n"
 
-#: src/transports/http.c:1331
+#: src/transports/http.c:1333
 #, c-format
 msgid ""
 "Could not bind the HTTP listener to port %d. No transport service started.\n"
@@ -3674,24 +3679,24 @@ msgstr ""
 "HTTP-Listener konnte nicht an Port %d gebunden werden. Der Transport Dienst "
 "wurde nicht gestartet.\n"
 
-#: src/transports/http.c:1474
+#: src/transports/http.c:1478
 msgid "# bytes received via HTTP"
 msgstr "# Bytes empfangen über HTTP"
 
-#: src/transports/http.c:1476
+#: src/transports/http.c:1480
 msgid "# bytes sent via HTTP"
 msgstr "# Bytes gesendet über HTTP"
 
-#: src/transports/http.c:1478
+#: src/transports/http.c:1482
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "# Bytes verworfen von HTTP"
 
-#: src/transports/smtp.c:296
+#: src/transports/smtp.c:297
 #, c-format
 msgid "Could not resolve name of SMTP server `%s': %s"
 msgstr "Der Name des SMTP servers `%s' konnte nicht aufgelöst werden: %s"
 
-#: src/transports/smtp.c:415 src/transports/smtp.c:876
+#: src/transports/smtp.c:416 src/transports/smtp.c:877
 #, c-format
 msgid ""
 "You must specify the name of a pipe for the SMTP transport in section `%s' "
@@ -3700,33 +3705,33 @@ msgstr ""
 "Für den SMTP Transport müssen Sie den Namen einer Pipe in Sektion `%s', "
 "Eintrag `%s' eintragen.\n"
 
-#: src/transports/smtp.c:488
+#: src/transports/smtp.c:489
 msgid "Received malformed message via SMTP (size mismatch).\n"
 msgstr ""
 "Es wurde eine ungültige Nachricht per SMTP empfangen (ungültige Größe).\n"
 
-#: src/transports/smtp.c:583
+#: src/transports/smtp.c:584
 msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
 msgstr ""
 "Kein Filter für E-Mail angegeben, es kann keine Bekanntmachung erstellt "
 "werden.\n"
 
-#: src/transports/smtp.c:590
+#: src/transports/smtp.c:591
 #, c-format
 msgid "SMTP filter string to long, capped to `%s'\n"
 msgstr "SMTP Filterstring zu lang, wurde auf `%s' abgeschnitten\n"
 
-#: src/transports/smtp.c:763
+#: src/transports/smtp.c:764
 #, c-format
 msgid "Sending E-mail to `%s' failed.\n"
 msgstr "Das Senden einer E-Mail an `%s' schlug fehl.\n"
 
-#: src/transports/smtp.c:814
+#: src/transports/smtp.c:815
 #, c-format
 msgid "SMTP server send unexpected response at %s:%d.\n"
 msgstr "Der SMTP server sendete eine unerwartete Antwort bei %s:%d.\n"
 
-#: src/transports/smtp.c:837
+#: src/transports/smtp.c:838
 #, c-format
 msgid ""
 "SMTP server failed to respond with 250 confirmation code to `%s' request.\n"
@@ -3734,17 +3739,17 @@ msgstr ""
 "SMTP Server antwortete nicht mit einem 250 Bestätigungscode auf eine `%s' "
 "Anfrage.\n"
 
-#: src/transports/smtp.c:843
+#: src/transports/smtp.c:844
 #, c-format
 msgid "Failed to send `%s' request to SMTP server.\n"
 msgstr "Fehler beim Senden einer `%s' Anfrage an den SMTP Server.\n"
 
-#: src/transports/smtp.c:902
+#: src/transports/smtp.c:903
 #, c-format
 msgid "%.*s filter %s (SMTP)"
 msgstr "%.*s filter %s (SMTP)"
 
-#: src/transports/smtp.c:931 src/transports/udp.c:706
+#: src/transports/smtp.c:932 src/transports/udp.c:708
 #: src/transports/udp6.c:680
 #, c-format
 msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
@@ -3853,26 +3858,26 @@ msgstr ""
 msgid "UDP: Could not determine my public IP address.\n"
 msgstr "UDP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/udp.c:535
+#: src/transports/udp.c:537
 #, c-format
 msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
 msgstr ""
 "Eine Nachricht der Größe %d konnte nicht per UDP an %u.%u.%u.%u:%u versendet "
 "werden: %s\n"
 
-#: src/transports/udp.c:691
+#: src/transports/udp.c:693
 msgid "# bytes received via UDP"
 msgstr "# Bytes empfangen über UDP"
 
-#: src/transports/udp.c:693
+#: src/transports/udp.c:695
 msgid "# bytes sent via UDP"
 msgstr "# Bytes gesendet über UDP"
 
-#: src/transports/udp.c:695
+#: src/transports/udp.c:697
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr "# Bytes verworfen von UDP (outgoing)"
 
-#: src/transports/ip.c:142
+#: src/transports/ip.c:124
 #, c-format
 msgid ""
 "Could not find interface `%s' in `%s', trying to find another interface.\n"
@@ -3880,19 +3885,19 @@ msgstr ""
 "Gerät `%s' konnte in `%s' nicht gefunden werden, es wird versucht, ein "
 "anderes Gerät zu finden.\n"
 
-#: src/transports/ip.c:167
+#: src/transports/ip.c:149
 #, c-format
 msgid "Could not obtain IP for interface `%s' using `%s'.\n"
 msgstr ""
 "Es konnte keine IP für das Gerät `%s' unter Verwendung von `%s' ermittelt "
 "werden.\n"
 
-#: src/transports/ip.c:211
+#: src/transports/ip.c:193
 #, c-format
 msgid "Could not find an IP address for interface `%s'.\n"
 msgstr "Es konnte keine IP-Adresse für das Gerät `%s' ermittelt werden.\n"
 
-#: src/transports/ip.c:221
+#: src/transports/ip.c:203
 #, c-format
 msgid ""
 "There is more than one IP address specified for interface `%s'.\n"
@@ -3901,18 +3906,18 @@ msgstr ""
 "Es ist mehr als eine IP-Adresse für das Gerät `%s' angegeben.\n"
 "GNUnet wird %u.%u.%u.%u. verwenden.\n"
 
-#: src/transports/ip.c:242
+#: src/transports/ip.c:224
 #, c-format
 msgid "Could not resolve `%s' to determine our IP address: %s\n"
 msgstr ""
 "`%s' konnte nicht aufgelöst werden, um unsere IP-Adresse zu ermitteln: %s\n"
 
-#: src/transports/ip.c:275
+#: src/transports/ip.c:256
 #, c-format
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr "GNUnet verwendet nun die IP-Adresse %u.%u.%u.%u.\n"
 
-#: src/transports/ip.c:345
+#: src/transports/ip.c:306
 msgid "Failed to obtain my (external) IP address!\n"
 msgstr "Fehler beim Bestimmen der (externen) IP-Adresse!\n"
 
