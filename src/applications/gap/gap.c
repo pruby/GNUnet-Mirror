@@ -1388,7 +1388,8 @@ static int execQuery(const PeerIdentity * sender,
       isRouted ? " routing" : "",
       i);
 #endif
-  if (stats != NULL)
+  if ( (stats != NULL) &&
+       (isRouted || doForward) )
     stats->change(stat_routing_processed, 1);
   cls.values = NULL;
   cls.valueCount = 0;
