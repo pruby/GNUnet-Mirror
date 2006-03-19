@@ -615,7 +615,7 @@ int wizard_curs_main(int argc, char **argv)
     if (!wiz_createGroupUser(group_name, user_name))
       showCursErr(_("Unable to create user account:"), STRERROR(errno));
 
-  if (autostart && !wiz_autostartService(doAutoStart, user_name, group_name))
+  if (!wiz_autostartService(autostart, user_name, group_name))
     showCursErr(_("Unable to change startup process:"), STRERROR(errno));
 
   init_dialog();
