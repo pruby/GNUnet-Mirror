@@ -252,6 +252,10 @@ AC_SUBST(SQLITE_LDFLAGS)
 zlib=1
 AC_CHECK_LIB(z, compress,,zlib=0)
 AM_CONDITIONAL(HAVE_ZLIB, test x$zlib = x1)
+if test "$zlib" != 1
+then
+ AC_MSG_ERROR([GNUnet requires zlib])
+fi
 
 # mysql & windows
 AC_CHECK_TYPES([sigset_t, off_t], [], [], [#include <sys/types.h>])
