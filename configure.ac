@@ -329,6 +329,11 @@ AM_CONDITIONAL(HAVE_MYSQL, test x$mysql = xtrue)
 LDFLAGS=$SAVE_LDFLAGS
 CPPFLAGS=$SAVE_CPPFLAGS
 
+if test "$sqlite" = 0 -a "$mysql" = 0
+then
+ AC_MSG_ERROR([GNUnet requires SQLite or MySQL])
+fi
+
 # GNUnet Setup
 curses=1
 pdcurses=0
