@@ -1546,7 +1546,7 @@ static int useContent(const PeerIdentity * hostId,
     EncName enc;
     
     if (hostId != NULL)
-      hash2enc(&hostId->hashPubKey, &enc)
+      hash2enc(&hostId->hashPubKey, &enc);
     LOG(LOG_ERROR,
       _("GAP received invalid content from `%s'\n"),
       (hostId != NULL) ? (const char*)&enc : _("myself"));
