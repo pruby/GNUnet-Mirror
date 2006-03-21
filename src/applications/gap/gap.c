@@ -1543,6 +1543,14 @@ static int useContent(const PeerIdentity * hostId,
 		value,
 		0);
   if (ret == SYSERR) {
+    EncName enc;
+    
+    if (hostId != NULL)
+      hash2enc(&hostId->hashPubKey, &enc)
+    LOG(LOG_ERROR,
+      _("GAP received invalid content from `%s'\n"),
+      (hostId != NULL) ? (const char*)&enc : _("myself"));
+    
     BREAK();
     uri(value,
 	ANY_BLOCK,
