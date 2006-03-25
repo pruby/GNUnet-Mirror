@@ -193,7 +193,7 @@ void reopenLogFile() {
       struct logfiledef def;
       char datestr[80];
       time_t curtime;
-      char *datefmt;
+      const char *datefmt;
       char c;
 
 #if ENABLE_NLS
