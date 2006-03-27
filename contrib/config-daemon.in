@@ -125,7 +125,7 @@ menu "General settings" "GNUNETD"
 	config HOSTLISTURL
 	string "Where can GNUnet find an initial list of peers"
 	depends on Meta::ADVANCED
-	default "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist"
+	default "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist http://de.gnunet.org/cgi-bin/hostlist.cgi"
 	help
 		GNUnet can automatically update the hostlist from the web. While
 		GNUnet internally communicates which hosts are online, it is
@@ -143,7 +143,7 @@ menu "General settings" "GNUNETD"
 		
 		If you do not specify a HOSTLISTURL, you must copy valid hostkeys to
 		data/hosts manually.
-		Default: HOSTLISTURL = "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist"
+		Default: HOSTLISTURL = "http://gnunet.org/hostlist http://mikael.karlsson.com/hostlist http://gnunet.mine.nu:8081/hostlist http://de.gnunet.org/cgi-bin/hostlist.cgi"
     
 	config HTTP-PROXY
 	string "HTTP Proxy Server"
