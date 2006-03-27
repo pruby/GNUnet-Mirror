@@ -224,6 +224,7 @@ void * downloadThread(void * cls) {
 	dl->filename);
 #endif
     totalBytes = 0;
+    dl->total = 0;
   }
   root = dl;
   while (root->parent != &dl->ctx->activeDownloads) {
