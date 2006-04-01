@@ -1,0 +1,127 @@
+/**
+ * @file util/hashtabletest.c
+ * @brief testcase for util/hashtable.c
+ * @author Nils Durner
+ */
+
+#include "gnunet_util.h"
+#include "platform.h"
+
+static int testHT()
+{
+  struct HashTable *ht = ht_create(10);
+  void *val;
+  unsigned int vallen;
+  
+  if (HT_PUT(ht, "Sweden", "Stockholm") != YES ||
+    HT_PUT(ht, "Germany", "Berlin") != YES ||
+    HT_PUT(ht, "France", "Paris") != YES ||
+    HT_PUT(ht, "Spain", "Madrid") != YES ||
+    HT_PUT(ht, "Italy", "Rome") != YES ||
+    HT_PUT(ht, "USA", "Washington") != YES)
+  {
+    puts("ht_put failed\n");
+    return 1;
+  }
+  
+  if (HT_CONTAINS_KEY(ht, "France") != YES ||
+    HT_CONTAINS_KEY(ht, "Iceland") != NO)
+  {
+    puts("ht_contains_key failed!\n");
+    return 1;
+  }
+  
+  if (HT_CONTAINS_VALUE(ht, "Paris") != YES ||
+    HT_CONTAINS_VALUE(ht, "London") != NO)
+  {
+    puts("ht_contains_value failed!\n");
+    return 1;
+  }
+  
+  if (HT_GET(ht, "USA", &val, &vallen) != YES)
+  {
+    puts("ht_get failed!\n");
+    return 1;
+  }
+  
+  if (strcmp((char *) val, "Washington") != 0)
+  {
+    puts("ht_get result invalid!\n");
+    return 1;
+  }
+  
+  HT_REMOVE(ht, "Spain");
+  if (HT_CONTAINS_KEY(ht, "Spain") != NO)
+  {
+    puts("ht_remove failed!\n");
+    return 1;    
+  }
+  
+  if (ht_size(ht) != 5)
+  {
+    puts("ht_size failed!\n");
+    return 1;    
+  }
+  
+  ht_removeAll(ht);
+  if (ht_size(ht) != 0)
+  {
+    puts("ht_size#2 failed!\n");
+    return 1;    
+  }
+  
+  ht_destroy(ht);
+  
+  return 0;
+}
+
+
+/**
+ * Perform option parsing from the command line.
+ */
+static int parseCommandLine(int argc,
+			    char * argv[]) {
+  char c;
+
+  while (1) {
+    int option_index = 0;
+    static struct GNoption long_options[] = {
+      { "loglevel",1, 0, 'L' },
+      { "config",  1, 0, 'c' },
+      { 0,0,0,0 }
+    };
+
+    c = GNgetopt_long(argc,
+		      argv,
+		      "c:L:",
+		      long_options,
+		      &option_index);
+
+    if (c == -1)
+      break;  /* No more flags to process */
+
+    switch(c) {
+    case 'L':
+      FREENONNULL(setConfigurationString("GNUNET",
+					 "LOGLEVEL",
+					 GNoptarg));
+      break;
+    case 'c':
+      FREENONNULL(setConfigurationString("FILES",
+					 "gnunet.conf",
+					 GNoptarg));
+      break;
+    } /* end of parsing commandline */
+  }
+  return OK;
+}
+
+int main(int argc, char * argv[]){
+  int ret = 0;
+
+  initUtil(argc, argv, &parseCommandLine);
+  ret = testHT();
+  doneUtil();
+
+  return ret;
+}

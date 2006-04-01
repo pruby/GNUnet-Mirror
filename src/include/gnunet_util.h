@@ -539,7 +539,10 @@ typedef HashCode512 * (*ElementIterator)(void * arg);
  */
 struct Vector;
 
-
+/**
+ * @brief a hash table, opaque
+ */
+struct HashTable;
 
 
 /* **************** Functions and Macros ************* */
@@ -1452,6 +1455,13 @@ int enc2hash(const char * enc,
 	     HashCode512 * result);
 
 /**
+ * @brief Convert a weak 64 bit hash into a string
+ * @param h the hashcode
+ * @param e the string (zero terminated)
+ */
+void encWeakHash(unsigned long long h, char e[14]);
+
+/**
  * Compute the distance between 2 hashcodes.
  * The computation must be fast, not involve
  * a.a or a.e (they're used elsewhere), and
@@ -1483,6 +1493,14 @@ void hash(const void * block,
  */
 int getFileHash(const char * filename,
      	        HashCode512 * ret);
+
+/**
+ * @brief Create a cryptographically weak hashcode from a buffer
+ * @param z the buffer to hash
+ * @param n the size of z
+ * @return the hashcode
+ */
+unsigned long long weakHash(const char *z, int n);
 
 /**
  * Check if 2 hosts are the same (returns 1 if yes)
@@ -2325,6 +2343,148 @@ unsigned int vectorIndexOf(struct Vector * v,
  * possible.
  */
 void ** vectorElements(struct Vector * v);
+
+/**
+ * @brief creates a new HashTable
+ * @param numOfBuckets the number of buckets to start the HashTable out with.
+ *                     Must be greater than zero, and should be prime.
+ *                     Ideally, the number of buckets should between 1/5
+ *                     and 1 times the expected number of elements in the
+ *                     HashTable.  Values much more or less than this will
+ *                     result in wasted memory or decreased performance
+ *                     respectively.  The number of buckets in a HashTable
+ *                     can be re-calculated to an appropriate number by
+ *                     calling the HashTableRehash() function once the
+ *                     HashTable has been populated.  The number of buckets
+ *                     in a HashTable may also be re-calculated
+ *                     automatically if the ratio of elements to buckets
+ *                     passes the thresholds set by ht_setIdealRatio().
+ * @return a new Hashtable, or NULL on error
+ */
+struct HashTable *ht_create(long numOfBuckets);
+
+/**
+ * @brief destroys an existing HashTable
+ * @param hashTable the HashTable to destroy
+ */
+void ht_destroy(struct HashTable *hashTable);
+
+/**
+ * @brief checks the existence of a key in a HashTable
+ * @param hashTable the HashTable to search
+ * @param key the key to search for
+ * @return whether or not the specified HashTable contains the
+ *         specified key
+ */
+int ht_containsKey(const struct HashTable *hashTable, const void *key, const unsigned int keylen);
+
+/**
+ * @brief checks the existence of a value in a HashTable
+ * @param hashTable the HashTable to search
+ * @param value the value to search for
+ * @return whether or not the specified HashTable contains the
+ *         specified value
+ */
+int ht_containsValue(const struct HashTable *hashTable, const void *value, const unsigned int valuelen);
+
+/**
+ * @brief adds a key/value pair to a HashTable
+ * @param hashTable the HashTable to add to
+ * @param key the key to add or whose value to replace
+ * @param value the value associated with the key
+ * @return 0 if successful, -1 if an error was encountered
+ */
+int ht_put(struct HashTable *hashTable, const void *key, const unsigned int keylen,
+  void *value, const unsigned int valuelen);
+  
+/**
+ * @brief retrieves the value of a key in a HashTable
+ * @param hashTable the HashTable to search
+ * @param key the key whose value is desired
+ * @param value the corresponding value
+ * @param valuelen the length of the value
+ * @return YES if found, NO otherwise
+ */
+int ht_get(const struct HashTable *hashTable, const void *key, const unsigned int
+  keylen, void **value, unsigned int *valuelen);
+
+/**
+ * @brief removes a key/value pair from a HashTable
+ * @param hashTable the HashTable to remove the key/value pair from
+ * @param key the key specifying the key/value pair to be removed
+ */
+void ht_remove(struct HashTable *hashTable, const void *key, const unsigned int keylen);
+
+/**
+ * @brief removes all key/value pairs from a HashTable
+ * @param hashTable the HashTable to remove all key/value pairs from
+ */
+void ht_removeAll(struct HashTable *hashTable);
+
+/**
+ * @brief returns the number of elements in a HashTable
+ * @param hashTable the HashTable whose size is requested
+ * @return the number of key/value pairs that are present in
+ *         the specified HashTable
+ */
+long ht_size(const struct HashTable *hashTable);
+
+/**
+ * @brief returns the number of buckets in a HashTable
+ * @param hashTable the HashTable whose number of buckets is requested
+ * @return the number of buckets that are in the specified
+ *         HashTable
+ */
+long ht_buckets(const struct HashTable *hashTable);
+
+/**
+ * @brief reorganizes a HashTable to be more efficient
+ * @param hashTable the HashTable to be reorganized
+ * @param numOfBuckets the number of buckets to rehash the HashTable to.
+ *                     Should be prime.  Ideally, the number of buckets
+ *                     should be between 1/5 and 1 times the expected
+ *                     number of elements in the HashTable.  Values much
+ *                     more or less than this will result in wasted memory
+ *                     or decreased performance respectively.  If 0 is
+ *                     specified, an appropriate number of buckets is
+ *                     automatically calculated.
+ */
+void ht_rehash(struct HashTable *hashTable, long numOfBuckets);
+
+/**
+ * @brief sets the ideal element-to-bucket ratio of a HashTable
+ * @param hashTable a HashTable
+ * @param idealRatio the ideal element-to-bucket ratio.  When a rehash
+ *                   occurs (either manually via a call to the
+ *                   HashTableRehash() function or automatically due the
+ *                   the triggering of one of the thresholds below), the
+ *                   number of buckets in the HashTable will be
+ *                   recalculated to be a prime number that achieves (as
+ *                   closely as possible) this ideal ratio.  Must be a
+ *                   positive number.
+ * @param lowerRehashThreshold the element-to-bucket ratio that is considered
+ *                     unacceptably low (i.e., too few elements per bucket).
+ *                     If the actual ratio falls below this number, a
+ *                     rehash will automatically be performed.  Must be
+ *                     lower than the value of idealRatio.  If no ratio
+ *                     is considered unacceptably low, a value of 0.0 can
+ *                     be specified.
+ * @param upperRehashThreshold the element-to-bucket ratio that is considered
+ *                     unacceptably high (i.e., too many elements per bucket).
+ *                     If the actual ratio rises above this number, a
+ *                     rehash will automatically be performed.  Must be
+ *                     higher than idealRatio.  However, if no ratio
+ *                     is considered unacceptably high, a value of 0.0 can
+ *                     be specified.
+ */
+void ht_setIdealRatio(struct HashTable *hashTable, float idealRatio,
+        float lowerRehashThreshold, float upperRehashThreshold);
+
+#define HT_PUT(ht, key, val) ht_put(ht, key, sizeof(key), val, sizeof(val))
+#define HT_GET(ht, key, val, vallen) ht_get(ht, key, sizeof(key), val, vallen)
+#define HT_CONTAINS_KEY(ht, key) ht_containsKey(ht, key, sizeof(key))
+#define HT_CONTAINS_VALUE(ht, value) ht_containsValue(ht, value, sizeof(value))
+#define HT_REMOVE(ht, key) ht_remove(ht, key, sizeof(key))
 
 /**
  * open() a file

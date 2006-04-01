@@ -53,6 +53,7 @@ libgnunetutil_la_SOURCES = \
  dso.c \
  getopt.c \
  hashing.c \
+ hashtable.c \
  hostkey_gcrypt.c \
  initialize.c \
  io.c \
@@ -88,6 +89,7 @@ check_PROGRAMS = \
  crontest \
  configtest \
  daemontest \
+ hashtabletest \
  hashtest \
  hashingtest \
  hostkeytest \
@@ -129,6 +131,11 @@ shutdowntest_LDADD = \
 timertest_SOURCES = \
  timertest.c
 timertest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+hashtabletest_SOURCES = \
+ hashtabletest.c
+hashtabletest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  
 
 hashingtest_SOURCES = \
