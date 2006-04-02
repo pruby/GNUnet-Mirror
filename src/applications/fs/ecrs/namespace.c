@@ -149,7 +149,8 @@ ECRS_createNamespace(const char * name,
 
   /* create advertisements */
 
-  mdsize = ECRS_sizeofMetaData(meta);
+  mdsize = ECRS_sizeofMetaData(meta,
+			       ECRS_SERIALIZE_PART);
   size = mdsize + sizeof(NBlock);
   if (size > MAX_NBLOCK_SIZE) {
     size = MAX_NBLOCK_SIZE;
@@ -161,7 +162,7 @@ ECRS_createNamespace(const char * name,
     mdsize = ECRS_serializeMetaData(meta,
 				    (char*)&nb[1],
 				    mdsize,
-				    YES);
+				    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
       BREAK();
       ECRS_deleteNamespace(name);
@@ -177,7 +178,7 @@ ECRS_createNamespace(const char * name,
     ECRS_serializeMetaData(meta,
 			   (char*)&nb[1],
 			   mdsize,
-			   NO);
+			   ECRS_SERIALIZE_FULL);
   }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(N_BLOCK);
@@ -402,7 +403,8 @@ ECRS_addToNamespace(const char * name,
 
   /* THEN: construct SBlock */
   dstURI = ECRS_uriToString(dstU);
-  mdsize = ECRS_sizeofMetaData(md);
+  mdsize = ECRS_sizeofMetaData(md,
+			       ECRS_SERIALIZE_PART);
   size = mdsize + sizeof(SBlock) + strlen(dstURI) + 1;
   if (size > MAX_SBLOCK_SIZE) {
     size = MAX_SBLOCK_SIZE;
@@ -417,7 +419,7 @@ ECRS_addToNamespace(const char * name,
     mdsize = ECRS_serializeMetaData(md,
 				    &((char*)&sb[1])[strlen(dstURI)+1],
 				    mdsize,
-				    YES);
+				    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
       BREAK();
       FREE(dstURI);
@@ -435,7 +437,7 @@ ECRS_addToNamespace(const char * name,
     ECRS_serializeMetaData(md,
 			   &((char*)&sb[1])[strlen(dstURI)+1],
 			   mdsize,
-			   NO);
+			   ECRS_SERIALIZE_FULL);
   }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(S_BLOCK);

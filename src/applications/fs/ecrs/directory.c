@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -180,7 +180,8 @@ int ECRS_createDirectory(char ** data,
   }
   ucs = MALLOC(sizeof(char*) * count);
   size = 8 + sizeof(unsigned int);
-  size += ECRS_sizeofMetaData(meta);
+  size += ECRS_sizeofMetaData(meta,
+			      ECRS_SERIALIZE_FULL);
 
   for (i=0;i<count;i++) {
     psize = size;
@@ -189,7 +190,8 @@ int ECRS_createDirectory(char ** data,
     GNUNET_ASSERT(ucs[i] != NULL);
     size += strlen(ucs[i]) + 1;
     size += sizeof(unsigned int);
-    size += ECRS_sizeofMetaData(fis[i].meta);
+    size += ECRS_sizeofMetaData(fis[i].meta,
+				ECRS_SERIALIZE_FULL);
     align = (size / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
     if ( (psize < align) &&
 	 (size > align) ) {
@@ -209,7 +211,7 @@ int ECRS_createDirectory(char ** data,
   ret = ECRS_serializeMetaData(meta,
 			       &(*data)[pos + sizeof(unsigned int)],
 			       size - pos - sizeof(unsigned int),
-			       NO);
+			       ECRS_SERIALIZE_FULL);
   GNUNET_ASSERT(ret != SYSERR);
   ret = htonl(ret);
   memcpy(&(*data)[pos],
@@ -221,7 +223,8 @@ int ECRS_createDirectory(char ** data,
     psize = pos;
 
     pos += strlen(ucs[i]) + 1 +
-      ECRS_sizeofMetaData(fis[i].meta);
+      ECRS_sizeofMetaData(fis[i].meta,
+			  ECRS_SERIALIZE_FULL);
     pos += sizeof(unsigned int);
     align = (pos / BLOCK_ALIGN_SIZE) * BLOCK_ALIGN_SIZE;
     if ( (psize < align) &&
@@ -238,7 +241,7 @@ int ECRS_createDirectory(char ** data,
     ret = ECRS_serializeMetaData(fis[i].meta,
 				 &(*data)[pos + sizeof(unsigned int)],
 				 size - pos - sizeof(unsigned int),
-				 NO);
+				 ECRS_SERIALIZE_FULL);
     GNUNET_ASSERT(ret != SYSERR);
     ret = htonl(ret);
     memcpy(&(*data)[pos],

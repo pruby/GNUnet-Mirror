@@ -59,14 +59,15 @@ static void writeNamespaceInfo(const char * namespaceName,
   strcat(fn, namespaceName);
   FREE(fnBase);
 
-  size = ECRS_sizeofMetaData(meta);
+  size = ECRS_sizeofMetaData(meta,
+			     ECRS_SERIALIZE_FULL);
   tag = size + sizeof(int);
   buf = MALLOC(tag);
   ((int *) buf)[0] = htonl(ranking); /* ranking */
   GNUNET_ASSERT(size == ECRS_serializeMetaData(meta,
 					       &buf[sizeof(int)],
 					       size,
-					       NO));
+					       ECRS_SERIALIZE_FULL));
   writeFile(fn,
 	    buf,
 	    tag,
@@ -458,7 +459,8 @@ static int writeUpdateData(const char * nsname,
   struct UpdateData * buf;
 
   uri = ECRS_uriToString(fi->uri);
-  metaSize = ECRS_sizeofMetaData(fi->meta);
+  metaSize = ECRS_sizeofMetaData(fi->meta,
+				 ECRS_SERIALIZE_FULL);
   size = sizeof(struct UpdateData) + metaSize + strlen(uri) + 1;
   buf = MALLOC(size);
   buf->nextId = *nextId;
@@ -472,7 +474,7 @@ static int writeUpdateData(const char * nsname,
 		ECRS_serializeMetaData(fi->meta,
 				       &((char*)&buf[1])[strlen(uri)+1],
 				       metaSize,
-				       NO));
+				       ECRS_SERIALIZE_FULL));
   FREE(uri);
   fn = getUpdateDataFilename(nsname,
 			     thisId);

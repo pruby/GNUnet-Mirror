@@ -180,6 +180,16 @@ int ECRS_extractMetaData(struct ECRS_MetaData * md,
 			 const char * filename,
 			 EXTRACTOR_ExtractorList * extractors);
 
+/* = 0 */
+#define ECRS_SERIALIZE_FULL NO
+
+/* = 1 */
+#define ECRS_SERIALIZE_PART YES
+
+/* disallow compression (if speed is important) */
+#define ECRS_SERIALIZE_NO_COMPRESS 2
+
+
 /**
  * Serialize meta-data to target.
  *
@@ -199,8 +209,10 @@ int ECRS_serializeMetaData(const struct ECRS_MetaData * md,
 /**
  * Compute size of the meta-data in
  * serialized form.
+ * @part flags (partial ok, may compress?)
  */
-unsigned int ECRS_sizeofMetaData(const struct ECRS_MetaData * md);
+unsigned int ECRS_sizeofMetaData(const struct ECRS_MetaData * md,
+				 int part);
 
 /**
  * Deserialize meta-data.  Initializes md.

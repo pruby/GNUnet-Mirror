@@ -610,6 +610,10 @@ int ECRS_search(const struct ECRS_URI * uri,
 			  &ctx);
     }
     MUTEX_UNLOCK(&ctx.lock);
+    if (! ( (OK == tt(ttClosure)) &&
+	    (timeout > now) &&
+	    (ctx.aborted == NO) ) )
+      break;
     gnunet_util_sleep(100 * cronMILLIS);
     cronTime(&now);
   }

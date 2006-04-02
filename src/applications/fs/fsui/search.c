@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -291,6 +291,9 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
     if (ECRS_equalsUri(uri,
 		       pos->uri)) {
       pos->signalTerminate = YES;
+      /* send signal to terminate sleep! */
+      PTHREAD_KILL(&pos->handle,
+		   SIGALRM);
       PTHREAD_JOIN(&pos->handle,
 		   &unused);
       ECRS_freeUri(pos->uri);

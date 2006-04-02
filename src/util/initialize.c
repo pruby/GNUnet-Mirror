@@ -29,10 +29,6 @@
 #include "locking_gcrypt.h"
 
 /* internal prototypes... */
-void initXmalloc();
-
-void doneXmalloc();
-
 void initKBlockKey();
 
 void doneKBlockKey();
@@ -197,7 +193,6 @@ int initUtil(int argc,
   gnunet_util_initIO();
   initLockingGcrypt();
   initRAND();
-  initXmalloc();
   initKBlockKey();
   initConfiguration();
   if (argc > 0)
@@ -236,7 +231,6 @@ void doneUtil() {
 #endif
   doneKBlockKey();
   doneLockingGcrypt();
-  doneXmalloc();
   gnunet_util_doneIO();
 }
 

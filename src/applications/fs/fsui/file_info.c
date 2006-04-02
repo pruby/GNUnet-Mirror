@@ -93,12 +93,13 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
 
   if (NO == FSUI_trackStatus())
     return;
-  size = ECRS_sizeofMetaData(fi->meta);
+  size = ECRS_sizeofMetaData(fi->meta,
+			     ECRS_SERIALIZE_FULL);
   data = MALLOC(size);
   GNUNET_ASSERT(size == ECRS_serializeMetaData(fi->meta,
 					       data,
 					       size,
-					       NO));
+					       ECRS_SERIALIZE_FULL));
   size = htonl(size);
   suri = ECRS_uriToString(fi->uri);
   sem = createIPC();

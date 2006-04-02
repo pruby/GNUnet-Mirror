@@ -1,7 +1,10 @@
+Sat Mar 18 12:54:11 PST 2006
+	Releasing GNUnet 0.7.0c.
+
 Thu Mar 16 22:14:01 PST 2006
 	Fixing various routing problems (resulting in better utilization
 	of bandwidth by routing more content and less queries).
-
+	
 Wed Mar 15 00:00:14 PST 2006
 	Fixing various content migration bugs (one that disabled it,
 	one that made it unlikely that migration was even tried, and

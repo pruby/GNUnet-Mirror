@@ -46,12 +46,13 @@ static int testMeta() {
 			       EXTRACTOR_FILENAME,
 			       "lib-link.m4"))
     ABORT();
-  size = ECRS_sizeofMetaData(m);
+  size = ECRS_sizeofMetaData(m,
+			     ECRS_SERIALIZE_FULL);
   val = MALLOC(size);
   if (size != ECRS_serializeMetaData(m,
 				     val,
 				     size,
-				     NO))
+				     ECRS_SERIALIZE_FULL))
     ABORT();
   ECRS_freeMetaData(m);
   m = ECRS_deserializeMetaData(val,

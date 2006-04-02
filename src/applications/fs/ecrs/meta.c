@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -457,8 +457,12 @@ int ECRS_serializeMetaData(const MetaData * md,
     }
 
     hdr->size = htonl(size);
-    pos = tryCompression((char*)&hdr[1],
-                         size - sizeof(MetaDataHeader));
+    if ((part & ECRS_SERIALIZE_NO_COMPRESS) == 0) {
+      pos = tryCompression((char*)&hdr[1],
+			   size - sizeof(MetaDataHeader));
+    } else {
+      pos = size - sizeof(MetaDataHeader);
+    }
     if (pos < size - sizeof(MetaDataHeader)) {
       hdr->version = htonl(HEADER_COMPRESSED);
       size = pos + sizeof(MetaDataHeader);
@@ -468,7 +472,7 @@ int ECRS_serializeMetaData(const MetaData * md,
     FREE(hdr);
     hdr = NULL;
 
-    if (! part) {
+    if ((part & ECRS_SERIALIZE_PART) == 0) {
       return SYSERR; /* does not fit! */
     }
     /* partial serialization ok, try again with less meta-data */
@@ -500,8 +504,8 @@ int ECRS_serializeMetaData(const MetaData * md,
  * serialized form.  The estimate MAY be higher
  * than what is strictly needed.
  */
-unsigned int ECRS_sizeofMetaData(const MetaData * md) {
-
+unsigned int ECRS_sizeofMetaData(const MetaData * md,
+				 int part) {
   MetaDataHeader * hdr;
   size_t size;
   size_t pos;
@@ -530,9 +534,12 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md) {
            len);
     pos += len;
   }
-
-  pos = tryCompression((char*)&hdr[1],
-                       size - sizeof(MetaDataHeader));
+  if ((part & ECRS_SERIALIZE_NO_COMPRESS) == 0) {
+    pos = tryCompression((char*)&hdr[1],
+			 size - sizeof(MetaDataHeader));
+  } else {
+    pos = size - sizeof(MetaDataHeader);
+  }
   if (pos < size - sizeof(MetaDataHeader))
     size = pos + sizeof(MetaDataHeader);
 

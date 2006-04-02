@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-03-17 12:25-0800\n"
+"POT-Creation-Date: 2006-04-01 16:49-0800\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -559,12 +559,12 @@ msgid ""
 "Content `%s' seems to be not available on the network (tried %u times).\n"
 msgstr "Nội dung '%s' có vẻ không có trên mạng.\n"
 
-#: src/applications/fs/ecrs/meta.c:835
+#: src/applications/fs/ecrs/meta.c:842
 #, fuzzy, c-format
 msgid "Renaming of file `%s' to `%s' failed: %s\n"
 msgstr "Đổi tên tập tin '%s' thành '%s' thất bại: %s\n"
 
-#: src/applications/fs/ecrs/meta.c:843
+#: src/applications/fs/ecrs/meta.c:850
 #, fuzzy, c-format
 msgid "Could not rename file `%s' to `%s': file exists\n"
 msgstr "Không đổi tên được tập tin '%s' thành '%s': tập tin tồn tại\n"
@@ -583,21 +583,21 @@ msgstr ""
 msgid "Cannot create pseudonym `%s', file `%s' exists.\n"
 msgstr "Không tạo được tên hiệu '%s', tập tin '%s' tồn tại.\n"
 
-#: src/applications/fs/ecrs/namespace.c:306
-#: src/applications/fs/ecrs/namespace.c:382
-#: src/applications/fs/ecrs/namespace.c:526
+#: src/applications/fs/ecrs/namespace.c:307
+#: src/applications/fs/ecrs/namespace.c:383
+#: src/applications/fs/ecrs/namespace.c:528
 #, fuzzy, c-format
 msgid "File `%s' does not contain a pseudonym.\n"
 msgstr "Tập tin '%s' không chứa một tên hiệu.\n"
 
-#: src/applications/fs/ecrs/namespace.c:317
-#: src/applications/fs/ecrs/namespace.c:393
+#: src/applications/fs/ecrs/namespace.c:318
+#: src/applications/fs/ecrs/namespace.c:394
 #, fuzzy, c-format
 msgid "Format of pseudonym `%s' is invalid.\n"
 msgstr "Định dạng của tên hiệu '%s' sai.\n"
 
-#: src/applications/fs/ecrs/namespace.c:536
-#: src/applications/fs/ecrs/namespace.c:546
+#: src/applications/fs/ecrs/namespace.c:538
+#: src/applications/fs/ecrs/namespace.c:548
 #, fuzzy, c-format
 msgid "Format of file `%s' is invalid.\n"
 msgstr "Định dạng của tập tin '%s' sai.\n"
@@ -645,11 +645,11 @@ msgstr "nạp môđun '%s' không thành công.  Đang cho máy khách biết.\n
 msgid "Indexing data failed at position %i.\n"
 msgstr "Đánh chỉ mục dữ liệu thất bại tại vị trí %i.\n"
 
-#: src/applications/fs/fsui/download.c:289
+#: src/applications/fs/fsui/download.c:290
 msgid "Download aborted."
 msgstr "Dừng tải xuống."
 
-#: src/applications/fs/fsui/download.c:292
+#: src/applications/fs/fsui/download.c:293
 msgid "ECRS download failed (see logs)."
 msgstr "Tải xuống ECRS thất bại (hãy xem các bản ghi log)."
 
@@ -671,7 +671,7 @@ msgstr "Tắt bỏ thu thập tên tập tin.\n"
 msgid "FSUI persistence: error restoring download\n"
 msgstr "FSUI: lỗi phục hồi tải xuống\n"
 
-#: src/applications/fs/fsui/fsui.c:621
+#: src/applications/fs/fsui/fsui.c:620
 #, fuzzy, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
 msgstr "Tập tin trạng thái FSUI '%s' có lỗi cú pháp tại vùng %u.\n"
@@ -680,12 +680,12 @@ msgstr "Tập tin trạng thái FSUI '%s' có lỗi cú pháp tại vùng %u.\n"
 msgid "No keywords specified!\n"
 msgstr "Chưa chỉ ra từ khóa!\n"
 
-#: src/applications/fs/fsui/namespace_info.c:581
+#: src/applications/fs/fsui/namespace_info.c:583
 msgid "Publication interval for periodic publication changed."
 msgstr ""
 "Đã thay đổi khoảng thời gian giữa các lần đưa ra chia sẻ cho chia sẻ định kỳ."
 
-#: src/applications/fs/fsui/namespace_info.c:602
+#: src/applications/fs/fsui/namespace_info.c:604
 msgid ""
 "Publishing update for periodically updated content more than a week ahead of "
 "schedule.\n"
@@ -703,11 +703,13 @@ msgid "Unindex failed."
 msgstr "Bỏ đánh chỉ mục thất bại.\n"
 
 #: src/applications/fs/fsui/upload.c:402 src/applications/fs/fsui/upload.c:439
-msgid "Upload failed.\n"
+#, fuzzy
+msgid "Upload failed."
 msgstr "Tải lên thất bại.\n"
 
 #: src/applications/fs/fsui/upload.c:446
-msgid "Cannot upload directory without using recursion.\n"
+#, fuzzy
+msgid "Cannot upload directory without using recursion."
 msgstr "Không tải lên được thư mục khi không dùng đệ quy.\n"
 
 #: src/applications/fs/module/fs.c:1090
@@ -762,7 +764,7 @@ msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr "Khối ODB đã bỏ chỉ mục '%s' từ %llu không có trong kho dữ liệu.\n"
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1719
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1727
 msgid "Failed to get traffic stats.\n"
 msgstr "Lấy các thông tin truyền tải không thành công.\n"
 
@@ -1316,81 +1318,90 @@ msgstr "Người dùng phải chỉ ra một  và chỉ một tập tin để b�
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr "'%s' thất bại.  '%s' là một tập tin?\n"
 
-#: src/applications/gap/gap.c:1708
+#: src/applications/gap/gap.c:1551
+#, fuzzy, c-format
+msgid "GAP received invalid content from `%s'\n"
+msgstr "Nhận được thông báo sai '%s' từ '%s'.\n"
+
+#: src/applications/gap/gap.c:1552
+msgid "myself"
+msgstr ""
+
+#: src/applications/gap/gap.c:1716
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 "Đã yêu cầu che truyền tải nhưng chưa nạp dịch vụ truyền tải.  Đang nhả ra "
 "yêu cầu.\n"
 
-#: src/applications/gap/gap.c:1725 src/applications/gap/gap.c:1730
-#: src/applications/gap/gap.c:1736
+#: src/applications/gap/gap.c:1733 src/applications/gap/gap.c:1738
+#: src/applications/gap/gap.c:1744
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr "Không thể thỏa mãn mức độ dấu tên mong muốn, đang lờ đi yêu cầu.\n"
 
-#: src/applications/gap/gap.c:1987
+#: src/applications/gap/gap.c:1995
 #, fuzzy
 msgid "# gap requests total received"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/gap/gap.c:1988
+#: src/applications/gap/gap.c:1996
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:1989
+#: src/applications/gap/gap.c:1997
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:1990
+#: src/applications/gap/gap.c:1998
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:1991
+#: src/applications/gap/gap.c:1999
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:1992
+#: src/applications/gap/gap.c:2000
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:1993
+#: src/applications/gap/gap.c:2001
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1994
+#: src/applications/gap/gap.c:2002
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:1995
+#: src/applications/gap/gap.c:2003
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1996
+#: src/applications/gap/gap.c:2004
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1997
+#: src/applications/gap/gap.c:2005
 #, fuzzy
 msgid "# gap duplicate requests that were re-tried"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/gap/gap.c:1998
+#: src/applications/gap/gap.c:2006
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1999
+#: src/applications/gap/gap.c:2007
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2000
+#: src/applications/gap/gap.c:2008
 msgid "# gap spurious replies"
 msgstr ""
 
-#: src/applications/gap/gap.c:2001
+#: src/applications/gap/gap.c:2009
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2017
+#: src/applications/gap/gap.c:2025
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
@@ -1398,7 +1409,7 @@ msgstr ""
 "Nạp dịch vụ truyền tải không thành công; lỗ hổng không thể chắc chắn khả "
 "năng truyền tải.\n"
 
-#: src/applications/gap/gap.c:2048
+#: src/applications/gap/gap.c:2056
 #, fuzzy, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr "'%s' đăng ký trình điều khiển %d %d\n"
@@ -1654,8 +1665,8 @@ msgstr "# đã thiết lập buổi làm việc"
 #: src/applications/sqstore_sqlite/sqlite.c:51 src/util/hostkey_gcrypt.c:56
 #: src/util/hostkey_gcrypt.c:63 src/util/storage.c:643
 #: src/util/symcipher_gcrypt.c:47 src/util/symcipher_gcrypt.c:54
-#: src/include/gnunet_util.h:1030 src/include/gnunet_util.h:1037
-#: src/include/gnunet_util.h:1039
+#: src/include/gnunet_util.h:1033 src/include/gnunet_util.h:1040
+#: src/include/gnunet_util.h:1042
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
@@ -4001,7 +4012,7 @@ msgstr "%s: tùy chọn `-W %s' không cho phép một tham số\n"
 msgid "RSA signature verification failed at %s:%d: %s\n"
 msgstr "Kiểm tra chữ ký RSA thất bại tại %s:%d: %s\n"
 
-#: src/util/initialize.c:231
+#: src/util/initialize.c:226
 msgid "Shutdown complete.\n"
 msgstr "Tắt xong.\n"
 
@@ -4236,7 +4247,7 @@ msgstr " ngày"
 msgid "Attempted path to `%s' was `%s'.\n"
 msgstr "Đường dẫn đã thử tới '%s' là '%s'.\n"
 
-#: src/util/xmalloc.c:71
+#: src/util/xmalloc.c:52
 #, c-format
 msgid "Unexpected very large allocation (%u bytes) at %s:%d!\n"
 msgstr "Không mong đợi một phân phối rất rộng (%u) tại %s:%d!\n"
@@ -4265,13 +4276,13 @@ msgstr "in số của phiên bản"
 msgid "be verbose"
 msgstr "thông báo chi tiết"
 
-#: src/include/gnunet_util.h:625 src/include/gnunet_util.h:627
+#: src/include/gnunet_util.h:628 src/include/gnunet_util.h:630
 #, c-format
 msgid "Assertion failed at %s:%d.\n"
 msgstr "Xác nhận thất bại tại %s:%d.\n"
 
-#: src/include/gnunet_util.h:1046 src/include/gnunet_util.h:1048
-#: src/include/gnunet_util.h:1055
+#: src/include/gnunet_util.h:1049 src/include/gnunet_util.h:1051
+#: src/include/gnunet_util.h:1058
 #, fuzzy, c-format
 msgid "`%s' failed on file `%s' at %s:%d with error: %s\n"
 msgstr "'%s' thất bại trên tập tin'%s' tại %s:%d với lỗi: %s\n"

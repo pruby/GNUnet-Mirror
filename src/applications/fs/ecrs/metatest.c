@@ -91,12 +91,13 @@ static int testMeta(int i) {
   if (i != ECRS_getMetaData(m, NULL, NULL))
     ABORT();
 
-  size = ECRS_sizeofMetaData(m);
+  size = ECRS_sizeofMetaData(m,
+			     ECRS_SERIALIZE_FULL);
   val = MALLOC(size);
   if (size != ECRS_serializeMetaData(m,
 				     val,
 				     size,
-				     NO))
+				     ECRS_SERIALIZE_FULL))
     ABORT();
   ECRS_freeMetaData(m);
   m = ECRS_deserializeMetaData(val,
@@ -139,12 +140,13 @@ int testMetaMore(int i) {
 		       q % EXTRACTOR_getHighestKeywordTypeNumber(),
 		       txt);
   }
-  size = ECRS_sizeofMetaData(meta);
+  size = ECRS_sizeofMetaData(meta,
+			     ECRS_SERIALIZE_FULL);
   data = MALLOC(size * 4);
   if (size != ECRS_serializeMetaData(meta,
 				     data,
 				     size * 4,
-				     NO))
+				     ECRS_SERIALIZE_FULL))
     ABORT();
   FREE(data);
   return 0;

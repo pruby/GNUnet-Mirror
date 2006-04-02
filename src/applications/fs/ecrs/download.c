@@ -1099,7 +1099,7 @@ static void issueRequest(RequestManager * rm,
  * (min ttl until next job is ready) and re-schedule itself
  * accordingly!
  */
-static void processRequests(RequestManager * rm) {
+static cron_t processRequests(RequestManager * rm) {
   cron_t minSleep;
   cron_t now;
   cron_t delta;
@@ -1111,7 +1111,7 @@ static void processRequests(RequestManager * rm) {
   MUTEX_LOCK(&rm->lock);
   if (rm->requestListIndex == 0) {
     MUTEX_UNLOCK(&rm->lock);
-    return;
+    return 0;
   }
   cronTime(&now);
   pending = 0;
@@ -1162,7 +1162,7 @@ static void processRequests(RequestManager * rm) {
   if (minSleep < cronMILLIS * 100)
     minSleep = cronMILLIS * 100; /* maximum resolution: 100ms */
   MUTEX_UNLOCK(&rm->lock);
-  gnunet_util_sleep(minSleep);
+  return minSleep;
 }
 
 
@@ -1188,6 +1188,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   CommonCtx ctx;
   NodeClosure * top;
   FileIdentifier fid;
+  cron_t minSleep;
 
 #if DEBUG_DOWNLOAD
   LOG(LOG_DEBUG,
@@ -1242,9 +1243,14 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   addRequest(rm, top);
   while ( (OK == tt(ttClosure)) &&
 	  (rm->abortFlag == NO) &&
-	  (rm->requestListIndex != 0) )
-    processRequests(rm);
-
+	  (rm->requestListIndex != 0) ) {
+    minSleep = processRequests(rm);
+    if ( (OK == tt(ttClosure)) &&
+	  (rm->abortFlag == NO) &&
+	  (rm->requestListIndex != 0) ) 
+      gnunet_util_sleep(minSleep);
+  }
+  
   if ( (rm->requestListIndex == 0) &&
        (ctx.completed == ctx.total) &&
        (rm->abortFlag == NO) ) {

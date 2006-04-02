@@ -15,14 +15,30 @@
 # Usage:
 #	nohup ./serve_hostlist.sh &
 
-while true; do
+if test -z "$NODE"
+then
+ NODE="*"
+fi
+
+if test -z "$PORT"
+then
+ PORT=80
+fi
+
+if test -z "$GNUNETD_HOME"
+then
+ GNUNETD_HOME=/var/lib/GNUnet
+fi
+
+while true
+do
  echo -n HTTP/1.0 200 OK > /tmp/gnunet-hostlist-$$
  echo -e "\r\n\r" >> /tmp/gnunet-hostlist-$$
- cat $GNUNETD_HOME/data/hosts/$NODE.* >> /tmp/gnunet-hostlist-$$
+ cat $GNUNETD_HOME/data/hosts/$NODE.{6,8,12,17,23,25} >> /tmp/gnunet-hostlist-$$
  nc -q 1 -l -p $PORT < /tmp/gnunet-hostlist-$$ > /dev/null
  if test $? -ne 0; then
-  rm /tmp/gnunet-hostlist*
+  rm -f /tmp/gnunet-hostlist*
   exit;
  fi
- rm /tmp/gnunet-hostlist-$$
-done;
+ rm -f /tmp/gnunet-hostlist-$$
+done

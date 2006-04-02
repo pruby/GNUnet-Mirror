@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -133,8 +133,8 @@ static FSUI_DownloadList * readDownloadList(int fd,
   for (i=0;i<ret->completedDownloadsCount;i++) {
     ret->completedDownloads[i]
       = readURI(fd);
-    if (ret->completedDownloads[i] == NULL)
-      ok = NO;
+    if (ret->completedDownloads[i] == NULL) 
+      ok = NO;    
   }
   if (NO == ok) {
     BREAK();
@@ -258,14 +258,11 @@ static int readFileInfo(int fd,
 
   fi->meta = NULL;
   fi->uri = NULL;
-  if (sizeof(unsigned int) !=
-      READ(fd,
-	   &big,
-	   sizeof(unsigned int))) {
+  READINT(size);
+  if (size > 1024 * 1024) {
     BREAK();
     return SYSERR;
   }
-  size = ntohl(big);
   buf = MALLOC(size);
   if (size != READ(fd,
 		   buf,
@@ -292,24 +289,26 @@ static int readFileInfo(int fd,
     return SYSERR;
   }
   return OK;
+ ERR:
+  BREAK();
+  return SYSERR;
 }
 
 static void writeFileInfo(int fd,
 			  const ECRS_FileInfo * fi) {
   unsigned int size;
-  unsigned int big;
   char * buf;
 
-  size = ECRS_sizeofMetaData(fi->meta);
+  size = ECRS_sizeofMetaData(fi->meta,
+			     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
+  if (size > 1024 * 1024)
+    size = 1024 * 1024;
   buf = MALLOC(size);
   ECRS_serializeMetaData(fi->meta,
 			 buf,
 			 size,
-			 NO);
-  big = htonl(size);
-  WRITE(fd,
-	&big,
-	sizeof(unsigned int));
+			 ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
+  WRITEINT(fd, size);
   WRITE(fd,
 	buf,
 	size);

@@ -146,7 +146,8 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     return SYSERR;
   }
 
-  mdsize = ECRS_sizeofMetaData(md);
+  mdsize = ECRS_sizeofMetaData(md,
+			       ECRS_SERIALIZE_PART);
   dstURI = ECRS_uriToString(dst);
   size = mdsize + sizeof(KBlock) + strlen(dstURI) + 1;
   if (size > MAX_KBLOCK_SIZE) {
@@ -162,7 +163,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     mdsize = ECRS_serializeMetaData(md,
 				    &((char*)&kb[1])[strlen(dstURI)+1],
 				    mdsize,
-				    YES);
+				    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
       BREAK();
       FREE(dstURI);
@@ -181,7 +182,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 		  ECRS_serializeMetaData(md,
 					 &((char*)&kb[1])[strlen(dstURI)+1],
 					 mdsize,
-					 NO));
+					 ECRS_SERIALIZE_FULL));
   }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(K_BLOCK);

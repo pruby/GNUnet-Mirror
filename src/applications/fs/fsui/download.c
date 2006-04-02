@@ -463,6 +463,8 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 	list->ctx->threadPoolSize);
 #endif
     list->signalTerminate = YES;
+    PTHREAD_KILL(&list->handle,
+		 SIGALRM); /* terminate sleep */
     PTHREAD_JOIN(&list->handle,
 		 &unused);
     list->ctx->activeDownloadThreads--;

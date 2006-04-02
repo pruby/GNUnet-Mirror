@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-03-17 12:25-0800\n"
+"POT-Creation-Date: 2006-04-01 16:49-0800\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -587,12 +587,12 @@ msgid ""
 "Content `%s' seems to be not available on the network (tried %u times).\n"
 msgstr "Kuri OYA Bihari ku i urusobe"
 
-#: src/applications/fs/ecrs/meta.c:835
+#: src/applications/fs/ecrs/meta.c:842
 #, fuzzy, c-format
 msgid "Renaming of file `%s' to `%s' failed: %s\n"
 msgstr "Bya IDOSIYE Kuri Byanze"
 
-#: src/applications/fs/ecrs/meta.c:843
+#: src/applications/fs/ecrs/meta.c:850
 #, fuzzy, c-format
 msgid "Could not rename file `%s' to `%s': file exists\n"
 msgstr "OYA Guhindura izina IDOSIYE Kuri IDOSIYE"
@@ -609,21 +609,21 @@ msgstr "IDOSIYE a bushyinguro kugirango Kuri Ibyatanzwe"
 msgid "Cannot create pseudonym `%s', file `%s' exists.\n"
 msgstr "Kurema IDOSIYE"
 
-#: src/applications/fs/ecrs/namespace.c:306
-#: src/applications/fs/ecrs/namespace.c:382
-#: src/applications/fs/ecrs/namespace.c:526
+#: src/applications/fs/ecrs/namespace.c:307
+#: src/applications/fs/ecrs/namespace.c:383
+#: src/applications/fs/ecrs/namespace.c:528
 #, fuzzy, c-format
 msgid "File `%s' does not contain a pseudonym.\n"
 msgstr "Idosiye OYA a"
 
-#: src/applications/fs/ecrs/namespace.c:317
-#: src/applications/fs/ecrs/namespace.c:393
+#: src/applications/fs/ecrs/namespace.c:318
+#: src/applications/fs/ecrs/namespace.c:394
 #, fuzzy, c-format
 msgid "Format of pseudonym `%s' is invalid.\n"
 msgstr "Bya ni Sibyo Ijambobanga..."
 
-#: src/applications/fs/ecrs/namespace.c:536
-#: src/applications/fs/ecrs/namespace.c:546
+#: src/applications/fs/ecrs/namespace.c:538
+#: src/applications/fs/ecrs/namespace.c:548
 #, fuzzy, c-format
 msgid "Format of file `%s' is invalid.\n"
 msgstr "Bya ni Sibyo Ijambobanga..."
@@ -671,12 +671,12 @@ msgstr "Itangira... Modire Byanze Umukiriya"
 msgid "Indexing data failed at position %i.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/download.c:289
+#: src/applications/fs/fsui/download.c:290
 #, fuzzy
 msgid "Download aborted."
 msgstr "/Byahiswemo"
 
-#: src/applications/fs/fsui/download.c:292
+#: src/applications/fs/fsui/download.c:293
 #, fuzzy
 msgid "ECRS download failed (see logs)."
 msgstr "OYA Gufungura IDOSIYE"
@@ -699,7 +699,7 @@ msgstr ""
 msgid "FSUI persistence: error restoring download\n"
 msgstr ""
 
-#: src/applications/fs/fsui/fsui.c:621
+#: src/applications/fs/fsui/fsui.c:620
 #, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
 msgstr ""
@@ -709,11 +709,11 @@ msgstr ""
 msgid "No keywords specified!\n"
 msgstr "Amagambo fatizo"
 
-#: src/applications/fs/fsui/namespace_info.c:581
+#: src/applications/fs/fsui/namespace_info.c:583
 msgid "Publication interval for periodic publication changed."
 msgstr ""
 
-#: src/applications/fs/fsui/namespace_info.c:602
+#: src/applications/fs/fsui/namespace_info.c:604
 msgid ""
 "Publishing update for periodically updated content more than a week ahead of "
 "schedule.\n"
@@ -729,11 +729,12 @@ msgid "Unindex failed."
 msgstr "/Idosiye IDOSIYE"
 
 #: src/applications/fs/fsui/upload.c:402 src/applications/fs/fsui/upload.c:439
-msgid "Upload failed.\n"
-msgstr ""
+#, fuzzy
+msgid "Upload failed."
+msgstr "/Idosiye IDOSIYE"
 
 #: src/applications/fs/fsui/upload.c:446
-msgid "Cannot upload directory without using recursion.\n"
+msgid "Cannot upload directory without using recursion."
 msgstr ""
 
 #: src/applications/fs/module/fs.c:1090
@@ -782,7 +783,7 @@ msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1719
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1727
 #, fuzzy
 msgid "Failed to get traffic stats.\n"
 msgstr "Kuri Ikibazo# Ibyerekeye"
@@ -1406,86 +1407,95 @@ msgstr "a Urutonde Bya Idosiye Kuri Kongeramo"
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr "`%s'ntabwo ari idosiye"
 
-#: src/applications/gap/gap.c:1708
+#: src/applications/gap/gap.c:1551
+#, fuzzy, c-format
+msgid "GAP received invalid content from `%s'\n"
+msgstr "Sibyo Ubutumwa Bivuye"
+
+#: src/applications/gap/gap.c:1552
+msgid "myself"
+msgstr ""
+
+#: src/applications/gap/gap.c:1716
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1725 src/applications/gap/gap.c:1730
-#: src/applications/gap/gap.c:1736
+#: src/applications/gap/gap.c:1733 src/applications/gap/gap.c:1738
+#: src/applications/gap/gap.c:1744
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1987
+#: src/applications/gap/gap.c:1995
 #, fuzzy
 msgid "# gap requests total received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/gap/gap.c:1988
+#: src/applications/gap/gap.c:1996
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:1989
+#: src/applications/gap/gap.c:1997
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:1990
+#: src/applications/gap/gap.c:1998
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:1991
+#: src/applications/gap/gap.c:1999
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:1992
+#: src/applications/gap/gap.c:2000
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:1993
+#: src/applications/gap/gap.c:2001
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1994
+#: src/applications/gap/gap.c:2002
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:1995
+#: src/applications/gap/gap.c:2003
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1996
+#: src/applications/gap/gap.c:2004
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1997
+#: src/applications/gap/gap.c:2005
 #, fuzzy
 msgid "# gap duplicate requests that were re-tried"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/gap/gap.c:1998
+#: src/applications/gap/gap.c:2006
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:1999
+#: src/applications/gap/gap.c:2007
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2000
+#: src/applications/gap/gap.c:2008
 #, fuzzy
 msgid "# gap spurious replies"
 msgstr "#hejuru Ibibazo BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2001
+#: src/applications/gap/gap.c:2009
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2017
+#: src/applications/gap/gap.c:2025
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2048
+#: src/applications/gap/gap.c:2056
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr ""
@@ -1739,8 +1749,8 @@ msgstr ""
 #: src/applications/sqstore_sqlite/sqlite.c:51 src/util/hostkey_gcrypt.c:56
 #: src/util/hostkey_gcrypt.c:63 src/util/storage.c:643
 #: src/util/symcipher_gcrypt.c:47 src/util/symcipher_gcrypt.c:54
-#: src/include/gnunet_util.h:1030 src/include/gnunet_util.h:1037
-#: src/include/gnunet_util.h:1039
+#: src/include/gnunet_util.h:1033 src/include/gnunet_util.h:1040
+#: src/include/gnunet_util.h:1042
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr "`%s'Byanze ku Na: Ikosa"
@@ -4135,7 +4145,7 @@ msgstr "%s:Ihitamo OYA Kwemerera"
 msgid "RSA signature verification failed at %s:%d: %s\n"
 msgstr "Isinya Byanze ku"
 
-#: src/util/initialize.c:231
+#: src/util/initialize.c:226
 #, fuzzy
 msgid "Shutdown complete.\n"
 msgstr "Byuzuye"
@@ -4367,7 +4377,7 @@ msgstr "7 Iminsi"
 msgid "Attempted path to `%s' was `%s'.\n"
 msgstr "Inzira Kuri"
 
-#: src/util/xmalloc.c:71
+#: src/util/xmalloc.c:52
 #, fuzzy, c-format
 msgid "Unexpected very large allocation (%u bytes) at %s:%d!\n"
 msgstr "Binini Bayite ku"
@@ -4401,13 +4411,13 @@ msgstr "Gucapa i Verisiyo Umubare"
 msgid "be verbose"
 msgstr ""
 
-#: src/include/gnunet_util.h:625 src/include/gnunet_util.h:627
+#: src/include/gnunet_util.h:628 src/include/gnunet_util.h:630
 #, fuzzy, c-format
 msgid "Assertion failed at %s:%d.\n"
 msgstr "Byanze ku"
 
-#: src/include/gnunet_util.h:1046 src/include/gnunet_util.h:1048
-#: src/include/gnunet_util.h:1055
+#: src/include/gnunet_util.h:1049 src/include/gnunet_util.h:1051
+#: src/include/gnunet_util.h:1058
 #, fuzzy, c-format
 msgid "`%s' failed on file `%s' at %s:%d with error: %s\n"
 msgstr "`%s'Byanze ku IDOSIYE ku Na: Ikosa"

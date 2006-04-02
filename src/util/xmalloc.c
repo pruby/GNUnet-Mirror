@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,25 +26,6 @@
 
 #include "gnunet_util.h"
 #include "platform.h"
-
-#define DEBUG_MALLOC 0
-
-#if DEBUG_MALLOC
-static Mutex lock;
-#endif
-
-
-void initXmalloc() {
-#if DEBUG_MALLOC
-  MUTEX_CREATE(&lock);
-#endif
-}
-
-void doneXmalloc() {
-#if DEBUG_MALLOC
-  MUTEX_DESTROY(&lock);
-#endif
-}
 
 #ifndef INT_MAX
 #define INT_MAX 0x7FFFFFFF
@@ -80,16 +61,6 @@ void * xmalloc_unchecked_(size_t size,
 
   GNUNET_ASSERT(size < INT_MAX);
   result = malloc(size);
-#if DEBUG_MALLOC
-  MUTEX_LOCK(&lock);
-  printf("%p malloc %s:%d (%d bytes)\n",
-	 result,
-	 filename,
-	 linenumber,
-	 size);
-  fflush(stdout);
-  MUTEX_UNLOCK(&lock);
-#endif
   if (result == NULL)
     DIE_STRERROR_FL(filename, linenumber, "malloc");
   memset(result, 0, size); /* client code should not rely on this, though... */
@@ -109,34 +80,13 @@ void * xmalloc_unchecked_(size_t size,
  * @return pointer to size bytes of memory
  */
 void * xrealloc_(void * ptr,
-      const size_t n,
-      const char * filename,
-      const int linenumber) {
-#if DEBUG_MALLOC
-  MUTEX_LOCK(&lock);
-  printf("%p free %s:%d\n",
-   ptr,
-   filename,
-   linenumber);
-  MUTEX_UNLOCK(&lock);
-#endif
-
+		 const size_t n,
+		 const char * filename,
+		 const int linenumber) {
   ptr = realloc(ptr, n);
 
   if (!ptr)
     DIE_STRERROR_FL(filename, linenumber, "realloc");
-
-#if DEBUG_MALLOC
-  MUTEX_LOCK(&lock);
-  printf("%p malloc %s:%d (%d bytes)\n",
-   ptr,
-   filename,
-   linenumber,
-   n);
-  fflush(stdout);
-  MUTEX_UNLOCK(&lock);
-#endif
-
   return ptr;
 }
 
@@ -153,15 +103,6 @@ void xfree_(void * ptr,
 	    const int linenumber) {
   GNUNET_ASSERT_FL(ptr != NULL,
 		   filename, linenumber);
-#if DEBUG_MALLOC
-  MUTEX_LOCK(&lock);
-  printf("%p free %s:%d\n",
-	 ptr,
-	 filename,
-	 linenumber);
-  fflush(stdout);
-  MUTEX_UNLOCK(&lock);
-#endif
   free(ptr);
 }
 
@@ -262,7 +203,5 @@ void xgrow_(void ** old,
   *old = tmp;
   *oldCount = newCount;
 }
-
-
 
 /* end of xmalloc.c */
