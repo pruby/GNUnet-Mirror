@@ -2563,10 +2563,6 @@ static void connectionConfigChangeCallback() {
       newMAXHOSTS = 2;          /* strict minimum is 2 */
     if(newMAXHOSTS > 256)
       newMAXHOSTS = 256;        /* limit, before we run out of sockets! */
-    i = 1;
-    while(i <= newMAXHOSTS)
-      i *= 2;
-    newMAXHOSTS = i / 2;        /* make sure it's a power of 2 */
 
     if(newMAXHOSTS != CONNECTION_MAX_HOSTS_) {
       /* change size of connection buffer!!! */
