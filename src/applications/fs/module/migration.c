@@ -30,6 +30,8 @@
 #include "fs.h"
 #include "anonymity.h"
 #include "gnunet_stats_service.h"
+#include "gnunet_protocols.h"
+#include "ondemand.h"
 
 #define DEBUG_MIGRATION NO
 
@@ -125,6 +127,18 @@ activeMigrationCallback(const PeerIdentity * receiver,
       return 0;
     }
   }
+  
+  if (ntohl(content->type) == ONDEMAND_BLOCK) {
+    Datastore_Value *enc;
+    
+    if (ONDEMAND_getIndexed(datastore, content, &key, &enc) != OK) {
+      MUTEX_UNLOCK(&lock);
+      return 0;
+    }
+      
+    content = enc;
+  }
+  
   size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
   if (size > padding) {
     MUTEX_UNLOCK(&lock);

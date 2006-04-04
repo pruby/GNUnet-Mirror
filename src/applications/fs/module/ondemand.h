@@ -29,6 +29,7 @@
 
 #include "gnunet_util.h"
 #include "gnunet_datastore_service.h"
+#include "ecrs_core.h"
 
 #define EXTRA_CHECKS YES
 
