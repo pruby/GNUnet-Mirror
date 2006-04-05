@@ -1036,7 +1036,6 @@ static void httpRegister(char * cmd) {
   int k;
   struct sockaddr_in theProxy;
   char *proxy, *proxyPort;
-  struct hostent *ip;
   size_t n;
 
   reg = getConfigurationString("TESTBED",
