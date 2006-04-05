@@ -469,7 +469,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   FREE(db);
   FREE(fn);
   if (ret == SYSERR) {
-    BREAK();
+    LOG(LOG_ERROR, "Indexed content does not match its hash.\n");
+    /* FIXME: delete content */
     return SYSERR;
   }
 
