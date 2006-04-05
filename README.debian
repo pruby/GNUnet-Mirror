@@ -39,6 +39,7 @@ libgcj-dev
 Additional gnunet-gtk dependencies:
 
 libglade2-dev (unstable required!)
+libnotify-dev
 
 
 For running GNUnet with the MySQL database:
