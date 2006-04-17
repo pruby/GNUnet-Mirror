@@ -1,6 +1,6 @@
 /*
      This file is part of PlibC.
-     (C) 2005 Nils Durner (and other contributing authors)
+     (C) 2005, 2006 Nils Durner (and other contributing authors)
 
 	   This library is free software; you can redistribute it and/or
 	   modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.31 $
  */
 
 #ifndef _PLIBC_H_
@@ -69,6 +69,21 @@ extern "C" {
 #define off_t int
 #define int64_t long long
 #define int32_t long
+
+struct stat64
+{
+    _dev_t st_dev;
+    _ino_t st_ino;
+    _mode_t st_mode;
+    short st_nlink;
+    short st_uid;
+    short st_gid;
+    _dev_t st_rdev;
+    __int64 st_size;
+    __time64_t st_atime;
+    __time64_t st_mtime;
+    __time64_t st_ctime;
+};
 
 #ifndef pid_t
 	#define pid_t int
@@ -173,6 +188,7 @@ extern "C" {
 #define ENOSHARE 136        /* No such host or network path */
 #define ECASECLASH 137      /* Filename exists with different case */
 #define EWOULDBLOCK EAGAIN	/* Operation would block */
+#define EOVERFLOW 139 /* Value too large for defined data type */
 
 #undef HOST_NOT_FOUND
 #define HOST_NOT_FOUND 1
@@ -344,6 +360,7 @@ long _win_random(void);
 int _win_remove(const char *path);
 int _win_rename(const char *oldname, const char *newname);
 int _win_stat(const char *path, struct stat *buffer);
+int _win_stat64(const char *path, struct stat64 *buffer);
 int _win_unlink(const char *filename);
 int _win_write(int fildes, const void *buf, size_t nbyte);
 int _win_read(int fildes, void *buf, size_t nbyte);
@@ -354,6 +371,7 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
                 unsigned long long offset);
 int _win_munmap(void *start, size_t length);
 int _win_lstat(const char *path, struct stat *buf);
+int _win_lstat64(const char *path, struct stat64 *buf);
 int _win_readlink(const char *path, char *buf, size_t bufsize);
 int _win_accept(SOCKET s, struct sockaddr *addr, int *addrlen);
 int _win_printf(const char *format,...);
@@ -429,6 +447,7 @@ size_t strnlen (const char *str, size_t maxlen);
  #define REMOVE(p) remove(p)
  #define RENAME(o, n) rename(o, n)
  #define STAT(p, b) stat(p, b)
+ #define STAT64(p, b) stat64(p, b)
  #define UNLINK(f) unlink(f)
  #define WRITE(f, b, n) write(f, b, n)
  #define READ(f, b, n) read(f, b, n)
@@ -441,6 +460,7 @@ size_t strnlen (const char *str, size_t maxlen);
  #define RANDOM() random()
  #define READLINK(p, b, s) readlink(p, b, s)
  #define LSTAT(p, b) lstat(p, b)
+ #define LSTAT64(p, b) lstat64(p, b)
  #define PRINTF printf
  #define FPRINTF fprintf
  #define VPRINTF(f, a) vprintf(f, a)
@@ -496,6 +516,7 @@ size_t strnlen (const char *str, size_t maxlen);
  #define REMOVE(p) _win_remove(p)
  #define RENAME(o, n) _win_rename(o, n)
  #define STAT(p, b) _win_stat(p, b)
+ #define STAT64(p, b) _win_stat64(p, b)
  #define UNLINK(f) _win_unlink(f)
  #define WRITE(f, b, n) _win_write(f, b, n)
  #define READ(f, b, n) _win_read(f, b, n)
@@ -507,6 +528,7 @@ size_t strnlen (const char *str, size_t maxlen);
  #define STRERROR(i) _win_strerror(i)
  #define READLINK(p, b, s) _win_readlink(p, b, s)
  #define LSTAT(p, b) _win_lstat(p, b)
+ #define LSTAT64(p, b) _win_lstat64(p, b)
  #define PRINTF(f, ...) _win_printf(f , __VA_ARGS__)
  #define FPRINTF(fil, fmt, ...) _win_fprintf(fil, fmt, __VA_ARGS__)
  #define VPRINTF(f, a) _win_vprintf(f, a)

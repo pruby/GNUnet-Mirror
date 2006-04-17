@@ -30,8 +30,8 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util.h"
 #include "platform.h"
+#include "gnunet_util.h"
 
 #define SHA512_DIGEST_SIZE 64
 #define SHA512_HMAC_BLOCK_SIZE 128

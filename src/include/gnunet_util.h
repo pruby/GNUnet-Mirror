@@ -37,6 +37,8 @@
   #include <iphlpapi.h>
   #include <Ntsecapi.h>
   #include <lm.h>
+  
+  #define HAVE_STAT64 1
 #endif
 
 /* we need size_t, and since it can be both unsigned int
