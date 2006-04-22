@@ -216,7 +216,12 @@ void startCron() {
      what the cron jobs may be doing */
 }
 
-static void noJob(void * unused) {}
+static void noJob(void * unused) {
+#if DEBUG_CRON
+  LOG(LOG_CRON,
+      "In noJob.\n");
+#endif
+}
 
 /**
  * Stop the cron service.
@@ -224,10 +229,6 @@ static void noJob(void * unused) {}
 void stopCron() {
   void * unused;
 
-#if DEBUG_CRON
-  LOG(LOG_INFO,
-      _("Cron stopped\n"));
-#endif
   cron_shutdown = YES;
   addCronJob(&noJob, 0, 0, NULL);
   SEMAPHORE_DOWN(cron_signal);
@@ -235,6 +236,10 @@ void stopCron() {
   cron_signal = NULL;
   cronPID = 0;
   PTHREAD_JOIN(&cron_handle, &unused);
+#if DEBUG_CRON
+  LOG(LOG_INFO,
+      _("Cron stopped\n"));
+#endif
 }
 
 static int inBlock = 0;
@@ -626,7 +631,8 @@ static void * cron() {
 #endif
     if (next > MAXSLEEP)
       next = MAXSLEEP;
-    gnunet_util_sleep(next);
+    if (cron_shutdown == NO) 
+      gnunet_util_sleep(next);
 #if DEBUG_CRON
     LOG(LOG_CRON,
 	"woke up at  %llu - %lld CS late\n",
@@ -635,6 +641,11 @@ static void * cron() {
 #endif
   }
   SEMAPHORE_UP(cron_signal);
+#if DEBUG_CRON
+	LOG(LOG_CRON,
+	    "Cron thread exits.\n");
+	printCronTab();
+#endif
   return NULL;
 }
 

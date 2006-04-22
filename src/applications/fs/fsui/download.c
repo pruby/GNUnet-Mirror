@@ -549,6 +549,8 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * prev;
   unsigned int backup;
 
+  LOG(LOG_DEBUG,
+      "FSUI_stopDownload called.\n");
   GNUNET_ASSERT(filename != NULL);
   MUTEX_LOCK(&ctx->lock);
   dl = ctx->activeDownloads.child;
@@ -565,12 +567,16 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
       freeDownloadList(dl);
       ctx->threadPoolSize = backup;
       MUTEX_UNLOCK(&ctx->lock);
+      LOG(LOG_DEBUG,
+	  "FSUI_stopDownload completed successfully.\n");
       return OK;
     }
     prev = dl;
     dl = dl->next;
   }
   MUTEX_UNLOCK(&ctx->lock);
+  LOG(LOG_DEBUG,
+      "FSUI_stopDownload failed to locate download.\n");
   return SYSERR;
 }
 
