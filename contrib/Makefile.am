@@ -7,6 +7,8 @@ pkgdata_DATA = \
  config-daemon.in
 
 EXTRA_DIST = \
+ hostlist.cgi \
+ hostlist.php \
  gnunet-download-manager.scm \
  init_gnunet_redhat init_gnunet_ubuntu \
  visualize_stats.sh \
