@@ -10,12 +10,12 @@ if (! $dir)
   die("Cannot open directory $path.\n");
 $mas = array();
 while ($fname = readdir($dir)) {
-  if (is_file($path . '/' . $fname)) {
+  $fn = $path . '/' . $fname;
+  if (is_file($fn)) {
     $dpo = strpos($fname, '.') + 1;
     $len = strlen($fname);
-    if (in_array(substr($fname, $dpo - $len, $extmas))) {
-      $mas[] = $fname;
-    }
+    if (in_array(substr($fname, $dpo - $len), $extmas)) 
+      $mas[] = $fn;
   }
 }
 shuffle($mas); // randomize order
