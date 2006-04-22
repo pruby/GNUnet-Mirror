@@ -1,3 +1,7 @@
+Sat Apr 22 13:50:39 PDT 2006
+	Fixed bug in util/cron.c where stopCron() would wait for an 
+	unnecessary sleep to complete.
+
 Sat Mar 18 12:54:11 PST 2006
 	Releasing GNUnet 0.7.0c.
 
