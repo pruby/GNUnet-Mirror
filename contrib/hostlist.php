@@ -13,7 +13,7 @@ while ($fname = readdir($dir)) {
   if (is_file($path . '/' . $fname)) {
     $dpo = strpos($fname, '.') + 1;
     $len = strlen($fname);
-    if (in_array(substr($fname, $dpo - $len, $extmas)) {
+    if (in_array(substr($fname, $dpo - $len, $extmas))) {
       $mas[] = $fname;
     }
   }
