@@ -228,11 +228,7 @@ int ECRS_uploadFile(const char * filename,
   }
   treedepth = computeDepth(filesize);
 
-#ifdef O_LARGEFILE
   fd = fileopen(filename, O_RDONLY | O_LARGEFILE);
-#else
-  fd = fileopen(filename, O_RDONLY);
-#endif
   if (fd == -1) {
     LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
     return SYSERR;

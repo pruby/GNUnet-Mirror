@@ -713,18 +713,11 @@ int copyFile(const char * src,
 
   buf = MALLOC(COPY_BLK_SIZE);
   pos = 0;
-  in = fileopen(src, O_RDONLY
-#ifdef O_LARGEFILE
-		| O_LARGEFILE
-#endif
-		);
+  in = fileopen(src, O_RDONLY | O_LARGEFILE);
   if (in == -1)
     return SYSERR;
   out = fileopen(dst,
-#ifdef O_LARGEFILE
-		 O_LARGEFILE |
-#endif
-		 O_WRONLY | O_CREAT | O_EXCL,
+		 O_LARGEFILE | O_WRONLY | O_CREAT | O_EXCL,
 		 S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
   if (out == -1) {
     closefile(in);

@@ -233,11 +233,7 @@ int ECRS_unindexFile(const char * filename,
     = FS_testIndexed(sock,
 		     &fileId);
 
-#ifdef O_LARGEFILE
   fd = fileopen(filename, O_RDONLY | O_LARGEFILE);
-#else
-  fd = fileopen(filename, O_RDONLY);
-#endif
   if (fd == -1) {
     LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
     return SYSERR;

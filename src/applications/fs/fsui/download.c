@@ -251,13 +251,8 @@ void * downloadThread(void * cls) {
       fn[strlen(fn)-1] = '\0';
       strcat(fn, GNUNET_DIRECTORY_EXT);
     } 
-#ifdef O_LARGEFILE
     fd = fileopen(fn,
 		  O_LARGEFILE | O_RDONLY);
-#else
-    fd = fileopen(fn,
-		  O_RDONLY);
-#endif
     if (fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR,
 			"OPEN",

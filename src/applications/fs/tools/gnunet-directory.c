@@ -82,13 +82,8 @@ static void printDirectory(const char * filename) {
     return;
   }
   md = NULL;
-#ifdef O_LARGEFILE
   fd = fileopen(name,
 		O_LARGEFILE | O_RDONLY);
-#else
-  fd = fileopen(name,
-		O_RDONLY);
-#endif
   if (fd == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "open", name);
     ret = -1;

@@ -190,10 +190,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 	fn);
 #endif
     fd = fileopen(fn,
-#ifdef O_LARGEFILE
-		  O_LARGEFILE |
-#endif
-		  O_CREAT|O_WRONLY,
+		  O_LARGEFILE | O_CREAT|O_WRONLY,
 		  S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
     if(fd == -1) {
       LOG_FILE_STRERROR(LOG_ERROR, "open", fn);
@@ -344,10 +341,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   fn = getOnDemandFile(&odb->fileId);
 
   fileHandle = fileopen(fn,
-#ifdef O_LARGEFILE
-			O_LARGEFILE |
-#endif
-			O_RDONLY,
+			O_LARGEFILE | O_RDONLY,
 			0);
   if (fileHandle == -1) {
     char unavail_key[256];
@@ -566,11 +560,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
       fn);
 #endif
   fd = fileopen(fn,
-#ifdef O_LARGEFILE
 	    O_RDONLY | O_LARGEFILE,
-#else
-	    O_RDONLY,
-#endif
 	    S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
   if(fd == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "open", fn);

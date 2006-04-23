@@ -332,12 +332,7 @@ int getFileHash(const char * filename,
 			&len))
     return SYSERR;
   fh = fileopen(filename,
-#ifdef O_LARGEFILE
-		O_RDONLY | O_LARGEFILE
-#else
-		O_RDONLY
-#endif
-	    );
+		O_RDONLY | O_LARGEFILE);
   if (fh == -1) {
     LOG_FILE_STRERROR(LOG_ERROR, "open", filename);
     return SYSERR;
