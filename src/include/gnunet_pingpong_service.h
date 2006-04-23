@@ -37,22 +37,6 @@ typedef struct {
 
   /**
    * Ping a host an call a method if a reply comes back. Uses
-   * a plaintext ping transmitted using the given session.
-   *
-   * @param receiver the peer that should be PINGed
-   * @param method the method to call if a PONG comes back
-   * @param data an argument to pass to the method, if not
-   *   NULL and the ping does not come back, ping will FREE data!
-   * @param session the session to use to send the ping
-   * @returns OK on success, SYSERR on error
-   */
-  int (*pingPlaintext)(const PeerIdentity * receiver,
-		       CronJob method,
-		       void * data,
-		       TSession * session);
-
-  /**
-   * Ping a host an call a method if a reply comes back. Uses
    * an encrypted ping routed using the core.
    *
    * @param receiver the peer that should be PINGed

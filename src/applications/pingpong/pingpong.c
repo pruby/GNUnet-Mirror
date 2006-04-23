@@ -427,37 +427,6 @@ static int initiatePing(const PeerIdentity * receiver,
 }
 
 /**
- * Ping a host an call a method if a reply comes back.
- *
- * @param receiver the peer that should be PINGed
- * @param usePlaintext send the PING in plaintext (YES/NO)
- * @param method the method to call if a PONG comes back
- * @param data an argument to pass to the method.
- * @returns OK on success, SYSERR on error
- */
-static int pingPlaintext(const PeerIdentity * receiver,
-			 CronJob method,
-			 void * data,
-			 TSession * session) {
-  P2P_pingpong_MESSAGE * pmsg;
-
-  pmsg = (P2P_pingpong_MESSAGE*) createPing(receiver,
-					method,
-					data,
-					YES);
-  if (pmsg == NULL)
-    return SYSERR;
-  if (stats != NULL)
-    stats->change(stat_plaintextPingSent, 1);
-  coreAPI->sendPlaintext(session,
-			 (char*)pmsg,
-			 sizeof(P2P_pingpong_MESSAGE));
-  FREE(pmsg);
-  return OK;
-}
-
-
-/**
  * Initialize the pingpong module.
  */
 Pingpong_ServiceAPI *
@@ -515,7 +484,6 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
 				 &plaintextPongReceived);
   ret.ping = &initiatePing;
   ret.pingUser = &createPing;
-  ret.pingPlaintext = &pingPlaintext;
   return &ret;
 }
 

@@ -81,6 +81,9 @@ static int stat_hello_out;
 
 static int stat_hello_fwd;
 
+static int stat_plaintextPingSent;
+
+
 /**
  * Which types of cron-jobs are currently scheduled
  * with cron?
@@ -107,7 +110,9 @@ static double getConnectPriority() {
   return preference;
 }
 
-static void callAddHost(P2P_hello_MESSAGE * helo) {
+static void callAddHost(void * cls) {
+  P2P_hello_MESSAGE * helo = cls;
+
   identity->addHost(helo);
   FREE(helo);
 }
@@ -280,7 +285,7 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
 	 msg,
 	 P2P_hello_MESSAGE_size(msg));
   ping = pingpong->pingUser(&msg->senderIdentity,
-			    (CronJob)&callAddHost,
+			    &callAddHost,
 			    copy,
 			    YES);
   if (ping == NULL) {
@@ -321,6 +326,10 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
 					 buffer,
 					 heloEnd)) )
     res = SYSERR;
+  if (res == OK) {
+    if (stats != NULL)
+      stats->change(stat_plaintextPingSent, 1);
+  }
   FREE(buffer);
   if (SYSERR == transport->disconnect(tsession))
     res = SYSERR;
@@ -720,6 +729,8 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
     stat_hello_in = stats->create(gettext_noop("# Peer advertisements received"));
     stat_hello_out = stats->create(gettext_noop("# Self advertisments transmitted"));
     stat_hello_fwd = stats->create(gettext_noop("# Foreign advertisements forwarded"));
+    stat_plaintextPingSent
+      = stats->create(gettext_noop("# plaintext PING messages sent"));
   }
 
   LOG(LOG_DEBUG,
