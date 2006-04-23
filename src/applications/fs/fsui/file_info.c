@@ -61,8 +61,8 @@ static char * getUriDbName() {
   char * new;
   char * pfx;
 
-  pfx = getFileName("GNUNETD", 
-		    "GNUNETD_HOME",
+  pfx = getFileName("GNUNET", 
+		    "GNUNET_HOME",
 		    _("Configuration file must specify a "
 		      "directory for GNUnet to store "
 		      "per-peer data under %s%s\n"));
