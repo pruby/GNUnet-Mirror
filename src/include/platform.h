@@ -174,7 +174,11 @@ long long atoll(const char *nptr);
 #endif
 
 #if ENABLE_NLS
-	#include "langinfo.h"
+#include "langinfo.h"
+#endif
+
+#ifndef O_LARGEFILE
+#define O_LARGEFILE 0
 #endif
 
 #endif

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -23,9 +23,9 @@
  * @brief Helper functions for keeping track of files for building directories.
  * @author Christian Grothoff
  *
- * The "state" database (see util/state.c) is used to store the data.
- * Note that state does not do any locking, and that it in particular
- * can not do any locking for us since it is IPC!
+ * The "state" database (see util/state.c) is used to store the toggle
+ * flag. An mmapped file (STATE_NAME) is used to store the actual URIs.
+ * An IPC semaphore is used to guard the access.
  */
 
 #include "platform.h"
@@ -34,7 +34,7 @@
 
 #define DEBUG_FILE_INFO NO
 
-#define STATE_NAME "fs_uridb"
+#define STATE_NAME DIR_SEPARATOR_STR "data" DIR_SEPARATOR_STR "fs_uridb"
 #define TRACK_OPTION "fs_uridb_status"
 
 static IPC_Semaphore * createIPC() {
@@ -56,6 +56,23 @@ static IPC_Semaphore * createIPC() {
   FREE(ipcName);
   return sem;				
 }
+
+static char * getUriDbName() {
+  char * new;
+  char * pfx;
+
+  pfx = getFileName("GNUNETD", 
+		    "GNUNETD_HOME",
+		    _("Configuration file must specify a "
+		      "directory for GNUnet to store "
+		      "per-peer data under %s%s\n"));
+  new = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 1);
+  strcpy(new, pfx);
+  strcat(new, STATE_NAME); 
+  FREE(pfx);
+  return new;
+}
+
 
 
 /**
@@ -90,6 +107,8 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
   char * data;
   unsigned int size;
   char * suri;
+  int fh;
+  char * fn;
 
   if (NO == FSUI_trackStatus())
     return;
@@ -104,9 +123,19 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
   suri = ECRS_uriToString(fi->uri);
   sem = createIPC();
   IPC_SEMAPHORE_DOWN(sem);
-  stateAppendContent(STATE_NAME, strlen(suri) + 1, suri);
-  stateAppendContent(STATE_NAME, sizeof(unsigned int), &size);
-  stateAppendContent(STATE_NAME, ntohl(size), data);
+  fn = getUriDbName();
+  fh = fileopen(fn, O_WRONLY|O_APPEND|O_CREAT|O_LARGEFILE, S_IRUSR|S_IWUSR);
+  if (fh == -1) {
+    LOG_FILE_STRERROR(LOG_WARNING,
+		      "open",
+		      fn);
+  } else {
+    WRITE(fh, suri, strlen(suri) + 1);
+    WRITE(fh, &size, sizeof(unsigned int));
+    WRITE(fh, data, ntohl(size));
+    CLOSE(fh);
+  }
+  FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_FREE(sem);
   FREE(data);
@@ -119,10 +148,16 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
  */
 void FSUI_clearTrackedURIS() {
   IPC_Semaphore * sem;
+  char * fn;
 
   sem = createIPC();
   IPC_SEMAPHORE_DOWN(sem);
-  stateUnlinkFromDB(STATE_NAME);
+  fn = getUriDbName();
+  if (0 != UNLINK(fn))
+    LOG_FILE_STRERROR(LOG_WARNING,
+		      "unlink",
+		      fn);
+  FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_FREE(sem);
 }
@@ -153,16 +188,41 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
   IPC_Semaphore * sem;
   int rval;
   char * result;
-  int ret;
-  int pos;
-  int spos;
+  off_t ret;
+  off_t pos;
+  off_t spos;
   unsigned int msize;
   ECRS_FileInfo fi;
+  int fd;
+  char * fn;
+  struct stat buf;
 
+  fn = getUriDbName();
   sem = createIPC();
   IPC_SEMAPHORE_DOWN(sem);
-  result = NULL;
-  ret = stateReadContent(STATE_NAME, (void*)&result);
+  if (0 != STAT(fn, &buf)) {
+    IPC_SEMAPHORE_UP(sem);
+    IPC_SEMAPHORE_FREE(sem);
+    return 0; /* no URI db */
+  }  
+  fd = fileopen(fn, O_LARGEFILE | O_RDONLY);
+  if (fd == -1) {
+    IPC_SEMAPHORE_UP(sem);
+    IPC_SEMAPHORE_FREE(sem);
+    LOG_FILE_STRERROR(LOG_WARNING, "open", fn);
+    FREE(fn);
+    return SYSERR; /* error opening URI db */
+  }
+  result = MMAP(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+  if (result == MAP_FAILED) {
+    CLOSE(fd);
+    LOG_FILE_STRERROR(LOG_WARNING, "mmap", fn);
+    FREE(fn);
+    IPC_SEMAPHORE_UP(sem);
+    IPC_SEMAPHORE_FREE(sem);
+    return SYSERR;
+  }
+  ret = buf.st_size;
   pos = 0;
   rval = 0;
   while (pos < ret) {
@@ -171,7 +231,8 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
 	    (result[spos] != '\0') )
       spos++;
     spos++; /* skip '\0' */
-    if (spos + sizeof(int) >= ret) {
+    if ( (spos + sizeof(int) >= ret) ||
+	 (spos + sizeof(int) < spos) ) {
       BREAK();
       goto FORMATERROR;
     }
@@ -185,7 +246,8 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
 	   sizeof(int));
     msize = ntohl(msize);
     spos += sizeof(int);
-    if (spos + msize > ret) {
+    if ( (spos + msize > ret) ||
+	 (spos + msize < spos) ) {
       BREAK();
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
@@ -205,7 +267,12 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
 			 closure)) {
 	ECRS_freeMetaData(fi.meta);
 	ECRS_freeUri(fi.uri);
-	FREE(result);
+	if (0 != MUNMAP(result, buf.st_size))
+	  LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
+	CLOSE(fd);
+	FREE(fn);
+	IPC_SEMAPHORE_UP(sem);
+	IPC_SEMAPHORE_FREE(sem);
 	return SYSERR; /* iteration aborted */
       }
     }
@@ -213,11 +280,18 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
     ECRS_freeMetaData(fi.meta);
     ECRS_freeUri(fi.uri);
   }
-  FREENONNULL(result);
+  if (0 != MUNMAP(result, buf.st_size))
+    LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
+  CLOSE(fd);
+  FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_FREE(sem);
   return rval;
  FORMATERROR:
+  if (0 != MUNMAP(result, buf.st_size))
+    LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
+  CLOSE(fd);
+  FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_FREE(sem);
   FSUI_clearTrackedURIS();
