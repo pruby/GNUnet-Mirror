@@ -1218,41 +1218,10 @@ void done_module_fs() {
   ONDEMAND_done();
 }
 
-/* see file_info.c */
-#define STATE_NAME DIR_SEPARATOR_STR "data" DIR_SEPARATOR_STR "fs_uridb"
-
 /**
  * Update FS module.
  */
 void update_module_fs(UpdateAPI * uapi) {
-  char * old;
-  char * new;
-  char * pfx;
-  struct stat buf;
-
-  /* 0.7.0c to 0.7.0d */
-  pfx = getFileName("GNUNETD", 
-		    "GNUNETD_HOME",
-		    _("Configuration file must specify a "
-		      "directory for GNUnet to store "
-		      "per-peer data under %s%s\n"));
-  old = MALLOC(strlen(pfx) + strlen("/state.sdb/fs_uridb") + 1);
-  strcpy(old, pfx);
-  strcat(old, DIR_SEPARATOR_STR);
-  strcat(old, "state.sdb");
-  strcat(old, DIR_SEPARATOR_STR);
-  strcat(old, "fs_uridb");
-  new = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 1);
-  strcpy(new, pfx);
-  strcat(new, STATE_NAME); 
-  if ( (0 != STAT(new, &buf)) &&
-       (0 == STAT(old, &buf)) &&
-       (0 != RENAME(old, new)) )
-    LOG_FILE_STRERROR(LOG_WARNING, "rename", old);
-  FREE(pfx);
-  FREE(old);
-  FREE(new);
-
   /* general sub-module updates */
   uapi->updateModule("datastore");
   uapi->updateModule("dht");
