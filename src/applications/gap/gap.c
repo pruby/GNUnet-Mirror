@@ -95,6 +95,11 @@ static int stat_routing_local_results;
 
 static int stat_routing_processed;
 
+static int stat_memory_seen;
+
+static int stat_memory_destinations;
+
+
 /**
  * Topology service.
  */
@@ -866,6 +871,8 @@ static int addToSlot(int mode,
        stats->change(stat_routing_slots_used, 1);
 
   if (mode == ITE_REPLACE) {
+    if (stats != NULL)
+      stats->change(stat_memory_seen, - ite->seenIndex);
     GROW(ite->seen,
 	 ite->seenIndex,
 	 0);
@@ -885,6 +892,8 @@ static int addToSlot(int mode,
       /* different request, flush pending queues */
       dequeueQuery(&ite->primaryKey);
       ite->primaryKey = *query;
+      if (stats != NULL)
+	stats->change(stat_memory_destinations, - ite->hostsWaiting);
       GROW(ite->destination,
 	   ite->hostsWaiting,
 	   0);
@@ -903,11 +912,15 @@ static int addToSlot(int mode,
       ite->ttl = now + ttl;
     ite->priority += priority;
   }
+  if (stats != NULL)
+    stats->change(stat_memory_destinations, 1);
   GROW(ite->destination,
        ite->hostsWaiting,
        ite->hostsWaiting+1);
   ite->destination[ite->hostsWaiting-1] = *sender;
   /* again: new listener, flush seen list */
+  if (stats != NULL)
+    stats->change(stat_memory_seen, - ite->seenIndex);
   GROW(ite->seen,
        ite->seenIndex,
        0);
@@ -991,6 +1004,8 @@ static int needsForwarding(const HashCode512 * query,
        longer expired than new query */
     /* previous entry relatively expired, start using the slot --
        and kill the old seen list!*/
+    if (stats != NULL)
+      stats->change(stat_memory_seen, - ite->seenIndex);
     GROW(ite->seen,
 	 ite->seenIndex,
 	 0);
@@ -1070,6 +1085,8 @@ static int needsForwarding(const HashCode512 * query,
     if (ite->seenReplyWasUnique) {
       if (ite->ttl < new_ttl) { /* ttl of new is longer? */
 	/* go again */
+	if (stats != NULL)
+	  stats->change(stat_memory_seen, - ite->seenIndex);
 	GROW(ite->seen,
 	     ite->seenIndex,
 	     0);
@@ -1573,12 +1590,16 @@ static int useContent(const PeerIdentity * hostId,
 	if (equalsHashCode512(&hostId->hashPubKey,
 			      &ite->destination[i].hashPubKey)) {
 	  ite->destination[i] = ite->destination[ite->hostsWaiting-1];
+	  if (stats != NULL)
+	    stats->change(stat_memory_destinations, - 1);
 	  GROW(ite->destination,
 	       ite->hostsWaiting,
 	       ite->hostsWaiting - 1);
 	}			
       }
     }
+    if (stats != NULL)
+      stats->change(stat_memory_seen, 1);
     GROW(ite->seen,
 	 ite->seenIndex,
 	 ite->seenIndex+1);
@@ -1597,9 +1618,13 @@ static int useContent(const PeerIdentity * hostId,
       /* kill routing entry -- we have seen so many different
 	 replies already that we cannot afford to continue
 	 to keep track of all of the responses seen (#1014) */
+      if (stats != NULL)
+	stats->change(stat_memory_destinations, - ite->hostsWaiting);
       GROW(ite->destination,
 	   ite->hostsWaiting,
 	   0);
+      if (stats != NULL)
+	stats->change(stat_memory_seen, - ite->seenIndex);
       GROW(ite->seen,
 	   ite->seenIndex,
 	   0);
@@ -2007,6 +2032,8 @@ provide_module_gap(CoreAPIForApplication * capi) {
     stat_routing_reply_dups         = stats->create(gettext_noop("# gap reply duplicates"));
     stat_routing_reply_drops        = stats->create(gettext_noop("# gap spurious replies"));
     stat_routing_slots_used         = stats->create(gettext_noop("# gap routing slots currently in use"));
+    stat_memory_seen                = stats->create(gettext_noop("# gap memory used for tracking seen content"));
+    stat_memory_destinations        = stats->create(gettext_noop("# gap memory used for tracking routing destinations"));
   }
   GROW(rewards,
        rewardSize,
@@ -2089,10 +2116,14 @@ void release_module_gap() {
 	     NULL);
 
   for (i=0;i<indirectionTableSize;i++) {
+    if (stats != NULL)
+      stats->change(stat_memory_seen, - ROUTING_indTable_[i].seenIndex);
     GROW(ROUTING_indTable_[i].seen,
 	 ROUTING_indTable_[i].seenIndex,
 	 0);
     ROUTING_indTable_[i].seenReplyWasUnique = NO;
+      if (stats != NULL)
+	stats->change(stat_memory_destinations, - ROUTING_indTable_[i].hostsWaiting);
     GROW(ROUTING_indTable_[i].destination,
 	 ROUTING_indTable_[i].hostsWaiting,
 	 0);
