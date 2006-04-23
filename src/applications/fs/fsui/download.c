@@ -182,7 +182,7 @@ static int
 testTerminate(void * cls) {
   FSUI_DownloadList * dl = cls;
 
-  if (dl->signalTerminate == YES) {
+  if (dl->state != FSUI_DOWNLOAD_ACTIVE) {
     return SYSERR;
   } else {
     return OK;
@@ -215,16 +215,20 @@ void * downloadThread(void * cls) {
 			  &testTerminate,
 			  dl);  
   if (ret == OK) {
-    dl->finished = YES;
+    dl->state = FSUI_DOWNLOAD_COMPLETED;
     totalBytes = ECRS_fileSize(dl->uri);
   } else {
 #if DEBUG_DTM
-    LOG(LOG_ERROR,
+    LOG(LOG_DEBUG,
 	"Download thread for `%s' failed (aborted or error)!\n",
 	dl->filename);
 #endif
+    if (dl->state == FSUI_DOWNLOAD_ACTIVE)
+      dl->state = FSUI_DOWNLOAD_ERROR;
+    else if ( (dl->state != FSUI_DOWNLOAD_ABORTED) &&
+	      (dl->state != FSUI_DOWNLOAD_SUSPENDING) )
+      BREAK();
     totalBytes = 0;
-    dl->total = 0;
   }
   root = dl;
   while (root->parent != &dl->ctx->activeDownloads) {
@@ -285,19 +289,29 @@ void * downloadThread(void * cls) {
     FREE(fn);
   }
   if (ret != OK) {
-    if (dl->signalTerminate == YES) {
+    switch (dl->state) {
+    case FSUI_DOWNLOAD_ABORTED:
       event.type = FSUI_download_aborted;
       event.data.DownloadError.message = _("Download aborted.");
-    } else {
+      break;
+    case FSUI_DOWNLOAD_ERROR:
       event.type = FSUI_download_error;
       event.data.DownloadError.message = _("ECRS download failed (see logs).");
+      break;
+    case FSUI_DOWNLOAD_SUSPENDING:
+      event.type = FSUI_download_suspending;
+      event.data.DownloadError.message = _("ECRS download suspending.");
+      break;
+    default:
+      event.type = FSUI_download_error;
+      event.data.DownloadError.message = _("Unexpected download state.");
+      printf("State: %u\n", dl->state);
+      BREAK();
     }
     event.data.DownloadError.pos = dl;
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
-    dl->signalTerminate = YES;
   } else {
-    dl->signalTerminate = YES;
     GNUNET_ASSERT(dl != &dl->ctx->activeDownloads);
     while ( (dl != NULL) &&
 	    (dl->ctx != NULL) &&
@@ -356,8 +370,7 @@ static int startDownload(struct FSUI_Context * ctx,
   dl = MALLOC(sizeof(FSUI_DownloadList));
   memset(dl, 0, sizeof(FSUI_DownloadList));
   cronTime(&dl->startTime); 
-  dl->signalTerminate = SYSERR;
-  dl->finished = NO;
+  dl->state = FSUI_DOWNLOAD_PENDING;
   dl->is_recursive = is_recursive;
   dl->parent = parent;
   dl->is_directory = SYSERR; /* don't know */
@@ -431,16 +444,15 @@ int updateDownloadThread(FSUI_DownloadList * list) {
   /* should this one be started? */
   if ( (list->ctx->threadPoolSize
 	> list->ctx->activeDownloadThreads) &&
-       (list->signalTerminate == SYSERR) &&
+       (list->state == FSUI_DOWNLOAD_PENDING) &&
        ( (list->total > list->completed) ||
-         (list->total == 0) ) &&
-       (list->finished == NO) ) {
+         (list->total == 0) ) ) {
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
 	"Download thread manager starts downlod of file `%s'\n",
 	list->filename);
 #endif
-    list->signalTerminate = NO;
+    list->state = FSUI_DOWNLOAD_ACTIVE;
     if (0 == PTHREAD_CREATE(&list->handle,
 			    &downloadThread,
 			    list,
@@ -448,13 +460,14 @@ int updateDownloadThread(FSUI_DownloadList * list) {
       list->ctx->activeDownloadThreads++;
     } else {
       LOG_STRERROR(LOG_WARNING, "pthread_create");	
+      list->state = FSUI_DOWNLOAD_ERROR_JOINED;
     }
   }
 
   /* should this one be stopped? */
   if ( (list->ctx->threadPoolSize
 	< list->ctx->activeDownloadThreads) &&
-       (list->signalTerminate == NO) ) {
+       (list->state == FSUI_DOWNLOAD_ACTIVE) ) {
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
 	"Download thread manager aborts active download of file `%s' (%u/%u downloads)\n",
@@ -462,18 +475,20 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 	list->ctx->activeDownloadThreads,
 	list->ctx->threadPoolSize);
 #endif
-    list->signalTerminate = YES;
+    list->state = FSUI_DOWNLOAD_SUSPENDING;
     PTHREAD_KILL(&list->handle,
 		 SIGALRM); /* terminate sleep */
     PTHREAD_JOIN(&list->handle,
 		 &unused);
     list->ctx->activeDownloadThreads--;
-    list->signalTerminate = SYSERR;
+    list->state = FSUI_DOWNLOAD_PENDING;
     ret = YES;
   }
 
   /* has this one "died naturally"? */
-  if (list->signalTerminate == YES) {
+  if ( (list->state == FSUI_DOWNLOAD_COMPLETED) ||
+       (list->state == FSUI_DOWNLOAD_ABORTED) ||
+       (list->state == FSUI_DOWNLOAD_ERROR) ) {       
 #if DEBUG_DTM
     LOG(LOG_DEBUG,
 	"Download thread manager collects inactive download of file `%s'\n",
@@ -482,7 +497,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
     PTHREAD_JOIN(&list->handle,
 		 &unused);
     list->ctx->activeDownloadThreads--;
-    list->signalTerminate = SYSERR;
+    list->state++; /* adds _JOINED */
     ret = YES;
   }
 
@@ -504,7 +519,7 @@ void freeDownloadList(FSUI_DownloadList * list) {
   FSUI_DownloadList * dpos;
   int i;
 
-  GNUNET_ASSERT(list->signalTerminate != NO);
+  GNUNET_ASSERT(list->state != FSUI_DOWNLOAD_ACTIVE);
 
   /* first, find our predecessor and
      unlink us from the tree! */
@@ -640,7 +655,9 @@ int FSUI_clearCompletedDownloads(struct FSUI_Context * ctx,
   while ( (dl != NULL) &&
 	  (stop == NO) ) {
     if ( (dl->completed == dl->total) &&
-	 (dl->signalTerminate == SYSERR) ) {
+	 ( (dl->state == FSUI_DOWNLOAD_COMPLETED_JOINED) ||
+	   (dl->state == FSUI_DOWNLOAD_ABORTED_JOINED) ||
+	   (dl->state == FSUI_DOWNLOAD_ERROR_JOINED) ) ) {
       if (iter != NULL)
 	if (OK != iter(closure,
 		       dl,

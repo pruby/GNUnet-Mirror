@@ -105,6 +105,7 @@ enum FSUI_EventType {
    * Connection status with gnunetd changed.
    */
   FSUI_gnunetd_disconnected,
+  FSUI_download_suspending,
 };
 
 /**

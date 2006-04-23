@@ -140,6 +140,63 @@ typedef struct FSUI_SearchList {
 } FSUI_SearchList;
 
 /**
+ * Current state of a download.
+ *
+ * PENDING means that the download is waiting for a thread
+ * to be assigned to run it.  Downloads start in this state,
+ * and during shutdown are serialized in this state.<br>
+ *
+ * ACTIVE means that there is currently a thread running
+ * the download (and that thread is allowed to continue).<br>
+ *
+ * COMPLETED means that the download is finished (but the
+ * thread has not been joined yet).  The download thread
+ * makes the transition from PENDING to COMPLETED when it
+ * is about to terminate.<br>
+ *
+ * COMPLETED_JOINED means that the download is finished and
+ * the thread has been joined.<br>
+ *
+ * ABORTED means that the user is causing the download to be
+ * terminated early (but the thread has not been joined yet).  The
+ * controller or the download thread make this transition; the
+ * download thread is supposed to terminate shortly after the state is
+ * moved to ABORTED.<br>
+ *
+ * ABORTED_JOINED means that the download did not complete
+ * successfully, should not be restarted and that the thread
+ * has been joined.<br>
+ *
+ * ERROR means that some fatal error is causing the download to be
+ * terminated early (but the thread has not been joined yet).  The
+ * controller or the download thread make this transition; the
+ * download thread is supposed to terminate shortly after the state is
+ * moved to ERROR.<br>
+ *
+ * ERROR_JOINED means that the download did not complete successfully,
+ * should not be restarted and that the thread has been joined.<br>
+ *
+ * SUSPENDING is used to notify the download thread that it
+ * should terminate because of an FSUI shutdown.  After this
+ * termination the code that joins the thread should move
+ * the state into PENDING (a new thread would not be started
+ * immediately because "threadPoolSize" will be 0 until FSUI
+ * resumes).
+ */
+typedef enum {
+  FSUI_DOWNLOAD_PENDING = 0,
+  FSUI_DOWNLOAD_ACTIVE = 1,
+  FSUI_DOWNLOAD_COMPLETED = 2,
+  FSUI_DOWNLOAD_COMPLETED_JOINED = 3,
+  FSUI_DOWNLOAD_ABORTED = 4,
+  FSUI_DOWNLOAD_ABORTED_JOINED = 5,
+  FSUI_DOWNLOAD_ERROR = 6,
+  FSUI_DOWNLOAD_ERROR_JOINED = 7,
+  FSUI_DOWNLOAD_SUSPENDING = 8,
+} FSUI_DownloadState;
+
+
+/**
  * @brief list of active downloads
  */
 typedef struct FSUI_DownloadList {
@@ -168,20 +225,9 @@ typedef struct FSUI_DownloadList {
   struct FSUI_Context * ctx;
 
   /**
-   * Set this to YES to signal the download thread that
-   * termination is desired.  Then join on handle.
-   * Set to NO if thread is running.  Set to SYSERR
-   * if no thread has been assigned to this download
-   * at the moment.
+   * State of the download.
    */
-  int signalTerminate;
-
-  /**
-   * Is the download of this file finished (not necessarily
-   * transitively for directories, just the directory/file
-   * itself).
-   */
-  int finished;
+  FSUI_DownloadState state;
 
   /**
    * Currently assigned thread (if any).

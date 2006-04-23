@@ -96,14 +96,33 @@ static FSUI_DownloadList * readDownloadList(int fd,
 	 0,
 	 sizeof(FSUI_DownloadList));
   ret->ctx = ctx;
-
-  ret->signalTerminate
-    = SYSERR;
   READINT(ret->is_recursive);
   READINT(ret->is_directory);
   READINT(ret->anonymityLevel);
   READINT(ret->completedDownloadsCount);
-  READINT(ret->finished);
+  READINT(ret->state);
+  switch (ret->state) { /* try to correct errors */
+  case FSUI_DOWNLOAD_ACTIVE:
+    ret->state = FSUI_DOWNLOAD_PENDING;
+    break;
+  case FSUI_DOWNLOAD_PENDING:
+  case FSUI_DOWNLOAD_COMPLETED_JOINED:
+  case FSUI_DOWNLOAD_ABORTED_JOINED:
+  case FSUI_DOWNLOAD_ERROR_JOINED:
+    break;
+  case FSUI_DOWNLOAD_ERROR:
+    ret->state = FSUI_DOWNLOAD_ERROR_JOINED;
+    break;
+  case FSUI_DOWNLOAD_ABORTED:
+    ret->state = FSUI_DOWNLOAD_ABORTED_JOINED;
+    break;
+  case FSUI_DOWNLOAD_COMPLETED:
+    ret->state = FSUI_DOWNLOAD_COMPLETED_JOINED;
+    break;
+  default:
+    ret->state = FSUI_DOWNLOAD_PENDING;
+    break;
+  }
   READINT(big);
   if (big > 1024 * 1024) {
     BREAK();
@@ -141,7 +160,6 @@ static FSUI_DownloadList * readDownloadList(int fd,
     goto ERR;
   }
   ret->parent = parent;
-  ret->signalTerminate = SYSERR;
   ret->next = readDownloadList(fd,
 			       ctx,
 			       parent);
@@ -227,7 +245,7 @@ static void writeDownloadList(int fd,
   WRITEINT(fd, list->is_directory);
   WRITEINT(fd, list->anonymityLevel);
   WRITEINT(fd, list->completedDownloadsCount);
-  WRITEINT(fd, list->finished);
+  WRITEINT(fd, list->state);
   WRITEINT(fd, strlen(list->filename));
   WRITE(fd,
 	list->filename,
@@ -356,8 +374,8 @@ struct FSUI_Context * FSUI_start(const char * name,
 
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
-  ret->activeDownloads.signalTerminate
-    = SYSERR;
+  ret->activeDownloads.state
+    = FSUI_DOWNLOAD_PENDING; /* !? */
   ret->activeDownloads.ctx
     = ret;
   gh = getFileName("GNUNET",
