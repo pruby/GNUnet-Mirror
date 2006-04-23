@@ -448,16 +448,16 @@ void LOG(LOG_Level minLogLevel,
   va_end(args);
   if (bInited)
     MUTEX_UNLOCK(&logMutex);
-  va_start(args, format);
   if (customLog) {
     char * txt;
 
     txt = MALLOC(len + 1);
+    va_start(args, format);
     GNUNET_ASSERT(len == VSNPRINTF(txt, len, format, args));
+    va_end(args);
     customLog(txt);
     FREE(txt);
   }
-  va_end(args);
 }
 
 /**
