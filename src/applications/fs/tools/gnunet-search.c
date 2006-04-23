@@ -365,9 +365,7 @@ int main(int argc,
 	     NULL);
   startCron();
   ret = runSearch();
-  printf("4)\n");
   stopCron();
-  printf("5)\n");
   delCronJob((CronJob)&run_shutdown,
 	     0,
 	     NULL);
