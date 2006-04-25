@@ -295,9 +295,9 @@ static void updateCpuUsage(){
   if (proc_stat != NULL) {
     static int last_cpu_results[4] = { 0, 0, 0, 0 };
     char line[128];
-    int user_read, system_read, nice_read, idle_read;
-    int user, system, nice, idle;
-    int usage_time=0, total_time=1;
+    unsigned long long user_read, system_read, nice_read, idle_read;
+    unsigned long long user, system, nice, idle;
+    unsigned long long usage_time=0, total_time=1;
 
     /* Get the first line with the data */
     rewind(proc_stat);
@@ -309,7 +309,7 @@ static void updateCpuUsage(){
       fclose(proc_stat);
       proc_stat = NULL; /* don't try again */
     } else {
-      if (sscanf(line, "%*s %i %i %i %i",
+      if (sscanf(line, "%*s %llu %llu %llu %llu",
 		 &user_read,
 		 &system_read,
 		 &nice_read,
