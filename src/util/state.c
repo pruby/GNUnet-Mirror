@@ -186,8 +186,8 @@ int stateAppendContent(const char * name,
 	   dbh,
 	   name);
   fd = fileopen(fil,
-	    O_RDWR|O_CREAT,
-	    S_IRUSR|S_IWUSR);
+		O_RDWR|O_CREAT,
+		S_IRUSR|S_IWUSR);
   if (fd == -1) {
     LOG_FILE_STRERROR(LOG_WARNING, "open", fil);
     FREE(fil);

@@ -288,6 +288,9 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
   IPC_SEMAPHORE_FREE(sem);
   return rval;
  FORMATERROR:
+  LOG(LOG_WARNING,
+      _("Deleted corrupt URI database in `%s'."),
+      STATE_NAME);
   if (0 != MUNMAP(result, buf.st_size))
     LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
   CLOSE(fd);
