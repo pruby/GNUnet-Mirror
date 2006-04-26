@@ -1,5 +1,5 @@
 #!/bin/sh
-export WANT_AUTOMAKE="1.7"
+export WANT_AUTOMAKE="1.8"
 cd libltdl
 autoreconf -f -i
 cd ..
