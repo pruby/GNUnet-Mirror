@@ -1235,7 +1235,6 @@ static void fragmentIfNecessary(BufferEntry * be) {
       break; /* "entries" changed as side-effect of fragment call */
     }
   } /* while changed */
-  return OK;
 }
 
 /**
