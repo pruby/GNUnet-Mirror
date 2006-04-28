@@ -169,9 +169,12 @@ static unsigned int rewardPos = 0;
 /**
  * Hard CPU limit
  */
-static unsigned int hardCPULimit;
+static int hardCPULimit;
 
-static unsigned int hardUpLimit;
+/**
+ * Hard network upload limit.
+ */
+static int hardUpLimit;
 
 #if DO_HISTOGRAM
 static int histogram[65536];
@@ -496,8 +499,10 @@ static void sendToSelected(const PeerIdentity * id,
     return; /* never send back to source */
 
   /* Load above hard limit? */
-  if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
-        (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) )
+  if ( ( (hardCPULimit > 0) && 
+	 (getCPULoad() >= hardCPULimit) ) ||
+       ( (hardUpLimit > 0) && 
+	 (getNetworkLoadUp() >= hardUpLimit) ) )
     return;
 
   if (getBit(qr, getIndex(id)) == 1) {
@@ -1356,11 +1361,11 @@ static int execQuery(const PeerIdentity * sender,
 #endif
 
   /* Load above hard limit? */
-  if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
-        (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) ) {
-
-    return SYSERR;
-  }
+  if ( ( (hardCPULimit > 0) && 
+	 (getCPULoad() >= hardCPULimit) ) ||
+       ( (hardUpLimit > 0) && 
+	 (getNetworkLoadUp() >= hardUpLimit) ) ) 
+    return SYSERR;  
 
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&lookup_exclusion);
@@ -1869,8 +1874,10 @@ static int handleQuery(const PeerIdentity * sender,
   }
   
   /* Load above hard limit? */
-  if ((hardCPULimit && getCPULoad() >= hardCPULimit) ||
-        (hardUpLimit && getNetworkLoadUp() >= hardUpLimit) ) {
+  if ( ( (hardCPULimit > 0) && 
+	 (getCPULoad() >= hardCPULimit) ) ||
+       ( (hardUpLimit > 0) && 
+	 (getNetworkLoadUp() >= hardUpLimit) ) ) {
 #if DEBUG_GAP
     if (sender != NULL) {
       IFLOG(LOG_DEBUG,

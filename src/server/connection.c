@@ -527,10 +527,11 @@ static void printMsg(const char *prefix, PeerIdentity * sender,
  * This allocates and initializes a BufferEntry.
  * @return the initialized BufferEntry
  */
-static BufferEntry *initBufferEntry() {
-  BufferEntry *be;
+static BufferEntry * initBufferEntry() {
+  BufferEntry * be;
+  int load;
 
-  be = (BufferEntry *) MALLOC(sizeof(BufferEntry));
+  be = MALLOC(sizeof(BufferEntry));
   memset(be, 0, sizeof(BufferEntry));
   be->isAlive = 0;
   be->status = STAT_DOWN;
@@ -545,7 +546,10 @@ static BufferEntry *initBufferEntry() {
   be->idealized_limit = MIN_BPM_PER_PEER;
   be->max_transmitted_limit = MIN_BPM_PER_PEER;
   be->lastSendAttempt = 0;      /* never */
-  be->MAX_SEND_FREQUENCY = 50 * cronMILLIS * getCPULoad();
+  load = getCPULoad();
+  if (load == -1)
+    load = 50; /* failed to determine load, assume 50% */
+  be->MAX_SEND_FREQUENCY = 50 * cronMILLIS * load;
   be->inSendBuffer = NO;
   cronTime(&be->last_bps_update); /* now */
   return be;
@@ -931,7 +935,9 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
   } else { /* if (be->session.mtu == 0) */
     /* solve knapsack problem, compute accumulated priority */
     approxProb = getCPULoad();
-    if(approxProb > 50) {
+    if (approxProb < 0)
+      approxProb = 50; /* failed to determine load, assume 50% */
+    if (approxProb > 50) {
       if(approxProb > 100)
         approxProb = 100;
       approxProb = 100 - approxProb;  /* now value between 0 and 50 */
@@ -1010,7 +1016,7 @@ static void expireSendBufferEntries(BufferEntry * be) {
   int i;
   SendEntry *entry;
   cron_t expired;
-  int l;
+  int load;
   unsigned long long usedBytes;
   int j;
 
@@ -1021,15 +1027,17 @@ static void expireSendBufferEntries(BufferEntry * be) {
   LOG(LOG_DEBUG, "policy prevents sending message\n");
 #endif
 
-  l = getCPULoad();
+  load = getCPULoad();
+  if (load < 0)
+    load = 50; /* failed to determine load, assume 50%* */
   /* cleanup queue */
   msgCap = be->max_bpm;         /* have minute of msgs, but at least one MTU */
   if(msgCap < EXPECTED_MTU)
     msgCap = EXPECTED_MTU;
-  if(l < 50) {                  /* afford more if CPU load is low */
-    if(l <= 0)
-      l = 1;
-    msgCap += (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU) / l;
+  if (load < 50) {                  /* afford more if CPU load is low */
+    if(load == 0)
+      load = 1; /* avoid division by zero */
+    msgCap += (MAX_SEND_BUFFER_SIZE - EXPECTED_MTU) / load;
   }
 
   usedBytes = 0;
@@ -2144,12 +2152,13 @@ static void cronDecreaseLiveness(void *unused) {
           /* the host may still be worth trying again soon: */
           identity->whitelistHost(&root->session.sender);
         }
-        if((root->available_send_window >= 60000) &&
-           (root->sendBufferSize < 4) &&
-           (scl_nextHead != NULL) &&
-           (getNetworkLoadUp() < 25) && (getCPULoad() < 50)) {
+        if ( (root->available_send_window >= 60000) &&
+	     (root->sendBufferSize < 4) &&
+	     (scl_nextHead != NULL) &&
+	     (getNetworkLoadUp() < 25) && 
+	     (getCPULoad() < 50) ) {
           /* create some traffic by force! */
-          char *msgBuf;
+          char * msgBuf;
           unsigned int mSize;
           SendCallbackList *pos;
 
@@ -2157,10 +2166,14 @@ static void cronDecreaseLiveness(void *unused) {
           pos = scl_nextHead;
           while(pos != NULL) {
             if(pos->minimumPadding <= 60000) {
-              mSize = pos->callback(&root->session.sender, msgBuf, 60000);
+              mSize = pos->callback(&root->session.sender,
+				    msgBuf,
+				    60000);
               if(mSize > 0)
                 unicast(&root->session.sender,
-                        (P2P_MESSAGE_HEADER *) msgBuf, 0, 5 * cronMINUTES);
+                        (P2P_MESSAGE_HEADER *) msgBuf, 
+			0, 
+			5 * cronMINUTES);
             }
             pos = pos->next;
           }
@@ -2479,21 +2492,22 @@ int getLastActivityOf(const PeerIdentity * peer, cron_t * time) {
  *         OK if the sessionkey was set.
  */
 int getCurrentSessionKey(const PeerIdentity * peer,
-                         SESSIONKEY * key, TIME_T * age, int forSending) {
+                         SESSIONKEY * key, 
+			 TIME_T * age,
+			 int forSending) {
   int ret;
   BufferEntry *be;
   ret = SYSERR;
   MUTEX_LOCK(&lock);
   be = lookForHost(peer);
   if(be != NULL) {
-    if(forSending == YES) {
-      if((be->status & STAT_SETKEY_SENT) > 0) {
+    if (forSending == YES) {
+      if ((be->status & STAT_SETKEY_SENT) > 0) {
         *key = be->skey_local;
         *age = be->skey_local_created;
         ret = OK;
       }
-    }
-    else {                      /* for receiving */
+    } else { /* for receiving */
       if((be->status & STAT_SETKEY_RECEIVED) > 0) {
         *key = be->skey_remote;
         *age = be->skey_remote_created;

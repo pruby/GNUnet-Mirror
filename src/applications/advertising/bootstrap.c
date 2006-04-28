@@ -88,6 +88,8 @@ static void processhellos(HelloListClosure * hcq) {
       unsigned int load;
       int nload;
       load = getCPULoad();
+      if (load == (unsigned int)-1)
+	load = 50; 
       nload = getNetworkLoadUp();
       if (nload > load)
 	load = nload;
