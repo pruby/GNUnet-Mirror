@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -293,7 +293,8 @@ static void updateCpuUsage(){
      if that does not work, disable /proc/stat for the future
      by closing the file and use the next-best method. */
   if (proc_stat != NULL) {
-    static int last_cpu_results[4] = { 0, 0, 0, 0 };
+    static unsigned long long last_cpu_results[4] = { 0, 0, 0, 0 };
+    static int have_last_cpu = NO;
     char line[128];
     unsigned long long user_read, system_read, nice_read, idle_read;
     unsigned long long user, system, nice, idle;
@@ -319,6 +320,7 @@ static void updateCpuUsage(){
 			  "/proc/stat");
 	fclose(proc_stat);
 	proc_stat = NULL; /* don't try again */
+	have_last_cpu = NO;
       } else {
 	/* Store the current usage*/
 	user   = user_read - last_cpu_results[0];
@@ -331,10 +333,7 @@ static void updateCpuUsage(){
 	  total_time = usage_time + idle;
 	}
 	if ( (total_time > 0) &&
-	     ( (last_cpu_results[0] +
-		last_cpu_results[1] +
-		last_cpu_results[2] +
-		last_cpu_results[3]) > 0) )
+	     (have_last_cpu == YES) ) 
 	  currentLoad = (100 * usage_time) / total_time;
 	else
 	  currentLoad = -1;
@@ -343,6 +342,7 @@ static void updateCpuUsage(){
 	last_cpu_results[1] = system_read;
 	last_cpu_results[2] = nice_read;
 	last_cpu_results[3] = idle_read;
+	have_last_cpu = YES;
 	MUTEX_UNLOCK(&statusMutex);
 	return;
       }
