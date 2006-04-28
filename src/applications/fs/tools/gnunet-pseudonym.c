@@ -254,7 +254,7 @@ static int itemPrinter(EXTRACTOR_KeywordType type,
 		       const char * data,
 		       void * closure) {
   printf("\t%20s: %s\n",
-	 EXTRACTOR_getKeywordTypeAsString(type),
+	 dgettext("libextractor", EXTRACTOR_getKeywordTypeAsString(type)),
 	 data);
   return OK;
 }

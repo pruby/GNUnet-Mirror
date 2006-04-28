@@ -381,6 +381,7 @@ static int parseOptions(int argc,
     case 'm': {
       EXTRACTOR_KeywordType type;
       const char * typename;
+      const char * typename_i18n;
 
       tmp = convertToUtf8(GNoptarg,
 			  strlen(GNoptarg),
@@ -394,19 +395,31 @@ static int parseOptions(int argc,
       while (type > 0) {
 	type--;
 	typename = EXTRACTOR_getKeywordTypeAsString(type);
-	if (strlen(tmp) < strlen(typename)+1)
-	  continue;
-	if ( (tmp[strlen(typename)] == ':') &&
-	     (0 == strncmp(typename,
-			   tmp,
-			   strlen(typename))) ) {
+	typename_i18n = dgettext("libextractor", typename);
+	if  ( (strlen(tmp) >= strlen(typename)+1) &&
+	      (tmp[strlen(typename)] == ':') &&
+	      (0 == strncmp(typename,
+			    tmp,
+			    strlen(typename))) ) {
 	  ECRS_addToMetaData(meta,
 			     type,
 			     &tmp[strlen(typename)+1]);
 	  FREE(tmp);
 	  tmp = NULL;
 	  break;
-	}	
+	}
+	if ( (strlen(tmp) >= strlen(typename_i18n)+1) &&
+	     (tmp[strlen(typename_i18n)] == ':') &&
+	     (0 == strncmp(typename_i18n,
+			   tmp,
+			   strlen(typename_i18n))) ) {
+	  ECRS_addToMetaData(meta,
+			     type,
+			     &tmp[strlen(typename_i18n)+1]);
+	  FREE(tmp);
+	  tmp = NULL;
+	  break;
+	}
       }
       if (tmp != NULL) {
 	ECRS_addToMetaData(meta,
