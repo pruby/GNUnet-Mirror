@@ -1068,7 +1068,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   stats = coreAPI->requestService("stats");
   if (stats)
     stat_size
-      = stats->create(gettext_noop("# Bytes in datastore"));
+      = stats->create(gettext_noop("# bytes in datastore"));
 
   api.getSize = &getSize;
   api.put = &put;

@@ -1175,7 +1175,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   stats = coreAPI->requestService("stats");
   if (stats)
     stat_size
-      = stats->create(gettext_noop("# Bytes in datastore"));
+      = stats->create(gettext_noop("# bytes in datastore"));
 
   /* verify that .my.cnf can be found */
 #ifndef WINDOWS
