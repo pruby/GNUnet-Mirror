@@ -1,4 +1,4 @@
-.TH GNUNET-INSERT "1" "27 Aug 2005" "GNUnet"
+.TH GNUNET-INSERT "1" "29 Apr 2006" "GNUnet"
 .SH NAME
 gnunet\-insert \- a command line interface for inserting new content into GNUnet
 .SH SYNOPSIS
@@ -104,7 +104,7 @@ Print a brief help page with all the options.
 
 .TP
 \fB\-i \fISECONDS\fR, \fB\-\-interval=\fISECONDS\fR
-Specifies the update frequency of the content in seconds. This option is only valid together with the \-s option. If no current and next ID are specified, the system picks some random start values for the sequence.
+Specifies the update frequency of the content in seconds. This option is only valid together with the \-P option. If no current and next ID are specified, the system picks some random start values for the sequence.
 
 Most recent update can be found by gnunet\-gtk automatically. gnunet\-search will print all edition ids
 between the insertion time and the current time. A new search can be then performed with one of the printed keys.
@@ -135,7 +135,7 @@ Do not index, full insertion.  Note that directories, RBlocks, SBlocks and IBloc
 
 .TP
 \fB\-N \fIID\fR, \fB\-\-next=\fIID\fR
-Specifies the next ID of a future version of the SBlock.  This option is only valid together with the \-s option and together with either the option -b or only a single filename on the command\-line.  This option can be used to specify what the identifier of an updated version will look like.  Without the \-i option, a one\-shot update SBlock is used (a\-periodic).  With the \-i option, the difference between  the current ID (this) and the next ID is used to compute all future IDs.  Note that specifying \-i and \-N without \-t hardly ever makes sense.
+Specifies the next ID of a future version of the SBlock.  This option is only valid together with the \-P option.  This option can be used to specify what the identifier of an updated version will look like.  Without the \-i option, a one\-shot update SBlock is used (a\-periodic).  With the \-i option, the difference between  the current ID (this) and the next ID is used to compute all future IDs.  Note that specifying \-i and \-N without \-t hardly ever makes sense.
 
 The ID can be given in HEX notation, otherwise the HEX code is derived by hashing the given ID string.
 
@@ -155,9 +155,9 @@ Process directories recursively.  Without this option, directories are ignored. 
 
 .TP
 \fB\-S\fR, \fB\-\-sporadic\fR
-This option specifies that the file will be updated sporadically but not periodically.  It is only valid in conjunction with the \-s option.  It is implied if  \-N is specified but not \-i.  It cannot be used together with the \-i option.  Use \-S if you intend to publish an update at an unknown point in the future and if you want gnunet\-insert to pick a random  identifier for that future content.
+This option specifies that the file will be updated sporadically but not periodically.  It is only valid in conjunction with the \-P option.  It is implied if  \-N is specified but not \-i.  It cannot be used together with the \-i option.  Use \-S if you intend to publish an update at an unknown point in the future and if you want gnunet\-insert to pick a random  identifier for that future content.
 
-If you use \-s but not \-S, \-N or \-i, the content will not be updateable.
+If you use \-P but not \-S, \-N or \-i, the content will not be updateable.
 
 .TP
 \fB\-t \fIID\fR, \fB\-\-this=\fIID\fR
@@ -220,19 +220,18 @@ Force description for all files:
 
 \fBSecure publishing with namespaces\fR
 
-Insert file COPYING with pseudonym RIAA (\-s) and password MPAA (\-P)
-with identifier \fBgpl\fR (\-t) and no updates:
+Insert file COPYING with pseudonym RIAA (\-P) and with identifier \fBgpl\fR (\-t) and no updates:
 
-# gnunet\-insert \-s RIAA \-P MPAA \-t gpl COPYING
+# gnunet\-insert \-P RIAA \-t gpl COPYING
 
 Recursively (\-R) index /home/ogg and build a matching directory structure.
 Insert the top\-level directory into the namespace under the pseudonym
-RIAA (\-s) with password MPAA (\-P) under identifier MUSIC (\-t) and
+RIAA (\-P) under identifier MUSIC (\-t) and
 promise to provide an update with identifier VIDEOS (\-N) at an
 arbitrary point in the future (\-S is implied by lack of \-i
 and presence of \-N):
 
-# gnunet\-insert \-R \-s RIAA \-P MPAA \-t MUSIC \-N VIDEOS /home/ogg
+# gnunet\-insert \-R \-P RIAA \-t MUSIC \-N VIDEOS /home/ogg
 
 Recursively (\-R) insert (\-n) /var/lib/mysql and build a matching directory
 structure, but disable the use of libextractor to extract keywords
