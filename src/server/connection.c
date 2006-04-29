@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -367,34 +367,36 @@ typedef struct BufferEntry_ {
 
   /** byte-per-minute limit for this connection */
   unsigned int max_bpm;
+
   /** current bps (actually bytes per minute) for this connection
       (incremented every minute by max_bpm,
        bounded by max_bpm * secondsInactive/2;
        may get negative if we have VERY high priority
        content) */
   long long available_send_window;
+
   /** time of the last increment of available_send_window */
   cron_t last_bps_update;
 
   /* *********** inbound bandwidth accounting ******** */
 
-  /* how much traffic (bytes) did we receive on this connection since
+  /** how much traffic (bytes) did we receive on this connection since
      the last update-round? */
   long long recently_received;
 
   /** How valueable were the messages of this peer recently? */
   double current_connection_value;
 
-  /* the highest bandwidth limit that a well-behaved peer
-     must have received by now */
+  /** the highest bandwidth limit that a well-behaved peer
+      must have received by now */
   unsigned int max_transmitted_limit;
-  /* what is the limit that we are currently shooting for? (byte per minute) */
+
+  /** what is the limit that we are currently shooting for? (byte per minute) */
   unsigned int idealized_limit;
 
   unsigned int violations;
 
-  /* are we currently in "sendBuffer" for this
-     entry? */
+  /** are we currently in "sendBuffer" for this entry? */
   int inSendBuffer;
 
 } BufferEntry;
@@ -1406,23 +1408,23 @@ static void sendBuffer(BufferEntry * be) {
   if((ret == NO) && (priority >= EXTREME_PRIORITY)) {
     ret = transport->sendReliable(be->session.tsession, encryptedMsg, p);
   }
-  if(ret == YES) {
-    if(be->available_send_window > totalMessageSize)
+  if (ret == YES) {
+    if (be->available_send_window > totalMessageSize)
       be->available_send_window -= totalMessageSize;
     else
       be->available_send_window = 0;  /* if we overrode limits,
                                          reset to 0 at least... */
     be->lastSequenceNumberSend++;
-    if(be->idealized_limit > be->max_transmitted_limit)
+    if (be->idealized_limit > be->max_transmitted_limit)
       be->max_transmitted_limit = be->idealized_limit;
     else                        /* age */
       be->max_transmitted_limit
         = (be->idealized_limit + be->max_transmitted_limit * 3) / 4;
 
-    if(rsnSize > 0) {
+    if (rsnSize > 0) {
       j = sizeof(P2P_PACKET_HEADER);
-      while(j < p) {
-        P2P_MESSAGE_HEADER *part = (P2P_MESSAGE_HEADER *) & plaintextMsg[j];
+      while (j < p) {
+        P2P_MESSAGE_HEADER *part = (P2P_MESSAGE_HEADER *) &plaintextMsg[j];
         unsigned short plen = htons(part->size);
         if(plen < sizeof(P2P_MESSAGE_HEADER)) {
           BREAK();
@@ -1919,9 +1921,10 @@ static void scheduleInboundTraffic() {
 
       entries[u]->violations++;
       entries[u]->recently_received = 0;  /* "clear" slate */
-      if(entries[u]->violations > 10) {
+      if (entries[u]->violations > 10) {
         IFLOG(LOG_INFO,
-              hash2enc(&entries[u]->session.sender.hashPubKey, &enc));
+              hash2enc(&entries[u]->session.sender.hashPubKey,
+		       &enc));
         LOG(LOG_INFO,
             "blacklisting `%s': sent repeatedly %llu bpm "
             "(limit %u bpm, target %u bpm)\n",
@@ -1970,7 +1973,7 @@ static void scheduleInboundTraffic() {
   didAssign = YES;
   /* in the first round we cap by 2* previous utilization */
   firstRound = YES;
-  for(u = 0; u < activePeerCount; u++)
+  for (u = 0; u < activePeerCount; u++)
     entries[u]->idealized_limit = 0;
   while((schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
         (activePeerCount > 0) && (didAssign == YES)) {
@@ -2085,19 +2088,25 @@ static void scheduleInboundTraffic() {
   FREE(adjustedRR);
   FREE(shares);
   FREE(entries);
-  for(u = 0; u < CONNECTION_MAX_HOSTS_; u++) {
+  for (u = 0; u < CONNECTION_MAX_HOSTS_; u++) {
     BufferEntry *be = CONNECTION_buffer_[u];
     if(be == NULL)
       continue;
-    if(be->idealized_limit < MIN_BPM_PER_PEER) {
+    if (be->idealized_limit < MIN_BPM_PER_PEER) {
 #if DEBUG_CONNECTION || 1
       EncName enc;
 
-      IFLOG(LOG_DEBUG, hash2enc(&be->session.sender.hashPubKey, &enc));
+      IFLOG(LOG_DEBUG,
+	    hash2enc(&be->session.sender.hashPubKey, 
+		     &enc));
       LOG(LOG_DEBUG,
-          "Number of connections too high, shutting down low-traffic connection to %s (had only %u bpm)\n",
+          "Number of connections too high, shutting down low-traffic connection to `%s' (had only %u bpm)\n",
           &enc, be->idealized_limit);
 #endif
+      /* We need to avoid giving a too low limit (especially 0, which
+	 would indicate a plaintex msg).  So we set the limit to the
+	 minimum value AND try to shutdown the connection. */
+      be->idealized_limit = MIN_BPM_PER_PEER; 
       shutdownConnection(be);
     }
   }
@@ -2215,7 +2224,8 @@ static void cronDecreaseLiveness(void *unused) {
  *         SYSERR if it was malformed
  */
 int checkHeader(const PeerIdentity * sender,
-                P2P_PACKET_HEADER * msg, unsigned short size) {
+                P2P_PACKET_HEADER * msg,
+		unsigned short size) {
   BufferEntry *be;
   int res;
   unsigned int sequenceNumber;
@@ -2235,10 +2245,11 @@ int checkHeader(const PeerIdentity * sender,
   }
   hash2enc(&sender->hashPubKey, &enc);
   hash(&msg->sequenceNumber, size - sizeof(HashCode512), &hc);
-  if(equalsHashCode512(&hc,
-                       &msg->hash) &&
-     (msg->sequenceNumber == 0) &&
-     (msg->bandwidth == 0) && (msg->timeStamp == 0))
+  if (equalsHashCode512(&hc,
+			&msg->hash) &&
+      (msg->sequenceNumber == 0) &&
+      (msg->bandwidth == 0) && 
+      (msg->timeStamp == 0) )
     return NO;                  /* plaintext */
 
 #if DEBUG_CONNECTION
@@ -2801,7 +2812,10 @@ void printConnectionBuffer() {
             SECONDS_INACTIVE_DROP,
             tmp->recently_received,
             tmp->idealized_limit,
-            tmp->sendBufferSize, &hostName, &skey_local, &skey_remote);
+            tmp->sendBufferSize,
+	    &hostName, 
+	    &skey_local, 
+	    &skey_remote);
       }
       tmp = tmp->overflowChain;
     }

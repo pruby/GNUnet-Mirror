@@ -307,7 +307,10 @@ typedef struct {
  * Indirection table entry. Lists what we're looking for,
  * where to forward it, and how long to keep looking for it.
  * Keep this struct as small as possible -- an array of these
- * takes 80% of GNUnet's memory.
+ * takes 80% of GNUnet's memory (for 65536 routing table entries,
+ * the array itself uses about 8 MB of memory; the contents
+ * that the entries point to can easily use another 8 MB at this 
+ * point [see Mantis #1058])
  */
 typedef struct {
   /**
