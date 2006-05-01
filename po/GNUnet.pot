@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-04-01 16:49-0800\n"
+"POT-Creation-Date: 2006-04-30 21:58-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,74 +16,79 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/applications/advertising/advertising.c:156
+#: src/applications/advertising/advertising.c:161
 #, c-format
 msgid "hello message from `%s' invalid (signature invalid). Dropping.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:162
+#: src/applications/advertising/advertising.c:167
 msgid ""
 "hello message received invalid (expiration time over limit). Dropping.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:171
+#: src/applications/advertising/advertising.c:176
 #, c-format
 msgid "hello advertisement for protocol %d received.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:290
+#: src/applications/advertising/advertising.c:295
 msgid "Could not send hellos+PING, ping buffer full.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:303
+#: src/applications/advertising/advertising.c:308
 #, c-format
 msgid "`%s' failed (%d, %u). Will not send PING.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:451
+#: src/applications/advertising/advertising.c:460
 #, c-format
 msgid "Advertising my transport %d to selected peers.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:458
+#: src/applications/advertising/advertising.c:467
 msgid ""
 "Announcing ourselves pointless: no other peers are known to us so far.\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:560
+#: src/applications/advertising/advertising.c:569
 #, c-format
 msgid "Removing hello from peer `%s' (expired %ds ago).\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:720
+#: src/applications/advertising/advertising.c:729
 msgid "# Peer advertisements received"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:721
+#: src/applications/advertising/advertising.c:730
 msgid "# Self advertisments transmitted"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:722
+#: src/applications/advertising/advertising.c:731
 msgid "# Foreign advertisements forwarded"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:726
+#: src/applications/advertising/advertising.c:733
+#: src/applications/pingpong/pingpong.c:462
+msgid "# plaintext PING messages sent"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:737
 #: src/applications/session/connect.c:753
 #, c-format
 msgid "`%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:745
+#: src/applications/advertising/advertising.c:756
 msgid "Network advertisements disabled by configuration!\n"
 msgstr ""
 
-#: src/applications/advertising/advertising.c:765
+#: src/applications/advertising/advertising.c:776
 msgid ""
 "ensures that this peer is known by other peers and discovers other peers"
 msgstr ""
 
 #: src/applications/bootstrap_http/http.c:81
-#: src/applications/testbed/testbed.c:1080
+#: src/applications/testbed/testbed.c:1079
 #, c-format
 msgid "Invalid URL `%s' (must begin with `%s')\n"
 msgstr ""
@@ -166,9 +171,9 @@ msgstr ""
 #: src/applications/dht/tools/dht-join.c:108
 #: src/applications/dht/tools/dht-query.c:99
 #: src/applications/fs/tools/gnunet-delete.c:111
-#: src/applications/fs/tools/gnunet-directory.c:195
+#: src/applications/fs/tools/gnunet-directory.c:190
 #: src/applications/fs/tools/gnunet-download.c:130
-#: src/applications/fs/tools/gnunet-insert.c:519
+#: src/applications/fs/tools/gnunet-insert.c:532
 #: src/applications/fs/tools/gnunet-pseudonym.c:232
 #: src/applications/fs/tools/gnunet-search.c:219
 #: src/applications/fs/tools/gnunet-unindex.c:140
@@ -321,7 +326,7 @@ msgstr ""
 #: src/applications/dht/tools/dht-query.c:84
 #: src/applications/fs/tools/gnunet-download.c:96
 #: src/applications/fs/tools/gnunet-insert.c:315
-#: src/applications/fs/tools/gnunet-insert.c:448
+#: src/applications/fs/tools/gnunet-insert.c:461
 #: src/applications/fs/tools/gnunet-pseudonym.c:120
 #: src/applications/fs/tools/gnunet-search.c:165
 #: src/applications/fs/tools/gnunet-search.c:181
@@ -628,7 +633,7 @@ msgstr ""
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr ""
 
-#: src/applications/fs/ecrs/upload.c:307
+#: src/applications/fs/ecrs/upload.c:303
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr ""
@@ -637,8 +642,16 @@ msgstr ""
 msgid "Download aborted."
 msgstr ""
 
-#: src/applications/fs/fsui/download.c:293
+#: src/applications/fs/fsui/download.c:294
 msgid "ECRS download failed (see logs)."
+msgstr ""
+
+#: src/applications/fs/fsui/download.c:298
+msgid "ECRS download suspending."
+msgstr ""
+
+#: src/applications/fs/fsui/download.c:302
+msgid "Unexpected download state."
 msgstr ""
 
 #: src/applications/fs/fsui/downloadtest.c:239
@@ -651,15 +664,29 @@ msgstr ""
 msgid "AND"
 msgstr ""
 
-#: src/applications/fs/fsui/file_info.c:76
+#: src/applications/fs/fsui/file_info.c:66
+#: src/applications/identity/hostkey.c:98
+#: src/applications/identity/identity.c:1036
+#, c-format
+msgid ""
+"Configuration file must specify a directory for GNUnet to store per-peer "
+"data under %s%s\n"
+msgstr ""
+
+#: src/applications/fs/fsui/file_info.c:93
 msgid "Collecting file identifiers disabled.\n"
 msgstr ""
 
-#: src/applications/fs/fsui/fsui.c:171
+#: src/applications/fs/fsui/file_info.c:292
+#, c-format
+msgid "Deleted corrupt URI database in `%s'."
+msgstr ""
+
+#: src/applications/fs/fsui/fsui.c:189
 msgid "FSUI persistence: error restoring download\n"
 msgstr ""
 
-#: src/applications/fs/fsui/fsui.c:620
+#: src/applications/fs/fsui/fsui.c:638
 #, c-format
 msgid "FSUI state file `%s' had syntax error at offset %u.\n"
 msgstr ""
@@ -710,16 +737,16 @@ msgstr ""
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
-#: src/applications/fs/module/migration.c:204
+#: src/applications/fs/module/migration.c:218
 msgid "# blocks migrated"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:308
+#: src/applications/fs/module/ondemand.c:305
 #, c-format
 msgid "Indexed file disappeared, deleting block for query `%s'\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:399
+#: src/applications/fs/module/ondemand.c:393
 #, c-format
 msgid ""
 "Because the file `%s' has been unavailable for 3 days it got removed from "
@@ -727,20 +754,20 @@ msgid ""
 "contains invalid references!\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:425
+#: src/applications/fs/module/ondemand.c:419
 #, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section `"
 "%s' under `%s'.\n"
 msgstr ""
 
-#: src/applications/fs/module/ondemand.c:626
+#: src/applications/fs/module/ondemand.c:617
 #, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1727
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1757
 msgid "Failed to get traffic stats.\n"
 msgstr ""
 
@@ -780,37 +807,37 @@ msgstr ""
 msgid "=\tError reading directory.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:116
+#: src/applications/fs/tools/gnunet-directory.c:111
 #, c-format
 msgid "File format error (not a GNUnet directory?)\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:118
+#: src/applications/fs/tools/gnunet-directory.c:113
 #, c-format
 msgid "%d files found in directory.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:136
+#: src/applications/fs/tools/gnunet-directory.c:131
 msgid "remove all entries from the directory database and stop tracking URIs"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:138
+#: src/applications/fs/tools/gnunet-directory.c:133
 msgid "list entries from the directory database"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:141
+#: src/applications/fs/tools/gnunet-directory.c:136
 msgid "start tracking entries for the directory database"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:145
+#: src/applications/fs/tools/gnunet-directory.c:140
 msgid "gnunet-directory [OPTIONS] [FILENAMES]"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:146
+#: src/applications/fs/tools/gnunet-directory.c:141
 msgid "Perform directory related operations."
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-directory.c:211
+#: src/applications/fs/tools/gnunet-directory.c:206
 #, c-format
 msgid "Listed %d matching entries.\n"
 msgstr ""
@@ -1003,42 +1030,42 @@ msgstr ""
 msgid "You must pass a positive number to the `%s' option.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:524
+#: src/applications/fs/tools/gnunet-insert.c:537
 #: src/applications/fs/tools/gnunet-unindex.c:145
 #, c-format
 msgid "You must specify a list of files to insert.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:528
+#: src/applications/fs/tools/gnunet-insert.c:541
 #, c-format
 msgid "Only one file or directory can be specified at a time.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:532
+#: src/applications/fs/tools/gnunet-insert.c:545
 #, c-format
 msgid "You must specify a file or directory to upload.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:582
+#: src/applications/fs/tools/gnunet-insert.c:595
 #, c-format
 msgid "Keywords for file `%s':\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:604
+#: src/applications/fs/tools/gnunet-insert.c:617
 #, c-format
 msgid "Could not access namespace `%s' (does not exist?).\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:623
+#: src/applications/fs/tools/gnunet-insert.c:636
 #, c-format
 msgid "Parsing time failed. Use `%s' format.\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:636
-#: src/applications/fs/tools/gnunet-insert.c:640
-#: src/applications/fs/tools/gnunet-insert.c:644
-#: src/applications/fs/tools/gnunet-insert.c:648
+#: src/applications/fs/tools/gnunet-insert.c:649
 #: src/applications/fs/tools/gnunet-insert.c:653
+#: src/applications/fs/tools/gnunet-insert.c:657
+#: src/applications/fs/tools/gnunet-insert.c:661
+#: src/applications/fs/tools/gnunet-insert.c:666
 #, c-format
 msgid "Option `%s' makes no sense without option `%s'.\n"
 msgstr ""
@@ -1249,92 +1276,100 @@ msgstr ""
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1551
+#: src/applications/gap/gap.c:1573
 #, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1552
+#: src/applications/gap/gap.c:1574
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1716
+#: src/applications/gap/gap.c:1746
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1733 src/applications/gap/gap.c:1738
-#: src/applications/gap/gap.c:1744
+#: src/applications/gap/gap.c:1763 src/applications/gap/gap.c:1768
+#: src/applications/gap/gap.c:1774
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1995
+#: src/applications/gap/gap.c:2027
 msgid "# gap requests total received"
 msgstr ""
 
-#: src/applications/gap/gap.c:1996
+#: src/applications/gap/gap.c:2028
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:1997
+#: src/applications/gap/gap.c:2029
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:1998
+#: src/applications/gap/gap.c:2030
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:1999
+#: src/applications/gap/gap.c:2031
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2000
+#: src/applications/gap/gap.c:2032
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2001
+#: src/applications/gap/gap.c:2033
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2002
+#: src/applications/gap/gap.c:2034
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2003
+#: src/applications/gap/gap.c:2035
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2004
+#: src/applications/gap/gap.c:2036
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2005
+#: src/applications/gap/gap.c:2037
 msgid "# gap duplicate requests that were re-tried"
 msgstr ""
 
-#: src/applications/gap/gap.c:2006
+#: src/applications/gap/gap.c:2038
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2007
+#: src/applications/gap/gap.c:2039
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2008
+#: src/applications/gap/gap.c:2040
 msgid "# gap spurious replies"
 msgstr ""
 
-#: src/applications/gap/gap.c:2009
+#: src/applications/gap/gap.c:2041
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2025
+#: src/applications/gap/gap.c:2042
+msgid "# gap memory used for tracking seen content"
+msgstr ""
+
+#: src/applications/gap/gap.c:2043
+msgid "# gap memory used for tracking routing destinations"
+msgstr ""
+
+#: src/applications/gap/gap.c:2059
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2056
+#: src/applications/gap/gap.c:2090
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr ""
@@ -1346,14 +1381,6 @@ msgstr ""
 
 #: src/applications/getoption/getoption.c:82
 msgid "allows clients to determine gnunetd's configuration"
-msgstr ""
-
-#: src/applications/identity/hostkey.c:98
-#: src/applications/identity/identity.c:1031
-#, c-format
-msgid ""
-"Configuration file must specify a directory for GNUnet to store per-peer "
-"data under %s%s\n"
 msgstr ""
 
 #: src/applications/identity/hostkey.c:119
@@ -1391,6 +1418,14 @@ msgstr ""
 msgid "Removed file `%s' containing invalid hello data.\n"
 msgstr ""
 
+#: src/applications/identity/identity.c:706
+msgid "Signature failed verification: other peer not known.\n"
+msgstr ""
+
+#: src/applications/identity/identity.c:712
+msgid "Signature failed verification: signature invalid.\n"
+msgstr ""
+
 #: src/applications/pingpong/pingpong.c:120
 #: src/applications/pingpong/pingpong.c:179
 #: src/applications/pingpong/pingpong.c:227
@@ -1418,35 +1453,31 @@ msgstr ""
 msgid "Cannot create PING, table full. Try increasing MAX_PING_PONG.\n"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:483
+#: src/applications/pingpong/pingpong.c:452
 msgid "# encrypted PONG messages received"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:485
+#: src/applications/pingpong/pingpong.c:454
 msgid "# plaintext PONG messages received"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:487
+#: src/applications/pingpong/pingpong.c:456
 msgid "# encrypted PING messages received"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:489
+#: src/applications/pingpong/pingpong.c:458
 msgid "# PING messages created"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:491
+#: src/applications/pingpong/pingpong.c:460
 msgid "# encrypted PONG messages sent"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:493
-msgid "# plaintext PING messages sent"
-msgstr ""
-
-#: src/applications/pingpong/pingpong.c:495
+#: src/applications/pingpong/pingpong.c:464
 msgid "# encrypted PING messages sent"
 msgstr ""
 
-#: src/applications/pingpong/pingpong.c:504
+#: src/applications/pingpong/pingpong.c:473
 #, c-format
 msgid "`%s' registering handlers %d %d (plaintext and ciphertext)\n"
 msgstr ""
@@ -1571,10 +1602,10 @@ msgstr ""
 #: src/applications/sqstore_mysql/mysql.c:1067
 #: src/applications/sqstore_sqlite/sqlite.c:44
 #: src/applications/sqstore_sqlite/sqlite.c:51 src/util/hostkey_gcrypt.c:56
-#: src/util/hostkey_gcrypt.c:63 src/util/storage.c:643
+#: src/util/hostkey_gcrypt.c:63 src/util/storage.c:659
 #: src/util/symcipher_gcrypt.c:47 src/util/symcipher_gcrypt.c:54
-#: src/include/gnunet_util.h:1033 src/include/gnunet_util.h:1040
-#: src/include/gnunet_util.h:1042
+#: src/include/gnunet_util.h:1035 src/include/gnunet_util.h:1042
+#: src/include/gnunet_util.h:1044
 #, c-format
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr ""
@@ -1599,7 +1630,7 @@ msgstr ""
 
 #: src/applications/sqstore_mysql/mysql.c:1178
 #: src/applications/sqstore_sqlite/sqlite.c:1071
-msgid "# Bytes in datastore"
+msgid "# bytes in datastore"
 msgstr ""
 
 #: src/applications/sqstore_mysql/mysql.c:1205
@@ -1984,40 +2015,40 @@ msgid ""
 "Received testbed message of type %u but unexpected size %u, expected %u\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1046
+#: src/applications/testbed/testbed.c:1045
 msgid "No testbed URL given, not registered.\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1055 src/transports/http.c:1455
+#: src/applications/testbed/testbed.c:1054 src/transports/http.c:1455
 #, c-format
 msgid "Could not resolve name of HTTP proxy `%s'.\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1119
+#: src/applications/testbed/testbed.c:1118
 #, c-format
 msgid "Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1155
+#: src/applications/testbed/testbed.c:1154
 #, c-format
 msgid "Could not register testbed, host `%s' unknown\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1178
+#: src/applications/testbed/testbed.c:1177
 #, c-format
 msgid "Failed to send HTTP request to host `%s': %s\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1231
+#: src/applications/testbed/testbed.c:1230
 #, c-format
 msgid "Failed so send HTTP request `%s' to host `%s': %s\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1270
+#: src/applications/testbed/testbed.c:1269
 msgid "Exit register (error: no http response read).\n"
 msgstr ""
 
-#: src/applications/testbed/testbed.c:1358
+#: src/applications/testbed/testbed.c:1357
 msgid "allows construction of a P2P-testbed (incomplete)"
 msgstr ""
 
@@ -2954,51 +2985,51 @@ msgstr ""
 msgid "Unknown error while creating a new user"
 msgstr ""
 
-#: src/server/connection.c:996
+#: src/server/connection.c:979
 #, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr ""
 
-#: src/server/connection.c:1002
+#: src/server/connection.c:986
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr ""
 
-#: src/server/connection.c:2331
+#: src/server/connection.c:2243
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr ""
 
-#: src/server/connection.c:2413
+#: src/server/connection.c:2309
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr ""
 
-#: src/server/connection.c:2429
+#: src/server/connection.c:2324
 msgid "Message received more than one day old. Dropped.\n"
 msgstr ""
 
-#: src/server/connection.c:2823
+#: src/server/connection.c:2690
 msgid "# outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:2825
+#: src/server/connection.c:2692
 msgid "# bytes of outgoing messages dropped"
 msgstr ""
 
-#: src/server/connection.c:2827
+#: src/server/connection.c:2694
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:2829
+#: src/server/connection.c:2695
 msgid "# bytes encrypted"
 msgstr ""
 
-#: src/server/connection.c:2831
+#: src/server/connection.c:2696
 msgid "# bytes decrypted"
 msgstr ""
 
-#: src/server/connection.c:2833
+#: src/server/connection.c:2697
 msgid "# bytes noise sent"
 msgstr ""
 
@@ -3612,11 +3643,11 @@ msgstr ""
 msgid "Cannot open configuration file `%s'.\n"
 msgstr ""
 
-#: src/util/cron.c:229
+#: src/util/cron.c:241
 msgid "Cron stopped\n"
 msgstr ""
 
-#: src/util/cron.c:366
+#: src/util/cron.c:371
 #, c-format
 msgid ""
 "`%s' called with cron job not in queue, adding.  This may not be what you "
@@ -3859,38 +3890,38 @@ msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
 msgstr ""
 
-#: src/util/storage.c:196
+#: src/util/storage.c:212
 #, c-format
 msgid "`%s' failed for drive %s: %u\n"
 msgstr ""
 
-#: src/util/storage.c:294
+#: src/util/storage.c:310
 #, c-format
 msgid "`%s' is not a regular file.\n"
 msgstr ""
 
-#: src/util/storage.c:548
+#: src/util/storage.c:564
 #, c-format
 msgid "`%s' expected `%s' to be a directory!\n"
 msgstr ""
 
-#: src/util/storage.c:654
+#: src/util/storage.c:670
 msgid "b"
 msgstr ""
 
-#: src/util/storage.c:659
+#: src/util/storage.c:675
 msgid "k"
 msgstr ""
 
-#: src/util/storage.c:662 src/util/timer.c:198
+#: src/util/storage.c:678 src/util/timer.c:198
 msgid "m"
 msgstr ""
 
-#: src/util/storage.c:665
+#: src/util/storage.c:681
 msgid "g"
 msgstr ""
 
-#: src/util/storage.c:668
+#: src/util/storage.c:684
 msgid "t"
 msgstr ""
 
@@ -3930,37 +3961,37 @@ msgstr ""
 msgid "Unexpected very large allocation (%u bytes) at %s:%d!\n"
 msgstr ""
 
-#: src/include/gnunet_util.h:158
+#: src/include/gnunet_util.h:160
 msgid "print this help"
 msgstr ""
 
-#: src/include/gnunet_util.h:161
+#: src/include/gnunet_util.h:163
 msgid "set verbosity to LEVEL"
 msgstr ""
 
-#: src/include/gnunet_util.h:164
+#: src/include/gnunet_util.h:166
 msgid "use configuration file FILENAME"
 msgstr ""
 
-#: src/include/gnunet_util.h:167
+#: src/include/gnunet_util.h:169
 msgid "specify host on which gnunetd is running"
 msgstr ""
 
-#: src/include/gnunet_util.h:170
+#: src/include/gnunet_util.h:172
 msgid "print the version number"
 msgstr ""
 
-#: src/include/gnunet_util.h:173
+#: src/include/gnunet_util.h:175
 msgid "be verbose"
 msgstr ""
 
-#: src/include/gnunet_util.h:628 src/include/gnunet_util.h:630
+#: src/include/gnunet_util.h:630 src/include/gnunet_util.h:632
 #, c-format
 msgid "Assertion failed at %s:%d.\n"
 msgstr ""
 
-#: src/include/gnunet_util.h:1049 src/include/gnunet_util.h:1051
-#: src/include/gnunet_util.h:1058
+#: src/include/gnunet_util.h:1051 src/include/gnunet_util.h:1053
+#: src/include/gnunet_util.h:1060
 #, c-format
 msgid "`%s' failed on file `%s' at %s:%d with error: %s\n"
 msgstr ""
