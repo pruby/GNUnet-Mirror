@@ -58,6 +58,8 @@ static void eventCallback(SearchClosure * sc,
   char * uri;
   char * filename;
 
+  if (0 == sc->max)
+    return;
   if (event->type != FSUI_search_result)
     return;
 
@@ -76,7 +78,7 @@ static void eventCallback(SearchClosure * sc,
   filename = ECRS_getFromMetaData(event->data.SearchResult.fi.meta,
 				  EXTRACTOR_FILENAME);
   if (filename != NULL) {
-    char *dotdot;
+    char * dotdot;
     
     while (NULL != (dotdot = strstr(filename, "..")))
       dotdot[0] = dotdot[1] = '_';
