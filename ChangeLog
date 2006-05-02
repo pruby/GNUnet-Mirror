@@ -1,3 +1,11 @@
+Tue May  2 00:01:25 PDT 2006
+	Fixed bug in gap where the tracking of query origins for
+	optimizing routing paths lacked a simple assignment of the
+	query origin (found by code inspection).  As a result,
+	routing performance should improve further.  Also fixed
+	small memory leak in gap and reduced memory consumption by
+	fixing Mantis #1058.
+
 Sat Apr 22 13:50:39 PDT 2006
 	Fixed bug in util/cron.c where stopCron() would wait for an 
 	unnecessary sleep to complete.

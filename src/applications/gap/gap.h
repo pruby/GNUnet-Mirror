@@ -35,6 +35,7 @@
 #include "gnunet_stats_service.h"
 #include "gnunet_traffic_service.h"
 #include "gnunet_topology_service.h"
+#include "pid_table.h"
 
 #define DEBUG_GAP NO
 
@@ -284,7 +285,7 @@ typedef struct {
   /**
    * To which peer will we never send this message?
    */
-  PeerIdentity noTarget;
+  PID_INDEX noTarget;
 
   /**
    * Bit-map marking the hostIndices (computeIndex) of nodes that have
@@ -351,7 +352,7 @@ typedef struct {
   /**
    * Who are these hosts?
    */
-  PeerIdentity * destination;
+  PID_INDEX * destination;
 
   /**
    * How many hosts are waiting for an answer to this query (length of
@@ -380,7 +381,7 @@ typedef struct {
  */
 typedef struct RL_ {
   struct RL_ * next;
-  PeerIdentity responder;
+  PID_INDEX responder;
   unsigned int responseCount;
 } ResponseList;
 
@@ -398,7 +399,7 @@ typedef struct RTD_ {
   /**
    * For which client does this entry track replies?
    */
-  PeerIdentity queryOrigin;
+  PID_INDEX queryOrigin;
 
   /**
    * Linked list of peers that responded, with

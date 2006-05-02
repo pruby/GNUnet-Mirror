@@ -10,7 +10,8 @@ plugin_LTLIBRARIES = \
 
 
 libgnunetmodule_gap_la_SOURCES = \
-  gap.c gap.h
+  gap.c gap.h \
+  pid_table.c pid_table.h
 libgnunetmodule_gap_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
   $(LDADD)
