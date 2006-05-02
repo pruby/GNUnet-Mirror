@@ -424,6 +424,7 @@ static void *get(KVHandle *kv, void *key, int keylen, unsigned int sort,
   {
     where = "";
     key_enc = NULL;
+    enclen = 0; /* make gcc happy */
   }
   
   switch(sort)
