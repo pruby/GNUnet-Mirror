@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -89,5 +89,39 @@ size_t strlcat(char *dest, const char *src, size_t count)
 	return res;
 }
 #endif
+
+#define KIBIBYTE_SIZE 1024L
+#define MEBIBYTE_SIZE 1048576L
+#define GIBIBYTE_SIZE 1073741824L
+
+/**
+ * Method to get human-readable filesizes from byte numbers.
+ */
+char * getHumanSize (unsigned long long int size_n)
+{
+  unsigned long long size_d;
+  char * size;
+  char * ret;
+
+  size = MALLOC(128);
+  if (size_n == 0) {
+    strcpy(size, _("unknown")); }
+  else if (size_n / 4> GIBIBYTE_SIZE) {
+    size_d = size_n / GIBIBYTE_SIZE;
+    SNPRINTF(size, 128, "%llu %s", size_d, _("GiB")); }
+  else if (size_n / 4> MEBIBYTE_SIZE) {
+    size_d = size_n / MEBIBYTE_SIZE;
+    SNPRINTF(size, 128, "%llu %s", size_d, _("MiB")); }
+  else if (size_n / 4> KIBIBYTE_SIZE) {
+    size_d = size_n / KIBIBYTE_SIZE;
+    SNPRINTF(size, 128, "%llu %s", size_d, _("KiB")); }
+  else {
+    size_d = size_n;
+    SNPRINTF(size, 128, "%llu %s", size_d, _("Bytes")); }
+  ret = STRDUP(size);
+  FREE(size);
+  return ret;
+}
+
 
 /* end of string.c */

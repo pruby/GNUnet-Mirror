@@ -178,7 +178,6 @@ fi
 AC_CHECK_LIB([kvm],[kvm_open])
 AC_CHECK_LIB([kstat],[kstat_open])
 
-
 # test for libextractor
 extractor=0
 AC_MSG_CHECKING(for libextractor)

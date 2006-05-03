@@ -2504,6 +2504,12 @@ size_t strlcat(char *dest, const char *src, size_t count);
 #endif
 
 /**
+ * @brief Get human-readable filesizes from byte numbers
+ * @param size_n the size in bytes
+ */
+char * getHumanSize (unsigned long long int size_n);
+
+/**
  * @brief Enumerate all network interfaces
  * @param callback the callback function
  */
