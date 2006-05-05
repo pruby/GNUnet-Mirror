@@ -1,3 +1,9 @@
+Fri May  5 01:33:42 PDT 2006
+	Fixed bug with priorities of IBlocks of uploaded content
+	(priority was left at zero, making those blocks be 
+	possibly discarded rather quickly once the datastore filled
+	up).
+
 Tue May  2 00:01:25 PDT 2006
 	Fixed bug in gap where the tracking of query origins for
 	optimizing routing paths lacked a simple assignment of the
