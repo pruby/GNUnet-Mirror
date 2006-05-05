@@ -37,7 +37,7 @@
 #include "gnunet_topology_service.h"
 #include "pid_table.h"
 
-#define DEBUG_GAP YES
+#define DEBUG_GAP NO
 
 #define EXTRA_CHECKS YES
 
@@ -158,8 +158,8 @@
  * THE VALUE YOU PICK MUST BE A POWER OF 2, for example:
  * 128, 256, 512, 1024, 2048, 4092, 8192, 16384, 32768, 65536
  */
-/* #define MIN_INDIRECTION_TABLE_SIZE 1024 */
-#define MIN_INDIRECTION_TABLE_SIZE 4 
+#define MIN_INDIRECTION_TABLE_SIZE 1024 
+/* #define MIN_INDIRECTION_TABLE_SIZE 4 */
 
 /**
  * Under certain cirumstances, two peers can interlock in their
