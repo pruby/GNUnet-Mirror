@@ -131,10 +131,12 @@ activeMigrationCallback(const PeerIdentity * receiver,
   
   if (ntohl(content->type) == ONDEMAND_BLOCK) {
     if (ONDEMAND_getIndexed(datastore, content, &key, &enc) != OK) {
+      FREE(content);
+      content = NULL;
       MUTEX_UNLOCK(&lock);
       return 0;
     }
-      
+    FREE(content);
     content = enc;
   }
   
