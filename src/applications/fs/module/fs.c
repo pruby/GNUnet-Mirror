@@ -298,9 +298,10 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
 	hash2enc(&query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS received REQUEST INSERT (query: `%s', type: %u)\n",
+      "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
       &enc,
-      type);
+      type,
+      ntohl(ri->prio));
 #endif
   datum->type = htonl(type);
   memcpy(&datum[1],

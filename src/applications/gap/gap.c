@@ -1265,7 +1265,7 @@ static void sendReply(IndirectionTableEntry * ite,
 		&recv);
 #if DEBUG_GAP
     IFLOG(LOG_DEBUG,
-	  hash2enc(&recv,
+	  hash2enc(&recv.hashPubKey,
 		   &enc));
     LOG(LOG_DEBUG,
 	"GAP sending reply to `%s'\n",
@@ -1540,7 +1540,7 @@ static int useContent(const PeerIdentity * host,
 
   IFLOG(LOG_DEBUG,
 	if (host != NULL)
-	  hash2enc(&hostId->hashPubKey,
+	  hash2enc(&host->hashPubKey,
 		   &enc));
   LOG(LOG_DEBUG,
       "GAP received content from `%s'\n",
@@ -1914,7 +1914,7 @@ static int handleQuery(const PeerIdentity * sender,
     }
     LOG(LOG_DEBUG,
         "Dropping query from %s, this peer is too busy.\n",
-        sender == NULL ? "localhost" : &enc);
+        sender == NULL ? "localhost" : (char*)&enc);
 #endif
     return OK;
   }  
@@ -1980,7 +1980,7 @@ static int handleQuery(const PeerIdentity * sender,
     }
     LOG(LOG_DEBUG,
 	"Dropping query from %s, policy decided that this peer is too busy.\n",
-	sender == NULL ? "localhost" : &enc);
+	sender == NULL ? "localhost" : (const char*) &enc);
 #endif
     if (stats != NULL)
       stats->change(stat_routing_direct_drops, 1);

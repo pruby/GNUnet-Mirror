@@ -776,9 +776,10 @@ static int put(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Storing in database block with type %u and key `%s'.\n",
+      "Storing in database block with type %u, key `%s' and priority %u.\n",
       ntohl(*(int*)&value[1]),
-      &enc);
+      &enc,
+      ntohl(value->prio));
 #endif
 
   if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {

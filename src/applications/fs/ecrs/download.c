@@ -31,7 +31,7 @@
 #include "ecrs.h"
 #include "tree.h"
 
-#define DEBUG_DOWNLOAD NO
+#define DEBUG_DOWNLOAD NO 
 
 /**
  * Highest TTL allowed? (equivalent of 25-50 HOPS distance!)
