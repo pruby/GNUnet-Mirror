@@ -104,6 +104,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   cron_t et;
   cron_t now;
   unsigned int anonymity;
+  Datastore_Value *enc;    
 
   MUTEX_LOCK(&lock);
   if (content != NULL) {
@@ -129,8 +130,6 @@ activeMigrationCallback(const PeerIdentity * receiver,
   }
   
   if (ntohl(content->type) == ONDEMAND_BLOCK) {
-    Datastore_Value *enc;
-    
     if (ONDEMAND_getIndexed(datastore, content, &key, &enc) != OK) {
       MUTEX_UNLOCK(&lock);
       return 0;

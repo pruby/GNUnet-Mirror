@@ -11,7 +11,10 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.1 [2'06] (aka "stabilization")
+0.7.0d:
+* #1025
+
+0.7.1 ['06] (aka "stabilization")
 - known bugs (see Mantis for updates):
   * gnunet-setup memory leaks (#878)
   * gnunet-setup category switch update bug (#892)  [ RC ]
@@ -27,7 +30,7 @@ Notes:
     + FSUI collections
     + gnunet-tracekit
 
-0.7.2 [4'06] (aka "performance"):
+0.7.2 ['06] (aka "performance"):
 - Optimizations:
   * cache some kblock-public/private keys in memory [ CG, RC ]
     (1024 bit keys are much better than the 2048 bit keys,
@@ -44,14 +47,14 @@ Notes:
 - gnunet-setup:
   * php-ification for i18n [ Nils, RC? ]
 
-0.7.3 [5'06] (aka "features"):
+0.7.3 ['06] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Documentation:
   * LJ article
 
-0.7.4 [6'06] (aka "advanced features"):
+0.7.4 ['06] (aka "advanced features"):
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
 - https://gnunet.org/drupal/?q=node/97

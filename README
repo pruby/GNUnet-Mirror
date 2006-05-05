@@ -25,7 +25,7 @@ Dependencies:
 For the impatient, here is the list of immediate dependencies for
 running GNUnet:
 
-- libextractor >= 0.5.4
+- libextractor >= 0.5.13
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
 - mysql >= 4.1 OR sqlite >= 3.0
