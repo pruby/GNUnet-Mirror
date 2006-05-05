@@ -76,7 +76,6 @@ static Mutex lock;
  * first time).
  */
 static Datastore_Value * content;
-
 				
 /**
  * Callback method for pushing content into the network.
@@ -97,8 +96,10 @@ static unsigned int
 activeMigrationCallback(const PeerIdentity * receiver,
 			void * position,
 			unsigned int padding) {
+  /** key corresponding to content (if content != NULL);
+      yes, must be static! */
+  static HashCode512 key;
   unsigned int ret;
-  HashCode512 key;
   GapWrapper * gw;
   unsigned int size;
   cron_t et;
@@ -182,7 +183,6 @@ activeMigrationCallback(const PeerIdentity * receiver,
 	"gap's tryMigrate returned %u\n",
 	ret);
 #endif
-
   } else {
 #if DEBUG_MIGRATION
     LOG(LOG_DEBUG,
