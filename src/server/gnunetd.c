@@ -132,7 +132,6 @@ void gnunet_main() {
  */
 int main(int argc, char * argv[]) {
   checkCompiler();
-  umask(0);
   /* init 1: get options and basic services up */
   if (SYSERR == initUtil(argc, argv, &parseGnunetdCommandLine))
     return 0; /* parse error, --help, etc. */
