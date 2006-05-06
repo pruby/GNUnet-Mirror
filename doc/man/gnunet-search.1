@@ -51,9 +51,12 @@ and
 are identical. You can use AND to separate keywords. In that case, gnunet\-search will only display results that match all the keywords.  gnunet\-search cannot do multiple independent queries ("OR"), you must use multiple processes for that.
 Search results are printed by gnunet\-search like this:
 
-gnunet-download -o "COPYING" gnunet://ecrs/chk/N8RCF3TETLRU9CV1PAS7M2H9QDB36AE3.K9JO8IP7KTNFO23S3VB4TFUKLD7SO5AS.17992
-	Description: The GNU Public License
-	Mime-type: text/plain
+.P
+	gnunet-download -o "COPYING" gnunet://ecrs/chk/HASH1.HASH2.SIZE
+
+		Description: The GNU Public License
+
+		Mime-type: text/plain
 
 The first line contains the command to run to download the file.  The suggested filename in the example is COPYING.  The GNUnet URI consists of the key and query hash of the file and finally the size of the file.  After the command to download the file GNUnet will print meta\-data about the file as advertised in the search result, here "The GNU Public License" and the mime\-type (see the options for gnunet\-insert on how to supply meta-data by hand).
 
