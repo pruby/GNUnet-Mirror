@@ -1,3 +1,6 @@
+Sat May  6 00:17:59 PDT 2006
+	Releasing GNUnet 0.7.0d.
+
 Fri May  5 01:33:42 PDT 2006
 	Fixed bug with priorities of IBlocks of uploaded content
 	(priority was left at zero, making those blocks be 

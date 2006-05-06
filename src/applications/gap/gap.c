@@ -840,7 +840,7 @@ static unsigned int claimReward(const HashCode512 * query) {
       ret += rewards[i].prio;
       if (stats != NULL)
 	stats->change(stat_pending_rewards,
-		      - rewards[rewardPos].prio);
+		      - rewards[i].prio);
       rewards[i].prio = 0;
     }
   }

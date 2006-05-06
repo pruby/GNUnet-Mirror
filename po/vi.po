@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-04-30 21:58-0700\n"
+"POT-Creation-Date: 2006-05-06 00:21-0700\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -181,7 +181,7 @@ msgstr "Chạy máy khách chát của GNUnet."
 #: src/applications/fs/tools/gnunet-download.c:130
 #: src/applications/fs/tools/gnunet-insert.c:532
 #: src/applications/fs/tools/gnunet-pseudonym.c:232
-#: src/applications/fs/tools/gnunet-search.c:219
+#: src/applications/fs/tools/gnunet-search.c:221
 #: src/applications/fs/tools/gnunet-unindex.c:140
 #: src/applications/stats/gnunet-stats.c:143
 #: src/applications/tbench/gnunet-tbench.c:189
@@ -191,7 +191,7 @@ msgstr "Chạy máy khách chát của GNUnet."
 #: src/applications/tracekit/gnunet-tracekit.c:153 src/conf/gnunet-setup.c:117
 #: src/conf/gnunet-setup.c:298 src/server/gnunet-peer-info.c:107
 #: src/server/gnunet-transport-check.c:523 src/server/gnunet-update.c:142
-#: src/server/startup.c:574
+#: src/server/startup.c:579
 #, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr "Dùng --help để xem danh sách các tùy chọn.\n"
@@ -335,9 +335,9 @@ msgstr "Nhập một DHT."
 #: src/applications/fs/tools/gnunet-insert.c:315
 #: src/applications/fs/tools/gnunet-insert.c:461
 #: src/applications/fs/tools/gnunet-pseudonym.c:120
-#: src/applications/fs/tools/gnunet-search.c:165
-#: src/applications/fs/tools/gnunet-search.c:181
-#: src/applications/fs/tools/gnunet-search.c:202
+#: src/applications/fs/tools/gnunet-search.c:167
+#: src/applications/fs/tools/gnunet-search.c:183
+#: src/applications/fs/tools/gnunet-search.c:204
 #: src/applications/tbench/gnunet-tbench.c:124
 #: src/applications/tbench/gnunet-tbench.c:134
 #: src/applications/tbench/gnunet-tbench.c:147
@@ -615,37 +615,37 @@ msgstr "Không cho phép tìm kiếm CHK URI.\n"
 msgid "LOC URI not allowed for search.\n"
 msgstr "Không cho phép tìm kiếm LOC URI.\n"
 
-#: src/applications/fs/ecrs/upload.c:177
+#: src/applications/fs/ecrs/upload.c:180
 #, fuzzy, c-format
 msgid "`%s' is not a file.\n"
 msgstr "'%s' không phải là một tập tin thông thường.\n"
 
-#: src/applications/fs/ecrs/upload.c:183
+#: src/applications/fs/ecrs/upload.c:186
 #, fuzzy, c-format
 msgid "Cannot get size of file `%s'"
 msgstr "Không mở được tập tin cấu hình '%s'\n"
 
-#: src/applications/fs/ecrs/upload.c:189
+#: src/applications/fs/ecrs/upload.c:192
 #, fuzzy
 msgid "Not connected to gnunetd."
 msgstr "Không kết nối được tới gnunetd.\n"
 
-#: src/applications/fs/ecrs/upload.c:200
+#: src/applications/fs/ecrs/upload.c:203
 #, fuzzy, c-format
 msgid "Cannot hash `%s'.\n"
 msgstr "Không hash được '%s'.\n"
 
-#: src/applications/fs/ecrs/upload.c:218
+#: src/applications/fs/ecrs/upload.c:221
 #, fuzzy, c-format
 msgid "Initialization for indexing file `%s' failed.\n"
 msgstr "Nạp để đánh chỉ mục tập tin '%s' thất bại.\n"
 
-#: src/applications/fs/ecrs/upload.c:224
+#: src/applications/fs/ecrs/upload.c:227
 #, fuzzy, c-format
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr "nạp môđun '%s' không thành công.  Đang cho máy khách biết.\n"
 
-#: src/applications/fs/ecrs/upload.c:303
+#: src/applications/fs/ecrs/upload.c:306
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr "Đánh chỉ mục dữ liệu thất bại tại vị trí %i.\n"
@@ -742,7 +742,7 @@ msgstr "Tải lên thất bại.\n"
 msgid "Cannot upload directory without using recursion."
 msgstr "Không tải lên được thư mục khi không dùng đệ quy.\n"
 
-#: src/applications/fs/module/fs.c:1090
+#: src/applications/fs/module/fs.c:1091
 #, fuzzy, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
@@ -750,17 +750,21 @@ msgid ""
 msgstr ""
 "Người dùng phải chỉ ra một số dương cho '%s' trong phần '%s' của cấu hình.\n"
 
-#: src/applications/fs/module/fs.c:1134
+#: src/applications/fs/module/fs.c:1135
 #, fuzzy, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr "'%s' đăng ký trình điều khiển máy khách %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/module/fs.c:1171
+#: src/applications/fs/module/fs.c:1172
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
-#: src/applications/fs/module/migration.c:218
+#: src/applications/fs/module/migration.c:224
 msgid "# blocks migrated"
+msgstr ""
+
+#: src/applications/fs/module/migration.c:225
+msgid "# on-demand block migration attempts"
 msgstr ""
 
 #: src/applications/fs/module/ondemand.c:305
@@ -794,7 +798,7 @@ msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr "Khối ODB đã bỏ chỉ mục '%s' từ %llu không có trong kho dữ liệu.\n"
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1757
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1785
 msgid "Failed to get traffic stats.\n"
 msgstr "Lấy các thông tin truyền tải không thành công.\n"
 
@@ -878,7 +882,7 @@ msgid "LEVEL"
 msgstr "CẤPĐỘ"
 
 #: src/applications/fs/tools/gnunet-download.c:42
-#: src/applications/fs/tools/gnunet-search.c:106
+#: src/applications/fs/tools/gnunet-search.c:108
 msgid "set the desired LEVEL of receiver-anonymity"
 msgstr "đặt CẤPĐỘ mong muốn của người nhận giấu tên"
 
@@ -1277,32 +1281,32 @@ msgstr "Đã tạo không gian tên '%s' (gốc: %s).\n"
 msgid "Could not access namespace information.\n"
 msgstr "Không truy cập được thông tin của không gian tên.\n"
 
-#: src/applications/fs/tools/gnunet-search.c:112
+#: src/applications/fs/tools/gnunet-search.c:114
 msgid "exit after receiving LIMIT results"
 msgstr "thoát sau khi nhận được kết quả GIỚIHẠN"
 
-#: src/applications/fs/tools/gnunet-search.c:114
+#: src/applications/fs/tools/gnunet-search.c:116
 msgid "write encountered (decrypted) search results to FILENAME"
 msgstr "ghi kết quả tìm kiếm tìm thấy (đã giải mã) vào tập tin FILENAME"
 
-#: src/applications/fs/tools/gnunet-search.c:116
+#: src/applications/fs/tools/gnunet-search.c:118
 msgid "wait TIMEOUT seconds for search results before aborting"
 msgstr "chờ kết quả tìm kiếm TIMEOUT giây trước khi thoát"
 
-#: src/applications/fs/tools/gnunet-search.c:121
+#: src/applications/fs/tools/gnunet-search.c:123
 msgid "Search GNUnet for files."
 msgstr "Tìm kiếm tập tin trong GNUnet."
 
-#: src/applications/fs/tools/gnunet-search.c:225
+#: src/applications/fs/tools/gnunet-search.c:227
 msgid "Not enough arguments. You must specify a keyword or identifier.\n"
 msgstr "Không đủ tham số. Người dùng phải chỉ ra một từ khóa hoặc một tên.\n"
 
-#: src/applications/fs/tools/gnunet-search.c:276
+#: src/applications/fs/tools/gnunet-search.c:278
 #, c-format
 msgid "Starting search failed. Consult logs.\n"
 msgstr "Bắt đầu tìm kiếm thất bại. Hãy xem các bản ghi log.\n"
 
-#: src/applications/fs/tools/gnunet-search.c:351
+#: src/applications/fs/tools/gnunet-search.c:353
 #, c-format
 msgid "Error converting arguments to URI!\n"
 msgstr "Lỗi chuyển đổi tham số tới URI!\n"
@@ -1348,98 +1352,102 @@ msgstr "Người dùng phải chỉ ra một  và chỉ một tập tin để b�
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr "'%s' thất bại.  '%s' là một tập tin?\n"
 
-#: src/applications/gap/gap.c:1573
+#: src/applications/gap/gap.c:1599
 #, fuzzy, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr "Nhận được thông báo sai '%s' từ '%s'.\n"
 
-#: src/applications/gap/gap.c:1574
+#: src/applications/gap/gap.c:1600
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1746
+#: src/applications/gap/gap.c:1774
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 "Đã yêu cầu che truyền tải nhưng chưa nạp dịch vụ truyền tải.  Đang nhả ra "
 "yêu cầu.\n"
 
-#: src/applications/gap/gap.c:1763 src/applications/gap/gap.c:1768
-#: src/applications/gap/gap.c:1774
+#: src/applications/gap/gap.c:1791 src/applications/gap/gap.c:1796
+#: src/applications/gap/gap.c:1802
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr "Không thể thỏa mãn mức độ dấu tên mong muốn, đang lờ đi yêu cầu.\n"
 
-#: src/applications/gap/gap.c:2027
+#: src/applications/gap/gap.c:2060
 #, fuzzy
 msgid "# gap requests total received"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/gap/gap.c:2028
+#: src/applications/gap/gap.c:2061
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:2029
+#: src/applications/gap/gap.c:2062
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:2030
+#: src/applications/gap/gap.c:2063
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:2031
+#: src/applications/gap/gap.c:2064
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2032
+#: src/applications/gap/gap.c:2065
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2033
+#: src/applications/gap/gap.c:2066
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2034
+#: src/applications/gap/gap.c:2067
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2035
+#: src/applications/gap/gap.c:2068
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2036
+#: src/applications/gap/gap.c:2069
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2037
+#: src/applications/gap/gap.c:2070
 #, fuzzy
 msgid "# gap duplicate requests that were re-tried"
 msgstr "# nhận được yêu cầu theo vết trace p2p"
 
-#: src/applications/gap/gap.c:2038
+#: src/applications/gap/gap.c:2071
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2039
+#: src/applications/gap/gap.c:2072
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2040
+#: src/applications/gap/gap.c:2073
 msgid "# gap spurious replies"
 msgstr ""
 
-#: src/applications/gap/gap.c:2041
+#: src/applications/gap/gap.c:2074
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2042
+#: src/applications/gap/gap.c:2075
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2043
+#: src/applications/gap/gap.c:2076
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2059
+#: src/applications/gap/gap.c:2077
+msgid "# gap rewards pending"
+msgstr ""
+
+#: src/applications/gap/gap.c:2094
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
@@ -1447,7 +1455,7 @@ msgstr ""
 "Nạp dịch vụ truyền tải không thành công; lỗ hổng không thể chắc chắn khả "
 "năng truyền tải.\n"
 
-#: src/applications/gap/gap.c:2090
+#: src/applications/gap/gap.c:2125
 #, fuzzy, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr "'%s' đăng ký trình điều khiển %d %d\n"
@@ -1725,7 +1733,7 @@ msgid "Query `%s' had no results.\n"
 msgstr "Câu hỏi '%s' không có kết quả.\n"
 
 #: src/applications/sqstore_mysql/mysql.c:1178
-#: src/applications/sqstore_sqlite/sqlite.c:1071
+#: src/applications/sqstore_sqlite/sqlite.c:1072
 #, fuzzy
 msgid "# bytes in datastore"
 msgstr "# byte nhận được do nhiễu đường truyền"
@@ -1755,7 +1763,7 @@ msgstr "Không chạy được SQLite.\n"
 msgid "sqlite datastore"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:1034
+#: src/applications/sqstore_sqlite/sqlite.c:1035
 #, fuzzy, c-format
 msgid ""
 "Configuration file must specify directory for storing FS data in section `%"
@@ -3469,7 +3477,7 @@ msgid "specifies after how many MS to time-out"
 msgstr "chỉ ra hết thời gian chờ sau bao nhiên MS"
 
 #: src/server/gnunet-transport-check.c:409 src/server/gnunet-update.c:55
-#: src/server/startup.c:450
+#: src/server/startup.c:455
 msgid "run as user LOGIN"
 msgstr "chạy dưới người dùng LOGIN"
 
@@ -3583,7 +3591,7 @@ msgstr ""
 msgid "Could not write PID to file `%s': %s.\n"
 msgstr "Không ghi được PID tới tập tin '%s': %s.\n"
 
-#: src/server/startup.c:443
+#: src/server/startup.c:448
 msgid ""
 "run in debug mode; gnunetd will not daemonize and error messages will be "
 "written to stderr instead of a logfile"
@@ -3591,30 +3599,30 @@ msgstr ""
 "chạy trong chế độ tìm sửa lỗi debug; gnunetd sẽ không tạo daemon và sẽ ghi "
 "thông báo lỗi ra stderr thay vì vào một tập tin bản ghi log"
 
-#: src/server/startup.c:456
+#: src/server/startup.c:461
 msgid "Starts the gnunetd daemon."
 msgstr "Chạy daemon gnunetd."
 
-#: src/server/startup.c:470
+#: src/server/startup.c:475
 #, fuzzy, c-format
 msgid "User `%s' not known, cannot change UID to it.\n"
 msgstr "Người dùng '%s' không rõ, không thay đổi được UID thành nó."
 
-#: src/server/startup.c:479
+#: src/server/startup.c:484
 #, fuzzy, c-format
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr "Không thay đổi được người dùng/nhóm thành '%s': %s"
 
-#: src/server/startup.c:580
+#: src/server/startup.c:585
 msgid "Invalid command-line arguments:\n"
 msgstr "Sai tham số dòng lệnh:\n"
 
-#: src/server/startup.c:583
+#: src/server/startup.c:588
 #, fuzzy, c-format
 msgid "Argument %d: `%s'\n"
 msgstr "Tham số %d: '%s'\n"
 
-#: src/server/startup.c:589
+#: src/server/startup.c:594
 msgid "Invalid command-line arguments.\n"
 msgstr "Sai tham số dòng lệnh.\n"
 
@@ -4250,6 +4258,27 @@ msgstr ""
 
 #: src/util/storage.c:684
 msgid "t"
+msgstr ""
+
+#: src/util/string.c:108
+#, fuzzy
+msgid "unknown"
+msgstr "Lỗi không rõ"
+
+#: src/util/string.c:111
+msgid "GiB"
+msgstr ""
+
+#: src/util/string.c:114
+msgid "MiB"
+msgstr ""
+
+#: src/util/string.c:117
+msgid "KiB"
+msgstr ""
+
+#: src/util/string.c:120
+msgid "Bytes"
 msgstr ""
 
 #: src/util/tcp_return.c:51
