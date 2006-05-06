@@ -10,7 +10,7 @@ export PATH="$PATH:/home/gnunet/bin"
 OPT="--user=gnunet"
 
 # test gnunet user access to binary
-su -p gnunet -- gnunetd --version 1>/dev/null 2>/dev/null
+su -p gnunet -c "gnunetd --version" 1>/dev/null 2>/dev/null
 test $? -eq 0 || exit 0
 
 
@@ -19,7 +19,7 @@ test $? -eq 0 || exit 0
 case "$1" in
 start)	log_begin_msg "Starting GNUnet daemon..."
         #start-stop-daemon --start --quiet --name gnunetd --startas "$EXEC" -- "$OPT"
-	su -p gnunet -- gnunetd "$OPT" 1>/dev/null 2>/dev/null
+	su -p gnunet -c "gnunetd \"$OPT\"" 1>/dev/null 2>/dev/null
         log_end_msg $?
 	;;
 stop)	log_begin_msg "Stopping GNUnet daemon..."
@@ -29,14 +29,14 @@ stop)	log_begin_msg "Stopping GNUnet daemon..."
 restart) log_begin_msg "Restarting GNUnet daemon..."
         start-stop-daemon --user gnunet --stop --retry 5 --quiet --name gnunetd
         #start-stop-daemon --start --quiet --pidfile /var/run/gnunetd.pid --name gnunetd --startas "$EXEC" -- "$OPT"
-	su -p gnunet -- gnunetd "$OPT" 1>/dev/null 2>/dev/null
+	su -p gnunet -c "gnunetd \"$OPT\"" 1>/dev/null 2>/dev/null
 	log_end_msg $?
         ;;
 status) log_begin_msg "GNUnet status..."
         #start-stop-daemon --start --quiet --pidfile /var/run/gnunetd.pid --name gnunetd --startas "$EXEC" -- "$OPT"
-	su -p gnunet -- gnunet-stats --version 1>/dev/null 2>/dev/null
+	su -p gnunet -c "gnunet-stats --version" 1>/dev/null 2>/dev/null
 	if test $? -eq 0 ;then
-    	    su -p gnunet -- gnunet-stats
+    	    su -p gnunet -c gnunet-stats
 	else
     	    log_end_msg $?
 	fi;
@@ -48,7 +48,7 @@ reload|force-reload) log_begin_msg "Reloading configuration files for GNUnet dae
 	# sleep
 	sleep 5
 	# start
-	su -p gnunet -- gnunetd "$OPT" 1>/dev/null 2>/dev/null
+	su -p gnunet -c "gnunetd \"$OPT\"" 1>/dev/null 2>/dev/null
 	# ...or hup if gnunetd supports	
         log_end_msg 0
         ;;
