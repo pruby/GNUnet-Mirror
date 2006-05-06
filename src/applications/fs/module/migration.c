@@ -64,6 +64,8 @@ static Stats_ServiceAPI * stats;
 
 static int stat_migration_count;
 
+static int stat_on_demand_migration_attempts;
+
 /**
  * Lock used to access content.
  */
@@ -137,6 +139,9 @@ activeMigrationCallback(const PeerIdentity * receiver,
       MUTEX_UNLOCK(&lock);
       return 0;
     }
+    if (stats != NULL)
+      stats->change(stat_on_demand_migration_attempts, 1); 
+
     FREE(content);
     content = enc;
   }
@@ -215,8 +220,10 @@ void initMigration(CoreAPIForApplication * capi,
   coreAPI->registerSendCallback(512,
 				&activeMigrationCallback);
   stats = capi->requestService("stats");
-  if (stats != NULL) 
+  if (stats != NULL) {
     stat_migration_count = stats->create(gettext_noop("# blocks migrated"));
+    stat_on_demand_migration_attempts = stats->create(gettext_noop("# on-demand block migration attempts"));
+  }
 
 }
 
