@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.0c"
+!define PRODUCT_VERSION "0.7.0d"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -120,6 +120,11 @@ SectionGroup "GNUnet" SEC_GNUNET
 	SectionEnd
 	
 	SectionGroup "Language Support" SEC_LANG
+		Section "French" SEC_LANG_FR
+			SectionIn 1 2 3 4
+		  SetOutPath "$INSTDIR\share\locale\fr\LC_MESSAGES"
+			File "C:\GNUnet\share\locale\fr\LC_MESSAGES\gnunet-gtk.mo" 
+		SectionEnd
 		Section "German" SEC_LANG_DE
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\de\LC_MESSAGES"
@@ -134,16 +139,19 @@ SectionGroup "GNUnet" SEC_GNUNET
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\libextractor.mo" 
 			File "C:\GNUnet\share\locale\rw\LC_MESSAGES\gnunet-gtk.mo" 
 		SectionEnd
+		Section "Swedish" SEC_LANG_SV
+			SectionIn 1 2 3 4
+		  SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
+			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
+			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\gnunet-gtk.mo" 
+			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\libextractor.mo" 
+		SectionEnd
 		Section "Vietnamese" SEC_LANG_VI
 			SectionIn 1 2 3 4
 		  SetOutPath "$INSTDIR\share\locale\vi\LC_MESSAGES"
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
 			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
-		SectionEnd
-		Section "Swedish" SEC_LANG_SV
-			SectionIn 1 2 3 4
-		  SetOutPath "$INSTDIR\share\locale\sv\LC_MESSAGES"
-			File "C:\GNUnet\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
+			File "C:\GNUnet\share\locale\vi\LC_MESSAGES\libextractor.mo" 
 		SectionEnd
 	SectionGroupEnd
 	
