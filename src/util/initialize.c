@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -121,7 +121,7 @@ void setProcessPrio() {
 #ifdef MINGW
       prio = ABOVE_NORMAL_PRIORITY_CLASS;
 #else
-    prio = -10;
+    prio = -5;
 #endif
     else if (strcmp(str, "BELOW NORMAL") == 0)
 #ifdef MINGW
@@ -133,7 +133,7 @@ void setProcessPrio() {
 #ifdef MINGW
       prio = HIGH_PRIORITY_CLASS;
 #else
-    prio = -20;
+    prio = -10;
 #endif
     else if (strcmp(str, "IDLE") == 0)
 #ifdef MINGW
@@ -163,7 +163,10 @@ void setProcessPrio() {
 #ifdef MINGW
     SetPriorityClass(GetCurrentProcess(), prio);
 #else
+    errno = 0;
     nice(prio);
+    if (errno != 0)
+      LOG_STRERROR(LOG_WARNING, "nice");
 #endif
     FREE(str);
   }
