@@ -274,11 +274,11 @@ menu "General settings" "GNUNETD"
 	depends on Meta::ADVANCED
 	help
 		At which priority should the GNUnet server run? If you don't want it
-		to interfere with other applications, set this to "BELOW NORMAL" or "IDLE".
-		Acceptable values are "NORMAL", "BELOW NORMAL", "ABOVE NORMAL", "HIGH",
-		"IDLE" and nice(1) increments (a numeric value between -20 and 19, keep
-		in mind that values smaller than 0 require root privileges).
-		Default is "NORMAL".
+		to interfere with other applications, set this to "BELOW NORMAL" 
+                or "IDLE".  Acceptable values are "NORMAL" (0), "BELOW NORMAL" (10), 
+                "ABOVE NORMAL" (-5), "HIGH" (-10), "IDLE" (19) and nice(1) increments 
+                (a numeric value between -20 and 19, keep in mind that values smaller 
+                than 0 require root privileges).  Default is "NORMAL".
 
 	config USER
 	string "GNUnet user"
