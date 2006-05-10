@@ -101,6 +101,7 @@ static int stat_memory_destinations;
 
 static int stat_pending_rewards;
 
+static int stat_response_count;
 
 /**
  * Topology service.
@@ -277,6 +278,8 @@ static void ageRTD(void * unused) {
     rprev = NULL;
     rpos = pos->responseList;
     while (rpos != NULL) {
+      if (stats != NULL)
+	stats->change(stat_response_count, rpos->responseCount / 2);
       rpos->responseCount = rpos->responseCount / 2;
       if (rpos->responseCount == 0) {	
 	if (rprev == NULL)
@@ -355,6 +358,8 @@ static void updateResponseData(PID_INDEX origin,
   while (rpos != NULL) {
     if (responder == rpos->responder) {
       rpos->responseCount++;
+      if (stats != NULL)
+	stats->change(stat_response_count, 1);
       MUTEX_UNLOCK(lock);
       return;
     }
@@ -363,6 +368,8 @@ static void updateResponseData(PID_INDEX origin,
   }
   rpos = MALLOC(sizeof(ResponseList));
   rpos->responseCount = 1;
+  if (stats != NULL)
+    stats->change(stat_response_count, 1);
   rpos->responder = responder;
   change_pid_rc(responder, 1);
   rpos->next = NULL;
@@ -442,9 +449,10 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
   QueryRecord * qr = cls;
   ReplyTrackData * pos;
   ResponseList * rp;
-  int ranking = 0;
+  unsigned int ranking = 0;
   int distance;
   PID_INDEX id;
+  unsigned int idx;
 
   id = intern_pid(peer);
   /* compute some basic ranking based on historical
@@ -471,14 +479,21 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
   }
   distance
     = distanceHashCode512(&qr->msg->queries[0],
-			  &peer->hashPubKey);
+			  &peer->hashPubKey) >> 10; /* change to value in [0:63] */
   if (distance <= 0)
     distance = 1;
-  ranking += 0xFFFF / (1 + weak_randomi(distance));
-  ranking += 1 + weak_randomi(0xFF); /* small random chance for everyone */
+  ranking += weak_randomi(1 + 0xFFFF * 10 / (1 + distance)); /* 0 to 20 "response equivalents" for proximity */
+  ranking += weak_randomi(0xFFFF); /* 2 "response equivalents" random chance for everyone */
   if (id == qr->noTarget)
     ranking = 0; /* no chance for blocked peers */
-  qr->rankings[getIndex(id)] = ranking; 
+  idx = getIndex(id);
+#if DEBUG_GAP 
+  LOG(LOG_DEBUG,
+      "Ranking for %u: %u\n",
+      idx,
+      ranking);
+#endif
+  qr->rankings[idx] = ranking; 
   change_pid_rc(id, -1);
 }
 
@@ -2075,6 +2090,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
     stat_memory_seen                = stats->create(gettext_noop("# gap memory used for tracking seen content"));
     stat_memory_destinations        = stats->create(gettext_noop("# gap memory used for tracking routing destinations"));
     stat_pending_rewards            = stats->create(gettext_noop("# gap rewards pending"));
+    stat_response_count             = stats->create(gettext_noop("# gap response weights"));
   }
   init_pid_table(stats);
   GROW(rewards,
