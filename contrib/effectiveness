@@ -1,0 +1,5 @@
+#!/bin/sh
+FWD=`gnunet-stats | grep gap | grep forwarded | awk '{ print $9 }'`
+SUC=`gnunet-stats | grep gap | grep success | awk '{ print $7 }'`
+RAT=`calc $FWD / $SUC`
+echo "GNUnet routing effectiveness: $RAT"
