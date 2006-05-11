@@ -501,9 +501,9 @@ void encWeakHash(unsigned long long h, char e[14]) {
  * @returns a positive number which is a measure for
  *  hashcode proximity.
  */
-int distanceHashCode512(const HashCode512 * a,
-			const HashCode512 * b) {
-  int x = (a->bits[1] - b->bits[1])>>16;
+unsigned int distanceHashCode512(const HashCode512 * a,
+				 const HashCode512 * b) {
+  unsigned int x = (a->bits[1] - b->bits[1])>>16;
   return ((x*x)>>16);
 }
 

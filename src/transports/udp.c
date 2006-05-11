@@ -247,7 +247,21 @@ static void * listenAndDistribute() {
     }
     if (pending <= 0) {
       LOG(LOG_WARNING,
-	  _("UDP: select returned, but ioctl reports 0 bytes available!\n"));
+	  _("UDP: select returned, but ioctl reports %d bytes available!\n"),
+	  pending);
+      if (pending == 0) {
+      	/* maybe empty UDP packet was sent (see report on bug-gnunet,
+	   5/11/6; read 0 bytes from UDP just to kill potential empty packet! */
+	memset(&incoming,
+	       0, 
+	       sizeof(struct sockaddr_in));
+	RECVFROM(udp_sock,
+		 NULL,
+		 0,
+		 0,
+		 (struct sockaddr * )&incoming,
+		 &addrlen);	
+      }
       continue;
     }   
     if (pending >= 65536) {

@@ -1469,9 +1469,10 @@ void encWeakHash(unsigned long long h, char e[14]);
  * a.a or a.e (they're used elsewhere), and
  * be somewhat consistent. And of course, the
  * result should be a positive number.
+ * @return number between 0 and 65536
  */
-int distanceHashCode512(const HashCode512 * a,
-			const HashCode512 * b);
+unsigned int distanceHashCode512(const HashCode512 * a,
+				 const HashCode512 * b);
 
 /**
  * compare two hashcodes.
