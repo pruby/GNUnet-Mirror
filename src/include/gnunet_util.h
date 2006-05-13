@@ -2529,7 +2529,9 @@ int isOSAutostartCapable(void);
  * @param groupname name of the group to use
  * @return 0 on success
  */
-int autostartService(int doAutoStart, char *username, char *groupname);
+int autostartService(int doAutoStart, 
+		     const char *username, 
+		     const char *groupname);
 
 /**
  * @brief Checks if we can add an user for the GNUnet service
@@ -2551,12 +2553,13 @@ int isOSGroupAddCapable(void);
  * @param name the name of the new user
  * @return 0 on success
  */
-int createGroupUser(char *group_name, char *user_name);
+int createGroupUser(const char *group_name, 
+		    const char *user_name);
 
 /**
  * @brief Format a Windows specific error code
  */
-char *winErrorStr(char *prefix, int dwErr);
+char *winErrorStr(const char *prefix, int dwErr);
 
 /**
  * Checks if gnunetd is running

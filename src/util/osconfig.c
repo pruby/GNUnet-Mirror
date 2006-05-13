@@ -114,7 +114,9 @@ int isOSAutostartCapable() {
  * @param groupname name of the group to use
  * @return 0 on success
  */
-int autostartService(int doAutoStart, char *username, char *groupname) {
+int autostartService(int doAutoStart, 
+		     const char * username, 
+		     const char * groupname) {
 #ifdef WINDOWS
   if (doAutoStart)
     {
@@ -328,10 +330,12 @@ int isOSGroupAddCapable() {
  * @param name the name of the new user
  * @return 0 on success
  */
-int createGroupUser(char *group_name, char *user_name) {
+int createGroupUser(const char *group_name, 
+		    const char *user_name) {
 	int haveGroup;
 
-	if (!user_name || !strlen(user_name))
+	if ( (user_name == NULL) ||
+	     (0 == strlen(user_name)) ) 
 		return 0;
 	
 #ifdef WINDOWS
@@ -369,7 +373,7 @@ int createGroupUser(char *group_name, char *user_name) {
 	return 0;
 }
 
-char *winErrorStr(char *prefix, int dwErr)
+char *winErrorStr(const char *prefix, int dwErr)
 {
 #ifdef WINDOWS
 	char *err, *ret;
