@@ -426,7 +426,7 @@ static int parseOptions(int argc,
 			   EXTRACTOR_UNKNOWN,
 			   tmp);
 	FREE(tmp);
-	printf(("Unknown meta-data type in meta-data option `%s'.  Using unknown.\n"),
+	printf(_("Unknown metadata type in metadata option `%s'.  Using metadata type `unknown' instead.\n"),
 	       GNoptarg);
       }
       break;

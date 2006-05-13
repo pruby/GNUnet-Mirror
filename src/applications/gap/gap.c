@@ -761,9 +761,9 @@ static void useContentLater(void * data) {
  *  which in turn wraps the DBlock (including
  *  the type ID).
  */
-static void queueReply(const PeerIdentity * sender,
-		       const HashCode512 * primaryKey,
-		       const DataContainer * data) {
+static int queueReply(const PeerIdentity * sender,
+		      const HashCode512 * primaryKey,
+		      const DataContainer * data) {
   P2P_gap_reply_MESSAGE * pmsg;
   IndirectionTableEntry * ite;
   unsigned int size;
@@ -792,21 +792,21 @@ static void queueReply(const PeerIdentity * sender,
     LOG(LOG_DEBUG,
 	"GAP: Dropping reply, routing table has no query associated with it (anymore)\n");
 #endif
-    return; /* we don't care for the reply (anymore) */
+    return NO; /* we don't care for the reply (anymore) */
   }
   if (YES == ite->successful_local_lookup_in_delay_loop) {
 #if DEBUG_GAP
     LOG(LOG_DEBUG,
 	"GAP: Dropping reply, found reply locally during delay\n");
 #endif
-    return; /* wow, really bad concurrent DB lookup and processing for
-	       the same query.  Well, at least we should not also
-	       queue the delayed reply twice... */
+    return NO; /* wow, really bad concurrent DB lookup and processing for
+		  the same query.  Well, at least we should not also
+		  queue the delayed reply twice... */
   }
   size = sizeof(P2P_gap_reply_MESSAGE) + ntohl(data->size) - sizeof(DataContainer);
   if (size >= MAX_BUFFER_SIZE) {
     BREAK();
-    return;
+    return SYSERR;
   }
   ite->successful_local_lookup_in_delay_loop = YES;
   pmsg = MALLOC(size);
@@ -825,6 +825,7 @@ static void queueReply(const PeerIdentity * sender,
 	     weak_randomi(TTL_DECREMENT),
 	     0,
 	     pmsg);
+  return YES;
 }
 
 static void addReward(const HashCode512 * query,
@@ -1468,8 +1469,6 @@ static int execQuery(const PeerIdentity * sender,
   }
 
   if (cls.valueCount > 0) {
-    if (stats != NULL)
-      stats->change(stat_routing_local_results, 1);
     perm = permute(WEAK, cls.valueCount);
     max = getNetworkLoadDown();
     if (max > 100)
@@ -1483,12 +1482,13 @@ static int execQuery(const PeerIdentity * sender,
 				what we have */
 
     for (i=0;i<cls.valueCount;i++) {
-      if (i < max) {
-	if (sender != NULL)
-	  queueReply(sender,
-		     &query->queries[0],
-		     cls.values[perm[i]]);
-      }
+      if ( (i < max) &&
+	   (sender != NULL) &&
+	   (YES == queueReply(sender,
+			      &query->queries[0],
+			      cls.values[perm[i]])) &&
+	   (stats != NULL) )
+	stats->change(stat_routing_local_results, 1);      
       /* even for local results, always do 'put'
 	 (at least to give back results to local client &
 	 to update priority; but only do this for
