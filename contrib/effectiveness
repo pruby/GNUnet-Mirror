@@ -1,10 +1,12 @@
 #!/bin/sh
+CALC=calc
+calc 1 + 1 &> /dev/null || CALC=expr
 FWD=`gnunet-stats | grep gap | grep forwarded | awk '{ print $9 }'`
 SUC=`gnunet-stats | grep gap | grep success | awk '{ print $7 }'`
 LOC=`gnunet-stats | grep gap | grep local | awk '{ print $8 }'`
 UP=`gnunet-stats | grep Uptime | awk '{ print $4 }'`
-RAT=`calc $FWD / $SUC`
-RRAT=`calc $FWD / \( $SUC - $LOC \)`
+RAT=`$CALC $FWD / $SUC`
+RRAT=`$CALC $FWD / \( $SUC - $LOC \)`
 echo "Uptime                             : ${UP}s"
 echo "GNUnet total  routing effectiveness: $RAT = $FWD / $SUC"
 echo "GNUnet remote routing effectiveness: $RRAT = $FWD / ($SUC - $LOC)"
