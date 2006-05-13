@@ -213,6 +213,14 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
   int len;
   PeerIdentity peer;
 
+  stats[0]++; /* one more seen */
+  if (NO == transport->isAvailable(ntohs(helo->protocol))) {
+    LOG(LOG_DEBUG,
+	_(" Transport %d is not being tested\n"),
+	ntohs(helo->protocol));
+    return;
+  }
+  stats[1]++; /* one more with transport 'available' */
   if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
 			      "VERBOSE",
 			      "YES")) {
@@ -227,14 +235,6 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
   helo = MALLOC(ntohs(xhelo->header.size));
   memcpy(helo, xhelo, ntohs(xhelo->header.size));
 
-  stats[0]++; /* one more seen */
-  if (NO == transport->isAvailable(ntohs(helo->protocol))) {
-    fprintf(stderr,
-	    _(" Transport %d not available\n"),
-	    ntohs(helo->protocol));
-    FREE(helo);
-    return;
-  }
   myHelo = transport->createhello(ntohs(xhelo->protocol));
   if (myHelo == NULL) {
     FREE(helo);
@@ -244,8 +244,6 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
 			      "VERBOSE",
 			      "YES"))
     fprintf(stderr, ".");
-
-  stats[1]++; /* one more with transport 'available' */
   tsession = NULL;
   peer = helo->senderIdentity;
   tsession = transport->connect(helo);
