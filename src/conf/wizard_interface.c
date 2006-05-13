@@ -67,7 +67,7 @@ create_assi_step1 (void)
   gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview11), GTK_WRAP_WORD);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (textview11), FALSE);
   gtk_text_view_set_indent (GTK_TEXT_VIEW (textview11), 2);
-  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview11)), _("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions in order to configure GNUnet.\n\nPlease visit our homepage at\n\thttp://www.gnunet.org\nand join our community at\n\thttp://www.gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"), -1);
+  gtk_text_buffer_set_text (gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview11)), _("Welcome to GNUnet!\n\nThis assistant will ask you a few basic questions in order to configure GNUnet.\n\nPlease visit our homepage at\n\thttp://gnunet.org\nand join our community at\n\thttps://gnunet.org/drupal/\n\nHave a lot of fun,\n\nthe GNUnet team"), -1);
 
   hseparator2 = gtk_hseparator_new ();
   gtk_widget_show (hseparator2);
