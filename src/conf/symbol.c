@@ -540,8 +540,8 @@ bool sym_string_within_range(struct symbol *sym, const char *str)
 	}
 }
 
-bool sym_set_string_value(struct symbol *sym, const char *newval)
-{
+bool sym_set_string_value(struct symbol *sym, 
+			  const char * newval) {
 	const char *oldval;
 	char *val;
 	int size;

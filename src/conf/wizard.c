@@ -386,6 +386,8 @@ int wizard_main (int argc, char **argv)
 
   if (doOpenEnhConfigurator)
     gconf_main(argc, argv);
+  FREENONNULL(user_name);
+  FREENONNULL(group_name);
 
   return 0;
 }

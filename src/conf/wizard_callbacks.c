@@ -44,7 +44,8 @@
 extern GtkWidget *curwnd;
 extern int doOpenEnhConfigurator;
 extern int doAutoStart;
-extern char *user_name, *group_name;
+extern char * user_name;
+extern char * group_name;
 static int doUpdate = YES;
 
 GtkWidget *msgSave;
@@ -258,8 +259,13 @@ on_updateFailedOK_clicked (GtkButton * button, gpointer user_data)
 void
 on_entIP_changed (GtkEditable * editable, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("IP", "NETWORK", 0);
-	sym_set_string_value(sym, gtk_editable_get_chars(editable, 0, -1));
+  struct symbol *sym;
+  gchar * ret;
+  
+  sym = sym_lookup("IP", "NETWORK", 0);
+  ret = gtk_editable_get_chars(editable, 0, -1);
+  sym_set_string_value(sym, ret);
+  g_free(ret);
 }
 
 
@@ -313,55 +319,77 @@ on_chkFW_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 void
 on_entUp_changed (GtkEditable * editable, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("MAXNETUPBPSTOTAL", "LOAD", 0);
-	sym_set_string_value(sym, gtk_editable_get_chars(editable, 0, -1));
+  gchar * ret;
+  struct symbol *sym;
+
+  sym = sym_lookup("MAXNETUPBPSTOTAL", "LOAD", 0);
+  ret = gtk_editable_get_chars(editable, 0, -1);
+  sym_set_string_value(sym, ret);
+  g_free(ret);
 }
 
 
 void
 on_entDown_changed (GtkEditable * editable, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("MAXNETDOWNBPSTOTAL", "LOAD", 0);
-	sym_set_string_value(sym, gtk_editable_get_chars(editable, 0, -1));
+  struct symbol *sym;
+  gchar * ret;
+
+  sym = sym_lookup("MAXNETDOWNBPSTOTAL", "LOAD", 0);
+  ret = gtk_editable_get_chars(editable, 0, -1);
+  sym_set_string_value(sym, ret);
+  g_free(ret);
 }
 
 
 void
 on_radGNUnet_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("BASICLIMITING", "LOAD", 0);
-	sym_set_tristate_value(sym,	gtk_toggle_button_get_active(togglebutton) ? yes : no);
+  struct symbol *sym = sym_lookup("BASICLIMITING", "LOAD", 0);
+  sym_set_tristate_value(sym,	
+			 gtk_toggle_button_get_active(togglebutton) ? yes : no);
 }
 
 
 void
 on_radShare_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("BASICLIMITING", "LOAD", 0);
-	sym_set_tristate_value(sym,	gtk_toggle_button_get_active(togglebutton) ? no : yes);
+  struct symbol *sym = sym_lookup("BASICLIMITING", "LOAD", 0);
+  sym_set_tristate_value(sym,	
+			 gtk_toggle_button_get_active(togglebutton) ? no : yes);
 }
 
 
 void
 on_entCPU_changed (GtkEditable * editable, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("MAXCPULOAD", "LOAD", 0);
-	sym_set_string_value(sym, gtk_editable_get_chars(editable, 0, -1));
+  struct symbol *sym;
+  gchar * ret;
+
+  sym = sym_lookup("MAXCPULOAD", "LOAD", 0);
+  ret = gtk_editable_get_chars(editable, 0, -1);
+  sym_set_string_value(sym, ret);
+  g_free(ret);
 }
 
 void
 on_chkMigr_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("ACTIVEMIGRATION", "FS", 0);
-	sym_set_tristate_value(sym,
-		gtk_toggle_button_get_active(togglebutton) ? yes : no);
+  struct symbol *sym = sym_lookup("ACTIVEMIGRATION", "FS", 0);
+  sym_set_tristate_value(sym,
+			 gtk_toggle_button_get_active(togglebutton) ? yes : no);
 }
 
 void
 on_entQuota_changed (GtkEditable * editable, gpointer user_data)
 {
-	struct symbol *sym = sym_lookup("QUOTA", "FS", 0);
-	sym_set_string_value(sym, gtk_editable_get_chars(editable, 0, -1));
+  struct symbol *sym;
+  gchar * ret;
+
+  sym = sym_lookup("QUOTA", "FS", 0);
+  ret = gtk_editable_get_chars(editable, 0, -1);
+  sym_set_string_value(sym, ret);
+  g_free(ret);
 }
 
 
@@ -370,7 +398,7 @@ on_chkStart_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
   struct symbol *sym = sym_lookup("AUTOSTART", "GNUNETD", 0);
 
-	doAutoStart = gtk_toggle_button_get_active(togglebutton);
+  doAutoStart = gtk_toggle_button_get_active(togglebutton);
   sym_set_tristate_value(sym, doAutoStart ? yes : no);
 }
 
@@ -378,7 +406,7 @@ on_chkStart_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 void
 on_chkEnh_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 {
-	doOpenEnhConfigurator = gtk_toggle_button_get_active(togglebutton);
+  doOpenEnhConfigurator = gtk_toggle_button_get_active(togglebutton);
 }
 
 void
@@ -390,39 +418,44 @@ on_chkUpdate_toggled (GtkToggleButton * togglebutton, gpointer user_data)
 void
 on_step4_back_clicked (GtkButton * button, gpointer user_data)
 {
-	quit = 0;
-	gtk_widget_destroy(curwnd);
-	quit = 1;
-	
-	curwnd = create_assi_step3();
-	load_step3();
-	gtk_widget_show(curwnd);
+  quit = 0;
+  gtk_widget_destroy(curwnd);
+  quit = 1;
+  
+  curwnd = create_assi_step3();
+  load_step3();
+  gtk_widget_show(curwnd);
 }
 
 void
 on_step4_next_clicked (GtkButton * button, gpointer user_data)
 {
-	quit = 0;
-	gtk_widget_destroy(curwnd);
-	quit = 1;
-	
-	curwnd = create_assi_step5();
-	load_step5();
-	gtk_widget_show(curwnd);
+  quit = 0;
+  gtk_widget_destroy(curwnd);
+  quit = 1;
+  
+  curwnd = create_assi_step5();
+  load_step5();
+  gtk_widget_show(curwnd);
 }
 
 void
 on_entUser_changed (GtkEditable * editable, gpointer user_data)
 {
   struct symbol *sym;
-
-	if (user_name)
-		free(user_name);
-	
-	user_name = strdup(gtk_editable_get_chars(editable, 0, -1));
+  gchar * ret;
 
   sym = sym_lookup("USER", "GNUNETD", 0);
-  sym_set_string_value(sym, user_name);
+  ret = gtk_editable_get_chars(editable, 0, -1);
+  GNUNET_ASSERT(ret != NULL);
+  sym_set_string_value(sym, ret);
+  FREENONNULL(user_name);
+  if (strlen(ret) != 0)
+    user_name = STRDUP(ret);
+  else
+    user_name = NULL;
+  g_free(ret);
+  
 }
 
 
@@ -430,12 +463,16 @@ void
 on_entGroup_changed (GtkEditable * editable, gpointer user_data)
 {
   struct symbol *sym;
+  gchar * ret;
 
-	if (group_name)
-		free(group_name);
-	
-	group_name = strdup(gtk_editable_get_chars(editable, 0, -1));
-
+  FREENONNULL(group_name);
+  ret = gtk_editable_get_chars(editable, 0, -1);
+  GNUNET_ASSERT(ret != NULL);
+  sym_set_string_value(sym, ret);
+  if (strlen(ret) != 0)
+    group_name = STRDUP(ret);
+  else
+    group_name = NULL;
   sym = sym_lookup("GROUP", "GNUNETD", 0);
-  sym_set_string_value(sym, group_name);
+  g_free(ret);
 }
