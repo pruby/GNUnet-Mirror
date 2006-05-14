@@ -218,26 +218,11 @@ static void insert_nic(const char *name,
 		       void * cls) {
   struct insert_nic_cls * inc = cls;
   GtkWidget * cmbNIC = inc->cmbNIC;
-  GtkTreeModel *model;
-  GtkTreeIter cur;
-  GtkTreeIter last;
 
   gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
   defaultNIC = wiz_is_nic_default(name, defaultNIC);
-
-  /* Make default selection */
-  if (defaultNIC) {
-    model = gtk_combo_box_get_model(GTK_COMBO_BOX(cmbNIC));
-    gtk_tree_model_get_iter_first(model, &cur);
-    last = cur;
-    while(gtk_tree_model_iter_next(model, &cur)) {
-      last = cur;
-    }
-    
-    gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cmbNIC), &last);
-    on_cmbNIC_changed(GTK_COMBO_BOX(cmbNIC), NULL);
-  }
-  inc->nic_item_count++;
+  if (defaultNIC) 
+    gtk_combo_box_set_active(GTK_COMBO_BOX(cmbNIC), inc->nic_item_count);
 }
 
 void load_step2(GtkButton * button,
@@ -246,19 +231,25 @@ void load_step2(GtkButton * button,
   GtkWidget * entIP;
   GtkWidget * chkFW;
   GtkTreeIter iter;
-  GtkTreeModel *model;
+  GtkListStore *model;
   char *nic;
   struct insert_nic_cls cls;
+  const char * val;
 
   destroyCurrentWindow();
   curwnd = get_xml("assi_step2");	
   cls.cmbNIC = glade_xml_get_widget(mainXML, "cmbNIC");
   GNUNET_ASSERT(cls.cmbNIC != NULL);
   cls.nic_item_count = 0;
-  entIP = glade_xml_get_widget(mainXML, "entIP");
-  
+  model = gtk_list_store_new(1, G_TYPE_STRING);
+  gtk_combo_box_set_model(GTK_COMBO_BOX(cls.cmbNIC),
+			  GTK_TREE_MODEL(model));
+  gtk_combo_box_entry_set_text_column(GTK_COMBO_BOX_ENTRY(cls.cmbNIC),
+				      0);
+
   sym = sym_find("INTERFACE", "NETWORK");
   if (sym != NULL) {
+    
     enumNetworkIfs(&insert_nic, &cls);
     
     if (cls.nic_item_count != 0) {
@@ -270,9 +261,8 @@ void load_step2(GtkButton * button,
       if (!nic || strlen(nic) == 0)
 	nic = "eth0";
       gtk_combo_box_append_text(GTK_COMBO_BOX(cls.cmbNIC), nic);
-      
-      model = gtk_combo_box_get_model(GTK_COMBO_BOX(cls.cmbNIC));  		
-      gtk_tree_model_get_iter_first(model, &iter);
+      gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model), 
+				    &iter);
       gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cls.cmbNIC), &iter);
       on_cmbNIC_changed(GTK_COMBO_BOX(cls.cmbNIC), NULL);			
     }
@@ -280,12 +270,17 @@ void load_step2(GtkButton * button,
     gtk_widget_set_usize(cls.cmbNIC, 10, -1);
   }
   
+  entIP = glade_xml_get_widget(mainXML, "entIP");
   sym = sym_find("IP", "NETWORK");
   if (sym != NULL) {
     sym_calc_value_ext(sym, 1);
-    gtk_entry_set_text(GTK_ENTRY(entIP), sym_get_string_value(sym));
+    val = sym_get_string_value(sym);
+    if (val == NULL)
+      val = "";
+    gtk_entry_set_text(GTK_ENTRY(entIP), val);
   }
   
+  chkFW = glade_xml_get_widget(mainXML, "chkFW");
   sym = sym_find("LIMITED", "NAT");
   if (sym != NULL) {
     sym_calc_value_ext(sym, 1);
@@ -303,6 +298,7 @@ void load_step3(GtkButton * button,
   GtkWidget * radGNUnet;
   GtkWidget * radShare;
   GtkWidget * entCPU;
+  const char * val;
   
   destroyCurrentWindow();
   curwnd = get_xml("assi_step3");
@@ -315,12 +311,18 @@ void load_step3(GtkButton * button,
   sym = sym_find("MAXNETUPBPSTOTAL", "LOAD");
   if (sym) {
     sym_calc_value_ext(sym, 1);
-    gtk_entry_set_text(GTK_ENTRY(entUp), sym_get_string_value(sym));
+    val = sym_get_string_value(sym);
+    if (val == NULL)
+      val = "";
+    gtk_entry_set_text(GTK_ENTRY(entUp), val);
   }
   sym = sym_find("MAXNETDOWNBPSTOTAL", "LOAD");
   if (sym) {
     sym_calc_value_ext(sym, 1);
-    gtk_entry_set_text(GTK_ENTRY(entDown), sym_get_string_value(sym));
+    val = sym_get_string_value(sym);
+    if (val == NULL)
+      val = "";
+    gtk_entry_set_text(GTK_ENTRY(entDown), val);
   }
   sym = sym_find("BASICLIMITING", "LOAD");
   if (sym) {
@@ -333,7 +335,10 @@ void load_step3(GtkButton * button,
   sym = sym_find("MAXCPULOAD", "LOAD");
   if (sym) {
     sym_calc_value_ext(sym, 1);
-    gtk_entry_set_text(GTK_ENTRY(entCPU), sym_get_string_value(sym));
+    val = sym_get_string_value(sym);
+    if (val == NULL)
+      val = "";
+    gtk_entry_set_text(GTK_ENTRY(entCPU), val);
   }
   gtk_widget_show(curwnd);
 }
@@ -409,9 +414,9 @@ void load_step4(GtkButton * button,
     group_name = STRDUP(gname);
 #endif
 
-  if(user_name)
+  if (user_name != NULL)
     gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
-  if(group_name)
+  if (group_name != NULL)
     gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
   if(isOSUserAddCapable())
     gtk_widget_set_sensitive(entUser, TRUE);
@@ -432,6 +437,7 @@ void load_step5(GtkButton * button,
   GtkWidget * entQuota;
   GtkWidget * chkEnh;
   GtkWidget * chkStart;
+  const char * val;
   
   destroyCurrentWindow();
   curwnd = get_xml("assi_step5");
@@ -443,7 +449,10 @@ void load_step5(GtkButton * button,
   sym = sym_find("QUOTA", "FS");
   if (sym) {
     sym_calc_value_ext(sym, 1);
-    gtk_entry_set_text(GTK_ENTRY(entQuota), sym_get_string_value(sym));
+    val = sym_get_string_value(sym);
+    if (val == NULL)
+      val = "";
+    gtk_entry_set_text(GTK_ENTRY(entQuota), val);
   }
   
   sym = sym_find("ACTIVEMIGRATION", "FS");
@@ -468,8 +477,8 @@ void load_step5(GtkButton * button,
   gtk_widget_show(curwnd);
 }
 
-void on_saveFailedOK_clicked (GtkButton * button, 
-			      gpointer user_data) {
+void do_destroy_widget(GtkButton * button,
+		       gpointer user_data) {
   GtkWidget * msgSaveFailed = user_data;
   gtk_widget_destroy(msgSaveFailed);
 }
@@ -735,7 +744,6 @@ int gtk_wizard_main(int argc,
 		    void * lib) {
   struct symbol * sym;
   char * filename;
-  GladeXML * mainXML;
 	
   library = lib;
   gtk_init(&argc, &argv); 
