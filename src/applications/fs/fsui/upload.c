@@ -184,6 +184,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
 			    NULL,
 			    uri);
       if (ret == OK) {
+	GNUNET_ASSERT(NULL != *uri);
 	event.type = FSUI_upload_complete;
 	event.data.UploadComplete.total = utc->main_total;
 	event.data.UploadComplete.completed = utc->main_completed;
@@ -237,38 +238,46 @@ static int dirEntryCallback(const char * filename,
   utc->filename = fn;
 
   if (NO == isDirectory(fn)) {
-    ECRS_uploadFile(fn,
-		    utc->doIndex,
-		    utc->anonymityLevel,
-		    utc->priority,
-		    utc->expiration,
-		    (ECRS_UploadProgressCallback) &progressCallback,
-		    utc,
-		    NULL,
-		    NULL,
-		    &uri);
-    event.type = FSUI_upload_complete;
-    event.data.UploadComplete.total = utc->main_total;
-    event.data.UploadComplete.completed = utc->main_completed;
-    event.data.UploadComplete.filename = utc->filename;
-    event.data.UploadComplete.uri = uri;
-    if (OK == getFileSize(fn, &len))
-      utc->main_completed += len;
-    event.data.UploadComplete.eta
-      = (cron_t) (utc->start_time +
-		  (((double)(cronTime(NULL)
-			     - utc->start_time/(double)(utc->main_completed))))
-		  * (double)utc->main_total);
-    event.data.UploadComplete.start_time = utc->start_time;
-    event.data.UploadComplete.is_recursive = YES;
-    event.data.UploadComplete.main_filename = utc->main_filename;
-    utc->ctx->ecb(utc->ctx->ecbClosure,
-		  &event);	
-    meta = ECRS_createMetaData();
-    ECRS_extractMetaData(meta,
-			 fn,
-			 utc->extractors);
-    ret = OK;
+    ret = ECRS_uploadFile(fn,
+			  utc->doIndex,
+			  utc->anonymityLevel,
+			  utc->priority,
+			  utc->expiration,
+			  (ECRS_UploadProgressCallback) &progressCallback,
+			  utc,
+			  NULL,
+			  NULL,
+			  &uri);
+    if (ret == OK) {
+      GNUNET_ASSERT(uri != NULL);
+      event.type = FSUI_upload_complete;
+      event.data.UploadComplete.total = utc->main_total;
+      event.data.UploadComplete.completed = utc->main_completed;
+      event.data.UploadComplete.filename = utc->filename;
+      event.data.UploadComplete.uri = uri;
+      if (OK == getFileSize(fn, &len))
+	utc->main_completed += len;
+      event.data.UploadComplete.eta
+	= (cron_t) (utc->start_time +
+		    (((double)(cronTime(NULL)
+			       - utc->start_time/(double)(utc->main_completed))))
+		    * (double)utc->main_total);
+      event.data.UploadComplete.start_time = utc->start_time;
+      event.data.UploadComplete.is_recursive = YES;
+      event.data.UploadComplete.main_filename = utc->main_filename;
+      utc->ctx->ecb(utc->ctx->ecbClosure,
+		    &event);	
+      meta = ECRS_createMetaData();
+      ECRS_extractMetaData(meta,
+			   fn,
+			   utc->extractors);
+    } else {
+      event.type = FSUI_upload_error;
+      event.data.message = _("Upload failed.");
+      utc->ctx->ecb(utc->ctx->ecbClosure,
+		    &event);	
+      meta = NULL;
+    }
   } else {
     DirTrack current;
     DirTrack * prev;
