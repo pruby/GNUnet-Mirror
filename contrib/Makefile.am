@@ -6,7 +6,13 @@ pkgdata_DATA = \
  config-client.in \
  config-daemon.in
 
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) gnunet-logo-color.png $(DESTDIR)$(pkgdatadir)
+	@$(NORMAL_INSTALL)
+
 EXTRA_DIST = \
+ gnunet-logo-color.png \
  hostlist.cgi \
  hostlist.php \
  gnunet-download-manager.scm \
