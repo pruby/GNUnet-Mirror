@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -17,17 +17,32 @@
      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
      Boston, MA 02111-1307, USA.
 */
+#ifndef GLADE_SUPPORT_H
+#define GLADE_SUPPORT_H
 
 
+#include <gtk/gtk.h>
+#include <gtk/gtktext.h>
+#include <glade/glade.h>
+
+#define mainXML getMainXML()
+
+GladeXML * getMainXML(void);
+
+void destroyMainXML(void);
+
+void setLibrary(void * lib);
+
+GtkWidget * get_xml(const char * dialog_name);
+ 
+GladeXML * load_xml(const char * dialog_name);
+ 
 /**
- * @file conf/gconf.h
- * @brief GNUnet Setup
- * @author Nils Durner
+ * Helper function to just show a simple dialog
+ * that requires no initialization.
  */
+void showDialog(const char * name);
 
-#ifndef GNUNET_SETUP_GCONF_H
-#define GNUNET_SETUP_GCONF_H
-
-int gconf_main(int argc, char **argv, void * lib);
+GtkWidget * lookup_widget(const char * name);
 
 #endif

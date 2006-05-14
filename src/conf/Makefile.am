@@ -36,7 +36,6 @@ BUILT_SOURCES = \
 
 EXTRA_DIST = \
  wizard.glade \
- gconf.glade \
  images.c \
  lex.zconf.c \
  lkc_proto.h \
@@ -45,7 +44,6 @@ EXTRA_DIST = \
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) gconf.glade $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) wizard.glade $(DESTDIR)$(pkgdatadir)
 	@$(NORMAL_INSTALL)
 
@@ -103,9 +101,8 @@ libgnunetsetup_curses_la_LIBADD = \
  libgnunetsetup.la
 
 libgnunetsetup_gtk_la_SOURCES = \
- gconf_support.h \
- gconf_support.c \
  gconf.c gconf.h \
+ glade_support.h glade_support.c \
  wizard_gtk.c wizard_gtk.h
 
 libgnunetsetup_gtk_la_LDFLAGS = \

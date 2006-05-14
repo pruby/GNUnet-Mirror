@@ -27,9 +27,7 @@
 
 #include "gnunet_util.h"
 #include "platform.h"
-#include <gtk/gtk.h>
-#include <gtk/gtktext.h>
-#include <glade/glade.h>
+#include "glade_support.h"
 
 #ifndef MINGW
 #include <grp.h>
@@ -44,19 +42,9 @@
 #include "confdata.h"
 
 /**
- * Handle to the dynamic library (which contains this code)
- */
-static void * library;
-
-/**
  * Current open window. 
  */
-static GtkWidget *curwnd;
-
-/**
- * Current glade handle.
- */
-static GladeXML * mainXML;
+static GtkWidget * curwnd;
 
 static int doOpenEnhConfigurator = 0;
 
@@ -82,8 +70,7 @@ static void destroyCurrentWindow() {
   quit = 0;
   gtk_widget_destroy(curwnd);
   curwnd = NULL;
-  g_object_unref(mainXML);
-  mainXML = NULL;
+  destroyMainXML();
   quit = 1;
 }
 
@@ -94,82 +81,6 @@ void on_assi_destroy (GtkObject * object,
     gtk_main_quit();
 }
 
-static char * get_glade_filename() {
-  char * gladeFile;
-
-#ifdef MINGW
-  gladeFile = MALLOC(_MAX_PATH + 1);
-  plibc_conv_to_win_path(DATADIR"/wizard.glade",
-			 gladeFile);
-#else
-  gladeFile = STRDUP(DATADIR"/wizard.glade");
-#endif
-  return gladeFile;
-}
-
-static void connector(const gchar *handler_name,
-		      GObject *object,
-		      const gchar *signal_name,
-		      const gchar *signal_data,
-		      GObject *connect_object,
-		      gboolean after,
-		      gpointer user_data) {
-  GladeXML * xml = user_data;
-  void * method;
-
-  method = trybindDynamicMethod(library,
-				"",
-				handler_name);
-  if (method == NULL) {
-    LOG(LOG_DEBUG,
-	_("Failed to find handler for `%s'\n"),
-	handler_name);
-    return;
-  }
-  glade_xml_signal_connect(xml,
-			   handler_name,
-			   (GCallback) method);
-}
-
-static GtkWidget * get_xml(const char * dialog_name) {
-  char * gladeFile;
-
-  gladeFile = get_glade_filename();
-  mainXML = glade_xml_new(gladeFile,
-			  dialog_name,
-			  PACKAGE_NAME);
-  if (mainXML == NULL)
-    errexit(_("Failed to open `%s'.\n"),
-	    gladeFile);  
-  FREE(gladeFile);
-  glade_xml_signal_autoconnect_full(mainXML, &connector, mainXML);
-  return glade_xml_get_widget(mainXML,
-			      dialog_name);
-}
-
-/**
- * Helper function to just show a simple dialog
- * that requires no initialization.
- */
-static void showDialog(const char * name) {
-  GtkWidget * msgSave;
-  char * gladeFile;
-  GladeXML * myXML;
-  
-  gladeFile = get_glade_filename();
-  myXML = glade_xml_new(gladeFile,
-			name,
-			PACKAGE_NAME);
-  if (mainXML == NULL)
-    errexit(_("Failed to open `%s'.\n"),
-	    gladeFile);  
-  FREE(gladeFile);
-  glade_xml_signal_autoconnect_full(myXML, &connector, myXML);
-  msgSave = glade_xml_get_widget(myXML,
-				 name);
-  gtk_widget_show(msgSave);
-  g_object_unref(myXML);
-}
 
 struct insert_nic_cls {
   GtkWidget * cmbNIC;
@@ -239,7 +150,7 @@ void load_step2(GtkButton * button,
 
   destroyCurrentWindow();
   curwnd = get_xml("assi_step2");	
-  cls.cmbNIC = glade_xml_get_widget(mainXML, "cmbNIC");
+  cls.cmbNIC = lookup_widget("cmbNIC");
   GNUNET_ASSERT(cls.cmbNIC != NULL);
   cls.nic_item_count = 0;
   model = gtk_list_store_new(1, G_TYPE_STRING);
@@ -271,7 +182,7 @@ void load_step2(GtkButton * button,
     gtk_widget_set_usize(cls.cmbNIC, 10, -1);
   }
   
-  entIP = glade_xml_get_widget(mainXML, "entIP");
+  entIP = lookup_widget("entIP");
   sym = sym_find("IP", "NETWORK");
   if (sym != NULL) {
     sym_calc_value_ext(sym, 1);
@@ -281,7 +192,7 @@ void load_step2(GtkButton * button,
     gtk_entry_set_text(GTK_ENTRY(entIP), val);
   }
   
-  chkFW = glade_xml_get_widget(mainXML, "chkFW");
+  chkFW = lookup_widget("chkFW");
   sym = sym_find("LIMITED", "NAT");
   if (sym != NULL) {
     sym_calc_value_ext(sym, 1);
@@ -303,11 +214,11 @@ void load_step3(GtkButton * button,
   
   destroyCurrentWindow();
   curwnd = get_xml("assi_step3");
-  entUp = glade_xml_get_widget(mainXML, "entUp");
-  entDown = glade_xml_get_widget(mainXML, "entDown");  
-  radGNUnet = glade_xml_get_widget(mainXML, "radGNUnet");
-  radShare = glade_xml_get_widget(mainXML, "radShare");  
-  entCPU = glade_xml_get_widget(mainXML, "entCPU");
+  entUp = lookup_widget("entUp");
+  entDown = lookup_widget("entDown");  
+  radGNUnet = lookup_widget("radGNUnet");
+  radShare = lookup_widget("radShare");  
+  entCPU = lookup_widget("entCPU");
 	
   sym = sym_find("MAXNETUPBPSTOTAL", "LOAD");
   if (sym) {
@@ -354,8 +265,8 @@ void load_step4(GtkButton * button,
 
   destroyCurrentWindow();
   curwnd = get_xml("assi_step4");
-  entUser = glade_xml_get_widget(mainXML, "entUser");
-  entGroup = glade_xml_get_widget(mainXML, "entGroup");
+  entUser = lookup_widget("entUser");
+  entGroup = lookup_widget("entGroup");
 
   if (NULL != user_name) {
     sym = sym_find("USER", "GNUNETD");
@@ -442,10 +353,10 @@ void load_step5(GtkButton * button,
   
   destroyCurrentWindow();
   curwnd = get_xml("assi_step5");
-  entQuota =  glade_xml_get_widget(mainXML, "entQuota"); 
-  chkMigr =  glade_xml_get_widget(mainXML, "chkMigr");
-  chkStart =  glade_xml_get_widget(mainXML, "chkStart");
-  chkEnh =  glade_xml_get_widget(mainXML, "chkEnh");
+  entQuota =  lookup_widget("entQuota"); 
+  chkMigr =  lookup_widget("chkMigr");
+  chkStart =  lookup_widget("chkStart");
+  chkEnh =  lookup_widget("chkEnh");
   
   sym = sym_find("QUOTA", "FS");
   if (sym) {
@@ -489,18 +400,9 @@ static void showErr(const char * prefix,
   GtkWidget * label98;
   GtkWidget * msgSaveFailed;
   char * err;  
-  char * gladeFile;
   GladeXML * myXML;
   
-  gladeFile = get_glade_filename();
-  myXML = glade_xml_new(gladeFile,
-			"msgSaveFailed",
-			PACKAGE_NAME);
-  if (mainXML == NULL)
-    errexit(_("Failed to open `%s'.\n"),
-	    gladeFile);  
-  FREE(gladeFile);
-  glade_xml_signal_autoconnect(myXML);
+  myXML = load_xml("msgSaveFailed");
   msgSaveFailed = glade_xml_get_widget(myXML,
 				       "msgSaveFailed");
   label98 = glade_xml_get_widget(myXML, "label98");  
@@ -746,7 +648,7 @@ int gtk_wizard_main(int argc,
   struct symbol * sym;
   char * filename;
 	
-  library = lib;
+  setLibrary(lib);
   gtk_init(&argc, &argv); 
 #ifdef ENABLE_NLS
   /* GTK uses UTF-8 encoding */
@@ -771,13 +673,11 @@ int gtk_wizard_main(int argc,
   gdk_threads_enter();
   gtk_main();
   gdk_threads_leave();
-  GNUNET_ASSERT(mainXML != NULL);
-  g_object_unref(mainXML);
-  mainXML = NULL;
+  destroyMainXML();
+  setLibrary(NULL);
   if (doOpenEnhConfigurator)
-    gconf_main(argc, argv);
+    gconf_main(argc, argv, lib);
   FREENONNULL(user_name);
   FREENONNULL(group_name);
-  library = NULL;
   return 0;
 }

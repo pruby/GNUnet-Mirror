@@ -28,6 +28,7 @@
  * @file conf/gconf.c
  * @author Roman Zippel
  * @author Nils Durner
+ * @author Christian Grothoff
  */
 
 #include "platform.h"
@@ -49,12 +50,9 @@
 #define USE_XPM_VOID 1
 #include "images.c"
 
-#include <gtk/gtk.h>
-#include <glib.h>
+#include "glade_support.h"
 #include <gdk/gdkkeysyms.h>
 
-#include "gconf_interface.h"
-#include "gconf_support.h"
 
 /* #define DEBUG */
 
@@ -274,8 +272,7 @@ GtkImage *get_btn_image(GtkButton *button)
 /* Main Window Initialization */
 
 
-void init_main_window()
-{
+void init_main_window() {
   GtkWidget *widget;
   GtkTextBuffer *txtbuf;
   char title[256];
@@ -283,47 +280,39 @@ void init_main_window()
   GdkBitmap *mask;
   GtkStyle *style;
   GtkToolbar *toolbar;
-  GtkWidget *vbox;
   GtkMenu *options;
   GtkImage *image;
 
-  main_wnd = create_main_wnd ();
-  gtk_widget_show(GTK_WIDGET(main_wnd));
+  main_wnd = get_xml("setupWindow");
 
-  vbox = lookup_widget(GTK_WIDGET(main_wnd), "vbox1");
-  hpaned = lookup_widget(GTK_WIDGET(vbox), "hpaned1");
-  vpaned = lookup_widget(GTK_WIDGET(hpaned), "vpaned1");
-  tree1_w = lookup_widget(lookup_widget(GTK_WIDGET(hpaned), "scrolledwindow1"),
-    "treeview1");
-  tree2_w = lookup_widget(lookup_widget(GTK_WIDGET(vpaned), "scrolledwindow2"),
-    "treeview2");
-  text_w = lookup_widget(lookup_widget(GTK_WIDGET(vpaned), "scrolledwindow3"),
-    "textview3");
+  hpaned = lookup_widget("hpaned1");
+  vpaned = lookup_widget("vpaned1");
+  tree1_w = lookup_widget("treeview1");
+  tree2_w = lookup_widget("treeview2");
+  text_w = lookup_widget("textview3");
 
-  toolbar = GTK_TOOLBAR(lookup_widget(lookup_widget(GTK_WIDGET(vbox),
-    "handlebox1"), "toolbar1"));
+  toolbar = GTK_TOOLBAR(lookup_widget("toolbar1"));
 
-  back_btn = lookup_widget(GTK_WIDGET(toolbar), "button1");
+  back_btn = lookup_widget("button1");
   gtk_widget_set_sensitive(back_btn, FALSE);
 
-  options = GTK_MENU(lookup_widget(lookup_widget(lookup_widget(vbox, "menubar1"),
-    "options1"), "options1_menu"));
+  options = GTK_MENU(lookup_widget("options1_menu"));
 
-  widget = lookup_widget(GTK_WIDGET(options), "show_name1");
+  widget = lookup_widget("show_name1");
   gtk_check_menu_item_set_active((GtkCheckMenuItem *) widget,
                show_name);
 
-  widget = lookup_widget(GTK_WIDGET(options), "show_range1");
+  widget = lookup_widget("show_range1");
   gtk_check_menu_item_set_active((GtkCheckMenuItem *) widget,
                show_range);
 
-  widget = lookup_widget(GTK_WIDGET(options), "show_data1");
+  widget = lookup_widget("show_data1");
   gtk_check_menu_item_set_active((GtkCheckMenuItem *) widget,
                show_value);
 
   style = gtk_widget_get_style(main_wnd);
 
-  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button4")));
+  image = get_btn_image(GTK_BUTTON(lookup_widget("button4")));
   if (image)
   {
     pixmap = gdk_pixmap_create_from_xpm_d(main_wnd->window, &mask,
@@ -332,7 +321,7 @@ void init_main_window()
     gtk_image_set_from_pixmap(image, pixmap, mask);
   }
 
-  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button5")));
+  image = get_btn_image(GTK_BUTTON(lookup_widget("button5")));
   if (image)
   {
     pixmap =
@@ -342,7 +331,7 @@ void init_main_window()
     gtk_image_set_from_pixmap(image, pixmap, mask);
   }
 
-  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button6")));
+  image = get_btn_image(GTK_BUTTON(lookup_widget("button6")));
   if (image)
   {
     pixmap =
@@ -352,7 +341,7 @@ void init_main_window()
     gtk_image_set_from_pixmap(image, pixmap, mask);
   }
 
-  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button7")));
+  image = get_btn_image(GTK_BUTTON(lookup_widget("button7")));
   if (image)
   {
     pixmap =
@@ -362,7 +351,7 @@ void init_main_window()
     gtk_image_set_from_pixmap(image, pixmap, mask);
   }
 
-  image = get_btn_image(GTK_BUTTON(lookup_widget(GTK_WIDGET(toolbar), "button8")));
+  image = get_btn_image(GTK_BUTTON(lookup_widget("button8")));
   if (image)
   {
     pixmap =
@@ -375,15 +364,15 @@ void init_main_window()
 
   switch (view_mode) {
   case SINGLE_VIEW:
-    widget = lookup_widget(GTK_WIDGET(toolbar), "button4");
+    widget = lookup_widget("button4");
     gtk_button_clicked(GTK_BUTTON(widget));
     break;
   case SPLIT_VIEW:
-    widget = lookup_widget(GTK_WIDGET(toolbar), "button5");
+    widget = lookup_widget("button5");
     gtk_button_clicked(GTK_BUTTON(widget));
     break;
   case FULL_VIEW:
-    widget = lookup_widget(GTK_WIDGET(toolbar), "button6");
+    widget = lookup_widget("button6");
     gtk_button_clicked(GTK_BUTTON(widget));
     break;
   }
@@ -399,14 +388,6 @@ void init_main_window()
 
   strcpy(title, "GNUnet Configuration");
   gtk_window_set_title(GTK_WINDOW(main_wnd), title);
-
-  set_help("GNUnet Setup", "",
-    "This is GNUnet's configuration interface.\n"
-    "GNUnet's options are separated into categories. You can browse "
-    "them in the left tree. If you click on one of the categories, its "
-    "options are shown above.\nTo change the value of an option, simply "
-    "click on its value and enter a new value.\nTo get additional "
-    "information about a specific option, click on its description.");
 
   gtk_widget_show(main_wnd);
 }
@@ -830,69 +811,15 @@ on_show_all_options1_activate(GtkMenuItem * menuitem, gpointer user_data)
 }
 
 
-void on_introduction1_activate(GtkMenuItem * menuitem, gpointer user_data)
-{
-  GtkWidget *dialog;
-  const gchar *intro_text =
-      "Welcome to GNUnet Setup.\n"
-      "For each option, a blank box indicates the feature is disabled, and\n"
-      "checked one indicates it is enabled.\n"
-      "If you do not see an option that you\n"
-      "believe should be present, try turning on Show All Options\n"
-      "under the Options menu.\n"
-      "Although there is no cross reference yet to help you figure out\n"
-      "what other options must be enabled to support the option you\n"
-      "are interested in, you can still view the help of a grayed-out\n"
-      "option.\n"
-      "\n"
-      "Toggling Show Debug Info under the Options menu will show \n"
-      "the dependencies, which you can then match by examining other options.";
-
-  dialog = gtk_message_dialog_new(GTK_WINDOW(main_wnd),
-          GTK_DIALOG_DESTROY_WITH_PARENT,
-          GTK_MESSAGE_INFO,
-          GTK_BUTTONS_CLOSE, intro_text);
-  g_signal_connect_swapped(GTK_OBJECT(dialog), "response",
-         G_CALLBACK(gtk_widget_destroy),
-         GTK_OBJECT(dialog));
-  gtk_widget_show_all(dialog);
+void on_introduction1_activate(GtkMenuItem * menuitem, 
+			       gpointer user_data) {
+  showDialog("introductionDialog");
 }
 
 
-void on_about1_activate(GtkMenuItem * menuitem, gpointer user_data)
-{
-  GtkWidget *dialog;
-  const gchar *about_text =
-      "(C) 2001-2005 Christian Grothoff (and other contributing authors).\n"
-      "Based on source code from Roman Zippel and Romain Lievin.\n";
-
-  dialog = gtk_message_dialog_new(GTK_WINDOW(main_wnd),
-          GTK_DIALOG_DESTROY_WITH_PARENT,
-          GTK_MESSAGE_INFO,
-          GTK_BUTTONS_CLOSE, about_text);
-  g_signal_connect_swapped(GTK_OBJECT(dialog), "response",
-         G_CALLBACK(gtk_widget_destroy),
-         GTK_OBJECT(dialog));
-  gtk_widget_show_all(dialog);
-}
-
-
-void on_license1_activate(GtkMenuItem * menuitem, gpointer user_data)
-{
-  GtkWidget *dialog;
-  const gchar *license_text =
-      "GNUnet is released under the terms of the GPL.\n"
-      "For more information, please see the source code or\n"
-      "visit http://www.fsf.org/licenses/licenses.html\n";
-
-  dialog = gtk_message_dialog_new(GTK_WINDOW(main_wnd),
-          GTK_DIALOG_DESTROY_WITH_PARENT,
-          GTK_MESSAGE_INFO,
-          GTK_BUTTONS_CLOSE, license_text);
-  g_signal_connect_swapped(GTK_OBJECT(dialog), "response",
-         G_CALLBACK(gtk_widget_destroy),
-         GTK_OBJECT(dialog));
-  gtk_widget_show_all(dialog);
+void on_about1_activate(GtkMenuItem * menuitem, 
+			gpointer user_data) {
+  showDialog("aboutdialog");
 }
 
 
@@ -1686,10 +1613,12 @@ void fixup_rootmenu(struct menu *menu)
 /* Main */
 
 
-int gconf_main(int argc, char **argv)
-{
+int gconf_main(int argc, 
+	       char **argv, 
+	       void * lib) {
   char * filename;
 
+  setLibrary(lib);
   /* GTK stuffs */
   gtk_init(&argc, &argv);
   bind_textdomain_codeset(PACKAGE, "UTF-8");
@@ -1728,6 +1657,7 @@ int gconf_main(int argc, char **argv)
   gdk_threads_enter();
   gtk_main();
   gdk_threads_leave();
-
+  destroyMainXML();
+  setLibrary(NULL);
   return 0;
 }
