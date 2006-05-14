@@ -548,6 +548,7 @@ src/applications/topology_f2f/Makefile
 src/applications/tracekit/Makefile
 src/applications/traffic/Makefile
 src/applications/transport/Makefile
+src/applications/vpn/Makefile
 src/conf/Makefile
 src/server/Makefile
 src/transports/Makefile

@@ -34,4 +34,5 @@ SUBDIRS	= \
  topology_f2f \
  tracekit \
  traffic \
- transport
+ transport \
+ vpn
