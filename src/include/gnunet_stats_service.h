@@ -1,5 +1,6 @@
 /*
       This file is part of GNUnet
+      (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -23,8 +24,16 @@
  * @author Christian Grothoff
  */
 
-#ifndef STATS_SERVICE_API_H
-#define STATS_SERVICE_API_H
+#ifndef GNUNET_STATS_SERVICE_API_H
+#define GNUNET_STATS_SERVICE_API_H
+
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
 
 /**
  * @brief API to the stats service
@@ -67,5 +76,12 @@ typedef struct {
 		 const int delta);
 
 } Stats_ServiceAPI;
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* STATS_SERVICE_API_H */

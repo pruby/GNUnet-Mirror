@@ -32,6 +32,13 @@
 
 #include "gnunet_core.h"
 
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 /**
  * How long may a hello be valid (in seconds). We use 10 days, do not
  * change (would break compatibility with peers that have a different
@@ -203,6 +210,14 @@ typedef struct {
   unsigned int (*getHostTrust)(const PeerIdentity * hostId);
 
 } Identity_ServiceAPI;
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 
 /* end of gnunet_identity_service.h */
 #endif

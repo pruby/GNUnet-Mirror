@@ -1,4 +1,8 @@
 #!/bin/bash
+# THIS SCRIPT DOES NOT WORK WITH THE 0.7.0 SERIES.  SOME
+# NECESSARY FEATURES ARE MISSING IN GNUNET-INSERT IN ORDER
+# TO MAKE IT WORK!
+# 
 #
 # This helper script can be used to create and maintain 
 # _regularly updated_ namespace entries. The configuration phase is
@@ -76,12 +80,7 @@ FEEDBACK="$TITLE-messages"
 
 SEARCH="gnunet-search"
 INSERT="gnunet-insert"
-# if required, use 
-# INSERT="gnunet-insert -p [your pseudonym password]"
 LISTPSEUDO="gnunet-pseudonym-list"
-# if required, use 
-# LISTPSEUDO="gnunet-pseudonym-list -p [your pseudonym password]"
-
 
 ## [ PROBABLY NO USER-SERVICEABLE PARTS BELOW ]########################
 
@@ -111,15 +110,15 @@ case $1 in
 		echo $BLURB >$TMPFILE
 		echo Feedback channel : $FEEDBACK >>$TMPFILE
 
-		$INSERT -nVXx -m "text/plain" -f "$TITLE.txt" $ADVERTISEKEYS -D "$BLURB" "$TMPFILE"
+		$INSERT -nV -m "mimetype:text/plain" -m "title:$TITLE.txt" $ADVERTISEKEYS -m "description:$BLURB" "$TMPFILE"
 		;;
 	create)
 		echo 1st time indexing dir $BASEDIR under $ACCESSKEY
-		$INSERT -VbrX -s $PSEUDONYM -o "$STOREDBLOCK" -t $ACCESSKEY -i $INTERVALSECS -D "$DESCRIPTION" "$BASEDIR"
+		$INSERT -VR -P $PSEUDONYM -o "$STOREDBLOCK" -t $ACCESSKEY -i $INTERVALSECS -m "description:$DESCRIPTION" "$BASEDIR"
 		;;
 	update)
 		echo Updating entry $ACCESSKEY with $BASEDIR ... 
-		$INSERT -VbrX -s $PSEUDONYM -e "$STOREDBLOCK" -o "$STOREDBLOCK" "$BASEDIR"
+		$INSERT -VR -P $PSEUDONYM -e "$STOREDBLOCK" -o "$STOREDBLOCK" "$BASEDIR"
 		;;
 	scan)
 		echo Scanning for messages ...

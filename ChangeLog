@@ -1,5 +1,8 @@
+Sat May 13 19:35:49 PDT 2006
+	Made headers more C++ friendly.     
+
 Wed May 10 22:11:17 PDT 2006
-	Fixing bug that possibly resulted in hanging the UDP transport;
+	Fixing bug that could result in hanging the UDP transport;
 	found by Luigi Auriemma (thanks!).
 
 Sat May  6 00:17:59 PDT 2006

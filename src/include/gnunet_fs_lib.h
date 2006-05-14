@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -33,6 +33,14 @@
 
 #include "gnunet_util.h"
 #include "gnunet_datastore_service.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 
 struct FS_SEARCH_CONTEXT;
 
@@ -138,5 +146,13 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
  */
 int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
 		   const HashCode512 * hc);
+
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 #endif

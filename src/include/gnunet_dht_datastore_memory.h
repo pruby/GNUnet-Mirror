@@ -1,5 +1,6 @@
  /*
       This file is part of GNUnet
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -24,10 +25,18 @@
  * @author Simo Viitanen, Christian Grothoff
  */
 
-#ifndef DHT_DATASTORE_MEMORY_H
-#define DHT_DATASTORE_MEMORY_H
+#ifndef GNUNET_DHT_DATASTORE_MEMORY_H
+#define GNUNET_DHT_DATASTORE_MEMORY_H
 
 #include "gnunet_blockstore.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 
 /**
  * Create a DHT Datastore (in memory)
@@ -41,5 +50,13 @@ Blockstore * create_blockstore_memory(size_t max_memory);
  *  created by create_datastore_memory.
  */
 void destroy_blockstore_memory(Blockstore * ds);
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

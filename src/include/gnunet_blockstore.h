@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -28,6 +28,13 @@
 #define GNUNET_BLOCKSTORE_H
 
 #include "gnunet_util.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
 
 /**
  * Data stored in the blockstore.
@@ -138,5 +145,12 @@ typedef struct {
 		 void * cls);
 
 } Blockstore;
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 #endif

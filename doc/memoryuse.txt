@@ -37,3 +37,49 @@ What can you expect to achieve:
   the VALGRIND option will disable unloading plugins (see
   src/util/dso.c) and thus improve the traces significantly.
 
+
+
+(rough) size estimates for a stripped, minimal-size GNUnet
+distribution for embedded devices (listing only what is required for
+anonymous file-sharing with DHT, no GUI):
+
+binaries:
+gnunetd: 13k
+gnunet-search: 10k
+gnunet-download: 10k
+gnunet-insert: 20k
+TOTAL: 53k
+
+libraries (libgnunet*.so):
+util: 146k
+ecrs:  75k
+fs  :  14k
+fsui:  60k
+core:  72k
+getoption_api:        5k
+dht_datastore_memory: 7k
+TOTAL: 379k
+
+plugins (libgnunetmodule*):
+gap: 30k 
+fs: 35k
+datastore: 14k
+bootstrap: 9k
+advertising: 16k
+fragmentation: 10k
+getoption: 5k
+identity: 22k
+pingpong: 9k
+session: 11k
+sqstore_sqlite: 22k
+topology: 8k
+traffic: 10k
+transport: 13k
+tcp: 22k
+udp: 15k
+dht: 57k 
+rpc: 23k
+TOTAL: ~330k [ dht and rpc are optional, - 80k ]
+
+DISTRIBUTION SIZE: ~700k (+ dependencies [sqlite, libc, libextractor])
+

@@ -47,6 +47,13 @@
    unconditionally available... */
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 
 /* **************** constants ****************** */
 
@@ -2630,6 +2637,14 @@ int waitForGNUnetDaemonTermination(int pid);
  * @return YES on success, NO otherwise
  */
 int termProcess(int pid);
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 
 /* ifndef GNUNET_UTIL_H */
 #endif

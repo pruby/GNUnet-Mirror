@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -30,9 +30,17 @@
 #ifndef GAP_SERVICE_API_H
 #define GAP_SERVICE_API_H
 
-#include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "gnunet_blockstore.h"
+
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 
 /**
  * Function that helps the routing code to find out if
@@ -116,5 +124,14 @@ typedef struct {
   unsigned int (*getAvgPriority)(void);
 
 } GAP_ServiceAPI;
+
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* GAP_SERVICE_API_H */

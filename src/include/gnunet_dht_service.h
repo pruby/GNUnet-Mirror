@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -31,10 +31,17 @@
 #ifndef GNUNET_DHT_SERVICE_H
 #define GNUNET_DHT_SERVICE_H
 
-#include "gnunet_util.h"
 #include "gnunet_core.h"
 #include "gnunet_dht.h"
 #include "gnunet_blockstore.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 
 struct DHT_GET_RECORD;
 
@@ -163,5 +170,13 @@ typedef struct {
   int (*remove_stop)(struct DHT_REMOVE_RECORD * record);
 
 } DHT_ServiceAPI;
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* DHT_SERVICE_API_H */

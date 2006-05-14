@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,8 +27,14 @@
 #ifndef GNUNET_TRANSPORT_SERVICE_H
 #define GNUNET_TRANSPORT_SERVICE_H
 
-#include "platform.h"
 #include "gnunet_transport.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
 
 /**
  * Type of the per-transport callback method.
@@ -188,6 +195,13 @@ typedef struct {
 			    char * buff);
 
 } Transport_ServiceAPI;
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 /* end of gnunet_transport_service.h */
 #endif

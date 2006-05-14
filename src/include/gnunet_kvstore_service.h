@@ -25,10 +25,17 @@
  * @author Nils Durner
  */
 
-#ifndef GNUNET_SQSTORE_SERVICE_H
-#define GNUNET_SQSTORE_SERVICE_H
+#ifndef GNUNET_KVSTORE_SERVICE_H
+#define GNUNET_KVSTORE_SERVICE_H
 
 #include "gnunet_core.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
 
 /**
  * @brief Handle to a Key/Value-Table
@@ -115,6 +122,12 @@ typedef struct {
 
 } KVstore_ServiceAPI;
 
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 /* end of gnunet_kvstore_service.h */
 #endif

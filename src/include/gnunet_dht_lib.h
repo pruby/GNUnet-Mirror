@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -29,6 +29,14 @@
 
 #include "gnunet_blockstore.h"
 #include "gnunet_dht_service.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 
 /**
  * Initialize DHT_LIB. Call first.
@@ -132,5 +140,13 @@ int DHT_LIB_remove(const DHT_TableId * table,
 		   const HashCode512 * key,
 		   cron_t timeout,
 		   const DataContainer * value);
+
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GNUNET_DHT_LIB_H */

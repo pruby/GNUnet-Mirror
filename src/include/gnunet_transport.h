@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,6 +29,12 @@
 
 #include "gnunet_core.h"
 
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
 
 /**
  * Just the version number of GNUnet-transport implementation.
@@ -347,6 +353,12 @@ typedef struct {
  */
 typedef TransportAPI * (*TransportMainMethod)(CoreAPIForTransport *);
 
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 /* end of gnunet_transport.h */
 #endif

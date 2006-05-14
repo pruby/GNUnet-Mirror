@@ -1,5 +1,6 @@
 /*
       This file is part of GNUnet
+      (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -27,6 +28,13 @@
 #define GNUNET_STATS_LIB_H
 
 #include "gnunet_util.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
 
 #define STATS_VERSION "3.0.0"
 
@@ -77,5 +85,12 @@ typedef int (*ProtocolProcessor)(unsigned short type,
 int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
 			      ProtocolProcessor processor,
 			      void * cls);
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 #endif

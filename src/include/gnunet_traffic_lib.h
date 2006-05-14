@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -30,6 +30,13 @@
 #include "gnunet_util.h"
 #include "gnunet_traffic_service.h"
 
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 /**
  * Poll gnunetd via TCP about traffic information.
  *
@@ -53,5 +60,13 @@ int pollSocket(GNUNET_TCP_SOCKET * sock,
 	       unsigned int * avg_size,
 	       unsigned int * peers,
 	       unsigned int * time);
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

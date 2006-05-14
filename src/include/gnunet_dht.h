@@ -1,5 +1,6 @@
 /*
       This file is part of GNUnet
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -31,6 +32,14 @@
 
 #include "gnunet_util.h"
 #include "gnunet_blockstore.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 
 /* ************* API specific errorcodes *********** */
 
@@ -173,5 +182,13 @@ typedef struct {
   DHT_TableId table;
 
 } CS_dht_reply_ack_MESSAGE;
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* GNUNET_DHT_H */

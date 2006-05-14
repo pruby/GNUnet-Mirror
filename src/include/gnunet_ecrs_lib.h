@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -30,6 +30,13 @@
 #include "gnunet_util.h"
 #include <extractor.h>
 
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
 /**
  * Just the version number of the AFS/ESED/ESED2/ECRS implementation.
  * History:
@@ -44,7 +51,7 @@
  * 4.0.x: with expiration, variable meta-data, kblocks
  * 5.x.x: who knows? :-)
  */
-#define AFS_VERSION "4.0.1"
+#define AFS_VERSION "4.0.2"
 
 #define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"
@@ -670,5 +677,11 @@ int ECRS_createDirectory(char ** data,
 			 const ECRS_FileInfo * fis,
 			 struct ECRS_MetaData * meta); /* directory.c */
 
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
 
 #endif
