@@ -265,6 +265,8 @@ SectionGroup "GNUnet" SEC_GNUNET
 			Section "Graphical Interface" SEC_CLIENT_GUI
 				SectionIn 1 3 4
 			  SetOutPath "$INSTDIR\bin"
+
+			  File "C:\GNUnet\bin\libpng13.dll"			  
 			  
 			  File "C:\GNUnet\bin\gnunet-gtk.exe"
 			  File "C:\GNUnet\bin\libgnunetgtk_common-0.dll"
@@ -793,6 +795,7 @@ Section Uninstall
 	Delete "$INSTDIR\bin\iconv.dll"
 	Delete "$INSTDIR\bin\intl.dll"
 	Delete "$INSTDIR\bin\jpeg62.dll"
+	Delete "$INSTDIR\bin\libpng13.dll"
 	Delete "$INSTDIR\bin\libatk-1.0-0.dll"
 	Delete "$INSTDIR\bin\libextractor-1.dll"
 	Delete "$INSTDIR\bin\libextractor_asf.dll"
@@ -961,11 +964,17 @@ Section Uninstall
   RmDir /REBOOTOK "$INSTDIR\share\locale\rw"
 	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\GNUnet.mo" 
 	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\gnunet-gtk.mo" 
+	Delete "$INSTDIR\share\locale\vi\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\vi\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\vi"
 	Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\GNUnet.mo" 
+	Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\gnunet-gtk.mo" 
+	Delete "$INSTDIR\share\locale\sv\LC_MESSAGES\libextractor.mo" 
   RmDir /REBOOTOK "$INSTDIR\share\locale\sv\LC_MESSAGES"
   RmDir /REBOOTOK "$INSTDIR\share\locale\sv"
+	Delete "$INSTDIR\share\locale\fr\LC_MESSAGES\gnunet-gtk.mo" 
+  RmDir /REBOOTOK "$INSTDIR\share\locale\fr\LC_MESSAGES"
+  RmDir /REBOOTOK "$INSTDIR\share\locale\fr"
   RmDir /REBOOTOK "$INSTDIR\share\locale"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc"
 	Delete "$INSTDIR\share\themes\Default\gtk-2.0\gtkrc.gtkwimp"
