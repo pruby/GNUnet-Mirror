@@ -4,7 +4,6 @@
 <glade-project>
   <name>gconf</name>
   <program_name>gconf</program_name>
-  <style>GNU</style>
   <gnome_support>FALSE</gnome_support>
   <main_source_file>gconf_interface.c</main_source_file>
   <main_header_file>gconf_interface.h</main_header_file>

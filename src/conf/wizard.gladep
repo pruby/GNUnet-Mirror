@@ -4,8 +4,12 @@
 <glade-project>
   <name>Wizard-conf</name>
   <program_name>wizard-conf</program_name>
-  <style>GNU</style>
   <gnome_support>FALSE</gnome_support>
+  <use_widget_names>TRUE</use_widget_names>
+  <output_main_file>FALSE</output_main_file>
+  <output_support_files>FALSE</output_support_files>
+  <output_build_files>FALSE</output_build_files>
+  <backup_source_files>FALSE</backup_source_files>
   <main_source_file>wizard_interface.c</main_source_file>
   <main_header_file>wizard_interface.h</main_header_file>
   <handler_source_file>wizard_callbacks.c</handler_source_file>

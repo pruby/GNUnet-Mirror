@@ -20,14 +20,16 @@
 
 
 /**
- * @file conf/wizard.h
+ * @file conf/wizard_gtk.h
  * @brief GNUnet Setup
  * @author Nils Durner
  */
 
-#ifndef WIZARD_H
-#define WIZARD_H
+#ifndef WIZARD_GTK_H
+#define WIZARD_GTK_H
 
-int wizard_main(int argc, char **argv);
+int gtk_wizard_main(int argc, 
+		    char **argv,
+		    void * library);
 
 #endif

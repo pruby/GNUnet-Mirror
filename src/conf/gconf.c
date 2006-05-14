@@ -1725,8 +1725,9 @@ int gconf_main(int argc, char **argv)
     display_tree(&rootmenu);
     break;
   }
-
+  gdk_threads_enter();
   gtk_main();
+  gdk_threads_leave();
 
   return 0;
 }

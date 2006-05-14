@@ -353,6 +353,9 @@ AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
 if test $without_gtk != true
 then
  AC_DEFINE_UNQUOTED([HAVE_GTK], 1, [We have GTK])
+ PKG_CHECK_MODULES(GNUNETGTK, libglade-2.0) # libgnomeui-2.0 >= 1.110.0
+ AC_SUBST(GNUNETGTK_CFLAGS)
+ AC_SUBST(GNUNETGTK_LIBS)
 fi
 
 # check for gettext

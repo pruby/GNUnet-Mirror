@@ -31,17 +31,6 @@
 #include "conf.h"
 #include "zconf_tab.h"
 
-#if HAVE_CURSES
-#include "mconf.h"
-#include "wizard_curs.h"
-#endif
-
-#if HAVE_GTK
-#include "gconf.h"
-#include "wizard.h"
-#include <gtk/gtk.h>
-#endif
-
 
 /**
  * Perform option parsing from the command line.
@@ -200,8 +189,11 @@ static int parser(int argc, char *argv[])
   return cont;
 }
 
-int dyn_config(const char *module, const char *mainfunc, int argc, char **argv) {
-  void (*mptr)(int, char **);
+int dyn_config(const char *module, 
+	       const char *mainfunc, 
+	       int argc, 
+	       char **argv) {
+  void (*mptr)(int, char **, void*);
   void *library;
 
   library = loadDynamicLibrary("libgnunet", module);
@@ -211,11 +203,8 @@ int dyn_config(const char *module, const char *mainfunc, int argc, char **argv) 
   mptr = bindDynamicMethod(library, mainfunc, "");
   if (! mptr)
     return SYSERR;
-  
-  mptr(argc, argv);
-  
-  unloadDynamicLibrary(library);
-  
+  mptr(argc, argv, library); 
+  unloadDynamicLibrary(library);  
   return YES;
 }
 
@@ -287,7 +276,7 @@ int main(int argc, char *argv[])
       errexit(_("Can only run wizard to configure gnunetd.\n"
                 "Did you forget the `%s' option?\n"), "-d");
 
-    if (dyn_config("setup_gtk", "wizard_main",
+    if (dyn_config("setup_gtk", "gtk_wizard_main",
           argc, argv) != YES) {
       FREE(operation);
       errexit(_("`%s' is not available."), "wizard-gtk");

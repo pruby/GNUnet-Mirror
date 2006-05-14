@@ -11,9 +11,6 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-0.7.0d:
-* #1025
-
 0.7.1 ['06] (aka "stabilization")
 - known bugs (see Mantis for updates):
   * gnunet-setup memory leaks (#878)

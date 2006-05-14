@@ -35,11 +35,19 @@ BUILT_SOURCES = \
  lkc_defs.h
 
 EXTRA_DIST = \
+ wizard.glade \
+ gconf.glade \
  images.c \
  lex.zconf.c \
  lkc_proto.h \
  bool.h \
  wizard_gtk.h
+
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) gconf.glade $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) wizard.glade $(DESTDIR)$(pkgdatadir)
+	@$(NORMAL_INSTALL)
 
 if HAVE_CURSES
 if HAVE_PDCURSES
@@ -65,7 +73,7 @@ libgnunetsetup_la_SOURCES = \
  zconf_tab.c zconf_tab.h \
  wizard_util.c \
  wizard_util.h
- 
+
 libgnunetsetup_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
@@ -85,40 +93,41 @@ libgnunetsetup_curses_la_SOURCES = \
  mconf_yesno.c \
  wizard_curs.c \
  wizard_curs.h
- 
+
 libgnunetsetup_curses_la_LDFLAGS = \
  $(curses_lib) $(pdcurses_lib) \
  -export-dynamic -avoid-version -module
- 
+
 libgnunetsetup_curses_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetsetup.la
 
 libgnunetsetup_gtk_la_SOURCES = \
- gconf_callbacks.h \
- gconf_interface.h \
  gconf_support.h \
- gconf_interface.c \
  gconf_support.c \
  gconf.c gconf.h \
- wizard_callbacks.h \
- wizard_interface.h \
- wizard_support.h \
- wizard_callbacks.c \
- wizard_interface.c \
- wizard.c wizard.h
+ wizard_gtk.c wizard_gtk.h
 
 libgnunetsetup_gtk_la_LDFLAGS = \
- $(GTK_LIBS) @EXT_LIB_PATH@ @EXT_LIBS@ -lgthread-2.0 \
+ $(GTK_LIBS) @EXT_LIB_PATH@ @EXT_LIBS@ \
  -export-dynamic -avoid-version -module
- 
+
+libgnunetsetup_gtk_la_CFLAGS = \
+ -I$(top_scrdir)/include \
+ @GNUNETGTK_CFLAGS@ \
+ @GTK_CFLAGS@ 
+
 libgnunetsetup_gtk_la_LIBADD = \
+ @GTK_LIBS@ @EXT_LIB_PATH@ @EXT_LIBS@ \
+ @GNUNETGTK_LIBS@ \
+  $(INTLLIBS) \
+  -lgthread-2.0 \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetsetup.la
 
 gnunet_setup_SOURCES = \
  gnunet-setup.c
- 
+
 gnunet_setup_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetsetup.la
