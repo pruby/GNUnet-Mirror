@@ -1,3 +1,6 @@
+Sun May 14 02:51:15 PDT 2006
+	Major gnunet-setup GTK wizard code cleanup (now uses libglade).
+
 Sat May 13 19:35:49 PDT 2006
 	Made headers more C++ friendly.     
 
