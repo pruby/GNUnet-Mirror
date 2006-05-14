@@ -19,15 +19,17 @@
 */
 
 /**
- * @file applications/template/gnunet-template.c
- * @brief template for writing a GNUnet tool (client)
- * @author Christian Grothoff
+ * @file applications/vpn/gnunet-vpn.c
+ * @brief Utility to admin VPN
+ * @author Michael John Wensley
  */
 
 #include "gnunet_util.h"
 #include "platform.h"
 
 #define TEMPLATE_VERSION "0.0.0"
+
+#define CS_PROTO_VPN_MSG 0xfa
 
 static Semaphore * doneSem;
 
@@ -71,14 +73,14 @@ static int parseOptions(int argc,
 	HELP_VERSION,
 	HELP_END,
       };
-      formatHelp("gnunet-template [OPTIONS]",
-		 _("Template for gnunet-clients."),
+      formatHelp("gnunet-vpn [OPTIONS]",
+		 _("VPN over GNUnet."),
 		 help);
 
       return SYSERR;
     }
     case 'v':
-      printf("GNUnet v%s, gnunet-template v%s\n",
+      printf("GNUnet v%s, gnunet-vpn v%s\n",
 	     VERSION,
 	     TEMPLATE_VERSION);
       return SYSERR;
@@ -92,12 +94,15 @@ static int parseOptions(int argc,
 }
 
 static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
-  void * buffer;
-
+  int i;
+  CS_MESSAGE_HEADER *buffer;
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  while (OK == readFromSocket(sock,
-			      (CS_MESSAGE_HEADER**)&buffer)) {
-    /* process */
+  while (OK == readFromSocket(sock, &buffer)) {
+	if (ntohs(buffer->type) == CS_PROTO_VPN_MSG) {
+		for (i = sizeof(CS_MESSAGE_HEADER); i < ntohs(buffer->size); i++) {
+			putchar(*(((char*)buffer)+i));
+		}
+	}
   }
   FREE(buffer);
   SEMAPHORE_UP(doneSem);
@@ -113,7 +118,9 @@ int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
   PTHREAD_T messageReceiveThread;
   void * unused;
+  char buffer[sizeof(CS_MESSAGE_HEADER) + 1024];
 
+  doneSem = SEMAPHORE_NEW(0);
   if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0; /* parse error, --help, etc. */
   sock = getClientSocket();
@@ -121,16 +128,18 @@ int main(int argc, char ** argv) {
   if (0 != PTHREAD_CREATE(&messageReceiveThread,
 			  (PThreadMain) &receiveThread,
 			  sock,
-			  128 * 1024))
-    DIE_STRERROR("pthread_create");
+			  128 * 1024)) DIE_STRERROR("pthread_create");
 
-  /*
-  if (SYSERR == writeToSocket(sock,
-                              &msg.header))
-    return -1;
-  */
+
+  /* accept keystrokes from user and send to gnunetd */
+  ((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_MSG);
+  printf("Welcome to the VPN console: (Ctrl-D to exit)\n");
+  while (1) {
+	if (NULL == fgets(&buffer[sizeof(CS_MESSAGE_HEADER)], 1024, stdin)) break;
+	((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER) + strlen(&buffer[sizeof(CS_MESSAGE_HEADER)]));
+	if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+  }
   /* wait for shutdown... */
-
   closeSocketTemporarily(sock);
   SEMAPHORE_DOWN(doneSem);
   SEMAPHORE_FREE(doneSem);

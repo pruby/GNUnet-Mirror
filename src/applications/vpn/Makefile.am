@@ -6,18 +6,18 @@ LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 bin_PROGRAMS = \
-  gnunet-template
+  gnunet-vpn
 
 plugin_LTLIBRARIES = \
-  libgnunetmodule_template.la
+  libgnunetmodule_vpn.la
 
 
-gnunet_template_SOURCES = \
-  gnunet-template.c 	
+gnunet_vpn_SOURCES = \
+  gnunet-vpn.c 	
 
-libgnunetmodule_template_la_SOURCES = \
-  template.c 
-libgnunetmodule_template_la_LDFLAGS = \
+libgnunetmodule_vpn_la_SOURCES = \
+  vpn.c 
+libgnunetmodule_vpn_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
   $(LDADD)
 
