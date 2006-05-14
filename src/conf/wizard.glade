@@ -4410,7 +4410,7 @@ Public License instead of this License.
 </property>
   <property name="wrap_license">True</property>
   <property name="website">http://gnunet.org/</property>
-  <property name="website_label" translatable="yes">http://gnunet.org/</property>
+  <property name="website_label" translatable="no">http://gnunet.org/</property>
   <property name="authors">Christian Grothoff &lt;christian@grothoff.org&gt;
 Nils Durner &lt;durner@gnunet.org&gt;
 Andrew McDonald &lt;andrew@mcdonald.org.uk&gt;

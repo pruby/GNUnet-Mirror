@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-05-06 00:21-0700\n"
+"POT-Creation-Date: 2006-05-14 04:22-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -194,10 +194,10 @@ msgstr "GNUnet chat client starten"
 #: src/applications/template/gnunet-template.c:87
 #: src/applications/testbed/gnunet-testbed.c:125
 #: src/applications/testbed/gnunet-testbed.c:546
-#: src/applications/tracekit/gnunet-tracekit.c:153 src/conf/gnunet-setup.c:117
-#: src/conf/gnunet-setup.c:298 src/server/gnunet-peer-info.c:107
-#: src/server/gnunet-transport-check.c:523 src/server/gnunet-update.c:142
-#: src/server/startup.c:579
+#: src/applications/tracekit/gnunet-tracekit.c:153 src/conf/gnunet-setup.c:106
+#: src/conf/gnunet-setup.c:287 src/server/gnunet-peer-info.c:107
+#: src/server/gnunet-transport-check.c:521 src/server/gnunet-update.c:142
+#: src/server/startup.c:574
 #, c-format
 msgid "Use --help to get a list of options.\n"
 msgstr "Verwenden Sie --help, um eine Liste der Optionen zu erhalten.\n"
@@ -356,10 +356,10 @@ msgstr "Einer DHT anschließen."
 #: src/applications/tracekit/gnunet-tracekit.c:87
 #: src/applications/tracekit/gnunet-tracekit.c:122
 #: src/applications/tracekit/gnunet-tracekit.c:136
-#: src/server/gnunet-transport-check.c:450
-#: src/server/gnunet-transport-check.c:464
-#: src/server/gnunet-transport-check.c:481
-#: src/server/gnunet-transport-check.c:511
+#: src/server/gnunet-transport-check.c:448
+#: src/server/gnunet-transport-check.c:462
+#: src/server/gnunet-transport-check.c:479
+#: src/server/gnunet-transport-check.c:509
 #, c-format
 msgid "You must pass a number to the `%s' option.\n"
 msgstr "Sie müssen für die Option `%s' zusätzlich eine Zahl angeben.\n"
@@ -640,9 +640,10 @@ msgstr "`%s' ist keine Datei.\n"
 msgid "Cannot get size of file `%s'"
 msgstr "Die Größe der Datei `%s' konnte nicht ermittelt werden"
 
-#: src/applications/fs/ecrs/upload.c:192
-msgid "Not connected to gnunetd."
-msgstr "Nicht verbunden zu gnunetd."
+#: src/applications/fs/ecrs/upload.c:193
+#, fuzzy
+msgid "Failed to connect to gnunetd."
+msgstr "Es konnte keine Verbindung mit gnunetd hergestellt werden.\n"
 
 #: src/applications/fs/ecrs/upload.c:203
 #, c-format
@@ -744,11 +745,12 @@ msgstr "Diese Suche läuft bereits!\n"
 msgid "Unindex failed."
 msgstr "Deindizierung schlug fehl."
 
-#: src/applications/fs/fsui/upload.c:402 src/applications/fs/fsui/upload.c:439
+#: src/applications/fs/fsui/upload.c:276 src/applications/fs/fsui/upload.c:411
+#: src/applications/fs/fsui/upload.c:448
 msgid "Upload failed."
 msgstr "Upload fehlgeschlagen."
 
-#: src/applications/fs/fsui/upload.c:446
+#: src/applications/fs/fsui/upload.c:455
 msgid "Cannot upload directory without using recursion."
 msgstr ""
 "Verzeichnis kann nicht ohne die Verwendung von Rekursion hochgeladen werden."
@@ -813,7 +815,7 @@ msgstr ""
 "Deindizierter ODB Block `%s' vom Offset %llu fehlt bereits im "
 "Datenspeicher.\n"
 
-#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1785
+#: src/applications/fs/module/anonymity.c:65 src/applications/gap/gap.c:1800
 msgid "Failed to get traffic stats.\n"
 msgstr "Statistiken über den Netzwerkverkehr konnten nicht ermittelt werden.\n"
 
@@ -1117,6 +1119,13 @@ msgstr "Dateien GNUnet zum Filesharing zur Verfügung stellen."
 msgid "You must pass a positive number to the `%s' option.\n"
 msgstr "Sie müssen eine positive Zahl zu der Option `%s' übergeben.\n"
 
+#: src/applications/fs/tools/gnunet-insert.c:429
+#, c-format
+msgid ""
+"Unknown metadata type in metadata option `%s'.  Using metadata type "
+"`unknown' instead.\n"
+msgstr ""
+
 #: src/applications/fs/tools/gnunet-insert.c:537
 #: src/applications/fs/tools/gnunet-unindex.c:145
 #, c-format
@@ -1252,8 +1261,8 @@ msgid "Invalid argument: `%s'\n"
 msgstr "Ungültiger Parameter: `%s'\n"
 
 #: src/applications/fs/tools/gnunet-pseudonym.c:241
-#: src/conf/gnunet-setup.c:190 src/server/gnunet-peer-info.c:118
-#: src/server/gnunet-transport-check.c:534
+#: src/conf/gnunet-setup.c:179 src/server/gnunet-peer-info.c:118
+#: src/server/gnunet-transport-check.c:532
 msgid "Invalid arguments. Exiting.\n"
 msgstr "Ungültige Parameter. Abbruch.\n"
 
@@ -1393,103 +1402,108 @@ msgstr "Sie dürfen nur eine Datei zum Deindizieren angeben.\n"
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr "`%s' schlug fehl. Ist `%s' eine Datei?\n"
 
-#: src/applications/gap/gap.c:1599
+#: src/applications/gap/gap.c:1614
 #, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr "GAP hat ungültige Inhalte von `%s' empfangen.\n"
 
-#: src/applications/gap/gap.c:1600
+#: src/applications/gap/gap.c:1615
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1774
+#: src/applications/gap/gap.c:1789
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 "Verdeckender Netzwerkverkehr angefordert, aber der Verkehrsdienst wurde "
 "nicht geladen. Anfrage wird abgelehnt.\n"
 
-#: src/applications/gap/gap.c:1791 src/applications/gap/gap.c:1796
-#: src/applications/gap/gap.c:1802
+#: src/applications/gap/gap.c:1806 src/applications/gap/gap.c:1811
+#: src/applications/gap/gap.c:1817
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 "Gewünschter Grad an Anonymität kann nicht erreicht werden, Anfrage wird "
 "ignoriert.\n"
 
-#: src/applications/gap/gap.c:2060
+#: src/applications/gap/gap.c:2075
 msgid "# gap requests total received"
 msgstr "# gap Anfragen insgesamt empfangen"
 
-#: src/applications/gap/gap.c:2061
+#: src/applications/gap/gap.c:2076
 msgid "# gap requests policy: immediate drop"
 msgstr "# gap Anfragen mit taktischer Entscheidung: sofortiges Verwerfen"
 
-#: src/applications/gap/gap.c:2062
+#: src/applications/gap/gap.c:2077
 msgid "# gap requests policy: not routed"
 msgstr "# gap Anfragen mit taktischer Entscheidung: kein Routing"
 
-#: src/applications/gap/gap.c:2063
+#: src/applications/gap/gap.c:2078
 msgid "# gap requests policy: not answered"
 msgstr "# gap Anfragen mit taktischer Entscheidung: nicht Antworten"
 
-#: src/applications/gap/gap.c:2064
+#: src/applications/gap/gap.c:2079
 msgid "# gap requests processed: attempted add to RT"
 msgstr "# gap Anfragen verarbeitet: versucht, der RT hinzuzufügen"
 
-#: src/applications/gap/gap.c:2065
+#: src/applications/gap/gap.c:2080
 msgid "# gap requests processed: local result"
 msgstr "# gap Anfragen verarbeitet: lokales Ergebnis"
 
-#: src/applications/gap/gap.c:2066
+#: src/applications/gap/gap.c:2081
 msgid "# gap routing successes (total)"
 msgstr "# gap Routing erfolgreich (insgesamt)"
 
-#: src/applications/gap/gap.c:2067
+#: src/applications/gap/gap.c:2082
 msgid "# gap requests dropped: collision in RT"
 msgstr "# gap Anfragen verworfen: Kollision in RT"
 
-#: src/applications/gap/gap.c:2068
+#: src/applications/gap/gap.c:2083
 msgid "# gap requests forwarded (counting each peer)"
 msgstr "#gap Anfragen weitergeleitet (jeder Knoten gezählt)"
 
-#: src/applications/gap/gap.c:2069
+#: src/applications/gap/gap.c:2084
 msgid "# gap duplicate requests (pending)"
 msgstr "# gap doppelte Anfragen (unfertig)"
 
-#: src/applications/gap/gap.c:2070
+#: src/applications/gap/gap.c:2085
 msgid "# gap duplicate requests that were re-tried"
 msgstr "# gap doppelte Anfragen, die wiederholt wurden"
 
-#: src/applications/gap/gap.c:2071
+#: src/applications/gap/gap.c:2086
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr "# gap Wiederholungs-TTL-Differenz (kummulativ)"
 
-#: src/applications/gap/gap.c:2072
+#: src/applications/gap/gap.c:2087
 msgid "# gap reply duplicates"
 msgstr "#gap doppelte Antworten"
 
-#: src/applications/gap/gap.c:2073
+#: src/applications/gap/gap.c:2088
 msgid "# gap spurious replies"
 msgstr "# gap falsche Antworten"
 
-#: src/applications/gap/gap.c:2074
+#: src/applications/gap/gap.c:2089
 msgid "# gap routing slots currently in use"
 msgstr "# gap Routingschächte im Moment in Verwendung"
 
-#: src/applications/gap/gap.c:2075
+#: src/applications/gap/gap.c:2090
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2076
+#: src/applications/gap/gap.c:2091
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2077
+#: src/applications/gap/gap.c:2092
 #, fuzzy
 msgid "# gap rewards pending"
 msgstr "# gap doppelte Anfragen (unfertig)"
 
-#: src/applications/gap/gap.c:2094
+#: src/applications/gap/gap.c:2093
+#, fuzzy
+msgid "# gap response weights"
+msgstr "# gap falsche Antworten"
+
+#: src/applications/gap/gap.c:2110
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
@@ -1497,7 +1511,7 @@ msgstr ""
 "Verkehrsdienst konnte nicht geladen werden, GAP kann keinen verdeckenden "
 "Netzwerkverkehr sicherstellen.\n"
 
-#: src/applications/gap/gap.c:2125
+#: src/applications/gap/gap.c:2141
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr "`%s' registriert Handler %d %d\n"
@@ -1753,8 +1767,8 @@ msgstr "# Sitzungen aufgebaut"
 #: src/applications/sqstore_sqlite/sqlite.c:51 src/util/hostkey_gcrypt.c:56
 #: src/util/hostkey_gcrypt.c:63 src/util/storage.c:659
 #: src/util/symcipher_gcrypt.c:47 src/util/symcipher_gcrypt.c:54
-#: src/include/gnunet_util.h:1035 src/include/gnunet_util.h:1042
-#: src/include/gnunet_util.h:1044
+#: src/include/gnunet_util.h:1042 src/include/gnunet_util.h:1049
+#: src/include/gnunet_util.h:1051
 #, c-format
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
@@ -2396,193 +2410,891 @@ msgstr "Konfigurationsdatei `%s' wurde erzeugt.\n"
 msgid "%s: symbol value `%s' invalid for %s\n"
 msgstr "%s: Symbolwert `%s' ist ungültig für %s\n"
 
-#: src/conf/gconf.c:75
+#: src/conf/gconf.c:73
 msgid "Sorry, no help is available for this option.\n"
 msgstr "Sorry, für diese Option steht keine Hilfe zur Verfügung.\n"
 
-#: src/conf/gconf_interface.c:134
+#: src/conf/wizard.glade:10 src/conf/wizard.glade:259
+#: src/conf/wizard.glade:711 src/conf/wizard.glade:1436
+#: src/conf/wizard.glade:2217
+msgid "GNUnet configuration assistant"
+msgstr "GNUnet Konfigurationsassistent"
+
+#: src/conf/wizard.glade:56
+#, fuzzy
+msgid ""
+"Welcome to GNUnet!\n"
+"\n"
+"This assistant will ask you a few basic questions in order to configure "
+"GNUnet.\n"
+"\n"
+"Please visit our homepage at\n"
+"\thttp://gnunet.org\n"
+"and join our community at\n"
+"\thttps://gnunet.org/drupal/\n"
+"\n"
+"Have a lot of fun,\n"
+"\n"
+"The GNUnet team"
+msgstr ""
+"Willkommen bei GNUnet!\n"
+"\n"
+"Dieser Assistent wird Ihnen einige grundlegende Fragen stellen, um GNUnet zu "
+"konfigurieren.\n"
+"\n"
+"Bitte besuchen Sie unsere Homepage\n"
+"\thttp://gnunet.org\n"
+"und schließen Sie sich unserer Community an:\n"
+"\thttps://gnunet.org/drupal/\n"
+"\n"
+"Viel Spaß,\n"
+"\n"
+"das GNUnet-Team"
+
+#: src/conf/wizard.glade:142 src/conf/wizard.glade:594
+#: src/conf/wizard.glade:1319 src/conf/wizard.glade:2581
+msgid "Next"
+msgstr "Weiter"
+
+#: src/conf/wizard.glade:217 src/conf/wizard.glade:669
+#: src/conf/wizard.glade:1394 src/conf/wizard.glade:1928
+#: src/conf/wizard.glade:2656
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/conf/wizard.glade:318
+msgid ""
+"Enter information about your network connection here.\n"
+"\n"
+"The \"Network interface\" is the device that connects your computer to the "
+"internet. This is usually a modem, an ISDN card or a network card in case "
+"you are using DSL.\n"
+"\n"
+"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
+"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
+"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
+"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
+"enter it here.\n"
+"If in doubt, leave the field empty. GNUnet will then try to determine your "
+"IP-Address.\n"
+"\n"
+"If you are connected to the internet through another computer doing SNAT, a "
+"router or a \"hardware firewall\" and other computers on the internet cannot "
+"connect to this computer, check the last option on this page. Leave it "
+"unchecked on direct connections through modems, ISDN cards and DNAT (also "
+"known as \"port forwarding\")."
+msgstr ""
+"Geben Sie hier Ihre Netzwerkinformationen ein.\n"
+"\n"
+"Das \"Netzwerkgerät\" ist das Gerät, das Ihren Computer mit dem Internet "
+"verbindet. Dies ist normalerweise ein Modem, eine ISDN-Karte oder eine "
+"Netzwerkkarte für den Fall, dass Sie DSL benutzen.\n"
+"\n"
+"Wenn Ihnen Ihr Provider immer die gleiche IP-Adresse zuweist (eine "
+"\"statische\" IP-Adresse), geben Sie diese in das \"IP-Adresse\"-Feld ein. "
+"Wenn Ihre IP-Adresse sich hin und wieder ändert (\"dynamische\" IP-Adresse), "
+"es jedoch einen Hostnamen gibt, der immer auf Ihre aktuelle IP-Adresse zeigt "
+"(\"Dynamisches DNS\"), so können Sie ihn auch eingeben.\n"
+"Im Zweifel lassen Sie das Feld leer. GNUnet wird dann versuchen, die IP-"
+"Adresse automatisch zu bestimmen.\n"
+"\n"
+"Wenn Sie nicht direkt mit dem Internet verbunden sind, sondern dies über "
+"einen anderen Rechner mit SNAT, einem Router oder einer \"Hardware Firewall"
+"\" geschieht und andere Computer im Internet keine Verbindung mit diesem "
+"Computer herstellen können, so aktivieren Sie die letzte Option auf dieser "
+"Seite. Lassen Sie sie jedoch deaktiviert, wenn Sie eine direkte Verbindung "
+"über ein Modem, eine ISDN-Karte oder einen anderen Rechner mit DNAT (auch "
+"bekannt als \"Port forwarding\") zum Internet haben."
+
+#: src/conf/wizard.glade:372
+msgid "Network interface:"
+msgstr "Netzwerkgerät:"
+
+#: src/conf/wizard.glade:400
+msgid "IP-Address/Hostname:"
+msgstr "IP-Adresse/Hostname:"
+
+#: src/conf/wizard.glade:451
+msgid "Computer cannot receive inbound connections (SNAT/Firewall)"
+msgstr ""
+"Computer kann keine ankommenden Verbindungen akzeptieren (SNAT/Firewall)"
+
+#: src/conf/wizard.glade:514
+msgid "Network connection"
+msgstr "Netzwerkverbindung"
+
+#: src/conf/wizard.glade:770
+msgid ""
+"You can limit GNUnet's ressource usage here.\n"
+"\n"
+"\"Bandwidth limitation\" is how much data may be sent per second. If you "
+"have a flatrate you can set it to the maximum speed of your internet "
+"connection.\n"
+"\n"
+"The \"Max. CPU usage\" is the percentage of processor time GNUnet is allowed "
+"to use."
+msgstr ""
+"Hier können Sie GNUnet's Ressourcennutzung einschränken.\n"
+"\n"
+"\"Bandbreitenbeschränkung\" gibt an, wieviele Daten maximal pro Sekunde "
+"übetragen werden dürfen. Wenn Sie eine Flatrate haben, können Sie diese "
+"Werte auf die maximal erreichbare Geschwindigkeit Ihrer Internetverbindung "
+"setzen.\n"
+"\n"
+"Die \"Max. CPU Nutzung\" gibt den Prozentsatz an CPU-Zeit an, den GNUnet für "
+"sich verwenden darf."
+
+#: src/conf/wizard.glade:833
+msgid "Upstream (Bytes/s):"
+msgstr "Upstream (Bytes/s):"
+
+#: src/conf/wizard.glade:883
+msgid "Downstream (Bytes/s):"
+msgstr "Downstream (Bytes/s):"
+
+#: src/conf/wizard.glade:942
+msgid "Bandwidth limitation"
+msgstr "Bandbreitenbeschränkung"
+
+#: src/conf/wizard.glade:986
+msgid "Use denoted bandwidth for GNUnet"
+msgstr "Angegebene Bandbreite für GNUnet verwenden"
+
+#: src/conf/wizard.glade:1006
+msgid "Share denoted bandwidth with other applications"
+msgstr "Angegebene Bandbreite mit anderen Anwendungen teilen"
+
+#: src/conf/wizard.glade:1028
+msgid "Bandwidth sharing"
+msgstr "Aufteilung der Bandbreite"
+
+#: src/conf/wizard.glade:1071
+msgid "Max. CPU usage (%):"
+msgstr "Max. CPU Nutzung (%):"
+
+#: src/conf/wizard.glade:1118
+msgid "CPU usage"
+msgstr "CPU Nutzung"
+
+#: src/conf/wizard.glade:1164
+msgid "Load limitation"
+msgstr "Lastbeschränkung"
+
+#: src/conf/wizard.glade:1244 src/conf/wizard.glade:1778
+#: src/conf/wizard.glade:2506
+msgid "Back"
+msgstr "Zurück"
+
+#: src/conf/wizard.glade:1495
+msgid ""
+"GNUnet is able to store data from other peers in your datastore. This is "
+"useful if an adversary has access to your inserted content and you need to "
+"deny that the content is yours. With \"content migration\" on, the content "
+"could have \"migrated\" over the internet to your node without your "
+"knowledge.\n"
+"It also helps to spread popular content over different peers to enhance "
+"availability.\n"
+"\n"
+"The GNUnet datastore contains all data that GNUnet generates (index data, "
+"inserted and migrated content). Its maximum size can be specified below.\n"
+"\n"
+"If you are an experienced user, you may want to tweak your GNUnet "
+"installation using the enhanced configurator.\n"
+"\n"
+"After changing the configuration and/or updating GNUnet, it is sometimes "
+"required to run gnunet-update to update internal data structures. Depending "
+"on the changes made, this may take some time."
+msgstr ""
+"GNUnet ist in der Lage, Daten von anderen Knoten in Ihrem Datenspeicher zu "
+"speichern. Das ist nützlich, wenn ein Widersacher Zugriff auf Ihre "
+"eingefügten Inhalte erlangt und Sie abstreiten müssen, dass diese Daten "
+"Ihnen gehören. Mit \"Inhaltsmigration\" angeschaltet können die Inhalte über "
+"das Internet von einem anderen Knoten zu Ihrem Rechner ohne Ihr Wissen "
+"\"gewandert\" sein.\n"
+"Außerdem hilft es, beliebte Inhalte über verschiedene Netzteilnehmer zu "
+"verteilen, um so die Verfügbarkeit zu erhöhen.\n"
+"\n"
+"Der GNUnet Datenspeicher enthält alle Daten, die GNUnet erzeugt (Indexdaten, "
+"eingefügte und migrierte Inhalte). Seine maximale Größe kann unten angegeben "
+"werden.\n"
+"\n"
+"Wenn Sie ein fortgeschrittener Benutzer sind, möchten Sie vielleicht weitere "
+"Feinjustierungen an GNUnet über den \"erweiterten Konfigurator\" vornehmen.\n"
+"Nachdem die Konfiguration verändert und/oder GNUnet upgedated wurde ist es "
+"manchmal nötig, gnunet-update auszuführen, um interne Datenstrukturen zu "
+"aktualisieren. Abhängig von den gemachten Änderungen kann dies etwas Zeit in "
+"Anspruch nehmen."
+
+#: src/conf/wizard.glade:1541
+msgid "Store migrated content"
+msgstr "Migrierte Inhalte speichern"
+
+#: src/conf/wizard.glade:1566
+msgid "Maximum datastore size (MB):"
+msgstr "Maximale Größe des Datenspeichers (MB):"
+
+#: src/conf/wizard.glade:1621
+msgid "Start the GNUnet background process on computer startup"
+msgstr ""
+"GNUnet Hintergrundprozeß beim Starten des Computers automatisch starten"
+
+#: src/conf/wizard.glade:1642
+msgid "Open the enhanced configurator"
+msgstr "Erweiterten Konfigurator starten"
+
+#: src/conf/wizard.glade:1663
+msgid "Run gnunet-update"
+msgstr "gnunet-update ausführen"
+
+#: src/conf/wizard.glade:1698 src/conf/wizard.glade:2426
+msgid "Other settings"
+msgstr "Weitere Einstellungen"
+
+#: src/conf/wizard.glade:1853
+msgid "Finish"
+msgstr "Fertigstellen"
+
+#: src/conf/wizard.glade:1968
+msgid "Question"
+msgstr "Frage"
+
+#: src/conf/wizard.glade:2014
+msgid "Do you want to save your settings?"
+msgstr "Möchten Sie Ihre Einstellungen speichern?"
+
+#: src/conf/wizard.glade:2065
+msgid "Yes"
+msgstr "Ja"
+
+#: src/conf/wizard.glade:2078
+msgid "No"
+msgstr "Nein"
+
+#: src/conf/wizard.glade:2098 src/conf/wizard.glade:2696
+#: src/conf/wizard_curs.c:58 src/conf/wizard_util.c:120
+#: src/conf/wizard_util.c:163 src/util/configuration.c:522
+msgid "Error"
+msgstr "Fehler"
+
+#: src/conf/wizard.glade:2144
+msgid "Unable to save configuration!"
+msgstr "Fehler beim Speichern der Konfiguration!"
+
+#: src/conf/wizard.glade:2195 src/conf/wizard.glade:2793
+msgid "OK"
+msgstr "OK"
+
+#: src/conf/wizard.glade:2276
+msgid ""
+"Define the user and the group owning the GNUnet service here.\n"
+"\n"
+"For security reasons, it is a good idea to let this setup create a new user "
+"account and a new group under which the GNUnet service is started at system "
+"startup.\n"
+"\n"
+"However, GNUnet may not be able to access files other than its own. This "
+"includes files you want to publish in GNUnet. You'll have to grant read "
+"permissions to the user specified below.\n"
+"\n"
+"Leave the fields empty to run GNUnet with system privileges."
+msgstr ""
+"Geben Sie den Benutzer und die Gruppe an, der der GNUnet Dienst gehören "
+"soll.\n"
+"\n"
+"Aus Sicherheitsgründen ist es eine gute Idee, dieses Setup ein neues "
+"Benutzerkonto und eine neue Gruppe anlegen zu lassen, unter der der GNUnet "
+"Dienst beim Systemstart läuft.\n"
+"\n"
+"Natürlich kann GNUnet dann nur auf seine eigenen Dateien zugreifen. Dies "
+"betrifft auch Dateien, die Sie im GNUnet veröffentlichen möchten. Sie müssen "
+"dann dem unten angegebenen Benutzerkonto zuerst Leseberechtigungen geben.\n"
+"\n"
+"Lassen Sie dieses Feld leer, wenn Sie GNUnet mit Systemprivilegien laufen "
+"lassen möchten."
+
+#: src/conf/wizard.glade:2317
+msgid "Group:"
+msgstr "Gruppe:"
+
+#: src/conf/wizard.glade:2389
+msgid "User account:"
+msgstr "Benutzerkonto:"
+
+#: src/conf/wizard.glade:2742
+msgid "gnunet-update failed!"
+msgstr "gnunet-update schlug fehlt!"
+
+#: src/conf/wizard.glade:2813
 msgid "Gtk GNUnet Configurator"
 msgstr "Gtk GNUnet Konfigurator"
 
-#: src/conf/gconf_interface.c:145
+#: src/conf/wizard.glade:2847
 msgid "_File"
 msgstr "_Datei"
 
-#: src/conf/gconf_interface.c:152
-msgid "_Load"
-msgstr "_öffnen"
-
-#: src/conf/gconf_interface.c:155 src/conf/gconf_interface.c:315
+#: src/conf/wizard.glade:2856 src/conf/wizard.glade:3189
 msgid "Load a config file"
 msgstr "Eine Konfigurationsdatei laden"
 
-#: src/conf/gconf_interface.c:163
-msgid "_Save"
-msgstr "_Speichern"
+#: src/conf/wizard.glade:2857
+msgid "_Load"
+msgstr "_öffnen"
 
-#: src/conf/gconf_interface.c:166
+#: src/conf/wizard.glade:2879
 msgid "Save the config in .config"
 msgstr "Die Konfiguration in .config speichern"
 
-#: src/conf/gconf_interface.c:180
+#: src/conf/wizard.glade:2880
+msgid "_Save"
+msgstr "_Speichern"
+
+#: src/conf/wizard.glade:2908
 msgid "_Quit"
 msgstr "_Beenden"
 
-#: src/conf/gconf_interface.c:190
+#: src/conf/wizard.glade:2934
 msgid "_Options"
 msgstr "_Optionen"
 
-#: src/conf/gconf_interface.c:197
-msgid "Show _name"
-msgstr "_Name anzeigen"
-
-#: src/conf/gconf_interface.c:200
+#: src/conf/wizard.glade:2943
 msgid "Show name"
 msgstr "Name anzeigen"
 
-#: src/conf/gconf_interface.c:202
-msgid "Show _range"
-msgstr "_Bereich anzeigen"
+#: src/conf/wizard.glade:2944
+msgid "Show _name"
+msgstr "_Name anzeigen"
 
-#: src/conf/gconf_interface.c:205
+#: src/conf/wizard.glade:2954
 msgid "Show range (Y/M/N)"
 msgstr "Bereich anzeigen (Y/M/N)"
 
-#: src/conf/gconf_interface.c:207
-msgid "Show _data"
-msgstr "_Daten anzeigen"
+#: src/conf/wizard.glade:2955
+msgid "Show _range"
+msgstr "_Bereich anzeigen"
 
-#: src/conf/gconf_interface.c:210
+#: src/conf/wizard.glade:2965
 msgid "Show value of the option"
 msgstr "Wert der Option anzeigen"
 
-#: src/conf/gconf_interface.c:219
-msgid "Show all _options"
-msgstr "Alle _Optionen anzeigen"
+#: src/conf/wizard.glade:2966
+msgid "Show _data"
+msgstr "_Daten anzeigen"
 
-#: src/conf/gconf_interface.c:222
+#: src/conf/wizard.glade:2982
 msgid "Show all options"
 msgstr "Alle Optionen anzeigen"
 
-#: src/conf/gconf_interface.c:225
+#: src/conf/wizard.glade:2983
+msgid "Show all _options"
+msgstr "Alle _Optionen anzeigen"
+
+#: src/conf/wizard.glade:2997
 msgid "_Help"
 msgstr "_Hilfe"
 
-#: src/conf/gconf_interface.c:232
+#: src/conf/wizard.glade:3006
 msgid "_Introduction"
 msgstr "_Einführung"
 
-#: src/conf/gconf_interface.c:244
+#: src/conf/wizard.glade:3028
 msgid "_About"
 msgstr "_über"
 
-#: src/conf/gconf_interface.c:254
-msgid "_License"
-msgstr "_Lizenz"
-
-#: src/conf/gconf_interface.c:281
+#: src/conf/wizard.glade:3083
 msgid "Goes up of one level (single view)"
 msgstr "Bewegt sich eine Ebene nach oben (einfache Ansicht)"
 
-#: src/conf/gconf_interface.c:295
+#: src/conf/wizard.glade:3126
 msgid "Up"
 msgstr "Oben"
 
-#: src/conf/gconf_interface.c:329
+#: src/conf/wizard.glade:3232
 msgid "Load"
 msgstr "Laden"
 
-#: src/conf/gconf_interface.c:341
+#: src/conf/wizard.glade:3276
 msgid "Save a config file"
 msgstr "Konfigurationsdatei speichern"
 
-#: src/conf/gconf_interface.c:355
+#: src/conf/wizard.glade:3319
 msgid "Save"
 msgstr "Speichern"
 
-#: src/conf/gconf_interface.c:375
+#: src/conf/wizard.glade:3382
 msgid "Single view"
 msgstr "Einfache Ansicht"
 
-#: src/conf/gconf_interface.c:390
+#: src/conf/wizard.glade:3425
 msgid "Single"
 msgstr "Einfach"
 
-#: src/conf/gconf_interface.c:402
+#: src/conf/wizard.glade:3469
 msgid "Split view"
 msgstr "Geteilte Ansicht"
 
-#: src/conf/gconf_interface.c:417
+#: src/conf/wizard.glade:3512
 msgid "Split"
 msgstr "Geteilt"
 
-#: src/conf/gconf_interface.c:429
+#: src/conf/wizard.glade:3556
 msgid "Full view"
 msgstr "Volle Ansicht"
 
-#: src/conf/gconf_interface.c:444
+#: src/conf/wizard.glade:3599
 msgid "Full"
 msgstr "Voll"
 
-#: src/conf/gconf_interface.c:465
+#: src/conf/wizard.glade:3662
 msgid "Collapse the whole tree in the right frame"
 msgstr "Den gesamten Baum im rechten Frame kollabieren"
 
-#: src/conf/gconf_interface.c:480
+#: src/conf/wizard.glade:3705
 msgid "Collapse"
 msgstr "Kollabieren"
 
-#: src/conf/gconf_interface.c:493
+#: src/conf/wizard.glade:3749
 msgid "Expand the whole tree in the right frame"
 msgstr "Den gesamten Baum im rechten Frame expandieren"
 
-#: src/conf/gconf_interface.c:507
+#: src/conf/wizard.glade:3792
 msgid "Expand"
 msgstr "Expandieren"
 
-#: src/conf/gconf_interface.c:561
-msgid "Sorry, no help available for this option yet."
-msgstr "Sorry, für diese Option steht noch keine Hilfe zur Verfügung"
+#: src/conf/wizard.glade:3935
+msgid ""
+"This is GNUnet's configuration interface.\n"
+"\n"
+"GNUnet's options are separated into categories. You can browse them in the "
+"left tree. If you click on one of the categories, its options are shown "
+"above. \n"
+"\n"
+"To change the value of an option, simply click on its value and enter a new "
+"value. To get additional information about a specific option, click on its "
+"description."
+msgstr ""
 
-#: src/conf/gconf_support.c:90 src/conf/gconf_support.c:114
-#, c-format
-msgid "Couldn't find pixmap file: %s"
-msgstr "Pixmapdatei %s konnte nicht gefunden werden"
+#: src/conf/wizard.glade:3967
+#, fuzzy
+msgid "Introduction"
+msgstr "_Einführung"
 
-#: src/conf/gnunet-setup.c:93
+#: src/conf/wizard.glade:4043
+msgid ""
+"Welcome to GNUnet Setup.\n"
+"\n"
+"For each option, a blank box indicates the feature is disabled, and checked "
+"one indicates it is enabled.\n"
+"If you do not see an option that you believe should be present, try turning "
+"on Show All Options under the Options menu.\n"
+"\n"
+"Although there is no cross reference yet to help you figure out what other "
+"options must be enabled to support the option you are interested in, you can "
+"still view the help of a grayed-out option.\n"
+"\n"
+"Toggling Show Debug Info under the Options menu will show the dependencies, "
+"which you can then match by examining other options."
+msgstr ""
+
+#: src/conf/wizard.glade:4067
+#, fuzzy
+msgid "gnunet-setup"
+msgstr "gnunet-update ausführen"
+
+#: src/conf/wizard.glade:4068
+msgid "(C) 2001-2006 Christian Grothoff (and other contributing authors)"
+msgstr ""
+
+#: src/conf/wizard.glade:4069
+msgid "This is the configuration tool for GNUnet."
+msgstr ""
+
+#: src/conf/wizard.glade:4070
+msgid ""
+"\t\t    GNU GENERAL PUBLIC LICENSE\n"
+"\t\t       Version 2, June 1991\n"
+"\n"
+" Copyright (C) 1989, 1991 Free Software Foundation, Inc.\n"
+"     51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA\n"
+" Everyone is permitted to copy and distribute verbatim copies\n"
+" of this license document, but changing it is not allowed.\n"
+"\n"
+"\t\t\t    Preamble\n"
+"\n"
+"  The licenses for most software are designed to take away your\n"
+"freedom to share and change it.  By contrast, the GNU General Public\n"
+"License is intended to guarantee your freedom to share and change free\n"
+"software--to make sure the software is free for all its users.  This\n"
+"General Public License applies to most of the Free Software\n"
+"Foundation's software and to any other program whose authors commit to\n"
+"using it.  (Some other Free Software Foundation software is covered by\n"
+"the GNU Library General Public License instead.)  You can apply it to\n"
+"your programs, too.\n"
+"\n"
+"  When we speak of free software, we are referring to freedom, not\n"
+"price.  Our General Public Licenses are designed to make sure that you\n"
+"have the freedom to distribute copies of free software (and charge for\n"
+"this service if you wish), that you receive source code or can get it\n"
+"if you want it, that you can change the software or use pieces of it\n"
+"in new free programs; and that you know you can do these things.\n"
+"\n"
+"  To protect your rights, we need to make restrictions that forbid\n"
+"anyone to deny you these rights or to ask you to surrender the rights.\n"
+"These restrictions translate to certain responsibilities for you if you\n"
+"distribute copies of the software, or if you modify it.\n"
+"\n"
+"  For example, if you distribute copies of such a program, whether\n"
+"gratis or for a fee, you must give the recipients all the rights that\n"
+"you have.  You must make sure that they, too, receive or can get the\n"
+"source code.  And you must show them these terms so they know their\n"
+"rights.\n"
+"\n"
+"  We protect your rights with two steps: (1) copyright the software, and\n"
+"(2) offer you this license which gives you legal permission to copy,\n"
+"distribute and/or modify the software.\n"
+"\n"
+"  Also, for each author's protection and ours, we want to make certain\n"
+"that everyone understands that there is no warranty for this free\n"
+"software.  If the software is modified by someone else and passed on, we\n"
+"want its recipients to know that what they have is not the original, so\n"
+"that any problems introduced by others will not reflect on the original\n"
+"authors' reputations.\n"
+"\n"
+"  Finally, any free program is threatened constantly by software\n"
+"patents.  We wish to avoid the danger that redistributors of a free\n"
+"program will individually obtain patent licenses, in effect making the\n"
+"program proprietary.  To prevent this, we have made it clear that any\n"
+"patent must be licensed for everyone's free use or not licensed at all.\n"
+"\n"
+"  The precise terms and conditions for copying, distribution and\n"
+"modification follow.\n"
+"\n"
+"\t\t    GNU GENERAL PUBLIC LICENSE\n"
+"   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION\n"
+"\n"
+"  0. This License applies to any program or other work which contains\n"
+"a notice placed by the copyright holder saying it may be distributed\n"
+"under the terms of this General Public License.  The \"Program\", below,\n"
+"refers to any such program or work, and a \"work based on the Program\"\n"
+"means either the Program or any derivative work under copyright law:\n"
+"that is to say, a work containing the Program or a portion of it,\n"
+"either verbatim or with modifications and/or translated into another\n"
+"language.  (Hereinafter, translation is included without limitation in\n"
+"the term \"modification\".)  Each licensee is addressed as \"you\".\n"
+"\n"
+"Activities other than copying, distribution and modification are not\n"
+"covered by this License; they are outside its scope.  The act of\n"
+"running the Program is not restricted, and the output from the Program\n"
+"is covered only if its contents constitute a work based on the\n"
+"Program (independent of having been made by running the Program).\n"
+"Whether that is true depends on what the Program does.\n"
+"\n"
+"  1. You may copy and distribute verbatim copies of the Program's\n"
+"source code as you receive it, in any medium, provided that you\n"
+"conspicuously and appropriately publish on each copy an appropriate\n"
+"copyright notice and disclaimer of warranty; keep intact all the\n"
+"notices that refer to this License and to the absence of any warranty;\n"
+"and give any other recipients of the Program a copy of this License\n"
+"along with the Program.\n"
+"\n"
+"You may charge a fee for the physical act of transferring a copy, and\n"
+"you may at your option offer warranty protection in exchange for a fee.\n"
+"\n"
+"  2. You may modify your copy or copies of the Program or any portion\n"
+"of it, thus forming a work based on the Program, and copy and\n"
+"distribute such modifications or work under the terms of Section 1\n"
+"above, provided that you also meet all of these conditions:\n"
+"\n"
+"    a) You must cause the modified files to carry prominent notices\n"
+"    stating that you changed the files and the date of any change.\n"
+"\n"
+"    b) You must cause any work that you distribute or publish, that in\n"
+"    whole or in part contains or is derived from the Program or any\n"
+"    part thereof, to be licensed as a whole at no charge to all third\n"
+"    parties under the terms of this License.\n"
+"\n"
+"    c) If the modified program normally reads commands interactively\n"
+"    when run, you must cause it, when started running for such\n"
+"    interactive use in the most ordinary way, to print or display an\n"
+"    announcement including an appropriate copyright notice and a\n"
+"    notice that there is no warranty (or else, saying that you provide\n"
+"    a warranty) and that users may redistribute the program under\n"
+"    these conditions, and telling the user how to view a copy of this\n"
+"    License.  (Exception: if the Program itself is interactive but\n"
+"    does not normally print such an announcement, your work based on\n"
+"    the Program is not required to print an announcement.)\n"
+"\n"
+"These requirements apply to the modified work as a whole.  If\n"
+"identifiable sections of that work are not derived from the Program,\n"
+"and can be reasonably considered independent and separate works in\n"
+"themselves, then this License, and its terms, do not apply to those\n"
+"sections when you distribute them as separate works.  But when you\n"
+"distribute the same sections as part of a whole which is a work based\n"
+"on the Program, the distribution of the whole must be on the terms of\n"
+"this License, whose permissions for other licensees extend to the\n"
+"entire whole, and thus to each and every part regardless of who wrote it.\n"
+"\n"
+"Thus, it is not the intent of this section to claim rights or contest\n"
+"your rights to work written entirely by you; rather, the intent is to\n"
+"exercise the right to control the distribution of derivative or\n"
+"collective works based on the Program.\n"
+"\n"
+"In addition, mere aggregation of another work not based on the Program\n"
+"with the Program (or with a work based on the Program) on a volume of\n"
+"a storage or distribution medium does not bring the other work under\n"
+"the scope of this License.\n"
+"\n"
+"  3. You may copy and distribute the Program (or a work based on it,\n"
+"under Section 2) in object code or executable form under the terms of\n"
+"Sections 1 and 2 above provided that you also do one of the following:\n"
+"\n"
+"    a) Accompany it with the complete corresponding machine-readable\n"
+"    source code, which must be distributed under the terms of Sections\n"
+"    1 and 2 above on a medium customarily used for software interchange; "
+"or,\n"
+"\n"
+"    b) Accompany it with a written offer, valid for at least three\n"
+"    years, to give any third party, for a charge no more than your\n"
+"    cost of physically performing source distribution, a complete\n"
+"    machine-readable copy of the corresponding source code, to be\n"
+"    distributed under the terms of Sections 1 and 2 above on a medium\n"
+"    customarily used for software interchange; or,\n"
+"\n"
+"    c) Accompany it with the information you received as to the offer\n"
+"    to distribute corresponding source code.  (This alternative is\n"
+"    allowed only for noncommercial distribution and only if you\n"
+"    received the program in object code or executable form with such\n"
+"    an offer, in accord with Subsection b above.)\n"
+"\n"
+"The source code for a work means the preferred form of the work for\n"
+"making modifications to it.  For an executable work, complete source\n"
+"code means all the source code for all modules it contains, plus any\n"
+"associated interface definition files, plus the scripts used to\n"
+"control compilation and installation of the executable.  However, as a\n"
+"special exception, the source code distributed need not include\n"
+"anything that is normally distributed (in either source or binary\n"
+"form) with the major components (compiler, kernel, and so on) of the\n"
+"operating system on which the executable runs, unless that component\n"
+"itself accompanies the executable.\n"
+"\n"
+"If distribution of executable or object code is made by offering\n"
+"access to copy from a designated place, then offering equivalent\n"
+"access to copy the source code from the same place counts as\n"
+"distribution of the source code, even though third parties are not\n"
+"compelled to copy the source along with the object code.\n"
+"\n"
+"  4. You may not copy, modify, sublicense, or distribute the Program\n"
+"except as expressly provided under this License.  Any attempt\n"
+"otherwise to copy, modify, sublicense or distribute the Program is\n"
+"void, and will automatically terminate your rights under this License.\n"
+"However, parties who have received copies, or rights, from you under\n"
+"this License will not have their licenses terminated so long as such\n"
+"parties remain in full compliance.\n"
+"\n"
+"  5. You are not required to accept this License, since you have not\n"
+"signed it.  However, nothing else grants you permission to modify or\n"
+"distribute the Program or its derivative works.  These actions are\n"
+"prohibited by law if you do not accept this License.  Therefore, by\n"
+"modifying or distributing the Program (or any work based on the\n"
+"Program), you indicate your acceptance of this License to do so, and\n"
+"all its terms and conditions for copying, distributing or modifying\n"
+"the Program or works based on it.\n"
+"\n"
+"  6. Each time you redistribute the Program (or any work based on the\n"
+"Program), the recipient automatically receives a license from the\n"
+"original licensor to copy, distribute or modify the Program subject to\n"
+"these terms and conditions.  You may not impose any further\n"
+"restrictions on the recipients' exercise of the rights granted herein.\n"
+"You are not responsible for enforcing compliance by third parties to\n"
+"this License.\n"
+"\n"
+"  7. If, as a consequence of a court judgment or allegation of patent\n"
+"infringement or for any other reason (not limited to patent issues),\n"
+"conditions are imposed on you (whether by court order, agreement or\n"
+"otherwise) that contradict the conditions of this License, they do not\n"
+"excuse you from the conditions of this License.  If you cannot\n"
+"distribute so as to satisfy simultaneously your obligations under this\n"
+"License and any other pertinent obligations, then as a consequence you\n"
+"may not distribute the Program at all.  For example, if a patent\n"
+"license would not permit royalty-free redistribution of the Program by\n"
+"all those who receive copies directly or indirectly through you, then\n"
+"the only way you could satisfy both it and this License would be to\n"
+"refrain entirely from distribution of the Program.\n"
+"\n"
+"If any portion of this section is held invalid or unenforceable under\n"
+"any particular circumstance, the balance of the section is intended to\n"
+"apply and the section as a whole is intended to apply in other\n"
+"circumstances.\n"
+"\n"
+"It is not the purpose of this section to induce you to infringe any\n"
+"patents or other property right claims or to contest validity of any\n"
+"such claims; this section has the sole purpose of protecting the\n"
+"integrity of the free software distribution system, which is\n"
+"implemented by public license practices.  Many people have made\n"
+"generous contributions to the wide range of software distributed\n"
+"through that system in reliance on consistent application of that\n"
+"system; it is up to the author/donor to decide if he or she is willing\n"
+"to distribute software through any other system and a licensee cannot\n"
+"impose that choice.\n"
+"\n"
+"This section is intended to make thoroughly clear what is believed to\n"
+"be a consequence of the rest of this License.\n"
+"\n"
+"  8. If the distribution and/or use of the Program is restricted in\n"
+"certain countries either by patents or by copyrighted interfaces, the\n"
+"original copyright holder who places the Program under this License\n"
+"may add an explicit geographical distribution limitation excluding\n"
+"those countries, so that distribution is permitted only in or among\n"
+"countries not thus excluded.  In such case, this License incorporates\n"
+"the limitation as if written in the body of this License.\n"
+"\n"
+"  9. The Free Software Foundation may publish revised and/or new versions\n"
+"of the General Public License from time to time.  Such new versions will\n"
+"be similar in spirit to the present version, but may differ in detail to\n"
+"address new problems or concerns.\n"
+"\n"
+"Each version is given a distinguishing version number.  If the Program\n"
+"specifies a version number of this License which applies to it and \"any\n"
+"later version\", you have the option of following the terms and conditions\n"
+"either of that version or of any later version published by the Free\n"
+"Software Foundation.  If the Program does not specify a version number of\n"
+"this License, you may choose any version ever published by the Free "
+"Software\n"
+"Foundation.\n"
+"\n"
+"  10. If you wish to incorporate parts of the Program into other free\n"
+"programs whose distribution conditions are different, write to the author\n"
+"to ask for permission.  For software which is copyrighted by the Free\n"
+"Software Foundation, write to the Free Software Foundation; we sometimes\n"
+"make exceptions for this.  Our decision will be guided by the two goals\n"
+"of preserving the free status of all derivatives of our free software and\n"
+"of promoting the sharing and reuse of software generally.\n"
+"\n"
+"\t\t\t    NO WARRANTY\n"
+"\n"
+"  11. BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY\n"
+"FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN\n"
+"OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES\n"
+"PROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY OF ANY KIND, EITHER "
+"EXPRESSED\n"
+"OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF\n"
+"MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS\n"
+"TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE\n"
+"PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,\n"
+"REPAIR OR CORRECTION.\n"
+"\n"
+"  12. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING\n"
+"WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR\n"
+"REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,\n"
+"INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING\n"
+"OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED\n"
+"TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY\n"
+"YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER\n"
+"PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE\n"
+"POSSIBILITY OF SUCH DAMAGES.\n"
+"\n"
+"\t\t     END OF TERMS AND CONDITIONS\n"
+"\n"
+"\t    How to Apply These Terms to Your New Programs\n"
+"\n"
+"  If you develop a new program, and you want it to be of the greatest\n"
+"possible use to the public, the best way to achieve this is to make it\n"
+"free software which everyone can redistribute and change under these terms.\n"
+"\n"
+"  To do so, attach the following notices to the program.  It is safest\n"
+"to attach them to the start of each source file to most effectively\n"
+"convey the exclusion of warranty; and each file should have at least\n"
+"the \"copyright\" line and a pointer to where the full notice is found.\n"
+"\n"
+"    <one line to give the program's name and a brief idea of what it does.>\n"
+"    Copyright (C) <year>  <name of author>\n"
+"\n"
+"    This program is free software; you can redistribute it and/or modify\n"
+"    it under the terms of the GNU General Public License as published by\n"
+"    the Free Software Foundation; either version 2 of the License, or\n"
+"    (at your option) any later version.\n"
+"\n"
+"    This program is distributed in the hope that it will be useful,\n"
+"    but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"    GNU General Public License for more details.\n"
+"\n"
+"    You should have received a copy of the GNU General Public License\n"
+"    along with this program; if not, write to the Free Software\n"
+"    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  "
+"USA\n"
+"\n"
+"\n"
+"Also add information on how to contact you by electronic and paper mail.\n"
+"\n"
+"If the program is interactive, make it output a short notice like this\n"
+"when it starts in an interactive mode:\n"
+"\n"
+"    Gnomovision version 69, Copyright (C) year  name of author\n"
+"    Gnomovision comes with ABSOLUTELY NO WARRANTY; for details type `show "
+"w'.\n"
+"    This is free software, and you are welcome to redistribute it\n"
+"    under certain conditions; type `show c' for details.\n"
+"\n"
+"The hypothetical commands `show w' and `show c' should show the appropriate\n"
+"parts of the General Public License.  Of course, the commands you use may\n"
+"be called something other than `show w' and `show c'; they could even be\n"
+"mouse-clicks or menu items--whatever suits your program.\n"
+"\n"
+"You should also get your employer (if you work as a programmer) or your\n"
+"school, if any, to sign a \"copyright disclaimer\" for the program, if\n"
+"necessary.  Here is a sample; alter the names:\n"
+"\n"
+"  Yoyodyne, Inc., hereby disclaims all copyright interest in the program\n"
+"  `Gnomovision' (which makes passes at compilers) written by James Hacker.\n"
+"\n"
+"  <signature of Ty Coon>, 1 April 1989\n"
+"  Ty Coon, President of Vice\n"
+"\n"
+"This General Public License does not permit incorporating your program into\n"
+"proprietary programs.  If your program is a subroutine library, you may\n"
+"consider it more useful to permit linking proprietary applications with the\n"
+"library.  If this is what you want to do, use the GNU Library General\n"
+"Public License instead of this License.\n"
+msgstr ""
+
+#: src/conf/wizard.glade:4458
+msgid "Not for English ;-)"
+msgstr "Nils Durner and Christian Grothoff"
+
+#: src/conf/gnunet-setup.c:82
 msgid "generate configuration for gnunetd, the GNUnet daemon"
 msgstr "Generiere Konfiguration für gnunetd, den GNUnet Daemon"
 
-#: src/conf/gnunet-setup.c:101
+#: src/conf/gnunet-setup.c:90
 msgid "Tool to setup GNUnet."
 msgstr "Werkzeug für die Einrichtung von GNUnet."
 
-#: src/conf/gnunet-setup.c:102
+#: src/conf/gnunet-setup.c:91
 #, c-format
 msgid "Available MODEs:\n"
 msgstr "Verfügbare MODEs:\n"
 
-#: src/conf/gnunet-setup.c:103
+#: src/conf/gnunet-setup.c:92
 #, c-format
 msgid " config\t\ttext-based configuration\n"
 msgstr " config\t\ttext-basierte Konfiguration\n"
 
-#: src/conf/gnunet-setup.c:105
+#: src/conf/gnunet-setup.c:94
 #, c-format
 msgid " menuconfig\ttext-based menu\n"
 msgstr "menuconfig\ttext-basiertes Menü\n"
 
-#: src/conf/gnunet-setup.c:107
+#: src/conf/gnunet-setup.c:96
 #, c-format
 msgid " wizard-curses\tBasic text-based graphical configuration\n"
 msgstr " wizard-curses\tEinfache text-basierte grafische Konfiguration\n"
 
-#: src/conf/gnunet-setup.c:110
+#: src/conf/gnunet-setup.c:99
 #, c-format
 msgid " gconfig\tGTK configuration\n"
 msgstr " gconfig\tGTK Konfiguration\n"
 
-#: src/conf/gnunet-setup.c:111
+#: src/conf/gnunet-setup.c:100
 #, c-format
 msgid ""
 " wizard-gtk\tBasic GTK configuration\n"
@@ -2591,30 +3303,30 @@ msgstr ""
 " wizard-gtk\tEinfache GTK Konfiguration\n"
 "\n"
 
-#: src/conf/gnunet-setup.c:178
+#: src/conf/gnunet-setup.c:167
 #, c-format
 msgid "gnunet-setup must have write-access to the configuration file `%s'\n"
 msgstr ""
 "gnunet-setup benötigt Schreibberechtigungen für die Konfigurationsdatei `%"
 "s'\n"
 
-#: src/conf/gnunet-setup.c:187 src/server/gnunet-peer-info.c:113
-#: src/server/gnunet-transport-check.c:529 src/server/gnunet-update.c:152
+#: src/conf/gnunet-setup.c:176 src/server/gnunet-peer-info.c:113
+#: src/server/gnunet-transport-check.c:527 src/server/gnunet-update.c:152
 #, c-format
 msgid "Invalid arguments: "
 msgstr "Ungültige Parameter: "
 
-#: src/conf/gnunet-setup.c:236
+#: src/conf/gnunet-setup.c:225
 msgid "No interface specified, using default\n"
 msgstr "Keine Oberfläche angegeben, verwende Standard\n"
 
-#: src/conf/gnunet-setup.c:249 src/conf/gnunet-setup.c:263
-#: src/conf/gnunet-setup.c:282 src/conf/gnunet-setup.c:293
+#: src/conf/gnunet-setup.c:238 src/conf/gnunet-setup.c:252
+#: src/conf/gnunet-setup.c:271 src/conf/gnunet-setup.c:282
 #, c-format
 msgid "`%s' is not available."
 msgstr "`%s' ist nicht verfügbar."
 
-#: src/conf/gnunet-setup.c:276 src/conf/gnunet-setup.c:287
+#: src/conf/gnunet-setup.c:265 src/conf/gnunet-setup.c:276
 #, c-format
 msgid ""
 "Can only run wizard to configure gnunetd.\n"
@@ -2623,7 +3335,7 @@ msgstr ""
 "Der Assistent kann nur zur Einrichtung von gnunetd gestartet werden.\n"
 "Haben Sie die `%s'-Option vergessen?\n"
 
-#: src/conf/gnunet-setup.c:297
+#: src/conf/gnunet-setup.c:286
 #, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Unbekannte Operation `%s'\n"
@@ -2668,24 +3380,18 @@ msgstr "Fehler: auf den Dienst konnte nicht zugegriffen werden: %s\n"
 msgid "Error: can't delete service: %s\n"
 msgstr "Fehler: Dienst konnte nicht gelöscht werden: %s\n"
 
-#: src/conf/wizard_callbacks.c:171
+#: src/conf/wizard_gtk.c:429
 #, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Fehler beim Speichern der Konfigurationsdatei `%s':"
 
-#: src/conf/wizard_callbacks.c:191 src/conf/wizard_curs.c:616
+#: src/conf/wizard_gtk.c:475 src/conf/wizard_curs.c:616
 msgid "Unable to create user account:"
 msgstr "Fehler beim Anlegen des Benutzerkontos:"
 
-#: src/conf/wizard_callbacks.c:198 src/conf/wizard_curs.c:619
+#: src/conf/wizard_gtk.c:482 src/conf/wizard_curs.c:619
 msgid "Unable to change startup process:"
 msgstr "Startprozeß konnte nicht geändert werden:"
-
-#: src/conf/wizard_curs.c:58 src/conf/wizard_interface.c:1077
-#: src/conf/wizard_interface.c:1371 src/conf/wizard_util.c:120
-#: src/conf/wizard_util.c:163 src/util/configuration.c:522
-msgid "Error"
-msgstr "Fehler"
 
 #: src/conf/wizard_curs.c:116 src/conf/wizard_curs.c:131
 #: src/conf/wizard_curs.c:184 src/conf/wizard_curs.c:221
@@ -3014,309 +3720,6 @@ msgstr ""
 "\n"
 "Soll es nochmals versucht werden?"
 
-#: src/conf/wizard_interface.c:51 src/conf/wizard_interface.c:192
-#: src/conf/wizard_interface.c:454 src/conf/wizard_interface.c:774
-#: src/conf/wizard_interface.c:1165
-msgid "GNUnet configuration assistant"
-msgstr "GNUnet Konfigurationsassistent"
-
-#: src/conf/wizard_interface.c:70
-msgid ""
-"Welcome to GNUnet!\n"
-"\n"
-"This assistant will ask you a few basic questions in order to configure "
-"GNUnet.\n"
-"\n"
-"Please visit our homepage at\n"
-"\thttp://www.gnunet.org\n"
-"and join our community at\n"
-"\thttp://www.gnunet.org/drupal/\n"
-"\n"
-"Have a lot of fun,\n"
-"\n"
-"the GNUnet team"
-msgstr ""
-"Willkommen bei GNUnet!\n"
-"\n"
-"Dieser Assistent wird Ihnen einige grundlegende Fragen stellen, um GNUnet zu "
-"konfigurieren.\n"
-"\n"
-"Bitte besuchen Sie unsere Homepage\n"
-"\thttp://gnunet.org\n"
-"und schließen Sie sich unserer Community an:\n"
-"\thttps://gnunet.org/drupal/\n"
-"\n"
-"Viel Spaß,\n"
-"\n"
-"das GNUnet-Team"
-
-#: src/conf/wizard_interface.c:98 src/conf/wizard_interface.c:319
-#: src/conf/wizard_interface.c:633 src/conf/wizard_interface.c:1280
-msgid "Next"
-msgstr "Weiter"
-
-#: src/conf/wizard_interface.c:119 src/conf/wizard_interface.c:340
-#: src/conf/wizard_interface.c:654 src/conf/wizard_interface.c:918
-#: src/conf/wizard_interface.c:1301
-msgid "Cancel"
-msgstr "Abbrechen"
-
-#: src/conf/wizard_interface.c:219
-msgid ""
-"Enter information about your network connection here.\n"
-"\n"
-"The \"Network interface\" is the device that connects your computer to the "
-"internet. This is usually a modem, an ISDN card or a network card in case "
-"you are using DSL.\n"
-"\n"
-"If your provider always assigns the same IP-Address to you (a \"static\" IP-"
-"Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
-"every now and then (\"dynamic\" IP-Address) but there's a hostname that "
-"always points to your actual IP-Address (\"Dynamic DNS\"), you can also "
-"enter it here.\n"
-"If in doubt, leave the field empty. GNUnet will then try to determine your "
-"IP-Address.\n"
-"\n"
-"If you are connected to the internet through another computer doing SNAT, a "
-"router or a \"hardware firewall\" and other computers on the internet cannot "
-"connect to this computer, check the last option on this page. Leave it "
-"unchecked on direct connections through modems, ISDN cards and DNAT (also "
-"known as \"port forwarding\")."
-msgstr ""
-"Geben Sie hier Ihre Netzwerkinformationen ein.\n"
-"\n"
-"Das \"Netzwerkgerät\" ist das Gerät, das Ihren Computer mit dem Internet "
-"verbindet. Dies ist normalerweise ein Modem, eine ISDN-Karte oder eine "
-"Netzwerkkarte für den Fall, dass Sie DSL benutzen.\n"
-"\n"
-"Wenn Ihnen Ihr Provider immer die gleiche IP-Adresse zuweist (eine "
-"\"statische\" IP-Adresse), geben Sie diese in das \"IP-Adresse\"-Feld ein. "
-"Wenn Ihre IP-Adresse sich hin und wieder ändert (\"dynamische\" IP-Adresse), "
-"es jedoch einen Hostnamen gibt, der immer auf Ihre aktuelle IP-Adresse zeigt "
-"(\"Dynamisches DNS\"), so können Sie ihn auch eingeben.\n"
-"Im Zweifel lassen Sie das Feld leer. GNUnet wird dann versuchen, die IP-"
-"Adresse automatisch zu bestimmen.\n"
-"\n"
-"Wenn Sie nicht direkt mit dem Internet verbunden sind, sondern dies über "
-"einen anderen Rechner mit SNAT, einem Router oder einer \"Hardware Firewall"
-"\" geschieht und andere Computer im Internet keine Verbindung mit diesem "
-"Computer herstellen können, so aktivieren Sie die letzte Option auf dieser "
-"Seite. Lassen Sie sie jedoch deaktiviert, wenn Sie eine direkte Verbindung "
-"über ein Modem, eine ISDN-Karte oder einen anderen Rechner mit DNAT (auch "
-"bekannt als \"Port forwarding\") zum Internet haben."
-
-#: src/conf/wizard_interface.c:240
-msgid "Network interface:"
-msgstr "Netzwerkgerät:"
-
-#: src/conf/wizard_interface.c:247
-msgid "IP-Address/Hostname:"
-msgstr "IP-Adresse/Hostname:"
-
-#: src/conf/wizard_interface.c:260
-msgid "Computer cannot receive inbound connections (SNAT/Firewall)"
-msgstr ""
-"Computer kann keine ankommenden Verbindungen akzeptieren (SNAT/Firewall)"
-
-#: src/conf/wizard_interface.c:272
-msgid "Network connection"
-msgstr "Netzwerkverbindung"
-
-#: src/conf/wizard_interface.c:298 src/conf/wizard_interface.c:612
-#: src/conf/wizard_interface.c:876 src/conf/wizard_interface.c:1259
-msgid "Back"
-msgstr "Zurück"
-
-#: src/conf/wizard_interface.c:481
-msgid ""
-"You can limit GNUnet's ressource usage here.\n"
-"\n"
-"\"Bandwidth limitation\" is how much data may be sent per second. If you "
-"have a flatrate you can set it to the maximum speed of your internet "
-"connection.\n"
-"\n"
-"The \"Max. CPU usage\" is the percentage of processor time GNUnet is allowed "
-"to use."
-msgstr ""
-"Hier können Sie GNUnet's Ressourcennutzung einschränken.\n"
-"\n"
-"\"Bandbreitenbeschränkung\" gibt an, wieviele Daten maximal pro Sekunde "
-"übetragen werden dürfen. Wenn Sie eine Flatrate haben, können Sie diese "
-"Werte auf die maximal erreichbare Geschwindigkeit Ihrer Internetverbindung "
-"setzen.\n"
-"\n"
-"Die \"Max. CPU Nutzung\" gibt den Prozentsatz an CPU-Zeit an, den GNUnet für "
-"sich verwenden darf."
-
-#: src/conf/wizard_interface.c:509
-msgid "Upstream (Bytes/s):"
-msgstr "Upstream (Bytes/s):"
-
-#: src/conf/wizard_interface.c:523
-msgid "Downstream (Bytes/s):"
-msgstr "Downstream (Bytes/s):"
-
-#: src/conf/wizard_interface.c:537
-msgid "Bandwidth limitation"
-msgstr "Bandbreitenbeschränkung"
-
-#: src/conf/wizard_interface.c:549
-msgid "Use denoted bandwidth for GNUnet"
-msgstr "Angegebene Bandbreite für GNUnet verwenden"
-
-#: src/conf/wizard_interface.c:555
-msgid "Share denoted bandwidth with other applications"
-msgstr "Angegebene Bandbreite mit anderen Anwendungen teilen"
-
-#: src/conf/wizard_interface.c:561
-msgid "Bandwidth sharing"
-msgstr "Aufteilung der Bandbreite"
-
-#: src/conf/wizard_interface.c:573
-msgid "Max. CPU usage (%):"
-msgstr "Max. CPU Nutzung (%):"
-
-#: src/conf/wizard_interface.c:582
-msgid "CPU usage"
-msgstr "CPU Nutzung"
-
-#: src/conf/wizard_interface.c:586
-msgid "Load limitation"
-msgstr "Lastbeschränkung"
-
-#: src/conf/wizard_interface.c:801
-msgid ""
-"GNUnet is able to store data from other peers in your datastore. This is "
-"useful if an adversary has access to your inserted content and you need to "
-"deny that the content is yours. With \"content migration\" on, the content "
-"could have \"migrated\" over the internet to your node without your "
-"knowledge.\n"
-"It also helps to spread popular content over different peers to enhance "
-"availability.\n"
-"\n"
-"The GNUnet datastore contains all data that GNUnet generates (index data, "
-"inserted and migrated content). Its maximum size can be specified below.\n"
-"\n"
-"If you are an experienced user, you may want to tweak your GNUnet "
-"installation using the enhanced configurator.\n"
-"\n"
-"After changing the configuration and/or updating GNUnet, it is sometimes "
-"required to run gnunet-update to update internal data structures. Depending "
-"on the changes made, this may take some time."
-msgstr ""
-"GNUnet ist in der Lage, Daten von anderen Knoten in Ihrem Datenspeicher zu "
-"speichern. Das ist nützlich, wenn ein Widersacher Zugriff auf Ihre "
-"eingefügten Inhalte erlangt und Sie abstreiten müssen, dass diese Daten "
-"Ihnen gehören. Mit \"Inhaltsmigration\" angeschaltet können die Inhalte über "
-"das Internet von einem anderen Knoten zu Ihrem Rechner ohne Ihr Wissen "
-"\"gewandert\" sein.\n"
-"Außerdem hilft es, beliebte Inhalte über verschiedene Netzteilnehmer zu "
-"verteilen, um so die Verfügbarkeit zu erhöhen.\n"
-"\n"
-"Der GNUnet Datenspeicher enthält alle Daten, die GNUnet erzeugt (Indexdaten, "
-"eingefügte und migrierte Inhalte). Seine maximale Größe kann unten angegeben "
-"werden.\n"
-"\n"
-"Wenn Sie ein fortgeschrittener Benutzer sind, möchten Sie vielleicht weitere "
-"Feinjustierungen an GNUnet über den \"erweiterten Konfigurator\" vornehmen.\n"
-"Nachdem die Konfiguration verändert und/oder GNUnet upgedated wurde ist es "
-"manchmal nötig, gnunet-update auszuführen, um interne Datenstrukturen zu "
-"aktualisieren. Abhängig von den gemachten Änderungen kann dies etwas Zeit in "
-"Anspruch nehmen."
-
-#: src/conf/wizard_interface.c:815
-msgid "Store migrated content"
-msgstr "Migrierte Inhalte speichern"
-
-#: src/conf/wizard_interface.c:824
-msgid "Maximum datastore size (MB):"
-msgstr "Maximale Größe des Datenspeichers (MB):"
-
-#: src/conf/wizard_interface.c:833
-msgid "Start the GNUnet background process on computer startup"
-msgstr ""
-"GNUnet Hintergrundprozeß beim Starten des Computers automatisch starten"
-
-#: src/conf/wizard_interface.c:839
-msgid "Open the enhanced configurator"
-msgstr "Erweiterten Konfigurator starten"
-
-#: src/conf/wizard_interface.c:844
-msgid "Run gnunet-update"
-msgstr "gnunet-update ausführen"
-
-#: src/conf/wizard_interface.c:850 src/conf/wizard_interface.c:1233
-msgid "Other settings"
-msgstr "Weitere Einstellungen"
-
-#: src/conf/wizard_interface.c:897
-msgid "Finish"
-msgstr "Fertigstellen"
-
-#: src/conf/wizard_interface.c:1002
-msgid "Question"
-msgstr "Frage"
-
-#: src/conf/wizard_interface.c:1018
-msgid "Do you want to save your settings?"
-msgstr "Möchten Sie Ihre Einstellungen speichern?"
-
-#: src/conf/wizard_interface.c:1033
-msgid "Yes"
-msgstr "Ja"
-
-#: src/conf/wizard_interface.c:1038
-msgid "No"
-msgstr "Nein"
-
-#: src/conf/wizard_interface.c:1093
-msgid "Unable to save configuration!"
-msgstr "Fehler beim Speichern der Konfiguration!"
-
-#: src/conf/wizard_interface.c:1108 src/conf/wizard_interface.c:1402
-msgid "OK"
-msgstr "OK"
-
-#: src/conf/wizard_interface.c:1192
-msgid ""
-"Define the user and the group owning the GNUnet service here.\n"
-"\n"
-"For security reasons, it is a good idea to let this setup create a new user "
-"account and a new group under which the GNUnet service is started at system "
-"startup.\n"
-"\n"
-"However, GNUnet may not be able to access files other than its own. This "
-"includes files you want to publish in GNUnet. You'll have to grant read "
-"permissions to the user specified below.\n"
-"\n"
-"Leave the fields empty to run GNUnet with system privileges."
-msgstr ""
-"Geben Sie den Benutzer und die Gruppe an, der der GNUnet Dienst gehören "
-"soll.\n"
-"\n"
-"Aus Sicherheitsgründen ist es eine gute Idee, dieses Setup ein neues "
-"Benutzerkonto und eine neue Gruppe anlegen zu lassen, unter der der GNUnet "
-"Dienst beim Systemstart läuft.\n"
-"\n"
-"Natürlich kann GNUnet dann nur auf seine eigenen Dateien zugreifen. Dies "
-"betrifft auch Dateien, die Sie im GNUnet veröffentlichen möchten. Sie müssen "
-"dann dem unten angegebenen Benutzerkonto zuerst Leseberechtigungen geben.\n"
-"\n"
-"Lassen Sie dieses Feld leer, wenn Sie GNUnet mit Systemprivilegien laufen "
-"lassen möchten."
-
-#: src/conf/wizard_interface.c:1205
-msgid "Group:"
-msgstr "Gruppe:"
-
-#: src/conf/wizard_interface.c:1225
-msgid "User account:"
-msgstr "Benutzerkonto:"
-
-#: src/conf/wizard_interface.c:1387
-msgid "gnunet-update failed!"
-msgstr "gnunet-update schlug fehlt!"
-
 #: src/conf/wizard_util.c:89
 msgid "Can't open Service Control Manager"
 msgstr "Der Dienstemanager konnte nicht geöffnet werden"
@@ -3520,7 +3923,12 @@ msgstr ""
 "`%s' Transport funktioniert. Es dauerte %ums, um %d Nachrichten zu je %d "
 "Bytes zu übertragen.\n"
 
-#: src/server/gnunet-transport-check.c:222
+#: src/server/gnunet-transport-check.c:219
+#, fuzzy, c-format
+msgid " Transport %d is not being tested\n"
+msgstr " Transport %d ist nicht verfügbar\n"
+
+#: src/server/gnunet-transport-check.c:230
 #, c-format
 msgid ""
 "\n"
@@ -3529,73 +3937,68 @@ msgstr ""
 "\n"
 "Kontaktiere `%s'."
 
-#: src/server/gnunet-transport-check.c:233
-#, c-format
-msgid " Transport %d not available\n"
-msgstr " Transport %d ist nicht verfügbar\n"
-
-#: src/server/gnunet-transport-check.c:255
+#: src/server/gnunet-transport-check.c:253
 #, c-format
 msgid " Connection failed\n"
 msgstr " Verbindung fehlgeschlagen\n"
 
-#: src/server/gnunet-transport-check.c:261
+#: src/server/gnunet-transport-check.c:259
 #, c-format
 msgid " Connection failed (bug?)\n"
 msgstr " Verbindung fehlgeschlagen (Bug?)\n"
 
-#: src/server/gnunet-transport-check.c:322
+#: src/server/gnunet-transport-check.c:320
 #, c-format
 msgid "No reply received within %llums.\n"
 msgstr "Keine Antwort innerhalb %llums erhalten.\n"
 
-#: src/server/gnunet-transport-check.c:398
+#: src/server/gnunet-transport-check.c:396
 msgid "ping peers from HOSTLISTURL that match transports"
 msgstr "Knoten aus HOSTLISTURL anpingen, deren Transports passen"
 
-#: src/server/gnunet-transport-check.c:400
+#: src/server/gnunet-transport-check.c:398
 msgid "send COUNT messages"
 msgstr "COUNT Nachrichten versenden"
 
-#: src/server/gnunet-transport-check.c:402
+#: src/server/gnunet-transport-check.c:400
 msgid "send messages with SIZE bytes payload"
 msgstr "Nachrichten mit SIZE Bytes Nutzlast versenden"
 
-#: src/server/gnunet-transport-check.c:404
+#: src/server/gnunet-transport-check.c:402
 msgid "specifies which TRANSPORT should be tested"
 msgstr "Gibt an, welcher TRANSPORT getestet werden soll"
 
-#: src/server/gnunet-transport-check.c:406
+#: src/server/gnunet-transport-check.c:404
 msgid "specifies after how many MS to time-out"
 msgstr "Gibt an, nach wievielen MS die Zeit abgelaufen sein soll"
 
-#: src/server/gnunet-transport-check.c:409 src/server/gnunet-update.c:55
-#: src/server/startup.c:455
+#: src/server/gnunet-transport-check.c:407 src/server/gnunet-update.c:55
+#: src/server/startup.c:450
 msgid "run as user LOGIN"
 msgstr "als Benutzer LOGIN ausführen"
 
-#: src/server/gnunet-transport-check.c:416
+#: src/server/gnunet-transport-check.c:414
 msgid "Tool to test if GNUnet transport services are operational."
 msgstr ""
 "Werkzeug, mit dem getestet werden kann, ob die GNUnet Transport Dienste "
 "funktionsfähig sind."
 
-#: src/server/gnunet-transport-check.c:567
+#: src/server/gnunet-transport-check.c:565
 msgid "You must specify a non-empty set of transports to test!\n"
 msgstr ""
 "Sie müssen eine Menge an Transporten angeben, die getestet werden sollen!\n"
 
-#: src/server/gnunet-transport-check.c:572
+#: src/server/gnunet-transport-check.c:570
 #, c-format
 msgid "Testing transport(s) %s\n"
 msgstr "Teste Transport(e) %s\n"
 
-#: src/server/gnunet-transport-check.c:575
+#: src/server/gnunet-transport-check.c:573
 #, c-format
 msgid "Available transport(s): %s\n"
 msgstr "Verfügbare(r) Transport(e): %s\n"
 
-#: src/server/gnunet-transport-check.c:619
+#: src/server/gnunet-transport-check.c:617
 #, c-format
 msgid ""
 "%d out of %d peers contacted successfully (%d times transport unavailable).\n"
@@ -3691,7 +4094,7 @@ msgstr ""
 msgid "Could not write PID to file `%s': %s.\n"
 msgstr "PID konnte nicht in Datei `%s' geschrieben werden: %s.\n"
 
-#: src/server/startup.c:448
+#: src/server/startup.c:443
 msgid ""
 "run in debug mode; gnunetd will not daemonize and error messages will be "
 "written to stderr instead of a logfile"
@@ -3700,30 +4103,30 @@ msgstr ""
 "Fehlermeldungen werden nicht in die Protokolldatei, sondern auf die "
 "Standardfehlerausgabe (stderr) geschrieben."
 
-#: src/server/startup.c:461
+#: src/server/startup.c:456
 msgid "Starts the gnunetd daemon."
 msgstr "Startet den gnunetd Daemonen."
 
-#: src/server/startup.c:475
+#: src/server/startup.c:470
 #, c-format
 msgid "User `%s' not known, cannot change UID to it.\n"
 msgstr "Benutzer `%s' ist nicht bekannt, UID kann nicht gewechselt werden.\n"
 
-#: src/server/startup.c:484
+#: src/server/startup.c:479
 #, c-format
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr "Benutzer/Gruppe kann nicht zu `%s' gewechselt werden: %s\n"
 
-#: src/server/startup.c:585
+#: src/server/startup.c:580
 msgid "Invalid command-line arguments:\n"
 msgstr "Ungültige Kommandozeilen Parameter:\n"
 
-#: src/server/startup.c:588
+#: src/server/startup.c:583
 #, c-format
 msgid "Argument %d: `%s'\n"
 msgstr "Parameter %d: `%s'\n"
 
-#: src/server/startup.c:594
+#: src/server/startup.c:589
 msgid "Invalid command-line arguments.\n"
 msgstr "Ungültige Kommandozeilen Parameter.\n"
 
@@ -3766,7 +4169,7 @@ msgstr ""
 "Es wurde eine Willkommensnachricht erwartet, tatsächlich wurde jedoch keine "
 "gesendet. HTTP-Verbindung wird geschlossen.\n"
 
-#: src/transports/http.c:817 src/transports/tcp.c:698 src/transports/udp.c:331
+#: src/transports/http.c:817 src/transports/tcp.c:698 src/transports/udp.c:345
 #, c-format
 msgid "%s: Rejected connection from blacklisted address %u.%u.%u.%u.\n"
 msgstr ""
@@ -3860,8 +4263,8 @@ msgstr "Fehler beim Senden einer `%s' Anfrage an den SMTP Server.\n"
 msgid "%.*s filter %s (SMTP)"
 msgstr "%.*s filter %s (SMTP)"
 
-#: src/transports/smtp.c:932 src/transports/udp.c:708
-#: src/transports/udp6.c:680
+#: src/transports/smtp.c:932 src/transports/udp.c:722
+#: src/transports/udp6.c:699
 #, c-format
 msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
 msgstr ""
@@ -3918,7 +4321,7 @@ msgstr ""
 "über die TCP6-Verbindung zu einem anderen Knoten wurde eine ungültige "
 "Nachricht empfangen. Verbindung wird geschlossen.\n"
 
-#: src/transports/tcp6.c:657 src/transports/udp6.c:315
+#: src/transports/tcp6.c:657 src/transports/udp6.c:334
 #, c-format
 msgid "%s: Rejected connection from blacklisted address %s.\n"
 msgstr "%s: Zurückgewiesene Verbindung von schwarzgelisteter Adresse %s.\n"
@@ -3948,43 +4351,44 @@ msgid "Failed to bind to UDP port %d.\n"
 msgstr "Fehler beim Binden an UDP Port %d.\n"
 
 #: src/transports/udp.c:250
-msgid "UDP: select returned, but ioctl reports 0 bytes available!\n"
+#, fuzzy, c-format
+msgid "UDP: select returned, but ioctl reports %d bytes available!\n"
 msgstr ""
 "UDP: select kam zurück aber ioctl berichtet, dass 0 Bytes verfügbar sind!\n"
 
-#: src/transports/udp.c:293
+#: src/transports/udp.c:307
 #, c-format
 msgid "Received invalid UDP message from %u.%u.%u.%u:%u, dropping.\n"
 msgstr ""
 "Es wurde eine ungültige UDP Nachricht von %u.%u.%u.%u:%u empfangen, "
 "Nachricht wird ignoriert.\n"
 
-#: src/transports/udp.c:318
+#: src/transports/udp.c:332
 #, c-format
 msgid "Packet received from %u.%u.%u.%u:%u (UDP) failed format check.\n"
 msgstr ""
 "Ein Paket empfangen von %u.%u.%u.%u:%u (UDP) hat ein ungültiges Format.\n"
 
-#: src/transports/udp.c:403
+#: src/transports/udp.c:417
 msgid "UDP: Could not determine my public IP address.\n"
 msgstr "UDP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/udp.c:537
+#: src/transports/udp.c:551
 #, c-format
 msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
 msgstr ""
 "Eine Nachricht der Größe %d konnte nicht per UDP an %u.%u.%u.%u:%u versendet "
 "werden: %s\n"
 
-#: src/transports/udp.c:693
+#: src/transports/udp.c:707
 msgid "# bytes received via UDP"
 msgstr "# Bytes empfangen über UDP"
 
-#: src/transports/udp.c:695
+#: src/transports/udp.c:709
 msgid "# bytes sent via UDP"
 msgstr "# Bytes gesendet über UDP"
 
-#: src/transports/udp.c:697
+#: src/transports/udp.c:711
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr "# Bytes verworfen von UDP (outgoing)"
 
@@ -4037,20 +4441,26 @@ msgstr "Fehler beim Bestimmen der (externen) IP-Adresse!\n"
 msgid "Failed to bind to UDP6 port %d.\n"
 msgstr "Fehler beim Binden an UDP6 Port %d.\n"
 
-#: src/transports/udp6.c:271
+#: src/transports/udp6.c:235
+#, fuzzy, c-format
+msgid "UDP6: select returned, but ioctl reports %d bytes available!\n"
+msgstr ""
+"UDP: select kam zurück aber ioctl berichtet, dass 0 Bytes verfügbar sind!\n"
+
+#: src/transports/udp6.c:290
 #, c-format
 msgid "Received invalid UDP6 message from %s:%d, dropping.\n"
 msgstr ""
 "Ungültige UDP6 Nachricht von %s:%d empfangen, Nachricht wird ignoriert.\n"
 
-#: src/transports/udp6.c:302
+#: src/transports/udp6.c:321
 #, c-format
 msgid "Packet received from %s:%d (UDP6) failed format check."
 msgstr ""
 "Die Formatüberprüfung des Pakets, das von %s:%d (UDP6) empfangen wurde, "
 "schlug fehl."
 
-#: src/transports/udp6.c:396
+#: src/transports/udp6.c:415
 msgid "UDP6: Could not determine my public IPv6 address.\n"
 msgstr "UDP6: Öffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
 
@@ -4184,7 +4594,7 @@ msgstr "%s: Option '-W %s' erlaubt keinen Parameter\n"
 msgid "RSA signature verification failed at %s:%d: %s\n"
 msgstr "RSA Signaturüberprüfung fehlgeschlagen bei %s:%d: %s\n"
 
-#: src/util/initialize.c:226
+#: src/util/initialize.c:229
 msgid "Shutdown complete.\n"
 msgstr "GNUnet wurde erfolgreich heruntergefahren.\n"
 
@@ -4449,40 +4859,81 @@ msgstr "Versuchter Pfad für `%s' war `%s'.\n"
 msgid "Unexpected very large allocation (%u bytes) at %s:%d!\n"
 msgstr "Unerwartete sehr große Allokierung (%u Bytes) bei %s:%d!\n"
 
-#: src/include/gnunet_util.h:160
+#: src/include/gnunet_util.h:167
 msgid "print this help"
 msgstr "Gibt diese Hilfe aus"
 
-#: src/include/gnunet_util.h:163
+#: src/include/gnunet_util.h:170
 msgid "set verbosity to LEVEL"
 msgstr "Umfang der Meldungen auf LEVEL setzen"
 
-#: src/include/gnunet_util.h:166
+#: src/include/gnunet_util.h:173
 msgid "use configuration file FILENAME"
 msgstr "Konfigurationsdatei FILENAME verwenden"
 
-#: src/include/gnunet_util.h:169
+#: src/include/gnunet_util.h:176
 msgid "specify host on which gnunetd is running"
 msgstr "Gibt an, auf welchem Host gnunetd läuft"
 
-#: src/include/gnunet_util.h:172
+#: src/include/gnunet_util.h:179
 msgid "print the version number"
 msgstr "Versionsnummer ausgeben"
 
-#: src/include/gnunet_util.h:175
+#: src/include/gnunet_util.h:182
 msgid "be verbose"
 msgstr "umfangreiche Meldungen ausgeben"
 
-#: src/include/gnunet_util.h:630 src/include/gnunet_util.h:632
+#: src/include/gnunet_util.h:637 src/include/gnunet_util.h:639
 #, c-format
 msgid "Assertion failed at %s:%d.\n"
 msgstr "Absicherung fehlgeschlagen bei %s:%d.\n"
 
-#: src/include/gnunet_util.h:1051 src/include/gnunet_util.h:1053
-#: src/include/gnunet_util.h:1060
+#: src/include/gnunet_util.h:1058 src/include/gnunet_util.h:1060
+#: src/include/gnunet_util.h:1067
 #, c-format
 msgid "`%s' failed on file `%s' at %s:%d with error: %s\n"
 msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
+
+#~ msgid "Not connected to gnunetd."
+#~ msgstr "Nicht verbunden zu gnunetd."
+
+#~ msgid "_License"
+#~ msgstr "_Lizenz"
+
+#~ msgid "Sorry, no help available for this option yet."
+#~ msgstr "Sorry, für diese Option steht noch keine Hilfe zur Verfügung"
+
+#~ msgid "Couldn't find pixmap file: %s"
+#~ msgstr "Pixmapdatei %s konnte nicht gefunden werden"
+
+#~ msgid ""
+#~ "Welcome to GNUnet!\n"
+#~ "\n"
+#~ "This assistant will ask you a few basic questions in order to configure "
+#~ "GNUnet.\n"
+#~ "\n"
+#~ "Please visit our homepage at\n"
+#~ "\thttp://www.gnunet.org\n"
+#~ "and join our community at\n"
+#~ "\thttp://www.gnunet.org/drupal/\n"
+#~ "\n"
+#~ "Have a lot of fun,\n"
+#~ "\n"
+#~ "the GNUnet team"
+#~ msgstr ""
+#~ "Willkommen bei GNUnet!\n"
+#~ "\n"
+#~ "Dieser Assistent wird Ihnen einige grundlegende Fragen stellen, um GNUnet "
+#~ "zu konfigurieren.\n"
+#~ "\n"
+#~ "Bitte besuchen Sie unsere Homepage\n"
+#~ "\thttp://gnunet.org\n"
+#~ "und schließen Sie sich unserer Community an:\n"
+#~ "\thttps://gnunet.org/drupal/\n"
+#~ "\n"
+#~ "Viel Spaß,\n"
+#~ "\n"
+#~ "das GNUnet-Team"
 
 #~ msgid ""
 #~ "You must specify a directory for FS files in the configuration in section "
@@ -4515,35 +4966,6 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 
 #~ msgid "gconfig is not available\n"
 #~ msgstr "gconfig ist nicht verfügbar\n"
-
-#~ msgid ""
-#~ "Welcome to GNUnet!\n"
-#~ "\n"
-#~ "This assistant will ask you a few basic questions in order to configure "
-#~ "GNUnet.\n"
-#~ "\n"
-#~ "Please visit our homepage at\n"
-#~ "\thttp://gnunet.org\n"
-#~ "and join our community at\n"
-#~ "\thttps://gnunet.org/drupal/\n"
-#~ "\n"
-#~ "Have a lot of fun,\n"
-#~ "\n"
-#~ "the GNUnet team"
-#~ msgstr ""
-#~ "Willkommen bei GNUnet!\n"
-#~ "\n"
-#~ "Dieser Assistent wird Ihnen einige grundlegende Fragen stellen, um GNUnet "
-#~ "zu konfigurieren.\n"
-#~ "\n"
-#~ "Bitte besuchen Sie unsere Homepage\n"
-#~ "\thttp://gnunet.org\n"
-#~ "und schließen Sie sich unserer Community an:\n"
-#~ "\thttps://gnunet.org/drupal/\n"
-#~ "\n"
-#~ "Viel Spaß,\n"
-#~ "\n"
-#~ "das GNUnet-Team"
 
 #~ msgid "Recursive download of directory `%s' at %llu of %llu bytes.\n"
 #~ msgstr ""
