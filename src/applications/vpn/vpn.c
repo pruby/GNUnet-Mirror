@@ -19,16 +19,12 @@
 */
 
 /**
- * @file applications/template/template.c
+ * @file applications/vpn/vpn.c
  * @author Michael John Wensley
  * @brief tunnel RFC 4193 in GNUnet
  *
  * 
  * http://gnunet.wensley.org.uk/
- *
- * This isnt really going to be called template...
- * It's just that renaming it means messing
- * with that autotools thing all over again :-(
  *
  * Yes this will thoroughly break most of the coding guidelines :-/ at least the first release.
  *
