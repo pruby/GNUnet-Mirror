@@ -15,7 +15,7 @@ Notes:
 - known bugs (see Mantis for updates):
   * gnunet-setup memory leaks (#878)
   * gnunet-setup category switch update bug (#892)  [ RC ]
-  * file/socket leak
+  * file/socket leak (#955)
   * Windows installer, uninstall: Remove account [Nils, RC]
 - testing:
   * make dht tests work (and write more) [ CG, RC ]
