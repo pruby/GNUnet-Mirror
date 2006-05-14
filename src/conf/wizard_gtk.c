@@ -22,6 +22,7 @@
  * @file conf/wizard_gtk.c
  * @brief A easy-to-use configuration assistant
  * @author Nils Durner
+ * @author Christian Grothoff
  */
 
 #include "gnunet_util.h"
