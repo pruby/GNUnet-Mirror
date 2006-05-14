@@ -189,8 +189,8 @@ int ECRS_uploadFile(const char * filename,
   }
   sock = getClientSocket();
   if (sock == NULL) {
-    LOG(LOG_ERROR, _("Not connected to gnunetd."));
-
+    LOG(LOG_ERROR,
+        _("Failed to connect to gnunetd."));
     return SYSERR;
   }
   eta = 0;
