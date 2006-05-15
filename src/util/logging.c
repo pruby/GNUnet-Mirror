@@ -414,7 +414,7 @@ void setCustomLogProc(TLogProc proc) {
 void LOG(LOG_Level minLogLevel,
 	 const char *format, ...) {
   va_list	args;
-  size_t len;
+  int len;
 
   if (loglevel__ < minLogLevel)
     return;
@@ -441,19 +441,21 @@ void LOG(LOG_Level minLogLevel,
       FPRINTF(logfile, "%s:", gettext(loglevels[minLogLevel]));
     else
       FPRINTF(logfile, "%s: ", gettext(loglevels[minLogLevel]));
-    len = VFPRINTF(logfile, format, args);
+    len = VFPRINTF(logfile, format, args);     
     fflush(logfile);
   } else
     len = VFPRINTF(stderr, format, args);
   va_end(args);
   if (bInited)
     MUTEX_UNLOCK(&logMutex);
-  if (customLog) {
+  if ( (customLog) &&
+       (len >= 0) ) {
     char * txt;
 
     txt = MALLOC(len + 1);
     va_start(args, format);
-    GNUNET_ASSERT(len == VSNPRINTF(txt, len, format, args));
+    if (len != VSNPRINTF(txt, len, format, args))
+      BREAK();
     va_end(args);
     customLog(txt);
     FREE(txt);
