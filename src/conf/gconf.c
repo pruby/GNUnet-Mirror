@@ -1619,11 +1619,11 @@ int gconf_main(int argc,
   char * filename;
 
   setLibrary(lib);
-  /* GTK stuffs */
+  g_thread_init(NULL);
   gtk_init(&argc, &argv);
-  bind_textdomain_codeset(PACKAGE, "UTF-8");
-  gtk_set_locale();
-
+#if ENABLE_NLS
+  bind_textdomain_codeset(PACKAGE, "UTF-8"); /* for gtk */
+#endif
 #ifdef WINDOWS
   FreeConsole();
 #endif

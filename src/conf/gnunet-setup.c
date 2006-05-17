@@ -217,7 +217,6 @@ int main(int argc, char *argv[])
     return -1;
 
   done = NO;
-
   operation = getConfigurationString("GNUNET-SETUP", "OPERATION");
   if (operation == NULL) {
     operation = STRDUP("");

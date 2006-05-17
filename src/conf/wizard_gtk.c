@@ -649,15 +649,15 @@ int gtk_wizard_main(int argc,
   char * filename;
 	
   setLibrary(lib);
+  g_thread_init(NULL);
   gtk_init(&argc, &argv); 
 #ifdef ENABLE_NLS
-  /* GTK uses UTF-8 encoding */
-  bind_textdomain_codeset(PACKAGE, "UTF-8");
+  bind_textdomain_codeset(PACKAGE, "UTF-8"); /* for gtk */
 #endif
 #ifdef WINDOWS
   FreeConsole();
 #endif
-  gtk_set_locale ();
+
   filename = getConfigurationString("GNUNET-SETUP",
 				   "FILENAME");
   conf_read(filename);

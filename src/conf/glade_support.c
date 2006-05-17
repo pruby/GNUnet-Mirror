@@ -87,8 +87,8 @@ GladeXML * load_xml(const char * dialog_name) {
 
   gladeFile = get_glade_filename();
   ret = glade_xml_new(gladeFile,
-			  dialog_name,
-			  PACKAGE_NAME);
+		      dialog_name,
+		      PACKAGE_NAME);
   if (ret == NULL)
     errexit(_("Failed to open `%s'.\n"),
 	    gladeFile);  
