@@ -703,13 +703,15 @@ static int verifyPeerSignature(const PeerIdentity * signer,
 		       ANY_PROTOCOL_NUMBER,
 		       YES);
   if (helo == NULL) {
-    LOG(LOG_ERROR, _("Signature failed verification: other peer not known.\n"));
+    LOG(LOG_INFO, 
+	_("Signature failed verification: other peer not known.\n"));
     return SYSERR;
   }
   res = verifySig(message, size, sig,
 		  &helo->publicKey);
   if (res == SYSERR)
-    LOG(LOG_ERROR, _("Signature failed verification: signature invalid.\n"));
+    LOG(LOG_ERROR,
+	_("Signature failed verification: signature invalid.\n"));
 
   FREE(helo);
   return res;

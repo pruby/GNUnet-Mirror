@@ -403,7 +403,6 @@ static int exchangeKey(const PeerIdentity * receiver,
   FREE(ping);
   if (skey == NULL) {
     transport->disconnect(tsession);
-    BREAK();
     return SYSERR;
   }
 
