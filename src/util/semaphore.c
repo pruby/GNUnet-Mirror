@@ -332,6 +332,7 @@ int PTHREAD_SELF_TEST(PTHREAD_T * pt) {
 void PTHREAD_GET_SELF(PTHREAD_T * pt) {
   pt->internal = MALLOC(sizeof(pthread_t));
   *((pthread_t*)pt->internal) = pthread_self();
+  GNUNET_ASSERT(NULL != *((pthread_t*)pt->internal));
 }
 
 /**
@@ -439,10 +440,11 @@ void PTHREAD_KILL(PTHREAD_T * pt,
 
   handle = pt->internal;
   if (handle == NULL) {
-    /*    BREAK(); */
+    BREAK();
     return;
   }
-  pthread_kill(*handle, signal);
+  if (0 != pthread_kill(*handle, signal))
+    LOG_STRERROR(LOG_ERROR, "pthread_kill");
 }
 
 

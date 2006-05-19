@@ -116,27 +116,16 @@ static int firstUsed_;
  * The cron thread.
  */
 static int cron_shutdown = YES;
-static pid_t cronPID = 0;
 static Semaphore * cron_signal = NULL;
 static Semaphore * cron_signal_up = NULL;
 
 static PTHREAD_T cron_handle;
 
 
-
-/**
- * The main-method of cron, will NEVER terminate.
- */
-static void * cron();
-
 /* don't do anything, we use SIGALRM to abort
    the nanosleep */
 #ifndef WINDOWS
 static void sigalrmHandler(int sig) {
-#if DEBUG_CRON
-  LOG(LOG_CRON,
-      "Received signal 'SIGALRM'.\n");
-#endif
 }
 #else
 static void CALLBACK sigalrmHandler(DWORD sig) {
@@ -176,44 +165,10 @@ void initCron() {
   memset(&sig, 0, sizeof(struct sigaction));
   memset(&old, 0, sizeof(struct sigaction));
   sig.sa_flags = SA_NODEFER;
-  sig.sa_handler = &sigalrmHandler;
+  sig.sa_handler =  &sigalrmHandler; 
   sigaction(SIGALRM, &sig, &old);
 #endif
   cron_signal_up = SEMAPHORE_NEW(0);
-}
-
-/**
- * Make sure to call stopCron before calling this method!
- */
-void doneCron() {
-  int i;
-
-  i = firstUsed_;
-  while (i != -1) {
-    FREENONNULL(deltaList_[i].data);
-    i = deltaList_[i].next;
-  }
-  MUTEX_DESTROY(&deltaListLock_);
-  MUTEX_DESTROY(&inBlockLock_);
-  FREE(deltaList_);
-  SEMAPHORE_FREE(cron_signal_up);
-  deltaList_ = NULL;
-}
-
-/**
- * Start the cron jobs.
- */
-void startCron() {
-  GNUNET_ASSERT(cron_signal == NULL);
-  cron_shutdown = NO;
-  cron_signal = SEMAPHORE_NEW(0);
-  if (0 != PTHREAD_CREATE(&cron_handle,
-			  (PThreadMain) cron,
-			  NULL,
-			  256 * 1024))
-    DIE_STRERROR("pthread_create");
-  /* large stack, we don't know for sure
-     what the cron jobs may be doing */
 }
 
 static void noJob(void * unused) {
@@ -229,12 +184,15 @@ static void noJob(void * unused) {
 void stopCron() {
   void * unused;
 
+#if DEBUG_CRON
+  LOG(LOG_INFO,
+      _("Stopping cron\n"));
+#endif
   cron_shutdown = YES;
   addCronJob(&noJob, 0, 0, NULL);
   SEMAPHORE_DOWN(cron_signal);
   SEMAPHORE_FREE(cron_signal);
   cron_signal = NULL;
-  cronPID = 0;
   PTHREAD_JOIN(&cron_handle, &unused);
 #if DEBUG_CRON
   LOG(LOG_INFO,
@@ -248,7 +206,8 @@ static int inBlock = 0;
  * CronJob to suspend the cron thread
  * until it is resumed.
  */
-static void block(Semaphore * sig) {
+static void block(void * sem) {
+  Semaphore * sig = sem;
   int ok = SYSERR;
 
   if (sig != NULL)
@@ -277,7 +236,7 @@ void suspendCron() {
   inBlock++;
   if (inBlock == 1) {
     blockSignal = SEMAPHORE_NEW(0);
-    addCronJob((CronJob)&block,
+    addCronJob(&block,
 	       0,
 	       0,
 	       blockSignal);
@@ -313,25 +272,43 @@ void resumeIfNotCron() {
 }
 
 static void abortSleep() {
-#if DEBUG_CRON
-  LOG(LOG_CRON,
-      "Sending signal to pid %d\n",
-      cronPID);
-#endif
-  if (! isCronRunning())
-    return;
+  if (cron_signal == NULL)
+    return; /* cron_handle not valid */
 #ifdef WINDOWS
   QueueUserAPC((PAPCFUNC) sigalrmHandler,
 	       IsWinNT() ? 0 : GetCurrentThread(), 0);
-#elif SOMEBSD || OSX || SOLARIS
-  PTHREAD_KILL(&cron_handle, SIGALRM);
 #else
-  /* linux */
-  if (cronPID != 0)
-    kill(cronPID, SIGALRM);
+  PTHREAD_KILL(&cron_handle, SIGALRM);
 #endif
 }
 
+
+#if HAVE_PRINT_CRON_TAB
+/**
+ * Print the cron-tab.
+ */
+void printCronTab() {
+  int jobId;
+  UTIL_cron_DeltaListEntry * tab;
+  cron_t now;
+
+  cronTime(&now);
+  MUTEX_LOCK(&deltaListLock_);
+
+  jobId = firstUsed_;
+  while (jobId != -1) {
+    tab = &deltaList_[jobId];
+    LOG(LOG_CRON,
+	"%3u: delta %8lld CU --- method %p --- repeat %8u CU\n",
+	jobId,
+	tab->delta - now,
+	(int)tab->method,
+	tab->deltaRepeat);
+    jobId = tab->next;
+  }
+  MUTEX_UNLOCK(&deltaListLock_);
+}
+#endif
 
 
 /**
@@ -483,6 +460,9 @@ void addCronJob(CronJob method,
 	= entry->next;
       entry->next = -1;
       MUTEX_UNLOCK(&deltaListLock_);
+#if HAVE_PRINT_CRON_TAB
+      printCronTab();
+#endif
       return;
     }
   }
@@ -490,40 +470,17 @@ void addCronJob(CronJob method,
   if (last == -1) {
     firstUsed_ = firstFree_;
     abortSleep();
-  } else
+  } else {
     deltaList_[last].next = firstFree_;
+#if HAVE_PRINT_CRON_TAB
+    printCronTab();
+#endif
+  }
   firstFree_
     = entry->next;
   entry->next = current;
   MUTEX_UNLOCK(&deltaListLock_);
 }
-
-#if HAVE_PRINT_CRON_TAB
-/**
- * Print the cron-tab.
- */
-void printCronTab() {
-  int jobId;
-  UTIL_cron_DeltaListEntry * tab;
-  cron_t now;
-
-  cronTime(&now);
-  MUTEX_LOCK(&deltaListLock_);
-
-  jobId = firstUsed_;
-  while (jobId != -1) {
-    tab = &deltaList_[jobId];
-    LOG(LOG_CRON,
-	"%3u: delta %8lld CU --- method %p --- repeat %8u CU\n",
-	jobId,
-	tab->delta - now,
-	(int)tab->method,
-	tab->deltaRepeat);
-    jobId = tab->next;
-  }
-  MUTEX_UNLOCK(&deltaListLock_);
-}
-#endif
 
 /**
  * Process the cron-job at the beginning of the waiting queue, that
@@ -589,11 +546,10 @@ static void runJob() {
 /**
  * The main-method of cron.
  */
-static void * cron() {
+static void * cron(void * unused) {
   cron_t now;
   cron_t next;
 
-  cronPID = getpid();
   while (cron_shutdown == NO) {
 #if HAVE_PRINT_CRON_TAB
     printCronTab();
@@ -648,6 +604,42 @@ static void * cron() {
 #endif
   return NULL;
 }
+
+
+/**
+ * Make sure to call stopCron before calling this method!
+ */
+void doneCron() {
+  int i;
+
+  i = firstUsed_;
+  while (i != -1) {
+    FREENONNULL(deltaList_[i].data);
+    i = deltaList_[i].next;
+  }
+  MUTEX_DESTROY(&deltaListLock_);
+  MUTEX_DESTROY(&inBlockLock_);
+  FREE(deltaList_);
+  SEMAPHORE_FREE(cron_signal_up);
+  deltaList_ = NULL;
+}
+
+/**
+ * Start the cron jobs.
+ */
+void startCron() {
+  GNUNET_ASSERT(cron_signal == NULL);
+  cron_shutdown = NO;
+  cron_signal = SEMAPHORE_NEW(0);
+  if (0 != PTHREAD_CREATE(&cron_handle,
+			  &cron,
+			  NULL,
+			  256 * 1024))
+    DIE_STRERROR("pthread_create");
+  /* large stack, we don't know for sure
+     what the cron jobs may be doing */
+}
+
 
 /**
  * Remove all matching cron-jobs from the list. This method should

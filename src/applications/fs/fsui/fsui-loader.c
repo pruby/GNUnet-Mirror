@@ -49,6 +49,13 @@ static void eventCallback(void * cls,
   }
 #endif
 }
+static int parseOptions(int argc,
+			char ** argv) {
+  FREENONNULL(setConfigurationString("GNUNET",
+	  		 	     "LOGLEVEL",
+			             "WARNING"));
+  return 0;
+}
 
 int main(int argc,
 	 char * argv[]) {
@@ -60,7 +67,7 @@ int main(int argc,
   }
   if(OK != initUtil(argc,
 		    argv,
-		    NULL)) {
+		    &parseOptions)) {
     fprintf(stderr,
 	    "initUtil failed!\n");
     return -1;
@@ -70,9 +77,9 @@ int main(int argc,
 		   YES,
 		   &eventCallback,
 		   NULL);
-  if (ctx != NULL)
+  if (ctx != NULL) {
     FSUI_stop(ctx);
-  else
+  } else
     fprintf(stderr,
 	    "FSUI_start failed!\n");
   stopCron();

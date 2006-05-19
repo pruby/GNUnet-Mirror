@@ -40,8 +40,6 @@ static Bootstrap_ServiceAPI * bootstrap;
 
 static PTHREAD_T pt;
 
-static int ptPID;
-
 static int abort_bootstrap = YES;
 
 typedef struct {
@@ -170,10 +168,9 @@ static int needBootstrap() {
   }
 }
 
-static void processThread(void * unused) {
+static void * processThread(void * unused) {
   HelloListClosure cls;
 
-  ptPID = getpid();
   cls.helos = NULL;
   while (abort_bootstrap == NO) {
     while (abort_bootstrap == NO) {
@@ -196,7 +193,7 @@ static void processThread(void * unused) {
 	 cls.helosCount);
     processhellos(&cls);
   }
-  ptPID = 0;
+  return NULL;
 }
 
 /**
@@ -209,7 +206,7 @@ void startBootstrap(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(bootstrap != NULL);
   abort_bootstrap = NO;
   GNUNET_ASSERT(0 == PTHREAD_CREATE(&pt,
-				    (PThreadMain)&processThread,
+				    &processThread,
 				    NULL,
 				    8 * 1024));	
 }
@@ -222,13 +219,7 @@ void stopBootstrap() {
   void * unused;
 
   abort_bootstrap = YES;
-#if SOMEBSD || OSX || SOLARIS || MINGW
   PTHREAD_KILL(&pt, SIGALRM);
-#else
-  /* linux */
-  if (ptPID != 0)
-    kill(ptPID, SIGALRM);
-#endif
   PTHREAD_JOIN(&pt, &unused);
   coreAPI->releaseService(bootstrap);
   bootstrap = NULL;

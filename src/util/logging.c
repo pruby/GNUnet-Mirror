@@ -436,7 +436,6 @@ void LOG(LOG_Level minLogLevel,
       lastlog = lcltime->tm_yday;
     }
 
-
     printTime();
     if (format[0] == ' ')
       FPRINTF(logfile, "%s:", gettext(loglevels[minLogLevel]));
