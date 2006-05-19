@@ -64,6 +64,7 @@ static int verifyKBlock(const HashCode512 * key,
   size = ntohl(value->size) - sizeof(Datastore_Value);
   if (OK != getQueryFor(size,
 			(DBlock*) &value[1],
+			YES,
 			&query))
     return SYSERR;
   GNUNET_ASSERT(type == K_BLOCK);
@@ -231,6 +232,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     /* extra check: verify sig */
     GNUNET_ASSERT(OK == getQueryFor(size,
 				    (DBlock*) kb,
+				    YES,
 				    &hc));
 #endif
     freePrivateKey(pk);

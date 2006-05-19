@@ -3,6 +3,7 @@ INCLUDES = -I$(top_srcdir)/src/include
 lib_LTLIBRARIES = \
   libgnunetfsui.la 
 
+noinst_PROGRAMS = fsui-loader
 
 libgnunetfsui_la_SOURCES = \
   collection.c \
@@ -22,6 +23,13 @@ libgnunetfsui_la_LIBADD = \
 EXTRA_DIST = \
   check.conf
 
+
+fsui_loader_SOURCES = \
+ fsui-loader.c 
+fsui_loader_LDADD = \
+ $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+ $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+ $(top_builddir)/src/util/libgnunetutil.la 
 
 check_PROGRAMS = \
   fsuitest \

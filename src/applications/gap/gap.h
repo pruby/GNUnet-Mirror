@@ -39,7 +39,7 @@
 
 #define DEBUG_GAP NO
 
-#define EXTRA_CHECKS YES
+#define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 
 
 /* ***************** policy constants **************** */

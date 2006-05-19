@@ -782,6 +782,7 @@ static int queueReply(const PeerIdentity * sender,
   /* verify data is valid */
   uri(data,
       ANY_BLOCK,
+      YES,
       primaryKey);
 #endif
 
@@ -1328,6 +1329,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
   /* verify data is valid */
   uri(value,
       ANY_BLOCK,
+      YES,
       primaryKey);
 #endif
 
@@ -1500,6 +1502,7 @@ static int execQuery(const PeerIdentity * sender,
 
       if (uri(cls.values[perm[i]],
 	      ite->type,
+	      NO, /* no need to verify local results! */
 	      &query->queries[0]))
 	doForward = NO; /* we have the one and only answer,
 				do not bother to forward... */
@@ -1614,9 +1617,6 @@ static int useContent(const PeerIdentity * host,
 	_("GAP received invalid content from `%s'\n"),
 	(host != NULL) ? (const char*)&enc : _("myself"));    
     BREAK();
-    uri(value,
-	ANY_BLOCK,
-	&contentHC);
     FREE(value);
     return SYSERR; /* invalid */
   }
@@ -1654,6 +1654,7 @@ static int useContent(const PeerIdentity * host,
       ite->seenReplyWasUnique
 	= uri(value,
 	      ite->type,
+	      NO, /* already verified */
 	      &ite->primaryKey);
     } else {
       ite->seenReplyWasUnique = NO;
@@ -1699,6 +1700,7 @@ static int useContent(const PeerIdentity * host,
   /* FIFTH: if unique reply, stopy querying */
   if (uri(value,
 	  ite->type,
+	  NO, /* already verified */
 	  &ite->primaryKey)) {
     /* unique reply, stop forwarding! */
     dequeueQuery(&ite->primaryKey);

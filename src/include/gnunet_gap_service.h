@@ -46,9 +46,11 @@ extern "C" {
  * Function that helps the routing code to find out if
  * a given reply is the one and only reply for a given
  * request.
+ * @param verify check that content is valid? (YES/NO)
  */
 typedef int (*UniqueReplyIdentifier)(const DataContainer * content,
 				     unsigned int query_type,
+				     int verify,
 				     const HashCode512 * primaryKey);
 
 /**

@@ -406,6 +406,6 @@ void * downloadThread(void * dl);
 /**
  * FOR RESUME: Thread that searches for data.
  */
-void * searchThread(FSUI_SearchList * pos);
+void * searchThread(void /* FSUI_SearchList */ * pos);
 
 #endif

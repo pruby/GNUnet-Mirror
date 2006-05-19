@@ -216,7 +216,8 @@ static int testTerminate(FSUI_SearchList * pos) {
 /**
  * Thread that searches for data.
  */
-void * searchThread(FSUI_SearchList * pos) {
+void * searchThread(void * cls) {
+  FSUI_SearchList * pos = cls;
   ECRS_search(pos->uri,
 	      pos->anonymityLevel,
 	      cronTime(NULL) + cronYEARS, /* timeout!?*/
@@ -259,7 +260,7 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
   if (0 != PTHREAD_CREATE(&pos->handle,
-			  (PThreadMain) &searchThread,
+			  &searchThread,
 			  pos,
 			  32 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");

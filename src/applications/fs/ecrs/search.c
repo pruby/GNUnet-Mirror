@@ -332,6 +332,7 @@ static int receiveReplies(const HashCode512 * key,
 #endif
   if (OK != getQueryFor(size,
 			(const DBlock*) &value[1],
+			YES,
 			&query))
     return SYSERR;
   for (i=0;i<sqc->queryCount;i++) {

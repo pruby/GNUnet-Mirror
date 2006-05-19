@@ -84,6 +84,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       size = ntohs(hdr->size) - sizeof(CS_fs_reply_content_MESSAGE);
       if (OK != getQueryFor(size,
 			    (DBlock*)&rep[1],
+			    NO, /* gnunetd will have checked already */
 			    &query)) {
 	BREAK();
 	FREE(hdr);

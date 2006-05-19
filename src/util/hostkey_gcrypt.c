@@ -45,7 +45,8 @@ struct PrivateKey {
 };
 
 #define HOSTKEY_LEN 2048
-#define EXTRA_CHECKS YES
+
+#define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 
 
 /**

@@ -155,6 +155,7 @@ unsigned int getTypeOfBlock(unsigned int size,
  */
 int getQueryFor(unsigned int size,
 		const DBlock * data,
+		int verify,
 		HashCode512 * query) {
   unsigned int type;
 
@@ -177,13 +178,14 @@ int getQueryFor(unsigned int size,
       return SYSERR;
     }
     sb = (const SBlock*) data;
-    if (OK != verifySig(&sb->identifier,
-			size
-			- sizeof(Signature)
-			- sizeof(PublicKey)
-			- sizeof(unsigned int),
-			&sb->signature,
-			&sb->subspace)) {
+    if ( (verify == YES) &&
+	 (OK != verifySig(&sb->identifier,
+			  size
+			  - sizeof(Signature)
+			  - sizeof(PublicKey)
+			  - sizeof(unsigned int),
+			  &sb->signature,
+			  &sb->subspace)) ) {
       BREAK();
       return SYSERR;
     }
@@ -197,10 +199,11 @@ int getQueryFor(unsigned int size,
       return SYSERR;
     }
     kb = (const KBlock*) data;
-    if ( (OK != verifySig(&kb[1],
-			  size - sizeof(KBlock),
-			  &kb->signature,
-			  &kb->keyspace)) ) {
+    if ( (verify == YES) &&
+	 ( (OK != verifySig(&kb[1],
+			    size - sizeof(KBlock),
+			    &kb->signature,
+			    &kb->keyspace)) ) ) {
       BREAK();
       return SYSERR;
     }
@@ -216,13 +219,14 @@ int getQueryFor(unsigned int size,
       return SYSERR;
     }
     nb = (const NBlock*) data;
-    if (OK != verifySig(&nb->identifier,
-			size
-			- sizeof(Signature)
-			- sizeof(PublicKey)
-			- sizeof(unsigned int),
-			&nb->signature,
-			&nb->subspace)) {
+    if ( (verify == YES) &&
+	 (OK != verifySig(&nb->identifier,
+			  size
+			  - sizeof(Signature)
+			  - sizeof(PublicKey)
+			  - sizeof(unsigned int),
+			  &nb->signature,
+			  &nb->subspace)) ) {
       BREAK();
       return SYSERR;
     }
@@ -236,12 +240,13 @@ int getQueryFor(unsigned int size,
       return SYSERR;
     }
     kb = (const KNBlock*) data;
-    if ( (OK != verifySig(&kb->nblock,
-			  size
-			  - sizeof(KBlock)
-			  - sizeof(unsigned int),
-			  &kb->kblock.signature,
-			  &kb->kblock.keyspace)) ) {
+    if ( (verify == YES) &&
+	 ( (OK != verifySig(&kb->nblock,
+			    size
+			    - sizeof(KBlock)
+			    - sizeof(unsigned int),
+			    &kb->kblock.signature,
+			    &kb->kblock.keyspace)) ) ) {
       BREAK();
       return SYSERR;
     }
@@ -287,7 +292,7 @@ int isDatumApplicable(unsigned int type,
     BREAK();
     return SYSERR; /* type mismatch */
   }
-  if (OK != getQueryFor(size, data, &hc)) {
+  if (OK != getQueryFor(size, data, YES, &hc)) {
     BREAK(); /* malformed data */
     return SYSERR;
   }

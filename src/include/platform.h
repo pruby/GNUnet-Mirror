@@ -33,6 +33,8 @@
 #include "config.h"
 #endif
 
+#define ALLOW_EXTRA_CHECKS  YES
+
 #include "plibc.h"
 
 /**

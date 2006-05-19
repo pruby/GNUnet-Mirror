@@ -43,8 +43,6 @@
 
 #define DEBUG_FS NO
 
-#define EXTRA_CHECKS YES
-
 typedef struct {
   struct DHT_GET_RECORD * rec;
   unsigned int prio;
@@ -53,6 +51,13 @@ typedef struct {
 typedef struct {
   struct DHT_PUT_RECORD * rec;
 } DHT_PUT_CLS;
+
+typedef struct LG_Job { 
+  unsigned int keyCount;
+  unsigned int type;
+  HashCode512 * queries;
+  struct LG_Job * next;
+} LG_Job;
 
 /**
  * Global core API.
@@ -87,6 +92,13 @@ static int migration;
  * ID of the FS table in the DHT infrastructure.
  */
 static DHT_TableId dht_table;
+
+static Semaphore * ltgSignal;
+
+static PTHREAD_T localGetProcessor;
+
+static LG_Job * lg_jobs;
+
 
 static Datastore_Value *
 gapWrapperToDatastoreValue(const DataContainer * value,
@@ -159,6 +171,7 @@ static int gapPut(void * closure,
   size = ntohl(gw->dc.size) - sizeof(GapWrapper);
   if ( (OK != getQueryFor(size,
 			  (DBlock*) &gw[1],
+			  YES,
 			  &hc)) ||
        (! equalsHashCode512(&hc, query)) ) {
     BREAK(); /* value failed verification! */
@@ -286,6 +299,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
   datum->anonymityLevel = ri->anonymityLevel;
   if (OK != getQueryFor(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*)&ri[1],
+			YES,
 			&query)) {
     BREAK();
     FREE(datum);
@@ -490,6 +504,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
 	 ntohs(req->size) - sizeof(CS_fs_request_delete_MESSAGE));
   if (OK != getQueryFor(ntohs(rd->header.size) - sizeof(CS_fs_request_delete_MESSAGE),
 			(const DBlock*)&rd[1],
+			NO,
 			&query)) {
     FREE(value);
     BREAK();
@@ -933,6 +948,7 @@ static int replyHashFunction(const DataContainer * content,
 
 static int uniqueReplyIdentifier(const DataContainer * content,
 				 unsigned int type,
+				 int verify,
 				 const HashCode512 * primaryKey) {
   HashCode512 q;
   unsigned int t;
@@ -947,6 +963,7 @@ static int uniqueReplyIdentifier(const DataContainer * content,
   gw = (const GapWrapper*) content;
   if ( (OK == getQueryFor(size - sizeof(GapWrapper),
 			  (const DBlock*) &gw[1],
+			  verify,
 			  &q)) &&
        (equalsHashCode512(&q,
 			  primaryKey)) &&
@@ -965,7 +982,26 @@ static int uniqueReplyIdentifier(const DataContainer * content,
 
 static int fastPathProcessor(const HashCode512 * query,
 			     const DataContainer * value,
-			     void * cls) {
+			     void * cls) { 
+  Datastore_Value * dv;
+
+  dv = gapWrapperToDatastoreValue(value, 0);
+  if (dv == NULL)
+    return SYSERR;
+  processResponse(query,
+		  dv);
+  FREE(dv);
+  return OK;
+}
+
+/**
+ * FastPathProcessor that only processes the first reply
+ * (essentially to establish "done" == uniqueReplyIdentifier
+ * as true or false.
+ */
+static int fastPathProcessorFirst(const HashCode512 * query,
+				  const DataContainer * value,
+				  void * cls) {
   int * done = cls;
   Datastore_Value * dv;
 
@@ -976,10 +1012,58 @@ static int fastPathProcessor(const HashCode512 * query,
 		  dv);
   if (YES == uniqueReplyIdentifier(value,
 				   ntohl(dv->type),
+				   NO,
 				   query))
     *done = YES;
   FREE(dv);
-  return OK;
+  return SYSERR;
+}
+
+/**
+ * Thread to lookup local replies to search queries
+ * asynchronously.
+ */
+static void * localGetter(void * noargs) {
+  LG_Job * job;
+  while (1) {
+    SEMAPHORE_DOWN(ltgSignal);
+    MUTEX_LOCK(&lock);
+    if (lg_jobs == NULL) {
+      MUTEX_UNLOCK(&lock);
+      break;
+    }
+    job = lg_jobs;
+    lg_jobs = job->next;
+    MUTEX_UNLOCK(&lock);
+    gapGet(NULL,
+	   job->type,
+	   EXTREME_PRIORITY,
+	   job->keyCount,
+	   job->queries,
+	   &fastPathProcessor,
+	   NULL);
+    FREE(job->queries);
+    FREE(job);
+  }
+  return NULL;
+}
+
+static void queueLG_Job(unsigned int type,
+			unsigned int keyCount,
+			const HashCode512 * queries) {
+  LG_Job * job;
+
+  job = MALLOC(sizeof(LG_Job));
+  job->keyCount = keyCount;
+  job->queries = MALLOC(sizeof(HashCode512) * keyCount);
+  memcpy(job->queries,
+	 queries,
+	 sizeof(HashCode512) * keyCount);
+  MUTEX_LOCK(&lock);
+  job->next = lg_jobs;
+  lg_jobs = job;
+  MUTEX_UNLOCK(&lock);
+  SEMAPHORE_UP(ltgSignal);
 }
 
 /**
@@ -1023,7 +1107,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 	 EXTREME_PRIORITY,
 	 keyCount,
 	 &rs->query[0],
-	 &fastPathProcessor,
+	 &fastPathProcessorFirst,
 	 &done);
   if (done == YES) {
 #if DEBUG_FS
@@ -1032,6 +1116,11 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 #endif
     return OK;	
   }
+
+  /* run gapGet asynchronously (since it may take a while due to lots of IO) */
+  queueLG_Job(type,
+	      keyCount,
+	      &rs->query[0]);
   gap->get_start(type,
 		 ntohl(rs->anonymityLevel),
 		 keyCount,
@@ -1078,7 +1167,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(sizeof(SBlock) == 724);
   GNUNET_ASSERT(sizeof(NBlock) == 716);
   GNUNET_ASSERT(sizeof(KNBlock) == 1244);
-
+  
   migration = testConfigurationString("FS",
 				      "ACTIVEMIGRATION",
 				      "YES");
@@ -1106,7 +1195,12 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   }
   /* dht = capi->requestService("dht"); */
   dht = NULL;
-
+  ltgSignal = SEMAPHORE_NEW(0);
+  if (0 != PTHREAD_CREATE(&localGetProcessor,
+			  &localGetter,
+			  NULL,
+			  16 * 1024))
+    DIE_STRERROR("pthread_create");
   coreAPI = capi;
   ONDEMAND_init();
   MUTEX_CREATE(&lock);
@@ -1174,6 +1268,9 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 }
 
 void done_module_fs() {
+  LG_Job * job;
+  void * unused;
+
   doneMigration();
   if (dht != NULL) {
     LOG(LOG_INFO,
@@ -1202,6 +1299,15 @@ void done_module_fs() {
   GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
 							   &csHandleRequestGetAvgPriority));
   doneQueryManager();
+  while (lg_jobs != NULL) {
+    job = lg_jobs->next;
+    FREE(lg_jobs->queries);
+    FREE(lg_jobs);
+    lg_jobs = job;
+  }
+  SEMAPHORE_UP(ltgSignal); /* lg_jobs == NULL => thread will terminate */
+  PTHREAD_JOIN(&localGetProcessor,
+	       &unused);
   coreAPI->releaseService(datastore);
   datastore = NULL;
   coreAPI->releaseService(gap);

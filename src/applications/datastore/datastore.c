@@ -82,8 +82,6 @@ static int get(const HashCode512 * query,
 	       unsigned int type,
 	       Datum_Iterator iter,
 	       void * closure) {
-  int ret;
-
   if (! testAvailable(query)) {
 #if DEBUG_DATASTORE
     EncName enc;
@@ -97,12 +95,10 @@ static int get(const HashCode512 * query,
 #endif
     return 0;
   }
-
-  ret = sq->get(query,
-		type,
-		iter,
-		closure);
-  return ret;
+  return sq->get(query,
+		 type,
+		 iter,
+		 closure);
 }
 
 /**

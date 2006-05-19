@@ -198,12 +198,15 @@ unsigned int getTypeOfBlock(unsigned int size,
  *
  * @param type the type of the encoding
  * @param data the content (encoded)
+ * @param verify should the data be verified?  Use NO if
+ *         data integrity has been checked before (maybe much faster!)
  * @param query set to the query for the content
  * @return SYSERR if the content is invalid or
  *   the content type is not known
  */
 int getQueryFor(unsigned int size,
 		const DBlock * data,
+		int verify,
 		HashCode512 * query);
 
 /**

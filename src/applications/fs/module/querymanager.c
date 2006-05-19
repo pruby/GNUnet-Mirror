@@ -128,7 +128,7 @@ void untrackQuery(const HashCode512 * query,
 }
 
 /**
- * We received a reply from 'responder'.
+ * We received a reply.
  * Forward to client (if appropriate).
  *
  * @param value the response

@@ -31,7 +31,7 @@
 #include "gnunet_datastore_service.h"
 #include "ecrs_core.h"
 
-#define EXTRA_CHECKS YES
+#define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 
 /**
  * Creates a symlink to the given file in the shared directory

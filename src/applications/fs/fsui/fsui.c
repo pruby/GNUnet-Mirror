@@ -590,7 +590,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	    "FSUI persistence: restarting search\n");
 #endif
 	if (0 != PTHREAD_CREATE(&list->handle,
-				(PThreadMain)&searchThread,
+				&searchThread,
 				list,
 				16 * 1024))
 	  DIE_STRERROR("pthread_create");

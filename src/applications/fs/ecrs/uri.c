@@ -85,7 +85,7 @@
 #include "ecrs.h"
 #include "gnunet_ecrs_lib.h"
 
-#define EXTRA_CHECKS YES
+#define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 
 /**
  * Generate a keyword URI.
