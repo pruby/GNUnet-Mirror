@@ -472,7 +472,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  goto WARN;
 	}
 	list
-	  = MALLOC(sizeof(FSUI_SearchList));
+	  = MALLOC(sizeof(FSUI_SearchList));	
 	list->uri
 	  = ECRS_stringToUri(buf);
 	FREE(buf);
@@ -592,7 +592,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	if (0 != PTHREAD_CREATE(&list->handle,
 				&searchThread,
 				list,
-				16 * 1024))
+				32 * 1024))
 	  DIE_STRERROR("pthread_create");
 	
 	/* finally: prepend to list */
