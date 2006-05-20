@@ -88,6 +88,7 @@ static void printhelp() {
   static Help help[] = {
     HELP_CONFIG,
     HELP_HELP,
+    HELP_HOSTNAME,
     HELP_LOGLEVEL,
     { 'p', "protocols", NULL,
       gettext_noop("prints supported protocol messages") },
@@ -113,14 +114,14 @@ static int parseOptions(int argc,
 
   while (1) {
     static struct GNoption long_options[] = {
-      { "protocols",          0, 0, 'p' },
       LONG_DEFAULT_OPTIONS,
+      { "protocols",          0, 0, 'p' },
       { 0,0,0,0 }
     };
     option_index = 0;
     c = GNgetopt_long(argc,
 		      argv,
-		      "vhdc:L:H:",
+		      "c:dhHL:pv",
 		      long_options,
 		      &option_index);
     if (c == -1)

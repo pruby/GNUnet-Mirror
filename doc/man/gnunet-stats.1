@@ -1,4 +1,4 @@
-.TH GNUNET-STATS 1 "April 30, 2003" "GNUnet"
+.TH GNUNET-STATS 1 "May 20, 2006" "GNUnet"
 
 .SH NAME
 gnunet-stats \- Display statistics about your GNUnet server.
@@ -9,34 +9,41 @@ gnunet-stats \- Display statistics about your GNUnet server.
 .br
 
 .SH DESCRIPTION
-\fBgnunet-stats\fP is used to display detailed information about various aspect of gnunetd's operation.
+\fBgnunet\-stats\fP is used to display detailed information about various aspect of gnunetd's operation.  This tool only works if the "stats" module is loaded by gnunetd.
 
 .SH OPTIONS
-.B
-.IP "-p,  --protocols"
-print supported protocol messages
-.B
-.IP "-h, --help"
-print this page
-.B
-.IP "-c FILENAME,  --config=FILENAME"
+
+.TP
+.IP "\-c FILENAME,  \-\-config=FILENAME"
 load config file
-.B
-.IP "-v, --version"
-print version number
-.B
-.IP "-H HOSTNAME, --host=HOSTNAME"
-on which host is gnunetd running (default: localhost)
-.B
-.IP "-L LOGLEVEL, --loglevel=LOGLEVEL"
-set the loglevel
-.B
-.IP "-d, --debug"
+
+.TP
+.IP "\-d, \-\-debug"
 run in debug mode, write logs to stderr
+
+.TP
+.IP "\-h, \-\-help"
+print this page
+
+.TP
+.IP "\-H HOSTNAME, \-\-host=HOSTNAME"
+on which host is gnunetd running (default: localhost).  You can also specify a port using the syntax HOSTNAME:PORT.  The default port is 2087.
+
+.TP
+.IP "\-L LOGLEVEL, \-\-loglevel=LOGLEVEL"
+set the loglevel
+
+.TP
+.IP "\-p,  \-\-protocols"
+print supported protocol messages
+
+.TP
+.IP "\-v, \-\-version"
+print version number
 
 
 .SH BUGS
 Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
 
 .SH SEE ALSO
-gnunet.conf(5), gnunetd(1)
+gnunetd.conf(5), gnunet.conf(5), gnunetd(1)

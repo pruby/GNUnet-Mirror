@@ -1,4 +1,4 @@
-.TH GNUNET-DOWNLOAD "1" "02 Aug 2004" "GNUnet"
+.TH GNUNET-DOWNLOAD "1" "20 May 2006" "GNUnet"
 .SH NAME
 gnunet-download \- a command line interface for downloading files from GNUnet
 .SH SYNOPSIS
@@ -16,6 +16,9 @@ use config file (defaults: ~/.gnunet/gnunet.conf)
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 print help page
+.TP
+\fB\-H \fIHOSTNAME\fR, \fB\-\-host=\fIHOSTNAME\fR
+on which host is gnunetd running (default: localhost).  You can also specify a port using the syntax HOSTNAME:PORT.  The default port is 2087.
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
 change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.

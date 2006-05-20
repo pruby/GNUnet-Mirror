@@ -120,6 +120,10 @@ void formatHelp(const char * general,
  */
 int parseDefaultOptions(char c,
 			char * optarg) {
+  char * host;
+  char * port_string;
+  unsigned short port;
+
   switch(c) {
   case 'c':
     FREENONNULL(setConfigurationString("FILES",
@@ -131,16 +135,31 @@ int parseDefaultOptions(char c,
 				       "LOGFILE",
 				       NULL));
     break;
-  case 'H':
+  case 'H': {
+    port_string = strstr(optarg, ":");   
+    if (NULL != port_string) {
+      port = (unsigned short) atoi(port_string+1);
+      setConfigurationInt("NETWORK",
+			  "CLIENT-PORT",
+			  port);
+      host = MALLOC(1 + port_string - optarg);
+      memcpy(host, optarg, port_string - optarg);
+      host[port_string - optarg] = '\0';
+    } else {
+      host = STRDUP(optarg);
+    }
     FREENONNULL(setConfigurationString("NETWORK",
 				       "HOST",
+				       host));
+    FREE(host);
+    break;
+  }
+  case 'L':
+    
+    FREENONNULL(setConfigurationString("GNUNET",
+				       "LOGLEVEL",
 				       optarg));
     break;
-  case 'L':
-      FREENONNULL(setConfigurationString("GNUNET",
-					 "LOGLEVEL",
-					 optarg));
-      break;
   default:
     return NO;
   }

@@ -9,8 +9,8 @@ data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
 
-0.7.0pre6, 0.7.0, 0.7.0{a,b,c} to 0.7.0d
-========================================
+0.7.0pre6, 0.7.0, 0.7.0{a,b,c,d} to 0.7.0e
+==========================================
 
 Run
 
