@@ -332,7 +332,11 @@ int PTHREAD_SELF_TEST(PTHREAD_T * pt) {
 void PTHREAD_GET_SELF(PTHREAD_T * pt) {
   pt->internal = MALLOC(sizeof(pthread_t));
   *((pthread_t*)pt->internal) = pthread_self();
+#ifdef HAVE_NEW_PTHREAD_T
+  GNUNET_ASSERT(NULL != *(((pthread_t*)pt->internal)->p));
+#else
   GNUNET_ASSERT(NULL != *((pthread_t*)pt->internal));
+#endif
 }
 
 /**
