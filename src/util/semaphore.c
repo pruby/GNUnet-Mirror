@@ -449,21 +449,21 @@ void PTHREAD_KILL(PTHREAD_T * pt,
     break; /* ok */
   case EINVAL:
     LOG(LOG_ERROR, 
-	_("`%s' failed with error code %s: %s"),
+	_("`%s' failed with error code %s: %s\n"),
 	"pthread_kill",
 	"EINVAL",
 	STRERROR(ret));
     break;
   case ESRCH:
     LOG(LOG_ERROR, 
-	_("`%s' failed with error code %s: %s"),
+	_("`%s' failed with error code %s: %s\n"),
 	"pthread_kill",
 	"ESRCH",
 	STRERROR(ret));
     break;
   default:
     LOG(LOG_ERROR, 
-	_("`%s' failed with error code %d: %s"),
+	_("`%s' failed with error code %d: %s\n"),
 	"pthread_kill",
 	ret,
 	STRERROR(ret));
