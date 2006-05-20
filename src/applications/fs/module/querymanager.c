@@ -138,9 +138,17 @@ void processResponse(const HashCode512 * key,
   int i;
   CS_fs_reply_content_MESSAGE * rc;
   unsigned int matchCount;
+#if DEBUG_QUERYMANAGER
+  EncName enc;
+#endif
 
   GNUNET_ASSERT(ntohl(value->size) > sizeof(Datastore_Value));
   matchCount = 0;
+#if DEBUG_QUERYMANAGER
+  IFLOG(LOG_DEBUG,
+	hash2enc(key,
+		 &enc));
+#endif
   MUTEX_LOCK(&queryManagerLock);
   for (i=trackerCount-1;i>=0;i--) {
     if ( (equalsHashCode512(&trackers[i]->query,
@@ -158,7 +166,8 @@ void processResponse(const HashCode512 * key,
 	     ntohl(value->size) - sizeof(Datastore_Value));
 #if DEBUG_QUERYMANAGER
       LOG(LOG_DEBUG,
-	  "Sending reply to client waiting in slot %u.\n",
+	  "Sending reply for `%s' to client waiting in slot %u.\n",
+	  &enc,
 	  i);
 #endif
       coreAPI->sendToClient(trackers[i]->client,
@@ -166,13 +175,8 @@ void processResponse(const HashCode512 * key,
       FREE(rc);
     }
   }
-#if DEBUG_QUERYMANAGER
+#if DEBUG_QUERYMANAGER && 0
   if (matchCount == 0) {
-    EncName enc;
-
-    IFLOG(LOG_DEBUG,
-	  hash2enc(key,
-		   &enc));
     LOG(LOG_DEBUG,
 	"Reply `%s' did not match any request.\n",
 	&enc);

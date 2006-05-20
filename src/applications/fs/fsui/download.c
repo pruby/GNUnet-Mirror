@@ -330,6 +330,7 @@ void * downloadThread(void * cls) {
       dl = dl->parent;
     }
   }
+  dl = cls;
 #if DEBUG_DTM
   LOG(LOG_DEBUG,
       "Download thread for `%s' terminated (%s)...\n",
@@ -567,7 +568,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   prev = NULL;
   while (dl != NULL) {
     if ( (ECRS_equalsUri(uri,
-		       dl->uri)) &&
+			 dl->uri)) &&
 	 ( (filename == NULL) ||
 	   (0 == strcmp(filename,
 			dl->filename)) ) ) {

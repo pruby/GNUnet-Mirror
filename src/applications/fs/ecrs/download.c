@@ -1058,7 +1058,10 @@ static void issueRequest(RequestManager * rm,
 	hash2enc(&entry->node->chk.query,
 		 &enc));
   LOG(LOG_DEBUG,
-      "Starting FS search for %s\n",
+      "Starting FS search for %s:%llu:%u `%s'\n",
+      entry->node->ctx->ioc->filename,
+      entry->node->offset,
+      entry->node->level,
       &enc);
 #endif
 

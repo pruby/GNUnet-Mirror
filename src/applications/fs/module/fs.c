@@ -1086,13 +1086,16 @@ static int csHandleRequestQueryStart(ClientHandle sock,
     return SYSERR;
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
-#if DEBUG_FS
+#if DEBUG_FS 
   IFLOG(LOG_DEBUG,
 	hash2enc(&rs->query[0],
 		 &enc));
   LOG(LOG_DEBUG,
-      "FS received QUERY START (query: `%s')\n",
-      &enc);
+      "FS received QUERY START (query: `%s', ttl %llu, priority %u, anonymity %u)\n",
+      &enc,
+      ntohll(rs->expiration) - cronTime(NULL),
+      ntohl(rs->prio),
+      ntohl(rs->anonymityLevel));
 #endif
   type = ntohl(rs->type);
   trackQuery(&rs->query[0],
@@ -1112,7 +1115,8 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   if (done == YES) {
 #if DEBUG_FS
     LOG(LOG_DEBUG,
-	"FS successfully took GAP shortcut.\n");
+	"FS successfully took GAP shortcut for `%s'.\n",
+	&enc);
 #endif
     return OK;	
   }
@@ -1199,7 +1203,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   if (0 != PTHREAD_CREATE(&localGetProcessor,
 			  &localGetter,
 			  NULL,
-			  16 * 1024))
+			  32 * 1024))
     DIE_STRERROR("pthread_create");
   coreAPI = capi;
   ONDEMAND_init();
