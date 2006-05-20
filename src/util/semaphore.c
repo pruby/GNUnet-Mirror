@@ -332,11 +332,6 @@ int PTHREAD_SELF_TEST(PTHREAD_T * pt) {
 void PTHREAD_GET_SELF(PTHREAD_T * pt) {
   pt->internal = MALLOC(sizeof(pthread_t));
   *((pthread_t*)pt->internal) = pthread_self();
-#ifdef HAVE_NEW_PTHREAD_T
-  GNUNET_ASSERT(NULL != ((pthread_t*)pt->internal)->p);
-#else
-  GNUNET_ASSERT(NULL != *((pthread_t*)pt->internal));
-#endif
 }
 
 /**
@@ -441,14 +436,30 @@ void PTHREAD_DETACH(PTHREAD_T * pt) {
 void PTHREAD_KILL(PTHREAD_T * pt,
 		  int signal) {
   pthread_t * handle;
+  int ret;
 
   handle = pt->internal;
   if (handle == NULL) {
     BREAK();
     return;
   }
-  if (0 != pthread_kill(*handle, signal))
-    LOG_STRERROR(LOG_ERROR, "pthread_kill");
+  ret = pthread_kill(*handle, signal);
+  switch (ret) {
+  case 0: 
+    break; /* ok */
+  case EINVAL:
+    LOG(LOG_ERROR, 
+	_("pthread_kill failed (invalid signal number)"));
+    break;
+  case ESRCH:
+    LOG(LOG_ERROR, 
+	_("pthread_kill failed (no such thread)"));
+    break;
+  default:
+    LOG(LOG_ERROR, 
+	_("pthread_kill failed (unknown error)"));
+    break;    
+  }
 }
 
 
