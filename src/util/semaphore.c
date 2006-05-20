@@ -449,15 +449,24 @@ void PTHREAD_KILL(PTHREAD_T * pt,
     break; /* ok */
   case EINVAL:
     LOG(LOG_ERROR, 
-	_("pthread_kill failed (invalid signal number)"));
+	_("`%s' failed with error code %s: %s"),
+	"pthread_kill",
+	"EINVAL",
+	STRERROR(ret));
     break;
   case ESRCH:
     LOG(LOG_ERROR, 
-	_("pthread_kill failed (no such thread)"));
+	_("`%s' failed with error code %s: %s"),
+	"pthread_kill",
+	"ESRCH",
+	STRERROR(ret));
     break;
   default:
     LOG(LOG_ERROR, 
-	_("pthread_kill failed (unknown error)"));
+	_("`%s' failed with error code %d: %s"),
+	"pthread_kill",
+	ret,
+	STRERROR(ret));
     break;    
   }
 }
