@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -31,7 +31,7 @@
 #include "ecrs.h"
 #include "tree.h"
 
-#define DEBUG_DOWNLOAD NO 
+#define DEBUG_DOWNLOAD NO
 
 /**
  * Highest TTL allowed? (equivalent of 25-50 HOPS distance!)
@@ -754,6 +754,7 @@ static void iblock_download_children(NodeClosure * node,
  */
 static int checkPresent(NodeClosure * node) {
   int res;
+  int ret;
   char * data;
   unsigned int size;
 
@@ -778,12 +779,21 @@ static int checkPresent(NodeClosure * node) {
 				 data,
 				 size);
 
-      FREE(data);
-      return YES;
-    }
-  }
+      ret = YES;
+    } else
+      ret = NO;
+  } else
+    ret = NO;
   FREE(data);
-  return NO;
+#ifdef DEBUG_DOWNLOAD
+  LOG(LOG_DEBUG,
+      "Checked presence of block at %llu level %u.  Result: %s\n",
+      node->offset,
+      node->level,
+      ret == YES ? "YES" : "NO");
+#endif
+
+  return ret;
 }
 
 /**
@@ -1240,7 +1250,8 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   top->chk = fid.chk;
   top->offset = 0;
   top->level = computeDepth(ctx.total);
-  addRequest(rm, top);
+  if (NO == checkPresent(top))
+    addRequest(rm, top);
   while ( (OK == tt(ttClosure)) &&
 	  (rm->abortFlag == NO) &&
 	  (rm->requestListIndex != 0) ) {
