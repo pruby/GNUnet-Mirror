@@ -1610,7 +1610,9 @@ void fixup_rootmenu(struct menu *menu)
 }
 
 
-int gconf_main_post_init(void * lib) {
+void gconf_main_post_init(void * lib) {
+  char * filename;
+
   setLibrary(lib);
 
   /* Load the interface and connect signals */
@@ -1648,8 +1650,6 @@ int gconf_main_post_init(void * lib) {
 int gconf_main(int argc, 
 	       char **argv, 
 	       void * lib) {
-  char * filename;
-
   g_thread_init(NULL);
   gtk_init(&argc, &argv);
 #if ENABLE_NLS

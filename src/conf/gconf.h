@@ -30,4 +30,6 @@
 
 int gconf_main(int argc, char **argv, void * lib);
 
+void gconf_main_post_init(void * lib);
+ 
 #endif
