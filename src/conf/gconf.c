@@ -1610,26 +1610,8 @@ void fixup_rootmenu(struct menu *menu)
 }
 
 
-/* Main */
-
-
-int gconf_main(int argc, 
-	       char **argv, 
-	       void * lib) {
-  char * filename;
-
+int gconf_main_post_init(void * lib) {
   setLibrary(lib);
-  g_thread_init(NULL);
-  gtk_init(&argc, &argv);
-#if ENABLE_NLS
-  bind_textdomain_codeset(PACKAGE, "UTF-8"); /* for gtk */
-#endif
-#ifdef WINDOWS
-  FreeConsole();
-#endif
-
-  /* add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps"); */
-  /* add_pixmap_directory (PACKAGE_SOURCE_DIR "/pixmaps"); */
 
   /* Load the interface and connect signals */
   init_main_window();
@@ -1659,5 +1641,26 @@ int gconf_main(int argc,
   gdk_threads_leave();
   destroyMainXML();
   setLibrary(NULL);
+}
+
+
+/* Main */
+int gconf_main(int argc, 
+	       char **argv, 
+	       void * lib) {
+  char * filename;
+
+  g_thread_init(NULL);
+  gtk_init(&argc, &argv);
+#if ENABLE_NLS
+  bind_textdomain_codeset(PACKAGE, "UTF-8"); /* for gtk */
+#endif
+#ifdef WINDOWS
+  FreeConsole();
+#endif
+
+  /* add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps"); */
+  /* add_pixmap_directory (PACKAGE_SOURCE_DIR "/pixmaps"); */
+  gconf_main_post_init(lib);
   return 0;
 }

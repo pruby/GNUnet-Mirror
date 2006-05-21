@@ -674,10 +674,10 @@ int gtk_wizard_main(int argc,
   gtk_main();
   gdk_threads_leave();
   destroyMainXML();
-  setLibrary(NULL);
   if (doOpenEnhConfigurator)
-    gconf_main(argc, argv, lib);
+    gconf_main_post_init(lib);
   FREENONNULL(user_name);
   FREENONNULL(group_name);
+  setLibrary(NULL);
   return 0;
 }
