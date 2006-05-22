@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-05-20 08:38-0700\n"
+"POT-Creation-Date: 2006-05-20 09:13-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -189,7 +189,7 @@ msgstr "GNUnet chat client starten"
 #: src/applications/fs/tools/gnunet-pseudonym.c:232
 #: src/applications/fs/tools/gnunet-search.c:221
 #: src/applications/fs/tools/gnunet-unindex.c:140
-#: src/applications/stats/gnunet-stats.c:143
+#: src/applications/stats/gnunet-stats.c:144
 #: src/applications/tbench/gnunet-tbench.c:189
 #: src/applications/template/gnunet-template.c:87
 #: src/applications/testbed/gnunet-testbed.c:125
@@ -1849,20 +1849,20 @@ msgstr "unterstützte Peer-to-Peer Nachrichten:\n"
 msgid "Supported client-server messages:\n"
 msgstr "unterstützte Client-Server Nachrichten:\n"
 
-#: src/applications/stats/gnunet-stats.c:93
+#: src/applications/stats/gnunet-stats.c:94
 msgid "prints supported protocol messages"
 msgstr "gibt unterstützte Protokollnachrichten aus"
 
-#: src/applications/stats/gnunet-stats.c:98
+#: src/applications/stats/gnunet-stats.c:99
 msgid "Print statistics about GNUnet operations."
 msgstr "Statistiken der GNUnet Aktivitäten ausgeben."
 
-#: src/applications/stats/gnunet-stats.c:166
+#: src/applications/stats/gnunet-stats.c:167
 #, c-format
 msgid "Error establishing connection with gnunetd.\n"
 msgstr "Fehler beim Aufbauen einer Verbindung mit gnunetd.\n"
 
-#: src/applications/stats/gnunet-stats.c:180
+#: src/applications/stats/gnunet-stats.c:181
 #, c-format
 msgid "Error reading information from gnunetd.\n"
 msgstr "Fehler beim Lesen von Informationen von gnunetd.\n"

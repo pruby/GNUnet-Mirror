@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-05-20 08:38-0700\n"
+"POT-Creation-Date: 2006-05-20 09:13-0700\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -183,7 +183,7 @@ msgstr "Chạy máy khách chát của GNUnet."
 #: src/applications/fs/tools/gnunet-pseudonym.c:232
 #: src/applications/fs/tools/gnunet-search.c:221
 #: src/applications/fs/tools/gnunet-unindex.c:140
-#: src/applications/stats/gnunet-stats.c:143
+#: src/applications/stats/gnunet-stats.c:144
 #: src/applications/tbench/gnunet-tbench.c:189
 #: src/applications/template/gnunet-template.c:87
 #: src/applications/testbed/gnunet-testbed.c:125
@@ -1800,20 +1800,20 @@ msgstr "Thông báo Peer to Peer được hỗ trợ:\n"
 msgid "Supported client-server messages:\n"
 msgstr "Thông báo máy khách-máy chủ hỗ trợ:\n"
 
-#: src/applications/stats/gnunet-stats.c:93
+#: src/applications/stats/gnunet-stats.c:94
 msgid "prints supported protocol messages"
 msgstr "in các thông báo giao thức hỗ trợ"
 
-#: src/applications/stats/gnunet-stats.c:98
+#: src/applications/stats/gnunet-stats.c:99
 msgid "Print statistics about GNUnet operations."
 msgstr "In thống kê về các thao tác của GNUnet."
 
-#: src/applications/stats/gnunet-stats.c:166
+#: src/applications/stats/gnunet-stats.c:167
 #, c-format
 msgid "Error establishing connection with gnunetd.\n"
 msgstr "Lỗi thiết lập kết nối với gnunetd.\n"
 
-#: src/applications/stats/gnunet-stats.c:180
+#: src/applications/stats/gnunet-stats.c:181
 #, c-format
 msgid "Error reading information from gnunetd.\n"
 msgstr "Lỗi đọc thông tin từ gnunetd.\n"
