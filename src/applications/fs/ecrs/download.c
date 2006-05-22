@@ -208,19 +208,23 @@ int readFromIOC(IOContext * this,
 		void * buf,
 		unsigned int len) {
   int ret;
-  size_t lpos;
 
-  lpos = pos;
-  for (ret=0;ret<level;ret++)
-    lpos /= CHK_PER_INODE;
   MUTEX_LOCK(&this->lock);
   lseek(this->handles[level],
-	lpos,
+	pos,
 	SEEK_SET);
   ret = READ(this->handles[level],
 	     buf,
 	     len);
   MUTEX_UNLOCK(&this->lock);
+#ifdef DEBUG_DOWNLOAD
+  LOG(LOG_DEBUG,
+      "IOC read at level %u offset %llu wanted %u got %d\n",
+      level,
+      pos,
+      len,
+      ret);
+#endif
   return ret;
 }
 
@@ -240,14 +244,10 @@ int writeToIOC(IOContext * this,
 	       void * buf,
 	       unsigned int len) {
   int ret;
-  size_t lpos;
 
-  lpos = pos;
-  for (ret=0;ret<level;ret++)
-    lpos /= CHK_PER_INODE;
   MUTEX_LOCK(&this->lock);
   lseek(this->handles[level],
-	lpos,
+	pos,
 	SEEK_SET);
   ret = WRITE(this->handles[level],
 	      buf,
@@ -261,6 +261,13 @@ int writeToIOC(IOContext * this,
 	STRERROR(errno));
   }
   MUTEX_UNLOCK(&this->lock);
+#ifdef DEBUG_DOWNLOAD
+  LOG(LOG_DEBUG,
+      "IOC write at level %u offset %llu writes %u\n",
+      level,
+      pos,
+      len);
+#endif
   return ret;
 }
 
@@ -618,29 +625,31 @@ static unsigned int getNodeSize(const NodeClosure * node) {
     if (node->offset + (unsigned long long) ret
 	> node->ctx->total)
       ret = (unsigned int) (node->ctx->total - node->offset);
-#if 0
-    PRINTF("Node at offset %llu and level %d has size %u\n",
-	   node->offset,
-	   node->level,
-	   ret);
+#if DEBUG_DOWNLOAD
+    LOG(LOG_DEBUG,
+	"Node at offset %llu and level %d has size %u\n",
+	node->offset,
+	node->level,
+	ret);
 #endif
     return ret;
   }
   rsize = DBLOCK_SIZE;
   for (i=0;i<node->level-1;i++)
     rsize *= CHK_PER_INODE;
-  spos = rsize * CHK_PER_INODE * (node->offset / sizeof(CHK));
+  spos = rsize * (node->offset / sizeof(CHK));
   epos = spos + rsize * CHK_PER_INODE;
   if (epos > node->ctx->total)
     epos = node->ctx->total;
   ret = (epos - spos) / rsize;
   if (ret * rsize < epos - spos)
     ret++; /* need to round up! */
-#if 0
-  PRINTF("Node at offset %llu and level %d has size %u\n",
-	 node->offset,
-	 node->level,
-	 ret * sizeof(CHK));
+#if DEBUG_DOWNLOAD
+  LOG(LOG_DEBUG,
+      "Node at offset %llu and level %d has size %u\n",
+      node->offset,
+      node->level,
+      ret * sizeof(CHK));
 #endif
   return ret * sizeof(CHK);
 }
@@ -757,6 +766,7 @@ static int checkPresent(NodeClosure * node) {
   int ret;
   char * data;
   unsigned int size;
+  HashCode512 hc;
 
   size = getNodeSize(node);
   data = MALLOC(size);
@@ -766,8 +776,6 @@ static int checkPresent(NodeClosure * node) {
 		    data,
 		    size);
   if (res == size) {
-    HashCode512 hc;
-
     hash(data,
 	 size,
 	 &hc);
@@ -819,9 +827,9 @@ static void iblock_download_children(NodeClosure * node,
   }
   if (node->level == 1) {
     levelSize = DBLOCK_SIZE;
-    baseOffset = node->offset / sizeof(CHK) * CHK_PER_INODE * DBLOCK_SIZE;
+    baseOffset = node->offset / sizeof(CHK) * DBLOCK_SIZE;
   } else {
-    levelSize = sizeof(CHK);
+    levelSize = sizeof(CHK) * CHK_PER_INODE;
     baseOffset = node->offset * CHK_PER_INODE;
   }
   chks = (CHK*) data;

@@ -350,8 +350,10 @@ broadcastHelper(const PeerIdentity * hi,
 		SendData * sd) {
   P2P_hello_MESSAGE * helo;
   TSession * tsession;
-  EncName other;
   int prio;
+#if DEBUG_ADVERTISING
+  EncName other;
+#endif
 
   if (confirmed == NO)
     return;
@@ -359,9 +361,10 @@ broadcastHelper(const PeerIdentity * hi,
     return; /* don't advertise NAT addresses via broadcast */
   if (weak_randomi(sd->n) != 0)
     return;
-  hash2enc(&hi->hashPubKey,
-	   &other);
 #if DEBUG_ADVERTISING
+  IFLOG(LOG_DEBUG,
+	hash2enc(&hi->hashPubKey,
+		 &other));
   LOG(LOG_DEBUG,
       "Entering `%s' with target `%s'.\n",
       __FUNCTION__,
@@ -596,6 +599,8 @@ forwardhello(void * unused) {
 
   if (getCPULoad() > 100)
     return; /* CPU load too high... */
+  if (getNetworkLoadUp() > 100)
+    return; /* network load too high... */
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
       "Enter `%s'.\n",
