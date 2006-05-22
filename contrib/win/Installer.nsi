@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.0d"
+!define PRODUCT_VERSION "0.7.0e"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -166,6 +166,8 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\share\GNUnet"
 		File "C:\GNUnet\share\GNUnet\config-client.in" 
 		File "C:\GNUnet\share\GNUnet\config-daemon.in"
+		File "C:\GNUnet\share\GNUnet\gnunet-logo-color.png"
+		File "C:\GNUnet\share\GNUnet\wizard.glade"
 	SectionEnd
 	
 	SectionGroup "Server"
@@ -358,6 +360,9 @@ SectionGroup "GNU libextractor"
 		File "C:\GNUnet\bin\jpeg62.dll"
 		File "C:\GNUnet\bin\bzip2.dll"
 		File "C:\GNUnet\bin\libextractor-1.dll"
+		File "C:\GNUnet\bin\libmpeg2.dll"
+		File "C:\GNUnet\bin\libgsf-1-114.dll"
+		File "C:\GNUnet\bin\libgsf-win32-1-114.dll"
 		File "C:\GNUnet\bin\libogg-0.dll"
 		File "C:\GNUnet\bin\libvorbis-0.dll"
 		File "C:\GNUnet\bin\libvorbisfile-3.dll"
@@ -901,6 +906,9 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libpango-1.0-0.dll"
 	Delete "$INSTDIR\bin\libpangowin32-1.0-0.dll"
 	Delete "$INSTDIR\bin\libplibc-1.dll"
+	Delete "$INSTDIR\bin\libmpeg2.dll"
+	Delete "$INSTDIR\bin\libgsf-1-114.dll"
+	Delete "$INSTDIR\bin\libgsf-win32-1-114.dll"
 	Delete "$INSTDIR\bin\libpng12.dll"
 	Delete "$INSTDIR\bin\libsqlite3-0.dll"
 	Delete "$INSTDIR\bin\libvorbis-0.dll"
@@ -951,6 +959,8 @@ Section Uninstall
   
 	Delete "$INSTDIR\share\GNUnet\config-client.in" 
 	Delete "$INSTDIR\share\GNUnet\config-daemon.in"
+	Delete "$INSTDIR\share\GNUnet\wizard.glade"
+	Delete "$INSTDIR\share\GNUnet\gnunet-logo-color.png"
   RmDir /REBOOTOK "$INSTDIR\share\GNUnet"
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\GNUnet.mo" 
 	Delete "$INSTDIR\share\locale\de\LC_MESSAGES\gnunet-gtk.mo" 

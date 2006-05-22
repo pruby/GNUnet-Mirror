@@ -8,6 +8,7 @@ endif
 
 if !MINGW
  TESTBED_DIR = testbed
+ VPN_DIR = vpn
 endif
 
 SUBDIRS	= \
@@ -35,4 +36,4 @@ SUBDIRS	= \
  tracekit \
  traffic \
  transport \
- vpn
+ $(VPN_DIR)
