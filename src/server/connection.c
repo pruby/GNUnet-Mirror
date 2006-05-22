@@ -496,6 +496,10 @@ static int stat_hangupSent;
 
 static int stat_encrypted;
 
+static int stat_transmitted;
+
+static int stat_received;
+
 static int stat_decrypted;
 
 static int stat_noise_sent;
@@ -1059,7 +1063,7 @@ static void expireSendBufferEntries(BufferEntry * be) {
           (int) ((cronTime(NULL) - entry->transmissionTime) / cronSECONDS),
           usedBytes);
 #endif
-      if(stats != NULL) {
+      if (stats != NULL) {
         stats->change(stat_messagesDropped, 1);
         stats->change(stat_sizeMessagesDropped, entry->len);
       }
@@ -1375,25 +1379,28 @@ static void sendBuffer(BufferEntry * be) {
   }
 
   /* finally padd with noise */
-  if((p + sizeof(P2P_MESSAGE_HEADER) <= totalMessageSize) &&
-     (disable_random_padding == NO)) {
+  if ( (p + sizeof(P2P_MESSAGE_HEADER) <= totalMessageSize) &&
+       (disable_random_padding == NO) ) {
     P2P_MESSAGE_HEADER *part;
     unsigned short noiseLen = totalMessageSize - p;
 
     part = (P2P_MESSAGE_HEADER *) & plaintextMsg[p];
     part->size = htons(noiseLen);
     part->type = htons(P2P_PROTO_noise);
-    for(i = p + sizeof(P2P_MESSAGE_HEADER); i < totalMessageSize; i++)
+    for (i = p + sizeof(P2P_MESSAGE_HEADER); i < totalMessageSize; i++)
       plaintextMsg[i] = (char) rand();
     p = totalMessageSize;
-    if(stats != NULL)
+    if (stats != NULL)
       stats->change(stat_noise_sent, noiseLen);
   }
 
   encryptedMsg = MALLOC(p);
   hash(&p2pHdr->sequenceNumber,
        p - sizeof(HashCode512), (HashCode512 *) encryptedMsg);
-  ret = encryptBlock(&p2pHdr->sequenceNumber, p - sizeof(HashCode512), &be->skey_local, (const INITVECTOR *) encryptedMsg,  /* IV */
+  ret = encryptBlock(&p2pHdr->sequenceNumber, 
+		     p - sizeof(HashCode512), 
+		     &be->skey_local, 
+		     (const INITVECTOR *) encryptedMsg,  /* IV */
                      &((P2P_PACKET_HEADER *) encryptedMsg)->sequenceNumber);
 #if DEBUG_CONNECTION
   printMsg("Encrypting P2P data", &be->session.sender,
@@ -1409,6 +1416,8 @@ static void sendBuffer(BufferEntry * be) {
     ret = transport->sendReliable(be->session.tsession, encryptedMsg, p);
   }
   if (ret == YES) {
+    if(stats != NULL)
+      stats->change(stat_transmitted, p);
     if (be->available_send_window > totalMessageSize)
       be->available_send_window -= totalMessageSize;
     else
@@ -1424,14 +1433,14 @@ static void sendBuffer(BufferEntry * be) {
     if (rsnSize > 0) {
       j = sizeof(P2P_PACKET_HEADER);
       while (j < p) {
-        P2P_MESSAGE_HEADER *part = (P2P_MESSAGE_HEADER *) &plaintextMsg[j];
+        P2P_MESSAGE_HEADER * part = (P2P_MESSAGE_HEADER *) &plaintextMsg[j];
         unsigned short plen = htons(part->size);
-        if(plen < sizeof(P2P_MESSAGE_HEADER)) {
+        if (plen < sizeof(P2P_MESSAGE_HEADER)) {
           BREAK();
           break;
         }
-        for(rsi = 0; rsi < rsnSize; rsi++)
-          rsns[rsi] (&be->session.sender, part);
+        for (rsi = 0; rsi < rsnSize; rsi++)
+          rsns[rsi](&be->session.sender, part);
         j += plen;
       }
     }
@@ -2251,6 +2260,8 @@ int checkHeader(const PeerIdentity * sender,
       (msg->bandwidth == 0) && 
       (msg->timeStamp == 0) )
     return NO;                  /* plaintext */
+  if (stats != NULL) 
+    stats->change(stat_received, size);
 
 #if DEBUG_CONNECTION
   LOG(LOG_DEBUG, "Decrypting message from host `%s'\n", &enc);
@@ -2270,7 +2281,10 @@ int checkHeader(const PeerIdentity * sender,
     return SYSERR;              /* could not decrypt */
   }
   tmp = MALLOC(size - sizeof(HashCode512));
-  res = decryptBlock(&be->skey_remote, &msg->sequenceNumber, size - sizeof(HashCode512), (const INITVECTOR *) &msg->hash, /* IV */
+  res = decryptBlock(&be->skey_remote, 
+		     &msg->sequenceNumber, 
+		     size - sizeof(HashCode512), 
+		     (const INITVECTOR *) &msg->hash, /* IV */
                      tmp);
   hash(tmp, size - sizeof(HashCode512), &hc);
   if(!((res != OK) && equalsHashCode512(&hc, &msg->hash))) {
@@ -2287,8 +2301,8 @@ int checkHeader(const PeerIdentity * sender,
     FREE(tmp);
     return SYSERR;
   }
-  if(stats != NULL)
-    stats->change(stat_decrypted, size - sizeof(HashCode512));
+  if(stats != NULL) 
+    stats->change(stat_decrypted, size - sizeof(HashCode512));  
   memcpy(&msg->sequenceNumber, tmp, size - sizeof(HashCode512));
   FREE(tmp);
   res = YES;
@@ -2687,13 +2701,28 @@ void initConnection() {
   stats = requestService("stats");
   if(stats != NULL) {
     stat_messagesDropped
-      = stats->create(gettext_noop("# outgoing messages dropped"));
+      = stats->create(gettext_noop(/* number of messages dropped by GNUnet core
+				      due to resource constraints */
+				   "# outgoing messages dropped"));
     stat_sizeMessagesDropped
-      = stats->create(gettext_noop("# bytes of outgoing messages dropped"));
+      = stats->create(gettext_noop(/* bytes of messages dropped by GNUnet core 
+				      due to resource constraints */
+				   "# bytes of outgoing messages dropped"));
     stat_hangupSent
       = stats->create(gettext_noop("# connections closed (HANGUP sent)"));
-    stat_encrypted = stats->create(gettext_noop("# bytes encrypted"));
-    stat_decrypted = stats->create(gettext_noop("# bytes decrypted"));
+    stat_encrypted = stats->create(gettext_noop(/* includes encrypted but then
+						   not transmitted data */
+						"# bytes encrypted"));
+    stat_transmitted = stats->create(gettext_noop(/* encrypted data, confirmed by 
+						   transport, without transport
+						   headers */
+						"# bytes transmitted"));
+    stat_received = stats->create(gettext_noop(/* encrypted data received
+						  (incl. invalid/undecryptable data)
+						  without transport headers */
+					       "# bytes received"));
+    stat_decrypted = stats->create(gettext_noop(/* bytes successfully decrypted */
+						"# bytes decrypted"));
     stat_noise_sent = stats->create(gettext_noop("# bytes noise sent"));
   }
   transport->start(&core_receive);
