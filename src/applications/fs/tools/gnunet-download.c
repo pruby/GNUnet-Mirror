@@ -189,7 +189,7 @@ static void progressModel(void * okVal,
     if ( (event->data.DownloadProgress.completed ==
 	  event->data.DownloadProgress.total) ) {
       PRINTF(_("Download of file `%s' complete.  "
-	       "Speed was %8.3f kibibyte per second.\n"),
+	       "Speed was %8.3f KiB per second.\n"),
 	     event->data.DownloadProgress.filename,
 	     (event->data.DownloadProgress.completed/1024.0) /
 	     (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1)))
