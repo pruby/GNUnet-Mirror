@@ -157,7 +157,7 @@ static void progressModel(void * okVal,
   case FSUI_download_progress:
     if (YES == verbose) {
       PRINTF(_("Download of file `%s' at "
-	       "%16llu out of %16llu bytes (%8.3f kbps)\n"),
+	       "%16llu out of %16llu bytes (%8.3f KiB/s)\n"),
 	     event->data.DownloadProgress.filename,
 	     event->data.DownloadProgress.completed,
 	     event->data.DownloadProgress.total,
@@ -189,7 +189,7 @@ static void progressModel(void * okVal,
     if ( (event->data.DownloadProgress.completed ==
 	  event->data.DownloadProgress.total) ) {
       PRINTF(_("Download of file `%s' complete.  "
-	       "Speed was %8.3f kilobyte per second.\n"),
+	       "Speed was %8.3f kibibyte per second.\n"),
 	     event->data.DownloadProgress.filename,
 	     (event->data.DownloadProgress.completed/1024.0) /
 	     (((double)(cronTime(NULL)-(event->data.DownloadProgress.start_time - 1)))

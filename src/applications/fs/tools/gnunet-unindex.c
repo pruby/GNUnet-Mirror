@@ -58,7 +58,7 @@ static void printstatus(int * verboselevel,
     if (*verboselevel == YES) {
       delta = cronTime(NULL) - event->data.UnindexComplete.start_time;
       PRINTF(
-      _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f kbps).\n"),
+      _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"),
       event->data.UnindexComplete.filename,
       event->data.UnindexComplete.total,
       delta / cronSECONDS,

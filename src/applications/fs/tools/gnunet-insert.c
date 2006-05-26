@@ -148,7 +148,7 @@ static void printstatus(int * verboselevel,
 	delta = event->data.UploadComplete.eta
 	  - event->data.UploadComplete.start_time;
 	PRINTF(_("Upload of `%s' complete, "
-		 "%llu bytes took %llu seconds (%8.3f kbps).\n"),
+		 "%llu bytes took %llu seconds (%8.3f KiB/s).\n"),
 	       event->data.UploadComplete.filename,
 	       event->data.UploadComplete.total,
 	       delta / cronSECONDS,
@@ -162,7 +162,7 @@ static void printstatus(int * verboselevel,
 	cronTime(&now);
 	delta = now - event->data.UploadComplete.start_time;
 	PRINTF(_("Upload of `%s' complete, "
-		 "current average speed is %8.3f kbps.\n"),
+		 "current average speed is %8.3f KiB/s.\n"),
 	       event->data.UploadComplete.filename,
 	       (delta == 0)
 	       ? (double) (-1.0)
