@@ -31,7 +31,7 @@
 #include "tree.h"
 #include <extractor.h>
 
-#define EXTRA_CHECKS YES
+#define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 
 
 /**

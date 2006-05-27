@@ -597,6 +597,7 @@ typedef struct {
    */
   void (*terminateClientConnection)(ClientHandle handle);
 
+
   /* ************************ MISC ************************ */
 
   /**

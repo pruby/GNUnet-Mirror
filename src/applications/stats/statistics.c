@@ -1,6 +1,6 @@
 /*
   This file is part of GNUnet.
-  (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+  (C) 2001, 2002, 2004, 2006 Christian Grothoff (and other contributing authors)
 
   GNUnet is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published
@@ -291,8 +291,8 @@ static int sendStatistics(ClientHandle sock,
 /**
  * Handle a request to see if a particular p2p message is supported.
  */
-static int handlep2pMessageSupported(ClientHandle sock,
-				     const CS_MESSAGE_HEADER * message) {
+static int handleMessageSupported(ClientHandle sock,
+				  const CS_MESSAGE_HEADER * message) {
   unsigned short type;
   unsigned short htype;
   int supported;
@@ -362,7 +362,9 @@ int initialize_module_stats(CoreAPIForApplication * capi) {
   capi->registerClientHandler(CS_PROTO_stats_GET_STATISTICS,
 			      &sendStatistics);
   capi->registerClientHandler(CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
-			      &handlep2pMessageSupported);
+			      &handleMessageSupported);
+  capi->registerClientHandler(CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED,
+			      &handleMessageSupported);
   capi->registerClientHandler(CS_PROTO_traffic_COUNT,
 				&processGetConnectionCountRequest);
   capi->registerHandler(P2P_PROTO_noise,
@@ -378,7 +380,9 @@ int done_module_stats() {
   coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_STATISTICS,
 				   &sendStatistics);
   coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_P2P_MESSAGE_SUPPORTED,
-				   &handlep2pMessageSupported);
+				   &handleMessageSupported);
+  coreAPI->unregisterClientHandler(CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED,
+				   &handleMessageSupported);
   coreAPI->unregisterClientHandler(CS_PROTO_traffic_COUNT,
 				   &processGetConnectionCountRequest);
   coreAPI->unregisterHandler(P2P_PROTO_noise,
