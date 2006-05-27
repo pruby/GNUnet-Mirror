@@ -92,8 +92,7 @@ menu "General settings" "GNUNETD"
 		How long should logs be kept? If you specify a value greater
 		than zero, a log is created each day with the date appended
 		to its filename. These logs are deleted after $KEEPLOG days.
-		To disable this function, set this setting to its default   
-		value 3.
+		To keep logs forever, set this value to 0.
 
 	config PIDFILE
 	string "Where should gnunetd write the PID"
