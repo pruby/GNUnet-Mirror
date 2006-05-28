@@ -183,38 +183,38 @@ void FSUI_trackURIS(int onOff) {
  * @param closure extra argument to the callback
  * @return number of entries found
  */
-int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
-		  void * closure) {
-  IPC_Semaphore * sem;
+int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
+{
+  IPC_Semaphore *sem;
   int rval;
-  char * result;
+  char *result;
   off_t ret;
   off_t pos;
   off_t spos;
   unsigned int msize;
   ECRS_FileInfo fi;
   int fd;
-  char * fn;
+  char *fn;
   struct stat buf;
 
   fn = getUriDbName();
   sem = createIPC();
   IPC_SEMAPHORE_DOWN(sem);
-  if (0 != STAT(fn, &buf)) {
+  if(0 != STAT(fn, &buf)) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_FREE(sem);
-    return 0; /* no URI db */
-  }  
+    return 0;                   /* no URI db */
+  }
   fd = fileopen(fn, O_LARGEFILE | O_RDONLY);
-  if (fd == -1) {
+  if(fd == -1) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_FREE(sem);
     LOG_FILE_STRERROR(LOG_WARNING, "open", fn);
     FREE(fn);
-    return SYSERR; /* error opening URI db */
+    return SYSERR;              /* error opening URI db */
   }
   result = MMAP(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-  if (result == MAP_FAILED) {
+  if(result == MAP_FAILED) {
     CLOSE(fd);
     LOG_FILE_STRERROR(LOG_WARNING, "mmap", fn);
     FREE(fn);
@@ -225,73 +225,62 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator,
   ret = buf.st_size;
   pos = 0;
   rval = 0;
-  while (pos < ret) {
+  while(pos < ret) {
     spos = pos;
-    while ( (spos < ret) &&
-	    (result[spos] != '\0') )
+    while((spos < ret) && (result[spos] != '\0'))
       spos++;
-    spos++; /* skip '\0' */
-    if ( (spos + sizeof(int) >= ret) ||
-	 (spos + sizeof(int) < spos) ) {
+    spos++;                     /* skip '\0' */
+    if((spos + sizeof(int) >= ret) || (spos + sizeof(int) < spos)) {
       BREAK();
       goto FORMATERROR;
     }
     fi.uri = ECRS_stringToUri(&result[pos]);
-    if (fi.uri == NULL) {
+    if(fi.uri == NULL) {
       BREAK();
       goto FORMATERROR;
     }
-    memcpy(&msize,
-	   &result[spos],
-	   sizeof(int));
+    memcpy(&msize, &result[spos], sizeof(int));
     msize = ntohl(msize);
     spos += sizeof(int);
-    if ( (spos + msize > ret) ||
-	 (spos + msize < spos) ) {
+    if((spos + msize > ret) || (spos + msize < spos)) {
       BREAK();
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
-    fi.meta = ECRS_deserializeMetaData(&result[spos],
-				       msize);
-    if (fi.meta == NULL) {
+    fi.meta = ECRS_deserializeMetaData(&result[spos], msize);
+    if(fi.meta == NULL) {
       BREAK();
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
     pos = spos + msize;
-    if (iterator != NULL) {
-      if (OK != iterator(&fi,
-			 NULL,
-			 NO,
-			 closure)) {
-	ECRS_freeMetaData(fi.meta);
-	ECRS_freeUri(fi.uri);
-	if (0 != MUNMAP(result, buf.st_size))
-	  LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
-	CLOSE(fd);
-	FREE(fn);
-	IPC_SEMAPHORE_UP(sem);
-	IPC_SEMAPHORE_FREE(sem);
-	return SYSERR; /* iteration aborted */
+    if(iterator != NULL) {
+      if(OK != iterator(&fi, NULL, NO, closure)) {
+        ECRS_freeMetaData(fi.meta);
+        ECRS_freeUri(fi.uri);
+        if(0 != MUNMAP(result, buf.st_size))
+          LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
+        CLOSE(fd);
+        FREE(fn);
+        IPC_SEMAPHORE_UP(sem);
+        IPC_SEMAPHORE_FREE(sem);
+        return SYSERR;          /* iteration aborted */
       }
     }
     rval++;
     ECRS_freeMetaData(fi.meta);
     ECRS_freeUri(fi.uri);
   }
-  if (0 != MUNMAP(result, buf.st_size))
+  if(0 != MUNMAP(result, buf.st_size))
     LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
   CLOSE(fd);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_FREE(sem);
   return rval;
- FORMATERROR:
-  LOG(LOG_WARNING,
-      _("Deleted corrupt URI database in `%s'."),
-      STATE_NAME);
-  if (0 != MUNMAP(result, buf.st_size))
+FORMATERROR:
+  LOG(LOG_WARNING, _("Deleted corrupt URI database in `%s'."), STATE_NAME);
+  if(0 != MUNMAP(result, buf.st_size))
     LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
   CLOSE(fd);
   FREE(fn);
