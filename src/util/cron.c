@@ -127,13 +127,6 @@ static PTHREAD_T cron_handle;
 #ifndef WINDOWS
 static void sigalrmHandler(int sig) {
 }
-#else
-static void CALLBACK sigalrmHandler(DWORD sig) {
-#if DEBUG_CRON
-  LOG(LOG_CRON,
-      "Received signal 'SIGALRM'.\n");
-#endif
-}
 #endif
 
 static Mutex inBlockLock_;
@@ -274,12 +267,7 @@ void resumeIfNotCron() {
 static void abortSleep() {
   if (cron_signal == NULL)
     return; /* cron_handle not valid */
-#ifdef WINDOWS
-  QueueUserAPC((PAPCFUNC) sigalrmHandler,
-	       IsWinNT() ? 0 : GetCurrentThread(), 0);
-#else
   PTHREAD_KILL(&cron_handle, SIGALRM);
-#endif
 }
 
 

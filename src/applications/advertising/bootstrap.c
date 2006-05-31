@@ -213,7 +213,6 @@ void startBootstrap(CoreAPIForApplication * capi) {
 
 /**
  * Stop advertising.
- * @todo [WIN] Check if this works under Windows
  */
 void stopBootstrap() {
   void * unused;

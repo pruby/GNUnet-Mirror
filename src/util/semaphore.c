@@ -306,6 +306,14 @@ int semaphore_down_nonblocking_(Semaphore * s,
   return OK;
 }
 
+#ifdef WINDOWS
+/**
+ * @brief Called if a sleeping thread is interrupted
+ */
+static void CALLBACK __PTHREAD_SIGNALED(DWORD sig) {
+}
+#endif
+
 /**
  * Returns YES if pt is the handle for THIS thread.
  */
@@ -443,7 +451,15 @@ void PTHREAD_KILL(PTHREAD_T * pt,
     BREAK();
     return;
   }
+#ifdef WINDOWS
+  if (signal != 0)
+    ret = QueueUserAPC((PAPCFUNC) __PTHREAD_SIGNALED,
+      pthread_getw32threadhandle_np(*handle), 0) != 0 ? 0 : EINVAL;
+  else
+    ret = pthread_kill(*handle, 0);
+#else
   ret = pthread_kill(*handle, signal);
+#endif
   switch (ret) {
   case 0: 
     break; /* ok */
