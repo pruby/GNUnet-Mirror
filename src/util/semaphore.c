@@ -154,7 +154,7 @@ void destroy_mutex_(Mutex * mutex) {
   mutex->internal = NULL;
   errno = 0;
   if ((k = pthread_mutex_destroy(mut)) != 0) {
-    LOG(_("`%s' failed with error code %d: %s\n"),
+    LOG(LOG_FATAL, _("`%s' failed with error code %d: %s\n"),
       "pthread_mutex_destroy",
       k,
       STRERROR(k));
