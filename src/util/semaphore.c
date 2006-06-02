@@ -144,6 +144,8 @@ void create_recursive_mutex_(Mutex * mutex) {
 
 void destroy_mutex_(Mutex * mutex) {
   pthread_mutex_t * mut;
+  int k;
+  
   mut = mutex->internal;
   if (mut == NULL) {
     BREAK();
@@ -151,7 +153,12 @@ void destroy_mutex_(Mutex * mutex) {
   }
   mutex->internal = NULL;
   errno = 0;
-  GNUNET_ASSERT(0 == pthread_mutex_destroy(mut));
+  if ((k = pthread_mutex_destroy(mut)) != 0) {
+    LOG(_("`%s' failed with error code %d: %s\n"),
+      "pthread_mutex_destroy",
+      k,
+      STRERROR(k));
+  }
   FREE(mut);
 }
 
