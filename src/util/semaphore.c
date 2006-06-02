@@ -158,6 +158,7 @@ void destroy_mutex_(Mutex * mutex) {
       "pthread_mutex_destroy",
       k,
       STRERROR(k));
+    return;
   }
   FREE(mut);
 }
