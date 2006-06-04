@@ -240,10 +240,17 @@ void semaphore_free_(Semaphore * s,
 		     const int linenumber) {
 
   pthread_cond_t * cond;
+  int k;
 
   MUTEX_DESTROY(&(s->mutex));
   cond = s->cond;
-  GNUNET_ASSERT(0 == pthread_cond_destroy(cond));
+  if ((k = pthread_cond_destroy(cond)) != 0) {
+    LOG(LOG_FATAL, _("`%s' failed with error code %d: %s\n"),
+      "pthread_cond_destroy",
+      k,
+      STRERROR(k));
+    return;    
+  }
   FREE(cond);
   xfree_(s,
 	 filename,
