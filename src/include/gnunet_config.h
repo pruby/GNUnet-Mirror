@@ -41,8 +41,6 @@ extern "C" {
 
 struct GC_Configuration;
 
-struct GC_Configuration * GC_create(void);
-
 void GC_free(struct GC_Configuration * cfg);
 
 /**
