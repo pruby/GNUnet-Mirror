@@ -22,6 +22,7 @@ gnunetinclude_HEADERS = \
   gnunet_dht_lib.h \
   gnunet_dht_service.h \
   gnunet_ecrs_lib.h \
+  gnunet_error.h \
   gnunet_fragmentation_service.h \
   gnunet_fs_lib.h \
   gnunet_fsui_lib.h \
