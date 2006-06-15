@@ -1,0 +1,22 @@
+Util is now structured as follows:
+
+util/error: basic error handling functions (lowest layer)
+util/win: win32 portability (lowest layer)
+util/config: configuration handling (depends on error)
+util: main utility library (depends on util/error, util/win and util/config)
+      => these are linked into gnunetutil.so
+util/loggers: specific logging implementations (depends on gnunetutil.so)
+      => linked to gnunetutil_logging.so
+util/config_impl: implementation of config API (depends on gnunetutil.so)
+      => linked to gnunetutil_config.so
+util/crypto: implementation of crypto API (depends on gnunetutil.so)
+      => linked to gnunetutil_crypto.so
+util/containers: implementation of bloomfilter/vector/hashset (depends on gnunetutil.so)
+      => linked to gnunetutil_containers.so (also requires libgnunetutil_crypto)
+
+Most GNUnet libraries and plugins will only need to (directly) link
+against gnunetutil.so.  Some may also require crypto or containers.
+Applications will usually additionally link against gnunetlogging.so
+and gnunetconfig.so which during startup will be used to provide
+concrete configuration and error handling implementations.
+

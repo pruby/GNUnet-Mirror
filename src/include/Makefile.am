@@ -14,8 +14,6 @@ gnunetincludedir = $(includedir)/GNUnet
 gnunetinclude_HEADERS = \
   gnunet_blockstore.h \
   gnunet_bootstrap_service.h \
-  gnunet_config.h \
-  gnunet_config_impl.h \
   gnunet_core.h \
   gnunet_datastore_service.h \
   gnunet_dht.h \
@@ -23,7 +21,6 @@ gnunetinclude_HEADERS = \
   gnunet_dht_lib.h \
   gnunet_dht_service.h \
   gnunet_ecrs_lib.h \
-  gnunet_error.h \
   gnunet_fragmentation_service.h \
   gnunet_fs_lib.h \
   gnunet_fsui_lib.h \
@@ -43,4 +40,11 @@ gnunetinclude_HEADERS = \
   gnunet_traffic_service.h \
   gnunet_transport.h \
   gnunet_transport_service.h \
-  gnunet_util.h 
+  gnunet_util.h \
+  gnunet_util_config.h \
+  gnunet_util_config_impl.h \
+  gnunet_util_containers.h \
+  gnunet_util_crypto.h \
+  gnunet_util_error.h \
+  gnunet_util_error.h \
+  gnunet_util_error_loggers.h 

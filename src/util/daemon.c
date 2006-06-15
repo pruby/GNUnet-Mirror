@@ -43,10 +43,8 @@ int checkGNUnetDaemonRunning() {
   int ret;
 
   sock = getClientSocket();
-  if(sock == NULL) {
-    BREAK();
+  if (sock == NULL) 
     return SYSERR;
-  }
 
   csHdr.size
     = htons(sizeof(CS_MESSAGE_HEADER));
@@ -63,7 +61,6 @@ int checkGNUnetDaemonRunning() {
     return SYSERR;
   }
   releaseClientSocket(sock);
-
   return OK;
 }
 
@@ -313,26 +310,26 @@ int waitForGNUnetDaemonTermination(int pid) {
 
 int termProcess(int pid) {
 #ifndef MINGW
-	return kill(pid, SIGTERM) == 0;
+  return kill(pid, SIGTERM) == 0;
 #else
-	int ret;
-	DWORD dwExitCode = 0;
-	
-	HANDLE hProc = OpenProcess(1, 0, pid);
-	GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid);
-	
-	WaitForSingleObject(hProc, 3000);
-	
-	GetExitCodeProcess(hProc, &dwExitCode);
-	if(dwExitCode == STILL_ACTIVE) {
-		ret = TerminateProcess(hProc, 0);
-	}
-	else
-		ret = 1;
-
-	CloseHandle(hProc);
-		
-	return ret;
+  int ret;
+  DWORD dwExitCode = 0;
+  
+  HANDLE hProc = OpenProcess(1, 0, pid);
+  GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid);
+  
+  WaitForSingleObject(hProc, 3000);
+  
+  GetExitCodeProcess(hProc, &dwExitCode);
+  if(dwExitCode == STILL_ACTIVE) {
+    ret = TerminateProcess(hProc, 0);
+  }
+  else
+    ret = 1;
+  
+  CloseHandle(hProc);
+  
+  return ret;
 #endif
 }
 

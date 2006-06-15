@@ -26,31 +26,6 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "locking_gcrypt.h"
-
-/* internal prototypes... */
-void initKBlockKey();
-
-void doneKBlockKey();
-
-/**
- * Initialize Random number generator.
- */
-void initRAND();
-
-/**
- * This method must be called first. Typically,
- * the command line is parsed after that and then
- * "readConfiguration" is invoked.
- */
-void initConfiguration();
-
-/**
- * This method may be called at last to clean up.
- * Afterwards everything but initConfiguration will result
- * in errors...
- */
-void doneConfiguration();
 
 void initState();
 
@@ -58,16 +33,6 @@ void initState();
  * Clean shutdown of the state module
  */
 void doneState();
-
-/**
- * initialize logging module.
- */
-void initLogging();
-
-/**
- * Shutdown the logging module.
- */
-void doneLogging();
 
 /**
  * The following method is called in order to initialize the status
@@ -194,9 +159,6 @@ int initUtil(int argc,
   textdomain("GNUnet");
 #endif
   gnunet_util_initIO();
-  initLockingGcrypt();
-  initRAND();
-  initKBlockKey();
   initConfiguration();
   if (argc > 0)
     setConfigurationString("MAIN",
@@ -227,13 +189,9 @@ void doneUtil() {
   doneState();
   LOG(LOG_MESSAGE,
       _("Shutdown complete.\n"));
-  doneLogging();
-  doneConfiguration();
 #ifdef MINGW
   ShutdownWinEnv();
 #endif
-  doneKBlockKey();
-  doneLockingGcrypt();
   gnunet_util_doneIO();
 }
 

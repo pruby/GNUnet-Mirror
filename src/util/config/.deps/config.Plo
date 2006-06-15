@@ -1,0 +1,10 @@
+config.lo .libs/config.o: config.c \
+  ../../../src/include/gnunet_util_config_impl.h \
+  ../../../src/include/gnunet_util_config.h \
+  ../../../src/include/gnunet_util_error.h
+
+../../../src/include/gnunet_util_config_impl.h:
+
+../../../src/include/gnunet_util_config.h:
+
+../../../src/include/gnunet_util_error.h:

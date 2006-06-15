@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -166,8 +166,9 @@ void initCron() {
 
 static void noJob(void * unused) {
 #if DEBUG_CRON
-  LOG(LOG_CRON,
-      "In noJob.\n");
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "In noJob.\n");
 #endif
 }
 
@@ -178,8 +179,9 @@ void stopCron() {
   void * unused;
 
 #if DEBUG_CRON
-  LOG(LOG_INFO,
-      _("Stopping cron\n"));
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "Stopping cron\n");
 #endif
   cron_shutdown = YES;
   addCronJob(&noJob, 0, 0, NULL);
@@ -188,8 +190,9 @@ void stopCron() {
   cron_signal = NULL;
   PTHREAD_JOIN(&cron_handle, &unused);
 #if DEBUG_CRON
-  LOG(LOG_INFO,
-      _("Cron stopped\n"));
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "Cron stopped\n");
 #endif
 }
 
@@ -223,8 +226,8 @@ static void block(void * sem) {
 void suspendCron() {
   Semaphore * blockSignal;
 
-  GNUNET_ASSERT(cron_shutdown == NO);
-  GNUNET_ASSERT(NO == PTHREAD_SELF_TEST(&cron_handle));
+  GE_ASSERT(NULL, cron_shutdown == NO);
+  GE_ASSERT(NULL, NO == PTHREAD_SELF_TEST(&cron_handle));
   MUTEX_LOCK(&inBlockLock_);
   inBlock++;
   if (inBlock == 1) {
@@ -250,7 +253,7 @@ int isCronRunning() {
  * Resume running cron-jobs.
  */
 void resumeCron() {
-  GNUNET_ASSERT(inBlock > 0);
+  GE_ASSERT(NULL, inBlock > 0);
   SEMAPHORE_UP(cron_signal_up);
 }
 
@@ -286,12 +289,13 @@ void printCronTab() {
   jobId = firstUsed_;
   while (jobId != -1) {
     tab = &deltaList_[jobId];
-    LOG(LOG_CRON,
-	"%3u: delta %8lld CU --- method %p --- repeat %8u CU\n",
-	jobId,
-	tab->delta - now,
-	(int)tab->method,
-	tab->deltaRepeat);
+    GE_LOG(NULL,
+	   GE_STATUS | GE_DEVELOPER | GE_BULK,
+	   "%3u: delta %8lld CU --- method %p --- repeat %8u CU\n",
+	   jobId,
+	   tab->delta - now,
+	   (int)tab->method,
+	   tab->deltaRepeat);
     jobId = tab->next;
   }
   MUTEX_UNLOCK(&deltaListLock_);
@@ -319,10 +323,11 @@ void advanceCronJob(CronJob method,
   int jobId;
 
 #if DEBUG_CRON
-  LOG(LOG_CRON,
-      "Advancing job %p-%p\n",
-      method,
-      data);
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "Advancing job %p-%p\n",
+	 method,
+	 data);
 #endif
   MUTEX_LOCK(&deltaListLock_);
   jobId = firstUsed_;
@@ -331,10 +336,10 @@ void advanceCronJob(CronJob method,
     if ( (method != runningJob_) ||
          (data != runningData_) ||
 	 (deltaRepeat != runningRepeat_) ) {
-      BREAK();
-      LOG(LOG_WARNING,
-	  _("`%s' called with cron job not in queue, adding.  This may not be what you want.\n"),
-	  __FUNCTION__);
+      GE_LOG(NULL,
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+	     _("`%s' called with cron job not in queue, adding.  This may not be what you want.\n"),
+	     __FUNCTION__);
       addCronJob(method,
       		 0,
 		 deltaRepeat,
@@ -397,11 +402,12 @@ void addCronJob(CronJob method,
   int current;
 
 #if DEBUG_CRON
-  LOG(LOG_CRON,
-      "Adding job %p-%p to fire in %d CU\n",
-      method,
-      data,
-      delta);
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "Adding job %p-%p to fire in %d CU\n",
+	 method,
+	 data,
+	 delta);
 #endif
 
   MUTEX_LOCK(&deltaListLock_);
@@ -505,29 +511,32 @@ static void runJob() {
   /* re-insert */
   if (repeat > 0) {
 #if DEBUG_CRON
-    LOG(LOG_CRON,
-	"adding periodic job %p-%p to run again in %u\n",
-	method,
-	data,
-	repeat);
+    GE_LOG(NULL,
+	   GE_STATUS | GE_DEVELOPER | GE_BULK,
+	   "adding periodic job %p-%p to run again in %u\n",
+	   method,
+	   data,
+	   repeat);
 #endif
     addCronJob(method, repeat, repeat, data);
   }
   /* run */
 #if DEBUG_CRON
-  LOG(LOG_CRON,
-      "running job %p-%p\n",
-      method,
-      data);
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "running job %p-%p\n",
+	 method,
+	 data);
 #endif
   method(data);
   MUTEX_LOCK(&deltaListLock_);
   runningJob_ = NULL;
 #if DEBUG_CRON
-  LOG(LOG_CRON,
-      "job %p-%p done\n",
-      method,
-      data);
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "job %p-%p done\n",
+	 method,
+	 data);
 #endif
 }
 
@@ -556,8 +565,9 @@ static void * cron(void * unused) {
 #endif
 	runJob();
 #if DEBUG_CRON
-	LOG(LOG_CRON,
-	    "job run, new table is\n");
+	GE_LOG(NULL,
+	       GE_STATUS | GE_DEVELOPER | GE_BULK,
+	       "job run, new table is\n");
 	printCronTab();
 #endif
       } else
@@ -566,29 +576,32 @@ static void * cron(void * unused) {
     MUTEX_UNLOCK(&deltaListLock_);
     next = next - now; /* how long to sleep */
 #if DEBUG_CRON
-    LOG(LOG_CRON,
-	"Sleeping at %llu for %llu CU (%llu s, %llu CU)\n",
-	now,
-	next,
-	next / cronSECONDS,
-	next);
+    GE_LOG(NULL,
+	   GE_STATUS | GE_DEVELOPER | GE_BULK,
+	   "Sleeping at %llu for %llu CU (%llu s, %llu CU)\n",
+	   now,
+	   next,
+	   next / cronSECONDS,
+	   next);
 #endif
     if (next > MAXSLEEP)
       next = MAXSLEEP;
     if (cron_shutdown == NO) 
       gnunet_util_sleep(next);
 #if DEBUG_CRON
-    LOG(LOG_CRON,
-	"woke up at  %llu - %lld CS late\n",
-	cronTime(NULL),
-	cronTime(NULL)-(now+next));
+    GE_LOG(NULL,
+	   GE_STATUS | GE_DEVELOPER | GE_BULK,
+	   "woke up at  %llu - %lld CS late\n",
+	   cronTime(NULL),
+	   cronTime(NULL)-(now+next));
 #endif
   }
   SEMAPHORE_UP(cron_signal);
 #if DEBUG_CRON
-	LOG(LOG_CRON,
-	    "Cron thread exits.\n");
-	printCronTab();
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "Cron thread exits.\n");
+  printCronTab();
 #endif
   return NULL;
 }
@@ -616,16 +629,18 @@ void doneCron() {
  * Start the cron jobs.
  */
 void startCron() {
-  GNUNET_ASSERT(cron_signal == NULL);
+  GE_ASSERT(NULL, cron_signal == NULL);
   cron_shutdown = NO;
   cron_signal = SEMAPHORE_NEW(0);
+  /* large stack, we don't know for sure
+     what the cron jobs may be doing */
   if (0 != PTHREAD_CREATE(&cron_handle,
 			  &cron,
 			  NULL,
 			  256 * 1024))
-    DIE_STRERROR("pthread_create");
-  /* large stack, we don't know for sure
-     what the cron jobs may be doing */
+    GE_DIE_STRERROR(NULL, 
+		    GE_FATAL | GE_ADMIN | GE_USER | GE_BULK, 
+		    "pthread_create");
 }
 
 
@@ -643,17 +658,18 @@ void startCron() {
  * @return the number of jobs removed
  */
 int delCronJob(CronJob method,
-		unsigned int repeat,
-		void * data) {
+	       unsigned int repeat,
+	       void * data) {
   UTIL_cron_DeltaListEntry * job;
   UTIL_cron_DeltaListEntry * last;
   int jobId;
 
 #if DEBUG_CRON
-  LOG(LOG_CRON,
-      "deleting job %p-%p\n",
-      method,
-      data);
+  GE_LOG(NULL,
+	 GE_STATUS | GE_DEVELOPER | GE_BULK,
+	 "deleting job %p-%p\n",
+	 method,
+	 data);
 #endif
   MUTEX_LOCK(&deltaListLock_);
   jobId = firstUsed_;
