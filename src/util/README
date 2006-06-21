@@ -2,8 +2,10 @@ Util is now structured as follows:
 
 util/error: basic error handling functions (lowest layer)
 util/win: win32 portability (lowest layer)
+util/string: string and memory abstraction (depends on error)
 util/config: configuration handling (depends on error)
-util: main utility library (depends on util/error, util/win and util/config)
+util/getopt: command line parsing (depends on config)
+util: main utility library (depends on error/, win/ and config/, string/ and getopt/)
       => these are linked into gnunetutil.so
 util/loggers: specific logging implementations (depends on gnunetutil.so)
       => linked to gnunetutil_logging.so

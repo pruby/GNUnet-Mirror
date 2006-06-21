@@ -31,7 +31,7 @@
  * Default context for logging errors; used
  * if NULL is passed to GE_LOG.
  */
-static struct GE_Context defaultContext;
+static struct GE_Context * defaultContext;
 
 typedef struct GE_Context {
   GE_KIND mask;

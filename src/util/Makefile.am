@@ -1,4 +1,4 @@
-SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) error config . config_impl loggers crypto containers
+SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) error string config getopt . config_impl loggers crypto containers
 
 INCLUDES = -I$(top_srcdir)/src/include
 
@@ -35,7 +35,9 @@ lib_LTLIBRARIES = libgnunetutil.la
 
 libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
  error/liberror.la \
- config/libconfig.la
+ config/libconfig.la \
+ string/libstring.la \
+ getopt/libgetopt.la
 
 EXTRA_DIST = \
   testconfig.conf \
@@ -62,11 +64,9 @@ libgnunetutil_la_SOURCES = \
  state.c \
  statuscalls.c \
  storage.c \
- string.c \
  tcp_return.c \
  tcpio.c \
- timer.c \
- xmalloc.c 
+ timer.c
 
 ################################
 # TESTCASES 
@@ -81,15 +81,9 @@ check_PROGRAMS = \
  statuscallstest \
  storagetest \
  tcpiotest \
- timertest \
- xmalloctest 
+ timertest 
 
 TESTS = $(check_PROGRAMS)
-
-xmalloctest_SOURCES = \
- xmalloctest.c 
-xmalloctest_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
 
 daemontest_SOURCES = \
  daemontest.c 

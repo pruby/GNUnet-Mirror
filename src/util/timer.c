@@ -183,36 +183,5 @@ char * GN_CTIME(const TIME_T * t) {
 #endif
 }
 
-/**
- * Give relative time in human-readable fancy format.
- */
-char * timeIntervalToFancyString(cron_t delta) {
-  const char * unit = _(/* time unit */ "ms");
-  char * ret;
-
-  if (delta > 5 * 1000) {
-    delta = delta / 1000;
-    unit = _(/* time unit */ "s");
-    if (delta > 5 * 60) {
-      delta = delta / 60;
-      unit = _(/* time unit */ "m");
-      if (delta > 5 * 60) {
-	delta = delta / 60;
-	unit = _(/* time unit */ "h");
-	if (delta > 5 * 24) {
-	  delta = delta / 24;
-	  unit = _(/* time unit */ " days");	
-	}	
-      }		
-    }	
-  }	
-  ret = MALLOC(32);
-  SNPRINTF(ret,
-	   32,
-	   "%llu%s",
-	   delta,
-	   unit);
-  return ret;
-}
 
 /* end of timer.c */

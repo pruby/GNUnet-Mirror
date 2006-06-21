@@ -37,12 +37,12 @@
  *
  * @return OK if gnunetd is running, SYSERR if not
  */
-int checkGNUnetDaemonRunning() {
+int checkGNUnetDaemonRunning(struct GE_Context * ectx) {
   GNUNET_TCP_SOCKET * sock;
   CS_MESSAGE_HEADER csHdr;
   int ret;
 
-  sock = getClientSocket();
+  sock = getClientSocket(ectx);
   if (sock == NULL) 
     return SYSERR;
 

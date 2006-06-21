@@ -663,39 +663,6 @@ void close_(int fd,
   }
 }
 
-/**
- * Convert a given filesize into a fancy human-readable format.
- */
-char * fileSizeToFancyString(unsigned long long size) {
-const char * unit = _(/* size unit */ "b");
-  char * ret;
-
-  if (size > 5 * 1024) {
-    size = size / 1024;
-    unit = _(/* size unit */ "k");
-    if (size > 5 * 1024) {
-      size = size / 1024;
-      unit = _(/* size unit */ "m");
-      if (size > 5 * 1024) {
-	size = size / 1024;
-	unit = _(/* size unit */ "g");
-	if (size > 5 * 1024) {
-	  size = size / 1024;
-	  unit = _(/* size unit */ "t");	
-	}	
-      }		
-    }	
-  }	
-  ret = MALLOC(32);
-  SNPRINTF(ret,
-	   32,
-	   "%llu%s",
-	   size,
-	   unit);
-  return ret;
-}
-
-
 #define COPY_BLK_SIZE 65536
 
 /**

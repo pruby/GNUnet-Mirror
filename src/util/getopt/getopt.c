@@ -22,14 +22,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-USA.  */
+USA.  
+
+
+This code was heavily modified for GNUnet.
+Copyright (C) 2006 Christian Grothoff
+*/
 
 /**
- * @file util/getopt.c
+ * @file util/getopt/getopt.c
  * @brief GNU style option parsing
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_getopt.h"
 #include "platform.h"
 
 #ifdef VMS
@@ -56,6 +61,40 @@ USA.  */
 # endif
 #endif
 
+/**
+ * 32-bit timer value.
+ */
+typedef unsigned int TIME_T;
+
+/* Describe the long-named options requested by the application.
+   The LONG_OPTIONS argument to getopt_long or getopt_long_only is a vector
+   of `struct GNoption' terminated by an element containing a name which is
+   zero.
+
+   The field `has_arg' is:
+   no_argument		(or 0) if the option does not take an argument,
+   required_argument	(or 1) if the option requires an argument,
+   optional_argument 	(or 2) if the option takes an optional argument.
+
+   If the field `flag' is not NULL, it points to a variable that is set
+   to the value given in the field `val' when the option is found, but
+   left unchanged if the option is not found.
+
+   To have a long-named option do something other than set an `int' to
+   a compiled-in constant, such as set a value from `GNoptarg', set the
+   option's `flag' field to zero and its `val' field to a nonzero
+   value (the equivalent single-letter option character, if there is
+   one).  For long options that have a zero `flag' field, `getopt'
+   returns the contents of the `val' field.  */
+
+struct GNoption {
+  const char *name;
+  /* has_arg can't be an enum because some compilers complain about
+     type mismatches in all the code that assumes it is an int.  */
+  int has_arg;
+  int *flag;
+  int val;
+};
 
 
 /* This version of `getopt' appears to the caller like standard Unix `getopt'
@@ -78,7 +117,7 @@ USA.  */
    Also, when `ordering' is RETURN_IN_ORDER,
    each non-option ARGV-element is returned here.  */
 
-char *GNoptarg = NULL;
+static char *GNoptarg = NULL;
 
 /* Index in ARGV of the next element to be scanned.
    This is used for communication to and from the caller
@@ -93,13 +132,13 @@ char *GNoptarg = NULL;
    how much of ARGV has been scanned so far.  */
 
 /* 1003.2 says this must be 1 before any call.  */
-int GNoptind = 1;
+static int GNoptind = 1;
 
 /* Formerly, initialization of getopt depended on GNoptind==0, which
    causes problems with re-calling getopt as programs generally don't
    know that. */
 
-int __getopt_initialized = 0;
+static int __getopt_initialized = 0;
 
 /* The next char to be scanned in the option-element
    in which the last option character we returned was found.
@@ -108,18 +147,18 @@ int __getopt_initialized = 0;
    If this is zero, or a null string, it means resume the scan
    by advancing to the next ARGV-element.  */
 
-static char *nextchar;
+static static char *nextchar;
 
 /* Callers store zero here to inhibit the error message
    for unrecognized options.  */
 
-int GNopterr = 1;
+static int GNopterr = 1;
 
 /* Set to an option character which was unrecognized.
    This must be initialized on some systems to avoid linking in the
    system's own getopt implementation.  */
 
-int GNoptopt = '?';
+static int GNoptopt = '?';
 
 /* Describe how to deal with options that follow non-option ARGV-elements.
 
@@ -928,9 +967,7 @@ GN_getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 }
 
 
-
-
-int
+static int
 GNgetopt_long (argc, argv, options, long_options, opt_index)
      int argc;
      char *const *argv;
@@ -940,6 +977,115 @@ GNgetopt_long (argc, argv, options, long_options, opt_index)
 {
   return GN_getopt_internal (argc, argv, options, long_options, opt_index, 0);
 }
+
+
+/* ******************** now the GNUnet specific modifications... ********************* */
+
+
+
+
+
+/**
+ * Parse the command line.
+ *
+ * @param binaryName name of the binary / application
+ * @param ectx for reporting errors
+ * @param cfg for storing/accessing configuration data
+ * @param allOptions defined options and handlers
+ * @param argc number of arguments 
+ * @param argv actual arguments
+ * @return OK on success, SYSERR on error (bad options
+ *   or command line handlers signal abort).
+ */
+int gnunet_parse_options(const char * binaryName,
+			 struct GE_Context * ectx,
+			 struct GC_Configuration * cfg,
+			 const CommandLineOption * allOptions,
+			 unsigned int argc,
+			 const char ** argv) {
+  struct GNoption * long_options;
+  int count;
+  int i;
+  char * shorts;
+  int spos;
+  int cont;
+
+  count = 0;
+  while (allOptions[count].name != NULL)
+    count++;
+  long_options = MALLOC(sizeof(struct GNoption) * (count+1));
+  shorts = MALLOC(count*2+1);
+  spos = 0;
+  for (i=0;i<count;i++) {
+    long_options[i].name = allOptions[count].name;
+    long_options[i].has_arg = allOptions[count].require_argument;
+    long_options[i].flag = NULL;
+    long_options[i].val = allOptions[count].shortName;
+    shorts[spos++] = allOptions[count].shortName;
+    if (allOptions[count].require_argument != 0)
+      shorts[spos++] = ':';
+  }
+  long_options[count].name = NULL;
+  long_options[count].has_arg = 0;
+  long_options[count].flag = NULL;
+  long_options[count].val = '\0';
+  shorts[spos++] = '\0';
+  
+  cont = OK;
+  /* main getopt loop */
+  while (cont == OK) {
+    int option_index = 0;
+    c = GNgetopt_long(argc,
+		      argv,
+		      shorts,
+		      long_options,
+		      &option_index);
+
+    if (c == -1)
+      break;  /* No more flags to process */
+    
+    for (i=0;i<count;i++) {
+      if (c == allOptions[i].shortName) {
+	cont = allOptions[i].processor(mctx,
+				       allOptions[i].scls,
+				       allOptions[i].name,
+				       GNoptarg);
+	break;
+      }
+    }
+    if (i == count) {
+      GE_LOG(ectx,
+	     LOG_FAILURE | GE_USER | GE_IMMEDIATE,
+	     _("Use --help to get a list of options.\n"));
+      cont = SYSERR;
+    } 
+  }
+
+  FREE(shorts);
+  FREE(long_options);
+
+  if (GNoptind < argc) {
+    LOG(LOG_WARNING,
+	_("Invalid command-line arguments:\n"));
+    while (GNoptind < argc) {
+      LOG(LOG_WARNING,
+	  _("Argument %d: `%s'\n"),
+	  GNoptind+1,
+	  argv[GNoptind]);
+      GNoptind++;
+    }
+    LOG(LOG_FATAL,
+	_("Invalid command-line arguments.\n"));
+    return SYSERR;
+  }
+
+}
+
+
+
+
+
+
 
 
 /* end of getopt.c */

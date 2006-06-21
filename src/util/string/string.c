@@ -19,12 +19,13 @@
 */
 
 /**
- * @file util/string.c
+ * @file util/string/string.c
  * @brief string functions
  * @author Nils Durner
+ * @author Christian Grothoff
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_string.h"
 #include "platform.h"
 #include <iconv.h>
 
@@ -40,21 +41,22 @@
  *          of course, the buffer size is zero). It does not pad
  *          out the result like strncpy() does.
  */
-size_t strlcpy(char *dest, const char *src, size_t size)
-{
-	size_t ret;
-
-	GNUNET_ASSERT(dest != NULL);
-	GNUNET_ASSERT(size > 0);
-	GNUNET_ASSERT(src != NULL);
-	ret = strlen(src);
-
-	if (size) {
-		size_t len = (ret >= size) ? size-1 : ret;
-		memcpy(dest, src, len);
-		dest[len] = '\0';
-	}
-	return ret;
+size_t strlcpy(char * dest, 
+	       const char * src, 
+	       size_t size) {
+  size_t ret;
+  
+  GE_ASSERT(NULL, dest != NULL);
+  GE_ASSERT(NULL, size > 0);
+  GE_ASSERT(NULL, src != NULL);
+  ret = strlen(src);
+  
+  if (size) {
+    size_t len = (ret >= size) ? size-1 : ret;
+    memcpy(dest, src, len);
+    dest[len] = '\0';
+  }
+  return ret;
 }
 #endif
 
@@ -66,65 +68,98 @@ size_t strlcpy(char *dest, const char *src, size_t size)
  * @param src The string to append to it
  * @param count The size of the destination buffer.
  */
-size_t strlcat(char *dest, const char *src, size_t count)
-{
-	size_t dsize;
-	size_t len;
-	size_t res;
-
-	GNUNET_ASSERT(dest != NULL);
-	GNUNET_ASSERT(src != NULL);
-	GNUNET_ASSERT(count > 0);
-	dsize = strlen(dest);
-	len = strlen(src);
-	res = dsize + len;
-	/* This would be a bug */
-	GNUNET_ASSERT(dsize < count);
-
-	dest += dsize;
-	count -= dsize;
-	if (len >= count)
-		len = count-1;
-	memcpy(dest, src, len);
-	dest[len] = 0;
-	return res;
+size_t strlcat(char * dest, 
+	       const char * src, 
+	       size_t count) {
+  size_t dsize;
+  size_t len;
+  size_t res;
+  
+  GE_ASSERT(NULL, dest != NULL);
+  GE_ASSERT(NULL, src != NULL);
+  GE_ASSERT(NULL, count > 0);
+  dsize = strlen(dest);
+  len = strlen(src);
+  res = dsize + len;
+  GE_ASSERT(NULL, dsize < count);
+  
+  dest += dsize;
+  count -= dsize;
+  if (len >= count)
+    len = count-1;
+  memcpy(dest, src, len);
+  dest[len] = 0;
+  return res;
 }
 #endif
 
-#define KIBIBYTE_SIZE 1024L
-#define MEBIBYTE_SIZE 1048576L
-#define GIBIBYTE_SIZE 1073741824L
-
 /**
- * Method to get human-readable filesizes from byte numbers.
+ * Give relative time in human-readable fancy format.
+ * @param delta time in milli seconds
  */
-char * getHumanSize (unsigned long long int size_n)
-{
-  unsigned long long size_d;
-  char * size;
+char * timeIntervalToFancyString(unsigned long long delta) {
+  const char * unit = _(/* time unit */ "ms");
   char * ret;
 
-  size = MALLOC(128);
-  if (size_n == 0) {
-    strcpy(size, _("unknown")); }
-  else if (size_n / 4> GIBIBYTE_SIZE) {
-    size_d = size_n / GIBIBYTE_SIZE;
-    SNPRINTF(size, 128, "%llu %s", size_d, _("GiB")); }
-  else if (size_n / 4> MEBIBYTE_SIZE) {
-    size_d = size_n / MEBIBYTE_SIZE;
-    SNPRINTF(size, 128, "%llu %s", size_d, _("MiB")); }
-  else if (size_n / 4> KIBIBYTE_SIZE) {
-    size_d = size_n / KIBIBYTE_SIZE;
-    SNPRINTF(size, 128, "%llu %s", size_d, _("KiB")); }
-  else {
-    size_d = size_n;
-    SNPRINTF(size, 128, "%llu %s", size_d, _("Bytes")); }
-  ret = STRDUP(size);
-  FREE(size);
+  if (delta > 5 * 1000) {
+    delta = delta / 1000;
+    unit = _(/* time unit */ "s");
+    if (delta > 5 * 60) {
+      delta = delta / 60;
+      unit = _(/* time unit */ "m");
+      if (delta > 5 * 60) {
+	delta = delta / 60;
+	unit = _(/* time unit */ "h");
+	if (delta > 5 * 24) {
+	  delta = delta / 24;
+	  unit = _(/* time unit */ " days");	
+	}	
+      }		
+    }	
+  }	
+  ret = MALLOC(32);
+  SNPRINTF(ret,
+	   32,
+	   "%llu%s",
+	   delta,
+	   unit);
   return ret;
 }
 
-/* ************* character conversion helpers *********** */
+/**
+ * Convert a given filesize into a fancy human-readable format.
+ */
+char * fileSizeToFancyString(unsigned long long size) {
+const char * unit = _(/* size unit */ "b");
+  char * ret;
+
+  if (size > 5 * 1024) {
+    size = size / 1024;
+    unit = _(/* size unit */ "KiB");
+    if (size > 5 * 1024) {
+      size = size / 1024;
+      unit = _(/* size unit */ "MiB");
+      if (size > 5 * 1024) {
+	size = size / 1024;
+	unit = _(/* size unit */ "GiB");
+	if (size > 5 * 1024) {
+	  size = size / 1024;
+	  unit = _(/* size unit */ "TiB");	
+	}	
+      }		
+    }	
+  }	
+  ret = MALLOC(32);
+  SNPRINTF(ret,
+	   32,
+	   "%llu%s",
+	   size,
+	   unit);
+  return ret;
+}
+
+
+
 
 /**
  * Convert the len characters long character sequence
@@ -147,13 +182,13 @@ char * convertToUtf8(const char * input,
 
   cd = iconv_open("UTF-8", charset);
   if (cd == (iconv_t) -1) {
-    ret = malloc(len+1);
+    ret = MALLOC(len+1);
     memcpy(ret, input, len);
     ret[len] = '\0';
     return ret;
   }
   tmpSize = 3 * len + 4;
-  tmp = malloc(tmpSize);
+  tmp = MALLOC(tmpSize);
   itmp = tmp;
   finSize = tmpSize;
   if (iconv(cd,
@@ -162,29 +197,26 @@ char * convertToUtf8(const char * input,
 	    &itmp,
 	    &finSize) == (size_t)-1) {
     iconv_close(cd);
-    free(tmp);
-    ret = malloc(len+1);
+    FREE(tmp);
+    ret = MALLOC(len+1);
     memcpy(ret, input, len);
     ret[len] = '\0';
     return ret;
   }
-  ret = malloc(tmpSize - finSize + 1);
+  ret = MALLOC(tmpSize - finSize + 1);
   memcpy(ret,
 	 tmp,
 	 tmpSize - finSize);
   ret[tmpSize - finSize] = '\0';
-  free(tmp);
+  FREE(tmp);
   iconv_close(cd);
   return ret;
 #else
-  ret = malloc(len+1);
+  ret = MALLOC(len+1);
   memcpy(ret, input, len);
   ret[len] = '\0';
   return ret;
 #endif
 }
-
-
-
 
 /* end of string.c */
