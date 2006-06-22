@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file util/state.c
+ * @file util/disk/state.c
  * @brief tiny, stateful database too keep track of internal state
  *
  * Directory based implementation of a tiny, stateful database
@@ -31,11 +31,10 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_disk.h"
 #include "platform.h"
 
 #include <sys/stat.h>
-
 
 #define STATE_DEBUG NO
 

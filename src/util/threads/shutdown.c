@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file util/shutdown.c
+ * @file util/threads/shutdown.c
  * @brief code to allow clean shutdown of application with signals
  * @author Christian Grothoff
  *
@@ -27,68 +27,61 @@
  * receives a SIGTERM/SIGHUP etc.
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_threads.h"
+#include "gnunet_util_error.h"
+#include "gnunet_util_string.h"
 #include "platform.h"
 
 /**
  * Semaphore used to signal "shutdown"
  */
-static Semaphore * shutdown_signal = NULL;
+static struct SEMAPHORE * shutdown_signal;
+
 static int shutdown_active;
 
-/**
- * Stop the application.
- * @param signum is ignored
- */
-void run_shutdown(int signum) {
-  if (shutdown_signal != NULL) {
-    shutdown_active = YES;
-    SEMAPHORE_UP(shutdown_signal);
-  }
+void GNUNET_SHUTDOWN_INITIATE() {
+  GE_ASSERT(NULL, shutdown_signal != NULL);
+  shutdown_active = YES;
+  SEMAPHORE_UP(shutdown_signal);
 }
 
-/**
- * Stop the application under Windows.
- * @param signum is ignored
- */
-#ifdef MINGW
-BOOL WINAPI run_shutdown_win(DWORD dwCtrlType)
-{
-  switch(dwCtrlType)
-  {
-    case CTRL_C_EVENT:
-    case CTRL_CLOSE_EVENT:
-    case CTRL_SHUTDOWN_EVENT:
-    case CTRL_LOGOFF_EVENT:
-      run_shutdown(1);
-  }
-
-  return TRUE;
-}
-#endif
-
-
-/**
- * Test if the shutdown has been initiated.
- * @return YES if we are shutting down, NO otherwise
- */
-int testShutdown() {
+int GNUNET_SHUTDOWN_TEST() {
   return shutdown_active;
 }
+
+void GNUNET_SHUTDOWN_WAITFOR() {
+  SEMAPHORE_DOWN(shutdown_signal, YES);
+}
+
+#ifdef MINGW
+BOOL WINAPI run_shutdown_win(DWORD dwCtrlType) {
+  switch(dwCtrlType) {
+  case CTRL_C_EVENT:
+  case CTRL_CLOSE_EVENT:
+  case CTRL_SHUTDOWN_EVENT:
+  case CTRL_LOGOFF_EVENT:
+    GNUNET_SHUTDOWN_INITIATE();
+  }
+  return TRUE;
+}
+#else
+static void run_shutdown(int signum) {
+  GNUNET_SHUTDOWN_INITIATE();
+}
+#endif
 
 /**
  * Initialize the signal handlers, etc.
  */
-void initializeShutdownHandlers() {
+void __attribute__ ((constructor)) shutdown_handlers_ltdl_init() {
 #ifndef MINGW
   struct sigaction sig;
   struct sigaction oldsig;
 #endif
 
-  if (shutdown_signal != NULL)
-    errexit(" initializeShutdownHandlers called twice!\n");
-  shutdown_signal = SEMAPHORE_NEW(0);
-  shutdown_active = NO;
+  GE_ASSERT(NULL, shutdown_signal == NULL);
+  GE_ASSERT(NULL, shutdown_active == NO);
+  shutdown_signal = SEMAPHORE_CREATE(0);
 #ifndef MINGW
   sig.sa_handler = &run_shutdown;
   sigemptyset(&sig.sa_mask);
@@ -105,14 +98,7 @@ void initializeShutdownHandlers() {
 #endif
 }
 
-/**
- * Wait until the shutdown has been initiated.
- */
-void wait_for_shutdown() {
-  SEMAPHORE_DOWN(shutdown_signal);
-}
-
-void doneShutdownHandlers() {
+void __attribute__ ((destructor)) shutdown_handlers_ltdl_fini() {
 #ifndef MINGW
   struct sigaction sig;
   struct sigaction oldsig;
@@ -130,8 +116,7 @@ void doneShutdownHandlers() {
 #else
   SetConsoleCtrlHandler(&run_shutdown_win, FALSE);
 #endif
-
-  SEMAPHORE_FREE(shutdown_signal);
+  SEMAPHORE_DESTROY(shutdown_signal);
   shutdown_signal = NULL;
 }
 

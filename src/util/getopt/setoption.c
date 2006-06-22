@@ -32,7 +32,7 @@
 
 int gnunet_getopt_configure_set_option(CommandLineProcessorContext * ctx,
 				       void * scls,
-				       const char * option,
+				       const char * cmdLineOption,
 				       const char * value) {
   char * section = STRDUP(scls);
   struct GC_Configuration * cfg = ctx->cfg;
@@ -55,7 +55,7 @@ int gnunet_getopt_configure_set_option(CommandLineProcessorContext * ctx,
 
 int gnunet_getopt_configure_increment_value(CommandLineProcessorContext * ctx,
 					    void * scls,
-					    const char * option,
+					    const char * cmdLineOption,
 					    const char * value) {
   char * section = STRDUP(scls);
   struct GC_Configuration * cfg = ctx->cfg;

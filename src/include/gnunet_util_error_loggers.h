@@ -69,6 +69,15 @@ GE_create_context_stderr(int logDate,
 			 GE_KIND mask);
 
 /**
+ * Create a logger that writes events to stderr
+ * 
+ * @param mask which events should be logged?
+ */
+struct GE_Context * 
+GE_create_context_stdout(int logDate,
+			 GE_KIND mask);
+
+/**
  * Create a logger that keeps events in memory (to be
  * queried later in bulk).
  */

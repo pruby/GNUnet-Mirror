@@ -1,0 +1,35 @@
+INCLUDES = -I$(top_srcdir)/src/include
+
+SUBDIRS = .
+
+noinst_LTLIBRARIES = \
+  libos.la
+
+libos_la_SOURCES = \
+ daemon.c \
+ dso.c \
+ osconfig.c \
+ semaphore.c \
+ statuscalls.c 
+
+check_PROGRAMS = \
+ daemontest \
+ semaphoretest \
+ statuscallstest
+
+TESTS = $(check_PROGRAMS)
+
+daemontest_SOURCES = \
+ daemontest.c 
+daemontest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+semaphoretest_SOURCES = \
+ semaphoretest.c
+semaphoretest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+statuscallstest_SOURCES = \
+ statuscallstest.c
+statuscallstest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  

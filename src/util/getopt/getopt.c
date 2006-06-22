@@ -32,8 +32,14 @@ Copyright (C) 2006 Christian Grothoff
 /**
  * @file util/getopt/getopt.c
  * @brief GNU style option parsing
+ *
+ * TODO: get rid of statics (make reentrant) and
+ * replace main GNU getopt parser with one that
+ * actually fits our API.
  */
 
+#include "gnunet_util_error.h"
+#include "gnunet_util_string.h"
 #include "gnunet_util_getopt.h"
 #include "platform.h"
 
@@ -147,7 +153,7 @@ static int __getopt_initialized = 0;
    If this is zero, or a null string, it means resume the scan
    by advancing to the next ARGV-element.  */
 
-static static char *nextchar;
+static char *nextchar;
 
 /* Callers store zero here to inhibit the error message
    for unrecognized options.  */
@@ -966,24 +972,21 @@ GN_getopt_internal (argc, argv, optstring, longopts, longind, long_only)
   }
 }
 
-
 static int
-GNgetopt_long (argc, argv, options, long_options, opt_index)
-     int argc;
-     char *const *argv;
-     const char *options;
-     const struct GNoption *long_options;
-     int *opt_index;
-{
-  return GN_getopt_internal (argc, argv, options, long_options, opt_index, 0);
+GNgetopt_long(int argc, 
+	      const char ** argv, 
+	      const char * options, 
+	      const struct GNoption * long_options,
+	      int * opt_index) {
+  return GN_getopt_internal(argc,
+			    argv, 
+			    options, 
+			    long_options,
+			    opt_index,
+			    0);
 }
 
-
 /* ******************** now the GNUnet specific modifications... ********************* */
-
-
-
-
 
 /**
  * Parse the command line.
@@ -994,8 +997,8 @@ GNgetopt_long (argc, argv, options, long_options, opt_index)
  * @param allOptions defined options and handlers
  * @param argc number of arguments 
  * @param argv actual arguments
- * @return OK on success, SYSERR on error (bad options
- *   or command line handlers signal abort).
+ * @return index into argv with first non-option
+ *   argument, or -1 on error
  */
 int gnunet_parse_options(const char * binaryName,
 			 struct GE_Context * ectx,
@@ -1004,12 +1007,21 @@ int gnunet_parse_options(const char * binaryName,
 			 unsigned int argc,
 			 const char ** argv) {
   struct GNoption * long_options;
+  CommandLineProcessorContext clpc;
   int count;
   int i;
   char * shorts;
   int spos;
   int cont;
+  int c;
 
+  GE_ASSERT(ectx, argc > 0);
+  clpc.binaryName = argv[0];
+  clpc.allOptions = allOptions;
+  clpc.argv = argv;
+  clpc.argc = argc;
+  clpc.ectx = ectx;
+  clpc.cfg  = cfg;
   count = 0;
   while (allOptions[count].name != NULL)
     count++;
@@ -1041,12 +1053,13 @@ int gnunet_parse_options(const char * binaryName,
 		      long_options,
 		      &option_index);
 
-    if (c == -1)
+    if (c == SYSERR)
       break;  /* No more flags to process */
     
     for (i=0;i<count;i++) {
-      if (c == allOptions[i].shortName) {
-	cont = allOptions[i].processor(mctx,
+      clpc.currentArgument = GNoptind - 1;
+      if ((char)c == allOptions[i].shortName) {
+	cont = allOptions[i].processor(&clpc,
 				       allOptions[i].scls,
 				       allOptions[i].name,
 				       GNoptarg);
@@ -1055,7 +1068,7 @@ int gnunet_parse_options(const char * binaryName,
     }
     if (i == count) {
       GE_LOG(ectx,
-	     LOG_FAILURE | GE_USER | GE_IMMEDIATE,
+	     GE_INFO | GE_USER | GE_IMMEDIATE,
 	     _("Use --help to get a list of options.\n"));
       cont = SYSERR;
     } 
@@ -1063,29 +1076,7 @@ int gnunet_parse_options(const char * binaryName,
 
   FREE(shorts);
   FREE(long_options);
-
-  if (GNoptind < argc) {
-    LOG(LOG_WARNING,
-	_("Invalid command-line arguments:\n"));
-    while (GNoptind < argc) {
-      LOG(LOG_WARNING,
-	  _("Argument %d: `%s'\n"),
-	  GNoptind+1,
-	  argv[GNoptind]);
-      GNoptind++;
-    }
-    LOG(LOG_FATAL,
-	_("Invalid command-line arguments.\n"));
-    return SYSERR;
-  }
-
+  return GNoptind;
 }
-
-
-
-
-
-
-
 
 /* end of getopt.c */

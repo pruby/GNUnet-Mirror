@@ -42,7 +42,7 @@ int gnunet_getopt_format_help(CommandLineProcessorContext * ctx,
   int p;
   char * scp;
   const char * trans;
-  struct CommandLineOption * opt;
+  const struct CommandLineOption * opt;
 	
   printf("%s",
 	 gettext(about));
@@ -55,7 +55,7 @@ int gnunet_getopt_format_help(CommandLineProcessorContext * ctx,
       printf("      ");
     else
       printf("  -%c, ",
-	     opt[i].shortArg);
+	     opt[i].shortName);
     printf("--%s",
 	   opt[i].name);
     slen = 8 + strlen(opt[i].name);

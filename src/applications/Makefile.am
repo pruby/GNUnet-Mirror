@@ -21,6 +21,7 @@ SUBDIRS	= \
  fragmentation \
  getoption \
  fs \
+ state \
  stats \
  gap \
  identity \

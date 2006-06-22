@@ -38,6 +38,19 @@ extern "C" {
 #endif
 
 /**
+ * Named constants for return values.  The following
+ * invariants hold: "NO == 0" (to allow "if (NO)")
+ * "OK != SYSERR", "OK != NO", "NO != SYSERR"
+ * and finally "YES != NO".
+ */
+#define OK      1
+#define SYSERR -1
+#define YES     1
+#define NO      0
+
+
+
+/**
  * Context required to log messages.
  */
 struct GE_Context;
@@ -49,10 +62,11 @@ typedef enum {
   GE_NOTHING   = 0x00000000,
   /* type of event */
   GE_DEBUG     = 0x00000001, /* DEBUG/CRON/EVERYTHING */
-  GE_STATUS    = 0x00000002, /* INFO/MESSAGE */
-  GE_WARNING   = 0x00000004,
-  GE_ERROR     = 0x00000008,
-  GE_FATAL     = 0x00000010, /* FATAL/FAILURE/NOTHING */
+  GE_STATUS    = 0x00000002, /* status message */
+  GE_INFO      = 0x00000004, /* normal program response */
+  GE_WARNING   = 0x00000008,
+  GE_ERROR     = 0x00000010,
+  GE_FATAL     = 0x00000020, /* FATAL/FAILURE/NOTHING */
   GE_EVENTKIND = 0x000000FF, /* bitmask */
 
   /* who should see the message? */
@@ -112,8 +126,10 @@ void GE_free_context(struct GE_Context * ctx);
 
 /**
  * Does the given event match the mask?
+ *
  * @param have the event type
  * @param mask the filter mask
+ * @return YES or NO
  */
 int GE_applies(GE_KIND have,
 	       GE_KIND mask);
@@ -121,8 +137,10 @@ int GE_applies(GE_KIND have,
 /**
  * Would an event of this kind be possibly 
  * processed by the logger?
+ *
  * @param ctx the logger
  * @param have the kind of event
+ * @return YES or NO
  */
 int GE_isLogged(struct GE_Context * ctx,
 		GE_KIND kind);
@@ -155,7 +173,7 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
 
 #define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); abort(); } } while(0);
 
-#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(_(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, "Assertion failed at %s:%d in %s.\n"), file, line, function); abort(); } } while(0);
+#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), file, line, function); abort(); } } while(0);
 
 #define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0);
 
@@ -180,6 +198,13 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
+#define GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); abort(); } while(0);
+
+/**
+ * Log an error message at log-level 'level' that indicates
+ * a failure of the command 'cmd' with the message given
+ * by strerror(errno).
+ */
 #define GE_LOG_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); } while(0);
 
 /**
@@ -188,8 +213,6 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
  * by strerror(errno).
  */
 #define GE_LOG_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); } while(0);
-
-
 
 
 #if 0 /* keep Emacsens' auto-indent happy */

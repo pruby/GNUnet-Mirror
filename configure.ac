@@ -539,6 +539,7 @@ src/applications/rpc/Makefile
 src/applications/session/Makefile
 src/applications/sqstore_mysql/Makefile
 src/applications/sqstore_sqlite/Makefile
+src/applications/state/Makefile
 src/applications/stats/Makefile
 src/applications/tbench/Makefile
 src/applications/testbed/Makefile
@@ -556,9 +557,16 @@ src/util/Makefile
 src/util/config/Makefile
 src/util/config_impl/Makefile
 src/util/containers/Makefile
+src/util/cron/Makefile
 src/util/crypto/Makefile
+src/util/disk/Makefile
 src/util/error/Makefile
+src/util/getopt/Makefile
 src/util/loggers/Makefile
+src/util/network/Makefile
+src/util/os/Makefile
+src/util/string/Makefile
+src/util/threads/Makefile
 src/util/win/Makefile
 ])
 AC_OUTPUT

@@ -249,6 +249,7 @@ fileclose(void * cls) {
   FREENONNULL(fctx->filename);
   FREENONNULL(fctx->basename);
   if ( (fctx->handle != stderr) &&
+       (fctx->handle != stdout) &&
        (0 != fclose(fctx->handle)) )
     GE_LOG_STRERROR(fctx->ectx,
 		    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
@@ -322,6 +323,32 @@ GE_create_context_stderr(int logDate,
   fctx->logdate = logDate;
   fctx->logrotate = 0;
   fctx->handle = stderr;
+  fctx->filename = NULL;
+  fctx->basename = NULL;
+  fctx->logstart = 0;
+  MUTEX_CREATE_RECURSIVE(&fctx->lock);
+  return GE_create_context_callback(mask,
+				    &filelogger,
+				    fctx,
+				    &fileclose);
+
+}
+
+/**
+ * Create a logger that writes events to stderr
+ * 
+ * @param mask which events should be logged?
+ */
+struct GE_Context * 
+GE_create_context_stdout(int logDate,
+			 GE_KIND mask) {
+  FileContext * fctx;
+
+  fctx = MALLOC(sizeof(FileContext));
+  fctx->ectx = NULL;
+  fctx->logdate = logDate;
+  fctx->logrotate = 0;
+  fctx->handle = stdout;
   fctx->filename = NULL;
   fctx->basename = NULL;
   fctx->logstart = 0;

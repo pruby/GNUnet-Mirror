@@ -41,6 +41,9 @@ extern "C" {
 #endif
 #endif
 
+#define STRONG YES
+#define WEAK NO
+
 /**
  * @brief length of the sessionkey in bytes (256 BIT sessionkey)
  */

@@ -312,48 +312,4 @@ int isSocketValid(int s)
 #endif
 }
 
-/**
- * Open a file
- */
-int fileopen(const char *filename, int oflag, ...)
-{
-  int mode;
-  char *fn;
-
-#ifdef MINGW
-  char szFile[_MAX_PATH + 1];
-  long lRet;
-
-  if ((lRet = plibc_conv_to_win_path(filename, szFile)) != ERROR_SUCCESS)
-  {
-    errno = ENOENT;
-    SetLastError(lRet);
-
-    return -1;
-  }
-  fn = szFile;
-#else
-  fn = (char *) filename;
-#endif
-
-  if (oflag & O_CREAT)
-  {
-    va_list arg;
-    va_start(arg, oflag);
-    mode = va_arg(arg, int);
-    va_end(arg);
-  }
-  else
-  {
-    mode = 0;
-  }
-
-#ifdef MINGW
-  /* Set binary mode */
-  oflag |= O_BINARY;
-#endif
-
-  return open(fn, oflag, mode);
-}
-
 /* end of io.c */

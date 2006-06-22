@@ -1,0 +1,18 @@
+INCLUDES = -I$(top_srcdir)/src/include
+
+SUBDIRS = .
+
+noinst_LTLIBRARIES = \
+  libdisk.la
+
+libdisk_la_SOURCES = \
+  storage.c
+
+check_PROGRAMS = \
+ storagetest 
+
+storagetest_SOURCES = \
+ storagetest.c
+storagetest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
+

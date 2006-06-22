@@ -97,7 +97,7 @@ size_t strlcat(char * dest,
  * Give relative time in human-readable fancy format.
  * @param delta time in milli seconds
  */
-char * timeIntervalToFancyString(unsigned long long delta) {
+char * string_get_fancy_time_interval(unsigned long long delta) {
   const char * unit = _(/* time unit */ "ms");
   char * ret;
 
@@ -129,7 +129,7 @@ char * timeIntervalToFancyString(unsigned long long delta) {
 /**
  * Convert a given filesize into a fancy human-readable format.
  */
-char * fileSizeToFancyString(unsigned long long size) {
+char * string_get_fancy_byte_size(unsigned long long size) {
 const char * unit = _(/* size unit */ "b");
   char * ret;
 
@@ -169,9 +169,10 @@ const char * unit = _(/* size unit */ "b");
  *  if conversion fails, a copy of the orignal
  *  string is returned.
  */
-char * convertToUtf8(const char * input,
-		     size_t len,
-		     const char * charset) {
+char * string_convertToUtf8(struct GE_Context * ectx,
+			    const char * input,
+			    size_t len,
+			    const char * charset) {
   char * ret;
 #if ENABLE_NLS
   size_t tmpSize;
@@ -182,6 +183,9 @@ char * convertToUtf8(const char * input,
 
   cd = iconv_open("UTF-8", charset);
   if (cd == (iconv_t) -1) {
+    GE_LOG_STRERROR(ectx,
+		    GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
+		    "iconv_open");
     ret = MALLOC(len+1);
     memcpy(ret, input, len);
     ret[len] = '\0';
@@ -196,6 +200,9 @@ char * convertToUtf8(const char * input,
 	    &len,
 	    &itmp,
 	    &finSize) == (size_t)-1) {
+    GE_LOG_STRERROR(ectx,
+		    GE_USER | GE_WARNING | GE_BULK,
+		    "iconv");    
     iconv_close(cd);
     FREE(tmp);
     ret = MALLOC(len+1);
@@ -209,7 +216,10 @@ char * convertToUtf8(const char * input,
 	 tmpSize - finSize);
   ret[tmpSize - finSize] = '\0';
   FREE(tmp);
-  iconv_close(cd);
+  if (0 != iconv_close(cd))
+    GE_LOG_STRERROR(ectx,
+		    GE_ADMIN | GE_WARNING | GE_REQUEST,
+		    "iconv_close");
   return ret;
 #else
   ret = MALLOC(len+1);
@@ -218,5 +228,111 @@ char * convertToUtf8(const char * input,
   return ret;
 #endif
 }
+
+
+
+
+/**
+ * Complete filename (a la shell) from abbrevition.
+ * @param fil the name of the file, may contain ~/ or
+ *        be relative to the current directory
+ * @returns the full file name,
+ *          NULL is returned on error
+ */
+char * string_expandFileName(struct GE_Context * ectx,
+			     const char * fil) {
+  char * buffer;
+  char * fn;
+#ifndef MINGW
+  size_t len;
+  size_t n;
+  char * fm;
+  const char * fil_ptr;
+#else
+  long lRet;
+#endif
+
+  if (fil == NULL)
+    return NULL;
+
+#ifndef MINGW
+  if (fil[0] == DIR_SEPARATOR) 
+    /* absolute path, just copy */
+    return(STRDUP(fil));
+  if (fil[0] == '~') {
+    fm = getenv("HOME");
+    if (fm == NULL) {
+      GE_LOG(ectx,
+	     GE_USER | GE_ADMIN | GE_WARNING | GE_IMMEDIATE,
+	     _("Failed to expand `$HOME': environment variable `HOME' not set"));
+      return NULL;
+    }
+    fm = STRDUP(fm);
+    /* do not copy '~' */
+    fil_ptr = fil + 1;
+
+    /* skip over dir seperator to be consistent */
+    if (fil_ptr[0] == DIR_SEPARATOR) 
+    	fil_ptr++;
+  } else { 
+    /* relative path */
+    fil_ptr = fil;
+    len = 512;
+    errno = ERANGE;
+    while (errno == ERANGE) {
+      buffer = MALLOC(len);
+      if (getcwd(buffer, len) != NULL) {
+	fm = buffer;
+	break;
+      } else {
+	GE_LOG_STRERROR(ectx,
+			GE_USER | GE_WARNING | GE_IMMEDIATE,
+			"getcwd");
+	FREE(buffer);
+	buffer = getenv("PWD"); /* alternative */
+	if (buffer == NULL) 
+	  return NULL; /* fatal */
+	fm = STRDUP(buffer);
+      }
+    }
+  }
+  n = strlen(fm) + 1 + strlen(fil_ptr) + 1;
+  buffer = MALLOC(n);
+  SNPRINTF(fn, n,
+	   "%s/%s", fm, fil_ptr);
+  FREE(fm);
+#else
+  fn = MALLOC(MAX_PATH + 1);
+
+  if ((lRet = plibc_conv_to_win_path(fil, buffer)) != ERROR_SUCCESS) {
+    SetErrnoFromWinError(lRet);
+    GE_LOG_STRERROR(ectx,
+		    GE_USER | GE_WARNING | GE_IMMEDIATE,
+		    "plibc_conv_to_win_path");
+    return NULL;
+  }
+  /* is the path relative? */
+  if ( (strncmp(buffer + 1, ":\\", 2) != 0) &&
+       (strncmp(buffer, "\\\\", 2) != 0)) {
+    char szCurDir[MAX_PATH + 1];
+    lRet = GetCurrentDirectory(MAX_PATH + 1, szCurDir);
+    if (lRet + strlen(fn) + 1 > (MAX_PATH + 1)) {
+      SetErrnoFromWinError(ERROR_BUFFER_OVERFLOW);
+      GE_LOG_STRERROR(ectx,
+		      GE_USER | GE_WARNING | GE_IMMEDIATE,
+		      "GetCurrentDirectory");
+      return NULL;
+    }
+    SNPRINTF(fn,
+	     MAX_PATH+1,
+	     "%s\\%s", szCurDir, buffer);
+  } else {
+    strcpy(fn, buffer);
+  }
+#endif
+  return fn;
+}
+
+
 
 /* end of string.c */

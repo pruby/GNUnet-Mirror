@@ -14,7 +14,7 @@
 
 
 
-SOURCES = $(liberror_la_SOURCES)
+SOURCES = $(libgetopt_la_SOURCES)
 
 srcdir = .
 top_srcdir = ../../..
@@ -54,13 +54,17 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
-liberror_la_LIBADD =
-am_liberror_la_OBJECTS = error.lo
-liberror_la_OBJECTS = $(am_liberror_la_OBJECTS)
+libgetopt_la_LIBADD =
+am_libgetopt_la_OBJECTS = getopt.lo setoption.lo printhelp.lo \
+	printversion.lo
+libgetopt_la_OBJECTS = $(am_libgetopt_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-DEP_FILES = ./$(DEPDIR)/error.Plo
+DEP_FILES = ./$(DEPDIR)/getopt.Plo \
+	./$(DEPDIR)/printhelp.Plo \
+	./$(DEPDIR)/printversion.Plo \
+	./$(DEPDIR)/setoption.Plo
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
@@ -69,8 +73,8 @@ LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(liberror_la_SOURCES)
-DIST_SOURCES = $(liberror_la_SOURCES)
+SOURCES = $(libgetopt_la_SOURCES)
+DIST_SOURCES = $(libgetopt_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -248,10 +252,13 @@ target_alias =
 INCLUDES = -I$(top_srcdir)/src/include
 SUBDIRS = .
 noinst_LTLIBRARIES = \
-  liberror.la
+  libgetopt.la
 
-liberror_la_SOURCES = \
-  error.c
+libgetopt_la_SOURCES = \
+  getopt.c \
+  setoption.c \
+  printhelp.c \
+  printversion.c 
 
 all: all-recursive
 
@@ -295,8 +302,8 @@ clean-noinstLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-liberror.la: $(liberror_la_OBJECTS) $(liberror_la_DEPENDENCIES) 
-	$(LINK)  $(liberror_la_LDFLAGS) $(liberror_la_OBJECTS) $(liberror_la_LIBADD) $(LIBS)
+libgetopt.la: $(libgetopt_la_OBJECTS) $(libgetopt_la_DEPENDENCIES) 
+	$(LINK)  $(libgetopt_la_LDFLAGS) $(libgetopt_la_OBJECTS) $(libgetopt_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -304,7 +311,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/error.Plo
+include ./$(DEPDIR)/getopt.Plo
+include ./$(DEPDIR)/printhelp.Plo
+include ./$(DEPDIR)/printversion.Plo
+include ./$(DEPDIR)/setoption.Plo
 
 .c.o:
 	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \

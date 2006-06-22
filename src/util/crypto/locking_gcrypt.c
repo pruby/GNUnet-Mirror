@@ -39,7 +39,7 @@ void unlockGcrypt() {
   MUTEX_UNLOCK(&gcrypt_shared_lock);
 }
 
-void __attribute__ ((constructor)) gnunet_crypto_ltdl_init(void) {
+void __attribute__ ((constructor)) gnunet_crypto_ltdl_init() {
   MUTEX_CREATE_RECURSIVE(&gcrypt_shared_lock);
   gcry_control(GCRYCTL_DISABLE_SECMEM, 0);
   if (! gcry_check_version(GCRYPT_VERSION)) {
@@ -56,6 +56,6 @@ void __attribute__ ((constructor)) gnunet_crypto_ltdl_init(void) {
 #endif
 }
 
-void __attribute__ ((destructor)) gnunet_crypto_ltdl_fini(void) {
+void __attribute__ ((destructor)) gnunet_crypto_ltdl_fini() {
   MUTEX_DESTROY(&gcrypt_shared_lock);
 }
