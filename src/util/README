@@ -3,14 +3,14 @@ util/ is now structured as follows:
 util/error: basic error handling functions (lowest layer)
 util/win: win32 portability (lowest layer)
  util/string: string and memory abstraction (depends on error)
-  util/disk  : disk IO abstractions (depends on string)
+  util/disk: disk IO abstractions (depends on string)
  util/config: configuration handling (depends on error)
   util/getopt: command line parsing (depends on config)
  util/threads: pthread abstractions (depends on error)
 
 -------- TODO ----------
-  util/network: network IO abstractions (depends on threads, config)
-  util/os    : process and system abstractions (depends on threads, config)
+  util/os: process and system abstractions (depends on threads, config)
+   util/network: network IO abstractions (depends on threads, config, os)
 
 util: main utility library (depends on all of the above)
       => these are all statically linked into gnunetutil.so

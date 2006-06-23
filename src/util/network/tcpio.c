@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -41,6 +41,66 @@
 #include "platform.h"
 
 #define DEBUG_TCPIO NO
+
+/**
+ * Struct to refer to a GNUnet TCP connection.
+ * This is more than just a socket because if the server
+ * drops the connection, the client automatically tries
+ * to reconnect (and for that needs connection information).
+ */
+typedef struct GNUNET_TCP_SOCKET {
+
+  /**
+   * the socket handle, -1 if invalid / not life
+   */
+  int socket;
+
+  /**
+   * the following is the IP for the remote host for client-sockets,
+   * as returned by gethostbyname("hostname"); server sockets should
+   * use 0.
+   */
+  IPaddr ip;
+
+  /**
+   * the port number, in host byte order
+   */
+  unsigned short port;
+
+  /**
+   * Write buffer length for non-blocking writes.
+   */
+  unsigned int outBufLen;
+
+  /**
+   * Write buffer for non-blocking writes.
+   */
+  void * outBufPending;
+
+  struct Mutex * readlock;
+
+  struct Mutex * writelock;
+
+} GNUNET_TCP_SOCKET;
+
+
+/**
+ * CS communication: simple return value
+ */
+typedef struct {
+
+  /**
+   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
+   */
+  MESSAGE_HEADER header;
+
+  /**
+   * The return value (network byte order)
+   */
+  int return_value;
+} RETURN_VALUE_MESSAGE;
+
+
 
 /**
  * Initialize a GNUnet client socket.
