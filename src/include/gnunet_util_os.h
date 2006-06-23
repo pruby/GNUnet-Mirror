@@ -1,0 +1,231 @@
+/*
+     This file is part of GNUnet.
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+/**
+ * @file include/gnunet_util_os.h
+ * @brief low level process routines (fork, IPC, 
+ *        OS statistics, OS properties)
+ * @author Christian Grothoff
+ * @author Krista Bennett
+ * @author Gerd Knorr <kraxel@bytesex.org>
+ * @author Ioana Patrascu
+ * @author Tzvetan Horozov
+ */
+
+#ifndef GNUNET_UTIL_OS_H
+#define GNUNET_UTIL_OS_H
+
+/* add error and config prototypes */
+#include "gnunet_util_config.h"
+
+#ifdef __cplusplus
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
+}
+#endif
+#endif
+
+/**
+ * @brief Inter-process semaphore.
+ */
+struct IPC_SEMAPHORE;
+
+/**
+ * @brief plugin (shared library) handle
+ */ 
+struct PluginHandle;
+
+/**
+ * @param isDefault is this presumably the default interface
+ * @return OK to continue iteration, SYSERR to abort
+ */
+typedef int (*NetworkIfcProcessor)(const char * name,
+				   int isDefault,
+				   void * cls);
+
+typedef enum {
+  Download,
+  Upload,
+} NetworkDirection;
+
+struct LoadMonitor;
+
+struct IPC_SEMAPHORE * 
+IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
+		     const char * basename,
+		     unsigned int initialValue);
+
+void IPC_SEMAPHORE_DESTROY(struct IPC_Semaphore * sem);
+
+void IPC_SEMAPHORE_UP(struct IPC_SEMAPHORE * sem);
+
+void IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
+			int mayBlock);
+
+/**
+ * Load plugin
+ */
+struct PluginHandle * 
+os_plugin_load(struct GE_Context * ectx,
+	       const char * libprefix,
+	       const char * dsoname);
+
+/**
+ * Try resolving a function provided by the plugin
+ * @param logError YES if failure to find the function
+ *        is an error that should be logged
+ * @param methodprefix prefix for the method; the
+ *        method name will be automatically extended
+ *        with the respective dsoname of the plugin
+ * @return NULL on error, otherwise pointer to the function
+ */
+void * 
+os_plugin_resolve_function(struct PluginHandle * plugin,			
+			   const char * methodprefix,
+			   int logError);
+
+void os_plugin_unload(struct PluginHandle * plugin);
+
+struct LoadMonitor * 
+os_network_monitor_create(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg);
+
+void os_network_monitor_destroy(struct LoadMonitor * mon);
+
+/**
+ * Get the load of the network relative to what is allowed.
+ *
+ * @return the network load as a percentage of allowed
+ *        (100 is equivalent to full load)
+ */
+int os_network_monitor_get_load(struct LoadMonitor * monitor,
+			     NetworkDirection dir);
+
+/**
+ * Tell monitor to increment the number of bytes sent/received
+ */
+void os_network_monitor_notify_transmission(NetworkDirection dir,
+					    unsigned long long delta);
+
+/**
+ * @brief Enumerate all network interfaces
+ * @param callback the callback function
+ */
+void os_list_network_interfaces(struct GE_Context * ectx,
+				NetworkIfcProcessor proc,
+				void * cls);
+
+/**
+ * @brief Make "application" start automatically
+ *
+ * @param testCapability YES to merely probe if the OS has this
+ *        functionality (in that case, no actual operation is
+ *        performed).  SYSERR is returned if
+ *        a) autostart is not supported,
+ *        b) the application does not seem to exist
+ *        c) the user or group do not exist
+ *        d) the user has insufficient permissions for 
+ *           changing autostart
+ *        e) doAutoStart is NO, but autostart is already
+ *           disabled
+ *        f) doAutoStart is YES, but autostart is already
+ *           enabled
+ * @param doAutoStart YES to enable autostart of the
+ *        application, NO to disable it
+ * @param username name of the user account to use
+ * @param groupname name of the group to use
+ * @return OK on success, SYSERR on error
+ */
+int os_modify_autostart(struct GE_Context * ectx,
+			int testCapability,
+			int doAutoStart,
+			const char * application
+			const char * username, 
+			const char * groupname);
+
+/**
+ * @brief Add or remove a service account for GNUnet
+ *
+ * @param testCapability YES to merely probe if the OS has this
+ *        functionality (in that case, no actual operation is
+ *        performed).  SYSERR is returned if
+ *        a) adding users is not supported,
+ *        b) the user has insufficient permissions for 
+ *           adding/removing users
+ *        c) doAdd is NO, but user does not exist
+ *        d) doAdd is YES, and user already exists
+ * @param name the name of the new user or group
+ * @param doAdd YES to add, NO to remove user, SYSERR to
+ *        purge (removes user AND group)
+ * @param name the name of the user
+ * @param group name of the group
+ * @return OK on success, SYSERR on error
+ */
+int os_modify_user(struct GE_Context * ectx,
+		   int doAdd,
+		   const char * name,
+		   const char * group);
+
+/**
+ * Get the current CPU load.
+ * @param ectx for error reporting
+ * @param cfg to determine acceptable load level (LOAD::MAXCPULOAD)
+ * @return -1 on error, otherwise load value 
+ */
+int os_cpu_get_load(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg);
+
+/**
+ * Start gnunetd process
+ *
+ * @param cfgFile configuration file to use, NULL for default
+ * @param daemonize YES if gnunetd should be daemonized
+ * @return pid_t of gnunetd if NOT daemonized, 0 if
+ *  daemonized sucessfully, -1 on error
+ */
+int os_daemon_start(struct GE_Context * ectx,
+		    const char * cfgFile,
+		    int daemonize);
+
+/**
+ * Wait until the gnunet daemon (or any other CHILD process for that
+ * matter) with the given PID has terminated.  Assumes that
+ * the daemon was started with daemon_start in no-daemonize mode.
+ * On arbitrary PIDs, this function may fail unexpectedly.
+ *
+ * @return YES if gnunetd shutdown with
+ *  return value 0, SYSERR if waitpid
+ *  failed, NO if gnunetd shutdown with
+ *  some error
+ */
+int os_daemon_stop(struct GE_Context * ectx,
+		   int pid);
+
+#if 0 /* keep Emacsens' auto-indent happy */
+{
+#endif
+#ifdef __cplusplus
+}
+#endif
+
+
+/* ifndef GNUNET_UTIL_OS_H */
+#endif
+/* end of gnunet_util_os.h */
