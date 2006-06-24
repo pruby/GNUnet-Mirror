@@ -19,51 +19,14 @@
 */
 
 /**
- * @file src/util/daemon.c
- * @brief code for client-gnunetd interaction (start, stop, waitpid, check running)
+ * @file src/util/os/daemon.c
+ * @brief code for client-gnunetd interaction (start, stop, waitpid)
  * @author Christian Grothoff
  */
 
 #include "platform.h"
-#include "gnunet_util.h"
-#include "gnunet_protocols.h"
-
-
-/**
- * Checks if gnunetd is running
- *
- * Uses CS_PROTO_traffic_COUNT query to determine if gnunetd is
- * running.
- *
- * @return OK if gnunetd is running, SYSERR if not
- */
-int checkGNUnetDaemonRunning(struct GE_Context * ectx) {
-  GNUNET_TCP_SOCKET * sock;
-  CS_MESSAGE_HEADER csHdr;
-  int ret;
-
-  sock = getClientSocket(ectx);
-  if (sock == NULL) 
-    return SYSERR;
-
-  csHdr.size
-    = htons(sizeof(CS_MESSAGE_HEADER));
-  csHdr.type
-    = htons(CS_PROTO_traffic_COUNT);
-  if (SYSERR == writeToSocket(sock,
-                              &csHdr)) {
-    releaseClientSocket(sock);
-    return SYSERR;
-  }
-  if (SYSERR == readTCPResult(sock,
-  			      &ret)) {
-    releaseClientSocket(sock);
-    return SYSERR;
-  }
-  releaseClientSocket(sock);
-  return OK;
-}
-
+#include "gnunet_util_os.h"
+#include "gnunet_util_string.h"
 
 #if LINUX || OSX || SOLARIS || SOMEBSD
 /**
@@ -73,45 +36,44 @@ int checkGNUnetDaemonRunning(struct GE_Context * ectx) {
  * @return pid_t of gnunetd if NOT daemonized, 0 if
  *  daemonized sucessfully, -1 on error
  */
-static pid_t launchWithExec(int daemonize) {
+static pid_t launchWithExec(struct GE_Context * ectx,
+			    const char * binary_home,
+			    const char * cfgFile,
+			    int daemonize) {
   pid_t pid;
 
   pid = fork();
   if (pid == 0) {
-    char * args[5];
+    const char * args[5];
     char * path;
     char * cp;
+    int i;
 
     path = NULL;
-    cp = getConfigurationString("MAIN",
-				"ARGV[0]");
-    if (cp != NULL) {
-      int i = strlen(cp);
-      while ( (i >= 0) &&
-	      (cp[i] != DIR_SEPARATOR) )
+    cp = STRDUP(binary_home);
+    i = strlen(cp);
+    while ( (i >= 0) &&
+	    (cp[i] != DIR_SEPARATOR) )
 	i--;
-      if ( i != -1 ) {
-	cp[i+1] = '\0';
-	path = MALLOC(i+2+strlen("gnunetd"));
-	strcpy(path, cp);
-	strcat(path, "gnunetd");
-	if (ACCESS(path, X_OK) == 0) {
-	  args[0] = path;
-	} else {
-	  FREE(path);
-	  path = NULL;
-	  args[0] = "gnunetd";
-	}
-	FREE(cp);
+    if ( i != -1 ) {
+      cp[i+1] = '\0';
+      path = MALLOC(i+2+strlen("gnunetd"));
+      strcpy(path, cp);
+      strcat(path, "gnunetd");
+      if (ACCESS(path, X_OK) == 0) {
+	args[0] = path;
       } else {
+	FREE(path);
+	path = NULL;
 	args[0] = "gnunetd";
       }
+      FREE(cp);
+    } else {
+      args[0] = "gnunetd";
     }
-    cp = getConfigurationString("GNUNET",
-				"GNUNETD-CONFIG");
-    if (cp != NULL) {
+    if (cfgFile != NULL) {
       args[1] = "-c";
-      args[2] = cp;
+      args[2] = cfgFile;
       if (NO == daemonize) {
 	args[3] = "-d";
 	args[4] = NULL;
@@ -127,20 +89,20 @@ static pid_t launchWithExec(int daemonize) {
     errno = 0;
     nice(10); /* return value is not well-defined */
     if (errno != 0)
-      LOG_STRERROR(LOG_WARNING, "nice");
+      GE_LOG_STRERROR(ectx,
+		      GE_WARNING | GE_USER | GE_BULK, 
+		      "nice");
     if (path != NULL)
       execv(path,
-	    args);
+	    (char**) args);
     else
       execvp("gnunetd",
-	     args);
-    LOG_STRERROR(LOG_FAILURE, "exec");
-    LOG(LOG_FAILURE,
-	_("Attempted path to `%s' was `%s'.\n"),
-	"gnunetd",
-	(path == NULL) ? "gnunetd" : path);
-    FREENONNULL(path); /* yeah, right, like we're likely to get
-			  here... */
+	     (char**) args);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_BULK, 
+			 "exec",
+			 path == NULL ? "gnunetd" : path);
+    FREENONNULL(path);
     _exit(-1);
   } else if (daemonize) {
     pid_t ret;
@@ -148,7 +110,9 @@ static pid_t launchWithExec(int daemonize) {
 
     ret = waitpid(pid, &status, 0);
     if (ret == -1) {
-      LOG_STRERROR(LOG_ERROR, "waitpid");
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_USER | GE_BULK, 
+		      "waitpid");
       return SYSERR;
     }
     if ( (WIFEXITED(status) &&
@@ -177,9 +141,26 @@ static pid_t launchWithExec(int daemonize) {
  * @return pid_t of gnunetd if NOT daemonized, 0 if
  *  daemonized sucessfully, -1 on error
  */
-int startGNUnetDaemon(int daemonize) {
+int os_daemon_start(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
+		    const char * cfgFile,
+		    int daemonize) {
 #if LINUX || OSX || SOLARIS || SOMEBSD
-  return launchWithExec(daemonize);
+  int ret;
+  char * binName;
+
+  if (0 != GC_get_configuration_value_string(cfg,
+					     "ARGV",
+					     "0",
+					     NULL,
+					     &binName))
+    return -1;
+  ret = launchWithExec(ectx,
+		       cfgFile,
+		       binName,
+		       daemonize);
+  FREE(binName);
+  return ret;
 #elif MINGW
   char szCall[_MAX_PATH + 1], szWd[_MAX_PATH + 1], szCWd[_MAX_PATH + 1];
   char *args[1], *cp = NULL;
@@ -193,20 +174,22 @@ int startGNUnetDaemon(int daemonize) {
   chdir(szWd);
 
   if (daemonize == NO) {
-  	args[0] = "-d";
- 		idx = 1;
-
+    args[0] = "-d";
+    idx = 1;
+    
     cp = getConfigurationString("GNUNET",
 				"GNUNETD-CONFIG");
-		if (cp) {
-			args[1] = "-c";
-			args[2] = cp;
-			idx=3;
-		}		
+    if (cp) {
+      args[1] = "-c";
+      args[2] = cp;
+      idx=3;
+    }		
   }
 
   args[idx] = NULL;
-  pid = spawnvp(_P_NOWAIT, szCall, (const char *const *) args);
+  pid = spawnvp(_P_NOWAIT, 
+		szCall,
+		(const char *const *) args);
   chdir(szCWd);
 
   FREENONNULL(cp);
@@ -220,95 +203,7 @@ int startGNUnetDaemon(int daemonize) {
 #endif
 }
 
-
-/**
- * Stop gnunetd
- *
- * Note that returning an error does NOT mean that
- * gnunetd will continue to run (it may have been
- * shutdown by something else in the meantime or
- * crashed).  Call checkDaemonRunning() frequently
- * to check the status of gnunetd.
- *
- * Furthermore, note that this WILL potentially kill
- * gnunetd processes on remote machines that cannot
- * be restarted with startGNUnetDaemon!
- *
- * This function does NOT need the PID and will also
- * kill daemonized gnunetd's.
- *
- * @return OK successfully stopped, SYSERR: error
- */
-int stopGNUnetDaemon() {
-  GNUNET_TCP_SOCKET * sock;
-  CS_MESSAGE_HEADER csHdr;
-  int ret;
-
-  sock = getClientSocket();
-  if (sock == NULL)
-    return SYSERR;
-  csHdr.size
-    = htons(sizeof(CS_MESSAGE_HEADER));
-  csHdr.type
-    = htons(CS_PROTO_SHUTDOWN_REQUEST);
-  if (SYSERR == writeToSocket(sock,
-			      &csHdr)) {
-    releaseClientSocket(sock);
-    return SYSERR;
-  }
-  if (SYSERR == readTCPResult(sock,
-			      &ret)) {
-    releaseClientSocket(sock);
-    return SYSERR;
-  }
-  releaseClientSocket(sock);
-  return ret;
-}
-
-/**
- * Wait until the gnunet daemon is
- * running.
- *
- * @param timeout how long to wait at most
- * @return OK if gnunetd is now running
- */
-int waitForGNUnetDaemonRunning(cron_t timeout) {
-  timeout += cronTime(NULL);
-  while (OK != checkGNUnetDaemonRunning()) {
-    gnunet_util_sleep(100 * cronMILLIS);
-    if (timeout < cronTime(NULL))
-      return checkGNUnetDaemonRunning();
-  }
-  return OK;
-}
-
-/**
- * Wait until the gnunet daemon (or any other CHILD process for that
- * matter) with the given PID has terminated.  Assumes that
- * the daemon was started with startGNUnetDaemon in no-daemonize mode.
- * On arbitrary PIDs, this function may fail unexpectedly.
- *
- * @return YES if gnunetd shutdown with
- *  return value 0, SYSERR if waitpid
- *  failed, NO if gnunetd shutdown with
- *  some error
- */
-int waitForGNUnetDaemonTermination(int pid) {
-  pid_t p;
-  int status;
-
-  p = pid;
-  if (p != WAITPID(p, &status, 0)) {
-    LOG_STRERROR(LOG_ERROR, "waitpid");
-    return SYSERR;
-  }
-  if (WEXITSTATUS(status) == 0)
-    return YES;
-  else
-    return NO;
-}
-
-int termProcess(int pid) {
+static int termProcess(int pid) {
 #ifndef MINGW
   return kill(pid, SIGTERM) == 0;
 #else
@@ -331,6 +226,38 @@ int termProcess(int pid) {
   
   return ret;
 #endif
+}
+
+
+
+/**
+ * Wait until the gnunet daemon (or any other CHILD process for that
+ * matter) with the given PID has terminated.  Assumes that
+ * the daemon was started with startGNUnetDaemon in no-daemonize mode.
+ * On arbitrary PIDs, this function may fail unexpectedly.
+ *
+ * @return YES if gnunetd shutdown with
+ *  return value 0, SYSERR if waitpid
+ *  failed, NO if gnunetd shutdown with
+ *  some error
+ */
+int os_daemon_stop(struct GE_Context * ectx,
+		   int pid) {
+  pid_t p;
+  int status;
+
+  termProcess(pid);
+  p = pid;
+  if (p != WAITPID(p, &status, 0)) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_BULK,
+		    "waitpid");
+    return SYSERR;
+  }
+  if (WEXITSTATUS(status) == 0)
+    return YES;
+  else
+    return NO;
 }
 
 /* end of daemon.c */

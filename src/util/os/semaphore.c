@@ -21,9 +21,13 @@
 /**
  * @file util/os/semaphore.c
  * @brief functions related to IPC synchronization
+ *
+ * TODO: implement non-blocking semaphore down!
  */
 
 #include "gnunet_util_os.h"
+#include "gnunet_util_string.h"
+#include "gnunet_util_error.h"
 #include "platform.h"
 
 #if SOLARIS || FREEBSD || OSX
@@ -148,8 +152,7 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 #if SOLARIS || OSX || FREEBSD5
   char * noslashBasename;
   int i;
-  IPC_Semaphore * rret;
-  IPC_Semaphore_Internal * ret;
+  IPC_Semaphore * ret;
 
   ret = MALLOC(sizeof(IPC_Semaphore));
   ret->ectx = ectx;
@@ -180,19 +183,15 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 			 noslashBasename);
   FREE(noslashBasename);
   return ret;
-
-  /* *********************** fix from here *********** */
 #elif WINDOWS
   char * noslashBasename;
   int i;
-  IPC_Semaphore * rret;
-  IPC_Semaphore_Internal * ret;
+  IPC_Semaphore * ret;
   SECURITY_ATTRIBUTES sec;
   DWORD dwErr;
 
-  rret = MALLOC(sizeof(IPC_Semaphore));
-  ret = MALLOC(sizeof(IPC_Semaphore_Internal));
-  rret->platform = ret;
+  ret = MALLOC(sizeof(IPC_Semaphore));
+  ret->ectx = ectx;
   noslashBasename = STRDUP(basename);
   for (i=strlen(noslashBasename);i>0;i--)
     if (noslashBasename[i] == '\\')
@@ -209,35 +208,35 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
     dwErr = GetLastError();
   }
   if (! ret->internal) {
-    LOG(LOG_FAILURE, _("Can't create semaphore: %i"), dwErr);
-    DIE_FILE_STRERROR("sem_open", noslashBasename);
+    GE_LOG(ectx,
+	   GE_FAILURE | GE_USER | GE_DEVELOPER | GE_BULK,
+	   _("Can't create semaphore: %i"), 
+	   dwErr);
+    DIE_STRERROR_FILE(ectx,
+		      GE_FAILURE | GE_USER | GE_DEVELOPER | GE_BULK,
+		      "OpenSemaphore", noslashBasename);
   }
   FREE(noslashBasename);
-  return rret;
+  return ret;
 #elif LINUX
   union semun {
       int             val;
       struct semid_ds *buf;
       ushort          *array;
   } semctl_arg;
-  IPC_Semaphore * rret;
-  IPC_Semaphore_Internal * ret;
+  IPC_Semaphore * ret;
   key_t key;
   FILE * fp;
   int pcount;
 
-  rret = MALLOC(sizeof(IPC_Semaphore));
-  ret = MALLOC(sizeof(IPC_Semaphore_Internal));
-  rret->platform = ret;
-
+  ret = MALLOC(sizeof(IPC_Semaphore));
+  ret->ectx = ectx;
   fp = FOPEN(basename, "a+");
   if (NULL == fp) {
-    LOG_FILE_STRERROR_FL(LOG_FATAL,
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_BULK,
 			 "fopen",
-			 basename,
-			 filename,
-			 linenumber);
-    FREE(rret);
+			 basename);
     FREE(ret);
     return NULL;
   }
@@ -246,58 +245,81 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
   key = ftok(basename,'g');
 
 again:
-
-  ret->internal = semget(key, 3, IPC_CREAT|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+  ret->internal = semget(key,
+			 3, 
+			 IPC_CREAT|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 
   if (ret->internal == -1)
-    DIE_STRERROR_FL("semget", filename, linenumber);
+    GE_DIE_STRERROR(ectx,
+		    GE_FATAL | GE_USER | GE_IMMEDIATE, 
+		    "semget");
   if (semop(ret->internal, &op_lock[0], 2) < 0) {
     if (errno == EINVAL)
       goto again;
     else
-      DIE_STRERROR_FL("semop", filename, linenumber);
+      GE_DIE_STRERROR(ectx, 
+		      GE_FATAL | GE_USER | GE_IMMEDIATE, 
+		      "semop");
   }
 
   /* get process count */
-  if ( (pcount = semctl(ret->internal, 1, GETVAL, 0)) < 0)
-    DIE_STRERROR_FL("semctl", filename, linenumber);
+  if ( (pcount = semctl(ret->internal,
+			1,
+			GETVAL,
+			0)) < 0)
+    GE_DIE_STRERROR(ectx, 
+		    GE_FATAL | GE_USER | GE_IMMEDIATE, 
+		    "semctl");
   if (pcount==0) {
      semctl_arg.val = initialValue;
-     if (semctl(ret->internal, 0, SETVAL, semctl_arg) < 0)
-       DIE_STRERROR_FL("semtcl", filename, linenumber);
+     if (semctl(ret->internal, 
+		0, 
+		SETVAL, 
+		semctl_arg) < 0)
+       GE_DIE_STRERROR(ectx, 
+		       GE_FATAL | GE_USER | GE_IMMEDIATE, 
+		       "semtcl");
      semctl_arg.val = PROCCOUNT;
-     if (semctl(ret->internal, 1, SETVAL, semctl_arg) < 0)
-       DIE_STRERROR_FL("semtcl", filename, linenumber);
+     if (semctl(ret->internal, 
+		1,
+		SETVAL,
+		semctl_arg) < 0)
+       GE_DIE_STRERROR(ectx, 
+		       GE_FATAL | GE_USER | GE_IMMEDIATE, 
+		       "semtcl");
   }
 
-  if (semop(ret->internal, &op_endcreate[0], 2) < 0)
-     DIE_STRERROR_FL("semop", filename, linenumber);
-
+  if (semop(ret->internal, 
+	    &op_endcreate[0],
+	    2) < 0)
+    GE_DIE_STRERROR(ectx, 
+		    GE_FATAL | GE_USER | GE_IMMEDIATE, 
+		    "semop");
   ret->filename = STRDUP(basename);
-  return rret;
+  return ret;
 #elif SOMEBSD
   int fd;
   int cnt;
-  IPC_Semaphore * rret;
-  IPC_Semaphore_Internal * ret;
+  IPC_Semaphore * ret;
 
-  rret = MALLOC(sizeof(IPC_Semaphore));
-  ret = MALLOC(sizeof(IPC_Semaphore_Internal));
-  rret->platform = ret;
+  ret = MALLOC(sizeof(IPC_Semaphore));
+  ret->ectx = ectx;
 
   MUTEX_CREATE(&ret->internalLock);
   ret->filename = STRDUP(basename);
   fd = -1;
   while (fd == -1) {
-    fd = fileopen(basename,
-	      O_CREAT|O_RDWR|O_EXCL,
-	      S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP /* 660 */);
+    fd = disk_file_open(ectx,
+			basename,
+			O_CREAT|O_RDWR|O_EXCL,
+			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP /* 660 */);
     if ( (fd == -1) &&
 	 (errno == EEXIST) ) {
       /* try without creation */
-      fd = fileopen(basename,
-		O_RDWR,
-		S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP /* 660 */);
+      fd = disk_file_open(ectx,
+			  basename,
+			  O_RDWR,
+			  S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP /* 660 */);
       /* possibly the file was deleted in the meantime,
 	 then try again with O_CREAT! */
       if ( (fd == -1) &&
@@ -306,28 +328,48 @@ again:
     }
   }
   if (fd == -1) {
-    LOG_FILE_STRERROR(LOG_ERROR, "open", ret->filename);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_BULK, 
+			 "open", 
+			 ret->filename);
     MUTEX_DESTROY(&ret->internalLock);
     FREE(ret->filename);
     FREE(ret);
-    FREE(rret);
     return NULL;
   }
   FLOCK(fd, LOCK_EX);
-  if (sizeof(int) != READ(fd, &cnt, sizeof(int))) {
+  if (sizeof(int) != READ(fd,
+			  &cnt, 
+			  sizeof(int))) {
     cnt = htonl(initialValue);
-    LSEEK(fd, 0, SEEK_SET);
-    if (sizeof(int) != WRITE(fd, &cnt, sizeof(int)))
-      LOG_FILE_STRERROR(LOG_WARNING, "write", basename);
+    LSEEK(fd, 
+	  0, 
+	  SEEK_SET);
+    if (sizeof(int) != WRITE(fd, 
+			     &cnt, 
+			     sizeof(int)))
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_USER | GE_BULK,
+			   "write", 
+			   basename);
   }
-  LSEEK(fd, sizeof(int), SEEK_SET);
-  if (sizeof(int) != READ(fd, &cnt, sizeof(int)))
+  LSEEK(fd, 
+	sizeof(int), 
+	SEEK_SET);
+  if (sizeof(int) != READ(fd, 
+			  &cnt, 
+			  sizeof(int)))
     cnt = htonl(1);
   else
     cnt = htonl(ntohl(cnt)+1);
   LSEEK(fd, sizeof(int), SEEK_SET);
-  if (sizeof(int) != WRITE(fd, &cnt, sizeof(int)))
-     LOG_FILE_STRERROR(LOG_WARNING, "write", basename);
+  if (sizeof(int) != WRITE(fd,
+			   &cnt,
+			   sizeof(int)))
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_WARNING | GE_USER | GE_BULK, 
+			 "write",
+			 basename);
   FLOCK(fd, LOCK_UN);
   ret->fd = fd;
   ret->initialValue = initialValue;
@@ -342,244 +384,205 @@ again:
 #endif
 }
 
-void ipc_semaphore_up_(IPC_Semaphore * rsem,
-		       const char * filename,
-		       const int linenumber) {
-  IPC_Semaphore_Internal * sem;
-  if (rsem == NULL) /* error on creation, optimistic execution; good luck */
+void IPC_SEMAPHORE_UP(IPC_Semaphore * sem) {
+  if (sem == NULL) /* error on creation, optimistic execution; good luck */
     return;
-  sem = rsem->platform;
 #if SOLARIS || OSX || FREEBSD5
   if (0 != sem_post(sem->internal))
-    LOG(LOG_WARNING,
-	"sem_post signaled error: %s at %s:%d\n",
-	STRERROR(errno),
-	filename,
-	linenumber);
+    GE_LOG_STRERROR(sem->ectx,
+		    GE_WARNING | GE_USER | GE_BULK,
+		    "sem_post");
 #elif WINDOWS
   if (!ReleaseSemaphore(sem->internal, 1, NULL))
-    LOG(LOG_WARNING,
-      "ReleaseSemaphore signaled error: %i at %s:%d\n",
-      GetLastError(),
-      filename,
-      linenumber);
+    GE_LOG(GE_WARNING | GE_USER | GE_BULK,
+	   "ReleaseSemaphore signaled error: %i\n",
+	   GetLastError());
 #elif LINUX
   {
     struct sembuf sops = {0,1,SEM_UNDO};
 
     if (0 != semop(sem->internal,&sops,1))
-      LOG(LOG_WARNING,
-	  "semop signaled error: %s at %s:%d\n",
-	  STRERROR(errno),
-	  filename,
-	  linenumber);
+      GE_LOG_STRERROR(sem->ectx,
+		      GE_WARNING | GE_USER | GE_BULK,
+		      "semop");
   }
 #elif SOMEBSD
   {
     int cnt;
 
-
     MUTEX_LOCK(&sem->internalLock);
-    FLOCK(sem->fd, LOCK_EX);
-    LSEEK(sem->fd, 0, SEEK_SET);
-    if (sizeof(int) != READ(sem->fd, &cnt, sizeof(int))) {
-      LOG(LOG_WARNING,
-	  "could not read IPC semaphore count (%s) at %s:%d!\n",
-	  STRERROR(errno),
-	  __FILE__,
-	  __LINE__);
+    FLOCK(sem->fd,
+	  LOCK_EX);
+    LSEEK(sem->fd, 
+	  0, 
+	  SEEK_SET);
+    if (sizeof(int) != READ(sem->fd, 
+			    &cnt, 
+			    sizeof(int))) {
+      GE_LOG_STRERROR_FILE(sem->ectx,
+			   GE_WARNING | GE_USER | GE_BULK,
+			   "read",
+			   sem->filename);
+      FLOCK(sem->fd,
+	    LOCK_UN);
       MUTEX_UNLOCK(&sem->internalLock);
       return;
     }
     cnt = htonl(ntohl(cnt)+1);
-    LSEEK(sem->fd, 0, SEEK_SET);
-    if (sizeof(int) != WRITE(sem->fd, &cnt, sizeof(int)))
-      LOG(LOG_WARNING,
-	  "could not write to IPC file %s (%s) at %s:%d\n",
-	  sem->filename,
-	  STRERROR(errno),
-	  __FILE__,
-	  __LINE__);
-    FLOCK(sem->fd, LOCK_UN);
+    LSEEK(sem->fd,
+	  0, 
+	  SEEK_SET);
+    if (sizeof(int) != WRITE(sem->fd,
+			     &cnt, 
+			     sizeof(int)))
+      GE_LOG_STRERROR_FILE(sem->ectx,
+			   GE_WARNING | GE_USER | GE_BULK,
+			   "write",
+			   sem->filename);
+    FLOCK(sem->fd,
+	  LOCK_UN);
     MUTEX_UNLOCK(&sem->internalLock);
   }
 #endif
 }
 
-void ipc_semaphore_down_(IPC_Semaphore * rsem,
-			 const char * filename,
-			 const int linenumber) {
-  IPC_Semaphore_Internal * sem;
-
-  if (rsem == NULL) /* error on creation, optimistic execution; good luck */
-    return;
-  sem = rsem->platform;
+/* FIXME: add support for mayBlock! */
+int IPC_SEMAPHORE_DOWN(IPC_Semaphore * sem,
+			int mayBlock) {
+  if (sem == NULL) /* error on creation, optimistic execution; good luck */
+    return OK;
 #if OSX || SOLARIS || FREEBSD5
   while (0 != sem_wait(sem->internal)) {
-    switch(errno) {
-    case EINTR:
-      break;
-    case EINVAL:
-      errexit(" ipc_semaphore_down called on invalid semaphore (in %s:%d)\n",
-	      filename,
-	      linenumber);
-    case EDEADLK:
-      errexit(" ipc_semaphore_down caused deadlock! (in %s:%d)\n",
-	      filename,
-	      linenumber);
-    case EAGAIN:
-      LOG(LOG_WARNING,
-	  "did not expect EAGAIN from sem_wait (in %s:%d).\n",
-	  filename,
-	  linenumber);
-      break;
-    default:
-      LOG(LOG_ERROR,
-	  "did not expect %s from sem_wait at %s:%d\n",
-	  STRERROR(errno),
-	  filename,
-	  linenumber);
-      break;
-    }
+    if ( (errno == EINTR) ||
+	 (errno == EAGAIN) )
+      continue;
+    GE_DIE_STRERROR(sem->ectx,
+		    GE_FATAL | GE_USER | GE_IMMEDIATE,
+		    "sem_wait");
   }
+  return OK;
 #elif WINDOWS
-  if (WaitForSingleObject(sem->internal, INFINITE) == WAIT_FAILED)
-    LOG(LOG_WARNING,
-      "WaitForSingleObject signaled error: %s at %s:%d\n",
-      STRERROR(errno),
-      filename,
-      linenumber);
+  if (WaitForSingleObject(sem->internal, 
+			  INFINITE) == WAIT_FAILED)
+    GE_LOG_STRERROR(sem->ectx,
+		    GE_WARNING | GE_USER | GE_BULK,
+		    "WaitForSingleObject");
+  return OK;
 #elif LINUX
   {
     struct sembuf sops = {0,-1,SEM_UNDO};
 
-    while (0 != semop(sem->internal,&sops,1)) {
-      switch(errno) {
-      case EINTR:
-	break;
-      case EINVAL:
-	errexit(" ipc_semaphore_down called on invalid semaphore (in %s:%d)\n",
-		filename,
-		linenumber);
-      case EAGAIN:
-	LOG(LOG_WARNING,
-	    "did not expect EAGAIN from sem_wait (in %s:%d).\n",
-	    filename,
-	    linenumber);
-	break;
-      default:
-	LOG(LOG_ERROR,
-	    "did not expect %s from sem_wait at %s:%d\n",
-	    STRERROR(errno),
-	    filename,
-	    linenumber);
-	break;
-      }
+    while (0 != semop(sem->internal,
+		      &sops,
+		      1)) {
+      if ( (errno == EINTR) ||
+	   (errno == EAGAIN) )
+	continue;
+      GE_DIE_STRERROR(sem->ectx,
+		      GE_FATAL | GE_USER | GE_IMMEDIATE,
+		      "semop");
     }
+    return OK;
   }
 #elif SOMEBSD
   {
     int cnt;
 
     MUTEX_LOCK(&sem->internalLock);
-    FLOCK(sem->fd, LOCK_EX);
+    FLOCK(sem->fd,
+	  LOCK_EX);
     cnt = ntohl(0);
     while (htonl(cnt) == 0) {
-      LSEEK(sem->fd, 0, SEEK_SET);
-      if (sizeof(int) != READ(sem->fd, &cnt, sizeof(int))) {
-	LOG(LOG_WARNING,
-	    "could not read IPC semaphore count (%s) at %s:%d!\n",
-	    STRERROR(errno),
-	    __FILE__,
-	    __LINE__);
-	FLOCK(sem->fd, LOCK_UN);
+      LSEEK(sem->fd, 
+	    0, 
+	    SEEK_SET);
+      if (sizeof(int) != READ(sem->fd, 
+			      &cnt, 
+			      sizeof(int))) {
+	GE_LOG_STRERROR_FILE(sem->ectx,
+			     GE_WARNING | GE_USER | GE_BULK,
+			     "read",
+			     sem->filename);
+	FLOCK(sem->fd, 
+	      LOCK_UN);
 	MUTEX_UNLOCK(&sem->internalLock);
 	return;
       }
       if (htonl(cnt) == 0) {
 	/* busy wait! */
-	FLOCK(sem->fd, LOCK_UN);
-	gnunet_util_sleep(50 * cronMILLIS);
-	FLOCK(sem->fd, LOCK_EX);
+	FLOCK(sem->fd,
+	      LOCK_UN);
+	PTHREAD_SLEEP(50 * cronMILLIS);
+	FLOCK(sem->fd, 
+	      LOCK_EX);
       }
     }
 
     cnt = htonl(ntohl(cnt)-1);
     LSEEK(sem->fd, 0, SEEK_SET);
-    if (sizeof(int) != WRITE(sem->fd, &cnt, sizeof(int)))
-      LOG(LOG_WARNING,
-	  "could not write update to IPC file %s at %s:%d\n",
-	  sem->filename,
-	  __FILE__,
-	  __LINE__);
-    FLOCK(sem->fd, LOCK_UN);
+    if (sizeof(int) != WRITE(sem->fd, 
+			     &cnt, 
+			     sizeof(int)))
+      GE_LOG_STRERROR_FILE(sem->ectx,
+			   GE_WARNING | GE_USER | GE_BULK,
+			   "write",
+			   sem->filename);
+    FLOCK(sem->fd, 
+	  LOCK_UN);
     MUTEX_UNLOCK(&sem->internalLock);
   }
+  return OK;
 #else
+  return OK;
 #endif
 }
 
-void ipc_semaphore_free_(IPC_Semaphore * rsem,
-			 const char * filename,
-			 const int linenumber) {
-  IPC_Semaphore_Internal * sem;
-  if (rsem == NULL) /* error on creation, optimistic execution; good luck */
+void IPC_SEMAPHORE_DESTROY(IPC_Semaphore * sem) {
+  if (sem == NULL) /* error on creation, optimistic execution; good luck */
     return;
-  sem = rsem->platform;
-  FREE(rsem);
 #if SOLARIS || OSX || FREEBSD5
   if (0 != sem_close(sem->internal))
-    LOG(LOG_WARNING,
-	"sem_close signaled error: %s at %s:%d\n",
-	STRERROR(errno),
-	filename,
-	linenumber);
+    GE_LOG_STRERROR(sem->ectx,
+		    GE_USER | GE_WARNING | GE_BULK,
+		    "sem_close");
 #elif WINDOWS
   if (!CloseHandle(sem->internal))
-    LOG(LOG_WARNING,
-    "CloseHandle signaled error: %i at %s:%d\n",
-    GetLastError(),
-    filename,
-    linenumber);
+    GE_LOG(sem->ectx,
+	   GE_USER | GE_WARNING | GE_BULK,
+	   "CloseHandle signaled error: %i\n",
+	   GetLastError());
 #elif LINUX
   {
     int pcount;
 
     if (semop(sem->internal, &op_close[0], 3) < 0)
-      LOG(LOG_WARNING,
-	  "semop signaled error: %s at %s:%d\n",
-	  STRERROR(errno),
-	  filename,
-	  linenumber);
-
-    if ( (pcount = semctl(sem->internal, 1, GETVAL, 0)) < 0)
-      LOG(LOG_WARNING,
-	  "semctl: %s at %s:%d\n",
-	  STRERROR(errno),
-	  filename,
-	  linenumber);
-    if (pcount > PROCCOUNT)
-      LOG(LOG_WARNING,
-	  "pcount too large at %s:%d\n",
-	  filename,
-	  linenumber);
-    else if (pcount == PROCCOUNT) {
-      if (0 != semctl(sem->internal,0,IPC_RMID,0))
-	LOG(LOG_WARNING,
-	    "semctl signaled error: %s at %s:%d\n",
-	    STRERROR(errno),
-	    filename,
-	    linenumber);
+      GE_LOG_STRERROR(sem->ectx,
+		      GE_USER | GE_WARNING | GE_BULK,
+		      "semop");
+    if ( (pcount = semctl(sem->internal, 1, GETVAL, 0)) < 0) 
+      GE_LOG_STRERROR(sem->ectx,
+		      GE_USER | GE_WARNING | GE_BULK,
+		      "semctl");
+    if (pcount > PROCCOUNT) {
+      GE_BREAK(sem->ectx, 0);
+    } else if (pcount == PROCCOUNT) {
+      if (0 != semctl(sem->internal,
+		      0,
+		      IPC_RMID,
+		      0))
+	GE_LOG_STRERROR(sem->ectx,
+			GE_USER | GE_WARNING | GE_BULK,
+			"semctl");
       UNLINK(sem->filename);
     } else {
-      if (semop(sem->internal, &op_unlock[0], 1) < 0)
-	LOG(LOG_WARNING,
-	    "semop %s %s:%d\n",
-	    STRERROR(errno),
-	    filename,
-	    linenumber);
+      if (semop(sem->internal, 
+		&op_unlock[0],
+		1) < 0)
+	GE_LOG_STRERROR(sem->ectx,
+			GE_USER | GE_WARNING | GE_BULK,
+			"semop");
     }
-    FREE(sem->filename);
+    FREE(sem->filename);   
   }
 #elif SOMEBSD
   {
@@ -592,23 +595,20 @@ void ipc_semaphore_free_(IPC_Semaphore * rsem,
       cnt = htonl(ntohl(cnt)-1);
       LSEEK(sem->fd, sizeof(int), SEEK_SET);
       if (sizeof(int) != WRITE(sem->fd, &cnt, sizeof(int)))
-	LOG(LOG_WARNING,
-	    "could not write to IPC file %s at %s:%d\n",
-	    sem->filename,
-	    __FILE__,
-	    __LINE__);
-      if (ntohl(cnt) == 0) {
-	UNLINK(sem->filename);
-      }
+	GE_LOG_STRERROR(sem->ectx,
+			GE_WARNING | GE_USER | GE_BULK,
+			"write");
+      if (ntohl(cnt) == 0) 
+	UNLINK(sem->filename);      
     } else
-      LOG(LOG_WARNING,
-	  "could not read process count of IPC %s at %s:%d\n",
-	  sem->filename,
-	  __FILE__,
-	  __LINE__);
-    FREE(sem->filename);
+      GE_LOG_STRERROR(sem->ectx,
+		      GE_WARNING | GE_USER | GE_BULK,
+		      "read");
     FLOCK(sem->fd, LOCK_UN);
-    closefile(sem->fd);
+    disk_file_close(sem->ectx,
+		    sem->filename,
+		    sem->fd);
+    FREE(sem->filename);
   }
 #else
 #endif

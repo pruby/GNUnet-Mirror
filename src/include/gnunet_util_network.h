@@ -27,30 +27,15 @@
  * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
- *
- *
- * TODO:
- * - add configuration argument to 
- *   methods that need it
- * - abstract sockets that are
- *   represented as "int" 
- *   (typedef int GNUNET_SOCKET or so) 
- * - 
  */
 
 #ifndef GNUNET_UTIL_NETWORK_H
 #define GNUNET_UTIL_NETWORK_H
 
-/* we need size_t, and since it can be both unsigned int
-   or unsigned long long, this IS platform dependent;
-   but "stdlib.h" should be portable 'enough' to be
-   unconditionally available... */
-#include <stdlib.h>
-
-/* add error and config prototypes */
 #include "gnunet_util_config.h"
 #include "gnunet_util_string.h"
 #include "gnunet_util_os.h"
+#include "gnunet_util_threads.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,19 +53,23 @@ extern "C" {
  * @brief Specify low-level network IO behavior
  */
 typedef enum {
+
   /**
    * Do not block.
    */
   NC_Nonblocking = 0x000,
+
   /**
    * Call may block.
    */
   NC_Blocking    = 0x001,
+
   /**
    * Ignore interrupts (re-try if operation
    * was aborted due to interrupt)
    */
   NC_IgnoreInt   = 0x010,
+
   /**
    * Always try to read/write the maximum
    * amount of data (using possibly multiple
@@ -88,6 +77,7 @@ typedef enum {
    * error or if completely done.
    */
   NC_Complete    = 0x111,
+
 } NC_KIND;
 
 /**
@@ -126,7 +116,10 @@ typedef struct {
  * @brief an IPv4 address
  */
 typedef struct {
-  unsigned int addr; /* struct in_addr */
+  /**
+   * struct in_addr 
+   */
+  unsigned int addr; 
 } IPaddr;
 
 /**
@@ -138,7 +131,10 @@ struct CIDRNetwork;
  * @brief an IPV6 address.
  */
 typedef struct {
-  unsigned int addr[4]; /* struct in6_addr addr; */
+  /**
+   * struct in6_addr addr; 
+   */
+  unsigned int addr[4]; 
 } IP6addr;
 
 /**
@@ -247,7 +243,7 @@ daemon_connection_create(struct GE_Context * ectx,
 struct ClientServerConnection * 
 client_connection_create(struct GE_Context * ectx,
 			 struct GC_Configuration * cfg,
-			 SocketHandle sock);
+			 struct SocketHandle * sock);
 
 /**
  * Close a GNUnet TCP socket for now (use to temporarily close
@@ -303,15 +299,12 @@ int connection_read(struct ClientServerConnection * sock,
  *
  * @param sock the socket to write to
  * @param buffer the buffer to write
- * @param isBlocking is this call allowed to block
  * @return OK if the write was sucessful, 
  *         NO if it would block and isBlocking was NO,
  *         SYSERR if the write failed (error will be logged)
  */
 int connection_write(struct ClientServerConnection * sock,
-		     const CS_MESSAGE_HEADER * buffer,
-		     int isBlocking);
-
+		     const MESSAGE_HEADER * buffer);
 
 /**
  * Obtain a simple return value from the connection.
@@ -338,6 +331,22 @@ int connection_read_result(struct ClientServerConnection * sock,
  */
 int connection_write_result(struct ClientServerConnection * sock,
 			    int ret);
+
+/**
+ * Send a return value that indicates
+ * a serious error to the other side.
+ *
+ * @param sock the TCP socket
+ * @param mask GE_MASK 
+ * @param date date string
+ * @param msg message string
+ * @return SYSERR on error, OK if the error code was send
+ *         successfully
+ */
+int connection_write_error(struct ClientServerConnection * sock,
+			   GE_KIND mask,
+			   const char * date,
+			   const char * msg);
 
 /**
  * Stop gnunetd
@@ -367,7 +376,8 @@ int connection_request_shutdown(struct ClientServerConnection * sock);
  *
  * @return OK if gnunetd is running, SYSERR if not
  */
-int connection_test_running(struct GE_Context * ectx);
+int connection_test_running(struct GE_Context * ectx,
+			    struct GC_Configuration * cfg);
 
 /**
  * Wait until the gnunet daemon is
@@ -377,23 +387,8 @@ int connection_test_running(struct GE_Context * ectx);
  * @return OK if gnunetd is now running
  */
 int connection_wait_for_running(struct GE_Context * ectx,
-				unsigned long long_t timeout);
-
-/**
- * Send a return value that indicates
- * a serious error to the other side.
- *
- * @param sock the TCP socket
- * @param mask GE_MASK 
- * @param date date string
- * @param msg message string
- * @return SYSERR on error, OK if the error code was send
- *         successfully
- */
-int connection_write_error(struct ClientServerConnection * sock,
-			   GE_KIND mask,
-			   const char * date,
-			   const char * msg);
+				struct GC_Configuration * cfg,
+				cron_t timeout);
 
 /* ********************* low-level socket operations **************** */
 

@@ -9,7 +9,8 @@ libthreads_la_SOURCES = \
  mutex.c \
  pthread.c \
  semaphore.c \
- shutdown.c 
+ shutdown.c \
+ time.c
 
 check_PROGRAMS = \
  semaphoretest \

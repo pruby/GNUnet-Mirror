@@ -72,12 +72,15 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 		     const char * basename,
 		     unsigned int initialValue);
 
-void IPC_SEMAPHORE_DESTROY(struct IPC_Semaphore * sem);
+void IPC_SEMAPHORE_DESTROY(struct IPC_SEMAPHORE * sem);
 
 void IPC_SEMAPHORE_UP(struct IPC_SEMAPHORE * sem);
 
-void IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
-			int mayBlock);
+/**
+ * @return OK on success, SYSERR if would block
+ */
+int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
+		       int mayBlock);
 
 /**
  * Load plugin
@@ -105,7 +108,7 @@ void os_plugin_unload(struct PluginHandle * plugin);
 
 struct LoadMonitor * 
 os_network_monitor_create(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg);
+			  struct GC_Configuration * cfg);
 
 void os_network_monitor_destroy(struct LoadMonitor * mon);
 
@@ -116,12 +119,13 @@ void os_network_monitor_destroy(struct LoadMonitor * mon);
  *        (100 is equivalent to full load)
  */
 int os_network_monitor_get_load(struct LoadMonitor * monitor,
-			     NetworkDirection dir);
+				NetworkDirection dir);
 
 /**
  * Tell monitor to increment the number of bytes sent/received
  */
-void os_network_monitor_notify_transmission(NetworkDirection dir,
+void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
+					    NetworkDirection dir,
 					    unsigned long long delta);
 
 /**
@@ -156,7 +160,7 @@ void os_list_network_interfaces(struct GE_Context * ectx,
 int os_modify_autostart(struct GE_Context * ectx,
 			int testCapability,
 			int doAutoStart,
-			const char * application
+			const char * application,
 			const char * username, 
 			const char * groupname);
 
@@ -179,6 +183,7 @@ int os_modify_autostart(struct GE_Context * ectx,
  * @return OK on success, SYSERR on error
  */
 int os_modify_user(struct GE_Context * ectx,
+		   int testCapability,
 		   int doAdd,
 		   const char * name,
 		   const char * group);
@@ -201,6 +206,7 @@ int os_cpu_get_load(struct GE_Context * ectx,
  *  daemonized sucessfully, -1 on error
  */
 int os_daemon_start(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
 		    const char * cfgFile,
 		    int daemonize);
 

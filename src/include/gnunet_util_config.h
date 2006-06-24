@@ -19,14 +19,14 @@
 */
 
 /**
- * @file include/gnunet_config.h
+ * @file include/gnunet_util_config.h
  * @brief configuration API
  *
  * @author Christian Grothoff
  */
 
-#ifndef GNUNET_CONFIG_H
-#define GNUNET_CONFIG_H
+#ifndef GNUNET_UTIL_CONFIG_H
+#define GNUNET_UTIL_CONFIG_H
 
 #include "gnunet_util_error.h"
 
@@ -52,8 +52,8 @@ void GC_free(struct GC_Configuration * cfg);
  * used (since failing to change an option may have to be reported
  * in a fundamentally different way to the user).
  * 
- * @parm ectx maybe NULL, in that case errors will no longer
- *       be reported
+ * @param ectx may be NULL, in that case errors will no longer
+ *        be reported
  */
 void GC_set_error_context(struct GC_Configuration * cfg,
 			  struct GE_Context * ectx);

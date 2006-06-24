@@ -19,7 +19,7 @@
 */
 
 /**
- * @file util/tcpio.c
+ * @file util/network/tcpio.c
  * @brief code for synchronized access to TCP streams
  * @author Christian Grothoff
  *
@@ -53,7 +53,7 @@ typedef struct GNUNET_TCP_SOCKET {
   /**
    * the socket handle, -1 if invalid / not life
    */
-  int socket;
+  struct SocketHandle * socket;
 
   /**
    * the following is the IP for the remote host for client-sockets,
@@ -81,74 +81,55 @@ typedef struct GNUNET_TCP_SOCKET {
 
   struct Mutex * writelock;
 
+  struct CE_Context * ectx;
+
 } GNUNET_TCP_SOCKET;
 
 
 /**
- * CS communication: simple return value
+ * Return the port-number (in host byte order)
  */
-typedef struct {
+static unsigned short getGNUnetPort() {
+  // TODO!
+  static unsigned short port;
+  const char *setting;
 
-  /**
-   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
-   */
-  MESSAGE_HEADER header;
+  if (port != 0)
+    return port;
+  if (testConfigurationString("GNUNETD",
+			      "_MAGIC_",
+			      "YES"))
+    setting = "PORT";
+  else
+    setting = "CLIENT-PORT";
 
-  /**
-   * The return value (network byte order)
-   */
-  int return_value;
-} RETURN_VALUE_MESSAGE;
-
-
-
-/**
- * Initialize a GNUnet client socket.
- * @param port the portnumber in host byte order
- * @param ip IP of the host to connect to, in network byte order
- * @param result the SOCKET (filled in)
- * @return OK if successful, SYSERR on failure
- */
-int initGNUnetClientSocketIP(unsigned short port,
-			     IPaddr ip,
-			     GNUNET_TCP_SOCKET * result) {
-  result->ip = ip;
-  result->port = port;
-  result->socket = -1; /* closed */
-  result->outBufLen = 0;
-  result->outBufPending = NULL;
-  MUTEX_CREATE(&result->readlock);
-  MUTEX_CREATE(&result->writelock);
-  return OK;
+  port = (unsigned short) getConfigurationInt("NETWORK",
+					      setting);
+  if (port == 0) {
+    errexit(_("Cannot determine port of gnunetd server. "
+	      "Define in configuration file in section `%s' under `%s'.\n"),
+	    "NETWORK",
+	    setting);
+  }
+  return port;
 }
 
 /**
- * Initialize a GNUnet client socket.
- * @param port the portnumber in host byte order
- * @param hostname the name of the host to connect to
- * @param result the SOCKET (filled in)
- * @return OK if successful, SYSERR on failure
+ * Configuration: get the GNUnetd host where the client
+ * should connect to (via TCP)
+ * @return the name of the host
  */
-int initGNUnetClientSocket(unsigned short port,
-			   const char * hostname,
-			   GNUNET_TCP_SOCKET * result) {
-  GNUNET_ASSERT(hostname != NULL);
-#if DEBUG_TCPIO
-  LOG(LOG_DEBUG,
-      "Connecting to host '%s:%d'.\n",
-      hostname,
-      port);
-#endif
-  if (OK != GN_getHostByName(hostname,
-			     &result->ip)) 
-    return SYSERR;
-  result->port = port;
-  result->socket = -1; /* closed */
-  result->outBufLen = 0;
-  result->outBufPending = NULL;
-  MUTEX_CREATE(&result->readlock);
-  MUTEX_CREATE(&result->writelock);
-  return OK;
+static const char * getGNUnetdHost() {
+  // TODO!
+  static char * res;
+
+  if (res != NULL)
+    return res;
+  res = getConfigurationString("NETWORK",
+			       "HOST");
+  if (res == NULL)
+    res = "localhost";
+  return res;
 }
 
 /**
@@ -157,8 +138,11 @@ int initGNUnetClientSocket(unsigned short port,
  * @param result the SOCKET (filled in)
  * @return OK (always successful)
  */
-int initGNUnetServerSocket(int sock,
-			   GNUNET_TCP_SOCKET * result) {
+struct ClientServerConnection * 
+client_connection_create(struct GE_Context * ectx,
+			 struct GC_Configuration * cfg,
+			 struct SocketHandle * sock) {
+  // TODO!
   result->ip.addr = 0;
   result->port = 0;
   result->socket = sock;
@@ -166,23 +150,87 @@ int initGNUnetServerSocket(int sock,
   result->outBufPending = NULL;
   MUTEX_CREATE(&result->readlock);
   MUTEX_CREATE(&result->writelock);
-  return OK;
+  return result;
 }
 
+
 /**
- * Check if a socket is open. Will ALWAYS return 'true'
- * for a valid client socket (even if the connection is
- * closed), but will return false for a closed server socket.
- * @return 1 if open, 0 if closed
+ * Get a GNUnet TCP socket that is connected to gnunetd.
  */
-int isOpenConnection(GNUNET_TCP_SOCKET * sock) {
+struct ClientServerConnection * 
+daemon_connection_create(struct GE_Context * ectx,
+			 struct GC_Configuration * cfg) {
+  // TODO!
+  struct ClientServerConnection * sock;
+  const char * host;
+
+  result->ip = ip;
+  result->port = port;
+  result->socket = -1; /* closed */
+  result->outBufLen = 0;
+  result->outBufPending = NULL;
+  MUTEX_CREATE(&result->readlock);
+  MUTEX_CREATE(&result->writelock);
+
+  if (OK != GN_getHostByName(hostname,
+			     &result->ip)) 
+    return SYSERR;
+
+  sock = MALLOC(sizeof(struct ClientServerConnection));
+  host = getGNUnetdHost();
+  if (SYSERR == initGNUnetClientSocket(getGNUnetPort(),
+				       host,
+				       sock)) {
+    LOG(LOG_ERROR,
+	_("Could not connect to gnunetd.\n"));
+    FREE(sock);
+    return NULL;
+  }
+  return sock;
+}
+
+void connection_close_temporarily(struct ClientServerConnection * sock) {
+  // TODO!
+  int i;
+  GE_ASSERT(NULL, sock != NULL);
+  if (sock->socket != -1) {
+    i = sock->socket;
+#if DEBUG_TCPIO
+    LOG(LOG_DEBUG,
+	"TCP: closing socket %d.\n",
+	sock->socket);
+#endif
+    sock->socket = -1;
+    if (0 != SHUTDOWN(i, SHUT_RDWR))
+      LOG_STRERROR(LOG_DEBUG, "shutdown");
+    CLOSE(i);
+  }
+  sock->outBufLen = 0;
+  FREENONNULL(sock->outBufPending);
+  sock->outBufPending = NULL;
+}
+
+void connection_destroy(struct ClientServerConnection * sock) {
+  connection_close_temporarily(sock);
+  sock->ip.addr = 0;
+  sock->port = 0;
+  sock->outBufLen = 0;
+  FREENONNULL(sock->outBufPending);
+  sock->outBufPending = NULL;
+  MUTEX_DESTROY(sock->readlock);
+  MUTEX_DESTROY(sock->writelock);
+  FREE(sock);
+}
+
+int connection_test_open(struct ClientServerConnection * sock) {
   return (sock->socket != -1);
 }
 
 /**
  * Check a socket, open and connect if it is closed and it is a client-socket.
  */
-int checkSocket(GNUNET_TCP_SOCKET * sock) {
+int connection_ensure_connected(struct ClientServerConnection * sock) {
+  // TODO!
   int res;
   struct sockaddr_in soaddr;
   fd_set rset;
@@ -265,8 +313,9 @@ int checkSocket(GNUNET_TCP_SOCKET * sock) {
  * @param buffer the buffer to write
  * @return OK if the write was sucessful, otherwise SYSERR.
  */
-int writeToSocket(GNUNET_TCP_SOCKET * sock,
-		  const CS_MESSAGE_HEADER * buffer) {
+int connection_write(struct ClientServerConnection * sock,
+		     const MESSAGE_HEADER * buffer) {
+  // TODO!
   int res;
   int size;
 
@@ -315,152 +364,45 @@ int writeToSocket(GNUNET_TCP_SOCKET * sock,
   return OK;
 }
 
-
-/**
- * Write to a GNUnet TCP socket non-blocking.  Note that it is
- * possible that only a part of the message is send and that tcpio
- * buffers the rest until the next writeToSocket operation.  If that
- * buffer is full or if send did not transmit any byte of the message,
- * NO is returned to indicate that the write failed (would have
- * blocked).
- *
- * @param sock the socket to write to
- * @param buffer the buffer to write
- * @return OK if the write was sucessful, NO if it would have blocked and was not performed,
- *         otherwise SYSERR.
- */
-int writeToSocketNonBlocking(GNUNET_TCP_SOCKET * sock,
-			     const CS_MESSAGE_HEADER * buffer) {
-  size_t res;
-  size_t size;
-
-  if (SYSERR == checkSocket(sock))
-    return SYSERR;
-  MUTEX_LOCK(&sock->writelock);
-  if (sock->outBufLen > 0) {
-    SEND_NONBLOCKING(sock->socket,
-	             sock->outBufPending,
-		     sock->outBufLen,
-		     &res);
-    if (res == (size_t)-1) {
-      if ( (errno == EWOULDBLOCK) ||
-	   (errno == EAGAIN) ) {
-	MUTEX_UNLOCK(&sock->writelock);
-	return NO;
-      }
-      LOG_STRERROR(LOG_INFO, "write");
-      closeSocketTemporarily(sock);
-      MUTEX_UNLOCK(&sock->writelock);
-      return SYSERR;
-    }
-    if (res < sock->outBufLen) {
-      memcpy(sock->outBufPending,
-	     &((char*)sock->outBufPending)[res],
-	     sock->outBufLen - res);
-      sock->outBufLen -= res;
-      MUTEX_UNLOCK(&sock->writelock);
-      return SYSERR;
-    }
-    /* completely send out deferred buffer, so
-       we can in fact continue! */
-    FREENONNULL(sock->outBufPending);
-    sock->outBufPending = NULL;
-    sock->outBufLen = 0;
-  }
-
-  size = ntohs(buffer->size);
-
-  SEND_NONBLOCKING(sock->socket,
-		   (const char*)buffer,
-		   size,
-		   &res);
-  if (res == (size_t) -1) {
-    if ( (errno == EWOULDBLOCK) ||
-	 (errno == EAGAIN) ) {
-      MUTEX_UNLOCK(&sock->writelock);
-      return NO; /* would block, can not send right now;
-		    but do NOT close socket in this case;
-		    do not use SYSERR as return value
-		    since this is not an error! */
-    }
-    LOG_STRERROR(LOG_INFO, "send");
-    closeSocketTemporarily(sock);
-    MUTEX_UNLOCK(&sock->writelock);
-    return SYSERR;
-  }
-  GNUNET_ASSERT(res <= size);
-  if (res != size) {
-    sock->outBufPending = MALLOC(size - res);
-    memcpy(sock->outBufPending,
-	   &((const char*)buffer)[res],
-	   size - res);
-    sock->outBufLen = size - res;
-    MUTEX_UNLOCK(&sock->writelock);
-    return OK; /* return OK here means that the message will be transmitted,
-		  though it may be a bit later (on the next call, in fact). */
-  }
-  MUTEX_UNLOCK(&sock->writelock);
-  return OK;
-}
-
-/**
- * Read from a GNUnet TCP socket.
- * @param sock the socket
- * @param buffer the buffer to write data to
- * @return OK if the read was successful, SYSERR if the socket
- *         was closed by the other side (if the socket is a
- *         client socket and is used again, tcpio will attempt
- *         to re-establish the connection [temporary error]).
- */
-int readFromSocket(GNUNET_TCP_SOCKET * sock,
-		   CS_MESSAGE_HEADER ** buffer) {
+int connection_read(struct ClientServerConnection * sock,
+		    MESSAGE_HEADER ** buffer) {
   int res;
   unsigned int pos;
   char * buf;
   unsigned short size;
 
-  if (SYSERR == checkSocket(sock))
+  if (OK != connection_ensure_connected(sock))
     return SYSERR;
-
-  MUTEX_LOCK(&sock->readlock);
+  
+  MUTEX_LOCK(sock->readlock);
   pos = 0;
   res = 0;
-
-  pos = RECV_BLOCKING_ALL(sock->socket,
+  if ( (OK != socket_recv(sock->handle,
+			  NC_Complete,
 			  &size,
-			  sizeof(unsigned short));
-  if (pos != sizeof(unsigned short)) {
-#if DEBUG_TCPIO
-    LOG_STRERROR(LOG_INFO, "recv");
-#endif
-    closeSocketTemporarily(sock);
-    MUTEX_UNLOCK(&sock->readlock);
-    return SYSERR; /* other side closed socket or invalid header */
+			  sizeof(unsigned short),
+			  &pos)) ||
+       (pos != sizeof(unsigned short)) ) {
+    connection_close_temporarily(sock);
+    MUTEX_UNLOCK(sock->readlock);
+    return SYSERR;
   }
   size = ntohs(size);
-  if (size < sizeof(CS_MESSAGE_HEADER)) {
-#if DEBUG_TCPIO
-    LOG_STRERROR(LOG_INFO, "recv");
-#endif
-    closeSocketTemporarily(sock);
-    MUTEX_UNLOCK(&sock->readlock);
+  if (size < sizeof(MESSAGE_HEADER)) {
+    connection_close_temporarily(sock);
+    MUTEX_UNLOCK(sock->readlock);
     return SYSERR; /* invalid header */
   }
 
-  buf = (char*) *buffer;
-  if (buf == NULL)
-    buf = MALLOC(size);
-
-  res = RECV_BLOCKING_ALL(sock->socket,
+  buf = MALLOC(size);
+  if ( (OK != socket_recv(sock->handle,
+			  NC_Complete,
 			  &buf[pos],
-			  size - pos);
-
-  if (res != (int)(size - pos)) {  /* error, abort */
-    if (sock->socket != -1)
-      LOG_STRERROR(LOG_INFO, "recv");
-    closeSocketTemporarily(sock);
-    if (*buffer == NULL)
-      FREE(buf);
+			  size - pos,
+			  &pos)) ||
+       (pos != sizeof(unsigned short) + size) ) {
+    connection_close_temporarily(sock);
+    FREE(buf);
     MUTEX_UNLOCK(&sock->readlock);
     return SYSERR;
   }
@@ -470,54 +412,102 @@ int readFromSocket(GNUNET_TCP_SOCKET * sock,
       size);
 #endif
   MUTEX_UNLOCK(&sock->readlock);
-  *buffer = (CS_MESSAGE_HEADER*) buf;
+  *buffer = (MESSAGE_HEADER*) buf;
   (*buffer)->size = htons(size);
   return OK; /* success */
 }
 
-/**
- * Close a GNUnet TCP socket for now (use to temporarily close
- * a TCP connection that will probably not be used for a long
- * time; the socket will still be auto-reopened by the
- * readFromSocket/writeToSocket methods if it is a client-socket).
- */
-void closeSocketTemporarily(GNUNET_TCP_SOCKET * sock) {
-  if (sock == NULL)
-    return;
-  if (sock->socket != -1) {
-    int i;
 
-    i = sock->socket;
-#if DEBUG_TCPIO
-    LOG(LOG_DEBUG,
-	"TCP: closing socket %d.\n",
-	sock->socket);
-#endif
-    sock->socket = -1;
-    if (0 != SHUTDOWN(i, SHUT_RDWR))
-      LOG_STRERROR(LOG_DEBUG, "shutdown");
-    closefile(i);
+
+/**
+ * CS communication: simple return value
+ */
+typedef struct {
+
+  /**
+   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
+   */
+  MESSAGE_HEADER header;
+
+  /**
+   * The return value (network byte order)
+   */
+  int return_value;
+
+} RETURN_VALUE_MESSAGE;
+
+/**
+ * Obtain a return value from a remote call from TCP.
+ *
+ * @param sock the TCP socket
+ * @param ret the return value from TCP
+ * @return SYSERR on error, OK if the return value was read
+ * successfully
+ */
+int connection_read_result(struct ClientServerConnection * sock,
+			   int * ret) {
+  RETURN_VALUE_MESSAGE * rv;
+
+  rv = NULL;
+  if (SYSERR == connection_read(sock,
+				(MESSAGE_HEADER **) &rv)) 
+    return SYSERR;
+  if ( (ntohs(rv->header.size) != sizeof(RETURN_VALUE_MESSAGE)) ||
+       (ntohs(rv->header.type) != CS_PROTO_RETURN_VALUE) ) {
+    GE_LOG(sock->ectx,
+	   GE_WARNING | GE_DEVELOPER | GE_BULK,
+	   _("`%s' failed, reply invalid!\n"),
+	   __FUNCTION__);
+    FREE(rv);
+    return SYSERR;
   }
-  sock->outBufLen = 0;
-  FREENONNULL(sock->outBufPending);
-  sock->outBufPending = NULL;
+  *ret = ntohl(rv->return_value);
+  FREE(rv);
+  return OK;
 }
 
 /**
- * Destroy a socket for good. If you use this socket afterwards,
- * you must first invoke initializeSocket, otherwise the operation
- * will fail.
+ * Send a return value to the caller of a remote call via
+ * TCP.
+ * @param sock the TCP socket
+ * @param ret the return value to send via TCP
+ * @return SYSERR on error, OK if the return value was
+ *         send successfully
  */
-void destroySocket(GNUNET_TCP_SOCKET * sock) {
-  closeSocketTemporarily(sock);
-  sock->ip.addr = 0;
-  sock->port = 0;
-  sock->outBufLen = 0;
-  FREENONNULL(sock->outBufPending);
-  sock->outBufPending = NULL;
-  MUTEX_DESTROY(&sock->readlock);
-  MUTEX_DESTROY(&sock->writelock);
+int connection_write_result(struct ClientServerConnection * sock,
+			    int ret) {
+  RETURN_VALUE_MESSAGE rv;
+
+  rv.header.size
+    = htons(sizeof(CS_returnvalue_MESSAGE));
+  rv.header.type
+    = htons(CS_PROTO_RETURN_VALUE);
+  rv.return_value
+    = htonl(ret);
+  return connection_write(sock,
+			  &rv.header,
+			  YES);
 }
+
+/**
+ * Send a return value that indicates
+ * a serious error to the other side.
+ *
+ * @param sock the TCP socket
+ * @param mask GE_MASK 
+ * @param date date string
+ * @param msg message string
+ * @return SYSERR on error, OK if the error code was send
+ *         successfully
+ */
+int connection_write_error(struct ClientServerConnection * sock,
+			   GE_KIND mask,
+			   const char * date,
+			   const char * msg) {
+  return SYSERR; /* not implemented! */
+}
+
+
 
 
 /*  end of tcpio.c */

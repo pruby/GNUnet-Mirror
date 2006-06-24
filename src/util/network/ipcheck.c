@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,12 +19,14 @@
 */
 
 /**
- * @file util/ipcheck.c
+ * @file util/network/ipcheck.c
  * @brief test if an IP matches a given subnet
  * @author Christian Grothoff
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_network.h"
+#include "gnunet_util_string.h"
+#include "gnunet_util_error.h"
 #include "platform.h"
 
 /**
@@ -55,7 +57,8 @@ typedef struct CIDR6Network {
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-CIDRNetwork * parseRoutes(const char * routeList) {
+CIDRNetwork * parse_ipv4_network_specification(struct GE_Context * ectx,
+					       const char * routeList) {
   unsigned int count;
   unsigned int i;
   unsigned int j;
@@ -96,9 +99,10 @@ CIDRNetwork * parseRoutes(const char * routeList) {
     if (cnt == 8) {
       for (j=0;j<8;j++)
 	if (temps[j] > 0xFF) {
-	  LOG(LOG_ERROR,
-	      _("Invalid format for IP: `%s'\n"),
-	      &routeList[pos]);
+	  GE_LOG(ectx,
+		 GE_ERROR | GE_USER | GE_IMMEDIATE,
+		 _("Invalid format for IP: `%s'\n"),
+		 &routeList[pos]);
 	  FREE(result);
 	  return NULL;
 	}
@@ -123,9 +127,10 @@ CIDRNetwork * parseRoutes(const char * routeList) {
     if (cnt == 5) {
       for (j=0;j<4;j++)
 	if (temps[j] > 0xFF) {
-	  LOG(LOG_ERROR,
-	      "wrong format for IP: %s\n",
-	      &routeList[pos]);
+	  GE_LOG(ectx,
+		 GE_ERROR | GE_USER | GE_IMMEDIATE,
+		 _("Invalid format for IP: `%s'\n"),
+		 &routeList[pos]);
 	  FREE(result);
 	  return NULL;
 	}
@@ -146,57 +151,32 @@ CIDRNetwork * parseRoutes(const char * routeList) {
  	i++;
 	continue;
       } else {
-	LOG(LOG_ERROR,
-	    _("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
-	    slash);
+	GE_LOG(ectx,
+	       GE_ERROR | GE_USER | GE_IMMEDIATE,
+	       _("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
+	       slash);
 	FREE(result);
 	return NULL; /* error */
       }
     }
-    LOG(LOG_ERROR,
-	"invalid network notation: >>%s<<",
-	&routeList[pos]);
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_IMMEDIATE,
+	   _("Invalid format for IP: `%s'\n"),
+	   &routeList[pos]);
     FREE(result);
     return NULL; /* error */
   }
   if (pos < strlen(routeList)) {
-    LOG(LOG_ERROR,
-	_("Invalid network notation (additional characters: `%s')."),
-	&routeList[pos]);
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_IMMEDIATE,
+	   _("Invalid format for IP: `%s'\n"),
+	   &routeList[pos]);
     FREE(result);
     return NULL; /* oops */
   }
   return result; /* ok */
 }
 
-
-
-/**
- * Check if the given IP address is in the list of IP addresses.
- *
- * @param list a list of networks
- * @param ip the IP to check (in network byte order)
- * @return NO if the IP is not in the list, YES if it it is
- */
-int checkIPListed(const CIDRNetwork * list,
-		  IPaddr ip) {
-  int i;
-  IPaddr add;
-
-  add = ip;
-  i=0;
-  if (list == NULL)
-    return NO;
-
-  while ( (list[i].network.addr != 0) ||
-	  (list[i].netmask.addr != 0) ) {
-    if ( (add.addr & list[i].netmask.addr) ==
-	 (list[i].network.addr & list[i].netmask.addr) )
-      return YES;
-    i++;
-  }
-  return NO;
-}
 
 /**
  * Parse a network specification. The argument specifies
@@ -209,7 +189,8 @@ int checkIPListed(const CIDRNetwork * list,
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-CIDR6Network * parseRoutes6(const char * routeListX) {
+CIDR6Network * parse_ipv6_network_specification(struct GE_Context * ectx,
+						const char * routeListX) {
   unsigned int count;
   unsigned int i;
   unsigned int len;
@@ -231,9 +212,10 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
     if (routeList[i] == ';')
       count++;
   if (routeList[len-1] != ';') {
-    LOG(LOG_ERROR,
-	_("Invalid network notation (does not end with ';': `%s')\n"),
-	routeList);
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_IMMEDIATE,
+	   _("Invalid network notation (does not end with ';': `%s')\n"),
+	   routeList);
     FREE(routeList);
     return NULL;
   }
@@ -263,10 +245,11 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
 		      &routeList[slash+1],
 		      &result[i].netmask);
       if (ret <= 0) {
-	LOG(LOG_ERROR,
-	    _("Wrong format `%s' for netmask: %s\n"),
-	    &routeList[slash+1],
-	    STRERROR(errno));
+	GE_LOG(ectx,
+	       GE_ERROR | GE_USER | GE_IMMEDIATE,
+	       _("Wrong format `%s' for netmask: %s\n"),
+	       &routeList[slash+1],
+	       STRERROR(errno));
 	FREE(result);
 	FREE(routeList);
 	return NULL;
@@ -277,10 +260,11 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
 		    &routeList[start],
 		    &result[i].network);
     if (ret <= 0) {
-      LOG(LOG_ERROR,
-	  _("Wrong format `%s' for network: %s\n"),
-	  &routeList[slash+1],
-	  STRERROR(errno));
+      GE_LOG(ectx,
+	     GE_ERROR | GE_USER | GE_IMMEDIATE,
+	     _("Wrong format `%s' for network: %s\n"),
+	     &routeList[slash+1],
+	       STRERROR(errno));
       FREE(result);
       FREE(routeList);
       return NULL;
@@ -291,6 +275,7 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
   return result;
 }
 
+
 /**
  * Check if the given IP address is in the list of IP addresses.
  *
@@ -298,8 +283,35 @@ CIDR6Network * parseRoutes6(const char * routeListX) {
  * @param ip the IP to check (in network byte order)
  * @return NO if the IP is not in the list, YES if it it is
  */
-int checkIP6Listed(const CIDR6Network * list,
-		   const IP6addr * ip) {
+int check_ipv4_listed(const CIDRNetwork * list,
+		      IPaddr ip) {
+  int i;
+  IPaddr add;
+
+  add = ip;
+  i=0;
+  if (list == NULL)
+    return NO;
+
+  while ( (list[i].network.addr != 0) ||
+	  (list[i].netmask.addr != 0) ) {
+    if ( (add.addr & list[i].netmask.addr) ==
+	 (list[i].network.addr & list[i].netmask.addr) )
+      return YES;
+    i++;
+  }
+  return NO;
+}
+
+/**
+ * Check if the given IP address is in the list of IP addresses.
+ *
+ * @param list a list of networks
+ * @param ip the IP to check (in network byte order)
+ * @return NO if the IP is not in the list, YES if it it is
+ */
+int check_ipv6_listed(const CIDR6Network * list,
+		      IP6addr ip) {
   unsigned int i;
   unsigned int j;
   struct in6_addr zero;
@@ -312,7 +324,7 @@ int checkIP6Listed(const CIDR6Network * list,
   while ( (memcmp(&zero, &list[i].network, sizeof(struct in6_addr)) != 0) ||
 	  (memcmp(&zero, &list[i].netmask, sizeof(struct in6_addr)) != 0) ) {
     for (j=0;j<sizeof(struct in6_addr)/sizeof(int);j++)
-      if ( ((((int*)ip)[j] & ((int*)&list[i].netmask)[j])) !=
+      if ( ((((int*)&ip)[j] & ((int*)&list[i].netmask)[j])) !=
 	   (((int*)&list[i].network)[j] & ((int*)&list[i].netmask)[j]) ) {
       i++;
       continue;

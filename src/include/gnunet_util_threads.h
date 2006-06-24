@@ -27,11 +27,6 @@
  * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
- *
- * TODO:
- * - consider moving SHUTDOWN into
- *   seperate shared library (not part of
- *   libgnunetutil binary at all!)
  */
 
 #ifndef GNUNET_UTIL_THREADS_H
@@ -43,6 +38,24 @@ extern "C" {
 }
 #endif
 #endif
+
+/**
+ * Time for absolute times used by cron (64 bit)
+ */
+typedef unsigned long long cron_t;
+
+
+/**
+ * @brief constants to specify time
+ */
+#define cronMILLIS ((cron_t)1)
+#define cronSECONDS ((cron_t)(1000 * cronMILLIS))
+#define cronMINUTES ((cron_t) (60 * cronSECONDS))
+#define cronHOURS ((cron_t)(60 * cronMINUTES))
+#define cronDAYS ((cron_t)(24 * cronHOURS))
+#define cronWEEKS ((cron_t)(7 * cronDAYS))
+#define cronMONTHS ((cron_t)(30 * cronDAYS))
+#define cronYEARS ((cron_t)(365 * cronDAYS))
 
 /**
  * Main method of a thread.
@@ -111,7 +124,14 @@ void PTHREAD_JOIN(struct PTHREAD * handle,
  *
  * @param time how long to sleep (in milli seconds)
  */
-void PTHREAD_SLEEP(unsigned long long time);
+void PTHREAD_SLEEP(cron_t time);
+
+/**
+ * Get the current time (in cron-units).
+ *
+ * @return the current time
+ */
+cron_t get_time(void);
 
 /**
  * Stop the sleep of anothe thread.

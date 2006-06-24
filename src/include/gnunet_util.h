@@ -146,13 +146,6 @@ int initUtil(int argc,
 
 
 /**
- * The configuration was re-loaded. All
- * util modules should check if it has
- * changed for them.
- */
-void resetUtil(void);
-
-/**
  * Shutdown the util services in proper order.
  */
 void doneUtil(void);

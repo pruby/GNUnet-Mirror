@@ -38,26 +38,9 @@ extern "C" {
 #endif
 
 /**
- * @brief constants to specify time
- */
-#define cronMILLIS ((cron_t)1)
-#define cronSECONDS ((cron_t)(1000 * cronMILLIS))
-#define cronMINUTES ((cron_t) (60 * cronSECONDS))
-#define cronHOURS ((cron_t)(60 * cronMINUTES))
-#define cronDAYS ((cron_t)(24 * cronHOURS))
-#define cronWEEKS ((cron_t)(7 * cronDAYS))
-#define cronMONTHS ((cron_t)(30 * cronDAYS))
-#define cronYEARS ((cron_t)(365 * cronDAYS))
-
-/**
  * Type of a cron-job method.
  */
 typedef void (*CronJob)(void *);
-
-/**
- * Time for absolute times used by cron (64 bit)
- */
-typedef unsigned long long cron_t;
 
 /**
  * Start the cron jobs.
@@ -93,13 +76,6 @@ void cron_resume_jobs(int checkself);
  * Is the cron-thread currently running?
  */
 int cron_test_running(void);
-
-/**
- * Get the current time (in cron-units).
- *
- * @return the current time
- */
-cron_t cron_get_time(void);
 
 /**
  * Add a cron-job to the delta list.

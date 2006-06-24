@@ -7,9 +7,9 @@ util/win: win32 portability (lowest layer)
  util/config: configuration handling (depends on error)
   util/getopt: command line parsing (depends on config)
  util/threads: pthread abstractions (depends on error)
+  util/os: process and system abstractions (depends on threads, config)
 
 -------- TODO ----------
-  util/os: process and system abstractions (depends on threads, config)
    util/network: network IO abstractions (depends on threads, config, os)
 
 util: main utility library (depends on all of the above)

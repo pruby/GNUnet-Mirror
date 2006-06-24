@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,297 +19,244 @@
 */
 
 /**
- * @file util/io.c
+ * @file util/network/io.c
  * @brief (network) input/output operations
  * @author Christian Grothoff
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_network.h"
 #include "platform.h"
 
-/* some systems send us signals, so we'd better
-   catch them (& ignore) */
-#ifndef LINUX
-static void catcher(int sig) {
-  LOG(LOG_INFO,
-      _("Caught signal %d.\n"),
-      sig);
-  /* re-install signal handler! */
-  signal(sig, catcher);
+typedef struct SocketHandle {
+
+  struct LoadMonitor * mon;
+  
+  struct GE_Context * ectx;
+
+  int handle;
+  
+} SocketHandle;
+
+struct SocketHandle * 
+socket_create(struct GE_Context * ectx,
+	      struct LoadMonitor * mon,
+	      int osSocket) {
+  SocketHandle * ret;
+
+  ret = MALLOC(sizeof(SocketHandle));
+  ret->ectx = ectx;
+  ret->mon = mon;
+  ret->handle = osSocket;
+  return ret;
 }
 
-
-#endif
-
-void gnunet_util_initIO() {
-#if ! (defined(LINUX) || defined(MINGW))
-  if ( SIG_ERR == signal(SIGPIPE, SIG_IGN))
-    if ( SIG_ERR == signal(SIGPIPE, catcher))
-      LOG_STRERROR(LOG_WARNING, "signal");
-#endif
+void socket_destroy(struct SocketHandle * s) {
+  if (0 != CLOSE(s->handle))
+    GE_LOG_STRERROR(s->ectx,
+		    GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
+		    "close");
+  FREE(s);
 }
 
-void gnunet_util_doneIO() {
-}
-
-/**
- * Depending on doBlock, enable or disable the nonblocking mode
- * of socket s.
- *
- * @param doBlock use YES to change the socket to blocking, NO to non-blocking
- * @return Upon successful completion, it returns zero, otherwise -1
- */
-int setBlocking(int s, int doBlock) {
+/* TODO: log errors! */
+int socket_set_blocking(struct SocketHandle * s, 
+			int doBlock) {
 #if MINGW
   u_long l = !doBlock;
-  if (ioctlsocket(s, FIONBIO, &l) == SOCKET_ERROR) {
+  if (ioctlsocket(s->handle, 
+		  FIONBIO, &l) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
-
+    
     return -1;
   } else {
     /* store the blocking mode */
-    __win_SetHandleBlockingMode(s, doBlock);
+    __win_SetHandleBlockingMode(s->handle, doBlock);
     return 0;
   }
 #else
-  int flags = fcntl(s, F_GETFL);
+  int flags = fcntl(s->handle, F_GETFL);
   if (doBlock)
     flags &= ~O_NONBLOCK;
   else
     flags |= O_NONBLOCK;
-
-  return fcntl(s,
+  return fcntl(s->handle,
 	       F_SETFL,
 	       flags);
 #endif
 }
 
-/**
- * Check whether the socket is blocking
- * @param s the socket
- * @return YES if blocking, NO non-blocking
- */
-int isSocketBlocking(int s)
+int socket_test_blocking(struct SocketHandle * s)
 {
 #ifndef MINGW
- return (fcntl(s, F_GETFL) & O_NONBLOCK) ? NO : YES;
+ return (fcntl(s->handle, 
+	       F_GETFL) & O_NONBLOCK) ? NO : YES;
 #else
-  return __win_IsHandleMarkedAsBlocking(s);
+  return __win_IsHandleMarkedAsBlocking(s->handle);
 #endif
 }
 
-/* recv wrappers */
-
-/**
- * Do a NONBLOCKING read on the given socket.  Note that in order to
- * avoid blocking, the caller MUST have done a select call before
- * calling this function. Though the caller must be prepared to the
- * fact that this function may fail with EWOULDBLOCK in any case (Win32).
- *
- * @brief Reads at most max bytes to buf. Interrupts are IGNORED.
- * @param s socket
- * @param buf buffer
- * @param max maximum number of bytes to read
- * @param read number of bytes actually read.
- *             0 is returned if no more bytes can be read
- * @return SYSERR on error, YES on success or NO if the operation
- *         would have blocked
- */
-int RECV_NONBLOCKING(int s,
-		     void * buf,
-		     size_t max,
-		     size_t *read) {
+int socket_recv(struct SocketHandle * s,
+		NC_KIND nc,
+		void * buf,
+		size_t max,
+		size_t * read) {
   int flags;
+  size_t pos;
+  size_t ret;
 
-  setBlocking(s, NO);
-
+  socket_set_blocking(s, 
+		      0 == (nc & NC_Blocking));
+  flags = 0;
 #ifdef CYGWIN
-    flags = MSG_NOSIGNAL;
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
 #elif OSX
-    flags = 0;
+  /* anything? */
 #elif SOMEBSD || SOLARIS
-    flags = MSG_DONTWAIT;
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
 #elif LINUX
-    flags = MSG_DONTWAIT | MSG_NOSIGNAL;
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
 #else
-    /* good luck */
-    flags = 0;
+  /* good luck */
 #endif
-
-  do {
-    *read = (size_t) RECV(s,
-	                  buf,
-	                  max,
-	                  flags);
-  } while ( ( *read == -1) && ( errno == EINTR) );
-
-  setBlocking(s, YES);
-
-  if (*read == SYSERR && (errno == EWOULDBLOCK || errno == EAGAIN))
-    return NO;
-  else if ( (*read < 0) || (*read > max) )
-    return SYSERR;
-
-  return YES;
-}
-
-/**
- * Do a BLOCKING read on the given socket.  Read len bytes (if needed
- * try multiple reads).  Interrupts are ignored.
- *
- * @return SYSERR if len bytes could not be read,
- *   otherwise the number of bytes read (must be len)
- */
-int RECV_BLOCKING_ALL(int s,
-		      void * buf,
-		      size_t len) {
-  size_t pos;
-  int i, flags;
-
   pos = 0;
-  setBlocking(s, YES);
-
-  while (pos < len) {
-#if LINUX || CYGWIN
-    flags = MSG_NOSIGNAL;
-#else
-    flags = 0;
-#endif
-
-    i = RECV(s,
-	     &((char*)buf)[pos],
-	     len - pos,
-	     flags);
-
-    if ( (i == -1) && (errno == EINTR) )
+  do {
+    ret = (size_t) RECV(s->handle,
+			&((char*)buf)[pos],
+			max - pos,
+			flags);
+    if ( (ret == (size_t) -1) &&
+	 (errno == EINTR) &&
+	 (0 != (nc & NC_IgnoreInt)) )
       continue;
-    if (i <= 0)
-    {
-      setBlocking(s, NO);
+    if (ret == (size_t) -1) {
+      if (errno == EINTR) {
+	*read = pos;
+	return YES;
+      }
+      if ( (errno == EAGAIN) ||
+	   (errno == EWOULDBLOCK) ) {
+	if (0 != (nc & NC_Blocking))
+	  continue;
+	*read = pos;
+	return (pos == 0) ? NO : YES;
+      }
+      GE_LOG_STRERROR(s->ectx,
+		      GE_DEBUG | GE_USER | GE_REQUEST,
+		      "recv");
+      *read = pos;
       return SYSERR;
     }
-    pos += i;
-  }
-  GNUNET_ASSERT(pos == len);
-
-  setBlocking(s, NO);
-
-  return pos;
-}
-
-/**
- * Do a NONBLOCKING write on the given socket.
- * Write at most max bytes from buf.
- * Interrupts are ignored (cause a re-try).
- *
- * The caller must be prepared to the fact that this function
- * may fail with EWOULDBLOCK in any case (Win32).
- *
- * @param s socket
- * @param buf buffer to send
- * @param max maximum number of bytes to send
- * @param sent number of bytes actually sent
- * @return SYSERR on error, YES on success or
- *         NO if the operation would have blocked.
- */
-int SEND_NONBLOCKING(int s,
-		     const void * buf,
-		     size_t max,
-		     size_t * sent) {
-  int flags;
-
-  setBlocking(s, NO);
-
-#ifdef SOMEBSD
-    flags = MSG_DONTWAIT;
-#elif SOLARIS
-    flags = MSG_DONTWAIT;
-#elif OSX
-    /* As braindead as Win32? */
-    flags = 0;
-#elif CYGWIN
-	flags = MSG_NOSIGNAL;
-#elif LINUX
-	flags = MSG_DONTWAIT | MSG_NOSIGNAL;
-#else
-    /* pray */
-	flags = 0;
-#endif
-
-  do {
-    *sent = (size_t) SEND(s,
-	                  buf,
-	                  max,
-	                  flags);
-
-  } while ( (*sent == -1) &&
-	    (errno == EINTR) );
-
-  setBlocking(s, YES);
-
-  if (*sent == SYSERR && (errno == EWOULDBLOCK || errno == EAGAIN))
-    return NO;
-  else if ( (*sent < 0) || (*sent > max) )
-    return SYSERR;
-
+    pos += ret;
+  } while ( (pos < max) &&
+	    (0 != (nc & NC_Blocking)) );
+  *read = pos;
   return YES;
 }
 
-/**
- * Do a BLOCKING write on the given socket.  Write len bytes (if
- * needed do multiple write).  Interrupts are ignored (cause a
- * re-try).
- *
- * @return SYSERR if len bytes could not be send,
- *   otherwise the number of bytes transmitted (must be len)
- */
-int SEND_BLOCKING_ALL(int s,
-		      const void * buf,
-		      size_t len) {
+int socket_send(struct SocketHandle * s,
+		NC_KIND nc,
+		const void * buf,
+		size_t max,
+		size_t * sent) {
+  int flags;
   size_t pos;
-  int i, flags;
+  size_t ret;
+
+  socket_set_blocking(s, 
+		      0 == (nc & NC_Blocking));
+  flags = 0;
+#if SOMEBSD || SOLARIS
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
+#elif OSX
+  /* As braindead as Win32? */
+#elif CYGWIN
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
+#elif LINUX
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
+#else
+  /* pray */
+#endif
 
   pos = 0;
-  setBlocking(s, YES);
-  while (pos < len) {
-#if CYGWIN || LINUX
-    flags = MSG_NOSIGNAL;
-#else
-    flags = 0;
-#endif
-    i = SEND(s,
-	     &((char*)buf)[pos],
-	     len - pos,
-	     flags);
-
-    if ( (i == -1) &&
-	 (errno == EINTR) )
-      continue; /* ingnore interrupts */
-    if (i <= 0) {
-      if (i == -1)
-	LOG_STRERROR(LOG_WARNING, "send");
+  do {
+    ret = (size_t) SEND(s->handle,
+			&((char*)buf)[pos],
+			max - pos,
+			flags);
+    if ( (ret == (size_t) -1) &&
+	 (errno == EINTR) &&
+	 (0 != (nc & NC_IgnoreInt)) )
+      continue;
+    if (ret == (size_t) -1) {
+      if (errno == EINTR) {
+	*sent = pos;
+	return YES;
+      }
+      if ( (errno == EAGAIN) ||
+	   (errno == EWOULDBLOCK) ) {
+	if (0 != (nc & NC_Blocking))
+	  continue;
+	*sent = pos;
+	return (pos == 0) ? NO : YES;
+      }
+      GE_LOG_STRERROR(s->ectx,
+		      GE_DEBUG | GE_USER | GE_REQUEST,
+		      "send");
+      *sent = pos;
       return SYSERR;
     }
-    pos += i;
-  }
-  setBlocking(s, NO);
-  GNUNET_ASSERT(pos == len);
-  return pos;
+    pos += ret;
+  } while ( (pos < max) &&
+	    (0 != (nc & NC_Blocking)) );
+  *sent = pos;
+  return YES;
 }
 
 /**
  * Check if socket is valid
  * @return 1 if valid, 0 otherwise
  */
-int isSocketValid(int s)
-{
+int socket_test_valid(struct SocketHandle * s) {
 #ifndef MINGW
   struct stat buf;
-  return -1 != fstat(s, &buf);
+  return -1 != fstat(s->handle, 
+		     &buf);
 #else
   long l;
-  return ioctlsocket(s, FIONREAD, &l) != SOCKET_ERROR;
+  return ioctlsocket(s->handle, 
+		     FIONREAD, 
+		     &l) != SOCKET_ERROR;
 #endif
 }
+
+
+/* some systems send us signals, so we'd better
+   catch them (& ignore) */
+#ifndef LINUX
+static void catcher(int sig) {
+  /* re-install signal handler! */
+  signal(sig, &catcher);
+}
+#endif
+
+/* TODO: add destructor to restore signal handler */
+void __attribute__ ((constructor)) gnunet_io_ltdl_init() {
+#if ! (defined(LINUX) || defined(MINGW))
+  if ( SIG_ERR == signal(SIGPIPE, SIG_IGN))
+    if ( SIG_ERR == signal(SIGPIPE, &catcher))
+      LOG_STRERROR(LOG_WARNING, "signal");
+#endif
+}
+
 
 /* end of io.c */

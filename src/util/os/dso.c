@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util_os.h"
+#include "gnunet_util_string.h"
 
 typedef struct PluginHandle {
   struct GE_Context * ectx;
@@ -146,7 +147,7 @@ os_plugin_load(struct GE_Context * ectx,
   return plug;
 }
 
-void os_plugin_unload(struct PluginHandle * libhandle) {
+void os_plugin_unload(struct PluginHandle * plugin) {
   lt_dlclose(plugin->handle);
   FREE(plugin->libprefix);
   FREE(plugin->dsoname);
@@ -154,7 +155,7 @@ void os_plugin_unload(struct PluginHandle * libhandle) {
 }
 
 void * 
-os_plugin_resolve_function(struct PluginHandle * plugin,
+os_plugin_resolve_function(struct PluginHandle * plug,
 			   const char * methodprefix,
 			   int logError) {
   char * initName;
@@ -164,10 +165,10 @@ os_plugin_resolve_function(struct PluginHandle * plugin,
 		    strlen(methodprefix) + 2);
   strcpy(initName, "_");
   strcat(initName, methodprefix);
-  strcat(initName, dsoname);
-  mptr = lt_dlsym(libhandle, &initName[1]);
+  strcat(initName, plug->dsoname);
+  mptr = lt_dlsym(plug->handle, &initName[1]);
   if (mptr == NULL) 
-    mptr = lt_dlsym(libhandle, initName);
+    mptr = lt_dlsym(plug->handle, initName);
   if ( (mptr == NULL) &&
        (logError) )
     GE_LOG(plug->ectx,

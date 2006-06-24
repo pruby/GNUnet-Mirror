@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,30 +19,28 @@
 */
 
 /**
- * @file util/network/endian.c
- * @brief endian conversion helpers
+ * @file util/threads/time.c
  * @author Christian Grothoff
  */
 
 #include "platform.h"
-#include "gnunet_util_network.h"
+#include "gnunet_util_threads.h"
 
-unsigned long long ntohll(unsigned long long n) {
-#if __BYTE_ORDER == __BIG_ENDIAN
-  return n;
+/**
+ * Get the current time (works just as "time", just that we use the
+ * unit of time that the cron-jobs use (and is 64 bit)).
+ *
+ * @return the current time
+ */
+cron_t get_time() {
+  struct timeval tv;
+#ifndef WINDOWS
+  struct timezone tz; /* man page says it's obsolete, but
+			 I'd rather not pass a NULL pointer */
+
+  gettimeofday(&tv, &tz);
 #else
-  return (((unsigned long long)ntohl(n)) << 32) + ntohl(n >> 32);
+  gettimeofday(&tv, NULL);
 #endif
+  return (((cron_t)tv.tv_sec) * 1000) + (tv.tv_usec / 1000 / 1000);
 }
-
-unsigned long long htonll(unsigned long long n) {
-#if __BYTE_ORDER == __BIG_ENDIAN
-  return n;
-#else
-  return (((unsigned long long)htonl(n)) << 32) + htonl(n >> 32);
-#endif
-}
-
-
-
-/* end of endian.c */
