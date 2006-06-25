@@ -214,7 +214,10 @@ int check_ipv4_listed(const struct CIDRNetwork * list,
 int check_ipv6_listed(const struct CIDR6Network * list,
 		      IP6addr ip);
 
-#define PRIP(ip) (unsigned int)(((unsigned int)(ip))>>24), (unsigned int)((((unsigned)(ip)))>>16 & 255), (unsigned int)((((unsigned int)(ip)))>>8 & 255), (unsigned int)((((unsigned int)(ip))) & 255)
+#define PRIP(ip) (unsigned int)(((unsigned int)(ip))>>24), \
+                 (unsigned int)((((unsigned)(ip)))>>16 & 255), \
+                 (unsigned int)((((unsigned int)(ip)))>>8 & 255), \
+                 (unsigned int)((((unsigned int)(ip))) & 255)
 
 /**
  * Get the IP address of the given host.

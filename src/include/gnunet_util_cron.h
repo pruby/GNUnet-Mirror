@@ -37,20 +37,22 @@ extern "C" {
 #endif
 #endif
 
+#include "gnunet_util.h"
+
 /**
  * Type of a cron-job method.
  */
 typedef void (*CronJob)(void *);
 
-/**
- * Start the cron jobs.
- */
-void cron_start_jobs(void);
+struct CronManager;
 
-/**
- * Stop the cron service.
- */
-void cron_stop_jobs(void);
+struct CronManager * cron_create(struct GE_Context * ectx);
+
+void cron_destroy(struct CronManager * mgr);
+
+void cron_start(struct CronManager * mgr);
+
+void cron_stop(struct CronManager * mgr);
 
 /**
  * Stop running cron-jobs for a short time.  This method may only be
@@ -61,7 +63,8 @@ void cron_stop_jobs(void);
  *
  * @param checkself, if YES and this thread is the cron thread, do nothing
  */
-void cron_suspend_jobs(int checkself);
+void cron_suspend(struct CronManager * mgr,
+		  int checkself);
 
 /**
  * Resume running cron-jobs.  Call must be matched by
@@ -70,12 +73,13 @@ void cron_suspend_jobs(int checkself);
  *
  * @param checkself, if YES and this thread is the cron thread, do nothing
  */
-void cron_resume_jobs(int checkself);
+void cron_resume_jobs(struct CronManager * mgr,
+		      int checkself);
 
 /**
  * Is the cron-thread currently running?
  */
-int cron_test_running(void);
+int cron_test_running(struct CronManager * mgr);
 
 /**
  * Add a cron-job to the delta list.
@@ -85,7 +89,8 @@ int cron_test_running(void);
  *        the runs, otherwise 0.
  * @param data argument to pass to the method
  */
-void cron_add_job(CronJob method,
+void cron_add_job(struct CronManager * mgr,
+		  CronJob method,
 		  unsigned int delta,
 		  unsigned int deltaRepeat,
 		  void * data);
@@ -102,7 +107,8 @@ void cron_add_job(CronJob method,
  *        non-null and cron is shutdown before the job is
  *        run and/or delCronJob is called
  */
-void cron_advance_job(CronJob method,
+void cron_advance_job(struct CronManager * mgr,
+		      CronJob method,
 		      unsigned int deltaRepeat,
 		      void * data);
 
@@ -119,7 +125,8 @@ void cron_advance_job(CronJob method,
  * @param data what was the data given to the method
  * @return the number of jobs removed
  */
-int cron_del_job(CronJob method,
+int cron_del_job(struct CronManager * mgr,
+		 CronJob method,
 		 unsigned int repeat,
 		 void * data);
 

@@ -37,7 +37,9 @@
  * provided in transports/tcp.c.
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_network.h"
+#include "gnunet_util_os.h"
+#include "gnunet_util_config.h"
 #include "platform.h"
 
 #define DEBUG_TCPIO NO
@@ -51,37 +53,27 @@
 typedef struct GNUNET_TCP_SOCKET {
 
   /**
-   * the socket handle, -1 if invalid / not life
+   * the socket handle, NULL if not life
    */
   struct SocketHandle * socket;
-
-  /**
-   * the following is the IP for the remote host for client-sockets,
-   * as returned by gethostbyname("hostname"); server sockets should
-   * use 0.
-   */
-  IPaddr ip;
-
-  /**
-   * the port number, in host byte order
-   */
-  unsigned short port;
-
-  /**
-   * Write buffer length for non-blocking writes.
-   */
-  unsigned int outBufLen;
-
-  /**
-   * Write buffer for non-blocking writes.
-   */
-  void * outBufPending;
 
   struct Mutex * readlock;
 
   struct Mutex * writelock;
 
   struct CE_Context * ectx;
+
+  struct GC_Configuration * cfg;
+
+  /**
+   * If this is gnunetd's server socket, then we cannot
+   * automatically reconnect after closing the connection
+   * (since it is an "accept" that gives the socket).<p>
+   *
+   * If this is NO, we should query the configuration and
+   * automagically try to reconnect.
+   */
+  int isServerSocket;
 
 } GNUNET_TCP_SOCKET;
 

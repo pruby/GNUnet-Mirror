@@ -34,7 +34,7 @@
  * then run the actual job.
  */
 
-#include "gnunet_util.h"
+#include "gnunet_util_cron.h"
 #include "platform.h"
 
 #define DEBUG_CRON NO
@@ -61,69 +61,6 @@
 
 #define CHECK_ASSERTS 1
 
-/**
- * The Delta-list for the cron jobs.
- */
-typedef struct {
-  /** The start-time for this event (in milliseconds). */
-  cron_t delta;
-  /** The method to call at that point. */
-  CronJob method;
-  /** for cron-jobs: when this should be repeated
-      automatically, 0 if this was a once-only job */
-  unsigned int deltaRepeat;
-  /** The index of the next entry in the delta list
-      after this one */
-  int next;
-  /** data ptr (argument to the method) */
-  void * data;
-} UTIL_cron_DeltaListEntry;
-
-/**
- * The delta-list of waiting tasks.
- */
-static UTIL_cron_DeltaListEntry * deltaList_;
-
-/**
- * The current size of the DeltaList.
- */
-static unsigned int deltaListSize_;
-
-/**
- * The lock for the delta-list.
- */
-static Mutex deltaListLock_;
-
-/**
- * The currently running job.
- */
-static CronJob runningJob_;
-static unsigned int runningRepeat_;
-static void * runningData_;
-
-/**
- * The first empty slot in the delta-list.
- */
-static int firstFree_;
-
-/**
- * The first empty slot in the delta-list.
- */
-static int firstUsed_;
-
-/**
- * The cron thread.
- */
-static int cron_shutdown = YES;
-static Semaphore * cron_signal = NULL;
-static Semaphore * cron_signal_up = NULL;
-
-static PTHREAD_T cron_handle;
-
-
-static Mutex inBlockLock_;
-
-
 /* change this value to artificially speed up all
    GNUnet cron timers by this factor. E.g. with 10,
    a cron-job scheduled after 1 minute in the code
@@ -141,6 +78,93 @@ static Mutex inBlockLock_;
 #define MICROSEC_TO_CRON_UNIT (1000 * SPEED_UP)
 
 
+/**
+ * @brief The Delta-list for the cron jobs.
+ */
+typedef struct {
+
+  /**
+   * The method to call at that point. 
+   */
+  CronJob method;
+
+  /**
+   * data ptr (argument to the method) 
+   */
+  void * data;
+
+  /**
+   * The start-time for this event (in milliseconds). 
+   */
+  cron_t delta;
+
+  /**
+   * for cron-jobs: when this should be repeated
+   * automatically, 0 if this was a once-only job 
+   */
+  unsigned int deltaRepeat;
+
+  /**
+   * The index of the next entry in the delta list
+   * after this one (-1 for none)
+   */
+  int next;
+
+} UTIL_cron_DeltaListEntry;
+
+typedef struct CronManager {
+
+  /**
+   * The lock for the delta-list.
+   */
+  struct MUTEX * deltaListLock_;
+
+  /**
+   * The delta-list of waiting tasks.
+   */
+  UTIL_cron_DeltaListEntry * deltaList_;
+
+  /**
+   * The currently running job.
+   */
+  CronJob runningJob_;
+
+  void * runningData_;
+
+  /**
+   * The cron thread.
+   */
+  struct PTHREAD * cron_handle;
+
+  struct SEMAPHORE * cron_signal;
+
+  struct SEMAPHORE * cron_signal_up;
+
+  struct MUTEX * inBlockLock_;
+
+  unsigned int runningRepeat_;
+
+  /**
+   * The current size of the DeltaList.
+   */
+  unsigned int deltaListSize_;
+
+  /**
+   * The first empty slot in the delta-list.
+   */
+  int firstFree_;
+
+  /**
+   * The first empty slot in the delta-list.
+   */
+  int firstUsed_;
+
+  /**
+   * Set to yes if we are shutting down or shut down.
+   */ 
+  int cron_shutdown;
+
+} CronManager;
 
 
 /**

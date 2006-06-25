@@ -27,27 +27,17 @@
  * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
- *
- * Features:
- * - threading (semaphore, pthreads, cron)
- * - basic libc wrappers (malloc, strdup, iconv)
- * - disk io (filesize, read, write, copy, remove, scan directory)
- * - network io (client socket, read, write, nonblocking, etc.)
- * - process management
- * - lots of other small functions
- * ??: sort/regroup ?? 
  */
 
 #ifndef GNUNET_UTIL_H
 #define GNUNET_UTIL_H
 
 #ifdef MINGW
-  #include <windows.h>
-  #include <iphlpapi.h>
-  #include <Ntsecapi.h>
-  #include <lm.h>
-  
-  #define HAVE_STAT64 1
+#include <windows.h>
+#include <iphlpapi.h>
+#include <Ntsecapi.h>
+#include <lm.h>
+#define HAVE_STAT64 1
 #endif
 
 /* we need size_t, and since it can be both unsigned int
@@ -73,7 +63,6 @@ extern "C" {
 #endif
 #endif
 
-
 #define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
 #define DEFAULT_DAEMON_DIR         "/etc"
 #define DEFAULT_DAEMON_CONFIG_FILE DEFAULT_DAEMON_DIR"/gnunetd.conf"
@@ -82,9 +71,6 @@ extern "C" {
 #define VAR_DAEMON_CONFIG_FILE     VAR_DAEMON_DIRECTORY"/gnunetd.conf"
 #define GNUNET_HOME_DIRECTORY      "~/.gnunet"
 #define HOME_DAEMON_CONFIG_FILE    GNUNET_HOME_DIRECTORY"/gnunetd.conf"
-
-
-/* **************** constants ****************** */
 
 /**
  * Just the version number of GNUnet-util implementation.
@@ -98,18 +84,14 @@ extern "C" {
  * especially the least significant bits may change
  * frequently, even between different SVN versions.
  */
-#define GNUNET_UTIL_VERSION 0x00070004
+#define GNUNET_UTIL_VERSION 0x00070100
 
 /* CHRISTIAN: move this to gnunet_core.h or _protocols.h ? */
 
-/**
- * Highest legal priority or trust value
- */
-#define MAX_PRIO 0x7FFFFFFF
-
-
 /* NILS: I would love to see the 
    next two methods in PLIBC */
+
+typedef unsigned int TIME_T;
 
 /**
  * TIME prototype. "man time".
@@ -133,6 +115,11 @@ char *winErrorStr(const char *prefix,
 		  int dwErr);
 
 
+/* FIXME: these functions need to be replaced with
+   functions that are appropriate for bootstrapping
+   the new gnunetutil library (i.e. setup error,
+   parse command line, setup configuration, etc.) */
+
 /**
  * Initialize the util module.
  * @param argc the number of arguments
@@ -141,8 +128,7 @@ char *winErrorStr(const char *prefix,
  * @return OK on success, SYSERR if we should abort
  */
 int initUtil(int argc,
-	     char * argv[],
-	     CommandLineParser parser);
+	     char * argv[]);
 
 
 /**
@@ -156,7 +142,6 @@ void doneUtil(void);
 #ifdef __cplusplus
 }
 #endif
-
 
 /* ifndef GNUNET_UTIL_H */
 #endif

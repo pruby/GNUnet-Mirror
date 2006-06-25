@@ -57,6 +57,11 @@ extern "C" {
 #define EXTREME_PRIORITY 0xFFFFFF
 
 /**
+ * Highest legal priority or trust value
+ */
+#define MAX_PRIO 0x7FFFFFFF
+
+/**
  * Overhead of the core for encapsulating P2P messages.
  * Should be subtracted from the transport MTU to compute
  * the amount of space available for an unfragmented
