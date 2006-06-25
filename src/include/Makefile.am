@@ -48,7 +48,7 @@ gnunetinclude_HEADERS = \
   gnunet_util_crypto.h \
   gnunet_util_disk.h \
   gnunet_util_error.h \
-  gnunet_util_error_loggers.h 
+  gnunet_util_error_loggers.h \
   gnunet_util_getopt.h \
   gnunet_util_network.h \
   gnunet_util_os.h \
