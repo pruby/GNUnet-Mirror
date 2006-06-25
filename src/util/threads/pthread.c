@@ -112,7 +112,6 @@ PThread * PTHREAD_CREATE(PThreadMain main,
 		       &stack_size_custom_attr,
 		       main,
 		       arg);
-
   if (ret != 0) {
     FREE(handle);
     return NULL;

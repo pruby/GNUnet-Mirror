@@ -113,7 +113,7 @@ void cron_advance_job(struct CronManager * mgr,
 		      void * data);
 
 /**
- * Remove all matching cron-jobs from the list. This method should
+ * Remove first matching cron-job from the list. This method should
  * only be called while cron is suspended or stopped, or from a cron
  * job that deletes another cron job.  If cron is not suspended or
  * stopped, it may be running the method that is to be deleted, which
@@ -123,7 +123,7 @@ void cron_advance_job(struct CronManager * mgr,
  * @param method which method is listed?
  * @param repeat which repeat factor was chosen?
  * @param data what was the data given to the method
- * @return the number of jobs removed
+ * @return the number of jobs removed (0 or 1)
  */
 int cron_del_job(struct CronManager * mgr,
 		 CronJob method,
