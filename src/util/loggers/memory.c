@@ -36,7 +36,7 @@ typedef struct GE_Message {
 
 typedef struct GE_Memory {
   GE_Message * messages;
-  Mutex lock;
+  struct MUTEX * lock;
   unsigned int maxSize;
   unsigned int size;
   unsigned int pos;
@@ -50,11 +50,11 @@ memorylogger(void * cls,
   GE_Memory * ctx = cls;
   unsigned int max;
 
-  MUTEX_LOCK(&ctx->lock);
+  MUTEX_LOCK(ctx->lock);
   if (ctx->pos == ctx->size) {
     if ( (ctx->maxSize != 0) &&
 	 (ctx->size == ctx->maxSize) ) {
-      MUTEX_UNLOCK(&ctx->lock);
+      MUTEX_UNLOCK(ctx->lock);
       return;
     }
     max = ctx->pos * 2 + 16;
@@ -74,7 +74,7 @@ memorylogger(void * cls,
     ctx->messages[ctx->pos].mask = kind;
   }
   ctx->pos++;
-  MUTEX_UNLOCK(&ctx->lock);
+  MUTEX_UNLOCK(ctx->lock);
 }
 
 /**
@@ -110,7 +110,7 @@ GE_create_memory(unsigned int maxSize) {
   ret->size = 0;
   ret->pos = 0;
   ret->messages = NULL;
-  MUTEX_CREATE(&ret->lock);
+  ret->lock = MUTEX_CREATE(NO);
   return ret;
 }
 
@@ -123,7 +123,7 @@ void GE_poll_memory(struct GE_Memory * memory,
 		    void * ctx) {
   int i;
 
-  MUTEX_LOCK(&memory->lock);
+  MUTEX_LOCK(memory->lock);
   for (i=0;i<memory->pos;i++) {
     handler(ctx,
 	    memory->messages[i].mask,
@@ -133,13 +133,13 @@ void GE_poll_memory(struct GE_Memory * memory,
     FREE(memory->messages[i].msg);
   }
   memory->pos = 0;  
-  MUTEX_UNLOCK(&memory->lock);
+  MUTEX_UNLOCK(memory->lock);
 }
 
 void GE_free_memory(struct GE_Memory * memory) {
   int i;
 
-  MUTEX_DESTROY(&memory->lock);
+  MUTEX_DESTROY(memory->lock);
   for (i=memory->pos-1;i>=0;i--) {
     FREE(memory->messages[i].date);
     FREE(memory->messages[i].msg);

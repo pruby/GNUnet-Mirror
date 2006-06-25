@@ -1,3 +1,7 @@
+
+#include "gnunet_util.h"
+#include "platform.h"
+
 /**
  * TIME prototype. "man time".
  */

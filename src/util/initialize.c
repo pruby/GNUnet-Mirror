@@ -27,52 +27,12 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
-void initState();
-
-/**
- * Clean shutdown of the state module
- */
-void doneState();
-
-/**
- * The following method is called in order to initialize the status
- * calls routines. After that it is safe to call each of the status
- * calls separately
- */
-void initStatusCalls();
-
-/**
- * Shutdown the module.
- */
-void doneStatusCalls();
-
-void gnunet_util_initIO();
-void gnunet_util_doneIO();
-
-/**
- * Initialize controlThread.
- */
-void initCron();
-
-/**
- * Make sure to call stopCron before calling this method!
- */
-void doneCron();
-
 /**
  * Set our process priority
  */
-void setProcessPrio() {
-  char *str;
+static void setProcessPrio(const char * str) {
   int prio = 0;
 
-  /* Get setting as string */
-  str = getConfigurationString(testConfigurationString("GNUNETD",
-						       "_MAGIC_",
-						       "YES")
-			       ? "GNUNETD"
-			       : "GNUNET",
-			       "PROCESS-PRIORITY");
   if (str) {
     /* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
      * and the usual numeric nice() increments */
@@ -131,13 +91,12 @@ void setProcessPrio() {
     errno = 0;
     nice(prio);
     if (errno != 0)
-      LOG_STRERROR(LOG_WARNING, "nice");
+      GE_LOG_STRERROR(NULL,
+		      GE_WARNING | GE_ADMIN | GE_BULK,
+		      "nice");
 #endif
-    FREE(str);
   }
 }
-
-static int initStatus;
 
 /**
  * Initialize the util library. Use argc, argv and the given parser
@@ -146,8 +105,7 @@ static int initStatus;
  * and other configuration-dependent features are started.
  */
 int initUtil(int argc,
-	     char * argv[],
-	     CommandLineParser parser) {
+	     char * argv[]) {
 
 #ifdef MINGW
   if (InitWinEnv() != ERROR_SUCCESS)
@@ -158,41 +116,18 @@ int initUtil(int argc,
   BINDTEXTDOMAIN("GNUnet", LOCALEDIR);
   textdomain("GNUnet");
 #endif
-  gnunet_util_initIO();
-  initConfiguration();
-  if (argc > 0)
+  /*  if (argc > 0)
     setConfigurationString("MAIN",
 			   "ARGV[0]",
-			   argv[0]);
-  initCron();
-  if (parser != NULL)
-    if (SYSERR == parser(argc, argv))
-      return SYSERR;
-  readConfiguration();
-  setProcessPrio();
-  initLogging();
-  initStatus = testConfigurationString("GNUNETD",
-				       "_MAGIC_",
-				       "YES");
-  if (initStatus)
-    initStatusCalls();
-  initState();
+			   argv[0]);*/
+  // setProcessPrio();
   return OK;
 }
 
 void doneUtil() {
-  if (initStatus) {
-    doneStatusCalls();
-    initStatus = 0;
-  }
-  doneCron();
-  doneState();
-  LOG(LOG_MESSAGE,
-      _("Shutdown complete.\n"));
 #ifdef MINGW
   ShutdownWinEnv();
 #endif
-  gnunet_util_doneIO();
 }
 
 

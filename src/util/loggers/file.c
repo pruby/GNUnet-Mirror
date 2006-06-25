@@ -59,7 +59,7 @@ typedef struct FileContext {
   /**
    * Lock.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
   /**
    * Should we log the current date with each message?
@@ -203,7 +203,7 @@ filelogger(void * cls,
   char * name;
   int ret;
   
-  MUTEX_LOCK(&fctx->lock);  
+  MUTEX_LOCK(fctx->lock);  
   if (fctx->logrotate) {
     name = getLogFileName(fctx->ectx,
 			  fctx->basename);
@@ -213,9 +213,10 @@ filelogger(void * cls,
       fctx->handle = FOPEN(name, "w+");
       FREE(fctx->filename);
       fctx->filename = name;
-      scanDirectory(fctx->basename,
-		    &removeOldLog,
-		    fctx);
+      disk_directory_scan(fctx->ectx,
+			  fctx->basename,
+			  &removeOldLog,
+			  fctx);
     } else {
       FREE(name);
     }    
@@ -238,14 +239,14 @@ filelogger(void * cls,
 		    "fclose");
 
   fflush(fctx->handle);
-  MUTEX_UNLOCK(&fctx->lock);
+  MUTEX_UNLOCK(fctx->lock);
 }
 
 static void
 fileclose(void * cls) {
   FileContext * fctx = cls;
 
-  MUTEX_DESTROY(&fctx->lock);
+  MUTEX_DESTROY(fctx->lock);
   FREENONNULL(fctx->filename);
   FREENONNULL(fctx->basename);
   if ( (fctx->handle != stderr) &&
@@ -300,7 +301,7 @@ GE_create_context_logfile(struct GE_Context * ectx,
   fctx->filename = STRDUP(filename);
   fctx->basename = name;
   fctx->logstart = start;
-  MUTEX_CREATE_RECURSIVE(&fctx->lock);
+  fctx->lock = MUTEX_CREATE(YES);
   return GE_create_context_callback(mask,
 				    &filelogger,
 				    fctx,
@@ -326,7 +327,7 @@ GE_create_context_stderr(int logDate,
   fctx->filename = NULL;
   fctx->basename = NULL;
   fctx->logstart = 0;
-  MUTEX_CREATE_RECURSIVE(&fctx->lock);
+  fctx->lock = MUTEX_CREATE(YES);
   return GE_create_context_callback(mask,
 				    &filelogger,
 				    fctx,
@@ -352,7 +353,7 @@ GE_create_context_stdout(int logDate,
   fctx->filename = NULL;
   fctx->basename = NULL;
   fctx->logstart = 0;
-  MUTEX_CREATE_RECURSIVE(&fctx->lock);
+  fctx->lock = MUTEX_CREATE(YES);
   return GE_create_context_callback(mask,
 				    &filelogger,
 				    fctx,

@@ -24,7 +24,7 @@
  * @author Christian Grothoff
  */
 
-#include "gnunet_config_impl.h"
+#include "gnunet_util_config_impl.h"
 #include "gnunet_util.h"
 #include "platform.h"
 
@@ -94,7 +94,7 @@ typedef struct GC_ConfigurationData {
   /**
    * Lock to access the data.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
   /**
    * Context for logging errors, maybe NULL.
@@ -151,7 +151,7 @@ static void _free(struct GC_Configuration * cfg) {
        0);
   GE_ASSERT(cfg->data->ectx,
 	    cfg->data->listeners == 0);
-  MUTEX_DESTROY(&cfg->data->lock);
+  MUTEX_DESTROY(cfg->data->lock);
   FREE(cfg->data);
 }
 
@@ -174,14 +174,14 @@ _parse_configuration(struct GC_Configuration * cfg,
   int ret;
   char * section;
 
-  MUTEX_LOCK(&cfg->data->lock);
+  MUTEX_LOCK(cfg->data->lock);
   dirty = cfg->data->dirty; /* back up value! */
   if (NULL == (fp = FOPEN(filename, "r"))) {
     GE_LOG_STRERROR_FILE(cfg->data->ectx,
 			 GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
 			 "fopen",
 			 filename);
-    MUTEX_UNLOCK(&cfg->data->lock);
+    MUTEX_UNLOCK(cfg->data->lock);
     return -1;
   }
   ret = 0;
@@ -209,7 +209,8 @@ _parse_configuration(struct GC_Configuration * cfg,
       line[i] = '\0';
     if (1 == sscanf(line, "@INLINE@ %191[^\n]", value) ) {
       /* @INLINE@ value */
-      char * expanded = expandFileName(value);
+      char * expanded = string_expandFileName(cfg->data->ectx,
+					      value);
       if (0 != _parse_configuration(cfg,
 				    expanded))
 	ret = -1; /* failed to parse included config */
@@ -266,7 +267,7 @@ _parse_configuration(struct GC_Configuration * cfg,
   /* restore dirty flag - anything we set in the meantime
      came from disk */
   cfg->data->dirty = dirty;
-  MUTEX_UNLOCK(&cfg->data->lock);
+  MUTEX_UNLOCK(cfg->data->lock);
   FREE(section);
   return ret;
 }
@@ -295,7 +296,7 @@ _write_configuration(struct GC_Configuration * cfg,
   data = cfg->data;
   error = 0;
   ret = 0;
-  MUTEX_LOCK(&data->lock);
+  MUTEX_LOCK(data->lock);
   for (i=0;i<data->ssize;i++) {
     sec = &data->sections[i];
     if (0 > fprintf(fp,
@@ -342,7 +343,7 @@ _write_configuration(struct GC_Configuration * cfg,
     ret = -1;
     data->dirty = -1; /* last write failed */
   }
-  MUTEX_UNLOCK(&data->lock);
+  MUTEX_UNLOCK(data->lock);
   return ret;
 }
 
@@ -392,7 +393,7 @@ _get_configuration_value_number(struct GC_Configuration * cfg,
   const char * val;
   int ret;
 
-  MUTEX_LOCK(&cfg->data->lock);
+  MUTEX_LOCK(cfg->data->lock);
   e = findEntry(cfg->data,
 		section,
 		option);
@@ -432,7 +433,7 @@ _get_configuration_value_number(struct GC_Configuration * cfg,
     *number = def;
     ret = 1; /* default */
   }
-  MUTEX_UNLOCK(&cfg->data->lock);
+  MUTEX_UNLOCK(cfg->data->lock);
   return ret;
 }
   
@@ -446,7 +447,7 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
   const char * val;
   int ret;
 
-  MUTEX_LOCK(&cfg->data->lock);
+  MUTEX_LOCK(cfg->data->lock);
   e = findEntry(cfg->data,
 		section,
 		option);
@@ -457,7 +458,7 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
     *value = STRDUP(def);
     ret = 1; /* default */
   }
-  MUTEX_UNLOCK(&cfg->data->lock);
+  MUTEX_UNLOCK(cfg->data->lock);
   return ret;
 }
   
@@ -473,7 +474,7 @@ _get_configuration_value_choice(struct GC_Configuration * cfg,
   int i;
   int ret;
 
-  MUTEX_LOCK(&cfg->data->lock);
+  MUTEX_LOCK(cfg->data->lock);
   e = findEntry(cfg->data,
 		section,
 		option);
@@ -503,7 +504,7 @@ _get_configuration_value_choice(struct GC_Configuration * cfg,
     *value = def;
     ret = 1; /* default */
   }
-  MUTEX_UNLOCK(&cfg->data->lock);
+  MUTEX_UNLOCK(cfg->data->lock);
   return ret;
 }
 
@@ -522,7 +523,7 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
   int i;
     
   data = cfg->data;
-  MUTEX_LOCK(&data->lock);
+  MUTEX_LOCK(data->lock);
   e = findEntry(data, section, option);
   if (e == NULL) {
     sec = findSection(data, section);
@@ -581,7 +582,7 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
       ret = 0;
     }
   }
-  MUTEX_UNLOCK(&data->lock);
+  MUTEX_UNLOCK(data->lock);
   return ret;
 }
 
@@ -611,13 +612,13 @@ _attach_change_listener(struct GC_Configuration * cfg,
 			void * ctx) {
   GC_Listener l;
 
-  MUTEX_LOCK(&cfg->data->lock);
+  MUTEX_LOCK(cfg->data->lock);
   l.listener = callback;
   l.ctx = ctx;
   APPEND(cfg->data->listeners,
 	 cfg->data->lsize,
 	 l);
-  MUTEX_UNLOCK(&cfg->data->lock);
+  MUTEX_UNLOCK(cfg->data->lock);
   return -1;
 }
 
@@ -628,7 +629,7 @@ _detach_change_listener(struct GC_Configuration * cfg,
   int i;
   GC_Listener * l;
 
-  MUTEX_LOCK(&cfg->data->lock);
+  MUTEX_LOCK(cfg->data->lock);
   for (i=cfg->data->lsize-1;i>=0;i--) {
     l = &cfg->data->listeners[i];
     if ( (l->listener == callback) &&
@@ -638,11 +639,11 @@ _detach_change_listener(struct GC_Configuration * cfg,
       GROW(cfg->data->listeners,
 	   cfg->data->lsize,
 	   cfg->data->lsize-1);
-      MUTEX_UNLOCK(&cfg->data->lock);
+      MUTEX_UNLOCK(cfg->data->lock);
       return 0;
     }
   }
-  MUTEX_UNLOCK(&cfg->data->lock);
+  MUTEX_UNLOCK(cfg->data->lock);
   return -1;
 }
   
@@ -656,7 +657,7 @@ GC_create_C_impl() {
   ret = MALLOC(sizeof(GC_Configuration));
   ret->data = MALLOC(sizeof(GC_ConfigurationData));
   memset(ret->data, 0, sizeof(GC_ConfigurationData));
-  MUTEX_CREATE_RECURSIVE(&ret->data->lock);
+  ret->data->lock = MUTEX_CREATE(YES);
   ret->free = &_free;
   ret->set_error_context = &_set_error_context;
   ret->parse_configuration = &_parse_configuration;

@@ -40,6 +40,7 @@
 #include "gnunet_util_network.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_config.h"
+#include "gnunet_protocols.h"
 #include "platform.h"
 
 #define DEBUG_TCPIO NO
@@ -50,18 +51,18 @@
  * drops the connection, the client automatically tries
  * to reconnect (and for that needs connection information).
  */
-typedef struct GNUNET_TCP_SOCKET {
+typedef struct ClientServerConnection {
 
   /**
    * the socket handle, NULL if not life
    */
-  struct SocketHandle * socket;
+  struct SocketHandle * sock;
 
-  struct Mutex * readlock;
+  struct MUTEX * readlock;
+  
+  struct MUTEX * writelock;
 
-  struct Mutex * writelock;
-
-  struct CE_Context * ectx;
+  struct GE_Context * ectx;
 
   struct GC_Configuration * cfg;
 
@@ -75,73 +76,70 @@ typedef struct GNUNET_TCP_SOCKET {
    */
   int isServerSocket;
 
-} GNUNET_TCP_SOCKET;
+} ClientServerConnection;
 
 
 /**
  * Return the port-number (in host byte order)
+ * @return 0 on error
  */
-static unsigned short getGNUnetPort() {
-  // TODO!
-  static unsigned short port;
-  const char *setting;
+static unsigned short getGNUnetPort(struct GE_Context * ectx,
+				    struct GC_Configuration * cfg) {
+  unsigned long long port;
 
-  if (port != 0)
-    return port;
-  if (testConfigurationString("GNUNETD",
-			      "_MAGIC_",
-			      "YES"))
-    setting = "PORT";
-  else
-    setting = "CLIENT-PORT";
-
-  port = (unsigned short) getConfigurationInt("NETWORK",
-					      setting);
-  if (port == 0) {
-    errexit(_("Cannot determine port of gnunetd server. "
-	      "Define in configuration file in section `%s' under `%s'.\n"),
-	    "NETWORK",
-	    setting);
+  port = 2087;
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "NETWORK",
+					      "PORT",
+					      1,
+					      65535,
+					      2087,
+					      &port)) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_BULK,
+	   _("Could not find valid value for PORT in section NETWORK."));
+    return 0;
   }
-  return port;
+  return (unsigned short) port;
 }
 
 /**
  * Configuration: get the GNUnetd host where the client
  * should connect to (via TCP)
- * @return the name of the host
+ *
+ * @return the name of the host, NULL on error
  */
-static const char * getGNUnetdHost() {
-  // TODO!
-  static char * res;
+static char * getGNUnetdHost(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg) {
+  char * res;
 
-  if (res != NULL)
-    return res;
-  res = getConfigurationString("NETWORK",
-			       "HOST");
-  if (res == NULL)
-    res = "localhost";
+  res = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "NETWORK",
+					      "HOST",
+					      "localhost",
+					      &res)) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_BULK,
+	   _("Could not find valid value for HOST in section NETWORK."));
+    return NULL;
+  }
   return res;
 }
 
-/**
- * Initialize a GNUnet server socket.
- * @param sock the open socket
- * @param result the SOCKET (filled in)
- * @return OK (always successful)
- */
 struct ClientServerConnection * 
 client_connection_create(struct GE_Context * ectx,
 			 struct GC_Configuration * cfg,
 			 struct SocketHandle * sock) {
-  // TODO!
-  result->ip.addr = 0;
-  result->port = 0;
-  result->socket = sock;
-  result->outBufLen = 0;
-  result->outBufPending = NULL;
-  MUTEX_CREATE(&result->readlock);
-  MUTEX_CREATE(&result->writelock);
+  ClientServerConnection * result;
+
+  result = MALLOC(sizeof(ClientServerConnection));  
+  result->sock = sock;
+  result->readlock = MUTEX_CREATE(NO);
+  result->writelock = MUTEX_CREATE(NO);
+  result->ectx = ectx;
+  result->cfg = cfg;
+  result->isServerSocket = YES;
   return result;
 }
 
@@ -152,148 +150,131 @@ client_connection_create(struct GE_Context * ectx,
 struct ClientServerConnection * 
 daemon_connection_create(struct GE_Context * ectx,
 			 struct GC_Configuration * cfg) {
-  // TODO!
-  struct ClientServerConnection * sock;
-  const char * host;
+  ClientServerConnection * result;
 
-  result->ip = ip;
-  result->port = port;
-  result->socket = -1; /* closed */
-  result->outBufLen = 0;
-  result->outBufPending = NULL;
-  MUTEX_CREATE(&result->readlock);
-  MUTEX_CREATE(&result->writelock);
-
-  if (OK != GN_getHostByName(hostname,
-			     &result->ip)) 
-    return SYSERR;
-
-  sock = MALLOC(sizeof(struct ClientServerConnection));
-  host = getGNUnetdHost();
-  if (SYSERR == initGNUnetClientSocket(getGNUnetPort(),
-				       host,
-				       sock)) {
-    LOG(LOG_ERROR,
-	_("Could not connect to gnunetd.\n"));
-    FREE(sock);
-    return NULL;
-  }
-  return sock;
+  result = MALLOC(sizeof(ClientServerConnection));  
+  result->sock = NULL;
+  result->readlock = MUTEX_CREATE(NO);
+  result->writelock = MUTEX_CREATE(NO);
+  result->ectx = ectx;
+  result->cfg = cfg;
+  result->isServerSocket = NO;
+  return result;
 }
 
 void connection_close_temporarily(struct ClientServerConnection * sock) {
-  // TODO!
-  int i;
-  GE_ASSERT(NULL, sock != NULL);
-  if (sock->socket != -1) {
-    i = sock->socket;
-#if DEBUG_TCPIO
-    LOG(LOG_DEBUG,
-	"TCP: closing socket %d.\n",
-	sock->socket);
-#endif
-    sock->socket = -1;
-    if (0 != SHUTDOWN(i, SHUT_RDWR))
-      LOG_STRERROR(LOG_DEBUG, "shutdown");
-    CLOSE(i);
+  if (sock->sock != NULL) {
+    socket_destroy(sock->sock);
+    sock->sock = NULL;
   }
-  sock->outBufLen = 0;
-  FREENONNULL(sock->outBufPending);
-  sock->outBufPending = NULL;
 }
 
 void connection_destroy(struct ClientServerConnection * sock) {
   connection_close_temporarily(sock);
-  sock->ip.addr = 0;
-  sock->port = 0;
-  sock->outBufLen = 0;
-  FREENONNULL(sock->outBufPending);
-  sock->outBufPending = NULL;
   MUTEX_DESTROY(sock->readlock);
   MUTEX_DESTROY(sock->writelock);
   FREE(sock);
 }
 
 int connection_test_open(struct ClientServerConnection * sock) {
-  return (sock->socket != -1);
+  return (sock->sock != NULL);
 }
 
 /**
  * Check a socket, open and connect if it is closed and it is a client-socket.
  */
 int connection_ensure_connected(struct ClientServerConnection * sock) {
-  // TODO!
-  int res;
   struct sockaddr_in soaddr;
   fd_set rset;
   fd_set wset;
   fd_set eset;
   struct timeval timeout;
   int ret;
-  int wasSockBlocking;
+  int osock;
+  unsigned short port;
+  char * host;
+  IPaddr ip;
 
-  if (sock->socket != -1)
+  if (sock->sock != NULL)
     return OK;
-  sock->socket = SOCKET(PF_INET, SOCK_STREAM, 6); /* 6: TCP */
-  if (sock->socket == -1) {
-    LOG_STRERROR(LOG_FAILURE, "socket");
+  port = getGNUnetPort(sock->ectx,
+		       sock->cfg);
+  if (port == 0)
+    return SYSERR;
+  host = getGNUnetdHost(sock->ectx, 
+			sock->cfg);
+  if (host == NULL)
+    return SYSERR;
+  if (SYSERR == get_host_by_name(sock->ectx, 
+				 host,
+				 &ip)) {
+    FREE(host);
     return SYSERR;
   }
-
-  wasSockBlocking = isSocketBlocking(sock->socket);
-  setBlocking(sock->socket, NO);
-	
+  osock = SOCKET(PF_INET, SOCK_STREAM, 6); /* 6: TCP */
+  if (osock == -1) {
+    GE_LOG_STRERROR(sock->ectx,
+		    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+		    "socket");
+    FREE(host);
+    return SYSERR;
+  }
+  sock->sock = socket_create(sock->ectx,
+			     NULL,
+			     osock);
+  socket_set_blocking(sock->sock, NO);
   soaddr.sin_family = AF_INET;
-  GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(sock->ip.addr));
+  GE_ASSERT(sock->ectx,
+	    sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&soaddr.sin_addr,
-	 &sock->ip.addr,
+	 &ip,
 	 sizeof(struct in_addr));
-  soaddr.sin_port = htons(sock->port);
-  res = CONNECT(sock->socket,
+  soaddr.sin_port = htons(port);
+  ret = CONNECT(osock,
 		(struct sockaddr*)&soaddr,
 		sizeof(soaddr));
-  if ( (res < 0) &&
+  if ( (ret < 0) &&
        (errno != EINPROGRESS) ) {
-    LOG(LOG_INFO,
-	_("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
-	PRIP(ntohl(*(int*)&sock->ip.addr)),
-	sock->port,
-	STRERROR(errno));
-    closefile(sock->socket);
-    sock->socket = -1;
+    GE_LOG(sock->ectx,
+	   GE_WARNING | GE_USER | GE_BULK,
+	   _("Cannot connect to %s:u: %s\n"),
+	   host,
+	   port,
+	   STRERROR(errno));
+    socket_destroy(sock->sock);
+    FREE(host);
     return SYSERR;
   }
-
   /* we call select() first with a timeout of 5s to
      avoid blocking on a later write indefinitely;
-     this is mostly needed for gnunet-testbed to keep
-     working if an advertised testbed-client is behind
-     a firewall and unreachable.  But it is also nice
-     if a local firewall decides to just drop the TCP
-     handshake...*/
+     Important if a local firewall decides to just drop 
+     the TCP handshake...*/
   FD_ZERO(&rset);
   FD_ZERO(&wset);
   FD_ZERO(&eset);
-  if (sock->socket < 0)
-    return SYSERR;
-  FD_SET(sock->socket, &wset);
+  FD_SET(osock, &wset);
   timeout.tv_sec = 5;
   timeout.tv_usec = 0;
-  ret = SELECT(sock->socket+1, &rset, &wset, &eset, &timeout);
+  ret = SELECT(osock + 1, 
+	       &rset,
+	       &wset,
+	       &eset, 
+	       &timeout);
   if ( (ret == -1) ||
-       (sock->socket == -1) ||
-       (! FD_ISSET(sock->socket,
+       (! FD_ISSET(osock,
 		   &wset)) ) {
-    LOG(LOG_INFO,
-	_("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
-	PRIP(ntohl(*(int*)&sock->ip.addr)),
-	sock->port,
-	STRERROR(errno));
-    setBlocking(sock->socket, wasSockBlocking);
+    GE_LOG(sock->ectx,
+	   GE_WARNING | GE_USER | GE_BULK,
+	   _("Cannot connect to %s:u: %s\n"),
+	   host,
+	   port,
+	   STRERROR(errno));
+    socket_destroy(sock->sock);
+    FREE(host);
     return SYSERR;
   }
-  setBlocking(sock->socket, wasSockBlocking);
-
+  FREE(host);
+  socket_set_blocking(sock->sock, YES);
   return OK;
 }
 
@@ -307,52 +288,26 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
  */
 int connection_write(struct ClientServerConnection * sock,
 		     const MESSAGE_HEADER * buffer) {
-  // TODO!
+  size_t size;
+  size_t sent;
   int res;
-  int size;
 
-  if (SYSERR == checkSocket(sock))
+  if (SYSERR == connection_ensure_connected(sock))
     return SYSERR;
   size = ntohs(buffer->size);
-  MUTEX_LOCK(&sock->writelock);
-
-  /* write pending data from prior non-blocking call
-     -- but this time use blocking IO! */
-  if (sock->outBufLen > 0) {
-    res = SEND_BLOCKING_ALL(sock->socket,
-			    sock->outBufPending,
-			    sock->outBufLen);
-    if (res < 0) {
-      if (errno == EAGAIN) {
-	MUTEX_UNLOCK(&sock->writelock);
-	return SYSERR; /* can not send right now;
-			  but do NOT close socket in this case! */
-      }
-      LOG_STRERROR(LOG_INFO, "send");
-      closeSocketTemporarily(sock);
-      MUTEX_UNLOCK(&sock->writelock);
-      return SYSERR;
-    }
-    FREE(sock->outBufPending);
-    sock->outBufPending = NULL;
-    sock->outBufLen = 0;
-  }
-
-  res = SEND_BLOCKING_ALL(sock->socket,
-			  buffer,
-			  size);
-  if (res < 0) {
-    if (errno == EAGAIN) {
-      MUTEX_UNLOCK(&sock->writelock);
-      return SYSERR; /* would block, can not send right now;
-			but do NOT close socket in this case! */
-    }
-    LOG_STRERROR(LOG_INFO, "send");
-    closeSocketTemporarily(sock);
-    MUTEX_UNLOCK(&sock->writelock);
+  MUTEX_LOCK(sock->writelock);
+  res = socket_send(sock->sock,
+		    NC_Complete,
+		    buffer,
+		    size,
+		    &sent);
+  if ( (res != YES) ||
+       (sent != size) ) {
+    connection_close_temporarily(sock);
+    MUTEX_UNLOCK(sock->writelock);
     return SYSERR;
   }
-  MUTEX_UNLOCK(&sock->writelock);
+  MUTEX_UNLOCK(sock->writelock);
   return OK;
 }
 
@@ -369,7 +324,7 @@ int connection_read(struct ClientServerConnection * sock,
   MUTEX_LOCK(sock->readlock);
   pos = 0;
   res = 0;
-  if ( (OK != socket_recv(sock->handle,
+  if ( (OK != socket_recv(sock->sock,
 			  NC_Complete,
 			  &size,
 			  sizeof(unsigned short),
@@ -387,7 +342,7 @@ int connection_read(struct ClientServerConnection * sock,
   }
 
   buf = MALLOC(size);
-  if ( (OK != socket_recv(sock->handle,
+  if ( (OK != socket_recv(sock->sock,
 			  NC_Complete,
 			  &buf[pos],
 			  size - pos,
@@ -395,7 +350,7 @@ int connection_read(struct ClientServerConnection * sock,
        (pos != sizeof(unsigned short) + size) ) {
     connection_close_temporarily(sock);
     FREE(buf);
-    MUTEX_UNLOCK(&sock->readlock);
+    MUTEX_UNLOCK(sock->readlock);
     return SYSERR;
   }
 #if DEBUG_TCPIO
@@ -403,7 +358,7 @@ int connection_read(struct ClientServerConnection * sock,
       "Successfully received %d bytes from TCP socket.\n",
       size);
 #endif
-  MUTEX_UNLOCK(&sock->readlock);
+  MUTEX_UNLOCK(sock->readlock);
   *buffer = (MESSAGE_HEADER*) buf;
   (*buffer)->size = htons(size);
   return OK; /* success */
@@ -471,14 +426,13 @@ int connection_write_result(struct ClientServerConnection * sock,
   RETURN_VALUE_MESSAGE rv;
 
   rv.header.size
-    = htons(sizeof(CS_returnvalue_MESSAGE));
+    = htons(sizeof(RETURN_VALUE_MESSAGE));
   rv.header.type
     = htons(CS_PROTO_RETURN_VALUE);
   rv.return_value
     = htonl(ret);
   return connection_write(sock,
-			  &rv.header,
-			  YES);
+			  &rv.header);
 }
 
 /**
