@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -43,8 +43,7 @@ int connection_test_running(struct GE_Context * ectx,
   csHdr.type
     = htons(CS_PROTO_traffic_COUNT);
   if (SYSERR == connection_write(sock,
-				 &csHdr,
-				 YES)) {
+				 &csHdr)) {
     connection_destroy(sock);
     return SYSERR;
   }
@@ -66,8 +65,7 @@ int connection_request_shutdown(struct ClientServerConnection * sock) {
   csHdr.type
     = htons(CS_PROTO_SHUTDOWN_REQUEST);
   if (SYSERR == connection_write(sock,
-				 &csHdr,
-				 YES)) {
+				 &csHdr)) {
     connection_close_temporarily(sock);
     return SYSERR;
   }
