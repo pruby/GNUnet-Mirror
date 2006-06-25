@@ -8,23 +8,23 @@ util/win: win32 portability (lowest layer)
   util/getopt: command line parsing (depends on config)
  util/threads: pthread abstractions (depends on error)
   util/os: process and system abstractions (depends on threads, config)
-
--------- TODO ----------
    util/network: network IO abstractions (depends on threads, config, os)
 
 util: main utility library (depends on all of the above)
       => these are all statically linked into gnunetutil.so
 
-util/cron: periodic job execution (depends on gnunetutil.so)
-      => linked to gnunetutil_cron.so
-util/loggers: specific logging implementations (depends on gnunetutil.so)
-      => linked to gnunetutil_logging.so
+-------- TODO ----------
+
 util/config_impl: implementation of config API (depends on gnunetutil.so)
       => linked to gnunetutil_config.so
-util/crypto: implementation of crypto API (depends on gnunetutil.so)
-      => linked to gnunetutil_crypto.so
 util/containers: implementation of bloomfilter/vector/hashset (depends on gnunetutil.so)
       => linked to gnunetutil_containers.so (also requires libgnunetutil_crypto)
+util/cron: periodic job execution (depends on gnunetutil.so)
+      => linked to gnunetutil_cron.so
+util/crypto: implementation of crypto API (depends on gnunetutil.so)
+      => linked to gnunetutil_crypto.so
+util/loggers: specific logging implementations (depends on gnunetutil.so)
+      => linked to gnunetutil_logging.so
 
 Most GNUnet libraries and plugins will only need to (directly) link
 against gnunetutil.so.  Some may also require crypto or containers.

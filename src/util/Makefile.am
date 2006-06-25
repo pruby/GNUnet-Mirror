@@ -2,8 +2,8 @@ SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) \
   error string config \
   getopt disk threads \
   os network . \
-  config_impl loggers \
-  crypto cron containers
+  config_impl cron crypto \
+  containers loggers 
 
 INCLUDES = -I$(top_srcdir)/src/include
 

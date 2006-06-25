@@ -32,7 +32,7 @@
 #ifndef GNUNET_UTIL_CRYPTO_H
 #define GNUNET_UTIL_CRYPTO_H
 
-#include "gnunet_util_error.h"
+#include "gnunet_util.h"
 
 #ifdef __cplusplus
 extern "C" {
