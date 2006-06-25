@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -276,7 +276,7 @@ public2PrivateKey(const PublicKey * publicKey) {
 
   if ( ( ntohs(publicKey->sizen) != RSA_ENC_LEN ) ||
        ( ntohs(publicKey->len) != sizeof(PublicKey) - sizeof(publicKey->padding)) ) {
-    BREAK();
+    GE_BREAK(NULL, 0);
     return NULL;
   }
   size = RSA_ENC_LEN;
@@ -340,7 +340,7 @@ encodePrivateKey(const struct PrivateKey * hostkey) {
   lockGcrypt();
 #if EXTRA_CHECKS
   if (gcry_pk_testkey(hostkey->sexp)) {
-    BREAK();
+    GE_BREAK(NULL, 0);
     unlockGcrypt();
     return NULL;
   }
@@ -411,7 +411,7 @@ encodePrivateKey(const struct PrivateKey * hostkey) {
       sizes[i] = 0;
     }
   }
-  GNUNET_ASSERT(size < 65536);
+  GE_ASSERT(NULL, size < 65536);
   retval = MALLOC(size);
   retval->len = htons(size);
   i = 0;
@@ -664,7 +664,7 @@ int encryptPrivateKey(const void * block,
   size_t erroff;
   int rc;
 
-  GNUNET_ASSERT(size <= sizeof(HashCode512));
+  GE_ASSERT(NULL, size <= sizeof(HashCode512));
   pubkey = public2PrivateKey(publicKey);
   isize = size;
   lockGcrypt();
@@ -1026,7 +1026,7 @@ int verifySig(const void * block,
   gcry_sexp_release(data);
   gcry_sexp_release(sigdata);
   if (rc) {
-    GE_LOG(ectx,
+    GE_LOG(NULL,
 	   GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
 	   _("RSA signature verification failed at %s:%d: %s\n"),
 	   __FILE__, __LINE__,

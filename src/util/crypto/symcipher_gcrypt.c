@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -107,7 +107,10 @@ int encryptBlock(const void * block,
 			  SESSIONKEY_LEN);
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
-    LOG_GCRY(LOG_FAILURE, "gcry_cipher_setkey", rc);
+    LOG_GCRY(NULL,
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK, 
+	     "gcry_cipher_setkey", 
+	     rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
     return -1;

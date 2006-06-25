@@ -20,12 +20,13 @@
 */
 
 /**
- * @file util/random.c
+ * @file util/crypto/random.c
  * @brief functions to gather random numbers
  * @author Christian Grothoff
  */
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_crypto.h"
 #include "locking_gcrypt.h"
 #include <gcrypt.h>
 
@@ -114,7 +115,7 @@ unsigned int weak_randomi(unsigned int i) {
 unsigned long long weak_randomi64(unsigned long long u) {
   unsigned long long ret;
 
-  GE_ASSERT(u > 0);
+  GE_ASSERT(NULL, u > 0);
   ret = u * ((double) RANDOM() / RAND_MAX);
   if (ret >= u)
     ret = u-1;

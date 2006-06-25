@@ -1,7 +1,7 @@
 /*
      This file is part of GNUnet.
      Copyright (C) 1994, 1996, 1998, 2001, 2002, 2003 Free Software Foundation, Inc.
-     Copyright (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -239,7 +239,8 @@ static int is_prime (mpz_t n,
 	set_highbit(x, nbits-2 );
 	mpz_clrbit( x, nbits-2 );
       }
-      GNUNET_ASSERT( mpz_cmp( x, nminus1 ) < 0 && mpz_cmp_ui( x, 1 ) > 0 );
+      GE_ASSERT(NULL,
+		mpz_cmp( x, nminus1 ) < 0 && mpz_cmp_ui( x, 1 ) > 0 );
     }
     mpz_powm ( y, x, q, n);
     if ( mpz_cmp_ui(y, 1) && mpz_cmp( y, nminus1 ) ) {
@@ -274,7 +275,7 @@ static void gen_prime(mpz_t ptest,
   int *mods;
   mpz_t tmp;
 
-  GNUNET_ASSERT(nbits >= 16);
+  GE_ASSERT(NULL, nbits >= 16);
 
   mods = MALLOC(no_of_small_prime_numbers * sizeof(*mods));
   /* Make nbits fit into mpz_t implementation. */
@@ -518,7 +519,7 @@ typedef struct {
 
 static KBlockKeyCacheLine ** cache;
 static unsigned int cacheSize;
-static Mutex lock;
+static struct MUTEX * lock;
 
 /**
  * Deterministically (!) create a hostkey using only the
@@ -529,12 +530,12 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
   KBlockKeyCacheLine * line;
   int i;
 
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (i=0;i<cacheSize;i++) {
     if (equalsHashCode512(hc,
 			  &cache[i]->hc)) {
       ret = decodePrivateKey(cache[i]->pke);
-      MUTEX_UNLOCK(&lock);
+      MUTEX_UNLOCK(lock);
       return ret;
     }
   }
@@ -549,12 +550,12 @@ struct PrivateKey * makeKblockKey(const HashCode512 * hc) {
        cacheSize+1);
   cache[cacheSize-1]
     = line;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return decodePrivateKey(line->pke);
 }
 
 void __attribute__ ((constructor)) gnunet_crypto_kblock_ltdl_init(void) {
-  MUTEX_CREATE(&lock);
+  lock = MUTEX_CREATE(NO);
 }
 
 void __attribute__ ((destructor)) gnunet_crypto_kblock_ltdl_fini(void) {
@@ -566,7 +567,7 @@ void __attribute__ ((destructor)) gnunet_crypto_kblock_ltdl_fini(void) {
   GROW(cache,
        cacheSize,
        0);
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
 }
 
 /* end of kblockkey.c */
