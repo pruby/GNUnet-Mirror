@@ -34,6 +34,7 @@
  * then run the actual job.
  */
 
+#include "gnunet_util.h"
 #include "gnunet_util_cron.h"
 #include "platform.h"
 

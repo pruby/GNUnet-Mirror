@@ -6,7 +6,7 @@ lib_LTLIBRARIES = libgnunetutil_containers.la
 
 libgnunetutil_containers_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la 
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la 
 
 libgnunetutil_containers_la_LDFLAGS = \
  -version-info 0:0:0

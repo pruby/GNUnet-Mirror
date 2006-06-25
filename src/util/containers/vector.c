@@ -18,7 +18,7 @@
 */
 
 /**
- * @file util/vector.c
+ * @file util/containers/vector.c
  * @brief Implementation of a dynamic array
  * @author Antti Salonen, Christian Grothoff
  * @version vector.c,v 1.3 2004/05/02 20:22:52 aksalone Exp
@@ -41,6 +41,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_containers.h"
 
 typedef struct Vector {
   unsigned int VECTOR_SEGMENT_SIZE;
@@ -624,9 +625,7 @@ void ** vectorElements (Vector *v) {
   VectorSegment *vs;
   size_t i = 0;
 
-  rvalue = xmalloc_unchecked_(v->size * sizeof (void *),
-			      __FILE__,
-			      __LINE__);
+  rvalue = MALLOC_LARGE(v->size * sizeof (void *));
   for (vs = v->segmentsHead; vs; vs = vs->next) {
     memcpy (rvalue + i,
 	    vs->data,

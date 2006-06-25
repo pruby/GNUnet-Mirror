@@ -27,6 +27,9 @@
  * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
+ * @author Nils Durner
+ *
+ * TODO: refactor APIs (more consistent naming conventions, etc.)
  */
 
 #ifndef GNUNET_UTIL_CONTAINERS_H
@@ -34,6 +37,7 @@
 
 /* add error and config prototypes */
 #include "gnunet_util.h"
+#include "gnunet_util_crypto.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,7 +75,8 @@ struct HashTable;
  *        element (number of bits set per element in the set)
  * @return the bloomfilter
  */
-struct Bloomfilter * loadBloomfilter(const char * filename,
+struct Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
+				     const char * filename,
 				     unsigned int size,
 				     unsigned int k);
 
@@ -310,8 +315,11 @@ int ht_containsValue(const struct HashTable *hashTable, const void *value, const
  * @param value the value associated with the key
  * @return 0 if successful, -1 if an error was encountered
  */
-int ht_put(struct HashTable *hashTable, const void *key, const unsigned int keylen,
-  void *value, const unsigned int valuelen);
+int ht_put(struct HashTable *hashTable, 
+	   const void *key, 
+	   const unsigned int keylen,
+	   void *value, 
+	   const unsigned int valuelen);
   
 /**
  * @brief retrieves the value of a key in a HashTable
@@ -321,15 +329,20 @@ int ht_put(struct HashTable *hashTable, const void *key, const unsigned int keyl
  * @param valuelen the length of the value
  * @return YES if found, NO otherwise
  */
-int ht_get(const struct HashTable *hashTable, const void *key, const unsigned int
-  keylen, void **value, unsigned int *valuelen);
+int ht_get(const struct HashTable *hashTable, 
+	   const void *key, 
+	   const unsigned int keylen, 
+	   void **value, 
+	   unsigned int *valuelen);
 
 /**
  * @brief removes a key/value pair from a HashTable
  * @param hashTable the HashTable to remove the key/value pair from
  * @param key the key specifying the key/value pair to be removed
  */
-void ht_remove(struct HashTable *hashTable, const void *key, const unsigned int keylen);
+void ht_remove(struct HashTable *hashTable, 
+	       const void *key,
+	       const unsigned int keylen);
 
 /**
  * @brief removes all key/value pairs from a HashTable
@@ -365,7 +378,8 @@ long ht_buckets(const struct HashTable *hashTable);
  *                     specified, an appropriate number of buckets is
  *                     automatically calculated.
  */
-void ht_rehash(struct HashTable *hashTable, long numOfBuckets);
+void ht_rehash(struct HashTable *hashTable, 
+	       long numOfBuckets);
 
 /**
  * @brief sets the ideal element-to-bucket ratio of a HashTable
@@ -393,8 +407,10 @@ void ht_rehash(struct HashTable *hashTable, long numOfBuckets);
  *                     is considered unacceptably high, a value of 0.0 can
  *                     be specified.
  */
-void ht_setIdealRatio(struct HashTable *hashTable, float idealRatio,
-        float lowerRehashThreshold, float upperRehashThreshold);
+void ht_setIdealRatio(struct HashTable *hashTable, 
+		      float idealRatio,
+		      float lowerRehashThreshold, 
+		      float upperRehashThreshold);
 
 #define HT_PUT(ht, key, val) ht_put(ht, key, sizeof(key), val, sizeof(val))
 #define HT_GET(ht, key, val, vallen) ht_get(ht, key, sizeof(key), val, vallen)
