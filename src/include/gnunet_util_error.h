@@ -37,16 +37,8 @@ extern "C" {
 #endif
 #endif
 
-/**
- * Named constants for return values.  The following
- * invariants hold: "NO == 0" (to allow "if (NO)")
- * "OK != SYSERR", "OK != NO", "NO != SYSERR"
- * and finally "YES != NO".
- */
-#define OK      1
-#define SYSERR -1
-#define YES     1
-#define NO      0
+#include "gnunet_util_common.h"
+
 
 
 

@@ -41,6 +41,7 @@ gnunetinclude_HEADERS = \
   gnunet_transport.h \
   gnunet_transport_service.h \
   gnunet_util.h \
+  gnunet_util_common.h \
   gnunet_util_config.h \
   gnunet_util_config_impl.h \
   gnunet_util_containers.h \
