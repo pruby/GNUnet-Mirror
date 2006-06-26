@@ -88,33 +88,6 @@ extern "C" {
 
 /* CHRISTIAN: move this to gnunet_core.h or _protocols.h ? */
 
-/* NILS: I would love to see the 
-   next two methods in PLIBC */
-
-typedef unsigned int TIME_T;
-
-/**
- * TIME prototype. "man time".
- */
-TIME_T TIME(TIME_T * t);
-
-/**
- * "man ctime_r".
- * @return character sequence describing the time,
- *  must be freed by caller
- */
-char * GN_CTIME(const TIME_T * t);
-
-/** NILS: the next one should be removed from gnunetutil --
-    we should not have anything win32 specific in here! */
-
-/**
- * @brief Format a Windows specific error code
- */
-char *winErrorStr(const char *prefix, 
-		  int dwErr);
-
-
 /* FIXME: these functions need to be replaced with
    functions that are appropriate for bootstrapping
    the new gnunetutil library (i.e. setup error,

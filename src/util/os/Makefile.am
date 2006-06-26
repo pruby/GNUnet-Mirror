@@ -11,7 +11,8 @@ libos_la_SOURCES = \
  dso.c \
  osconfig.c \
  semaphore.c \
- statuscalls.c 
+ statuscalls.c \
+ time.c
 
 check_PROGRAMS = \
  daemontest \

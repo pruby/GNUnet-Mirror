@@ -43,6 +43,11 @@ extern "C" {
 #endif
 
 /**
+ * 32-bit timer value.
+ */
+typedef unsigned int TIME_T;
+
+/**
  * @brief Inter-process semaphore.
  */
 struct IPC_SEMAPHORE;
@@ -51,6 +56,18 @@ struct IPC_SEMAPHORE;
  * @brief plugin (shared library) handle
  */ 
 struct PluginHandle;
+
+/**
+ * TIME prototype. "man time".
+ */
+TIME_T TIME(TIME_T * t);
+
+/**
+ * "man ctime_r".
+ * @return character sequence describing the time,
+ *  must be freed by caller
+ */
+char * GN_CTIME(const TIME_T * t);
 
 /**
  * @param isDefault is this presumably the default interface

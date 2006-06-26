@@ -30,6 +30,36 @@
 #define LKC_DIRECT_LINK
 #include "lkc.h"
 
+char * winErrorStr(const char *prefix, 
+       int dwErr) {
+#ifdef WINDOWS
+  char *err, *ret;
+  int mem;
+  
+  if (! FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+          NULL, 
+          (DWORD) dwErr, 
+          MAKELANGID(LANG_NEUTRAL, 
+         SUBLANG_DEFAULT), 
+          (LPTSTR) &err,
+          0,
+          NULL )) {
+    err = "";
+  }
+  
+  mem = strlen(err) + strlen(prefix) + 20;
+  ret = (char *) malloc(mem);
+  
+  snprintf(ret, mem, "%s: %s (#%u)", 
+     prefix, 
+     err, 
+     dwErr);
+  LocalFree(err);
+  return ret;
+#else
+  return NULL;
+#endif
+}
 
 /**
  * @brief Determine whether a NIC makes a good default
