@@ -19,7 +19,7 @@
 */
 
 /**
- * @file src/util/os/prefix.c
+ * @file src/util/os/installpath.c
  * @brief get paths used by the program
  * @author Milan
  */
@@ -32,32 +32,26 @@ extern "C" {
 #endif
 
 #include <sys/stat.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "gnunet_util_config.h"
 
+#include "platform.h"
+#include "gnunet_util_string.h"
+#include "gnunet_util_config.h"
+#include "gnunet_util_os.h"
+
+/* assumed math size for a path
+ * used to try allocating less memory than PATH_MAX */
 #define PATH_TRY 96
 
-/*
- * List of app dirs
- * Used to find paths
- */
-enum InstallPathKind {
-  PREFIX,
-  BINDIR,
-  LIBDIR,
-  DATADIR,
-  PACKAGEDATADIR,
-  LOCALEDIR };
 
 /*
  * @brief get the path to the executable, including the binary itself
  * @author Milan
  * @param ectx the context to report the errors to
  * @param cfg the context to get configuration values from
- * @returns a pointer to the executable path, owned by the function (don't free it)
+ * @return a pointer to the executable path, owned by the function (don't free it)
  */
 static char *os_get_exec_path(struct GE_Context * ectx,
                               struct GC_Configuration * cfg) {
@@ -116,7 +110,7 @@ static char *os_get_exec_path(struct GE_Context * ectx,
     tmp = MALLOC(PATH_TRY); /* let's try with a little buffer */
     if( !getcwd(tmp, PATH_TRY-1) ) { /* buffer too small */
       tmp = REALLOC(tmp, path_max);
-      size = getcwd(tmp, path_max-1); }
+      getcwd(tmp, path_max-1); }
 
     execpath = MALLOC(strlen(tmp)+strlen(path1)+2);
     sprintf(execpath, "%s/%s", tmp, path1);
@@ -133,13 +127,13 @@ static char *os_get_exec_path(struct GE_Context * ectx,
 
     while(strchr(tmp, ':')) {
       path2 = (strrchr(tmp, ':')+1);
-      size2 = strlen(path2)+size+2);
+      size2 = strlen(path2)+size+2;
       if(size2 > size1) {
         path3 = REALLOC(path3, size2); /* not nice, but best to do: */
         size1 = size2; }               /* malloc PATH_MAX bytes is too much */
 
       sprintf(path3, "%s/%s", path2, path1);
-      if(STAT(path3, &dummy_stat) == 0) {
+      if(stat(path3, &dummy_stat) == 0) {
         found = 1;
         break; }
        *(path2-1) = '\0';
@@ -161,19 +155,18 @@ static char *os_get_exec_path(struct GE_Context * ectx,
   if(found) {
       return execpath; }
   else { /* we can do nothing to run normally */
-    GE_LOG(NULL, /* This error should not occur on standard Unices */
+    GE_LOG(ectx, /* This error should not occur on standard Unices */
 	   GE_ERROR | GE_USER | GE_ADMIN | GE_DEVELOPER | GE_IMMEDIATE,
 	   _("Cannot determine the path to the executable, your system may be broken or not supported.\n"));
      return NULL; }
 }
-
 
 /*
  * @brief get the path to a specific app dir
  * @author Milan
  * @param ectx the context to report the errors to
  * @param cfg the context to get configuration values from
- * @returns a pointer to the dir path (to be freed by the caller)
+ * @return a pointer to the dir path (to be freed by the caller)
  */
 char * os_get_installation_path(struct GE_Context * ectx,
                                 struct GC_Configuration * cfg,
@@ -243,7 +236,7 @@ char * os_get_installation_path(struct GE_Context * ectx,
   final_dir = STRDUP(tmp);
 
   FREE(tmp);
-  FREENONULL(dirname);
+  FREENONNULL(dirname);
   return final_dir;
 }
 
@@ -253,4 +246,4 @@ char * os_get_installation_path(struct GE_Context * ectx,
 #ifdef __cplusplus
 }
 #endif
-/* end of prefix.c */
+/* end of installpath.c */

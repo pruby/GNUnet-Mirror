@@ -241,6 +241,28 @@ int os_daemon_start(struct GE_Context * ectx,
 int os_daemon_stop(struct GE_Context * ectx,
 		   int pid);
 
+/**
+ * List of install paths
+ */
+enum InstallPathKind {
+  PREFIX,
+  BINDIR,
+  LIBDIR,
+  DATADIR,
+  PACKAGEDATADIR,
+  LOCALEDIR };
+
+/**
+ * @brief get the path to a specific app dir
+ * @author Milan
+ * @param ectx the context to report the errors to
+ * @param cfg the context to get configuration values from
+ * @return a pointer to the dir path (to be freed by the caller)
+ */
+char * os_get_installation_path(struct GE_Context * ectx,
+                                struct GC_Configuration * cfg,
+                                enum InstallPathKind dirkind);
+
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
