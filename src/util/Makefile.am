@@ -58,5 +58,5 @@ libgnunetutil_la_LDFLAGS = \
  -version-info 1:0:0
 
 libgnunetutil_la_SOURCES = \
- initialize.c time.c
+ initialize.c 
 
