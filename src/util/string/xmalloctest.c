@@ -4,6 +4,7 @@
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_string.h"
 #include "platform.h"
 
 static int check() {

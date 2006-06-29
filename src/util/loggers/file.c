@@ -25,6 +25,7 @@
  * @author Christian Grothoff
  */
 #include "gnunet_util_error_loggers.h"
+#include "gnunet_util_string.h"
 #include "gnunet_util.h"
 #include "platform.h"
 #define _XOPEN_SOURCE /* glibc2 needs this */

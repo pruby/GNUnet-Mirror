@@ -25,6 +25,7 @@
  */
 
 #include "gnunet_util_config_impl.h"
+#include "gnunet_util_string.h"
 #include "gnunet_util.h"
 #include "platform.h"
 

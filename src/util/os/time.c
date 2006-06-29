@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util_os.h"
+#include "gnunet_util_string.h"
 
 /**
  * TIME prototype. "man time".
