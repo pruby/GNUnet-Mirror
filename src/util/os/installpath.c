@@ -190,12 +190,22 @@ char * os_get_installation_path(struct GE_Context * ectx,
       *(ptr-n) = '\0';
       n++; }
     ptr = strrchr(tmp, DIR_SEPARATOR);
+
+    if( !( (*(ptr+1) == 'b)'
+        && (*(ptr+2) == 'i')
+        && (*(ptr+3) == 'n')) ) )
+      GE_LOG(ectx,
+             GE_WARNING | GE_ADMIN | GE_IMMEDIATE,
+	      _("GNUnet executables are not in a directory named 'bin'. This may signal a broken installation.\n"));
+
+    *(ptr+1) = '\0';
+    n = 1;
     while( *(ptr-n) == DIR_SEPARATOR ) { /* same, but keep the final '/' */
       *(ptr-n+1) = '\0';
       n++; }
 
     if(*tmp == '\0') { /* no prefix at all */
-      GE_LOG(NULL,
+      GE_LOG(ectx,
              GE_ERROR | GE_USER | GE_ADMIN | GE_DEVELOPER | GE_IMMEDIATE,
 	      _("Cannot determine the installation prefix. Unknown error.\n"));
      return NULL; }
@@ -209,30 +219,32 @@ char * os_get_installation_path(struct GE_Context * ectx,
 
   switch(dirkind) {
     case PREFIX:
-      dirname = NULL;
+      dirname = STRDUP("\0");
+      break;
     case BINDIR:
-      dirname = STRDUP("bin/");
+      dirname = STRDUP("bin/\0");
+      break;
     case LIBDIR:
-      dirname = STRDUP("lib/");
+      dirname = STRDUP("lib/\0");
+      break;
     case DATADIR:
-      dirname = STRDUP("share/");
+      dirname = STRDUP("share/\0");
+      break;
     case PACKAGEDATADIR:
       tmp = MALLOC(9+strlen(prefix)+strlen(appname));
-      sprintf(tmp, "share/%s/%s/", prefix, appname);
+      sprintf(tmp, "share/%s/%s/\0", prefix, appname);
       dirname = STRDUP(tmp);
       FREE(tmp);
+      break;
     case LOCALEDIR:
-      dirname = STRDUP("share/locale/");
+      dirname = STRDUP("share/locale/\0");
+      break;
     default:
       return NULL; }
 
-  if( !(tmp = MALLOC(strlen(prefix)+strlen(dirname)+1)) ) {
-    GE_LOG(ectx,
-           GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("Cannot determine the application directories. Memory allocation error.\n"));
-    return NULL; }
+  /* if an error occurs here, we won't be able to continue */
+  GE_ASSERT(ectx, (tmp = MALLOC(strlen(prefix)+strlen(dirname))) );
 
-  sprintf(tmp, "%s%s", prefix, dirname);
   final_dir = STRDUP(tmp);
 
   FREE(tmp);
