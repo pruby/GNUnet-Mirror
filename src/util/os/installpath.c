@@ -111,6 +111,18 @@ static char *os_get_exec_path(struct GE_Context * ectx,
     if( !getcwd(tmp, PATH_TRY-1) ) { /* buffer too small */
       tmp = REALLOC(tmp, path_max);
       getcwd(tmp, path_max-1); }
+    
+    if( (*path1 == '.') && (*(path1+1) == '.') ) { /* ../ so go one level higher */
+      ptr = strchr(tmp, '/');
+      *ptr = '\0';
+      path2 = path1+3; } /* and jump */
+    else if( (*path1 == '.')) ) {/* ./ so just jump */
+      path2 = path1+2;
+    else
+      path2 = path1;
+ 
+    if(tmp[len(tmp)-1] == '/') /* just to clean final '/' */
+        tmp[len(tmp)-1] = '\0'
 
     execpath = MALLOC(strlen(tmp)+strlen(path1)+2);
     sprintf(execpath, "%s/%s", tmp, path1);
@@ -242,8 +254,7 @@ char * os_get_installation_path(struct GE_Context * ectx,
     default:
       return NULL; }
 
-  /* if an error occurs here, we won't be able to continue */
-  GE_ASSERT(ectx, (tmp = MALLOC(strlen(prefix)+strlen(dirname))) );
+  tmp = MALLOC(strlen(prefix)+strlen(dirname)+1);
 
   final_dir = STRDUP(tmp);
 
