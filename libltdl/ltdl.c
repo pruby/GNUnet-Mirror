@@ -1,5 +1,5 @@
 /* ltdl.c -- system independent dlopen wrapper
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2004, 2005  Free Software Foundation, Inc.
    Originally by Thomas Tanner <tanner@ffii.org>
    This file is part of GNU Libtool.
 
@@ -20,8 +20,8 @@ Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307  USA
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301  USA
 
 */
 
@@ -37,8 +37,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 #  include <stdio.h>
 #endif
 
+/* Include the header defining malloc.  On K&R C compilers,
+   that's <malloc.h>, on ANSI C and ISO C compilers, that's <stdlib.h>.  */
 #if HAVE_STDLIB_H
 #  include <stdlib.h>
+#else
+#  if HAVE_MALLOC_H
+#    include <malloc.h>
+#  endif
 #endif
 
 #if HAVE_STRING_H
@@ -51,10 +57,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 
 #if HAVE_CTYPE_H
 #  include <ctype.h>
-#endif
-
-#if HAVE_MALLOC_H
-#  include <malloc.h>
 #endif
 
 #if HAVE_MEMORY_H
@@ -237,7 +239,7 @@ LT_GLOBAL_DATA void   (*lt_dlfree)	LT_PARAMS((lt_ptr ptr))
 #else
 
 #define LT_DLMALLOC(tp, n)	((tp *) lt_dlmalloc ((n) * sizeof(tp)))
-#define LT_DLREALLOC(tp, p, n)	((tp *) rpl_realloc ((p), (n) * sizeof(tp)))
+#define LT_DLREALLOC(tp, p, n)	((tp *) lt_dlrealloc ((p), (n) * sizeof(tp)))
 #define LT_DLFREE(p)						\
 	LT_STMT_START { if (p) (p) = (lt_dlfree (p), (lt_ptr) 0); } LT_STMT_END
 
@@ -383,11 +385,13 @@ memcpy (dest, src, size)
      const lt_ptr src;
      size_t size;
 {
-  size_t i = 0;
+  const char *	s = src;
+  char *	d = dest;
+  size_t	i = 0;
 
   for (i = 0; i < size; ++i)
     {
-      dest[i] = src[i];
+      d[i] = s[i];
     }
 
   return dest;
@@ -407,17 +411,21 @@ memmove (dest, src, size)
      const lt_ptr src;
      size_t size;
 {
-  size_t i;
+  const char *	s = src;
+  char *	d = dest;
+  size_t	i;
 
-  if (dest < src)
+  if (d < s)
     for (i = 0; i < size; ++i)
       {
-	dest[i] = src[i];
+	d[i] = s[i];
       }
-  else if (dest > src)
-    for (i = size -1; i >= 0; --i)
+  else if (d > s && size > 0)
+    for (i = size -1; ; --i)
       {
-	dest[i] = src[i];
+	d[i] = s[i];
+	if (i == 0)
+	  break;
       }
 
   return dest;
@@ -449,7 +457,9 @@ opendir (path)
   DIR *entry;
 
   assert(path != (char *) NULL);
-  (void) strncpy(file_specification,path,LT_FILENAME_MAX-1);
+  /* allow space for: path + '\\' '\\' '*' '.' '*' + '\0' */
+  (void) strncpy (file_specification, path, LT_FILENAME_MAX-6);
+  file_specification[LT_FILENAME_MAX-6] = LT_EOS_CHAR;
   (void) strcat(file_specification,"\\");
   entry = LT_DLMALLOC (DIR,sizeof(DIR));
   if (entry != (DIR *) 0)
@@ -490,6 +500,7 @@ static struct dirent *readdir(entry)
   entry->firsttime = FALSE;
   (void) strncpy(entry->file_info.d_name,entry->Win32FindData.cFileName,
     LT_FILENAME_MAX-1);
+  entry->file_info.d_name[LT_FILENAME_MAX - 1] = LT_EOS_CHAR;
   entry->file_info.d_namlen = strlen(entry->file_info.d_name);
   return(&entry->file_info);
 }
@@ -614,7 +625,7 @@ argz_create_sep (str, delim, pargz, pargz_len)
   assert (pargz);
   assert (pargz_len);
 
-  /* Make a copy of STR, but replacing each occurence of
+  /* Make a copy of STR, but replacing each occurrence of
      DELIM with '\0'.  */
   argz_len = 1+ LT_STRLEN (str);
   if (argz_len)
@@ -682,7 +693,7 @@ argz_insert (pargz, pargz_len, before, entry)
   /* This probably indicates a programmer error, but to preserve
      semantics, scan back to the start of an entry if BEFORE points
      into the middle of it.  */
-  while ((before >= *pargz) && (before[-1] != LT_EOS_CHAR))
+  while ((before > *pargz) && (before[-1] != LT_EOS_CHAR))
     --before;
 
   {
@@ -1016,7 +1027,7 @@ lt_erealloc (addr, size)
      lt_ptr addr;
      size_t size;
 {
-  lt_ptr mem = realloc (addr, size);
+  lt_ptr mem = lt_dlrealloc (addr, size);
   if (size && !mem)
     LT_DLMUTEX_SETERROR (LT_DLSTRERROR (NO_MEMORY));
   return mem;
@@ -1337,15 +1348,27 @@ sys_wll_open (loader_data, filename)
   if (!searchname)
     return 0;
 
-#if __CYGWIN__
   {
-    char wpath[MAX_PATH];
-    cygwin_conv_to_full_win32_path(searchname, wpath);
-    module = LoadLibrary(wpath);
-  }
+    /* Silence dialog from LoadLibrary on some failures.
+       No way to get the error mode, but to set it,
+       so set it twice to preserve any previous flags. */
+    UINT errormode = SetErrorMode(SEM_FAILCRITICALERRORS);
+    SetErrorMode(errormode | SEM_FAILCRITICALERRORS);
+
+#if defined(__CYGWIN__)
+    {
+      char wpath[MAX_PATH];
+      cygwin_conv_to_full_win32_path (searchname, wpath);
+      module = LoadLibrary (wpath);
+    }
 #else
-  module = LoadLibrary (searchname);
+    module = LoadLibrary (searchname);
 #endif
+
+    /* Restore the error mode. */
+    SetErrorMode(errormode);
+  }
+
   LT_DLFREE (searchname);
 
   /* libltdl expects this function to fail if it is unable
@@ -1580,6 +1603,10 @@ static struct lt_user_dlloader sys_dld = {
 
 
 #if HAVE_MACH_O_DYLD_H
+#if !defined(__APPLE_CC__) && !defined(__MWERKS__) && !defined(__private_extern__)
+/* Is this correct? Does it still function properly? */
+#define __private_extern__ extern
+#endif
 # include <mach-o/dyld.h>
 #endif
 #include <mach-o/getsect.h>
@@ -1643,7 +1670,7 @@ lt_int_dyld_error(othererror)
 	int lerno;
 	const char *errstr;
 	const char *file;
-	NSLinkEditError(&ler,&lerno,&file,&errstr);	
+	NSLinkEditError(&ler,&lerno,&file,&errstr);
 	if (!errstr || !strlen(errstr)) errstr = othererror;
 	return errstr;
 }
@@ -1671,7 +1698,7 @@ lt_int_dyld_get_mach_header_from_nsmodule(module)
 
 static const char* lt_int_dyld_lib_install_name(mh)
 	const struct mach_header *mh;
-{	
+{
 /* NSAddImage is also used to get the loaded image, but it only works if the lib
    is installed, for uninstalled libs we need to check the install_names against
    each other. Note that this is still broken if DYLD_IMAGE_SUFFIX is set and a
@@ -1680,7 +1707,6 @@ static const char* lt_int_dyld_lib_install_name(mh)
 	int j;
 	struct load_command *lc;
 	unsigned long offset = sizeof(struct mach_header);
-	const struct mach_header *mh1;
 	const char* retStr=NULL;
 	for (j = 0; j < mh->ncmds; j++)
 	{
@@ -1701,7 +1727,7 @@ lt_int_dyld_match_loaded_lib_by_install_name(const char *name)
 	int i=_dyld_image_count();
 	int j;
 	const struct mach_header *mh=NULL;
-	const char *id=NULL;	
+	const char *id=NULL;
 	for (j = 0; j < i; j++)
 	{
 		id=lt_int_dyld_lib_install_name(_dyld_get_image_header(j));
@@ -1713,7 +1739,7 @@ lt_int_dyld_match_loaded_lib_by_install_name(const char *name)
 	}
 	return mh;
 }
-	
+
 static NSSymbol
 lt_int_dyld_NSlookupSymbolInLinkedLibs(symbol,mh)
 	const char *symbol;
@@ -1735,14 +1761,14 @@ lt_int_dyld_NSlookupSymbolInLinkedLibs(symbol,mh)
 				mh1=lt_int_dyld_match_loaded_lib_by_install_name((char*)(((struct dylib_command*)lc)->dylib.name.offset +
 										(unsigned long)lc));
 				if (!mh1)
-				{	
-					/* Maybe NSAddImage can find it */												
+				{
+					/* Maybe NSAddImage can find it */
 					mh1=ltdl_NSAddImage((char*)(((struct dylib_command*)lc)->dylib.name.offset +
 										(unsigned long)lc),
 										NSADDIMAGE_OPTION_RETURN_ONLY_IF_LOADED +
 										NSADDIMAGE_OPTION_WITH_SEARCHING +
 										NSADDIMAGE_OPTION_RETURN_ON_ERROR );
-				}						
+				}
 				if (mh1)
 				{
 					retSym = ltdl_NSLookupSymbolInImage(mh1,
@@ -1750,8 +1776,8 @@ lt_int_dyld_NSlookupSymbolInLinkedLibs(symbol,mh)
 											NSLOOKUPSYMBOLINIMAGE_OPTION_BIND_NOW
 											| NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR
 											);
-					if (retSym) break;						
-				}						
+					if (retSym) break;
+				}
 			}
 			offset += lc->cmdsize;
 		}
@@ -1784,7 +1810,7 @@ sys_dyld_open (loader_data, filename)
 	lt_module   module   = 0;
 	NSObjectFileImage ofi = 0;
 	NSObjectFileImageReturnCode ofirc;
-	
+
   	if (!filename)
   		return (lt_module)-1;
 	ofirc = NSCreateObjectFileImageFromFile(filename, &ofi);
@@ -1802,9 +1828,9 @@ sys_dyld_open (loader_data, filename)
 		case NSObjectFileImageInappropriateFile:
 		    if (ltdl_NSIsSymbolNameDefinedInImage && ltdl_NSLookupSymbolInImage)
 		    {
-				module = (lt_module)ltdl_NSAddImage(filename, NSADDIMAGE_OPTION_RETURN_ON_ERROR);	
+				module = (lt_module)ltdl_NSAddImage(filename, NSADDIMAGE_OPTION_RETURN_ON_ERROR);
 				break;
-			}	
+			}
 		default:
 			LT_DLMUTEX_SETERROR (lt_int_dyld_error(LT_DLSTRERROR(CANNOT_OPEN)));
 			return 0;
@@ -1820,11 +1846,10 @@ sys_dyld_close (loader_data, module)
 {
 	int retCode = 0;
 	int flags = 0;
-	unsigned long size=0;
 	if (module == (lt_module)-1) return 0;
-#ifdef __BIG_ENDIAN__  	
+#ifdef __BIG_ENDIAN__
   	if (((struct mach_header *)module)->magic == MH_MAGIC)
-#else  	
+#else
     if (((struct mach_header *)module)->magic == MH_CIGAM)
 #endif
 	{
@@ -1844,7 +1869,7 @@ sys_dyld_close (loader_data, module)
 		{
 			flags += NSUNLINKMODULE_OPTION_KEEP_MEMORY_MAPPED;
 		}
-#endif		
+#endif
 #ifdef __ppc__
 			flags += NSUNLINKMODULE_OPTION_RESET_LAZY_REFERENCES;
 #endif
@@ -1852,9 +1877,9 @@ sys_dyld_close (loader_data, module)
 		{
 			retCode=1;
 			LT_DLMUTEX_SETERROR (lt_int_dyld_error(LT_DLSTRERROR(CANNOT_CLOSE)));
-		}										
+		}
 	}
-	
+
  return retCode;
 }
 
@@ -1868,14 +1893,15 @@ sys_dyld_sym (loader_data, module, symbol)
   	NSSymbol *nssym = 0;
   	void *unused;
   	const struct mach_header *mh=NULL;
+  	char saveError[256] = "Symbol not found";
   	if (module == (lt_module)-1)
   	{
   		_dyld_lookup_and_bind(symbol,(unsigned long*)&address,&unused);
   		return address;
   	}
-#ifdef __BIG_ENDIAN__  	
+#ifdef __BIG_ENDIAN__
   	if (((struct mach_header *)module)->magic == MH_MAGIC)
-#else  	
+#else
     if (((struct mach_header *)module)->magic == MH_CIGAM)
 #endif
   	{
@@ -1890,7 +1916,7 @@ sys_dyld_sym (loader_data, module, symbol)
 											| NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR
 											);
 			}
-	    }	
+	    }
 
   	}
   else {
@@ -1898,14 +1924,16 @@ sys_dyld_sym (loader_data, module, symbol)
 	}
 	if (!nssym)
 	{
+		strncpy(saveError, lt_int_dyld_error(LT_DLSTRERROR(SYMBOL_NOT_FOUND)), 255);
+		saveError[255] = 0;
 		if (!mh) mh=lt_int_dyld_get_mach_header_from_nsmodule(module);
 		nssym = lt_int_dyld_NSlookupSymbolInLinkedLibs(symbol,mh);
-	}		
+	}
 	if (!nssym)
 	{
-		LT_DLMUTEX_SETERROR (lt_int_dyld_error(LT_DLSTRERROR(SYMBOL_NOT_FOUND)));
+		LT_DLMUTEX_SETERROR (saveError);
 		return NULL;
-	}	
+	}
 	return NSAddressOfSymbol(nssym);
 }
 
@@ -2525,8 +2553,8 @@ find_module (handle, dir, libdir, dlname, old_name, installed)
 
       /* maybe it was moved to another directory */
       {
-	  if (tryall_dlopen_module (handle,
-				    (const char *) 0, dir, dlname) == 0)
+	  if (dir && (tryall_dlopen_module (handle,
+				    (const char *) 0, dir, dlname) == 0))
 	    return 0;
       }
     }
@@ -2853,12 +2881,6 @@ load_deplibs (handle, deplibs)
 	}
     }
 
-  /* restore the old search path */
-  LT_DLFREE (user_search_path);
-  user_search_path = save_search_path;
-
-  LT_DLMUTEX_UNLOCK ();
-
   if (!depcount)
     {
       errors = 0;
@@ -2945,6 +2967,13 @@ load_deplibs (handle, deplibs)
 
  cleanup:
   LT_DLFREE (names);
+  /* restore the old search path */
+  if (user_search_path) {
+    LT_DLFREE (user_search_path);
+    user_search_path = save_search_path;
+  }
+  LT_DLMUTEX_UNLOCK ();
+
 #endif
 
   return errors;
@@ -2983,6 +3012,9 @@ trim (dest, str)
   char *tmp;
 
   LT_DLFREE (*dest);
+
+  if (!end)
+    return 1;
 
   if (len > 3 && str[0] == '\'')
     {
@@ -3088,7 +3120,7 @@ try_dlopen (phandle, filename)
       ++base_name;
     }
   else
-    LT_DLMEM_REASSIGN (base_name, canonical);
+    base_name = canonical;
 
   assert (base_name && *base_name);
 
@@ -3521,7 +3553,14 @@ lt_argz_insert (pargz, pargz_len, before, entry)
 {
   error_t error;
 
-  if ((error = argz_insert (pargz, pargz_len, before, entry)))
+  /* Prior to Sep 8, 2005, newlib had a bug where argz_insert(pargz,
+     pargz_len, NULL, entry) failed with EINVAL.  */
+  if (before)
+    error = argz_insert (pargz, pargz_len, before, entry);
+  else
+    error = argz_append (pargz, pargz_len, entry, 1 + LT_STRLEN (entry));
+
+  if (error)
     {
       switch (error)
 	{
@@ -3919,7 +3958,7 @@ lt_dlerror ()
   LT_DLMUTEX_GETERROR (error);
   LT_DLMUTEX_SETERROR (0);
 
-  return error ? error : LT_DLSTRERROR (UNKNOWN);
+  return error ? error : NULL;
 }
 
 static int
