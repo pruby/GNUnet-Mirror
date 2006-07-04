@@ -41,14 +41,14 @@ check_PROGRAMS = xmalloctest$(EXEEXT)
 subdir = src/util/string
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ac_define_dir.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/gtk-2.0.m4 \
-	$(top_srcdir)/m4/guile.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
-	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libgcrypt.m4 \
-	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/acinclude.m4 $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
+	$(top_srcdir)/m4/gtk-2.0.m4 $(top_srcdir)/m4/guile.m4 \
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
+	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/nls.m4 \
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -111,7 +111,6 @@ CXXFLAGS = -g -O2
 CYGPATH_W = echo
 CYGWIN_FALSE = 
 CYGWIN_TRUE = #
-DATADIR = /home/grothoff//share/GNUnet/
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DLLTOOL = dlltool
@@ -119,7 +118,7 @@ ECHO = echo
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
-EGREP = grep -E
+EGREP = /bin/grep -E
 EXEEXT = 
 EXT_LIBS = 
 EXT_LIB_PATH = -L/home/grothoff//lib 
@@ -128,6 +127,7 @@ FFLAGS = -g -O2
 GMSGFMT = /usr/bin/msgfmt
 GNUNETGTK_CFLAGS = -I/usr/include/libglade-2.0 -I/usr/include/gtk-2.0 -I/usr/include/libxml2 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include  
 GNUNETGTK_LIBS = -lglade-2.0 -lgtk-x11-2.0 -lxml2 -lz -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lfontconfig -lXext -lXrender -lXinerama -lXi -lXrandr -lXcursor -lXfixes -lpango-1.0 -lcairo -lX11 -lgobject-2.0 -lgmodule-2.0 -ldl -lglib-2.0  
+GREP = /bin/grep
 GTK_CFLAGS = -I/usr/include/gtk-2.0 -I/usr/lib/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include  
 GTK_LIBS = -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgdk_pixbuf-2.0 -lm -lpangocairo-1.0 -lfontconfig -lXext -lXrender -lXinerama -lXi -lXrandr -lXcursor -lXfixes -lpango-1.0 -lcairo -lX11 -lgobject-2.0 -lgmodule-2.0 -ldl -lglib-2.0  
 GUILE = 
@@ -168,7 +168,6 @@ LIBOBJS =
 LIBS = -lm -lnsl -lpthread 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
-LOCALEDIR = /home/grothoff//share/locale/
 LTDLINCL = 
 LTLIBICONV = -liconv
 LTLIBINTL = 
@@ -205,15 +204,9 @@ VERSION = 0.7.0e
 XFREEBSD_FALSE = 
 XFREEBSD_TRUE = #
 XGETTEXT = /usr/bin/xgettext
-ac_ct_AR = ar
-ac_ct_AS = 
 ac_ct_CC = gcc
 ac_ct_CXX = g++
-ac_ct_DLLTOOL = 
 ac_ct_F77 = f77
-ac_ct_OBJDUMP = 
-ac_ct_RANLIB = ranlib
-ac_ct_STRIP = strip
 am__fastdepCC_FALSE = #
 am__fastdepCC_TRUE = 
 am__fastdepCXX_FALSE = #
@@ -227,7 +220,10 @@ build_alias =
 build_cpu = i686
 build_os = linux-gnu
 build_vendor = pc
-datadir = ${prefix}/share
+datadir = ${datarootdir}
+datarootdir = ${prefix}/share
+docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
+dvidir = ${docdir}
 exec_prefix = ${prefix}
 guile_available = 
 host = i686-pc-linux-gnu
@@ -235,17 +231,21 @@ host_alias =
 host_cpu = i686
 host_os = linux-gnu
 host_vendor = pc
+htmldir = ${docdir}
 includedir = ${prefix}/include
-infodir = ${prefix}/info
+infodir = ${datarootdir}/info
 install_sh = /home/grothoff/svn/GNUnet/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
+localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
-mandir = ${prefix}/man
+mandir = ${datarootdir}/man
 mkdir_p = mkdir -p -- .
 oldincludedir = /usr/include
+pdfdir = ${docdir}
 prefix = /home/grothoff/
 program_transform_name = s,x,x,
+psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 subdirs =  libltdl
