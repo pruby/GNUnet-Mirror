@@ -239,7 +239,7 @@ char * os_get_installation_path(struct GE_Context * ectx,
     case LIBDIR:
       dirname = STRDUP("lib/\0");
       break;
-    case DATADIR:
+    case GNDATADIR:
       dirname = STRDUP("share/\0");
       break;
     case PACKAGEDATADIR:

@@ -132,7 +132,7 @@ static int parser(int argc, char *argv[])
       }
     }
     FREENONNULL(setConfigurationString("FILES", "gnunet.conf", filename));
-    conf_parse(DATADIR "/config-daemon.in");
+    conf_parse(GNDATADIR "/config-daemon.in");
   }
   else {
     FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "NO"));
@@ -143,7 +143,7 @@ static int parser(int argc, char *argv[])
       filename = expandFileName(DEFAULT_CLIENT_CONFIG_FILE);
     }
     FREENONNULL(setConfigurationString("FILES", "gnunet.conf", filename));
-    conf_parse(DATADIR "/config-client.in");
+    conf_parse(GNDATADIR "/config-client.in");
   }
   dirname = STRDUP(filename);
 

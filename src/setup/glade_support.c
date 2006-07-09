@@ -47,10 +47,10 @@ char * get_glade_filename() {
 
 #ifdef MINGW
   gladeFile = MALLOC(_MAX_PATH + 1);
-  plibc_conv_to_win_path(DATADIR"/wizard.glade",
+  plibc_conv_to_win_path(GNDATADIR"/wizard.glade",
 			 gladeFile);
 #else
-  gladeFile = STRDUP(DATADIR"/wizard.glade");
+  gladeFile = STRDUP(GNDATADIR"/wizard.glade");
 #endif
   return gladeFile;
 }

@@ -248,7 +248,7 @@ enum InstallPathKind {
   PREFIX,
   BINDIR,
   LIBDIR,
-  DATADIR,
+  GNDATADIR,
   PACKAGEDATADIR,
   LOCALEDIR };
 

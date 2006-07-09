@@ -134,11 +134,11 @@ AM_CONDITIONAL(XFREEBSD, test "$build_target" = "freebsd")
 AC_MSG_RESULT([$build_target])
 
 # We define the paths here, because MinGW/GCC expands paths
-# passed through the command line ("-DDATADIR=..."). This would
+# passed through the command line ("-DGNDATADIR=..."). This would
 # lead to hard-coded paths ("C:\mingw\mingw\bin...") that do
 # not contain the actual GNUnet installation. GNUnet usually lives in
 # "C:\Program Files\GNU\GNUnet\bin".
-#AC_DEFINE_DIR([DATADIR], [datadir/GNUnet/], [The directory for 
+#AC_DEFINE_DIR([GNDATADIR], [datadir/GNUnet/], [The directory for 
 #installing read-only architecture-independent data])
 #AC_DEFINE_DIR([LOCALEDIR], [datadir/locale/], [gettext catalogs])
 
