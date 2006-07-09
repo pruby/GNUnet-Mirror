@@ -1381,12 +1381,14 @@ static void sendBuffer(BufferEntry * be) {
   /* finally padd with noise */
   if ( (p + sizeof(P2P_MESSAGE_HEADER) <= totalMessageSize) &&
        (disable_random_padding == NO) ) {
-    P2P_MESSAGE_HEADER *part;
+    P2P_MESSAGE_HEADER part;
     unsigned short noiseLen = totalMessageSize - p;
 
-    part = (P2P_MESSAGE_HEADER *) & plaintextMsg[p];
-    part->size = htons(noiseLen);
-    part->type = htons(P2P_PROTO_noise);
+    part.size = htons(noiseLen);
+    part.type = htons(P2P_PROTO_noise);
+    memcpy(&plaintextMsg[p],
+           &part,
+	   sizeof(P2P_MESSAGE_HEADER));
     for (i = p + sizeof(P2P_MESSAGE_HEADER); i < totalMessageSize; i++)
       plaintextMsg[i] = (char) rand();
     p = totalMessageSize;
