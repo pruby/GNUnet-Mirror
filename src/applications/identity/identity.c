@@ -59,6 +59,10 @@
 
 #define CRON_TRUST_FLUSH_FREQ (5 * cronMINUTES)
 
+#define CRON_DISCARD_HOSTS_INTERVAL (cronDAYS)
+
+#define CRON_DISCARDS_HOSTS_AFTER (3 * cronMONTHS)
+
 typedef struct {
   PeerIdentity identity;
   /**
@@ -998,6 +1002,44 @@ static void getPeerIdentity(const PublicKey * pubKey,
   }
 }
 
+/**
+ * @brief Delete expired hosts
+ */
+static int discardHostsHelper(const char *filename,
+          const char *dirname,
+          void *now) {
+  char *fn;
+  struct stat hostStat;
+  int hostFile;
+  
+  fn = (char *) MALLOC(strlen(filename) + strlen(dirname) + 2);
+  sprintf(fn, "%s%s%s", dirname, DIR_SEPARATOR_STR, filename);
+  hostFile = fileopen(fn, O_WRONLY);
+  if (hostFile != -1) {
+    if (FSTAT(hostFile, &hostStat) == 0) {
+      CLOSE(hostFile);
+      
+      if (hostStat.st_mtime + (CRON_DISCARDS_HOSTS_AFTER / cronSECONDS) < *((time_t *) now))
+        UNLINK(fn);
+    }
+  }
+  FREE(fn);
+  
+  return OK;
+}
+
+/**
+ * @brief scan host directory for expired entries
+ */
+static void cronDiscardHosts(void *unused) {
+  time_t timeNow;
+  
+  timeNow = time(NULL);
+  scanDirectory(networkIdDirectory,
+      &discardHostsHelper,
+      (void *) &timeNow);
+}
+
 
 /**
  * Provide the Identity service.
@@ -1077,6 +1119,10 @@ provide_module_identity(CoreAPIForApplication * capi) {
 	     CRON_TRUST_FLUSH_FREQ,
 	     CRON_TRUST_FLUSH_FREQ,
 	     NULL);
+  addCronJob(&cronDiscardHosts,
+       0,
+       CRON_DISCARD_HOSTS_INTERVAL,
+       NULL);
   return &id;
 }
 
@@ -1105,6 +1151,9 @@ void release_module_identity() {
   delCronJob(&cronFlushTrustBuffer,
 	     CRON_TRUST_FLUSH_FREQ,
 	     NULL);
+  delCronJob(&cronDiscardHosts,
+       CRON_DISCARD_HOSTS_INTERVAL,
+       NULL);
   cronFlushTrustBuffer(NULL);
   MUTEX_DESTROY(&lock_);
   for (i=0;i<numberOfHosts_;i++) {
