@@ -13,9 +13,12 @@ Notes:
 
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring:
+  * util: 
+    + network/io: load monitor support
+    + loggers: SMTP logger
   * transports:
     + TCP: setBlocking for select pipe
-    + UDP/SMTP/HTTP/IPv6: do not yet compile
+    + SMTP/HTTP/IPv6: do not yet compile
   * core:
     + nothing compiles
     + add support for extended core API fields

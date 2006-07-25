@@ -43,7 +43,8 @@ typedef struct {
 
 /* apis (our advertised API and the core api ) */
 static TransportAPI natAPI;
-static CoreAPIForTransport * coreAPI = NULL;
+
+static CoreAPIForTransport * coreAPI;
 
 
 /* *************** API implementation *************** */
@@ -57,15 +58,20 @@ static CoreAPIForTransport * coreAPI = NULL;
  * @return OK on success, SYSERR on failure
  */
 static int verifyHelo(const P2P_hello_MESSAGE * helo) {
-
+  const char * yesno[] = { "YES", "NO", NULL };
+  const char * value;
   if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
        (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
        (ntohs(helo->header.type) != p2p_PROTO_hello) ) {
     return SYSERR; /* obviously invalid */
   } else {
-    if (testConfigurationString("NAT",
-				"LIMITED",
-				"YES")) {
+    if ( (-1 != GC_get_configuration_value_choice(coreAPI->cfg,
+						  "NAT",
+						  "LIMITED",
+						  yesno,
+						  "NO",
+						  &value)) &&
+	 (value == "YES") ) {
       /* if WE are a NAT and this is not our hello,
 	 it is invalid since NAT-to-NAT is not possible! */
       if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
@@ -86,11 +92,17 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
  * @return hello on success, NULL on error
  */
 static P2P_hello_MESSAGE * createhello() {
+  const char * yesno[] = { "YES", "NO", NULL };
+  const char * value;
   P2P_hello_MESSAGE * msg;
 
-  if (! testConfigurationString("NAT",
-				"LIMITED",
-				"YES"))
+  if (! ( (-1 != GC_get_configuration_value_choice(coreAPI->cfg,
+						"NAT",
+						"LIMITED",
+						yesno,
+						"NO",
+						&value)) &&
+	  (value == "YES") ) )
     return NULL;
 
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));

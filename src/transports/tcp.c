@@ -1482,7 +1482,7 @@ static int stopTransportServer() {
  * Reload the configuration. Should never fail (keep old
  * configuration on error, syslog errors!)
  */
-static void reloadConfiguration(void) {
+static void reloadConfiguration() {
   char * ch;
 
   MUTEX_LOCK(tcplock);

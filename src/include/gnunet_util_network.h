@@ -36,6 +36,7 @@
 #include "gnunet_util_string.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_threads.h"
+#include <sys/socket.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -452,6 +453,14 @@ int socket_recv(struct SocketHandle * s,
 		size_t max,
 		size_t * read);
 
+int socket_recv_from(struct SocketHandle * s,
+		     NC_KIND nc,
+		     void * buf,
+		     size_t max,
+		     size_t * read,
+		     struct sockaddr * from,
+		     socklen_t * fromlen);
+
 /**
  * Do a write on the given socket.
  * Write at most max bytes from buf.
@@ -468,6 +477,14 @@ int socket_send(struct SocketHandle * s,
 		const void * buf,
 		size_t max,
 		size_t * sent);
+
+int socket_send_to(struct SocketHandle * s,
+		   NC_KIND nc,
+		   const void * buf,
+		   size_t max,
+		   size_t * sent,
+		   const struct sockaddr * dst,
+		   socklen_t dstlen);
 
 /**
  * Check if socket is valid

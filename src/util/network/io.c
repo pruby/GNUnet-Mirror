@@ -22,6 +22,8 @@
  * @file util/network/io.c
  * @brief (network) input/output operations
  * @author Christian Grothoff
+ *
+ * TODO: load monitor support!
  */
 
 #include "gnunet_util_network.h"
@@ -183,6 +185,73 @@ int socket_recv(struct SocketHandle * s,
   return YES;
 }
 
+int socket_recv_from(struct SocketHandle * s,
+		     NC_KIND nc,
+		     void * buf,
+		     size_t max,
+		     size_t * read,
+		     struct sockaddr * from,
+		     socklen_t * fromlen) {
+  int flags;
+  size_t pos;
+  size_t ret;
+
+  socket_set_blocking(s, 
+		      0 == (nc & NC_Blocking));
+  flags = 0;
+#ifdef CYGWIN
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
+#elif OSX
+  /* anything? */
+#elif SOMEBSD || SOLARIS
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
+#elif LINUX
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
+#else
+  /* good luck */
+#endif
+  pos = 0;
+  do {
+    ret = (size_t) RECVFROM(s->handle,
+			    &((char*)buf)[pos],
+			    max - pos,
+			    flags,
+			    from,
+			    fromlen);
+    if ( (ret == (size_t) -1) &&
+	 (errno == EINTR) &&
+	 (0 != (nc & NC_IgnoreInt)) )
+      continue;
+    if (ret == (size_t) -1) {
+      if (errno == EINTR) {
+	*read = pos;
+	return YES;
+      }
+      if ( (errno == EAGAIN) ||
+	   (errno == EWOULDBLOCK) ) {
+	if (0 != (nc & NC_Blocking))
+	  continue;
+	*read = pos;
+	return (pos == 0) ? NO : YES;
+      }
+      GE_LOG_STRERROR(s->ectx,
+		      GE_DEBUG | GE_USER | GE_REQUEST,
+		      "recv");
+      *read = pos;
+      return SYSERR;
+    }
+    pos += ret;
+  } while ( (pos < max) &&
+	    (0 != (nc & NC_Blocking)) );
+  *read = pos;
+  return YES;
+}
+
 int socket_send(struct SocketHandle * s,
 		NC_KIND nc,
 		const void * buf,
@@ -218,6 +287,74 @@ int socket_send(struct SocketHandle * s,
 			&((char*)buf)[pos],
 			max - pos,
 			flags);
+    if ( (ret == (size_t) -1) &&
+	 (errno == EINTR) &&
+	 (0 != (nc & NC_IgnoreInt)) )
+      continue;
+    if (ret == (size_t) -1) {
+      if (errno == EINTR) {
+	*sent = pos;
+	return YES;
+      }
+      if ( (errno == EAGAIN) ||
+	   (errno == EWOULDBLOCK) ) {
+	if (0 != (nc & NC_Blocking))
+	  continue;
+	*sent = pos;
+	return (pos == 0) ? NO : YES;
+      }
+      GE_LOG_STRERROR(s->ectx,
+		      GE_DEBUG | GE_USER | GE_REQUEST,
+		      "send");
+      *sent = pos;
+      return SYSERR;
+    }
+    pos += ret;
+  } while ( (pos < max) &&
+	    (0 != (nc & NC_Blocking)) );
+  *sent = pos;
+  return YES;
+}
+
+int socket_send_to(struct SocketHandle * s,
+		   NC_KIND nc,
+		   const void * buf,
+		   size_t max,
+		   size_t * sent,
+		   const struct sockaddr * dst,
+		   socklen_t dstlen) {
+  int flags;
+  size_t pos;
+  size_t ret;
+
+  socket_set_blocking(s, 
+		      0 == (nc & NC_Blocking));
+  flags = 0;
+#if SOMEBSD || SOLARIS
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
+#elif OSX
+  /* As braindead as Win32? */
+#elif CYGWIN
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
+#elif LINUX
+  if (0 == (nc & NC_Blocking))
+    flags |= MSG_DONTWAIT;
+  if (0 == (nc & NC_IgnoreInt))
+    flags |= MSG_NOSIGNAL;
+#else
+  /* pray */
+#endif
+
+  pos = 0;
+  do {
+    ret = (size_t) SENDTO(s->handle,
+			  &((char*)buf)[pos],
+			  max - pos,
+			  flags,
+			  dst,
+			  dstlen);
     if ( (ret == (size_t) -1) &&
 	 (errno == EINTR) &&
 	 (0 != (nc & NC_IgnoreInt)) )
