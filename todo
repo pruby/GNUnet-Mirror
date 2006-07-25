@@ -12,7 +12,17 @@ Notes:
 
 
 0.7.1 ['06] (aka "stabilization")
-- finish util refactoring
+- finish util refactoring:
+  * transports:
+    + TCP: setBlocking for select pipe
+    + UDP/SMTP/HTTP/IPv6: do not yet compile
+  * core:
+    + nothing compiles
+    + add support for extended core API fields
+  * applications:
+    + nothing compiles
+  * setup:
+    + nothing compiles
 - adapt util testcases and main GNUnet codebase
 - use new util to improve error handling capabilities
 - use new util to clean up gnunet-setup

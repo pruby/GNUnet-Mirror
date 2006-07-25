@@ -108,6 +108,26 @@ typedef struct {
   PeerIdentity * myIdentity;
 
   /**
+   * System error context
+   */
+  struct GE_Context * ectx;
+
+  /**
+   * System configuration
+   */
+  struct GC_Configuration * cfg;
+
+  /**
+   * System load monitor
+   */
+  struct LoadMonitor * load_monitor;
+
+  /**
+   * System cron Manager.
+   */
+  struct CronManager * cron;
+
+  /**
    * Data was received (potentially encrypted), make the core process
    * it.
    */

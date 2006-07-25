@@ -37,6 +37,25 @@ typedef struct SocketHandle {
   
 } SocketHandle;
 
+
+void socket_add_to_select_set(struct SocketHandle * s,
+			      fd_set * set,
+			      int * max) {
+  FD_SET(s->handle,
+	 set);
+  if (*max < s->handle)
+    *max = s->handle;
+}
+
+int socket_test_select_set(struct SocketHandle * sock,
+			   fd_set * set) {
+  return FD_ISSET(sock->handle, set);
+}
+
+int socket_get_os_socket(struct SocketHandle * sock) {
+  return sock->handle;
+}
+
 struct SocketHandle * 
 socket_create(struct GE_Context * ectx,
 	      struct LoadMonitor * mon,
@@ -51,6 +70,12 @@ socket_create(struct GE_Context * ectx,
 }
 
 void socket_destroy(struct SocketHandle * s) {
+  GE_ASSERT(NULL, s != NULL);
+  if (0 != SHUTDOWN(s->handle,
+		    SHUT_RDWR))
+    GE_LOG_STRERROR(s->ectx,
+		    GE_WARNING | GE_ADMIN | GE_BULK, 
+		    "shutdown");
   if (0 != CLOSE(s->handle))
     GE_LOG_STRERROR(s->ectx,
 		    GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,

@@ -456,6 +456,8 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
     val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
     *value = STRDUP(val);
   } else {
+    if (def == NULL) 
+      return -1;    
     *value = STRDUP(def);
     ret = 1; /* default */
   }
@@ -503,7 +505,10 @@ _get_configuration_value_choice(struct GC_Configuration * cfg,
     }
   } else {
     *value = def;
-    ret = 1; /* default */
+    if (def == NULL)
+      ret = -1;
+    else
+      ret = 1; /* default */
   }
   MUTEX_UNLOCK(cfg->data->lock);
   return ret;

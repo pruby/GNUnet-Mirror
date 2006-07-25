@@ -42,13 +42,8 @@
  *
  * @return SYSERR on error, OK on success
  */
-int getPublicIPAddress(IPaddr  * address);
-
-/**
- * @brief Get the IPv6 address for the local machine.
- *
- * @return SYSERR on error, OK on success
- */
-int getPublicIP6Address(IP6addr  * address);
+int getPublicIPAddress(struct GC_Configuration * cfg,
+		       struct GE_Context * ectx,
+		       IPaddr  * address);
 
 #endif

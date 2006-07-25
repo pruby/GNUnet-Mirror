@@ -407,6 +407,15 @@ socket_create(struct GE_Context * ectx,
 
 void socket_destroy(struct SocketHandle * s);
 
+void socket_add_to_select_set(struct SocketHandle * s,
+			      fd_set * set,
+			      int * max);
+
+int socket_test_select_set(struct SocketHandle * sock,
+			   fd_set * set);
+
+int socket_get_os_socket(struct SocketHandle * sock);
+
 /**
  * Depending on doBlock, enable or disable the nonblocking mode
  * of socket s.

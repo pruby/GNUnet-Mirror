@@ -106,7 +106,7 @@ typedef struct {
   /**
    * the tcp socket
    */
-  int sock;
+  struct SocketHandle * sock;
 
   /**
    * number of users of this session
@@ -121,7 +121,7 @@ typedef struct {
   /**
    * mutex for synchronized access to 'users'
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
   /**
    * To whom are we talking to (set to our identity
@@ -172,6 +172,7 @@ typedef struct {
  * apis (our advertised API and the core api )
  */
 static CoreAPIForTransport * coreAPI;
+
 static TransportAPI tcpAPI;
 
 static Stats_ServiceAPI * stats;
@@ -186,13 +187,13 @@ static int stat_bytesDropped;
  * one thread for listening for new connections,
  * and for reading on all open sockets
  */
-static PTHREAD_T listenThread;
+static struct PTHREAD * listenThread;
 
 /**
  * sock is the tcp socket that we listen on for new inbound
  * connections.
  */
-static int tcp_sock;
+static struct SocketHandle * tcp_sock;
 
 /**
  * tcp_pipe is used to signal the thread that is
@@ -205,7 +206,9 @@ static int tcp_pipe[2];
  * Array of currently active TCP sessions.
  */
 static TSession ** tsessions = NULL;
+
 static unsigned int tsessionCount;
+
 static unsigned int tsessionArrayLength;
 
 /* configuration */
@@ -223,15 +226,22 @@ static struct CIDRNetwork * filteredNetworks_;
  * prevent the select thread from operating and removing
  * is done by the only therad that reads from the array.
  */
-static Mutex tcplock;
+static struct MUTEX * tcplock;
 
 /**
  * Semaphore used by the server-thread to signal that
  * the server has been started -- and later again to
  * signal that the server has been stopped.
  */
-static Semaphore * serverSignal = NULL;
+static struct SEMAPHORE * serverSignal;
+
 static int tcp_shutdown = YES;
+
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
+
+static struct LoadMonitor * load_monitor;
 
 /* ******************** helper functions *********************** */
 
@@ -241,10 +251,10 @@ static int tcp_shutdown = YES;
 static int isBlacklisted(IPaddr ip) {
   int ret;
 
-  MUTEX_LOCK(&tcplock);
-  ret = checkIPListed(filteredNetworks_,
-		      ip);
-  MUTEX_UNLOCK(&tcplock);
+  MUTEX_LOCK(tcplock);
+  ret = check_ipv4_listed(filteredNetworks_,
+			  ip);
+  MUTEX_UNLOCK(tcplock);
   return ret;
 }
 
@@ -260,7 +270,9 @@ static void signalSelect() {
 	      &i,
 	      sizeof(char));
   if (ret != sizeof(char))
-    LOG_STRERROR(LOG_ERROR, "write");
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_BULK,
+		    "write");
 }
 
 /**
@@ -277,14 +289,14 @@ static int tcpDisconnect(TSession * tsession) {
   if (tsession->internal != NULL) {
     TCPSession * tcpsession = tsession->internal;
 
-    MUTEX_LOCK(&tcpsession->lock);
+    MUTEX_LOCK(tcpsession->lock);
     tcpsession->users--;
     if (tcpsession->users > 0) {
-      MUTEX_UNLOCK(&tcpsession->lock);
+      MUTEX_UNLOCK(tcpsession->lock);
       return OK;
     }
-    MUTEX_UNLOCK(&tcpsession->lock);
-    MUTEX_DESTROY(&tcpsession->lock);
+    MUTEX_UNLOCK(tcpsession->lock);
+    MUTEX_DESTROY(tcpsession->lock);
     FREE(tcpsession->rbuff);
     FREENONNULL(tcpsession->wbuff);
     tcpsession->wbuff = NULL;
@@ -311,11 +323,9 @@ static void destroySession(int i) {
   TCPSession * tcpSession;
 
   tcpSession = tsessions[i]->internal;
-  if (tcpSession->sock != -1)
-    if (0 != SHUTDOWN(tcpSession->sock, SHUT_RDWR))
-      LOG_STRERROR(LOG_EVERYTHING, "shutdown");
-  closefile(tcpSession->sock);
-  tcpSession->sock = -1;
+  if (tcpSession->sock != NULL)
+    socket_destroy(tcpSession->sock);
+  tcpSession->sock = NULL;
   tcpDisconnect(tsessions[i]);
   tsessions[i] = tsessions[--tsessionCount];
   tsessions[tsessionCount] = NULL;
@@ -328,15 +338,21 @@ static void destroySession(int i) {
  */
 static unsigned short getGNUnetTCPPort() {
   struct servent * pse;	/* pointer to service information entry	*/
-  unsigned short port;
+  unsigned long long port;
 
-  port = (unsigned short) getConfigurationInt("TCP",
-					      "PORT");
-  if (port == 0) { /* try lookup in services */
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "TCP",
+					      "PORT",
+					      1,
+					      65535,
+					      2086,
+					      &port)) {
     if ((pse = getservbyname("gnunet", "tcp")))
       port = htons(pse->s_port);
+    else
+      port = 0;
   }
-  return port;
+  return (unsigned short) port;
 }
 
 /**
@@ -362,13 +378,13 @@ static int tcpAssociate(TSession * tsession) {
   TCPSession * tcpSession;
 
   if (tsession == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   tcpSession = (TCPSession*) tsession->internal;
-  MUTEX_LOCK(&tcpSession->lock);
+  MUTEX_LOCK(tcpSession->lock);
   tcpSession->users++;
-  MUTEX_UNLOCK(&tcpSession->lock);
+  MUTEX_UNLOCK(tcpSession->lock);
   return OK;
 }
 
@@ -385,6 +401,7 @@ static int readAndProcess(int i) {
   int ret;
   TCPP2P_PACKET * pack;
   P2P_PACKET * mp;
+  size_t recvd;
 
   tsession = tsessions[i];
   if (SYSERR == tcpAssociate(tsession))
@@ -396,40 +413,23 @@ static int readAndProcess(int i) {
 	 tcpSession->rsize,
 	 tcpSession->rsize * 2);
   }
-  ret = READ(tcpSession->sock,
-	     &tcpSession->rbuff[tcpSession->pos],
-	     tcpSession->rsize - tcpSession->pos);
-  if ( (ret > 0) &&
-       (stats != NULL) )
-    stats->change(stat_bytesReceived,
-		  ret);
-  cronTime(&tcpSession->lastUse);
-  if (ret == 0) {
+  ret = socket_recv(tcpSession->sock,
+		    NC_Blocking | NC_IgnoreInt, 
+		    &tcpSession->rbuff[tcpSession->pos],
+		    tcpSession->rsize - tcpSession->pos,
+		    &recvd);
+  tcpSession->lastUse = get_time();
+  if (ret != OK) {
     tcpDisconnect(tsession);
 #if DEBUG_TCP
-    LOG(LOG_DEBUG,
-	"READ on socket %d returned 0 bytes, closing connection\n",
-	tcpSession->sock);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,
+	   "READ on socket %d returned 0 bytes, closing connection\n",
+	   tcpSession->sock);
 #endif
     return SYSERR; /* other side closed connection */
   }
-  if (ret < 0) {
-    if ( (errno == EINTR) ||
-	 (errno == EAGAIN) ) {
-#if DEBUG_TCP
-      LOG_STRERROR(LOG_DEBUG, "read");
-#endif
-      tcpDisconnect(tsession);
-      return OK;
-    }
-#if DEBUG_TCP
-    LOG_STRERROR(LOG_INFO, "read");
-#endif
-    tcpDisconnect(tsession);
-    return SYSERR;
-  }
-  incrementBytesReceived(ret);
-  tcpSession->pos += ret;
+  tcpSession->pos += recvd;
 
   while (tcpSession->pos > 2) {
     len = ntohs(((TCPP2P_PACKET*)&tcpSession->rbuff[0])->size)
@@ -439,11 +439,12 @@ static int readAndProcess(int i) {
 	   tcpSession->rsize,
 	   len);
 #if DEBUG_TCP
-    LOG(LOG_DEBUG,
-	"Read %d bytes on socket %d, expecting %d for full message\n",
-	tcpSession->pos,
-	tcpSession->sock,
-	len);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,
+	   "Read %d bytes on socket %d, expecting %d for full message\n",
+	   tcpSession->pos,
+	   tcpSession->sock,
+	   len);
 #endif
     if (tcpSession->pos < len) {
       tcpDisconnect(tsession);
@@ -461,23 +462,26 @@ static int readAndProcess(int i) {
       if ( (ntohs(welcome->header.reserved) != 0) ||
 	   (ntohs(welcome->header.size)
 	    != sizeof(TCPWelcome) - sizeof(TCPP2P_PACKET)) ) {
-	LOG(LOG_WARNING,
-	    _("Expected welcome message on tcp connection, "
-	      "got garbage (%u, %u). Closing.\n"),
-	    ntohs(welcome->header.reserved),
-	    ntohs(welcome->header.size));
+	GE_LOG(ectx,
+	       GE_WARNING | GE_USER | GE_BULK,
+	       _("Expected welcome message on tcp connection, "
+		 "got garbage (%u, %u). Closing.\n"),
+	       ntohs(welcome->header.reserved),
+	       ntohs(welcome->header.size));
 	tcpDisconnect(tsession);
 	return SYSERR;
       }
       tcpSession->expectingWelcome = NO;
       tcpSession->sender = welcome->clientIdentity;
 #if DEBUG_TCP
-      IFLOG(LOG_DEBUG,
-	    hash2enc(&tcpSession->sender.hashPubKey,
-		     &enc));
-      LOG(LOG_DEBUG,
-	  "tcp welcome message from `%s' received\n",
-	  &enc);
+      IF_GELOG(ectx,
+	       GE_DEBUG | GE_USER | GE_BULK,
+	       hash2enc(&tcpSession->sender.hashPubKey,
+			&enc));
+      GE_LOG(etcx,
+	     GE_DEBUG | GE_USER | GE_BULK,
+	     "tcp welcome message from `%s' received\n",
+	     &enc);
 #endif
       memmove(&tcpSession->rbuff[0],
 	      &tcpSession->rbuff[sizeof(TCPWelcome)],
@@ -495,10 +499,11 @@ static int readAndProcess(int i) {
     pack = (TCPP2P_PACKET*)&tcpSession->rbuff[0];
     /* send msg to core! */
     if (len <= sizeof(TCPP2P_PACKET)) {
-      LOG(LOG_WARNING,
-	  _("Received malformed message (size %u)"
-	    " from tcp-peer connection. Closing.\n"),
-	  len);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_BULK,
+	     _("Received malformed message (size %u)"
+	       " from tcp-peer connection. Closing.\n"),
+	     len);
       tcpDisconnect(tsession);
       return SYSERR;
     }
@@ -514,11 +519,17 @@ static int readAndProcess(int i) {
     {
       EncName enc;
       
-      hash2enc(&mp->sender.hashPubKey, &enc);
-      
-      LOG(LOG_DEBUG,
-	  "tcp transport received %u bytes from %s (CRC %u), forwarding to core\n",
-	  mp->size, &enc, crc32N(tcpSession->rbuff, tcpSession->pos));
+      IF_GELOG(ectx,
+	       GE_DEBUG | GE_USER | GE_BULK,
+	       hash2enc(&mp->sender.hashPubKey, 
+	       &enc);      
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_USER | GE_BULK,
+	     "tcp transport received %u bytes from %s (CRC %u), forwarding to core\n",
+	     mp->size, 
+	     &enc, 
+	     crc32N(tcpSession->rbuff, 
+		    tcpSession->pos));
     }
 #endif
     coreAPI->receive(mp);
@@ -549,14 +560,14 @@ static int readAndProcess(int i) {
 static unsigned int addTSession(TSession * tsession) {
   unsigned int i;
 
-  MUTEX_LOCK(&tcplock);
+  MUTEX_LOCK(tcplock);
   if (tsessionCount == tsessionArrayLength)
     GROW(tsessions,
 	 tsessionArrayLength,
 	 tsessionArrayLength * 2);
   i = tsessionCount;
   tsessions[tsessionCount++] = tsession;
-  MUTEX_UNLOCK(&tcplock);
+  MUTEX_UNLOCK(tcplock);
   return i;
 }
 
@@ -576,14 +587,16 @@ static void createNewSession(int sock) {
   tcpSession->wpos = 0;
   tcpSession->wbuff = NULL;
   tcpSession->wsize = 0;
-  tcpSession->sock = sock;
+  tcpSession->sock = socket_create(ectx,
+				   load_monitor,
+				   sock);
   /* fill in placeholder identity to mark that we
      are waiting for the welcome message */
   tcpSession->sender = *(coreAPI->myIdentity);
   tcpSession->expectingWelcome = YES;
-  MUTEX_CREATE_RECURSIVE(&tcpSession->lock);
+  tcpSession->lock = MUTEX_CREATE(YES);
   tcpSession->users = 1; /* us only, core has not seen this tsession! */
-  cronTime(&tcpSession->lastUse);
+  tcpSession->lastUse = get_time();
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
@@ -597,7 +610,7 @@ static void createNewSession(int sock) {
  * and processes deferred (async) writes and buffers reads until an
  * entire message has been received.
  */
-static void * tcpListenMain() {
+static void * tcpListenMain(void * unused) {
   struct sockaddr_in clientAddr;
   fd_set readSet;
   fd_set errorSet;
@@ -608,78 +621,82 @@ static void * tcpListenMain() {
   int max;
   int ret;
 
-  if (tcp_sock != -1)
-    if (0 != LISTEN(tcp_sock, 5))
-      LOG_STRERROR(LOG_ERROR, "listen");
   SEMAPHORE_UP(serverSignal); /* we are there! */
-  MUTEX_LOCK(&tcplock);
+  MUTEX_LOCK(tcplock);
   while (tcp_shutdown == NO) {
     FD_ZERO(&readSet);
     FD_ZERO(&errorSet);
     FD_ZERO(&writeSet);
-    if (tcp_sock != -1) {
-      if (isSocketValid(tcp_sock)) {
-	FD_SET(tcp_sock, &readSet);
-      } else {	
-	LOG_STRERROR(LOG_ERROR, "isSocketValid");
-	tcp_sock = -1; /* prevent us from error'ing all the time */
-      }
-    }
-#if DEBUG_TCP
-    else
-      LOG(LOG_DEBUG,
-	  "TCP server socket not open!\n");
-#endif
     if (tcp_pipe[0] != -1) {
       if (-1 != FSTAT(tcp_pipe[0], &buf)) {
-	FD_SET(tcp_pipe[0], &readSet);
+	FD_SET(tcp_pipe[0], 
+	       &readSet);
       } else {
-	LOG_STRERROR(LOG_ERROR, "fstat");
+	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			"fstat");
 	tcp_pipe[0] = -1; /* prevent us from error'ing all the time */	
       }
     }
     max = tcp_pipe[0];
-    if (tcp_sock > tcp_pipe[0])
-      max = tcp_sock;
+    if (tcp_sock != NULL) {
+      if (socket_test_valid(tcp_sock)) {
+	socket_add_to_select_set(tcp_sock, &readSet, &max);
+      } else {	
+	socket_destroy(tcp_sock);
+	tcp_sock = NULL; /* prevent us from error'ing all the time */
+      }
+    }
+#if DEBUG_TCP
+    else
+      GE_LOG(ectx,
+	     GE_USER | GE_WARNING | GE_BULK,
+	     _("TCP server socket not open!\n"));
+#endif
     for (i=0;i<tsessionCount;i++) {
       TCPSession * tcpSession = tsessions[i]->internal;
-      int sock = tcpSession->sock;
-      if (sock != -1) {
-	if (isSocketValid(sock)) {
-	  FD_SET(sock, &readSet);
-	  FD_SET(sock, &errorSet);
+      struct SocketHandle * sock = tcpSession->sock;
+      if (sock != NULL) {
+	if (socket_test_valid(sock)) {
+	  socket_add_to_select_set(sock, &readSet, &max);
+	  socket_add_to_select_set(sock, &errorSet, &max);
 	  if (tcpSession->wpos > 0)
-	    FD_SET(sock, &writeSet); /* do we have a pending write request? */
+	    socket_add_to_select_set(sock, &writeSet, &max); /* do we have a pending write request? */
 	} else {
-	  LOG_STRERROR(LOG_ERROR, "isSocketValid");
 	  destroySession(i);
 	}
       } else {
-	BREAK(); /* sock in tsessions array should never be -1 */
+	GE_BREAK(ectx, 0); /* sock in tsessions array should never be -1 */
 	destroySession(i);
       }
-      if (sock > max)
-	max = sock;
     }
-    MUTEX_UNLOCK(&tcplock);
-    ret = SELECT(max+1, &readSet, &writeSet, &errorSet, NULL);
-    MUTEX_LOCK(&tcplock);
+    MUTEX_UNLOCK(tcplock);
+    ret = SELECT(max+1, 
+		 &readSet,
+		 &writeSet,
+		 &errorSet,
+		 NULL);
+    MUTEX_LOCK(tcplock);
     if ( (ret == -1) &&
 	 ( (errno == EAGAIN) || (errno == EINTR) ) )
       continue;
     if (ret == -1) {
       if (errno == EBADF) {
-	LOG_STRERROR(LOG_ERROR, "select");
+	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
+			"select");
       } else {
-	DIE_STRERROR("select");
+	GE_DIE_STRERROR(ectx,
+			GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+			"select");
       }
     }
-    if (tcp_sock != -1) {
-      if (FD_ISSET(tcp_sock, &readSet)) {
+    if (tcp_sock != NULL) {
+      if (socket_test_select_set(tcp_sock, &readSet)) {
 	int sock;
 	
 	lenOfIncomingAddr = sizeof(clientAddr);
-	sock = ACCEPT(tcp_sock,
+	sock = ACCEPT(socket_get_os_socket(tcp_sock),
 		      (struct sockaddr *)&clientAddr,
 		      &lenOfIncomingAddr);
 	if (sock != -1) {	
@@ -688,29 +705,40 @@ static void * tcpListenMain() {
 	     otherwise we just close and reject the communication! */
 
 	  IPaddr ipaddr;
-	  GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
+	  GE_ASSERT(ectx,
+		    sizeof(struct in_addr) == sizeof(IPaddr));
 	  memcpy(&ipaddr,
 		 &clientAddr.sin_addr,
 		 sizeof(struct in_addr));
 
 	  if (YES == isBlacklisted(ipaddr)) {
-	    LOG(LOG_INFO,
-		_("%s: Rejected connection from blacklisted "
-		  "address %u.%u.%u.%u.\n"),
-		"TCP",
-		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
-	    SHUTDOWN(sock, 2);
-	    closefile(sock);
+	    GE_LOG(ectx,
+		   GE_INFO | GE_USER | GE_ADMIN | GE_REQUEST,
+		   _("%s: Rejected connection from blacklisted "
+		     "address %u.%u.%u.%u.\n"),
+		   "TCP",
+		   PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
+	    if (0 != SHUTDOWN(sock, 2))
+	      GE_LOG_STRERROR(ectx,
+			      GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
+			      "shutdown");
+	    if (0 != CLOSE(sock))
+	      GE_LOG_STRERROR(ectx,
+			      GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
+			      "close");
 	  } else {
 #if DEBUG_TCP
-	    LOG(LOG_INFO,
-		"Accepted connection from %u.%u.%u.%u.\n",
-		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));	
+	    GE_LOG(ectx,
+		   GE_INFO,
+		   "Accepted connection from %u.%u.%u.%u.\n",
+		   PRIP(ntohl(*(int*)&clientAddr.sin_addr)));	
 #endif
 	    createNewSession(sock);
 	  }
 	} else {
-	  LOG_STRERROR(LOG_INFO, "accept");
+	  GE_LOG_STRERROR(ectx,
+			  GE_WARNING | GE_ADMIN | GE_BULK,
+			  "accept");
 	}
       }
     }
@@ -723,35 +751,41 @@ static void * tcpListenMain() {
       if (0 >= READ(tcp_pipe[0],
 		    &buf[0],
 		    MAXSIG_BUF)) {
-	LOG_STRERROR(LOG_WARNING, "read");
+	GE_LOG_STRERROR(ectx,
+			GE_WARNING | GE_USER | GE_BULK, 
+			"read");
       }
     }
     for (i=0;i<tsessionCount;i++) {
       TCPSession * tcpSession = tsessions[i]->internal;
-      int sock = tcpSession->sock;
-      if (FD_ISSET(sock, &readSet)) {
+      struct SocketHandle * sock = tcpSession->sock;
+      if (socket_test_select_set(sock, &readSet)) {
 	if (SYSERR == readAndProcess(i)) {
 	  destroySession(i);
 	  i--;
 	  continue;
 	}
       }
-      if (FD_ISSET(sock, &writeSet)) {
+      if (socket_test_select_set(sock, &writeSet)) {
 	size_t ret;
 	int success;
 
 try_again_1:
 #if DEBUG_TCP
-	LOG(LOG_DEBUG,
-	    "TCP: trying to send %u bytes\n",
-	    tcpSession->wpos);
+	GE_LOG(ectx,
+	       GE_DEBUG | GE_USER | GE_BULK,
+	       "TCP: trying to send %u bytes\n",
+	       tcpSession->wpos);
 #endif
-	success = SEND_NONBLOCKING(sock,
-				   tcpSession->wbuff,
-				   tcpSession->wpos,
-				   &ret);
-	if ( (success == SYSERR) || (ret == (size_t) -1) ) {
-	  LOG_STRERROR(LOG_WARNING, "send");
+	success = socket_send(sock,
+			      NC_Nonblocking,
+			      tcpSession->wbuff,
+			      tcpSession->wpos,
+			      &ret);
+	if (success == SYSERR) {
+	  GE_LOG_STRERROR(ectx,
+			  GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+			  "send");
 	  destroySession(i);
 	  i--;
 	  continue;
@@ -759,7 +793,7 @@ try_again_1:
   	  /* this should only happen under Win9x because
   	     of a bug in the socket implementation (KB177346).
   	     Let's sleep and try again. */
-  	  gnunet_util_sleep(20);
+  	  PTHREAD_SLEEP(20 * cronMILLIS);
   	  goto try_again_1;
         }
 	if (stats != NULL)
@@ -767,9 +801,10 @@ try_again_1:
 			ret);
 
 #if DEBUG_TCP
-	LOG(LOG_DEBUG,
-	    "TCP: transmitted %u bytes\n",
-	    ret);
+	GE_LOG(ectx,
+	       GE_DEBUG | GE_USER | GE_BULK,
+	       "TCP: transmitted %u bytes\n",
+	       ret);
 #endif
 	if (ret == 0) {
           /* send only returns 0 on error (other side closed connection),
@@ -790,13 +825,13 @@ try_again_1:
 	  tcpSession->wpos -= ret;
 	}
       }
-      if (FD_ISSET(sock, &errorSet)) {
+      if (socket_test_select_set(sock, &errorSet)) {
 	destroySession(i);
 	i--;
 	continue;
       }
       if ( ( tcpSession->users == 1) &&
-	   (cronTime(NULL) > tcpSession->lastUse + TCP_TIMEOUT) ) {
+	   (get_time() > tcpSession->lastUse + TCP_TIMEOUT) ) {
 	destroySession(i);
 	i--;
 	continue;
@@ -804,14 +839,14 @@ try_again_1:
     }
   }
   /* shutdown... */
-  if (tcp_sock != -1) {
-    closefile(tcp_sock);
-    tcp_sock = -1;
+  if (tcp_sock != NULL) {
+    socket_destroy(tcp_sock);
+    tcp_sock = NULL;
   }
   /* close all sessions */
   while (tsessionCount > 0)
     destroySession(0);
-  MUTEX_UNLOCK(&tcplock);
+  MUTEX_UNLOCK(tcplock);
   SEMAPHORE_UP(serverSignal); /* we are there! */
   return NULL;
 } /* end of tcp listen main */
@@ -836,21 +871,27 @@ static int tcpDirectSend(TCPSession * tcpSession,
   {
     EncName enc;
     
-    hash2enc(&tcpSession->sender.hashPubKey, &enc);
-    
-    LOG(LOG_DEBUG,
-        "tcpDirectSend called to transmit %u bytes to %s (CRC %u).\n",
-        ssize, &enc, crc32N(mp, ssize));
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_USER | GE_BULK,
+	     hash2enc(&tcpSession->sender.hashPubKey,
+		      &enc));    
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,
+	   "tcpDirectSend called to transmit %u bytes to %s (CRC %u).\n",
+	   ssize,
+	   &enc,
+	   crc32N(mp, ssize));
   }
 #endif	
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
-    LOG(LOG_DEBUG,
-        "tcpDirectSend called while TCP transport is shutdown.\n");		
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,
+	   "tcpDirectSend called while TCP transport is shutdown.\n");		
 #endif	
     return SYSERR;
   }
-  if (tcpSession->sock == -1) {
+  if (tcpSession->sock == NULL) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
 	"tcpDirectSend called, but socket is closed\n");
@@ -858,36 +899,39 @@ static int tcpDirectSend(TCPSession * tcpSession,
     return SYSERR;
   }
   if (ssize == 0) {
-    BREAK(); /* size 0 not allowed */
+    GE_BREAK(ectx, 0); /* size 0 not allowed */
     return SYSERR;
   }
-  MUTEX_LOCK(&tcplock);
+  MUTEX_LOCK(tcplock);
   if (tcpSession->wpos > 0) {
     /* select already pending... */
 #if DEBUG_TCP
-    LOG(LOG_DEBUG,
-	"write already pending, will not take additional message.\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,	   
+	   "write already pending, will not take additional message.\n");
 #endif
     if (stats != NULL)
       stats->change(stat_bytesDropped,
 		    ssize);
-    MUTEX_UNLOCK(&tcplock);
+    MUTEX_UNLOCK(tcplock);
     return NO;
   }
 #if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "TCP: trying to send %u bytes\n",
-      ssize);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK, 
+	 "TCP: trying to send %u bytes\n",
+	 ssize);
 #endif
-  success = SEND_NONBLOCKING(tcpSession->sock,
-			     mp,
-			     ssize,
-			     &ret);
+  success = socket_send(tcpSession->sock,
+			NC_Nonblocking,
+			mp,
+			ssize,
+			&ret);
   if (success == SYSERR) {
 #if DEBUG_TCP
     LOG_STRERROR(LOG_INFO, "send");
 #endif
-    MUTEX_UNLOCK(&tcplock);
+    MUTEX_UNLOCK(tcplock);
     return SYSERR;
   }
   if (success == NO)
@@ -897,9 +941,10 @@ static int tcpDirectSend(TCPSession * tcpSession,
 		  ret);
 
 #if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "TCP: transmitted %u bytes\n",
-      ret);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK, 
+	 "TCP: transmitted %u bytes\n",
+	 ret);
 #endif
 
   if (ret < ssize) {/* partial send */
@@ -914,9 +959,8 @@ static int tcpDirectSend(TCPSession * tcpSession,
     tcpSession->wpos = ssize - ret;
     signalSelect(); /* select set changed! */
   }
-  cronTime(&tcpSession->lastUse);
-  MUTEX_UNLOCK(&tcplock);
-  incrementBytesSent(ssize);
+  tcpSession->lastUse = get_time();
+  MUTEX_UNLOCK(tcplock);
   return OK;
 }
 
@@ -939,11 +983,16 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
   {
     EncName enc;
     
-    hash2enc(&tcpSession->sender.hashPubKey, &enc);
-    
-    LOG(LOG_DEBUG,
-        "tcpDirectSendReliable called to transmit %u bytes to %s (CRC %u).\n",
-        ssize, &enc, crc32N(mp, ssize));
+    IF_GELOC(ectx,
+	     GE_DEBUG | GE_USER | GE_BULK, 
+	     hash2enc(&tcpSession->sender.hashPubKey, 
+		      &enc));    
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK, 
+	   "tcpDirectSendReliable called to transmit %u bytes to %s (CRC %u).\n",
+	   ssize, 
+	   &enc,
+	   crc32N(mp, ssize));
   }
 #endif	
   if (tcp_shutdown == YES) {
@@ -953,7 +1002,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 #endif
     return SYSERR;
   }
-  if (tcpSession->sock == -1) {
+  if (tcpSession->sock == NULL) {
 #if DEBUG_TCP
     LOG(LOG_INFO,
 	"tcpDirectSendReliable called, but socket is closed\n");
@@ -961,10 +1010,10 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
     return SYSERR;
   }
   if (ssize == 0) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  MUTEX_LOCK(&tcplock);
+  MUTEX_LOCK(tcplock);
   if (tcpSession->wpos > 0) {
     unsigned int old = tcpSession->wpos;
     GROW(tcpSession->wbuff,
@@ -975,8 +1024,9 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 	   mp,
 	   ssize);
 #if DEBUG_TCP
-    LOG(LOG_DEBUG,
-	"tcpDirectSendReliable appended message to send buffer.\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK, 
+	   "tcpDirectSendReliable appended message to send buffer.\n");
 #endif	
 
     ok = OK;
@@ -985,7 +1035,7 @@ static int tcpDirectSendReliable(TCPSession * tcpSession,
 		       mp,
 		       ssize);
   }
-  MUTEX_UNLOCK(&tcplock);
+  MUTEX_UNLOCK(tcplock);
   return ok;
 }
 
@@ -1010,10 +1060,10 @@ static int tcpSendReliable(TSession * tsession,
   if (tcp_shutdown == YES)
     return SYSERR;
   if (size == 0) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  if (((TCPSession*)tsession->internal)->sock == -1)
+  if (((TCPSession*)tsession->internal)->sock == NULL)
     return SYSERR; /* other side closed connection */
   mp = MALLOC(sizeof(TCPP2P_PACKET) + size);
   memcpy(&mp[1],
@@ -1068,23 +1118,28 @@ static P2P_hello_MESSAGE * createhello() {
     static int once = 0;
     if (once == 0) {
       once = 1;
-      LOG(LOG_DEBUG,
-	  "TCP port is 0, will only send using TCP.\n");
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_USER | GE_BULK, 
+	     "TCP port is 0, will only send using TCP.\n");
     }
     return NULL; /* TCP transport is configured SEND-only! */
   }
   msg = (P2P_hello_MESSAGE *) MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   haddr = (HostAddress*) &msg[1];
 
-  if (SYSERR == getPublicIPAddress(&haddr->ip)) {
+  if (SYSERR == getPublicIPAddress(cfg,
+				   ectx,
+				   &haddr->ip)) {
     FREE(msg);
-    LOG(LOG_WARNING,
-	_("Could not determine my public IP address.\n"));
+    GE_LOG(ectx,
+	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+	   _("Could not determine my public IP address.\n"));
     return NULL;
   }
-  LOG(LOG_DEBUG,
-      "TCP uses IP address %u.%u.%u.%u.\n",
-      PRIP(ntohl(*(int*)&haddr->ip)));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK, 
+	 "TCP uses IP address %u.%u.%u.%u.\n",
+	 PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
@@ -1109,26 +1164,32 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
   TSession * tsession;
   TCPSession * tcpSession;
   struct sockaddr_in soaddr;
+  struct SocketHandle * s;
 
   if (tcp_shutdown == YES)
     return SYSERR;
   haddr = (HostAddress*) &helo[1];
 #if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "Creating TCP connection to %u.%u.%u.%u:%u.\n",
-      PRIP(ntohl(*(int*)&haddr->ip.addr)),
-      ntohs(haddr->port));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK, 
+	 "Creating TCP connection to %u.%u.%u.%u:%u.\n",
+	 PRIP(ntohl(*(int*)&haddr->ip.addr)),
+	 ntohs(haddr->port));
 #endif
   sock = SOCKET(PF_INET,
 		SOCK_STREAM,
 		6); /* 6: TCP */
   if (sock == -1) {
-    LOG_STRERROR(LOG_FAILURE, "socket");
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_BULK,
+		    "socket");
     return SYSERR;
   }
-  if (0 != setBlocking(sock, NO)) {
-    closefile(sock);
-    LOG_STRERROR(LOG_FAILURE, "setBlocking");
+  s = socket_create(ectx,
+		    load_monitor,
+		    sock);
+  if (-1 == socket_set_blocking(s, NO)) {
+    socket_destroy(s);
     return SYSERR;
   }
   memset(&soaddr,
@@ -1136,7 +1197,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 	 sizeof(soaddr));
   soaddr.sin_family = AF_INET;
 
-  GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
+  GE_ASSERT(ectx, sizeof(struct in_addr) == sizeof(IPaddr));
   memcpy(&soaddr.sin_addr,
 	 &haddr->ip,
 	 sizeof(IPaddr));
@@ -1146,21 +1207,17 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 	      sizeof(soaddr));
   if ( (i < 0) &&
        (errno != EINPROGRESS) ) {
-    LOG(LOG_ERROR,
-	_("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
-	PRIP(ntohl(*(int*)&haddr->ip)),
-	ntohs(haddr->port),
-	STRERROR(errno));
-    closefile(sock);
-    return SYSERR;
-  }
-  if (0 != setBlocking(sock, NO)) {
-    LOG_STRERROR(LOG_FAILURE, "setBlocking");
-    closefile(sock);
+    GE_LOG(ectx,
+	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	   _("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
+	   PRIP(ntohl(*(int*)&haddr->ip)),
+	   ntohs(haddr->port),
+	   STRERROR(errno));
+    socket_destroy(s);
     return SYSERR;
   }
   tcpSession = MALLOC(sizeof(TCPSession));
-  tcpSession->sock = sock;
+  tcpSession->sock = s;
   tcpSession->wpos = 0;
   tcpSession->wbuff = NULL;
   tcpSession->wsize = 0;
@@ -1169,13 +1226,13 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
   tsession = MALLOC(sizeof(TSession));
   tsession->internal = tcpSession;
   tsession->ttype = tcpAPI.protocolNumber;
-  MUTEX_CREATE_RECURSIVE(&tcpSession->lock);
+  tcpSession->lock = MUTEX_CREATE(YES);
   tcpSession->users = 2; /* caller + us */
   tcpSession->pos = 0;
-  cronTime(&tcpSession->lastUse);
+  tcpSession->lastUse = get_time();
   tcpSession->sender = helo->senderIdentity;
   tcpSession->expectingWelcome = NO;
-  MUTEX_LOCK(&tcplock);
+  MUTEX_LOCK(tcplock);
   i = addTSession(tsession);
 
   /* send our node identity to the other side to fully establish the
@@ -1191,10 +1248,10 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
 			      sizeof(TCPWelcome))) {
     destroySession(i);
     tcpDisconnect(tsession);
-    MUTEX_UNLOCK(&tcplock);
+    MUTEX_UNLOCK(tcplock);
     return SYSERR;
   }
-  MUTEX_UNLOCK(&tcplock);
+  MUTEX_UNLOCK(tcplock);
   signalSelect();
 
   *tsessionPtr = tsession;
@@ -1216,19 +1273,21 @@ static int tcpSend(TSession * tsession,
   int ok;
 
 #if DEBUG_TCP
-  LOG(LOG_DEBUG,
-      "tcpSend called to transmit %u bytes.\n",
-      size);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK, 
+	 "tcpSend called to transmit %u bytes.\n",
+	 size);
 #endif	
   if (size >= MAX_BUFFER_SIZE) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
   if (tcp_shutdown == YES) {
 #if DEBUG_TCP
-    LOG(LOG_DEBUG,
-	"tcpSend called while TCP is shutdown.\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK, 
+	   "tcpSend called while TCP is shutdown.\n");
 #endif	
     if (stats != NULL)
       stats->change(stat_bytesDropped,
@@ -1236,13 +1295,14 @@ static int tcpSend(TSession * tsession,
     return SYSERR;
   }
   if (size == 0) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  if (((TCPSession*)tsession->internal)->sock == -1) {
+  if (((TCPSession*)tsession->internal)->sock == NULL) {
 #if DEBUG_TCP
-    LOG(LOG_DEBUG,
-	"tcpSend called after other side closed connection.\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK, 
+	   "tcpSend called after other side closed connection.\n");
 #endif
     if (stats != NULL)
       stats->change(stat_bytesDropped,
@@ -1277,16 +1337,19 @@ static int startTransportServer(void) {
   struct sockaddr_in serverAddr;
   const int on = 1;
   unsigned short port;
+  int s;
 
   if (serverSignal != NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  serverSignal = SEMAPHORE_NEW(0);
+  serverSignal = SEMAPHORE_CREATE(0);
   tcp_shutdown = NO;
 
   if (0 != PIPE(tcp_pipe)) {
-    LOG_STRERROR(LOG_ERROR, "pipe");
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_BULK,
+		    "pipe");
     return SYSERR;
   }
   setBlocking(tcp_pipe[1], NO);
@@ -1294,24 +1357,34 @@ static int startTransportServer(void) {
   port = getGNUnetTCPPort();
   if (port != 0) { /* if port == 0, this is a read-only
 		      business! */
-    tcp_sock = SOCKET(PF_INET,
-		      SOCK_STREAM,
-		      0);
-    if (tcp_sock < 0) {
-      LOG_STRERROR(LOG_FAILURE, "socket");
-      closefile(tcp_pipe[0]);
-      closefile(tcp_pipe[1]);
-      SEMAPHORE_FREE(serverSignal);
+    s = SOCKET(PF_INET,
+	       SOCK_STREAM,
+	       0);
+    if (s < 0) {
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_ADMIN | GE_BULK,
+		      "socket");
+      if (0 != CLOSE(tcp_pipe[0]))
+ 	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			"close");
+      if (0 != CLOSE(tcp_pipe[1]))
+ 	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			"close");
+      SEMAPHORE_DESTROY(serverSignal);
       serverSignal = NULL;
       tcp_shutdown = YES;
       return SYSERR;
     }
-    if (SETSOCKOPT(tcp_sock,
+    if (SETSOCKOPT(s,
 		   SOL_SOCKET,
 		   SO_REUSEADDR,
 		   &on,
 		   sizeof(on)) < 0 )
-      DIE_STRERROR("setsockopt");
+      GE_DIE_STRERROR(ectx, 
+		      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+		      "setsockopt");
     memset((char *) &serverAddr,
 	   0,
 	   sizeof(serverAddr));
@@ -1319,39 +1392,53 @@ static int startTransportServer(void) {
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddr.sin_port        = htons(getGNUnetTCPPort());
 #if DEBUG_TCP
-    LOG(LOG_INFO,
-	"starting %s peer server on port %d\n",
-	"tcp",
-	ntohs(serverAddr.sin_port));
+    GE_LOG(ectx,
+	   GE_INFO | GE_USER | GE_BULK,
+	   "starting %s peer server on port %d\n",
+	   "tcp",
+	   ntohs(serverAddr.sin_port));
 #endif
-    if (BIND(tcp_sock,
+    if (BIND(s,
 	     (struct sockaddr *) &serverAddr,
 	     sizeof(serverAddr)) < 0) {
-      LOG_STRERROR(LOG_ERROR, "bind");
-      LOG(LOG_ERROR,
-	  _("Failed to start transport service on port %d.\n"),
-	  getGNUnetTCPPort());
-      closefile(tcp_sock);
-      tcp_sock = -1;
-      SEMAPHORE_FREE(serverSignal);
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+		      "bind");
+      GE_LOG(ectx,
+	     GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+	     _("Failed to start transport service on port %d.\n"),
+	     getGNUnetTCPPort());
+      if (0 != CLOSE(s))
+	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			"close");
+      SEMAPHORE_DESTROY(serverSignal);
       serverSignal = NULL;
       return SYSERR;
     }
+    if (0 != LISTEN(s, 5))
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE, 
+		      "listen");
+    tcp_sock = socket_create(ectx,
+			     load_monitor,
+			     s);
   } else
-    tcp_sock = -1;
-  if (0 == PTHREAD_CREATE(&listenThread,
-			  (PThreadMain) &tcpListenMain,
-			  NULL,
-			  4092)) {
-    SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */
-  } else {
-    LOG_STRERROR(LOG_ERROR,
-		 "pthread_create");
-    closefile(tcp_sock);
-    SEMAPHORE_FREE(serverSignal);
+    tcp_sock = NULL;
+  listenThread = PTHREAD_CREATE(&tcpListenMain,
+				NULL,
+				5 * 1024);
+  if (listenThread == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_IMMEDIATE | GE_ADMIN,
+		    "pthread_create");
+    socket_destroy(tcp_sock);
+    tcp_sock = NULL;
+    SEMAPHORE_DESTROY(serverSignal);
     serverSignal = NULL;
     return SYSERR;
   }
+  SEMAPHORE_DOWN(serverSignal, YES); /* wait for server to be up */
   return OK;
 }
 
@@ -1369,19 +1456,25 @@ static int stopTransportServer() {
   signalSelect();
   if (serverSignal != NULL) {
     haveThread = YES;
-    SEMAPHORE_DOWN(serverSignal);
-    SEMAPHORE_FREE(serverSignal);
+    SEMAPHORE_DOWN(serverSignal, YES);
+    SEMAPHORE_DESTROY(serverSignal);
   } else
     haveThread = NO;
   serverSignal = NULL;
-  closefile(tcp_pipe[1]);
-  closefile(tcp_pipe[0]);
-  if (tcp_sock != -1) {
-    closefile(tcp_sock);
-    tcp_sock = -1;
+  if (0 != CLOSE(tcp_pipe[1]))
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+		    "close");
+  if (0 != CLOSE(tcp_pipe[0])) 
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+		    "close");
+  if (tcp_sock != NULL) {
+    socket_destroy(tcp_sock);
+    tcp_sock = NULL;
   }
   if (haveThread == YES)
-    PTHREAD_JOIN(&listenThread, &unused);
+    PTHREAD_JOIN(listenThread, &unused);
   return OK;
 }
 
@@ -1392,17 +1485,21 @@ static int stopTransportServer() {
 static void reloadConfiguration(void) {
   char * ch;
 
-  MUTEX_LOCK(&tcplock);
+  MUTEX_LOCK(tcplock);
   FREENONNULL(filteredNetworks_);
-  ch = getConfigurationString("TCP",
-			      "BLACKLIST");
-  if (ch == NULL)
-    filteredNetworks_ = parseRoutes("");
+  if (0 != GC_get_configuration_value_string(cfg,
+					     "TCP",
+					     "BLACKLIST",
+					     NULL,
+					     &ch)) 
+    filteredNetworks_ = parse_ipv4_network_specification(ectx,
+							 "");
   else {
-    filteredNetworks_ = parseRoutes(ch);
+    filteredNetworks_ = parse_ipv4_network_specification(ectx,
+							 ch);
     FREE(ch);
   }
-  MUTEX_UNLOCK(&tcplock);
+  MUTEX_UNLOCK(tcplock);
 }
 
 /**
@@ -1432,10 +1529,13 @@ static char * addressToString(const P2P_hello_MESSAGE * helo) {
  * via a global and returns the udp transport API.
  */
 TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
-  GNUNET_ASSERT(sizeof(HostAddress) == 8);
-  GNUNET_ASSERT(sizeof(TCPP2P_PACKET) == 4);
-  GNUNET_ASSERT(sizeof(TCPWelcome) == 68);
-  MUTEX_CREATE_RECURSIVE(&tcplock);
+  ectx = core->ectx;
+  cfg = core->cfg;
+  load_monitor = core->load_monitor;
+  GE_ASSERT(ectx, sizeof(HostAddress) == 8);
+  GE_ASSERT(ectx, sizeof(TCPP2P_PACKET) == 4);
+  GE_ASSERT(ectx, sizeof(TCPWelcome) == 68);
+  tcplock = MUTEX_CREATE(YES);
   reloadConfiguration();
   tsessionCount = 0;
   tsessionArrayLength = 0;
@@ -1481,7 +1581,7 @@ void donetransport_tcp() {
        tsessionArrayLength,
        0);
   FREENONNULL(filteredNetworks_);
-  MUTEX_DESTROY(&tcplock);
+  MUTEX_DESTROY(tcplock);
 }
 
 /* end of tcp.c */
