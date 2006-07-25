@@ -20,6 +20,7 @@ gnunetinclude_HEADERS = \
   gnunet_dht_datastore_memory.h \
   gnunet_dht_lib.h \
   gnunet_dht_service.h \
+  gnunet_directories.h \
   gnunet_ecrs_lib.h \
   gnunet_fragmentation_service.h \
   gnunet_fs_lib.h \

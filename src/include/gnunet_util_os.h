@@ -154,6 +154,13 @@ void os_list_network_interfaces(struct GE_Context * ectx,
 				void * cls);
 
 /**
+ * Set our process priority
+ * @return OK on success, SYSERR on error
+ */
+int os_set_process_priority(struct GE_Context * ectx,
+			    const char * str);
+
+/**
  * @brief Make "application" start automatically
  *
  * @param testCapability YES to merely probe if the OS has this

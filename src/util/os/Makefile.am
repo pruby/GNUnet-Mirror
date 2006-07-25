@@ -10,6 +10,7 @@ libos_la_SOURCES = \
  daemon.c \
  dso.c \
  osconfig.c \
+ priority.c \
  semaphore.c \
  statuscalls.c \
  time.c \

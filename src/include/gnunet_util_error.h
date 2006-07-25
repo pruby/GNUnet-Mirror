@@ -39,9 +39,6 @@ extern "C" {
 
 #include "gnunet_util_common.h"
 
-
-
-
 /**
  * Context required to log messages.
  */

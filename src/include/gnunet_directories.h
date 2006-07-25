@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,34 +19,22 @@
 */
 
 /**
- * @file util/initialize.c
- * @brief functions to initializing libgnunetutil in the proper order.
+ * @file include/gnunet_directories.h
+ * @brief directories and files in GNUnet (default locations)
+ *
  * @author Christian Grothoff
  */
 
-#include "platform.h"
-#include "gnunet_util.h"
+#ifndef GNUNET_DIRECTORIES
+#define GNUNET_DIRECTORIES
 
-/**
- * Initialize the util library.
- */
-int __attribute__ ((constructor))  gnunet_util_init() {
-#ifdef MINGW
-  if (InitWinEnv() != ERROR_SUCCESS)
-  	return SYSERR;
-#endif
-#if ENABLE_NLS
-  setlocale (LC_ALL, "");
-  BINDTEXTDOMAIN("GNUnet", LOCALEDIR);
-  textdomain("GNUnet");
-#endif
-  return OK;
-}
+#define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
+#define DEFAULT_DAEMON_DIR         "/etc"
+#define DEFAULT_DAEMON_CONFIG_FILE DEFAULT_DAEMON_DIR"/gnunetd.conf"
+#define VAR_DIRECTORY              "/var/lib"
+#define VAR_DAEMON_DIRECTORY       VAR_DIRECTORY"/gnunet"
+#define VAR_DAEMON_CONFIG_FILE     VAR_DAEMON_DIRECTORY"/gnunetd.conf"
+#define GNUNET_HOME_DIRECTORY      "~/.gnunet"
+#define HOME_DAEMON_CONFIG_FILE    GNUNET_HOME_DIRECTORY"/gnunetd.conf"
 
-void __attribute__ ((destructor)) gnunet_util_fini() {
-#ifdef MINGW
-  ShutdownWinEnv();
 #endif
-}
-
-/* end of initialize.c */

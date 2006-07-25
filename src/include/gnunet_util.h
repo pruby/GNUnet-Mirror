@@ -86,29 +86,6 @@ extern "C" {
  */
 #define GNUNET_UTIL_VERSION 0x00070100
 
-/* CHRISTIAN: move this to gnunet_core.h or _protocols.h ? */
-
-/* FIXME: these functions need to be replaced with
-   functions that are appropriate for bootstrapping
-   the new gnunetutil library (i.e. setup error,
-   parse command line, setup configuration, etc.) */
-
-/**
- * Initialize the util module.
- * @param argc the number of arguments
- * @param argv the command line arguments
- * @param parser parser to call at the right moment
- * @return OK on success, SYSERR if we should abort
- */
-int initUtil(int argc,
-	     char * argv[]);
-
-
-/**
- * Shutdown the util services in proper order.
- */
-void doneUtil(void);
-
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

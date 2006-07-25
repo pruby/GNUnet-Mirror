@@ -330,13 +330,17 @@ int getFileHash(struct GE_Context * ectx,
   int fh;
   struct sha512_ctx ctx;
 
-  if (OK != getFileSize(ectx,
-			filename,
-			&len))
+  if (OK != disk_file_test(ectx,
+			   filename))
     return SYSERR;
-  fh = fileopen(ectx,
-		filename,
-		O_RDONLY | O_LARGEFILE);
+  if (OK != disk_file_size(ectx,
+			   filename,
+			   &len,
+			   NO))
+    return SYSERR;
+  fh = disk_file_open(ectx,
+		      filename,
+		      O_RDONLY | O_LARGEFILE);
   if (fh == -1) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST, 
@@ -566,7 +570,8 @@ void hashToKey(const HashCode512 * hc,
 int getHashCodeBit(const HashCode512 * code,
 		   unsigned int bit) {
   if (bit >= 8 * sizeof(HashCode512)) {
-    BREAK();
+    GE_ASSERT(NULL,
+	      0);
     return -1; /* error */
   }
   return (((unsigned char*)code)[bit >> 3] & (1 << bit & 7)) > 0;
