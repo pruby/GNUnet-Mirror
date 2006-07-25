@@ -37,6 +37,7 @@
 #include "gnunet_util_os.h"
 #include "gnunet_util_threads.h"
 #include <sys/socket.h>
+#include <sys/select.h>
 
 #ifdef __cplusplus
 extern "C" {
