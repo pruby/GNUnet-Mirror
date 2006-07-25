@@ -113,16 +113,16 @@ static char *os_get_exec_path(struct GE_Context * ectx,
       getcwd(tmp, path_max-1); }
     
     if( (*path1 == '.') && (*(path1+1) == '.') ) { /* ../ so go one level higher */
-      ptr = strchr(tmp, '/');
-      *ptr = '\0';
-      path2 = path1+3; } /* and jump */
-    else if( (*path1 == '.')) ) {/* ./ so just jump */
+      strchr(tmp, '/')[0] = '\0';
+      path2 = path1+3; 
+    } /* and jump */
+    else if (*path1 == '.') /* ./ so just jump */
       path2 = path1+2;
     else
       path2 = path1;
  
-    if(tmp[len(tmp)-1] == '/') /* just to clean final '/' */
-        tmp[len(tmp)-1] = '\0'
+    if(tmp[strlen(tmp)-1] == '/') /* just to clean final '/' */
+      tmp[strlen(tmp)-1] = '\0';
 
     execpath = MALLOC(strlen(tmp)+strlen(path1)+2);
     sprintf(execpath, "%s/%s", tmp, path1);
@@ -203,9 +203,9 @@ char * os_get_installation_path(struct GE_Context * ectx,
       n++; }
     ptr = strrchr(tmp, DIR_SEPARATOR);
 
-    if( !( (*(ptr+1) == 'b)'
-        && (*(ptr+2) == 'i')
-        && (*(ptr+3) == 'n')) ) )
+    if( !( (*(ptr+1) == 'b')
+	   && (*(ptr+2) == 'i')
+	   && (*(ptr+3) == 'n')) )
       GE_LOG(ectx,
              GE_WARNING | GE_ADMIN | GE_IMMEDIATE,
 	      _("GNUnet executables are not in a directory named 'bin'. This may signal a broken installation.\n"));
@@ -244,7 +244,7 @@ char * os_get_installation_path(struct GE_Context * ectx,
       break;
     case PACKAGEDATADIR:
       tmp = MALLOC(9+strlen(prefix)+strlen(appname));
-      sprintf(tmp, "share/%s/%s/\0", prefix, appname);
+      sprintf(tmp, "share/%s/%s/", prefix, appname);
       dirname = STRDUP(tmp);
       FREE(tmp);
       break;
