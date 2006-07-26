@@ -1,5 +1,6 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -32,18 +33,19 @@
  * Initialize the TCP port and listen for incoming client connections.
  * @return OK on success, SYSERR on error
  */
-int initTCPServer();
+int initTCPServer(struct GE_Context * ectx,
+		  struct GC_Configuration * cfg);
 
 /**
  * Stop the server (but do not yet destroy the data structures)
  */
-int stopTCPServer();
+int stopTCPServer(void);
 
 /**
  * Shutdown the module.
  * @return OK on success, SYSERR on error
  */
-int doneTCPServer();
+int doneTCPServer(void);
 
 /**
  * Register a method as a handler for specific message
@@ -85,7 +87,7 @@ int unregisterClientExitHandler(ClientExitHandler callback);
  * transfer happens asynchronously.
  */
 int sendToClient(ClientHandle handle,
-		 const CS_MESSAGE_HEADER * message);
+		 const MESSAGE_HEADER * message);
 
 
 /**

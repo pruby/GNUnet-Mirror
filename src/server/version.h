@@ -26,15 +26,23 @@
 #ifndef GNUNETD_VERSION_H
 #define GNUNETD_VERSION_H
 
+#include "gnunet_util.h"
+#include "gnunet_state_service.h"
+
+
 /**
  * Check if we are up-to-date.
  * @return OK if we are
  */
-int checkUpToDate();
+int checkUpToDate(struct GE_Context * ectx,
+		  State_ServiceAPI * sapi,
+		  struct GC_Configuration * cfg);
 
 /**
  * We are up-to-date.
  */
-void upToDate();
+void upToDate(struct GE_Context * ectx,
+	      State_ServiceAPI * sapi,
+	      struct GC_Configuration * cfg);
 
 #endif

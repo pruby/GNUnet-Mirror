@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -47,17 +47,17 @@ static unsigned int max_registeredType = 0;
 /**
  * Mutex to guard access to the handler array.
  */
-static Mutex handlerlock;
+static struct MUTEX * handlerlock;
 
 /**
  * Mutex to guard access to the client list.
  */
-static Mutex clientlock;
+static struct MUTEX * clientlock;
 
 /**
  * The thread that waits for new connections.
  */
-static PTHREAD_T TCPLISTENER_listener_;
+static struct PTHREAD * TCPLISTENER_listener_;
 
 /**
  * Pipe to communicate with select thread
@@ -67,22 +67,25 @@ static int signalingPipe[2];
 /**
  * Handlers to call if client exits.
  */
-static ClientExitHandler * exitHandlers = NULL;
+static ClientExitHandler * exitHandlers;
 
 /**
  * How many entries are in exitHandlers?
  */
-static unsigned int exitHandlerCount = 0;
+static unsigned int exitHandlerCount;
 
 /**
  * Signals for control-thread to server-thread communication
  */
-static Semaphore * serverSignal = NULL;
+static struct SEMAPHORE * serverSignal;
 
 /**
  * Should the select-thread exit?
  */
 static int tcpserver_keep_running = NO;
+
+
+static struct GE_Context * ectx;
 
 /**
  * Per-client data structure (kept in linked list).  Also: the opaque
@@ -92,19 +95,24 @@ typedef struct ClientH {
   /**
    * Socket to communicate with the client.
    */
-  int sock;
+  struct SocketHandle * sock;
 
   char * readBuffer;
+
   unsigned int readBufferPos;
+
   unsigned int readBufferSize;
 
   char * writeBuffer;
+
   unsigned int writeBufferSize;
 
-  CS_MESSAGE_HEADER ** writeQueue;
+  MESSAGE_HEADER ** writeQueue;
+
   unsigned int writeQueueSize;
 
   ClientHandle next;
+
 } ClientThreadHandle;
 
 
@@ -123,12 +131,12 @@ static struct CIDRNetwork * trustedNetworks_ = NULL;
  * Is this IP labeled as trusted for CS connections?
  */
 static int isWhitelisted(IPaddr ip) {
-  return checkIPListed(trustedNetworks_,
-		       ip);
+  return check_ipv4_listed(trustedNetworks_,
+			   ip);
 }
 
 static void signalSelect() {
-  char i = 0;
+  static char i = 0;
   int ret;
 
 #if DEBUG_TCPHANDLER
@@ -140,16 +148,18 @@ static void signalSelect() {
 	      sizeof(char));
   if (ret != sizeof(char))
     if (errno != EAGAIN)
-      LOG_STRERROR(LOG_ERROR, "write");
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_WARNING | GE_USER,
+		      "write");
 }
 
 int registerClientExitHandler(ClientExitHandler callback) {
-  MUTEX_LOCK(&handlerlock);
+  MUTEX_LOCK(handlerlock);
   GROW(exitHandlers,
        exitHandlerCount,
        exitHandlerCount+1);
   exitHandlers[exitHandlerCount-1] = callback;
-  MUTEX_UNLOCK(&handlerlock);
+  MUTEX_UNLOCK(handlerlock);
   return OK;
 }
 
@@ -171,16 +181,16 @@ void terminateClientConnection(ClientHandle session) {
      the client is processing; since only (!) the
      select-thread can possibly free handle/readbuffer,
      releasing the lock here is safe. */
-  MUTEX_UNLOCK(&clientlock);
-  MUTEX_LOCK(&handlerlock);
+  MUTEX_UNLOCK(clientlock);
+  MUTEX_LOCK(handlerlock);
   for (i=0;i<exitHandlerCount;i++)
     exitHandlers[i](session);
-  MUTEX_UNLOCK(&handlerlock);
-  MUTEX_LOCK(&clientlock);
+  MUTEX_UNLOCK(handlerlock);
+  MUTEX_LOCK(clientlock);
   prev = NULL;
   pos = clientList;
   while (pos != session) {
-    GNUNET_ASSERT(pos != NULL);
+    GE_ASSERT(ectx, pos != NULL);
     prev = pos;
     pos = pos->next;
   }
@@ -188,7 +198,7 @@ void terminateClientConnection(ClientHandle session) {
     clientList = session->next;
   else
     prev->next = session->next;
-  closefile(session->sock);
+  socket_destroy(session->sock);
   GROW(session->writeBuffer,
        session->writeBufferSize,
        0);
@@ -206,18 +216,18 @@ void terminateClientConnection(ClientHandle session) {
 int unregisterClientExitHandler(ClientExitHandler callback) {
   int i;
 
-  MUTEX_LOCK(&handlerlock);
+  MUTEX_LOCK(handlerlock);
   for (i=0;i<exitHandlerCount;i++) {
     if (exitHandlers[i] == callback) {
       exitHandlers[i] = exitHandlers[exitHandlerCount-1];
       GROW(exitHandlers,
 	   exitHandlerCount,
 	   exitHandlerCount-1);
-      MUTEX_UNLOCK(&handlerlock);
+      MUTEX_UNLOCK(handlerlock);
       return OK;
     }
   }
-  MUTEX_UNLOCK(&handlerlock);
+  MUTEX_UNLOCK(handlerlock);
   return SYSERR;
 }
 
@@ -229,8 +239,8 @@ int unregisterClientExitHandler(ClientExitHandler callback) {
  * transfer happens asynchronously.
  */
 int sendToClient(ClientHandle handle,
-		 const CS_MESSAGE_HEADER * message) {
-  CS_MESSAGE_HEADER * cpy;
+		 const MESSAGE_HEADER * message) {
+  MESSAGE_HEADER * cpy;
 
 #if DEBUG_TCPHANDLER
   LOG(LOG_DEBUG,
@@ -238,13 +248,15 @@ int sendToClient(ClientHandle handle,
       handle);
 #endif
   cpy = MALLOC(ntohs(message->size));
-  memcpy(cpy, message, ntohs(message->size));
-  MUTEX_LOCK(&clientlock);
+  memcpy(cpy, 
+	 message, 
+	 ntohs(message->size));
+  MUTEX_LOCK(clientlock);
   GROW(handle->writeQueue,
        handle->writeQueueSize,
        handle->writeQueueSize+1);
   handle->writeQueue[handle->writeQueueSize-1] = cpy;
-  MUTEX_UNLOCK(&clientlock);
+  MUTEX_UNLOCK(clientlock);
   signalSelect();
   return OK;
 }
@@ -255,7 +267,7 @@ int sendToClient(ClientHandle handle,
  * message by calling the registered handler for
  * each message part.
  */
-static int processHelper(CS_MESSAGE_HEADER * msg,
+static int processHelper(MESSAGE_HEADER * msg,
 			 ClientHandle sender) {
   unsigned short ptyp;
   CSHandler callback;
@@ -266,32 +278,34 @@ static int processHelper(CS_MESSAGE_HEADER * msg,
       sender);
 #endif
   ptyp = htons(msg->type);
-  MUTEX_LOCK(&handlerlock);
+  MUTEX_LOCK(handlerlock);
   if (ptyp >= max_registeredType) {
-    LOG(LOG_INFO,
-	"%s: Message of type %d not understood: no handler registered\n",
-	__FUNCTION__,
-	ptyp,
-	max_registeredType);
-    MUTEX_UNLOCK(&handlerlock);
+    GE_LOG(ectx,
+	   GE_INFO,
+	   "%s: Message of type %d not understood: no handler registered\n",
+	   __FUNCTION__,
+	   ptyp,
+	   max_registeredType);
+    MUTEX_UNLOCK(handlerlock);
     return SYSERR;
   }
   callback = handlers[ptyp];
   if (callback == NULL) {
-    LOG(LOG_INFO,
-	"%s: Message of type %d not understood: no handler registered\n",
-	__FUNCTION__,
-	ptyp);
-    MUTEX_UNLOCK(&handlerlock);
+    GE_LOG(ectx,
+	   GE_INFO,
+	   "%s: Message of type %d not understood: no handler registered\n",
+	   __FUNCTION__,
+	   ptyp);
+    MUTEX_UNLOCK(handlerlock);
     return SYSERR;
   } else {
     if (OK != callback(sender,
 		       msg)) {
-      MUTEX_UNLOCK(&handlerlock);
+      MUTEX_UNLOCK(handlerlock);
       return SYSERR;
     }
   }
-  MUTEX_UNLOCK(&handlerlock);
+  MUTEX_UNLOCK(handlerlock);
   return OK;
 }
 
@@ -305,48 +319,44 @@ static int processHelper(CS_MESSAGE_HEADER * msg,
 static int readAndProcess(ClientHandle handle) {
   unsigned int len;
   int ret;
+  size_t size;
 
 #if DEBUG_TCPHANDLER
   LOG(LOG_DEBUG,
       "Reading from client %p.\n",
       handle);
 #endif
-  ret = READ(handle->sock,
-	     &handle->readBuffer[handle->readBufferPos],
-	     handle->readBufferSize - handle->readBufferPos);
-  if (ret == 0) {
+  ret = socket_recv(handle->sock,
+		    NC_Blocking | NC_IgnoreInt,
+		    &handle->readBuffer[handle->readBufferPos],
+		    handle->readBufferSize - handle->readBufferPos,
+		    &size);
+  if ( (ret == SYSERR) || (size == 0) ) {
 #if DEBUG_TCPHANDLER
     LOG(LOG_DEBUG,
-	"Read 0 bytes from client %p (socket %d). Closing.\n",
-	handle,
-	handle->sock);
+	"Read 0 bytes from client %p. Closing.\n",
+	handle);
 #endif
     return SYSERR; /* other side closed connection */
   }
 #if DEBUG_TCPHANDLER
   LOG(LOG_DEBUG,
-      "Read %d bytes from client %p.\n",
-      ret,
+      "Read %u bytes from client %p.\n",
+      size,
       handle);
 #endif
-  if (ret < 0) {
-    if ( (errno == EINTR) ||
-	 (errno == EAGAIN) )
-      return OK;
-    LOG_STRERROR(LOG_WARNING, "read");
-    return SYSERR;
-  }
-  handle->readBufferPos += ret;
+  handle->readBufferPos += size;
   ret = OK;
   while (ret == OK) {
-    if (handle->readBufferPos < sizeof(CS_MESSAGE_HEADER))
+    if (handle->readBufferPos < sizeof(MESSAGE_HEADER))
       return OK;
-    len = ntohs(((CS_MESSAGE_HEADER*)handle->readBuffer)->size);
+    len = ntohs(((MESSAGE_HEADER*)handle->readBuffer)->size);
 #if DEBUG_TCPHANDLER
-    LOG(LOG_DEBUG,
-	"Total size is %u bytes, have %u.\n",
-	len,
-      handle->readBufferPos);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_USER | GE_BULK,
+	   "Total size is %u bytes, have %u.\n",
+	   len,
+	   handle->readBufferPos);
 #endif
     if (len > handle->readBufferSize) /* if MTU larger than expected, grow! */
       GROW(handle->readBuffer,
@@ -358,13 +368,13 @@ static int readAndProcess(ClientHandle handle) {
        the client is processing; since only (!) the
        select-thread can possibly free handle/readbuffer,
      releasing the lock here is safe. */
-    MUTEX_UNLOCK(&clientlock);
-    ret = processHelper((CS_MESSAGE_HEADER*)handle->readBuffer,
+    MUTEX_UNLOCK(clientlock);
+    ret = processHelper((MESSAGE_HEADER*)handle->readBuffer,
 		      handle);
-    MUTEX_LOCK(&clientlock);
+    MUTEX_LOCK(clientlock);
     /* finally, shrink buffer adequately */
     memmove(&handle->readBuffer[0],
-	  &handle->readBuffer[len],
+	    &handle->readBuffer[len],
 	    handle->readBufferPos - len);
     handle->readBufferPos -= len;
   }
@@ -389,12 +399,15 @@ static void * tcpListenMain(void * unused) {
   fd_set writeSet;
   int success;
 
+  /* TODO: move bind code into init! */
   listenerPort = getGNUnetPort();
   /* create the socket */
   while ( (listenerFD = SOCKET(PF_INET,
 			       SOCK_STREAM,
 			       0)) < 0) {
-    DIE_STRERROR("socket");
+    GE_DIE_STRERROR(ectx,
+		    GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+		    "socket");
     sleep(30);
   }
 
@@ -413,23 +426,33 @@ static void * tcpListenMain(void * unused) {
 		  SOL_SOCKET,
 		  SO_REUSEADDR,
 		  &on, sizeof(on)) < 0 )
-    LOG_STRERROR(LOG_ERROR, "setsockopt");
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_BULK, 
+		    "setsockopt");
 
   /* bind the socket */
   if (BIND(listenerFD,
 	   (struct sockaddr *) &serverAddr,
 	   sizeof(serverAddr)) < 0) {
-    errexit(_("`%s' failed for port %d: %s. Is gnunetd already running?\n"),
-	    "bind",
-	    listenerPort,
-	    STRERROR(errno));
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_IMMEDIATE,
+		    "bind");
+    GE_LOG(ectx,
+	   GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+	   _("`%s' failed for port %d. Is gnunetd already running?\n"),
+	   "bind",
+	   listenerPort);
+    SEMAPHORE_UP(serverSignal);
+    tcpserver_keep_running = SYSERR;
+    SEMAPHORE_UP(serverSignal);
+    return NULL;
   }
 
   /* start listening for new connections */
   LISTEN(listenerFD, 5); /* max: 5 pending, unhandled connections */
   SEMAPHORE_UP(serverSignal);
 
-  MUTEX_LOCK(&clientlock);
+  MUTEX_LOCK(clientlock);
   /* process incoming data */
   while (tcpserver_keep_running == YES) {
     FD_ZERO(&readSet);
@@ -438,32 +461,33 @@ static void * tcpListenMain(void * unused) {
     if (-1 != FSTAT(listenerFD, &buf)) {
       FD_SET(listenerFD, &readSet);
     } else {
-      DIE_STRERROR("fstat");
+      GE_DIE_STRERROR(ectx,
+		      GE_FATAL,
+		      "fstat");
     }
     if (-1 != FSTAT(signalingPipe[0], &buf)) {
       FD_SET(signalingPipe[0], &readSet);
     } else {
-      DIE_STRERROR("fstat");
+      GE_DIE_STRERROR(ectx,
+		      GE_FATAL,
+		      "fstat");
     }
     max = signalingPipe[0];
     if (listenerFD > max)
       max = listenerFD;
     pos = clientList;
     while (pos != NULL) {
-      int sock = pos->sock;
-      if (-1 != FSTAT(sock, &buf)) {
-	FD_SET(sock, &errorSet);
+      struct SocketHandle * sock = pos->sock;
+      if (YES == socket_test_valid(sock)) {
+	socket_add_to_select_set(sock, &errorSet, &max);
 	if ( (pos->writeBufferSize > 0) ||
 	     (pos->writeQueueSize > 0) )
-	  FD_SET(sock, &writeSet); /* we have a pending write request? */
+	  socket_add_to_select_set(sock, &writeSet, &max); /* we have a pending write request? */
 	else
-	  FD_SET(sock, &readSet); /* ONLY read if no writes are pending! */
-	if (sock > max)
-	  max = sock;
+	  socket_add_to_select_set(sock, &readSet, &max); /* ONLY read if no writes are pending! */
       } else {
 	ClientHandle ch;
 
-	LOG_STRERROR(LOG_ERROR, "fstat");
 	ch = pos->next;
 	terminateClientConnection(pos);
 	pos = ch;
@@ -471,21 +495,25 @@ static void * tcpListenMain(void * unused) {
       }
       pos = pos->next;
     }
-    MUTEX_UNLOCK(&clientlock);
+    MUTEX_UNLOCK(clientlock);
     ret = SELECT(max+1,
 		 &readSet,
 		 &writeSet,
 		 &errorSet,
 		 NULL);
-    MUTEX_LOCK(&clientlock);
+    MUTEX_LOCK(clientlock);
     if ( (ret == -1) &&
 	 ( (errno == EAGAIN) || (errno == EINTR) ) )
       continue;
     if (ret == -1) {
       if (errno == EBADF) {
-	LOG_STRERROR(LOG_ERROR, "select");
+	GE_LOG_STRERROR(ectx,
+			GE_ERROR | GE_DEVELOPER | GE_BULK,
+			"select");
       } else {
-	DIE_STRERROR("select");
+	GE_DIE_STRERROR(ectx,
+			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+			"select");
       }
     }
     if (FD_ISSET(listenerFD, &readSet)) {
@@ -505,26 +533,33 @@ static void * tcpListenMain(void * unused) {
 #if 0
 	printConnectionBuffer();
 #endif
-	GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
+	GE_ASSERT(ectx, sizeof(struct in_addr) == sizeof(IPaddr));
 	memcpy(&ipaddr,
 	       &clientAddr.sin_addr,
 	       sizeof(struct in_addr));
 
 	if (NO == isWhitelisted(ipaddr)) {
-	  LOG(LOG_WARNING,
-	      _("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
-	      PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
-	  closefile(sock);
+	  GE_LOG(ectx,
+		 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+		 _("Rejected unauthorized connection from %u.%u.%u.%u.\n"),
+		 PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
+	  if (0 != CLOSE(sock))
+	    GE_LOG_STRERROR(ectx,
+			    GE_WARNING | GE_ADMIN | GE_BULK,
+			    "close");
 	} else {
 	  ClientHandle ch
 	    = MALLOC(sizeof(ClientThreadHandle));
 #if DEBUG_TCPHANDLER
-	  LOG(LOG_DEBUG,
-	      "Accepting connection from %u.%u.%u.%u (socket: %d).\n",
-	      PRIP(ntohl(*(int*)&clientAddr.sin_addr)),
-	      sock);
+	  GE_LOG(ectx,
+		 GE_DEBUG | GE_USER | GE_REQUEST,
+		 "Accepting connection from %u.%u.%u.%u (socket: %d).\n",
+		 PRIP(ntohl(*(int*)&clientAddr.sin_addr)),
+		 sock);
 #endif
-	  ch->sock = sock;
+	  ch->sock = socket_create(ectx,
+				   NULL,
+				   sock);
 	  ch->readBufferSize = 2048;
 	  ch->readBuffer = MALLOC(ch->readBufferSize);
 	  ch->readBufferPos = 0;
@@ -536,11 +571,13 @@ static void * tcpListenMain(void * unused) {
 	  clientList = ch;
 	}
       } else {
-	LOG_STRERROR(LOG_INFO, "accept");
+	GE_LOG_STRERROR(ectx,
+			GE_INFO | GE_BULK | GE_ADMIN, "accept");
       }
     }
 
-    if (FD_ISSET(signalingPipe[0], &readSet)) {
+    if (socket_test_select_set(signalingPipe[0], 
+			       &readSet)) {
       /* allow reading multiple signals in one go in case we get many
 	 in one shot... */
 
@@ -555,18 +592,22 @@ static void * tcpListenMain(void * unused) {
       if (0 >= READ(signalingPipe[0],
 		    &buf[0],
 		    MAXSIG_BUF))
-	LOG_STRERROR(LOG_WARNING, "read");
+	GE_LOG_STRERROR(ectx,
+			GE_WARNING, 
+			"read");
     }
 
     pos = clientList;
     while (pos != NULL) {
-      int sock = pos->sock;
-      if (FD_ISSET(sock, &readSet)) {
+      struct SocketHandle * sock = pos->sock;
+      if (socket_test_select_set(sock,
+				 &readSet)) {
 #if DEBUG_TCPHANDLER
-	LOG(LOG_DEBUG,
-	    "tcpserver reads from %p (socket %d)\n",
-	    pos,
-	    sock);
+	GE_LOG(ectx,
+	       GE_DEBUG,
+	       "tcpserver reads from %p (socket %d)\n",
+	       pos,
+	       sock);
 #endif
 	if (SYSERR == readAndProcess(pos)) {
 	  ClientHandle ch
@@ -576,13 +617,14 @@ static void * tcpListenMain(void * unused) {
 	  continue;
 	}
       }
-      if (FD_ISSET(sock, &writeSet)) {
+      if (socket_test_select_set(sock, &writeSet)) {
 	size_t ret;
 	
 #if DEBUG_TCPHANDLER
-	LOG(LOG_DEBUG,
-	    "tcpserver writes to %p.\n",
-	    pos);
+	GE_LOG(ectx,
+	       GE_DEBUG,
+	       "tcpserver writes to %p.\n",
+	       pos);
 #endif
 	if (pos->writeBufferSize == 0) {
 	  if (pos->writeQueueSize > 0) {
@@ -596,18 +638,21 @@ static void * tcpListenMain(void * unused) {
 		 pos->writeQueueSize,
 		 pos->writeQueueSize-1);
 	  } else {
-	    BREAK(); /* entry in write set but no messages pending! */
+	    GE_BREAK(ectx, 0); /* entry in write set but no messages pending! */
 	  }
 	}
 try_again:
-	success = SEND_NONBLOCKING(sock,
-                                   pos->writeBuffer,
-                                   pos->writeBufferSize,
-                                   &ret);
+	success = socket_send(sock,
+			      NC_Blocking | NC_IgnoreInt,
+			      pos->writeBuffer,
+			      pos->writeBufferSize,
+			      &ret);
 	if (success == SYSERR) {
 	  ClientHandle ch
 	    = pos->next;
-	  LOG_STRERROR(LOG_INFO, "send");
+	  GE_LOG_STRERROR(ectx,
+			  GE_INFO | GE_BULK | GE_USER,
+			  "send");
 	  terminateClientConnection(pos);
 	  pos = ch;
 	  continue;
@@ -615,7 +660,7 @@ try_again:
 	  /* this should only happen under Win9x because
 	     of a bug in the socket implementation (KB177346).
 	     Let's sleep and try again. */
-	  gnunet_util_sleep(20);
+	  PTHREAD_SLEEP(20 * cronMILLIS);
 	  goto try_again;
 	}
 	if (ret == 0) {
@@ -639,11 +684,13 @@ try_again:
 	}
       }
 
-      if (FD_ISSET(sock, &errorSet)) {
+      if (socket_test_select_set(sock,
+				 &errorSet)) {
 #if DEBUG_TCPHANDLER
-	LOG(LOG_DEBUG,
-	    "tcpserver error on connection %p.\n",
-	    pos);
+	GE_LOG(ectx,
+	       GE_DEBUG,
+	       "tcpserver error on connection %p.\n",
+	       pos);
 #endif
 	ClientHandle ch
 	  = pos->next;
@@ -656,13 +703,16 @@ try_again:
   } /* while tcpserver_keep_running */
 
   /* shutdown... */
-  closefile(listenerFD);
+  if (0 != CLOSE(listenerFD))
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR,
+		    "close");
 
   /* close all sessions */
   while (clientList != NULL)
     terminateClientConnection(clientList);
 
-  MUTEX_UNLOCK(&clientlock);
+  MUTEX_UNLOCK(clientlock);
   SEMAPHORE_UP(serverSignal);  /* signal shutdown */
   return NULL;
 }
@@ -671,55 +721,69 @@ try_again:
 /**
  * Initialize the TCP port and listen for incoming client connections.
  */
-int initTCPServer() {
+int initTCPServer(struct GE_Context * e,
+		  struct GC_Configuration * cfg) {
   char * ch;
+
+  ectx = e;
   if (tcpserver_keep_running == YES) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
-
-  ch = getConfigurationString("NETWORK",
-			      "TRUSTED");
-  if (ch == NULL) {
-    trustedNetworks_ = parseRoutes("127.0.0.0/8;"); /* by default, trust localhost only */
-  } else {
-    trustedNetworks_ = parseRoutes(ch);
-    if (trustedNetworks_ == NULL)
-      errexit(_("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
-	      "NETWORK",
-	      "TRUSTED",
-	      ch);
+  ch = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "NETWORK",
+					      "TRUSTED",
+					      "127.0.0.0/8;",
+					      &ch)) 
+    return SYSERR;
+  GE_ASSERT(ectx, ch != NULL);
+  trustedNetworks_ = parse_ipv4_network_specification(ectx,
+						      ch);
+  if (trustedNetworks_ == NULL) {
+    GE_LOG(ectx,
+	   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+	   _("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
+	   "NETWORK",
+	   "TRUSTED",
+	   ch);    
     FREE(ch);
+    return SYSERR;
   }
+  FREE(ch);
 
   PIPE(signalingPipe);
   /* important: make signalingPipe non-blocking
      to avoid stalling on signaling! */
   setBlocking(signalingPipe[1], NO);
 
-  MUTEX_CREATE_RECURSIVE(&handlerlock);
-  MUTEX_CREATE_RECURSIVE(&clientlock);
+  handlerlock = MUTEX_CREATE(YES);
+  clientlock = MUTEX_CREATE(YES);
+#if 0
   if (testConfigurationString("TCPSERVER",
 			      "DISABLE",
 			      "YES"))
     return OK;
+#endif
   tcpserver_keep_running = YES;
-  serverSignal = SEMAPHORE_NEW(0);
-  if (0 == PTHREAD_CREATE(&TCPLISTENER_listener_,
-			  &tcpListenMain,
-			  NULL,
-			  64*1024)) {
-    SEMAPHORE_DOWN(serverSignal);
-  } else {
-    LOG_STRERROR(LOG_FAILURE, "pthread_create");
-    SEMAPHORE_FREE(serverSignal);
+  serverSignal = SEMAPHORE_CREATE(0);
+  TCPLISTENER_listener_ = PTHREAD_CREATE(&tcpListenMain,
+					 NULL,
+					 64*1024);
+  if (TCPLISTENER_listener_ == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR,
+		    "pthread_create");
+    SEMAPHORE_DESTROY(serverSignal);
     serverSignal = NULL;
     tcpserver_keep_running = NO;
-    MUTEX_DESTROY(&handlerlock);
-    MUTEX_DESTROY(&clientlock);
+    MUTEX_DESTROY(handlerlock);
+    handlerlock = NULL;
+    MUTEX_DESTROY(clientlock);
+    clientlock = NULL;
     return SYSERR;
   }
-
+  SEMAPHORE_DOWN(serverSignal, NO);
   return OK;
 }
 
@@ -738,17 +802,20 @@ int stopTCPServer() {
     /* stop server thread */
     tcpserver_keep_running = NO;
     signalSelect();
-    SEMAPHORE_DOWN(serverSignal);
-    SEMAPHORE_FREE(serverSignal);
+    SEMAPHORE_DOWN(serverSignal, NO);
+    SEMAPHORE_DESTROY(serverSignal);
     serverSignal = NULL;
-    PTHREAD_JOIN(&TCPLISTENER_listener_,
+    PTHREAD_JOIN(TCPLISTENER_listener_,
 		 &unused);
+    TCPLISTENER_listener_ = NULL;
     return OK;
   } else {
+#if 0
     if (testConfigurationString("TCPSERVER",
 				"DISABLE",
 				"YES"))
       return OK;
+#endif
     return SYSERR;
   }
 }
@@ -762,11 +829,13 @@ int doneTCPServer() {
   LOG(LOG_DEBUG,
       "entering %s\n", __FUNCTION__);
 #endif
-  closefile(signalingPipe[0]);
-  closefile(signalingPipe[1]);
+  CLOSE(signalingPipe[0]);
+  CLOSE(signalingPipe[1]);
   /* free data structures */
-  MUTEX_DESTROY(&handlerlock);
-  MUTEX_DESTROY(&clientlock);
+  MUTEX_DESTROY(handlerlock);
+  handlerlock = NULL;
+  MUTEX_DESTROY(clientlock);
+  clientlock = NULL;
   GROW(handlers,
        max_registeredType,
        0);
@@ -790,14 +859,15 @@ int doneTCPServer() {
  */
 int registerCSHandler(unsigned short type,
 		      CSHandler callback) {
-  MUTEX_LOCK(&handlerlock);
+  MUTEX_LOCK(handlerlock);
   if (type < max_registeredType) {
     if (handlers[type] != NULL) {
-      MUTEX_UNLOCK(&handlerlock);
-      LOG(LOG_WARNING,
-	  _("%s failed, message type %d already in use.\n"),
-	  __FUNCTION__,
-	  type);
+      MUTEX_UNLOCK(handlerlock);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_DEVELOPER | GE_BULK,
+	     _("%s failed, message type %d already in use.\n"),
+	     __FUNCTION__,
+	     type);
       return SYSERR;
     }
   } else
@@ -805,7 +875,7 @@ int registerCSHandler(unsigned short type,
 	 max_registeredType,
 	 type + 8);
   handlers[type] = callback;
-  MUTEX_UNLOCK(&handlerlock);
+  MUTEX_UNLOCK(handlerlock);
   return OK;
 }
 
@@ -823,18 +893,18 @@ int registerCSHandler(unsigned short type,
  */
 int unregisterCSHandler(unsigned short type,
 			CSHandler callback) {
-  MUTEX_LOCK(&handlerlock);
+  MUTEX_LOCK(handlerlock);
   if (type < max_registeredType) {
     if (handlers[type] != callback) {
-      MUTEX_UNLOCK(&handlerlock);
+      MUTEX_UNLOCK(handlerlock);
       return SYSERR; /* another handler present */
     } else {
       handlers[type] = NULL;
-      MUTEX_UNLOCK(&handlerlock);
+      MUTEX_UNLOCK(handlerlock);
       return OK; /* success */
     }
   } else {  /* can't be there */
-    MUTEX_UNLOCK(&handlerlock);
+    MUTEX_UNLOCK(handlerlock);
     return SYSERR;
   }
 }
@@ -869,14 +939,14 @@ int sendTCPResultToClient(ClientHandle sock,
  * @return number of registered handlers (0 or 1)
  */
 unsigned int isCSHandlerRegistered(unsigned short type) {
-  MUTEX_LOCK(&handlerlock);
+  MUTEX_LOCK(handlerlock);
   if (type < max_registeredType) {
     if (handlers[type] != NULL) {
-      MUTEX_UNLOCK(&handlerlock);
+      MUTEX_UNLOCK(handlerlock);
       return 1;
     }
   }
-  MUTEX_UNLOCK(&handlerlock);
+  MUTEX_UNLOCK(handlerlock);
   return 0;
 }
 

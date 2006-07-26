@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_crypto.h"
 #include "version.h"
 
 /**
@@ -33,7 +34,8 @@
  * val is the configuration value from the
  * configuration file.
  */
-static void dyncat(char ** string,
+static void dyncat(struct GC_Configuration * cfg,
+		   char ** string,
 		   const char * section,
 		   const char * part) {
   int len;
@@ -43,7 +45,12 @@ static void dyncat(char ** string,
   len = strlen(*string);
   len += strlen(section) + 1;
   len += strlen(part) + 1;
-  val = getConfigurationString(section, part);
+  val = NULL;
+  GC_get_configuration_value_string(cfg,
+				    section,
+				    part,
+				    "",
+				    &val);
   if (val == NULL)
     val = STRDUP("");
   len += strlen(val) + 2;
@@ -68,7 +75,8 @@ static void dyncat(char ** string,
  * since changes to certain values there will also
  * require us to run gnunet-update!
  */
-static void getVersionHash(EncName * enc) {
+static void getVersionHash(struct GC_Configuration * cfg,
+			   EncName * enc) {
   HashCode512 hc;
   char * string;
 
@@ -78,9 +86,18 @@ static void getVersionHash(EncName * enc) {
      changes require gnunet-update feels like overkill for now; one
      simple alternative would be to require gnunet-update for any
      configuration change, but that again would be too strict. */
-  dyncat(&string, "GNUNETD", "APPLICATIONS");
-  dyncat(&string, "FS", "QUOTA");
-  dyncat(&string, "MODULES", "sqstore");
+  dyncat(cfg,
+	 &string,
+	 "GNUNETD", 
+	 "APPLICATIONS");
+  dyncat(cfg,
+	 &string, 
+	 "FS",
+	 "QUOTA");
+  dyncat(cfg, 
+	 &string, 
+	 "MODULES", 
+	 "sqstore");
   hash(string,
        strlen(string),
        &hc);
@@ -92,16 +109,21 @@ static void getVersionHash(EncName * enc) {
  * Check if we are up-to-date.
  * @return OK if we are
  */
-int checkUpToDate() {
+int checkUpToDate(struct GE_Context * ectx,
+		  State_ServiceAPI * sapi,
+		  struct GC_Configuration * cfg) {
   char * version;
   int len;
   EncName enc;
 
   version = NULL;
-  len = stateReadContent("GNUNET-VERSION",
-			 (void**)&version);
+  len = sapi->read(ectx,
+		   "GNUNET-VERSION",
+		   (void**)&version);
   if (len == -1) {
-    upToDate(); /* first start */
+    upToDate(ectx,
+	     sapi,
+	     cfg); /* first start */
     return OK;
   }
   if ( (len != strlen(VERSION) + 1 + sizeof(EncName)) ||
@@ -111,7 +133,8 @@ int checkUpToDate() {
     FREENONNULL(version);
     return SYSERR; /* wrong version */
   }
-  getVersionHash(&enc);
+  getVersionHash(cfg,
+		 &enc);
   if (0 != memcmp(&enc,
 		  &version[strlen(VERSION)+1],
 		  sizeof(EncName))) {
@@ -126,7 +149,9 @@ int checkUpToDate() {
  * We are up-to-date.
  * Writes the version tag
  */
-void upToDate() {
+void upToDate(struct GE_Context * ectx,
+	      State_ServiceAPI * sapi,
+	      struct GC_Configuration * cfg) {
   char * version;
   int len;
   EncName enc;
@@ -134,11 +159,13 @@ void upToDate() {
   len = strlen(VERSION) + 1 + sizeof(EncName);
   version = MALLOC(len);
   memcpy(version, VERSION, strlen(VERSION)+1);
-  getVersionHash(&enc);
+  getVersionHash(cfg,
+		 &enc);
   memcpy(&version[strlen(VERSION)+1], &enc, sizeof(EncName));
-  stateWriteContent("GNUNET-VERSION",
-		    len,
-		    version);
+  sapi->write(ectx,
+	      "GNUNET-VERSION",
+	      len,
+	      version);
   FREE(version);
 }
 		
