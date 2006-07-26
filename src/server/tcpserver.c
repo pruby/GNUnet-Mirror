@@ -783,7 +783,7 @@ int initTCPServer(struct GE_Context * e,
     clientlock = NULL;
     return SYSERR;
   }
-  SEMAPHORE_DOWN(serverSignal, NO);
+  SEMAPHORE_DOWN(serverSignal, YES);
   return OK;
 }
 
@@ -802,7 +802,7 @@ int stopTCPServer() {
     /* stop server thread */
     tcpserver_keep_running = NO;
     signalSelect();
-    SEMAPHORE_DOWN(serverSignal, NO);
+    SEMAPHORE_DOWN(serverSignal, YES);
     SEMAPHORE_DESTROY(serverSignal);
     serverSignal = NULL;
     PTHREAD_JOIN(TCPLISTENER_listener_,
