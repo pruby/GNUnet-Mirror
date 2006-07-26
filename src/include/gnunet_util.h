@@ -63,15 +63,6 @@ extern "C" {
 #endif
 #endif
 
-#define DEFAULT_CLIENT_CONFIG_FILE "~/.gnunet/gnunet.conf"
-#define DEFAULT_DAEMON_DIR         "/etc"
-#define DEFAULT_DAEMON_CONFIG_FILE DEFAULT_DAEMON_DIR"/gnunetd.conf"
-#define VAR_DIRECTORY              "/var/lib"
-#define VAR_DAEMON_DIRECTORY       VAR_DIRECTORY"/gnunet"
-#define VAR_DAEMON_CONFIG_FILE     VAR_DAEMON_DIRECTORY"/gnunetd.conf"
-#define GNUNET_HOME_DIRECTORY      "~/.gnunet"
-#define HOME_DAEMON_CONFIG_FILE    GNUNET_HOME_DIRECTORY"/gnunetd.conf"
-
 /**
  * Just the version number of GNUnet-util implementation.
  * Encoded as
