@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -38,7 +38,7 @@
 
 #include "tcpserver.h"
 #include "core.h"
-
+#include "startup.h"
 
 
 /**
@@ -72,7 +72,7 @@ int win_service() {
 /**
  * This flag is set if gnunetd is shutting down.
  */
-static Semaphore * doShutdown;
+static struct SEMAPHORE * doShutdown;
 
 /* ************* SIGNAL HANDLING *********** */
 
@@ -218,7 +218,7 @@ void initSignalHandlers() {
   struct sigaction oldsig;
 #endif
 
-  doShutdown = SEMAPHORE_NEW(0);
+  doShutdown = SEMAPHORE_CREATE(0);
 
 #ifndef MINGW
   sig.sa_handler = &shutdown_gnunetd;
@@ -240,7 +240,7 @@ void initSignalHandlers() {
 
   if (SYSERR == registerCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
                                   &shutdownHandler))
-    GNUNET_ASSERT(0);
+    GE_ASSERT(ectx, 0);
 }
 
 void doneSignalHandlers() {
@@ -261,7 +261,8 @@ void doneSignalHandlers() {
 #else
   SetConsoleCtrlHandler(&win_shutdown_gnunetd, TRUE);
 #endif
-  SEMAPHORE_FREE(doShutdown);
+  SEMAPHORE_DESTROY(doShutdown);
+  doShutdown = NULL;
 }
 
 /**
@@ -305,18 +306,6 @@ void waitForSignalHandler() {
 	       doShutdown);
 
 }
-
-/* *********** SYSTEM CHECKS ON STARTUP ************ */
-
-/**
- * Check if the compiler did a decent job aligning the structs...
- */
-void checkCompiler() {
-  GNUNET_ASSERT(sizeof(P2P_hello_MESSAGE) == 600);
-  GNUNET_ASSERT(sizeof(P2P_MESSAGE_HEADER) == 4);
-}
-
-/* *********** PID file handling *************** */
 
 static char * getPIDFile() {
   return getFileName("GNUNETD",

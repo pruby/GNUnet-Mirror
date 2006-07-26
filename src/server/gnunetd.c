@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,6 +28,8 @@
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 #include "gnunet_core.h"
 #include "core.h"
 #include "connection.h"
@@ -35,17 +37,6 @@
 #include "handler.h"
 #include "startup.h"
 #include "version.h"
-
-void gnunet_main();
-
-#ifdef MINGW
-/**
- * Main method of the windows service
- */
-void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
-  win_service_main(gnunet_main);
-}
-#endif
 
 /**
  * The main method of gnunetd. And here is how it works:
@@ -80,9 +71,10 @@ void gnunet_main() {
   if (NO == debug_flag())
     detachFromTerminal(filedes);
 
-  LOG(LOG_MESSAGE,
-      _("`%s' starting\n"),
-      "gnunetd");
+  GE_LOG(ectx,
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 _("`%s' starting\n"),
+	 "gnunetd");
 
   initCore();
   initConnection();   /* requires core, starts transports! */
@@ -102,15 +94,17 @@ void gnunet_main() {
      a SIGUSR1 which will wake us up from the
      sleep */
   initSignalHandlers();
-  LOG(LOG_MESSAGE,
-      _("`%s' startup complete.\n"),
-      "gnunetd");
-
+  GE_LOG(ectx,
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 _("`%s' startup complete.\n"),
+	 "gnunetd");
+  
   waitForSignalHandler();
-  LOG(LOG_MESSAGE,
-      _("`%s' is shutting down.\n"),
-      "gnunetd");
-
+  GE_LOG(ectx,
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 _("`%s' is shutting down.\n"),
+	 "gnunetd");
+  
   /* init 5: shutdown */
   disableCoreProcessing(); /* calls on applications! */
   stopCron(); /* avoid concurrency! */
@@ -123,18 +117,54 @@ void gnunet_main() {
   /* init 6: goodbye */
   deletePIDFile();
   doneSignalHandlers();
-  doneUtil();
 }
+
+#ifdef MINGW
+/**
+ * Main method of the windows service
+ */
+void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
+  win_service_main(gnunet_main);
+}
+#endif
 
 /**
  * Initialize util (parse command line, options) and
  * call the main routine.
  */
-int main(int argc, char * argv[]) {
-  checkCompiler();
+int main(int argc, 
+	 char * argv[]) {
+  int ret;
+  struct GC_Configuration * cfg;
+  struct GE_Context * ectx;
+
+  if ( (4 != sizeof(MESSAGE_HEADER)) ||
+       (600 != sizeof(P2P_hello_MESSAGE)) ) {
+    fprintf(stderr,
+	    "Sorry, your C compiler did not properly align the C structs. Aborting.\n");
+    return -1;
+  }
+
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
   /* init 1: get options and basic services up */
-  if (SYSERR == initUtil(argc, argv, &parseGnunetdCommandLine))
-    return 0; /* parse error, --help, etc. */
+  ret = gnunet_parse_options("gnunetd",
+			     ectx,
+			     cfg,
+			     &gnunetdOptions,
+			     (unsigned int) argc,
+			     argv);
+  if (ret == -1) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
+  /* now: patch up default context according to config! */
 
 #ifdef MINGW
   if (win_service()) {
@@ -146,7 +176,7 @@ int main(int argc, char * argv[]) {
   } else
 #endif
     gnunet_main();
-
+  
   return 0;
 }
 

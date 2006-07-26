@@ -1,6 +1,8 @@
 /*
      This file is part of GNUnet
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
+ 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
      by the Free Software Foundation; either version 2, or (at your
@@ -34,29 +36,18 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
-int debug_flag();
+int debug_flag(void);
 
-int win_service();
-
-/**
- * Check if the compiler did a decent job.
- **/
-void checkCompiler();
-
-/**
- * Perform option parsing from the command line.
- **/
-int parseGnunetdCommandLine(int argc,
-			    char * argv[]);
+int win_service(void);
 
 /**
  * Initialize signal handlers
  **/
-void initSignalHandlers();
+void initSignalHandlers(void);
 
-void doneSignalHandlers();
+void doneSignalHandlers(void);
 
-void waitForSignalHandler();
+void waitForSignalHandler(void);
 
 /**
  * Fork and start a new session to go into the background
@@ -76,17 +67,17 @@ void detachFromTerminalComplete(int * filedes);
 /**
  * Write our process ID to the pid file.
  **/
-void writePIDFile();
+void writePIDFile(void);
 
 /**
  * Delete the pid file.
  **/
-void deletePIDFile();
+void deletePIDFile(void);
 
 /**
  * Load all of the user-specified application modules.
  */
-void loadApplicationModules();
+void loadApplicationModules(void);
 
 #ifndef MINGW
 /**
