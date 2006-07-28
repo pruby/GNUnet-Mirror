@@ -129,7 +129,6 @@ client_connection_create(struct GE_Context * ectx,
   result->writelock = MUTEX_CREATE(NO);
   result->ectx = ectx;
   result->cfg = cfg;
-  result->isServerSocket = YES;
   return result;
 }
 
