@@ -86,7 +86,7 @@ int unregisterClientExitHandler(ClientExitHandler callback);
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
  */
-int sendToClient(ClientHandle handle,
+int sendToClient(struct ClientHandle * handle,
 		 const MESSAGE_HEADER * message);
 
 
@@ -98,11 +98,11 @@ int sendToClient(ClientHandle handle,
  * @return SYSERR on error, OK if the return value was
  *         send successfully
  */
-int sendTCPResultToClient(ClientHandle sock,
+int sendTCPResultToClient(struct ClientHandle * sock,
 			  int ret);
 
 
-void terminateClientConnection(ClientHandle sock);
+void terminateClientConnection(struct ClientHandle * sock);
 
 /**
  * Check if a handler is registered for a given
