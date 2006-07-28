@@ -141,18 +141,18 @@ typedef struct {
  * Opaque handle for client connections passed by
  * the core to the CSHandlers.
  */
-typedef struct ClientH * ClientHandle;
+struct ClientHandle;
 
 /**
  * Type of a handler for messages from clients.
  */
-typedef int (*CSHandler)(ClientHandle client,
+typedef int (*CSHandler)(struct ClientHandle * client,
 			 const MESSAGE_HEADER * message);
 
 /**
  * Method called whenever a given client disconnects.
  */
-typedef void (*ClientExitHandler)(ClientHandle client);
+typedef void (*ClientExitHandler)(struct ClientHandle * client);
 
 /**
  * Type of a handler for some message type.
@@ -213,7 +213,7 @@ typedef int (*BuildMessageCallback)(void * buf,
  * on the other hand does NOT confirm delivery since the actual
  * transfer happens asynchronously.
  */
-typedef int (*SendToClientCallback)(ClientHandle handle,
+typedef int (*SendToClientCallback)(struct ClientHandle * handle,
                                     const MESSAGE_HEADER * message);
 
 /**
@@ -567,7 +567,7 @@ typedef struct {
    * on the other hand does NOT confirm delivery since the actual
    * transfer happens asynchronously.
    */
-  int (*sendValueToClient)(ClientHandle handle,
+  int (*sendValueToClient)(struct ClientHandle * handle,
 			   int value);
 
   /**
@@ -623,7 +623,7 @@ typedef struct {
    * Terminate the connection with the given client (asynchronous
    * detection of a protocol violation).
    */
-  void (*terminateClientConnection)(ClientHandle handle);
+  void (*terminateClientConnection)(struct ClientHandle * handle);
 
 
   /* ************************ MISC ************************ */
