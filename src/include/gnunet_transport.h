@@ -263,6 +263,8 @@ typedef struct {
    *        or the hello_message from connect)
    * @param msg the message
    * @param size the size of the message, <= mtu
+   * @param important YES if message is important (i.e. grow 
+   *        buffers to queue if needed)
    * @return SYSERR on error, NO on temporary error (retry),
    *         YES/OK on success; after any persistent error,
    *         the caller must call "disconnect" and not continue
@@ -271,25 +273,8 @@ typedef struct {
    */
   int (*send)(TSession * tsession,
 	      const void * msg,
-	      const unsigned int size);
-
-  /**
-   * Send a message to the specified remote node with
-   * increased reliablility (whatever that means is
-   * up to the transport).
-   *
-   * @param tsession an opaque session handle (e.g. a socket
-   *        or the hello_message from connect)
-   * @param msg the message
-   * @param size the size of the message, <= mtu
-   * @return SYSERR on error, OK on success; after any error,
-   *         the caller must call "disconnect" and not continue
-   *         using the session afterwards (useful if the other
-   *         side closed the connection).
-   */
-  int (*sendReliable)(TSession * tsession,
-		      const void * msg,
-		      const unsigned int size);
+	      const unsigned int size,
+	      int important);
 
   /**
    * A (core) Session is to be associated with a transport session. The
@@ -338,12 +323,6 @@ typedef struct {
    * traffic). Maybe restarted later!
    */
   int (*stopTransportServer)(void);
-
-  /**
-   * Reload the configuration. Should never fail (keep old
-   * configuration on error, syslog errors!)
-   */
-  void (*reloadConfiguration)(void);
 
   /**
    * Convert transport address to human readable string.

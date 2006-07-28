@@ -530,7 +530,8 @@ int udpAssociate(TSession * tsession) {
  */
 static int udpSend(TSession * tsession,
 		   const void * message,
-		   const unsigned int size) {
+		   const unsigned int size,
+		   int important) {
   char * msg;
   UDPMessage mp;
   P2P_hello_MESSAGE * helo;
@@ -785,12 +786,10 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
   udpAPI.createhello          = &createhello;
   udpAPI.connect              = &udpConnect;
   udpAPI.send                 = &udpSend;
-  udpAPI.sendReliable         = &udpSend; /* can't increase reliability */
   udpAPI.associate            = &udpAssociate;
   udpAPI.disconnect           = &udpDisconnect;
   udpAPI.startTransportServer = &startTransportServer;
   udpAPI.stopTransportServer  = &stopTransportServer;
-  udpAPI.reloadConfiguration  = &reloadConfiguration;
   udpAPI.addressToString      = &addressToString;
 
   return &udpAPI;

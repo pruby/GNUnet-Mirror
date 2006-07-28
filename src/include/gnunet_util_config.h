@@ -182,7 +182,11 @@ typedef int (*GC_ChangeListener)(void * ctx,
 
 /**
  * Attach a callback that is notified whenever a 
- * configuration option changes.
+ * configuration option changes.<p>
+ *
+ * TODO: also call callback on existing configuration and confirm
+ * existing configuration is OK!  If not, return error!
+ * 
  * @return 0 on success, -1 on error
  */
 int GC_attach_change_listener(struct GC_Configuration * cfg,

@@ -148,7 +148,8 @@ int natAssociate(TSession * tsession) {
  */
 static int natSend(TSession * tsession,
 		   const void * message,
-		   const unsigned int size) {
+		   const unsigned int size,
+		   int important) {
   return SYSERR;
 }
 
@@ -180,12 +181,6 @@ static int stopTransportServer() {
 }
 
 /**
- * Reload the configuration. Should never fail.
- */
-static void reloadConfiguration(void) {
-}
-
-/**
  * Convert NAT address to a string.
  */
 static char * addressToString(const P2P_hello_MESSAGE * helo) {
@@ -206,12 +201,10 @@ TransportAPI * inittransport_nat(CoreAPIForTransport * core) {
   natAPI.createhello           = &createhello;
   natAPI.connect              = &natConnect;
   natAPI.send                 = &natSend;
-  natAPI.sendReliable         = &natSend; /* can't increase reliability */
   natAPI.associate            = &natAssociate;
   natAPI.disconnect           = &natDisconnect;
   natAPI.startTransportServer = &startTransportServer;
   natAPI.stopTransportServer  = &stopTransportServer;
-  natAPI.reloadConfiguration  = &reloadConfiguration;
   natAPI.addressToString      = &addressToString;
 
   return &natAPI;
