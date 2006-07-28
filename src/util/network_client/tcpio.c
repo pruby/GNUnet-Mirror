@@ -66,16 +66,6 @@ typedef struct ClientServerConnection {
 
   struct GC_Configuration * cfg;
 
-  /**
-   * If this is gnunetd's server socket, then we cannot
-   * automatically reconnect after closing the connection
-   * (since it is an "accept" that gives the socket).<p>
-   *
-   * If this is NO, we should query the configuration and
-   * automagically try to reconnect.
-   */
-  int isServerSocket;
-
 } ClientServerConnection;
 
 
@@ -140,25 +130,6 @@ client_connection_create(struct GE_Context * ectx,
   result->ectx = ectx;
   result->cfg = cfg;
   result->isServerSocket = YES;
-  return result;
-}
-
-
-/**
- * Get a GNUnet TCP socket that is connected to gnunetd.
- */
-struct ClientServerConnection * 
-daemon_connection_create(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg) {
-  ClientServerConnection * result;
-
-  result = MALLOC(sizeof(ClientServerConnection));  
-  result->sock = NULL;
-  result->readlock = MUTEX_CREATE(NO);
-  result->writelock = MUTEX_CREATE(NO);
-  result->ectx = ectx;
-  result->cfg = cfg;
-  result->isServerSocket = NO;
   return result;
 }
 
@@ -364,25 +335,6 @@ int connection_read(struct ClientServerConnection * sock,
   return OK; /* success */
 }
 
-
-
-/**
- * CS communication: simple return value
- */
-typedef struct {
-
-  /**
-   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
-   */
-  MESSAGE_HEADER header;
-
-  /**
-   * The return value (network byte order)
-   */
-  int return_value;
-
-} RETURN_VALUE_MESSAGE;
-
 /**
  * Obtain a return value from a remote call from TCP.
  *
@@ -452,8 +404,6 @@ int connection_write_error(struct ClientServerConnection * sock,
 			   const char * msg) {
   return SYSERR; /* not implemented! */
 }
-
-
 
 
 /*  end of tcpio.c */

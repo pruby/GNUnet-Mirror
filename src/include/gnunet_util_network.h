@@ -36,8 +36,6 @@
 #include "gnunet_util_string.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_threads.h"
-#include <sys/socket.h>
-#include <sys/select.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,6 +113,24 @@ typedef struct {
 } MESSAGE_HEADER;
 
 /**
+ * Client-server communication: simple return value
+ */
+typedef struct {
+
+  /**
+   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
+   */
+  MESSAGE_HEADER header;
+
+  /**
+   * The return value (network byte order)
+   */
+  int return_value;
+
+} RETURN_VALUE_MESSAGE;
+
+
+/**
  * @brief an IPv4 address
  */
 typedef struct {
@@ -144,9 +160,55 @@ typedef struct {
  */
 struct CIDR6Network;
 
-struct ClientServerConnection;
-
+/**
+ * @brief handle for a system socket
+ */
 struct SocketHandle;
+
+/**
+ * @brief handle for a select manager
+ */
+struct SelectHandle;
+
+/**
+ * @brief callback for handling messages received by select
+ *
+ * @param sock socket on which the message was received
+ *        (should ONLY be used to queue reply using select methods)
+ * @return OK if message was valid, SYSERR if corresponding
+ *  socket should be closed
+ */
+typedef int (*SelectMessageHandler)(void * mh_cls,
+				   struct SelectHandle * sh,
+				   struct SocketHandle * sock,
+				   void * sock_ctx,
+				   const MESSAGE_HEADER * msg);			     
+
+/**
+ * We've accepted a connection, check that
+ * the connection is valid and create the
+ * corresponding sock_ctx for the new
+ * connection.
+ *
+ * @param addr the address of the other side as reported by OS
+ * @param addr_len the size of the address
+ * @return NULL to reject connection, otherwise value of sock_ctx
+ *         for the new connection
+ */
+typedef void * (*SelectAcceptHandler)(void * ah_cls,
+				      struct SelectHandle * sh,
+				      struct SocketHandle * sock,
+				      const void * addr,
+				      unsigned int addr_len);
+
+/**
+ * Select has been forced to close a connection.
+ * Free the associated context.
+ */
+typedef void (*SelectCloseHandler)(void * ch_cls,
+				   struct SelectHandle * sh,
+				   struct SocketHandle * sock,
+				   void * sock_ctx);
 
 /* *********************** endianess conversion ************* */
 
@@ -230,171 +292,6 @@ int get_host_by_name(struct GE_Context * ectx,
 		     const char * hostname,
 		     IPaddr * ip);
 
-/* ***************** high-level GNUnet client-server connections *********** */
-
-/**
- * Get a connection with gnunetd.
- */
-struct ClientServerConnection * 
-daemon_connection_create(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg);
-
-/**
- * Initialize a GNUnet server socket.
- * @param sock the open socket
- * @param result the SOCKET (filled in)
- * @return OK (always successful)
- */
-struct ClientServerConnection * 
-client_connection_create(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg,
-			 struct SocketHandle * sock);
-
-/**
- * Close a GNUnet TCP socket for now (use to temporarily close
- * a TCP connection that will probably not be used for a long
- * time; the socket will still be auto-reopened by the
- * readFromSocket/writeToSocket methods if it is a client-socket).
- *
- * Also, you must still call connection_destroy to free all
- * resources associated with the connection.
- */
-void connection_close_temporarily(struct ClientServerConnection * sock);
-
-/**
- * Destroy connection between gnunetd and clients.
- * Also closes the connection if it is still active.
- */
-void connection_destroy(struct ClientServerConnection * con);
-
-/**
- * Check if a socket is open. Will ALWAYS return 'true' for a valid
- * client socket (even if the connection is closed), but will return
- * false for a closed server socket.
- *
- * @return 1 if open, 0 if closed
- */
-int connection_test_open(struct ClientServerConnection * sock);
-
-/**
- * Check a socket, open and connect if it is closed and it is a
- * client-socket.
- *
- * @return OK if the socket is now open, SYSERR if not
- */
-int connection_ensure_connected(struct ClientServerConnection * sock);
-
-/**
- * Read from a GNUnet client-server connection.
- *
- * @param sock the socket
- * @param buffer the buffer to write data to
- *        if NULL == *buffer, *buffer is allocated (caller frees)
- * @return OK if the read was successful, SYSERR if the socket
- *         was closed by the other side (if the socket is a
- *         client socket and is used again, the next
- *         read/write call will automatically attempt
- *         to re-establish the connection).
- */
-int connection_read(struct ClientServerConnection * sock,
-		    MESSAGE_HEADER ** buffer);
-
-/**
- * Write to a GNUnet TCP socket.
- *
- * @param sock the socket to write to
- * @param buffer the buffer to write
- * @return OK if the write was sucessful, 
- *         NO if it would block and isBlocking was NO,
- *         SYSERR if the write failed (error will be logged)
- */
-int connection_write(struct ClientServerConnection * sock,
-		     const MESSAGE_HEADER * buffer);
-
-/**
- * Obtain a simple return value from the connection.
- * Note that the protocol will automatically communicate
- * errors and pass those to the error context used when
- * the socket was created.  In that case, read_result
- * will return SYSERR for the corresponding communication.
- * 
- * @param sock the TCP socket
- * @param ret the return value from TCP
- * @return SYSERR on error, OK if the return value was
- *         read successfully
- */
-int connection_read_result(struct ClientServerConnection * sock,
-			   int * ret);
-
-/**
- * Send a simple return value to the other side.
- *
- * @param sock the TCP socket
- * @param ret the return value to send via TCP
- * @return SYSERR on error, OK if the return value was
- *         send successfully
- */
-int connection_write_result(struct ClientServerConnection * sock,
-			    int ret);
-
-/**
- * Send a return value that indicates
- * a serious error to the other side.
- *
- * @param sock the TCP socket
- * @param mask GE_MASK 
- * @param date date string
- * @param msg message string
- * @return SYSERR on error, OK if the error code was send
- *         successfully
- */
-int connection_write_error(struct ClientServerConnection * sock,
-			   GE_KIND mask,
-			   const char * date,
-			   const char * msg);
-
-/**
- * Stop gnunetd
- *
- * Note that returning an error does NOT mean that
- * gnunetd will continue to run (it may have been
- * shutdown by something else in the meantime or
- * crashed).  Call connection_test_running() frequently
- * to check the status of gnunetd.
- *
- * Furthermore, note that this WILL potentially kill
- * gnunetd processes on remote machines that cannot
- * be restarted with startGNUnetDaemon!
- *
- * This function does NOT need the PID and will also
- * kill daemonized gnunetd's.
- *
- * @return OK successfully stopped, SYSERR: error
- */
-int connection_request_shutdown(struct ClientServerConnection * sock);
-
-/**
- * Checks if gnunetd is running
- *
- * Uses CS_PROTO_traffic_COUNT query to determine if gnunetd is
- * running.
- *
- * @return OK if gnunetd is running, SYSERR if not
- */
-int connection_test_running(struct GE_Context * ectx,
-			    struct GC_Configuration * cfg);
-
-/**
- * Wait until the gnunet daemon is
- * running.
- *
- * @param timeout how long to wait at most in ms
- * @return OK if gnunetd is now running
- */
-int connection_wait_for_running(struct GE_Context * ectx,
-				struct GC_Configuration * cfg,
-				cron_t timeout);
-
 /* ********************* low-level socket operations **************** */
 
 /**
@@ -407,16 +304,10 @@ socket_create(struct GE_Context * ectx,
 	      struct LoadMonitor * mon,
 	      int osSocket);
 
+/**
+ * Destroy the socket (also closes it).
+ */
 void socket_destroy(struct SocketHandle * s);
-
-void socket_add_to_select_set(struct SocketHandle * s,
-			      fd_set * set,
-			      int * max);
-
-int socket_test_select_set(struct SocketHandle * sock,
-			   fd_set * set);
-
-int socket_get_os_socket(struct SocketHandle * sock);
 
 /**
  * Depending on doBlock, enable or disable the nonblocking mode
@@ -459,8 +350,8 @@ int socket_recv_from(struct SocketHandle * s,
 		     void * buf,
 		     size_t max,
 		     size_t * read,
-		     struct sockaddr * from,
-		     socklen_t * fromlen);
+		     char * from,
+		     unsigned int * fromlen);
 
 /**
  * Do a write on the given socket.
@@ -484,8 +375,8 @@ int socket_send_to(struct SocketHandle * s,
 		   const void * buf,
 		   size_t max,
 		   size_t * sent,
-		   const struct sockaddr * dst,
-		   socklen_t dstlen);
+		   const char * dst,
+		   unsigned int dstlen);
 
 /**
  * Check if socket is valid
@@ -493,6 +384,75 @@ int socket_send_to(struct SocketHandle * s,
  */
 int socket_test_valid(struct SocketHandle * s);
 
+
+/* ********************* select operations **************** */
+
+
+/**
+ * Start a select thread that will accept connections
+ * from the given socket and pass messages read to the
+ * given message handler.
+ *
+ * @param sock the listen socket
+ * @param max_addr_len maximum expected length of addresses for
+ *        connections accepted on the given socket
+ * @param timeout after how long should inactive connections be
+ *        closed?  Use 0 for no timeout
+ * @param mon maybe NULL
+ * @param memory_quota amount of memory available for
+ *        queueing messages (in bytes)
+ * @return NULL on error
+ */
+struct SelectHandle * select_create(struct GE_Context * ectx,
+				    struct LoadMonitor * mon,
+				    int sock,
+				    unsigned int max_addr_len,
+				    cron_t timeout,
+				    SelectMessageHandler mh,
+				    void * mh_cls,
+				    SelectAcceptHandler ah,
+				    void * ah_cls,
+				    SelectCloseHandler ch,
+				    void * ch_cls,
+				    unsigned int memory_quota);
+
+/**
+ * Terminate the select thread, close the socket and
+ * all associated connections.
+ */
+void select_destroy(struct SelectHandle * sh);
+
+/**
+ * Queue the given message with the select thread.
+ *
+ * @param mayBlock if YES, blocks this thread until message
+ *        has been sent
+ * @param force message is important, queue even if
+ *        there is not enough space
+ * @return OK if the message was sent or queued
+ *         NO if there was not enough memory to queue it,
+ *         SYSERR if the sock does not belong with this select
+ */
+int select_write(struct SelectHandle * sh,
+		 struct SocketHandle * sock,
+		 const MESSAGE_HEADER * msg,
+		 int mayBlock,
+		 int force);
+
+/**
+ * Add another (already connected) socket to the set of
+ * sockets managed by the select.
+ */
+int select_connect(struct SelectHandle * sh,
+		   struct SocketHandle * sock,
+		   void * sock_ctx);
+
+/**
+ * Close the associated socket and remove it from the
+ * set of sockets managed by select.
+ */
+int select_disconnect(struct SelectHandle * sh,
+		      struct SocketHandle * sock);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

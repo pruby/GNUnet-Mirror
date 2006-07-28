@@ -134,36 +134,6 @@ typedef struct {
    */
   int expectingWelcome;
 
-  /**
-   * Current read position in the buffer.
-   */
-  unsigned int pos;
-
-  /**
-   * Current size of the read buffer.
-   */
-  unsigned int rsize;
-
-  /**
-   * The read buffer.
-   */
-  char * rbuff;
-
-  /**
-   * Position in the write buffer
-   */
-  unsigned int wpos;
-
-  /**
-   * The write buffer.
-   */
-  char * wbuff;
-
-  /**
-   * Size of the write buffer
-   */
-  unsigned int wsize;
-
 } TCPSession;
 
 /* *********** globals ************* */
@@ -183,65 +153,14 @@ static int stat_bytesSent;
 
 static int stat_bytesDropped;
 
-/**
- * one thread for listening for new connections,
- * and for reading on all open sockets
- */
-static struct PTHREAD * listenThread;
-
-/**
- * sock is the tcp socket that we listen on for new inbound
- * connections.
- */
-static struct SocketHandle * tcp_sock;
-
-/**
- * tcp_pipe is used to signal the thread that is
- * blocked in a select call that the set of sockets to listen
- * to has changed.
- */
-static int tcp_pipe[2];
-
-/**
- * Array of currently active TCP sessions.
- */
-static TSession ** tsessions = NULL;
-
-static unsigned int tsessionCount;
-
-static unsigned int tsessionArrayLength;
-
 /* configuration */
 static struct CIDRNetwork * filteredNetworks_;
 
-/**
- * Lock for access to mutable state of the module,
- * that is the configuration and the tsessions array.
- * Note that we ONLY need to synchronize access to
- * the tsessions array when adding or removing sessions,
- * since removing is done only by one thread and we just
- * need to avoid another thread adding an element at the
- * same point in time. We do not need to synchronize at
- * every access point since adding new elements does not
- * prevent the select thread from operating and removing
- * is done by the only therad that reads from the array.
- */
-static struct MUTEX * tcplock;
-
-/**
- * Semaphore used by the server-thread to signal that
- * the server has been started -- and later again to
- * signal that the server has been stopped.
- */
-static struct SEMAPHORE * serverSignal;
-
-static int tcp_shutdown = YES;
+static struct SelectHandle * selector;
 
 static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
-
-static struct LoadMonitor * load_monitor;
 
 /* ******************** helper functions *********************** */
 
@@ -256,23 +175,6 @@ static int isBlacklisted(IPaddr ip) {
 			  ip);
   MUTEX_UNLOCK(tcplock);
   return ret;
-}
-
-/**
- * Write to the pipe to wake up the select thread (the set of
- * files to watch has changed).
- */
-static void signalSelect() {
-  char i = 0;
-  int ret;
-
-  ret = WRITE(tcp_pipe[1],
-	      &i,
-	      sizeof(char));
-  if (ret != sizeof(char))
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK,
-		    "write");
 }
 
 /**
@@ -602,254 +504,6 @@ static void createNewSession(int sock) {
   tsession->internal = tcpSession;
   addTSession(tsession);
 }					
-
-/**
- * Main method for the thread listening on the tcp socket and all tcp
- * connections. Whenever a message is received, it is forwarded to the
- * core. This thread waits for activity on any of the TCP connections
- * and processes deferred (async) writes and buffers reads until an
- * entire message has been received.
- */
-static void * tcpListenMain(void * unused) {
-  struct sockaddr_in clientAddr;
-  fd_set readSet;
-  fd_set errorSet;
-  fd_set writeSet;
-  struct stat buf;
-  socklen_t lenOfIncomingAddr;
-  int i;
-  int max;
-  int ret;
-
-  SEMAPHORE_UP(serverSignal); /* we are there! */
-  MUTEX_LOCK(tcplock);
-  while (tcp_shutdown == NO) {
-    FD_ZERO(&readSet);
-    FD_ZERO(&errorSet);
-    FD_ZERO(&writeSet);
-    if (tcp_pipe[0] != -1) {
-      if (-1 != FSTAT(tcp_pipe[0], &buf)) {
-	FD_SET(tcp_pipe[0], 
-	       &readSet);
-      } else {
-	GE_LOG_STRERROR(ectx,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-			"fstat");
-	tcp_pipe[0] = -1; /* prevent us from error'ing all the time */	
-      }
-    }
-    max = tcp_pipe[0];
-    if (tcp_sock != NULL) {
-      if (socket_test_valid(tcp_sock)) {
-	socket_add_to_select_set(tcp_sock, &readSet, &max);
-      } else {	
-	socket_destroy(tcp_sock);
-	tcp_sock = NULL; /* prevent us from error'ing all the time */
-      }
-    }
-#if DEBUG_TCP
-    else
-      GE_LOG(ectx,
-	     GE_USER | GE_WARNING | GE_BULK,
-	     _("TCP server socket not open!\n"));
-#endif
-    for (i=0;i<tsessionCount;i++) {
-      TCPSession * tcpSession = tsessions[i]->internal;
-      struct SocketHandle * sock = tcpSession->sock;
-      if (sock != NULL) {
-	if (socket_test_valid(sock)) {
-	  socket_add_to_select_set(sock, &readSet, &max);
-	  socket_add_to_select_set(sock, &errorSet, &max);
-	  if (tcpSession->wpos > 0)
-	    socket_add_to_select_set(sock, &writeSet, &max); /* do we have a pending write request? */
-	} else {
-	  destroySession(i);
-	}
-      } else {
-	GE_BREAK(ectx, 0); /* sock in tsessions array should never be -1 */
-	destroySession(i);
-      }
-    }
-    MUTEX_UNLOCK(tcplock);
-    ret = SELECT(max+1, 
-		 &readSet,
-		 &writeSet,
-		 &errorSet,
-		 NULL);
-    MUTEX_LOCK(tcplock);
-    if ( (ret == -1) &&
-	 ( (errno == EAGAIN) || (errno == EINTR) ) )
-      continue;
-    if (ret == -1) {
-      if (errno == EBADF) {
-	GE_LOG_STRERROR(ectx,
-			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
-			"select");
-      } else {
-	GE_DIE_STRERROR(ectx,
-			GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
-			"select");
-      }
-    }
-    if (tcp_sock != NULL) {
-      if (socket_test_select_set(tcp_sock, &readSet)) {
-	int sock;
-	
-	lenOfIncomingAddr = sizeof(clientAddr);
-	sock = ACCEPT(socket_get_os_socket(tcp_sock),
-		      (struct sockaddr *)&clientAddr,
-		      &lenOfIncomingAddr);
-	if (sock != -1) {	
-	  /* verify clientAddr for eligibility here (ipcheck-style,
-	     user should be able to specify who is allowed to connect,
-	     otherwise we just close and reject the communication! */
-
-	  IPaddr ipaddr;
-	  GE_ASSERT(ectx,
-		    sizeof(struct in_addr) == sizeof(IPaddr));
-	  memcpy(&ipaddr,
-		 &clientAddr.sin_addr,
-		 sizeof(struct in_addr));
-
-	  if (YES == isBlacklisted(ipaddr)) {
-	    GE_LOG(ectx,
-		   GE_INFO | GE_USER | GE_ADMIN | GE_REQUEST,
-		   _("%s: Rejected connection from blacklisted "
-		     "address %u.%u.%u.%u.\n"),
-		   "TCP",
-		   PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
-	    if (0 != SHUTDOWN(sock, 2))
-	      GE_LOG_STRERROR(ectx,
-			      GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
-			      "shutdown");
-	    if (0 != CLOSE(sock))
-	      GE_LOG_STRERROR(ectx,
-			      GE_USER | GE_ADMIN | GE_WARNING | GE_BULK,
-			      "close");
-	  } else {
-#if DEBUG_TCP
-	    GE_LOG(ectx,
-		   GE_INFO,
-		   "Accepted connection from %u.%u.%u.%u.\n",
-		   PRIP(ntohl(*(int*)&clientAddr.sin_addr)));	
-#endif
-	    createNewSession(sock);
-	  }
-	} else {
-	  GE_LOG_STRERROR(ectx,
-			  GE_WARNING | GE_ADMIN | GE_BULK,
-			  "accept");
-	}
-      }
-    }
-    if (FD_ISSET(tcp_pipe[0], &readSet)) {
-      /* allow reading multiple signals in one go in case we get many
-	 in one shot... */
-#define MAXSIG_BUF 128
-      char buf[MAXSIG_BUF];
-      /* just a signal to refresh sets, eat and continue */
-      if (0 >= READ(tcp_pipe[0],
-		    &buf[0],
-		    MAXSIG_BUF)) {
-	GE_LOG_STRERROR(ectx,
-			GE_WARNING | GE_USER | GE_BULK, 
-			"read");
-      }
-    }
-    for (i=0;i<tsessionCount;i++) {
-      TCPSession * tcpSession = tsessions[i]->internal;
-      struct SocketHandle * sock = tcpSession->sock;
-      if (socket_test_select_set(sock, &readSet)) {
-	if (SYSERR == readAndProcess(i)) {
-	  destroySession(i);
-	  i--;
-	  continue;
-	}
-      }
-      if (socket_test_select_set(sock, &writeSet)) {
-	size_t ret;
-	int success;
-
-try_again_1:
-#if DEBUG_TCP
-	GE_LOG(ectx,
-	       GE_DEBUG | GE_USER | GE_BULK,
-	       "TCP: trying to send %u bytes\n",
-	       tcpSession->wpos);
-#endif
-	success = socket_send(sock,
-			      NC_Nonblocking,
-			      tcpSession->wbuff,
-			      tcpSession->wpos,
-			      &ret);
-	if (success == SYSERR) {
-	  GE_LOG_STRERROR(ectx,
-			  GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
-			  "send");
-	  destroySession(i);
-	  i--;
-	  continue;
-        } else if (success == NO) {
-  	  /* this should only happen under Win9x because
-  	     of a bug in the socket implementation (KB177346).
-  	     Let's sleep and try again. */
-  	  PTHREAD_SLEEP(20 * cronMILLIS);
-  	  goto try_again_1;
-        }
-	if (stats != NULL)
-	  stats->change(stat_bytesSent,
-			ret);
-
-#if DEBUG_TCP
-	GE_LOG(ectx,
-	       GE_DEBUG | GE_USER | GE_BULK,
-	       "TCP: transmitted %u bytes\n",
-	       ret);
-#endif
-	if (ret == 0) {
-          /* send only returns 0 on error (other side closed connection),
-	   * so close the session */
-	  destroySession(i);
-	  i--;
-	  continue;
-	}
-	if (ret == tcpSession->wpos) {
-	  FREENONNULL(tcpSession->wbuff);
-	  tcpSession->wbuff = NULL;
-	  tcpSession->wpos  = 0;
-	  tcpSession->wsize = 0;
-	} else {
-	  memmove(tcpSession->wbuff,
-		  &tcpSession->wbuff[ret],
-		  tcpSession->wpos - ret);
-	  tcpSession->wpos -= ret;
-	}
-      }
-      if (socket_test_select_set(sock, &errorSet)) {
-	destroySession(i);
-	i--;
-	continue;
-      }
-      if ( ( tcpSession->users == 1) &&
-	   (get_time() > tcpSession->lastUse + TCP_TIMEOUT) ) {
-	destroySession(i);
-	i--;
-	continue;
-      }
-    }
-  }
-  /* shutdown... */
-  if (tcp_sock != NULL) {
-    socket_destroy(tcp_sock);
-    tcp_sock = NULL;
-  }
-  /* close all sessions */
-  while (tsessionCount > 0)
-    destroySession(0);
-  MUTEX_UNLOCK(tcplock);
-  SEMAPHORE_UP(serverSignal); /* we are there! */
-  return NULL;
-} /* end of tcp listen main */
 
 /**
  * Send a message (already encapsulated if needed) via the
@@ -1425,20 +1079,8 @@ static int startTransportServer(void) {
 			     s);
   } else
     tcp_sock = NULL;
-  listenThread = PTHREAD_CREATE(&tcpListenMain,
-				NULL,
-				5 * 1024);
-  if (listenThread == NULL) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_IMMEDIATE | GE_ADMIN,
-		    "pthread_create");
-    socket_destroy(tcp_sock);
-    tcp_sock = NULL;
-    SEMAPHORE_DESTROY(serverSignal);
-    serverSignal = NULL;
-    return SYSERR;
-  }
-  SEMAPHORE_DOWN(serverSignal, YES); /* wait for server to be up */
+
+  /* FIXME: call network/select code! */
   return OK;
 }
 

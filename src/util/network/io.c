@@ -28,35 +28,7 @@
 
 #include "gnunet_util_network.h"
 #include "platform.h"
-
-typedef struct SocketHandle {
-
-  struct LoadMonitor * mon;
-  
-  struct GE_Context * ectx;
-
-  int handle;
-  
-} SocketHandle;
-
-
-void socket_add_to_select_set(struct SocketHandle * s,
-			      fd_set * set,
-			      int * max) {
-  FD_SET(s->handle,
-	 set);
-  if (*max < s->handle)
-    *max = s->handle;
-}
-
-int socket_test_select_set(struct SocketHandle * sock,
-			   fd_set * set) {
-  return FD_ISSET(sock->handle, set);
-}
-
-int socket_get_os_socket(struct SocketHandle * sock) {
-  return sock->handle;
-}
+#include "network.h"
 
 struct SocketHandle * 
 socket_create(struct GE_Context * ectx,
@@ -190,8 +162,8 @@ int socket_recv_from(struct SocketHandle * s,
 		     void * buf,
 		     size_t max,
 		     size_t * read,
-		     struct sockaddr * from,
-		     socklen_t * fromlen) {
+		     char * from,
+		     unsigned int * fromlen) {
   int flags;
   size_t pos;
   size_t ret;
@@ -221,7 +193,7 @@ int socket_recv_from(struct SocketHandle * s,
 			    &((char*)buf)[pos],
 			    max - pos,
 			    flags,
-			    from,
+			    (struct sockaddr*) from,
 			    fromlen);
     if ( (ret == (size_t) -1) &&
 	 (errno == EINTR) &&
@@ -321,8 +293,8 @@ int socket_send_to(struct SocketHandle * s,
 		   const void * buf,
 		   size_t max,
 		   size_t * sent,
-		   const struct sockaddr * dst,
-		   socklen_t dstlen) {
+		   const char * dst,
+		   unsigned int dstlen) {
   int flags;
   size_t pos;
   size_t ret;
@@ -353,7 +325,7 @@ int socket_send_to(struct SocketHandle * s,
 			  &((char*)buf)[pos],
 			  max - pos,
 			  flags,
-			  dst,
+			  (const struct sockaddr*) dst,
 			  dstlen);
     if ( (ret == (size_t) -1) &&
 	 (errno == EINTR) &&

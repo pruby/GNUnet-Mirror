@@ -6,11 +6,10 @@ noinst_LTLIBRARIES = \
   libnetwork.la
 
 libnetwork_la_SOURCES = \
- daemon.c \
  endian.c \
  io.c \
  ipcheck.c \
- tcpio.c 
+ select.c 
 
 check_PROGRAMS = \
  tcpiotest 

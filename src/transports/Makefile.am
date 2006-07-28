@@ -15,7 +15,7 @@ noinst_LTLIBRARIES = \
   libip.la
 
 if !MINGW
-# smtptransport = libgnunettransport_smtp.la
+ smtptransport = libgnunettransport_smtp.la
 endif
 
 libip_la_SOURCES = \

@@ -1,0 +1,740 @@
+/*
+     This file is part of GNUnet.
+     (C) 2003, 2006 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+/**
+ * @file util/network/select.c
+ * @brief (network) input/output operations
+ * @author Christian Grothoff
+ *
+ * TODO: memory management (pool allocation!)
+ */
+
+#include "gnunet_util_network.h"
+#include "platform.h"
+#include "network.h"
+
+/**
+ * Select Session handle.
+ */
+typedef struct {
+
+  /**
+   * the socket
+   */
+  struct SocketHandle * sock;
+
+  /**
+   * Client connection context.
+   */
+  void * sock_ctx;
+
+  cron_t lastUse;
+
+  /**
+   * Current read position in the buffer.
+   */
+  unsigned int pos;
+
+  /**
+   * Current size of the read buffer.
+   */
+  unsigned int rsize;
+
+  /**
+   * The read buffer.
+   */
+  char * rbuff;
+
+  /**
+   * Position in the write buffer
+   */
+  unsigned int wpos;
+
+  /**
+   * The write buffer.
+   */
+  char * wbuff;
+
+  /**
+   * Size of the write buffer
+   */
+  unsigned int wsize;
+
+} Session;
+
+typedef struct SelectHandle {
+
+  /**
+   * mutex for synchronized access
+   */
+  struct MUTEX * lock;
+
+  /**
+   * one thread for listening for new connections,
+   * and for reading on all open sockets
+   */
+  struct PTHREAD * thread;
+
+  /**
+   * sock is the tcp socket that we listen on for new inbound
+   * connections.
+   */
+  struct SocketHandle * listen_sock;
+
+  /**
+   * tcp_pipe is used to signal the thread that is
+   * blocked in a select call that the set of sockets to listen
+   * to has changed.
+   */
+  int signal_pipe[2];
+
+  /**
+   * Array of currently active TCP sessions.
+   */
+  Session ** sessions;
+
+  unsigned int sessionCount;
+
+  unsigned int sessionArrayLength;
+
+  int shutdown;
+
+  struct GE_Context * ectx;
+  
+  struct LoadMonitor * load_monitor;
+
+  unsigned int max_addr_len;
+
+  cron_t timeout;
+  
+  SelectMessageHandler mh;
+
+  void * mh_cls;
+  
+  SelectAcceptHandler ah;
+  
+  void * ah_cls;
+  
+  SelectCloseHandler ch;
+
+  void * ch_cls;
+  
+  unsigned int memory_quota;
+
+} SelectHandle;
+
+static void add_to_select_set(struct SocketHandle * s,
+			      fd_set * set,
+			      int * max) {
+  FD_SET(s->handle,
+	 set);
+  if (*max < s->handle)
+    *max = s->handle;
+}
+
+/**
+ * Write to the pipe to wake up the select thread (the set of
+ * files to watch has changed).
+ */
+static void signalSelect(SelectHandle * sh) {
+  static char i = '\0';
+  int ret;
+
+  ret = WRITE(sh->signal_pipe[1],
+	      &i,
+	      sizeof(char));
+  if (ret != sizeof(char))
+    GE_LOG_STRERROR(sh->ectx,
+		    GE_ERROR | GE_ADMIN | GE_BULK,
+		    "write");
+}
+
+/**
+ * Destroy the given session by closing the socket,
+ * releasing the buffers and removing it from the
+ * select set.
+ *
+ * This function may only be called if the tcplock is
+ * already held by the caller.
+ */
+static void destroySession(SelectHandle * sh,
+			   Session * s) { 
+  int i;
+
+  sh->ch(sh->ch_cls,
+	 sh,
+	 s->sock,
+	 s->sock_ctx);
+  socket_destroy(s->sock);
+  GROW(s->rbuff,
+       s->rsize,
+       0);
+  GROW(s->wbuff,
+       s->wsize,
+       0);
+  for (i=0;i<sh->sessionCount;i++) {
+    if (sh->sessions[i] == s) {
+      sh->sessions[i] = sh->sessions[sh->sessionCount-1];
+      sh->sessionCount--;
+      break;
+    }
+  }
+  FREE(s);
+  if (sh->sessionCount * 2 < sh->sessionArrayLength)
+    GROW(sh->sessions,
+	 sh->sessionArrayLength,
+	 sh->sessionCount);
+}
+
+/**
+ * The socket of a session has data waiting, read and 
+ * process!
+ *
+ * This function may only be called if the lock is
+ * already held by the caller.
+ * @return OK for success, SYSERR if session was destroyed
+ */
+static int readAndProcess(SelectHandle * sh,
+			  Session * session) {
+  const MESSAGE_HEADER * pack;
+  int ret;
+  size_t recvd;
+  unsigned short len;
+  
+  if (session->rsize == session->pos) {
+    /* read buffer too small, grow */
+    GROW(session->rbuff,
+	 session->rsize,
+	 session->rsize + 1024);
+  }
+  ret = socket_recv(session->sock,
+		    NC_Blocking | NC_IgnoreInt, 
+		    &session->rbuff[session->pos],
+		    session->rsize - session->pos,
+		    &recvd);
+  if (ret != OK) {
+    destroySession(sh, session);
+    return SYSERR; /* other side closed connection */
+  }
+  session->pos += recvd;
+  while (sh->shutdown == NO) {
+    pack = (const MESSAGE_HEADER*) &session->rbuff[0];
+    len = ntohs(pack->size);
+    /* check minimum size */
+    if (len < sizeof(MESSAGE_HEADER)) {
+      GE_LOG(sh->ectx,
+	     GE_WARNING | GE_USER | GE_BULK,
+	     _("Received malformed message (too small) from connection. Closing.\n"));
+      destroySession(sh, session);
+      return SYSERR;
+    }
+    if (len > session->rsize) /* if message larger than read buffer, grow! */
+      GROW(session->rbuff,
+	   session->rsize,
+	   len);
+
+    /* do we have the entire message? */
+    if (session->pos < len) 
+      break; /* wait for more */    
+
+    sh->mh(sh->mh_cls,
+	   sh,
+	   session->sock,
+	   session->sock_ctx,
+	   pack);
+    /* shrink buffer adequately */
+    memmove(&session->rbuff[0],
+	    &session->rbuff[len],
+	    session->pos - len);
+    session->pos -= len;
+  }
+  session->lastUse = get_time();
+  return OK;
+}
+
+/**
+ * The socket of a session has data waiting that can be 
+ * transmitted, do it!
+ *
+ * This function may only be called if the lock is
+ * already held by the caller.
+ * @return OK for success, SYSERR if session was destroyed
+ */
+static int writeAndProcess(SelectHandle * sh,
+			   Session * session) {
+  SocketHandle * sock;
+  int ret;
+  size_t size;
+
+  sock = session->sock;
+  while (sh->shutdown == NO) {
+    ret = socket_send(sock,
+		      NC_Nonblocking,
+		      session->wbuff,
+		      session->wpos,
+		      &size);
+    if (ret == SYSERR) {
+      GE_LOG_STRERROR(sh->ectx,
+		      GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+		      "send");
+      destroySession(sh, session);
+      return SYSERR;
+    } 
+    if (ret == OK) {
+      if (size == 0) {
+	/* send only returns 0 on error (happens if 
+	   other side closed connection), so close 
+	   the session */
+	destroySession(sh, session);
+	return SYSERR;
+      }
+      if (size == session->wpos) {
+	session->wpos = 0;
+	GROW(session->wbuff,
+	     session->wsize,
+	     0);
+	break;
+      }
+      memmove(session->wbuff,
+	      &session->wbuff[size],
+	      session->wpos - size);
+      session->wpos -= size;
+      break;
+    }
+    GE_ASSERT(sh->ectx, ret == NO);
+    /* this should only happen under Win9x because
+       of a bug in the socket implementation (KB177346).
+       Let's sleep and try again. */
+    PTHREAD_SLEEP(20 * cronMILLIS);
+  }
+  session->lastUse = get_time();
+  return OK;
+}
+
+/**
+ * Thread that selects until it is signaled to shut down.
+ */
+static void * selectThread(void * ctx) {
+  struct SelectHandle * sh = ctx;
+  char * clientAddr;
+  fd_set readSet;
+  fd_set errorSet;
+  fd_set writeSet;
+  struct stat buf;
+  socklen_t lenOfIncomingAddr;
+  int i;
+  int max;
+  int ret;
+  int s;
+  void * sctx;
+  SocketHandle * sock;
+  Session * session;	
+
+  clientAddr = MALLOC(sh->max_addr_len);
+  MUTEX_LOCK(sh->lock);
+  while (sh->shutdown == NO) {
+    FD_ZERO(&readSet);
+    FD_ZERO(&errorSet);
+    FD_ZERO(&writeSet);
+    if (sh->signal_pipe[0] != -1) {
+      if (-1 == FSTAT(sh->signal_pipe[0], &buf)) {
+	GE_LOG_STRERROR(sh->ectx,
+			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			"fstat");
+	sh->signal_pipe[0] = -1; /* prevent us from error'ing all the time */	
+      } else {
+	FD_SET(sh->signal_pipe[0], 
+	       &readSet);
+      }
+    }
+    max = sh->signal_pipe[0];
+    if (sh->listen_sock != NULL) {
+      if (! socket_test_valid(sh->listen_sock)) {
+	socket_destroy(sh->listen_sock);
+	GE_LOG(sh->ectx,
+	       GE_USER | GE_ERROR | GE_BULK,
+	       _("select listen socket not valid!\n"));
+	sh->listen_sock = NULL; /* prevent us from error'ing all the time */
+      } else {
+	add_to_select_set(sh->listen_sock, &readSet, &max);
+      } 
+    }
+    for (i=0;i<sh->sessionCount;i++) {
+      Session * session = sh->sessions[i];
+      struct SocketHandle * sock = session->sock;
+
+      if (! socket_test_valid(sock)) {
+	destroySession(sh, session);
+      } else {
+	add_to_select_set(sock, &readSet, &max);
+	add_to_select_set(sock, &errorSet, &max);
+	if (session->wpos > 0)
+	  add_to_select_set(sock, &writeSet, &max); /* do we have a pending write request? */
+      }
+    }
+    MUTEX_UNLOCK(sh->lock);
+    ret = SELECT(max+1, 
+		 &readSet,
+		 &writeSet,
+		 &errorSet,
+		 NULL);
+    MUTEX_LOCK(sh->lock);
+    if ( (ret == -1) &&
+	 ( (errno == EAGAIN) || (errno == EINTR) ) )
+      continue;
+    if (ret == -1) {
+      if (errno == EBADF) {
+	GE_LOG_STRERROR(sh->ectx,
+			GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
+			"select");
+      } else {
+	GE_DIE_STRERROR(sh->ectx,
+			GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+			"select");
+      }
+    }
+    if ( (sh->listen_sock != NULL) &&
+	 (FD_ISSET(sh->listen_sock->handle, &readSet)) ) {
+      lenOfIncomingAddr = sh->max_addr_len;
+      memset(clientAddr,
+	     0,
+	     lenOfIncomingAddr);
+      s = ACCEPT(sh->listen_sock->handle,
+		 (struct sockaddr *) clientAddr,
+		 &lenOfIncomingAddr);
+      if (s == -1) {	
+	GE_LOG_STRERROR(sh->ectx,
+			GE_WARNING | GE_ADMIN | GE_BULK,
+			"accept");
+      } else {
+	sock = socket_create(sh->ectx,
+			     sh->load_monitor,
+			     s);
+	sctx = sh->ah(sh->ah_cls,
+		      sh,
+		      sock,
+		      clientAddr,
+		      lenOfIncomingAddr);
+	if (sctx == NULL) {
+	  socket_destroy(sock);
+	} else {
+	  session = MALLOC(sizeof(Session));
+	  memset(session, 0, sizeof(Session));
+	  session->sock = sock;
+	  session->sock_ctx = sctx;
+	  session->lastUse = get_time();
+	  if (sh->sessionArrayLength == sh->sessionCount)
+	    GROW(sh->sessions,
+		 sh->sessionArrayLength,
+		 sh->sessionArrayLength + 4);
+	  sh->sessions[sh->sessionCount++] = session;
+	}
+      } 
+    }
+    if (FD_ISSET(sh->signal_pipe[0], &readSet)) {
+      /* allow reading multiple signals in one go in case we get many
+	 in one shot... */
+#define MAXSIG_BUF 128
+      char buf[MAXSIG_BUF];
+      /* just a signal to refresh sets, eat and continue */
+      if (0 >= READ(sh->signal_pipe[0],
+		    &buf[0],
+		    MAXSIG_BUF)) {
+	GE_LOG_STRERROR(sh->ectx,
+			GE_WARNING | GE_USER | GE_BULK, 
+			"read");
+      }
+    }
+    for (i=0;i<sh->sessionCount;i++) {
+      session = sh->sessions[i];
+      sock = session->sock;
+      if ( (FD_ISSET(sock->handle, &readSet)) &&
+	   (SYSERR == readAndProcess(sh,
+				     session)) ) {
+	i--;
+	continue;	
+      }
+      if ( (FD_ISSET(sock->handle, &writeSet)) &&
+	   (SYSERR == writeAndProcess(sh,
+				      session)) ) {
+	i--;
+	continue;
+      }     
+      if (FD_ISSET(sock->handle, &errorSet)) {
+	destroySession(sh, 
+		       session);
+	i--;
+	continue;
+      }
+      if ( (sh->timeout != 0) &&
+	   (get_time() > session->lastUse + sh->timeout) ) {
+	destroySession(sh, session);
+	i--;
+	continue;
+      }
+    }
+  }
+  MUTEX_UNLOCK(sh->lock);
+  FREE(clientAddr);
+  return NULL;
+}
+
+static int makeNonblocking(struct GE_Context * ectx,
+			    int handle) {
+#if MINGW
+  u_long l = 1;
+  if (ioctlsocket(handle, 
+		  FIONBIO, 
+		  &l) == SOCKET_ERROR) {
+    SetErrnoFromWinsockError(WSAGetLastError());
+    return SYSERR;
+  } else {
+    /* store the blocking mode */
+    __win_SetHandleBlockingMode(handle, 0);
+  }
+#else
+  int flags = fcntl(handle, F_GETFL);
+  flags |= O_NONBLOCK;
+  if (-1 == fcntl(handle,
+		  F_SETFL,
+		  flags)) {
+    GE_LOG_STRERROR(ectx,
+		    GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+		    "fcntl");
+    return SYSERR;
+  }
+#endif
+  return OK;
+}
+
+/**
+ * Start a select thread that will accept connections
+ * from the given socket and pass messages read to the
+ * given message handler.
+ *
+ * @param sock the listen socket
+ * @param max_addr_len maximum expected length of addresses for
+ *        connections accepted on the given socket
+ * @param mon maybe NULL
+ * @param memory_quota amount of memory available for
+ *        queueing messages (in bytes)
+ * @return NULL on error
+ */
+SelectHandle * select_create(struct GE_Context * ectx,
+			     struct LoadMonitor * mon,
+			     int sock,
+			     unsigned int max_addr_len,
+			     cron_t timeout,
+			     SelectMessageHandler mh,
+			     void * mh_cls,
+			     SelectAcceptHandler ah,
+			     void * ah_cls,
+			     SelectCloseHandler ch,
+			     void * ch_cls,
+			     unsigned int memory_quota) {
+  SelectHandle * sh;
+
+  if (0 != LISTEN(sock, 5)) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_IMMEDIATE,
+		    "listen");
+    return NULL;
+  }
+  sh = MALLOC(sizeof(SelectHandle));
+  memset(sh, 0, sizeof(SelectHandle));
+  if (0 != PIPE(sh->signal_pipe)) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_IMMEDIATE,
+		    "pipe");
+    FREE(sh);
+    return NULL;
+  }
+  if (OK != makeNonblocking(sh->ectx,
+			    sh->signal_pipe[0])) {
+    if ( (0 != CLOSE(sh->signal_pipe[0])) ||
+	 (0 != CLOSE(sh->signal_pipe[1])) )
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_IMMEDIATE | GE_ADMIN,
+		      "close");    
+    FREE(sh);
+    return NULL;    
+  }      
+  sh->shutdown = NO;
+  sh->ectx = ectx;
+  sh->load_monitor = mon;
+  sh->max_addr_len = max_addr_len;
+  sh->mh = mh;
+  sh->mh_cls = mh_cls;
+  sh->ah = ah;
+  sh->ah_cls = ah_cls;
+  sh->ch = ch;
+  sh->ch_cls = ch_cls;
+  sh->memory_quota = memory_quota;
+  sh->timeout = timeout;
+  sh->lock = MUTEX_CREATE(NO);
+  sh->listen_sock = socket_create(ectx,
+				  mon,
+				  sock);
+  sh->thread = PTHREAD_CREATE(&selectThread,
+			      sh,
+			      4 * 1024);
+  if (sh->thread == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_IMMEDIATE | GE_ADMIN,
+		    "pthread_create");
+    socket_destroy(sh->listen_sock);
+    if ( (0 != CLOSE(sh->signal_pipe[0])) ||
+	 (0 != CLOSE(sh->signal_pipe[1])) )
+      GE_LOG_STRERROR(ectx,
+		      GE_ERROR | GE_IMMEDIATE | GE_ADMIN,
+		      "close");
+    MUTEX_DESTROY(sh->lock);
+    FREE(sh);
+    return NULL;
+  }
+  return sh;
+}
+
+/**
+ * Terminate the select thread, close the socket and
+ * all associated connections.
+ */
+void select_destroy(struct SelectHandle * sh) {
+  void * unused;
+
+  sh->shutdown = YES;
+  signalSelect(sh);
+  PTHREAD_STOP_SLEEP(sh->thread);
+  PTHREAD_JOIN(sh->thread, &unused);
+  while (sh->sessionCount > 0)
+    destroySession(sh, sh->sessions[0]);
+  GROW(sh->sessions,
+       sh->sessionArrayLength,
+       0);
+  MUTEX_DESTROY(sh->lock);    
+  if (0 != CLOSE(sh->signal_pipe[1]))
+    GE_LOG_STRERROR(sh->ectx,
+		    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+		    "close");
+  if (0 != CLOSE(sh->signal_pipe[0])) 
+    GE_LOG_STRERROR(sh->ectx,
+		    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+		    "close");
+  if (sh->listen_sock != NULL)
+    socket_destroy(sh->listen_sock);
+  FREE(sh);
+}
+
+/**
+ * Queue the given message with the select thread.
+ *
+ * @param mayBlock if YES, blocks this thread until message
+ *        has been sent
+ * @param force message is important, queue even if
+ *        there is not enough space
+ * @return OK if the message was sent or queued, 
+ *         NO if there was not enough memory to queue it,
+ *         SYSERR if the sock does not belong with this select
+ */
+int select_write(struct SelectHandle * sh,
+		 struct SocketHandle * sock,
+		 const MESSAGE_HEADER * msg,
+		 int mayBlock,
+		 int force) {
+  Session * session;
+  int i;
+  unsigned short len;
+  int fresh_write;
+
+  session = NULL;
+  len = ntohs(msg->size);
+  MUTEX_LOCK(sh->lock);
+  for (i=0;i<sh->sessionCount;i++) 
+    if (sh->sessions[i]->sock == sock) {
+      session = sh->sessions[i];
+      break;
+    }
+  if (session == NULL) {
+    MUTEX_UNLOCK(sh->lock);
+    return SYSERR;    
+  }
+  fresh_write = (session->wsize == 0);
+  GROW(session->wbuff,
+       session->wsize,
+       session->wsize + len);
+  memcpy(&session->wbuff[session->wpos],
+	 msg,
+	 len);
+  session->wpos += len;
+  MUTEX_UNLOCK(sh->lock);
+  if (fresh_write)
+    signalSelect(sh);
+  return OK;
+}
+
+/**
+ * Add another (already connected) socket to the set of
+ * sockets managed by the select.
+ */
+int select_connect(struct SelectHandle * sh,
+		   struct SocketHandle * sock,
+		   void * sock_ctx) {
+  Session * session;	
+  
+  session = MALLOC(sizeof(Session));
+  memset(session, 0, sizeof(Session));
+  session->sock = sock;
+  session->sock_ctx = sock_ctx;
+  session->lastUse = get_time();
+  MUTEX_LOCK(sh->lock);
+  if (sh->sessionArrayLength == sh->sessionCount)
+    GROW(sh->sessions,
+	 sh->sessionArrayLength,
+	 sh->sessionArrayLength + 4);
+  sh->sessions[sh->sessionCount++] = session;
+  MUTEX_UNLOCK(sh->lock);
+  signalSelect(sh);
+  return OK;
+}
+
+/**
+ * Close the associated socket and remove it from the
+ * set of sockets managed by select.
+ */
+int select_disconnect(struct SelectHandle * sh,
+		      struct SocketHandle * sock) {
+  Session * session;
+  int i;
+ 
+  MUTEX_LOCK(sh->lock);
+  for (i=0;i<sh->sessionCount;i++) 
+    if (sh->sessions[i]->sock == sock) {
+      session = sh->sessions[i];
+      break;
+    } 
+  if (session == NULL) {
+    MUTEX_UNLOCK(sh->lock);
+    return SYSERR;
+  }
+  destroySession(sh, session);
+  MUTEX_UNLOCK(sh->lock);
+  signalSelect(sh);
+  return OK;
+}

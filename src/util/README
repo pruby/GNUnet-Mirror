@@ -25,6 +25,8 @@ util/containers: implementation of bloomfilter/vector/hashset (depends on gnunet
       => linked to gnunetutil_containers.so (also requires libgnunetutil_crypto)
 util/loggers: specific logging implementations (depends on gnunetutil.so)
       => linked to gnunetutil_logging.so
+util/network_client: library for synchronous communiation of clients with gnunetd (depends on gnunetutil.so)
+      => linked to gnunetutil_network_client.so
 
 Most GNUnet libraries and plugins will only need to (directly) link
 against gnunetutil.so.  Some may also require crypto or containers.
