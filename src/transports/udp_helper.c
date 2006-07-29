@@ -1,0 +1,197 @@
+/*
+     This file is part of GNUnet
+     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
+/**
+ * @file transports/udp_helper.c
+ * @brief common code for UDP transports
+ * @author Christian Grothoff
+ */
+
+/**
+ * Message-Packet header.
+ */
+typedef struct {
+  /**
+   * this struct is *preceded* by MESSAGE_PARTs - until
+   * size-sizeof(UDPMessage)!
+   */
+
+  /**
+   * size of the message, in bytes, including this header.
+   */
+  MESSAGE_HEADER header;
+
+  /**
+   * What is the identity of the sender (hash of public key)
+   */
+  PeerIdentity sender;
+
+} UDPMessage;
+
+/* *********** globals ************* */
+
+static CoreAPIForTransport * coreAPI;
+
+static TransportAPI udpAPI;
+
+static Stats_ServiceAPI * stats;
+
+static int stat_bytesReceived;
+
+static int stat_bytesSent;
+
+static int stat_bytesDropped;
+
+static struct GE_Context * ectx;
+
+/**
+ * thread that listens for inbound messages
+ */
+static struct SelectHandle * selector;
+
+/**
+ * the socket that we transmit all data with
+ */
+static struct SocketHandle * udp_sock;
+
+/**
+ * The socket of session has data waiting, process!
+ *
+ * This function may only be called if the tcplock is
+ * already held by the caller.
+ */
+static int select_message_handler(void * mh_cls,
+				  struct SelectHandle * sh,
+				  struct SocketHandle * sock,
+				  void * sock_ctx,
+				  const MESSAGE_HEADER * msg) {
+  unsigned int len;
+  P2P_PACKET * mp;
+  const UDPMessage * um;
+
+  len = ntohs(msg->size);
+  if (len <= sizeof(UDPMessage)) {
+    GE_LOG(ectx,
+	   GE_WARNING | GE_USER | GE_BULK,
+	   _("Received malformed message from udp-peer connection. Closing.\n"));
+    return SYSERR;
+  }
+  um = (const UDPMessage*) msg;
+  mp      = MALLOC(sizeof(P2P_PACKET));
+  mp->msg = MALLOC(len - sizeof(UDPMessage));
+  memcpy(mp->msg,
+	 &um[1],
+	 len - sizeof(UDPMessage));
+  mp->sender = um->sender;
+  mp->size   = len - sizeof(UDPMessage);
+  mp->tsession = NULL;
+  coreAPI->receive(mp);
+  if (stats != NULL)
+    stats->change(stat_bytesReceived,
+		  len);
+  return OK;
+}
+
+static void * select_accept_handler(void * ah_cls,
+				    struct SelectHandle * sh,
+				    struct SocketHandle * sock,
+				    const void * addr,
+				    unsigned int addr_len) {
+  static int nonnullpointer;
+  return &nonnullpointer;
+}
+
+/**
+ * Select has been forced to close a connection.
+ * Free the associated context.
+ */
+static void select_close_handler(void * ch_cls,
+				 struct SelectHandle * sh,
+				 struct SocketHandle * sock,
+				 void * sock_ctx) {
+  /* do nothing */
+}
+
+/**
+ * Establish a connection to a remote node.
+ * @param helo the hello-Message for the target node
+ * @param tsessionPtr the session handle that is to be set
+ * @return OK on success, SYSERR if the operation failed
+ */
+static int udpConnect(const P2P_hello_MESSAGE * helo,
+		      TSession ** tsessionPtr) {
+  TSession * tsession;
+
+  tsession = MALLOC(sizeof(TSession));
+  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(helo));
+  memcpy(tsession->internal,
+	 helo,
+	 P2P_hello_MESSAGE_size(helo));
+  tsession->ttype = udpAPI.protocolNumber;
+   (*tsessionPtr) = tsession;
+  return OK;
+}
+
+/**
+ * A (core) Session is to be associated with a transport session. The
+ * transport service may want to know in order to call back on the
+ * core if the connection is being closed.
+ *
+ * @param tsession the session handle passed along
+ *   from the call to receive that was made by the transport
+ *   layer
+ * @return OK if the session could be associated,
+ *         SYSERR if not.
+ */
+int udpAssociate(TSession * tsession) {
+  return SYSERR; /* UDP connections can never be associated */
+}
+
+/**
+ * Disconnect from a remote node.
+ *
+ * @param tsession the session that is closed
+ * @return OK on success, SYSERR if the operation failed
+ */
+static int udpDisconnect(TSession * tsession) {
+  if (tsession != NULL) {
+    if (tsession->internal != NULL)
+      FREE(tsession->internal);
+    FREE(tsession);
+  }
+  return OK;
+}
+
+/**
+ * Shutdown the server process (stop receiving inbound traffic). Maybe
+ * restarted later!
+ */
+static int stopTransportServer() {
+  GE_ASSERT(ectx, udp_sock != NULL);
+  if (selector != NULL) {
+    select_destroy(selector);
+    selector = NULL;
+  }  
+  socket_destroy(udp_sock);
+  udp_sock = NULL;
+  return OK;
+}
+
+/* end of udp_helper.c */

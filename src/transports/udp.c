@@ -33,6 +33,8 @@
 
 #define DEBUG_UDP NO
 
+#include "udp_helper.c"
+
 /**
  * Host-Address in a UDP network.
  */
@@ -54,72 +56,13 @@ typedef struct {
 
 } HostAddress;
 
-/**
- * Message-Packet header.
- */
-typedef struct {
-  /**
-   * this struct is *preceded* by MESSAGE_PARTs - until
-   * size-sizeof(UDPMessage)!
-   */
-
-  /**
-   * size of the message, in bytes, including this header.
-   */
-  MESSAGE_HEADER header;
-
-  /**
-   * What is the identity of the sender (hash of public key)
-   */
-  PeerIdentity sender;
-
-} UDPMessage;
-
-/* *********** globals ************* */
-
-/* apis (our advertised API and the core api ) */
-static CoreAPIForTransport * coreAPI;
-
-static TransportAPI udpAPI;
-
-static Stats_ServiceAPI * stats;
-
-static int stat_bytesReceived;
-
-static int stat_bytesSent;
-
-static int stat_bytesDropped;
-
-static struct GE_Context * ectx;
-
 static struct GC_Configuration * cfg;
 
 static struct LoadMonitor * load_monitor;
 
-/**
- * thread that listens for inbound messages
- */
-static struct SelectHandle * selector;
-
-/**
- * the socket that we receive all data from
- */
-static struct SocketHandle * udp_sock;
-
-/**
- * configuration
- */
 static struct CIDRNetwork * filteredNetworks_;
 
 static struct MUTEX * configLock;
-
-/**
- * Keep used port locally, the one in the configuration
- * may change and then we would not be able to send
- * the shutdown signal!
- */
-static unsigned short port;
-
 
 /**
  * Get the GNUnet UDP port from the configuration, or from
@@ -196,77 +139,22 @@ static int listensock(unsigned short port) {
 /**
  * Check if we are explicitly forbidden to communicate with this IP.
  */
-static int isBlacklisted(IPaddr ip) {
+static int isBlacklisted(const void * addr,
+			 unsigned int len) {
+  IPaddr ip;
   int ret;
 
+  if (len != sizeof(IPaddr))
+    return SYSERR;
+  memcpy(&ip,
+	 addr,
+	 sizeof(IPaddr));
   MUTEX_LOCK(configLock);
   ret = check_ipv4_listed(filteredNetworks_,
 			  ip);
   MUTEX_UNLOCK(configLock);
   return ret;
 }
-
-/**
- * The socket of session has data waiting, process!
- *
- * This function may only be called if the tcplock is
- * already held by the caller.
- */
-static int select_message_handler(void * mh_cls,
-				  struct SelectHandle * sh,
-				  struct SocketHandle * sock,
-				  void * sock_ctx,
-				  const MESSAGE_HEADER * msg) {
-  unsigned int len;
-  P2P_PACKET * mp;
-  const UDPMessage * um;
-
-  len = ntohs(msg->size);
-  if (len <= sizeof(UDPMessage)) {
-    GE_LOG(ectx,
-	   GE_WARNING | GE_USER | GE_BULK,
-	   _("Received malformed message from udp-peer connection. Closing.\n"));
-    return SYSERR;
-  }
-  um = (const UDPMessage*) msg;
-  mp      = MALLOC(sizeof(P2P_PACKET));
-  mp->msg = MALLOC(len - sizeof(UDPMessage));
-  memcpy(mp->msg,
-	 &um[1],
-	 len - sizeof(UDPMessage));
-  mp->sender = um->sender;
-  mp->size   = len - sizeof(UDPMessage);
-  mp->tsession = NULL;
-  coreAPI->receive(mp);
-  if (stats != NULL)
-    stats->change(stat_bytesReceived,
-		  len);
-  return OK;
-}
-
-
-static void * select_accept_handler(void * ah_cls,
-				    struct SelectHandle * sh,
-				    struct SocketHandle * sock,
-				    const void * addr,
-				    unsigned int addr_len) {
-  static int nonnullpointer;
-  return &nonnullpointer;
-}
-
-/**
- * Select has been forced to close a connection.
- * Free the associated context.
- */
-static void select_close_handler(void * ch_cls,
-				 struct SelectHandle * sh,
-				 struct SocketHandle * sock,
-				 void * sock_ctx) {
-  /* do nothing */
-}
-
-
-/* *************** API implementation *************** */
 
 /**
  * Verify that a hello-Message is correct (a node is reachable at that
@@ -284,7 +172,8 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
        (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
        (ntohs(helo->header.type) != p2p_PROTO_hello) ||
-       (YES == isBlacklisted(haddr->senderIP)) )
+       (YES == isBlacklisted(&haddr->senderIP,
+			     sizeof(IPaddr))) )
     return SYSERR; /* obviously invalid */
   else {
 #if DEBUG_UDP
@@ -308,8 +197,7 @@ static P2P_hello_MESSAGE * createhello() {
   P2P_hello_MESSAGE * msg;
   HostAddress * haddr;
 
-  if ( ( (selector == NULL) && (getGNUnetUDPPort() == 0) ) ||
-       ( (selector != NULL) && (port == 0) ) )
+  if (getGNUnetUDPPort() == 0)
     return NULL; /* UDP transport configured send-only */
 
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
@@ -330,58 +218,12 @@ static P2P_hello_MESSAGE * createhello() {
 	 "UDP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->senderIP)));
 #endif
-  if (selector == NULL)
-    haddr->senderPort      = htons(getGNUnetUDPPort());
-  else
-    haddr->senderPort      = htons(port);
+  haddr->senderPort      = htons(getGNUnetUDPPort());
   haddr->reserved        = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol          = htons(UDP_PROTOCOL_NUMBER);
   msg->MTU               = htonl(udpAPI.mtu);
   return msg;
-}
-
-/**
- * Establish a connection to a remote node.
- * @param helo the hello-Message for the target node
- * @param tsessionPtr the session handle that is to be set
- * @return OK on success, SYSERR if the operation failed
- */
-static int udpConnect(const P2P_hello_MESSAGE * helo,
-		      TSession ** tsessionPtr) {
-  TSession * tsession;
-  HostAddress * haddr;
-
-  tsession = MALLOC(sizeof(TSession));
-  tsession->internal = MALLOC(P2P_hello_MESSAGE_size(helo));
-  memcpy(tsession->internal,
-	 helo,
-	 P2P_hello_MESSAGE_size(helo));
-  tsession->ttype = udpAPI.protocolNumber;
-  haddr = (HostAddress*) &helo[1];
-#if DEBUG_UDP
-  GE_LOG(ectx, GE_DEBUG | GE_USER | GE_BULK,
-      "Connecting via UDP to %u.%u.%u.%u:%u.\n",
-      PRIP(ntohl(*(int*)&haddr->senderIP.addr)),
-      ntohs(haddr->senderPort));
-#endif
-   (*tsessionPtr) = tsession;
-  return OK;
-}
-
-/**
- * A (core) Session is to be associated with a transport session. The
- * transport service may want to know in order to call back on the
- * core if the connection is being closed.
- *
- * @param tsession the session handle passed along
- *   from the call to receive that was made by the transport
- *   layer
- * @return OK if the session could be associated,
- *         SYSERR if not.
- */
-int udpAssociate(TSession * tsession) {
-  return SYSERR; /* UDP connections can never be associated */
 }
 
 /**
@@ -475,27 +317,13 @@ static int udpSend(TSession * tsession,
 }
 
 /**
- * Disconnect from a remote node.
- *
- * @param tsession the session that is closed
- * @return OK on success, SYSERR if the operation failed
- */
-static int udpDisconnect(TSession * tsession) {
-  if (tsession != NULL) {
-    if (tsession->internal != NULL)
-      FREE(tsession->internal);
-    FREE(tsession);
-  }
-  return OK;
-}
-
-/**
  * Start the server process to receive inbound traffic.
  *
  * @return OK on success, SYSERR if the operation failed
  */
 static int startTransportServer(void) {
   int sock;
+  unsigned short port;
 
   GE_ASSERT(ectx, selector == NULL);
    /* initialize UDP network */
@@ -531,21 +359,6 @@ static int startTransportServer(void) {
   udp_sock = socket_create(ectx,
 			   load_monitor,
 			   sock);
-  return OK;
-}
-
-/**
- * Shutdown the server process (stop receiving inbound traffic). Maybe
- * restarted later!
- */
-static int stopTransportServer() {
-  GE_ASSERT(ectx, udp_sock != NULL);
-  if (selector != NULL) {
-    select_destroy(selector);
-    selector = NULL;
-  }  
-  socket_destroy(udp_sock);
-  udp_sock = NULL;
   return OK;
 }
 
@@ -613,7 +426,7 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "UDP",
 					      "MTU",
-					      sizeof(UDPMessage) + P2P_MESSAGE_OVERHEAD + sizeof(MESSAGE_HEADER) + 4,
+					      sizeof(UDPMessage) + P2P_MESSAGE_OVERHEAD + sizeof(MESSAGE_HEADER) + 32,
 					      65500,
 					      MESSAGE_SIZE,
 					      &mtu)) {

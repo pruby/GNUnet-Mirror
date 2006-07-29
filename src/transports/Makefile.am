@@ -15,7 +15,7 @@ noinst_LTLIBRARIES = \
   libip.la
 
 if !MINGW
- smtptransport = libgnunettransport_smtp.la
+# smtptransport = libgnunettransport_smtp.la
 endif
 
 libip_la_SOURCES = \
@@ -28,22 +28,20 @@ plugin_LTLIBRARIES = $(smtptransport) \
  libgnunettransport_tcp.la \
  libgnunettransport_udp.la \
  libgnunettransport_nat.la \
- $(v6transports) \
- libgnunettransport_http.la 
+ $(v6transports) # libgnunettransport_http.la 
 
-libgnunettransport_smtp_la_SOURCES = smtp.c
-libgnunettransport_smtp_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la
-libgnunettransport_smtp_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
+#libgnunettransport_smtp_la_SOURCES = smtp.c
+#libgnunettransport_smtp_la_LIBADD = \
+# $(top_builddir)/src/util/libgnunetutil.la
+#libgnunettransport_smtp_la_LDFLAGS = \
+# -export-dynamic -avoid-version -module 
 
-
-libgnunettransport_http_la_SOURCES = http.c
-libgnunettransport_http_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- libip.la
-libgnunettransport_http_la_LDFLAGS = \
- -export-dynamic -avoid-version -module 
+#libgnunettransport_http_la_SOURCES = http.c
+#libgnunettransport_http_la_LIBADD = \
+# $(top_builddir)/src/util/libgnunetutil.la \
+# libip.la
+#libgnunettransport_http_la_LDFLAGS = \
+# -export-dynamic -avoid-version -module 
 
 libgnunettransport_tcp_la_SOURCES = tcp.c
 libgnunettransport_tcp_la_LIBADD = \

@@ -293,16 +293,20 @@ static int connectToSMTPServer() {
 
   if (OK != GN_getHostByName(hostname,
 			     &ip)) {
-    LOG(LOG_ERROR,
-	_("Could not resolve name of SMTP server `%s': %s"),
-	hostname, hstrerror(h_errno));
+    GE_LOG(ectx,
+	   GE_ERROR,
+	   _("Could not resolve name of SMTP server `%s': %s"),
+	   hostname, 
+	   hstrerror(h_errno));
     FREE(hostname);
     return -1;
   }
   FREE(hostname);
   res = SOCKET(PF_INET, SOCK_STREAM, 6);/* 6: TCP */
   if (res == -1) {
-    LOG_STRERROR(LOG_FAILURE, "socket");
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR,
+		    "socket");
     return SYSERR;
   }
   SETSOCKOPT(res, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
@@ -663,7 +667,8 @@ int smtpAssociate(TSession * tsession) {
  */
 static int smtpSend(TSession * tsession,
 		    const void * message,
-		    const unsigned int size) {
+		    const unsigned int size,
+		    int important) {
   char * msg;
   SMTPMessage * mp;
   P2P_hello_MESSAGE * helo;
@@ -941,12 +946,10 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   smtpAPI.createhello          = &createhello;
   smtpAPI.connect              = &smtpConnect;
   smtpAPI.send                 = &smtpSend;
-  smtpAPI.sendReliable         = &smtpSend; /* is always blocking, so we can't really do better */
   smtpAPI.associate            = &smtpAssociate;
   smtpAPI.disconnect           = &smtpDisconnect;
   smtpAPI.startTransportServer = &startTransportServer;
   smtpAPI.stopTransportServer  = &stopTransportServer;
-  smtpAPI.reloadConfiguration  = &reloadConfiguration;
   smtpAPI.addressToString      = &addressToString;
 
   return &smtpAPI;
