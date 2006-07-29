@@ -14,6 +14,7 @@ libos_la_SOURCES = \
  semaphore.c \
  statuscalls.c \
  time.c \
+ user.c \
  installpath.c
 
 check_PROGRAMS = \

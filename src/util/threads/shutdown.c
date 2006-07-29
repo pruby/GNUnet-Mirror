@@ -39,6 +39,12 @@ static struct SEMAPHORE * shutdown_signal;
 
 static int shutdown_active;
 
+static struct SignalHandlerContext * shc_int;
+
+static struct SignalHandlerContext * shc_term;
+
+static struct SignalHandlerContext * shc_quit;
+
 void GNUNET_SHUTDOWN_INITIATE() {
   GE_ASSERT(NULL, shutdown_signal != NULL);
   shutdown_active = YES;
@@ -53,71 +59,31 @@ void GNUNET_SHUTDOWN_WAITFOR() {
   SEMAPHORE_DOWN(shutdown_signal, YES);
 }
 
-#ifdef MINGW
-BOOL WINAPI run_shutdown_win(DWORD dwCtrlType) {
-  switch(dwCtrlType) {
-  case CTRL_C_EVENT:
-  case CTRL_CLOSE_EVENT:
-  case CTRL_SHUTDOWN_EVENT:
-  case CTRL_LOGOFF_EVENT:
-    GNUNET_SHUTDOWN_INITIATE();
-  }
-  return TRUE;
-}
-#else
-static void run_shutdown(int signum) {
+static void run_shutdown() {
   GNUNET_SHUTDOWN_INITIATE();
 }
-#endif
 
 /**
  * Initialize the signal handlers, etc.
  */
 void __attribute__ ((constructor)) shutdown_handlers_ltdl_init() {
-#ifndef MINGW
-  struct sigaction sig;
-  struct sigaction oldsig;
-#endif
-
   GE_ASSERT(NULL, shutdown_signal == NULL);
   GE_ASSERT(NULL, shutdown_active == NO);
   shutdown_signal = SEMAPHORE_CREATE(0);
-#ifndef MINGW
-  sig.sa_handler = &run_shutdown;
-  sigemptyset(&sig.sa_mask);
-#ifdef SA_INTERRUPT
-  sig.sa_flags = SA_INTERRUPT; /* SunOS */
-#else
-  sig.sa_flags = SA_RESTART;
-#endif
-  sigaction(SIGINT,  &sig, &oldsig);
-  sigaction(SIGTERM, &sig, &oldsig);
-  sigaction(SIGQUIT, &sig, &oldsig);
-#else
-  SetConsoleCtrlHandler(&run_shutdown_win, TRUE);
-#endif
+  shc_int = signal_handler_install(SIGINT, &run_shutdown);
+  shc_term = signal_handler_install(SIGTERM, &run_shutdown);
+  shc_quit = signal_handler_install(SIGQUIT, &run_shutdown);
 }
 
 void __attribute__ ((destructor)) shutdown_handlers_ltdl_fini() {
-#ifndef MINGW
-  struct sigaction sig;
-  struct sigaction oldsig;
-
-  sig.sa_handler = SIG_DFL;
-  sigemptyset(&sig.sa_mask);
-#ifdef SA_INTERRUPT
-  sig.sa_flags = SA_INTERRUPT; /* SunOS */
-#else
-  sig.sa_flags = SA_RESTART;
-#endif
-  sigaction(SIGINT,  &sig, &oldsig);
-  sigaction(SIGTERM, &sig, &oldsig);
-  sigaction(SIGQUIT, &sig, &oldsig);
-#else
-  SetConsoleCtrlHandler(&run_shutdown_win, FALSE);
-#endif
+  signal_handler_uninstall(SIGINT, &run_shutdown, shc_int);
+  signal_handler_uninstall(SIGTERM, &run_shutdown, shc_term);
+  signal_handler_uninstall(SIGQUIT, &run_shutdown, shc_quit);
   SEMAPHORE_DESTROY(shutdown_signal);
   shutdown_signal = NULL;
+  shc_int = NULL;
+  shc_term = NULL;
+  shc_quit = NULL;
 }
 
 /* end of shutdown.c */

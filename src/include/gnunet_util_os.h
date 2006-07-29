@@ -213,6 +213,14 @@ int os_modify_user(struct GE_Context * ectx,
 		   const char * group);
 
 /**
+ * Change current process to run as the given
+ * user
+ * @return OK on success, SYSERR on error
+ */
+int os_change_user(struct GE_Context * ectx,
+		   const char * user);
+
+/**
  * Get the current CPU load.
  * @param ectx for error reporting
  * @param cfg to determine acceptable load level (LOAD::MAXCPULOAD)
@@ -269,6 +277,27 @@ enum InstallPathKind {
 char * os_get_installation_path(struct GE_Context * ectx,
                                 struct GC_Configuration * cfg,
                                 enum InstallPathKind dirkind);
+
+
+
+/**
+ * Fork and start a new session to go into the background
+ * in the way a good deamon should.
+ *
+ * @param filedes pointer to an array of 2 file descriptors
+ *        to complete the detachment protocol (handshake)
+ */
+int os_terminal_detach(struct GE_Context * ectx,
+		       int * filedes);
+
+/**
+ * Complete the handshake of detaching from the terminal.
+ * @param success use NO for error, YES for successful start
+ */
+void os_terminal_detach_complete(struct GE_Context * ectx,
+				 int * filedes,
+				 int success);
+
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

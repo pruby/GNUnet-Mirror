@@ -10,6 +10,7 @@ libthreads_la_SOURCES = \
  pthread.c \
  semaphore.c \
  shutdown.c \
+ signal.c \
  time.c
 
 check_PROGRAMS = \

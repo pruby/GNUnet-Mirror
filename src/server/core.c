@@ -523,8 +523,21 @@ void unloadApplicationModules() {
 /**
  * Initialize the CORE's globals.
  */
-void initCore() {
-  initTCPServer();
+int initCore(struct GE_Context * ectx,
+	     struct GC_Configuration * cfg,
+	     struct CronManager * cron,
+	     struct LoadMonitor * monitor) {
+  identity = requestService("identity");
+  if (identity == NULL)
+    return SYSERR;
+  identity->getPeerIdentity(identity->getPublicPrivateKey(),
+			    &myIdentity);
+  initTCPServer(ectx,
+		cfg);
+  applicationCore.ectx = ectx;
+  applicationCore.cfg = cfg;
+  applicationCore.load_monitor = monitor;
+  applicationCore.cron = cron;
   applicationCore.version = 0;
   applicationCore.myIdentity = &myIdentity; /* core.c */
   applicationCore.loadApplicationModule = &loadApplicationModule; /* core.c */
@@ -569,13 +582,8 @@ void initCore() {
   applicationCore.getSlotCount = &getSlotCount; /* connection.c */
   applicationCore.isSlotUsed = &isSlotUsed; /* connection.c */
   applicationCore.getLastActivityOf = &getLastActivityOf; /* connection.c */
-
-  identity = requestService("identity");
-  if (identity == NULL)
-    errexit(_("FATAL: Identity plugin not found!\n"));
-  identity->getPeerIdentity(identity->getPublicPrivateKey(),
-			    &myIdentity);
-  initHandler();
+  initHandler(ectx);
+  return OK;
 }
 
 /**

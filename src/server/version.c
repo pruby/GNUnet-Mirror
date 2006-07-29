@@ -110,7 +110,6 @@ static void getVersionHash(struct GC_Configuration * cfg,
  * @return OK if we are
  */
 int checkUpToDate(struct GE_Context * ectx,
-		  State_ServiceAPI * sapi,
 		  struct GC_Configuration * cfg) {
   char * version;
   int len;
@@ -122,7 +121,6 @@ int checkUpToDate(struct GE_Context * ectx,
 		   (void**)&version);
   if (len == -1) {
     upToDate(ectx,
-	     sapi,
 	     cfg); /* first start */
     return OK;
   }
@@ -150,7 +148,6 @@ int checkUpToDate(struct GE_Context * ectx,
  * Writes the version tag
  */
 void upToDate(struct GE_Context * ectx,
-	      State_ServiceAPI * sapi,
 	      struct GC_Configuration * cfg) {
   char * version;
   int len;

@@ -181,7 +181,7 @@ typedef struct CommandLineOption {
  * Marker to end the list of options.
  */
 #define COMMAND_LINE_OPTION_END \
-  { '\0', NULL, NULL, 0, NULL, NULL }
+  { '\0', NULL, NULL, NULL, 0, NULL, NULL }
 
 /**
  * Parse the command line.

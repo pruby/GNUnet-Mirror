@@ -38,21 +38,25 @@ extern PeerIdentity myIdentity;
 /**
  * Initialize the CORE's globals.
  */
-void initCore();
+
+int initCore(struct GE_Context * ectx,
+	     struct GC_Configuration * cfg,
+	     struct CronManager * cron,
+	     struct LoadMonitor * monitor);
 
 /**
  * Shutdown the CORE modules (also shuts down all
  * application modules).
  */
-void doneCore();
+void doneCore(void);
 
 void * requestService(const char * pos);
 
 int releaseService(void * service);
 
-void unloadApplicationModules();
+void unloadApplicationModules(void);
 
-void loadApplicationModules();
+void loadApplicationModules(void);
 
 
 

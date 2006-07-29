@@ -33,7 +33,7 @@
  * Initialize message handling module (make ready to register
  * handlers).
  */
-void initHandler();
+void initHandler(struct GE_Context * e);
 
 /**
  * Shutdown message handling module.

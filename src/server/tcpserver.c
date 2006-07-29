@@ -92,6 +92,26 @@ static int isWhitelisted(IPaddr ip) {
 			   ip);
 }
 
+static int shutdownHandler(ClientHandle client,
+                           const MESSAGE_HEADER * msg) {
+  int ret;
+
+  if (ntohs(msg->size) != sizeof(MESSAGE_HEADER)) {
+    GE_LOG(NULL,
+	   GE_WARNING | GE_USER | GE_BULK,
+	   _("The `%s' request received from client is malformed.\n"),
+	   "shutdown");
+    return SYSERR;
+  }
+  GE_LOG(NULL,
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 "shutdown request accepted from client\n");
+  ret = sendTCPResultToClient(client,
+			      OK);
+  GNUNET_SHUTDOWN_INITIATE();
+  return ret;
+}
+
 int registerClientExitHandler(ClientExitHandler callback) {
   MUTEX_LOCK(handlerlock);
   GROW(exitHandlers,

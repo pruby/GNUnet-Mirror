@@ -627,7 +627,8 @@ void disableCoreProcessing() {
 /**
  * Initialize message handling module.
  */
-void initHandler() {
+void initHandler(struct GE_Context * e) {
+  ectx = e;
   handlerLock = MUTEX_CREATE(NO);
   transport = requestService("transport");
   GE_ASSERT(ectx, transport != NULL);

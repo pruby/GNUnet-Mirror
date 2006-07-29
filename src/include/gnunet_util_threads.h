@@ -187,6 +187,29 @@ int GNUNET_SHUTDOWN_TEST(void);
  */
 void GNUNET_SHUTDOWN_WAITFOR(void);
 
+struct SignalHandlerContext;
+
+/**
+ * A signal handler.  Since different OSes have different signatures
+ * for their handlers, the API only gives the most restrictive
+ * signature -- no arguments, no return value.  Note that this will
+ * work even if the OS expects a function with arguments.  However,
+ * the implementation must guarantee that this handler is not called
+ * for signals other than the one that it has been registered for.
+ */
+typedef void (*SignalHandler)(void);
+
+/**
+ * Install a signal handler that will be run if the
+ * given signal is received.  
+ */
+struct SignalHandlerContext * signal_handler_install(int signal,
+						     SignalHandler handler);
+
+void signal_handler_uninstall(int signal,
+			      SignalHandler handler,
+			      struct SignalHandlerContext * ctx);
+
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

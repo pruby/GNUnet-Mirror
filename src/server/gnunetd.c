@@ -30,7 +30,9 @@
 #include "gnunet_util.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
+#include "gnunet_util_cron.h"
 #include "gnunet_core.h"
+#include "gnunet_directories.h"
 #include "core.h"
 #include "connection.h"
 #include "tcpserver.h"
@@ -38,104 +40,136 @@
 #include "startup.h"
 #include "version.h"
 
+static struct GC_Configuration * cfg;
+
+static struct CronManager * cron;
+
 /**
- * The main method of gnunetd. And here is how it works:
- * <ol>
- * <li>detach from tty, initialize all coresystems
- * <li>a) start core-services
- *     b) initialize application services and download hostlist
- * <li>wait for semaphore to signal shutdown
- * <li>shutdown all services (in roughly inverse order)
- * <li>exit
- * </ol>
+ * Cron job that triggers re-reading of the configuration.
  */
-void gnunet_main() {
-  int filedes[2]; /* pipe between client and parent */
+static void reread_config_helper(void * unused) {
+  char * filename;
+  
+  filename = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "GNUNET",
+					      "CONFIGFILE",
+					      DEFAULT_DAEMON_CONFIG_FILE,
+					      &filename)) {
+    GE_BREAK(NULL, 0); /* should never happen */
+    return; 
+  }
+  GE_ASSERT(NULL, filename != NULL);
+  GC_parse_configuration(cfg,
+			 filename);
+  FREE(filename);
+}
 
-  /* init 0: change user */
-#ifndef MINGW
-  char *user = getConfigurationString("GNUNETD", "USER");
-  if (user && strlen(user))
-    changeUser(user);
-  FREENONNULL(user);
-#endif
+/**
+ * Signal handler for SIGHUP.
+ * Re-reads the configuration file.
+ */
+static void reread_config() {
+  cron_add_job(cron,
+	       &reread_config_helper,
+	       1 * cronSECONDS,
+	       0,
+	       NULL);
+}
 
-  /* init 1: version management for GNUnet core,
-     essentially forces running gnunet-update
-     whenever the version OR configuration changes. */
-  if (OK != checkUpToDate())
-    errexit(_("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
-	    "gnunet-update");
-
-  /* init 2: become deamon, initialize core subsystems */
-  if (NO == debug_flag())
-    detachFromTerminal(filedes);
-
-  GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_REQUEST,
-	 _("`%s' starting\n"),
-	 "gnunetd");
-
-  initCore();
-  initConnection();   /* requires core, starts transports! */
-  loadApplicationModules(); /* still single-threaded! */
-
-  /* initialize signal handler (CTRL-C / SIGTERM) */
-  if (NO == debug_flag())
-    detachFromTerminalComplete(filedes);
-  writePIDFile();
-
-  startCron();
-  enableCoreProcessing();
-
-  /* init 4: wait for shutdown */
-  /* wait for SIGTERM, SIGTERM will set
-     doShutdown to YES and send this thread
-     a SIGUSR1 which will wake us up from the
-     sleep */
-  initSignalHandlers();
+/**
+ * Park main thread until shutdown has been signaled.
+ */
+static void waitForSignalHandler(struct GE_Context * ectx) {
   GE_LOG(ectx,
 	 GE_INFO | GE_USER | GE_REQUEST,
 	 _("`%s' startup complete.\n"),
-	 "gnunetd");
-  
-  waitForSignalHandler();
+	 "gnunetd"); 
+  GNUNET_SHUTDOWN_WAITFOR();
   GE_LOG(ectx,
 	 GE_INFO | GE_USER | GE_REQUEST,
 	 _("`%s' is shutting down.\n"),
 	 "gnunetd");
-  
-  /* init 5: shutdown */
-  disableCoreProcessing(); /* calls on applications! */
-  stopCron(); /* avoid concurrency! */
-  stopTCPServer(); /* calls on applications! */
-  unloadApplicationModules(); /* requires connection+tcpserver+handler */
-
-  doneConnection();  /* requires core, stops transports! */
-  doneCore();
-
-  /* init 6: goodbye */
-  deletePIDFile();
-  doneSignalHandlers();
 }
 
-#ifdef MINGW
 /**
- * Main method of the windows service
+ * The main method of gnunetd.
  */
-void WINAPI ServiceMain(DWORD argc, LPSTR *argv) {
-  win_service_main(gnunet_main);
+int gnunet_main(struct GE_Context * ectx) {
+  struct LoadMonitor * mon;
+  struct SignalHandlerContext * shc_hup;
+  int filedes[2]; /* pipe between client and parent */
+
+  if (NO == debug_flag()) {
+    if (OK != detachFromTerminal(ectx,
+				 filedes))
+      return SYSERR;
+  }
+  mon = os_network_monitor_create(ectx,
+				  cfg);
+  cron = cron_create(ectx);
+  shc_hup = signal_handler_install(SIGHUP, &reread_config);
+  initCore(ectx,
+	   cfg,
+	   cron,
+	   mon);
+  initConnection(); 
+  loadApplicationModules();
+  writePIDFile(ectx, cfg);
+  if (NO == debug_flag())
+    detachFromTerminalComplete(ectx,
+			       filedes);
+  cron_start(cron);
+  enableCoreProcessing();
+  waitForSignalHandler(ectx);  
+  disableCoreProcessing(); 
+  cron_stop(cron);
+  deletePIDFile(ectx, cfg);
+  stopTCPServer();
+  unloadApplicationModules(); 
+  doneConnection(); 
+  doneCore();
+  os_network_monitor_destroy(mon);
+  signal_handler_uninstall(SIGHUP, 
+			   &reread_config,
+			   shc_hup);
+  cron_destroy(cron);
+  return OK;
 }
+
+/**
+ * All gnunetd command line options
+ */
+static struct CommandLineOption gnunetdOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  { '@', "win-service", NULL, gettext_noop(""), 0, 
+    &gnunet_getopt_configure_set_option, "GNUNETD:WINSERVICE" },
+  { 'd', "debug", NULL, 
+    gettext_noop("run in debug mode; gnunetd will "
+		 "not daemonize and error messages will "
+		 "be written to stderr instead of a logfile"), 
+    0, &gnunet_getopt_configure_set_option, "GNUNETD:DEBUG" },
+  COMMAND_LINE_OPTION_HELP(_("Starts the gnunetd daemon.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'p', "padding", "PADDING", gettext_noop(""), 1,
+    &gnunet_getopt_configure_set_option, "GNUNETD-EXPERIMENTAL:PADDING" },
+#ifndef MINGW
+  { 'u', "user", "USERNAME", gettext_noop(""), 1, 
+    &gnunet_getopt_configure_set_option, "GNUNETD:USERNAME" },
 #endif
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_END,
+};
 
 /**
  * Initialize util (parse command line, options) and
  * call the main routine.
  */
 int main(int argc, 
-	 char * argv[]) {
+	 const char * argv[]) {
+  char * user;
   int ret;
-  struct GC_Configuration * cfg;
   struct GE_Context * ectx;
 
   if ( (4 != sizeof(MESSAGE_HEADER)) ||
@@ -144,7 +178,6 @@ int main(int argc,
 	    "Sorry, your C compiler did not properly align the C structs. Aborting.\n");
     return -1;
   }
-
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
@@ -152,31 +185,46 @@ int main(int argc,
   GE_setDefaultContext(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
-  /* init 1: get options and basic services up */
-  ret = gnunet_parse_options("gnunetd",
-			     ectx,
-			     cfg,
-			     &gnunetdOptions,
-			     (unsigned int) argc,
-			     argv);
-  if (ret == -1) {
+  if (-1 == gnunet_parse_options("gnunetd",
+				 ectx,
+				 cfg,
+				 gnunetdOptions,
+				 (unsigned int) argc,
+				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
     return -1;  
   }
-  /* now: patch up default context according to config! */
-
-#ifdef MINGW
-  if (win_service()) {
-    SERVICE_TABLE_ENTRY DispatchTable[] =
-      {{"GNUnet", ServiceMain}, {NULL, NULL}};
-    GNStartServiceCtrlDispatcher(DispatchTable);
-
-    return 0;
-  } else
-#endif
-    gnunet_main();
-  
+  user = NULL;
+  if (0 == GC_get_configuration_value_string(cfg,
+					     "GNUNETD",
+					     "USER",
+					     NULL,
+					     &user)) {
+    if (OK != os_change_user(ectx,
+			     user)) {
+      GC_free(cfg);
+      GE_free_context(ectx);
+      FREE(user);
+      return 1;
+    }
+    FREE(user);
+  }
+  if (OK != checkUpToDate(ectx,
+			  cfg)) {
+    GE_LOG(ectx,
+	   GE_USER | GE_FATAL | GE_IMMEDIATE,
+	   _("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
+	   "gnunet-update");
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  ret = gnunet_main(ectx);
+  GC_free(cfg);
+  GE_free_context(ectx);
+  if (ret != OK)
+    return 1;
   return 0;
 }
 
