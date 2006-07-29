@@ -654,7 +654,7 @@ typedef struct {
    * The the lock of the connection module. A module that registers
    * callbacks may need this.
    */
-  struct Mutex * (*getConnectionModuleLock)(void);
+  struct MUTEX * (*getConnectionModuleLock)(void);
 
   /**
    * Get the current number of slots in the connection table (as computed

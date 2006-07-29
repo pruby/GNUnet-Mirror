@@ -41,23 +41,28 @@ typedef struct ShutdownList {
   /**
    * Pointer to the library (as returned by dlopen).
    */
-  void * library;
+  struct PluginHandle * library;
+
   /**
    * Textual name of the library ("libgnunet_afs_protocol").
    */
   char * dsoName;
+
   /**
    * YES or NO: is the application initialized at this point?
    */
   int applicationInitialized;
+
   /**
    * Current number of users of the service API.
    */
   unsigned int serviceCount;
+
   /**
    * Pointer to the service API (or NULL if service not in use).
    */
   void * servicePTR;
+
   /**
    * This is a linked list.
    */
@@ -79,7 +84,7 @@ static ShutdownList * shutdownList = NULL;
 /**
  * The identity of THIS node.
  */
-PeerIdentity myIdentity;
+static PeerIdentity myIdentity;
 
 static Identity_ServiceAPI * identity;
 
@@ -92,15 +97,18 @@ static int loadApplicationModule(const char * rpos) {
   ShutdownList * nxt;
   ShutdownList * spos;
   ApplicationInitMethod mptr;
-  void * library;
+  struct PluginHandle * library;
   char * name;
   char * pos;
 
-  pos = getConfigurationString("MODULES",
-			       rpos);
-  if (pos == NULL)
-    pos = STRDUP(rpos);
-
+  pos = NULL;
+  if (-1 == GC_get_configuration_value_string(applicationCore.cfg,
+					      "MODULES",
+					      rpos,
+					      rpos,
+					      &pos))
+    return SYSERR;
+  GE_ASSERT(applicationCore.ectx, pos != NULL);
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);
@@ -111,15 +119,16 @@ static int loadApplicationModule(const char * rpos) {
     if (0 == strcmp(name,
 		    nxt->dsoName)) {
       if (nxt->applicationInitialized == YES) {
-	LOG(LOG_WARNING,
-	    _("Application module `%s' already initialized!\n"),
-	    name);
+	GE_LOG(applicationCore.ectx,
+	       GE_WARNING | GE_DEVELOPER | GE_BULK,
+	       _("Application module `%s' already initialized!\n"),
+	       name);
 	FREE(name);
 	return SYSERR;
       } else {
-	mptr = bindDynamicMethod(nxt->library,
-				 "initialize_",
-				 name);
+	mptr = os_plugin_resolve_function(nxt->library,
+					  "initialize_",
+					  YES);
 	if (mptr == NULL) {
 	  FREE(name);
 	  return SYSERR;
@@ -134,22 +143,18 @@ static int loadApplicationModule(const char * rpos) {
     nxt = nxt->next;
   }
 
-  library = loadDynamicLibrary(DSO_PREFIX,
-			       name);
+  library = os_plugin_load(applicationCore.ectx,
+			   DSO_PREFIX,
+			   name);
   if (library == NULL) {
     FREE(name);
     return SYSERR;
   }
-  mptr = bindDynamicMethod(library,
-			   "initialize_",
-			   name);
+  mptr = os_plugin_resolve_function(library,
+				    "initialize_",
+				    YES);
   if (mptr == NULL) {
-#if DEBUG_CORE
-    LOG(LOG_DEBUG,
-	"Unloading library `%s' at %s:%d.\n",
-	name, __FILE__, __LINE__);
-#endif
-    unloadDynamicLibrary(library);
+    os_plugin_unload(library);
     FREE(name);
     return SYSERR;
   }
@@ -164,9 +169,10 @@ static int loadApplicationModule(const char * rpos) {
   ok = mptr(&applicationCore);
   if (OK != ok) {
     /* undo loading */
-    LOG(LOG_MESSAGE,
-	_("Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"),
-	name, __FILE__, __LINE__);
+    GE_LOG(applicationCore.ectx,
+	   GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+	   _("Failed to load plugin `%s' at %s:%d.  Unloading plugin.\n"),
+	   name, __FILE__, __LINE__);
     /* Note: we cannot assert that shutdownList == nxt here,
        so we have to traverse the list again! */
     nxt->applicationInitialized = NO;
@@ -177,7 +183,7 @@ static int loadApplicationModule(const char * rpos) {
       while (spos->next != nxt) {
 	spos = spos->next;
 	if (spos == NULL) {
-	  BREAK(); /* should never happen! */
+	  GE_BREAK(applicationCore.ectx, 0); /* should never happen! */
 	  return ok;
 	}
       }
@@ -186,12 +192,7 @@ static int loadApplicationModule(const char * rpos) {
       shutdownList = nxt->next;
     else
       spos->next = nxt->next;
-#if DEBUG_CORE
-    LOG(LOG_DEBUG,
-	"Unloading library `%s' at %s:%d.\n",
-	name, __FILE__, __LINE__);
-#endif
-    unloadDynamicLibrary(library);
+    os_plugin_unload(library);
     FREE(name);
     FREE(nxt);
   }
@@ -211,40 +212,36 @@ static int unloadApplicationModule(const char * name) {
     pos = pos->next;
 
   if (pos == NULL) {
-    LOG(LOG_ERROR,
-	_("Could not shutdown `%s': application not loaded\n"),
-	name);
+    GE_LOG(applicationCore.ectx,
+	   GE_ERROR | GE_USER | GE_BULK | GE_DEVELOPER,
+	   _("Could not shutdown `%s': application not loaded\n"),
+	   name);
     return SYSERR;
   }
 
   if (pos->applicationInitialized != YES) {
-    LOG(LOG_WARNING,
-	_("Could not shutdown application `%s': not initialized\n"),
-	name);
+    GE_LOG(applicationCore.ectx,
+	   GE_WARNING | GE_USER | GE_BULK | GE_DEVELOPER,
+	   _("Could not shutdown application `%s': not initialized\n"),
+	   name);
     return SYSERR;
   }
-  mptr = bindDynamicMethod(pos->library,
-			   "done_",
-			   pos->dsoName);
+  mptr = os_plugin_resolve_function(pos->library,
+				    "done_",
+				    YES);
   if (mptr == NULL) {
-    LOG(LOG_ERROR,
-	_("Could not find '%s%s' method in library `%s'.\n"),
-	"done_",
-	pos->dsoName,
-	pos->dsoName);
+    GE_LOG(applicationCore.ectx,
+	   GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+	   _("Could not find '%s%s' method in library `%s'.\n"),
+	   "done_",
+	   pos->dsoName,
+	   pos->dsoName);
     return SYSERR;
-  }
-
+  }  
   mptr();
   pos->applicationInitialized = NO;
-  if (pos->serviceCount > 0) {
-#if DEBUG_CORE
-    LOG(LOG_DEBUG,
-	"Application shutdown, but service `%s' is still in use.\n",
-	pos->dsoName);
-#endif	
-    return OK;
-  }
+  if (pos->serviceCount > 0) 
+    return OK; 
 
   /* compute prev! */
   if (pos == shutdownList) {
@@ -254,18 +251,7 @@ static int unloadApplicationModule(const char * name) {
     while (prev->next != pos)
       prev = prev->next;
   }
-
-  if (0 == getConfigurationInt("GNUNETD",
-			       "VALGRIND")) {
-    /* do not unload plugins if we're using
-       valgrind */
-#if DEBUG_CORE
-    LOG(LOG_DEBUG,
-	"Unloading application plugin `%s' at %s:%d.\n",
-	pos->dsoName, __FILE__, __LINE__);
-#endif
-    unloadDynamicLibrary(pos->library);
-  }
+  os_plugin_unload(pos->library);  
   if (prev == NULL)
     shutdownList = pos->next;
   else
@@ -284,11 +270,14 @@ void * requestService(const char * rpos) {
   char * pos;
 
   /* subtyping, GNUnet style */
-  pos = getConfigurationString("MODULES",
-			       rpos);
-  if (pos == NULL)
-    pos = STRDUP(rpos);
-
+  pos = NULL;
+  if (-1 == GC_get_configuration_value_string(applicationCore.cfg,
+					      "MODULES",
+					      rpos,
+					      rpos,
+					      &pos))
+    return NULL;
+  GE_ASSERT(applicationCore.ectx, pos != NULL);
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);
@@ -301,18 +290,12 @@ void * requestService(const char * rpos) {
 	if (nxt->servicePTR != NULL)
 	  nxt->serviceCount++;
 	FREE(name);
-#if DEBUG_CORE
-	LOG(LOG_DEBUG,
-	    "Already have service `%s' as %p.\n",
-	    pos,
-	    nxt->servicePTR);
-#endif
 	FREE(pos);
 	return nxt->servicePTR;
       } else {
-	mptr = bindDynamicMethod(nxt->library,
-				 "provide_",
-				 name);
+	mptr = os_plugin_resolve_function(nxt->library,
+					  "provide_",
+					  YES);
 	if (mptr == NULL) {
 	  FREE(name);
 	  FREE(pos);
@@ -322,12 +305,6 @@ void * requestService(const char * rpos) {
 	if (nxt->servicePTR != NULL)
 	  nxt->serviceCount++;
 	FREE(name);
-#if DEBUG_CORE
-	LOG(LOG_DEBUG,
-	    "Initialized service `%s' as %p.\n",
-	    pos,
-	    nxt->servicePTR);
-#endif
 	FREE(pos);
 	return nxt->servicePTR;
       }
@@ -335,23 +312,19 @@ void * requestService(const char * rpos) {
     nxt = nxt->next;
   }
 
-  library = loadDynamicLibrary(DSO_PREFIX,
-			       name);
+  library = os_plugin_load(applicationCore.ectx,
+			   DSO_PREFIX,
+			   name);
   if (library == NULL) {
     FREE(name);
     FREE(pos);
     return NULL;
   }
-  mptr = bindDynamicMethod(library,
-			   "provide_",
-			   name);
+  mptr = os_plugin_resolve_function(library,
+				    "provide_",
+				    YES);
   if (mptr == NULL) {
-#if DEBUG_CORE
-	LOG(LOG_DEBUG,
-	    "Unloading library `%s' at %s:%d.\n",
-	    name, __FILE__, __LINE__);
-#endif
-    unloadDynamicLibrary(library);
+    os_plugin_unload(library);
     FREE(name);
     FREE(pos);
     return NULL;
@@ -364,16 +337,18 @@ void * requestService(const char * rpos) {
   nxt->serviceCount = 1;
   nxt->servicePTR = NULL;
   shutdownList = nxt;
-  LOG(LOG_DEBUG,
-      "Loading service `%s'\n",
-      pos);
+  GE_LOG(applicationCore.ectx,
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 "Loading service `%s'\n",
+	 pos);
   api = mptr(&applicationCore);
   if (api != NULL) {
     nxt->servicePTR = api;
   } else {
-    LOG(LOG_WARNING,
-	"Failed to load service `%s'\n",
-	pos);
+    GE_LOG(applicationCore.ectx,
+	   GE_WARNING | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+	   "Failed to load service `%s'\n",
+	   pos);
     nxt->serviceCount = 0;
   }
   FREE(pos);
@@ -394,53 +369,31 @@ int releaseService(void * service) {
     pos = pos->next;
 
   if (pos == NULL) {
-    LOG(LOG_ERROR,
-	_("Could not release %p: service not loaded\n"),
-	service);
+    GE_LOG(applicationCore.ectx,
+	   GE_BULK | GE_DEVELOPER | GE_ERROR,
+	   _("Could not release %p: service not loaded\n"),
+	   service);
     return SYSERR;
   }
   if (pos->serviceCount > 1) {
-#if DEBUG_CORE
-    LOG(LOG_DEBUG,
-	"Service `%s' still in use, not unloaded.\n",
-	pos->dsoName);
-#endif
     pos->serviceCount--;
     return OK; /* service still in use elsewhere! */
   }
-
-  LOG(LOG_DEBUG,
-      "Unloading service `%s'.\n",
-      pos->dsoName);
-  mptr = bindDynamicMethod(pos->library,
-			   "release_",
-			   pos->dsoName);
-  if (mptr == NULL) {
-    LOG(LOG_ERROR,
-	_("Could not find '%s%s' method in library `%s'.\n"),
-	"release_",
-	pos->dsoName,
-	pos->dsoName);
-    return SYSERR;
-  }
-#if DEBUG_CORE
-  LOG(LOG_DEBUG,
-      "Calling 'release_%s'.\n",
-      pos->dsoName);
-#endif
+  GE_LOG(applicationCore.ectx,
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 "Unloading service `%s'.\n",
+	 pos->dsoName);
+  mptr = os_plugin_resolve_function(pos->library,
+				    "release_",
+				    YES);
+  if (mptr == NULL) 
+    return SYSERR;  
   mptr();
   pos->serviceCount--;
   pos->servicePTR = NULL;
 
-  if (pos->applicationInitialized == YES) {
-#if DEBUG_CORE
-    LOG(LOG_DEBUG,
-	"Protocol `%s' still in use, not unloaded.\n",
-	pos->dsoName);
-#endif
+  if (pos->applicationInitialized == YES) 
     return OK; /* protocol still in use! */
-  }
-
   /* compute prev */
   if (pos == shutdownList) {
     prev = NULL;
@@ -453,29 +406,27 @@ int releaseService(void * service) {
     shutdownList = pos->next;
   else
     prev->next = pos->next;
-
-  if (0 == getConfigurationInt("GNUNETD",
-			       "VALGRIND")) {
-    /* do not unload plugins if we're using valgrind */
-    unloadDynamicLibrary(pos->library);
-  }
+  os_plugin_unload(pos->library);
   FREE(pos->dsoName);
   FREE(pos);
   return OK;
 }
 
-void loadApplicationModules() {
+int loadApplicationModules() {
   char * dso;
   char * next;
   char * pos;
-
-  dso = getConfigurationString("GNUNETD",
-			       "APPLICATIONS");
-  if (dso == NULL) {
-    LOG(LOG_WARNING,
-	_("No applications defined in configuration!\n"));
-    return;
-  }
+  int ok;
+  
+  ok = OK;
+  dso = NULL;
+  if (-1 == GC_get_configuration_value_string(applicationCore.cfg,
+					      "GNUNETD",
+					      "APPLICATIONS",
+					      "advertising fs getoption stats traffic",
+					      &dso))
+    return SYSERR;
+  GE_ASSERT(applicationCore.ectx, dso != NULL);
   next = dso;
   do {
     while (*next == ' ')
@@ -491,33 +442,38 @@ void loadApplicationModules() {
       next++;
     }
     if (strlen(pos) > 0) {
-      LOG(LOG_DEBUG,
-	  "Loading application `%s'\n",
-	  pos);
-     if (OK != loadApplicationModule(pos))
-	LOG(LOG_ERROR,
-	    _("Could not initialize application `%s'\n"),
-	    pos);
+      GE_LOG(applicationCore.ectx,
+	     GE_INFO | GE_USER | GE_BULK,
+	     "Loading application `%s'\n",
+	     pos);
+      if (OK != loadApplicationModule(pos))
+	ok = SYSERR;
     }
   } while (next != NULL);
   FREE(dso);
+  return ok;
 }
 
-void unloadApplicationModules() {
+int unloadApplicationModules() {
   ShutdownList * pos;
   ShutdownList * nxt;
-  /* shutdown application modules */
+  int ok;
+
+  ok = OK;
   pos = shutdownList;
   while (pos != NULL) {
     nxt = pos->next;
     if ( (pos->applicationInitialized == YES) &&
-	 (OK != unloadApplicationModule(pos->dsoName)) )
-      LOG(LOG_ERROR,
-	  _("Could not properly shutdown application `%s'.\n"),
-	  pos->dsoName);
+	 (OK != unloadApplicationModule(pos->dsoName)) ) {
+      GE_LOG(applicationCore.ectx,
+	     GE_ERROR | GE_DEVELOPER | GE_BULK,
+	     _("Could not properly shutdown application `%s'.\n"),
+	     pos->dsoName);
+      ok = SYSERR;
+    }
     pos = nxt;
   }
-
+  return OK;
 }
 
 /**
@@ -612,16 +568,7 @@ void doneCore() {
       if ( (pos->applicationInitialized == NO) &&
 	   (pos->serviceCount == 0) ) {
 	change = 1;
-	if (0 == getConfigurationInt("GNUNETD",
-				     "VALGRIND")) {
-	  /* do not unload plugins if we're using valgrind */
-#if DEBUG_CORE
-	  LOG(LOG_DEBUG,
-	      "Unloading library `%s' at %s:%d.\n",
-	      pos->dsoName, __FILE__, __LINE__);
-#endif	
-	  unloadDynamicLibrary(pos->library);
-	}	
+	os_plugin_unload(pos->library);		
 	nxt = pos->next;
 	if (prev == NULL)
 	  shutdownList = nxt;
@@ -637,9 +584,10 @@ void doneCore() {
   }
   pos = shutdownList;
   while (pos != NULL) {
-    LOG(LOG_ERROR,
-	_("Could not properly unload service `%s'!\n"),
-	pos->dsoName);
+    GE_LOG(applicationCore.ectx,
+	   GE_ERROR | GE_DEVELOPER | GE_BULK,
+	   _("Could not properly unload service `%s'!\n"),
+	   pos->dsoName);
     pos = pos->next;
   }
   doneTCPServer();
