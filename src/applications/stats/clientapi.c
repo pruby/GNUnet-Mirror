@@ -241,21 +241,6 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
       }
     }
   }
-  csStatMsg.header.type
-    = htons(CS_PROTO_stats_GET_CS_MESSAGE_SUPPORTED);
-  for (i=0;i<65535;i++) {
-    csStatMsg.type = htons(i);
-    if (SYSERR == writeToSocket(sock,
-				&csStatMsg.header))
-      return SYSERR;
-    if (SYSERR == readTCPResult(sock, &supported))
-      return SYSERR;
-    if (supported == YES) {
-      ret = processor(i, NO, cls);
-      if (ret != OK)
-	break;
-    }
-  }
   return OK;
 }
 
