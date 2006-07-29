@@ -56,17 +56,19 @@ typedef struct {
 /**
  * Initialize this module.
  */
-void initConnection();
+void initConnection(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
+		    struct LoadMonitor * mon);
 
 /**
  * Shutdown the connection module.
  */
-void doneConnection();
+void doneConnection(void);
 
 /**
  * For debugging.
  */
-void printConnectionBuffer();
+void printConnectionBuffer(void);
 
 /**
  * Check the sequence number and timestamp.  Decrypts the
@@ -197,7 +199,7 @@ void unicast(const PeerIdentity * receiver,
 /**
  * Return a pointer to the lock of the connection module.
  */
-struct MUTEX * getConnectionModuleLock();
+struct MUTEX * getConnectionModuleLock(void);
 
 
 /* ******************** traffic management ********** */
