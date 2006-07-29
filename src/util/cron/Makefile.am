@@ -7,6 +7,8 @@ lib_LTLIBRARIES = \
 
 libgnunetutil_cron_la_SOURCES = \
  cron.c
+libgnunetutil_cron_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
 
 check_PROGRAMS = \
  crontest

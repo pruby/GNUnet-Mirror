@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util_network.h"
+#include "gnunet_util_network_client.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util_threads.h"
 
@@ -35,7 +36,7 @@ int connection_test_running(struct GE_Context * ectx,
   MESSAGE_HEADER csHdr;
   int ret;
 
-  sock = daemon_connection_create(ectx, cfg);
+  sock = client_connection_create(ectx, cfg);
   if (sock == NULL) 
     return SYSERR;
   csHdr.size

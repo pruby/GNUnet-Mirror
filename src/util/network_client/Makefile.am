@@ -8,6 +8,8 @@ lib_LTLIBRARIES = \
 libgnunetutil_network_client_la_SOURCES = \
  daemon.c \
  tcpio.c 
+libgnunetutil_network_client_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
 
 check_PROGRAMS = \
  tcpiotest 

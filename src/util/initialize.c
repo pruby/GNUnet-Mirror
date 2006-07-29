@@ -27,26 +27,19 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
+#ifdef MINGW
 /**
  * Initialize the util library.
  */
 int __attribute__ ((constructor))  gnunet_util_init() {
-#ifdef MINGW
   if (InitWinEnv() != ERROR_SUCCESS)
   	return SYSERR;
-#endif
-#if ENABLE_NLS
-  setlocale (LC_ALL, "");
-  BINDTEXTDOMAIN("GNUnet", LOCALEDIR);
-  textdomain("GNUnet");
-#endif
   return OK;
 }
 
 void __attribute__ ((destructor)) gnunet_util_fini() {
-#ifdef MINGW
   ShutdownWinEnv();
-#endif
 }
+#endif
 
 /* end of initialize.c */

@@ -119,12 +119,11 @@ static char * getGNUnetdHost(struct GE_Context * ectx,
 
 struct ClientServerConnection * 
 client_connection_create(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg,
-			 struct SocketHandle * sock) {
+			 struct GC_Configuration * cfg) {
   ClientServerConnection * result;
 
   result = MALLOC(sizeof(ClientServerConnection));  
-  result->sock = sock;
+  result->sock = NULL;
   result->readlock = MUTEX_CREATE(NO);
   result->writelock = MUTEX_CREATE(NO);
   result->ectx = ectx;

@@ -74,8 +74,9 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
 	 (value == "YES") ) {
       /* if WE are a NAT and this is not our hello,
 	 it is invalid since NAT-to-NAT is not possible! */
-      if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
-			    &helo->senderIdentity.hashPubKey))
+      if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
+		      &helo->senderIdentity.hashPubKey,
+		      sizeof(HashCode512)))
 	return OK;
       else
 	return SYSERR;

@@ -29,6 +29,24 @@
 #include "platform.h"
 #include <iconv.h>
 
+
+int SNPRINTF(char * buf,
+             size_t size,
+             const char * format,
+             ...) {
+  int ret;
+  va_list args;
+
+  va_start(args, format);
+  ret = VSNPRINTF(buf,
+                  size,
+                  format,
+                  args);
+  va_end(args);
+  GE_ASSERT(NULL, ret <= size);
+  return ret;
+}
+
 #if !HAVE_STRLCPY
 /**
  * @brief Copy a %NUL terminated string into a sized buffer

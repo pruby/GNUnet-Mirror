@@ -47,20 +47,8 @@ struct ClientServerConnection;
  * Get a connection with gnunetd.
  */
 struct ClientServerConnection * 
-daemon_connection_create(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg);
-
-/**
- * Initialize a GNUnet server socket.
- *
- * @param sock the open socket
- * @param result the SOCKET (filled in)
- * @return OK (always successful)
- */
-struct ClientServerConnection * 
 client_connection_create(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg,
-			 struct SocketHandle * sock);
+			 struct GC_Configuration * cfg);
 
 /**
  * Close a GNUnet TCP socket for now (use to temporarily close

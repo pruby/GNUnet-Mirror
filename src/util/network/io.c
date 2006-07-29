@@ -30,6 +30,55 @@
 #include "platform.h"
 #include "network.h"
 
+/**
+ * Global lock for gethostbyname.
+ */
+static struct MUTEX * lock;
+
+void __attribute__ ((constructor)) gnunet_network_io_init() {
+  lock = MUTEX_CREATE(NO);
+}
+
+void __attribute__ ((destructor)) gnunet_network_io_fini() {
+  MUTEX_DESTROY(lock);
+  lock = NULL;
+}
+
+/**
+ * Get the IP address of the given host.
+ * @return OK on success, SYSERR on error
+ */
+int get_host_by_name(struct GE_Context * ectx,
+		     const char * hostname,
+                     IPaddr * ip) {
+  struct hostent * he;
+
+  /* slight hack: re-use config lock */
+  MUTEX_LOCK(lock);
+  he = GETHOSTBYNAME(hostname);
+  if (he == NULL) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_ADMIN | GE_BULK,
+	   _("Could not find IP of host `%s': %s\n"),
+	   hostname,
+	   hstrerror(h_errno));
+    MUTEX_UNLOCK(lock);
+    return SYSERR;
+  }
+  if (he->h_addrtype != AF_INET) {
+    GE_BREAK(ectx, 0);
+    MUTEX_UNLOCK(lock);
+    return SYSERR;
+  }
+  memcpy(ip,
+         &((struct in_addr*)he->h_addr_list[0])->s_addr,
+         sizeof(struct in_addr));
+  MUTEX_UNLOCK(lock);
+  return OK;
+}
+
+
+
 struct SocketHandle * 
 socket_create(struct GE_Context * ectx,
 	      struct LoadMonitor * mon,
