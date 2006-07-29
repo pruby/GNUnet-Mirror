@@ -41,6 +41,8 @@
 
 #define TARGET_BUFFER_SIZE 4092
 
+#include "tcp_helper.c"
+
 /**
  * Host-Address in a TCP network.
  */
@@ -62,87 +64,27 @@ typedef struct {
 
 } HostAddress;
 
-/**
- * Initial handshake message. Note that the beginning
- * must match the CS_MESSAGE_HEADER since we are using tcpio.
- */
-typedef struct {
-  MESSAGE_HEADER header;
-
-  /**
-   * Identity of the node connecting (TCP client)
-   */
-  PeerIdentity clientIdentity;
-} TCPWelcome;
-
-/**
- * Transport Session handle.
- */
-typedef struct {
-  /**
-   * the tcp socket (used to identify this connection with selector)
-   */
-  struct SocketHandle * sock;
-
-  /**
-   * number of users of this session (reference count)
-   */
-  int users;
-
-  /**
-   * mutex for synchronized access to 'users'
-   */
-  struct MUTEX * lock;
-
-  /**
-   * To whom are we talking to (set to our identity
-   * if we are still waiting for the welcome message)
-   */
-  PeerIdentity sender;
-
-  /**
-   * Are we still expecting the welcome? (YES/NO)
-   */
-  int expectingWelcome;
-
-} TCPSession;
-
 /* *********** globals ************* */
-
-/**
- * apis (our advertised API and the core api )
- */
-static CoreAPIForTransport * coreAPI;
 
 static TransportAPI tcpAPI;
 
-static Stats_ServiceAPI * stats;
-
-static int stat_bytesReceived;
-
-static int stat_bytesSent;
-
-static int stat_bytesDropped;
-
-/* configuration */
 static struct CIDRNetwork * filteredNetworks_;
 
-static struct SelectHandle * selector;
-
-static struct GE_Context * ectx;
-
 static struct GC_Configuration * cfg;
-
-static struct MUTEX * tcplock;
-
-/* ******************** helper functions *********************** */
 
 /**
  * Check if we are allowed to connect to the given IP.
  */
-static int isBlacklisted(IPaddr ip) {
+static int isBlacklisted(const void * addr,
+			 unsigned int addr_len) {
+  IPaddr ip;
   int ret;
-
+  
+  if (addr_len != sizeof(IPaddr))
+    return SYSERR;
+  memcpy(&ip,
+	 addr,
+	 addr_len);
   MUTEX_LOCK(tcplock);
   ret = check_ipv4_listed(filteredNetworks_,
 			  ip);
@@ -175,215 +117,6 @@ static unsigned short getGNUnetTCPPort() {
 }
 
 /**
- * Disconnect from a remote node. May only be called
- * on sessions that were aquired by the caller first.
- * For the core, aquiration means to call associate or
- * connect. The number of disconnects must match the
- * number of calls to connect+associate.
- *
- * @param tsession the session that is closed
- * @return OK on success, SYSERR if the operation failed
- */
-static int tcpDisconnect(TSession * tsession) {
-  TCPSession * tcpsession = tsession->internal;
-
-  GE_ASSERT(ectx, tcpsession != NULL);
-  MUTEX_LOCK(tcpsession->lock);
-  tcpsession->users--;
-  if (tcpsession->users > 0) {
-    MUTEX_UNLOCK(tcpsession->lock);
-    return OK;
-  }  
-  select_disconnect(selector,
-		    tcpsession->sock);
-  MUTEX_UNLOCK(tcpsession->lock);
-  MUTEX_DESTROY(tcpsession->lock);
-  FREE(tcpsession);  
-  FREE(tsession);
-  return OK;
-}
-
-/**
- * A (core) Session is to be associated with a transport session. The
- * transport service may want to know in order to call back on the
- * core if the connection is being closed. Associate can also be
- * called to test if it would be possible to associate the session
- * later, in this case the argument session is NULL. This can be used
- * to test if the connection must be closed by the core or if the core
- * can assume that it is going to be self-managed (if associate
- * returns OK and session was NULL, the transport layer is responsible
- * for eventually freeing resources associated with the tesession). If
- * session is not NULL, the core takes responsbility for eventually
- * calling disconnect.
- *
- * @param tsession the session handle passed along
- *   from the call to receive that was made by the transport
- *   layer
- * @return OK if the session could be associated,
- *         SYSERR if not.
- */
-static int tcpAssociate(TSession * tsession) {
-  TCPSession * tcpSession;
-
-  GE_ASSERT(ectx, tsession != NULL);
-  tcpSession = tsession->internal;
-  MUTEX_LOCK(tcpSession->lock);
-  tcpSession->users++;
-  MUTEX_UNLOCK(tcpSession->lock);
-  return OK;
-}
-
-/**
- * The socket of session i has data waiting, process!
- *
- * This function may only be called if the tcplock is
- * already held by the caller.
- */
-static int select_message_handler(void * mh_cls,
-				  struct SelectHandle * sh,
-				  struct SocketHandle * sock,
-				  void * sock_ctx,
-				  const MESSAGE_HEADER * msg) {
-  TSession * tsession = sock_ctx;
-  TCPSession * tcpSession;
-  unsigned int len;
-  P2P_PACKET * mp;
-  const TCPWelcome * welcome;
-
-  if (SYSERR == tcpAssociate(tsession))
-    return SYSERR;
-  len = ntohs(msg->size);
-  tcpSession = tsession->internal;
-  if (YES == tcpSession->expectingWelcome) {    
-    welcome = (const TCPWelcome*) msg;
-    if ( (ntohs(welcome->header.type) != 0) ||
-	 (len != sizeof(TCPWelcome)) ) {
-      tcpDisconnect(tsession);
-      return SYSERR;    
-    }
-    tcpSession->expectingWelcome = NO;
-    tcpSession->sender = welcome->clientIdentity;
-  } else {
-    /* send msg to core! */
-    if (len <= sizeof(MESSAGE_HEADER)) {
-      GE_LOG(ectx,
-	     GE_WARNING | GE_USER | GE_BULK,
-	     _("Received malformed message from tcp-peer connection. Closing.\n"));
-      tcpDisconnect(tsession);
-      return SYSERR;
-    }
-    mp      = MALLOC(sizeof(P2P_PACKET));
-    mp->msg = MALLOC(len - sizeof(MESSAGE_HEADER));
-    memcpy(mp->msg,
-	   &msg[1],
-	   len - sizeof(MESSAGE_HEADER));
-    mp->sender   = tcpSession->sender;
-    mp->size     = len - sizeof(MESSAGE_HEADER);
-    mp->tsession = tsession;
-    coreAPI->receive(mp);
-  }
-  tcpDisconnect(tsession);
-  return OK;
-}
-
-
-/**
- * Create a new session for an inbound connection on the given
- * socket. Adds the session to the array of sessions watched
- * by the select thread.
- */
-static void * select_accept_handler(void * ah_cls,
-				    struct SelectHandle * sh,
-				    struct SocketHandle * sock,
-				    const void * addr,
-				    unsigned int addr_len) {
-  TSession * tsession;
-  TCPSession * tcpSession;
-  IPaddr ip;
-
-  if (addr_len != sizeof(IPaddr))
-    return NULL;
-  memcpy(&ip,
-	 addr,
-	 addr_len);
-  if (isBlacklisted(ip))
-    return NULL;
-  tcpSession = MALLOC(sizeof(TCPSession));
-  tcpSession->sock = sock;
-  /* fill in placeholder identity to mark that we
-     are waiting for the welcome message */
-  tcpSession->sender = *(coreAPI->myIdentity);
-  tcpSession->expectingWelcome = YES;
-  tcpSession->lock = MUTEX_CREATE(YES);
-  tcpSession->users = 1; /* us only, core has not seen this tsession! */
-  tsession = MALLOC(sizeof(TSession));
-  tsession->ttype = TCP_PROTOCOL_NUMBER;
-  tsession->internal = tcpSession;
-
-  return tsession;
-}					
-
-static void select_close_handler(void * ch_cls,
-				 struct SelectHandle * sh,
-				 struct SocketHandle * sock,
-				 void * sock_ctx) {
-  TSession * tsession = sock_ctx;
-  tcpDisconnect(tsession);
-}
-
-/**
- * Send a message to the specified remote node.
- *
- * @param tsession the handle identifying the remote node
- * @param msg the message
- * @param size the size of the message
- * @return SYSERR on error, OK on success
- */
-static int tcpSend(TSession * tsession,
-		   const void * msg,
-		   const unsigned int size,
-		   int important) {
-  TCPSession * tcpSession;
-  MESSAGE_HEADER * mp;
-  int ok;
-
-  tcpSession = tsession->internal;
-  if (size >= MAX_BUFFER_SIZE - sizeof(MESSAGE_HEADER)) {
-    GE_BREAK(ectx, 0);
-    return SYSERR; /* too big */
-  }
-  if (selector == NULL) {
-    if (stats != NULL)
-      stats->change(stat_bytesDropped,
-		    size);
-    return SYSERR;
-  }
-  if (size == 0) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  if (tcpSession->sock == NULL) {
-    if (stats != NULL)
-      stats->change(stat_bytesDropped,
-		    size);
-    return SYSERR; /* other side closed connection */
-  }
-  mp = MALLOC(sizeof(MESSAGE_HEADER) + size);
-  mp->size = htons(size + sizeof(MESSAGE_HEADER));
-  mp->type = 0;
-  memcpy(&mp[1],
-	 msg,
-	 size);
-  ok = select_write(selector,
-		    tcpSession->sock,
-		    mp,
-		    NO,
-		    important);
-  FREE(mp);
-  return ok;
-}
-
-/**
  * Verify that a Hello-Message is correct (a node
  * is reachable at that address). Since the reply
  * will be asynchronous, a method must be called on
@@ -400,7 +133,8 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
        (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
        (ntohs(helo->header.type) != p2p_PROTO_hello) ||
        (ntohs(helo->protocol) != TCP_PROTOCOL_NUMBER) ||
-       (YES == isBlacklisted(haddr->ip)) )
+       (YES == isBlacklisted(&haddr->ip,
+			     sizeof(IPaddr))) )
     return SYSERR; /* obviously invalid */
   else
     return OK;
@@ -463,10 +197,7 @@ static P2P_hello_MESSAGE * createhello() {
 static int tcpConnect(const P2P_hello_MESSAGE * helo,
 		      TSession ** tsessionPtr) {
   HostAddress * haddr;
-  TCPWelcome welcome;
   int sock;
-  TSession * tsession;
-  TCPSession * tcpSession;
   struct sockaddr_in soaddr;
   struct SocketHandle * s;
   int i;
@@ -521,39 +252,10 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
     socket_destroy(s);
     return SYSERR;
   }
-  tcpSession = MALLOC(sizeof(TCPSession));
-  tcpSession->sock = s;
-  tsession = MALLOC(sizeof(TSession));
-  tsession->internal = tcpSession;
-  tsession->ttype = tcpAPI.protocolNumber;
-  tcpSession->lock = MUTEX_CREATE(YES);
-  tcpSession->users = 2; /* caller + us */
-  tcpSession->sender = helo->senderIdentity;
-  tcpSession->expectingWelcome = NO;
-  MUTEX_LOCK(tcplock);
-  select_connect(selector,
-		 tcpSession->sock,
-		 tsession);
-
-  /* send our node identity to the other side to fully establish the
-     connection! */
-  welcome.header.size
-    = htons(sizeof(TCPWelcome));
-  welcome.header.type
-    = htons(0);
-  welcome.clientIdentity
-    = *(coreAPI->myIdentity);
-  if (SYSERR == tcpSend(tsession,
-			&welcome.header,
-			sizeof(TCPWelcome),
-			YES)) {
-    tcpDisconnect(tsession);
-    MUTEX_UNLOCK(tcplock);
-    return SYSERR;
-  }
-  MUTEX_UNLOCK(tcplock);
-  *tsessionPtr = tsession;
-  return OK;
+  return tcpConnectHelper(helo,
+			  s,
+			  tcpAPI.protocolNumber,
+			  tsessionPtr);
 }
 
 /**
@@ -618,26 +320,14 @@ static int startTransportServer(void) {
 			   coreAPI->load_monitor,
 			   s,
 			   sizeof(IPaddr),
-			   0, /* timeout */
+			   TCP_TIMEOUT,
 			   &select_message_handler,
 			   NULL,
 			   &select_accept_handler,
-			   NULL,
+			   &isBlacklisted,
 			   &select_close_handler,
 			   NULL,
 			   0 /* memory quota */ );
-  return OK;
-}
-
-/**
- * Shutdown the server process (stop receiving inbound
- * traffic). Maybe restarted later!
- */
-static int stopTransportServer() {
-  if (selector != NULL) {
-    select_destroy(selector);
-    selector = NULL;
-  }
   return OK;
 }
 
