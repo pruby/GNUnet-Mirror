@@ -489,6 +489,8 @@ static struct GC_Configuration * cfg;
 
 static struct LoadMonitor * load_monitor;
 
+static struct CronManager * cron;
+
 
 /**
  * Size of rsns.
@@ -2686,10 +2688,12 @@ static void connectionConfigChangeCallback() {
  */
 void initConnection(struct GE_Context * e,
 		    struct GC_Configuration * c,
-		    struct LoadMonitor * m) {
+		    struct LoadMonitor * m,
+		    struct CronManager * cm) {
   ectx = e;
   cfg = c;
   load_monitor = m;
+  cron = cm;
   GE_ASSERT(ectx, P2P_MESSAGE_OVERHEAD == sizeof(P2P_PACKET_HEADER));
   GE_ASSERT(ectx, sizeof(P2P_hangup_MESSAGE) == 68);
   ENTRY();
@@ -2700,7 +2704,11 @@ void initConnection(struct GE_Context * e,
   CONNECTION_MAX_HOSTS_ = 0;
   connectionConfigChangeCallback();
   registerp2pHandler(P2P_PROTO_hangup, &handleHANGUP);
-  addCronJob(&cronDecreaseLiveness, 1 * cronSECONDS, 1 * cronSECONDS, NULL);
+  cron_add_job(cron,
+	       &cronDecreaseLiveness,
+	       1 * cronSECONDS,
+	       1 * cronSECONDS,
+	       NULL);
 #if DEBUG_COLLECT_PRIO == YES
   prioFile = FOPEN("/tmp/knapsack_prio.txt", "w");
 #endif
@@ -2757,7 +2765,10 @@ void doneConnection() {
   ENTRY();
   transport->stop();
   unregisterConfigurationUpdateCallback(&connectionConfigChangeCallback);
-  delCronJob(&cronDecreaseLiveness, 1 * cronSECONDS, NULL);
+  cron_del_job(cron,
+	       &cronDecreaseLiveness,
+	       1 * cronSECONDS,
+	       NULL);
   for(i = 0; i < CONNECTION_MAX_HOSTS_; i++) {
     BufferEntry *prev;
 

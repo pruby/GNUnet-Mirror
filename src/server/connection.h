@@ -58,7 +58,8 @@ typedef struct {
  */
 void initConnection(struct GE_Context * ectx,
 		    struct GC_Configuration * cfg,
-		    struct LoadMonitor * mon);
+		    struct LoadMonitor * mon,
+		    struct CronManager * cron);
 
 /**
  * Shutdown the connection module.

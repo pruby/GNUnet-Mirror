@@ -118,7 +118,7 @@ int gnunet_main(struct GE_Context * ectx) {
 	   cfg,
 	   cron,
 	   mon);
-  initConnection(); 
+  initConnection(ectx, cfg, mon, cron); 
   loadApplicationModules();
   writePIDFile(ectx, cfg);
   if (NO == debug_flag)
