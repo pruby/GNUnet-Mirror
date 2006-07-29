@@ -34,18 +34,21 @@ gnunetd_LDADD = \
 gnunet_update_SOURCES = \
  gnunet-update.c 
 gnunet_update_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/server/libgnunetcore.la
+ $(top_builddir)/src/server/libgnunetcore.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
 
 gnunet_peer_info_SOURCES = \
  gnunet-peer-info.c 
 gnunet_peer_info_LDADD  = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/server/libgnunetcore.la
+ $(top_builddir)/src/server/libgnunetcore.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
 
 gnunet_transport_check_SOURCES = \
  gnunet-transport-check.c 
 gnunet_transport_check_LDADD  = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/server/libgnunetcore.la
+ $(top_builddir)/src/server/libgnunetcore.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
 

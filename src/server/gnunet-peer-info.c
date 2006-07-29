@@ -30,96 +30,28 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_identity_service.h"
 #include "gnunet_core.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_cron.h"
 #include "core.h"
 
 static Transport_ServiceAPI * transport;
+
 static Identity_ServiceAPI * identity;
 
+static struct GE_Context * ectx;
+
 /**
- * Perform option parsing from the command line.
+ * All gnunet-peer-info command line options
  */
-static int parser(int argc,
-		  char * argv[]) {
-  int cont = OK;
-  int c;
-
-  /* set the 'magic' code that indicates that
-     this process is 'gnunetd' (and not any of
-     the user-tools).  Needed such that we use
-     the right configuration file... */
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "YES"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      { "loglevel",1, 0, 'L' },
-      { "config",  1, 0, 'c' },
-      { "version", 0, 0, 'v' },
-      { "help",    0, 0, 'h' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "vhc:L:",
-		      long_options,
-		      &option_index);
-
-    if (c == -1)
-      break;  /* No more flags to process */
-
-    switch(c) {
-    case 'c':
-      FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
-      break;
-    case 'v':
-      printf("gnunet-peer-info v%s\n",
-	     VERSION);
-      cont = SYSERR;
-      break;
-    case 'h': {
-      static Help help[] = {
-	HELP_CONFIG,
-	HELP_HELP,
-	HELP_LOGLEVEL,
-	HELP_VERSION,
-	HELP_END,
-      };
-      formatHelp("gnunet-peer-info [OPTIONS]",
-		 _("Print information about GNUnet peers."),
-		 help);
-      cont = SYSERR;
-      break;
-    }
-    case 'L':
-      FREENONNULL(setConfigurationString("GNUNETD",
-					 "LOGLEVEL",
-					 GNoptarg));
-      break;
-    default:
-      LOG(LOG_FAILURE,
-	  _("Use --help to get a list of options.\n"));
-      cont = SYSERR;
-    } /* end of parsing commandline */
-  }
-  if (GNoptind < argc) {
-    LOG(LOG_WARNING,
-	_("Invalid arguments: "));
-    while (GNoptind < argc)
-      LOG(LOG_WARNING,
-	  "%s ", argv[GNoptind++]);
-    LOG(LOG_FATAL,
-	_("Invalid arguments. Exiting.\n"));
-    return SYSERR;
-  }
-  return cont;
-}
+static struct CommandLineOption gnunetpeerinfoOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Print information about GNUnet peers.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_END,
+};
 
 /**
  * Print information about the peer.
@@ -140,22 +72,22 @@ static void printHostInfo(const PeerIdentity * id,
 				 proto,
 				 NO);
   if (NULL == helo) {
-    LOG(LOG_WARNING,
-	_("Could not get address of peer `%s'.\n"),
-	&enc);
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+	   _("Could not get address of peer `%s'.\n"),
+	   &enc);
     return;
   }
   if (SYSERR == verifySig(&helo->senderIdentity,
 			  P2P_hello_MESSAGE_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
 			  &helo->signature,
 			  &helo->publicKey)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("hello message invalid (signature invalid).\n"));
   }
   info = transport->heloToString(helo);
   FREE(helo);
   if (info == NULL) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Could not get address of peer `%s'.\n"),
 	&enc);
     return;
@@ -168,13 +100,36 @@ static void printHostInfo(const PeerIdentity * id,
   FREE(info);
 }
 
-int main(int argc, char *argv[]) {
-  if (OK != initUtil(argc, argv, &parser))
-    return SYSERR;
-  FREENONNULL(setConfigurationString("TCPSERVER",
-				     "DISABLE",
-				     "YES"));
-  initCore();
+int main(int argc, 
+	 const char *argv[]) {
+  struct GC_Configuration * cfg;
+  struct CronManager * cron;
+
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  if (-1 == gnunet_parse_options("gnunet-peer-info",
+				 ectx,
+				 cfg,
+				 gnunetpeerinfoOptions,
+				 (unsigned int) argc,
+				 argv)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  } 
+  GE_ASSERT(ectx,
+	    0 == GC_set_configuration_value_string(cfg,
+						   ectx,
+						   "TCPSERVER",
+						   "DISABLE",
+						   "YES"));
+  cron = cron_create(ectx);
+  initCore(ectx, cfg, cron, NULL);
   identity = requestService("identity");
   transport = requestService("transport");
   identity->forEachHost(0, /* no timeout */
@@ -183,7 +138,9 @@ int main(int argc, char *argv[]) {
   releaseService(identity);
   releaseService(transport);
   doneCore();
-  doneUtil();
+  cron_destroy(cron);
+  GC_free(cfg);
+  GE_free_context(ectx);
   return 0;
 }
 
