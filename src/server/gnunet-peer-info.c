@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -146,7 +146,7 @@ static void printHostInfo(const PeerIdentity * id,
     return;
   }
   if (SYSERR == verifySig(&helo->senderIdentity,
-			  P2P_hello_MESSAGE_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(P2P_MESSAGE_HEADER),
+			  P2P_hello_MESSAGE_size(helo) - sizeof(Signature) - sizeof(PublicKey) - sizeof(MESSAGE_HEADER),
 			  &helo->signature,
 			  &helo->publicKey)) {
     LOG(LOG_WARNING,

@@ -2619,15 +2619,26 @@ void considerTakeover(const PeerIdentity * sender,
  * limits may now be different.  Adjust the connection table
  * accordingly.
  */
-static void connectionConfigChangeCallback() {
+static int connectionConfigChangeCallback(void * ctx,
+					  struct GC_Configuration * cfg, 
+					  struct GE_Context * ectx,
+					  const char * section,
+					  const char * option) {
   unsigned long long new_max_bpm;
   unsigned int i;
 
+  if (0 != strcmp(section, "LOAD"))
+    return OK; /* fast path */
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "LOAD",
+					      "MAXNETDOWNBPSTOTAL",
+					      0,
+					      ((unsigned long long)-1)/60,
+					      50000, /* default: 50 kbps */
+					      &new_max_bpm))
+    return SYSERR;
   MUTEX_LOCK(lock);
-  /* max_bpm may change... */
-  new_max_bpm = 60 * getConfigurationInt("LOAD", "MAXNETDOWNBPSTOTAL");
-  if(new_max_bpm == 0)
-    new_max_bpm = 50000 * 60;   /* assume 50 kbps */
+  new_max_bpm = 60 * new_max_bpm;
   if(max_bpm != new_max_bpm) {
     unsigned int newMAXHOSTS = 0;
 
@@ -2646,8 +2657,12 @@ static void connectionConfigChangeCallback() {
 
       olen = CONNECTION_MAX_HOSTS_;
       CONNECTION_MAX_HOSTS_ = newMAXHOSTS;
-      setConfigurationInt("gnunetd",
-                          "connection-max-hosts", CONNECTION_MAX_HOSTS_);
+      GE_BREAK(ectx,
+	       0 == GC_set_configuration_value_number(cfg,
+						      ectx,
+						      "gnunetd",
+						      "connection-max-hosts",
+						      CONNECTION_MAX_HOSTS_));
       newBuffer =
         (BufferEntry **) MALLOC(sizeof(BufferEntry *) * newMAXHOSTS);
       for(i = 0; i < CONNECTION_MAX_HOSTS_; i++)
@@ -2678,9 +2693,12 @@ static void connectionConfigChangeCallback() {
 
     }
   }
-  disable_random_padding = testConfigurationString("GNUNETD-EXPERIMENTAL",
-                                                   "PADDING", "NO");
+  disable_random_padding = GC_get_configuration_value_yesno(cfg,
+							    "GNUNETD-EXPERIMENTAL",
+							    "PADDING",
+							    NO);
   MUTEX_UNLOCK(lock);
+  return OK;
 }
 
 /**
@@ -2700,9 +2718,10 @@ void initConnection(struct GE_Context * e,
   scl_nextHead = NULL;
   scl_nextTail = NULL;
   lock = MUTEX_CREATE(YES);
-  registerConfigurationUpdateCallback(&connectionConfigChangeCallback);
+  GC_attach_change_listener(cfg,
+			    &connectionConfigChangeCallback,
+			    NULL);
   CONNECTION_MAX_HOSTS_ = 0;
-  connectionConfigChangeCallback();
   registerp2pHandler(P2P_PROTO_hangup, &handleHANGUP);
   cron_add_job(cron,
 	       &cronDecreaseLiveness,
@@ -2764,7 +2783,9 @@ void doneConnection() {
 
   ENTRY();
   transport->stop();
-  unregisterConfigurationUpdateCallback(&connectionConfigChangeCallback);
+  GC_detach_change_listener(cfg,
+			    &connectionConfigChangeCallback,
+			    NULL);
   cron_del_job(cron,
 	       &cronDecreaseLiveness,
 	       1 * cronSECONDS,

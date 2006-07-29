@@ -158,7 +158,8 @@ static struct CommandLineOption gnunetdOptions[] = {
   COMMAND_LINE_OPTION_HELP(gettext_noop("Starts the gnunetd daemon.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 'p', "padding", "PADDING", gettext_noop(""), 1,
+  { 'p', "padding-disable", "YES/NO", 
+    gettext_noop("disable padding with random data (experimental)"), 0,
     &gnunet_getopt_configure_set_option, "GNUNETD-EXPERIMENTAL:PADDING" },
 #ifndef MINGW
   { 'u', "user", "USERNAME", gettext_noop(""), 1, 
