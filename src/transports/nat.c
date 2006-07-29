@@ -65,13 +65,10 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
        (ntohs(helo->header.type) != p2p_PROTO_hello) ) {
     return SYSERR; /* obviously invalid */
   } else {
-    if ( (-1 != GC_get_configuration_value_choice(coreAPI->cfg,
-						  "NAT",
-						  "LIMITED",
-						  yesno,
-						  "NO",
-						  &value)) &&
-	 (value == "YES") ) {
+    if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
+						"NAT",
+						"LIMITED",
+						NO)) {
       /* if WE are a NAT and this is not our hello,
 	 it is invalid since NAT-to-NAT is not possible! */
       if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
@@ -97,15 +94,11 @@ static P2P_hello_MESSAGE * createhello() {
   const char * value;
   P2P_hello_MESSAGE * msg;
 
-  if (! ( (-1 != GC_get_configuration_value_choice(coreAPI->cfg,
-						"NAT",
-						"LIMITED",
-						yesno,
-						"NO",
-						&value)) &&
-	  (value == "YES") ) )
+  if (NO == GC_get_configuration_value_yesno(coreAPI->cfg,
+					     "NAT",
+					     "LIMITED",
+					     NO))
     return NULL;
-
   msg = MALLOC(sizeof(P2P_hello_MESSAGE) + sizeof(HostAddress));
   msg->senderAddressSize = htons(sizeof(HostAddress));
   msg->protocol          = htons(NAT_PROTOCOL_NUMBER);

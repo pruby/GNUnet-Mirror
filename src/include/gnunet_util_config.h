@@ -129,6 +129,19 @@ int GC_get_configuration_value_choice(struct GC_Configuration * cfg,
 				      const char ** value);
 
 /**
+ * Get a configuration value that should be in a set of
+ * "YES" or "NO".
+ *
+ * @param def default value (use indicated by return value;
+ *        will NOT be aliased, maybe NULL)
+ * @return YES, NO or SYSERR
+ */
+int GC_get_configuration_value_yesno(struct GC_Configuration * cfg,
+				     const char * section,
+				     const char * option,
+				     int def);
+
+/**
  * Set a configuration value that should be a number.
  * @return 0 on success, -1 on error (i.e. out of memory,
  *   or update refused by registered callback)

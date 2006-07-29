@@ -77,6 +77,35 @@ int GC_write_configuration(struct GC_Configuration * cfg,
   return cfg->write_configuration(cfg, filename);
 }
 
+
+/**
+ * Get a configuration value that should be in a set of
+ * "YES" or "NO".
+ *
+ * @param def default value (use indicated by return value;
+ *        will NOT be aliased, maybe NULL)
+ * @return YES, NO or SYSERR
+ */
+int GC_get_configuration_value_yesno(struct GC_Configuration * cfg,
+				     const char * section,
+				     const char * option,
+				     int def) {
+  static const char * yesno[] = { "YES" , "NO", NULL };
+  const char * val;
+  int ret;
+
+  ret = GC_get_configuration_value_choice(cfg,
+					  section,
+					  option,
+					  def == YES ? "YES" : "NO",
+					  &val);
+  if (ret == -1)
+    return SYSERR;
+  if (ret == yesno[0])
+    return YES;
+  return NO;
+}
+
 /**
  * Get a configuration value that should be a number.
  * @param min minimal legal value

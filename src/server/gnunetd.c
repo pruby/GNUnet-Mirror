@@ -100,11 +100,13 @@ int gnunet_main(struct GE_Context * ectx) {
   struct SignalHandlerContext * shc_hup;
   int filedes[2]; /* pipe between client and parent */
 
-  if (NO == debug_flag()) {
-    if (OK != detachFromTerminal(ectx,
-				 filedes))
-      return SYSERR;
-  }
+  if ( (NO == GC_get_configuration_value_yesno(cfg,
+					       "GNUNETD",
+					       "DEBUG",
+					       NO)) &&
+       (OK != os_terminal_detach(ectx,
+				 filedes)) )
+    return SYSERR;
   mon = os_network_monitor_create(ectx,
 				  cfg);
   cron = cron_create(ectx);
@@ -117,8 +119,9 @@ int gnunet_main(struct GE_Context * ectx) {
   loadApplicationModules();
   writePIDFile(ectx, cfg);
   if (NO == debug_flag())
-    detachFromTerminalComplete(ectx,
-			       filedes);
+    os_terminal_detach_complete(ectx,
+				filedes,
+				YES);
   cron_start(cron);
   enableCoreProcessing();
   waitForSignalHandler(ectx);  
@@ -149,7 +152,7 @@ static struct CommandLineOption gnunetdOptions[] = {
 		 "not daemonize and error messages will "
 		 "be written to stderr instead of a logfile"), 
     0, &gnunet_getopt_configure_set_option, "GNUNETD:DEBUG" },
-  COMMAND_LINE_OPTION_HELP(_("Starts the gnunetd daemon.")), /* -h */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Starts the gnunetd daemon.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'p', "padding", "PADDING", gettext_noop(""), 1,
