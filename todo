@@ -22,9 +22,8 @@ NILS:
     + loggers: SMTP logger
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
-  * core:
-    + nothing compiles
-    + add support for extended core API fields
+  * server:
+    + gnunet-peer-info, gnunet-transport-check do not compile yet
   * applications:
     + nothing compiles
   * setup:
