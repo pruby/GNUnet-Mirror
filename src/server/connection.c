@@ -191,7 +191,7 @@
 
 
 #if DEBUG_CONNECTION == 2
-#define ENTRY() LOG(LOG_DEBUG, "Method entry: %s defined in %s:%d\n", __FUNCTION__, __FILE__, __LINE__);
+#define ENTRY() GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Method entry: %s defined in %s:%d\n", __FUNCTION__, __FILE__, __LINE__);
 #else
 #define ENTRY() ;
 #endif
@@ -532,7 +532,7 @@ static void printMsg(const char *prefix, PeerIdentity * sender,
   }
   *dst = 0;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "%s: Sender `%s', key `%s', IV %u msg CRC %u\n",
       prefix, &enc, skey, *((int *) iv), crc);
 }
@@ -817,7 +817,7 @@ static int outgoingCheck(unsigned int priority) {
   delta = load - 50;            /* now delta is in [1,50] with 50 == 100% load */
   if(delta * delta * delta > priority) {
 #if DEBUG_POLICY
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Network load is too high (%d%%, priority is %u, require %d), "
         "dropping outgoing.\n", load, priority, delta * delta * delta);
 #endif
@@ -825,7 +825,7 @@ static int outgoingCheck(unsigned int priority) {
   }
   else {
 #if DEBUG_POLICY
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Network load is ok (%d%%, priority is %u >= %d), "
         "sending outgoing.\n", load, priority, delta * delta * delta);
 #endif
@@ -861,7 +861,7 @@ static int checkSendFrequency(BufferEntry * be) {
 
   if(be->lastSendAttempt + be->MAX_SEND_FREQUENCY > get_time()) {
 #if DEBUG_CONNECTION
-    LOG(LOG_DEBUG, "Send frequency too high (CPU load), send deferred.\n");
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Send frequency too high (CPU load), send deferred.\n");
 #endif
     return NO;                  /* frequency too high, wait */
   }
@@ -900,7 +900,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
         entry->knapsackSolution = YES;
         (*priority) += entry->pri;
 #if DEBUG_CONNECTION
-        LOG(LOG_DEBUG, "Selecting msg %u with length %u\n", i, entry->len);
+        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Selecting msg %u with length %u\n", i, entry->len);
 #endif
         totalMessageSize += entry->len;
       }
@@ -922,7 +922,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
          (totalMessageSize + entry->len < MAX_BUFFER_SIZE)) {
         entry->knapsackSolution = YES;
 #if DEBUG_CONNECTION
-        LOG(LOG_DEBUG, "Selecting msg %u with length %u\n", i, entry->len);
+        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Selecting msg %u with length %u\n", i, entry->len);
 #endif
         totalMessageSize += entry->len;
         (*priority) += entry->pri;
@@ -988,14 +988,14 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       if(be->sendBuffer[i]->knapsackSolution == YES)
         j++;
     if(j == 0) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_DEVELOPER,
           _("`%s' selected %d out of %d messages (MTU: %d).\n"),
           __FUNCTION__,
           j, be->sendBufferSize,
 	  be->session.mtu - sizeof(P2P_PACKET_HEADER));
 
       for(j = 0; j < be->sendBufferSize; j++)
-        LOG(LOG_ERROR,
+        GE_LOG(ectx, GE_ERROR | GE_BULK | GE_DEVELOPER,
             _("Message details: %u: length %d, priority: %d\n"),
             j, 
 	    be->sendBuffer[j]->len,
@@ -1009,7 +1009,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
          which  has EXTREME_PRIORITY) */
       if((*priority) < EXTREME_PRIORITY) {
 #if DEBUG_CONNECTION
-        LOG(LOG_DEBUG,
+        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
             "bandwidth limits prevent sending (send window %u too small).\n",
             be->available_send_window);
 #endif
@@ -1039,7 +1039,7 @@ static void expireSendBufferEntries(BufferEntry * be) {
   be->lastSendAttempt = get_time();
   expired = be->lastSendAttempt - SECONDS_PINGATTEMPT * cronSECONDS;
 #if DEBUG_CONNECTION
-  LOG(LOG_DEBUG, "policy prevents sending message\n");
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "policy prevents sending message\n");
 #endif
 
   load = os_cpu_get_load(ectx, cfg);
@@ -1067,7 +1067,7 @@ static void expireSendBufferEntries(BufferEntry * be) {
       continue;
     if(entry->transmissionTime <= expired) {
 #if DEBUG_CONNECTION
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "expiring message, expired %ds ago, queue size is %llu (bandwidth stressed)\n",
           (int) ((get_time() - entry->transmissionTime) / cronSECONDS),
           usedBytes);
@@ -1137,8 +1137,8 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
         EncName enc;
 
         hdr = (MESSAGE_HEADER *) entry->closure;
-        IFLOG(LOG_DEBUG, hash2enc(&be->session.sender.hashPubKey, &enc));
-        LOG(LOG_DEBUG,
+        IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&be->session.sender.hashPubKey, &enc));
+        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
             "Core selected message of type %u and size %u for sending to peer `%s'.\n",
             ntohs(hdr->type), ntohs(hdr->size), &enc);
       }
@@ -1323,7 +1323,7 @@ static void sendBuffer(BufferEntry * be) {
   /* test if receiver has enough bandwidth available!  */
   updateCurBPS(be);
 #if DEBUG_CONNECTION
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "receiver window available: %lld bytes (MTU: %u)\n",
       be->available_send_window, be->session.mtu);
 #endif
@@ -1365,7 +1365,7 @@ static void sendBuffer(BufferEntry * be) {
       continue;
     if(entry->knapsackSolution == YES) {
 #if DEBUG_CONNECTION
-      LOG(LOG_DEBUG, "Queuing msg %u with length %u\n", perm[i], entry->len);
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Queuing msg %u with length %u\n", perm[i], entry->len);
 #endif
       GE_ASSERT(ectx, entry->callback == NULL);
       GE_ASSERT(ectx, p + entry->len <= totalMessageSize);
@@ -1506,8 +1506,8 @@ static void appendToBuffer(BufferEntry * be, SendEntry * se) {
   }
 
 #if DEBUG_CONNECTION
-  IFLOG(LOG_DEBUG, hash2enc(&be->session.sender.hashPubKey, &enc));
-  LOG(LOG_DEBUG,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&be->session.sender.hashPubKey, &enc));
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "adding message of size %d to buffer of host `%s'\n",
       se->len,
       &enc);
@@ -1516,7 +1516,7 @@ static void appendToBuffer(BufferEntry * be, SendEntry * se) {
     /* as long as we do not have a confirmed
        connection, do NOT queue messages! */
 #if DEBUG_CONNECTION
-    LOG(LOG_DEBUG, 
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, 
 	"not connected to `%s', message dropped\n",
 	&enc);
 #endif
@@ -1541,7 +1541,7 @@ static void appendToBuffer(BufferEntry * be, SendEntry * se) {
       /* we need to enforce some hard limit here, otherwise we may take
          FAR too much memory (200 MB easily) */
 #if DEBUG_CONNECTION
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "queueSize (%llu) >= %d, refusing to queue message.\n",
           queueSize, 
 	  MAX_SEND_BUFFER_SIZE);
@@ -1725,8 +1725,8 @@ static void shutdownConnection(BufferEntry * be) {
 
   ENTRY();
 #if DEBUG_CONNECTION
-  IFLOG(LOG_DEBUG, hash2enc(&be->session.sender.hashPubKey, &enc));
-  LOG(LOG_DEBUG, "Shutting down connection with `%s'\n", &enc);
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&be->session.sender.hashPubKey, &enc));
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Shutting down connection with `%s'\n", &enc);
 #endif
   if(be->status == STAT_DOWN)
     return;                     /* nothing to do */
@@ -1924,8 +1924,8 @@ static void scheduleInboundTraffic() {
 #if DEBUG_CONNECTION
     if(adjustedRR[u] > entries[u]->idealized_limit) {
       EncName enc;
-      IFLOG(LOG_INFO, hash2enc(&entries[u]->session.sender.hashPubKey, &enc));
-      LOG(LOG_INFO,
+      IF_GELOG(ectx, GE_INFO | GE_BULK | GE_USER, hash2enc(&entries[u]->session.sender.hashPubKey, &enc));
+      GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
           "peer `%s' transmitted above limit: %llu bpm > %u bpm\n",
           &enc, adjustedRR[u], entries[u]->idealized_limit);
     }
@@ -1943,10 +1943,10 @@ static void scheduleInboundTraffic() {
       entries[u]->violations++;
       entries[u]->recently_received = 0;  /* "clear" slate */
       if (entries[u]->violations > 10) {
-        IFLOG(LOG_INFO,
+        IF_GELOG(ectx, GE_INFO | GE_BULK | GE_USER,
               hash2enc(&entries[u]->session.sender.hashPubKey,
 		       &enc));
-        LOG(LOG_INFO,
+        GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
             "blacklisting `%s': sent repeatedly %llu bpm "
             "(limit %u bpm, target %u bpm)\n",
             &enc,
@@ -2096,8 +2096,8 @@ static void scheduleInboundTraffic() {
 #if DEBUG_CONNECTION
     EncName enc;
 
-    IFLOG(LOG_DEBUG, hash2enc(&entries[u]->session.sender.hashPubKey, &enc));
-    LOG(LOG_DEBUG,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&entries[u]->session.sender.hashPubKey, &enc));
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "inbound limit for peer %u: %s set to %u bpm\n",
         u, &enc, entries[u]->idealized_limit);
 #endif
@@ -2117,10 +2117,10 @@ static void scheduleInboundTraffic() {
 #if DEBUG_CONNECTION || 1
       EncName enc;
 
-      IFLOG(LOG_DEBUG,
+      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&be->session.sender.hashPubKey, 
 		     &enc));
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "Number of connections too high, shutting down low-traffic connection to `%s' (had only %u bpm)\n",
           &enc, be->idealized_limit);
 #endif
@@ -2174,8 +2174,8 @@ static void cronDecreaseLiveness(void *unused) {
           EncName enc;
 
           /* switch state form UP to DOWN: too much inactivity */
-          IFLOG(LOG_DEBUG, hash2enc(&root->session.sender.hashPubKey, &enc));
-          LOG(LOG_DEBUG,
+          IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&root->session.sender.hashPubKey, &enc));
+          GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
               "closing connection with `%s': "
               "too much inactivity (%llu ms)\n", &enc, now - root->isAlive);
           shutdownConnection(root);
@@ -2215,8 +2215,8 @@ static void cronDecreaseLiveness(void *unused) {
         if((now > root->isAlive) &&
            (now - root->isAlive > SECONDS_NOPINGPONG_DROP * cronSECONDS)) {
           EncName enc;
-          IFLOG(LOG_DEBUG, hash2enc(&root->session.sender.hashPubKey, &enc));
-          LOG(LOG_DEBUG,
+          IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&root->session.sender.hashPubKey, &enc));
+          GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
               "closing connection to %s: %s not answered.\n",
               &enc, (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
           shutdownConnection(root);
@@ -2260,7 +2260,7 @@ int checkHeader(const PeerIdentity * sender,
   GE_ASSERT(ectx, sender != NULL);
   hash2enc(&sender->hashPubKey, &enc);
   if(size < sizeof(P2P_PACKET_HEADER)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
         _("Message from `%s' discarded: invalid format.\n"), &enc);
     return SYSERR;
   }
@@ -2276,13 +2276,13 @@ int checkHeader(const PeerIdentity * sender,
     stats->change(stat_received, size);
 
 #if DEBUG_CONNECTION
-  LOG(LOG_DEBUG, "Decrypting message from host `%s'\n", &enc);
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Decrypting message from host `%s'\n", &enc);
 #endif
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
   if((be == NULL) ||
      (be->status == STAT_DOWN) || (be->status == STAT_SETKEY_SENT)) {
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
         "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
         &enc);
     /* try to establish a connection, that way, we don't keep
@@ -2300,7 +2300,7 @@ int checkHeader(const PeerIdentity * sender,
                      tmp);
   hash(tmp, size - sizeof(HashCode512), &hc);
   if(!((res != OK) && equalsHashCode512(&hc, &msg->hash))) {
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
         "Decrypting message from host `%s' failed, wrong sessionkey!\n",
         &enc);
 #if DEBUG_CONNECTION
@@ -2331,7 +2331,7 @@ int checkHeader(const PeerIdentity * sender,
       }
     }
     if(res == SYSERR) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_REQUEST | GE_USER,
           _("Invalid sequence number"
             " %u <= %u, dropping message.\n"),
           sequenceNumber, be->lastSequenceNumberReceived);
@@ -2347,14 +2347,14 @@ int checkHeader(const PeerIdentity * sender,
   }
   stamp = ntohl(msg->timeStamp);
   if(stamp + 1 * cronDAYS < TIME(NULL)) {
-    LOG(LOG_INFO, _("Message received more than one day old. Dropped.\n"));
+    GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER, _("Message received more than one day old. Dropped.\n"));
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
 
   be->max_bpm = ntohl(msg->bandwidth);
 #if DEBUG_CONNECTION
-  LOG(LOG_DEBUG, "Received bandwidth cap of %u bpm\n", be->max_bpm);
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Received bandwidth cap of %u bpm\n", be->max_bpm);
 #endif
   if(be->available_send_window >= be->max_bpm) {
     be->available_send_window = be->max_bpm;
@@ -2385,8 +2385,8 @@ static int handleHANGUP(const PeerIdentity * sender,
 		 &((P2P_hangup_MESSAGE *) msg)->sender,
 		 sizeof(PeerIdentity)))
     return SYSERR;
-  IFLOG(LOG_INFO, hash2enc(&sender->hashPubKey, &enc));
-  LOG(LOG_INFO, "received HANGUP from `%s'\n", &enc);
+  IF_GELOG(ectx, GE_INFO | GE_BULK | GE_USER, hash2enc(&sender->hashPubKey, &enc));
+  GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER, "received HANGUP from `%s'\n", &enc);
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
   if(be == NULL) {
@@ -2672,7 +2672,7 @@ static void connectionConfigChangeCallback() {
       FREENONNULL(CONNECTION_buffer_);
       CONNECTION_buffer_ = newBuffer;
 
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "connection goal is %s%d peers (%llu BPS bandwidth downstream)\n",
           (olen == 0) ? "" : "now ", CONNECTION_MAX_HOSTS_, max_bpm);
 
@@ -2775,7 +2775,7 @@ void doneConnection() {
     prev = NULL;
     be = CONNECTION_buffer_[i];
     while(be != NULL) {
-      LOG(LOG_DEBUG, "Closing connection: shutdown\n");
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Closing connection: shutdown\n");
       shutdownConnection(be);
       prev = be;
       be = be->overflowChain;
@@ -2861,7 +2861,7 @@ void printConnectionBuffer() {
         ttype = 0;
         if(tmp->session.tsession != NULL)
           ttype = tmp->session.tsession->ttype;
-        LOG(LOG_MESSAGE,
+        GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
             "CONNECTION-TABLE: %3d-%1d-%2d-%4ds"
             " (of %ds) BPM %4llu %8ut-%3u: %s-%s-%s\n",
             i,
@@ -3021,8 +3021,8 @@ void unicastCallback(const PeerIdentity * hostId,
 #if DEBUG_CONNECTION
   EncName enc;
 
-  IFLOG(LOG_DEBUG, hash2enc(&hostId->hashPubKey, &enc));
-  LOG(LOG_DEBUG,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&hostId->hashPubKey, &enc));
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "%s: sending message to host %s message of size %d\n",
       __FUNCTION__, &enc, len);
 #endif
@@ -3171,8 +3171,8 @@ void disconnectFromPeer(const PeerIdentity * node) {
   MUTEX_LOCK(lock);
   be = lookForHost(node);
   if(be != NULL) {
-    IFLOG(LOG_DEBUG, hash2enc(&node->hashPubKey, &enc));
-    LOG(LOG_DEBUG,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&node->hashPubKey, &enc));
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Closing connection to `%s' as requested by application.\n", &enc);
     shutdownConnection(be);
   }
