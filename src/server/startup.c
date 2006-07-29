@@ -74,7 +74,7 @@ void writePIDFile(struct GE_Context * ectx,
 			 GE_WARNING | GE_ADMIN | GE_BULK,
 			 "fprintf",
 			 pif);    
-  if (0 != FCLOSE(pidfd))
+  if (0 != fclose(pidfd))
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_ADMIN | GE_BULK,
 			 "fclose",

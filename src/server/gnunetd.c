@@ -99,11 +99,14 @@ int gnunet_main(struct GE_Context * ectx) {
   struct LoadMonitor * mon;
   struct SignalHandlerContext * shc_hup;
   int filedes[2]; /* pipe between client and parent */
+  int debug_flag;
 
-  if ( (NO == GC_get_configuration_value_yesno(cfg,
-					       "GNUNETD",
-					       "DEBUG",
-					       NO)) &&
+
+  debug_flag = GC_get_configuration_value_yesno(cfg,
+						"GNUNETD",
+						"DEBUG",
+						NO);
+  if ( (NO == debug_flag) &&
        (OK != os_terminal_detach(ectx,
 				 filedes)) )
     return SYSERR;
@@ -118,7 +121,7 @@ int gnunet_main(struct GE_Context * ectx) {
   initConnection(); 
   loadApplicationModules();
   writePIDFile(ectx, cfg);
-  if (NO == debug_flag())
+  if (NO == debug_flag)
     os_terminal_detach_complete(ectx,
 				filedes,
 				YES);

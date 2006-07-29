@@ -11,14 +11,17 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
+NILS:
+* FCLOSE not in plibc? (using fclose for now)
+
+
 0.7.1 ['06] (aka "stabilization")
-- finish util refactoring:
+- finish util refactoring: [RC]
   * util: 
     + network/io: load monitor support
     + loggers: SMTP logger
   * transports:
-    + TCP: setBlocking for select pipe
-    + SMTP/HTTP/IPv6: do not yet compile
+    + SMTP/HTTP: do not yet compile (commented out from build)
   * core:
     + nothing compiles
     + add support for extended core API fields

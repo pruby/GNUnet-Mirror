@@ -26,6 +26,7 @@
  */
 
 #include "gnunet_util_config_impl.h"
+#include "platform.h"
 
 void GC_free(struct GC_Configuration * cfg) {
   cfg->free(cfg);
@@ -97,11 +98,12 @@ int GC_get_configuration_value_yesno(struct GC_Configuration * cfg,
   ret = GC_get_configuration_value_choice(cfg,
 					  section,
 					  option,
+					  yesno,
 					  def == YES ? "YES" : "NO",
 					  &val);
   if (ret == -1)
     return SYSERR;
-  if (ret == yesno[0])
+  if (val == yesno[0])
     return YES;
   return NO;
 }

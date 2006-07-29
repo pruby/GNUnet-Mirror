@@ -565,6 +565,7 @@ src/util/error/Makefile
 src/util/getopt/Makefile
 src/util/loggers/Makefile
 src/util/network/Makefile
+src/util/network_client/Makefile
 src/util/os/Makefile
 src/util/string/Makefile
 src/util/threads/Makefile

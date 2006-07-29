@@ -92,7 +92,7 @@ static int isWhitelisted(IPaddr ip) {
 			   ip);
 }
 
-static int shutdownHandler(ClientHandle client,
+static int shutdownHandler(struct ClientHandle * client,
                            const MESSAGE_HEADER * msg) {
   int ret;
 
@@ -273,12 +273,11 @@ int initTCPServer(struct GE_Context * e,
 
   cfg = c;
   ectx = e;
-#if 0
-  if (testConfigurationString("TCPSERVER",
-			      "DISABLE",
-			      "YES"))
+  if (YES == GC_get_configuration_value_yesno(cfg,
+					      "TCPSERVER",
+					      "DISABLE",
+					      NO))
     return OK;
-#endif
 
   /* move to reload-configuration method! */
   ch = NULL;
@@ -362,6 +361,8 @@ int initTCPServer(struct GE_Context * e,
 			   0 /* no memory quota */);
   if (selector == NULL) 
     return SYSERR;  
+  registerCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
+		    &shutdownHandler);
   return OK;
 }
 
@@ -369,12 +370,13 @@ int initTCPServer(struct GE_Context * e,
  * Shutdown the module.
  */
 int stopTCPServer() {
-#if 0
-  if (testConfigurationString("TCPSERVER",
-			      "DISABLE",
-			      "YES"))
+  if (YES == GC_get_configuration_value_yesno(cfg,
+					      "TCPSERVER",
+					      "DISABLE",
+					      NO))
     return OK;
-#endif
+  unregisterCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
+		      &shutdownHandler);
   GE_ASSERT(ectx, selector != NULL);
   select_destroy(selector);
   return OK;

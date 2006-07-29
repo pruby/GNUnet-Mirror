@@ -170,7 +170,7 @@ int SEMAPHORE_UP(struct SEMAPHORE * sem);
 /**
  * Programatically shutdown the application.
  */
-void GNUNET_SHUTDOWN_INIITATE(void);
+void GNUNET_SHUTDOWN_INITIATE(void);
 
 /**
  * Test if the shutdown has been initiated.
