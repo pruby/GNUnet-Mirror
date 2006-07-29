@@ -6,6 +6,7 @@ noinst_LTLIBRARIES = \
   libos.la
 
 libos_la_SOURCES = \
+ console.c \
  cpustatus.c \
  daemon.c \
  dso.c \

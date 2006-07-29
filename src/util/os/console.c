@@ -30,6 +30,7 @@
 #include "gnunet_util_os.h"
 #include "gnunet_util_error.h"
 #include "gnunet_util_string.h"
+#include "gnunet_util_disk.h"
 #include "platform.h"
 
 /**
@@ -85,8 +86,9 @@ int os_terminal_detach(struct GE_Context * ectx,
     GE_LOG_STRERROR(ectx,
 		    GE_WARNING | GE_USER | GE_BULK,
 		    "close");
-  nullfd = fileopen("/dev/null",
-		    O_CREAT | O_RDWR | O_APPEND);
+  nullfd = disk_file_open(ectx,
+			  "/dev/null",
+			  O_RDWR | O_APPEND);
   if (nullfd < 0) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
@@ -111,6 +113,7 @@ int os_terminal_detach(struct GE_Context * ectx,
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 		    "setsid");
+  return OK;
 }
 
 void os_terminal_detach_complete(struct GE_Context * ectx,
