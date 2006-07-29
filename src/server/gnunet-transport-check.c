@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -73,10 +73,10 @@ static void semUp(Semaphore * sem) {
 }
 
 static int noiseHandler(const PeerIdentity *peer,
-			const P2P_MESSAGE_HEADER * msg,
+			const MESSAGE_HEADER * msg,
 			TSession * s) {
   if ( (ntohs(msg->size) ==
-	sizeof(P2P_MESSAGE_HEADER) + expectedSize) &&
+	sizeof(MESSAGE_HEADER) + expectedSize) &&
        (0 == memcmp(expectedValue,
 		    &msg[1],
 		    expectedSize)) )
@@ -95,7 +95,7 @@ static void testTAPI(TransportAPI * tapi,
   unsigned int repeat;
   cron_t start;
   cron_t end;
-  CS_MESSAGE_HEADER * noise;
+  MESSAGE_HEADER * noise;
 
   if (tapi == NULL)
     errexit("Could not initialize transport!\n");
@@ -132,9 +132,9 @@ static void testTAPI(TransportAPI * tapi,
   }
   sem = SEMAPHORE_NEW(0);
   cronTime(&start);
-  noise = MALLOC(expectedSize + sizeof(P2P_MESSAGE_HEADER));
+  noise = MALLOC(expectedSize + sizeof(MESSAGE_HEADER));
   noise->type = htons(P2P_PROTO_noise);
-  noise->size = htons(expectedSize + sizeof(P2P_MESSAGE_HEADER));
+  noise->size = htons(expectedSize + sizeof(MESSAGE_HEADER));
   memcpy(&noise[1],
 	 expectedValue,
 	 expectedSize);
@@ -208,7 +208,7 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
   TSession * tsession;
   P2P_hello_MESSAGE * helo;
   P2P_hello_MESSAGE * myHelo;
-  P2P_MESSAGE_HEADER * ping;
+  MESSAGE_HEADER * ping;
   char * msg;
   int len;
   PeerIdentity peer;
@@ -429,7 +429,7 @@ static int parser(int argc,
     case 'P':{
       unsigned int port;
       if (1 != sscanf(GNoptarg, "%ud", &port)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
 	    "You must pass a number to the -P option.\n");
 	return SYSERR;
       } else {
@@ -444,7 +444,7 @@ static int parser(int argc,
     case 'r':{
       unsigned int repeat;
       if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-r");
 	return SYSERR;
@@ -458,7 +458,7 @@ static int parser(int argc,
     case 's':{
       unsigned int size;
       if (1 != sscanf(GNoptarg, "%ud", &size)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-s");
 	return SYSERR;
@@ -475,7 +475,7 @@ static int parser(int argc,
     }
     case 'T':{
       if (1 != SSCANF(GNoptarg, "%llu", &timeout)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-T");
 	return SYSERR;
@@ -505,7 +505,7 @@ static int parser(int argc,
     case 'X':{
       unsigned int repeat;
       if (1 != sscanf(GNoptarg, "%ud", &repeat)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-X");
 	return SYSERR;
@@ -517,7 +517,7 @@ static int parser(int argc,
       break;
     }
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       cont = SYSERR;
     } /* end of parsing commandline */
