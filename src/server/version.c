@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,7 +27,10 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
+#include "gnunet_directories.h"
 #include "version.h"
+
+#define VERSIONFILE "state.sdb/GNUNET-VERSION"
 
 /**
  * Extend string by "section:part=val;" where
@@ -105,20 +108,56 @@ static void getVersionHash(struct GC_Configuration * cfg,
   FREE(string);
 }
 
+static char * getVersionFileName(struct GE_Context * ectx,
+				 struct GC_Configuration * cfg) {
+  char * cn;
+  char * en;
+  
+  cn = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "GNUNETD",
+					      "GNUNETD_HOME",
+					      VAR_DAEMON_DIRECTORY,
+					      &cn))
+    return NULL;
+  GE_ASSERT(ectx, cn != NULL);
+  en = string_expandFileName(ectx,
+			     cn);
+  FREE(cn);
+  if (en == NULL)
+    return NULL;
+  cn = MALLOC(strlen(en) + strlen(VERSIONFILE) + 1);
+  strcpy(cn, en);
+  strcat(cn, VERSIONFILE);
+  FREE(en);
+  return cn;
+}
+
+#define MAX_VS sizeof(EncName) + 64
+
 /**
  * Check if we are up-to-date.
  * @return OK if we are
  */
 int checkUpToDate(struct GE_Context * ectx,
 		  struct GC_Configuration * cfg) {
-  char * version;
+  char version[MAX_VS];
   int len;
   EncName enc;
+  char * fn;
 
-  version = NULL;
-  len = sapi->read(ectx,
-		   "GNUNET-VERSION",
-		   (void**)&version);
+  fn = getVersionFileName(ectx, cfg);
+  if (fn == NULL) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_USER | GE_BULK,
+	   _("Failed to determine filename used to store GNUnet version information!\n"));
+    return OK; /* uh uh */
+  }
+  len = disk_file_read(ectx,
+		       fn,
+		       MAX_VS,
+		       version);
+  FREE(fn);
   if (len == -1) {
     upToDate(ectx,
 	     cfg); /* first start */
@@ -127,19 +166,14 @@ int checkUpToDate(struct GE_Context * ectx,
   if ( (len != strlen(VERSION) + 1 + sizeof(EncName)) ||
        (0 != memcmp(VERSION,
 		    version,
-		    strlen(VERSION)+1)) ) {
-    FREENONNULL(version);
-    return SYSERR; /* wrong version */
-  }
+		    strlen(VERSION)+1)) ) 
+    return SYSERR; /* wrong version */  
   getVersionHash(cfg,
 		 &enc);
   if (0 != memcmp(&enc,
 		  &version[strlen(VERSION)+1],
-		  sizeof(EncName))) {
-    FREENONNULL(version);
+		  sizeof(EncName)))
     return SYSERR; /* wrong hash */
-  }
-  FREENONNULL(version);
   return OK;
 }
 
@@ -149,21 +183,24 @@ int checkUpToDate(struct GE_Context * ectx,
  */
 void upToDate(struct GE_Context * ectx,
 	      struct GC_Configuration * cfg) {
-  char * version;
+  char version[MAX_VS];
   int len;
   EncName enc;
+  char * fn;
 
+  fn = getVersionFileName(ectx, cfg);
   len = strlen(VERSION) + 1 + sizeof(EncName);
-  version = MALLOC(len);
+  GE_ASSERT(ectx, len < MAX_VS);
   memcpy(version, VERSION, strlen(VERSION)+1);
   getVersionHash(cfg,
 		 &enc);
   memcpy(&version[strlen(VERSION)+1], &enc, sizeof(EncName));
-  sapi->write(ectx,
-	      "GNUNET-VERSION",
-	      len,
-	      version);
-  FREE(version);
+  disk_file_write(ectx,
+		  fn,
+		  version,
+		  len,
+		  "600");
+  FREE(fn);
 }
 		
 /* end of version.c */
