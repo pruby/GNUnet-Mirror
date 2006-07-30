@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -138,11 +138,12 @@ const char *csMessageName(unsigned short type) {
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestStatistics(GNUNET_TCP_SOCKET * sock,
+int requestStatistics(struct GE_Context * ectx,
+		      struct ClientServerConnection * sock,
 		      StatisticsProcessor processor,
 		      void * cls) {
   CS_stats_reply_MESSAGE * statMsg;
-  CS_MESSAGE_HEADER csHdr;
+  MESSAGE_HEADER csHdr;
   unsigned int count;
   unsigned int i;
   int mpos;
@@ -150,11 +151,11 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
 
   ret = OK;
   csHdr.size
-    = htons(sizeof(CS_MESSAGE_HEADER));
+    = htons(sizeof(MESSAGE_HEADER));
   csHdr.type
     = htons(CS_PROTO_stats_GET_STATISTICS);
-  if (SYSERR == writeToSocket(sock,
-			      &csHdr))
+  if (SYSERR == connection_write(sock,
+				 &csHdr))
     return SYSERR;
   statMsg
     = MALLOC(MAX_BUFFER_SIZE);
@@ -164,13 +165,13 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
   while ( count < ntohl(statMsg->totalCounters) ) {
     /* printf("reading from socket starting %u of %d\n",
        count, ntohl(statMsg->totalCounters) );*/
-    if (SYSERR == readFromSocket(sock,
-				 (CS_MESSAGE_HEADER**)&statMsg)) {
+    if (SYSERR == connection_read(sock,
+				  (MESSAGE_HEADER**)&statMsg)) {
       FREE(statMsg);
       return SYSERR;
     }
     if (ntohs(statMsg->header.size) < sizeof(CS_stats_reply_MESSAGE)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       ret = SYSERR;
       break;
     }
@@ -178,13 +179,13 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
     if (count == 0) {
       ret = processor(_("Uptime (seconds)"),
 		      (unsigned long long)
-		      ((cronTime(NULL) - ntohll(statMsg->startTime))/cronSECONDS),
+		      ((get_time() - ntohll(statMsg->startTime))/cronSECONDS),
 		      cls);
     }
     for (i=0;i<ntohl(statMsg->statCounters);i++) {
       if (mpos+strlen(&((char*)(((CS_stats_reply_MESSAGE_GENERIC*)statMsg)->values))[mpos])+1 >
 	  ntohs(statMsg->header.size) - sizeof(CS_stats_reply_MESSAGE)) {
-	BREAK();
+	GE_BREAK(ectx, 0);
 	ret = SYSERR;
 	break; /* out of bounds! */
       }
@@ -208,7 +209,8 @@ int requestStatistics(GNUNET_TCP_SOCKET * sock,
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
+int requestAvailableProtocols(struct GE_Context * ectx,
+			      struct ClientServerConnection * sock,
 			      ProtocolProcessor processor,
 			      void * cls) {
   CS_stats_get_supported_MESSAGE csStatMsg;
@@ -226,11 +228,11 @@ int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
     csStatMsg.handlerType = htons(j);
     for (i=0;i<65535;i++) {
       csStatMsg.type = htons(i);
-      if (SYSERR == writeToSocket(sock,
-				  &csStatMsg.header))
+      if (SYSERR == connection_write(sock,
+				     &csStatMsg.header))
 	return SYSERR;
-      if (SYSERR == readTCPResult(sock,
-				  &supported))
+      if (SYSERR == connection_read_result(sock,
+					   &supported))
 	return SYSERR;
       if (supported == YES) {	
 	ret = processor(i,

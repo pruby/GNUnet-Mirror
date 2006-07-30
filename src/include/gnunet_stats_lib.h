@@ -28,6 +28,7 @@
 #define GNUNET_STATS_LIB_H
 
 #include "gnunet_util.h"
+#include "gnunet_util_network_client.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,7 +64,8 @@ typedef int (*StatisticsProcessor)(const char * name,
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestStatistics(GNUNET_TCP_SOCKET * sock,
+int requestStatistics(struct GE_Context * ectx,
+		      struct ClientServerConnection * sock,
 		      StatisticsProcessor processor,
 		      void * cls);
 
@@ -82,7 +84,8 @@ typedef int (*ProtocolProcessor)(unsigned short type,
  * @param processor function to call on each value
  * @return OK on success, SYSERR on error
  */
-int requestAvailableProtocols(GNUNET_TCP_SOCKET * sock,
+int requestAvailableProtocols(struct GE_Context * ectx,
+			      struct ClientServerConnection * sock,
 			      ProtocolProcessor processor,
 			      void * cls);
 

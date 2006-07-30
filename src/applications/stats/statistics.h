@@ -33,7 +33,7 @@
  * numbers. If needed, several messages are used.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   /**
    * For 64-bit alignment...
    */
@@ -69,7 +69,7 @@ typedef struct {
  * the message we are requesting the status of.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * The type of the message (XX_CS_PROTO_XXXX)

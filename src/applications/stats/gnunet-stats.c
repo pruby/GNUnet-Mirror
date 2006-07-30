@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,10 +27,10 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 #include "gnunet_stats_lib.h"
 #include "statistics.h"
-
-static int printProtocolsSelected;
 
 static int lastIp2p = 42; /* not YES or NO */
 
@@ -81,72 +81,20 @@ static int printProtocols(unsigned short type,
 }
 
 /**
- * Prints the usage information for this command if the user errs.
- * Aborts the program.
+ * All gnunet-transport-check command line options
  */
-static void printhelp() {
-  static Help help[] = {
-    HELP_CONFIG,
-    HELP_HELP,
-    HELP_HOSTNAME,
-    HELP_LOGLEVEL,
-    { 'p', "protocols", NULL,
-      gettext_noop("prints supported protocol messages") },
-    HELP_VERSION,
-    HELP_END,
-  };
-  formatHelp("gnunet-stats [OPTIONS]",
-	     _("Print statistics about GNUnet operations."),
-	     help);
-}
+static struct CommandLineOption gnunetstatsOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Print statistics about GNUnet operations.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'p', "protocols", NULL, 
+    gettext_noop("prints supported protocol messages"), 
+    0, &gnunet_getopt_configure_set_option, "STATS:PRINT-PROTOCOLS=YES" },
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_END,
+};
 
-/**
- * Parse the options.
- *
- * @param argc the number of options
- * @param argv the option list (including keywords)
- * @return SYSERR if we should abort, OK to continue
- */
-static int parseOptions(int argc,
-			char ** argv) {
-  int option_index;
-  int c;
-
-  while (1) {
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "protocols",          0, 0, 'p' },
-      { 0,0,0,0 }
-    };
-    option_index = 0;
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:dhHL:pv",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'v':
-      printf("GNUnet v%s, gnunet-stats v%s\n",
-	     VERSION, STATS_VERSION);
-      return SYSERR;
-    case 'h':
-      printhelp();
-      return SYSERR;
-    case 'p':
-      printProtocolsSelected = YES;
-      break;
-    default:
-      LOG(LOG_FAILURE,
-	  _("Use --help to get a list of options.\n"));
-      return -1;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  return OK;
-}
 
 /**
  * The main function to obtain statistics from gnunetd.
@@ -155,32 +103,57 @@ static int parseOptions(int argc,
  * @param argv command line arguments
  * @return 0 ok, 1 on error
  */
-int main(int argc, char ** argv) {
+int main(int argc, 
+	 const char ** argv) {
   int res;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
+  struct GC_Configuration * cfg;
+  struct GE_Context * ectx;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0;
-  sock = getClientSocket();
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  if (-1 == gnunet_parse_options("gnunet-stats",
+				 ectx,
+				 cfg,
+				 gnunetstatsOptions,
+				 (unsigned int) argc,
+				 argv)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
+  sock = client_connection_create(ectx,
+				  cfg);
   if (sock == NULL) {
     fprintf(stderr,
 	    _("Error establishing connection with gnunetd.\n"));
     return 1;
   }
-  res = requestStatistics(sock,
+  res = requestStatistics(ectx,
+			  sock,
 			  (StatisticsProcessor) &printStatistics,
 			  stdout);
-  if ((printProtocolsSelected == YES) &&
-      (res == OK)) {
-    res = requestAvailableProtocols(sock,
+  if ( (YES == GC_get_configuration_value_yesno(cfg,
+						"STATS",
+						"PRINT-PROTOCOLS",
+						NO)) &&
+       (res == OK) ) {
+    res = requestAvailableProtocols(ectx,
+				    sock,
 				    (ProtocolProcessor) &printProtocols,
 				    stdout);
   }
   if (res != OK)
     fprintf(stderr,
 	    _("Error reading information from gnunetd.\n"));
-  releaseClientSocket(sock);
-  doneUtil();
+  connection_destroy(sock);
+  GC_free(cfg);
+  GE_free_context(ectx);
 
   return (res == OK) ? 0 : 1;
 }

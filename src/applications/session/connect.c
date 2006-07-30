@@ -772,10 +772,11 @@ provide_module_session(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# sessions established"));
   }
 
-  GE_LOG(ectx, GE_DEBUG | GE_USER | GE_REQUEST,
-      _("`%s' registering handler %d (plaintext and ciphertext)\n"),
-      "session",
-      P2P_PROTO_setkey);
+  GE_LOG(ectx, 
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 _("`%s' registering handler %d (plaintext and ciphertext)\n"),
+	 "session",
+	 P2P_PROTO_setkey);
   coreAPI->registerPlaintextHandler(P2P_PROTO_setkey,
 				    &acceptSessionKey);
   coreAPI->registerHandler(P2P_PROTO_setkey,
