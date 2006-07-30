@@ -34,6 +34,7 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
+#include "gnunet_directories.h"
 #include "gnunet_identity_service.h"
 
 #include "hostkey.h"
@@ -219,9 +220,10 @@ static void addHostToKnown(const PeerIdentity * identity,
     strcpy(fn, trustDirectory);
     strcat(fn, (char*) &fil);
     if (sizeof(unsigned int) ==
-	readFile(fn,
-		 sizeof(unsigned int),
-		 &trust)) {
+	disk_file_read(ectx, 
+		       fn,
+		       sizeof(unsigned int),
+		       &trust)) {
       entry->trust = ntohl(trust);
     } else {
       entry->trust = 0;
@@ -517,9 +519,10 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   fn = getHostFileName(&msg->senderIdentity,
 		       ntohs(msg->protocol));
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  size = readFile(fn,
-		  MAX_BUFFER_SIZE,
-		  buffer);
+  size = disk_file_read(ectx,
+			fn,
+			MAX_BUFFER_SIZE,
+			buffer);
   oldMsg = (P2P_hello_MESSAGE*) buffer;
   if ((unsigned int)size == P2P_hello_MESSAGE_size(oldMsg)) {
     if (ntohl(oldMsg->expirationTime) > ntohl(msg->expirationTime)) {
@@ -528,10 +531,11 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
       return; /* have more recent hello in stock */
     }
   }
-  writeFile(fn,
-	    msg,
-	    P2P_hello_MESSAGE_size(msg),
-	    "644");
+  disk_file_write(ectx,
+		  fn,
+		  msg,
+		  P2P_hello_MESSAGE_size(msg),
+		  "644");
   FREE(fn);
   FREE(buffer);
 
@@ -645,9 +649,10 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   /* do direct read */
   fn = getHostFileName(hostId,
 		       protocol);
-  size = readFile(fn,
-		  sizeof(P2P_hello_MESSAGE),
-		  &buffer);
+  size = disk_file_read(ectx,
+			fn,
+			sizeof(P2P_hello_MESSAGE),
+			&buffer);
   if (size != sizeof(P2P_hello_MESSAGE)) {
     struct stat buf;
 
@@ -669,9 +674,10 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
     return NULL;
   }
   result = MALLOC(P2P_hello_MESSAGE_size(&buffer));
-  size = readFile(fn,
-		  P2P_hello_MESSAGE_size(&buffer),
-		  result);
+  size = disk_file_read(ectx,
+			fn,
+			P2P_hello_MESSAGE_size(&buffer),
+			result);
   if ((unsigned int)size != P2P_hello_MESSAGE_size(&buffer)) {
     if (0 == UNLINK(fn))
       GE_LOG(ectx,
@@ -723,10 +729,10 @@ static int verifyPeerSignature(const PeerIdentity * signer,
   if (helo == NULL) {
     EncName enc;
     
-    IFLOG(ectx,
-	  GE_INFO | GE_USER | GE_BULK,
-	  hash2enc(&signer->hashPubKey,
-		   &enc));
+    IF_GELOG(ectx,
+	     GE_INFO | GE_USER | GE_BULK,
+	     hash2enc(&signer->hashPubKey,
+		      &enc));
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_BULK, 
 	   _("Signature failed verification: peer `%s' not known.\n"),
@@ -984,10 +990,11 @@ static void flushHostCredit(HostEntry * host) {
 			   fn);    
   } else {
     trust = htonl(host->trust);
-    writeFile(fn,
-	      &trust,
-	      sizeof(unsigned int),
-	      "644");
+    disk_file_write(ectx,
+		    fn,
+		    &trust,
+		    sizeof(unsigned int),
+		    "644");
   }
   FREE(fn);
 }
@@ -1033,7 +1040,9 @@ static int discardHostsHelper(const char *filename,
   
   fn = (char *) MALLOC(strlen(filename) + strlen(dirname) + 2);
   sprintf(fn, "%s%s%s", dirname, DIR_SEPARATOR_STR, filename);
-  hostFile = fileopen(fn, O_WRONLY);
+  hostFile = disk_file_open(ectx,
+			    fn,
+			    O_WRONLY);
   if (hostFile != -1) {
     if (FSTAT(hostFile, &hostStat) == 0) {
       CLOSE(hostFile);
@@ -1075,6 +1084,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
   int i;
 
   coreAPI = capi;
+  ectx = coreAPI->ectx;
   id.getPublicPrivateKey = &getPublicPrivateKey;
   id.getPeerIdentity     = &getPeerIdentity;
   id.signData            = &signData;
@@ -1097,41 +1107,46 @@ provide_module_identity(CoreAPIForApplication * capi) {
 	   sizeof(HostEntry));
   numberOfHosts_ = 0;
 
-  initPrivateKey(capi->ectx,
-		 capi->cfg);
-  getPeerIdentity(getPublicPrivateKey(),
-		  &myIdentity);
-
-  lock_ = MUTEX_CREATE(YES);
-  gnHome = getFileName("GNUNETD",
-		       "GNUNETD_HOME",
-		       _("Configuration file must specify a "
-			 "directory for GNUnet to store "
-			 "per-peer data under %s%s\n"));
-  networkIdDirectory
-    = getConfigurationString("GNUNETD",
-			     "HOSTS");
-  if (networkIdDirectory == NULL) {
-    networkIdDirectory
-      = MALLOC(strlen(gnHome) + strlen(HOST_DIR) + 2);
-    strcpy(networkIdDirectory, gnHome);
-    strcat(networkIdDirectory, DIR_SEPARATOR_STR);
-    strcat(networkIdDirectory, HOST_DIR);
-  } else {
-    tmp =
-      expandFileName(networkIdDirectory);
-    FREE(networkIdDirectory);
-    networkIdDirectory = tmp;
-  }
-  mkdirp(networkIdDirectory);
+  gnHome = NULL;
+  GE_ASSERT(ectx, 
+	    -1 != GC_get_configuration_value_string(coreAPI->cfg,
+						    "GNUNETD",
+						    "GNUNETD_HOME",
+						    VAR_DAEMON_DIRECTORY,
+						    &tmp));
+  gnHome = string_expandFileName(ectx,
+				 tmp);
+  FREE(tmp);
+  if (gnHome == NULL)
+    return NULL;
+  tmp = MALLOC(strlen(gnHome) + strlen(HOST_DIR) + 2);
+  strcpy(tmp, gnHome);
+  strcat(tmp, DIR_SEPARATOR_STR);
+  strcat(tmp, HOST_DIR);
+  networkIdDirectory = NULL;
+  GE_ASSERT(ectx,
+	    -1 != GC_get_configuration_value_string(coreAPI->cfg,
+						    "GNUNETD",
+						    "HOSTS",
+						    tmp,
+						    &networkIdDirectory));
+  FREE(tmp);
+  disk_directory_create(ectx,
+			networkIdDirectory);
   trustDirectory = MALLOC(strlen(gnHome) +
 			  strlen(TRUSTDIR)+2);
   strcpy(trustDirectory, gnHome);
   strcat(trustDirectory, DIR_SEPARATOR_STR);
   strcat(trustDirectory, TRUSTDIR);
-  mkdirp(trustDirectory);
+  disk_directory_create(ectx,
+			trustDirectory);
   FREE(gnHome);
 
+  lock_ = MUTEX_CREATE(YES);
+  initPrivateKey(capi->ectx,
+		 capi->cfg);
+  getPeerIdentity(getPublicPrivateKey(),
+		  &myIdentity);
   cronScanDirectoryDataHosts(NULL);
   cron_add_job(coreAPI->cron,
 	       &cronScanDirectoryDataHosts,
