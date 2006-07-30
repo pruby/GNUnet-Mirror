@@ -369,7 +369,7 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   { 'X', "Xrepeat", "X",
-    gettext_noop(""),
+    gettext_noop("repeat each test X times"),
     1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:X-REPEAT" },
   COMMAND_LINE_OPTION_END,
 };
