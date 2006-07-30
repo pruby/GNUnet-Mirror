@@ -31,15 +31,18 @@
 #include "gnunet_util.h"
 #include "platform.h"
 
+int changeUser(struct GE_Context * ectx,
+	       struct GC_Configuration * cfg);
+
 /**
  * Write our process ID to the pid file.
- **/
+ */
 void writePIDFile(struct GE_Context * ectx,
 		  struct GC_Configuration * cfg);
 
 /**
  * Delete the pid file.
- **/
+ */
 void deletePIDFile(struct GE_Context * ectx,
 		   struct GC_Configuration * cfg);
 

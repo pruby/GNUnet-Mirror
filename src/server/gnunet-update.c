@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,6 +26,9 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_cron.h"
 #include "gnunet_core.h"
 #include "core.h"
 #include "startup.h"
@@ -40,134 +43,14 @@
  */
 #define DSO_PREFIX "libgnunet"
 
-/**
- * Print a list of the options we offer.
- */
-static void printhelp() {
-  static Help help[] = {
-    HELP_CONFIG,
-    { 'g', "get", "SECTION:ENTRY",
-      gettext_noop("print a value from the configuration file to stdout") },
-    HELP_HELP,
-    HELP_LOGLEVEL,
-#ifndef MINGW	/* not supported */
-    { 'u', "user", "LOGIN",
-      gettext_noop("run as user LOGIN") },
-#endif
-    { 'U', "client", NULL,
-      gettext_noop("run in client mode (for getting client configuration values)") },
-    HELP_VERSION,
-    HELP_VERBOSE,
-    HELP_END,
-  };
-  formatHelp("gnunet-update [OPTIONS]",
-	     _("Updates GNUnet datastructures after version change."),
-	     help);
-}
+static struct GC_Configuration * cfg;
 
-static int be_verbose = NO;
-
-/**
- * Perform option parsing from the command line.
- */
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  int c;
-  int user = NO;
-  int get = NO;
-
-  /* set the 'magic' code that indicates that
-     this process is 'gnunetd' (and not any of
-     the user-tools).  Needed such that we use
-     the right configuration file... */
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "YES"));
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "get", 1, 0, 'g' },
-#ifndef MINGW	/* not supported */
-      { "user", 0, 0, 'u' },
-#endif
-      { "client", 0, 0, 'U' },
-      { "verbose", 0, 0, 'V' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "vhdc:g:VL:",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'g':
-      FREENONNULL(setConfigurationString("GNUNET-UPDATE",
-					 "GET",
-					 GNoptarg));
-      get = YES;
-     break;
-    case 'L':
-      FREENONNULL(setConfigurationString("GNUNETD",
-					 "LOGLEVEL",
-					 GNoptarg));
-     break;
-    case 'h':
-      printhelp();
-      return SYSERR;
-#ifndef MINGW	/* not supported */
-    case 'u':
-      changeUser(GNoptarg);
-      break;
-#endif
-    case 'U':
-      FREENONNULL(setConfigurationString("GNUNETD",
-					 "_MAGIC_",
-					 "NO"));
-      user = YES;
-      break;
-    case 'v':
-      printf("GNUnet v%s, gnunet-update 0.0.1\n",
-	     VERSION);
-      return SYSERR;
-    case 'V':
-      be_verbose = YES;
-      break;
-    default:
-      printf(_("Use --help to get a list of options.\n"));
-      return SYSERR;
-    } /* end of parsing commandline */
-  }
-  if (user && (! get)) {
-    printf(_("Option `%s' makes no sense without option `%s'."),
-	   "-u", "-g");
-    return SYSERR;
-  }
-  if (GNoptind < argc) {
-    printf(_("Invalid arguments: "));
-    while (GNoptind < argc)
-      printf("%s ", argv[GNoptind++]);
-    printf(_("\nExiting.\n"));
-    return SYSERR;
-  }
-  if (get == NO) {
-    /* if we do not run in 'get' mode,
-       make sure we send error messages
-       to the console... */
-    FREENONNULL(setConfigurationString("GNUNETD",
-				       "LOGFILE",
-				       NULL));
-  }
-  return OK;
-}
+static struct GE_Context * ectx;
 
 static char ** processed;
+
 static unsigned int processedCount;
+
 static UpdateAPI uapi;
 
 /**
@@ -271,11 +154,11 @@ static void doGet(char * get) {
     *ent = '\0';
     ent++;
   }
-  val = getConfigurationString(sec, ent);
-  if (val == NULL)
-    printf("%u\n",
-	   getConfigurationInt(sec, ent));
-  else {
+  if (0 == GC_get_configuration_value_string(cfg,
+					     sec,
+					     ent,
+					     NULL,
+					     &val)) {
     printf("%s\n",
 	   val);
     FREE(val);
@@ -285,14 +168,16 @@ static void doGet(char * get) {
 
 static void work() {
   int i;
-  uapi.updateModule = &updateModule;
+  struct CronManager * cron;
+
+  uapi.updateModule   = &updateModule;
   uapi.requestService = &requestService;
   uapi.releaseService = &releaseService;
 
-  initCore();
+  cron = cron_create(ectx);
+  initCore(ectx, cfg, cron, NULL);
 
-  /* force update of common modules
-     (used by core) */
+  /* force update of common modules (used by core) */
   updateModule("transport");
   updateModule("identity");
   updateModule("session");
@@ -310,29 +195,74 @@ static void work() {
 	   processedCount);
   GROW(processed, processedCount, 0);
   doneCore();
+  cron_destroy(cron);
 }
 
+
+/**
+ * All gnunet-update command line options
+ */
+static struct CommandLineOption gnunetupdateOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  { 'g', "get", "", 
+    gettext_noop("ping peers from HOSTLISTURL that match transports"), 
+    0, &gnunet_getopt_configure_set_option, "GNUNET-UPDATE:GET" },
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Updates GNUnet datastructures after version change.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'u', "user", "LOGIN",
+    gettext_noop("run as user LOGIN"),
+    1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },	
+  { 'U', "client", NULL,
+    gettext_noop("run in client mode (for getting client configuration values)"),
+    0, &gnunet_getopt_configure_set_option, "GNUNETD:_MAGIC_=NO" },	
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
+
+
 int main(int argc,
-	 char * argv[]) {
+	 const char * argv[]) {
   char * get;
   char * user;
 
-  if (SYSERR == initUtil(argc, argv, &parseCommandLine))
-    return 0;
-#ifndef MINGW
-  user = getConfigurationString("GNUNETD", "USER");
-  if (user && strlen(user))
-    changeUser(user);
-  FREENONNULL(user);
-#endif
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
 
-  get = getConfigurationString("GNUNET-UPDATE",
-			       "GET");
-  if (get != NULL)
-    doGet(get);
-  else
+  if (-1 == gnunet_parse_options("gnunet-update",
+				 ectx,
+				 cfg,
+				 gnunetupdateOptions,
+				 (unsigned int) argc,
+				 argv)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
+  if (OK != changeUser(ectx, cfg)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;
+  }
+  if (0 == GC_get_configuration_value_string(cfg,
+					     "GNUNET-UPDATE",
+					     "GET",
+					     NULL,
+					     &get)) {
+    doGet(get);  
+    FREE(get);
+  } else {
     work();
-  doneUtil();
+  }
+  GC_free(cfg);
+  GE_free_context(ectx);
+
   return 0;
 }
 

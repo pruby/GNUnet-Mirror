@@ -379,7 +379,6 @@ int main(int argc,
   int res;
   unsigned long long Xrepeat;
   char * trans;
-  char * user;
   int ping;
   int stats[3];
   int pos;
@@ -402,20 +401,10 @@ int main(int argc,
     return -1;  
   }
 
-  user = NULL;
-  if (0 == GC_get_configuration_value_string(cfg,
-					     "GNUNETD",
-					     "USER",
-					     NULL,
-					     &user)) {
-    if (OK != os_change_user(ectx,
-			     user)) {
-      GC_free(cfg);
-      GE_free_context(ectx);
-      FREE(user);
-      return 1;
-    }
-    FREE(user);
+  if (OK != changeUser(ectx, cfg)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;
   }
 
   if (-1 == GC_get_configuration_value_number(cfg,
@@ -490,6 +479,7 @@ int main(int argc,
 				      "BLACKLIST",
 				      NULL);
   }
+  cron = cron_create(ectx);
   initCore(ectx, cfg, cron, NULL);
   initConnection(ectx, cfg, NULL, cron);
   registerPlaintextHandler(P2P_PROTO_noise,
@@ -536,6 +526,7 @@ int main(int argc,
   doneConnection();
   doneCore();
   FREE(expectedValue);
+  cron_destroy(cron);
   GC_free(cfg);
   GE_free_context(ectx);
  

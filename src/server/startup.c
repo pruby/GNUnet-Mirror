@@ -36,6 +36,27 @@
 #include "core.h"
 #include "startup.h"
 
+int changeUser(struct GE_Context * ectx,
+	       struct GC_Configuration * cfg) {
+  char * user;
+
+  user = NULL;
+  if (0 == GC_get_configuration_value_string(cfg,
+					     "GNUNETD",
+					     "USER",
+					     NULL,
+					     &user)) {
+    if (OK != os_change_user(ectx,
+			     user)) {
+      FREE(user);
+      return SYSERR;
+    }
+    FREE(user);
+  }
+  return OK;
+}
+
+
 static char * getPIDFile(struct GC_Configuration * cfg) {
   char * pif;
   

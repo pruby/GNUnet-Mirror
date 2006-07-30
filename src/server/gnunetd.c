@@ -175,7 +175,6 @@ static struct CommandLineOption gnunetdOptions[] = {
  */
 int main(int argc, 
 	 const char * argv[]) {
-  char * user;
   int ret;
   struct GE_Context * ectx;
 
@@ -202,20 +201,10 @@ int main(int argc,
     GE_free_context(ectx);
     return -1;  
   }
-  user = NULL;
-  if (0 == GC_get_configuration_value_string(cfg,
-					     "GNUNETD",
-					     "USER",
-					     NULL,
-					     &user)) {
-    if (OK != os_change_user(ectx,
-			     user)) {
-      GC_free(cfg);
-      GE_free_context(ectx);
-      FREE(user);
-      return 1;
-    }
-    FREE(user);
+  if (OK != changeUser(ectx, cfg)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
   }
   if (OK != checkUpToDate(ectx,
 			  cfg)) {
