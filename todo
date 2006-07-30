@@ -23,7 +23,7 @@ NILS:
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
   * server:
-    + needs testing
+    + needs testing, also likely to be missing features
   * applications:
     + nothing compiles
   * setup:
