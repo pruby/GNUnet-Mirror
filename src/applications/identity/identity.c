@@ -64,7 +64,9 @@
 #define CRON_DISCARDS_HOSTS_AFTER (3 * cronMONTHS)
 
 typedef struct {
+
   PeerIdentity identity;
+
   /**
    *how long is this host blacklisted? (if at all)
    */
@@ -119,7 +121,7 @@ static unsigned int numberOfHosts_;
 /**
  * A lock for accessing knownHosts
  */
-static Mutex lock_;
+static struct MUTEX * lock_;
 
 /**
  * Directory where the hellos are stored in (data/hosts)
@@ -137,6 +139,10 @@ static char * trustDirectory;
 static HostEntry tempHosts[MAX_TEMP_HOSTS];
 
 static PeerIdentity myIdentity;
+
+static struct GE_Context * ectx;
+
+static CoreAPIForApplication * coreAPI;
 
 /**
  * Get the filename under which we would store the P2P_hello_MESSAGE
@@ -170,10 +176,11 @@ static char * getHostFileName(const PeerIdentity * id,
 static HostEntry * findHost(const PeerIdentity * id) {
   int i;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
   for (i=0;i<numberOfHosts_;i++)
-    if ( (hostIdentityEquals(id,
-			     &hosts_[i]->identity)) )
+    if ( (0 == memcmp(id,
+		      &hosts_[i]->identity,
+		      sizeof(PeerIdentity))) )
       return hosts_[i];
   return NULL;
 }
@@ -192,8 +199,8 @@ static void addHostToKnown(const PeerIdentity * identity,
   char * fn;
   unsigned int trust;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  MUTEX_LOCK(&lock_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  MUTEX_LOCK(lock_);
   entry = findHost(identity);
   if (entry == NULL) {
     entry = MALLOC(sizeof(HostEntry));
@@ -229,7 +236,7 @@ static void addHostToKnown(const PeerIdentity * identity,
   }
   for (i=0;i<entry->protocolCount;i++) {
     if (entry->protocols[i] == protocol) {
-      MUTEX_UNLOCK(&lock_);
+      MUTEX_UNLOCK(lock_);
       return; /* already there */
     }
   }
@@ -238,7 +245,7 @@ static void addHostToKnown(const PeerIdentity * identity,
        entry->protocolCount+1);
   entry->protocols[entry->protocolCount-1]
     = protocol;
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
 }
 
 /**
@@ -256,15 +263,15 @@ static int changeHostTrust(const PeerIdentity * hostId,
   if (value == 0)
     return 0;
 
-  MUTEX_LOCK(&lock_);
+  MUTEX_LOCK(lock_);
   host = findHost(hostId);
   if (host == NULL) {
     addHostToKnown(hostId,
 		   NAT_PROTOCOL_NUMBER);
     host = findHost(hostId);
     if (host == NULL) {
-      BREAK();
-      MUTEX_UNLOCK(&lock_);
+      GE_BREAK(ectx, 0);
+      MUTEX_UNLOCK(lock_);
       return 0;
     }
   }
@@ -276,7 +283,7 @@ static int changeHostTrust(const PeerIdentity * hostId,
     host->trust = ( (host->trust & TRUST_ACTUAL_MASK) + value)
       | TRUST_REFRESH_MASK;
   }
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
   return value;
 }
 
@@ -290,13 +297,13 @@ static unsigned int getHostTrust(const PeerIdentity * hostId) {
   HostEntry * host;
   unsigned int trust;
 
-  MUTEX_LOCK(&lock_);
+  MUTEX_LOCK(lock_);
   host = findHost(hostId);
   if (host == NULL)
     trust = 0;
   else
     trust = host->trust & TRUST_ACTUAL_MASK;
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
   return trust;
 }
 
@@ -309,8 +316,8 @@ static int cronHelper(const char * filename,
   unsigned int protoNumber;
   char * fullname;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  GNUNET_ASSERT(sizeof(EncName) == 104);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  GE_ASSERT(ectx, sizeof(EncName) == 104);
   if (2 == sscanf(filename,
 		  "%103c.%u",
 		  (char*)&id,
@@ -329,15 +336,17 @@ static int cronHelper(const char * filename,
   strcpy(fullname, networkIdDirectory);
   strcat(fullname, filename);
   if (0 == UNLINK(fullname))
-    LOG(LOG_WARNING,
-	_("File `%s' in directory `%s' does not match naming convention. "
-	  "Removed.\n"),
-	filename,
-	networkIdDirectory);
+    GE_LOG(ectx,
+	   GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+	   _("File `%s' in directory `%s' does not match naming convention. "
+	     "Removed.\n"),
+	   filename,
+	   networkIdDirectory);
   else
-    LOG_FILE_STRERROR(LOG_ERROR,
-		      "unlink",
-		      fullname);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_BULK,
+			 "unlink",
+			 fullname);
   FREE(fullname);
   return OK;
 }
@@ -351,24 +360,25 @@ static void cronScanDirectoryDataHosts(void * unused) {
   int count;
   cron_t now;
 
-  cronTime(&now);
+  now = get_time();
   if (lastRun + MAX_DATA_HOST_FREQ > now)
     return; /* prevent scanning more than
 	       once every 5 min */
   lastRun = now;
-  count = scanDirectory(networkIdDirectory,
-			&cronHelper,
-			NULL);
+  count = disk_directory_scan(ectx,
+			      networkIdDirectory,
+			      &cronHelper,
+			      NULL);
   if (count <= 0) {
     retries++;
     if ((retries & 32) > 0) {
-      LOG(LOG_WARNING,
-	  _("%s `%s' returned no known hosts!\n"),
-	  "scanDirectory",
-	  networkIdDirectory);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_BULK,
+	     _("Still no peers found in `%s'!\n"),
+	     networkIdDirectory);
     }
   }
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
 }
 
 /**
@@ -385,13 +395,14 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
   memcpy(msg,
 	 tmp,
 	 P2P_hello_MESSAGE_size(tmp));
-  MUTEX_LOCK(&lock_);
+  MUTEX_LOCK(lock_);
   entry = findHost(&msg->senderIdentity);
   if (entry == NULL) {
     slot = tempHostsNextSlot;
     for (i=0;i<MAX_TEMP_HOSTS;i++)
-      if (hostIdentityEquals(&tmp->senderIdentity,
-			     &tempHosts[i].identity))
+      if (0 == memcmp(&tmp->senderIdentity,
+		      &tempHosts[i].identity,
+		      sizeof(PeerIdentity)))
 	slot = i;
     if (slot == tempHostsNextSlot) {
       tempHostsNextSlot++;
@@ -417,7 +428,7 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
   } else {
     FREE(msg);
   }
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
 }
 
 /**
@@ -430,12 +441,13 @@ static void delHostFromKnown(const PeerIdentity * identity,
   int i;
   int j;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  GNUNET_ASSERT(protocol != ANY_PROTOCOL_NUMBER);
-  MUTEX_LOCK(&lock_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  GE_ASSERT(ectx, protocol != ANY_PROTOCOL_NUMBER);
+  MUTEX_LOCK(lock_);
   for (i=0;i<numberOfHosts_;i++) {
-    if ( (hostIdentityEquals(identity,
-			     &hosts_[i]->identity)) ) {
+    if ( (0 == memcmp(identity,
+		      &hosts_[i]->identity,
+		      sizeof(PeerIdentity))) ) {
       entry = hosts_[i];
       for (j=0;j<entry->protocolCount;j++) {
 	if (protocol == entry->protocols[j]) {
@@ -460,9 +472,10 @@ static void delHostFromKnown(const PeerIdentity * identity,
       fn = getHostFileName(identity,
 			   protocol);
       if (0 != UNLINK(fn))
-	LOG_FILE_STRERROR(LOG_WARNING,
-			  "unlink",
-			  fn);
+	GE_LOG_STRERROR_FILE(ectx,
+			     GE_WARNING | GE_USER | GE_BULK,
+			     "unlink",
+			     fn);
       FREE(fn);
 
       if (entry->protocolCount == 0) {
@@ -476,12 +489,13 @@ static void delHostFromKnown(const PeerIdentity * identity,
 	hosts_[i] = hosts_[--numberOfHosts_];
 	FREE(entry);
       }
-      MUTEX_UNLOCK(&lock_);
-      GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
+      MUTEX_UNLOCK(lock_);
+      GE_ASSERT(ectx, 
+		numberOfHosts_ <= sizeOfHosts_);
       return; /* deleted */
     }
   }
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
 }
 
 /**
@@ -493,21 +507,13 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   char * buffer;
   P2P_hello_MESSAGE * oldMsg;
   int size;
-  EncName enc;
   HostEntry * host;
   int i;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  GNUNET_ASSERT(msg != NULL);
-  IFLOG(LOG_INFO,
-	hash2enc(&msg->senderIdentity.hashPubKey,
-		 &enc));
-#if DEBUG_IDENTITY
-  LOG(LOG_INFO,
-      "Binding address of node %s.%d\n",
-      &enc,
-      ntohs(msg->protocol));
-#endif
+  GE_ASSERT(ectx, 
+	    numberOfHosts_ <= sizeOfHosts_);
+  GE_ASSERT(ectx,
+	    msg != NULL);
   fn = getHostFileName(&msg->senderIdentity,
 		       ntohs(msg->protocol));
   buffer = MALLOC(MAX_BUFFER_SIZE);
@@ -529,11 +535,12 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   FREE(fn);
   FREE(buffer);
 
-  MUTEX_LOCK(&lock_);
+  MUTEX_LOCK(lock_);
   addHostToKnown(&msg->senderIdentity,
 		 ntohs(msg->protocol));
   host = findHost(&msg->senderIdentity);
-  GNUNET_ASSERT(host != NULL);
+  GE_ASSERT(ectx,
+	    host != NULL);
 
   for (i=0;i<host->heloCount;i++) {
     if (msg->protocol == host->helos[i]->protocol) {
@@ -551,8 +558,9 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   memcpy(host->helos[i],
 	 msg,
 	 P2P_hello_MESSAGE_size(msg));
-  MUTEX_UNLOCK(&lock_);
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
+  MUTEX_UNLOCK(lock_);
+  GE_ASSERT(ectx,
+	    numberOfHosts_ <= sizeOfHosts_);
 }
 
 /**
@@ -579,8 +587,9 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   int j;
   int * perm;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  MUTEX_LOCK(&lock_);
+  GE_ASSERT(ectx,
+	    numberOfHosts_ <= sizeOfHosts_);
+  MUTEX_LOCK(lock_);
   if (YES == tryTemporaryList) {
     if (protocol == ANY_PROTOCOL_NUMBER)
       perm = permute(WEAK, MAX_TEMP_HOSTS);
@@ -594,15 +603,16 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
       else
 	j = perm[i];
       if ( (tempHosts[j].heloCount > 0) &&
-	   hostIdentityEquals(hostId,
-			      &tempHosts[j].identity) &&
+	   (0 == memcmp(hostId,
+			&tempHosts[j].identity,
+			sizeof(PeerIdentity))) &&
 	   ( (tempHosts[j].protocols[0] == protocol) ||
 	     (protocol == ANY_PROTOCOL_NUMBER) ) ) {
 	result = MALLOC(P2P_hello_MESSAGE_size(tempHosts[j].helos[0]));
 	memcpy(result,
 	       tempHosts[j].helos[0],
 	       P2P_hello_MESSAGE_size(tempHosts[j].helos[0]));	
-	MUTEX_UNLOCK(&lock_);
+	MUTEX_UNLOCK(lock_);
 	FREENONNULL(perm);
 	return result;
       }
@@ -613,7 +623,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   host = findHost(hostId);
   if ( (host == NULL) ||
        (host->protocolCount == 0) ) {
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return NULL;
   }
 
@@ -627,7 +637,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
       memcpy(result,
 	     host->helos[i],
 	     P2P_hello_MESSAGE_size(host->helos[i]));
-      MUTEX_UNLOCK(&lock_);
+      MUTEX_UNLOCK(lock_);
       return result;
     }
   }
@@ -644,16 +654,18 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
     if (0 == STAT(fn,
 		  &buf)) {
       if (0 == UNLINK(fn))
-	LOG(LOG_WARNING,
-	    _("Removed file `%s' containing invalid hello data.\n"),
-	    fn);
+	GE_LOG(ectx,
+	       GE_WARNING | GE_USER | GE_BULK,
+	       _("Removed file `%s' containing invalid hello data.\n"),
+	       fn);
       else
-	LOG_FILE_STRERROR(LOG_ERROR,
-			  "unlink",
-			  fn);
+	GE_LOG_STRERROR_FILE(ectx,
+			     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			     "unlink",
+			     fn);
     }
     FREE(fn);
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return NULL;
   }
   result = MALLOC(P2P_hello_MESSAGE_size(&buffer));
@@ -662,16 +674,18 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
 		  result);
   if ((unsigned int)size != P2P_hello_MESSAGE_size(&buffer)) {
     if (0 == UNLINK(fn))
-      LOG(LOG_WARNING,
-	  _("Removed file `%s' containing invalid hello data.\n"),
-	  fn);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_BULK,
+	     _("Removed file `%s' containing invalid hello data.\n"),
+	     fn);
     else
-      LOG_FILE_STRERROR(LOG_ERROR,
-			"unlink",
-			fn);
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			   "unlink",
+			   fn);
     FREE(fn);
     FREE(result);
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return NULL;
   }
   FREE(fn);
@@ -683,7 +697,7 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   memcpy(host->helos[host->heloCount-1],
 	 result,
 	 P2P_hello_MESSAGE_size(&buffer));
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
   return result;
 }
 
@@ -709,20 +723,22 @@ static int verifyPeerSignature(const PeerIdentity * signer,
   if (helo == NULL) {
     EncName enc;
     
-    IFLOG(LOG_INFO,
+    IFLOG(ectx,
+	  GE_INFO | GE_USER | GE_BULK,
 	  hash2enc(&signer->hashPubKey,
 		   &enc));
-    LOG(LOG_INFO, 
-	_("Signature failed verification: peer `%s' not known.\n"),
-	&enc);
+    GE_LOG(ectx,
+	   GE_INFO | GE_USER | GE_BULK, 
+	   _("Signature failed verification: peer `%s' not known.\n"),
+	   &enc);
     return SYSERR;
   }
   res = verifySig(message, size, sig,
 		  &helo->publicKey);
   if (res == SYSERR)
-    LOG(LOG_ERROR,
-	_("Signature failed verification: signature invalid.\n"));
-
+    GE_LOG(ectx,
+	   GE_ERROR | GE_REQUEST | GE_DEVELOPER | GE_USER,
+	   _("Signature failed verification: signature invalid.\n"));
   FREE(helo);
   return res;
 }
@@ -743,20 +759,21 @@ static int blacklistHost(const PeerIdentity * identity,
   HostEntry * entry;
   int i;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  MUTEX_LOCK(&lock_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  MUTEX_LOCK(lock_);
   entry = findHost(identity);
   if (entry == NULL) {
     for (i=0;i<MAX_TEMP_HOSTS;i++) {
-      if (hostIdentityEquals(identity,
-			     &tempHosts[i].identity)) {
+      if (0 == memcmp(identity,
+		      &tempHosts[i].identity,
+		      sizeof(PeerIdentity))) {
 	entry = &tempHosts[i];
 	break;
       }
     }
   }
   if (entry == NULL) {
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return SYSERR;
   }
   if (strict == YES) {
@@ -770,21 +787,22 @@ static int blacklistHost(const PeerIdentity * identity,
     if (entry->delta > 4 * cronHOURS)
       entry->delta = 4 *  weak_randomi(cronHOURS * (desperation+1));
   }
-  cronTime(&entry->until);
+  entry->until = get_time();
   entry->until += entry->delta;
   entry->strict = strict;
   hash2enc(&identity->hashPubKey,
 	   &hn);
 #if DEBUG_IDENTITY
-  LOG(LOG_INFO,
-      "Blacklisting host `%s' for %llu seconds"
-      " until %llu (strict=%d).\n",
-      &hn,
-      entry->delta / cronSECONDS,
-      entry->until,
-      strict);
+  GE_LOG(ectx,
+	 GE_INFO | GE_REQUEST | GE_USER,
+	 "Blacklisting host `%s' for %llu seconds"
+	 " until %llu (strict=%d).\n",
+	 &hn,
+	 entry->delta / cronSECONDS,
+	 entry->until,
+	 strict);
 #endif
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
   return OK;
 }
 
@@ -798,20 +816,20 @@ static int isBlacklistedStrict(const PeerIdentity * identity) {
   cron_t now;
   HostEntry * entry;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  MUTEX_LOCK(&lock_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  MUTEX_LOCK(lock_);
   entry = findHost(identity);
   if (entry == NULL) {
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return NO;
   }
-  cronTime(&now);			
+  now = get_time();
   if ( (now < entry->until) &&
        (entry->strict == YES) ) {
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return YES;
   } else {
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return NO;
   }
 }
@@ -829,34 +847,36 @@ static int whitelistHost(const PeerIdentity * identity) {
   EncName enc;
 #endif
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
-  MUTEX_LOCK(&lock_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
+  MUTEX_LOCK(lock_);
   entry = findHost(identity);
   if (entry == NULL) {
     for (i=0;i<MAX_TEMP_HOSTS;i++) {
-      if (hostIdentityEquals(identity,
-			     &tempHosts[i].identity)) {
+      if (0 == memcmp(identity,
+		      &tempHosts[i].identity,
+		      sizeof(PeerIdentity))) {
 	entry = &tempHosts[i];
 	break;
       }
     }
   }
   if (entry == NULL) {
-    MUTEX_UNLOCK(&lock_);
+    MUTEX_UNLOCK(lock_);
     return SYSERR;
   }
 #if DEBUG_IDENTITY
   IFLOG(LOG_INFO,
 	hash2enc(&identity->hashPubKey,
 		 &enc));
-  LOG(LOG_INFO,
-      "Whitelisting host `%s'\n",
-      &enc);
+  GE_LOG(ectx,
+	 GE_INFO | GE_USER | GE_REQUEST,
+	 "Whitelisting host `%s'\n",
+	 &enc);
 #endif
   entry->delta = 30 * cronSECONDS;
   entry->until = 0;
   entry->strict = NO;
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
   return OK;
 }
 
@@ -880,13 +900,14 @@ static int forEachHost(cron_t now,
   unsigned short proto;
   HostEntry * entry;
 
-  GNUNET_ASSERT(numberOfHosts_ <= sizeOfHosts_);
+  GE_ASSERT(ectx, numberOfHosts_ <= sizeOfHosts_);
   count = 0;
-  MUTEX_LOCK(&lock_);
+  MUTEX_LOCK(lock_);
   for (i=0;i<numberOfHosts_;i++) {
     entry = hosts_[i];
-    if (hostIdentityEquals(&entry->identity,
-			   &myIdentity))
+    if (0 == memcmp(&entry->identity,
+		    &myIdentity,
+		    sizeof(PeerIdentity)))
       continue;
     if ( (now == 0) ||
 	 (now >= entry->until) ) {
@@ -895,19 +916,20 @@ static int forEachHost(cron_t now,
 	hi = entry->identity;
 	for (j=0;j<entry->protocolCount;j++) {
 	  proto = entry->protocols[j];
-	  MUTEX_UNLOCK(&lock_);
+	  MUTEX_UNLOCK(lock_);
 	  callback(&hi,
 		   proto,
 		   YES,
 		   data);
-	  MUTEX_LOCK(&lock_);
+	  MUTEX_LOCK(lock_);
 	  /* we gave up the lock,
 	     need to re-aquire entry (if possible)! */
 	  if (i >= numberOfHosts_)
 	    break;
 	  entry = hosts_[i];
-	  if (hostIdentityEquals(&entry->identity,
-				 &myIdentity))
+	  if (0 == memcmp(&entry->identity,
+			  &myIdentity,
+			  sizeof(PeerIdentity)))
 	    break;
 	}
       }
@@ -923,16 +945,16 @@ static int forEachHost(cron_t now,
       if (callback != NULL) {
 	hi = entry->identity;
 	proto = entry->protocols[0];
-	MUTEX_UNLOCK(&lock_);
+	MUTEX_UNLOCK(lock_);
 	callback(&hi,
 		 proto,
 		 YES,
 		 data);
-	MUTEX_LOCK(&lock_);
+	MUTEX_LOCK(lock_);
       }
     }
   }
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
   return count;
 }
 
@@ -954,15 +976,12 @@ static void flushHostCredit(HostEntry * host) {
   strcpy(fn, trustDirectory);
   strcat(fn, (char*) &fil);
   if (host->trust == 0) {
-    if (0 != UNLINK(fn)) {
-      if (errno != ENOENT)
-	LOG(LOG_INFO,
-	    "`%s' of file `%s' at %s:%d failed: %s\n",
-	    "unlink",
-	    fn,
-	    __FILE__, __LINE__,
-	    STRERROR(errno));
-    }
+    if ( (0 != UNLINK(fn)) &&
+	 (errno != ENOENT) )
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_WARNING | GE_USER | GE_BULK,			     
+			   "unlink",
+			   fn);    
   } else {
     trust = htonl(host->trust);
     writeFile(fn,
@@ -978,10 +997,10 @@ static void flushHostCredit(HostEntry * host) {
  */
 static void cronFlushTrustBuffer(void * unused) {
   int i;
-  MUTEX_LOCK(&lock_);
+  MUTEX_LOCK(lock_);
   for (i=0;i<numberOfHosts_;i++)
     flushHostCredit(hosts_[i]);
-  MUTEX_UNLOCK(&lock_);
+  MUTEX_UNLOCK(lock_);
 }
 
 /**
@@ -1035,9 +1054,10 @@ static void cronDiscardHosts(void *unused) {
   time_t timeNow;
   
   timeNow = time(NULL);
-  scanDirectory(networkIdDirectory,
-      &discardHostsHelper,
-      (void *) &timeNow);
+  disk_directory_scan(ectx,
+		      networkIdDirectory,
+		      &discardHostsHelper,
+		      (void *) &timeNow);
 }
 
 
@@ -1054,6 +1074,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
   char * tmp;
   int i;
 
+  coreAPI = capi;
   id.getPublicPrivateKey = &getPublicPrivateKey;
   id.getPeerIdentity     = &getPeerIdentity;
   id.signData            = &signData;
@@ -1076,11 +1097,12 @@ provide_module_identity(CoreAPIForApplication * capi) {
 	   sizeof(HostEntry));
   numberOfHosts_ = 0;
 
-  initPrivateKey();
+  initPrivateKey(capi->ectx,
+		 capi->cfg);
   getPeerIdentity(getPublicPrivateKey(),
 		  &myIdentity);
 
-  MUTEX_CREATE_RECURSIVE(&lock_);
+  lock_ = MUTEX_CREATE(YES);
   gnHome = getFileName("GNUNETD",
 		       "GNUNETD_HOME",
 		       _("Configuration file must specify a "
@@ -1111,18 +1133,21 @@ provide_module_identity(CoreAPIForApplication * capi) {
   FREE(gnHome);
 
   cronScanDirectoryDataHosts(NULL);
-  addCronJob(&cronScanDirectoryDataHosts,
-	     CRON_DATA_HOST_FREQ,
-	     CRON_DATA_HOST_FREQ,
-	     NULL);
-  addCronJob(&cronFlushTrustBuffer,
-	     CRON_TRUST_FLUSH_FREQ,
-	     CRON_TRUST_FLUSH_FREQ,
-	     NULL);
-  addCronJob(&cronDiscardHosts,
-       0,
-       CRON_DISCARD_HOSTS_INTERVAL,
-       NULL);
+  cron_add_job(coreAPI->cron,
+	       &cronScanDirectoryDataHosts,
+	       CRON_DATA_HOST_FREQ,
+	       CRON_DATA_HOST_FREQ,
+	       NULL);
+  cron_add_job(coreAPI->cron,
+	       &cronFlushTrustBuffer,
+	       CRON_TRUST_FLUSH_FREQ,
+	       CRON_TRUST_FLUSH_FREQ,
+	       NULL);
+  cron_add_job(coreAPI->cron,
+	       &cronDiscardHosts,
+	       0,
+	       CRON_DISCARD_HOSTS_INTERVAL,
+	       NULL);
   return &id;
 }
 
@@ -1145,17 +1170,21 @@ void release_module_identity() {
 	 entry->protocolCount,
 	 0);
   }
-  delCronJob(&cronScanDirectoryDataHosts,
-	     CRON_DATA_HOST_FREQ,
-	     NULL);
-  delCronJob(&cronFlushTrustBuffer,
-	     CRON_TRUST_FLUSH_FREQ,
-	     NULL);
-  delCronJob(&cronDiscardHosts,
-       CRON_DISCARD_HOSTS_INTERVAL,
-       NULL);
+  cron_del_job(coreAPI->cron,
+	       &cronScanDirectoryDataHosts,
+	       CRON_DATA_HOST_FREQ,
+	       NULL);
+  cron_del_job(coreAPI->cron,
+	       &cronFlushTrustBuffer,
+	       CRON_TRUST_FLUSH_FREQ,
+	       NULL);
+  cron_del_job(coreAPI->cron,
+	       &cronDiscardHosts,
+	       CRON_DISCARD_HOSTS_INTERVAL,
+	       NULL);
   cronFlushTrustBuffer(NULL);
-  MUTEX_DESTROY(&lock_);
+  MUTEX_DESTROY(lock_);
+  lock_ = NULL;
   for (i=0;i<numberOfHosts_;i++) {
     entry = hosts_[i];
     for (j=0;j<entry->heloCount;j++)
