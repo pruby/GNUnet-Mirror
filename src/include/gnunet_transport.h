@@ -184,7 +184,7 @@ typedef struct {
    * the transport should never do ANYTHING
    * with it.
    */
-  void * libHandle;
+  struct PluginHandle * libHandle;
 
   /**
    * The name of the transport, set by the

@@ -25,7 +25,13 @@ NILS:
   * server:
     + needs testing, also likely to be missing features
   * applications:
-    + nothing compiles
+    + identity, transport compile
+    + for core: fragmentation, session, topology_default, pingpong, stats
+    + for basics: advertising, bootstrap_http, state, getoption, traffic
+    + for fs: datastore, fs, gap, sqstore_sqlite
+    + rest: sqstore_mysql, dht, chat, kvstore_sqlite, 
+            sqstore_mysql, rpc, tbench, template, testbed, 
+            topology_f2f, vpn, tracekit
   * setup:
     + nothing compiles
 - adapt util testcases and main GNUnet codebase

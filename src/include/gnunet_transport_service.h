@@ -126,25 +126,14 @@ typedef struct {
    * @param session the session identifying the connection
    * @param msg the message to send
    * @param size the size of the message
+   * @param important the message is important
    * @return OK on success, SYSERR on persistent error, NO on
    *         temporary error
    */
   int (*send)(TSession * session,
 	      const void * msg,
-	      const unsigned int size);
-
-  /**
-   * Send a message.
-   * Try to be more reliable than the usual transportSend.
-   *
-   * @param session the session identifying the connection
-   * @param msg the message to send
-   * @param size the size of the message
-   * @return OK on success, SYSERR on error
-   */
-  int (*sendReliable)(TSession * session,
-		      const void * msg,
-		      const unsigned int size);
+	      unsigned int size,
+	      int important);
 
   /**
    * Close the session with the remote node. May only be called on
