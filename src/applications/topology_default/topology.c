@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -34,11 +34,10 @@
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 #include "gnunet_identity_service.h"
+#include "gnunet_state_service.h"
 #include "gnunet_topology_service.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_pingpong_service.h"
-
-#define DEBUG_TOPOLOGY NO
 
 /**
  * After 2 minutes on an inactive connection, probe the other
@@ -106,8 +105,9 @@ static void scanHelperCount(const PeerIdentity * id,
 			    void * data) {
   IndexMatch * im = data;
 
-  if (hostIdentityEquals(coreAPI->myIdentity,
-			 id))
+  if (0 == memcmp(coreAPI->myIdentity,
+		  id,
+		  sizeof(PeerIdentity)))
     return;
   if (coreAPI->computeIndex(id) != im->index)
     return;
@@ -133,7 +133,9 @@ static void scanHelperSelect(const PeerIdentity * id,
 			     void * data) {
   IndexMatch * im = data;
 
-  if (hostIdentityEquals(coreAPI->myIdentity, id))
+  if (0 == memcmp(coreAPI->myIdentity, 
+		  id,
+		  sizeof(PeerIdentity)))
     return;
   if (coreAPI->computeIndex(id) != im->index)
     return;
@@ -159,14 +161,12 @@ static void scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
-#if DEBUG_TOPOLOGY
-  EncName enc;
-#endif
 
-  if (getNetworkLoadUp() > 100)
+  if (os_network_monitor_get_load(coreAPI->load_monitor,
+				  Upload) > 100)
     return; /* bandwidth saturated, do not
 	       push it higher! */
-  cronTime(&now);
+  now = get_time();
   indexMatch.index = index;
   indexMatch.matchCount = 0;
   indexMatch.costSelector = 0;
@@ -174,9 +174,10 @@ static void scanForHosts(unsigned int index) {
 			&scanHelperCount,
 			&indexMatch);
   if (indexMatch.matchCount == 0) {
-    LOG(LOG_EVERYTHING,
-	"No peers found for slot %u\n",
-	index);
+    GE_LOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST,
+	   "No peers found for slot %u\n",
+	   index);
     return; /* no matching peers found! */
   }
   if (indexMatch.costSelector > 0)
@@ -186,21 +187,14 @@ static void scanForHosts(unsigned int index) {
   identity->forEachHost(now,
 			&scanHelperSelect,
 			&indexMatch);
-  if (hostIdentityEquals(coreAPI->myIdentity,
-			 &indexMatch.match))
+  if (0 == memcmp(coreAPI->myIdentity,
+		  &indexMatch.match,
+		  sizeof(PeerIdentity)))
     return; /* should happen really rarely */
   if (coreAPI->computeIndex(&indexMatch.match) != index) {
-    BREAK(); /* should REALLY not happen */
+    GE_BREAK(NULL, 0); /* should REALLY not happen */
     return;
   }
-#if DEBUG_TOPOLOGY
-  hash2enc(&indexMatch.match.hashPubKey,
-	   &enc);
-  LOG(LOG_DEBUG,
-      "Topology: trying to connect to `%s' in slot '%u'.\n",
-      &enc,
-      index);
-#endif
   coreAPI->unicast(&indexMatch.match,
 		   NULL,
 		   0,
@@ -217,15 +211,6 @@ static void scanForHosts(unsigned int index) {
  */
 static void notifyPONG(void * cls) {
   PeerIdentity * hostId = cls;
-#if DEBUG_TOPOLOGY
-  EncName enc;
-
-  hash2enc(&hostId->hashPubKey,
-	   &enc);
-  LOG(LOG_DEBUG,
-      "Received pong from `%s', telling core that peer is still alive.\n",
-      (char*)&enc);
-#endif
   coreAPI->confirmSessionUp(hostId);
   FREE(hostId);
 }
@@ -238,15 +223,12 @@ static void checkNeedForPing(const PeerIdentity * peer,
   cron_t now;
   cron_t act;
   PeerIdentity * hi;
-#if DEBUG_TOPOLOGY
-  EncName enc;
-#endif
 
   if (weak_randomi(LIVE_PING_EFFECTIVENESS) != 0)
     return;
-  cronTime(&now);
+  now = get_time();
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
-    BREAK();
+    GE_BREAK(coreAPI->ectx, 0);
     return; /* this should not happen... */
   }
 
@@ -256,13 +238,6 @@ static void checkNeedForPing(const PeerIdentity * peer,
        to keep the connection open instead of hanging up */
     hi = MALLOC(sizeof(PeerIdentity));
     *hi = *peer;
-#if DEBUG_TOPOLOGY
-    hash2enc(&hi->hashPubKey,
-	     &enc);
-    LOG(LOG_DEBUG,
-	"Sending ping to `%s' to prevent connection timeout.\n",
-	(char*)&enc);
-#endif
     if (OK != pingpong->ping(peer,
 			     NO,
 			     &notifyPONG,
@@ -283,9 +258,10 @@ static void cronCheckLiveness(void * unused) {
   unsigned int minint;
   int autoconnect;
 
-  autoconnect = testConfigurationString("GNUNETD",
-					"DISABLE-AUTOCONNECT",
-					"YES");
+  autoconnect = GC_get_configuration_value_yesno(coreAPI->cfg,
+						 "GNUNETD",
+						 "DISABLE-AUTOCONNECT",
+						 NO);
   slotCount = coreAPI->getSlotCount();
   if (saturation > 0.001)
     minint = (int) 1 / saturation;
@@ -349,71 +325,37 @@ static int allowConnection(const PeerIdentity * peer) {
   return OK; /* allow everything */
 }
 
-#define TOPOLOGY_TAG_FILE "topology-070"
-
 Topology_ServiceAPI *
 provide_module_topology_default(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
-  char * data;
-  unsigned int len;
 
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {
-    BREAK();
+    GE_BREAK(capi->ectx, 0);
     return NULL;
   }
   transport = capi->requestService("transport");
   if (transport == NULL) {
-    BREAK();
+    GE_BREAK(capi->ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     return NULL;
   }
   pingpong = capi->requestService("pingpong");
   if (pingpong == NULL) {
-    BREAK();
+    GE_BREAK(capi->ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     capi->releaseService(transport);
     transport = NULL;
     return NULL;
   }
-
-  addCronJob(&cronCheckLiveness,
-	     LIVE_SCAN_FREQUENCY,
-	     LIVE_SCAN_FREQUENCY,
-	     NULL);
-
-  if (-1 == (len = stateReadContent(TOPOLOGY_TAG_FILE,
-				    (void**) &data))) {
-    stateWriteContent(TOPOLOGY_TAG_FILE,
-		      strlen(PACKAGE_VERSION),
-		      PACKAGE_VERSION);
-  } else {
-    if (0 != strncmp(PACKAGE_VERSION,
-		     data,
-		     len)) {
-      LOG(LOG_FAILURE,
-	  _("Version mismatch (`%s' vs. '%*.s'), run gnunet-update!\n"),
-	  PACKAGE_VERSION,
-	  len,
-	  data);
-      FREE(data);
-      delCronJob(&cronCheckLiveness,
-		 LIVE_SCAN_FREQUENCY,
-		 NULL);
-      capi->releaseService(identity);
-      identity = NULL;
-      capi->releaseService(transport);
-      transport = NULL;
-      capi->releaseService(pingpong);
-      pingpong = NULL;
-      return NULL;
-    }
-    FREE(data);
-  }
-
+  cron_add_job(capi->cron,
+	       &cronCheckLiveness,
+	       LIVE_SCAN_FREQUENCY,
+	       LIVE_SCAN_FREQUENCY,
+	       NULL);
   api.estimateNetworkSize = &estimateNetworkSize;
   api.getSaturation = &estimateSaturation;
   api.allowConnectionFrom = &allowConnection;
@@ -421,9 +363,10 @@ provide_module_topology_default(CoreAPIForApplication * capi) {
 }
 
 int release_module_topology_default() {
-  delCronJob(&cronCheckLiveness,
-	     LIVE_SCAN_FREQUENCY,
-	     NULL);
+  cron_del_job(coreAPI->cron,
+	       &cronCheckLiveness,
+	       LIVE_SCAN_FREQUENCY,
+	       NULL);
   coreAPI->releaseService(identity);
   identity = NULL;
   coreAPI->releaseService(transport);
@@ -434,25 +377,41 @@ int release_module_topology_default() {
   return OK;
 }
 
+#define TOPOLOGY_TAG_FILE "topology-070"
+
 /**
  * Update topology module.
  */
 void update_module_topology_default(UpdateAPI * uapi) {
-  stateUnlinkFromDB(TOPOLOGY_TAG_FILE);
+  State_ServiceAPI * state;
+
+  uapi->updateModule("state");
   uapi->updateModule("identity");
   uapi->updateModule("transport");
   uapi->updateModule("pingpong");
+
+  /* remove version stamp file from 0.7.0x,
+     we have a global check for version, so 
+     we do not need this one anymore;
+     this code can be removed in a few
+     versions (since it is just minor cleanup
+     anyway) */
+  state = uapi->requestService("state");
+  state->unlink(NULL,
+		TOPOLOGY_TAG_FILE);
+  uapi->releaseService(state);
+  state = NULL;
 }
 
-
-
 static CoreAPIForApplication * myCapi;
+
 static Topology_ServiceAPI * myTopology;
 
 int initialize_module_topology_default(CoreAPIForApplication * capi) {
   myCapi = capi;
   myTopology = capi->requestService("topology");
-  GNUNET_ASSERT(myTopology != NULL);
+  GE_ASSERT(capi->ectx,
+	    myTopology != NULL);
   return OK;
 }
 

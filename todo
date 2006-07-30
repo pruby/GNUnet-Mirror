@@ -25,9 +25,10 @@ NILS:
   * server:
     + needs testing, also likely to be missing features
   * applications:
-    + fragmentation, identity,  pingpong, session, transport, stats compile
-    + for core: topology_default
-    + for basics: advertising, bootstrap_http, state, getoption, traffic
+    + fragmentation, identity,  pingpong, session, transport,
+      stats, topology_default compile
+    + for core: state
+    + for basics: advertising, bootstrap_http, getoption, traffic
     + for fs: datastore, fs, gap, sqstore_sqlite
     + rest: sqstore_mysql, dht, chat, kvstore_sqlite, 
             sqstore_mysql, rpc, tbench, template, testbed, 

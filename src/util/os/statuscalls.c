@@ -354,6 +354,8 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
   int ret;
   int weight;
 
+  if (monitor == NULL)
+    return 0; /* no limits */
   MUTEX_LOCK(monitor->statusMutex);
   now = get_time();
   if ( (monitor->useBasicMethod == NO) &&
