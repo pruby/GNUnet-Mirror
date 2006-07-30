@@ -43,8 +43,6 @@
 
 #define DEBUG_TRANSPORT_CHECK NO
 
-#define DEFAULT_MSG "Hello World"
-
 static struct SEMAPHORE * sem;
 
 static int terminate;
@@ -98,7 +96,8 @@ static void testTAPI(TransportAPI * tapi,
 		     int * res) {
   P2P_hello_MESSAGE * helo;
   TSession * tsession;
-  unsigned int repeat;
+  unsigned long long repeat;
+  unsigned long long total;
   cron_t start;
   cron_t end;
   MESSAGE_HEADER * noise;
@@ -127,14 +126,18 @@ static void testTAPI(TransportAPI * tapi,
     return;
   }
   FREE(helo);
-  repeat = getConfigurationInt("TRANSPORT-CHECK",
-			       "REPEAT");
-  if (repeat == 0) {
-    repeat = 1;
-    setConfigurationInt("TRANSPORT-CHECK",
-			"REPEAT",
-			1);
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "TRANSPORT-CHECK",
+					      "REPEAT",
+					      1,
+					      (unsigned long) -1,
+					      1,
+					      &repeat)) {
+    *res = SYSERR;
+    FREE(helo);
+    return;
   }
+  total = repeat;
   sem = SEMAPHORE_CREATE(0);
   start = get_time();
   noise = MALLOC(expectedSize + sizeof(MESSAGE_HEADER));
@@ -193,11 +196,10 @@ static void testTAPI(TransportAPI * tapi,
     return;
   }
   SEMAPHORE_DESTROY(sem);
-  printf(_("`%s' transport OK.  It took %ums to transmit %d messages of %llu bytes each.\n"),
+  printf(_("`%s' transport OK.  It took %ums to transmit %llu messages of %llu bytes each.\n"),
 	 tapi->transName,
 	 (unsigned int) ((end - start)/cronMILLIS),
-	 getConfigurationInt("TRANSPORT-CHECK",
-			     "REPEAT"),
+	 total,
 	 expectedSize);
 }
 
@@ -215,6 +217,7 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
   char * msg;
   int len;
   PeerIdentity peer;
+  unsigned long long verbose;
 
   stats[0]++; /* one more seen */
   if (NO == transport->isAvailable(ntohs(helo->protocol))) {
@@ -225,9 +228,14 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
     return;
   }
   stats[1]++; /* one more with transport 'available' */
-  if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
-			      "VERBOSE",
-			      "YES")) {
+  GC_get_configuration_value_number(cfg,
+				    "GNUNET-TRANSPORT-CHECK",
+				    "VERBOSE",
+				    0, 
+				    (unsigned long long) -1,
+				    0,
+				    &verbose);
+  if (verbose > 0) {
     char * str;
     str = transport->heloToString(xhelo);
     fprintf(stderr,
@@ -244,9 +252,7 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
     FREE(helo);
     return;
   }
-  if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
-			      "VERBOSE",
-			      "YES"))
+  if (verbose > 0)
     fprintf(stderr, ".");
   tsession = NULL;
   peer = helo->senderIdentity;
@@ -263,9 +269,7 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
 	    _(" Connection failed (bug?)\n"));
     return;
   }
-  if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
-			      "VERBOSE",
-			      "YES"))
+  if (verbose > 0)
     fprintf(stderr, ".");
 
   sem = SEMAPHORE_CREATE(0);
@@ -286,10 +290,6 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
   FREE(ping);
   /* send ping */
   ok = NO;
-#if DEBUG_TRANSPORT_CHECK
-  LOG(LOG_DEBUG,
-      "Sending PING\n");
-#endif
   if (OK != sendPlaintext(tsession,
 			  msg,
 			  len)) {
@@ -300,9 +300,7 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
     return;
   }
   FREE(msg);
-  if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
-			      "VERBOSE",
-			      "YES"))
+  if (verbose > 0)
     fprintf(stderr, ".");
   /* check: received pong? */
 #if DEBUG_TRANSPORT_CHECK
@@ -317,14 +315,11 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
 	       sem);
   SEMAPHORE_DOWN(sem, YES);
 
-  if (testConfigurationString("GNUNET-TRANSPORT-CHECK",
-			      "VERBOSE",
-			      "YES")) {
-    if (ok != YES)
-      FPRINTF(stderr,
-	      _("No reply received within %llums.\n"),
-	      timeout);
-  }
+  if ( (verbose > 0) &&
+       (ok != YES) )
+    FPRINTF(stderr,
+	    _("No reply received within %llums.\n"),
+	    timeout);  
   cron_suspend(cron,
 	       NO);
   cron_del_job(cron,
@@ -382,7 +377,7 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
 int main(int argc, 
 	 const char *argv[]) {
   int res;
-  int Xrepeat;
+  unsigned long long Xrepeat;
   char * trans;
   char * user;
   int ping;
@@ -423,42 +418,43 @@ int main(int argc,
     FREE(user);
   }
 
-  if (-1 == GC_get_configuration_value_int(cfg,
-					   "TRANSPORT-CHECK",
-					   "SIZE",
-					   1,
-					   60000,
-					   strlen(DEFAULT_MSG),
-					   &expectedSize)) {
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "TRANSPORT-CHECK",
+					      "SIZE",
+					      1,
+					      60000,
+					      12,
+					      &expectedSize)) {
     return 1;
   }
-  if (-1 == GC_get_configuration_value_int(cfg,
-					   "TRANSPORT-CHECK",
-					   "TIMEOUT",
-					   1,
-					   60000,
-					   60 * cronSECONDS,
-					   &timeout)) {
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "TRANSPORT-CHECK",
+					      "TIMEOUT",
+					      1,
+					      60000,
+					      60 * cronSECONDS,
+					      &timeout)) {
     return 1;
   }
   
   expectedValue = MALLOC(expectedSize);
   pos = expectedSize;
   expectedValue[--pos] = '\0';
-  while (pos > 0)
-    expectedValue[--pos] = 'A' + (pos % 26);
-  
-  trans = getConfigurationString("GNUNETD",
-				 "TRANSPORTS");
-  if (trans == NULL) {
-    GE_LOG(ectx,
-	   GE_FATAL | GE_USER | GE_IMMEDIATE,
-	   _("You must specify a non-empty set of transports to test!\n"));
+  while (pos-- > 0)
+    expectedValue[pos] = 'A' + (pos % 26);
+
+  trans = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "GNUNETD",
+					      "TRANSPORTS",
+					      "udp tcp http",
+					      &trans)) 
     return 1;
-  }
-  ping = testConfigurationString("TRANSPORT-CHECK",
-				 "PING",
-				 "YES");
+  GE_ASSERT(ectx, trans != NULL);
+  ping = GC_get_configuration_value_yesno(cfg,
+					  "TRANSPORT-CHECK",
+					  "PING",
+					  NO);
   if (! ping)
     printf(_("Testing transport(s) %s\n"),
 	   trans);
@@ -468,21 +464,31 @@ int main(int argc,
   FREE(trans);
   if (! ping) {
     /* disable blacklists (loopback is often blacklisted)... */
-    FREENONNULL(setConfigurationString("TCP",
-				       "BLACKLIST",
-				       NULL));
-    FREENONNULL(setConfigurationString("UDP",
-				       "BLACKLIST",
-				       NULL));
-    FREENONNULL(setConfigurationString("TCP6",
-				       "BLACKLIST",
-				       NULL));
-    FREENONNULL(setConfigurationString("UDP6",
-				       "BLACKLIST",
-				       NULL));
-    FREENONNULL(setConfigurationString("HTTP",
-				       "BLACKLIST",
-				       NULL));
+    GC_set_configuration_value_string(cfg,
+				      ectx,
+				      "TCP",
+				      "BLACKLIST",
+				      NULL);
+    GC_set_configuration_value_string(cfg,
+				      ectx,
+				      "TCP6",
+				      "BLACKLIST",
+				      NULL);
+    GC_set_configuration_value_string(cfg,
+				      ectx,
+				      "UDP",
+				      "BLACKLIST",
+				      NULL);
+    GC_set_configuration_value_string(cfg,
+				      ectx,
+				      "UDP6",
+				      "BLACKLIST",
+				      NULL);
+    GC_set_configuration_value_string(cfg,
+				      ectx,
+				      "HTTP",
+				      "BLACKLIST",
+				      NULL);
   }
   initCore(ectx, cfg, cron, NULL);
   initConnection(ectx, cfg, NULL, cron);
@@ -494,10 +500,13 @@ int main(int argc,
   pingpong = requestService("pingpong");
   cron_start(cron);
 
-  Xrepeat = getConfigurationInt("TRANSPORT-CHECK",
-				"X-REPEAT");
-  if (Xrepeat == 0)
-    Xrepeat = 1;
+  GC_get_configuration_value_number(cfg,
+				    "TRANSPORT-CHECK",
+				    "X-REPEAT",
+				    1,
+				    (unsigned long long) -1,
+				    1,
+				    &Xrepeat);
   res = OK;
   if (ping) {
     bootstrap = requestService("bootstrap");

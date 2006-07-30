@@ -23,7 +23,7 @@ NILS:
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
   * server:
-    + gnunet-peer-info, gnunet-transport-check do not compile yet
+    + gnunet-update does not compile yet
   * applications:
     + nothing compiles
   * setup:

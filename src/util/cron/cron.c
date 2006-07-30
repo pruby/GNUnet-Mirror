@@ -277,15 +277,15 @@ void cron_suspend(struct CronManager * cron,
   MUTEX_UNLOCK(cron->inBlockLock_);
 }
 
-int isCronRunning(struct CronManager * cron) {
+int cron_test_running(struct CronManager * cron) {
   if ( (NO == cron->cron_shutdown) || (cron->inBlock > 0) )
     return YES;
   else
     return NO;
 }
 
-void resumeCron(struct CronManager * cron,
-		int checkSelf) {
+void cron_resume_jobs(struct CronManager * cron,
+		      int checkSelf) {
   if ( (YES == checkSelf) &&
        (NO != PTHREAD_TEST_SELF(cron->cron_handle)) )
     return;
