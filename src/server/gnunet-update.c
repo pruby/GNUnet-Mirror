@@ -59,7 +59,7 @@ static UpdateAPI uapi;
  */
 static int updateModule(const char * rpos) {
   UpdateMethod mptr;
-  void * library;
+  struct PluginHandle * library;
   char * name;
   int i;
   char * pos;
@@ -71,30 +71,35 @@ static int updateModule(const char * rpos) {
   GROW(processed, processedCount, processedCount+1);
   processed[processedCount-1] = STRDUP(rpos);
 
-  pos = getConfigurationString("MODULES",
-			       rpos);
-  if (pos == NULL)
-    pos = STRDUP(rpos);
+  pos = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "MODULES",
+					      rpos,
+					      rpos,
+					      &pos))
+    return SYSERR;
+  GE_ASSERT(ectx, pos != NULL);
 
   name = MALLOC(strlen(pos) + strlen("module_") + 1);
   strcpy(name, "module_");
   strcat(name, pos);
   FREE(pos);
-  library = loadDynamicLibrary(DSO_PREFIX,
-			       name);
+  library = os_plugin_load(ectx,
+			   DSO_PREFIX,
+			   name);
   if (library == NULL) {
     FREE(name);
     return SYSERR;
   }
-  mptr = trybindDynamicMethod(library,
-			      "update_",
-			      name);
+  mptr = os_plugin_resolve_function(library,
+				    "update_",
+				    NO);
   if (mptr == NULL) {
     FREE(name);
     return OK; /* module needs no updates! */
   }
   mptr(&uapi);
-  unloadDynamicLibrary(library);
+  os_plugin_unload(library);
   FREE(name);
   return OK;
 }
@@ -108,13 +113,14 @@ static void updateApplicationModules() {
   char * next;
   char * pos;
 
-  dso = getConfigurationString("GNUNETD",
-			       "APPLICATIONS");
-  if (dso == NULL) {
-    LOG(LOG_WARNING,
-	_("No applications defined in configuration!\n"));
+  dso = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "GNUNETD",
+					      "APPLICATIONS",
+					      "advertising fs getoption stats traffic",
+					      &dso))
     return;
-  }
+  GE_ASSERT(ectx, dso != NULL);
   next = dso;
   do {
     pos = next;
@@ -128,13 +134,15 @@ static void updateApplicationModules() {
       next++;
     }
     if (strlen(pos) > 0) {
-      LOG(LOG_MESSAGE,
-	  _("Updating data for module `%s'\n"),
-	  pos);
+      GE_LOG(ectx,
+	     GE_INFO | GE_USER | GE_BULK,
+	     _("Updating data for module `%s'\n"),
+	     pos);
       if (OK != updateModule(pos))
-	LOG(LOG_ERROR,
-	    _("Failed to update data for module `%s'\n"),
-	    pos);
+	GE_LOG(ectx,
+	       GE_ERROR | GE_DEVELOPER | GE_BULK | GE_USER,
+	       _("Failed to update data for module `%s'\n"),
+	       pos);
     }
   } while (next != NULL);
   FREE(dso);
@@ -186,13 +194,10 @@ static void work() {
   /* then update active application modules */
   updateApplicationModules();
   /* store information about update */
-  upToDate();
+  upToDate(ectx, cfg);
 
   for (i=0;i<processedCount;i++)
     FREE(processed[i]);
-  if (be_verbose)
-    printf(_("Updated data for %d applications.\n"),
-	   processedCount);
   GROW(processed, processedCount, 0);
   doneCore();
   cron_destroy(cron);
@@ -225,7 +230,6 @@ static struct CommandLineOption gnunetupdateOptions[] = {
 int main(int argc,
 	 const char * argv[]) {
   char * get;
-  char * user;
 
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
