@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,12 +29,13 @@
 #define HOSTKEY_H
 
 #include "gnunet_util.h"
+#include "gnunet_util_crypto.h"
 
 /**
  * Get the public key of the host
  * @return reference to the public key. Do not free it!
  */
-const PublicKey * getPublicPrivateKey();
+const PublicKey * getPublicPrivateKey(void);
 
 /**
  * Sign arbitrary data. ALWAYS use only on data we generated
@@ -60,8 +61,9 @@ int decryptData(const RSAEncryptedData * block,
 
 
 
-void initPrivateKey();
+void initPrivateKey(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg);
 
-void donePrivateKey();
+void donePrivateKey(void);
 
 #endif

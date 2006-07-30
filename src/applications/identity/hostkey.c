@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -25,9 +25,9 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
-#include "gnunet_util.h"
 #include "hostkey.h"
+#include "gnunet_directories.h"
+#include "platform.h"
 
 /**
  * Name of the file in which we store the hostkey.
@@ -43,7 +43,7 @@ static struct PrivateKey * hostkey;
 /**
  * The public hostkey
  */
-static PublicKey * publicKey;
+static PublicKey publicKey;
 
 /**
  * Get the public key of the host
@@ -51,7 +51,7 @@ static PublicKey * publicKey;
  * @return reference to the public key. Do not free it!
  */
 const PublicKey * getPublicPrivateKey() {
-  return publicKey;
+  return &publicKey;
 }
 
 /**
@@ -86,18 +86,33 @@ int decryptData(const RSAEncryptedData * block,
 			   max);
 }
 
-void initPrivateKey() {
+void initPrivateKey(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg) {
   char * gnHome;
   char * hostkeyfile;
   PrivateKeyEncoded * encPrivateKey;
   unsigned short len;
   int res;
 
-  gnHome = getFileName("GNUNETD",
-		       "GNUNETD_HOME",
-		       _("Configuration file must specify a "
-			 "directory for GNUnet to store "
-			 "per-peer data under %s%s\n"));
+  GE_ASSERT(ectx,
+	    -1 != GC_get_configuration_value_string(cfg,
+						    "GNUNETD",
+						    "GNUNETD_HOME",
+						    VAR_DAEMON_DIRECTORY,
+						    &hostkeyfile));
+  gnHome = string_expandFileName(ectx,
+				 hostkeyfile);
+  FREE(hostkeyfile);
+  disk_directory_create(ectx,
+			gnHome);
+  if (YES != disk_directory_test(ectx,
+				 gnHome)) {
+    GE_LOG(ectx,
+	   GE_FATAL | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+	   _("Failed to access GNUnet home directory `%s'\n"),
+	   gnHome);
+    abort();
+  }
 
   /* read or create public key */
   hostkeyfile = MALLOC(strlen(gnHome) + strlen(HOSTKEYFILE)+2);
@@ -105,57 +120,58 @@ void initPrivateKey() {
   FREE(gnHome);
   strcat(hostkeyfile, "/");
   strcat(hostkeyfile, HOSTKEYFILE);
-  res = readFile(hostkeyfile,
-		 sizeof(unsigned short),
-		 &len);
+  res = disk_file_read(ectx,
+		       hostkeyfile,
+		       sizeof(unsigned short),
+		       &len);
   if (res == sizeof(unsigned short)) {
     encPrivateKey = (PrivateKeyEncoded*) MALLOC(ntohs(len));
     if (ntohs(len) !=
-	readFile(hostkeyfile,
-		 ntohs(len),
-		 encPrivateKey)) {
+	disk_file_read(ectx,
+		       hostkeyfile,
+		       ntohs(len),
+		       encPrivateKey)) {
       FREE(encPrivateKey);
-      LOG(LOG_WARNING,
-	  _("Existing hostkey in file `%s' failed format check, creating new hostkey.\n"),
-	  hostkeyfile);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_IMMEDIATE | GE_ADMIN,
+	     _("Existing hostkey in file `%s' failed format check, creating new hostkey.\n"),
+	     hostkeyfile);
       encPrivateKey = NULL;
     }
   } else
     encPrivateKey = NULL;
   if (encPrivateKey == NULL) { /* make new hostkey */
-    LOG(LOG_MESSAGE,
-	_("Creating new hostkey (this may take a while).\n"));
+    GE_LOG(ectx,
+	   GE_INFO | GE_USER | GE_BULK,
+	   _("Creating new hostkey (this may take a while).\n"));
     hostkey = makePrivateKey();
-    if (hostkey == NULL)
-      errexit(_("Could not create hostkey!\n"));
+    GE_ASSERT(ectx, hostkey != NULL);
     encPrivateKey = encodePrivateKey(hostkey);
-    GNUNET_ASSERT(encPrivateKey != NULL);
-    writeFile(hostkeyfile,
-	      encPrivateKey,
-	      ntohs(encPrivateKey->len),
-	      "600");
+    GE_ASSERT(ectx, encPrivateKey != NULL);
+    disk_file_write(ectx,
+		    hostkeyfile,
+		    encPrivateKey,
+		    ntohs(encPrivateKey->len),
+		    "600");
     FREE(encPrivateKey);
-    LOG(LOG_MESSAGE,
-	_("Done creating hostkey.\n"));
+    GE_LOG(ectx,
+	   GE_INFO | GE_USER | GE_BULK,
+	   _("Done creating hostkey.\n"));
   } else {
     hostkey = decodePrivateKey(encPrivateKey);
     FREE(encPrivateKey);
   }
   FREE(hostkeyfile);
-  if (hostkey != NULL) {
-    publicKey = MALLOC(sizeof(PublicKey));
-    getPublicKey(hostkey,
-		 publicKey);
-  } else {
-    publicKey = NULL;
-  }
+  GE_ASSERT(ectx, hostkey != NULL);
+  getPublicKey(hostkey,
+	       &publicKey);
 }
 
 
 void donePrivateKey() {
-  FREENONNULL(publicKey);
-  if (hostkey != NULL)
-    freePrivateKey(hostkey);
+  GE_ASSERT(NULL, hostkey != NULL);
+  freePrivateKey(hostkey);
+  hostkey = NULL;
 }
 
 /* end of hostkey.c */
