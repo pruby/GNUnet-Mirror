@@ -34,9 +34,10 @@
 
 /**
  * Obtain option from a peer.
- * @return NULL on error
+ *
+ * @return NULL on error (for both option not set and internal errors)
  */
-char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
+char * getConfigurationOptionValue(struct ClientServerConnection * sock,
 				   const char * section,
 				   const char * option) {
   CS_getoption_request_MESSAGE req;
@@ -56,20 +57,20 @@ char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
 	 section);
   strcpy(&req.option[0],
 	 option);
-  res = writeToSocket(sock,
-		      &req.header);
+  res = connection_write(sock,
+			 &req.header);
   if (res != OK)
     return NULL;
   reply = NULL;
-  res = readFromSocket(sock,
-		       (CS_MESSAGE_HEADER**)&reply);
+  res = connection_read(sock,
+			(MESSAGE_HEADER**)&reply);
   if (res != OK)
     return NULL;
-  ret = MALLOC(ntohs(reply->header.size) - sizeof(CS_MESSAGE_HEADER) + 1);
+  ret = MALLOC(ntohs(reply->header.size) - sizeof(MESSAGE_HEADER) + 1);
   memcpy(ret,
 	 &reply->value[0],
-	 ntohs(reply->header.size) - sizeof(CS_MESSAGE_HEADER));
-  ret[ntohs(reply->header.size) - sizeof(CS_MESSAGE_HEADER)] = '\0';
+	 ntohs(reply->header.size) - sizeof(MESSAGE_HEADER));
+  ret[ntohs(reply->header.size) - sizeof(MESSAGE_HEADER)] = '\0';
   FREE(reply);
   return ret;
 }

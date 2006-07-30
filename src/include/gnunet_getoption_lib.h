@@ -27,7 +27,7 @@
 #ifndef GNUNET_GETOPTION_LIB_H
 #define GNUNET_GETOPTION_LIB_H
 
-#include "gnunet_util.h"
+#include "gnunet_util_network_client.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,12 +36,11 @@ extern "C" {
 #endif
 #endif
 
-
 /**
  * Obtain option value from a peer.
  * @return NULL on error
  */
-char * getConfigurationOptionValue(GNUNET_TCP_SOCKET * sock,
+char * getConfigurationOptionValue(struct ClientServerConnection * sock,
 				   const char * section,
 				   const char * option);
 

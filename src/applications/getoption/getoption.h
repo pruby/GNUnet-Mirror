@@ -1,5 +1,6 @@
  /*
       This file is part of GNUnet
+      (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -26,7 +27,7 @@
  * Request for option value.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   char section[CS_getoption_request_MESSAGE_OPT_LEN];
   char option[CS_getoption_request_MESSAGE_OPT_LEN];
 } CS_getoption_request_MESSAGE;
@@ -36,7 +37,7 @@ typedef struct {
  * value is 0-terminated).
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   char value[1];
 } CS_getoption_reply_MESSAGE;
 
