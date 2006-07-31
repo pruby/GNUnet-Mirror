@@ -133,14 +133,14 @@ static int handleTBenchReq(const PeerIdentity * sender,
   const P2P_tbench_MESSAGE * msg;
 
   if ( ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   msg = (const P2P_tbench_MESSAGE*) message;
   if (crc32N(&msg[1],
 	     ntohs(message->size) - sizeof(P2P_tbench_MESSAGE))
       != ntohl(msg->crc)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
@@ -172,14 +172,14 @@ static int handleTBenchReply(const PeerIdentity * sender,
   const P2P_tbench_MESSAGE * pmsg;
 
   if (ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   pmsg = (const P2P_tbench_MESSAGE*) message;
   if (crc32N(&pmsg[1],
 	     ntohs(message->size) - sizeof(P2P_tbench_MESSAGE))
       != ntohl(pmsg->crc)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 #if DEBUG_TBENCH

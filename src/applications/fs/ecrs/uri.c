@@ -164,7 +164,7 @@ char * createFileURI(const FileIdentifier * fi) {
  */
 char * ECRS_uriToString(const struct ECRS_URI * uri) {
   if (uri == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
   switch (uri->type) {
@@ -179,7 +179,7 @@ char * ECRS_uriToString(const struct ECRS_URI * uri) {
   case loc:
     return "FIXME";
   default:
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
 }
@@ -430,7 +430,7 @@ char * ECRS_getNamespaceName(const HashCode512 * id) {
 int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 			HashCode512 * id) {
   if (! ECRS_isNamespaceUri(uri)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   *id = uri->data.sks.namespace;
@@ -445,7 +445,7 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 int ECRS_getSKSContentHash(const struct ECRS_URI * uri,
 			   HashCode512 * id) {
   if (! ECRS_isNamespaceUri(uri)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   *id = uri->data.sks.identifier;

@@ -586,7 +586,7 @@ static void delRequest(RequestManager * rm,
     }
   }
   MUTEX_UNLOCK(&rm->lock);
-  BREAK(); /* uh uh - at least a memory leak... */
+  GE_BREAK(ectx, 0); /* uh uh - at least a memory leak... */
 }
 
 
@@ -697,7 +697,7 @@ static void updateProgress(const NodeClosure * node,
     if (rm->requestList[i]->node == node)
       pos = i;
   if (pos == -1) {
-    /* BREAK(); */ /* should never happen */
+    /* GE_BREAK(ectx, 0); */ /* should never happen */
     return;
   }
   entry = rm->requestList[pos];
@@ -822,7 +822,7 @@ static void iblock_download_children(NodeClosure * node,
   GNUNET_ASSERT(node->level > 0);
   childcount = size / sizeof(CHK);
   if (size != childcount * sizeof(CHK)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return;
   }
   if (node->level == 1) {
@@ -912,7 +912,7 @@ static int nodeReceive(const HashCode512 * query,
   size = ntohl(reply->size) - sizeof(Datastore_Value);
   if ( (size <= sizeof(DBlock)) ||
        (size - sizeof(DBlock) != getNodeSize(node)) ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR; /* invalid size! */
   }
   size -= sizeof(DBlock);
@@ -930,7 +930,7 @@ static int nodeReceive(const HashCode512 * query,
     delRequest(node->ctx->rm,
 	       node);
     FREE(data);
-    BREAK();
+    GE_BREAK(ectx, 0);
     LOG(LOG_ERROR,
 	_("Decrypted content does not match key. "
 	  "This is either a bug or a maliciously inserted "
@@ -1031,7 +1031,7 @@ static void issueRequest(RequestManager * rm,
     = entry->node->ctx->TTL_DECREMENT;
 
   if (entry->lastTimeout + TTL_DECREMENT > now)
-    BREAK();
+    GE_BREAK(ectx, 0);
   if (entry->lasttime == 0) {
     timeout = now + rm->initialTTL;
   } else {
@@ -1230,7 +1230,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   GNUNET_ASSERT(filename != NULL);
   fid = uri->data.chk;
   if (! ECRS_isFileUri(uri)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 

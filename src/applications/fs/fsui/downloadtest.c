@@ -34,7 +34,7 @@
 
 #define DEBUG_VERBOSE NO
 
-#define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
 static volatile int suspendRestart = 0;
 

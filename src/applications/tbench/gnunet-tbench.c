@@ -239,7 +239,7 @@ int main(int argc, char ** argv) {
     GNUNET_ASSERT(ntohs(buffer->header.size) ==
 		  sizeof(CS_tbench_reply_MESSAGE));
     if ((float)buffer->mean_loss <= 0){
-      BREAK();
+      GE_BREAK(ectx, 0);
       messagesPercentLoss = 0.0;
     } else {
       messagesPercentLoss = (buffer->mean_loss/((float)htons(msg.msgCnt)));

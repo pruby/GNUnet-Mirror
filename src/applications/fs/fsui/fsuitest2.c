@@ -28,7 +28,7 @@
 #include "gnunet_util.h"
 #include "gnunet_fsui_lib.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
 static int parseCommandLine(int argc,
 			    char * argv[]) {

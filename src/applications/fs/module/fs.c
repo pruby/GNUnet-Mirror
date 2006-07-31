@@ -110,7 +110,7 @@ gapWrapperToDatastoreValue(const DataContainer * value,
   cron_t now;
 
   if (ntohl(value->size) < sizeof(GapWrapper)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
   gw = (GapWrapper*) value;
@@ -164,7 +164,7 @@ static int gapPut(void * closure,
 
   dv = gapWrapperToDatastoreValue(value, prio);
   if (dv == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   gw = (GapWrapper*) value;
@@ -174,7 +174,7 @@ static int gapPut(void * closure,
 			  YES,
 			  &hc)) ||
        (! equalsHashCode512(&hc, query)) ) {
-    BREAK(); /* value failed verification! */
+    GE_BREAK(ectx, 0); /* value failed verification! */
     return SYSERR;
   }
   if (YES != isDatumApplicable(ntohl(dv->type),
@@ -182,7 +182,7 @@ static int gapPut(void * closure,
 			       (DBlock*) &dv[1],
 			       0,
 			       query)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     FREE(dv);
     return SYSERR;
   }
@@ -247,7 +247,7 @@ static int csHandleRequestQueryStop(ClientHandle sock,
 #endif
 
   if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   rs = (CS_fs_request_search_MESSAGE*) req;
@@ -286,7 +286,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
 #endif
 
   if (ntohs(req->size) < sizeof(CS_fs_request_insert_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   ri = (const CS_fs_request_insert_MESSAGE*) req;
@@ -301,7 +301,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
 			(const DBlock*)&ri[1],
 			YES,
 			&query)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     FREE(datum);
     return SYSERR;
   }
@@ -378,7 +378,7 @@ static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
   int fnLen;
 
   if (ntohs(req->size) < sizeof(CS_fs_request_init_index_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
@@ -417,7 +417,7 @@ static int csHandleCS_fs_request_index_MESSAGE(ClientHandle sock,
   const CS_fs_request_index_MESSAGE * ri;
 
   if (ntohs(req->size) < sizeof(CS_fs_request_index_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   ri = (const CS_fs_request_index_MESSAGE*) req;
@@ -488,7 +488,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
 #endif
 
   if (ntohs(req->size) < sizeof(CS_fs_request_delete_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   rd = (const CS_fs_request_delete_MESSAGE*) req;
@@ -507,7 +507,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
 			NO,
 			&query)) {
     FREE(value);
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 #if DEBUG_FS
@@ -548,7 +548,7 @@ static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
   CS_fs_request_unindex_MESSAGE * ru;
 
   if (ntohs(req->size) != sizeof(CS_fs_request_unindex_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   ru = (CS_fs_request_unindex_MESSAGE*) req;
@@ -573,7 +573,7 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
   RequestTestindex * ru;
 
   if (ntohs(req->size) != sizeof(RequestTestindex)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   ru = (RequestTestindex*) req;
@@ -787,7 +787,7 @@ static int gapGet(void * closure,
 static int gapDel(void * closure,
 		  const HashCode512 * key,
 		  const DataContainer * value) {
-  BREAK(); /* gap does not use 'del'! */
+  GE_BREAK(ectx, 0); /* gap does not use 'del'! */
   return SYSERR;
 }
 
@@ -801,7 +801,7 @@ static int gapDel(void * closure,
 static int gapIterate(void * closure,		
 		      DataProcessor processor,
 		      void * cls) {
-  BREAK(); /* gap does not use 'iterate' */
+  GE_BREAK(ectx, 0); /* gap does not use 'iterate' */
   return SYSERR;
 }
 
@@ -935,7 +935,7 @@ static int replyHashFunction(const DataContainer * content,
 
   size = ntohl(content->size);
   if (size < sizeof(GapWrapper)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     memset(id, 0, sizeof(HashCode512));
     return SYSERR;
   }
@@ -957,7 +957,7 @@ static int uniqueReplyIdentifier(const DataContainer * content,
 
   size = ntohl(content->size);
   if (size < sizeof(GapWrapper)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NO;
   }
   gw = (const GapWrapper*) content;
@@ -1082,7 +1082,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   int done;
 
   if (ntohs(req->size) < sizeof(CS_fs_request_search_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
@@ -1187,13 +1187,13 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   }
   datastore = capi->requestService("datastore");
   if (datastore == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   traffic = capi->requestService("traffic");
   gap = capi->requestService("gap");
   if (gap == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     capi->releaseService(datastore);
     return SYSERR;
   }

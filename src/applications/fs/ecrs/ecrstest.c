@@ -29,7 +29,7 @@
 #include "gnunet_ecrs_lib.h"
 #include "tree.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; BREAK(); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
 static int parseCommandLine(int argc,
 			    char * argv[]) {

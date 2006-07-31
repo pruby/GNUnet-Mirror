@@ -170,7 +170,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 
 
   if (size <= sizeof(DBlock)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
@@ -237,7 +237,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 			      size,
 			      &key,
 			      &dsvalue)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
     } else {
       FREE(dsvalue);
     }
@@ -334,7 +334,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   DBlock * db;
 
   if (ntohl(dbv->size) != sizeof(OnDemandBlock)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   odb = (OnDemandBlock*) dbv;
@@ -379,7 +379,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 		  (errno == ENAMETOOLONG) &&
 		  (len < 4 * 1024 * 1024) )
 	    if (len * 2 < len) {
-	      BREAK();
+	      GE_BREAK(ectx, 0);
 	      GROW(ofn, len, 0);
 	      FREE(fn);
 	      return SYSERR;

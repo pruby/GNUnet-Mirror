@@ -343,7 +343,7 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
   if (ctx->collectionData == NULL)
     return;
   if ((ECRS_isKeywordUri(fi->uri))) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return;
   }
   cd = (CollectionData*) ctx->collectionData;

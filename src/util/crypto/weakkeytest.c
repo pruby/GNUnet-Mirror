@@ -96,7 +96,7 @@ static int testWeakKey() {
                       result);
 
   if (size == -1) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return 1;
   }
 
@@ -107,12 +107,12 @@ static int testWeakKey() {
                       res);
 
   if ((strlen(WEAK_KEY_TESTSTRING)+1) != size) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return 1;
   }
   if (0 != strcmp(res,
 		  WEAK_KEY_TESTSTRING)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return 1;
   } else
     return 0;

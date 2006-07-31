@@ -47,7 +47,7 @@ static int testMultiKey(const char * word) {
   hash(word, strlen(word), &in);
   hostkey = makeKblockKey(&in);
   if (hostkey == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   getPublicKey(hostkey, &pkey);
@@ -60,7 +60,7 @@ static int testMultiKey(const char * word) {
     fprintf(stderr, ".");
     hostkey = makeKblockKey(&in);
     if (hostkey == NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       fprintf(stderr, " ERROR\n");
       return SYSERR;
     }
@@ -68,7 +68,7 @@ static int testMultiKey(const char * word) {
     freePrivateKey(hostkey);
     if (0 != memcmp(&pkey, &pkey1,
 		    sizeof(PublicKey))) {
-      BREAK();
+      GE_BREAK(ectx, 0);
     fprintf(stderr, " ERROR\n");
       return SYSERR;
     }

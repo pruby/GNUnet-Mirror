@@ -411,7 +411,7 @@ static int httpAssociate(TSession * tsession) {
   HTTPSession * httpSession;
 
   if (tsession == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   httpSession = (HTTPSession*) tsession->internal;
@@ -480,7 +480,7 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
 	    len);
 #endif
 	if (len >= MAX_BUFFER_SIZE) {
-	  BREAK(); /* FIMXE: inline method and do proper
+	  GE_BREAK(ectx, 0); /* FIMXE: inline method and do proper
 		      error handling! */
 	  httpSession->httpRPos = 0;	
 	} else {	
@@ -775,7 +775,7 @@ static void * httpListenMain() {
 	  destroySession(i);
 	}
       } else {
-	BREAK();
+	GE_BREAK(ectx, 0);
 	destroySession(i);
       }
       if (sock > max)
@@ -955,7 +955,7 @@ static int httpDirectSend(HTTPSession * httpSession,
     return SYSERR;
   }
   if (ssize == 0) {
-    BREAK(); /* size 0 not allowed */
+    GE_BREAK(ectx, 0); /* size 0 not allowed */
     return SYSERR;
   }
   MUTEX_LOCK(&httplock);
@@ -1248,7 +1248,7 @@ static int httpSend(TSession * tsession,
   if (http_shutdown == YES)
     return SYSERR;
   if (size == 0) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
@@ -1280,7 +1280,7 @@ static int startTransportServer() {
   unsigned short port;
 
   if (serverSignal != NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   serverSignal = SEMAPHORE_NEW(0);

@@ -245,7 +245,7 @@ static int unindexFile(unsigned int size) {
   return ret;
 }
 
-#define CHECK(a) if (!(a)) { ret = 1; BREAK(); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; }
 
 /**
  * Testcase to test gap routing (2 peers only).

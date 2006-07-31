@@ -66,7 +66,7 @@ static void setNamespaceRoot(const ECRS_FileInfo * fi) {
 
   if (OK != ECRS_getNamespaceId(fi->uri,
 				&ns)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return;
   }
   name = ECRS_getNamespaceName(&ns);
@@ -125,7 +125,7 @@ static int spcb(const ECRS_FileInfo * fi,
     }
   if (pos->numberOfURIKeys > 1) {
     if (key == NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
 #if DEBUG_SEARCH
       LOG(LOG_DEBUG,
 	  "Received search result without key to decrypt.\n");
@@ -243,7 +243,7 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
 		       pos->uri)) {
       LOG(LOG_ERROR,
 	  _("This search is already pending!\n"));
-      BREAK();
+      GE_BREAK(ectx, 0);
       MUTEX_UNLOCK(&ctx->lock);
       return SYSERR;
     }

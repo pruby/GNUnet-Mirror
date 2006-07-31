@@ -172,7 +172,7 @@ static int tcp_get(void * closure,
   int ret;
 
   if (keyCount < 1) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
@@ -360,7 +360,7 @@ static int csJoin(ClientHandle client,
   int ret;
 
   if (ntohs(message->size) != sizeof(CS_dht_request_join_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   req = (CS_dht_request_join_MESSAGE*) message;
@@ -409,7 +409,7 @@ static int csLeave(ClientHandle client,
   DHT_CLIENT_TableHandlers * ptr;
 
   if (ntohs(message->size) != sizeof(CS_dht_request_leave_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   req = (CS_dht_request_leave_MESSAGE*) message;
@@ -490,7 +490,7 @@ static int csPut(ClientHandle client,
   unsigned int size;
 
   if (ntohs(message->size) < sizeof(CS_dht_request_put_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   req = (CS_dht_request_put_MESSAGE*) message;
@@ -616,7 +616,7 @@ static int csRemove(ClientHandle client,
   struct CSRemoveClosure * cpc;
 
   if (ntohs(message->size) < sizeof(CS_dht_request_remove_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   cpc = MALLOC(sizeof(struct CSRemoveClosure));
@@ -754,7 +754,7 @@ static int csGet(ClientHandle client,
   struct CSGetClosure * cpc;
 
   if (ntohs(message->size) != sizeof(CS_dht_request_get_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
@@ -783,7 +783,7 @@ static int csACK(ClientHandle client,
   int i;
 
   if (ntohs(message->size) != sizeof(CS_dht_reply_ack_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   req =(CS_dht_reply_ack_MESSAGE*) message;
@@ -823,13 +823,13 @@ static int csResults(ClientHandle client,
   int i;
 
   if (ntohs(message->size) < sizeof(CS_dht_reply_results_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   req = (CS_dht_reply_results_MESSAGE*) message;
   dataLength = ntohs(message->size) - sizeof(CS_dht_reply_results_MESSAGE);
   if (dataLength != ntohl(req->data.size)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   LOG(LOG_EVERYTHING,

@@ -96,7 +96,7 @@ static int aquire(const HashCode512 * key,
     rCBPos = (rCBPos + 1) % RCB_SIZE;
     load++;
     if (load > RCB_SIZE) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       MUTEX_UNLOCK(&lock);
       return SYSERR;
     }

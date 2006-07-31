@@ -227,7 +227,7 @@ void * downloadThread(void * cls) {
       dl->state = FSUI_DOWNLOAD_ERROR;
     else if ( (dl->state != FSUI_DOWNLOAD_ABORTED) &&
 	      (dl->state != FSUI_DOWNLOAD_SUSPENDING) )
-      BREAK();
+      GE_BREAK(ectx, 0);
     totalBytes = 0;
   }
   root = dl;
@@ -301,7 +301,7 @@ void * downloadThread(void * cls) {
       event.type = FSUI_download_error;
       event.data.DownloadError.message = _("Unexpected download state.");
       printf("State: %u\n", dl->state);
-      BREAK();
+      GE_BREAK(ectx, 0);
     }
     event.data.DownloadError.pos = dl;
     dl->ctx->ecb(dl->ctx->ecbClosure,
@@ -360,7 +360,7 @@ static int startDownload(struct FSUI_Context * ctx,
   GNUNET_ASSERT(ctx != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
-    BREAK(); /* wrong type of URI! */
+    GE_BREAK(ectx, 0); /* wrong type of URI! */
     return SYSERR;
   }
   dl = MALLOC(sizeof(FSUI_DownloadList));

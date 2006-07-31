@@ -75,7 +75,7 @@ static void printstatus(int * verboselevel,
     SEMAPHORE_UP(exitSignal); /* always exit main? */
     break;
   default:
-    BREAK();
+    GE_BREAK(ectx, 0);
     break;
   }
 }

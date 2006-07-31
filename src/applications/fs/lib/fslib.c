@@ -76,7 +76,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	 matching callback, call on value */
       if ( (ntohs(hdr->size) < sizeof(CS_fs_reply_content_MESSAGE)) ||
 	   (ntohs(hdr->type) != CS_PROTO_gap_RESULT) ) {
-	BREAK();
+	GE_BREAK(ectx, 0);
 	FREE(hdr);
 	continue;
       }
@@ -86,7 +86,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 			    (DBlock*)&rep[1],
 			    NO, /* gnunetd will have checked already */
 			    &query)) {
-	BREAK();
+	GE_BREAK(ectx, 0);
 	FREE(hdr);
 	continue;
       }
@@ -311,7 +311,7 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
   unsigned int size;
 
   if (ntohl(block->size) <= sizeof(Datastore_Value)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   size = ntohl(block->size) - sizeof(Datastore_Value);
@@ -448,13 +448,13 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
   if (OK != writeToSocket(sock,
 			  &rd->header)) {
     FREE(rd);
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   FREE(rd);
   if (OK != readTCPResult(sock,
 			  &ret)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   return ret;

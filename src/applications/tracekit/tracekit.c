@@ -88,7 +88,7 @@ static int handlep2pReply(const PeerIdentity * sender,
 	LOG(LOG_DEBUG,
 	    "TRACEKIT: I am initiator, sending to client.\n");
 	if (idx >= clientCount) {
-	  BREAK();
+	  GE_BREAK(ectx, 0);
 	  continue; /* discard */
 	}
 	if (clients[idx] == NULL) {

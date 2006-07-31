@@ -230,7 +230,7 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
       if (0 != mysql_query(dbhI->dbf, scratch))
 	LOG_MYSQL(LOG_ERROR, "mysql_query", dbhI);
     } else {
-      BREAK(); /* should really never happen */
+      GE_BREAK(ectx, 0); /* should really never happen */
     }
 
     return NULL;
@@ -341,7 +341,7 @@ static int iopen(mysqlHandle * dbhI,
 	 (dbhI->selectsc == NULL) ||
 	 (dbhI->deleteh == NULL) ||
 	 (dbhI->deleteg == NULL) ) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       if (dbhI->insert != NULL)
 	mysql_stmt_close(dbhI->insert);
       if (dbhI->update != NULL)
@@ -730,7 +730,7 @@ static int get(const HashCode512 * query,
     return SYSERR;
   }
   if (7 != mysql_num_fields(sql_res)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -883,7 +883,7 @@ static int put(const HashCode512 * key,
 #endif
 
   if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   MUTEX_LOCK(&dbh->DATABASE_Lock_);
@@ -1107,7 +1107,7 @@ static unsigned long long getSize() {
 	  _("Query `%s' had no results.\n"),
 	  "SHOW TABLE STATUS LIKE 'gn070'");
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
-      BREAK();
+      GE_BREAK(ectx, 0);
       return 0;	/* shouldn't get here */
     }
     GNUNET_ASSERT( (dbh->avgLength_ID < rows) &&
@@ -1246,7 +1246,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 
     num_fields=mysql_num_fields(sql_res);
     if(num_fields<=0) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       iclose(dbh);
       FREE(dbh);
       FREE(cnffile);
@@ -1254,7 +1254,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     }
     sql_fields=mysql_fetch_fields(sql_res);
     if(sql_fields==NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       iclose(dbh);
       FREE(dbh);
       FREE(cnffile);
@@ -1272,7 +1272,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     GNUNET_ASSERT(dbh->avgLength_ID != -1);
     mysql_free_result(sql_res);
     if (found == NO) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       /* avg_row_length not found in SHOW TABLE STATUS */
       iclose(dbh);
       FREE(dbh);
@@ -1280,7 +1280,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
       return NULL;
     }
   } else {
-    BREAK();
+    GE_BREAK(ectx, 0);
     iclose(dbh);
     FREE(dbh);
     FREE(cnffile);

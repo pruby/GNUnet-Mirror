@@ -124,7 +124,7 @@ ECRS_createNamespace(const char * name,
 
   if ( (advertisementURI != NULL) &&
        (! ECRS_isKeywordUri(advertisementURI)) ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
   fileName = getPseudonymFileName(name);
@@ -164,7 +164,7 @@ ECRS_createNamespace(const char * name,
 				    mdsize,
 				    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       ECRS_deleteNamespace(name);
       freePrivateKey(hk);
       return NULL;
@@ -421,7 +421,7 @@ ECRS_addToNamespace(const char * name,
 				    mdsize,
 				    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       FREE(dstURI);
       return NULL;
     }
@@ -548,7 +548,7 @@ static int processFile_(const char * name,
         _("Format of file `%s' is invalid.\n"),
         fileName);
     FREE(fileName);
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   FREE(fileName);

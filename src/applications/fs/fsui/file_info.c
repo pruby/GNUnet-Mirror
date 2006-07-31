@@ -231,25 +231,25 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
       spos++;
     spos++;                     /* skip '\0' */
     if((spos + sizeof(int) >= ret) || (spos + sizeof(int) < spos)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       goto FORMATERROR;
     }
     fi.uri = ECRS_stringToUri(&result[pos]);
     if(fi.uri == NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       goto FORMATERROR;
     }
     memcpy(&msize, &result[spos], sizeof(int));
     msize = ntohl(msize);
     spos += sizeof(int);
     if((spos + msize > ret) || (spos + msize < spos)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
     fi.meta = ECRS_deserializeMetaData(&result[spos], msize);
     if(fi.meta == NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }

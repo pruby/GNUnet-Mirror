@@ -133,7 +133,7 @@ void resolve_pid(PID_INDEX id,
 		 PeerIdentity * pid) {
   if (id == 0) {
     memset(pid, 0, sizeof(PeerIdentity));
-    BREAK();
+    GE_BREAK(ectx, 0);
     return;
   }
   MUTEX_LOCK(&lock);

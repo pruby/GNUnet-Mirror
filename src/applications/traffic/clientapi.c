@@ -78,7 +78,7 @@ int pollSocket(GNUNET_TCP_SOCKET * sock,
 	CS_PROTO_traffic_INFO) ||
        (ntohs(info->header.size) !=
 	sizeof(CS_traffic_info_MESSAGE) + ntohl(info->count)*sizeof(TRAFFIC_COUNTER)) ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 

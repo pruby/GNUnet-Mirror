@@ -184,11 +184,11 @@ static void scanForHosts(unsigned int index) {
 			&indexMatch);
   if (hostIdentityEquals(coreAPI->myIdentity,
 			 &indexMatch.match)) {
-    BREAK(); /* should not happen, at least not often... */
+    GE_BREAK(ectx, 0); /* should not happen, at least not often... */
     return;
   }
   if (coreAPI->computeIndex(&indexMatch.match) != index) {
-    BREAK(); /* should REALLY not happen */
+    GE_BREAK(ectx, 0); /* should REALLY not happen */
     return;
   }
   hash2enc(&indexMatch.match.hashPubKey,
@@ -239,7 +239,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
     return;
   cronTime(&now);
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return; /* this should not happen... */
   }
 
@@ -385,19 +385,19 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
   transport = capi->requestService("transport");
   if (transport == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     return NULL;
   }
   pingpong = capi->requestService("pingpong");
   if (pingpong == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     capi->releaseService(transport);

@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
   initCore();
   api = requestService("sqstore");
   if (api == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     doneCore();
     doneUtil();
     return 1;
@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
       ok = test(api);
       releaseService(api);
     } else {
-      BREAK();
+      GE_BREAK(ectx, 0);
     }
   }
   doneCore();

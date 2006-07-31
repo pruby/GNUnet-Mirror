@@ -594,7 +594,7 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
   myCoreAPI = capi;
   myApi = capi->requestService("traffic");
   if (myApi == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     myCoreAPI = NULL;
     return SYSERR;
   }

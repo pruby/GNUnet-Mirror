@@ -83,7 +83,7 @@ int fileBlockEncode(const DBlock * data,
     return OK;
   } else {
     FREE(val);
-    BREAK();
+    GE_BREAK(ectx, 0);
     *value = NULL;
     return SYSERR;
   }
@@ -138,7 +138,7 @@ void fileBlockGetQuery(const DBlock * db,
 unsigned int getTypeOfBlock(unsigned int size,
 			    const DBlock * data) {
   if (size <= 4) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return ANY_BLOCK; /* signal error */
   }
   return ntohl(*((const unsigned int*)data));
@@ -161,7 +161,7 @@ int getQueryFor(unsigned int size,
 
   type = getTypeOfBlock(size, data);
   if (type == ANY_BLOCK) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   switch (type) {
@@ -174,7 +174,7 @@ int getQueryFor(unsigned int size,
   case S_BLOCK: {
     const SBlock * sb;
     if (size < sizeof(SBlock)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     sb = (const SBlock*) data;
@@ -186,7 +186,7 @@ int getQueryFor(unsigned int size,
 			  - sizeof(unsigned int),
 			  &sb->signature,
 			  &sb->subspace)) ) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     *query = sb->identifier;
@@ -195,7 +195,7 @@ int getQueryFor(unsigned int size,
   case K_BLOCK: {
     const KBlock * kb;
     if (size < sizeof(KBlock)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     kb = (const KBlock*) data;
@@ -204,7 +204,7 @@ int getQueryFor(unsigned int size,
 			    size - sizeof(KBlock),
 			    &kb->signature,
 			    &kb->keyspace)) ) ) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     hash(&kb->keyspace,
@@ -215,7 +215,7 @@ int getQueryFor(unsigned int size,
   case N_BLOCK: {
     const NBlock * nb;
     if (size < sizeof(NBlock)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     nb = (const NBlock*) data;
@@ -227,7 +227,7 @@ int getQueryFor(unsigned int size,
 			  - sizeof(unsigned int),
 			  &nb->signature,
 			  &nb->subspace)) ) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     *query = nb->namespace; /* XOR with all zeros makes no difference... */
@@ -236,7 +236,7 @@ int getQueryFor(unsigned int size,
   case KN_BLOCK: {
     const KNBlock * kb;
     if (size < sizeof(KNBlock)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     kb = (const KNBlock*) data;
@@ -247,7 +247,7 @@ int getQueryFor(unsigned int size,
 			    - sizeof(unsigned int),
 			    &kb->kblock.signature,
 			    &kb->kblock.keyspace)) ) ) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     hash(&kb->kblock.keyspace,
@@ -256,11 +256,11 @@ int getQueryFor(unsigned int size,
     return OK;
   }
   case ONDEMAND_BLOCK: {
-    BREAK(); /* should never be used here! */
+    GE_BREAK(ectx, 0); /* should never be used here! */
     return SYSERR;
   }
   default: {
-    BREAK(); /* unknown block type */
+    GE_BREAK(ectx, 0); /* unknown block type */
     return SYSERR;
   }
   } /* end switch */
@@ -289,15 +289,15 @@ int isDatumApplicable(unsigned int type,
   HashCode512 hc;
 
   if (type != getTypeOfBlock(size, data)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR; /* type mismatch */
   }
   if (OK != getQueryFor(size, data, YES, &hc)) {
-    BREAK(); /* malformed data */
+    GE_BREAK(ectx, 0); /* malformed data */
     return SYSERR;
   }
   if (! equalsHashCode512(&hc, &keys[0])) {
-    BREAK(); /* mismatch between primary queries,
+    GE_BREAK(ectx, 0); /* mismatch between primary queries,
 		we should not even see those here. */
     return SYSERR;
   }
@@ -330,13 +330,13 @@ int isDatumApplicable(unsigned int type,
   case K_BLOCK:
   case KN_BLOCK:
     if (keyCount != 1)
-      BREAK(); /* keyCount should be 1 */
+      GE_BREAK(ectx, 0); /* keyCount should be 1 */
     return OK; /* if query matches, everything matches! */
   case ANY_BLOCK:
-    BREAK(); /* block type should be known */
+    GE_BREAK(ectx, 0); /* block type should be known */
     return SYSERR;
   default:
-    BREAK(); /* unknown block type */
+    GE_BREAK(ectx, 0); /* unknown block type */
     return SYSERR;
   }
 }

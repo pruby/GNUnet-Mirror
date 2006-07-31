@@ -202,7 +202,7 @@ static void progressModel(void * okVal,
     }
     break;
   default:
-    BREAK();
+    GE_BREAK(ectx, 0);
     break;
   }
 }

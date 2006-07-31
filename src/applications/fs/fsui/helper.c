@@ -47,7 +47,7 @@ struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
   char * searchString;
 
   if (input == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
   searchString = STRDUP(input);

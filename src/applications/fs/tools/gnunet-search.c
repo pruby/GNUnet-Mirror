@@ -248,7 +248,7 @@ static int runSearch() {
   suri = getConfigurationString("GNUNET-SEARCH",
 				"URI");
   if (suri == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   uri = ECRS_stringToUri(suri);

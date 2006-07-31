@@ -1308,7 +1308,7 @@ static void request_DHT_ping(const PeerIdentity * identity,
   ENTER();
   if (hostIdentityEquals(identity,
 			 coreAPI->myIdentity)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return; /* refuse to self-ping!... */
   }
   MUTEX_LOCK(lock);
@@ -1542,7 +1542,7 @@ static int getLocalResultCallback(const HashCode512 * key,
   if ( (equalsHashCode512(&rec->table,
 			  &masterTableId)) &&
        ((ntohl(val->size) - sizeof(DataContainer)) % sizeof(PeerIdentity) != 0) )
-    BREAK(); /* assertion failed: entry in master table malformed! */
+    GE_BREAK(ectx, 0); /* assertion failed: entry in master table malformed! */
   ret = OK;
   if (rec->resultCallback != NULL)
     ret = rec->resultCallback(key,
@@ -1652,7 +1652,7 @@ dht_get_async_start(const DHT_TableId * table,
 		  (HashCode512*) hosts,
 		  &coreAPI->myIdentity->hashPubKey);
     if (count == 0) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       /* Assertion failed: I participate in a table but findLocalNodes returned 0! */
       MUTEX_UNLOCK(lock);
       FREE(ret->keys);
@@ -2114,7 +2114,7 @@ findKNodes_start(const DHT_TableId * table,
   fnc->async_handle = NULL;
   if (equalsHashCode512(table,
 			  &masterTableId)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     /* findKNodes_start called for masterTable.  That should not happen! */
   } else {
  #if DEBUG_DHT
@@ -2318,7 +2318,7 @@ dht_put_async_start(const DHT_TableId * table,
   EncName enc2;
 
   if (value == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
 
@@ -2384,7 +2384,7 @@ dht_put_async_start(const DHT_TableId * table,
 		  (HashCode512*) hosts,
 		  &coreAPI->myIdentity->hashPubKey);
     if (count == 0) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       /* Assertion failed: I participate in a table but findLocalNodes returned 0! */
       MUTEX_UNLOCK(lock);
       return NULL;
@@ -2654,7 +2654,7 @@ dht_remove_async_start(const DHT_TableId * table,
 		  (HashCode512*) hosts,
 		  &coreAPI->myIdentity->hashPubKey);
     if (count == 0) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       /* Assertion failed: I participate in a table but findLocalNodes returned 0! */
       MUTEX_UNLOCK(lock);
       return NULL;

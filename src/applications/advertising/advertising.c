@@ -710,19 +710,19 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   coreAPI = capi;
   identity = capi->requestService("identity");
   if (identity == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   transport = capi->requestService("transport");
   if (transport == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     return SYSERR;
   }
   pingpong = capi->requestService("pingpong");
   if (pingpong == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     capi->releaseService(transport);
@@ -731,7 +731,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   }
   topology = capi->requestService("topology");
   if (topology == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     capi->releaseService(identity);
     identity = NULL;
     capi->releaseService(transport);

@@ -806,7 +806,7 @@ static int queueReply(const PeerIdentity * sender,
   }
   size = sizeof(P2P_gap_reply_MESSAGE) + ntohl(data->size) - sizeof(DataContainer);
   if (size >= MAX_BUFFER_SIZE) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   ite->successful_local_lookup_in_delay_loop = YES;
@@ -1565,7 +1565,7 @@ static int useContent(const PeerIdentity * host,
       (host != NULL) ? (const char*)&enc : "myself");
 #endif
   if (ntohs(msg->header.size) < sizeof(P2P_gap_reply_MESSAGE)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR; /* invalid! */
   }
 	
@@ -1616,7 +1616,7 @@ static int useContent(const PeerIdentity * host,
     LOG(LOG_ERROR,
 	_("GAP received invalid content from `%s'\n"),
 	(host != NULL) ? (const char*)&enc : _("myself"));    
-    BREAK();
+    GE_BREAK(ectx, 0);
     FREE(value);
     return SYSERR; /* invalid */
   }
@@ -1736,7 +1736,7 @@ static int init(Blockstore * datastore,
 		UniqueReplyIdentifier uid,
 		ReplyHashFunction rh) {
   if (bs != NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   bs = datastore;
@@ -1773,7 +1773,7 @@ static int get_start(unsigned int type,
 
   size = sizeof(P2P_gap_query_MESSAGE) + (keyCount-1) * sizeof(HashCode512);
   if (size >= MAX_BUFFER_SIZE) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR; /* too many keys! */
   }
 
@@ -1919,7 +1919,7 @@ static int handleQuery(const PeerIdentity * sender,
 #endif
 
   if (bs == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return 0;
   }
   
@@ -1946,7 +1946,7 @@ static int handleQuery(const PeerIdentity * sender,
        (ntohs(msg->size) < sizeof(P2P_gap_query_MESSAGE)) ||
        (ntohs(msg->size) != sizeof(P2P_gap_query_MESSAGE) +
 	(queries-1) * sizeof(HashCode512)) ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR; /* malformed query */
   }
   
@@ -1959,7 +1959,7 @@ static int handleQuery(const PeerIdentity * sender,
        (or B directly back to A; also should not happen)
        in this case, A must just drop; however, this
        should not happen (peers should check). */
-    BREAK();
+    GE_BREAK(ectx, 0);
     FREE(qmsg);
     return OK;
   }

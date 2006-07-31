@@ -112,7 +112,7 @@ static int readNamespaceInfo(const char * namespaceName,
   }
   if (len > 16 * 1024 * 1024) {
     /* too big, must be invalid! remove! */
-    BREAK();
+    GE_BREAK(ectx, 0);
     UNLINK(fn);
     FREE(fn);
     return SYSERR;
@@ -132,7 +132,7 @@ static int readNamespaceInfo(const char * namespaceName,
 				   size);
   if ((*meta) == NULL) {
     /* invalid data! remove! */
-    BREAK();
+    GE_BREAK(ectx, 0);
     UNLINK(fn);
     FREE(buf);
     FREE(fn);
@@ -413,7 +413,7 @@ static int readUpdateData(const char * nsname,
   size -= pos;
   if (size == 0) {
     FREE(buf);
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   if (fi != NULL) {
@@ -421,7 +421,7 @@ static int readUpdateData(const char * nsname,
 					size);
     if (fi->meta == NULL) {
       FREE(buf);
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     fi->uri = ECRS_stringToUri(uri);
@@ -429,7 +429,7 @@ static int readUpdateData(const char * nsname,
       ECRS_freeMetaData(fi->meta);
       fi->meta = NULL;
       FREE(buf);
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
   }
@@ -699,7 +699,7 @@ static int lNCHelper(const char * fil,
 
   if (OK != enc2hash(fil,
 		     &lastId)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return OK;
   }
   fi.uri = NULL;
@@ -710,7 +710,7 @@ static int lNCHelper(const char * fil,
 			   &fi,
 			   &pubFreq,
 			   &lastTime)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return OK;
   }
   cls->cnt++;
@@ -792,7 +792,7 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
   HashCode512 id;
 
   if (! ECRS_isNamespaceUri(uri)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return;
   }
   ECRS_getNamespaceId(uri,

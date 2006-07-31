@@ -54,8 +54,8 @@ static int waitForConnect(const char * name,
 }
 
 
-#define CHECK(a) do { if (!(a)) { ret = 1; BREAK(); goto FAILURE; } } while(0)
-#define CHECK2(a) do { if (!(a)) { ret = 1; BREAK(); goto FAILURE2; } } while(0)
+#define CHECK(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
+#define CHECK2(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE2; } } while(0)
 
 /**
  * Testcase to test gap routing (2 peers only).

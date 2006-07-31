@@ -336,7 +336,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
     = ((unsigned long long)lquota) * 1024L * 1024L; /* MB to bytes */
   sq = capi->requestService("sqstore");
   if (sq == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return NULL;
   }
   lquota = htonl(lquota);

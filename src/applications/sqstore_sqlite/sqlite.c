@@ -783,7 +783,7 @@ static int put(const HashCode512 * key,
 #endif
 
   if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 

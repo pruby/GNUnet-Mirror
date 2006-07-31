@@ -482,7 +482,7 @@ static void * listenAndDistribute() {
 	READLINE(&line[strlen(line)-1], LINESIZE - strlen(line));
       size = base64_decode(line, strlen(line)-1, &out);
       if (size < sizeof(SMTPMessage)) {
-	BREAK();
+	GE_BREAK(ectx, 0);
 	FREE(out);
 	goto END;
       }
@@ -544,7 +544,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   if ((ntohs(helo->header.size)!=
        sizeof(P2P_hello_MESSAGE)+ntohs(helo->senderAddressSize)) ||
       (maddr->senderAddress[ntohs(helo->senderAddressSize)-1-FILTER_STRING_SIZE]!='\0')) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR; /* obviously invalid */
   } else {
 #if DEBUG_SMTP
@@ -680,11 +680,11 @@ static int smtpSend(TSession * tsession,
   if (smtp_shutdown == YES)
     return SYSERR;
   if (size == 0) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   if (size > smtpAPI.mtu) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   helo = (P2P_hello_MESSAGE*)tsession->internal;
@@ -796,7 +796,7 @@ static int startTransportServer(void) {
   char * email;
 
   if (serverSignal != NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   serverSignal = SEMAPHORE_NEW(0);

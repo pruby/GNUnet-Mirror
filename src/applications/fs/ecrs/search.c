@@ -216,7 +216,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 	_("LOC URI not allowed for search.\n"));
     break;
   default:
-    BREAK();
+    GE_BREAK(ectx, 0);
     /* unknown URI type */
     break;
   }
@@ -288,7 +288,7 @@ static int processNBlock(const NBlock * nb,
   fi.meta = ECRS_deserializeMetaData((const char*)&nb[1],
 				     size - sizeof(NBlock));
   if (fi.meta == NULL) {
-    BREAK(); /* nblock malformed */
+    GE_BREAK(ectx, 0); /* nblock malformed */
     return SYSERR;
   }
   fi.uri = &uri;
@@ -375,7 +375,7 @@ static int receiveReplies(const HashCode512 * key,
 		(((const char*)kb)[j] != '\0') )
 	  j++;
 	if (j == size) {
-	  BREAK(); /* kblock malformed */
+	  GE_BREAK(ectx, 0); /* kblock malformed */
 	  FREE(kb);
 	  return SYSERR;
 	}
@@ -384,13 +384,13 @@ static int receiveReplies(const HashCode512 * key,
 	fi.meta = ECRS_deserializeMetaData(&((const char*)kb)[j],
 					   size - j);
 	if (fi.meta == NULL) {
-	  BREAK(); /* kblock malformed */
+	  GE_BREAK(ectx, 0); /* kblock malformed */
 	  FREE(kb);
 	  return SYSERR;
 	}
 	fi.uri = ECRS_stringToUri(dstURI);
 	if (fi.uri == NULL) {
-	  BREAK(); /* kblock malformed */
+	  GE_BREAK(ectx, 0); /* kblock malformed */
 	  ECRS_freeMetaData(fi.meta);
 	  FREE(kb);
 	  return SYSERR;
@@ -461,7 +461,7 @@ static int receiveReplies(const HashCode512 * key,
 		(((char*) &sb[1])[j] != '\0') )
 	  j++;
 	if (j == size) {
-	  BREAK(); /* sblock malformed */
+	  GE_BREAK(ectx, 0); /* sblock malformed */
 	  FREE(sb);
 	  return SYSERR;
 	}
@@ -470,13 +470,13 @@ static int receiveReplies(const HashCode512 * key,
 	fi.meta = ECRS_deserializeMetaData(&dstURI[j],
 					   size - j);
 	if (fi.meta == NULL) {
-	  BREAK(); /* kblock malformed */
+	  GE_BREAK(ectx, 0); /* kblock malformed */
 	  FREE(sb);
 	  return SYSERR;
 	}
 	fi.uri = ECRS_stringToUri(dstURI);
 	if (fi.uri == NULL) {
-	  BREAK(); /* sblock malformed */
+	  GE_BREAK(ectx, 0); /* sblock malformed */
 	  ECRS_freeMetaData(fi.meta);
 	  FREE(sb);
 	  return SYSERR;
@@ -505,7 +505,7 @@ static int receiveReplies(const HashCode512 * key,
 	  return ret; /* have latest version */
 	}
 	if (ps->keyCount != 2) {
-	  BREAK();
+	  GE_BREAK(ectx, 0);
 	  FREE(sb);
 	  return SYSERR;
 	}
@@ -519,7 +519,7 @@ static int receiveReplies(const HashCode512 * key,
 	return ret;
       }
       default:
-	BREAK();
+	GE_BREAK(ectx, 0);
 	break;
       } /* end switch */
     } /* for all matches */

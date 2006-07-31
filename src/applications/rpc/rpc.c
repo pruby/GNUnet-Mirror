@@ -1509,14 +1509,14 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
       "RPC testcase starting\n");
   rpcAPI = capi->requestService("rpc");
   if (rpcAPI == NULL) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   ret = OK;
 
   if (OK != rpcAPI->RPC_register("testFunction",
 				 &testCallback)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     ret = SYSERR;
   }
 
@@ -1542,7 +1542,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
 			     0,
 			     5 * cronSECONDS);
   if (code != RPC_ERROR_OK) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     ret = SYSERR;
   }
   RPC_paramFree(args);
@@ -1552,7 +1552,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
 				   (void**)&reply)) ||
        (strncmp("Hello RPC World",
 		reply, dl) != 0) ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     ret = SYSERR;
   }
   RPC_paramFree(rets);
@@ -1563,11 +1563,11 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
 
   if (OK != rpcAPI->RPC_unregister("testFunction",
 				   &testCallback)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     ret = SYSERR;
   }
   if (OK != capi->releaseService(rpcAPI)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     ret = SYSERR;
   }
   LOG(LOG_DEBUG,

@@ -77,7 +77,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 			&ichk,
 			level+1,
 			iblocks)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     fileBlockEncode(db,
@@ -88,7 +88,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
     if (SYSERR == FS_delete(sock,
 			    value)) {
       FREE(value);
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
 #else
@@ -195,11 +195,11 @@ int ECRS_unindexFile(const char * filename,
 
   cronTime(&start);
   if (isDirectory(filename)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   if (0 == assertIsFile(filename)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   if (OK != getFileSize(filename,
@@ -214,7 +214,7 @@ int ECRS_unindexFile(const char * filename,
   if (SYSERR == getFileHash(filename,
 			    &fileId)) {
     releaseClientSocket(sock);
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   cronTime(&now);
@@ -293,7 +293,7 @@ int ECRS_unindexFile(const char * filename,
 			&chk,
 			0, /* dblocks are on level 0 */
 			iblocks)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       goto FAILURE;
     }
     if (! wasIndexed) {
@@ -307,7 +307,7 @@ int ECRS_unindexFile(const char * filename,
 	if (OK != FS_delete(sock,
 			    value)) {
 	  FREE(value);
-	  BREAK();
+	  GE_BREAK(ectx, 0);
 	  goto FAILURE;
 	}
 #else
@@ -341,7 +341,7 @@ int ECRS_unindexFile(const char * filename,
 			&chk,
 			i+1,
 			iblocks)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       goto FAILURE;
     }
     fileBlockEncode(db,
@@ -352,7 +352,7 @@ int ECRS_unindexFile(const char * filename,
     if (OK != FS_delete(sock,
 			value)) {
       FREE(value);
-      BREAK();
+      GE_BREAK(ectx, 0);
       goto FAILURE;
     }
 #else
@@ -371,11 +371,11 @@ int ECRS_unindexFile(const char * filename,
       if (OK != FS_unindex(sock,
 			   DBLOCK_SIZE,
 			   &fileId)) {
-	BREAK();
+	GE_BREAK(ectx, 0);
 	goto FAILURE;
       }
     } else {
-      BREAK();
+      GE_BREAK(ectx, 0);
       goto FAILURE;
     }
   }

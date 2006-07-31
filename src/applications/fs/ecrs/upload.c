@@ -93,7 +93,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
                     &ichk.query,
                     &value);
     if (value == NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return SYSERR;
     }
     value->prio = htonl(prio);
@@ -170,7 +170,7 @@ int ECRS_uploadFile(const char * filename,
   cronTime(&start);
   memset(&chk, 0, sizeof(CHK));
   if (isDirectory(filename)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     /* Should not happen */
     LOG(LOG_ERROR, "Cannot upload file `%s', it seems to be a directory!", filename);
     return SYSERR;
@@ -388,7 +388,7 @@ int ECRS_uploadFile(const char * filename,
                     &chk.query,
                     &value);
     if (value == NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       goto FAILURE;
     }
     value->prio = htonl(priority);

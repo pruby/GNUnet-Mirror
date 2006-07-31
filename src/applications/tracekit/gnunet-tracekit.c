@@ -190,7 +190,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
 
     count = ntohs(buffer->header.size) - sizeof(CS_tracekit_reply_MESSAGE);
     if (count < 0) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       break; /* faulty reply */
     }
     hash2enc(&buffer->responderId.hashPubKey,
@@ -213,7 +213,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
     if (ntohs(buffer->header.size) !=
 	sizeof(CS_tracekit_reply_MESSAGE) +
 	count * sizeof(PeerIdentity)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       break;
     }
     if (count == 0) {

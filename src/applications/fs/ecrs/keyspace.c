@@ -83,7 +83,7 @@ static int verifyKBlock(const HashCode512 * key,
 	  (((const char*)kb)[j] != '\0') )
     j++;
   if (j == size) {
-    BREAK(); /* kblock malformed */
+    GE_BREAK(ectx, 0); /* kblock malformed */
     return SYSERR;
   }
   dstURI = (const char*) &kb[1];
@@ -91,12 +91,12 @@ static int verifyKBlock(const HashCode512 * key,
   fi.meta = ECRS_deserializeMetaData(&((const char*)kb)[j],
 				     size - j);
   if (fi.meta == NULL) {
-    BREAK(); /* kblock malformed */
+    GE_BREAK(ectx, 0); /* kblock malformed */
     return SYSERR;
   }
   fi.uri = ECRS_stringToUri(dstURI);
   if (fi.uri == NULL) {
-    BREAK(); /* kblock malformed */
+    GE_BREAK(ectx, 0); /* kblock malformed */
     ECRS_freeMetaData(fi.meta);
     return SYSERR;
   }
@@ -143,7 +143,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
   struct ECRS_URI * xuri;
 
   if (! ECRS_isKeywordUri(uri)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
 
@@ -166,7 +166,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 				    mdsize,
 				    ECRS_SERIALIZE_PART);
     if (mdsize == -1) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       FREE(dstURI);
       return SYSERR;
     }

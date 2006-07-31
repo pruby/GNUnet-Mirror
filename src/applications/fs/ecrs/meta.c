@@ -577,7 +577,7 @@ ECRS_deserializeMetaData(const char * input,
   if (compressed) {
     dataSize = ntohl(hdr->size) - sizeof(MetaDataHeader);
     if (dataSize > 2 * 1042 * 1024) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return NULL; /* only 2 MB allowed [to make sure we don't blow
                         our memory limit because of a mal-formed
                         message... ]*/
@@ -586,25 +586,25 @@ ECRS_deserializeMetaData(const char * input,
                       size - sizeof(MetaDataHeader),
                       dataSize);
     if (data == NULL) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return NULL;
     }
   } else {
     data = (char*) &hdr[1];
     dataSize = size - sizeof(MetaDataHeader);
     if (size != ntohl(hdr->size)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       return NULL;
     }
   }
 
   if ( (sizeof(unsigned int) * ic + ic) > dataSize) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     goto FAILURE;
   }
   if ( (ic > 0)
        && (data[dataSize-1] != '\0') ) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     goto FAILURE;
   }
 

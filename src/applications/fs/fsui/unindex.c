@@ -75,7 +75,7 @@ static void * unindexThread(UnindexThreadClosure * utc) {
     event.type = FSUI_unindex_complete;
     if (OK != getFileSize(utc->filename,
 			  &event.data.UnindexComplete.total)) {
-      BREAK();
+      GE_BREAK(ectx, 0);
       event.data.UnindexComplete.total = 0;
     }
     event.data.UnindexComplete.filename = utc->filename;
@@ -110,7 +110,7 @@ int FSUI_unindex(struct FSUI_Context * ctx,
   UnindexThreadClosure * utc;
 
   if (YES == isDirectory(filename)) {
-    BREAK();
+    GE_BREAK(ectx, 0);
     return SYSERR;
   }
   utc = MALLOC(sizeof(UnindexThreadClosure));
