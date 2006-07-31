@@ -1449,7 +1449,7 @@ TransportAPI * inittransport_http(CoreAPIForTransport * core) {
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
-    if (OK != GN_getHostByName(proxy,
+    if (OK != get_host_by_name(ectx, proxy,
 			       &ip)) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not resolve name of HTTP proxy `%s'.\n"),

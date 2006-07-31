@@ -291,7 +291,7 @@ static int connectToSMTPServer() {
   if (hostname == NULL)
     hostname = STRDUP("localhost");
 
-  if (OK != GN_getHostByName(hostname,
+  if (OK != get_host_by_name(ectx, hostname,
 			     &ip)) {
     GE_LOG(ectx,
 	   GE_ERROR,

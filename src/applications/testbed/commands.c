@@ -1480,7 +1480,7 @@ static int addAvailable(int argc,
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
-    if (OK != GN_getHostByName(proxy,
+    if (OK != get_host_by_name(ectx, proxy,
 			       &ip)) {
       XPRINTF(" Couldn't resolve name of HTTP proxy '%s'\n",
 	      proxy);
@@ -1578,7 +1578,7 @@ static int addAvailable(int argc,
   /* Do we need to connect through a proxy? */
   if (theProxy.sin_addr.s_addr == 0) {
     /* no proxy */
-    if (OK != GN_getHostByName(hostname,
+    if (OK != get_host_by_name(ectx, hostname,
 			       &ip)) {
       XPRINTF(" could not download hostlist, host '%s' unknown\n",
 	     hostname);

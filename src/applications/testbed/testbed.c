@@ -1049,7 +1049,7 @@ static void httpRegister(char * cmd) {
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
-    if (OK != GN_getHostByName(proxy, &ip_info)) {
+    if (OK != get_host_by_name(ectx, proxy, &ip_info)) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not resolve name of HTTP proxy `%s'.\n"),
 	  proxy);
@@ -1148,7 +1148,7 @@ static void httpRegister(char * cmd) {
   /* Do we need to connect through a proxy? */
   if (theProxy.sin_addr.s_addr == 0) {
     /* no proxy */
-    if (OK != GN_getHostByName(hostname,
+    if (OK != get_host_by_name(ectx, hostname,
 			       &ip_info)) {
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Could not register testbed, host `%s' unknown\n"),

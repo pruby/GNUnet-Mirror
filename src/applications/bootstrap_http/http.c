@@ -129,7 +129,7 @@ downloadHostlistHelper(char * url,
 
   /* Do we need to connect through a proxy? */
   if (theProxy.sin_addr.s_addr == 0) {
-    if (OK != GN_getHostByName(hostname, &ip_info)) {
+    if (OK != get_host_by_name(ectx, hostname, &ip_info)) {
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Could not download list of peer contacts, host `%s' unknown.\n"),
 	  hostname);
@@ -190,7 +190,7 @@ downloadHostlistHelper(char * url,
     return;
   }
   FREE(command);
-  cronTime(&start);
+  start = get_time();
 
   /* we first have to read out the http_response*/
   /* it ends with four line delimiters: "\r\n\r\n" */
@@ -327,7 +327,8 @@ provide_module_bootstrap(CoreAPIForApplication * capi) {
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {
-    if (OK != GN_getHostByName(proxy,
+    if (OK != get_host_by_name(ectx,
+			       proxy,
 			       &ip)) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"),
