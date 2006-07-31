@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -21,8 +21,10 @@
 /**
  * @file bootstrap_http/http.c
  * @brief HOSTLISTURL support.  Downloads hellos via http.
- *
  * @author Christian Grothoff
+ *
+ * TODO: avoid busy-sleep-waiting (use select!); maybe 
+ *       change to use libwww!?
  */
 
 #include "platform.h"
@@ -107,9 +109,10 @@ downloadHostlistHelper(char * url,
   else {
     port = atoi(hostname + curpos + 1);
     if (!port) {
-    	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-    		_("Invalid port \"%s\" in hostlist specification, trying port %d.\n"),
-    		TCP_HTTP_PORT);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("Invalid port \"%s\" in hostlist specification, trying port %d.\n"),
+	     TCP_HTTP_PORT);
     	port = TCP_HTTP_PORT;
     }
   }
@@ -153,14 +156,18 @@ downloadHostlistHelper(char * url,
   if (CONNECT(sock,
 	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr)) < 0) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("`%s' to `%s' failed at %s:%d with error: %s\n"),
-	"connect",
-	hostname,
-	__FILE__, __LINE__,
-	STRERROR(errno));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("`%s' to `%s' failed at %s:%d with error: %s\n"),
+	   "connect",
+	   hostname,
+	   __FILE__, __LINE__,
+	   STRERROR(errno));
     FREE(filename);
-    closefile(sock);
+    if (0 != CLOSE(sock))
+      GE_LOG_STRERROR(ectx,
+		      GE_WARNING | GE_BULK | GE_ADMIN, 
+		      "close");
     return;
   }
 
@@ -180,13 +187,16 @@ downloadHostlistHelper(char * url,
 			     curpos);
   if (SYSERR == (int)curpos) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("`%s' to `%s' failed at %s:%d with error: %s\n"),
-	"send",
-	hostname,
-	__FILE__, __LINE__,
-	STRERROR(errno));
+	   _("`%s' to `%s' failed at %s:%d with error: %s\n"),
+	   "send",
+	   hostname,
+	   __FILE__, __LINE__,
+	   STRERROR(errno));
     FREE(command);
-    closefile(sock);
+    if (0 != CLOSE(sock))
+      GE_LOG_STRERROR(ectx,
+		      GE_WARNING | GE_BULK | GE_ADMIN, 
+		      "close");
     return;
   }
   FREE(command);
@@ -215,10 +225,14 @@ downloadHostlistHelper(char * url,
   }
 
   if (curpos < 4) { /* we have not found it */
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Parsing HTTP response for URL `%s' failed.\n"),
-	url);
-    closefile(sock);
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Parsing HTTP response for URL `%s' failed.\n"),
+	   url);
+    if (0 != CLOSE(sock))
+      GE_LOG_STRERROR(ectx,
+		      GE_WARNING | GE_BULK | GE_ADMIN, 
+		      "close");
     return;
   }
 
@@ -264,7 +278,10 @@ downloadHostlistHelper(char * url,
   }
 
   FREE(buffer);
-  closefile(sock);
+  if (0 != CLOSE(sock))
+    GE_LOG_STRERROR(ectx,
+		    GE_WARNING | GE_BULK | GE_ADMIN, 
+		    "close");
 }
 
 
@@ -274,13 +291,16 @@ static void downloadHostlist(hello_Callback callback,
   int i;
   int cnt;
 
-  url = getConfigurationString("GNUNETD",
-			       "HOSTLISTURL");
-  if (url == NULL) {
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-        "No hostlist URL specified in configuration, will not bootstrap.\n");
+  if (0 != GC_get_configuration_value_string(coreAPI->cfg,
+					     "GNUNETD",
+					     "HOSTLISTURL",
+					     NULL,
+					     &url)) {
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   "No hostlist URL specified in configuration, will not bootstrap.\n");
     return;
-  }
+  }  
 #if DEBUG_HTTP
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Trying to bootstrap with peers from `%s'\n",
@@ -320,32 +340,35 @@ static void downloadHostlist(hello_Callback callback,
 Bootstrap_ServiceAPI *
 provide_module_bootstrap(CoreAPIForApplication * capi) {
   static Bootstrap_ServiceAPI api;
-  char *proxy, *proxyPort;
+  char *proxy;
+  unsigned long long proxyPort;
   IPaddr ip;
 
   ectx = capi->ectx;
-  proxy = getConfigurationString("GNUNETD",
-				 "HTTP-PROXY");
-  if (proxy != NULL) {
+  if (0 == GC_get_configuration_value_string(capi->cfg,
+					     "GNUNETD",
+					     "HTTP-PROXY",
+					     NULL,
+					     &proxy)) {
     if (OK != get_host_by_name(ectx,
 			       proxy,
 			       &ip)) {
       GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"),
-	  proxy);
+	     _("Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"),
+	     proxy);
       theProxy.sin_addr.s_addr = 0;
     } else {
       memcpy(&theProxy.sin_addr.s_addr,
 	     &ip,
 	     sizeof(IPaddr));
-      proxyPort = getConfigurationString("GNUNETD",
-					 "HTTP-PROXY-PORT");
-      if (proxyPort == NULL) {
-	theProxy.sin_port = htons(8080);
-      } else {
-	theProxy.sin_port = htons(atoi(proxyPort));
-	FREE(proxyPort);
-      }
+      GC_get_configuration_value_number(capi->cfg,
+					"GNUNETD",
+					"HTTP-PROXY-PORT",
+					1,
+					65535,
+					8080,
+					&proxyPort);
+      theProxy.sin_port = htons(proxyPort);
     }
     FREE(proxy);
   } else {

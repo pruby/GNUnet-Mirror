@@ -28,7 +28,8 @@ NILS:
   * applications:
     + fragmentation, identity,  pingpong, session, transport,
       stats, topology_default, state, getoption, advertising compile
-    + for basics: bootstrap_http (370), traffic (720)
+    + bootstrap_http: maybe switch to libwww?
+    + for basics: traffic (720)
     + for fs: datastore (787), fs (18500), gap (2800), sqstore_sqlite (1375)
     + rest: sqstore_mysql, dht, chat, kvstore_sqlite, 
             sqstore_mysql, rpc, tbench, template, testbed, 
