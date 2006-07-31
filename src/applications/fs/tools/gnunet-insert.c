@@ -733,7 +733,7 @@ int main(int argc, char ** argv) {
   SEMAPHORE_DOWN(exitSignal);
   es = exitSignal;
   exitSignal = NULL;
-  SEMAPHORE_FREE(es);
+  SEMAPHORE_DESTROY(es);
 
   /* shutdown */
   FREE(filename);

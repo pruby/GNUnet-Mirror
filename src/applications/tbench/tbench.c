@@ -368,8 +368,8 @@ static int csHandleTBenchRequest(ClientHandle client,
 	       0,
 	       postsem);
     resumeCron();
-    SEMAPHORE_FREE(presem);
-    SEMAPHORE_FREE(postsem);
+    SEMAPHORE_DESTROY(presem);
+    SEMAPHORE_DESTROY(postsem);
     presem = NULL;
     postsem = NULL;
 

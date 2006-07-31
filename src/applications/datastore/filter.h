@@ -26,11 +26,15 @@
 #ifndef FILTER_H
 #define FILTER_H
 
-int initFilters();
+#include "gnunet_util.h"
 
-void doneFilters();
+int initFilters(struct GE_Context * ectx,
+		struct GC_Configuration * cfg);
 
-void deleteFilter();
+void doneFilters(void);
+
+void deleteFilter(struct GE_Context * ectx,
+		  struct GC_Configuration * cfg);
 
 void makeAvailable(const HashCode512 * key);
 

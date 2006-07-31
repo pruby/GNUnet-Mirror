@@ -843,7 +843,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     freeDownloadList(ctx->activeDownloads.child);
   if (ctx->ipc != NULL) {
     IPC_SEMAPHORE_UP(ctx->ipc);
-    IPC_SEMAPHORE_FREE(ctx->ipc);
+    IPC_SEMAPHORE_DESTROY(ctx->ipc);
   }
   MUTEX_DESTROY(&ctx->lock);
   FREE(ctx->name);

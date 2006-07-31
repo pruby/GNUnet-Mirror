@@ -112,7 +112,7 @@ static int testIPCSemaphore() {
     }
   }
  END:
-  IPC_SEMAPHORE_FREE(ipc);
+  IPC_SEMAPHORE_DESTROY(ipc);
   REMOVE("/tmp/gnunet_ipc_xchange");
   if (me == 0) {
     exit(ret);

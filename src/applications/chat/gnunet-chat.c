@@ -192,7 +192,7 @@ int main(int argc, char ** argv) {
   }
   closeSocketTemporarily(sock);
   SEMAPHORE_DOWN(doneSem);
-  SEMAPHORE_FREE(doneSem);
+  SEMAPHORE_DESTROY(doneSem);
   PTHREAD_JOIN(&messageReceiveThread, &unused);
   releaseClientSocket(sock);
 

@@ -205,7 +205,7 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   suspendCron();
   delCronJob((CronJob) &abortSem, 0, closure.sem);
   resumeCron();
-  SEMAPHORE_FREE(closure.sem);
+  SEMAPHORE_DESTROY(closure.sem);
   return closure.found;
 }
 

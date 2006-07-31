@@ -137,7 +137,7 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
   }
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
-  IPC_SEMAPHORE_FREE(sem);
+  IPC_SEMAPHORE_DESTROY(sem);
   FREE(data);
   FREE(suri);
 }
@@ -159,7 +159,7 @@ void FSUI_clearTrackedURIS() {
 		      fn);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
-  IPC_SEMAPHORE_FREE(sem);
+  IPC_SEMAPHORE_DESTROY(sem);
 }
 
 /**
@@ -202,13 +202,13 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
   IPC_SEMAPHORE_DOWN(sem);
   if(0 != STAT(fn, &buf)) {
     IPC_SEMAPHORE_UP(sem);
-    IPC_SEMAPHORE_FREE(sem);
+    IPC_SEMAPHORE_DESTROY(sem);
     return 0;                   /* no URI db */
   }
   fd = fileopen(fn, O_LARGEFILE | O_RDONLY);
   if(fd == -1) {
     IPC_SEMAPHORE_UP(sem);
-    IPC_SEMAPHORE_FREE(sem);
+    IPC_SEMAPHORE_DESTROY(sem);
     LOG_FILE_STRERROR(LOG_WARNING, "open", fn);
     FREE(fn);
     return SYSERR;              /* error opening URI db */
@@ -219,7 +219,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
     LOG_FILE_STRERROR(LOG_WARNING, "mmap", fn);
     FREE(fn);
     IPC_SEMAPHORE_UP(sem);
-    IPC_SEMAPHORE_FREE(sem);
+    IPC_SEMAPHORE_DESTROY(sem);
     return SYSERR;
   }
   ret = buf.st_size;
@@ -263,7 +263,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
         CLOSE(fd);
         FREE(fn);
         IPC_SEMAPHORE_UP(sem);
-        IPC_SEMAPHORE_FREE(sem);
+        IPC_SEMAPHORE_DESTROY(sem);
         return SYSERR;          /* iteration aborted */
       }
     }
@@ -276,7 +276,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
   CLOSE(fd);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
-  IPC_SEMAPHORE_FREE(sem);
+  IPC_SEMAPHORE_DESTROY(sem);
   return rval;
 FORMATERROR:
   GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, _("Deleted corrupt URI database in `%s'."), STATE_NAME);
@@ -285,7 +285,7 @@ FORMATERROR:
   CLOSE(fd);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
-  IPC_SEMAPHORE_FREE(sem);
+  IPC_SEMAPHORE_DESTROY(sem);
   FSUI_clearTrackedURIS();
   return SYSERR;
 }

@@ -1216,7 +1216,7 @@ static int RPC_execute(const PeerIdentity *receiver,
 	     call);
   MUTEX_UNLOCK (rpcLock);
   SEMAPHORE_DOWN(cls.sem);
-  SEMAPHORE_FREE(cls.sem);
+  SEMAPHORE_DESTROY(cls.sem);
   RPC_STATUS(name, "completed synchronously", call);
   return cls.ec;
 }

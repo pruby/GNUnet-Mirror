@@ -24,24 +24,35 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_util.h"
+#include "gnunet_util_containers.h"
 #include "filter.h"
+#include "platform.h"
 
 /**
  * Filter.
  */
 static struct Bloomfilter * filter;
 
-static char * getFilterName() {
+static char * getFilterName(struct GE_Context * ectx,
+			    struct GC_Configuration * cfg) {
   char * fn;
   char * bf;
 
-  fn = getFileName("FS",
-                   "DIR",
-                   _("Configuration must specify directory for "
-		     "FS data in section `%s' under `%s'.\n"));
-  mkdirp(fn);
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "FS",
+					      "DIR",
+					      VAR_DAEMON_DIRECTORY "/fs",
+					      &bf))
+    return NULL;
+  fn = string_expandFileName(ectx, bf);
+  FREE(bf);
+  if (OK != disk_directory_create(ectx,
+				  fn)) {
+    FREE(fn);
+    return NULL;
+  }
   bf = MALLOC(strlen(fn)+
 	      strlen("/bloomfilter")+1);
   strcpy(bf, fn);
@@ -50,22 +61,28 @@ static char * getFilterName() {
   return bf;
 }
 
-int initFilters() {
+int initFilters(struct GE_Context * ectx,
+		struct GC_Configuration * cfg) {
   char * bf;
-  unsigned int quota; /* in kb */
-  unsigned int * qt;
+  unsigned long long quota; /* in kb */
   unsigned int bf_size;
 
-  bf = getFilterName();
-
-  /* read existing quota, check if it changed */
-  qt = NULL;
-  quota = getConfigurationInt("FS",
-			      "QUOTA") * 1024;
-
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "FS",
+					      "QUOTA",
+					      0,
+					      ((unsigned long long)-1)/1024,
+					      1024,
+					      &quota))
+    return SYSERR;
+  quota *= 1024;
   bf_size = quota/8/32; /* 8 bit per entry, 1 bit per 32 kb in DB */
+  bf = getFilterName(ectx, cfg);
+  if (bf == NULL)
+    return SYSERR;
   filter
-    = loadBloomfilter(bf,
+    = loadBloomfilter(ectx,
+		      bf,
 		      bf_size,
 		      5); /* approx. 3% false positives at max use */
   FREE(bf);
@@ -79,11 +96,12 @@ void doneFilters() {
     freeBloomfilter(filter);
 }
 
-void deleteFilter() {
+void deleteFilter(struct GE_Context * ectx,
+		  struct GC_Configuration * cfg) {
   char * fn;
 
   GE_ASSERT(ectx, filter == NULL);
-  fn = getFilterName();
+  fn = getFilterName(ectx, cfg);
   UNLINK(fn);
   FREE(fn);
 }

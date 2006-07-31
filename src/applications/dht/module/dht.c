@@ -1946,7 +1946,7 @@ static int findNodes_stop(FindNodesContext * fnc,
   /* stop all async RPCs */
   for (i=fnc->rpcRepliesExpected-1;i>=0;i--)
     rpcAPI->RPC_stop(fnc->rpc[i]);
-  SEMAPHORE_FREE(fnc->signal);
+  SEMAPHORE_DESTROY(fnc->signal);
   MUTEX_DESTROY(&fnc->lock);
 
   /* Finally perform callbacks on collected k-best nodes. */

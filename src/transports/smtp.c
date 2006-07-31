@@ -874,7 +874,7 @@ static int stopTransportServer() {
   smtp_shutdown = YES;
   PTHREAD_KILL(&dispatchThread, SIGALRM);
   SEMAPHORE_DOWN(serverSignal);
-  SEMAPHORE_FREE(serverSignal);
+  SEMAPHORE_DESTROY(serverSignal);
   closefile(smtp_sock);
   PTHREAD_JOIN(&dispatchThread, &unused);
   pipename = getFileName("SMTP",

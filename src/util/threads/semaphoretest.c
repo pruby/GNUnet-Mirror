@@ -139,7 +139,7 @@ static void semUpDown() {
   for (i=0;i<42;i++)
     SEMAPHORE_DOWN(sem); /* fails by blocking */
   if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
-    SEMAPHORE_FREE(sem);
+    SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n"
 	   "Testcase deadlocked.\n",
 	   __FILE__, __LINE__);
@@ -159,7 +159,7 @@ static int testSemaphore() {
   for (i=0;i<42;i++)
     SEMAPHORE_DOWN(sem); /* fails by blocking */
   if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
-    SEMAPHORE_FREE(sem);
+    SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
 	   __FILE__, __LINE__);
     return 1;
@@ -168,13 +168,13 @@ static int testSemaphore() {
     SEMAPHORE_UP(sem);
   for (i=0;i<42;i++)
     if (OK != SEMAPHORE_DOWN_NONBLOCKING(sem)) {
-      SEMAPHORE_FREE(sem);
+      SEMAPHORE_DESTROY(sem);
       printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
 	     __FILE__, __LINE__);
       return 1;
     }
   if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
-    SEMAPHORE_FREE(sem);
+    SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
 	   __FILE__, __LINE__);
     return 1;
@@ -190,7 +190,7 @@ static int testSemaphore() {
   for (i=0;i<42;i++)
     SEMAPHORE_DOWN(sem);
   if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
-    SEMAPHORE_FREE(sem);
+    SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
 	   __FILE__, __LINE__);
     return 1;

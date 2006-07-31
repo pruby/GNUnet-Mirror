@@ -2,12 +2,8 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/GNUnet
 
-LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
-
 plugin_LTLIBRARIES = \
   libgnunetmodule_datastore.la
-
 
 libgnunetmodule_datastore_la_SOURCES = \
   filter.c filter.h \
@@ -16,5 +12,6 @@ libgnunetmodule_datastore_la_SOURCES = \
 libgnunetmodule_datastore_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 libgnunetmodule_datastore_la_LIBADD = \
-  $(LDADD)
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/containers/libgnunetutil_containers.la 
 

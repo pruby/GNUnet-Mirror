@@ -120,7 +120,7 @@ static int check() {
 	    "Timer precision is acceptable.\n");
 
   stopCron();
-  SEMAPHORE_FREE(sem);
+  SEMAPHORE_DESTROY(sem);
 
   return 0;
 }

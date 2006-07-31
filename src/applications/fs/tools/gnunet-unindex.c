@@ -194,7 +194,7 @@ int main(int argc, char ** argv) {
   } else {
     /* wait for completion */
     SEMAPHORE_DOWN(exitSignal);
-    SEMAPHORE_FREE(exitSignal);
+    SEMAPHORE_DESTROY(exitSignal);
   }
   FREE(filename);
   FSUI_stop(ctx);

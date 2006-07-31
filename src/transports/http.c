@@ -1302,7 +1302,7 @@ static int startTransportServer() {
       LOG_STRERROR(LOG_FAILURE, "socket");
       closefile(http_pipe[0]);
       closefile(http_pipe[1]);
-      SEMAPHORE_FREE(serverSignal);
+      SEMAPHORE_DESTROY(serverSignal);
       serverSignal = NULL;
       http_shutdown = YES;
       return SYSERR;
@@ -1334,7 +1334,7 @@ static int startTransportServer() {
 	    "No transport service started.\n"),
 	  getGNUnetHTTPPort());
       closefile(http_sock);
-      SEMAPHORE_FREE(serverSignal);
+      SEMAPHORE_DESTROY(serverSignal);
       serverSignal = NULL;
       return SYSERR;
     }
@@ -1349,7 +1349,7 @@ static int startTransportServer() {
     LOG_STRERROR(LOG_ERROR,
 		 "pthread_create");
     closefile(http_sock);
-    SEMAPHORE_FREE(serverSignal);
+    SEMAPHORE_DESTROY(serverSignal);
     serverSignal = NULL;
     return SYSERR;
   }
@@ -1371,7 +1371,7 @@ static int stopTransportServer() {
   if (serverSignal != NULL) {
     haveThread = YES;
     SEMAPHORE_DOWN(serverSignal);
-    SEMAPHORE_FREE(serverSignal);
+    SEMAPHORE_DESTROY(serverSignal);
   } else
     haveThread = NO;
   serverSignal = NULL;

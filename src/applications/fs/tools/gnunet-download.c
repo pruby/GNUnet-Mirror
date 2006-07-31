@@ -278,7 +278,7 @@ int main(int argc,
   if (OK == ok)
     SEMAPHORE_DOWN(signalFinished);
   FSUI_stop(ctx);
-  SEMAPHORE_FREE(signalFinished);
+  SEMAPHORE_DESTROY(signalFinished);
 
   if ( (ok == OK) && (try_rename == YES) ) {
     char * newname = ECRS_suggestFilename(filename);

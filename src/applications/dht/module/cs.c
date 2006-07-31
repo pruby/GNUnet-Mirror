@@ -385,9 +385,9 @@ static int csJoin(ClientHandle client,
 	 csHandlersCount+1);
     csHandlers[csHandlersCount-1] = ptr;
   } else {
-    SEMAPHORE_FREE(ptr->prerequest);
-    SEMAPHORE_FREE(ptr->prereply);
-    SEMAPHORE_FREE(ptr->postreply);
+    SEMAPHORE_DESTROY(ptr->prerequest);
+    SEMAPHORE_DESTROY(ptr->prereply);
+    SEMAPHORE_DESTROY(ptr->postreply);
     FREE(ptr->store);
     FREE(ptr);
   }
@@ -431,9 +431,9 @@ static int csLeave(ClientHandle client,
       ptr->status = SYSERR;
       SEMAPHORE_UP(ptr->prereply);
       SEMAPHORE_DOWN(ptr->prerequest);
-      SEMAPHORE_FREE(ptr->prerequest);
-      SEMAPHORE_FREE(ptr->prereply);
-      SEMAPHORE_FREE(ptr->postreply);
+      SEMAPHORE_DESTROY(ptr->prerequest);
+      SEMAPHORE_DESTROY(ptr->prereply);
+      SEMAPHORE_DESTROY(ptr->postreply);
       FREE(ptr->store);
       FREE(ptr);
       return sendAck(client,

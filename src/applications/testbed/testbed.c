@@ -664,7 +664,7 @@ static void tb_EXEC(ClientHandle client,
 			  pi,
 			  8*1024)) {
     LOG_STRERROR(LOG_WARNING, "pthread_create");
-    SEMAPHORE_FREE(pi->sem);
+    SEMAPHORE_DESTROY(pi->sem);
     MUTEX_UNLOCK(&lock);
     FREE(pi);
     sendAcknowledgement(client, SYSERR);
@@ -672,7 +672,7 @@ static void tb_EXEC(ClientHandle client,
   }
   MUTEX_UNLOCK(&lock);
   SEMAPHORE_DOWN(pi->sem);
-  SEMAPHORE_FREE(pi->sem);
+  SEMAPHORE_DESTROY(pi->sem);
   uid = pi->uid;
   if (uid == -1) {
     errno = pi->errno_;

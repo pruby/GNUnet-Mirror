@@ -63,21 +63,21 @@ static SQstore_ServiceAPI * sq;
  * Semaphore on which the RCB acquire thread waits
  * if the RCB buffer is full.
  */
-static Semaphore * acquireMoreSignal;
+static struct SEMAPHORE * acquireMoreSignal;
 
-static Semaphore * doneSignal;
+static struct SEMAHPORE * doneSignal;
 
 /**
  * Lock for the RCB buffer.
  */
-static Mutex lock;
+static struct MUTEX * lock;
 
 /**
  * Highest index in RCB that is valid.
  */
 static int rCBPos = 0;
 
-static PTHREAD_T gather_thread;
+static struct PTHREAD * gather_thread;
 
 
 static int aquire(const HashCode512 * key,
@@ -90,14 +90,14 @@ static int aquire(const HashCode512 * key,
   SEMAPHORE_DOWN(acquireMoreSignal);
   if (doneSignal != NULL)
     return SYSERR;
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   load = 0;
   while (randomContentBuffer[rCBPos].value != NULL) {
     rCBPos = (rCBPos + 1) % RCB_SIZE;
     load++;
     if (load > RCB_SIZE) {
       GE_BREAK(ectx, 0);
-      MUTEX_UNLOCK(&lock);
+      MUTEX_UNLOCK(lock);
       return SYSERR;
     }
   }  
@@ -113,7 +113,7 @@ static int aquire(const HashCode512 * key,
   memcpy(randomContentBuffer[rCBPos].value,
 	 value,
 	 ntohl(value->size));
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   load = getCPULoad(); /* FIXME: should use 'IO load' here */
   if (load < 10)
     load = 10;    /* never sleep less than 500 ms */
@@ -170,7 +170,7 @@ int getRandom(const HashCode512 * receiver,
 
   minIdx = -1;
   minDist = -1; /* max */
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (i=0;i<RCB_SIZE;i++) {
     if (randomContentBuffer[i].value == NULL)
       continue;
@@ -188,7 +188,7 @@ int getRandom(const HashCode512 * receiver,
     }
   }
   if (minIdx == -1) {
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
 #if DEBUG_PREFETCH
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Failed to find content in prefetch buffer\n");
@@ -216,7 +216,7 @@ int getRandom(const HashCode512 * receiver,
     randomContentBuffer[minIdx].value = NULL;
     SEMAPHORE_UP(acquireMoreSignal);
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 				
@@ -227,7 +227,7 @@ void initPrefetch(SQstore_ServiceAPI * s) {
 	 sizeof(ContentBuffer *)*RCB_SIZE);
   acquireMoreSignal = SEMAPHORE_NEW(RCB_SIZE);
   doneSignal = NULL;
-  MUTEX_CREATE(&lock);
+  lock = MUTEX_CREATE();
   if (0 != PTHREAD_CREATE(&gather_thread,
 			  (PThreadMain)&rcbAcquire,
 			  NULL,
@@ -242,12 +242,13 @@ void donePrefetch() {
   doneSignal = SEMAPHORE_NEW(0);
   SEMAPHORE_UP(acquireMoreSignal);
   SEMAPHORE_DOWN(doneSignal);
-  SEMAPHORE_FREE(acquireMoreSignal);
-  SEMAPHORE_FREE(doneSignal);
+  SEMAPHORE_DESTROY(acquireMoreSignal);
+  SEMAPHORE_DESTROY(doneSignal);
   PTHREAD_JOIN(&gather_thread, &unused);
   for (i=0;i<rCBPos;i++)
     FREENONNULL(randomContentBuffer[i].value);
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
+  lock = NULL;
 }
 
 /* end of prefetch.c */
