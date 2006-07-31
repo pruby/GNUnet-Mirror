@@ -939,7 +939,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 				 (void**)&data)) {
     tableCount = dataLength / sizeof(DHT_TableId);
     if (tableCount * sizeof(DHT_TableId) != dataLength) {
-      IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+      IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -952,7 +952,7 @@ static void processOptionalFields(const PeerIdentity * responder,
     cronTime(&now);
 
 #if DEBUG_DHT
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -966,7 +966,7 @@ static void processOptionalFields(const PeerIdentity * responder,
     pos = findPeerInfo(responder);
     bucket = findBucket(responder);
     if (bucket == NULL) {
-      IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+      IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -1011,7 +1011,7 @@ static void processOptionalFields(const PeerIdentity * responder,
     }
     if (pos == NULL) {
 #if DEBUG_DHT
-      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1020,7 +1020,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 #endif
     } else {
 #if DEBUG_DHT
-      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1113,7 +1113,7 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
 				 "peer",
 				 &dataLength,
 				 (void**) &value)) {
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -1128,7 +1128,7 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
      the peer will automatically trigger the ping_reply_handler
      which will in turn trigger create_find_nodes_rpc) */
   if ( (dataLength % sizeof(PeerIdentity)) != 0) {
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -1142,14 +1142,14 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
 
     msg = (PeerIdentity*) &value[pos];
 #if DEBUG_DHT
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"processing PeerID received from peer `%s' in response to `%s' RPC.\n",
 	&enc,
 	"DHT_findNode");
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&msg->hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1178,7 +1178,7 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
 #if DEBUG_DHT
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1263,7 +1263,7 @@ ping_reply_handler(const PeerIdentity * responder,
   }
 
 #if DEBUG_DHT
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&responder->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1297,7 +1297,7 @@ static void request_DHT_ping(const PeerIdentity * identity,
 #if DEBUG_DHT
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&identity->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1362,7 +1362,7 @@ static unsigned int findLocalNodes(const DHT_TableId * table,
 #if DEBUG_DHT
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1383,7 +1383,7 @@ static unsigned int findLocalNodes(const DHT_TableId * table,
 #if DEBUG_DHT
 	  EncName enc;
 	
-	  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+	  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 		hash2enc(&pos->id.hashPubKey,
 			 &enc));
 	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1428,7 +1428,7 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
 
   max = RPC_paramCount(results);
 #if DEBUG_DHT
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&responder->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1477,7 +1477,7 @@ send_dht_get_rpc(const PeerIdentity * peer,
   EncName enc;
 
   ENTER();
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1585,10 +1585,10 @@ dht_get_async_start(const DHT_TableId * table,
   int res;
 
   ENTER();
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&keys[0],
 		 &enc));
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc2));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1630,7 +1630,7 @@ dht_get_async_start(const DHT_TableId * table,
   if (ltd != NULL) {
     PeerIdentity * hosts;
 #if DEBUG_DHT
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(table,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1671,7 +1671,7 @@ dht_get_async_start(const DHT_TableId * table,
 			      (DataProcessor)&getLocalResultCallback,
 			      ret);
 #if DEBUG_DHT
-	IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+	IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&keys[0],
 		       &enc));
 	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1689,7 +1689,7 @@ dht_get_async_start(const DHT_TableId * table,
 	if (! hostIdentityEquals(coreAPI->myIdentity,
 				 &hosts[i])) {
 #if DEBUG_DHT
-	  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+	  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 		hash2enc(&hosts[i].hashPubKey,
 			 &enc));
 	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1704,7 +1704,7 @@ dht_get_async_start(const DHT_TableId * table,
     }
   } else {
 #if DEBUG_DHT
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(table,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1841,7 +1841,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
   EncName enc;
 
   ENTER();
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1897,7 +1897,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 				    fnc);
     } else {
 #if DEBUG_DHT
-      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(table,
 		     &enc));
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1999,7 +1999,7 @@ find_k_nodes_dht_master_get_callback(const HashCode512 * key,
 
     msg = &value[pos];
 #if DEBUG_DHT
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&msg->hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2229,7 +2229,7 @@ send_dht_put_rpc(const PeerIdentity * peer,
 #if DEBUG_DHT
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2323,10 +2323,10 @@ dht_put_async_start(const DHT_TableId * table,
   }
 
   ENTER();
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc2));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2362,7 +2362,7 @@ dht_put_async_start(const DHT_TableId * table,
   if (ltd != NULL) {
     PeerIdentity * hosts;
 #if DEBUG_DHT
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(table,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2531,7 +2531,7 @@ send_dht_remove_rpc(const PeerIdentity * peer,
   EncName enc;
 
   ENTER();
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2826,7 +2826,7 @@ static void rpc_DHT_ping(const PeerIdentity * sender,
 #if DEBUG_DHT
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&sender->hashPubKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -3504,7 +3504,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
 	EncName enc;
 	
 	ENTER();
-	IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+	IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&pos->id.hashPubKey,
 		       &enc));
 	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

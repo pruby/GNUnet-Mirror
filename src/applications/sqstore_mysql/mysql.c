@@ -694,7 +694,7 @@ static int get(const HashCode512 * query,
     return iterateLowPriority(type, iter, closure);
 
 #if DEBUG_MYSQL
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -844,7 +844,7 @@ static int get(const HashCode512 * query,
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
 #if DEBUG_MYSQL
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
   if (count > 0) {
@@ -898,7 +898,7 @@ static int put(const HashCode512 * key,
   expiration = ntohll(value->expirationTime);
 
 #if DEBUG_MYSQL
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -962,7 +962,7 @@ static int del(const HashCode512 * key,
 #if DEBUG_MYSQL
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

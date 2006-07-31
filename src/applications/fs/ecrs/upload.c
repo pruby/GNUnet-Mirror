@@ -74,7 +74,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
                       size,
                       &ichk.query);
 #if DEBUG_UPLOAD
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&ichk.query,
                    &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -98,7 +98,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
     }
     value->prio = htonl(prio);
 #if DEBUG_UPLOAD
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&ichk.query,
                    &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -290,7 +290,7 @@ int ECRS_uploadFile(const char * filename,
                       size + sizeof(DBlock),
                       &chk.query);
 #if DEBUG_UPLOAD
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&chk.query,
                    &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -369,7 +369,7 @@ int ECRS_uploadFile(const char * filename,
                       size,
                       &chk.query);
 #if DEBUG_UPLOAD
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&chk.query,
                    &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -402,7 +402,7 @@ int ECRS_uploadFile(const char * filename,
     iblocks[i] = NULL;
   }
 #if DEBUG_UPLOAD
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         hash2enc(&chk.query,
                  &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

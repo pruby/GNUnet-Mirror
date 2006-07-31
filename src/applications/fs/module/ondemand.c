@@ -245,7 +245,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 #endif
 
 #if DEBUG_ONDEMAND
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&key, &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Storing on-demand content for query `%s'\n",
@@ -610,7 +610,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     else /* not found */
       ret = SYSERR;
     if (ret == SYSERR) {
-      IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+      IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    hash2enc(&key,
 		     &enc));
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,

@@ -360,7 +360,7 @@ static int receiveReplies(const HashCode512 * key,
 	kb = MALLOC(size);
 	memcpy(kb, &value[1], size);
 #if DEBUG_SEARCH
-	IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+	IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&ps->decryptKey,
 		       &enc));
 	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

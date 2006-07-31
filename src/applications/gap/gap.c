@@ -529,7 +529,7 @@ static void sendToSelected(const PeerIdentity * peer,
 
   if (getBit(qr, getIndex(id)) == 1) {
 #if DEBUG_GAP
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&peer->hashPubKey,
 		   &encp);
 	  hash2enc(&qr->msg->queries[0],
@@ -770,7 +770,7 @@ static int queueReply(const PeerIdentity * sender,
 #if DEBUG_GAP
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(primaryKey,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -890,7 +890,7 @@ static int addToSlot(int mode,
 #if DEBUG__GAP
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1281,7 +1281,7 @@ static void sendReply(IndirectionTableEntry * ite,
     resolve_pid(ite->destination[j],
 		&recv);
 #if DEBUG_GAP
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&recv.hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1441,7 +1441,7 @@ static int execQuery(const PeerIdentity * sender,
     doForward = NO;
 
 #if DEBUG_GAP
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         hash2enc(&query->queries[0],
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1556,7 +1556,7 @@ static int useContent(const PeerIdentity * host,
 #if DEBUG_GAP
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	if (host != NULL)
 	  hash2enc(&host->hashPubKey,
 		   &enc));
@@ -1609,7 +1609,7 @@ static int useContent(const PeerIdentity * host,
   if (ret == SYSERR) {
     EncName enc;
     
-    IFGE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  if (host != NULL)
 	    hash2enc(&host->hashPubKey, 
 		     &enc));
@@ -1930,7 +1930,7 @@ static int handleQuery(const PeerIdentity * sender,
 	 (getNetworkLoadUp() >= hardUpLimit) ) ) {
 #if DEBUG_GAP
     if (sender != NULL) {
-      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));
     }
@@ -1983,7 +1983,7 @@ static int handleQuery(const PeerIdentity * sender,
   policy = evaluateQuery(sender,
 			 &prio);
 #if DEBUG_GAP
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&qmsg->queries[0],
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1996,7 +1996,7 @@ static int handleQuery(const PeerIdentity * sender,
     FREE(qmsg);
 #if DEBUG_GAP
     if (sender != NULL) {
-      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));
     }

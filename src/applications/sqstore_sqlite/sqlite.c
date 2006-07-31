@@ -657,7 +657,7 @@ static int get(const HashCode512 * key,
 
 #if DEBUG_SQLITE
   EncName enc;
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -772,7 +772,7 @@ static int put(const HashCode512 * key,
 #if DEBUG_SQLITE
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -852,7 +852,7 @@ static int del(const HashCode512 * key,
 #if DEBUG_SQLITE
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -967,7 +967,7 @@ static int update(const HashCode512 * key,
 #if DEBUG_SQLITE
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

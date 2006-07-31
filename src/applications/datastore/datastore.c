@@ -86,7 +86,7 @@ static int get(const HashCode512 * query,
 #if DEBUG_DATASTORE
     EncName enc;
 
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(query,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -111,7 +111,7 @@ static int del(const HashCode512 * query,
   int i;
 
   if (! testAvailable(query)) {
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(query,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -127,7 +127,7 @@ static int del(const HashCode512 * query,
       available += ntohl(value->size);
     }
 #if DEBUG_DATASTORE
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(query,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -135,7 +135,7 @@ static int del(const HashCode512 * query,
 	&enc);
 #endif
   } else {
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(query,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,

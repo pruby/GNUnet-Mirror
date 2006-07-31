@@ -605,7 +605,7 @@ static int readAndProcess(int i) {
     httpSession->expectingWelcome = NO;
     httpSession->sender = welcome->clientIdentity;
 #if DEBUG_HTTP
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&httpSession->sender.hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

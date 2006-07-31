@@ -154,7 +154,7 @@ receivedhello(const MESSAGE_HEADER * message) {
 			  &msg->signature,
 			  &msg->publicKey)) {
     EncName enc;
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&msg->senderIdentity.hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -362,7 +362,7 @@ broadcastHelper(const PeerIdentity * hi,
   if (weak_randomi(sd->n) != 0)
     return;
 #if DEBUG_ADVERTISING
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&hi->hashPubKey,
 		 &other));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -570,7 +570,7 @@ forwardhelloHelper(const PeerIdentity * peer,
   if ((TIME_T)ntohl(helo->expirationTime) < now) {
     EncName enc;
     /* remove hellos that expired */
-    IFGE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	  hash2enc(&peer->hashPubKey,
 		   &enc));
     GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,

@@ -145,7 +145,7 @@ void processResponse(const HashCode512 * key,
   GE_ASSERT(ectx, ntohl(value->size) > sizeof(Datastore_Value));
   matchCount = 0;
 #if DEBUG_QUERYMANAGER
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
 #endif

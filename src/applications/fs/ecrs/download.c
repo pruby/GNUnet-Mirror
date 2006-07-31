@@ -524,7 +524,7 @@ static void addRequest(RequestManager * rm,
 #if DEBUG_DOWNLOAD
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&node->chk.query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -899,7 +899,7 @@ static int nodeReceive(const HashCode512 * query,
 #if DEBUG_DOWNLOAD
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1062,7 +1062,7 @@ static void issueRequest(RequestManager * rm,
   }
 
 #if DEBUG_DOWNLOAD
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&entry->node->chk.query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1105,7 +1105,7 @@ static void issueRequest(RequestManager * rm,
   if ( (0 == (entry->tries % MAX_TRIES)) &&
        (entry->tries > 0) )  {
     EncName enc;
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&entry->node->chk.key,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,

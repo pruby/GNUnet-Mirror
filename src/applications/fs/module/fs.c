@@ -188,7 +188,7 @@ static int gapPut(void * closure,
   }
   processResponse(query, dv);
 #if DEBUG_FS
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -210,7 +210,7 @@ static int get_result_callback(const HashCode512 * query,
 #if DEBUG_FS
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -252,7 +252,7 @@ static int csHandleRequestQueryStop(ClientHandle sock,
   }
   rs = (CS_fs_request_search_MESSAGE*) req;
 #if DEBUG_FS
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&rs->query[0],
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -308,7 +308,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*) &ri[1]);
 #if DEBUG_FS
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -511,7 +511,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
     return SYSERR;
   }
 #if DEBUG_FS
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&query,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -632,7 +632,7 @@ static int gapGetConverter(const HashCode512 * key,
   EncName enc;
 
 #if DEBUG_FS
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -656,7 +656,7 @@ static int gapGetConverter(const HashCode512 * key,
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(key,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -666,7 +666,7 @@ static int gapGetConverter(const HashCode512 * key,
     return SYSERR; /* no query will ever match */
   }
   if (ret == NO) {
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(key,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -689,7 +689,7 @@ static int gapGetConverter(const HashCode512 * key,
        refuse to hand out data that requires
        anonymity! */
     FREENONNULL(xvalue);
-    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(key,
 		   &enc));
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -745,7 +745,7 @@ static int gapGet(void * closure,
 #if DEBUG_FS
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&keys[0],
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -906,7 +906,7 @@ static int dhtGet(void * closure,
   GGC myClosure;
   EncName enc;
 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&keys[0],
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1087,7 +1087,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
 #if DEBUG_FS 
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&rs->query[0],
 		 &enc));
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

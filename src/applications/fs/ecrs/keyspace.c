@@ -72,7 +72,7 @@ static int verifyKBlock(const HashCode512 * key,
   if (size < sizeof(KBlock))
     return SYSERR;
   kb = (KBlock*) &value[1];
-  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
   ECRS_decryptInPlace(key,
@@ -211,7 +211,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 	 strlen(keywords[i]),
 	 &key);
 #if DEBUG_KEYSPACE
-    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&key,
 		   &enc));
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
