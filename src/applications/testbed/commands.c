@@ -381,7 +381,7 @@ static int addSshNode(int argc, char * argv[]) {
     if (ret == OK)
       break;
     rtc++;
-    gnunet_util_sleep(cronSECONDS);
+    PTHREAD_SLEEP(cronSECONDS);
   }
   if (ret == SYSERR) {
     XPRINTF(" could not connect to %s:%d.\n",
@@ -1651,7 +1651,7 @@ static int addAvailable(int argc,
 			       sizeof(c),
 			       &ret);
     if ( success == NO ) {
-      gnunet_util_sleep(100 * cronMILLIS);
+      PTHREAD_SLEEP(100 * cronMILLIS);
       continue;
     }
     if ( (ret == 0) || (ret == (size_t)-1) )
@@ -1685,7 +1685,7 @@ static int addAvailable(int argc,
 			     65536-curpos,
 			     &ret);
       if ( success == NO ) {
-        gnunet_util_sleep(20);
+        PTHREAD_SLEEP(20);
 	continue;
       }
       if ( (ret == 0) || (ret == (size_t)-1) )

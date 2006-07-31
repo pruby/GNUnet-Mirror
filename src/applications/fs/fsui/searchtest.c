@@ -127,7 +127,7 @@ int main(int argc, char * argv[]){
   ok = YES;
   startCron();
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
-  gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
+  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
 
@@ -175,14 +175,14 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 10000)
 
-    gnunet_util_sleep(50 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
   }
 
   prog = 0;
   while (lastEvent != FSUI_download_complete) {
     prog++;
     CHECK(prog < 10000);
-    gnunet_util_sleep(50 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
   }
   FSUI_stopSearch(ctx,
 		  uri);

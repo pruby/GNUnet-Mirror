@@ -1253,7 +1253,7 @@ static void httpRegister(char * cmd) {
 			       sizeof(c),
 			       &ret);
     if ( success == NO ) {
-      gnunet_util_sleep(100 * cronMILLIS);
+      PTHREAD_SLEEP(100 * cronMILLIS);
       continue;
     }
     if ( (ret == 0) || (ret == (size_t) -1) )
@@ -1301,7 +1301,7 @@ static void testbedClientExitHandler(ClientHandle client) {
      semaphores... */
   while (pding > 0) {
     pding = 0;
-    gnunet_util_sleep(50);
+    PTHREAD_SLEEP(50);
     MUTEX_LOCK(&lock);
     for (i=ptSize-1;i>=0;i--) {
       if (pt[i]->client == client) {

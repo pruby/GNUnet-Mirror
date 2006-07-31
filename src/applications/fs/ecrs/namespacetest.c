@@ -112,7 +112,7 @@ int main(int argc, char * argv[]) {
   daemon = startGNUnetDaemon(NO);
   GE_ASSERT(ectx, daemon > 0);
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
-  gnunet_util_sleep(30 * cronSECONDS);
+  PTHREAD_SLEEP(30 * cronSECONDS);
 
   failureCount += testNamespace();
 

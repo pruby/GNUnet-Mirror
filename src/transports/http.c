@@ -872,7 +872,7 @@ try_again_1:
 	  /* this should only happen under Win9x because
 	     of a bug in the socket implementation (KB177346).
 	     Let's sleep and try again. */
-	  gnunet_util_sleep(20);
+	  PTHREAD_SLEEP(20);
 	  goto try_again_1;
 	}
 	if (stats != NULL)

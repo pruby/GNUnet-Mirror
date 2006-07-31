@@ -336,9 +336,9 @@ static int csHandleTBenchRequest(ClientHandle client,
 		(timeoutOccured == NO) ) {
 	  if (delayStart + delay - now  > 5 * cronMILLIS) {
 	    pollResults(&results[iteration], NO);
-	    gnunet_util_sleep(5 * cronMILLIS);
+	    PTHREAD_SLEEP(5 * cronMILLIS);
 	  } else
-	    gnunet_util_sleep(delayStart + delay - now);
+	    PTHREAD_SLEEP(delayStart + delay - now);
 	}
       }	
       if ( (0 == pollResults(&results[iteration], NO)) &&
@@ -350,7 +350,7 @@ static int csHandleTBenchRequest(ClientHandle client,
       if ( (0 == pollResults(&results[iteration], YES) ) &&
 	   (earlyEnd == 0) )
 	earlyEnd = now;
-      gnunet_util_sleep(5 * cronMILLIS);
+      PTHREAD_SLEEP(5 * cronMILLIS);
     }
 
     /* make sure to unblock waiting jobs */

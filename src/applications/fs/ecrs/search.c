@@ -615,7 +615,7 @@ int ECRS_search(const struct ECRS_URI * uri,
 	    (timeout > now) &&
 	    (ctx.aborted == NO) ) )
       break;
-    gnunet_util_sleep(100 * cronMILLIS);
+    PTHREAD_SLEEP(100 * cronMILLIS);
     cronTime(&now);
   }
   for (i=0;i<ctx.queryCount;i++) {

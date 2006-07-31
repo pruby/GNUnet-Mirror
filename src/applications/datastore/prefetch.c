@@ -123,7 +123,7 @@ static int aquire(const HashCode512 * key,
   if (doneSignal != NULL)
     return SYSERR;
   /* the higher the load, the longer the sleep */
-  gnunet_util_sleep(50 * cronMILLIS * load);
+  PTHREAD_SLEEP(50 * cronMILLIS * load);
   if (doneSignal != NULL)
     return SYSERR;
   return OK;
@@ -146,7 +146,7 @@ static void * rcbAcquire(void * unused) {
     if (load > 100)
       load = 100;   /* never sleep longer than 5 seconds since that
 		       might show up badly in the shutdown sequence... */
-    gnunet_util_sleep(50 * cronMILLIS * load);
+    PTHREAD_SLEEP(50 * cronMILLIS * load);
   }
   SEMAPHORE_UP(doneSignal);
   return NULL;

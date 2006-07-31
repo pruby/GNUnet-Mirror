@@ -83,7 +83,7 @@ int main(int argc, char ** argv) {
 				     "peer2.conf"));
   daemon2 = startGNUnetDaemon(NO);
   /* in case existing hellos have expired */
-  gnunet_util_sleep(30 * cronSECONDS);
+  PTHREAD_SLEEP(30 * cronSECONDS);
   system("cp peer1/data/hosts/* peer2/data/hosts/");
   system("cp peer2/data/hosts/* peer1/data/hosts/");
   if (daemon1 != -1) {
@@ -106,7 +106,7 @@ int main(int argc, char ** argv) {
 				     "GNUNETD-CONFIG",
 				     "peer2.conf"));
   daemon2 = startGNUnetDaemon(NO);
-  gnunet_util_sleep(5 * cronSECONDS);
+  PTHREAD_SLEEP(5 * cronSECONDS);
 
 
   ret = 0;

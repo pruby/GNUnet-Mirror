@@ -269,7 +269,7 @@ int main(int argc, char * argv[]){
   ok = YES;
   startCron();
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
-  gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
+  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   sock = getClientSocket();
   CHECK(sock != NULL);
 

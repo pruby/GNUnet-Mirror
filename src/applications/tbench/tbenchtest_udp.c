@@ -189,7 +189,7 @@ int main(int argc, char ** argv) {
 				     "GNUNETD-CONFIG",
 				     "peer2udp.conf"));
   daemon2 = startGNUnetDaemon(NO);
-  gnunet_util_sleep(5 * cronSECONDS);
+  PTHREAD_SLEEP(5 * cronSECONDS);
   sleep(5);
 
   ret = 0;

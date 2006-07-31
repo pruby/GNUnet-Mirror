@@ -1556,7 +1556,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
     ret = SYSERR;
   }
   RPC_paramFree(rets);
-  gnunet_util_sleep(1 * cronSECONDS);
+  PTHREAD_SLEEP(1 * cronSECONDS);
   if (RPC_ERROR_OK != rpcAPI->RPC_stop(record))
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("async RPC reply not received.\n"));

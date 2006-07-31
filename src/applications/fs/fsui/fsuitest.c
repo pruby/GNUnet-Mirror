@@ -127,7 +127,7 @@ int main(int argc, char * argv[]){
   ok = YES;
   startCron();
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
-  gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
+  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start("fsuitest",
@@ -158,7 +158,7 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 10000)
 
-    gnunet_util_sleep(50 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
   }
   SNPRINTF(keyword,
 	   40,
@@ -174,7 +174,7 @@ int main(int argc, char * argv[]){
   while (lastEvent != FSUI_download_complete) {
     prog++;
     CHECK(prog < 10000);
-    gnunet_util_sleep(50 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
   }
   FSUI_stopSearch(ctx,
 		  uri);

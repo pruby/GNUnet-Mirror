@@ -194,7 +194,7 @@ int main(int argc, char * argv[]){
   ok = YES;
   startCron();
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
-  gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
+  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start("fsuidownloadtest",
@@ -230,7 +230,7 @@ int main(int argc, char * argv[]){
   while (lastEvent != FSUI_upload_complete) {
     prog++;
     CHECK(prog < 1000);
-    gnunet_util_sleep(50 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
   }
   SNPRINTF(keyword,
 	   40,
@@ -247,7 +247,7 @@ int main(int argc, char * argv[]){
   while (lastEvent != FSUI_download_complete) {
     prog++;
     CHECK(prog < 10000);
-    gnunet_util_sleep(50 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
     if ( (suspendRestart > 0) &&
 	 (weak_randomi(4) == 0) ) {
       suspendCron();
@@ -277,7 +277,7 @@ int main(int argc, char * argv[]){
   while (lastEvent != FSUI_unindex_complete) {
     prog++;
     CHECK(prog < 1000);
-    gnunet_util_sleep(50 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
     CHECK(lastEvent != FSUI_unindex_error);
   }
   CHECK(lastEvent == FSUI_unindex_complete);

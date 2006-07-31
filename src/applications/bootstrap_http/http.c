@@ -51,6 +51,8 @@ static CoreAPIForApplication * coreAPI;
 
 static int stat_hellodownloaded;
 
+static struct GE_Context * ectx;
+
 /**
  * Download hostlist from the web and call method
  * on each hello.
@@ -201,7 +203,7 @@ downloadHostlistHelper(char * url,
 			       sizeof(c),
 			       &ret);
     if (success == NO) {
-      gnunet_util_sleep(100 * cronMILLIS);
+      PTHREAD_SLEEP(100 * cronMILLIS);
       continue;
     }
     if (ret <= 0)
@@ -321,6 +323,7 @@ provide_module_bootstrap(CoreAPIForApplication * capi) {
   char *proxy, *proxyPort;
   IPaddr ip;
 
+  ectx = capi->ectx;
   proxy = getConfigurationString("GNUNETD",
 				 "HTTP-PROXY");
   if (proxy != NULL) {

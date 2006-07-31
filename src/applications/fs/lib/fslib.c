@@ -130,7 +130,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	  "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
 	  delay);
 #endif
-      gnunet_util_sleep(delay);
+      PTHREAD_SLEEP(delay);
       delay *= 2;
       if (delay > 5 * cronSECONDS)
 	delay = 5 * cronSECONDS;

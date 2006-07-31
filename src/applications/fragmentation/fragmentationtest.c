@@ -67,7 +67,7 @@ static void handleHelper(const PeerIdentity * sender,
  * Wait long enough to force all fragments to timeout.
  */
 static void makeTimeout() {
-  gnunet_util_sleep(DEFRAGMENTATION_TIMEOUT*2);
+  PTHREAD_SLEEP(DEFRAGMENTATION_TIMEOUT*2);
   defragmentationPurgeCron();
 }
 

@@ -78,7 +78,7 @@ int main(int argc, char * argv[]){
   startCron();
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
   ECRS_deleteNamespace("test");
-  gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
+  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
   ctx = FSUI_start("namespace_infotest",

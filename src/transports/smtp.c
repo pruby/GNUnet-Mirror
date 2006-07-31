@@ -354,7 +354,7 @@ try_again:
 			       MAX_SMTP_LINE - pos,
 			       &i);
     if (success == NO) {
-      gnunet_util_sleep(20);
+      PTHREAD_SLEEP(20);
       goto try_again;
     }
 	
@@ -450,7 +450,7 @@ static void * listenAndDistribute() {
     fd = fileopen(pipename, O_RDONLY);
     if (fd == -1) {
       if (smtp_shutdown == NO)
-	gnunet_util_sleep(5 * cronSECONDS);
+	PTHREAD_SLEEP(5 * cronSECONDS);
       continue;
     }
     fdes = fdopen(fd, "r");

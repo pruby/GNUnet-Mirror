@@ -236,7 +236,7 @@ int main(int argc, char * argv[]){
   startCron();
   MUTEX_CREATE(&lock);
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(60 * cronSECONDS));
-  gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
+  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   sock = getClientSocket();
   CHECK(sock != NULL);
   ctx = FS_SEARCH_makeContext(&lock);
@@ -341,7 +341,7 @@ int main(int argc, char * argv[]){
 			&countCallback,
 			&i);
   CHECK(hnd != NULL);
-  gnunet_util_sleep(10 * cronSECONDS);
+  PTHREAD_SLEEP(10 * cronSECONDS);
   FS_stop_search(ctx, hnd);
   CHECK(i <= 0);
 		

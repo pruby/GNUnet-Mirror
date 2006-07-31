@@ -46,7 +46,7 @@ static int check() {
 #define MAXV 1500
   for (i=0;i<MAXV;i+=INCR) {
     cronTime(&last);
-    if (0 != gnunet_util_sleep(cronMILLIS * i))
+    if (0 != PTHREAD_SLEEP(cronMILLIS * i))
       return 5;
     cronTime(&now);
 #if VERBOSE

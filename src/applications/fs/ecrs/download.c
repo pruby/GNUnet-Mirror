@@ -1270,7 +1270,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
     if ( (OK == tt(ttClosure)) &&
 	  (rm->abortFlag == NO) &&
 	  (rm->requestListIndex != 0) ) 
-      gnunet_util_sleep(minSleep);
+      PTHREAD_SLEEP(minSleep);
   }
   
   if ( (rm->requestListIndex == 0) &&

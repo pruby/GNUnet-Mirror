@@ -154,7 +154,7 @@ static void * process_thread(TableList * list) {
 
   while (list->leave_request == NO) {
     if (list->sock == NULL) {
-      gnunet_util_sleep(500 * cronMILLIS);
+      PTHREAD_SLEEP(500 * cronMILLIS);
       MUTEX_LOCK(&list->lock);
       if (list->leave_request == NO)
 	list->sock  = getClientSocket();

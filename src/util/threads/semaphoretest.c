@@ -41,7 +41,7 @@ static void lockIt() {
   sv = 0;
   fprintf(stderr, ".");
   while (sv == 0)
-    gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
+    PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
   MUTEX_LOCK(&lock);
   sv = 1;
   MUTEX_UNLOCK(&lock);
@@ -72,7 +72,7 @@ static int testPTHREAD_CREATE() {
   PTHREAD_DETACH(&pt);
   while (tv != 2) {
     sv = 1;
-    gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
+    PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
   }
   MUTEX_DESTROY(&lock);
   PTHREAD_CREATE(&pt,
@@ -95,7 +95,7 @@ static int testMutex() {
 		 NULL,
 		 1024);
   while (sv == 1)
-    gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
+    PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
   MUTEX_LOCK(&lock);
   sv = 5; /* release lockIt from while sv==0 loop,
 	     blocks it on lock */
@@ -104,7 +104,7 @@ static int testMutex() {
   if (sv != 5) {
     MUTEX_UNLOCK(&lock);
     while (tv != 2)
-      gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
+      PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
     MUTEX_DESTROY(&lock);
     printf("MUTEX test failed at %s:%u\n",
 	   __FILE__, __LINE__);
@@ -112,7 +112,7 @@ static int testMutex() {
   } else {
     MUTEX_UNLOCK(&lock);
     while (tv != 2)
-      gnunet_util_sleep(50 * cronMILLIS); /* busy waiting may not always work */
+      PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
     PTHREAD_JOIN(&pt, &unused);
     MUTEX_DESTROY(&lock);
     return 0; /* ok */
