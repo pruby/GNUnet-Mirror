@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -125,12 +125,12 @@ static void callAddHost(void * cls) {
  * @return SYSERR on error, OK on success
  */
 static int
-receivedhello(const P2P_MESSAGE_HEADER * message) {
+receivedhello(const MESSAGE_HEADER * message) {
   TSession * tsession;
   P2P_hello_MESSAGE * copy;
   PeerIdentity foreignId;
   P2P_hello_MESSAGE * msg;
-  P2P_MESSAGE_HEADER * ping;
+  MESSAGE_HEADER * ping;
   char * buffer;
   int heloEnd;
   int mtu;
@@ -150,7 +150,7 @@ receivedhello(const P2P_MESSAGE_HEADER * message) {
 			  P2P_hello_MESSAGE_size(msg)
 			  - sizeof(Signature)
 			  - sizeof(PublicKey)
-			  - sizeof(P2P_MESSAGE_HEADER),
+			  - sizeof(MESSAGE_HEADER),
 			  &msg->signature,
 			  &msg->publicKey)) {
     EncName enc;
@@ -442,7 +442,8 @@ broadcasthelloTransport(TransportAPI * tapi,
   SendData sd;
   cron_t now;
 
-  if (getNetworkLoadUp() > 100)
+  if (os_network_monitor_get_load(coreAPI->load_monitor,
+				  Upload) > 100)
     return; /* network load too high... */
   if (0 != weak_randomi(*prob))
     return; /* ignore */
@@ -490,9 +491,11 @@ broadcasthelloTransport(TransportAPI * tapi,
 static void broadcasthello(void * unused) {
   unsigned int i;
 
-  if (getNetworkLoadUp() > 100)
+  if (os_network_monitor_get_load(coreAPI->load_monitor,
+				  Upload) > 100)
     return; /* network load too high... */
-  if (getCPULoad() > 100)
+  if (os_cpu_get_load(coreAPI->ectx,
+		      coreAPI->cfg) > 100)
     return; /* CPU load too high... */
   i = transport->forEach(NULL,
 			 NULL);
@@ -508,7 +511,8 @@ typedef struct {
 
 static void forwardCallback(const PeerIdentity * peer,
 			    FCC * fcc) {
-  if (getNetworkLoadUp() > 100)
+  if (os_network_monitor_get_load(coreAPI->monitor,
+				  Upload) > 100)
     return; /* network load too high... */
   if (weak_randomi(fcc->prob) != 0)
     return; /* only forward with a certain chance */
@@ -538,7 +542,8 @@ forwardhelloHelper(const PeerIdentity * peer,
   int count;
   FCC fcc;
 
-  if (getNetworkLoadUp() > 100)
+  if (os_network_monitor_get_load(coreAPI->load_monitor,
+				  Upload) > 100)
     return; /* network load too high... */
   if (confirmed == NO)
     return;
@@ -597,9 +602,11 @@ static void
 forwardhello(void * unused) {
   int count;
 
-  if (getCPULoad() > 100)
+  if (os_cpu_get_load(coreAPI->ectx,
+		      coreAPI->cfg) > 100)
     return; /* CPU load too high... */
-  if (getNetworkLoadUp() > 100)
+  if (os_network_monitor_get_load(coreAPI->load_monitor,
+				  Upload) > 100)
     return; /* network load too high... */
 #if DEBUG_ADVERTISING
   LOG(LOG_CRON,
@@ -624,7 +631,7 @@ forwardhello(void * unused) {
  */
 static int
 ehelloHandler(const PeerIdentity * sender,
-	     const P2P_MESSAGE_HEADER * message) {
+	      const MESSAGE_HEADER * message) {
   if (OK == receivedhello(message)) {
     /* if the hello was ok, update traffic preference
        for the peer (depending on how much we like
@@ -640,7 +647,7 @@ ehelloHandler(const PeerIdentity * sender,
  */
 static int
 phelloHandler(const PeerIdentity * sender,
-	     const P2P_MESSAGE_HEADER * message,
+	      const MESSAGE_HEADER * message,
 	     TSession * session) {
   receivedhello(message);
   return OK;
@@ -657,36 +664,40 @@ configurationUpdateCallback() {
     if (testConfigurationString("NETWORK",
 				"DISABLE-ADVERTISEMENTS",
 				"YES"))
-      delCronJob(&broadcasthello,
-		 HELLO_BROADCAST_FREQUENCY,
-		 NULL);
+      cron_del_job(coreAPI->cron,
+		   &broadcasthello,
+		   HELLO_BROADCAST_FREQUENCY,
+		   NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   } else {
     if (testConfigurationString("NETWORK",
 				"HELLOEXCHANGE",
 				"YES"))
-      addCronJob(&broadcasthello,
-		 15 * cronSECONDS,
-		 HELLO_BROADCAST_FREQUENCY,
-		 NULL);
+      cron_add_job(coreAPI->cron,
+		   &broadcasthello,
+		   15 * cronSECONDS,
+		   HELLO_BROADCAST_FREQUENCY,
+		   NULL);
     activeCronJobs += ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
     if (! testConfigurationString("NETWORK",
 				  "HELLOEXCHANGE",
 				  "YES"))
-      delCronJob(&forwardhello,
-		 HELLO_FORWARD_FREQUENCY,
-		 NULL); /* seven minutes: exchange */
+      cron_del_job(coreAPI->cron,
+		   &forwardhello,
+		   HELLO_FORWARD_FREQUENCY,
+		   NULL); /* seven minutes: exchange */
     activeCronJobs -= ACJ_FORWARD;
   } else {
     if (! testConfigurationString("NETWORK",
 				  "DISABLE-ADVERTISEMENTS",
 				  "YES"))
-      addCronJob(&broadcasthello,
-		 15 * cronSECONDS,
-		 HELLO_BROADCAST_FREQUENCY,
-		 NULL);
+      cron_add_job(coreAPI->cron,
+		   &broadcasthello,
+		   15 * cronSECONDS,
+		   HELLO_BROADCAST_FREQUENCY,
+		   NULL);
     activeCronJobs += ACJ_FORWARD;
   }
 }

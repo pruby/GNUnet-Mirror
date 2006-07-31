@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,6 +29,7 @@
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_bootstrap_service.h"
+#include "gnunet_state_service.h"
 
 #define DEBUG_BOOTSTRAP NO
 
@@ -38,7 +39,9 @@ static CoreAPIForApplication * coreAPI;
 
 static Bootstrap_ServiceAPI * bootstrap;
 
-static PTHREAD_T pt;
+static State_ServiceAPI * state;
+
+static struct PTHREAD * pt;
 
 static int abort_bootstrap = YES;
 
@@ -54,7 +57,7 @@ static void processhellos(HelloListClosure * hcq) {
   P2P_hello_MESSAGE * msg;
 
   if (NULL == hcq) {
-    BREAK();
+    GE_BREAK(coreAPI->ectx, 0);
     return;
   }
   while ( (abort_bootstrap == NO) &&
@@ -85,19 +88,22 @@ static void processhellos(HelloListClosure * hcq) {
       /* wait a bit */
       unsigned int load;
       int nload;
-      load = getCPULoad();
+      load = os_cpu_get_load(coreAPI->ectx,
+			     coreAPI->cfg);
       if (load == (unsigned int)-1)
 	load = 50; 
-      nload = getNetworkLoadUp();
+      nload = os_network_monitor_get_load(coreAPI->load_monitor,
+					  Upload);
       if (nload > load)
 	load = nload;
-      nload = getNetworkLoadDown();
+      nload = os_network_monitor_get_load(coreAPI->load_monitor,
+					  Download);
       if (nload > load)
 	load = nload;
       if (load > 100)
 	load = 100;
 
-      gnunet_util_sleep(50 + weak_randomi((load+1)*(load+1)));
+      PTHREAD_SLEEP(50 + weak_randomi((load+1)*(load+1)));
     }
   }
   for (i=0;i<hcq->helosCount;i++)
@@ -128,7 +134,7 @@ static int needBootstrap() {
   cron_t now;
   char * data;
 
-  cronTime(&now);
+  now = get_time();
   if (coreAPI->forAllConnectedNodes(NULL, NULL) > 4) {
     /* still change delta and lastTest; even
        if the peer _briefly_ drops below 4
@@ -140,17 +146,19 @@ static int needBootstrap() {
   }
   if (lastTest == 0) {
     /* first run in this process */
-    if (-1 != stateReadContent(BOOTSTRAP_INFO,
-			       (void**)&data)) {
-      /* but not first on this machine */
-      lastTest = cronTime(&now);
+    if (-1 != state->read(coreAPI->ectx,
+			  BOOTSTRAP_INFO,
+			  (void**)&data)) {
+      /* but not first on this machine */      
+      lastTest = now;
       delta = 2 * cronMINUTES; /* wait 2 minutes */
       FREE(data);
     } else {
       /* first on this machine, too! */
-      stateWriteContent(BOOTSTRAP_INFO,
-			1,
-			"X");
+      state->write(coreAPI->ectx,
+		   BOOTSTRAP_INFO,
+		   1,
+		   "X");
       delta = 60 * cronSECONDS;
     }
   }
@@ -174,7 +182,7 @@ static void * processThread(void * unused) {
   cls.helos = NULL;
   while (abort_bootstrap == NO) {
     while (abort_bootstrap == NO) {
-      gnunet_util_sleep(2 * cronSECONDS);
+      PTHREAD_SLEEP(2 * cronSECONDS);
       if (needBootstrap())
 	break;
     }
@@ -202,13 +210,18 @@ static void * processThread(void * unused) {
  */
 void startBootstrap(CoreAPIForApplication * capi) {
   coreAPI = capi;
+  state = capi->requestService("state");
+  GE_ASSERT(capi->ectx,
+	    state != NULL); 
   bootstrap = capi->requestService("bootstrap");
-  GNUNET_ASSERT(bootstrap != NULL);
+  GE_ASSERT(capi->ectx,
+	    bootstrap != NULL);
   abort_bootstrap = NO;
-  GNUNET_ASSERT(0 == PTHREAD_CREATE(&pt,
-				    &processThread,
-				    NULL,
-				    8 * 1024));	
+  pt = PTHREAD_CREATE(&processThread,
+		      NULL,
+		      8 * 1024);
+  GE_ASSERT(capi->ectx,
+	    pt != NULL);
 }
 
 /**
@@ -218,10 +231,13 @@ void stopBootstrap() {
   void * unused;
 
   abort_bootstrap = YES;
-  PTHREAD_KILL(&pt, SIGALRM);
-  PTHREAD_JOIN(&pt, &unused);
+  PTHREAD_STOP_SLEEP(pt);
+  PTHREAD_JOIN(pt, &unused);
+  pt = NULL;
   coreAPI->releaseService(bootstrap);
   bootstrap = NULL;
+  coreAPI->releaseService(state);
+  state = NULL;
   coreAPI = NULL;
 }
 
