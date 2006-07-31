@@ -31,7 +31,6 @@
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
 #include "gnunet_identity_service.h"
@@ -39,8 +38,8 @@
 #include "gnunet_pingpong_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_topology_service.h"
-
 #include "bootstrap.h"
+#include "platform.h"
 
 /**
  * Send our hello to a random connected host on a regular basis.
@@ -74,6 +73,8 @@ static Pingpong_ServiceAPI * pingpong;
 static Topology_ServiceAPI * topology;
 
 static Stats_ServiceAPI * stats;
+
+static struct GE_Context * ectx;
 
 static int stat_hello_in;
 
@@ -220,9 +221,10 @@ receivedhello(const MESSAGE_HEADER * message) {
     FREE(copy);
   }
 
-  if (testConfigurationString("GNUNETD",
-			      "PRIVATE-NETWORK",
-			      "YES")) {
+  if (YES == GC_get_configuration_value_yesno(coreAPI->cfg,
+					      "GNUNETD",
+					      "PRIVATE-NETWORK",
+					      NO)) {
     /* the option 'PRIVATE-NETWORK' can be used
        to limit the connections of this peer to
        peers of which the hostkey has been copied
@@ -242,10 +244,10 @@ receivedhello(const MESSAGE_HEADER * message) {
 
   now = get_time();
   if ( (now - lasthelloMsg) *
-       getConfigurationInt("LOAD",
-			   "MAXNETDOWNBPSTOTAL") /
-       cronSECONDS / 100
-       < P2P_hello_MESSAGE_size(msg) ) {
+       (os_network_monitor_get_limit(coreAPI->load_monitor,
+				    Download) /
+	cronSECONDS / 100)
+	< P2P_hello_MESSAGE_size(msg) ) {
     /* do not use more than about 1% of the
        available bandwidth to VERIFY hellos (by sending
        our own with a PING).  This does not affect
@@ -370,8 +372,9 @@ broadcastHelper(const PeerIdentity * hi,
       __FUNCTION__,
       &other);
 #endif
-  if (hostIdentityEquals(hi,
-			 coreAPI->myIdentity))
+  if (0 == memcmp(hi,
+		  coreAPI->myIdentity,
+		  sizeof(PeerIdentity)))
     return; /* never advertise to myself... */
   prio = (int) getConnectPriority();
   if (prio >= EXTREME_PRIORITY)
@@ -452,7 +455,7 @@ broadcasthelloTransport(TransportAPI * tapi,
       "Enter `%s'.\n",
       __FUNCTION__);
 #endif
-  cronTime(&now);
+  now = get_time();
   sd.n = identity->forEachHost(now,
 			       NULL,
 			       NULL); /* just count */
@@ -511,7 +514,7 @@ typedef struct {
 
 static void forwardCallback(const PeerIdentity * peer,
 			    FCC * fcc) {
-  if (os_network_monitor_get_load(coreAPI->monitor,
+  if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
     return; /* network load too high... */
   if (weak_randomi(fcc->prob) != 0)
@@ -658,21 +661,29 @@ phelloHandler(const PeerIdentity * sender,
  * Does not have to suspend cron since this guaranteed to be a cron
  * job!
  */
-static void
-configurationUpdateCallback() {
+static int
+configurationUpdateCallback(void * ctx,
+			    struct GC_Configuration * cfg, 
+			    struct GE_Context * ectx,
+			    const char * section,
+			    const char * option) {
+  if (0 != strcmp(section, "NETWORK"))
+    return 0;
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE)) {
-    if (testConfigurationString("NETWORK",
-				"DISABLE-ADVERTISEMENTS",
-				"YES"))
+    if (YES == GC_get_configuration_value_yesno(cfg,
+						"NETWORK",
+						"DISABLE-ADVERTISEMENTS",
+						NO))
       cron_del_job(coreAPI->cron,
 		   &broadcasthello,
 		   HELLO_BROADCAST_FREQUENCY,
 		   NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   } else {
-    if (testConfigurationString("NETWORK",
-				"HELLOEXCHANGE",
-				"YES"))
+    if (YES == GC_get_configuration_value_yesno(cfg,
+						"NETWORK",
+						"HELLOEXCHANGE",
+						YES))
       cron_add_job(coreAPI->cron,
 		   &broadcasthello,
 		   15 * cronSECONDS,
@@ -681,18 +692,20 @@ configurationUpdateCallback() {
     activeCronJobs += ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
-    if (! testConfigurationString("NETWORK",
-				  "HELLOEXCHANGE",
-				  "YES"))
+    if (YES != GC_get_configuration_value_yesno(cfg,
+						"NETWORK",
+						"HELLOEXCHANGE",
+						YES))
       cron_del_job(coreAPI->cron,
 		   &forwardhello,
 		   HELLO_FORWARD_FREQUENCY,
 		   NULL); /* seven minutes: exchange */
     activeCronJobs -= ACJ_FORWARD;
   } else {
-    if (! testConfigurationString("NETWORK",
-				  "DISABLE-ADVERTISEMENTS",
-				  "YES"))
+    if (YES != GC_get_configuration_value_yesno(cfg,
+						"NETWORK",
+						"DISABLE-ADVERTISEMENTS",
+						NO))
       cron_add_job(coreAPI->cron,
 		   &broadcasthello,
 		   15 * cronSECONDS,
@@ -700,6 +713,7 @@ configurationUpdateCallback() {
 		   NULL);
     activeCronJobs += ACJ_FORWARD;
   }
+  return 0;
 }
 
 /**
@@ -708,6 +722,7 @@ configurationUpdateCallback() {
 int
 initialize_module_advertising(CoreAPIForApplication * capi) {
   coreAPI = capi;
+  ectx = capi->ectx;
   identity = capi->requestService("identity");
   if (identity == NULL) {
     GE_BREAK(ectx, 0);
@@ -758,39 +773,17 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 			&ehelloHandler);
   capi->registerPlaintextHandler(p2p_PROTO_hello,
 				 &phelloHandler);
-  registerConfigurationUpdateCallback(&configurationUpdateCallback);
-  if (! testConfigurationString("NETWORK",
-				"DISABLE-ADVERTISEMENTS",
-				"YES")) {
-    addCronJob(&broadcasthello,
-	       15 * cronSECONDS,
-	       HELLO_BROADCAST_FREQUENCY,
-	       NULL);
-    activeCronJobs += ACJ_ANNOUNCE;
-  } else {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Network advertisements disabled by configuration!\n"));
-  }
-  if (testConfigurationString("NETWORK",
-			      "HELLOEXCHANGE",
-			      "YES") == YES) {
-    addCronJob(&forwardhello,
-	       4 * cronMINUTES,
-	       HELLO_FORWARD_FREQUENCY,
-	       NULL);
-    activeCronJobs += ACJ_FORWARD;
-  }
-#if DEBUG_ADVERTISING
-  else
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"hello forwarding disabled!\n");
-#endif
-
+  GC_attach_change_listener(capi->cfg,
+			    &configurationUpdateCallback,
+			    NULL);
   startBootstrap(capi);
-  setConfigurationString("ABOUT",
-			 "advertising",
-			 _("ensures that this peer is known by other"
-			   " peers and discovers other peers"));
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "advertising",
+						   _("ensures that this peer is known by other"
+						     " peers and discovers other peers")));
   return OK;
 }
 
@@ -799,19 +792,23 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
  */
 void done_module_advertising() {
   stopBootstrap();
+  GC_detach_change_listener(coreAPI->cfg,
+			    &configurationUpdateCallback,
+			    NULL);
   if (ACJ_ANNOUNCE == (activeCronJobs & ACJ_ANNOUNCE)) {
-    delCronJob(&broadcasthello,
-	       HELLO_BROADCAST_FREQUENCY,
-	       NULL);
+    cron_del_job(coreAPI->cron,
+		 &broadcasthello,
+		 HELLO_BROADCAST_FREQUENCY,
+		 NULL);
     activeCronJobs -= ACJ_ANNOUNCE;
   }
   if (ACJ_FORWARD == (activeCronJobs & ACJ_FORWARD)) {
-    delCronJob(&forwardhello,
-	       HELLO_FORWARD_FREQUENCY,
-	       NULL); /* seven minutes: exchange */
+    cron_del_job(coreAPI->cron,
+		 &forwardhello,
+		 HELLO_FORWARD_FREQUENCY,
+		 NULL); /* seven minutes: exchange */
     activeCronJobs -= ACJ_FORWARD;
   }
-  unregisterConfigurationUpdateCallback(&configurationUpdateCallback);
   coreAPI->unregisterHandler(p2p_PROTO_hello,
 			     &ehelloHandler);
   coreAPI->unregisterPlaintextHandler(p2p_PROTO_hello,

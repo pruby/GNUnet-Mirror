@@ -337,6 +337,23 @@ static int resetStatusCalls(void * cls,
 }
 
 /**
+ * Get the total amoung of bandwidth this load monitor allows
+ * in bytes per second
+ *
+ * @return the maximum bandwidth in bytes per second, -1 for no limit
+ */
+unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
+						NetworkDirection dir) {
+  if (monitor == NULL)
+    return -1;
+  if (dir == Upload)
+    return monitor->maxNetUpBPS;
+  else if (dir == Download)
+    return monitor->maxNetDownBPS;
+  return -1;
+}
+
+/**
  * Get the load of the network relative to what is allowed.
  * @return the network load as a percentage of allowed
  *        (100 is equivalent to full load)

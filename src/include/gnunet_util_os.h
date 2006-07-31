@@ -139,6 +139,15 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
 				NetworkDirection dir);
 
 /**
+ * Get the total amoung of bandwidth this load monitor allows
+ * in bytes per second
+ *
+ * @return the maximum bandwidth in bytes per second, -1 for no limit
+ */
+unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
+						NetworkDirection dir);
+
+/**
  * Tell monitor to increment the number of bytes sent/received
  */
 void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
