@@ -1283,7 +1283,7 @@ static int startTransportServer() {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  serverSignal = SEMAPHORE_NEW(0);
+  serverSignal = SEMAPHORE_CREATE(0);
   http_shutdown = NO;
 
   if (0 != PIPE(http_pipe)) {

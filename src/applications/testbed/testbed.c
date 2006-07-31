@@ -658,7 +658,7 @@ static void tb_EXEC(ClientHandle client,
   }
   MUTEX_LOCK(&lock);
 
-  pi->sem = SEMAPHORE_NEW(0);
+  pi->sem = SEMAPHORE_CREATE(0);
   if (0 != PTHREAD_CREATE(&pi->reader,
 			  (PThreadMain) &pipeReaderThread,
 			  pi,

@@ -155,7 +155,7 @@ int main(int argc, char ** argv) {
     errexit(_("You must specify a nickname (use option `%s').\n"),
 	    "-n");
 
-  doneSem = SEMAPHORE_NEW(0);
+  doneSem = SEMAPHORE_CREATE(0);
   if (0 != PTHREAD_CREATE(&messageReceiveThread,
 			  &receiveThread,
 			  sock,

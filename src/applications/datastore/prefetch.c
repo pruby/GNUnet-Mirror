@@ -65,7 +65,7 @@ static SQstore_ServiceAPI * sq;
  */
 static struct SEMAPHORE * acquireMoreSignal;
 
-static struct SEMAHPORE * doneSignal;
+static struct SEMAPHORE * doneSignal;
 
 /**
  * Lock for the RCB buffer.
@@ -87,7 +87,7 @@ static int aquire(const HashCode512 * key,
 
   if (doneSignal != NULL)
     return SYSERR;
-  SEMAPHORE_DOWN(acquireMoreSignal);
+  SEMAPHORE_DOWN(acquireMoreSignal, YES);
   if (doneSignal != NULL)
     return SYSERR;
   MUTEX_LOCK(lock);
@@ -225,23 +225,23 @@ void initPrefetch(SQstore_ServiceAPI * s) {
   memset(randomContentBuffer,
 	 0,
 	 sizeof(ContentBuffer *)*RCB_SIZE);
-  acquireMoreSignal = SEMAPHORE_NEW(RCB_SIZE);
+  acquireMoreSignal = SEMAPHORE_CREATE(RCB_SIZE);
   doneSignal = NULL;
-  lock = MUTEX_CREATE();
-  if (0 != PTHREAD_CREATE(&gather_thread,
-			  (PThreadMain)&rcbAcquire,
-			  NULL,
-			  64*1024))
-    DIE_STRERROR("pthread_create");
+  lock = MUTEX_CREATE(NO);
+  gather_thread = PTHREAD_CREATE(&rcbAcquire,
+				 NULL,
+				 64*1024);
+  GE_ASSERT(NULL,
+	    gather_thread != NULL);
 }
 
 void donePrefetch() {
   int i;
   void * unused;
 
-  doneSignal = SEMAPHORE_NEW(0);
+  doneSignal = SEMAPHORE_CREATE(0);
   SEMAPHORE_UP(acquireMoreSignal);
-  SEMAPHORE_DOWN(doneSignal);
+  SEMAPHORE_DOWN(doneSignal, YES);
   SEMAPHORE_DESTROY(acquireMoreSignal);
   SEMAPHORE_DESTROY(doneSignal);
   PTHREAD_JOIN(&gather_thread, &unused);

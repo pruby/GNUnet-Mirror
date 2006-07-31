@@ -364,7 +364,7 @@ int main(int argc, char ** argv) {
     return -1;
   }
 
-  doneSem = SEMAPHORE_NEW(0);
+  doneSem = SEMAPHORE_CREATE(0);
   if (0 != PTHREAD_CREATE(&messageReceiveThread,
 			  (PThreadMain) &receiveThread,
 			  sock,

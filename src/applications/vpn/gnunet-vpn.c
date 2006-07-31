@@ -120,7 +120,7 @@ int main(int argc, char ** argv) {
   void * unused;
   char buffer[sizeof(CS_MESSAGE_HEADER) + 1024];
 
-  doneSem = SEMAPHORE_NEW(0);
+  doneSem = SEMAPHORE_CREATE(0);
   if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0; /* parse error, --help, etc. */
   sock = getClientSocket();

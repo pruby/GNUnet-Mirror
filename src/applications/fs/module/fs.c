@@ -1199,7 +1199,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   }
   /* dht = capi->requestService("dht"); */
   dht = NULL;
-  ltgSignal = SEMAPHORE_NEW(0);
+  ltgSignal = SEMAPHORE_CREATE(0);
   if (0 != PTHREAD_CREATE(&localGetProcessor,
 			  &localGetter,
 			  NULL,

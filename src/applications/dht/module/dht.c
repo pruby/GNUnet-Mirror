@@ -1854,7 +1854,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
   fnc->table = *table;
   fnc->k = 0;
   fnc->matches = MALLOC(sizeof(HashCode512) * ALPHA);
-  fnc->signal = SEMAPHORE_NEW(0);
+  fnc->signal = SEMAPHORE_CREATE(0);
   fnc->timeout = get_time() + timeout;
   fnc->rpcRepliesExpected = 0;
   fnc->rpcRepliesReceived = 0;

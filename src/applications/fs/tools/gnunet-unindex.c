@@ -173,7 +173,7 @@ int main(int argc, char ** argv) {
   verbose = testConfigurationString("GNUNET-INSERT",
 				    "VERBOSE",
 				    "YES");
-  exitSignal = SEMAPHORE_NEW(0);
+  exitSignal = SEMAPHORE_CREATE(0);
   /* fundamental init */
   ctx = FSUI_start("gnunet-unindex",
 		   NO,

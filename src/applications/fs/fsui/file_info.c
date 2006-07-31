@@ -52,7 +52,7 @@ static IPC_Semaphore * createIPC() {
   ipcName = expandFileName(tmpname);
   FREE(basename);
   FREE(tmpname);
-  sem = IPC_SEMAPHORE_NEW(ipcName, 1);
+  sem = IPC_SEMAPHORE_CREATE(ipcName, 1);
   FREE(ipcName);
   return sem;				
 }

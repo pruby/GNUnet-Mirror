@@ -390,7 +390,7 @@ struct FSUI_Context * FSUI_start(const char * name,
   strcat(fn, name);
   ret->name = fn;
   if (doResume) {
-    ret->ipc = IPC_SEMAPHORE_NEW(fn,
+    ret->ipc = IPC_SEMAPHORE_CREATE(fn,
 				 1);
     GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"Getting IPC lock for FSUI (%s).\n",

@@ -46,7 +46,7 @@ static int testIPCSemaphore() {
   me = fork();
   sw = me;
 
-  ipc = IPC_SEMAPHORE_NEW("/tmp/gnunet_ipc_semtest",
+  ipc = IPC_SEMAPHORE_CREATE("/tmp/gnunet_ipc_semtest",
 			  0);
   for (cnt=0;cnt<3;cnt++) {
     if (sw == 0) {

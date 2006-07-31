@@ -1190,7 +1190,7 @@ static int RPC_execute(const PeerIdentity *receiver,
   CallInstance * call;
 
   MUTEX_LOCK(rpcLock);
-  cls.sem = SEMAPHORE_NEW(0);
+  cls.sem = SEMAPHORE_CREATE(0);
   cls.result = returnParam;
   call = MALLOC(sizeof(CallInstance));
   RPC_STATUS(name, "started synchronously", call);
@@ -1525,7 +1525,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
 	       "command",
 	       strlen("Hello")+1,
 	       "Hello");
-  sign = SEMAPHORE_NEW(0);
+  sign = SEMAPHORE_CREATE(0);
   record = rpcAPI->RPC_start(coreAPI->myIdentity,
 			     "testFunction",
 			     args,

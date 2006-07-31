@@ -184,7 +184,7 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   FREE(dv);
   closure.found = NO;
   closure.i = i;
-  closure.sem = SEMAPHORE_NEW(0);
+  closure.sem = SEMAPHORE_CREATE(0);
   cronTime(&now);
   handle = FS_start_search(ctx,
 			   D_BLOCK,

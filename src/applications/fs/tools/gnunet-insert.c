@@ -667,7 +667,7 @@ int main(int argc, char ** argv) {
 	      "-S", "-P");
   }
 
-  exitSignal = SEMAPHORE_NEW(0);
+  exitSignal = SEMAPHORE_CREATE(0);
   /* fundamental init */
   ctx = FSUI_start("gnunet-insert",
 		   NO,

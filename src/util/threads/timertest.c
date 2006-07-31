@@ -76,7 +76,7 @@ static int check() {
     fprintf(stdout,
 	    "Timer precision is acceptable.\n");
 
-  sem = SEMAPHORE_NEW(0);
+  sem = SEMAPHORE_CREATE(0);
 
   startCron();
   cumDelta = 0;

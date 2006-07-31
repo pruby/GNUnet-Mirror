@@ -286,8 +286,8 @@ static int csHandleTBenchRequest(ClientHandle client,
     results[iteration].duplicateCount = 0;
 
     earlyEnd = 0;
-    presem = SEMAPHORE_NEW(1);
-    postsem = SEMAPHORE_NEW(0);
+    presem = SEMAPHORE_CREATE(1);
+    postsem = SEMAPHORE_CREATE(0);
     currNounce = weak_randomi(0xFFFFFF);
     p2p->nounce
       = htonl(currNounce);

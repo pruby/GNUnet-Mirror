@@ -799,7 +799,7 @@ static int startTransportServer(void) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  serverSignal = SEMAPHORE_NEW(0);
+  serverSignal = SEMAPHORE_CREATE(0);
   smtp_shutdown = NO;
 
    /* initialize SMTP network */

@@ -374,9 +374,9 @@ static int csJoin(ClientHandle client,
   ptr->store->closure = ptr;
   ptr->handler = client;
   ptr->table = req->table;
-  ptr->prerequest = SEMAPHORE_NEW(1);
-  ptr->prereply   = SEMAPHORE_NEW(0);
-  ptr->postreply  = SEMAPHORE_NEW(0);
+  ptr->prerequest = SEMAPHORE_CREATE(1);
+  ptr->prereply   = SEMAPHORE_CREATE(0);
+  ptr->postreply  = SEMAPHORE_CREATE(0);
   ret = dhtAPI->join(ptr->store,
 		     &req->table);
   if (ret == OK) {

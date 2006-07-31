@@ -255,7 +255,7 @@ int main(int argc,
     try_rename = YES;
   }
   FREE(fstring);
-  signalFinished = SEMAPHORE_NEW(0);
+  signalFinished = SEMAPHORE_CREATE(0);
   ctx = FSUI_start("gnunet-download",
 		   NO,
 		   &progressModel,

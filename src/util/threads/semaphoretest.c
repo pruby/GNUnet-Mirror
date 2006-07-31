@@ -154,7 +154,7 @@ static int testSemaphore() {
   PTHREAD_T pt;
   void * unused;
 
-  sem = SEMAPHORE_NEW(42);
+  sem = SEMAPHORE_CREATE(42);
   fprintf(stderr, ".");
   for (i=0;i<42;i++)
     SEMAPHORE_DOWN(sem); /* fails by blocking */
