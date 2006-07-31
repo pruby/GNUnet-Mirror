@@ -1246,7 +1246,7 @@ static void httpRegister(char * cmd) {
   while (curpos < 4) {
     int success;
 
-    if (start + 5 * cronMINUTES < cronTime(NULL))
+    if (start + 5 * cronMINUTES < get_time())
       break; /* exit after 5m */
     success = RECV_NONBLOCKING(sock,
 			       &c,
@@ -1271,7 +1271,7 @@ static void httpRegister(char * cmd) {
 #if DEBUG_TESTBED
   GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       "Exit register (%d seconds before timeout)\n",
-      (int)(start + 300 * cronSECONDS - cronTime(NULL))/cronSECONDS);
+      (int)(start + 300 * cronSECONDS - get_time())/cronSECONDS);
 #endif
 }
 

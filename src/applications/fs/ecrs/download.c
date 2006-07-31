@@ -702,12 +702,12 @@ static void updateProgress(const NodeClosure * node,
   }
   entry = rm->requestList[pos];
 
-  if ( (entry->lasttime < cronTime(NULL)) &&
+  if ( (entry->lasttime < get_time()) &&
        (entry->lasttime != 0) ) {
     unsigned int weight = 15;
     unsigned int ettl = entry->lastTimeout - entry->lasttime;
     if ( (ettl > 4 * rm->initialTTL) &&
-	 ( (cronTime(NULL) - entry->lasttime) < rm->initialTTL) ) {
+	 ( (get_time() - entry->lasttime) < rm->initialTTL) ) {
       weight = 127;
       /* eTTL is MUCH bigger than what we currently expect AND the time
 	 between the last query and the reply was in the range of the
@@ -1224,7 +1224,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
       return SYSERR;
     }
     CLOSE(ret);
-    dpcb(0, 0, cronTime(NULL), 0, NULL, 0, dpcbClosure);
+    dpcb(0, 0, get_time(), 0, NULL, 0, dpcbClosure);
     return OK;
   }
   GE_ASSERT(ectx, filename != NULL);

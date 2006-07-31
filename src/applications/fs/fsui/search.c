@@ -220,7 +220,7 @@ void * searchThread(void * cls) {
   FSUI_SearchList * pos = cls;
   ECRS_search(pos->uri,
 	      pos->anonymityLevel,
-	      cronTime(NULL) + cronYEARS, /* timeout!?*/
+	      get_time() + cronYEARS, /* timeout!?*/
 	      &spcb,
 	      pos,
 	      (ECRS_TestTerminate) &testTerminate,

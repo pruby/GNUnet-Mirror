@@ -162,7 +162,7 @@ static int store(void * closure,
       for (i=0;i<pos->count;i++)
 	if (equalsHashCode512(&pos->values[i].hash,
 			      (HashCode512*)&value[1])) {
-	  pos->values[i].lastRefreshTime = cronTime(NULL);
+	  pos->values[i].lastRefreshTime = get_time();
 	  MUTEX_UNLOCK(&ds->lock);
 	  return OK; /* already present */
 	}
@@ -174,7 +174,7 @@ static int store(void * closure,
       GROW(pos->values,
 	   pos->count,
 	   pos->count+1);
-      pos->values[pos->count-1].lastRefreshTime = cronTime(NULL);
+      pos->values[pos->count-1].lastRefreshTime = get_time();
       memcpy(&pos->values[pos->count-1].hash,
 	     &value[1],
 	     sizeof(HashCode512));
@@ -196,7 +196,7 @@ static int store(void * closure,
   memcpy(&pos->values[0].hash,
 	 &value[1],
 	 sizeof(HashCode512));
-  pos->values[0].lastRefreshTime = cronTime(NULL);
+  pos->values[0].lastRefreshTime = get_time();
   pos->next = ds->first;
   ds->first = pos;
   MUTEX_UNLOCK(&ds->lock);

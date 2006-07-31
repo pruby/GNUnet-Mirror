@@ -194,7 +194,7 @@ downloadHostlistHelper(char * url,
   /* it ends with four line delimiters: "\r\n\r\n" */
   curpos = 0;
   while (curpos < 4) {
-    if (start + 300 * cronSECONDS < cronTime(NULL))
+    if (start + 300 * cronSECONDS < get_time())
       break; /* exit after 5m */
     success = RECV_NONBLOCKING(sock,
 			       &c,
@@ -227,12 +227,12 @@ downloadHostlistHelper(char * url,
     helo = (P2P_hello_MESSAGE*) &buffer[0];
     helo->header.type = htons(p2p_PROTO_hello);
 
-    if (start + 300 * cronSECONDS < cronTime(NULL))
+    if (start + 300 * cronSECONDS < get_time())
       break; /* exit after 300s */
     curpos = 0;
     helo->senderAddressSize = 0;
     while (curpos < P2P_hello_MESSAGE_size(helo)) {
-      if (start + 300 * cronSECONDS < cronTime(NULL))
+      if (start + 300 * cronSECONDS < get_time())
 	break; /* exit after 300s */
       success = RECV_NONBLOCKING(sock,
 			         &((char*)helo)[curpos],

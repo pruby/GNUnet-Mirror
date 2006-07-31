@@ -240,7 +240,7 @@ receivedhello(const MESSAGE_HEADER * message) {
     return SYSERR;
   }
 
-  cronTime(&now);
+  now = get_time();
   if ( (now - lasthelloMsg) *
        getConfigurationInt("LOAD",
 			   "MAXNETDOWNBPSTOTAL") /

@@ -343,7 +343,7 @@ static int csHandleTBenchRequest(ClientHandle client,
       }	
       if ( (0 == pollResults(&results[iteration], NO)) &&
 	   (earlyEnd == 0) )
-	earlyEnd = cronTime(NULL);
+	earlyEnd = get_time();
     }
     while ( (timeoutOccured == NO) &&
 	    (cronTime(&now) < endTime) ) {

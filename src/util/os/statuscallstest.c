@@ -59,11 +59,11 @@ int main(int argc, char * argv[]){
   /* need to run each phase for more than 10s since
      statuscalls only refreshes that often... */
   cronTime(&start);
-  while (start + 12 * cronSECONDS > cronTime(NULL))
+  while (start + 12 * cronSECONDS > get_time())
     sleep(1);
   cronTime(&start);
   ret = getCPULoad();
-  while (start + 12 * cronSECONDS > cronTime(NULL))
+  while (start + 12 * cronSECONDS > get_time())
     sqrt(245.2523); /* do some processing to drive load up */
   if (ret > getCPULoad())
     printf("busy loop decreased CPU load: %d < %d.\n",

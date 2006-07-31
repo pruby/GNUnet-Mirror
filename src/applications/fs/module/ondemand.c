@@ -364,11 +364,11 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	       (char *) &enc);
       if (stateReadContent(unavail_key,
 			   (void *) &first_unavail) == SYSERR) {
-        unsigned long long now = htonll(cronTime(NULL));
+        unsigned long long now = htonll(get_time());
         stateWriteContent(unavail_key, sizeof(cron_t), (void *) &now);
       } else {
         /* Delete it after 3 days */
-        if (*first_unavail - cronTime(NULL) > 3 * cronDAYS) {
+        if (*first_unavail - get_time() > 3 * cronDAYS) {
 	  unsigned int len;
 	  char * ofn;
 	  int ret;

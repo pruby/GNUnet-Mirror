@@ -34,7 +34,7 @@ static int check() {
   if (tlast != tnow)
     return 2;
   while (now == last)
-    now = cronTime(NULL);
+    now = get_time();
   while (tnow == tlast)
     tnow = TIME(NULL);
   if (now < last)

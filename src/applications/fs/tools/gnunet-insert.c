@@ -131,7 +131,7 @@ static void printstatus(int * verboselevel,
     if (*verboselevel == YES) {
       char * ret;
 
-      delta = event->data.UploadProgress.main_eta - cronTime(NULL);
+      delta = event->data.UploadProgress.main_eta - get_time();
       ret = timeIntervalToFancyString(delta);
       PRINTF(_("%16llu of %16llu bytes inserted "
 	       "(estimating %s to completion)\n"),

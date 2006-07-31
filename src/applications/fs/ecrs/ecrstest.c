@@ -94,7 +94,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 			YES, /* index */
 			0, /* anon */
 			0, /* prio */
-			cronTime(NULL) + 10 * cronMINUTES, /* expire */
+			get_time() + 10 * cronMINUTES, /* expire */
 			NULL, /* progress */
 			NULL,
 			&testTerminate,
@@ -113,7 +113,7 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
     ret = ECRS_addToKeyspace(key,
 			     0,
 			     0,
-			     cronTime(NULL) + 10 * cronMINUTES, /* expire */
+			     get_time() + 10 * cronMINUTES, /* expire */
 			     uri,
 			     meta);
     ECRS_freeMetaData(meta);

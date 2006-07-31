@@ -1644,7 +1644,7 @@ static int addAvailable(int argc,
   while (curpos < 4) {
     int success;
 
-    if (start + 5 * cronMINUTES < cronTime(NULL))
+    if (start + 5 * cronMINUTES < get_time())
       break; /* exit after 5m */
     success = RECV_NONBLOCKING(sock,
 			       &c,
@@ -1674,11 +1674,11 @@ static int addAvailable(int argc,
   while (1) {
     int success;
 
-    if (start + 300 * cronSECONDS < cronTime(NULL))
+    if (start + 300 * cronSECONDS < get_time())
       break; /* exit after 300s */
     curpos = 0;
     while (curpos < 65536) {
-      if (start + 300 * cronSECONDS < cronTime(NULL))
+      if (start + 300 * cronSECONDS < get_time())
 	break; /* exit after 300s */
       success = RECV_NONBLOCKING(sock,
 			     &buffer[curpos],

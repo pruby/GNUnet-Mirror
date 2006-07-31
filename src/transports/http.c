@@ -906,7 +906,7 @@ try_again_1:
 	continue;
       }
       if ( ( httpSession->users == 1) &&
-	   (cronTime(NULL) > httpSession->lastUse + HTTP_TIMEOUT) ) {
+	   (get_time() > httpSession->lastUse + HTTP_TIMEOUT) ) {
 	destroySession(i);
 	i--;
 	continue;

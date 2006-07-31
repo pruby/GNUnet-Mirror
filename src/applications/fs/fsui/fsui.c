@@ -138,7 +138,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   READLONG(ret->completed);
   ret->completedFile = 0;
   READLONG(ret->startTime);
-  ret->startTime = cronTime(NULL) - ret->startTime;
+  ret->startTime = get_time() - ret->startTime;
   ret->uri
     = readURI(fd);
   if (ret->completedDownloadsCount > 0)
@@ -252,7 +252,7 @@ static void writeDownloadList(int fd,
 	strlen(list->filename));
   WRITELONG(fd, list->total);
   WRITELONG(fd, list->completed);
-  WRITELONG(fd, cronTime(NULL) - list->startTime);
+  WRITELONG(fd, get_time() - list->startTime);
   writeURI(fd, list->uri);
   for (i=0;i<list->completedDownloadsCount;i++)
     writeURI(fd, list->completedDownloads[i]);

@@ -167,7 +167,7 @@ FSUI_createNamespace(struct FSUI_Context * ctx,
 			     getConfigurationInt("FS", "INSERT-PRIORITY"),
 			     getConfigurationInt("FS",
 						 "INSERT-EXPIRATION")
-			     * cronYEARS + cronTime(NULL),
+			     * cronYEARS + get_time(),
 			     advertisementURI,
 			     rootEntry);
   /* store binding of namespaceName to 'meta' in state DB! */
@@ -599,7 +599,7 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
 		       &delta,
 		       &tid);
 	}
-	if (creationTime > cronTime(NULL) + 7 * cronDAYS) {
+	if (creationTime > get_time() + 7 * cronDAYS) {
 	  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	      _("Publishing update for periodically updated "
 		"content more than a week ahead of schedule.\n"));
@@ -650,7 +650,7 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
 			    getConfigurationInt("FS", "INSERT-PRIORITY"),
 			    getConfigurationInt("FS",
 						"INSERT-EXPIRATION")
-			    * cronYEARS + cronTime(NULL),
+			    * cronYEARS + get_time(),
 			    creationTime,
 			    updateInterval,
 			    &tid,

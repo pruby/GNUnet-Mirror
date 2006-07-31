@@ -276,7 +276,7 @@ static int freeSpaceExpired(const HashCode512 * key,
 			 void * closure) {
   int ret;
 
-  if (cronTime(NULL) < ntohll(value->expirationTime))
+  if (get_time() < ntohll(value->expirationTime))
     return SYSERR; /* not expired */
   ret = sq->del(key, value);
   if (ret != SYSERR)

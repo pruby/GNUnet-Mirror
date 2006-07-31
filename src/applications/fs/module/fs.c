@@ -1093,7 +1093,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received QUERY START (query: `%s', ttl %llu, priority %u, anonymity %u)\n",
       &enc,
-      ntohll(rs->expiration) - cronTime(NULL),
+      ntohll(rs->expiration) - get_time(),
       ntohl(rs->prio),
       ntohl(rs->anonymityLevel));
 #endif

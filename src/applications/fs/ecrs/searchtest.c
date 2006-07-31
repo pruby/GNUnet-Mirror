@@ -127,7 +127,7 @@ int main(int argc, char * argv[]){
   CHECK(OK == ECRS_addToKeyspace(key,
 				 0,
 				 0,
-				 cronTime(NULL) + 10 * cronMINUTES, /* expire */
+				 get_time() + 10 * cronMINUTES, /* expire */
 				 uri,
 				 meta));
   CHECK(OK == searchFile(key,
@@ -147,7 +147,7 @@ int main(int argc, char * argv[]){
   CHECK(OK == ECRS_addToKeyspace(key,
 				 0,
 				 0,
-				 cronTime(NULL) + 10 * cronMINUTES, /* expire */
+				 get_time() + 10 * cronMINUTES, /* expire */
 				 uri,
 				 meta));
   CHECK(OK == searchFile(key,

@@ -1006,7 +1006,7 @@ static void processOptionalFields(const PeerIdentity * responder,
       pos = MALLOC(sizeof(PeerInfo));
       pos->tables = NULL;
       pos->tableCount = 0;
-      pos->lastTimePingSend = cronTime(NULL);
+      pos->lastTimePingSend = get_time();
       vectorInsertLast(bucket->peers, pos);
     }
     if (pos == NULL) {
@@ -1106,7 +1106,7 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
   MUTEX_LOCK(lock);
   info = findPeerInfo(responder);
   if (info != NULL)
-    info->lastActivity = cronTime(NULL);
+    info->lastActivity = get_time();
   MUTEX_UNLOCK(lock);
 
   if (OK != RPC_paramValueByName(results,
@@ -1423,7 +1423,7 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
   processOptionalFields(responder, results);
   MUTEX_LOCK(lock);
   pos = findPeerInfo(responder);
-  pos->lastActivity = cronTime(NULL);
+  pos->lastActivity = get_time();
   MUTEX_UNLOCK(lock);
 
   max = RPC_paramCount(results);
@@ -1606,7 +1606,7 @@ dht_get_async_start(const DHT_TableId * table,
   }
 
   ret = MALLOC(sizeof(DHT_GET_RECORD));
-  ret->timeout = cronTime(NULL) + timeout;
+  ret->timeout = get_time() + timeout;
   ret->type = type;
   ret->keyCount = keyCount;
   ret->keys = MALLOC(keyCount * sizeof(HashCode512));
@@ -1855,7 +1855,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
   fnc->k = 0;
   fnc->matches = MALLOC(sizeof(HashCode512) * ALPHA);
   fnc->signal = SEMAPHORE_NEW(0);
-  fnc->timeout = cronTime(NULL) + timeout;
+  fnc->timeout = get_time() + timeout;
   fnc->rpcRepliesExpected = 0;
   fnc->rpcRepliesReceived = 0;
   fnc->async_handle = NULL;
@@ -2078,7 +2078,7 @@ findKNodes_start(const DHT_TableId * table,
   fnc->k = k;
   fnc->callback = callback;
   fnc->closure = closure;
-  fnc->timeout = cronTime(NULL) + timeout;
+  fnc->timeout = get_time() + timeout;
   fnc->rpcRepliesExpected = 0;
   fnc->rpcRepliesReceived = 0;
   fnc->found = 0;
@@ -2186,7 +2186,7 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
   processOptionalFields(responder, results);
   MUTEX_LOCK(&record->lock);
   pos = findPeerInfo(responder);
-  pos->lastActivity = cronTime(NULL);
+  pos->lastActivity = get_time();
 
   max = RPC_paramCount(results);
   for (i=0;i<max;i++) {
@@ -2342,7 +2342,7 @@ dht_put_async_start(const DHT_TableId * table,
     timeout = 1 * cronHOURS;
   }
   ret = MALLOC(sizeof(DHT_PUT_RECORD));
-  ret->timeout = cronTime(NULL) + timeout;
+  ret->timeout = get_time() + timeout;
   ret->key = *key;
   ret->table = *table;
   ret->callback = callback;
@@ -2487,7 +2487,7 @@ dht_remove_rpc_reply_callback(const PeerIdentity * responder,
   processOptionalFields(responder, results);
   MUTEX_LOCK(&record->lock);
   pos = findPeerInfo(responder);
-  pos->lastActivity = cronTime(NULL);
+  pos->lastActivity = get_time();
   max = RPC_paramCount(results);
   for (i=0;i<max;i++) {
     if (0 != strcmp("peer",
@@ -2616,7 +2616,7 @@ dht_remove_async_start(const DHT_TableId * table,
   }
   ENTER();
   ret = MALLOC(sizeof(DHT_REMOVE_RECORD));
-  ret->timeout = cronTime(NULL) + timeout;
+  ret->timeout = get_time() + timeout;
   ret->key = *key;
   ret->table = *table;
   ret->callback = callback;
@@ -3375,7 +3375,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
   }
   for (i=findRecordsSize-1;i>=0;i--) {
     if ( (shutdownFlag != NULL) ||
-	 (findTimes[i] + DHT_MAINTAIN_FIND_FREQUENCY < cronTime(NULL))) {
+	 (findTimes[i] + DHT_MAINTAIN_FIND_FREQUENCY < get_time())) {
       findNodes_stop(findRecords[i],
 		     NULL,
 		     NULL);
@@ -3391,7 +3391,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
   }
   for (i=0;i<pingRecordsSize;i++) {
     if ( (shutdownFlag != NULL) ||
-	 (pingTimes[i] + DHT_PING_FREQUENCY < cronTime(NULL))) {
+	 (pingTimes[i] + DHT_PING_FREQUENCY < get_time())) {
       rpcAPI->RPC_stop(pingRecords[i]);
       pingRecords[i] = pingRecords[pingRecordsSize-1];
       pingTimes[i] = pingTimes[pingRecordsSize-1];

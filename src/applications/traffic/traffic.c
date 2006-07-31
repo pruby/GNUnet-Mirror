@@ -390,7 +390,7 @@ static int getTrafficStats(unsigned int timePeriod,
     dtc = &counters[messageType]->receive;
   updateUse(dtc, 0, 0, YES);
 
-  nowUnit = cronTime(NULL) / TRAFFIC_TIME_UNIT;
+  nowUnit = get_time() / TRAFFIC_TIME_UNIT;
   *peerCount = 0;
   *messageCount = 0;
   totSize = 0;

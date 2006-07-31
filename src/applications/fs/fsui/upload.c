@@ -192,7 +192,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
 	event.data.UploadComplete.uri = *uri;
 	event.data.UploadComplete.eta
 	  = (cron_t) (utc->start_time +
-		      (((double)(cronTime(NULL)
+		      (((double)(get_time()
 				 - utc->start_time/(double)(utc->main_completed+len))))
 		      * (double)utc->main_total);
 	event.data.UploadComplete.start_time = utc->start_time;
@@ -259,7 +259,7 @@ static int dirEntryCallback(const char * filename,
 	utc->main_completed += len;
       event.data.UploadComplete.eta
 	= (cron_t) (utc->start_time +
-		    (((double)(cronTime(NULL)
+		    (((double)(get_time()
 			       - utc->start_time/(double)(utc->main_completed))))
 		    * (double)utc->main_total);
       event.data.UploadComplete.start_time = utc->start_time;
@@ -402,7 +402,7 @@ static void * uploadThread(void * cls) {
       event.data.UploadComplete.completed = utc->main_completed;
       event.data.UploadComplete.filename = utc->filename;
       event.data.UploadComplete.uri = uri;
-      event.data.UploadComplete.eta = cronTime(NULL);
+      event.data.UploadComplete.eta = get_time();
       event.data.UploadComplete.start_time = utc->start_time;
       event.data.UploadComplete.is_recursive = NO;
       event.data.UploadComplete.main_filename = utc->main_filename;
@@ -549,7 +549,7 @@ int FSUI_upload(struct FSUI_Context * ctx,
   utc->anonymityLevel = anonymityLevel;
   utc->priority = getConfigurationInt("FS",
 				      "INSERT-PRIORITY");
-  utc->expiration = cronTime(NULL) + 120 * cronYEARS;
+  utc->expiration = get_time() + 120 * cronYEARS;
   utc->ctx = ctx;
   utc->isRecursive = NO;
   if (doExtract) {
@@ -623,7 +623,7 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   utc->anonymityLevel = anonymityLevel;
   utc->priority = getConfigurationInt("FS",
 				      "INSERT-PRIORITY");
-  utc->expiration = cronTime(NULL) + 120 * cronYEARS;
+  utc->expiration = get_time() + 120 * cronYEARS;
   utc->extractors = EXTRACTOR_loadDefaultLibraries();
   config = getConfigurationString("FS",
 				  "EXTRACTORS");

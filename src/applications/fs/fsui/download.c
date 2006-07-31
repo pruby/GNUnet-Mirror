@@ -315,7 +315,7 @@ void * downloadThread(void * cls) {
       event.data.DownloadProgress.total = dl->total;
       event.data.DownloadProgress.completed = dl->completed;
       event.data.DownloadProgress.last_offset = 0;
-      event.data.DownloadProgress.eta = cronTime(NULL);
+      event.data.DownloadProgress.eta = get_time();
       event.data.DownloadProgress.last_block = NULL;
       event.data.DownloadProgress.last_size = 0;
       event.data.DownloadProgress.filename = dl->filename;

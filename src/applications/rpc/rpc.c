@@ -424,7 +424,7 @@ static void notifyPeerRequest(PeerIdentity * peer,
       }
     }
     pi->agedActivitySend |= 0x80000000;
-    pi->lastRequestTimes[pi->oldestRTIndex] = cronTime(NULL);
+    pi->lastRequestTimes[pi->oldestRTIndex] = get_time();
     pi->lastRequestId[pi->oldestRTIndex] = messageID;
     pi->oldestRTIndex = (pi->oldestRTIndex+1) % MTRACK_COUNT;
     MUTEX_UNLOCK(rpcLock);
@@ -434,7 +434,7 @@ static void notifyPeerRequest(PeerIdentity * peer,
   memset(pi, 0, sizeof(PeerInfo));
   pi->identity = *peer;
   pi->agedActivitySend = 0x80000000;
-  pi->lastRequestTimes[0] = cronTime(NULL);
+  pi->lastRequestTimes[0] = get_time();
   pi->lastRequestId[0] = messageID;
   pi->oldestRTIndex = 1;
   MUTEX_UNLOCK(rpcLock);
@@ -460,7 +460,7 @@ static void notifyPeerReply(const PeerIdentity * peer,
 	  if (pi->lastRequestTimes[i] != 0) { /* resend */
 	    pi->averageResponseTime
 	      = (pi->averageResponseTime * (MTRACK_COUNT-1) +
-		 cronTime(NULL) - pi->lastRequestTimes[i]) / MTRACK_COUNT;
+		 get_time() - pi->lastRequestTimes[i]) / MTRACK_COUNT;
 	    pi->agedActivityRecv |= 0x80000000;
 	    pi->lastRequestTimes[i] = 0;
 	  }
@@ -627,8 +627,8 @@ static void retryRPCJob(CallInstance * call) {
   cron_t now;
 
   cronTime(&now);
-  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
-		 (call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
+  GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > call->expirationTime) ||
+		 (call->expirationTime - get_time() < 1 * cronHOURS) );
   MUTEX_LOCK(rpcLock);
   if (now > call->expirationTime) {
 #if DEBUG_RPC
@@ -693,8 +693,8 @@ static void retryRPCJob(CallInstance * call) {
 		       ntohl(call->msg->importance),
 		       maxdelay);
     }
-    GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
-		   (call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
+    GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > call->expirationTime) ||
+		   (call->expirationTime - get_time() < 1 * cronHOURS) );
     addCronJob((CronJob) &retryRPCJob,
 	       call->repetitionFrequency,
 	       0,
@@ -837,8 +837,8 @@ static void async_rpc_complete_callback(RPC_Param * results,
 			      results);
   vectorInsertLast(incomingCalls, calls);
 
-  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > calls->expirationTime) ||
-		 (calls->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
+  GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > calls->expirationTime) ||
+		 (calls->expirationTime - get_time() < 1 * cronHOURS) );
   /* for right now: schedule cron job to send reply! */
   addCronJob((CronJob)&retryRPCJob,
 	     0,
@@ -907,7 +907,7 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
 	pi->averageResponseTime *= 2;
     }
     RPC_STATUS("", "received duplicate request", calls);
-    calls->expirationTime = cronTime(NULL) + MAX_RPC_TIMEOUT;
+    calls->expirationTime = get_time() + MAX_RPC_TIMEOUT;
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Dropping RPC request %u, duplicate.\n",
 	sq);
@@ -950,7 +950,7 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
   FREE(functionName);
   calls->sequenceNumber = sq;
   calls->receiver = *sender;
-  calls->expirationTime = cronTime(NULL) + MAX_RPC_TIMEOUT;
+  calls->expirationTime = get_time() + MAX_RPC_TIMEOUT;
   calls->lastAttempt = 0;
   calls->attempts = 0;
   calls->finishedCallback = NULL;
@@ -1197,7 +1197,7 @@ static int RPC_execute(const PeerIdentity *receiver,
   call->lastAttempt = 0;
   call->attempts = 0;
   call->repetitionFrequency = getExpectedResponseTime(receiver);
-  call->expirationTime = cronTime(NULL) + timeout;
+  call->expirationTime = get_time() + timeout;
   call->receiver = *receiver;
   call->sequenceNumber = rpcIdentifier++;
   call->msg = buildMessage(RPC_ERROR_OK,
@@ -1208,8 +1208,8 @@ static int RPC_execute(const PeerIdentity *receiver,
   call->finishedCallback = (RPCFinishedCallback) &RPC_execute_callback;
   call->rpcCallbackArgs = &cls;
   vectorInsertLast(outgoingCalls, call);
-  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
-		 (call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
+  GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > call->expirationTime) ||
+		 (call->expirationTime - get_time() < 1 * cronHOURS) );
   addCronJob((CronJob) &retryRPCJob,
 	     0,
 	     0,
@@ -1279,7 +1279,7 @@ static RPC_Record * RPC_start(const PeerIdentity * receiver,
   ret->call->lastAttempt = 0;
   ret->call->attempts = 0;
   ret->call->repetitionFrequency = getExpectedResponseTime(receiver);
-  ret->call->expirationTime = cronTime(NULL) + timeout;
+  ret->call->expirationTime = get_time() + timeout;
   ret->call->receiver = *receiver;
   ret->call->sequenceNumber = rpcIdentifier++;
   ret->call->msg = buildMessage(RPC_ERROR_OK,
@@ -1291,8 +1291,8 @@ static RPC_Record * RPC_start(const PeerIdentity * receiver,
     (RPCFinishedCallback) &RPC_async_callback;
   ret->call->rpcCallbackArgs = ret;
   vectorInsertLast(outgoingCalls, ret->call);
-  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > ret->call->expirationTime) ||
-		 (ret->call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
+  GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > ret->call->expirationTime) ||
+		 (ret->call->expirationTime - get_time() < 1 * cronHOURS) );
   addCronJob((CronJob) &retryRPCJob,
 	     0,
 	     0,

@@ -1833,7 +1833,7 @@ static int get_start(unsigned int type,
   msg->priority
     = htonl(prio);
   msg->ttl
-    = htonl(adjustTTL((int)timeout - cronTime(NULL),
+    = htonl(adjustTTL((int)timeout - get_time(),
 		      prio));
   memcpy(&msg->queries[0],
 	 keys,
@@ -1843,7 +1843,7 @@ static int get_start(unsigned int type,
   ret = execQuery(NULL,
 		  prio,
 		  QUERY_ANSWER|QUERY_FORWARD|QUERY_INDIRECT,
-		  timeout - cronTime(NULL),
+		  timeout - get_time(),
 		  msg);
   FREE(msg);
   return ret;

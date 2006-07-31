@@ -46,7 +46,7 @@ static void printstatus(int * verboselevel,
   switch(event->type) {
   case FSUI_unindex_progress:
     if (*verboselevel == YES) {
-      delta = event->data.UnindexProgress.eta - cronTime(NULL);
+      delta = event->data.UnindexProgress.eta - get_time();
       PRINTF(_("%16llu of %16llu bytes unindexed (estimating %llu seconds to completion)                "),
 	     event->data.UnindexProgress.completed,
 	     event->data.UnindexProgress.total,
@@ -56,7 +56,7 @@ static void printstatus(int * verboselevel,
     break;
   case FSUI_unindex_complete:
     if (*verboselevel == YES) {
-      delta = cronTime(NULL) - event->data.UnindexComplete.start_time;
+      delta = get_time() - event->data.UnindexComplete.start_time;
       PRINTF(
       _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"),
       event->data.UnindexComplete.filename,
