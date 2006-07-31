@@ -86,10 +86,10 @@ static int get(const HashCode512 * query,
 #if DEBUG_DATASTORE
     EncName enc;
 
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    GE_LOG(coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Datastore availability pre-test failed for `%s'.\n",
 	&enc);
 #endif
@@ -111,10 +111,10 @@ static int del(const HashCode512 * query,
   int i;
 
   if (! testAvailable(query)) {
-    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(coreAPI->ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    GE_LOG(coreAPI->ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Availability test failed for `%s' at %s:%d.\n"),
 	&enc,
 	__FILE__, __LINE__);
@@ -127,18 +127,18 @@ static int del(const HashCode512 * query,
       available += ntohl(value->size);
     }
 #if DEBUG_DATASTORE
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    IF_GELOG(coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+    GE_LOG(coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Deleted `%s' from database.\n",
 	&enc);
 #endif
   } else {
-    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    IF_GELOG(coreAPI->ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    GE_LOG(coreAPI->ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Database failed to delete `%s'.\n"),
 	&enc);
   }
@@ -161,7 +161,7 @@ static int put(const HashCode512 * key,
   /* check if we have enough space / priority */
   if ( (available < ntohl(value->size) ) &&
        (minPriority > ntohl(value->prio)) ) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+    GE_LOG(coreAPI->ectx, GE_WARNING | GE_BULK | GE_USER,
 	"Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
 	sq->getSize(), 
 	quota);
@@ -247,7 +247,7 @@ static int putUpdate(const HashCode512 * key,
     return OK;
   }
 #if DEBUG_DATASTORE
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GE_LOG(coreAPI->ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Migration: available %llu (need %u), min priority %u have %u\n",
       available, ntohl(value->size),
       minPriority,
@@ -328,35 +328,46 @@ static void cronMaintenance(void * unused) {
 Datastore_ServiceAPI *
 provide_module_datastore(CoreAPIForApplication * capi) {
   static Datastore_ServiceAPI api;
-  unsigned int lquota;
+  unsigned long long lquota;
+  unsigned int sqot;
 
-  lquota
-    = getConfigurationInt("FS", "QUOTA");
+  if (-1 == GC_get_configuration_value_number(capi->cfg,
+					      "FS",
+					      "QUOTA",
+					      0,
+					      ((unsigned long long)-1)/1024,
+					      1024,
+					      &lquota))
+    return; /* OOPS */  
+
   quota
-    = ((unsigned long long)lquota) * 1024L * 1024L; /* MB to bytes */
+    = lquota * 1024L * 1024L; /* MB to bytes */
   sq = capi->requestService("sqstore");
   if (sq == NULL) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(coreAPI->ectx, 0);
     return NULL;
   }
-  lquota = htonl(lquota);
+  sqot = htonl(lquota);
   stateWriteContent("FS-LAST-QUOTA",
 		    sizeof(unsigned int),
-		    &lquota);
+		    &sqot);
 
   coreAPI = capi;
 
-  initPrefetch(sq);
-  if (OK != initFilters()) {
+  initPrefetch(capi->ectx,
+	       capi->cfg,
+	       sq);
+  if (OK != initFilters(capi->ectx,
+			capi->cfg)) {
     donePrefetch();
     return NULL;
   }
   cronMaintenance(NULL);
-  addCronJob(&cronMaintenance,
-	     10 * cronSECONDS,
-	     10 * cronSECONDS,
-	     NULL);
-
+  cron_add_job(capi->cron,
+	       &cronMaintenance,
+	       10 * cronSECONDS,
+	       10 * cronSECONDS,
+	       NULL);
   api.getSize = &getSize;
   api.put = &put;
   api.fast_get = &fastGet;
@@ -372,9 +383,10 @@ provide_module_datastore(CoreAPIForApplication * capi) {
  * Shutdown the manager module.
  */
 void release_module_datastore() {
-  delCronJob(&cronMaintenance,
-	     10 * cronSECONDS,
-	     NULL);
+  cron_del_job(coreAPI->cron,
+	       &cronMaintenance,
+	       10 * cronSECONDS,
+	       NULL);
   donePrefetch();
   doneFilters();
   coreAPI->releaseService(sq);
@@ -399,12 +411,18 @@ static int filterAddAll(const HashCode512 * key,
  * different sqstore's here, too.
  */
 void update_module_datastore(UpdateAPI * uapi) {
-  int quota;
+  unsigned long long quota;
+  unsigned int lastQuota;
   int * lq;
-  int lastQuota;
 
-  quota
-    = getConfigurationInt("FS", "QUOTA");
+  if (-1 == GC_get_configuration_value_number(uapi->cfg,
+					      "FS",
+					      "QUOTA",
+					      0,
+					      ((unsigned long long)-1)/1024,
+					      1024,
+					      &quota))
+    return; /* OOPS */
   lq = NULL;
   if (sizeof(int) != stateReadContent("FS-LAST-QUOTA",
 				      (void**)&lq))
@@ -414,8 +432,10 @@ void update_module_datastore(UpdateAPI * uapi) {
   if (lastQuota == quota)
     return; /* unchanged */
   /* ok, need to convert! */
-  deleteFilter();
-  initFilters();
+  deleteFilter(uapi->ectx,
+	       uapi->cfg);
+  initFilters(uapi->ectx,
+	      uapi->cfg);
   sq = uapi->requestService("sqstore");
   sq->get(NULL, ANY_BLOCK,
 	  &filterAddAll,

@@ -79,6 +79,10 @@ static int rCBPos = 0;
 
 static struct PTHREAD * gather_thread;
 
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
+		  
 
 static int aquire(const HashCode512 * key,
 		  const Datastore_Value * value,
@@ -114,7 +118,8 @@ static int aquire(const HashCode512 * key,
 	 value,
 	 ntohl(value->size));
   MUTEX_UNLOCK(lock);
-  load = getCPULoad(); /* FIXME: should use 'IO load' here */
+  load = os_cpu_get_load(ectx,
+			 cfg); /* FIXME: should use 'IO load' here */
   if (load < 10)
     load = 10;    /* never sleep less than 500 ms */
   if (load > 100)
@@ -140,7 +145,8 @@ static void * rcbAcquire(void * unused) {
 			      NULL);
     /* sleep here, too - otherwise we start looping immediately
        if there is no content in the DB! */
-    load = getCPULoad();
+    load = os_cpu_get_load(ectx,
+			   cfg);
     if (load < 10)
       load = 10;    /* never sleep less than 500 ms */
     if (load > 100)
@@ -220,7 +226,11 @@ int getRandom(const HashCode512 * receiver,
   return OK;
 }
 				
-void initPrefetch(SQstore_ServiceAPI * s) {
+void initPrefetch(struct GE_Context * e,
+		  struct GC_Configuration * c,
+		  SQstore_ServiceAPI * s) {
+  ectx = e;
+  cfg = c;
   sq = s;
   memset(randomContentBuffer,
 	 0,
@@ -240,15 +250,19 @@ void donePrefetch() {
   void * unused;
 
   doneSignal = SEMAPHORE_CREATE(0);
+  PTHREAD_STOP_SLEEP(gather_thread);
   SEMAPHORE_UP(acquireMoreSignal);
   SEMAPHORE_DOWN(doneSignal, YES);
   SEMAPHORE_DESTROY(acquireMoreSignal);
   SEMAPHORE_DESTROY(doneSignal);
-  PTHREAD_JOIN(&gather_thread, &unused);
+  PTHREAD_JOIN(gather_thread, &unused);
   for (i=0;i<rCBPos;i++)
     FREENONNULL(randomContentBuffer[i].value);
   MUTEX_DESTROY(lock);
   lock = NULL;
+  sq = NULL;
+  cfg = NULL;
+  ectx = NULL;
 }
 
 /* end of prefetch.c */

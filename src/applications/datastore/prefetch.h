@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -33,9 +33,11 @@
 /**
  * Initialize the migration module.
  */
-void initPrefetch(SQstore_ServiceAPI * sq);
+void initPrefetch(struct GE_Context * ectx,
+		  struct GC_Configuration * cfg,
+		  SQstore_ServiceAPI * sq);
 
-void donePrefetch();
+void donePrefetch(void);
 
 /**
  * Get a random value from the datastore that has

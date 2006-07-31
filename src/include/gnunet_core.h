@@ -720,6 +720,16 @@ typedef void (*ServiceDoneMethod)(void);
 typedef struct {
 
   /**
+   * System error context
+   */
+  struct GE_Context * ectx;
+
+  /**
+   * System configuration
+   */
+  struct GC_Configuration * cfg;
+
+  /**
    * Trigger updates for another module.
    */
   int (*updateModule)(const char * module);

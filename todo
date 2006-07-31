@@ -25,6 +25,7 @@ NILS:
     + SMTP/HTTP: do not yet compile (commented out from build)
   * server:
     + needs testing, also likely to be missing features
+      - gnunet-update needs to initialize ectx + cfg in UpdateAPI struct
   * applications:
     + fragmentation, identity,  pingpong, session, transport,
       stats, topology_default, state, getoption, advertising,
