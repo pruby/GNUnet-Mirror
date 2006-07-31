@@ -67,11 +67,6 @@ Copyright (C) 2006 Christian Grothoff
 # endif
 #endif
 
-/**
- * 32-bit timer value.
- */
-typedef unsigned int TIME_T;
-
 /* Describe the long-named options requested by the application.
    The LONG_OPTIONS argument to getopt_long or getopt_long_only is a vector
    of `struct GNoption' terminated by an element containing a name which is

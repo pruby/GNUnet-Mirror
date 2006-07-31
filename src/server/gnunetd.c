@@ -191,6 +191,7 @@ int main(int argc,
   GE_setDefaultContext(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
+  os_init();
   if (-1 == gnunet_parse_options("gnunetd",
 				 ectx,
 				 cfg,
@@ -218,6 +219,7 @@ int main(int argc,
   }
   ret = gnunet_main(ectx);
   GC_free(cfg);
+  os_done();
   GE_free_context(ectx);
   if (ret != OK)
     return 1;

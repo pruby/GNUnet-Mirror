@@ -307,6 +307,17 @@ void os_terminal_detach_complete(struct GE_Context * ectx,
 				 int * filedes,
 				 int success);
 
+/**
+ * @brief Perform OS specific initalization
+ * @param ectx logging context, NULL means stderr
+ * @returns OK on success, SYSERR otherwise
+ */
+int os_init(struct GE_Context *ectx);
+
+/**
+ * @brief Perform OS specific cleanup
+ */
+void os_done();
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

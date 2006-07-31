@@ -19,27 +19,37 @@
 */
 
 /**
- * @file util/initialize.c
- * @brief functions to initializing libgnunetutil in the proper order.
+ * @file util/os/init.c
+ * @brief functions to initialize os specifics
  * @author Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_util.h"
 
-#ifdef MINGW
 /**
- * Initialize the util library.
+ * @brief Perform OS specific initalization
+ * @param ectx logging context, NULL means stderr
+ * @returns OK on success, SYSERR otherwise
  */
-int __attribute__ ((constructor))  gnunet_util_init() {
-  if (InitWinEnv() != ERROR_SUCCESS)
-  	return SYSERR;
-  return OK;
-}
-
-void __attribute__ ((destructor)) gnunet_util_fini() {
-  ShutdownWinEnv();
-}
+int os_init(struct GE_Context *ectx)
+{
+#ifdef MINGW
+  if (InitWinEnv(ectx) != ERROR_SUCCESS)
+    return SYSERR;
+  else
 #endif
+    return OK;
+}
 
-/* end of initialize.c */
+/**
+ * @brief Perform OS specific cleanup
+ */
+void os_done()
+{
+#ifdef MINGW
+  ShutdownWinEnv();
+#endif
+}
+
+/* end of init.c */

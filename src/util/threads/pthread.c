@@ -51,7 +51,7 @@ typedef struct PTHREAD {
  */
 int PTHREAD_TEST_SELF(PThread * handle) {
   GE_ASSERT(NULL, handle != NULL);
-#if pthread_equal
+#if HAVE_PTHREAD_EQUAL
   if (pthread_equal(pthread_self(), handle->pt))
 #else
 #if HAVE_NEW_PTHREAD_T

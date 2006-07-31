@@ -57,6 +57,3 @@ libgnunetutil_la_LDFLAGS = \
  -export-dynamic $(LIBLTDL) $(LIBGCRYPT_LIBS) $(SOLFLAGS) $(WINFLAGS) $(LIBS) -lgmp $(DLFLAG) \
  -version-info 1:0:0
 
-libgnunetutil_la_SOURCES = \
- initialize.c 
-

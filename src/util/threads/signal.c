@@ -28,14 +28,13 @@
 #include "gnunet_util_string.h"
 #include "platform.h"
 
+#ifndef MINGW
 typedef struct SignalHandlerContext {
   int sig;
 
   SignalHandler method;
 
-#ifndef MINGW
   struct sigaction oldsig;
-#endif
 } SignalHandlerContext;
 
 struct SignalHandlerContext * signal_handler_install(int signal,
@@ -46,7 +45,7 @@ struct SignalHandlerContext * signal_handler_install(int signal,
   ret = MALLOC(sizeof(struct SignalHandlerContext));
   ret->sig = signal;
   ret->method = handler;
-#ifndef MINGW
+
   sig.sa_handler = (void*) handler;
   sigemptyset(&sig.sa_mask);
 #ifdef SA_INTERRUPT
@@ -55,23 +54,16 @@ struct SignalHandlerContext * signal_handler_install(int signal,
   sig.sa_flags = SA_RESTART;
 #endif
   sigaction(signal,  &sig, &ret->oldsig);
-#else
-  /* FIXME: mingw! */
-#endif
   return ret;
 }
 
 void signal_handler_uninstall(int signal,
 			      SignalHandler handler,
 			      struct SignalHandlerContext * ctx) {
-#ifndef MINGW
   struct sigaction sig;
 
   GE_ASSERT(NULL, (ctx->sig == signal) && (ctx->method == handler));
   sigemptyset(&sig.sa_mask);
   sigaction(signal,  &ctx->oldsig, &sig);
-#else
-  /* FIXME: mingw! */
-#endif
 }
-
+#endif

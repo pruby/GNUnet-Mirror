@@ -32,6 +32,8 @@
 #ifdef MINGW
 
 static HINSTANCE hNTDLL, hIphlpapi, hAdvapi, hNetapi;
+static struct GE_Context *pEctx = NULL;
+
 TNtQuerySystemInformation GNNtQuerySystemInformation;
 TGetIfEntry GNGetIfEntry;
 TGetIpAddrTable GNGetIpAddrTable;
@@ -68,17 +70,25 @@ TSetNamedSecurityInfo GNSetNamedSecurityInfo;
 /**
  * Log (panic) messages from PlibC
  */
-void plibc_panic(int err, char *msg) {
-	LOG((err = INT_MAX) ? LOG_DEBUG : LOG_FAILURE, "%s", msg);
+void plibc_panic(int err, char *msg)
+{
+  if (!pEctx)
+    fprintf(stderr, "%s", msg);
+  else    
+    GE_LOG(pEctx, ((err == INT_MAX) ? GE_DEBUG : GE_FATAL) | GE_USER | GE_ADMIN |
+      GE_IMMEDIATE, "%s", msg);
 }
 
 /**
- * Initialize PlibC and set up Windows environment
+ * @brief Initialize PlibC and set up Windows environment
+ * @param logging context, NULL means stderr
  * @return Error code from winerror.h, ERROR_SUCCESS on success
 */
-int InitWinEnv()
+int InitWinEnv(struct GE_Context *ectx)
 {
 	int ret;
+  
+  pEctx = ectx;
 	
   plibc_set_panic_proc(plibc_panic);
 	ret = plibc_init("GNU", PACKAGE);
@@ -234,6 +244,8 @@ void ShutdownWinEnv()
   FreeLibrary(hNetapi);
 
   CoUninitialize();
+
+  pEctx = NULL;
 }
 
 #endif /* MINGW */

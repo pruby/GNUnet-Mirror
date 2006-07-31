@@ -64,21 +64,49 @@ static void run_shutdown() {
 }
 
 /**
+ * Stop the application under Windows.
+ * @param signum is ignored
+ */
+#ifdef MINGW
+BOOL WINAPI run_shutdown_win(DWORD dwCtrlType)
+{
+  switch(dwCtrlType)
+  {
+    case CTRL_C_EVENT:
+    case CTRL_CLOSE_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+    case CTRL_LOGOFF_EVENT:
+      run_shutdown();
+  }
+
+  return TRUE;
+}
+#endif
+
+/**
  * Initialize the signal handlers, etc.
  */
 void __attribute__ ((constructor)) shutdown_handlers_ltdl_init() {
   GE_ASSERT(NULL, shutdown_signal == NULL);
   GE_ASSERT(NULL, shutdown_active == NO);
   shutdown_signal = SEMAPHORE_CREATE(0);
+#ifndef MINGW
   shc_int = signal_handler_install(SIGINT, &run_shutdown);
   shc_term = signal_handler_install(SIGTERM, &run_shutdown);
   shc_quit = signal_handler_install(SIGQUIT, &run_shutdown);
+#else
+  SetConsoleCtrlHandler(&run_shutdown_win, TRUE);
+#endif
 }
 
 void __attribute__ ((destructor)) shutdown_handlers_ltdl_fini() {
+#ifndef MINGW
   signal_handler_uninstall(SIGINT, &run_shutdown, shc_int);
   signal_handler_uninstall(SIGTERM, &run_shutdown, shc_term);
   signal_handler_uninstall(SIGQUIT, &run_shutdown, shc_quit);
+#else
+  SetConsoleCtrlHandler(&run_shutdown_win, FALSE);
+#endif
   SEMAPHORE_DESTROY(shutdown_signal);
   shutdown_signal = NULL;
   shc_int = NULL;
