@@ -118,7 +118,7 @@ static int spcb(const ECRS_FileInfo * fi,
     if (ECRS_equalsUri(fi->uri,
 		       pos->resultsReceived[i].uri)) {
 #if DEBUG_SEARCH
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Received search result that I have seen before.\n");
 #endif
       return OK; /* seen before */
@@ -127,7 +127,7 @@ static int spcb(const ECRS_FileInfo * fi,
     if (key == NULL) {
       GE_BREAK(ectx, 0);
 #if DEBUG_SEARCH
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Received search result without key to decrypt.\n");
 #endif
       return SYSERR;
@@ -140,14 +140,14 @@ static int spcb(const ECRS_FileInfo * fi,
 	  if (equalsHashCode512(key,
 				&rp->matchingKeys[j])) {
 #if DEBUG_SEARCH
-	    LOG(LOG_DEBUG,
+	    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 		"Received search result that I have seen before (missing keyword to show client).\n");
 #endif
 	    return OK;
 	  }
 	if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
 #if DEBUG_SEARCH
-	  LOG(LOG_DEBUG,
+	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      "Received search result (showing client)!\n");
 #endif
 	  GROW(rp->matchingKeys,
@@ -169,7 +169,7 @@ static int spcb(const ECRS_FileInfo * fi,
 	       rp->matchingKeyCount+1);
 	  rp->matchingKeys[rp->matchingKeyCount-1] = *key;
 #if DEBUG_SEARCH
-	  LOG(LOG_DEBUG,
+	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      "Received search result (waiting for more %u keys before showing client).\n",
 	      pos->numberOfURIKeys - rp->matchingKeyCount);
 #endif
@@ -190,14 +190,14 @@ static int spcb(const ECRS_FileInfo * fi,
 	 1);
     rp->matchingKeys[0] = *key;
 #if DEBUG_SEARCH
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Received search result (waiting for %u more keys before showing client).\n",
 	pos->numberOfURIKeys  - rp->matchingKeyCount);
 #endif
     return OK;
   } else {
 #if DEBUG_SEARCH
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Received search result (showing client)!\n");
 #endif
     processResult(fi,
@@ -241,7 +241,7 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
   while (pos != NULL) {
     if (ECRS_equalsUri(uri,
 		       pos->uri)) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("This search is already pending!\n"));
       GE_BREAK(ectx, 0);
       MUTEX_UNLOCK(&ctx->lock);

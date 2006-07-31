@@ -63,7 +63,7 @@
 
 
 #if DEBUG_RPC_CLIENT
-#define RPC_STATUS(a,b,c) LOG(LOG_DEBUG, "RPC: `%s' (%p) %s at %s\n", a, c, b, __FUNCTION__);
+#define RPC_STATUS(a,b,c) GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "RPC: `%s' (%p) %s at %s\n", a, c, b, __FUNCTION__);
 #else
 #define RPC_STATUS(a,b,c)
 #endif
@@ -125,7 +125,7 @@ static int RPC_register(const char *name,
   while (rrpc != NULL) {
     if (0 == strcmp(rrpc->name, name)) {
       MUTEX_UNLOCK (rpcLock);
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("%s::%s - RPC %s:%p could not be registered:"
 	    " another callback is already using this name (%p)\n"),
 	  __FILE__, __FUNCTION__,
@@ -139,7 +139,7 @@ static int RPC_register(const char *name,
   rrpc->callback = callback;
   rrpc->async_callback = NULL;
   vectorInsertLast(list_of_callbacks, rrpc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "%s::%s - Registered RPC %d: %s\n",
       __FILE__, __FUNCTION__,
       vectorSize(list_of_callbacks), name);
@@ -165,7 +165,7 @@ static int RPC_register_async(const char *name,
   while (rrpc != NULL) {
     if (0 == strcmp(rrpc->name, name)) {
       MUTEX_UNLOCK (rpcLock);
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("%s::%s - RPC %s:%p could not be registered:"
 	    " another callback is already using this name (%p)\n"),
 	  __FILE__, __FUNCTION__,
@@ -179,7 +179,7 @@ static int RPC_register_async(const char *name,
   rrpc->callback = NULL;
   rrpc->async_callback = callback;
   vectorInsertLast(list_of_callbacks, rrpc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "%s::%s - Registered asynchronous RPC %d: %s\n",
       __FILE__, __FUNCTION__,
       vectorSize(list_of_callbacks), name);
@@ -207,7 +207,7 @@ static int RPC_unregister(const char *name,
     if (0 == strcmp(rrpc->name, name)) {
       if ( (rrpc->callback != callback) &&
 	   (callback != NULL) ) {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("%s::%s - RPC %s:%p could not be unregistered:"
 	      " another callback registered under that name: %p\n"),
 	    __FILE__, __FUNCTION__,
@@ -219,7 +219,7 @@ static int RPC_unregister(const char *name,
       FREE(rrpc->name);
       FREE(rrpc);
       MUTEX_UNLOCK(rpcLock);
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "%s::%s - Unregistered RPC %s\n",
 	  __FILE__, __FUNCTION__,
 	  name);
@@ -228,7 +228,7 @@ static int RPC_unregister(const char *name,
     rrpc = vectorGetNext(list_of_callbacks);
   }
   MUTEX_UNLOCK(rpcLock);
-  LOG(LOG_WARNING,
+  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("%s::%s - RPC %s:%p could not be unregistered: not found\n"),
       __FILE__, __FUNCTION__,
       name, callback);
@@ -254,7 +254,7 @@ static int RPC_unregister_async(const char *name,
     if (0 == strcmp(rrpc->name, name)) {
       if ( (rrpc->async_callback != callback) &&
 	   (callback != NULL) ) {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("%s::%s - RPC %s:%p could not be unregistered:"
 	      " another callback registered under that name: %p\n"),
 	    __FILE__, __FUNCTION__,
@@ -266,7 +266,7 @@ static int RPC_unregister_async(const char *name,
       FREE(rrpc->name);
       FREE(rrpc);
       MUTEX_UNLOCK(rpcLock);
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "%s::%s - Unregistered asynchronous RPC %s\n",
 	  __FILE__, __FUNCTION__,
 	  name);
@@ -275,7 +275,7 @@ static int RPC_unregister_async(const char *name,
     rrpc = vectorGetNext(list_of_callbacks);
   }
   MUTEX_UNLOCK(rpcLock);
-  LOG(LOG_WARNING,
+  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("%s::%s - async RPC %s:%p could not be unregistered: not found\n"),
       __FILE__, __FUNCTION__,
       name, callback);
@@ -632,7 +632,7 @@ static void retryRPCJob(CallInstance * call) {
   MUTEX_LOCK(rpcLock);
   if (now > call->expirationTime) {
 #if DEBUG_RPC
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Completed RPC %p (timeout).\n",
 	call);
 #endif
@@ -669,7 +669,7 @@ static void retryRPCJob(CallInstance * call) {
 			       ntohs(call->msg->header.type)));
 #if DEBUG_RPC
       if (ntohs(call->msg->header.type) == P2P_PROTO_rpc_REQ) {
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "Sending RPC request %p: '%.*s' (expires in %llums, last attempt %llums ago; attempt %u).\n",
 	    call,
 	    ntohs(call->msg->functionNameLength),
@@ -678,7 +678,7 @@ static void retryRPCJob(CallInstance * call) {
 	    now - call->lastAttempt,
 	    call->attempts);
       } else {
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "Sending RPC reply %p (expires in %llums, last attempt %llums ago, attempt %u).\n",
 	    call,
 	    call->expirationTime - now,
@@ -875,7 +875,7 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
   req = (P2P_rpc_MESSAGE *) message;
   sq = ntohl(req->sequenceNumber);
 #if DEBUG_RPC
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received RPC request with id %u.\n",
       sq);
 #endif
@@ -908,14 +908,14 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
     }
     RPC_STATUS("", "received duplicate request", calls);
     calls->expirationTime = cronTime(NULL) + MAX_RPC_TIMEOUT;
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Dropping RPC request %u, duplicate.\n",
 	sq);
     MUTEX_UNLOCK(rpcLock);
     return OK; /* seen before */
   }
   if (minSQ > sq) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Dropping RPC request %u, sequence number too old (current minimum is %u).\n",
 	sq,
 	minSQ);
@@ -932,7 +932,7 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
     if (argumentValues != NULL)
       RPC_paramFree(argumentValues);
     MUTEX_UNLOCK(rpcLock);
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Dropping RPC request %u: message malformed.\n"));
     return SYSERR; /* message malformed */
   }
@@ -998,14 +998,14 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
 
   if ( (ntohs(message->type) != P2P_PROTO_rpc_RES) ||
        (ntohs(message->size) < sizeof(P2P_rpc_MESSAGE)) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Invalid message of type %u received.  Dropping.\n"),
 	ntohs(message->type));
     return SYSERR;
   }
   res = (P2P_rpc_MESSAGE *) message;
 #if DEBUG_RPC
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received RPC reply with id %u.\n",
       ntohl(res->sequenceNumber));
 #endif
@@ -1088,7 +1088,7 @@ static int handleRPCMessageAck(const PeerIdentity *sender,
 
   ack = (RPC_ACK_Message*) message;
 #if DEBUG_RPC
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received RPC ACK with id %u.\n",
       ntohl(ack->sequenceNumber));
 #endif
@@ -1124,7 +1124,7 @@ static int handleRPCMessageAck(const PeerIdentity *sender,
 	pi->averageResponseTime *= 2;
     }
 #if DEBUG_RPC
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"ACK is a duplicate (or invalid).\n");
 #endif
   }
@@ -1263,7 +1263,7 @@ static RPC_Record * RPC_start(const PeerIdentity * receiver,
   RPC_Record * ret;
 
   if (timeout > 1 * cronHOURS) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
@@ -1384,7 +1384,7 @@ void release_module_rpc() {
     while(vectorSize(list_of_callbacks) > 0) {
       RegisteredRPC * rpc;
       rpc = (RegisteredRPC*) vectorRemoveLast(list_of_callbacks);
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("RPC not unregistered: %s:%p\n"),
 	  rpc->name, rpc->callback);
       FREE(rpc->name);
@@ -1410,7 +1410,7 @@ RPC_ServiceAPI * provide_module_rpc(CoreAPIForApplication * capi) {
   incomingCalls = vectorNew(16);
   outgoingCalls = vectorNew(16);
   list_of_callbacks = vectorNew(16);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("`%s' registering handlers %d %d %d\n"),
       "rpc",
       P2P_PROTO_rpc_REQ,
@@ -1431,7 +1431,7 @@ RPC_ServiceAPI * provide_module_rpc(CoreAPIForApplication * capi) {
     rvalue = SYSERR;
   if (rvalue == SYSERR) {
     release_module_rpc();
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed to initialize `%s' service.\n"),
 	"rpc");
     return NULL;
@@ -1459,14 +1459,14 @@ static void testCallback(const PeerIdentity * sender,
   unsigned int dl;
   char * data;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "RPC callback invoked!\n");
   if ( (OK == RPC_paramValueByName(arguments,
 				   "command",
 				   &dl,
 				   (void**)&data)) &&
        (strncmp("Hello", data, dl) == 0) ) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"RPC callback received Hello command!\n");
     RPC_paramAdd(results,
 		 "response",
@@ -1487,10 +1487,10 @@ static void async_RPC_Complete_callback(RPC_Param * results,
 				   (void**)&reply)) ||
        (strncmp("Hello RPC World",
 		reply, dl) != 0) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("RPC async reply invalid.\n"));
   } else
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"RPC async reply received.\n");
 }
 
@@ -1505,7 +1505,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
   RPC_Record * record;
   Semaphore * sign;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "RPC testcase starting\n");
   rpcAPI = capi->requestService("rpc");
   if (rpcAPI == NULL) {
@@ -1558,7 +1558,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
   RPC_paramFree(rets);
   gnunet_util_sleep(1 * cronSECONDS);
   if (RPC_ERROR_OK != rpcAPI->RPC_stop(record))
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("async RPC reply not received.\n"));
 
   if (OK != rpcAPI->RPC_unregister("testFunction",
@@ -1570,7 +1570,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
     GE_BREAK(ectx, 0);
     ret = SYSERR;
   }
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "RPC testcase completed with status %s\n",
       ret == OK ? "SUCCESS" : "FAILURE");
   return ret;

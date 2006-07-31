@@ -71,7 +71,7 @@ static void connector(const gchar *handler_name,
 				"",
 				handler_name);
   if (method == NULL) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	_("Failed to find handler for `%s'\n"),
 	handler_name);
     return;

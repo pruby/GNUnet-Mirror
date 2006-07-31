@@ -97,7 +97,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
   strcat(fullName, filename);
   FREE(filename);
 #if DEBUG_DTM
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Starting recursive download of `%s'\n",
       fullName);
 #endif
@@ -201,7 +201,7 @@ void * downloadThread(void * cls) {
   unsigned long long totalBytes;
 
 #if DEBUG_DTM
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Download thread for `%s' started...\n",
       dl->filename);
 #endif
@@ -219,7 +219,7 @@ void * downloadThread(void * cls) {
     totalBytes = ECRS_fileSize(dl->uri);
   } else {
 #if DEBUG_DTM
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Download thread for `%s' failed (aborted or error)!\n",
 	dl->filename);
 #endif
@@ -332,7 +332,7 @@ void * downloadThread(void * cls) {
   }
   dl = cls;
 #if DEBUG_DTM
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Download thread for `%s' terminated (%s)...\n",
       dl->filename,
       ret == OK ? "COMPLETED" : "ABORTED");
@@ -430,7 +430,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
     return NO;
 
 #if DEBUG_DTM
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Download thread manager investigates pending downlod of file `%s' (%u/%u downloads)\n",
       list->filename,
       list->ctx->activeDownloadThreads,
@@ -444,7 +444,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        ( (list->total > list->completed) ||
          (list->total == 0) ) ) {
 #if DEBUG_DTM
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Download thread manager starts downlod of file `%s'\n",
 	list->filename);
 #endif
@@ -465,7 +465,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 	< list->ctx->activeDownloadThreads) &&
        (list->state == FSUI_DOWNLOAD_ACTIVE) ) {
 #if DEBUG_DTM
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Download thread manager aborts active download of file `%s' (%u/%u downloads)\n",
 	list->filename,
 	list->ctx->activeDownloadThreads,
@@ -486,7 +486,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
        (list->state == FSUI_DOWNLOAD_ABORTED) ||
        (list->state == FSUI_DOWNLOAD_ERROR) ) {       
 #if DEBUG_DTM
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Download thread manager collects inactive download of file `%s'\n",
 	list->filename);
 #endif
@@ -560,7 +560,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * prev;
   unsigned int backup;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSUI_stopDownload called.\n");
   GNUNET_ASSERT(filename != NULL);
   MUTEX_LOCK(&ctx->lock);
@@ -578,7 +578,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
       freeDownloadList(dl);
       ctx->threadPoolSize = backup;
       MUTEX_UNLOCK(&ctx->lock);
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "FSUI_stopDownload completed successfully.\n");
       return OK;
     }
@@ -586,7 +586,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
     dl = dl->next;
   }
   MUTEX_UNLOCK(&ctx->lock);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSUI_stopDownload failed to locate download.\n");
   return SYSERR;
 }

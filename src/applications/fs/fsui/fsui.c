@@ -167,7 +167,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
 				ctx,
 				ret);
 #if DEBUG_PERSISTENCE
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSUI persistence: restoring download `%s': %s (%llu, %llu)\n",
       ret->filename,
       ret->finished == YES ? "finished" : "pending",
@@ -185,7 +185,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   }
 
   FREE(ret);
-  LOG(LOG_WARNING,
+  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("FSUI persistence: error restoring download\n"));
   return NULL;
 }
@@ -232,7 +232,7 @@ static void writeDownloadList(int fd,
     return;
   }
 #if DEBUG_PERSISTENCE
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Serializing download state of download `%s': %s (%llu, %llu)\n",
       list->filename,
       list->finished == YES ? "finished" : "pending",
@@ -342,7 +342,7 @@ static void updateDownloadThreads(void * c) {
   dpos = ctx->activeDownloads.child;
 #if DEBUG_PERSISTENCE
   if (dpos != NULL)
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Download thread manager schedules pending downloads...\n");
 #endif
   while (dpos != NULL) {
@@ -392,11 +392,11 @@ struct FSUI_Context * FSUI_start(const char * name,
   if (doResume) {
     ret->ipc = IPC_SEMAPHORE_NEW(fn,
 				 1);
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"Getting IPC lock for FSUI (%s).\n",
 	fn);
     IPC_SEMAPHORE_DOWN(ret->ipc);
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"Aquired IPC lock.\n");
     fd = -1;
     strcat(fn, ".res");
@@ -586,7 +586,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  = ret;
 	/* start search thread! */
 #if DEBUG_PERSISTENCE
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "FSUI persistence: restarting search\n");
 #endif
 	if (0 != PTHREAD_CREATE(&list->handle,
@@ -634,7 +634,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	   list->sizeResultsReceived,
 	   0);
     WARN:
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("FSUI state file `%s' had syntax error at offset %u.\n"),
 	  fn,
 	  lseek(fd, 0, SEEK_CUR));
@@ -678,7 +678,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   int fd;
   int big;
 
-  LOG(LOG_INFO,
+  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       "FSUI shutdown.  This may take a while.\n");
   FSUI_publishCollectionNow(ctx);
 
@@ -722,12 +722,12 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	    8); /* magic */
     }
 #if DEBUG_PERSISTENCE
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Serializing FSUI state...\n");
 #endif
   } else {
 #if DEBUG_PERSISTENCE
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"NOT serializing FSUI state...\n");
 #endif
     fd = -1;
@@ -832,7 +832,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   }
   if (fd != -1) {
 #if DEBUG_PERSISTENCE
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Serializing FSUI state done.\n");
 #endif
     CLOSE(fd);
@@ -848,7 +848,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   MUTEX_DESTROY(&ctx->lock);
   FREE(ctx->name);
   FREE(ctx);
-  LOG(LOG_INFO,
+  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       "FSUI shutdown complete.\n");
 }
 

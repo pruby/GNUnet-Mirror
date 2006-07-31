@@ -579,7 +579,7 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
 			       &lastInterval,
 			       &lastTime)) ) {
       if (lastInterval != updateInterval) {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Publication interval for periodic publication changed."));
       }
       /* try to compute tid and/or
@@ -600,7 +600,7 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
 		       &tid);
 	}
 	if (creationTime > cronTime(NULL) + 7 * cronDAYS) {
-	  LOG(LOG_WARNING,
+	  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	      _("Publishing update for periodically updated "
 		"content more than a week ahead of schedule.\n"));
 	}

@@ -15,7 +15,7 @@ static int openServerSocket() {
   listenerPort = getGNUnetPort();
   /* create the socket */
   while ( (listenerFD = SOCKET(PF_INET, SOCK_STREAM, 0)) < 0) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	"ERROR opening socket (%s).  "
 	"No client service started.  "
 	"Trying again in 30 seconds.\n",
@@ -41,7 +41,7 @@ static int openServerSocket() {
   if (BIND (listenerFD,
 	   (struct sockaddr *) &serverAddr,
 	    sizeof(serverAddr)) < 0) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	"ERROR (%s) binding the TCP listener to port %d. "
 	"Test failed.  Is gnunetd running?\n",
 	STRERROR(errno),
@@ -51,7 +51,7 @@ static int openServerSocket() {
 
   /* start listening for new connections */
   if (0 != LISTEN(listenerFD, 5)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	" listen failed: %s\n",
 	STRERROR(errno));
     return -1;
@@ -71,7 +71,7 @@ static int doAccept(int serverSocket) {
 			(struct sockaddr *)&clientAddr,
 			&lenOfIncomingAddr);
     if (incomingFD < 0) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  "ERROR accepting new connection (%s).\n",
 	  STRERROR(errno));
       continue;

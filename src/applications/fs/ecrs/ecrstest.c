@@ -139,7 +139,7 @@ static int searchCB(const ECRS_FileInfo * fi,
   char * tmp;
 
   tmp = ECRS_uriToString(fi->uri);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Search found URI `%s'\n",
       tmp);
   FREE(tmp);
@@ -184,7 +184,7 @@ static int downloadFile(unsigned int size,
   char * tmp;
 
   tmp = ECRS_uriToString(uri);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Starting download of `%s'\n",
       tmp);
   FREE(tmp);

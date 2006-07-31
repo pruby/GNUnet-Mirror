@@ -80,7 +80,7 @@ static int parseOptions(int argc,
      case 'T': {
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-T");
 	return SYSERR;
@@ -95,14 +95,14 @@ static int parseOptions(int argc,
       printf("dht-query v0.0.1\n");
       return SYSERR;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"),
 	  c);
       return SYSERR;
     } /* end of parsing commandline */
   } /* while (1) */
   if (argc - GNoptind == 0) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("No commands specified.\n"));
     printHelp();
     return SYSERR;
@@ -131,7 +131,7 @@ static void do_get(GNUNET_TCP_SOCKET * sock,
   hash(key,
        strlen(key),
        &hc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Issuing '%s(%s)' command.\n",
       "get", key);
   ret = DHT_LIB_get(&table,
@@ -161,7 +161,7 @@ static void do_put(GNUNET_TCP_SOCKET * sock,
   dc->size = htonl(strlen(value)
 		   + sizeof(DataContainer));
   memcpy(&dc[1], value, strlen(value));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Issuing '%s(%s,%s)' command.\n",
       "put", key, value);
   if (OK == DHT_LIB_put(&table,		
@@ -193,7 +193,7 @@ static void do_remove(GNUNET_TCP_SOCKET * sock,
   dc->size = htonl(strlen(value)
 		   + sizeof(DataContainer));
   memcpy(&dc[1], value, strlen(value));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Issuing '%s(%s,%s)' command.\n",
       "remove", key, value);
   if (OK == DHT_LIB_remove(&table,

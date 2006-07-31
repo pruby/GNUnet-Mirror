@@ -260,7 +260,7 @@ static sqliteHandle *getDBHandle(const char *name) {
 
     /* Open database */
     if (sqlite3_open(db->fn, &dbh->dbh) != SQLITE_OK) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
           _("Unable to initialize SQLite KVStore.\n"));
       
       FREE(db->fn);
@@ -308,7 +308,7 @@ static void sqlite_shutdown() {
   unsigned int idx;
   
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG, "SQLite KVStore: closing database\n");
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "SQLite KVStore: closing database\n");
 #endif
 
   for (idx = 0; idx < databases; idx++)
@@ -673,7 +673,7 @@ provide_module_kvstore_sqlite(CoreAPIForApplication * capi) {
   static KVstore_ServiceAPI api;
 
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "SQLite: initializing database\n");
 #endif
 
@@ -697,7 +697,7 @@ provide_module_kvstore_sqlite(CoreAPIForApplication * capi) {
 void release_module_kvstore_sqlite() {
   sqlite_shutdown();
 #if DEBUG_SQLITE
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "SQLite KVStore: database shutdown\n");
 #endif
 

@@ -58,7 +58,7 @@ static int handlep2pReply(const PeerIdentity * sender,
   hostCount = (ntohs(message->size)-sizeof(P2P_tracekit_reply_MESSAGE))/sizeof(PeerIdentity);
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received invalid `%s' message from `%s'.\n"),
 	"P2P_tracekit_probe_MESSAGE",
 	&sen);
@@ -67,7 +67,7 @@ static int handlep2pReply(const PeerIdentity * sender,
   reply = (P2P_tracekit_reply_MESSAGE*)message;
   hash2enc(&reply->initiatorId.hashPubKey,
 	   &initiator);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TRACEKIT: Sending reply back to initiator `%s'.\n",
       &initiator);
   MUTEX_LOCK(&lock);
@@ -77,7 +77,7 @@ static int handlep2pReply(const PeerIdentity * sender,
     if ( (routeTable[i]->timestamp == (TIME_T)ntohl(reply->initiatorTimestamp)) &&
 	 (equalsHashCode512(&routeTable[i]->initiator.hashPubKey,
 			    &reply->initiatorId.hashPubKey) ) ) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "TRACEKIT: found matching entry in routing table\n");
       if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			    &routeTable[i]->replyTo.hashPubKey) ) {
@@ -85,14 +85,14 @@ static int handlep2pReply(const PeerIdentity * sender,
 	CS_tracekit_reply_MESSAGE * csReply;
 
 	idx = ntohl(reply->clientId);
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "TRACEKIT: I am initiator, sending to client.\n");
 	if (idx >= clientCount) {
 	  GE_BREAK(ectx, 0);
 	  continue; /* discard */
 	}
 	if (clients[idx] == NULL) {
-	  LOG(LOG_DEBUG,
+	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      "TRACEKIT: received response on slot %u, but client already exited.\n",
 	      idx);
 	  continue; /* discard */
@@ -117,7 +117,7 @@ static int handlep2pReply(const PeerIdentity * sender,
 
 	hash2enc(&routeTable[i]->replyTo.hashPubKey,
 		 &hop);
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "TRACEKIT: forwarding to next hop `%s'\n",
 	    &hop);
 	coreAPI->unicast(&routeTable[i]->replyTo,
@@ -182,18 +182,18 @@ static int handlep2pProbe(const PeerIdentity * sender,
 	   &sen);
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_probe_MESSAGE)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received invalid `%s' message from `%s'.\n"),
 	"P2P_tracekit_probe_MESSAGE",
 	&sen);
     return SYSERR;
   }
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TRACEKIT: received probe\n");
   TIME(&now);
   msg = (P2P_tracekit_probe_MESSAGE*) message;
   if ((TIME_T)ntohl(msg->timestamp) > 3600 + now) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"TRACEKIT: probe has timestamp in the far future (%d > %d), dropping\n",
 	ntohl(msg->timestamp),
 	3600 + now);
@@ -209,7 +209,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
     if ( (routeTable[i]->timestamp == (TIME_T)ntohl(msg->timestamp)) &&
 	 equalsHashCode512(&routeTable[i]->initiator.hashPubKey,
 			   &msg->initiatorId.hashPubKey) ) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "TRACEKIT-PROBE %d from `%s' received twice (slot %d), ignored\n",
 	  ntohl(msg->timestamp),
 	  &init,
@@ -239,7 +239,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
   }
   if (sel == -1) {
     MUTEX_UNLOCK(&lock);
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	_("TRACEKIT: routing table full, trace request dropped\n"));
     return OK;
   }
@@ -254,7 +254,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
   routeTable[sel]->replyTo
     = *sender;
   MUTEX_UNLOCK(&lock);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TRACEKIT-PROBE started at %d by peer `%s' received, processing in slot %d with %u hops\n",
       ntohl(msg->timestamp),
       &init,
@@ -320,14 +320,14 @@ static int csHandle(ClientHandle client,
   CS_tracekit_probe_MESSAGE * csProbe;
   P2P_tracekit_probe_MESSAGE p2pProbe;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TRACEKIT: client sends probe request\n");
 
   /* build probe, broadcast */
   csProbe = (CS_tracekit_probe_MESSAGE*) message;
   if (ntohs(csProbe->header.size) !=
       sizeof(CS_tracekit_probe_MESSAGE) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("TRACEKIT: received invalid `%s' message\n"),
 	"CS_tracekit_probe_MESSAGE");
     return SYSERR;
@@ -354,7 +354,7 @@ static int csHandle(ClientHandle client,
   }
   clients[idx] = client;
   MUTEX_UNLOCK(&lock);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TRACEKIT: client joins in slot %u.\n",
       idx);
 
@@ -384,7 +384,7 @@ static void clientExitHandler(ClientHandle c) {
   MUTEX_LOCK(&lock);
   for (i=0;i<clientCount;i++)
     if (clients[i] == c) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "TRACEKIT: client in slot %u exits.\n",
 	  i);
       clients[i] = NULL;
@@ -407,7 +407,7 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
 
   MUTEX_CREATE(&lock);
   coreAPI = capi;
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TRACEKIT registering handlers %d %d and %d\n",
       P2P_PROTO_tracekit_PROBE,
       P2P_PROTO_tracekit_REPLY,

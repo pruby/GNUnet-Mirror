@@ -219,7 +219,7 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
 	 (lens[6] != contentSize) ) {
       char scratch[512];
 
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	  _("mysql datastore"));
       SNPRINTF(scratch, 
@@ -382,7 +382,7 @@ static int iopen(mysqlHandle * dbhI,
 	mysql_stmt_prepare(dbhI->deleteg,
 			   DELETE_GENERIC_SAMPLE,
 			   strlen(DELETE_GENERIC_SAMPLE)) ) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("`%s' failed at %s:%d with error: %s\n"),
 	  "mysql_stmt_prepare",
 	  __FILE__, __LINE__,
@@ -694,10 +694,10 @@ static int get(const HashCode512 * query,
     return iterateLowPriority(type, iter, closure);
 
 #if DEBUG_MYSQL
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "MySQL looks for `%s' of type %u\n",
       &enc,
       type);
@@ -721,7 +721,7 @@ static int get(const HashCode512 * query,
   GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 2);
   sql_res = mysql_stmt_result_metadata(stmt);
   if (! sql_res) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_result_metadata",
 	__FILE__, __LINE__,
@@ -736,7 +736,7 @@ static int get(const HashCode512 * query,
   }
   if (mysql_stmt_bind_param(stmt,
 			    dbh->sbind)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_param",
 	__FILE__, __LINE__,
@@ -745,7 +745,7 @@ static int get(const HashCode512 * query,
     return SYSERR;
   }
   if (mysql_stmt_execute(stmt)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
@@ -769,7 +769,7 @@ static int get(const HashCode512 * query,
   dbh->bind[6].buffer_length = MAX_DATUM_SIZE;
   if (mysql_stmt_bind_result(stmt,
 			     dbh->bind)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_result",
 	__FILE__, __LINE__,
@@ -779,7 +779,7 @@ static int get(const HashCode512 * query,
     return SYSERR;
   }
   if (mysql_stmt_store_result(stmt)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_store_result",
 	__FILE__, __LINE__,
@@ -796,7 +796,7 @@ static int get(const HashCode512 * query,
       char scratch[512];
 
       mysql_free_result(sql_res); 
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	  _("mysql datastore"));
       SNPRINTF(scratch, 
@@ -819,7 +819,7 @@ static int get(const HashCode512 * query,
       datum->anonymityLevel = htonl(level);
       datum->expirationTime = htonll(expiration);
 #if DEBUG_MYSQL
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Found in database block with type %u.\n",
 	  ntohl(*(int*)&datum[1]));
 #endif
@@ -833,7 +833,7 @@ static int get(const HashCode512 * query,
     datasize = MAX_DATUM_SIZE;
   }
   if (mysql_stmt_errno(stmt)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_fetch",
 	__FILE__, __LINE__,
@@ -844,17 +844,17 @@ static int get(const HashCode512 * query,
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 
 #if DEBUG_MYSQL
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
   if (count > 0) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"MySQL found %d results for `%s' of type %u.\n",
 	count,
 	&enc,
 	type);
   } else {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"MySQL iteration aborted looking for `%s' of type %u.\n",
 	&enc,
 	type);
@@ -898,10 +898,10 @@ static int put(const HashCode512 * key,
   expiration = ntohll(value->expirationTime);
 
 #if DEBUG_MYSQL
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Storing in database block with type %u and key %s.\n",
       type,
       &enc);
@@ -918,7 +918,7 @@ static int put(const HashCode512 * key,
 
   if (mysql_stmt_bind_param(dbh->insert,
 			    dbh->bind)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_param",
 	__FILE__, __LINE__,
@@ -928,7 +928,7 @@ static int put(const HashCode512 * key,
   }
 
   if (mysql_stmt_execute(dbh->insert)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
@@ -962,10 +962,10 @@ static int del(const HashCode512 * key,
 #if DEBUG_MYSQL
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "MySQL is executing deletion request for content of query `%s' and type %u\n",
       &enc,
       value == NULL ? 0 : ntohl(value->type));
@@ -1000,7 +1000,7 @@ static int del(const HashCode512 * key,
   }
   if (mysql_stmt_bind_param(stmt,
 			    dbh->dbind)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_param",
 	__FILE__, __LINE__,
@@ -1009,7 +1009,7 @@ static int del(const HashCode512 * key,
     return SYSERR;
   }
   if (mysql_stmt_execute(stmt)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
@@ -1020,7 +1020,7 @@ static int del(const HashCode512 * key,
   count = mysql_stmt_affected_rows(stmt);
   MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
 #if DEBUG_MYSQL
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "MySQL DELETE operation affected %d rows.\n",
       count);
 #endif
@@ -1049,7 +1049,7 @@ static int update(const HashCode512 * key,
   GNUNET_ASSERT(mysql_stmt_param_count(dbh->update) <= 3);
   if (mysql_stmt_bind_param(dbh->update,
 			    dbh->ubind)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_bind_param",
 	__FILE__, __LINE__,
@@ -1063,7 +1063,7 @@ static int update(const HashCode512 * key,
    * at all in this context.)
    */
   if (mysql_stmt_execute(dbh->update)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: %s\n"),
 	"mysql_stmt_execute",
 	__FILE__, __LINE__,
@@ -1103,7 +1103,7 @@ static unsigned long long getSize() {
     int rows = mysql_num_fields(sql_res);
     sql_row = mysql_fetch_row(sql_res);
     if (sql_row == NULL) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Query `%s' had no results.\n"),
 	  "SHOW TABLE STATUS LIKE 'gn070'");
       MUTEX_UNLOCK(&dbh->DATABASE_Lock_);
@@ -1201,7 +1201,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 #ifdef WINDOWS
   FREE(home_dir);
 #endif
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("Trying to use file `%s' for MySQL configuration.\n"),
       cnffile);
   fp = FOPEN(cnffile, "r");
@@ -1219,7 +1219,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   if (OK != iopen(dbh, YES)) {
     FREE(cnffile);
     FREE(dbh);
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Failed to load MySQL database module.  Check that MySQL is running and configured properly!\n"));
     dbh = NULL;
     return NULL;

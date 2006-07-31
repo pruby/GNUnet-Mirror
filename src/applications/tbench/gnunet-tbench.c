@@ -120,7 +120,7 @@ static int parseOptions(int argc,
       if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageIterations)){
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-i");
 	return SYSERR;
@@ -130,7 +130,7 @@ static int parseOptions(int argc,
       if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageCnt)){
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-n");
 	return SYSERR;
@@ -143,7 +143,7 @@ static int parseOptions(int argc,
       if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageSize)){
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-s");
 	return SYSERR;
@@ -153,7 +153,7 @@ static int parseOptions(int argc,
       if(1 != sscanf(GNoptarg,
 		     "%ud",
 		     &messageTrainSize)){
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-S");
 	return SYSERR;
@@ -163,7 +163,7 @@ static int parseOptions(int argc,
       if(1 != SSCANF(GNoptarg,
 		     "%llud",
 		     &messageTimeOut)){
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-t");
 	return SYSERR;
@@ -178,14 +178,14 @@ static int parseOptions(int argc,
       if(1 != SSCANF(GNoptarg,
 		     "%llud",
 		     &messageSpacing)){
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-X");
 	return SYSERR;
       }
       break;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       return -1;
     } /* end of parsing commandline */

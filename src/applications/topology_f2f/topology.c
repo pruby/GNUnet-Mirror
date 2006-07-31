@@ -193,7 +193,7 @@ static void scanForHosts(unsigned int index) {
   }
   hash2enc(&indexMatch.match.hashPubKey,
 	   &enc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Topology: trying to connect to `%s'.\n",
       &enc);
   coreAPI->unicast(&indexMatch.match,
@@ -216,7 +216,7 @@ static void notifyPONG(PeerIdentity * hostId) {
 
   hash2enc(&hostId->hashPubKey,
      &enc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received pong from `%s', telling core that peer is still alive.\n",
       (char*)&enc);
 #endif
@@ -252,7 +252,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
 #if DEBUG_TOPOLOGY
     hash2enc(&hi->hashPubKey,
        &enc);
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
   "Sending ping to `%s' to prevent connection timeout.\n",
   (char*)&enc);
 #endif
@@ -319,7 +319,7 @@ static int rereadConfiguration() {
   tmp = getConfigurationString("F2F",
 			       "FRIENDS");
   if (tmp == NULL) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Need to have list of friends in configuration under `%s' in section `%s'.\n"),
 	"FRIENDS",
 	"F2F");
@@ -338,7 +338,7 @@ static int rereadConfiguration() {
   }
   data = MALLOC(size);
   if (size != readFile(fn, size, data)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Failed to read friends list from `%s'\n"),
 	fn);
     FREE(fn);
@@ -354,7 +354,7 @@ static int rereadConfiguration() {
 	   &data[pos],
 	   sizeof(EncName));
     if (! isspace(enc.encoding[sizeof(EncName)-1])) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Syntax error in topology specification, skipping bytes.\n"));
       continue;
     }
@@ -366,7 +366,7 @@ static int rereadConfiguration() {
 	   friendCount+1);
       friends[friendCount-1].hashPubKey = hc;
     } else {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Syntax error in topology specification, skipping bytes `%s'.\n"),
 	  &enc);
     }

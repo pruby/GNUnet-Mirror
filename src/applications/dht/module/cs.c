@@ -442,7 +442,7 @@ static int csLeave(ClientHandle client,
     }
   }
   MUTEX_UNLOCK(&csLock);
-  LOG(LOG_WARNING,
+  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("`%s' failed: table not found!\n"),
       "CS_DHT_LEAVE");
   return sendAck(client,
@@ -454,7 +454,7 @@ static void cs_put_abort(void * cls) {
   DHT_CLIENT_PUT_RECORD * record = cls;
   int i;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Signaling client put completion: %d\n",
       record->replicas);
   MUTEX_LOCK(&csLock);
@@ -462,7 +462,7 @@ static void cs_put_abort(void * cls) {
   if (OK != sendAck(record->client,
 		    &record->table,
 		    record->replicas)) {
-    LOG(LOG_FAILURE,
+    GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	_("`%s' failed.  Terminating connection to client.\n"),
 	"sendAck");
     coreAPI->terminateClientConnection(record->client);
@@ -519,7 +519,7 @@ static int csPut(ClientHandle client,
        putRecordsSize+1);
   putRecords[putRecordsSize-1] = ptr;
   MUTEX_UNLOCK(&csLock);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Starting DHT put\n");
   ptr->put_record = dhtAPI->put_start(&req->table,
 				      &req->key,
@@ -538,7 +538,7 @@ static void cs_remove_abort(DHT_CLIENT_REMOVE_RECORD * record) {
   if (OK != sendAck(record->client,
 		    &record->table,
 		    record->replicas)) {
-    LOG(LOG_FAILURE,
+    GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	_("sendAck failed.  Terminating connection to client.\n"));
     coreAPI->terminateClientConnection(record->client);
   }
@@ -647,7 +647,7 @@ static int cs_get_result_callback(const HashCode512 * key,
   memcpy(&msg[1],
 	 value,
 	 ntohl(value->size));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "`%s' processes reply '%.*s'\n",
       __FUNCTION__,
       ntohl(value->size) - sizeof(DataContainer),
@@ -657,7 +657,7 @@ static int cs_get_result_callback(const HashCode512 * key,
   msg->header.type = htons(CS_PROTO_dht_REPLY_GET);
   if (OK != coreAPI->sendToClient(record->client,
 				  &msg->header)) {
-    LOG(LOG_FAILURE,
+    GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	_("`%s' failed. Terminating connection to client.\n"),
 	"sendToClient");
     coreAPI->terminateClientConnection(record->client);
@@ -675,7 +675,7 @@ static void cs_get_abort(void * cls) {
     if (OK != sendAck(record->client,
 		      &record->table,
 		      SYSERR)) {
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("`%s' failed. Terminating connection to client.\n"),
 	  "sendAck");
       coreAPI->terminateClientConnection(record->client);
@@ -684,7 +684,7 @@ static void cs_get_abort(void * cls) {
     if (OK != sendAck(record->client,
 		      &record->table,
 		      record->count)) {
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("`%s' failed. Terminating connection to client.\n"),
 	  "sendAck");
       coreAPI->terminateClientConnection(record->client);
@@ -804,7 +804,7 @@ static int csACK(ClientHandle client,
     }
   }
   MUTEX_UNLOCK(&csLock);
-  LOG(LOG_ERROR,
+  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
       _("Failed to deliver `%s' message.\n"),
       "CS_dht_reply_ack_MESSAGE");
   return SYSERR; /* failed to signal */
@@ -857,7 +857,7 @@ static int csResults(ClientHandle client,
     }
   }
   MUTEX_UNLOCK(&csLock);
-  LOG(LOG_ERROR,
+  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
       _("Failed to deliver `%s' message.\n"),
       "CS_dht_reply_results_MESSAGE");
   return SYSERR; /* failed to deliver */
@@ -946,7 +946,7 @@ int initialize_module_dht(CoreAPIForApplication * capi) {
   if (dhtAPI == NULL)
     return SYSERR;
   coreAPI = capi;
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "DHT registering client handlers: "
       "%d %d %d %d %d %d %d\n",
       CS_PROTO_dht_REQUEST_JOIN,
@@ -991,7 +991,7 @@ int done_module_dht() {
   int status;
 
   status = OK;
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "DHT: shutdown\n");
   if (OK != coreAPI->unregisterClientHandler(CS_PROTO_dht_REQUEST_JOIN,
 					     &csJoin))

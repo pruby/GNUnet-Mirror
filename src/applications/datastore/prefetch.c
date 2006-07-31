@@ -102,7 +102,7 @@ static int aquire(const HashCode512 * key,
     }
   }  
 #if DEBUG_PREFETCH
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Adding content to prefetch buffer (%u)\n",
       rCBPos);
 #endif
@@ -190,13 +190,13 @@ int getRandom(const HashCode512 * receiver,
   if (minIdx == -1) {
     MUTEX_UNLOCK(&lock);
 #if DEBUG_PREFETCH
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Failed to find content in prefetch buffer\n");
 #endif
     return SYSERR;
   }
 #if DEBUG_PREFETCH
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Found content in prefetch buffer (%u)\n",
 	minIdx);
 #endif

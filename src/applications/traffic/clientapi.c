@@ -63,14 +63,14 @@ int pollSocket(GNUNET_TCP_SOCKET * sock,
     = htonl(timeframe);
   if (SYSERR == writeToSocket(sock,
 			      &req.header)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed to query gnunetd about traffic conditions.\n"));
     return SYSERR;
   }
   info = NULL;
   if (SYSERR == readFromSocket(sock,
 			       (CS_MESSAGE_HEADER**)&info)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Did not receive reply from gnunetd about traffic conditions.\n"));
     return SYSERR;
   }

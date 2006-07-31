@@ -475,7 +475,7 @@ static void checkHeaderComplete(HTTPSession * httpSession) {
 	     (len == 0) )
 	  continue;
 #if DEBUG_HTTP
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "http receiving chunk of %u bytes\n",
 	    len);
 #endif
@@ -568,7 +568,7 @@ static int readAndProcess(int i) {
     }
   }
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Got message of %u out of %u bytes\n",
       httpSession->rpos,
       httpSession->rsize);
@@ -577,7 +577,7 @@ static int readAndProcess(int i) {
        (httpSession->rpos != httpSession->rsize) ) {
     /* only have partial message yet */
 #if DEBUG_HTTP
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Got partial message of %u out of %u bytes\n",
 	httpSession->rpos,
 	httpSession->rsize);
@@ -597,7 +597,7 @@ static int readAndProcess(int i) {
     welcome = (HTTPWelcome*) &httpSession->rbuff[0];
     if ( (ntohs(welcome->version) != 0) ||
 	 (ntohs(welcome->size) != sizeof(HTTPWelcome)) ) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Expected welcome on http connection, got garbage. Closing connection.\n"));
       httpDisconnect(tsession);
       return SYSERR;
@@ -605,10 +605,10 @@ static int readAndProcess(int i) {
     httpSession->expectingWelcome = NO;
     httpSession->sender = welcome->clientIdentity;
 #if DEBUG_HTTP
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&httpSession->sender.hashPubKey,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Http welcome message from peer `%s' received.\n",
 	&enc);
 #endif
@@ -645,7 +645,7 @@ static int readAndProcess(int i) {
   httpSession->rsize = 0;
   httpSession->rpos = 0;
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "http transport received %d bytes, forwarding to core.\n",
       mp->size);
 #endif
@@ -748,7 +748,7 @@ static void * httpListenMain() {
 	http_sock = -1; /* prevent us from error'ing all the time */
       }
     } else
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "HTTP server socket not open!\n");
     if (http_pipe[0] != -1) {
       if (-1 != FSTAT(http_pipe[0], &buf)) {
@@ -813,7 +813,7 @@ static void * httpListenMain() {
 		 sizeof(struct in_addr));
 
 	  if (YES == isBlacklisted(ipaddr)) {
-	    LOG(LOG_INFO,
+	    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 		_("%s: Rejected connection from blacklisted "
 		  "address %u.%u.%u.%u.\n"),
 		"HTTP",
@@ -821,7 +821,7 @@ static void * httpListenMain() {
 	    closefile(sock);
 	  } else {
 #if DEBUG_HTTP
-	    LOG(LOG_INFO,
+	    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 		"Accepted connection from %u.%u.%u.%u.\n",
 		PRIP(ntohl(*(int*)&clientAddr.sin_addr)));
 #endif
@@ -949,7 +949,7 @@ static int httpDirectSend(HTTPSession * httpSession,
     return SYSERR;
   if (httpSession->sock == -1) {
 #if DEBUG_HTTP
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"httpDirectSend called, but socket is closed\n");
 #endif
     return SYSERR;
@@ -1009,7 +1009,7 @@ static int httpDirectSend(HTTPSession * httpSession,
   len += ssize;
   incrementBytesSent(len);
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "http sending chunk of %u bytes\n",
       ssize);
 #endif
@@ -1088,7 +1088,7 @@ static P2P_hello_MESSAGE * createhello() {
 
   port = getGNUnetHTTPPort();
   if (0 == port) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"HTTP port is 0, will only send using HTTP.\n");
     return NULL; /* HTTP transport is configured SEND-only! */
   }
@@ -1097,12 +1097,12 @@ static P2P_hello_MESSAGE * createhello() {
 
   if (SYSERR == getPublicIPAddress(&haddr->ip)) {
     FREE(msg);
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("HTTP: Could not determine my public IP address.\n"));
     return NULL;
   }
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "HTTP uses IP address %u.%u.%u.%u.\n",
       PRIP(ntohl(*(int*)&haddr->ip)));
 #endif
@@ -1135,7 +1135,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
     return SYSERR;
   haddr = (HostAddress*) &helo[1];
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Creating HTTP connection to %u.%u.%u.%u:%u.\n",
       PRIP(ntohl(*(int*)&haddr->ip.addr)),
       ntohs(haddr->port));
@@ -1173,7 +1173,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
 	      sizeof(soaddr));
   if ( (i < 0) &&
        (errno != EINPROGRESS) ) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Cannot connect to %u.%u.%u.%u:%u: %s\n"),
 	PRIP(ntohl(*(int*)&haddr->ip)),
 	ntohs(haddr->port),
@@ -1320,7 +1320,7 @@ static int startTransportServer() {
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddr.sin_port        = htons(getGNUnetHTTPPort());
 #if DEBUG_HTTP
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"starting %s peer server on port %d\n",
 	"http",
 	ntohs(serverAddr.sin_port));
@@ -1329,7 +1329,7 @@ static int startTransportServer() {
 	     (struct sockaddr *) &serverAddr,
 	     sizeof(serverAddr)) < 0) {
       LOG_STRERROR(LOG_ERROR, "bind");
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not bind the HTTP listener to port %d. "
 	    "No transport service started.\n"),
 	  getGNUnetHTTPPort());
@@ -1451,7 +1451,7 @@ TransportAPI * inittransport_http(CoreAPIForTransport * core) {
   if (proxy != NULL) {
     if (OK != GN_getHostByName(proxy,
 			       &ip)) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not resolve name of HTTP proxy `%s'.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;

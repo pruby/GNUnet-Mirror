@@ -871,7 +871,7 @@ static int whitelistHost(const PeerIdentity * identity) {
     return SYSERR;
   }
 #if DEBUG_IDENTITY
-  IFLOG(LOG_INFO,
+  IFGE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	hash2enc(&identity->hashPubKey,
 		 &enc));
   GE_LOG(ectx,

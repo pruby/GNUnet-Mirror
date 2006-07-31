@@ -188,10 +188,10 @@ static int gapPut(void * closure,
   }
   processResponse(query, dv);
 #if DEBUG_FS
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received GAP-PUT request (query: `%s')\n",
       &enc);
 #endif
@@ -210,10 +210,10 @@ static int get_result_callback(const HashCode512 * query,
 #if DEBUG_FS
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Found reply to query `%s'.\n",
       &enc);
 #endif
@@ -252,10 +252,10 @@ static int csHandleRequestQueryStop(ClientHandle sock,
   }
   rs = (CS_fs_request_search_MESSAGE*) req;
 #if DEBUG_FS
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&rs->query[0],
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received QUERY STOP (query: `%s')\n",
       &enc);
 #endif
@@ -308,10 +308,10 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*) &ri[1]);
 #if DEBUG_FS
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
       &enc,
       type,
@@ -398,7 +398,7 @@ static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
 
   FREE(fn);
 #if DEBUG_FS
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Sending confirmation (%s) of index initialization request to client\n",
       ret == OK ? "success" : "failure");
 #endif
@@ -430,7 +430,7 @@ static int csHandleCS_fs_request_index_MESSAGE(ClientHandle sock,
 		       ntohs(ri->header.size) - sizeof(CS_fs_request_index_MESSAGE),
 		       (const DBlock*) &ri[1]);
 #if DEBUG_FS
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Sending confirmation (%s) of index request to client\n",
       ret == OK ? "success" : "failure");
 #endif
@@ -454,7 +454,7 @@ static int completeValue(const HashCode512 * key,
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
 #if DEBUG_FS
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"`%s' found value that does not match (%u, %u).\n",
 	__FUNCTION__,
 	ntohl(comp->size),
@@ -464,7 +464,7 @@ static int completeValue(const HashCode512 * key,
   }
   *comp = *value; /* make copy! */
 #if DEBUG_FS
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "`%s' found value that matches.\n",
       __FUNCTION__);
 #endif
@@ -511,10 +511,10 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
     return SYSERR;
   }
 #if DEBUG_FS
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received REQUEST DELETE (query: `%s', type: %u)\n",
       &enc,
       type);
@@ -531,7 +531,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
   MUTEX_UNLOCK(&lock);
   FREE(value);
 #if DEBUG_FS
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Sending confirmation (%s) of delete request to client\n",
       ret != SYSERR ? "success" : "failure");
 #endif
@@ -553,7 +553,7 @@ static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
   }
   ru = (CS_fs_request_unindex_MESSAGE*) req;
 #if DEBUG_FS
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received REQUEST UNINDEX\n");
 #endif
   ret = ONDEMAND_unindex(datastore,
@@ -578,7 +578,7 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
   }
   ru = (RequestTestindex*) req;
 #if DEBUG_FS
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received REQUEST TESTINDEXED\n");
 #endif
   ret = ONDEMAND_testindexed(datastore,
@@ -594,7 +594,7 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
 static int csHandleRequestGetAvgPriority(ClientHandle sock,
 					 const CS_MESSAGE_HEADER * req) {
 #if DEBUG_FS
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received REQUEST GETAVGPRIORITY\n");
 #endif
   return coreAPI->sendValueToClient(sock,
@@ -632,10 +632,10 @@ static int gapGetConverter(const HashCode512 * key,
   EncName enc;
 
 #if DEBUG_FS
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Converting reply for query `%s' for gap.\n",
       &enc);
 #endif
@@ -656,20 +656,20 @@ static int gapGetConverter(const HashCode512 * key,
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(key,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	"Converting reply for query `%s' for gap failed (datum not applicable).\n",
 	&enc);
     FREENONNULL(xvalue);
     return SYSERR; /* no query will ever match */
   }
   if (ret == NO) {
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(key,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	"Converting reply for query `%s' for gap failed (type not applicable).\n",
 	&enc);
     FREENONNULL(xvalue);
@@ -689,10 +689,10 @@ static int gapGetConverter(const HashCode512 * key,
        refuse to hand out data that requires
        anonymity! */
     FREENONNULL(xvalue);
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(key,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	"Converting reply for query `%s' for gap failed (insufficient cover traffic).\n",
 	&enc);
     return OK;
@@ -745,10 +745,10 @@ static int gapGet(void * closure,
 #if DEBUG_FS
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&keys[0],
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "GAP requests content for `%s' of type %u\n",
       &enc,
       type);
@@ -906,10 +906,10 @@ static int dhtGet(void * closure,
   GGC myClosure;
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&keys[0],
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "DHT requests content for %s of type %u\n",
       &enc,
       type);
@@ -1087,10 +1087,10 @@ static int csHandleRequestQueryStart(ClientHandle sock,
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
 #if DEBUG_FS 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&rs->query[0],
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received QUERY START (query: `%s', ttl %llu, priority %u, anonymity %u)\n",
       &enc,
       ntohll(rs->expiration) - cronTime(NULL),
@@ -1114,7 +1114,7 @@ static int csHandleRequestQueryStart(ClientHandle sock,
 	 &done);
   if (done == YES) {
 #if DEBUG_FS
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"FS successfully took GAP shortcut for `%s'.\n",
 	&enc);
 #endif
@@ -1180,7 +1180,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
        &dht_table);
   if (getConfigurationInt("FS",
 			  "QUOTA") <= 0) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("You must specify a postive number for `%s' in the configuration in section `%s'.\n"),
 	"QUOTA", "FS");
     return SYSERR;
@@ -1229,7 +1229,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     dht->join(&dsDht, &dht_table);
   }
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
       "fs",
       CS_PROTO_gap_QUERY_START,
@@ -1277,10 +1277,10 @@ void done_module_fs() {
 
   doneMigration();
   if (dht != NULL) {
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"Leaving DHT (this may take a while).");
     dht->leave(&dht_table);
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"Leaving DHT complete.");
 
   }

@@ -89,7 +89,7 @@ int FSUI_trackStatus() {
        (ntohl(*status) != YES) ) {
     FREENONNULL(status);
 #if DEBUG_FILE_INFO
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	_("Collecting file identifiers disabled.\n"));
 #endif
     return NO;
@@ -279,7 +279,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
   IPC_SEMAPHORE_FREE(sem);
   return rval;
 FORMATERROR:
-  LOG(LOG_WARNING, _("Deleted corrupt URI database in `%s'."), STATE_NAME);
+  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, _("Deleted corrupt URI database in `%s'."), STATE_NAME);
   if(0 != MUNMAP(result, buf.st_size))
     LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
   CLOSE(fd);

@@ -77,7 +77,7 @@ downloadHostlistHelper(char * url,
   port = TCP_HTTP_PORT;
 
   if (0 != strncmp(HTTP_URL, url, strlen(HTTP_URL)) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Invalid URL `%s' (must begin with `%s')\n"),
 	url,
 	HTTP_URL);
@@ -105,7 +105,7 @@ downloadHostlistHelper(char * url,
   else {
     port = atoi(hostname + curpos + 1);
     if (!port) {
-    	LOG(LOG_WARNING,
+    	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
     		_("Invalid port \"%s\" in hostlist specification, trying port %d.\n"),
     		TCP_HTTP_PORT);
     	port = TCP_HTTP_PORT;
@@ -116,7 +116,7 @@ downloadHostlistHelper(char * url,
 
   sock = SOCKET(PF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("`%s' failed at %s:%d with error: `%s'.\n"),
 	"socket",
 	__FILE__, __LINE__,
@@ -128,7 +128,7 @@ downloadHostlistHelper(char * url,
   /* Do we need to connect through a proxy? */
   if (theProxy.sin_addr.s_addr == 0) {
     if (OK != GN_getHostByName(hostname, &ip_info)) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Could not download list of peer contacts, host `%s' unknown.\n"),
 	  hostname);
       FREE(filename);
@@ -151,7 +151,7 @@ downloadHostlistHelper(char * url,
   if (CONNECT(sock,
 	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr)) < 0) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("`%s' to `%s' failed at %s:%d with error: %s\n"),
 	"connect",
 	hostname,
@@ -177,7 +177,7 @@ downloadHostlistHelper(char * url,
 			     command,
 			     curpos);
   if (SYSERR == (int)curpos) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("`%s' to `%s' failed at %s:%d with error: %s\n"),
 	"send",
 	hostname,
@@ -213,7 +213,7 @@ downloadHostlistHelper(char * url,
   }
 
   if (curpos < 4) { /* we have not found it */
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Parsing HTTP response for URL `%s' failed.\n"),
 	url);
     closefile(sock);
@@ -248,7 +248,7 @@ downloadHostlistHelper(char * url,
     }
     if (curpos != P2P_hello_MESSAGE_size(helo)) {
       if (curpos != 0)
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Parsing hello from `%s' failed.\n"),
 	    url);
       break;
@@ -275,12 +275,12 @@ static void downloadHostlist(hello_Callback callback,
   url = getConfigurationString("GNUNETD",
 			       "HOSTLISTURL");
   if (url == NULL) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "No hostlist URL specified in configuration, will not bootstrap.\n");
     return;
   }
 #if DEBUG_HTTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Trying to bootstrap with peers from `%s'\n",
       url);
 #endif
@@ -326,7 +326,7 @@ provide_module_bootstrap(CoreAPIForApplication * capi) {
   if (proxy != NULL) {
     if (OK != GN_getHostByName(proxy,
 			       &ip)) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;

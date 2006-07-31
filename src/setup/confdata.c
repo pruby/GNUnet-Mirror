@@ -89,7 +89,7 @@ int conf_read(const char *name)
 	  sym->flags &= ~SYMBOL_NEW;
 	}
 	else {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("%s: symbol value `%s' invalid for %s\n"),
 	      name,
 	      val,

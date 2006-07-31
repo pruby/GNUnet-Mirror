@@ -304,7 +304,7 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
     fprintf(stderr, ".");
   /* check: received pong? */
 #if DEBUG_TRANSPORT_CHECK
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Waiting for PONG\n");
 #endif
   terminate = NO;

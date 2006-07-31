@@ -117,10 +117,10 @@ static int testIPCSemaphore() {
   if (me == 0) {
     exit(ret);
   } else {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	" waiting for other process to exit.\n");
     if (-1 == waitpid(me, &j, 0))
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  " waitpid failed: %s\n",
 	  STRERROR(errno));
     if ((! WIFEXITED(j)) || WEXITSTATUS(j) == 1)

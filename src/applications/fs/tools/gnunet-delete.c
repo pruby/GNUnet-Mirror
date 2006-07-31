@@ -107,7 +107,7 @@ static int parseOptions(int argc,
       printhelp();
       return SYSERR;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */
@@ -145,7 +145,7 @@ int main(int argc, char ** argv) {
 		  &printstatus,
 		  &beVerbose);
   if (ok != OK) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Error deleting file `%s'.\n",
 	filename);
     printf(_("Error deleting file %s.\n"

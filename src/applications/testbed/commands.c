@@ -346,7 +346,7 @@ static int addSshNode(int argc, char * argv[]) {
     sargv[6] = NULL; /* last argument */
     execvp("ssh",
 	   sargv);
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	" execvp failed: %s\n",
 	STRERROR(errno));
     exit(-1);
@@ -1557,7 +1557,7 @@ static int addAvailable(int argc,
   hostname[k] = '\0';
 
 #if DEBUG_TESTBED
-  LOG(LOG_INFO,
+  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       " Trying to download a hostlist from %s\n",
       reg);
 #endif

@@ -311,7 +311,7 @@ static int parseOptions(int argc,
       if (1 != sscanf(GNoptarg,
 		      "%ud",
 		      &receivePolicy)) {
-        LOG(LOG_FAILURE,
+        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("You must pass a number to the `%s' option.\n"),
 	    "-a");
         return -1;
@@ -340,7 +340,7 @@ static int parseOptions(int argc,
     case 'i': {
       unsigned int interval;
       if (1 != sscanf(GNoptarg, "%ud", &interval)) {
-        LOG(LOG_FAILURE,
+        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a positive number to the `%s' option.\n"),
 	    "-i");
 	return -1;
@@ -457,7 +457,7 @@ static int parseOptions(int argc,
       if (1 != sscanf(GNoptarg,
 		      "%ud",
 		      &contentPriority)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-p");
 	return SYSERR;
@@ -528,7 +528,7 @@ static int parseOptions(int argc,
 	     AFS_VERSION);
       return SYSERR;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */

@@ -46,7 +46,7 @@ static Identity_ServiceAPI * identity;
 static void sendAcknowledgement(ClientHandle client,
 				int ack) {
   if (OK != coreAPI->sendValueToClient(client, ack)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Could not send acknowledgement back to client.\n"));
   }
 }
@@ -56,7 +56,7 @@ static void sendAcknowledgement(ClientHandle client,
  */
 static void tb_undefined(ClientHandle client,
 			 TESTBED_CS_MESSAGE * msg) {
-  LOG(LOG_WARNING,
+  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("Received unknown testbed message of type %u.\n"),
       ntohl(msg->msgType));
 }
@@ -70,18 +70,18 @@ static void tb_ADD_PEER(ClientHandle client,
   TESTBED_ADD_PEER_MESSAGE * hm
     = (TESTBED_ADD_PEER_MESSAGE*) msg;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       " tb_ADD_PEER\n");
   if (sizeof(TESTBED_ADD_PEER_MESSAGE) >
       ntohs(msg->header.size) ) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("size of `%s' message is too short. Ignoring.\n"),
 	"ADD_PEER");
     return;
   }
   if (P2P_hello_MESSAGE_size(&hm->helo) !=
       ntohs(msg->header.size) - sizeof(TESTBED_CS_MESSAGE) ) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("size of `%s' message is wrong. Ignoring.\n"),
 	"_ADD_PEER");
     return;
@@ -133,7 +133,7 @@ static void tb_GET_hello(ClientHandle client,
 				 proto,
 				 NO);
   if (NULL == helo) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("TESTBED could not generate hello message for protocol %u\n"),
 	proto);
     sendAcknowledgement(client, SYSERR);
@@ -151,7 +151,7 @@ static void tb_GET_hello(ClientHandle client,
 	   ntohs(helo->header.size));
     coreAPI->sendToClient(client,
 			  &reply->header.header);
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"%s: returning from sendToClient\n",
 	__FUNCTION__);
     FREE(helo);
@@ -188,7 +188,7 @@ static void tb_GET_TVALUE(ClientHandle client,
  */
 static void tb_SET_BW(ClientHandle client,
 		      TESTBED_SET_BW_MESSAGE * msg) {
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "gnunet-testbed: tb_SET_BW\n");
   setConfigurationInt("LOAD",
 		      "MAXNETDOWNBPSTOTAL",
@@ -211,7 +211,7 @@ static void tb_LOAD_MODULE(ClientHandle client,
 
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message\n"),
 	"LOAD_MODULE");
     return;
@@ -227,14 +227,14 @@ static void tb_LOAD_MODULE(ClientHandle client,
   name = STRNDUP(&((TESTBED_LOAD_MODULE_MESSAGE_GENERIC*)msg)->modulename[0],
 		 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message (empty module name)\n"),
 	"LOAD_MODULE");
     return;
   }
   ok = coreAPI->loadApplicationModule(name);
   if (ok != OK)
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("loading module `%s' failed.  Notifying client.\n"),
 	name);
   FREE(name);
@@ -252,7 +252,7 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
 
   size = ntohs(msg->header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message\n"),
 	"UNLOAD_MODULE");
     return;
@@ -267,14 +267,14 @@ static void tb_UNLOAD_MODULE(ClientHandle client,
   name = STRNDUP(&((TESTBED_UNLOAD_MODULE_MESSAGE_GENERIC*)msg)->modulename[0],
 		 size - sizeof(TESTBED_CS_MESSAGE));
   if (strlen(name) == 0) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message (empty module name)\n"),
 	"UNLOAD_MODULE");
     return;
   }
   ok = coreAPI->unloadApplicationModule(name);
   if (ok != OK)
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("unloading module failed.  Notifying client.\n"));
   FREE(name);
   sendAcknowledgement(client, ok);
@@ -355,14 +355,14 @@ static void tb_ALLOW_CONNECT(ClientHandle client,
 
   size = ntohs(msg->header.header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message\n"),
 	"ALLOW_CONNECT");
     return;
   }
   count = (size - sizeof(TESTBED_CS_MESSAGE)) / sizeof(PeerIdentity);
   if (count * sizeof(PeerIdentity) + sizeof(TESTBED_CS_MESSAGE) != size) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message\n"),
 	"ALLOW_CONNECT");
     return;
@@ -399,14 +399,14 @@ static void tb_DENY_CONNECT(ClientHandle client,
 
   size = ntohs(msg->header.header.size);
   if (size <= sizeof(TESTBED_CS_MESSAGE) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message\n"),
 	"DENY_CONNECT");
     return;
   }
   count = (size - sizeof(TESTBED_CS_MESSAGE)) / sizeof(PeerIdentity);
   if (count * sizeof(PeerIdentity) + sizeof(TESTBED_CS_MESSAGE) != size) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message\n"),
 	"DENY_CONNECT");
     return;
@@ -500,12 +500,12 @@ static int pipeReaderThread(ProcessInfo * pi) {
     MUTEX_UNLOCK(&lock);
     return -1;
   }
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "exec'ing: %s with %d arguments\n",
       pi->argv[0],
       pi->argc-1);
   for (i=1;i<pi->argc;i++)
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"exec argument %d is %s\n",
 	i, pi->argv[i]);
   tmp = getConfigurationString("TESTBED",
@@ -621,7 +621,7 @@ static void tb_EXEC(ClientHandle client,
   size = htons(msg->header.size);
   if ( (size <= sizeof(TESTBED_CS_MESSAGE)) ||
        (((TESTBED_EXEC_MESSAGE_GENERIC*)emsg)->commandLine[size-sizeof(TESTBED_CS_MESSAGE)-1] != '\0') ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid `%s' message: %s.\n"),
 	"EXEC",
 	(size <= sizeof(TESTBED_CS_MESSAGE))
@@ -800,10 +800,10 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   char * tmp;
   FILE *outfile;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "tb_UPLOAD_FILE\n");
   if (sizeof(TESTBED_UPLOAD_FILE_MESSAGE) > ntohs(msg->header.header.size)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("size of `%s' message is too short. Ignoring.\n"),
 	"UPLOAD_FILE");
     sendAcknowledgement(client, SYSERR);
@@ -813,7 +813,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   s = filename = ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf;
   while ( (*s) && (s != end) ) {
     if (*s == '.' && *(s+1) == '.') {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("\'..\' is not allowed in file name (%s).\n"),
 	  filename);
       return;
@@ -822,14 +822,14 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   }
   if (s == filename) {
     /* filename empty, not allowed! */
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Empty filename for UPLOAD_FILE message is invalid!\n"));
     sendAcknowledgement(client, SYSERR);
     return;
   }
   if (s == end) {
     /* filename empty, not allowed! */
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Filename for UPLOAD_FILE message is not null-terminated (invalid!)\n"));
     sendAcknowledgement(client, SYSERR);
     return;
@@ -837,7 +837,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   tmp = getConfigurationString("TESTBED",
 			       "UPLOAD-DIR");
   if (tmp == NULL) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Upload refused!"));
     sendAcknowledgement(client, SYSERR);
     return;
@@ -863,7 +863,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
     return;
   }
   if (htonl(msg->type) != TESTBED_FILE_APPEND) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Invalid message received at %s:%d."),
 	__FILE__,
 	__LINE__);
@@ -976,12 +976,12 @@ static void csHandleTestbedRequest(ClientHandle client,
   unsigned int id;
 
 #if DEBUG_TESTBED
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TESTBED handleTestbedRequest\n");
 #endif
   size = ntohs(message->size);
   if (size < sizeof(TESTBED_CS_MESSAGE)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("received invalid testbed message of size %u\n"),
 	size);
     return;
@@ -991,14 +991,14 @@ static void csHandleTestbedRequest(ClientHandle client,
   if (id < TESTBED_MAX_MSG) {
     if ( (handlers[id].expectedSize == 0) ||
 	 (handlers[id].expectedSize == size) ) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "TESTBED received message of type %u.\n",
 	  id);
 
       handlers[id].handler(client, msg);
 
     } else {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Received testbed message of type %u but unexpected size %u, expected %u\n"),
 	  id,
 	  size,
@@ -1041,7 +1041,7 @@ static void httpRegister(char * cmd) {
   reg = getConfigurationString("TESTBED",
 			       "REGISTERURL");
   if (reg == NULL) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	_("No testbed URL given, not registered.\n"));
     return;
   }
@@ -1050,7 +1050,7 @@ static void httpRegister(char * cmd) {
 				 "HTTP-PROXY");
   if (proxy != NULL) {
     if (OK != GN_getHostByName(proxy, &ip_info)) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Could not resolve name of HTTP proxy `%s'.\n"),
 	  proxy);
       theProxy.sin_addr.s_addr = 0;
@@ -1075,7 +1075,7 @@ static void httpRegister(char * cmd) {
   if (0 != strncmp(HTTP_URL,
 		   reg,
 		   strlen(HTTP_URL)) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Invalid URL `%s' (must begin with `%s')\n"),
 	reg,
 	HTTP_URL);
@@ -1114,7 +1114,7 @@ static void httpRegister(char * cmd) {
     }
     port = strtol(pstring, &buffer, 10);
     if ( (port < 0) || (port > 65536) ) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Malformed http URL: `%s' at `%s'.  Testbed-client not registered.\n"),
 	  reg,
 	  buffer);
@@ -1128,7 +1128,7 @@ static void httpRegister(char * cmd) {
   hostname[k] = '\0';
 
 #if DEBUG_TESTBED
-  LOG(LOG_INFO,
+  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       "Trying to (un)register testbed client at %s\n",
       reg);
 #endif
@@ -1150,7 +1150,7 @@ static void httpRegister(char * cmd) {
     /* no proxy */
     if (OK != GN_getHostByName(hostname,
 			       &ip_info)) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Could not register testbed, host `%s' unknown\n"),
 	  hostname);
       FREE(reg);
@@ -1173,7 +1173,7 @@ static void httpRegister(char * cmd) {
   if (CONNECT(sock,
 	      (struct sockaddr*)&soaddr,
 	      sizeof(soaddr)) < 0) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed to send HTTP request to host `%s': %s\n"),
 	hostname,
 	STRERROR(errno));
@@ -1226,7 +1226,7 @@ static void httpRegister(char * cmd) {
 			     command,
 			     curpos);
   if (SYSERR == (int)curpos) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed so send HTTP request `%s' to host `%s': %s\n"),
 	command,
 	hostname,
@@ -1265,11 +1265,11 @@ static void httpRegister(char * cmd) {
   }
   closefile(sock);
   if (curpos < 4) { /* invalid response */
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Exit register (error: no http response read).\n"));
   }
 #if DEBUG_TESTBED
-  LOG(LOG_INFO,
+  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       "Exit register (%d seconds before timeout)\n",
       (int)(start + 300 * cronSECONDS - cronTime(NULL))/cronSECONDS);
 #endif
@@ -1344,7 +1344,7 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
     return SYSERR;
 
   MUTEX_CREATE(&lock);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TESTBED registering handler %d!\n",
       CS_PROTO_testbed_REQUEST);
   coreAPI = capi;
@@ -1384,7 +1384,7 @@ void done_module_testbed() {
 
   httpRegister("shutdown");
   MUTEX_DESTROY(&lock);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "TESTBED unregistering handler %d\n",
       CS_PROTO_testbed_REQUEST);
   coreAPI->unregisterClientHandler(CS_PROTO_testbed_REQUEST,

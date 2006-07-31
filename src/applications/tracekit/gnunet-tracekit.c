@@ -69,7 +69,7 @@ static int parseOptions(int argc,
     case 'D': {
       unsigned int depth;
       if (1 != sscanf(GNoptarg, "%ud", &depth)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-D");
 	return SYSERR;
@@ -83,7 +83,7 @@ static int parseOptions(int argc,
     case 'F': {
       unsigned int format;
       if (1 != sscanf(GNoptarg, "%ud", &format)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-F");
 	return SYSERR;
@@ -118,7 +118,7 @@ static int parseOptions(int argc,
     case 'P': {
       unsigned int prio;
       if (1 != sscanf(GNoptarg, "%ud", &prio)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-P");
 	return SYSERR;
@@ -132,7 +132,7 @@ static int parseOptions(int argc,
     case 'W': {
       unsigned int wait;
       if (1 != sscanf(GNoptarg, "%ud", &wait)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-W");
 	return SYSERR;
@@ -149,7 +149,7 @@ static int parseOptions(int argc,
 	     TRACEKIT_VERSION);
       return SYSERR;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */
@@ -359,7 +359,7 @@ int main(int argc, char ** argv) {
     return 0; /* parse error, --help, etc. */
   sock = getClientSocket();
   if (sock == NULL) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Could not connect to gnunetd.\n"));
     return -1;
   }
@@ -383,7 +383,7 @@ int main(int argc, char ** argv) {
 				"PRIORITY"));
   if (SYSERR == writeToSocket(sock,
                               &probe.header)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Could not send request to gnunetd.\n"));
     return -1;
   }

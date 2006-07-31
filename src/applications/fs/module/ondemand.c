@@ -185,7 +185,7 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 
     /* not sym-linked, write content to offset! */
 #if DEBUG_ONDEMAND
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Storing on-demand encoded data in `%s'.\n",
 	fn);
 #endif
@@ -245,9 +245,9 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 #endif
 
 #if DEBUG_ONDEMAND
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&key, &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Storing on-demand content for query `%s'\n",
       &enc);
 #endif
@@ -301,7 +301,7 @@ static void asyncDelete(Datastore_ServiceAPI * datastore,
 #if DEBUG_ONDEMAND
   hash2enc(query,
 	   &enc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("Indexed file disappeared, deleting block for query `%s'\n"),
       &enc);
 #endif
@@ -389,7 +389,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 		 len*2);
 	  	
           if (ret != -1) {
-            LOG(LOG_ERROR,
+            GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 		_("Because the file `%s' has been unavailable for 3 days"
 		  " it got removed from your share.  Please unindex files before"
 		  " deleting them as the index now contains invalid references!\n"),
@@ -463,7 +463,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   FREE(db);
   FREE(fn);
   if (ret == SYSERR) {
-    LOG(LOG_ERROR, "Indexed content does not match its hash.\n");
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, "Indexed content does not match its hash.\n");
     asyncDelete(datastore, dbv, query);
     return SYSERR;
   }
@@ -511,7 +511,7 @@ static int completeValue(const HashCode512 * key,
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
 #if DEBUG_ONDEMAND
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"`%s' found value that does not match (%u, %u).\n",
 	__FUNCTION__,
 	ntohl(comp->size),
@@ -521,7 +521,7 @@ static int completeValue(const HashCode512 * key,
   }
   *comp = *value; /* make copy! */
 #if DEBUG_ONDEMAND
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "`%s' found value that matches.\n",
       __FUNCTION__);
 #endif
@@ -555,7 +555,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 
   fn = getOnDemandFile(fileId);
 #if DEBUG_ONDEMAND
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Removing on-demand encoded data stored in `%s'.\n",
       fn);
 #endif
@@ -610,10 +610,10 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
     else /* not found */
       ret = SYSERR;
     if (ret == SYSERR) {
-      IFLOG(LOG_WARNING,
+      IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    hash2enc(&key,
 		     &enc));
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"),
 	  &enc,
 	  pos);

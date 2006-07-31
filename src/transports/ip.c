@@ -222,7 +222,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
 
     if (! iAddrCount)
       {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Could not find an IP address for "
 	    "interface `%s'.\n"), 
 	  interfaces);
@@ -232,7 +232,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
       return SYSERR;
     }
     else if (iAddrCount > 1)
-      LOG(LOG_WARNING, 
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, 
 	  _("There is more than one IP address specified"
 	    " for interface `%s'.\nGNUnet will "
 	    "use %u.%u.%u.%u.\n"), 
@@ -253,7 +253,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     s = SOCKET(PF_INET, SOCK_STREAM, 0);
     pHost = GETHOSTBYNAME("www.example.com");
     if (! pHost) {
-      LOG(LOG_ERROR, 
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, 
 	  _("Could not resolve `%s' to "
 	    "determine our IP address: %s\n"), 
 	  "www.example.com",
@@ -285,7 +285,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     identity->addr = theHost.sin_addr.S_un.S_addr;
   }
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("GNUnet now uses the IP address %u.%u.%u.%u.\n"),
       PRIP(ntohl(identity->addr)));
   

@@ -61,13 +61,13 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
 			 &peers,
 			 &sizes,
 			 &timevect)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed to get traffic stats.\n"));
     return SYSERR;
   }
   if (level > 1000) {
     if (peers < level / 1000) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u peers). "
 	  "Result dropped.\n",
 	  level,
@@ -75,7 +75,7 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
       return SYSERR;
     }
     if (count < level % 1000) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
 	  "Result dropped.\n",
 	  level,
@@ -84,7 +84,7 @@ int checkCoverTraffic(Traffic_ServiceAPI * traffic,
     }
   } else {
     if (count < level) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Not enough cover traffic to satisfy anonymity requirements (%u, %u messages). "
 	  "Result dropped.\n",
 	  level,

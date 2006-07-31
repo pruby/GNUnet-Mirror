@@ -121,7 +121,7 @@ static void freeIOC(IOContext * this,
       strcat(fn, ".A");
       fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Could not unlink temporary file `%s': %s\n"),
 	    fn, STRERROR(errno));
       FREE(fn);
@@ -218,7 +218,7 @@ int readFromIOC(IOContext * this,
 	     len);
   MUTEX_UNLOCK(&this->lock);
 #ifdef DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "IOC read at level %u offset %llu wanted %u got %d\n",
       level,
       pos,
@@ -253,7 +253,7 @@ int writeToIOC(IOContext * this,
 	      buf,
 	      len);
   if (ret != len) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Write(%d, %p, %d) failed: %s\n"),
 	this->handles[level],
 	buf,
@@ -262,7 +262,7 @@ int writeToIOC(IOContext * this,
   }
   MUTEX_UNLOCK(&this->lock);
 #ifdef DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "IOC write at level %u offset %llu writes %u\n",
       level,
       pos,
@@ -455,7 +455,7 @@ static RequestManager * createRequestManager() {
   rm->ssthresh
     = 65535;
 #ifdef DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "created request manager %p\n",
       rm);
 #endif
@@ -473,7 +473,7 @@ static void destroyRequestManager(RequestManager * rm) {
   int i;
 
 #ifdef DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "destroying request manager %p\n",
       rm);
 #endif
@@ -524,10 +524,10 @@ static void addRequest(RequestManager * rm,
 #if DEBUG_DOWNLOAD
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&node->chk.query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Queuing request (query: %s)\n",
       &enc);
 #endif
@@ -626,7 +626,7 @@ static unsigned int getNodeSize(const NodeClosure * node) {
 	> node->ctx->total)
       ret = (unsigned int) (node->ctx->total - node->offset);
 #if DEBUG_DOWNLOAD
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Node at offset %llu and level %d has size %u\n",
 	node->offset,
 	node->level,
@@ -645,7 +645,7 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   if (ret * rsize < epos - spos)
     ret++; /* need to round up! */
 #if DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Node at offset %llu and level %d has size %u\n",
       node->offset,
       node->level,
@@ -794,7 +794,7 @@ static int checkPresent(NodeClosure * node) {
     ret = NO;
   FREE(data);
 #ifdef DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Checked presence of block at %llu level %u.  Result: %s\n",
       node->offset,
       node->level,
@@ -899,10 +899,10 @@ static int nodeReceive(const HashCode512 * query,
 #if DEBUG_DOWNLOAD
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Receiving reply to query `%s'\n",
       &enc);
 #endif
@@ -931,7 +931,7 @@ static int nodeReceive(const HashCode512 * query,
 	       node);
     FREE(data);
     GE_BREAK(ectx, 0);
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Decrypted content does not match key. "
 	  "This is either a bug or a maliciously inserted "
 	  "file. Download aborted.\n"));
@@ -1062,10 +1062,10 @@ static void issueRequest(RequestManager * rm,
   }
 
 #if DEBUG_DOWNLOAD
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&entry->node->chk.query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Starting FS search for %s:%llu:%u `%s'\n",
       entry->node->ctx->ioc->filename,
       entry->node->offset,
@@ -1105,10 +1105,10 @@ static void issueRequest(RequestManager * rm,
   if ( (0 == (entry->tries % MAX_TRIES)) &&
        (entry->tries > 0) )  {
     EncName enc;
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&entry->node->chk.key,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Content `%s' seems to be not available on the network (tried %u times).\n"),
 	&enc,
 	entry->tries);
@@ -1212,7 +1212,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   cron_t minSleep;
 
 #if DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "`%s' running for file `%s'\n",
       __FUNCTION__,
       filename);
@@ -1238,7 +1238,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
 			    ntohll(fid.file_length),
 			    filename)) {
 #if DEBUG_DOWNLOAD
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"`%s' aborted for file `%s'\n",
 	__FUNCTION__,
 	filename);
@@ -1279,7 +1279,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
     ret = OK;
   } else {
 #if 0
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	"Download ends prematurely: %d %llu == %llu %d TT: %d\n",
 	rm->requestListIndex,
 	ctx.completed,
@@ -1295,7 +1295,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   else
     freeIOC(&ioc, NO); /* aborted */
 #if DEBUG_DOWNLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "`%s' terminating for file `%s' with result %s\n",
       __FUNCTION__,
       filename,

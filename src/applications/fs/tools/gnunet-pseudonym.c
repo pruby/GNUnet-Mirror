@@ -116,7 +116,7 @@ static int parser(int argc,
       if (1 != sscanf(GNoptarg,
 		      "%ud",
 		      &receivePolicy)) {
-        LOG(LOG_FAILURE,
+        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("You must pass a number to the `%s' option.\n"),
 	    "-a");
         return -1;
@@ -228,16 +228,16 @@ static int parser(int argc,
 	     VERSION);
       return SYSERR;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */
   }
   if (GNoptind < argc) {
     while (GNoptind < argc)
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid argument: `%s'\n"), argv[GNoptind++]);
-    LOG(LOG_FATAL,
+    GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
 	_("Invalid arguments. Exiting.\n"));
     return SYSERR;
   }

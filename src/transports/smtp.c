@@ -204,14 +204,14 @@ static unsigned int base64_decode(char * data,
   unsigned int ret=0;
 
 #define CHECK_CRLF	while (data[i] == '\r' || data[i] == '\n') {\
-				LOG(LOG_DEBUG, "ignoring CR/LF\n"); \
+				GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "ignoring CR/LF\n"); \
 				i++; \
 				if (i >= len) goto END;  \
 			}
 
   *output = MALLOC((len * 3 / 4) + 8);
 #if DEBUG_SMTP
-  LOG(LOG_DEBUG, "base64_decode decoding len=%d\n", len);
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "base64_decode decoding len=%d\n", len);
 #endif
   for (i = 0; i < len; ++i) {
     CHECK_CRLF;
@@ -489,10 +489,10 @@ static void * listenAndDistribute() {
 
       mp = (SMTPMessage*)&out[size-sizeof(SMTPMessage)];
       if (ntohs(mp->size) != size) {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Received malformed message via SMTP (size mismatch).\n"));
 #if DEBUG_SMTP
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "Size returned by base64=%d, in the msg=%d.\n",
 	    size,
 	    ntohl(mp->size));
@@ -507,7 +507,7 @@ static void * listenAndDistribute() {
 	     &mp->sender,
 	     sizeof(PeerIdentity));
 #if DEBUG_SMTP
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "SMTP message passed to the core.\n");
 #endif
 
@@ -516,7 +516,7 @@ static void * listenAndDistribute() {
     }
   END:
 #if DEBUG_SMTP
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"SMTP message processed.\n");
 #endif
     if (fdes != NULL)
@@ -548,7 +548,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
     return SYSERR; /* obviously invalid */
   } else {
 #if DEBUG_SMTP
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Verified SMTP helo from `%s'.\n",
 	&maddr->senderAddress[0]);
 #endif
@@ -575,7 +575,7 @@ static P2P_hello_MESSAGE * createhello() {
   if (email == NULL) {
     static int once;
     if (once == 0) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  "No email-address specified, cannot create SMTP advertisement.\n");
       once = 1;
     }
@@ -584,14 +584,14 @@ static P2P_hello_MESSAGE * createhello() {
   filter = getConfigurationString("SMTP",
 				  "FILTER");
   if (filter == NULL) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("No filter for E-mail specified, cannot create SMTP advertisement.\n"));
     FREE(email);
     return NULL;
   }
   if (strlen(filter) > FILTER_STRING_SIZE) {
     filter[FILTER_STRING_SIZE] = '\0';
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("SMTP filter string to long, capped to `%s'\n"),
 	filter);
   }
@@ -704,13 +704,13 @@ static int smtpSend(TSession * tsession,
 	 size);
   ebody = NULL;
 #if DEBUG_SMTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Base64-encoding %d byte message.\n",
       ssize);
 #endif
   ssize = base64_encode(msg, ssize, &ebody);
 #if DEBUG_SMTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Base64-encoded message size is %d bytes.\n",
       ssize);
 #endif
@@ -765,7 +765,7 @@ static int smtpSend(TSession * tsession,
 			    res = OK;
   MUTEX_UNLOCK(&smtpLock);
   if (res != OK)
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Sending E-mail to `%s' failed.\n"),
 	&haddr->senderAddress[0]);
   incrementBytesSent(ssize);
@@ -810,13 +810,13 @@ static int startTransportServer(void) {
     return SYSERR;
   }
 #if DEBUG_SMTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Checking SMTP server.\n");
 #endif
   /* read welcome from SMTP server */
   if (SYSERR == readSMTPLine(smtp_sock,
 			     "220 ")) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("SMTP server send unexpected response at %s:%d.\n"),
 	__FILE__, __LINE__);
     closefile(smtp_sock);
@@ -832,26 +832,26 @@ static int startTransportServer(void) {
 				     "EMAIL");
       if (email == NULL) {
 #if DEBUG_SMTP
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "No email-address specified, will not advertise SMTP address.\n");
 #endif
 	return OK;
       }
       FREE(email);
     } else {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("SMTP server failed to respond with 250 confirmation code to `%s' request.\n"),
 	  "helo");
       return OK;
     }
   } else {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("Failed to send `%s' request to SMTP server.\n"),
 	"helo");
     return OK;
   }
 #if DEBUG_SMTP
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "creating listen thread\n");
 #endif
   if (0 != PTHREAD_CREATE(&dispatchThread,
@@ -933,7 +933,7 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   if (mtu == 0)
     mtu = MESSAGE_SIZE;
   if (mtu < 1200)
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
 	"SMTP");
   if (mtu > MESSAGE_SIZE)

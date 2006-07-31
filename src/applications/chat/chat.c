@@ -83,7 +83,7 @@ static int handleChatMSG(const PeerIdentity * sender,
   HashCode512 hc;
 
   if (ntohs(message->size) != sizeof(P2P_chat_MESSAGE)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Message received from peer is invalid.\n"));
     return SYSERR;
   }
@@ -111,7 +111,7 @@ static int handleChatMSG(const PeerIdentity * sender,
     pmsg->nick[CHAT_NICK_LENGTH-1] = '\0';
     pmsg->message[CHAT_MSG_LENGTH-1] = '\0';
     /*
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	" CHAT: received new message from %s: %s\n",
 	&pmsg->nick[0],
 	&pmsg->message[0]);
@@ -130,7 +130,7 @@ static int csHandleChatRequest(ClientHandle client,
   HashCode512 hc;
 
   if (ntohs(message->size) != sizeof(CS_chat_MESSAGE)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Message received from client is invalid\n"));
     return SYSERR; /* invalid message */
   }
@@ -152,11 +152,11 @@ static int csHandleChatRequest(ClientHandle client,
 		    message);
   if (j == -1) {
     if (clientCount == MAX_CLIENTS)
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Maximum number of chat clients reached.\n"));
     else {
       clients[clientCount++] = client;
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  _("Now %d of %d chat clients at this node.\n"),
 	  clientCount, MAX_CLIENTS);
     }
@@ -173,7 +173,7 @@ static void chatClientExitHandler(ClientHandle client) {
   MUTEX_LOCK(&chatMutex);
   for (i=0;i<clientCount;i++)
     if (clients[i] == client) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Chat client exits.\n");
       clients[i] = clients[--clientCount];
       break;
@@ -193,7 +193,7 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
   MUTEX_CREATE(&chatMutex);
   clientCount = 0;
   coreAPI = capi;
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("`%s' registering handlers %d and %d\n"),
       "chat",
       P2P_PROTO_chat_MSG,

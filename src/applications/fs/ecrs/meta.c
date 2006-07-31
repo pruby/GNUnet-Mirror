@@ -769,7 +769,7 @@ char * ECRS_suggestFilename(const char * filename) {
             (0 != strcmp(mime, mimeMap[i][0])) )
       i++;
     if (mimeMap[i][1] == NULL)
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "Did not find mime type `%s' in extension list.\n",
           mime);
     mime = mimeMap[i][1];
@@ -838,7 +838,7 @@ char * ECRS_suggestFilename(const char * filename) {
     if (0 != STAT(renameTo,
                   &filestat)) {
       if (0 != RENAME(filename, renameTo))
-        LOG(LOG_ERROR,
+        GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
             _("Renaming of file `%s' to `%s' failed: %s\n"),
             filename,
             renameTo,
@@ -846,7 +846,7 @@ char * ECRS_suggestFilename(const char * filename) {
       else
         ret = STRDUP(renameTo);
     } else {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
           _("Could not rename file `%s' to `%s': file exists\n"),
           filename,
           renameTo);

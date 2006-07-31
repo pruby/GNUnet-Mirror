@@ -103,7 +103,7 @@ static int parser(int argc, char *argv[])
         break;
       }
     default:
-      LOG(LOG_FAILURE, _("Use --help to get a list of options.\n"));
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER, _("Use --help to get a list of options.\n"));
       cont = SYSERR;
     }                           /* end of parsing commandline */
   }
@@ -173,10 +173,10 @@ static int parser(int argc, char *argv[])
     FREENONNULL(setConfigurationString("GNUNET-SETUP",
                                        "OPERATION", argv[GNoptind++]));
   if(GNoptind < argc) {
-    LOG(LOG_WARNING, _("Invalid arguments: "));
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, _("Invalid arguments: "));
     while(GNoptind < argc)
-      LOG(LOG_WARNING, "%s ", argv[GNoptind++]);
-    LOG(LOG_FATAL, _("Invalid arguments. Exiting.\n"));
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, "%s ", argv[GNoptind++]);
+    GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER, _("Invalid arguments. Exiting.\n"));
     FREE(filename);
     return SYSERR;
   }
@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
   operation = getConfigurationString("GNUNET-SETUP", "OPERATION");
   if (operation == NULL) {
     operation = STRDUP("");
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("No interface specified, using default\n"));
     def = YES;
   }

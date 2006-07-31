@@ -154,16 +154,16 @@ receivedhello(const MESSAGE_HEADER * message) {
 			  &msg->signature,
 			  &msg->publicKey)) {
     EncName enc;
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&msg->senderIdentity.hashPubKey,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("hello message from `%s' invalid (signature invalid). Dropping.\n"),
 	(char*)&enc);
     return SYSERR; /* message invalid */
   }
   if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_HELLO_EXPIRES) {
-     LOG(LOG_WARNING,
+     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	 _("hello message received invalid (expiration time over limit). Dropping.\n"));
     return SYSERR;
   }
@@ -172,7 +172,7 @@ receivedhello(const MESSAGE_HEADER * message) {
   if (stats != NULL)
     stats->change(stat_hello_in, 1);
 #if DEBUG_ADVERTISING
-  LOG(LOG_INFO,
+  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       _("hello advertisement for protocol %d received.\n"),
       ntohs(msg->protocol));
 #endif
@@ -212,7 +212,7 @@ receivedhello(const MESSAGE_HEADER * message) {
       return OK;
     } else {
 #if DEBUG_ADVERTISING
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "advertised hello differs from prior knowledge,"
 	  " requireing ping-pong confirmation.\n");
 #endif
@@ -291,7 +291,7 @@ receivedhello(const MESSAGE_HEADER * message) {
   if (ping == NULL) {
     res = SYSERR;
     FREE(buffer);
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	_("Could not send hellos+PING, ping buffer full.\n"));
     transport->disconnect(tsession);
     return SYSERR;
@@ -304,7 +304,7 @@ receivedhello(const MESSAGE_HEADER * message) {
     heloEnd = -2;
   }
   if (heloEnd <= 0) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("`%s' failed (%d, %u). Will not send PING.\n"),
 	"getAdvertisedhellos",
 	heloEnd,
@@ -362,10 +362,10 @@ broadcastHelper(const PeerIdentity * hi,
   if (weak_randomi(sd->n) != 0)
     return;
 #if DEBUG_ADVERTISING
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&hi->hashPubKey,
 		 &other));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Entering `%s' with target `%s'.\n",
       __FUNCTION__,
       &other);
@@ -400,7 +400,7 @@ broadcastHelper(const PeerIdentity * hi,
 				 NO);
   if (NULL == helo) {
 #if DEBUG_ADVERTISING
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Exit from `%s' (error: `%s' failed).\n",
 	__FUNCTION__,
 	"identity2Helo");
@@ -411,7 +411,7 @@ broadcastHelper(const PeerIdentity * hi,
   FREE(helo);
   if (tsession == NULL) {
 #if DEBUG_ADVERTISING
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Exit from `%s' (%s error).\n",
 	__FUNCTION__,
 	"transportConnect");
@@ -426,7 +426,7 @@ broadcastHelper(const PeerIdentity * hi,
 			 P2P_hello_MESSAGE_size(sd->m));
   transport->disconnect(tsession);
 #if DEBUG_ADVERTISING
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Exit from %s.\n",
       __FUNCTION__);
 #endif
@@ -460,14 +460,14 @@ broadcasthelloTransport(TransportAPI * tapi,
   if (sd.m == NULL)
     return;
 #if DEBUG_ADVERTISING
-  LOG(LOG_INFO,
+  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
       _("Advertising my transport %d to selected peers.\n"),
       tapi->protocolNumber);
 #endif
   identity->addHost(sd.m);
   if (sd.n < 1) {
     if (identity->forEachHost(0, NULL, NULL) == 0)
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Announcing ourselves pointless: "
 	    "no other peers are known to us so far.\n"));
     FREE(sd.m);
@@ -570,10 +570,10 @@ forwardhelloHelper(const PeerIdentity * peer,
   if ((TIME_T)ntohl(helo->expirationTime) < now) {
     EncName enc;
     /* remove hellos that expired */
-    IFLOG(LOG_INFO,
+    IFGE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	  hash2enc(&peer->hashPubKey,
 		   &enc));
-    LOG(LOG_INFO,
+    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	_("Removing hello from peer `%s' (expired %ds ago).\n"),
 	&enc,
 	now - ntohl(helo->expirationTime));
@@ -749,7 +749,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# plaintext PING messages sent"));
   }
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("`%s' registering handler %d (plaintext and ciphertext)\n"),
       "advertising",
       p2p_PROTO_hello);
@@ -768,7 +768,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
 	       NULL);
     activeCronJobs += ACJ_ANNOUNCE;
   } else {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Network advertisements disabled by configuration!\n"));
   }
   if (testConfigurationString("NETWORK",
@@ -782,7 +782,7 @@ initialize_module_advertising(CoreAPIForApplication * capi) {
   }
 #if DEBUG_ADVERTISING
   else
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"hello forwarding disabled!\n");
 #endif
 

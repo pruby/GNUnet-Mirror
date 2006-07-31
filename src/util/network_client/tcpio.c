@@ -323,7 +323,7 @@ int connection_read(struct ClientServerConnection * sock,
     return SYSERR;
   }
 #if DEBUG_TCPIO
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Successfully received %d bytes from TCP socket.\n",
       size);
 #endif

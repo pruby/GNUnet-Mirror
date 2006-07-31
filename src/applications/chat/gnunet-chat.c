@@ -89,7 +89,7 @@ static int parseOptions(int argc,
       return SYSERR;
     }
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       return -1;
     } /* end of parsing commandline */

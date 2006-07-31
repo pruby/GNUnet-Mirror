@@ -125,7 +125,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
 				   0)) {
       MUTEX_UNLOCK(&lock);
 #if DEBUG_MIGRATION
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Migration: random lookup in datastore failed.\n");
 #endif
       return 0;
@@ -150,7 +150,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   if (size > padding) {
     MUTEX_UNLOCK(&lock);
 #if DEBUG_MIGRATION
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Available content of size %u too big for available space (%u)\n",
 	size, 
 	padding);
@@ -184,13 +184,13 @@ activeMigrationCallback(const PeerIdentity * receiver,
 			  padding);
     FREE(gw);
 #if DEBUG_MIGRATION
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"gap's tryMigrate returned %u\n",
 	ret);
 #endif
   } else {
 #if DEBUG_MIGRATION
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Migration: anonymity requirements not satisfied.\n");
 #endif
   }

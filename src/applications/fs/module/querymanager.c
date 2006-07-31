@@ -145,7 +145,7 @@ void processResponse(const HashCode512 * key,
   GNUNET_ASSERT(ntohl(value->size) > sizeof(Datastore_Value));
   matchCount = 0;
 #if DEBUG_QUERYMANAGER
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
 #endif
@@ -165,7 +165,7 @@ void processResponse(const HashCode512 * key,
 	     &value[1],
 	     ntohl(value->size) - sizeof(Datastore_Value));
 #if DEBUG_QUERYMANAGER
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Sending reply for `%s' to client waiting in slot %u.\n",
 	  &enc,
 	  i);
@@ -177,7 +177,7 @@ void processResponse(const HashCode512 * key,
   }
 #if DEBUG_QUERYMANAGER && 0
   if (matchCount == 0) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Reply `%s' did not match any request.\n",
 	&enc);
   }

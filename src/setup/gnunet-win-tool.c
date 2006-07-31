@@ -373,7 +373,7 @@ static int parseOptions(int argc, char ** argv) {
         strcpy(hashFile, GNoptarg);
         break;
       default:
-        LOG(LOG_FAILURE,
+        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
         	  "Unknown option %c. Aborting.\n"\
         	  "Use --help to get a list of options.\n",
   	  c);

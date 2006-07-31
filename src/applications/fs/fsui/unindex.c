@@ -89,7 +89,7 @@ static void * unindexThread(UnindexThreadClosure * utc) {
   FREE(utc->filename);
   utc->tl->isDone = YES;
   FREE(utc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSUI unindexThread exits.\n");
   return NULL;
 }

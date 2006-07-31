@@ -112,7 +112,7 @@ static int pollResults(IterationData * results,
     } else {
       results->duplicateCount++;
 #if DEBUG_TBENCH
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Received duplicate message %u from iteration %u\n",
 	  lastPacketNumber,
 	  currIteration);
@@ -145,7 +145,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
   }
 
 #if DEBUG_TBENCH
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received request %u from iteration %u/%u\n",
       htonl(msg->packetNum),
       htonl(msg->iterationNum),
@@ -183,7 +183,7 @@ static int handleTBenchReply(const PeerIdentity * sender,
     return SYSERR;
   }
 #if DEBUG_TBENCH
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received response %u from iteration %u/%u\n",
       htonl(pmsg->packetNum),
       htonl(pmsg->iterationNum),
@@ -200,7 +200,7 @@ static int handleTBenchReply(const PeerIdentity * sender,
     SEMAPHORE_UP(postsem);
   } else {
 #if DEBUG_TBENCH
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Received message %u from iteration %u too late (now at iteration %u)\n",
 	ntohl(pmsg->packetNum),
 	ntohl(pmsg->iterationNum),
@@ -317,7 +317,7 @@ static int csHandleTBenchRequest(ClientHandle client,
 
       p2p->packetNum = htonl(packetNum);
 #if DEBUG_TBENCH
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Sending message %u of size %u in iteration %u\n",
 	  packetNum,
 	  size,

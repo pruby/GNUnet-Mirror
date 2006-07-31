@@ -65,7 +65,7 @@ static void processhellos(HelloListClosure * hcq) {
     /* select hello by random */
     rndidx = weak_randomi(hcq->helosCount);
 #if DEBUG_BOOTSTRAP
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"%s chose hello %d of %d\n",
 	__FUNCTION__,
 	rndidx, hcq->helosCount);
@@ -189,7 +189,7 @@ static void * processThread(void * unused) {
     if (abort_bootstrap != NO)
       break;
 #if DEBUG_BOOTSTRAP
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Starting bootstrap.\n");
 #endif
     cls.helosLen = 0;

@@ -488,7 +488,7 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
     ranking = 0; /* no chance for blocked peers */
   idx = getIndex(id);
 #if DEBUG_GAP 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Ranking for %u: %u\n",
       idx,
       ranking);
@@ -529,12 +529,12 @@ static void sendToSelected(const PeerIdentity * peer,
 
   if (getBit(qr, getIndex(id)) == 1) {
 #if DEBUG_GAP
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&peer->hashPubKey,
 		   &encp);
 	  hash2enc(&qr->msg->queries[0],
 		   &encq));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Sending query `%s' to `%s'\n",
 	&encq,
 	&encp);
@@ -770,10 +770,10 @@ static int queueReply(const PeerIdentity * sender,
 #if DEBUG_GAP
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(primaryKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Gap queues reply to query `%s' for later use.\n",
       &enc);
 #endif
@@ -790,14 +790,14 @@ static int queueReply(const PeerIdentity * sender,
   if (! equalsHashCode512(&ite->primaryKey,
 			  primaryKey) ) {
 #if DEBUG_GAP
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"GAP: Dropping reply, routing table has no query associated with it (anymore)\n");
 #endif
     return NO; /* we don't care for the reply (anymore) */
   }
   if (YES == ite->successful_local_lookup_in_delay_loop) {
 #if DEBUG_GAP
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"GAP: Dropping reply, found reply locally during delay\n");
 #endif
     return NO; /* wow, really bad concurrent DB lookup and processing for
@@ -890,10 +890,10 @@ static int addToSlot(int mode,
 #if DEBUG__GAP
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(query,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "GAP: Queueing query '%s' in slot %p\n",
       &enc,
       ite);
@@ -1281,10 +1281,10 @@ static void sendReply(IndirectionTableEntry * ite,
     resolve_pid(ite->destination[j],
 		&recv);
 #if DEBUG_GAP
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&recv.hashPubKey,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"GAP sending reply to `%s'\n",
 	&enc);
 #endif
@@ -1441,10 +1441,10 @@ static int execQuery(const PeerIdentity * sender,
     doForward = NO;
 
 #if DEBUG_GAP
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         hash2enc(&query->queries[0],
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "GAP is executing request for `%s':%s%s (%d)\n",
       &enc,
       doForward ? " forwarding" : "",
@@ -1556,11 +1556,11 @@ static int useContent(const PeerIdentity * host,
 #if DEBUG_GAP
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	if (host != NULL)
 	  hash2enc(&host->hashPubKey,
 		   &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "GAP received content from `%s'\n",
       (host != NULL) ? (const char*)&enc : "myself");
 #endif
@@ -1609,11 +1609,11 @@ static int useContent(const PeerIdentity * host,
   if (ret == SYSERR) {
     EncName enc;
     
-    IFLOG(LOG_ERROR,
+    IFGE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  if (host != NULL)
 	    hash2enc(&host->hashPubKey, 
 		     &enc));
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("GAP received invalid content from `%s'\n"),
 	(host != NULL) ? (const char*)&enc : _("myself"));    
     GE_BREAK(ectx, 0);
@@ -1787,7 +1787,7 @@ static int get_start(unsigned int type,
 
     anonymityLevel--;
     if (traffic == NULL) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  _("Cover traffic requested but traffic service not loaded.  Rejecting request.\n"));
       return SYSERR;
     }
@@ -1798,24 +1798,24 @@ static int get_start(unsigned int type,
 			   &peers,
 			   &sizes,
 			   &timevect)) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Failed to get traffic stats.\n"));
       return SYSERR;
     }
     if (anonymityLevel > 1000) {
       if (peers < anonymityLevel / 1000) {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
       }
       if (count < anonymityLevel % 1000) {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
       }
     } else {
       if (count < anonymityLevel) {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
       }
@@ -1930,11 +1930,11 @@ static int handleQuery(const PeerIdentity * sender,
 	 (getNetworkLoadUp() >= hardUpLimit) ) ) {
 #if DEBUG_GAP
     if (sender != NULL) {
-      IFLOG(LOG_DEBUG,
+      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));
     }
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Dropping query from %s, this peer is too busy.\n",
         sender == NULL ? "localhost" : (char*)&enc);
 #endif
@@ -1983,10 +1983,10 @@ static int handleQuery(const PeerIdentity * sender,
   policy = evaluateQuery(sender,
 			 &prio);
 #if DEBUG_GAP
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&qmsg->queries[0],
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received GAP query `%s'.\n",
       &enc);
 #endif
@@ -1996,11 +1996,11 @@ static int handleQuery(const PeerIdentity * sender,
     FREE(qmsg);
 #if DEBUG_GAP
     if (sender != NULL) {
-      IFLOG(LOG_DEBUG,
+      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));
     }
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Dropping query from %s, policy decided that this peer is too busy.\n",
 	sender == NULL ? "localhost" : (const char*) &enc);
 #endif
@@ -2108,7 +2108,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
   GNUNET_ASSERT(topology != NULL);
   traffic = coreAPI->requestService("traffic");
   if (traffic == NULL) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"));
   }
   random_qsel = weak_randomi(0xFFFF);
@@ -2139,7 +2139,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
 	     2 * cronMINUTES,
 	     NULL);
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       _("`%s' registering handlers %d %d\n"),
       "gap",
       P2P_PROTO_gap_QUERY,

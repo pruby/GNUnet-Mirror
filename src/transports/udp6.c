@@ -177,7 +177,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   else {
 #if DEBUG_UDP6
     char inet6[INET6_ADDRSTRLEN];
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Verified UDP6 helo from %u.%u.%u.%u:%u.\n",
 	inet_ntop(AF_INET6,
 		  &haddr->senderIP,

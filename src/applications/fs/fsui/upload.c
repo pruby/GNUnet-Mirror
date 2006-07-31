@@ -467,7 +467,7 @@ static void * uploadThread(void * cls) {
 			 inboundFN);
     }
 #if DEBUG_UPLOAD
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Adding URI to keyspace.\n");
 #endif
     keywordUri = ECRS_metaDataToUri(utc->meta);

@@ -156,7 +156,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 			   SendQueriesContext * sqc) {
   switch (uri->type) {
   case chk:
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("CHK URI not allowed for search.\n"));
     break;
   case sks: {
@@ -185,7 +185,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
     int i;
 
 #if DEBUG_SEARCH
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Computing queries (this may take a while).\n");
 #endif
     for (i=0;i<uri->data.ksk.keywordCount;i++) {
@@ -206,13 +206,13 @@ static void addQueryForURI(const struct ECRS_URI * uri,
       freePrivateKey(pk);
     }	
 #if DEBUG_SEARCH
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Queries ready.\n");
 #endif
     break;
   }
   case loc:
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("LOC URI not allowed for search.\n"));
     break;
   default:
@@ -326,7 +326,7 @@ static int receiveReplies(const HashCode512 * key,
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
 #if DEBUG_SEARCH
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Search received reply of type %u and size %u.\n",
       type, size);
 #endif
@@ -360,10 +360,10 @@ static int receiveReplies(const HashCode512 * key,
 	kb = MALLOC(size);
 	memcpy(kb, &value[1], size);
 #if DEBUG_SEARCH
-	IFLOG(LOG_DEBUG,
+	IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&ps->decryptKey,
 		       &enc));
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "Decrypting KBlock with key %s.\n",
 	    &enc);
 #endif
@@ -594,7 +594,7 @@ int ECRS_search(const struct ECRS_URI * uri,
       ps->priority = new_priority;
       ps->lastTransmission = now;
 #if DEBUG_SEARCH
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "ECRS initiating FS search with timeout %llus and priority %u.\n",
 	  (ps->timeout - now) / cronSECONDS,
 	  ps->priority);

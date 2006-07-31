@@ -54,7 +54,7 @@ static int getAddress6FromHostname(struct GE_Context * ectx,
 		    "gethostname");
     return SYSERR;
   }
-  /* LOG(LOG_DEBUG,
+  /* GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       " looking up $HOSTNAME (%s) to obtain local IP\n",
       hostname); */
 

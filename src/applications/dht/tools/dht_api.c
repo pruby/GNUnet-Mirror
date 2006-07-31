@@ -80,7 +80,7 @@ static Mutex lock;
  * return the status, otherwise SYSERR.
  */
 static int checkACK(CS_MESSAGE_HEADER * reply) {
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "received ACK from gnunetd\n");
   if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
        (CS_PROTO_dht_REPLY_ACK == ntohs(reply->type)) )
@@ -96,7 +96,7 @@ static int sendAck(GNUNET_TCP_SOCKET * sock,
 		   int value) {
   CS_dht_reply_ack_MESSAGE msg;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "sending ACK to gnunetd\n");
   msg.header.size = htons(sizeof(CS_dht_reply_ack_MESSAGE));
   msg.header.type = htons(CS_PROTO_dht_REPLY_ACK);
@@ -123,7 +123,7 @@ static int sendAllResults(const HashCode512 * key,
 	 ntohl(value->size));
   if (OK != writeToSocket(list->sock,
 			  &reply->header)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed to send `%s'.  Closing connection.\n"),
 	"CS_dht_reply_results_MESSAGE");
     MUTEX_LOCK(&list->lock);
@@ -186,7 +186,7 @@ static void * process_thread(TableList * list) {
     buffer = NULL;
     while (OK == readFromSocket(list->sock,
 				&buffer)) {
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Received message of type %d from gnunetd\n",
 	  ntohs(buffer->type));
 
@@ -197,7 +197,7 @@ static void * process_thread(TableList * list) {
 	int keyCount;
 
 	if (sizeof(CS_dht_request_get_MESSAGE) != ntohs(buffer->size)) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Received invalid `%s' request (size %d)\n"),
 	      "GET",
 	      ntohs(buffer->size));
@@ -210,7 +210,7 @@ static void * process_thread(TableList * list) {
 	req = (CS_dht_request_get_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Received invalid `%s' request (wrong table)\n"),
 	      "GET");
 	  MUTEX_LOCK(&list->lock);
@@ -232,7 +232,7 @@ static void * process_thread(TableList * list) {
 	     (OK != sendAck(list->sock,
 			    &list->table,
 			    resCount)) ) {
-	  LOG(LOG_WARNING,
+	  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
@@ -249,7 +249,7 @@ static void * process_thread(TableList * list) {
 	DataContainer * value;
 	
 	if (sizeof(CS_dht_request_put_MESSAGE) > ntohs(buffer->size)) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Received invalid `%s' request (size %d)\n"),
 	      "PUT",
 	      ntohs(buffer->size));
@@ -262,7 +262,7 @@ static void * process_thread(TableList * list) {
 	req = (CS_dht_request_put_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Received invalid `%s' request (wrong table)\n"),
 	      "PUT");
 	  MUTEX_LOCK(&list->lock);
@@ -285,7 +285,7 @@ static void * process_thread(TableList * list) {
 				     &req->key,
 				     value,
 				     ntohl(req->priority)))) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
@@ -303,7 +303,7 @@ static void * process_thread(TableList * list) {
 	DataContainer * value;
 	
 	if (sizeof(CS_dht_request_remove_MESSAGE) > ntohs(buffer->size)) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Received invalid `%s' request (size %d)\n"),
 	      "REMOVE",
 	      ntohs(buffer->size));
@@ -316,7 +316,7 @@ static void * process_thread(TableList * list) {
 	req = (CS_dht_request_remove_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Received invalid `%s' request (wrong table)\n"),
 	      "REMOVE");
 	  MUTEX_LOCK(&list->lock);
@@ -339,7 +339,7 @@ static void * process_thread(TableList * list) {
 		    list->store->del(list->store->closure,
 				     &req->key,
 				     value))) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
@@ -356,7 +356,7 @@ static void * process_thread(TableList * list) {
 	int resCount;
 
 	if (sizeof(CS_dht_request_iterate_MESSAGE) != ntohs(buffer->size)) {
-	  LOG(LOG_ERROR,
+	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	      _("Received invalid `%s' request (size %d)\n"),
 	      "ITERATE",
 	      ntohs(buffer->size));
@@ -373,7 +373,7 @@ static void * process_thread(TableList * list) {
 	if (OK != sendAck(list->sock,
 					  &list->table,
 					  resCount)) {
-	  LOG(LOG_WARNING,
+	  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
@@ -386,7 +386,7 @@ static void * process_thread(TableList * list) {
 
 
       default:
-	LOG(LOG_ERROR,
+	GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	    _("Received unknown request type %d at %s:%d\n"),
 	    ntohs(buffer->type),
 	    __FILE__, __LINE__);
@@ -426,7 +426,7 @@ int DHT_LIB_join(Blockstore * store,
   for (i=0;i<tableCount;i++)
     if (equalsHashCode512(&tables[i]->table,
 			  table)) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("This client already participates in the given DHT!\n"));
       MUTEX_UNLOCK(&lock);
       return SYSERR;
@@ -494,7 +494,7 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   }
   MUTEX_UNLOCK(&lock);
   if (list == NULL) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Cannot leave DHT: table not known!\n"));
     return SYSERR; /* no such table! */
   }
@@ -516,17 +516,17 @@ int DHT_LIB_leave(const DHT_TableId * table) {
 	if (OK == checkACK(reply))
 	  ret = OK;	
 	else
-	  LOG(LOG_WARNING,
+	  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	      _("gnunetd signaled error in response to `%s' message\n"),
 	      "CS_dht_request_leave_MESSAGE");      	
 	FREE(reply);
       } else {
-	LOG(LOG_WARNING,
+	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    _("Failed to receive response to `%s' message from gnunetd\n"),
 	    "CS_dht_request_leave_MESSAGE");
       }
     } else {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Failed to send `%s' message to gnunetd\n"),
 	  "CS_dht_request_leave_MESSAGE");
     }
@@ -618,7 +618,7 @@ int DHT_LIB_get(const DHT_TableId * table,
     }
     if ( (sizeof(CS_dht_reply_results_MESSAGE) > ntohs(reply->size)) ||
 	 (CS_PROTO_dht_REPLY_GET != ntohs(reply->type)) ) {
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Unexpected reply to `%s' operation.\n"),
 	  "GET");
       releaseClientSocket(sock);
@@ -666,7 +666,7 @@ int DHT_LIB_put(const DHT_TableId * table,
   CS_MESSAGE_HEADER * reply;
   int ret;
 
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "DHT_LIB_put called with value '%.*s'\n",
       ntohl(value->size),
       &value[1]);

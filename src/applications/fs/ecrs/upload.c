@@ -74,10 +74,10 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
                       size,
                       &ichk.query);
 #if DEBUG_UPLOAD
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&ichk.query,
                    &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Query for current iblock at level %u is %s\n",
         level,
         &enc);
@@ -98,10 +98,10 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
     }
     value->prio = htonl(prio);
 #if DEBUG_UPLOAD
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&ichk.query,
                    &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Publishing block (query: %s)\n",
         &enc);
 #endif
@@ -172,24 +172,24 @@ int ECRS_uploadFile(const char * filename,
   if (isDirectory(filename)) {
     GE_BREAK(ectx, 0);
     /* Should not happen */
-    LOG(LOG_ERROR, "Cannot upload file `%s', it seems to be a directory!", filename);
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, "Cannot upload file `%s', it seems to be a directory!", filename);
     return SYSERR;
   }
   if (0 == assertIsFile(filename)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("`%s' is not a file.\n"),
         filename);
     return SYSERR;
   }
   if (OK != getFileSize(filename,
                         &filesize)) {
-    LOG(LOG_ERROR, _("Cannot get size of file `%s'"), filename);
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot get size of file `%s'"), filename);
 
     return SYSERR;
   }
   sock = getClientSocket();
   if (sock == NULL) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("Failed to connect to gnunetd."));
     return SYSERR;
   }
@@ -199,7 +199,7 @@ int ECRS_uploadFile(const char * filename,
   if (doIndex) {
     if (SYSERR == getFileHash(filename,
                               &fileId)) {
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
           _("Cannot hash `%s'.\n"),
           filename);
       releaseClientSocket(sock);
@@ -217,13 +217,13 @@ int ECRS_uploadFile(const char * filename,
 
     switch (FS_initIndex(sock, &fileId, filename)) {
     case SYSERR:
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
           _("Initialization for indexing file `%s' failed.\n"),
           filename);
       releaseClientSocket(sock);
       return SYSERR;
     case NO:
-      LOG(LOG_ERROR,
+      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
           _("Indexing file `%s' failed. Trying to insert file...\n"),
           filename);
       doIndex = YES;
@@ -290,10 +290,10 @@ int ECRS_uploadFile(const char * filename,
                       size + sizeof(DBlock),
                       &chk.query);
 #if DEBUG_UPLOAD
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&chk.query,
                    &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Query for current block of size %u is %s\n",
         size,
         &enc);
@@ -303,7 +303,7 @@ int ECRS_uploadFile(const char * filename,
                              &fileId,
                              dblock,
                              pos)) {
-                                LOG(LOG_ERROR, _("Indexing data failed at position %i.\n"), pos);
+                                GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Indexing data failed at position %i.\n"), pos);
                                 goto FAILURE;
                         }
     } else {
@@ -341,7 +341,7 @@ int ECRS_uploadFile(const char * filename,
     if (OK != tt(ttClosure))
       goto FAILURE;
 #if DEBUG_UPLOAD
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Tree depth is %u, walking up tree.\n",
       treedepth);
 #endif
@@ -350,7 +350,7 @@ int ECRS_uploadFile(const char * filename,
     GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
     if (size == sizeof(DBlock)) {
 #if DEBUG_UPLOAD
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           "Level %u is empty\n",
           i);
 #endif
@@ -361,7 +361,7 @@ int ECRS_uploadFile(const char * filename,
                     size,
                     &chk.key);
 #if DEBUG_UPLOAD
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Computing query for %u bytes content.\n",
         size);
 #endif
@@ -369,10 +369,10 @@ int ECRS_uploadFile(const char * filename,
                       size,
                       &chk.query);
 #if DEBUG_UPLOAD
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
           hash2enc(&chk.query,
                    &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         "Query for current block at level %u is `%s'.\n",
         i,
         &enc);
@@ -402,10 +402,10 @@ int ECRS_uploadFile(const char * filename,
     iblocks[i] = NULL;
   }
 #if DEBUG_UPLOAD
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
         hash2enc(&chk.query,
                  &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Query for top block is %s\n",
       &enc);
 #endif

@@ -67,7 +67,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
     if (OK == readFromSocket(ctx->sock,
 			     &hdr)) {
 #if DEBUG_FSLIB
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "FSLIB: received message from gnunetd\n");
 #endif
       delay = 100 * cronMILLIS;
@@ -121,12 +121,12 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       MUTEX_UNLOCK(ctx->lock);
 #if DEBUG_FSLIB
       if (matched == 0)
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "FSLIB: received content but have no pending request\n");
 #endif
     } else {
 #if DEBUG_FSLIB
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
 	  delay);
 #endif
@@ -200,7 +200,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 
   ret = MALLOC(sizeof(SEARCH_HANDLE));
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSLIB: start search (%p)\n",
       ret);
 #endif
@@ -226,10 +226,10 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   ctx->handles[ctx->handleCount++] = ret;
   MUTEX_UNLOCK(ctx->lock);
 #if DEBUG_FSLIB
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&req->query[0],
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSLIB: initiating search for `%s' of type %u\n",
       &enc,
       type);
@@ -241,7 +241,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
     return NULL;
   }
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSLIB: search started (%p)\n",
       ret);
 #endif
@@ -256,7 +256,7 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
   int i;
 
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSLIB: stop search (%p)\n",
       handle);
 #endif
@@ -272,7 +272,7 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
   MUTEX_UNLOCK(ctx->lock);
   FREE(handle->req);
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSLIB: search stopped (%p)\n",
       handle);
 #endif
@@ -357,7 +357,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   memcpy(&ri[1], fn, fnSize);
 
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Sending index initialization request to gnunetd\n");
 #endif
   if (OK != writeToSocket(sock,
@@ -367,7 +367,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   }
   FREE(ri);
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Waiting for confirmation of index initialization request by gnunetd\n");
 #endif
   if (OK != readTCPResult(sock,
@@ -405,7 +405,7 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
 	 &block[1],
 	 size);
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Sending index request to gnunetd\n");
 #endif
   if (OK != writeToSocket(sock,
@@ -415,7 +415,7 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
   }
   FREE(ri);
 #if DEBUG_FSLIB
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Waiting for confirmation of index request by gnunetd\n");
 #endif
   if (OK != readTCPResult(sock,

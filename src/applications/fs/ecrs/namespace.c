@@ -129,7 +129,7 @@ ECRS_createNamespace(const char * name,
   }
   fileName = getPseudonymFileName(name);
   if (1 == readFile(fileName, 1, &tmp)) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("Cannot create pseudonym `%s', file `%s' exists.\n"),
         name,
         fileName);
@@ -303,7 +303,7 @@ int ECRS_testNamespaceExists(const char * name,
     return SYSERR;
   }
   if (len < 2) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("File `%s' does not contain a pseudonym.\n"),
         fileName);
     FREE(fileName);
@@ -314,7 +314,7 @@ int ECRS_testNamespaceExists(const char * name,
   FREE(fileName);
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("Format of pseudonym `%s' is invalid.\n"),
         name);
     FREE(hke);
@@ -379,7 +379,7 @@ ECRS_addToNamespace(const char * name,
     return NULL;
   }
   if (len < 2) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("File `%s' does not contain a pseudonym.\n"),
         fileName);
     FREE(fileName);
@@ -390,7 +390,7 @@ ECRS_addToNamespace(const char * name,
   FREE(fileName);
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("Format of pseudonym `%s' is invalid.\n"),
         name);
     FREE(hke);
@@ -524,7 +524,7 @@ static int processFile_(const char * name,
     return OK;
   }
   if (len < 2) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("File `%s' does not contain a pseudonym.\n"),
         fileName);
     FREE(fileName);
@@ -534,7 +534,7 @@ static int processFile_(const char * name,
   len = readFile(fileName, len, dst);
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("Format of file `%s' is invalid.\n"),
         fileName);
     FREE(hke);
@@ -544,7 +544,7 @@ static int processFile_(const char * name,
   hk = decodePrivateKey(hke);
   FREE(hke);
   if (hk == NULL) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("Format of file `%s' is invalid.\n"),
         fileName);
     FREE(fileName);

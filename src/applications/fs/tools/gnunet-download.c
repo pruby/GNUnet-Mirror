@@ -92,7 +92,7 @@ static int parseOptions(int argc,
       unsigned int receivePolicy;
 
       if (1 != sscanf(GNoptarg, "%ud", &receivePolicy)) {
-        LOG(LOG_FAILURE,
+        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-a");
 	return -1;
@@ -126,13 +126,13 @@ static int parseOptions(int argc,
 					 "YES"));
       break;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"));
       return SYSERR;
     } /* end of parsing commandline */
   } /* while (1) */
   if (argc - GNoptind != 1) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Not enough arguments. "
 	  "You must specify a GNUnet file URI\n"));
     printhelp();
@@ -233,7 +233,7 @@ int main(int argc,
   if ( (NULL == uri) ||
        (! (ECRS_isLocationUri(uri) ||
 	   ECRS_isFileUri(uri)) ) ) {
-    LOG(LOG_ERROR,
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("URI `%s' invalid for gnunet-download.\n"),
 	fstring);
     FREE(fstring);
@@ -249,7 +249,7 @@ int main(int argc,
 		  strlen(ECRS_FILE_INFIX));
     filename = expandFileName(&fstring[strlen(ECRS_URI_PREFIX)+
 				       strlen(ECRS_FILE_INFIX)]);
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"No filename specified, using `%s' instead (for now).\n",
 	filename);
     try_rename = YES;

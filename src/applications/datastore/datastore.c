@@ -86,10 +86,10 @@ static int get(const HashCode512 * query,
 #if DEBUG_DATASTORE
     EncName enc;
 
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Datastore availability pre-test failed for `%s'.\n",
 	&enc);
 #endif
@@ -111,10 +111,10 @@ static int del(const HashCode512 * query,
   int i;
 
   if (! testAvailable(query)) {
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Availability test failed for `%s' at %s:%d.\n"),
 	&enc,
 	__FILE__, __LINE__);
@@ -127,18 +127,18 @@ static int del(const HashCode512 * query,
       available += ntohl(value->size);
     }
 #if DEBUG_DATASTORE
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Deleted `%s' from database.\n",
 	&enc);
 #endif
   } else {
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(query,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Database failed to delete `%s'.\n"),
 	&enc);
   }
@@ -161,7 +161,7 @@ static int put(const HashCode512 * key,
   /* check if we have enough space / priority */
   if ( (available < ntohl(value->size) ) &&
        (minPriority > ntohl(value->prio)) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	"Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
 	sq->getSize(), 
 	quota);
@@ -247,7 +247,7 @@ static int putUpdate(const HashCode512 * key,
     return OK;
   }
 #if DEBUG_DATASTORE
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Migration: available %llu (need %u), min priority %u have %u\n",
       available, ntohl(value->size),
       minPriority,

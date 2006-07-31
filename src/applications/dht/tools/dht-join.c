@@ -81,7 +81,7 @@ static int parseOptions(int argc,
     case 'm': {
       unsigned int max;
       if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	LOG(LOG_FAILURE,
+	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	    _("You must pass a number to the `%s' option.\n"),
 	    "-m");
 	return SYSERR;
@@ -104,14 +104,14 @@ static int parseOptions(int argc,
       verbose++;
       break;
     default:
-      LOG(LOG_FAILURE,
+      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
 	  _("Use --help to get a list of options.\n"),
 	  c);
       return SYSERR;
     } /* end of parsing commandline */
   } /* while (1) */
   if (argc - GNoptind != 0)
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Superflous arguments (ignored).\n"));
   return OK;
 }
@@ -232,7 +232,7 @@ int main(int argc,
   initializeShutdownHandlers();
   if (OK != DHT_LIB_join(&myStore,
 			 &table)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Error joining DHT.\n"));
     destroy_blockstore_memory((Blockstore*)myStore.closure);
     doneShutdownHandlers();
@@ -246,7 +246,7 @@ int main(int argc,
 
   /* shutdown */
   if (OK != DHT_LIB_leave(&table)) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Error leaving DHT.\n"));
     destroy_blockstore_memory((Blockstore*)myStore.closure);
     doneShutdownHandlers();

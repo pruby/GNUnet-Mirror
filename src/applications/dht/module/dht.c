@@ -692,7 +692,7 @@ static void printRoutingTable() {
   unsigned int i;
 
   MUTEX_LOCK(lock);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "DHT ROUTING TABLE:\n");
   for (i=0;i<bucketCount;i++) {
     if (buckets[i].peers != NULL) {
@@ -711,7 +711,7 @@ static void printRoutingTable() {
 	  hash2enc(&pos->tables[j],
 		   &tabs[j]);
 	
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "[%4d: %3d-%3d]: %s with %u tables (%s, %s, %s)\n",
 	    i,
 	    buckets[i].bstart, buckets[i].bend,
@@ -724,7 +724,7 @@ static void printRoutingTable() {
       }
     }
   }
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "DHT ROUTING TABLE END\n");
   MUTEX_UNLOCK(lock);
 }
@@ -826,7 +826,7 @@ static PeerBucket * findBucket(const PeerIdentity * peer) {
 	   &enc1);
   hash2enc(&coreAPI->myIdentity->hashPubKey,
 	   &enc2);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Bit-distance from `%s' to this peer `%s' is %u bit.\n",
       &enc1,
       &enc2,
@@ -842,7 +842,7 @@ static PeerBucket * findBucket(const PeerIdentity * peer) {
     return &buckets[i];
   } else {
 #if DEBUG_DHT
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	"Index %d not in range for bucket %d which is [%d,%d[\n",
 	index,
 	i,
@@ -939,10 +939,10 @@ static void processOptionalFields(const PeerIdentity * responder,
 				 (void**)&data)) {
     tableCount = dataLength / sizeof(DHT_TableId);
     if (tableCount * sizeof(DHT_TableId) != dataLength) {
-      IFLOG(LOG_WARNING,
+      IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Malformed optional field `%s' received from peer `%s'.\n"),
 	  "tables",
 	  &enc);
@@ -952,10 +952,10 @@ static void processOptionalFields(const PeerIdentity * responder,
     cronTime(&now);
 
 #if DEBUG_DHT
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"updating routing table after learning about peer `%s' who provides %d tables.\n",	
 	&enc,
 	tableCount);
@@ -966,10 +966,10 @@ static void processOptionalFields(const PeerIdentity * responder,
     pos = findPeerInfo(responder);
     bucket = findBucket(responder);
     if (bucket == NULL) {
-      IFLOG(LOG_WARNING,
+      IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Could not find peer `%s' in routing table!\n"),
 	  &enc);
     }
@@ -1011,19 +1011,19 @@ static void processOptionalFields(const PeerIdentity * responder,
     }
     if (pos == NULL) {
 #if DEBUG_DHT
-      IFLOG(LOG_DEBUG,
+      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "routing table full, not adding peer `%s'.\n",	
 	  &enc);
 #endif
     } else {
 #if DEBUG_DHT
-      IFLOG(LOG_DEBUG,
+      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(&responder->hashPubKey,
 		     &enc));
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "adding peer `%s' to routing table.\n",	
 	  &enc);
 #endif
@@ -1113,10 +1113,10 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
 				 "peer",
 				 &dataLength,
 				 (void**) &value)) {
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received malformed response to `%s' from peer `%s'.\n"),
 	"DHT_findNode",
 	&enc);
@@ -1128,10 +1128,10 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
      the peer will automatically trigger the ping_reply_handler
      which will in turn trigger create_find_nodes_rpc) */
   if ( (dataLength % sizeof(PeerIdentity)) != 0) {
-    IFLOG(LOG_WARNING,
+    IFGE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received malformed response to `%s' from peer `%s'.\n"),
 	"DHT_findNode",
 	&enc);
@@ -1142,17 +1142,17 @@ static void create_find_nodes_rpc_complete_callback(const PeerIdentity * respond
 
     msg = (PeerIdentity*) &value[pos];
 #if DEBUG_DHT
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&responder->hashPubKey,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"processing PeerID received from peer `%s' in response to `%s' RPC.\n",
 	&enc,
 	"DHT_findNode");
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&msg->hashPubKey,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"sending RPC `%s' to learn more about peer `%s'.\n",
 	"DHT_ping",
 	&enc);
@@ -1178,10 +1178,10 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
 #if DEBUG_DHT
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "sending RPC `%s' to peer `%s'.\n",
       "DHT_find_nodes",
       &enc);
@@ -1263,10 +1263,10 @@ ping_reply_handler(const PeerIdentity * responder,
   }
 
 #if DEBUG_DHT
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&responder->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "peer `%s' supports table in question, considering the peer for list of %d-best matches.\n",	
       &enc,
       ALPHA);
@@ -1297,10 +1297,10 @@ static void request_DHT_ping(const PeerIdentity * identity,
 #if DEBUG_DHT
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&identity->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "sending RPC `%s' to peer `%s'.\n",
       "DHT_ping",
       &enc);
@@ -1362,10 +1362,10 @@ static unsigned int findLocalNodes(const DHT_TableId * table,
 #if DEBUG_DHT
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "searching local table for peers supporting table `%s'.\n",
       &enc);
 #endif
@@ -1383,10 +1383,10 @@ static unsigned int findLocalNodes(const DHT_TableId * table,
 #if DEBUG_DHT
 	  EncName enc;
 	
-	  IFLOG(LOG_DEBUG,
+	  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 		hash2enc(&pos->id.hashPubKey,
 			 &enc));
-	  LOG(LOG_DEBUG,
+	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      "local table search showed peer `%s' is supporting the table.\n",
 	      &enc);
 #endif
@@ -1428,10 +1428,10 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
 
   max = RPC_paramCount(results);
 #if DEBUG_DHT
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&responder->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "peer `%s' responded to RPC `%s' with %u results.\n",
       &enc,
       "DHT_findvalue",
@@ -1443,7 +1443,7 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
     if (value == NULL) {
       hash2enc(&responder->hashPubKey,
 	       &enc);
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid response to `%s' from peer `%s'.\n"),
 	  "DHT_findValue",
 	  &enc);
@@ -1477,10 +1477,10 @@ send_dht_get_rpc(const PeerIdentity * peer,
   EncName enc;
 
   ENTER();
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "sending RPC `%s' to peer `%s'.\n",
       "DHT_findvalue",
       &enc);
@@ -1585,13 +1585,13 @@ dht_get_async_start(const DHT_TableId * table,
   int res;
 
   ENTER();
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&keys[0],
 		 &enc));
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc2));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "performing `%s' operation on key `%s' and table `%s'.\n",
       "DHT_GET",
       &enc,
@@ -1599,7 +1599,7 @@ dht_get_async_start(const DHT_TableId * table,
 #endif
 
   if (timeout > 1 * cronHOURS) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
@@ -1630,10 +1630,10 @@ dht_get_async_start(const DHT_TableId * table,
   if (ltd != NULL) {
     PeerIdentity * hosts;
 #if DEBUG_DHT
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(table,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"I participate in the table `%s' for the `%s' operation.\n",
 	&enc,
 	"DHT_GET");
@@ -1671,10 +1671,10 @@ dht_get_async_start(const DHT_TableId * table,
 			      (DataProcessor)&getLocalResultCallback,
 			      ret);
 #if DEBUG_DHT
-	IFLOG(LOG_DEBUG,
+	IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&keys[0],
 		       &enc));
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "local datastore lookup for key `%s' resulted in %d results.\n",
 	    &enc,
 	    res);
@@ -1689,10 +1689,10 @@ dht_get_async_start(const DHT_TableId * table,
 	if (! hostIdentityEquals(coreAPI->myIdentity,
 				 &hosts[i])) {
 #if DEBUG_DHT
-	  IFLOG(LOG_DEBUG,
+	  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 		hash2enc(&hosts[i].hashPubKey,
 			 &enc));
-	  LOG(LOG_DEBUG,
+	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      "sending RPC `%s' to peer `%s' that also participates in the table.\n",
 	      "DHT_GET",
 	      &enc);
@@ -1704,10 +1704,10 @@ dht_get_async_start(const DHT_TableId * table,
     }
   } else {
 #if DEBUG_DHT
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(table,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"I do not participate in the table `%s', finding %d other nodes that do.\n",
 	&enc,
 	ALPHA);
@@ -1751,7 +1751,7 @@ static int dht_get_async_stop(struct DHT_GET_RECORD * record) {
   resultsFound = record->resultsFound;
   FREE(record);
 #if DEBUG_DHT
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "`%s' operation completed with %d results.\n",
       "DHT_GET",
       resultsFound);
@@ -1785,11 +1785,11 @@ findnodes_dht_master_get_callback(const HashCode512 * key,
   dataLength = ntohl(cont->size) - sizeof(DataContainer);
 
   if ( (dataLength % sizeof(PeerIdentity)) != 0) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Response size was %d, expected multile of %d\n",
 	dataLength,
 	sizeof(PeerIdentity));
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Invalid response to `%s'.\n"),
 	"DHT_findValue");
     return SYSERR;
@@ -1841,10 +1841,10 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
   EncName enc;
 
   ENTER();
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "function `%s' called to look for nodes participating in table `%s'.\n",
       __FUNCTION__,
       &enc);
@@ -1868,7 +1868,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 			  (PeerIdentity*) fnc->matches,
 			  ALPHA);
 #if DEBUG_DHT
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "found %d participating nodes in local routing table.\n",
       fnc->k);
 #endif
@@ -1887,7 +1887,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
     if (equalsHashCode512(table,
 			  &masterTableId)) {
 #if DEBUG_DHT
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "broadcasting RPC ping to find other peers for master table.\n");
 #endif
      /* No or too few other DHT peers known, search
@@ -1897,10 +1897,10 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
 				    fnc);
     } else {
 #if DEBUG_DHT
-      IFLOG(LOG_DEBUG,
+      IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    hash2enc(table,
 		     &enc));
-      LOG(LOG_DEBUG,
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "performing RPC `%s' to find other peers participating in table `%s'.\n",
 	  "DHT_findValue",
 	  &enc);
@@ -1989,7 +1989,7 @@ find_k_nodes_dht_master_get_callback(const HashCode512 * key,
      the peer will automatically trigger the ping_reply_handler
      which will in turn trigger create_find_nodes_rpc) */
   if ( (dataLength % sizeof(PeerIdentity)) != 0) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Malformed response to `%s' on master table.\n"),
 	"DHT_findValue");
     return SYSERR;
@@ -1999,10 +1999,10 @@ find_k_nodes_dht_master_get_callback(const HashCode512 * key,
 
     msg = &value[pos];
 #if DEBUG_DHT
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(&msg->hashPubKey,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"master table returned peer `%s' in `%s' operation.\n",
 	&enc,
 	"DHT_findValue");
@@ -2066,7 +2066,7 @@ findKNodes_start(const DHT_TableId * table,
   ENTER();
   hash2enc(table,
 	   &enc);
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "`%s' called to find %d nodes that participate in table `%s'.\n",
       __FUNCTION__,
       k,
@@ -2097,7 +2097,7 @@ findKNodes_start(const DHT_TableId * table,
 	       closure);
   if (found == k) {
 #if DEBUG_DHT
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"`%s' found %d nodes in local table, no remote requests needed.\n",
 	__FUNCTION__,
 	k);
@@ -2118,7 +2118,7 @@ findKNodes_start(const DHT_TableId * table,
     /* findKNodes_start called for masterTable.  That should not happen! */
   } else {
  #if DEBUG_DHT
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"`%s' sends request to find %d in master table.\n",
 	__FUNCTION__,
 	k);
@@ -2203,7 +2203,7 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
       MUTEX_UNLOCK(&record->lock);
       hash2enc(&responder->hashPubKey,
 	       &enc);
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid response to `%s' from `%s'\n"),
 	  "DHT_put",
 	  &enc);
@@ -2229,10 +2229,10 @@ send_dht_put_rpc(const PeerIdentity * peer,
 #if DEBUG_DHT
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "sending RPC `%s' to peer `%s'.\n",
       "DHT_store",
       &enc);
@@ -2323,20 +2323,20 @@ dht_put_async_start(const DHT_TableId * table,
   }
 
   ENTER();
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(key,
 		 &enc));
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc2));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "performing `%s' operation on key `%s' and table `%s'.\n",
       "DHT_PUT",
       &enc,
       &enc2);
 #endif
   if (timeout > 1 * cronHOURS) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
@@ -2362,10 +2362,10 @@ dht_put_async_start(const DHT_TableId * table,
   if (ltd != NULL) {
     PeerIdentity * hosts;
 #if DEBUG_DHT
-    IFLOG(LOG_DEBUG,
+    IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  hash2enc(table,
 		   &enc));
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"I participate in the table `%s' for the `%s' operation.\n",
 	&enc,
 	"DHT_PUT");
@@ -2503,7 +2503,7 @@ dht_remove_rpc_reply_callback(const PeerIdentity * responder,
       MUTEX_UNLOCK(&record->lock);
       hash2enc(&responder->hashPubKey,
 	       &enc);
-      LOG(LOG_WARNING,
+      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid response to `%s' from `%s'\n"),
 	  "DHT_remove",
 	  &enc);
@@ -2531,10 +2531,10 @@ send_dht_remove_rpc(const PeerIdentity * peer,
   EncName enc;
 
   ENTER();
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&peer->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "sending RPC `%s' to peer `%s'.\n",
       "DHT_remove",
       &enc);
@@ -2609,7 +2609,7 @@ dht_remove_async_start(const DHT_TableId * table,
   unsigned int count;
 
   if (timeout > 1 * cronHOURS) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("`%s' called with timeout above 1 hour (bug?)\n"),
 	__FUNCTION__);
     timeout = 1 * cronHOURS;
@@ -2826,10 +2826,10 @@ static void rpc_DHT_ping(const PeerIdentity * sender,
 #if DEBUG_DHT
   EncName enc;
 
-  IFLOG(LOG_DEBUG,
+  IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&sender->hashPubKey,
 		 &enc));
-  LOG(LOG_DEBUG,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Received RPC `%s' from peer `%s'.\n",
       "DHT_ping",
       &enc);
@@ -2877,7 +2877,7 @@ static void rpc_DHT_findNode(const PeerIdentity * sender,
 				   &dataLength,
 				   (void**) &table)) ||
        (dataLength != sizeof(DHT_TableId)) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received invalid RPC `%s'.\n"),
 	"DHT_findNode");
     return;
@@ -3017,7 +3017,7 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 				   &dataLength,
 				   (void**) &type)) ||
        (dataLength != sizeof(unsigned int)) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received invalid RPC `%s'.\n"),
 	"DHT_findValue");
     return;
@@ -3144,7 +3144,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
        (dataLength != sizeof(unsigned long long)) ||
        ((NULL == (value = RPC_paramDataContainerByName(arguments,
 						       "value")))) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received invalid RPC `%s'.\n"),
 	"DHT_store");
     return;
@@ -3156,7 +3156,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
   MUTEX_LOCK(lock);
   ltd = getLocalTableData(table);
   if (ltd == NULL) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("RPC for `%s' received for table that we do not participate in!\n"),
 	"DHT_store");
   }
@@ -3278,7 +3278,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 				   &dataLength,
 				   (void**) &timeout)) ||
        (dataLength != sizeof(unsigned long long)) ) {
-    LOG(LOG_WARNING,
+    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Received invalid RPC `%s'.\n"),
 	"DHT_remove");
     return;
@@ -3292,7 +3292,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
   MUTEX_LOCK(lock);
   ltd = getLocalTableData(table);
   if (ltd == NULL) {
-    LOG(LOG_DEBUG,
+    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	_("RPC for `%s' received for table that we do not participate in!\n"),
 	"DHT_removed");
   }
@@ -3504,10 +3504,10 @@ static void dhtMaintainJob(void * shutdownFlag) {
 	EncName enc;
 	
 	ENTER();
-	IFLOG(LOG_DEBUG,
+	IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&pos->id.hashPubKey,
 		       &enc));
-	LOG(LOG_DEBUG,
+	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "sending RPC `%s' to peer `%s'.\n",
 	    "DHT_ping",
 	    &enc);
