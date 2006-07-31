@@ -394,7 +394,7 @@ void IPC_SEMAPHORE_UP(IPC_Semaphore * sem) {
 		    "sem_post");
 #elif WINDOWS
   if (!ReleaseSemaphore(sem->internal, 1, NULL))
-    GE_LOG(GE_WARNING | GE_USER | GE_BULK,
+    GE_LOG(sem->ectx, GE_WARNING | GE_USER | GE_BULK,
 	   "ReleaseSemaphore signaled error: %i\n",
 	   GetLastError());
 #elif LINUX
