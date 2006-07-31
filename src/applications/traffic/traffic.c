@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -150,7 +150,7 @@ typedef struct {
 /**
  * Lock to synchronize access.
  */
-static Mutex lock;
+static struct MUTEX * lock;
 
 /**
  * Highest message type seen so far.
@@ -183,7 +183,7 @@ static void updateUse(DirectedTrafficCounter * dtc,
   unsigned int i;
   unsigned int slot;
 
-  cronTime(&now);
+  now = get_time();
   unitNow = now / TRAFFIC_TIME_UNIT;
   delta = now - dtc->lastUpdate;
   dtc->lastUpdate = now;
@@ -255,7 +255,7 @@ static void buildSummary(TRAFFIC_COUNTER * res,
   unsigned long long totalMsgSize;
 
   updateUse(dtc, 0, 0, YES); /* expire old entries */
-  cronTime(&now);
+  now = get_time();
   unitNow = now / TRAFFIC_TIME_UNIT;
 
   /* count number of peers that we interacted with in
@@ -292,7 +292,7 @@ static CS_traffic_info_MESSAGE * buildReply(unsigned int countTimeUnits) {
   unsigned int count;
   unsigned int i;
 
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   count = 0;
   for (i=0;i<max_message_type;i++)
     if (counters[i] != NULL) {
@@ -324,12 +324,12 @@ static CS_traffic_info_MESSAGE * buildReply(unsigned int countTimeUnits) {
 		     i);
     }
 
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return reply;
 }
 
-static int trafficQueryHandler(ClientHandle sock,
-			       const CS_MESSAGE_HEADER * message) {
+static int trafficQueryHandler(struct ClientHandle * sock,
+			       const MESSAGE_HEADER * message) {
   CS_traffic_request_MESSAGE * msg;
   CS_traffic_info_MESSAGE * reply;
   int ret;
@@ -373,14 +373,14 @@ static int getTrafficStats(unsigned int timePeriod,
 
   if (timePeriod > HISTORY_SIZE)
     timePeriod = HISTORY_SIZE;
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   if ( (messageType >= max_message_type) ||
        (counters[messageType] == NULL) ) {
     *avgMessageSize = 0;
     *messageCount = 0;
     *peerCount = 0;
     *timeDistribution = 0;
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
     return OK;
   }
 
@@ -409,7 +409,7 @@ static int getTrafficStats(unsigned int timePeriod,
   else
     *avgMessageSize = 0;
   *timeDistribution = dtc->slots;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 
@@ -482,19 +482,19 @@ static void updateTrafficReceiveCounter(unsigned short ptyp,
  * @param sender the identity of the sender
  */
 static int trafficReceive(const PeerIdentity * sender,
-			  const P2P_MESSAGE_HEADER * header) {
+			  const MESSAGE_HEADER * header) {
   unsigned short port;
 
   port = ntohs(header->type);
   updateTrafficReceiveCounter(port,
 			      ntohs(header->size));
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   checkPort(port);
   updateUse(&counters[port]->receive,
 	    ntohs(header->size),
 	    sender->hashPubKey.bits[0],
 	    NO);
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 
@@ -505,19 +505,19 @@ static int trafficReceive(const PeerIdentity * sender,
  * @param receiver the identity of the receiver
  */
 static int trafficSend(const PeerIdentity * receiver,
-		       const P2P_MESSAGE_HEADER * header) {
+		       const MESSAGE_HEADER * header) {
   unsigned short port;
 
   port = ntohs(header->type);
   updateTrafficSendCounter(port,
 			   ntohs(header->size));
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   checkPort(port);
   updateUse(&counters[port]->send,
 	    ntohs(header->size),
 	    receiver->hashPubKey.bits[0],
 	    NO);
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 
@@ -546,8 +546,8 @@ Traffic_ServiceAPI * provide_module_traffic(CoreAPIForApplication * capi) {
   }
 #endif
 
-  GE_ASSERT(ectx, counters == NULL);
-  MUTEX_CREATE(&lock);
+  GE_ASSERT(coreAPI->ectx, counters == NULL);
+  lock = MUTEX_CREATE(NO);
 #if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
   stats = capi->requestService("stats");
 #endif
@@ -577,7 +577,8 @@ void release_module_traffic() {
   GROW(counters,
        max_message_type,
        0);
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
+  lock = NULL;
   coreAPI = NULL;
 }
 
@@ -590,19 +591,22 @@ static CoreAPIForApplication * myCoreAPI;
  * Initialize the traffic module.
  */
 int initialize_module_traffic(CoreAPIForApplication * capi) {
-  GE_ASSERT(ectx, myCoreAPI == NULL);
+  GE_ASSERT(capi->ectx, myCoreAPI == NULL);
   myCoreAPI = capi;
   myApi = capi->requestService("traffic");
   if (myApi == NULL) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(capi->ectx, 0);
     myCoreAPI = NULL;
     return SYSERR;
   }
   capi->registerClientHandler(CS_PROTO_traffic_QUERY,
 			      &trafficQueryHandler);
-  setConfigurationString("ABOUT",
-			 "traffic",
-			 gettext_noop("tracks bandwidth utilization by gnunetd"));
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "traffic",
+						   gettext_noop("tracks bandwidth utilization by gnunetd")));
   return OK;				
 }
 
@@ -610,9 +614,10 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
  * Shutdown the traffic module.
  */
 void done_module_traffic() {
-  GE_ASSERT(ectx, myCoreAPI != NULL);
-  GE_ASSERT(ectx, SYSERR != myCoreAPI->unregisterClientHandler(CS_PROTO_traffic_QUERY,
-							     &trafficQueryHandler));
+  GE_ASSERT(NULL, myCoreAPI != NULL);
+  GE_ASSERT(myCoreAPI->ectx,
+	    SYSERR != myCoreAPI->unregisterClientHandler(CS_PROTO_traffic_QUERY,
+							 &trafficQueryHandler));
   myCoreAPI->releaseService(myApi);
   myApi = NULL;
   myCoreAPI = NULL;

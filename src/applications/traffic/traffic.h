@@ -70,7 +70,7 @@ typedef struct {
  * if it sends a CS_TRAFFIC_QUERY to gnunetd.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * The number of different message types we have seen
@@ -98,7 +98,7 @@ typedef struct {
  * Request for CS_traffic_info_MESSAGE.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * How many time units back should the statistics returned contain?

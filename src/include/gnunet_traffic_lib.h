@@ -28,6 +28,7 @@
 #define GNUNET_TRAFFIC_LIB_H
 
 #include "gnunet_util.h"
+#include "gnunet_util_network_client.h"
 #include "gnunet_traffic_service.h"
 
 #ifdef __cplusplus
@@ -52,7 +53,7 @@ extern "C" {
  *        highest bit is current time-unit, bit 1 is 32 time-units ago (set)
  * @return OK on success, SYSERR on error
  */
-int pollSocket(GNUNET_TCP_SOCKET * sock,
+int pollSocket(struct ClientServerConnection * sock,
 	       unsigned int timeframe,
 	       unsigned short type,
 	       unsigned short direction,
