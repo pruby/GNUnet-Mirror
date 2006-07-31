@@ -58,8 +58,6 @@ static CoreAPIForTransport * coreAPI;
  * @return OK on success, SYSERR on failure
  */
 static int verifyHelo(const P2P_hello_MESSAGE * helo) {
-  const char * yesno[] = { "YES", "NO", NULL };
-  const char * value;
   if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
        (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
        (ntohs(helo->header.type) != p2p_PROTO_hello) ) {
@@ -90,8 +88,6 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
  * @return hello on success, NULL on error
  */
 static P2P_hello_MESSAGE * createhello() {
-  const char * yesno[] = { "YES", "NO", NULL };
-  const char * value;
   P2P_hello_MESSAGE * msg;
 
   if (NO == GC_get_configuration_value_yesno(coreAPI->cfg,
