@@ -11,9 +11,6 @@ Notes:
   Oh, and this is of course just a plan.  And plans always change.
 
 
-NILS:
-* FCLOSE not in plibc? (using fclose for now)
-
 
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring: [RC]
@@ -23,6 +20,7 @@ NILS:
     + config: call GC change listeners on entire config on registration!!!
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
+    	o libwww & libesmtp?
   * server:
     + needs testing, also likely to be missing features
       - gnunet-update needs to initialize ectx + cfg in UpdateAPI struct
