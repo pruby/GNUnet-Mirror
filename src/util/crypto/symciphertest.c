@@ -112,7 +112,7 @@ error:
 int main(int argc, char * argv[]) {
   int failureCount = 0;
 
-  GNUNET_ASSERT(strlen(INITVALUE) > sizeof(INITVECTOR));
+  GE_ASSERT(ectx, strlen(INITVALUE) > sizeof(INITVECTOR));
   initLockingGcrypt();
   failureCount += testSymcipher();
   failureCount += verifyCrypto();

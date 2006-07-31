@@ -52,7 +52,7 @@ int conf_read(const char *name)
   struct expr *e;
   int i = 0;
 
-  GNUNET_ASSERT(name != NULL);
+  GE_ASSERT(ectx, name != NULL);
   FREENONNULL(setConfigurationString("FILES",
 				     "gnunet.conf",
 				     name));

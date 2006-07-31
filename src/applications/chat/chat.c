@@ -189,7 +189,7 @@ static void chatClientExitHandler(ClientHandle client) {
 int initialize_module_chat(CoreAPIForApplication * capi) {
   int ok = OK;
 
-  GNUNET_ASSERT(sizeof(P2P_chat_MESSAGE) == sizeof(CS_chat_MESSAGE));
+  GE_ASSERT(ectx, sizeof(P2P_chat_MESSAGE) == sizeof(CS_chat_MESSAGE));
   MUTEX_CREATE(&chatMutex);
   clientCount = 0;
   coreAPI = capi;

@@ -37,7 +37,7 @@ GladeXML * getMainXML() {
 }
 
 void destroyMainXML() {
-  GNUNET_ASSERT(mainXML_ != NULL);
+  GE_ASSERT(ectx, mainXML_ != NULL);
   g_object_unref(mainXML_);
   mainXML_ = NULL;
 }
@@ -66,7 +66,7 @@ static void connector(const gchar *handler_name,
   GladeXML * xml = user_data;
   void * method;
 
-  GNUNET_ASSERT(xml != NULL);
+  GE_ASSERT(ectx, xml != NULL);
   method = trybindDynamicMethod(library,
 				"",
 				handler_name);

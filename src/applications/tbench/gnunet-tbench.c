@@ -236,7 +236,7 @@ int main(int argc, char ** argv) {
   buffer = NULL;
   if (OK == readFromSocket(sock,
 			   (CS_MESSAGE_HEADER**)&buffer)) {
-    GNUNET_ASSERT(ntohs(buffer->header.size) ==
+    GE_ASSERT(ectx, ntohs(buffer->header.size) ==
 		  sizeof(CS_tbench_reply_MESSAGE));
     if ((float)buffer->mean_loss <= 0){
       GE_BREAK(ectx, 0);

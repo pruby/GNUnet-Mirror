@@ -115,9 +115,9 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
   struct ECRS_MetaData * dirMeta;
 
   FSUI_stopCollection(ctx); /* cancel old collection */
-  GNUNET_ASSERT(name != NULL);
+  GE_ASSERT(ectx, name != NULL);
   advertisement = FSUI_parseCharKeywordURI(COLLECTION);
-  GNUNET_ASSERT(advertisement != NULL);
+  GE_ASSERT(ectx, advertisement != NULL);
   TIME(&now);
   prio = getConfigurationInt("FS",
 			     "ADVERTISEMENT-PRIORITY");
@@ -138,7 +138,7 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
   ECRS_freeUri(advertisement);
   ECRS_freeUri(rootURI);
   dirMeta = ECRS_dupMetaData(meta);
-  GNUNET_ASSERT(OK == ECRS_createDirectory(&dirData,
+  GE_ASSERT(ectx, OK == ECRS_createDirectory(&dirData,
 					   &dirLen,
 					   0,
 					   NULL,
@@ -276,7 +276,7 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
   UNLINK(tmpName);
   FREE(tmpName);
   metaData = NULL;
-  GNUNET_ASSERT(OK == ECRS_listDirectory(&cd->name[strlen(cd->name)+1],
+  GE_ASSERT(ectx, OK == ECRS_listDirectory(&cd->name[strlen(cd->name)+1],
 					 dirLen,
 					 &metaData,
 					 NULL,
@@ -350,7 +350,7 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
   dirLen = ntohl(cd->hdr.size) - strlen(cd->name) - sizeof(CollectionData);
   cls.count = 0;
   cls.fis = NULL;
-  GNUNET_ASSERT(OK ==
+  GE_ASSERT(ectx, OK ==
 		ECRS_listDirectory(&cd->name[strlen(cd->name)+1],
 				   dirLen,
 				   &metaData,
@@ -361,7 +361,7 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
 		  NO,
 		  &cls);
   dirData = NULL;
-  GNUNET_ASSERT(OK ==
+  GE_ASSERT(ectx, OK ==
 		ECRS_createDirectory(&dirData,
 				     &dirLen,
 				     cls.count,

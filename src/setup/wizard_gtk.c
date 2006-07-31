@@ -65,8 +65,8 @@ static int quit;
  * Also unrefs the current glade XML context.
  */
 static void destroyCurrentWindow() {
-  GNUNET_ASSERT(mainXML != NULL);
-  GNUNET_ASSERT(curwnd != NULL);
+  GE_ASSERT(ectx, mainXML != NULL);
+  GE_ASSERT(ectx, curwnd != NULL);
   quit = 0;
   gtk_widget_destroy(curwnd);
   curwnd = NULL;
@@ -151,7 +151,7 @@ void load_step2(GtkButton * button,
   destroyCurrentWindow();
   curwnd = get_xml("assi_step2");	
   cls.cmbNIC = lookup_widget("cmbNIC");
-  GNUNET_ASSERT(cls.cmbNIC != NULL);
+  GE_ASSERT(ectx, cls.cmbNIC != NULL);
   cls.nic_item_count = 0;
   model = gtk_list_store_new(1, G_TYPE_STRING);
   gtk_combo_box_set_model(GTK_COMBO_BOX(cls.cmbNIC),
@@ -613,7 +613,7 @@ void on_entUser_changed (GtkEditable * editable,
 
   sym = sym_lookup("USER", "GNUNETD", 0);
   ret = gtk_editable_get_chars(editable, 0, -1);
-  GNUNET_ASSERT(ret != NULL);
+  GE_ASSERT(ectx, ret != NULL);
   sym_set_string_value(sym, ret);
   FREENONNULL(user_name);
   if (strlen(ret) != 0)
@@ -631,7 +631,7 @@ void on_entGroup_changed (GtkEditable * editable,
 
   FREENONNULL(group_name);
   ret = gtk_editable_get_chars(editable, 0, -1);
-  GNUNET_ASSERT(ret != NULL);
+  GE_ASSERT(ectx, ret != NULL);
   sym_set_string_value(sym, ret);
   if (strlen(ret) != 0)
     group_name = STRDUP(ret);

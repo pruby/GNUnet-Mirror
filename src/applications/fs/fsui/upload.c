@@ -129,7 +129,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
   int handle;
   char * mdn;
 
-  GNUNET_ASSERT(utc->filename != NULL);
+  GE_ASSERT(ectx, utc->filename != NULL);
 
   ret = SYSERR;
   if (*meta == NULL)
@@ -184,7 +184,7 @@ static int uploadDirectory(UploadThreadClosure * utc,
 			    NULL,
 			    uri);
       if (ret == OK) {
-	GNUNET_ASSERT(NULL != *uri);
+	GE_ASSERT(ectx, NULL != *uri);
 	event.type = FSUI_upload_complete;
 	event.data.UploadComplete.total = utc->main_total;
 	event.data.UploadComplete.completed = utc->main_completed;
@@ -249,7 +249,7 @@ static int dirEntryCallback(const char * filename,
 			  NULL,
 			  &uri);
     if (ret == OK) {
-      GNUNET_ASSERT(uri != NULL);
+      GE_ASSERT(ectx, uri != NULL);
       event.type = FSUI_upload_complete;
       event.data.UploadComplete.total = utc->main_total;
       event.data.UploadComplete.completed = utc->main_completed;
@@ -369,7 +369,7 @@ static void * uploadThread(void * cls) {
   char * inboundFN;
   int sendEvent = YES;
 
-  GNUNET_ASSERT(utc->main_filename != NULL);
+  GE_ASSERT(ectx, utc->main_filename != NULL);
   inboundFN
     = ECRS_getFromMetaData(utc->meta,
 			   EXTRACTOR_FILENAME);

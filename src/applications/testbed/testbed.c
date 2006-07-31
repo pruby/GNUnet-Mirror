@@ -1337,8 +1337,8 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   for (i=0;i<TESTBED_MAX_MSG;i++)
     if ( (handlers[i].msgId != i) &&
 	 (handlers[i].handler != &tb_undefined) )
-      GNUNET_ASSERT(0);
-  GNUNET_ASSERT(handlers[TESTBED_MAX_MSG].handler == NULL);
+      GE_ASSERT(ectx, 0);
+  GE_ASSERT(ectx, handlers[TESTBED_MAX_MSG].handler == NULL);
   identity = capi->requestService("identity");
   if (identity == NULL)
     return SYSERR;
@@ -1348,8 +1348,8 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
       "TESTBED registering handler %d!\n",
       CS_PROTO_testbed_REQUEST);
   coreAPI = capi;
-  GNUNET_ASSERT(SYSERR != capi->registerClientExitHandler(&testbedClientExitHandler));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_testbed_REQUEST,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientExitHandler(&testbedClientExitHandler));
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_testbed_REQUEST,
 						      (CSHandler)&csHandleTestbedRequest));
   httpRegister("startup");
   setConfigurationString("ABOUT",

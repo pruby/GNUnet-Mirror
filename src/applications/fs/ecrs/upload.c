@@ -61,9 +61,9 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
 #endif
 
   size = ntohl(iblocks[level]->size);
-  GNUNET_ASSERT(size > sizeof(Datastore_Value));
+  GE_ASSERT(ectx, size > sizeof(Datastore_Value));
   size -= sizeof(Datastore_Value);
-  GNUNET_ASSERT(size - sizeof(DBlock) <= IBLOCK_SIZE);
+  GE_ASSERT(ectx, size - sizeof(DBlock) <= IBLOCK_SIZE);
   present = (size - sizeof(DBlock)) / sizeof(CHK);
   db = (DBlock*) &iblocks[level][1];
   if (present == CHK_PER_INODE) {
@@ -118,7 +118,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
          chk,
          sizeof(CHK));
   size += sizeof(CHK) + sizeof(Datastore_Value);
-  GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
+  GE_ASSERT(ectx, size < MAX_BUFFER_SIZE);
   iblocks[level]->size = htonl(size);
 
   return OK;
@@ -270,7 +270,7 @@ int ECRS_uploadFile(const char * filename,
              0,
              DBLOCK_SIZE);
     }
-    GNUNET_ASSERT(sizeof(Datastore_Value) + size + sizeof(DBlock) < MAX_BUFFER_SIZE);
+    GE_ASSERT(ectx, sizeof(Datastore_Value) + size + sizeof(DBlock) < MAX_BUFFER_SIZE);
     dblock->size = htonl(sizeof(Datastore_Value) + size + sizeof(DBlock));
     if (size != READ(fd,
                      &db[1],
@@ -314,7 +314,7 @@ int ECRS_uploadFile(const char * filename,
                           &chk.query,
                           &value))
         goto FAILURE;
-      GNUNET_ASSERT(value != NULL);
+      GE_ASSERT(ectx, value != NULL);
       *value = *dblock; /* copy options! */
       if (SYSERR == FS_insert(sock,
                               value)) {
@@ -347,7 +347,7 @@ int ECRS_uploadFile(const char * filename,
 #endif
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
-    GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
+    GE_ASSERT(ectx, size < MAX_BUFFER_SIZE);
     if (size == sizeof(DBlock)) {
 #if DEBUG_UPLOAD
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

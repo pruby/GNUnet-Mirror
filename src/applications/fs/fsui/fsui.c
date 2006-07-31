@@ -84,7 +84,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   int i;
   int ok;
 
-  GNUNET_ASSERT(ctx != NULL);
+  GE_ASSERT(ectx, ctx != NULL);
   if (1 != READ(fd, &zaro, sizeof(char))) {
     GE_BREAK(ectx, 0);
     return NULL;
@@ -754,7 +754,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
       unsigned int big;
 
       tmp = ECRS_uriToString(spos->uri);
-      GNUNET_ASSERT(tmp != NULL);
+      GE_ASSERT(ectx, tmp != NULL);
       big = htonl(strlen(tmp));
       WRITE(fd,
 	    &big,

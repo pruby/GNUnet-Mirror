@@ -276,7 +276,7 @@ receivedhello(const MESSAGE_HEADER * message) {
   if (mtu == 0) {
     mtu = 2048; /* bound size */
   } else {
-    GNUNET_ASSERT(mtu > P2P_MESSAGE_OVERHEAD);
+    GE_ASSERT(ectx, mtu > P2P_MESSAGE_OVERHEAD);
     mtu -= P2P_MESSAGE_OVERHEAD;
   }
   buffer = MALLOC(mtu);
@@ -299,7 +299,7 @@ receivedhello(const MESSAGE_HEADER * message) {
   if (mtu > ntohs(ping->size)) {
     heloEnd = transport->getAdvertisedhellos(mtu - ntohs(ping->size),
 					    buffer);
-    GNUNET_ASSERT(mtu - ntohs(ping->size) >= heloEnd);
+    GE_ASSERT(ectx, mtu - ntohs(ping->size) >= heloEnd);
   } else {
     heloEnd = -2;
   }

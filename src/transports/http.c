@@ -547,7 +547,7 @@ static int readAndProcess(int i) {
       return SYSERR; /* error! */
     }
   } else {
-    GNUNET_ASSERT(httpSession->rsize > httpSession->rpos);
+    GE_ASSERT(ectx, httpSession->rsize > httpSession->rpos);
     /* data read mode */
     ret = READ(httpSession->sock,
 	       &httpSession->rbuff[httpSession->rpos],
@@ -616,7 +616,7 @@ static int readAndProcess(int i) {
 	 httpSession->rsize,
 	 0);
     httpSession->rpos = 0;
-    GNUNET_ASSERT(httpSession->wsize == 0);
+    GE_ASSERT(ectx, httpSession->wsize == 0);
     GROW(httpSession->wbuff,
 	 httpSession->wsize,
 	 256);
@@ -638,7 +638,7 @@ static int readAndProcess(int i) {
   mp      = MALLOC(sizeof(P2P_PACKET));
   mp->sender = httpSession->sender;
   mp->tsession = tsession;
-  GNUNET_ASSERT(httpSession->rbuff != NULL);
+  GE_ASSERT(ectx, httpSession->rbuff != NULL);
   mp->msg = httpSession->rbuff;
   mp->size = httpSession->rsize;
   httpSession->rbuff = NULL;
@@ -807,7 +807,7 @@ static void * httpListenMain() {
 	     user should be able to specify who is allowed to connect,
 	     otherwise we just close and reject the communication! */
 	  IPaddr ipaddr;
-	  GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
+	  GE_ASSERT(ectx, sizeof(struct in_addr) == sizeof(IPaddr));
 	  memcpy(&ipaddr,
 		 &clientAddr.sin_addr,
 		 sizeof(struct in_addr));
@@ -887,7 +887,7 @@ try_again_1:
 	  i--;
 	  continue;
 	}
-	GNUNET_ASSERT(ret <= httpSession->wpos);
+	GE_ASSERT(ectx, ret <= httpSession->wpos);
 	if (ret == httpSession->wpos) {
 	  FREENONNULL(httpSession->wbuff);
 	  httpSession->wbuff = NULL;
@@ -1162,7 +1162,7 @@ static int httpConnect(const P2P_hello_MESSAGE * helo,
     soaddr.sin_addr = theProxy.sin_addr;
     soaddr.sin_port = theProxy.sin_port;
   } else {
-    GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
+    GE_ASSERT(ectx, sizeof(struct in_addr) == sizeof(IPaddr));
     memcpy(&soaddr.sin_addr,
 	   &haddr->ip,
 	   sizeof(IPaddr));

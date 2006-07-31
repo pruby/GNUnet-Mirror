@@ -451,7 +451,7 @@ static Topology_ServiceAPI * myTopology;
 int initialize_module_topology_f2f(CoreAPIForApplication * capi) {
   myCapi = capi;
   myTopology = capi->requestService("topology");
-  GNUNET_ASSERT(myTopology != NULL);
+  GE_ASSERT(ectx, myTopology != NULL);
   return OK;
 }
 

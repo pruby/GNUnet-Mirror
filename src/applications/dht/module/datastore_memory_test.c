@@ -149,14 +149,14 @@ static int load(Blockstore * s,
 
 
 static int test(Blockstore * s) {
-  GNUNET_ASSERT(0 == store(s, "a", "Hello"));
-  GNUNET_ASSERT(0 == store(s, "b", "World"));
-  GNUNET_ASSERT(0 == load(s, "a", "Hello"));
-  GNUNET_ASSERT(0 == load(s, "b", "World"));
-  GNUNET_ASSERT(0 == rem(s, "a", "Hello"));
-  GNUNET_ASSERT(0 == rem(s, "b", "World"));
-  GNUNET_ASSERT(0 == load(s, "a", NULL));
-  GNUNET_ASSERT(0 == load(s, "b", NULL));
+  GE_ASSERT(ectx, 0 == store(s, "a", "Hello"));
+  GE_ASSERT(ectx, 0 == store(s, "b", "World"));
+  GE_ASSERT(ectx, 0 == load(s, "a", "Hello"));
+  GE_ASSERT(ectx, 0 == load(s, "b", "World"));
+  GE_ASSERT(ectx, 0 == rem(s, "a", "Hello"));
+  GE_ASSERT(ectx, 0 == rem(s, "b", "World"));
+  GE_ASSERT(ectx, 0 == load(s, "a", NULL));
+  GE_ASSERT(ectx, 0 == load(s, "b", NULL));
 
   return 0;
 }

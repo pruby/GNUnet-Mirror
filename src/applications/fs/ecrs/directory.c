@@ -187,7 +187,7 @@ int ECRS_createDirectory(char ** data,
     psize = size;
 
     ucs[i] = ECRS_uriToString(fis[i].uri);
-    GNUNET_ASSERT(ucs[i] != NULL);
+    GE_ASSERT(ectx, ucs[i] != NULL);
     size += strlen(ucs[i]) + 1;
     size += sizeof(unsigned int);
     size += ECRS_sizeofMetaData(fis[i].meta,
@@ -212,7 +212,7 @@ int ECRS_createDirectory(char ** data,
 			       &(*data)[pos + sizeof(unsigned int)],
 			       size - pos - sizeof(unsigned int),
 			       ECRS_SERIALIZE_FULL);
-  GNUNET_ASSERT(ret != SYSERR);
+  GE_ASSERT(ectx, ret != SYSERR);
   ret = htonl(ret);
   memcpy(&(*data)[pos],
 	 &ret,
@@ -242,7 +242,7 @@ int ECRS_createDirectory(char ** data,
 				 &(*data)[pos + sizeof(unsigned int)],
 				 size - pos - sizeof(unsigned int),
 				 ECRS_SERIALIZE_FULL);
-    GNUNET_ASSERT(ret != SYSERR);
+    GE_ASSERT(ectx, ret != SYSERR);
     ret = htonl(ret);
     memcpy(&(*data)[pos],
 	   &ret,
@@ -250,7 +250,7 @@ int ECRS_createDirectory(char ** data,
     pos += ntohl(ret) + sizeof(unsigned int);
   }
   FREE(ucs);
-  GNUNET_ASSERT(pos == size);
+  GE_ASSERT(ectx, pos == size);
 
   return OK;
 }

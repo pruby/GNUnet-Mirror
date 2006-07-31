@@ -244,7 +244,7 @@ int main(int argc,
   filename = getConfigurationString("GNUNET-DOWNLOAD",
 				    "FILENAME");
   if (filename == NULL) {
-    GNUNET_ASSERT(strlen(fstring) >
+    GE_ASSERT(ectx, strlen(fstring) >
 		  strlen(ECRS_URI_PREFIX) +
 		  strlen(ECRS_FILE_INFIX));
     filename = expandFileName(&fstring[strlen(ECRS_URI_PREFIX)+

@@ -497,7 +497,7 @@ static int csPut(ClientHandle client,
   size = ntohs(req->header.size)
     - sizeof(CS_dht_request_put_MESSAGE)
     + sizeof(DataContainer);
-  GNUNET_ASSERT(size < MAX_BUFFER_SIZE);
+  GE_ASSERT(ectx, size < MAX_BUFFER_SIZE);
   if (size == 0) {
     data = NULL;
   } else {
@@ -577,7 +577,7 @@ static void csRemoveJob(struct CSRemoveClosure * cpc) {
   size = ntohs(req->header.size)
     - sizeof(CS_dht_request_remove_MESSAGE)
     + sizeof(DataContainer);
-  GNUNET_ASSERT(size < 0xFFFF);
+  GE_ASSERT(ectx, size < 0xFFFF);
   if (size == 0) {
     data = NULL;
   } else {

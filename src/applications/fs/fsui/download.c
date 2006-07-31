@@ -76,7 +76,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 				  EXTRACTOR_FILENAME);
   if (filename == NULL) {
     char * tmp = ECRS_uriToString(fi->uri);
-    GNUNET_ASSERT(strlen(tmp) >= strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX));
+    GE_ASSERT(ectx, strlen(tmp) >= strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX));
     filename = STRDUP(&tmp[strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX)]);
     FREE(tmp);
   }
@@ -205,8 +205,8 @@ void * downloadThread(void * cls) {
       "Download thread for `%s' started...\n",
       dl->filename);
 #endif
-  GNUNET_ASSERT(dl->ctx != NULL);
-  GNUNET_ASSERT(dl->filename != NULL);
+  GE_ASSERT(ectx, dl->ctx != NULL);
+  GE_ASSERT(ectx, dl->filename != NULL);
   ret = ECRS_downloadFile(dl->uri,
 			  dl->filename,
 			  dl->anonymityLevel,
@@ -307,7 +307,7 @@ void * downloadThread(void * cls) {
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else {
-    GNUNET_ASSERT(dl != &dl->ctx->activeDownloads);
+    GE_ASSERT(ectx, dl != &dl->ctx->activeDownloads);
     while ( (dl != NULL) &&
 	    (dl->ctx != NULL) &&
 	    (dl != &dl->ctx->activeDownloads) ) {
@@ -357,7 +357,7 @@ static int startDownload(struct FSUI_Context * ctx,
   FSUI_DownloadList * root;
   unsigned long long totalBytes;
 
-  GNUNET_ASSERT(ctx != NULL);
+  GE_ASSERT(ectx, ctx != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
     GE_BREAK(ectx, 0); /* wrong type of URI! */
@@ -401,8 +401,8 @@ int FSUI_startDownload(struct FSUI_Context * ctx,
 		       const char * filename) {
   int ret;
 
-  GNUNET_ASSERT(filename != NULL);
-  GNUNET_ASSERT(ctx != NULL);
+  GE_ASSERT(ectx, filename != NULL);
+  GE_ASSERT(ectx, ctx != NULL);
   MUTEX_LOCK(&ctx->lock);
   ret = startDownload(ctx,
 		      anonymityLevel,
@@ -515,7 +515,7 @@ void freeDownloadList(FSUI_DownloadList * list) {
   FSUI_DownloadList * dpos;
   int i;
 
-  GNUNET_ASSERT(list->state != FSUI_DOWNLOAD_ACTIVE);
+  GE_ASSERT(ectx, list->state != FSUI_DOWNLOAD_ACTIVE);
 
   /* first, find our predecessor and
      unlink us from the tree! */
@@ -528,7 +528,7 @@ void freeDownloadList(FSUI_DownloadList * list) {
       while ( (dpos != NULL) &&
 	      (dpos->next != list) )
 	dpos = dpos->next;
-      GNUNET_ASSERT(dpos != NULL);
+      GE_ASSERT(ectx, dpos != NULL);
       dpos->next = list->next;
     }
   }
@@ -562,7 +562,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
 
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FSUI_stopDownload called.\n");
-  GNUNET_ASSERT(filename != NULL);
+  GE_ASSERT(ectx, filename != NULL);
   MUTEX_LOCK(&ctx->lock);
   dl = ctx->activeDownloads.child;
   prev = NULL;
@@ -705,8 +705,8 @@ int FSUI_startDownloadAll(struct FSUI_Context * ctx,
 			  const char * dirname) {
   int ret;
 
-  GNUNET_ASSERT(dirname != NULL);
-  GNUNET_ASSERT(ctx != NULL);
+  GE_ASSERT(ectx, dirname != NULL);
+  GE_ASSERT(ectx, ctx != NULL);
   MUTEX_LOCK(&ctx->lock);
   ret = startDownload(ctx,
 		      anonymityLevel,

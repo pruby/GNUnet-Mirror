@@ -82,7 +82,7 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
   }
   if (ret == 0)
     ret = 1;
-  GNUNET_ASSERT(ret < size);
+  GE_ASSERT(ectx, ret < size);
   table[ret].id = pid->hashPubKey;
   table[ret].rc = 1;
   if (stats != NULL) {
@@ -102,8 +102,8 @@ void decrement_pid_rcs(const PID_INDEX * ids,
   MUTEX_LOCK(&lock);
   for (i=count-1;i>=0;i--) {
     id = ids[i];
-    GNUNET_ASSERT(id < size);
-    GNUNET_ASSERT(table[id].rc > 0);
+    GE_ASSERT(ectx, id < size);
+    GE_ASSERT(ectx, table[id].rc > 0);
     table[id].rc--;
     if ( (table[id].rc == 0) &&
 	 (stats != NULL) )
@@ -118,8 +118,8 @@ void change_pid_rc(PID_INDEX id, int delta) {
   if (id == 0)
     return;
   MUTEX_LOCK(&lock);
-  GNUNET_ASSERT(id < size);
-  GNUNET_ASSERT(table[id].rc > 0);
+  GE_ASSERT(ectx, id < size);
+  GE_ASSERT(ectx, table[id].rc > 0);
   table[id].rc += delta;
   if (stats != NULL) {
     stats->change(stat_pid_rc, delta);
@@ -137,8 +137,8 @@ void resolve_pid(PID_INDEX id,
     return;
   }
   MUTEX_LOCK(&lock);
-  GNUNET_ASSERT(id < size);
-  GNUNET_ASSERT(table[id].rc > 0);
+  GE_ASSERT(ectx, id < size);
+  GE_ASSERT(ectx, table[id].rc > 0);
   pid->hashPubKey = table[id].id;
   MUTEX_UNLOCK(&lock);
 }

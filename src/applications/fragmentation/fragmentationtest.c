@@ -57,7 +57,7 @@ static void handleHelper(const PeerIdentity * sender,
 			 const unsigned int len,
 			 int wasEncrypted,
 			 TSession  * ts) {
-  GNUNET_ASSERT(hostIdentityEquals(sender, &mySender));
+  GE_ASSERT(ectx, hostIdentityEquals(sender, &mySender));
   myMsg = resultBuffer;
   memcpy(resultBuffer, msg, len);
   myMsgLen = len;
@@ -111,10 +111,10 @@ static void checkPacket(int id,
 			unsigned int len) {
   int i;
 
-  GNUNET_ASSERT(myMsg != NULL);
-  GNUNET_ASSERT(myMsgLen == len);
+  GE_ASSERT(ectx, myMsg != NULL);
+  GE_ASSERT(ectx, myMsgLen == len);
   for (i=0;i<len;i++)
-    GNUNET_ASSERT(myMsg[i] == (char) (i+id));
+    GE_ASSERT(ectx, myMsg[i] == (char) (i+id));
   myMsgLen = 0;
   myMsg = NULL;
 }
@@ -127,7 +127,7 @@ static void testSimpleFragment() {
 
   pep = makeFragment(0, 16, 32, 42);
   processFragment(&mySender, pep);
-  GNUNET_ASSERT(myMsg == NULL);
+  GE_ASSERT(ectx, myMsg == NULL);
   pep = makeFragment(16, 16, 32, 42);
   processFragment(&mySender, pep);
   checkPacket(42, 32);
@@ -138,11 +138,11 @@ static void testSimpleFragmentTimeout() {
 
   pep = makeFragment(0, 16, 32, 42);
   processFragment(&mySender, pep);
-  GNUNET_ASSERT(myMsg == NULL);
+  GE_ASSERT(ectx, myMsg == NULL);
   makeTimeout();
   pep = makeFragment(16, 16, 32, 42);
   processFragment(&mySender, pep);
-  GNUNET_ASSERT(myMsg == NULL);
+  GE_ASSERT(ectx, myMsg == NULL);
   pep = makeFragment(0, 16, 32, 42);
   processFragment(&mySender, pep);
   checkPacket(42, 32);
@@ -153,7 +153,7 @@ static void testSimpleFragmentReverse() {
 
   pep = makeFragment(16, 16, 32, 42);
   processFragment(&mySender, pep);
-  GNUNET_ASSERT(myMsg == NULL);
+  GE_ASSERT(ectx, myMsg == NULL);
   pep = makeFragment(0, 16, 32, 42);
   processFragment(&mySender, pep);
   checkPacket(42, 32);
@@ -166,7 +166,7 @@ static void testManyFragments() {
   for (i=0;i<50;i++) {
     pep = makeFragment(i*16, 16, 51*16, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   pep = makeFragment(50*16,16, 51*16, 42);
   processFragment(&mySender, pep);
@@ -180,7 +180,7 @@ static void testManyFragmentsMegaLarge() {
   for (i=0;i<4000;i++) {
     pep = makeFragment(i*16, 16, 4001*16, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   pep = makeFragment(4000*16, 16, 4001*16, 42);
   processFragment(&mySender, pep);
@@ -194,7 +194,7 @@ static void testLastFragmentEarly() {
   for (i=0;i<5;i++) {
     pep = makeFragment(i*16, 8, 6*16+8, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   pep = makeFragment(5*16, 24, 6*16+8, 42);
   processFragment(&mySender, pep);
@@ -212,12 +212,12 @@ static void testManyInterleavedFragments() {
   for (i=0;i<50;i++) {
     pep = makeFragment(i*16, 8, 51*16+8, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   for (i=0;i<50;i++) {
     pep = makeFragment(i*16+8, 8, 51*16+8, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   pep = makeFragment(50*16, 24, 51*16+8, 42);
   processFragment(&mySender, pep);
@@ -231,12 +231,12 @@ static void testManyInterleavedOverlappingFragments() {
   for (i=0;i<50;i++) {
     pep = makeFragment(i*32, 16, 51*32, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   for (i=0;i<50;i++) {
     pep = makeFragment(i*32+8, 24, 51*32, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   pep = makeFragment(50*32, 32, 51*32, 42);
   processFragment(&mySender, pep);
@@ -250,7 +250,7 @@ static void testManyOverlappingFragments() {
   for (i=0;i<50;i++) {
     pep = makeFragment(0, i*16+16, 51*16, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   pep = makeFragment(50*16,16, 51*16, 42);
   processFragment(&mySender, pep);
@@ -264,12 +264,12 @@ static void testManyOverlappingFragmentsTimeout() {
   for (i=0;i<50;i++) {
     pep = makeFragment(0, i*16+16, 51*16+8, 42);
     processFragment(&mySender, pep);
-    GNUNET_ASSERT(myMsg == NULL);
+    GE_ASSERT(ectx, myMsg == NULL);
   }
   makeTimeout();
   pep = makeFragment(50*16, 24, 51*16+8, 42);
   processFragment(&mySender, pep);
-  GNUNET_ASSERT(myMsg == NULL);
+  GE_ASSERT(ectx, myMsg == NULL);
   for (i=0;i<50;i++) {
     pep = makeFragment(0, i*16+16, 51*16+8, 42);
     processFragment(&mySender, pep);
@@ -287,7 +287,7 @@ static void testManyFragmentsMultiId() {
       pep = makeFragment(i*16, 16, 51*16, id+5);
       mySender.hashPubKey.bits[0] = id;
       processFragment(&mySender, pep);
-      GNUNET_ASSERT(myMsg == NULL);
+      GE_ASSERT(ectx, myMsg == NULL);
     }
   }
   for (id=0;id<DEFRAG_BUCKET_COUNT;id++) {
@@ -308,7 +308,7 @@ static void testManyFragmentsMultiIdCollisions() {
       pep = makeFragment(i*16, 16, 6*16, id+5);
       mySender.hashPubKey.bits[0] = id;
       processFragment(&mySender, pep);
-      GNUNET_ASSERT(myMsg == NULL);
+      GE_ASSERT(ectx, myMsg == NULL);
     }
   }
   for (id=0;id<DEFRAG_BUCKET_COUNT*4;id++) {

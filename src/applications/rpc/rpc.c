@@ -118,8 +118,8 @@ static int RPC_register(const char *name,
 			RPC_Function callback) {
   RegisteredRPC * rrpc;
 
-  GNUNET_ASSERT(name != NULL);
-  GNUNET_ASSERT(callback != NULL);
+  GE_ASSERT(ectx, name != NULL);
+  GE_ASSERT(ectx, callback != NULL);
   MUTEX_LOCK (rpcLock);
   rrpc = vectorGetFirst(list_of_callbacks);
   while (rrpc != NULL) {
@@ -158,8 +158,8 @@ static int RPC_register_async(const char *name,
 			      ASYNC_RPC_Function callback) {
   RegisteredRPC * rrpc;
 
-  GNUNET_ASSERT(name != NULL);
-  GNUNET_ASSERT(callback != NULL);
+  GE_ASSERT(ectx, name != NULL);
+  GE_ASSERT(ectx, callback != NULL);
   MUTEX_LOCK (rpcLock);
   rrpc = vectorGetFirst(list_of_callbacks);
   while (rrpc != NULL) {
@@ -200,7 +200,7 @@ static int RPC_unregister(const char *name,
 			  RPC_Function callback) {
   RegisteredRPC * rrpc;
 
-  GNUNET_ASSERT(name != NULL);
+  GE_ASSERT(ectx, name != NULL);
   MUTEX_LOCK(rpcLock);
   rrpc = vectorGetFirst(list_of_callbacks);
   while (rrpc != NULL) {
@@ -247,7 +247,7 @@ static int RPC_unregister_async(const char *name,
 				ASYNC_RPC_Function callback) {
   RegisteredRPC * rrpc;
 
-  GNUNET_ASSERT(name != NULL);
+  GE_ASSERT(ectx, name != NULL);
   MUTEX_LOCK(rpcLock);
   rrpc = vectorGetFirst(list_of_callbacks);
   while (rrpc != NULL) {
@@ -627,7 +627,7 @@ static void retryRPCJob(CallInstance * call) {
   cron_t now;
 
   cronTime(&now);
-  GNUNET_ASSERT( (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
+  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
 		 (call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
   MUTEX_LOCK(rpcLock);
   if (now > call->expirationTime) {
@@ -693,7 +693,7 @@ static void retryRPCJob(CallInstance * call) {
 		       ntohl(call->msg->importance),
 		       maxdelay);
     }
-    GNUNET_ASSERT( (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
+    GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
 		   (call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
     addCronJob((CronJob) &retryRPCJob,
 	       call->repetitionFrequency,
@@ -837,7 +837,7 @@ static void async_rpc_complete_callback(RPC_Param * results,
 			      results);
   vectorInsertLast(incomingCalls, calls);
 
-  GNUNET_ASSERT( (cronTime(NULL) + 1 * cronMINUTES > calls->expirationTime) ||
+  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > calls->expirationTime) ||
 		 (calls->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
   /* for right now: schedule cron job to send reply! */
   addCronJob((CronJob)&retryRPCJob,
@@ -1208,7 +1208,7 @@ static int RPC_execute(const PeerIdentity *receiver,
   call->finishedCallback = (RPCFinishedCallback) &RPC_execute_callback;
   call->rpcCallbackArgs = &cls;
   vectorInsertLast(outgoingCalls, call);
-  GNUNET_ASSERT( (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
+  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > call->expirationTime) ||
 		 (call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
   addCronJob((CronJob) &retryRPCJob,
 	     0,
@@ -1291,7 +1291,7 @@ static RPC_Record * RPC_start(const PeerIdentity * receiver,
     (RPCFinishedCallback) &RPC_async_callback;
   ret->call->rpcCallbackArgs = ret;
   vectorInsertLast(outgoingCalls, ret->call);
-  GNUNET_ASSERT( (cronTime(NULL) + 1 * cronMINUTES > ret->call->expirationTime) ||
+  GE_ASSERT(ectx,  (cronTime(NULL) + 1 * cronMINUTES > ret->call->expirationTime) ||
 		 (ret->call->expirationTime - cronTime(NULL) < 1 * cronHOURS) );
   addCronJob((CronJob) &retryRPCJob,
 	     0,

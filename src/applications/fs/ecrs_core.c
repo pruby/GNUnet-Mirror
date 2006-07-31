@@ -53,8 +53,8 @@ int fileBlockEncode(const DBlock * data,
   Datastore_Value * val;
   DBlock * db;
 
-  GNUNET_ASSERT(len >= sizeof(DBlock));
-  GNUNET_ASSERT((data!=NULL) && (query != NULL));
+  GE_ASSERT(ectx, len >= sizeof(DBlock));
+  GE_ASSERT(ectx, (data!=NULL) && (query != NULL));
   hash(&data[1], len - sizeof(DBlock), &hc);
   hashToKey(&hc,
 	    &skey,
@@ -67,8 +67,8 @@ int fileBlockEncode(const DBlock * data,
   val->expirationTime = htonl(0);
   db = (DBlock*) &val[1];
   db->type = htonl(D_BLOCK);
-  GNUNET_ASSERT(len - sizeof(DBlock) < MAX_BUFFER_SIZE);
-  GNUNET_ASSERT(len - sizeof(DBlock)
+  GE_ASSERT(ectx, len - sizeof(DBlock) < MAX_BUFFER_SIZE);
+  GE_ASSERT(ectx, len - sizeof(DBlock)
 		== encryptBlock(&data[1],
 				len - sizeof(DBlock),
 				&skey,
@@ -96,7 +96,7 @@ int fileBlockEncode(const DBlock * data,
 void fileBlockGetKey(const DBlock * data,
 		     unsigned int len,
 		     HashCode512 * key) {
-  GNUNET_ASSERT(len >= sizeof(DBlock));
+  GE_ASSERT(ectx, len >= sizeof(DBlock));
   hash(&data[1],
        len - sizeof(DBlock),
        key);
@@ -117,16 +117,16 @@ void fileBlockGetQuery(const DBlock * db,
   SESSIONKEY skey;
   INITVECTOR iv;
 
-  GNUNET_ASSERT(len >= sizeof(DBlock));
+  GE_ASSERT(ectx, len >= sizeof(DBlock));
   data = (const char*) &db[1];
   len -= sizeof(DBlock);
-  GNUNET_ASSERT(len < MAX_BUFFER_SIZE);
+  GE_ASSERT(ectx, len < MAX_BUFFER_SIZE);
   hash(data, len, &hc);
   hashToKey(&hc,
 	    &skey,
 	    &iv);
   tmp = MALLOC(len);
-  GNUNET_ASSERT(len == encryptBlock(data,
+  GE_ASSERT(ectx, len == encryptBlock(data,
 				    len,
 				    &skey,
 				    &iv,

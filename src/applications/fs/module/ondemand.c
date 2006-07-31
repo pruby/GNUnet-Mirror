@@ -648,7 +648,7 @@ int ONDEMAND_init() {
   if (NULL == tmp) {
     tmp = getConfigurationString("GNUNETD",
 				 "GNUNETD_HOME");
-    GNUNET_ASSERT(NULL != tmp);
+    GE_ASSERT(ectx, NULL != tmp);
     tmp = REALLOC(tmp,
 			      strlen(tmp) +
 			      strlen("/data/shared/") + 1);

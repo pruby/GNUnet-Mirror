@@ -81,7 +81,7 @@ int ECRS_addToMetaData(MetaData * md,
                        const char * data) {
   int idx;
 
-  GNUNET_ASSERT(data != NULL);
+  GE_ASSERT(ectx, data != NULL);
   for (idx=0;idx<md->itemCount;idx++) {
     if ( (md->items[idx].type == type) &&
          (0 == strcmp(md->items[idx].data,
@@ -481,7 +481,7 @@ int ECRS_serializeMetaData(const MetaData * md,
     else
       ic--; /* small steps, we're close */
   }
-  GNUNET_ASSERT(size <= max);
+  GE_ASSERT(ectx, size <= max);
   memcpy(target,
          hdr,
          size);
@@ -492,7 +492,7 @@ int ECRS_serializeMetaData(const MetaData * md,
     MetaData * mdx;
     mdx = ECRS_deserializeMetaData(target,
                                    size);
-    GNUNET_ASSERT(NULL != mdx);
+    GE_ASSERT(ectx, NULL != mdx);
     ECRS_freeMetaData(mdx);
   }
 #endif

@@ -718,7 +718,7 @@ static int get(const HashCode512 * query,
   dbh->sbind[0].buffer = (char*) query;
   dbh->sbind[1].buffer = (char*) &type;
   dbh->sbind[0].length = &hashSize;
-  GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 2);
+  GE_ASSERT(ectx, mysql_stmt_param_count(stmt) <= 2);
   sql_res = mysql_stmt_result_metadata(stmt);
   if (! sql_res) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
@@ -978,7 +978,7 @@ static int del(const HashCode512 * key,
     stmt = dbh->deleteh;
     dbh->dbind[0].buffer = (char*) key;
     dbh->dbind[0].length = &twenty;
-    GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 1);
+    GE_ASSERT(ectx, mysql_stmt_param_count(stmt) <= 1);
   } else {
     stmt = dbh->deleteg;
     type = ntohl(value->type);
@@ -996,7 +996,7 @@ static int del(const HashCode512 * key,
     dbh->dbind[5].buffer = (char*) &expiration;
     dbh->dbind[6].buffer = (char*) &value[1];
     dbh->dbind[6].length = &datasize;
-    GNUNET_ASSERT(mysql_stmt_param_count(stmt) <= 7);
+    GE_ASSERT(ectx, mysql_stmt_param_count(stmt) <= 7);
   }
   if (mysql_stmt_bind_param(stmt,
 			    dbh->dbind)) {
@@ -1046,7 +1046,7 @@ static int update(const HashCode512 * key,
   dbh->ubind[1].length = &twenty;
   dbh->ubind[2].buffer = (char*) &value[1];
   dbh->ubind[2].length = &contentSize;
-  GNUNET_ASSERT(mysql_stmt_param_count(dbh->update) <= 3);
+  GE_ASSERT(ectx, mysql_stmt_param_count(dbh->update) <= 3);
   if (mysql_stmt_bind_param(dbh->update,
 			    dbh->ubind)) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
@@ -1110,7 +1110,7 @@ static unsigned long long getSize() {
       GE_BREAK(ectx, 0);
       return 0;	/* shouldn't get here */
     }
-    GNUNET_ASSERT( (dbh->avgLength_ID < rows) &&
+    GE_ASSERT(ectx,  (dbh->avgLength_ID < rows) &&
  	           (dbh->avgLength_ID >= 0) );
     if (sql_row[dbh->avgLength_ID] != NULL)
       avgRowLen = atoll(sql_row[dbh->avgLength_ID]);
@@ -1119,7 +1119,7 @@ static unsigned long long getSize() {
 
     mysql_free_result(sql_res);
   }
-  GNUNET_ASSERT(avgRowLen >= 0);
+  GE_ASSERT(ectx, avgRowLen >= 0);
   /* find number of entries (rows) */
   mysql_query(dbh->dbf,
   	      "SELECT COUNT(*) FROM gn070");
@@ -1130,7 +1130,7 @@ static unsigned long long getSize() {
 
   if ((sql_row=mysql_fetch_row(sql_res))) {
     int cols = mysql_num_fields(sql_res);
-    GNUNET_ASSERT(cols > 0);
+    GE_ASSERT(ectx, cols > 0);
     if (sql_row[0] != NULL)
       rowsInTable = atoll(sql_row[0]);
     else
@@ -1269,7 +1269,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 	break;
       }
     }
-    GNUNET_ASSERT(dbh->avgLength_ID != -1);
+    GE_ASSERT(ectx, dbh->avgLength_ID != -1);
     mysql_free_result(sql_res);
     if (found == NO) {
       GE_BREAK(ectx, 0);

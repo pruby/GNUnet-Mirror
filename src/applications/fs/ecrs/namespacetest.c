@@ -110,14 +110,14 @@ int main(int argc, char * argv[]) {
 		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);
-  GNUNET_ASSERT(daemon > 0);
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
+  GE_ASSERT(ectx, daemon > 0);
+  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
   gnunet_util_sleep(30 * cronSECONDS);
 
   failureCount += testNamespace();
 
-  GNUNET_ASSERT(OK == stopGNUnetDaemon());
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon));
+  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
+  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
   doneUtil();
   return (failureCount == 0) ? 0 : 1;
 }

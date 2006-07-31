@@ -546,7 +546,7 @@ Traffic_ServiceAPI * provide_module_traffic(CoreAPIForApplication * capi) {
   }
 #endif
 
-  GNUNET_ASSERT(counters == NULL);
+  GE_ASSERT(ectx, counters == NULL);
   MUTEX_CREATE(&lock);
 #if KEEP_RECEIVE_STATS || KEEP_TRANSMITTED_STATS
   stats = capi->requestService("stats");
@@ -590,7 +590,7 @@ static CoreAPIForApplication * myCoreAPI;
  * Initialize the traffic module.
  */
 int initialize_module_traffic(CoreAPIForApplication * capi) {
-  GNUNET_ASSERT(myCoreAPI == NULL);
+  GE_ASSERT(ectx, myCoreAPI == NULL);
   myCoreAPI = capi;
   myApi = capi->requestService("traffic");
   if (myApi == NULL) {
@@ -610,8 +610,8 @@ int initialize_module_traffic(CoreAPIForApplication * capi) {
  * Shutdown the traffic module.
  */
 void done_module_traffic() {
-  GNUNET_ASSERT(myCoreAPI != NULL);
-  GNUNET_ASSERT(SYSERR != myCoreAPI->unregisterClientHandler(CS_PROTO_traffic_QUERY,
+  GE_ASSERT(ectx, myCoreAPI != NULL);
+  GE_ASSERT(ectx, SYSERR != myCoreAPI->unregisterClientHandler(CS_PROTO_traffic_QUERY,
 							     &trafficQueryHandler));
   myCoreAPI->releaseService(myApi);
   myApi = NULL;

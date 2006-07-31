@@ -146,7 +146,7 @@ int main(int argc, char ** argv) {
   GNUNET_TCP_SOCKET * sock;
   int i;
 
-  GNUNET_ASSERT(OK ==
+  GE_ASSERT(ectx, OK ==
 		enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
 			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
 			 "OPDA8F1VIKESLSNBO",
@@ -171,12 +171,12 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
   }
 #endif
 
@@ -227,12 +227,12 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
   }
   doneUtil();
   return ret;

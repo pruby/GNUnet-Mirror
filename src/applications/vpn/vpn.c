@@ -1338,7 +1338,7 @@ int initialize_module_vpn(CoreAPIForApplication * capi) {
 
   	identity = coreAPI->requestService("identity");
 
-	GNUNET_ASSERT(identity != NULL);
+	GE_ASSERT(ectx, identity != NULL);
 
 	init_router();	/* reqire identity */
 	init_realised();	/* reqire identity */

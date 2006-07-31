@@ -146,7 +146,7 @@ static int createIOContext(IOContext * this,
   char * fn;
   struct stat st;
 
-  GNUNET_ASSERT(filename != NULL);
+  GE_ASSERT(ectx, filename != NULL);
   this->treedepth = computeDepth(filesize);
   MUTEX_CREATE(&this->lock);
   this->handles = MALLOC(sizeof(int) * (this->treedepth+1));
@@ -532,7 +532,7 @@ static void addRequest(RequestManager * rm,
       &enc);
 #endif
 
-  GNUNET_ASSERT(node != NULL);
+  GE_ASSERT(ectx, node != NULL);
   entry
     = MALLOC(sizeof(RequestEntry));
   entry->node
@@ -548,7 +548,7 @@ static void addRequest(RequestManager * rm,
   entry->searchHandle
     = NULL;
   MUTEX_LOCK(&rm->lock);
-  GNUNET_ASSERT(rm->requestListSize > 0);
+  GE_ASSERT(ectx, rm->requestListSize > 0);
   if (rm->requestListSize == rm->requestListIndex)
     GROW(rm->requestList,
 	 rm->requestListSize,
@@ -619,7 +619,7 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   unsigned long long spos;
   unsigned long long epos;
 
-  GNUNET_ASSERT(node->offset < node->ctx->total);
+  GE_ASSERT(ectx, node->offset < node->ctx->total);
   if (node->level == 0) {
     ret = DBLOCK_SIZE;
     if (node->offset + (unsigned long long) ret
@@ -819,7 +819,7 @@ static void iblock_download_children(NodeClosure * node,
   unsigned int levelSize;
   unsigned long long baseOffset;
 
-  GNUNET_ASSERT(node->level > 0);
+  GE_ASSERT(ectx, node->level > 0);
   childcount = size / sizeof(CHK);
   if (size != childcount * sizeof(CHK)) {
     GE_BREAK(ectx, 0);
@@ -838,9 +838,9 @@ static void iblock_download_children(NodeClosure * node,
     child->ctx = node->ctx;
     child->chk = chks[i];
     child->offset = baseOffset + i * levelSize;
-    GNUNET_ASSERT(child->offset < node->ctx->total);
+    GE_ASSERT(ectx, child->offset < node->ctx->total);
     child->level = node->level - 1;
-    GNUNET_ASSERT( (child->level != 0) ||
+    GE_ASSERT(ectx,  (child->level != 0) ||
 		   ( (child->offset % DBLOCK_SIZE) == 0) );
     if (NO == checkPresent(child))
       addRequest(node->ctx->rm,
@@ -867,7 +867,7 @@ static int decryptContent(const char * data,
   INITVECTOR iv;
   SESSIONKEY skey;
 
-  GNUNET_ASSERT((data!=NULL) && (hashcode != NULL) && (result != NULL));
+  GE_ASSERT(ectx, (data!=NULL) && (hashcode != NULL) && (result != NULL));
   /* get key and init value from the hash code */
   hashToKey(hashcode,
 	    &skey,
@@ -907,7 +907,7 @@ static int nodeReceive(const HashCode512 * query,
       &enc);
 #endif
 
-  GNUNET_ASSERT(equalsHashCode512(query,
+  GE_ASSERT(ectx, equalsHashCode512(query,
 				  &node->chk.query));
   size = ntohl(reply->size) - sizeof(Datastore_Value);
   if ( (size <= sizeof(DBlock)) ||
@@ -921,7 +921,7 @@ static int nodeReceive(const HashCode512 * query,
 			       size,
 			       &node->chk.key,
 			       data))
-    GNUNET_ASSERT(0);
+    GE_ASSERT(ectx, 0);
   hash(data,
        size,
        &hc);
@@ -1227,7 +1227,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
     dpcb(0, 0, cronTime(NULL), 0, NULL, 0, dpcbClosure);
     return OK;
   }
-  GNUNET_ASSERT(filename != NULL);
+  GE_ASSERT(ectx, filename != NULL);
   fid = uri->data.chk;
   if (! ECRS_isFileUri(uri)) {
     GE_BREAK(ectx, 0);

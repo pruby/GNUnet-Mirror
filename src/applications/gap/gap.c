@@ -659,7 +659,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
 	  pos += qr->rankings[j];
 	  if (pos > sel) {
 	    setBit(qr, j);
-	    GNUNET_ASSERT(rankingSum >= qr->rankings[j]);
+	    GE_ASSERT(ectx, rankingSum >= qr->rankings[j]);
 	    rankingSum -= qr->rankings[j];
 	    qr->rankings[j] = 0;
 	    break;
@@ -715,7 +715,7 @@ static unsigned int computeRoutingIndex(const HashCode512 * query) {
     = (((unsigned int*)query)[0] ^
        ((unsigned int*)query)[1] / (1 + random_qsel))
     % indirectionTableSize;
-  GNUNET_ASSERT(res < indirectionTableSize);
+  GE_ASSERT(ectx, res < indirectionTableSize);
 #if DO_HISTOGRAM
   histogram[res % 65536]++;
   if (++hist_total % 10000 == 0) {
@@ -898,7 +898,7 @@ static int addToSlot(int mode,
       &enc,
       ite);
 #endif
-  GNUNET_ASSERT(sender != 0); /* do NOT add to RT for local clients! */
+  GE_ASSERT(ectx, sender != 0); /* do NOT add to RT for local clients! */
   cronTime(&now);
   if ( (stats != NULL) &&
        (ite->ttl == 0) )
@@ -941,7 +941,7 @@ static int addToSlot(int mode,
       ite->priority = priority;
     }
   } else { /* GROW mode */
-    GNUNET_ASSERT(equalsHashCode512(query,
+    GE_ASSERT(ectx, equalsHashCode512(query,
 				    &ite->primaryKey));
     for (i=0;i<ite->hostsWaiting;i++)
       if (sender == ite->destination[i])
@@ -1407,7 +1407,7 @@ static int execQuery(const PeerIdentity * sender,
     return SYSERR;  
 
   senderID = intern_pid(sender);
-  GNUNET_ASSERT( (senderID != 0) || (sender == NULL) );
+  GE_ASSERT(ectx,  (senderID != 0) || (sender == NULL) );
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
   MUTEX_LOCK(&lookup_exclusion);
   i = -1;
@@ -1894,7 +1894,7 @@ tryMigrate(const DataContainer * data,
 	 size - sizeof(P2P_gap_reply_MESSAGE));
 #if EXTRA_CHECKS
   /* verify content integrity */
-  GNUNET_ASSERT(SYSERR != bs->put(bs->closure,
+  GE_ASSERT(ectx, SYSERR != bs->put(bs->closure,
 				  primaryKey,
 				  data,
 				  0));
@@ -2068,8 +2068,8 @@ provide_module_gap(CoreAPIForApplication * capi) {
   static GAP_ServiceAPI api;
   unsigned int i;
 
-  GNUNET_ASSERT(sizeof(P2P_gap_reply_MESSAGE) == 68);
-  GNUNET_ASSERT(sizeof(P2P_gap_query_MESSAGE) == 144);
+  GE_ASSERT(ectx, sizeof(P2P_gap_reply_MESSAGE) == 68);
+  GE_ASSERT(ectx, sizeof(P2P_gap_query_MESSAGE) == 144);
 
   coreAPI = capi;
   stats = capi->requestService("stats");
@@ -2103,9 +2103,9 @@ provide_module_gap(CoreAPIForApplication * capi) {
   hardUpLimit = getConfigurationInt("LOAD", "HARDUPLIMIT");
 
   identity = coreAPI->requestService("identity");
-  GNUNET_ASSERT(identity != NULL);
+  GE_ASSERT(ectx, identity != NULL);
   topology = coreAPI->requestService("topology");
-  GNUNET_ASSERT(topology != NULL);
+  GE_ASSERT(ectx, topology != NULL);
   traffic = coreAPI->requestService("traffic");
   if (traffic == NULL) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,

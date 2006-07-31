@@ -252,7 +252,7 @@ static void bash_main() {
 
   configFile = getConfigurationString("FILES",
 				      "gnunet.conf");
-  GNUNET_ASSERT(configFile != NULL);
+  GE_ASSERT(ectx, configFile != NULL);
   argv[0] = SHELL;
   aliases = FOPEN(TB_ALIASES, "w+");
   fprintf(aliases,
@@ -406,7 +406,7 @@ static int server_main(pid_t bash_pid) {
       continue;
     }
     /* access control! */
-    GNUNET_ASSERT(sizeof(struct in_addr) == sizeof(IPaddr));
+    GE_ASSERT(ectx, sizeof(struct in_addr) == sizeof(IPaddr));
     memcpy(&ipaddr,
 	   &clientAddr.sin_addr,
 	   sizeof(struct in_addr));

@@ -86,7 +86,7 @@ static int lookup(void * closure,
   int i;
   DataContainer * data;
 
-  GNUNET_ASSERT(keyCount == 1);
+  GE_ASSERT(ectx, keyCount == 1);
   if (ds == NULL)
     return SYSERR;
   MUTEX_LOCK(&ds->lock);

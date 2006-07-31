@@ -973,7 +973,7 @@ static void processOptionalFields(const PeerIdentity * responder,
 	  _("Could not find peer `%s' in routing table!\n"),
 	  &enc);
     }
-    GNUNET_ASSERT(bucket != NULL);
+    GE_ASSERT(ectx, bucket != NULL);
     if (pos == NULL) {
       PeerInfo * oldest = NULL;
 
@@ -1239,7 +1239,7 @@ ping_reply_handler(const PeerIdentity * responder,
   PeerInfo * pos;
 
   ENTER();
-  GNUNET_ASSERT(! hostIdentityEquals(responder,
+  GE_ASSERT(ectx, ! hostIdentityEquals(responder,
 				     coreAPI->myIdentity));
   /* this processes the 'tables' field! */
   processOptionalFields(responder,

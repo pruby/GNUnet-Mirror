@@ -1164,13 +1164,13 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   static Blockstore dsGap;
   static Blockstore dsDht;
 
-  GNUNET_ASSERT(sizeof(CHK) == 128);
-  GNUNET_ASSERT(sizeof(DBlock) == 4);
-  GNUNET_ASSERT(sizeof(IBlock) == 132);
-  GNUNET_ASSERT(sizeof(KBlock) == 524);
-  GNUNET_ASSERT(sizeof(SBlock) == 724);
-  GNUNET_ASSERT(sizeof(NBlock) == 716);
-  GNUNET_ASSERT(sizeof(KNBlock) == 1244);
+  GE_ASSERT(ectx, sizeof(CHK) == 128);
+  GE_ASSERT(ectx, sizeof(DBlock) == 4);
+  GE_ASSERT(ectx, sizeof(IBlock) == 132);
+  GE_ASSERT(ectx, sizeof(KBlock) == 524);
+  GE_ASSERT(ectx, sizeof(SBlock) == 724);
+  GE_ASSERT(ectx, sizeof(NBlock) == 716);
+  GE_ASSERT(ectx, sizeof(KNBlock) == 1244);
   
   migration = testConfigurationString("FS",
 				      "ACTIVEMIGRATION",
@@ -1242,23 +1242,23 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
       CS_PROTO_gap_GET_AVG_PRIORITY,
       CS_PROTO_gap_INIT_INDEX);
 
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_QUERY_START,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_QUERY_START,
 						      &csHandleRequestQueryStart));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_QUERY_STOP,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_QUERY_STOP,
 						      &csHandleRequestQueryStop));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_INSERT,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_INSERT,
 						      &csHandleCS_fs_request_insert_MESSAGE));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_INDEX,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_INDEX,
 						      &csHandleCS_fs_request_index_MESSAGE));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_INIT_INDEX,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_INIT_INDEX,
 						      &csHandleCS_fs_request_init_index_MESSAGE));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_DELETE,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_DELETE,
 						      &csHandleCS_fs_request_delete_MESSAGE));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_UNINDEX,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_UNINDEX,
 						      &csHandleCS_fs_request_unindex_MESSAGE));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_TESTINDEX,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_TESTINDEX,
 						      &csHandleCS_fs_request_test_index_MESSAGEed));
-  GNUNET_ASSERT(SYSERR != capi->registerClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
+  GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
 						      &csHandleRequestGetAvgPriority));
   initMigration(capi,
 		datastore,
@@ -1284,23 +1284,23 @@ void done_module_fs() {
 	"Leaving DHT complete.");
 
   }
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_START,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_START,
 							   &csHandleRequestQueryStart));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_STOP,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_STOP,
 							   &csHandleRequestQueryStop));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INSERT,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INSERT,
 							   &csHandleCS_fs_request_insert_MESSAGE));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INDEX,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INDEX,
 							   &csHandleCS_fs_request_index_MESSAGE));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INIT_INDEX,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_INIT_INDEX,
 							   &csHandleCS_fs_request_init_index_MESSAGE));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_DELETE,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_DELETE,
 							   &csHandleCS_fs_request_delete_MESSAGE));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_UNINDEX,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_UNINDEX,
 							   &csHandleCS_fs_request_unindex_MESSAGE));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_TESTINDEX,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_TESTINDEX,
 							   &csHandleCS_fs_request_test_index_MESSAGEed));
-  GNUNET_ASSERT(SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
+  GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_GET_AVG_PRIORITY,
 							   &csHandleRequestGetAvgPriority));
   doneQueryManager();
   while (lg_jobs != NULL) {

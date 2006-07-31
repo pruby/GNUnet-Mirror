@@ -82,7 +82,7 @@ void doneFilters() {
 void deleteFilter() {
   char * fn;
 
-  GNUNET_ASSERT(filter == NULL);
+  GE_ASSERT(ectx, filter == NULL);
   fn = getFilterName();
   UNLINK(fn);
   FREE(fn);

@@ -143,7 +143,7 @@ static int searchResultCB(const HashCode512 * key,
   fileBlockGetQuery((DBlock*) &blk[1],
 		    ntohl(blk->size) - sizeof(Datastore_Value),
 		    &ekey);
-  GNUNET_ASSERT(OK ==
+  GE_ASSERT(ectx, OK ==
 		fileBlockEncode((DBlock*) &blk[1],
 				ntohl(blk->size) - sizeof(Datastore_Value),
 				&ekey,
@@ -231,11 +231,11 @@ int main(int argc, char * argv[]){
 		     &parseCommandLine))
     return -1;
   daemon = startGNUnetDaemon(NO);
-  GNUNET_ASSERT(daemon > 0);
+  GE_ASSERT(ectx, daemon > 0);
   ok = YES;
   startCron();
   MUTEX_CREATE(&lock);
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(60 * cronSECONDS));
+  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(60 * cronSECONDS));
   gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
   sock = getClientSocket();
   CHECK(sock != NULL);
@@ -357,8 +357,8 @@ int main(int argc, char * argv[]){
     releaseClientSocket(sock);
   MUTEX_DESTROY(&lock);
   stopCron();
-  GNUNET_ASSERT(OK == stopGNUnetDaemon());
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon));
+  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
+  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
   doneUtil();
   return (ok == YES) ? 0 : 1;
 }

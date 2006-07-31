@@ -160,7 +160,7 @@ SEARCH_CONTEXT * FS_SEARCH_makeContext(Mutex * lock) {
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   void * unused;
 
-  GNUNET_ASSERT(ctx->handleCount == 0);
+  GE_ASSERT(ectx, ctx->handleCount == 0);
   ctx->abort = YES;
   closeSocketTemporarily(ctx->sock);
   PTHREAD_JOIN(&ctx->thread,

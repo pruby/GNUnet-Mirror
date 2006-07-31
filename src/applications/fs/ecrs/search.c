@@ -252,7 +252,7 @@ static int computeIdAtTime(const SBlock * sb,
 	    c);
     return OK;
   }
-  GNUNET_ASSERT(ntohl(sb->updateInterval) != 0);
+  GE_ASSERT(ectx, ntohl(sb->updateInterval) != 0);
   pos = ntohl(sb->creationTime);
   deltaId(&sb->identifierIncrement,
 	  &sb->nextIdentifier,

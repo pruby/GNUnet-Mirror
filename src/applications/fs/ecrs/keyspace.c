@@ -67,7 +67,7 @@ static int verifyKBlock(const HashCode512 * key,
 			YES,
 			&query))
     return SYSERR;
-  GNUNET_ASSERT(type == K_BLOCK);
+  GE_ASSERT(ectx, type == K_BLOCK);
 
   if (size < sizeof(KBlock))
     return SYSERR;
@@ -179,7 +179,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     memcpy(&kb[1],
 	   dstURI,
 	   strlen(dstURI)+1);
-    GNUNET_ASSERT(mdsize ==
+    GE_ASSERT(ectx, mdsize ==
 		  ECRS_serializeMetaData(md,
 					 &((char*)&kb[1])[strlen(dstURI)+1],
 					 mdsize,
@@ -224,13 +224,13 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     pk = makeKblockKey(&key);
     getPublicKey(pk,
 		 &kb->keyspace);
-    GNUNET_ASSERT(OK == sign(pk,
+    GE_ASSERT(ectx, OK == sign(pk,
 			     mdsize + strlen(dstURI) + 1,
 			     &kb[1],
 			     &kb->signature));
 #if EXTRA_CHECKS
     /* extra check: verify sig */
-    GNUNET_ASSERT(OK == getQueryFor(size,
+    GE_ASSERT(ectx, OK == getQueryFor(size,
 				    (DBlock*) kb,
 				    YES,
 				    &hc));
@@ -239,7 +239,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     if (OK != FS_insert(sock, value))
       ret = SYSERR;
 #if EXTRA_CHECKS
-    GNUNET_ASSERT(OK == verifyKBlock(&key, value))
+    GE_ASSERT(ectx, OK == verifyKBlock(&key, value))
 #endif
   }
   ECRS_freeUri(xuri);

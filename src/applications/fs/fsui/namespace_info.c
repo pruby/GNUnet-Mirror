@@ -64,7 +64,7 @@ static void writeNamespaceInfo(const char * namespaceName,
   tag = size + sizeof(int);
   buf = MALLOC(tag);
   ((int *) buf)[0] = htonl(ranking); /* ranking */
-  GNUNET_ASSERT(size == ECRS_serializeMetaData(meta,
+  GE_ASSERT(ectx, size == ECRS_serializeMetaData(meta,
 					       &buf[sizeof(int)],
 					       size,
 					       ECRS_SERIALIZE_FULL));
@@ -470,7 +470,7 @@ static int writeUpdateData(const char * nsname,
   memcpy(&buf[1],
 	 uri,
 	 strlen(uri)+1);
-  GNUNET_ASSERT(metaSize ==
+  GE_ASSERT(ectx, metaSize ==
 		ECRS_serializeMetaData(fi->meta,
 				       &((char*)&buf[1])[strlen(uri)+1],
 				       metaSize,

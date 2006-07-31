@@ -54,7 +54,7 @@ static Mutex queryManagerLock;
 static CoreAPIForApplication * coreAPI;
 
 static void removeEntry(unsigned int off) {
-  GNUNET_ASSERT(off < trackerCount);
+  GE_ASSERT(ectx, off < trackerCount);
   FREE(trackers[off]);
   trackers[off] = trackers[--trackerCount];
   trackers[trackerCount] = NULL;
@@ -84,7 +84,7 @@ void trackQuery(const HashCode512 * query,
 		const ClientHandle client) {
   int i;
 
-  GNUNET_ASSERT(client != NULL);
+  GE_ASSERT(ectx, client != NULL);
   MUTEX_LOCK(&queryManagerLock);
   for (i=trackerCount-1;i>=0;i--)
     if ( (trackers[i]->client == client) &&
@@ -142,7 +142,7 @@ void processResponse(const HashCode512 * key,
   EncName enc;
 #endif
 
-  GNUNET_ASSERT(ntohl(value->size) > sizeof(Datastore_Value));
+  GE_ASSERT(ectx, ntohl(value->size) > sizeof(Datastore_Value));
   matchCount = 0;
 #if DEBUG_QUERYMANAGER
   IFGE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,

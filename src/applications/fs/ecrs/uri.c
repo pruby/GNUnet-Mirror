@@ -201,7 +201,7 @@ static int parseKeywordURI(const char * uri,
   size_t slen;
   char * dup;
 
-  GNUNET_ASSERT(uri != NULL);
+  GE_ASSERT(ectx, uri != NULL);
 
   slen = strlen(uri);
   pos = strlen(ECRS_URI_PREFIX);
@@ -242,7 +242,7 @@ static int parseKeywordURI(const char * uri,
     }
   }
   (*keywords)[--ret] = STRDUP(&dup[pos]);
-  GNUNET_ASSERT(ret == 0);
+  GE_ASSERT(ectx, ret == 0);
   FREE(dup);
   return iret;
 }
@@ -262,7 +262,7 @@ static int parseSubspaceURI(const char * uri,
   size_t slen;
   char * up;
 
-  GNUNET_ASSERT(uri != NULL);
+  GE_ASSERT(ectx, uri != NULL);
 
   slen = strlen(uri);
   pos = strlen(ECRS_URI_PREFIX);
@@ -313,7 +313,7 @@ static int parseFileURI(const char * uri,
   size_t slen;
   char * dup;
 
-  GNUNET_ASSERT(uri != NULL);
+  GE_ASSERT(ectx, uri != NULL);
 
   slen = strlen(uri);
   pos = strlen(ECRS_URI_PREFIX);
@@ -387,7 +387,7 @@ URI * ECRS_stringToUri(const char * uri) {
  */
 void ECRS_freeUri(struct ECRS_URI * uri) {
   int i;
-  GNUNET_ASSERT(uri != NULL);
+  GE_ASSERT(ectx, uri != NULL);
   if (uri->type == ksk) {
     for (i=0;i<uri->data.ksk.keywordCount;i++)
       FREE(uri->data.ksk.keywords[i]);
@@ -461,7 +461,7 @@ int ECRS_isKeywordUri(const struct ECRS_URI * uri) {
 
   if (uri->type == ksk) {
     for (i=uri->data.ksk.keywordCount-1;i>=0;i--)
-      GNUNET_ASSERT(uri->data.ksk.keywords[i] != NULL);
+      GE_ASSERT(ectx, uri->data.ksk.keywords[i] != NULL);
   }
 #endif
   return uri->type == ksk;
@@ -527,7 +527,7 @@ unsigned long long ECRS_fileSize(const struct ECRS_URI * uri) {
   case loc:
     return ntohll(uri->data.loc.size);
   default:
-    GNUNET_ASSERT(0);
+    GE_ASSERT(ectx, 0);
   }
   return 0; /* unreachable */
 }
@@ -574,7 +574,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
   time_t now;
   unsigned int keywordCount;
 
-  GNUNET_ASSERT(uri->type == ksk);
+  GE_ASSERT(ectx, uri->type == ksk);
   time(&now);
 #ifdef HAVE_GMTIME_R
   gmtime_r(&now, &t);
@@ -590,7 +590,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
     ret->data.ksk.keywords = MALLOC(sizeof(char*) * keywordCount * 2);
     for (i=0;i<keywordCount;i++) {
       key = uri->data.ksk.keywords[i];
-      GNUNET_ASSERT(key != NULL);
+      GE_ASSERT(ectx, key != NULL);
       ret->data.ksk.keywords[2*i]
 	= STRDUP(key);
       kd = MALLOC(strlen(key) + 13);
@@ -659,7 +659,7 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
 	}
       }
       if (add == 1) {
-	GNUNET_ASSERT(md->items[i].data != NULL);
+	GE_ASSERT(ectx, md->items[i].data != NULL);
 	ret->data.ksk.keywords[i-havePreview]
 	  = STRDUP(md->items[i].data);
       }
@@ -704,8 +704,8 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
   int i;
   int j;
 
-  GNUNET_ASSERT(uri1 != NULL);
-  GNUNET_ASSERT(uri2 != NULL);
+  GE_ASSERT(ectx, uri1 != NULL);
+  GE_ASSERT(ectx, uri2 != NULL);
   if (uri1->type != uri2->type)
     return NO;
   switch(uri1->type) {

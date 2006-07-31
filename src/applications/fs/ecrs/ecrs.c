@@ -38,7 +38,7 @@ void ECRS_encryptInPlace(const HashCode512 * hc,
 
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
-  GNUNET_ASSERT(len ==
+  GE_ASSERT(ectx, len ==
 		encryptBlock(data,
 			     len,
 			     &skey,
@@ -57,7 +57,7 @@ void ECRS_decryptInPlace(const HashCode512 * hc,
 
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
-  GNUNET_ASSERT(len ==
+  GE_ASSERT(ectx, len ==
 		decryptBlock(&skey,
 			     data,
 			     len,

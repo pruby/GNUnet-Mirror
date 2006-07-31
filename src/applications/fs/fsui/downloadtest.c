@@ -187,13 +187,13 @@ int main(int argc, char * argv[]){
     return -1;
 #if 1
   daemon = startGNUnetDaemon(NO);
-  GNUNET_ASSERT(daemon > 0);
+  GE_ASSERT(ectx, daemon > 0);
 #else
   daemon = -1;
 #endif
   ok = YES;
   startCron();
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
+  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
   gnunet_util_sleep(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
@@ -312,8 +312,8 @@ int main(int argc, char * argv[]){
     ECRS_freeUri(upURI);
 
   stopCron();
-  GNUNET_ASSERT(OK == stopGNUnetDaemon());
-  GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon));
+  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
+  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
   doneUtil();
   return (ok == YES) ? 0 : 1;
 }

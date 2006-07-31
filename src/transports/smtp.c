@@ -419,7 +419,7 @@ static void * listenAndDistribute() {
 			 "PIPE",
 			 _("You must specify the name of a "
 			   "pipe for the SMTP transport in section `%s' under `%s'.\n"));
-  GNUNET_ASSERT(pipename != NULL);
+  GE_ASSERT(ectx, pipename != NULL);
   UNLINK(pipename);
   if (0 != mkfifo(pipename,
 		  S_IWUSR|S_IRUSR))
@@ -616,7 +616,7 @@ static P2P_hello_MESSAGE * createhello() {
       = htons(P2P_hello_MESSAGE_size(msg));
   FREE(email);
   if (verifyHelo(msg) == SYSERR)
-    GNUNET_ASSERT(0);
+    GE_ASSERT(ectx, 0);
   return msg;
 }
 

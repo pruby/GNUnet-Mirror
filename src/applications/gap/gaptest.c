@@ -151,7 +151,7 @@ static int searchCB(const ECRS_FileInfo * fi,
       "Search found URI `%s'\n",
       tmp);
   FREE(tmp);
-  GNUNET_ASSERT(NULL == *my);
+  GE_ASSERT(ectx, NULL == *my);
   *my = ECRS_dupUri(fi->uri);
   return SYSERR; /* abort search */
 }
@@ -259,7 +259,7 @@ int main(int argc, char ** argv) {
   int left;
   struct ECRS_URI * uri;
 
-  GNUNET_ASSERT(OK ==
+  GE_ASSERT(ectx, OK ==
 		enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
 			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
 			 "OPDA8F1VIKESLSNBO",
@@ -286,12 +286,12 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
   }
 
   /* re-start, this time we're sure up-to-date hellos are available */
@@ -354,12 +354,12 @@ int main(int argc, char ** argv) {
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon1));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
   }
   if (daemon2 != -1) {
     if (! termProcess(daemon2))
       DIE_STRERROR("kill");
-    GNUNET_ASSERT(OK == waitForGNUnetDaemonTermination(daemon2));
+    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
   }
   doneUtil();
   return ret;
