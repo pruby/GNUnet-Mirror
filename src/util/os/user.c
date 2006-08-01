@@ -115,6 +115,7 @@ int os_modify_user(struct GE_Context * ectx,
  */
 int os_change_user(struct GE_Context * ectx,
 		   const char * user) {
+#ifndef MINGW
   struct passwd * pws;
 
   pws = getpwnam(user);
@@ -138,6 +139,8 @@ int os_change_user(struct GE_Context * ectx,
       return SYSERR;
     }
   }
+#endif
+
   return OK;
 }
 

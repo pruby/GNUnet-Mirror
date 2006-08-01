@@ -55,13 +55,15 @@ extern "C" {
  */
 static char *os_get_exec_path(struct GE_Context * ectx,
                               struct GC_Configuration * cfg) {
-#ifdef WINDOWS
-/* FIXME: get the path
- * set found and execpath so the end of the function is valid */
-
-#else /* Should work on all Unices, else we won't run */
   static char *execpath = NULL; /* save it between calls */
+  int found;
 
+#ifdef WINDOWS
+/* FIXME MINGW: get the path
+ * set found and execpath so the end of the function is valid */
+ 
+ found = 0;
+#else /* Should work on all Unices, else we won't run */
   /* FIXME: we assume PATH_MAX is the same for all used files */
   const long path_max = pathconf(".", _PC_PATH_MAX);
   const long name_max = pathconf(".", _PC_NAME_MAX);
@@ -69,7 +71,6 @@ static char *os_get_exec_path(struct GE_Context * ectx,
   char *tmp, *path1, *path2, *path3;
   size_t size, size1, size2;
   struct stat dummy_stat;
-  int found;
 
   if(execpath) /* already got the path, don't work more */
      return execpath;

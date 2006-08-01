@@ -207,9 +207,10 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
     GlobalFree(pTable);
   } else { /* Win 95 */
     if ( ( command = popen("netstat -e", "rt") ) == NULL ) {
-      LOG_FILE_STRERROR(LOG_ERROR,
-			"popen",
-			"netstat -e");
+      GE_LOG_STRERROR_FILE(monitor->ectx,
+        GE_ERROR | GE_ADMIN | GE_BULK,
+  			"popen",
+  			"netstat -e");
       return;
     }
     ifc = &monitor->ifcs[0];

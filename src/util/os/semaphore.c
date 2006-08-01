@@ -212,8 +212,8 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 	   GE_FATAL | GE_USER | GE_DEVELOPER | GE_BULK,
 	   _("Can't create semaphore: %i"), 
 	   dwErr);
-    DIE_STRERROR_FILE(ectx,
-		      GE_FAILURE | GE_USER | GE_DEVELOPER | GE_BULK,
+    GE_DIE_STRERROR_FILE(ectx,
+		      GE_FATAL | GE_USER | GE_DEVELOPER | GE_BULK,
 		      "OpenSemaphore", noslashBasename);
   }
   FREE(noslashBasename);
