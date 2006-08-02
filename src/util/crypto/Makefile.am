@@ -10,6 +10,8 @@ libgnunetutil_crypto_la_LIBADD = \
  $(GCLIBADD) \
  $(top_builddir)/src/util/libgnunetutil.la 
 
+libgnunetutil_crypto_la_LDFLAGS = $(LIBGCRYPT_LIBS) -lgmp
+
 libgnunetutil_crypto_la_SOURCES = \
  crc32.c \
  hashing.c \

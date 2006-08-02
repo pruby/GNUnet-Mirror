@@ -53,6 +53,7 @@ int os_terminal_detach(struct GE_Context * ectx,
     return SYSERR;
   }
 
+#ifndef MINGW
   PIPE(filedes);
   pid = fork();
   if (pid < 0) {
@@ -113,12 +114,16 @@ int os_terminal_detach(struct GE_Context * ectx,
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 		    "setsid");
+#else
+  FreeConsole();
+#endif
   return OK;
 }
 
 void os_terminal_detach_complete(struct GE_Context * ectx,
 				 int * filedes,
 				 int success) {
+#ifndef MINGW
   char c = '.';
   
   if (! success)
@@ -130,5 +135,6 @@ void os_terminal_detach_complete(struct GE_Context * ectx,
     GE_LOG_STRERROR(ectx,
 		    GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 		    "close");
+#endif
 }
 

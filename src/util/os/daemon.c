@@ -177,8 +177,8 @@ int os_daemon_start(struct GE_Context * ectx,
     args[0] = "-d";
     idx = 1;
     
-    cp = getConfigurationString("GNUNET",
-				"GNUNETD-CONFIG");
+    cp = GC_get_configuration_value_string(cfg, "GNUNET", "GNUNETD-CONFIG",
+      NULL, &cp);
     if (cp) {
       args[1] = "-c";
       args[2] = cp;

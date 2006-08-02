@@ -38,11 +38,8 @@ typedef struct PluginHandle {
 
 static char * old_dlsearchpath;
 
-/* NILS: this method will need to be
-   ported for Win32 and other non-linux
-   systems */
-#if LINUX
 static char * getPluginPath() {
+#if LINUX
   char * fn;
   char * lnk;
   size_t size;
@@ -82,8 +79,23 @@ static char * getPluginPath() {
   lnk[--size] = 'i';
   lnk[--size] = 'l';
   return lnk;
-}
+#elif WINDOWS
+  char *path, *idx;
+  
+  path = MALLOC(4097);
+  GetModuleFileName(NULL, path, 4096);
+  idx = path + strlen(idx);
+  while(idx > path && path != '\\' && path != '/')
+    idx++;
+  *idx = 0;
+  
+  return path;  
+#else
+/* FIXME/PORTME to other platforms */
+#error Missing port: getPluginPath()
+  Missing port: getPluginPath();
 #endif
+}
 
 /* using libtool, needs init! */
 void __attribute__ ((constructor)) gnc_ltdl_init(void) {

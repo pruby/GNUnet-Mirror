@@ -268,7 +268,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     if (CONNECT(s, 
 		(SOCKADDR *) &theHost, 
 		sizeof(theHost)) == SOCKET_ERROR) {
-      LOG_STRERROR(LOG_ERROR, 
+      GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER,
 		   "connect");
       return SYSERR;
     }
@@ -277,7 +277,7 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
     if (GETSOCKNAME(s,
 		    (SOCKADDR *) &theHost, 
 		    &i) == SOCKET_ERROR) {
-      LOG_STRERROR(LOG_ERROR, 
+      GE_LOG_STRERROR(ectx, GE_ERROR | GE_BULK | GE_USER, 
 		   "getsockname");
       return SYSERR;
     }    

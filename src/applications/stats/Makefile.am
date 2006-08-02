@@ -26,7 +26,8 @@ gnunet_stats_LDADD = \
 libgnunetstats_api_la_SOURCES = \
   clientapi.c 
 libgnunetstats_api_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la
 
 libgnunetmodule_stats_la_SOURCES = \
   statistics.c \
