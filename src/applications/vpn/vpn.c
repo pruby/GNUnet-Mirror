@@ -45,6 +45,7 @@
  * CHANGELOG:
  * 20060110 Change ifconfig/route to ioctl's
  * 20060111 P2P packet includes length of the header.
+ * 20060802 Logging for multiple clients 
  */
 
 #include "platform.h"
@@ -52,6 +53,7 @@
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 #include "gnunet_identity_service.h"
+#include "gnunet_session_service.h"
 
 /* i'm going to put platform dependent code here for now */
 #include <linux/if_tun.h>
@@ -85,7 +87,27 @@ struct in6_ifreq {
  */
 #define VC_START 2
 
-#define CS_PROTO_VPN_MSG 0xfa
+/**
+ * Most are commands available to clients
+ * except VPN_MSG (general loggable output) and
+ * VPN_REPLY = output from a command.
+ * The commands output their last using their own code
+ * instead of the VPN_REPLY so the UI knows it has
+ * seen all the output.
+ *
+ * keep in sync with gnunet-vpn.c !
+ */
+#define CS_PROTO_VPN_MSG 0xf0
+#define CS_PROTO_VPN_REPLY 0xf1
+#define CS_PROTO_VPN_DEBUGOFF 0xf2
+#define CS_PROTO_VPN_DEBUGON 0xf3
+#define CS_PROTO_VPN_TUNNELS 0xf4
+#define CS_PROTO_VPN_ROUTES 0xf5
+#define CS_PROTO_VPN_REALISED 0xf6
+#define CS_PROTO_VPN_RESET 0xf7
+#define CS_PROTO_VPN_REALISE 0xf8
+#define CS_PROTO_VPN_ADD 0xf9
+#define CS_PROTO_VPN_TRUST 0xfa
 
 #define MAXSIG_BUF 128
 
@@ -106,18 +128,26 @@ struct in6_ifreq {
  * Identity service, to reset the core.
  */
 static Identity_ServiceAPI * identity;
+static Session_ServiceAPI * session;
 
 static CoreAPIForApplication * coreAPI = NULL;
 
-static ClientHandle client;
+static ClientHandle* clients_store = NULL;
+static int clients_entries = 0;
+static int clients_capacity = 0;
+
 static int cdebug = 0;
 static int interval = 60;
 static Mutex lock;
 
 PTHREAD_T tunThreadInfo;
 
-static int delay_destroyed = -1;
-
+/* id = number portion of interface name. I.e. 0 = gnu0, 1= gnu1 ...
+ * hd = filedescriptor of this tunnel
+ * active = tunnel is in use, i.e. peer is online
+ * route_entry = index in the remote node's routing table we have requested
+ * ifindex = linux internal number to identify an interface
+ */
 typedef struct {
 /*	char name[IFNAMSIZ]; */
 	int id;
@@ -191,7 +221,7 @@ static int realised_entries = 0;
 static int realised_capacity = 0;
 
 /** send given string to client */
-static void cprintf(ClientHandle c, const char* format, ...) {
+static void cprintf(ClientHandle c, int t, const char* format, ...) {
 	va_list args;
 	int r = -1;
 	int size = 100;
@@ -218,12 +248,18 @@ static void cprintf(ClientHandle c, const char* format, ...) {
 			b = nb;
 		}
 	}
-	b->type=htons(CS_PROTO_VPN_MSG);
+	b->type=htons(t);
 	b->size=htons(sizeof(CS_MESSAGE_HEADER) + strlen((char*)(b+1)));
-	coreAPI->sendToClient(c, b);
+	if (c != NULL) {
+		coreAPI->sendToClient(c, b);
+	} else {
+		for(r = 0; r < clients_entries; r++) {
+			coreAPI->sendToClient(*(clients_store+r), b);
+		}
+	}
 	FREE(b);
 }
-#define VLOG if ((cdebug >= LOG_DEBUG) && (client != NULL)) cprintf(client,
+#define VLOG if (cdebug >= LOG_DEBUG) cprintf(NULL,CS_PROTO_VPN_MSG,
 
 /** Test if two PublicKey are equal or not */
 static int isEqualP(const PublicKey *first, const PublicKey *second) {
@@ -267,7 +303,7 @@ static int isEqualP(const PublicKey *first, const PublicKey *second) {
  */
 static void init_router() {
 	int reqcapacity;
-	route_info *reqstore;	
+	route_info *reqstore;
 	reqcapacity = sizeof(route_info);
 	if (reqcapacity > route_capacity) {
 		reqstore = REALLOC(route_store, reqcapacity);
@@ -304,7 +340,7 @@ static void init_realised() {
 static void add_route(PublicKey* them, int hops, int tunnel) {
 	int i;
 	route_info *rstore;
-	int rcapacity;	
+	int rcapacity;
 
 	for (i = 0; i < route_entries; i++) {
 		if (isEqualP(them, &(route_store+i)->owner)) {
@@ -397,11 +433,11 @@ static void ipinfo(char *info, const struct ip6_hdr* fp) {
 static int valid_incoming(int len, struct tun_pi* tp, struct ip6_hdr* fp) {
 	char info[100];
 	if (len > (65535 - sizeof(struct tun_pi))) {
-		GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("RFC4193 Frame length %d is too big for GNUnet!\n"), len);
+		LOG(LOG_ERROR, _("RFC4193 Frame length %d is too big for GNUnet!\n"), len);
 		return NO;
 	}
 	if (len < sizeof(struct tun_pi)) {
-		GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("RFC4193 Frame length %d too small\n"), len);
+		LOG(LOG_ERROR, _("RFC4193 Frame length %d too small\n"), len);
 		return NO;
 	}
 	if ((ntohs(tp->proto) == ETH_P_IP) && (((struct iphdr*)fp)->version == 4)) {
@@ -411,7 +447,7 @@ static int valid_incoming(int len, struct tun_pi* tp, struct ip6_hdr* fp) {
 		VLOG "-> GNUnet(%d) : %s\n", len - sizeof(struct tun_pi), info);
 		return YES;
 	}
-	GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("RFC4193 Ethertype %x and IP version %x do not match!\n"),
+	LOG(LOG_ERROR, _("RFC4193 Ethertype %x and IP version %x do not match!\n"),
 		ntohs(tp->proto), ((struct iphdr*)fp)->version);
 	return NO;
 }
@@ -438,7 +474,7 @@ static void id2ip(ClientHandle cx, const PeerIdentity* them) {
 	c = (them->hashPubKey.bits[1] >> 8) & 0xff;
 	d = (them->hashPubKey.bits[1] >> 0) & 0xff;
 	e = (them->hashPubKey.bits[2] >> 8) & 0xff;
-	cprintf(cx, "fd%02x:%02x%02x:%02x%02x",a,b,c,d,e);
+	cprintf(cx, CS_PROTO_VPN_REPLY, "fd%02x:%02x%02x:%02x%02x",a,b,c,d,e);
 }
 /* convert PeerIdentity into network octet order IPv6 address */
 static void id2net(struct in6_addr* buf, const PeerIdentity* them) {
@@ -471,11 +507,11 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 	int i, used, fd, id = 0;
 
 
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Going to try and make a tunnel in slot %d\n"), n);
+	LOG(LOG_DEBUG, _("RFC4193 Going to try and make a tunnel in slot %d\n"), n);
 
 	fd = open("/dev/net/tun", O_RDWR);
 	if (fd < 0) {
-		GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot open tunnel device because of %s"), strerror(fd));
+		LOG(LOG_ERROR, _("Cannot open tunnel device because of %s"), strerror(fd));
 		DIE_STRERROR("open");
 	}
 	memset(&ifr, 0, sizeof(ifr));
@@ -502,7 +538,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 		used = 0;
 		for (i = 0; i < entries1; i++) {
 			if ((store1+i)->id == id) { 
-				GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Create skips gnu%d as we are already using it\n"), id);
+				LOG(LOG_DEBUG, _("RFC4193 Create skips gnu%d as we are already using it\n"), id);
 				id++;
 				used = 1;
 			}
@@ -510,11 +546,11 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 		if (used == 0) {
 			sprintf(ifr.ifr_name, "gnu%d", id);
 			if ( ioctl(fd, TUNSETIFF, (void *) &ifr) < 0) {
-				GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot set tunnel name to %s because of %s\n"), ifr.ifr_name, strerror(errno));
+				LOG(LOG_ERROR, _("Cannot set tunnel name to %s because of %s\n"), ifr.ifr_name, strerror(errno));
 				id++;
 				used = 1;
 			} else {
-				GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Configured tunnel name to %s\n"), ifr.ifr_name);
+				LOG(LOG_ERROR, _("Configured tunnel name to %s\n"), ifr.ifr_name);
 			}
 		}
 	} while (used);
@@ -524,7 +560,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 	memcpy(&((store1+n)->peer), them, sizeof(PeerIdentity));
 	(store1+n)->id = id;
 	(store1+n)->fd = fd;
-	(store1+n)->active = NO;
+	(store1+n)->active = YES;
 	(store1+n)->route_entry = 0;
 
 	/* tun_alloc can change the tunnel name */
@@ -544,7 +580,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 
 	/* Run some system commands to set it up... */
 /*	sprintf(cmd, "sudo ifconfig %s up", name);
- *	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Calling %s\n"), cmd);
+ *	LOG(LOG_DEBUG, _("RFC4193 Calling %s\n"), cmd);
  *	system(cmd);
  */
 
@@ -552,23 +588,23 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 	
 	/* not needed, we already have the iface name ... strncpy(ifr.ifr_name, name, IFNAMSIZ); */
 	if (ioctl(admin_fd, SIOCGIFFLAGS, &ifr) < 0) {
-		GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot get socket flags for gnu%d because %s\n"), id, strerror(errno));
+		LOG(LOG_ERROR, _("Cannot get socket flags for gnu%d because %s\n"), id, strerror(errno));
 	} else {
 	        ifr.ifr_flags |= IFF_UP | IFF_RUNNING;
 		if (ioctl(admin_fd, SIOCSIFFLAGS, &ifr) < 0) {
-			GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot set socket flags for gnu%d because %s\n"), id, strerror(errno));
+			LOG(LOG_ERROR, _("Cannot set socket flags for gnu%d because %s\n"), id, strerror(errno));
 		}
 	}
 	
 	/* Seems to go better with lower mtu, aka system("sudo ifconfig %s mtu 1280") */
 	ifr.ifr_mtu = 1280;
 	if (ioctl(admin_fd, SIOCSIFMTU, &ifr) < 0) {
-		GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot set MTU for gnu%d because %s\n"), id, strerror(errno));
+		LOG(LOG_ERROR, _("Cannot set MTU for gnu%d because %s\n"), id, strerror(errno));
 	}
 
 	/* lets add an IP address... aka "sudo ifconfig %s add %s:%04x::1/64" */
 	if (ioctl(admin_fd, SIOCGIFINDEX, &ifr) < 0) {
-		GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot get interface index for gnu%d because %s\n"), id, strerror(errno));
+		LOG(LOG_ERROR, _("Cannot get interface index for gnu%d because %s\n"), id, strerror(errno));
 	} else {
 		/* note to self... htons(64) = kernel oops. */
 		(store1+n)->ifindex = ifr.ifr_ifindex;
@@ -576,7 +612,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 		ifr6.ifr6_ifindex = ifr.ifr_ifindex;
 		id2net(&ifr6.ifr6_addr, coreAPI->myIdentity);
 		ifr6.ifr6_addr.s6_addr16[3] = htons(n+VC_START);
-		GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("IPv6 ifaddr gnu%d - %x:%x:%x:%x:%x:%x:%x:%x/%d\n"),
+		LOG(LOG_DEBUG, _("IPv6 ifaddr gnu%d - %x:%x:%x:%x:%x:%x:%x:%x/%d\n"),
 			id,
 			ntohs(ifr6.ifr6_addr.s6_addr16[0]),
 			ntohs(ifr6.ifr6_addr.s6_addr16[1]),
@@ -588,10 +624,10 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 			ntohs(ifr6.ifr6_addr.s6_addr16[7]),
 			ifr6.ifr6_prefixlen);
 		if (ioctl(admin_fd, SIOCSIFADDR, &ifr6) < 0) {
-			GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot set interface IPv6 address for gnu%d because %s\n"), id, strerror(errno));
+			LOG(LOG_ERROR, _("Cannot set interface IPv6 address for gnu%d because %s\n"), id, strerror(errno));
 		}
 		
-		/* lets add a route to the peer, aka "sudo route -A inet6 add %s::/48 dev %s" */
+		/* lets add a route to the peer, aka "#sudo route -A inet6 add %s::/48 dev %s" */
 		memset((char*)&rt, 0, sizeof(struct in6_rtmsg));
 		/* rtmsg_ifindex would be zero for routes not specifying a device, such as by gateway */
 		rt.rtmsg_ifindex = ifr.ifr_ifindex;
@@ -599,7 +635,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 		rt.rtmsg_flags = RTF_UP;
 		rt.rtmsg_metric = 1;   /* how many hops to owner of public key */
 		rt.rtmsg_dst_len = 48; /* network prefix len is 48 by standard */
-		GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("IPv6 route gnu%d - destination %x:%x:%x:%x:%x:%x:%x:%x/%d\n"),
+		LOG(LOG_DEBUG, _("IPv6 route gnu%d - destination %x:%x:%x:%x:%x:%x:%x:%x/%d\n"),
 			id,
 			ntohs(rt.rtmsg_dst.s6_addr16[0]),
 			ntohs(rt.rtmsg_dst.s6_addr16[1]),
@@ -611,7 +647,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 			ntohs(rt.rtmsg_dst.s6_addr16[7]),
 			rt.rtmsg_dst_len);
 		if (ioctl(admin_fd, SIOCADDRT, &rt) < 0) {
-			GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("Cannot add route IPv6 address for gnu%s because %s\n"), id, strerror(errno));
+			LOG(LOG_ERROR, _("Cannot add route IPv6 address for gnu%s because %s\n"), id, strerror(errno));
 		}
 	}
 }
@@ -625,12 +661,13 @@ static void checkensure_peer(const PeerIdentity *them, void *callerinfo) {
 	tunnel_info* rstore1;
 	int rcapacity1;
 
-	/* GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Going to checkensure peer %x then\n"), them->hashPubKey.bits[0]); */
+	/* LOG(LOG_DEBUG, _("RFC4193 Going to checkensure peer %x then\n"), them->hashPubKey.bits[0]); */
 	/* first entry in array will be known as gnu0 */
 
 	/* if a tunnel is already setup, we don't setup another */
 	for (i = 0; i < entries1; i++) {
 		if (isEqual(them, &((store1+i)->peer))) {
+			(store1+i)->active = YES;
 			return;
 		}
 	}
@@ -643,7 +680,7 @@ static void checkensure_peer(const PeerIdentity *them, void *callerinfo) {
 	if (rcapacity1 > capacity1) {
 		rstore1 = REALLOC(store1, rcapacity1);
 		if (rstore1 == NULL) {
-			GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("RFC4193 We have run out of memory and so I can't store a tunnel for this peer.\n"));
+			LOG(LOG_ERROR, _("RFC4193 We have run out of memory and so I can't store a tunnel for this peer.\n"));
 			entries1--;
 			return;
 		}
@@ -651,7 +688,7 @@ static void checkensure_peer(const PeerIdentity *them, void *callerinfo) {
 		capacity1 = rcapacity1;
 	}
 
-	/* GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Extending array for new tunnel\n")); */
+	/* LOG(LOG_DEBUG, _("RFC4193 Extending array for new tunnel\n")); */
 	setup_tunnel((entries1 - 1), them);
 }
 
@@ -689,7 +726,7 @@ static void * tunThread(void* arg) {
 	tp = ((struct tun_pi*)fp)-1;
 	gp = ((P2P_MESSAGE_HEADER*)fp)-1;
 	running = 1;
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Thread running (frame %d tunnel %d f2f %d) ...\n"), fp, tp, gp);
+	LOG(LOG_DEBUG, _("RFC4193 Thread running (frame %d tunnel %d f2f %d) ...\n"), fp, tp, gp);
 
 	MUTEX_LOCK(&lock);
 	while (running) {
@@ -719,6 +756,7 @@ static void * tunThread(void* arg) {
 			&errorSet,
 			&timeout);
 		if (ret < 0) {
+        		LOG(LOG_ERROR, "From the vpn select: %s\n", strerror(errno));
 			running = 0;
 			break;
 		}
@@ -726,7 +764,7 @@ static void * tunThread(void* arg) {
 			if (0 >= READ(signalingPipe[0],
 			&tmp[0],
 			MAXSIG_BUF))
-        		LOG_STRERROR(LOG_WARNING, "read");
+        		LOG_STRERROR(LOG_WARNING, "vpn could not read from exit control pipe\n");
 		}
 		MUTEX_LOCK(&lock);
 		for (i = 0; i < entries1; i++) {
@@ -744,32 +782,32 @@ static void * tunThread(void* arg) {
 					coreAPI->preferTrafficFrom(&((store1+i)->peer),1000);
 				}
 			}
+			/* we do this here as we get a race if the p2p handler tries it */
+			if (((store1+i)->active) == 0) {
+				if ( close( (store1+i)->fd ) == 0) {
+					LOG(LOG_INFO, _("VPN dropping connection %x\n"), i);
+					*(store1+i) = *(store1+(entries1-1));
+					entries1--;
+				} else {
+					LOG(LOG_ERROR, _("VPN cannot drop connection %x\n"), i);
+				}					
+			}
 		}
+/*
 		if (timeout.tv_sec < (interval / 2)) {
-//			for (i = 0; i < entries1; i++) (store1+i)->connected = NO;
-//			coreAPI->forAllConnectedNodes(&checkensure_peer, NULL);
 			for (i = 0; i < entries1; i++) {
 				if (((store1+i)->active) > 0) {
 					if (identity->isBlacklistedStrict(&((store1+i)->peer))) {
-						GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER, _("RFC4193 --- whitelist of peer %x\n"),
+						LOG(LOG_INFO, _("RFC4193 --- whitelist of peer %x\n"),
 							(store1+i)->peer.hashPubKey.bits[0]);
 						identity->whitelistHost(&((store1+i)->peer));
 					}
 				}
-				/* This prevents our list of peers becoming too big....
-				 * they have never used VPN, and they have disconnected...
-				 */
-/*				if (((store1+i)->active) == 0) {
- *					GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER, _("RFC4193 --- dropping connection %x\n"), i);
- *					close( (store1+i)->fd );
- *					*(store1+i) = *(store1+(entries1-1));
- *					entries1--;
- *				}
- */
 			}
 		}
+*/
 	}
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Thread exiting\n"));
+	LOG(LOG_DEBUG, _("RFC4193 Thread exiting\n"));
 	MUTEX_UNLOCK(&lock);
 	return NULL;
 }
@@ -809,20 +847,20 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 			case 6:
 				tp->proto = htons(ETH_P_IPV6);
 				if ( ntohs(fp->ip6_src.s6_addr16[0]) < 0xFD00 ) {
-					GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("VPN IP src not anonymous. drop..\n"));
+					LOG(LOG_DEBUG, _("VPN IP src not anonymous. drop..\n"));
 					return OK;
 				}
 				if ( ntohs(fp->ip6_dst.s6_addr16[0]) < 0xFD00 ) {
-					GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("VPN IP not anonymous, drop.\n"));
+					LOG(LOG_DEBUG, _("VPN IP not anonymous, drop.\n"));
 					return OK;
 				}
 				break;
 			case 4:
 				tp->proto = htons(ETH_P_IP);
-				GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("VPN Received, not anonymous, drop.\n"));
+				LOG(LOG_DEBUG, _("VPN Received, not anonymous, drop.\n"));
 		                return OK;
 			default: 
-				GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("VPN Received unknown IP version %d...\n"), ((struct iphdr*)fp)->version);
+				LOG(LOG_ERROR, _("VPN Received unknown IP version %d...\n"), ((struct iphdr*)fp)->version);
 				return OK;
 		}
 
@@ -851,7 +889,7 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 		/* do not normally get here... but checkensure so any future packets could be routed... */
 		checkensure_peer(sender, NULL);
 		MUTEX_UNLOCK(&lock);
-		GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("Could not write the tunnelled IP to the OS... Did to setup a tunnel?\n"));
+		LOG(LOG_DEBUG, _("Could not write the tunnelled IP to the OS... Did to setup a tunnel?\n"));
 		return OK;
 	case p2p_PROTO_PONG:
 		MUTEX_LOCK(&lock);
@@ -859,23 +897,13 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 		MUTEX_UNLOCK(&lock);
 		return OK;
 	case P2P_PROTO_hangup:
-		/*
-		 * Remove node's entry in access table if it did not VPN.
-		 */
 		MUTEX_LOCK(&lock);
 	        for (i = 0; i < entries1; i++) {
-	                if ((((store1+i)->fd) > 0) && isEqual(sender, &((store1+i)->peer))) {
-				if (((store1+i)->active) == 0) {
-					GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER, _("RFC4193 -- non-vpn node hangs up. close down gnu%d (%d in %d)\n"),
-						(store1+i)->id,  i, entries1);
-
-					close( (store1+i)->fd );
-					delay_destroyed = (store1+i)->id;
-
-					*(store1+i) = *(store1+(entries1-1));
-					entries1--;
-				}
-
+	                if (
+				(((store1+i)->fd) > 0) &&
+				isEqual(sender, &((store1+i)->peer))
+			) {
+				(store1+i)->active = NO;
 			}
 		}
 		MUTEX_UNLOCK(&lock);
@@ -973,13 +1001,6 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 	return OK;
 }
 
-/** compare msg from client with given string */
-static int iscmd(const int len, const char* ccmd, const char* cmd) {
-	if (len != strlen(cmd)) return NO;
-	if (strncmp(ccmd, cmd, len)) return NO;
-	return YES;
-}
-
 /* here we copy the prototype route table we are collecting from peers to the actual
  * "realised" route table we distribute to peers, and to the kernel's table.
  */
@@ -990,18 +1011,15 @@ static void realise(ClientHandle c) {
 	route_info *reqstore;
 	struct in6_rtmsg rt;
 
-	cprintf(c, "Realisation in progress\n");
-	cprintf(c, "-----------------\n");
-	cprintf(c, "\n");
         MUTEX_LOCK(&lock);
 	/* make sure realised table can take the new routes - if it wont, abort now! */
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("realise alloc ram\n"));
+	LOG(LOG_DEBUG, _("realise alloc ram\n"));
 	if (route_entries > realised_entries) {
 		reqcapacity = sizeof(route_info) * route_entries;
 		if (reqcapacity > realised_capacity) {
 			reqstore = REALLOC(realised_store, reqcapacity);
 			if (reqstore == NULL) {
-				cprintf(c, "I cannot up the ram for realised routes.\n");
+				cprintf(c, CS_PROTO_VPN_REPLY, "I cannot up the ram for realised routes.\n");
 			        MUTEX_UNLOCK(&lock);
 				return;
 			}
@@ -1010,7 +1028,7 @@ static void realise(ClientHandle c) {
 		}
 	}
 	/* add routes that are in the new table but not the old */
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("realise add routes\n"));
+	LOG(LOG_DEBUG, _("realise add routes\n"));
 	for (i = 0; i < route_entries; i++) {
 		found = 0;
 		for (j = 0; j < realised_entries; j++) {
@@ -1037,7 +1055,7 @@ static void realise(ClientHandle c) {
 			rt.rtmsg_metric = (route_store+i)->hops;
 			/* how many hops to owner of public key */
 			rt.rtmsg_dst_len = 48; /* always 48 as per RFC4193 */
-			cprintf(c, "Add route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
+			cprintf(c, CS_PROTO_VPN_REPLY, "Add route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
 				id,
 				rt.rtmsg_metric,
 				ntohs(rt.rtmsg_dst.s6_addr16[0]),
@@ -1050,12 +1068,12 @@ static void realise(ClientHandle c) {
 				ntohs(rt.rtmsg_dst.s6_addr16[7]),
 				rt.rtmsg_dst_len);
 			if (ioctl(admin_fd, SIOCADDRT, &rt) < 0) {
-				cprintf(c,"Cannot add route IPv6 address for gnu%s because %s\n", id, strerror(errno));
+				cprintf(c, CS_PROTO_VPN_REPLY, "Cannot add route IPv6 address for gnu%s because %s\n", id, strerror(errno));
 			}
 		}
 	}
-	cprintf(c, "Removing routes\n");
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("realise pull routes\n"));
+	cprintf(c, CS_PROTO_VPN_REPLY, "Removing routes\n");
+	LOG(LOG_DEBUG, _("realise pull routes\n"));
 	/* pull routes that are in the old table but not the new */
 	for (i = 0; i < realised_entries; i++) {
 		found = 0;
@@ -1083,7 +1101,7 @@ static void realise(ClientHandle c) {
 			rt.rtmsg_metric = (realised_store+i)->hops;
 			/* how many hops to owner of public key */
 			rt.rtmsg_dst_len = 48; /* always 48 as per RFC4193 */
-			cprintf(c, "Delete route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
+			cprintf(c, CS_PROTO_VPN_REPLY, "Delete route gnu%d hops %d dst %x:%x:%x:%x:%x:%x:%x:%x/%d\n",
 				id,
 				rt.rtmsg_metric,
 				ntohs(rt.rtmsg_dst.s6_addr16[0]),
@@ -1096,16 +1114,55 @@ static void realise(ClientHandle c) {
 				ntohs(rt.rtmsg_dst.s6_addr16[7]),
 				rt.rtmsg_dst_len);
 			if (ioctl(admin_fd, SIOCDELRT, &rt) < 0) {
-				cprintf(c,"Cannot del route IPv6 address for gnu%s because %s\n", id, strerror(errno));
+				cprintf(c, CS_PROTO_VPN_REPLY, "Cannot del route IPv6 address for gnu%s because %s\n", id, strerror(errno));
 			}
 		}
 	}
-	cprintf(c, "Copying table\n");
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("realise copy table\n"));
+	cprintf(c, CS_PROTO_VPN_REPLY, "Copying table\n");
+	LOG(LOG_DEBUG, _("realise copy table\n"));
 	realised_entries = route_entries;
 	memcpy(realised_store,route_store, sizeof(route_info) * route_entries);
 
 	MUTEX_UNLOCK(&lock);
+}
+
+static void add_client(ClientHandle c) {
+	ClientHandle* rstore;
+	int i, rcapacity;
+
+	/* we already have them, equality is assumed if the filehandles match */
+	for (i = 0; i < clients_entries; i++) {
+		if (*(clients_store+i) == c) return;
+	}
+
+	clients_entries++;
+	/* do we need more ram to hold the client handle? */
+	rcapacity = clients_entries * sizeof(ClientHandle);
+	if (rcapacity > clients_capacity) {
+		rstore = REALLOC(clients_store, rcapacity);
+		if (rstore == NULL) {
+			clients_entries--;
+			/* not enough ram, warn in the logs that they
+			 * will forego receiving logging
+			 */
+			LOG(LOG_ERROR, _("Cannot store client info\n"));
+			return;
+		}
+               	clients_capacity = rcapacity;
+               	clients_store = rstore;
+	}
+	*(clients_store+(clients_entries-1)) = c;
+}
+
+static void remove_client(ClientHandle c) {
+	int i;
+	for (i = 0; i < clients_entries; i++) {
+		if (*(clients_store+i) == c) {
+			*(clients_store+i) = *(clients_store+(clients_entries-1));
+			clients_entries--;
+			return;	
+		}
+	}
 }
 
 /** The console client is used to admin/debug vpn */
@@ -1113,183 +1170,174 @@ static int csHandle(ClientHandle c, const CS_MESSAGE_HEADER * message) {
 	P2P_MESSAGE_HEADER * rgp = NULL;
 	int i;
 	PeerIdentity id;
-	int cl = 1; 
-	int cll = ntohs(message->size) - sizeof(CS_MESSAGE_HEADER);
+	int parameter = ntohs(message->size) - sizeof(CS_MESSAGE_HEADER);
 	char* ccmd = (char*)(message+1);
 	char* parm;
 
 	MUTEX_LOCK(&lock);
-		client = c;
+		add_client(c);
 	MUTEX_UNLOCK(&lock);
 	/* issued command from client */
 	if (ntohs(message->type) == CS_PROTO_VPN_MSG) {
 		if (ntohs(message->size) == 0) return OK;
-		while ((cl < cll) && (*(ccmd+cl) > 32)) cl++;
+	}
+	/*	while ((l < ll) && (*(ccmd+cl) > 32)) cl++; */
 
-		if (iscmd(cl,ccmd,"help")) {
-			cprintf(c, "\
-Welcome to the GNUnet VPN debugging interface.\n\
-Written by Michael John Wensley\n\
-commands include: help, debug0, debug1, tunnel, route, reset\r\n\
-");
-			return OK;
+	if (ntohs(message->type) == CS_PROTO_VPN_DEBUGOFF) {
+		MUTEX_LOCK(&lock);
+			cdebug = LOG_NOTHING;
+		MUTEX_UNLOCK(&lock);
+		cprintf(c, CS_PROTO_VPN_DEBUGOFF, "LOG NOTHING\n");
+		return OK;
+	}
+	if (ntohs(message->type) == CS_PROTO_VPN_DEBUGON) {
+		MUTEX_LOCK(&lock);
+			cdebug = LOG_DEBUG;
+		MUTEX_UNLOCK(&lock);
+		cprintf(c, CS_PROTO_VPN_DEBUGON, "LOG DEBUG\n");
+		return OK;
+	}
+	if (ntohs(message->type) == CS_PROTO_VPN_TUNNELS) {
+		MUTEX_LOCK(&lock);
+		id2ip(c, coreAPI->myIdentity);
+		cprintf(c, CS_PROTO_VPN_REPLY, "::/48 This Node\n");
+		for (i = 0; i < entries1; i++) {
+			id2ip(c, &(store1+i)->peer);
+			cprintf(c, CS_PROTO_VPN_REPLY, "::/48 gnu%d active=%s routeentry=%d\n",
+				(store1+i)->id, 
+				(store1+i)->active ? _("Yes") : _("No"), 
+				(store1+i)->route_entry);
 		}
-		if (iscmd(cl,ccmd,"debug0")) {
-			MUTEX_LOCK(&lock);
-				cdebug = LOG_NOTHING;
-			MUTEX_UNLOCK(&lock);
-			cprintf(c, "LOG NOTHING\n");
-			return OK;
-		}
-		if (iscmd(cl,ccmd,"debug1")) {
-			MUTEX_LOCK(&lock);
-				cdebug = LOG_DEBUG;
-			MUTEX_UNLOCK(&lock);
-			cprintf(c, "LOG DEBUG\n");
-			return OK;
-		}
-		if (iscmd(cl,ccmd,"tunnel")) {
-			cprintf(c, "Tunnel Information\n");
-			cprintf(c, "------------------\n");
-			cprintf(c, "\n");
-			MUTEX_LOCK(&lock);
-			id2ip(c, coreAPI->myIdentity);
-			cprintf(c, "::/48 This Node\n");
-		        for (i = 0; i < entries1; i++) {
-				id2ip(c, &(store1+i)->peer);
-				cprintf(c, "::/48 gnu%d active=%s routeentry=%d\n", (store1+i)->id, 
-						(store1+i)->active ? _("Yes") : _("No"), 
-						(store1+i)->route_entry);
-			}
-			MUTEX_UNLOCK(&lock);
-		}
-		if (iscmd(cl,ccmd,"route")) {
-			cprintf(c, "Route Information\n");
-			cprintf(c, "-----------------\n");
-                        cprintf(c, "\n");
-                        MUTEX_LOCK(&lock);
-			for (i = 0; i < route_entries; i++) {
-				identity->getPeerIdentity(&(route_store+i)->owner, &id);
-				id2ip(c, &id);
-				if ((route_store+i)->hops == 0) {
-					cprintf(c, "::/48 hops 0 (This Node)\n");
-				} else {
-					cprintf(c, "::/48 hops %d tunnel gnu%d\n", (route_store+i)->hops,
-						(store1+((route_store+i)->tunnel))->id);
-				}
-			}
-			MUTEX_UNLOCK(&lock);
-		}
-		if (iscmd(cl,ccmd,"realised")) {
-			cprintf(c, "Realised Route Information\n");
-			cprintf(c, "-----------------\n");
-                        cprintf(c, "\n");
-                        MUTEX_LOCK(&lock);
-			for (i = 0; i < realised_entries; i++) {
-				identity->getPeerIdentity(&(realised_store+i)->owner, &id);
-				id2ip(c, &id);
-				if ((realised_store+i)->hops == 0) {
-					cprintf(c, "::/48 hops 0 (This Node)\n");
-				} else {
-					cprintf(c, "::/48 hops %d tunnel gnu%d\n", (realised_store+i)->hops,
-						(store1+((realised_store+i)->tunnel))->id);
-				}
-			}
-			MUTEX_UNLOCK(&lock);
-		}
-		/* add routes in route but not realised to OS
-		 * delete routes in realised but not route from OS
-		 * memcpy routes to realised metric
-		 */
-		if (iscmd(cl,ccmd,"realise")) {
-			realise(c);
-		}
-		if (iscmd(cl,ccmd,"reset")) {
-			cprintf(c, "Rebuilding routing tables\n");
-                        cprintf(c, "\n");
-                        MUTEX_LOCK(&lock);
-			init_router();
-		        for (i = 0; i < entries1; i++) {
-				(store1+i)->route_entry = 0;
-				/* lets send it to everyone - expect response only from VPN enabled nodes tho :-) */
-/*				if ((store1+i)->active == YES) { */
-					rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
-			                if (rgp == NULL) { break; }
-					rgp->type = htons(P2P_PROTO_aip_GETROUTE);
-					rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
-					*((int*)(rgp+1)) = htonl((store1+i)->route_entry);
-					cprintf(c, "Request level %d from peer %d ", (store1+i)->route_entry, i);
-					id2ip(c, &((store1+i)->peer));
-					cprintf(c, "\n");
-					coreAPI->unicast(&((store1+i)->peer),rgp,EXTREME_PRIORITY,60);
-					FREE(rgp);
-/*				}	*/
-			}
-			MUTEX_UNLOCK(&lock);
-			cprintf(c, "Rebuilding routing tables done\n");
-                        cprintf(c, "\n");
-		}
-		/* not really used any more */
-		if (iscmd(cl,ccmd,"fast")) {
-			cprintf(c, "Going faster for you.\n");
-                        cprintf(c, "\n");
-                        MUTEX_LOCK(&lock);
-			interval = 2;
-			MUTEX_UNLOCK(&lock);
-		}
-		if (iscmd(cl,ccmd,"trust")) {
-			cprintf(c, "Give credit to active nodes...\n");
-			MUTEX_LOCK(&lock);
-		        for (i = 0; i < entries1; i++) {
-				if ((store1+i)->active == YES) {
-					cprintf(c, "Uprating peer ");
-					id2ip(c, &(store1+i)->peer);
-					cprintf(c, " with credit %d\n", identity->changeHostTrust(&(store1+i)->peer, 1000));
-				}
-			}
-			MUTEX_UNLOCK(&lock);
-		}
-		/* user wants add a peer - actually this does not work very well */
-		if (iscmd(cl,ccmd,"add")) {
-			if ((cll - cl) > 1) {
-				if ((parm = MALLOC(cll - cl)) != NULL) {
-					strncpy(parm, ccmd+(cl+1), cll-cl-1);
-					*(parm+(cll-cl)) = 0;
-					cprintf(c, "Connect %s for ", parm);
-					if (OK == enc2hash(parm, &(id.hashPubKey))) {
- 						id2ip(c, &id);
-
-						/* this does not seem to work, strangeness with threads and capabilities?
-						 * MUTEX_LOCK(&lock);
-						 * checkensure_peer(&id, NULL);
-						 * MUTEX_UNLOCK(&lock);
-						 */
-
-						/* get it off the local blacklist */
-						identity->whitelistHost(&id);
-
-						/* req route level 0 */
-		                        	rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
-						if (rgp != NULL) { 
-	                                        	rgp->type = htons(P2P_PROTO_aip_GETROUTE);
-	                                        	rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
-							*((int*)(rgp+1)) = 0;
-							coreAPI->unicast(&id,rgp,EXTREME_PRIORITY,4);
-							cprintf(c, " Sent");
-							FREE(rgp);
-						}
-
-						cprintf(c, "\n");
-						FREE(parm);
-					} else {
-						cprintf(c, "Could not decode PeerId from parameter.\n");
-					}
-				} else {
-					cprintf(c, "Could not allocate for key.\n");
-				}
+		cprintf(c, CS_PROTO_VPN_TUNNELS, "%d Tunnels\n", entries1);
+		MUTEX_UNLOCK(&lock);
+	}
+	if (ntohs(message->type) == CS_PROTO_VPN_ROUTES) {
+		MUTEX_LOCK(&lock);
+		for (i = 0; i < route_entries; i++) {
+			identity->getPeerIdentity(&(route_store+i)->owner, &id);
+			id2ip(c, &id);
+			if ((route_store+i)->hops == 0) {
+				cprintf(c, CS_PROTO_VPN_REPLY, "::/48 hops 0 (This Node)\n");
 			} else {
-				cprintf(c, "Require key for parameter\n");
+				cprintf(c, CS_PROTO_VPN_REPLY, "::/48 hops %d tunnel gnu%d\n", (route_store+i)->hops,
+				(store1+((route_store+i)->tunnel))->id);
 			}
+		}
+		cprintf(c, CS_PROTO_VPN_ROUTES, "%d Routes\n", route_entries);
+		MUTEX_UNLOCK(&lock);
+	}
+	if (ntohs(message->type) == CS_PROTO_VPN_REALISED) {
+		MUTEX_LOCK(&lock);
+		for (i = 0; i < realised_entries; i++) {
+			identity->getPeerIdentity(&(realised_store+i)->owner, &id);
+			id2ip(c, &id);
+			if ((realised_store+i)->hops == 0) {
+				cprintf(c, CS_PROTO_VPN_REPLY, "::/48 hops 0 (This Node)\n");
+			} else {
+				cprintf(c, CS_PROTO_VPN_REPLY, "::/48 hops %d tunnel gnu%d\n", (realised_store+i)->hops,
+					(store1+((realised_store+i)->tunnel))->id);
+			}
+		}
+		cprintf(c, CS_PROTO_VPN_REALISED, "%d Realised\n", realised_entries);
+		MUTEX_UNLOCK(&lock);
+	}
+	/* add routes in route but not realised to OS
+	 * delete routes in realised but not route from OS
+	 * memcpy routes to realised metric
+	 */
+	if (ntohs(message->type) == CS_PROTO_VPN_REALISE) {
+		realise(c);
+		cprintf(c, CS_PROTO_VPN_REALISE, "Realise done\n");
+	}
+	if (ntohs(message->type) == CS_PROTO_VPN_RESET) {
+		MUTEX_LOCK(&lock);
+		init_router();
+		for (i = 0; i < entries1; i++) {
+			(store1+i)->route_entry = 0;
+			/* lets send it to everyone - expect response only from VPN enabled nodes tho :-) */
+/*			if ((store1+i)->active == YES) { */
+				rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+		                if (rgp == NULL) { break; }
+				rgp->type = htons(P2P_PROTO_aip_GETROUTE);
+				rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+				*((int*)(rgp+1)) = htonl((store1+i)->route_entry);
+				cprintf(c, CS_PROTO_VPN_REPLY, "Request level %d from peer %d ", (store1+i)->route_entry, i);
+				id2ip(c, &((store1+i)->peer));
+				cprintf(c, CS_PROTO_VPN_REPLY, "\n");
+				coreAPI->unicast(&((store1+i)->peer),rgp,EXTREME_PRIORITY,60);
+				FREE(rgp);
+/*			}	*/
+		}
+		MUTEX_UNLOCK(&lock);
+		cprintf(c, CS_PROTO_VPN_RESET, "Rebuilding routing tables done\n");
+	}
+	if (ntohs(message->type) == CS_PROTO_VPN_TRUST) {
+		MUTEX_LOCK(&lock);
+	        for (i = 0; i < entries1; i++) {
+			if ((store1+i)->active == YES) {
+				cprintf(c, CS_PROTO_VPN_REPLY, "Uprating peer ");
+				id2ip(c, &(store1+i)->peer);
+				cprintf(c, CS_PROTO_VPN_REPLY, " with credit %d\n", identity->changeHostTrust(&(store1+i)->peer, 1000));
+			}
+		}
+		cprintf(c, CS_PROTO_VPN_TRUST, "Gave credit to active nodes of %d nodes...\n", entries1);
+		MUTEX_UNLOCK(&lock);
+	}
+	if (ntohs(message->type) == CS_PROTO_VPN_ADD) {
+		if (parameter > 0) {
+			if ((parm = MALLOC(parameter+1)) != NULL) {
+				strncpy(parm, ccmd, parameter);
+				*(parm+parameter) = 0;
+				cprintf(c, CS_PROTO_VPN_REPLY, "Connect ");
+				if (OK == enc2hash(parm, &(id.hashPubKey))) {
+					id2ip(c, &id);
+
+					/* this does not seem to work, strangeness with threads and capabilities?
+					 * MUTEX_LOCK(&lock);
+					 * checkensure_peer(&id, NULL);
+					 * MUTEX_UNLOCK(&lock);
+					 */
+
+					/* get it off the local blacklist */
+					identity->whitelistHost(&id);
+					
+					switch (session->tryConnect(&id)) {
+					case YES:
+						cprintf(c, CS_PROTO_VPN_REPLY, " already connected.\n");
+						break;
+					case NO:
+						cprintf(c, CS_PROTO_VPN_REPLY, " schedule connection.\n");
+						break;
+					case SYSERR:
+						cprintf(c, CS_PROTO_VPN_REPLY, " core refused.\n");
+						break;
+						default:
+						cprintf(c, CS_PROTO_VPN_REPLY, " misc error.\n");
+						break;
+					}
+
+					/* req route level 0
+	                        	rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+					if (rgp != NULL) { 
+                                        	rgp->type = htons(P2P_PROTO_aip_GETROUTE);
+                                        	rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+						*((int*)(rgp+1)) = 0;
+						coreAPI->unicast(&id,rgp,EXTREME_PRIORITY,4);
+						cprintf(c, " Sent");
+						FREE(rgp);
+					} */
+
+					cprintf(c, CS_PROTO_VPN_ADD, "\n");
+				} else {
+					cprintf(c, CS_PROTO_VPN_ADD, "Could not decode PeerId %s from parameter.\n", parm);
+					
+				}
+				FREE(parm);
+			} else {
+				cprintf(c, CS_PROTO_VPN_ADD, "Could not allocate for key.\n");
+			}
+		} else {
+			cprintf(c, CS_PROTO_VPN_ADD, "Require key for parameter\n");
 		}
 	}
 	return OK;
@@ -1297,8 +1345,7 @@ commands include: help, debug0, debug1, tunnel, route, reset\r\n\
 
 static void clientExitHandler(ClientHandle c) {
 	MUTEX_LOCK(&lock);
-	if (c == client)
-		client = NULL;
+		remove_client(c);
 	MUTEX_UNLOCK(&lock);
 }
 
@@ -1310,19 +1357,33 @@ static void clientExitHandler(ClientHandle c) {
  *
  */
 int initialize_module_vpn(CoreAPIForApplication * capi) {
+	int pfd;
+	char* str = "OK\r\n";
+
 	MUTEX_CREATE(&lock);
 
-	/** client to write debug msg to */
-	client = NULL;
 	coreAPI = capi;
 
-	/* Give GNUnet permission to administrate net interfaces itself. Needs access in /etc/sudoers
+	/* Signal to the root init script we want cap_net_admin
 	 */
-	system("sudo setpcaps cap_net_admin+eip `pidof gnunetd`");
+	pfd = open("/var/lib/GNUnet/gnunet.vpn", O_WRONLY);
+	if (pfd > -1) {
+		write(pfd, str, strlen(str));
+		close(pfd);
+	}
+	pfd = open("/var/lib/GNUnet/gnunet.vpn", O_RDONLY);
+	if (pfd > -1) {
+		read(pfd, str, strlen(str));
+		close(pfd);
+	}
+	unlink("/var/lib/GNUnet/gnunet.vpn");
+
+	/* system("sudo setpcaps cap_net_admin+eip `pidof gnunetd`"); */
+
 	admin_fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("`%s' initialising RFC4913 module  %d and %d\n"), "template", CS_PROTO_MAX_USED, P2P_PROTO_MAX_USED);
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 my First 4 hex digits of host id are %x\n"), capi->myIdentity->hashPubKey.bits[0]);
+	LOG(LOG_DEBUG, _("`%s' initialising RFC4913 module  %d and %d\n"), "template", CS_PROTO_MAX_USED, P2P_PROTO_MAX_USED);
+	LOG(LOG_DEBUG, _("RFC4193 my First 4 hex digits of host id are %x\n"), capi->myIdentity->hashPubKey.bits[0]);
 
 	/* core calls us to receive messages */
 	/* get a PONG = peer is online */
@@ -1335,10 +1396,22 @@ int initialize_module_vpn(CoreAPIForApplication * capi) {
 	if (SYSERR == capi->registerHandler(P2P_PROTO_hangup, &handlep2pMSG)) return SYSERR;
 	if (SYSERR == capi->registerClientExitHandler(&clientExitHandler)) return SYSERR;
 	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_MSG, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_DEBUGOFF, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_DEBUGON, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_TUNNELS, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_ROUTES, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_REALISED, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_RESET, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_REALISE, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_ADD, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_TRUST, &csHandle)) return SYSERR;
+	if (SYSERR == capi->registerClientHandler(CS_PROTO_VPN_REPLY, &csHandle)) return SYSERR;
 
   	identity = coreAPI->requestService("identity");
+  	session  = coreAPI->requestService("session");
 
-	GE_ASSERT(ectx, identity != NULL);
+	GNUNET_ASSERT(identity != NULL);
+	GNUNET_ASSERT(session  != NULL);
 
 	init_router();	/* reqire identity */
 	init_realised();	/* reqire identity */
@@ -1378,9 +1451,19 @@ void done_module_vpn() {
 	coreAPI->unregisterHandler(p2p_PROTO_PONG, &handlep2pMSG);
 	coreAPI->unregisterHandler(P2P_PROTO_hangup, &handlep2pMSG);
 	coreAPI->unregisterClientHandler(CS_PROTO_VPN_MSG, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_DEBUGOFF, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_DEBUGON, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_TUNNELS, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_ROUTES, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_REALISED, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_RESET, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_REALISE, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_ADD, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_TRUST, &csHandle);
+	coreAPI->unregisterClientHandler(CS_PROTO_VPN_REPLY, &csHandle);
 	coreAPI->unregisterClientExitHandler(&clientExitHandler);
 
-	GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER, _("RFC4193 Waiting for tun thread to end\n"));
+	LOG(LOG_INFO, _("RFC4193 Waiting for tun thread to end\n"));
 
 	running = 0;
 	/* thread should wake up and exit */
@@ -1391,9 +1474,11 @@ void done_module_vpn() {
 
 	/* wait for it to exit */
 	PTHREAD_JOIN(&tunThreadInfo, &returnval);
-	GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER, _("RFC4193 The tun thread has ended\n"));
+	LOG(LOG_INFO, _("RFC4193 The tun thread has ended\n"));
 
   	coreAPI->releaseService(identity);
+  	coreAPI->releaseService(session);
+
 	identity = NULL;
 
 	closefile(signalingPipe[0]);
@@ -1402,7 +1487,7 @@ void done_module_vpn() {
 	/* bye bye TUNTAP ... */
 	for (i = 0; i < entries1; i++) {
 		if (((store1+i)->fd) != 0) {
-			GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, _("RFC4193 Closing tunnel %d fd %d\n"), i, (store1+i)->fd);
+			LOG(LOG_DEBUG, _("RFC4193 Closing tunnel %d fd %d\n"), i, (store1+i)->fd);
 			close((store1+i)->fd);
 			(store1+i)->fd = 0;
 		}
