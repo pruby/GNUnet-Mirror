@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,10 +29,15 @@
 #include "gnunet_protocols.h"
 #include "tracekit.h"
 
-static CoreAPIForApplication * coreAPI = NULL;
-static Mutex lock;
-static unsigned int clientCount = 0;
-static ClientHandle * clients = NULL;
+static CoreAPIForApplication * coreAPI;
+
+static struct MUTEX * lock;
+
+static unsigned int clientCount;
+
+static struct ClientHandle ** clients;
+
+static struct GE_Context * ectx;
 
 typedef struct {
   PeerIdentity initiator;
@@ -46,7 +51,7 @@ typedef struct {
 static RTE * routeTable[MAXROUTE];
 
 static int handlep2pReply(const PeerIdentity * sender,
-			  const P2P_MESSAGE_HEADER * message) {
+			  const MESSAGE_HEADER * message) {
   unsigned int i;
   unsigned int hostCount;
   P2P_tracekit_reply_MESSAGE * reply;
@@ -58,43 +63,50 @@ static int handlep2pReply(const PeerIdentity * sender,
   hostCount = (ntohs(message->size)-sizeof(P2P_tracekit_reply_MESSAGE))/sizeof(PeerIdentity);
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity)) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Received invalid `%s' message from `%s'.\n"),
-	"P2P_tracekit_probe_MESSAGE",
-	&sen);
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Received invalid `%s' message from `%s'.\n"),
+	   "P2P_tracekit_probe_MESSAGE",
+	   &sen);
     return SYSERR;
   }
   reply = (P2P_tracekit_reply_MESSAGE*)message;
   hash2enc(&reply->initiatorId.hashPubKey,
 	   &initiator);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "TRACEKIT: Sending reply back to initiator `%s'.\n",
-      &initiator);
-  MUTEX_LOCK(&lock);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "TRACEKIT: Sending reply back to initiator `%s'.\n",
+	 &initiator);
+  MUTEX_LOCK(lock);
   for (i=0;i<MAXROUTE;i++) {
     if (routeTable[i] == NULL)
       continue;
     if ( (routeTable[i]->timestamp == (TIME_T)ntohl(reply->initiatorTimestamp)) &&
-	 (equalsHashCode512(&routeTable[i]->initiator.hashPubKey,
-			    &reply->initiatorId.hashPubKey) ) ) {
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "TRACEKIT: found matching entry in routing table\n");
-      if (equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
-			    &routeTable[i]->replyTo.hashPubKey) ) {
+	 (0 == memcmp(&routeTable[i]->initiator.hashPubKey,
+		      &reply->initiatorId.hashPubKey,
+		      sizeof(HashCode512)) ) ) {
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "TRACEKIT: found matching entry in routing table\n");
+      if (0 == memcmp(&coreAPI->myIdentity->hashPubKey,
+		      &routeTable[i]->replyTo.hashPubKey,
+		      sizeof(HashCode512)) ) {
 	unsigned int idx;
 	CS_tracekit_reply_MESSAGE * csReply;
 
 	idx = ntohl(reply->clientId);
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "TRACEKIT: I am initiator, sending to client.\n");
+	GE_LOG(ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "TRACEKIT: I am initiator, sending to client.\n");
 	if (idx >= clientCount) {
 	  GE_BREAK(ectx, 0);
 	  continue; /* discard */
 	}
 	if (clients[idx] == NULL) {
-	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	      "TRACEKIT: received response on slot %u, but client already exited.\n",
-	      idx);
+	  GE_LOG(ectx, 
+		 GE_DEBUG | GE_REQUEST | GE_USER,
+		 "TRACEKIT: received response on slot %u, but client already exited.\n",
+		 idx);
 	  continue; /* discard */
 	}
 	
@@ -117,9 +129,10 @@ static int handlep2pReply(const PeerIdentity * sender,
 
 	hash2enc(&routeTable[i]->replyTo.hashPubKey,
 		 &hop);
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "TRACEKIT: forwarding to next hop `%s'\n",
-	    &hop);
+	GE_LOG(ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "TRACEKIT: forwarding to next hop `%s'\n",
+	       &hop);
 	coreAPI->unicast(&routeTable[i]->replyTo,
 			 message,
 			 routeTable[i]->priority,
@@ -127,7 +140,7 @@ static int handlep2pReply(const PeerIdentity * sender,
       }
     }
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 
@@ -155,8 +168,9 @@ static void getPeerCallback(const PeerIdentity * id,
 static void transmit(const PeerIdentity * id,
 		     void * cls) {
   P2P_tracekit_probe_MESSAGE * pro = cls;
-  if (! hostIdentityEquals(id,
-			   &pro->initiatorId))
+  if (0 != memcmp(id,
+		  &pro->initiatorId,
+		  sizeof(PeerIdentity)))
     coreAPI->unicast(id,
 		     &pro->header,
 		     ntohl(pro->priority),
@@ -164,7 +178,7 @@ static void transmit(const PeerIdentity * id,
 }
 
 static int handlep2pProbe(const PeerIdentity * sender,
-			  const P2P_MESSAGE_HEADER * message) {
+			  const MESSAGE_HEADER * message) {
   P2P_tracekit_reply_MESSAGE * reply;
   P2P_tracekit_probe_MESSAGE * msg;
   Tracekit_Collect_Trace_Closure closure;
@@ -182,39 +196,44 @@ static int handlep2pProbe(const PeerIdentity * sender,
 	   &sen);
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_probe_MESSAGE)) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Received invalid `%s' message from `%s'.\n"),
-	"P2P_tracekit_probe_MESSAGE",
-	&sen);
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Received invalid `%s' message from `%s'.\n"),
+	   "P2P_tracekit_probe_MESSAGE",
+	   &sen);
     return SYSERR;
   }
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "TRACEKIT: received probe\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "TRACEKIT: received probe\n");
   TIME(&now);
   msg = (P2P_tracekit_probe_MESSAGE*) message;
   if ((TIME_T)ntohl(msg->timestamp) > 3600 + now) {
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"TRACEKIT: probe has timestamp in the far future (%d > %d), dropping\n",
-	ntohl(msg->timestamp),
-	3600 + now);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "TRACEKIT: probe has timestamp in the far future (%d > %d), dropping\n",
+	   ntohl(msg->timestamp),
+	   3600 + now);
     return SYSERR; /* Timestamp is more than 1h in the future. Invalid! */
   }
   hash2enc(&msg->initiatorId.hashPubKey,
 	   &init);
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   /* test if already processed */
   for (i=0;i<MAXROUTE;i++) {
     if (routeTable[i] == NULL)
       continue;
     if ( (routeTable[i]->timestamp == (TIME_T)ntohl(msg->timestamp)) &&
-	 equalsHashCode512(&routeTable[i]->initiator.hashPubKey,
-			   &msg->initiatorId.hashPubKey) ) {
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "TRACEKIT-PROBE %d from `%s' received twice (slot %d), ignored\n",
-	  ntohl(msg->timestamp),
-	  &init,
-	  i);
-      MUTEX_UNLOCK(&lock);
+	 0 == memcmp(&routeTable[i]->initiator.hashPubKey,
+		     &msg->initiatorId.hashPubKey,
+		     sizeof(HashCode512)) ) {
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "TRACEKIT-PROBE %d from `%s' received twice (slot %d), ignored\n",
+	     ntohl(msg->timestamp),
+	     &init,
+	     i);
+      MUTEX_UNLOCK(lock);
       return OK;
     }
   }
@@ -238,9 +257,10 @@ static int handlep2pProbe(const PeerIdentity * sender,
     }
   }
   if (sel == -1) {
-    MUTEX_UNLOCK(&lock);
-    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	_("TRACEKIT: routing table full, trace request dropped\n"));
+    MUTEX_UNLOCK(lock);
+    GE_LOG(ectx, 
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   _("TRACEKIT: routing table full, trace request dropped\n"));
     return OK;
   }
   if (routeTable[sel] == NULL)
@@ -253,13 +273,14 @@ static int handlep2pProbe(const PeerIdentity * sender,
     = msg->initiatorId;
   routeTable[sel]->replyTo
     = *sender;
-  MUTEX_UNLOCK(&lock);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "TRACEKIT-PROBE started at %d by peer `%s' received, processing in slot %d with %u hops\n",
-      ntohl(msg->timestamp),
-      &init,
-      sel,
-      ntohl(msg->hopsToGo));
+  MUTEX_UNLOCK(lock);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "TRACEKIT-PROBE started at %d by peer `%s' received, processing in slot %d with %u hops\n",
+	 ntohl(msg->timestamp),
+	 &init,
+	 sel,
+	 ntohl(msg->hopsToGo));
   hops = ntohl(msg->hopsToGo);
   /* forward? */
   if (hops > 0) {
@@ -313,27 +334,29 @@ static int handlep2pProbe(const PeerIdentity * sender,
   return OK;
 }
 
-static int csHandle(ClientHandle client,
-		    const CS_MESSAGE_HEADER * message) {
+static int csHandle(struct ClientHandle * client,
+		    const MESSAGE_HEADER * message) {
   int i;
   int idx;
   CS_tracekit_probe_MESSAGE * csProbe;
   P2P_tracekit_probe_MESSAGE p2pProbe;
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "TRACEKIT: client sends probe request\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "TRACEKIT: client sends probe request\n");
 
   /* build probe, broadcast */
   csProbe = (CS_tracekit_probe_MESSAGE*) message;
   if (ntohs(csProbe->header.size) !=
       sizeof(CS_tracekit_probe_MESSAGE) ) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("TRACEKIT: received invalid `%s' message\n"),
-	"CS_tracekit_probe_MESSAGE");
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("TRACEKIT: received invalid `%s' message\n"),
+	   "CS_tracekit_probe_MESSAGE");
     return SYSERR;
   }
 
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   idx = -1;
   for (i=0;i<clientCount;i++) {
     if (clients[i] == client) {
@@ -353,10 +376,11 @@ static int csHandle(ClientHandle client,
     idx = clientCount-1;
   }
   clients[idx] = client;
-  MUTEX_UNLOCK(&lock);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "TRACEKIT: client joins in slot %u.\n",
-      idx);
+  MUTEX_UNLOCK(lock);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "TRACEKIT: client joins in slot %u.\n",
+	 idx);
 
   p2pProbe.header.size
     = htons(sizeof(P2P_tracekit_probe_MESSAGE));
@@ -378,15 +402,16 @@ static int csHandle(ClientHandle client,
   return OK;
 }
 
-static void clientExitHandler(ClientHandle c) {
+static void clientExitHandler(struct ClientHandle * c) {
   int i;
 
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (i=0;i<clientCount;i++)
     if (clients[i] == c) {
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "TRACEKIT: client in slot %u exits.\n",
-	  i);
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "TRACEKIT: client in slot %u exits.\n",
+	     i);
       clients[i] = NULL;
       break;
     }
@@ -399,19 +424,21 @@ static void clientExitHandler(ClientHandle c) {
     GROW(clients,
 	 clientCount,
 	 i);
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
 }
 
 int initialize_module_tracekit(CoreAPIForApplication * capi) {
   int ok = OK;
 
-  MUTEX_CREATE(&lock);
+  ectx = capi->ectx;
+  lock = MUTEX_CREATE(NO);
   coreAPI = capi;
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "TRACEKIT registering handlers %d %d and %d\n",
-      P2P_PROTO_tracekit_PROBE,
-      P2P_PROTO_tracekit_REPLY,
-      CS_PROTO_tracekit_PROBE);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "TRACEKIT registering handlers %d %d and %d\n",
+	 P2P_PROTO_tracekit_PROBE,
+	 P2P_PROTO_tracekit_REPLY,
+	 CS_PROTO_tracekit_PROBE);
   memset(routeTable,
 	 0,
 	 MAXROUTE*sizeof(RTE*));
@@ -426,9 +453,12 @@ int initialize_module_tracekit(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(CS_PROTO_tracekit_PROBE,
 					    (CSHandler)&csHandle))
     ok = SYSERR;
-  setConfigurationString("ABOUT",
-			 "tracekit",
-			 gettext_noop("allows mapping of the network topology"));
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "tracekit",
+						   gettext_noop("allows mapping of the network topology")));
   return ok;
 }
 
@@ -441,7 +471,7 @@ void done_module_tracekit() {
 			     &handlep2pReply);
   coreAPI->unregisterClientExitHandler(&clientExitHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_tracekit_PROBE,
-				   (CSHandler)&csHandle);
+				   &csHandle);
   for (i=0;i<MAXROUTE;i++) {
     FREENONNULL(routeTable[i]);
     routeTable[i] = NULL;
@@ -449,7 +479,8 @@ void done_module_tracekit() {
   GROW(clients,
        clientCount,
        0);
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
+  lock = NULL;
   coreAPI = NULL;
 }
 
