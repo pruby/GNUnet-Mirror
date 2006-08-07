@@ -29,9 +29,8 @@ Notes:
       traffic, ecrs_core, template, tbench, tracekit compile
     + bootstrap_http: maybe switch to libwww?
     + for fs: fs (18500), gap (2800)
-    + rest: sqstore_mysql, dht, chat, kvstore_sqlite, 
-            sqstore_mysql, rpc, testbed, 
-            topology_f2f, vpn
+    + rest: sqstore_mysql, dht, rpc, topology_f2f, vpn
+    + low priority: chat, kvstore_sqlite, testbed
   * setup:
     + nothing compiles
 - adapt util testcases and main GNUnet codebase
