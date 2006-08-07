@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,9 +26,11 @@
 
 #include "platform.h"
 #include "gnunet_protocols.h"
+#include "gnunet_util_network_client.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_crypto.h"
 #include "tbench.h"
-
-#define TBENCH_VERSION "0.1.1"
 
 #define DEFAULT_MESSAGE_SIZE	10
 #define DEFAULT_TIMEOUT		(2 * cronSECONDS)
@@ -37,161 +39,52 @@
 #define OF_HUMAN_READABLE 0
 #define OF_GNUPLOT_INPUT 1
 
-static unsigned int messageSize = DEFAULT_MESSAGE_SIZE;
-static unsigned int messageCnt  = 1;
+static unsigned long long messageSize = DEFAULT_MESSAGE_SIZE;
+static unsigned long long messageCnt  = 1;
 static char * messageReceiver;
-static unsigned int messageIterations = 1;
-static unsigned int messageTrainSize  = 1;
+static unsigned long long messageIterations = 1;
+static unsigned long long messageTrainSize  = 1;
 static cron_t messageTimeOut          = DEFAULT_TIMEOUT;
 static cron_t messageSpacing          = DEFAULT_SPACING;
-static unsigned int outputFormat      = OF_HUMAN_READABLE;
+static int outputFormat               = OF_HUMAN_READABLE;
+
 
 /**
- * Parse the options, set the timeout.
- * @param argc the number of options
- * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit
+ * All gnunet-tbench command line options
  */
-static int parseOptions(int argc,
-			char ** argv) {
-  int option_index;
-  int c;
+static struct CommandLineOption gnunettbenchOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Start GNUnet transport benchmarking tool.")), /* -h */
+  { 'g', "gnuplot", NULL, 
+    gettext_noop("output in gnuplot format"), 0,
+    &gnunet_getopt_configure_set_one, &outputFormat },
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  { 'i', "iterations", "ITER",
+    gettext_noop("number of iterations"), 1,
+    &gnunet_getopt_configure_set_ulong, &messageIterations },
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'n', "msg", "MESSAGES",
+    gettext_noop("number of messages to use per iteration"), 1,
+    &gnunet_getopt_configure_set_ulong, &messageCnt },
+  { 'r', "rec", "RECEIVER",
+    gettext_noop("receiver host identifier (ENC file name)"), 1,
+    &gnunet_getopt_configure_set_string, &messageReceiver },
+  { 's', "size", "SIZE",
+    gettext_noop("message size"), 1,
+    &gnunet_getopt_configure_set_ulong, &messageSize },
+  { 'S', "space", "SPACE",
+    gettext_noop("sleep for SPACE ms after each a message block"), 1,
+    &gnunet_getopt_configure_set_ulong, &messageTrainSize },
+  { 't', "timeout", "TIMEOUT",
+    gettext_noop("time to wait for the completion of an iteration (in ms)"), 1,
+    &gnunet_getopt_configure_set_ulong, &messageTimeOut },
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  { 'X', "xspace", "COUNT",
+    gettext_noop("number of messages in a message block"), 1,
+    &gnunet_getopt_configure_set_ulong, &messageSpacing },
+  COMMAND_LINE_OPTION_END,
+};
 
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  while (1) {
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "gnuplot", 0, 0, 'g' },
-      { "iterations", 1, 0, 'i'},
-      { "msg", 1, 0, 'n'},
-      { "rec", 1, 0, 'r'},
-      { "size", 1, 0, 's' },
-      { "space", 1, 0, 'S' },
-      { "timeout", 1, 0, 't' },
-      { "xspace", 1, 0, 'X' },
-      { 0,0,0,0 }
-    };
-    option_index=0;
-    c = GNgetopt_long(argc,
-		      argv,
-		      "vhdc:L:H:n:s:r:i:t:S:X:g",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process*/
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'g':
-      outputFormat = OF_GNUPLOT_INPUT;
-      break;
-    case 'h': {
-      static Help help[] = {
-	HELP_CONFIG,
-	HELP_HELP,
-	{ 'g', "gnuplot", NULL,
-	  gettext_noop("output in gnuplot format") },
-	HELP_LOGLEVEL,	
-	{ 'i', "iterations", "ITER",
-	  gettext_noop("number of iterations") },
-	{ 'n', "msg", "MESSAGES",
-	  gettext_noop("number of messages to use per iteration") },
-	{ 'r', "rec", "RECEIVER",
-	  gettext_noop("receiver host identifier (ENC file name)") },
-	{ 's', "size", "SIZE",
-	  gettext_noop("message size") },
-	{ 'S', "space", "SPACE",
-	  gettext_noop("sleep for SPACE ms after each a message block") },
-	{ 't', "timeout", "TIMEOUT",
-	  gettext_noop("time to wait for the completion of an iteration (in ms)") },
-	HELP_VERSION,
-	{ 'X', "xspace", "COUNT",
-	  gettext_noop("number of messages in a message block") },
-	HELP_END,
-      };
-      formatHelp("gnunet-tbench [OPTIONS]",
-		 _("Start GNUnet transport benchmarking tool."),
-		 help);
-      return SYSERR;
-    }
-    case 'i':
-      if(1 != sscanf(GNoptarg,
-		     "%ud",
-		     &messageIterations)){
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-i");
-	return SYSERR;
-      }
-      break;
-    case 'n':
-      if(1 != sscanf(GNoptarg,
-		     "%ud",
-		     &messageCnt)){
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-n");
-	return SYSERR;
-      }
-      break;
-    case 'r':
-      messageReceiver = STRDUP(GNoptarg);
-      break;
-    case 's':
-      if(1 != sscanf(GNoptarg,
-		     "%ud",
-		     &messageSize)){
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-s");
-	return SYSERR;
-      }
-      break;
-    case 'S':
-      if(1 != sscanf(GNoptarg,
-		     "%ud",
-		     &messageTrainSize)){
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-S");
-	return SYSERR;
-      }
-      break;
-    case 't':
-      if(1 != SSCANF(GNoptarg,
-		     "%llud",
-		     &messageTimeOut)){
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-t");
-	return SYSERR;
-      }
-      break;
-    case 'v':
-      printf("GNUnet v%s, gnunet-tbench v%s\n",
-	     VERSION,
-	     TBENCH_VERSION);
-      return SYSERR;
-    case 'X':
-      if(1 != SSCANF(GNoptarg,
-		     "%llud",
-		     &messageSpacing)){
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-X");
-	return SYSERR;
-      }
-      break;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"));
-      return -1;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  return OK;
-}
 
 /**
  * Tool to benchmark the performance of the P2P transports.
@@ -200,17 +93,43 @@ static int parseOptions(int argc,
  * @param argv command line arguments
  * @return return value from gnunetsearch: 0: ok, -1: error
  */
-int main(int argc, char ** argv) {
-  GNUNET_TCP_SOCKET * sock;
+int main(int argc, 
+	 const char ** argv) {
+  struct ClientServerConnection * sock;
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE * buffer;
   float messagesPercentLoss;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0; /* parse error, --help, etc. */
-  sock = getClientSocket();
-  if (sock == NULL)
-    errexit(_("Could not connect to gnunetd.\n"));
+  struct GE_Context * ectx;
+  struct GC_Configuration * cfg;
+
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  os_init(ectx);
+  if (-1 == gnunet_parse_options("gnunet-tbench",
+				 ectx,
+				 cfg,
+				 gnunettbenchOptions,
+				 (unsigned int) argc,
+				 argv)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
+  sock = client_connection_create(ectx,
+				  cfg);
+  if (sock == NULL) {
+    fprintf(stderr,
+	    _("Error establishing connection with gnunetd.\n"));
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
 
   msg.header.size = htons(sizeof(CS_tbench_request_MESSAGE));
   msg.header.type = htons(CS_PROTO_tbench_REQUEST);
@@ -221,23 +140,36 @@ int main(int argc, char ** argv) {
   msg.trainSize   = htonl(messageTrainSize);
   msg.timeOut     = htonll(messageTimeOut);
   msg.priority    = htonl(5);
-  if (messageReceiver == NULL)
-    errexit(_("You must specify a receiver!\n"));
+  if (messageReceiver == NULL) {
+    fprintf(stderr,
+	    _("You must specify a receiver!\n"));
+    connection_destroy(sock);
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
   if (OK != enc2hash(messageReceiver,
-		     &msg.receiverId.hashPubKey))		
-    errexit(_("Invalid receiver peer ID specified (`%s' is not valid name).\n"),
+		     &msg.receiverId.hashPubKey)) {
+    fprintf(stderr,
+	    _("Invalid receiver peer ID specified (`%s' is not valid name).\n"),
 	    messageReceiver);
+    connection_destroy(sock);
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
   FREE(messageReceiver);
 
-  if (SYSERR == writeToSocket(sock,
-			      &msg.header))
+  if (SYSERR == connection_write(sock,
+				 &msg.header))
     return -1;
 
   buffer = NULL;
-  if (OK == readFromSocket(sock,
-			   (CS_MESSAGE_HEADER**)&buffer)) {
-    GE_ASSERT(ectx, ntohs(buffer->header.size) ==
-		  sizeof(CS_tbench_reply_MESSAGE));
+  if (OK == connection_read(sock,
+			    (MESSAGE_HEADER**)&buffer)) {
+    GE_ASSERT(ectx, 
+	      ntohs(buffer->header.size) ==
+	      sizeof(CS_tbench_reply_MESSAGE));
     if ((float)buffer->mean_loss <= 0){
       GE_BREAK(ectx, 0);
       messagesPercentLoss = 0.0;
@@ -278,8 +210,9 @@ int main(int argc, char ** argv) {
   } else
     printf(_("\nDid not receive the message from gnunetd. Is gnunetd running?\n"));
 
-  releaseClientSocket(sock);
-  doneUtil();
+  connection_destroy(sock);
+  GC_free(cfg);
+  GE_free_context(ectx);
   return 0;
 }
 

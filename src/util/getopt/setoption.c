@@ -88,4 +88,40 @@ int gnunet_getopt_configure_increment_value(CommandLineProcessorContext * ctx,
   return ret;
 }
 
+int gnunet_getopt_configure_set_one(CommandLineProcessorContext * ctx,
+				    void * scls,
+				    const char * option,
+				    const char * value) {
+  int * val = scls;
+  val = 1;
+  return OK;
+}
+
+int gnunet_getopt_configure_set_string(CommandLineProcessorContext * ctx,
+				       void * scls,
+				       const char * option,
+				       const char * value) {
+  char ** val = scls;
+  if (value == NULL)
+    return SYSERR;
+  *val = STRDUP(value);
+  return OK;
+}
+
+int gnunet_getopt_configure_set_ulong(CommandLineProcessorContext * ctx,
+				      void * scls,
+				      const char * option,
+				      const char * value) {
+  unsigned long long * val = scls;
+  if (1 != SSCANF(value, "%llu", val)) {
+    GE_LOG(ctx->ectx, 
+	   GE_ERROR | GE_IMMEDIATE | GE_USER,
+	   _("You must pass a number to the `%s' option.\n"),
+	   "-X");
+    return SYSERR;
+  }
+  return OK;
+}
+
+
 /* end of setoption.c */

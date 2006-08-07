@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -43,7 +43,7 @@ typedef struct {
  * transport performance.
  */
 typedef struct {
-  P2P_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   unsigned int iterationNum;
   unsigned int packetNum;
   unsigned int priority;
@@ -54,11 +54,11 @@ typedef struct {
 /**
  * Lock for access to semaphores.
  */
-static Mutex lock;
+static struct MUTEX * lock;
 
-static Semaphore * presem;
+static struct SEMAPHORE * presem;
 
-static Semaphore * postsem;
+static struct SEMAPHORE * postsem;
 
 /**
  * What was the packet number we received?
@@ -70,6 +70,7 @@ static unsigned int lastPacketNumber;
  * that replies match the current request series).
  */
 static unsigned int currIteration;
+
 static unsigned int currNounce;
 
 /**
@@ -77,6 +78,7 @@ static unsigned int currNounce;
  */
 static int timeoutOccured;
 
+static struct GE_Context * ectx;
 
 static CoreAPIForApplication * coreAPI;
 
@@ -93,9 +95,9 @@ static int pollResults(IterationData * results,
   if (blocking == YES) {
     if (timeoutOccured == YES)
       return results->lossCount;
-    SEMAPHORE_DOWN(postsem);
+    SEMAPHORE_DOWN(postsem, YES);
   } else {
-    if (OK != SEMAPHORE_DOWN_NONBLOCKING(postsem))
+    if (OK != SEMAPHORE_DOWN(postsem, NO))
       return results->lossCount;
   }
   do {
@@ -119,7 +121,7 @@ static int pollResults(IterationData * results,
 #endif
     }
     SEMAPHORE_UP(presem);
-  } while (OK == SEMAPHORE_DOWN_NONBLOCKING(postsem));
+  } while (OK == SEMAPHORE_DOWN(postsem, NO));
   return results->lossCount;
 }
 
@@ -128,8 +130,8 @@ static int pollResults(IterationData * results,
  * around and send it back.
  */
 static int handleTBenchReq(const PeerIdentity * sender,
-			   const P2P_MESSAGE_HEADER * message) {
-  P2P_MESSAGE_HEADER * reply;
+			   const MESSAGE_HEADER * message) {
+  MESSAGE_HEADER * reply;
   const P2P_tbench_MESSAGE * msg;
 
   if ( ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
@@ -168,7 +170,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
  * We received a tbench-reply.  Check and count stats.
  */
 static int handleTBenchReply(const PeerIdentity * sender,
-			     const P2P_MESSAGE_HEADER * message) {
+			     const MESSAGE_HEADER * message) {
   const P2P_tbench_MESSAGE * pmsg;
 
   if (ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
@@ -189,13 +191,13 @@ static int handleTBenchReply(const PeerIdentity * sender,
       htonl(pmsg->iterationNum),
       htonl(pmsg->nounce));
 #endif
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   if ( (timeoutOccured == NO) &&
        (presem != NULL) &&
        (postsem != NULL) &&
        (htonl(pmsg->iterationNum) == currIteration) &&
        (htonl(pmsg->nounce) == currNounce) ) {
-    SEMAPHORE_DOWN(presem);
+    SEMAPHORE_DOWN(presem, YES);
     lastPacketNumber = ntohl(pmsg->packetNum);
     SEMAPHORE_UP(postsem);
   } else {
@@ -207,14 +209,15 @@ static int handleTBenchReply(const PeerIdentity * sender,
 	currIteration);
 #endif
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 
 /**
  * Cron-job helper function to signal timeout.
  */
-static void semaUp(Semaphore * sem) {
+static void semaUp(void * cls) {
+  struct SEMAPHORE * sem = cls;
   timeoutOccured = YES;
   SEMAPHORE_UP(sem);
 }
@@ -222,8 +225,8 @@ static void semaUp(Semaphore * sem) {
 /**
  * Handle client request (main function)
  */
-static int csHandleTBenchRequest(ClientHandle client,
-				 const CS_MESSAGE_HEADER * message) {
+static int csHandleTBenchRequest(struct ClientHandle * client,
+				 const MESSAGE_HEADER * message) {
   CS_tbench_request_MESSAGE * msg;
   CS_tbench_reply_MESSAGE reply;
   P2P_tbench_MESSAGE * p2p;
@@ -275,7 +278,7 @@ static int csHandleTBenchRequest(ClientHandle client,
   p2p->header.type = htons(P2P_PROTO_tbench_REQUEST);
   p2p->priority = msg->priority;
 
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (iteration=0;iteration<iterations;iteration++) {
     results[iteration].maxPacketNumber = msgCnt;
     results[iteration].packetsReceived = MALLOC(msgCnt);
@@ -300,18 +303,19 @@ static int csHandleTBenchRequest(ClientHandle client,
     p2p->crc
       = htonl(crc32N(&p2p[1],
 		     size - sizeof(P2P_tbench_MESSAGE)));
-    MUTEX_UNLOCK(&lock); /* allow receiving */
+    MUTEX_UNLOCK(lock); /* allow receiving */
 
-    cronTime(&startTime);
+    startTime = get_time();
     endTime = startTime + ntohll(msg->timeOut);
 
     timeoutOccured = NO;
-    addCronJob((CronJob)&semaUp,
-	       ntohll(msg->timeOut) * cronMILLIS,
-	       0,
-	       postsem);
+    cron_add_job(coreAPI->cron,
+		 &semaUp,
+		 ntohll(msg->timeOut) * cronMILLIS,
+		 0,
+		 postsem);
     for (packetNum=0;packetNum<msgCnt;packetNum++){
-      cronTime(&now);
+      now = get_time();
       if (now > endTime)
 	break; /* timeout */
 
@@ -332,8 +336,9 @@ static int csHandleTBenchRequest(ClientHandle client,
 	   (htonl(msg->trainSize) != 0) &&
 	   (packetNum % htonl(msg->trainSize)) == 0) {
 	delayStart = now;
-	while ( (cronTime(&now) < (delayStart+delay)) &&
+	while ( (get_time() < (delayStart+delay)) &&
 		(timeoutOccured == NO) ) {
+	  now = get_time();
 	  if (delayStart + delay - now  > 5 * cronMILLIS) {
 	    pollResults(&results[iteration], NO);
 	    PTHREAD_SLEEP(5 * cronMILLIS);
@@ -346,10 +351,10 @@ static int csHandleTBenchRequest(ClientHandle client,
 	earlyEnd = get_time();
     }
     while ( (timeoutOccured == NO) &&
-	    (cronTime(&now) < endTime) ) {
+	    (get_time() < endTime) ) {
       if ( (0 == pollResults(&results[iteration], YES) ) &&
 	   (earlyEnd == 0) )
-	earlyEnd = now;
+	earlyEnd = get_time();
       PTHREAD_SLEEP(5 * cronMILLIS);
     }
 
@@ -357,24 +362,26 @@ static int csHandleTBenchRequest(ClientHandle client,
     timeoutOccured = YES;
     SEMAPHORE_UP(presem);
 
-    MUTEX_LOCK(&lock);
+    MUTEX_LOCK(lock);
     if (earlyEnd == 0)
       earlyEnd = now;
     results[iteration].totalTime
       = earlyEnd - startTime;
     FREE(results[iteration].packetsReceived);
-    suspendCron();
-    delCronJob((CronJob)&semaUp,
-	       0,
-	       postsem);
-    resumeCron();
+    cron_suspend(coreAPI->cron,
+		 NO);
+    cron_del_job(coreAPI->cron,
+		 &semaUp,
+		 0,
+		 postsem);
+    cron_resume_jobs(coreAPI->cron,
+		     NO);
     SEMAPHORE_DESTROY(presem);
     SEMAPHORE_DESTROY(postsem);
     presem = NULL;
     postsem = NULL;
-
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
 
   sum_loss = 0;
   sum_time = 0;
@@ -432,7 +439,8 @@ static int csHandleTBenchRequest(ClientHandle client,
 int initialize_module_tbench(CoreAPIForApplication * capi) {
   int ok = OK;
 
-  MUTEX_CREATE(&lock);
+  ectx = capi->ectx;
+  lock = MUTEX_CREATE(NO);
   coreAPI = capi;
   if (SYSERR == capi->registerHandler(P2P_PROTO_tbench_REPLY,
 				      &handleTBenchReply))
@@ -457,7 +465,8 @@ void done_module_tbench() {
 			     &handleTBenchReply);
   coreAPI->unregisterClientHandler(CS_PROTO_tbench_REQUEST,
 				   &csHandleTBenchRequest);
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
+  lock = NULL;
   coreAPI = NULL;
 }
 

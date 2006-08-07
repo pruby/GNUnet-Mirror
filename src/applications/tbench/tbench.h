@@ -31,7 +31,7 @@
  * Client requests peer to perform some profiling.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   /**
    * How big is each message (plus headers).
    * Note that GNUnet is limited to 64k messages.
@@ -75,7 +75,7 @@ typedef struct {
  * Response from server with statistics.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   unsigned int max_loss;
   unsigned int min_loss;
   float mean_loss;

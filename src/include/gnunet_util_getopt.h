@@ -207,6 +207,21 @@ int gnunet_getopt_configure_set_option(CommandLineProcessorContext * ctx,
 				       const char * option,
 				       const char * value);
 
+int gnunet_getopt_configure_set_ulong(CommandLineProcessorContext * ctx,
+				      void * scls,
+				      const char * option,
+				      const char * value);
+
+int gnunet_getopt_configure_set_one(CommandLineProcessorContext * ctx,
+				    void * scls,
+				    const char * option,
+				    const char * value);
+
+int gnunet_getopt_configure_set_string(CommandLineProcessorContext * ctx,
+				       void * scls,
+				       const char * option,
+				       const char * value);
+
 int gnunet_getopt_configure_increment_value(CommandLineProcessorContext * ctx,
 					    void * scls,
 					    const char * option,
