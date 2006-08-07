@@ -36,6 +36,8 @@ static int stat_pid_entries;
 
 static int stat_pid_rc;
 
+static struct GE_Context * ectx;
+
 typedef struct {
   /** the identifier itself */
   HashCode512 id;
@@ -47,7 +49,7 @@ static unsigned int size;
 
 static PID_Entry * table;
 
-static Mutex lock;
+static struct MUTEX * lock;
 
 
 PID_INDEX intern_pid(const PeerIdentity * pid) {
@@ -57,17 +59,18 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
   if (pid == NULL)
     return 0;
   zero = size;
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (ret=1;ret<size;ret++) {
-    if (equalsHashCode512(&pid->hashPubKey,
-			  &table[ret].id)) {
+    if (0 == memcmp(&pid->hashPubKey,
+		    &table[ret].id,
+		    sizeof(HashCode512))) {
       table[ret].rc++;
       if (stats != NULL) {
 	stats->change(stat_pid_rc, 1);
 	if (table[ret].rc == 1)
 	  stats->change(stat_pid_entries, 1);
       }
-      MUTEX_UNLOCK(&lock);
+      MUTEX_UNLOCK(lock);
       return ret;
     } else if ( (zero == size) &&
 		(table[ret].rc == 0) ) {
@@ -89,7 +92,7 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
     stats->change(stat_pid_rc, 1);
     stats->change(stat_pid_entries, 1);
   }  
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return ret;
 }
 
@@ -99,7 +102,7 @@ void decrement_pid_rcs(const PID_INDEX * ids,
   PID_INDEX id;
   if (count == 0)
     return;
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (i=count-1;i>=0;i--) {
     id = ids[i];
     GE_ASSERT(ectx, id < size);
@@ -109,7 +112,7 @@ void decrement_pid_rcs(const PID_INDEX * ids,
 	 (stats != NULL) )
       stats->change(stat_pid_entries, -1);   
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   if (stats != NULL) 
     stats->change(stat_pid_rc, - count);
 }
@@ -117,7 +120,7 @@ void decrement_pid_rcs(const PID_INDEX * ids,
 void change_pid_rc(PID_INDEX id, int delta) {
   if (id == 0)
     return;
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   GE_ASSERT(ectx, id < size);
   GE_ASSERT(ectx, table[id].rc > 0);
   table[id].rc += delta;
@@ -126,7 +129,7 @@ void change_pid_rc(PID_INDEX id, int delta) {
     if (table[id].rc == 0)
       stats->change(stat_pid_entries, -1);
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
 }
 
 void resolve_pid(PID_INDEX id, 
@@ -136,15 +139,17 @@ void resolve_pid(PID_INDEX id,
     GE_BREAK(ectx, 0);
     return;
   }
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   GE_ASSERT(ectx, id < size);
   GE_ASSERT(ectx, table[id].rc > 0);
   pid->hashPubKey = table[id].id;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
 }
 
 
-void init_pid_table(Stats_ServiceAPI * s) {
+void init_pid_table(struct GE_Context * e,
+		    Stats_ServiceAPI * s) {
+  ectx = e;
   stats = s;
   if (stats != NULL) {
     stat_pid_entries 
@@ -152,7 +157,7 @@ void init_pid_table(Stats_ServiceAPI * s) {
     stat_pid_rc
       = stats->create(gettext_noop("# total RC of interned peer IDs in pid table"));
   }
-  MUTEX_CREATE(&lock);
+  lock = MUTEX_CREATE(NO);
 }
 
 
@@ -161,7 +166,9 @@ void done_pid_table() {
        size,
        0);
   stats = NULL;
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
+  lock = NULL;
+  ectx = NULL;
 }
 
 /* end of pid_table.c */

@@ -65,6 +65,8 @@ typedef struct {
 
 static char * index_directory;
 
+static struct GE_Context * ectx;
+
 static char * getOnDemandFile(const HashCode512 * fileId) {
   EncName enc;
   char * fn;
@@ -638,10 +640,10 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
   return OK;
 }
 
-int ONDEMAND_init() {
+int ONDEMAND_init(CoreAPIForApplication * capi) {
   char * tmp;
-
-
+  
+  ectx = capi->ectx;
   tmp
     = getConfigurationString("FS",
 			     "INDEX-DIRECTORY");

@@ -69,7 +69,7 @@ typedef HashCode512 DHT_TableId;
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   DHT_TableId table;
 
@@ -80,7 +80,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   DHT_TableId table;
 
@@ -93,7 +93,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   DHT_TableId table;
 
@@ -111,7 +111,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   unsigned int type; /* nbo */
 
@@ -131,7 +131,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   DHT_TableId table;
 
@@ -147,7 +147,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
 } CS_dht_request_iterate_MESSAGE;
 
@@ -158,7 +158,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   unsigned int totalResults;
 
@@ -175,7 +175,7 @@ typedef struct {
  */
 typedef struct {
 
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   int status; /* NBO */
 

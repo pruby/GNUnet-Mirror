@@ -43,7 +43,8 @@
  *
  * @return OK if cover traffic is sufficient
  */
-int checkCoverTraffic(Traffic_ServiceAPI * traffic,
+int checkCoverTraffic(struct GE_Context * ectx,
+		      Traffic_ServiceAPI * traffic,
 		      unsigned int level);
 
 #endif

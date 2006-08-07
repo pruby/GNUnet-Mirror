@@ -35,7 +35,7 @@
 typedef struct {
   HashCode512 query;
   unsigned int type;
-  ClientHandle client;
+  struct ClientHandle * client;
 } TrackRecord;
 
 /**
@@ -44,14 +44,17 @@ typedef struct {
 static TrackRecord ** trackers;
 
 static unsigned int trackerCount;
+
 static unsigned int trackerSize;
 
 /**
  * Mutex for all query manager structures.
  */
-static Mutex queryManagerLock;
+static struct MUTEX * queryManagerLock;
 
 static CoreAPIForApplication * coreAPI;
+
+static struct GE_Context * ectx;
 
 static void removeEntry(unsigned int off) {
   GE_ASSERT(ectx, off < trackerCount);
@@ -63,13 +66,13 @@ static void removeEntry(unsigned int off) {
     GROW(trackers, trackerSize, trackerSize / 2);
 }
 
-static void ceh(ClientHandle client) {
+static void ceh(struct ClientHandle * client) {
   int i;
-  MUTEX_LOCK(&queryManagerLock);
+  MUTEX_LOCK(queryManagerLock);
   for (i=trackerCount-1;i>=0;i--)
     if (trackers[i]->client == client)
       removeEntry(i);
-  MUTEX_UNLOCK(&queryManagerLock);
+  MUTEX_UNLOCK(queryManagerLock);
 }
 
 /**
@@ -81,16 +84,16 @@ static void ceh(ClientHandle client) {
  */
 void trackQuery(const HashCode512 * query,
 		unsigned int type,
-		const ClientHandle client) {
+		struct ClientHandle * client) {
   int i;
 
   GE_ASSERT(ectx, client != NULL);
-  MUTEX_LOCK(&queryManagerLock);
+  MUTEX_LOCK(queryManagerLock);
   for (i=trackerCount-1;i>=0;i--)
     if ( (trackers[i]->client == client) &&
 	 (equalsHashCode512(&trackers[i]->query,
 			    query)) ) {
-      MUTEX_UNLOCK(&queryManagerLock);
+      MUTEX_UNLOCK(queryManagerLock);
       return;
     }
   if (trackerSize == trackerCount)
@@ -102,7 +105,7 @@ void trackQuery(const HashCode512 * query,
   trackers[trackerCount]->type = type;
   trackers[trackerCount]->client = client;
   trackerCount++;
-  MUTEX_UNLOCK(&queryManagerLock);
+  MUTEX_UNLOCK(queryManagerLock);
 }
 
 /**
@@ -112,19 +115,19 @@ void trackQuery(const HashCode512 * query,
  * @param client where did the query come from?
  */
 void untrackQuery(const HashCode512 * query,
-		  const ClientHandle client) {
+		  struct ClientHandle * client) {
   int i;
 
-  MUTEX_LOCK(&queryManagerLock);
+  MUTEX_LOCK(queryManagerLock);
   for (i=trackerCount-1;i>=0;i--)
     if ( (trackers[i]->client == client) &&
 	 (equalsHashCode512(&trackers[i]->query,
 			    query)) ) {
       removeEntry(i);
-      MUTEX_UNLOCK(&queryManagerLock);
+      MUTEX_UNLOCK(queryManagerLock);
       return;
     }
-  MUTEX_UNLOCK(&queryManagerLock);
+  MUTEX_UNLOCK(queryManagerLock);
 }
 
 /**
@@ -149,7 +152,7 @@ void processResponse(const HashCode512 * key,
 	hash2enc(key,
 		 &enc));
 #endif
-  MUTEX_LOCK(&queryManagerLock);
+  MUTEX_LOCK(queryManagerLock);
   for (i=trackerCount-1;i>=0;i--) {
     if ( (equalsHashCode512(&trackers[i]->query,
 			    key)) &&
@@ -182,7 +185,7 @@ void processResponse(const HashCode512 * key,
 	&enc);
   }
 #endif
-  MUTEX_UNLOCK(&queryManagerLock);
+  MUTEX_UNLOCK(queryManagerLock);
 }
 
 /**
@@ -190,11 +193,12 @@ void processResponse(const HashCode512 * key,
  */
 int initQueryManager(CoreAPIForApplication * capi) {
   coreAPI = capi;
+  ectx = capi->ectx;
   capi->registerClientExitHandler(&ceh);
   GROW(trackers,
        trackerSize,
        64);
-  MUTEX_CREATE(&queryManagerLock);
+  queryManagerLock = MUTEX_CREATE(NO);
   return OK;
 }
 
@@ -207,8 +211,9 @@ void doneQueryManager() {
        0);
   trackerCount = 0;
   coreAPI->unregisterClientExitHandler(&ceh);
-  MUTEX_DESTROY(&queryManagerLock);
+  MUTEX_DESTROY(queryManagerLock);
   coreAPI = NULL;
+  ectx = NULL;
 }
 
 /* end of querymanager.c */

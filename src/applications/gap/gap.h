@@ -203,7 +203,7 @@ typedef unsigned int QUERY_POLICY;
  * be determined from the header size.
  */
 typedef struct {
-  P2P_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * Type of the query (block type).
@@ -237,7 +237,7 @@ typedef struct {
  * Return message for search result.
  */
 typedef struct {
-  P2P_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   HashCode512 primaryKey;
 

@@ -84,7 +84,7 @@ static Datastore_ServiceAPI * datastore;
  */
 static Traffic_ServiceAPI * traffic;
 
-static Mutex lock;
+static struct MUTEX * lock;
 
 static int migration;
 
@@ -93,12 +93,13 @@ static int migration;
  */
 static DHT_TableId dht_table;
 
-static Semaphore * ltgSignal;
+static struct SEMAPHORE * ltgSignal;
 
-static PTHREAD_T localGetProcessor;
+static struct PTHREAD * localGetProcessor;
 
 static LG_Job * lg_jobs;
 
+static struct GE_Context * ectx;
 
 static Datastore_Value *
 gapWrapperToDatastoreValue(const DataContainer * value,
@@ -124,7 +125,7 @@ gapWrapperToDatastoreValue(const DataContainer * value,
   dv->prio = htonl(prio);
   dv->anonymityLevel = htonl(0);
   et = ntohll(gw->timeout);
-  cronTime(&now);
+  now = get_time();
   /* bound ET to MAX_MIGRATION_EXP from now */
   if (et > now) {
     et -= now;
@@ -239,8 +240,8 @@ static void put_complete_callback(DHT_PUT_CLS * cls) {
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleRequestQueryStop(ClientHandle sock,
-				    const CS_MESSAGE_HEADER * req) {
+static int csHandleRequestQueryStop(struct ClientHandle * sock,
+				    const MESSAGE_HEADER * req) {
   CS_fs_request_search_MESSAGE * rs;
 #if DEBUG_FS
   EncName enc;
@@ -274,8 +275,8 @@ static int csHandleRequestQueryStop(ClientHandle sock,
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
-						const CS_MESSAGE_HEADER * req) {
+static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
+						const MESSAGE_HEADER * req) {
   const CS_fs_request_insert_MESSAGE * ri;
   Datastore_Value * datum;
   int ret;
@@ -321,10 +322,10 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
   memcpy(&datum[1],
 	 &ri[1],
 	 ntohs(req->size) - sizeof(CS_fs_request_insert_MESSAGE));
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   ret = datastore->put(&query,
 		       datum);
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   if ( (ntohl(ri->anonymityLevel) == 0) &&
        (dht != NULL) ) {
     GapWrapper * gw;
@@ -341,7 +342,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
     gw->dc.size = htonl(size);
     et = ntohll(ri->expiration);
     /* expiration time normalization and randomization */
-    cronTime(&now);
+    now = get_time();
     if (et > now) {
       et -= now;
       et = et % MAX_MIGRATION_EXP;
@@ -370,8 +371,8 @@ static int csHandleCS_fs_request_insert_MESSAGE(ClientHandle sock,
 /**
  * Process a request to symlink a file
  */
-static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
-						    const CS_MESSAGE_HEADER * req) {
+static int csHandleCS_fs_request_init_index_MESSAGE(struct ClientHandle * sock,
+						    const MESSAGE_HEADER * req) {
   int ret;
   char *fn;
   CS_fs_request_init_index_MESSAGE *ri;
@@ -411,8 +412,8 @@ static int csHandleCS_fs_request_init_index_MESSAGE(ClientHandle sock,
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleCS_fs_request_index_MESSAGE(ClientHandle sock,
-					       const CS_MESSAGE_HEADER * req) {
+static int csHandleCS_fs_request_index_MESSAGE(struct ClientHandle * sock,
+					       const MESSAGE_HEADER * req) {
   int ret;
   const CS_fs_request_index_MESSAGE * ri;
 
@@ -476,8 +477,8 @@ static int completeValue(const HashCode512 * key,
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
-						const CS_MESSAGE_HEADER * req) {
+static int csHandleCS_fs_request_delete_MESSAGE(struct ClientHandle * sock,
+						const MESSAGE_HEADER * req) {
   int ret;
   const CS_fs_request_delete_MESSAGE * rd;
   Datastore_Value * value;
@@ -519,7 +520,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
       &enc,
       type);
 #endif
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   if (SYSERR == datastore->get(&query,
 			       type,
 			       &completeValue,
@@ -528,7 +529,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
 			 value);
   else /* not found */
     ret = SYSERR;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   FREE(value);
 #if DEBUG_FS
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -542,8 +543,8 @@ static int csHandleCS_fs_request_delete_MESSAGE(ClientHandle sock,
 /**
  * Process a client request unindex content.
  */
-static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
-						 const CS_MESSAGE_HEADER * req) {
+static int csHandleCS_fs_request_unindex_MESSAGE(struct ClientHandle * sock,
+						 const MESSAGE_HEADER * req) {
   int ret;
   CS_fs_request_unindex_MESSAGE * ru;
 
@@ -567,8 +568,8 @@ static int csHandleCS_fs_request_unindex_MESSAGE(ClientHandle sock,
  * Process a client request to test if certain
  * data is indexed.
  */
-static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
-						      const CS_MESSAGE_HEADER * req) {
+static int csHandleCS_fs_request_test_index_MESSAGEed(struct ClientHandle * sock,
+						      const MESSAGE_HEADER * req) {
   int ret;
   RequestTestindex * ru;
 
@@ -591,8 +592,8 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(ClientHandle sock,
  * Process a client request to obtain the current
  * averge priority.
  */
-static int csHandleRequestGetAvgPriority(ClientHandle sock,
-					 const CS_MESSAGE_HEADER * req) {
+static int csHandleRequestGetAvgPriority(struct ClientHandle * sock,
+					 const MESSAGE_HEADER * req) {
 #if DEBUG_FS
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "FS received REQUEST GETAVGPRIORITY\n");
@@ -683,7 +684,8 @@ static int gapGetConverter(const HashCode512 * key,
 
   level
     = ntohl(value->anonymityLevel);
-  if (OK != checkCoverTraffic(traffic,
+  if (OK != checkCoverTraffic(ectx,
+			      traffic,
 			      level)) {
     /* traffic required by module not loaded;
        refuse to hand out data that requires
@@ -701,7 +703,7 @@ static int gapGetConverter(const HashCode512 * key,
   gw->dc.size = htonl(size);
   et = ntohll(value->expirationTime);
   /* expiration time normalization and randomization */
-  cronTime(&now);
+  now = get_time();
   if (et > now) {
     et -= now;
     et = et % MAX_MIGRATION_EXP;
@@ -863,7 +865,7 @@ static int dhtGetConverter(const HashCode512 * key,
   gw->dc.size = htonl(size);
   et = ntohll(value->expirationTime);
   /* expiration time normalization and randomization */
-  cronTime(&now);
+  now = get_time();
   if (et > now) {
     et -= now;
     et = et % MAX_MIGRATION_EXP;
@@ -1026,15 +1028,15 @@ static int fastPathProcessorFirst(const HashCode512 * query,
 static void * localGetter(void * noargs) {
   LG_Job * job;
   while (1) {
-    SEMAPHORE_DOWN(ltgSignal);
-    MUTEX_LOCK(&lock);
+    SEMAPHORE_DOWN(ltgSignal, YES);
+    MUTEX_LOCK(lock);
     if (lg_jobs == NULL) {
-      MUTEX_UNLOCK(&lock);
+      MUTEX_UNLOCK(lock);
       break;
     }
     job = lg_jobs;
     lg_jobs = job->next;
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
     gapGet(NULL,
 	   job->type,
 	   EXTREME_PRIORITY,
@@ -1059,10 +1061,10 @@ static void queueLG_Job(unsigned int type,
   memcpy(job->queries,
 	 queries,
 	 sizeof(HashCode512) * keyCount);
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   job->next = lg_jobs;
   lg_jobs = job;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   SEMAPHORE_UP(ltgSignal);
 }
 
@@ -1071,8 +1073,8 @@ static void queueLG_Job(unsigned int type,
  *
  * @return SYSERR if the TCP connection should be closed, otherwise OK
  */
-static int csHandleRequestQueryStart(ClientHandle sock,
-				     const CS_MESSAGE_HEADER * req) {
+static int csHandleRequestQueryStart(struct ClientHandle * sock,
+				     const MESSAGE_HEADER * req) {
   const CS_fs_request_search_MESSAGE * rs;
   unsigned int keyCount;
 #if DEBUG_FS
@@ -1164,6 +1166,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   static Blockstore dsGap;
   static Blockstore dsDht;
 
+  ectx = capi->ectx;
   GE_ASSERT(ectx, sizeof(CHK) == 128);
   GE_ASSERT(ectx, sizeof(DBlock) == 4);
   GE_ASSERT(ectx, sizeof(IBlock) == 132);
@@ -1171,7 +1174,6 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   GE_ASSERT(ectx, sizeof(SBlock) == 724);
   GE_ASSERT(ectx, sizeof(NBlock) == 716);
   GE_ASSERT(ectx, sizeof(KNBlock) == 1244);
-  
   migration = testConfigurationString("FS",
 				      "ACTIVEMIGRATION",
 				      "YES");
@@ -1200,14 +1202,14 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   /* dht = capi->requestService("dht"); */
   dht = NULL;
   ltgSignal = SEMAPHORE_CREATE(0);
-  if (0 != PTHREAD_CREATE(&localGetProcessor,
-			  &localGetter,
-			  NULL,
-			  32 * 1024))
+  localGetProcessor = PTHREAD_CREATE(&localGetter,
+				     NULL,
+				     32 * 1024);
+  if (localGetProcessor == NULL)
     DIE_STRERROR("pthread_create");
   coreAPI = capi;
-  ONDEMAND_init();
-  MUTEX_CREATE(&lock);
+  ONDEMAND_init(capi);
+  lock = MUTEX_CREATE(NO);
   dsGap.closure = NULL;
   dsGap.get = &gapGet;
   dsGap.put = &gapPut;
@@ -1310,7 +1312,7 @@ void done_module_fs() {
     lg_jobs = job;
   }
   SEMAPHORE_UP(ltgSignal); /* lg_jobs == NULL => thread will terminate */
-  PTHREAD_JOIN(&localGetProcessor,
+  PTHREAD_JOIN(localGetProcessor,
 	       &unused);
   coreAPI->releaseService(datastore);
   datastore = NULL;
@@ -1325,8 +1327,11 @@ void done_module_fs() {
     traffic = NULL;
   }
   coreAPI = NULL;
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
+  lock = NULL;
   ONDEMAND_done();
+  SEMAPHORE_DESTROY(ltgSignal);
+  ltgSignal = NULL;
 }
 
 /**

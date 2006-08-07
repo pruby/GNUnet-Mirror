@@ -34,7 +34,7 @@
  * on the type).
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * Priority of the search.
@@ -72,7 +72,7 @@ typedef struct {
  * of the Datastore_Value).
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
 } CS_fs_reply_content_MESSAGE;
 
@@ -83,7 +83,7 @@ typedef struct {
  * number of bytes of content.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * Priority for the on-demand encoded entry.
@@ -110,7 +110,7 @@ typedef struct {
  * by the filename to index.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   unsigned int reserved;
 
@@ -128,7 +128,7 @@ typedef struct {
  * number of bytes of content.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * Priority for the on-demand encoded entry.
@@ -167,7 +167,7 @@ typedef struct {
  * variable number of bytes of the content that is to be deleted.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
 } CS_fs_request_delete_MESSAGE;
 
@@ -176,7 +176,7 @@ typedef struct {
  * Client to server: unindex file.
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   /**
    * Size of each block of the file.
@@ -195,7 +195,7 @@ typedef struct {
  * Client to server: test if file is indexed
  */
 typedef struct {
-  CS_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
 
   unsigned int reserved;
 

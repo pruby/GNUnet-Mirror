@@ -181,6 +181,8 @@ static void work() {
   uapi.updateModule   = &updateModule;
   uapi.requestService = &requestService;
   uapi.releaseService = &releaseService;
+  uapi.ectx = ectx;
+  uapi.cfg = cfg;
 
   cron = cron_create(ectx);
   initCore(ectx, cfg, cron, NULL);

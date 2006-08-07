@@ -32,6 +32,7 @@
 #include "gnunet_protocols.h"
 #include "gnunet_datastore_service.h"
 #include "gnunet_sqstore_service.h"
+#include "gnunet_state_service.h"
 #include "filter.h"
 #include "prefetch.h"
 
@@ -330,6 +331,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   static Datastore_ServiceAPI api;
   unsigned long long lquota;
   unsigned int sqot;
+  State_ServiceAPI * state;
 
   if (-1 == GC_get_configuration_value_number(capi->cfg,
 					      "FS",
@@ -338,20 +340,28 @@ provide_module_datastore(CoreAPIForApplication * capi) {
 					      ((unsigned long long)-1)/1024,
 					      1024,
 					      &lquota))
-    return; /* OOPS */  
+    return NULL; /* OOPS */  
 
   quota
     = lquota * 1024L * 1024L; /* MB to bytes */
+  state = capi->requestService("state");
+  if (state != NULL) {
+    sqot = htonl(lquota);
+    state->write(capi->ectx,
+		 "FS-LAST-QUOTA",
+		 sizeof(unsigned int),
+		 &sqot);
+    capi->releaseService(state);
+  } else {
+    GE_LOG(capi->ectx,
+	   GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+	   _("Failed to load state service. Trying to do without.\n"));
+  }
   sq = capi->requestService("sqstore");
   if (sq == NULL) {
     GE_BREAK(coreAPI->ectx, 0);
     return NULL;
   }
-  sqot = htonl(lquota);
-  stateWriteContent("FS-LAST-QUOTA",
-		    sizeof(unsigned int),
-		    &sqot);
-
   coreAPI = capi;
 
   initPrefetch(capi->ectx,
@@ -414,6 +424,7 @@ void update_module_datastore(UpdateAPI * uapi) {
   unsigned long long quota;
   unsigned int lastQuota;
   int * lq;
+  State_ServiceAPI * state;
 
   if (-1 == GC_get_configuration_value_number(uapi->cfg,
 					      "FS",
@@ -423,14 +434,26 @@ void update_module_datastore(UpdateAPI * uapi) {
 					      1024,
 					      &quota))
     return; /* OOPS */
-  lq = NULL;
-  if (sizeof(int) != stateReadContent("FS-LAST-QUOTA",
-				      (void**)&lq))
-    return; /* first start? */
-  lastQuota = ntohl(*lq);
-  FREE(lq);
-  if (lastQuota == quota)
-    return; /* unchanged */
+  state = uapi->requestService("state");
+  if (state != NULL) {
+    lq = NULL;
+    if (sizeof(int) != state->read(uapi->ectx,
+				   "FS-LAST-QUOTA",
+				   (void**)&lq)) {
+      uapi->releaseService(state);
+      return; /* first start? */
+    }
+    uapi->releaseService(state);
+    lastQuota = ntohl(*lq);
+    FREE(lq);
+    if (lastQuota == quota)
+      return; /* unchanged */
+  } else {
+    GE_LOG(uapi->ectx,
+	   GE_USER | GE_ADMIN | GE_ERROR | GE_BULK,
+	   _("Failed to load state service. Trying to do without.\n"));
+  }
+
   /* ok, need to convert! */
   deleteFilter(uapi->ectx,
 	       uapi->cfg);

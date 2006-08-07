@@ -27,9 +27,10 @@
 #include "gnunet_util.h"
 #include "gnunet_stats_service.h"
 
-void init_pid_table(Stats_ServiceAPI * s);
+void init_pid_table(struct GE_Context * ectx,
+		    Stats_ServiceAPI * s);
 
-void done_pid_table();
+void done_pid_table(void);
 
 typedef unsigned int PID_INDEX;
  

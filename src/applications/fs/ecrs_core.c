@@ -53,8 +53,8 @@ int fileBlockEncode(const DBlock * data,
   Datastore_Value * val;
   DBlock * db;
 
-  GE_ASSERT(ectx, len >= sizeof(DBlock));
-  GE_ASSERT(ectx, (data!=NULL) && (query != NULL));
+  GE_ASSERT(NULL, len >= sizeof(DBlock));
+  GE_ASSERT(NULL, (data!=NULL) && (query != NULL));
   hash(&data[1], len - sizeof(DBlock), &hc);
   hashToKey(&hc,
 	    &skey,
@@ -67,8 +67,8 @@ int fileBlockEncode(const DBlock * data,
   val->expirationTime = htonl(0);
   db = (DBlock*) &val[1];
   db->type = htonl(D_BLOCK);
-  GE_ASSERT(ectx, len - sizeof(DBlock) < MAX_BUFFER_SIZE);
-  GE_ASSERT(ectx, len - sizeof(DBlock)
+  GE_ASSERT(NULL, len - sizeof(DBlock) < MAX_BUFFER_SIZE);
+  GE_ASSERT(NULL, len - sizeof(DBlock)
 		== encryptBlock(&data[1],
 				len - sizeof(DBlock),
 				&skey,
@@ -83,7 +83,7 @@ int fileBlockEncode(const DBlock * data,
     return OK;
   } else {
     FREE(val);
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     *value = NULL;
     return SYSERR;
   }
@@ -96,7 +96,7 @@ int fileBlockEncode(const DBlock * data,
 void fileBlockGetKey(const DBlock * data,
 		     unsigned int len,
 		     HashCode512 * key) {
-  GE_ASSERT(ectx, len >= sizeof(DBlock));
+  GE_ASSERT(NULL, len >= sizeof(DBlock));
   hash(&data[1],
        len - sizeof(DBlock),
        key);
@@ -117,16 +117,16 @@ void fileBlockGetQuery(const DBlock * db,
   SESSIONKEY skey;
   INITVECTOR iv;
 
-  GE_ASSERT(ectx, len >= sizeof(DBlock));
+  GE_ASSERT(NULL, len >= sizeof(DBlock));
   data = (const char*) &db[1];
   len -= sizeof(DBlock);
-  GE_ASSERT(ectx, len < MAX_BUFFER_SIZE);
+  GE_ASSERT(NULL, len < MAX_BUFFER_SIZE);
   hash(data, len, &hc);
   hashToKey(&hc,
 	    &skey,
 	    &iv);
   tmp = MALLOC(len);
-  GE_ASSERT(ectx, len == encryptBlock(data,
+  GE_ASSERT(NULL, len == encryptBlock(data,
 				    len,
 				    &skey,
 				    &iv,
@@ -138,7 +138,7 @@ void fileBlockGetQuery(const DBlock * db,
 unsigned int getTypeOfBlock(unsigned int size,
 			    const DBlock * data) {
   if (size <= 4) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return ANY_BLOCK; /* signal error */
   }
   return ntohl(*((const unsigned int*)data));
@@ -161,7 +161,7 @@ int getQueryFor(unsigned int size,
 
   type = getTypeOfBlock(size, data);
   if (type == ANY_BLOCK) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
   switch (type) {
@@ -174,7 +174,7 @@ int getQueryFor(unsigned int size,
   case S_BLOCK: {
     const SBlock * sb;
     if (size < sizeof(SBlock)) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     sb = (const SBlock*) data;
@@ -186,7 +186,7 @@ int getQueryFor(unsigned int size,
 			  - sizeof(unsigned int),
 			  &sb->signature,
 			  &sb->subspace)) ) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     *query = sb->identifier;
@@ -195,7 +195,7 @@ int getQueryFor(unsigned int size,
   case K_BLOCK: {
     const KBlock * kb;
     if (size < sizeof(KBlock)) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     kb = (const KBlock*) data;
@@ -204,7 +204,7 @@ int getQueryFor(unsigned int size,
 			    size - sizeof(KBlock),
 			    &kb->signature,
 			    &kb->keyspace)) ) ) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     hash(&kb->keyspace,
@@ -215,7 +215,7 @@ int getQueryFor(unsigned int size,
   case N_BLOCK: {
     const NBlock * nb;
     if (size < sizeof(NBlock)) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     nb = (const NBlock*) data;
@@ -227,7 +227,7 @@ int getQueryFor(unsigned int size,
 			  - sizeof(unsigned int),
 			  &nb->signature,
 			  &nb->subspace)) ) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     *query = nb->namespace; /* XOR with all zeros makes no difference... */
@@ -236,7 +236,7 @@ int getQueryFor(unsigned int size,
   case KN_BLOCK: {
     const KNBlock * kb;
     if (size < sizeof(KNBlock)) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     kb = (const KNBlock*) data;
@@ -247,7 +247,7 @@ int getQueryFor(unsigned int size,
 			    - sizeof(unsigned int),
 			    &kb->kblock.signature,
 			    &kb->kblock.keyspace)) ) ) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       return SYSERR;
     }
     hash(&kb->kblock.keyspace,
@@ -256,11 +256,11 @@ int getQueryFor(unsigned int size,
     return OK;
   }
   case ONDEMAND_BLOCK: {
-    GE_BREAK(ectx, 0); /* should never be used here! */
+    GE_BREAK(NULL, 0); /* should never be used here! */
     return SYSERR;
   }
   default: {
-    GE_BREAK(ectx, 0); /* unknown block type */
+    GE_BREAK(NULL, 0); /* unknown block type */
     return SYSERR;
   }
   } /* end switch */
@@ -289,15 +289,15 @@ int isDatumApplicable(unsigned int type,
   HashCode512 hc;
 
   if (type != getTypeOfBlock(size, data)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR; /* type mismatch */
   }
   if (OK != getQueryFor(size, data, YES, &hc)) {
-    GE_BREAK(ectx, 0); /* malformed data */
+    GE_BREAK(NULL, 0); /* malformed data */
     return SYSERR;
   }
   if (! equalsHashCode512(&hc, &keys[0])) {
-    GE_BREAK(ectx, 0); /* mismatch between primary queries,
+    GE_BREAK(NULL, 0); /* mismatch between primary queries,
 		we should not even see those here. */
     return SYSERR;
   }
@@ -330,13 +330,13 @@ int isDatumApplicable(unsigned int type,
   case K_BLOCK:
   case KN_BLOCK:
     if (keyCount != 1)
-      GE_BREAK(ectx, 0); /* keyCount should be 1 */
+      GE_BREAK(NULL, 0); /* keyCount should be 1 */
     return OK; /* if query matches, everything matches! */
   case ANY_BLOCK:
-    GE_BREAK(ectx, 0); /* block type should be known */
+    GE_BREAK(NULL, 0); /* block type should be known */
     return SYSERR;
   default:
-    GE_BREAK(ectx, 0); /* unknown block type */
+    GE_BREAK(NULL, 0); /* unknown block type */
     return SYSERR;
   }
 }

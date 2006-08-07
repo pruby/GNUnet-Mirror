@@ -69,7 +69,7 @@ static int stat_on_demand_migration_attempts;
 /**
  * Lock used to access content.
  */
-static Mutex lock;
+static struct MUTEX * lock;
 
 /**
  * The content that we are currently trying
@@ -78,7 +78,9 @@ static Mutex lock;
  * first time).
  */
 static Datastore_Value * content;
-				
+			
+static struct GE_Context * ectx;
+	
 /**
  * Callback method for pushing content into the network.
  * The method chooses either a "recently" deleted block
@@ -109,7 +111,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   unsigned int anonymity;
   Datastore_Value *enc;    
 
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   if (content != NULL) {
     size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
     if (size > padding) {
@@ -123,7 +125,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
 				   &key,
 				   &content,
 				   0)) {
-      MUTEX_UNLOCK(&lock);
+      MUTEX_UNLOCK(lock);
 #if DEBUG_MIGRATION
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Migration: random lookup in datastore failed.\n");
@@ -136,7 +138,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
     if (ONDEMAND_getIndexed(datastore, content, &key, &enc) != OK) {
       FREE(content);
       content = NULL;
-      MUTEX_UNLOCK(&lock);
+      MUTEX_UNLOCK(lock);
       return 0;
     }
     if (stats != NULL)
@@ -148,7 +150,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   
   size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
   if (size > padding) {
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
 #if DEBUG_MIGRATION
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Available content of size %u too big for available space (%u)\n",
@@ -158,7 +160,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
     return 0;
   }
   et = ntohll(content->expirationTime);
-  cronTime(&now);
+  now = get_time();
   if (et > now) {
     et -= now;
     et = et % MAX_MIGRATION_EXP;
@@ -170,7 +172,8 @@ activeMigrationCallback(const PeerIdentity * receiver,
     /* ret > 0; (if DHT succeeds) fixme for DHT */
   }
   if ( (ret == 0) &&
-       (OK == checkCoverTraffic(traffic,
+       (OK == checkCoverTraffic(ectx,
+				traffic,
 				anonymity)) ) {
     gw = MALLOC(size);
     gw->dc.size = htonl(size);
@@ -198,7 +201,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
     FREE(content);
     content = NULL;
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   if ( (ret > 0)&&
        (stats != NULL) )
       stats->change(stat_migration_count, 1); 
@@ -211,7 +214,8 @@ void initMigration(CoreAPIForApplication * capi,
 		   GAP_ServiceAPI * g,
 		   DHT_ServiceAPI * d,
 		   Traffic_ServiceAPI * t) {
-  MUTEX_CREATE(&lock);
+  ectx = capi->ectx;
+  lock = MUTEX_CREATE(NO);
   coreAPI = capi;
   datastore = ds;
   gap = g;
@@ -241,7 +245,8 @@ void doneMigration() {
   traffic = NULL;
   FREENONNULL(content);
   content = NULL;
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
+  lock = NULL;
 }
 
 /* end of migration.c */

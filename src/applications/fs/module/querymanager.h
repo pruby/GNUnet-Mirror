@@ -36,7 +36,7 @@ int initQueryManager(CoreAPIForApplication * capi);
 /**
  * Shutdown query management.
  */
-void doneQueryManager();
+void doneQueryManager(void);
 
 /**
  * Keep track of a query.  If a matching response
@@ -47,7 +47,7 @@ void doneQueryManager();
  */
 void trackQuery(const HashCode512 * query,
 		unsigned int type,
-		const ClientHandle client);
+		struct ClientHandle * client);
 
 /**
  * Stop keeping track of a query.
@@ -56,7 +56,7 @@ void trackQuery(const HashCode512 * query,
  * @param client where did the query come from?
  */
 void untrackQuery(const HashCode512 * query,
-		  const ClientHandle client);
+		  struct ClientHandle * client);
 
 /**
  * We received a reply from 'responder'.

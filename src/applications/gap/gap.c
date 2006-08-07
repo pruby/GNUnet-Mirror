@@ -48,7 +48,7 @@
  * Avoiding concurrent lookups for the same ITE: lock to grant
  * access to peers to perform a lookup that matches this ITE entry.
  */
-static Mutex lookup_exclusion;
+static struct MUTEX * lookup_exclusion;
 
 /**
  * GNUnet core.
@@ -155,7 +155,7 @@ static QueryRecord queries[QUERY_RECORD_COUNT];
 /**
  * Mutex for all gap structures.
  */
-static Mutex * lock;
+static struct MUTEX * lock;
 
 /**
  * Linked list tracking reply statistics.  Synchronize access using
@@ -183,6 +183,10 @@ static int hardUpLimit;
 static int histogram[65536];
 static int hist_total;
 #endif
+
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
 
 /* ****************** helper functions ***************** */
 
@@ -408,7 +412,7 @@ fillInQuery(const PeerIdentity * receiver,
   QueryRecord * qr;
   PID_INDEX receiverId;
 
-  cronTime(&now);
+  now = get_time();
   receiverId = intern_pid(receiver);
   MUTEX_LOCK(lock);
   start = pos;
@@ -568,7 +572,7 @@ static void forwardQuery(const P2P_gap_query_MESSAGE * msg,
   unsigned long long sel;
   unsigned long long pos;
 
-  cronTime(&now);
+  now = get_time();
   MUTEX_LOCK(lock);
 
   oldestIndex = -1;
@@ -736,13 +740,13 @@ static unsigned int computeRoutingIndex(const HashCode512 * query) {
  *     NULL for the local peer
  */
 static int useContent(const PeerIdentity * hostId,
-		      const P2P_gap_reply_MESSAGE * pmsg);
+		      const MESSAGE_HEADER * pmsg);
 
 /**
  * Call useContent "later" and then free the pmsg.
  */
 static void useContentLater(void * data) {
-  P2P_gap_reply_MESSAGE * pmsg = data;
+  MESSAGE_HEADER * pmsg = data;
   useContent(NULL,
 	     pmsg);
   FREE(pmsg);
@@ -822,10 +826,11 @@ static int queueReply(const PeerIdentity * sender,
 	 size - sizeof(P2P_gap_reply_MESSAGE));
   /* delay reply, delay longer if we are busy (makes it harder
      to predict / analyze, too). */
-  addCronJob(&useContentLater,
-	     weak_randomi(TTL_DECREMENT),
-	     0,
-	     pmsg);
+  cron_add_job(coreAPI->cron,
+	       &useContentLater,
+	       weak_randomi(TTL_DECREMENT),
+	       0,
+	       pmsg);
   return YES;
 }
 
@@ -899,7 +904,7 @@ static int addToSlot(int mode,
       ite);
 #endif
   GE_ASSERT(ectx, sender != 0); /* do NOT add to RT for local clients! */
-  cronTime(&now);
+  now = get_time();
   if ( (stats != NULL) &&
        (ite->ttl == 0) )
        stats->change(stat_routing_slots_used, 1);
@@ -1005,7 +1010,7 @@ static int needsForwarding(const HashCode512 * query,
   cron_t new_ttl;
   int equal_to_pending;
 
-  cronTime(&now);
+  now = get_time();
   ite = &ROUTING_indTable_[computeRoutingIndex(query)];
   equal_to_pending = equalsHashCode512(query, &ite->primaryKey);
   if ( (stats != NULL) &&
@@ -1260,7 +1265,7 @@ static int needsForwarding(const HashCode512 * query,
  * @param msg the message to route
  */
 static void sendReply(IndirectionTableEntry * ite,
-		      const P2P_MESSAGE_HEADER * msg) {
+		      const MESSAGE_HEADER * msg) {
   unsigned int j;
   unsigned int maxDelay;
   cron_t now;
@@ -1271,7 +1276,7 @@ static void sendReply(IndirectionTableEntry * ite,
 
   if (stats != NULL)
     stats->change(stat_routing_successes, 1);
-  cronTime(&now);
+  now = get_time();
   if (now < ite->ttl)
     maxDelay = ite->ttl - now;
   else
@@ -1409,7 +1414,7 @@ static int execQuery(const PeerIdentity * sender,
   senderID = intern_pid(sender);
   GE_ASSERT(ectx,  (senderID != 0) || (sender == NULL) );
   ite = &ROUTING_indTable_[computeRoutingIndex(&query->queries[0])];
-  MUTEX_LOCK(&lookup_exclusion);
+  MUTEX_LOCK(lookup_exclusion);
   i = -1;
   if (sender != NULL) {
     if ( ( (policy & QUERY_ANSWER) > 0) &&
@@ -1519,7 +1524,7 @@ static int execQuery(const PeerIdentity * sender,
        0);
 
 
-  MUTEX_UNLOCK(&lookup_exclusion);
+  MUTEX_UNLOCK(lookup_exclusion);
   if (doForward) {
     forwardQuery(query,
 		 sender);
@@ -1543,7 +1548,8 @@ static int execQuery(const PeerIdentity * sender,
  *         priority of the original request)
  */
 static int useContent(const PeerIdentity * host,
-		      const P2P_gap_reply_MESSAGE * msg) {
+		      const MESSAGE_HEADER * pmsg) {
+  const P2P_gap_reply_MESSAGE * msg;
   unsigned int i;
   HashCode512 contentHC;
   IndirectionTableEntry * ite;
@@ -1556,18 +1562,21 @@ static int useContent(const PeerIdentity * host,
 #if DEBUG_GAP
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	if (host != NULL)
-	  hash2enc(&host->hashPubKey,
-		   &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "GAP received content from `%s'\n",
-      (host != NULL) ? (const char*)&enc : "myself");
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   if (host != NULL)
+	     hash2enc(&host->hashPubKey,
+		      &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "GAP received content from `%s'\n",
+	 (host != NULL) ? (const char*)&enc : "myself");
 #endif
-  if (ntohs(msg->header.size) < sizeof(P2P_gap_reply_MESSAGE)) {
+  if (ntohs(pmsg->size) < sizeof(P2P_gap_reply_MESSAGE)) {
     GE_BREAK(ectx, 0);
     return SYSERR; /* invalid! */
   }
+  msg = (const P2P_gap_reply_MESSAGE *) pmsg;
 	
   ite = &ROUTING_indTable_[computeRoutingIndex(&msg->primaryKey)];
   ite->successful_local_lookup_in_delay_loop = NO;
@@ -1588,18 +1597,18 @@ static int useContent(const PeerIdentity * host,
       &contentHC);
 
   /* FIRST: check if seen */
-  MUTEX_LOCK(&lookup_exclusion);
+  MUTEX_LOCK(lookup_exclusion);
   for (i=0;i<ite->seenIndex;i++) {
     if (equalsHashCode512(&contentHC,
 			  &ite->seen[i])) {
-      MUTEX_UNLOCK(&lookup_exclusion);
+      MUTEX_UNLOCK(lookup_exclusion);
       FREE(value);
       if (stats != NULL) 
 	stats->change(stat_routing_reply_dups, 1);
       return 0; /* seen before, useless */
     }
   }
-  MUTEX_UNLOCK(&lookup_exclusion);
+  MUTEX_UNLOCK(lookup_exclusion);
 
   /* SECOND: check if valid */
   ret = bs->put(bs->closure,
@@ -1624,7 +1633,7 @@ static int useContent(const PeerIdentity * host,
   /* THIRD: compute content priority/value and
      send remote reply (ITE processing) */
   hostId = intern_pid(host);
-  MUTEX_LOCK(&lookup_exclusion);
+  MUTEX_LOCK(lookup_exclusion);
   if (equalsHashCode512(&ite->primaryKey,
 			&msg->primaryKey) ) {	
     prio = ite->priority;
@@ -1686,7 +1695,7 @@ static int useContent(const PeerIdentity * host,
     if (stats != NULL) 
       stats->change(stat_routing_reply_drops, 1);
   }
-  MUTEX_UNLOCK(&lookup_exclusion);
+  MUTEX_UNLOCK(lookup_exclusion);
   prio += claimReward(&msg->primaryKey);
 
   /* FOURTH: update content priority in local datastore */
@@ -1907,7 +1916,7 @@ tryMigrate(const DataContainer * data,
  * lookup, forward or even indirect.
  */
 static int handleQuery(const PeerIdentity * sender,
-		       const P2P_MESSAGE_HEADER * msg) {
+		       const MESSAGE_HEADER * msg) {
   QUERY_POLICY policy;
   P2P_gap_query_MESSAGE * qmsg;
   unsigned int queries;
@@ -2068,6 +2077,8 @@ provide_module_gap(CoreAPIForApplication * capi) {
   static GAP_ServiceAPI api;
   unsigned int i;
 
+  ectx = capi->ectx;
+  cfg = capi->cfg;
   GE_ASSERT(ectx, sizeof(P2P_gap_reply_MESSAGE) == 68);
   GE_ASSERT(ectx, sizeof(P2P_gap_query_MESSAGE) == 144);
 
@@ -2094,7 +2105,8 @@ provide_module_gap(CoreAPIForApplication * capi) {
     stat_pending_rewards            = stats->create(gettext_noop("# gap rewards pending"));
     stat_response_count             = stats->create(gettext_noop("# gap response weights"));
   }
-  init_pid_table(stats);
+  init_pid_table(ectx,
+		 stats);
   GROW(rewards,
        rewardSize,
        MAX_REWARD_TRACKS);
@@ -2117,7 +2129,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
     			"TABLESIZE");
   if (indirectionTableSize < MIN_INDIRECTION_TABLE_SIZE)
     indirectionTableSize = MIN_INDIRECTION_TABLE_SIZE;
-  MUTEX_CREATE(&lookup_exclusion);
+  lookup_exclusion = MUTEX_CREATE(NO);
   ROUTING_indTable_
     = MALLOC(sizeof(IndirectionTableEntry)
 	     * indirectionTableSize);
@@ -2134,16 +2146,18 @@ provide_module_gap(CoreAPIForApplication * capi) {
     queries[i].msg = NULL;
   }
   lock = coreAPI->getConnectionModuleLock();
-  addCronJob(&ageRTD,
-	     2 * cronMINUTES,
-	     2 * cronMINUTES,
-	     NULL);
+  cron_add_job(capi->cron,
+	       &ageRTD,
+	       2 * cronMINUTES,
+	       2 * cronMINUTES,
+	       NULL);
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      _("`%s' registering handlers %d %d\n"),
-      "gap",
-      P2P_PROTO_gap_QUERY,
-      P2P_PROTO_gap_RESULT);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 _("`%s' registering handlers %d %d\n"),
+	 "gap",
+	 P2P_PROTO_gap_QUERY,
+	 P2P_PROTO_gap_RESULT);
   capi->registerHandler(P2P_PROTO_gap_QUERY,
 			&handleQuery);
   capi->registerHandler(P2P_PROTO_gap_RESULT,
@@ -2168,13 +2182,14 @@ void release_module_gap() {
   coreAPI->unregisterHandler(P2P_PROTO_gap_QUERY,
 			     &handleQuery);
   coreAPI->unregisterHandler(P2P_PROTO_gap_RESULT,
-			     (MessagePartHandler) &useContent);
+			     &useContent);
   coreAPI->unregisterSendCallback(sizeof(P2P_gap_query_MESSAGE),
 				  &fillInQuery);
 
-  delCronJob(&ageRTD,
-	     2 * cronMINUTES,
-	     NULL);
+  cron_del_job(coreAPI->cron,
+	       &ageRTD,
+	       2 * cronMINUTES,
+	       NULL);
 
   for (i=0;i<indirectionTableSize;i++) {
     ite = &ROUTING_indTable_[i];
@@ -2192,7 +2207,8 @@ void release_module_gap() {
 	 0);
   }
 
-  MUTEX_DESTROY(&lookup_exclusion);
+  MUTEX_DESTROY(lookup_exclusion);
+  lookup_exclusion = NULL;
   while (rtdList != NULL) {
     pos = rtdList;
     rtdList = rtdList->next;
@@ -2228,6 +2244,8 @@ void release_module_gap() {
   coreAPI = NULL;
   bs = NULL;
   uri = NULL;
+  ectx = NULL;
+  cfg = NULL;
 }
 
 /* end of gap.c */

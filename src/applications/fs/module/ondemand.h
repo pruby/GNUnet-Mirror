@@ -89,9 +89,9 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 int ONDEMAND_testindexed(Datastore_ServiceAPI * datastore,
 			 const HashCode512 * fileId);
 
-int ONDEMAND_init();
+int ONDEMAND_init(CoreAPIForApplication * capi);
 
-int ONDEMAND_done();
+int ONDEMAND_done(void);
 
 /* end of ondemand.h */
 #endif
