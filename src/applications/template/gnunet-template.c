@@ -25,78 +25,35 @@
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_network_client.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
 #define TEMPLATE_VERSION "0.0.0"
 
-static Semaphore * doneSem;
+static struct SEMAPHORE * doneSem;
+
 
 /**
- * Parse the options, set the timeout.
- * @param argc the number of options
- * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit
+ * All gnunetd command line options
  */
-static int parseOptions(int argc,
-			char ** argv) {
-  int option_index;
-  int c;
+static struct CommandLineOption gnunettemplateOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Template description.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_END,
+};
 
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  while (1) {
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { 0,0,0,0 }
-    };
-    option_index=0;
-    c = GNgetopt_long(argc,
-		      argv,
-		      "vhdc:L:H:t",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'h': {
-      static Help help[] = {
-	HELP_CONFIG,
-	HELP_HELP,
-	HELP_LOGLEVEL,
-	{ 't', "longoptionname", "ARGUMENT",
-	  gettext_noop("helptext for -t") },
-	HELP_VERSION,
-	HELP_END,
-      };
-      formatHelp("gnunet-template [OPTIONS]",
-		 _("Template for gnunet-clients."),
-		 help);
-
-      return SYSERR;
-    }
-    case 'v':
-      printf("GNUnet v%s, gnunet-template v%s\n",
-	     VERSION,
-	     TEMPLATE_VERSION);
-      return SYSERR;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"));
-      return -1;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  return OK;
-}
-
-static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
+static void * receiveThread(void * cls) {
+  struct ClientServerConnection * sock = cls;
   void * buffer;
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  while (OK == readFromSocket(sock,
-			      (CS_MESSAGE_HEADER**)&buffer)) {
+  while (OK == connection_read(sock,
+			       (MESSAGE_HEADER**)&buffer)) {
     /* process */
   }
   FREE(buffer);
@@ -109,35 +66,60 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
  * @param argv command line arguments
  * @return return value from gnunet-template: 0: ok, -1: error
  */
-int main(int argc, char ** argv) {
-  GNUNET_TCP_SOCKET * sock;
-  PTHREAD_T messageReceiveThread;
+int main(int argc, 
+	 const char ** argv) {
+  struct ClientServerConnection * sock;
+  struct PTHREAD * messageReceiveThread;
   void * unused;
+  struct GE_Context * ectx;
+  struct GC_Configuration * cfg;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0; /* parse error, --help, etc. */
-  sock = getClientSocket();
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  os_init(ectx);
+  if (-1 == gnunet_parse_options("gnunet-template",
+				 ectx,
+				 cfg,
+				 gnunettemplateOptions,
+				 (unsigned int) argc,
+				 argv)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
 
-  if (0 != PTHREAD_CREATE(&messageReceiveThread,
-			  (PThreadMain) &receiveThread,
-			  sock,
-			  128 * 1024))
-    DIE_STRERROR("pthread_create");
+  sock = client_connection_create(ectx,
+				  cfg);
+  if (sock == NULL) {
+    fprintf(stderr,
+	    _("Error establishing connection with gnunetd.\n"));
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  messageReceiveThread = PTHREAD_CREATE(&receiveThread,
+					sock,
+					128 * 1024);
+  if (messageReceiveThread == NULL) {
+    GE_DIE_STRERROR(ectx,
+		    GE_IMMEDIATE | GE_FATAL | GE_USER | GE_ADMIN, 
+		    "pthread_create");
+  }
 
-  /*
-  if (SYSERR == writeToSocket(sock,
-                              &msg.header))
-    return -1;
-  */
   /* wait for shutdown... */
 
-  closeSocketTemporarily(sock);
-  SEMAPHORE_DOWN(doneSem);
+  connection_close_temporarily(sock);
+  SEMAPHORE_DOWN(doneSem, YES);
   SEMAPHORE_DESTROY(doneSem);
-  PTHREAD_JOIN(&messageReceiveThread, &unused);
-  releaseClientSocket(sock);
-
-  doneUtil();
+  PTHREAD_JOIN(messageReceiveThread, &unused);
+  connection_destroy(sock);
+  GC_free(cfg);
+  GE_free_context(ectx);
   return 0;
 }
 

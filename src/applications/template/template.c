@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -30,38 +30,39 @@
 #include "gnunet_protocols.h"
 
 static CoreAPIForApplication * coreAPI = NULL;
-static ClientHandle client;
-static Mutex lock;
+static struct ClientHandle * client;
+static struct MUTEX * lock;
 
 static int handlep2pMSG(const PeerIdentity * sender,
-		        const P2P_MESSAGE_HEADER * message) {
+		        const MESSAGE_HEADER * message) {
   return OK;
 }
 
-static int csHandle(ClientHandle client,
-		    const CS_MESSAGE_HEADER * message) {
+static int csHandle(struct ClientHandle * client,
+		    const MESSAGE_HEADER * message) {
   return OK;
 }
 
-static void clientExitHandler(ClientHandle c) {
-  MUTEX_LOCK(&lock);
+static void clientExitHandler(struct ClientHandle * c) {
+  MUTEX_LOCK(lock);
   if (c == client)
     client = NULL;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
 }
 
 int initialize_module_template(CoreAPIForApplication * capi) {
   int ok = OK;
 
-  MUTEX_CREATE(&lock);
+  lock = MUTEX_CREATE(NO);
   client = NULL;
   coreAPI = capi;
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      _("`%s' registering client handler %d and %d\n"),
-      "template",
-      CS_PROTO_MAX_USED,
-      P2P_PROTO_MAX_USED);
+  GE_LOG(capi->ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 _("`%s' registering client handler %d and %d\n"),
+	 "template",
+	 CS_PROTO_MAX_USED,
+	 P2P_PROTO_MAX_USED);
   if (SYSERR == capi->registerHandler(P2P_PROTO_MAX_USED,
 				      &handlep2pMSG))
     ok = SYSERR;
@@ -79,7 +80,7 @@ void done_module_template() {
   coreAPI->unregisterClientExitHandler(&clientExitHandler);
   coreAPI->unregisterClientHandler(CS_PROTO_MAX_USED,
 				   &csHandle);
-  MUTEX_DESTROY(&lock);
+  MUTEX_DESTROY(lock);
   coreAPI = NULL;
 }
 

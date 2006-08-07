@@ -23,15 +23,14 @@ Notes:
     	o libwww & libesmtp?
   * server:
     + needs testing, also likely to be missing features
-      - gnunet-update needs to initialize ectx + cfg in UpdateAPI struct
   * applications:
     + fragmentation, identity,  pingpong, session, transport,
       stats, topology_default, state, getoption, advertising,
-      traffic compile
+      traffic, ecrs_core, template compile
     + bootstrap_http: maybe switch to libwww?
-    + for fs: datastore (787), fs (18500), gap (2800), sqstore_sqlite (1375)
+    + for fs: fs (18500), gap (2800)
     + rest: sqstore_mysql, dht, chat, kvstore_sqlite, 
-            sqstore_mysql, rpc, tbench, template, testbed, 
+            sqstore_mysql, rpc, tbench, testbed, 
             topology_f2f, vpn, tracekit
   * setup:
     + nothing compiles
