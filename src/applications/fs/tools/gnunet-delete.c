@@ -124,7 +124,7 @@ static int parseOptions(int argc,
  */
 int main(int argc, char ** argv) {
   int beVerbose;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   int ok;
   char * filename;
 

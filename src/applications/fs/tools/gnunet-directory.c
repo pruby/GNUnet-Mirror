@@ -85,7 +85,7 @@ static void printDirectory(const char * filename) {
   fd = fileopen(name,
 		O_LARGEFILE | O_RDONLY);
   if (fd == -1) {
-    LOG_FILE_STRERROR(LOG_ERROR, "open", name);
+    GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "open", name);
     ret = -1;
   } else {
     data = MMAP(NULL,
@@ -95,7 +95,7 @@ static void printDirectory(const char * filename) {
 		fd,
 		0);
     if (data == MAP_FAILED) {
-      LOG_FILE_STRERROR(LOG_ERROR, "mmap", name);
+      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "mmap", name);
       ret = -1;
     } else {
       ret = ECRS_listDirectory(data,

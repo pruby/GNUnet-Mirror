@@ -51,7 +51,7 @@ typedef struct {
   /** string describing the peer address */
   char	* ips;
   /** socket to communicate with the peer */
-  GNUNET_TCP_SOCKET sock;
+  struct ClientServerConnection sock;
   /** hello message identifying the peer in the network */
   P2P_hello_MESSAGE * helo;
   /** if we're using ssh, what is the PID of the
@@ -125,7 +125,7 @@ static int sendMessage(unsigned msgType,
   memcpy(&((TESTBED_CS_MESSAGE_GENERIC*)msg)->data[0],
 	 arg,
 	 argSize);
-  msgsz = writeToSocket(&nodes[peer].sock,
+  msgsz = connection_write(&nodes[peer].sock,
 			&msg->header);
   FREE(msg);
   if (msgsz == SYSERR) {
@@ -144,7 +144,7 @@ static int sendMessage(unsigned msgType,
  */
 static int readResult(int peer,
 		      int * result) {
-  if (OK != readTCPResult(&nodes[peer].sock,
+  if (OK != connection_read_result(&nodes[peer].sock,
 			  result)) {
     XPRINTF(" peer %s is not responding.\n",
 	   nodes[peer].ips);
@@ -220,7 +220,7 @@ static int addNode(int argc, char * argv[]) {
   }
 
   hdr = NULL;
-  if (SYSERR == readFromSocket(&nodes[currindex].sock,
+  if (SYSERR == connection_read(&nodes[currindex].sock,
 			       (CS_MESSAGE_HEADER**)&hdr)) {
     XPRINTF(" peer %s is not responding.\n",
 	   nodes[currindex].ips);
@@ -417,7 +417,7 @@ static int addSshNode(int argc, char * argv[]) {
   }
 
   hdr = NULL;
-  if (SYSERR == readFromSocket(&nodes[currindex].sock,
+  if (SYSERR == connection_read(&nodes[currindex].sock,
 			       (CS_MESSAGE_HEADER**)&hdr)) {
     XPRINTF(" peer %s is not responding.\n",
 	   nodes[currindex].ips);
@@ -970,7 +970,7 @@ static int dumpProcessOutput(int argc,
       TESTBED_OUTPUT_REPLY_MESSAGE * reply;
 
       reply = NULL;
-      if (SYSERR == readFromSocket(&nodes[dst].sock,
+      if (SYSERR == connection_read(&nodes[dst].sock,
 				   (CS_MESSAGE_HEADER**)&reply)) {
 	XPRINTF(" peer %s is not responding after %d of %d bytes.\n",
 	       nodes[dst].ips,
@@ -1257,7 +1257,7 @@ static int uploadFile(int argc,
     = htonl(TESTBED_FILE_DELETE);
   memcpy(((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf, argv[2], flen);
 
-  if (SYSERR == writeToSocket(&nodes[peer].sock,
+  if (SYSERR == connection_write(&nodes[peer].sock,
 			      &msg->header.header)) {
     fclose(infile);
     FREE(msg);
@@ -1266,7 +1266,7 @@ static int uploadFile(int argc,
     return -1;
   }
   /* Read ack from the peer */
-  if (OK != readTCPResult(&nodes[peer].sock, &ack)) {
+  if (OK != connection_read_result(&nodes[peer].sock, &ack)) {
     fclose(infile);
     FREE(msg);
     XPRINTF("Peer is not responding\n");
@@ -1288,7 +1288,7 @@ static int uploadFile(int argc,
       break;
     msg->header.header.size = htons(sizeof(TESTBED_UPLOAD_FILE_MESSAGE) +
 				    nbytes + flen);
-    if (SYSERR == writeToSocket(&nodes[peer].sock, &msg->header.header)) {
+    if (SYSERR == connection_write(&nodes[peer].sock, &msg->header.header)) {
       fclose(infile);
       FREE(msg);
       XPRINTF(" could not send file to node %s.\n",

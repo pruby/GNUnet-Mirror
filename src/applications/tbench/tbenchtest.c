@@ -42,7 +42,7 @@ static int parseOptions(int argc,
  */
 static PeerIdentity peer2;
 
-static int test(GNUNET_TCP_SOCKET * sock,
+static int test(struct ClientServerConnection * sock,
 		unsigned int messageSize,
 		unsigned int messageCnt,
 		unsigned int messageIterations,
@@ -69,13 +69,13 @@ static int test(GNUNET_TCP_SOCKET * sock,
   msg.priority    = htonl(5);
   msg.receiverId  = peer2;
 
-  if (SYSERR == writeToSocket(sock,
+  if (SYSERR == connection_write(sock,
 			      &msg.header))
     return -1;
   ret = 0;
 
   buffer = NULL;
-  if (OK == readFromSocket(sock, (CS_MESSAGE_HEADER**)&buffer)) {
+  if (OK == connection_read(sock, (CS_MESSAGE_HEADER**)&buffer)) {
     if ((float)buffer->mean_loss <= 0){
       messagesPercentLoss = 0.0;
     } else {
@@ -110,7 +110,7 @@ static int waitForConnect(const char * name,
   return OK;
 }
 
-static int checkConnected(GNUNET_TCP_SOCKET * sock) {
+static int checkConnected(struct ClientServerConnection * sock) {
   int left;
   int ret;
 
@@ -143,7 +143,7 @@ int main(int argc, char ** argv) {
   pid_t daemon2;
   int ret;
   int left;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   int i;
 
   GE_ASSERT(ectx, OK ==

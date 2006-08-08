@@ -126,7 +126,7 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
   fn = getUriDbName();
   fh = fileopen(fn, O_WRONLY|O_APPEND|O_CREAT|O_LARGEFILE, S_IRUSR|S_IWUSR);
   if (fh == -1) {
-    LOG_FILE_STRERROR(LOG_WARNING,
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
 		      "open",
 		      fn);
   } else {
@@ -154,7 +154,7 @@ void FSUI_clearTrackedURIS() {
   IPC_SEMAPHORE_DOWN(sem);
   fn = getUriDbName();
   if (0 != UNLINK(fn))
-    LOG_FILE_STRERROR(LOG_WARNING,
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
 		      "unlink",
 		      fn);
   FREE(fn);
@@ -209,14 +209,14 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
   if(fd == -1) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
-    LOG_FILE_STRERROR(LOG_WARNING, "open", fn);
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "open", fn);
     FREE(fn);
     return SYSERR;              /* error opening URI db */
   }
   result = MMAP(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
   if(result == MAP_FAILED) {
     CLOSE(fd);
-    LOG_FILE_STRERROR(LOG_WARNING, "mmap", fn);
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "mmap", fn);
     FREE(fn);
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
@@ -259,7 +259,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
         ECRS_freeMetaData(fi.meta);
         ECRS_freeUri(fi.uri);
         if(0 != MUNMAP(result, buf.st_size))
-          LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
+          GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "munmap", fn);
         CLOSE(fd);
         FREE(fn);
         IPC_SEMAPHORE_UP(sem);
@@ -272,7 +272,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
     ECRS_freeUri(fi.uri);
   }
   if(0 != MUNMAP(result, buf.st_size))
-    LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "munmap", fn);
   CLOSE(fd);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
@@ -281,7 +281,7 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
 FORMATERROR:
   GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, _("Deleted corrupt URI database in `%s'."), STATE_NAME);
   if(0 != MUNMAP(result, buf.st_size))
-    LOG_FILE_STRERROR(LOG_WARNING, "munmap", fn);
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "munmap", fn);
   CLOSE(fd);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);

@@ -254,7 +254,7 @@ void * downloadThread(void * cls) {
     fd = fileopen(fn,
 		  O_LARGEFILE | O_RDONLY);
     if (fd == -1) {
-      LOG_FILE_STRERROR(LOG_ERROR,
+      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR,
 			"OPEN",
 			fn);
     } else {
@@ -265,7 +265,7 @@ void * downloadThread(void * cls) {
 		      fd,
 		      0);
       if (MAP_FAILED == dirBlock) {
-	LOG_FILE_STRERROR(LOG_ERROR, "MMAP", fn);	
+	GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "MMAP", fn);	
       } else {
 	/* load directory, start downloads */
 	md = NULL;

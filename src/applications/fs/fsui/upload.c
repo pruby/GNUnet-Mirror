@@ -165,11 +165,11 @@ static int uploadDirectory(UploadThreadClosure * utc,
     tempName = STRDUP("/tmp/gnunetdir.XXXXXX");
     handle = mkstemp(tempName);
     if (handle == -1) {
-      LOG_FILE_STRERROR(LOG_ERROR, tempName, "mkstemp");
+      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, tempName, "mkstemp");
     } else if (len != WRITE(handle,
 			    data,
 			    len)) {
-      LOG_FILE_STRERROR(LOG_ERROR, tempName, "write");
+      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, tempName, "write");
     } else {
       closefile(handle);
       utc->filename = tempName;

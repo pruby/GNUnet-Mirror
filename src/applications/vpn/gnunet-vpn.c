@@ -122,14 +122,14 @@ static int parseOptions(int argc,
   return OK;
 }
 
-static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
+static void * receiveThread(struct ClientServerConnection * sock) {
   /* printf("Welcome to the VPN console: (Ctrl-D to exit)\n"); */
   /* CS_MESSAGE_HEADER *buffer; */
   char buffer[MAX_BUFFER_SIZE];
   CS_MESSAGE_HEADER* bufp = buf;
       
   /* buffer = MALLOC(MAX_BUFFER_SIZE); */
-  while (OK == readFromSocket(sock, &bufp)) {
+  while (OK == connection_read(sock, &bufp)) {
 	switch (ntohs(buf->type)) {
 		case CS_PROTO_VPN_DEBUGOFF:
 		case CS_PROTO_VPN_DEBUGON:
@@ -181,7 +181,7 @@ static void * receiveThread(GNUNET_TCP_SOCKET * sock) {
  * @return return value from gnunet-template: 0: ok, -1: error
  */
 int main(int argc, char ** argv) {
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   PTHREAD_T messageReceiveThread;
   void * unused;
   char buffer[sizeof(CS_MESSAGE_HEADER) + 1024];
@@ -213,49 +213,49 @@ int main(int argc, char ** argv) {
 	if (strncmp(buffer, "debug0", 6) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_DEBUGOFF);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "debug1", 6) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_DEBUGON);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "tunnels", 7) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_TUNNELS);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "route", 5) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_ROUTES);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "realised", 8) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_REALISED);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "reset", 5) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_RESET);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "realise", 7) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_REALISE);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "trust", 5) == 0) {
 		((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_TRUST);
 		((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER));
-		if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+		if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 		rancommand = 1;
 		SEMAPHORE_DOWN(cmdAck);
 	} else if (strncmp(buffer, "add ", 4) == 0) {
@@ -265,7 +265,7 @@ int main(int argc, char ** argv) {
 		if (strlen(&buffer[4]) > 1) {
 			((CS_MESSAGE_HEADER*)&buffer)->type = htons(CS_PROTO_VPN_ADD);
 			((CS_MESSAGE_HEADER*)&buffer)->size = htons(sizeof(CS_MESSAGE_HEADER) + strlen(&buffer[5]));
-			if (SYSERR == writeToSocket(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
+			if (SYSERR == connection_write(sock, (CS_MESSAGE_HEADER*)&buffer)) return -1;
 			rancommand = 1;
 			SEMAPHORE_DOWN(cmdAck);
 		} else {

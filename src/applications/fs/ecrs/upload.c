@@ -46,7 +46,7 @@
  * level+1 and clear the level.  iblocks is guaranteed to be big
  * enough.
  */
-static int pushBlock(GNUNET_TCP_SOCKET * sock,
+static int pushBlock(struct ClientServerConnection * sock,
                      const CHK * chk,
                      unsigned int level,
                      Datastore_Value ** iblocks,
@@ -155,7 +155,7 @@ int ECRS_uploadFile(const char * filename,
   Datastore_Value * dblock;
   DBlock * db;
   Datastore_Value * value;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   HashCode512 fileId;
   CHK chk;
   cron_t eta;
@@ -233,7 +233,7 @@ int ECRS_uploadFile(const char * filename,
 
   fd = fileopen(filename, O_RDONLY | O_LARGEFILE);
   if (fd == -1) {
-    LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "OPEN", filename);
     return SYSERR;
   }
 
@@ -275,7 +275,7 @@ int ECRS_uploadFile(const char * filename,
     if (size != READ(fd,
                      &db[1],
                      size)) {
-      LOG_FILE_STRERROR(LOG_WARNING,
+      GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
                         "READ",
                         filename);
       goto FAILURE;

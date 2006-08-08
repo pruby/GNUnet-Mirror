@@ -123,7 +123,7 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 		       cron_t expirationTime,
 		       const struct ECRS_URI * dst,
 		       const struct ECRS_MetaData * md) {
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   Datastore_Value * value;
   int ret;
   unsigned int size;

@@ -534,7 +534,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
     FREE(dir);
     execvp(pi->argv[0],
 	   &pi->argv[0]);
-    LOG_FILE_STRERROR(LOG_ERROR, "execvp", pi->argv[0]);
+    GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "execvp", pi->argv[0]);
     fprintf(stderr,
 	    _("`%s' %s failed: %s\n"),
 	    "execvp",
@@ -854,7 +854,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
 	  end - ((TESTBED_UPLOAD_FILE_MESSAGE_GENERIC*)msg)->buf);
   if (htonl(msg->type) == TESTBED_FILE_DELETE) {
     if (REMOVE(filename) && errno != ENOENT) {
-      LOG_FILE_STRERROR(LOG_WARNING, "remove", filename);
+      GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "remove", filename);
       ack = SYSERR;
     } else
       ack = OK;
@@ -873,7 +873,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   outfile = FOPEN(filename, "ab");
   if (outfile == NULL) {
     /* Send nack back to control point. */
-    LOG_FILE_STRERROR(LOG_ERROR, "fopen", filename);
+    GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "fopen", filename);
     sendAcknowledgement(client, SYSERR);
     FREE(filename);
     return;

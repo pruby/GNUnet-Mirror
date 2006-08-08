@@ -32,6 +32,7 @@
 #define GNUNET_FS_LIB_H
 
 #include "gnunet_util.h"
+#include "gnunet_util_network_client.h"
 #include "gnunet_datastore_service.h"
 
 #ifdef __cplusplus
@@ -44,7 +45,9 @@ extern "C" {
 
 struct FS_SEARCH_CONTEXT;
 
-struct FS_SEARCH_CONTEXT * FS_SEARCH_makeContext(Mutex * lock);
+struct FS_SEARCH_CONTEXT * FS_SEARCH_makeContext(struct GE_Context * ectx,
+						 struct GC_Configuration * cfg,
+						 struct MUTEX * lock);
 
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx);
 
@@ -80,7 +83,7 @@ void FS_stop_search(struct FS_SEARCH_CONTEXT * ctx,
  * What is the current average priority of entries
  * in the routing table like?  Returns -1 on error.
  */
-int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock);
+int FS_getAveragePriority(struct ClientServerConnection * sock);
 
 /**
  * Insert a block.  Note that while the API is VERY similar to
@@ -91,14 +94,14 @@ int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock);
  * @return OK on success, SYSERR on error
  * @see ecrs_core.h::fileBlockEncode
  */
-int FS_insert(GNUNET_TCP_SOCKET * sock,
+int FS_insert(struct ClientServerConnection * sock,
 	      const Datastore_Value * block);
 
 
 /**
  * Initialize to index a file.  Tries to do the symlinking.
  */
-int FS_initIndex(GNUNET_TCP_SOCKET * sock,
+int FS_initIndex(struct ClientServerConnection * sock,
 		 const HashCode512 * fileHc,
 		 const char * fn);
 
@@ -112,7 +115,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
  * @param offset the offset of the block into the file
  * @return OK on success, SYSERR on error
  */
-int FS_index(GNUNET_TCP_SOCKET * sock,
+int FS_index(struct ClientServerConnection * sock,
 	     const HashCode512 * fileHc,	
 	     const Datastore_Value * block,
 	     unsigned long long offset);
@@ -125,7 +128,7 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
  * @return number of items deleted on success,
  *    SYSERR on error
  */
-int FS_delete(GNUNET_TCP_SOCKET * sock,
+int FS_delete(struct ClientServerConnection * sock,
 	      const Datastore_Value * block);
 
 /**
@@ -134,7 +137,7 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
  * @param hc the hash of the entire file
  * @return OK on success, SYSERR on error
  */
-int FS_unindex(GNUNET_TCP_SOCKET * sock,
+int FS_unindex(struct ClientServerConnection * sock,
 	       unsigned int blocksize,
 	       const HashCode512 * hc);
 
@@ -144,7 +147,7 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
  * @param hc the hash of the entire file
  * @return YES if so, NO if not, SYSERR on error
  */
-int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
+int FS_testIndexed(struct ClientServerConnection * sock,
 		   const HashCode512 * hc);
 
 

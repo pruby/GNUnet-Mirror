@@ -67,7 +67,7 @@ int main(int argc, char ** argv) {
   pid_t sto2;
   int ret;
   int status;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   int left;
   DHT_TableId table;
   DHT_TableId key;

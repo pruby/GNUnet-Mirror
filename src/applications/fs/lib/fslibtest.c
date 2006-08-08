@@ -216,7 +216,7 @@ int main(int argc, char * argv[]){
   struct FS_SEARCH_CONTEXT * ctx = NULL;
   struct FS_SEARCH_HANDLE * hnd;
   Mutex lock;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   Datastore_Value * block;
   Datastore_Value * eblock;
   HashCode512 hc;

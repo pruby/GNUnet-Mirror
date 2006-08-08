@@ -41,7 +41,7 @@ typedef struct {
    * The socket that was used to join GNUnet to receive
    * requests for this table.
    */
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   /**
    * The thread that is processing the requests received
    * from GNUnet on sock.
@@ -91,7 +91,7 @@ static int checkACK(CS_MESSAGE_HEADER * reply) {
 /**
  * Send an ACK message of the given value to gnunetd.
  */
-static int sendAck(GNUNET_TCP_SOCKET * sock,
+static int sendAck(struct ClientServerConnection * sock,
 		   DHT_TableId * table,
 		   int value) {
   CS_dht_reply_ack_MESSAGE msg;
@@ -102,7 +102,7 @@ static int sendAck(GNUNET_TCP_SOCKET * sock,
   msg.header.type = htons(CS_PROTO_dht_REPLY_ACK);
   msg.status = htonl(value);
   msg.table = *table;
-  return writeToSocket(sock,
+  return connection_write(sock,
 		       &msg.header);
 }
 
@@ -121,7 +121,7 @@ static int sendAllResults(const HashCode512 * key,
   memcpy(&reply->data,
 	 value,
 	 ntohl(value->size));
-  if (OK != writeToSocket(list->sock,
+  if (OK != connection_write(list->sock,
 			  &reply->header)) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Failed to send `%s'.  Closing connection.\n"),
@@ -165,10 +165,10 @@ static void * process_thread(TableList * list) {
 
     ok = NO;
     /* send 'join' message via socket! */
-    if (OK == writeToSocket(list->sock,
+    if (OK == connection_write(list->sock,
 			    &req.header)) {
       reply = NULL;
-      if (OK == readFromSocket(list->sock,
+      if (OK == connection_read(list->sock,
 			       &reply)) {
 	if (OK == checkACK(reply))
 	  ok = YES;
@@ -184,7 +184,7 @@ static void * process_thread(TableList * list) {
     }
 
     buffer = NULL;
-    while (OK == readFromSocket(list->sock,
+    while (OK == connection_read(list->sock,
 				&buffer)) {
       GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	  "Received message of type %d from gnunetd\n",
@@ -477,7 +477,7 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   CS_dht_request_leave_MESSAGE req;
   CS_MESSAGE_HEADER * reply;
   int ret;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
 
   list = NULL;
   MUTEX_LOCK(&lock);
@@ -508,10 +508,10 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   ret = SYSERR;
   sock = getClientSocket();
   if (sock != NULL) {
-    if (OK == writeToSocket(sock,
+    if (OK == connection_write(sock,
 			    &req.header)) {
       reply = NULL;
-      if (OK == readFromSocket(sock,
+      if (OK == connection_read(sock,
 			       &reply)) {
 	if (OK == checkACK(reply))
 	  ret = OK;	
@@ -572,7 +572,7 @@ int DHT_LIB_get(const DHT_TableId * table,
 		cron_t timeout,
 		DataProcessor processor,
 		void * closure) {
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   CS_dht_request_get_MESSAGE * req;
   CS_dht_reply_results_MESSAGE * res;
   CS_MESSAGE_HEADER * reply;
@@ -596,7 +596,7 @@ int DHT_LIB_get(const DHT_TableId * table,
   memcpy(&req->keys,
 	 keys,
 	 keyCount * sizeof(HashCode512));
-  if (OK != writeToSocket(sock,
+  if (OK != connection_write(sock,
 			  &req->header)) {
     releaseClientSocket(sock);
     return SYSERR;
@@ -604,7 +604,7 @@ int DHT_LIB_get(const DHT_TableId * table,
   FREE(req);
   while (1) {
     reply = NULL;
-    if (OK != readFromSocket(sock,
+    if (OK != connection_read(sock,
 			     &reply)) {
       releaseClientSocket(sock);
       return SYSERR;
@@ -661,7 +661,7 @@ int DHT_LIB_put(const DHT_TableId * table,
 		unsigned int prio,
 		cron_t timeout,
 		const DataContainer * value) {
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   CS_dht_request_put_MESSAGE * req;
   CS_MESSAGE_HEADER * reply;
   int ret;
@@ -691,10 +691,10 @@ int DHT_LIB_put(const DHT_TableId * table,
 	 &value[1],
 	 ntohl(value->size) - sizeof(DataContainer));
   ret = SYSERR;
-  if (OK == writeToSocket(sock,
+  if (OK == connection_write(sock,
 			  &req->header))
     reply = NULL;
-    if (OK == readFromSocket(sock,
+    if (OK == connection_read(sock,
 			     &reply)) {
       if (OK == checkACK(reply))
 	ret = OK;
@@ -719,7 +719,7 @@ int DHT_LIB_remove(const DHT_TableId * table,
 		   const HashCode512 * key,
 		   cron_t timeout,
 		   const DataContainer * value) {
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   CS_dht_request_remove_MESSAGE * req;
   CS_MESSAGE_HEADER * reply;
   int ret;
@@ -742,10 +742,10 @@ int DHT_LIB_remove(const DHT_TableId * table,
 	   &value[1],
 	   ntohl(value->size) - sizeof(DataContainer));
   ret = SYSERR;
-  if (OK == writeToSocket(sock,
+  if (OK == connection_write(sock,
 			  &req->header))
     reply = NULL;
-    if (OK == readFromSocket(sock,
+    if (OK == connection_read(sock,
 			     &reply)) {
       if (OK == checkACK(reply))
 	ret = OK;

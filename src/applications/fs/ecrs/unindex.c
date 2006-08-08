@@ -53,7 +53,7 @@
  * to avoid code duplication (move to block.c, pass
  * FS_delete as argument!).
  */
-static int pushBlock(GNUNET_TCP_SOCKET * sock,
+static int pushBlock(struct ClientServerConnection * sock,
 		     const CHK * chk,	
 		     unsigned int level,
 		     Datastore_Value ** iblocks) {
@@ -117,7 +117,7 @@ static int pushBlock(GNUNET_TCP_SOCKET * sock,
  */
 static int undoSymlinking(const char * fn,
 			  const HashCode512 * fileId,
-			  GNUNET_TCP_SOCKET * sock) {
+			  struct ClientServerConnection * sock) {
   EncName enc;
   char * serverDir;
   char * serverFN;
@@ -129,7 +129,7 @@ static int undoSymlinking(const char * fn,
 #endif
   if (0 != LSTAT(fn,
 		 &buf)) {
-    LOG_FILE_STRERROR(LOG_ERROR, "stat", fn);
+    GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "stat", fn);
     return SYSERR;
   }
 #ifdef S_ISLNK
@@ -155,7 +155,7 @@ static int undoSymlinking(const char * fn,
 	 (char*)&enc);
 
   if (0 != UNLINK(serverFN)) {
-    LOG_FILE_STRERROR(LOG_ERROR, "unlink", serverFN);
+    GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "unlink", serverFN);
     FREE(serverFN);
     return SYSERR;
   }
@@ -185,7 +185,7 @@ int ECRS_unindexFile(const char * filename,
   Datastore_Value * dblock;
   DBlock * db;
   Datastore_Value * value;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   HashCode512 fileId;
   CHK chk;
   cron_t eta;
@@ -235,7 +235,7 @@ int ECRS_unindexFile(const char * filename,
 
   fd = fileopen(filename, O_RDONLY | O_LARGEFILE);
   if (fd == -1) {
-    LOG_FILE_STRERROR(LOG_WARNING, "OPEN", filename);
+    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "OPEN", filename);
     return SYSERR;
   }
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
@@ -275,7 +275,7 @@ int ECRS_unindexFile(const char * filename,
     if (size != READ(fd,
 		     &db[1],
 		     size)) {
-      LOG_FILE_STRERROR(LOG_WARNING,
+      GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
 			"READ",
 			filename);
       goto FAILURE;

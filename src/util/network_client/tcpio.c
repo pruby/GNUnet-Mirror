@@ -249,7 +249,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
 
 /**
  * Write to a GNUnet TCP socket.  Will also potentially complete the
- * sending of a previous non-blocking writeToSocket call.
+ * sending of a previous non-blocking connection_write call.
  *
  * @param sock the socket to write to
  * @param buffer the buffer to write

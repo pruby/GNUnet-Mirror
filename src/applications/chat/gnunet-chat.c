@@ -98,11 +98,11 @@ static int parseOptions(int argc,
 }
 
 static void * receiveThread(void * arg) {
-  GNUNET_TCP_SOCKET * sock = arg;
+  struct ClientServerConnection * sock = arg;
   CS_chat_MESSAGE * buffer;
 
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  while (OK == readFromSocket(sock,
+  while (OK == connection_read(sock,
 			      (CS_MESSAGE_HEADER **)&buffer)) {
     char timebuf[64];
     time_t timetmp;
@@ -138,7 +138,7 @@ static void * receiveThread(void * arg) {
  * @return return value from gnunetsearch: 0: ok, -1: error
  */
 int main(int argc, char ** argv) {
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   PTHREAD_T messageReceiveThread;
   void * unused;
   CS_chat_MESSAGE msg;
@@ -177,7 +177,7 @@ int main(int argc, char ** argv) {
 	 strlen(nick));
 
   /* send first "Hi!" message to gnunetd to indicate "join" */
-  if (SYSERR == writeToSocket(sock,
+  if (SYSERR == connection_write(sock,
 			      &msg.header))
     errexit(_("Could not send join message to gnunetd\n"));
 
@@ -186,7 +186,7 @@ int main(int argc, char ** argv) {
     memset(&msg.message, 0, 1024);
     if (NULL == fgets(&msg.message[0], 1024, stdin))
       break;
-    if (SYSERR == writeToSocket(sock,
+    if (SYSERR == connection_write(sock,
 				&msg.header))
       errexit(_("Could not send message to gnunetd\n"));
   }

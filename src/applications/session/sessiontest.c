@@ -62,7 +62,7 @@ int main(int argc, char ** argv) {
   pid_t daemon1;
   pid_t daemon2;
   int ret;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   int left;
 
   GE_ASSERT(ectx, OK ==

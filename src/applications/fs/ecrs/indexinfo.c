@@ -40,7 +40,7 @@
  */
 int ECRS_isFileIndexed(const char * filename) {
   HashCode512 hc;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   int ret;
 
   if (SYSERR == getFileHash(filename,
@@ -93,7 +93,7 @@ static int iiHelper(const char * fn,
 	continue;
       }
       if (errno != EINVAL) {
-	LOG_FILE_STRERROR(LOG_WARNING,
+	GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
 			  "readlink",
 			  fullName);
       }
@@ -134,7 +134,7 @@ int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
 			     void * closure) {
   char * tmp;
   char * indexDirectory;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   struct iiC cls;
 
   sock = getClientSocket();

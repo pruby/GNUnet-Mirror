@@ -123,7 +123,7 @@ static int printCallback(const HashCode512 * hash,
   return OK;
 }
 
-static void do_get(GNUNET_TCP_SOCKET * sock,
+static void do_get(struct ClientServerConnection * sock,
 		   const char * key) {
   int ret;
   HashCode512 hc;
@@ -149,7 +149,7 @@ static void do_get(GNUNET_TCP_SOCKET * sock,
 	   key);
 }
 
-static void do_put(GNUNET_TCP_SOCKET * sock,
+static void do_put(struct ClientServerConnection * sock,
 		   const char * key,
 		   char * value) {
   DataContainer * dc;
@@ -181,7 +181,7 @@ static void do_put(GNUNET_TCP_SOCKET * sock,
   FREE(dc);
 }
 
-static void do_remove(GNUNET_TCP_SOCKET * sock,
+static void do_remove(struct ClientServerConnection * sock,
 		      const char * key,
 		      char * value) {
   DataContainer * dc;
@@ -219,7 +219,7 @@ int main(int argc,
   int count;
   char ** commands;
   int i;
-  GNUNET_TCP_SOCKET * handle;
+  struct ClientServerConnection * handle;
 
   if (SYSERR == initUtil(argc, argv, &parseOptions))
     return 0;

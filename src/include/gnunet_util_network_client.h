@@ -54,7 +54,7 @@ client_connection_create(struct GE_Context * ectx,
  * Close a GNUnet TCP socket for now (use to temporarily close
  * a TCP connection that will probably not be used for a long
  * time; the socket will still be auto-reopened by the
- * readFromSocket/writeToSocket methods if it is a client-socket).
+ * connection_read/connection_write methods if it is a client-socket).
  *
  * Also, you must still call connection_destroy to free all
  * resources associated with the connection.

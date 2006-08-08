@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -39,9 +39,11 @@ typedef struct FS_SEARCH_HANDLE {
 } SEARCH_HANDLE;
 
 typedef struct FS_SEARCH_CONTEXT {
-  GNUNET_TCP_SOCKET * sock;
-  PTHREAD_T thread;
-  Mutex * lock;
+  struct GC_Configuration * cfg;
+  struct GE_Context * ectx;
+  struct ClientServerConnection * sock;
+  struct PTHREAD * thread;
+  struct MUTEX * lock;
   SEARCH_HANDLE ** handles;
   unsigned int handleCount;
   unsigned int handleSize;
@@ -52,8 +54,9 @@ typedef struct FS_SEARCH_CONTEXT {
  * Thread that processes replies from gnunetd and
  * calls the appropriate callback.
  */
-static void * processReplies(SEARCH_CONTEXT * ctx) {
-  CS_MESSAGE_HEADER * hdr;
+static void * processReplies(void * cls) {
+  SEARCH_CONTEXT * ctx = cls;
+  MESSAGE_HEADER * hdr;
   int i;
   int matched;
   CS_fs_reply_content_MESSAGE * rep;
@@ -64,11 +67,12 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
   delay = 100 * cronMILLIS;
   while (ctx->abort == NO) {
     hdr = NULL;
-    if (OK == readFromSocket(ctx->sock,
-			     &hdr)) {
+    if (OK == connection_read(ctx->sock,
+			      &hdr)) {
 #if DEBUG_FSLIB
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "FSLIB: received message from gnunetd\n");
+      GE_LOG(ctx->ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "FSLIB: received message from gnunetd\n");
 #endif
       delay = 100 * cronMILLIS;
       /* verify hdr, if reply, process, otherwise
@@ -76,7 +80,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 	 matching callback, call on value */
       if ( (ntohs(hdr->size) < sizeof(CS_fs_reply_content_MESSAGE)) ||
 	   (ntohs(hdr->type) != CS_PROTO_gap_RESULT) ) {
-	GE_BREAK(ectx, 0);
+	GE_BREAK(ctx->ectx, 0);
 	FREE(hdr);
 	continue;
       }
@@ -86,7 +90,7 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
 			    (DBlock*)&rep[1],
 			    NO, /* gnunetd will have checked already */
 			    &query)) {
-	GE_BREAK(ectx, 0);
+	GE_BREAK(ctx->ectx, 0);
 	FREE(hdr);
 	continue;
       }
@@ -121,14 +125,16 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
       MUTEX_UNLOCK(ctx->lock);
 #if DEBUG_FSLIB
       if (matched == 0)
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "FSLIB: received content but have no pending request\n");
+	GE_LOG(ctx->ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "FSLIB: received content but have no pending request\n");
 #endif
     } else {
 #if DEBUG_FSLIB
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
-	  delay);
+      GE_LOG(ctx->ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
+	     delay);
 #endif
       PTHREAD_SLEEP(delay);
       delay *= 2;
@@ -140,33 +146,39 @@ static void * processReplies(SEARCH_CONTEXT * ctx) {
   return NULL;
 }
 
-SEARCH_CONTEXT * FS_SEARCH_makeContext(Mutex * lock) {
+SEARCH_CONTEXT * FS_SEARCH_makeContext(struct GE_Context * ectx,
+				       struct GC_Configuration * cfg,
+				       struct MUTEX * lock) {
   SEARCH_CONTEXT * ret;
   ret = MALLOC(sizeof(SEARCH_CONTEXT));
+  ret->ectx = ectx;
+  ret->cfg = cfg;
   ret->lock = lock;
-  ret->sock = getClientSocket();
+  ret->sock = client_connection_create(ectx, cfg);
   ret->handles = NULL;
   ret->handleCount = 0;
   ret->handleSize = 0;
   ret->abort = NO;
-  if (0 != PTHREAD_CREATE(&ret->thread,
-			  (PThreadMain) &processReplies,
-			  ret,
-			  64 * 1024))
-    DIE_STRERROR("PTHREAD_CREATE");
+  ret->thread = PTHREAD_CREATE(&processReplies,
+			       ret,
+			       64 * 1024);
+  if (ret->thread == NULL)
+    GE_DIE_STRERROR(ectx,
+		    GE_FATAL | GE_ADMIN | GE_BULK,
+		    "PTHREAD_CREATE");
   return ret;
 }
 
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   void * unused;
 
-  GE_ASSERT(ectx, ctx->handleCount == 0);
+  GE_ASSERT(ctx->ectx, ctx->handleCount == 0);
   ctx->abort = YES;
-  closeSocketTemporarily(ctx->sock);
-  PTHREAD_JOIN(&ctx->thread,
+  connection_close_temporarily(ctx->sock);
+  PTHREAD_JOIN(ctx->thread,
 	       &unused);
   ctx->lock = NULL;
-  releaseClientSocket(ctx->sock);
+  connection_destroy(ctx->sock);
   GROW(ctx->handles,
        ctx->handleSize,
        0);
@@ -200,9 +212,10 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 
   ret = MALLOC(sizeof(SEARCH_HANDLE));
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FSLIB: start search (%p)\n",
-      ret);
+  GE_LOG(ctx->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSLIB: start search (%p)\n",
+	 ret);
 #endif
   req = MALLOC(sizeof(CS_fs_request_search_MESSAGE) + (keyCount-1) * sizeof(HashCode512));
   req->header.size = htons(sizeof(CS_fs_request_search_MESSAGE) + (keyCount-1) * sizeof(HashCode512));
@@ -226,24 +239,27 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   ctx->handles[ctx->handleCount++] = ret;
   MUTEX_UNLOCK(ctx->lock);
 #if DEBUG_FSLIB
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&req->query[0],
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FSLIB: initiating search for `%s' of type %u\n",
-      &enc,
-      type);
+  IF_GELOG(ctx->ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&req->query[0],
+		    &enc));
+  GE_LOG(ctx->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSLIB: initiating search for `%s' of type %u\n",
+	 &enc,
+	 type);
 #endif
-  if (OK != writeToSocket(ctx->sock,
+  if (OK != connection_write(ctx->sock,
 			  &req->header)) {
     FS_stop_search(ctx,
 		   ret);
     return NULL;
   }
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FSLIB: search started (%p)\n",
-      ret);
+  GE_LOG(ctx->ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSLIB: search started (%p)\n",
+	 ret);
 #endif
   return ret;
 }
@@ -256,13 +272,14 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
   int i;
 
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FSLIB: stop search (%p)\n",
-      handle);
+  GE_LOG(ctx->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSLIB: stop search (%p)\n",
+	 handle);
 #endif
   handle->req->header.type = htons(CS_PROTO_gap_QUERY_STOP);
-  writeToSocket(ctx->sock,
-		&handle->req->header);
+  connection_write(ctx->sock,
+		   &handle->req->header);
   MUTEX_LOCK(ctx->lock);
   for (i=ctx->handleCount-1;i>=0;i--)
     if (ctx->handles[i] == handle) {
@@ -272,9 +289,10 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
   MUTEX_UNLOCK(ctx->lock);
   FREE(handle->req);
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FSLIB: search stopped (%p)\n",
-      handle);
+  GE_LOG(ctx->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSLIB: search stopped (%p)\n",
+	 handle);
 #endif
   FREE(handle);
 }
@@ -283,17 +301,17 @@ void FS_stop_search(SEARCH_CONTEXT * ctx,
  * What is the current average priority of entries
  * in the routing table like?  Returns -1 on error.
  */
-int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock) {
-  CS_MESSAGE_HEADER req;
+int FS_getAveragePriority(struct ClientServerConnection * sock) {
+  MESSAGE_HEADER req;
   int ret;
 
-  req.size = htons(sizeof(CS_MESSAGE_HEADER));
+  req.size = htons(sizeof(MESSAGE_HEADER));
   req.type = htons(CS_PROTO_gap_GET_AVG_PRIORITY);
-  if (OK != writeToSocket(sock,
-			  &req))
+  if (OK != connection_write(sock,
+			     &req))
     return -1;
-  if (OK != readTCPResult(sock,
-			  &ret))
+  if (OK != connection_read_result(sock,
+				   &ret))
     return -1;
   return ret;
 }
@@ -304,14 +322,14 @@ int FS_getAveragePriority(GNUNET_TCP_SOCKET * sock) {
  * @param block the block (properly encoded and all)
  * @return OK on success, SYSERR on error
  */
-int FS_insert(GNUNET_TCP_SOCKET * sock,
+int FS_insert(struct ClientServerConnection * sock,
 	      const Datastore_Value * block) {
   int ret;
   CS_fs_request_insert_MESSAGE * ri;
   unsigned int size;
 
   if (ntohl(block->size) <= sizeof(Datastore_Value)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
   size = ntohl(block->size) - sizeof(Datastore_Value);
@@ -324,15 +342,15 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
   memcpy(&ri[1],
 	 &block[1],
 	 size);
-  if (OK != writeToSocket(sock,
-			  &ri->header)) {
+  if (OK != connection_write(sock,
+			     &ri->header)) {
     FREE(ri);
     return SYSERR;
   }
   FREE(ri);
 
-  if (OK != readTCPResult(sock,
-			  &ret))
+  if (OK != connection_read_result(sock,
+				   &ret))
     return SYSERR;
   return ret;
 }
@@ -340,7 +358,7 @@ int FS_insert(GNUNET_TCP_SOCKET * sock,
 /**
  * Initialize to index a file
  */
-int FS_initIndex(GNUNET_TCP_SOCKET * sock,
+int FS_initIndex(struct ClientServerConnection * sock,
 		 const HashCode512 * fileHc,
 		 const char * fn) {
   int ret;
@@ -360,7 +378,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Sending index initialization request to gnunetd\n");
 #endif
-  if (OK != writeToSocket(sock,
+  if (OK != connection_write(sock,
         &ri->header)) {
     FREE(ri);
     return SYSERR;
@@ -370,7 +388,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Waiting for confirmation of index initialization request by gnunetd\n");
 #endif
-  if (OK != readTCPResult(sock,
+  if (OK != connection_read_result(sock,
         &ret))
     return SYSERR;
   return ret;
@@ -384,7 +402,7 @@ int FS_initIndex(GNUNET_TCP_SOCKET * sock,
  * @param offset the offset of the block into the file
  * @return OK on success, SYSERR on error
  */
-int FS_index(GNUNET_TCP_SOCKET * sock,
+int FS_index(struct ClientServerConnection * sock,
 	     const HashCode512 * fileHc,	
 	     const Datastore_Value * block,
 	     unsigned long long offset) {
@@ -408,7 +426,7 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Sending index request to gnunetd\n");
 #endif
-  if (OK != writeToSocket(sock,
+  if (OK != connection_write(sock,
 			  &ri->header)) {
     FREE(ri);
     return SYSERR;
@@ -418,7 +436,7 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Waiting for confirmation of index request by gnunetd\n");
 #endif
-  if (OK != readTCPResult(sock,
+  if (OK != connection_read_result(sock,
 			  &ret))
     return SYSERR;
   return ret;
@@ -432,7 +450,7 @@ int FS_index(GNUNET_TCP_SOCKET * sock,
  * @return number of items deleted on success,
  *    SYSERR on error
  */
-int FS_delete(GNUNET_TCP_SOCKET * sock,
+int FS_delete(struct ClientServerConnection * sock,
 	      const Datastore_Value * block) {
   int ret;
   CS_fs_request_delete_MESSAGE * rd;
@@ -445,16 +463,16 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
   memcpy(&rd[1],
 	 &block[1],
 	 size);
-  if (OK != writeToSocket(sock,
+  if (OK != connection_write(sock,
 			  &rd->header)) {
     FREE(rd);
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
   FREE(rd);
-  if (OK != readTCPResult(sock,
+  if (OK != connection_read_result(sock,
 			  &ret)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
   return ret;
@@ -466,7 +484,7 @@ int FS_delete(GNUNET_TCP_SOCKET * sock,
  * @param hc the hash of the entire file
  * @return OK on success, SYSERR on error
  */
-int FS_unindex(GNUNET_TCP_SOCKET * sock,
+int FS_unindex(struct ClientServerConnection * sock,
 	       unsigned int blocksize,
 	       const HashCode512 * hc) {
   int ret;
@@ -476,10 +494,10 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
   ru.header.type = htons(CS_PROTO_gap_UNINDEX);
   ru.blocksize = htonl(blocksize);
   ru.fileId = *hc;
-  if (OK != writeToSocket(sock,
+  if (OK != connection_write(sock,
 			  &ru.header))
     return SYSERR;
-  if (OK != readTCPResult(sock,
+  if (OK != connection_read_result(sock,
 			  &ret))
     return SYSERR;
   return ret;
@@ -491,7 +509,7 @@ int FS_unindex(GNUNET_TCP_SOCKET * sock,
  * @param hc the hash of the entire file
  * @return YES if so, NO if not, SYSERR on error
  */
-int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
+int FS_testIndexed(struct ClientServerConnection * sock,
 		   const HashCode512 * hc) {
   RequestTestindex ri;
   int ret;
@@ -500,10 +518,10 @@ int FS_testIndexed(GNUNET_TCP_SOCKET * sock,
   ri.header.type = htons(CS_PROTO_gap_TESTINDEX);
   ri.reserved = htonl(0);
   ri.fileId = *hc;
-  if (OK != writeToSocket(sock,
+  if (OK != connection_write(sock,
 			  &ri.header))
     return SYSERR;
-  if (OK != readTCPResult(sock,
+  if (OK != connection_read_result(sock,
 			  &ret))
     return SYSERR;
   return ret;

@@ -49,9 +49,10 @@ extern "C" {
  * 3.1.x: with namespace meta-data
  * 3.2.x: with collections
  * 4.0.x: with expiration, variable meta-data, kblocks
+ * 4.1.x: with new error and configuration handling
  * 5.x.x: who knows? :-)
  */
-#define AFS_VERSION "4.0.2"
+#define AFS_VERSION "4.1.0"
 
 #define GNUNET_DIRECTORY_MIME  "application/gnunet-directory"
 #define GNUNET_DIRECTORY_MAGIC "\211GND\r\n\032\n"
@@ -183,7 +184,8 @@ size_t ECRS_getThumbnailFromMetaData(const struct ECRS_MetaData * md,
  * @return SYSERR on error, otherwise the number
  *   of meta-data items obtained
  */
-int ECRS_extractMetaData(struct ECRS_MetaData * md,
+int ECRS_extractMetaData(struct GE_Context * ectx,
+			 struct ECRS_MetaData * md,
 			 const char * filename,
 			 EXTRACTOR_ExtractorList * extractors);
 
@@ -208,7 +210,8 @@ int ECRS_extractMetaData(struct ECRS_MetaData * md,
  *         SYSERR on error (typically: not enough
  *         space)
  */
-int ECRS_serializeMetaData(const struct ECRS_MetaData * md,
+int ECRS_serializeMetaData(struct GE_Context * ectx,
+			   const struct ECRS_MetaData * md,
 			   char * target,
 			   unsigned int size,
 			   int part);
@@ -228,7 +231,8 @@ unsigned int ECRS_sizeofMetaData(const struct ECRS_MetaData * md,
  *         bad format)
  */
 struct ECRS_MetaData *
-ECRS_deserializeMetaData(const char * input,
+ECRS_deserializeMetaData(struct GE_Context * ectx,
+			 const char * input,
 			 unsigned int size);
 
 /**
@@ -244,7 +248,8 @@ int ECRS_isDirectory(const struct ECRS_MetaData * md);
  * Suggest a better filename for a file (and do the
  * renaming).
  */
-char * ECRS_suggestFilename(const char * filename);
+char * ECRS_suggestFilename(struct GE_Context * ectx,
+			    const char * filename);
 
 /* ******************** URI (uri.c) ************************ */
 
@@ -262,12 +267,14 @@ char * ECRS_uriToString(const struct ECRS_URI * uri);
  * Convert a NULL-terminated array of keywords
  * to an ECRS URI.
  */
-struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]);
+struct ECRS_URI * ECRS_keywordsToUri(struct GE_Context * ectx,
+				     const char * keyword[]);
 
 /**
  * Convert a UTF-8 String to a URI.
  */
-struct ECRS_URI * ECRS_stringToUri(const char * uri);
+struct ECRS_URI * ECRS_stringToUri(struct GE_Context * ectx,
+				   const char * uri);
 
 /**
  * Free URI.
@@ -409,7 +416,8 @@ typedef int (*ECRS_TestTerminate)(void * closure);
  * @return SYSERR if the upload failed (i.e. not enough space
  *  or gnunetd not running)
  */
-int ECRS_uploadFile(const char * filename,
+int ECRS_uploadFile(struct GE_Context * ectx,
+		    const char * filename,
 		    int doIndex,
 		    unsigned int anonymityLevel,
 		    unsigned int priority,
@@ -429,7 +437,8 @@ int ECRS_uploadFile(const char * filename,
  *  in either case, if SYSERR is returned the user should probably
  *  be notified that 'something is wrong')
  */
-int ECRS_isFileIndexed(const char * filename);
+int ECRS_isFileIndexed(struct GE_Context * ectx,
+		       const char * filename);
 
 /**
  * @return OK to continue iteration, SYSERR to abort
@@ -449,7 +458,8 @@ typedef int (*ECRS_FileIterator)(const char * filename,
  *
  * @return number of files indexed, SYSERR if iterator aborted
  */
-int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
+int ECRS_iterateIndexedFiles(struct GE_Context * ectx,
+			     ECRS_FileIterator iterator,
 			     void * closure);
 
 /**
@@ -457,7 +467,8 @@ int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
  *
  * @return SYSERR if the unindexing failed (i.e. not indexed)
  */
-int ECRS_unindexFile(const char * filename,
+int ECRS_unindexFile(struct GE_Context * ectx,
+		     const char * filename,
 		     ECRS_UploadProgressCallback upcb,
 		     void * upcbClosure,
 		     ECRS_TestTerminate tt,
@@ -485,7 +496,8 @@ int ECRS_unindexFile(const char * filename,
  * @return URI on success, NULL on error (namespace already exists)
  */
 struct ECRS_URI *
-ECRS_createNamespace(const char * name,
+ECRS_createNamespace(struct GE_Context * ectx,
+		     const char * name,
 		     const struct ECRS_MetaData * meta,
 		     unsigned int anonymityLevel,
 		     unsigned int priority,
@@ -499,7 +511,8 @@ ECRS_createNamespace(const char * name,
  *   hc of the public key
  * @return OK if the namespace exists, SYSERR if not
  */
-int ECRS_testNamespaceExists(const char * name,
+int ECRS_testNamespaceExists(struct GE_Context * ectx,
+			     const char * name,
 			     const HashCode512 * hc);
 
 /**
@@ -509,7 +522,8 @@ int ECRS_testNamespaceExists(const char * name,
  *
  * @return OK on success, SYSERR on error
  */
-int ECRS_deleteNamespace(const char * namespaceName); /* namespace.c */
+int ECRS_deleteNamespace(struct GE_Context * ectx,
+			 const char * namespaceName); /* namespace.c */
 
 /**
  * Callback with information about local (!) namespaces.
@@ -528,7 +542,8 @@ typedef int (*ECRS_NamespaceInfoCallback)(const HashCode512 * id,
  * @param list where to store the names (is allocated, caller frees)
  * @return SYSERR on error, otherwise the number of pseudonyms in list
  */
-int ECRS_listNamespaces(ECRS_NamespaceInfoCallback cb,
+int ECRS_listNamespaces(struct GE_Context * ectx,
+			ECRS_NamespaceInfoCallback cb,
 			void * cls); /* namespace.c */
 
 /**
@@ -542,7 +557,8 @@ int ECRS_listNamespaces(ECRS_NamespaceInfoCallback cb,
  * @return URI on success, NULL on error
  */
 struct ECRS_URI *
-ECRS_addToNamespace(const char * name,
+ECRS_addToNamespace(struct GE_Context * ectx,
+		    const char * name,
 		    unsigned int anonymityLevel,
 		    unsigned int priority,
 		    cron_t expirationTime,
@@ -562,7 +578,8 @@ ECRS_addToNamespace(const char * name,
  * @param md what meta-data should be associated with the
  *        entry?
  */
-int ECRS_addToKeyspace(const struct ECRS_URI * uri,
+int ECRS_addToKeyspace(struct GE_Context * ectx,
+		       const struct ECRS_URI * uri,
 		       unsigned int anonymityLevel,
 		       unsigned int priority,
 		       cron_t expirationTime,
@@ -593,7 +610,8 @@ typedef int (*ECRS_SearchProgressCallback)
  * @param uri specifies the search parameters
  * @param uri set to the URI of the uploaded file
  */
-int ECRS_search(const struct ECRS_URI * uri,
+int ECRS_search(struct GE_Context * ectx,
+		const struct ECRS_URI * uri,
 		unsigned int anonymityLevel,
 		cron_t timeout,
 		ECRS_SearchProgressCallback spcb,
@@ -630,7 +648,8 @@ typedef void (*ECRS_DownloadProgressCallback)
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file
  */
-int ECRS_downloadFile(const struct ECRS_URI * uri,
+int ECRS_downloadFile(struct GE_Context * ectx,
+		      const struct ECRS_URI * uri,
 		      const char * filename,
 		      unsigned int anonymityLevel,
 		      ECRS_DownloadProgressCallback dpcb,
@@ -652,7 +671,8 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
  * @return number of entries on success, SYSERR if the
  *         directory is malformed
  */
-int ECRS_listDirectory(const char * data,
+int ECRS_listDirectory(struct GE_Context * ectx,
+		       const char * data,
 		       unsigned long long len,
 		       struct ECRS_MetaData ** md,
 		       ECRS_SearchProgressCallback spcb,
@@ -671,7 +691,8 @@ int ECRS_listDirectory(const char * data,
  *        is extended with the mime-type for a GNUnet directory.
  * @return OK on success, SYSERR on error
  */
-int ECRS_createDirectory(char ** data,
+int ECRS_createDirectory(struct GE_Context * ectx,
+			 char ** data,
 			 unsigned long long * len,
 			 unsigned int count,
 			 const ECRS_FileInfo * fis,

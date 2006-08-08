@@ -156,7 +156,7 @@ static int createIOContext(IOContext * this,
        ((size_t)st.st_size > filesize ) ) {
     /* if exists and oversized, truncate */
     if (truncate(filename, filesize) != 0) {
-      LOG_FILE_STRERROR(LOG_FAILURE,
+      GE_LOG_STRERROR_FILE(ectx,LOG_FAILURE,
 			"truncate",
 			filename);
       return SYSERR;
@@ -180,7 +180,7 @@ static int createIOContext(IOContext * this,
 				O_CREAT|O_RDWR,
 				S_IRUSR|S_IWUSR );
     if (this->handles[i] < 0) {
-      LOG_FILE_STRERROR(LOG_FAILURE,
+      GE_LOG_STRERROR_FILE(ectx,LOG_FAILURE,
 			"open",
 			fn);
       freeIOC(this, NO);
@@ -1004,7 +1004,7 @@ static void issueRequest(RequestManager * rm,
   if (lastmpritime + 10 * cronSECONDS < now) {
     /* only update avg. priority at most every
        10 seconds */
-    GNUNET_TCP_SOCKET * sock;
+    struct ClientServerConnection * sock;
 
     sock = getClientSocket();
     lastmpriority = FS_getAveragePriority(sock);
@@ -1220,7 +1220,7 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
   if (0 == ECRS_fileSize(uri)) {
     ret = fileopen(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR|S_IWUSR);
     if (ret == -1) {
-      LOG_FILE_STRERROR(LOG_ERROR, "open", filename);
+      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "open", filename);
       return SYSERR;
     }
     CLOSE(ret);

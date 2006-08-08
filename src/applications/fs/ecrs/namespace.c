@@ -64,7 +64,7 @@ int ECRS_deleteNamespace(const char * name) {
 
   fileName = getPseudonymFileName(name);
   if (0 != UNLINK(fileName)) {
-    LOG_FILE_STRERROR(LOG_EVERYTHING, "unlink", fileName);
+    GE_LOG_STRERROR_FILE(ectx,LOG_EVERYTHING, "unlink", fileName);
     FREE(fileName);
     return SYSERR;
   } else {
@@ -109,7 +109,7 @@ ECRS_createNamespace(const char * name,
   char * dst;
   unsigned short len;
   HashCode512 hc;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   Datastore_Value * value;
   Datastore_Value * knvalue;
   unsigned int size;
@@ -357,7 +357,7 @@ ECRS_addToNamespace(const char * name,
 		    const struct ECRS_URI * dstU,
 		    const struct ECRS_MetaData * md) {
   struct ECRS_URI * uri;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   Datastore_Value * value;
   unsigned int size;
   unsigned int mdsize;

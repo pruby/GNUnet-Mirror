@@ -94,7 +94,7 @@ static int searchFile(const struct ECRS_URI * uri,
 int main(int argc, char * argv[]){
   pid_t daemon;
   int ok;
-  GNUNET_TCP_SOCKET * sock;
+  struct ClientServerConnection * sock;
   struct ECRS_URI * uri;
   struct ECRS_MetaData * meta;
   struct ECRS_URI * key;

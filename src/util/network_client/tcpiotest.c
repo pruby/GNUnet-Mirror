@@ -120,8 +120,8 @@ static int parseCommandLine(int argc,
   return OK;
 }
 
-static int testTransmission(GNUNET_TCP_SOCKET * a,
-			    GNUNET_TCP_SOCKET * b) {
+static int testTransmission(struct ClientServerConnection * a,
+			    struct ClientServerConnection * b) {
   CS_MESSAGE_HEADER * hdr;
   CS_MESSAGE_HEADER * buf;
   int i;
@@ -134,12 +134,12 @@ static int testTransmission(GNUNET_TCP_SOCKET * a,
       ((char*)&hdr[1])[j] = (char)i+j;
     hdr->size = htons(i+sizeof(CS_MESSAGE_HEADER));
     hdr->type = 0;
-    if (OK != writeToSocket(a, hdr)) {
+    if (OK != connection_write(a, hdr)) {
       FREE(hdr);
       return 1;
     }
     buf = NULL;
-    if (OK != readFromSocket(b, &buf)) {
+    if (OK != connection_read(b, &buf)) {
       FREE(hdr);
       return 2;
     }
@@ -154,8 +154,8 @@ static int testTransmission(GNUNET_TCP_SOCKET * a,
   return 0;
 }
 
-static int testNonblocking(GNUNET_TCP_SOCKET * a,
-			   GNUNET_TCP_SOCKET * b) {
+static int testNonblocking(struct ClientServerConnection * a,
+			   struct ClientServerConnection * b) {
   CS_MESSAGE_HEADER * hdr;
   CS_MESSAGE_HEADER * buf;
   int i;
@@ -166,7 +166,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
     ((char*)&hdr[1])[i] = (char)i;
   hdr->size = htons(64+sizeof(CS_MESSAGE_HEADER));
   hdr->type = 0;
-  while (OK == writeToSocketNonBlocking(a,
+  while (OK == connection_writeNonBlocking(a,
 					hdr))
     hdr->type++;
   i = 0;
@@ -177,7 +177,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
   for (i=0;i<cnt;i++) {
     hdr->type = i;
     buf = NULL;
-    if (OK != readFromSocket(b, &buf)) {
+    if (OK != connection_read(b, &buf)) {
       FREE(hdr);
       return 16;
     }
@@ -194,7 +194,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
     if (i == cnt - 2) {
       /* printf("Blocking write to flush last non-blocking message.\n"); */
       hdr->type = cnt;
-      if (OK != writeToSocket(a,
+      if (OK != connection_write(a,
 			      hdr)) {
 	FREE(hdr);
 	return 64;
@@ -203,7 +203,7 @@ static int testNonblocking(GNUNET_TCP_SOCKET * a,
   }
   hdr->type = i;
   buf = NULL;
-  if (OK != readFromSocket(b, &buf)) {
+  if (OK != connection_read(b, &buf)) {
     FREE(hdr);
     return 128;
   }
@@ -221,8 +221,8 @@ int main(int argc, char * argv[]){
   int i;
   int ret;
   int serverSocket;
-  GNUNET_TCP_SOCKET * clientSocket;
-  GNUNET_TCP_SOCKET acceptSocket;
+  struct ClientServerConnection * clientSocket;
+  struct ClientServerConnection acceptSocket;
 
   ret = 0;
   initUtil(argc, argv, &parseCommandLine);

@@ -643,7 +643,7 @@ struct FSUI_Context * FSUI_start(const char * name,
       UNLINK(fn);
     } else {
       if (errno != ENOENT)
-	LOG_FILE_STRERROR(LOG_ERROR,
+	GE_LOG_STRERROR_FILE(ectx,LOG_ERROR,
 			  "open",
 			  fn);
     }
@@ -713,7 +713,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 		  O_CREAT|O_TRUNC|O_WRONLY,
 		  S_IRUSR|S_IWUSR);
     if (fd == -1) {
-      LOG_FILE_STRERROR(LOG_ERROR,
+      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR,
 			"open",
 			ctx->name);
     } else {
