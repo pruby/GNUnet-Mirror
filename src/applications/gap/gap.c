@@ -138,7 +138,7 @@ static IndirectionTableEntry * ROUTING_indTable_;
 /**
  * Size of the indirection table specified in gnunet.conf
  */
-static unsigned int indirectionTableSize;
+static unsigned long long indirectionTableSize;
 
 /**
  * Constant but peer-dependent value that randomizes the construction
@@ -172,12 +172,12 @@ static unsigned int rewardPos = 0;
 /**
  * Hard CPU limit
  */
-static int hardCPULimit;
+static unsigned long long hardCPULimit;
 
 /**
  * Hard network upload limit.
  */
-static int hardUpLimit;
+static unsigned long long hardUpLimit;
 
 #if DO_HISTOGRAM
 static int histogram[65536];
@@ -215,7 +215,8 @@ static int adjustTTL(int ttl, unsigned int prio) {
 static QUERY_POLICY
 evaluateQuery(const PeerIdentity * sender,
 	      unsigned int * priority) {
-  unsigned int netLoad = getNetworkLoadUp();
+  unsigned int netLoad = os_network_monitor_get_load(coreAPI->load_monitor,
+						     Upload);
 
   if ( (netLoad == (unsigned int) -1) ||
        (netLoad < IDLE_LOAD_THRESHOLD) ) {
@@ -502,6 +503,19 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
 }
 
 /**
+ * Return 1 if the current network (upstream) or CPU load is 
+ * too high, 0 if the load is ok.
+ */
+static int loadTooHigh() {
+  return ( (hardCPULimit > 0) && 
+	   (os_cpu_get_load(ectx, 
+			    coreAPI->cfg) >= hardCPULimit) ) ||
+    ( (hardUpLimit > 0) && 
+      (os_network_monitor_get_load(coreAPI->load_monitor,
+				   Upload) >= hardUpLimit) );
+}
+
+/**
  * A "PerNodeCallback" method that forwards the query to the selected
  * nodes.
  */
@@ -519,10 +533,7 @@ static void sendToSelected(const PeerIdentity * peer,
     return;  /* never send back to source */
 
   /* Load above hard limit? */
-  if ( ( (hardCPULimit > 0) && 
-	 (getCPULoad() >= hardCPULimit) ) ||
-       ( (hardUpLimit > 0) && 
-	 (getNetworkLoadUp() >= hardUpLimit) ) )
+  if (loadTooHigh())
     return;
   
   id = intern_pid(peer);
@@ -1405,10 +1416,7 @@ static int execQuery(const PeerIdentity * sender,
 #endif
 
   /* Load above hard limit? */
-  if ( ( (hardCPULimit > 0) && 
-	 (getCPULoad() >= hardCPULimit) ) ||
-       ( (hardUpLimit > 0) && 
-	 (getNetworkLoadUp() >= hardUpLimit) ) ) 
+  if (loadTooHigh())
     return SYSERR;  
 
   senderID = intern_pid(sender);
@@ -1477,7 +1485,8 @@ static int execQuery(const PeerIdentity * sender,
 
   if (cls.valueCount > 0) {
     perm = permute(WEAK, cls.valueCount);
-    max = getNetworkLoadDown();
+    max = os_network_monitor_get_load(coreAPI->load_monitor,
+				      Download);
     if (max > 100)
       max = 100;
     if (max == -1)
@@ -1933,10 +1942,7 @@ static int handleQuery(const PeerIdentity * sender,
   }
   
   /* Load above hard limit? */
-  if ( ( (hardCPULimit > 0) && 
-	 (getCPULoad() >= hardCPULimit) ) ||
-       ( (hardUpLimit > 0) && 
-	 (getNetworkLoadUp() >= hardUpLimit) ) ) {
+  if (loadTooHigh()) {
 #if DEBUG_GAP
     if (sender != NULL) {
       IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -2079,6 +2085,29 @@ provide_module_gap(CoreAPIForApplication * capi) {
 
   ectx = capi->ectx;
   cfg = capi->cfg;
+
+  if ( (-1 == GC_get_configuration_value_number(coreAPI->cfg,
+						"LOAD",
+						"HARDCPULIMIT",
+						0,
+						100000, /* 1000 CPUs!? */
+						0, /* 0 == no limit */
+						&hardCPULimit)) ||
+       (-1 == GC_get_configuration_value_number(coreAPI->cfg,
+						"LOAD",
+						"HARDUPLIMIT",
+						0,
+						100, /* 100% */
+						0, /* 0 == no limit */
+						&hardUpLimit)) ||
+       (-1 == GC_get_configuration_value_number(coreAPI->cfg,
+						"GAP",
+						"TABLESIZE",
+						MIN_INDIRECTION_TABLE_SIZE,
+						MAX_MALLOC_CHECKED / sizeof(IndirectionTableEntry),
+						MIN_INDIRECTION_TABLE_SIZE,
+						&indirectionTableSize)) )
+    return NULL;
   GE_ASSERT(ectx, sizeof(P2P_gap_reply_MESSAGE) == 68);
   GE_ASSERT(ectx, sizeof(P2P_gap_query_MESSAGE) == 144);
 
@@ -2110,9 +2139,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
   GROW(rewards,
        rewardSize,
        MAX_REWARD_TRACKS);
-       
-  hardCPULimit = getConfigurationInt("LOAD", "HARDCPULIMIT");
-  hardUpLimit = getConfigurationInt("LOAD", "HARDUPLIMIT");
+
 
   identity = coreAPI->requestService("identity");
   GE_ASSERT(ectx, identity != NULL);
@@ -2124,11 +2151,6 @@ provide_module_gap(CoreAPIForApplication * capi) {
 	_("Traffic service failed to load; gap cannot ensure cover-traffic availability.\n"));
   }
   random_qsel = weak_randomi(0xFFFF);
-  indirectionTableSize =
-    getConfigurationInt("GAP",
-    			"TABLESIZE");
-  if (indirectionTableSize < MIN_INDIRECTION_TABLE_SIZE)
-    indirectionTableSize = MIN_INDIRECTION_TABLE_SIZE;
   lookup_exclusion = MUTEX_CREATE(NO);
   ROUTING_indTable_
     = MALLOC(sizeof(IndirectionTableEntry)

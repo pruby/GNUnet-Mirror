@@ -50,6 +50,11 @@ extern "C" {
 #include "gnunet_util_config.h"
 
 /**
+ * Maximum allocation with MALLOC macro.
+ */
+#define MAX_MALLOC_CHECKED (1024 * 1024 * 40)
+
+/**
  * Wrapper around malloc. Allocates size bytes of memory.
  *
  * @param size the number of bytes to allocate, must be

@@ -51,7 +51,7 @@ void * xmalloc_(size_t size,
   /* As a security precaution, we generally do not allow very large
      allocations using the default 'MALLOC' macro */
   GE_ASSERT_FLF(NULL, 
-		size <= 1024 * 1024 * 40,
+		size <= MAX_MALLOC_CHECKED,
 		filename, 
 		linenumber, 
 		function);
