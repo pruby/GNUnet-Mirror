@@ -26,8 +26,10 @@
 
 #include "platform.h"
 #include "gnunet_protocols.h"
+#include "gnunet_directories.h"
 #include "ecrs_core.h"
 #include "ondemand.h"
+#include "gnunet_state_service.h"
 
 #define DEBUG_ONDEMAND NO
 
@@ -68,6 +70,8 @@ static char * index_directory;
 static struct GE_Context * ectx;
 
 static CoreAPIForApplication * coreAPI;
+
+static State_ServiceAPI * state;
 
 static char * getOnDemandFile(const HashCode512 * fileId) {
   EncName enc;
@@ -144,7 +148,8 @@ int ONDEMAND_initIndex(const HashCode512 * fileId,
 	   256,
 	   "FIRST_UNAVAILABLE-%s",
 	   (char*)&enc);
-  stateUnlinkFromDB(unavail_key);
+  state->unlink(ectx,
+		unavail_key);
   FREE(serverFN);
   return YES;
 }
@@ -371,10 +376,14 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	       256,
 	       "FIRST_UNVAILABLE-%s",
 	       (char *) &enc);
-      if (stateReadContent(unavail_key,
-			   (void *) &first_unavail) == SYSERR) {
+      if (state->read(ectx,
+		      unavail_key,
+		      (void *) &first_unavail) == SYSERR) {
         unsigned long long now = htonll(get_time());
-        stateWriteContent(unavail_key, sizeof(cron_t), (void *) &now);
+        state->write(ectx,
+		     unavail_key, 
+		     sizeof(cron_t), 
+		     (void *) &now);
       } else {
         /* Delete it after 3 days */
         if (*first_unavail - get_time() > 3 * cronDAYS) {
@@ -406,7 +415,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	  }
 	  FREE(ofn);
 	  asyncDelete(datastore, dbv, query);
-          stateUnlinkFromDB(unavail_key);
+          state->unlink(ectx,
+			unavail_key);
           UNLINK(fn);
         }
       }
@@ -659,7 +669,8 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 	   256,
 	   "FIRST_UNAVAILABLE-%s",
 	   (char*)&enc);
-  stateUnlinkFromDB(unavail_key);
+  state->unlink(ectx,
+		unavail_key);
 
 
   FREE(fn);
@@ -670,17 +681,27 @@ int ONDEMAND_init(CoreAPIForApplication * capi) {
   char * tmp;
 
   coreAPI = capi;
+  state = capi->requestService("state");
+  if (state == NULL) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
   ectx = capi->ectx;
-  tmp
-    = getConfigurationString("FS",
-			     "INDEX-DIRECTORY");
-  if (NULL == tmp) {
-    tmp = getConfigurationString("GNUNETD",
-				 "GNUNETD_HOME");
-    GE_ASSERT(ectx, NULL != tmp);
+  if (0 != GC_get_configuration_value_string(capi->cfg,
+					     "FS",
+					     "INDEX-DIRECTORY",
+					     NULL,
+					     &tmp)) {
+    GC_get_configuration_value_string(capi->cfg,
+				      "GNUNETD",
+				      "GNUNETD_HOME",
+				      VAR_DAEMON_DIRECTORY,
+				      &tmp);
+    GE_ASSERT(ectx,
+	      NULL != tmp);
     tmp = REALLOC(tmp,
-			      strlen(tmp) +
-			      strlen("/data/shared/") + 1);
+		  strlen(tmp) +
+		  strlen("/data/shared/") + 1);
     strcat(tmp, "/data/shared/");
   }
   index_directory = string_expandFileName(ectx,
@@ -692,6 +713,8 @@ int ONDEMAND_init(CoreAPIForApplication * capi) {
 }
 
 int ONDEMAND_done() {
+  coreAPI->releaseService(state);
+  state = NULL;
   FREE(index_directory);
   return OK;
 }

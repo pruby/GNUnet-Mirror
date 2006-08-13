@@ -1352,10 +1352,14 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_testbed_REQUEST,
 						      (CSHandler)&csHandleTestbedRequest));
   httpRegister("startup");
-  setConfigurationString("ABOUT",
-			 "testbed",
-			 gettext_noop("allows construction of a P2P-testbed"
-			   " (incomplete)"));
+ 
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "testbed",
+						   gettext_noop("allows construction of a P2P-testbed"
+								" (incomplete)")));
   return OK;
 }
 

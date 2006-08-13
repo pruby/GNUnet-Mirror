@@ -207,9 +207,13 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(CS_PROTO_chat_MSG,
 					    &csHandleChatRequest))
     ok = SYSERR;
-  setConfigurationString("ABOUT",
-			 "chat",
-			 _("enables P2P-chat (incomplete)"));
+  
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						  "ABOUT",
+						   "chat",
+						   _("enables P2P-chat (incomplete)")));
   return ok;
 }
 

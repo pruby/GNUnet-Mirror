@@ -1165,6 +1165,7 @@ static int fastGet(const HashCode512 * key) {
 int initialize_module_fs(CoreAPIForApplication * capi) {
   static Blockstore dsGap;
   static Blockstore dsDht;
+  unsigned long long quota;
 
   ectx = capi->ectx;
   GE_ASSERT(ectx, sizeof(CHK) == 128);
@@ -1174,17 +1175,26 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   GE_ASSERT(ectx, sizeof(SBlock) == 724);
   GE_ASSERT(ectx, sizeof(NBlock) == 716);
   GE_ASSERT(ectx, sizeof(KNBlock) == 1244);
-  migration = testConfigurationString("FS",
-				      "ACTIVEMIGRATION",
-				      "YES");
+  migration = GC_get_configuration_value_yesno(capi->cfg,
+					       "FS",
+					       "ACTIVEMIGRATION",
+					       YES);
+  if (migration == SYSERR)
+    return SYSERR;
   hash("GNUNET_FS",
        strlen("GNUNET_FS"),
        &dht_table);
-  if (getConfigurationInt("FS",
-			  "QUOTA") <= 0) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("You must specify a postive number for `%s' in the configuration in section `%s'.\n"),
-	"QUOTA", "FS");
+  if (GC_get_configuration_value_number(capi->cfg,
+					"FS",
+					"QUOTA",
+					1,
+					((unsigned long long)-1)/1024,
+					1024,
+					&quota) == -1) {
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("You must specify a postive number for `%s' in the configuration in section `%s'.\n"),
+	   "QUOTA", "FS");
     return SYSERR;
   }
   datastore = capi->requestService("datastore");
@@ -1206,7 +1216,9 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 				     NULL,
 				     32 * 1024);
   if (localGetProcessor == NULL)
-    DIE_STRERROR("pthread_create");
+    GE_DIE_STRERROR(ectx,
+		    GE_ADMIN | GE_FATAL | GE_BULK,
+		    "pthread_create");
   coreAPI = capi;
   ONDEMAND_init(capi);
   lock = MUTEX_CREATE(NO);
@@ -1267,9 +1279,12 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 		gap,
 		dht,
 		traffic);
-  setConfigurationString("ABOUT",
-			 "fs",
-			 gettext_noop("enables (anonymous) file-sharing"));
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "fs",
+						   gettext_noop("enables (anonymous) file-sharing")));
   return OK;
 }
 

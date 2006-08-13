@@ -451,10 +451,14 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(CS_PROTO_tbench_REQUEST,
 					    &csHandleTBenchRequest))
     ok = SYSERR;
-  setConfigurationString("ABOUT",
-			 "tbench",
-			 gettext_noop("allows profiling of direct "
-     			              "peer-to-peer connections"));
+  
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						  "ABOUT",
+						   "tbench",
+						   gettext_noop("allows profiling of direct "
+								"peer-to-peer connections")));
   return ok;
 }
 
