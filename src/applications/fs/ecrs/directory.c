@@ -49,7 +49,8 @@
  * @return number of entries on success, SYSERR if the
  *         directory is malformed
  */
-int ECRS_listDirectory(const char * data,
+int ECRS_listDirectory(struct GE_Context * ectx,
+		       const char * data,
 		       unsigned long long len,
 		       struct ECRS_MetaData ** md,
 		       ECRS_SearchProgressCallback spcb,
@@ -72,7 +73,8 @@ int ECRS_listDirectory(const char * data,
     mdSize = ntohl(mdSize);
     if (mdSize > len - 8 - sizeof(unsigned int) )
       return SYSERR; /* invalid size */
-    *md = ECRS_deserializeMetaData(&data[8 + sizeof(unsigned int)],
+    *md = ECRS_deserializeMetaData(ectx,
+				   &data[8 + sizeof(unsigned int)],
 				   mdSize);
     if (*md == NULL)
       return SYSERR; /* malformed !*/
@@ -98,7 +100,8 @@ int ECRS_listDirectory(const char * data,
       return SYSERR; /* malformed */
     }
 
-    fi.uri = ECRS_stringToUri(&data[pos]);
+    fi.uri = ECRS_stringToUri(ectx,
+			      &data[pos]);
     pos = epos+1;
     if (fi.uri == NULL)
       return SYSERR; /* malformed! */
@@ -119,7 +122,8 @@ int ECRS_listDirectory(const char * data,
       return SYSERR; /* malformed! */
     }
 
-    fi.meta = ECRS_deserializeMetaData(&data[pos],
+    fi.meta = ECRS_deserializeMetaData(ectx,
+				       &data[pos],
 				       mdSize);
     if (fi.meta == NULL) {
       ECRS_freeUri(fi.uri);
@@ -159,7 +163,8 @@ int ECRS_listDirectory(const char * data,
  *        is extended with the mime-type for a GNUnet directory.
  * @return OK on success, SYSERR on error
  */
-int ECRS_createDirectory(char ** data,
+int ECRS_createDirectory(struct GE_Context * ectx,
+			 char ** data,
 			 unsigned long long * len,
 			 unsigned int count,
 			 const ECRS_FileInfo * fis,
@@ -208,7 +213,8 @@ int ECRS_createDirectory(char ** data,
 	 GNUNET_DIRECTORY_MAGIC,
 	 8);
 
-  ret = ECRS_serializeMetaData(meta,
+  ret = ECRS_serializeMetaData(ectx,
+			       meta,
 			       &(*data)[pos + sizeof(unsigned int)],
 			       size - pos - sizeof(unsigned int),
 			       ECRS_SERIALIZE_FULL);
@@ -238,7 +244,8 @@ int ECRS_createDirectory(char ** data,
     pos += strlen(ucs[i]) + 1;
     FREE(ucs[i]);
 
-    ret = ECRS_serializeMetaData(fis[i].meta,
+    ret = ECRS_serializeMetaData(ectx,
+				 fis[i].meta,
 				 &(*data)[pos + sizeof(unsigned int)],
 				 size - pos - sizeof(unsigned int),
 				 ECRS_SERIALIZE_FULL);

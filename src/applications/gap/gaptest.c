@@ -333,7 +333,7 @@ int main(int argc, char ** argv) {
     left--;
     CHECK(left > 0);
   }
-  releaseClientSocket(sock);
+  connection_destroy(sock);
 
 
   uri = uploadFile(12345);

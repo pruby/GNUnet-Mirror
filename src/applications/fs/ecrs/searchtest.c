@@ -169,7 +169,7 @@ int main(int argc, char * argv[]){
   /* END OF TEST CODE */
  FAILURE:
   if (sock != NULL)
-    releaseClientSocket(sock);
+    connection_destroy(sock);
   stopCron();
   GE_ASSERT(ectx, OK == stopGNUnetDaemon());
   GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));

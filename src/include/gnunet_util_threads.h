@@ -85,7 +85,7 @@ int PTHREAD_TEST_SELF(struct PTHREAD * pt);
 /**
  * Get the handle for THIS thread.
  */
-struct PTHREAD * PTHREAD_GET_SELF();
+struct PTHREAD * PTHREAD_GET_SELF(void);
 
 /**
  * Release handle for a thread (should have been

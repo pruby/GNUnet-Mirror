@@ -280,7 +280,7 @@ int main(int argc,
 	   commands[i]);
     break;
   }
-  releaseClientSocket(handle);
+  connection_destroy(handle);
   for (i=0;i<count;i++)
     FREE(commands[i]);
   FREE(commands);

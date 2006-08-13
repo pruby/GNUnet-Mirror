@@ -65,15 +65,12 @@
  */
 typedef struct IOContext {
 
-  /**
-   * The depth of the file-tree.
-   */
-  unsigned int treedepth;
+  struct GE_Context * ectx;
 
   /**
    * A lock for synchronizing access.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
   /**
    * The file handles for each level in the tree.
@@ -84,6 +81,11 @@ typedef struct IOContext {
    * The base-filename
    */
   char * filename;
+
+  /**
+   * The depth of the file-tree.
+   */
+  unsigned int treedepth;
 
 } IOContext;
 
@@ -105,11 +107,11 @@ static void freeIOC(IOContext * this,
 
   for (i=0;i<=this->treedepth;i++) {
     if (this->handles[i] != -1) {
-      closefile(this->handles[i]);
+      CLOSE(this->handles[i]);
       this->handles[i] = -1;
     }
   }
-  MUTEX_DESTROY(&this->lock);
+  MUTEX_DESTROY(this->lock);
   if (YES == unlinkTreeFiles) {
     for (i=1;i<= this->treedepth;i++) {
       fn = MALLOC(strlen(this->filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
@@ -121,9 +123,10 @@ static void freeIOC(IOContext * this,
       strcat(fn, ".A");
       fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
-	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	    _("Could not unlink temporary file `%s': %s\n"),
-	    fn, STRERROR(errno));
+	GE_LOG(this->ectx, 
+	       GE_WARNING | GE_BULK | GE_USER,
+	       _("Could not unlink temporary file `%s': %s\n"),
+	       fn, STRERROR(errno));
       FREE(fn);
     }
   }
@@ -139,16 +142,18 @@ static void freeIOC(IOContext * this,
  * @param filename the name of the level-0 file
  * @return OK on success, SYSERR on failure
  */
-static int createIOContext(IOContext * this,
+static int createIOContext(struct GE_Context * ectx,
+			   IOContext * this,
 			   unsigned long long filesize,
 			   const char * filename) {
   int i;
   char * fn;
   struct stat st;
 
+  this->ectx = ectx;
   GE_ASSERT(ectx, filename != NULL);
   this->treedepth = computeDepth(filesize);
-  MUTEX_CREATE(&this->lock);
+  this->lock = MUTEX_CREATE(NO);
   this->handles = MALLOC(sizeof(int) * (this->treedepth+1));
   this->filename = STRDUP(filename);
 
@@ -156,9 +161,10 @@ static int createIOContext(IOContext * this,
        ((size_t)st.st_size > filesize ) ) {
     /* if exists and oversized, truncate */
     if (truncate(filename, filesize) != 0) {
-      GE_LOG_STRERROR_FILE(ectx,LOG_FAILURE,
-			"truncate",
-			filename);
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_ADMIN | GE_BULK,
+			   "truncate",
+			   filename);
       return SYSERR;
     }
   }
@@ -176,13 +182,11 @@ static int createIOContext(IOContext * this,
       strcat(fn, ".A");
       fn[strlen(fn)-1] += i;
     }
-    this->handles[i] = fileopen(fn,
-				O_CREAT|O_RDWR,
-				S_IRUSR|S_IWUSR );
+    this->handles[i] = disk_file_open(ectx,
+				      fn,
+				      O_CREAT|O_RDWR,
+				      S_IRUSR|S_IWUSR );
     if (this->handles[i] < 0) {
-      GE_LOG_STRERROR_FILE(ectx,LOG_FAILURE,
-			"open",
-			fn);
       freeIOC(this, NO);
       FREE(fn);
       return SYSERR;
@@ -209,21 +213,22 @@ int readFromIOC(IOContext * this,
 		unsigned int len) {
   int ret;
 
-  MUTEX_LOCK(&this->lock);
+  MUTEX_LOCK(this->lock);
   lseek(this->handles[level],
 	pos,
 	SEEK_SET);
   ret = READ(this->handles[level],
 	     buf,
 	     len);
-  MUTEX_UNLOCK(&this->lock);
+  MUTEX_UNLOCK(this->lock);
 #ifdef DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "IOC read at level %u offset %llu wanted %u got %d\n",
-      level,
-      pos,
-      len,
-      ret);
+  GE_LOG(this->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "IOC read at level %u offset %llu wanted %u got %d\n",
+	 level,
+	 pos,
+	 len,
+	 ret);
 #endif
   return ret;
 }
@@ -245,7 +250,7 @@ int writeToIOC(IOContext * this,
 	       unsigned int len) {
   int ret;
 
-  MUTEX_LOCK(&this->lock);
+  MUTEX_LOCK(this->lock);
   lseek(this->handles[level],
 	pos,
 	SEEK_SET);
@@ -253,20 +258,22 @@ int writeToIOC(IOContext * this,
 	      buf,
 	      len);
   if (ret != len) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Write(%d, %p, %d) failed: %s\n"),
-	this->handles[level],
-	buf,
-	len,
-	STRERROR(errno));
+    GE_LOG(this->ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Write(%d, %p, %d) failed: %s\n"),
+	   this->handles[level],
+	   buf,
+	   len,
+	   STRERROR(errno));
   }
-  MUTEX_UNLOCK(&this->lock);
+  MUTEX_UNLOCK(this->lock);
 #ifdef DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "IOC write at level %u offset %llu writes %u\n",
-      level,
-      pos,
-      len);
+  GE_LOG(this->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "IOC write at level %u offset %llu writes %u\n",
+	 level,
+	 pos,
+	 len);
 #endif
   return ret;
 }
@@ -319,6 +326,12 @@ typedef struct RequestEntry {
   NodeClosure * node;
 
   /**
+   * Search handle of the last request (NULL if never
+   * requested).
+   */
+  struct FS_SEARCH_HANDLE * searchHandle;
+
+  /**
    * Last time the query was send.
    */
   cron_t lasttime;
@@ -340,12 +353,6 @@ typedef struct RequestEntry {
    */
   unsigned int lastPriority;
 
-  /**
-   * Search handle of the last request (NULL if never
-   * requested).
-   */
-  struct FS_SEARCH_HANDLE * searchHandle;
-
 } RequestEntry;
 
 /**
@@ -361,12 +368,20 @@ typedef struct RequestManager {
   /**
    * Mutex for synchronizing access to this struct
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
   /**
    * Current list of all pending requests
    */
   RequestEntry ** requestList;
+
+  struct FS_SEARCH_CONTEXT * sctx;
+
+  struct PTHREAD * requestThread;
+
+  struct GE_Context * ectx;
+
+  struct GC_Configuration * cfg;
 
   /**
    * Number of pending requests (highest used index)
@@ -405,10 +420,6 @@ typedef struct RequestManager {
    */
   int abortFlag;
 
-  struct FS_SEARCH_CONTEXT * sctx;
-
-  PTHREAD_T requestThread;
-
 } RequestManager;
 
 static int nodeReceive(const HashCode512 * query,
@@ -422,17 +433,26 @@ static int nodeReceive(const HashCode512 * query,
  *
  * @return NULL on error
  */
-static RequestManager * createRequestManager() {
+static RequestManager * createRequestManager(struct GE_Context * ectx,
+					     struct GC_Configuration * cfg) {
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
-  PTHREAD_GET_SELF(&rm->requestThread);
+  rm->ectx 
+    = ectx;
+  rm->cfg 
+    = cfg;
+  rm->requestThread
+    = PTHREAD_GET_SELF();
   rm->abortFlag
     = NO;
   rm->lastDET
     = 0;
-  MUTEX_CREATE_RECURSIVE(&rm->lock);
-  rm->sctx = FS_SEARCH_makeContext(&rm->lock);
+  rm->lock
+    = MUTEX_CREATE(YES);
+  rm->sctx = FS_SEARCH_makeContext(ectx,
+				   cfg,
+				   rm->lock);
   rm->requestListIndex
     = 0;
   rm->requestListSize
@@ -455,9 +475,10 @@ static RequestManager * createRequestManager() {
   rm->ssthresh
     = 65535;
 #ifdef DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "created request manager %p\n",
-      rm);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "created request manager %p\n",
+	 rm);
 #endif
   return rm;
 }
@@ -473,11 +494,12 @@ static void destroyRequestManager(RequestManager * rm) {
   int i;
 
 #ifdef DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "destroying request manager %p\n",
-      rm);
+  GE_LOG(rm->ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "destroying request manager %p\n",
+	 rm);
 #endif
-  MUTEX_LOCK(&rm->lock);
+  MUTEX_LOCK(rm->lock);
   for (i=0;i<rm->requestListIndex;i++) {
     if (rm->requestList[i]->searchHandle != NULL)
       FS_stop_search(rm->sctx,
@@ -488,10 +510,10 @@ static void destroyRequestManager(RequestManager * rm) {
   GROW(rm->requestList,
        rm->requestListSize,
        0);
-  MUTEX_UNLOCK(&rm->lock);
+  MUTEX_UNLOCK(rm->lock);
   FS_SEARCH_destroyContext(rm->sctx);
-  MUTEX_DESTROY(&rm->lock);
-  PTHREAD_REL_SELF(&rm->requestThread);
+  MUTEX_DESTROY(rm->lock);
+  PTHREAD_REL_SELF(rm->requestThread);
   FREE(rm);
 }
 
@@ -502,14 +524,14 @@ static void destroyRequestManager(RequestManager * rm) {
 static void requestManagerEndgame(RequestManager * rm) {
   int i;
 
-  MUTEX_LOCK(&rm->lock);
+  MUTEX_LOCK(rm->lock);
   for (i=0;i<rm->requestListIndex;i++) {
     RequestEntry * entry = rm->requestList[i];
     /* cut TTL in half */
     entry->lasttime
       += (entry->lasttime + entry->lastTimeout) / 2;
   }
-  MUTEX_UNLOCK(&rm->lock);
+  MUTEX_UNLOCK(rm->lock);
 }
 
 /**
@@ -524,15 +546,18 @@ static void addRequest(RequestManager * rm,
 #if DEBUG_DOWNLOAD
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&node->chk.query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Queuing request (query: %s)\n",
-      &enc);
+  IF_GELOG(rm->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&node->chk.query,
+		    &enc));
+  GE_LOG(rm->ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Queuing request (query: %s)\n",
+	 &enc);
 #endif
 
-  GE_ASSERT(ectx, node != NULL);
+  GE_ASSERT(rm->ectx,
+	    node != NULL);
   entry
     = MALLOC(sizeof(RequestEntry));
   entry->node
@@ -547,14 +572,15 @@ static void addRequest(RequestManager * rm,
     = 0;
   entry->searchHandle
     = NULL;
-  MUTEX_LOCK(&rm->lock);
-  GE_ASSERT(ectx, rm->requestListSize > 0);
+  MUTEX_LOCK(rm->lock);
+  GE_ASSERT(rm->ectx,
+	    rm->requestListSize > 0);
   if (rm->requestListSize == rm->requestListIndex)
     GROW(rm->requestList,
 	 rm->requestListSize,
 	 rm->requestListSize*2);
   rm->requestList[rm->requestListIndex++] = entry;
-  MUTEX_UNLOCK(&rm->lock);
+  MUTEX_UNLOCK(rm->lock);
 }
 
 
@@ -569,7 +595,7 @@ static void delRequest(RequestManager * rm,
   int i;
   RequestEntry * re;
 
-  MUTEX_LOCK(&rm->lock);
+  MUTEX_LOCK(rm->lock);
   for (i=0;i<rm->requestListIndex;i++) {
     re = rm->requestList[i];
     if (re->node == node) {
@@ -577,7 +603,7 @@ static void delRequest(RequestManager * rm,
 	= rm->requestList[--rm->requestListIndex];
       rm->requestList[rm->requestListIndex]
 	= NULL;
-      MUTEX_UNLOCK(&rm->lock);
+      MUTEX_UNLOCK(rm->lock);
       if (NULL != re->searchHandle)
 	FS_stop_search(rm->sctx,
 		       re->searchHandle);
@@ -585,8 +611,8 @@ static void delRequest(RequestManager * rm,
       return;
     }
   }
-  MUTEX_UNLOCK(&rm->lock);
-  GE_BREAK(ectx, 0); /* uh uh - at least a memory leak... */
+  MUTEX_UNLOCK(rm->lock);
+  GE_BREAK(rm->ectx, 0); /* uh uh - at least a memory leak... */
 }
 
 
@@ -597,15 +623,15 @@ static void delRequest(RequestManager * rm,
  * Design Question: integrate with IOContext?
  */
 typedef struct CommonCtx {
-  RequestManager * rm;
-  IOContext * ioc;
   unsigned long long total;
   unsigned long long completed;
+  cron_t startTime;
+  cron_t TTL_DECREMENT;
+  RequestManager * rm;
+  IOContext * ioc;
   ECRS_DownloadProgressCallback dpcb;
   void * dpcbClosure;
-  cron_t startTime;
   unsigned int anonymityLevel;
-  cron_t TTL_DECREMENT;
 } CommonCtx;
 
 /**
@@ -619,15 +645,17 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   unsigned long long spos;
   unsigned long long epos;
 
-  GE_ASSERT(ectx, node->offset < node->ctx->total);
+  GE_ASSERT(node->ctx->rm->ectx,
+	    node->offset < node->ctx->total);
   if (node->level == 0) {
     ret = DBLOCK_SIZE;
     if (node->offset + (unsigned long long) ret
 	> node->ctx->total)
       ret = (unsigned int) (node->ctx->total - node->offset);
 #if DEBUG_DOWNLOAD
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Node at offset %llu and level %d has size %u\n",
+    GE_LOG(node->ctx->rm->ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Node at offset %llu and level %d has size %u\n",
 	node->offset,
 	node->level,
 	ret);
@@ -645,11 +673,12 @@ static unsigned int getNodeSize(const NodeClosure * node) {
   if (ret * rsize < epos - spos)
     ret++; /* need to round up! */
 #if DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Node at offset %llu and level %d has size %u\n",
-      node->offset,
-      node->level,
-      ret * sizeof(CHK));
+  GE_LOG(node->ctx->rm->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Node at offset %llu and level %d has size %u\n",
+	 node->offset,
+	 node->level,
+	 ret * sizeof(CHK));
 #endif
   return ret * sizeof(CHK);
 }
@@ -671,7 +700,7 @@ static void updateProgress(const NodeClosure * node,
     cron_t eta;
 
     node->ctx->completed += size;
-    cronTime(&eta); /* now */
+    eta = get_time();
     if (node->ctx->completed > 0) {
       eta = (cron_t) (node->ctx->startTime +
 		      (((double)(eta - node->ctx->startTime)/(double)node->ctx->completed))
@@ -794,11 +823,12 @@ static int checkPresent(NodeClosure * node) {
     ret = NO;
   FREE(data);
 #ifdef DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Checked presence of block at %llu level %u.  Result: %s\n",
-      node->offset,
-      node->level,
-      ret == YES ? "YES" : "NO");
+  GE_LOG(node->ctx->rm->ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Checked presence of block at %llu level %u.  Result: %s\n",
+	 node->offset,
+	 node->level,
+	 ret == YES ? "YES" : "NO");
 #endif
 
   return ret;
@@ -812,6 +842,7 @@ static int checkPresent(NodeClosure * node) {
 static void iblock_download_children(NodeClosure * node,
 				     char * data,
 				     unsigned int size) {
+  struct GE_Context * ectx = node->ctx->rm->ectx;
   int i;
   NodeClosure * child;
   unsigned int childcount;
@@ -819,7 +850,8 @@ static void iblock_download_children(NodeClosure * node,
   unsigned int levelSize;
   unsigned long long baseOffset;
 
-  GE_ASSERT(ectx, node->level > 0);
+  GE_ASSERT(ectx, 
+	    node->level > 0);
   childcount = size / sizeof(CHK);
   if (size != childcount * sizeof(CHK)) {
     GE_BREAK(ectx, 0);
@@ -867,7 +899,8 @@ static int decryptContent(const char * data,
   INITVECTOR iv;
   SESSIONKEY skey;
 
-  GE_ASSERT(ectx, (data!=NULL) && (hashcode != NULL) && (result != NULL));
+  GE_ASSERT(NULL, 
+	    (data!=NULL) && (hashcode != NULL) && (result != NULL));
   /* get key and init value from the hash code */
   hashToKey(hashcode,
 	    &skey,
@@ -892,6 +925,7 @@ static int decryptContent(const char * data,
 static int nodeReceive(const HashCode512 * query,
 		       const Datastore_Value * reply,
 		       NodeClosure * node) {
+  struct GE_Context * ectx = node->ctx->rm->ectx;
   HashCode512 hc;
   unsigned int size;
   int i;
@@ -899,16 +933,19 @@ static int nodeReceive(const HashCode512 * query,
 #if DEBUG_DOWNLOAD
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Receiving reply to query `%s'\n",
-      &enc);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(query,
+		    &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Receiving reply to query `%s'\n",
+	 &enc);
 #endif
 
-  GE_ASSERT(ectx, equalsHashCode512(query,
-				  &node->chk.query));
+  GE_ASSERT(ectx,
+	    equalsHashCode512(query,
+			      &node->chk.query));
   size = ntohl(reply->size) - sizeof(Datastore_Value);
   if ( (size <= sizeof(DBlock)) ||
        (size - sizeof(DBlock) != getNodeSize(node)) ) {
@@ -943,7 +980,9 @@ static int nodeReceive(const HashCode512 * query,
 			 node->offset,
 			 data,
 			 size)) {
-    LOG_STRERROR(LOG_ERROR, "WRITE");
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+		    "WRITE");
     node->ctx->rm->abortFlag = YES;
     return SYSERR;
   }
@@ -967,8 +1006,7 @@ static int nodeReceive(const HashCode512 * query,
       requestManagerEndgame(node->ctx->rm);
     }
   }
-  PTHREAD_KILL(&node->ctx->rm->requestThread,
-	       SIGALRM);
+  PTHREAD_STOP_SLEEP(node->ctx->rm->requestThread);
   FREE(data);
   FREE(node);
   return OK;
@@ -997,7 +1035,7 @@ static void issueRequest(RequestManager * rm,
   EncName enc;
 #endif
 
-  cronTime(&now);
+  now = get_time();
   entry = rm->requestList[requestIndex];
 
   /* compute priority */
@@ -1006,10 +1044,11 @@ static void issueRequest(RequestManager * rm,
        10 seconds */
     struct ClientServerConnection * sock;
 
-    sock = getClientSocket();
+    sock = client_connection_create(rm->ectx,
+				    rm->cfg);
     lastmpriority = FS_getAveragePriority(sock);
     lastmpritime = now;
-    releaseClientSocket(sock);
+    connection_destroy(sock);
   }
   mpriority = lastmpriority;
   priority
@@ -1031,7 +1070,7 @@ static void issueRequest(RequestManager * rm,
     = entry->node->ctx->TTL_DECREMENT;
 
   if (entry->lastTimeout + TTL_DECREMENT > now)
-    GE_BREAK(ectx, 0);
+    GE_BREAK(rm->ectx, 0);
   if (entry->lasttime == 0) {
     timeout = now + rm->initialTTL;
   } else {
@@ -1105,13 +1144,15 @@ static void issueRequest(RequestManager * rm,
   if ( (0 == (entry->tries % MAX_TRIES)) &&
        (entry->tries > 0) )  {
     EncName enc;
-    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  hash2enc(&entry->node->chk.key,
-		   &enc));
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Content `%s' seems to be not available on the network (tried %u times).\n"),
-	&enc,
-	entry->tries);
+    IF_GELOG(rm->ectx, 
+	     GE_WARNING | GE_BULK | GE_USER,
+	     hash2enc(&entry->node->chk.key,
+		      &enc));
+    GE_LOG(rm->ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Content `%s' seems to be not available on the network (tried %u times).\n"),
+	   &enc,
+	   entry->tries);
   }
 }
 
@@ -1129,12 +1170,12 @@ static cron_t processRequests(RequestManager * rm) {
   int * perm;
   unsigned int TTL_DECREMENT;
 
-  MUTEX_LOCK(&rm->lock);
+  MUTEX_LOCK(rm->lock);
   if (rm->requestListIndex == 0) {
-    MUTEX_UNLOCK(&rm->lock);
+    MUTEX_UNLOCK(rm->lock);
     return 0;
   }
-  cronTime(&now);
+  now = get_time();
   pending = 0;
   TTL_DECREMENT = 0;
   if (rm->requestListIndex > 0)
@@ -1182,7 +1223,7 @@ static cron_t processRequests(RequestManager * rm) {
   FREE(perm);
   if (minSleep < cronMILLIS * 100)
     minSleep = cronMILLIS * 100; /* maximum resolution: 100ms */
-  MUTEX_UNLOCK(&rm->lock);
+  MUTEX_UNLOCK(rm->lock);
   return minSleep;
 }
 
@@ -1196,7 +1237,9 @@ static cron_t processRequests(RequestManager * rm) {
  * @param uri the URI of the file (determines what to download)
  * @param filename where to store the file
  */
-int ECRS_downloadFile(const struct ECRS_URI * uri,
+int ECRS_downloadFile(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      const struct ECRS_URI * uri,
 		      const char * filename,
 		      unsigned int anonymityLevel,
 		      ECRS_DownloadProgressCallback dpcb,
@@ -1218,11 +1261,12 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
       filename);
 #endif
   if (0 == ECRS_fileSize(uri)) {
-    ret = fileopen(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR|S_IWUSR);
-    if (ret == -1) {
-      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "open", filename);
-      return SYSERR;
-    }
+    ret = disk_file_open(ectx,
+			 filename, 
+			 O_CREAT | O_WRONLY | O_TRUNC,
+			 S_IRUSR|S_IWUSR);
+    if (ret == -1) 
+      return SYSERR;    
     CLOSE(ret);
     dpcb(0, 0, get_time(), 0, NULL, 0, dpcbClosure);
     return OK;
@@ -1234,7 +1278,8 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
     return SYSERR;
   }
 
-  if (OK != createIOContext(&ioc,
+  if (OK != createIOContext(ectx,
+			    &ioc,
 			    ntohll(fid.file_length),
 			    filename)) {
 #if DEBUG_DOWNLOAD
@@ -1245,9 +1290,10 @@ int ECRS_downloadFile(const struct ECRS_URI * uri,
 #endif
     return SYSERR;
   }
-  rm = createRequestManager();
+  rm = createRequestManager(ectx,
+			    cfg);
 
-  cronTime(&ctx.startTime);
+  ctx.startTime = get_time();
   ctx.anonymityLevel = anonymityLevel;
   ctx.TTL_DECREMENT = 5 * cronSECONDS; /* HACK! */
   ctx.rm = rm;

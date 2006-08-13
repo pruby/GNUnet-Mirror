@@ -139,7 +139,7 @@ int main(int argc, char ** argv) {
       break;
     }
   }
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");

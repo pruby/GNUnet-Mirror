@@ -127,7 +127,7 @@ static int sendAllResults(const HashCode512 * key,
 	_("Failed to send `%s'.  Closing connection.\n"),
 	"CS_dht_reply_results_MESSAGE");
     MUTEX_LOCK(&list->lock);
-    releaseClientSocket(list->sock);
+    connection_destroy(list->sock);
     list->sock = NULL;
     MUTEX_UNLOCK(&list->lock);
     FREE(reply);
@@ -177,7 +177,7 @@ static void * process_thread(TableList * list) {
     }
     if (ok == NO) {
       MUTEX_LOCK(&list->lock);
-      releaseClientSocket(list->sock);
+      connection_destroy(list->sock);
       list->sock = NULL;
       MUTEX_UNLOCK(&list->lock);
       continue; /* retry... */
@@ -202,7 +202,7 @@ static void * process_thread(TableList * list) {
 	      "GET",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	  FREE(buffer);
@@ -214,7 +214,7 @@ static void * process_thread(TableList * list) {
 	      _("Received invalid `%s' request (wrong table)\n"),
 	      "GET");
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
@@ -236,7 +236,7 @@ static void * process_thread(TableList * list) {
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	}
@@ -254,7 +254,7 @@ static void * process_thread(TableList * list) {
 	      "PUT",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
@@ -266,7 +266,7 @@ static void * process_thread(TableList * list) {
 	      _("Received invalid `%s' request (wrong table)\n"),
 	      "PUT");
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
@@ -289,7 +289,7 @@ static void * process_thread(TableList * list) {
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	}
@@ -308,7 +308,7 @@ static void * process_thread(TableList * list) {
 	      "REMOVE",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
@@ -320,7 +320,7 @@ static void * process_thread(TableList * list) {
 	      _("Received invalid `%s' request (wrong table)\n"),
 	      "REMOVE");
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	  break;
@@ -343,7 +343,7 @@ static void * process_thread(TableList * list) {
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	}
@@ -361,7 +361,7 @@ static void * process_thread(TableList * list) {
 	      "ITERATE",
 	      ntohs(buffer->size));
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	  FREE(buffer);
@@ -377,7 +377,7 @@ static void * process_thread(TableList * list) {
 	      _("Failed to send `%s'.  Closing connection.\n"),
 	      "ACK");
 	  MUTEX_LOCK(&list->lock);
-	  releaseClientSocket(list->sock);
+	  connection_destroy(list->sock);
 	  list->sock = NULL;
 	  MUTEX_UNLOCK(&list->lock);
 	}
@@ -391,7 +391,7 @@ static void * process_thread(TableList * list) {
 	    ntohs(buffer->type),
 	    __FILE__, __LINE__);
 	MUTEX_LOCK(&list->lock);
-	releaseClientSocket(list->sock);
+	connection_destroy(list->sock);
 	list->sock = NULL;
 	MUTEX_UNLOCK(&list->lock);
       } /* end of switch */
@@ -399,7 +399,7 @@ static void * process_thread(TableList * list) {
       buffer = NULL;
     }
     MUTEX_LOCK(&list->lock);
-    releaseClientSocket(list->sock);
+    connection_destroy(list->sock);
     list->sock = NULL;
     MUTEX_UNLOCK(&list->lock);
   }
@@ -447,7 +447,7 @@ int DHT_LIB_join(Blockstore * store,
 			  list,
 			  16 * 1024)) {
     LOG_STRERROR(LOG_ERROR, "pthread_create");
-    releaseClientSocket(list->sock);
+    connection_destroy(list->sock);
     MUTEX_DESTROY(&list->lock);
     FREE(list);
     MUTEX_UNLOCK(&lock);
@@ -530,7 +530,7 @@ int DHT_LIB_leave(const DHT_TableId * table) {
 	  _("Failed to send `%s' message to gnunetd\n"),
 	  "CS_dht_request_leave_MESSAGE");
     }
-    releaseClientSocket(sock);
+    connection_destroy(sock);
   }
   MUTEX_LOCK(&list->lock);
   if (list->sock != NULL)
@@ -538,7 +538,7 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   MUTEX_UNLOCK(&list->lock);
   unused = NULL;
   PTHREAD_JOIN(&list->processor, &unused);
-  releaseClientSocket(list->sock);
+  connection_destroy(list->sock);
   MUTEX_DESTROY(&list->lock);
   FREE(list);
   return ret;
@@ -598,7 +598,7 @@ int DHT_LIB_get(const DHT_TableId * table,
 	 keyCount * sizeof(HashCode512));
   if (OK != connection_write(sock,
 			  &req->header)) {
-    releaseClientSocket(sock);
+    connection_destroy(sock);
     return SYSERR;
   }
   FREE(req);
@@ -606,12 +606,12 @@ int DHT_LIB_get(const DHT_TableId * table,
     reply = NULL;
     if (OK != connection_read(sock,
 			     &reply)) {
-      releaseClientSocket(sock);
+      connection_destroy(sock);
       return SYSERR;
     }
     if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
 	 (CS_PROTO_dht_REPLY_ACK == ntohs(reply->type)) ) {
-      releaseClientSocket(sock);
+      connection_destroy(sock);
       ret = checkACK(reply);
       FREE(reply);
       break; /* termination message, end loop! */
@@ -621,7 +621,7 @@ int DHT_LIB_get(const DHT_TableId * table,
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Unexpected reply to `%s' operation.\n"),
 	  "GET");
-      releaseClientSocket(sock);
+      connection_destroy(sock);
       FREE(reply);
       return SYSERR;
     }
@@ -641,7 +641,7 @@ int DHT_LIB_get(const DHT_TableId * table,
 	      closure);
     FREE(result);
   }
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   return ret;
 }
 	
@@ -700,7 +700,7 @@ int DHT_LIB_put(const DHT_TableId * table,
 	ret = OK;
       FREE(reply);
     }
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   return ret;
 }
 
@@ -751,7 +751,7 @@ int DHT_LIB_remove(const DHT_TableId * table,
 	ret = OK;
       FREE(reply);
     }
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   return ret;
 }
 

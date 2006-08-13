@@ -292,7 +292,7 @@ int main(int argc, char ** argv) {
   SEMAPHORE_FREE(exitCheck);
   MUTEX_DESTROY(&lock);
   PTHREAD_JOIN(&messageReceiveThread, &unused);
-  releaseClientSocket(sock);
+  connection_destroy(sock);
 
   doneUtil();
   return 0;

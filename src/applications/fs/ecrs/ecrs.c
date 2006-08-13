@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005. 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -38,12 +38,13 @@ void ECRS_encryptInPlace(const HashCode512 * hc,
 
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
-  GE_ASSERT(ectx, len ==
-		encryptBlock(data,
-			     len,
-			     &skey,
-			     &iv,
-			     tmp));
+  GE_ASSERT(NULL, 
+	    len ==
+	    encryptBlock(data,
+			 len,
+			 &skey,
+			 &iv,
+			 tmp));
   memcpy(data, tmp, len);
   FREE(tmp);
 }
@@ -57,12 +58,13 @@ void ECRS_decryptInPlace(const HashCode512 * hc,
 
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
-  GE_ASSERT(ectx, len ==
-		decryptBlock(&skey,
-			     data,
-			     len,
-			     &iv,
-			     tmp));
+  GE_ASSERT(NULL,
+	    len ==
+	    decryptBlock(&skey,
+			 data,
+			 len,
+			 &iv,
+			 tmp));
   memcpy(data, tmp, len);
   FREE(tmp);
 }

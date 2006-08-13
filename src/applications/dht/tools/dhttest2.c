@@ -143,7 +143,7 @@ int main(int argc, char ** argv) {
     left--;
     CHECK(left > 0);
   }
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   printf("Peers connected.  Running actual test.\n");
   
   memset(&table, 33, sizeof(DHT_TableId));

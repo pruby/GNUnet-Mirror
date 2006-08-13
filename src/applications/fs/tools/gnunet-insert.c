@@ -159,7 +159,7 @@ static void printstatus(int * verboselevel,
       } else {
 	cron_t now;
 
-	cronTime(&now);
+	now = get_time();
 	delta = now - event->data.UploadComplete.start_time;
 	PRINTF(_("Upload of `%s' complete, "
 		 "current average speed is %8.3f KiB/s.\n"),

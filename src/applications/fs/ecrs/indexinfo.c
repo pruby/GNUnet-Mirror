@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -38,24 +38,28 @@
  *  in either case, if SYSERR is returned the user should probably
  *  be notified that 'something is wrong')
  */
-int ECRS_isFileIndexed(const char * filename) {
+int ECRS_isFileIndexed(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      const char * filename) {
   HashCode512 hc;
   struct ClientServerConnection * sock;
   int ret;
 
-  if (SYSERR == getFileHash(filename,
+  if (SYSERR == getFileHash(ectx,
+			    filename,
 			    &hc))
     return SYSERR;
-  sock = getClientSocket();
+  sock = client_connection_create(ectx, cfg);
   if (sock == NULL)
     return SYSERR;
   ret = FS_testIndexed(sock,
 		       &hc);
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   return ret;
 }
 
 struct iiC {
+  struct GE_Context * ectx;
   ECRS_FileIterator iterator;
   void * closure;
   int cnt;
@@ -93,9 +97,10 @@ static int iiHelper(const char * fn,
 	continue;
       }
       if (errno != EINVAL) {
-	GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
-			  "readlink",
-			  fullName);
+	GE_LOG_STRERROR_FILE(cls->ectx,
+			     GE_WARNING | GE_BULK | GE_ADMIN | GE_USER,
+			     "readlink",
+			     fullName);
       }
       FREE(lnkName);
       FREE(fullName);
@@ -130,31 +135,35 @@ static int iiHelper(const char * fn,
  *
  * @return number of files indexed, SYSERR if iterator aborted
  */
-int ECRS_iterateIndexedFiles(ECRS_FileIterator iterator,
+int ECRS_iterateIndexedFiles(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     ECRS_FileIterator iterator,
 			     void * closure) {
   char * tmp;
   char * indexDirectory;
   struct ClientServerConnection * sock;
   struct iiC cls;
 
-  sock = getClientSocket();
+  sock = client_connection_create(ectx, cfg);
   if (sock == NULL)
     return 0;
   tmp = getConfigurationOptionValue(sock,
 				    "FS",
 				    "INDEX-DIRECTORY");
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   if (tmp == NULL) {
     return 0;
   }
-  indexDirectory = expandFileName(tmp);
+  indexDirectory = string_expandFileName(ectx, tmp);
   FREE(tmp);
+  cls.ectx = ectx;
   cls.iterator = iterator;
   cls.closure = closure;
   cls.cnt = 0;
-  scanDirectory(indexDirectory,
-		&iiHelper,
-		&cls);
+  disk_directory_scan(ectx,
+		      indexDirectory,
+		      &iiHelper,
+		      &cls);
   FREE(indexDirectory);
   return cls.cnt;
 }

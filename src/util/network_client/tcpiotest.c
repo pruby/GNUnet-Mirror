@@ -229,7 +229,7 @@ int main(int argc, char * argv[]){
   serverSocket = openServerSocket();
   clientSocket = getClientSocket();
   if (serverSocket == -1) {
-    releaseClientSocket(clientSocket);
+    connection_destroy(clientSocket);
     doneUtil();
     return 1;
   }
@@ -253,7 +253,7 @@ int main(int argc, char * argv[]){
       ret = -1;
     }
   }
-  releaseClientSocket(clientSocket);
+  connection_destroy(clientSocket);
   doneUtil();
   if (ret > 0)
     fprintf(stderr, "Error %d\n", ret);

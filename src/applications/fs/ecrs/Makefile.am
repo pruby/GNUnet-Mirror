@@ -22,6 +22,8 @@ libgnunetecrs_la_LIBADD = \
  $(top_builddir)/src/applications/fs/libecrs_core.la \
  $(top_builddir)/src/applications/fs/lib/libgnunetfs.la \
  $(top_builddir)/src/applications/getoption/libgnunetgetoption_api.la \
+ $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 

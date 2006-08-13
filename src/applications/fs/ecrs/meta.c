@@ -81,7 +81,7 @@ int ECRS_addToMetaData(MetaData * md,
                        const char * data) {
   int idx;
 
-  GE_ASSERT(ectx, data != NULL);
+  GE_ASSERT(NULL, data != NULL);
   for (idx=0;idx<md->itemCount;idx++) {
     if ( (md->items[idx].type == type) &&
          (0 == strcmp(md->items[idx].data,
@@ -291,7 +291,8 @@ MetaData * ECRS_dupMetaData(const MetaData * md) {
  * @return SYSERR on error, otherwise the number
  *   of meta-data items obtained
  */
-int ECRS_extractMetaData(MetaData * md,
+int ECRS_extractMetaData(struct GE_Context * ectx,
+			 MetaData * md,
                          const char * filename,
                          EXTRACTOR_ExtractorList * extractors) {
   EXTRACTOR_KeywordList * head;
@@ -419,7 +420,8 @@ typedef struct {
  *         SYSERR on error (typically: not enough
  *         space)
  */
-int ECRS_serializeMetaData(const MetaData * md,
+int ECRS_serializeMetaData(struct GE_Context * ectx,
+			   const MetaData * md,
                            char * target,
                            unsigned int max,
                            int part) {
@@ -490,7 +492,8 @@ int ECRS_serializeMetaData(const MetaData * md,
 #if EXTRA_CHECKS
   {
     MetaData * mdx;
-    mdx = ECRS_deserializeMetaData(target,
+    mdx = ECRS_deserializeMetaData(ectx,
+				   target,
                                    size);
     GE_ASSERT(ectx, NULL != mdx);
     ECRS_freeMetaData(mdx);
@@ -555,7 +558,8 @@ unsigned int ECRS_sizeofMetaData(const MetaData * md,
  *         bad format)
  */
 struct ECRS_MetaData *
-ECRS_deserializeMetaData(const char * input,
+ECRS_deserializeMetaData(struct GE_Context * ectx,
+			 const char * input,
                          unsigned int size) {
   MetaData * md;
   const MetaDataHeader * hdr;
@@ -723,7 +727,8 @@ static char * mimeMap[][2] = {
  * renaming).
  * @return the new filename
  */
-char * ECRS_suggestFilename(const char * filename) {
+char * ECRS_suggestFilename(struct GE_Context * ectx,
+			    const char * filename) {
   EXTRACTOR_ExtractorList * l;
   EXTRACTOR_KeywordList * list;
   const char * key;

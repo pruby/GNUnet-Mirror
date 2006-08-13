@@ -949,7 +949,7 @@ static void processOptionalFields(const PeerIdentity * responder,
       return;
     }
     tables = (DHT_TableId*) data;
-    cronTime(&now);
+    now = get_time();
 
 #if DEBUG_DHT
     IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1187,7 +1187,7 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
       &enc);
 #endif
   ENTER();
-  cronTime(&now);
+  now = get_time();
   param = RPC_paramNew();
   MUTEX_LOCK(&fnc->lock);
   if (equalsHashCode512(&fnc->key,
@@ -1314,7 +1314,7 @@ static void request_DHT_ping(const PeerIdentity * identity,
   MUTEX_LOCK(lock);
   /* test if this peer is already in buckets */
   pos = findPeerInfo(identity);
-  cronTime(&now);
+  now = get_time();
   if (pos != NULL)
     pos->lastTimePingSend = now;
   MUTEX_UNLOCK(lock);
@@ -1489,7 +1489,7 @@ send_dht_get_rpc(const PeerIdentity * peer,
 			peer,		
 			record->keys))
     return OK; /* refuse! */
-  cronTime(&now);
+  now = get_time();
   if (record->timeout > now)
     delta = (record->timeout - now) / 2;
   else
@@ -2242,7 +2242,7 @@ send_dht_put_rpc(const PeerIdentity * peer,
 			peer,		
 			&record->key))
     return OK;
-  cronTime(&now);
+  now = get_time();
   if (record->timeout > now)
     delta = (record->timeout - now) / 2;
   else
@@ -2543,7 +2543,7 @@ send_dht_remove_rpc(const PeerIdentity * peer,
 			peer,		
 			&record->key))
     return OK; /* refuse! */
-  cronTime(&now);
+  now = get_time();
   if (record->timeout > now)
     delta = (record->timeout - now) / 2;
   else
@@ -3358,7 +3358,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
       "`%s' stops async requests from last cron round.\n",
       __FUNCTION__);
 #endif
-  cronTime(&now);
+  now = get_time();
   for (i=putRecordsSize-1;i>=0;i--) {
     if ( (shutdownFlag != NULL) ||
 	 (putTimes[i] + DHT_MAINTAIN_BUCKET_FREQUENCY < now)) {

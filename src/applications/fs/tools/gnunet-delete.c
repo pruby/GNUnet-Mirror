@@ -152,7 +152,7 @@ int main(int argc, char ** argv) {
 	     "Probably a few blocks were already missing from the database.\n"),
 	   filename);
   }
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   doneUtil();
   FREE(filename);
   if (ok == OK)

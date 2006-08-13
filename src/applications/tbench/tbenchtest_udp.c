@@ -223,7 +223,7 @@ int main(int argc, char ** argv) {
   }
   ret = test(sock, 4096, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
   ret = test(sock, 32768, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   if (daemon1 != -1) {
     if (! termProcess(daemon1))
       DIE_STRERROR("kill");

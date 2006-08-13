@@ -166,7 +166,7 @@ static void scanForHosts(unsigned int index) {
   cron_t now;
   EncName enc;
 
-  cronTime(&now);
+  now = get_time();
   indexMatch.index = index;
   indexMatch.matchCount = 0;
   indexMatch.costSelector = 0;
@@ -237,7 +237,7 @@ static void checkNeedForPing(const PeerIdentity * peer,
 
   if (weak_randomi(LIVE_PING_EFFECTIVENESS) != 0)
     return;
-  cronTime(&now);
+  now = get_time();
   if (SYSERR == coreAPI->getLastActivityOf(peer, &act)) {
     GE_BREAK(ectx, 0);
     return; /* this should not happen... */

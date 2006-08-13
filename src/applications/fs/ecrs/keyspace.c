@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -49,7 +49,8 @@
  *
  * @return SYSERR if the entry is malformed
  */
-static int verifyKBlock(const HashCode512 * key,
+static int verifyKBlock(struct GE_Context * ectx,
+			const HashCode512 * key,
 			Datastore_Value * value) {
   unsigned int type;
   ECRS_FileInfo fi;
@@ -57,7 +58,6 @@ static int verifyKBlock(const HashCode512 * key,
   HashCode512 query;
   KBlock * kb;
   const char * dstURI;
-  EncName enc;
   int j;
 
   type = ntohl(value->type);
@@ -72,9 +72,6 @@ static int verifyKBlock(const HashCode512 * key,
   if (size < sizeof(KBlock))
     return SYSERR;
   kb = (KBlock*) &value[1];
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(key,
-		 &enc));
   ECRS_decryptInPlace(key,
 		      &kb[1],
 		      size - sizeof(KBlock));
@@ -83,18 +80,20 @@ static int verifyKBlock(const HashCode512 * key,
 	  (((const char*)kb)[j] != '\0') )
     j++;
   if (j == size) {
-    GE_BREAK(ectx, 0); /* kblock malformed */
+    GE_BREAK(NULL, 0); /* kblock malformed */
     return SYSERR;
   }
   dstURI = (const char*) &kb[1];
   j++;
-  fi.meta = ECRS_deserializeMetaData(&((const char*)kb)[j],
+  fi.meta = ECRS_deserializeMetaData(ectx,
+				     &((const char*)kb)[j],
 				     size - j);
   if (fi.meta == NULL) {
     GE_BREAK(ectx, 0); /* kblock malformed */
     return SYSERR;
   }
-  fi.uri = ECRS_stringToUri(dstURI);
+  fi.uri = ECRS_stringToUri(ectx,
+			    dstURI);
   if (fi.uri == NULL) {
     GE_BREAK(ectx, 0); /* kblock malformed */
     ECRS_freeMetaData(fi.meta);
@@ -117,7 +116,9 @@ static int verifyKBlock(const HashCode512 * key,
  * @param md what meta-data should be associated with the
  *        entry?
  */
-int ECRS_addToKeyspace(const struct ECRS_URI * uri,
+int ECRS_addToKeyspace(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       const struct ECRS_URI * uri,
 		       unsigned int anonymityLevel,
 		       unsigned int priority,
 		       cron_t expirationTime,
@@ -161,7 +162,8 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
 	   dstURI,
 	   strlen(dstURI)+1);
     mdsize = size - sizeof(KBlock) - strlen(dstURI) - 1;
-    mdsize = ECRS_serializeMetaData(md,
+    mdsize = ECRS_serializeMetaData(ectx,
+				    md,
 				    &((char*)&kb[1])[strlen(dstURI)+1],
 				    mdsize,
 				    ECRS_SERIALIZE_PART);
@@ -179,23 +181,26 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     memcpy(&kb[1],
 	   dstURI,
 	   strlen(dstURI)+1);
-    GE_ASSERT(ectx, mdsize ==
-		  ECRS_serializeMetaData(md,
-					 &((char*)&kb[1])[strlen(dstURI)+1],
-					 mdsize,
-					 ECRS_SERIALIZE_FULL));
+    GE_ASSERT(ectx,
+	      mdsize ==
+	      ECRS_serializeMetaData(ectx,
+				     md,
+				     &((char*)&kb[1])[strlen(dstURI)+1],
+				     mdsize,
+				     ECRS_SERIALIZE_FULL));
   }
   value->size = htonl(sizeof(Datastore_Value) + size);
   value->type = htonl(K_BLOCK);
   value->prio = htonl(priority);
   value->anonymityLevel = htonl(anonymityLevel);
   value->expirationTime = htonll(expirationTime);
-  sock = getClientSocket();
+  sock = client_connection_create(ectx, cfg);
   ret = OK;
 
-  if (testConfigurationString("FS",
-			      "DISABLE-CREATION-TIME",
-			      "YES"))
+  if (GC_get_configuration_value_yesno(cfg,
+				       "FS",
+				       "DISABLE-CREATION-TIME",
+				       NO) == YES)
     xuri = ECRS_dupUri(uri);
   else
     xuri = ECRS_dateExpandKeywordUri(uri);
@@ -239,13 +244,16 @@ int ECRS_addToKeyspace(const struct ECRS_URI * uri,
     if (OK != FS_insert(sock, value))
       ret = SYSERR;
 #if EXTRA_CHECKS
-    GE_ASSERT(ectx, OK == verifyKBlock(&key, value))
+    GE_ASSERT(ectx, 
+	      OK == verifyKBlock(ectx,
+				 &key,
+				 value))
 #endif
   }
   ECRS_freeUri(xuri);
   FREE(cpy);
   FREE(dstURI);
-  releaseClientSocket(sock);
+  connection_destroy(sock);
   FREE(value);
   return ret;
 }

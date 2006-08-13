@@ -267,8 +267,7 @@ char * ECRS_uriToString(const struct ECRS_URI * uri);
  * Convert a NULL-terminated array of keywords
  * to an ECRS URI.
  */
-struct ECRS_URI * ECRS_keywordsToUri(struct GE_Context * ectx,
-				     const char * keyword[]);
+struct ECRS_URI * ECRS_keywordsToUri(const char * keyword[]);
 
 /**
  * Convert a UTF-8 String to a URI.
@@ -417,6 +416,7 @@ typedef int (*ECRS_TestTerminate)(void * closure);
  *  or gnunetd not running)
  */
 int ECRS_uploadFile(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
 		    const char * filename,
 		    int doIndex,
 		    unsigned int anonymityLevel,
@@ -438,6 +438,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
  *  be notified that 'something is wrong')
  */
 int ECRS_isFileIndexed(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
 		       const char * filename);
 
 /**
@@ -459,6 +460,7 @@ typedef int (*ECRS_FileIterator)(const char * filename,
  * @return number of files indexed, SYSERR if iterator aborted
  */
 int ECRS_iterateIndexedFiles(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
 			     ECRS_FileIterator iterator,
 			     void * closure);
 
@@ -468,6 +470,7 @@ int ECRS_iterateIndexedFiles(struct GE_Context * ectx,
  * @return SYSERR if the unindexing failed (i.e. not indexed)
  */
 int ECRS_unindexFile(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg,
 		     const char * filename,
 		     ECRS_UploadProgressCallback upcb,
 		     void * upcbClosure,
@@ -497,6 +500,7 @@ int ECRS_unindexFile(struct GE_Context * ectx,
  */
 struct ECRS_URI *
 ECRS_createNamespace(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg,
 		     const char * name,
 		     const struct ECRS_MetaData * meta,
 		     unsigned int anonymityLevel,
@@ -512,6 +516,7 @@ ECRS_createNamespace(struct GE_Context * ectx,
  * @return OK if the namespace exists, SYSERR if not
  */
 int ECRS_testNamespaceExists(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
 			     const char * name,
 			     const HashCode512 * hc);
 
@@ -523,6 +528,7 @@ int ECRS_testNamespaceExists(struct GE_Context * ectx,
  * @return OK on success, SYSERR on error
  */
 int ECRS_deleteNamespace(struct GE_Context * ectx,
+			 struct GC_Configuration * cfg,
 			 const char * namespaceName); /* namespace.c */
 
 /**
@@ -543,6 +549,7 @@ typedef int (*ECRS_NamespaceInfoCallback)(const HashCode512 * id,
  * @return SYSERR on error, otherwise the number of pseudonyms in list
  */
 int ECRS_listNamespaces(struct GE_Context * ectx,
+			struct GC_Configuration * cfg,
 			ECRS_NamespaceInfoCallback cb,
 			void * cls); /* namespace.c */
 
@@ -558,6 +565,7 @@ int ECRS_listNamespaces(struct GE_Context * ectx,
  */
 struct ECRS_URI *
 ECRS_addToNamespace(struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
 		    const char * name,
 		    unsigned int anonymityLevel,
 		    unsigned int priority,
@@ -579,6 +587,7 @@ ECRS_addToNamespace(struct GE_Context * ectx,
  *        entry?
  */
 int ECRS_addToKeyspace(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
 		       const struct ECRS_URI * uri,
 		       unsigned int anonymityLevel,
 		       unsigned int priority,
@@ -611,6 +620,7 @@ typedef int (*ECRS_SearchProgressCallback)
  * @param uri set to the URI of the uploaded file
  */
 int ECRS_search(struct GE_Context * ectx,
+		struct GC_Configuration * cfg,
 		const struct ECRS_URI * uri,
 		unsigned int anonymityLevel,
 		cron_t timeout,
@@ -649,6 +659,7 @@ typedef void (*ECRS_DownloadProgressCallback)
  * @param filename where to store the file
  */
 int ECRS_downloadFile(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
 		      const struct ECRS_URI * uri,
 		      const char * filename,
 		      unsigned int anonymityLevel,

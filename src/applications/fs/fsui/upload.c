@@ -85,7 +85,7 @@ static void progressCallback(unsigned long long totalBytes,
   FSUI_Event event;
   cron_t now;
 
-  cronTime(&now);
+  now = get_time();
   event.type = FSUI_upload_progress;
   event.data.UploadProgress.completed = completedBytes;
   event.data.UploadProgress.total = totalBytes;

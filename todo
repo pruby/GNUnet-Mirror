@@ -27,9 +27,9 @@ Notes:
     + fragmentation, identity,  pingpong, session, transport,
       stats, topology_default, state, getoption, advertising,
       traffic, ecrs_core, template, tbench, tracekit, fs/fslib,
-      fs/module, gap compile
+      fs/module, gap, fs/ecrs compile
     + bootstrap_http: maybe switch to libwww?
-    + for fs: fs/ecrs (7000), fs/fsui (5500), fs/tools (2500)
+    + for fs: fs/fsui (5500), fs/tools (2500)
     + rest: sqstore_mysql, dht, rpc, topology_f2f, vpn
     + low priority: chat, kvstore_sqlite, testbed
   * setup:

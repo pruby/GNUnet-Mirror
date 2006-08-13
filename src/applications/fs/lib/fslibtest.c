@@ -185,7 +185,7 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   closure.found = NO;
   closure.i = i;
   closure.sem = SEMAPHORE_CREATE(0);
-  cronTime(&now);
+  now = get_time();
   handle = FS_start_search(ctx,
 			   D_BLOCK,
 			   1,
@@ -225,7 +225,7 @@ int main(int argc, char * argv[]){
   char * tmpName;
   int fd;
 
-  cronTime(&now);
+  now = get_time();
   if (OK != initUtil(argc,
 		     argv,
 		     &parseCommandLine))
@@ -354,7 +354,7 @@ int main(int argc, char * argv[]){
   if (ctx != NULL)
     FS_SEARCH_destroyContext(ctx);
   if (sock != NULL)
-    releaseClientSocket(sock);
+    connection_destroy(sock);
   MUTEX_DESTROY(&lock);
   stopCron();
   GE_ASSERT(ectx, OK == stopGNUnetDaemon());

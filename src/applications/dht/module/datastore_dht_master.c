@@ -330,7 +330,7 @@ static void expirationJob(MemoryDatastore * store) {
 
   prev = NULL;
   MUTEX_LOCK(&store->lock);
-  cronTime(&now);
+  now = get_time();
   pos = store->first;
   while (pos != NULL) {
     for (i=pos->count-1;i>=0;i--) {

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -164,7 +164,7 @@ char * createFileURI(const FileIdentifier * fi) {
  */
 char * ECRS_uriToString(const struct ECRS_URI * uri) {
   if (uri == NULL) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return NULL;
   }
   switch (uri->type) {
@@ -179,7 +179,7 @@ char * ECRS_uriToString(const struct ECRS_URI * uri) {
   case loc:
     return "FIXME";
   default:
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return NULL;
   }
 }
@@ -192,7 +192,8 @@ char * ECRS_uriToString(const struct ECRS_URI * uri) {
  * @return SYSERR if this is not a search URI, otherwise
  *  the number of keywords placed in the array
  */
-static int parseKeywordURI(const char * uri,
+static int parseKeywordURI(struct GE_Context * ectx,
+			   const char * uri,
 			   char *** keywords) {
   unsigned int pos;
   int ret;
@@ -255,7 +256,8 @@ static int parseKeywordURI(const char * uri,
  * @param identifier set to the ID in the namespace
  * @return OK on success, SYSERR if this is not a namespace URI
  */
-static int parseSubspaceURI(const char * uri,
+static int parseSubspaceURI(struct GE_Context * ectx,
+			    const char * uri,
 			    HashCode512 * namespace,
 			    HashCode512 * identifier) {
   unsigned int pos;
@@ -307,7 +309,8 @@ static int parseSubspaceURI(const char * uri,
  * @param fi the file identifier
  * @return OK on success, SYSERR if this is not a file URI
  */
-static int parseFileURI(const char * uri,
+static int parseFileURI(struct GE_Context * ectx,
+			const char * uri,
 			FileIdentifier * fi) {
   unsigned int pos;
   size_t slen;
@@ -353,24 +356,28 @@ static int parseFileURI(const char * uri,
 /**
  * Convert a UTF-8 String to a URI.
  */
-URI * ECRS_stringToUri(const char * uri) {
+URI * ECRS_stringToUri(struct GE_Context * ectx,
+		       const char * uri) {
   URI * ret;
   int len;
 
   ret = MALLOC(sizeof(URI));
-  if (OK == parseFileURI(uri,
+  if (OK == parseFileURI(ectx,
+			 uri,
 			 &ret->data.chk)) {
     ret->type = chk;
     return ret;
   }
-  if (OK == parseSubspaceURI(uri,
+  if (OK == parseSubspaceURI(ectx,
+			     uri,
 			     &ret->data.sks.namespace,
 			     &ret->data.sks.identifier)) {
     ret->type = sks;
     return ret;
   }
   /* FIXME: parse location! */
-  len = parseKeywordURI(uri,
+  len = parseKeywordURI(ectx,
+			uri,
 			&ret->data.ksk.keywords);
   if (len < 0) {
     FREE(ret);
@@ -387,7 +394,8 @@ URI * ECRS_stringToUri(const char * uri) {
  */
 void ECRS_freeUri(struct ECRS_URI * uri) {
   int i;
-  GE_ASSERT(ectx, uri != NULL);
+
+  GE_ASSERT(NULL, uri != NULL);
   if (uri->type == ksk) {
     for (i=0;i<uri->data.ksk.keywordCount;i++)
       FREE(uri->data.ksk.keywords[i]);
@@ -430,7 +438,7 @@ char * ECRS_getNamespaceName(const HashCode512 * id) {
 int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 			HashCode512 * id) {
   if (! ECRS_isNamespaceUri(uri)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
   *id = uri->data.sks.namespace;
@@ -445,7 +453,7 @@ int ECRS_getNamespaceId(const struct ECRS_URI * uri,
 int ECRS_getSKSContentHash(const struct ECRS_URI * uri,
 			   HashCode512 * id) {
   if (! ECRS_isNamespaceUri(uri)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
   *id = uri->data.sks.identifier;
@@ -461,7 +469,7 @@ int ECRS_isKeywordUri(const struct ECRS_URI * uri) {
 
   if (uri->type == ksk) {
     for (i=uri->data.ksk.keywordCount-1;i>=0;i--)
-      GE_ASSERT(ectx, uri->data.ksk.keywords[i] != NULL);
+      GE_ASSERT(NULL, uri->data.ksk.keywords[i] != NULL);
   }
 #endif
   return uri->type == ksk;
@@ -527,7 +535,7 @@ unsigned long long ECRS_fileSize(const struct ECRS_URI * uri) {
   case loc:
     return ntohll(uri->data.loc.size);
   default:
-    GE_ASSERT(ectx, 0);
+    GE_ASSERT(NULL, 0);
   }
   return 0; /* unreachable */
 }
@@ -574,7 +582,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
   time_t now;
   unsigned int keywordCount;
 
-  GE_ASSERT(ectx, uri->type == ksk);
+  GE_ASSERT(NULL, uri->type == ksk);
   time(&now);
 #ifdef HAVE_GMTIME_R
   gmtime_r(&now, &t);
@@ -590,7 +598,7 @@ URI * ECRS_dateExpandKeywordUri(const URI * uri) {
     ret->data.ksk.keywords = MALLOC(sizeof(char*) * keywordCount * 2);
     for (i=0;i<keywordCount;i++) {
       key = uri->data.ksk.keywords[i];
-      GE_ASSERT(ectx, key != NULL);
+      GE_ASSERT(NULL, key != NULL);
       ret->data.ksk.keywords[2*i]
 	= STRDUP(key);
       kd = MALLOC(strlen(key) + 13);
@@ -659,7 +667,7 @@ URI * ECRS_metaDataToUri(const MetaData * md) {
 	}
       }
       if (add == 1) {
-	GE_ASSERT(ectx, md->items[i].data != NULL);
+	GE_ASSERT(NULL, md->items[i].data != NULL);
 	ret->data.ksk.keywords[i-havePreview]
 	  = STRDUP(md->items[i].data);
       }
@@ -704,8 +712,8 @@ int ECRS_equalsUri(const struct ECRS_URI * uri1,
   int i;
   int j;
 
-  GE_ASSERT(ectx, uri1 != NULL);
-  GE_ASSERT(ectx, uri2 != NULL);
+  GE_ASSERT(NULL, uri1 != NULL);
+  GE_ASSERT(NULL, uri2 != NULL);
   if (uri1->type != uri2->type)
     return NO;
   switch(uri1->type) {

@@ -519,7 +519,7 @@ int FSUI_computeNextId(const char * name,
   deltaId(lastId,
 	  thisId,
 	  &delta);	
-  cronTime(&now);
+  now = get_time();
   TIME(&tnow);
   *nextId = *thisId;
   while (lastTime < tnow + updateInterval/2) {

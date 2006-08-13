@@ -626,7 +626,7 @@ static unsigned int rpcIdentifier = 0;
 static void retryRPCJob(CallInstance * call) {
   cron_t now;
 
-  cronTime(&now);
+  now = get_time();
   GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > call->expirationTime) ||
 		 (call->expirationTime - get_time() < 1 * cronHOURS) );
   MUTEX_LOCK(rpcLock);
