@@ -27,7 +27,7 @@ static int check() {
      increasing;
      measure precision of sleep and report;
      test that sleep is interrupted by signals; */
-  last = cronTime(&now);
+  last = now = get_time();
   if (last != now)
     return 1;
   tlast = TIME(&tnow);
@@ -48,7 +48,7 @@ static int check() {
     cronTime(&last);
     if (0 != PTHREAD_SLEEP(cronMILLIS * i))
       return 5;
-    cronTime(&now);
+    now = get_time();
 #if VERBOSE
     fprintf(stderr,
 	    "%4u ms requested, got: %4lld ms\n",
@@ -90,7 +90,7 @@ static int check() {
 	       0,
 	       sem);
     SEMAPHORE_DOWN(sem);
-    cronTime(&now);
+    now = get_time();
     if (now < last + i)
       now = last + i - now;
     else

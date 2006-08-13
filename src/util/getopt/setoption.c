@@ -93,7 +93,7 @@ int gnunet_getopt_configure_set_one(CommandLineProcessorContext * ctx,
 				    const char * option,
 				    const char * value) {
   int * val = scls;
-  val = 1;
+  *val = 1;
   return OK;
 }
 
