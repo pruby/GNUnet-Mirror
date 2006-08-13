@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,16 +19,14 @@
 */
 
 /**
- * @file applications/fs/fsui/helper.c
- * @brief FSUI helper functions
+ * @file applications/fs/ecrs/helper.c
+ * @brief ECRS helper functions
  * @author Krista Bennett
  * @author Christian Grothoff
  */
 
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
-#include "gnunet_fsui_lib.h"
-#include "fsui.h"
 
 /**
  * Create an ECRS URI from a single user-supplied string of keywords.
@@ -38,7 +36,8 @@
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
+struct ECRS_URI * ECRS_parseCharKeywordURI(struct GE_Context * ectx,
+					   const char * input) {
   char ** keywords;
   unsigned int num_Words;
   int inWord;
@@ -63,8 +62,9 @@ struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
 
   if (num_Words == 0) {
     FREENONNULL(searchString);
-    GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	_("No keywords specified!\n"));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_IMMEDIATE | GE_USER,
+	   _("No keywords specified!\n"));
     return NULL;
   }
   keywords = MALLOC(num_Words * sizeof(char *));
@@ -79,7 +79,8 @@ struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
       ++num_Words;
     }
   }
-  uri = FSUI_parseArgvKeywordURI(num_Words,
+  uri = ECRS_parseArgvKeywordURI(ectx,
+				 num_Words,
 				 (const char**) keywords);
   FREE(keywords);
   FREE(searchString);
@@ -94,7 +95,8 @@ struct ECRS_URI * FSUI_parseCharKeywordURI(const char * input) {
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int num_keywords,
+struct ECRS_URI * ECRS_parseArgvKeywordURI(struct GE_Context * ectx,
+					   unsigned int num_keywords,
 					   const char ** keywords) {
   unsigned int i;
   unsigned int uriLen;
@@ -133,7 +135,7 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int num_keywords,
       uriLen += strlen(keywords[i]);
     }
   }
-  uri = ECRS_stringToUri(uriString);
+  uri = ECRS_stringToUri(ectx, uriString);
   GROW(uriString,
        uriSize,
        0);
@@ -148,7 +150,8 @@ struct ECRS_URI * FSUI_parseArgvKeywordURI(unsigned int num_keywords,
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI * FSUI_parseListKeywordURI(unsigned int num_keywords,
+struct ECRS_URI * ECRS_parseListKeywordURI(struct GE_Context * ectx,
+					   unsigned int num_keywords,
 					   const char ** keywords) {
   unsigned int i;
   unsigned int uriLen;
@@ -178,7 +181,7 @@ struct ECRS_URI * FSUI_parseListKeywordURI(unsigned int num_keywords,
     strcat(uriString, keywords[i]);
     uriLen += strlen(keywords[i]);
   }
-  uri = ECRS_stringToUri(uriString);
+  uri = ECRS_stringToUri(ectx, uriString);
   GROW(uriString,
        uriSize,
        0);

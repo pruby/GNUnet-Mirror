@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/file_info.c
+ * @file applications/fs/uritrack/file_info.c
  * @brief Helper functions for keeping track of files for building directories.
  * @author Christian Grothoff
  *
@@ -28,73 +28,103 @@
  * An IPC semaphore is used to guard the access.
  */
 
+#include "gnunet_directories.h"
+#include "gnunet_util.h"
+#include "gnunet_uritrack_lib.h"
 #include "platform.h"
-#include "gnunet_fsui_lib.h"
-#include "gnunet_ecrs_lib.h"
 
 #define DEBUG_FILE_INFO NO
 
 #define STATE_NAME DIR_SEPARATOR_STR "data" DIR_SEPARATOR_STR "fs_uridb"
 #define TRACK_OPTION "fs_uridb_status"
 
-static IPC_Semaphore * createIPC() {
+static struct IPC_SEMAPHORE * createIPC(struct GE_Context * ectx,
+					struct GC_Configuration * cfg) {
   char * basename;
   char * tmpname;
   char * ipcName;
-  IPC_Semaphore * sem;
+  struct IPC_SEMAPHORE * sem;
   size_t n;
 
-  basename = getConfigurationString("GNUNET",
-				    "GNUNET_HOME");
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &basename);
   n = strlen(basename) + 512;
   tmpname = MALLOC(n);
   SNPRINTF(tmpname, n, "%s/directory_ipc_lock", basename);
-  ipcName = expandFileName(tmpname);
+  ipcName = string_expandFileName(ectx,
+				  tmpname);
   FREE(basename);
   FREE(tmpname);
-  sem = IPC_SEMAPHORE_CREATE(ipcName, 1);
+  sem = IPC_SEMAPHORE_CREATE(ectx, ipcName, 1);
   FREE(ipcName);
   return sem;				
 }
 
-static char * getUriDbName() {
+static char * getUriDbName(struct GE_Context * ectx,
+			   struct GC_Configuration * cfg) {
   char * new;
   char * pfx;
 
-  pfx = getFileName("GNUNET", 
-		    "GNUNET_HOME",
-		    _("Configuration file must specify a "
-		      "directory for GNUnet to store "
-		      "per-peer data under %s%s\n"));
-  new = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 1);
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &pfx);
+  new = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 2);
   strcpy(new, pfx);
+  strcat(new, "/");
   strcat(new, STATE_NAME); 
   FREE(pfx);
   return new;
 }
 
+static char * getToggleName(struct GE_Context * ectx,
+			    struct GC_Configuration * cfg) {
+  char * new;
+  char * pfx;
 
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &pfx);
+  new = MALLOC(strlen(pfx) + strlen(TRACK_OPTION) + 2);
+  strcpy(new, pfx);
+  strcat(new, "/");
+  strcat(new, TRACK_OPTION); 
+  FREE(pfx);
+  return new;
+}
 
 /**
- * Get the FSUI URI tracking status.
+ * Get the URITRACK URI tracking status.
  *
  * @return YES of tracking is enabled, NO if not
  */
-int FSUI_trackStatus() {
-  int * status;
+int URITRACK_trackStatus(struct GE_Context * ectx,
+			 struct GC_Configuration * cfg) {
+  int status;
+  char * tn;
 
-  status = NULL;
-  if ( (sizeof(int) != stateReadContent(TRACK_OPTION,
-					(void**)&status)) ||
-       (ntohl(*status) != YES) ) {
-    FREENONNULL(status);
+  tn = getToggleName(ectx,
+		     cfg);
+  if ( (sizeof(int) != disk_file_read(ectx,
+				      tn,
+				      sizeof(int),
+				      &status)) ||
+       (ntohl(status) != YES) ) {
+    FREE(tn);
 #if DEBUG_FILE_INFO
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	_("Collecting file identifiers disabled.\n"));
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   _("Collecting file identifiers disabled.\n"));
 #endif
     return NO;
   } else {
-    FREENONNULL(status);
+    FREE(tn);
     return YES;
   }
 }
@@ -102,33 +132,40 @@ int FSUI_trackStatus() {
 /**
  * Makes a URI available for directory building.
  */
-void FSUI_trackURI(const ECRS_FileInfo * fi) {
-  IPC_Semaphore * sem;
+void URITRACK_trackURI(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       const ECRS_FileInfo * fi) {
+  struct IPC_SEMAPHORE * sem;
   char * data;
   unsigned int size;
   char * suri;
   int fh;
   char * fn;
 
-  if (NO == FSUI_trackStatus())
+  if (NO == URITRACK_trackStatus(ectx, cfg))
     return;
   size = ECRS_sizeofMetaData(fi->meta,
 			     ECRS_SERIALIZE_FULL);
   data = MALLOC(size);
-  GE_ASSERT(ectx, size == ECRS_serializeMetaData(fi->meta,
-					       data,
-					       size,
-					       ECRS_SERIALIZE_FULL));
+  GE_ASSERT(ectx, size == ECRS_serializeMetaData(ectx,
+						 fi->meta,
+						 data,
+						 size,
+						 ECRS_SERIALIZE_FULL));
   size = htonl(size);
   suri = ECRS_uriToString(fi->uri);
-  sem = createIPC();
-  IPC_SEMAPHORE_DOWN(sem);
-  fn = getUriDbName();
-  fh = fileopen(fn, O_WRONLY|O_APPEND|O_CREAT|O_LARGEFILE, S_IRUSR|S_IWUSR);
+  sem = createIPC(ectx, cfg);
+  IPC_SEMAPHORE_DOWN(sem, YES);
+  fn = getUriDbName(ectx, cfg);
+  fh = disk_file_open(ectx,
+		      fn, 
+		      O_WRONLY|O_APPEND|O_CREAT|O_LARGEFILE, 
+		      S_IRUSR|S_IWUSR);
   if (fh == -1) {
-    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
-		      "open",
-		      fn);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			 "open",
+			 fn);
   } else {
     WRITE(fh, suri, strlen(suri) + 1);
     WRITE(fh, &size, sizeof(unsigned int));
@@ -146,17 +183,19 @@ void FSUI_trackURI(const ECRS_FileInfo * fi) {
  * Remove all of the root-nodes of a particular type
  * from the tracking database.
  */
-void FSUI_clearTrackedURIS() {
-  IPC_Semaphore * sem;
+void URITRACK_clearTrackedURIS(struct GE_Context * ectx,
+			       struct GC_Configuration * cfg) {
+  struct IPC_SEMAPHORE * sem;
   char * fn;
 
-  sem = createIPC();
-  IPC_SEMAPHORE_DOWN(sem);
-  fn = getUriDbName();
+  sem = createIPC(ectx, cfg);
+  IPC_SEMAPHORE_DOWN(sem, YES);
+  fn = getUriDbName(ectx, cfg);
   if (0 != UNLINK(fn))
-    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING,
-		      "unlink",
-		      fn);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			 "unlink",
+			 fn);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_DESTROY(sem);
@@ -168,11 +207,20 @@ void FSUI_clearTrackedURIS() {
  * @param onOff YES to enable tracking, NO to disable
  *  disabling tracking
  */
-void FSUI_trackURIS(int onOff) {
-  onOff = htonl(onOff);
-  stateWriteContent(TRACK_OPTION,
-		    sizeof(int),
-		    &onOff);
+void URITRACK_trackURIS(struct GE_Context * ectx,
+			struct GC_Configuration * cfg,
+			int onOff) {
+  int o = htonl(onOff);
+  char * tn;
+
+  tn = getToggleName(ectx,
+		     cfg);
+  disk_file_write(ectx,
+		  tn,
+		  &o,
+		  sizeof(int),
+		  "600");
+  FREE(tn);
 }
 
 /**
@@ -183,9 +231,11 @@ void FSUI_trackURIS(int onOff) {
  * @param closure extra argument to the callback
  * @return number of entries found
  */
-int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
-{
-  IPC_Semaphore *sem;
+int URITRACK_listURIs(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      ECRS_SearchProgressCallback iterator, 
+		      void *closure) {
+  struct IPC_SEMAPHORE *sem;
   int rval;
   char *result;
   off_t ret;
@@ -197,26 +247,39 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
   char *fn;
   struct stat buf;
 
-  fn = getUriDbName();
-  sem = createIPC();
-  IPC_SEMAPHORE_DOWN(sem);
+  fn = getUriDbName(ectx, cfg);
+  sem = createIPC(ectx, cfg);
+  IPC_SEMAPHORE_DOWN(sem, YES);
   if(0 != STAT(fn, &buf)) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
     return 0;                   /* no URI db */
   }
-  fd = fileopen(fn, O_LARGEFILE | O_RDONLY);
-  if(fd == -1) {
+  fd = disk_file_open(ectx,
+		      fn, 
+		      O_LARGEFILE | O_RDONLY);
+  if (fd == -1) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
-    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "open", fn);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			 "open", 
+			 fn);
     FREE(fn);
     return SYSERR;              /* error opening URI db */
   }
-  result = MMAP(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-  if(result == MAP_FAILED) {
+  result = MMAP(NULL,
+		buf.st_size,
+		PROT_READ,
+		MAP_SHARED,
+		fd,
+		0);
+  if (result == MAP_FAILED) {
     CLOSE(fd);
-    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "mmap", fn);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
+			 "mmap",
+			 fn);
     FREE(fn);
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
@@ -234,7 +297,8 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
       GE_BREAK(ectx, 0);
       goto FORMATERROR;
     }
-    fi.uri = ECRS_stringToUri(&result[pos]);
+    fi.uri = ECRS_stringToUri(ectx, 
+			      &result[pos]);
     if(fi.uri == NULL) {
       GE_BREAK(ectx, 0);
       goto FORMATERROR;
@@ -247,7 +311,8 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
-    fi.meta = ECRS_deserializeMetaData(&result[spos], msize);
+    fi.meta = ECRS_deserializeMetaData(ectx,
+				       &result[spos], msize);
     if(fi.meta == NULL) {
       GE_BREAK(ectx, 0);
       ECRS_freeUri(fi.uri);
@@ -259,7 +324,10 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
         ECRS_freeMetaData(fi.meta);
         ECRS_freeUri(fi.uri);
         if(0 != MUNMAP(result, buf.st_size))
-          GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "munmap", fn);
+          GE_LOG_STRERROR_FILE(ectx,
+			       GE_ERROR | GE_ADMIN | GE_BULK,
+			       "munmap",
+			       fn);
         CLOSE(fd);
         FREE(fn);
         IPC_SEMAPHORE_UP(sem);
@@ -272,21 +340,30 @@ int FSUI_listURIs(ECRS_SearchProgressCallback iterator, void *closure)
     ECRS_freeUri(fi.uri);
   }
   if(0 != MUNMAP(result, buf.st_size))
-    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "munmap", fn);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_ADMIN | GE_BULK,
+			 "munmap", 
+			 fn);
   CLOSE(fd);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_DESTROY(sem);
   return rval;
 FORMATERROR:
-  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, _("Deleted corrupt URI database in `%s'."), STATE_NAME);
+  GE_LOG(ectx,
+	 GE_WARNING | GE_BULK | GE_USER,
+	 _("Deleted corrupt URI database in `%s'."), 
+	 STATE_NAME);
   if(0 != MUNMAP(result, buf.st_size))
-    GE_LOG_STRERROR_FILE(ectx,LOG_WARNING, "munmap", fn);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_ADMIN | GE_BULK,
+			 "munmap",
+			 fn);
   CLOSE(fd);
   FREE(fn);
   IPC_SEMAPHORE_UP(sem);
   IPC_SEMAPHORE_DESTROY(sem);
-  FSUI_clearTrackedURIS();
+  URITRACK_clearTrackedURIS(ectx, cfg);
   return SYSERR;
 }
 

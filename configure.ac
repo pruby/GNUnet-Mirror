@@ -528,10 +528,13 @@ src/applications/dht/tools/Makefile
 src/applications/dht/module/Makefile
 src/applications/fragmentation/Makefile
 src/applications/fs/Makefile
+src/applications/fs/collection/Makefile
 src/applications/fs/ecrs/Makefile
 src/applications/fs/fsui/Makefile
 src/applications/fs/lib/Makefile
 src/applications/fs/module/Makefile
+src/applications/fs/namespace/Makefile
+src/applications/fs/uritrack/Makefile
 src/applications/fs/tools/Makefile
 src/applications/gap/Makefile
 src/applications/getoption/Makefile

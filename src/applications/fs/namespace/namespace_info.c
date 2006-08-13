@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/namespace_info.c
+ * @file applications/fs/namespace/namespace_info.c
  * @brief keeping track of namespaces.  This module
  *  is supposed to keep track of other namespaces (and
  *  their advertisments), as well as of our own namespaces
@@ -153,12 +153,12 @@ static int readNamespaceInfo(const char * namespaceName,
  * @return URI on success, NULL on error (namespace already exists)
  */
 struct ECRS_URI *
-FSUI_createNamespace(struct FSUI_Context * ctx,
-		     unsigned int anonymityLevel,
-		     const char * namespaceName,
-		     const struct ECRS_MetaData * meta,
-		     const struct ECRS_URI * advertisementURI,
-		     const HashCode512 * rootEntry) {
+NAMESPACE_createNamespace(struct NAMESPACE_Context * ctx,
+			  unsigned int anonymityLevel,
+			  const char * namespaceName,
+			  const struct ECRS_MetaData * meta,
+			  const struct ECRS_URI * advertisementURI,
+			  const HashCode512 * rootEntry) {
   struct ECRS_URI * ret;
 
   ret = ECRS_createNamespace(namespaceName,
@@ -195,7 +195,7 @@ FSUI_createNamespace(struct FSUI_Context * ctx,
  *  changed?
  * @return new rating of the namespace
  */
-int FSUI_rankNamespace(struct FSUI_Context * ctx,
+int NAMESPACE_rankNamespace(struct NAMESPACE_Context * ctx,
 		       const char * ns,
 		       int delta) {
   struct ECRS_MetaData * meta;
@@ -218,7 +218,7 @@ int FSUI_rankNamespace(struct FSUI_Context * ctx,
 }
 
 typedef struct {
-  FSUI_NamespaceIterator iterator;
+  NAMESPACE_NamespaceIterator iterator;
   void * closure;
 } LNClosure;
 
@@ -283,9 +283,9 @@ static int listNamespaceHelper(const char * fn,
  * @param local only list local namespaces (if NO, only
  *   non-local known namespaces are listed)
  */
-int FSUI_listNamespaces(struct FSUI_Context * ctx,
+int NAMESPACE_listNamespaces(struct NAMESPACE_Context * ctx,
 			int local,
-			FSUI_NamespaceIterator iterator,
+			NAMESPACE_NamespaceIterator iterator,
 			void * closure) {
   LNClosure cls;
   int ret;
@@ -491,14 +491,14 @@ static int writeUpdateData(const char * nsname,
 /**
  * Compute the next ID for peridodically updated content.
  * @param updateInterval MUST be a peridic interval (not NONE or SPORADIC)
- * @param thisId MUST be known to FSUI
+ * @param thisId MUST be known to NAMESPACE
  * @return OK on success, SYSERR on error
  */
-int FSUI_computeNextId(const char * name,
-		       const HashCode512 * lastId,
-		       const HashCode512 * thisId,
-		       TIME_T updateInterval,
-		       HashCode512 * nextId) {
+int NAMESPACE_computeNextId(const char * name,
+			    const HashCode512 * lastId,
+			    const HashCode512 * thisId,
+			    TIME_T updateInterval,
+			    HashCode512 * nextId) {
   HashCode512 delta;
   cron_t now;
   TIME_T tnow;
@@ -547,15 +547,15 @@ int FSUI_computeNextId(const char * name,
  * @param uri set to the resulting URI
  */
 struct ECRS_URI *
-FSUI_addToNamespace(struct FSUI_Context * ctx,
-		    unsigned int anonymityLevel,
-		    const char * name,
-		    TIME_T updateInterval,
-		    const HashCode512 * lastId,
-		    const HashCode512 * thisId,
-		    const HashCode512 * nextId,
-		    const struct ECRS_URI * dst,
-		    const struct ECRS_MetaData * md) {
+NAMESPACE_addToNamespace(struct NAMESPACE_Context * ctx,
+			 unsigned int anonymityLevel,
+			 const char * name,
+			 TIME_T updateInterval,
+			 const HashCode512 * lastId,
+			 const HashCode512 * thisId,
+			 const HashCode512 * nextId,
+			 const struct ECRS_URI * dst,
+			 const struct ECRS_MetaData * md) {
   TIME_T creationTime;
   HashCode512 nid;
   HashCode512 tid;
@@ -680,7 +680,7 @@ FSUI_addToNamespace(struct FSUI_Context * ctx,
 
 struct lNCC {
   const char * name;
-  FSUI_UpdateIterator it;
+  NAMESPACE_UpdateIterator it;
   void * closure;
   int cnt;
 };
@@ -743,10 +743,10 @@ static int lNCHelper(const char * fil,
 /**
  * List all updateable content in a given namespace.
  */
-int FSUI_listNamespaceContent(struct FSUI_Context * ctx,
-			      const char * name,
-			      FSUI_UpdateIterator iterator,
-			      void * closure) {
+int NAMESPACE_listNamespaceContent(struct NAMESPACE_Context * ctx,
+				   const char * name,
+				   NAMESPACE_UpdateIterator iterator,
+				   void * closure) {
   struct lNCC cls;
   char * dirName;
 
@@ -780,12 +780,12 @@ static int mergeMeta(EXTRACTOR_KeywordType type,
 /**
  * Add a namespace to the set of known namespaces.
  * For all namespace advertisements that we discover
- * FSUI should automatically call this function.
+ * NAMESPACE should automatically call this function.
  *
  * @param ns the namespace identifier
  */
-void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
-			   const struct ECRS_MetaData * meta) {
+void NAMESPACE_addNamespaceInfo(const struct ECRS_URI * uri,
+				const struct ECRS_MetaData * meta) {
   char * name;
   int ranking;
   struct ECRS_MetaData * old;
@@ -824,8 +824,8 @@ void FSUI_addNamespaceInfo(const struct ECRS_URI * uri,
  * Get the root of the namespace (if we have one).
  * @return SYSERR on error, OK on success
  */
-int FSUI_getNamespaceRoot(const char * ns,
-			  HashCode512 * root) {
+int NAMESPACE_getNamespaceRoot(const char * ns,
+			       HashCode512 * root) {
   char * fn;
   char * fnBase;
   int ret;

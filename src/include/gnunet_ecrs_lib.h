@@ -308,6 +308,45 @@ struct ECRS_URI * ECRS_dupUri(const struct ECRS_URI * uri);
 struct ECRS_URI * ECRS_dateExpandKeywordUri(const struct ECRS_URI * uri);
 
 /**
+ * Create an ECRS URI from a single user-supplied string of keywords.
+ * The string may contain the reserved word 'AND' to create a boolean
+ * search over multiple keywords.
+ *
+ * @return an ECRS URI for the given keywords, NULL
+ *  if keywords is not legal (i.e. empty).
+ */
+struct ECRS_URI * 
+ECRS_parseCharKeywordURI(struct GE_Context * ectx,
+			 const char * keywords); /* helper.c */
+
+/**
+ * Create an ECRS URI from a user-supplied command line of keywords.
+ * The command line may contain the reserved word 'AND' to create a
+ * boolean search over multiple keywords.
+ *
+ * @return an ECRS URI for the given keywords, NULL
+ *  if keywords is not legal (i.e. empty).
+ */
+struct ECRS_URI * 
+ECRS_parseArgvKeywordURI(struct GE_Context * ectx,
+			 unsigned int argc,
+			 const char ** argv); /* helper.c */
+
+/**
+ * Create an ECRS URI from a user-supplied list of keywords.
+ * The keywords are NOT separated by AND but already
+ * given individually.
+ *
+ * @return an ECRS URI for the given keywords, NULL
+ *  if keywords is not legal (i.e. empty).
+ */
+struct ECRS_URI * 
+ECRS_parseListKeywordURI(struct GE_Context * ectx,
+			 unsigned int num_keywords,
+			 const char ** keywords);
+
+
+/**
  * Test if two URIs are equal.
  */
 int ECRS_equalsUri(const struct ECRS_URI * u1,

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -44,7 +44,7 @@ typedef struct FSUI_ThreadList {
   /**
    * Handle to a thread.
    */
-  PTHREAD_T handle;
+  struct PTHREAD * handle;
 
   /**
    * Flag that indicates if it is safe (i.e.
@@ -94,7 +94,7 @@ typedef struct FSUI_SearchList {
   /**
    * Handle to the thread which performs the search.
    */
-  PTHREAD_T handle;
+  struct PTHREAD * handle;
 
   /**
    * Set this to YES to signal the search thread that
@@ -232,7 +232,7 @@ typedef struct FSUI_DownloadList {
   /**
    * Currently assigned thread (if any).
    */
-  PTHREAD_T handle;
+  struct PTHREAD * handle;
 
   /**
    * How many bytes is this download in total
@@ -316,7 +316,7 @@ typedef struct FSUI_Context {
    * between different processes of the same name
    * that all use resume.
    */
-  IPC_Semaphore * ipc;
+  struct IPC_SEMAPHORE * ipc;
 
   /**
    * Name of the tool using FSUI (used for resume).
@@ -326,7 +326,7 @@ typedef struct FSUI_Context {
   /**
    * Lock to synchronize access to the FSUI Context.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
   /**
    * Callback for notifying the client about events.
