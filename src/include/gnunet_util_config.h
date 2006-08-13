@@ -111,6 +111,22 @@ int GC_get_configuration_value_string(struct GC_Configuration * cfg,
 				      char ** value);
 
 /**
+ * Get a configuration value that should be the name of a file
+ * or directory.
+ *
+ * @param default default value (use indicated by return value;
+ *        will NOT be aliased, may NOT be NULL)
+ * @param value will be set to a freshly allocated configuration
+ *        value, or NULL if option is not specified and no default given
+ * @return 0 on success, -1 on error, 1 for default
+ */
+int GC_get_configuration_value_filename(struct GC_Configuration * cfg,
+					const char * section,
+					const char * option,
+					const char * def,
+					char ** value);
+
+/**
  * Get a configuration value that should be in a set of
  * predefined strings
  * @param choices NULL-terminated list of legal values

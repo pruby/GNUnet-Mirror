@@ -115,6 +115,20 @@ typedef struct GC_Configuration {
 					const char * option,
 					const char * def,
 					char ** value);
+
+  /**
+   * Get a configuration value that should be a file name.
+   * @param default default value (use indicated by return value;
+   *        will NOT be aliased, maybe NOT be NULL)
+   * @param value will be set to a freshly allocated configuration
+   *        value, or NULL if option is not specified and no default given
+   * @return 0 on success, -1 on error, 1 for default
+   */
+  int (*get_configuration_value_filename)(struct GC_Configuration * cfg,
+					  const char * section,
+					  const char * option,
+					  const char * def,
+					  char ** value);
   
   /**
    * Get a configuration value that should be in a set of

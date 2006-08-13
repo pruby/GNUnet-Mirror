@@ -35,7 +35,9 @@
 #define NS_UPDATE_DIR "data" DIR_SEPARATOR_STR "namespace-updates" DIR_SEPARATOR_STR
 #define NS_ROOTS "data" DIR_SEPARATOR_STR "namespace-root" DIR_SEPARATOR_STR
 
-static void writeNamespaceInfo(const char * namespaceName,
+static void writeNamespaceInfo(struct GE_Context * ectx,
+			       struct GC_Configuration * cfg,
+			       const char * namespaceName,
 			       const struct ECRS_MetaData * meta,
 			       int ranking) {
   unsigned int size;
@@ -44,9 +46,12 @@ static void writeNamespaceInfo(const char * namespaceName,
   char * fn;
   char * fnBase;
 
-  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
-  fnBase = expandFileName(fn);
-  FREE(fn);
+
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_DIR) +
 	      strlen(namespaceName) +
@@ -64,10 +69,11 @@ static void writeNamespaceInfo(const char * namespaceName,
   tag = size + sizeof(int);
   buf = MALLOC(tag);
   ((int *) buf)[0] = htonl(ranking); /* ranking */
-  GE_ASSERT(ectx, size == ECRS_serializeMetaData(meta,
-					       &buf[sizeof(int)],
-					       size,
-					       ECRS_SERIALIZE_FULL));
+  GE_ASSERT(ectx, size == ECRS_serializeMetaData(ectx,
+						 meta,
+						 &buf[sizeof(int)],
+						 size,
+						 ECRS_SERIALIZE_FULL));
   writeFile(fn,
 	    buf,
 	    tag,

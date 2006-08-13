@@ -592,6 +592,31 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
   return ret;
 }
 
+/**
+ * Get a configuration value that should be a string.
+ * @param def default value (use indicated by return value;
+ *        will NOT be aliased, maybe NULL)
+ * @param value will be set to a freshly allocated configuration
+ *        value, or NULL if option is not specified and no default given
+ * @return 0 on success, -1 on error, 1 for default
+ */
+int _get_configuration_value_filename(struct GC_Configuration * cfg,
+				      const char * section,
+				      const char * option,
+				      const char * def,
+				      char ** value) {
+  GC_ConfigurationData * data;
+  int ret;
+  char * tmp;
+  
+  data = cfg->data;
+  GE_ASSERT(data->ectx, def != NULL);
+  ret = _get_configuration_value_string(cfg, section, option, def, &tmp);
+  *value = string_expandFileName(data->ectx, tmp);
+  FREE(tmp);
+  return ret;
+}
+
 static int 
 _set_configuration_value_number(struct GC_Configuration * cfg,
 				struct GE_Context * ectx,
@@ -671,6 +696,7 @@ GC_create_C_impl() {
   ret->write_configuration = &_write_configuration;
   ret->get_configuration_value_number = &_get_configuration_value_number;
   ret->get_configuration_value_string = &_get_configuration_value_string;
+  ret->get_configuration_value_filename = &_get_configuration_value_filename;
   ret->get_configuration_value_choice = &_get_configuration_value_choice;
   ret->set_configuration_value_number = &_set_configuration_value_number;
   ret->set_configuration_value_string = &_set_configuration_value_string;

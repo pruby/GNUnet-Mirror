@@ -142,6 +142,14 @@ int GC_get_configuration_value_string(struct GC_Configuration * cfg,
   return cfg->get_configuration_value_string(cfg, section, option, def, value);
 }
 
+int GC_get_configuration_value_filename(struct GC_Configuration * cfg,
+					const char * section,
+					const char * option,
+					const char * def,
+					char ** value) {
+  return cfg->get_configuration_value_string(cfg, section, option, def, value);
+}
+
 /**
  * Get a configuration value that should be in a set of
  * predefined strings
