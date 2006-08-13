@@ -28,8 +28,9 @@
  */
 
 #include "platform.h"
-#include "gnunet_fsui_lib.h"
-#include "fsui.h"
+#include "gnunet_directories.h"
+#include "gnunet_namespace_lib.h"
+#include "gnunet_util_crypto.h"
 
 #define NS_DIR "data" DIR_SEPARATOR_STR "namespaces" DIR_SEPARATOR_STR
 #define NS_UPDATE_DIR "data" DIR_SEPARATOR_STR "namespace-updates" DIR_SEPARATOR_STR
@@ -59,7 +60,7 @@ static void writeNamespaceInfo(struct GE_Context * ectx,
   strcpy(fn, fnBase);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, NS_DIR);
-  mkdirp(fn);
+  disk_directory_create(ectx, fn);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, namespaceName);
   FREE(fnBase);
@@ -69,20 +70,24 @@ static void writeNamespaceInfo(struct GE_Context * ectx,
   tag = size + sizeof(int);
   buf = MALLOC(tag);
   ((int *) buf)[0] = htonl(ranking); /* ranking */
-  GE_ASSERT(ectx, size == ECRS_serializeMetaData(ectx,
-						 meta,
-						 &buf[sizeof(int)],
-						 size,
-						 ECRS_SERIALIZE_FULL));
-  writeFile(fn,
-	    buf,
-	    tag,
-	    "660");
+  GE_ASSERT(ectx, 
+	    size == ECRS_serializeMetaData(ectx,
+					   meta,
+					   &buf[sizeof(int)],
+					   size,
+					   ECRS_SERIALIZE_FULL));
+  disk_file_write(ectx,
+		  fn,
+		  buf,
+		  tag,
+		  "660");
   FREE(fn);
   FREE(buf);
 }
 
-static int readNamespaceInfo(const char * namespaceName,
+static int readNamespaceInfo(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     const char * namespaceName,
 			     struct ECRS_MetaData ** meta,
 			     int * ranking) {
   unsigned long long len;
@@ -92,9 +97,11 @@ static int readNamespaceInfo(const char * namespaceName,
   char * fnBase;
 
   *meta = NULL;
-  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
-  fnBase = expandFileName(fn);
-  FREE(fn);
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_DIR) +
 	      strlen(namespaceName) +
@@ -102,13 +109,16 @@ static int readNamespaceInfo(const char * namespaceName,
   strcpy(fn, fnBase);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, NS_DIR);
-  mkdirp(fn);
+  disk_directory_create(ectx,
+			fn);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, namespaceName);
   FREE(fnBase);
 
-  if (OK != getFileSize(fn,
-			&len)) {
+  if (OK != disk_file_size(ectx,
+			   fn,
+			   &len,
+			   YES)) {
     FREE(fn);
     return SYSERR;
   }
@@ -124,9 +134,10 @@ static int readNamespaceInfo(const char * namespaceName,
     return SYSERR;
   }
   buf = MALLOC(len);
-  if (len != readFile(fn,
-		      len,
-		      buf)) {
+  if (len != disk_file_read(ectx,
+			    fn,
+			    len,
+			    buf)) {
     FREE(buf);
     FREE(fn);
     return SYSERR;
@@ -134,7 +145,8 @@ static int readNamespaceInfo(const char * namespaceName,
 
   size = len - sizeof(int);
   *ranking = ntohl(((int *) buf)[0]);
-  *meta = ECRS_deserializeMetaData(&buf[sizeof(int)],
+  *meta = ECRS_deserializeMetaData(ectx,
+				   &buf[sizeof(int)],
 				   size);
   if ((*meta) == NULL) {
     /* invalid data! remove! */
@@ -159,21 +171,24 @@ static int readNamespaceInfo(const char * namespaceName,
  * @return URI on success, NULL on error (namespace already exists)
  */
 struct ECRS_URI *
-NAMESPACE_createNamespace(struct NAMESPACE_Context * ctx,
-			  unsigned int anonymityLevel,
-			  const char * namespaceName,
-			  const struct ECRS_MetaData * meta,
-			  const struct ECRS_URI * advertisementURI,
-			  const HashCode512 * rootEntry) {
+NS_createNamespace(struct GE_Context * ectx,
+		   struct GC_Configuration * cfg,		   
+		   unsigned int anonymityLevel,
+		   unsigned int insertPriority,
+		   unsigned int insertExpiration,
+		   const char * namespaceName,
+		   const struct ECRS_MetaData * meta,
+		   const struct ECRS_URI * advertisementURI,
+		   const HashCode512 * rootEntry) {
   struct ECRS_URI * ret;
 
-  ret = ECRS_createNamespace(namespaceName,
+  ret = ECRS_createNamespace(ectx,
+			     cfg,
+			     namespaceName,
 			     meta,
 			     anonymityLevel,
-			     getConfigurationInt("FS", "INSERT-PRIORITY"),
-			     getConfigurationInt("FS",
-						 "INSERT-EXPIRATION")
-			     * cronYEARS + get_time(),
+			     insertPriority,
+			     insertExpiration + get_time(),
 			     advertisementURI,
 			     rootEntry);
   /* store binding of namespaceName to 'meta' in state DB! */
@@ -184,7 +199,9 @@ NAMESPACE_createNamespace(struct NAMESPACE_Context * ctx,
     ECRS_getNamespaceId(ret,
 			&id);
     name = ECRS_getNamespaceName(&id);
-    writeNamespaceInfo(name,
+    writeNamespaceInfo(ectx,
+		       cfg,
+		       name,
 		       meta,
 		       0);
     FREE(name);
@@ -201,14 +218,17 @@ NAMESPACE_createNamespace(struct NAMESPACE_Context * ctx,
  *  changed?
  * @return new rating of the namespace
  */
-int NAMESPACE_rankNamespace(struct NAMESPACE_Context * ctx,
-		       const char * ns,
-		       int delta) {
+int NS_rankNamespace(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg,
+		     const char * ns,
+		     int delta) {
   struct ECRS_MetaData * meta;
   int ret;
   int ranking;
 
-  ret = readNamespaceInfo(ns,
+  ret = readNamespaceInfo(ectx,
+			  cfg,
+			  ns,
 			  &meta,
 			  &ranking);
   if (ret == SYSERR) {
@@ -216,7 +236,9 @@ int NAMESPACE_rankNamespace(struct NAMESPACE_Context * ctx,
     meta = ECRS_createMetaData();
   }
   ranking += delta;
-  writeNamespaceInfo(ns,
+  writeNamespaceInfo(ectx,
+		     cfg,
+		     ns,
 		     meta,
 		     ranking);
   ECRS_freeMetaData(meta);
@@ -224,8 +246,10 @@ int NAMESPACE_rankNamespace(struct NAMESPACE_Context * ctx,
 }
 
 typedef struct {
-  NAMESPACE_NamespaceIterator iterator;
+  NS_NamespaceIterator iterator;
   void * closure;
+  struct GE_Context * ectx;
+  struct GC_Configuration * cfg;
 } LNClosure;
 
 static int localListNamespaceHelper(const HashCode512 * nsid,
@@ -238,7 +262,9 @@ static int localListNamespaceHelper(const HashCode512 * nsid,
 
   meta = NULL;
   rating = 0;
-  readNamespaceInfo(name,
+  readNamespaceInfo(c->ectx,
+		    c->cfg,
+		    name,
 		    &meta,
 		    &rating);
   if (meta == NULL)
@@ -267,7 +293,9 @@ static int listNamespaceHelper(const char * fn,
   if (OK != enc2hash(fn,
 		     &id))
     return OK; /* invalid name */
-  if (OK != readNamespaceInfo(fn,
+  if (OK != readNamespaceInfo(c->ectx,
+			      c->cfg,
+			      fn,
 			      &meta,
 			      &rating))
     return OK; /* ignore entry */
@@ -289,25 +317,32 @@ static int listNamespaceHelper(const char * fn,
  * @param local only list local namespaces (if NO, only
  *   non-local known namespaces are listed)
  */
-int NAMESPACE_listNamespaces(struct NAMESPACE_Context * ctx,
-			int local,
-			NAMESPACE_NamespaceIterator iterator,
-			void * closure) {
+int NS_listNamespaces(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      int local,
+		      NS_NamespaceIterator iterator,
+		      void * closure) {
   LNClosure cls;
   int ret;
 
   cls.iterator = iterator;
   cls.closure = closure;
+  cls.ectx = ectx;
+  cls.cfg = cfg;
   if (local == YES) {
-    ret = ECRS_listNamespaces(&localListNamespaceHelper,
+    ret = ECRS_listNamespaces(ectx,
+			      cfg,
+			      &localListNamespaceHelper,
 			      &cls);
   } else {
     char * fn;
     char * fnBase;
 
-    fn = getConfigurationString("GNUNET", "GNUNET_HOME");
-    fnBase = expandFileName(fn);
-    FREE(fn);
+    GC_get_configuration_value_string(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &fnBase);
     fn = MALLOC(strlen(fnBase) +
 		strlen(NS_DIR) +
 		4);
@@ -315,10 +350,11 @@ int NAMESPACE_listNamespaces(struct NAMESPACE_Context * ctx,
     FREE(fnBase);
     strcat(fn, DIR_SEPARATOR_STR);
     strcat(fn, NS_DIR);
-    mkdirp(fn);
-    ret = scanDirectory(fn,
-			&listNamespaceHelper,
-			&cls);
+    disk_directory_create(ectx, fn);
+    ret = disk_directory_scan(ectx,
+			      fn,
+			      &listNamespaceHelper,
+			      &cls);
     FREE(fn);
   }
   return ret;
@@ -329,14 +365,18 @@ int NAMESPACE_listNamespaces(struct NAMESPACE_Context * ctx,
  * namespace and content identifier.
  * @param lastId maybe NULL
  */
-static char * getUpdateDataFilename(const char * nsname,
+static char * getUpdateDataFilename(struct GE_Context * ectx,
+				    struct GC_Configuration * cfg,
+				    const char * nsname,
 				    const HashCode512 * lastId) {
   char * tmp;
   char * ret;
 
-  ret = getConfigurationString("GNUNET", "GNUNET_HOME");
-  tmp = expandFileName(ret);
-  FREE(ret);
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &tmp);
   ret = MALLOC(strlen(tmp) + strlen(NS_UPDATE_DIR) +
 	       strlen(nsname) + sizeof(EncName) + 20);
   strcpy(ret, tmp);
@@ -345,7 +385,7 @@ static char * getUpdateDataFilename(const char * nsname,
   strcat(ret, NS_UPDATE_DIR);
   strcat(ret, nsname);
   strcat(ret, DIR_SEPARATOR_STR);
-  mkdirp(ret);
+  disk_directory_create(ectx, ret);
   if (lastId != NULL) {
     EncName enc;
 
@@ -369,7 +409,9 @@ struct UpdateData {
  * @param fi maybe NULL
  * @return OK if update data was found, SYSERR if not.
  */
-static int readUpdateData(const char * nsname,
+static int readUpdateData(struct GE_Context * ectx,
+			  struct GC_Configuration * cfg,
+			  const char * nsname,
 			  const HashCode512 * lastId,
 			  HashCode512 * nextId,
 			  ECRS_FileInfo * fi,
@@ -381,10 +423,14 @@ static int readUpdateData(const char * nsname,
   unsigned long long size;
   size_t pos;
 
-  fn = getUpdateDataFilename(nsname,
+  fn = getUpdateDataFilename(ectx,
+			     cfg,
+			     nsname,
 			     lastId);
-  if (OK != getFileSize(fn,
-			&size)) {
+  if (OK != disk_file_size(ectx,
+			   fn,
+			   &size,
+			   YES)) {
     FREE(fn);
     return SYSERR;
   }
@@ -396,9 +442,10 @@ static int readUpdateData(const char * nsname,
   }
 
   buf = MALLOC(size);
-  if (size != readFile(fn,
-		       size,	
-		       buf)) {
+  if (size != disk_file_read(ectx,
+			     fn,
+			     size,	
+			     buf)) {
     FREE(buf);
     FREE(fn);
     return SYSERR;
@@ -423,14 +470,16 @@ static int readUpdateData(const char * nsname,
     return SYSERR;
   }
   if (fi != NULL) {
-    fi->meta = ECRS_deserializeMetaData(&uri[pos],
+    fi->meta = ECRS_deserializeMetaData(ectx,
+					&uri[pos],
 					size);
     if (fi->meta == NULL) {
       FREE(buf);
       GE_BREAK(ectx, 0);
       return SYSERR;
     }
-    fi->uri = ECRS_stringToUri(uri);
+    fi->uri = ECRS_stringToUri(ectx,
+			       uri);
     if (fi->uri == NULL) {
       ECRS_freeMetaData(fi->meta);
       fi->meta = NULL;
@@ -452,7 +501,9 @@ static int readUpdateData(const char * nsname,
 /**
  * Write content update information.
  */
-static int writeUpdateData(const char * nsname,
+static int writeUpdateData(struct GE_Context * ectx,
+			   struct GC_Configuration * cfg,
+			   const char * nsname,
 			   const HashCode512 * thisId,
 			   const HashCode512 * nextId,
 			   const ECRS_FileInfo * fi,
@@ -476,18 +527,23 @@ static int writeUpdateData(const char * nsname,
   memcpy(&buf[1],
 	 uri,
 	 strlen(uri)+1);
-  GE_ASSERT(ectx, metaSize ==
-		ECRS_serializeMetaData(fi->meta,
-				       &((char*)&buf[1])[strlen(uri)+1],
-				       metaSize,
-				       ECRS_SERIALIZE_FULL));
+  GE_ASSERT(ectx, 
+	    metaSize ==
+	    ECRS_serializeMetaData(ectx,
+				   fi->meta,
+				   &((char*)&buf[1])[strlen(uri)+1],
+				   metaSize,
+				   ECRS_SERIALIZE_FULL));
   FREE(uri);
-  fn = getUpdateDataFilename(nsname,
+  fn = getUpdateDataFilename(ectx,
+			     cfg,
+			     nsname,
 			     thisId);
-  writeFile(fn,
-	    buf,
-	    size,
-	    "400"); /* no editing, just deletion */
+  disk_file_write(ectx,
+		  fn,
+		  buf,
+		  size,
+		  "400"); /* no editing, just deletion */
   FREE(fn);
   FREE(buf);
   return OK;
@@ -500,11 +556,13 @@ static int writeUpdateData(const char * nsname,
  * @param thisId MUST be known to NAMESPACE
  * @return OK on success, SYSERR on error
  */
-int NAMESPACE_computeNextId(const char * name,
-			    const HashCode512 * lastId,
-			    const HashCode512 * thisId,
-			    TIME_T updateInterval,
-			    HashCode512 * nextId) {
+int NS_computeNextId(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg,
+		     const char * name,
+		     const HashCode512 * lastId,
+		     const HashCode512 * thisId,
+		     TIME_T updateInterval,
+		     HashCode512 * nextId) {
   HashCode512 delta;
   cron_t now;
   TIME_T tnow;
@@ -515,7 +573,9 @@ int NAMESPACE_computeNextId(const char * name,
        (updateInterval == ECRS_SBLOCK_UPDATE_NONE) )
     return SYSERR;
 
-  if (OK != readUpdateData(name,
+  if (OK != readUpdateData(ectx,
+			   cfg,
+			   name,
 			   lastId,
 			   NULL,
 			   NULL,
@@ -553,15 +613,18 @@ int NAMESPACE_computeNextId(const char * name,
  * @param uri set to the resulting URI
  */
 struct ECRS_URI *
-NAMESPACE_addToNamespace(struct NAMESPACE_Context * ctx,
-			 unsigned int anonymityLevel,
-			 const char * name,
-			 TIME_T updateInterval,
-			 const HashCode512 * lastId,
-			 const HashCode512 * thisId,
-			 const HashCode512 * nextId,
-			 const struct ECRS_URI * dst,
-			 const struct ECRS_MetaData * md) {
+NS_addToNamespace(struct GE_Context * ectx,
+		  struct GC_Configuration * cfg,
+		  unsigned int anonymityLevel,
+		  unsigned int insertPriority,
+		  unsigned int insertExpiration,
+		  const char * name,
+		  TIME_T updateInterval,
+		  const HashCode512 * lastId,
+		  const HashCode512 * thisId,
+		  const HashCode512 * nextId,
+		  const struct ECRS_URI * dst,
+		  const struct ECRS_MetaData * md) {
   TIME_T creationTime;
   HashCode512 nid;
   HashCode512 tid;
@@ -578,7 +641,9 @@ NAMESPACE_addToNamespace(struct NAMESPACE_Context * ctx,
   creationTime = TIME(&now);
   if (updateInterval != ECRS_SBLOCK_UPDATE_NONE) {
     if ( (lastId != NULL) &&
-	 (OK == readUpdateData(name,
+	 (OK == readUpdateData(ectx,
+			       cfg,
+			       name,
 			       lastId,
 			       &tid,
 			       NULL,
@@ -651,12 +716,12 @@ NAMESPACE_addToNamespace(struct NAMESPACE_Context * ctx,
       nid = tid;
     }
   }
-  uri = ECRS_addToNamespace(name,
+  uri = ECRS_addToNamespace(ectx,
+			    cfg,
+			    name,
 			    anonymityLevel,
-			    getConfigurationInt("FS", "INSERT-PRIORITY"),
-			    getConfigurationInt("FS",
-						"INSERT-EXPIRATION")
-			    * cronYEARS + get_time(),
+			    insertPriority,
+			    insertExpiration + get_time(),
 			    creationTime,
 			    updateInterval,
 			    &tid,
@@ -667,7 +732,9 @@ NAMESPACE_addToNamespace(struct NAMESPACE_Context * ctx,
     if (updateInterval != ECRS_SBLOCK_UPDATE_NONE) {
       fi.uri = uri;
       fi.meta = (struct ECRS_MetaData*) md;
-      writeUpdateData(name,
+      writeUpdateData(ectx,
+		      cfg,
+		      name,
 		      &tid,
 		      &nid,
 		      &fi,
@@ -675,7 +742,9 @@ NAMESPACE_addToNamespace(struct NAMESPACE_Context * ctx,
 		      creationTime);
     }
     if (lastId != NULL) {
-      old = getUpdateDataFilename(name,
+      old = getUpdateDataFilename(ectx,
+				  cfg,
+				  name,
 				  lastId);
       UNLINK(old);
       FREE(old);
@@ -686,9 +755,11 @@ NAMESPACE_addToNamespace(struct NAMESPACE_Context * ctx,
 
 struct lNCC {
   const char * name;
-  NAMESPACE_UpdateIterator it;
+  NS_UpdateIterator it;
   void * closure;
   int cnt;
+  struct GE_Context * ectx;
+  struct GC_Configuration * cfg;
 };
 
 static int lNCHelper(const char * fil,
@@ -705,18 +776,20 @@ static int lNCHelper(const char * fil,
 
   if (OK != enc2hash(fil,
 		     &lastId)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(cls->ectx, 0);
     return OK;
   }
   fi.uri = NULL;
   fi.meta = NULL;
-  if (OK != readUpdateData(cls->name,
+  if (OK != readUpdateData(cls->ectx,
+			   cls->cfg,
+			   cls->name,
 			   &lastId,
 			   &nextId,
 			   &fi,
 			   &pubFreq,
 			   &lastTime)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(cls->ectx, 0);
     return OK;
   }
   cls->cnt++;
@@ -749,10 +822,11 @@ static int lNCHelper(const char * fil,
 /**
  * List all updateable content in a given namespace.
  */
-int NAMESPACE_listNamespaceContent(struct NAMESPACE_Context * ctx,
-				   const char * name,
-				   NAMESPACE_UpdateIterator iterator,
-				   void * closure) {
+int NS_listNamespaceContent(struct GE_Context * ectx,
+			    struct GC_Configuration * cfg,
+			    const char * name,
+			    NS_UpdateIterator iterator,
+			    void * closure) {
   struct lNCC cls;
   char * dirName;
 
@@ -760,12 +834,17 @@ int NAMESPACE_listNamespaceContent(struct NAMESPACE_Context * ctx,
   cls.it = iterator;
   cls.closure = closure;
   cls.cnt = 0;
-  dirName = getUpdateDataFilename(name,
+  cls.ectx = ectx;
+  cls.cfg = cfg;
+  dirName = getUpdateDataFilename(ectx,
+				  cfg,
+				  name,
 				  NULL);
-  mkdirp(dirName);
-  if (SYSERR == scanDirectory(dirName,
-			      &lNCHelper,
-			      &cls)) {
+  disk_directory_create(ectx, dirName);
+  if (SYSERR == disk_directory_scan(ectx,
+				    dirName,
+				    &lNCHelper,
+				    &cls)) {
     FREE(dirName);
     return SYSERR;
   }
@@ -790,8 +869,10 @@ static int mergeMeta(EXTRACTOR_KeywordType type,
  *
  * @param ns the namespace identifier
  */
-void NAMESPACE_addNamespaceInfo(const struct ECRS_URI * uri,
-				const struct ECRS_MetaData * meta) {
+void NS_addNamespaceInfo(struct GE_Context * ectx,
+			 struct GC_Configuration * cfg,
+			 const struct ECRS_URI * uri,
+			 const struct ECRS_MetaData * meta) {
   char * name;
   int ranking;
   struct ECRS_MetaData * old;
@@ -807,18 +888,24 @@ void NAMESPACE_addNamespaceInfo(const struct ECRS_URI * uri,
   if (name == NULL)
     return;
   ranking = 0;
-  if (OK == readNamespaceInfo(name,
+  if (OK == readNamespaceInfo(ectx,
+			      cfg,
+			      name,
 			      &old,
 			      &ranking)) {
     ECRS_getMetaData(meta,
 		     &mergeMeta,
 		     old);
-    writeNamespaceInfo(name,
+    writeNamespaceInfo(ectx,
+		       cfg,
+		       name,
 		       old,
 		       ranking);
     ECRS_freeMetaData(old);
   } else {
-    writeNamespaceInfo(name,
+    writeNamespaceInfo(ectx,
+		       cfg,
+		       name,
 		       meta,
 		       ranking);
   }
@@ -830,15 +917,19 @@ void NAMESPACE_addNamespaceInfo(const struct ECRS_URI * uri,
  * Get the root of the namespace (if we have one).
  * @return SYSERR on error, OK on success
  */
-int NAMESPACE_getNamespaceRoot(const char * ns,
-			       HashCode512 * root) {
+int NS_getNamespaceRoot(struct GE_Context * ectx,
+			struct GC_Configuration * cfg,
+			const char * ns,
+			HashCode512 * root) {
   char * fn;
   char * fnBase;
   int ret;
 
-  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
-  fnBase = expandFileName(fn);
-  FREE(fn);
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_ROOTS) +
 	      strlen(ns) +
@@ -846,12 +937,15 @@ int NAMESPACE_getNamespaceRoot(const char * ns,
   strcpy(fn, fnBase);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, NS_ROOTS);
-  mkdirp(fn);
+  disk_directory_create(ectx, fn);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, ns);
   FREE(fnBase);
   if (sizeof(HashCode512)
-      == readFile(fn, sizeof(HashCode512), root))
+      == disk_file_read(ectx,
+			fn,
+			sizeof(HashCode512),
+			root))
     ret = OK;
   else
     ret = SYSERR;

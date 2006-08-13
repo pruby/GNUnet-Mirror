@@ -76,12 +76,14 @@ typedef int (*NS_UpdateIterator)(void * cls,
  */
 struct ECRS_URI *
 NS_createNamespace(struct GE_Context * ectx,
-		     struct GC_Configuration * cfg,
-		     unsigned int anonymityLevel,
-		     const char * namespaceName,
-		     const struct ECRS_MetaData * meta,
-		     const struct ECRS_URI * advertisementURI,
-		     const HashCode512 * rootEntry); /* namespace_info.c */
+		   struct GC_Configuration * cfg,
+		   unsigned int anonymityLevel,
+		   unsigned int insertPriority,
+		   unsigned int insertExpiration,
+		   const char * namespaceName,
+		   const struct ECRS_MetaData * meta,
+		   const struct ECRS_URI * advertisementURI,
+		   const HashCode512 * rootEntry); /* namespace_info.c */
 
 /**
  * Delete a local namespace.  Only prevents future insertions into the
@@ -101,9 +103,9 @@ NS_createNamespace(struct GE_Context * ectx,
  * @return new rating of the namespace
  */
 int NS_rankNamespace(struct GE_Context * ectx,
-		       struct GC_Configuration * cfg,
-		       const char * ns,
-		       int delta); /* namespace_info.c */
+		     struct GC_Configuration * cfg,
+		     const char * ns,
+		     int delta); /* namespace_info.c */
 
 /**
  * Add a namespace to the set of known namespaces.  For all namespace
@@ -113,9 +115,9 @@ int NS_rankNamespace(struct GE_Context * ectx,
  * @param ns the namespace identifier
  */
 void NS_addNamespaceInfo(struct GE_Context * ectx,
-			   struct GC_Configuration * cfg,
-			   const struct ECRS_URI * uri,
-			   const struct ECRS_MetaData * meta);
+			 struct GC_Configuration * cfg,
+			 const struct ECRS_URI * uri,
+			 const struct ECRS_MetaData * meta);
 
 
 /**
@@ -123,9 +125,9 @@ void NS_addNamespaceInfo(struct GE_Context * ectx,
  * @return SYSERR on error, OK on success
  */
 int NS_getNamespaceRoot(struct GE_Context * ectx,
-			  struct GC_Configuration * cfg,
-			  const char * ns,
-			  HashCode512 * root);
+			struct GC_Configuration * cfg,
+			const char * ns,
+			HashCode512 * root);
 
 
 /**
@@ -181,15 +183,17 @@ int NS_listNamespaces(struct GE_Context * ectx,
  */
 struct ECRS_URI *
 NS_addToNamespace(struct GE_Context * ectx,
-		    struct GC_Configuration * cfg,
-		    unsigned int anonymityLevel,
-		    const char * name,
-		    TIME_T updateInterval,
-		    const HashCode512 * lastId,
-		    const HashCode512 * thisId,
-		    const HashCode512 * nextId,
-		    const struct ECRS_URI * dst,
-		    const struct ECRS_MetaData * md); /* namespace_info.c */
+		  struct GC_Configuration * cfg,
+		  unsigned int anonymityLevel,
+		  unsigned int insertPriority,
+		  unsigned int insertExpiration,
+		  const char * name,
+		  TIME_T updateInterval,
+		  const HashCode512 * lastId,
+		  const HashCode512 * thisId,
+		  const HashCode512 * nextId,
+		  const struct ECRS_URI * dst,
+		  const struct ECRS_MetaData * md); /* namespace_info.c */
 
 /**
  * Compute the next ID for peridodically updated content.
@@ -197,11 +201,13 @@ NS_addToNamespace(struct GE_Context * ectx,
  * @param thisId MUST be known to NS
  * @return OK on success, SYSERR on error
  */
-int NS_computeNextId(const char * name,
-		       const HashCode512 * lastId,
-		       const HashCode512 * thisId,
-		       TIME_T updateInterval,
-		       HashCode512 * nextId);
+int NS_computeNextId(struct GE_Context * ectx,
+		     struct GC_Configuration * cfg,
+		     const char * name,
+		     const HashCode512 * lastId,
+		     const HashCode512 * thisId,
+		     TIME_T updateInterval,
+		     HashCode512 * nextId);
 
 /**
  * List all updateable content in a given namespace.
