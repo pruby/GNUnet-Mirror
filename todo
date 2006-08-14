@@ -32,7 +32,7 @@ Notes:
     + fs/fsui, fs/collection, fs/uritrack, fs/namespace 
       must still be revised to match new API!
     + bootstrap_http: maybe switch to libwww?
-    + for fs: (400), fs/tools (2500)
+    + for fs: fs/tools (2500)
     + rest: sqstore_mysql, dht, rpc, topology_f2f, vpn
     + low priority: chat, kvstore_sqlite, testbed
   * setup:
