@@ -697,6 +697,7 @@ struct FSUI_UploadList *
 FSUI_startUpload(struct FSUI_Context * ctx,
 		 const char * filename,
 		 unsigned int anonymityLevel,
+		 unsigned int priority,
 		 int doIndex,
 		 int doExtract,
 		 int individualKeywords,

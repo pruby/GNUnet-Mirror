@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -36,8 +36,9 @@
  */
 
 #include "platform.h"
-#include "gnunet_fsui_lib.h"
-#include "fsui.h"
+#include "gnunet_blockstore.h"
+#include "gnunet_collection_lib.h"
+#include "gnunet_util_crypto.h"
 
 /**
  * Entry in the state-DB that caches the current
@@ -49,8 +50,6 @@
  * How long does a collection advertisement live?
  */
 #define COLLECTION_ADV_LIFETIME (12 * cronMONTHS)
-
-#define DEFAULT_ADVERTISEMENT_PRIORITY 128
 
 /**
  * @brief information about a collection
@@ -89,6 +88,7 @@ typedef struct CollectionData {
      serialized ECRS directory */
 } CollectionData;
 
+static CollectionData * collectionData;
 
 /**
  * Start collection.
@@ -96,35 +96,35 @@ typedef struct CollectionData {
  * @param updateInterval of ECRS_SBLOCK_UPDATE_NONE
  *        means to update _immediately_ on any change,
  *        wherease ECRS_SBLOCK_UPDATE_SPORADIC means
- *        to publish updates when the FSUI_Context
+ *        to publish updates when the CO_Context
  *        is destroyed (i.e. on exit from the UI).
  */
-int FSUI_startCollection(struct FSUI_Context * ctx,
-			 unsigned int anonymityLevel,
-			 TIME_T updateInterval,
-			 const char * name,
-			 const struct ECRS_MetaData * meta) {
+int CO_startCollection(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       unsigned int anonymityLevel,
+		       unsigned int prio,
+		       TIME_T updateInterval,
+		       const char * name,
+		       const struct ECRS_MetaData * meta) {
   struct ECRS_URI * advertisement;
   struct ECRS_URI * rootURI;
   HashCode512 nextId;
   TIME_T now;
-  unsigned int prio;
   CollectionData * cd;
   unsigned long long dirLen;
   char * dirData;
   struct ECRS_MetaData * dirMeta;
 
-  FSUI_stopCollection(ctx); /* cancel old collection */
+  CO_stopCollection(ectx, cfg); /* cancel old collection */
   GE_ASSERT(ectx, name != NULL);
-  advertisement = FSUI_parseCharKeywordURI(COLLECTION);
+  advertisement = ECRS_parseCharKeywordURI(ectx,
+					   COLLECTION);
   GE_ASSERT(ectx, advertisement != NULL);
   TIME(&now);
-  prio = getConfigurationInt("FS",
-			     "ADVERTISEMENT-PRIORITY");
-  if (prio == 0)
-    prio = DEFAULT_ADVERTISEMENT_PRIORITY;
   makeRandomId(&nextId);
-  rootURI = ECRS_createNamespace(name,
+  rootURI = ECRS_createNamespace(ectx,
+				 cfg,
+				 name,
 				 meta,
 				 anonymityLevel,
 				 prio,
@@ -138,14 +138,15 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
   ECRS_freeUri(advertisement);
   ECRS_freeUri(rootURI);
   dirMeta = ECRS_dupMetaData(meta);
-  GE_ASSERT(ectx, OK == ECRS_createDirectory(&dirData,
-					   &dirLen,
-					   0,
-					   NULL,
-					   dirMeta));
+  GE_ASSERT(ectx, OK == ECRS_createDirectory(ectx,
+					     &dirData,
+					     &dirLen,
+					     0,
+					     NULL,
+					     dirMeta));
   ECRS_freeMetaData(dirMeta);
   cd = MALLOC(sizeof(CollectionData) + strlen(name) + dirLen);
-  ctx->collectionData = &cd->hdr;
+  collectionData = cd;
   cd->hdr.size = ntohl(sizeof(CollectionData) + strlen(name));
   makeRandomId(&cd->lastId);
   cd->nextId = nextId;
@@ -165,15 +166,15 @@ int FSUI_startCollection(struct FSUI_Context * ctx,
  *
  * @return OK on success, SYSERR if no collection is active
  */
-int FSUI_stopCollection(struct FSUI_Context * ctx) {
-  CollectionData * cd;
-
-  if (ctx->collectionData == NULL)
+int CO_stopCollection(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg) {
+  if (collectionData == NULL)
     return SYSERR;
-  cd = (CollectionData*) ctx->collectionData;
-  ECRS_deleteNamespace(cd->name);
-  FREE(cd);
-  ctx->collectionData = NULL;
+  ECRS_deleteNamespace(ectx,
+		       cfg,
+		       collectionData->name);
+  FREE(collectionData);
+  collectionData = NULL;
   return OK;
 }
 
@@ -182,13 +183,11 @@ int FSUI_stopCollection(struct FSUI_Context * ctx) {
  *
  * @return NULL if there is no collection, otherwise its name
  */
-const char * FSUI_getCollection(struct FSUI_Context * ctx) {
-  CollectionData * cd;
-
-  cd = (CollectionData*) ctx->collectionData;
-  if (cd == NULL)
+const char * CO_getCollection(struct GE_Context * ectx,
+			      struct GC_Configuration * cfg) {
+  if (collectionData == NULL)
     return NULL;
-  return &cd->name[0];
+  return &collectionData->name[0];
 }
 
 /**
@@ -198,7 +197,7 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx) {
  * collecting, this function does nothing.
  *
  * Note that clients typically don't have to call this
- * function explicitly.  FSUI will call the function on
+ * function explicitly.  CO will call the function on
  * exit (for sporadically updated collections), on any
  * change to the collection (for immediately updated
  * content) or when the publication time has arrived
@@ -208,8 +207,9 @@ const char * FSUI_getCollection(struct FSUI_Context * ctx) {
  * explicit publication of an update at another
  * time is desired.
  */
-void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
-  CollectionData * cd;
+void CO_publishCollectionNow(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     unsigned int prio) {
   TIME_T now;
   struct ECRS_URI * uri;
   struct ECRS_URI * directoryURI;
@@ -218,51 +218,55 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
   char * tmpName;
   int fd;
 
-  if (ctx->collectionData == NULL)
+  if (collectionData == NULL)
     return;
-  cd = (CollectionData*) ctx->collectionData;
-  if (ntohl(cd->changed) == NO)
+  if (ntohl(collectionData->changed) == NO)
     return;
 
   TIME(&now);
-  if ( (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
-       (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) &&
-       (ntohl(cd->lastPublication) + ntohl(cd->updateInterval) < now) )
+  if ( (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
+       (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) &&
+       (ntohl(collectionData->lastPublication) + ntohl(collectionData->updateInterval) < now) )
     return;
-  if ( (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
-       (ntohl(cd->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
+  if ( (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_NONE) &&
+       (ntohl(collectionData->updateInterval) != ECRS_SBLOCK_UPDATE_SPORADIC) ) {
     HashCode512 delta;
 
-    deltaId(&cd->nextId,
-	    &cd->lastId,
+    deltaId(&collectionData->nextId,
+	    &collectionData->lastId,
 	    &delta);
-    cd->lastId = cd->nextId;
-    addHashCodes(&cd->nextId,
+    collectionData->lastId = collectionData->nextId;
+    addHashCodes(&collectionData->nextId,
 		 &delta,
-		 &cd->nextId);
+		 &collectionData->nextId);
   } else {
-    cd->lastId = cd->nextId;
-    makeRandomId(&cd->nextId);
+    collectionData->lastId = collectionData->nextId;
+    makeRandomId(&collectionData->nextId);
   }
   tmpName = STRDUP("/tmp/gnunet-collectionXXXXXX");
   fd = mkstemp(tmpName);
   if (fd == -1) {
-    LOG_STRERROR(LOG_ERROR, "mkstemp");
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_BULK, 
+		    "mkstemp");
     FREE(tmpName);
     return;
   }
-  dirLen = ntohl(cd->hdr.size) - sizeof(CollectionData) - strlen(cd->name);
-  if (-1 == WRITE(fd, &cd->name[strlen(cd->name)+1], dirLen)) {
-    LOG_STRERROR(LOG_ERROR, "write");
+  dirLen = ntohl(collectionData->hdr.size) - sizeof(CollectionData) - strlen(collectionData->name);
+  if (-1 == WRITE(fd, &collectionData->name[strlen(collectionData->name)+1], dirLen)) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_BULK,
+		    "write");
     FREE(tmpName);
     return;
   }
-  closefile(fd);
-  if (OK != ECRS_uploadFile(tmpName,
+  CLOSE(fd);
+  if (OK != ECRS_uploadFile(ectx,
+			    cfg,
+			    tmpName,
 			    NO, /* indexing */
-			    ntohl(cd->anonymityLevel),
-			    getConfigurationInt("FS",
-						"ADVERTISEMENT-PRIORITY"),
+			    ntohl(collectionData->anonymityLevel),
+			    prio,
 			    now + COLLECTION_ADV_LIFETIME,
 			    NULL,
 			    NULL,
@@ -276,25 +280,27 @@ void FSUI_publishCollectionNow(struct FSUI_Context * ctx) {
   UNLINK(tmpName);
   FREE(tmpName);
   metaData = NULL;
-  GE_ASSERT(ectx, OK == ECRS_listDirectory(&cd->name[strlen(cd->name)+1],
-					 dirLen,
-					 &metaData,
-					 NULL,
-					 NULL));
-  uri = ECRS_addToNamespace(cd->name,
-			    ntohl(cd->anonymityLevel),
-			    getConfigurationInt("FS",
-						"ADVERTISEMENT-PRIORITY"),
+  GE_ASSERT(ectx, OK == ECRS_listDirectory(ectx,
+					   &collectionData->name[strlen(collectionData->name)+1],
+					   dirLen,
+					   &metaData,
+					   NULL,
+					   NULL));
+  uri = ECRS_addToNamespace(ectx,
+			    cfg,
+			    collectionData->name,
+			    ntohl(collectionData->anonymityLevel),
+			    prio,
 			    now + COLLECTION_ADV_LIFETIME,
 			    now,
-			    ntohl(cd->updateInterval),
-			    &cd->lastId,
-			    &cd->nextId,
+			    ntohl(collectionData->updateInterval),
+			    &collectionData->lastId,
+			    &collectionData->nextId,
 			    directoryURI,
 			    metaData);
   if (uri != NULL) {
-    cd->lastPublication = htonl(now);
-    cd->changed = htonl(NO);
+    collectionData->lastPublication = htonl(now);
+    collectionData->changed = htonl(NO);
     ECRS_freeUri(uri);
   }
   ECRS_freeMetaData(metaData);
@@ -325,33 +331,35 @@ static int collectCallback(const ECRS_FileInfo * fi,
  * does nothing.
  *
  * Note that clients typically don't have to call this
- * function explicitly -- by using the FSUI library it
- * should be called automatically by FSUI code whenever
+ * function explicitly -- by using the CO library it
+ * should be called automatically by CO code whenever
  * needed.  However, the function maybe useful if you're
  * inserting files using libECRS directly or need other
  * ways to explicitly extend a collection.
  */
-void FSUI_publishToCollection(struct FSUI_Context * ctx,
-			      const ECRS_FileInfo * fi) {
-  CollectionData * cd;
+void CO_publishToCollection(struct GE_Context * ectx,
+			    struct GC_Configuration * cfg,
+			    const ECRS_FileInfo * fi,
+			    unsigned int prio) {
+  CollectionData * collectionData;
   unsigned long long dirLen;
   char * dirData;
   struct ECRS_MetaData * metaData;
   struct CCcls cls;
   int i;
 
-  if (ctx->collectionData == NULL)
+  if (collectionData == NULL)
     return;
   if ((ECRS_isKeywordUri(fi->uri))) {
     GE_BREAK(ectx, 0);
     return;
   }
-  cd = (CollectionData*) ctx->collectionData;
-  dirLen = ntohl(cd->hdr.size) - strlen(cd->name) - sizeof(CollectionData);
+  dirLen = ntohl(collectionData->hdr.size) - strlen(collectionData->name) - sizeof(CollectionData);
   cls.count = 0;
   cls.fis = NULL;
   GE_ASSERT(ectx, OK ==
-		ECRS_listDirectory(&cd->name[strlen(cd->name)+1],
+	    ECRS_listDirectory(ectx,
+			       &collectionData->name[strlen(collectionData->name)+1],
 				   dirLen,
 				   &metaData,
 				   &collectCallback,
@@ -362,11 +370,12 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
 		  &cls);
   dirData = NULL;
   GE_ASSERT(ectx, OK ==
-		ECRS_createDirectory(&dirData,
-				     &dirLen,
-				     cls.count,
-				     cls.fis,
-				     metaData));
+	    ECRS_createDirectory(ectx,
+				 &dirData,
+				 &dirLen,
+				 cls.count,
+				 cls.fis,
+				 metaData));
   ECRS_freeMetaData(metaData);
   for (i=0;i<cls.count;i++) {
     ECRS_freeUri(cls.fis[i].uri);
@@ -375,15 +384,15 @@ void FSUI_publishToCollection(struct FSUI_Context * ctx,
   GROW(cls.fis,
        cls.count,
        0);
-  REALLOC(cd,
-	  sizeof(CollectionData) + strlen(cd->name) + dirLen);
-  memcpy(&cd->name[strlen(cd->name)+1],
+  REALLOC(collectionData,
+	  sizeof(CollectionData) + strlen(collectionData->name) + dirLen);
+  memcpy(&collectionData->name[strlen(collectionData->name)+1],
 	 dirData,
 	 dirLen);
   FREE(dirData);
-  cd->changed = htonl(YES);
-  if (ntohll(cd->updateInterval) == ECRS_SBLOCK_UPDATE_NONE)
-    FSUI_publishCollectionNow(ctx);
+  collectionData->changed = htonl(YES);
+  if (ntohll(collectionData->updateInterval) == ECRS_SBLOCK_UPDATE_NONE)
+    CO_publishCollectionNow(ectx, cfg, prio);
 }
 
 

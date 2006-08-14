@@ -26,6 +26,8 @@
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 
 static void eventCallback(void * cls,
 			  const FSUI_Event * event) {
@@ -49,40 +51,36 @@ static void eventCallback(void * cls,
   }
 #endif
 }
-static int parseOptions(int argc,
-			char ** argv) {
-  FREENONNULL(setConfigurationString("GNUNET",
-	  		 	     "LOGLEVEL",
-			             "WARNING"));
-  return 0;
-}
 
 int main(int argc,
 	 char * argv[]) {
   struct FSUI_Context * ctx;
+  struct GC_Configuration * cfg;
+  struct GE_Context * ectx;
+
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
   if (argc != 2) {
     fprintf(stderr,
 	    "Call with name of FSUI resource file!\n");
     return -1;
   }
-  if(OK != initUtil(argc,
-		    argv,
-		    &parseOptions)) {
-    fprintf(stderr,
-	    "initUtil failed!\n");
-    return -1;
-  }
-  startCron();
-  ctx = FSUI_start(argv[1],
+  ctx = FSUI_start(ectx,
+		   cfg,
+		   argv[1],
+		   16,
 		   YES,
 		   &eventCallback,
 		   NULL);
-  if (ctx != NULL) {
+  if (ctx != NULL) 
     FSUI_stop(ctx);
-  } else
+  else 
     fprintf(stderr,
-	    "FSUI_start failed!\n");
-  stopCron();
-  doneUtil();
+	    "FSUI_start failed!\n");  
   return (ctx == NULL);
 }

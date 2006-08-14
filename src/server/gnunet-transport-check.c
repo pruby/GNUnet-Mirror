@@ -65,8 +65,6 @@ static unsigned long long expectedSize;
 
 static struct GC_Configuration * cfg;
 
-static struct CronManager * cron;
-
 static struct GE_Context * ectx;
 
 static struct CronManager * cron;

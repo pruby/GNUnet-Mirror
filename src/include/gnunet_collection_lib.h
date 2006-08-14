@@ -39,28 +39,29 @@ extern "C" {
 /**
  * Start collection.
  */
-int FSUI_startCollection(struct GE_Context * ectx,
-			 struct GC_Configuration * cfg,
-			 unsigned int anonymityLevel,
-			 TIME_T updateInterval,
-			 const char * name,
-			 const struct ECRS_MetaData * meta); /* collection.c */
+int CO_startCollection(struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       unsigned int anonymityLevel,
+		       unsigned int priority,
+		       TIME_T updateInterval,
+		       const char * name,
+		       const struct ECRS_MetaData * meta); /* collection.c */
 
 /**
  * Stop collection.
  *
  * @return OK on success, SYSERR if no collection is active
  */
-int FSUI_stopCollection(struct GE_Context * ectx,
-			struct GC_Configuration * cfg); /* collection.c */
+int CO_stopCollection(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg); /* collection.c */
 
 /**
  * Are we using a collection?
  *
  * @return NULL if there is no collection, otherwise its name
  */
-const char * FSUI_getCollection(struct GE_Context * ectx,
-				struct GC_Configuration * cfg); /* collection.c */
+const char * CO_getCollection(struct GE_Context * ectx,
+			      struct GC_Configuration * cfg); /* collection.c */
 
 /**
  * Upload an update of the current collection information to the
@@ -69,7 +70,7 @@ const char * FSUI_getCollection(struct GE_Context * ectx,
  * collecting, this function does nothing.
  *
  * Note that clients typically don't have to call this function
- * explicitly.  FSUI will call the function on exit (for sporadically
+ * explicitly.  CO will call the function on exit (for sporadically
  * updated collections), on any change to the collection (for
  * immediately updated content) or when the publication time has
  * arrived (for periodically updated collections).
@@ -77,8 +78,9 @@ const char * FSUI_getCollection(struct GE_Context * ectx,
  * However, clients may want to call this function if explicit
  * publication of an update at another time is desired.
  */
-void FSUI_publishCollectionNow(struct GE_Context * ectx,
-			       struct GC_Configuration * cfg);
+void CO_publishCollectionNow(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     unsigned int priority);
 
 /**
  * If we are currently building a collection, publish the given file
@@ -86,14 +88,15 @@ void FSUI_publishCollectionNow(struct GE_Context * ectx,
  * collecting, this function does nothing.
  *
  * Note that clients typically don't have to call this function
- * explicitly -- by using the FSUI library it should be called
- * automatically by FSUI code whenever needed.  However, the function
+ * explicitly -- by using the CO library it should be called
+ * automatically by CO code whenever needed.  However, the function
  * maybe useful if you're inserting files using libECRS directly or
  * need other ways to explicitly extend a collection.
  */
-void FSUI_publishToCollection(struct GE_Context * ectx,
-			      struct GC_Configuration * cfg,
-			      const ECRS_FileInfo * fi);
+void CO_publishToCollection(struct GE_Context * ectx,
+			    struct GC_Configuration * cfg,
+			    const ECRS_FileInfo * fi,
+			    unsigned int prio);
 
 
 

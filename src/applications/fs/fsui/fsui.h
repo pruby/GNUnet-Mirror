@@ -329,7 +329,60 @@ typedef struct FSUI_UnindexList {
 
 } FSUI_UnindexList;
 
+/**
+ * Data used to keep track of the files in the
+ * current directory.
+ */
+typedef struct {
+  unsigned int fiCount;
+  ECRS_FileInfo * fis;
+} DirTrack;
 
+/**
+ * Context for the upload thread.
+ */
+typedef struct FSUI_UploadList {
+  struct FSUI_UploadList * next;
+
+  struct PTHREAD * handle;
+
+  void * cctx;
+
+  int isRecursive;
+
+  int doIndex;
+
+  unsigned int anonymityLevel;
+
+  unsigned int priority;
+
+  cron_t expiration;
+
+  struct ECRS_MetaData * meta;
+
+  struct ECRS_URI * uri;
+
+  struct ECRS_URI * globalUri;
+
+  char * filename;
+
+  char * main_filename;
+
+  unsigned long long main_completed;
+
+  unsigned long long main_total;
+
+  EXTRACTOR_ExtractorList * extractors;
+
+  struct FSUI_Context * ctx;
+
+  cron_t start_time;
+
+  DirTrack * dir;
+
+  int individualKeywords;
+
+} FSUI_UploadList;
 
 /**
  * @brief global state of the FSUI library
@@ -395,6 +448,8 @@ typedef struct FSUI_Context {
    * FSUI must abort each of these downloads.
    */
   FSUI_DownloadList activeDownloads;
+
+  FSUI_UploadList * activeUploads;
 
   /**
    * Target size of the thread pool for parallel
