@@ -272,10 +272,6 @@ typedef struct {
     } SearchResuming;
 
 
-    /**
-     * Download Progress information.  Also used
-     * for download_completed event.
-     */
     struct {
 
       FSUI_DownloadContext dc;
@@ -322,6 +318,29 @@ typedef struct {
       unsigned int last_size;
 
     } DownloadProgress;
+
+
+    struct {
+
+      FSUI_DownloadContext dc;
+
+      /**
+       * How large is the total download (as far
+       * as known so far).
+       */
+      unsigned long long total;
+
+      /**
+       * Information about the download.
+       */
+      char * filename;
+
+      /**
+       * Original URI.
+       */
+      struct ECRS_URI * uri;
+
+    } DownloadComplete;
 
 
     struct {
@@ -607,6 +626,7 @@ struct FSUI_Context *
 FSUI_start(struct GE_Context * ectx,
 	   struct GC_Configuration * cfg,
 	   const char * name,
+	   unsigned int threadPoolSize,
 	   int doResume,
 	   FSUI_EventCallback cb,
 	   void * closure); /* fsui.c */
@@ -623,8 +643,7 @@ void FSUI_stop(struct FSUI_Context * ctx); /* fsui.c */
 /**
  * Start a search.
  *
- * @return SYSERR if such a search is already pending, OK on
- *  success
+ * @return NULL on error
  */
 struct FSUI_SearchList *
 FSUI_startSearch(struct FSUI_Context * ctx,

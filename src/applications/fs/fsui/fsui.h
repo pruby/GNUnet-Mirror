@@ -27,6 +27,7 @@
 #define FSUI_H
 
 #include "gnunet_util.h"
+#include "gnunet_util_cron.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_blockstore.h"
 
@@ -225,6 +226,11 @@ typedef struct FSUI_DownloadList {
   struct FSUI_Context * ctx;
 
   /**
+   * Client context for the downloadx
+   */ 
+  void * cctx;
+
+  /**
    * State of the download.
    */
   FSUI_DownloadState state;
@@ -307,9 +313,32 @@ typedef struct FSUI_DownloadList {
 } FSUI_DownloadList;
 
 /**
+ * Context for the unindex thread.
+ */
+typedef struct FSUI_UnindexList {
+
+  struct FSUI_UnindexList * next;
+
+  struct PTHREAD * handle;
+
+  char * filename;
+
+  struct FSUI_Context * ctx;
+
+  cron_t start_time;
+
+} FSUI_UnindexList;
+
+
+
+/**
  * @brief global state of the FSUI library
  */
 typedef struct FSUI_Context {
+
+  struct GE_Context * ectx;
+
+  struct GC_Configuration * cfg;
 
   /**
    * IPC semaphore used to ensure mutual exclusion
@@ -327,6 +356,8 @@ typedef struct FSUI_Context {
    * Lock to synchronize access to the FSUI Context.
    */
   struct MUTEX * lock;
+
+  struct CronManager * cron;
 
   /**
    * Callback for notifying the client about events.
@@ -353,6 +384,11 @@ typedef struct FSUI_Context {
    * List of active searches.
    */
   FSUI_SearchList * activeSearches;
+
+  /**
+   * List of active unindex operations.
+   */
+  FSUI_UnindexList * unindexOperations;
 
   /**
    * Root of the tree of downloads.  On shutdown,

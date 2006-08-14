@@ -30,15 +30,6 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
-/**
- * Context for the unindex thread.
- */
-typedef struct {
-  char * filename;
-  FSUI_ThreadList * tl;
-  FSUI_Context * ctx;
-  cron_t start_time;
-} UnindexThreadClosure;
 
 /**
  * Transform an ECRS progress callback into an FSUI event.
@@ -46,14 +37,14 @@ typedef struct {
 static void progressCallback(unsigned long long totalBytes,
 			     unsigned long long completedBytes,
 			     cron_t eta,
-			     UnindexThreadClosure * utc) {
+			     void * cls) {
+  FSUI_UnindexList * utc = cls;
   FSUI_Event event;
 
   event.type = FSUI_unindex_progress;
   event.data.UnindexProgress.completed = completedBytes;
   event.data.UnindexProgress.total = totalBytes;
   event.data.UnindexProgress.filename = utc->filename;
-  event.data.UnindexProgress.start_time = utc->start_time;
   event.data.UnindexProgress.eta = eta;
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
@@ -62,35 +53,39 @@ static void progressCallback(unsigned long long totalBytes,
 /**
  * Thread that does the unindex.
  */
-static void * unindexThread(UnindexThreadClosure * utc) {
+static void * unindexThread(void * cls) {
+  FSUI_UnindexList * utc = cls;
   FSUI_Event event;
   int ret;
 
-  ret = ECRS_unindexFile(utc->filename,
-			 (ECRS_UploadProgressCallback) &progressCallback,
+  ret = ECRS_unindexFile(utc->ctx->ectx,
+			 utc->ctx->cfg,
+			 utc->filename,
+			 &progressCallback,
 			 utc,
 			 NULL,
 			 NULL);
   if (ret == OK) {
     event.type = FSUI_unindex_complete;
-    if (OK != getFileSize(utc->filename,
-			  &event.data.UnindexComplete.total)) {
-      GE_BREAK(ectx, 0);
+    if (OK != disk_file_size(utc->ctx->ectx,
+			     utc->filename,
+			     &event.data.UnindexComplete.total,
+			     YES)) {
+      GE_BREAK(utc->ctx->ectx, 0);
       event.data.UnindexComplete.total = 0;
     }
     event.data.UnindexComplete.filename = utc->filename;
-    event.data.UnindexComplete.start_time = utc->start_time;
   } else {
     event.type = FSUI_unindex_error;
-    event.data.message = _("Unindex failed.");
+    event.data.UnindexError.message = _("Unindex failed.");
   }
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
   FREE(utc->filename);
-  utc->tl->isDone = YES;
   FREE(utc);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FSUI unindexThread exits.\n");
+  GE_LOG(utc->ctx->ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSUI unindexThread exits.\n");
   return NULL;
 }
 
@@ -104,38 +99,36 @@ static void * unindexThread(UnindexThreadClosure * utc) {
  *  SYSERR if the file does not exist or gnunetd is not
  *  running
  */
-int FSUI_unindex(struct FSUI_Context * ctx,
-		 const char * filename) {
-  FSUI_ThreadList * tl;
-  UnindexThreadClosure * utc;
+struct FSUI_UnindexList *
+FSUI_unindex(struct FSUI_Context * ctx,
+	     const char * filename) {
+  FSUI_UnindexList * utc;
 
-  if (YES == isDirectory(filename)) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
+  if (YES == disk_directory_test(ctx->ectx,
+				 filename)) {
+    GE_BREAK(ctx->ectx, 0);
+    return NULL;
   }
-  utc = MALLOC(sizeof(UnindexThreadClosure));
+  utc = MALLOC(sizeof(FSUI_UnindexList));
   utc->ctx = ctx;
   utc->filename = STRDUP(filename);
-  cronTime(&utc->start_time);
-  tl = MALLOC(sizeof(FSUI_ThreadList));
-  utc->tl = tl;
-  tl->isDone = NO;
-  if (0 != PTHREAD_CREATE(&tl->handle,
-			  (PThreadMain) &unindexThread,
-			  utc,
-			  32 * 1024)) {
-    LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
-    FREE(tl);
+  utc->start_time = get_time();
+  utc->handle = PTHREAD_CREATE(&unindexThread,
+			       utc,
+			       32 * 1024);
+  if (utc->handle == NULL) {
+    GE_LOG_STRERROR(ctx->ectx,
+		    GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+		    "PTHREAD_CREATE");
     FREE(utc->filename);
     FREE(utc);
-    return SYSERR;
+    return NULL;
   }
-  MUTEX_LOCK(&ctx->lock);
-  tl->next = ctx->activeThreads;
-  ctx->activeThreads = tl;
-  MUTEX_UNLOCK(&ctx->lock);
-  cleanupFSUIThreadList(ctx);
-  return OK;
+  MUTEX_LOCK(ctx->lock);
+  utc->next = ctx->unindexOperations;
+  ctx->unindexOperations = utc;
+  MUTEX_UNLOCK(ctx->lock);
+  return utc;
 }
 
 /* end of unindex.c */

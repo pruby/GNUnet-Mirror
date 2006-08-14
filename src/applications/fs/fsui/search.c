@@ -27,8 +27,11 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_uritrack_lib.h"
+#include "gnunet_namespace_lib.h"
 #include "fsui.h"
 
 #define DEBUG_SEARCH NO
@@ -58,7 +61,9 @@ static void processResult(const ECRS_FileInfo * fi,
 		&event);
 }
 
-static void setNamespaceRoot(const ECRS_FileInfo * fi) {
+static void setNamespaceRoot(struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     const ECRS_FileInfo * fi) {
   char * fn;
   char * fnBase;
   HashCode512 ns;
@@ -70,9 +75,11 @@ static void setNamespaceRoot(const ECRS_FileInfo * fi) {
     return;
   }
   name = ECRS_getNamespaceName(&ns);
-  fn = getConfigurationString("GNUNET", "GNUNET_HOME");
-  fnBase = expandFileName(fn);
-  FREE(fn);
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &fnBase);
   fn = MALLOC(strlen(fnBase) +
 	      strlen(NS_ROOTS) +
 	      strlen(name) +
@@ -80,17 +87,18 @@ static void setNamespaceRoot(const ECRS_FileInfo * fi) {
   strcpy(fn, fnBase);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, NS_ROOTS);
-  mkdirp(fn);
+  disk_directory_create(ectx, fn);
   strcat(fn, DIR_SEPARATOR_STR);
   strcat(fn, name);
   FREE(name);
   FREE(fnBase);
   if (OK == ECRS_getSKSContentHash(fi->uri,
 				   &ns)) {
-    writeFile(fn,
-	      &ns,
-	      sizeof(HashCode512),
-	      "644");
+    disk_file_write(ectx,
+		    fn,
+		    &ns,
+		    sizeof(HashCode512),
+		    "644");
   }
   FREE(fn);
 }
@@ -106,12 +114,21 @@ static int spcb(const ECRS_FileInfo * fi,
   unsigned int i;
   unsigned int j;
   ResultPending * rp;
+  struct GE_Context * ectx;
 
-  FSUI_trackURI(fi);
+  ectx = pos->ctx->ectx;
+
+  URITRACK_trackURI(ectx,
+		    pos->ctx->cfg,
+		    fi);
   if (isRoot) {
-    setNamespaceRoot(fi);
-    FSUI_addNamespaceInfo(fi->uri,
-			  fi->meta);
+    setNamespaceRoot(ectx,
+		     pos->ctx->cfg,
+		     fi);
+    NS_addNamespaceInfo(ectx,
+			pos->ctx->cfg,
+			fi->uri,
+			fi->meta);
     return OK;
   }
   for (i=0;i<pos->sizeResultsReceived;i++)
@@ -137,8 +154,9 @@ static int spcb(const ECRS_FileInfo * fi,
       if (ECRS_equalsUri(fi->uri,
 			 rp->fi.uri)) {
 	for (j=0;j<rp->matchingKeyCount;j++)
-	  if (equalsHashCode512(key,
-				&rp->matchingKeys[j])) {
+	  if (0 == memcmp(key,
+			  &rp->matchingKeys[j],
+			  sizeof(HashCode512))) {
 #if DEBUG_SEARCH
 	    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 		"Received search result that I have seen before (missing keyword to show client).\n");
@@ -209,8 +227,7 @@ static int spcb(const ECRS_FileInfo * fi,
 static int testTerminate(FSUI_SearchList * pos) {
   if (pos->signalTerminate == NO)
     return OK;
-  else
-    return SYSERR;
+  return SYSERR;
 }
 
 /**
@@ -218,7 +235,9 @@ static int testTerminate(FSUI_SearchList * pos) {
  */
 void * searchThread(void * cls) {
   FSUI_SearchList * pos = cls;
-  ECRS_search(pos->uri,
+  ECRS_search(pos->ctx->ectx,
+	      pos->ctx->cfg,
+	      pos->uri,
 	      pos->anonymityLevel,
 	      get_time() + cronYEARS, /* timeout!?*/
 	      &spcb,
@@ -231,24 +250,15 @@ void * searchThread(void * cls) {
 /**
  * Start a search.
  */
-int FSUI_startSearch(struct FSUI_Context * ctx,
-		     unsigned int anonymityLevel,
-		     const struct ECRS_URI * uri) {
+struct FSUI_SearchList *
+FSUI_startSearch(struct FSUI_Context * ctx,
+		 unsigned int anonymityLevel,
+		 const struct ECRS_URI * uri) {
   FSUI_SearchList * pos;
+  struct GE_Context * ectx;
 
-  MUTEX_LOCK(&ctx->lock);
-  pos = ctx->activeSearches;
-  while (pos != NULL) {
-    if (ECRS_equalsUri(uri,
-		       pos->uri)) {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("This search is already pending!\n"));
-      GE_BREAK(ectx, 0);
-      MUTEX_UNLOCK(&ctx->lock);
-      return SYSERR;
-    }
-    pos = pos->next;
-  }
+  ectx = ctx->ectx;
+  MUTEX_LOCK(ctx->lock);
   pos = MALLOC(sizeof(FSUI_SearchList));
   pos->signalTerminate = NO;
   pos->uri = ECRS_dupUri(uri);
@@ -259,106 +269,76 @@ int FSUI_startSearch(struct FSUI_Context * ctx,
   pos->unmatchedResultsReceived = 0;
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
-  if (0 != PTHREAD_CREATE(&pos->handle,
-			  &searchThread,
-			  pos,
-			  32 * 1024)) {
-    LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
+  pos->handle = PTHREAD_CREATE(&searchThread,
+			       pos,
+			       32 * 1024);
+  if (pos->handle == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_IMMEDIATE | GE_USER | GE_ADMIN,
+		    "PTHREAD_CREATE");
     ECRS_freeUri(pos->uri);
     FREE(pos);
-    MUTEX_UNLOCK(&ctx->lock);
-    return SYSERR;
+    MUTEX_UNLOCK(ctx->lock);
+    return NULL;
   }
   pos->next = ctx->activeSearches;
   ctx->activeSearches = pos;
-  MUTEX_UNLOCK(&ctx->lock);
-  return OK;
+  MUTEX_UNLOCK(ctx->lock);
+  return pos;
 }
 
 /**
  * Stop a search.
  */
 int FSUI_stopSearch(struct FSUI_Context * ctx,
-		    const struct ECRS_URI * uri) {
+		    struct FSUI_SearchList * sl) {
   FSUI_SearchList * pos;
   FSUI_SearchList * prev;
   void * unused;
   int i;
 
+  MUTEX_LOCK(ctx->lock);
   prev = NULL;
-  MUTEX_LOCK(&ctx->lock);
   pos = ctx->activeSearches;
-  while (pos != NULL) {
-    if (ECRS_equalsUri(uri,
-		       pos->uri)) {
-      pos->signalTerminate = YES;
-      /* send signal to terminate sleep! */
-      PTHREAD_KILL(&pos->handle,
-		   SIGALRM);
-      PTHREAD_JOIN(&pos->handle,
-		   &unused);
-      ECRS_freeUri(pos->uri);
-      for (i=0;i<pos->sizeResultsReceived;i++) {
-	ECRS_freeUri(pos->resultsReceived[i].uri);
-	ECRS_freeMetaData(pos->resultsReceived[i].meta);
-      }
-      GROW(pos->resultsReceived,
-	   pos->sizeResultsReceived,
-	   0);
-      for (i=0;i<pos->sizeResultsReceived;i++) {
-	ECRS_freeUri(pos->unmatchedResultsReceived[i].fi.uri);
-	ECRS_freeMetaData(pos->unmatchedResultsReceived[i].fi.meta);
-	GROW(pos->unmatchedResultsReceived[i].matchingKeys,
-	     pos->unmatchedResultsReceived[i].matchingKeyCount,
-	     0);
-      }
-      GROW(pos->unmatchedResultsReceived,
-	   pos->sizeUnmatchedResultsReceived,
-	   0);
-      if (prev == NULL)
-	ctx->activeSearches = pos->next;
-      else
-	prev->next = pos->next;
-      FREE(pos);
-      MUTEX_UNLOCK(&ctx->lock);
-      return OK;
-    }
+  while ( (pos != sl) &&
+	  (pos != NULL) ) {
     prev = pos;
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&ctx->lock);
-  return SYSERR;
-}
-
-/**
- * List active searches.  Can also be used to obtain
- * search results that were already signaled earlier.
- */
-int FSUI_listSearches(struct FSUI_Context * ctx,
-		      FSUI_SearchIterator iter,
-		      void * closure) {
-  int ret;
-  FSUI_SearchList * pos;
-
-  ret = 0;
-  MUTEX_LOCK(&ctx->lock);
-  pos = ctx->activeSearches;
-  while (pos != NULL) {
-    if (iter != NULL) {
-      if (OK != iter(closure,
-		     pos->uri,
-		     pos->anonymityLevel,
-		     pos->sizeResultsReceived,
-		     pos->resultsReceived)) {
-	MUTEX_UNLOCK(&ctx->lock);
-	return SYSERR;
-      }
-    }
-    ret++;
-    pos = pos->next;
+  if (pos == NULL) {
+    MUTEX_UNLOCK(ctx->lock);
+    return SYSERR;
   }
-  MUTEX_UNLOCK(&ctx->lock);
-  return ret;
+  if (prev == NULL)
+    ctx->activeSearches = pos->next;
+  else
+    prev->next = pos->next;
+  MUTEX_UNLOCK(ctx->lock);
+  pos->next = NULL;
+  pos->signalTerminate = YES;
+  /* send signal to terminate sleep! */
+  PTHREAD_STOP_SLEEP(pos->handle);
+  PTHREAD_JOIN(pos->handle,
+	       &unused);
+  ECRS_freeUri(pos->uri);
+  for (i=0;i<pos->sizeResultsReceived;i++) {
+    ECRS_freeUri(pos->resultsReceived[i].uri);
+    ECRS_freeMetaData(pos->resultsReceived[i].meta);
+  }
+  GROW(pos->resultsReceived,
+       pos->sizeResultsReceived,
+       0);
+  for (i=0;i<pos->sizeResultsReceived;i++) {
+    ECRS_freeUri(pos->unmatchedResultsReceived[i].fi.uri);
+    ECRS_freeMetaData(pos->unmatchedResultsReceived[i].fi.meta);
+    GROW(pos->unmatchedResultsReceived[i].matchingKeys,
+	 pos->unmatchedResultsReceived[i].matchingKeyCount,
+	 0);
+  }
+  GROW(pos->unmatchedResultsReceived,
+       pos->sizeUnmatchedResultsReceived,
+       0);
+  return OK;
 }
 
 /* end of search.c */

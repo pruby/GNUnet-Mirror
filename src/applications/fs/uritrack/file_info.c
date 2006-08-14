@@ -83,7 +83,7 @@ static char * getUriDbName(struct GE_Context * ectx,
 
 static char * getToggleName(struct GE_Context * ectx,
 			    struct GC_Configuration * cfg) {
-  char * new;
+  char * nw;
   char * pfx;
 
   GC_get_configuration_value_string(cfg,
@@ -91,12 +91,12 @@ static char * getToggleName(struct GE_Context * ectx,
 				    "GNUNET_HOME",
 				    GNUNET_HOME_DIRECTORY,
 				    &pfx);
-  new = MALLOC(strlen(pfx) + strlen(TRACK_OPTION) + 2);
-  strcpy(new, pfx);
-  strcat(new, "/");
-  strcat(new, TRACK_OPTION); 
+  nw = MALLOC(strlen(pfx) + strlen(TRACK_OPTION) + 2);
+  strcpy(nw, pfx);
+  strcat(nw, "/");
+  strcat(nw, TRACK_OPTION); 
   FREE(pfx);
-  return new;
+  return nw;
 }
 
 /**

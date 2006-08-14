@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -165,11 +165,17 @@ static int uploadDirectory(UploadThreadClosure * utc,
     tempName = STRDUP("/tmp/gnunetdir.XXXXXX");
     handle = mkstemp(tempName);
     if (handle == -1) {
-      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, tempName, "mkstemp");
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_USER | GE_BULK,
+			   tempName, 
+			   "mkstemp");
     } else if (len != WRITE(handle,
 			    data,
 			    len)) {
-      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, tempName, "write");
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_USER | GE_BULK,
+			   tempName,
+			   "write");
     } else {
       closefile(handle);
       utc->filename = tempName;
@@ -573,11 +579,13 @@ int FSUI_upload(struct FSUI_Context * ctx,
   tl = MALLOC(sizeof(FSUI_ThreadList));
   utc->tl = tl;
   tl->isDone = NO;
-  if (0 != PTHREAD_CREATE(&tl->handle,
-			  &uploadThread,
-			  utc,
-			  128 * 1024)) {
-    LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
+  tl->handle = PTHREAD_CREATE(&uploadThread,
+			      utc,
+			      128 * 1024);
+  if (tl->handle == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_BULK, 
+		    "PTHREAD_CREATE");
     FREE(tl);
     FREE(utc->main_filename);
     ECRS_freeMetaData(utc->meta);
@@ -642,11 +650,13 @@ int FSUI_uploadAll(struct FSUI_Context * ctx,
   tl = MALLOC(sizeof(FSUI_ThreadList));
   utc->tl = tl;
   tl->isDone = NO;
-  if (0 != PTHREAD_CREATE(&tl->handle,
-			  &uploadThread,
-			  utc,
-			  128 * 1024)) {
-    LOG_STRERROR(LOG_ERROR, "PTHREAD_CREATE");
+  tl->handle = PTHREAD_CREATE(&uploadThread,
+			      utc,
+			      128 * 1024);
+  if (tl->handle == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_BULK, 
+		    "PTHREAD_CREATE");
     FREE(tl);
     FREE(utc->main_filename);
     ECRS_freeMetaData(utc->meta);

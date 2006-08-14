@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_directories.h"
 #include "fsui.h"
 
 #define DEBUG_PERSISTENCE NO
@@ -43,7 +44,8 @@
   else \
     a = ntohll(bigl)
 
-static struct ECRS_URI * readURI(int fd) {
+static struct ECRS_URI * readURI(struct GE_Context * ectx,
+				 int fd) {
   char * buf;
   unsigned int big;
   struct ECRS_URI * ret;
@@ -58,7 +60,7 @@ static struct ECRS_URI * readURI(int fd) {
     FREE(buf);
     return NULL;
   }
-  ret = ECRS_stringToUri(buf);
+  ret = ECRS_stringToUri(ectx, buf);
   FREE(buf);
   return ret;
  ERR:
@@ -74,7 +76,8 @@ static struct ECRS_URI * readURI(int fd) {
  * @return NULL on error AND on read of empty
  *  list (these two cannot be distinguished)
  */
-static FSUI_DownloadList * readDownloadList(int fd,
+static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
+					    int fd,
 					    FSUI_Context * ctx,
 					    FSUI_DownloadList * parent) {
   char zaro;
@@ -140,7 +143,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   READLONG(ret->startTime);
   ret->startTime = get_time() - ret->startTime;
   ret->uri
-    = readURI(fd);
+    = readURI(ectx, fd);
   if (ret->completedDownloadsCount > 0)
     ret->completedDownloads
       = MALLOC(sizeof(struct ECRS_URI *) *
@@ -151,7 +154,7 @@ static FSUI_DownloadList * readDownloadList(int fd,
   ok = ret->uri != NULL;
   for (i=0;i<ret->completedDownloadsCount;i++) {
     ret->completedDownloads[i]
-      = readURI(fd);
+      = readURI(ectx, fd);
     if (ret->completedDownloads[i] == NULL) 
       ok = NO;    
   }
@@ -160,19 +163,22 @@ static FSUI_DownloadList * readDownloadList(int fd,
     goto ERR;
   }
   ret->parent = parent;
-  ret->next = readDownloadList(fd,
+  ret->next = readDownloadList(ectx,
+			       fd,
 			       ctx,
 			       parent);
-  ret->child = readDownloadList(fd,
+  ret->child = readDownloadList(ectx,
+				fd,
 				ctx,
 				ret);
 #if DEBUG_PERSISTENCE
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FSUI persistence: restoring download `%s': %s (%llu, %llu)\n",
-      ret->filename,
-      ret->finished == YES ? "finished" : "pending",
-      ret->completed,
-      ret->total);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSUI persistence: restoring download `%s': %s (%llu, %llu)\n",
+	 ret->filename,
+	 ret->finished == YES ? "finished" : "pending",
+	 ret->completed,
+	 ret->total);
 #endif
   return ret;
  ERR:
@@ -221,7 +227,8 @@ static void writeURI(int fd,
 /**
  * (recursively) write a download list.
  */
-static void writeDownloadList(int fd,
+static void writeDownloadList(struct GE_Context * ectx,
+			      int fd,
 			      const FSUI_DownloadList * list) {
   static char zero = '\0';
   static char nonzero = '+';
@@ -232,12 +239,13 @@ static void writeDownloadList(int fd,
     return;
   }
 #if DEBUG_PERSISTENCE
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Serializing download state of download `%s': %s (%llu, %llu)\n",
-      list->filename,
-      list->finished == YES ? "finished" : "pending",
-      list->completed,
-      list->total);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Serializing download state of download `%s': %s (%llu, %llu)\n",
+	 list->filename,
+	 list->finished == YES ? "finished" : "pending",
+	 list->completed,
+	 list->total);
 #endif
   WRITE(fd, &nonzero, sizeof(char));
 
@@ -257,9 +265,11 @@ static void writeDownloadList(int fd,
   for (i=0;i<list->completedDownloadsCount;i++)
     writeURI(fd, list->completedDownloads[i]);
 
-  writeDownloadList(fd,
+  writeDownloadList(ectx,
+		    fd,
 		    list->next);
-  writeDownloadList(fd,
+  writeDownloadList(ectx,
+		    fd,
 		    list->child);
 }
 
@@ -268,7 +278,8 @@ static void writeDownloadList(int fd,
  *
  * @return OK on success, SYSERR on error
  */
-static int readFileInfo(int fd,
+static int readFileInfo(struct GE_Context * ectx,
+			int fd,
 			ECRS_FileInfo * fi) {
   unsigned int size;
   unsigned int big;
@@ -289,7 +300,8 @@ static int readFileInfo(int fd,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  fi->meta = ECRS_deserializeMetaData(buf,
+  fi->meta = ECRS_deserializeMetaData(ectx,
+				      buf,
 				      size);
   if (fi->meta == NULL) {
     FREE(buf);
@@ -299,7 +311,7 @@ static int readFileInfo(int fd,
   FREE(buf);
 
   fi->uri
-    = readURI(fd);
+    = readURI(ectx, fd);
   if (fi->uri == NULL) {
     ECRS_freeMetaData(fi->meta);
     fi->meta = NULL;
@@ -312,7 +324,8 @@ static int readFileInfo(int fd,
   return SYSERR;
 }
 
-static void writeFileInfo(int fd,
+static void writeFileInfo(struct GE_Context * ectx,
+			  int fd,
 			  const ECRS_FileInfo * fi) {
   unsigned int size;
   char * buf;
@@ -322,7 +335,8 @@ static void writeFileInfo(int fd,
   if (size > 1024 * 1024)
     size = 1024 * 1024;
   buf = MALLOC(size);
-  ECRS_serializeMetaData(fi->meta,
+  ECRS_serializeMetaData(ectx,
+			 fi->meta,
 			 buf,
 			 size,
 			 ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
@@ -338,7 +352,7 @@ static void updateDownloadThreads(void * c) {
   FSUI_Context * ctx = c;
   FSUI_DownloadList * dpos;
 
-  MUTEX_LOCK(&ctx->lock);
+  MUTEX_LOCK(ctx->lock);
   dpos = ctx->activeDownloads.child;
 #if DEBUG_PERSISTENCE
   if (dpos != NULL)
@@ -349,7 +363,7 @@ static void updateDownloadThreads(void * c) {
     updateDownloadThread(dpos);
     dpos = dpos->next;
   }
-  MUTEX_UNLOCK(&ctx->lock);
+  MUTEX_UNLOCK(ctx->lock);
 }
 
 /**
@@ -360,7 +374,10 @@ static void updateDownloadThreads(void * c) {
  * @param name name of the context, must not be NULL
  * @return NULL on error
  */
-struct FSUI_Context * FSUI_start(const char * name,
+struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
+				 struct GC_Configuration * cfg,
+				 const char * name,
+				 unsigned int threadPoolSize,
 				 int doResume,
 				 FSUI_EventCallback cb,
 				 void * closure) {
@@ -378,11 +395,12 @@ struct FSUI_Context * FSUI_start(const char * name,
     = FSUI_DOWNLOAD_PENDING; /* !? */
   ret->activeDownloads.ctx
     = ret;
-  gh = getFileName("GNUNET",
-		   "GNUNET_HOME",
-		   "You must specify a directory for "
-		   "user-data under '%s%s' at the beginning"
-		   " of the configuration file.\n");
+
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET",
+				    "GNUNET_HOME",
+				    GNUNET_HOME_DIRECTORY,
+				    &gh);
   fn = MALLOC(strlen(gh) + strlen(name) + 2 + 5);
   strcpy(fn, gh);
   FREE(gh);
@@ -390,18 +408,22 @@ struct FSUI_Context * FSUI_start(const char * name,
   strcat(fn, name);
   ret->name = fn;
   if (doResume) {
-    ret->ipc = IPC_SEMAPHORE_CREATE(fn,
-				 1);
+    ret->ipc = IPC_SEMAPHORE_CREATE(ectx,
+				    fn,
+				    1);
     GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"Getting IPC lock for FSUI (%s).\n",
 	fn);
-    IPC_SEMAPHORE_DOWN(ret->ipc);
-    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	"Aquired IPC lock.\n");
+    IPC_SEMAPHORE_DOWN(ret->ipc, YES);
+    GE_LOG(ectx, 
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   "Aquired IPC lock.\n");
     fd = -1;
     strcat(fn, ".res");
     if (0 == ACCESS(fn, R_OK))
-      fd = fileopen(fn, O_RDONLY);
+      fd = disk_file_open(ectx,
+			  fn,
+			  O_RDONLY);
     if (fd != -1) {
       char magic[8];
       unsigned int big;
@@ -474,7 +496,7 @@ struct FSUI_Context * FSUI_start(const char * name,
 	list
 	  = MALLOC(sizeof(FSUI_SearchList));	
 	list->uri
-	  = ECRS_stringToUri(buf);
+	  = ECRS_stringToUri(ectx, buf);
 	FREE(buf);
 	if (list->uri == NULL) {
 	  FREE(list);
@@ -538,11 +560,13 @@ struct FSUI_Context * FSUI_start(const char * name,
 	  list->unmatchedResultsReceived
 	    = NULL;
 	for (i=0;i<list->sizeResultsReceived;i++)
-	  readFileInfo(fd,
+	  readFileInfo(ectx,
+		       fd,
 		       &list->resultsReceived[i]);
 	for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
 	  rp = &list->unmatchedResultsReceived[i];
-	  readFileInfo(fd,
+	  readFileInfo(ectx,
+		       fd,
 		       &rp->fi);
 	
 	  if (sizeof(unsigned int) !=
@@ -589,11 +613,13 @@ struct FSUI_Context * FSUI_start(const char * name,
 	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "FSUI persistence: restarting search\n");
 #endif
-	if (0 != PTHREAD_CREATE(&list->handle,
-				&searchThread,
-				list,
-				32 * 1024))
-	  DIE_STRERROR("pthread_create");
+	list->handle = PTHREAD_CREATE(&searchThread,
+				      list,
+				      32 * 1024);
+	if (list->handle == NULL)
+	  GE_DIE_STRERROR(ectx,
+			  GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+			  "pthread_create");
 	
 	/* finally: prepend to list */
 	list->next
@@ -605,7 +631,8 @@ struct FSUI_Context * FSUI_start(const char * name,
 	     0,
 	     sizeof(FSUI_DownloadList));
       ret->activeDownloads.child
-	= readDownloadList(fd,
+	= readDownloadList(ectx,
+			   fd,
 			   ret,
 			   &ret->activeDownloads);
 
@@ -634,7 +661,8 @@ struct FSUI_Context * FSUI_start(const char * name,
 	   list->sizeResultsReceived,
 	   0);
     WARN:
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
+      GE_LOG(ectx, 
+	     GE_WARNING | GE_BULK | GE_USER,
 	  _("FSUI state file `%s' had syntax error at offset %u.\n"),
 	  fn,
 	  lseek(fd, 0, SEEK_CUR));
@@ -643,25 +671,28 @@ struct FSUI_Context * FSUI_start(const char * name,
       UNLINK(fn);
     } else {
       if (errno != ENOENT)
-	GE_LOG_STRERROR_FILE(ectx,LOG_ERROR,
-			  "open",
-			  fn);
+	GE_LOG_STRERROR_FILE(ectx,
+			     GE_WARNING | GE_BULK | GE_USER,
+			     "open",
+			     fn);
     }
   } else {
     ret->ipc = NULL;
   }
-  MUTEX_CREATE_RECURSIVE(&ret->lock);
+  ret->lock = MUTEX_CREATE(YES);
   ret->ecb = cb;
   ret->ecbClosure = closure;
-  ret->threadPoolSize = getConfigurationInt("FS",
-					    "DOWNLOAD-POOL");
+  ret->threadPoolSize = threadPoolSize;
   if (ret->threadPoolSize == 0)
     ret->threadPoolSize = 32;
   ret->activeDownloadThreads = 0;
-  addCronJob(&updateDownloadThreads,
-	     0,
-	     FSUI_UDT_FREQUENCY,
-	     ret);
+  ret->cron = cron_create(ectx);  
+  cron_add_job(ret->cron,
+	       &updateDownloadThreads,
+	       0,
+	       FSUI_UDT_FREQUENCY,
+	       ret);
+  cron_start(ret->cron);
   return ret;
 }
 
@@ -670,6 +701,7 @@ struct FSUI_Context * FSUI_start(const char * name,
  * later if possible).
  */
 void FSUI_stop(struct FSUI_Context * ctx) {
+  struct GE_Context * ectx;
   FSUI_ThreadList * tpos;
   FSUI_SearchList * spos;
   FSUI_DownloadList * dpos;
@@ -678,18 +710,17 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   int fd;
   int big;
 
-  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-      "FSUI shutdown.  This may take a while.\n");
-  FSUI_publishCollectionNow(ctx);
+  ectx = ctx->ectx;
+  GE_LOG(ectx, 
+	 GE_INFO | GE_REQUEST | GE_USER,
+	 "FSUI shutdown.  This may take a while.\n");
 
-  i = isCronRunning();
-  if (i)
-    suspendCron();
-  delCronJob(&updateDownloadThreads,
-	     FSUI_UDT_FREQUENCY,
-	     ctx);
-  if (i)
-    resumeCron();
+  cron_stop(ctx->cron);
+  cron_del_job(ctx->cron,
+	       &updateDownloadThreads,
+	       FSUI_UDT_FREQUENCY,
+	       ctx);
+  cron_destroy(ctx->cron);
   /* first, stop all download threads
      by reducing the thread pool size to 0 */
   ctx->threadPoolSize = 0;
@@ -703,32 +734,31 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   while (ctx->activeThreads != NULL) {
     tpos = ctx->activeThreads;
     ctx->activeThreads = tpos->next;
-    PTHREAD_JOIN(&tpos->handle, &unused);
+    PTHREAD_JOIN(tpos->handle, &unused);
     FREE(tpos);
   }
 
   /* next, serialize all of the FSUI state */
   if (ctx->ipc != NULL) {
-    fd = fileopen(ctx->name,
-		  O_CREAT|O_TRUNC|O_WRONLY,
-		  S_IRUSR|S_IWUSR);
-    if (fd == -1) {
-      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR,
-			"open",
-			ctx->name);
-    } else {
+    fd = disk_file_open(ectx,
+			ctx->name,
+			O_CREAT|O_TRUNC|O_WRONLY,
+			S_IRUSR|S_IWUSR);
+    if (fd != -1) {
       WRITE(fd,
 	    "FSUI00\n\0",
 	    8); /* magic */
     }
 #if DEBUG_PERSISTENCE
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Serializing FSUI state...\n");
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Serializing FSUI state...\n");
 #endif
   } else {
 #if DEBUG_PERSISTENCE
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"NOT serializing FSUI state...\n");
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "NOT serializing FSUI state...\n");
 #endif
     fd = -1;
   }
@@ -747,7 +777,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     ctx->activeSearches = spos->next;
 
     spos->signalTerminate = YES;
-    PTHREAD_JOIN(&spos->handle, &unused);
+    PTHREAD_JOIN(spos->handle, &unused);
     if (fd != -1) {
       /* serialize pending searches */
       char * tmp;
@@ -776,13 +806,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	    &big,
 	    sizeof(unsigned int));
       for (i=0;i<spos->sizeResultsReceived;i++)
-	writeFileInfo(fd,
+	writeFileInfo(ectx,
+		      fd,
 		      &spos->resultsReceived[i]);
       for (i=0;i<spos->sizeUnmatchedResultsReceived;i++) {
 	ResultPending * rp;
 
 	rp = &spos->unmatchedResultsReceived[i];
-	writeFileInfo(fd,
+	writeFileInfo(ectx,
+		      fd,
 		      &rp->fi);
 	big = htonl(rp->matchingKeyCount);
 	WRITE(fd,
@@ -827,7 +859,8 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     WRITE(fd,
 	  &big,
 	  sizeof(unsigned int));
-    writeDownloadList(fd,
+    writeDownloadList(ectx,
+		      fd,
 		      ctx->activeDownloads.child);
   }
   if (fd != -1) {
@@ -845,7 +878,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     IPC_SEMAPHORE_UP(ctx->ipc);
     IPC_SEMAPHORE_DESTROY(ctx->ipc);
   }
-  MUTEX_DESTROY(&ctx->lock);
+  MUTEX_DESTROY(ctx->lock);
   FREE(ctx->name);
   FREE(ctx);
   GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
@@ -866,11 +899,11 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
   void * unused;
 
   prev = NULL;
-  MUTEX_LOCK(&ctx->lock);
+  MUTEX_LOCK(ctx->lock);
   pos = ctx->activeThreads;
   while (pos != NULL) {
     if (YES == pos->isDone) {
-      PTHREAD_JOIN(&pos->handle,
+      PTHREAD_JOIN(pos->handle,
 		   &unused);
       tmp = pos->next;
       FREE(pos);
@@ -884,7 +917,7 @@ void cleanupFSUIThreadList(FSUI_Context * ctx) {
       pos = pos->next;
     }
   }
-  MUTEX_UNLOCK(&ctx->lock);
+  MUTEX_UNLOCK(ctx->lock);
 }
 
 
