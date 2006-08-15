@@ -560,7 +560,8 @@ static int parseOptions(int argc,
  * @param argv command line arguments
  * @return return 0 for ok, -1 on error
  */
-int main(int argc, char ** argv) {
+int main(int argc, 
+	 const char ** argv) {
   int i;
   char * pname;
   char * filename;
@@ -634,7 +635,9 @@ int main(int argc, char ** argv) {
 			    "%Y-%m-%d",
 #endif
 			    &t))) {
-	LOG_STRERROR(LOG_FATAL, "strptime");
+	GE_LOG_STRERROR(ectx,
+			LOG_FATAL, 
+			"strptime");
         errexit(_("Parsing time failed. Use `%s' format.\n"),
 #if ENABLE_NLS
 		nl_langinfo(D_T_FMT)

@@ -163,7 +163,7 @@ typedef struct CommandLineOption {
  * Set the configuration option for increasing verbosity.
  */
 #define COMMAND_LINE_OPTION_VERBOSE \
-  { 'V', "verbose", NULL, gettext_noop("be verbose"), 1, &gnunet_getopt_configure_increment_value, "1" }
+  { 'V', "verbose", NULL, gettext_noop("be verbose"), 1, &gnunet_getopt_configure_increment_value, "GNUNET:VERBOSE" }
 
 /**
  * Set the configuration option for the configuration file.
