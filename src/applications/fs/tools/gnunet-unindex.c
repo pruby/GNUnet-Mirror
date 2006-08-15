@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -25,27 +25,34 @@
  * @author Krista Bennett
  * @author James Blackwell
  * @author Igor Wronsky
+ *
+ * TODO: fix message handling, signal handling
  */
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 
-static Semaphore * exitSignal;
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
+
+static struct SEMAPHORE * exitSignal;
 
 static int errorCode;
-
-static struct FSUI_Context * ctx;
 
 /**
  * Print progess message.
  */
-static void printstatus(int * verboselevel,
-			const FSUI_Event * event) {
+static void * printstatus(void * cls,
+			  const FSUI_Event * event) {
+  unsigned long long * verboselevel = cls;
   unsigned long long delta;
 
   switch(event->type) {
   case FSUI_unindex_progress:
-    if (*verboselevel == YES) {
+    if (*verboselevel) {
       delta = event->data.UnindexProgress.eta - get_time();
       PRINTF(_("%16llu of %16llu bytes unindexed (estimating %llu seconds to completion)                "),
 	     event->data.UnindexProgress.completed,
@@ -55,7 +62,7 @@ static void printstatus(int * verboselevel,
     }
     break;
   case FSUI_unindex_complete:
-    if (*verboselevel == YES) {
+    if (*verboselevel) {
       delta = get_time() - event->data.UnindexComplete.start_time;
       PRINTF(
       _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"),
@@ -78,82 +85,21 @@ static void printstatus(int * verboselevel,
     GE_BREAK(ectx, 0);
     break;
   }
+  return NULL;
 }
 
 /**
- * Prints the usage information for this command if the user errs.
- * Aborts the program.
+ * All gnunet-unindex command line options
  */
-static void printhelp() {
-  static Help help[] = {
-    HELP_HELP,
-    HELP_HOSTNAME,
-    HELP_LOGLEVEL,
-    HELP_VERSION,
-    HELP_VERBOSE,
-    HELP_END,
-  };
-  formatHelp("gnunet-unindex [OPTIONS] FILENAME*",
-	     _("Unindex files."),
-	     help);
-}
-
-static int parseOptions(int argc,
-			char ** argv) {
-  int c;
-
-  FREENONNULL(setConfigurationString("GNUNET-INSERT",
-	  		 	     "INDEX-CONTENT",
-			             "YES"));
-  while (1) {
-    int option_index=0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "verbose",       0, 0, 'V' },
-      { 0,0,0,0 }
-    };
-    c = GNgetopt_long(argc,
-		      argv,
-		      "hHLvV",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'h':
-      printhelp();
-      return SYSERR;
-    case 'V':
-      FREENONNULL(setConfigurationString("GNUNET-INSERT",
-					 "VERBOSE",
-					 "YES"));
-      break;
-    case 'v':
-      printf("GNUnet v%s, gnunet-unindex v%s\n",
-	     VERSION,
-	     AFS_VERSION);
-      return SYSERR;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"));
-      return SYSERR;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  if (argc == GNoptind) {
-    printf(_("You must specify a list of files to insert.\n"));
-    return SYSERR;
-  }
-  if (argc - GNoptind != 1) {
-    printf(_("You must specify one and only one file to unindex.\n"));
-    return SYSERR;
-  }
-  setConfigurationString("GNUNET-INSERT",
-			 "MAIN-FILE",
-			 argv[GNoptind]);
-  return OK;
-}
+static struct CommandLineOption gnunetunindexOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Unindex files.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
 /**
  * The main function to unindex files.
@@ -162,43 +108,76 @@ static int parseOptions(int argc,
  * @param argv command line arguments
  * @return return 0 for ok, -1 on error
  */
-int main(int argc, char ** argv) {
+int main(int argc, 
+	 const char ** argv) {
+  static struct FSUI_Context * ctx;
   char * filename;
-  int verbose;
-  char * tmp;
+  int i;
+  unsigned long long verbose;
+  struct FSUI_UnindexList * ul;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0;
-
-  verbose = testConfigurationString("GNUNET-INSERT",
+  /* startup */
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  i = gnunet_parse_options("gnunet-unindex [OPTIONS] FILENAME",
+			   ectx,
+			   cfg,
+			   gnunetunindexOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i == SYSERR) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
+  if (i == argc) {
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Not enough arguments. "
+	     "You must specify a filename.\n"));
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;
+  }
+  GC_get_configuration_value_number(cfg,
+				    "GNUNET-INSERT",
 				    "VERBOSE",
-				    "YES");
+				    0,
+				    9999,
+				    0,
+				    &verbose);
   exitSignal = SEMAPHORE_CREATE(0);
   /* fundamental init */
-  ctx = FSUI_start("gnunet-unindex",
+  ctx = FSUI_start(ectx,
+		   cfg,
+		   "gnunet-unindex",
+		   2,
 		   NO,
-		   (FSUI_EventCallback) &printstatus,
+		   &printstatus,
 		   &verbose);
-
-  /* first insert all of the top-level files or directories */
-  tmp = getConfigurationString("GNUNET-INSERT",
-			       "MAIN-FILE");
-  filename = expandFileName(tmp);
-  FREE(tmp);
-  if (OK != FSUI_unindex(ctx,
-			 filename)) {
+  filename = string_expandFileName(ectx,
+				   argv[i]);
+  ul = FSUI_unindex(ctx,
+		    filename);
+  if (ul == NULL) {
     printf(_("`%s' failed.  Is `%s' a file?\n"),
 	   "FSUI_unindex",
-	   filename);
+	   argv[i]);
     errorCode = 1;
   } else {
     /* wait for completion */
-    SEMAPHORE_DOWN(exitSignal);
-    SEMAPHORE_DESTROY(exitSignal);
+    SEMAPHORE_DOWN(exitSignal, YES);
   }
   FREE(filename);
   FSUI_stop(ctx);
-  doneUtil();
+  SEMAPHORE_DESTROY(exitSignal);
+  GC_free(cfg);
+  GE_free_context(ectx);
   return errorCode;
 }
 

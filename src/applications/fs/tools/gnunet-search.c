@@ -294,7 +294,6 @@ int main(int argc,
 	       0,
 	       NULL);
   cron_destroy(cron);
-
   GC_free(cfg);
   GE_free_context(ectx);
   if (ret == OK)

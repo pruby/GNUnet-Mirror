@@ -26,136 +26,57 @@
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 
+static struct GE_Context * ectx;
 
-static int verbose = NO;
+static struct GC_Configuration * cfg;
 
-static Semaphore * signalFinished;
+static unsigned long long verbose;
 
-/**
- * Prints the usage information for this command if the user errs.
- * Aborts the program.
- */
-static void printhelp() {
-  static Help help[] = {
-    { 'a', "anonymity", gettext_noop("LEVEL"),
-      gettext_noop("set the desired LEVEL of receiver-anonymity") },
-    HELP_CONFIG,
-    HELP_HELP,
-    HELP_HOSTNAME,
-    HELP_LOGLEVEL,
-    { 'o', "output", gettext_noop("FILENAME"),
-      gettext_noop("write the file to FILENAME") },
-    { 'R', "recursive", NULL,
-      gettext_noop("download a GNUnet directory recursively") },
-    HELP_VERSION,
-    HELP_VERBOSE,
-    HELP_END,
-  };
-  formatHelp("gnunet-download [OPTIONS] GNUNET-URI",
-	     _("Download files from GNUnet."),
-	     help);
-}
+static int do_recursive;
+
+static char * filename;
+
+static unsigned int anonymity = 1;
+
+static struct SEMAPHORE * signalFinished;
 
 /**
- * ParseOptions for gnunet-download.
- * @return SYSERR to abort afterwards, OK to continue
+ * All gnunet-download command line options
  */
-static int parseOptions(int argc,
-			char ** argv) {
-  int c;
-
-  setConfigurationInt("FS",
-		      "ANONYMITY-RECEIVE",
-		      1);
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "anonymity", 1, 0, 'a' },
-      { "output",    1, 0, 'o' },
-      { "recursive", 0, 0, 'R' },
-      { "verbose",   0, 0, 'V' },
-      { 0,0,0,0 }
-    };
-    c = GNgetopt_long(argc,
-		      argv,
-		      "a:c:dhH:L:o:RvV",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'a': {
-      unsigned int receivePolicy;
-
-      if (1 != sscanf(GNoptarg, "%ud", &receivePolicy)) {
-        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-a");
-	return -1;
-      }
-      setConfigurationInt("FS",
-      			  "ANONYMITY-RECEIVE",
-			  receivePolicy);
-      break;
-    }
-    case 'h':
-      printhelp();
-      return SYSERR;
-    case 'o':
-      FREENONNULL(setConfigurationString("GNUNET-DOWNLOAD",
-					 "FILENAME",
-					 GNoptarg));
-      break;
-    case 'R':
-      FREENONNULL(setConfigurationString("GNUNET-DOWNLOAD",
-					 "RECURSIVE",
-					 "YES"));
-      break;
-    case 'v':
-      printf("GNUnet v%s, gnunet-download v%s\n",
-	     VERSION,
-	     AFS_VERSION);
-      return SYSERR;
-    case 'V':
-      FREENONNULL(setConfigurationString("GNUNET-DOWNLOAD",
-					 "VERBOSE",
-					 "YES"));
-      break;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"));
-      return SYSERR;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  if (argc - GNoptind != 1) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Not enough arguments. "
-	  "You must specify a GNUnet file URI\n"));
-    printhelp();
-    return SYSERR;
-  }
-  FREENONNULL(setConfigurationString("GNUNET-DOWNLOAD",
-				     "URI",
-				     argv[GNoptind++]));
-  return OK;
-}
+static struct CommandLineOption gnunetdownloadOptions[] = {
+  { 'a', "anonymity", "LEVEL",
+    gettext_noop("set the desired LEVEL of sender-anonymity"),
+    1, &gnunet_getopt_configure_set_uint, &anonymity }, 
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Download files from GNUnet.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'o', "output", "FILENAME",
+    gettext_noop("write encountered (decrypted) search results to FILENAME"),
+    1, &gnunet_getopt_configure_set_string, &filename },
+  { 'R', "recursive", NULL,
+    gettext_noop("download a GNUnet directory recursively"),
+    1, &gnunet_getopt_configure_set_one, &do_recursive }, 
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
 /**
  * This method is called whenever data is received.
  * The current incarnation just ensures that the main
  * method exits once the download is complete.
  */
-static void progressModel(void * okVal,
-			  const FSUI_Event * event) {
+static void * progressModel(void * okVal,
+			    const FSUI_Event * event) {
   int * ok = okVal;
 
   switch (event->type) {
   case FSUI_download_progress:
-    if (YES == verbose) {
+    if (verbose) {
       PRINTF(_("Download of file `%s' at "
 	       "%16llu out of %16llu bytes (%8.3f KiB/s)\n"),
 	     event->data.DownloadProgress.filename,
@@ -205,6 +126,7 @@ static void progressModel(void * okVal,
     GE_BREAK(ectx, 0);
     break;
   }
+  return NULL;
 }
 
 /**
@@ -215,73 +137,103 @@ static void progressModel(void * okVal,
  * @return return value from download file: 0: ok, -1, 1: error
  */
 int main(int argc,
-	 char ** argv) {
-  struct ECRS_URI * uri;
-  char * fstring;
-  char * filename;
+	 const char ** argv) {
   int ok;
   int try_rename;
   struct FSUI_Context * ctx;
+  struct ECRS_URI * uri;
+  int i;
+  struct FSUI_DownloadList * dl;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0;
+  /* startup */
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  i = gnunet_parse_options("gnunet-download [OPTIONS] [KEYWORDS]",
+			   ectx,
+			   cfg,
+			   gnunetdownloadOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i == SYSERR) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
 
-  verbose = testConfigurationString("GNUNET-DOWNLOAD", "VERBOSE", "YES");
-  fstring = getConfigurationString("GNUNET-DOWNLOAD",
-  				   "URI");
-  uri = ECRS_stringToUri(fstring);
+  if (i == argc) {
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Not enough arguments. "
+	     "You must specify a GNUnet file URI\n"));
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;
+  }
+  GC_get_configuration_value_number(cfg,
+				    "GNUNET",
+				    "VERBOSE",
+				    0,
+				    9999,
+				    0,
+				    &verbose);
+  uri = ECRS_stringToUri(ectx,
+			 argv[i]);
   if ( (NULL == uri) ||
        (! (ECRS_isLocationUri(uri) ||
 	   ECRS_isFileUri(uri)) ) ) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-        _("URI `%s' invalid for gnunet-download.\n"),
-	fstring);
-    FREE(fstring);
+    GE_LOG(ectx,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("URI `%s' invalid for gnunet-download.\n"),
+	   argv[i]);
+    GC_free(cfg);
+    GE_free_context(ectx);
     return -1;
   }
 
   try_rename = NO;
-  filename = getConfigurationString("GNUNET-DOWNLOAD",
-				    "FILENAME");
   if (filename == NULL) {
-    GE_ASSERT(ectx, strlen(fstring) >
-		  strlen(ECRS_URI_PREFIX) +
-		  strlen(ECRS_FILE_INFIX));
-    filename = expandFileName(&fstring[strlen(ECRS_URI_PREFIX)+
-				       strlen(ECRS_FILE_INFIX)]);
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"No filename specified, using `%s' instead (for now).\n",
-	filename);
+    GE_ASSERT(ectx, 
+	      strlen(argv[i]) >
+	      strlen(ECRS_URI_PREFIX) +
+	      strlen(ECRS_FILE_INFIX));
+    filename = string_expandFileName(ectx,
+				     &argv[i][strlen(ECRS_URI_PREFIX)+
+					      strlen(ECRS_FILE_INFIX)]);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "No filename specified, using `%s' instead (for now).\n",
+	   filename);
     try_rename = YES;
   }
-  FREE(fstring);
   signalFinished = SEMAPHORE_CREATE(0);
-  ctx = FSUI_start("gnunet-download",
+  ctx = FSUI_start(ectx,
+		   cfg,
+		   "gnunet-download",
+		   32, /* FIXME: support option! */
 		   NO,
 		   &progressModel,
 		   &ok);
-  startCron();
-  if (testConfigurationString("GNUNET-DOWNLOAD",
-			      "RECURSIVE",
-			      "YES"))
-    ok = FSUI_startDownloadAll(ctx,
-			       getConfigurationInt("FS",
-						   "ANONYMITY-RECEIVE"),
-			       uri,
-			       filename);
-  else
-    ok = FSUI_startDownload(ctx,
-			    getConfigurationInt("FS",
-						"ANONYMITY-RECEIVE"),
-			    uri,
-			    filename);
-  if (OK == ok)
-    SEMAPHORE_DOWN(signalFinished);
+
+  dl = FSUI_startDownload(ctx,
+			  anonymity,
+			  do_recursive,
+			  uri,
+			  filename);
+  /* FIXME: use gnunetutil shutdown management instead! */
+  if (dl != NULL)
+    SEMAPHORE_DOWN(signalFinished, YES);
   FSUI_stop(ctx);
   SEMAPHORE_DESTROY(signalFinished);
 
-  if ( (ok == OK) && (try_rename == YES) ) {
-    char * newname = ECRS_suggestFilename(filename);
+  if ( (dl != NULL) &&
+       (try_rename == YES) ) {
+    char * newname = ECRS_suggestFilename(ectx,
+					  filename);
 
     if (newname != NULL) {
       fprintf(stdout,
@@ -292,14 +244,11 @@ int main(int argc,
   }
   FREE(filename);
   ECRS_freeUri(uri);
-
-  stopCron();
-  doneUtil();
-
-  if (ok == OK)
-    return 0;
-  else
+  GC_free(cfg);
+  GE_free_context(ectx);
+  if (dl == NULL)
     return 1;
+  return 0;
 }
 
 /* end of gnunet-download.c */
