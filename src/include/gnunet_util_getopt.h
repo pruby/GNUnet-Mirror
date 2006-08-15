@@ -212,6 +212,11 @@ int gnunet_getopt_configure_set_ulong(CommandLineProcessorContext * ctx,
 				      const char * option,
 				      const char * value);
 
+int gnunet_getopt_configure_set_uint(CommandLineProcessorContext * ctx,
+				     void * scls,
+				     const char * option,
+				     const char * value);
+
 int gnunet_getopt_configure_set_one(CommandLineProcessorContext * ctx,
 				    void * scls,
 				    const char * option,

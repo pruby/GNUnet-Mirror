@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -25,242 +25,99 @@
  */
 
 #include "platform.h"
-#include "gnunet_fsui_lib.h"
+#include "gnunet_collection_lib.h"
+#include "gnunet_namespace_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_crypto.h"
 
-static void printhelp() {
-  static Help help[] = {
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
+
+static int start_collection;
+
+static int stop_collection;
+
+static int be_quiet;
+
+static int no_advertisement;
+
+static char * delete_name;
+
+static char * create_name;
+
+static char * set_rating;
+
+static char * root_name;
+
+static unsigned int anonymity;
+
+static unsigned int priority;
+
+static unsigned int expiration;
+
+static struct ECRS_MetaData * meta;
+
+static struct ECRS_URI * advertisement;
+
+/**
+ * All gnunet-directory command line options
+ */
+static struct CommandLineOption gnunetpseudonymOptions[] = {
     { 'a', "anonymity", "LEVEL",
-      gettext_noop("set the desired LEVEL of sender-anonymity") },
+      gettext_noop("set the desired LEVEL of sender-anonymity"),
+      1, &gnunet_getopt_configure_set_uint, &anonymity }, 
     { 'A', "automate", NULL,
-      gettext_noop("automate creation of a namespace by starting a collection") },
-    HELP_CONFIG,
+      gettext_noop("automate creation of a namespace by starting a collection"),
+      0, &gnunet_getopt_configure_set_one, &start_collection },
+    COMMAND_LINE_OPTION_CFG_FILE, /* -c */
     { 'C', "create", "NICKNAME",
-      gettext_noop("create a new pseudonym under the given NICKNAME") },
+      gettext_noop("create a new pseudonym under the given NICKNAME"),
+      1, &gnunet_getopt_configure_set_string, &create_name },
     { 'D', "delete", "NICKNAME",
-      gettext_noop("delete the pseudonym with the given NICKNAME") },
+      gettext_noop("delete the pseudonym with the given NICKNAME"),
+      1, &gnunet_getopt_configure_set_string, &delete_name },
     { 'E', "end", NULL,
-      gettext_noop("end automated building of a namespace (ends collection)") },
-    HELP_HELP,
-    HELP_LOGLEVEL,
+      gettext_noop("end automated building of a namespace (ends collection)"),
+      0, &gnunet_getopt_configure_set_one, &stop_collection },
+    COMMAND_LINE_OPTION_HELP(gettext_noop("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")), /* -h */
+    COMMAND_LINE_OPTION_LOGGING, /* -L */
     { 'k', "keyword", "KEYWORD",
-      gettext_noop("use the given keyword to advertise the namespace (use when creating a new pseudonym)") },
-    { 'm', "mimetype", "MIMETYPE",
-      gettext_noop("specify that the contents of the namespace are of the given MIMETYPE (use when creating a new pseudonym)") },
+      gettext_noop("use the given keyword to advertise the namespace (use when creating a new pseudonym)"),
+      1, &gnunet_getopt_configure_set_keywords, &advertisement },    
+    { 'm', "meta", "TYPE=VALUE",
+      gettext_noop("specify metadata describing the namespace or collection"),
+      1, &gnunet_getopt_configure_set_metadata, &meta },
     { 'n', "no-advertisement", NULL,
-      gettext_noop("do not generate an advertisement for this namespace (use when creating a new pseudonym)") },
+      gettext_noop("do not generate an advertisement for this namespace (use when creating a new pseudonym)"),
+      0, &gnunet_getopt_configure_set_one, &no_advertisement },
     { 'q', "quiet", NULL,
-      gettext_noop("do not list the pseudonyms from the pseudonym database") },
-    { 'r', "realname", "NAME",
-      gettext_noop("specify NAME to be the realname of the user controlling the namespace (use when creating a new pseudonym)") },
+      gettext_noop("do not list the pseudonyms from the pseudonym database"),
+      0, &gnunet_getopt_configure_set_one, &be_quiet },
     { 'R', "root", "IDENTIFIER",
-      gettext_noop("specify IDENTIFIER to be the address of the entrypoint to content in the namespace (use when creating a new pseudonym)") },
+      gettext_noop("specify IDENTIFIER to be the address of the entrypoint to content in the namespace (use when creating a new pseudonym)"),
+      1, &gnunet_getopt_configure_set_string, &root_name },
     { 's', "set-rating", "ID:VALUE",
-      gettext_noop("set the rating of a namespace") },
-    { 't', "text", "DESCRIPTION",
-      gettext_noop("use DESCRIPTION to describe the content of the namespace (use when creating a new pseudonym)") },
-    { 'u', "uri", "URI",
-      gettext_noop("specify the given URI as an address that contains more information about the namespace (use when creating a new pseudonym)") },
-    HELP_VERSION,
-    HELP_END,
-  };
-  formatHelp("gnunet-pseudonym [OPTIONS]",
-	     _("Create new pseudonyms, delete pseudonyms or list existing pseudonyms."),
-	     help);
-}
-
-/**
- * Perform option parsing from the command line.
- */
-static int parser(int argc,
-	   char * argv[]) {
-  int c;
-
-  setConfigurationInt("FS",
-		      "ANONYMITY-SEND",
-		      1);
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "anonymity",     1, 0, 'a' },
-      { "automate", 0, 0, 'A' },
-      { "create", 1, 0, 'C' },
-      { "delete", 1, 0, 'D' },
-      { "end", 0, 0, 'E' },
-      { "keyword", 1, 0, 'k' },
-      { "mimetype", 1, 0, 'm' },
-      { "no-advertisement", 0, 0, 'n' },
-      { "quiet", 0, 0, 'q' },
-      { "realname", 1, 0, 'r' },
-      { "root", 1, 0, 'R' },
-      { "set-rating", 1, 0, 's' },
-      { "text", 1, 0, 't' },
-      { "uri", 1, 0, 'u' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "a:Ac:C:D:Ehk:L:m:nqr:R:s:t:u:v",
-		      long_options,
-		      &option_index);
-
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'a': {
-      unsigned int receivePolicy;
-
-      if (1 != sscanf(GNoptarg,
-		      "%ud",
-		      &receivePolicy)) {
-        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("You must pass a number to the `%s' option.\n"),
-	    "-a");
-        return -1;
-      }
-      setConfigurationInt("FS",
-                          "ANONYMITY-SEND",
-                          receivePolicy);
-      break;
-    }
-    case 'A':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "AUTOMATE",
-					 "START"));
-      break;
-    case 'C':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "CREATE",
-					 GNoptarg));
-      break;
-    case 'D':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "DELETE",
-					 GNoptarg));
-      break;
-    case 'E':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "AUTOMATE",
-					 "STOP"));
-      break;
-    case 'k': {
-      char * old;
-      char * nw;
-      size_t s;
-
-      old = getConfigurationString("PSEUDONYM",
-				   "KEYWORD");
-      if (old == NULL) {
-	nw = STRDUP(GNoptarg);
-      } else {
-	s = strlen(old) + strlen(GNoptarg) + 3 + strlen(_("AND"));
-	nw = MALLOC(s);
-	SNPRINTF(nw, 
-		 s,
-		 "%s %s %s",
-		 old, _("AND"), GNoptarg);
-	FREE(old);
-      }
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "KEYWORD",
-					 nw));
-      FREE(nw);
-      break;
-    }
-    case 'h':
-      printhelp();
-      return SYSERR;
-    case 'm':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "MIMETYPE",
-					 GNoptarg));
-      break;
-    case 'n':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "NO-ADVERTISEMENT",
-					 "YES"));
-      break;
-    case 'q':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "QUIET",
-					 "YES"));
-      break;
-    case 'r':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "REALNAME",
-					 GNoptarg));
-      break;
-    case 'R': {
-      EncName enc;
-      HashCode512 hc;
-
-      if (SYSERR == enc2hash(GNoptarg,
-			     &hc))
-	hash(GNoptarg,
-	     strlen(GNoptarg),
-	     &hc);
-      hash2enc(&hc, &enc);
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "ROOT",
-					 (char*)&enc));
-      break;
-    }
-    case 's':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "SET-RATING",
-					 GNoptarg));
-      break;
-    case 't':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "DESCRIPTION",
-					 GNoptarg));
-      break;
-    case 'u':
-      FREENONNULL(setConfigurationString("PSEUDONYM",
-					 "URI",
-					 GNoptarg));
-      break;
-    case 'v':
-      printf("gnunet-pseudoynm v%s\n",
-	     VERSION);
-      return SYSERR;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"));
-      return SYSERR;
-    } /* end of parsing commandline */
-  }
-  if (GNoptind < argc) {
-    while (GNoptind < argc)
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Invalid argument: `%s'\n"), argv[GNoptind++]);
-    GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER,
-	_("Invalid arguments. Exiting.\n"));
-    return SYSERR;
-  }
-  return OK;
-}
-
-/**
- * Global context to use FSUI.
- */
-static struct FSUI_Context * ctx;
-
+      gettext_noop("set the rating of a namespace"),
+      0, &gnunet_getopt_configure_set_string, &set_rating },
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
 static int itemPrinter(EXTRACTOR_KeywordType type,
 		       const char * data,
 		       void * closure) {
   printf("\t%20s: %s\n",
-	 dgettext("libextractor", EXTRACTOR_getKeywordTypeAsString(type)),
+	 dgettext("libextractor",
+		  EXTRACTOR_getKeywordTypeAsString(type)),
 	 data);
   return OK;
 }
 
-static void printMeta(const struct ECRS_MetaData * meta) {
-  ECRS_getMetaData(meta,
+static void printMeta(const struct ECRS_MetaData * m) {
+  ECRS_getMetaData(m,
 		   &itemPrinter,
 		   NULL);
 }
@@ -271,11 +128,8 @@ static int namespacePrinter(void * unused,
 			    const struct ECRS_MetaData * md,
 			    int rating) {
   EncName enc;
-  char * set;
   int cpos;
 
-  set = getConfigurationString("PSEUDONYM",
-			       "SET-RATING");
   hash2enc(id,
 	   &enc);
   if (0 == strcmp(namespaceName, (char*)&enc))
@@ -289,9 +143,11 @@ static int namespacePrinter(void * unused,
 	   rating);
   printMeta(md);
 
-  if (set != NULL) {
+  if (set_rating != NULL) {
     int delta;
+    char * set;
 
+    set = set_rating;
     delta = 0;
     cpos = 0;
     while ( (set[cpos] != '\0') &&
@@ -313,116 +169,86 @@ static int namespacePrinter(void * unused,
     }
 
     if (delta != 0) {
-      rating = FSUI_rankNamespace(ctx,
-				  namespaceName,
-				  delta);
+      rating = NS_rankNamespace(ectx,
+				cfg,
+				namespaceName,
+				delta);
       printf(_("\tRating (after update): %d\n"),
 	     rating);
     }
   }
-  FREENONNULL(set);
   printf("\n");
   return OK;
 }
 
-static void eventCallback(void * unused,
-			  const FSUI_Event * event) {
-  /* we ignore all events */
-}
-
-
-int main(int argc, char *argv[]) {
+int main(int argc, 
+	 const char *argv[]) {
   int cnt;
   char * pname;
   int success;
-  char * description;
-  char * realname;
-  char * uri;
-  char * mimetype;
-  struct ECRS_MetaData * meta;
-	
-  /* startup */
-  success = 0; /* no errors */
-  if (OK != initUtil(argc, argv, &parser))
-    return SYSERR;
+  int i;
+  HashCode512 hc;
 
-  ctx = FSUI_start("gnunet-pseudonym",
-		   NO,
-		   &eventCallback,
-		   NULL);
+  /* startup */
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  meta = ECRS_createMetaData();
+  i = gnunet_parse_options("gnunet-pseudonym [OPTIONS]",
+			   ectx,
+			   cfg,
+			   gnunetpseudonymOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i == SYSERR) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    ECRS_freeMetaData(meta);
+    return -1;  
+  }
+  success = 0; /* no errors */
 
   /* stop collections */
-  if (testConfigurationString("PSEUDONYM",
-			      "AUTOMATE",
-			      "STOP")) {
-    if (OK == FSUI_stopCollection(ctx))
+  if (start_collection || stop_collection) {
+    if (OK == CO_stopCollection(ectx,
+				cfg))
       printf(_("Collection stopped.\n"));
     else
       printf(_("Failed to stop collection (not active?).\n"));
   }
 
   /* delete pseudonyms */
-  pname = getConfigurationString("PSEUDONYM",
-				 "DELETE");
-  if (pname != NULL) {
-    if (OK == FSUI_deleteNamespace(pname)) {
+  if (delete_name != NULL) {
+    if (OK == NS_deleteNamespace(ectx,
+				 cfg,
+				 delete_name)) {
       printf(_("Pseudonym `%s' deleted.\n"),
-	     pname);
+	     delete_name);
     } else {
       success += 2;
       printf(_("Error deleting pseudonym `%s' (does not exist?).\n"),
-	     pname);
+	     delete_name);
     }
-    FREE(pname);
+    FREE(delete_name);
   }
 
-  /* create MetaData */
-  description = getConfigurationString("PSEUDONYM",
-				       "DESCRIPTION");
-  realname = getConfigurationString("PSEUDONYM",
-				    "REALNAME");
-  uri = getConfigurationString("PSEUDONYM",
-			       "URI");
-  mimetype = getConfigurationString("PSEUDONYM",
-				    "MIMETYPE");
-  meta = ECRS_createMetaData();
-  if (uri != NULL)
-    ECRS_addToMetaData(meta,
-		       EXTRACTOR_RELATION,
-		       uri);
-  if (realname != NULL)
-    ECRS_addToMetaData(meta,
-		       EXTRACTOR_PRODUCER,
-		       realname);
-  if (description != NULL)
-    ECRS_addToMetaData(meta,
-		       EXTRACTOR_DESCRIPTION,
-		       description);
-  if (mimetype != NULL)
-    ECRS_addToMetaData(meta,
-		       EXTRACTOR_MIMETYPE,
-		       mimetype);
-  FREENONNULL(description);
-  FREENONNULL(realname);
-  FREENONNULL(uri);
-  FREENONNULL(mimetype);
-
   /* create collections / namespace */
-  pname = getConfigurationString("PSEUDONYM",
-				 "CREATE");
-  if (pname != NULL) {
-    if (testConfigurationString("PSEUDONYM",
-				"AUTOMATE",
-				"START")) {
+  if (create_name != NULL) {
+    if (start_collection) {
       ECRS_addToMetaData(meta,
 			 EXTRACTOR_OWNER,
 			 pname);
-      if (OK == FSUI_startCollection(ctx,
-				     getConfigurationInt("FS",
-							 "ANONYMITY-SEND"),
-				     ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
-				     pname,
-				     meta)) {
+      if (OK == CO_startCollection(ectx,
+				   cfg,
+				   anonymity,
+				   priority,
+				   ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
+				   pname,
+				   meta)) {
 	printf(_("Started collection `%s'.\n"),
 	       pname);
       } else {
@@ -435,40 +261,38 @@ int main(int argc, char *argv[]) {
 			   pname);
     } else { /* no collection */
       HashCode512 rootEntry;
-      char * root;
       char * keyword;
       struct ECRS_URI * advertisement;
       struct ECRS_URI * rootURI;
+      char * root;
 
-      root = getConfigurationString("PSEUDONYM",
-				    "ROOT");
-      if (root == NULL) {
+      if (root_name == NULL) {
 	memset(&rootEntry, 0, sizeof(HashCode512));
       } else {
-	enc2hash(root, &rootEntry);
-	FREE(root);
+	if (SYSERR == enc2hash(root_name,
+			       &hc))
+	  hash(root_name,
+	       strlen(root_name),
+	       &hc);
       }
-
-      keyword = getConfigurationString("PSEUDONYM",
-				       "KEYWORD");
-      if (keyword == NULL)
-	keyword = STRDUP("namespace"); /* default keyword */
-
-      if (testConfigurationString("PSEUDONYM",
-				  "NO-ADVERTISEMENT",
-				  "YES")) {
+      if (no_advertisement) {
+	ECRS_freeUri(advertisement);
 	advertisement = NULL;
       } else {
-	advertisement = FSUI_parseCharKeywordURI(keyword);
+	if (advertisement == NULL)
+	  advertisement = ECRS_parseCharKeywordURI(ectx,
+						   "namespace");      
       }
       FREE(keyword);
-      rootURI = FSUI_createNamespace(ctx,
-				     getConfigurationInt("FS",
-							 "ANONYMITY-SEND"),
-				     pname,
-				     meta,
-				     advertisement,
-				     &rootEntry);
+      rootURI = NS_createNamespace(ectx,
+				   cfg,
+				   anonymity,
+				   priority,
+				   expiration,
+				   create_name,
+				   meta,
+				   advertisement,
+				   &rootEntry);
       if (rootURI == NULL) {
 	printf(_("Could not create namespace `%s' (exists?).\n"),
 	       pname);
@@ -489,22 +313,19 @@ int main(int argc, char *argv[]) {
   }
   ECRS_freeMetaData(meta);
 
-  if (testConfigurationString("PSEUDONYM",
-			      "QUIET",
-			      "YES"))
-    return success; /* do not print! */
-
+  if (0 == be_quiet) {
   /* print information about pseudonyms */
-
-  cnt = FSUI_listNamespaces(ctx,
+    cnt = NS_listNamespaces(ectx,
+			    cfg,
 			    NO,
 			    &namespacePrinter,
 			    NULL);
-  if (cnt == -1)
-    printf(_("Could not access namespace information.\n"));
-
-  FSUI_stop(ctx);
-  doneUtil();
+    if (cnt == -1)
+      printf(_("Could not access namespace information.\n"));
+  }
+  ECRS_freeMetaData(meta);
+  GC_free(cfg);
+  GE_free_context(ectx);
   return success;
 }
 

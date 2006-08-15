@@ -12,6 +12,7 @@ libgnunetecrs_la_SOURCES = \
   keyspace.c \
   meta.c \
   namespace.c \
+  parser.c \
   search.c \
   tree.c tree.h \
   unindex.c \

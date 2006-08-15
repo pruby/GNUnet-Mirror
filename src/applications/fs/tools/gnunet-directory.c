@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,20 +27,25 @@
  */
 
 #include "platform.h"
-#include "gnunet_fsui_lib.h"
-
-static char ** filenames;
-static int filenamescnt;
+#include "gnunet_ecrs_lib.h"
+#include "gnunet_uritrack_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 
 static int do_list;
+
 static int do_kill;
+
 static int do_track;
+
+static struct GE_Context * ectx;
 
 static int itemPrinter(EXTRACTOR_KeywordType type,
 		       const char * data,
 		       void * closure) {
   printf("\t%20s: %s\n",
-	 dgettext("libextractor", EXTRACTOR_getKeywordTypeAsString(type)),
+	 dgettext("libextractor", 
+		  EXTRACTOR_getKeywordTypeAsString(type)),
 	 data);
   return OK;
 }
@@ -72,20 +77,22 @@ static void printDirectory(const char * filename) {
   char * name;
   int fd;
 
-  name = expandFileName(filename);
+  name = string_expandFileName(ectx, filename);
   printf(_("==> Directory `%s':\n"),
 	 name);
-  if ( (OK != getFileSize(name,
-			  &len)) ||
+  if ( (OK != disk_file_size(ectx,
+			     name,
+			     &len,
+			     YES)) ||
        (len == 0) ) {
     printf(_("=\tError reading directory.\n"));
     return;
   }
   md = NULL;
-  fd = fileopen(name,
-		O_LARGEFILE | O_RDONLY);
+  fd = disk_file_open(ectx,
+		      name,
+		      O_LARGEFILE | O_RDONLY);
   if (fd == -1) {
-    GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "open", name);
     ret = -1;
   } else {
     data = MMAP(NULL,
@@ -95,17 +102,21 @@ static void printDirectory(const char * filename) {
 		fd,
 		0);
     if (data == MAP_FAILED) {
-      GE_LOG_STRERROR_FILE(ectx,LOG_ERROR, "mmap", name);
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_ADMIN | GE_BULK,
+			   "mmap",
+			   name);
       ret = -1;
     } else {
-      ret = ECRS_listDirectory(data,
+      ret = ECRS_listDirectory(ectx,
+			       data,
 			       len,
 			       &md,
 			       &printNode,
 			       NULL);
       MUNMAP(data, len);
     }
-    closefile(fd);
+    CLOSE(fd);
   }
   if (ret == -1)
     printf(_("File format error (not a GNUnet directory?)\n"));
@@ -121,102 +132,69 @@ static void printDirectory(const char * filename) {
 }
 
 /**
- * Print a list of the options we offer.
+ * All gnunet-directory command line options
  */
-static void printhelp() {
-  static Help help[] = {
-    HELP_CONFIG,
-    HELP_HELP,
-    { 'k', "kill", NULL,
-      gettext_noop("remove all entries from the directory database and stop tracking URIs") },
-    { 'l', "list", NULL,
-      gettext_noop("list entries from the directory database") },
-    HELP_LOGLEVEL,
-    { 't', "track", NULL,
-      gettext_noop("start tracking entries for the directory database") },
-    HELP_VERSION,
-    HELP_END,
-  };
-  formatHelp(_("gnunet-directory [OPTIONS] [FILENAMES]"),
-	     _("Perform directory related operations."),
-	     help);
-}
-
-/**
- * Perform option parsing from the command line.
- */
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  int c;
-
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "kill",    0, 0, 'k' },
-      { "list",    0, 0, 'l' },
-      { "track",   0, 0, 't' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:hklL:tv",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'h':
-      printhelp();
-      return SYSERR;
-    case 'k':
-      do_kill = YES;
-      break;
-    case 'l':
-      do_list = YES;
-      break;
-    case 't':
-      do_track = YES;
-      break;
-    case 'v':
-      printf("GNUnet v%s, gnunet-directory v%s\n",
-	     VERSION,
-	     AFS_VERSION);
-      return SYSERR;
-    default:
-      printf(_("Use --help to get a list of options.\n"));
-      return SYSERR;
-    } /* end of parsing commandline */
-  }
-  filenames = &argv[GNoptind];
-  filenamescnt = argc - GNoptind;
-  return OK;
-}
+static struct CommandLineOption gnunetdirectoryOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Perform directory related operations.")), /* -h */
+  { 'k', "kill", NULL, 
+    gettext_noop("remove all entries from the directory database and stop tracking URIs"),
+    0, &gnunet_getopt_configure_set_one, &do_kill },
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'l', "list", NULL,
+    gettext_noop("list entries from the directory database"),
+    1, &gnunet_getopt_configure_set_one, &do_list },
+  { 't', "track", NULL,
+    gettext_noop("start tracking entries for the directory database"),
+    1, &gnunet_getopt_configure_set_one, &do_track },
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
 int main(int argc,
-	 char * argv[]) {
+	 const char * argv[]) {
   int i;
-  if (SYSERR == initUtil(argc, argv, &parseCommandLine))
-    return 0;
+  struct GC_Configuration * cfg;
 
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  i = gnunet_parse_options("gnunet-directory [OPTIONS] [FILENAMES]",
+			   ectx,
+			   cfg,
+			   gnunetdirectoryOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i == SYSERR) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
   if (do_list)
     printf(_("Listed %d matching entries.\n"),
-	   FSUI_listURIs(&printNode,
-			 NULL));
+	   URITRACK_listURIs(ectx,
+			     cfg,
+			     &printNode,
+			     NULL));
   if (do_kill) {
-    FSUI_trackURIS(NO);
-    FSUI_clearTrackedURIS();
+    URITRACK_trackURIS(ectx, cfg, NO);
+    URITRACK_clearTrackedURIS(ectx, cfg);
   }
   if (do_track)
-    FSUI_trackURIS(YES);
+    URITRACK_trackURIS(ectx, cfg, YES);
 
-  for (i=0;i<filenamescnt;i++)
-    printDirectory(filenames[i]);
+  while (i < argc)
+    printDirectory(argv[i]);
 
-  doneUtil();
+  GC_free(cfg);
+  GE_free_context(ectx);
+ 
+
   return 0;
 }
 

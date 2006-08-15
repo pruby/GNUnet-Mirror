@@ -413,6 +413,25 @@ typedef struct {
   struct ECRS_URI * uri;
 } ECRS_FileInfo;
 
+
+/**
+ * @param scls must be of type "struct ECRS_URI **"
+ */
+int gnunet_getopt_configure_set_keywords(CommandLineProcessorContext * ctx,
+					 void * scls,
+					 const char * option,
+					 const char * value);
+
+/**
+ * @param scls must be of type "struct ECRS_MetaData **"
+ */
+int gnunet_getopt_configure_set_metadata(CommandLineProcessorContext * ctx,
+					 void * scls,
+					 const char * option,
+					 const char * value);
+
+
+
 /* ************************* sharing API ***************** */
 
 /**
