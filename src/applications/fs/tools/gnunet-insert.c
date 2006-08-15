@@ -48,9 +48,11 @@ static struct ECRS_MetaData * meta;
 static struct FSUI_Context * ctx;
 
 static char ** topKeywords = NULL;
+
 static unsigned int topKeywordCnt = 0;
 
 static char ** gloKeywords = NULL;
+
 static unsigned int gloKeywordCnt = 0;
 
 

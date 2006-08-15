@@ -62,7 +62,7 @@ static struct ECRS_MetaData * meta;
 static struct ECRS_URI * advertisement;
 
 /**
- * All gnunet-directory command line options
+ * All gnunet-pseudonym command line options
  */
 static struct CommandLineOption gnunetpseudonymOptions[] = {
     { 'a', "anonymity", "LEVEL",

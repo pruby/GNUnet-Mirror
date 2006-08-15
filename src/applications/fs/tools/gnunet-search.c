@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -22,10 +22,28 @@
  * @file applications/fs/tools/gnunet-search.c
  * @brief Main function to search for files on GNUnet.
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - make sure all (search related) FSUI events are handled correctly!
  */
 
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_util_cron.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
+
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
+
+static unsigned int anonymity = 1;
+
+static unsigned int delay = 300;
+
+static unsigned int max_results;
+
+static char * output_filename;
 
 typedef struct {
   unsigned int resultCount;
@@ -39,7 +57,8 @@ static int itemPrinter(EXTRACTOR_KeywordType type,
 		       const char * data,
 		       void * closure) {
   printf("\t%20s: %s\n",
-	 dgettext("libextractor", EXTRACTOR_getKeywordTypeAsString(type)),
+	 dgettext("libextractor",
+		  EXTRACTOR_getKeywordTypeAsString(type)),
 	 data);
   return OK;
 }
@@ -53,15 +72,16 @@ static void printMeta(const struct ECRS_MetaData * meta) {
 /**
  * Handle the search result.
  */
-static void eventCallback(SearchClosure * sc,
-			  const FSUI_Event * event) {
+static void * eventCallback(void * cls,
+			    const FSUI_Event * event) {
+  SearchClosure * sc = cls;
   char * uri;
   char * filename;
 
   if (0 == sc->max)
-    return;
+    return NULL;
   if (event->type != FSUI_search_result)
-    return;
+    return NULL;
 
   /* retain URIs for possible directory dump later */
   GROW(sc->fis,
@@ -95,198 +115,85 @@ static void eventCallback(SearchClosure * sc,
   FREENONNULL(filename);
   FREE(uri);
   if (0 == --sc->max)
-    run_shutdown(0);
+    GNUNET_SHUTDOWN_INITIATE();
+  return NULL;
 }
 
 /**
- * Prints the usage information for this command if the user errs.
- * Aborts the program.
+ * All gnunet-search command line options
  */
-static void printhelp() {
-  static Help help[] = {
-    { 'a', "anonymity", "LEVEL",
-      gettext_noop("set the desired LEVEL of receiver-anonymity") },
-    HELP_CONFIG,
-    HELP_HELP,
-    HELP_HOSTNAME,
-    HELP_LOGLEVEL,
-    { 'm', "max", "LIMIT",
-      gettext_noop("exit after receiving LIMIT results") },
-    { 'o', "output", "FILENAME",
-      gettext_noop("write encountered (decrypted) search results to FILENAME") },
-    { 't', "timeout", "TIMEOUT",
-      gettext_noop("wait TIMEOUT seconds for search results before aborting") },
-    HELP_VERSION,
-    HELP_END,
-  };
-  formatHelp("gnunet-search [OPTIONS] KEYWORD [AND KEYWORD]",
-	     _("Search GNUnet for files."),
-	     help);
-}
+static struct CommandLineOption gnunetsearchOptions[] = {
+  { 'a', "anonymity", "LEVEL",
+    gettext_noop("set the desired LEVEL of sender-anonymity"),
+    1, &gnunet_getopt_configure_set_uint, &anonymity }, 
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 'm', "max", "LIMIT",
+    gettext_noop("exit after receiving LIMIT results"),
+    1, &gnunet_getopt_configure_set_uint, &max_results },  
+  { 'o', "output", "FILENAME",
+    gettext_noop("write encountered (decrypted) search results to FILENAME"),
+    1, &gnunet_getopt_configure_set_string, &output_filename },
+  { 't', "timeout", "DELAY",
+    gettext_noop("wait DELAY seconds for search results before aborting"),
+    0, &gnunet_getopt_configure_set_uint, &delay },
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
-/**
- * Parse the options, set the timeout.
- * @param argc the number of options
- * @param argv the option list (including keywords)
- * @return SYSERR if we should exit, OK otherwise
- */
-static int parseOptions(int argc,
-			char ** argv) {
-  int c;
-
-  setConfigurationInt("FS",
-		      "ANONYMITY-RECEIVE",
-		      1);
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "anonymity", 1, 0, 'a' },
-      { "max",       1, 0, 'm' },
-      { "output",    1, 0, 'o' },
-      { "timeout",   1, 0, 't' },
-      { 0,0,0,0 }
-    };
-    c = GNgetopt_long(argc,
-		      argv,
-		      "a:c:dhH:L:m:o:t:v",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'a': {
-      unsigned int receivePolicy;
-
-      if (1 != sscanf(GNoptarg,
-		      "%ud",
-		      &receivePolicy)) {
-        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("You must pass a number to the `%s' option.\n"),
-	    "-a");
-        return -1;
-      }
-      setConfigurationInt("FS",
-                          "ANONYMITY-RECEIVE",
-                          receivePolicy);
-      break;
-    }
-    case 'h':
-      printhelp();
-      return SYSERR;
-    case 'm': {
-      unsigned int max;
-      if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-m");
-	return SYSERR;
-      } else {
-	setConfigurationInt("FS",
-			    "MAXRESULTS",
-			    max);
-	if (max == 0)
-	  return SYSERR; /* exit... */	
-      }
-      break;
-    }
-    case 'o':
-      FREENONNULL(setConfigurationString("GNUNET-SEARCH",
-      					 "OUTPUT_PREFIX",
-					 GNoptarg));
-      break;
-    case 't': {
-      unsigned int timeout;
-      if (1 != sscanf(GNoptarg, "%ud", &timeout)) {
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-t");
-	return SYSERR;
-      } else {
-	setConfigurationInt("FS",
-			    "SEARCHTIMEOUT",
-			    timeout);
-      }
-      break;
-    }
-    case 'v':
-      printf("GNUnet v%s, gnunet-search v%s\n",
-	     VERSION,
-	     AFS_VERSION);
-      return SYSERR;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"));
-      return SYSERR;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  if (argc - GNoptind <= 0) {
-    GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	_("Not enough arguments. "
-	  "You must specify a keyword or identifier.\n"));
-    printhelp();
-    return SYSERR;
-  }
-  setConfigurationStringList(&argv[GNoptind],
-			     argc-GNoptind);
-  return OK;
+static void run_shutdown(void * unused) {
+  GNUNET_SHUTDOWN_INITIATE();
 }
 
 /**
  * Perform a normal (non-namespace) search.
  */
-static int runSearch() {
+static int runSearch(const char * suri) {
   struct FSUI_Context * ctx;
   SearchClosure sc;
-  char * suri;
   struct ECRS_URI * uri;
+  struct FSUI_SearchList * s;
   int i;
-  char * prefix;
 
-  suri = getConfigurationString("GNUNET-SEARCH",
-				"URI");
   if (suri == NULL) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  uri = ECRS_stringToUri(suri);
-  if (uri == NULL)
-    uri = FSUI_parseCharKeywordURI(suri);
-  FREE(suri);
-
+  uri = ECRS_stringToUri(ectx,
+			 suri);
   memset(&sc, 0, sizeof(SearchClosure));
-  sc.max = getConfigurationInt("FS",
-			       "MAXRESULTS");
+  sc.max = max_results;
   sc.resultCount = 0;
   if (sc.max == 0)
     sc.max = (unsigned int)-1; /* infty */
-  ctx = FSUI_start("gnunet-search",
+  ctx = FSUI_start(ectx,
+		   cfg,
+		   "gnunet-search",
+		   4,
 		   NO,
-		   (FSUI_EventCallback) &eventCallback,
+		   &eventCallback,
 		   &sc);
   if (ctx == NULL) {
     ECRS_freeUri(uri);
     return SYSERR;
   }
-  if (OK !=
-      FSUI_startSearch(ctx,
-		       getConfigurationInt("FS",
-					   "ANONYMITY-RECEIVE"),
-		       uri)) {
+  s = FSUI_startSearch(ctx,
+		       anonymity,
+		       uri);
+  if (s == NULL) {
     printf(_("Starting search failed. Consult logs.\n"));
   } else {
-    wait_for_shutdown();
+    GNUNET_SHUTDOWN_WAITFOR();
     FSUI_stopSearch(ctx,
-		    uri);
+		    s);
   }
   ECRS_freeUri(uri);
   FSUI_stop(ctx);
 
-  prefix = getConfigurationString("GNUNET-SEARCH",
-  				  "OUTPUT_PREFIX");
-  if (prefix != NULL) {
+  if (output_filename != NULL) {
     char * outfile;
     unsigned long long n;
     char * data;
@@ -294,20 +201,23 @@ static int runSearch() {
 
     meta = ECRS_createMetaData();
     /* ?: anything here to put into meta? */
-    if (OK == ECRS_createDirectory(&data,
+    if (OK == ECRS_createDirectory(ectx,
+				   &data,
 				   &n,
 				   sc.fiCount,
 				   sc.fis,
 				   meta)) {
-      outfile = expandFileName(prefix);
-      writeFile(outfile,
-		data,
-		n,
-		"600");
+      outfile = string_expandFileName(ectx,
+				      output_filename);
+      disk_file_write(ectx,
+		      outfile,
+		      data,
+		      n,
+		      "600");
       FREE(outfile);
       FREE(data);
     }
-    FREE(prefix);
+    FREE(output_filename);
   }
   for (i=0;i<sc.fiCount;i++) {
     ECRS_freeUri(sc.fis[i].uri);
@@ -327,52 +237,66 @@ static int runSearch() {
  * @return return value from gnunet-search: 0: ok, -1: error
  */
 int main(int argc,
-	 char ** argv) {
+	 const char ** argv) {
   int ret;
   char * suri;
   struct ECRS_URI * uri;
+  int i;
+  struct CronManager * cron;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0;
+  /* startup */
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  i = gnunet_parse_options("gnunet-search [OPTIONS] [KEYWORDS]",
+			   ectx,
+			   cfg,
+			   gnunetsearchOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i == SYSERR) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
 
   /* convert args to URI */
-  argc = getConfigurationStringList(&argv);
-  uri = NULL;
-  if (argc == 1)
-    uri = ECRS_stringToUri(argv[0]);
-  if (uri == NULL)
-    uri = FSUI_parseArgvKeywordURI(argc,
-				   (const char**) argv);
-  while (argc > 0)
-    FREE(argv[--argc]);
-  FREE(argv);
+  uri = ECRS_parseArgvKeywordURI(ectx,
+				 argc - i,
+				 (const char**) &argv[i]);
   if (uri != NULL) {
     suri = ECRS_uriToString(uri);
     ECRS_freeUri(uri);
   } else {
     printf(_("Error converting arguments to URI!\n"));
+    GC_free(cfg);
+    GE_free_context(ectx);
     return -1;
   }
-  FREENONNULL(setConfigurationString("GNUNET-SEARCH",
-				     "URI",
-				     suri));
+
+  cron = cron_create(ectx);
+  cron_add_job(cron,
+	       &run_shutdown,
+	       cronSECONDS * delay,
+	       0, /* no need to repeat */
+	       NULL);
+  cron_start(cron);
+  ret = runSearch(suri);
   FREE(suri);
 
+  cron_stop(cron);
+  cron_del_job(cron,
+	       &run_shutdown,
+	       0,
+	       NULL);
+  cron_destroy(cron);
 
-  initializeShutdownHandlers();
-  addCronJob((CronJob)&run_shutdown,
-	     cronSECONDS * getConfigurationInt("FS",
-					       "SEARCHTIMEOUT"),
-	     0, /* no need to repeat */
-	     NULL);
-  startCron();
-  ret = runSearch();
-  stopCron();
-  delCronJob((CronJob)&run_shutdown,
-	     0,
-	     NULL);
-  doneShutdownHandlers();
-  doneUtil();
+  GC_free(cfg);
+  GE_free_context(ectx);
   if (ret == OK)
     return 0;
   else
