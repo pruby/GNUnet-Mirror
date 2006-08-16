@@ -510,16 +510,16 @@ static void * uploadThread(void * cls) {
  *  running
  */
 struct FSUI_UploadList *
-FSUI_upload(struct FSUI_Context * ctx,
-	    const char * filename,
-	    unsigned int anonymityLevel,
-	    unsigned int priority,
-	    int doIndex,
-	    int doExtract,
-	    int individualKeywords,
-	    const struct ECRS_MetaData * md,
-	    const struct ECRS_URI * globalURI,
-	    const struct ECRS_URI * keyUri) {
+FSUI_startUpload(struct FSUI_Context * ctx,
+		 const char * filename,
+		 unsigned int anonymityLevel,
+		 unsigned int priority,
+		 int doIndex,
+		 int doExtract,
+		 int individualKeywords,
+		 const struct ECRS_MetaData * md,
+		 const struct ECRS_URI * globalURI,
+		 const struct ECRS_URI * keyUri) {
   FSUI_UploadList * utc;
   char * config;
   struct GE_Context * ectx;
