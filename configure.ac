@@ -177,6 +177,10 @@ then
 fi
 
 
+# libcurl
+LIBCURL_CHECK_CONFIG(,,,AC_MSG_ERROR([GNUnet requires libcurl]))
+
+
 # test for kvm and kstat (for CPU stats under BSD/Solaris)
 AC_CHECK_LIB([kvm],[kvm_open])
 AC_CHECK_LIB([kstat],[kstat_open])

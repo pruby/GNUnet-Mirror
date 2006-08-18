@@ -152,15 +152,6 @@ menu "General settings" "GNUNETD"
 		If you have to use a proxy for outbound HTTP connections,
 		specify the proxy configuration here.  Default is no proxy.
   
-	config HTTP-PROXY-PORT
-	int "HTTP Proxy Port"
-	range 1 65535
-	default 1080
-	depends on Meta::ADVANCED
-	help
-		If you have to use a proxy for outbound HTTP connections,
-		specify the proxy configuration here.  Default is no proxy.
-  
 	config APPLICATIONS
 	string "Which applications should gnunetd support?"
 	default "advertising fs getoption stats traffic"

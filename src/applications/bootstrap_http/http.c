@@ -23,8 +23,11 @@
  * @brief HOSTLISTURL support.  Downloads hellos via http.
  * @author Christian Grothoff
  *
- * TODO: avoid busy-sleep-waiting (use select!); maybe 
- *       change to use libwww!?
+ * TODO:
+ * make use of curls multi-API to make the http download
+ * interruptable (use select & test for terminate callback
+ * -- PTHREAD_STOP_SLEEP should interrupt select
+ * as well! -- and if not, we can use a small timeout).
  */
 
 #include "platform.h"
@@ -33,16 +36,7 @@
 #include "gnunet_bootstrap_service.h"
 #include "gnunet_stats_service.h"
 
-#define DEBUG_HTTP NO
-
-#define TCP_HTTP_PORT 80
-#define HTTP_URL "http://"
-#define GET_COMMAND "GET http://%s:%u%s HTTP/1.0\r\n\r\n"
-
-/**
- * The HTTP proxy (optional)
- */
-static struct sockaddr_in theProxy;
+#include <curl/curl.h>
 
 /**
  * Stats service (maybe NULL!)
@@ -55,242 +49,87 @@ static int stat_hellodownloaded;
 
 static struct GE_Context * ectx;
 
+typedef struct {
+  bootstrap_hello_callback callback;
+  void * arg;
+  bootstrap_terminate_callback termTest;
+  void * targ;
+  char * buf;
+  size_t bsize;
+  const char * url;
+} BootstrapContext;
+
+
 /**
- * Download hostlist from the web and call method
- * on each hello.
+ * Process downloaded bits by calling callback on each hello.
  */
-static void
-downloadHostlistHelper(char * url,
-		       hello_Callback callback,
-		       void * arg) {
-  unsigned short port;
-  char * hostname;
-  char * filename;
-  unsigned int curpos, lenHostname, lenUrl;
-  IPaddr ip_info;
-  struct sockaddr_in soaddr;
-  int sock;
-  size_t ret;
-  int success;
-  char * command;
-  cron_t start;
-  char c;
-  char * buffer;
-  size_t n;
+static size_t
+downloadHostlistHelper(void * ptr,
+		       size_t size,
+		       size_t nmemb, 
+		       void * stream) {
+  BootstrapContext * bctx = ptr;
+  size_t osize;
+  size_t total;
+  P2P_hello_MESSAGE * helo;
+  unsigned int hs;
 
-  port = TCP_HTTP_PORT;
-
-  if (0 != strncmp(HTTP_URL, url, strlen(HTTP_URL)) ) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Invalid URL `%s' (must begin with `%s')\n"),
-	url,
-	HTTP_URL);
-    return;
-  }
-  curpos = strlen(HTTP_URL);
-  hostname = &url[curpos];
-  lenUrl = strlen(url);
-  while ( (curpos < lenUrl) &&
-	  (url[curpos] != '/') )
-    curpos++;
-  if (curpos == lenUrl)
-    filename = STRDUP("/");
-  else
-    filename = STRDUP(&url[curpos]);
-  url[curpos] = '\0'; /* terminator for hostname */
-
-  curpos = 0;
-  lenHostname = strlen(hostname);
-  while ( (curpos < lenHostname) &&
-          (hostname[curpos] != ':') )
-    curpos++;
-  if (curpos == lenHostname)
-    port = TCP_HTTP_PORT;
-  else {
-    port = atoi(hostname + curpos + 1);
-    if (!port) {
-      GE_LOG(ectx,
-	     GE_WARNING | GE_BULK | GE_USER,
-	     _("Invalid port \"%s\" in hostlist specification, trying port %d.\n"),
-	     TCP_HTTP_PORT);
-    	port = TCP_HTTP_PORT;
-    }
-  }
-
-  hostname[curpos] = '\0'; /* terminator for hostname */
-
-  sock = SOCKET(PF_INET, SOCK_STREAM, 0);
-  if (sock < 0) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: `%s'.\n"),
-	"socket",
-	__FILE__, __LINE__,
-	STRERROR(errno));
-    FREE(filename);
-    return;
-  }
-
-  /* Do we need to connect through a proxy? */
-  if (theProxy.sin_addr.s_addr == 0) {
-    if (OK != get_host_by_name(ectx, hostname, &ip_info)) {
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Could not download list of peer contacts, host `%s' unknown.\n"),
-	  hostname);
-      FREE(filename);
-      return;
-    }
-
-    memcpy(&soaddr.sin_addr.s_addr,
-	   &ip_info,
-	   sizeof(IPaddr));
-    soaddr.sin_port
-      = htons(port);
-  } else {
-    soaddr.sin_addr.s_addr
-      = theProxy.sin_addr.s_addr;
-    soaddr.sin_port
-      = theProxy.sin_port;
-  }
-  soaddr.sin_family = AF_INET;
-
-  if (CONNECT(sock,
-	      (struct sockaddr*)&soaddr,
-	      sizeof(soaddr)) < 0) {
-    GE_LOG(ectx, 
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("`%s' to `%s' failed at %s:%d with error: %s\n"),
-	   "connect",
-	   hostname,
-	   __FILE__, __LINE__,
-	   STRERROR(errno));
-    FREE(filename);
-    if (0 != CLOSE(sock))
-      GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_BULK | GE_ADMIN, 
-		      "close");
-    return;
-  }
-
-	/* 10: 1 + sizeof(port) */
-  n = strlen(filename) + strlen(GET_COMMAND) + lenHostname + 10;
-  command = MALLOC(n);
-  SNPRINTF(command,
-	   n,
-	   GET_COMMAND,
-	   hostname,
-	   port,
-	   filename);
-  FREE(filename);
-  curpos = strlen(command)+1;
-  curpos = SEND_BLOCKING_ALL(sock,
-			     command,
-			     curpos);
-  if (SYSERR == (int)curpos) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	   _("`%s' to `%s' failed at %s:%d with error: %s\n"),
-	   "send",
-	   hostname,
-	   __FILE__, __LINE__,
-	   STRERROR(errno));
-    FREE(command);
-    if (0 != CLOSE(sock))
-      GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_BULK | GE_ADMIN, 
-		      "close");
-    return;
-  }
-  FREE(command);
-  start = get_time();
-
-  /* we first have to read out the http_response*/
-  /* it ends with four line delimiters: "\r\n\r\n" */
-  curpos = 0;
-  while (curpos < 4) {
-    if (start + 300 * cronSECONDS < get_time())
-      break; /* exit after 5m */
-    success = RECV_NONBLOCKING(sock,
-			       &c,
-			       sizeof(c),
-			       &ret);
-    if (success == NO) {
-      PTHREAD_SLEEP(100 * cronMILLIS);
-      continue;
-    }
-    if (ret <= 0)
-      break; /* end of transmission or error */
-    if ((c=='\r') || (c=='\n'))
-      curpos += ret;
-    else
-      curpos=0;
-  }
-
-  if (curpos < 4) { /* we have not found it */
-    GE_LOG(ectx,
-	   GE_WARNING | GE_BULK | GE_USER,
-	   _("Parsing HTTP response for URL `%s' failed.\n"),
-	   url);
-    if (0 != CLOSE(sock))
-      GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_BULK | GE_ADMIN, 
-		      "close");
-    return;
-  }
-
-  buffer = MALLOC(MAX_BUFFER_SIZE);
-  while (1) {
-    P2P_hello_MESSAGE * helo;
-
-    helo = (P2P_hello_MESSAGE*) &buffer[0];
-    helo->header.type = htons(p2p_PROTO_hello);
-
-    if (start + 300 * cronSECONDS < get_time())
-      break; /* exit after 300s */
-    curpos = 0;
-    helo->senderAddressSize = 0;
-    while (curpos < P2P_hello_MESSAGE_size(helo)) {
-      if (start + 300 * cronSECONDS < get_time())
-	break; /* exit after 300s */
-      success = RECV_NONBLOCKING(sock,
-			         &((char*)helo)[curpos],
-			         P2P_hello_MESSAGE_size(helo)-curpos,
-			         &ret);
-      if ( success == NO )
-	continue;
-      if (ret <= 0)
-	break; /* end of file or error*/
-      if (P2P_hello_MESSAGE_size(helo) >= MAX_BUFFER_SIZE)
-	break; /* INVALID! Avoid overflow! */
-      curpos += ret;
-    }
-    if (curpos != P2P_hello_MESSAGE_size(helo)) {
-      if (curpos != 0)
-	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	    _("Parsing hello from `%s' failed.\n"),
-	    url);
+  if (size * nmemb == 0)
+    return 0; /* ok, no data */
+  osize = bctx->bsize;
+  total = size * nmemb + osize; 
+  GROW(bctx->buf,
+       bctx->bsize,
+       total);
+  memcpy(&bctx->buf[osize],
+	 stream,
+	 size * nmemb);
+  while ( (bctx->bsize > sizeof(P2P_hello_MESSAGE)) &&
+	  (bctx->termTest(bctx->targ)) ) {
+    helo = (P2P_hello_MESSAGE*) &bctx->buf[0];
+    if (bctx->bsize < P2P_hello_MESSAGE_size(helo))
       break;
+    if ( (ntohs(helo->header.type) != p2p_PROTO_hello) ||
+	 (P2P_hello_MESSAGE_size(helo) >= MAX_BUFFER_SIZE) ) {
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_REQUEST,
+	     _("Bootstrap data obtained from `%s' is invalid.\n"),
+	     bctx->url);
+      return 0; /* Error: invalid format! */
     }
-    helo->header.size = htons(P2P_hello_MESSAGE_size(helo));
+    hs = P2P_hello_MESSAGE_size(helo);
+    helo->header.size = htons(hs);
     if (stats != NULL)
       stats->change(stat_hellodownloaded,
 		    1);
-    callback(helo,
-	     arg);
+    bctx->callback(helo,
+		   bctx->arg);
+    memmove(&bctx->buf[0],
+	    &bctx->buf[hs],
+	    bctx->bsize - hs);
+    GROW(bctx->buf,
+	 bctx->bsize,
+	 bctx->bsize - hs);
   }
-
-  FREE(buffer);
-  if (0 != CLOSE(sock))
-    GE_LOG_STRERROR(ectx,
-		    GE_WARNING | GE_BULK | GE_ADMIN, 
-		    "close");
+  return size * nmemb;
 }
 
 
-static void downloadHostlist(hello_Callback callback,
-			     void * arg) {
+static void downloadHostlist(bootstrap_hello_callback callback,
+			     void * arg,
+			     bootstrap_terminate_callback termTest,
+			     void * targ) {
+  BootstrapContext bctx;
   char * url;
-  int i;
-  int cnt;
+  char * proxy;
+  CURL * curl;
 
+  bctx.callback = callback;
+  bctx.arg = arg;
+  bctx.termTest = termTest;
+  bctx.targ = targ;
+  bctx.buf = NULL;
+  bctx.bsize = 0;
   if (0 != GC_get_configuration_value_string(coreAPI->cfg,
 					     "GNUNETD",
 					     "HOSTLISTURL",
@@ -298,83 +137,56 @@ static void downloadHostlist(hello_Callback callback,
 					     &url)) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
-	   "No hostlist URL specified in configuration, will not bootstrap.\n");
+	   _("No hostlist URL specified in configuration, will not bootstrap.\n"));
     return;
   }  
-#if DEBUG_HTTP
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Trying to bootstrap with peers from `%s'\n",
-      url);
-#endif
-  cnt = 1;
-  i = strlen(url);
-  while (i > 0) {
-    i--;
-    if (url[i] == ' ')
-      cnt++;
-  }
-  cnt = weak_randomi(cnt); /* pick random hostlist of the pack */
-  i = strlen(url);
-  while (i > 0) {
-    i--;
-    if (url[i] == ' ') {
-      if (cnt > 0) {
-	url[i] = '\0';
-	cnt--;
-	continue;
-      }
-      downloadHostlistHelper(&url[i+1],
-			     callback,
-			     arg);
-      FREE(url);
-      return;
-    }
-  }
-  downloadHostlistHelper(&url[0],
-			 callback,
-			 arg);
+  bctx.url = url;
+  proxy = NULL;
+  GC_get_configuration_value_string(coreAPI->cfg,
+				    "GNUNETD",
+				    "HTTP-PROXY",
+				    NULL,
+				    &proxy);
+  curl = curl_easy_init();
+  curl_easy_setopt(curl, 
+		   CURLOPT_WRITEFUNCTION,
+		   &downloadHostlistHelper);
+  curl_easy_setopt(curl, 
+		   CURLOPT_WRITEDATA,
+		   &bctx);
+  curl_easy_setopt(curl, 
+		   CURLOPT_FAILONERROR,
+		   1);
+  curl_easy_setopt(curl, 
+		   CURLOPT_URL,
+		   url);
+  if (proxy != NULL)
+    curl_easy_setopt(curl, 
+		     CURLOPT_PROXY,
+		     proxy);
+  curl_easy_setopt(curl, 
+		   CURLOPT_BUFFERSIZE,
+		   1024); /* a bit more than one HELLO */
+  if (0 == strncmp(url, "http", 4))
+    curl_easy_setopt(curl, 
+		     CURLOPT_USERAGENT,
+		     "GNUnet");
+  curl_easy_setopt(curl, 
+		   CURLOPT_CONNECTTIMEOUT,
+		   15L);
+  curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
   FREE(url);
+  FREE(proxy);
 }
 
 
 Bootstrap_ServiceAPI *
 provide_module_bootstrap(CoreAPIForApplication * capi) {
   static Bootstrap_ServiceAPI api;
-  char *proxy;
-  unsigned long long proxyPort;
-  IPaddr ip;
 
-  ectx = capi->ectx;
-  if (0 == GC_get_configuration_value_string(capi->cfg,
-					     "GNUNETD",
-					     "HTTP-PROXY",
-					     NULL,
-					     &proxy)) {
-    if (OK != get_host_by_name(ectx,
-			       proxy,
-			       &ip)) {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	     _("Could not resolve name of HTTP proxy `%s'. Trying without a proxy.\n"),
-	     proxy);
-      theProxy.sin_addr.s_addr = 0;
-    } else {
-      memcpy(&theProxy.sin_addr.s_addr,
-	     &ip,
-	     sizeof(IPaddr));
-      GC_get_configuration_value_number(capi->cfg,
-					"GNUNETD",
-					"HTTP-PROXY-PORT",
-					1,
-					65535,
-					8080,
-					&proxyPort);
-      theProxy.sin_port = htons(proxyPort);
-    }
-    FREE(proxy);
-  } else {
-    theProxy.sin_addr.s_addr = 0;
-  }
-
+  if (0 != curl_global_init(CURL_GLOBAL_ALL))
+    return NULL;
   coreAPI = capi;
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {

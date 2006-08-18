@@ -43,13 +43,19 @@ static State_ServiceAPI * state;
 
 static struct PTHREAD * pt;
 
-static int abort_bootstrap = YES;
-
 typedef struct {
   P2P_hello_MESSAGE ** helos;
   unsigned int helosCount;
   unsigned int helosLen;
+  int do_shutdown;
 } HelloListClosure;
+
+static HelloListClosure hlc;
+
+static int testTerminate(void * cls) {
+  HelloListClosure * c = cls;
+  return ! c->do_shutdown;
+}
 
 static void processhellos(HelloListClosure * hcq) {
   int rndidx;
@@ -60,7 +66,7 @@ static void processhellos(HelloListClosure * hcq) {
     GE_BREAK(coreAPI->ectx, 0);
     return;
   }
-  while ( (abort_bootstrap == NO) &&
+  while ( (! hqc.do_shutdown) &&
 	  (hcq->helosCount > 0) ) {
     /* select hello by random */
     rndidx = weak_randomi(hcq->helosCount);
@@ -84,7 +90,7 @@ static void processhellos(HelloListClosure * hcq) {
 			   NULL);
     FREE(msg);
     if ( (hcq->helosCount > 0) &&
-	 (abort_bootstrap == NO) ) {
+	 (! hlc.do_shutdown) ) {
       /* wait a bit */
       unsigned int load;
       int nload;
@@ -114,7 +120,8 @@ static void processhellos(HelloListClosure * hcq) {
 }
 
 static void downloadHostlistCallback(const P2P_hello_MESSAGE * helo,
-				     HelloListClosure * cls) {
+				     void * c) {
+  HelloListClosure * cls = c;
   if (cls->helosCount >= cls->helosLen) {
     GROW(cls->helos,
 	 cls->helosLen,
@@ -177,29 +184,30 @@ static int needBootstrap() {
 }
 
 static void * processThread(void * unused) {
-  HelloListClosure cls;
-
-  cls.helos = NULL;
-  while (abort_bootstrap == NO) {
-    while (abort_bootstrap == NO) {
+  hlc.helos = NULL;
+  while (! hlc.do_shutdown) {
+    while (! hlc.do_shutdown) {
       PTHREAD_SLEEP(2 * cronSECONDS);
       if (needBootstrap())
 	break;
     }
-    if (abort_bootstrap != NO)
+    if (! hlc.do_shutdown)
       break;
 #if DEBUG_BOOTSTRAP
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Starting bootstrap.\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Starting bootstrap.\n");
 #endif
-    cls.helosLen = 0;
-    cls.helosCount = 0;
-    bootstrap->bootstrap((hello_Callback)&downloadHostlistCallback,
-			 &cls);
-    GROW(cls.helos,
-	 cls.helosLen,
-	 cls.helosCount);
-    processhellos(&cls);
+    hlc.helosLen = 0;
+    hlc.helosCount = 0;
+    bootstrap->bootstrap(&downloadHostlistCallback,
+			 &hlc,
+			 &testTerminate,
+			 &hlc);
+    GROW(hlc.helos,
+	 hlc.helosLen,
+	 hlc.helosCount);
+    processhellos(&hlc);
   }
   return NULL;
 }
@@ -216,7 +224,7 @@ void startBootstrap(CoreAPIForApplication * capi) {
   bootstrap = capi->requestService("bootstrap");
   GE_ASSERT(capi->ectx,
 	    bootstrap != NULL);
-  abort_bootstrap = NO;
+  hlc.do_shutdown = NO;
   pt = PTHREAD_CREATE(&processThread,
 		      NULL,
 		      8 * 1024);
@@ -230,7 +238,7 @@ void startBootstrap(CoreAPIForApplication * capi) {
 void stopBootstrap() {
   void * unused;
 
-  abort_bootstrap = YES;
+  hlc.do_shutdown = YES;
   PTHREAD_STOP_SLEEP(pt);
   PTHREAD_JOIN(pt, &unused);
   pt = NULL;

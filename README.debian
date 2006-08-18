@@ -25,8 +25,8 @@ libgtk2.0-dev
 libsqlite3-dev
 libmysqlclient14-dev
 libncurses5-dev
+libcurl3-gnutls-dev
 libextractor-dev (unstable required!)
-
 
 Additional libextractor dependencies:
 

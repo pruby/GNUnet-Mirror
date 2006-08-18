@@ -7,8 +7,10 @@ plugin_LTLIBRARIES = \
 
 libgnunetmodule_bootstrap_la_SOURCES = \
   http.c 
-libgnunetmodule_bootstrap_la_LIBADD = \
+libgnunetmodule_bootstrap_la_LIBADD = @LIBCURL@ \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la 
 libgnunetmodule_bootstrap_la_LDFLAGS = \
-  -export-dynamic -avoid-version -module
+  -export-dynamic -avoid-version -module 
+libgnunetmodule_bootstrap_la_CPPFLAGS = \
+ @LIBCURL_CPPFLAGS@ 

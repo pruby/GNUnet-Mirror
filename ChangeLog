@@ -1,3 +1,7 @@
+Fri Aug 18 00:01:37 PDT 2006
+	Swiched http bootstrap mechanism to using libcurl
+	(new dependency!).
+
 Sat May 20 08:37:02 PDT 2006
 	Releasing GNUnet 0.7.0e.
 
