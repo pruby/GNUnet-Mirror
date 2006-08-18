@@ -44,6 +44,9 @@
 #define _XOPEN_SOURCE
 #endif
 
+#ifndef _REENTRANT
+#define _REENTRANT
+#endif
 
 /* configuration options */
 
