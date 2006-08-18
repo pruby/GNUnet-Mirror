@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -43,6 +43,10 @@ static unsigned int anonymity = 1;
 
 static struct SEMAPHORE * signalFinished;
 
+static cron_t start_time;
+
+static struct FSUI_DownloadList * dl;
+
 /**
  * All gnunet-download command line options
  */
@@ -83,12 +87,12 @@ static void * progressModel(void * okVal,
 	     event->data.DownloadProgress.completed,
 	     event->data.DownloadProgress.total,
 	     (event->data.DownloadProgress.completed/1024.0) /
-	     (((double)(get_time()-(event->data.DownloadProgress.start_time - 1)))
+	     (((double)(get_time()-(start_time - 1)))
 	      / (double)cronSECONDS) );
     }
     break;
   case FSUI_download_aborted:
-    if (FSUI_getDownloadParent(event->data.DownloadError.pos) == NULL) {
+    if (dl == event->data.DownloadError.dc.pos) {
       /* top-download aborted */
       PRINTF(_("Error downloading: %s\n"),
 	     event->data.DownloadError.message);
@@ -113,10 +117,9 @@ static void * progressModel(void * okVal,
 	       "Speed was %8.3f KiB per second.\n"),
 	     event->data.DownloadProgress.filename,
 	     (event->data.DownloadProgress.completed/1024.0) /
-	     (((double)(get_time()-(event->data.DownloadProgress.start_time - 1)))
+	     (((double)(get_time()-(start_time - 1)))
 	      / (double)cronSECONDS) );
-      if (ECRS_equalsUri(event->data.DownloadProgress.main_uri,
-			 event->data.DownloadProgress.uri)) {
+      if (dl == event->data.DownloadProgress.dc.pos) {
 	*ok = OK;
 	SEMAPHORE_UP(signalFinished);
       }
@@ -143,7 +146,6 @@ int main(int argc,
   struct FSUI_Context * ctx;
   struct ECRS_URI * uri;
   int i;
-  struct FSUI_DownloadList * dl;
 
   /* startup */
   ectx = GE_create_context_stderr(NO, 
@@ -218,7 +220,7 @@ int main(int argc,
 		   NO,
 		   &progressModel,
 		   &ok);
-
+  start_time = get_time();
   dl = FSUI_startDownload(ctx,
 			  anonymity,
 			  do_recursive,

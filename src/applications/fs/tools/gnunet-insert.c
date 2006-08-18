@@ -50,6 +50,13 @@ static struct GE_Context * ectx;
 
 static struct FSUI_Context * ctx;
 
+/**
+ * The main upload
+ */
+static struct FSUI_UploadList * ul;
+
+static cron_t start_time;
+
 /* ************ config options ******** */
 
 static struct ECRS_MetaData * meta;
@@ -85,6 +92,8 @@ static int do_copy;
 static int is_sporadic;
 
 static int extract_only;
+
+static int do_disable_creation_time;
 
 static void convertId(const char * s,
 		      HashCode512 * id) {
@@ -153,61 +162,50 @@ static void * printstatus(void * ctx,
     if (*verboselevel) {
       char * ret;
 
-      delta = event->data.UploadProgress.main_eta - get_time();
+      delta = event->data.UploadProgress.eta - get_time();
       ret = string_get_fancy_time_interval(delta);
       PRINTF(_("%16llu of %16llu bytes inserted "
-	       "(estimating %s to completion)\n"),
-	     event->data.UploadProgress.main_completed,
-	     event->data.UploadProgress.main_total,
-	     ret);
+	       "(estimating %6s to completion) - %s\n"),
+	     event->data.UploadProgress.completed,
+	     event->data.UploadProgress.total,
+	     ret,
+	     event->data.UploadProgress.filename);
       FREE(ret);
     }
     break;
   case FSUI_upload_complete:
     if (*verboselevel) {
-      if (0 == strcmp(event->data.UploadComplete.filename,
-		      event->data.UploadComplete.main_filename)) {
-	delta = event->data.UploadComplete.eta
-	  - event->data.UploadComplete.start_time;
-	PRINTF(_("Upload of `%s' complete, "
-		 "%llu bytes took %llu seconds (%8.3f KiB/s).\n"),
-	       event->data.UploadComplete.filename,
-	       event->data.UploadComplete.total,
-	       delta / cronSECONDS,
-	       (delta == 0)
-	       ? (double) (-1.0)
-	       : (double) (event->data.UploadComplete.total
-			   / 1024.0 * cronSECONDS / delta));
-      } else {
-	cron_t now;
-
-	now = get_time();
-	delta = now - event->data.UploadComplete.start_time;
-	PRINTF(_("Upload of `%s' complete, "
-		 "current average speed is %8.3f KiB/s.\n"),
-	       event->data.UploadComplete.filename,
-	       (delta == 0)
-	       ? (double) (-1.0)
-	       : (double) (event->data.UploadComplete.completed
-			   / 1024.0 * cronSECONDS / delta));	
-      }
+      delta = get_time() - start_time;
+      PRINTF(_("Upload of `%s' complete, "
+	       "%llu bytes took %llu seconds (%8.3f KiB/s).\n"),
+	     event->data.UploadComplete.filename,
+	     event->data.UploadComplete.total,
+	     delta / cronSECONDS,
+	     (delta == 0)
+	     ? (double) (-1.0)
+	     : (double) (event->data.UploadComplete.total
+			 / 1024.0 * cronSECONDS / delta));
     }
     fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
     printf(_("File `%s' has URI: %s\n"),
 	   event->data.UploadComplete.filename,
 	   fstring);
     FREE(fstring);
-    if (0 == strcmp(event->data.UploadComplete.main_filename,
-		    event->data.UploadComplete.filename)) {
+    if (ul == event->data.UploadComplete.uc.pos) {
       postProcess(event->data.UploadComplete.uri);
       if (exitSignal != NULL)
 	SEMAPHORE_UP(exitSignal);
     }
-
+    break;
+  case FSUI_upload_aborted:
+    printf(_("\nUpload aborted.\n"));
+    errorCode = 1;
+    if (exitSignal != NULL)
+      SEMAPHORE_UP(exitSignal); /* always exit main? */
     break;
   case FSUI_upload_error:
     printf(_("\nError uploading file: %s\n"),
-	   event->data.message);
+	   event->data.UploadError.message);
     errorCode = 1;
     if (exitSignal != NULL)
       SEMAPHORE_UP(exitSignal); /* always exit main? */
@@ -231,6 +229,9 @@ static struct CommandLineOption gnunetinsertOptions[] = {
     gettext_noop("even if gnunetd is running on the local machine, force the"
 		 " creation of a copy instead of making a link to the GNUnet share directory"),
     0, &gnunet_getopt_configure_set_one, &do_copy }, 
+  { 'd', "disable-creation-time", NULL,
+    gettext_noop("disable adding the creation time to the metadata of the uploaded file"),
+    0, &gnunet_getopt_configure_set_one, &do_disable_creation_time }, 
   { 'D', "direct", NULL,
     gettext_noop("use libextractor to add additional direct references to directory entries"),
     0, &gnunet_getopt_configure_set_one, &do_direct_references }, 
@@ -299,7 +300,6 @@ static struct CommandLineOption gnunetinsertOptions[] = {
 int main(int argc, 
 	 const char ** argv) {
   const char * filename;
-  struct FSUI_UploadList * ul;
   int i;
   char * tmp;
   unsigned long long verbose;
@@ -403,21 +403,32 @@ int main(int argc,
       }
     }
   } else { /* ordinary insertion checks */
-    if (NULL != next_id)
-      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
+    if (NULL != next_id) {
+      fprintf(stderr,
+	      _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-N", "-P");
-    if (NULL != prev_id)
-      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
+      return -1;
+    }
+    if (NULL != prev_id) {
+      fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-u", "-P");
-    if (NULL != this_id)
-      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
+      return -1;
+    }
+    if (NULL != this_id) {
+      fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-t", "-P");
-    if (0 != interval)
-      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
+      return -1;
+    }
+    if (0 != interval) {
+      fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-i", "-P");
-    if (is_sporadic)
-      errexit(_("Option `%s' makes no sense without option `%s'.\n"),
+      return -1;
+    }
+    if (is_sporadic) {
+      fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-S", "-P");
+      return -1;
+    }
   }
 
   exitSignal = SEMAPHORE_CREATE(0);
@@ -432,10 +443,9 @@ int main(int argc,
 
   /* first insert all of the top-level files or directories */
   tmp = string_expandFileName(ectx, filename);
-  if (! testConfigurationString("FS",
-				"DISABLE-CREATION-TIME",
-				"YES"))
+  if (! do_disable_creation_time)
     ECRS_addPublicationDateToMetaData(meta);
+  start_time = get_time();
   ul = FSUI_startUpload(ctx,
 			tmp,
 			anonymity,

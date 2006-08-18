@@ -40,6 +40,8 @@ static struct GC_Configuration * cfg;
 
 static struct SEMAPHORE * exitSignal;
 
+static cron_t start_time;
+
 static int errorCode;
 
 /**
@@ -63,7 +65,7 @@ static void * printstatus(void * cls,
     break;
   case FSUI_unindex_complete:
     if (*verboselevel) {
-      delta = get_time() - event->data.UnindexComplete.start_time;
+      delta = get_time() - start_time;
       PRINTF(
       _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"),
       event->data.UnindexComplete.filename,
@@ -77,7 +79,7 @@ static void * printstatus(void * cls,
     break;
   case FSUI_unindex_error:
     printf(_("\nError unindexing file: %s\n"),
-	   event->data.message);
+	   event->data.UnindexError.message);
     errorCode = 1;
     SEMAPHORE_UP(exitSignal); /* always exit main? */
     break;
@@ -160,6 +162,7 @@ int main(int argc,
 		   NO,
 		   &printstatus,
 		   &verbose);
+  start_time = get_time();
   filename = string_expandFileName(ectx,
 				   argv[i]);
   ul = FSUI_unindex(ctx,
