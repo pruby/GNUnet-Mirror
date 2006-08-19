@@ -38,6 +38,10 @@ static int config_daemon;
 
 static struct GE_Context * ectx;
 
+/**
+ * FIXME: bad hack to make "cfg" available to zconf!
+ * -- need to re-organize zconf bits!
+ */ 
 struct GC_Configuration * cfg;
 
 /**
