@@ -58,30 +58,3 @@ AC_DEFUN([CHECK_PTHREAD],
 		CPPFLAGS="$save_CPPFLAGS"
 	])
 ])
-
-# OpenSSL check
-AC_DEFUN([AM_GNUNET_SSL_VERSION], [
-  AC_PATH_PROG(SSL_CONF, openssl, no)
-  if test "x$SSL_CONF" = "xno"; then
-    AC_MSG_ERROR(GNUnet requires a working installation of OpenSSL or libgcrypt)
-  else
-    ssl_major_version=`$SSL_CONF version | \
-         $ac_cv_prog_AWK '{print $[2]}' | \
-         $ac_cv_prog_AWK -F. '{print $[1]}'`
-    ssl_minor_version=`$SSL_CONF version | \
-        $ac_cv_prog_AWK '{print $[2]}' | \
-        $ac_cv_prog_AWK -F. '{print $[2]}'`
-    ssl_micro_version=`$SSL_CONF version | \
-        $ac_cv_prog_AWK '{print $[2]}' | \
-        $ac_cv_prog_AWK -F. '{print $[3]}' | \
-        sed 's/[[^0-9]]//g'`
-    AC_DEFINE_UNQUOTED(SSL_MAJOR, $ssl_major_version, [OpenSSL Major Version])
-    AC_DEFINE_UNQUOTED(SSL_MINOR, $ssl_minor_version, [OpenSSL Minor Version])
-    AC_DEFINE_UNQUOTED(SSL_MICRO, $ssl_micro_version, [OpenSSL Micro Version])
-  fi
-])
-
-
-
-
-
