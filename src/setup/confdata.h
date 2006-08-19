@@ -28,7 +28,12 @@
 #ifndef CONFDATA_H
 #define CONFDATA_H
 
-int conf_read(const char *name);
+/**
+ * Convert the configuration specified in "cfg"
+ * into the internal configuration of the conf module.
+ */
+int conf_read(struct GE_Context * ectx,
+	      struct GC_Configuration * cfg);
 
 int conf_write(const char * filename);
 

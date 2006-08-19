@@ -143,6 +143,8 @@ extern int zconfleng;
 
 extern FILE *zconfin, *zconfout;
 
+extern struct GC_Configuration * cfg;
+
 #define EOB_ACT_CONTINUE_SCAN 0
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
@@ -3626,7 +3628,9 @@ void zconf_nextfile(const char *name)
   struct file *file;
   struct buffer *buf;
 
-  realfn = expandDollar("Meta", STRDUP(name));
+  realfn = GC_configuration_expand_dollar(cfg,
+					  "Meta", 
+					  STRDUP(name));
   if (strlen(realfn) == 0) {
     FREE(realfn);
     realfn = STRDUP(name);

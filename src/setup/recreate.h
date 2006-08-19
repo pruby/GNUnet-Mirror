@@ -28,6 +28,9 @@
 #ifndef RECREATE_H
 #define RECREATE_H
 
-int recreate_main(void);
+int recreate_main(struct GE_Context * ectx,
+		  struct GC_Configuration  * cfg,
+		  const char * filename,
+		  int config_daemon);
 
 #endif

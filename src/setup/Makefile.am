@@ -28,6 +28,7 @@ endif
 lib_LTLIBRARIES = libgnunetsetup.la
 
 plugin_LTLIBRARIES = \
+ libgnunetsetup_text.la \
  $(curses_libs) \
  $(gtk_libs)
 
@@ -59,7 +60,6 @@ lkc_defs.h: $(srcdir)/lkc_proto.h
 	sed < $(srcdir)/lkc_proto.h > $@ 's/P(\([^,]*\),.*/#define \1 (\*\1_p)/'
 
 libgnunetsetup_la_SOURCES = \
- conf.c conf.h \
  confdata.c confdata.h \
  expr.c \
  expr.h \
@@ -73,7 +73,9 @@ libgnunetsetup_la_SOURCES = \
  wizard_util.h
 
 libgnunetsetup_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
 
 libgnunetsetup_la_LDFLAGS = \
  -export-dynamic
@@ -99,6 +101,18 @@ libgnunetsetup_curses_la_LDFLAGS = \
 libgnunetsetup_curses_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunetsetup.la
+
+
+libgnunetsetup_text_la_SOURCES = \
+  conf.c conf.h
+
+libgnunetsetup_text_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module
+
+libgnunetsetup_text_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunetsetup.la
+
 
 libgnunetsetup_gtk_la_SOURCES = \
  gconf.c gconf.h \

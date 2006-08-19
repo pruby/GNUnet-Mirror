@@ -86,6 +86,19 @@ typedef struct GC_Configuration {
   int (*write_configuration)(struct GC_Configuration * cfg,
 			     const char * filename);
 
+
+  /**
+   * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
+   * where either in the current section or globally FOO is set to
+   * DIRECTORY.
+   *
+   * @param old string to $-expand (will be freed!)
+   * @return $-expanded string
+   */
+  char * (*configuration_expand_dollar)(struct GC_Configuration * cfg,
+					   const char * section,
+					   char * old);
+  
   /**
    * Get a configuration value that should be a number.
    * @param min minimal legal value

@@ -69,21 +69,21 @@ static void checkGNUNETDHome(struct symbol *sym)
     }
 }
 
-static void insert_nic(const char * name,
-		       int defaultNIC,
-		       void * cls) {
+static int insert_nic(const char * name,
+		      int defaultNIC,
+		      void * cls) {
   struct symbol * sym = cls;
   if ( (NULL == sym_get_string_value(sym)) ||
        (defaultNIC) )
     sym_set_string_value(sym, name);
+  return OK;
 }
 
 /**
  * @brief Set reasonable default for GNUNETD_HOME if needed
  */
-static void checkDefaultIFC(struct symbol *sym)
-{
- 
+static void checkDefaultIFC(struct GE_Context * ectx,
+			    struct symbol *sym) { 
   if (strncmp(sym->name, 
 	      "INTERFACE",
 	      strlen("INTERFACE")) == 0) /* match also for INTERFACES ! */
@@ -97,19 +97,21 @@ static void checkDefaultIFC(struct symbol *sym)
       if (!val || !strlen(val))
 	{
 	  /* INTERFACE isn't set yet. Let's choose a sane default */
-	  enumNetworkIfs(insert_nic, sym);
+	  os_list_network_interfaces(ectx,
+				     insert_nic,
+				     sym);
 	}
     }
 }
 
 
-int recreate_main() {
+int recreate_main(struct GE_Context * ectx,
+		  struct GC_Configuration  * cfg,
+		  const char * filename,
+		  int config_daemon) {
   struct symbol *sym;
   int i = 0;
-  char * filename;
-  
-  filename = getConfigurationString("GNUNET-SETUP",
-				    "FILENAME");
+
   /* we are setting advanced/rare settings below */
   sym = sym_find("EXPERIMENTAL", "Meta");
   if (sym != NULL)
@@ -122,12 +124,10 @@ int recreate_main() {
     sym_set_tristate_value(sym, yes);
 
   /* save new config files to DATADIR */
-  if (testConfigurationString("GNUNETD",
-			      "_MAGIC_",
-			      "YES")) {
+  if (config_daemon) {
     for_all_symbols(i, sym) {
       checkGNUNETDHome(sym);
-      checkDefaultIFC(sym);
+      checkDefaultIFC(ectx, sym);
     }
   }
   /* Write defaults */
@@ -135,10 +135,8 @@ int recreate_main() {
     printf(_("Unable to save configuration file `%s': %s.\n"), 
 	   filename,
 	   STRERROR(errno));
-    FREE(filename);
     return 1;
   }
-  FREE(filename);
   return 0;  
 }
 

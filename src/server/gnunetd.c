@@ -51,11 +51,11 @@ static void reread_config_helper(void * unused) {
   char * filename;
   
   filename = NULL;
-  if (-1 == GC_get_configuration_value_string(cfg,
-					      "GNUNET",
-					      "CONFIGFILE",
-					      DEFAULT_DAEMON_CONFIG_FILE,
-					      &filename)) {
+  if (-1 == GC_get_configuration_value_filename(cfg,
+						"GNUNET",
+						"CONFIGFILE",
+						DEFAULT_DAEMON_CONFIG_FILE,
+						&filename)) {
     GE_BREAK(NULL, 0); /* should never happen */
     return; 
   }

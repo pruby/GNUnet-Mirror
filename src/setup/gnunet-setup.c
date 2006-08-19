@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file conf/gnunet-setup.c
+ * @file setup/gnunet-setup.c
  * @brief GNUnet Setup
  * @author Nils Durner
  * @author Christian Grothoff
@@ -27,269 +27,210 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_directories.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
+
 #include "recreate.h"
-#include "conf.h"
 #include "zconf_tab.h"
 
+static int config_daemon;
+
+static struct GE_Context * ectx;
+
+struct GC_Configuration * cfg;
 
 /**
- * Perform option parsing from the command line.
+ * All gnunet-setup command line options
  */
-static int parser(int argc, char *argv[])
-{
-  int cont = OK;
-  int c;
-  int daemon = NO;
-  char *filename = NULL;
-  char *dirname;
+static struct CommandLineOption gnunetsetupOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  { 'd', "daemon", NULL, 
+    gettext_noop("generate configuration for gnunetd, the GNUnet daemon"),
+    0, &gnunet_getopt_configure_set_one, &config_daemon },
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Tool to setup GNUnet.")), /* -h */
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
-  FREENONNULL(setConfigurationString("GNUNETD", "LOGFILE", NULL));
-  while(1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      {"config", 1, 0, 'c'},
-      {"deamon", 0, 0, 'd'},
-      {"help", 0, 0, 'h'},
-      {"version", 0, 0, 'v'},
-      {"verbose", 0, 0, 'V'},
-      {0, 0, 0, 0}
-    };
+static int dyn_config(const char * module, 
+		      const char * mainfunc, 
+		      int argc, 
+		      const char **argv) {
+  void (*mptr)(int, const char **, void*);
+  struct PluginHandle * library;
 
-    c = GNgetopt_long(argc, argv, "c:dhvV", long_options, &option_index);
-
-    if(c == -1)
-      break;                    /* No more flags to process */
-
-    switch (c) {
-    case 'c':
-      filename = expandFileName(GNoptarg);
-      break;
-    case 'd':
-      daemon = YES;
-      break;
-    case 'v':
-      printf("gnunet-setup v%s\n", VERSION);
-      cont = SYSERR;
-      break;
-    case 'V':
-      FREENONNULL(setConfigurationString("GNUNET-SETUP", "VERBOSE", "YES"));
-      break;
-    case 'h':{
-        static Help help[] = {
-          HELP_CONFIG,
-          {'d', "daemon", NULL,
-           gettext_noop
-           ("generate configuration for gnunetd, the GNUnet daemon")},
-          HELP_HELP,
-          HELP_LOGLEVEL,
-          HELP_VERSION,
-          HELP_VERBOSE,
-          HELP_END,
-        };
-        formatHelp("gnunet-daemon [OPTIONS] MODE",
-                   _("Tool to setup GNUnet."), help);
-        printf(_("Available MODEs:\n"));
-        printf(_(" config\t\ttext-based configuration\n"));
-#if HAVE_CURSES
-        printf(_(" menuconfig\ttext-based menu\n"));
-        printf(_
-               (" wizard-curses\tBasic text-based graphical configuration\n"));
-#endif
-#if HAVE_GTK
-        printf(_(" gconfig\tGTK configuration\n"));
-        printf(_(" wizard-gtk\tBasic GTK configuration\n\n"));
-#endif
-        cont = SYSERR;
-        break;
-      }
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER, _("Use --help to get a list of options.\n"));
-      cont = SYSERR;
-    }                           /* end of parsing commandline */
-  }
-  /* set the 'magic' code that indicates that
-     this process is 'gnunetd' (and not any of
-     the user-tools).  Needed such that we use
-     the right configuration file... */
-  if(daemon) {
-    FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "YES"));
-    if(filename == NULL) {
-      if(0 == ACCESS(DEFAULT_DAEMON_CONFIG_FILE, W_OK) ||
-	 (errno == ENOENT && 0 == ACCESS(DEFAULT_DAEMON_DIR, W_OK)))
-        filename = STRDUP(DEFAULT_DAEMON_CONFIG_FILE);
-      else {
-        if(0 == ACCESS(VAR_DIRECTORY, W_OK))
-          mkdirp(VAR_DAEMON_DIRECTORY);
-        if(0 == ACCESS(VAR_DAEMON_CONFIG_FILE, W_OK) ||
-            (errno == ENOENT && 0 == ACCESS(VAR_DAEMON_DIRECTORY, W_OK)))
-          filename = STRDUP(VAR_DAEMON_CONFIG_FILE);
-        else {
-          dirname = expandFileName(GNUNET_HOME_DIRECTORY);
-          mkdirp(dirname);
-          FREE(dirname);
-          filename = expandFileName(HOME_DAEMON_CONFIG_FILE);
-        }
-      }
-    }
-    FREENONNULL(setConfigurationString("FILES", "gnunet.conf", filename));
-    conf_parse(GNDATADIR "/config-daemon.in");
-  }
-  else {
-    FREENONNULL(setConfigurationString("GNUNETD", "_MAGIC_", "NO"));
-    if(filename == NULL) {
-      dirname = expandFileName(GNUNET_HOME_DIRECTORY);
-      mkdirp(dirname);
-      FREE(dirname);
-      filename = expandFileName(DEFAULT_CLIENT_CONFIG_FILE);
-    }
-    FREENONNULL(setConfigurationString("FILES", "gnunet.conf", filename));
-    conf_parse(GNDATADIR "/config-client.in");
-  }
-  dirname = STRDUP(filename);
-
-  c = strlen(dirname) - 1;
-  while(c > -1) {
-    char ch = dirname[c];
-    if (ch == '/' || ch == '\\') {
-      dirname[c + 1] = 0;
-      break;
-    }
-    c--;
-  }
-
-  if (c)
-    mkdirp(dirname);
-
-  if((0 != ACCESS(filename,
-                  W_OK)) &&
-     ((0 == ACCESS(filename, F_OK)) || (0 != ACCESS(dirname, W_OK)))) {
-    errexit(_
-            ("gnunet-setup must have write-access to the configuration file `%s'\n"),
-            filename);
-  }
-  FREE(dirname);
-  FREENONNULL(setConfigurationString("GNUNET-SETUP", "FILENAME", filename));
-  if(GNoptind < argc)
-    FREENONNULL(setConfigurationString("GNUNET-SETUP",
-                                       "OPERATION", argv[GNoptind++]));
-  if(GNoptind < argc) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, _("Invalid arguments: "));
-    while(GNoptind < argc)
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER, "%s ", argv[GNoptind++]);
-    GE_LOG(ectx, GE_FATAL | GE_IMMEDIATE | GE_USER, _("Invalid arguments. Exiting.\n"));
-    FREE(filename);
-    return SYSERR;
-  }
-
-  if(0 != ACCESS(filename, F_OK))
-    recreate_main();
-  FREE(filename);
-
-
-  return cont;
-}
-
-int dyn_config(const char *module, 
-	       const char *mainfunc, 
-	       int argc, 
-	       char **argv) {
-  void (*mptr)(int, char **, void*);
-  void *library;
-
-  library = loadDynamicLibrary("libgnunet", module);
+  library = os_plugin_load(ectx,
+			   "libgnunet",
+			   module);
   if (!library)    
     return SYSERR;
-  
-  mptr = bindDynamicMethod(library, mainfunc, "");
+  mptr = os_plugin_resolve_function(library,
+				    mainfunc,
+				    YES);
   if (! mptr)
     return SYSERR;
   mptr(argc, argv, library); 
-  unloadDynamicLibrary(library);  
+  os_plugin_unload(library);  
   return YES;
 }
 
-int main(int argc, char *argv[])
-{
-  char *operation;
-  int def, done;
+static const char * INFO =
+  "gnunet-setup [OPTIONS] config"
+#if HAVE_CURSES
+  "|menuconfig|wizard-curses"
+#endif
+#if HAVE_GTK
+  "|gconfig|wizard-gtk"
+#endif
+  "\n";
 
-  if(OK != initUtil(argc, argv, &parser))
+static const char * modules[] = {
+   "gconfig", "setup_gtk", "gconf_main" ,
+   "menuconfig", "setup_curses", "mconf_main" ,
+   "config", "setup_text", "conf_main" ,
+   "wizard-curses", "setup_curses", "wizard_curs_main",
+   "wizard-gtk", "setup_gtk", "gtk_wizard_main",   
+   NULL,
+};
+
+int main(int argc, 
+	 const char *argv[]) {
+  const char * operation;
+  int done;
+  char * filename;
+  char * dirname;
+  char * specname;
+  int i; 
+  
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  i = gnunet_parse_options(INFO,
+			   ectx,
+			   cfg,
+			   gnunetsetupOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i < 0) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
+  if (i != argc - 1) {
+    if (i < argc - 1) {
+      fprintf(stderr,
+	      _("Too many arguments.\n"));
+      return -1;
+    }
+    GE_LOG(ectx,
+	   GE_WARNING | GE_REQUEST | GE_USER,
+	   _("No interface specified, using default\n"));
+    operation = "config";
+#if HAVE_CURSES
+    operation = "menuconfig";
+#endif
+#if HAVE_GTK
+    operation = "gconfig";
+#endif
+  } else {
+    operation = argv[i];
+  }
+
+  filename = NULL;
+  if (-1 == GC_get_configuration_value_filename(cfg,
+						"GNUNET",
+						"CONFIGFILE",
+						config_daemon 
+						? DEFAULT_DAEMON_CONFIG_FILE 
+						: DEFAULT_CLIENT_CONFIG_FILE,
+						&filename)) {
+    GE_BREAK(ectx, 0); /* should never happen */
     return -1;
+  }
+  GE_ASSERT(ectx, filename != NULL);
+  dirname = STRDUP(filename);
+  i = strlen(dirname) - 1;
+  while (i > -1) {
+    char ch = dirname[i];
+    if ( (ch == '/') || (ch == '\\')) {
+      dirname[i + 1] = 0;
+      break;
+    }
+    i--;
+  }  
+  disk_directory_create(ectx, dirname);
+  if ( ( (0 == ACCESS(filename, W_OK)) ||
+	 ( (errno == ENOENT) && 
+	   (0 == ACCESS(dirname, W_OK))) ) ) 
+    GE_DIE_STRERROR_FILE(ectx,
+			 GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+			 "access",
+			 dirname);  
+  FREE(dirname);
+  
+  dirname = os_get_installation_path(ectx,
+				     cfg,
+				     GNDATADIR);
+  specname = MALLOC(strlen(dirname) + strlen("/config-daemon.in") + 1);
+  strcpy(specname, dirname);
+  FREE(dirname);
+  if (config_daemon) 
+    strcat(specname, "/config-daemon.in");
+  else 
+    strcat(specname, "/config-client.in");  
+  conf_parse(specname);
+  FREE(specname);
+
+  if(0 != ACCESS(filename, F_OK)) {
+    recreate_main(ectx,
+		  cfg,
+		  filename,
+		  config_daemon);
+  } else {
+    GC_parse_configuration(cfg,
+			   filename);
+  }
 
   done = NO;
-  operation = getConfigurationString("GNUNET-SETUP", "OPERATION");
-  if (operation == NULL) {
-    operation = STRDUP("");
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-      _("No interface specified, using default\n"));
-    def = YES;
-  }
-  else {
-    def = NO;
-    done = YES;
-  }
-  
-  if(strcmp(operation, "gconfig") == 0 || def) {
-    if (dyn_config("setup_gtk", "gconf_main",
-          argc, argv) != YES) {
-      if (!def) {
-        FREE(operation);
-        errexit(_("`%s' is not available."), "gconfig");
+  i = 0;
+  while ( (done == NO) &&
+	  (modules[i] != NULL) ) {
+    if (strcmp(operation, modules[i]) == 0) {
+      if (dyn_config(modules[i+1],
+		     modules[i+2],
+		     argc, 
+		     argv) != YES) {
+	GE_LOG(ectx,
+	       GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+	       _("`%s' is not available."), 
+	       operation);
+	GC_free(cfg);
+	GE_free_context(ectx);
+	return -1;
+      } else {
+	done = YES;
       }
     }
-    else {
-      def = NO;
-      done = YES;
-    }
+    i += 3;
   }
-  
-  if(strcmp(operation, "menuconfig") == 0 || def) {
-    if (dyn_config("setup_curses", "mconf_main",
-          argc, argv) != YES) {
-      if (!def) {
-        FREE(operation);
-        errexit(_("`%s' is not available."), "menuconfig");
-      }
-    }
-    else {
-      def = NO;
-      done = YES;
-    }
-  }
-  
-  if(strcmp(operation, "config") == 0 || def)
-    conf_main();
-  else if(strcmp(operation, "wizard-curses") == 0) {
-    if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
-      errexit(_("Can only run wizard to configure gnunetd.\n"
-                "Did you forget the `%s' option?\n"), "-d");
-                
-    if (dyn_config("setup_curses", "wizard_curs_main",
-          argc, argv) != YES) {
-      FREE(operation);
-      errexit(_("`%s' is not available."), "wizard-curses");
-    }
-  }
-  else if(strcmp(operation, "wizard-gtk") == 0) {
-    if(!testConfigurationString("GNUNETD", "_MAGIC_", "YES"))
-      errexit(_("Can only run wizard to configure gnunetd.\n"
-                "Did you forget the `%s' option?\n"), "-d");
+  if (done == NO) {
+    fprintf(stderr,
+	    _("Unknown operation `%s'\n"), 
+	    operation);
+    fprintf(stderr,
+	    _("Use --help to get a list of options.\n"));
 
-    if (dyn_config("setup_gtk", "gtk_wizard_main",
-          argc, argv) != YES) {
-      FREE(operation);
-      errexit(_("`%s' is not available."), "wizard-gtk");
-    }
-  }
-  else if (!done) {
-    printf(_("Unknown operation `%s'\n"), operation);
-    printf(_("Use --help to get a list of options.\n"));
-    FREE(operation);
-    doneUtil();
+    GC_free(cfg);
+    GE_free_context(ectx);
     return 1;
   }
-
-  FREE(operation);
-  doneUtil();
+  GC_free(cfg);
+  GE_free_context(ectx);
   return 0;
 }

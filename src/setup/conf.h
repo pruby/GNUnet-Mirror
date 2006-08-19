@@ -21,13 +21,15 @@
 
 /**
  * @file conf/conf.h
- * @brief GNUnet Setup
+ * @brief GNUnet text mode Setup
  * @author Nils Durner
  */
 
 #ifndef CONF_H
 #define CONF_H
 
-int conf_main(void);
+int conf_main(int argc, 
+	      char **argv, 
+	      void * lib);
 
 #endif

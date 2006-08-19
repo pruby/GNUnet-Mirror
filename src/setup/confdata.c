@@ -44,7 +44,8 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
-int conf_read(const char *name)
+int conf_read(struct GE_Context * ectx,
+	      struct GC_Configuration * cfg)
 {
   char *val;
   struct symbol *sym;
@@ -52,21 +53,15 @@ int conf_read(const char *name)
   struct expr *e;
   int i = 0;
 
-  GE_ASSERT(ectx, name != NULL);
-  FREENONNULL(setConfigurationString("FILES",
-				     "gnunet.conf",
-				     name));
-  readConfigFile(name);	
-
   for_all_symbols(i, sym) {
     sym->flags |= SYMBOL_NEW | SYMBOL_CHANGED;
     sym->flags &= ~SYMBOL_VALID;
 
-    if (isConfigurationItemSet(sym->sect, sym->name)) {
-      val = getConfigurationString(sym->sect, sym->name);
-      if (!val)
-	val = STRDUP("");
-
+    if (0 == GC_get_configuration_value_string(cfg,
+					       sym->sect,
+					       sym->name,
+					       NULL,
+					       &val)) {
       switch (sym->type) {
       case S_TRISTATE:
 	if (*val == 'm') {
@@ -89,11 +84,11 @@ int conf_read(const char *name)
 	  sym->flags &= ~SYMBOL_NEW;
 	}
 	else {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("%s: symbol value `%s' invalid for %s\n"),
-	      name,
-	      val,
-	      sym->name);
+	  GE_LOG(ectx, 
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Symbol value `%s' invalid for %s\n"),
+		 val,
+		 sym->name);
 	  sym->user.val = NULL;
 	  sym->flags |= SYMBOL_NEW;
 	}

@@ -1577,7 +1577,7 @@ yyreduce:
   case 74:
 
     {
-	zconf_nextfile(yyvsp[0].string);
+      zconf_nextfile(yyvsp[0].string);
 ;}
     break;
 

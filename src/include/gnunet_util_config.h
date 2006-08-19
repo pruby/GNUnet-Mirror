@@ -158,6 +158,18 @@ int GC_get_configuration_value_yesno(struct GC_Configuration * cfg,
 				     int def);
 
 /**
+ * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
+ * where either in the current section or globally FOO is set to
+ * DIRECTORY.
+
+ * @param old string to $-expand (will be freed!)
+ * @return $-expanded string
+ */
+char * GC_configuration_expand_dollar(struct GC_Configuration * cfg,
+				      const char * section,
+				      char * old);
+
+/**
  * Set a configuration value that should be a number.
  * @return 0 on success, -1 on error (i.e. out of memory,
  *   or update refused by registered callback)

@@ -600,11 +600,12 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
  *        value, or NULL if option is not specified and no default given
  * @return 0 on success, -1 on error, 1 for default
  */
-int _get_configuration_value_filename(struct GC_Configuration * cfg,
-				      const char * section,
-				      const char * option,
-				      const char * def,
-				      char ** value) {
+static int 
+_get_configuration_value_filename(struct GC_Configuration * cfg,
+				  const char * section,
+				  const char * option,
+				  const char * def,
+				  char ** value) {
   GC_ConfigurationData * data;
   int ret;
   char * tmp;
@@ -615,6 +616,60 @@ int _get_configuration_value_filename(struct GC_Configuration * cfg,
   *value = string_expandFileName(data->ectx, tmp);
   FREE(tmp);
   return ret;
+}
+
+/**
+ * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
+ * where either in the current section or globally FOO is set to
+ * DIRECTORY.
+ *
+ * @param old string to $-expand (will be freed!)
+ * @return $-expanded string
+ */
+static char * 
+_configuration_expand_dollar(struct GC_Configuration * cfg,
+			     const char * section,
+			     char * orig) {
+  int i;
+  char * prefix;
+  char * result;
+
+  i = 0;
+  while ( (orig[i] != '/') &&
+	  (orig[i] != '\\') &&
+          (orig[i] != '\0') )
+    i++;
+  if (orig[i] == '\0')
+    return orig;
+  orig[i] = '\0';
+  _get_configuration_value_string(cfg,
+				  section,
+				  &orig[1],
+				  NULL,
+				  &prefix);
+  if (prefix == NULL)
+    _get_configuration_value_string(cfg,
+				    "",
+				    &orig[1],
+				    NULL,
+				    &prefix);
+  if (prefix == NULL) {
+    const char * env = getenv(&orig[1]);
+    if (env != NULL)
+      prefix = STRDUP(env);
+  }
+  if (prefix == NULL) {
+    orig[i] = DIR_SEPARATOR;
+    return orig;
+  }
+  result = MALLOC(strlen(prefix) +
+                  strlen(&orig[i+1]) + 2);
+  strcpy(result, prefix);
+  strcat(result, DIR_SEPARATOR_STR);
+  strcat(result, &orig[i+1]);
+  FREE(prefix);
+  FREE(orig);
+  return result;
 }
 
 static int 
@@ -698,6 +753,7 @@ GC_create_C_impl() {
   ret->get_configuration_value_string = &_get_configuration_value_string;
   ret->get_configuration_value_filename = &_get_configuration_value_filename;
   ret->get_configuration_value_choice = &_get_configuration_value_choice;
+  ret->configuration_expand_dollar = &_configuration_expand_dollar;
   ret->set_configuration_value_number = &_set_configuration_value_number;
   ret->set_configuration_value_string = &_set_configuration_value_string;
   ret->set_configuration_value_choice = &_set_configuration_value_choice;

@@ -20,7 +20,7 @@ Notes:
     + config: call GC change listeners on entire config on registration!!!
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
-    	o libcurl? & libesmtp?
+    	o libcurl / libwebserver-gnunet & libesmtp?
   * server:
     + needs testing, also likely to be missing features
   * applications:

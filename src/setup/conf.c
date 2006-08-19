@@ -503,8 +503,9 @@ static void check_conf(struct menu *menu)
 		check_conf(child);
 }
 
-int conf_main()
-{
+int conf_main(int argc, 
+	      char **argv, 
+	      void * lib) {
   char * filename;
 
   filename = getConfigurationString("GNUNET-SETUP",

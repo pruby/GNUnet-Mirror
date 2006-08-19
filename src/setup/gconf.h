@@ -28,7 +28,9 @@
 #ifndef GNUNET_SETUP_GCONF_H
 #define GNUNET_SETUP_GCONF_H
 
-int gconf_main(int argc, char **argv, void * lib);
+int gconf_main(int argc, 
+	       char **argv, 
+	       void * lib);
 
 void gconf_main_post_init(void * lib);
  

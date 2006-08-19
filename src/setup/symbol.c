@@ -645,8 +645,7 @@ struct symbol *sym_lookup(char *name, char *sect, int isconst)
 
 	if (!sect)
 		sect = current_sect;
-	if (!sect)
-		errexit("Error: current section not known (sym_lookup)");
+	GE_ASSERT(NULL, sect);
 
 	if (name) {
 		if (name[0] && !name[1]) {
@@ -728,8 +727,7 @@ struct symbol *sym_find(char *name, char *sect)
 
 	if (!sect)
 		sect = current_sect;
-	if (!sect)
-		errexit("Error: current section not known (sym_find)");
+	GE_ASSERT(NULL, sect);
 
 	if (name[0] && !name[1]) {
 		switch (name[0]) {

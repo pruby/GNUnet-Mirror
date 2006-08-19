@@ -107,10 +107,15 @@ int wiz_is_nic_default(const char *name, int suggestion) {
  * @param groupname name of the group to use
  * @return 1 on success, 0 on error
  */
-int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
-  int ret = autostartService(doAutoStart,
-			     username,
-			     groupname);
+int wiz_autostartService(int doAutoStart, 
+			 char *username, 
+			 char *groupname) {
+  int ret = os_modify_autostart(NULL,
+				NO,
+				doAutoStart,
+				"gnunetd", 
+				username,
+				groupname);
   if (ret ) {
 #ifdef MINGW
     char *err = NULL;
@@ -165,9 +170,13 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
  * @return 1 on success
  */
 int wiz_createGroupUser(char *group_name, char *user_name) {
-  int ret = createGroupUser(group_name, user_name);
+  int ret = os_modify_user(NULL, 
+			   NO,
+			   YES,
+			   user_name,
+			   group_name);
 
-  if (ret) {
+  if (ret != OK) {
 #ifdef MINGW
     char *err;
 
