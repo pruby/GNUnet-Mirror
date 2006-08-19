@@ -28,21 +28,25 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_directories.h"
+#include "gnunet_setup_lib.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
 
-#include "recreate.h"
-#include "zconf_tab.h"
+typedef int (*ConfigurationPluginMain)(int argc,
+				       const char ** argv,
+				       struct PluginHandle * self,
+				       struct GE_Context * ectx,
+				       struct GC_Configuration * cfg,
+				       struct GNS_Context * gns,
+				       int is_daemon);
 
 static int config_daemon;
 
 static struct GE_Context * ectx;
 
-/**
- * FIXME: bad hack to make "cfg" available to zconf!
- * -- need to re-organize zconf bits!
- */ 
-struct GC_Configuration * cfg;
+static struct GC_Configuration * cfg;
+
+static struct GNS_Context * gns;
 
 /**
  * All gnunet-setup command line options
@@ -61,8 +65,9 @@ static struct CommandLineOption gnunetsetupOptions[] = {
 static int dyn_config(const char * module, 
 		      const char * mainfunc, 
 		      int argc, 
-		      const char **argv) {
-  void (*mptr)(int, const char **, void*);
+		      const char **argv,
+		      const char * filename) {
+  ConfigurationPluginMain mptr;
   struct PluginHandle * library;
 
   library = os_plugin_load(ectx,
@@ -75,7 +80,13 @@ static int dyn_config(const char * module,
 				    YES);
   if (! mptr)
     return SYSERR;
-  mptr(argc, argv, library); 
+  mptr(argc, 
+       argv,
+       library,
+       ectx, 
+       cfg,
+       filename,
+       config_daemon); 
   os_plugin_unload(library);  
   return YES;
 }
@@ -90,6 +101,11 @@ static const char * INFO =
 #endif
   "\n";
 
+/**
+ * List of supported plugins.  One entry consists
+ * of three strings: option name, plugin library
+ * name and main method name.
+ */
 static const char * modules[] = {
    "gconfig", "setup_gtk", "gconf_main" ,
    "menuconfig", "setup_curses", "mconf_main" ,
@@ -98,6 +114,7 @@ static const char * modules[] = {
    "wizard-gtk", "setup_gtk", "gtk_wizard_main",   
    NULL,
 };
+
 
 int main(int argc, 
 	 const char *argv[]) {
@@ -178,6 +195,9 @@ int main(int argc,
 			 dirname);  
   FREE(dirname);
   
+  if(0 == ACCESS(filename, F_OK)) 
+    GC_parse_configuration(cfg,
+			   filename);
   dirname = os_get_installation_path(ectx,
 				     cfg,
 				     GNDATADIR);
@@ -188,17 +208,15 @@ int main(int argc,
     strcat(specname, "/config-daemon.in");
   else 
     strcat(specname, "/config-client.in");  
-  conf_parse(specname);
+  gns = GNS_load_specification(ectx,
+			       cfg,
+			       specname); 
   FREE(specname);
-
-  if(0 != ACCESS(filename, F_OK)) {
-    recreate_main(ectx,
-		  cfg,
-		  filename,
-		  config_daemon);
-  } else {
-    GC_parse_configuration(cfg,
-			   filename);
+  if (gns == NULL) {  
+    GC_free(cfg);
+    GE_free_context(ectx);
+    FREE(filename);
+    return -1;
   }
 
   done = NO;
@@ -209,13 +227,15 @@ int main(int argc,
       if (dyn_config(modules[i+1],
 		     modules[i+2],
 		     argc, 
-		     argv) != YES) {
+		     argv,
+		     filename) != YES) {
 	GE_LOG(ectx,
 	       GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 	       _("`%s' is not available."), 
 	       operation);
 	GC_free(cfg);
 	GE_free_context(ectx);
+	FREE(filename);
 	return -1;
       } else {
 	done = YES;
@@ -223,17 +243,19 @@ int main(int argc,
     }
     i += 3;
   }
+  FREE(filename);
   if (done == NO) {
     fprintf(stderr,
 	    _("Unknown operation `%s'\n"), 
 	    operation);
     fprintf(stderr,
 	    _("Use --help to get a list of options.\n"));
-
+    GNS_free_specification(gns);
     GC_free(cfg);
     GE_free_context(ectx);
     return 1;
   }
+  GNS_free_specification(gns);
   GC_free(cfg);
   GE_free_context(ectx);
   return 0;

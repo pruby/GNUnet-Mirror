@@ -32,9 +32,10 @@
 #define LKC_DIRECT_LINK
 #include "lkc.h"
 
-#include "confdata.h"
+#include "gnunet_setup_lib.h"
 
 static void conf(struct menu *menu);
+
 static void check_conf(struct menu *menu);
 
 enum {
@@ -47,12 +48,17 @@ enum {
 	set_no,
 	set_random
 } input_mode = ask_all;
+
 char *defconfig_file;
 
 static int indent = 1;
+
 static int valid_stdin = 1;
+
 static int conf_cnt;
+
 static char line[128];
+
 static struct menu *rootEntry;
 
 static char nohelp_text[] = "Sorry, no help available for this option yet.\n";
@@ -505,12 +511,13 @@ static void check_conf(struct menu *menu)
 
 int conf_main(int argc, 
 	      char **argv, 
-	      void * lib) {
-  char * filename;
-
-  filename = getConfigurationString("GNUNET-SETUP",
-				    "FILENAME");
-  conf_read(filename);
+	      struct PluginHandle * self,
+	      struct GE_Context * ectx,
+	      struct GC_Configuration * cfg,
+	      const char * filename,
+	      int is_daemon) {
+  conf_read(ectx,
+	    cfg);
   input_mode = ask_all; /* for now */
   rootEntry = &rootmenu;
   conf(&rootmenu);
@@ -523,13 +530,10 @@ int conf_main(int argc,
     printf(_("Unable to save configuration file `%s': %s.\n"),
 	   filename,
 	   STRERROR(errno));
-    FREE(filename);
     return 1;
-  }
-  else {
+  } else {
     printf(_("Configuration file `%s' created.\n"),
 	   filename);
-    FREE(filename);
     return 0;
   }
 }
