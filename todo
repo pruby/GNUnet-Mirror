@@ -34,7 +34,13 @@ Notes:
     + rest: sqstore_mysql, dht, rpc, topology_f2f, vpn
     + low priority: chat, kvstore_sqlite, testbed
   * setup:
-    + nothing compiles
+    + main binary compiles, plugins are missing
+      consider reorganization (subdirectories):
+      - gtk
+      - curses
+      - text
+      - util (add src/include header with decent API!)
+      - main (just plugin loader)
 - adapt util testcases and main GNUnet codebase
 - use new util to improve error handling capabilities
 - use new util to clean up gnunet-setup
