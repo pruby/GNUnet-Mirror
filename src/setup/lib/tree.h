@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003 Christian Grothoff (and other contributing authors)
+     (C) 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,27 +19,29 @@
 */
 
 /**
- * @file conf/bool.h
- * @brief Definition of "bool"
- * @author Nils Durner
- **/
+ * @file src/setup/tree.h
+ * @brief tree API (guile integration)
+ * @author Christian Grothoff
+ */
 
-#ifndef CONF_BOOL_H
-#define CONF_BOOL_H
+/**
+ * Parse the specification file and create the tree.
+ * Set all values to defaults.
+ */
+struct GNS_Tree *
+tree_parse(struct GE_Context * ectx,
+	   const char * specification);
 
-#ifndef __cplusplus
- #ifdef CURSES_LOC
-  #include CURSES_LOC
- #else
-  #ifndef bool
-   #define bool int
-  #endif
- #endif
+typedef void (*VisibilityChangeListener)(void * ctx,
+					 struct GNS_Tree * tree);
 
- #ifndef true
-  #define true 1
-  #define false 0
- #endif
-#endif
+/**
+ * A value in the tree has been changed. 
+ * Update visibility (and notify about changes).
+ */
+void tree_notify_change(VisibilityChangeListener vcl,
+			void * ctx,
+			struct GE_Context * ectx,
+			struct GNS_Tree * root,
+			struct GNS_Tree * change);
 
-#endif
