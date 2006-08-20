@@ -91,7 +91,8 @@ static int noiseHandler(const PeerIdentity *peer,
  * Test the given transport API.
  */
 static void testTAPI(TransportAPI * tapi,
-		     int * res) {
+		     void * ctx) {
+  int * res = ctx;
   P2P_hello_MESSAGE * helo;
   TSession * tsession;
   unsigned long long repeat;
@@ -206,8 +207,9 @@ static void pingCallback(void * unused) {
   SEMAPHORE_UP(sem);
 }
 
-static void testPING(P2P_hello_MESSAGE * xhelo,
-		     int * stats) {
+static void testPING(const P2P_hello_MESSAGE * xhelo,
+		     void * arg) {
+  int * stats = arg;
   TSession * tsession;
   P2P_hello_MESSAGE * helo;
   P2P_hello_MESSAGE * myHelo;
@@ -331,6 +333,10 @@ static void testPING(P2P_hello_MESSAGE * xhelo,
   transport->disconnect(tsession);
   if (ok == YES)
     stats[2]++;
+}
+
+static int testTerminate(void * arg) {
+  return YES;
 }
 
 /**
@@ -502,8 +508,10 @@ int main(int argc,
     stats[0] = 0;
     stats[1] = 0;
     stats[2] = 0;
-    bootstrap->bootstrap((hello_Callback)&testPING,
-			 &stats[0]);
+    bootstrap->bootstrap(&testPING,
+			 &stats[0],
+			 &testTerminate,
+			 NULL);
     printf(_("%d out of %d peers contacted successfully (%d times transport unavailable).\n"),
 	   stats[2],
 	   stats[1],
@@ -511,7 +519,7 @@ int main(int argc,
     releaseService(bootstrap);
   } else {
     while (Xrepeat-- > 0)
-      transport->forEach((TransportCallback)&testTAPI,
+      transport->forEach(&testTAPI,
 			 &res);
   }
   cron_stop(cron);

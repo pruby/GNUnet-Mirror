@@ -1422,9 +1422,15 @@ static void sendBuffer(BufferEntry * be) {
   if(stats != NULL)
     stats->change(stat_encrypted, p - sizeof(HashCode512));
   GE_ASSERT(ectx, be->session.tsession != NULL);
-  ret = transport->send(be->session.tsession, encryptedMsg, p);
+  ret = transport->send(be->session.tsession, 
+			encryptedMsg,
+			p,
+			NO);
   if((ret == NO) && (priority >= EXTREME_PRIORITY)) {
-    ret = transport->sendReliable(be->session.tsession, encryptedMsg, p);
+    ret = transport->send(be->session.tsession, 
+			  encryptedMsg,
+			  p, 
+			  YES);
   }
   if (ret == YES) {
     if(stats != NULL)
@@ -3017,7 +3023,10 @@ int sendPlaintext(TSession * tsession, const char *msg, unsigned int size) {
   memcpy(&buf[sizeof(P2P_PACKET_HEADER)], msg, size);
   hash(&hdr->sequenceNumber,
        size + sizeof(P2P_PACKET_HEADER) - sizeof(HashCode512), &hdr->hash);
-  ret = transport->send(tsession, buf, size + sizeof(P2P_PACKET_HEADER));
+  ret = transport->send(tsession,
+			buf, 
+			size + sizeof(P2P_PACKET_HEADER),
+			NO);
   FREE(buf);
   return ret;
 }
