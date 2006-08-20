@@ -32,6 +32,7 @@
 ;; - actually convert *.in to *.scm
 ;; - test!
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; for GNU gettext
@@ -45,7 +46,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; menu definitions
-
 
 ;; meta-menu
 
@@ -63,7 +63,7 @@ development where the functionality, stability, or the level of
 testing is not yet high enough for general use.  These features are
 said to be of \"alpha\" quality.  If a feature is currently in alpha,
 uninformed use is discouraged (since the developers then do not fancy
-\"Why doesn\'t this work?\" type messages).
+\"Why doesn't this work?\" type messages).
 
 However, active testing and qualified feedback of these features is
 always welcome.  Users should just be aware that alpha features may
@@ -71,12 +71,13 @@ not meet the normal level of reliability or it may fail to work in
 some special cases.  Bug reports are usually welcomed by the
 developers, but please read the documents <file://README> and
 <http://gnunet.org/faq.php3> and use <https://gnunet.org/mantis/> for
-how to report problems.\" )
+how to report problems." )
    ()
    #t
    #f
    #f
    'always) )
+
 
 
 (define (meta-adv builder) 
@@ -109,7 +110,6 @@ installation.  If in a hurry, say NO." )
    #f
    'always) )
 
-
 ;; main-menu
 
 (define (main builder)
@@ -124,6 +124,8 @@ installation.  If in a hurry, say NO." )
   #f 
   'always) )
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; first main method: build tree using build-tree-node
@@ -132,7 +134,6 @@ installation.  If in a hurry, say NO." )
 (define (setup) 
  (main 
   (lambda (a b c d e f g h i) build-tree-node a b c d e f g h)))
-
 
 
 ;; "change" is not yet implemented.  However, the idea is to again use
