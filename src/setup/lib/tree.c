@@ -111,6 +111,41 @@ tree_lookup(struct GNS_Tree * root,
   return NULL;
 }
 
+SCM get_option(SCM smob,
+	       SCM option,
+	       SCM section) {
+  TC * tc;
+  char * opt;
+  char * sec;
+  struct GNS_Tree * t;
+
+  SCM_ASSERT(SCM_SMOB_PREDICATE(tc_tag, smob), smob, SCM_ARG1, "change_visible");
+  SCM_ASSERT(scm_string_p(option), option, SCM_ARG2, "change_visible");
+  SCM_ASSERT(scm_string_p(section), section, SCM_ARG3, "change_visible");
+  tc    = (TC *) SCM_SMOB_DATA(smob);
+  opt = scm_to_locale_string(option);
+  sec = scm_to_locale_string(section);
+  t = tree_lookup(tc->root,
+		  sec,
+		  opt);
+  if (t == NULL)
+    return SCM_EOL;
+  switch (t->type & (-1 ^ GNS_KindMask) ) {
+  case 0:
+    return SCM_EOL; /* no value */
+  case GNS_Boolean:
+    return (t->value.Boolean.val) ? SCM_BOOL_T : SCM_BOOL_F;      
+  case GNS_UInt64:
+    return scm_from_uint64(t->value.UInt64.val);
+  case GNS_Double:
+    return scm_from_double(t->value.Double.val);
+  case GNS_String:
+    return scm_from_locale_string(t->value.String.val);
+  }
+  GE_BREAK(NULL, 0);
+  return SCM_EOL;
+}
+	       
 /**
  * Change the visibility of an entry in the
  * tree (and notify listeners about change).
@@ -258,6 +293,9 @@ void gns_scheme_register() {
   scm_c_define_gsubr("build-tree-node",
 		     8, 0, 0,
 		     &build_tree_node);
+  scm_c_define_gsubr("get-option",
+		     3, 0, 0,
+		     &get_option);
 }
 
 /**
