@@ -26,7 +26,9 @@ libsqlite3-dev
 libmysqlclient14-dev
 libncurses5-dev
 libcurl3-gnutls-dev
+guile-1.8-dev (out since Feb 2006 - still no debian package!)
 libextractor-dev (unstable required!)
+
 
 Additional libextractor dependencies:
 
@@ -46,11 +48,6 @@ For running GNUnet with the MySQL database:
 
 mysql-server-5.0
 mysql-client-5.0 (for administration)
-
-
-For gnunet-download-manager (probably no longer needed):
-
-guile-1.6
 
 
 For Subversion access and compilation:

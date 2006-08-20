@@ -1,6 +1,4 @@
-if HAVE_GUILE
- bin_SCRIPTS = gnunet-download-manager.scm
-endif
+bin_SCRIPTS = gnunet-download-manager.scm
 
 pkgdata_DATA = \
  config-client.in \

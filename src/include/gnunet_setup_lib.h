@@ -43,6 +43,13 @@
 #ifndef GNUNET_SETUP_LIB_H
 #define GNUNET_SETUP_LIB_H
 
+#include "gnunet_util.h"
+
+/**
+ * Register GNUnet setup functions with scheme (call only once).
+ */ 
+void gns_scheme_register(void);
+
 /**
  * Types of nodes and values in the configuration tree.
  */
@@ -52,10 +59,9 @@ typedef enum {
   GNS_Leaf     = 2,
   GNS_KindMask = 3,
   GNS_Boolean  = 4,
-  GNS_Float    = 8,
+  GNS_String   = 8,
   GNS_Double   = 16,
   GNS_UInt64   = 32,
-  GNS_String   = 64,
 } GNS_Type;
 
 /**
@@ -71,11 +77,6 @@ typedef union {
 
     int def;
   } Boolean;
-
-  struct {
-    float val;
-    float def;
-  } Float;
 
   struct {
     unsigned long long val;
@@ -217,7 +218,7 @@ typedef void (*GNS_TreeChangeListener)(const struct GNS_Tree * node,
 void 
 GNS_register_tree_change_listener(struct GNS_Context * ctx,
 				  GNS_TreeChangeListener listener,
-				  void * ctx);
+				  void * cls);
 
 /**
  * Release a tree change listener from GNS (do not call the listener
@@ -226,6 +227,6 @@ GNS_register_tree_change_listener(struct GNS_Context * ctx,
 void 
 GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
 				    GNS_TreeChangeListener listener,
-				    void * ctx);
+				    void * cls);
 
 #endif

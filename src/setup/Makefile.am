@@ -25,11 +25,14 @@ bin_PROGRAMS = \
 gnunet_setup_SOURCES = \
  gnunet-setup.c
 
-gnunet_setup_LDADD = \
+gnunet_setup_LDADD = @GUILE_LDFLAGS@ \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
+
+gnunet_setup_CFLAGS = \
+ @GUILE_CFLAGS@ -I$(top_scrdir)/include 
 
 gnunet_win_tool_SOURCE = \
  gnunet-win-tool.c

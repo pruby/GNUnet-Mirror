@@ -55,14 +55,14 @@ struct GNS_Context {
 
 };
 
-static void notfiy_listeners(void * ctx,
+static void notify_listeners(void * ctx,
 			     struct GNS_Tree * tree) {  
   struct GNS_Context * g = ctx;
   GNS_TCL * lpos;
 
   lpos = g->listeners;
   while (lpos != NULL) {
-    lpos->l(pos, lpos->c);
+    lpos->l(tree, lpos->c);
     lpos = lpos->next;
   }
 }
@@ -85,7 +85,9 @@ int configChangeListener(void * ctx,
   struct GNS_Context * g = ctx;
   struct GNS_Tree * pos;
   
-  pos = tree_lookup(section, option);
+  pos = tree_lookup(g->root,
+		    section, 
+		    option);
   if (pos == NULL) {
     GE_LOG(g->ectx,
 	   GE_DEVELOPER | GE_BULK | GE_ERROR,
@@ -95,7 +97,7 @@ int configChangeListener(void * ctx,
     return 0; /* or refuse? */
   }
   /* first, check if value is valid */
-  if (pos->type & GNS_KindMask != GNS_Leaf) {
+  if ((pos->type & GNS_KindMask) != GNS_Leaf) {
     GE_LOG(g->ectx,
 	   GE_DEVELOPER | GE_BULK | GE_ERROR,
 	   "Tree value change for non-leaf option `%s' in section `%s'!\n",
@@ -114,32 +116,6 @@ int configChangeListener(void * ctx,
     if (val == SYSERR)
       return SYSERR;
     pos->value.Boolean.val = val;
-    break;
-  }
-  case GNS_Float: {
-    char * s;
-    float f;
-
-    s = NULL;
-    GC_get_configuration_value_string(cfg,
-				      section,
-				      option,
-				      NULL,
-				      &s);
-    if (s == NULL) {
-      pos->value.Float.val = pos->value.Float.def;
-    } else {
-      if (1 != sscanf(s, "%f", &f)) {
-	GE_LOG(ectx,
-	       GE_USER | GE_ERROR | GE_IMMEDIATE,
-	       "`%s' is not a valid floating point number.\n",
-	       s);
-	FREE(s);
-	return SYSERR;
-      }
-      pos->value.Float.val = f;
-      FREE(s);
-    }
     break;
   }
   case GNS_UInt64: {
@@ -190,7 +166,7 @@ int configChangeListener(void * ctx,
       if (SYSERR == GC_get_configuration_value_choice(cfg,
 						      section,
 						      option,
-						      pos->value.String.legalRange,
+						      (const char**) pos->value.String.legalRange,
 						      pos->value.String.def,
 						      &ival))
 	return SYSERR;
@@ -221,6 +197,41 @@ int configChangeListener(void * ctx,
   return 0;
 }
 
+static void free_tree(struct GNS_Tree * t) {
+  int i;
+
+  i = 0;
+  while (t->children[i] != NULL) {
+    free_tree(t->children[i]);
+    i++;
+  }
+  switch (t->type & (-1 ^ GNS_KindMask) ) {
+  case 0: 
+    break; /* no value */
+  case GNS_Boolean:
+  case GNS_UInt64:
+  case GNS_Double:
+    break; /* nothing to free */
+  case GNS_String:
+    i = 0;
+    while (t->value.String.legalRange[i] != NULL) {
+      FREE(t->value.String.legalRange[i]);
+      i++;
+    }
+    FREE(t->value.String.legalRange);
+    FREE(t->value.String.val);
+    break;
+  default:
+    GE_BREAK(NULL, 0);
+    break;
+  }
+  FREE(t->description);
+  FREE(t->help);
+  FREE(t->children);
+  FREE(t);
+}
+
+
 /**
  * Start the setup process by loading a scheme file that
  * contains the configuration specification. 
@@ -240,7 +251,7 @@ GNS_load_specification(struct GE_Context * ectx,
   root = tree_parse(ectx, specification);
   if (root == NULL)
     return NULL;
-  ctx = MALLOC(sizeof(GNS_Context));
+  ctx = MALLOC(sizeof(struct GNS_Context));
   ctx->ectx = ectx;
   ctx->cfg = cfg;
   ctx->root = root;
@@ -271,41 +282,6 @@ GNS_get_tree(struct GNS_Context * ctx) {
   return ctx->root;
 }
 
-static void free_tree(struct GNS_Tree * t) {
-  int i;
-
-  i = 0;
-  while (t->children[i] != NULL) {
-    free_tree(t->children[i]);
-    i++;
-  }
-  switch (t->type & (-1 ^ GNS_KindMask) ) {
-  case 0: 
-    break; /* no value */
-  case GNS_Boolean:
-  case GNS_Float:
-  case GNS_UInt64:
-  case GNS_Double:
-    break; /* nothing to free */
-  case GNS_String:
-    i = 0;
-    while (t->value.String.legalRange[i] != NULL) {
-      FREE(t->value.String.legalRange[i]);
-      i++;
-    }
-    FREE(t->value.String.legalRange);
-    FREE(t->value.String.val);
-    break;
-  default:
-    GE_BREAK(NULL, 0);
-    break;
-  }
-  FREE(t->description);
-  FREE(t->help);
-  FREE(t->children);
-  FREE(t);
-}
-
 /**
  * Free resources associated with the GNS context.
  */
@@ -327,12 +303,12 @@ GNS_free_specification(struct GNS_Context * ctx) {
 void 
 GNS_register_tree_change_listener(struct GNS_Context * ctx,
 				  GNS_TreeChangeListener listener,
-				  void * ctx) {
+				  void * cls) {
   GNS_TCL  * n;
   
   n = MALLOC(sizeof(GNS_TCL));
   n->l = listener;
-  n->c = ctx;
+  n->c = cls;
   n->next = ctx->listeners;
   ctx->listeners = n;
 }
@@ -344,7 +320,7 @@ GNS_register_tree_change_listener(struct GNS_Context * ctx,
 void 
 GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
 				    GNS_TreeChangeListener listener,
-				    void * ctx) {
+				    void * cls) {
   GNS_TCL * pos;
   GNS_TCL * prev;
 
@@ -352,7 +328,7 @@ GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
   pos = ctx->listeners;
   while (pos != NULL) {
     if ( (pos->l == listener) &&
-	 (pos->c == ctx)) {
+	 (pos->c == cls)) {
       if (prev == NULL)
 	ctx->listeners = pos->next;
       else

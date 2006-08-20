@@ -24,13 +24,14 @@
  * @author Nils Durner
  * @author Christian Grothoff
  */
-
-#include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_directories.h"
 #include "gnunet_setup_lib.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
+
+#include "platform.h"
+#include <libguile.h>
 
 typedef int (*ConfigurationPluginMain)(int argc,
 				       const char ** argv,
@@ -116,15 +117,17 @@ static const char * modules[] = {
 };
 
 
-int main(int argc, 
-	 const char *argv[]) {
+int real_main(void * unused,
+	      int argc, 
+	      const char *argv[]) {
   const char * operation;
   int done;
   char * filename;
   char * dirname;
   char * specname;
   int i; 
-  
+
+  gns_scheme_register();
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
@@ -205,9 +208,9 @@ int main(int argc,
   strcpy(specname, dirname);
   FREE(dirname);
   if (config_daemon) 
-    strcat(specname, "/config-daemon.in");
+    strcat(specname, "/config-daemon.scm");
   else 
-    strcat(specname, "/config-client.in");  
+    strcat(specname, "/config-client.scm");  
   gns = GNS_load_specification(ectx,
 			       cfg,
 			       specname); 
@@ -259,4 +262,13 @@ int main(int argc,
   GC_free(cfg);
   GE_free_context(ectx);
   return 0;
+}
+
+/**
+ * Guile's gh_enter sucks.
+ */
+int main(int argc, 
+	 const char *argv[]) {
+  scm_boot_guile(argc, argv, real_main, NULL);
+  return 0; /* never reached */ 
 }

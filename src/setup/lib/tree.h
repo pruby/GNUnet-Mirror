@@ -32,6 +32,11 @@ struct GNS_Tree *
 tree_parse(struct GE_Context * ectx,
 	   const char * specification);
 
+struct GNS_Tree * 
+tree_lookup(struct GNS_Tree * root,
+	    const char * section,
+	    const char * option);
+
 typedef void (*VisibilityChangeListener)(void * ctx,
 					 struct GNS_Tree * tree);
 

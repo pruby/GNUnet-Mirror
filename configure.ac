@@ -439,82 +439,7 @@ AM_CONDITIONAL(HAVE_IPV6, test x$ipv6 != x0)
 AC_DEFINE_UNQUOTED(USE_IPV6, $ipv6, [IPV6 available])
 
 # check for guile
-
-AC_ARG_ENABLE(guile,
-              [AC_HELP_STRING([--enable-guile],
-	                      [Install Guile scripts.])],
-	      enable_guile=$enableval)
-
-# By default, enable Guile
-if test -z $enable_guile
-then
-    enable_guile="yes"
-fi
-
-guile=0
-if test "$enable_guile" = "yes"
-then
-    AC_PATH_PROG([guile_available], [guile])
-    if test -z "$guile_available"
-    then
-	AC_MSG_WARN([Guile not available, so `gnunet-download-manager' won't be installed.])
-    else
-	# Perform the whole Guile feature tests
-	GUILE_PROGS
-        guile=1
-	GUILE_MODULE_AVAILABLE(module_available,[(ice-9 format)])
-        if test "$module_available" = "no";
-	then
-          AC_MSG_WARN([required guile module not available])
-	  guile=0
-        fi
-	GUILE_MODULE_AVAILABLE(module_available,[(ice-9 regex)])
-        if test "$module_available" = "no";
-	then
-          AC_MSG_WARN([required guile module not available])
-	  guile=0
-        fi
-	GUILE_MODULE_AVAILABLE(module_available,[(ice-9 and-let-star)])
-        if test "$module_available" = "no";
-	then
-          AC_MSG_WARN([required guile module not available])
-	  guile=0
-        fi
-	GUILE_MODULE_AVAILABLE(module_available,[(ice-9 pretty-print)])
-        if test "$module_available" = "no";
-	then
-          AC_MSG_WARN([required guile module not available])
-	  guile=0
-        fi
-	GUILE_MODULE_AVAILABLE(module_available,[(ice-9 documentation)])
-        if test "$module_available" = "no";
-	then
-          AC_MSG_WARN([required guile module not available])
-	  guile=0
-        fi
-	GUILE_MODULE_AVAILABLE(module_available,[(ice-9 optargs)])
-        if test "$module_available" = "no";
-	then
-          AC_MSG_WARN([required guile module not available])
-	  guile=0
-        fi
-
-	# Check that the keywork syntax used by (ice-9 optargs) is `#:keywork'
-	# (as in Guile 1.6) and not `#!' (as in Guile 1.4)
-	GUILE_MODULE_CHECK([guile_pound_colon_keywords],
-			   [(ice-9 optargs)],
-			   [(lambda* (foo [#]:optional (o [#t])) o)],
-			   [Guile 1.6's optarg keyword style is supported])
-	if test $guile_pound_colon_keywords != "yes"
-	then
-	   AC_MSG_WARN([`(ice-9 optargs)' doesn't support the `[#:]' keyword syntax.  Upgrade to Guile 1.6 or later.]);
-	  guile=0
-        else
-          guile=1
-	fi
-    fi
-fi # enable_guile
-AM_CONDITIONAL(HAVE_GUILE, test x$guile != x0)
+GUILE_FLAGS
 
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
@@ -562,6 +487,10 @@ src/applications/traffic/Makefile
 src/applications/transport/Makefile
 src/applications/vpn/Makefile
 src/setup/Makefile
+src/setup/lib/Makefile
+src/setup/gtk/Makefile
+src/setup/ncurses/Makefile
+src/setup/text/Makefile
 src/server/Makefile
 src/transports/Makefile
 src/util/Makefile
