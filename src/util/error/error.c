@@ -57,27 +57,43 @@ void GE_LOG(struct GE_Context * ctx,
 	    GE_KIND kind,
 	    const char * message,
 	    ...) {
+  va_list va;
   char date[64];
   time_t timetmp;
   struct tm * tmptr;
+  size_t size;
+  char * buf;
 
   if (ctx == NULL)
     ctx = defaultContext;
-  if (ctx == NULL)
+  if ( (ctx != NULL)  &&
+       (! GE_applies(kind, ctx->mask)) )
     return;
-  if (! GE_applies(kind, ctx->mask))
-    return;
+  va_start(va, message);
+  size = vsnprintf(NULL, 0, message, va) + 1;
+  va_end(va);
+  buf = malloc(size);
+  va_start(va, message);
+  vsnprintf(buf, size, message, va);
+  va_end(va);
   time(&timetmp);
   tmptr = localtime(&timetmp);
-  if (0 != strftime(date,
-		    64,
-		    "%b %d %H:%M:%S",
-		    tmptr))
-    abort();
-  ctx->handler(ctx->cls,
-	       kind,
-	       date,
-	       message);
+  memset(date, 0, 64);
+  strftime(date,
+	   64,
+	   "%b %d %H:%M:%S",
+	   tmptr);
+  if (ctx != NULL)
+    ctx->handler(ctx->cls,
+		 kind,
+		 date,
+		 buf);
+  else
+    fprintf(stderr,
+	    "%s %s", 
+	    date,
+	    buf);
+  free(buf);
 }
 
 /**

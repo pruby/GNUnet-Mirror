@@ -17,5 +17,5 @@ TESTS = $(check_PROGRAMS)
 xmalloctest_SOURCES = \
  xmalloctest.c 
 xmalloctest_LDADD = \
- $(top_builddir)/src/util/string/libstring.la
+ $(top_builddir)/src/util/libgnunetutil.la
 

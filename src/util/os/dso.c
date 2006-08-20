@@ -69,8 +69,9 @@ static char * getPluginPath() {
        (lnk[size-4] != '/') ) {
     GE_LOG(NULL,
 	   GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("Cannot determine plugin path, application must be installed in directory ending with `%s'.\n"),
-	   "bin/");
+	   _("Cannot determine plugin path (have, application must be installed in directory ending with `%s', have `%s').\n"),
+	   "bin/",
+	   lnk);
     FREE(lnk);
     return NULL;
   }
@@ -85,7 +86,9 @@ static char * getPluginPath() {
   path = MALLOC(4097);
   GetModuleFileName(NULL, path, 4096);
   idx = path + strlen(idx);
-  while(idx > path && path != '\\' && path != '/')
+  while ( (idx > path) && 
+	  (path != '\\') &&
+	  (path != '/') )
     idx++;
   *idx = 0;
   
@@ -114,8 +117,13 @@ void __attribute__ ((constructor)) gnc_ltdl_init(void) {
   if (opath != NULL)
     old_dlsearchpath = STRDUP(opath);
   path = getPluginPath();
+  if (path == NULL) {
+    fprintf(stderr,
+	    _("Fatal error: could not determine path for plugins!\n"));    
+    abort();
+  }
   lt_dlsetsearchpath(path);
-  FREE(path);
+  FREE(path);  
 }
 
 void __attribute__ ((destructor)) gnc_ltdl_fini(void) {
