@@ -20,7 +20,7 @@
 
 
 /**
- * @file conf/conf.h
+ * @file setup/text/conf.h
  * @brief GNUnet text mode Setup
  * @author Nils Durner
  */
@@ -29,12 +29,14 @@
 #define CONF_H
 
 #include "gnunet_util.h"
+#include "gnunet_setup_lib.h"
 
 int conf_main(int argc, 
 	      const char ** argv, 
 	      struct PluginHandle * self,
 	      struct GE_Context * ectx,
 	      struct GC_Configuration * cfg,
+	      struct GNS_Context * gns,
 	      const char * filename,
 	      int is_daemon);
 

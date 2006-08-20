@@ -1,5 +1,5 @@
 SUBDIRS = \
- . module lib ecrs uritrack fsui namespace collection tools 
+ . module lib ecrs uritrack namespace fsui collection tools 
 
 INCLUDES = -I$(top_srcdir)/src/include
 

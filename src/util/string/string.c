@@ -260,13 +260,13 @@ char * string_convertToUtf8(struct GE_Context * ectx,
 char * string_expandFileName(struct GE_Context * ectx,
 			     const char * fil) {
   char * buffer;
-  char * fn;
 #ifndef MINGW
   size_t len;
   size_t n;
   char * fm;
   const char * fil_ptr;
 #else
+  char * fn;
   long lRet;
 #endif
 
@@ -276,7 +276,7 @@ char * string_expandFileName(struct GE_Context * ectx,
 #ifndef MINGW
   if (fil[0] == DIR_SEPARATOR) 
     /* absolute path, just copy */
-    return(STRDUP(fil));
+    return STRDUP(fil);
   if (fil[0] == '~') {
     fm = getenv("HOME");
     if (fm == NULL) {
@@ -316,9 +316,10 @@ char * string_expandFileName(struct GE_Context * ectx,
   }
   n = strlen(fm) + 1 + strlen(fil_ptr) + 1;
   buffer = MALLOC(n);
-  SNPRINTF(fn, n,
+  SNPRINTF(buffer, n,
 	   "%s/%s", fm, fil_ptr);
   FREE(fm);
+  return buffer;
 #else
   fn = MALLOC(MAX_PATH + 1);
 
@@ -347,8 +348,8 @@ char * string_expandFileName(struct GE_Context * ectx,
   } else {
     strcpy(fn, buffer);
   }
-#endif
   return fn;
+#endif
 }
 
 

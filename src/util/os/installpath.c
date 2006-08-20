@@ -99,10 +99,14 @@ static char *os_get_exec_path(struct GE_Context * ectx,
 
   /* II. reading /proc failed, trying with argv[0] */
   found = 0;
-  GC_get_configuration_value_string(cfg, "ARGV", "0", "gnunetd", &path1);
+  GC_get_configuration_value_string(cfg, 
+				    "ARGV", 
+				    "0", 
+				    "gnunetd",
+				    &path1);
 
   /* 1. absolute path */
-  if(*path1 == '/') {
+  if (*path1 == '/') {
     execpath = path1;
     found = 1; }
 
@@ -188,8 +192,10 @@ char * os_get_installation_path(struct GE_Context * ectx,
   static char *prefix = NULL; /*save it between calls */
 
   unsigned int n;
-  char *dirname, *final_dir, *appname;
-  char *execpath, *tmp, *ptr;
+  const char * dirname;
+  char *execpath;
+  char *tmp;
+  char *ptr;
 
   if(!prefix) { /* if we already got the prefix once, don't work more */
     if( !(execpath = os_get_exec_path(ectx, cfg)) )
@@ -227,41 +233,33 @@ char * os_get_installation_path(struct GE_Context * ectx,
     FREE(tmp); }
 
 
-  /* what do we have to return ? */
-  GC_get_configuration_value_string(cfg, "ARGV", "0", "gnunetd", &appname);
-
   switch(dirkind) {
     case PREFIX:
-      dirname = STRDUP("\0");
+      dirname = "";
       break;
     case BINDIR:
-      dirname = STRDUP("bin/\0");
+      dirname = "bin/";
       break;
     case LIBDIR:
-      dirname = STRDUP("lib/\0");
-      break;
-    case GNDATADIR:
-      dirname = STRDUP("share/\0");
+      dirname = "lib/GNUnet/";
       break;
     case PACKAGEDATADIR:
-      tmp = MALLOC(9+strlen(prefix)+strlen(appname));
-      sprintf(tmp, "share/%s/%s/", prefix, appname);
-      dirname = STRDUP(tmp);
-      FREE(tmp);
+    case GNDATADIR:
+      dirname = "share/GNUnet/";
       break;
     case LOCALEDIR:
-      dirname = STRDUP("share/locale/\0");
+      dirname = "share/locale/";
       break;
     default:
       return NULL; }
 
   tmp = MALLOC(strlen(prefix)+strlen(dirname)+1);
-
-  final_dir = STRDUP(tmp);
-
-  FREE(tmp);
-  FREENONNULL(dirname);
-  return final_dir;
+  sprintf(tmp, 
+	  "%s%s",
+	  prefix,
+	  dirname);
+  FREE(prefix);
+  return tmp;
 }
 
 #if 0 /* keep Emacsens' auto-indent happy */

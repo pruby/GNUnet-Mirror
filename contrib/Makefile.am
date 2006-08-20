@@ -1,6 +1,7 @@
 bin_SCRIPTS = gnunet-download-manager.scm
 
 pkgdata_DATA = \
+ config-daemon.scm \
  config-client.in \
  config-daemon.in
 

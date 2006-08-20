@@ -287,6 +287,8 @@ tree_parse(struct GE_Context * ectx,
   SCM proc;
   SCM smob;
   struct GNS_Tree * tree;
+
+  scm_c_primitive_load(specification);
   proc = scm_variable_ref(scm_c_lookup("setup"));
   smob = scm_apply_0(proc, SCM_EOL);
   tree = (struct GNS_Tree*) SCM_SMOB_DATA(smob);
