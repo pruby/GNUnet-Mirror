@@ -1,11 +1,8 @@
-if HAVE_GUILE
- gdmpage = gnunet-download-manager.1
-endif
-
-man_MANS = $(gdmpage) \
+man_MANS = \
 gnunet-chat.1\
 gnunet-directory.1 \
 gnunet-download.1 \
+gnunet-download-manager.1 \
 gnunet-insert.1 \
 gnunet-search.1 \
 gnunet-setup.1 \
@@ -21,6 +18,3 @@ gnunet-update.1 \
 gnunetd.1 \
 gnunet.conf.5 \
 gnunetd.conf.5
-
-EXTRA_DIST = $(man_MANS) \
- gnunet-download-manager.1
