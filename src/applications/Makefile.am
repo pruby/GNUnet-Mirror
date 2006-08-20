@@ -1,3 +1,5 @@
+# commented out for now: vpn
+
 if HAVE_MYSQL
  MYSQL_DIR = sqstore_mysql
 endif
@@ -7,17 +9,15 @@ if HAVE_SQLITE
 endif
 
 if !MINGW
- TESTBED_DIR = testbed
- VPN_DIR = vpn
+# TESTBED_DIR = testbed
+# VPN_DIR = vpn
 endif
 
 SUBDIRS	= \
  advertising \
  bootstrap_http \
- chat \
  datastore \
  rpc \
- dht \
  fragmentation \
  getoption \
  fs \
@@ -38,3 +38,6 @@ SUBDIRS	= \
  traffic \
  transport \
  $(VPN_DIR)
+# dht 
+# chat
+# kvstore_sqlite

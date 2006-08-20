@@ -29,8 +29,8 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
 
-static void eventCallback(void * cls,
-			  const FSUI_Event * event) {
+static void * eventCallback(void * cls,
+			    const FSUI_Event * event) {
 #if 0
   switch(event->type) {
   case FSUI_search_result:
@@ -50,6 +50,7 @@ static void eventCallback(void * cls,
     break;
   }
 #endif
+  return NULL;
 }
 
 int main(int argc,

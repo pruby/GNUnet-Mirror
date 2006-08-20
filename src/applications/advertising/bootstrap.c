@@ -66,15 +66,16 @@ static void processhellos(HelloListClosure * hcq) {
     GE_BREAK(coreAPI->ectx, 0);
     return;
   }
-  while ( (! hqc.do_shutdown) &&
+  while ( (! hcq->do_shutdown) &&
 	  (hcq->helosCount > 0) ) {
     /* select hello by random */
     rndidx = weak_randomi(hcq->helosCount);
 #if DEBUG_BOOTSTRAP
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"%s chose hello %d of %d\n",
-	__FUNCTION__,
-	rndidx, hcq->helosCount);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "%s chose hello %d of %d\n",
+	   __FUNCTION__,
+	   rndidx, hcq->helosCount);
 #endif
     msg = (P2P_hello_MESSAGE*) hcq->helos[rndidx];
     hcq->helos[rndidx]

@@ -53,7 +53,7 @@ static char * makeName(unsigned int i) {
 
   fn = STRDUP("/tmp/gnunet-fsuisearchtest");
   name = expandFileName(fn);
-  mkdirp(name);
+  disk_directory_create(ectx, name);
   FREE(fn);
   fn = MALLOC(strlen(name) + 40);
   SNPRINTF(fn,

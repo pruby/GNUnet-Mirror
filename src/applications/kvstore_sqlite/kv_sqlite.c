@@ -30,6 +30,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_directories.h"
 #include "gnunet_kvstore_service.h"
 #include <sqlite3.h>
 
@@ -40,16 +41,18 @@
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define DIE_SQLITE(cmd) do { errexit(_("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbh)); } while(0);
+#define DIE_SQLITE(cmd) do { GE_LOG(ectx, GE_FATAL | GE_ADMIN | GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbh)); abort(); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_SQLITE(level, cmd) do { fprintf(stderr, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbh)); } while(0);
+#define LOG_SQLITE(level, cmd) do { GE_LOG(ectx, GE_ERROR | GE_ADMIN | GE_BULK, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(dbh->dbh)); } while(0);
 
 static CoreAPIForApplication * coreAPI;
+
+static struct GE_Context * ectx;
 
 /**
  * @brief Wrapper for SQLite
@@ -58,22 +61,26 @@ typedef struct {
   /* Native SQLite database handle - may not be shared between threads! */
   sqlite3 *dbh;
   /* Thread ID owning this handle */
-  pthread_t tid;
+  struct PTHREAD * tid;
   /* Synchronized access to sqlite */
-  Mutex *DATABASE_Lock_;
+  struct MUTEX * DATABASE_Lock_;
 } sqliteHandle;
 
 /**
  * @brief Information about the database
  */
 typedef struct {
-  Mutex DATABASE_Lock_;
+  struct MUTEX * DATABASE_Lock_;
+
   /** name of the database */
   char *name;  
+
   /** filename of this database */
   char *fn;
+
   /** bytes used */
   double payload;
+
   unsigned int lastSync;
   
   /* Open handles */
@@ -88,11 +95,12 @@ typedef struct {
 
 
 static unsigned int databases = 0;
+
 static sqliteDatabase *dbs;
 
 static sqliteHandle *getDBHandle(const char *name);
 
-static Mutex databasesLock;
+static struct MUTEX * databasesLock;
 
 /**
  * @brief Encode a binary buffer "in" of size n bytes so that it contains
@@ -167,33 +175,29 @@ static int sq_prepare(sqliteHandle *dbh,
 /**
  * @brief Create new database structure
  */
-static void new_db(sqliteDatabase *db, const char *name)
-{
+static void new_db(sqliteDatabase *db, 
+		   const char *name) {
   char *dir;
-  unsigned int mem;
+  size_t mem;
   
   memset(db, sizeof(sqliteDatabase), 0);
   
-  MUTEX_CREATE(&db->DATABASE_Lock_);
+  db->DATABASE_Lock_ = MUTEX_CREATE(NO);
   
   /* Get path to database file */
-  dir = getFileName("KEYVALUE_DATABASE", "DIR",
-           _("Configuration file must specify directory for "
-           "storing data in section `%s' under `%s'.\n"));
-           
-  if (dir != NULL)
-    mem = strlen(dir);
-  else
-    mem = 0;
-    
-  mkdirp(dir);
-    
-  mem += strlen(name) + 6; /* 6 = "/" + ".dat" */
-   
+  GC_get_configuration_value_filename(coreAPI->cfg,
+				      "KEYVALUE_DATABASE", 
+				      "DIR",
+				      VAR_DAEMON_DIRECTORY "/kvstore/",
+				      &dir);
+  mem = strlen(dir) + strlen(name) + 5;
   db->fn = (char *) MALLOC(mem);
-  sprintf(db->fn, "%s/%s.dat", dir, name);
-  FREE(dir);
-  
+  SNPRINTF(db->fn, 
+	   mem,
+	   "%s/%s.dat",
+	   dir, 
+	   name);
+  FREE(dir);  
   db->name = STRDUP(name);
 }
 
@@ -221,11 +225,10 @@ static sqliteDatabase *getDB(const char *name)
  */
 static sqliteHandle *getDBHandle(const char *name) {
   unsigned int idx;
-  pthread_t this_tid;
   sqliteHandle *dbh = NULL;
   sqliteDatabase *db = NULL;
   
-  MUTEX_LOCK(&databasesLock);
+  MUTEX_LOCK(databasesLock);
   
   /* Is database already open? */
   db = getDB(name);  
@@ -237,14 +240,12 @@ static sqliteHandle *getDBHandle(const char *name) {
     new_db(db, name);
   }
 
-  MUTEX_UNLOCK(&databasesLock);
-
-  MUTEX_LOCK(&db->DATABASE_Lock_);
+  MUTEX_UNLOCK(databasesLock);
+  MUTEX_LOCK(db->DATABASE_Lock_);
   
   /* Was it opened by this thread? */
-  this_tid = pthread_self();
   for (idx = 0; idx < db->handle_count; idx++)
-    if (pthread_equal(db->handles[idx].tid, this_tid)) {
+    if (PTHREAD_TEST_SELF(db->handles[idx].tid)) {
       dbh = db->handles + idx;
       break;
     }
@@ -255,8 +256,8 @@ static sqliteHandle *getDBHandle(const char *name) {
   	 db->handle_count,
   	 db->handle_count + 1);
     dbh = db->handles + db->handle_count - 1;
-    dbh->tid = this_tid;
-    dbh->DATABASE_Lock_ = &db->DATABASE_Lock_;
+    dbh->tid = PTHREAD_GET_SELF();
+    dbh->DATABASE_Lock_ = db->DATABASE_Lock_;
 
     /* Open database */
     if (sqlite3_open(db->fn, &dbh->dbh) != SQLITE_OK) {
@@ -274,25 +275,25 @@ static sqliteHandle *getDBHandle(const char *name) {
     sqlite3_exec(dbh->dbh, "PRAGMA page_size=4096", NULL, NULL, NULL);
   }
 
-  MUTEX_UNLOCK(&db->DATABASE_Lock_);
+  MUTEX_UNLOCK(db->DATABASE_Lock_);
 
   return dbh;
 }
 
-static void close_database(sqliteDatabase *db)
-{
+static void close_database(sqliteDatabase *db) {
   unsigned int idx;
 
   for (idx = 0; idx < db->handle_count; idx++) {
-    sqliteHandle *dbh = db->handles + idx;
-
+    sqliteHandle * dbh = db->handles + idx;
+    PTHREAD_REL_SELF(dbh->tid);
     if (sqlite3_close(dbh->dbh) != SQLITE_OK)
-      LOG_SQLITE(LOG_ERROR, "sqlite_close");
+      LOG_SQLITE(LOG_ERROR, 
+		 "sqlite_close");
   }
   FREE(db->handles);
   db->handle_count = 0;
 
-  MUTEX_DESTROY(&db->DATABASE_Lock_);
+  MUTEX_DESTROY(db->DATABASE_Lock_);
   FREE(db->fn);
   FREE(db->name);
 
@@ -671,16 +672,16 @@ static int dropTable(KVHandle *kv)
 KVstore_ServiceAPI *
 provide_module_kvstore_sqlite(CoreAPIForApplication * capi) {
   static KVstore_ServiceAPI api;
-
+  
+  ectx = capi->ectx;
 #if DEBUG_SQLITE
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "SQLite: initializing database\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "SQLite: initializing database\n");
 #endif
 
-  MUTEX_CREATE(&databasesLock);
-
+  databasesLock = MUTEX_CREATE(NO);
   coreAPI = capi;
-
   api.closeTable = &closeTable;
   api.del = &del;
   api.get = &get;
@@ -697,12 +698,12 @@ provide_module_kvstore_sqlite(CoreAPIForApplication * capi) {
 void release_module_kvstore_sqlite() {
   sqlite_shutdown();
 #if DEBUG_SQLITE
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "SQLite KVStore: database shutdown\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "SQLite KVStore: database shutdown\n");
 #endif
 
-  MUTEX_DESTROY(&databasesLock);
-
+  MUTEX_DESTROY(databasesLock);
   coreAPI = NULL;
 }
 

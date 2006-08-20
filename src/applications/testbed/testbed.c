@@ -513,7 +513,7 @@ static int pipeReaderThread(ProcessInfo * pi) {
   if (tmp == NULL)
     tmp = STRDUP("/");
   dir = expandFileName(tmp);
-  mkdirp(dir);
+  disk_directory_create(ectx, dir);
   FREE(tmp);
 
   MUTEX_LOCK(&lock);
@@ -844,7 +844,7 @@ static void tb_UPLOAD_FILE(ClientHandle client,
   }
   gnHome = expandFileName(tmp);
   FREE(tmp);
-  mkdirp(gnHome);
+  disk_directory_create(ectx, gnHome);
 
   filename = MALLOC(strlen(filename) + strlen(gnHome) + 2); /*2: /, \0 */
   strcpy(filename, gnHome);
