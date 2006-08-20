@@ -31,7 +31,6 @@
 #include "gnunet_util_error_loggers.h"
 
 #include "platform.h"
-#include <libguile.h>
 
 typedef int (*ConfigurationPluginMain)(int argc,
 				       const char ** argv,
@@ -86,7 +85,7 @@ static int dyn_config(const char * module,
        library,
        ectx, 
        cfg,
-       filename,
+       gns,
        config_daemon); 
   os_plugin_unload(library);  
   return YES;
@@ -117,9 +116,8 @@ static const char * modules[] = {
 };
 
 
-int real_main(void * unused,
-	      int argc, 
-	      const char *argv[]) {
+int main(int argc, 
+	 const char * argv[]) {
   const char * operation;
   int done;
   char * filename;
@@ -127,7 +125,6 @@ int real_main(void * unused,
   char * specname;
   int i; 
 
-  gns_scheme_register();
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
@@ -262,13 +259,4 @@ int real_main(void * unused,
   GC_free(cfg);
   GE_free_context(ectx);
   return 0;
-}
-
-/**
- * Guile's gh_enter sucks.
- */
-int main(int argc, 
-	 const char *argv[]) {
-  scm_boot_guile(argc, argv, real_main, NULL);
-  return 0; /* never reached */ 
 }

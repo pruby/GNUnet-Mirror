@@ -32,8 +32,8 @@ Notes:
       sqstore_mysql, topology_f2f, rpc, kvstore_sqlite compile
     + fs/fsui, fs/collection, fs/uritrack, fs/namespace
       must still be revised to match new API!
-    + rest: dht, vpn
-    + low priority: chat, testbed
+    + rest: vpn
+    + low priority: chat, dht, testbed
   * setup:
     + main binary compiles, plugins are missing
       consider reorganization (subdirectories):

@@ -277,27 +277,6 @@ SCM build_tree_node(SCM section,
   return box_tree(tree);
 }
 
-void gns_scheme_register() {
-  tc_tag = scm_make_smob_type ("tc", sizeof (TC));
-  scm_set_smob_mark (tc_tag, NULL);
-  scm_set_smob_free (tc_tag, free_box);
-  scm_set_smob_print (tc_tag, print_tc);
-
-  tree_tag = scm_make_smob_type ("tc", sizeof (struct GNS_Tree));
-  scm_set_smob_mark (tree_tag, NULL);
-  scm_set_smob_free (tree_tag, free_box);
-  scm_set_smob_print (tree_tag, print_tree);
-  scm_c_define_gsubr("change-visible",
-		     4, 0, 0, 
-		     &change_visible);
-  scm_c_define_gsubr("build-tree-node",
-		     8, 0, 0,
-		     &build_tree_node);
-  scm_c_define_gsubr("get-option",
-		     3, 0, 0,
-		     &get_option);
-}
-
 /**
  * Parse the specification file and create the tree.
  * Set all values to defaults.
@@ -335,5 +314,29 @@ void tree_notify_change(VisibilityChangeListener vcl,
   smob_chng = box_tree(change);
   scm_apply_3(proc, smob_ctx, smob_root, smob_chng, SCM_EOL);
 }
+
+
+void __attribute__ ((constructor)) gns_scheme_init() {
+  scm_init_guile();
+  tc_tag = scm_make_smob_type ("tc", sizeof (TC));
+  scm_set_smob_mark (tc_tag, NULL);
+  scm_set_smob_free (tc_tag, free_box);
+  scm_set_smob_print (tc_tag, print_tc);
+
+  tree_tag = scm_make_smob_type ("tc", sizeof (struct GNS_Tree));
+  scm_set_smob_mark (tree_tag, NULL);
+  scm_set_smob_free (tree_tag, free_box);
+  scm_set_smob_print (tree_tag, print_tree);
+  scm_c_define_gsubr("change-visible",
+		     4, 0, 0, 
+		     &change_visible);
+  scm_c_define_gsubr("build-tree-node",
+		     8, 0, 0,
+		     &build_tree_node);
+  scm_c_define_gsubr("get-option",
+		     3, 0, 0,
+		     &get_option);
+}
+
 
 /* end of tree.c */

@@ -46,11 +46,6 @@
 #include "gnunet_util.h"
 
 /**
- * Register GNUnet setup functions with scheme (call only once).
- */ 
-void gns_scheme_register(void);
-
-/**
  * Types of nodes and values in the configuration tree.
  */
 typedef enum {
