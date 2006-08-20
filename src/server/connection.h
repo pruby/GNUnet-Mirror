@@ -37,7 +37,7 @@
  * decrypting the message.  It provides a timestamp and sequence
  * number (to guard against replay attacks).  The header is followed
  * by the 'data' which contains a sequence of GNUnet p2p messages,
- * each with its own P2P_MESSAGE_HEADER.
+ * each with its own MESSAGE_HEADER.
  */
 typedef struct {
   /* hash of the plaintext, used to verify message integrity;
@@ -125,7 +125,7 @@ int forEachConnectedNode(PerNodeCallback method,
  * from the GNUnet core.
  *
  * @param session the transport session
- * @param msg the message to transmit, should contain P2P_MESSAGE_HEADERs
+ * @param msg the message to transmit, should contain MESSAGE_HEADERs
  * @return OK on success, SYSERR on failure
  */
 int sendPlaintext(TSession * tsession,

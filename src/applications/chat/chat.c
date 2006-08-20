@@ -50,7 +50,7 @@ static void markSeen(HashCode512 * hc) {
 }
 
 typedef struct {
-  const P2P_MESSAGE_HEADER * message;
+  const MESSAGE_HEADER * message;
   unsigned int prio;
   unsigned int delay;
 } BCC;
@@ -63,7 +63,7 @@ static void bccHelper(const PeerIdentity * peer,
 		   bcc->delay);
 }
 
-static void broadcastToConnected(const P2P_MESSAGE_HEADER * message,
+static void broadcastToConnected(const MESSAGE_HEADER * message,
 				 unsigned int prio,
 				 unsigned int delay) {
   BCC bcc;
@@ -75,7 +75,7 @@ static void broadcastToConnected(const P2P_MESSAGE_HEADER * message,
 }
 
 static int handleChatMSG(const PeerIdentity * sender,
-			 const P2P_MESSAGE_HEADER * message) {
+			 const MESSAGE_HEADER * message) {
   int i;
   int j;
   CS_chat_MESSAGE * cmsg;

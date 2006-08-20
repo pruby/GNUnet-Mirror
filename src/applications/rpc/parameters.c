@@ -1,6 +1,7 @@
 /*
       This file is part of GNUnet
-
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+  
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
       by the Free Software Foundation; either version 2, or (at your
@@ -24,9 +25,10 @@
  * @author Antti Salonen, Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_containers.h"
 #include "gnunet_rpc_service.h"
+#include "platform.h"
 
 /**
  * A parameter to/from an RPC call. These (and nothing else) are stored in

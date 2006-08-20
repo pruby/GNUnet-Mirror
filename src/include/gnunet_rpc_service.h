@@ -28,6 +28,7 @@
 #define GNUNET_RPC_SERVICE_H
 
 #include "gnunet_core.h"
+#include "gnunet_util_containers.h"
 #include "gnunet_blockstore.h"
 
 #ifdef __cplusplus

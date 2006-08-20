@@ -117,7 +117,7 @@ struct in6_ifreq {
  */
 #define maxi(a,b) ((a)>(b)?(a):(b))
 #define mini(a,b) ((a)<(b)?(a):(b))
-#define HEADER_FRAME maxi(sizeof(P2P_MESSAGE_HEADER), sizeof(struct tun_pi))
+#define HEADER_FRAME maxi(sizeof(MESSAGE_HEADER), sizeof(struct tun_pi))
 
 /* we can't actually send messages this long... maybe 2 bytes shorter tho
  * planned includes a way to send yet longer messages
@@ -716,7 +716,7 @@ static void * tunThread(void* arg) {
 	char frame[IP_FRAME + HEADER_FRAME];
 	struct ip6_hdr* fp;
 	struct tun_pi* tp;
-	P2P_MESSAGE_HEADER* gp;
+	MESSAGE_HEADER* gp;
 	struct timeval timeout;
 
 	/* need the cast otherwise it increments by HEADER_FRAME * sizeof(frame) rather than HEADER_FRAME */
@@ -724,7 +724,7 @@ static void * tunThread(void* arg) {
 
 	/* this trick decrements the pointer by the sizes of the respective structs */
 	tp = ((struct tun_pi*)fp)-1;
-	gp = ((P2P_MESSAGE_HEADER*)fp)-1;
+	gp = ((MESSAGE_HEADER*)fp)-1;
 	running = 1;
 	LOG(LOG_DEBUG, _("RFC4193 Thread running (frame %d tunnel %d f2f %d) ...\n"), fp, tp, gp);
 
@@ -777,7 +777,7 @@ static void * tunThread(void* arg) {
 				 */
 				if (valid_incoming(ret, tp, fp)) {
 					gp->type = htons(P2P_PROTO_aip_IP);
-					gp->size = htons(sizeof(P2P_MESSAGE_HEADER) + ret - sizeof(struct tun_pi));
+					gp->size = htons(sizeof(MESSAGE_HEADER) + ret - sizeof(struct tun_pi));
 					coreAPI->unicast(&((store1+i)->peer),gp,EXTREME_PRIORITY,1);
 					coreAPI->preferTrafficFrom(&((store1+i)->peer),1000);
 				}
@@ -817,14 +817,14 @@ static void * tunThread(void* arg) {
  * If we've not seen the peer before, create a new TAP and tell our thread about it?
  * else scan the array of TAPS and copy the message into it.
  *
- * Mainly this routine exchanges the P2P_MESSAGE_HEADER on incoming ipv6 packets
+ * Mainly this routine exchanges the MESSAGE_HEADER on incoming ipv6 packets
  * for a TUN/TAP header for writing it to TUNTAP.
  */
-static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * gp) {
+static int handlep2pMSG(const PeerIdentity * sender, const MESSAGE_HEADER * gp) {
 	int i = 0, fd;
 	char loginfo[100];
 
-	P2P_MESSAGE_HEADER * rgp = NULL;
+	MESSAGE_HEADER * rgp = NULL;
 	char frame[IP_FRAME + sizeof(struct tun_pi)];
         const struct ip6_hdr* fp = (struct ip6_hdr*)(gp+1);
         struct ip6_hdr* new_fp = (struct ip6_hdr*)(((char*)&frame) + sizeof(struct tun_pi));
@@ -867,10 +867,10 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 		ipinfo(loginfo, fp);
 
 		/* do packet memcpy outside of mutex for speed */
-		memcpy(new_fp, fp, ntohs(gp->size)-sizeof(P2P_MESSAGE_HEADER));
+		memcpy(new_fp, fp, ntohs(gp->size)-sizeof(MESSAGE_HEADER));
 
 		MUTEX_LOCK(&lock);
-		VLOG _("<- GNUnet(%d) : %s\n"), ntohs(gp->size) - sizeof(P2P_MESSAGE_HEADER), loginfo);
+		VLOG _("<- GNUnet(%d) : %s\n"), ntohs(gp->size) - sizeof(MESSAGE_HEADER), loginfo);
 	        for (i = 0; i < entries1; i++) {
         	        if (isEqual(sender, &((store1+i)->peer))) {
 				fd = ((store1+i)->fd);
@@ -880,7 +880,7 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 				/* We are only allowed one call to write() per packet.
 				 * We need to write packet and packetinfo together in one go.
 				 */
-				write(fd, tp, ntohs(gp->size) + sizeof(struct tun_pi) - sizeof(P2P_MESSAGE_HEADER));
+				write(fd, tp, ntohs(gp->size) + sizeof(struct tun_pi) - sizeof(MESSAGE_HEADER));
 				coreAPI->preferTrafficFrom(&((store1+i)->peer),1000);
 				MUTEX_UNLOCK(&lock);
                         	return OK;
@@ -911,17 +911,17 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 	case P2P_PROTO_aip_GETROUTE:
 		/** peer wants an entry from our routing table */
 		VLOG _("Receive route request\n"));
-		if (ntohs(gp->size) == (sizeof(P2P_MESSAGE_HEADER) + sizeof(int))) {
+		if (ntohs(gp->size) == (sizeof(MESSAGE_HEADER) + sizeof(int))) {
 			i = ntohl(*((int*)fp));
 			MUTEX_LOCK(&lock);
 			if (i < realised_entries) {
 				VLOG _("Prepare route announcement level %d\n"), i);
-				rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(transit_route));
+				rgp = MALLOC(sizeof(MESSAGE_HEADER) + sizeof(transit_route));
 				if (rgp == NULL) {
 					MUTEX_UNLOCK(&lock);
 					return OK;
 				}
-				rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(transit_route));
+				rgp->size = htons(sizeof(MESSAGE_HEADER) + sizeof(transit_route));
 				rgp->type = htons(P2P_PROTO_aip_ROUTE);
 				((transit_route*)(rgp+1))->owner = (realised_store+i)->owner;
 				((transit_route*)(rgp+1))->hops = htonl((realised_store+i)->hops);
@@ -933,12 +933,12 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 				return OK;
 			}
 			VLOG _("Send outside table info %d\n"), i);
-			rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+			rgp = MALLOC(sizeof(MESSAGE_HEADER) + sizeof(int));
 			if (rgp == NULL) {
 				MUTEX_UNLOCK(&lock);
 				return OK;
 			}
-			rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+			rgp->size = htons(sizeof(MESSAGE_HEADER) + sizeof(int));
 			rgp->type = htons(P2P_PROTO_aip_ROUTES);
 			*((int*)(rgp+1)) = htonl(realised_entries);
 			MUTEX_UNLOCK(&lock);
@@ -950,7 +950,7 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 	case P2P_PROTO_aip_ROUTE:
 		VLOG _("Receive route announce.\n"));
 		/** peer sent us a route, insert it into routing table, then req next entry */
-		if (ntohs(gp->size) == (sizeof(P2P_MESSAGE_HEADER) + sizeof(transit_route))) {
+		if (ntohs(gp->size) == (sizeof(MESSAGE_HEADER) + sizeof(transit_route))) {
 			MUTEX_LOCK(&lock);
 			VLOG _("Going to try insert route into local table.\n"));
 		        for (i = 0; i < entries1; i++) {
@@ -962,13 +962,13 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 							i);
 					if ((store1+i)->route_entry < GNUNET_VIEW_LIMIT) {
 						(store1+i)->route_entry++;
-						rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+						rgp = MALLOC(sizeof(MESSAGE_HEADER) + sizeof(int));
 			                        if (rgp == NULL) {
 			                                MUTEX_UNLOCK(&lock);
 			                                return OK;
 			                        }
 						rgp->type = htons(P2P_PROTO_aip_GETROUTE);
-						rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+						rgp->size = htons(sizeof(MESSAGE_HEADER) + sizeof(int));
 						*((int*)(rgp+1)) = htonl((store1+i)->route_entry);
 						VLOG _("Request level %d from peer %d\n"), (store1+i)->route_entry, i);
 						coreAPI->unicast(&((store1+i)->peer),rgp,EXTREME_PRIORITY,60);
@@ -981,7 +981,7 @@ static int handlep2pMSG(const PeerIdentity * sender, const P2P_MESSAGE_HEADER * 
 		}
 		return OK;
 	case P2P_PROTO_aip_ROUTES:
-		if (ntohs(gp->size) == (sizeof(P2P_MESSAGE_HEADER) + sizeof(int))) {
+		if (ntohs(gp->size) == (sizeof(MESSAGE_HEADER) + sizeof(int))) {
 			/* if this is the last route message, we do route realisation
 			 * that is, insert the routes into the operating system.
 			 */
@@ -1167,7 +1167,7 @@ static void remove_client(ClientHandle c) {
 
 /** The console client is used to admin/debug vpn */
 static int csHandle(ClientHandle c, const CS_MESSAGE_HEADER * message) {
-	P2P_MESSAGE_HEADER * rgp = NULL;
+	MESSAGE_HEADER * rgp = NULL;
 	int i;
 	PeerIdentity id;
 	int parameter = ntohs(message->size) - sizeof(CS_MESSAGE_HEADER);
@@ -1256,10 +1256,10 @@ static int csHandle(ClientHandle c, const CS_MESSAGE_HEADER * message) {
 			(store1+i)->route_entry = 0;
 			/* lets send it to everyone - expect response only from VPN enabled nodes tho :-) */
 /*			if ((store1+i)->active == YES) { */
-				rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+				rgp = MALLOC(sizeof(MESSAGE_HEADER) + sizeof(int));
 		                if (rgp == NULL) { break; }
 				rgp->type = htons(P2P_PROTO_aip_GETROUTE);
-				rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+				rgp->size = htons(sizeof(MESSAGE_HEADER) + sizeof(int));
 				*((int*)(rgp+1)) = htonl((store1+i)->route_entry);
 				cprintf(c, CS_PROTO_VPN_REPLY, "Request level %d from peer %d ", (store1+i)->route_entry, i);
 				id2ip(c, &((store1+i)->peer));
@@ -1317,10 +1317,10 @@ static int csHandle(ClientHandle c, const CS_MESSAGE_HEADER * message) {
 					}
 
 					/* req route level 0
-	                        	rgp = MALLOC(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+	                        	rgp = MALLOC(sizeof(MESSAGE_HEADER) + sizeof(int));
 					if (rgp != NULL) { 
                                         	rgp->type = htons(P2P_PROTO_aip_GETROUTE);
-                                        	rgp->size = htons(sizeof(P2P_MESSAGE_HEADER) + sizeof(int));
+                                        	rgp->size = htons(sizeof(MESSAGE_HEADER) + sizeof(int));
 						*((int*)(rgp+1)) = 0;
 						coreAPI->unicast(&id,rgp,EXTREME_PRIORITY,4);
 						cprintf(c, " Sent");

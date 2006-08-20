@@ -29,10 +29,10 @@ Notes:
       traffic, ecrs_core, template, tbench, tracekit, fs/fslib,
       fs/module, gap, fs/ecrs, fs/uritrack, fs/namespace,
       fs/fsui, fs/collection, fs/tools, bootstrap_http,
-      sqstore_mysql, topology_f2f compile
+      sqstore_mysql, topology_f2f, rpc compile
     + fs/fsui, fs/collection, fs/uritrack, fs/namespace
       must still be revised to match new API!
-    + rest: dht, rpc, vpn
+    + rest: dht, vpn
     + low priority: chat, kvstore_sqlite, testbed
   * setup:
     + main binary compiles, plugins are missing

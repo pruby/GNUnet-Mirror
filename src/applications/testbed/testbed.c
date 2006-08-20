@@ -66,7 +66,7 @@ static void tb_undefined(ClientHandle client,
  */
 static void tb_ADD_PEER(ClientHandle client,
 			TESTBED_CS_MESSAGE * msg) {
-  P2P_MESSAGE_HEADER noise;
+  MESSAGE_HEADER noise;
   TESTBED_ADD_PEER_MESSAGE * hm
     = (TESTBED_ADD_PEER_MESSAGE*) msg;
 
@@ -88,7 +88,7 @@ static void tb_ADD_PEER(ClientHandle client,
   }
 
   identity->addHost(&hm->helo);
-  noise.size = htons(sizeof(P2P_MESSAGE_HEADER));
+  noise.size = htons(sizeof(MESSAGE_HEADER));
   noise.type = htons(P2P_PROTO_noise);
   coreAPI->unicast(&hm->helo.senderIdentity,
 		   &noise,

@@ -79,8 +79,9 @@ static CoreAPIForApplication * coreAPI = NULL;
  * lock must be held by the thread that accesses any module-wide accessable
  * data structures.
  */
-static Mutex * rpcLock;
+static struct MUTEX * rpcLock;
 
+static struct GE_Context * ectx;
 
 /* *************** RPC registration ****************** */
 
@@ -350,8 +351,9 @@ static PeerInfo * getPeerInfo(const PeerIdentity * id) {
 
   pi = (PeerInfo*) vectorGetFirst(peerInformation);
   while (pi != NULL) {
-    if (hostIdentityEquals(id,
-			   &pi->identity))
+    if (0 == memcmp(id,
+		    &pi->identity,
+		    sizeof(PeerIdentity)))
       return pi;
     pi = (PeerInfo*) vectorGetNext(peerInformation);
   }
@@ -453,8 +455,9 @@ static void notifyPeerReply(const PeerIdentity * peer,
   MUTEX_LOCK(rpcLock);
   pi = vectorGetFirst(peerInformation);
   while (pi != NULL) {
-    if (hostIdentityEquals(peer,
-			   &pi->identity)) {
+    if (0 == memcmp(peer,
+		    &pi->identity,
+		    sizeof(PeerIdentity))) {
       for (i=0;i<MTRACK_COUNT;i++) {
 	if (pi->lastRequestId[i] == messageID) {
 	  if (pi->lastRequestTimes[i] != 0) { /* resend */
@@ -488,7 +491,7 @@ static void notifyPeerReply(const PeerIdentity * peer,
  * indicate the number of return values.
  */
 typedef struct {
-  P2P_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   TIME_T timestamp;
   unsigned int sequenceNumber;
   unsigned int importance;
@@ -514,7 +517,7 @@ typedef struct {
  * times out).
  */
 typedef struct {
-  P2P_MESSAGE_HEADER header;
+  MESSAGE_HEADER header;
   /**
    * The number of the original request for which this is the
    * ACK.
@@ -623,7 +626,8 @@ static unsigned int rpcIdentifier = 0;
  * each CallInstance.  Not renewed if the call times out,
  * deleted if the appropriate response is received.
  */
-static void retryRPCJob(CallInstance * call) {
+static void retryRPCJob(void * ctx) {
+  CallInstance * call = ctx;
   cron_t now;
 
   now = get_time();
@@ -695,10 +699,11 @@ static void retryRPCJob(CallInstance * call) {
     }
     GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > call->expirationTime) ||
 		   (call->expirationTime - get_time() < 1 * cronHOURS) );
-    addCronJob((CronJob) &retryRPCJob,
-	       call->repetitionFrequency,
-	       0,
-	       call);
+    cron_add_job(coreAPI->cron,
+		 &retryRPCJob,
+		 call->repetitionFrequency,
+		 0,
+		 call);
   }
   MUTEX_UNLOCK(rpcLock);
 }
@@ -840,10 +845,11 @@ static void async_rpc_complete_callback(RPC_Param * results,
   GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > calls->expirationTime) ||
 		 (calls->expirationTime - get_time() < 1 * cronHOURS) );
   /* for right now: schedule cron job to send reply! */
-  addCronJob((CronJob)&retryRPCJob,
-	     0,
-	     0,
-	     calls);
+  cron_add_job(coreAPI->cron,
+	       &retryRPCJob,
+	       0,
+	       0,
+	       calls);
   MUTEX_UNLOCK (rpcLock);
 }
 
@@ -854,7 +860,7 @@ static void async_rpc_complete_callback(RPC_Param * results,
  * reply.
  */
 static int handleRPCMessageReq(const PeerIdentity *sender,
-			       const P2P_MESSAGE_HEADER * message) {
+			       const MESSAGE_HEADER * message) {
   P2P_rpc_MESSAGE * req;
   CallInstance * calls;
   unsigned int sq;
@@ -867,15 +873,17 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
 
   if ( (ntohs(message->type) != P2P_PROTO_rpc_REQ) ||
        (ntohs(message->size) < sizeof(P2P_rpc_MESSAGE)) ) {
-    LOG (LOG_WARNING,
-	 _("Invalid message of type %u received.  Dropping.\n"),
-	 ntohs(message->type));
+    GE_LOG(ectx,
+	   GE_WARNING | GE_REQUEST | GE_ADMIN,
+	   _("Invalid message of type %u received.  Dropping.\n"),
+	   ntohs(message->type));
     return SYSERR;
   }
   req = (P2P_rpc_MESSAGE *) message;
   sq = ntohl(req->sequenceNumber);
 #if DEBUG_RPC
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
       "Received RPC request with id %u.\n",
       sq);
 #endif
@@ -894,8 +902,9 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
     if (calls->sequenceNumber < minSQ)
       minSQ = calls->sequenceNumber;
     if ( (calls->sequenceNumber == sq) &&
-	 (hostIdentityEquals(&calls->receiver,
-			     sender)) )
+	 (0 == memcmp(&calls->receiver,
+		      sender,
+		      sizeof(PeerIdentity))) )
       break;
     calls = vectorGetNext(incomingCalls);
   }
@@ -992,7 +1001,7 @@ static int handleRPCMessageReq(const PeerIdentity *sender,
  * Also always sends an ACK.
  */
 static int handleRPCMessageRes(const PeerIdentity * sender,
-			       const P2P_MESSAGE_HEADER * message) {
+			       const MESSAGE_HEADER * message) {
   P2P_rpc_MESSAGE * res;
   CallInstance * call;
 
@@ -1005,18 +1014,22 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
   }
   res = (P2P_rpc_MESSAGE *) message;
 #if DEBUG_RPC
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Received RPC reply with id %u.\n",
-      ntohl(res->sequenceNumber));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Received RPC reply with id %u.\n",
+	 ntohl(res->sequenceNumber));
 #endif
 
-  suspendCron();
+  cron_suspend(coreAPI->cron,
+	       NO);
   MUTEX_LOCK (rpcLock);
 
   /* Locate the CallInstance structure. */
   call = vectorGetFirst(outgoingCalls);
   while (call != NULL) {
-    if ( hostIdentityEquals(&call->receiver, sender) &&
+    if ( (0 == memcmp(&call->receiver, 
+		      sender,
+		      sizeof(PeerIdentity))) &&
 	 (call->sequenceNumber == ntohl(res->sequenceNumber)) )
       break;
     call = vectorGetNext(outgoingCalls);
@@ -1052,9 +1065,10 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
     notifyPeerReply(sender,
 		    MINGLE(call->sequenceNumber,
 			   P2P_PROTO_rpc_REQ));
-    delCronJob((CronJob) &retryRPCJob,
-	       0,
-	       call);
+    cron_del_job(coreAPI->cron,
+		 &retryRPCJob,
+		 0,
+		 call);
     FREE(call->msg);
     FREE(call);
     if (reply != NULL)
@@ -1065,7 +1079,8 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
 	  0,/* not important, ACK should be tiny enough to go through anyway */
 	  0 /* right away */);
   MUTEX_UNLOCK (rpcLock);
-  resumeCron();
+  cron_resume_jobs(coreAPI->cron,
+		   NO);
   return OK;
 }
 
@@ -1074,15 +1089,16 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
  * Handle a peer-to-peer message of type P2P_PROTO_rpc_ACK.
  */
 static int handleRPCMessageAck(const PeerIdentity *sender,
-			       const P2P_MESSAGE_HEADER * message) {
+			       const MESSAGE_HEADER * message) {
   RPC_ACK_Message * ack;
   CallInstance *call;
 
   if ( (ntohs(message->type) != P2P_PROTO_rpc_ACK) ||
        (ntohs(message->size) != sizeof(RPC_ACK_Message)) ) {
-    LOG (LOG_WARNING,
-	 _("Invalid message of type %u received.  Dropping.\n"),
-         ntohs (message->type));
+    GE_LOG(ectx,
+	   GE_WARNING | GE_REQUEST | GE_ADMIN,
+	   _("Invalid message of type %u received.  Dropping.\n"),
+	   ntohs (message->type));
     return SYSERR;
   }
 
@@ -1092,13 +1108,16 @@ static int handleRPCMessageAck(const PeerIdentity *sender,
       "Received RPC ACK with id %u.\n",
       ntohl(ack->sequenceNumber));
 #endif
-  suspendCron();
+  cron_suspend(coreAPI->cron,
+	       NO);
   MUTEX_LOCK(rpcLock);
 
   /* Locate the CallInstance structure. */
   call = (CallInstance*) vectorGetFirst(incomingCalls);
   while (call != NULL) {
-    if ( hostIdentityEquals(&call->receiver, sender) &&
+    if ( (0 == memcmp(&call->receiver, 
+		      sender,
+		      sizeof(PeerIdentity))) &&
 	 (call->sequenceNumber == ntohl(ack->sequenceNumber)) )
       break;
     call = (CallInstance*) vectorGetNext(incomingCalls);
@@ -1110,9 +1129,10 @@ static int handleRPCMessageAck(const PeerIdentity *sender,
     notifyPeerReply(sender,
 		    MINGLE(ntohl(ack->sequenceNumber),
 			   P2P_PROTO_rpc_RES));
-    delCronJob((CronJob) &retryRPCJob,
-	       0,
-	       call);
+    cron_del_job(coreAPI->cron,
+		 &retryRPCJob,
+		 0,
+		 call);
     vectorRemoveObject(incomingCalls,
 		       call);
     FREE(call->msg);
@@ -1130,14 +1150,15 @@ static int handleRPCMessageAck(const PeerIdentity *sender,
   }
 
   MUTEX_UNLOCK (rpcLock);
-  resumeCron();
+  cron_resume_jobs(coreAPI->cron,
+		   NO);
   return OK;
 }
 
 /* ********************* RPC service functions ******************** */
 
 typedef struct {
-  Semaphore * sem;
+  struct SEMAPHORE * sem;
   RPC_Param * result;
   unsigned short ec;
 } RPC_EXEC_CLS;
@@ -1208,14 +1229,16 @@ static int RPC_execute(const PeerIdentity *receiver,
   call->finishedCallback = (RPCFinishedCallback) &RPC_execute_callback;
   call->rpcCallbackArgs = &cls;
   vectorInsertLast(outgoingCalls, call);
-  GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > call->expirationTime) ||
-		 (call->expirationTime - get_time() < 1 * cronHOURS) );
-  addCronJob((CronJob) &retryRPCJob,
-	     0,
-	     0,
-	     call);
+  GE_ASSERT(ectx,  
+	    (get_time() + 1 * cronMINUTES > call->expirationTime) ||
+	    (call->expirationTime - get_time() < 1 * cronHOURS) );
+  cron_add_job(coreAPI->cron,
+	       &retryRPCJob,
+	       0,
+	       0,
+	       call);
   MUTEX_UNLOCK (rpcLock);
-  SEMAPHORE_DOWN(cls.sem);
+  SEMAPHORE_DOWN(cls.sem, YES);
   SEMAPHORE_DESTROY(cls.sem);
   RPC_STATUS(name, "completed synchronously", call);
   return cls.ec;
@@ -1293,10 +1316,11 @@ static RPC_Record * RPC_start(const PeerIdentity * receiver,
   vectorInsertLast(outgoingCalls, ret->call);
   GE_ASSERT(ectx,  (get_time() + 1 * cronMINUTES > ret->call->expirationTime) ||
 		 (ret->call->expirationTime - get_time() < 1 * cronHOURS) );
-  addCronJob((CronJob) &retryRPCJob,
-	     0,
-	     0,
-	     ret->call);
+  cron_add_job(coreAPI->cron,
+	       &retryRPCJob,
+	       0,
+	       0,
+	       ret->call);
   MUTEX_UNLOCK (rpcLock);
   return ret;
 }
@@ -1310,17 +1334,16 @@ static RPC_Record * RPC_start(const PeerIdentity * receiver,
  */
 static int RPC_stop(RPC_Record * record) {
   int ret;
-  int cronRunning;
 
   RPC_STATUS("", "stopped", record);
-  cronRunning = isCronRunning();
-  if (cronRunning)
-    suspendIfNotCron();
-  delCronJob((CronJob) &retryRPCJob,
-	     0,
-	     record->call);
-  if (cronRunning)
-    resumeIfNotCron();
+  cron_suspend(coreAPI->cron,
+	       YES);
+  cron_del_job(coreAPI->cron,
+	       &retryRPCJob,
+	       0,
+	       record->call);
+  cron_resume_jobs(coreAPI->cron,
+		   YES);
   MUTEX_LOCK(rpcLock);
   if (NULL != vectorRemoveObject(outgoingCalls, record->call)) {
     FREE(record->call->msg);
@@ -1341,9 +1364,10 @@ static int RPC_stop(RPC_Record * record) {
 void release_module_rpc() {
   CallInstance * call;
 
-  delCronJob(&agePeerStats,
-	     PEER_TRACKING_TIME_INTERVAL,
-	     NULL);
+  cron_del_job(coreAPI->cron,
+	       &agePeerStats,
+	       PEER_TRACKING_TIME_INTERVAL,
+	       NULL);
   coreAPI->unregisterHandler(P2P_PROTO_rpc_REQ,
 			     &handleRPCMessageReq);
   coreAPI->unregisterHandler(P2P_PROTO_rpc_RES,
@@ -1359,9 +1383,10 @@ void release_module_rpc() {
   if (NULL != incomingCalls) {
     while(vectorSize (incomingCalls) > 0) {
       call = (CallInstance*) vectorRemoveLast(incomingCalls);
-      delCronJob((CronJob)&retryRPCJob,
-		 0,
-		 call);
+      cron_del_job(coreAPI->cron,
+		   &retryRPCJob,
+		   0,
+		   call);
       FREE(call->msg);
       FREE(call);
     }
@@ -1371,9 +1396,10 @@ void release_module_rpc() {
   if (NULL != outgoingCalls) {
     while(vectorSize (outgoingCalls) > 0) {
       call = (CallInstance*) vectorRemoveLast(outgoingCalls);
-      delCronJob((CronJob) &retryRPCJob,
-		 0,
-		 call);
+      cron_del_job(coreAPI->cron,
+		   &retryRPCJob,
+		   0,
+		   call);
       FREE(call->msg);
       FREE(call);
     }
@@ -1404,6 +1430,7 @@ RPC_ServiceAPI * provide_module_rpc(CoreAPIForApplication * capi) {
   static RPC_ServiceAPI rpcAPI;
   int rvalue;
 
+  ectx = capi->ectx;
   rpcLock = capi->getConnectionModuleLock();
   coreAPI = capi;
   peerInformation = vectorNew(16);
@@ -1443,10 +1470,11 @@ RPC_ServiceAPI * provide_module_rpc(CoreAPIForApplication * capi) {
     rpcAPI.RPC_unregister_async = &RPC_unregister_async;
     rpcAPI.RPC_start = &RPC_start;
     rpcAPI.RPC_stop = &RPC_stop;
-    addCronJob(&agePeerStats,
-	       PEER_TRACKING_TIME_INTERVAL,
-	       PEER_TRACKING_TIME_INTERVAL,
-	       NULL);
+    cron_add_job(coreAPI->cron,
+		 &agePeerStats,
+		 PEER_TRACKING_TIME_INTERVAL,
+		 PEER_TRACKING_TIME_INTERVAL,
+		 NULL);
     return &rpcAPI;
   }
 }
@@ -1476,11 +1504,11 @@ static void testCallback(const PeerIdentity * sender,
 }
 
 static void async_RPC_Complete_callback(RPC_Param * results,
-					Semaphore * sign) {
+					struct SEMAPHORE * sign) {
   unsigned int dl;
   char * reply;
 
-  SEMAPHORE_DOWN(sign);
+  SEMAPHORE_DOWN(sign, YES);
   if ( (OK != RPC_paramValueByName(results,
 				   "response",
 				   &dl,
@@ -1503,10 +1531,11 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
   char * reply;
   int code;
   RPC_Record * record;
-  Semaphore * sign;
+  struct SEMAPHORE * sign;
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "RPC testcase starting\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "RPC testcase starting\n");
   rpcAPI = capi->requestService("rpc");
   if (rpcAPI == NULL) {
     GE_BREAK(ectx, 0);

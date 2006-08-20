@@ -312,7 +312,7 @@ typedef struct {
    * from the GNUnet core.
    *
    * @param session the transport session
-   * @param msg the message to transmit, should contain P2P_MESSAGE_HEADERs
+   * @param msg the message to transmit, should contain MESSAGE_HEADERs
    * @return OK on success, SYSERR on failure
    */
   int (*sendPlaintext)(TSession * session,
