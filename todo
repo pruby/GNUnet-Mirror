@@ -28,7 +28,8 @@ Notes:
       stats, topology_default, state, getoption, advertising,
       traffic, ecrs_core, template, tbench, tracekit, fs/fslib,
       fs/module, gap, fs/ecrs, fs/uritrack, fs/namespace,
-      fs/fsui, fs/collection, fs/tools, bootstrap_http compile
+      fs/fsui, fs/collection, fs/tools, bootstrap_http,
+      sqstore_mysql compile
     + fs/fsui, fs/collection, fs/uritrack, fs/namespace
       must still be revised to match new API!
     + rest: sqstore_mysql, dht, rpc, topology_f2f, vpn

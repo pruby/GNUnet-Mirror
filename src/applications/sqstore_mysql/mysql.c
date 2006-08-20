@@ -272,10 +272,13 @@ static int iopen(mysqlHandle * dbhI,
   mysql_options(dbhI->dbf,
 		MYSQL_READ_DEFAULT_GROUP,
 		"client");
-  dbname = getConfigurationString("MYSQL",
-				  "DATABASE");
-  if (dbname == NULL)
-    dbname = STRDUP("gnunet");
+  dbname = NULL;
+  GC_get_configuration_value_string(coreAPI->cfg,
+				    "MYSQL",
+				    "DATABASE",
+				    "gnunet",
+				    &dbname);
+  GE_ASSERT(ectx, dbname != NULL);
   mysql_real_connect(dbhI->dbf,
 		     NULL,
 		     NULL,
@@ -1169,7 +1172,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   FILE * fp;
   struct passwd * pw;
   size_t nX;
-  char *home_dir;
+  char * home_dir;
 
   ectx = capi->ectx;
   coreAPI = capi;
@@ -1185,28 +1188,29 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
     GE_DIE_STRERROR(ectx, 
 		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
 		    "getpwuid");
-  home_dir = pw->pw_dir;
+  home_dir = STRDUP(pw->pw_dir);
 #else
   home_dir = (char *) MALLOC(_MAX_PATH + 1);
   plibc_conv_to_win_path("~/", home_dir);
 #endif
-  nX = strlen(home_dir)+1024;
-  cnffile = getConfigurationString("MYSQL",
-				   "CONFIG");
-  if (cnffile == NULL) {
-    cnffile = MALLOC(nX);
-    SNPRINTF(cnffile, nX, "%s/.my.cnf", home_dir);
-  } else {
-    char * ex = string_expandFileName(ectx, cnffile);
-    FREE(cnffile);
-    cnffile = ex;
-  }
-#ifdef WINDOWS
+  nX = strlen(home_dir)+10;
+  cnffile = MALLOC(nX);
+  SNPRINTF(cnffile, 
+	   nX, 
+	   "%s/.my.cnf",
+	   home_dir);
   FREE(home_dir);
-#endif
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      _("Trying to use file `%s' for MySQL configuration.\n"),
-      cnffile);
+  GC_get_configuration_value_filename(capi->cfg,
+				      "MYSQL",
+				      "CONFIG",
+				      cnffile,
+				      &home_dir);
+  FREE(cnffile);
+  cnffile = home_dir;
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 _("Trying to use file `%s' for MySQL configuration.\n"),
+	 cnffile);
   fp = FOPEN(cnffile, "r");
   if (!fp) {
     GE_LOG_STRERROR_FILE(ectx, GE_ERROR | GE_ADMIN | GE_BULK, "fopen", cnffile);
