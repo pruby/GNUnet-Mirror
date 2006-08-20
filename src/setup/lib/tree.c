@@ -317,6 +317,13 @@ void tree_notify_change(VisibilityChangeListener vcl,
 
 
 void __attribute__ ((constructor)) gns_scheme_init() {
+  /* NOTE: we might want to do guile initialization
+     each time we enter guile explicitly (per-thread)
+     using a different function; however, I cannot
+     find docs for that API and I am also not sure how
+     this would interact with the scm_c_define_gsubr
+     calls -- to be addressed later (portability
+     concern! */
   scm_init_guile();
   tc_tag = scm_make_smob_type ("tc", sizeof (TC));
   scm_set_smob_mark (tc_tag, NULL);
