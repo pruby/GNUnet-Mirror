@@ -73,6 +73,8 @@ case "$host_os" in
      AC_DEFINE_UNQUOTED(OSX,1,[This is an OS X system])
      CFLAGS="-no-cpp-precomp $CFLAGS"
      LDFLAGS="-flat_namespace -undefined suppress $LDFLAGS"
+     AC_MSG_WARN([The VPN application cannot be compiled on your OS])
+     build_target="macosx"
      ;;
 linux*)
      AC_DEFINE_UNQUOTED(LINUX,1,[This is a Linux system])
@@ -128,6 +130,7 @@ netbsd*)
 esac
 
 AC_MSG_CHECKING([for build target])
+AM_CONDITIONAL(MACOSX,  test "$build_target" = "macosx")
 AM_CONDITIONAL(CYGWIN,  test "$build_target" = "cygwin")
 AM_CONDITIONAL(MINGW,   test "$build_target" = "mingw")
 AM_CONDITIONAL(SOLARIS, test "$build_target" = "solaris")

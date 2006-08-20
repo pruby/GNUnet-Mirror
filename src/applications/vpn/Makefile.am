@@ -1,3 +1,4 @@
+if !MACOSX
 INCLUDES = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/GNUnet
@@ -20,4 +21,5 @@ libgnunetmodule_vpn_la_SOURCES = \
 libgnunetmodule_vpn_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
   $(LDADD)
+endif
 
