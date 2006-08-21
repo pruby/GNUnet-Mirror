@@ -127,7 +127,6 @@ int main(int argc,
   char * specname;
   int i; 
 
-  printf("Creating ectx\n");
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
@@ -135,7 +134,6 @@ int main(int argc,
   GE_setDefaultContext(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
-  printf("Parsing options\n");
   i = gnunet_parse_options(INFO,
 			   ectx,
 			   cfg,
@@ -237,6 +235,7 @@ int main(int argc,
 	       GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 	       _("`%s' is not available."), 
 	       operation);
+	GNS_free_specification(gns);
 	GC_free(cfg);
 	GE_free_context(ectx);
 	FREE(filename);

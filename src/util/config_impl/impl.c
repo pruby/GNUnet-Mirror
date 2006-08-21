@@ -697,15 +697,31 @@ _attach_change_listener(struct GC_Configuration * cfg,
 			GC_ChangeListener callback,
 			void * ctx) {
   GC_Listener l;
+  int i;
+  int j;
 
   MUTEX_LOCK(cfg->data->lock);
+  for (i=0;i<cfg->data->ssize;i++) {
+    GC_Section * s = &cfg->data->sections[i];
+    for (j=0;j<s->size;j++) {
+      GC_Entry * e = &s->entries[j];
+      if (0 != callback(ctx,
+			cfg,
+			cfg->data->ectx,
+			s->name,
+			e->key)) {
+	MUTEX_UNLOCK(cfg->data->lock);
+	return -1;
+      }
+    }
+  }
   l.listener = callback;
   l.ctx = ctx;
   APPEND(cfg->data->listeners,
 	 cfg->data->lsize,
 	 l);
   MUTEX_UNLOCK(cfg->data->lock);
-  return -1;
+  return 0;
 }
 
 static int 

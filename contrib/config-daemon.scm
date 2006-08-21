@@ -72,7 +72,7 @@ some special cases.  Bug reports are usually welcomed by the
 developers, but please read the documents <file://README> and
 <http://gnunet.org/faq.php3> and use <https://gnunet.org/mantis/> for
 how to report problems." )
-   ()
+   '()
    #t
    #f
    #f
@@ -89,7 +89,7 @@ how to report problems." )
 "These are options that maybe difficult to understand for the beginner.
 These options typically refer to features that allow tweaking of the
 installation.  If in a hurry, say NO." )
-   ()
+   '()
    #t
    #t
    #f
@@ -103,7 +103,6 @@ installation.  If in a hurry, say NO." )
    "" 
    (_ "Meta-configuration") 
    (_ "Which level of configuration should be available")
-   (nohelp)
    (list (meta-exp builder) (meta-adv builder) )
    #t
    #f
@@ -133,7 +132,7 @@ installation.  If in a hurry, say NO." )
 ;; which we use internally and which is not used by build-tree-node!
 (define (setup) 
  (main 
-  (lambda (a b c d e f g h i) build-tree-node a b c d e f g h)))
+  (lambda (a b c d e f g h i) (build-tree-node a b c d e f g h) ) ) )
 
 
 ;; "change" is not yet implemented.  However, the idea is to again use
@@ -143,3 +142,4 @@ installation.  If in a hurry, say NO." )
 (define (change ctx root changed)
  (0))
 
+;; (setup)

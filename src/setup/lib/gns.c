@@ -112,9 +112,10 @@ int configChangeListener(void * ctx,
     val = GC_get_configuration_value_yesno(cfg,
 					   section,
 					   option,
-					   pos->value.Boolean.def);
-    if (val == SYSERR)
+					   pos->value.Boolean.def);    
+    if (val == SYSERR) {
       return SYSERR;
+    }
     pos->value.Boolean.val = val;
     break;
   }
@@ -127,8 +128,9 @@ int configChangeListener(void * ctx,
 						    pos->value.UInt64.min,
 						    pos->value.UInt64.max,
 						    pos->value.UInt64.def,
-						    &val))
+						    &val)) {
       return SYSERR;
+    }
     pos->value.UInt64.val = val;
     break;
   }
@@ -168,8 +170,9 @@ int configChangeListener(void * ctx,
 						      option,
 						      (const char**) pos->value.String.legalRange,
 						      pos->value.String.def,
-						      &ival))
+						      &ival)) {
 	return SYSERR;
+      }
       val = STRDUP(ival);
     } else {
       if (SYSERR == GC_get_configuration_value_string(cfg,

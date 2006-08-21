@@ -213,7 +213,7 @@ SCM build_tree_node(SCM section,
 	       children, SCM_ARG5, "build_tree_node");
   }
   SCM_ASSERT(scm_boolean_p(visible), visible, SCM_ARG6, "build_tree_node");
-  if (scm_string_p(value)) {
+  if (scm_is_string(value)) {
     SCM_ASSERT(scm_list_p(range), range, 8, "build_tree_node");
     len = scm_to_int(scm_length(range));
     for (i=0;i<len;i++) 
@@ -226,9 +226,9 @@ SCM build_tree_node(SCM section,
 	       range, 8, "build_tree_node");
     SCM_ASSERT(scm_is_integer(SCM_CDR(range)),
 	       range, 8, "build_tree_node");
-  } else if (scm_real_p(value)) {
+  } else if (scm_is_true(scm_real_p(value))) {
     /* no checks */
-  } else if (scm_boolean_p(value)) {
+  } else if (scm_is_true(scm_boolean_p(value))) {
     /* no checks */
   } else {
     SCM_ASSERT(0, 
@@ -250,7 +250,7 @@ SCM build_tree_node(SCM section,
   tree->type = clen == 0 ? GNS_Leaf : GNS_Node;
   tree->visible = scm_is_true(visible);
 
-  if (scm_string_p(value)) {
+  if (scm_is_string(value)) {
     tree->value.String.val = scm_to_locale_string(value);
     tree->value.String.def = scm_to_locale_string(value);
     len = scm_to_int32(range);
@@ -265,14 +265,13 @@ SCM build_tree_node(SCM section,
     tree->value.UInt64.def = scm_to_uint64(value);
     tree->value.UInt64.min = scm_to_uint64(SCM_CAR(range));
     tree->value.UInt64.max = scm_to_uint64(SCM_CDR(range));
-  } else if (scm_real_p(value)) {
+  } else if (scm_is_true(scm_real_p(value))) {
     tree->value.Double.val = scm_to_double(value);
     tree->value.Double.def = scm_to_double(value);
-  } else if (scm_boolean_p(value)) {
+  } else if (scm_is_true(scm_boolean_p(value))) {
     tree->value.Boolean.val = scm_is_true(value);
     tree->value.Boolean.def = scm_is_true(value);
   }
-
   /* box and return */
   return box_tree(tree);
 }
