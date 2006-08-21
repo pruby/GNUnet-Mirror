@@ -1,94 +1,47 @@
+/*
+     This file is part of GNUnet.
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
+
 /**
- * @file test/shutdowntest.c
- * @brief testcase for util/shutdown.c
+ * @file util/threads/shutdowntest.c
+ * @brief testcase for util/threads/shutdown.c
  */
 
 #include "gnunet_util.h"
 #include "platform.h"
 
-static pid_t myPID;
-
 static int check() {
-  /* first, test / SIGINT (simulated) */
-  initializeShutdownHandlers();
-  if (testShutdown() != NO)
+  if (GNUNET_SHUTDOWN_TEST() != NO)
     return 1;
-#ifndef MINGW
-  kill(myPID, SIGINT);
-#else
-  GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
-#endif
-  if (testShutdown() != YES)
+  GNUNET_SHUTDOWN_INITIATE();
+  if (GNUNET_SHUTDOWN_TEST() != YES)
     return 2;
-  wait_for_shutdown();
-  doneShutdownHandlers();
-
-  /* now, test "run_shutdown" */
-  initializeShutdownHandlers();
-  if (testShutdown() != NO)
-    return 3;
-  run_shutdown(42);
-  if (testShutdown() != YES)
-    return 4;
-  wait_for_shutdown();
-  doneShutdownHandlers();
-
+  GNUNET_SHUTDOWN_WAITFOR();
   return 0;
-}
-
-
-/**
- * Perform option parsing from the command line.
- */
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  char c;
-
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      { "config",  1, 0, 'c' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:",
-		      long_options,
-		      &option_index);
-
-    if (c == -1)
-      break;  /* No more flags to process */
-
-    switch(c) {
-    case 'c':
-      FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
-      break;
-    } /* end of parsing commandline */
-  }
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGLEVEL",
-				     "WARNING"));
-  return OK;
 }
 
 int main(int argc,
 	 char * argv[]){
   int ret;
 
-  myPID = getpid();
-  initUtil(argc, argv, &parseCommandLine);
-
   ret = check();
-  if (ret != 0)
-    fprintf(stderr,
-	    "ERROR %d\n", ret);
-  doneUtil();
+
   return ret;
 }
 

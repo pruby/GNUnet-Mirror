@@ -42,5 +42,5 @@ cron_t get_time() {
 #else
   gettimeofday(&tv, NULL);
 #endif
-  return (((cron_t)tv.tv_sec) * 1000) + (tv.tv_usec / 1000 / 1000);
+  return (((cron_t)tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
 }

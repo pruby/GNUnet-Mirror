@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -18,7 +18,7 @@
      Boston, MA 02111-1307, USA.
 */
 /**
- * @file test/semaphore.c
+ * @file util/threads/semaphoretest.c
  * @brief testcase for util/threads/semaphore.c
  */
 
@@ -26,95 +26,89 @@
 #include "platform.h"
 
 #include <sys/types.h>
-#ifndef MINGW             /* PORT-ME MINGW */
 
+static struct MUTEX * lock;
 
-static Mutex lock;
-
-static Semaphore * sem;
+static struct SEMAPHORE * sem;
 
 static volatile int sv;
 
 static volatile int tv;
 
-static void lockIt() {
+static void * lockIt(void * unused) {
   sv = 0;
-  fprintf(stderr, ".");
   while (sv == 0)
     PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   sv = 1;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   sv = 2;
   tv = 2;
+  return NULL;
 }
 
-static void bigStack() {
+static void * bigStack(void * unused) {
   int i;
   char big[1024 * 100];
 
-  fprintf(stderr, ".");
   for (i=0;i<1024*100;i++)
     big[i] = (char) i;
+  return NULL;
 }
 
 static int testPTHREAD_CREATE() {
-  PTHREAD_T pt;
+  struct PTHREAD * pt;
   void * unused;
 
   sv = -1; tv = 0;
-  fprintf(stderr, ".");
-  MUTEX_CREATE(&lock);
-  PTHREAD_CREATE(&pt,
-		 (PThreadMain)&lockIt,
-		 NULL,
-		 1024);
-  PTHREAD_DETACH(&pt);
+  lock = MUTEX_CREATE(NO);
+  pt = PTHREAD_CREATE(&lockIt,
+		      NULL,
+		      1024);
   while (tv != 2) {
     sv = 1;
     PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
   }
-  MUTEX_DESTROY(&lock);
-  PTHREAD_CREATE(&pt,
-		 (PThreadMain)&bigStack,
-		 NULL,
-		 1024*100 + 25000); /* fails by segfault */
-  PTHREAD_JOIN(&pt, &unused);
+  PTHREAD_JOIN(pt, &unused);
+  MUTEX_DESTROY(lock);
+  pt = PTHREAD_CREATE(&bigStack,
+		      NULL,
+		      1024*100 + 25000); /* fails by segfault */
+  PTHREAD_JOIN(pt, &unused);
   return 0;
 }
 
 static int testMutex() {
-  PTHREAD_T pt;
+  struct PTHREAD * pt;
   void * unused;
-  MUTEX_CREATE(&lock);
+  
+  lock = MUTEX_CREATE(NO);
 
   sv = 1;
   tv = 0;
-  PTHREAD_CREATE(&pt,
-		 (PThreadMain)&lockIt,
-		 NULL,
-		 1024);
+  pt = PTHREAD_CREATE(&lockIt,
+		      NULL,
+		      1024);
   while (sv == 1)
     PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   sv = 5; /* release lockIt from while sv==0 loop,
 	     blocks it on lock */
-  fprintf(stderr, ".");
 
   if (sv != 5) {
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
     while (tv != 2)
       PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
-    MUTEX_DESTROY(&lock);
+    MUTEX_DESTROY(lock);
     printf("MUTEX test failed at %s:%u\n",
 	   __FILE__, __LINE__);
     return 1; /* error */
   } else {
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
     while (tv != 2)
       PTHREAD_SLEEP(50 * cronMILLIS); /* busy waiting may not always work */
-    PTHREAD_JOIN(&pt, &unused);
-    MUTEX_DESTROY(&lock);
+    PTHREAD_JOIN(pt, &unused);
+    MUTEX_DESTROY(lock);
     return 0; /* ok */
   }
 }
@@ -122,74 +116,70 @@ static int testMutex() {
 static int testRecursiveMutex() {
   int i;
 
-  fprintf(stderr, ".");
-  MUTEX_CREATE_RECURSIVE(&lock);
+  lock = MUTEX_CREATE(YES);
   for (i=0;i<50;i++)
-    MUTEX_LOCK(&lock);
+    MUTEX_LOCK(lock);
   for (i=0;i<50;i++)
-    MUTEX_UNLOCK(&lock);
-  MUTEX_DESTROY(&lock);
+    MUTEX_UNLOCK(lock);
+  MUTEX_DESTROY(lock);
   return 0; /* ok -- fails by hanging!*/
 }
 
-static void semUpDown() {
+static void * semUpDown(void * unused) {
   int i;
 
-  fprintf(stderr, ".");
   for (i=0;i<42;i++)
-    SEMAPHORE_DOWN(sem); /* fails by blocking */
-  if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
+    SEMAPHORE_DOWN(sem, YES); /* fails by blocking */
+  if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n"
 	   "Testcase deadlocked.\n",
 	   __FILE__, __LINE__);
-    return; /* will halt testcase! */
+    return NULL; /* will halt testcase! */
   }
   for (i=0;i<42;i++)
     SEMAPHORE_UP(sem);
+  return NULL;
 }
 
 static int testSemaphore() {
   int i;
-  PTHREAD_T pt;
+  struct PTHREAD * pt;
   void * unused;
 
   sem = SEMAPHORE_CREATE(42);
-  fprintf(stderr, ".");
   for (i=0;i<42;i++)
-    SEMAPHORE_DOWN(sem); /* fails by blocking */
-  if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
+    SEMAPHORE_DOWN(sem, YES); /* fails by blocking */
+  if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
 	   __FILE__, __LINE__);
     return 1;
   }
-  for (i=0;i<42;i++)
+  for (i=0;i<42;i++) 
     SEMAPHORE_UP(sem);
   for (i=0;i<42;i++)
-    if (OK != SEMAPHORE_DOWN_NONBLOCKING(sem)) {
+    if (SYSERR == SEMAPHORE_DOWN(sem, NO)) {
       SEMAPHORE_DESTROY(sem);
-      printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
-	     __FILE__, __LINE__);
+      printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u iteration %d\n",
+	     __FILE__, __LINE__, i);
       return 1;
     }
-  if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
+  if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
 	   __FILE__, __LINE__);
     return 1;
   }
-  fprintf(stderr, ".");
-  PTHREAD_CREATE(&pt,
-		 (PThreadMain)&semUpDown,
-		 NULL,
-		 1024);
+  pt = PTHREAD_CREATE(&semUpDown,
+		      NULL,
+		      1024);
   for (i=0;i<42;i++)
     SEMAPHORE_UP(sem);
-  PTHREAD_JOIN(&pt, &unused);
+  PTHREAD_JOIN(pt, &unused);
   for (i=0;i<42;i++)
-    SEMAPHORE_DOWN(sem);
-  if (SEMAPHORE_DOWN_NONBLOCKING(sem) != SYSERR) {
+    SEMAPHORE_DOWN(sem, YES);
+  if (SEMAPHORE_DOWN(sem, NO) != SYSERR) {
     SEMAPHORE_DESTROY(sem);
     printf("SEMAPHORE_DOWN_NONBLOCKING failed at %s:%u\n",
 	   __FILE__, __LINE__);
@@ -198,58 +188,13 @@ static int testSemaphore() {
   return 0;
 }
 
-/**
- * Perform option parsing from the command line.
- */
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  char c;
-
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      { "loglevel",1, 0, 'L' },
-      { "config",  1, 0, 'c' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:L:",
-		      long_options,
-		      &option_index);
-
-    if (c == -1)
-      break;  /* No more flags to process */
-
-    switch(c) {
-    case 'L':
-      FREENONNULL(setConfigurationString("GNUNET",
-					 "LOGLEVEL",
-					 GNoptarg));
-      break;
-    case 'c':
-      FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
-      break;
-    } /* end of parsing commandline */
-  }
-  return OK;
-}
-#endif /* PORT-ME MINGW */
-
-int main(int argc, char * argv[]){
+int main(int argc, 
+	 char * argv[]){
   int ret = 0;
 
-#ifndef MINGW
-  initUtil(argc, argv, &parseCommandLine);
   ret += testPTHREAD_CREATE();
   ret += testMutex();
   ret += testRecursiveMutex();
   ret += testSemaphore();
-  fprintf(stderr, "\n");
-  doneUtil();
-#endif
   return ret;
 }

@@ -16,6 +16,7 @@ libthreads_la_SOURCES = \
 check_PROGRAMS = \
  semaphoretest \
  shutdowntest \
+ shutdowntest2 \
  timertest 
 
 TESTS = $(check_PROGRAMS)
@@ -28,6 +29,11 @@ semaphoretest_LDADD = \
 shutdowntest_SOURCES = \
  shutdowntest.c
 shutdowntest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+shutdowntest2_SOURCES = \
+ shutdowntest2.c
+shutdowntest2_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  
 
 timertest_SOURCES = \

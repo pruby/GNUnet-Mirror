@@ -1,6 +1,25 @@
+/*
+     This file is part of GNUnet.
+     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
 /**
- * @file test/timertest.c
- * @brief testcase for util/timer.c; also measures how
+ * @file util/threads/timertest.c
+ * @brief testcase for util/threads/timer.c; also measures how
  *  precise the timers are.  Expect values between 10 and 20 ms on
  *  modern machines.
  */
@@ -10,10 +29,6 @@
 
 #define VERBOSE NO
 
-static void semaphore_up(Semaphore * sem) {
-  SEMAPHORE_UP(sem);
-}
-
 static int check() {
   cron_t now;
   cron_t last;
@@ -21,39 +36,33 @@ static int check() {
   TIME_T tlast;
   int i;
   unsigned long long cumDelta;
-  Semaphore * sem;
 
   /* test that time/cronTime are monotonically
      increasing;
      measure precision of sleep and report;
      test that sleep is interrupted by signals; */
   last = now = get_time();
-  if (last != now)
-    return 1;
-  tlast = TIME(&tnow);
-  if (tlast != tnow)
-    return 2;
   while (now == last)
     now = get_time();
+  if (now < last)
+    return 1;
+  tnow = tlast = TIME(NULL);
   while (tnow == tlast)
     tnow = TIME(NULL);
-  if (now < last)
-    return 3;
   if (tnow < tlast)
-    return 4;
+    return 2;
   cumDelta = 0;
 #define INCR 47
 #define MAXV 1500
   for (i=0;i<MAXV;i+=INCR) {
-    cronTime(&last);
-    if (0 != PTHREAD_SLEEP(cronMILLIS * i))
-      return 5;
+    last = get_time();
+    PTHREAD_SLEEP(cronMILLIS * i);
     now = get_time();
 #if VERBOSE
     fprintf(stderr,
-	    "%4u ms requested, got: %4lld ms\n",
-	    i / cronMILLIS,
-	    (now - last) / cronMILLIS);
+	    "%4llu ms requested, got: %4llu ms\n",
+	    i * cronMILLIS,
+	    (now - last));
 #endif
     if (last + cronMILLIS * i < now)
       cumDelta += (now - (last+cronMILLIS*i));
@@ -61,7 +70,7 @@ static int check() {
       cumDelta += ((last+cronMILLIS*i) - now);
   }
   FPRINTF(stdout,
-	  "Sleep precision: %llu ms.  ",
+	  "Sleep precision: %llu ms. ",
 	  cumDelta / cronMILLIS / (MAXV/INCR));
   if (cumDelta <= 10 * cronMILLIS * MAXV / INCR)
     fprintf(stdout,
@@ -75,107 +84,15 @@ static int check() {
   else
     fprintf(stdout,
 	    "Timer precision is acceptable.\n");
-
-  sem = SEMAPHORE_CREATE(0);
-
-  startCron();
-  cumDelta = 0;
-
-#define MAXV2 1500
-#define INCR2 113
-  for (i=50;i<MAXV2+50;i+=INCR2) {
-    cronTime(&last);
-    addCronJob((CronJob) &semaphore_up,
-	       i * cronMILLIS,
-	       0,
-	       sem);
-    SEMAPHORE_DOWN(sem);
-    now = get_time();
-    if (now < last + i)
-      now = last + i - now;
-    else
-      now = now - (last + i);
-    cumDelta += now;
-#if VERBOSE
-    FPRINTF(stderr,
-	    "Sleep interrupted by signal within %llu ms of deadline (intended delay: %d ms).\n",
-	    now,
-	    i);
-#endif
-  }
-  FPRINTF(stdout,
-	  "Sleep interrupt precision is %llums. ",
-	  cumDelta / (MAXV2/INCR2) );
-  if (cumDelta <= 10 * cronMILLIS * MAXV2 / INCR2)
-    fprintf(stdout,
-	    "Timer precision is excellent.\n");
-  else if (cumDelta <= 50 * cronMILLIS * MAXV2 / INCR2) /* 50ms average deviation */
-    fprintf(stdout,
-	    "Timer precision is good.\n");
-  else if (cumDelta > 250 * cronMILLIS * MAXV2 / INCR2)
-    fprintf(stdout,
-	    "Timer precision is awful.\n");
-  else
-    fprintf(stdout,
-	    "Timer precision is acceptable.\n");
-
-  stopCron();
-  SEMAPHORE_DESTROY(sem);
-
   return 0;
-}
-
-
-/**
- * Perform option parsing from the command line.
- */
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  char c;
-
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      { "config",  1, 0, 'c' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:",
-		      long_options,
-		      &option_index);
-
-    if (c == -1)
-      break;  /* No more flags to process */
-
-    switch(c) {
-    case 'c':
-      FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
-      break;
-    } /* end of parsing commandline */
-  }
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGLEVEL",
-				     "WARNING"));
-  return OK;
 }
 
 int main(int argc,
 	 char * argv[]){
   int ret;
-  initUtil(argc, argv, &parseCommandLine);
 
   ret = check();
-  if (ret != 0)
-    fprintf(stderr,
-	    "ERROR %d\n", ret);
-  doneUtil();
+
   return ret;
 }
 

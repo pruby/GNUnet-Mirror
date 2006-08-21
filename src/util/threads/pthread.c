@@ -224,6 +224,7 @@ void PTHREAD_SLEEP(unsigned long long delay) {
 #elif WINDOWS
   SleepEx(delay, TRUE);
 #else
+  printf("Select!\n");
   /* fall back to select */
   timeout.tv_sec
     = delay / CRON_UNIT_TO_SECONDS;

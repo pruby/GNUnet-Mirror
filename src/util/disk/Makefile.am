@@ -11,6 +11,8 @@ libdisk_la_SOURCES = \
 check_PROGRAMS = \
  storagetest 
 
+TESTS = $(check_PROGRAMS)
+
 storagetest_SOURCES = \
  storagetest.c
 storagetest_LDADD = \

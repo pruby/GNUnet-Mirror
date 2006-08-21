@@ -11,12 +11,20 @@ libgnunetutil_cron_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la  
 
 check_PROGRAMS = \
- crontest
+ crontest \
+ timertest
 
 TESTS = $(check_PROGRAMS)
 
 crontest_SOURCES = \
  crontest.c
 crontest_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la  
+
+
+
+timertest_SOURCES = \
+ timertest.c
+timertest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  
 
