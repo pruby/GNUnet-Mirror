@@ -24,7 +24,7 @@ libip_la_SOURCES = \
 libip6_la_SOURCES = \
   ip6.c ip6.h
 
-plugin_LTLIBRARIES = \ # $(smtptransport) \
+plugin_LTLIBRARIES = \
  libgnunettransport_tcp.la \
  libgnunettransport_udp.la \
  libgnunettransport_nat.la \
