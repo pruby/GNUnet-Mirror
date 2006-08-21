@@ -1024,12 +1024,12 @@ int gnunet_parse_options(const char * binaryName,
   shorts = MALLOC(count*2+1);
   spos = 0;
   for (i=0;i<count;i++) {
-    long_options[i].name = allOptions[count].name;
-    long_options[i].has_arg = allOptions[count].require_argument;
+    long_options[i].name = allOptions[i].name;
+    long_options[i].has_arg = allOptions[i].require_argument;
     long_options[i].flag = NULL;
-    long_options[i].val = allOptions[count].shortName;
-    shorts[spos++] = allOptions[count].shortName;
-    if (allOptions[count].require_argument != 0)
+    long_options[i].val = allOptions[i].shortName;
+    shorts[spos++] = allOptions[i].shortName;
+    if (allOptions[i].require_argument != 0)
       shorts[spos++] = ':';
   }
   long_options[count].name = NULL;
@@ -1037,7 +1037,7 @@ int gnunet_parse_options(const char * binaryName,
   long_options[count].flag = NULL;
   long_options[count].val = '\0';
   shorts[spos++] = '\0';
-  
+  printf("shorts: %s %d\n", shorts, count);
   cont = OK;
   /* main getopt loop */
   while (cont == OK) {
