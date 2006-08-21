@@ -1037,7 +1037,6 @@ int gnunet_parse_options(const char * binaryName,
   long_options[count].flag = NULL;
   long_options[count].val = '\0';
   shorts[spos++] = '\0';
-  printf("shorts: %s %d\n", shorts, count);
   cont = OK;
   /* main getopt loop */
   while (cont == OK) {
@@ -1071,6 +1070,8 @@ int gnunet_parse_options(const char * binaryName,
 
   FREE(shorts);
   FREE(long_options);
+  if (cont == SYSERR)
+    return SYSERR;
   return GNoptind;
 }
 

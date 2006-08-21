@@ -44,7 +44,7 @@ int gnunet_getopt_format_help(CommandLineProcessorContext * ctx,
   const char * trans;
   const struct CommandLineOption * opt;
 	
-  printf("%s",
+  printf("%s\n",
 	 gettext(about));
   printf(_("Arguments mandatory for long options are also mandatory for short options.\n"));
   slen = 0;
