@@ -38,67 +38,6 @@ typedef struct PluginHandle {
 
 static char * old_dlsearchpath;
 
-static char * getPluginPath() {
-#if LINUX
-  char * fn;
-  char * lnk;
-  size_t size;
-
-  fn = MALLOC(64);
-  SNPRINTF(fn, 
-	   64,
-	   "/proc/%u/exe",
-	   getpid());
-  lnk = MALLOC(1024);
-  size = readlink(fn, lnk, 1023);
-  if ( (size == 0) || (size >= 1024) ) {
-    GE_LOG_STRERROR_FILE(NULL,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-			 "readlink",
-			 fn);
-    FREE(fn);
-    FREE(lnk);
-    return NULL;
-  }
-  FREE(fn);
-  lnk[size] = '\0';
-  while ( (lnk[size] != '/') &&
-	  (size > 0) )
-    size--;
-  if ( (size < 4) ||
-       (lnk[size-4] != '/') ) {
-    GE_LOG(NULL,
-	   GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("Cannot determine plugin path (have, application must be installed in directory ending with `%s', have `%s').\n"),
-	   "bin/",
-	   lnk);
-    FREE(lnk);
-    return NULL;
-  }
-  lnk[  size] = '\0';
-  lnk[--size] = 'b';
-  lnk[--size] = 'i';
-  lnk[--size] = 'l';
-  return lnk;
-#elif WINDOWS
-  char *path, *idx;
-  
-  path = MALLOC(4097);
-  GetModuleFileName(NULL, path, 4096);
-  idx = path + strlen(idx);
-  while ( (idx > path) && 
-	  (path != '\\') &&
-	  (path != '/') )
-    idx++;
-  *idx = 0;
-  
-  return path;  
-#else
-/* FIXME/PORTME to other platforms */
-#error Missing port: getPluginPath()
-  Missing port: getPluginPath();
-#endif
-}
 
 /* using libtool, needs init! */
 void __attribute__ ((constructor)) gnc_ltdl_init(void) {
@@ -116,14 +55,11 @@ void __attribute__ ((constructor)) gnc_ltdl_init(void) {
   opath = lt_dlgetsearchpath();
   if (opath != NULL)
     old_dlsearchpath = STRDUP(opath);
-  path = getPluginPath();
-  if (path == NULL) {
-    fprintf(stderr,
-	    _("Fatal error: could not determine path for plugins!\n"));    
-    abort();
+  path = os_get_installation_path(IPK_LIBDIR);
+  if (path != NULL) {
+    lt_dlsetsearchpath(path);
+    FREE(path);  
   }
-  lt_dlsetsearchpath(path);
-  FREE(path);  
 }
 
 void __attribute__ ((destructor)) gnc_ltdl_fini(void) {
@@ -132,7 +68,7 @@ void __attribute__ ((destructor)) gnc_ltdl_fini(void) {
     FREE(old_dlsearchpath);
     old_dlsearchpath = NULL;
   }
-  lt_dlexit ();
+  lt_dlexit();
 }
 
 struct PluginHandle * 

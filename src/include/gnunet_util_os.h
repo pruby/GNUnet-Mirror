@@ -269,12 +269,12 @@ int os_daemon_stop(struct GE_Context * ectx,
  * List of install paths
  */
 enum InstallPathKind {
-  PREFIX,
-  BINDIR,
-  LIBDIR,
-  GNDATADIR,
-  PACKAGEDATADIR,
-  LOCALEDIR };
+  IPK_PREFIX,
+  IPK_BINDIR,
+  IPK_LIBDIR,
+  IPK_DATADIR,
+  IPK_LOCALEDIR 
+};
 
 /**
  * @brief get the path to a specific app dir
@@ -283,9 +283,7 @@ enum InstallPathKind {
  * @param cfg the context to get configuration values from
  * @return a pointer to the dir path (to be freed by the caller)
  */
-char * os_get_installation_path(struct GE_Context * ectx,
-                                struct GC_Configuration * cfg,
-                                enum InstallPathKind dirkind);
+char * os_get_installation_path(enum InstallPathKind dirkind);
 
 
 

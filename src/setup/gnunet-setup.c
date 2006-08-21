@@ -200,16 +200,14 @@ int main(int argc,
   if(0 == ACCESS(filename, F_OK)) 
     GC_parse_configuration(cfg,
 			   filename);
-  dirname = os_get_installation_path(ectx,
-				     cfg,
-				     GNDATADIR);
-  specname = MALLOC(strlen(dirname) + strlen("/config-daemon.scm") + 1);
+  dirname = os_get_installation_path(IPK_DATADIR);
+  specname = MALLOC(strlen(dirname) + strlen("config-daemon.scm") + 1);
   strcpy(specname, dirname);
   FREE(dirname);
   if (config_daemon) 
-    strcat(specname, "/config-daemon.scm");
+    strcat(specname, "config-daemon.scm");
   else 
-    strcat(specname, "/config-client.scm");  
+    strcat(specname, "config-client.scm");  
   gns = GNS_load_specification(ectx,
 			       cfg,
 			       specname); 
