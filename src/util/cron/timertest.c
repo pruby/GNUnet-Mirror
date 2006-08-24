@@ -23,6 +23,7 @@
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_cron.h"
 #include "platform.h"
 
 static void semaphore_up(void * ctx) {
@@ -30,26 +31,29 @@ static void semaphore_up(void * ctx) {
   SEMAPHORE_UP(sem);
 }
 
+static struct CronManager * cron;
+
 static int check() {
   struct SEMAPHORE * sem;
   unsigned long long cumDelta;
   cron_t now;
   cron_t last;
+  int i;
 
   sem = SEMAPHORE_CREATE(0);
 
-  startCron();
   cumDelta = 0;
 
 #define MAXV2 1500
 #define INCR2 113
   for (i=50;i<MAXV2+50;i+=INCR2) {
     last = get_time();
-    addCronJob(&semaphore_up,
-	       i * cronMILLIS,
-	       0,
-	       sem);
-    SEMAPHORE_DOWN(sem);
+    cron_add_job(cron,
+		 &semaphore_up,
+		 i * cronMILLIS,
+		 0,
+		 sem);
+    SEMAPHORE_DOWN(sem, YES);
     now = get_time();
     if (now < last + i)
       now = last + i - now;
@@ -79,5 +83,21 @@ static int check() {
     fprintf(stdout,
 	    "Timer precision is acceptable.\n");
 
-  stopCron();
   SEMAPHORE_DESTROY(sem);
+  return 0;
+}
+
+int main(int argc, char * argv[]) {
+  int failureCount = 0;
+
+  cron = cron_create(NULL);
+  cron_start(cron);
+  failureCount += check();
+  cron_stop(cron);
+  cron_destroy(cron);
+  if (failureCount != 0) 
+    return 1;
+  return 0;
+} 
+
+/* end of timertest.c */

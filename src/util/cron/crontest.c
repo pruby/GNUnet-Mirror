@@ -1,53 +1,62 @@
+/*
+     This file is part of GNUnet.
+     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+*/
 /**
- * @file test/crontest.c
+ * @file util/cron/crontest.c
  * @brief Testcase for cron.
  * @author Christian Grothoff
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_cron.h"
 #include "platform.h"
 
 static int global;
 static int global2;
 static int global3;
 
-/**
- * Initialize controlThread.
- */
-void initCron();
-
-/**
- * Make sure to call stopCron before calling this method!
- */
-void doneCron();
-
-/**
- * Process the cron-job at the beginning of the waiting
- * queue, that is, remove, invoke, and re-insert if
- * it is a periodical job. Make sure the sync is down
- * while the job is running (it may add other jobs!)
- */
-void runJob();
+static struct CronManager * cron;
 
 static void cronJob(void * unused) {
   global++;
 }
+
 static void cronJob2(void * unused) {
   global2++;
 }
+
 static void cronJob3(void * unused) {
   global3++;
 }
 
-int testCron() {
+static int testCron() {
   int i;
 
   global = -1;
   global2 = -1;
   global3 = -1;
-  addCronJob(&cronJob, cronSECONDS*1, cronSECONDS*1, NULL);
-  addCronJob(&cronJob2, cronSECONDS*4, cronSECONDS*4, NULL);
-  addCronJob(&cronJob3, cronSECONDS*16, cronSECONDS*16, NULL);
+  cron_add_job(cron,
+	       &cronJob, cronSECONDS*1, cronSECONDS*1, NULL);
+  cron_add_job(cron,
+	       &cronJob2, cronSECONDS*4, cronSECONDS*4, NULL);
+  cron_add_job(cron,
+	       &cronJob3, cronSECONDS*16, cronSECONDS*16, NULL);
   for (i=0;i<10;i++) {
     /*    fprintf(stderr,"."); */
     sleep(1);
@@ -64,42 +73,45 @@ int testCron() {
       return 1;
     }
   }
-  delCronJob(&cronJob, cronSECONDS*1, NULL);
-  delCronJob(&cronJob2, cronSECONDS*4, NULL);
-  delCronJob(&cronJob3, cronSECONDS*16, NULL);
+  cron_del_job(cron,
+	       &cronJob, cronSECONDS*1, NULL);
+  cron_del_job(cron,
+	       &cronJob2, cronSECONDS*4, NULL);
+  cron_del_job(cron,
+	       &cronJob3, cronSECONDS*16, NULL);
   return 0;
 }
 
 static void delJob() {
-  delCronJob(&cronJob, 42, NULL);
+  cron_del_job(cron,
+	       &cronJob, 42, NULL);
 }
 
 static int testDelCron() {
   global = 0;
-  addCronJob(&cronJob, cronSECONDS*1, 42, NULL);
-  addCronJob(&delJob, 500 * cronMILLIS, 0, NULL);
-  sleep(1);
+  cron_add_job(cron,
+	       &cronJob, cronSECONDS*1, 42, NULL);
+  cron_add_job(cron,
+	       &delJob, 500 * cronMILLIS, 0, NULL);
+  PTHREAD_SLEEP(1 * cronSECONDS);
   if (global != 0) {
     fprintf(stderr,
 	    "cron job was supposed to be deleted, but ran anyway!\n");
     return 1;
-  } else
-    return 0;
+  }
+  return 0;
 }
 
 int main(int argc, char * argv[]) {
   int failureCount = 0;
 
-  initCron();
-  startCron();
+  cron = cron_create(NULL);
+  cron_start(cron);
   failureCount += testCron();
   failureCount += testDelCron();
-  stopCron();
-  doneCron();
-  if (failureCount == 0)
-    return 0;
-  else {
-    printf("\n\n%d TESTS FAILED!\n\n",failureCount);
-    return -1;
-  }
+  cron_stop(cron);
+  cron_destroy(cron);
+  if (failureCount != 0) 
+    return 1;
+  return 0;
 } /* end of main */

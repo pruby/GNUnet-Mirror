@@ -19,6 +19,7 @@ TESTS = $(check_PROGRAMS)
 crontest_SOURCES = \
  crontest.c
 crontest_LDADD = \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
  $(top_builddir)/src/util/libgnunetutil.la  
 
 
@@ -26,5 +27,6 @@ crontest_LDADD = \
 timertest_SOURCES = \
  timertest.c
 timertest_LDADD = \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
  $(top_builddir)/src/util/libgnunetutil.la  
 
