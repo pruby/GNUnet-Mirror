@@ -62,7 +62,7 @@ typedef struct IPC_SEMAPHORE {
 #elif SOMEBSD
   int initialValue;
   int fd;
-  Mutex internalLock;
+  struct MUTEX * internalLock;
   char * filename;
 #elif _MSC_VER
   int internal; /* KLB_FIX */
@@ -70,7 +70,7 @@ typedef struct IPC_SEMAPHORE {
 #else
   /* PORT-ME! */
 #endif
-} struct IPC_SEMAPHORE;
+} IPC_SEMAPHORE;
 
 
 #if LINUX
