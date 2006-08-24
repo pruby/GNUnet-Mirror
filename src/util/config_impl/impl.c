@@ -154,6 +154,7 @@ static void _free(struct GC_Configuration * cfg) {
 	    cfg->data->listeners == 0);
   MUTEX_DESTROY(cfg->data->lock);
   FREE(cfg->data);
+  FREE(cfg);
 }
 
 static void _set_error_context(struct GC_Configuration * cfg,
