@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -18,43 +18,43 @@
      Boston, MA 02111-1307, USA.
 */
 /**
- * @file test/daemontest.c
+ * @file src/util/os/daemontest.c
  * @brief Testcase for the daemon functions
  * @author Christian Grothoff
  */
 
 #include "gnunet_util.h"
 #include "platform.h"
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "NOTHING"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  return OK;
-}
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
+#include "gnunet_util_error_loggers.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, 
+	 const char *argv[]) {
   int daemon;
+  struct GE_Context * ectx;
+  static struct GC_Configuration * cfg;
 
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  os_init(ectx);
+  daemon = os_daemon_start(ectx, 
+			   cfg,
+			   "check.conf",
+			   NO);
   GE_ASSERT(ectx, daemon > 0);
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+  GE_ASSERT(ectx, OK == connection_wait_for_running(ectx,
+						    cfg,
+						    30 * cronSECONDS));
+  GE_ASSERT(ectx, OK == os_daemon_stop(ectx, daemon));
+
+  GC_free(cfg);
+  GE_free_context(ectx);
   return 0;
 }
 

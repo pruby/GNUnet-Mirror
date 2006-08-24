@@ -70,7 +70,7 @@ typedef struct IPC_SEMAPHORE {
 #else
   /* PORT-ME! */
 #endif
-} IPC_Semaphore;
+} struct IPC_SEMAPHORE;
 
 
 #if LINUX
@@ -144,7 +144,7 @@ static int LSEEK(int fd,
 }
 #endif
 
-IPC_Semaphore * 
+struct IPC_SEMAPHORE * 
 IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 		     const char * basename,
 		     const unsigned int initialValue) {
@@ -152,9 +152,9 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 #if SOLARIS || OSX || FREEBSD5
   char * noslashBasename;
   int i;
-  IPC_Semaphore * ret;
+  struct IPC_SEMAPHORE * ret;
 
-  ret = MALLOC(sizeof(IPC_Semaphore));
+  ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
   noslashBasename = STRDUP(basename);
   for (i=strlen(noslashBasename);i>0;i--)
@@ -186,11 +186,11 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 #elif WINDOWS
   char * noslashBasename;
   int i;
-  IPC_Semaphore * ret;
+  struct IPC_SEMAPHORE * ret;
   SECURITY_ATTRIBUTES sec;
   DWORD dwErr;
 
-  ret = MALLOC(sizeof(IPC_Semaphore));
+  ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
   noslashBasename = STRDUP(basename);
   for (i=strlen(noslashBasename);i>0;i--)
@@ -224,12 +224,12 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
       struct semid_ds *buf;
       ushort          *array;
   } semctl_arg;
-  IPC_Semaphore * ret;
+  struct IPC_SEMAPHORE * ret;
   key_t key;
   FILE * fp;
   int pcount;
 
-  ret = MALLOC(sizeof(IPC_Semaphore));
+  ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
   fp = FOPEN(basename, "a+");
   if (NULL == fp) {
@@ -300,9 +300,9 @@ again:
 #elif SOMEBSD
   int fd;
   int cnt;
-  IPC_Semaphore * ret;
+  struct IPC_SEMAPHORE * ret;
 
-  ret = MALLOC(sizeof(IPC_Semaphore));
+  ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
 
   MUTEX_CREATE(&ret->internalLock);
@@ -384,7 +384,7 @@ again:
 #endif
 }
 
-void IPC_SEMAPHORE_UP(IPC_Semaphore * sem) {
+void IPC_SEMAPHORE_UP(struct IPC_SEMAPHORE * sem) {
   if (sem == NULL) /* error on creation, optimistic execution; good luck */
     return;
 #if SOLARIS || OSX || FREEBSD5
@@ -447,7 +447,7 @@ void IPC_SEMAPHORE_UP(IPC_Semaphore * sem) {
 }
 
 /* FIXME: add support for mayBlock! */
-int IPC_SEMAPHORE_DOWN(IPC_Semaphore * sem,
+int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
 			int mayBlock) {
   if (sem == NULL) /* error on creation, optimistic execution; good luck */
     return OK;
@@ -537,7 +537,7 @@ int IPC_SEMAPHORE_DOWN(IPC_Semaphore * sem,
 #endif
 }
 
-void IPC_SEMAPHORE_DESTROY(IPC_Semaphore * sem) {
+void IPC_SEMAPHORE_DESTROY(struct IPC_SEMAPHORE * sem) {
   if (sem == NULL) /* error on creation, optimistic execution; good luck */
     return;
 #if SOLARIS || OSX || FREEBSD5

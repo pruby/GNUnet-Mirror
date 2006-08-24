@@ -28,8 +28,11 @@ running GNUnet:
 - libextractor >= 0.5.13
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
-- mysql >= 4.1 OR sqlite >= 3.0
-- libltdl (from libtool)
+- mysql        >= 4.1  OR  sqlite >= 3.0
+- libltdl      >= 1.5 (part of GNU libtool)
+- libguile     >= 1.8
+- libcurl      >= 7.x
+
 
 Recommended autotools for compiling the SVN version are:
 - autoconf >= 2.59
@@ -164,6 +167,21 @@ https://gnunet.org/mantis/.  Please make sure to run contrib/report.sh
 and include the output with your bug reports.  More about how to
 report bugs can be found in the GNUnet FAQ on the webpage.  Submit
 patches via E-Mail to gnunet-developers@gnu.org.
+
+In order to run the unit tests with "make check", you need to
+set an environment variable ("GNUNET_PREFIX") to the directory
+where GNUnet is installed (usually, GNUnet will use OS specific
+tricks in order to try to figure out the PREFIX, but since the
+testcase binaries are not installed, that trick does not work
+for them).  Also, before running any testcases, you must 
+complete the installation first.  Quick summary:
+
+$ ./configure --prefix=$SOMEWHERE
+$ make
+$ make install
+$ export GNUNET_PREFIX=$SOMEWHERE
+$ make check
+
 
 
 Stay tuned

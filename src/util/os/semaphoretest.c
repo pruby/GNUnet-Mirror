@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #ifndef MINGW             /* PORT-ME MINGW */
 
-static IPC_Semaphore * ipc;
+static struct IPC_SEMAPHORE * ipc;
 
 static int testIPCSemaphore() {
   pid_t me;
