@@ -23,12 +23,14 @@
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
 #include <sys/types.h>
-#ifndef MINGW             /* PORT-ME MINGW */
 
 static struct IPC_SEMAPHORE * ipc;
+
+static struct GE_Context * ectx;
 
 static int testIPCSemaphore() {
   pid_t me;
@@ -46,12 +48,14 @@ static int testIPCSemaphore() {
   me = fork();
   sw = me;
 
-  ipc = IPC_SEMAPHORE_CREATE("/tmp/gnunet_ipc_semtest",
-			  0);
+  ipc = IPC_SEMAPHORE_CREATE(ectx,
+			     "/tmp/gnunet_ipc_semtest",
+			     0);
   for (cnt=0;cnt<3;cnt++) {
     if (sw == 0) {
       for (i=0;i<6;i++) {
-	IPC_SEMAPHORE_DOWN(ipc);
+	IPC_SEMAPHORE_DOWN(ipc,
+			   YES);
 	fd = FOPEN("/tmp/gnunet_ipc_xchange",
 		       "a+");
 	if (fd == NULL) {
@@ -129,56 +133,17 @@ static int testIPCSemaphore() {
   return ret;
 }
 
-
-/**
- * Perform option parsing from the command line.
- */
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  char c;
-
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      { "loglevel",1, 0, 'L' },
-      { "config",  1, 0, 'c' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:L:",
-		      long_options,
-		      &option_index);
-
-    if (c == -1)
-      break;  /* No more flags to process */
-
-    switch(c) {
-    case 'L':
-      FREENONNULL(setConfigurationString("GNUNET",
-					 "LOGLEVEL",
-					 GNoptarg));
-      break;
-    case 'c':
-      FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
-      break;
-    } /* end of parsing commandline */
-  }
-  return OK;
-}
-#endif /* PORT-ME MINGW */
-
 int main(int argc, char * argv[]){
   int ret = 0;
 
-#ifndef MINGW
-  initUtil(argc, argv, &parseCommandLine);
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  os_init(ectx);
   ret += testIPCSemaphore();
   fprintf(stderr, "\n");
-  doneUtil();
-#endif
+  GE_free_context(ectx);
   return ret;
 }

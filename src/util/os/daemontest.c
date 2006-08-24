@@ -24,16 +24,16 @@
  */
 
 #include "gnunet_util.h"
-#include "platform.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_error_loggers.h"
+#include "platform.h"
 
 int main(int argc, 
 	 const char *argv[]) {
   int daemon;
   struct GE_Context * ectx;
-  static struct GC_Configuration * cfg;
+  struct GC_Configuration * cfg;
 
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
@@ -47,11 +47,29 @@ int main(int argc,
 			   cfg,
 			   "check.conf",
 			   NO);
-  GE_ASSERT(ectx, daemon > 0);
-  GE_ASSERT(ectx, OK == connection_wait_for_running(ectx,
-						    cfg,
-						    30 * cronSECONDS));
-  GE_ASSERT(ectx, OK == os_daemon_stop(ectx, daemon));
+  if (daemon <= 0) {
+    fprintf(stderr,
+	    "Failed to start daemon.\n");
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  if (0 != connection_wait_for_running(ectx,
+				       cfg,
+				       30 * cronSECONDS)) {
+    fprintf(stderr,
+	    "Failed to confirm daemon running (after 30s).\n");
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  if (OK != os_daemon_stop(ectx, daemon)) {
+    fprintf(stderr,
+	    "Failed to stop daemon.\n");
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
 
   GC_free(cfg);
   GE_free_context(ectx);

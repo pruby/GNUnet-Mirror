@@ -50,7 +50,6 @@ libgnunetutil_la_LIBADD = $(GCLIBADD) $(CYGLIBADD) $(WINLIBADD) \
 
 
 EXTRA_DIST = \
-  testconfig.conf \
   check.conf
 
 libgnunetutil_la_LDFLAGS = \
