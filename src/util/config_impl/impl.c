@@ -738,6 +738,8 @@ _attach_change_listener(struct GC_Configuration * cfg,
   }
   l.listener = callback;
   l.ctx = ctx;
+  fprintf(stderr,
+	  "Appending to %u\n", cfg->data->lsize);
   APPEND(cfg->data->listeners,
 	 cfg->data->lsize,
 	 l);
@@ -754,6 +756,8 @@ _detach_change_listener(struct GC_Configuration * cfg,
 
   MUTEX_LOCK(cfg->data->lock);
   for (i=cfg->data->lsize-1;i>=0;i--) {
+    fprintf(stderr,
+	    "Accessing at to %u - base %p\n", i, cfg->data->listeners);
     l = &cfg->data->listeners[i];
     if ( (l->listener == callback) &&
 	 (l->ctx == ctx) ) {

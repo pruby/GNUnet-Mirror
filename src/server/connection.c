@@ -2634,7 +2634,7 @@ static int connectionConfigChangeCallback(void * ctx,
   unsigned int i;
 
   if (0 != strcmp(section, "LOAD"))
-    return OK; /* fast path */
+    return 0; /* fast path */
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "LOAD",
 					      "MAXNETDOWNBPSTOTAL",
@@ -2704,7 +2704,7 @@ static int connectionConfigChangeCallback(void * ctx,
 							    "PADDING",
 							    NO);
   MUTEX_UNLOCK(lock);
-  return OK;
+  return 0;
 }
 
 /**
@@ -2724,10 +2724,13 @@ void initConnection(struct GE_Context * e,
   scl_nextHead = NULL;
   scl_nextTail = NULL;
   lock = MUTEX_CREATE(YES);
-  GC_attach_change_listener(cfg,
-			    &connectionConfigChangeCallback,
-			    NULL);
   CONNECTION_MAX_HOSTS_ = 0;
+  GE_ASSERT(ectx,
+	    0 == GC_attach_change_listener(cfg,
+					   &connectionConfigChangeCallback,
+					   NULL));
+  GE_ASSERT(ectx,
+	    CONNECTION_MAX_HOSTS_ != 0);
   registerp2pHandler(P2P_PROTO_hangup, &handleHANGUP);
   cron_add_job(cron,
 	       &cronDecreaseLiveness,

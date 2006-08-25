@@ -234,6 +234,9 @@ void xgrow_(void ** old,
 		   filename,
 		   linenumber,
 		   function);
+    fprintf(stderr,
+	    "xm %u bytes at %p\n",
+	    size, tmp);
     GE_ASSERT(NULL, tmp != NULL);
     memset(tmp, 0, size); /* client code should not rely on this, though... */
     if (*oldCount > newCount)
