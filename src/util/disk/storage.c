@@ -591,7 +591,7 @@ int disk_file_open(struct GE_Context * ectx,
 		   const char * filename,
 		   int oflag,
 		   ...) {
-  const char * fn;
+  char * fn;
   int mode;
   int ret;
 #ifdef MINGW
@@ -608,9 +608,9 @@ int disk_file_open(struct GE_Context * ectx,
 			 filename);
     return -1;
   }
-  fn = szFile;
+  fn = STRDUP(szFile);
 #else
-  fn = filename;
+  fn = string_expandFileName(ectx, filename);
 #endif
   if (oflag & O_CREAT) {
     va_list arg;
@@ -629,7 +629,8 @@ int disk_file_open(struct GE_Context * ectx,
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_BULK,
 			 "open",
-			 filename);
+			 fn);
+  FREE(fn);
   return ret;
 }
 

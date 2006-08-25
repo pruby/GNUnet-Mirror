@@ -161,7 +161,7 @@ int GC_get_configuration_value_filename(struct GC_Configuration * cfg,
 					const char * option,
 					const char * def,
 					char ** value) {
-  return cfg->get_configuration_value_string(cfg, section, option, def, value);
+  return cfg->get_configuration_value_filename(cfg, section, option, def, value);
 }
 
 /**

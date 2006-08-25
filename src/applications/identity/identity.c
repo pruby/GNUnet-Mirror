@@ -1109,14 +1109,11 @@ provide_module_identity(CoreAPIForApplication * capi) {
 
   gnHome = NULL;
   GE_ASSERT(ectx, 
-	    -1 != GC_get_configuration_value_string(coreAPI->cfg,
-						    "GNUNETD",
-						    "GNUNETD_HOME",
-						    VAR_DAEMON_DIRECTORY,
-						    &tmp));
-  gnHome = string_expandFileName(ectx,
-				 tmp);
-  FREE(tmp);
+	    -1 != GC_get_configuration_value_filename(coreAPI->cfg,
+						      "GNUNETD",
+						      "GNUNETD_HOME",
+						      VAR_DAEMON_DIRECTORY,
+						      &gnHome));
   if (gnHome == NULL)
     return NULL;
   tmp = MALLOC(strlen(gnHome) + strlen(HOST_DIR) + 2);
@@ -1125,11 +1122,11 @@ provide_module_identity(CoreAPIForApplication * capi) {
   strcat(tmp, HOST_DIR);
   networkIdDirectory = NULL;
   GE_ASSERT(ectx,
-	    -1 != GC_get_configuration_value_string(coreAPI->cfg,
-						    "GNUNETD",
-						    "HOSTS",
-						    tmp,
-						    &networkIdDirectory));
+	    -1 != GC_get_configuration_value_filename(coreAPI->cfg,
+						      "GNUNETD",
+						      "HOSTS",
+						      tmp,
+						      &networkIdDirectory));
   FREE(tmp);
   disk_directory_create(ectx,
 			networkIdDirectory);

@@ -456,6 +456,7 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
   if (e != NULL) {
     val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
     *value = STRDUP(val);
+    ret = 0;
   } else {
     if (def == NULL) {
       MUTEX_UNLOCK(cfg->data->lock);
@@ -628,9 +629,14 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
   
   data = cfg->data;
   GE_ASSERT(data->ectx, def != NULL);
+  tmp = NULL;
   ret = _get_configuration_value_string(cfg, section, option, def, &tmp);
-  *value = string_expandFileName(data->ectx, tmp);
-  FREE(tmp);
+  if (tmp != NULL) {
+    *value = string_expandFileName(data->ectx, tmp);
+    FREE(tmp);
+  } else {
+    *value = NULL;
+  }
   return ret;
 }
 

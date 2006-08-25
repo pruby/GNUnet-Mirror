@@ -359,6 +359,7 @@ static int startTransportServer(void) {
   udp_sock = socket_create(ectx,
 			   load_monitor,
 			   sock);
+  GE_ASSERT(ectx, udp_sock != NULL);
   return OK;
 }
 

@@ -50,7 +50,8 @@ typedef struct PTHREAD {
  * Returns YES if pt is the handle for THIS thread.
  */
 int PTHREAD_TEST_SELF(PThread * handle) {
-  GE_ASSERT(NULL, handle != NULL);
+  if (handle == NULL)
+    return NO;
 #if HAVE_PTHREAD_EQUAL
   if (pthread_equal(pthread_self(), handle->pt))
 #else

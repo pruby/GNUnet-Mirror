@@ -446,7 +446,6 @@ static int getAdvertisedhellos(unsigned int maxLen,
   return used;
 }
 
-
 /**
  * Actually start the transport services and begin
  * receiving messages.
@@ -456,8 +455,10 @@ static void startTransports(P2P_PACKETProcessor mpp) {
 
   ctapi.receive = mpp;
   for (i=0;i<tapis_count;i++)
-    if (tapis[i] != NULL)
-      tapis[i]->startTransportServer();
+    if (tapis[i] != NULL) {
+      if (OK != tapis[i]->startTransportServer()) 
+	unloadTransport(i);      
+    }
 }
 
 /**
@@ -509,6 +510,26 @@ static void doneHelper(TransportAPI * tapi,
 	       &initHello,
 	       0,
 	       tapi);
+}
+
+static void unloadTransport(int i) {
+  void (*ptr)();
+
+  doneHelper(&tapis[i], NULL);
+  cron_del_job(coreAPI->cron,
+	       &createSignedhello,
+	       HELLO_RECREATE_FREQ,
+	       tapis[i]);
+  ptr = os_plugin_resolve_function(tapis[i]->libHandle,
+				   "donetransport_",
+				   NO);
+  if (ptr != NULL)
+    ptr();
+  FREE(tapis[i]->transName);
+  FREENONNULL(tapis[i]->helo);
+  tapis[i]->helo = NULL;
+  os_plugin_unload(tapis[i]->libHandle);
+  tapis[i] = NULL;
 }
 
 
@@ -659,27 +680,11 @@ provide_module_transport(CoreAPIForApplication * capi) {
  */
 int release_module_transport() {
   int i;
-  void (*ptr)();
 
   forEachTransport(&doneHelper, NULL);
-  for (i=0;i<tapis_count;i++) {
-    if (tapis[i] != NULL) {
-      cron_del_job(coreAPI->cron,
-		   &createSignedhello,
-		   HELLO_RECREATE_FREQ,
-		   tapis[i]);
-      ptr = os_plugin_resolve_function(tapis[i]->libHandle,
-				       "donetransport_",
-				       NO);
-      if (ptr != NULL)
-	ptr();
-      FREE(tapis[i]->transName);
-      FREENONNULL(tapis[i]->helo);
-      tapis[i]->helo = NULL;
-      os_plugin_unload(tapis[i]->libHandle);
-    }
-  }
-
+  for (i=0;i<tapis_count;i++) 
+    if (tapis[i] != NULL) 
+      unloadTransport(i);
   MUTEX_DESTROY(tapis_lock);
   tapis_lock = NULL;
   GROW(tapis,

@@ -95,14 +95,11 @@ void initPrivateKey(struct GE_Context * ectx,
   int res;
 
   GE_ASSERT(ectx,
-	    -1 != GC_get_configuration_value_string(cfg,
-						    "GNUNETD",
-						    "GNUNETD_HOME",
-						    VAR_DAEMON_DIRECTORY,
-						    &hostkeyfile));
-  gnHome = string_expandFileName(ectx,
-				 hostkeyfile);
-  FREE(hostkeyfile);
+	    -1 != GC_get_configuration_value_filename(cfg,
+						      "GNUNETD",
+						      "GNUNETD_HOME",
+						      VAR_DAEMON_DIRECTORY,
+						      &gnHome));
   disk_directory_create(ectx,
 			gnHome);
   if (YES != disk_directory_test(ectx,
