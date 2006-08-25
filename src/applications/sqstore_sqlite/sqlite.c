@@ -154,12 +154,9 @@ static sqliteHandle * getDBHandle() {
   ret = MALLOC(sizeof(sqliteHandle *));
   /* Open database and precompile statements */
   if (sqlite3_open(db->fn, &ret->dbh) != SQLITE_OK) {
-    PTHREAD_REL_SELF(ret->tid);
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
 	   _("Unable to initialize SQLite.\n"));
-    GROW(db->handles,
-	 db->handle_count,
-	 db->handle_count - 1);
     FREE(ret);
     return NULL;
   }
