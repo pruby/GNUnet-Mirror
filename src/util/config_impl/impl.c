@@ -574,7 +574,9 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
 					   option))
 	break; /* update refused */
       i--;
+      e = findEntry(data, section, option); /* side-effects of callback are possible! */
     }
+    e = findEntry(data, section, option); /* side-effects of callback are possible! */
     if (i >= 0) {
       /* update refused, revert! */
       FREE(e->dirty_val);
@@ -587,6 +589,7 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
 					     section,
 					     option))
 	  GE_ASSERT(ectx, 0); /* refused the refusal!? */
+	e = findEntry(data, section, option); /* side-effects of callback are possible! */
 	i++;
       }
       ret = -1; /* error -- update refused */
@@ -734,6 +737,7 @@ _attach_change_listener(struct GC_Configuration * cfg,
 	MUTEX_UNLOCK(cfg->data->lock);
 	return -1;
       }
+      s = &cfg->data->sections[i]; /* side-effects of callback are possible! */
     }
   }
   l.listener = callback;

@@ -2085,22 +2085,22 @@ provide_module_gap(CoreAPIForApplication * capi) {
 
   ectx = capi->ectx;
   cfg = capi->cfg;
-
-  if ( (-1 == GC_get_configuration_value_number(coreAPI->cfg,
+  coreAPI->capi;
+  if ( (-1 == GC_get_configuration_value_number(cfg,
 						"LOAD",
 						"HARDCPULIMIT",
 						0,
 						100000, /* 1000 CPUs!? */
 						0, /* 0 == no limit */
 						&hardCPULimit)) ||
-       (-1 == GC_get_configuration_value_number(coreAPI->cfg,
+       (-1 == GC_get_configuration_value_number(cfg,
 						"LOAD",
 						"HARDUPLIMIT",
 						0,
 						100, /* 100% */
 						0, /* 0 == no limit */
 						&hardUpLimit)) ||
-       (-1 == GC_get_configuration_value_number(coreAPI->cfg,
+       (-1 == GC_get_configuration_value_number(cfg,
 						"GAP",
 						"TABLESIZE",
 						MIN_INDIRECTION_TABLE_SIZE,
@@ -2111,7 +2111,6 @@ provide_module_gap(CoreAPIForApplication * capi) {
   GE_ASSERT(ectx, sizeof(P2P_gap_reply_MESSAGE) == 68);
   GE_ASSERT(ectx, sizeof(P2P_gap_query_MESSAGE) == 144);
 
-  coreAPI = capi;
   stats = capi->requestService("stats");
   if (stats != NULL) {
     stat_routing_totals             = stats->create(gettext_noop("# gap requests total received"));

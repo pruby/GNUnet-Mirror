@@ -116,22 +116,20 @@ typedef struct {
 
 } sqliteDatabase;
 
-
-static sqliteDatabase *db;
-
-static sqliteHandle * getDBHandle(void);
+static sqliteDatabase * db;
 
 /**
  * @brief Prepare a SQL statement
  */
-static int sq_prepare(const char *zSql,       /* SQL statement, UTF-8 encoded */
+static int sq_prepare(sqlite3 * dbh,
+		      const char *zSql,       /* SQL statement, UTF-8 encoded */
 		      sqlite3_stmt **ppStmt) {  /* OUT: Statement handle */
   char * dummy;
-  return sqlite3_prepare(getDBHandle()->dbh,
-       zSql,
-       strlen(zSql),
-       ppStmt,
-       (const char**) &dummy);
+  return sqlite3_prepare(dbh,
+			 zSql,
+			 strlen(zSql),
+			 ppStmt,
+			 (const char**) &dummy);
 }
 
 /**
@@ -184,7 +182,8 @@ static sqliteHandle * getDBHandle() {
   sqlite3_exec(ret->dbh, "PRAGMA page_size=4096", NULL, NULL, NULL);
   
   /* We have to do it here, because otherwise precompiling SQL might fail */
-  sq_prepare("Select 1 from sqlite_master where tbl_name = 'gn070'",
+  sq_prepare(ret->dbh,
+	     "Select 1 from sqlite_master where tbl_name = 'gn070'",
 	     &stmt);
   if (sqlite3_step(stmt) == SQLITE_DONE) {
     if (sqlite3_exec(ret->dbh,
@@ -206,15 +205,19 @@ static sqliteHandle * getDBHandle() {
   }
   sqlite3_finalize(stmt);
   
-  if ( (sq_prepare("SELECT COUNT(*) FROM gn070 WHERE hash=?",
+  if ( (sq_prepare(ret->dbh,
+		   "SELECT COUNT(*) FROM gn070 WHERE hash=?",
 		   &ret->countContent) != SQLITE_OK) ||
-       (sq_prepare("SELECT LENGTH(hash), LENGTH(value), size, type, prio, anonLevel, expire "
+       (sq_prepare(ret->dbh,
+		   "SELECT LENGTH(hash), LENGTH(value), size, type, prio, anonLevel, expire "
 		   "FROM gn070 WHERE hash=?",
 		   &ret->exists) != SQLITE_OK) ||         
-       (sq_prepare("UPDATE gn070 SET prio = prio + ? WHERE "
+       (sq_prepare(ret->dbh,
+		   "UPDATE gn070 SET prio = prio + ? WHERE "
 		   "hash = ? AND value = ? AND prio + ? < ?",
 		   &ret->updPrio) != SQLITE_OK) ||
-       (sq_prepare("INSERT INTO gn070 (size, type, prio, "
+       (sq_prepare(ret->dbh,
+		   "INSERT INTO gn070 (size, type, prio, "
 		   "anonLevel, expire, hash, value) VALUES "
 		   "(?, ?, ?, ?, ?, ?, ?)",
 		   &ret->insertContent) != SQLITE_OK) ) {
@@ -289,16 +292,19 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
   Datastore_Datum * datum;
   Datastore_Value * value;
   int contentSize;
+  sqlite3 * dbh;
 
   contentSize = sqlite3_column_int(stmt, 0) - sizeof(Datastore_Value);
 
+  dbh = getDBHandle()->dbh;
   if (contentSize < 0) {
     sqlite3_stmt * stmt;
 
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	_("sqlite datastore"));
-    if (sq_prepare("DELETE FROM gn070 WHERE size < ?", &stmt) == SQLITE_OK) {
+    if (sq_prepare(dbh,
+		   "DELETE FROM gn070 WHERE size < ?", &stmt) == SQLITE_OK) {
       sqlite3_bind_int(stmt,
 		       1,
 		       sizeof(Datastore_Value));
@@ -316,7 +322,8 @@ static Datastore_Datum * assembleDatum(sqlite3_stmt *stmt) {
     GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	_("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	_("sqlite datastore"));
-    if (sq_prepare("DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))", 
+    if (sq_prepare(dbh,
+		   "DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))", 
                    &stmt) == SQLITE_OK) {
       sqlite3_bind_int(stmt,
 		       1,
@@ -359,7 +366,8 @@ static double getStat(const char * key) {
   sqlite3_stmt *stmt;
   double ret = SYSERR;
 
-  i = sq_prepare("SELECT anonLevel FROM gn070 WHERE hash = ?",
+  i = sq_prepare(getDBHandle()->dbh,
+		 "SELECT anonLevel FROM gn070 WHERE hash = ?",
 		 &stmt);
   if (i == SQLITE_OK) {
     sqlite3_bind_text(stmt,
@@ -398,8 +406,11 @@ static double getStat(const char * key) {
 static int setStat(const char *key,
 		   double val) {
   sqlite3_stmt *stmt;
+  sqlite3 * dbh;
 
-  if (sq_prepare("DELETE FROM gn070 where hash = ?", &stmt) == SQLITE_OK) {
+  dbh = getDBHandle()->dbh;
+  if (sq_prepare(dbh,
+		 "DELETE FROM gn070 where hash = ?", &stmt) == SQLITE_OK) {
     sqlite3_bind_text(stmt,
 		      1,
 		      key,
@@ -409,7 +420,8 @@ static int setStat(const char *key,
     sqlite3_finalize(stmt);
   }
 
-  if (sq_prepare("INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
+  if (sq_prepare(dbh,
+		 "INSERT INTO gn070(hash, anonLevel, type) VALUES (?, ?, ?)",
 		 &stmt) == SQLITE_OK) {
     sqlite3_bind_text(stmt,
 		      1,
@@ -466,7 +478,9 @@ static int sqlite_iterate(unsigned int type,
   unsigned int lastPrio;
   unsigned long long lastExp;
   HashCode512 key;
+  sqlite3 * dbh;
 
+  dbh = getDBHandle()->dbh;
   MUTEX_LOCK(db->DATABASE_Lock_);
 
   /* For the rowid trick see
@@ -495,7 +509,8 @@ static int sqlite_iterate(unsigned int type,
   else
     strcat(scratch, " ORDER BY expire ASC, prio ASC, hash ASC");
   strcat(scratch, " LIMIT 1)");
-  if (sq_prepare(scratch,
+  if (sq_prepare(dbh,
+		 scratch,
 		 &stmt) != SQLITE_OK) {
     LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite3_prepare");
     MUTEX_UNLOCK(db->DATABASE_Lock_);
@@ -686,6 +701,7 @@ static int get(const HashCode512 * key,
   char scratch[97];
   int bind = 1;
   Datastore_Datum *datum;
+  sqlite3 * dbh;
 
 #if DEBUG_SQLITE
   EncName enc;
@@ -696,7 +712,7 @@ static int get(const HashCode512 * key,
       "SQLite: retrieving content `%s'\n",
       &enc);
 #endif
-
+  dbh = getDBHandle()->dbh;
   MUTEX_LOCK(db->DATABASE_Lock_);
 
   strcpy(scratch, "SELECT ");
@@ -717,7 +733,8 @@ static int get(const HashCode512 * key,
       strcat(scratch, "hash = :2");
   }
 
-  if (sq_prepare(scratch,
+  if (sq_prepare(dbh,
+		 scratch,
 		 &stmt) != SQLITE_OK) {
     LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_query");
     MUTEX_UNLOCK(db->DATABASE_Lock_);
@@ -921,7 +938,8 @@ static int del(const HashCode512 * key,
     }
     sqlite3_reset(dbh->exists);
 
-    n = sq_prepare("DELETE FROM gn070 WHERE hash = ?", /*  ORDER BY prio ASC LIMIT 1" -- not available */
+    n = sq_prepare(dbh->dbh,
+		   "DELETE FROM gn070 WHERE hash = ?", /*  ORDER BY prio ASC LIMIT 1" -- not available */
 		   &stmt);
     if (n == SQLITE_OK) {
       sqlite3_bind_blob(stmt,
@@ -938,7 +956,8 @@ static int del(const HashCode512 * key,
     unsigned long contentSize;
   	
     contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-    n = sq_prepare("DELETE FROM gn070 WHERE hash = ? and "
+    n = sq_prepare(dbh->dbh,
+		   "DELETE FROM gn070 WHERE hash = ? and "
 		   "value = ? AND size = ? AND type = ? AND prio = ? AND anonLevel = ? "
 		   "AND expire = ?", /* ORDER BY prio ASC LIMIT 1" -- not available in sqlite */
 		   &stmt);
