@@ -43,6 +43,8 @@ static unsigned int delay = 300;
 
 static unsigned int max_results;
 
+static char * cfgFilename;
+
 static char * output_filename;
 
 typedef struct {
@@ -126,7 +128,7 @@ static struct CommandLineOption gnunetsearchOptions[] = {
   { 'a', "anonymity", "LEVEL",
     gettext_noop("set the desired LEVEL of sender-anonymity"),
     1, &gnunet_getopt_configure_set_uint, &anonymity }, 
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */

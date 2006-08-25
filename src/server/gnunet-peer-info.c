@@ -27,6 +27,7 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_protocols.h"
+#include "gnunet_directories.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_identity_service.h"
 #include "gnunet_core.h"
@@ -41,11 +42,13 @@ static Identity_ServiceAPI * identity;
 
 static struct GE_Context * ectx;
 
+static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
+
 /**
  * All gnunet-peer-info command line options
  */
 static struct CommandLineOption gnunetpeerinfoOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Print information about GNUnet peers.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
@@ -122,6 +125,12 @@ int main(int argc,
     GE_free_context(ectx);
     return -1;  
   } 
+  if (-1 == GC_parse_configuration(cfg,
+	 			   cfgFilename)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
   GE_ASSERT(ectx,
 	    0 == GC_set_configuration_value_string(cfg,
 						   ectx,

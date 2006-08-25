@@ -37,7 +37,6 @@
  *  daemonized sucessfully, -1 on error
  */
 static pid_t launchWithExec(struct GE_Context * ectx,
-			    const char * binary_home,
 			    const char * cfgFile,
 			    int daemonize) {
   pid_t pid;
@@ -50,27 +49,19 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     int i;
 
     path = NULL;
-    cp = STRDUP(binary_home);
+    cp = os_get_installation_path(IPK_BINDIR);
     i = strlen(cp);
-    while ( (i >= 0) &&
-	    (cp[i] != DIR_SEPARATOR) )
-	i--;
-    if ( i != -1 ) {
-      cp[i+1] = '\0';
-      path = MALLOC(i+2+strlen("gnunetd"));
-      strcpy(path, cp);
-      strcat(path, "gnunetd");
-      if (ACCESS(path, X_OK) == 0) {
-	args[0] = path;
-      } else {
-	FREE(path);
-	path = NULL;
-	args[0] = "gnunetd";
-      }
-      FREE(cp);
+    path = MALLOC(i+2+strlen("gnunetd"));
+    strcpy(path, cp);
+    strcat(path, "gnunetd");
+    if (ACCESS(path, X_OK) == 0) {
+      args[0] = path;
     } else {
+      FREE(path);
+      path = NULL;
       args[0] = "gnunetd";
     }
+    FREE(cp);
     if (cfgFile != NULL) {
       args[1] = "-c";
       args[2] = cfgFile;
@@ -146,21 +137,9 @@ int os_daemon_start(struct GE_Context * ectx,
 		    const char * cfgFile,
 		    int daemonize) {
 #if LINUX || OSX || SOLARIS || SOMEBSD
-  int ret;
-  char * binName;
-
-  if (0 != GC_get_configuration_value_string(cfg,
-					     "ARGV",
-					     "0",
-					     NULL,
-					     &binName))
-    return -1;
-  ret = launchWithExec(ectx,
-		       cfgFile,
-		       binName,
-		       daemonize);
-  FREE(binName);
-  return ret;
+  return launchWithExec(ectx,
+			cfgFile,
+			daemonize);
 #elif MINGW
   char szCall[_MAX_PATH + 1], szWd[_MAX_PATH + 1], szCWd[_MAX_PATH + 1];
   char *args[1], *cp = NULL;
@@ -177,8 +156,11 @@ int os_daemon_start(struct GE_Context * ectx,
     args[0] = "-d";
     idx = 1;
     
-    cp = GC_get_configuration_value_string(cfg, "GNUNET", "GNUNETD-CONFIG",
-      NULL, &cp);
+    cp = GC_get_configuration_value_string(cfg,
+					   "GNUNET", 
+					   "GNUNETD-CONFIG",
+					   NULL,
+					   &cp);
     if (cp) {
       args[1] = "-c";
       args[2] = cp;
@@ -197,8 +179,9 @@ int os_daemon_start(struct GE_Context * ectx,
   return (daemonize == NO) ? pid : 0;
 #else
   /* any system out there that does not support THIS!? */
-  system("gnunetd"); /* we may not have nice,
-			so let's be minimalistic here. */
+  if (-1 == system("gnunetd")) /* we may not have nice,
+				  so let's be minimalistic here. */
+    return -1;
   return 0;
 #endif
 }

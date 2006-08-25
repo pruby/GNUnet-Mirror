@@ -34,12 +34,13 @@
 
 static struct SEMAPHORE * doneSem;
 
+static char * cfgFilename;
 
 /**
  * All gnunetd command line options
  */
 static struct CommandLineOption gnunettemplateOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Template description.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */

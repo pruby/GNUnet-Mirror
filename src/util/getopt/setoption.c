@@ -44,13 +44,27 @@ int gnunet_getopt_configure_set_option(CommandLineProcessorContext * ctx,
 	    option != NULL);
   option[0] = '\0';
   option++;
+  if (value == NULL)
+    value = "YES";
   ret = GC_set_configuration_value_string(cfg,
 					  ctx->ectx,
 					  section,
 					  option,
 					  value);
+  
+  if (ret != 0) {
+    GE_LOG(ctx->ectx,
+	   GE_USER | GE_BULK | GE_ERROR,
+	   _("Setting option `%s' in section `%s' to `%s' when processing command line option `%s' was denied.\n"),
+	   option,
+	   section,
+	   value,
+	   cmdLineOption);
+    FREE(section);
+    return SYSERR;
+  }
   FREE(section);
-  return ret;
+  return OK;
 }
 
 int gnunet_getopt_configure_increment_value(CommandLineProcessorContext * ctx,
@@ -102,8 +116,8 @@ int gnunet_getopt_configure_set_string(CommandLineProcessorContext * ctx,
 				       const char * option,
 				       const char * value) {
   char ** val = scls;
-  if (value == NULL)
-    return SYSERR;
+
+  GE_ASSERT(NULL, value != NULL);
   *val = STRDUP(value);
   return OK;
 }

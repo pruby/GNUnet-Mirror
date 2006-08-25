@@ -18,6 +18,7 @@ Notes:
     + network/io: load monitor support
     + loggers: SMTP logger
     + config: call GC change listeners on entire config on registration!!!
+    + make testcases compile & pass again!
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
     	o libcurl / libwebserver-gnunet & libesmtp?

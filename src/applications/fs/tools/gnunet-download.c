@@ -37,6 +37,8 @@ static unsigned long long verbose;
 
 static int do_recursive;
 
+static char * cfgFilename;
+
 static char * filename;
 
 static unsigned int anonymity = 1;
@@ -54,7 +56,7 @@ static struct CommandLineOption gnunetdownloadOptions[] = {
   { 'a', "anonymity", "LEVEL",
     gettext_noop("set the desired LEVEL of sender-anonymity"),
     1, &gnunet_getopt_configure_set_uint, &anonymity }, 
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Download files from GNUnet.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */

@@ -34,6 +34,8 @@
 
 static struct SEMAPHORE * doneSem;
 
+static char * cfgFilename;
+
 static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
@@ -42,7 +44,7 @@ static struct GC_Configuration * cfg;
  * All gnunet-tracekit command line options
  */
 static struct CommandLineOption gnunettracekitOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   { 'D', "depth", "DEPTH",
     gettext_noop("probe network to the given DEPTH"), 1,
     &gnunet_getopt_configure_set_option, "GNUNET-TRACEKIT:HOPS" },

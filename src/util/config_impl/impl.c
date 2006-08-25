@@ -141,7 +141,7 @@ static void _free(struct GC_Configuration * cfg) {
     for (j=0;j<sec->size;j++) {
       e = &sec->entries[j];
       FREE(e->key);
-      FREE(e->val);
+      FREENONNULL(e->val);
       GE_ASSERT(cfg->data->ectx,
 		e->dirty_val == NULL);
     }
@@ -459,6 +459,11 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
   } else {
     if (def == NULL) {
       MUTEX_UNLOCK(cfg->data->lock);
+      GE_LOG(cfg->data->ectx,
+	     GE_USER | GE_IMMEDIATE | GE_ERROR,
+	     "Configuration value for option `%s' in section `%s' required.\n",
+	     option,
+	     section);
       return -1;    
     }
     *value = STRDUP(def);
@@ -560,7 +565,7 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
   } else {
     e->dirty_val = STRDUP(value);
     i = data->lsize - 1;
-    while (i > 0) {
+    while (i >= 0) {
       if (0 != data->listeners[i].listener(data->listeners[i].ctx,
 					   cfg,
 					   ectx,
@@ -569,7 +574,7 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
 	break; /* update refused */
       i--;
     }
-    if (i != 0) {
+    if (i >= 0) {
       /* update refused, revert! */
       FREE(e->dirty_val);
       e->dirty_val = NULL;
@@ -586,11 +591,19 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
       ret = -1; /* error -- update refused */
     } else {
       /* all confirmed, commit! */
+      FREENONNULL(e->val);
       e->val = e->dirty_val;
       e->dirty_val = NULL;
       ret = 0;
     }
   }
+  if (ret == -1)
+    GE_LOG(ectx,
+	   GE_USER | GE_BULK | GE_WARNING,
+	   _("Setting option `%s' in section `%s' to value `%s' was refused.\n"),
+	   option,
+	   section,
+	   value);
   MUTEX_UNLOCK(data->lock);
   return ret;
 }

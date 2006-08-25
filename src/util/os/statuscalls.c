@@ -255,22 +255,18 @@ static int resetStatusCalls(void * cls,
 			    struct GE_Context * ectx,
 			    const char * sect,
 			    const char * op) {
-  static const char * yesno[] = { "YES", "NO", NULL };
   struct LoadMonitor * monitor = cls;
-  const char * y;
   char * interfaces;
   int i;
   int numInterfaces;
   int basic;
 
-  if (-1 == GC_get_configuration_value_choice(cfg,
-					      "LOAD",
-					      "BASICLIMITING",
-					      yesno,
-					      "NO",
-					      &y))
+  basic = GC_get_configuration_value_yesno(cfg,
+					   "LOAD",
+					   "BASICLIMITING",
+					   NO);
+  if (basic == SYSERR) 
     return SYSERR;
-  basic = (y == "YES") ? YES : NO;
   if (-1 == GC_get_configuration_value_string(cfg,
 					      "LOAD",
 					      "INTERFACES",
@@ -334,7 +330,7 @@ static int resetStatusCalls(void * cls,
 				    50000,
 				    &monitor->maxNetUpBPS);
   MUTEX_UNLOCK(monitor->statusMutex);
-  return OK;
+  return 0;
 }
 
 /**
@@ -441,17 +437,12 @@ os_network_monitor_create(struct GE_Context * ectx,
 			 PROC_NET_DEV);
 #endif
   monitor->statusMutex = MUTEX_CREATE(NO);
-  if (OK != resetStatusCalls(monitor,
-			     cfg,
-			     ectx,
-			     NULL,
-			     NULL)) {
+  if (-1 == GC_attach_change_listener(cfg,
+				      &resetStatusCalls,
+				      monitor)) {
     os_network_monitor_destroy(monitor);
     return NULL;
   }
-  GC_attach_change_listener(cfg,
-			    &resetStatusCalls,
-			    monitor);
   return monitor;
 }
 

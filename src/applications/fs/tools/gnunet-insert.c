@@ -50,14 +50,13 @@ static struct GE_Context * ectx;
 
 static struct FSUI_Context * ctx;
 
-/**
- * The main upload
- */
 static struct FSUI_UploadList * ul;
 
 static cron_t start_time;
 
 /* ************ config options ******** */
+
+static char * cfgFilename;
 
 static struct ECRS_MetaData * meta;
 
@@ -224,7 +223,7 @@ static struct CommandLineOption gnunetinsertOptions[] = {
   { 'a', "anonymity", "LEVEL",
     gettext_noop("set the desired LEVEL of sender-anonymity"),
     1, &gnunet_getopt_configure_set_uint, &anonymity }, 
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   { 'C', "copy", NULL,
     gettext_noop("even if gnunetd is running on the local machine, force the"
 		 " creation of a copy instead of making a link to the GNUnet share directory"),

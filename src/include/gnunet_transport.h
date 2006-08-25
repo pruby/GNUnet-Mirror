@@ -98,7 +98,7 @@ typedef void (*P2P_PACKETProcessor)(P2P_PACKET * mp);
 typedef struct {
 
   /**
-   * The version of the CORE API. For now, always "0".
+   * The version of the CORE API. For now, always "1".
    */
   unsigned int version;
 

@@ -359,7 +359,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   }
   sq = capi->requestService("sqstore");
   if (sq == NULL) {
-    GE_BREAK(coreAPI->ectx, 0);
+    GE_BREAK(capi->ectx, 0);
     return NULL;
   }
   coreAPI = capi;

@@ -32,6 +32,8 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
 
+static char * cfgFilename;
+
 static int do_list;
 
 static int do_kill;
@@ -135,7 +137,7 @@ static void printDirectory(const char * filename) {
  * All gnunet-directory command line options
  */
 static struct CommandLineOption gnunetdirectoryOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Perform directory related operations.")), /* -h */
   { 'k', "kill", NULL, 
     gettext_noop("remove all entries from the directory database and stop tracking URIs"),

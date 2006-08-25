@@ -44,6 +44,8 @@ static cron_t start_time;
 
 static int errorCode;
 
+static char * cfgFilename;
+
 /**
  * Print progess message.
  */
@@ -94,7 +96,7 @@ static void * printstatus(void * cls,
  * All gnunet-unindex command line options
  */
 static struct CommandLineOption gnunetunindexOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Unindex files.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */

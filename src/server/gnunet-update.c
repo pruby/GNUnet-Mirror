@@ -29,6 +29,7 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
 #include "gnunet_util_cron.h"
+#include "gnunet_directories.h"
 #include "gnunet_core.h"
 #include "core.h"
 #include "startup.h"
@@ -52,6 +53,8 @@ static char ** processed;
 static unsigned int processedCount;
 
 static UpdateAPI uapi;
+
+static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
 /**
  * Allow the module named "pos" to update.
@@ -210,7 +213,7 @@ static void work() {
  * All gnunet-update command line options
  */
 static struct CommandLineOption gnunetupdateOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   { 'g', "get", "", 
     gettext_noop("ping peers from HOSTLISTURL that match transports"), 
     0, &gnunet_getopt_configure_set_option, "GNUNET-UPDATE:GET" },
@@ -247,6 +250,12 @@ int main(int argc,
 				 gnunetupdateOptions,
 				 (unsigned int) argc,
 				 argv)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
+  if (-1 == GC_parse_configuration(cfg,
+	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
     return -1;  

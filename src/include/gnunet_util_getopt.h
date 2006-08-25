@@ -168,8 +168,8 @@ typedef struct CommandLineOption {
 /**
  * Set the configuration option for the configuration file.
  */
-#define COMMAND_LINE_OPTION_CFG_FILE \
-  { 'c', "config", "FILENAME", gettext_noop("use configuration file FILENAME"), 1, &gnunet_getopt_configure_set_option, "GNUNET:CONFIGFILE" }
+#define COMMAND_LINE_OPTION_CFG_FILE(fn)				\
+  { 'c', "config", "FILENAME", gettext_noop("use configuration file FILENAME"), 1, &gnunet_getopt_configure_set_string, fn }
 
 /**
  * Set the configuration option for the configuration file.

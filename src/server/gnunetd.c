@@ -44,25 +44,17 @@ static struct GC_Configuration * cfg;
 
 static struct CronManager * cron;
 
+static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
+
+static int debug_flag;
+
 /**
  * Cron job that triggers re-reading of the configuration.
  */
 static void reread_config_helper(void * unused) {
-  char * filename;
-  
-  filename = NULL;
-  if (-1 == GC_get_configuration_value_filename(cfg,
-						"GNUNET",
-						"CONFIGFILE",
-						DEFAULT_DAEMON_CONFIG_FILE,
-						&filename)) {
-    GE_BREAK(NULL, 0); /* should never happen */
-    return; 
-  }
-  GE_ASSERT(NULL, filename != NULL);
+  GE_ASSERT(NULL, cfgFilename != NULL);
   GC_parse_configuration(cfg,
-			 filename);
-  FREE(filename);
+			 cfgFilename);
 }
 
 /**
@@ -99,25 +91,24 @@ int gnunet_main(struct GE_Context * ectx) {
   struct LoadMonitor * mon;
   struct SignalHandlerContext * shc_hup;
   int filedes[2]; /* pipe between client and parent */
-  int debug_flag;
 
-
-  debug_flag = GC_get_configuration_value_yesno(cfg,
-						"GNUNETD",
-						"DEBUG",
-						NO);
   if ( (NO == debug_flag) &&
        (OK != os_terminal_detach(ectx,
 				 filedes)) )
     return SYSERR;
   mon = os_network_monitor_create(ectx,
 				  cfg);
+  GE_ASSERT(ectx,
+	    mon != NULL);
   cron = cron_create(ectx);
+  GE_ASSERT(ectx,
+	    cron != NULL);
   shc_hup = signal_handler_install(SIGHUP, &reread_config);
-  initCore(ectx,
-	   cfg,
-	   cron,
-	   mon);
+  GE_ASSERT(ectx,
+	    OK == initCore(ectx,
+			   cfg,
+			   cron,
+			   mon));
   initConnection(ectx, cfg, mon, cron); 
   loadApplicationModules();
   writePIDFile(ectx, cfg);
@@ -147,14 +138,14 @@ int gnunet_main(struct GE_Context * ectx) {
  * All gnunetd command line options
  */
 static struct CommandLineOption gnunetdOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   { '@', "win-service", NULL, gettext_noop(""), 0, 
     &gnunet_getopt_configure_set_option, "GNUNETD:WINSERVICE" },
   { 'd', "debug", NULL, 
     gettext_noop("run in debug mode; gnunetd will "
 		 "not daemonize and error messages will "
 		 "be written to stderr instead of a logfile"), 
-    0, &gnunet_getopt_configure_set_option, "GNUNETD:DEBUG" },
+    0, &gnunet_getopt_configure_set_one, &debug_flag },
   COMMAND_LINE_OPTION_HELP(gettext_noop("Starts the gnunetd daemon.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
@@ -202,6 +193,12 @@ int main(int argc,
     GE_free_context(ectx);
     return -1;  
   }
+  if (-1 == GC_parse_configuration(cfg,
+	 			   cfgFilename)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;  
+  }
   if (OK != changeUser(ectx, cfg)) {
     GC_free(cfg);
     GE_free_context(ectx);
@@ -216,7 +213,7 @@ int main(int argc,
     GC_free(cfg);
     GE_free_context(ectx);
     return 1;
-  }
+  }  
   ret = gnunet_main(ectx);
   GC_free(cfg);
   os_done();

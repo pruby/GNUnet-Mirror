@@ -57,6 +57,8 @@ static unsigned int priority;
 
 static unsigned int expiration;
 
+static char * cfgFilename;
+
 static struct ECRS_MetaData * meta;
 
 static struct ECRS_URI * advertisement;
@@ -71,7 +73,7 @@ static struct CommandLineOption gnunetpseudonymOptions[] = {
     { 'A', "automate", NULL,
       gettext_noop("automate creation of a namespace by starting a collection"),
       0, &gnunet_getopt_configure_set_one, &start_collection },
-    COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+    COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
     { 'C', "create", "NICKNAME",
       gettext_noop("create a new pseudonym under the given NICKNAME"),
       1, &gnunet_getopt_configure_set_string, &create_name },

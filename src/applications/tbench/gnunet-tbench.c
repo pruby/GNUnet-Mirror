@@ -40,20 +40,28 @@
 #define OF_GNUPLOT_INPUT 1
 
 static unsigned long long messageSize = DEFAULT_MESSAGE_SIZE;
+
 static unsigned long long messageCnt  = 1;
+
 static char * messageReceiver;
+
 static unsigned long long messageIterations = 1;
+
 static unsigned long long messageTrainSize  = 1;
+
 static cron_t messageTimeOut          = DEFAULT_TIMEOUT;
+
 static cron_t messageSpacing          = DEFAULT_SPACING;
+
 static int outputFormat               = OF_HUMAN_READABLE;
 
+static char * cfgFilename;
 
 /**
  * All gnunet-tbench command line options
  */
 static struct CommandLineOption gnunettbenchOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Start GNUnet transport benchmarking tool.")), /* -h */
   { 'g', "gnuplot", NULL, 
     gettext_noop("output in gnuplot format"), 0,

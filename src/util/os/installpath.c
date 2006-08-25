@@ -221,16 +221,16 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
     dirname = "";
     break;
   case IPK_BINDIR:
-    dirname = "bin/";
+    dirname = "/bin/";
     break;
   case IPK_LIBDIR:
-    dirname = "lib/GNUnet/";
+    dirname = "/lib/GNUnet/";
     break;
   case IPK_DATADIR:
-    dirname = "share/GNUnet/";
+    dirname = "/share/GNUnet/";
     break;
   case IPK_LOCALEDIR:
-    dirname = "share/locale/";
+    dirname = "/share/locale/";
     break;
   default:
     FREE(execpath);

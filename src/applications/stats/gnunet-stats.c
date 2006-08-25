@@ -34,6 +34,8 @@
 
 static int lastIp2p = 42; /* not YES or NO */
 
+static char * cfgFilename;
+
 /**
  * Print statistics received.
  *
@@ -84,7 +86,7 @@ static int printProtocols(unsigned short type,
  * All gnunet-transport-check command line options
  */
 static struct CommandLineOption gnunetstatsOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Print statistics about GNUnet operations.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */

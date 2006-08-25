@@ -246,8 +246,8 @@ provide_module_state(CoreAPIForApplication * capi) {
   size_t n;
 
   if (-1 == GC_get_configuration_value_string(capi->cfg,
-					      "GNUNETD_HOME",
 					      "GNUNETD",
+					      "GNUNETD_HOME",
 					      VAR_DAEMON_DIRECTORY,
 					      &dir))
     return NULL;
@@ -257,9 +257,14 @@ provide_module_state(CoreAPIForApplication * capi) {
   FREE(dir);
   if (dbh == NULL) 
     return NULL;
-  n = strlen(dir) + strlen(DIR_EXT) + 5;
+  n = strlen(dbh) + strlen(DIR_EXT) + 5;
   handle = MALLOC(n);
-  SNPRINTF(handle, n, "%s/%s/", dir, DIR_EXT);
+  SNPRINTF(handle, 
+	   n, 
+	   "%s/%s/", 
+	   dbh, 
+	   DIR_EXT);
+  FREE(dbh);
   if (SYSERR == disk_directory_create(capi->ectx,
 				      handle)) {
     FREE(handle);

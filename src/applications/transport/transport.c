@@ -545,8 +545,12 @@ provide_module_transport(CoreAPIForApplication * capi) {
     return NULL;
   }
   coreAPI = capi;
-  ctapi.version = 0;
+  ctapi.version = 1;
   ctapi.myIdentity = coreAPI->myIdentity;
+  ctapi.ectx = coreAPI->ectx;
+  ctapi.cfg = coreAPI->cfg;
+  ctapi.load_monitor = coreAPI->load_monitor;
+  ctapi.cron = coreAPI->cron;
   ctapi.receive = NULL; /* initialized LATER! */
   ctapi.requestService = coreAPI->requestService;
   ctapi.releaseService = coreAPI->releaseService;
@@ -605,6 +609,10 @@ provide_module_transport(CoreAPIForApplication * capi) {
       continue;
     }
     tapi = tptr(&ctapi);
+    if (tapi == NULL) {
+      os_plugin_unload(lib);
+      continue;
+    }
     tapi->libHandle = lib;
     tapi->transName = STRDUP(pos);
     addTransport(tapi);

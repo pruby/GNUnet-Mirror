@@ -49,11 +49,13 @@ static struct GC_Configuration * cfg;
 
 static struct GNS_Context * gns;
 
+static char * cfgFilename;
+
 /**
  * All gnunet-setup command line options
  */
 static struct CommandLineOption gnunetsetupOptions[] = {
-  COMMAND_LINE_OPTION_CFG_FILE, /* -c */
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   { 'd', "daemon", NULL, 
     gettext_noop("generate configuration for gnunetd, the GNUnet daemon"),
     0, &gnunet_getopt_configure_set_one, &config_daemon },
@@ -122,7 +124,6 @@ int main(int argc,
 	 const char * argv[]) {
   const char * operation;
   int done;
-  char * filename;
   char * dirname;
   char * specname;
   int i; 
@@ -165,19 +166,11 @@ int main(int argc,
     operation = argv[i];
   }
 
-  filename = NULL;
-  if (-1 == GC_get_configuration_value_filename(cfg,
-						"GNUNET",
-						"CONFIGFILE",
-						config_daemon 
-						? DEFAULT_DAEMON_CONFIG_FILE 
-						: DEFAULT_CLIENT_CONFIG_FILE,
-						&filename)) {
-    GE_BREAK(ectx, 0); /* should never happen */
-    return -1;
-  }
-  GE_ASSERT(ectx, filename != NULL);
-  dirname = STRDUP(filename);
+  if (cfgFilename == NULL)
+    cfgFilename = config_daemon 
+      ? DEFAULT_DAEMON_CONFIG_FILE 
+      : DEFAULT_CLIENT_CONFIG_FILE;
+  dirname = STRDUP(cfgFilename);
   i = strlen(dirname) - 1;
   while (i > -1) {
     char ch = dirname[i];
@@ -188,7 +181,7 @@ int main(int argc,
     i--;
   }  
   disk_directory_create(ectx, dirname);
-  if ( ( (0 == ACCESS(filename, W_OK)) ||
+  if ( ( (0 == ACCESS(cfgFilename, W_OK)) ||
 	 ( (errno == ENOENT) && 
 	   (0 == ACCESS(dirname, W_OK))) ) ) 
     GE_DIE_STRERROR_FILE(ectx,
@@ -197,9 +190,9 @@ int main(int argc,
 			 dirname);  
   FREE(dirname);
   
-  if(0 == ACCESS(filename, F_OK)) 
+  if(0 == ACCESS(cfgFilename, F_OK)) 
     GC_parse_configuration(cfg,
-			   filename);
+			   cfgFilename);
   dirname = os_get_installation_path(IPK_DATADIR);
   specname = MALLOC(strlen(dirname) + strlen("config-daemon.scm") + 1);
   strcpy(specname, dirname);
@@ -215,7 +208,7 @@ int main(int argc,
   if (gns == NULL) {  
     GC_free(cfg);
     GE_free_context(ectx);
-    FREE(filename);
+    FREE(cfgFilename);
     return -1;
   }
 
@@ -228,7 +221,7 @@ int main(int argc,
 		     modules[i+2],
 		     argc, 
 		     argv,
-		     filename) != YES) {
+		     cfgFilename) != YES) {
 	GE_LOG(ectx,
 	       GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 	       _("`%s' is not available."), 
@@ -236,7 +229,7 @@ int main(int argc,
 	GNS_free_specification(gns);
 	GC_free(cfg);
 	GE_free_context(ectx);
-	FREE(filename);
+	FREE(cfgFilename);
 	return -1;
       } else {
 	done = YES;
@@ -244,7 +237,7 @@ int main(int argc,
     }
     i += 3;
   }
-  FREE(filename);
+  FREE(cfgFilename);
   if (done == NO) {
     fprintf(stderr,
 	    _("Unknown operation `%s'\n"), 
