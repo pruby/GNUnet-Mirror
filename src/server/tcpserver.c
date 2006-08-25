@@ -379,6 +379,7 @@ int stopTCPServer() {
 		      &shutdownHandler);
   GE_ASSERT(ectx, selector != NULL);
   select_destroy(selector);
+  selector = NULL;
   return OK;
 }
 
