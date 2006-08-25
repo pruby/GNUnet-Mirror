@@ -67,8 +67,8 @@ static size_t
 downloadHostlistHelper(void * ptr,
 		       size_t size,
 		       size_t nmemb, 
-		       void * stream) {
-  BootstrapContext * bctx = ptr;
+		       void * ctx) {
+  BootstrapContext * bctx = ctx;
   size_t osize;
   size_t total;
   P2P_hello_MESSAGE * helo;
@@ -82,7 +82,7 @@ downloadHostlistHelper(void * ptr,
        bctx->bsize,
        total);
   memcpy(&bctx->buf[osize],
-	 stream,
+	 ptr,
 	 size * nmemb);
   while ( (bctx->bsize > sizeof(P2P_hello_MESSAGE)) &&
 	  (bctx->termTest(bctx->targ)) ) {
