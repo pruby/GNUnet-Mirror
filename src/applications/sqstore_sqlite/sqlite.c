@@ -62,24 +62,34 @@ static struct GE_Context * ectx;
  * @brief Wrapper for SQLite
  */
 typedef struct {
+
   /**
    * Native SQLite database handle - may not be shared between threads! 
    */
   sqlite3 *dbh;
+
   /**
    * Thread ID owning this handle 
    */
-  pthread_t tid;
+  struct PTHREAD * tid;
+
   /** 
    * Precompiled SQL 
    */
-  sqlite3_stmt *exists, *countContent, *updPrio, *insertContent;
+  sqlite3_stmt * exists;
+
+  sqlite3_stmt * countContent;
+
+  sqlite3_stmt * updPrio;
+
+  sqlite3_stmt * insertContent;
 } sqliteHandle;
 
 /**
  * @brief Information about the database
  */
 typedef struct {
+
   struct MUTEX * DATABASE_Lock_;
   /** 
    * filename of this bucket
@@ -101,7 +111,8 @@ typedef struct {
   /**
    * List of open handles
    */
-  sqliteHandle *handles;  
+  sqliteHandle ** handles;  
+
 } sqliteDatabase;
 
 
@@ -131,103 +142,102 @@ static int sq_prepare(const char *zSql,       /* SQL statement, UTF-8 encoded */
  */
 static sqliteHandle * getDBHandle() {
   unsigned int idx;
-  pthread_t this_tid;
-  sqliteHandle *ret = NULL;
-  sqlite3_stmt *stmt;
+  sqliteHandle * ret;
+  sqlite3_stmt * stmt;
   
   /* Is the DB already open? */
-  this_tid = pthread_self();
   for (idx = 0; idx < db->handle_count; idx++)
-    if (pthread_equal(db->handles[idx].tid, this_tid)) {
-      ret = db->handles + idx;
-      break;
-    }
-  
-  if (idx == db->handle_count) {
-    /* we haven't opened the DB for this thread yet */
+    if (PTHREAD_TEST_SELF(db->handles[idx]->tid)) 
+      return db->handles[idx];
+
+  /* we haven't opened the DB for this thread yet */
+  ret = MALLOC(sizeof(sqliteHandle *));
+  /* Open database and precompile statements */
+  if (sqlite3_open(db->fn, &ret->dbh) != SQLITE_OK) {
+    PTHREAD_REL_SELF(ret->tid);
+    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
+	   _("Unable to initialize SQLite.\n"));
     GROW(db->handles,
 	 db->handle_count,
-	 db->handle_count + 1);
-    ret = db->handles + db->handle_count - 1;
-    ret->tid = this_tid;
-
-    /* Open database and precompile statements */
-    if (sqlite3_open(db->fn, &ret->dbh) != SQLITE_OK) {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-          _("Unable to initialize SQLite.\n"));
-      
-      FREE(db->fn);
-      FREE(db);
-      return NULL;
-    }
-
-    if (db->handle_count == 1) {
-      /* first open: create indices! */
-      sqlite3_exec(ret->dbh, "CREATE INDEX idx_hash ON gn070 (hash)",
-		   NULL, NULL, NULL);
-      sqlite3_exec(ret->dbh, "CREATE INDEX idx_prio ON gn070 (prio)",
-		   NULL, NULL, NULL);
-      sqlite3_exec(ret->dbh, "CREATE INDEX idx_expire ON gn070 (expire)",
-		   NULL, NULL, NULL);
-      sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
-		   NULL, NULL, NULL);
-      sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
-		   NULL, NULL, NULL);
-    }
-
-    sqlite3_exec(ret->dbh, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
-    sqlite3_exec(ret->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
-    sqlite3_exec(ret->dbh, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
-    sqlite3_exec(ret->dbh, "PRAGMA page_size=4096", NULL, NULL, NULL);
-
-    /* We have to do it here, because otherwise precompiling SQL might fail */
-    sq_prepare("Select 1 from sqlite_master where tbl_name = 'gn070'",
-         &stmt);
-    if (sqlite3_step(stmt) == SQLITE_DONE) {
-      if (sqlite3_exec(ret->dbh,
-           "CREATE TABLE gn070 ("
-           "  size INTEGER NOT NULL DEFAULT 0,"
-           "  type INTEGER NOT NULL DEFAULT 0,"
-           "  prio INTEGER NOT NULL DEFAULT 0,"
-           "  anonLevel INTEGER NOT NULL DEFAULT 0,"
-           "  expire INTEGER NOT NULL DEFAULT 0,"
-           "  hash TEXT NOT NULL DEFAULT '',"
-           "  value BLOB NOT NULL DEFAULT '')", NULL, NULL,
-           NULL) != SQLITE_OK) {
-        LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_create");
-        sqlite3_finalize(stmt);
-        return NULL;
-      }
-    }
-    sqlite3_finalize(stmt);
+	 db->handle_count - 1);
+    FREE(ret);
+    return NULL;
+  }
   
-    if ( (sq_prepare("SELECT COUNT(*) FROM gn070 WHERE hash=?",
-            &ret->countContent) != SQLITE_OK) ||
-         (sq_prepare("SELECT LENGTH(hash), LENGTH(value), size, type, prio, anonLevel, expire "
-                     "FROM gn070 WHERE hash=?",
-            &ret->exists) != SQLITE_OK) ||         
-         (sq_prepare("UPDATE gn070 SET prio = prio + ? WHERE "
-                     "hash = ? AND value = ? AND prio + ? < ?",
-            &ret->updPrio) != SQLITE_OK) ||
-         (sq_prepare("INSERT INTO gn070 (size, type, prio, "
-                     "anonLevel, expire, hash, value) VALUES "
-                     "(?, ?, ?, ?, ?, ?, ?)",
-            &ret->insertContent) != SQLITE_OK) ) {
+  if (db->handle_count == 1) {
+    /* first open: create indices! */
+    sqlite3_exec(ret->dbh, "CREATE INDEX idx_hash ON gn070 (hash)",
+		 NULL, NULL, NULL);
+    sqlite3_exec(ret->dbh, "CREATE INDEX idx_prio ON gn070 (prio)",
+		 NULL, NULL, NULL);
+    sqlite3_exec(ret->dbh, "CREATE INDEX idx_expire ON gn070 (expire)",
+		 NULL, NULL, NULL);
+    sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
+		 NULL, NULL, NULL);
+    sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
+		 NULL, NULL, NULL);
+  }
+  
+  sqlite3_exec(ret->dbh, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
+  sqlite3_exec(ret->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+  sqlite3_exec(ret->dbh, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
+  sqlite3_exec(ret->dbh, "PRAGMA page_size=4096", NULL, NULL, NULL);
+  
+  /* We have to do it here, because otherwise precompiling SQL might fail */
+  sq_prepare("Select 1 from sqlite_master where tbl_name = 'gn070'",
+	     &stmt);
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    if (sqlite3_exec(ret->dbh,
+		     "CREATE TABLE gn070 ("
+		     "  size INTEGER NOT NULL DEFAULT 0,"
+		     "  type INTEGER NOT NULL DEFAULT 0,"
+		     "  prio INTEGER NOT NULL DEFAULT 0,"
+		     "  anonLevel INTEGER NOT NULL DEFAULT 0,"
+		     "  expire INTEGER NOT NULL DEFAULT 0,"
+		     "  hash TEXT NOT NULL DEFAULT '',"
+		     "  value BLOB NOT NULL DEFAULT '')", NULL, NULL,
+		     NULL) != SQLITE_OK) {
       LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-           "precompiling");
-      if (ret->countContent != NULL)
-        sqlite3_finalize(ret->countContent);
-      if (ret->exists != NULL)
-        sqlite3_finalize(ret->exists);
-      if (ret->updPrio != NULL)
-        sqlite3_finalize(ret->updPrio);
-      if (ret->insertContent != NULL)
-        sqlite3_finalize(ret->insertContent);
-
+		 "sqlite_create");
+      sqlite3_finalize(stmt);
+      FREE(ret);
       return NULL;
     }
   }
-
+  sqlite3_finalize(stmt);
+  
+  if ( (sq_prepare("SELECT COUNT(*) FROM gn070 WHERE hash=?",
+		   &ret->countContent) != SQLITE_OK) ||
+       (sq_prepare("SELECT LENGTH(hash), LENGTH(value), size, type, prio, anonLevel, expire "
+		   "FROM gn070 WHERE hash=?",
+		   &ret->exists) != SQLITE_OK) ||         
+       (sq_prepare("UPDATE gn070 SET prio = prio + ? WHERE "
+		   "hash = ? AND value = ? AND prio + ? < ?",
+		   &ret->updPrio) != SQLITE_OK) ||
+       (sq_prepare("INSERT INTO gn070 (size, type, prio, "
+		   "anonLevel, expire, hash, value) VALUES "
+		   "(?, ?, ?, ?, ?, ?, ?)",
+		   &ret->insertContent) != SQLITE_OK) ) {
+    LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	       "precompiling");
+    if (ret->countContent != NULL)
+      sqlite3_finalize(ret->countContent);
+    if (ret->exists != NULL)
+      sqlite3_finalize(ret->exists);
+    if (ret->updPrio != NULL)
+      sqlite3_finalize(ret->updPrio);
+    if (ret->insertContent != NULL)
+      sqlite3_finalize(ret->insertContent);
+    FREE(ret);
+    return NULL;
+  }  
+  ret->tid = PTHREAD_GET_SELF();
+  
+  MUTEX_LOCK(db->DATABASE_Lock_);
+  APPEND(db->handles,
+	 db->handle_count,
+	 ret);  
+  MUTEX_UNLOCK(db->DATABASE_Lock_);
   return ret;
 }
 
@@ -613,7 +623,9 @@ static void sqlite_shutdown() {
   unsigned int idx;
   
 #if DEBUG_SQLITE
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "SQLite: closing database\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER, 
+	 "SQLite: closing database\n");
 #endif
   if (! db)
     return;
@@ -621,15 +633,17 @@ static void sqlite_shutdown() {
   syncStats();
 
   for (idx = 0; idx < db->handle_count; idx++) {
-    sqliteHandle *h = db->handles + idx;
-    
+    sqliteHandle * h = db->handles[idx];
+
+    PTHREAD_REL_SELF(h->tid);
     sqlite3_finalize(h->countContent);
     sqlite3_finalize(h->exists);
     sqlite3_finalize(h->updPrio);
     sqlite3_finalize(h->insertContent);
-  
     if (sqlite3_close(h->dbh) != SQLITE_OK)
-      LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_close");
+      LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+		 "sqlite_close");
+    FREE(h);
   }
   FREE(db->handles);
   db->handle_count = 0;
