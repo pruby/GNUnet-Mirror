@@ -2085,7 +2085,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
 
   ectx = capi->ectx;
   cfg = capi->cfg;
-  coreAPI->capi;
+  coreAPI = capi;
   if ( (-1 == GC_get_configuration_value_number(cfg,
 						"LOAD",
 						"HARDCPULIMIT",
