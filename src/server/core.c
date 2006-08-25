@@ -482,20 +482,13 @@ int unloadApplicationModules() {
 int initCore(struct GE_Context * ectx,
 	     struct GC_Configuration * cfg,
 	     struct CronManager * cron,
-	     struct LoadMonitor * monitor) {
-  identity = requestService("identity");
-  if (identity == NULL)
-    return SYSERR;
-  identity->getPeerIdentity(identity->getPublicPrivateKey(),
-			    &myIdentity);
-  initTCPServer(ectx,
-		cfg);
+	     struct LoadMonitor * monitor) {  
   applicationCore.ectx = ectx;
   applicationCore.cfg = cfg;
   applicationCore.load_monitor = monitor;
   applicationCore.cron = cron;
   applicationCore.version = 0;
-  applicationCore.myIdentity = &myIdentity; /* core.c */
+  applicationCore.myIdentity = NULL; /* for now */
   applicationCore.loadApplicationModule = &loadApplicationModule; /* core.c */
   applicationCore.unloadApplicationModule = &unloadApplicationModule; /* core.c */
   applicationCore.requestService = &requestService; /* core.c */
@@ -538,6 +531,15 @@ int initCore(struct GE_Context * ectx,
   applicationCore.getSlotCount = &getSlotCount; /* connection.c */
   applicationCore.isSlotUsed = &isSlotUsed; /* connection.c */
   applicationCore.getLastActivityOf = &getLastActivityOf; /* connection.c */
+
+  identity = requestService("identity");
+  if (identity == NULL)
+    return SYSERR;
+  identity->getPeerIdentity(identity->getPublicPrivateKey(),
+			    &myIdentity);
+  applicationCore.myIdentity = &myIdentity; /* core.c */
+  initTCPServer(ectx,
+		cfg);
   initHandler(ectx);
   return OK;
 }
