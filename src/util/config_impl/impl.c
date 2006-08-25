@@ -145,6 +145,9 @@ static void _free(struct GC_Configuration * cfg) {
       GE_ASSERT(cfg->data->ectx,
 		e->dirty_val == NULL);
     }
+    GROW(sec->entries,
+	 sec->size,
+	 0);
     FREE(sec->name);
   }
   GROW(cfg->data->sections,
