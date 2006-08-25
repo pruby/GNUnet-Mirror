@@ -150,7 +150,7 @@ static sqliteHandle * getDBHandle() {
       return db->handles[idx];
 
   /* we haven't opened the DB for this thread yet */
-  ret = MALLOC(sizeof(sqliteHandle *));
+  ret = MALLOC(sizeof(sqliteHandle));
   /* Open database and precompile statements */
   if (sqlite3_open(db->fn, &ret->dbh) != SQLITE_OK) {
     GE_LOG(ectx, 
