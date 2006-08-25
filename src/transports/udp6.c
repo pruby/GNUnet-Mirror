@@ -363,7 +363,7 @@ static int startTransportServer(void) {
 /**
  * Reload the configuration. Should never fail.
  */
-static void reloadConfiguration(void) {
+static int reloadConfiguration(void) {
   char * ch;
 
   MUTEX_LOCK(configLock);
@@ -381,6 +381,7 @@ static void reloadConfiguration(void) {
     FREE(ch);
   }
   MUTEX_UNLOCK(configLock);
+  return 0;
 }
 
 /**

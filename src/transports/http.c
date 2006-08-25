@@ -1390,7 +1390,7 @@ static int stopTransportServer() {
  * Reload the configuration. Should never fail (keep old
  * configuration on error, syslog errors!)
  */
-static void reloadConfiguration() {
+static int reloadConfiguration() {
   char * ch;
 
   MUTEX_LOCK(&httplock);
@@ -1404,6 +1404,7 @@ static void reloadConfiguration() {
     FREE(ch);
   }
   MUTEX_UNLOCK(&httplock);
+  return 0;
 }
 
 /**

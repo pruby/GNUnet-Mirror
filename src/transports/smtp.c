@@ -889,7 +889,8 @@ static int stopTransportServer() {
 /**
  * Reload the configuration. Should never fail.
  */
-static void reloadConfiguration(void) {
+static int reloadConfiguration() {
+  return 0;
 }
 
 /**

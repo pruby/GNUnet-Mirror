@@ -343,7 +343,7 @@ static int reloadConfiguration(void * ctx,
   char * ch;
 
   if (0 != strcmp(section, "TCP"))
-    return OK; /* fast path */
+    return 0; /* fast path */
 	
   MUTEX_LOCK(tcplock);
   FREENONNULL(filteredNetworks_);
@@ -361,7 +361,7 @@ static int reloadConfiguration(void * ctx,
   }
   MUTEX_UNLOCK(tcplock);
   /* TODO: error handling! */
-  return OK;
+  return 0;
 }
 
 /**

@@ -356,7 +356,7 @@ static int reloadConfiguration(void * ctx,
   char * ch;
 
   if (0 != strcmp(section, "TCP6"))
-    return OK; /* fast path */
+    return 0; /* fast path */
   MUTEX_LOCK(tcplock);
   FREENONNULL(filteredNetworks_);
   if (0 != GC_get_configuration_value_string(cfg,
@@ -372,7 +372,7 @@ static int reloadConfiguration(void * ctx,
     FREE(ch);
   }
   MUTEX_UNLOCK(tcplock);
-  return OK;
+  return 0;
 }
 
 /**
