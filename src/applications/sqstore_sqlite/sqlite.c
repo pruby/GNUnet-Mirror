@@ -1094,23 +1094,22 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   db->DATABASE_Lock_ = MUTEX_CREATE(NO);
 
   dbh = getDBHandle();
-  if (!dbh) {
+  if (dbh == NULL) {
     LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "db_handle");
+    MUTEX_DESTROY(db->DATABASE_Lock_);
     FREE(db->fn);
-    FREE(dbh);
+    FREE(db);
     return NULL;    
   }
 
   db->payload = getStat("PAYLOAD");
   if (db->payload == SYSERR) {
     LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "sqlite_payload");
+    MUTEX_DESTROY(db->DATABASE_Lock_);
     FREE(db->fn);
     FREE(db);
     return NULL;
-  }
-  
-  
-  
+  }  
 
   coreAPI = capi;
   stats = coreAPI->requestService("stats");
