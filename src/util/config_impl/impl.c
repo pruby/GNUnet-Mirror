@@ -628,7 +628,6 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
   char * tmp;
   
   data = cfg->data;
-  GE_ASSERT(data->ectx, def != NULL);
   tmp = NULL;
   ret = _get_configuration_value_string(cfg, section, option, def, &tmp);
   if (tmp != NULL) {

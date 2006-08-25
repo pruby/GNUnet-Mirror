@@ -156,7 +156,9 @@ static sqliteHandle * getDBHandle() {
   if (sqlite3_open(db->fn, &ret->dbh) != SQLITE_OK) {
     GE_LOG(ectx, 
 	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Unable to initialize SQLite.\n"));
+	   _("Unable to initialize SQLite: %s.\n"),
+	   sqlite3_errmsg(ret->dbh));
+    sqlite3_close(ret->dbh);
     FREE(ret);
     return NULL;
   }
@@ -1062,17 +1064,12 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   db->lastSync = 0;
 
   afsdir = NULL;
-  if (0 != GC_get_configuration_value_string(capi->cfg,
-					     "FS", 
-					     "DIR",
-					     NULL,
-					     &afsdir)) {
+  if (0 != GC_get_configuration_value_filename(capi->cfg,
+					       "FS", 
+					       "DIR",
+					       VAR_DAEMON_DIRECTORY "/data/fs/",
+					       &afsdir)) {
     FREE(db);
-    GE_LOG(ectx,
-	   GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("Configuration must specify directory in section `%s' entry `%s'\n"),
-	   "FS",
-	   "DIR");
     return NULL;
   }
 
@@ -1095,7 +1092,6 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 
   dbh = getDBHandle();
   if (dbh == NULL) {
-    LOG_SQLITE(GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "db_handle");
     MUTEX_DESTROY(db->DATABASE_Lock_);
     FREE(db->fn);
     FREE(db);

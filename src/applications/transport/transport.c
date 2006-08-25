@@ -446,6 +446,51 @@ static int getAdvertisedhellos(unsigned int maxLen,
   return used;
 }
 
+static void initHello(void * cls) {
+  TransportAPI * tapi = cls;
+  P2P_hello_MESSAGE * helo;
+
+  createSignedhello(tapi);
+  helo = transportCreatehello(tapi->protocolNumber);
+  if (NULL != helo) {
+    identity->addHost(helo);
+    FREE(helo);
+  }
+}
+
+
+static void doneHelper(TransportAPI * tapi,
+		       void * unused) {
+  /* In the (rare) case that we shutdown transports
+     before the cron-jobs had a chance to run, stop
+     the cron-jobs */
+  cron_del_job(coreAPI->cron,
+	       &initHello,
+	       0,
+	       tapi);
+}
+
+static void unloadTransport(int i) {
+  void (*ptr)();
+
+  doneHelper(tapis[i], NULL);
+  cron_del_job(coreAPI->cron,
+	       &createSignedhello,
+	       HELLO_RECREATE_FREQ,
+	       tapis[i]);
+  ptr = os_plugin_resolve_function(tapis[i]->libHandle,
+				   "donetransport_",
+				   NO);
+  if (ptr != NULL)
+    ptr();
+  FREE(tapis[i]->transName);
+  FREENONNULL(tapis[i]->helo);
+  tapis[i]->helo = NULL;
+  os_plugin_unload(tapis[i]->libHandle);
+  tapis[i] = NULL;
+}
+
+
 /**
  * Actually start the transport services and begin
  * receiving messages.
@@ -473,18 +518,6 @@ static void stopTransports() {
   ctapi.receive = NULL;
 }
 
-static void initHello(void * cls) {
-  TransportAPI * tapi = cls;
-  P2P_hello_MESSAGE * helo;
-
-  createSignedhello(tapi);
-  helo = transportCreatehello(tapi->protocolNumber);
-  if (NULL != helo) {
-    identity->addHost(helo);
-    FREE(helo);
-  }
-}
-
 static void initHelper(TransportAPI * tapi,
 		       void * unused) {
   /* Creation of HELLOs takes longer if a locally
@@ -500,38 +533,6 @@ static void initHelper(TransportAPI * tapi,
 	       0,
 	       tapi);
 }
-
-static void doneHelper(TransportAPI * tapi,
-		       void * unused) {
-  /* In the (rare) case that we shutdown transports
-     before the cron-jobs had a chance to run, stop
-     the cron-jobs */
-  cron_del_job(coreAPI->cron,
-	       &initHello,
-	       0,
-	       tapi);
-}
-
-static void unloadTransport(int i) {
-  void (*ptr)();
-
-  doneHelper(&tapis[i], NULL);
-  cron_del_job(coreAPI->cron,
-	       &createSignedhello,
-	       HELLO_RECREATE_FREQ,
-	       tapis[i]);
-  ptr = os_plugin_resolve_function(tapis[i]->libHandle,
-				   "donetransport_",
-				   NO);
-  if (ptr != NULL)
-    ptr();
-  FREE(tapis[i]->transName);
-  FREENONNULL(tapis[i]->helo);
-  tapis[i]->helo = NULL;
-  os_plugin_unload(tapis[i]->libHandle);
-  tapis[i] = NULL;
-}
-
 
 /**
  * Initialize the transport layer.

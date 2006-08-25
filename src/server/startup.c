@@ -60,11 +60,11 @@ int changeUser(struct GE_Context * ectx,
 static char * getPIDFile(struct GC_Configuration * cfg) {
   char * pif;
   
-  if (0 != GC_get_configuration_value_string(cfg,
-					     "GNUNETD",
-					     "PIDFILE",
-					     NULL,
-					     &pif))
+  if (0 != GC_get_configuration_value_filename(cfg,
+					       "GNUNETD",
+					       "PIDFILE",
+					       NULL,
+					       &pif))
     return NULL;
   return pif;
 }
