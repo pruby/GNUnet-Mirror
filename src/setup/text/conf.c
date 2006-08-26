@@ -27,6 +27,10 @@
  * @brief GNUnet Setup
  * @author Roman Zippel
  * @author Nils Durner
+ * @author Christian Grothoff
+ * 
+ * TODO:
+ * - support editing of string inputs...
  */
 
 #include "gnunet_setup_lib.h"
@@ -97,6 +101,7 @@ static void printChoice(int indent,
 	    _("\tEnter yes (%s), no (%s) or help (%s): "),
 	    val->Boolean.def ? "Y" : "y",
 	    val->Boolean.def ? "n" : "N",
+	    "d",
 	    "?");
     break;
   case GNS_String:
@@ -127,14 +132,16 @@ static void printChoice(int indent,
     break;
   case GNS_Double:
     iprintf(indent,
-	    _("\tEnter floating point (default is %f): "),
+	    _("\tEnter floating point (type '%s' for default value %f): "),
+	    "d",
 	    val->Double.def);
     break;
   case GNS_UInt64:
     iprintf(indent,
-	    _("\tEnter unsigned integer in interval [%llu,%llu] (default is %llu): "),
+	    _("\tEnter unsigned integer in interval [%llu,%llu] (type '%s' for default value %llu): "),
 	    val->UInt64.min,
 	    val->UInt64.max,
+	    "d",
 	    val->UInt64.def);
     break;
   default:
@@ -158,6 +165,9 @@ static int readValue(GNS_Type type,
     while (1) {
       c = rd();
       switch (c) {
+      case '\n':
+	printf("\n");
+	return YES; /* skip */
       case 'y':
       case 'Y':
 	val->Boolean.val = 1;
@@ -168,16 +178,7 @@ static int readValue(GNS_Type type,
 	val->Boolean.val = 0;
 	printf(_("No\n"));
 	return YES;
-      case '\n':
-	val->Boolean.val = val->Boolean.def;
-	if (val->Boolean.val)
-	  printf(_("Yes\n"));
-	else
-	  printf(_("No\n"));
-	return YES;
       case '?':
-      case 'h':
-      case 'H':
 	printf(_("Help\n"));
 	return NO;
       case '\x1b':
@@ -190,9 +191,39 @@ static int readValue(GNS_Type type,
     break;
   case GNS_String:
     if (val->String.legalRange[0] == NULL) {
-      fgets(buf, 1024, stdin);
+      i = 0;
+      while (1) {
+	buf[i] = rd();
+	if (buf[i] == '\x1b') {
+	  printf(_("Abort\n"));
+	  return SYSERR;
+	}
+#if 0
+	if (buf[i] == '\b') {
+	  if (i > 0) {
+	    printf("\b"); /* this does not work */
+	    i--;
+	  }
+	continue;
+	}
+#endif	
+	if ( (buf[i] == '?') && (i == 0) ) {
+	  printf(_("Help\n"));
+	  return NO;
+	}   
+	if (buf[i] != '\n') {
+	  if (i < 1023) {
+	    printf("%c", buf[i]);
+	    i++;
+	  }
+	  continue;
+	}
+	break;
+      }
+      if (i == 0)
+	return OK; /* keep */
       FREE(val->String.val);
-      val->String.val = STRDUP(buf);
+      val->String.val = STRDUP(buf[0] == ' ' ? &buf[1] : buf);
       return OK;
     } else {
       while (1) {
@@ -201,10 +232,15 @@ static int readValue(GNS_Type type,
 	  printf(_("Help\n"));
 	  return NO;
 	}
+	if (c == '\n') {
+	  printf("%s\n",
+		 val->String.val);
+	  return YES;
+	}
 	if (c == '\x1b') {
 	  printf(_("Abort\n"));
 	  return SYSERR;
-	}	
+	}
 	i = -1;
 	if ( (c >= '0') && (c <= '9') )
 	  i = c - '0';
@@ -228,46 +264,105 @@ static int readValue(GNS_Type type,
     }
     break;
   case GNS_Double:
+    i = 0;
     while (1) {
-      fgets(buf, 1024, stdin);
-      if ( (buf[0] == '?') ||
-	   (buf[0] == 'h') ||
-	   (buf[0] == 'H') )
-	return NO;
-      if (buf[0] == '\n') {
-	val->Double.val = val->Double.def;
-	return YES;
-      }
-      if (buf[0] == '\x1b')
+      buf[i] = rd();
+      if (buf[i] == '\x1b') {
+	printf(_("Abort\n"));
 	return SYSERR;
+      }
+#if 0
+      if (buf[i] == '\b') {
+	if (i > 0) {
+	  printf("\b"); /* this does not work */
+	  i--;
+	}
+	continue;
+      }
+#endif
+      if ( (buf[i] == 'd') && (i == 0) ) {
+	val->Double.val = val->Double.def;
+	printf("%f\n",
+	       val->Double.val);      
+	return YES; /* default */
+      }
+      if (buf[i] == '?') {
+	printf(_("Help\n"));
+	return NO;
+      }
+      if (buf[i] != '\n') {
+	if (i < 1023) {
+	  printf("%c", buf[i]);
+	  i++;
+	}
+	continue;
+      }
+      if (i == 0) {
+	printf("%f\n",
+	       val->Double.val);      
+	return YES; /* keep */
+      }
+      buf[i+1] = '\0';
       if (1 == sscanf(buf,
 		      "%lf",
-		      &val->Double.val))
+		      &val->Double.val)) {
+	printf("\n");
 	return OK;
+      }
+      i = 0;
       printf(_("\nInvalid entry, try again (use '?' for help): "));
     }
     break;
   case GNS_UInt64:
+    i = 0;
     while (1) {
-      fgets(buf, 1024, stdin);
-      if ( (buf[0] == '?') ||
-	   (buf[0] == 'h') ||
-	   (buf[0] == 'H') )
-	return NO;
-      if (buf[0] == '\n') {
-	val->UInt64.val = val->UInt64.def;
-	return YES;
-      }
-      if (buf[0] == '\x1b')
+      buf[i] = rd();
+      if (buf[i] == '\x1b') {
+	printf(_("Abort\n"));
 	return SYSERR;
+      }
+#if 0
+      if (buf[i] == '\b') {
+	if (i > 0) {
+	  printf("\b"); /* does not work */
+	  i--;
+	}
+	continue;
+      }
+#endif
+      if ( (buf[i] == 'd') && (i == 0) ) {
+	val->UInt64.val = val->UInt64.def;
+	printf("%llu\n",
+	       val->UInt64.val);      
+	return YES; /* default */
+      }
+      if (buf[i] == '?') {
+	printf(_("Help\n"));
+	return NO;
+      }
+      if (buf[i] != '\n') {
+	if (i < 1023) {
+	  printf("%c", buf[i]);
+	  i++;
+	}
+	continue;
+      }
+      if (i == 0) {
+	printf("%llu\n",
+	       val->UInt64.val); 
+	return YES; /* keep */
+      }
+      buf[i+1] = '\0';
       if ( (1 == sscanf(buf,
 			"%llu",
 			&l)) &&
 	   (l >= val->UInt64.min) &&
 	   (l <= val->UInt64.max) ) {
 	val->UInt64.val = l;
+	printf("\n");
 	return OK;
       }
+      i = 0;
       printf(_("\nInvalid entry, try again (use '?' for help): "));
     }
     break;
@@ -361,8 +456,6 @@ static int conf(int indent,
 		_("Aborted.\n"));
 	return SYSERR; /* escape */
       case '?':
-      case 'h':
-      case 'H':
 	iprintf(indent,
 		"%c\n", 
 		choice);
@@ -428,6 +521,8 @@ int main_setup_text(int argc,
   newT.c_lflag &= ~ICANON;
   ioctl(0, TCSETS, &newT);
 
+  printf(_("You can always press ENTER to keep the current value.\n"));
+  printf(_("Use the escape key to abort.\n"));
   root = GNS_get_tree(gns);
   c = 'r';
   while (c == 'r') {
@@ -460,7 +555,7 @@ int main_setup_text(int argc,
       ioctl(0, TCSETS, &oldT);
       return 1;
     } else {
-      printf(_("Configuration file `%s' created.\n"),
+      printf(_("Configuration file `%s' written.\n"),
 	     filename);
     }
   }

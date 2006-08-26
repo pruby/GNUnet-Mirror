@@ -264,7 +264,7 @@ SCM build_tree_node(SCM section,
   if (scm_is_string(value)) {
     tree->value.String.val = scm_to_locale_string(value);
     tree->value.String.def = scm_to_locale_string(value);
-    len = scm_to_int32(range);
+    len = scm_to_int(scm_length(range));
     tree->value.String.legalRange = MALLOC(sizeof(char*) * (len + 1));    
     for (i=0;i<len;i++) 
       tree->value.String.legalRange[i] 
@@ -315,7 +315,8 @@ tree_parse(struct GE_Context * ectx,
 
   ret = scm_with_guile(parse_internal,
 		       (void*) specification);
-  ret->type = GNS_Root;
+  if (ret != NULL)
+    ret->type = GNS_Root;
   return ret;
 }
 
