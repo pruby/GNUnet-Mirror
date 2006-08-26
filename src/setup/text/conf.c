@@ -31,7 +31,6 @@
  * 
  * TODO:
  * - support editing of string inputs...
- * - do not interpret escape sequences as escape...
  */
 
 #include "gnunet_setup_lib.h"
@@ -46,7 +45,7 @@ static char rd() {
   ret = fread(&c, 1, 1, stdin);
   if (ret == 1)
     return c;
-  return '\x1b'; /* escape */
+  return 'q'; /* quit */
 }
 
 /**
@@ -108,7 +107,10 @@ static void printChoice(int indent,
   case GNS_String:
     if (val->String.legalRange[0] == NULL) {
       iprintf(indent,
-	      _("\tEnter string (default is `%s'): "),
+	      _("\tUse single space prefix to avoid conflicts with hotkeys!\n"));
+      iprintf(indent,
+	      _("\tEnter string (type '%s' for default value `%s'): "),
+	      "d",
 	      val->String.def);
     } else {
       i = 0;
@@ -182,7 +184,7 @@ static int readValue(GNS_Type type,
       case '?':
 	printf(_("Help\n"));
 	return NO;
-      case '\x1b':
+      case 'q':
 	printf(_("Abort\n"));
 	return SYSERR;
       default:
@@ -195,7 +197,7 @@ static int readValue(GNS_Type type,
       i = 0;
       while (1) {
 	buf[i] = rd();
-	if (buf[i] == '\x1b') {
+	if (buf[i] == 'q') {
 	  printf(_("Abort\n"));
 	  return SYSERR;
 	}
@@ -208,10 +210,22 @@ static int readValue(GNS_Type type,
 	continue;
 	}
 #endif	
+	if ( (buf[i] == 'd') && (i == 0) ) {
+	  printf("%s\n",
+		 val->String.def);
+	  FREE(val->String.val);
+	  val->String.val = STRDUP(val->String.def);
+	  return YES;
+	}
 	if ( (buf[i] == '?') && (i == 0) ) {
 	  printf(_("Help\n"));
 	  return NO;
-	}   
+	}
+	if ( (buf[i] == '\n') && (i == 0) ) {
+	  printf("%s\n",
+		 val->String.val);
+	  return YES; /* keep */
+	}
 	if (buf[i] != '\n') {
 	  if (i < 1023) {
 	    printf("%c", buf[i]);
@@ -221,10 +235,9 @@ static int readValue(GNS_Type type,
 	}
 	break;
       }
-      if (i == 0)
-	return OK; /* keep */
       FREE(val->String.val);
       val->String.val = STRDUP(buf[0] == ' ' ? &buf[1] : buf);
+      printf("\n");
       return OK;
     } else {
       while (1) {
@@ -238,7 +251,7 @@ static int readValue(GNS_Type type,
 		 val->String.val);
 	  return YES;
 	}
-	if (c == '\x1b') {
+	if (c == 'q') {
 	  printf(_("Abort\n"));
 	  return SYSERR;
 	}
@@ -268,7 +281,7 @@ static int readValue(GNS_Type type,
     i = 0;
     while (1) {
       buf[i] = rd();
-      if (buf[i] == '\x1b') {
+      if (buf[i] == 'q') {
 	printf(_("Abort\n"));
 	return SYSERR;
       }
@@ -318,7 +331,7 @@ static int readValue(GNS_Type type,
     i = 0;
     while (1) {
       buf[i] = rd();
-      if (buf[i] == '\x1b') {
+      if (buf[i] == 'q') {
 	printf(_("Abort\n"));
 	return SYSERR;
       }
@@ -452,7 +465,7 @@ static int conf(int indent,
 		"%c\n", 
 		choice);
 	return OK;
-      case '\x1b':
+      case 'q':
 	iprintf(indent,
 		_("Aborted.\n"));
 	return SYSERR; /* escape */
@@ -523,7 +536,8 @@ int main_setup_text(int argc,
   ioctl(0, TCSETS, &newT);
 
   printf(_("You can always press ENTER to keep the current value.\n"));
-  printf(_("Use the escape key to abort.\n"));
+  printf(_("Use the '%s' key to abort.\n"),
+	 "q");
   root = GNS_get_tree(gns);
   c = 'r';
   while (c == 'r') {
