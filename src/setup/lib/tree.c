@@ -280,22 +280,56 @@ SCM build_tree_node(SCM section,
  * Parse the specification file and create the tree.
  * Set all values to defaults.
  */
-struct GNS_Tree *
-tree_parse(struct GE_Context * ectx,
-	   const char * specification) {  
+static void *
+parse_internal(void * spec) {
+  const char * specification = spec;
   SCM proc;
   SCM smob;
-  struct GNS_Tree * tree;
 
   scm_c_primitive_load(specification);
   proc = scm_variable_ref(scm_c_lookup("setup"));
   smob = scm_apply_0(proc, SCM_EOL);
-  tree = (struct GNS_Tree*) SCM_SMOB_DATA(smob);
-  return tree;
+  return (void*) SCM_SMOB_DATA(smob);
+}
+
+
+struct GNS_Tree *
+tree_parse(struct GE_Context * ectx,
+	   const char * specification) {  
+  return scm_with_guile(parse_internal,
+			(void*) specification);
+}
+
+struct NCI {
+  TC * tc;
+  struct GNS_Tree * root;
+  struct GNS_Tree * change;
+};
+
+static void *
+notify_change_internal(void * cls) {
+  struct NCI * n = cls;
+  SCM smob_ctx;
+  SCM smob_root;
+  SCM smob_chng;
+  SCM proc;
+
+  /* I hope that loading of "specification" from
+     tree_parse is preserved by guile.
+     Otherwise we have to re-do this here */
+  proc = scm_variable_ref(scm_c_lookup("change"));
+  smob_ctx = box_tc(n->tc);
+  smob_root = box_tree(n->root);
+  smob_chng = box_tree(n->change);
+  scm_apply_3(proc, smob_ctx, smob_root, smob_chng, SCM_EOL);
+  return NULL;
 }
 
 /**
- * A value in the tree has been changed. 
+ * A value in the tree has been changed.  Must only
+ * be called after "tree_parse" has already been
+ * executed.
+ *
  * Update visibility (and notify about changes).
  */
 void tree_notify_change(VisibilityChangeListener vcl,
@@ -304,28 +338,24 @@ void tree_notify_change(VisibilityChangeListener vcl,
 			struct GNS_Tree * root,
 			struct GNS_Tree * change) {
   TC tc;
-  SCM smob_ctx;
-  SCM smob_root;
-  SCM smob_chng;
-  SCM proc;
+  struct NCI n;
 
-  proc = scm_variable_ref(scm_c_lookup("change"));
-  smob_ctx = box_tc(&tc);
-  smob_root = box_tree(root);
-  smob_chng = box_tree(change);
-  scm_apply_3(proc, smob_ctx, smob_root, smob_chng, SCM_EOL);
+  tc.vcl = vcl;
+  tc.ctx = ctx;
+  tc.root = root;
+  n.tc = &tc;
+  n.root = root;
+  n.change = change;
+  scm_with_guile(&notify_change_internal, &n);
 }
 
-
+/**
+ * Hopefully this initialization can be done
+ * once and for all outside of a guile context.
+ * If not, we'll have to move it into the
+ * _internal methods.
+ */
 void __attribute__ ((constructor)) gns_scheme_init() {
-  /* NOTE: we might want to do guile initialization
-     each time we enter guile explicitly (per-thread)
-     using a different function; however, I cannot
-     find docs for that API and I am also not sure how
-     this would interact with the scm_c_define_gsubr
-     calls -- to be addressed later (portability
-     concern! */
-  scm_init_guile();
   tc_tag = scm_make_smob_type ("tc", sizeof (TC));
   scm_set_smob_mark (tc_tag, NULL);
   scm_set_smob_free (tc_tag, free_box);
