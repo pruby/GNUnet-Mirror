@@ -32,6 +32,17 @@
 #include "gnunet_setup_lib.h"
 #include "conf.h"
 #include "platform.h"
+#include <term.h>
+
+static char rd() {
+  size_t ret;
+  char c;
+
+  ret = fread(&c, 1, 1, stdin);
+  if (ret == 1)
+    return c;
+  return '\x1b'; /* escape */
+}
 
 /**
  * printf with indentation
@@ -53,9 +64,9 @@ static char * getValueAsString(GNS_Type type,
 			       GNS_Value * val) {
   char buf[92];
 
-  switch (type & (~ GNS_KindMask)) {
+  switch (type & GNS_TypeMask) {
   case GNS_Boolean:
-    if (val->Boolean.def)
+    if (val->Boolean.val)
       return STRDUP(_("yes"));
     return STRDUP(_("no"));
   case GNS_String:
@@ -80,10 +91,10 @@ static void printChoice(int indent,
   int i;
   char defLet;
 
-  switch (type & (~ GNS_KindMask)) {
+  switch (type & GNS_TypeMask) {
   case GNS_Boolean:
     iprintf(indent, 
-	    _("\tEnter yes (%s) / no (%s) or help (%s): "),
+	    _("\tEnter yes (%s), no (%s) or help (%s): "),
 	    val->Boolean.def ? "Y" : "y",
 	    val->Boolean.def ? "n" : "N",
 	    "?");
@@ -127,7 +138,7 @@ static void printChoice(int indent,
 	    val->UInt64.def);
     break;
   default:
-    GE_ASSERT(NULL, 0);
+    return;
   }
 }
 
@@ -142,10 +153,10 @@ static int readValue(GNS_Type type,
   int j;
   unsigned long long l;
   
-  switch (type & (~ GNS_KindMask)) {
+  switch (type & GNS_TypeMask) {
   case GNS_Boolean:
     while (1) {
-      c = fgetc(stdin);
+      c = rd();
       switch (c) {
       case 'y':
       case 'Y':
@@ -185,7 +196,7 @@ static int readValue(GNS_Type type,
       return OK;
     } else {
       while (1) {
-	c = fgetc(stdin);
+	c = rd();
 	if (c == '?') {
 	  printf(_("Help\n"));
 	  return NO;
@@ -261,7 +272,10 @@ static int readValue(GNS_Type type,
     }
     break;
   default:
-    GE_ASSERT(NULL, 0);
+    fprintf(stderr,
+	    _("Unknown kind %x (internal error).  Skipping option.\n"),
+	    type & GNS_TypeMask);
+    return OK;
   }
   return OK;
 }
@@ -289,7 +303,7 @@ static int conf(int indent,
 	      ovalue);
       iprintf(indent,
 	      "%s\n",
-	      tree->description);
+	      gettext(tree->description));
       printChoice(indent, 
 		  tree->type,
 		  &tree->value);
@@ -304,7 +318,7 @@ static int conf(int indent,
       printf("\n\n");
       iprintf(0,
 	      "%s\n",
-	      tree->help);
+	      gettext(tree->help));
       printf("\n");
     }
     value = getValueAsString(tree->type,
@@ -334,12 +348,13 @@ static int conf(int indent,
       iprintf(indent,
 	      _(/* do not translate y/n/? */
 		"\tDescend? (y/n/?) "));
-      choice = fgetc(stdin);
+      choice = rd();
       switch(choice) {
       case 'N':
       case 'n':
 	iprintf(indent,
-		"%c\n", choice);
+		"%c\n", 
+		choice);
 	return OK;
       case '\x1b':
 	iprintf(indent,
@@ -349,19 +364,23 @@ static int conf(int indent,
       case 'h':
       case 'H':
 	iprintf(indent,
-		"%c\n", choice);
+		"%c\n", 
+		choice);
 	iprintf(indent,
+		"%s\n",
 		gettext(tree->help));
 	choice = '\0';
 	break;
       case 'Y':
       case 'y':
 	iprintf(indent,
-		"%c\n", choice);
+		"%c\n", 
+		choice);
 	break;
       default:
 	iprintf(indent,
-		"%c\n", choice);
+		"%c\n", 
+		choice);
 	iprintf(indent,
 		_("Invalid entry.\n"));
 	choice = '\0';
@@ -379,32 +398,72 @@ static int conf(int indent,
 	return SYSERR;
       i++;
     }
+    return OK;
   default:
-    GE_ASSERT(NULL, 0);
+    fprintf(stderr,
+	    _("Unknown kind %x (internal error).  Aborting.\n"),
+	    tree->type & GNS_KindMask);
     return SYSERR;
   }
+  return SYSERR;
 }
 
-int conf_main(int argc, 
-	      const char **argv, 
-	      struct PluginHandle * self,
-	      struct GE_Context * ectx,
-	      struct GC_Configuration * cfg,
-	      struct GNS_Context * gns,
-	      const char * filename,
-	      int is_daemon) {
+int main_setup_text(int argc, 
+		    const char **argv, 
+		    struct PluginHandle * self,
+		    struct GE_Context * ectx,
+		    struct GC_Configuration * cfg,
+		    struct GNS_Context * gns,
+		    const char * filename,
+		    int is_daemon) {
   struct GNS_Tree * root;
+  struct termios oldT;
+  struct termios newT;
+  char c;
+  int ret;
+
+  ioctl(0, TCGETS, &oldT);
+  newT = oldT;
+  newT.c_lflag &= ~ECHO;
+  newT.c_lflag &= ~ICANON;
+  ioctl(0, TCSETS, &newT);
 
   root = GNS_get_tree(gns);
-  if (OK != conf(-1,
-		 cfg,
-		 ectx,		 
-		 root)) 
-    return 1;
-  if (-1 == GC_write_configuration(cfg,
-				   filename)) 
-    return 1;
-  printf(_("Configuration file `%s' created.\n"),
-	 filename);
+  c = 'r';
+  while (c == 'r') {
+    if (OK != conf(-1,
+		   cfg,
+		   ectx,		 
+		   root)) {
+      ioctl(0, TCSETS, &oldT);
+      return 1;
+    }
+    if ( (0 == GC_test_dirty(cfg)) &&
+	 (0 == ACCESS(filename, R_OK)) ) {
+      printf(_("Configuration unchanged, no need to save.\n"));    
+      ioctl(0, TCSETS, &oldT);
+      return 0;
+    }
+    printf("\n");
+    printf(_("Save configuration?  Answer 'y' for yes, 'n' for no, 'r' to repeat configuration. "));
+    do {
+      c = rd();
+    } while ( (c != 'y') && (c != 'n') && (c != 'r') );
+    printf("%c\n", c);
+  }  
+  if (c == 'y') {
+    ret = GC_write_configuration(cfg,
+				 filename);
+    if (ret == 1) {
+      printf(_("Configuration was unchanged, no need to save.\n"));      
+    } else if (ret == -1) { /* error */
+      ioctl(0, TCSETS, &oldT);
+      return 1;
+    } else {
+      printf(_("Configuration file `%s' created.\n"),
+	     filename);
+    }
+  }
+  ioctl(0, TCSETS, &oldT);
   return 0;
 }

@@ -294,11 +294,14 @@ _write_configuration(struct GC_Configuration * cfg,
   int error;
   int ret;
   
-  if (! GC_test_dirty(cfg))
-    return 0; /* success: nothing to do! */
-  if (NULL == (fp = FOPEN(filename, "w")))
-    return -1;
   data = cfg->data;
+  if (NULL == (fp = FOPEN(filename, "w"))) {
+    GE_LOG_STRERROR_FILE(data->ectx,
+			 GE_ERROR | GE_USER | GE_IMMEDIATE,
+			 "fopen",
+			 filename);
+    return -1;
+  }
   error = 0;
   ret = 0;
   MUTEX_LOCK(data->lock);
@@ -598,6 +601,10 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
       ret = -1; /* error -- update refused */
     } else {
       /* all confirmed, commit! */
+      if ( (e->val == NULL) ||
+	   (0 != strcmp(e->val,
+			e->dirty_val)) )
+	data->dirty = 1;
       FREENONNULL(e->val);
       e->val = e->dirty_val;
       e->dirty_val = NULL;

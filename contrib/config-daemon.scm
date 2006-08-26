@@ -17,10 +17,10 @@
 ;;
 ;;
 ;; GNUnet setup requires two functions from this script.
-;; First, a function "setup" which constructs the
+;; First, a function "gnunet-config-setup" which constructs the
 ;; configuration tree.
 ;;
-;; Second, a function "change" which is notified whenever
+;; Second, a function "gnunet-config-change" which is notified whenever
 ;; configuration options are changed; the script can then
 ;; change the visibility of other options.
 ;;
@@ -83,8 +83,8 @@ how to report problems." )
 (define (meta-adv builder) 
  (builder
    (_ "Meta")
-   (_ "EXPERIMENTAL")
-   (_ "Prompt for development and/or incomplete code")
+   (_ "ADVANCED")
+   (_ "Show options for advanced users")
    (_
 "These are options that maybe difficult to understand for the beginner.
 These options typically refer to features that allow tweaking of the
@@ -130,7 +130,7 @@ installation.  If in a hurry, say NO." )
 ;; first main method: build tree using build-tree-node
 ;; The lambda expression is used to throw away the last argument,
 ;; which we use internally and which is not used by build-tree-node!
-(define (setup) 
+(define (gnunet-config-setup) 
  (main 
   (lambda (a b c d e f g h i) (build-tree-node a b c d e f g h) ) ) )
 
@@ -139,7 +139,9 @@ installation.  If in a hurry, say NO." )
 ;; the tree builder but this time scan use the "i" tags to determine
 ;; how the visibility needs to change
 
-(define (change ctx root changed)
- (0))
+(define (gnunet-config-change ctx root changed)
+ 0)
+
+;; Example: (change-visible ctx "FOO" "BAR" #t)
 
 ;; (setup)

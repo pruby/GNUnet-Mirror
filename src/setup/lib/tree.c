@@ -130,7 +130,7 @@ SCM get_option(SCM smob,
 		  opt);
   if (t == NULL)
     return SCM_EOL;
-  switch (t->type & (-1 ^ GNS_KindMask) ) {
+  switch (t->type & GNS_TypeMask) {
   case 0:
     return SCM_EOL; /* no value */
   case GNS_Boolean:
@@ -168,13 +168,24 @@ SCM change_visible(SCM smob,
   tc    = (TC *) SCM_SMOB_DATA(smob);
   opt = scm_to_locale_string(option);
   sec = scm_to_locale_string(section);
-  val = SCM_INUM(yesno);
+  val = scm_is_true(scm_boolean_p(yesno)) ? 1 : 0;
   t = tree_lookup(tc->root,
 		  sec,
 		  opt);
-  t->visible = val;
-  tc->vcl(tc->ctx,
-	  t);  
+  if (t != NULL) {
+    t->visible = val;
+    tc->vcl(tc->ctx,
+	    t);  
+    fprintf(stderr,
+	    "Changing visibility of entry `%s' in section `%s'\n",
+	    opt,
+	    sec);
+  } else {
+    fprintf(stderr,
+	    _("Internal error: entry `%s' in section `%s' not found for visibility change!\n"),
+	    opt,
+	    sec);
+  }
   return SCM_EOL;
 }
 
@@ -214,18 +225,18 @@ SCM build_tree_node(SCM section,
   }
   SCM_ASSERT(scm_boolean_p(visible), visible, SCM_ARG6, "build_tree_node");
   if (scm_is_string(value)) {
-    SCM_ASSERT(scm_list_p(range), range, 8, "build_tree_node");
+    SCM_ASSERT(scm_list_p(range), range, SCM_ARGn, "build_tree_node");
     len = scm_to_int(scm_length(range));
     for (i=0;i<len;i++) 
       SCM_ASSERT(scm_string_p(scm_list_ref(range, scm_from_signed_integer(i))),
-		 range, 8, "build_tree_node");
+		 range, SCM_ARGn, "build_tree_node");
   } else if (scm_is_integer(value)) {
     SCM_ASSERT(scm_pair_p(range),
-	       range, 8, "build_tree_node");
+	       range, SCM_ARGn, "build_tree_node");
     SCM_ASSERT(scm_is_integer(SCM_CAR(range)),
-	       range, 8, "build_tree_node");
+	       range, SCM_ARGn, "build_tree_node");
     SCM_ASSERT(scm_is_integer(SCM_CDR(range)),
-	       range, 8, "build_tree_node");
+	       range, SCM_ARGn, "build_tree_node");
   } else if (scm_is_true(scm_real_p(value))) {
     /* no checks */
   } else if (scm_is_true(scm_boolean_p(value))) {
@@ -247,7 +258,7 @@ SCM build_tree_node(SCM section,
     tree->children[i] = (struct GNS_Tree*) SCM_SMOB_DATA(child);
   }
   tree->children[clen] = NULL;
-  tree->type = clen == 0 ? GNS_Leaf : GNS_Node;
+  tree->type = (clen == 0) ? GNS_Leaf : GNS_Node;
   tree->visible = scm_is_true(visible);
 
   if (scm_is_string(value)) {
@@ -260,17 +271,21 @@ SCM build_tree_node(SCM section,
 	= scm_to_locale_string(scm_list_ref(range, 
 					    scm_from_signed_integer(i)));
     tree->value.String.legalRange[len] = NULL;
+    tree->type |= GNS_String;
   } else if (scm_is_integer(value)) {
     tree->value.UInt64.val = scm_to_uint64(value);
     tree->value.UInt64.def = scm_to_uint64(value);
     tree->value.UInt64.min = scm_to_uint64(SCM_CAR(range));
     tree->value.UInt64.max = scm_to_uint64(SCM_CDR(range));
+    tree->type |= GNS_UInt64;
   } else if (scm_is_true(scm_real_p(value))) {
     tree->value.Double.val = scm_to_double(value);
     tree->value.Double.def = scm_to_double(value);
+    tree->type |= GNS_Double;
   } else if (scm_is_true(scm_boolean_p(value))) {
     tree->value.Boolean.val = scm_is_true(value);
     tree->value.Boolean.def = scm_is_true(value);
+    tree->type |= GNS_Boolean;
   }
   /* box and return */
   return box_tree(tree);
@@ -287,7 +302,7 @@ parse_internal(void * spec) {
   SCM smob;
 
   scm_c_primitive_load(specification);
-  proc = scm_variable_ref(scm_c_lookup("setup"));
+  proc = scm_variable_ref(scm_c_lookup("gnunet-config-setup"));
   smob = scm_apply_0(proc, SCM_EOL);
   return (void*) SCM_SMOB_DATA(smob);
 }
@@ -296,8 +311,12 @@ parse_internal(void * spec) {
 struct GNS_Tree *
 tree_parse(struct GE_Context * ectx,
 	   const char * specification) {  
-  return scm_with_guile(parse_internal,
-			(void*) specification);
+  struct GNS_Tree * ret;
+
+  ret = scm_with_guile(parse_internal,
+		       (void*) specification);
+  ret->type = GNS_Root;
+  return ret;
 }
 
 struct NCI {
@@ -317,7 +336,8 @@ notify_change_internal(void * cls) {
   /* I hope that loading of "specification" from
      tree_parse is preserved by guile.
      Otherwise we have to re-do this here */
-  proc = scm_variable_ref(scm_c_lookup("change"));
+  scm_c_primitive_load("/home/grothoff/share/GNUnet/config-daemon.scm");
+  proc = scm_variable_ref(scm_c_lookup("gnunet-config-change"));
   smob_ctx = box_tc(n->tc);
   smob_root = box_tree(n->root);
   smob_chng = box_tree(n->change);
@@ -339,7 +359,7 @@ void tree_notify_change(VisibilityChangeListener vcl,
 			struct GNS_Tree * change) {
   TC tc;
   struct NCI n;
-
+  
   tc.vcl = vcl;
   tc.ctx = ctx;
   tc.root = root;
@@ -349,14 +369,8 @@ void tree_notify_change(VisibilityChangeListener vcl,
   scm_with_guile(&notify_change_internal, &n);
 }
 
-/**
- * Hopefully this initialization can be done
- * once and for all outside of a guile context.
- * If not, we'll have to move it into the
- * _internal methods.
- */
-void __attribute__ ((constructor)) gns_scheme_init() {
-  tc_tag = scm_make_smob_type ("tc", sizeof (TC));
+static void * init_helper(void * unused) {
+  tc_tag = scm_make_smob_type ("tc", 0);
   scm_set_smob_mark (tc_tag, NULL);
   scm_set_smob_free (tc_tag, free_box);
   scm_set_smob_print (tc_tag, print_tc);
@@ -374,6 +388,17 @@ void __attribute__ ((constructor)) gns_scheme_init() {
   scm_c_define_gsubr("get-option",
 		     3, 0, 0,
 		     &get_option);
+  return NULL;
+}
+
+/**
+ * Hopefully this initialization can be done
+ * once and for all outside of a guile context.
+ * If not, we'll have to move it into the
+ * _internal methods.
+ */
+void __attribute__ ((constructor)) gns_scheme_init() {
+  scm_with_guile(&init_helper, NULL);
 }
 
 

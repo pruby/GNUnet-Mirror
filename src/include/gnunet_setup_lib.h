@@ -57,6 +57,7 @@ typedef enum {
   GNS_String   = 8,
   GNS_Double   = 16,
   GNS_UInt64   = 32,
+  GNS_TypeMask = 60,
 } GNS_Type;
 
 /**

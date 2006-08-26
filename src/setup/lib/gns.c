@@ -105,7 +105,7 @@ int configChangeListener(void * ctx,
 	   section);
     return 0;
   }
-  switch (pos->type & (-1 ^ GNS_KindMask)) {
+  switch (pos->type & GNS_TypeMask) {
   case GNS_Boolean: {
     int val;
 
@@ -208,7 +208,7 @@ static void free_tree(struct GNS_Tree * t) {
     free_tree(t->children[i]);
     i++;
   }
-  switch (t->type & (-1 ^ GNS_KindMask) ) {
+  switch (t->type & GNS_TypeMask) {
   case 0: 
     break; /* no value */
   case GNS_Boolean:

@@ -7,8 +7,8 @@ if HAVE_CURSES
  curses_dir = ncurses
 endif
 
-SUBDIRS = lib
-# text $(curses_dir) $(gtk_dir) .
+SUBDIRS = lib text .
+# $(curses_dir) $(gtk_dir) .
 
 plugindir = $(libdir)/GNUnet
 

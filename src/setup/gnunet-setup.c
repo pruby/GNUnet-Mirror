@@ -113,7 +113,7 @@ static const char * INFO =
 static const char * modules[] = {
    "gconfig", "setup_gtk", "gconf_main" ,
    "menuconfig", "setup_curses", "mconf_main" ,
-   "config", "setup_text", "conf_main" ,
+   "config", "setup_text", "main_" ,
    "wizard-curses", "setup_curses", "wizard_curs_main",
    "wizard-gtk", "setup_gtk", "gtk_wizard_main",   
    NULL,
@@ -168,8 +168,8 @@ int main(int argc,
 
   if (cfgFilename == NULL)
     cfgFilename = config_daemon 
-      ? DEFAULT_DAEMON_CONFIG_FILE 
-      : DEFAULT_CLIENT_CONFIG_FILE;
+      ? STRDUP(DEFAULT_DAEMON_CONFIG_FILE) 
+      : STRDUP(DEFAULT_CLIENT_CONFIG_FILE);
   dirname = STRDUP(cfgFilename);
   i = strlen(dirname) - 1;
   while (i > -1) {
@@ -181,16 +181,16 @@ int main(int argc,
     i--;
   }  
   disk_directory_create(ectx, dirname);
-  if ( ( (0 == ACCESS(cfgFilename, W_OK)) ||
-	 ( (errno == ENOENT) && 
-	   (0 == ACCESS(dirname, W_OK))) ) ) 
+  if ( ( (0 != ACCESS(cfgFilename, W_OK)) &&
+	 ( (errno != ENOENT) ||
+	   (0 != ACCESS(dirname, W_OK))) ) ) 
     GE_DIE_STRERROR_FILE(ectx,
 			 GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 			 "access",
 			 dirname);  
   FREE(dirname);
   
-  if(0 == ACCESS(cfgFilename, F_OK)) 
+  if (0 == ACCESS(cfgFilename, F_OK)) 
     GC_parse_configuration(cfg,
 			   cfgFilename);
   dirname = os_get_installation_path(IPK_DATADIR);
