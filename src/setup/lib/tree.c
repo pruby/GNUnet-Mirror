@@ -112,8 +112,8 @@ tree_lookup(struct GNS_Tree * root,
 }
 
 SCM get_option(SCM smob,
-	       SCM option,
-	       SCM section) {
+	       SCM section,
+	       SCM option) {
   TC * tc;
   char * opt;
   char * sec;
@@ -151,8 +151,8 @@ SCM get_option(SCM smob,
  * tree (and notify listeners about change).
  */
 SCM change_visible(SCM smob,
-		   SCM option,
 		   SCM section,
+		   SCM option,
 		   SCM yesno) {
   TC * tc;
   char * opt;
@@ -168,7 +168,7 @@ SCM change_visible(SCM smob,
   tc    = (TC *) SCM_SMOB_DATA(smob);
   opt = scm_to_locale_string(option);
   sec = scm_to_locale_string(section);
-  val = scm_is_true(scm_boolean_p(yesno)) ? 1 : 0;
+  val = scm_is_true(yesno) ? 1 : 0;
   t = tree_lookup(tc->root,
 		  sec,
 		  opt);
@@ -176,10 +176,6 @@ SCM change_visible(SCM smob,
     t->visible = val;
     tc->vcl(tc->ctx,
 	    t);  
-    fprintf(stderr,
-	    "Changing visibility of entry `%s' in section `%s'\n",
-	    opt,
-	    sec);
   } else {
     fprintf(stderr,
 	    _("Internal error: entry `%s' in section `%s' not found for visibility change!\n"),
@@ -243,7 +239,9 @@ SCM build_tree_node(SCM section,
     /* no checks */
   } else {
     SCM_ASSERT(0, 
-	       range, SCM_ARG7, "build_tree_node"); /* invalid type */
+	       range,
+	       SCM_ARG7, 
+	       "build_tree_node"); /* invalid type */
   }
 
   /* construct C object */
@@ -320,18 +318,10 @@ tree_parse(struct GE_Context * ectx,
   return ret;
 }
 
-struct NCI {
-  TC * tc;
-  struct GNS_Tree * root;
-  struct GNS_Tree * change;
-};
-
 static void *
 notify_change_internal(void * cls) {
-  struct NCI * n = cls;
+  TC * tc = cls;
   SCM smob_ctx;
-  SCM smob_root;
-  SCM smob_chng;
   SCM proc;
 
   /* I hope that loading of "specification" from
@@ -339,10 +329,8 @@ notify_change_internal(void * cls) {
      Otherwise we have to re-do this here */
   scm_c_primitive_load("/home/grothoff/share/GNUnet/config-daemon.scm");
   proc = scm_variable_ref(scm_c_lookup("gnunet-config-change"));
-  smob_ctx = box_tc(n->tc);
-  smob_root = box_tree(n->root);
-  smob_chng = box_tree(n->change);
-  scm_apply_3(proc, smob_ctx, smob_root, smob_chng, SCM_EOL);
+  smob_ctx = box_tc(tc);
+  scm_apply_1(proc, smob_ctx, SCM_EOL);
   return NULL;
 }
 
@@ -359,15 +347,11 @@ void tree_notify_change(VisibilityChangeListener vcl,
 			struct GNS_Tree * root,
 			struct GNS_Tree * change) {
   TC tc;
-  struct NCI n;
   
   tc.vcl = vcl;
   tc.ctx = ctx;
   tc.root = root;
-  n.tc = &tc;
-  n.root = root;
-  n.change = change;
-  scm_with_guile(&notify_change_internal, &n);
+  scm_with_guile(&notify_change_internal, &tc);
 }
 
 static void * init_helper(void * unused) {

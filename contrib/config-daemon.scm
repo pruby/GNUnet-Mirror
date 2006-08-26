@@ -51,8 +51,8 @@
 
 (define (meta-exp builder) 
  (builder
-   (_ "Meta")
-   (_ "EXPERIMENTAL")
+   "Meta"
+   "EXPERIMENTAL"
    (_ "Prompt for development and/or incomplete code")
    (_
 "If EXPERIMENTAL is set to NO, options for experimental code are not
@@ -82,8 +82,8 @@ how to report problems." )
 
 (define (meta-adv builder) 
  (builder
-   (_ "Meta")
-   (_ "ADVANCED")
+   "Meta"
+   "ADVANCED"
    (_ "Show options for advanced users")
    (_
 "These are options that maybe difficult to understand for the beginner.
@@ -95,29 +95,82 @@ installation.  If in a hurry, say NO." )
    #f
    'always) )
 
-
-
 (define (meta builder)
  (builder
-   (_ "Meta") 
+   "Meta"
    "" 
    (_ "Meta-configuration") 
    (_ "Which level of configuration should be available")
-   (list (meta-exp builder) (meta-adv builder) )
+   (list 
+     (meta-exp builder)
+     (meta-adv builder) 
+   )
    #t
    #f
    #f
    'always) )
 
+;; General menu
+
+(define (general-helloexpires builder)
+ (builder
+  "GNUNETD"
+  "HELLOEXPIRES"
+  (_ "How many minutes should peer advertisements last?")
+  (_
+"How many minutes is the current IP valid?  (GNUnet will sign HELLO
+messages with this expiration timeline. If you are on dialup, 60 (for
+1 hour) is suggested. If you are having a static IP address, you may
+want to set this to a large value (say 14400).  The default is 1440 (1
+day). If your IP changes periodically, you will want to choose the
+expiration to be smaller than the frequency with which your IP
+changes." )
+  '()
+  #t
+  1440
+  (cons 1 14400)
+  'advanced) )
+
+(define (general-loglevel builder)
+ (builder
+  "GNUNETD"
+  "LOGLEVEL"
+  (_ "Log level")
+  (_ "How verbose should the logging of errors be?")
+  '()
+  #t
+  "WARNING"
+  (list "NOTHING" "DEBUG" "STATUS" "INFO" "WARNING" "ERROR" "FATAL")
+  'always) )
+
+(define (general builder)
+ (builder
+  "GNUNETD"
+  ""
+  (_ "General settings")
+  (_ "Settings that change the behavior of GNUnet in general")
+  (list 
+    (general-helloexpires builder) 
+    (general-loglevel builder) 
+  )
+  #t
+  #f
+  #f
+  'always) )
+
+
 ;; main-menu
 
 (define (main builder)
  (builder 
-  (_ "Root")
+  "Root"
   ""
   (_ "Root node")
   (nohelp)
-  (list (meta builder) )
+  (list 
+    (meta builder)
+    (general builder) 
+  )
   #t 
   #f 
   #f 
@@ -139,8 +192,14 @@ installation.  If in a hurry, say NO." )
 ;; the tree builder but this time scan use the "i" tags to determine
 ;; how the visibility needs to change
 
-(define (gnunet-config-change ctx root changed)
- 0)
+(define (gnunet-config-change ctx)
+ (let ((advanced (get-option ctx "Meta" "ADVANCED")))
+   (main
+     (lambda (a b c d e f g h i) 
+        (begin 
+          (if (eq? i 'advanced)
+            (change-visible ctx a b advanced)
+            'nothing ) ) ) ) ) )
 
 ;; Example: (change-visible ctx "FOO" "BAR" #t)
 

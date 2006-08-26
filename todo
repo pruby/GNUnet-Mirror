@@ -35,14 +35,12 @@ Notes:
       must still be revised to match new API!
     + rest: vpn
     + low priority: chat, dht, testbed
-  * setup:
-    + main binary compiles, plugins are missing
-      consider reorganization (subdirectories):
-      - gtk
-      - curses
-      - text
-      - util (add src/include header with decent API!)
-      - main (just plugin loader)
+  * setup missing:
+    + gtk config
+    + gtk wizard
+    + ncurses config
+    + ncurses wizard
+    + scm specification of configuration
 - adapt util testcases and main GNUnet codebase
 - use new util to improve error handling capabilities
 - use new util to clean up gnunet-setup
