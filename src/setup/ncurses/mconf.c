@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -770,28 +770,27 @@ static void conf_load(void)
 	}
 }
 
-static void conf_cleanup(void)
-{
+static void conf_cleanup() {
 #ifndef MINGW
-	tcsetattr(1, TCSAFLUSH, &ios_org);
+  tcsetattr(1, TCSAFLUSH, &ios_org);
 #endif
-	UNLINK(".help.tmp");
-	UNLINK("lxdialog.scrltmp");
+  UNLINK(".help.tmp");
+  UNLINK("lxdialog.scrltmp");
 }
 
-int mconf_main(int argc, char **argv)
-{
-	char *mode;
-	int stat;
-  char * filename;
 
-  filename = getConfigurationString("GNUNET-SETUP",
-				    "FILENAME");
-  conf_read(filename);
+int main_setup_ncurses(int argc,
+		       const char **argv,
+		       struct PluginHandle * self,
+		       struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       struct GNS_Context * gns,
+		       const char * filename,
+		       int is_daemon) {
+  char *mode;
+  int stat;
 
-  backtitle = malloc(128);
-  strcpy(backtitle, "GNUnet Configuration");
-
+  backtitle = _("GNUnet Configuration");
   mode = getenv("MENUCONFIG_MODE");
   if (mode) {
     if (!strcasecmp(mode, "single_menu"))
@@ -806,33 +805,35 @@ int mconf_main(int argc, char **argv)
     sa.sa_flags = SA_RESTART;
     sigaction(SIGWINCH, &sa, NULL);
   }
-
   tcgetattr(1, &ios_org);
 #endif
   atexit(conf_cleanup);
   init_dialog();
-
   init_wsize();
   conf(&rootmenu);
 
+
+  if ( (0 == GC_test_dirty(cfg)) &&
+       (0 == ACCESS(filename, R_OK)) ) {
+    printf(_("Configuration unchanged, no need to save.\n"));    
+    end_dialog();
+    return 0;
+  }  
   do {
     stat = dialog_yesno(NULL,
-			"Do you wish to save your new configuration?",
+			_("Do you wish to save your new configuration?"),
 			5, 60);
   } while (stat < 0);
   end_dialog();
-
+  printf("\n\n");
   if (stat == 0) {
-    conf_write(filename);
-    printf("\n\n"
-	   "*** End of configuration.\n"
-	   "\n\n");
+    if (0 != GC_write_configuration(cfg,
+				    filename)) {
+      return 1;
+    }
+    printf(_("End of configuration.\n"));
   } else {
-    printf("\n\n"
-	   "Your configuration changes were NOT saved."
-	   "\n\n");
+    printf(_("Your configuration changes were NOT saved.\n"));
   }
-  FREE(filename);
-
   return 0;
 }

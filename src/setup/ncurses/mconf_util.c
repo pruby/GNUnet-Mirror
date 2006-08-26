@@ -32,7 +32,7 @@
 /* use colors by default? */
 bool use_colors = 1;
 
-char *backtitle = NULL;
+const char * backtitle = NULL;
 
 const char *dialog_result;
 

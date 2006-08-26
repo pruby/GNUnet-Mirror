@@ -25,7 +25,7 @@
 /**
  * Handle to the dynamic library (which contains this code)
  */
-static void * library;
+static struct PluginHandler * library;
 
 /**
  * Current glade handle.
@@ -67,15 +67,11 @@ static void connector(const gchar *handler_name,
   void * method;
 
   GE_ASSERT(ectx, xml != NULL);
-  method = trybindDynamicMethod(library,
-				"",
-				handler_name);
-  if (method == NULL) {
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	_("Failed to find handler for `%s'\n"),
-	handler_name);
-    return;
-  }
+  method = os_plugin_resolve_function(library,
+				      handler_name,
+				      YES);
+  if (method == NULL) 
+    return; 
   glade_xml_signal_connect(xml,
 			   handler_name,
 			   (GCallback) method);
@@ -131,7 +127,7 @@ void showDialog(const char * name) {
   g_object_unref(myXML);
 }
 
-void setLibrary(void * lib) {
+void setLibrary(struct PluginHandle * lib) {
   library = lib;
 }
 

@@ -25,21 +25,18 @@
 
 /**
  * @brief GNUnet Setup
- * @file conf/gconf.c
+ * @file setup/gtk/gconf.c
  * @author Roman Zippel
  * @author Nils Durner
  * @author Christian Grothoff
  */
 
+#include "gnunet_setup_lib.h"
 #include "platform.h"
 
-#define LKC_DIRECT_LINK
 #define ENABLE_NLS 1
 
 #define BUG916 NO
-
-#include "lkc.h"
-#include "confdata.h"
 
 #define USE_XPM_SINGLE_VIEW 1
 #define USE_XPM_SPLIT_VIEW 1
@@ -1610,7 +1607,7 @@ void fixup_rootmenu(struct menu *menu)
 }
 
 
-void gconf_main_post_init(void * lib) {
+void gconf_main_post_init(struct PluginHandle * lib) {
   char * filename;
 
   setLibrary(lib);
@@ -1648,10 +1645,15 @@ void gconf_main_post_init(void * lib) {
 
 /* Main */
 int gconf_main(int argc, 
-	       char **argv, 
-	       void * lib) {
+	       const char ** argv, 
+	       struct PluginHandle * self,
+	       struct GE_Context * ectx,
+	       struct GC_Configuration * cfg,
+	       struct GNS_Context * gns,
+	       const char * filename,
+	       int is_daemon) {
   g_thread_init(NULL);
-  gtk_init(&argc, &argv);
+  gtk_init(&argc, (char***) &argv);
 #if ENABLE_NLS
   bind_textdomain_codeset(PACKAGE, "UTF-8"); /* for gtk */
 #endif
@@ -1661,6 +1663,6 @@ int gconf_main(int argc,
 
   /* add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps"); */
   /* add_pixmap_directory (PACKAGE_SOURCE_DIR "/pixmaps"); */
-  gconf_main_post_init(lib);
+  gconf_main_post_init(self);
   return 0;
 }

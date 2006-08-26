@@ -28,6 +28,13 @@
 #ifndef MCONF_H
 #define MCONF_H
 
-int mconf_main(int argc, char **argv);
+int main_setup_ncurses(int argc,
+		       const char **argv,
+		       struct PluginHandle * self,
+		       struct GE_Context * ectx,
+		       struct GC_Configuration * cfg,
+		       struct GNS_Context * gns,
+		       const char * filename,
+		       int is_daemon);
 
 #endif
