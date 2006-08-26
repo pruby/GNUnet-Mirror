@@ -31,6 +31,7 @@
  * 
  * TODO:
  * - support editing of string inputs...
+ * - do not interpret escape sequences as escape...
  */
 
 #include "gnunet_setup_lib.h"
