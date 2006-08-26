@@ -23,517 +23,388 @@
  */
 
 /**
- * @file conf/conf.c
+ * @file text/conf.c
  * @brief GNUnet Setup
  * @author Roman Zippel
  * @author Nils Durner
  */
 
-#define LKC_DIRECT_LINK
-#include "lkc.h"
-
 #include "gnunet_setup_lib.h"
+#include "conf.h"
+#include "platform.h"
 
-static void conf(struct menu *menu);
+/**
+ * printf with indentation
+ */ 
+static void iprintf(int indent,
+		    const char * format,
+		    ...) {
+  int i;
+  va_list va;
 
-static void check_conf(struct menu *menu);
-
-enum {
-	ask_all,
-	ask_new,
-	ask_silent,
-	set_default,
-	set_yes,
-	set_mod,
-	set_no,
-	set_random
-} input_mode = ask_all;
-
-char *defconfig_file;
-
-static int indent = 1;
-
-static int valid_stdin = 1;
-
-static int conf_cnt;
-
-static char line[128];
-
-static struct menu *rootEntry;
-
-static char nohelp_text[] = "Sorry, no help available for this option yet.\n";
-
-static void strip(char *str)
-{
-	char *p = str;
-	int l;
-
-	while ((isspace(*p)))
-		p++;
-	l = strlen(p);
-	if (p != str)
-		memmove(str, p, l + 1);
-	if (!l)
-		return;
-	p = str + l - 1;
-	while ((isspace(*p)))
-		*p-- = 0;
+  for (i=0;i<indent;i++)
+    printf(" ");
+  va_start(va, format);
+  vfprintf(stdout, format, va);
+  va_end(va);
 }
 
-static void check_stdin(void)
-{
-	if (!valid_stdin && input_mode == ask_silent) {
-		printf("aborted!\n\n");
-		printf("Console input/output is redirected. ");
-		printf("Run 'make oldconfig' to update configuration.\n\n");
-		exit(1);
-	}
+static char * getValueAsString(GNS_Type type,
+			       GNS_Value * val) {
+  char buf[92];
+
+  switch (type & (~ GNS_KindMask)) {
+  case GNS_Boolean:
+    if (val->Boolean.def)
+      return STRDUP(_("yes"));
+    return STRDUP(_("no"));
+  case GNS_String:
+    return STRDUP(val->String.val);
+  case GNS_Double:
+    SNPRINTF(buf, 92,
+	     "%f",
+	     val->Double.val);
+    return STRDUP(buf);
+  case GNS_UInt64:
+    SNPRINTF(buf, 92,
+	     "%llu",
+	     val->UInt64.val);
+    return STRDUP(buf);
+  }
+  return STRDUP("Internal error.");
 }
 
-static void conf_askvalue(struct symbol *sym, const char *def)
-{
-	enum symbol_type type = sym_get_type(sym);
-	tristate val;
+static void printChoice(int indent,
+			GNS_Type type,
+			GNS_Value * val) {
+  int i;
+  char defLet;
 
-	if (!sym_has_value(sym))
-		printf("(NEW) ");
-
-	line[0] = '\n';
-	line[1] = 0;
-
-	if (!sym_is_changable(sym)) {
-		printf("%s\n", def);
-		line[0] = '\n';
-		line[1] = 0;
-		return;
-	}
-
-	switch (input_mode) {
-	case ask_new:
-	case ask_silent:
-		if (sym_has_value(sym)) {
-			printf("%s\n", def);
-			return;
-		}
-		check_stdin();
-	case ask_all:
-		fflush(stdout);
-		fgets(line, 128, stdin);
-		return;
-	case set_default:
-		printf("%s\n", def);
-		return;
-	default:
-		break;
-	}
-
-	switch (type) {
-	case S_INT:
-	case S_HEX:
-	case S_STRING:
-		printf("%s\n", def);
-		return;
-	default:
-		;
-	}
-	switch (input_mode) {
-	case set_yes:
-		if (sym_tristate_within_range(sym, yes)) {
-			line[0] = 'y';
-			line[1] = '\n';
-			line[2] = 0;
-			break;
-		}
-	case set_mod:
-		if (type == S_TRISTATE) {
-			if (sym_tristate_within_range(sym, mod)) {
-				line[0] = 'm';
-				line[1] = '\n';
-				line[2] = 0;
-				break;
-			}
-		} else {
-			if (sym_tristate_within_range(sym, yes)) {
-				line[0] = 'y';
-				line[1] = '\n';
-				line[2] = 0;
-				break;
-			}
-		}
-	case set_no:
-		if (sym_tristate_within_range(sym, no)) {
-			line[0] = 'n';
-			line[1] = '\n';
-			line[2] = 0;
-			break;
-		}
-	case set_random:
-		do {
-			val = (tristate)(rand() % 3);
-		} while (!sym_tristate_within_range(sym, val));
-		switch (val) {
-		case no: line[0] = 'n'; break;
-		case mod: line[0] = 'm'; break;
-		case yes: line[0] = 'y'; break;
-		}
-		line[1] = '\n';
-		line[2] = 0;
-		break;
-	default:
-		break;
-	}
-	printf("%s", line);
+  switch (type & (~ GNS_KindMask)) {
+  case GNS_Boolean:
+    iprintf(indent, 
+	    _("\tEnter yes (%s) / no (%s) or help (%s): "),
+	    val->Boolean.def ? "Y" : "y",
+	    val->Boolean.def ? "n" : "N",
+	    "?");
+    break;
+  case GNS_String:
+    if (val->String.legalRange[0] == NULL) {
+      iprintf(indent,
+	      _("\tEnter string (default is `%s'): "),
+	      val->String.def);
+    } else {
+      i = 0;
+      defLet = '\0';
+      while (val->String.legalRange[i] != NULL) {
+	iprintf(indent,
+		"\t (%c) %s\n",
+		(i < 10) ? '0' + i : 'a' + i - 10, 
+		val->String.legalRange[i]);
+	if (0 == strcmp(val->String.legalRange[i],
+			val->String.def))
+	  defLet = (i < 10) ? '0' + i : 'a' + i - 10;
+	i++;
+      }
+      GE_ASSERT(NULL, defLet != '\0');
+      iprintf(indent,
+	      "\n\t (?) Help\n");
+      iprintf(indent,
+	      _("\t Enter choice (default is %c): "),
+	      defLet);
+    }
+    break;
+  case GNS_Double:
+    iprintf(indent,
+	    _("\tEnter floating point (default is %f): "),
+	    val->Double.def);
+    break;
+  case GNS_UInt64:
+    iprintf(indent,
+	    _("\tEnter unsigned integer in interval [%llu,%llu] (default is %llu): "),
+	    val->UInt64.min,
+	    val->UInt64.max,
+	    val->UInt64.def);
+    break;
+  default:
+    GE_ASSERT(NULL, 0);
+  }
 }
 
-int conf_string(struct menu *menu)
-{
-	struct symbol *sym = menu->sym;
-	const char *def, *help;
-
-	while (1) {
-		printf("%*s%s ", indent - 1, "", menu->prompt->text);
-		printf("(%s) ", sym->name);
-		def = sym_get_string_value(sym);
-		if (sym_get_string_value(sym))
-			printf("[%s] ", def);
-		conf_askvalue(sym, def);
-		switch (line[0]) {
-		case '\n':
-			break;
-		case '?':
-			/* print help */
-			if (line[1] == 0) {
-				help = nohelp_text;
-				if (menu->sym->help)
-					help = menu->sym->help;
-				printf("\n%s\n", menu->sym->help);
-				def = NULL;
-				break;
-			}
-		default:
-			line[strlen(line)-1] = 0;
-			def = line;
-		}
-		if (def && sym_set_string_value(sym, def))
-			return 0;
+/**
+ * @return OK on success, NO to display help, SYSERR to abort
+ */
+static int readValue(GNS_Type type,
+		     GNS_Value * val) {
+  int c;
+  char buf[1024];
+  int i;
+  int j;
+  unsigned long long l;
+  
+  switch (type & (~ GNS_KindMask)) {
+  case GNS_Boolean:
+    while (1) {
+      c = fgetc(stdin);
+      switch (c) {
+      case 'y':
+      case 'Y':
+	val->Boolean.val = 1;
+	printf(_("Yes\n"));
+	return YES;
+      case 'n':
+      case 'N':
+	val->Boolean.val = 0;
+	printf(_("No\n"));
+	return YES;
+      case '\n':
+	val->Boolean.val = val->Boolean.def;
+	if (val->Boolean.val)
+	  printf(_("Yes\n"));
+	else
+	  printf(_("No\n"));
+	return YES;
+      case '?':
+      case 'h':
+      case 'H':
+	printf(_("Help\n"));
+	return NO;
+      case '\x1b':
+	printf(_("Abort\n"));
+	return SYSERR;
+      default:
+	break;
+      }
+    }
+    break;
+  case GNS_String:
+    if (val->String.legalRange[0] == NULL) {
+      fgets(buf, 1024, stdin);
+      FREE(val->String.val);
+      val->String.val = STRDUP(buf);
+      return OK;
+    } else {
+      while (1) {
+	c = fgetc(stdin);
+	if (c == '?') {
+	  printf(_("Help\n"));
+	  return NO;
 	}
+	if (c == '\x1b') {
+	  printf(_("Abort\n"));
+	  return SYSERR;
+	}	
+	i = -1;
+	if ( (c >= '0') && (c <= '9') )
+	  i = c - '0';
+	else if ( (c >= 'a') && (c <= 'z') )
+	  i = c - 'a' + 10;
+	else
+	  continue; /* invalid entry */
+	for (j=0;j<=i;j++)
+	  if (val->String.legalRange[j] == NULL) {
+	    i = -1;
+	    break;
+	  }
+	if (i == -1) 
+	  continue; /* invalid entry */
+	FREE(val->String.val);
+	val->String.val = STRDUP(val->String.legalRange[i]);
+	printf("%s\n",
+	       val->String.val);
+	return OK;
+      }
+    }
+    break;
+  case GNS_Double:
+    while (1) {
+      fgets(buf, 1024, stdin);
+      if ( (buf[0] == '?') ||
+	   (buf[0] == 'h') ||
+	   (buf[0] == 'H') )
+	return NO;
+      if (buf[0] == '\n') {
+	val->Double.val = val->Double.def;
+	return YES;
+      }
+      if (buf[0] == '\x1b')
+	return SYSERR;
+      if (1 == sscanf(buf,
+		      "%lf",
+		      &val->Double.val))
+	return OK;
+      printf(_("\nInvalid entry, try again (use '?' for help): "));
+    }
+    break;
+  case GNS_UInt64:
+    while (1) {
+      fgets(buf, 1024, stdin);
+      if ( (buf[0] == '?') ||
+	   (buf[0] == 'h') ||
+	   (buf[0] == 'H') )
+	return NO;
+      if (buf[0] == '\n') {
+	val->UInt64.val = val->UInt64.def;
+	return YES;
+      }
+      if (buf[0] == '\x1b')
+	return SYSERR;
+      if ( (1 == sscanf(buf,
+			"%llu",
+			&l)) &&
+	   (l >= val->UInt64.min) &&
+	   (l <= val->UInt64.max) ) {
+	val->UInt64.val = l;
+	return OK;
+      }
+      printf(_("\nInvalid entry, try again (use '?' for help): "));
+    }
+    break;
+  default:
+    GE_ASSERT(NULL, 0);
+  }
+  return OK;
 }
 
-static int conf_sym(struct menu *menu)
-{
-	struct symbol *sym = menu->sym;
-	int type;
-	tristate oldval, newval;
-	const char *help;
+static int conf(int indent,
+		struct GC_Configuration * cfg,
+		struct GE_Context * ectx,
+		struct GNS_Tree * tree) {
+  char choice;
+  char * value;
+  char * ovalue;
+  int i;
 
-	while (1) {
-		printf("%*s%s ", indent - 1, "", menu->prompt->text);
-		if (sym->name)
-			printf("(%s) ", sym->name);
-		type = sym_get_type(sym);
-		putchar('$');
-		oldval = sym_get_tristate_value(sym);
-		switch (oldval) {
-		case no:
-			putchar('N');
-			break;
-		case mod:
-			putchar('M');
-			break;
-		case yes:
-			putchar('Y');
-			break;
-		}
-		if (oldval != no && sym_tristate_within_range(sym, no))
-			printf("/n");
-		if (oldval != mod && sym_tristate_within_range(sym, mod))
-			printf("/m");
-		if (oldval != yes && sym_tristate_within_range(sym, yes))
-			printf("/y");
-		if (sym->help)
-			printf("/?");
-		printf("] ");
-		conf_askvalue(sym, sym_get_string_value(sym));
-		strip(line);
-
-		switch (line[0]) {
-		case 'n':
-		case 'N':
-			newval = no;
-			if (!line[1] || !strcmp(&line[1], "o"))
-				break;
-			continue;
-		case 'm':
-		case 'M':
-			newval = mod;
-			if (!line[1])
-				break;
-			continue;
-		case 'y':
-		case 'Y':
-			newval = yes;
-			if (!line[1] || !strcmp(&line[1], "es"))
-				break;
-			continue;
-		case 0:
-			newval = oldval;
-			break;
-		case '?':
-			goto help;
-		default:
-			continue;
-		}
-		if (sym_set_tristate_value(sym, newval))
-			return 0;
-help:
-		help = nohelp_text;
-		if (sym->help)
-			help = sym->help;
-		printf("\n%s\n", help);
-	}
-}
-
-static int conf_choice(struct menu *menu)
-{
-	struct symbol *sym, *def_sym;
-	struct menu *child;
-	int type;
-	bool is_new;
-
-	sym = menu->sym;
-	type = sym_get_type(sym);
-	is_new = !sym_has_value(sym);
-	if (sym_is_changable(sym)) {
-		conf_sym(menu);
-		sym_calc_value(sym);
-		switch (sym_get_tristate_value(sym)) {
-		case no:
-			return 1;
-		case mod:
-			return 0;
-		case yes:
-			break;
-		}
-	} else {
-		switch (sym_get_tristate_value(sym)) {
-		case no:
-			return 1;
-		case mod:
-			printf("%*s%s\n", indent - 1, "", menu_get_prompt(menu));
-			return 0;
-		case yes:
-			break;
-		}
-	}
-
-	while (1) {
-		int cnt, def;
-
-		printf("%*s%s\n", indent - 1, "", menu_get_prompt(menu));
-		def_sym = sym_get_choice_value(sym);
-		cnt = def = 0;
-		line[0] = '0';
-		line[1] = 0;
-		for (child = menu->list; child; child = child->next) {
-			if (!menu_is_visible(child))
-				continue;
-			if (!child->sym) {
-				printf("%*c %s\n", indent, '*', menu_get_prompt(child));
-				continue;
-			}
-			cnt++;
-			if (child->sym == def_sym) {
-				def = cnt;
-				printf("%*c", indent, '>');
-			} else
-				printf("%*c", indent, ' ');
-			printf(" %d. %s", cnt, menu_get_prompt(child));
-			if (child->sym->name)
-				printf(" (%s)", child->sym->name);
-			if (!sym_has_value(child->sym))
-				printf(" (NEW)");
-			printf("\n");
-		}
-		printf("%*schoice", indent - 1, "");
-		if (cnt == 1) {
-			printf("[1]: 1\n");
-			goto conf_childs;
-		}
-		printf("[1-%d", cnt);
-		if (sym->help)
-			printf("?");
-		printf("]: ");
-		switch (input_mode) {
-		case ask_new:
-		case ask_silent:
-			if (!is_new) {
-				cnt = def;
-				printf("%d\n", cnt);
-				break;
-			}
-			check_stdin();
-		case ask_all:
-			fflush(stdout);
-			fgets(line, 128, stdin);
-			strip(line);
-			if (line[0] == '?') {
-				printf("\n%s\n", menu->sym->help ?
-					menu->sym->help : nohelp_text);
-				continue;
-			}
-			if (!line[0])
-				cnt = def;
-			else if (isdigit(line[0]))
-				cnt = atoi(line);
-			else
-				continue;
-			break;
-		case set_random:
-			def = (rand() % cnt) + 1;
-		case set_default:
-		case set_yes:
-		case set_mod:
-		case set_no:
-			cnt = def;
-			printf("%d\n", cnt);
-			break;
-		}
-
-	conf_childs:
-		for (child = menu->list; child; child = child->next) {
-			if (!child->sym || !menu_is_visible(child))
-				continue;
-			if (!--cnt)
-				break;
-		}
-		if (!child)
-			continue;
-		if (line[strlen(line) - 1] == '?') {
-			printf("\n%s\n", child->sym->help ?
-				child->sym->help : nohelp_text);
-			continue;
-		}
-		sym_set_choice_value(sym, child->sym);
-		if (child->list) {
-			indent += 2;
-			conf(child->list);
-			indent -= 2;
-		}
-		return 1;
-	}
-}
-
-static void conf(struct menu *menu)
-{
-	struct symbol *sym;
-	struct property *prop;
-	struct menu *child;
-
-	if (!menu_is_visible(menu))
-		return;
-
-	sym = menu->sym;
-	prop = menu->prompt;
-	if (prop) {
-		const char *prompt;
-
-		switch (prop->type) {
-		case P_MENU:
-			if (input_mode == ask_silent && rootEntry != menu) {
-				check_conf(menu);
-				return;
-			}
-		case P_COMMENT:
-			prompt = menu_get_prompt(menu);
-			if (prompt)
-				printf("%*c\n%*c %s\n%*c\n",
-					indent, '*',
-					indent, '*', prompt,
-					indent, '*');
-		default:
-			;
-		}
-	}
-
-	if (!sym)
-		goto conf_childs;
-
-	if (sym_is_choice(sym)) {
-		conf_choice(menu);
-		if (sym->curr.tri != mod)
-			return;
-		goto conf_childs;
-	}
-
-	switch (sym->type) {
-	case S_INT:
-	case S_HEX:
-	case S_STRING:
-		conf_string(menu);
-		break;
-	default:
-		conf_sym(menu);
-		break;
-	}
-
-conf_childs:
-	if (sym)
-		indent += 2;
-	for (child = menu->list; child; child = child->next)
-		conf(child);
-	if (sym)
-		indent -= 2;
-}
-
-static void check_conf(struct menu *menu)
-{
-	struct symbol *sym;
-	struct menu *child;
-
-	if (!menu_is_visible(menu))
-		return;
-
-	sym = menu->sym;
-	if (sym) {
-		if (sym_is_changable(sym) && !sym_has_value(sym)) {
-			if (!conf_cnt++)
-				printf("*\n* Restart config...\n*\n");
-			rootEntry = menu_get_parent_menu(menu);
-			conf(rootEntry);
-		}
-		if (sym_is_choice(sym) && sym_get_tristate_value(sym) != mod)
-			return;
-	}
-
-	for (child = menu->list; child; child = child->next)
-		check_conf(child);
+  if (! tree->visible)
+    return OK;
+  switch (tree->type & GNS_KindMask) {
+  case GNS_Leaf:
+    ovalue = getValueAsString(tree->type,
+			      &tree->value);
+    while (1) {
+      iprintf(indent,
+	      "[%s] %s = \"%s\"\n",
+	      tree->section,
+	      tree->option,
+	      ovalue);
+      iprintf(indent,
+	      "%s\n",
+	      tree->description);
+      printChoice(indent, 
+		  tree->type,
+		  &tree->value);
+      i = readValue(tree->type,
+		    &tree->value);
+      if (i == SYSERR) {
+	FREE(ovalue);
+	return SYSERR;
+      }
+      if (i == OK)
+	break;
+      printf("\n\n");
+      iprintf(0,
+	      "%s\n",
+	      tree->help);
+      printf("\n");
+    }
+    value = getValueAsString(tree->type,
+			     &tree->value);
+    if ( (0 != strcmp(value, ovalue)) &&
+	 (0 != GC_set_configuration_value_string(cfg,
+						 ectx,
+						 tree->section,
+						 tree->option,
+						 value)) ) {
+      FREE(value);
+      FREE(ovalue);
+      return conf(indent,
+		  cfg, 
+		  ectx,
+		  tree); /* try again */
+    }
+    FREE(value);
+    FREE(ovalue);
+    return OK;
+  case GNS_Node:
+    choice = '\0';
+    while (choice == '\0') {
+      iprintf(indent,
+	      "%s\n",
+	      gettext(tree->description));
+      iprintf(indent,
+	      _(/* do not translate y/n/? */
+		"\tDescend? (y/n/?) "));
+      choice = fgetc(stdin);
+      switch(choice) {
+      case 'N':
+      case 'n':
+	iprintf(indent,
+		"%c\n", choice);
+	return OK;
+      case '\x1b':
+	iprintf(indent,
+		_("Aborted.\n"));
+	return SYSERR; /* escape */
+      case '?':
+      case 'h':
+      case 'H':
+	iprintf(indent,
+		"%c\n", choice);
+	iprintf(indent,
+		gettext(tree->help));
+	choice = '\0';
+	break;
+      case 'Y':
+      case 'y':
+	iprintf(indent,
+		"%c\n", choice);
+	break;
+      default:
+	iprintf(indent,
+		"%c\n", choice);
+	iprintf(indent,
+		_("Invalid entry.\n"));
+	choice = '\0';
+	break;
+      }
+    }    
+    /* fall-through! */
+  case GNS_Root:
+    i = 0;
+    while (tree->children[i] != NULL) {
+      if (SYSERR == conf(indent + 1,
+			 cfg,
+			 ectx,
+			 tree->children[i]))
+	return SYSERR;
+      i++;
+    }
+  default:
+    GE_ASSERT(NULL, 0);
+    return SYSERR;
+  }
 }
 
 int conf_main(int argc, 
-	      char **argv, 
+	      const char **argv, 
 	      struct PluginHandle * self,
 	      struct GE_Context * ectx,
 	      struct GC_Configuration * cfg,
+	      struct GNS_Context * gns,
 	      const char * filename,
 	      int is_daemon) {
-  conf_read(ectx,
-	    cfg);
-  input_mode = ask_all; /* for now */
-  rootEntry = &rootmenu;
-  conf(&rootmenu);
-  do {
-    conf_cnt = 0;
-    check_conf(&rootmenu);
-  } while (conf_cnt);
+  struct GNS_Tree * root;
 
-  if (conf_write(filename)) {
-    printf(_("Unable to save configuration file `%s': %s.\n"),
-	   filename,
-	   STRERROR(errno));
+  root = GNS_get_tree(gns);
+  if (OK != conf(-1,
+		 cfg,
+		 ectx,		 
+		 root)) 
     return 1;
-  } else {
-    printf(_("Configuration file `%s' created.\n"),
-	   filename);
-    return 0;
-  }
+  if (-1 == GC_write_configuration(cfg,
+				   filename)) 
+    return 1;
+  printf(_("Configuration file `%s' created.\n"),
+	 filename);
+  return 0;
 }

@@ -280,7 +280,7 @@ GNS_load_specification(struct GE_Context * ectx,
  *
  * @return NULL on error
  */
-const struct GNS_Tree *
+struct GNS_Tree *
 GNS_get_tree(struct GNS_Context * ctx) {
   return ctx->root;
 }
