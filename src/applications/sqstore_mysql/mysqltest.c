@@ -25,6 +25,8 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_cron.h"
+#include "gnunet_util_config_impl.h"
 #include "gnunet_protocols.h"
 #include "gnunet_sqstore_service.h"
 #include "core.h"
@@ -226,35 +228,27 @@ static int test(SQstore_ServiceAPI * api) {
   return SYSERR;
 }
 
-/**
- * Perform option parsing from the command line.
- */
-static int parser(int argc,
-		  char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "YES"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("FILES",
-				     "gnunet.conf",
-				     "check.conf"));
-  return OK;
-}
-
 int main(int argc, char *argv[]) {
   SQstore_ServiceAPI * api;
   int ok;
+  struct GC_Configuration * cfg;
+  struct CronManager * cron;
 
-  if (OK != initUtil(argc, argv, &parser))
-    errexit(_("Could not initialize libgnunetutil!\n"));
-  initCore();
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  cron = cron_create(NULL);
+  initCore(NULL,
+	   cfg,
+	   cron,
+	   NULL);
   api = requestService("sqstore");
   if (api == NULL) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     doneCore();
-    doneUtil();
     return 1;
   }
   ok = SYSERR;
@@ -266,15 +260,13 @@ int main(int argc, char *argv[]) {
       ok = test(api);
       releaseService(api);
     } else {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
     }
   }
   doneCore();
-  doneUtil();
   if (ok == SYSERR)
     return 1;
-  else
-    return 0;
+  return 0;
 }
 
 /* end of mysqltest.c */

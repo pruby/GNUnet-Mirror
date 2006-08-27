@@ -30,4 +30,5 @@ sqlitetest_SOURCES = \
  sqlitetest.c 
 sqlitetest_LDADD = \
  $(top_builddir)/src/server/libgnunetcore.la  \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
  $(top_builddir)/src/util/libgnunetutil.la  

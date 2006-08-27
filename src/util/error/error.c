@@ -140,6 +140,8 @@ void GE_free_context(GE_Context * ctx) {
  */
 int GE_isLogged(GE_Context * ctx,
 		GE_KIND kind) {
+  if (ctx == NULL)
+    return YES;
   return GE_applies(kind,
 		    ctx->mask);
 }

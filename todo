@@ -21,8 +21,6 @@ Notes:
   * make testcases compile & pass again:
     + util/network_client/ 
     + session
-    + sqstore_sqlite
-    + sqstore_mysql
     + gap
     + fs/ecrs
     + fs/lib

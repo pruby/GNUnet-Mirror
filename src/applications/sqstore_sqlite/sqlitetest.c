@@ -25,6 +25,8 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_cron.h"
+#include "gnunet_util_config_impl.h"
 #include "gnunet_protocols.h"
 #include "gnunet_sqstore_service.h"
 #include "core.h"
@@ -229,36 +231,23 @@ static int test(SQstore_ServiceAPI * api) {
 
 #define TEST_DB "/tmp/GNUnet_sqstore_test/"
 
-/**
- * Perform option parsing from the command line.
- */
-static int parser(int argc,
-		  char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "YES"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "GNUNETD_HOME",
-				     "/tmp/gnunet_test/"));
-  FREENONNULL(setConfigurationString("FILES",
-				     "gnunet.conf",
-				     "check.conf"));
-  FREENONNULL(setConfigurationString("FS",
-				     "DIR",
-				     TEST_DB));
-  return OK;
-}
-
 int main(int argc, char *argv[]) {
   SQstore_ServiceAPI * api;
   int ok;
+  struct GC_Configuration * cfg;
+  struct CronManager * cron;
 
-  if (OK != initUtil(argc, argv, &parser))
-    errexit(_("Could not initialize libgnunetutil!\n"));
-  initCore();
+ cfg = GC_create_C_impl();
+ if (-1 == GC_parse_configuration(cfg,
+				  "check.conf")) {
+   GC_free(cfg);
+   return -1;  
+ }
+ cron = cron_create(NULL);
+   initCore(NULL,
+	   cfg,
+	   cron,
+	   NULL);
   api = requestService("sqstore");
   if (api != NULL) {
     ok = test(api);
@@ -266,11 +255,11 @@ int main(int argc, char *argv[]) {
   } else
     ok = SYSERR;
   doneCore();
-  doneUtil();
+  cron_destroy(cron);  
+  GC_free(cfg);
   if (ok == SYSERR)
     return 1;
-  else
-    return 0;
+  return 0;
 }
 
 /* end of sqlitetest.c */
