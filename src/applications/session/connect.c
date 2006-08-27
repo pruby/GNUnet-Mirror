@@ -160,10 +160,11 @@ static int verifySKS(const PeerIdentity * hostId,
   }
   /* check if we are allowed to accept connections
      from that peer */
+  limited = NULL;
   if (0 == GC_get_configuration_value_string(coreAPI->cfg,
 					     "GNUNETD",
 					     "LIMIT-ALLOW",
-					     NULL,
+					     "",
 					     &limited)) {
     EncName enc;
 
@@ -180,12 +181,13 @@ static int verifySKS(const PeerIdentity * hostId,
       FREE(limited);
       return SYSERR;
     }
-    FREE(limited);
   }
+  FREE(limited);
+  limited = NULL;
   if (0 == GC_get_configuration_value_string(coreAPI->cfg,
 					     "GNUNETD",
 					     "LIMIT-DENY",
-					     NULL,
+					     "",
 					     &limited)) {
     EncName enc;
 
@@ -202,8 +204,8 @@ static int verifySKS(const PeerIdentity * hostId,
       FREE(limited);
       return SYSERR;
     }
-    FREE(limited);
   }
+  FREE(limited);
 
   if (OK != identity->verifyPeerSignature
       (hostId,

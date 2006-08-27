@@ -97,39 +97,27 @@ int main(int argc, char ** argv) {
 			    cfg,
 			    "peer2.conf",
 			    NO);
-  PTHREAD_SLEEP(5 * cronSECONDS);
-
-  ret = 0;
-  left = 5;
-  /* wait for connection or abort with error */
-  do {
+  if (OK == connection_wait_for_running(NULL,
+					cfg,
+					30 * cronSECONDS)) {
     sock = client_connection_create(NULL,
 				    cfg);
-    if (sock == NULL) {
-      printf(_("Waiting for gnunetd to start (%u iterations left)...\n"),
+    left = 30; /* how many iterations should we wait? */
+    while (OK == requestStatistics(NULL,
+				   sock,
+				   &waitForConnect,
+				   NULL)) {
+      printf("Waiting for peers to connect (%u iterations left)...\n",
 	     left);
-      sleep(1);
+      sleep(5);
       left--;
       if (left == 0) {
 	ret = 1;
 	break;
       }
     }
-  } while (sock == NULL);
-
-  left = 30; /* how many iterations should we wait? */
-  while (OK == requestStatistics(NULL,
-				 sock,
-				 &waitForConnect,
-				 NULL)) {
-    printf(_("Waiting for peers to connect (%u iterations left)...\n"),
-	   left);
-    sleep(5);
-    left--;
-    if (left == 0) {
-      ret = 1;
-      break;
-    }
+  } else {
+    printf("Could not establish connection with peer.\n");
   }
   connection_destroy(sock);
   if (daemon1 != -1) {
