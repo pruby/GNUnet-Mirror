@@ -24,7 +24,29 @@
 
 #include "gnunet_util.h"
 #include "gnunet_util_network_client.h"
+#include "gnunet_util_config_impl.h"
 #include "platform.h"
+
+static struct GC_Configuration * cfg;
+
+/**
+ * Get the GNUnet UDP port from the configuration,
+ * or from /etc/services if it is not specified in
+ * the config file.
+ */
+static unsigned short getGNUnetPort() {
+  unsigned long long port;
+
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "TCP",
+					      "PORT",
+					      1,
+					      65535,
+					      2087,
+					      &port)) 
+    port = 0; 
+  return (unsigned short) port;
+}
 
 static int openServerSocket() {
   int listenerFD;
@@ -34,14 +56,12 @@ static int openServerSocket() {
 
   listenerPort = getGNUnetPort();
   /* create the socket */
-  while ( (listenerFD = SOCKET(PF_INET, SOCK_STREAM, 0)) < 0) {
-    GE_LOG(NULL,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   "ERROR opening socket (%s).  "
-	   "No client service started.  "
-	   "Trying again in 30 seconds.\n",
-	   STRERROR(errno));
-    sleep(30);
+  listenerFD = SOCKET(PF_INET, SOCK_STREAM, 0);
+  if (listenerFD < 0) {
+    GE_LOG_STRERROR(NULL,
+		    GE_BULK | GE_ERROR | GE_USER,
+		    "socket");
+    return -1;
   }
 
   /* fill in the inet address structure */
@@ -55,28 +75,31 @@ static int openServerSocket() {
   if ( SETSOCKOPT(listenerFD,
 		  SOL_SOCKET,
 		  SO_REUSEADDR,
-		  &on, sizeof(on)) < 0 )
-    perror("setsockopt");
+		  &on, sizeof(on)) < 0 ) {
+    GE_LOG_STRERROR(NULL,
+		    GE_BULK | GE_ERROR | GE_USER,
+		    "setsockopt");
+    CLOSE(listenerFD);
+    return -1;
+  }
 
   /* bind the socket */
   if (BIND (listenerFD,
 	   (struct sockaddr *) &serverAddr,
 	    sizeof(serverAddr)) < 0) {
-    GE_LOG(NULL,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   "ERROR (%s) binding the TCP listener to port %d. "
-	   "Test failed.  Is gnunetd running?\n",
-	   STRERROR(errno),
-	   listenerPort);
+    GE_LOG_STRERROR(NULL, 
+		    GE_BULK | GE_ERROR | GE_USER,
+		    "bind");
+    CLOSE(listenerFD);
     return -1;
   }
 
   /* start listening for new connections */
   if (0 != LISTEN(listenerFD, 5)) {
-    GE_LOG(NULL,
-	   GE_ERROR | GE_BULK | GE_USER,
-	   " listen failed: %s\n",
-	   STRERROR(errno));
+    GE_LOG_STRERROR(NULL, 
+		    GE_BULK | GE_ERROR | GE_USER,
+		    "listen");
+    CLOSE(listenerFD);
     return -1;
   }
   return listenerFD;
@@ -84,7 +107,7 @@ static int openServerSocket() {
 
 static int doAccept(int serverSocket) {
   int incomingFD;
-  int lenOfIncomingAddr;
+  socklen_t lenOfIncomingAddr;
   struct sockaddr_in clientAddr;
 
   incomingFD = -1;
@@ -94,10 +117,9 @@ static int doAccept(int serverSocket) {
 			(struct sockaddr *)&clientAddr,
 			&lenOfIncomingAddr);
     if (incomingFD < 0) {
-      GE_LOG(NULL,
-	     GE_ERROR | GE_BULK | GE_USER,
-	     "ERROR accepting new connection (%s).\n",
-	     STRERROR(errno));
+      GE_LOG_STRERROR(NULL, 
+		      GE_BULK | GE_ERROR | GE_USER,
+		      "accept");
       continue;
     }
   }
@@ -105,11 +127,13 @@ static int doAccept(int serverSocket) {
 }
 
 static int testTransmission(struct ClientServerConnection * a,
-			    struct ClientServerConnection * b) {
+			    struct SocketHandle * b) {
   MESSAGE_HEADER * hdr;
   MESSAGE_HEADER * buf;
   int i;
   int j;
+  size_t rd;
+  size_t pos;
 
   hdr = MALLOC(1024);
   for (i=0;i<1024-sizeof(MESSAGE_HEADER);i+=7) {
@@ -122,10 +146,24 @@ static int testTransmission(struct ClientServerConnection * a,
       FREE(hdr);
       return 1;
     }
-    buf = NULL;
-    if (OK != connection_read(b, &buf)) {
-      FREE(hdr);
-      return 2;
+    buf = MALLOC(2048);
+    pos = 0;
+    while (pos < i + sizeof(MESSAGE_HEADER)) {
+      rd = 0;
+      if (SYSERR == socket_recv(b,
+				NC_Nonblocking,
+				&buf[pos],
+				2048 - pos,
+				&rd)) {
+	FREE(hdr);
+	FREE(buf);
+	return 2;
+      }
+      pos += rd;
+    }
+    if (pos != i + sizeof(MESSAGE_HEADER)) {
+      FREE(buf);
+      return 3;
     }
     if (0 != memcmp(buf, hdr, i+sizeof(MESSAGE_HEADER))) {
       FREE(buf);
@@ -138,105 +176,47 @@ static int testTransmission(struct ClientServerConnection * a,
   return 0;
 }
 
-static int testNonblocking(struct ClientServerConnection * a,
-			   struct ClientServerConnection * b) {
-  MESSAGE_HEADER * hdr;
-  MESSAGE_HEADER * buf;
-  int i;
-  int cnt;
-
-  hdr = MALLOC(1024);
-  for (i=0;i<1024-sizeof(MESSAGE_HEADER);i+=11)
-    ((char*)&hdr[1])[i] = (char)i;
-  hdr->size = htons(64+sizeof(MESSAGE_HEADER));
-  hdr->type = 0;
-  while (OK == connection_writeNonBlocking(a,
-					hdr))
-    hdr->type++;
-  i = 0;
-  cnt = hdr->type;
-  /* printf("Reading %u messages.\n", cnt); */
-  if (cnt < 2)
-    return 8; /* could not write ANY data non-blocking!? */
-  for (i=0;i<cnt;i++) {
-    hdr->type = i;
-    buf = NULL;
-    if (OK != connection_read(b, &buf)) {
-      FREE(hdr);
-      return 16;
-    }
-    if (0 != memcmp(buf, hdr, 64+sizeof(MESSAGE_HEADER))) {
-      printf("Failure in message %u.  Headers: %d ? %d\n",
-	     i,
-	     buf->type,
-	     hdr->type);
-      FREE(buf);
-      FREE(hdr);
-      return 32;
-    }
-    FREE(buf);
-    if (i == cnt - 2) {
-      /* printf("Blocking write to flush last non-blocking message.\n"); */
-      hdr->type = cnt;
-      if (OK != connection_write(a,
-			      hdr)) {
-	FREE(hdr);
-	return 64;
-      }
-    }
-  }
-  hdr->type = i;
-  buf = NULL;
-  if (OK != connection_read(b, &buf)) {
-    FREE(hdr);
-    return 128;
-  }
-  if (0 != memcmp(buf, hdr, 64+sizeof(MESSAGE_HEADER))) {
-    FREE(buf);
-    FREE(hdr);
-    return 256;
-  }
-  FREE(buf);
-  FREE(hdr);
-  return 0;
-}
-
 int main(int argc, char * argv[]){
   int i;
   int ret;
   int serverSocket;
   struct ClientServerConnection * clientSocket;
-  struct ClientServerConnection acceptSocket;
+  int acceptSocket;
+  struct SocketHandle * sh;
 
-  ret = 0;
-  serverSocket = openServerSocket();
-  clientSocket = getClientSocket();
-  if (serverSocket == -1) {
-    connection_destroy(clientSocket);
-    return 1;
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
   }
+  serverSocket = openServerSocket();
+  if (serverSocket == -1) 
+    return 1;  
+  clientSocket = client_connection_create(NULL,
+					  cfg);
+  ret = 0;
   for (i=0;i<2;i++) {
-    if (OK == checkSocket(clientSocket)) {
-      if (OK == initGNUnetServerSocket(doAccept(serverSocket),
-				       &acceptSocket)) {
-	ret = ret | testTransmission(clientSocket, &acceptSocket);
-	ret = ret | testTransmission(&acceptSocket, clientSocket);
-	ret = ret | testNonblocking(clientSocket, &acceptSocket);
-	ret = ret | testNonblocking(&acceptSocket, clientSocket);
-	closeSocketTemporarily(clientSocket);
- 	destroySocket(&acceptSocket);
-	fprintf(stderr, "\n");
-      } else {
-	fprintf(stderr, "initGNUnetServerSocket failed.\n");
-	ret = -1;
-      }
-    } else {
-      fprintf(stderr, "checkSocket faild.\n");
-      ret = -1;
+    if (OK != connection_ensure_connected(clientSocket)) {
+      ret = 42;
+      break;
     }
+    acceptSocket = doAccept(serverSocket);
+    if (acceptSocket == -1) {
+      ret = 43;
+      break;
+    }
+    sh = socket_create(NULL, NULL, acceptSocket);
+    ret = ret | testTransmission(clientSocket, sh);
+    connection_close_temporarily(clientSocket);
+    socket_destroy(sh);
   }
   connection_destroy(clientSocket);
+  CLOSE(serverSocket);
   if (ret > 0)
-    fprintf(stderr, "Error %d\n", ret);
+    fprintf(stderr, 
+	    "Error %d\n", 
+	    ret);
+  GC_free(cfg);
   return ret;
 }

@@ -105,7 +105,6 @@ int connection_read(struct ClientServerConnection * sock,
  * @param sock the socket to write to
  * @param buffer the buffer to write
  * @return OK if the write was sucessful, 
- *         NO if it would block and isBlocking was NO,
  *         SYSERR if the write failed (error will be logged)
  */
 int connection_write(struct ClientServerConnection * sock,

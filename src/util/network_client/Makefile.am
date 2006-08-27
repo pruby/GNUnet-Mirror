@@ -20,5 +20,8 @@ tcpiotest_SOURCES = \
  tcpiotest.c
 tcpiotest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la 
 
+
+EXTRA_DIST = check.conf
