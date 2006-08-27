@@ -15,6 +15,7 @@ Notes:
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring: [RC]
   * util: 
+    + statuscalls: load always extremely high (2^31 ++)
     + network/io: load monitor support
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
