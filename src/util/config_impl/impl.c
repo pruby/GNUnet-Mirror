@@ -210,7 +210,7 @@ _parse_configuration(struct GC_Configuration * cfg,
     if (emptyline == 1)
       continue;
     /* remove tailing whitespace */
-    for (i=strlen(line)-1;(i>=0) && (line[i] == ' ');i--)
+    for (i=strlen(line)-1;(i>=0) && (isspace(line[i]));i--)
       line[i] = '\0';
     if (1 == sscanf(line, "@INLINE@ %191[^\n]", value) ) {
       /* @INLINE@ value */
@@ -232,8 +232,8 @@ _parse_configuration(struct GC_Configuration * cfg,
       /* tag = value */
       /* Strip LF */
       i = strlen(value) - 1;
-      if (i >= 0 && value[i] == '\r')
-        value[i] = '\0';
+      while ((i >= 0) && (isspace(value[i])))
+        value[i--] = '\0';
       /* remove quotes */
       i = 0;
       if (value[0] == '"') {
@@ -622,35 +622,6 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
   return ret;
 }
 
-/**
- * Get a configuration value that should be a string.
- * @param def default value (use indicated by return value;
- *        will NOT be aliased, maybe NULL)
- * @param value will be set to a freshly allocated configuration
- *        value, or NULL if option is not specified and no default given
- * @return 0 on success, -1 on error, 1 for default
- */
-static int 
-_get_configuration_value_filename(struct GC_Configuration * cfg,
-				  const char * section,
-				  const char * option,
-				  const char * def,
-				  char ** value) {
-  GC_ConfigurationData * data;
-  int ret;
-  char * tmp;
-  
-  data = cfg->data;
-  tmp = NULL;
-  ret = _get_configuration_value_string(cfg, section, option, def, &tmp);
-  if (tmp != NULL) {
-    *value = string_expandFileName(data->ectx, tmp);
-    FREE(tmp);
-  } else {
-    *value = NULL;
-  }
-  return ret;
-}
 
 /**
  * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
@@ -668,6 +639,8 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
   char * prefix;
   char * result;
 
+  if (orig[0] != '$')
+    return orig;
   i = 0;
   while ( (orig[i] != '/') &&
 	  (orig[i] != '\\') &&
@@ -704,6 +677,40 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
   FREE(prefix);
   FREE(orig);
   return result;
+}
+
+/**
+ * Get a configuration value that should be a string.
+ * @param def default value (use indicated by return value;
+ *        will NOT be aliased, maybe NULL)
+ * @param value will be set to a freshly allocated configuration
+ *        value, or NULL if option is not specified and no default given
+ * @return 0 on success, -1 on error, 1 for default
+ */
+static int 
+_get_configuration_value_filename(struct GC_Configuration * cfg,
+				  const char * section,
+				  const char * option,
+				  const char * def,
+				  char ** value) {
+  GC_ConfigurationData * data;
+  int ret;
+  char * tmp;
+  
+  data = cfg->data;
+  tmp = NULL;
+  ret = _get_configuration_value_string(cfg, section, option, def, &tmp);
+  if (tmp != NULL) {
+    tmp = _configuration_expand_dollar(cfg,
+				       section,
+				       tmp);
+    *value = string_expandFileName(data->ectx, 
+				   tmp);
+    FREE(tmp);
+  } else {
+    *value = NULL;
+  }
+  return ret;
 }
 
 static int 

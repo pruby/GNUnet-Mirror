@@ -92,10 +92,11 @@ static int getAddress6(struct GC_Configuration * cfg,
   struct hostent * ip; /* for the lookup of the IP in gnunet.conf */
 
   retval = SYSERR;
+  ipString = NULL;
   if (0 != GC_get_configuration_value_string(cfg,
 					     "NETWORK",
 					     "IP",
-					     NULL,
+					     "",
 					     &ipString)) {
     retval = getAddress6FromHostname(ectx,
 				     address);
@@ -123,8 +124,8 @@ static int getAddress6(struct GC_Configuration * cfg,
 	retval = OK;
       }
     }
-    FREE(ipString);
   }
+  FREE(ipString);  
   return retval;
 }
 

@@ -225,7 +225,7 @@ static int readAndProcess(SelectHandle * sh,
 	 session->rsize + 1024);
   }
   ret = socket_recv(session->sock,
-		    NC_Blocking | NC_IgnoreInt, 
+		    NC_Nonblocking | NC_IgnoreInt, 
 		    &session->rbuff[session->pos],
 		    session->rsize - session->pos,
 		    &recvd);
@@ -254,11 +254,14 @@ static int readAndProcess(SelectHandle * sh,
     if (session->pos < len) 
       break; /* wait for more */    
 
-    sh->mh(sh->mh_cls,
-	   sh,
-	   session->sock,
-	   session->sock_ctx,
-	   pack);
+    if (OK != sh->mh(sh->mh_cls,
+		     sh,
+		     session->sock,
+		     session->sock_ctx,
+		     pack)) {
+      destroySession(sh, session);
+      return SYSERR;
+    }
     /* shrink buffer adequately */
     memmove(&session->rbuff[0],
 	    &session->rbuff[len],
@@ -551,7 +554,8 @@ SelectHandle * select_create(struct GE_Context * ectx,
 			     unsigned int memory_quota) {
   SelectHandle * sh;
 
-  if (0 != LISTEN(sock, 5)) {
+  if ( (0 != LISTEN(sock, 5)) &&
+       (errno != EOPNOTSUPP) ) { /* udp: not supported */
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_IMMEDIATE,
 		    "listen");
@@ -588,7 +592,7 @@ SelectHandle * select_create(struct GE_Context * ectx,
   sh->ch_cls = ch_cls;
   sh->memory_quota = memory_quota;
   sh->timeout = timeout;
-  sh->lock = MUTEX_CREATE(NO);
+  sh->lock = MUTEX_CREATE(YES);
   sh->listen_sock = socket_create(ectx,
 				  mon,
 				  sock);

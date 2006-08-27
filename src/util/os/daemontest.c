@@ -54,11 +54,13 @@ int main(int argc,
     GE_free_context(ectx);
     return 1;
   }
-  if (0 != connection_wait_for_running(ectx,
+  if (OK != connection_wait_for_running(ectx,
 				       cfg,
 				       30 * cronSECONDS)) {
     fprintf(stderr,
 	    "Failed to confirm daemon running (after 30s).\n");
+    /* try killing anyway, just to be sure */
+    os_daemon_stop(ectx, daemon);
     GC_free(cfg);
     GE_free_context(ectx);
     return 1;

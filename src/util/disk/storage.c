@@ -352,8 +352,8 @@ int disk_directory_create(struct GE_Context * ectx,
 	  FREE(rdir);
 	  return SYSERR;
 	}
-	rdir[pos] = DIR_SEPARATOR;
       }
+      rdir[pos] = DIR_SEPARATOR;     
     }
     pos++;
   }

@@ -147,14 +147,16 @@ static void * select_accept_handler(void * ah_cls,
 				    unsigned int addr_len) {
   struct ClientHandle * session;
   IPaddr ip;
+  struct sockaddr_in * a;
 
-  if (addr_len != sizeof(IPaddr))
-    return NULL;
+  if (addr_len != sizeof(struct sockaddr_in)) 
+    return NULL;  
+  a = (struct sockaddr_in *) addr;
   memcpy(&ip,
-	 addr,
-	 addr_len);
-  if (! isWhitelisted(ip))
-    return NULL;
+	 &a->sin_addr,
+	 sizeof(IPaddr));
+  if (! isWhitelisted(ip)) 
+    return NULL;  
   session = MALLOC(sizeof(ClientHandle));
   session->sock = sock;
   return session;
@@ -183,6 +185,10 @@ static void select_close_handler(void * ch_cls,
  */
 int sendToClient(struct ClientHandle * handle,
 		 const MESSAGE_HEADER * message) {
+  GE_LOG(ectx,
+	 GE_INFO | GE_USER | GE_BULK,
+	 "%s: sending reply to client\n",
+	 __FUNCTION__);
   return select_write(selector,
 		      handle->sock,
 		      message,
@@ -208,7 +214,7 @@ static int select_message_handler(void * mh_cls,
   MUTEX_LOCK(handlerlock);
   if (ptyp >= max_registeredType) {
     GE_LOG(ectx,
-	   GE_INFO,
+	   GE_INFO | GE_USER | GE_BULK,
 	   "%s: Message of type %d not understood: no handler registered\n",
 	   __FUNCTION__,
 	   ptyp,
@@ -219,7 +225,7 @@ static int select_message_handler(void * mh_cls,
   callback = handlers[ptyp];
   if (callback == NULL) {
     GE_LOG(ectx,
-	   GE_INFO,
+	   GE_INFO | GE_USER | GE_BULK,
 	   "%s: Message of type %d not understood: no handler registered\n",
 	   __FUNCTION__,
 	   ptyp);
@@ -228,6 +234,13 @@ static int select_message_handler(void * mh_cls,
   } else {
     if (OK != callback(sender,
 		       msg)) {
+#if 0
+      GE_LOG(ectx,
+	     GE_INFO | GE_USER | GE_BULK,
+	     "%s: Message of type %d caused error in handler\n",
+	     __FUNCTION__,
+	     ptyp);
+#endif
       MUTEX_UNLOCK(handlerlock);
       return SYSERR;
     }
@@ -242,7 +255,6 @@ static int select_message_handler(void * mh_cls,
  * the config file.
  */
 static unsigned short getGNUnetPort() {
-  struct servent * pse;	/* pointer to service information entry	*/
   unsigned long long port;
 
   if (-1 == GC_get_configuration_value_number(cfg,
@@ -250,13 +262,9 @@ static unsigned short getGNUnetPort() {
 					      "PORT",
 					      1,
 					      65535,
-					      2086,
-					      &port)) {
-    if ((pse = getservbyname("gnunet", "tcp")))
-      port = htons(pse->s_port);
-    else
-      port = 0;
-  }
+					      2087,
+					      &port)) 
+    port = 0; 
   return (unsigned short) port;
 }
 
@@ -350,7 +358,7 @@ int initTCPServer(struct GE_Context * e,
   selector = select_create(e,
 			   NULL,
 			   listenerFD,
-			   sizeof(IPaddr),
+			   sizeof(struct sockaddr_in),
 			   0, /* no timeout */
 			   &select_message_handler,
 			   NULL,

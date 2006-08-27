@@ -44,15 +44,15 @@ int changeUser(struct GE_Context * ectx,
   if (0 == GC_get_configuration_value_string(cfg,
 					     "GNUNETD",
 					     "USER",
-					     NULL,
+					     "",
 					     &user)) {
     if (OK != os_change_user(ectx,
 			     user)) {
       FREE(user);
       return SYSERR;
     }
-    FREE(user);
   }
+  FREE(user);
   return OK;
 }
 

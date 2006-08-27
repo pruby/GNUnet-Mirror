@@ -316,7 +316,7 @@ int connection_read(struct ClientServerConnection * sock,
 			  &buf[pos],
 			  size - pos,
 			  &pos)) ||
-       (pos != sizeof(unsigned short) + size) ) {
+       (pos + sizeof(unsigned short) != size) ) {
     connection_close_temporarily(sock);
     FREE(buf);
     MUTEX_UNLOCK(sock->readlock);

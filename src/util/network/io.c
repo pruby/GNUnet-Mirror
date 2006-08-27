@@ -94,8 +94,9 @@ socket_create(struct GE_Context * ectx,
 
 void socket_destroy(struct SocketHandle * s) {
   GE_ASSERT(NULL, s != NULL);
-  if (0 != SHUTDOWN(s->handle,
-		    SHUT_RDWR))
+  if ( (0 != SHUTDOWN(s->handle,
+		    SHUT_RDWR)) &&
+       (errno != ENOTCONN) ) 
     GE_LOG_STRERROR(s->ectx,
 		    GE_WARNING | GE_ADMIN | GE_BULK, 
 		    "shutdown");
@@ -153,7 +154,7 @@ int socket_recv(struct SocketHandle * s,
   size_t ret;
 
   socket_set_blocking(s, 
-		      0 == (nc & NC_Blocking));
+		      0 != (nc & NC_Blocking));
   flags = 0;
 #ifdef CYGWIN
   if (0 == (nc & NC_IgnoreInt))
@@ -179,17 +180,16 @@ int socket_recv(struct SocketHandle * s,
 			flags);
     if ( (ret == (size_t) -1) &&
 	 (errno == EINTR) &&
-	 (0 != (nc & NC_IgnoreInt)) )
-      continue;
+	 (0 != (nc & NC_IgnoreInt)) ) 
+      continue;    
     if (ret == (size_t) -1) {
       if (errno == EINTR) {
 	*read = pos;
 	return YES;
       }
-      if ( (errno == EAGAIN) ||
-	   (errno == EWOULDBLOCK) ) {
-	if (0 != (nc & NC_Blocking))
-	  continue;
+      if (errno == EWOULDBLOCK) {
+	if (0 != (nc & NC_Blocking)) 
+	  continue;	
 	*read = pos;
 	return (pos == 0) ? NO : YES;
       }
@@ -198,6 +198,11 @@ int socket_recv(struct SocketHandle * s,
 		      "recv");
       *read = pos;
       return SYSERR;
+    }
+    if (ret == 0) {
+      /* most likely: other side closed connection */
+      *read = pos;
+      return SYSERR; 
     }
     pos += ret;
   } while ( (pos < max) &&
@@ -218,7 +223,7 @@ int socket_recv_from(struct SocketHandle * s,
   size_t ret;
 
   socket_set_blocking(s, 
-		      0 == (nc & NC_Blocking));
+		      0 != (nc & NC_Blocking));
   flags = 0;
 #ifdef CYGWIN
   if (0 == (nc & NC_IgnoreInt))
@@ -253,8 +258,7 @@ int socket_recv_from(struct SocketHandle * s,
 	*read = pos;
 	return YES;
       }
-      if ( (errno == EAGAIN) ||
-	   (errno == EWOULDBLOCK) ) {
+      if (errno == EWOULDBLOCK) {
 	if (0 != (nc & NC_Blocking))
 	  continue;
 	*read = pos;
@@ -265,6 +269,11 @@ int socket_recv_from(struct SocketHandle * s,
 		      "recv");
       *read = pos;
       return SYSERR;
+    }
+    if (ret == 0) {
+      /* most likely: other side closed connection */
+      *read = pos;
+      return SYSERR; 
     }
     pos += ret;
   } while ( (pos < max) &&
@@ -283,7 +292,7 @@ int socket_send(struct SocketHandle * s,
   size_t ret;
 
   socket_set_blocking(s, 
-		      0 == (nc & NC_Blocking));
+		      0 != (nc & NC_Blocking));
   flags = 0;
 #if SOMEBSD || SOLARIS
   if (0 == (nc & NC_Blocking))
@@ -317,8 +326,7 @@ int socket_send(struct SocketHandle * s,
 	*sent = pos;
 	return YES;
       }
-      if ( (errno == EAGAIN) ||
-	   (errno == EWOULDBLOCK) ) {
+      if (errno == EWOULDBLOCK) {
 	if (0 != (nc & NC_Blocking))
 	  continue;
 	*sent = pos;
@@ -329,6 +337,11 @@ int socket_send(struct SocketHandle * s,
 		      "send");
       *sent = pos;
       return SYSERR;
+    }
+    if (ret == 0) {
+      /* strange error; most likely: other side closed connection */
+      *sent = pos;
+      return SYSERR; 
     }
     pos += ret;
   } while ( (pos < max) &&
@@ -349,7 +362,7 @@ int socket_send_to(struct SocketHandle * s,
   size_t ret;
 
   socket_set_blocking(s, 
-		      0 == (nc & NC_Blocking));
+		      0 != (nc & NC_Blocking));
   flags = 0;
 #if SOMEBSD || SOLARIS
   if (0 == (nc & NC_Blocking))
@@ -385,8 +398,7 @@ int socket_send_to(struct SocketHandle * s,
 	*sent = pos;
 	return YES;
       }
-      if ( (errno == EAGAIN) ||
-	   (errno == EWOULDBLOCK) ) {
+      if (errno == EWOULDBLOCK) {
 	if (0 != (nc & NC_Blocking))
 	  continue;
 	*sent = pos;
@@ -397,6 +409,11 @@ int socket_send_to(struct SocketHandle * s,
 		      "send");
       *sent = pos;
       return SYSERR;
+    }
+    if (ret == 0) {
+      /* strange error; most likely: other side closed connection */
+      *sent = pos;
+      return SYSERR; 
     }
     pos += ret;
   } while ( (pos < max) &&

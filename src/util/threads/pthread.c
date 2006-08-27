@@ -184,10 +184,6 @@ static void sigalrmHandler(int sig) {
  * sleep was long enough.
  */
 void PTHREAD_SLEEP(unsigned long long delay) {
-#ifndef MINGW
-  static struct sigaction sig;
-  static struct sigaction old;
-#endif
 #if LINUX || SOLARIS || SOMEBSD || OSX
   struct timespec req;
   struct timespec rem;
@@ -195,18 +191,6 @@ void PTHREAD_SLEEP(unsigned long long delay) {
 #else
   int ret;
   struct timeval timeout;
-#endif
-
-  /* make sure SIGALRM does not kill us */
-#ifndef MINGW
-  memset(&sig, 0, sizeof(struct sigaction));
-  memset(&old, 0, sizeof(struct sigaction));
-  sig.sa_flags = SA_NODEFER;
-  sig.sa_handler =  &sigalrmHandler; 
-  if (0 != sigaction(SIGALRM, &sig, &old))
-    GE_LOG_STRERROR(NULL,
-		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "sigaction");		    
 #endif
 
   /* actual sleep */
@@ -225,7 +209,6 @@ void PTHREAD_SLEEP(unsigned long long delay) {
 #elif WINDOWS
   SleepEx(delay, TRUE);
 #else
-  printf("Select!\n");
   /* fall back to select */
   timeout.tv_sec
     = delay / CRON_UNIT_TO_SECONDS;
@@ -240,13 +223,6 @@ void PTHREAD_SLEEP(unsigned long long delay) {
 		    "select");
 #endif
 
-  /* restore signal handler */
-#ifndef MINGW
-  if (0 != sigaction(SIGALRM, &old, &sig))
-    GE_LOG_STRERROR(NULL,
-		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "sigaction");		    
-#endif
 }
 
 void PTHREAD_STOP_SLEEP(PThread * handle) {
@@ -272,12 +248,7 @@ void PTHREAD_STOP_SLEEP(PThread * handle) {
 	   STRERROR(ret));
     break;
   case ESRCH:
-    GE_LOG(NULL,
-	   GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	   _("`%s' failed with error code %s: %s\n"),
-	   "pthread_kill",
-	   "ESRCH",
-	   STRERROR(ret));
+    /* ignore, thread might have already exited by chance */
     break;
   default:
     GE_LOG(NULL,
@@ -290,4 +261,36 @@ void PTHREAD_STOP_SLEEP(PThread * handle) {
   }
 }
 
-/* end of semaphore.c */
+#ifndef MINGW
+static struct sigaction sig;
+static struct sigaction old;
+#endif
+
+
+/**
+ * Initialize the signal handlers, etc.
+ */
+void __attribute__ ((constructor)) pthread_handlers_ltdl_init() {
+  /* make sure SIGALRM does not kill us */
+#ifndef MINGW
+  memset(&sig, 0, sizeof(struct sigaction));
+  memset(&old, 0, sizeof(struct sigaction));
+  sig.sa_flags = SA_NODEFER;
+  sig.sa_handler =  &sigalrmHandler; 
+  if (0 != sigaction(SIGALRM, &sig, &old))
+    GE_LOG_STRERROR(NULL,
+		    GE_WARNING | GE_ADMIN | GE_BULK,
+		    "sigaction");		    
+#endif
+}
+
+void __attribute__ ((destructor)) pthread_handlers_ltdl_fini() {
+#ifndef MINGW
+  if (0 != sigaction(SIGALRM, &old, &sig))
+    GE_LOG_STRERROR(NULL,
+		    GE_WARNING | GE_ADMIN | GE_BULK,
+		    "sigaction");		    
+#endif
+}
+
+/* end of pthread.c */

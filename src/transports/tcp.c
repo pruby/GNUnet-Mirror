@@ -347,18 +347,15 @@ static int reloadConfiguration(void * ctx,
 	
   MUTEX_LOCK(tcplock);
   FREENONNULL(filteredNetworks_);
-  if (0 != GC_get_configuration_value_string(cfg,
-					     "TCP",
-					     "BLACKLIST",
-					     NULL,
-					     &ch)) 
-    filteredNetworks_ = parse_ipv4_network_specification(ectx,
-							 "");
-  else {
-    filteredNetworks_ = parse_ipv4_network_specification(ectx,
-							 ch);
-    FREE(ch);
-  }
+  ch = NULL;
+  GC_get_configuration_value_string(cfg,
+				    "TCP",
+				    "BLACKLIST",
+				    "",
+				    &ch);
+  filteredNetworks_ = parse_ipv4_network_specification(ectx,
+						       ch);
+  FREE(ch);
   MUTEX_UNLOCK(tcplock);
   /* TODO: error handling! */
   return 0;

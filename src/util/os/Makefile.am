@@ -2,6 +2,8 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 SUBDIRS = .
 
+EXTRA_DIST = check.conf
+
 noinst_LTLIBRARIES = \
   libos.la
 

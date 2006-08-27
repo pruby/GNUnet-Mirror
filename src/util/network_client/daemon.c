@@ -88,15 +88,23 @@ int connection_request_shutdown(struct ClientServerConnection * sock) {
 int connection_wait_for_running(struct GE_Context * ectx,
 				struct GC_Configuration * cfg,
 				cron_t timeout) {
+  cron_t min;
+  int ret;
+
   timeout += get_time();
-  while (OK != connection_test_running(ectx,
-				       cfg)) {
-    PTHREAD_SLEEP(100 * cronMILLIS);
+  while (GNUNET_SHUTDOWN_TEST() == 0) {
+    ret = connection_test_running(ectx,
+				  cfg);
+    if (ret == OK)
+      return OK;
     if (timeout < get_time())
-      return connection_test_running(ectx,
-				     cfg);
+      return SYSERR;
+    min = timeout - get_time();
+    if (min > 100 * cronMILLIS)
+      min = 100 * cronMILLIS;
+    PTHREAD_SLEEP(min);
   }
-  return OK;
+  return SYSERR;
 }
 
 /* end of daemon.c */

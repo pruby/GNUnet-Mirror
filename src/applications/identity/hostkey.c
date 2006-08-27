@@ -117,10 +117,15 @@ void initPrivateKey(struct GE_Context * ectx,
   FREE(gnHome);
   strcat(hostkeyfile, "/");
   strcat(hostkeyfile, HOSTKEYFILE);
-  res = disk_file_read(ectx,
-		       hostkeyfile,
-		       sizeof(unsigned short),
-		       &len);
+  res = 0;
+  if (disk_file_test(ectx,
+		     hostkeyfile)) {
+    res = disk_file_read(ectx,
+			 hostkeyfile,
+			 sizeof(unsigned short),
+			 &len);
+  }
+  encPrivateKey = NULL;
   if (res == sizeof(unsigned short)) {
     encPrivateKey = (PrivateKeyEncoded*) MALLOC(ntohs(len));
     if (ntohs(len) !=
@@ -135,8 +140,7 @@ void initPrivateKey(struct GE_Context * ectx,
 	     hostkeyfile);
       encPrivateKey = NULL;
     }
-  } else
-    encPrivateKey = NULL;
+  }
   if (encPrivateKey == NULL) { /* make new hostkey */
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_BULK,

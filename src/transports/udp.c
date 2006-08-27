@@ -371,18 +371,15 @@ static int reloadConfiguration() {
 
   MUTEX_LOCK(configLock);
   FREENONNULL(filteredNetworks_);
-  if (0 != GC_get_configuration_value_string(cfg,
-					     "UDP",
-					     "BLACKLIST",
-					     NULL,
-					     &ch)) 
-    filteredNetworks_ = parse_ipv4_network_specification(ectx,
-							 "");
-  else {
-    filteredNetworks_ = parse_ipv4_network_specification(ectx,
-							 ch);
-    FREE(ch);
-  }
+  ch = NULL;
+  GC_get_configuration_value_string(cfg,
+				    "UDP",
+				    "BLACKLIST",
+				    "",
+				    &ch);
+  filteredNetworks_ = parse_ipv4_network_specification(ectx,
+						       ch);
+  FREE(ch);  
   MUTEX_UNLOCK(configLock);
   return 0;
 }

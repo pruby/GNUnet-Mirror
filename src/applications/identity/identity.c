@@ -219,11 +219,13 @@ static void addHostToKnown(const PeerIdentity * identity,
     fn = MALLOC(strlen(trustDirectory)+sizeof(EncName)+1);
     strcpy(fn, trustDirectory);
     strcat(fn, (char*) &fil);
-    if (sizeof(unsigned int) ==
-	disk_file_read(ectx, 
-		       fn,
-		       sizeof(unsigned int),
-		       &trust)) {
+    if ( (disk_file_test(ectx,
+			 fn) == YES) &&
+	 (sizeof(unsigned int) ==
+	  disk_file_read(ectx, 
+			 fn,
+			 sizeof(unsigned int),
+			 &trust)) ) {
       entry->trust = ntohl(trust);
     } else {
       entry->trust = 0;
@@ -337,18 +339,33 @@ static int cronHelper(const char * filename,
 		    strlen(networkIdDirectory) + 1);
   strcpy(fullname, networkIdDirectory);
   strcat(fullname, filename);
-  if (0 == UNLINK(fullname))
-    GE_LOG(ectx,
-	   GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
-	   _("File `%s' in directory `%s' does not match naming convention. "
-	     "Removed.\n"),
-	   filename,
-	   networkIdDirectory);
-  else
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_BULK,
-			 "unlink",
-			 fullname);
+  if (disk_file_test(ectx, fullname) == YES) {
+    if (0 == UNLINK(fullname))
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+	     _("File `%s' in directory `%s' does not match naming convention. "
+	       "Removed.\n"),
+	     filename,
+	     networkIdDirectory);
+    else
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_USER | GE_BULK,
+			   "unlink",
+			   fullname);
+  } else if (disk_directory_test(ectx, fullname) == YES) {
+    if (0 == RMDIR(fullname)) 
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
+	     _("Directory `%s' in directory `%s' does not match naming convention. "
+	       "Removed.\n"),
+	     filename,
+	     networkIdDirectory);
+    else
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_USER | GE_BULK,
+			   "rmdir",
+			   fullname);
+  }
   FREE(fullname);
   return OK;
 }
@@ -519,16 +536,19 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   fn = getHostFileName(&msg->senderIdentity,
 		       ntohs(msg->protocol));
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  size = disk_file_read(ectx,
-			fn,
-			MAX_BUFFER_SIZE,
-			buffer);
-  oldMsg = (P2P_hello_MESSAGE*) buffer;
-  if ((unsigned int)size == P2P_hello_MESSAGE_size(oldMsg)) {
-    if (ntohl(oldMsg->expirationTime) > ntohl(msg->expirationTime)) {
-      FREE(fn);
-      FREE(buffer);
-      return; /* have more recent hello in stock */
+  if (disk_file_test(ectx,
+		     fn) == YES) {
+    size = disk_file_read(ectx,
+			  fn,
+			  MAX_BUFFER_SIZE,
+			  buffer);
+    oldMsg = (P2P_hello_MESSAGE*) buffer;
+    if ((unsigned int)size == P2P_hello_MESSAGE_size(oldMsg)) {
+      if (ntohl(oldMsg->expirationTime) > ntohl(msg->expirationTime)) {
+	FREE(fn);
+	FREE(buffer);
+	return; /* have more recent hello in stock */
+      }
     }
   }
   disk_file_write(ectx,
@@ -1116,6 +1136,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
 						      &gnHome));
   if (gnHome == NULL)
     return NULL;
+  disk_directory_create(ectx, gnHome);
   tmp = MALLOC(strlen(gnHome) + strlen(HOST_DIR) + 2);
   strcpy(tmp, gnHome);
   strcat(tmp, DIR_SEPARATOR_STR);

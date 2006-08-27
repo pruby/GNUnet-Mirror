@@ -147,10 +147,10 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
   }
   GE_LOG(ectx,
 	 GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-	 _("Could not find interface `%s' in `%s', "
+	 _("Could not find interface `%s' using `%s', "
 	   "trying to find another interface.\n"),
-	 "ioctl",
-      interfaces);
+	 interfaces,
+	 "ioctl");
   /* if no such interface exists, take any interface but loopback */
   for (i=0;i<ifCount;i++){
     if (ioctl(sockfd, SIOCGIFADDR, &ifr[i]) != 0)
@@ -180,8 +180,8 @@ static int getAddressFromIOCTL(struct GC_Configuration * cfg,
   GE_LOG(ectx,
 	 GE_WARNING | GE_USER | GE_BULK,
 	 _("Could not obtain IP for interface `%s' using `%s'.\n"),
-	 "ioctl",
-      interfaces);
+	 interfaces,
+	 "ioctl");
   FREE(interfaces);
   return SYSERR;
 #else /* MinGW */
@@ -305,10 +305,11 @@ static int getAddress(struct GC_Configuration * cfg,
   char * ipString;
   int retval;
 
+  ipString = NULL;
   if (0 != GC_get_configuration_value_string(cfg,
 					     "NETWORK",
 					     "IP",
-					     NULL,
+					     "",
 					     &ipString)) {
 #if LINUX || SOMEBSD || MINGW
     if (OK == getAddressFromIOCTL(cfg,
@@ -323,8 +324,8 @@ static int getAddress(struct GC_Configuration * cfg,
     retval = get_host_by_name(ectx,
 			      ipString,
 			      address);
-    FREE(ipString);
   }
+  FREE(ipString);
   return retval;
 }
 

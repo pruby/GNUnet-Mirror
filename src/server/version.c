@@ -30,7 +30,8 @@
 #include "gnunet_directories.h"
 #include "version.h"
 
-#define VERSIONFILE "state.sdb/GNUNET-VERSION"
+#define VERSIONFILE "/state.sdb/GNUNET-VERSION"
+#define VERSIONDIR "/state.sdb/"
 
 /**
  * Extend string by "section:part=val;" where
@@ -128,6 +129,9 @@ static char * getVersionFileName(struct GE_Context * ectx,
     return NULL;
   cn = MALLOC(strlen(en) + strlen(VERSIONFILE) + 1);
   strcpy(cn, en);
+  strcat(cn, VERSIONDIR);
+  disk_directory_create(ectx, cn);
+  strcpy(cn, en);
   strcat(cn, VERSIONFILE);
   FREE(en);
   return cn;
@@ -153,12 +157,18 @@ int checkUpToDate(struct GE_Context * ectx,
 	   _("Failed to determine filename used to store GNUnet version information!\n"));
     return OK; /* uh uh */
   }
+  if (disk_file_test(ectx,
+		     fn) != YES) {
+    FREE(fn);
+    upToDate(ectx, cfg); /* first start */
+    return OK;
+  }
   len = disk_file_read(ectx,
 		       fn,
 		       MAX_VS,
 		       version);
   FREE(fn);
-  if (len == -1) {
+  if (len == -1) { /* should never happen -- file should exist */
     upToDate(ectx,
 	     cfg); /* first start */
     return OK;
