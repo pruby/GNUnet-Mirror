@@ -21,7 +21,6 @@ Notes:
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
     + session -- compiles, but fails (peers do not connect!)
-    + kvstore_sqlite -- compiles, but fails!
     + gap
     + fs/ecrs
     + fs/namespace

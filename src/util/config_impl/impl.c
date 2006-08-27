@@ -649,25 +649,28 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
   if (orig[i] == '\0')
     return orig;
   orig[i] = '\0';
-  _get_configuration_value_string(cfg,
-				  section,
-				  &orig[1],
-				  NULL,
-				  &prefix);
-  if (prefix == NULL)
-    _get_configuration_value_string(cfg,
-				    "",
-				    &orig[1],
-				    NULL,
-				    &prefix);
-  if (prefix == NULL) {
-    const char * env = getenv(&orig[1]);
-    if (env != NULL)
-      prefix = STRDUP(env);
-  }
-  if (prefix == NULL) {
-    orig[i] = DIR_SEPARATOR;
-    return orig;
+  prefix = NULL;
+  if (0 != _get_configuration_value_string(cfg,
+					   section,
+					   &orig[1],
+					   "",
+					   &prefix)) {
+    FREE(prefix);
+    if (0 != _get_configuration_value_string(cfg,
+					     "",
+					     &orig[1],
+					     "",
+					     &prefix)) {
+      const char * env = getenv(&orig[1]);
+
+      FREE(prefix);
+      if (env != NULL) {
+	prefix = STRDUP(env);
+      } else {
+	orig[i] = DIR_SEPARATOR;
+	return orig;
+      }
+    }
   }
   result = MALLOC(strlen(prefix) +
                   strlen(&orig[i+1]) + 2);
