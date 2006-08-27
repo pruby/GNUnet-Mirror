@@ -538,8 +538,11 @@ int initCore(struct GE_Context * ectx,
   identity->getPeerIdentity(identity->getPublicPrivateKey(),
 			    &myIdentity);
   applicationCore.myIdentity = &myIdentity; /* core.c */
-  initTCPServer(ectx,
-		cfg);
+  if (initTCPServer(ectx,
+		    cfg) != OK) {
+    releaseService(identity);
+    return SYSERR;
+  }
   initHandler(ectx);
   return OK;
 }

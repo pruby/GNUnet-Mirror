@@ -98,17 +98,32 @@ int gnunet_main(struct GE_Context * ectx) {
     return SYSERR;
   mon = os_network_monitor_create(ectx,
 				  cfg);
-  GE_ASSERT(ectx,
-	    mon != NULL);
+  if (mon == NULL) {
+   if (NO == debug_flag)
+     os_terminal_detach_complete(ectx,
+				filedes,
+				 NO);
+   return SYSERR;
+  }
   cron = cron_create(ectx);
   GE_ASSERT(ectx,
 	    cron != NULL);
   shc_hup = signal_handler_install(SIGHUP, &reread_config);
-  GE_ASSERT(ectx,
-	    OK == initCore(ectx,
-			   cfg,
-			   cron,
-			   mon));
+  if (OK != initCore(ectx,
+		     cfg,
+		     cron,
+		     mon)) {
+    cron_destroy(cron);
+    os_network_monitor_destroy(mon);
+    signal_handler_uninstall(SIGHUP, 
+			     &reread_config,
+			     shc_hup);
+    if (NO == debug_flag)
+      os_terminal_detach_complete(ectx,
+				  filedes,
+				  NO);
+    return SYSERR;
+  }
   initConnection(ectx, cfg, mon, cron); 
   loadApplicationModules();
   writePIDFile(ectx, cfg);

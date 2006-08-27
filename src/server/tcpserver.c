@@ -1,4 +1,4 @@
-+/*
+/*
      This file is part of GNUnet
      (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
@@ -258,7 +258,7 @@ static unsigned short getGNUnetPort() {
   unsigned long long port;
 
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "TCP",
+					      "NETWORK",
 					      "PORT",
 					      1,
 					      65535,
@@ -268,47 +268,11 @@ static unsigned short getGNUnetPort() {
   return (unsigned short) port;
 }
 
-/**
- * Initialize the TCP port and listen for incoming client connections.
- */
-int initTCPServer(struct GE_Context * e,
-		  struct GC_Configuration * c) {
+static int startTCPServer() {
   int listenerFD;
   int listenerPort;
   struct sockaddr_in serverAddr;
   const int on = 1;
-  char * ch;
-
-  cfg = c;
-  ectx = e;
-  if (YES == GC_get_configuration_value_yesno(cfg,
-					      "TCPSERVER",
-					      "DISABLE",
-					      NO))
-    return OK;
-
-  /* move to reload-configuration method! */
-  ch = NULL;
-  if (-1 == GC_get_configuration_value_string(cfg,
-					      "NETWORK",
-					      "TRUSTED",
-					      "127.0.0.0/8;",
-					      &ch)) 
-    return SYSERR;
-  GE_ASSERT(ectx, ch != NULL);
-  trustedNetworks_ = parse_ipv4_network_specification(ectx,
-						      ch);
-  if (trustedNetworks_ == NULL) {
-    GE_LOG(ectx,
-	   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	   _("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
-	   "NETWORK",
-	   "TRUSTED",
-	   ch);    
-    FREE(ch);
-    return SYSERR;
-  }
-  FREE(ch);
 
   listenerPort = getGNUnetPort();
   if (listenerPort == 0)
@@ -354,8 +318,7 @@ int initTCPServer(struct GE_Context * e,
 	   listenerPort);
     return SYSERR;
   }
-  handlerlock = MUTEX_CREATE(YES);
-  selector = select_create(e,
+  selector = select_create(ectx,
 			   NULL,
 			   listenerFD,
 			   sizeof(struct sockaddr_in),
@@ -367,27 +330,10 @@ int initTCPServer(struct GE_Context * e,
 			   &select_close_handler,
 			   NULL,
 			   0 /* no memory quota */);
-  if (selector == NULL) 
+  if (selector == NULL) {
+    CLOSE(listenerFD);
     return SYSERR;  
-  registerCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
-		    &shutdownHandler);
-  return OK;
-}
-
-/**
- * Shutdown the module.
- */
-int stopTCPServer() {
-  if (YES == GC_get_configuration_value_yesno(cfg,
-					      "TCPSERVER",
-					      "DISABLE",
-					      NO))
-    return OK;
-  unregisterCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
-		      &shutdownHandler);
-  GE_ASSERT(ectx, selector != NULL);
-  select_destroy(selector);
-  selector = NULL;
+  }
   return OK;
 }
 
@@ -397,6 +343,8 @@ int doneTCPServer() {
 			for the benefit of gnunet-update
 			and other gnunet-tools that are
 			not gnunetd */
+  unregisterCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
+		      &shutdownHandler);
   MUTEX_DESTROY(handlerlock);
   handlerlock = NULL;
   GROW(handlers,
@@ -406,6 +354,64 @@ int doneTCPServer() {
        exitHandlerCount,
        0);
   FREE(trustedNetworks_);
+  return OK;
+}
+
+/**
+ * Initialize the TCP port and listen for incoming client connections.
+ */
+int initTCPServer(struct GE_Context * e,
+		  struct GC_Configuration * c) {
+  char * ch;
+
+  cfg = c;
+  ectx = e;
+
+  /* move to reload-configuration method! */
+  ch = NULL;
+  if (-1 == GC_get_configuration_value_string(cfg,
+					      "NETWORK",
+					      "TRUSTED",
+					      "127.0.0.0/8;",
+					      &ch)) 
+    return SYSERR;
+  GE_ASSERT(ectx, ch != NULL);
+  trustedNetworks_ = parse_ipv4_network_specification(ectx,
+						      ch);
+  if (trustedNetworks_ == NULL) {
+    GE_LOG(ectx,
+	   GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+	   _("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
+	   "NETWORK",
+	   "TRUSTED",
+	   ch);    
+    FREE(ch);
+    return SYSERR;
+  }
+  FREE(ch);
+  handlerlock = MUTEX_CREATE(YES);
+
+  registerCSHandler(CS_PROTO_SHUTDOWN_REQUEST,
+		    &shutdownHandler);
+  if ( (NO == GC_get_configuration_value_yesno(cfg,
+					       "TCPSERVER",
+					       "DISABLE",
+					       NO)) &&
+       (OK != startTCPServer()) ) {
+    doneTCPServer();
+    return SYSERR;
+  }
+  return OK;
+}
+
+/**
+ * Shutdown the module.
+ */
+int stopTCPServer() {
+  if (selector != NULL) {
+    select_destroy(selector);
+    selector = NULL;
+  }
   return OK;
 }
 
