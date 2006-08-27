@@ -17,36 +17,62 @@ Notes:
   * util: 
     + network/io: load monitor support
     + loggers: SMTP logger
-    + config: call GC change listeners on entire config on registration!!!
-    + make testcases compile & pass again!
+    + use new loggers in for CS error reporting
+  * make testcases compile & pass again:
+    + util/network_client/ 
+    + session
+    + sqstore_sqlite
+    + sqstore_mysql
+    + gap
+    + fs/ecrs
+    + fs/lib
+    + fs/namespace
+    + fs/fsui
+    + kvstore_sqlite      
+    + tbench
+    + rpc     
+    + dht/tools, dht/module
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
-    	o libcurl / libwebserver-gnunet & libesmtp?
+      - libcurl / libmicrohttpd / libesmtp?
   * server:
-    + needs testing, also likely to be missing features
+    + needs more testing
   * applications:
-    + fragmentation, identity,  pingpong, session, transport,
-      stats, topology_default, state, getoption, advertising,
-      traffic, ecrs_core, template, tbench, tracekit, fs/fslib,
-      fs/module, gap, fs/ecrs, fs/uritrack, fs/namespace,
-      fs/fsui, fs/collection, fs/tools, bootstrap_http,
-      sqstore_mysql, topology_f2f, rpc, kvstore_sqlite compile
-    + fs/fsui, fs/collection, fs/uritrack, fs/namespace
-      must still be revised to match new API!
-    + rest: vpn
-    + low priority: chat, dht, testbed
-  * setup missing:
+    + testing needed:
+      - transport,
+      - state
+      - advertising,
+      - ecrs_core
+      - tbench
+      - tracekit
+      - gap
+      - rpc
+    + incomplete (API change-related fixes):
+      - fs/fslib
+      - fs/module 
+      - fs/ecrs
+      - fs/uritrack 
+      - fs/tools
+      - fs/namespace,
+      - fs/collection
+      - fs/fsui
+    + proper use of libcurl to allow abort:
+      - bootstrap_http 
+    + not compiling:
+      - vpn
+      - chat
+      - dht
+      - testbed
+  * setup:
     + gtk config
+      - adopt for new API
+      - gnunet-setup memory leaks (#878)
+      - gnunet-setup category switch update bug (#892)  [ RC ]
     + gtk wizard
     + ncurses config
     + ncurses wizard
     + scm specification of configuration
-- adapt util testcases and main GNUnet codebase
-- use new util to improve error handling capabilities
-- use new util to clean up gnunet-setup
 - fix known bugs (see Mantis for updates):
-  * gnunet-setup memory leaks (#878)
-  * gnunet-setup category switch update bug (#892)  [ RC ]
   * file/socket leak (#955)
   * Windows installer, uninstall: Remove account [Nils, RC]
 - testing:

@@ -29,5 +29,7 @@ TESTS = $(check_PROGRAMS)
 fragmentationtest_SOURCES = \
  fragmentationtest.c 
 fragmentationtest_LDADD = \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/libgnunetutil.la  
 
