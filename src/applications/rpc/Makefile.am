@@ -36,4 +36,5 @@ parameterstest_SOURCES = \
   parameterstest.c 
 
 parameterstest_LDADD = \
+  $(top_builddir)/src/util/containers/libgnunetutil_containers.la \
   $(top_builddir)/src/util/libgnunetutil.la 

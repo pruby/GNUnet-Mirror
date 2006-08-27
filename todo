@@ -28,7 +28,6 @@ Notes:
     + fs/fsui
     + kvstore_sqlite      
     + tbench
-    + rpc     
     + dht/tools, dht/module
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
