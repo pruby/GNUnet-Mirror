@@ -1,9 +1,29 @@
+/*
+      This file is part of GNUnet
+      (C) 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+
+      GNUnet is free software; you can redistribute it and/or modify
+      it under the terms of the GNU General Public License as published
+      by the Free Software Foundation; either version 2, or (at your
+      option) any later version.
+
+      GNUnet is distributed in the hope that it will be useful, but
+      WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+      General Public License for more details.
+
+      You should have received a copy of the GNU General Public License
+      along with GNUnet; see the file COPYING.  If not, write to the
+      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+      Boston, MA 02111-1307, USA.
+*/
 /**
- * @file test/tcpiotest.c
- * @brief testcase for util/tcpiotest.c
+ * @file util/network_client/tcpiotest.c
+ * @brief testcase for util/network_client/tcpiotest.c
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_network_client.h"
 #include "platform.h"
 
 static int openServerSocket() {
@@ -15,11 +35,12 @@ static int openServerSocket() {
   listenerPort = getGNUnetPort();
   /* create the socket */
   while ( (listenerFD = SOCKET(PF_INET, SOCK_STREAM, 0)) < 0) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	"ERROR opening socket (%s).  "
-	"No client service started.  "
-	"Trying again in 30 seconds.\n",
-	STRERROR(errno));
+    GE_LOG(NULL,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   "ERROR opening socket (%s).  "
+	   "No client service started.  "
+	   "Trying again in 30 seconds.\n",
+	   STRERROR(errno));
     sleep(30);
   }
 
@@ -41,19 +62,21 @@ static int openServerSocket() {
   if (BIND (listenerFD,
 	   (struct sockaddr *) &serverAddr,
 	    sizeof(serverAddr)) < 0) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	"ERROR (%s) binding the TCP listener to port %d. "
-	"Test failed.  Is gnunetd running?\n",
-	STRERROR(errno),
-	listenerPort);
+    GE_LOG(NULL,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   "ERROR (%s) binding the TCP listener to port %d. "
+	   "Test failed.  Is gnunetd running?\n",
+	   STRERROR(errno),
+	   listenerPort);
     return -1;
   }
 
   /* start listening for new connections */
   if (0 != LISTEN(listenerFD, 5)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	" listen failed: %s\n",
-	STRERROR(errno));
+    GE_LOG(NULL,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   " listen failed: %s\n",
+	   STRERROR(errno));
     return -1;
   }
   return listenerFD;
@@ -71,68 +94,29 @@ static int doAccept(int serverSocket) {
 			(struct sockaddr *)&clientAddr,
 			&lenOfIncomingAddr);
     if (incomingFD < 0) {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  "ERROR accepting new connection (%s).\n",
-	  STRERROR(errno));
+      GE_LOG(NULL,
+	     GE_ERROR | GE_BULK | GE_USER,
+	     "ERROR accepting new connection (%s).\n",
+	     STRERROR(errno));
       continue;
     }
   }
   return incomingFD;
 }
 
-/**
- * Perform option parsing from the command line.
- */
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  char c;
-
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      { "config",  1, 0, 'c' },
-      { 0,0,0,0 }
-    };
-
-    c = GNgetopt_long(argc,
-		      argv,
-		      "c:",
-		      long_options,
-		      &option_index);
-
-    if (c == -1)
-      break;  /* No more flags to process */
-
-    switch(c) {
-    case 'c':
-      FREENONNULL(setConfigurationString("FILES",
-					 "gnunet.conf",
-					 GNoptarg));
-      break;
-    } /* end of parsing commandline */
-  }
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGLEVEL",
-				     "DEBUG"));
-  return OK;
-}
-
 static int testTransmission(struct ClientServerConnection * a,
 			    struct ClientServerConnection * b) {
-  CS_MESSAGE_HEADER * hdr;
-  CS_MESSAGE_HEADER * buf;
+  MESSAGE_HEADER * hdr;
+  MESSAGE_HEADER * buf;
   int i;
   int j;
 
   hdr = MALLOC(1024);
-  for (i=0;i<1024-sizeof(CS_MESSAGE_HEADER);i+=7) {
+  for (i=0;i<1024-sizeof(MESSAGE_HEADER);i+=7) {
     fprintf(stderr, ".");
     for (j=0;j<i;j++)
       ((char*)&hdr[1])[j] = (char)i+j;
-    hdr->size = htons(i+sizeof(CS_MESSAGE_HEADER));
+    hdr->size = htons(i+sizeof(MESSAGE_HEADER));
     hdr->type = 0;
     if (OK != connection_write(a, hdr)) {
       FREE(hdr);
@@ -143,7 +127,7 @@ static int testTransmission(struct ClientServerConnection * a,
       FREE(hdr);
       return 2;
     }
-    if (0 != memcmp(buf, hdr, i+sizeof(CS_MESSAGE_HEADER))) {
+    if (0 != memcmp(buf, hdr, i+sizeof(MESSAGE_HEADER))) {
       FREE(buf);
       FREE(hdr);
       return 4;
@@ -156,15 +140,15 @@ static int testTransmission(struct ClientServerConnection * a,
 
 static int testNonblocking(struct ClientServerConnection * a,
 			   struct ClientServerConnection * b) {
-  CS_MESSAGE_HEADER * hdr;
-  CS_MESSAGE_HEADER * buf;
+  MESSAGE_HEADER * hdr;
+  MESSAGE_HEADER * buf;
   int i;
   int cnt;
 
   hdr = MALLOC(1024);
-  for (i=0;i<1024-sizeof(CS_MESSAGE_HEADER);i+=11)
+  for (i=0;i<1024-sizeof(MESSAGE_HEADER);i+=11)
     ((char*)&hdr[1])[i] = (char)i;
-  hdr->size = htons(64+sizeof(CS_MESSAGE_HEADER));
+  hdr->size = htons(64+sizeof(MESSAGE_HEADER));
   hdr->type = 0;
   while (OK == connection_writeNonBlocking(a,
 					hdr))
@@ -181,7 +165,7 @@ static int testNonblocking(struct ClientServerConnection * a,
       FREE(hdr);
       return 16;
     }
-    if (0 != memcmp(buf, hdr, 64+sizeof(CS_MESSAGE_HEADER))) {
+    if (0 != memcmp(buf, hdr, 64+sizeof(MESSAGE_HEADER))) {
       printf("Failure in message %u.  Headers: %d ? %d\n",
 	     i,
 	     buf->type,
@@ -207,7 +191,7 @@ static int testNonblocking(struct ClientServerConnection * a,
     FREE(hdr);
     return 128;
   }
-  if (0 != memcmp(buf, hdr, 64+sizeof(CS_MESSAGE_HEADER))) {
+  if (0 != memcmp(buf, hdr, 64+sizeof(MESSAGE_HEADER))) {
     FREE(buf);
     FREE(hdr);
     return 256;
@@ -225,12 +209,10 @@ int main(int argc, char * argv[]){
   struct ClientServerConnection acceptSocket;
 
   ret = 0;
-  initUtil(argc, argv, &parseCommandLine);
   serverSocket = openServerSocket();
   clientSocket = getClientSocket();
   if (serverSocket == -1) {
     connection_destroy(clientSocket);
-    doneUtil();
     return 1;
   }
   for (i=0;i<2;i++) {
@@ -254,7 +236,6 @@ int main(int argc, char * argv[]){
     }
   }
   connection_destroy(clientSocket);
-  doneUtil();
   if (ret > 0)
     fprintf(stderr, "Error %d\n", ret);
   return ret;

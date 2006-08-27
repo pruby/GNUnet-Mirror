@@ -27,17 +27,17 @@ bloomtest_SOURCES = \
  bloomtest.c
 bloomtest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_containers.la 
+ $(top_builddir)/src/util/containers/libgnunetutil_containers.la 
 
 hashtabletest_SOURCES = \
  hashtabletest.c
 hashtabletest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  \
- $(top_builddir)/src/util/libgnunetutil_containers.la 
+ $(top_builddir)/src/util/containers/libgnunetutil_containers.la 
 
 vectortest_SOURCES = \
  vectortest.c
 vectortest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  \
- $(top_builddir)/src/util/libgnunetutil_containers.la   
+ $(top_builddir)/src/util/containers/libgnunetutil_containers.la   
 

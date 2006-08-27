@@ -18,12 +18,14 @@
      Boston, MA 02111-1307, USA.
 */
 /**
- * @file test/bloomtest.c
+ * @file test/containers/bloomtest.c
  * @brief Testcase for the bloomfilter.
  * @author Igor Wronsky
  */
 
 #include "gnunet_util.h"
+#include "gnunet_util_containers.h"
+#include "gnunet_util_crypto.h"
 #include "platform.h"
 
 #define K 4
@@ -43,10 +45,12 @@ int main(int argc, char *argv[]) {
   int ok;
   int falseok;
 
-  initUtil(argc, argv, NULL);
   srand(1);
   UNLINK("/tmp/bloomtest.dat");
-  bf = loadBloomfilter("/tmp/bloomtest.dat", SIZE, K);
+  bf = loadBloomfilter(NULL,
+		       "/tmp/bloomtest.dat", 
+		       SIZE,
+		       K);
 
   for(i=0;i<200;i++) {
     nextHC(&tmp);
@@ -63,13 +67,15 @@ int main(int argc, char *argv[]) {
     printf(" Got %d elements out of"
 	   "200 expected after insertion.\n",
 	   ok);
-    doneUtil();
     return -1;
   }
   freeBloomfilter(bf);
 
 
-   bf=loadBloomfilter("/tmp/bloomtest.dat", SIZE, K);
+  bf=loadBloomfilter(NULL,
+		     "/tmp/bloomtest.dat", 
+		     SIZE,
+		     K);
 
   srand(1);
   ok=0;
@@ -82,7 +88,6 @@ int main(int argc, char *argv[]) {
     printf(" Got %d elements out of 200"
 	   "expected after reloading.\n",
 	   ok);
-    doneUtil();
     return -1;
   }
 
@@ -105,7 +110,6 @@ int main(int argc, char *argv[]) {
     printf(" Expected 100 elements in filter"
 	   " after adding 200 and deleting 100, got %d\n",
 	   ok);
-    doneUtil();
     return -1;
   }
 
@@ -121,8 +125,7 @@ int main(int argc, char *argv[]) {
   freeBloomfilter(bf);
 
   UNLINK("/tmp/bloomtest.dat");
-  doneUtil();
-  return(0);
+  return 0;
 }
 
 

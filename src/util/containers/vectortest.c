@@ -1,5 +1,6 @@
 /*
       This file is part of GNUnet
+      (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -21,8 +22,9 @@
  * This is a testcase for the vector, waiting to be extended.
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_containers.h"
+#include "platform.h"
 
 #define DUMP(v) fprintf(stderr, "At %d: \n", __LINE__); vectorDump(v);
 
