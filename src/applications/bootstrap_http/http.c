@@ -130,14 +130,16 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   bctx.targ = targ;
   bctx.buf = NULL;
   bctx.bsize = 0;
+  url = NULL;
   if (0 != GC_get_configuration_value_string(coreAPI->cfg,
 					     "GNUNETD",
 					     "HOSTLISTURL",
-					     NULL,
+					     "",
 					     &url)) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("No hostlist URL specified in configuration, will not bootstrap.\n"));
+    FREE(url);
     return;
   }  
   bctx.url = url;

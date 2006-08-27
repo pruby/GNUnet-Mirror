@@ -20,7 +20,7 @@ Notes:
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
     + util/network_client/ 
-    + session
+    + session -- compiles, but fails!
     + gap
     + fs/ecrs
     + fs/lib
