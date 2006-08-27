@@ -237,14 +237,14 @@ int main(int argc, char *argv[]) {
   struct GC_Configuration * cfg;
   struct CronManager * cron;
 
- cfg = GC_create_C_impl();
- if (-1 == GC_parse_configuration(cfg,
-				  "check.conf")) {
-   GC_free(cfg);
-   return -1;  
- }
- cron = cron_create(NULL);
-   initCore(NULL,
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  cron = cron_create(NULL);
+  initCore(NULL,
 	   cfg,
 	   cron,
 	   NULL);

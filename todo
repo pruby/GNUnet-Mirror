@@ -22,11 +22,11 @@ Notes:
     + util/network_client/ 
     + fs/lib -- compiles, but fails!
     + session -- compiles, but fails!
+    + kvstore_sqlite -- compiles, but fails!
     + gap
     + fs/ecrs
     + fs/namespace
     + fs/fsui
-    + kvstore_sqlite      
     + tbench
     + dht/tools, dht/module
   * transports:
