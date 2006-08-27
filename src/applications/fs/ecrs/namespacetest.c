@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,6 +26,8 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
 #include "gnunet_ecrs_lib.h"
 #include "ecrs.h"
 
@@ -33,6 +35,8 @@
 #define CHECK(c) { do { if (!(c)) ABORT(); } while(0); }
 
 #define CHECKNAME "gnunet-namespace-test"
+
+static struct GC_Configuration * cfg;
 
 static int testNamespace() {
   HashCode512 root;
@@ -49,12 +53,16 @@ static int testNamespace() {
   };
 
 
-  ECRS_deleteNamespace(CHECKNAME); /* make sure old one is deleted */
+  ECRS_deleteNamespace(NULL,
+		       cfg,
+		       CHECKNAME); /* make sure old one is deleted */
   meta = ECRS_createMetaData();
   adv = ECRS_keywordsToUri(keys);
   hash("root", 4, &root);
   rootURI =
-    ECRS_createNamespace(CHECKNAME,
+    ECRS_createNamespace(NULL,
+			 cfg,
+			 CHECKNAME,
 			 meta,
 			 0,
 			 0,
@@ -65,7 +73,9 @@ static int testNamespace() {
   hash("this", 4, &thisId);
   hash("next", 4, &nextId);
   uri = rootURI; /* just for fun: NS::this advertises NS::root */
-  advURI = ECRS_addToNamespace(CHECKNAME,
+  advURI = ECRS_addToNamespace(NULL,
+			       cfg,
+			       CHECKNAME,
 			       0,
 			       0,
 			       TIME(NULL) + 300,
@@ -76,49 +86,42 @@ static int testNamespace() {
 			       uri,
 			       meta);
   CHECK(NULL != advURI);
-  CHECK(OK == ECRS_deleteNamespace(CHECKNAME));
-  CHECK(SYSERR == ECRS_deleteNamespace(CHECKNAME));
+  CHECK(OK == ECRS_deleteNamespace(NULL,
+				   cfg,
+				   CHECKNAME));
+  CHECK(SYSERR == ECRS_deleteNamespace(NULL,
+				       cfg,
+				       CHECKNAME));
   ECRS_freeMetaData(meta);
   ECRS_freeUri(rootURI);
   ECRS_freeUri(advURI);
   return 0;
 }
 
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "ERROR"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  return OK;
-}
-
 int main(int argc, char * argv[]) {
   pid_t daemon;
   int failureCount = 0;
 
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
-  GE_ASSERT(ectx, daemon > 0);
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
-  PTHREAD_SLEEP(30 * cronSECONDS);
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  daemon  = os_daemon_start(NULL,
+			    cfg,
+			    "peer.conf",
+			    NO);
+  GE_ASSERT(NULL, daemon > 0);
+  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
+						    cfg,
+						    30 * cronSECONDS));
+  PTHREAD_SLEEP(5 * cronSECONDS);
 
   failureCount += testNamespace();
 
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+
   return (failureCount == 0) ? 0 : 1;
 }
 

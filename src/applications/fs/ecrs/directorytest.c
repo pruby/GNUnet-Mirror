@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -83,7 +83,7 @@ static int testDirectory(unsigned int i) {
 	     512,
 	     "gnunet://ecrs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
 	     p);
-    fis[p].uri = ECRS_stringToUri(uri);
+    fis[p].uri = ECRS_stringToUri(NULL, uri);
     if (fis[p].uri == NULL)
       ABORT(); /* error in testcase */
   }
@@ -94,7 +94,8 @@ static int testDirectory(unsigned int i) {
   ECRS_addToMetaData(meta,
 		     EXTRACTOR_AUTHOR,
 		     "An author");
-  if (OK != ECRS_createDirectory(&data,
+  if (OK != ECRS_createDirectory(NULL,
+				 &data,
 				 &dlen,
 				 i,
 				 fis,
@@ -102,7 +103,8 @@ static int testDirectory(unsigned int i) {
     ABORT();
   cls.pos = 0;
   cls.fi = fis;
-  if (i != ECRS_listDirectory(data,
+  if (i != ECRS_listDirectory(NULL,
+			      data,
 			      dlen,
 			      &meta2,
 			      &processor,

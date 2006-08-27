@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,30 +27,17 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
 #include "tree.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
-
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "NOTHING"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  return OK;
-}
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 static int testTerminate(void * unused) {
   return OK;
 }
+
+static struct GC_Configuration * cfg;
 
 static int searchCB(const ECRS_FileInfo * fi,
 		    const HashCode512 * key,
@@ -68,8 +55,7 @@ static int searchCB(const ECRS_FileInfo * fi,
   (*cnt)--;
   if (0 == *cnt)
     return SYSERR; /* abort search */
-  else
-    return OK;
+  return OK;
 }
 
 /**
@@ -78,17 +64,18 @@ static int searchCB(const ECRS_FileInfo * fi,
  */
 static int searchFile(const struct ECRS_URI * uri,
 		      int resultCount) {
-  ECRS_search(uri,
+  ECRS_search(NULL,
+	      cfg,
+	      uri,
 	      0,
 	      60 * 15 * cronSECONDS,
 	      &searchCB,
 	      &resultCount,
 	      &testTerminate,
 	      NULL);
-  if (resultCount <= 0)
-    return OK;
-  else
+  if (resultCount > 0)
     return SYSERR;
+  return OK;
 }
 
 int main(int argc, char * argv[]){
@@ -100,31 +87,40 @@ int main(int argc, char * argv[]){
   struct ECRS_URI * key;
   const char * keywords[6];
 
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
-  GE_ASSERT(ectx, daemon > 0);
-  ok = YES;
-  startCron();
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
-  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
-  sock = getClientSocket();
-  CHECK(sock != NULL);
 
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  daemon  = os_daemon_start(NULL,
+			    cfg,
+			    "peer.conf",
+			    NO);
+  GE_ASSERT(NULL, daemon > 0);
+  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
+						    cfg,
+						    30 * cronSECONDS));
+  ok = YES;
+  PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
+  sock = client_connection_create(NULL, cfg);
+  CHECK(sock != NULL);
   /* ACTUAL TEST CODE */
   /* first, simple insertion => one result */
 #if 0
   printf("Testing search for 'XXtest' with one result.\n");
 #endif
-  uri = ECRS_stringToUri("gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
+  uri = ECRS_stringToUri(NULL,
+			 "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test");
   meta = ECRS_createMetaData();
   keywords[0] = "XXtest";
   keywords[1] = NULL;
 
   key = ECRS_keywordsToUri(keywords);
-  CHECK(OK == ECRS_addToKeyspace(key,
+  CHECK(OK == ECRS_addToKeyspace(NULL,
+				 cfg,
+				 key,
 				 0,
 				 0,
 				 get_time() + 10 * cronMINUTES, /* expire */
@@ -140,11 +136,14 @@ int main(int argc, char * argv[]){
 #if 0
   printf("Testing search for 'XXtest AND binary' with two results.\n");
 #endif
-  uri = ECRS_stringToUri("gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
+  uri = ECRS_stringToUri(NULL,
+			 "gnunet://ecrs/sks/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820/test-different");
   keywords[1] = "binary";
   keywords[2] = NULL;
   key = ECRS_keywordsToUri(keywords);
-  CHECK(OK == ECRS_addToKeyspace(key,
+  CHECK(OK == ECRS_addToKeyspace(NULL,
+				 cfg,
+				 key,
 				 0,
 				 0,
 				 get_time() + 10 * cronMINUTES, /* expire */
@@ -170,10 +169,7 @@ int main(int argc, char * argv[]){
  FAILURE:
   if (sock != NULL)
     connection_destroy(sock);
-  stopCron();
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
   return (ok == YES) ? 0 : 1;
 }
 

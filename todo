@@ -14,6 +14,7 @@ Notes:
 
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring: [RC]
+  * $GNUNET_HOME directory creation (where?)
   * util: 
     + statuscalls: load always extremely high (2^31 ++)
     + network/io: load monitor support
@@ -21,8 +22,8 @@ Notes:
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
     + session -- compiles, but fails (peers do not connect!)
+    + fs/ecrs -- compiles, but searchtest hangs
     + gap
-    + fs/ecrs
     + fs/namespace
     + fs/fsui
     + tbench

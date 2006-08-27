@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -94,13 +94,15 @@ static int testMeta(int i) {
   size = ECRS_sizeofMetaData(m,
 			     ECRS_SERIALIZE_FULL);
   val = MALLOC(size);
-  if (size != ECRS_serializeMetaData(m,
+  if (size != ECRS_serializeMetaData(NULL,
+				     m,
 				     val,
 				     size,
 				     ECRS_SERIALIZE_FULL))
     ABORT();
   ECRS_freeMetaData(m);
-  m = ECRS_deserializeMetaData(val,
+  m = ECRS_deserializeMetaData(NULL,
+			       val,
 			       size);
   if (m == NULL)
     ABORT();
@@ -143,7 +145,8 @@ int testMetaMore(int i) {
   size = ECRS_sizeofMetaData(meta,
 			     ECRS_SERIALIZE_FULL);
   data = MALLOC(size * 4);
-  if (size != ECRS_serializeMetaData(meta,
+  if (size != ECRS_serializeMetaData(NULL,
+				     meta,
 				     data,
 				     size * 4,
 				     ECRS_SERIALIZE_FULL))
@@ -161,10 +164,9 @@ int main(int argc, char * argv[]) {
   for (i=1;i<255;i++)
     failureCount += testMetaMore(i);
 
-  if (failureCount == 0)
-    return 0;
-  else
+  if (failureCount != 0)
     return 1;
+  return 0;
 }
 
 /* end of metatest.c */

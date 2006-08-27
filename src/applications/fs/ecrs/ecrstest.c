@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,39 +27,24 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
 #include "tree.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
-
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "NOTHING"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  return OK;
-}
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 static int testTerminate(void * unused) {
   return OK;
 }
 
+static struct GC_Configuration * cfg;
+
 static char * makeName(unsigned int i) {
   char * name;
   char * fn;
 
-  fn = STRDUP("/tmp/gnunet-ecrstest");
-  name = expandFileName(fn);
-  disk_directory_create(ectx, name);
-  FREE(fn);
+  name = STRDUP("/tmp/gnunet-ecrstest");
+  disk_directory_create(NULL, name);
   fn = MALLOC(strlen(name) + 40);
   SNPRINTF(fn,
 	   strlen(name) + 40,
@@ -80,7 +65,9 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   int i;
 
   name = makeName(size);
-  fd = fileopen(name, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
+  fd = disk_file_open(NULL,
+		      name,
+		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
   for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
@@ -89,8 +76,10 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 	 (HashCode512*) &buf[i+sizeof(HashCode512)]);
   WRITE(fd, buf, size);
   FREE(buf);
-  closefile(fd);
-  ret = ECRS_uploadFile(name,
+  CLOSE(fd);
+  ret = ECRS_uploadFile(NULL,
+			cfg,
+			name,
 			YES, /* index */
 			0, /* anon */
 			0, /* prio */
@@ -110,7 +99,9 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 
     meta = ECRS_createMetaData();
     key = ECRS_keywordsToUri(keywords);
-    ret = ECRS_addToKeyspace(key,
+    ret = ECRS_addToKeyspace(NULL,
+			     cfg,
+			     key,
 			     0,
 			     0,
 			     get_time() + 10 * cronMINUTES, /* expire */
@@ -139,11 +130,12 @@ static int searchCB(const ECRS_FileInfo * fi,
   char * tmp;
 
   tmp = ECRS_uriToString(fi->uri);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Search found URI `%s'\n",
-      tmp);
+  GE_LOG(NULL,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Search found URI `%s'\n",
+	 tmp);
   FREE(tmp);
-  GE_ASSERT(ectx, NULL == *my);
+  GE_ASSERT(NULL, NULL == *my);
   *my = ECRS_dupUri(fi->uri);
   return SYSERR; /* abort search */
 }
@@ -157,7 +149,9 @@ static int searchFile(struct ECRS_URI ** uri) {
   struct ECRS_URI * myURI;
 
   myURI = NULL;
-  ret = ECRS_search(*uri,
+  ret = ECRS_search(NULL,
+		    cfg,
+		    *uri,
 		    0,
 		    15 * cronSECONDS,
 		    &searchCB,
@@ -184,13 +178,16 @@ static int downloadFile(unsigned int size,
   char * tmp;
 
   tmp = ECRS_uriToString(uri);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Starting download of `%s'\n",
-      tmp);
+  GE_LOG(NULL,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Starting download of `%s'\n",
+	 tmp);
   FREE(tmp);
   tmpName = makeName(0);
   ret = SYSERR;
-  if (OK == ECRS_downloadFile(uri,
+  if (OK == ECRS_downloadFile(NULL,
+			      cfg,
+			      uri,
 			      tmpName,
 			      0,
 			      NULL,
@@ -198,7 +195,9 @@ static int downloadFile(unsigned int size,
 			      &testTerminate,
 			      NULL)) {
 
-    fd = fileopen(tmpName, O_RDONLY);
+    fd = disk_file_open(NULL,
+			tmpName, 
+			O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
@@ -214,7 +213,7 @@ static int downloadFile(unsigned int size,
       ret = OK;
     FREE(buf);
     FREE(in);
-    closefile(fd);
+    CLOSE(fd);
   }
   UNLINK(tmpName);
   FREE(tmpName);
@@ -227,7 +226,9 @@ static int unindexFile(unsigned int size) {
   char * name;
 
   name = makeName(size);
-  ret = ECRS_unindexFile(name,
+  ret = ECRS_unindexFile(NULL,
+			 cfg,
+			 name,
 			 NULL,
 			 NULL,
 			 &testTerminate,
@@ -260,17 +261,23 @@ int main(int argc, char * argv[]){
   struct ECRS_URI * uri;
   int i;
 
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
-  GE_ASSERT(ectx, daemon > 0);
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  daemon  = os_daemon_start(NULL,
+			    cfg,
+			    "peer.conf",
+			    NO);
+  GE_ASSERT(NULL, daemon > 0);
+  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
+						    cfg,
+						    30 * cronSECONDS));
   ok = YES;
-  startCron();
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
-  sock = getClientSocket();
+  sock = client_connection_create(NULL, cfg);
   CHECK(sock != NULL);
 
   /* ACTUAL TEST CODE */
@@ -294,10 +301,7 @@ int main(int argc, char * argv[]){
  FAILURE:
   if (sock != NULL)
     connection_destroy(sock);
-  stopCron();
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
   return (ok == YES) ? 0 : 1;
 }
 
