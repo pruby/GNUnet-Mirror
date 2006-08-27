@@ -687,25 +687,22 @@ int ONDEMAND_init(CoreAPIForApplication * capi) {
     return SYSERR;
   }
   ectx = capi->ectx;
-  if (0 != GC_get_configuration_value_string(capi->cfg,
-					     "FS",
-					     "INDEX-DIRECTORY",
-					     NULL,
-					     &tmp)) {
-    GC_get_configuration_value_string(capi->cfg,
+  GC_get_configuration_value_filename(capi->cfg,
 				      "GNUNETD",
 				      "GNUNETD_HOME",
 				      VAR_DAEMON_DIRECTORY,
 				      &tmp);
-    GE_ASSERT(ectx,
-	      NULL != tmp);
-    tmp = REALLOC(tmp,
-		  strlen(tmp) +
-		  strlen("/data/shared/") + 1);
-    strcat(tmp, "/data/shared/");
-  }
-  index_directory = string_expandFileName(ectx,
-					  tmp);
+  GE_ASSERT(ectx,
+	    NULL != tmp);
+  tmp = REALLOC(tmp,
+		strlen(tmp) +
+		strlen("/data/shared/") + 1);
+  strcat(tmp, "/data/shared/"); 
+  GC_get_configuration_value_filename(capi->cfg,
+				      "FS",
+				      "INDEX-DIRECTORY",
+				      tmp,
+				      &index_directory);
   FREE(tmp);
   disk_directory_create(ectx,
 			index_directory); /* just in case */  

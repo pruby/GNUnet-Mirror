@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -200,9 +200,12 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   return closure.found;
 }
 
+#define START_DAEMON 0
 
 int main(int argc, char * argv[]){
+#if START_DAEMON
   pid_t daemon;
+#endif
   int ok;
   struct FS_SEARCH_CONTEXT * ctx = NULL;
   struct FS_SEARCH_HANDLE * hnd;
@@ -225,11 +228,13 @@ int main(int argc, char * argv[]){
   }
   now = get_time();
   cron = cron_create(NULL);
+#if START_DAEMON
   daemon = os_daemon_start(NULL,
 			   cfg,
 			   "peer.conf",
 			   NO);
   GE_ASSERT(NULL, daemon > 0);
+#endif
   ok = YES;
   cron_start(cron);
   lock = MUTEX_CREATE(NO);
@@ -361,7 +366,9 @@ int main(int argc, char * argv[]){
   MUTEX_DESTROY(lock);
   cron_stop(cron);
   cron_destroy(cron);
+#if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+#endif
   return (ok == YES) ? 0 : 1;
 }
 
