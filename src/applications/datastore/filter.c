@@ -40,14 +40,13 @@ static char * getFilterName(struct GE_Context * ectx,
   char * fn;
   char * bf;
 
-  if (-1 == GC_get_configuration_value_string(cfg,
+  fn = NULL;
+  if (-1 == GC_get_configuration_value_filename(cfg,
 					      "FS",
 					      "DIR",
 					      VAR_DAEMON_DIRECTORY "/fs",
-					      &bf))
+					      &fn))
     return NULL;
-  fn = string_expandFileName(ectx, bf);
-  FREE(bf);
   if (OK != disk_directory_create(ectx,
 				  fn)) {
     FREE(fn);

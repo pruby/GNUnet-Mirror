@@ -19,7 +19,6 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
-    + fs/lib -- compiles, but fails!
     + session -- compiles, but fails!
     + kvstore_sqlite -- compiles, but fails!
     + gap
