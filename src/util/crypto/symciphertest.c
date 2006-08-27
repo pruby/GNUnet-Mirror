@@ -1,12 +1,32 @@
+/*
+     This file is part of GNUnet.
+     (C) 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+
+     GNUnet is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 2, or (at your
+     option) any later version.
+
+     GNUnet is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with GNUnet; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+
+*/
 /**
  * SymCipher testcode.
  * @author Christian Grothoff
- * @file util/symciphertest.c
+ * @file util/crypto/symciphertest.c
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
-#include "locking_gcrypt.h"
+#include "gnunet_util_crypto.h"
+#include "platform.h"
 
 #define TESTSTRING "Hello World!"
 #define INITVALUE "InitializationVectorValue"
@@ -47,10 +67,10 @@ static int testSymcipher() {
     return 0;
 }
 
-int verifyCrypto()
-{
+int verifyCrypto() {
   SESSIONKEY key;
-  char *result, *res;
+  char * result;
+  char * res;
   int ret;
 
   unsigned char plain[] = {29, 128, 192, 253, 74, 171, 38, 187, 84, 219, 76, 76, 209, 118, 33, 249, 172, 124, 96, 9, 157, 110, 8, 215, 200, 63, 69, 230, 157, 104, 247, 164};
@@ -64,8 +84,7 @@ int verifyCrypto()
   memcpy(key.key, raw_key, SESSIONKEY_LEN);
   key.crc32 = htonl(crc32N(&key, SESSIONKEY_LEN));
 
-  if (key.crc32 != 2344502530)
-  {
+  if (key.crc32 != (unsigned int) 2344502530LL) {
     printf("Static key has different CRC\n");
 
     ret = 1;
@@ -112,18 +131,15 @@ error:
 int main(int argc, char * argv[]) {
   int failureCount = 0;
 
-  GE_ASSERT(ectx, strlen(INITVALUE) > sizeof(INITVECTOR));
-  initLockingGcrypt();
+  GE_ASSERT(NULL, strlen(INITVALUE) > sizeof(INITVECTOR));
   failureCount += testSymcipher();
   failureCount += verifyCrypto();
-  doneLockingGcrypt();
 
-  if (failureCount == 0)
-    return 0;
-  else {
+  if (failureCount != 0) {
     printf("%d TESTS FAILED!\n",failureCount);
     return -1;
   }
+  return 0;
 }
 
 /* end of symciphertest.c */

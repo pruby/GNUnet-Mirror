@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -26,10 +26,10 @@
  * @file util/crypto/weakkeytest.c
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
-#include "locking_gcrypt.h"
+#include "gnunet_util_crypto.h"
 #include <gcrypt.h>
+#include "platform.h"
 
 #define MAX_WEAK_KEY_TRIALS 100000
 #define GENERATE_WEAK_KEYS NO
@@ -96,7 +96,7 @@ static int testWeakKey() {
                       result);
 
   if (size == -1) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return 1;
   }
 
@@ -107,12 +107,12 @@ static int testWeakKey() {
                       res);
 
   if ((strlen(WEAK_KEY_TESTSTRING)+1) != size) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return 1;
   }
   if (0 != strcmp(res,
 		  WEAK_KEY_TESTSTRING)) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return 1;
   } else
     return 0;
@@ -169,17 +169,8 @@ static int getWeakKeys() {
   return number_of_weak_keys;
 }
 
-void initRAND();
-
 int main(int argc, char * argv[]) {
   int weak_keys;
-  int ret;
-
-  if (1)
-    return 0;
-
-  initLockingGcrypt();
-  initRAND();
 
   if (GENERATE_WEAK_KEYS) {
     weak_keys = getWeakKeys();
@@ -195,12 +186,9 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  if (testWeakKey() == 0)
-    ret = 0;
-  else
-    ret = -1;
-  doneLockingGcrypt();
-  return ret;
+  if (testWeakKey() != 0)
+    return -1;
+  return 0;
 }
 
 /* end of weakkeytest.c */

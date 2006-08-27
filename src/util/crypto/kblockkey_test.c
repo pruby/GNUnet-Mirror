@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     Copyright (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,14 +19,14 @@
 */
 
 /**
- * @file util/kblockkey_test.c
- * @brief testcase for util/kblockkey.c
+ * @file util/crypto/kblockkey_test.c
+ * @brief testcase for util/crypto/kblockkey.c
  * @author Christian Grothoff
  */
 
-#include "platform.h"
 #include "gnunet_util.h"
-#include "locking_gcrypt.h"
+#include "gnunet_util_crypto.h"
+#include "platform.h"
 
 #define TESTSTRING "Hello World\0"
 #define MAX_TESTVAL 20
@@ -47,7 +47,7 @@ static int testMultiKey(const char * word) {
   hash(word, strlen(word), &in);
   hostkey = makeKblockKey(&in);
   if (hostkey == NULL) {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     return SYSERR;
   }
   getPublicKey(hostkey, &pkey);
@@ -60,7 +60,7 @@ static int testMultiKey(const char * word) {
     fprintf(stderr, ".");
     hostkey = makeKblockKey(&in);
     if (hostkey == NULL) {
-      GE_BREAK(ectx, 0);
+      GE_BREAK(NULL, 0);
       fprintf(stderr, " ERROR\n");
       return SYSERR;
     }
@@ -68,8 +68,8 @@ static int testMultiKey(const char * word) {
     freePrivateKey(hostkey);
     if (0 != memcmp(&pkey, &pkey1,
 		    sizeof(PublicKey))) {
-      GE_BREAK(ectx, 0);
-    fprintf(stderr, " ERROR\n");
+      GE_BREAK(NULL, 0);
+      fprintf(stderr, " ERROR\n");
       return SYSERR;
     }
   }
@@ -227,21 +227,12 @@ static int testPrivateKeyEncoding(const struct PrivateKey * hostkey) {
   return ok;
 }
 
-
-void initRAND(void); /* hostkey_* */
-void initKBlockKey(void);
-void doneKBlockKey(void);
-
 int main(int argc, char * argv[]) {
   int failureCount = 0;
   HashCode512 in;
   struct PrivateKey * hostkey;
 
-  initLockingGcrypt();
-  initRAND();
-  initKBlockKey();
   makeRandomId(&in);
-
   hostkey = makeKblockKey(&in);
   if (hostkey == NULL) {
     printf("\nmakeKblockKey failed!\n");
@@ -259,14 +250,11 @@ int main(int argc, char * argv[]) {
   if (OK != testPrivateKeyEncoding(hostkey))
     failureCount++;
   freePrivateKey(hostkey);
-  doneKBlockKey();
-  doneLockingGcrypt();
 
-  if (failureCount == 0) {
-    return 0;
-  } else {
+  if (failureCount != 0) {
     printf("\n\n%d TESTS FAILED!\n\n",
 	   failureCount);
     return -1;
   }
+  return 0;
 }

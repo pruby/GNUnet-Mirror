@@ -36,41 +36,41 @@ hashingtest_SOURCES = \
  hashingtest.c
 hashingtest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la  
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  
 
 crctest_SOURCES = \
  crctest.c
 crctest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la  
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  
 
 kblockkey_test_SOURCES = \
  kblockkey_test.c
 kblockkey_test_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la  
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  
 
 hostkeytest_SOURCES = \
  hostkeytest.c
 hostkeytest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la   
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la   
 
 hashtest_SOURCES = \
- hashtest.c
+ hashingtest.c
 hashtest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la  
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  
 
 symciphertest_SOURCES = \
  symciphertest.c
 symciphertest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la   
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la   
 
 weakkeytest_SOURCES = \
  weakkeytest.c
 weakkeytest_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/util/libgnunetutil_crypto.la  
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la  
 
