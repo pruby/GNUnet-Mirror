@@ -20,10 +20,10 @@ Notes:
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
     + util/network_client/ 
+    + fs/lib -- compiles, but fails!
     + session -- compiles, but fails!
     + gap
     + fs/ecrs
-    + fs/lib
     + fs/namespace
     + fs/fsui
     + kvstore_sqlite      

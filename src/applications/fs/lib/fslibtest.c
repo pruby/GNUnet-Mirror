@@ -25,28 +25,16 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_cron.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
 #include "gnunet_fs_lib.h"
 #include "gnunet_protocols.h"
 #include "ecrs_core.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "ERROR"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  return OK;
-}
+static struct CronManager * cron;
 
 static cron_t now;
 
@@ -106,12 +94,13 @@ static Datastore_Value * makeKBlock(unsigned int i,
 
 
 typedef struct {
-  Semaphore * sem;
+  struct SEMAPHORE * sem;
   int found;
   int i;
 } TSC;
 
-static void abortSem(Semaphore * sem) {
+static void abortSem(void * cls) {
+  struct SEMAPHORE * sem = cls;
   SEMAPHORE_UP(sem);
 }
 
@@ -143,11 +132,11 @@ static int searchResultCB(const HashCode512 * key,
   fileBlockGetQuery((DBlock*) &blk[1],
 		    ntohl(blk->size) - sizeof(Datastore_Value),
 		    &ekey);
-  GE_ASSERT(ectx, OK ==
-		fileBlockEncode((DBlock*) &blk[1],
-				ntohl(blk->size) - sizeof(Datastore_Value),
-				&ekey,
-				&eblk));
+  GE_ASSERT(NULL, OK ==
+	    fileBlockEncode((DBlock*) &blk[1],
+			    ntohl(blk->size) - sizeof(Datastore_Value),
+			    &ekey,
+			    &eblk));
   if ( (equalsHashCode512(&ekey,
 			  key)) &&
        (value->size == blk->size) &&
@@ -158,7 +147,7 @@ static int searchResultCB(const HashCode512 * key,
     SEMAPHORE_UP(cls->sem);
     ret = SYSERR;
   } else {
-    GE_BREAK(ectx, 0);
+    GE_BREAK(NULL, 0);
     printf("Received unexpected result.\n");
     ret = OK;
   }
@@ -195,16 +184,18 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
 			   now + 30 * cronSECONDS,
 			   (Datum_Iterator)&searchResultCB,
 			   &closure);
-  addCronJob((CronJob) &abortSem,
-	     30 * cronSECONDS,
-	     0,
-	     closure.sem);
-  SEMAPHORE_DOWN(closure.sem);
+  cron_add_job(cron,
+	       &abortSem,
+	       30 * cronSECONDS,
+	       0,
+	       closure.sem);
+  SEMAPHORE_DOWN(closure.sem, YES);
   FS_stop_search(ctx,
 		 handle);
-  suspendCron();
-  delCronJob((CronJob) &abortSem, 0, closure.sem);
-  resumeCron();
+  cron_suspend(cron, NO);
+  cron_del_job(cron,
+	       &abortSem, 0, closure.sem);
+  cron_resume_jobs(cron, NO);
   SEMAPHORE_DESTROY(closure.sem);
   return closure.found;
 }
@@ -215,7 +206,7 @@ int main(int argc, char * argv[]){
   int ok;
   struct FS_SEARCH_CONTEXT * ctx = NULL;
   struct FS_SEARCH_HANDLE * hnd;
-  Mutex lock;
+  struct MUTEX * lock;
   struct ClientServerConnection * sock;
   Datastore_Value * block;
   Datastore_Value * eblock;
@@ -224,22 +215,34 @@ int main(int argc, char * argv[]){
   int i;
   char * tmpName;
   int fd;
+  struct GC_Configuration * cfg;
 
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
   now = get_time();
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
-  GE_ASSERT(ectx, daemon > 0);
+  cron = cron_create(NULL);
+  daemon = os_daemon_start(NULL,
+			   cfg,
+			   "peer.conf",
+			   NO);
+  GE_ASSERT(NULL, daemon > 0);
   ok = YES;
-  startCron();
-  MUTEX_CREATE(&lock);
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(60 * cronSECONDS));
+  cron_start(cron);
+  lock = MUTEX_CREATE(NO);
+  GE_ASSERT(NULL, 
+	    OK == connection_wait_for_running(NULL,
+					      cfg,
+					      60 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
-  sock = getClientSocket();
+  sock = client_connection_create(NULL, cfg);
   CHECK(sock != NULL);
-  ctx = FS_SEARCH_makeContext(&lock);
+  ctx = FS_SEARCH_makeContext(NULL,
+			      cfg,
+			      lock);
   CHECK(ctx != NULL);
 
   /* ACTUAL TEST CODE */
@@ -276,7 +279,7 @@ int main(int argc, char * argv[]){
     CHECK(-1 != WRITE(fd,
 		      &((DBlock*)&block[1])[1],
 		      ntohl(block->size) - sizeof(Datastore_Value) - sizeof(DBlock)));
-    closefile(fd);
+    CLOSE(fd);
     CHECK(FS_initIndex(sock,
 		       &hc,
 		       tmpName) == YES);
@@ -355,11 +358,10 @@ int main(int argc, char * argv[]){
     FS_SEARCH_destroyContext(ctx);
   if (sock != NULL)
     connection_destroy(sock);
-  MUTEX_DESTROY(&lock);
-  stopCron();
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+  MUTEX_DESTROY(lock);
+  cron_stop(cron);
+  cron_destroy(cron);
+  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
   return (ok == YES) ? 0 : 1;
 }
 
