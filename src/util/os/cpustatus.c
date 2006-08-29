@@ -373,7 +373,7 @@ int os_cpu_get_load(struct GE_Context * ectx,
 					      "LOAD",
 					      "MAXCPULOAD",
 					      0,
-					      100,
+					      10000, /* more than 1 CPU possible */
 					      100,
 					      &maxCPULoad))
     return -1;
@@ -390,6 +390,12 @@ int os_cpu_get_load(struct GE_Context * ectx,
     return ret;
   }
   currentLoad = updateCpuUsage();
+  if (currentLoad == -1) {
+    lastRet = -1;
+    MUTEX_UNLOCK(statusMutex);
+    return -1;
+  }
+    
   ret = (100 * currentLoad) / maxCPULoad;
   /* for CPU, we don't do the 'fast increase' since CPU is much
      more jitterish to begin with */
@@ -409,13 +415,14 @@ int os_cpu_get_load(struct GE_Context * ectx,
 void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init() {
   statusMutex = MUTEX_CREATE(NO);
 #ifdef LINUX
-  proc_stat = fopen("/proc/stat", "r");
+  proc_stat = fopen("/proc/stat", "r");  
   if (NULL == proc_stat)
     GE_LOG_STRERROR_FILE(NULL,
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			 "fopen",
 			 "/proc/stat");
 #endif
+  updateCpuUsage(); /* initialize */
 }
 
 /**
