@@ -102,6 +102,7 @@ static int tcpDisconnect(TSession * tsession) {
     MUTEX_UNLOCK(tcpsession->lock);
     return OK;
   }  
+  MUTEX_UNLOCK(tcpsession->lock);
   select_disconnect(selector,
 		    tcpsession->sock);
   return OK;
@@ -233,7 +234,6 @@ static void select_close_handler(void * ch_cls,
   TCPSession * tcpsession = tsession->internal;
 
   GE_ASSERT(ectx, tcpsession != NULL);
-  MUTEX_UNLOCK(tcpsession->lock);
   MUTEX_DESTROY(tcpsession->lock);
   FREE(tcpsession);  
   FREE(tsession);
