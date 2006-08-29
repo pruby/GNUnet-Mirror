@@ -93,20 +93,9 @@ static struct GE_Context * ectx;
 
 static struct MUTEX * tcplock;
 
-/**
- * Disconnect from a remote node. May only be called
- * on sessions that were aquired by the caller first.
- * For the core, aquiration means to call associate or
- * connect. The number of disconnects must match the
- * number of calls to connect+associate.
- *
- * @param tsession the session that is closed
- * @return OK on success, SYSERR if the operation failed
- */
 static int tcpDisconnect(TSession * tsession) {
   TCPSession * tcpsession = tsession->internal;
 
-  GE_ASSERT(ectx, tcpsession != NULL);
   MUTEX_LOCK(tcpsession->lock);
   tcpsession->users--;
   if (tcpsession->users > 0) {
@@ -115,10 +104,6 @@ static int tcpDisconnect(TSession * tsession) {
   }  
   select_disconnect(selector,
 		    tcpsession->sock);
-  MUTEX_UNLOCK(tcpsession->lock);
-  MUTEX_DESTROY(tcpsession->lock);
-  FREE(tcpsession);  
-  FREE(tsession);
   return OK;
 }
 
@@ -245,7 +230,13 @@ static void select_close_handler(void * ch_cls,
 				 struct SocketHandle * sock,
 				 void * sock_ctx) {
   TSession * tsession = sock_ctx;
-  tcpDisconnect(tsession);
+  TCPSession * tcpsession = tsession->internal;
+
+  GE_ASSERT(ectx, tcpsession != NULL);
+  MUTEX_UNLOCK(tcpsession->lock);
+  MUTEX_DESTROY(tcpsession->lock);
+  FREE(tcpsession);  
+  FREE(tsession);
 }
 
 /**
