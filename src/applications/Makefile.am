@@ -21,6 +21,7 @@ SUBDIRS	= \
  fragmentation \
  getoption \
  fs \
+ kvstore_sqlite \
  state \
  stats \
  gap \
@@ -31,13 +32,13 @@ SUBDIRS	= \
  $(SQLITE_DIR) \
  tbench \
  template \
- $(TESTBED_DIR) \
  topology_default \
  topology_f2f \
  tracekit \
  traffic \
- transport \
- $(VPN_DIR)
+ transport 
+# $(VPN_DIR)
+# $(TESTBED_DIR) 
 # dht 
 # chat
 # kvstore_sqlite
