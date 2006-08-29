@@ -726,7 +726,8 @@ int select_disconnect(struct SelectHandle * sh,
 		      struct SocketHandle * sock) {
   Session * session;
   int i;
- 
+
+  session = NULL;
   MUTEX_LOCK(sh->lock);
   for (i=0;i<sh->sessionCount;i++) 
     if (sh->sessions[i]->sock == sock) {

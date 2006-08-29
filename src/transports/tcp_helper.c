@@ -102,9 +102,13 @@ static int tcpDisconnect(TSession * tsession) {
     MUTEX_UNLOCK(tcpsession->lock);
     return OK;
   }  
-  MUTEX_UNLOCK(tcpsession->lock);
   select_disconnect(selector,
 		    tcpsession->sock);
+  MUTEX_UNLOCK(tcpsession->lock);
+  MUTEX_DESTROY(tcpsession->lock);
+  FREE(tcpsession);  
+  FREE(tsession);
+
   return OK;
 }
 
@@ -230,13 +234,6 @@ static void select_close_handler(void * ch_cls,
 				 struct SelectHandle * sh,
 				 struct SocketHandle * sock,
 				 void * sock_ctx) {
-  TSession * tsession = sock_ctx;
-  TCPSession * tcpsession = tsession->internal;
-
-  GE_ASSERT(ectx, tcpsession != NULL);
-  MUTEX_DESTROY(tcpsession->lock);
-  FREE(tcpsession);  
-  FREE(tsession);
 }
 
 /**
@@ -287,6 +284,11 @@ static int tcpSend(TSession * tsession,
 		    mp,
 		    NO,
 		    important);
+  if ( (OK == ok) &&
+       (stats != NULL) )
+    stats->change(stat_bytesSent,
+		  size);
+
   FREE(mp);
   return ok;
 }
@@ -312,7 +314,7 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
   tsession->internal = tcpSession;
   tsession->ttype = protocolNumber;
   tcpSession->lock = MUTEX_CREATE(YES);
-  tcpSession->users = 2; /* caller + us */
+  tcpSession->users = 1; /* caller */
   tcpSession->sender = helo->senderIdentity;
   tcpSession->expectingWelcome = NO;
   MUTEX_LOCK(tcplock);
@@ -332,10 +334,13 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
 			&welcome.header,
 			sizeof(TCPWelcome),
 			YES)) {
+    /* disconnect caller -- error! */
     tcpDisconnect(tsession);
     MUTEX_UNLOCK(tcplock);
     return SYSERR;
-  }
+  } else if (stats != NULL) 
+    stats->change(stat_bytesSent,
+		  sizeof(TCPWelcome));
   MUTEX_UNLOCK(tcplock);
   *tsessionPtr = tsession;
   return OK;

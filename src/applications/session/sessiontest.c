@@ -31,6 +31,8 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_stats_lib.h"
 
+#define START_PEERS 0
+
 static int ok;
 
 static int waitForConnect(const char * name,
@@ -53,8 +55,10 @@ static int waitForConnect(const char * name,
  * @return 0: ok, -1: error
  */
 int main(int argc, char ** argv) {
+#if START_PEERS
   pid_t daemon1;
   pid_t daemon2;
+#endif
   int ret;
   struct ClientServerConnection * sock;
   int left;
@@ -66,6 +70,7 @@ int main(int argc, char ** argv) {
     GC_free(cfg);
     return -1;  
   }
+#if START_PEERS
   daemon1  = os_daemon_start(NULL,
 			     cfg,
 			     "peer1.conf",
@@ -74,11 +79,13 @@ int main(int argc, char ** argv) {
 			    cfg,
 			    "peer2.conf",
 			    NO);
+#endif
   /* in case existing hellos have expired */
   PTHREAD_SLEEP(30 * cronSECONDS);
   system("cp peer1/data/hosts/* peer2/data/hosts/");
   system("cp peer2/data/hosts/* peer1/data/hosts/");
   ret = 0;
+#if START_PEERS
   if (daemon1 != -1) {
     if (os_daemon_stop(NULL, daemon1) != YES)
       ret = 1;
@@ -97,6 +104,7 @@ int main(int argc, char ** argv) {
 			    cfg,
 			    "peer2.conf",
 			    NO);
+#endif
   if (OK == connection_wait_for_running(NULL,
 					cfg,
 					30 * cronSECONDS)) {
@@ -120,6 +128,7 @@ int main(int argc, char ** argv) {
     printf("Could not establish connection with peer.\n");
   }
   connection_destroy(sock);
+#if START_PEERS
   if (daemon1 != -1) {
     if (os_daemon_stop(NULL, daemon1) != YES)
       ret = 1;
@@ -128,6 +137,7 @@ int main(int argc, char ** argv) {
     if (os_daemon_stop(NULL, daemon2) != YES)
       ret = 1;
   }
+#endif
   if (ok == 0)
     ret = 1;
 

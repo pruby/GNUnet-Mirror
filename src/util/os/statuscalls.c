@@ -65,6 +65,24 @@ typedef struct {
   unsigned long long last_out;
 } NetworkStats;
 
+typedef struct {
+  unsigned long long overload;
+
+  unsigned long long lastSum;
+
+  cron_t lastCall;
+
+  int lastValue;
+
+  int have_last;
+
+  /**
+   * Maximum bandwidth as per config.
+   */
+  unsigned long long max;
+
+} DirectionInfo;
+
 typedef struct LoadMonitor {
   
   /**
@@ -81,16 +99,6 @@ typedef struct LoadMonitor {
    * how many interfaces do we have?
    */
   unsigned int ifcsSize;
-
-  /**
-   * Maximum bandwidth (down) as per config.
-   */
-  unsigned long long maxNetDownBPS;
-
-  /**
-   * Maximum bandwidth (up) as per config.
-   */
-  unsigned long long maxNetUpBPS;
 
   /**
    * How to measure traffic (YES == only gnunetd,
@@ -110,6 +118,10 @@ typedef struct LoadMonitor {
   struct GE_Context * ectx;
 
   struct GC_Configuration * cfg;
+
+  DirectionInfo upload_info;
+
+  DirectionInfo download_info;
 
 } LoadMonitor;
 
@@ -321,14 +333,14 @@ static int resetStatusCalls(void * cls,
 				    0,
 				    (unsigned long long)-1,
 				    50000,
-				    &monitor->maxNetDownBPS);
+				    &monitor->download_info.max);
   GC_get_configuration_value_number(cfg,
 				    "LOAD",
 				    "MAXNETUPBPSTOTAL",
 				    0,
 				    (unsigned long long)-1,
 				    50000,
-				    &monitor->maxNetUpBPS);
+				    &monitor->upload_info.max);
   MUTEX_UNLOCK(monitor->statusMutex);
   return 0;
 }
@@ -344,9 +356,9 @@ unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
   if (monitor == NULL)
     return -1;
   if (dir == Upload)
-    return monitor->maxNetUpBPS;
+    return monitor->upload_info.max;
   else if (dir == Download)
-    return monitor->maxNetDownBPS;
+    return monitor->download_info.max;
   return -1;
 }
 
@@ -357,10 +369,7 @@ unsigned long long os_network_monitor_get_limit(struct LoadMonitor * monitor,
  */
 int os_network_monitor_get_load(struct LoadMonitor * monitor,
 				NetworkDirection dir) {
-  static unsigned long long overload;
-  static unsigned long long lastSum;
-  static cron_t lastCall;
-  static int lastValue;
+  DirectionInfo * di;
   cron_t now;
   unsigned long long maxExpect;
   unsigned long long currentLoadSum;
@@ -370,49 +379,64 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
 
   if (monitor == NULL)
     return 0; /* no limits */
+  if (dir == Upload)
+    di = &monitor->upload_info;
+  else
+    di = &monitor->download_info;
+
   MUTEX_LOCK(monitor->statusMutex);
   now = get_time();
   if ( (monitor->useBasicMethod == NO) &&
-       (now - lastCall > 10 * cronSECONDS) ) 
+       (now - di->lastCall > 10 * cronSECONDS) ) 
     updateInterfaceTraffic(monitor);
-  currentLoadSum = monitor->globalTrafficBetweenProc.last_in;
-  for (i=0;i<monitor->ifcsSize;i++)
-    currentLoadSum += monitor->ifcs[i].last_in;
-  if ( (lastSum > currentLoadSum) ||
-       (lastSum == 0) ||
-       (now < lastCall) ) {
+  if (dir == Upload) {
+    currentLoadSum = monitor->globalTrafficBetweenProc.last_out;
+    for (i=0;i<monitor->ifcsSize;i++)
+      currentLoadSum += monitor->ifcs[i].last_out;
+  } else {
+    currentLoadSum = monitor->globalTrafficBetweenProc.last_in;
+    for (i=0;i<monitor->ifcsSize;i++)
+      currentLoadSum += monitor->ifcs[i].last_in;
+  } 
+  if ( (di->lastSum > currentLoadSum) ||
+       (di->have_last == 0) ||
+       (now < di->lastCall) ) {
     /* integer overflow or first datapoint; since we cannot tell where
        / by how much the overflow happened, all we can do is ignore
        this datapoint.  So we return -1 -- AND reset lastSum / lastCall. */
-    lastSum = currentLoadSum;
-    lastCall = now;
+    di->lastSum = currentLoadSum;
+    di->lastCall = now;
+    di->have_last = 1;
     MUTEX_UNLOCK(monitor->statusMutex);
     return -1;
   }
-  if (monitor->maxNetDownBPS == 0) {
+  if (di->max == 0) {
     MUTEX_UNLOCK(monitor->statusMutex);
     return -1;
   }
 
-  maxExpect = (now - lastCall) * monitor->maxNetDownBPS / cronSECONDS;
-  if (now - lastCall < 5 * cronSECONDS) {
+  maxExpect = (now - di->lastCall) * di->max / cronSECONDS;
+  if (now - di->lastCall < 5 * cronSECONDS) {
     /* return weighted average between last return value and
        load in the last interval */
-    weight = (now - lastCall) * 100 / (5 * cronSECONDS); /* how close are we to lastCall? */
-    ret = (lastValue * (100-weight) + weight * (currentLoadSum - lastSum) / maxExpect) / 2;
+    weight = (now - di->lastCall) * 100 / (5 * cronSECONDS); /* how close are we to lastCall? */
+    if (maxExpect == 0) 
+      ret = di->lastValue;
+    else
+      ret = (di->lastValue * (100-weight) + weight * (currentLoadSum - di->lastSum) / maxExpect) / 2;
     MUTEX_UNLOCK(monitor->statusMutex);
     return ret;
   }
-  currentLoadSum -= lastSum;
-  lastSum += currentLoadSum;
-  currentLoadSum += overload;
-  lastCall = now;
+  currentLoadSum -= di->lastSum;
+  di->lastSum += currentLoadSum;
+  currentLoadSum += di->overload;
+  di->lastCall = now;
   if (currentLoadSum < maxExpect)
-    overload = 0;
+    di->overload = 0;
   else
-    overload = currentLoadSum - maxExpect;
-  lastValue = currentLoadSum * 100 / maxExpect;
-  ret = lastValue;
+    di->overload = currentLoadSum - maxExpect;
+  di->lastValue = currentLoadSum * 100 / maxExpect;
+  ret = di->lastValue;
   MUTEX_UNLOCK(monitor->statusMutex);
   return ret;
 }
