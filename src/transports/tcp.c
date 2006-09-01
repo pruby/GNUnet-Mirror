@@ -31,7 +31,7 @@
 #include "platform.h"
 #include "ip.h"
 
-#define DEBUG_TCP NO
+#define DEBUG_TCP YES
 
 /**
  * after how much time of the core not being associated with a tcp
@@ -252,6 +252,13 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
     socket_destroy(s);
     return SYSERR;
   }
+#if DEBUG_TCP
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Establishing connection to %u.%u.%u.%u:%u\n",
+	 PRIP(ntohl(*(int*)&haddr->ip)),
+	 ntohs(haddr->port));
+#endif
   return tcpConnectHelper(helo,
 			  s,
 			  tcpAPI.protocolNumber,

@@ -191,6 +191,7 @@ int main(int argc,
     return -1;
   }
   ectx = GE_create_context_stderr(NO, 
+				  GE_DEBUG |
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);

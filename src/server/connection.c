@@ -2791,7 +2791,6 @@ void doneConnection() {
   SendCallbackList *scl;
 
   ENTRY();
-  transport->stop();
   GC_detach_change_listener(cfg,
 			    &connectionConfigChangeCallback,
 			    NULL);
@@ -2822,6 +2821,7 @@ void doneConnection() {
     FREE(scl);
   }
   scl_nextTail = NULL;
+  transport->stop();
   releaseService(transport);
   transport = NULL;
   releaseService(identity);

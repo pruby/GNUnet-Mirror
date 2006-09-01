@@ -30,6 +30,8 @@
 #include "platform.h"
 #include "network.h"
 
+#define DEBUG_SELECT YES
+
 /**
  * Select Session handle.
  */
@@ -157,6 +159,12 @@ static void signalSelect(SelectHandle * sh) {
   static char i = '\0';
   int ret;
 
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Signaling select %p.\n",
+	 sh);	 
+#endif
   ret = WRITE(sh->signal_pipe[1],
 	      &i,
 	      sizeof(char));
@@ -178,6 +186,13 @@ static void destroySession(SelectHandle * sh,
 			   Session * s) { 
   int i;
 
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Destroying session %p of select %p.\n",
+	 sh,
+	 s);	 
+#endif
   sh->ch(sh->ch_cls,
 	 sh,
 	 s->sock,
@@ -229,6 +244,14 @@ static int readAndProcess(SelectHandle * sh,
 		    &session->rbuff[session->pos],
 		    session->rsize - session->pos,
 		    &recvd);
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Receiving from session %p of select %p return %d.\n",
+	 sh,
+	 session,
+	 ret);	 
+#endif
   if (ret != OK) {
     destroySession(sh, session);
     return SYSERR; /* other side closed connection */
@@ -286,6 +309,14 @@ static int writeAndProcess(SelectHandle * sh,
   int ret;
   size_t size;
 
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Write and process called for session %p of select %p status %d.\n",
+	 sh,
+	 session,
+	 sh->shutdown);	 
+#endif
   sock = session->sock;
   while (sh->shutdown == NO) {
     ret = socket_send(sock,
@@ -293,6 +324,15 @@ static int writeAndProcess(SelectHandle * sh,
 		      session->wbuff,
 		      session->wpos,
 		      &size);
+#if DEBUG_SELECT
+    GE_LOG(sh->ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	   "Sending %d bytes from session %p of select %p return %d.\n",
+	   session->wpos,
+	   sh,
+	   session,
+	   ret);	 
+#endif
     if (ret == SYSERR) {
       GE_LOG_STRERROR(sh->ectx,
 		      GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
@@ -384,8 +424,22 @@ static void * selectThread(void * ctx) {
       struct SocketHandle * sock = session->sock;
 
       if (! socket_test_valid(sock)) {
+#if DEBUG_SELECT
+	GE_LOG(sh->ectx,
+	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	       "Select %p destroys invalid client handle %p\n",
+	       sh,
+	       session);	 
+#endif
 	destroySession(sh, session);
       } else {
+#if DEBUG_SELECT
+	GE_LOG(sh->ectx,
+	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	       "Select %p adds to select set connection %p\n",
+	       sh,
+	       session);	 
+#endif
 	add_to_select_set(sock, &readSet, &max);
 	add_to_select_set(sock, &errorSet, &max);
 	if (session->wpos > 0)
@@ -422,6 +476,13 @@ static void * selectThread(void * ctx) {
       s = ACCEPT(sh->listen_sock->handle,
 		 (struct sockaddr *) clientAddr,
 		 &lenOfIncomingAddr);
+#if DEBUG_SELECT
+      GE_LOG(sh->ectx,
+	     GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	     "Select %p is accepting connection: %d\n",
+	     sh,
+	     s);	 
+#endif
       if (s == -1) {	
 	GE_LOG_STRERROR(sh->ectx,
 			GE_WARNING | GE_ADMIN | GE_BULK,
@@ -435,6 +496,13 @@ static void * selectThread(void * ctx) {
 		      sock,
 		      clientAddr,
 		      lenOfIncomingAddr);
+#if DEBUG_SELECT
+	GE_LOG(sh->ectx,
+	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	       "Select %p is accepting connection: %p\n",
+	       sh,
+	       sctx);	 
+#endif
 	if (sctx == NULL) {
 	  socket_destroy(sock);
 	} else {
@@ -623,6 +691,12 @@ SelectHandle * select_create(struct GE_Context * ectx,
 void select_destroy(struct SelectHandle * sh) {
   void * unused;
 
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Destroying select %p\n",
+	 sh);	 
+#endif
   sh->shutdown = YES;
   signalSelect(sh);
   PTHREAD_STOP_SLEEP(sh->thread);
@@ -667,6 +741,14 @@ int select_write(struct SelectHandle * sh,
   unsigned short len;
   int fresh_write;
 
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Adding message of size %u to %p of select %p\n",
+	 ntohs(msg->size),
+	 sock,
+	 sh);	 
+#endif
   session = NULL;
   len = ntohs(msg->size);
   MUTEX_LOCK(sh->lock);
@@ -702,6 +784,13 @@ int select_connect(struct SelectHandle * sh,
 		   void * sock_ctx) {
   Session * session;	
   
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Adding connection %p to selector %p\n",
+	 sock,
+	 sh);	 
+#endif
   session = MALLOC(sizeof(Session));
   memset(session, 0, sizeof(Session));
   session->sock = sock;
@@ -727,6 +816,13 @@ int select_disconnect(struct SelectHandle * sh,
   Session * session;
   int i;
 
+#if DEBUG_SELECT
+  GE_LOG(sh->ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Removing connection %p from selector %p\n",
+	 sock,
+	 sh);	 
+#endif
   session = NULL;
   MUTEX_LOCK(sh->lock);
   for (i=0;i<sh->sessionCount;i++) 

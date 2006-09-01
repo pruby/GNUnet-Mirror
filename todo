@@ -16,7 +16,6 @@ Notes:
 - finish util refactoring: [RC]
   * $GNUNET_HOME directory creation (where?)
   * util: 
-    + statuscalls: load always extremely high (2^31 ++)
     + network/io: load monitor support
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
