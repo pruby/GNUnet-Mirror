@@ -79,14 +79,23 @@ static struct GC_Configuration * cfg;
  */
 static int isBlacklisted(const void * addr,
 			 unsigned int addr_len) {
-  const IP6addr * ip = addr;
+  IP6addr ip;
   int ret;
 
-  if (addr_len != sizeof(IP6addr))
+  if (addr_len == sizeof(IP6addr)) {
+    memcpy(&ip,
+	   addr,
+	   sizeof(IP6addr));
+  } else if (addr_len == sizeof(struct sockaddr_in6)) {
+    memcpy(&ip,
+	   &((struct sockaddr_in6*) addr)->sin6_addr,
+	   sizeof(IP6addr));
+  } else { 
     return SYSERR;
+  }
   MUTEX_LOCK(tcplock);
   ret = check_ipv6_listed(filteredNetworks_,
-			  *ip);
+			  ip);
   MUTEX_UNLOCK(tcplock);
   return ret;
 }

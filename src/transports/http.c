@@ -286,9 +286,22 @@ static struct sockaddr_in theProxy;
 /**
  * Check if we are allowed to connect to the given IP.
  */
-static int isBlacklisted(IPaddr ip) {
+static int isBlacklisted(const void * addr,
+			 unsigned int addr_len) {
+  IPaddr ip;
   int ret;
 
+  if (addr_len == sizeof(struct sockaddr_in)) {
+    memcpy(&ip,
+	   &((struct sockaddr_in*) addr)->sin_addr,
+	   sizeof(IPaddr));
+  } else if (addr_len == sizeof(IPaddr)) {
+    memcpy(&ip,
+	   addr,
+	   addr_len);
+  } else {
+    return SYSERR;
+  }
   MUTEX_LOCK(&httplock);
   ret = checkIPListed(filteredNetworks_,
 		      ip);

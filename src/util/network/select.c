@@ -189,9 +189,11 @@ static void destroySession(SelectHandle * sh,
 #if DEBUG_SELECT
   GE_LOG(sh->ectx,
 	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	 "Destroying session %p of select %p.\n",
+	 "Destroying session %p of select %p with %u in read and %u in write buffer.\n",
+	 s,
 	 sh,
-	 s);	 
+	 s->rsize,
+	 s->wsize);	 
 #endif
   sh->ch(sh->ch_cls,
 	 sh,
@@ -247,17 +249,20 @@ static int readAndProcess(SelectHandle * sh,
 #if DEBUG_SELECT
   GE_LOG(sh->ectx,
 	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	 "Receiving from session %p of select %p return %d.\n",
+	 "Receiving from session %p of select %p return %d-%u (%s).\n",
 	 sh,
 	 session,
-	 ret);	 
+	 ret,
+	 recvd,
+	 STRERROR(errno));	 
 #endif
   if (ret != OK) {
     destroySession(sh, session);
     return SYSERR; /* other side closed connection */
   }
   session->pos += recvd;
-  while (sh->shutdown == NO) {
+  while ( (sh->shutdown == NO) &&
+	  (session->pos >= sizeof(MESSAGE_HEADER)) ) {
     pack = (const MESSAGE_HEADER*) &session->rbuff[0];
     len = ntohs(pack->size);
     /* check minimum size */

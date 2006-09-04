@@ -140,15 +140,21 @@ static int listensock(unsigned short port) {
  * Check if we are explicitly forbidden to communicate with this IP.
  */
 static int isBlacklisted(const void * addr,
-			 unsigned int len) {
+			 unsigned int addr_len) {
   IPaddr ip;
   int ret;
 
-  if (len != sizeof(IPaddr))
+  if (addr_len == sizeof(struct sockaddr_in)) {
+    memcpy(&ip,
+	   &((struct sockaddr_in*) addr)->sin_addr,
+	   sizeof(IPaddr));
+  } else if (addr_len == sizeof(IPaddr)) {
+    memcpy(&ip,
+	   addr,
+	   addr_len);
+  } else {
     return SYSERR;
-  memcpy(&ip,
-	 addr,
-	 sizeof(IPaddr));
+  }
   MUTEX_LOCK(configLock);
   ret = check_ipv4_listed(filteredNetworks_,
 			  ip);

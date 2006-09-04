@@ -452,10 +452,12 @@ static int exchangeKey(const PeerIdentity * receiver,
 #endif
   if (stats != NULL)
     stats->change(stat_skeySent, 1);
+  printf("Sending session key via plaintext!\n");
   coreAPI->sendPlaintext(tsession,
 			 sendBuffer,
 			 size);
   FREE(sendBuffer);
+  printf("Offering TSession to core!\n");
   coreAPI->offerTSessionFor(receiver,
 			    tsession);
   coreAPI->assignSessionKey(&sk,

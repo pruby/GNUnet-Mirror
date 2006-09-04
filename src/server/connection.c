@@ -1463,7 +1463,7 @@ static void sendBuffer(BufferEntry * be) {
     }
     freeSelectedEntries(be);
   }
-  if((ret == SYSERR) && (be->session.tsession != NULL)) {
+  if ((ret == SYSERR) && (be->session.tsession != NULL)) {
     transport->disconnect(be->session.tsession);
     be->session.tsession = NULL;
   }
@@ -1610,26 +1610,33 @@ static BufferEntry *lookForHost(const PeerIdentity * hostId) {
  * @param hostId for which peer should we get/create a connection
  * @return the table entry for the host
  */
-static BufferEntry *addHost(const PeerIdentity * hostId, int establishSession) {
+static BufferEntry *addHost(const PeerIdentity * hostId, 
+			    int establishSession) {
   BufferEntry *root;
   BufferEntry *prev;
 #if DEBUG_CONNECTION
   EncName enc;
 
-  IFLOG(LOG_EVERYTHING, hash2enc(&hostId->hashPubKey, &enc));
-  LOG(LOG_EVERYTHING, "Adding host `%s' to the connection table.\n", &enc);
+  GE_IFLOG(ectx,
+	   GE_DEBUG, 
+	   hash2enc(&hostId->hashPubKey, 
+		    &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG,
+	 "Adding host `%s' to the connection table.\n",
+	 &enc);
 #endif
 
   ENTRY();
   root = lookForHost(hostId);
-  if(root == NULL) {
+  if (root == NULL) {
     root = CONNECTION_buffer_[computeIndex(hostId)];
     prev = NULL;
-    while(NULL != root) {
+    while (NULL != root) {
       /* settle for entry in the linked list that is down */
-      if((root->status == STAT_DOWN) ||
-         (equalsHashCode512(&hostId->hashPubKey,
-                            &root->session.sender.hashPubKey)))
+      if ( (root->status == STAT_DOWN) ||
+	   (equalsHashCode512(&hostId->hashPubKey,
+			      &root->session.sender.hashPubKey)))
         break;
       prev = root;
       root = root->overflowChain;
@@ -1643,7 +1650,8 @@ static BufferEntry *addHost(const PeerIdentity * hostId, int establishSession) {
     }
     root->session.sender = *hostId;
   }
-  if((root->status == STAT_DOWN) && (establishSession == YES)) {
+  if ( (root->status == STAT_DOWN) &&
+       (establishSession == YES) ) {
     root->lastSequenceNumberReceived = 0;
     session->tryConnect(hostId);
   }
@@ -1731,8 +1739,13 @@ static void shutdownConnection(BufferEntry * be) {
 
   ENTRY();
 #if DEBUG_CONNECTION
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&be->session.sender.hashPubKey, &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Shutting down connection with `%s'\n", &enc);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&be->session.sender.hashPubKey, &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER, 
+	 "Shutting down connection with `%s'\n", 
+	 &enc);
 #endif
   if(be->status == STAT_DOWN)
     return;                     /* nothing to do */
@@ -2288,9 +2301,10 @@ int checkHeader(const PeerIdentity * sender,
   be = lookForHost(sender);
   if((be == NULL) ||
      (be->status == STAT_DOWN) || (be->status == STAT_SETKEY_SENT)) {
-    GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
-        "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
-        &enc);
+    GE_LOG(ectx,
+	   GE_INFO | GE_BULK | GE_USER,
+	   "Decrypting message from host `%s' failed, no sessionkey (yet)!\n",
+	   &enc);
     /* try to establish a connection, that way, we don't keep
        getting bogus messages until the other one times out. */
     if((be == NULL) || (be->status == STAT_DOWN))
@@ -2581,42 +2595,43 @@ int getCurrentSessionKey(const PeerIdentity * peer,
  */
 void considerTakeover(const PeerIdentity * sender, 
 		      TSession * tsession) {
-  BufferEntry *be;
+  BufferEntry * be;
+  unsigned int cost;
 
   ENTRY();
   if(tsession == NULL)
     return;
   MUTEX_LOCK(lock);
-  be = lookForHost(sender);
-  if(be != NULL) {
-    if(be->status != STAT_DOWN) {
-      unsigned int cost = -1;
-      if(be->session.tsession != NULL)
-        cost = transport->getCost(be->session.tsession->ttype);
-      /* Question: doesn't this always do takeover in tcp/udp
-         case, which have the same costs? Should it? -IW
-
-         Answer: this will always switch to TCP in the long run (if
-         that is possible) since udpAssociate always
-         returns SYSERR. This is intended since for long-running
-         sessions, TCP is the better choice. UDP is only better for
-         sending very few messages (e.g. attempting an initial exchange
-         to get to know each other). See also transport paper and the
-         data on throughput. - CG
-       */
-      if(transport->getCost(tsession->ttype) < cost) {
-        if(transport->associate(tsession) == OK) {
-          if(be->session.tsession != NULL)
-            transport->disconnect(be->session.tsession);
-          be->session.tsession = tsession;
-          be->session.mtu = transport->getMTU(tsession->ttype);
-	  fragmentIfNecessary(be);
-        }
-      } /* end if cheaper AND possible */
-    } /* end if connected */
+  be = addHost(sender, NO);
+  if (be == NULL) {
+    MUTEX_UNLOCK(lock);
+    transport->disconnect(tsession);
+    return;
   }
-  MUTEX_UNLOCK(lock);
+  cost = -1;
+  if (be->session.tsession != NULL)
+    cost = transport->getCost(be->session.tsession->ttype);
+  /* Question: doesn't this always do takeover in tcp/udp
+     case, which have the same costs? Should it? -IW
+       
+     Answer: this will always switch to TCP in the long run (if
+     that is possible) since udpAssociate always
+     returns SYSERR. This is intended since for long-running
+     sessions, TCP is the better choice. UDP is only better for
+     sending very few messages (e.g. attempting an initial exchange
+     to get to know each other). See also transport paper and the
+     data on throughput. - CG
+  */
+  if ( (transport->getCost(tsession->ttype) < cost) &&
+       (transport->associate(tsession) == OK) ) {
+    if (be->session.tsession != NULL)
+      transport->disconnect(be->session.tsession);
+    be->session.tsession = tsession;
+    be->session.mtu = transport->getMTU(tsession->ttype);
+    fragmentIfNecessary(be);
+  } 
   transport->disconnect(tsession);
+  MUTEX_UNLOCK(lock);
 }
 
 
@@ -3054,10 +3069,15 @@ void unicastCallback(const PeerIdentity * hostId,
 #if DEBUG_CONNECTION
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&hostId->hashPubKey, &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "%s: sending message to host %s message of size %d\n",
-      __FUNCTION__, &enc, len);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER, 
+	   hash2enc(&hostId->hashPubKey, &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "%s: sending message to host %s message of size %d\n",
+	 __FUNCTION__, 
+	 &enc, 
+	 len);
 #endif
   ENTRY();
   MUTEX_LOCK(lock);

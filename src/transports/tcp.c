@@ -80,11 +80,17 @@ static int isBlacklisted(const void * addr,
   IPaddr ip;
   int ret;
   
-  if (addr_len != sizeof(IPaddr))
+  if (addr_len == sizeof(struct sockaddr_in)) {
+    memcpy(&ip,
+	   &((struct sockaddr_in*) addr)->sin_addr,
+	   sizeof(IPaddr));
+  } else if (addr_len == sizeof(IPaddr)) {
+    memcpy(&ip,
+	   addr,
+	   addr_len);
+  } else {
     return SYSERR;
-  memcpy(&ip,
-	 addr,
-	 addr_len);
+  }
   MUTEX_LOCK(tcplock);
   ret = check_ipv4_listed(filteredNetworks_,
 			  ip);

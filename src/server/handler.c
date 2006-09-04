@@ -529,7 +529,6 @@ static void * threadMain(void * cls) {
     MUTEX_UNLOCK(globalLock_);
     /* end of sync */
     SEMAPHORE_UP(bufferQueueWrite_);
-
     /* handle buffer - now out of sync */
     handleMessage(mp->tsession,
 		  &mp->sender,

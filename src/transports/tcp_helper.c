@@ -103,6 +103,10 @@ static int tcpDisconnect(TSession * tsession) {
     MUTEX_UNLOCK(tcpsession->lock);
     return OK;
   }  
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "TCP disconnect closes socket session.\n");
+
   select_disconnect(selector,
 		    tcpsession->sock);
   MUTEX_UNLOCK(tcpsession->lock);
@@ -176,7 +180,7 @@ static int select_message_handler(void * mh_cls,
       GE_LOG(ectx,
 	     GE_WARNING | GE_USER | GE_BULK,
 	     _("Received malformed message instead of welcome message. Closing.\n"));
-      tcpDisconnect(tsession);
+      tcpDisconnect(tsession);      
       return SYSERR;    
     }
     tcpSession->expectingWelcome = NO;
@@ -357,10 +361,11 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
     = htons(0);
   welcome.clientIdentity
     = *(coreAPI->myIdentity);
-  if (SYSERR == tcpSend(tsession,
-			&welcome.header,
-			sizeof(TCPWelcome),
-			YES)) {
+  if (SYSERR == select_write(selector,
+			     s,			     
+			     &welcome.header,
+			     NO,
+			     YES)) {
 #if DEBUG_TCP
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_BULK, 
