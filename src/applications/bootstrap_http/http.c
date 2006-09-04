@@ -23,11 +23,7 @@
  * @brief HOSTLISTURL support.  Downloads hellos via http.
  * @author Christian Grothoff
  *
- * TODO:
- * make use of curls multi-API to make the http download
- * interruptable (use select & test for terminate callback
- * -- PTHREAD_STOP_SLEEP should interrupt select
- * as well! -- and if not, we can use a small timeout).
+ * TODO: improve error handling (check curl return values)
  */
 
 #include "platform.h"
@@ -123,6 +119,13 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   char * url;
   char * proxy;
   CURL * curl;
+  CURLM * mutli;
+  fd_set rs;
+  fd_set ws;
+  fd_set es;
+  int max;
+  struct timeval tv;
+  int running;
 
   bctx.callback = callback;
   bctx.arg = arg;
@@ -176,8 +179,38 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   curl_easy_setopt(curl, 
 		   CURLOPT_CONNECTTIMEOUT,
 		   15L);
-  curl_easy_perform(curl);
+  multi = curl_multi_init();
+
+  curl_multi_add_handle(multi, curl);
+  while (YES == termTest(targ)) {
+    max = 0;
+    FD_ZERO(&rs);
+    FD_ZERO(&ws);
+    FD_ZERO(&es);
+    curl_multi_fdset(multi,
+		     &rs,
+		     &ws,
+		     &es,
+		     &max);
+    /* use timeout of 1s in case that SELECT is not interrupted by
+       signal (just to increase portability a bit) -- better a 1s
+       delay in the reaction than hanging... */
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    SELECT(max + 1,
+	   &rs,
+	   &ws,
+	   &es,
+	   &tv);
+    if (YES != termTest(targ))
+      break;
+    curl_multi_perform(multi, &running);
+    if (running == 0)
+      break;
+  }
+  curl_multi_remove_handle(multi, curl);
   curl_easy_cleanup(curl);
+  curl_multi_cleanup(multi);
   FREE(url);
   FREE(proxy);
 }
