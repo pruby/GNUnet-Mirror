@@ -119,7 +119,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   char * url;
   char * proxy;
   CURL * curl;
-  CURLM * mutli;
+  CURLM * multi;
   fd_set rs;
   fd_set ws;
   fd_set es;
