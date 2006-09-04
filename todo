@@ -51,8 +51,6 @@ Notes:
       - fs/namespace,
       - fs/collection
       - fs/fsui
-    + proper use of libcurl to allow abort:
-      - bootstrap_http 
     + not compiling:
       - vpn
       - chat
