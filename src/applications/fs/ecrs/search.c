@@ -31,7 +31,7 @@
 #include "ecrs_core.h"
 #include "ecrs.h"
 
-#define DEBUG_SEARCH NO
+#define DEBUG_SEARCH YES
 
 typedef struct {
 
@@ -339,9 +339,10 @@ static int receiveReplies(const HashCode512 * key,
   type = ntohl(value->type);
   size = ntohl(value->size) - sizeof(Datastore_Value);
 #if DEBUG_SEARCH
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Search received reply of type %u and size %u.\n",
-      type, size);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Search received reply of type %u and size %u.\n",
+	 type, size);
 #endif
   if (OK != getQueryFor(size,
 			(const DBlock*) &value[1],
@@ -376,9 +377,10 @@ static int receiveReplies(const HashCode512 * key,
 	IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&ps->decryptKey,
 		       &enc));
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "Decrypting KBlock with key %s.\n",
-	    &enc);
+	GE_LOG(ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "Decrypting KBlock with key %s.\n",
+	       &enc);
 #endif
 	ECRS_decryptInPlace(&ps->decryptKey,
 			    &kb[1],
@@ -617,10 +619,11 @@ int ECRS_search(struct GE_Context * ectx,
       ps->priority = new_priority;
       ps->lastTransmission = now;
 #if DEBUG_SEARCH
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "ECRS initiating FS search with timeout %llus and priority %u.\n",
-	  (ps->timeout - now) / cronSECONDS,
-	  ps->priority);
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "ECRS initiating FS search with timeout %llus and priority %u.\n",
+	     (ps->timeout - now) / cronSECONDS,
+	     ps->priority);
 #endif
       ps->handle
 	= FS_start_search(ctx.sctx,

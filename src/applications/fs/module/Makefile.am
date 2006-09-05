@@ -16,5 +16,6 @@ libgnunetmodule_fs_la_LDFLAGS = \
   -export-dynamic -avoid-version -module
 libgnunetmodule_fs_la_LIBADD = \
  $(top_builddir)/src/applications/fs/libecrs_core.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 

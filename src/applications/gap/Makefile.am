@@ -3,7 +3,8 @@ INCLUDES = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/GNUnet
 
 LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la 
 
 plugin_LTLIBRARIES = \
   libgnunetmodule_gap.la

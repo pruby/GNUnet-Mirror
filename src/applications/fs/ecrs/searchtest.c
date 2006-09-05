@@ -44,7 +44,7 @@ static int searchCB(const ECRS_FileInfo * fi,
 		    int isRoot,
 		    void * closure) {
   int * cnt = closure;
-#if 0
+#if 1
   char * st;
 
   st = ECRS_uriToString(fi->uri);
@@ -108,7 +108,7 @@ int main(int argc, char * argv[]){
   CHECK(sock != NULL);
   /* ACTUAL TEST CODE */
   /* first, simple insertion => one result */
-#if 0
+#if 1
   printf("Testing search for 'XXtest' with one result.\n");
 #endif
   uri = ECRS_stringToUri(NULL,
@@ -133,7 +133,7 @@ int main(int argc, char * argv[]){
 
   /* inserting another URI under the 'XXtest' keyword and under 'binary'
      should give both URIs since ECRS knows nothing about 'AND'ing: */
-#if 0
+#if 1
   printf("Testing search for 'XXtest AND binary' with two results.\n");
 #endif
   uri = ECRS_stringToUri(NULL,

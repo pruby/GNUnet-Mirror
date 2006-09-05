@@ -200,7 +200,7 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   return closure.found;
 }
 
-#define START_DAEMON 1
+#define START_DAEMON 0
 
 int main(int argc, char * argv[]){
 #if START_DAEMON

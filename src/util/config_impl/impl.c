@@ -646,8 +646,6 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
 	  (orig[i] != '\\') &&
           (orig[i] != '\0') )
     i++;
-  if (orig[i] == '\0')
-    return orig;
   orig[i] = '\0';
   prefix = NULL;
   if (0 != _get_configuration_value_string(cfg,

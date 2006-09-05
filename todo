@@ -16,7 +16,6 @@ Notes:
 - finish util refactoring: [RC]
   * $GNUNET_HOME directory creation (where?)
   * util: 
-    + network/io: load monitor support
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:

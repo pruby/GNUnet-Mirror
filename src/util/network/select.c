@@ -481,18 +481,19 @@ static void * selectThread(void * ctx) {
       s = ACCEPT(sh->listen_sock->handle,
 		 (struct sockaddr *) clientAddr,
 		 &lenOfIncomingAddr);
-#if DEBUG_SELECT
-      GE_LOG(sh->ectx,
-	     GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	     "Select %p is accepting connection: %d\n",
-	     sh,
-	     s);	 
-#endif
       if (s == -1) {	
 	GE_LOG_STRERROR(sh->ectx,
 			GE_WARNING | GE_ADMIN | GE_BULK,
 			"accept");
+	break;
       } else {
+#if DEBUG_SELECT
+	GE_LOG(sh->ectx,
+	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	       "Select %p is accepting connection: %d\n",
+	       sh,
+	       s); 
+#endif
 	sock = socket_create(sh->ectx,
 			     sh->load_monitor,
 			     s);

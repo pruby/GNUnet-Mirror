@@ -22,8 +22,6 @@
  * @file util/network/io.c
  * @brief (network) input/output operations
  * @author Christian Grothoff
- *
- * TODO: load monitor support!
  */
 
 #include "gnunet_util_network.h"
@@ -35,13 +33,21 @@
  */
 static struct MUTEX * lock;
 
+static struct SignalHandlerContext * sctx;
+
+static void catcher() {
+}
+
 void __attribute__ ((constructor)) gnunet_network_io_init() {
   lock = MUTEX_CREATE(NO);
+  sctx = signal_handler_install(SIGPIPE, &catcher);
 }
 
 void __attribute__ ((destructor)) gnunet_network_io_fini() {
   MUTEX_DESTROY(lock);
   lock = NULL;
+  signal_handler_uninstall(SIGPIPE, &catcher, sctx);
+  sctx = NULL;
 }
 
 /**
@@ -204,6 +210,10 @@ int socket_recv(struct SocketHandle * s,
       *read = pos;
       return SYSERR; 
     }
+    if (s->mon != NULL)
+      os_network_monitor_notify_transmission(s->mon,
+					     Download,
+					     ret);
     pos += ret;
   } while ( (pos < max) &&
 	    (0 != (nc & NC_Blocking)) );
@@ -275,6 +285,10 @@ int socket_recv_from(struct SocketHandle * s,
       *read = pos;
       return SYSERR; 
     }
+    if (s->mon != NULL)
+      os_network_monitor_notify_transmission(s->mon,
+					     Download,
+					     ret);
     pos += ret;
   } while ( (pos < max) &&
 	    (0 != (nc & NC_Blocking)) );
@@ -343,6 +357,10 @@ int socket_send(struct SocketHandle * s,
       *sent = pos;
       return SYSERR; 
     }
+    if (s->mon != NULL)
+      os_network_monitor_notify_transmission(s->mon,
+					     Upload,
+					     ret);
     pos += ret;
   } while ( (pos < max) &&
 	    (0 != (nc & NC_Blocking)) );
@@ -415,6 +433,10 @@ int socket_send_to(struct SocketHandle * s,
       *sent = pos;
       return SYSERR; 
     }
+    if (s->mon != NULL)
+      os_network_monitor_notify_transmission(s->mon,
+					     Upload,
+					     ret);
     pos += ret;
   } while ( (pos < max) &&
 	    (0 != (nc & NC_Blocking)) );
@@ -438,25 +460,5 @@ int socket_test_valid(struct SocketHandle * s) {
 		     &l) != SOCKET_ERROR;
 #endif
 }
-
-
-/* some systems send us signals, so we'd better
-   catch them (& ignore) */
-#ifndef LINUX
-static void catcher(int sig) {
-  /* re-install signal handler! */
-  signal(sig, &catcher);
-}
-#endif
-
-/* TODO: add destructor to restore signal handler */
-void __attribute__ ((constructor)) gnunet_io_ltdl_init() {
-#if ! (defined(LINUX) || defined(MINGW))
-  if ( SIG_ERR == signal(SIGPIPE, SIG_IGN))
-    if ( SIG_ERR == signal(SIGPIPE, &catcher))
-      LOG_STRERROR(LOG_WARNING, "signal");
-#endif
-}
-
 
 /* end of io.c */
