@@ -106,9 +106,15 @@ static int getSizeRec(const char * filename,
 
 #ifdef HAVE_STAT64
   if (0 != STAT64(fn, &buf)) {
+    GE_LOG_STRERROR_FILE(gfsd->ectx,
+			 GE_WARNING | GE_USER | GE_REQUEST,
+			 "stat64",
+			 fn);
+    FREE(fn);
+    return SYSERR;
+  }
 #else
   if (0 != STAT(fn, &buf)) {
-#endif
     GE_LOG_STRERROR_FILE(gfsd->ectx,
 			 GE_WARNING | GE_USER | GE_REQUEST,
 			 "stat",
@@ -116,6 +122,7 @@ static int getSizeRec(const char * filename,
     FREE(fn);
     return SYSERR;
   }
+#endif
   if ( (! S_ISLNK(buf.st_mode)) ||
        (gfsd->include_sym_links == YES) )
     gfsd->total += buf.st_size;
