@@ -223,11 +223,11 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
   unsigned long long verbose;
 
   stats[0]++; /* one more seen */
-  if (NO == transport->isAvailable(ntohs(helo->protocol))) {
+  if (NO == transport->isAvailable(ntohs(xhelo->protocol))) {
     GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   _(" Transport %d is not being tested\n"),
-	   ntohs(helo->protocol));
+	   ntohs(xhelo->protocol));
     return;
   }
   stats[1]++; /* one more with transport 'available' */
