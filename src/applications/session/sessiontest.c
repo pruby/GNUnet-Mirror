@@ -31,7 +31,7 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_stats_lib.h"
 
-#define START_PEERS 0
+#define START_PEERS 1
 
 static int ok;
 
@@ -124,10 +124,10 @@ int main(int argc, char ** argv) {
 	break;
       }
     }
+    connection_destroy(sock);
   } else {
     printf("Could not establish connection with peer.\n");
   }
-  connection_destroy(sock);
 #if START_PEERS
   if (daemon1 != -1) {
     if (os_daemon_stop(NULL, daemon1) != YES)
