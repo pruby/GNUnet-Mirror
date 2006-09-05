@@ -172,10 +172,10 @@
 
 #ifdef OSX
  #define socklen_t unsigned int
- #define stat64 stat
  #define __BYTE_ORDER BYTE_ORDER
  #define __BIG_ENDIAN BIG_ENDIAN
 #endif
+
 
 #if !HAVE_ATOLL
 long long atoll(const char *nptr);
