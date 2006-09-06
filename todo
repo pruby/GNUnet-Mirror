@@ -14,7 +14,6 @@ Notes:
 
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring: [RC]
-  * $GNUNET_HOME directory creation (where?)
   * util: 
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
