@@ -5,9 +5,8 @@ plugindir = $(libdir)/GNUnet
 LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
-  $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
-  $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
   $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+  $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
 
 bin_PROGRAMS = \
@@ -25,6 +24,8 @@ libgnunetmodule_tbench_la_SOURCES = \
   tbench.c\
   tbench.h
 libgnunetmodule_tbench_la_LIBADD = \
+  $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetmodule_tbench_la_LDFLAGS = \
   -export-dynamic -avoid-version -module

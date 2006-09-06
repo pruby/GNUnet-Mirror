@@ -4,6 +4,7 @@ plugindir = $(libdir)/GNUnet
 
 LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la 
 
 plugin_LTLIBRARIES = \
