@@ -59,7 +59,6 @@ Notes:
       - gnunet-setup memory leaks (#878)
       - gnunet-setup category switch update bug (#892)  [ RC ]
     + gtk wizard
-    + ncurses config
     + ncurses wizard
     + scm specification of configuration
 - fix known bugs (see Mantis for updates):

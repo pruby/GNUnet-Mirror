@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -20,14 +20,21 @@
 
 
 /**
- * @file conf/gconf.h
+ * @file setup/ncurses/wizard_curs.h
  * @brief GNUnet Setup
  * @author Nils Durner
  */
 
-#ifndef GCONF_H
-#define GCONF_H
+#ifndef WIZARD_CURS_H
+#define WIZARD_CURS_H
 
-int wizard_curs_main(int argc, char **argv);
+int wizard_curs_main_ncurses(int argc,
+			     const char **argv,
+			     struct PluginHandle * self,
+			     struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     struct GNS_Context * gns,
+			     const char * filename,
+			     int is_daemon);
 
 #endif

@@ -170,7 +170,7 @@ int main(int argc,
     cfgFilename = config_daemon 
       ? STRDUP(DEFAULT_DAEMON_CONFIG_FILE) 
       : STRDUP(DEFAULT_CLIENT_CONFIG_FILE);
-  dirname = STRDUP(cfgFilename);
+  dirname = string_expandFileName(ectx, cfgFilename);
   i = strlen(dirname) - 1;
   while (i > -1) {
     char ch = dirname[i];

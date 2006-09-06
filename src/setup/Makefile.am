@@ -3,12 +3,12 @@ INCLUDES = -I$(top_srcdir)/src/include
 if HAVE_GTK
  gtk_dir = gtk
 endif
-if HAVE_CURSES
+if HAVE_DIALOG
  curses_dir = ncurses
 endif
 
-SUBDIRS = lib text .
-# $(curses_dir) $(gtk_dir) .
+SUBDIRS = lib text . $(curses_dir)
+# $(gtk_dir) .
 
 plugindir = $(libdir)/GNUnet
 

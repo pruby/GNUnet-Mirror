@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,29 +19,27 @@
 */
 
 /**
- * @file conf/wizard_curs.c
+ * @file setup/ncurses/wizard_curs.c
  * @brief A easy-to-use configuration assistant for curses
  * @author Nils Durner
  */
 
-#include "gnunet_util.h"
+#include <dialog.h>
+
+#undef _
+#undef OK
 #include "platform.h"
+#include "gnunet_util.h"
+#include "gnunet_setup_lib.h"
+
+#include "wizard_curs.h"
+#include "mconf.h"
 
 #ifndef MINGW
-  #include <grp.h>
+#include <grp.h>
 #endif
 
-#define LKC_DIRECT_LINK
-#include "lkc.h"
 
-#include "mconf_dialog.h"
-#include "wizard_util.h"
-#include "mconf.h"
-#include "wizard_curs.h"
-#include "confdata.h"
-
-
-extern int cols, rows;
 
 static struct dialog_list_item **nic_items;
 static int nic_item_count = 0;
@@ -82,8 +80,14 @@ void insert_nic_curs(const char *name,
   item->selected = wiz_is_nic_default(name, defaultNIC);
 }
 
-int wizard_curs_main(int argc, char **argv)
-{
+int wizard_curs_main_ncurses(int argc,
+			     const char **argv,
+			     struct PluginHandle * self,
+			     struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     struct GNS_Context * gns,
+			     const char * filename,
+			     int is_daemon) 
   void *active_ptr = NULL;
   int idx, ret, autostart = 0, adv = 0;
   struct symbol *sym;

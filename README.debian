@@ -26,6 +26,8 @@ libsqlite3-dev
 libmysqlclient14-dev
 libncurses5-dev
 libcurl3-gnutls-dev
+libncursesw5-dev
+dialog
 guile-1.8-dev (out since Feb 2006 - still no debian package!)
 libextractor-dev (unstable required!)
 
