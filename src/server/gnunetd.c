@@ -154,7 +154,7 @@ int gnunet_main(struct GE_Context * ectx) {
  */
 static struct CommandLineOption gnunetdOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  { '@', "win-service", NULL, gettext_noop(""), 0, 
+  { '@', "win-service", NULL, "", 0, 
     &gnunet_getopt_configure_set_option, "GNUNETD:WINSERVICE" },
   { 'd', "debug", NULL, 
     gettext_noop("run in debug mode; gnunetd will "
@@ -168,7 +168,8 @@ static struct CommandLineOption gnunetdOptions[] = {
     gettext_noop("disable padding with random data (experimental)"), 0,
     &gnunet_getopt_configure_set_option, "GNUNETD-EXPERIMENTAL:PADDING" },
 #ifndef MINGW
-  { 'u', "user", "USERNAME", gettext_noop(""), 1, 
+  { 'u', "user", "USERNAME", 
+    gettext_noop("specify username as which gnunetd should run"), 1, 
     &gnunet_getopt_configure_set_option, "GNUNETD:USERNAME" },
 #endif
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */

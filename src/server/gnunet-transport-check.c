@@ -353,11 +353,6 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
   { 'p', "ping", NULL, 
     gettext_noop("ping peers from HOSTLISTURL that match transports"), 
     0, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:PING=YES" },
-#if 0
-  { 'P', "Xport", "PORT", 
-    gettext_noop(""), 
-    0, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:PORT" },
-#endif
   { 'r', "repeat", "COUNT",
     gettext_noop("send COUNT messages"),
     1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:REPEAT" },

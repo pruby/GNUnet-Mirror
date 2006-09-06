@@ -508,8 +508,8 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_REQUEST,
-      "Received session key from peer `%s'.\n",
-      &enc);
+	 "Received session key from peer `%s'.\n",
+	 &enc);
 #endif
   if (ntohs(msg->size) < sizeof(P2P_setkey_MESSAGE)) {
     GE_LOG(ectx,
