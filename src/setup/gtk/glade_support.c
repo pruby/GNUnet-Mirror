@@ -25,7 +25,7 @@
 /**
  * Handle to the dynamic library (which contains this code)
  */
-static struct PluginHandler * library;
+static struct PluginHandle * library;
 
 /**
  * Current glade handle.
@@ -37,21 +37,20 @@ GladeXML * getMainXML() {
 }
 
 void destroyMainXML() {
-  GE_ASSERT(ectx, mainXML_ != NULL);
+  GE_ASSERT(NULL, mainXML_ != NULL);
   g_object_unref(mainXML_);
   mainXML_ = NULL;
 }
 
 char * get_glade_filename() {
+  char * path;
   char * gladeFile;
 
-#ifdef MINGW
-  gladeFile = MALLOC(_MAX_PATH + 1);
-  plibc_conv_to_win_path(GNDATADIR"/wizard.glade",
-			 gladeFile);
-#else
-  gladeFile = STRDUP(GNDATADIR"/wizard.glade");
-#endif
+  path = os_get_installation_path(IPK_DATADIR);
+  gladeFile = MALLOC(strlen(path) + 20);
+  strcpy(gladeFile, path);
+  strcat(gladeFile, "gnunet-setup.glade");
+  FREE(path);
   return gladeFile;
 }
 
@@ -66,7 +65,7 @@ static void connector(const gchar *handler_name,
   GladeXML * xml = user_data;
   void * method;
 
-  GE_ASSERT(ectx, xml != NULL);
+  GE_ASSERT(NULL, xml != NULL);
   method = os_plugin_resolve_function(library,
 				      handler_name,
 				      YES);
@@ -85,9 +84,11 @@ GladeXML * load_xml(const char * dialog_name) {
   ret = glade_xml_new(gladeFile,
 		      dialog_name,
 		      PACKAGE_NAME);
-  if (ret == NULL)
-    errexit(_("Failed to open `%s'.\n"),
-	    gladeFile);  
+  if (ret == NULL) 
+    GE_DIE_STRERROR_FILE(NULL,
+			 GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
+			 "open",
+			 gladeFile);
   FREE(gladeFile);
   glade_xml_signal_autoconnect_full(ret, &connector, ret);
   return ret;
@@ -117,8 +118,10 @@ void showDialog(const char * name) {
 			name,
 			PACKAGE_NAME);
   if (mainXML_ == NULL)
-    errexit(_("Failed to open `%s'.\n"),
-	    gladeFile);  
+    GE_DIE_STRERROR_FILE(NULL,
+			 GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
+			 "open",
+			 gladeFile);
   FREE(gladeFile);
   glade_xml_signal_autoconnect_full(myXML, &connector, myXML);
   msgSave = glade_xml_get_widget(myXML,

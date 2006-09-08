@@ -20,10 +20,10 @@ Notes:
   * make testcases compile & pass again:
     + fs/lib -- strange crashes?
     + fs/ecrs -- compiles, but searchtest hangs
+    + tbench -- compiles
     + gap
     + fs/namespace
     + fs/fsui
-    + tbench
     + dht/tools, dht/module
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
@@ -56,12 +56,13 @@ Notes:
       - testbed
   * setup:
     + gtk config
-      - adopt for new API
-      - gnunet-setup memory leaks (#878)
-      - gnunet-setup category switch update bug (#892)  [ RC ]
+      - save
+      - edit event handling
+      - better configuration tree refresh handling
+      - memory leaks
     + gtk wizard
     + ncurses wizard
-    + scm specification of configuration
+    + Scheme (scm) specification of entire configuration
 - fix known bugs (see Mantis for updates):
   * file/socket leak (#955)
   * Windows installer, uninstall: Remove account [Nils, RC]

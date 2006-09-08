@@ -20,7 +20,7 @@
 #ifndef GLADE_SUPPORT_H
 #define GLADE_SUPPORT_H
 
-
+#include "gnunet_util.h"
 #include <gtk/gtk.h>
 #include <gtk/gtktext.h>
 #include <glade/glade.h>

@@ -28,14 +28,14 @@
 #ifndef GNUNET_SETUP_GCONF_H
 #define GNUNET_SETUP_GCONF_H
 
-int gconf_main(int argc, 
-	       const char ** argv, 
-	       struct PluginHandle * self,
-	       struct GE_Context * ectx,
-	       struct GC_Configuration * cfg,
-	       struct GNS_Context * gns,
-	       const char * filename,
-	       int is_daemon);
+int gconf_mainsetup_gtk(int argc, 
+			const char ** argv, 
+			struct PluginHandle * self,
+			struct GE_Context * ectx,
+			struct GC_Configuration * cfg,
+			struct GNS_Context * gns,
+			const char * filename,
+			int is_daemon);
 
 void gconf_main_post_init(struct PluginHandle * lib);
  

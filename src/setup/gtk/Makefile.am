@@ -11,18 +11,19 @@ plugin_LTLIBRARIES = \
   libgnunetsetup_gtk.la
 
 EXTRA_DIST = \
- wizard.glade \
- images.c 
+ wizard.glade 
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) wizard.glade $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) gnunet-setup.glade $(DESTDIR)$(pkgdatadir)
 	@$(NORMAL_INSTALL)
 
 libgnunetsetup_gtk_la_SOURCES = \
+ about.c \
+ save.c \
  gconf.c gconf.h \
- glade_support.h glade_support.c \
- wizard_gtk.c wizard_gtk.h
+ glade_support.h glade_support.c 
+# wizard_gtk.c wizard_gtk.h
 
 libgnunetsetup_gtk_la_LDFLAGS = \
  $(GTK_LIBS) @EXT_LIB_PATH@ @EXT_LIBS@ \
@@ -40,3 +41,4 @@ libgnunetsetup_gtk_la_LIBADD = \
   -lgthread-2.0 \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/setup/lib/libgnunetsetup.la
+
