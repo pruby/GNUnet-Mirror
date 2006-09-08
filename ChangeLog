@@ -1,3 +1,7 @@
+Tue Sep  5 21:28:25 PDT 2006
+	Switched ncurses interface of gnunet-setup to use
+	external dialog library (new dependency!).
+
 Fri Aug 18 00:01:37 PDT 2006
 	Swiched http bootstrap mechanism to using libcurl
 	(new dependency!).

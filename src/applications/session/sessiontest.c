@@ -127,6 +127,7 @@ int main(int argc, char ** argv) {
     connection_destroy(sock);
   } else {
     printf("Could not establish connection with peer.\n");
+    ret = 1;
   }
 #if START_PEERS
   if (daemon1 != -1) {

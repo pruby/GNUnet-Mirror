@@ -48,11 +48,10 @@ extern "C" {
  */
 static char * 
 get_path_from_proc_exe() {
-  char * fn;
+  char fn[64];
   char * lnk;
   size_t size;
 
-  fn = MALLOC(64);
   SNPRINTF(fn, 
 	   64,
 	   "/proc/%u/exe",
@@ -64,11 +63,9 @@ get_path_from_proc_exe() {
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 			 "readlink",
 			 fn);
-    FREE(fn);
     FREE(lnk);
     return NULL;
   }
-  FREE(fn);
   lnk[size] = '\0';
   while ( (lnk[size] != '/') &&
 	  (size > 0) )
@@ -88,7 +85,7 @@ get_path_from_proc_exe() {
 /**
  * Try to determine path with win32-specific function
  */
-char * get_path_from_module_filename() {
+static char * get_path_from_module_filename() {
   char * path;
   char * idx;
   

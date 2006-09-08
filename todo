@@ -18,6 +18,7 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
+    + fs/lib -- strange crashes?
     + fs/ecrs -- compiles, but searchtest hangs
     + gap
     + fs/namespace

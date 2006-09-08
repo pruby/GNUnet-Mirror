@@ -40,7 +40,7 @@ static char * old_dlsearchpath;
 
 
 /* using libtool, needs init! */
-void __attribute__ ((constructor)) gnc_ltdl_init(void) {
+void __attribute__ ((constructor)) gnc_ltdl_init() {
   int err;
   const char * opath;
   char * path;
@@ -62,7 +62,7 @@ void __attribute__ ((constructor)) gnc_ltdl_init(void) {
   }
 }
 
-void __attribute__ ((destructor)) gnc_ltdl_fini(void) {
+void __attribute__ ((destructor)) gnc_ltdl_fini() {
   lt_dlsetsearchpath(old_dlsearchpath);
   if (old_dlsearchpath != NULL) {
     FREE(old_dlsearchpath);
