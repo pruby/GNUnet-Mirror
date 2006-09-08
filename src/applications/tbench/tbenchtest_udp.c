@@ -126,6 +126,8 @@ static int checkConnected(struct ClientServerConnection * sock) {
   return ret;
 }
 
+#define START_PEERS 1
+
 /**
  * Testcase to test p2p communications.
  *
