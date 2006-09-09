@@ -90,8 +90,6 @@ Notes:
     current directories!) [ CG ]
   * DHT: use additional optional fields (HELLOs) [ CG ]
 - XFS / support for location URIs [CG, RC]
-- gnunet-setup:
-  * php-ification for i18n [ Nils, RC? ]
 
 0.7.3 ['06] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
