@@ -33,21 +33,27 @@
  */
 static struct MUTEX * lock;
 
+#ifndef MINGW
 static struct SignalHandlerContext * sctx;
 
 static void catcher() {
 }
+#endif
 
 void __attribute__ ((constructor)) gnunet_network_io_init() {
   lock = MUTEX_CREATE(NO);
+#ifndef MINGW
   sctx = signal_handler_install(SIGPIPE, &catcher);
+#endif
 }
 
 void __attribute__ ((destructor)) gnunet_network_io_fini() {
   MUTEX_DESTROY(lock);
   lock = NULL;
+#ifndef MINGW
   signal_handler_uninstall(SIGPIPE, &catcher, sctx);
   sctx = NULL;
+#endif
 }
 
 /**
