@@ -48,6 +48,7 @@ static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
 static int debug_flag;
 
+#ifndef WINDOWS
 /**
  * Cron job that triggers re-reading of the configuration.
  */
@@ -68,6 +69,7 @@ static void reread_config() {
 	       0,
 	       NULL);
 }
+#endif
 
 /**
  * Park main thread until shutdown has been signaled.
@@ -108,16 +110,20 @@ int gnunet_main(struct GE_Context * ectx) {
   cron = cron_create(ectx);
   GE_ASSERT(ectx,
 	    cron != NULL);
+#ifndef WINDOWS
   shc_hup = signal_handler_install(SIGHUP, &reread_config);
+#endif
   if (OK != initCore(ectx,
 		     cfg,
 		     cron,
 		     mon)) {
     cron_destroy(cron);
     os_network_monitor_destroy(mon);
+#ifndef WINDOWS
     signal_handler_uninstall(SIGHUP, 
 			     &reread_config,
 			     shc_hup);
+#endif
     if (NO == debug_flag)
       os_terminal_detach_complete(ectx,
 				  filedes,
@@ -142,9 +148,11 @@ int gnunet_main(struct GE_Context * ectx) {
   doneConnection(); 
   doneCore();
   os_network_monitor_destroy(mon);
+#ifndef WINDOWS
   signal_handler_uninstall(SIGHUP, 
 			   &reread_config,
 			   shc_hup);
+#endif
   cron_destroy(cron);
   return OK;
 }

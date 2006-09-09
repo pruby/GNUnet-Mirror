@@ -7,7 +7,11 @@ if HAVE_DIALOG
  curses_dir = ncurses
 endif
 
-SUBDIRS = lib text . $(curses_dir)
+if !MINGW
+ textdir=text
+endif
+
+SUBDIRS = lib $(textdir) . $(curses_dir)
 # $(gtk_dir) .
 
 plugindir = $(libdir)/GNUnet
@@ -38,4 +42,5 @@ gnunet_win_tool_SOURCE = \
 gnunet_win_tool_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 

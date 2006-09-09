@@ -25,37 +25,49 @@
  */
 
 #include "platform.h"
+#include "gnunet_util_os.h"
+#include "gnunet_util_crypto.h"
+#include "gnunet_util_error_loggers.h"
+
 #include <conio.h>
 
 #define WINTOOL_VERSION "0.1.0"
 
-static int bPrintAdapters, bInstall, bUninstall, bConn;
-static char *hashFile;
 static char chunk1[] = {0x62, 0x13, 0x06, 0x00};
 static char chunk2[] = {0xFE, 0xFF, 0xFF, 0x00};
 static char chunk3[] = {0xBC, 0x28, 0x06, 0x00};
 static char chunk4[] = {0xCF, 0x47, 0x06, 0x00};
 
 /**
- * Prints the usage information for this command if the user errs.
- * Aborts the program.
+ * configuration
  */
-static void printhelp() {
-  static Help help[] = {
-    HELP_CONFIG,
-    HELP_HELP,
-    HELP_LOGLEVEL,
-    { 'n', "netadapters", NULL, "list all network adapters" },
-    { 'i', "install", NULL, "install GNUnet as Windows service" },
-    { 'u', "uninstall", NULL, "uninstall GNUnet service" },
-    { 'C', "increase-connections", NULL, "increase the maximum number of TCP/IP connections"},
-    HELP_VERSION,
-    HELP_END,
-  };
-  formatHelp("gnunet-win-tool [OPTIONS]",
-	     "Tool for Windows specific tasks.",
-	     help);
-}
+static unsigned int bPrintAdapters = 0, bInstall = 0, bUninstall = 0, bConn = 0;
+static char *hashFile = NULL;
+
+static struct GE_Context * ectx;
+
+/**
+ * All gnunet-win-tool command line options
+ */
+static struct CommandLineOption gnunetwinOptions[] = {
+  { 'n', "netadapters", "network adapters",
+    gettext_noop("list all network adapters"),
+    0, &gnunet_getopt_configure_set_uint, &bPrintAdapters },
+  { 'i', "install", "install service",
+    gettext_noop("install GNUnet as Windows service"),
+    0, &gnunet_getopt_configure_set_uint, &bInstall },
+  { 'u', "uninstall", "uninstall service",
+    gettext_noop("uninstall GNUnet service"),
+    0, &gnunet_getopt_configure_set_uint, &bUninstall },
+  { 'C', "increase-connections", "increase connections",
+    gettext_noop("increase the maximum number of TCP/IP connections"),
+    0, &gnunet_getopt_configure_set_uint, &bConn },
+  { 'R', "filehash", "hash",
+    gettext_noop("display a file's hash value"),
+    1, &gnunet_getopt_configure_set_string, &hashFile },
+  COMMAND_LINE_OPTION_VERSION(WINTOOL_VERSION), /* -v */
+    COMMAND_LINE_OPTION_END,
+};
 
 /**
  * Print all network adapters with their index number
@@ -296,9 +308,9 @@ void doHash()
   EncName hex;
   char *c;
 
-  getFileHash(hashFile, &code);
+  getFileHash(ectx, hashFile, &code);
   hash2enc(&code, &hex);
-  printf("RIPEMD160(%s)= ", hashFile);
+  printf("SHA512(%s)= ", hashFile);
 
   /* Flip byte order */
   c = (char *) hex.encoding;
@@ -314,83 +326,6 @@ void doHash()
 }
 
 /**
- * Parse the options.
- *
- * @param argc the number of options
- * @param argv the option list (including keywords)
- * @return SYSERR if we should abort, OK to continue
- */
-static int parseOptions(int argc, char ** argv) {
-  int option_index;
-  int c;
-  BOOL bPrintHelp = TRUE;
-
-  while (1) {
-    static struct GNoption long_options[] = {
-      { "netadapters",          0, 0, 'n' },
-      { "install",              0, 0, 'i' },
-      { "uninstall",            0, 0, 'u' },
-      { "increase-connections", 0, 0, 'C' },
-      { "filehash",             1, 0, 'R' },
-      LONG_DEFAULT_OPTIONS,
-      { 0,0,0,0 }
-    };
-    option_index = 0;
-    c = GNgetopt_long(argc,
-		      argv,
-		      "vhdc:L:H:niuCR:",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-
-    bPrintHelp = FALSE;
-
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-      case 'v':
-        printf("GNUnet v%s, gnunet-win-tool v%s\n",
-  	      VERSION, WINTOOL_VERSION);
-        return SYSERR;
-      case 'h':
-        printhelp();
-        return SYSERR;
-      case 'n':
-        bPrintAdapters = YES;
-        break;
-      case 'i':
-        bInstall = YES;
-        break;
-      case 'u':
-        bUninstall = YES;
-        break;
-      case 'C':
-        bConn = YES;
-        break;
-      case 'R':
-        hashFile = MALLOC(strlen(GNoptarg) + 1);
-        strcpy(hashFile, GNoptarg);
-        break;
-      default:
-        GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-        	  "Unknown option %c. Aborting.\n"\
-        	  "Use --help to get a list of options.\n",
-  	  c);
-        return -1;
-    } /* end of parsing commandline */
-  } /* while (1) */
-
-  if (bPrintHelp) {
-    printhelp();
-
-    return SYSERR;
-  }
-
-  return OK;
-}
-
-/**
  * The main function.
  *
  * @param argc number of arguments from the command line
@@ -401,11 +336,23 @@ int main(int argc, char ** argv) {
   int res;
 
   res = OK;
-  hashFile = NULL;
-  bPrintAdapters = bInstall = bUninstall = bConn = NO;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0;
+  /* startup */
+  ectx = GE_create_context_stderr(NO, 
+          GE_WARNING | GE_ERROR | GE_FATAL |
+          GE_USER | GE_ADMIN | GE_DEVELOPER |
+          GE_IMMEDIATE | GE_BULK);
+  res = gnunet_parse_options("gnunet-win-tool [OPTIONS] [KEYWORDS]",
+         ectx,
+         NULL,
+         gnunetwinOptions,
+         (unsigned int) argc,
+         argv);
+  if (res == SYSERR)
+  {
+    GE_free_context(ectx);
+    return -1;  
+  }
 
   if (bPrintAdapters)
     PrintAdapters();
@@ -418,7 +365,7 @@ int main(int argc, char ** argv) {
   if (hashFile)
     doHash();
 
-  doneUtil();
+  GE_free_context(ectx);
 
   return (res == OK) ? 0 : 1;
 }

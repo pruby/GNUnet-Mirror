@@ -22,6 +22,7 @@ libgnunetmodule_template_la_SOURCES = \
   template.c 
 libgnunetmodule_template_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
+  $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la 
 
 
