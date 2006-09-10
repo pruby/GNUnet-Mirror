@@ -57,8 +57,6 @@ Notes:
   * setup:
     + gtk config
       - save
-      - edit event handling
-      - better configuration tree refresh handling
       - memory leaks
     + gtk wizard
     + ncurses wizard

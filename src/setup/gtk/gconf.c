@@ -25,8 +25,6 @@
  *
  * TODO:
  * - process save configuration event
- * - process editing signals
- * - avoid completely killing existing tree after each edit
  */
 
 #include "gnunet_setup_lib.h"
@@ -49,10 +47,8 @@ enum {
   SETUP_WRAP,
   SETUP_EDIT_BGCOLOR,
   SETUP_DEFAULT_VALUE,
-  SETUP_BOOL_VALUE,
   SETUP_TEXT_VALUE,
   SETUP_COMBO_MODEL,
-  SETUP_TOGGLE_VIS,
   SETUP_TEXT_VIS,
   SETUP_COMBO_VIS,
   SETUP_DESCRIPTION,
@@ -76,6 +72,8 @@ static void addToTree(GtkTreeStore * model,
   char defStr[128];
   char valStr[128];
 
+  if (! pos->visible)
+    return;
   gtk_tree_store_append(model,
 			&it,
 			parent);
@@ -92,10 +90,8 @@ static void addToTree(GtkTreeStore * model,
 		     SETUP_WRAP, PANGO_WRAP_WORD_CHAR,
 		     SETUP_EDIT_BGCOLOR, "yellow",
 		     SETUP_DEFAULT_VALUE, "",
-		     SETUP_BOOL_VALUE, FALSE,
 		     SETUP_TEXT_VALUE, "",
 		     SETUP_COMBO_MODEL, no_model,
-		     SETUP_TOGGLE_VIS, FALSE,
 		     SETUP_TEXT_VIS, FALSE,
 		     SETUP_COMBO_VIS, FALSE,
 		     SETUP_DESCRIPTION, pos->description,
@@ -114,11 +110,24 @@ static void addToTree(GtkTreeStore * model,
   case GNS_Leaf:
     switch (pos->type & GNS_TypeMask) {
     case GNS_Boolean:
+      cmodel = gtk_list_store_new(1,
+				  G_TYPE_STRING);
+      gtk_list_store_insert_with_values(cmodel,
+					&it2,
+					-1,
+					0, "YES",
+					-1);
+      gtk_list_store_insert_with_values(cmodel,
+					&it2,
+					-1,
+					0, "NO",
+					-1);
       gtk_tree_store_set(model,
 			 &it,
+			 SETUP_COMBO_MODEL, cmodel,
+			 SETUP_COMBO_VIS, TRUE,
 			 SETUP_DEFAULT_VALUE, pos->value.Boolean.def ? "YES" : "NO",
-			 SETUP_BOOL_VALUE, pos->value.Boolean.val ? TRUE : FALSE,
-			 SETUP_TOGGLE_VIS, TRUE,
+			 SETUP_TEXT_VALUE, pos->value.Boolean.val ? "YES" : "NO",
 			 -1);
       break;
     case GNS_String:
@@ -225,12 +234,31 @@ static void addToTree(GtkTreeStore * model,
   }	  
 }
 
+typedef struct {
+  unsigned int size;
+  char ** paths;
+} CR_Context;
+
+static void collectRows(GtkTreeView * tree_view,
+			GtkTreePath * path,
+			gpointer user_data) {
+  CR_Context * ctx = user_data;
+  
+  GROW(ctx->paths,
+       ctx->size,
+       ctx->size+1);
+  ctx->paths[ctx->size-1] = gtk_tree_path_to_string(path);  
+}
+
 static void updateTreeModel(struct GNS_Context * gns) {
   GtkWidget * treeView;
   GtkTreeStore * model;
   struct GNS_Tree * tree;
+  CR_Context crCTX;
+  GtkTreePath * path;
   int i;
 
+  /* create new model */
   model = gtk_tree_store_new(SETUP_NUM,
 			     G_TYPE_STRING, /* section */
 			     G_TYPE_STRING, /* option */
@@ -243,10 +271,8 @@ static void updateTreeModel(struct GNS_Context * gns) {
 			     G_TYPE_INT, /* wrap */
 			     G_TYPE_STRING, /* edit bg color */
 			     G_TYPE_STRING, /* default value */
-			     G_TYPE_BOOLEAN, /* true/false value */
 			     G_TYPE_STRING, /* current text value */
 			     GTK_TYPE_LIST_STORE, /* combo model */
-			     G_TYPE_BOOLEAN, /* toggle visible? */
 			     G_TYPE_BOOLEAN, /* text   visible? */
 			     G_TYPE_BOOLEAN, /* combo  visible? */
 			     G_TYPE_STRING,  /* description */
@@ -260,28 +286,68 @@ static void updateTreeModel(struct GNS_Context * gns) {
 	      tree->children[i]);
     i++;
   }
-  
+  /* capture paths that are currently expanded */
+  crCTX.size = 0;
+  crCTX.paths = NULL;
   treeView = lookup_widget("configTreeView");
+  gtk_tree_view_map_expanded_rows(GTK_TREE_VIEW(treeView),
+				  &collectRows,
+				  &crCTX);  
+  /* update model */
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeView),
 			  GTK_TREE_MODEL(model));
-}
-
-static void toggleBooleanHandler(GtkCellRendererToggle * rdner,
-				 gchar * path,
-				 gpointer user_data) {
-  struct GNS_Context * gns = user_data;
-
-  printf("FIXME: find out which entry was toggled, change configuration and regenerate tree!\n");
-  updateTreeModel(gns);
+  /* restore expanded paths */
+  for (i=0;i<crCTX.size;i++) {
+    path = gtk_tree_path_new_from_string(crCTX.paths[i]);
+    gtk_tree_view_expand_row(GTK_TREE_VIEW(treeView),
+			     path,
+			     FALSE);
+    gtk_tree_path_free(path);
+    free(crCTX.paths[i]);
+  }
+  GROW(crCTX.paths,
+       crCTX.size,
+       0);
 }
 
 static void editedTextHandler(GtkCellRendererToggle * rdner,
-			      gchar * arg1,
-			      gchar * arg2,
+			      gchar * path,
+			      gchar * new_value,
 			      gpointer user_data) {
   struct GNS_Context * gns = user_data;
+  GtkTreePath * gtk_path;
+  GtkTreeIter iter;
+  GtkWidget * treeView;
+  GtkTreeModel * model;
+  const char * section;
+  const char * option;
 
-  printf("FIXME: find out which entry was edited, change configuration and regenerate tree!\n");
+  treeView = lookup_widget("configTreeView");
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeView));
+  gtk_path = gtk_tree_path_new_from_string(path);
+  if (TRUE != gtk_tree_model_get_iter(model,
+				      &iter,
+				      gtk_path)) {
+    GE_BREAK(ectx, 0);
+    return;
+  }
+  gtk_tree_model_get(model,
+		     &iter,
+		     SETUP_SECTION, &section,
+		     SETUP_OPTION, &option,
+		     -1);
+  if (0 != GC_set_configuration_value_string(cfg,
+					     ectx,
+					     section,
+					     option,
+					     new_value)) {
+    GE_LOG(ectx,
+	   GE_WARNING | GE_USER | GE_IMMEDIATE,
+	   _("Failed to change configuration option `%s' in section `%s' to value `%s'.\n"),
+	   option,
+	   section,
+	   new_value);
+  }
   updateTreeModel(gns);
 }
 
@@ -305,24 +371,6 @@ static void initTreeView(struct GNS_Context * gns) {
 						    "text", SETUP_DESCRIPTION,
 						    "wrap-width", SETUP_DWIDTH,
 						    "wrap-mode", SETUP_WRAP,
-						    NULL);
-  column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeView),
-				    col - 1);
-  gtk_tree_view_column_set_resizable(column, TRUE);
-
-
-  renderer = gtk_cell_renderer_toggle_new();
-  g_signal_connect(renderer,
-		   "toggled",
-		   G_CALLBACK(&toggleBooleanHandler),
-		   gns);
-  col = gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeView),
-						    -1,
-						    _("Y/N"),
-						    renderer,
-						    "active", SETUP_BOOL_VALUE,
-						    "visible", SETUP_TOGGLE_VIS,
-						    "cell-background", SETUP_EDIT_BGCOLOR,
 						    NULL);
   column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeView),
 				    col - 1);

@@ -55,23 +55,11 @@
    "EXPERIMENTAL"
    (_ "Prompt for development and/or incomplete code")
    (_
-"If EXPERIMENTAL is set to NO, options for experimental code are not
-shown.  If in doubt, use NO.
+"If EXPERIMENTAL is set to NO, options for experimental code are not shown.  If in doubt, use NO.
 
-Some options apply to experimental code that maybe in a state of
-development where the functionality, stability, or the level of
-testing is not yet high enough for general use.  These features are
-said to be of \"alpha\" quality.  If a feature is currently in alpha,
-uninformed use is discouraged (since the developers then do not fancy
-\"Why doesn't this work?\" type messages).
+Some options apply to experimental code that maybe in a state of development where the functionality, stability, or the level of testing is not yet high enough for general use.  These features are said to be of \"alpha\" quality.  If a feature is currently in alpha, uninformed use is discouraged (since the developers then do not fancy \"Why doesn't this work?\" type messages).
 
-However, active testing and qualified feedback of these features is
-always welcome.  Users should just be aware that alpha features may
-not meet the normal level of reliability or it may fail to work in
-some special cases.  Bug reports are usually welcomed by the
-developers, but please read the documents <file://README> and
-<http://gnunet.org/faq.php3> and use <https://gnunet.org/mantis/> for
-how to report problems." )
+However, active testing and qualified feedback of these features is always welcome.  Users should just be aware that alpha features may not meet the normal level of reliability or it may fail to work in some special cases.  Bug reports are usually welcomed by the developers, but please read the documents <file://README> and <http://gnunet.org/faq.php3> and use <https://gnunet.org/mantis/> for how to report problems." )
    '()
    #t
    #f
@@ -86,9 +74,7 @@ how to report problems." )
    "ADVANCED"
    (_ "Show options for advanced users")
    (_
-"These are options that maybe difficult to understand for the beginner.
-These options typically refer to features that allow tweaking of the
-installation.  If in a hurry, say NO." )
+"These are options that maybe difficult to understand for the beginner. These options typically refer to features that allow tweaking of the installation.  If in a hurry, say NO." )
    '()
    #t
    #t
@@ -118,13 +104,7 @@ installation.  If in a hurry, say NO." )
   "HELLOEXPIRES"
   (_ "How many minutes should peer advertisements last?")
   (_
-"How many minutes is the current IP valid?  (GNUnet will sign HELLO
-messages with this expiration timeline. If you are on dialup, 60 (for
-1 hour) is suggested. If you are having a static IP address, you may
-want to set this to a large value (say 14400).  The default is 1440 (1
-day). If your IP changes periodically, you will want to choose the
-expiration to be smaller than the frequency with which your IP
-changes." )
+"How many minutes is the current IP valid?  (GNUnet will sign HELLO messages with this expiration timeline. If you are on dialup, 60 (for 1 hour) is suggested. If you are having a static IP address, you may want to set this to a large value (say 14400).  The default is 1440 (1 day). If your IP changes periodically, you will want to choose the expiration to be smaller than the frequency with which your IP changes." )
   '()
   #t
   1440
