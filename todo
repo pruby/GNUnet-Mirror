@@ -56,7 +56,6 @@ Notes:
       - testbed
   * setup:
     + gtk config
-      - save
       - memory leaks
     + gtk wizard
     + ncurses wizard

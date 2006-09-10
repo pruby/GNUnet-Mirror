@@ -32,8 +32,8 @@
 /**
  * This displays an about window
  */
-void on_about1_activatesetup_gtk(GtkWidget * dummy,
-				 gpointer data) {
+void on_aboutButton_activatesetup_gtk(GtkWidget * dummy,
+				      gpointer data) {
   GtkWidget * ad;
   GladeXML * axml;
 

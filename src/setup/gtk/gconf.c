@@ -22,9 +22,6 @@
  * @file setup/gtk/gconf.c
  * @author Nils Durner
  * @author Christian Grothoff
- *
- * TODO:
- * - process save configuration event
  */
 
 #include "gnunet_setup_lib.h"
@@ -61,6 +58,8 @@ static GtkListStore * no_model;
 static struct GC_Configuration * cfg;
 
 static struct GE_Context * ectx;
+
+static const char * cfg_filename;
 
 static void addToTree(GtkTreeStore * model,
 		      GtkTreeIter * parent,
@@ -351,9 +350,6 @@ static void editedTextHandler(GtkCellRendererToggle * rdner,
   updateTreeModel(gns);
 }
 
-
-
-
 static void initTreeView(struct GNS_Context * gns) {
   GtkWidget * treeView;
   GtkTreeViewColumn * column;
@@ -451,6 +447,76 @@ static void initTreeView(struct GNS_Context * gns) {
 }
 
 
+/**
+ * User requested save manually.  Save configuration.
+ */
+void on_saveButton_activatesetup_gtk() {
+  GtkWidget * dialog;
+  
+  if (0 == GC_write_configuration(cfg,
+				  cfg_filename)) {    
+    dialog = gtk_message_dialog_new(NULL,
+				    GTK_DIALOG_MODAL,
+				    GTK_MESSAGE_INFO,
+				    GTK_BUTTONS_OK,
+				    _("Configuration saved."));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+   } else {
+    dialog = gtk_message_dialog_new(NULL,
+				    GTK_DIALOG_MODAL,
+				    GTK_MESSAGE_ERROR,
+				    GTK_BUTTONS_OK,
+				    _("Failed to save configuration."));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+}
+
+
+/**
+ * User clicked to close window.  Check if configuration
+ * needs saving and possibly save configuration or do not
+ * exit.
+ *
+ * @return TRUE to NOT exit (i.e. user hits cancel on save YES/NO/CANCEL).
+ */
+gboolean on_main_window_delete_eventsetup_gtk() {
+  GtkWidget * dialog;
+  gint ret;
+
+  if (GC_test_dirty(cfg)) {
+    dialog = gtk_message_dialog_new(NULL,
+				    GTK_DIALOG_MODAL,
+				    GTK_MESSAGE_QUESTION,
+				    GTK_BUTTONS_YES_NO,
+				    _("Configuration changed. Save?"));
+    ret = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    switch (ret) {
+    case GTK_RESPONSE_YES:
+      GC_write_configuration(cfg,
+			     cfg_filename);
+      return FALSE;
+    case GTK_RESPONSE_NO:
+      return FALSE;
+    case GTK_RESPONSE_CANCEL:      
+    default:
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * We're really exiting.  Final cleanup code (in GTK).
+ */
+void gtk_main_quitsetup_gtk() {
+  gtk_main_quit();
+}
+
+
+
 int gconf_main_post_init(struct PluginHandle * self,
 			 struct GE_Context * e,
 			 struct GC_Configuration * c,
@@ -461,6 +527,7 @@ int gconf_main_post_init(struct PluginHandle * self,
 
   cfg = c;
   ectx = e;
+  cfg_filename = filename;
   no_model = gtk_list_store_new(1,
 				G_TYPE_STRING);
   setLibrary(self);

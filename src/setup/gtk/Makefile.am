@@ -20,7 +20,6 @@ install-data-local:
 
 libgnunetsetup_gtk_la_SOURCES = \
  about.c \
- save.c \
  gconf.c gconf.h \
  glade_support.h glade_support.c 
 # wizard_gtk.c wizard_gtk.h
