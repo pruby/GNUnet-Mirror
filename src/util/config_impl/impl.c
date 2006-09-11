@@ -568,9 +568,14 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
     e = findEntry(data, section, option);
   }
   if (e->dirty_val != NULL) {
-    /* recursive update, not allowed! */
-    GE_BREAK(ectx, 0);
-    ret = -1;
+    if (0 == strcmp(e->dirty_val,
+		    value)) {
+      ret = 0;
+    } else {
+      /* recursive update to different value -- not allowed! */
+      GE_BREAK(ectx, 0);
+      ret = -1;
+    }
   } else {
     e->dirty_val = STRDUP(value);
     i = data->lsize - 1;

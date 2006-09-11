@@ -388,6 +388,8 @@ static void initTreeView(struct GNS_Context * gns) {
 						    "background", SETUP_EDIT_BGCOLOR,
 						    "background-set", SETUP_TRUE,
 						    "editable", SETUP_TRUE,
+						    "wrap-width", SETUP_DWIDTH,
+						    "wrap-mode", SETUP_WRAP,
 						    NULL);
   column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeView),
 				    col - 1);
@@ -400,6 +402,8 @@ static void initTreeView(struct GNS_Context * gns) {
 						    _("Default"),
 						    renderer,
 						    "text", SETUP_DEFAULT_VALUE,
+						    "wrap-width", SETUP_DWIDTH,
+						    "wrap-mode", SETUP_WRAP,
 						    NULL);
   column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeView),
 				    col - 1);
@@ -565,9 +569,6 @@ int gconf_mainsetup_gtk(int argc,
 #ifdef WINDOWS
   FreeConsole();
 #endif
-
-  /* add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps"); */
-  /* add_pixmap_directory (PACKAGE_SOURCE_DIR "/pixmaps"); */
   return gconf_main_post_init(self,
 			      ectx,
 			      cfg,

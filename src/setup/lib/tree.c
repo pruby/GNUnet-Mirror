@@ -35,6 +35,7 @@ typedef struct {
   VisibilityChangeListener vcl;
   void * ctx;  
   struct GNS_Tree * root;
+  struct GC_Configuration * cfg;
 } TC;
 
 /* ********************** scheme smob boxing ***************** */
@@ -184,6 +185,41 @@ SCM change_visible(SCM smob,
   }
   if (sec != NULL)
     free(sec);
+  if (opt != NULL)
+    free(opt);
+  return SCM_EOL;
+}  
+
+/**
+ * Set an option.
+ */
+SCM set_option(SCM smob,
+	       SCM section,
+	       SCM option,
+	       SCM value) {
+  TC * tc;
+  char * opt;
+  char * sec;
+  char * val;
+
+  SCM_ASSERT(SCM_SMOB_PREDICATE(tc_tag, smob), smob, SCM_ARG1, "set_option");
+  SCM_ASSERT(scm_string_p(option), option, SCM_ARG2, "set_option");
+  SCM_ASSERT(scm_string_p(section), section, SCM_ARG3, "set_option");
+  SCM_ASSERT(scm_string_p(value), value, SCM_ARG4, "set_option");
+
+  tc    = (TC *) SCM_SMOB_DATA(smob);
+  opt = scm_to_locale_string(option);
+  sec = scm_to_locale_string(section);
+  val = scm_to_locale_string(value);  
+  GC_set_configuration_value_string(tc->cfg,
+				    NULL,
+				    sec,
+				    opt,
+				    val);
+  if (sec != NULL)
+    free(sec);
+  if (val != NULL)
+    free(val);
   if (opt != NULL)
     free(opt);
   return SCM_EOL;
@@ -345,13 +381,15 @@ notify_change_internal(void * cls) {
  *
  * Update visibility (and notify about changes).
  */
-void tree_notify_change(VisibilityChangeListener vcl,
+void tree_notify_change(struct GC_Configuration * cfg,
+			VisibilityChangeListener vcl,
 			void * ctx,
 			struct GE_Context * ectx,
 			struct GNS_Tree * root,
 			struct GNS_Tree * change) {
   TC tc;
   
+  tc.cfg = cfg;
   tc.vcl = vcl;
   tc.ctx = ctx;
   tc.root = root;
@@ -377,6 +415,9 @@ static void * init_helper(void * unused) {
   scm_c_define_gsubr("get-option",
 		     3, 0, 0,
 		     &get_option);
+  scm_c_define_gsubr("set-option",
+		     4, 0, 0,
+		     &set_option);
   return NULL;
 }
 

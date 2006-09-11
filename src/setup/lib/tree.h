@@ -44,7 +44,8 @@ typedef void (*VisibilityChangeListener)(void * ctx,
  * A value in the tree has been changed. 
  * Update visibility (and notify about changes).
  */
-void tree_notify_change(VisibilityChangeListener vcl,
+void tree_notify_change(struct GC_Configuration * cfg,
+			VisibilityChangeListener vcl,
 			void * ctx,
 			struct GE_Context * ectx,
 			struct GNS_Tree * root,

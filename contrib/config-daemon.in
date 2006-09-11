@@ -1,110 +1,5 @@
 mainmenu "GNUnet Server Configuration"
 
-menu "Meta-configuration" "Meta"
-	config EXPERIMENTAL
-	bool "Prompt for development and/or incomplete code"
-	help
-               	If EXPERIMENTAL is set to NO, options for experimental code are
-                not shown.  If in doubt, use NO.
-
-		Some options apply to experimental code that maybe in a state 
-		of development where the functionality, stability, or the level of
-		testing is not yet high enough for general use.  These features 
-		are said to be of "alpha" quality.   If a feature is currently in 
-               	alpha, uninformed use is discouraged (since the developers then
-                do not fancy "Why doesn't this work?" type messages).
-
-       	        However, active testing and qualified feedback of these features
-               	is always welcome.  Users should just be aware that alpha features
-		may not meet the normal level of reliability or it may fail to work
-		in some special cases.  Bug reports are usually welcomed by the 
-               	developers, but please read the documents <file://README> and 
-                <http://gnunet.org/faq.php3> and use <https://gnunet.org/mantis/>
-       	        for how to report problems.
-  
-	config ADVANCED
-  	bool "Show options for advanced users"
-	help
-		These are options that maybe difficult to understand for the
-		beginner.  These options typically refer to features that
-       	        allow tweaking of the installation.  If in a hurry, say NO.
-  
-	config RARE
-	bool "Show rarely used options"
-	help
-		These are options that hardly anyone actually needs.
-		If you plan on doing development on GNUnet, you may want to
-       	        look into these.  If in doubt or in a hurry, say NO.
-endmenu
-
-menu "General settings" "GNUNETD"
-	config GNUNETD_HOME
-	string "Full pathname of GNUnet HOME directory"
-	default ""
-	help
-		This gives the root-directory of the GNUnet installation. Make
-		sure there is some space left in that directory. :-)  Users inserting
-		or indexing files will be able to store data in this directory
-		up to the (global) quota specified below.  Having a few gigabytes
-		of free space is recommended.
-		Default: GNUNETD_HOME     = /var/lib/GNUnet
-
-	config HELLOEXPIRES
-	int "How many minutes should peer advertisements last?"
-	default 1440
-	depends on Meta::ADVANCED
-	help
-		How many minutes is the current IP valid?  (GNUnet will sign HELLO
-		messages with this expiration timeline. If you are on dialup, 60
-		(for 1 hour) is suggested. If you are having a static IP address,
-		you may want to set this to a large value (say 14400).  The default
-		is 1440 (1 day). If your IP changes periodically, you will want to
-		choose the expiration to be smaller than the frequency with which
-		your IP changes.
-		The largest legal value is 14400 (10 days).
-		Default: HELLOEXPIRES     = 1440
-
-	config LOGLEVEL
-	string "Log level"
-	default "WARNING"
-	depends on Meta::ADVANCED
-	help
-		Loglevel, how much should be logged? You can use NOTHING, FATAL,
-		ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON or EVERYTHING
-		(which log more and more messages in this order). Default is
-		WARNING.
-
-	config LOGFILE
-	string "Where should logs go by default"
-	default "$GNUNETD_HOME/logs"
-	depends on Meta::ADVANCED
-	help
-		In which file should gnunetd write the logs?  If you specify
-		nothing, logs are written to stderr (and note that if gnunetd runs
-		in the background, stderr is closed and all logs are discarded).
-		Default: LOGFILE         = $GNUNETD_HOME/logs
-
-	config KEEPLOG
-	int "How long should logs be kept"
-	default 3
-	depends on Meta::ADVANCED
-	help
-		How long should logs be kept? If you specify a value greater
-		than zero, a log is created each day with the date appended
-		to its filename. These logs are deleted after $KEEPLOG days.
-		To keep logs forever, set this value to 0.
-
-	config PIDFILE
-	string "Where should gnunetd write the PID"
-	default "$GNUNETD_HOME/gnunet.pid"
-	depends on Meta::ADVANCED
-	help
-		In which file should gnunetd write the process-id of the server?  If
-		you run gnunetd as root, you may want to choose
-		/var/run/gnunetd.pid. It's not the default since gnunetd may not
-		have write rights at that location.
-		Default: PIDFILE         = $GNUNETD_HOME/gnunetd.pid
-
 	config HOSTS
 	string "Where should gnunetd keep the list of peers"
 	default "$GNUNETD_HOME/data/hosts/"
@@ -152,87 +47,6 @@ menu "General settings" "GNUNETD"
 		If you have to use a proxy for outbound HTTP connections,
 		specify the proxy configuration here.  Default is no proxy.
   
-	config APPLICATIONS
-	string "Which applications should gnunetd support?"
-	default "advertising fs getoption stats traffic"
-	depends on Meta::ADVANCED
-	help
-		Which applications should gnunetd support? Specify the name of the
-		dynamic shared object (DSO) that implements the service in the
-		gnunetd core here. Separate multiple modules with spaces.
-		
-		Whenever this option is changed, you MUST run gnunet-update.
-		
-		Currently, the available applications are:
-
-		advertising: tell peers about peers
-			This module will advertise your peer to other peers.
-			Without it, your peer will not participate in 
-			informing peers about other peers.  You should 
-			always load this module.
-		getoption: configuration
-			This module allows clients to query gnunetd about
-			the values of various configuration options.  Many
-			tools need this.  You should always load this module.
-		stats: statistics 
-			This module allows tools like gnunet-stats
-			and gnunet-gtk to query gnunetd about various
-			statistics.  This information is usually quite
-			useful to diagnose errors, hence it is recommended
-			that you load this module.
-		traffic: traffic analysis 
-			This module keeps track of how many messages of
-			which type and size were recently received and
-			transmitted.  This information can then be used
-			by your peer to establish how much cover traffic
-			is currently available.  The amount of cover 
-			traffic becomes important if you want to make
-			anonymous requests with an anonymity level that
-			is greater than one.  This module does not add
-			support for any new peer-to-peer messages itself.
-			It is recommended that you always load this module,
-			unless you are really short on memory and are
-			certain that you do not require good anonymity.
-		fs: file sharing
-			The file sharing module is needed for downloading
-			files, for caching content within the network and
-			for being the source of content.  At this point,
-			pretty much everybody should load this module.
-		chat: broadcast chat (demo-application, ALPHA quality)
-			If this module is loaded, you can run gnunet-chat
-			(text-mode only) to chat with other GNUnet users.
-			However, there are no channels and no list of users
-			on-line, the code simply broadcasts your messages.
-		tbench: benchmark tool for transport performance
-			If two peers load this module and establish a direct
-			connection, the gnunet-tbench tool can be used to
-			measure the quality of the connection between the
-			two peers.  Useful mostly for testing new transports.
-		tracekit: topology visualization toolkit
-			Peers that load this module can be queried for their
-			active connections (in fact, this is transitive for
-			all peers that load this module).  Using the
-			gnunet-tracekit tool it is possible to create a
-			picture of the network topology.  Note that the
-			picture maybe incomplete since peers that do not
-			load the tracekit module will not respond to such
-			requests and thus cut off the trace.  Also, some
-			peers may fail to respond within the specified
-			timeout.  Note that while tracing the topology
-			maybe fun, loading tracekit may make it easier 
-			for an adversary to compromise your anonymity.
-		
-		Again, the chat, tbench and tracekit protocols are potential security 
-		risks and have been engineered for testing GNUnet or demonstrating how
-		GNUnet works. They should be used with caution.
-		
-		In order to download or share files with GNUnet, you must load the
-		fs module which in turn requires or recommends getoption, stats
-		and traffic.  
-
-		Everybody should run advertising.
-		
-		Default: APPLICATIONS = "advertising fs getoption stats traffic"
 
 	config TRANSPORTS
 	string "Which transport mechanisms are available?"
@@ -298,45 +112,6 @@ menu "General settings" "GNUNETD"
 
 endmenu
 
-if Meta::ADVANCED	
-	menu "Modules" "MODULES"
-		config sqstore
-		string "Which database should be used?"
-		default "sqstore_sqlite"
-		help
-			Which database should be used?  The options
-			are "sqstore_sqlite" and "sqstore_mysql".
-			Default is "sqstore_sqlite".  You must run
-			gnunet-update after changing this value!
-			
-			In order to use sqstore_mysql, you must configure
-			the mysql database, which is relatively simple.
-			Read the file doc/README.mysql for how to setup
-			mysql.
-			The default is "sqstore_sqlite".
-	
-		config topology
-		string "Which topology should be used?"
-		default "topology_default"
-		help
-			Which topology should be used?  The only
-			options at the moment are "topology_default"
-                        and "topology_f2f".  In default mode, GNUnet
-			will try to connect to a diverse set of peers,
-			and welcome connections from anyone.  In
-			f2f (friend-to-friend) mode, GNUnet will only 
-                        allow connections from peers that are explicitly 
-                        listed in a FRIENDS file.  Note that you can
-                        list peers in the FRIENDS file that run in 
-                        default mode.
-
-                        Use f2f only if you have (trustworthy) friends
-                        that use GNUnet and are afraid of establishing
-                        (direct) connections to unknown peers.
-			
-			The default is "topology_default".
-	endmenu
-endif
 
 menu "Network" "NETWORK"
 	config PORT
@@ -411,20 +186,6 @@ menu "Network" "NETWORK"
 
 endmenu
 
-menu "Friend-to-Friend" "F2F"
-	config FRIENDS
-	string "List of friends for friend-to-friend topology"
-	default "$GNUNETD_HOME/friends"
-	depends on Meta::ADVANCED
-	help
-		Specifies the name of a file which contains a list of GNUnet peer IDs
-		that are friends.  If used together with 
-
-                [MODULES] topology = topology_f2f
-
-                this will ensure that GNUnet only connects to these peers (via
-		any available transport).
-endmenu
 
 menu "Resource limitations" "LOAD"
 
@@ -531,14 +292,6 @@ menu "Transports" "Transports"
 
 	menu "UDP Transport" "UDP"
 
-		config PORT
-		int "Port"
-		range 0 65535
-		default 2086
-		help
-			To which port does GNUnet bind? Default is 2086 and there is usually
-			no reason to change that.
-
 		config BLACKLIST
 		string "Disallow connections from"
 		default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
@@ -578,16 +331,6 @@ menu "Transports" "Transports"
   
 	menu "TCP Transport" "TCP"
 
-		config PORT
-		int "Port"
-		range 0 65535
-		default 2086
-		help
-			To which port does GNUnet bind? Default is 2086 and there is usually
-			no reason to change that.  Make sure that this port does not
-			conflict with the port for GNUnet clients (section NETWORK), which
-			defaults to 2087.
-
 		config BLACKLIST
 		string "Disallow connections from"
 		default "127.0.0.1/8;172.16.0.0/12;192.168.0.0/16;10.0.0.0/255.0.0.0;"
@@ -614,54 +357,21 @@ menu "Transports" "Transports"
 
     endif
 
-	menu "NAT" "NAT"
-	
-		config LIMITED
-		bool "Is this machine unreachable behind a NAT?"
-		default n
-		help
-			Is this machine behind a NAT that does not allow
-			connections from the outside to the GNUnet port?
-			(if you can configure the NAT box to allow
-			direct connections from other peers, set this
-			to NO).  Set this only to YES if other peers
-			cannot contact you directly via TCP or UDP.
-			If you set this to NO, you should also set the
-			TCP and UDP port to '0' to indicate that you
-			cannot accept inbound connections.
-
-	endmenu
- 
     if Meta::EXPERIMENTAL && Meta::RARE && Meta::ADVANCED
   
   	menu "UDP over IPv6" "UDP6"
   		  		
-  		config PORT
-  		int "Port"
-  		range 0 65535
-  		default 2088
-
-			config MTU
-			int "MTU"
-			default 1452
-			depends on Meta::RARE
-			
 			config BLACKLIST
 			string "Disallow connections from"
   	
-  	endmenu
-
-  	menu "TCP over IPv6" "TCP6"
   		  		
-  		config PORT
-  		int "Port"
-  		range 0 65535
-  		default 2088
-
 			config MTU
 			int "MTU"
 			default 1440
 			depends on Meta::RARE
+  	endmenu
+
+  	menu "TCP over IPv6" "TCP6"
 			
 			config BLACKLIST
 			string "Disallow connections from"
@@ -779,61 +489,6 @@ menu "Applications" ""
 
 	menu "Anonymous file sharing" "FS"
 
-		config QUOTA
-		int "MB of diskspace GNUnet can use for anonymous file sharing"
-		default 1024
-		help
-			How much disk space (MB) is GNUnet allowed to use for anonymous file
-			sharing?  This does not take indexed files into account, only the
-			space directly used by GNUnet is accounted for.  GNUnet will gather
-			content from the network if the current space-consumption is below
-			the number given here (and if content migration is allowed below).
-			
-			IMPORTANT:
-			Note that if you change the quota, you need to run gnunet-update,
-			otherwise your databases will be inconsistent and gnunetd will
-			refuse to work.  Default is 1024 (1 GB)
-
-		config ACTIVEMIGRATION
-		bool "Allow migrating content"
-		default y
-		depends on Meta::ADVANCED
-		help
-			Should we participate in content migration?  If you say yes here,
-			GNUnet will migrate content to your server, and you will not be able
-			to control what data is stored on your machine.  This option has
-			advantages and disadvantages.
-			
-			If you activate it, you can claim for *all* the non-indexed (-n to
-			gnunet-insert) content that you did not know what it was even if an
-			adversary takes control of your machine.
-			
-			If you do not activate it, it is obvious that you have knowledge of
-			all the content that is hosted on your machine and thus can be
-			considered liable for it.  
-			
-			So if you think that the legal system in your country has gone
-			postal, you may want to set it to "NO" and make sure that the
-			content you put on your machine does not get you into too much
-			trouble if an adversary takes control of your machine.  If you think
-			that you're safe if you host content that you don't know anything
-			about (like an ISP) or that you don't have to fear prosecution
-			no-matter-what, turn it to YES, which will also improve GNUnet's
-			performance and thereby your results.
-			
-			Note that as long as the adversary is not really powerful (e.g. can
-			not take control of your machine), GNUnet's build-in anonymity
-			mechanisms should protect you from being singled out easily.
-			
-			Currently, activating active migration can cause some problems when
-			the database is getting full (gdbm reorganization can take very,
-			very long and make GNUnet look like it hangs for that time). Thus if
-			you turn it on, you may want to disable it after you hit the
-			quota. A better content management system should solve this problem
-			in the near future... [at the time of GNUnet 0.6.1c, the MySQL 
-			database module already works well even if the db is full.]
-			Default is YES.
-
 		config DIR
 		string "Directory for storing FS data"
 		default "$GNUNETD_HOME/data/fs/"
@@ -873,43 +528,6 @@ menu "Applications" ""
 
 	endmenu
 	
-    if Meta::EXPERIMENTAL && Meta::RARE && Meta::ADVANCED
-	
-	menu "GNUnet Testbed" "TESTBED"
-		
-		config REGISTERURL
-		string "Where should we register the testbed service?"
-		default "http://gnunet.org/testbed/"
-		help
-			Where should we register the testbed service?
-			Default is "http://gnunet.org/testbed/"				
-		
-		config ALLOW_MODULE_LOADING
-		bool "Allow to load and unload modules"
-		default n
-		help
-			Is the testbed operator allowed to load and
-			unload modules? (somewhat of a security risk!)
-			Default is NO.
-
-		config UPLOAD-DIR
-		string "Upload directory"
-		default "$GNUNETD_HOME/testbed"
-		help
-			Where should file-uploads go?
-			Default is $GNUNETD_HOME/testbed
-			
-		config LOGIN
-		string "Login-name for SSH-tunnel"
-		default 2087
-		help
-			Login-name for SSH-tunnel (for secure testbed
-			connections).  Without login name the testbed-server
-			will try to make a direct TCP connection to the
-			application port (default: 2087).
-		
-	endmenu
-			
 	menu "DHT" "DHT"
 		config BUCKETCOUNT
 		int "Number of buckets to use"
@@ -927,17 +545,6 @@ menu "Applications" ""
 			Default is 65536.
 	endmenu
 
-    endif
-	
-    if Meta::RARE
-	menu "GAP" "GAP"
-		config TABLESIZE
-		int "Size of the routing table."
-		default 65536
-		help
-			Size of the routing table.
-			Default: 65536
-	endmenu
     endif
 	
 endmenu

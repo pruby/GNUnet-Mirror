@@ -53,6 +53,8 @@ struct GNS_Context {
   
   GNS_TCL * listeners;
 
+  unsigned int in_notify;
+
 };
 
 static void notify_listeners(void * ctx,
@@ -60,11 +62,15 @@ static void notify_listeners(void * ctx,
   struct GNS_Context * g = ctx;
   GNS_TCL * lpos;
 
+  if (g->in_notify > 0)
+    return; /* do not do recursive notifications! */
+  g->in_notify++;
   lpos = g->listeners;
   while (lpos != NULL) {
     lpos->l(tree, lpos->c);
     lpos = lpos->next;
   }
+  g->in_notify--;
 }
 
 /**
@@ -192,7 +198,8 @@ int configChangeListener(void * ctx,
   notify_listeners(g, pos);
 
   /* allow tree to update visibility */
-  tree_notify_change(&notify_listeners,
+  tree_notify_change(cfg,
+		     &notify_listeners,
 		     g,
 		     g->ectx,
 		     g->root,
@@ -258,6 +265,7 @@ GNS_load_specification(struct GE_Context * ectx,
   ctx->ectx = ectx;
   ctx->cfg = cfg;
   ctx->root = root;
+  ctx->in_notify = 0;
   if (-1 == GC_attach_change_listener(cfg,
 				      &configChangeListener,
 				      ctx)) {
