@@ -645,6 +645,7 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
   int i;
   char * prefix;
   char * result;
+  const char * post;
 
   if (orig[0] != '$')
     return orig;
@@ -653,7 +654,12 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
 	  (orig[i] != '\\') &&
           (orig[i] != '\0') )
     i++;
-  orig[i] = '\0';
+  if (orig[i] == '\0') {
+    post = "";
+  } else {
+    orig[i] = '\0';
+    post = &orig[i+1];
+  }
   prefix = NULL;
   if (0 != _get_configuration_value_string(cfg,
 					   section,
@@ -678,10 +684,10 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
     }
   }
   result = MALLOC(strlen(prefix) +
-                  strlen(&orig[i+1]) + 2);
+                  strlen(post) + 2);
   strcpy(result, prefix);
   strcat(result, DIR_SEPARATOR_STR);
-  strcat(result, &orig[i+1]);
+  strcat(result, post);
   FREE(prefix);
   FREE(orig);
   return result;
