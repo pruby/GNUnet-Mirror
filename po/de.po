@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-09-05 18:18-0700\n"
+"POT-Creation-Date: 2006-09-10 22:06-0600\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -16,7 +16,359 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: src/transports/ip6.c:65 src/util/network/io.c:68
+#: contrib/config-daemon.scm:43 contrib/config-client.scm:44
+#, fuzzy
+msgid "No help available."
+msgstr "`%s' ist nicht verfügbar."
+
+#: contrib/config-daemon.scm:56 contrib/config-client.scm:57
+msgid "Prompt for development and/or incomplete code"
+msgstr ""
+
+#: contrib/config-daemon.scm:58 contrib/config-client.scm:59
+msgid ""
+"If EXPERIMENTAL is set to NO, options for experimental code are not shown.  "
+"If in doubt, use NO.\n"
+"\n"
+"Some options apply to experimental code that maybe in a state of development "
+"where the functionality, stability, or the level of testing is not yet high "
+"enough for general use.  These features are said to be of \"alpha\" "
+"quality.  If a feature is currently in alpha, uninformed use is discouraged "
+"(since the developers then do not fancy \"Why doesn't this work?\" type "
+"messages).\n"
+"\n"
+"However, active testing and qualified feedback of these features is always "
+"welcome.  Users should just be aware that alpha features may not meet the "
+"normal level of reliability or it may fail to work in some special cases.  "
+"Bug reports are usually welcomed by the developers, but please read the "
+"documents <file://README> and <http://gnunet.org/faq.php3> and use <https://"
+"gnunet.org/mantis/> for how to report problems."
+msgstr ""
+
+#: contrib/config-daemon.scm:73 contrib/config-client.scm:74
+msgid "Show options for advanced users"
+msgstr ""
+
+#: contrib/config-daemon.scm:75 contrib/config-client.scm:76
+msgid ""
+"These are options that maybe difficult to understand for the beginner. These "
+"options typically refer to features that allow tweaking of the "
+"installation.  If in a hurry, say NO."
+msgstr ""
+
+#: contrib/config-daemon.scm:86 contrib/config-client.scm:87
+#, fuzzy
+msgid "Show rarely used options"
+msgstr "Maskierte Optionen anzeigen"
+
+#: contrib/config-daemon.scm:88 contrib/config-client.scm:89
+msgid ""
+"These are options that hardly anyone actually needs.  If you plan on doing "
+"development on GNUnet, you may want to look into these.  If in doubt or in a "
+"hurry, say NO."
+msgstr ""
+
+#: contrib/config-daemon.scm:99 contrib/config-client.scm:100
+#, fuzzy
+msgid "Meta-configuration"
+msgstr "GNUnet Konfiguration"
+
+#: contrib/config-daemon.scm:100 contrib/config-client.scm:101
+msgid "Which level of configuration should be available"
+msgstr ""
+
+#: contrib/config-daemon.scm:117
+#, fuzzy
+msgid "Full pathname of GNUnet HOME directory"
+msgstr "Dateiformat fehlerhaft (kein GNUnet Verzeichnis?)\n"
+
+#: contrib/config-daemon.scm:119
+msgid ""
+"This gives the root-directory of the GNUnet installation. Make sure there is "
+"some space left in that directory. :-)  Users inserting or indexing files "
+"will be able to store data in this directory up to the (global) quota "
+"specified below.  Having a few gigabytes of free space is recommended."
+msgstr ""
+
+#: contrib/config-daemon.scm:130
+msgid "How many minutes should peer advertisements last?"
+msgstr ""
+
+#: contrib/config-daemon.scm:132
+msgid ""
+"How many minutes is the current IP valid?  (GNUnet will sign HELLO messages "
+"with this expiration timeline. If you are on dialup, 60 (for 1 hour) is "
+"suggested. If you are having a static IP address, you may want to set this "
+"to a large value (say 14400).  The default is 1440 (1 day). If your IP "
+"changes periodically, you will want to choose the expiration to be smaller "
+"than the frequency with which your IP changes."
+msgstr ""
+
+#: contrib/config-daemon.scm:143
+msgid "Log level"
+msgstr ""
+
+#: contrib/config-daemon.scm:144
+msgid "How verbose should the logging of errors be?"
+msgstr ""
+
+#: contrib/config-daemon.scm:155
+msgid "Where should logs go?"
+msgstr ""
+
+#: contrib/config-daemon.scm:157
+msgid ""
+"In which file should gnunetd write the logs?  If you specify nothing, logs "
+"are written to stderr (and note that if gnunetd runs in the background, "
+"stderr is closed and all logs are discarded)."
+msgstr ""
+
+#: contrib/config-daemon.scm:168
+msgid "How long should logs be kept?"
+msgstr ""
+
+#: contrib/config-daemon.scm:170
+msgid ""
+"How long should logs be kept? If you specify a value greater than zero, a "
+"log is created each day with the date appended to its filename. These logs "
+"are deleted after $KEEPLOG days.\tTo keep logs forever, set this value to 0."
+msgstr ""
+
+#: contrib/config-daemon.scm:181
+msgid "Where should gnunetd write the PID?"
+msgstr ""
+
+#: contrib/config-daemon.scm:183
+msgid ""
+"In which file should gnunetd write the process-id of the server?  If you run "
+"gnunetd as root, you may want to choose /var/run/gnunetd.pid. It's not the "
+"default since gnunetd may not have write rights at that location."
+msgstr ""
+
+#: contrib/config-daemon.scm:195
+msgid "Which transport mechanisms should GNUnet use?"
+msgstr ""
+
+#: contrib/config-daemon.scm:197
+msgid ""
+"Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The "
+"available transports are udp, tcp, http, smtp, tcp6, udp6 and nat.\n"
+"\t\t\n"
+"Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes "
+"that cannot directly be reached from the outside.  Peers that are NOT behind "
+"a NAT box and that want to *allow* peers that ARE behind a NAT box to "
+"connect must ALSO load the 'nat' module.  Note that the actual transfer will "
+"always be via tcp initiated by the peer behind the NAT box.  The nat "
+"transport requires the use of tcp, http, smtp and/or tcp6 in addition to nat "
+"itself."
+msgstr ""
+
+#: contrib/config-daemon.scm:211
+msgid "Which applications should gnunetd support?"
+msgstr ""
+
+#: contrib/config-daemon.scm:213
+msgid ""
+"Whenever this option is changed, you MUST run gnunet-update. Currently, the "
+"available applications are:\n"
+"\n"
+"advertising: advertises your peer to other peers. Without it, your peer will "
+"not participate in informing peers about other peers.  You should always "
+"load this module.\n"
+"\n"
+"getoption:  allows clients to query gnunetd about the values of various "
+"configuration options.  Many tools need this.  You should always load this "
+"module.\n"
+"\n"
+"stats: allows tools like gnunet-stats and gnunet-gtk to query gnunetd about "
+"various statistics.  This information is usually quite useful to diagnose "
+"errors, hence it is recommended that you load this module.\n"
+"\n"
+"traffic: keeps track of how many messages were recently received and "
+"transmitted.  This information can then be used to establish how much cover "
+"traffic is currently available.  The amount of cover traffic becomes "
+"important if you want to make anonymous requests with an anonymity level "
+"that is greater than one.  It is recommended that you load this module.\n"
+"\n"
+"fs: needed for anonymous file sharing. You should always load this module.\n"
+"\n"
+"chat: broadcast chat (demo-application, ALPHA quality).\tRequired for gnunet-"
+"chat.  Note that the current implementation of chat is not considered to be "
+"secure.\n"
+"\n"
+"tbench: benchmark transport performance.  Required for gnunet-tbench.  Note "
+"that tbench allows other users to abuse your resources.\n"
+"\n"
+"tracekit: topology visualization toolkit.  Required for gnunet-tracekit. "
+"Note that loading tracekit will make it slightly easier for an adversary to "
+"compromise your anonymity."
+msgstr ""
+
+#: contrib/config-daemon.scm:244
+#, fuzzy
+msgid "General settings"
+msgstr "Weitere Einstellungen"
+
+#: contrib/config-daemon.scm:245
+msgid "Settings that change the behavior of GNUnet in general"
+msgstr ""
+
+#: contrib/config-daemon.scm:268
+msgid "Which database should be used?"
+msgstr ""
+
+#: contrib/config-daemon.scm:270
+msgid ""
+"Which database should be used?  The options are \"sqstore_sqlite\" and "
+"\"sqstore_mysql\".  You must run gnunet-update after changing this value!\n"
+"\t\t\t\n"
+"In order to use sqstore_mysql, you must configure the mysql database, which "
+"is relatively simple.  Read the file doc/README.mysql for how to setup mysql."
+msgstr ""
+
+#: contrib/config-daemon.scm:283
+msgid "Which topology should be used?"
+msgstr ""
+
+#: contrib/config-daemon.scm:285
+msgid ""
+"Which topology should be used?  The only options at the moment are "
+"\"topology_default\" and \"topology_f2f\".  In default mode, GNUnet will try "
+"to connect to a diverse set of peers, and welcome connections from anyone.  "
+"In f2f (friend-to-friend) mode, GNUnet will only allow connections from "
+"peers that are explicitly listed in a FRIENDS file.  Note that you can list "
+"peers in the FRIENDS file that run in default mode.\n"
+"\n"
+"Use f2f only if you have (trustworthy) friends that use GNUnet and are "
+"afraid of establishing (direct) connections to unknown peers."
+msgstr ""
+
+#: contrib/config-daemon.scm:300
+msgid "Modules"
+msgstr ""
+
+#: contrib/config-daemon.scm:301
+msgid "Settings that select specific implementations for GNUnet modules"
+msgstr ""
+
+#: contrib/config-daemon.scm:318
+msgid "List of friends for friend-to-friend topology"
+msgstr ""
+
+#: contrib/config-daemon.scm:319
+msgid ""
+"Specifies the name of a file which contains a list of GNUnet peer IDs that "
+"are friends.  If used with the friend-to-friend topology, this will ensure "
+"that GNUnet only connects to these peers (via any available transport)."
+msgstr ""
+
+#: contrib/config-daemon.scm:334
+msgid "MB of diskspace GNUnet can use for anonymous file sharing"
+msgstr ""
+
+#: contrib/config-daemon.scm:336
+msgid ""
+"How much disk space (MB) is GNUnet allowed to use for anonymous file "
+"sharing?  This does not take indexed files into account, only the space "
+"directly used by GNUnet is accounted for.  GNUnet will gather content from "
+"the network if the current space-consumption is below the number given here "
+"(and if content migration is allowed below).\n"
+"\n"
+"Note that if you change the quota, you need to run gnunet-update afterwards."
+msgstr ""
+
+#: contrib/config-daemon.scm:350
+msgid "Size of the routing table."
+msgstr ""
+
+#: contrib/config-daemon.scm:363
+msgid "Allow migrating content to this peer."
+msgstr ""
+
+#: contrib/config-daemon.scm:365
+msgid ""
+"If you say yes here, GNUnet will migrate content to your server, and you "
+"will not be able to control what data is stored on your machine. \n"
+"\t\t\t\n"
+"If you activate it, you can claim for *all* the non-indexed (-n to gnunet-"
+"insert) content that you did not know what it was even if an adversary takes "
+"control of your machine.  If you do not activate it, it is obvious that you "
+"have knowledge of all the content that is hosted on your machine and thus "
+"can be considered liable for it."
+msgstr ""
+
+#: contrib/config-daemon.scm:379
+#, fuzzy
+msgid "Options for anonymous file sharing"
+msgstr "Ermöglicht (anonymes) Filesharing"
+
+#: contrib/config-daemon.scm:395
+#, fuzzy
+msgid "Applications"
+msgstr "_Optionen"
+
+#: contrib/config-daemon.scm:411
+msgid "Is this machine unreachable behind a NAT?"
+msgstr ""
+
+#: contrib/config-daemon.scm:412
+msgid ""
+"Set to YES if this machine is behind a NAT that limits connections from the "
+"outside to the GNUnet port. Note that if you have configured your NAT box to "
+"allow direct connections from other machines to the GNUnet ports, you should "
+"set the option to NO.  Set this only to YES if other peers cannot contact "
+"you directly."
+msgstr ""
+
+#: contrib/config-daemon.scm:423
+msgid "Which port should be used by the TCP IPv4 transport?"
+msgstr ""
+
+#: contrib/config-daemon.scm:435
+msgid "TCP transport"
+msgstr ""
+
+#: contrib/config-daemon.scm:450
+msgid "Which port should be used by the HTTP transport?"
+msgstr ""
+
+#: contrib/config-daemon.scm:462
+msgid "HTTP transport"
+msgstr ""
+
+#: contrib/config-daemon.scm:477
+msgid "Which port should be used by the UDP IPv4 transport?"
+msgstr ""
+
+#: contrib/config-daemon.scm:489
+msgid "UDP transport"
+msgstr ""
+
+#: contrib/config-daemon.scm:504
+msgid "Which port should be used by the TCP IPv6 transport?"
+msgstr ""
+
+#: contrib/config-daemon.scm:516
+msgid "TCP6 transport"
+msgstr ""
+
+#: contrib/config-daemon.scm:531
+msgid "Which port should be used by the UDP IPv6 transport?"
+msgstr ""
+
+#: contrib/config-daemon.scm:543
+msgid "UDP6 transport"
+msgstr ""
+
+#: contrib/config-daemon.scm:558
+msgid "Transports"
+msgstr ""
+
+#: contrib/config-daemon.scm:580 contrib/config-client.scm:121
+msgid "Root node"
+msgstr ""
+
+#: src/transports/ip6.c:65 src/util/network/io.c:74
 #, c-format
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "IP des Hosts `%s' konnte nicht ermittelt werden: %s\n"
@@ -297,23 +649,21 @@ msgstr ""
 #: src/applications/dht/tools/dhttest2.c:50
 #: src/applications/session/sessiontest.c:42
 #: src/applications/stats/statistics.c:212
-#: src/applications/tbench/tbenchtest.c:107
-#: src/applications/tbench/tbenchtest_udp.c:107
+#: src/applications/tbench/tbenchtest.c:101
+#: src/applications/tbench/tbenchtest_udp.c:101
 #: src/applications/gap/gaptest.c:52
 msgid "# of connected peers"
 msgstr "# verbundener Knoten"
 
 #: src/applications/dht/tools/dhttest2.c:128
-#: src/applications/tbench/tbenchtest.c:199
-#: src/applications/tbench/tbenchtest_udp.c:201
 #: src/applications/gap/gaptest.c:318
 #, c-format
 msgid "Waiting for gnunetd to start (%u iterations left)...\n"
 msgstr "Warte auf den Start von gnunetd (%u Iterationen verbleiben)...\n"
 
 #: src/applications/dht/tools/dhttest2.c:140
-#: src/applications/tbench/tbenchtest.c:122
-#: src/applications/tbench/tbenchtest_udp.c:122
+#: src/applications/tbench/tbenchtest.c:117
+#: src/applications/tbench/tbenchtest_udp.c:117
 #: src/applications/gap/gaptest.c:330
 #, c-format
 msgid "Waiting for peers to connect (%u iterations left)...\n"
@@ -1467,26 +1817,26 @@ msgstr ""
 "\n"
 "Es wurde keine Nachricht von gnunetd empfangen. Läuft gnunetd?\n"
 
-#: src/applications/tbench/tbenchtest.c:57
-#: src/applications/tbench/tbenchtest_udp.c:57
+#: src/applications/tbench/tbenchtest.c:51
+#: src/applications/tbench/tbenchtest_udp.c:51
 #, c-format
 msgid "Using %u messages of size %u for %u times.\n"
 msgstr "Verwende %u Nachrichten der Größe %u %umal.\n"
 
-#: src/applications/tbench/tbenchtest.c:84
-#: src/applications/tbench/tbenchtest_udp.c:84
+#: src/applications/tbench/tbenchtest.c:78
+#: src/applications/tbench/tbenchtest_udp.c:78
 #, c-format
 msgid "Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"
 msgstr "Zeiten:   Max %16llu  Min %16llu  Mittel %12.3f  Varianz %12.3f\n"
 
-#: src/applications/tbench/tbenchtest.c:89
-#: src/applications/tbench/tbenchtest_udp.c:89
+#: src/applications/tbench/tbenchtest.c:83
+#: src/applications/tbench/tbenchtest_udp.c:83
 #, c-format
 msgid "Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"
 msgstr "Verloren:  Max %16u  Min %16u  Mittel %12.3f  Varianz %12.3f\n"
 
-#: src/applications/tbench/tbenchtest.c:95
-#: src/applications/tbench/tbenchtest_udp.c:95
+#: src/applications/tbench/tbenchtest.c:89
+#: src/applications/tbench/tbenchtest_udp.c:89
 #, c-format
 msgid ""
 "\n"
@@ -1496,7 +1846,7 @@ msgstr ""
 "Fehler beim Empfangen der Antwort von gnunetd.\n"
 
 #: src/applications/tbench/tbenchtest.c:211
-#: src/applications/tbench/tbenchtest_udp.c:213
+#: src/applications/tbench/tbenchtest_udp.c:211
 #, c-format
 msgid "Running benchmark...\n"
 msgstr "Benchmark läuft...\n"
@@ -2811,17 +3161,17 @@ msgstr "# Bytes entschlüsselt"
 msgid "# bytes noise sent"
 msgstr "# Bytes Rauschen gesendet"
 
-#: src/server/gnunetd.c:78
+#: src/server/gnunetd.c:80
 #, c-format
 msgid "`%s' startup complete.\n"
 msgstr "`%s' Startvorgang abgeschlossen.\n"
 
-#: src/server/gnunetd.c:83
+#: src/server/gnunetd.c:85
 #, c-format
 msgid "`%s' is shutting down.\n"
 msgstr "`%s' fährt herunter.\n"
 
-#: src/server/gnunetd.c:160
+#: src/server/gnunetd.c:168
 msgid ""
 "run in debug mode; gnunetd will not daemonize and error messages will be "
 "written to stderr instead of a logfile"
@@ -2830,20 +3180,20 @@ msgstr ""
 "Fehlermeldungen werden nicht in die Protokolldatei, sondern auf die "
 "Standardfehlerausgabe (stderr) geschrieben."
 
-#: src/server/gnunetd.c:164
+#: src/server/gnunetd.c:172
 msgid "Starts the gnunetd daemon."
 msgstr "Startet den gnunetd Daemonen."
 
-#: src/server/gnunetd.c:168
+#: src/server/gnunetd.c:176
 msgid "disable padding with random data (experimental)"
 msgstr ""
 
-#: src/server/gnunetd.c:172
+#: src/server/gnunetd.c:180
 #, fuzzy
 msgid "specify username as which gnunetd should run"
 msgstr "Gibt an, auf welchem Host gnunetd läuft"
 
-#: src/server/gnunetd.c:228
+#: src/server/gnunetd.c:236
 #, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
 msgstr ""
@@ -3208,26 +3558,26 @@ msgstr "`%s' erwartet, dass `%s' ein Verzeichnis ist!\n"
 msgid "Syntax error in configuration file `%s' at line %d.\n"
 msgstr "Syntaxfehler in Konfigurationsdatei `%s' in Zeile %d.\n"
 
-#: src/util/config_impl/impl.c:419
+#: src/util/config_impl/impl.c:421
 #, c-format
 msgid ""
 "Configuration value '%llu' for '%s' in section '%s' is out of legal bounds [%"
 "llu,%llu]\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:431
+#: src/util/config_impl/impl.c:433
 #, c-format
 msgid "Configuration value '%s' for '%s' in section '%s' should be a number\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:511
+#: src/util/config_impl/impl.c:513
 #, c-format
 msgid ""
 "Configuration value '%s' for '%s' in section '%s' is not in set of legal "
 "choices\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:617
+#: src/util/config_impl/impl.c:624
 #, c-format
 msgid "Setting option `%s' in section `%s' to value `%s' was refused.\n"
 msgstr ""
@@ -3455,65 +3805,123 @@ msgstr "`%s' ist nicht verfügbar."
 msgid "Unknown operation `%s'\n"
 msgstr "Unbekannte Operation `%s'\n"
 
-#: src/setup/gnunet-win-tool.c:109
+#: src/setup/gnunet-win-tool.c:54
+msgid "list all network adapters"
+msgstr ""
+
+#: src/setup/gnunet-win-tool.c:57
+msgid "install GNUnet as Windows service"
+msgstr ""
+
+#: src/setup/gnunet-win-tool.c:60
+msgid "uninstall GNUnet service"
+msgstr ""
+
+#: src/setup/gnunet-win-tool.c:63
+msgid "increase the maximum number of TCP/IP connections"
+msgstr ""
+
+#: src/setup/gnunet-win-tool.c:66
+msgid "display a file's hash value"
+msgstr ""
+
+#: src/setup/gnunet-win-tool.c:121
 #, c-format
 msgid "GNUnet service installed successfully.\n"
 msgstr "Der GNUnet Dienst wurde erfolgreich installiert.\n"
 
-#: src/setup/gnunet-win-tool.c:112 src/setup/gnunet-win-tool.c:139
+#: src/setup/gnunet-win-tool.c:124 src/setup/gnunet-win-tool.c:151
 #, c-format
 msgid "This version of Windows doesn't support services.\n"
 msgstr "Diese Version von Windows unterstützt keine Dienste.\n"
 
-#: src/setup/gnunet-win-tool.c:116 src/setup/gnunet-win-tool.c:143
+#: src/setup/gnunet-win-tool.c:128 src/setup/gnunet-win-tool.c:155
 #, c-format
 msgid "Error: can't open Service Control Manager: %s\n"
 msgstr "Fehler: der Dienstemanager konnte nicht geöffnet werden: %s\n"
 
-#: src/setup/gnunet-win-tool.c:121
+#: src/setup/gnunet-win-tool.c:133
 #, c-format
 msgid "Error: can't create service: %s\n"
 msgstr "Fehler: Dienst konnte nicht angelegt werden: %s\n"
 
-#: src/setup/gnunet-win-tool.c:124 src/setup/gnunet-win-tool.c:155
+#: src/setup/gnunet-win-tool.c:136 src/setup/gnunet-win-tool.c:167
 #, c-format
 msgid "Unknown error.\n"
 msgstr "Unbekannter Fehler.\n"
 
-#: src/setup/gnunet-win-tool.c:136
+#: src/setup/gnunet-win-tool.c:148
 #, c-format
 msgid "Service deleted.\n"
 msgstr "Dienst gelöscht.\n"
 
-#: src/setup/gnunet-win-tool.c:148
+#: src/setup/gnunet-win-tool.c:160
 #, c-format
 msgid "Error: can't access service: %s\n"
 msgstr "Fehler: auf den Dienst konnte nicht zugegriffen werden: %s\n"
 
-#: src/setup/gnunet-win-tool.c:152
+#: src/setup/gnunet-win-tool.c:164
 #, c-format
 msgid "Error: can't delete service: %s\n"
 msgstr "Fehler: Dienst konnte nicht gelöscht werden: %s\n"
 
-#: src/setup/gtk/gconf.c:70
-msgid "Sorry, no help is available for this option.\n"
-msgstr "Sorry, für diese Option steht keine Hilfe zur Verfügung.\n"
+#: src/setup/gtk/gconf.c:363
+#, fuzzy
+msgid "Description"
+msgstr "Frage"
 
-#: src/setup/gtk/glade_support.c:89 src/setup/gtk/glade_support.c:120
-#, fuzzy, c-format
-msgid "Failed to open `%s'.\n"
-msgstr "Datei wurde als `%s' gespeichert.\n"
+#: src/setup/gtk/gconf.c:381
+msgid "Value"
+msgstr ""
+
+#: src/setup/gtk/gconf.c:402
+msgid "Default"
+msgstr ""
+
+#: src/setup/gtk/gconf.c:416 src/setup/ncurses/wizard_curs.c:142
+#: src/setup/ncurses/wizard_curs.c:195 src/setup/ncurses/wizard_curs.c:232
+#: src/setup/ncurses/wizard_curs.c:287 src/setup/ncurses/wizard_curs.c:319
+#: src/setup/ncurses/wizard_curs.c:379
+msgid "Help"
+msgstr "Hilfe"
+
+#: src/setup/gtk/gconf.c:430
+#, fuzzy
+msgid "Section"
+msgstr "Frage"
+
+#: src/setup/gtk/gconf.c:442
+#, fuzzy
+msgid "Option"
+msgstr "_Optionen"
+
+#: src/setup/gtk/gconf.c:464
+#, fuzzy
+msgid "Configuration saved."
+msgstr "GNUnet Konfiguration"
+
+#: src/setup/gtk/gconf.c:472
+#, fuzzy
+msgid "Failed to save configuration."
+msgstr "Fehler beim Speichern der Konfiguration!"
+
+#: src/setup/gtk/gconf.c:495
+#, fuzzy
+msgid "Configuration changed. Save?"
+msgstr ""
+"Konfiguration oder die GNUnet Version hat sich geändert. Sie müssen `%s' "
+"ausführen!\n"
 
 #: src/setup/gtk/wizard_gtk.c:429
 #, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Fehler beim Speichern der Konfigurationsdatei `%s':"
 
-#: src/setup/gtk/wizard_gtk.c:475 src/setup/ncurses/wizard_curs.c:616
+#: src/setup/gtk/wizard_gtk.c:475 src/setup/ncurses/wizard_curs.c:620
 msgid "Unable to create user account:"
 msgstr "Fehler beim Anlegen des Benutzerkontos:"
 
-#: src/setup/gtk/wizard_gtk.c:482 src/setup/ncurses/wizard_curs.c:619
+#: src/setup/gtk/wizard_gtk.c:482 src/setup/ncurses/wizard_curs.c:623
 msgid "Unable to change startup process:"
 msgstr "Startprozeß konnte nicht geändert werden:"
 
@@ -3621,7 +4029,7 @@ msgstr ""
 msgid "Use the '%s' key to abort.\n"
 msgstr ""
 
-#: src/setup/text/conf.c:553 src/setup/ncurses/mconf.c:818
+#: src/setup/text/conf.c:553 src/setup/ncurses/mconf.c:422
 #, fuzzy, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr ""
@@ -3647,42 +4055,75 @@ msgstr ""
 msgid "Configuration file `%s' written.\n"
 msgstr "Konfigurationsdatei `%s' wurde erzeugt.\n"
 
-#: src/setup/ncurses/mconf.c:793
+#: src/setup/ncurses/mconf.c:79
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/setup/ncurses/mconf.c:84
+msgid "Exit"
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:161 src/setup/ncurses/mconf.c:260
+#: src/setup/ncurses/mconf.c:365
+msgid "Internal error! (Choice invalid?)"
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:200 src/setup/ncurses/mconf.c:310
+msgid "Internal error! (Value invalid?)"
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:301
+msgid "Invalid input, expecting floating point value."
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:350
+msgid "Invalid input, expecting integer."
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:356
+msgid "Value is not in legal range."
+msgstr ""
+
+#: src/setup/ncurses/mconf.c:408
 #, fuzzy
 msgid "GNUnet Configuration"
 msgstr "GNUnet Konfiguration"
 
-#: src/setup/ncurses/mconf.c:824
+#: src/setup/ncurses/mconf.c:426
 #, fuzzy
 msgid "Do you wish to save your new configuration?"
 msgstr "Möchten Sie Ihre Einstellungen speichern?"
 
-#: src/setup/ncurses/mconf.c:834
+#: src/setup/ncurses/mconf.c:437
 #, fuzzy, c-format
-msgid "End of configuration.\n"
+msgid ""
+"\n"
+"End of configuration.\n"
 msgstr " gconfig\tGTK Konfiguration\n"
 
-#: src/setup/ncurses/mconf.c:836
+#: src/setup/ncurses/mconf.c:440
 #, fuzzy, c-format
-msgid "Your configuration changes were NOT saved.\n"
+msgid ""
+"\n"
+"Your configuration changes were NOT saved.\n"
 msgstr "Konfigurationsdatei `%s' wurde erzeugt.\n"
 
-#: src/setup/ncurses/wizard_curs.c:58
+#: src/setup/ncurses/wizard_curs.c:56
 msgid "Error"
 msgstr "Fehler"
 
-#: src/setup/ncurses/wizard_curs.c:116 src/setup/ncurses/wizard_curs.c:131
-#: src/setup/ncurses/wizard_curs.c:184 src/setup/ncurses/wizard_curs.c:221
-#: src/setup/ncurses/wizard_curs.c:251 src/setup/ncurses/wizard_curs.c:277
-#: src/setup/ncurses/wizard_curs.c:310 src/setup/ncurses/wizard_curs.c:337
-#: src/setup/ncurses/wizard_curs.c:369 src/setup/ncurses/wizard_curs.c:394
-#: src/setup/ncurses/wizard_curs.c:423 src/setup/ncurses/wizard_curs.c:446
-#: src/setup/ncurses/wizard_curs.c:501 src/setup/ncurses/wizard_curs.c:563
-#: src/setup/ncurses/wizard_curs.c:594 src/setup/ncurses/wizard_curs.c:638
+#: src/setup/ncurses/wizard_curs.c:120 src/setup/ncurses/wizard_curs.c:135
+#: src/setup/ncurses/wizard_curs.c:188 src/setup/ncurses/wizard_curs.c:225
+#: src/setup/ncurses/wizard_curs.c:255 src/setup/ncurses/wizard_curs.c:281
+#: src/setup/ncurses/wizard_curs.c:314 src/setup/ncurses/wizard_curs.c:341
+#: src/setup/ncurses/wizard_curs.c:373 src/setup/ncurses/wizard_curs.c:398
+#: src/setup/ncurses/wizard_curs.c:427 src/setup/ncurses/wizard_curs.c:450
+#: src/setup/ncurses/wizard_curs.c:505 src/setup/ncurses/wizard_curs.c:567
+#: src/setup/ncurses/wizard_curs.c:598 src/setup/ncurses/wizard_curs.c:642
 msgid "GNUnet configuration"
 msgstr "GNUnet Konfiguration"
 
-#: src/setup/ncurses/wizard_curs.c:117
+#: src/setup/ncurses/wizard_curs.c:121
 msgid ""
 "Welcome to GNUnet!\n"
 "\n"
@@ -3712,7 +4153,7 @@ msgstr ""
 "\n"
 "das GNUnet-Team"
 
-#: src/setup/ncurses/wizard_curs.c:132
+#: src/setup/ncurses/wizard_curs.c:136
 msgid ""
 "Choose the network interface that connects your computer to the internet "
 "from the list below."
@@ -3720,13 +4161,7 @@ msgstr ""
 "Wählen Sie das Netzwerkgerät, das Ihren Computer mit dem Internet verbindet, "
 "aus unten stehender Liste."
 
-#: src/setup/ncurses/wizard_curs.c:138 src/setup/ncurses/wizard_curs.c:191
-#: src/setup/ncurses/wizard_curs.c:228 src/setup/ncurses/wizard_curs.c:283
-#: src/setup/ncurses/wizard_curs.c:315 src/setup/ncurses/wizard_curs.c:375
-msgid "Help"
-msgstr "Hilfe"
-
-#: src/setup/ncurses/wizard_curs.c:138 src/setup/ncurses/wizard_curs.c:192
+#: src/setup/ncurses/wizard_curs.c:142 src/setup/ncurses/wizard_curs.c:196
 msgid ""
 "The \"Network interface\" is the device that connects your computer to the "
 "internet. This is usually a modem, an ISDN card or a network card in case "
@@ -3736,7 +4171,7 @@ msgstr ""
 "verbindet. Dies ist üblicherweise ein Modem, eine ISDN-Karte oder eine "
 "Netzwerkkarte falls Sie DSL nutzen."
 
-#: src/setup/ncurses/wizard_curs.c:185
+#: src/setup/ncurses/wizard_curs.c:189
 msgid ""
 "What is the name of the network interface that connects your computer to the "
 "Internet?"
@@ -3744,7 +4179,7 @@ msgstr ""
 "Was ist der Name des Netzwerkgerätes, das Ihren Computer mit dem Internet "
 "verbindet?"
 
-#: src/setup/ncurses/wizard_curs.c:222
+#: src/setup/ncurses/wizard_curs.c:226
 msgid ""
 "What is this computer's public IP address or hostname?\n"
 "\n"
@@ -3754,7 +4189,7 @@ msgstr ""
 "Computers?\n"
 "Wenn Sie nicht sicher sind, lassen Sie dieses Feld leer."
 
-#: src/setup/ncurses/wizard_curs.c:229
+#: src/setup/ncurses/wizard_curs.c:233
 msgid ""
 "If your provider always assigns the same IP-Address to you (a \"static\" IP-"
 "Address), enter it into the \"IP-Address\" field. If your IP-Address changes "
@@ -3772,7 +4207,7 @@ msgstr ""
 "Wenn Sie nicht sicher sind, so können Sie das Feld leer lassen. GNUnet wird "
 "dann versuchen, Ihre IP-Adresse automatisch zu bestimmen."
 
-#: src/setup/ncurses/wizard_curs.c:252
+#: src/setup/ncurses/wizard_curs.c:256
 msgid ""
 "Is this machine behind NAT?\n"
 "\n"
@@ -3790,11 +4225,11 @@ msgstr ""
 "hier \"Ja\". Antworten Sie \"Nein\" bei direkten Verbindungen über Modem, "
 "ISDN-Karten und DNAT (auch bekannt als \"Port forwarding\")."
 
-#: src/setup/ncurses/wizard_curs.c:278
+#: src/setup/ncurses/wizard_curs.c:282
 msgid "How much upstream (Bytes/s) may be used?"
 msgstr "Wieviel Upstream (Bytes/s) darf verwendet werden?"
 
-#: src/setup/ncurses/wizard_curs.c:283
+#: src/setup/ncurses/wizard_curs.c:287
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -3812,11 +4247,11 @@ msgstr ""
 "festlegen. Wenn Sie eine Flatrate haben, können Sie die maximale "
 "Geschwindigkeit Ihrer Internetverbindung angeben."
 
-#: src/setup/ncurses/wizard_curs.c:310
+#: src/setup/ncurses/wizard_curs.c:314
 msgid "How much downstream (Bytes/s) may be used?"
 msgstr "Wieviel Downstream (Bytes/s) darf verwendet werden?"
 
-#: src/setup/ncurses/wizard_curs.c:316
+#: src/setup/ncurses/wizard_curs.c:320
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -3834,7 +4269,7 @@ msgstr ""
 "festlegen. Wenn Sie eine Flatrate haben, können Sie die maximale "
 "Geschwindigkeit Ihrer Internetverbindung angeben."
 
-#: src/setup/ncurses/wizard_curs.c:338
+#: src/setup/ncurses/wizard_curs.c:342
 msgid ""
 "Share denoted bandwidth with other applications?\n"
 "\n"
@@ -3857,11 +4292,11 @@ msgstr ""
 "Netzwerkverkehr über die Internetverbindung einschränken, wann immer Ihre "
 "Hochgeschwindigkeits-LAN-Verbindung verwendet wird (z.B. durch NFS)."
 
-#: src/setup/ncurses/wizard_curs.c:370
+#: src/setup/ncurses/wizard_curs.c:374
 msgid "How much CPU (in %) may be used?"
 msgstr "Wieviel CPU (in %) darf verwendet werden?"
 
-#: src/setup/ncurses/wizard_curs.c:376
+#: src/setup/ncurses/wizard_curs.c:380
 msgid ""
 "You can limit GNUnet's resource usage here.\n"
 "\n"
@@ -3871,7 +4306,7 @@ msgstr ""
 "\n"
 "Dies ist der Prozentsatz an Prozessorzeit, den GNUnet verwenden darf."
 
-#: src/setup/ncurses/wizard_curs.c:395
+#: src/setup/ncurses/wizard_curs.c:399
 msgid ""
 "Store migrated content?\n"
 "\n"
@@ -3893,7 +4328,7 @@ msgstr ""
 "Außerdem hilft es, beliebte Inhalte über verschiedene Netzteilnehmer zu "
 "verteilen, um so die Verfügbarkeit zu erhöhen."
 
-#: src/setup/ncurses/wizard_curs.c:424
+#: src/setup/ncurses/wizard_curs.c:428
 msgid ""
 "What's the maximum datastore size in MB?\n"
 "\n"
@@ -3904,7 +4339,7 @@ msgstr ""
 "Der GNUnet Datenspeicher enthält alle Daten, die GNUnet erzeugt (Indexdaten, "
 "eingefügte und migrierte Inhalte)."
 
-#: src/setup/ncurses/wizard_curs.c:447
+#: src/setup/ncurses/wizard_curs.c:451
 msgid ""
 "Do you want to launch GNUnet as a system service?\n"
 "\n"
@@ -3919,7 +4354,7 @@ msgstr ""
 "\"Nein\" sagen, so müssen Sie GNUnet jedesmal selbst starten, wenn Sie es "
 "verwenden möchten."
 
-#: src/setup/ncurses/wizard_curs.c:502
+#: src/setup/ncurses/wizard_curs.c:506
 msgid ""
 "Define the user owning the GNUnet service.\n"
 "\n"
@@ -3949,7 +4384,7 @@ msgstr ""
 "\n"
 "GNUnet Benutzer:"
 
-#: src/setup/ncurses/wizard_curs.c:564
+#: src/setup/ncurses/wizard_curs.c:568
 msgid ""
 "Define the group owning the GNUnet service.\n"
 "\n"
@@ -3975,7 +4410,7 @@ msgstr ""
 "\n"
 "GNUnet Gruppe:"
 
-#: src/setup/ncurses/wizard_curs.c:595
+#: src/setup/ncurses/wizard_curs.c:599
 msgid ""
 "If you are an experienced user, you may want to tweak your GNUnet "
 "installation using the enhanced configurator.\n"
@@ -3987,7 +4422,7 @@ msgstr ""
 "\n"
 "Möchten Sie ihn starten, nachdem Ihre Konfiguration gespeichert wurde?"
 
-#: src/setup/ncurses/wizard_curs.c:632
+#: src/setup/ncurses/wizard_curs.c:636
 #, c-format
 msgid ""
 "Unable to save configuration file %s: %s.\n"
@@ -3998,7 +4433,7 @@ msgstr ""
 "\n"
 "Soll es nochmals versucht werden?"
 
-#: src/setup/lib/gns.c:266
+#: src/setup/lib/gns.c:274
 #, fuzzy, c-format
 msgid ""
 "Configuration does not satisfy constraints of configuration specification "
@@ -4007,7 +4442,7 @@ msgstr ""
 "Die Konfigurationsdatei muss in der Sektion `%s' unter `%s' ein Verzeichnis "
 "für FS Daten angeben.\n"
 
-#: src/setup/lib/tree.c:181
+#: src/setup/lib/tree.c:182
 #, c-format
 msgid ""
 "Internal error: entry `%s' in section `%s' not found for visibility change!\n"
@@ -4053,6 +4488,13 @@ msgstr "`%s' schlug bei %s:%d mit dem Fehler %s fehl\n"
 #, fuzzy, c-format
 msgid "`%s' failed on file `%s' at %s:%d in %s with error: %s\n"
 msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
+
+#~ msgid "Sorry, no help is available for this option.\n"
+#~ msgstr "Sorry, für diese Option steht keine Hilfe zur Verfügung.\n"
+
+#, fuzzy
+#~ msgid "Failed to open `%s'.\n"
+#~ msgstr "Datei wurde als `%s' gespeichert.\n"
 
 #~ msgid "Failed to obtain my (external) IPv6 address!\n"
 #~ msgstr "Die öffentliche IPv6-Adresse konnte nicht ermittelt werden!\n"
@@ -4508,9 +4950,6 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ msgid "Next"
 #~ msgstr "Weiter"
 
-#~ msgid "Cancel"
-#~ msgstr "Abbrechen"
-
 #~ msgid ""
 #~ "Enter information about your network connection here.\n"
 #~ "\n"
@@ -4674,17 +5113,8 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 #~ msgid "Run gnunet-update"
 #~ msgstr "gnunet-update ausführen"
 
-#~ msgid "Other settings"
-#~ msgstr "Weitere Einstellungen"
-
 #~ msgid "Finish"
 #~ msgstr "Fertigstellen"
-
-#~ msgid "Question"
-#~ msgstr "Frage"
-
-#~ msgid "Unable to save configuration!"
-#~ msgstr "Fehler beim Speichern der Konfiguration!"
 
 #~ msgid "OK"
 #~ msgstr "OK"
@@ -4746,9 +5176,6 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 
 #~ msgid "_Quit"
 #~ msgstr "_Beenden"
-
-#~ msgid "_Options"
-#~ msgstr "_Optionen"
 
 #~ msgid "Show name"
 #~ msgstr "Name anzeigen"
@@ -5027,9 +5454,6 @@ msgstr "`%s' schlug bei Datei `%s' fehl. Ort: %s:%d. Fehler: %s\n"
 
 #~ msgid "Show _debug info"
 #~ msgstr "_Debug Informationen anzeigen"
-
-#~ msgid "Show masked options"
-#~ msgstr "Maskierte Optionen anzeigen"
 
 #~ msgid ""
 #~ "USAGE: gnunet-setup MODULE\n"
