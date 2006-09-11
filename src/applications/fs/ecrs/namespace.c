@@ -69,9 +69,14 @@ static char * getPseudonymFileName(struct GE_Context * ectx,
 int ECRS_deleteNamespace(struct GE_Context * ectx,
 			 struct GC_Configuration * cfg,
 			 const char * name) {
- char * fileName;
-
- fileName = getPseudonymFileName(ectx, cfg, name);
+  char * fileName;
+  
+  fileName = getPseudonymFileName(ectx, cfg, name);
+  if (YES != disk_file_test(ectx,
+			    fileName)) {
+    FREE(fileName);
+    return SYSERR; /* no such namespace */
+  }
   if (0 != UNLINK(fileName)) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_BULK,
@@ -79,10 +84,9 @@ int ECRS_deleteNamespace(struct GE_Context * ectx,
 			 fileName);
     FREE(fileName);
     return SYSERR;
-  } else {
-    FREE(fileName);
-    return OK;
   }
+  FREE(fileName);
+  return OK;
 }
 
 /**
@@ -117,7 +121,6 @@ ECRS_createNamespace(struct GE_Context * ectx,
 		     const HashCode512 * rootEntry) {
   struct ECRS_URI * rootURI;
   char * fileName;
-  char tmp;
   struct PrivateKey * hk;
   PrivateKeyEncoded * hke;
   char * dst;
@@ -144,10 +147,8 @@ ECRS_createNamespace(struct GE_Context * ectx,
   fileName = getPseudonymFileName(ectx,
 				  cfg,
 				  name);
-  if (1 == disk_file_read(ectx,
-			  fileName,
-			  1, 
-			  &tmp)) {
+  if (YES == disk_file_test(ectx,
+			    fileName)) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("Cannot create pseudonym `%s', file `%s' exists.\n"),

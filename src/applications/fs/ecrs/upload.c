@@ -154,17 +154,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 
   start = get_time();
   memset(&chk, 0, sizeof(CHK));
-  if (disk_directory_test(ectx,
-			  filename)) {
-    GE_BREAK(ectx, 0);
-    /* Should not happen */
-    GE_LOG(ectx, 
-	   GE_ERROR | GE_BULK | GE_USER, 
-	   "Cannot upload file `%s', it seems to be a directory!",
-	   filename);
-    return SYSERR;
-  }
-  if (0 == disk_file_test(ectx,
+  if (YES != disk_file_test(ectx,
 			  filename)) {
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
         _("`%s' is not a file.\n"),

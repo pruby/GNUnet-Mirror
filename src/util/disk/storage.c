@@ -491,7 +491,7 @@ int disk_directory_scan(struct GE_Context * ectx,
   if (!S_ISDIR(istat.st_mode)) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_USER | GE_BULK,
-	   _("expected `%s' to be a directory!\n"),
+	   _("Expected `%s' to be a directory!\n"),
 	   dirName);
     return SYSERR;
   }

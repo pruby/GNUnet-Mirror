@@ -221,7 +221,7 @@ int readFromIOC(IOContext * this,
 	     buf,
 	     len);
   MUTEX_UNLOCK(this->lock);
-#ifdef DEBUG_DOWNLOAD
+#if DEBUG_DOWNLOAD
   GE_LOG(this->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "IOC read at level %u offset %llu wanted %u got %d\n",
@@ -267,7 +267,7 @@ int writeToIOC(IOContext * this,
 	   STRERROR(errno));
   }
   MUTEX_UNLOCK(this->lock);
-#ifdef DEBUG_DOWNLOAD
+#if DEBUG_DOWNLOAD
   GE_LOG(this->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "IOC write at level %u offset %llu writes %u\n",
@@ -474,7 +474,7 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
     = 1; /* RSS is 1 */
   rm->ssthresh
     = 65535;
-#ifdef DEBUG_DOWNLOAD
+#if DEBUG_DOWNLOAD
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "created request manager %p\n",
@@ -493,7 +493,7 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
 static void destroyRequestManager(RequestManager * rm) {
   int i;
 
-#ifdef DEBUG_DOWNLOAD
+#if DEBUG_DOWNLOAD
   GE_LOG(rm->ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "destroying request manager %p\n",
@@ -822,7 +822,7 @@ static int checkPresent(NodeClosure * node) {
   } else
     ret = NO;
   FREE(data);
-#ifdef DEBUG_DOWNLOAD
+#if DEBUG_DOWNLOAD
   GE_LOG(node->ctx->rm->ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Checked presence of block at %llu level %u.  Result: %s\n",
