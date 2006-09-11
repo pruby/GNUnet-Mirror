@@ -338,7 +338,8 @@ static int startTransportServer(void) {
     sock = listensock(port);
     if (sock == -1)
       return SYSERR;
-    selector = select_create(ectx,
+    selector = select_create("udp",
+			     ectx,
 			     load_monitor,
 			     sock,
 			     sizeof(IPaddr),

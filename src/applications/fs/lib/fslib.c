@@ -250,7 +250,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
 	 type);
 #endif
   if (OK != connection_write(ctx->sock,
-			  &req->header)) {
+			     &req->header)) {
     FS_stop_search(ctx,
 		   ret);
     return NULL;

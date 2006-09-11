@@ -322,7 +322,12 @@ static double estimateSaturation() {
 }
 
 static int allowConnection(const PeerIdentity * peer) {
-  return OK; /* allow everything */
+  if ( (coreAPI->myIdentity != NULL) &&
+       (0 == memcmp(coreAPI->myIdentity,
+		    peer,
+		    sizeof(PeerIdentity))) )
+    return SYSERR; /* disallow connections to self */
+  return OK; /* allow everything else */
 }
 
 Topology_ServiceAPI *

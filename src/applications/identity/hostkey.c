@@ -115,15 +115,19 @@ void initPrivateKey(struct GE_Context * ectx,
   hostkeyfile = MALLOC(strlen(gnHome) + strlen(HOSTKEYFILE)+2);
   strcpy(hostkeyfile, gnHome);
   FREE(gnHome);
-  strcat(hostkeyfile, "/");
+  if (hostkeyfile[strlen(hostkeyfile)-1] != '/')
+    strcat(hostkeyfile, "/");
   strcat(hostkeyfile, HOSTKEYFILE);
   res = 0;
-  if (disk_file_test(ectx,
-		     hostkeyfile)) {
+  if (YES == disk_file_test(ectx,
+			    hostkeyfile)) {
     res = disk_file_read(ectx,
 			 hostkeyfile,
 			 sizeof(unsigned short),
 			 &len);
+  } else {
+    printf("Could not read host key at `%s', generating fresh key.\n",
+	   hostkeyfile);
   }
   encPrivateKey = NULL;
   if (res == sizeof(unsigned short)) {

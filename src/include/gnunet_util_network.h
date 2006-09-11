@@ -305,6 +305,11 @@ socket_create(struct GE_Context * ectx,
 	      int osSocket);
 
 /**
+ * Close the socket (does NOT destroy it)
+ */
+void socket_close(struct SocketHandle * s);
+
+/**
  * Destroy the socket (also closes it).
  */
 void socket_destroy(struct SocketHandle * s);
@@ -393,6 +398,7 @@ int socket_test_valid(struct SocketHandle * s);
  * from the given socket and pass messages read to the
  * given message handler.
  *
+ * @param desc for debugging (description)
  * @param sock the listen socket
  * @param max_addr_len maximum expected length of addresses for
  *        connections accepted on the given socket
@@ -403,7 +409,8 @@ int socket_test_valid(struct SocketHandle * s);
  *        queueing messages (in bytes)
  * @return NULL on error
  */
-struct SelectHandle * select_create(struct GE_Context * ectx,
+struct SelectHandle * select_create(const char * desc,
+				    struct GE_Context * ectx,
 				    struct LoadMonitor * mon,
 				    int sock,
 				    unsigned int max_addr_len,

@@ -38,6 +38,8 @@ static struct CronManager * cron;
 
 static cron_t now;
 
+static struct PTHREAD * mainThread;
+
 static Datastore_Value * makeBlock(int i) {
   Datastore_Value * block;
   DBlock * db;
@@ -113,6 +115,9 @@ static int countCallback(const HashCode512 * key,
 			 void * cls) {
   int * cnt = cls;
   (*cnt)--;
+  fprintf(stderr, "*");
+  if (*cnt <= 0)
+    PTHREAD_STOP_SLEEP(mainThread);
   return OK;
 }
 
@@ -200,7 +205,7 @@ static int trySearch(struct FS_SEARCH_CONTEXT * ctx,
   return closure.found;
 }
 
-#define START_DAEMON 0
+#define START_DAEMON 1
 
 int main(int argc, char * argv[]){
 #if START_DAEMON
@@ -252,6 +257,7 @@ int main(int argc, char * argv[]){
 
   /* ACTUAL TEST CODE */
   for (i=1;i<32;i++) {
+    fprintf(stderr, ".");
     block = makeBlock(i);
     fileBlockGetQuery((DBlock*) &block[1],
 		      ntohl(block->size) - sizeof(Datastore_Value),
@@ -297,9 +303,12 @@ int main(int argc, char * argv[]){
 			   MAX_BUFFER_SIZE,
 			   &hc));
     UNLINK(tmpName);
+    FREE(tmpName);
     FREE(block);
   }
+  fprintf(stderr, "\n");
   for (i=32;i<MAX_BUFFER_SIZE;i*=2) {
+    fprintf(stderr, ".");
     block = makeBlock(i);
     fileBlockGetQuery((DBlock*) &block[1],
 		      ntohl(block->size) - sizeof(Datastore_Value),
@@ -327,6 +336,7 @@ int main(int argc, char * argv[]){
 			   &hc));
     FREE(block);
   }
+  fprintf(stderr, "\n");
 
   /* multiple search results test */
   makeRandomId(&hc);
@@ -339,6 +349,7 @@ int main(int argc, char * argv[]){
 			block));
   FREE(block);
   i = 2;
+  mainThread = PTHREAD_GET_SELF();
   hnd = FS_start_search(ctx,
 			ANY_BLOCK,
 			1,
@@ -351,6 +362,7 @@ int main(int argc, char * argv[]){
   CHECK(hnd != NULL);
   PTHREAD_SLEEP(10 * cronSECONDS);
   FS_stop_search(ctx, hnd);
+  PTHREAD_REL_SELF(mainThread);
   CHECK(i <= 0);
 		
 
@@ -359,6 +371,7 @@ int main(int argc, char * argv[]){
   /* END OF TEST CODE */
 
  FAILURE:
+  fprintf(stderr, "\n");
   if (ctx != NULL)
     FS_SEARCH_destroyContext(ctx);
   if (sock != NULL)
@@ -369,6 +382,7 @@ int main(int argc, char * argv[]){
 #if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
 #endif
+  GC_free(cfg);
   return (ok == YES) ? 0 : 1;
 }
 

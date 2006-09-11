@@ -256,7 +256,7 @@ void donePrefetch() {
   SEMAPHORE_DESTROY(acquireMoreSignal);
   SEMAPHORE_DESTROY(doneSignal);
   PTHREAD_JOIN(gather_thread, &unused);
-  for (i=0;i<rCBPos;i++)
+  for (i=0;i<RCB_SIZE;i++)
     FREENONNULL(randomContentBuffer[i].value);
   MUTEX_DESTROY(lock);
   lock = NULL;

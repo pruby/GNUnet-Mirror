@@ -148,9 +148,10 @@ void processResponse(const HashCode512 * key,
   GE_ASSERT(ectx, ntohl(value->size) > sizeof(Datastore_Value));
   matchCount = 0;
 #if DEBUG_QUERYMANAGER
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(key,
-		 &enc));
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(key,
+		    &enc));
 #endif
   MUTEX_LOCK(queryManagerLock);
   for (i=trackerCount-1;i>=0;i--) {
@@ -168,10 +169,11 @@ void processResponse(const HashCode512 * key,
 	     &value[1],
 	     ntohl(value->size) - sizeof(Datastore_Value));
 #if DEBUG_QUERYMANAGER
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Sending reply for `%s' to client waiting in slot %u.\n",
-	  &enc,
-	  i);
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "Sending reply for `%s' to client waiting in slot %u.\n",
+	     &enc,
+	     i);
 #endif
       coreAPI->sendToClient(trackers[i]->client,
 			    &rc->header);

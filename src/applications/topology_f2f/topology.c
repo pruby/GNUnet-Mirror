@@ -101,6 +101,11 @@ static unsigned int friendCount;
 static int allowConnection(const PeerIdentity * peer) {
   int i;
 
+  if ( (coreAPI->myIdentity != NULL) &&
+       (0 == memcmp(coreAPI->myIdentity,
+		    peer,
+		    sizeof(PeerIdentity))) )
+    return SYSERR; /* disallow connections to self */
   for (i=friendCount-1;i>=0;i--)
     if (0 == memcmp(&friends[i], 
 		    peer,

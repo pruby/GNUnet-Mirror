@@ -259,10 +259,10 @@ int disk_directory_test(struct GE_Context * ectx,
 }
 
 /**
- * Assert that fil corresponds to a filename
+ * Check that fil corresponds to a filename
  * (of a file that exists and that is not a directory).
- * @returns 1 if yes, 0 if not (will print an error
- * message in that case, too).
+ * @returns YES if yes, NO if not a file, SYSERR if something 
+ * else (will print an error message in that case, too).
  */
 int disk_file_test(struct GE_Context * ectx,
 		   const char * fil) {
@@ -280,7 +280,7 @@ int disk_file_test(struct GE_Context * ectx,
     }
     return NO;
   }
-  if (!S_ISREG(filestat.st_mode)) {
+  if (! S_ISREG(filestat.st_mode)) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
 	   _("Expected `%s' to be a regular file\n"),
@@ -313,6 +313,7 @@ int disk_directory_create(struct GE_Context * ectx,
 			       dir);
   if (rdir == NULL)
     return SYSERR;
+
   len = strlen(rdir);
 #ifndef MINGW
   pos = 1; /* skip heading '/' */

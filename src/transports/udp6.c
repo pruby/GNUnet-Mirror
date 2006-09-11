@@ -336,7 +336,8 @@ static int startTransportServer(void) {
     sock = passivesock(port);
     if (sock == -1)
       return SYSERR;
-    selector = select_create(ectx,
+    selector = select_create("udp6",
+			     ectx,
 			     load_monitor,
 			     sock,
 			     sizeof(IPaddr),

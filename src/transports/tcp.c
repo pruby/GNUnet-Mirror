@@ -329,7 +329,8 @@ static int startTransportServer(void) {
 		      "close");
     return SYSERR;
   }
-  selector = select_create(ectx,
+  selector = select_create("tcp",
+			   ectx,
 			   coreAPI->load_monitor,
 			   s,
 			   sizeof(IPaddr),

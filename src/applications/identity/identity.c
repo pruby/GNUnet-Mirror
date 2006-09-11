@@ -600,8 +600,8 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
  * @returns SYSERR on failure, OK on success
  */
 static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
-				    unsigned short protocol,
-				    int tryTemporaryList) {
+					 unsigned short protocol,
+					 int tryTemporaryList) {
   P2P_hello_MESSAGE * result;
   HostEntry * host;
   char * fn;
@@ -669,26 +669,27 @@ static P2P_hello_MESSAGE * identity2Helo(const PeerIdentity *  hostId,
   /* do direct read */
   fn = getHostFileName(hostId,
 		       protocol);
+  if (1 != disk_file_test(ectx,
+			  fn)) {
+    FREE(fn);
+    MUTEX_UNLOCK(lock_);
+    return NULL;
+  }
   size = disk_file_read(ectx,
 			fn,
 			sizeof(P2P_hello_MESSAGE),
 			&buffer);
   if (size != sizeof(P2P_hello_MESSAGE)) {
-    struct stat buf;
-
-    if (0 == STAT(fn,
-		  &buf)) {
-      if (0 == UNLINK(fn))
-	GE_LOG(ectx,
-	       GE_WARNING | GE_USER | GE_BULK,
-	       _("Removed file `%s' containing invalid hello data.\n"),
-	       fn);
-      else
-	GE_LOG_STRERROR_FILE(ectx,
-			     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-			     "unlink",
-			     fn);
-    }
+    if (0 == UNLINK(fn))
+      GE_LOG(ectx,
+	     GE_WARNING | GE_USER | GE_BULK,
+	     _("Removed file `%s' containing invalid hello data.\n"),
+	     fn);
+    else
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			   "unlink",
+			   fn);
     FREE(fn);
     MUTEX_UNLOCK(lock_);
     return NULL;
@@ -1052,8 +1053,8 @@ static void getPeerIdentity(const PublicKey * pubKey,
  * @brief Delete expired hosts
  */
 static int discardHostsHelper(const char *filename,
-          const char *dirname,
-          void *now) {
+			      const char *dirname,
+			      void *now) {
   char *fn;
   struct stat hostStat;
   int hostFile;

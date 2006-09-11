@@ -242,21 +242,16 @@ provide_module_state(CoreAPIForApplication * capi) {
   static State_ServiceAPI api;
 
   char * dbh;
-  char * dir;
   size_t n;
 
-  if (-1 == GC_get_configuration_value_string(capi->cfg,
-					      "GNUNETD",
-					      "GNUNETD_HOME",
-					      VAR_DAEMON_DIRECTORY,
-					      &dir))
+  dbh = NULL;
+  if (-1 == GC_get_configuration_value_filename(capi->cfg,
+						"GNUNETD",
+						"GNUNETD_HOME",
+						VAR_DAEMON_DIRECTORY,
+						&dbh))
     return NULL;
-  GE_ASSERT(capi->ectx, dir != NULL);
-  dbh = string_expandFileName(capi->ectx,
-			      dir);
-  FREE(dir);
-  if (dbh == NULL) 
-    return NULL;
+  GE_ASSERT(capi->ectx, dbh != NULL);
   n = strlen(dbh) + strlen(DIR_EXT) + 5;
   handle = MALLOC(n);
   SNPRINTF(handle, 

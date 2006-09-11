@@ -339,8 +339,10 @@ provide_module_datastore(CoreAPIForApplication * capi) {
 					      0,
 					      ((unsigned long long)-1)/1024,
 					      1024,
-					      &lquota))
+					      &lquota)) {
+    GE_BREAK(capi->ectx, 0);
     return NULL; /* OOPS */  
+  }
 
   quota
     = lquota * 1024L * 1024L; /* MB to bytes */
@@ -369,7 +371,9 @@ provide_module_datastore(CoreAPIForApplication * capi) {
 	       sq);
   if (OK != initFilters(capi->ectx,
 			capi->cfg)) {
+    GE_BREAK(capi->ectx, 0);
     donePrefetch();
+    capi->releaseService(sq);
     return NULL;
   }
   cronMaintenance(NULL);

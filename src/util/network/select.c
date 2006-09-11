@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "network.h"
 
-#define DEBUG_SELECT YES
+#define DEBUG_SELECT NO
 
 /**
  * Select Session handle.
@@ -47,7 +47,19 @@ typedef struct {
    */
   void * sock_ctx;
 
+  /**
+   * The read buffer.
+   */
+  char * rbuff;
+
+  /**
+   * The write buffer.
+   */
+  char * wbuff;
+
   cron_t lastUse;
+
+  int locked;
 
   /**
    * Current read position in the buffer.
@@ -60,19 +72,9 @@ typedef struct {
   unsigned int rsize;
 
   /**
-   * The read buffer.
-   */
-  char * rbuff;
-
-  /**
    * Position in the write buffer
    */
   unsigned int wpos;
-
-  /**
-   * The write buffer.
-   */
-  char * wbuff;
 
   /**
    * Size of the write buffer
@@ -82,6 +84,8 @@ typedef struct {
 } Session;
 
 typedef struct SelectHandle {
+
+  const char * description;
 
   /**
    * mutex for synchronized access
@@ -186,6 +190,10 @@ static void destroySession(SelectHandle * sh,
 			   Session * s) { 
   int i;
 
+  if (s->locked == 1) {
+    s->locked = -1;
+    return;
+  }
 #if DEBUG_SELECT
   GE_LOG(sh->ectx,
 	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
@@ -282,14 +290,25 @@ static int readAndProcess(SelectHandle * sh,
     if (session->pos < len) 
       break; /* wait for more */    
 
+    session->locked = 1;
+    MUTEX_UNLOCK(sh->lock);
     if (OK != sh->mh(sh->mh_cls,
 		     sh,
 		     session->sock,
 		     session->sock_ctx,
 		     pack)) {
+      MUTEX_LOCK(sh->lock);
+      session->locked = 0;
       destroySession(sh, session);
       return SYSERR;
     }
+    MUTEX_LOCK(sh->lock);
+    if (session->locked == -1) {
+      session->locked = 0;
+      destroySession(sh, session);
+      return OK;
+    }
+    session->locked = 0;
     /* shrink buffer adequately */
     memmove(&session->rbuff[0],
 	    &session->rbuff[len],
@@ -482,6 +501,10 @@ static void * selectThread(void * ctx) {
 		 (struct sockaddr *) clientAddr,
 		 &lenOfIncomingAddr);
       if (s == -1) {	
+	GE_LOG(sh->ectx,
+	       GE_WARNING | GE_ADMIN | GE_BULK,
+	       "Select %s failed to accept!\n",
+	       sh->description); 
 	GE_LOG_STRERROR(sh->ectx,
 			GE_WARNING | GE_ADMIN | GE_BULK,
 			"accept");
@@ -614,7 +637,8 @@ static int makeNonblocking(struct GE_Context * ectx,
  *        queueing messages (in bytes)
  * @return NULL on error
  */
-SelectHandle * select_create(struct GE_Context * ectx,
+SelectHandle * select_create(const char * description,
+			     struct GE_Context * ectx,
 			     struct LoadMonitor * mon,
 			     int sock,
 			     unsigned int max_addr_len,
@@ -636,6 +660,7 @@ SelectHandle * select_create(struct GE_Context * ectx,
     return NULL;
   }
   sh = MALLOC(sizeof(SelectHandle));
+  sh->description = description;
   memset(sh, 0, sizeof(SelectHandle));
   if (0 != PIPE(sh->signal_pipe)) {
     GE_LOG_STRERROR(ectx,

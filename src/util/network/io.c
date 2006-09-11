@@ -104,10 +104,10 @@ socket_create(struct GE_Context * ectx,
   return ret;
 }
 
-void socket_destroy(struct SocketHandle * s) {
+void socket_close(struct SocketHandle * s) {
   GE_ASSERT(NULL, s != NULL);
   if ( (0 != SHUTDOWN(s->handle,
-		    SHUT_RDWR)) &&
+		      SHUT_RDWR)) &&
        (errno != ENOTCONN) ) 
     GE_LOG_STRERROR(s->ectx,
 		    GE_WARNING | GE_ADMIN | GE_BULK, 
@@ -116,6 +116,23 @@ void socket_destroy(struct SocketHandle * s) {
     GE_LOG_STRERROR(s->ectx,
 		    GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
 		    "close");
+  s->handle = -1;
+}
+
+void socket_destroy(struct SocketHandle * s) {
+  GE_ASSERT(NULL, s != NULL);
+  if (s->handle != -1) {
+    if ( (0 != SHUTDOWN(s->handle,
+			SHUT_RDWR)) &&
+	 (errno != ENOTCONN) ) 
+      GE_LOG_STRERROR(s->ectx,
+		      GE_WARNING | GE_ADMIN | GE_BULK, 
+		      "shutdown");
+    if (0 != CLOSE(s->handle))
+      GE_LOG_STRERROR(s->ectx,
+		      GE_WARNING | GE_USER | GE_DEVELOPER | GE_BULK,
+		      "close");
+  }
   FREE(s);
 }
 

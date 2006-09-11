@@ -111,22 +111,17 @@ static void getVersionHash(struct GC_Configuration * cfg,
 
 static char * getVersionFileName(struct GE_Context * ectx,
 				 struct GC_Configuration * cfg) {
-  char * cn;
   char * en;
+  char * cn;
   
-  cn = NULL;
-  if (-1 == GC_get_configuration_value_string(cfg,
-					      "GNUNETD",
-					      "GNUNETD_HOME",
-					      VAR_DAEMON_DIRECTORY,
-					      &cn))
+  en = NULL;
+  if (-1 == GC_get_configuration_value_filename(cfg,
+						"GNUNETD",
+						"GNUNETD_HOME",
+						VAR_DAEMON_DIRECTORY,
+						&en))
     return NULL;
-  GE_ASSERT(ectx, cn != NULL);
-  en = string_expandFileName(ectx,
-			     cn);
-  FREE(cn);
-  if (en == NULL)
-    return NULL;
+  GE_ASSERT(ectx, en != NULL);
   cn = MALLOC(strlen(en) + strlen(VERSIONFILE) + 1);
   strcpy(cn, en);
   strcat(cn, VERSIONDIR);

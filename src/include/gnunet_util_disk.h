@@ -52,11 +52,11 @@ long disk_get_blocks_available(struct GE_Context * ectx,
 			       const char * part);
 
 /**
- * Assert that fil corresponds to a filename
+ * Check that fil corresponds to a filename
  * (of a file that exists and that is not a directory).
  * 
- * @return YES if exists, NO if not a file, SYSERR
- *   if file does not exist
+ * @returns YES if yes, NO if not a file, SYSERR if something 
+ * else (will print an error message in that case, too).
  */
 int disk_file_test(struct GE_Context * ectx,
 		   const char * fil);

@@ -490,7 +490,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
   EncName enc;
 
   hash2enc(&sender->hashPubKey,
-     &enc);
+	   &enc);
   if ( (topology != NULL) &&
        (topology->allowConnectionFrom(sender) == SYSERR) ) {
     GE_LOG(ectx,

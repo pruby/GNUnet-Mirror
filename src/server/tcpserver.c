@@ -318,7 +318,8 @@ static int startTCPServer() {
 	   listenerPort);
     return SYSERR;
   }
-  selector = select_create(ectx,
+  selector = select_create("tcpserver",
+			   ectx,
 			   NULL,
 			   listenerFD,
 			   sizeof(struct sockaddr_in),

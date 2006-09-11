@@ -104,7 +104,7 @@ os_plugin_load(struct GE_Context * ectx,
 }
 
 void os_plugin_unload(struct PluginHandle * plugin) {
-  lt_dlclose(plugin->handle);
+  // lt_dlclose(plugin->handle);
   FREE(plugin->libprefix);
   FREE(plugin->dsoname);
   FREE(plugin);

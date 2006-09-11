@@ -62,6 +62,8 @@ typedef struct ClientServerConnection {
   
   struct MUTEX * writelock;
 
+  struct MUTEX * destroylock;
+
   struct GE_Context * ectx;
 
   struct GC_Configuration * cfg;
@@ -126,22 +128,31 @@ client_connection_create(struct GE_Context * ectx,
   result->sock = NULL;
   result->readlock = MUTEX_CREATE(NO);
   result->writelock = MUTEX_CREATE(NO);
+  result->destroylock = MUTEX_CREATE(NO);
   result->ectx = ectx;
   result->cfg = cfg;
   return result;
 }
 
 void connection_close_temporarily(struct ClientServerConnection * sock) {
+  MUTEX_LOCK(sock->destroylock);
   if (sock->sock != NULL) {
+    socket_close(sock->sock);
+    MUTEX_LOCK(sock->readlock);
+    MUTEX_LOCK(sock->writelock);
     socket_destroy(sock->sock);
     sock->sock = NULL;
+    MUTEX_UNLOCK(sock->writelock);
+    MUTEX_UNLOCK(sock->readlock);
   }
+  MUTEX_UNLOCK(sock->destroylock);
 }
 
 void connection_destroy(struct ClientServerConnection * sock) {
   connection_close_temporarily(sock);
   MUTEX_DESTROY(sock->readlock);
   MUTEX_DESTROY(sock->writelock);
+  MUTEX_DESTROY(sock->destroylock);
   FREE(sock);
 }
 
@@ -272,8 +283,8 @@ int connection_write(struct ClientServerConnection * sock,
 		    &sent);
   if ( (res != YES) ||
        (sent != size) ) {
-    connection_close_temporarily(sock);
     MUTEX_UNLOCK(sock->writelock);
+    connection_close_temporarily(sock);
     return SYSERR;
   }
   MUTEX_UNLOCK(sock->writelock);
@@ -299,14 +310,14 @@ int connection_read(struct ClientServerConnection * sock,
 			  sizeof(unsigned short),
 			  &pos)) ||
        (pos != sizeof(unsigned short)) ) {
-    connection_close_temporarily(sock);
     MUTEX_UNLOCK(sock->readlock);
+    connection_close_temporarily(sock);
     return SYSERR;
   }
   size = ntohs(size);
   if (size < sizeof(MESSAGE_HEADER)) {
-    connection_close_temporarily(sock);
     MUTEX_UNLOCK(sock->readlock);
+    connection_close_temporarily(sock);
     return SYSERR; /* invalid header */
   }
 
@@ -317,9 +328,9 @@ int connection_read(struct ClientServerConnection * sock,
 			  size - pos,
 			  &pos)) ||
        (pos + sizeof(unsigned short) != size) ) {
-    connection_close_temporarily(sock);
     FREE(buf);
     MUTEX_UNLOCK(sock->readlock);
+    connection_close_temporarily(sock);
     return SYSERR;
   }
 #if DEBUG_TCPIO
