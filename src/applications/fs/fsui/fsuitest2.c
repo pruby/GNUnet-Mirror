@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,57 +27,56 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "NOTHING"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  return OK;
-}
 
 static struct FSUI_Context * ctx;
 
-static void eventCallback(void * cls,
-			  const FSUI_Event * event) {
+static void * eventCallback(void * cls,
+			    const FSUI_Event * event) {
+  return NULL;
 }
 
 
 int main(int argc, char * argv[]){
   pid_t daemon;
   int ok;
+  struct GC_Configuration * cfg;
 
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
-  GE_ASSERT(ectx, daemon > 0);
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  daemon  = os_daemon_start(NULL,
+			    cfg,
+			    "peer.conf",
+			    NO);
+  GE_ASSERT(NULL, daemon > 0);
   ok = YES;
-  startCron();
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
+  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
+						    cfg,
+						    30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  ctx = FSUI_start("fsuitest2",
-		   YES,
+  ctx = FSUI_start(NULL,
+		   cfg,
+		   "fsuitest2",
+		   32,
+		   YES, /* do resume! */
 		   &eventCallback,
 		   NULL);
   CHECK(ctx != NULL);
   FSUI_stop(ctx);
-  /* ACTUAL TEST CODE */
-  ctx = FSUI_start("fsuitest2",
+  ctx = FSUI_start(NULL,
+		   cfg,
+		   "fsuitest2",
+		   32,
 		   YES,
 		   &eventCallback,
 		   NULL);
@@ -86,10 +85,9 @@ int main(int argc, char * argv[]){
   if (ctx != NULL)
     FSUI_stop(ctx);
 
-  stopCron();
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+  GC_free(cfg);
+
   return (ok == YES) ? 0 : 1;
 }
 

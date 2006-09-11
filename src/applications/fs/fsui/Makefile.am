@@ -25,6 +25,7 @@ EXTRA_DIST = \
 fsui_loader_SOURCES = \
  fsui-loader.c 
 fsui_loader_LDADD = \
+ $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
@@ -42,6 +43,8 @@ TESTS = $(check_PROGRAMS)
 fsuitest_SOURCES = \
   fsuitest.c 
 fsuitest_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -49,6 +52,8 @@ fsuitest_LDADD = \
 fsuitest2_SOURCES = \
   fsuitest2.c 
 fsuitest2_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -56,6 +61,8 @@ fsuitest2_LDADD = \
 searchtest_SOURCES = \
   searchtest.c 
 searchtest_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 
@@ -63,6 +70,8 @@ searchtest_LDADD = \
 downloadtest_SOURCES = \
   downloadtest.c 
 downloadtest_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
   $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
   $(top_builddir)/src/util/libgnunetutil.la 

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,33 +27,18 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_fsui_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
 
-#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
-
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "NOTHING"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  return OK;
-}
+#define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 static char * makeName(unsigned int i) {
   char * name;
   char * fn;
 
   fn = STRDUP("/tmp/gnunet-fsuisearchtest");
-  name = expandFileName(fn);
-  disk_directory_create(ectx, name);
+  name = string_expandFileName(NULL, fn);
+  disk_directory_create(NULL, name);
   FREE(fn);
   fn = MALLOC(strlen(name) + 40);
   SNPRINTF(fn,
@@ -67,13 +52,20 @@ static char * makeName(unsigned int i) {
 }
 
 static volatile enum FSUI_EventType lastEvent;
+
 static struct FSUI_Context * ctx;
 
-static void eventCallback(void * cls,
-			  const FSUI_Event * event) {
+static void * eventCallback(void * cls,
+			    const FSUI_Event * event) {
+  static char unused;
   char * fn;
-
+ 
   switch(event->type) {
+  case FSUI_search_resuming:
+  case FSUI_download_resuming:
+  case FSUI_upload_resuming:
+  case FSUI_unindex_resuming:
+    return &unused;
   case FSUI_search_result:
     printf("Received search result\n");
     break;
@@ -90,16 +82,18 @@ static void eventCallback(void * cls,
     break;
   }
   if (lastEvent == FSUI_download_complete)
-    return; /* ignore all other events */
+    return NULL; /* ignore all other events */
   lastEvent = event->type;
   if (event->type == FSUI_search_result) {
     fn = makeName(43);
     FSUI_startDownload(ctx,
 		       0,
+		       NO,
 		       event->data.SearchResult.fi.uri,
 		       fn);
     FREE(fn);
   }
+  return NULL;
 }
 
 
@@ -117,21 +111,30 @@ int main(int argc, char * argv[]){
   int prog;
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri;
+  struct GC_Configuration * cfg;
+  struct FSUI_SearchList * search;
 
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
-  GE_ASSERT(ectx, daemon > 0);
-  ok = YES;
-  startCron();
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(30 * cronSECONDS));
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  daemon  = os_daemon_start(NULL,
+			    cfg,
+			    "peer.conf",
+			    NO);
+  GE_ASSERT(NULL, daemon > 0);
+  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
+						    cfg,
+						    30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
-
   /* ACTUAL TEST CODE */
 
-  ctx = FSUI_start("fsuisearchtest",
+  ctx = FSUI_start(NULL,
+		   cfg,
+		   "fsuisearchtest",
+		   32,
 		   YES,
 		   &eventCallback,
 		   NULL);
@@ -142,32 +145,41 @@ int main(int argc, char * argv[]){
 	   keywords[0],
 	   _("AND"),
 	   keywords[1]);
-  uri = FSUI_parseCharKeywordURI(keyword);
-  CHECK(OK == FSUI_startSearch(ctx,
-			       0,
-			       uri));
+  uri = ECRS_parseCharKeywordURI(NULL, keyword);
+  search = FSUI_startSearch(ctx,
+			    0,
+			    uri);
+  CHECK(NULL != search);
   FSUI_stop(ctx);
   /* resume search! */
-  ctx = FSUI_start("fsuisearchtest",
+  ctx = FSUI_start(NULL,
+		   cfg,
+		   "fsuisearchtest",
+		   32,
 		   YES,
 		   &eventCallback,
 		   NULL);
   fn = makeName(42);
-  writeFile(fn,
-	    "foo bar test!",
-	    strlen("foo bar test!"),
-	    "600");
+  disk_file_write(NULL,
+		  fn,
+		  "foo bar test!",
+		  strlen("foo bar test!"),
+		  "600");
   meta = ECRS_createMetaData();
-  kuri = FSUI_parseListKeywordURI(2,
+  kuri = ECRS_parseListKeywordURI(NULL,
+				  2,
 				  (const char**)keywords);
-  CHECK(OK ==
-	FSUI_upload(ctx,
-		    fn,
-		    0,
-		    YES,
-		    NO,
-		    meta,
-		    kuri));
+  CHECK(NULL !=
+	FSUI_startUpload(ctx,
+			 fn,
+			 0,
+			 0,
+			 YES,
+			 NO,
+			 NO,
+			 meta,
+			 kuri,
+			 kuri));
   ECRS_freeUri(kuri);
   ECRS_freeMetaData(meta);
   prog = 0;
@@ -185,8 +197,15 @@ int main(int argc, char * argv[]){
     PTHREAD_SLEEP(50 * cronMILLIS);
   }
   FSUI_stopSearch(ctx,
-		  uri);
-  CHECK(OK == FSUI_unindex(ctx, fn));
+		  search);
+  CHECK(NULL != FSUI_unindex(ctx, fn));
+
+  prog = 0;
+  while (lastEvent != FSUI_unindex_complete) {
+    prog++;
+    CHECK(prog < 10000);
+    PTHREAD_SLEEP(50 * cronMILLIS);
+  }
 
   /* END OF TEST CODE */
  FAILURE:
@@ -203,10 +222,9 @@ int main(int argc, char * argv[]){
   UNLINK(fn);
   FREE(fn);
 
-  stopCron();
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+ 
+  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+  GC_free(cfg);
   return (ok == YES) ? 0 : 1;
 }
 
