@@ -55,8 +55,6 @@ Notes:
       - dht
       - testbed
   * setup:
-    + gtk config
-      - memory leaks
     + gtk wizard
     + ncurses wizard
     + Scheme (scm) specification of entire configuration

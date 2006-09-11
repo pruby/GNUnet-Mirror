@@ -11,8 +11,7 @@ if !MINGW
  textdir=text
 endif
 
-SUBDIRS = lib $(textdir) . $(curses_dir)
-# $(gtk_dir) .
+SUBDIRS = lib $(textdir) . $(curses_dir) $(gtk_dir) .
 
 plugindir = $(libdir)/GNUnet
 

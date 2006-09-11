@@ -182,6 +182,10 @@ SCM change_visible(SCM smob,
 	    opt,
 	    sec);
   }
+  if (sec != NULL)
+    free(sec);
+  if (opt != NULL)
+    free(opt);
   return SCM_EOL;
 }
 

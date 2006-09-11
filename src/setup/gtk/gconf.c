@@ -295,6 +295,7 @@ static void updateTreeModel(struct GNS_Context * gns) {
   /* update model */
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeView),
 			  GTK_TREE_MODEL(model));
+  g_object_unref(model);
   /* restore expanded paths */
   for (i=0;i<crCTX.size;i++) {
     path = gtk_tree_path_new_from_string(crCTX.paths[i]);
@@ -318,8 +319,8 @@ static void editedTextHandler(GtkCellRendererToggle * rdner,
   GtkTreeIter iter;
   GtkWidget * treeView;
   GtkTreeModel * model;
-  const char * section;
-  const char * option;
+  char * section;
+  char * option;
 
   treeView = lookup_widget("configTreeView");
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeView));
@@ -328,26 +329,23 @@ static void editedTextHandler(GtkCellRendererToggle * rdner,
 				      &iter,
 				      gtk_path)) {
     GE_BREAK(ectx, 0);
+    gtk_tree_path_free(gtk_path);
     return;
   }
+  gtk_tree_path_free(gtk_path);
   gtk_tree_model_get(model,
 		     &iter,
 		     SETUP_SECTION, &section,
 		     SETUP_OPTION, &option,
 		     -1);
-  if (0 != GC_set_configuration_value_string(cfg,
-					     ectx,
-					     section,
-					     option,
-					     new_value)) {
-    GE_LOG(ectx,
-	   GE_WARNING | GE_USER | GE_IMMEDIATE,
-	   _("Failed to change configuration option `%s' in section `%s' to value `%s'.\n"),
-	   option,
-	   section,
-	   new_value);
-  }
+  GC_set_configuration_value_string(cfg,
+				    ectx,
+				    section,
+				    option,
+				    new_value);
   updateTreeModel(gns);
+  free(section);
+  free(option);
 }
 
 static void initTreeView(struct GNS_Context * gns) {

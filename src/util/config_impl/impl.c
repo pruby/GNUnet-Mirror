@@ -103,7 +103,7 @@ typedef struct GC_ConfigurationData {
   struct GE_Context * ectx;
 
   /**
-   * Modification indication since last save.
+   * Modification indication since last save
    * 0 if clean, 1 if dirty, -1 on error (i.e. last save failed)
    */
   int dirty;
@@ -317,12 +317,14 @@ _write_configuration(struct GC_Configuration * cfg,
       e = &sec->entries[j];
       GE_ASSERT(data->ectx,
 		e->dirty_val == NULL);
-      if (0 > fprintf(fp,
-		      "%s = %s\n",
-		      e->key,
-		      e->val)) {
-	error = 1;
-	break;
+      if (e->val != NULL) {
+	if (0 > fprintf(fp,
+			"%s = %s\n",
+			e->key,
+			e->val)) {
+	  error = 1;
+	  break;
+	}
       }
     }
     if (error != 0)
