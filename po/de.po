@@ -17,9 +17,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: contrib/config-daemon.scm:43 contrib/config-client.scm:44
-#, fuzzy
 msgid "No help available."
-msgstr "`%s' ist nicht verfügbar."
+msgstr "Keine Hilfe verfügbar."
 
 #: contrib/config-daemon.scm:56 contrib/config-client.scm:57
 msgid "Prompt for development and/or incomplete code"
