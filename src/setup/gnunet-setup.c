@@ -133,6 +133,7 @@ int main(int argc,
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
+  os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
   i = gnunet_parse_options(INFO,
@@ -144,12 +145,14 @@ int main(int argc,
   if (i < 0) {
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;  
   }
   if (i != argc - 1) {
     if (i < argc - 1) {
       fprintf(stderr,
 	      _("Too many arguments.\n"));
+      os_done();
       return -1;
     }
     GE_LOG(ectx,
@@ -209,6 +212,7 @@ int main(int argc,
     GC_free(cfg);
     GE_free_context(ectx);
     FREE(cfgFilename);
+    os_done();
     return -1;
   }
 
@@ -229,6 +233,7 @@ int main(int argc,
 	GNS_free_specification(gns);
 	GC_free(cfg);
 	GE_free_context(ectx);
+  os_done();
 	FREE(cfgFilename);
 	return -1;
       } else {
@@ -247,10 +252,12 @@ int main(int argc,
     GNS_free_specification(gns);
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return 1;
   }
   GNS_free_specification(gns);
   GC_free(cfg);
   GE_free_context(ectx);
+  os_done();
   return 0;
 }

@@ -241,6 +241,7 @@ int main(int argc,
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
+  os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
 
@@ -252,17 +253,20 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;  
   }
   if (-1 == GC_parse_configuration(cfg,
 	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;  
   }
   if (OK != changeUser(ectx, cfg)) {
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;
   }
   if (0 == GC_get_configuration_value_string(cfg,
@@ -277,6 +281,7 @@ int main(int argc,
   }
   GC_free(cfg);
   GE_free_context(ectx);
+  os_done();
 
   return 0;
 }

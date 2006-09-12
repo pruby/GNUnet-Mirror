@@ -64,11 +64,13 @@ int main(int argc,
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
+  os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
   if (argc != 2) {
     fprintf(stderr,
 	    "Call with name of FSUI resource file!\n");
+    os_done();
     return -1;
   }
   ctx = FSUI_start(ectx,
@@ -83,5 +85,6 @@ int main(int argc,
   else 
     fprintf(stderr,
 	    "FSUI_start failed!\n");  
+  os_done();
   return (ctx == NULL);
 }

@@ -116,9 +116,9 @@ int main(int argc,
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
+  os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
-  os_init(ectx);
   if (-1 == gnunet_parse_options("gnunet-tbench",
 				 ectx,
 				 cfg,
@@ -127,6 +127,7 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;  
   }
   sock = client_connection_create(ectx,
@@ -136,6 +137,7 @@ int main(int argc,
 	    _("Error establishing connection with gnunetd.\n"));
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return 1;
   }
 
@@ -154,6 +156,7 @@ int main(int argc,
     connection_destroy(sock);
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return 1;
   }
   if (OK != enc2hash(messageReceiver,
@@ -164,13 +167,17 @@ int main(int argc,
     connection_destroy(sock);
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return 1;
   }
   FREE(messageReceiver);
 
   if (SYSERR == connection_write(sock,
 				 &msg.header))
+  {
+    os_done();
     return -1;
+  }
 
   buffer = NULL;
   if (OK == connection_read(sock,
@@ -221,6 +228,7 @@ int main(int argc,
   connection_destroy(sock);
   GC_free(cfg);
   GE_free_context(ectx);
+  os_done();
   return 0;
 }
 

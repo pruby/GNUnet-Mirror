@@ -80,9 +80,9 @@ int main(int argc,
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
+  os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
-  os_init(ectx);
   if (-1 == gnunet_parse_options("gnunet-template",
 				 ectx,
 				 cfg,
@@ -91,6 +91,7 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;  
   }
 
@@ -101,6 +102,7 @@ int main(int argc,
 	    _("Error establishing connection with gnunetd.\n"));
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return 1;
   }
   messageReceiveThread = PTHREAD_CREATE(&receiveThread,
@@ -121,6 +123,7 @@ int main(int argc,
   connection_destroy(sock);
   GC_free(cfg);
   GE_free_context(ectx);
+  os_done();
   return 0;
 }
 

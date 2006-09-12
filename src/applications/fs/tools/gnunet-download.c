@@ -155,6 +155,7 @@ int main(int argc,
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
+  os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
   i = gnunet_parse_options("gnunet-download [OPTIONS] [KEYWORDS]",
@@ -166,6 +167,7 @@ int main(int argc,
   if (i == SYSERR) {
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;  
   }
 
@@ -176,6 +178,7 @@ int main(int argc,
 	     "You must specify a GNUnet file URI\n"));
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;
   }
   GC_get_configuration_value_number(cfg,
@@ -196,6 +199,7 @@ int main(int argc,
 	   argv[i]);
     GC_free(cfg);
     GE_free_context(ectx);
+    os_done();
     return -1;
   }
 
@@ -250,6 +254,7 @@ int main(int argc,
   ECRS_freeUri(uri);
   GC_free(cfg);
   GE_free_context(ectx);
+  os_done();
   if (dl == NULL)
     return 1;
   return 0;

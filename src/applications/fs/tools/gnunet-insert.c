@@ -309,6 +309,7 @@ int main(int argc,
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
   GE_setDefaultContext(ectx);
+  os_init(ectx);
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
   i = gnunet_parse_options("gnunet-insert [OPTIONS] FILENAME",
@@ -318,15 +319,13 @@ int main(int argc,
 			   (unsigned int) argc,
 			   argv);
   if (i == SYSERR) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;  
+    errorCode = -1;
+    goto quit;  
   }
   if (i != argc - 1) {
     printf(_("You must specify one and only one filename for insertion.\n"));
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
+    errorCode = -1;
+    goto quit;
   }
   filename = argv[i];
 
@@ -355,10 +354,9 @@ int main(int argc,
     EXTRACTOR_freeKeywords(list);
     EXTRACTOR_removeAll(l);
     ECRS_freeMetaData(meta);
- 
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return 0;
+
+    errorCode = 0;
+    goto quit; 
   }
 
   
@@ -377,7 +375,8 @@ int main(int argc,
 				       NULL)) {
       printf(_("Could not access namespace `%s' (does not exist?).\n"),
 	     pseudonym);
-      return -1;
+      errorCode = -1;
+      goto quit;
     }
     if (creation_time != NULL) {
       struct tm t;
@@ -398,7 +397,8 @@ int main(int argc,
 	       "%Y-%m-%d"
 #endif
 	       );
-	return -1;
+  errorCode = -1;
+	goto quit;
       }
     }
   } else { /* ordinary insertion checks */
@@ -406,27 +406,32 @@ int main(int argc,
       fprintf(stderr,
 	      _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-N", "-P");
-      return -1;
+      errorCode = -1;
+      goto quit;
     }
     if (NULL != prev_id) {
       fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-u", "-P");
-      return -1;
+      errorCode = -1;
+      goto quit;
     }
     if (NULL != this_id) {
       fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-t", "-P");
-      return -1;
+      errorCode = -1;
+      goto quit;
     }
     if (0 != interval) {
       fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-i", "-P");
-      return -1;
+      errorCode = -1;
+      goto quit;
     }
     if (is_sporadic) {
       fprintf(stderr, _("Option `%s' makes no sense without option `%s'.\n"),
 	      "-S", "-P");
-      return -1;
+      errorCode = -1;
+      goto quit;
     }
   }
 
@@ -466,8 +471,11 @@ int main(int argc,
 
   ECRS_freeMetaData(meta);
   FSUI_stop(ctx);
+  
+quit:
   GC_free(cfg);
   GE_free_context(ectx);
+  os_done();
   return errorCode;
 }
 
