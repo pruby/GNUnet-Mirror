@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,14 +27,10 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "gnunet_stats_lib.h"
+#include "gnunet_util_crypto.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 #include "tbench.h"
-
-/**
- * Identity of peer 2.
- */
-static PeerIdentity peer2;
 
 static int test(struct ClientServerConnection * sock,
 		unsigned int messageSize,
@@ -43,11 +39,14 @@ static int test(struct ClientServerConnection * sock,
 		cron_t messageSpacing,
 		unsigned int messageTrainSize,
 		cron_t messageTimeOut /* in milli-seconds */) {
+  PeerIdentity peer2; 
   int ret;
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE * buffer;
   float messagesPercentLoss;
 
+  enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77FOPDA8F1VIKESLSNBO",
+	   &peer2.hashPubKey);
   printf(_("Using %u messages of size %u for %u times.\n"),
 	 messageCnt,
 	 messageSize,
@@ -165,8 +164,8 @@ int main(int argc, char ** argv) {
 #endif
   /* in case existing hellos have expired */
   PTHREAD_SLEEP(30 * cronSECONDS);
-  system("cp peer1/data/hosts/* peer2/data/hosts/");
-  system("cp peer2/data/hosts/* peer1/data/hosts/");
+  system("cp peer1-udp/data/hosts/* peer2-udp/data/hosts/");
+  system("cp peer2-udp/data/hosts/* peer1-udp/data/hosts/");
   ret = 0;
 #if START_PEERS
   if (daemon1 != -1) {
@@ -211,7 +210,7 @@ int main(int argc, char ** argv) {
     printf(_("Running benchmark...\n"));
     /* 'slow' pass: wait for bandwidth negotiation! */
     if (ret == 0)
-      ret = test(sock, 64, 100, 4, 50 * cronMILLIS, 1, 30 * cronSECONDS);
+      ret = test(sock, 64, 100, 4, 50 * cronMILLIS, 1, 5 * cronSECONDS);
     checkConnected(sock);
     /* 'blast' pass: hit bandwidth limits! */
     for (i=8;i<60000;i*=2) {

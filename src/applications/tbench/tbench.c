@@ -56,14 +56,7 @@ typedef struct {
  */
 static struct MUTEX * lock;
 
-static struct SEMAPHORE * presem;
-
 static struct SEMAPHORE * postsem;
-
-/**
- * What was the packet number we received?
- */
-static unsigned int lastPacketNumber;
 
 /**
  * What is the current iteration counter? (Used to verify
@@ -82,48 +75,14 @@ static struct GE_Context * ectx;
 
 static CoreAPIForApplication * coreAPI;
 
+static IterationData * results;
+
 /**
- * Check if we have received a p2p reply,
- * update result counters accordingly.
- *
- * @return 0 if we have received all results, >0 otherwise
+ * Did we receive the last response for the current iteration
+ * before the timeout? If so, when?
  */
-static int pollResults(IterationData * results,
-		       int blocking) {
-  if (results->lossCount == 0)
-    return 0;
-  if (blocking == YES) {
-    if (timeoutOccured == YES)
-      return results->lossCount;
-    SEMAPHORE_DOWN(postsem, YES);
-  } else {
-    if (OK != SEMAPHORE_DOWN(postsem, NO))
-      return results->lossCount;
-  }
-  do {
-    if (timeoutOccured == YES) {
-      SEMAPHORE_UP(presem);
-      return results->lossCount;
-    }
-    if (lastPacketNumber > results->maxPacketNumber) {
-      SEMAPHORE_UP(presem);
-      return results->lossCount;
-    }
-    if (0 == results->packetsReceived[lastPacketNumber]++) {
-      results->lossCount--;
-    } else {
-      results->duplicateCount++;
-#if DEBUG_TBENCH
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Received duplicate message %u from iteration %u\n",
-	  lastPacketNumber,
-	  currIteration);
-#endif
-    }
-    SEMAPHORE_UP(presem);
-  } while (OK == SEMAPHORE_DOWN(postsem, NO));
-  return results->lossCount;
-}
+static cron_t earlyEnd;
+
 
 /**
  * Another peer send us a tbench request.  Just turn
@@ -134,6 +93,11 @@ static int handleTBenchReq(const PeerIdentity * sender,
   MESSAGE_HEADER * reply;
   const P2P_tbench_MESSAGE * msg;
 
+#if DEBUG_TBENCH
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_BULK | GE_USER,
+	 "Received tbench request\n");
+#endif
   if ( ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
     GE_BREAK(ectx, 0);
     return SYSERR;
@@ -147,11 +111,12 @@ static int handleTBenchReq(const PeerIdentity * sender,
   }
 
 #if DEBUG_TBENCH
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Received request %u from iteration %u/%u\n",
-      htonl(msg->packetNum),
-      htonl(msg->iterationNum),
-      htonl(msg->nounce));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_BULK | GE_USER,
+	 "Received request %u from iteration %u/%u\n",
+	 htonl(msg->packetNum),
+	 htonl(msg->iterationNum),
+	 htonl(msg->nounce));
 #endif
   reply = MALLOC(ntohs(message->size));
   memcpy(reply,
@@ -160,7 +125,7 @@ static int handleTBenchReq(const PeerIdentity * sender,
   reply->type = htons(P2P_PROTO_tbench_REPLY);
   coreAPI->unicast(sender,
 		   reply,
-		   ntohl(msg->priority), /* medium importance */
+		   ntohl(msg->priority),
 		   0); /* no delay */
   FREE(reply);
   return OK;
@@ -172,6 +137,8 @@ static int handleTBenchReq(const PeerIdentity * sender,
 static int handleTBenchReply(const PeerIdentity * sender,
 			     const MESSAGE_HEADER * message) {
   const P2P_tbench_MESSAGE * pmsg;
+  unsigned int lastPacketNumber;
+  IterationData * res;
 
   if (ntohs(message->size) < sizeof(P2P_tbench_MESSAGE)) {
     GE_BREAK(ectx, 0);
@@ -184,29 +151,38 @@ static int handleTBenchReply(const PeerIdentity * sender,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-#if DEBUG_TBENCH
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Received response %u from iteration %u/%u\n",
-      htonl(pmsg->packetNum),
-      htonl(pmsg->iterationNum),
-      htonl(pmsg->nounce));
-#endif
-  MUTEX_LOCK(lock);
+  MUTEX_LOCK(lock);  
   if ( (timeoutOccured == NO) &&
-       (presem != NULL) &&
        (postsem != NULL) &&
        (htonl(pmsg->iterationNum) == currIteration) &&
        (htonl(pmsg->nounce) == currNounce) ) {
-    SEMAPHORE_DOWN(presem, YES);
+    res = &results[currIteration];
     lastPacketNumber = ntohl(pmsg->packetNum);
-    SEMAPHORE_UP(postsem);
+    if (lastPacketNumber <= res->maxPacketNumber) {
+      if (0 == res->packetsReceived[lastPacketNumber]++) {
+	res->lossCount--;
+	if (res->lossCount == 0)
+	  earlyEnd = get_time();
+      } else {
+	res->duplicateCount++;
+      }      
+    }
+#if DEBUG_TBENCH
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_BULK | GE_USER,
+	 "Received response %u from iteration %u/%u on time!\n",
+	 htonl(pmsg->packetNum),
+	 htonl(pmsg->iterationNum),
+	 htonl(pmsg->nounce));
+#endif
   } else {
 #if DEBUG_TBENCH
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Received message %u from iteration %u too late (now at iteration %u)\n",
-	ntohl(pmsg->packetNum),
-	ntohl(pmsg->iterationNum),
-	currIteration);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_BULK | GE_USER,
+	   "Received message %u from iteration %u too late (now at iteration %u)\n",
+	   ntohl(pmsg->packetNum),
+	   ntohl(pmsg->iterationNum),
+	   currIteration);
 #endif
   }
   MUTEX_UNLOCK(lock);
@@ -237,20 +213,25 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
   cron_t endTime;
   cron_t now;
   cron_t delay;
-  cron_t delayStart;
-  IterationData * results;
   unsigned long long sum_loss;
   unsigned int max_loss;
   unsigned int min_loss;
   cron_t sum_time;
   cron_t min_time;
   cron_t max_time;
-  cron_t earlyEnd;
   double sum_variance_time;
   double sum_variance_loss;
   unsigned int msgCnt;
   unsigned int iterations;
 
+#if DEBUG_TBENCH
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "Tbench received request from client.\n",
+	 msgCnt,
+	 size,
+	 iterations);
+#endif
   if ( ntohs(message->size) != sizeof(CS_tbench_request_MESSAGE) )
     return SYSERR;
 
@@ -262,12 +243,21 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
   iterations = ntohl(msg->iterations);
   msgCnt = ntohl(msg->msgCnt);
 #if DEBUG_TBENCH
-  LOG(LOG_MESSAGE,
-      "Tbench runs %u test messages of size %u in %u iterations.\n",
-      msgCnt,
-      size,
-      iterations);
+  GE_LOG(ectx,
+	 GE_INFO | GE_USER | GE_BULK,
+	 "Tbench runs %u test messages of size %u in %u iterations.\n",
+	 msgCnt,
+	 size,
+	 iterations);
 #endif
+  MUTEX_LOCK(lock);
+  if (results != NULL) {
+    GE_LOG(ectx,
+	   GE_WARNING | GE_USER | GE_IMMEDIATE,
+	   "Cannot run multiple tbench sessions at the same time!\n");
+    MUTEX_UNLOCK(lock);
+    return SYSERR;
+  }
   results = MALLOC(sizeof(IterationData) * iterations);
 
   p2p = MALLOC(size);
@@ -278,7 +268,6 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
   p2p->header.type = htons(P2P_PROTO_tbench_REQUEST);
   p2p->priority = msg->priority;
 
-  MUTEX_LOCK(lock);
   for (iteration=0;iteration<iterations;iteration++) {
     results[iteration].maxPacketNumber = msgCnt;
     results[iteration].packetsReceived = MALLOC(msgCnt);
@@ -289,7 +278,6 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
     results[iteration].duplicateCount = 0;
 
     earlyEnd = 0;
-    presem = SEMAPHORE_CREATE(1);
     postsem = SEMAPHORE_CREATE(0);
     currNounce = weak_randomi(0xFFFFFF);
     p2p->nounce
@@ -316,72 +304,43 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
 		 postsem);
     for (packetNum=0;packetNum<msgCnt;packetNum++){
       now = get_time();
-      if (now > endTime)
-	break; /* timeout */
-
       p2p->packetNum = htonl(packetNum);
 #if DEBUG_TBENCH
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Sending message %u of size %u in iteration %u\n",
-	  packetNum,
-	  size,
-	  iteration);
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_BULK | GE_USER,
+	     "Sending message %u of size %u in iteration %u\n",
+	     packetNum,
+	     size,
+	     iteration);
 #endif
       coreAPI->unicast(&msg->receiverId,
 		       &p2p->header,
 		       ntohl(msg->priority),
 		       0); /* no delay */
-      pollResults(&results[iteration], NO);
       if ( (delay != 0) &&
 	   (htonl(msg->trainSize) != 0) &&
-	   (packetNum % htonl(msg->trainSize)) == 0) {
-	delayStart = now;
-	while ( (get_time() < (delayStart+delay)) &&
-		(timeoutOccured == NO) ) {
-	  now = get_time();
-	  if (delayStart + delay - now  > 5 * cronMILLIS) {
-	    pollResults(&results[iteration], NO);
-	    PTHREAD_SLEEP(5 * cronMILLIS);
-	  } else
-	    PTHREAD_SLEEP(delayStart + delay - now);
-	}
-      }	
-      if ( (0 == pollResults(&results[iteration], NO)) &&
-	   (earlyEnd == 0) )
-	earlyEnd = get_time();
+	   (packetNum % htonl(msg->trainSize)) == 0) 
+	PTHREAD_SLEEP(delay); 
     }
-    while ( (timeoutOccured == NO) &&
-	    (get_time() < endTime) ) {
-      if ( (0 == pollResults(&results[iteration], YES) ) &&
-	   (earlyEnd == 0) )
-	earlyEnd = get_time();
-      PTHREAD_SLEEP(5 * cronMILLIS);
-    }
-
-    /* make sure to unblock waiting jobs */
-    timeoutOccured = YES;
-    SEMAPHORE_UP(presem);
-
+    SEMAPHORE_DOWN(postsem, YES);
     MUTEX_LOCK(lock);
     if (earlyEnd == 0)
-      earlyEnd = now;
+      earlyEnd = get_time();
     results[iteration].totalTime
       = earlyEnd - startTime;
     FREE(results[iteration].packetsReceived);
-    cron_suspend(coreAPI->cron,
-		 NO);
-    cron_del_job(coreAPI->cron,
-		 &semaUp,
-		 0,
-		 postsem);
-    cron_resume_jobs(coreAPI->cron,
-		     NO);
-    SEMAPHORE_DESTROY(presem);
     SEMAPHORE_DESTROY(postsem);
-    presem = NULL;
     postsem = NULL;
   }
   MUTEX_UNLOCK(lock);
+#if DEBUG_TBENCH
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_BULK | GE_USER,
+	 "Done waiting for response.\n",
+	 packetNum,
+	 size,
+	 iteration);
+#endif
 
   sum_loss = 0;
   sum_time = 0;
@@ -427,6 +386,7 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
   reply.variance_time = sum_variance_time/(iterations-1);
   reply.variance_loss = sum_variance_loss/(iterations-1);
   FREE(results);
+  results = NULL;
   return coreAPI->sendToClient(client,
 			       &reply.header);
 }
@@ -455,7 +415,7 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
   GE_ASSERT(capi->ectx,
 	    0 == GC_set_configuration_value_string(capi->cfg,
 						   capi->ectx,
-						  "ABOUT",
+						   "ABOUT",
 						   "tbench",
 						   gettext_noop("allows profiling of direct "
 								"peer-to-peer connections")));

@@ -199,7 +199,7 @@ int main(int argc,
 	    "Sorry, your C compiler did not properly align the C structs. Aborting.\n");
     return -1;
   }
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(YES, 
 				  GE_DEBUG |
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |

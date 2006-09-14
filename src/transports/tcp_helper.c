@@ -310,6 +310,12 @@ static int tcpSend(TSession * tsession,
   memcpy(&mp[1],
 	 msg,
 	 size);
+#if DEBUG_TCP
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Transport asks select to queue message of size %u\n",
+	 size);
+#endif
   ok = select_write(selector,
 		    tcpSession->sock,
 		    mp,

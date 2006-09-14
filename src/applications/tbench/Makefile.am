@@ -44,6 +44,7 @@ tbenchtest_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
   $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
@@ -53,6 +54,7 @@ tbenchtest_udp_LDADD = \
   $(top_builddir)/src/applications/stats/libgnunetstats_api.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
   $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 

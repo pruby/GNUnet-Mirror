@@ -18,10 +18,9 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
-    + tbench -- compiles
-    + gap
-    + fs/namespace
-    + fs/fsui
+    + gap -- does not yet compile
+    + fs/namespace -- does not yet compile
+    + fs/fsui -- downloadtest does not yet compile
     + dht/tools, dht/module
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
@@ -34,7 +33,6 @@ Notes:
       - state
       - advertising,
       - ecrs_core
-      - tbench
       - tracekit
       - gap
       - rpc

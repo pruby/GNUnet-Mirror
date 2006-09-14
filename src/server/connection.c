@@ -128,7 +128,7 @@
 /**
  * How often do we expect to re-run the traffic allocation
  * code? (depends on MINIMUM_SAMPLE_COUNT and MIN_BPM_PER_PEER
- * and MTU size).
+ * and MTU size). [2 * 32 M / 50 = 5M ]
  */
 #define MIN_SAMPLE_TIME (MINIMUM_SAMPLE_COUNT * cronMINUTES * EXPECTED_MTU / MIN_BPM_PER_PEER)
 
@@ -532,9 +532,14 @@ static void printMsg(const char *prefix, PeerIdentity * sender,
   }
   *dst = 0;
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "%s: Sender `%s', key `%s', IV %u msg CRC %u\n",
-      prefix, &enc, skey, *((int *) iv), crc);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "%s: Sender `%s', key `%s', IV %u msg CRC %u\n",
+	 prefix, 
+	 &enc, 
+	 skey,
+	 *((int *) iv),
+	 crc);
 }
 #endif
 
@@ -854,14 +859,16 @@ static int checkSendFrequency(BufferEntry * be) {
       / (be->max_bpm * cronMINUTES / cronMILLIS)  /* bytes per ms */
       /2;                       /* some head-room */
   }
-  /* Also: allow at least MINIMUM_SAMPLE_COUNT knapsack
+  /* Also: allow at least 2 * MINIMUM_SAMPLE_COUNT knapsack
      solutions for any MIN_SAMPLE_TIME! */
-  if(be->MAX_SEND_FREQUENCY > MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
-    be->MAX_SEND_FREQUENCY = MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
+  if (be->MAX_SEND_FREQUENCY > 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT)
+    be->MAX_SEND_FREQUENCY = 2 * MIN_SAMPLE_TIME / MINIMUM_SAMPLE_COUNT;
 
-  if(be->lastSendAttempt + be->MAX_SEND_FREQUENCY > get_time()) {
-#if DEBUG_CONNECTION
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Send frequency too high (CPU load), send deferred.\n");
+  if (be->lastSendAttempt + be->MAX_SEND_FREQUENCY > get_time()) {
+#if DEBUG_CONNECTION || 1
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER, 
+	   "Send frequency too high (CPU load), send deferred.\n");
 #endif
     return NO;                  /* frequency too high, wait */
   }
@@ -882,6 +889,7 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
   int i;
   int j;
   int approxProb;
+  cron_t deadline;
 
   totalMessageSize = 0;
   (*priority) = 0;
@@ -891,45 +899,56 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
 
   if (be->session.mtu == 0) {
     totalMessageSize = sizeof(P2P_PACKET_HEADER);
+    deadline = (cron_t) -1L; /* infinity */
+
     i = 0;
     /* assumes entries are sorted by priority! */
-    while(i < be->sendBufferSize) {
+    while (i < be->sendBufferSize) {
       entry = be->sendBuffer[i];
-      if((totalMessageSize + entry->len < MAX_BUFFER_SIZE) &&
-         (entry->pri >= EXTREME_PRIORITY)) {
+      if ( (totalMessageSize + entry->len < MAX_BUFFER_SIZE) &&
+	   (entry->pri >= EXTREME_PRIORITY)) {
         entry->knapsackSolution = YES;
+	if (entry->transmissionTime < deadline)
+	  deadline = entry->transmissionTime;
         (*priority) += entry->pri;
 #if DEBUG_CONNECTION
-        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Selecting msg %u with length %u\n", i, entry->len);
+        GE_LOG(ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER, 
+	       "Selecting msg %u with length %u\n", 
+	       i, 
+	       entry->len);
 #endif
         totalMessageSize += entry->len;
-      }
-      else {
+      } else {
         entry->knapsackSolution = NO;
         break;
       }
       i++;
     }
-    if((i == 0) && (be->sendBuffer[i]->len > be->available_send_window))
+    if ( (i == 0) &&
+	 (be->sendBuffer[i]->len > be->available_send_window)) {
       return 0;                 /* always wait for the highest-priority
                                    message (otherwise large messages may
                                    starve! */
-    while((i < be->sendBufferSize) &&
-          (be->available_send_window > totalMessageSize)) {
+    }
+    while ( (i < be->sendBufferSize) &&
+	    (be->available_send_window > totalMessageSize)) {
       entry = be->sendBuffer[i];
-      if((entry->len + totalMessageSize <=
-          be->available_send_window) &&
-         (totalMessageSize + entry->len < MAX_BUFFER_SIZE)) {
+      if ( (entry->len + totalMessageSize <= be->available_send_window) &&
+	   (totalMessageSize + entry->len < MAX_BUFFER_SIZE)) {
         entry->knapsackSolution = YES;
+	if (entry->transmissionTime < deadline)
+	  deadline = entry->transmissionTime;	
 #if DEBUG_CONNECTION
-        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Selecting msg %u with length %u\n", i, entry->len);
+        GE_LOG(ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "Selecting msg %u with length %u\n", i, entry->len);
 #endif
         totalMessageSize += entry->len;
         (*priority) += entry->pri;
-      }
-      else {
+      } else {
         entry->knapsackSolution = NO;
-        if(totalMessageSize == sizeof(P2P_PACKET_HEADER)) {
+        if (totalMessageSize == sizeof(P2P_PACKET_HEADER)) {
           /* if the highest-priority message does not yet
              fit, wait for send window to grow so that
              we can get it out (otherwise we would starve
@@ -939,10 +958,11 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       }
       i++;
     }
-    if((totalMessageSize == sizeof(P2P_PACKET_HEADER)) ||
-       (((*priority) < EXTREME_PRIORITY) &&
-        ((totalMessageSize / sizeof(P2P_PACKET_HEADER)) < 4) &&
-        (weak_randomi(16) != 0))) {
+    if ( (totalMessageSize == sizeof(P2P_PACKET_HEADER)) ||
+	 ( ((*priority) < EXTREME_PRIORITY) &&
+	   ((totalMessageSize / sizeof(P2P_PACKET_HEADER)) < 4) &&
+	   (deadline > get_time() + 500 * cronMILLIS) &&
+	   (weak_randomi(16) != 0) ) ) {
       /* randomization necessary to ensure we eventually send
          a small message if there is nothing else to do! */
       return 0;
@@ -963,7 +983,10 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
                                           be->session.mtu -
                                           sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
-        FPRINTF(prioFile, "%llu 0 %d\n", get_time(), priority);
+        FPRINTF(prioFile,
+		"%llu 0 %d\n", 
+		get_time(),
+		priority);
 #endif
       }
       else {
@@ -971,7 +994,10 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
                                     be->session.mtu -
                                     sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
-        FPRINTF(prioFile, "%llu 1 %d\n", get_time(), priority);
+        FPRINTF(prioFile,
+		"%llu 1 %d\n", 
+		get_time(), 
+		priority);
 #endif
       }
     }
@@ -980,26 +1006,32 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
                                   be->session.mtu -
                                   sizeof(P2P_PACKET_HEADER));
 #if DEBUG_COLLECT_PRIO == YES
-      FPRINTF(prioFile, "%llu 2 %d\n", get_time(), priority);
+      FPRINTF(prioFile,
+	      "%llu 2 %d\n", 
+	      get_time(),
+	      priority);
 #endif
     }
     j = 0;
     for(i = 0; i < be->sendBufferSize; i++)
       if(be->sendBuffer[i]->knapsackSolution == YES)
         j++;
-    if(j == 0) {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_DEVELOPER,
-          _("`%s' selected %d out of %d messages (MTU: %d).\n"),
-          __FUNCTION__,
-          j, be->sendBufferSize,
-	  be->session.mtu - sizeof(P2P_PACKET_HEADER));
-
+    if (j == 0) {
+      GE_LOG(ectx,
+	     GE_ERROR | GE_BULK | GE_DEVELOPER,
+	     _("`%s' selected %d out of %d messages (MTU: %d).\n"),
+	     __FUNCTION__,
+	     j,
+	     be->sendBufferSize,
+	     be->session.mtu - sizeof(P2P_PACKET_HEADER));
+      
       for(j = 0; j < be->sendBufferSize; j++)
-        GE_LOG(ectx, GE_ERROR | GE_BULK | GE_DEVELOPER,
-            _("Message details: %u: length %d, priority: %d\n"),
-            j, 
-	    be->sendBuffer[j]->len,
-	    be->sendBuffer[j]->pri);
+        GE_LOG(ectx, 
+	       GE_ERROR | GE_BULK | GE_DEVELOPER,
+	       _("Message details: %u: length %d, priority: %d\n"),
+	       j, 
+	       be->sendBuffer[j]->len,
+	       be->sendBuffer[j]->pri);
       return 0;
     }
 
@@ -1007,11 +1039,12 @@ static unsigned int selectMessagesToSend(BufferEntry * be,
       /* if we have a very high priority, we may
          want to ignore bandwidth availability (e.g. for HANGUP,
          which  has EXTREME_PRIORITY) */
-      if((*priority) < EXTREME_PRIORITY) {
+      if ((*priority) < EXTREME_PRIORITY) {
 #if DEBUG_CONNECTION
-        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-            "bandwidth limits prevent sending (send window %u too small).\n",
-            be->available_send_window);
+        GE_LOG(ectx,
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "bandwidth limits prevent sending (send window %u too small).\n",
+	       be->available_send_window);
 #endif
         return 0;               /* can not send, BPS available is too small */
       }
@@ -1039,7 +1072,9 @@ static void expireSendBufferEntries(BufferEntry * be) {
   be->lastSendAttempt = get_time();
   expired = be->lastSendAttempt - SECONDS_PINGATTEMPT * cronSECONDS;
 #if DEBUG_CONNECTION
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "policy prevents sending message\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "policy prevents sending message\n");
 #endif
 
   load = os_cpu_get_load(ectx, cfg);
@@ -1067,10 +1102,11 @@ static void expireSendBufferEntries(BufferEntry * be) {
       continue;
     if(entry->transmissionTime <= expired) {
 #if DEBUG_CONNECTION
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-          "expiring message, expired %ds ago, queue size is %llu (bandwidth stressed)\n",
-          (int) ((get_time() - entry->transmissionTime) / cronSECONDS),
-          usedBytes);
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "expiring message, expired %ds ago, queue size is %llu (bandwidth stressed)\n",
+	     (int) ((get_time() - entry->transmissionTime) / cronSECONDS),
+	     usedBytes);
 #endif
       if (stats != NULL) {
         stats->change(stat_messagesDropped, 1);
@@ -1308,30 +1344,48 @@ static void sendBuffer(BufferEntry * be) {
     GE_BREAK(ectx, 0);
     return;
   }
-  if((be->status != STAT_UP) ||
-     (be->sendBufferSize == 0) || (be->inSendBuffer == YES)) {
+  if ( (be->status != STAT_UP) ||
+       (be->sendBufferSize == 0) || 
+       (be->inSendBuffer == YES) ) {
     return;                     /* must not run */
   }
   be->inSendBuffer = YES;
 
-  if((OK != ensureTransportConnected(be)) ||
-     (be->sendBufferSize == 0) || (OK != checkSendFrequency(be))) {
+  if ( (OK != ensureTransportConnected(be)) ||
+       (be->sendBufferSize == 0) || 
+       (OK != checkSendFrequency(be)) ){ 
     be->inSendBuffer = NO;
+#if 0
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	   "Will not try to send: %d %d %d\n",
+	   (OK != ensureTransportConnected(be)),
+	   (be->sendBufferSize == 0),
+	   (OK != checkSendFrequency(be)));
+#endif
     return;
   }
 
   /* test if receiver has enough bandwidth available!  */
   updateCurBPS(be);
 #if DEBUG_CONNECTION
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "receiver window available: %lld bytes (MTU: %u)\n",
-      be->available_send_window, be->session.mtu);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "receiver window available: %lld bytes (MTU: %u)\n",
+	 be->available_send_window,
+	 be->session.mtu);
 #endif
 
   totalMessageSize = selectMessagesToSend(be, &priority);
   if (totalMessageSize == 0) {
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;
+#if DEBUG_CONNECTION
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	   "No messages selected for sending (%d)\n",
+	   be->available_send_window);
+#endif
     return;                     /* deferr further */
   }
   GE_ASSERT(ectx, totalMessageSize > sizeof(P2P_PACKET_HEADER));
@@ -1339,8 +1393,11 @@ static void sendBuffer(BufferEntry * be) {
   /* check if we (sender) have enough bandwidth available
      if so, trigger callbacks on selected entries; if either
      fails, return (but clean up garbage) */
-  if((SYSERR == outgoingCheck(priority)) ||
-     (0 == prepareSelectedMessages(be))) {
+  if ((SYSERR == outgoingCheck(priority)) ||
+      (0 == prepareSelectedMessages(be))) {
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	   "Insufficient bandwidth or priority to send message\n");
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;
     return;                     /* deferr further */
@@ -1365,7 +1422,11 @@ static void sendBuffer(BufferEntry * be) {
       continue;
     if(entry->knapsackSolution == YES) {
 #if DEBUG_CONNECTION
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Queuing msg %u with length %u\n", perm[i], entry->len);
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER, 
+	     "Queuing msg %u with length %u\n", 
+	     perm[i],
+	     entry->len);
 #endif
       GE_ASSERT(ectx, entry->callback == NULL);
       GE_ASSERT(ectx, p + entry->len <= totalMessageSize);
@@ -1414,14 +1475,22 @@ static void sendBuffer(BufferEntry * be) {
 		     (const INITVECTOR *) encryptedMsg,  /* IV */
                      &((P2P_PACKET_HEADER *) encryptedMsg)->sequenceNumber);
 #if DEBUG_CONNECTION
-  printMsg("Encrypting P2P data", &be->session.sender,
-           &be->skey_local, (const INITVECTOR *) encryptedMsg,
+  printMsg("Encrypting P2P data",
+	   &be->session.sender,
+           &be->skey_local, 
+	   (const INITVECTOR *) encryptedMsg,
            crc32N(&((P2P_PACKET_HEADER *) encryptedMsg)->sequenceNumber,
                   ret));
 #endif
   if(stats != NULL)
     stats->change(stat_encrypted, p - sizeof(HashCode512));
   GE_ASSERT(ectx, be->session.tsession != NULL);
+#if DEBUG_CONNECTION
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	 "Asking transport to send message with priority %u\n",
+	 priority);
+#endif
   ret = transport->send(be->session.tsession, 
 			encryptedMsg,
 			p,
@@ -1512,19 +1581,24 @@ static void appendToBuffer(BufferEntry * be, SendEntry * se) {
   }
 
 #if DEBUG_CONNECTION
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&be->session.sender.hashPubKey, &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "adding message of size %d to buffer of host `%s'\n",
-      se->len,
-      &enc);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER, 
+	   hash2enc(&be->session.sender.hashPubKey, 
+		    &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "adding message of size %d to buffer of host `%s'\n",
+	 se->len,
+	 &enc);
 #endif
   if((be->sendBufferSize > 0) && (be->status != STAT_UP)) {
     /* as long as we do not have a confirmed
        connection, do NOT queue messages! */
 #if DEBUG_CONNECTION
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, 
-	"not connected to `%s', message dropped\n",
-	&enc);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER, 
+	   "not connected to `%s', message dropped\n",
+	   &enc);
 #endif
     FREE(se->closure);
     FREE(se);
@@ -1534,23 +1608,24 @@ static void appendToBuffer(BufferEntry * be, SendEntry * se) {
   for(i = 0; i < be->sendBufferSize; i++)
     queueSize += be->sendBuffer[i]->len;
 
-  if(queueSize >= MAX_SEND_BUFFER_SIZE) {
+  if (queueSize >= MAX_SEND_BUFFER_SIZE) {
     /* first, try to remedy! */
     sendBuffer(be);
     /* did it work? */
 
     queueSize = 0;
-    for(i = 0; i < be->sendBufferSize; i++)
+    for (i = 0; i < be->sendBufferSize; i++)
       queueSize += be->sendBuffer[i]->len;
 
-    if(queueSize >= MAX_SEND_BUFFER_SIZE) {
+    if (queueSize >= MAX_SEND_BUFFER_SIZE) {
       /* we need to enforce some hard limit here, otherwise we may take
          FAR too much memory (200 MB easily) */
 #if DEBUG_CONNECTION
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-          "queueSize (%llu) >= %d, refusing to queue message.\n",
-          queueSize, 
-	  MAX_SEND_BUFFER_SIZE);
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "queueSize (%llu) >= %d, refusing to queue message.\n",
+	     queueSize, 
+	     MAX_SEND_BUFFER_SIZE);
 #endif
       FREE(se->closure);
       FREE(se);
@@ -1847,12 +1922,13 @@ static void scheduleInboundTraffic() {
   int firstRound;
   int earlyRun;
   int load;
+  int * perm;
 
   MUTEX_LOCK(lock);
   now = get_time();
 
   /* if this is the first round, don't bother... */
-  if(lastRoundStart == 0) {
+  if (lastRoundStart == 0) {
     /* no allocation the first time this function is called! */
     lastRoundStart = now;
     forAllConnectedHosts(&resetRecentlyReceived, NULL);
@@ -1861,7 +1937,7 @@ static void scheduleInboundTraffic() {
   }
 
   activePeerCount = forAllConnectedHosts(NULL, NULL);
-  if(activePeerCount == 0) {
+  if (activePeerCount == 0) {
     MUTEX_UNLOCK(lock);
     return;                     /* nothing to be done here. */
   }
@@ -1874,15 +1950,15 @@ static void scheduleInboundTraffic() {
      to the limits anyway) */
   timeDifference = now - lastRoundStart;
   earlyRun = 0;
-  if(timeDifference < MIN_SAMPLE_TIME) {
+  if (timeDifference < MIN_SAMPLE_TIME) {
     earlyRun = 1;
-    if(activePeerCount > CONNECTION_MAX_HOSTS_ / 16) {
+    if (activePeerCount > CONNECTION_MAX_HOSTS_ / 16) {
       MUTEX_UNLOCK(lock);
       return;                   /* don't update too frequently, we need at least some
                                    semi-representative sampling! */
     }
   }
-  if(timeDifference == 0)
+  if (timeDifference == 0)
     timeDifference = 1;
 
   /* build an array containing all BEs */
@@ -1904,28 +1980,28 @@ static void scheduleInboundTraffic() {
   }
 
   /* normalize distribution */
-  if(shareSum >= 0.00001) {     /* avoid numeric glitches... */
+  if (shareSum >= 0.00001) {     /* avoid numeric glitches... */
     for(u = 0; u < activePeerCount; u++)
       shares[u] = shares[u] / shareSum;
-  }
-  else {
+  } else {
+    /* proportional shareing */
     for(u = 0; u < activePeerCount; u++)
       shares[u] = 1 / activePeerCount;
   }
 
   /* compute how much bandwidth we can bargain with */
   minCon = minConnect();
-  if(minCon > activePeerCount)
+  if (minCon > activePeerCount)
     minCon = activePeerCount;
   schedulableBandwidth = max_bpm - minCon * MIN_BPM_PER_PEER;
   load = os_network_monitor_get_load(load_monitor,
 				     Download);
-  if(load > 100) {
+  if (load > 100) {
     /* take counter measures! */
     schedulableBandwidth = schedulableBandwidth * 100 / load;
     /* make sure we do not take it down too far */
-    if((schedulableBandwidth < minCon * MIN_BPM_PER_PEER / 2) &&
-       (max_bpm > minCon * MIN_BPM_PER_PEER * 2))
+    if ( (schedulableBandwidth < minCon * MIN_BPM_PER_PEER / 2) &&
+	 (max_bpm > minCon * MIN_BPM_PER_PEER * 2) )
       schedulableBandwidth = minCon * MIN_BPM_PER_PEER / 2;
   }
 
@@ -1943,34 +2019,42 @@ static void scheduleInboundTraffic() {
 #if DEBUG_CONNECTION
     if(adjustedRR[u] > entries[u]->idealized_limit) {
       EncName enc;
-      IF_GELOG(ectx, GE_INFO | GE_BULK | GE_USER, hash2enc(&entries[u]->session.sender.hashPubKey, &enc));
-      GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
-          "peer `%s' transmitted above limit: %llu bpm > %u bpm\n",
-          &enc, adjustedRR[u], entries[u]->idealized_limit);
+      IF_GELOG(ectx,
+	       GE_INFO | GE_BULK | GE_USER, 
+	       hash2enc(&entries[u]->session.sender.hashPubKey, 
+			&enc));
+      GE_LOG(ectx, 
+	     GE_INFO | GE_BULK | GE_USER,
+	     "peer `%s' transmitted above limit: %llu bpm > %u bpm\n",
+	     &enc, 
+	     adjustedRR[u], 
+	     entries[u]->idealized_limit);
     }
 #endif
     /* Check for peers grossly exceeding send limits. Be a bit
      * reasonable and make the check against the max value we have
      * sent to this peer (assume announcements may have got lost).
      */
-    if((earlyRun == 0) &&
-       (adjustedRR[u] > 2 * MAX_BUF_FACT *
-        entries[u]->max_transmitted_limit) &&
-       (adjustedRR[u] > 2 * MAX_BUF_FACT * entries[u]->idealized_limit)) {
+    if ( (earlyRun == 0) &&
+	 (adjustedRR[u] > 2 * MAX_BUF_FACT *
+	  entries[u]->max_transmitted_limit) &&
+	 (adjustedRR[u] > 2 * MAX_BUF_FACT * entries[u]->idealized_limit)) {
       EncName enc;
 
       entries[u]->violations++;
       entries[u]->recently_received = 0;  /* "clear" slate */
       if (entries[u]->violations > 10) {
-        IF_GELOG(ectx, GE_INFO | GE_BULK | GE_USER,
-              hash2enc(&entries[u]->session.sender.hashPubKey,
-		       &enc));
-        GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER,
-            "blacklisting `%s': sent repeatedly %llu bpm "
-            "(limit %u bpm, target %u bpm)\n",
-            &enc,
-            adjustedRR[u],
-            entries[u]->max_transmitted_limit, entries[u]->idealized_limit);
+        IF_GELOG(ectx, 
+		 GE_INFO | GE_BULK | GE_USER,
+		 hash2enc(&entries[u]->session.sender.hashPubKey,
+			  &enc));
+        GE_LOG(ectx, 
+	       GE_INFO | GE_BULK | GE_USER,
+	       "blacklisting `%s': sent repeatedly %llu bpm "
+	       "(limit %u bpm, target %u bpm)\n",
+	       &enc,
+	       adjustedRR[u],
+	       entries[u]->max_transmitted_limit, entries[u]->idealized_limit);
         identity->blacklistHost(&entries[u]->session.sender,
                                 1 / topology->getSaturation(), YES);
         shutdownConnection(entries[u]);
@@ -1981,11 +2065,10 @@ static void scheduleInboundTraffic() {
         u--;
         continue;
       }
-    }
-    else {
-      if((earlyRun == 0) &&
-         (adjustedRR[u] < entries[u]->max_transmitted_limit / 2) &&
-         (entries[u]->violations > 0)) {
+    } else {
+      if ( (earlyRun == 0) &&
+	   (adjustedRR[u] < entries[u]->max_transmitted_limit / 2) &&
+	   (entries[u]->violations > 0)) {
         /* allow very low traffic volume to
            balance out (rare) times of high
            volume */
@@ -1993,7 +2076,7 @@ static void scheduleInboundTraffic() {
       }
     }
 
-    if(adjustedRR[u] < MIN_BPM_PER_PEER / 2)
+    if (adjustedRR[u] < MIN_BPM_PER_PEER / 2)
       adjustedRR[u] = MIN_BPM_PER_PEER / 2;
     /* even if we received NO traffic, allow
        at least MIN_BPM_PER_PEER */
@@ -2015,84 +2098,73 @@ static void scheduleInboundTraffic() {
   firstRound = YES;
   for (u = 0; u < activePeerCount; u++)
     entries[u]->idealized_limit = 0;
-  while((schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
-        (activePeerCount > 0) && (didAssign == YES)) {
+  while ( (schedulableBandwidth > CONNECTION_MAX_HOSTS_ * 100) &&
+	  (activePeerCount > 0) && 
+	  (didAssign == YES) ) {
     didAssign = NO;
     decrementSB = 0;
-    for(u = 0; u < activePeerCount; u++) {
+    for (u = 0; u < activePeerCount; u++) {
       /* always allow allocating MIN_BPM_PER_PEER */
-      if((firstRound == NO) ||
-         (entries[u]->idealized_limit < adjustedRR[u] * 2)) {
+      if ( (firstRound == NO) ||
+	   (entries[u]->idealized_limit < adjustedRR[u] * 2) ) {
         unsigned int share;
 
-        share =
+	share =
           entries[u]->idealized_limit +
           (unsigned int) (shares[u] * schedulableBandwidth);
-        if(share < entries[u]->idealized_limit)
+        if (share < entries[u]->idealized_limit)
           share = 0xFFFFFFFF;   /* int overflow */
-        if((share > adjustedRR[u] * 2) && (firstRound == YES))
+        if ( (share > adjustedRR[u] * 2) && (firstRound == YES))
           share = adjustedRR[u] * 2;
-        if(share > entries[u]->idealized_limit) {
+        if ( (share < MIN_BPM_PER_PEER) &&
+	     (minCon > 0) ) {
+          /* use one of the minCon's to keep the connection! */
+          share += MIN_BPM_PER_PEER;
+          decrementSB -= MIN_BPM_PER_PEER; /* do not count */
+          minCon--;
+        }
+        if (share > entries[u]->idealized_limit) {
           decrementSB += share - entries[u]->idealized_limit;
           didAssign = YES;
         }
-        if((share < MIN_BPM_PER_PEER) && (minCon > 0)) {
-          /* use one of the minCon's to keep the connection! */
-          decrementSB -= share;
-          share = MIN_BPM_PER_PEER;
-          minCon--;
-        }
+	if (share > 0)
+	  didAssign = YES;
         entries[u]->idealized_limit = share;
       }
-    }
-    if(decrementSB > schedulableBandwidth) {
+    } /* end for all peers */
+    if (decrementSB < schedulableBandwidth) {
       schedulableBandwidth -= decrementSB;
-    }
-    else {
+    } else {
       schedulableBandwidth = 0;
       break;
     }
-    if((activePeerCount > 0) && (didAssign == NO)) {
-      int *perm = permute(WEAK, activePeerCount);
+    if ( (activePeerCount > 0) && 
+	 (didAssign == NO) ) {
+      perm = permute(WEAK, activePeerCount);
       /* assign also to random "worthless" (zero-share) peers */
-      for(u = 0; u < activePeerCount; u++) {
+      for (u = 0; u < activePeerCount; u++) {
         unsigned int v = perm[u]; /* use perm to avoid preference to low-numbered slots */
-        if((firstRound == NO) ||
-           (entries[v]->idealized_limit < adjustedRR[u] * 2)) {
+        if ( (firstRound == NO) ||
+	     (entries[v]->idealized_limit < adjustedRR[u] * 2)) {
           unsigned int share;
 
           share =
             entries[v]->idealized_limit +
             (unsigned int) (schedulableBandwidth);
-          if(share < entries[u]->idealized_limit)
+          if (share < entries[u]->idealized_limit)
             share = 0xFFFFFFFF; /* int overflow */
-          if((firstRound == YES) && (share > adjustedRR[u] * 2))
+          if ((firstRound == YES) && (share > adjustedRR[u] * 2))
             share = adjustedRR[u] * 2;
-          schedulableBandwidth -= share - entries[v]->idealized_limit;
-          entries[v]->idealized_limit = share;
+
+          schedulableBandwidth -= share - entries[v]->idealized_limit; 
+	  entries[v]->idealized_limit = share;
         }
       }
       FREE(perm);
       perm = NULL;
 
-      if((schedulableBandwidth > 0) && (activePeerCount > 0)) {
-        /* assign rest disregarding traffic limits */
-        perm = permute(WEAK, activePeerCount);
-        for(u = 0; u < activePeerCount; u++) {
-          unsigned int share;
-
-          share =
-            entries[perm[u]]->idealized_limit +
-            (unsigned int) (schedulableBandwidth / activePeerCount);
-          if(share > entries[perm[u]]->idealized_limit) /* no int-overflow? */
-            entries[perm[u]]->idealized_limit = share;
-        }
-        schedulableBandwidth = 0;
-        FREE(perm);
-        perm = NULL;
-      }
-    }                           /* didAssign == NO? */
-    if(firstRound == YES) {
+    }  /* didAssign == NO? */
+    if (firstRound == YES) {
       /* keep some bandwidth off the market
          for new connections */
       schedulableBandwidth /= 2;
@@ -2100,11 +2172,31 @@ static void scheduleInboundTraffic() {
     firstRound = NO;
   }                             /* while bandwidth to distribute */
 
+  if ( (schedulableBandwidth > 0) && 
+       (activePeerCount > 0) ) {
+    /* assign rest disregarding traffic limits */
+    perm = permute(WEAK, activePeerCount);
+    for(u = 0; u < activePeerCount; u++) {
+      unsigned int share;
+      
+      share =
+	entries[perm[u]]->idealized_limit +
+	(unsigned int) (schedulableBandwidth / activePeerCount);
+      if (share > entries[perm[u]]->idealized_limit) { /* no int-overflow? */
+	entries[perm[u]]->idealized_limit = share;
+      } else {
+	entries[perm[u]]->idealized_limit = 0xFFFF0000;	    
+      }
+    }
+    schedulableBandwidth = 0;
+    FREE(perm);
+    perm = NULL;
+  }
 
   /* randomly add the remaining MIN_BPM_PER_PEER to minCon peers; yes, this will
      yield some fluctuation, but some amount of fluctuation should be
      good since it creates opportunities. */
-  if(activePeerCount > 0)
+  if (activePeerCount > 0)
     for(u = 0; u < minCon; u++)
       entries[weak_randomi(activePeerCount)]->idealized_limit
         += MIN_BPM_PER_PEER;
@@ -2115,13 +2207,30 @@ static void scheduleInboundTraffic() {
 #if DEBUG_CONNECTION
     EncName enc;
 
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&entries[u]->session.sender.hashPubKey, &enc));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-        "inbound limit for peer %u: %s set to %u bpm\n",
-        u, &enc, entries[u]->idealized_limit);
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_BULK | GE_USER, 
+	     hash2enc(&entries[u]->session.sender.hashPubKey, 
+		      &enc));
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_BULK | GE_USER,
+	   "inbound limit for peer %u: %s set to %u bpm\n",
+	   u, 
+	   &enc, 
+	   entries[u]->idealized_limit);
 #endif
-    entries[u]->current_connection_value /= 2.0;
-    entries[u]->recently_received /= 2;
+    if ( (timeDifference > 50) &&
+	 (weak_randomi(timeDifference + 1) > 50) )
+      entries[u]->current_connection_value /= 2.0;
+    decrementSB = entries[u]->idealized_limit * timeDifference / cronMINUTES / 2;
+    if ( (decrementSB == 0) &&
+	 (weak_randomi(timeDifference + 1) != 0) )
+      decrementSB = 1;
+    if (entries[u]->recently_received >= decrementSB) {
+      entries[u]->recently_received
+	-= decrementSB;
+    } else {
+      entries[u]->recently_received = 0;
+    }
   }
 
   /* free memory */
@@ -2129,19 +2238,22 @@ static void scheduleInboundTraffic() {
   FREE(shares);
   FREE(entries);
   for (u = 0; u < CONNECTION_MAX_HOSTS_; u++) {
-    BufferEntry *be = CONNECTION_buffer_[u];
-    if(be == NULL)
+    BufferEntry * be = CONNECTION_buffer_[u];
+    if (be == NULL)
       continue;
     if (be->idealized_limit < MIN_BPM_PER_PEER) {
-#if DEBUG_CONNECTION || 1
+#if DEBUG_CONNECTION
       EncName enc;
 
-      IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    hash2enc(&be->session.sender.hashPubKey, 
-		     &enc));
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-          "Number of connections too high, shutting down low-traffic connection to `%s' (had only %u bpm)\n",
-          &enc, be->idealized_limit);
+      IF_GELOG(ectx,
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       hash2enc(&be->session.sender.hashPubKey, 
+			&enc));
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "Number of connections too high, shutting down low-traffic connection to `%s' (had only %u bpm)\n",
+	     &enc,
+	     be->idealized_limit);
 #endif
       /* We need to avoid giving a too low limit (especially 0, which
 	 would indicate a plaintex msg).  So we set the limit to the
@@ -2374,7 +2486,10 @@ int checkHeader(const PeerIdentity * sender,
 
   be->max_bpm = ntohl(msg->bandwidth);
 #if DEBUG_CONNECTION
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, "Received bandwidth cap of %u bpm\n", be->max_bpm);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Received bandwidth cap of %u bpm\n", 
+	 be->max_bpm);
 #endif
   if(be->available_send_window >= be->max_bpm) {
     be->available_send_window = be->max_bpm;
@@ -2472,9 +2587,10 @@ void confirmSessionUp(const PeerIdentity * peer) {
   if(be != NULL) {
     be->isAlive = get_time();
     identity->whitelistHost(peer);
-    if(((be->status & STAT_SETKEY_SENT) > 0) &&
-       ((be->status & STAT_SETKEY_RECEIVED) > 0) &&
-       (OK == ensureTransportConnected(be)) && (be->status != STAT_UP)) {
+    if( ((be->status & STAT_SETKEY_SENT) > 0) &&
+	((be->status & STAT_SETKEY_RECEIVED) > 0) &&
+	(OK == ensureTransportConnected(be)) && 
+	(be->status != STAT_UP) ) {
       be->status = STAT_UP;
       be->lastSequenceNumberReceived = 0;
       be->lastSequenceNumberSend = 1;
@@ -3082,7 +3198,8 @@ void unicastCallback(const PeerIdentity * hostId,
   ENTRY();
   MUTEX_LOCK(lock);
   be = addHost(hostId, YES);
-  if((be != NULL) && (be->status != STAT_DOWN)) {
+  if ((be != NULL) &&
+      (be->status != STAT_DOWN)) {
     SendEntry *entry;
 
     entry = MALLOC(sizeof(SendEntry));
@@ -3094,8 +3211,7 @@ void unicastCallback(const PeerIdentity * hostId,
     entry->closure = closure;
     entry->knapsackSolution = NO;
     appendToBuffer(be, entry);
-  }
-  else {
+  } else {
     FREENONNULL(closure);
   }
   MUTEX_UNLOCK(lock);
@@ -3116,17 +3232,21 @@ void unicast(const PeerIdentity * receiver,
   char *closure;
   unsigned short len;
 
-  if(msg == NULL) {
+  if (msg == NULL) {
     /* little hack for topology,
        which cannot do this directly
        due to cyclic dependencies! */
-    if(getBandwidthAssignedTo(receiver) == 0)
+    if (getBandwidthAssignedTo(receiver) == 0)
       session->tryConnect(receiver);
     return;
   }
   len = ntohs(msg->size);
-  if(len == 0)
+  if (len == 0) {
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_BULK | GE_DEVELOPER,
+	   "Empty message send (hopefully used to initiate connection attempt)\n");
     return;
+  }
   closure = MALLOC(len);
   memcpy(closure, msg, len);
   unicastCallback(receiver,
@@ -3199,13 +3319,14 @@ unsigned int getBandwidthAssignedTo(const PeerIdentity * node) {
  * @param node the identity of the other peer
  * @param preference how much should the traffic preference be increased?
  */
-void updateTrafficPreference(const PeerIdentity * node, double preference) {
+void updateTrafficPreference(const PeerIdentity * node, 
+			     double preference) {
   BufferEntry *be;
 
   ENTRY();
   MUTEX_LOCK(lock);
   be = lookForHost(node);
-  if(be != NULL)
+  if (be != NULL)
     be->current_connection_value += preference;
   MUTEX_UNLOCK(lock);
 }
@@ -3224,9 +3345,14 @@ void disconnectFromPeer(const PeerIdentity * node) {
   MUTEX_LOCK(lock);
   be = lookForHost(node);
   if(be != NULL) {
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&node->hashPubKey, &enc));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-        "Closing connection to `%s' as requested by application.\n", &enc);
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     hash2enc(&node->hashPubKey,
+		      &enc));
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Closing connection to `%s' as requested by application.\n",
+	   &enc);
     shutdownConnection(be);
   }
   MUTEX_UNLOCK(lock);

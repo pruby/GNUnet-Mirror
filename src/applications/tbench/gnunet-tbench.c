@@ -82,14 +82,14 @@ static struct CommandLineOption gnunettbenchOptions[] = {
     &gnunet_getopt_configure_set_ulong, &messageSize },
   { 'S', "space", "SPACE",
     gettext_noop("sleep for SPACE ms after each a message block"), 1,
-    &gnunet_getopt_configure_set_ulong, &messageTrainSize },
+    &gnunet_getopt_configure_set_ulong, &messageSpacing },
   { 't', "timeout", "TIMEOUT",
     gettext_noop("time to wait for the completion of an iteration (in ms)"), 1,
     &gnunet_getopt_configure_set_ulong, &messageTimeOut },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   { 'X', "xspace", "COUNT",
     gettext_noop("number of messages in a message block"), 1,
-    &gnunet_getopt_configure_set_ulong, &messageSpacing },
+    &gnunet_getopt_configure_set_ulong, &messageTrainSize },
   COMMAND_LINE_OPTION_END,
 };
 
@@ -185,7 +185,7 @@ int main(int argc,
     GE_ASSERT(ectx, 
 	      ntohs(buffer->header.size) ==
 	      sizeof(CS_tbench_reply_MESSAGE));
-    if ((float)buffer->mean_loss <= 0){
+    if ((float)buffer->mean_loss < 0){
       GE_BREAK(ectx, 0);
       messagesPercentLoss = 0.0;
     } else {

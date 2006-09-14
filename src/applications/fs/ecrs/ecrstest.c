@@ -302,6 +302,7 @@ int main(int argc, char * argv[]){
   if (sock != NULL)
     connection_destroy(sock);
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+  GC_free(cfg);
   return (ok == YES) ? 0 : 1;
 }
 
