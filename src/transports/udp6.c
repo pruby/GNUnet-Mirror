@@ -337,15 +337,16 @@ static int startTransportServer(void) {
     if (sock == -1)
       return SYSERR;
     selector = select_create("udp6",
+			     YES,
 			     ectx,
 			     load_monitor,
 			     sock,
-			     sizeof(IPaddr),
+			     sizeof(struct sockaddr_in6),
 			     0, /* timeout */
 			     &select_message_handler,
 			     NULL,
 			     &select_accept_handler,
-			     NULL,
+			     &isBlacklisted,
 			     &select_close_handler,
 			     NULL,
 			     0 /* memory quota */ );

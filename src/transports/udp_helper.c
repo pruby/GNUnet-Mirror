@@ -24,6 +24,9 @@
  * @author Christian Grothoff
  */
 
+typedef int (*BlacklistedTester)(const void * addr,
+				 unsigned int addr_len);
+
 /**
  * Message-Packet header.
  */
@@ -115,6 +118,10 @@ static void * select_accept_handler(void * ah_cls,
 				    const void * addr,
 				    unsigned int addr_len) {
   static int nonnullpointer;
+  BlacklistedTester blt = ah_cls;
+  if (NO != blt(addr,
+		addr_len))
+    return NULL;  
   return &nonnullpointer;
 }
 

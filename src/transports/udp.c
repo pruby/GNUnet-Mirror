@@ -98,41 +98,46 @@ static int listensock(unsigned short port) {
   const int on = 1;
 
   sock = SOCKET(PF_INET, SOCK_DGRAM, UDP_PROTOCOL_NUMBER);
-  if (sock < 0)
+  if (sock < 0) {
     GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
 		    "socket");
+    return -1;
+  }
   if ( SETSOCKOPT(sock,
 		  SOL_SOCKET,
 		  SO_REUSEADDR, 
 		  &on,
-		  sizeof(on)) < 0 )
+		  sizeof(on)) < 0 ) {
     GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
 		    "setsockopt");
-  if (port != 0) {
-    memset(&sin, 
-	   0, 
-	   sizeof(sin));
-    sin.sin_family      = AF_INET;
-    sin.sin_addr.s_addr = INADDR_ANY;
-    sin.sin_port        = htons(port);
-    if (BIND(sock,
-	     (struct sockaddr *)&sin,
-	     sizeof(sin)) < 0) {
-      GE_LOG_STRERROR(ectx,
-		      GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-		      "bind");
-      GE_LOG(ectx,
-	     GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-	     _("Failed to bind to UDP port %d.\n"),
-	     port);
-      GE_DIE_STRERROR(ectx,
-		      GE_FATAL | GE_USER | GE_IMMEDIATE,
-		      "bind");
-    }
-  } /* do not bind if port == 0, then we use
-       send-only! */
+    return -1;
+  }
+  GE_ASSERT(NULL, port != 0);
+  memset(&sin, 
+	 0, 
+	 sizeof(sin));
+  sin.sin_family      = AF_INET;
+  sin.sin_addr.s_addr = INADDR_ANY;
+  sin.sin_port        = htons(port);
+  if (BIND(sock,
+	   (struct sockaddr *)&sin,
+	   sizeof(sin)) < 0) {
+    GE_LOG_STRERROR(ectx,
+		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+		    "bind");
+    GE_LOG(ectx,
+	   GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+	   _("Failed to bind to UDP port %d.\n"),
+	   port);
+    GE_DIE_STRERROR(ectx,
+		    GE_FATAL | GE_USER | GE_IMMEDIATE,
+		    "bind");
+    return -1;
+  }
+  /* do not bind if port == 0, then we use
+     send-only! */
   return sock;
 }
 
@@ -339,15 +344,16 @@ static int startTransportServer(void) {
     if (sock == -1)
       return SYSERR;
     selector = select_create("udp",
+			     YES,
 			     ectx,
 			     load_monitor,
 			     sock,
-			     sizeof(IPaddr),
+			     sizeof(struct sockaddr_in),
 			     0, /* timeout */
 			     &select_message_handler,
 			     NULL,
 			     &select_accept_handler,
-			     NULL,
+			     &isBlacklisted,
 			     &select_close_handler,
 			     NULL,
 			     0 /* memory quota */ );

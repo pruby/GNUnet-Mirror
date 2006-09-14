@@ -330,10 +330,11 @@ static int startTransportServer(void) {
     return SYSERR;
   }
   selector = select_create("tcp",
+			   NO,
 			   ectx,
 			   coreAPI->load_monitor,
 			   s,
-			   sizeof(IPaddr),
+			   sizeof(struct sockaddr_in),
 			   TCP_TIMEOUT,
 			   &select_message_handler,
 			   NULL,

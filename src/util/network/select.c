@@ -104,6 +104,29 @@ typedef struct SelectHandle {
    */
   struct SocketHandle * listen_sock;
 
+  struct GE_Context * ectx;
+  
+  struct LoadMonitor * load_monitor;
+
+  /**
+   * Array of currently active TCP sessions.
+   */
+  Session ** sessions;
+
+  SelectMessageHandler mh;
+
+  SelectAcceptHandler ah;
+
+  SelectCloseHandler ch;
+
+  void * mh_cls; 
+  
+  void * ah_cls;
+  
+  void * ch_cls;
+  
+  cron_t timeout;
+  
   /**
    * tcp_pipe is used to signal the thread that is
    * blocked in a select call that the set of sockets to listen
@@ -111,10 +134,7 @@ typedef struct SelectHandle {
    */
   int signal_pipe[2];
 
-  /**
-   * Array of currently active TCP sessions.
-   */
-  Session ** sessions;
+  int is_udp;
 
   unsigned int sessionCount;
 
@@ -122,26 +142,8 @@ typedef struct SelectHandle {
 
   int shutdown;
 
-  struct GE_Context * ectx;
-  
-  struct LoadMonitor * load_monitor;
-
   unsigned int max_addr_len;
 
-  cron_t timeout;
-  
-  SelectMessageHandler mh;
-
-  void * mh_cls;
-  
-  SelectAcceptHandler ah;
-  
-  void * ah_cls;
-  
-  SelectCloseHandler ch;
-
-  void * ch_cls;
-  
   unsigned int memory_quota;
 
 } SelectHandle;
@@ -413,6 +415,7 @@ static void * selectThread(void * ctx) {
   void * sctx;
   SocketHandle * sock;
   Session * session;	
+  size_t size;
 
   clientAddr = MALLOC(sh->max_addr_len);
   MUTEX_LOCK(sh->lock);
@@ -491,63 +494,149 @@ static void * selectThread(void * ctx) {
 			"select");
       }
     }
-    if ( (sh->listen_sock != NULL) &&
-	 (FD_ISSET(sh->listen_sock->handle, &readSet)) ) {
+    if (sh->is_udp == NO) {
+      if ( (sh->listen_sock != NULL) &&
+	   (FD_ISSET(sh->listen_sock->handle, &readSet)) ) {
+	lenOfIncomingAddr = sh->max_addr_len;
+	memset(clientAddr,
+	       0,
+	     lenOfIncomingAddr);
+	s = ACCEPT(sh->listen_sock->handle,
+		   (struct sockaddr *) clientAddr,
+		   &lenOfIncomingAddr);
+	if (s == -1) {	
+	  GE_LOG(sh->ectx,
+		 GE_WARNING | GE_ADMIN | GE_BULK,
+		 "Select %s failed to accept!\n",
+		 sh->description); 
+	  GE_LOG_STRERROR(sh->ectx,
+			  GE_WARNING | GE_ADMIN | GE_BULK,
+			  "accept");
+	  break;
+	} else {
+#if DEBUG_SELECT
+	  GE_LOG(sh->ectx,
+		 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+		 "Select %p is accepting connection: %d\n",
+		 sh,
+		 s); 
+#endif
+	  sock = socket_create(sh->ectx,
+			       sh->load_monitor,
+			       s);
+	  sctx = sh->ah(sh->ah_cls,
+			sh,
+			sock,
+			clientAddr,
+			lenOfIncomingAddr);
+#if DEBUG_SELECT
+	  GE_LOG(sh->ectx,
+		 GE_DEBUG | GE_DEVELOPER | GE_BULK,
+		 "Select %p is accepting connection: %p\n",
+		 sh,
+		 sctx);	 
+#endif
+	  if (sctx == NULL) {
+	    socket_destroy(sock);
+	  } else {
+	    session = MALLOC(sizeof(Session));
+	    memset(session, 0, sizeof(Session));
+	    session->sock = sock;
+	    session->sock_ctx = sctx;
+	    session->lastUse = get_time();
+	    if (sh->sessionArrayLength == sh->sessionCount)
+	      GROW(sh->sessions,
+		   sh->sessionArrayLength,
+		   sh->sessionArrayLength + 4);
+	    sh->sessions[sh->sessionCount++] = session;
+	  }
+	} 
+      }
+    } else {  /* is_udp == YES */
+      int pending;
+      int udp_sock;
+      int error;
+
+      udp_sock = sh->listen_sock->handle;
       lenOfIncomingAddr = sh->max_addr_len;
       memset(clientAddr,
 	     0,
 	     lenOfIncomingAddr);
-      s = ACCEPT(sh->listen_sock->handle,
-		 (struct sockaddr *) clientAddr,
-		 &lenOfIncomingAddr);
-      if (s == -1) {	
-	GE_LOG(sh->ectx,
-	       GE_WARNING | GE_ADMIN | GE_BULK,
-	       "Select %s failed to accept!\n",
-	       sh->description); 
+      pending = 0;
+      /* @todo FIXME in PlibC */
+#ifdef MINGW
+      error = ioctlsocket(udp_sock,
+			  FIONREAD,
+			  &pending);
+#else
+      error = ioctl(udp_sock,
+		    FIONREAD,
+		    &pending);
+#endif
+      if (error != 0) {
 	GE_LOG_STRERROR(sh->ectx,
-			GE_WARNING | GE_ADMIN | GE_BULK,
-			"accept");
-	break;
+			GE_ERROR | GE_ADMIN | GE_BULK,
+			"ioctl");
+	pending = 65535; /* max */
+      }
+      GE_ASSERT(sh->ectx, pending >= 0);
+      if (pending == 0) {
+      	/* maybe empty UDP packet was sent (see report on bug-gnunet,
+	   5/11/6; read 0 bytes from UDP just to kill potential empty packet! */
+	socket_recv_from(sh->listen_sock,
+			 NC_Blocking,
+			 NULL,
+			 0,
+			 &size,
+			 clientAddr,
+			 &lenOfIncomingAddr);
+      } else if (pending >= 65536) {
+	GE_BREAK(sh->ectx, 0);
+	socket_close(sh->listen_sock);
       } else {
-#if DEBUG_SELECT
-	GE_LOG(sh->ectx,
-	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	       "Select %p is accepting connection: %d\n",
-	       sh,
-	       s); 
-#endif
-	sock = socket_create(sh->ectx,
-			     sh->load_monitor,
-			     s);
-	sctx = sh->ah(sh->ah_cls,
-		      sh,
-		      sock,
-		      clientAddr,
-		      lenOfIncomingAddr);
-#if DEBUG_SELECT
-	GE_LOG(sh->ectx,
-	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	       "Select %p is accepting connection: %p\n",
-	       sh,
-	       sctx);	 
-#endif
-	if (sctx == NULL) {
-	  socket_destroy(sock);
+	char * msg;
+	
+	msg = MALLOC(pending);    
+	size = 0;
+	if (YES != socket_recv_from(sh->listen_sock,
+				    NC_Blocking,
+				    msg,
+				    pending,
+				    &size,
+				    clientAddr,
+				    &lenOfIncomingAddr)) {
+	  socket_close(sh->listen_sock);
 	} else {
-	  session = MALLOC(sizeof(Session));
-	  memset(session, 0, sizeof(Session));
-	  session->sock = sock;
-	  session->sock_ctx = sctx;
-	  session->lastUse = get_time();
-	  if (sh->sessionArrayLength == sh->sessionCount)
-	    GROW(sh->sessions,
-		 sh->sessionArrayLength,
-		 sh->sessionArrayLength + 4);
-	  sh->sessions[sh->sessionCount++] = session;
+	  /* validate msg format! */
+	  const MESSAGE_HEADER * hdr;
+
+	  hdr = (const MESSAGE_HEADER*) msg;
+	  if ( (size == pending) &&
+	       (size >= sizeof(MESSAGE_HEADER)) &&
+	       (ntohs(hdr->size) == size) ) {
+	    void * sctx;
+	    
+	    sctx = sh->ah(sh->ah_cls,
+			  sh,
+			  NULL,
+			  clientAddr,
+			  lenOfIncomingAddr);
+	    if (sctx != NULL) {
+	      sh->mh(sh->mh_cls,
+		     sh,
+		     NULL,
+		     sctx,
+		     hdr);
+	      sh->ch(sh->ch_cls,
+		     sh,
+		     NULL,
+		     sctx);		   
+	    }
+	  }
 	}
-      } 
-    }
+	FREE(msg);
+      }
+    } /* end UDP processing */
     if (FD_ISSET(sh->signal_pipe[0], &readSet)) {
       /* allow reading multiple signals in one go in case we get many
 	 in one shot... */
@@ -638,6 +727,7 @@ static int makeNonblocking(struct GE_Context * ectx,
  * @return NULL on error
  */
 SelectHandle * select_create(const char * description,
+			     int is_udp,
 			     struct GE_Context * ectx,
 			     struct LoadMonitor * mon,
 			     int sock,
@@ -652,16 +742,18 @@ SelectHandle * select_create(const char * description,
 			     unsigned int memory_quota) {
   SelectHandle * sh;
 
-  if ( (0 != LISTEN(sock, 5)) &&
-       (errno != EOPNOTSUPP) ) { /* udp: not supported */
+  if ( (is_udp == NO) &&
+       (0 != LISTEN(sock, 5)) ) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_IMMEDIATE,
 		    "listen");
-    return NULL;
+    return NULL;    
   }
+  GE_ASSERT(ectx, description != NULL);
   sh = MALLOC(sizeof(SelectHandle));
-  sh->description = description;
   memset(sh, 0, sizeof(SelectHandle));
+  sh->is_udp = is_udp;
+  sh->description = description;
   if (0 != PIPE(sh->signal_pipe)) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_IMMEDIATE,

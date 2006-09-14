@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -339,6 +339,7 @@ static int startTransportServer(void) {
     return SYSERR;
   }
   selector = select_create("tcp6",
+			   NO,
 			   ectx,
 			   coreAPI->load_monitor,
 			   s,

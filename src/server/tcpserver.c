@@ -319,6 +319,7 @@ static int startTCPServer() {
     return SYSERR;
   }
   selector = select_create("tcpserver",
+			   NO,
 			   ectx,
 			   NULL,
 			   listenerFD,

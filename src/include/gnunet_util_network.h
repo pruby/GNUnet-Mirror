@@ -410,6 +410,7 @@ int socket_test_valid(struct SocketHandle * s);
  * @return NULL on error
  */
 struct SelectHandle * select_create(const char * desc,
+				    int is_udp,
 				    struct GE_Context * ectx,
 				    struct LoadMonitor * mon,
 				    int sock,
