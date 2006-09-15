@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -31,11 +31,6 @@ typedef int (*BlacklistedTester)(const void * addr,
  * Message-Packet header.
  */
 typedef struct {
-  /**
-   * this struct is *preceded* by MESSAGE_PARTs - until
-   * size-sizeof(UDPMessage)!
-   */
-
   /**
    * size of the message, in bytes, including this header.
    */

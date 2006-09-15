@@ -243,8 +243,7 @@ static int udp6Send(TSession * tsession,
 		    const void * message,
 		    const unsigned int size,
 		    int importance) {
-  char * msg;
-  UDPMessage mp;
+  UDPMessage * mp;
   P2P_hello_MESSAGE * helo;
   Host6Address * haddr;
   struct sockaddr_in6 sin; /* an Internet endpoint address */
@@ -270,14 +269,11 @@ static int udp6Send(TSession * tsession,
 
   haddr = (Host6Address*) &helo[1];
   ssize = size + sizeof(UDPMessage);
-  msg = MALLOC(ssize);
-  mp.header.size = htons(ssize);
-  mp.header.type = 0;
-  mp.sender   = *coreAPI->myIdentity;
-  memcpy(&msg[size],
-	 &mp,
-	 sizeof(UDPMessage));
-  memcpy(msg,
+  mp = MALLOC(ssize);
+  mp->header.size = htons(ssize);
+  mp->header.type = 0;
+  mp->sender   = *coreAPI->myIdentity;
+  memcpy(&mp[1],
 	 message,
 	 size);
   ok = SYSERR;
@@ -300,7 +296,7 @@ static int udp6Send(TSession * tsession,
 #endif
   if (YES == socket_send_to(udp_sock,
 			    NC_Nonblocking,
-			    msg,
+			    mp,
 			    ssize,
 			    &ssize,
 			    (const char*) &sin,
@@ -317,7 +313,7 @@ static int udp6Send(TSession * tsession,
       stats->change(stat_bytesDropped,
 		    ssize);
   }
-  FREE(msg);
+  FREE(mp);
   return ok;
 }
 

@@ -179,10 +179,10 @@ struct SelectHandle;
  *  socket should be closed
  */
 typedef int (*SelectMessageHandler)(void * mh_cls,
-				   struct SelectHandle * sh,
-				   struct SocketHandle * sock,
-				   void * sock_ctx,
-				   const MESSAGE_HEADER * msg);			     
+				    struct SelectHandle * sh,
+				    struct SocketHandle * sock,
+				    void * sock_ctx,
+				    const MESSAGE_HEADER * msg);			     
 
 /**
  * We've accepted a connection, check that

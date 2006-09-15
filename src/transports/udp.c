@@ -249,8 +249,7 @@ static int udpSend(TSession * tsession,
 		   const void * message,
 		   const unsigned int size,
 		   int important) {
-  char * msg;
-  UDPMessage mp;
+  UDPMessage * mp;
   P2P_hello_MESSAGE * helo;
   HostAddress * haddr;
   struct sockaddr_in sin; /* an Internet endpoint address */
@@ -274,14 +273,11 @@ static int udpSend(TSession * tsession,
 
   haddr = (HostAddress*) &helo[1];
   ssize = size + sizeof(UDPMessage);
-  msg     = MALLOC(ssize);
-  mp.header.size = htons(ssize);
-  mp.header.type = 0;
-  mp.sender = *(coreAPI->myIdentity);
-  memcpy(&msg[size],
-	 &mp,
-	 sizeof(UDPMessage));
-  memcpy(msg,
+  mp = MALLOC(ssize);
+  mp->header.size = htons(ssize);
+  mp->header.type = 0;
+  mp->sender = *(coreAPI->myIdentity);
+  memcpy(&mp[1],
 	 message,
 	 size);
   ok = SYSERR;
@@ -294,15 +290,16 @@ static int udpSend(TSession * tsession,
 	 &haddr->senderIP,
 	 sizeof(IPaddr));
 #if DEBUG_UDP
-  GE_LOG(ectx, GE_DEBUG | GE_USER | GE_BULK,
-      "Sending message of %d bytes via UDP to %u.%u.%u.%u:%u.\n",
-      ssize,
-      PRIP(ntohl(*(int*)&sin.sin_addr)),
-      ntohs(sin.sin_port));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_USER | GE_BULK,
+	 "Sending message of %d bytes via UDP to %u.%u.%u.%u:%u.\n",
+	 ssize,
+	 PRIP(ntohl(*(int*)&sin.sin_addr)),
+	 ntohs(sin.sin_port));
 #endif
   if (YES == socket_send_to(udp_sock,
 			    NC_Nonblocking,
-			    msg,
+			    mp,
 			    ssize,
 			    &sent,
 			    (const char *) &sin,
@@ -323,7 +320,7 @@ static int udpSend(TSession * tsession,
       stats->change(stat_bytesDropped,
 		    ssize);
   }
-  FREE(msg);
+  FREE(mp);
   return ok;
 }
 

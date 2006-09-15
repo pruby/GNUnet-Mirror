@@ -553,88 +553,118 @@ static void * selectThread(void * ctx) {
 	} 
       }
     } else {  /* is_udp == YES */
-      int pending;
-      int udp_sock;
-      int error;
-
-      udp_sock = sh->listen_sock->handle;
-      lenOfIncomingAddr = sh->max_addr_len;
-      memset(clientAddr,
-	     0,
-	     lenOfIncomingAddr);
-      pending = 0;
-      /* @todo FIXME in PlibC */
-#ifdef MINGW
-      error = ioctlsocket(udp_sock,
-			  FIONREAD,
-			  &pending);
-#else
-      error = ioctl(udp_sock,
-		    FIONREAD,
-		    &pending);
-#endif
-      if (error != 0) {
-	GE_LOG_STRERROR(sh->ectx,
-			GE_ERROR | GE_ADMIN | GE_BULK,
-			"ioctl");
-	pending = 65535; /* max */
-      }
-      GE_ASSERT(sh->ectx, pending >= 0);
-      if (pending == 0) {
-      	/* maybe empty UDP packet was sent (see report on bug-gnunet,
-	   5/11/6; read 0 bytes from UDP just to kill potential empty packet! */
-	socket_recv_from(sh->listen_sock,
-			 NC_Blocking,
-			 NULL,
-			 0,
-			 &size,
-			 clientAddr,
-			 &lenOfIncomingAddr);
-      } else if (pending >= 65536) {
-	GE_BREAK(sh->ectx, 0);
-	socket_close(sh->listen_sock);
-      } else {
-	char * msg;
+      if ( (sh->listen_sock != NULL) &&
+	   (FD_ISSET(sh->listen_sock->handle, &readSet)) ) {
+	int pending;
+	int udp_sock;
+	int error;
 	
-	msg = MALLOC(pending);    
-	size = 0;
-	if (YES != socket_recv_from(sh->listen_sock,
-				    NC_Blocking,
-				    msg,
-				    pending,
-				    &size,
-				    clientAddr,
-				    &lenOfIncomingAddr)) {
+	udp_sock = sh->listen_sock->handle;
+	lenOfIncomingAddr = sh->max_addr_len;
+	memset(clientAddr,
+	       0,
+	       lenOfIncomingAddr);
+	pending = 0;
+	/* @todo FIXME in PlibC */
+#ifdef MINGW
+	error = ioctlsocket(udp_sock,
+			    FIONREAD,
+			    &pending);
+#else
+	error = ioctl(udp_sock,
+		      FIONREAD,
+		      &pending);
+#endif
+	if (error != 0) {
+	  GE_LOG_STRERROR(sh->ectx,
+			  GE_ERROR | GE_ADMIN | GE_BULK,
+			  "ioctl");
+	  pending = 65535; /* max */
+	}
+#if DEBUG_SELECT
+	GE_LOG(sh->ectx,
+	       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+	       "Select %p is preparing to receive %u bytes\n",
+	       sh,
+	       pending); 
+#endif
+	GE_ASSERT(sh->ectx, pending >= 0);
+	if (pending == 0) {
+	  /* maybe empty UDP packet was sent (see report on bug-gnunet,
+	     5/11/6; read 0 bytes from UDP just to kill potential empty packet! */
+	  socket_recv_from(sh->listen_sock,
+			   NC_Nonblocking,
+			   NULL,
+			   0,
+			   &size,
+			   clientAddr,
+			   &lenOfIncomingAddr);
+	} else if (pending >= 65536) {
+	  GE_BREAK(sh->ectx, 0);
 	  socket_close(sh->listen_sock);
 	} else {
-	  /* validate msg format! */
-	  const MESSAGE_HEADER * hdr;
-
-	  hdr = (const MESSAGE_HEADER*) msg;
-	  if ( (size == pending) &&
-	       (size >= sizeof(MESSAGE_HEADER)) &&
-	       (ntohs(hdr->size) == size) ) {
-	    void * sctx;
+	  char * msg;
+	  
+	  msg = MALLOC(pending);    
+	  size = 0;
+	  if (YES != socket_recv_from(sh->listen_sock,
+				      NC_Blocking,
+				      msg,
+				      pending,
+				      &size,
+				      clientAddr,
+				      &lenOfIncomingAddr)) {
+#if DEBUG_SELECT
+	    GE_LOG(sh->ectx,
+		   GE_DEBUG | GE_DEVELOPER | GE_BULK,
+		   "Error in select %p -- failed to receive %u bytes\n",
+		   sh,
+		   pending); 
+#endif
+	    socket_close(sh->listen_sock);
+	  } else {
+	    /* validate msg format! */
+	    const MESSAGE_HEADER * hdr;
 	    
-	    sctx = sh->ah(sh->ah_cls,
-			  sh,
-			  NULL,
-			  clientAddr,
-			  lenOfIncomingAddr);
-	    if (sctx != NULL) {
-	      sh->mh(sh->mh_cls,
-		     sh,
-		     NULL,
-		     sctx,
-		     hdr);
-	      sh->ch(sh->ch_cls,
-		     sh,
-		     NULL,
-		     sctx);		   
+	    hdr = (const MESSAGE_HEADER*) msg;
+	    if ( (size == pending) &&
+		 (size >= sizeof(MESSAGE_HEADER)) &&
+		 (ntohs(hdr->size) == size) ) {
+	      void * sctx;
+	      
+	      sctx = sh->ah(sh->ah_cls,
+			    sh,
+			    NULL,
+			    clientAddr,
+			    lenOfIncomingAddr);
+	      if (sctx != NULL) {
+		sh->mh(sh->mh_cls,
+		       sh,
+		       NULL,
+		       sctx,
+		       hdr);
+		sh->ch(sh->ch_cls,
+		       sh,
+		       NULL,
+		       sctx);		   
+	      } else {
+#if DEBUG_SELECT
+		GE_LOG(sh->ectx,
+		       GE_DEBUG | GE_DEVELOPER | GE_BULK,
+		       "Error in select %p -- connection refused\n",
+		       sh); 
+#endif
+	      }
+	    } else {
+#if DEBUG_SELECT
+	      GE_BREAK(sh->ectx, size == pending);
+	      GE_BREAK(sh->ectx, size >= sizeof(MESSAGE_HEADER));
+	      GE_BREAK(sh->ectx, (size >= sizeof(MESSAGE_HEADER)) && (ntohs(hdr->size) == size));
+#endif
 	    }
 	  }
+	  FREE(msg);
 	}
-	FREE(msg);
       }
     } /* end UDP processing */
     if (FD_ISSET(sh->signal_pipe[0], &readSet)) {

@@ -210,9 +210,11 @@ static void checkComplete(FC * pep) {
 	   FRAGSIZE(pos));
     pos = pos->link;
   }
-
   if (stats != NULL)
     stats->change(stat_defragmented, 1);
+#if 0
+  printf("Finished defragmentation!\n");
+#endif
   /* handle message! */
   coreAPI->injectMessage(&pep->sender,
 			 msg,			
@@ -263,7 +265,12 @@ static int tryJoin(FC * entry,
     return SYSERR; /* wrong fragment list, try another! */
   if (ntohl(packet->id) != entry->id)
     return SYSERR; /* wrong fragment list, try another! */
-
+#if 0
+  printf("Received fragment %u from %u to %u\n",
+	 ntohl(packet->id),
+	 ntohs(packet->off),
+	 ntohs(packet->off) + ntohs(packet->header.size) - sizeof(P2P_fragmentation_MESSAGE));
+#endif
   pos = entry->head;
   if ( (pos != NULL) &&
        (packet->len != pos->frag->len) )

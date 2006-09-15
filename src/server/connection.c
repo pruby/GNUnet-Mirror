@@ -1323,8 +1323,9 @@ static int ensureTransportConnected(BufferEntry * be) {
  * message to the transport service.
  *
  * @param be connection of the buffer that is to be transmitted
+ * @return YES if we might want to be re-run
  */
-static void sendBuffer(BufferEntry * be) {
+static int sendBuffer(BufferEntry * be) {
   unsigned int i;
   unsigned int j;
   unsigned int p;
@@ -1340,30 +1341,28 @@ static void sendBuffer(BufferEntry * be) {
 
   ENTRY();
   /* fast ways out */
-  if(be == NULL) {
+  if (be == NULL) {
     GE_BREAK(ectx, 0);
-    return;
+    return SYSERR;
   }
   if ( (be->status != STAT_UP) ||
        (be->sendBufferSize == 0) || 
        (be->inSendBuffer == YES) ) {
-    return;                     /* must not run */
+    return NO;                     /* must not run */
   }
   be->inSendBuffer = YES;
 
   if ( (OK != ensureTransportConnected(be)) ||
-       (be->sendBufferSize == 0) || 
        (OK != checkSendFrequency(be)) ){ 
     be->inSendBuffer = NO;
 #if 0
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
-	   "Will not try to send: %d %d %d\n",
+	   "Will not try to send: %d %d\n",
 	   (OK != ensureTransportConnected(be)),
-	   (be->sendBufferSize == 0),
 	   (OK != checkSendFrequency(be)));
 #endif
-    return;
+    return NO;
   }
 
   /* test if receiver has enough bandwidth available!  */
@@ -1380,27 +1379,27 @@ static void sendBuffer(BufferEntry * be) {
   if (totalMessageSize == 0) {
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION 
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
 	   "No messages selected for sending (%d)\n",
 	   be->available_send_window);
 #endif
-    return;                     /* deferr further */
+    return NO;  /* deferr further */
   }
   GE_ASSERT(ectx, totalMessageSize > sizeof(P2P_PACKET_HEADER));
 
   /* check if we (sender) have enough bandwidth available
      if so, trigger callbacks on selected entries; if either
      fails, return (but clean up garbage) */
-  if ((SYSERR == outgoingCheck(priority)) ||
-      (0 == prepareSelectedMessages(be))) {
+  if ( (SYSERR == outgoingCheck(priority)) ||
+       (0 == prepareSelectedMessages(be)) ) {
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
 	   "Insufficient bandwidth or priority to send message\n");
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;
-    return;                     /* deferr further */
+    return NO;             /* deferr further */
   }
 
   /* get permutation of SendBuffer Entries
@@ -1495,7 +1494,8 @@ static void sendBuffer(BufferEntry * be) {
 			encryptedMsg,
 			p,
 			NO);
-  if((ret == NO) && (priority >= EXTREME_PRIORITY)) {
+  if ( (ret == NO) && 
+       (priority >= EXTREME_PRIORITY) ) {
     ret = transport->send(be->session.tsession, 
 			  encryptedMsg,
 			  p, 
@@ -1541,6 +1541,7 @@ static void sendBuffer(BufferEntry * be) {
   FREE(plaintextMsg);
   expireSendBufferEntries(be);
   be->inSendBuffer = NO;
+  return NO;
 }
 
 /**
@@ -1591,7 +1592,8 @@ static void appendToBuffer(BufferEntry * be, SendEntry * se) {
 	 se->len,
 	 &enc);
 #endif
-  if((be->sendBufferSize > 0) && (be->status != STAT_UP)) {
+  if ( (be->sendBufferSize > 0) && 
+       (be->status != STAT_UP) ) {
     /* as long as we do not have a confirmed
        connection, do NOT queue messages! */
 #if DEBUG_CONNECTION
@@ -2275,19 +2277,19 @@ static void scheduleInboundTraffic() {
  * @param unused not used, just to make signature type nicely
  */
 static void cronDecreaseLiveness(void *unused) {
-  BufferEntry *root;
-  BufferEntry *prev;
-  BufferEntry *tmp;
+  BufferEntry * root;
+  BufferEntry * prev;
+  BufferEntry * tmp;
   cron_t now;
   int i;
 
   scheduleInboundTraffic();
   now = get_time();
   MUTEX_LOCK(lock);
-  for(i = 0; i < CONNECTION_MAX_HOSTS_; i++) {
+  for (i = 0; i < CONNECTION_MAX_HOSTS_; i++) {
     root = CONNECTION_buffer_[i];
     prev = NULL;
-    while(NULL != root) {
+    while (NULL != root) {
       switch (root->status) {
       case STAT_DOWN:
         /* just compact linked list */
@@ -2300,15 +2302,20 @@ static void cronDecreaseLiveness(void *unused) {
         FREE(tmp);
         continue;               /* no need to call 'send buffer' */
       case STAT_UP:
-        if((now > root->isAlive) && /* concurrency might make this false... */
-           (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS)) {
+        if ( (now > root->isAlive) && /* concurrency might make this false... */
+	     (now - root->isAlive > SECONDS_INACTIVE_DROP * cronSECONDS)) {
           EncName enc;
 
           /* switch state form UP to DOWN: too much inactivity */
-          IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&root->session.sender.hashPubKey, &enc));
-          GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-              "closing connection with `%s': "
-              "too much inactivity (%llu ms)\n", &enc, now - root->isAlive);
+          IF_GELOG(ectx,
+		   GE_DEBUG | GE_REQUEST | GE_USER, 
+		   hash2enc(&root->session.sender.hashPubKey, &enc));
+          GE_LOG(ectx, 
+		 GE_DEBUG | GE_REQUEST | GE_USER,
+		 "closing connection with `%s': "
+		 "too much inactivity (%llu ms)\n",
+		 &enc, 
+		 now - root->isAlive);
           shutdownConnection(root);
           /* the host may still be worth trying again soon: */
           identity->whitelistHost(&root->session.sender);
@@ -2325,12 +2332,12 @@ static void cronDecreaseLiveness(void *unused) {
 
           msgBuf = MALLOC(60000);
           pos = scl_nextHead;
-          while(pos != NULL) {
-            if(pos->minimumPadding <= 60000) {
+          while (pos != NULL) {
+            if (pos->minimumPadding <= 60000) {
               mSize = pos->callback(&root->session.sender,
 				    msgBuf,
 				    60000);
-              if(mSize > 0)
+              if (mSize > 0)
                 unicast(&root->session.sender,
                         (MESSAGE_HEADER *) msgBuf, 
 			0, 
@@ -2340,16 +2347,20 @@ static void cronDecreaseLiveness(void *unused) {
           }
           FREE(msgBuf);
         }
-
         break;
       default:                 /* not up, not down - partial SETKEY exchange */
-        if((now > root->isAlive) &&
-           (now - root->isAlive > SECONDS_NOPINGPONG_DROP * cronSECONDS)) {
+        if ( (now > root->isAlive) &&
+	     (now - root->isAlive > SECONDS_NOPINGPONG_DROP * cronSECONDS)) {
           EncName enc;
-          IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&root->session.sender.hashPubKey, &enc));
-          GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-              "closing connection to %s: %s not answered.\n",
-              &enc, (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
+          IF_GELOG(ectx, 
+		   GE_DEBUG | GE_REQUEST | GE_USER, 
+		   hash2enc(&root->session.sender.hashPubKey, 
+			    &enc));
+          GE_LOG(ectx, 
+		 GE_DEBUG | GE_REQUEST | GE_USER,
+		 "closing connection to %s: %s not answered.\n",
+		 &enc, 
+		 (root->status == STAT_SETKEY_SENT) ? "SETKEY" : "PING");
           shutdownConnection(root);
         }
         break;
@@ -2359,7 +2370,6 @@ static void cronDecreaseLiveness(void *unused) {
       root = root->overflowChain;
     }                           /* end of while */
   }                             /* for all buckets */
-
   MUTEX_UNLOCK(lock);
 }
 
@@ -2863,10 +2873,18 @@ void initConnection(struct GE_Context * e,
   GE_ASSERT(ectx,
 	    CONNECTION_MAX_HOSTS_ != 0);
   registerp2pHandler(P2P_PROTO_hangup, &handleHANGUP);
+  /* note: should we see that this cron job takes
+     excessive amounts of CPU on some systems, we
+     may consider adding an OPTION to reduce the
+     frequency.  However, on my system, larger
+     values significantly impact the performance
+     of the UDP transport for large (fragmented)
+     messages -- and 10ms does not cause any noticeable
+     CPU load during testing.  */
   cron_add_job(cron,
 	       &cronDecreaseLiveness,
-	       1 * cronSECONDS,
-	       1 * cronSECONDS,
+	       10 * cronMILLIS,
+	       10 * cronMILLIS,
 	       NULL);
 #if DEBUG_COLLECT_PRIO == YES
   prioFile = FOPEN("/tmp/knapsack_prio.txt", "w");
@@ -3137,7 +3155,9 @@ int unregisterSendCallback(const unsigned int minimumPadding,
  * @param msg the message to transmit, should contain MESSAGE_HEADERs
  * @return OK on success, SYSERR on failure, NO on temporary failure
  */
-int sendPlaintext(TSession * tsession, const char *msg, unsigned int size) {
+int sendPlaintext(TSession * tsession, 
+		  const char *msg, 
+		  unsigned int size) {
   char *buf;
   int ret;
   P2P_PACKET_HEADER *hdr;
