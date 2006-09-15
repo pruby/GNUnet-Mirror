@@ -18,7 +18,6 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
-    + tbench_udp (bugs in udp transport?)
     + gap -- does not yet compile
     + fs/namespace -- does not yet compile
     + fs/fsui -- downloadtest does not yet compile
