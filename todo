@@ -18,7 +18,6 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
-    + gap -- does not yet compile
     + fs/namespace -- does not yet compile
     + fs/fsui -- downloadtest does not yet compile
     + dht/tools, dht/module

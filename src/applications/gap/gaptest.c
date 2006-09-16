@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -28,22 +28,19 @@
 #include "gnunet_protocols.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_stats_lib.h"
-
-static int parseOptions(int argc,
-			char ** argv) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGLEVEL",
-				     "DEBUG"));
-  return OK;
-}
+#include "gnunet_util_crypto.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
+#include "gnunet_stats_lib.h"
 
 /**
  * Identity of peer 2 (hardwired).
  */
 static PeerIdentity peer2;
+
+static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
 
 static int waitForConnect(const char * name,
 			  unsigned long long value,
@@ -65,7 +62,7 @@ static char * makeName(unsigned int i) {
   char * fn;
 
   fn = STRDUP("/tmp/gnunet-ecrstest");
-  name = expandFileName(fn);
+  name = string_expandFileName(ectx, fn);
   disk_directory_create(ectx, name);
   FREE(fn);
   fn = MALLOC(strlen(name) + 40);
@@ -88,7 +85,9 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
   int i;
 
   name = makeName(size);
-  fd = fileopen(name, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
+  fd = disk_file_open(ectx,
+		      name,
+		      O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
   buf = MALLOC(size);
   memset(buf, size + size / 253, size);
   for (i=0;i<(int) (size - 42 - sizeof(HashCode512));i+=sizeof(HashCode512))
@@ -97,8 +96,10 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 	 (HashCode512*) &buf[i]);
   WRITE(fd, buf, size);
   FREE(buf);
-  closefile(fd);
-  ret = ECRS_uploadFile(name,
+  disk_file_close(ectx, name, fd);
+  ret = ECRS_uploadFile(ectx,
+			cfg,
+			name,
 			YES, /* index */
 			0, /* anon */
 			0, /* prio */
@@ -118,7 +119,9 @@ static struct ECRS_URI * uploadFile(unsigned int size) {
 
     meta = ECRS_createMetaData();
     key = ECRS_keywordsToUri(keywords);
-    ret = ECRS_addToKeyspace(key,
+    ret = ECRS_addToKeyspace(ectx,
+			     cfg,
+			     key,
 			     0,
 			     0,
 			     get_time() + 10 * cronMINUTES, /* expire */
@@ -165,7 +168,9 @@ static int searchFile(struct ECRS_URI ** uri) {
   struct ECRS_URI * myURI;
 
   myURI = NULL;
-  ret = ECRS_search(*uri,
+  ret = ECRS_search(ectx,
+		    cfg,
+		    *uri,
 		    0,
 		    15 * cronSECONDS,
 		    &searchCB,
@@ -192,13 +197,16 @@ static int downloadFile(unsigned int size,
   char * tmp;
 
   tmp = ECRS_uriToString(uri);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Starting download of `%s'\n",
-      tmp);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Starting download of `%s'\n",
+	 tmp);
   FREE(tmp);
   tmpName = makeName(0);
   ret = SYSERR;
-  if (OK == ECRS_downloadFile(uri,
+  if (OK == ECRS_downloadFile(ectx,
+			      cfg,
+			      uri,
 			      tmpName,
 			      0,
 			      NULL,
@@ -206,7 +214,9 @@ static int downloadFile(unsigned int size,
 			      &testTerminate,
 			      NULL)) {
 
-    fd = fileopen(tmpName, O_RDONLY);
+    fd = disk_file_open(ectx,
+			tmpName, 
+			O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
     memset(buf, size + size / 253, size);
@@ -222,7 +232,7 @@ static int downloadFile(unsigned int size,
       ret = OK;
     FREE(buf);
     FREE(in);
-    closefile(fd);
+    disk_file_close(ectx, tmpName, fd);
   }
   UNLINK(tmpName);
   FREE(tmpName);
@@ -234,7 +244,9 @@ static int unindexFile(unsigned int size) {
   char * name;
 
   name = makeName(size);
-  ret = ECRS_unindexFile(name,
+  ret = ECRS_unindexFile(ectx,
+			 cfg,
+			 name,
 			 NULL,
 			 NULL,
 			 &testTerminate,
@@ -246,6 +258,8 @@ static int unindexFile(unsigned int size) {
 }
 
 #define CHECK(a) if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; }
+
+#define START_PEERS 1
 
 /**
  * Testcase to test gap routing (2 peers only).
@@ -259,109 +273,107 @@ int main(int argc, char ** argv) {
   int left;
   struct ECRS_URI * uri;
 
-  GE_ASSERT(ectx, OK ==
-		enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
-			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
-			 "OPDA8F1VIKESLSNBO",
-			 &peer2.hashPubKey));
-  /* set to 0 if you want to start gnunetd's by hand for debugging */
-
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseOptions))
-    return -1;
-#if 1
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer1.conf"));
-  daemon1 = startGNUnetDaemon(NO);
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer2.conf"));
-  daemon2 = startGNUnetDaemon(NO);
+  enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
+	   "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
+	   "OPDA8F1VIKESLSNBO",
+	   &peer2.hashPubKey);
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+#if START_PEERS
+  daemon1  = os_daemon_start(NULL,
+			     cfg,
+			     "peer1.conf",
+			     NO);
+  daemon2 = os_daemon_start(NULL,
+			    cfg,
+			    "peer2.conf",
+			    NO);
+#endif
   /* in case existing hellos have expired */
-  sleep(5);
-  system("cp ./peer1/data/hosts/* peer2/data/hosts/");
-  system("cp ./peer2/data/hosts/* peer1/data/hosts/");
+  PTHREAD_SLEEP(30 * cronSECONDS);
+  system("cp peer1/data/hosts/* peer2/data/hosts/");
+  system("cp peer2/data/hosts/* peer1/data/hosts/");
+  ret = 0;
+#if START_PEERS
   if (daemon1 != -1) {
-    if (! termProcess(daemon1))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
+    if (os_daemon_stop(NULL, daemon1) != YES)
+      ret = 1;
   }
   if (daemon2 != -1) {
-    if (! termProcess(daemon2))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
+    if (os_daemon_stop(NULL, daemon2) != YES)
+      ret = 1;
   }
-
-  /* re-start, this time we're sure up-to-date hellos are available */
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer1.conf"));
-  daemon1 = startGNUnetDaemon(NO);
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer2.conf"));
-  daemon2 = startGNUnetDaemon(NO);
-  sleep(5);
-
-  /* wait for connection or abort with error */
-#else
-  daemon1 = -1;
-  daemon2 = -1;
+  if (ret != 0)
+    return 1;
+  daemon1  = os_daemon_start(NULL,
+			     cfg,
+			     "peer1.conf",
+			     NO);
+  daemon2 = os_daemon_start(NULL,
+			    cfg,
+			    "peer2.conf",
+			    NO);
 #endif
-  ret = 0;
-  left = 5;
-  do {
-    sock = getClientSocket();
-    if (sock == NULL) {
-      printf(_("Waiting for gnunetd to start (%u iterations left)...\n"),
+  if (OK == connection_wait_for_running(NULL,
+					cfg,
+					30 * cronSECONDS)) {
+    sock = client_connection_create(NULL,
+				    cfg);
+    left = 30; /* how many iterations should we wait? */
+    while (OK == requestStatistics(NULL,
+				   sock,
+				   &waitForConnect,
+				   NULL)) {
+      printf("Waiting for peers to connect (%u iterations left)...\n",
 	     left);
-      sleep(1);
+      sleep(5);
       left--;
-      CHECK(left > 0);
+      if (left == 0) {
+	ret = 1;
+	break;
+      }
     }
-  } while (sock == NULL);
-
-  left = 30; /* how many iterations should we wait? */
-  while (OK == requestStatistics(sock,
-				 &waitForConnect,
-				 NULL)) {
-    printf(_("Waiting for peers to connect (%u iterations left)...\n"),
-	   left);
-    sleep(5);
-    left--;
-    CHECK(left > 0);
+    connection_destroy(sock);
+  } else {
+    printf("Could not establish connection with peer.\n");
+    ret = 1;
   }
-  connection_destroy(sock);
 
 
   uri = uploadFile(12345);
   CHECK(NULL != uri);
   CHECK(OK == searchFile(&uri));
-  setConfigurationInt("NETWORK",
-		      "PORT",
-		      12087);
+  GC_set_configuration_value_number(cfg,
+				    ectx,
+				    "NETWORK",
+				    "PORT",
+				    12087);
   CHECK(OK == downloadFile(12345, uri));
   ECRS_freeUri(uri);
-  setConfigurationInt("NETWORK",
-		      "PORT",
-		      2087);
+  GC_set_configuration_value_number(cfg,
+				    ectx,
+				    "NETWORK",
+				    "PORT",
+				    2087);
   CHECK(OK == unindexFile(12345));
 
  FAILURE:
-
+#if START_PEERS
   if (daemon1 != -1) {
-    if (! termProcess(daemon1))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
+    if (os_daemon_stop(NULL, daemon1) != YES)
+      ret = 1;
   }
   if (daemon2 != -1) {
-    if (! termProcess(daemon2))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
+    if (os_daemon_stop(NULL, daemon2) != YES)
+      ret = 1;
   }
-  doneUtil();
+#endif
+
+  GC_free(cfg);
   return ret;
 }
 
