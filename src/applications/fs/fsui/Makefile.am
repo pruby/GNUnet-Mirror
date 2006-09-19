@@ -20,7 +20,8 @@ libgnunetfsui_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \
-  check.conf
+  check.conf \
+  peer.conf
 
 fsui_loader_SOURCES = \
  fsui-loader.c 
