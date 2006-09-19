@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,16 +29,21 @@
 #include "gnunet_protocols.h"
 #include "gnunet_transport.h"
 #include "platform.h"
+#include <libesmtp.h>
 
 #define DEBUG_SMTP NO
 
 #define FILTER_STRING_SIZE 64
+
 #define CONTENT_TYPE_MULTIPART "Content-Type: Multipart/Mixed;"
+
 #define BOUNDARY_SPECIFIER "-EL-GNUNET-"
+
 /* how long can a line in base64 encoded
    mime text be? (in characters, excluding "\n") */
 #define MAX_CHAR_PER_LINE 76
 
+#define EBUF_LEN 128
 
 /**
  * Host-Address in a SMTP network.
@@ -88,29 +93,16 @@ typedef struct {
  * apis (our advertised API and the core api )
  */
 static CoreAPIForTransport * coreAPI;
+
+static struct GE_Context * ectx;
+
 static TransportAPI smtpAPI;
 
 /**
- * thread that listens for inbound messages
+ * Thread that listens for inbound messages
  */
-static PTHREAD_T dispatchThread;
+static struct PTHREAD * dispatchThread;
 
-/**
- * Socket to talk to the SMTP server
- */
-static int smtp_sock;
-
-/**
- * Lock to guard access to smtp_sock
- */
-static Mutex smtpLock;
-
-/**
- *   Semaphore used to signal that server has
- *   been started -- and later again to
- *   signal that the server has been stopped.
- */
-static Semaphore * serverSignal = NULL;
 /**
  * Flag to indicate that server has been shut down.
  */
@@ -252,164 +244,9 @@ static unsigned int base64_decode(char * data,
 #define strAUTOncmp(a,b) strncmp(a,b,strlen(b))
 
 /**
- * Get the GNUnet SMTP port from the configuration, or from
- * /etc/services if it is not specified in the config file.
- *
- * @return the port in host byte order
- */
-static unsigned short getSMTPPort() {
-  struct servent * pse;	/* pointer to service information entry	*/
-  unsigned short port;
-
-  port = (unsigned short) getConfigurationInt("SMTP",
-					      "PORT");
-  if (port == 0) { /* try lookup in services */
-    if ((pse = getservbyname("gnunet", "smtp")))
-      port = ntohs(pse->s_port);
-    else
-      errexit("Cannot determine port to bind to. "\
-	      " Define in configuration file in section %s under %s "\
-	      "or in /etc/services under smtp/gnunet.\n",
-	      "SMTP", "PORT");
-  }
-  return port;
-}
-
-/**
- * Connect to the local SMTP server, return
- * the socket, -1 on error.
- */
-static int connectToSMTPServer() {
-  int res;
-  struct sockaddr_in soaddr;
-  char * hostname;
-  IPaddr ip;
-  int one = 1;
-
-  hostname = getConfigurationString("SMTP",
-				    "SERVER");
-  if (hostname == NULL)
-    hostname = STRDUP("localhost");
-
-  if (OK != get_host_by_name(ectx, hostname,
-			     &ip)) {
-    GE_LOG(ectx,
-	   GE_ERROR,
-	   _("Could not resolve name of SMTP server `%s': %s"),
-	   hostname, 
-	   hstrerror(h_errno));
-    FREE(hostname);
-    return -1;
-  }
-  FREE(hostname);
-  res = SOCKET(PF_INET, SOCK_STREAM, 6);/* 6: TCP */
-  if (res == -1) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR,
-		    "socket");
-    return SYSERR;
-  }
-  SETSOCKOPT(res, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
-  soaddr.sin_family = AF_INET;
-  memcpy(&soaddr.sin_addr,
-	 &ip,
-	 sizeof(IPaddr));
-  soaddr.sin_port = htons(getSMTPPort());
-  if (0 > CONNECT(res,
-		  (struct sockaddr*)&soaddr,
-		  sizeof(soaddr))) {
-    LOG_STRERROR(LOG_FAILURE, "connect");
-    closefile(res);
-    return -1;
-  }
-  return res;
-}
-
-#define MAX_SMTP_LINE 128
-
-/**
- * Read a single line from the socket and check if
- * it starts with the expected string. If the server
- * sends more than one line, an arbitrary amount of
- * data from the next line may be read!
- * @param sock the socket to read from
- * @param expect the expected beginning of the line form the server,
- *        e.g. "250 ".
- * @return OK if the line matches the expectation, SYSERR if not
- */
-static int readSMTPLine(int sock,
-			char * expect) {
-  int pos;
-  char buff[MAX_SMTP_LINE];
-  size_t i;
-
-  pos = 0;
-
-  while (pos < MAX_SMTP_LINE) {
-    int success;
-
-try_again:
-    success = RECV_NONBLOCKING(sock,
-			       &buff[pos],
-			       MAX_SMTP_LINE - pos,
-			       &i);
-    if (success == NO) {
-      PTHREAD_SLEEP(20);
-      goto try_again;
-    }
-	
-    if ( (i == 0) || (i == (size_t) -1) )
-      return SYSERR;
-    while (i > 0) {
-      if (buff[pos++] == '\n')
-	goto END;
-      i--;
-    }
-  }
- END:
-  buff[pos] = '\0';
-  if (strncmp(expect,
-	      &buff[0],
-	      strlen(expect)) == 0)
-    return OK;
-  else
-    return SYSERR;
-}
-
-/**
- * Build a string and write the result to the SMTP socket.
- */
-static int writeSMTPLine(int sock,
-			 char * format,
-			 ...) {
-  va_list args;
-  char * target;
-  int size;
-  int ret;
-
-  size = 256;
-  ret = -1;
-  target = MALLOC(size);
-  while (ret == -1) {
-    va_start(args, format);
-    ret = vsnprintf(target, size, format, args);
-    va_end(args);
-    if (ret == -1) {
-      FREE(target);
-      size *= 2;
-      target = MALLOC(size);
-    }
-  }
-  if (ret == SEND_BLOCKING_ALL(sock, target, ret))
-    ret = OK;
-  FREE(target);
-  return ret;
-}
-
-/**
  * Listen to the pipe, decode messages and send to core.
  */
-static void * listenAndDistribute() {
+static void * listenAndDistribute(void * unused) {
   char * pipename;
   char * line;
   unsigned int LINESIZE;
@@ -423,7 +260,9 @@ static void * listenAndDistribute() {
   UNLINK(pipename);
   if (0 != mkfifo(pipename,
 		  S_IWUSR|S_IRUSR))
-    DIE_STRERROR("mkfifo");
+    GE_DIE_STRERROR(ectx,
+		    GE_ADMIN | GE_BULK | GE_FATAL,
+		    "mkfifo");
   LINESIZE = ((smtpAPI.mtu * 4 / 3) + 8) * (MAX_CHAR_PER_LINE+2)/
              MAX_CHAR_PER_LINE; /* maximum size of a line supported */
   line = MALLOC(LINESIZE + 2);  /* 2 bytes for off-by-one errors, just to be safe... */
@@ -437,8 +276,7 @@ static void * listenAndDistribute() {
   } while (0)
 
 
-  SEMAPHORE_UP(serverSignal); /* we are there! */
-  while ( smtp_shutdown == NO ) {
+  while (smtp_shutdown == NO ) {
     FILE * fdes;
     char * retl;
     char * boundary;
@@ -447,7 +285,9 @@ static void * listenAndDistribute() {
     P2P_PACKET * coreMP;
     int fd;
 
-    fd = fileopen(pipename, O_RDONLY);
+    fd = disk_file_open(ectx,
+			pipename, 
+			O_RDONLY);
     if (fd == -1) {
       if (smtp_shutdown == NO)
 	PTHREAD_SLEEP(5 * cronSECONDS);
@@ -489,8 +329,9 @@ static void * listenAndDistribute() {
 
       mp = (SMTPMessage*)&out[size-sizeof(SMTPMessage)];
       if (ntohs(mp->size) != size) {
-	GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	    _("Received malformed message via SMTP (size mismatch).\n"));
+	GE_LOG(ectx,
+	       GE_WARNING | GE_BULK | GE_USER,
+	       _("Received malformed message via SMTP (size mismatch).\n"));
 #if DEBUG_SMTP
 	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	    "Size returned by base64=%d, in the msg=%d.\n",
@@ -507,8 +348,9 @@ static void * listenAndDistribute() {
 	     &mp->sender,
 	     sizeof(PeerIdentity));
 #if DEBUG_SMTP
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "SMTP message passed to the core.\n");
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "SMTP message passed to the core.\n");
 #endif
 
       coreAPI->receive(coreMP);
@@ -516,13 +358,16 @@ static void * listenAndDistribute() {
     }
   END:
 #if DEBUG_SMTP
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"SMTP message processed.\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "SMTP message processed.\n");
 #endif
     if (fdes != NULL)
       fclose(fdes);
   }
-  SEMAPHORE_UP(serverSignal); /* we are there! */
+  UNLINK(pipename);
+  FREE(pipename);
+
   return NULL;
 }
 
@@ -675,101 +520,100 @@ static int smtpSend(TSession * tsession,
   EmailAddress * haddr;
   char * ebody;
   int res;
-  int ssize, ssize2;
+  int ssize;
+  int ssize2;
+  smtp_session_t smtp_sock;
+  smtp_message_t message;
+  smtp_recipient_t recipient;
+  char ebuf[EBUF_LEN];
+  char * smtpServer;
 
   if (smtp_shutdown == YES)
     return SYSERR;
-  if (size == 0) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  if (size > smtpAPI.mtu) {
+  if ( (size == 0) ||
+       (size > smtpAPI.mtu) ) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
   helo = (P2P_hello_MESSAGE*)tsession->internal;
   if (helo == NULL)
     return SYSERR;
+  
+  smtp_sock = smtp_create_session();
+  if (smtp_sock == NULL) {
+    GE_LOG(ectx,
+	   GE_ERROR | GE_ADMIN | GE_USER | GE_IMMEDIATE,
+	   _("Failed to initialize libesmtp: %s.\n"),
+	   smtp_strerror(smtp_errno(), ebuf, EBUF_LEN));
+    return NULL;
+  }
+  smtpServer = "localhost:587"; /* fixme */
+  smtp_set_server(smtp_sock, smtpServer);
+
 
   haddr = (EmailAddress*) &helo[1];
   ssize2 = ssize = size + sizeof(SMTPMessage);
   msg = MALLOC(ssize);
   mp              = (SMTPMessage*) &msg[size];
   mp->size        = htons(ssize);
-  memcpy(&mp->sender,
-	 coreAPI->myIdentity,
-	 sizeof(PeerIdentity));
+  mp->sender      = *coreAPI->myIdentity;
   memcpy(msg,
 	 message,
 	 size);
   ebody = NULL;
 #if DEBUG_SMTP
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Base64-encoding %d byte message.\n",
-      ssize);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Base64-encoding %d byte message.\n",
+	 ssize);
 #endif
   ssize = base64_encode(msg, ssize, &ebody);
 #if DEBUG_SMTP
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Base64-encoded message size is %d bytes.\n",
-      ssize);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Base64-encoded message size is %d bytes.\n",
+	 ssize);
 #endif
   FREE(msg);
-  MUTEX_LOCK(&smtpLock);
   res = SYSERR;
-  /*
-    The mail from field is left empty, so mailing list servers
-    will interpret the message as a bounce message.
-    MAIL FROM: <>
-    RCPT TO: recpient@www.example.com
-    DATA
-    FILTER
-    ebody
-    .
-   */
+
+  message = smtp_add_message(smtp_sock);
+  if (message == NULL) {
+    GE_LOG(ectx,
+	   GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
+	   "Failed to create smtp message: %s\n",
+	   smtp_strerror(smtp_errno(), ebuf, EBUF_LEN));
+    return SYSERR;
+  }
+  smtp_size_set_estimate(message,
+			 ssize);
+  smtp_set_messagecb(message,
+		     &getMessage,
+		     &msg);
+  
+#if 0
   if (OK == writeSMTPLine(smtp_sock,
-			  "MAIL FROM: <>\r\n"))
-    if (OK == readSMTPLine(smtp_sock,
-			   "250 "))
-      if (OK == writeSMTPLine(smtp_sock,
-			      "RCPT TO: <%s>\r\n",
-			      &haddr->senderAddress[0]))
-	if (OK == readSMTPLine(smtp_sock,
-			       "250 "))
-	  if (OK == writeSMTPLine(smtp_sock,
-				  "DATA\r\n"))
-	    if (OK == readSMTPLine(smtp_sock,
-				   "354 "))
-	      if (OK == writeSMTPLine(smtp_sock,
-				      "%-*s\r\n",
-				      MIN(FILTER_STRING_SIZE,
-					  strlen(&haddr->filter[0])),
-				      &haddr->filter[0]))
-		if (OK == writeSMTPLine(smtp_sock,
-					"%s\r\n  boundary=\"%s\"\r\n\r\n",
-					CONTENT_TYPE_MULTIPART,
-					BOUNDARY_SPECIFIER))
-		  if (OK == writeSMTPLine(smtp_sock,
-					  "--%s\r\n\r\n",
-					  BOUNDARY_SPECIFIER))
-		    if (SYSERR != SEND_BLOCKING_ALL(smtp_sock,
-						    ebody,
-						    ssize))
-		      if (OK == writeSMTPLine(smtp_sock,
-					      "\r\n--%s\r\n",
-					      BOUNDARY_SPECIFIER))
-			if (OK == writeSMTPLine(smtp_sock,
-						"\r\n.\r\n"))
-			  if (OK == readSMTPLine(smtp_sock,
-						 "250 "))
-			    res = OK;
-  MUTEX_UNLOCK(&smtpLock);
+			  "%-*s\r\n",
+			  MIN(FILTER_STRING_SIZE,
+			      strlen(&haddr->filter[0])),
+			  &haddr->filter[0])) {
+  }
+#endif
+  recipient = smtp_add_recipient(message,
+				 haddr->senderAddress);
+  if (recipient == NULL) {
+    /* FIXME */
+  }
   if (res != OK)
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Sending E-mail to `%s' failed.\n"),
-	&haddr->senderAddress[0]);
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Sending E-mail to `%s' failed.\n"),
+	   &haddr->senderAddress[0]);
   incrementBytesSent(ssize);
   FREE(ebody);
+  smtp_destroy_session(smtp_sock);
+
+
   return res;
 }
 
@@ -793,73 +637,15 @@ static int smtpDisconnect(TSession * tsession) {
  * @return OK on success, SYSERR if the operation failed
  */
 static int startTransportServer(void) {
-  char * email;
-
-  if (serverSignal != NULL) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  serverSignal = SEMAPHORE_CREATE(0);
   smtp_shutdown = NO;
-
-   /* initialize SMTP network */
-  smtp_sock = connectToSMTPServer();
-  if ( smtp_sock == -1) {
-    LOG_STRERROR(LOG_ERROR, "connectToSMTPServer");
-    closefile(smtp_sock);
-    return SYSERR;
-  }
-#if DEBUG_SMTP
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Checking SMTP server.\n");
-#endif
-  /* read welcome from SMTP server */
-  if (SYSERR == readSMTPLine(smtp_sock,
-			     "220 ")) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("SMTP server send unexpected response at %s:%d.\n"),
-	__FILE__, __LINE__);
-    closefile(smtp_sock);
-    return SYSERR;
-  }
-  if (OK == writeSMTPLine(smtp_sock,
-			  "helo %s\r\n",
-			  getConfigurationString("SMTP",
-						 "SENDERHOSTNAME"))) {
-    if (OK == readSMTPLine(smtp_sock,
-			   "250 ")) {
-      email = getConfigurationString("SMTP",
-				     "EMAIL");
-      if (email == NULL) {
-#if DEBUG_SMTP
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "No email-address specified, will not advertise SMTP address.\n");
-#endif
-	return OK;
-      }
-      FREE(email);
-    } else {
-      GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  _("SMTP server failed to respond with 250 confirmation code to `%s' request.\n"),
-	  "helo");
-      return OK;
-    }
-  } else {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("Failed to send `%s' request to SMTP server.\n"),
-	"helo");
-    return OK;
-  }
-#if DEBUG_SMTP
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "creating listen thread\n");
-#endif
-  if (0 != PTHREAD_CREATE(&dispatchThread,
-			  (PThreadMain) &listenAndDistribute,
-			  NULL,
-			  1024*4))
-    DIE_STRERROR("pthread_create");
-  SEMAPHORE_DOWN(serverSignal); /* wait for server to be up */
+  /* initialize SMTP network */
+  dispatchThread = PTHREAD_CREATE(&listenAndDistribute,
+				  NULL,
+				  1024*4);
+  if (dispatchThread == NULL)
+    GE_DIE_STRERROR(ectx,
+		    GE_ADMIN | GE_BULK | GE_FATAL,
+		    "pthread_create");
   return OK;
 }
 
@@ -869,28 +655,11 @@ static int startTransportServer(void) {
  */
 static int stopTransportServer() {
   void * unused;
-  char * pipename;
 
   smtp_shutdown = YES;
-  PTHREAD_KILL(&dispatchThread, SIGALRM);
-  SEMAPHORE_DOWN(serverSignal);
-  SEMAPHORE_DESTROY(serverSignal);
-  closefile(smtp_sock);
-  PTHREAD_JOIN(&dispatchThread, &unused);
-  pipename = getFileName("SMTP",
-			 "PIPE",
-			 _("You must specify the name of a "
-			   "pipe for the SMTP transport in section `%s' under `%s'.\n"));
-  UNLINK(pipename);
-  FREE(pipename);
+  PTHREAD_STOP_SLEEP(dispatchThread);
+  PTHREAD_JOIN(dispatchThread, &unused);
   return OK;
-}
-
-/**
- * Reload the configuration. Should never fail.
- */
-static int reloadConfiguration() {
-  return 0;
 }
 
 /**
@@ -926,20 +695,18 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   int mtu;
 
   coreAPI = core;
-
-  MUTEX_CREATE(&smtpLock);
-  reloadConfiguration();
+  ectx = core->ectx;
   mtu = getConfigurationInt("SMTP",
 			    "MTU");
   if (mtu == 0)
     mtu = MESSAGE_SIZE;
   if (mtu < 1200)
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
-	"SMTP");
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
+	   "SMTP");
   if (mtu > MESSAGE_SIZE)
     mtu = MESSAGE_SIZE;
-
   smtpAPI.protocolNumber       = SMTP_PROTOCOL_NUMBER;
   smtpAPI.mtu                  = mtu - sizeof(SMTPMessage);
   smtpAPI.cost                 = 50;
@@ -952,12 +719,10 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   smtpAPI.startTransportServer = &startTransportServer;
   smtpAPI.stopTransportServer  = &stopTransportServer;
   smtpAPI.addressToString      = &addressToString;
-
   return &smtpAPI;
 }
 
 void donetransport_smtp() {
-  MUTEX_DESTROY(&smtpLock);
 }
 
 /* end of smtp.c */

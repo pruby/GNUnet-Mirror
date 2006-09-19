@@ -32,7 +32,7 @@ plugin_LTLIBRARIES = \
 
 #libgnunettransport_smtp_la_SOURCES = smtp.c
 #libgnunettransport_smtp_la_LIBADD = \
-# $(top_builddir)/src/util/libgnunetutil.la
+# $(top_builddir)/src/util/libgnunetutil.la -lesmtp
 #libgnunettransport_smtp_la_LDFLAGS = \
 # -export-dynamic -avoid-version -module 
 
