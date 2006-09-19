@@ -213,10 +213,10 @@ int NS_computeNextId(struct GE_Context * ectx,
  * List all updateable content in a given namespace.
  */
 int NS_listNamespaceContent(struct GE_Context * ectx,
-			      struct GC_Configuration * cfg,
-			      const char * name,
-			      NS_UpdateIterator iterator,
-			      void * closure); /* namespace_info.c */
+			    struct GC_Configuration * cfg,
+			    const char * name,
+			    NS_UpdateIterator iterator,
+			    void * closure); /* namespace_info.c */
 
 
 

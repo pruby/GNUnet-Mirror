@@ -15,11 +15,14 @@ check_PROGRAMS = \
 
 TESTS = $(check_PROGRAMS)
 
+EXTRA_DIST = check.conf peer.conf
+
 namespace_infotest_SOURCES = \
   namespace_infotest.c 
 namespace_infotest_LDADD = \
   $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
   $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 

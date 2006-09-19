@@ -18,19 +18,14 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
-    + fs/namespace -- does not yet compile
     + fs/fsui -- downloadtest does not yet compile
     + dht/tools, dht/module
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
       - libcurl / libmicrohttpd / libesmtp?
-  * server:
-    + needs more testing
   * applications:
-    + testing needed:
-      - transport,
-      - state
-      - advertising,
+    + more testing needed:
+      - advertising
       - ecrs_core
       - tracekit
       - gap

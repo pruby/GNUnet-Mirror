@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -27,35 +27,15 @@
 #include "platform.h"
 #include "gnunet_util.h"
 #include "gnunet_ecrs_lib.h"
-#include "gnunet_fsui_lib.h"
+#include "gnunet_namespace_lib.h"
+#include "gnunet_namespace_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_crypto.h"
+#include "gnunet_util_network_client.h"
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
-static int parseCommandLine(int argc,
-			    char * argv[]) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "NO"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "LOGLEVEL",
-				     "NOTHING"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "check.conf"));
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNET_HOME",
-				     "/tmp/gnunet-namespace-infotest"));
-  return OK;
-}
-
-
-static void eventCallback(void * cls,
-			  const FSUI_Event * event) {
-}
-
+static struct GE_Context * ectx;
 
 int main(int argc, char * argv[]){
   pid_t daemon;
@@ -66,82 +46,96 @@ int main(int argc, char * argv[]){
   HashCode512 root;
   int old;
   int newVal;
-  struct FSUI_Context * ctx;
+  struct GC_Configuration * cfg;
 
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseCommandLine))
-    return -1;
-  daemon = startGNUnetDaemon(NO);
-  GE_ASSERT(ectx, daemon > 0);
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+  daemon  = os_daemon_start(NULL,
+			    cfg,
+			    "peer.conf",
+			    NO);
+  GE_ASSERT(NULL, daemon > 0);
+  GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
+						    cfg,
+						    30 * cronSECONDS));
   ok = YES;
-  startCron();
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonRunning(2 * cronMINUTES));
-  ECRS_deleteNamespace("test");
+  NS_deleteNamespace(ectx,
+		     cfg,
+		     "test");
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
 
   /* ACTUAL TEST CODE */
-  ctx = FSUI_start("namespace_infotest",
-		   NO,
-		   &eventCallback,
-		   NULL);
-  CHECK(ctx != NULL);
-  old = FSUI_listNamespaces(ctx,
-			    YES,
-			    NULL,
-			    NULL);
+  old = NS_listNamespaces(ectx,
+			  cfg,
+			  YES,
+			  NULL,
+			  NULL);
 				
   meta = ECRS_createMetaData();
   ECRS_addToMetaData(meta,
 		     0,
 		     "test");
   makeRandomId(&root);
-  uri = FSUI_createNamespace(ctx,
-			     1,
-			     "test",
-			     meta,
-			     NULL,
-			     &root);
+  uri = NS_createNamespace(ectx,
+			   cfg,
+			   1,
+			   1,
+			   5000,
+			   "test",
+			   meta,
+			   NULL,
+			   &root);
   CHECK(uri != NULL);
-  CHECK(old + 1 == FSUI_listNamespaces(ctx,
-				       YES,
-				       NULL,
-				       NULL));
-  old = FSUI_listNamespaceContent(ctx,
-				  "test",
-				  NULL,
-				  NULL);
-  euri = FSUI_addToNamespace(ctx,
-			     1,
-			     "test",
-			     42,
-			     NULL,
-			     &root,
-			     NULL,
-			     uri,
-			     meta);
-  CHECK(euri != NULL);
-  newVal = FSUI_listNamespaceContent(ctx,
-				     "test",
+  CHECK(old + 1 == NS_listNamespaces(ectx,
+				     cfg,
+				     YES,
 				     NULL,
-				     NULL);
+				     NULL));
+  old = NS_listNamespaceContent(ectx,
+				cfg,
+				"test",
+				NULL,
+				NULL);
+  euri = NS_addToNamespace(ectx,
+			   cfg,
+			   1,
+			   1,
+			   5000,
+			   "test",
+			   42,
+			   NULL,
+			   &root,
+			   NULL,
+			   uri,
+			   meta);
+  CHECK(euri != NULL);
+  newVal = NS_listNamespaceContent(ectx,
+				   cfg,
+				   "test",
+				   NULL,
+				   NULL);
   CHECK(old + 1 == newVal);
-  CHECK(OK == ECRS_deleteNamespace("test"));
+  CHECK(OK == NS_deleteNamespace(ectx,
+				 cfg,
+				 "test"));
   /* END OF TEST CODE */
  FAILURE:
-  if (ctx != NULL)
-    FSUI_stop(ctx);
   if (uri != NULL)
     ECRS_freeUri(uri);
   if (euri != NULL)
     ECRS_freeUri(euri);
   if (meta != NULL)
     ECRS_freeMetaData(meta);
-  ECRS_deleteNamespace("test");
-  stopCron();
-  GE_ASSERT(ectx, OK == stopGNUnetDaemon());
-  GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon));
-  doneUtil();
+  ECRS_deleteNamespace(ectx,
+		       cfg,
+		       "test");
+ 
+  GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+  GC_free(cfg);
   return (ok == YES) ? 0 : 1;
 }
 

@@ -115,10 +115,12 @@ static int readNamespaceInfo(struct GE_Context * ectx,
   strcat(fn, namespaceName);
   FREE(fnBase);
 
-  if (OK != disk_file_size(ectx,
-			   fn,
-			   &len,
-			   YES)) {
+  if ( (OK != disk_file_test(ectx,
+			     fn)  ||
+	(OK != disk_file_size(ectx,
+			      fn,
+			      &len,
+			      YES)) ) ) {
     FREE(fn);
     return SYSERR;
   }
