@@ -14,7 +14,7 @@ if CYGWIN
 endif
 
 if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -luuid -lstdc++ -lcomdlg32
+  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -luuid -lstdc++ -lcomdlg32 -lplibc
 endif
 
 if CYGWIN

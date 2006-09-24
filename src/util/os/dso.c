@@ -45,6 +45,10 @@ void __attribute__ ((constructor)) gnc_ltdl_init() {
   const char * opath;
   char * path;
 
+#ifdef MINGW
+  InitWinEnv(NULL);
+#endif
+
   err = lt_dlinit();
   if (err > 0) {
     fprintf(stderr,
@@ -68,6 +72,11 @@ void __attribute__ ((destructor)) gnc_ltdl_fini() {
     FREE(old_dlsearchpath);
     old_dlsearchpath = NULL;
   }
+  
+#ifdef MINGW
+  ShutdownWinEnv();
+#endif
+  
   lt_dlexit();
 }
 

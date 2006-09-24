@@ -421,6 +421,8 @@ void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init() {
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			 "fopen",
 			 "/proc/stat");
+#elif MINGW
+  InitWinEnv(NULL);
 #endif
   updateCpuUsage(); /* initialize */
 }
@@ -434,6 +436,8 @@ void __attribute__ ((destructor)) gnunet_cpustats_ltdl_fini() {
     fclose(proc_stat);
     proc_stat = NULL;
   }
+#elif MINGW
+  ShutdownWinEnv();
 #endif
   MUTEX_DESTROY(statusMutex);
 }

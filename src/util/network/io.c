@@ -44,6 +44,8 @@ void __attribute__ ((constructor)) gnunet_network_io_init() {
   lock = MUTEX_CREATE(NO);
 #ifndef MINGW
   sctx = signal_handler_install(SIGPIPE, &catcher);
+#else
+  InitWinEnv(NULL);
 #endif
 }
 
@@ -53,6 +55,8 @@ void __attribute__ ((destructor)) gnunet_network_io_fini() {
 #ifndef MINGW
   signal_handler_uninstall(SIGPIPE, &catcher, sctx);
   sctx = NULL;
+#else
+  ShutdownWinEnv();
 #endif
 }
 

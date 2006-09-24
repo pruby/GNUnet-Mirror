@@ -428,8 +428,37 @@ static void * init_helper(void * unused) {
  * _internal methods.
  */
 void __attribute__ ((constructor)) gns_scheme_init() {
+#ifdef MINGW
+  char *oldpath, *env;
+  char load[MAX_PATH + 1];
+  int len;
+  
+  InitWinEnv();
+
+  /* add path of "system" .scm files to guile's load path */
+  plibc_conv_to_win_path("/share/guile/1.9/", load);
+  len = 0;
+  oldpath = getenv("GUILE_LOAD_PATH");
+  if (oldpath)
+    len = strlen(oldpath);
+  env = malloc(len + strlen(load) + 18);
+  strcpy(env, "GUILE_LOAD_PATH=");
+  if (oldpath)
+  {
+    strcat(env, oldpath);
+    strcat(env, ";");
+  }
+  strcat(env, load);
+  putenv(env);
+  free(env);
+#endif
   scm_with_guile(&init_helper, NULL);
 }
 
+void __attribute__ ((destructor)) gns_scheme_fin() {
+#ifdef MINGW
+  ShutdownWinEnv();
+#endif
+}
 
 /* end of tree.c */

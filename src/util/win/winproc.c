@@ -86,12 +86,18 @@ void plibc_panic(int err, char *msg)
 */
 int InitWinEnv(struct GE_Context *ectx)
 {
-	int ret;
+	int ret, init;
   
-  pEctx = ectx;
+  if (ectx)
+    pEctx = ectx;
 	
+  init = plibc_initialized();  
   plibc_set_panic_proc(plibc_panic);
 	ret = plibc_init("GNU", PACKAGE);
+
+  /* don't load other DLLs twice */  
+  if (init)
+    return ret;
 
   hNTDLL = LoadLibrary("ntdll.dll");
 

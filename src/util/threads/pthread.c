@@ -280,7 +280,9 @@ void __attribute__ ((constructor)) pthread_handlers_ltdl_init() {
   if (0 != sigaction(SIGALRM, &sig, &old))
     GE_LOG_STRERROR(NULL,
 		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "sigaction");		    
+		    "sigaction");
+#else
+  InitWinEnv(NULL);		    
 #endif
 }
 
@@ -289,7 +291,9 @@ void __attribute__ ((destructor)) pthread_handlers_ltdl_fini() {
   if (0 != sigaction(SIGALRM, &old, &sig))
     GE_LOG_STRERROR(NULL,
 		    GE_WARNING | GE_ADMIN | GE_BULK,
-		    "sigaction");		    
+		    "sigaction");
+#else
+  ShutdownWinEnv();		    
 #endif
 }
 
