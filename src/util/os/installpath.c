@@ -91,11 +91,11 @@ static char * get_path_from_module_filename() {
   
   path = MALLOC(4097);
   GetModuleFileName(NULL, path, 4096);
-  idx = path + strlen(idx);
+  idx = path + strlen(path);
   while ( (idx > path) && 
-	  (path != '\\') &&
-	  (path != '/') )
-    idx++;
+	  (*idx != '\\') &&
+	  (*idx != '/') )
+    idx--;
   *idx = '\0';
   return path;  
 }

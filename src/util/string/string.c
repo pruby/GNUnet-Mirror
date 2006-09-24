@@ -323,7 +323,7 @@ char * string_expandFileName(struct GE_Context * ectx,
 #else
   fn = MALLOC(MAX_PATH + 1);
 
-  if ((lRet = plibc_conv_to_win_path(fil, buffer)) != ERROR_SUCCESS) {
+  if ((lRet = plibc_conv_to_win_path(fil, fn)) != ERROR_SUCCESS) {
     SetErrnoFromWinError(lRet);
     GE_LOG_STRERROR(ectx,
 		    GE_USER | GE_WARNING | GE_IMMEDIATE,
@@ -331,8 +331,8 @@ char * string_expandFileName(struct GE_Context * ectx,
     return NULL;
   }
   /* is the path relative? */
-  if ( (strncmp(buffer + 1, ":\\", 2) != 0) &&
-       (strncmp(buffer, "\\\\", 2) != 0)) {
+  if ( (strncmp(fn + 1, ":\\", 2) != 0) &&
+       (strncmp(fn, "\\\\", 2) != 0)) {
     char szCurDir[MAX_PATH + 1];
     lRet = GetCurrentDirectory(MAX_PATH + 1, szCurDir);
     if (lRet + strlen(fn) + 1 > (MAX_PATH + 1)) {
@@ -342,12 +342,14 @@ char * string_expandFileName(struct GE_Context * ectx,
 		      "GetCurrentDirectory");
       return NULL;
     }
-    SNPRINTF(fn,
+    buffer = MALLOC(MAX_PATH + 1);
+    SNPRINTF(buffer,
 	     MAX_PATH+1,
-	     "%s\\%s", szCurDir, buffer);
-  } else {
-    strcpy(fn, buffer);
+	     "%s\\%s", szCurDir, fn);
+    FREE(fn);
+    fn = buffer;
   }
+
   return fn;
 #endif
 }
