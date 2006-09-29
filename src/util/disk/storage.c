@@ -241,13 +241,8 @@ int disk_directory_test(struct GE_Context * ectx,
     }
     return NO;
   }
-  if (!S_ISDIR(filestat.st_mode)) {
-    GE_LOG(ectx,
-	   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
-	   _("Expected `%s' to be a directory\n"),
-	   fil);
-    return SYSERR;
-  }
+  if (! S_ISDIR(filestat.st_mode)) 
+    return NO;
   if (ACCESS(fil, R_OK | X_OK) < 0 ) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
@@ -280,13 +275,8 @@ int disk_file_test(struct GE_Context * ectx,
     }
     return NO;
   }
-  if (! S_ISREG(filestat.st_mode)) {
-    GE_LOG(ectx,
-	   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
-	   _("Expected `%s' to be a regular file\n"),
-	   fil);
-    return SYSERR;
-  }
+  if (! S_ISREG(filestat.st_mode)) 
+    return NO;
   if (ACCESS(fil, R_OK) < 0 ) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 

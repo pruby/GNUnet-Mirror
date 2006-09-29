@@ -34,7 +34,7 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
-#define DEBUG_DTM NO
+#define DEBUG_DTM YES
 
 /**
  * Start to download a file.
@@ -368,6 +368,7 @@ startDownload(struct FSUI_Context * ctx,
   unsigned long long totalBytes;
 
   GE_ASSERT(NULL, ctx != NULL);
+  GE_ASSERT(NULL, parent != NULL);
   if (! (ECRS_isFileUri(uri) ||
 	 ECRS_isLocationUri(uri)) ) {
     GE_BREAK(NULL, 0); /* wrong type of URI! */
@@ -386,8 +387,8 @@ startDownload(struct FSUI_Context * ctx,
   dl->uri = ECRS_dupUri(uri);
   dl->total = ECRS_fileSize(uri);
   dl->next = parent->child;
+  parent->child = dl;  
   totalBytes = ECRS_fileSize(uri);
-  parent->child = dl;
 
   root = dl;
   while ( (root->parent != NULL) &&
@@ -419,7 +420,7 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 		      doRecursive,
 		      uri,
 		      filename,
-		      NULL);
+		      &ctx->activeDownloads);
   MUTEX_UNLOCK(ctx->lock);
   return ret;
 }
@@ -489,6 +490,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 	   list->ctx->threadPoolSize);
 #endif
     list->state = FSUI_DOWNLOAD_SUSPENDING;
+    GE_ASSERT(ectx, list->handle != NULL);
     PTHREAD_STOP_SLEEP(list->handle);
     PTHREAD_JOIN(list->handle,
 		 &unused);
@@ -537,17 +539,16 @@ void freeDownloadList(FSUI_DownloadList * list) {
   /* first, find our predecessor and
      unlink us from the tree! */
   dpos = list->parent;
-  if (dpos != NULL) {
-    if (dpos->child == list) {
-      dpos->child = list->next;
-    } else {
-      dpos = dpos->child;
-      while ( (dpos != NULL) &&
-	      (dpos->next != list) )
-	dpos = dpos->next;
-      GE_ASSERT(NULL, dpos != NULL);
-      dpos->next = list->next;
-    }
+  GE_ASSERT(NULL, dpos != NULL);
+  if (dpos->child == list) {
+    dpos->child = list->next;
+  } else {
+    dpos = dpos->child;
+    while ( (dpos != NULL) &&
+	    (dpos->next != list) )
+      dpos = dpos->next;
+    GE_ASSERT(NULL, dpos != NULL);
+    dpos->next = list->next;    
   }
 
   /* then, free all of our children */
@@ -577,6 +578,10 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   unsigned int backup;
 
   ectx = ctx->ectx;
+  if (dl == NULL) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI_stopDownload called.\n");
@@ -592,14 +597,6 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "FSUI_stopDownload failed to locate download.\n");
     return SYSERR;
-  }
-  if (prev == dl) { /* first */
-    if (dl->parent != NULL)
-      dl->parent->child = dl->next;
-    else
-      ctx->activeDownloads.child = dl->next;
-  } else { 
-    prev->next = dl->next; /* unlink */    
   }
   backup = ctx->threadPoolSize;
   ctx->threadPoolSize = 0;

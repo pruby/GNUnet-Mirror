@@ -68,6 +68,13 @@ static void * eventCallback(void * cls,
     return &unused;
   case FSUI_search_result:
     printf("Received search result\n");
+    fn = makeName(43);
+    FSUI_startDownload(ctx,
+		       0,
+		       NO,
+		       event->data.SearchResult.fi.uri,
+		       fn);
+    FREE(fn);
     break;
   case FSUI_upload_complete:
     printf("Upload complete.\n");
@@ -84,15 +91,6 @@ static void * eventCallback(void * cls,
   if (lastEvent == FSUI_download_complete)
     return NULL; /* ignore all other events */
   lastEvent = event->type;
-  if (event->type == FSUI_search_result) {
-    fn = makeName(43);
-    FSUI_startDownload(ctx,
-		       0,
-		       NO,
-		       event->data.SearchResult.fi.uri,
-		       fn);
-    FREE(fn);
-  }
   return NULL;
 }
 

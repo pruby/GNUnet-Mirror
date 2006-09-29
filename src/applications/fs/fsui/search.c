@@ -317,6 +317,7 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
   pos->next = NULL;
   pos->signalTerminate = YES;
   /* send signal to terminate sleep! */
+  GE_ASSERT(ctx->ectx, pos->handle != NULL);
   PTHREAD_STOP_SLEEP(pos->handle);
   PTHREAD_JOIN(pos->handle,
 	       &unused);

@@ -111,6 +111,11 @@ int URITRACK_trackStatus(struct GE_Context * ectx,
 
   tn = getToggleName(ectx,
 		     cfg);
+  if (YES != disk_file_test(ectx,
+			    tn)) {
+    FREE(tn);
+    return NO; /* default: off */
+  }
   if ( (sizeof(int) != disk_file_read(ectx,
 				      tn,
 				      sizeof(int),

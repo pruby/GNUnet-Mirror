@@ -31,7 +31,7 @@
 #include "ecrs_core.h"
 #include "ecrs.h"
 
-#define DEBUG_SEARCH YES
+#define DEBUG_SEARCH NO
 
 typedef struct {
 

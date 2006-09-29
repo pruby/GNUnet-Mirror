@@ -524,7 +524,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   char * config;
   struct GE_Context * ectx;
 
-  ectx = utc->ctx->ectx;
+  ectx = ctx->ectx;
   utc = MALLOC(sizeof(FSUI_UploadList));
   utc->dir = NULL;
   utc->anonymityLevel = anonymityLevel;

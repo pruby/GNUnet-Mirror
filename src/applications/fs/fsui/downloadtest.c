@@ -73,7 +73,33 @@ static void * eventCallback(void * cls,
 
   switch(event->type) {
   case FSUI_search_result:
+#if DEBUG_VERBOSE
     printf("Received search result\n");
+#endif
+    if (download == NULL) {
+      char * u;
+      
+      if (! ECRS_equalsUri(upURI,
+			   event->data.SearchResult.fi.uri)) {
+	printf("Received search result for different file (download not started).\n");
+	return NULL; /* ignore */
+      }
+      fn = makeName(43);
+      u = ECRS_uriToString(event->data.SearchResult.fi.uri);
+      printf("Download started: %s.\n", u);
+      FREE(u);
+      download = FSUI_startDownload(ctx,
+				    0,
+				    NO,
+				    event->data.SearchResult.fi.uri,
+				    fn);
+      if (download == NULL) {
+	GE_BREAK(ectx, 0);
+	return NULL;
+      }
+      FREE(fn);
+      suspendRestart = 4;
+    }
     break;
   case FSUI_upload_progress:
 #if DEBUG_VERBOSE
@@ -123,6 +149,14 @@ static void * eventCallback(void * cls,
   case FSUI_gnunetd_connected:
   case FSUI_gnunetd_disconnected:
     break;
+  case FSUI_unindex_suspending:
+  case FSUI_upload_suspending:
+  case FSUI_download_suspending:
+  case FSUI_search_suspending:
+    fprintf(stderr,
+	    "Received SUSPENDING: %d\n",
+	    event->type);
+    break;
   default:
     printf("Unexpected event: %d\n",
 	   event->type);
@@ -131,28 +165,6 @@ static void * eventCallback(void * cls,
   if (lastEvent == waitForEvent)
     return NULL; /* ignore all other events */
   lastEvent = event->type;
-  if (event->type == FSUI_search_result) {
-    char * u;
-
-    if (! ECRS_equalsUri(upURI,
-			 event->data.SearchResult.fi.uri))
-      return NULL; /* ignore */
-    fn = makeName(43);
-    u = ECRS_uriToString(event->data.SearchResult.fi.uri);
-    printf("Download started: %s.\n", u);
-    FREE(u);
-    download = FSUI_startDownload(ctx,
-				  0,
-				  NO,
-				  event->data.SearchResult.fi.uri,
-				  fn);
-    if (download == NULL) {
-      GE_BREAK(ectx, 0);
-      return NULL;
-    }
-    FREE(fn);
-    suspendRestart = 4;
-  }
   return NULL;
 }
 
@@ -300,8 +312,9 @@ int main(int argc, char * argv[]){
     FSUI_stopSearch(ctx,
 		    search);
     fn = makeName(43);
-    FSUI_stopDownload(ctx,
-		      download);
+    if (download != NULL)
+      FSUI_stopDownload(ctx,
+			download);
     FREE(fn);
     FSUI_stop(ctx);
   }

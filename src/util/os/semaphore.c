@@ -156,7 +156,7 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 
   ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
-  noslashBasename = STRDUP(basename);
+  noslashBasename = string_expandFileName(ectx, basename);
   for (i=strlen(noslashBasename);i>0;i--)
     if (noslashBasename[i] == '/')
       noslashBasename[i] = '.'; /* first character MUST be /, but Solaris
@@ -192,7 +192,7 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 
   ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
-  noslashBasename = STRDUP(basename);
+  noslashBasename = string_expandFileName(ectx, basename);
   for (i=strlen(noslashBasename);i>0;i--)
     if (noslashBasename[i] == '\\')
       noslashBasename[i] = '.'; /* must not contain backslashes */
@@ -228,21 +228,24 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
   key_t key;
   FILE * fp;
   int pcount;
+  char * ebasename;
 
   ret = MALLOC(sizeof(struct IPC_SEMAPHORE));
   ret->ectx = ectx;
-  fp = FOPEN(basename, "a+");
+  ebasename = string_expandFileName(ectx, basename);
+  fp = FOPEN(ebasename, "a+");
   if (NULL == fp) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_ERROR | GE_USER | GE_BULK,
 			 "fopen",
-			 basename);
+			 ebasename);
     FREE(ret);
+    FREE(ebasename);
     return NULL;
   }
   fclose(fp);
 
-  key = ftok(basename,'g');
+  key = ftok(ebasename,'g');
 
 again:
   ret->internal = semget(key,
@@ -295,7 +298,7 @@ again:
     GE_DIE_STRERROR(ectx, 
 		    GE_FATAL | GE_USER | GE_IMMEDIATE, 
 		    "semop");
-  ret->filename = STRDUP(basename);
+  ret->filename = ebasename;
   return ret;
 #elif SOMEBSD
   int fd;

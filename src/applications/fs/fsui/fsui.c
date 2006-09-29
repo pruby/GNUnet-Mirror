@@ -29,7 +29,7 @@
 #include "gnunet_directories.h"
 #include "fsui.h"
 
-#define DEBUG_PERSISTENCE NO
+#define DEBUG_PERSISTENCE YES
 
 #define FSUI_UDT_FREQUENCY (2 * cronSECONDS)
 
@@ -92,7 +92,7 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
     GE_BREAK(ectx, 0);
     return NULL;
   }
-  if (zaro == '\0')
+  if (zaro == '\0') 
     return NULL;
   ret = MALLOC(sizeof(FSUI_DownloadList));
   memset(ret,
@@ -174,9 +174,8 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
 #if DEBUG_PERSISTENCE
   GE_LOG(ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "FSUI persistence: restoring download `%s': %s (%llu, %llu)\n",
+	 "FSUI persistence: restoring download `%s': (%llu, %llu)\n",
 	 ret->filename,
-	 ret->finished == YES ? "finished" : "pending",
 	 ret->completed,
 	 ret->total);
 #endif
@@ -189,10 +188,10 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
     if (ret->completedDownloads[i] != NULL)
       ECRS_freeUri(ret->completedDownloads[i]);
   }
-
   FREE(ret);
-  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-      _("FSUI persistence: error restoring download\n"));
+  GE_LOG(ectx,
+	 GE_WARNING | GE_BULK | GE_USER,
+	 _("FSUI persistence: error restoring download\n"));
   return NULL;
 }
 
@@ -241,9 +240,8 @@ static void writeDownloadList(struct GE_Context * ectx,
 #if DEBUG_PERSISTENCE
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Serializing download state of download `%s': %s (%llu, %llu)\n",
+	 "Serializing download state of download `%s': (%llu, %llu)\n",
 	 list->filename,
-	 list->finished == YES ? "finished" : "pending",
 	 list->completed,
 	 list->total);
 #endif
@@ -356,8 +354,9 @@ static void updateDownloadThreads(void * c) {
   dpos = ctx->activeDownloads.child;
 #if DEBUG_PERSISTENCE
   if (dpos != NULL)
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Download thread manager schedules pending downloads...\n");
+    GE_LOG(ctx->ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Download thread manager schedules pending downloads...\n");
 #endif
   while (dpos != NULL) {
     updateDownloadThread(dpos);
@@ -389,18 +388,21 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   int fd;
   int i;
 
+  GE_ASSERT(ectx, cfg != NULL);
   ret = MALLOC(sizeof(FSUI_Context));
   memset(ret, 0, sizeof(FSUI_Context));
   ret->activeDownloads.state
     = FSUI_DOWNLOAD_PENDING; /* !? */
   ret->activeDownloads.ctx
     = ret;
+  ret->cfg
+    = cfg;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &gh);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &gh);
   fn = MALLOC(strlen(gh) + strlen(name) + 2 + 5);
   strcpy(fn, gh);
   FREE(gh);
@@ -411,13 +413,17 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     ret->ipc = IPC_SEMAPHORE_CREATE(ectx,
 				    fn,
 				    1);
+#if DEBUG_PERSISTENCE
     GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
 	"Getting IPC lock for FSUI (%s).\n",
 	fn);
+#endif
     IPC_SEMAPHORE_DOWN(ret->ipc, YES);
+#if DEBUG_PERSISTENCE
     GE_LOG(ectx, 
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   "Aquired IPC lock.\n");
+#endif
     fd = -1;
     strcat(fn, ".res");
     if (0 == ACCESS(fn, R_OK))
@@ -610,8 +616,9 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 	  = ret;
 	/* start search thread! */
 #if DEBUG_PERSISTENCE
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "FSUI persistence: restarting search\n");
+	GE_LOG(ectx, 
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "FSUI persistence: restarting search\n");
 #endif
 	list->handle = PTHREAD_CREATE(&searchThread,
 				      list,
@@ -663,8 +670,8 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     WARN:
       GE_LOG(ectx, 
 	     GE_WARNING | GE_BULK | GE_USER,
-	  _("FSUI state file `%s' had syntax error at offset %u.\n"),
-	  fn,
+	     _("FSUI state file `%s' had syntax error at offset %u.\n"),
+	     fn,
 	  lseek(fd, 0, SEEK_CUR));
     END:
       CLOSE(fd);

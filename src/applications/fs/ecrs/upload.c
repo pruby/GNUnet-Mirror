@@ -152,6 +152,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   EncName enc;
 #endif
 
+  GE_ASSERT(ectx, cfg != NULL);
   start = get_time();
   memset(&chk, 0, sizeof(CHK));
   if (YES != disk_file_test(ectx,

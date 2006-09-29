@@ -1006,6 +1006,8 @@ static int nodeReceive(const HashCode512 * query,
       requestManagerEndgame(node->ctx->rm);
     }
   }
+  GE_ASSERT(node->ctx->rm->ectx, 
+	    node->ctx->rm->requestThread != NULL);
   PTHREAD_STOP_SLEEP(node->ctx->rm->requestThread);
   FREE(data);
   FREE(node);
