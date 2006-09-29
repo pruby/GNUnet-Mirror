@@ -55,8 +55,8 @@ static char * makeName(unsigned int i) {
   SNPRINTF(fn,
 	   strlen(name) + 40,
 	   "%s%sFSUITEST%u",
-	   DIR_SEPARATOR_STR,
 	   name,
+	   DIR_SEPARATOR_STR,
 	   i);
   FREE(name);
   return fn;
@@ -188,7 +188,9 @@ int main(int argc, char * argv[]){
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri = NULL;
   struct GC_Configuration * cfg;
-  struct FSUI_SearchList * search;
+  struct FSUI_SearchList * search = NULL;
+  struct FSUI_UnindexList * unindex = NULL;
+  struct FSUI_UploadList * upload = NULL;
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -230,17 +232,17 @@ int main(int argc, char * argv[]){
 				  2,
 				  (const char**)keywords);
   waitForEvent = FSUI_upload_complete;
-  CHECK(NULL !=
-	FSUI_startUpload(ctx,
-			 fn,
-			 0,
-			 0,
-			 YES,
-			 NO,
-			 NO,
-			 meta,
-			 kuri,
-			 kuri));
+  upload = FSUI_startUpload(ctx,
+			    fn,
+			    0,
+			    0,
+			    YES,
+			    NO,
+			    NO,
+			    meta,
+			    kuri,
+			    kuri);
+  CHECK(upload != NULL);
   ECRS_freeUri(kuri);
   kuri = NULL;
   ECRS_freeMetaData(meta);
@@ -249,7 +251,9 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 1000);
     PTHREAD_SLEEP(50 * cronMILLIS);
+    printf("U\n");
   }
+  FSUI_stopUpload(ctx, upload);
   SNPRINTF(keyword,
 	   40,
 	   "%s %s %s",
@@ -289,17 +293,20 @@ int main(int argc, char * argv[]){
 #endif
       suspendRestart--;
     }
+    printf("R\n");
   }
   CHECK(OK == FSUI_stopSearch(ctx,
 			      search));
   waitForEvent = FSUI_unindex_complete;
-  CHECK(NULL != FSUI_unindex(ctx, fn));
+  unindex = FSUI_unindex(ctx, fn);
+  CHECK(unindex != NULL);
   prog = 0;
   while (lastEvent != FSUI_unindex_complete) {
     prog++;
     CHECK(prog < 1000);
     PTHREAD_SLEEP(50 * cronMILLIS);
     CHECK(lastEvent != FSUI_unindex_error);
+    printf("D\n");
   }
   CHECK(lastEvent == FSUI_unindex_complete);
   /* END OF TEST CODE */
@@ -309,13 +316,15 @@ int main(int argc, char * argv[]){
     FREE(fn);
   }
   if (ctx != NULL) {
-    FSUI_stopSearch(ctx,
-		    search);
-    fn = makeName(43);
+    if (search != NULL)
+      FSUI_stopSearch(ctx,
+		      search);
+    if (unindex != NULL)
+      FSUI_stopUnindex(ctx,
+		       unindex);
     if (download != NULL)
       FSUI_stopDownload(ctx,
 			download);
-    FREE(fn);
     FSUI_stop(ctx);
   }
   if (uri != NULL)

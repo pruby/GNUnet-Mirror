@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -50,6 +50,13 @@ static void progressCallback(unsigned long long totalBytes,
 		&event);
 }
 
+static int tt(void * cls) {
+  FSUI_UnindexList * utc = cls;
+  if (utc->force_termination == YES)
+    return SYSERR;
+  return OK;
+}
+
 /**
  * Thread that does the unindex.
  */
@@ -63,8 +70,8 @@ static void * unindexThread(void * cls) {
 			 utc->filename,
 			 &progressCallback,
 			 utc,
-			 NULL,
-			 NULL);
+			 &tt,
+			 utc);
   if (ret == OK) {
     event.type = FSUI_unindex_complete;
     if (OK != disk_file_size(utc->ctx->ectx,
@@ -113,6 +120,7 @@ FSUI_unindex(struct FSUI_Context * ctx,
   utc->ctx = ctx;
   utc->filename = STRDUP(filename);
   utc->start_time = get_time();
+  utc->force_termination = NO;
   utc->handle = PTHREAD_CREATE(&unindexThread,
 			       utc,
 			       32 * 1024);
@@ -129,6 +137,55 @@ FSUI_unindex(struct FSUI_Context * ctx,
   ctx->unindexOperations = utc;
   MUTEX_UNLOCK(ctx->lock);
   return utc;
+}
+
+
+/**
+ * Abort a deletion operation.
+ *
+ * @return SYSERR if no such unindex is pending
+ */
+int FSUI_stopUnindex(struct FSUI_Context * ctx,
+		     struct FSUI_UnindexList * dl) {
+  FSUI_UnindexList * prev;
+  struct GE_Context * ectx;
+  unsigned int backup;
+  void * unused;
+
+  ectx = ctx->ectx;
+  if (dl == NULL) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSUI_stopUnindex called.\n");
+  MUTEX_LOCK(ctx->lock);
+  prev = ctx->unindexOperations;
+  while ( (prev != dl) &&
+	  (prev != NULL) &&
+	  (prev->next != dl) ) 
+    prev = prev->next;
+  if (prev == NULL) {
+    MUTEX_UNLOCK(ctx->lock);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "FSUI_stopUnindex failed to locate deletion operation.\n");
+    return SYSERR;
+  }
+  if (prev == dl) {
+    ctx->unindexOperations = dl->next;
+  } else {
+    prev->next = dl->next;
+  }
+  MUTEX_UNLOCK(ctx->lock);
+  dl->force_termination = YES;
+  PTHREAD_STOP_SLEEP(dl->handle);
+  PTHREAD_JOIN(dl->handle,
+	       &unused);
+  FREE(dl->filename);
+  FREE(dl);
+  return OK;
 }
 
 /* end of unindex.c */

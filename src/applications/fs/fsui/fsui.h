@@ -327,6 +327,8 @@ typedef struct FSUI_UnindexList {
 
   cron_t start_time;
 
+  int force_termination;
+
 } FSUI_UnindexList;
 
 /**
