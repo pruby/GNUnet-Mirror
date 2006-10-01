@@ -22,6 +22,7 @@ libgnunetmodule_dht_la_LDFLAGS = \
 libgnunetdht_datastore_memory_la_SOURCES = \
   datastore_memory.c 
 libgnunetdht_datastore_memory_la_LIBADD = \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetdht_datastore_memory_la_LDFLAGS = \
   -export-dynamic 
@@ -37,6 +38,7 @@ datastore_memory_test_SOURCES = \
   datastore_memory_test.c
 datastore_memory_test_LDADD = \
   $(top_builddir)/src/applications/dht/module/libgnunetdht_datastore_memory.la \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
   $(top_builddir)/src/util/libgnunetutil.la 
 
 
