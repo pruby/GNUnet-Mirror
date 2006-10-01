@@ -88,9 +88,11 @@ static void * unindexThread(void * cls) {
   }
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
+#if 0
   GE_LOG(utc->ctx->ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI unindexThread exits.\n");
+#endif
   return NULL;
 }
 
@@ -159,9 +161,11 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
+#if 0
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI_stopUnindex called.\n");
+#endif
   MUTEX_LOCK(ctx->lock);
   prev = ctx->unindexOperations;
   while ( (prev != dl) &&

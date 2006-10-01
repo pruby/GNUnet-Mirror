@@ -748,9 +748,10 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   int big;
 
   ectx = ctx->ectx;
-  GE_LOG(ectx, 
-	 GE_INFO | GE_REQUEST | GE_USER,
-	 "FSUI shutdown.  This may take a while.\n");
+  if (ctx->ipc != NULL)
+    GE_LOG(ectx, 
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   "FSUI shutdown.  This may take a while.\n");
 
   cron_stop(ctx->cron);
   cron_del_job(ctx->cron,
@@ -919,9 +920,10 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   MUTEX_DESTROY(ctx->lock);
   FREE(ctx->name);
   FREE(ctx);
-  GE_LOG(ectx,
-	 GE_INFO | GE_REQUEST | GE_USER,
-	 "FSUI shutdown complete.\n");
+  if (ctx->ipc != NULL)
+    GE_LOG(ectx,
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   "FSUI shutdown complete.\n");
 }
 
 

@@ -30,6 +30,8 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 
+#define DEBUG_VERBOSE NO
+
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 static char * makeName(unsigned int i) {
@@ -69,24 +71,9 @@ static void * eventCallback(void * cls,
   case FSUI_unindex_resuming:
     return &unused;
   case FSUI_search_result:
+#if DEBUG_VERBOSE
     printf("Received search result\n");
-    break;
-  case FSUI_upload_complete:
-    printf("Upload complete.\n");
-    break;
-  case FSUI_download_complete:
-    printf("Download complete.\n");
-    break;
-  case FSUI_unindex_complete:
-    printf("Unindex complete.\n");
-    break;
-  default:
-    break;
-  }
-  if (lastEvent == FSUI_download_complete)
-    return NULL; /* ignore all other events */
-  lastEvent = event->type;
-  if (event->type == FSUI_search_result) {
+#endif
     fn = makeName(43);
     download = FSUI_startDownload(ctx,
 				  0,
@@ -94,7 +81,26 @@ static void * eventCallback(void * cls,
 				  event->data.SearchResult.fi.uri,
 				  fn);    
     FREE(fn);
+    break;
+  case FSUI_upload_complete:
+#if DEBUG_VERBOSE
+    printf("Upload complete.\n");
+#endif
+    break;
+  case FSUI_download_complete:
+#if DEBUG_VERBOSE
+    printf("Download complete.\n");
+#endif
+    break;
+  case FSUI_unindex_complete:
+#if DEBUG_VERBOSE
+    printf("Unindex complete.\n");
+#endif
+    break;
+  default:
+    break;
   }
+  lastEvent = event->type;
   return NULL;
 }
 
@@ -173,6 +179,8 @@ int main(int argc, char * argv[]){
     CHECK(prog < 10000)
 
     PTHREAD_SLEEP(50 * cronMILLIS);
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   SNPRINTF(keyword,
 	   40,
@@ -191,6 +199,8 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   FSUI_stopSearch(ctx,
 		  search);
@@ -200,6 +210,8 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   
 

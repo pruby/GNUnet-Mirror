@@ -18,9 +18,6 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
-    + fs/fsui:
-      - searchtest, downloadtest pass
-      - fsuitest, fsuitest2 -- to be done
     + dht/tools, dht/module
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)

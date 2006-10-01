@@ -215,6 +215,7 @@ int main(int argc, char * argv[]){
   struct FSUI_UnindexList * unindex = NULL;
   struct FSUI_UploadList * upload = NULL;
 
+  ok = YES;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {

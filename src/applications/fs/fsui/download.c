@@ -578,15 +578,16 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   struct GE_Context * ectx;
   unsigned int backup;
 
-  printf("Stop download %p\n", dl);
   ectx = ctx->ectx;
   if (dl == NULL) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
+#if 0
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI_stopDownload called.\n");
+#endif
   MUTEX_LOCK(ctx->lock);
   prev = (dl->parent != NULL) ? dl->parent->child : ctx->activeDownloads.child;
   while ( (prev != dl) &&
