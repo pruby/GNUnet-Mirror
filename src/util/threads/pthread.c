@@ -228,7 +228,8 @@ void PTHREAD_SLEEP(unsigned long long delay) {
 void PTHREAD_STOP_SLEEP(PThread * handle) {
   int ret;
 
-  GE_ASSERT(NULL, handle != NULL);
+  if (handle == NULL)
+    return;
 #ifdef WINDOWS
   ret = QueueUserAPC((PAPCFUNC) __PTHREAD_SIGNALED,
 		     pthread_getw32threadhandle_np(handle->pt), 

@@ -34,7 +34,7 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
-#define DEBUG_DTM YES
+#define DEBUG_DTM NO
 
 /**
  * Start to download a file.

@@ -317,6 +317,13 @@ static int dirEntryCallback(const char * filename,
   return OK;
 }
 
+static int tt(void * cls) {
+  FSUI_UploadList * utc = cls;
+  if (utc->force_termination == YES)
+    return SYSERR;
+  return OK;
+}
+
 /**
  * Thread that does the upload.
  */
@@ -359,10 +366,10 @@ static void * uploadThread(void * cls) {
 			  utc->anonymityLevel,
 			  utc->priority,
 			  utc->expiration,
-			  (ECRS_UploadProgressCallback) &progressCallback,
+			  &progressCallback,
 			  utc,
-			  NULL,
-			  NULL,
+			  &tt,
+			  utc,
 			  &uri);
     if (ret == OK) {
       event.type = FSUI_upload_complete;
@@ -578,10 +585,9 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
   void * unused;
   FSUI_UploadList * prev;
   struct GE_Context * ectx;
-  void * unused;
 
   ectx = ctx->ectx;
-  if (dl == NULL) {
+  if (ul == NULL) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
@@ -589,7 +595,7 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI_stopUpload called.\n");
   MUTEX_LOCK(ctx->lock);
-  prev = ctx->uploadOperations;
+  prev = ctx->activeUploads;
   while ( (prev != ul) &&
 	  (prev != NULL) &&
 	  (prev->next != ul) ) 
@@ -602,7 +608,7 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
     return SYSERR;
   }
   if (prev == ul) {
-    ctx->uploadOperations = ul->next;
+    ctx->activeUploads = ul->next;
   } else {
     prev->next = ul->next;
   }

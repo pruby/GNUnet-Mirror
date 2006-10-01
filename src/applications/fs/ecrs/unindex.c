@@ -202,7 +202,8 @@ int ECRS_unindexFile(struct GE_Context * ectx,
   int wasIndexed;
 
   start = get_time();
-  if (YES != disk_file_test(ectx, filename)) {
+  if (YES != disk_file_test(ectx,
+			    filename)) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }

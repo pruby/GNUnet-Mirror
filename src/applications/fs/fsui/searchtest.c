@@ -32,36 +32,31 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
-static struct FSUI_SearchList * search;
-
-
 static char * makeName(unsigned int i) {
-  char * name;
+  const char * name;
   char * fn;
 
-  fn = STRDUP("/tmp/gnunet-fsuisearchtest");
-  name = string_expandFileName(NULL, fn);
+  name = "/tmp/gnunet-fsuisearchtest";
   disk_directory_create(NULL, name);
-  FREE(fn);
   fn = MALLOC(strlen(name) + 40);
   SNPRINTF(fn,
 	   strlen(name) + 40,
 	   "%s%sFSUITEST%u",
-	   DIR_SEPARATOR_STR,
 	   name,
+	   DIR_SEPARATOR_STR,
 	   i);
-  FREE(name);
   return fn;
 }
 
 static volatile enum FSUI_EventType lastEvent;
+
+static struct ECRS_URI * uri;
 
 static struct FSUI_Context * ctx;
 
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
   static char unused;
-  char * fn;
  
   switch(event->type) {
   case FSUI_search_resuming:
@@ -71,15 +66,7 @@ static void * eventCallback(void * cls,
     return &unused;
   case FSUI_search_result:
     printf("Received search result\n");
-    FSUI_stopSearch(ctx,
-		    search);
-    fn = makeName(43);
-    FSUI_startDownload(ctx,
-		       0,
-		       NO,
-		       event->data.SearchResult.fi.uri,
-		       fn);
-    FREE(fn);
+    uri = ECRS_dupUri(event->data.SearchResult.fi.uri);
     break;
   case FSUI_upload_complete:
     printf("Upload complete.\n");
@@ -89,6 +76,15 @@ static void * eventCallback(void * cls,
     break;
   case FSUI_unindex_complete:
     printf("Unindex complete.\n");
+    break;
+  case FSUI_upload_error:
+    printf("Upload error.\n");
+    break;
+  case FSUI_download_error:
+    printf("Download error.\n");
+    break;
+  case FSUI_unindex_error:
+    printf("Unindex error.\n");
     break;
   default:
     break;
@@ -101,7 +97,6 @@ static void * eventCallback(void * cls,
 int main(int argc, char * argv[]){
   pid_t daemon;
   int ok;
-  struct ECRS_URI * uri = NULL;
   char * fn = NULL;
   char * keywords[] = {
     "search_foo",
@@ -115,7 +110,11 @@ int main(int argc, char * argv[]){
   struct GC_Configuration * cfg;
   struct FSUI_UploadList * upload;
   struct FSUI_UnindexList * unindex;
+  struct FSUI_DownloadList * download;
+  struct FSUI_SearchList * search;
+  struct ECRS_URI * luri;
 
+  ok = YES;
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
@@ -147,10 +146,12 @@ int main(int argc, char * argv[]){
 	   keywords[0],
 	   _("AND"),
 	   keywords[1]);
-  uri = ECRS_parseCharKeywordURI(NULL, keyword);
+  luri = ECRS_parseCharKeywordURI(NULL, keyword);
   search = FSUI_startSearch(ctx,
 			    0,
-			    uri);
+			    luri);
+  ECRS_freeUri(luri);
+  uri = NULL;
   CHECK(NULL != search);
   FSUI_stop(ctx);
   /* resume search! */
@@ -183,6 +184,8 @@ int main(int argc, char * argv[]){
 			 kuri,
 			 kuri);
   CHECK(NULL != upload);
+  FREE(fn);
+  fn = NULL;
   ECRS_freeUri(kuri);
   ECRS_freeMetaData(meta);
   prog = 0;
@@ -190,37 +193,63 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 10000)
     PTHREAD_SLEEP(50 * cronMILLIS);
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   FSUI_stopUpload(ctx, upload);
+
+  while (uri == NULL) {
+    prog++;
+    CHECK(prog < 10000)
+    PTHREAD_SLEEP(500 * cronMILLIS);
+  }
+  FSUI_stopSearch(ctx,
+		  search);
+  CHECK(uri != NULL);
+  fn = makeName(43);
+  download = FSUI_startDownload(ctx,
+				0,
+				NO,
+				uri,
+				fn);
+  FREE(fn);
+  fn = NULL;
+  ECRS_freeUri(uri);
 
   prog = 0;
   while (lastEvent != FSUI_download_complete) {
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
+  FSUI_stopDownload(ctx, download);
+  fn = makeName(42);
   unindex = FSUI_unindex(ctx, fn);
+  FREE(fn);
+  fn = NULL;
   CHECK(NULL != unindex);
   prog = 0;
   while (lastEvent != FSUI_unindex_complete) {
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   FSUI_stopUnindex(ctx, unindex);
 
   /* END OF TEST CODE */
  FAILURE:
-  if (uri != NULL)
-    ECRS_freeUri(uri);
   if (ctx != NULL)
     FSUI_stop(ctx);
-  if (fn != NULL) {
-    UNLINK(fn);
-    FREE(fn);
-  }
-  fn = makeName(43);
+  FREENONNULL(fn);  
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
+  fn = makeName(42);
+  UNLINK(fn);
+  FREE(fn);
+  fn = makeName(43);
   UNLINK(fn);
   FREE(fn);
 

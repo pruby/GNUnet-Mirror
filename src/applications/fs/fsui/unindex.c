@@ -114,6 +114,11 @@ FSUI_unindex(struct FSUI_Context * ctx,
     GE_BREAK(ctx->ectx, 0);
     return NULL;
   }
+  if (YES != disk_file_test(ctx->ectx,
+			    filename)) {
+    GE_BREAK(ctx->ectx, 0);
+    return NULL;
+  }
   utc = MALLOC(sizeof(FSUI_UnindexList));
   utc->ctx = ctx;
   utc->filename = STRDUP(filename);
