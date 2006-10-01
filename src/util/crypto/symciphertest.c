@@ -84,7 +84,7 @@ int verifyCrypto() {
   memcpy(key.key, raw_key, SESSIONKEY_LEN);
   key.crc32 = htonl(crc32N(&key, SESSIONKEY_LEN));
 
-  if (key.crc32 != (unsigned int) 2344502530LL) {
+  if (ntohl(key.crc32) != (unsigned int) 2344502530LL) {
     printf("Static key has different CRC\n");
 
     ret = 1;
