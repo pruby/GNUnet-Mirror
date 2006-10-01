@@ -22,6 +22,11 @@
  * @file applications/fs/fsui/fsui.c
  * @brief main FSUI functions
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - upload suspend/resume
+ * - unindex suspend/resume
+ * - events for suspend (!)
  */
 
 #include "platform.h"
@@ -29,7 +34,7 @@
 #include "gnunet_directories.h"
 #include "fsui.h"
 
-#define DEBUG_PERSISTENCE YES
+#define DEBUG_PERSISTENCE NO
 
 #define FSUI_UDT_FREQUENCY (2 * cronSECONDS)
 
@@ -86,6 +91,7 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
   unsigned long long bigl;
   int i;
   int ok;
+  FSUI_Event event;
 
   GE_ASSERT(ectx, ctx != NULL);
   if (1 != READ(fd, &zaro, sizeof(char))) {
@@ -179,6 +185,19 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
 	 ret->completed,
 	 ret->total);
 #endif
+  /* signal event handler! */
+  event.type = FSUI_download_resuming;
+  event.data.DownloadResuming.dc.pos = ret;
+  event.data.DownloadResuming.dc.cctx = NULL;
+  event.data.DownloadResuming.dc.ppos = ret->parent;
+  event.data.DownloadResuming.dc.pcctx = NULL; /* not yet available */
+  event.data.DownloadResuming.eta = get_time(); /* best guess */
+  event.data.DownloadResuming.total = ret->total;
+  event.data.DownloadResuming.completed = ret->completedFile;
+  event.data.DownloadResuming.anonymityLevel = ret->anonymityLevel;
+  event.data.DownloadResuming.uri = ret->uri;
+  ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
+
   return ret;
  ERR:
   FREENONNULL(ret->filename);
@@ -380,6 +399,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 				 int doResume,
 				 FSUI_EventCallback cb,
 				 void * closure) {
+  FSUI_Event event;
   FSUI_Context * ret;
   FSUI_SearchList * list;
   ResultPending * rp;
@@ -397,6 +417,12 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     = ret;
   ret->cfg
     = cfg;
+  ret->ecb = cb;
+  ret->ecbClosure = closure;
+  ret->threadPoolSize = threadPoolSize;
+  if (ret->threadPoolSize == 0)
+    ret->threadPoolSize = 32;
+  ret->activeDownloadThreads = 0;
 
   GC_get_configuration_value_filename(cfg,
 				      "GNUNET",
@@ -414,9 +440,10 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 				    fn,
 				    1);
 #if DEBUG_PERSISTENCE
-    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	"Getting IPC lock for FSUI (%s).\n",
-	fn);
+    GE_LOG(ectx,
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   "Getting IPC lock for FSUI (%s).\n",
+	   fn);
 #endif
     IPC_SEMAPHORE_DOWN(ret->ipc, YES);
 #if DEBUG_PERSISTENCE
@@ -633,6 +660,15 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 	  = ret->activeSearches;
 	ret->activeSearches
 	  = list;
+	/* then: signal event handler! */
+	event.type = FSUI_search_resuming;
+	event.data.SearchResuming.sc.pos = list;
+	event.data.SearchResuming.sc.cctx = NULL;
+	event.data.SearchResuming.fis = list->resultsReceived;
+	event.data.SearchResuming.fisSize = list->sizeResultsReceived;
+	event.data.SearchResuming.anonymityLevel = list->anonymityLevel;
+	event.data.SearchResuming.searchURI = list->uri;
+	list->cctx = cb(closure, &event);	
       }
       memset(&ret->activeDownloads,
 	     0,
@@ -687,12 +723,6 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     ret->ipc = NULL;
   }
   ret->lock = MUTEX_CREATE(YES);
-  ret->ecb = cb;
-  ret->ecbClosure = closure;
-  ret->threadPoolSize = threadPoolSize;
-  if (ret->threadPoolSize == 0)
-    ret->threadPoolSize = 32;
-  ret->activeDownloadThreads = 0;
   ret->cron = cron_create(ectx);  
   cron_add_job(ret->cron,
 	       &updateDownloadThreads,
@@ -872,8 +902,9 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   }
   if (fd != -1) {
 #if DEBUG_PERSISTENCE
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Serializing FSUI state done.\n");
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Serializing FSUI state done.\n");
 #endif
     CLOSE(fd);
   }
@@ -888,8 +919,9 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   MUTEX_DESTROY(ctx->lock);
   FREE(ctx->name);
   FREE(ctx);
-  GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-      "FSUI shutdown complete.\n");
+  GE_LOG(ectx,
+	 GE_INFO | GE_REQUEST | GE_USER,
+	 "FSUI shutdown complete.\n");
 }
 
 

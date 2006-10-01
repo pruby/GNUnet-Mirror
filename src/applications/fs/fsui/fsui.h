@@ -140,6 +140,8 @@ typedef struct FSUI_SearchList {
    */
   unsigned int sizeUnmatchedResultsReceived;
 
+  void * cctx;
+
 } FSUI_SearchList;
 
 /**

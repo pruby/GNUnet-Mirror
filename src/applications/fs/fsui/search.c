@@ -57,6 +57,8 @@ static void processResult(const ECRS_FileInfo * fi,
   event.type = FSUI_search_result;
   event.data.SearchResult.fi = *fi;
   event.data.SearchResult.searchURI = pos->uri;
+  event.data.SearchResult.sc.pos = pos;
+  event.data.SearchResult.sc.cctx = pos->cctx;
   pos->ctx->ecb(pos->ctx->ecbClosure,
 		&event);
 }

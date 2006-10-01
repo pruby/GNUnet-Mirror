@@ -105,11 +105,11 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
       fullName);
 #endif
   startDownload(parent->ctx,
-		     parent->anonymityLevel,
-		     YES,
-		     fi->uri,
-		     fullName,
-		     parent);
+		parent->anonymityLevel,
+		YES,
+		fi->uri,
+		fullName,
+		parent);
   FREE(fullName);
   return OK;
 }
@@ -386,6 +386,7 @@ startDownload(struct FSUI_Context * ctx,
   dl->filename = STRDUP(filename);
   dl->uri = ECRS_dupUri(uri);
   dl->total = ECRS_fileSize(uri);
+  dl->child = NULL;
   dl->next = parent->child;
   parent->child = dl;  
   totalBytes = ECRS_fileSize(uri);
@@ -577,6 +578,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   struct GE_Context * ectx;
   unsigned int backup;
 
+  printf("Stop download %p\n", dl);
   ectx = ctx->ectx;
   if (dl == NULL) {
     GE_BREAK(ectx, 0);

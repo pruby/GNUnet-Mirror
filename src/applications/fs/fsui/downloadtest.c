@@ -43,8 +43,6 @@ static volatile int suspendRestart = 0;
 
 static struct GE_Context * ectx;
 
-static struct FSUI_DownloadList * download;
-
 static char * makeName(unsigned int i) {
   char * name;
   char * fn;
@@ -66,12 +64,26 @@ static volatile enum FSUI_EventType lastEvent;
 static volatile enum FSUI_EventType waitForEvent;
 static struct FSUI_Context * ctx;
 static struct ECRS_URI * upURI;
+static struct FSUI_SearchList * search;
+static struct FSUI_DownloadList * download;
 
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
   char * fn;
 
   switch(event->type) {
+  case FSUI_search_resuming:
+#if DEBUG_VERBOSE
+    printf("Search resuming\n"); 
+#endif
+    search = event->data.SearchResuming.sc.pos;
+    break;
+  case FSUI_download_resuming: 
+#if DEBUG_VERBOSE
+    printf("Download resuming\n");
+#endif
+   download = event->data.DownloadResuming.dc.pos;
+    break;
   case FSUI_search_result:
 #if DEBUG_VERBOSE
     printf("Received search result\n");
@@ -81,12 +93,16 @@ static void * eventCallback(void * cls,
       
       if (! ECRS_equalsUri(upURI,
 			   event->data.SearchResult.fi.uri)) {
+#if DEBUG_VERBOSE
 	printf("Received search result for different file (download not started).\n");
+#endif
 	return NULL; /* ignore */
       }
       fn = makeName(43);
       u = ECRS_uriToString(event->data.SearchResult.fi.uri);
+#if DEBUG_VERBOSE
       printf("Download started: %s.\n", u);
+#endif
       FREE(u);
       download = FSUI_startDownload(ctx,
 				    0,
@@ -110,10 +126,14 @@ static void * eventCallback(void * cls,
     break;
   case FSUI_upload_complete:
     upURI = ECRS_dupUri(event->data.UploadComplete.uri);
+#if DEBUG_VERBOSE
     printf("Upload complete.\n");
+#endif
     break;
   case FSUI_download_complete:
+#if DEBUG_VERBOSE
     printf("Download complete.\n");
+#endif
     break;
   case FSUI_download_progress:
 #if DEBUG_VERBOSE
@@ -130,7 +150,9 @@ static void * eventCallback(void * cls,
 #endif
     break;
   case FSUI_unindex_complete:
+#if DEBUG_VERBOSE
     printf("Unindex complete.\n");
+#endif
     break;
   case FSUI_unindex_error:
   case FSUI_upload_error:
@@ -153,9 +175,11 @@ static void * eventCallback(void * cls,
   case FSUI_upload_suspending:
   case FSUI_download_suspending:
   case FSUI_search_suspending:
+#if DEBUG_VERBOSE
     fprintf(stderr,
 	    "Received SUSPENDING: %d\n",
 	    event->type);
+#endif
     break;
   default:
     printf("Unexpected event: %d\n",
@@ -188,7 +212,6 @@ int main(int argc, char * argv[]){
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri = NULL;
   struct GC_Configuration * cfg;
-  struct FSUI_SearchList * search = NULL;
   struct FSUI_UnindexList * unindex = NULL;
   struct FSUI_UploadList * upload = NULL;
 
@@ -251,7 +274,8 @@ int main(int argc, char * argv[]){
     prog++;
     CHECK(prog < 1000);
     PTHREAD_SLEEP(50 * cronMILLIS);
-    printf("U\n");
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   FSUI_stopUpload(ctx, upload);
   SNPRINTF(keyword,
@@ -280,6 +304,11 @@ int main(int argc, char * argv[]){
 #endif
       FSUI_stop(ctx); /* download possibly incomplete
 			 at this point, thus testing resume */
+      /* FIXME: this should be done in 
+	 "suspend" event handler -- once event is implemented! */
+      search = NULL;
+      download = NULL;
+      
       ctx = FSUI_start(NULL,
 		       cfg,
 		       "fsuidownloadtest",
@@ -293,10 +322,11 @@ int main(int argc, char * argv[]){
 #endif
       suspendRestart--;
     }
-    printf("R\n");
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
-  CHECK(OK == FSUI_stopSearch(ctx,
-			      search));
+  CHECK(search != NULL);
+  CHECK(download != NULL);
   waitForEvent = FSUI_unindex_complete;
   unindex = FSUI_unindex(ctx, fn);
   CHECK(unindex != NULL);
@@ -306,7 +336,8 @@ int main(int argc, char * argv[]){
     CHECK(prog < 1000);
     PTHREAD_SLEEP(50 * cronMILLIS);
     CHECK(lastEvent != FSUI_unindex_error);
-    printf("D\n");
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   CHECK(lastEvent == FSUI_unindex_complete);
   /* END OF TEST CODE */

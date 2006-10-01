@@ -18,7 +18,9 @@ Notes:
     + loggers: SMTP logger
     + use new loggers in for CS error reporting
   * make testcases compile & pass again:
-    + fs/fsui -- compiles; did not try to run yet
+    + fs/fsui:
+      - searchtest, downloadtest pass
+      - fsuitest, fsuitest2 -- to be done
     + dht/tools, dht/module
   * transports:
     + SMTP/HTTP: do not yet compile (commented out from build)
@@ -32,13 +34,16 @@ Notes:
       - rpc
     + incomplete (API change-related fixes):
       - fs/fslib
+        * error handing
       - fs/module 
       - fs/ecrs
       - fs/uritrack 
       - fs/tools
       - fs/namespace,
       - fs/collection
-      - fs/fsui
+      - fs/fsui:
+        * events for suspend, abort
+        * make sure new event fields are set for all events
     + not compiling:
       - vpn
       - chat
