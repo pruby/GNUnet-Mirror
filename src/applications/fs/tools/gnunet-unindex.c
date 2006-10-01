@@ -175,11 +175,12 @@ int main(int argc,
   if (ul == NULL) {
     printf(_("`%s' failed.  Is `%s' a file?\n"),
 	   "FSUI_unindex",
-	   argv[i]);
+	   filename);
     errorCode = 1;
   } else {
     /* wait for completion */
     SEMAPHORE_DOWN(exitSignal, YES);
+    FSUI_stopUnindex(ctx, ul);
   }
   FREE(filename);
   FSUI_stop(ctx);
