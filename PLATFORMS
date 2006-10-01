@@ -26,7 +26,10 @@ OpenBSD/NetBSD:
 - unknown
 
 OS X (10.3.7, PowerPC):
-- perfect
+- You may have to recompile some libraries (if you get a linker error)
+  libgpg-error: add configure flag --disable-nls
+  libgmp" add configure flag --with-pic
+  [Thanks, kkaz/johnh, see Mantis #968]
 
 Solaris:
 - unknown
