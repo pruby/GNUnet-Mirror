@@ -37,17 +37,6 @@ extern "C" {
 #endif
 #endif
 
-
-/**
- * Initialize DHT_LIB. Call first.
- */
-void DHT_LIB_init(void);
-
-/**
- * Shutdown DHT_LIB. Call after leaving all tables!
- */
-void DHT_LIB_done(void);
-
 /**
  * Join a table (start storing data for the table).  Join
  * fails if the node is already joint with the particular
@@ -61,6 +50,8 @@ void DHT_LIB_done(void);
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
+		 struct GC_Configuration * cfg,
+		 struct GE_Context * ectx,
 		 const DHT_TableId * table);
 
 
@@ -99,7 +90,9 @@ int DHT_LIB_leave(const DHT_TableId * table);
  * @param resultCallback function to call for results
  * @return number of results on success, SYSERR on error (i.e. timeout)
  */
-int DHT_LIB_get(const DHT_TableId * table,
+int DHT_LIB_get(struct GC_Configuration * cfg,
+		struct GE_Context * ectx,
+		const DHT_TableId * table,
 		unsigned int type,
 		unsigned int prio,
 		unsigned int keyCount,
@@ -119,7 +112,9 @@ int DHT_LIB_get(const DHT_TableId * table,
  * @param value what to store
  * @return OK on success, SYSERR on error (or timeout)
  */
-int DHT_LIB_put(const DHT_TableId * table,
+int DHT_LIB_put(struct GC_Configuration * cfg,
+		struct GE_Context * ectx,
+		const DHT_TableId * table,
 		const HashCode512 * key,
 		unsigned int prio,
 		cron_t timeout,
@@ -136,7 +131,9 @@ int DHT_LIB_put(const DHT_TableId * table,
  * @param value what to remove; NULL for all values matching the key
  * @return OK on success, SYSERR on error (or timeout)
  */
-int DHT_LIB_remove(const DHT_TableId * table,
+int DHT_LIB_remove(struct GC_Configuration * cfg,
+		   struct GE_Context * ectx,
+		   const DHT_TableId * table,
 		   const HashCode512 * key,
 		   cron_t timeout,
 		   const DataContainer * value);

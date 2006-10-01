@@ -1,5 +1,6 @@
 /*
       This file is part of GNUnet
+      (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -27,37 +28,48 @@
 #include "gnunet_protocols.h"
 #include "gnunet_dht_lib.h"
 #include "gnunet_dht.h"
+#include "gnunet_util_network_client.h"
 
 /**
  * Information for each table that this client is responsible
  * for.
  */
 typedef struct {
+
   /**
    * ID of the table.
    */
   DHT_TableId table;
+
   /**
    * The socket that was used to join GNUnet to receive
    * requests for this table.
    */
   struct ClientServerConnection * sock;
+
   /**
    * The thread that is processing the requests received
    * from GNUnet on sock.
    */
-  PTHREAD_T processor;
+  struct PTHREAD * processor;
+
   /**
    * The Datastore provided by the client that performs the
    * actual storage operations.
    */
   Blockstore * store;
+
   /**
    * Did we receive a request to leave the table?
    */
   int leave_request;
 
-  Mutex lock;
+  struct MUTEX * lock;
+
+  struct GC_Configuration * cfg;
+
+  struct GE_Context * ectx;
+
 } TableList;
 
 /**
@@ -73,15 +85,22 @@ static unsigned int tableCount;
 /**
  * Lock for access to tables array.
  */
-static Mutex lock;
+static struct MUTEX * lock;
+
+/**
+ * FIXME -- avoid this global!
+ */
+static struct GE_Context * ectx;
+
 
 /**
  * Check if the given message is an ACK.  If so,
  * return the status, otherwise SYSERR.
  */
-static int checkACK(CS_MESSAGE_HEADER * reply) {
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "received ACK from gnunetd\n");
+static int checkACK(MESSAGE_HEADER * reply) {
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "received ACK from gnunetd\n");
   if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
        (CS_PROTO_dht_REPLY_ACK == ntohs(reply->type)) )
     return ntohl(((CS_dht_reply_ack_MESSAGE*)reply)->status);
@@ -96,8 +115,9 @@ static int sendAck(struct ClientServerConnection * sock,
 		   int value) {
   CS_dht_reply_ack_MESSAGE msg;
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "sending ACK to gnunetd\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "sending ACK to gnunetd\n");
   msg.header.size = htons(sizeof(CS_dht_reply_ack_MESSAGE));
   msg.header.type = htons(CS_PROTO_dht_REPLY_ACK);
   msg.status = htonl(value);
@@ -123,13 +143,14 @@ static int sendAllResults(const HashCode512 * key,
 	 ntohl(value->size));
   if (OK != connection_write(list->sock,
 			  &reply->header)) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Failed to send `%s'.  Closing connection.\n"),
-	"CS_dht_reply_results_MESSAGE");
-    MUTEX_LOCK(&list->lock);
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Failed to send `%s'.  Closing connection.\n"),
+	   "CS_dht_reply_results_MESSAGE");
+    MUTEX_LOCK(list->lock);
     connection_destroy(list->sock);
     list->sock = NULL;
-    MUTEX_UNLOCK(&list->lock);
+    MUTEX_UNLOCK(list->lock);
     FREE(reply);
     return SYSERR;
   }
@@ -143,8 +164,8 @@ static int sendAllResults(const HashCode512 * key,
  * them to the implementation of list->store).
  */
 static void * process_thread(TableList * list) {
-  CS_MESSAGE_HEADER * buffer;
-  CS_MESSAGE_HEADER * reply;
+  MESSAGE_HEADER * buffer;
+  MESSAGE_HEADER * reply;
   CS_dht_request_join_MESSAGE req;
   int ok;
 
@@ -155,10 +176,11 @@ static void * process_thread(TableList * list) {
   while (list->leave_request == NO) {
     if (list->sock == NULL) {
       PTHREAD_SLEEP(500 * cronMILLIS);
-      MUTEX_LOCK(&list->lock);
+      MUTEX_LOCK(list->lock);
       if (list->leave_request == NO)
-	list->sock  = getClientSocket();
-      MUTEX_UNLOCK(&list->lock);
+	list->sock  = client_connection_create(ectx,
+					       list->cfg);
+      MUTEX_UNLOCK(list->lock);
     }
     if (list->sock == NULL)
       continue;
@@ -176,19 +198,20 @@ static void * process_thread(TableList * list) {
       }
     }
     if (ok == NO) {
-      MUTEX_LOCK(&list->lock);
+      MUTEX_LOCK(list->lock);
       connection_destroy(list->sock);
       list->sock = NULL;
-      MUTEX_UNLOCK(&list->lock);
+      MUTEX_UNLOCK(list->lock);
       continue; /* retry... */
     }
 
     buffer = NULL;
     while (OK == connection_read(list->sock,
 				&buffer)) {
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Received message of type %d from gnunetd\n",
-	  ntohs(buffer->type));
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "Received message of type %d from gnunetd\n",
+	     ntohs(buffer->type));
 
       switch (ntohs(buffer->type)) {
       case CS_PROTO_dht_REQUEST_GET: {
@@ -197,26 +220,28 @@ static void * process_thread(TableList * list) {
 	int keyCount;
 
 	if (sizeof(CS_dht_request_get_MESSAGE) != ntohs(buffer->size)) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Received invalid `%s' request (size %d)\n"),
-	      "GET",
-	      ntohs(buffer->size));
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx,
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Received invalid `%s' request (size %d)\n"),
+		 "GET",
+		 ntohs(buffer->size));
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	  FREE(buffer);
 	}
 	req = (CS_dht_request_get_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Received invalid `%s' request (wrong table)\n"),
-	      "GET");
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx,
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Received invalid `%s' request (wrong table)\n"),
+		 "GET");
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	  break;
 	}
 	
@@ -232,13 +257,14 @@ static void * process_thread(TableList * list) {
 	     (OK != sendAck(list->sock,
 			    &list->table,
 			    resCount)) ) {
-	  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	      _("Failed to send `%s'.  Closing connection.\n"),
-	      "ACK");
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx,
+		 GE_WARNING | GE_BULK | GE_USER,
+		 _("Failed to send `%s'.  Closing connection.\n"),
+		 "ACK");
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	}
 	break;
       }
@@ -249,26 +275,28 @@ static void * process_thread(TableList * list) {
 	DataContainer * value;
 	
 	if (sizeof(CS_dht_request_put_MESSAGE) > ntohs(buffer->size)) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Received invalid `%s' request (size %d)\n"),
-	      "PUT",
+	  GE_LOG(ectx,
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Received invalid `%s' request (size %d)\n"),
+		 "PUT",
 	      ntohs(buffer->size));
-	  MUTEX_LOCK(&list->lock);
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	  break;
 	}
 	req = (CS_dht_request_put_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Received invalid `%s' request (wrong table)\n"),
-	      "PUT");
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx,
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Received invalid `%s' request (wrong table)\n"),
+		 "PUT");
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	  break;
 	}
 	value = MALLOC(sizeof(DataContainer) +
@@ -285,13 +313,14 @@ static void * process_thread(TableList * list) {
 				     &req->key,
 				     value,
 				     ntohl(req->priority)))) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Failed to send `%s'.  Closing connection.\n"),
-	      "ACK");
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx, 
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Failed to send `%s'.  Closing connection.\n"),
+		 "ACK");
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	}
 	FREE(value);
 	break;
@@ -303,26 +332,28 @@ static void * process_thread(TableList * list) {
 	DataContainer * value;
 	
 	if (sizeof(CS_dht_request_remove_MESSAGE) > ntohs(buffer->size)) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Received invalid `%s' request (size %d)\n"),
-	      "REMOVE",
+	  GE_LOG(ectx, 
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Received invalid `%s' request (size %d)\n"),
+		 "REMOVE",
 	      ntohs(buffer->size));
-	  MUTEX_LOCK(&list->lock);
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	  break;
 	}
 	req = (CS_dht_request_remove_MESSAGE*) buffer;
 	if (! equalsHashCode512(&req->table,
 				&list->table)) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Received invalid `%s' request (wrong table)\n"),
-	      "REMOVE");
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx,
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Received invalid `%s' request (wrong table)\n"),
+		 "REMOVE");
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	  break;
 	}
 
@@ -339,13 +370,14 @@ static void * process_thread(TableList * list) {
 		    list->store->del(list->store->closure,
 				     &req->key,
 				     value))) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Failed to send `%s'.  Closing connection.\n"),
-	      "ACK");
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx, 
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Failed to send `%s'.  Closing connection.\n"),
+		 "ACK");
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	}
 	FREE(value);
 	break;
@@ -356,14 +388,15 @@ static void * process_thread(TableList * list) {
 	int resCount;
 
 	if (sizeof(CS_dht_request_iterate_MESSAGE) != ntohs(buffer->size)) {
-	  GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	      _("Received invalid `%s' request (size %d)\n"),
-	      "ITERATE",
+	  GE_LOG(ectx, 
+		 GE_ERROR | GE_BULK | GE_USER,
+		 _("Received invalid `%s' request (size %d)\n"),
+		 "ITERATE",
 	      ntohs(buffer->size));
-	  MUTEX_LOCK(&list->lock);
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	  FREE(buffer);
 	}
 	req = (CS_dht_request_iterate_MESSAGE*) buffer;
@@ -373,35 +406,37 @@ static void * process_thread(TableList * list) {
 	if (OK != sendAck(list->sock,
 					  &list->table,
 					  resCount)) {
-	  GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	      _("Failed to send `%s'.  Closing connection.\n"),
-	      "ACK");
-	  MUTEX_LOCK(&list->lock);
+	  GE_LOG(ectx, 
+		 GE_WARNING | GE_BULK | GE_USER,
+		 _("Failed to send `%s'.  Closing connection.\n"),
+		 "ACK");
+	  MUTEX_LOCK(list->lock);
 	  connection_destroy(list->sock);
 	  list->sock = NULL;
-	  MUTEX_UNLOCK(&list->lock);
+	  MUTEX_UNLOCK(list->lock);
 	}
 	break;
       }
 
 
       default:
-	GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	    _("Received unknown request type %d at %s:%d\n"),
-	    ntohs(buffer->type),
+	GE_LOG(ectx, 
+	       GE_ERROR | GE_BULK | GE_USER,
+	       _("Received unknown request type %d at %s:%d\n"),
+	       ntohs(buffer->type),
 	    __FILE__, __LINE__);
-	MUTEX_LOCK(&list->lock);
+	MUTEX_LOCK(list->lock);
 	connection_destroy(list->sock);
 	list->sock = NULL;
-	MUTEX_UNLOCK(&list->lock);
+	MUTEX_UNLOCK(list->lock);
       } /* end of switch */
       FREE(buffer);
       buffer = NULL;
     }
-    MUTEX_LOCK(&list->lock);
+    MUTEX_LOCK(list->lock);
     connection_destroy(list->sock);
     list->sock = NULL;
-    MUTEX_UNLOCK(&list->lock);
+    MUTEX_UNLOCK(list->lock);
   }
 
   return NULL;
@@ -418,46 +453,54 @@ static void * process_thread(TableList * list) {
  * @return SYSERR on error, OK on success
  */
 int DHT_LIB_join(Blockstore * store,
+		 struct GC_Configuration * cfg,
+		 struct GE_Context * ectx,
 		 const DHT_TableId * table) {
   TableList * list;
   int i;
 
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (i=0;i<tableCount;i++)
     if (equalsHashCode512(&tables[i]->table,
 			  table)) {
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("This client already participates in the given DHT!\n"));
-      MUTEX_UNLOCK(&lock);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("This client already participates in the given DHT!\n"));
+      MUTEX_UNLOCK(lock);
       return SYSERR;
     }
   list = MALLOC(sizeof(TableList));
+  list->cfg = cfg;
+  list->ectx = ectx;
   list->table = *table;
   list->store = store;
   list->leave_request = NO;
-  list->sock = getClientSocket();
+  list->sock = client_connection_create(ectx,
+					cfg);
   if (list->sock == NULL) {
     FREE(list);
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
     return SYSERR;
   }
-  MUTEX_CREATE(&list->lock);
-  if (0 != PTHREAD_CREATE(&list->processor,
-			  (PThreadMain)&process_thread,
-			  list,
-			  16 * 1024)) {
-    LOG_STRERROR(LOG_ERROR, "pthread_create");
+  list->lock = MUTEX_CREATE(NO);
+  list->processor = PTHREAD_CREATE((PThreadMain)&process_thread,
+				   list,
+				   16 * 1024);
+  if (list->processor == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+		    "pthread_create");
     connection_destroy(list->sock);
-    MUTEX_DESTROY(&list->lock);
+    MUTEX_DESTROY(list->lock);
     FREE(list);
-    MUTEX_UNLOCK(&lock);
+    MUTEX_UNLOCK(lock);
     return SYSERR;
   }
   GROW(tables,
        tableCount,
        tableCount+1);
   tables[tableCount-1] = list;
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 
@@ -475,12 +518,12 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   int i;
   void * unused;
   CS_dht_request_leave_MESSAGE req;
-  CS_MESSAGE_HEADER * reply;
+  MESSAGE_HEADER * reply;
   int ret;
   struct ClientServerConnection * sock;
 
   list = NULL;
-  MUTEX_LOCK(&lock);
+  MUTEX_LOCK(lock);
   for (i=0;i<tableCount;i++) {
     if (equalsHashCode512(&tables[i]->table,
 			  table)) {
@@ -492,10 +535,11 @@ int DHT_LIB_leave(const DHT_TableId * table) {
       break;
     }
   }
-  MUTEX_UNLOCK(&lock);
+  MUTEX_UNLOCK(lock);
   if (list == NULL) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Cannot leave DHT: table not known!\n"));
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Cannot leave DHT: table not known!\n"));
     return SYSERR; /* no such table! */
   }
 
@@ -506,10 +550,11 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   req.table = *table;
 
   ret = SYSERR;
-  sock = getClientSocket();
+  sock = client_connection_create(list->ectx,
+				  list->cfg);
   if (sock != NULL) {
     if (OK == connection_write(sock,
-			    &req.header)) {
+			       &req.header)) {
       reply = NULL;
       if (OK == connection_read(sock,
 			       &reply)) {
@@ -532,14 +577,14 @@ int DHT_LIB_leave(const DHT_TableId * table) {
     }
     connection_destroy(sock);
   }
-  MUTEX_LOCK(&list->lock);
+  MUTEX_LOCK(list->lock);
   if (list->sock != NULL)
-    closeSocketTemporarily(list->sock); /* signal process_thread */
-  MUTEX_UNLOCK(&list->lock);
+    connection_close_temporarily(list->sock); /* signal process_thread */
+  MUTEX_UNLOCK(list->lock);
   unused = NULL;
-  PTHREAD_JOIN(&list->processor, &unused);
+  PTHREAD_JOIN(list->processor, &unused);
   connection_destroy(list->sock);
-  MUTEX_DESTROY(&list->lock);
+  MUTEX_DESTROY(list->lock);
   FREE(list);
   return ret;
 }
@@ -564,7 +609,9 @@ int DHT_LIB_leave(const DHT_TableId * table) {
  * @param results where to store the results (on success)
  * @return number of results on success, SYSERR on error (i.e. timeout)
  */
-int DHT_LIB_get(const DHT_TableId * table,
+int DHT_LIB_get(struct GC_Configuration * cfg,
+		struct GE_Context * ectx,
+		const DHT_TableId * table,
 		unsigned int type,
 		unsigned int prio,
 		unsigned int keyCount,
@@ -575,12 +622,13 @@ int DHT_LIB_get(const DHT_TableId * table,
   struct ClientServerConnection * sock;
   CS_dht_request_get_MESSAGE * req;
   CS_dht_reply_results_MESSAGE * res;
-  CS_MESSAGE_HEADER * reply;
+  MESSAGE_HEADER * reply;
   int ret;
   unsigned int size;
   DataContainer * result;
 
-  sock = getClientSocket();
+  sock = client_connection_create(ectx,
+				  cfg);
   if (sock == NULL)
     return SYSERR;
 
@@ -656,14 +704,16 @@ int DHT_LIB_get(const DHT_TableId * table,
  * @param value what to store
  * @return OK on success, SYSERR on error (or timeout)
  */
-int DHT_LIB_put(const DHT_TableId * table,
+int DHT_LIB_put(struct GC_Configuration * cfg,
+		struct GE_Context * ectx,
+		const DHT_TableId * table,
 		const HashCode512 * key,
 		unsigned int prio,
 		cron_t timeout,
 		const DataContainer * value) {
   struct ClientServerConnection * sock;
   CS_dht_request_put_MESSAGE * req;
-  CS_MESSAGE_HEADER * reply;
+  MESSAGE_HEADER * reply;
   int ret;
 
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
@@ -671,7 +721,8 @@ int DHT_LIB_put(const DHT_TableId * table,
       ntohl(value->size),
       &value[1]);
 
-  sock = getClientSocket();
+  sock = client_connection_create(ectx,
+				  cfg);
   if (sock == NULL)
     return SYSERR;
   req = MALLOC(sizeof(CS_dht_request_put_MESSAGE) +
@@ -715,17 +766,19 @@ int DHT_LIB_put(const DHT_TableId * table,
  * @param value what to remove; NULL for all values matching the key
  * @return OK on success, SYSERR on error (or timeout)
  */
-int DHT_LIB_remove(const DHT_TableId * table,
+int DHT_LIB_remove(struct GC_Configuration * cfg,
+		   struct GE_Context * ectx,
+		   const DHT_TableId * table,
 		   const HashCode512 * key,
 		   cron_t timeout,
 		   const DataContainer * value) {
   struct ClientServerConnection * sock;
   CS_dht_request_remove_MESSAGE * req;
-  CS_MESSAGE_HEADER * reply;
+  MESSAGE_HEADER * reply;
   int ret;
   size_t n;
 
-  sock = getClientSocket();
+  sock = client_connection_create(ectx, cfg);
   if (sock == NULL)
     return SYSERR;
   n = sizeof(CS_dht_request_remove_MESSAGE);
@@ -757,17 +810,17 @@ int DHT_LIB_remove(const DHT_TableId * table,
 
 
 /**
- * Initialize DHT_LIB. Call first.
+ * Initialize DHT_LIB. 
  */
-void DHT_LIB_init() {
-  MUTEX_CREATE(&lock);
+void __attribute__ ((constructor)) DHT_LIB_init() {
+  lock = MUTEX_CREATE(NO);
 }
 
 /**
- * Initialize DHT_LIB. Call after leaving all tables!
+ * Shutdown DHT_LIB. 
  */
-void DHT_LIB_done() {
-  MUTEX_DESTROY(&lock);
+void __attribute__ ((destructor))  DHT_LIB_fini() {
+  MUTEX_DESTROY(lock);
 }
 
 

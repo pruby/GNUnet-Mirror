@@ -18,7 +18,7 @@ Notes:
     + dht/tools
     + vpn
   * Testcases not compiling or passing:
-    + dht/tools, dht/module
+    + dht/tools
   * Missing functionality: 
     + fs/fsui:
       @ generate events for suspend, abort

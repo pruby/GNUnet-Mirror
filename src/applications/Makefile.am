@@ -36,9 +36,9 @@ SUBDIRS	= \
  topology_f2f \
  tracekit \
  traffic \
- transport 
+ transport \
+ dht 
 # $(VPN_DIR)
 # $(TESTBED_DIR) 
-# dht 
 # chat
 # kvstore_sqlite
