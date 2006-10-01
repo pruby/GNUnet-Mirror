@@ -32,6 +32,9 @@
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
+static struct FSUI_SearchList * search;
+
+
 static char * makeName(unsigned int i) {
   char * name;
   char * fn;
@@ -68,6 +71,8 @@ static void * eventCallback(void * cls,
     return &unused;
   case FSUI_search_result:
     printf("Received search result\n");
+    FSUI_stopSearch(ctx,
+		    search);
     fn = makeName(43);
     FSUI_startDownload(ctx,
 		       0,
@@ -88,8 +93,6 @@ static void * eventCallback(void * cls,
   default:
     break;
   }
-  if (lastEvent == FSUI_download_complete)
-    return NULL; /* ignore all other events */
   lastEvent = event->type;
   return NULL;
 }
@@ -110,7 +113,8 @@ int main(int argc, char * argv[]){
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri;
   struct GC_Configuration * cfg;
-  struct FSUI_SearchList * search;
+  struct FSUI_UploadList * upload;
+  struct FSUI_UnindexList * unindex;
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
@@ -167,7 +171,7 @@ int main(int argc, char * argv[]){
   kuri = ECRS_parseListKeywordURI(NULL,
 				  2,
 				  (const char**)keywords);
-  CHECK(NULL !=
+  upload = 
 	FSUI_startUpload(ctx,
 			 fn,
 			 0,
@@ -177,16 +181,17 @@ int main(int argc, char * argv[]){
 			 NO,
 			 meta,
 			 kuri,
-			 kuri));
+			 kuri);
+  CHECK(NULL != upload);
   ECRS_freeUri(kuri);
   ECRS_freeMetaData(meta);
   prog = 0;
   while (lastEvent != FSUI_upload_complete) {
     prog++;
     CHECK(prog < 10000)
-
     PTHREAD_SLEEP(50 * cronMILLIS);
   }
+  FSUI_stopUpload(ctx, upload);
 
   prog = 0;
   while (lastEvent != FSUI_download_complete) {
@@ -194,16 +199,15 @@ int main(int argc, char * argv[]){
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
   }
-  FSUI_stopSearch(ctx,
-		  search);
-  CHECK(NULL != FSUI_unindex(ctx, fn));
-
+  unindex = FSUI_unindex(ctx, fn);
+  CHECK(NULL != unindex);
   prog = 0;
   while (lastEvent != FSUI_unindex_complete) {
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
   }
+  FSUI_stopUnindex(ctx, unindex);
 
   /* END OF TEST CODE */
  FAILURE:

@@ -445,7 +445,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 #if DEBUG_DTM
   GE_LOG(ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Download thread manager investigates pending downlod of file `%s' (%u/%u downloads)\n",
+	 "Download thread manager investigates pending download of file `%s' (%u/%u downloads)\n",
 	 list->filename,
 	 list->ctx->activeDownloadThreads,
 	 list->ctx->threadPoolSize);
@@ -460,7 +460,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 #if DEBUG_DTM
     GE_LOG(ectx, 
 	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Download thread manager starts downlod of file `%s'\n",
+	   "Download thread manager starts download of file `%s'\n",
 	   list->filename);
 #endif
     list->state = FSUI_DOWNLOAD_ACTIVE;

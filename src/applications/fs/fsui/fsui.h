@@ -53,18 +53,13 @@ typedef struct FSUI_ThreadList {
    * Set to YES by an FSUI thread upon exit.
    */
   int isDone;
+
 } FSUI_ThreadList;
 
 /**
  * Track record for a given result.
  */
 typedef struct {
-
-  /**
-   * For how many keys (hash of keyword) did we
-   * get this result?
-   */
-  unsigned int matchingKeyCount;
 
   /**
    * What are these keys?
@@ -75,6 +70,13 @@ typedef struct {
    * What info do we have about this result?
    */
   ECRS_FileInfo fi;
+
+  /**
+   * For how many keys (hash of keyword) did we
+   * get this result?
+   */
+  unsigned int matchingKeyCount;
+
 } ResultPending;
 
 /**
@@ -98,15 +100,22 @@ typedef struct FSUI_SearchList {
   struct PTHREAD * handle;
 
   /**
+   * Which URI are we searching?
+   */
+  struct ECRS_URI * uri;
+
+  /**
+   * List of all results found so far.
+   */
+  ECRS_FileInfo * resultsReceived;
+
+  ResultPending * unmatchedResultsReceived;
+
+  /**
    * Set this to YES to signal the search thread that
    * termination is desired.  Then join on handle.
    */
   int signalTerminate;
-
-  /**
-   * Which URI are we searching?
-   */
-  struct ECRS_URI * uri;
 
   /**
    * Desired anonymity level for this search
@@ -125,18 +134,11 @@ typedef struct FSUI_SearchList {
   unsigned int sizeResultsReceived;
 
   /**
-   * List of all results found so far.
-   */
-  ECRS_FileInfo * resultsReceived;
-
-  /**
    * Size of the queue of results that matched at least
    * one of the queries in the boolean query, but not
    * yet all of them.
    */
   unsigned int sizeUnmatchedResultsReceived;
-
-  ResultPending * unmatchedResultsReceived;
 
 } FSUI_SearchList;
 
@@ -201,6 +203,33 @@ typedef enum {
  * @brief list of active downloads
  */
 typedef struct FSUI_DownloadList {
+
+  /**
+   * How many bytes is this download in total
+   * (including files in directory).
+   */
+  unsigned long long total;
+
+  /**
+   * How many bytes have been retrieved so far?
+   */
+  unsigned long long completed;
+
+  /**
+   * How many bytes have been retrieved so far for this particular file only.
+   */
+  unsigned long long completedFile;
+
+  /**
+   * URI for this download.
+   */
+  struct ECRS_URI * uri;
+
+  /**
+   * Filename for this download.
+   */
+  char * filename;
+
   /**
    * Next in the linked list of all downloads
    * kept in FSUI context.
@@ -231,45 +260,14 @@ typedef struct FSUI_DownloadList {
   void * cctx;
 
   /**
-   * State of the download.
-   */
-  FSUI_DownloadState state;
-
-  /**
    * Currently assigned thread (if any).
    */
   struct PTHREAD * handle;
 
   /**
-   * How many bytes is this download in total
-   * (including files in directory).
+   * FIs of completed sub-downloads.
    */
-  unsigned long long total;
-
-  /**
-   * How many bytes have been retrieved so far?
-   */
-  unsigned long long completed;
-
-  /**
-   * How many bytes have been retrieved so far for this particular file only.
-   */
-  unsigned long long completedFile;
-
-  /**
-   * URI for this download.
-   */
-  struct ECRS_URI * uri;
-
-  /**
-   * Filename for this download.
-   */
-  char * filename;
-
-  /**
-   * Is this a recursive download? (YES/NO)
-   */
-  int is_recursive;
+  struct ECRS_URI ** completedDownloads;
 
   /**
    * When did the download start?  Note that if a download is resumed,
@@ -277,6 +275,11 @@ typedef struct FSUI_DownloadList {
    * absolute start time.
    */
   cron_t startTime;
+
+  /**
+   * Is this a recursive download? (YES/NO)
+   */
+  int is_recursive;
 
   /**
    * Is this file a directory?  Set to YES either if the first block
@@ -301,14 +304,14 @@ typedef struct FSUI_DownloadList {
   unsigned int anonymityLevel;
 
   /**
-   * FIs of completed sub-downloads.
-   */
-  struct ECRS_URI ** completedDownloads;
-
-  /**
    * Number of completed sub-downloads.
    */
   unsigned int completedDownloadsCount;
+  
+  /**
+   * State of the download.
+   */
+  FSUI_DownloadState state;
 
 } FSUI_DownloadList;
 
@@ -317,6 +320,8 @@ typedef struct FSUI_DownloadList {
  */
 typedef struct FSUI_UnindexList {
 
+  cron_t start_time;
+
   struct FSUI_UnindexList * next;
 
   struct PTHREAD * handle;
@@ -324,8 +329,6 @@ typedef struct FSUI_UnindexList {
   char * filename;
 
   struct FSUI_Context * ctx;
-
-  cron_t start_time;
 
   int force_termination;
 
@@ -344,21 +347,24 @@ typedef struct {
  * Context for the upload thread.
  */
 typedef struct FSUI_UploadList {
-  struct FSUI_UploadList * next;
 
-  struct PTHREAD * handle;
+  unsigned long long main_completed;
 
-  void * cctx;
-
-  int isRecursive;
-
-  int doIndex;
-
-  unsigned int anonymityLevel;
-
-  unsigned int priority;
+  unsigned long long main_total;
 
   cron_t expiration;
+
+  cron_t start_time;
+
+  EXTRACTOR_ExtractorList * extractors;
+
+  struct FSUI_Context * ctx;
+
+  struct FSUI_UploadList * next;
+
+  DirTrack * dir;
+
+  struct PTHREAD * handle;
 
   struct ECRS_MetaData * meta;
 
@@ -370,19 +376,19 @@ typedef struct FSUI_UploadList {
 
   char * main_filename;
 
-  unsigned long long main_completed;
+  void * cctx;
 
-  unsigned long long main_total;
+  int isRecursive;
 
-  EXTRACTOR_ExtractorList * extractors;
+  int doIndex;
 
-  struct FSUI_Context * ctx;
+  unsigned int anonymityLevel;
 
-  cron_t start_time;
-
-  DirTrack * dir;
+  unsigned int priority;
 
   int individualKeywords;
+
+  int force_termination;
 
 } FSUI_UploadList;
 
@@ -445,13 +451,13 @@ typedef struct FSUI_Context {
    */
   FSUI_UnindexList * unindexOperations;
 
+  FSUI_UploadList * activeUploads;
+
   /**
    * Root of the tree of downloads.  On shutdown,
    * FSUI must abort each of these downloads.
    */
   FSUI_DownloadList activeDownloads;
-
-  FSUI_UploadList * activeUploads;
 
   /**
    * Target size of the thread pool for parallel

@@ -485,16 +485,6 @@ static void * uploadThread(void * cls) {
   if (uri != NULL)
     ECRS_freeUri(uri);
 
-  FREE(utc->main_filename);
-  if (utc->meta != NULL)
-    ECRS_freeMetaData(utc->meta);
-  if (utc->uri != NULL)
-    ECRS_freeUri(utc->uri);
-  if (utc->globalUri != NULL)
-    ECRS_freeUri(utc->globalUri);
-  EXTRACTOR_removeAll(utc->extractors);
-  utc->extractors = NULL;
-  FREE(utc);
   FREENONNULL(inboundFN);
   return NULL;
 }
@@ -553,6 +543,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   utc->meta = ECRS_dupMetaData(md);
   utc->doIndex = doIndex;
   utc->individualKeywords = NO;
+  utc->force_termination = NO;
   utc->handle = PTHREAD_CREATE(&uploadThread,
 			       utc,
 			       128 * 1024);
@@ -563,6 +554,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
     FREE(utc->main_filename);
     ECRS_freeMetaData(utc->meta);
     ECRS_freeUri(utc->uri);
+    EXTRACTOR_removeAll(utc->extractors);
     FREE(utc);
     return NULL;
   }
@@ -583,7 +575,50 @@ FSUI_startUpload(struct FSUI_Context * ctx,
  */
 int FSUI_stopUpload(struct FSUI_Context * ctx,
 		    struct FSUI_UploadList * ul) {
-  return SYSERR;
+  void * unused;
+  FSUI_UploadList * prev;
+  struct GE_Context * ectx;
+  void * unused;
+
+  ectx = ctx->ectx;
+  if (dl == NULL) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FSUI_stopUpload called.\n");
+  MUTEX_LOCK(ctx->lock);
+  prev = ctx->uploadOperations;
+  while ( (prev != ul) &&
+	  (prev != NULL) &&
+	  (prev->next != ul) ) 
+    prev = prev->next;
+  if (prev == NULL) {
+    MUTEX_UNLOCK(ctx->lock);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "FSUI_stopUpload failed to locate deletion operation.\n");
+    return SYSERR;
+  }
+  if (prev == ul) {
+    ctx->uploadOperations = ul->next;
+  } else {
+    prev->next = ul->next;
+  }
+  MUTEX_UNLOCK(ctx->lock);
+  ul->force_termination = YES;
+  PTHREAD_STOP_SLEEP(ul->handle);
+  PTHREAD_JOIN(ul->handle,
+	       &unused);
+  FREE(ul->main_filename);
+  ECRS_freeMetaData(ul->meta);
+  ECRS_freeUri(ul->uri);
+  if (ul->globalUri != NULL)
+    ECRS_freeUri(ul->globalUri);
+  EXTRACTOR_removeAll(ul->extractors);
+  FREE(ul);
+  return OK;
 }
 
 /* end of upload.c */

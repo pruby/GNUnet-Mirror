@@ -88,8 +88,6 @@ static void * unindexThread(void * cls) {
   }
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
-  FREE(utc->filename);
-  FREE(utc);
   GE_LOG(utc->ctx->ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI unindexThread exits.\n");
@@ -149,7 +147,6 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
 		     struct FSUI_UnindexList * dl) {
   FSUI_UnindexList * prev;
   struct GE_Context * ectx;
-  unsigned int backup;
   void * unused;
 
   ectx = ctx->ectx;
