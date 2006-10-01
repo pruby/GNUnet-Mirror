@@ -1,5 +1,6 @@
 /*
       This file is part of GNUnet
+      Copyright (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -34,7 +35,7 @@
 /**
  * Global core API.
  */
-static CoreAPIForApplication * coreAPI = NULL;
+static CoreAPIForApplication * coreAPI;
 
 /**
  * Reference to the DHT service API.
@@ -49,7 +50,7 @@ typedef struct {
   /**
    * Handle to access the client.
    */
-  ClientHandle handler;
+  struct ClientHandle * handler;
   /**
    * For which table is this client responsible?
    */
@@ -66,21 +67,21 @@ typedef struct {
    * and results fields for sending a request to the client.
    * Released after the request has been processed.
    */
-  Semaphore * prerequest;
+  struct SEMAPHORE * prerequest;
 
   /**
    * Semaphore that is up'ed by the client handler whenever a reply
    * was received.  The client exit handler also needs to up this
    * semaphore to unblock threads that wait for replies.
    */
-  Semaphore * prereply;
+  struct SEMAPHORE * prereply;
 
   /**
    * Semaphore that is down'ed by the client handler before storing
    * the data from a reply.  The cs-functions need to up it
    * once they have prepared the handlers.
    */
-  Semaphore * postreply;
+  struct SEMAPHORE * postreply;
 
   /**
    * Function to call for results
@@ -101,21 +102,21 @@ typedef struct {
 } DHT_CLIENT_TableHandlers;
 
 typedef struct {
-  ClientHandle client;
+  struct ClientHandle * client;
   struct DHT_PUT_RECORD * put_record;
   DHT_TableId table;
   unsigned int replicas; /* confirmed puts? */
 } DHT_CLIENT_PUT_RECORD;
 
 typedef struct {
-  ClientHandle client;
+  struct ClientHandle * client;
   struct DHT_REMOVE_RECORD * remove_record;
   DHT_TableId table;
   unsigned int replicas; /* confirmed dels? */
 } DHT_CLIENT_REMOVE_RECORD;
 
 typedef struct {
-  ClientHandle client;
+  struct ClientHandle * client;
   struct DHT_GET_RECORD * get_record;
   DHT_TableId table;
   unsigned int count;
@@ -147,7 +148,9 @@ static unsigned int csHandlersCount;
 /**
  * Lock for accessing csHandlers.
  */
-static Mutex csLock;
+static struct MUTEX * csLock;
+
+static struct GE_Context * ectx;
 
 /* ******* implementation of Blockstore via TCP link ********** */
 
@@ -176,7 +179,7 @@ static int tcp_get(void * closure,
     return SYSERR;
   }
 
-  SEMAPHORE_DOWN(handlers->prerequest);
+  SEMAPHORE_DOWN(handlers->prerequest, YES);
   handlers->resultCallback = resultCallback;
   handlers->resultCallbackClosure = resCallbackClosure;
   handlers->status = 0;
@@ -205,7 +208,7 @@ static int tcp_get(void * closure,
   }
   FREE(req);
   SEMAPHORE_UP(handlers->postreply);
-  SEMAPHORE_DOWN(handlers->prereply);
+  SEMAPHORE_DOWN(handlers->prereply, YES);
   ret = handlers->status;
   SEMAPHORE_UP(handlers->prerequest);
   return ret;
@@ -230,7 +233,7 @@ static int tcp_put(void * closure,
 
   n = sizeof(CS_dht_request_put_MESSAGE) + ntohl(value->size);
   req = MALLOC(n);
-  SEMAPHORE_DOWN(handlers->prerequest);
+  SEMAPHORE_DOWN(handlers->prerequest, YES);
   handlers->status = 0;
   req->header.size = htons(n);
   req->header.type = htons(CS_PROTO_dht_REQUEST_PUT);
@@ -248,12 +251,12 @@ static int tcp_put(void * closure,
     return SYSERR;
   }
   FREE(req);
-  LOG(LOG_EVERYTHING,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "Sending STORE request to client!\n");
   SEMAPHORE_UP(handlers->postreply);
-  SEMAPHORE_DOWN(handlers->prereply);
+  SEMAPHORE_DOWN(handlers->prereply, YES);
   ret = handlers->status;
-  LOG(LOG_EVERYTHING,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "Client confirmed STORE request with status %d!\n",
       ret);
   SEMAPHORE_UP(handlers->prerequest);
@@ -278,7 +281,7 @@ static int tcp_del(void * closure,
   if (value != NULL)
     n += htonl(value->size);
   req = MALLOC(n);
-  SEMAPHORE_DOWN(handlers->prerequest);
+  SEMAPHORE_DOWN(handlers->prerequest, YES);
   handlers->status = 0;
   req->header.size = htons(n);
   req->header.type = htons(CS_PROTO_dht_REQUEST_REMOVE);
@@ -297,7 +300,7 @@ static int tcp_del(void * closure,
   }
   FREE(req);
   SEMAPHORE_UP(handlers->postreply);
-  SEMAPHORE_DOWN(handlers->prereply);
+  SEMAPHORE_DOWN(handlers->prereply, YES);
   ret = handlers->status;
   SEMAPHORE_UP(handlers->prerequest);
   return ret;
@@ -317,7 +320,7 @@ static int tcp_iterate(void * closure,
   DHT_CLIENT_TableHandlers * handlers = closure;
   int ret;
 
-  SEMAPHORE_DOWN(handlers->prerequest);
+  SEMAPHORE_DOWN(handlers->prerequest, YES);
   handlers->status = 0;
   handlers->resultCallback = processor;
   handlers->resultCallbackClosure = cls;
@@ -329,7 +332,7 @@ static int tcp_iterate(void * closure,
     return SYSERR;
   }
   SEMAPHORE_UP(handlers->postreply);
-  SEMAPHORE_DOWN(handlers->prereply);
+  SEMAPHORE_DOWN(handlers->prereply, YES);
   ret = handlers->status;
   SEMAPHORE_UP(handlers->prerequest);
   return ret;
@@ -337,7 +340,7 @@ static int tcp_iterate(void * closure,
 
 /* *********************** CS handlers *********************** */
 
-static int sendAck(ClientHandle client,
+static int sendAck(struct ClientHandle * client,
 		   DHT_TableId * table,
 		   int value) {
   CS_dht_reply_ack_MESSAGE msg;
@@ -353,8 +356,8 @@ static int sendAck(ClientHandle client,
 /**
  * CS handler for joining existing DHT-table.
  */
-static int csJoin(ClientHandle client,
-                  const CS_MESSAGE_HEADER * message) {
+static int csJoin(struct ClientHandle * client,
+                  const MESSAGE_HEADER * message) {
   DHT_CLIENT_TableHandlers * ptr;
   CS_dht_request_join_MESSAGE * req;
   int ret;
@@ -364,7 +367,7 @@ static int csJoin(ClientHandle client,
     return SYSERR;
   }
   req = (CS_dht_request_join_MESSAGE*) message;
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   ptr = MALLOC(sizeof(DHT_CLIENT_TableHandlers));
   ptr->store = MALLOC(sizeof(Blockstore));
   ptr->store->iterate = &tcp_iterate;
@@ -394,15 +397,15 @@ static int csJoin(ClientHandle client,
   ret = sendAck(client,
 		&req->table,
 		ret);
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   return ret;
 }
 
 /**
  * CS handler for leaving DHT-table.
  */
-static int csLeave(ClientHandle client,
-                   const CS_MESSAGE_HEADER * message) {
+static int csLeave(struct ClientHandle * client,
+                   const MESSAGE_HEADER * message) {
 
   CS_dht_request_leave_MESSAGE * req;
   int i;
@@ -413,10 +416,10 @@ static int csLeave(ClientHandle client,
     return SYSERR;
   }
   req = (CS_dht_request_leave_MESSAGE*) message;
-  LOG(LOG_EVERYTHING,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "Client leaving request received!\n");
 
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   for (i=0;i<csHandlersCount;i++) {
     ptr = csHandlers[i];
     if ( (equalsHashCode512(&ptr->table,
@@ -425,12 +428,12 @@ static int csLeave(ClientHandle client,
       GROW(csHandlers,
 	   csHandlersCount,
 	   csHandlersCount-1);
-      MUTEX_UNLOCK(&csLock);
+      MUTEX_UNLOCK(csLock);
 
       /* release clients waiting on this DHT */
       ptr->status = SYSERR;
       SEMAPHORE_UP(ptr->prereply);
-      SEMAPHORE_DOWN(ptr->prerequest);
+      SEMAPHORE_DOWN(ptr->prerequest, YES);
       SEMAPHORE_DESTROY(ptr->prerequest);
       SEMAPHORE_DESTROY(ptr->prereply);
       SEMAPHORE_DESTROY(ptr->postreply);
@@ -441,7 +444,7 @@ static int csLeave(ClientHandle client,
 		     OK);
     }
   }
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
       _("`%s' failed: table not found!\n"),
       "CS_DHT_LEAVE");
@@ -457,7 +460,7 @@ static void cs_put_abort(void * cls) {
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Signaling client put completion: %d\n",
       record->replicas);
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   dhtAPI->put_stop(record->put_record);
   if (OK != sendAck(record->client,
 		    &record->table,
@@ -475,15 +478,15 @@ static void cs_put_abort(void * cls) {
 	   putRecordsSize-1);
       break;
     }
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   FREE(record);
 }
 
 /**
  * CS handler for inserting <key,value>-pair into DHT-table.
  */
-static int csPut(ClientHandle client,
-		 const CS_MESSAGE_HEADER * message) {
+static int csPut(struct ClientHandle * client,
+		 const MESSAGE_HEADER * message) {
   CS_dht_request_put_MESSAGE * req;
   DataContainer * data;
   DHT_CLIENT_PUT_RECORD * ptr;
@@ -513,12 +516,12 @@ static int csPut(ClientHandle client,
   ptr->table = req->table;
   ptr->put_record = NULL;
 
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   GROW(putRecords,
        putRecordsSize,
        putRecordsSize+1);
   putRecords[putRecordsSize-1] = ptr;
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Starting DHT put\n");
   ptr->put_record = dhtAPI->put_start(&req->table,
@@ -542,7 +545,7 @@ static void cs_remove_abort(DHT_CLIENT_REMOVE_RECORD * record) {
 	_("sendAck failed.  Terminating connection to client.\n"));
     coreAPI->terminateClientConnection(record->client);
   }
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   for (i=removeRecordsSize-1;i>=0;i--)
     if (removeRecords[i] == record) {
       removeRecords[i] = removeRecords[removeRecordsSize-1];
@@ -551,13 +554,13 @@ static void cs_remove_abort(DHT_CLIENT_REMOVE_RECORD * record) {
 	   removeRecordsSize-1);
       break;
     }
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
 
   FREE(record);
 }
 
 struct CSRemoveClosure {
-  ClientHandle client;
+  struct ClientHandle * client;
   CS_dht_request_remove_MESSAGE * message;
 };
 
@@ -568,7 +571,7 @@ static void csRemoveJob(struct CSRemoveClosure * cpc) {
   CS_dht_request_remove_MESSAGE * req;
   DataContainer * data;
   DHT_CLIENT_REMOVE_RECORD * ptr;
-  ClientHandle client;
+  struct ClientHandle * client;
   unsigned int size;
 
   req = cpc->message;
@@ -592,12 +595,12 @@ static void csRemoveJob(struct CSRemoveClosure * cpc) {
   ptr->replicas = 0;
   ptr->table = req->table;
   ptr->remove_record = NULL;
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   GROW(removeRecords,
        removeRecordsSize,
        removeRecordsSize+1);
   removeRecords[removeRecordsSize-1] = ptr;
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   ptr->remove_record = dhtAPI->remove_start(&req->table,
 					    &req->key,
 					    ntohll(req->timeout),
@@ -611,8 +614,8 @@ static void csRemoveJob(struct CSRemoveClosure * cpc) {
 /**
  * CS handler for inserting <key,value>-pair into DHT-table.
  */
-static int csRemove(ClientHandle client,
-		    const CS_MESSAGE_HEADER * message) {
+static int csRemove(struct ClientHandle * client,
+		    const MESSAGE_HEADER * message) {
   struct CSRemoveClosure * cpc;
 
   if (ntohs(message->size) < sizeof(CS_dht_request_remove_MESSAGE)) {
@@ -625,10 +628,11 @@ static int csRemove(ClientHandle client,
 	 message,
 	 ntohs(message->size));
   cpc->client = client;
-  addCronJob((CronJob)&csRemoveJob,
-	     0,
-	     0,
-	     cpc);
+  cron_add_job(coreAPI->cron,
+	       (CronJob)&csRemoveJob,
+	       0,
+	       0,
+	       cpc);
   return OK;
 }
 
@@ -690,7 +694,7 @@ static void cs_get_abort(void * cls) {
       coreAPI->terminateClientConnection(record->client);
     }
   }
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   for (i=getRecordsSize-1;i>=0;i--)
     if (getRecords[i] == record) {
       getRecords[i] = getRecords[getRecordsSize-1];
@@ -699,12 +703,12 @@ static void cs_get_abort(void * cls) {
 	   getRecordsSize-1);
       break;
     }
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   FREE(record);
 }
 
 struct CSGetClosure {
-  ClientHandle client;
+  struct ClientHandle * client;
   CS_dht_request_get_MESSAGE * message;
 };
 
@@ -714,7 +718,7 @@ struct CSGetClosure {
 static int csGetJob(struct CSGetClosure * cpc) {
   CS_dht_request_get_MESSAGE * req;
   DHT_CLIENT_GET_RECORD * ptr;
-  ClientHandle client;
+  struct ClientHandle * client;
   unsigned int keyCount;
 
   client = cpc->client;
@@ -728,12 +732,12 @@ static int csGetJob(struct CSGetClosure * cpc) {
   ptr->table = req->table;
   ptr->get_record = NULL;
 
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   GROW(getRecords,
        getRecordsSize,
        getRecordsSize+1);
   getRecords[getRecordsSize-1] = ptr;
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   ptr->get_record = dhtAPI->get_start(&req->table,
 				      ntohl(req->type),
 				      keyCount,
@@ -749,8 +753,8 @@ static int csGetJob(struct CSGetClosure * cpc) {
 /**
  * CS handler for inserting <key,value>-pair into DHT-table.
  */
-static int csGet(ClientHandle client,
-		 const CS_MESSAGE_HEADER * message) {
+static int csGet(struct ClientHandle * client,
+		 const MESSAGE_HEADER * message) {
   struct CSGetClosure * cpc;
 
   if (ntohs(message->size) != sizeof(CS_dht_request_get_MESSAGE)) {
@@ -764,10 +768,11 @@ static int csGet(ClientHandle client,
 	 message,
 	 ntohs(message->size));
   cpc->client = client;
-  addCronJob((CronJob)&csGetJob,
-	     0,
-	     0,
-	     cpc);
+  cron_add_job(coreAPI->cron,
+	       (CronJob)&csGetJob,
+	       0,
+	       0,
+	       cpc);
   return OK;
 }
 
@@ -776,8 +781,8 @@ static int csGet(ClientHandle client,
  * the status value in status and up's the semaphore to signal
  * that we received a reply.
  */
-static int csACK(ClientHandle client,
-		 const CS_MESSAGE_HEADER * message) {
+static int csACK(struct ClientHandle * client,
+		 const MESSAGE_HEADER * message) {
   DHT_CLIENT_TableHandlers * ptr;
   CS_dht_reply_ack_MESSAGE * req;
   int i;
@@ -787,23 +792,23 @@ static int csACK(ClientHandle client,
     return SYSERR;
   }
   req =(CS_dht_reply_ack_MESSAGE*) message;
-  LOG(LOG_EVERYTHING,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "`%s' received from client.\n",
       "CS_dht_reply_ack_MESSAGE");
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   for (i=0;i<csHandlersCount;i++) {
     ptr = csHandlers[i];
     if ( (ptr->handler == client) &&
 	 (equalsHashCode512(&ptr->table,
 			    &req->table)) ) {
-      SEMAPHORE_DOWN(ptr->postreply);
+      SEMAPHORE_DOWN(ptr->postreply, YES);
       ptr->status = ntohl(req->status);
       SEMAPHORE_UP(ptr->prereply);
-      MUTEX_UNLOCK(&csLock);
+      MUTEX_UNLOCK(csLock);
       return OK;
     }
   }
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
       _("Failed to deliver `%s' message.\n"),
       "CS_dht_reply_ack_MESSAGE");
@@ -815,8 +820,8 @@ static int csACK(ClientHandle client,
  * and passes on the new result.  If all results have been
  * collected, signals using the semaphore.
  */
-static int csResults(ClientHandle client,
-		     const CS_MESSAGE_HEADER * message) {
+static int csResults(struct ClientHandle * client,
+		     const MESSAGE_HEADER * message) {
   CS_dht_reply_results_MESSAGE * req;
   DHT_CLIENT_TableHandlers * ptr;
   unsigned int dataLength;
@@ -832,17 +837,17 @@ static int csResults(ClientHandle client,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  LOG(LOG_EVERYTHING,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "`%s' received from client.\n",
       "CS_dht_reply_results_MESSAGE");
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   for (i=0;i<csHandlersCount;i++) {
     if ( (csHandlers[i]->handler == client) &&
 	 (equalsHashCode512(&csHandlers[i]->table,
 			    &req->table)) ) {
       ptr = csHandlers[i];
-      SEMAPHORE_DOWN(ptr->postreply);
-      LOG(LOG_EVERYTHING,
+      SEMAPHORE_DOWN(ptr->postreply, YES);
+      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	  "`%s' received result '%.*s'!\n",
 	  __FUNCTION__,
 	  dataLength - sizeof(DataContainer),
@@ -852,11 +857,11 @@ static int csResults(ClientHandle client,
 			  &req->data,			
 			  ptr->resultCallbackClosure);
       ptr->status++;
-      MUTEX_UNLOCK(&csLock);
+      MUTEX_UNLOCK(csLock);
       return OK;
     }
   }
-  MUTEX_UNLOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
   GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
       _("Failed to deliver `%s' message.\n"),
       "CS_dht_reply_results_MESSAGE");
@@ -867,14 +872,13 @@ static int csResults(ClientHandle client,
  * CS handler for handling exiting client.  Triggers
  * csLeave for all tables that rely on this client.
  */
-static void csClientExit(ClientHandle client) {
+static void csClientExit(struct ClientHandle * client) {
   int i;
   DHT_CLIENT_GET_RECORD * gr;
   DHT_CLIENT_PUT_RECORD * pr;
   DHT_CLIENT_REMOVE_RECORD * rr;
-  int haveCron;
 
-  MUTEX_LOCK(&csLock);
+  MUTEX_LOCK(csLock);
   for (i=0;i<csHandlersCount;i++) {
     if (csHandlers[i]->handler == client) {
       CS_dht_request_leave_MESSAGE message;
@@ -887,18 +891,18 @@ static void csClientExit(ClientHandle client) {
       i--;
     }
   }
-  haveCron = isCronRunning();
-  MUTEX_UNLOCK(&csLock);
-  if (YES == haveCron)
-    suspendCron();
-  MUTEX_LOCK(&csLock);
+  MUTEX_UNLOCK(csLock);
+  cron_suspend(coreAPI->cron,
+	       YES);
+  MUTEX_LOCK(csLock);
   for (i=0;i<getRecordsSize;i++) {
     if (getRecords[i]->client == client) {
       gr = getRecords[i];
 
-      delCronJob(&cs_get_abort,
-		 0,
-		 gr);
+      cron_del_job(coreAPI->cron,
+		   &cs_get_abort,
+		   0,
+		   gr);
       dhtAPI->get_stop(gr->get_record);
       getRecords[i] = getRecords[getRecordsSize-1];
       GROW(getRecords,
@@ -910,9 +914,10 @@ static void csClientExit(ClientHandle client) {
     if (putRecords[i]->client == client) {
       pr = putRecords[i];
 
-      delCronJob(&cs_put_abort,
-		 0,
-		 pr);
+      cron_del_job(coreAPI->cron,
+		   &cs_put_abort,
+		   0,
+		   pr);
       dhtAPI->put_stop(pr->put_record);
       putRecords[i] = putRecords[putRecordsSize-1];
       GROW(putRecords,
@@ -924,9 +929,10 @@ static void csClientExit(ClientHandle client) {
     if (removeRecords[i]->client == client) {
       rr = removeRecords[i];
 
-      delCronJob((CronJob) &cs_remove_abort,
-		 0,
-		 rr);
+      cron_del_job(coreAPI->cron,
+		   (CronJob) &cs_remove_abort,
+		   0,
+		   rr);
       dhtAPI->remove_stop(rr->remove_record);
       removeRecords[i] = removeRecords[removeRecordsSize-1];
       GROW(removeRecords,
@@ -934,14 +940,15 @@ static void csClientExit(ClientHandle client) {
 	   removeRecordsSize-1);
     }
   }
-  MUTEX_UNLOCK(&csLock);
-  if (YES == haveCron)
-    resumeCron();
+  MUTEX_UNLOCK(csLock);
+  cron_resume_jobs(coreAPI->cron,
+		   YES);
 }
 
 int initialize_module_dht(CoreAPIForApplication * capi) {
   int status;
 
+  ectx = capi->ectx;
   dhtAPI = capi->requestService("dht");
   if (dhtAPI == NULL)
     return SYSERR;
@@ -957,7 +964,7 @@ int initialize_module_dht(CoreAPIForApplication * capi) {
       CS_PROTO_dht_REPLY_GET,
       CS_PROTO_dht_REPLY_ACK);
   status = OK;
-  MUTEX_CREATE_RECURSIVE(&csLock);
+  csLock = MUTEX_CREATE(YES);
   if (SYSERR == capi->registerClientHandler(CS_PROTO_dht_REQUEST_JOIN,
                                             &csJoin))
     status = SYSERR;
@@ -1018,23 +1025,26 @@ int done_module_dht() {
     status = SYSERR;
 
   while (putRecordsSize > 0) {
-    delCronJob(&cs_put_abort,
-	       0,
-	       putRecords[0]);
+    cron_del_job(coreAPI->cron,
+		 &cs_put_abort,
+		 0,
+		 putRecords[0]);
     cs_put_abort(putRecords[0]);
   }
 
   while (removeRecordsSize > 0) {
-    delCronJob((CronJob) &cs_remove_abort,
-	       0,
-	       removeRecords[0]);
+    cron_del_job(coreAPI->cron,
+		 (CronJob) &cs_remove_abort,
+		 0,
+		 removeRecords[0]);
     cs_remove_abort(removeRecords[0]);
   }
 
   while (getRecordsSize > 0) {
-    delCronJob(&cs_get_abort,
-	       0,
-	       getRecords[0]);
+    cron_del_job(coreAPI->cron,
+		 &cs_get_abort,
+		 0,
+		 getRecords[0]);
     cs_get_abort(getRecords[0]);
   }
 
@@ -1044,7 +1054,7 @@ int done_module_dht() {
   coreAPI->releaseService(dhtAPI);
   dhtAPI = NULL;
   coreAPI = NULL;
-  MUTEX_DESTROY(&csLock);
+  MUTEX_DESTROY(csLock);
   return status;
 }
 

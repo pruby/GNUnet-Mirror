@@ -60,7 +60,7 @@
 #define DEBUG_DHT YES
 
 #if DEBUG_DHT
-#define ENTER() LOG(LOG_EVERYTHING, "Entering method %s at %s:%d.\n", __FUNCTION__, __FILE__, __LINE__)
+#define ENTER() GE_LOG(ectx, GE_REQUEST | GE_DEVELOPER | GE_DEBUG, "Entering method %s at %s:%d.\n", __FUNCTION__, __FILE__, __LINE__)
 #else
 #define ENTER() do {} while (0)
 #endif
@@ -219,7 +219,7 @@ typedef struct {
    * Signal used to return from findNodes when timeout has
    * expired.
    */
-  Semaphore * signal;
+  struct SEMAPHORE * signal;
 
   /**
    * Number of entries in matches.
@@ -262,7 +262,7 @@ typedef struct {
   /**
    * Lock for accessing this struct.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 } FindNodesContext;
 
 /**
@@ -329,7 +329,7 @@ typedef struct {
   /**
    * Lock for accessing this struct.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
   /**
    * Callback to call on the k nodes.
@@ -393,7 +393,7 @@ typedef struct DHT_GET_RECORD {
   /**
    * Lock for concurrent access to the record.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
 } DHT_GET_RECORD;
 
@@ -448,7 +448,7 @@ typedef struct DHT_PUT_RECORD {
   /**
    * Lock for concurrent access to the record.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
 } DHT_PUT_RECORD;
 
@@ -507,7 +507,7 @@ typedef struct DHT_REMOVE_RECORD {
   /**
    * Lock for concurrent access to the record.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 
 } DHT_REMOVE_RECORD;
 
@@ -544,7 +544,7 @@ typedef struct {
   /**
    * Lock for accessing this struct.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 } RPC_DHT_FindValue_Context;
 
 typedef struct {
@@ -569,7 +569,7 @@ typedef struct {
   /**
    * Lock for accessing this struct.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 } RPC_DHT_store_Context;
 
 typedef struct {
@@ -594,7 +594,7 @@ typedef struct {
   /**
    * Lock for accessing this struct.
    */
-  Mutex lock;
+  struct MUTEX * lock;
 } RPC_DHT_remove_Context;
 
 /**
@@ -631,12 +631,14 @@ static int findKNodes_stop(FindKNodesContext * fnc);
 /**
  * Global core API.
  */
-static CoreAPIForApplication * coreAPI = NULL;
+static CoreAPIForApplication * coreAPI;
+
+static struct GE_Context * ectx;
 
 /**
  * RPC API
  */
-static RPC_ServiceAPI * rpcAPI = NULL;
+static RPC_ServiceAPI * rpcAPI;
 
 /**
  * The buckets (Kademlia style routing table).
@@ -666,7 +668,7 @@ static unsigned int tablesCount;
 /**
  * Mutex to synchronize access to tables.
  */
-static Mutex * lock;
+static struct MUTEX * lock;
 
 /**
  * Handle for the masterTable datastore that is used by this node
@@ -685,6 +687,8 @@ static DHT_CronJobAbortEntry * abortTable;
 
 static unsigned int abortTableSize;
 
+#define hostIdentityEquals(a,b) (0 == memcmp(a,b,sizeof(PeerIdentity)))
+
 /* *********************** CODE! ********************* */
 
 #if DEBUG_DHT
@@ -692,8 +696,9 @@ static void printRoutingTable() {
   unsigned int i;
 
   MUTEX_LOCK(lock);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "DHT ROUTING TABLE:\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "DHT ROUTING TABLE:\n");
   for (i=0;i<bucketCount;i++) {
     if (buckets[i].peers != NULL) {
       PeerInfo * pos = NULL;
@@ -711,15 +716,16 @@ static void printRoutingTable() {
 	  hash2enc(&pos->tables[j],
 		   &tabs[j]);
 	
-	GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	    "[%4d: %3d-%3d]: %s with %u tables (%s, %s, %s)\n",
-	    i,
-	    buckets[i].bstart, buckets[i].bend,
-	    &enc,
-	    pos->tableCount,
-	    &tabs[0],
-	    &tabs[1],
-	    &tabs[2]);
+	GE_LOG(ectx,
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "[%4d: %3d-%3d]: %s with %u tables (%s, %s, %s)\n",
+	       i,
+	       buckets[i].bstart, buckets[i].bend,
+	       &enc,
+	       pos->tableCount,
+	       &tabs[0],
+	       &tabs[1],
+	       &tabs[2]);
 	pos = vectorGetNext(buckets[i].peers);
       }
     }
@@ -1189,7 +1195,7 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
   ENTER();
   now = get_time();
   param = RPC_paramNew();
-  MUTEX_LOCK(&fnc->lock);
+  MUTEX_LOCK(fnc->lock);
   if (equalsHashCode512(&fnc->key,
 			&coreAPI->myIdentity->hashPubKey)) {
     table = getLocalTableData(&fnc->table);
@@ -1221,7 +1227,7 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
 			rel,
 			(RPC_Complete) &create_find_nodes_rpc_complete_callback,
 			fnc);
-  MUTEX_UNLOCK(&fnc->lock);
+  MUTEX_UNLOCK(fnc->lock);
   RPC_paramFree(param);
 }
 
@@ -1247,7 +1253,7 @@ ping_reply_handler(const PeerIdentity * responder,
   if (fnc == NULL)
     return;
   /* update k-best list */
-  MUTEX_LOCK(&fnc->lock);
+  MUTEX_LOCK(fnc->lock);
   pos = findPeerInfo(responder);
   /* does the peer support the table in question? */
   if (! equalsHashCode512(&fnc->table,
@@ -1257,7 +1263,7 @@ ping_reply_handler(const PeerIdentity * responder,
 			    &pos->tables[i]))
 	break;
     if (i == -1) {
-      MUTEX_UNLOCK(&fnc->lock);
+      MUTEX_UNLOCK(fnc->lock);
       return; /* peer does not support table in question */
     }
   }
@@ -1280,7 +1286,7 @@ ping_reply_handler(const PeerIdentity * responder,
   /* trigger transitive request searching for more nodes! */
   create_find_nodes_rpc(responder,
 			fnc);
-  MUTEX_UNLOCK(&fnc->lock);
+  MUTEX_UNLOCK(fnc->lock);
 }
 
 /**
@@ -1320,7 +1326,7 @@ static void request_DHT_ping(const PeerIdentity * identity,
   MUTEX_UNLOCK(lock);
 
   /* peer not in RPC buckets; try PINGing via RPC */
-  MUTEX_LOCK(&fnc->lock);
+  MUTEX_LOCK(fnc->lock);
   GROW(fnc->rpc,
        fnc->rpcRepliesExpected,
        fnc->rpcRepliesExpected+1);
@@ -1339,7 +1345,7 @@ static void request_DHT_ping(const PeerIdentity * identity,
 			(RPC_Complete) &ping_reply_handler,
 			fnc);
   vectorFree(request_param);
-  MUTEX_UNLOCK(&fnc->lock);
+  MUTEX_UNLOCK(fnc->lock);
 }
 
 /**
@@ -1449,12 +1455,12 @@ static void dht_findvalue_rpc_reply_callback(const PeerIdentity * responder,
 	  &enc);
       return;
     }
-    MUTEX_LOCK(&record->lock);
+    MUTEX_LOCK(record->lock);
     if (record->callback != NULL)
       record->resultCallback(record->keys,
 			     value,
 			     record->resultClosure);
-    MUTEX_UNLOCK(&record->lock);
+    MUTEX_UNLOCK(record->lock);
     FREE(value);
   }
 }
@@ -1619,7 +1625,7 @@ dht_get_async_start(const DHT_TableId * table,
   ret->resultsFound = 0;
   ret->callback = callback;
   ret->closure = closure;
-  MUTEX_CREATE_RECURSIVE(&ret->lock);
+  ret->lock = MUTEX_CREATE(YES);
   ret->rpc = NULL;
   ret->rpcRepliesExpected = 0;
   ret->kfnc = NULL;
@@ -1747,7 +1753,7 @@ static int dht_get_async_stop(struct DHT_GET_RECORD * record) {
 
   for (i=0;i<record->rpcRepliesExpected;i++)
     rpcAPI->RPC_stop(record->rpc[i]);
-  MUTEX_DESTROY(&record->lock);
+  MUTEX_DESTROY(record->lock);
   resultsFound = record->resultsFound;
   FREE(record);
 #if DEBUG_DHT
@@ -1859,7 +1865,7 @@ static FindNodesContext * findNodes_start(const DHT_TableId * table,
   fnc->rpcRepliesExpected = 0;
   fnc->rpcRepliesReceived = 0;
   fnc->async_handle = NULL;
-  MUTEX_CREATE_RECURSIVE(&fnc->lock);
+  fnc->lock = MUTEX_CREATE(YES);
 
   /* find peers in local peer-list that participate in
      the given table */
@@ -1947,7 +1953,7 @@ static int findNodes_stop(FindNodesContext * fnc,
   for (i=fnc->rpcRepliesExpected-1;i>=0;i--)
     rpcAPI->RPC_stop(fnc->rpc[i]);
   SEMAPHORE_DESTROY(fnc->signal);
-  MUTEX_DESTROY(&fnc->lock);
+  MUTEX_DESTROY(fnc->lock);
 
   /* Finally perform callbacks on collected k-best nodes. */
   if (callback != NULL)
@@ -2007,7 +2013,7 @@ find_k_nodes_dht_master_get_callback(const HashCode512 * key,
 	&enc,
 	"DHT_findValue");
 #endif
-    MUTEX_LOCK(&fnc->lock);
+    MUTEX_LOCK(fnc->lock);
     if (fnc->k > 0) {
       if (fnc->callback != NULL)
 	fnc->callback(msg,
@@ -2015,7 +2021,7 @@ find_k_nodes_dht_master_get_callback(const HashCode512 * key,
       fnc->k--;
       fnc->found++;
     }
-    MUTEX_UNLOCK(&fnc->lock);
+    MUTEX_UNLOCK(fnc->lock);
   }
   return OK;
 }
@@ -2082,7 +2088,7 @@ findKNodes_start(const DHT_TableId * table,
   fnc->rpcRepliesExpected = 0;
   fnc->rpcRepliesReceived = 0;
   fnc->found = 0;
-  MUTEX_CREATE_RECURSIVE(&fnc->lock);
+  fnc->lock = MUTEX_CREATE(YES);
   matches = MALLOC(sizeof(PeerIdentity) * fnc->k);
 
   /* find peers in local peer-list that participate in
@@ -2158,7 +2164,7 @@ static int findKNodes_stop(FindKNodesContext * fnc) {
   /* stop all async RPCs */
   for (i=fnc->rpcRepliesExpected-1;i>=0;i--)
     rpcAPI->RPC_stop(fnc->rpc[i]);
-  MUTEX_DESTROY(&fnc->lock);
+  MUTEX_DESTROY(fnc->lock);
 
   i = fnc->found;
   FREE(fnc);
@@ -2184,7 +2190,7 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
 
   ENTER();
   processOptionalFields(responder, results);
-  MUTEX_LOCK(&record->lock);
+  MUTEX_LOCK(record->lock);
   pos = findPeerInfo(responder);
   pos->lastActivity = get_time();
 
@@ -2200,7 +2206,7 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
 	 (dataLength != sizeof(PeerIdentity)) ) {
       EncName enc;
 
-      MUTEX_UNLOCK(&record->lock);
+      MUTEX_UNLOCK(record->lock);
       hash2enc(&responder->hashPubKey,
 	       &enc);
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -2210,7 +2216,7 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
       return;
     }
   }
-  MUTEX_UNLOCK(&record->lock);
+  MUTEX_UNLOCK(record->lock);
 }
 
 /**
@@ -2351,7 +2357,7 @@ dht_put_async_start(const DHT_TableId * table,
   memcpy(ret->value,
 	 value,
 	 ntohl(value->size));
-  MUTEX_CREATE_RECURSIVE(&ret->lock);
+  ret->lock = MUTEX_CREATE(YES);
   ret->rpc = NULL;
   ret->rpcRepliesExpected = 0;
   ret->kfnc = NULL;
@@ -2427,10 +2433,11 @@ dht_put_async_start(const DHT_TableId * table,
   /* call OP_Complete callback after timeout! */
   addAbortJob(&dht_put_async_timeout,
 	      ret);
-  addCronJob(&dht_put_async_timeout,
-	     timeout,
-	     0,
-	     ret);
+  cron_add_job(coreAPI->cron,
+	       &dht_put_async_timeout,
+	       timeout,
+	       0,
+	       ret);
   MUTEX_UNLOCK(lock);
   return ret;
 }
@@ -2447,7 +2454,10 @@ static int dht_put_async_stop(struct DHT_PUT_RECORD * record) {
 
   /* cancel timeout cron job (if still live) */
   delAbortJob(&dht_put_async_timeout, record);
-  delCronJob(&dht_put_async_timeout, 0, record);
+  cron_del_job(coreAPI->cron,
+	       &dht_put_async_timeout, 
+	       0, 
+	       record);
   /* abort findKNodes (if running) - it may cause
      the addition of additional RPCs otherwise! */
   if (record->kfnc != NULL)
@@ -2455,7 +2465,7 @@ static int dht_put_async_stop(struct DHT_PUT_RECORD * record) {
 
   for (i=0;i<record->rpcRepliesExpected;i++)
     rpcAPI->RPC_stop(record->rpc[i]);
-  MUTEX_DESTROY(&record->lock);
+  MUTEX_DESTROY(record->lock);
   i = record->confirmed_stores;
   FREE(record->value);
   FREE(record);
@@ -2485,7 +2495,7 @@ dht_remove_rpc_reply_callback(const PeerIdentity * responder,
 
   ENTER();
   processOptionalFields(responder, results);
-  MUTEX_LOCK(&record->lock);
+  MUTEX_LOCK(record->lock);
   pos = findPeerInfo(responder);
   pos->lastActivity = get_time();
   max = RPC_paramCount(results);
@@ -2500,7 +2510,7 @@ dht_remove_rpc_reply_callback(const PeerIdentity * responder,
 	 (dataLength != sizeof(PeerIdentity)) ) {
       EncName enc;
 
-      MUTEX_UNLOCK(&record->lock);
+      MUTEX_UNLOCK(record->lock);
       hash2enc(&responder->hashPubKey,
 	       &enc);
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
@@ -2511,7 +2521,7 @@ dht_remove_rpc_reply_callback(const PeerIdentity * responder,
     }
     record->confirmed_stores++;
   }
-  MUTEX_UNLOCK(&record->lock);
+  MUTEX_UNLOCK(record->lock);
 }
 
 /**
@@ -2629,7 +2639,7 @@ dht_remove_async_start(const DHT_TableId * table,
 	   value,
 	   ntohl(value->size));
   }
-  MUTEX_CREATE_RECURSIVE(&ret->lock);
+  ret->lock = MUTEX_CREATE(YES);
   ret->rpc = NULL;
   ret->rpcRepliesExpected = 0;
   ret->confirmed_stores = 0;
@@ -2713,7 +2723,7 @@ static int dht_remove_async_stop(struct DHT_REMOVE_RECORD * record) {
 
   for (i=0;i<record->rpcRepliesExpected;i++)
     rpcAPI->RPC_stop(record->rpc[i]);
-  MUTEX_DESTROY(&record->lock);
+  MUTEX_DESTROY(record->lock);
   i = record->confirmed_stores;
   FREE(record->value);
   FREE(record);
@@ -2910,9 +2920,9 @@ static void rpc_DHT_findValue_abort(RPC_DHT_FindValue_Context * fw) {
   ENTER();
   delAbortJob((CronJob) &rpc_DHT_findValue_abort,
 	      fw);
-  MUTEX_LOCK(&fw->lock);
+  MUTEX_LOCK(fw->lock);
   if (fw->done == YES) {
-    MUTEX_UNLOCK(&fw->lock);
+    MUTEX_UNLOCK(fw->lock);
     return;
   }
   dht_get_async_stop(fw->get_record);
@@ -2928,7 +2938,7 @@ static void rpc_DHT_findValue_abort(RPC_DHT_FindValue_Context * fw) {
     RPC_paramFree(results);
   }
   fw->done = YES;
-  MUTEX_UNLOCK(&fw->lock);
+  MUTEX_UNLOCK(fw->lock);
 }
 
 /**
@@ -2941,7 +2951,7 @@ static int rpc_dht_findValue_callback(const HashCode512 * key,
 				      const DataContainer * value,
 				      RPC_DHT_FindValue_Context * fw) {
   ENTER();
-  MUTEX_LOCK(&fw->lock);
+  MUTEX_LOCK(fw->lock);
   GROW(fw->results,
        fw->count,
        fw->count+1);
@@ -2949,7 +2959,7 @@ static int rpc_dht_findValue_callback(const HashCode512 * key,
   memcpy(fw->results[fw->count-1],
 	 value,
 	 ntohl(value->size));
-  MUTEX_UNLOCK(&fw->lock);
+  MUTEX_UNLOCK(fw->lock);
   return OK;
 }
 
@@ -3025,7 +3035,7 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 
   fw_context
     = MALLOC(sizeof(RPC_DHT_FindValue_Context));
-  MUTEX_CREATE_RECURSIVE(&fw_context->lock);
+  fw_context->lock = MUTEX_CREATE(YES);
   fw_context->count
     = 0;
   fw_context->done
@@ -3048,10 +3058,11 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 			  fw_context);
   addAbortJob((CronJob)&rpc_DHT_findValue_abort,
 	      fw_context);
-  addCronJob((CronJob)&rpc_DHT_findValue_abort,
-	     ntohll(*timeout),
-	     0,
-	     fw_context);
+  cron_add_job(coreAPI->cron,
+	       (CronJob)&rpc_DHT_findValue_abort,
+	       ntohll(*timeout),
+	       0,
+	       fw_context);
 }
 
 /**
@@ -3069,9 +3080,9 @@ static void rpc_DHT_store_abort(void * cls) {
   ENTER();
   delAbortJob(&rpc_DHT_store_abort,
 	      fw);
-  MUTEX_LOCK(&fw->lock);
+  MUTEX_LOCK(fw->lock);
   if (fw->done == YES) {
-    MUTEX_UNLOCK(&fw->lock);
+    MUTEX_UNLOCK(fw->lock);
     return;
   }
   dht_put_async_stop(fw->put_record);
@@ -3087,7 +3098,7 @@ static void rpc_DHT_store_abort(void * cls) {
     RPC_paramFree(results);
   }
   fw->done = YES;
-  MUTEX_UNLOCK(&fw->lock);
+  MUTEX_UNLOCK(fw->lock);
 }
 
 /**
@@ -3099,7 +3110,10 @@ static void rpc_DHT_store_abort(void * cls) {
 static void rpc_dht_store_callback(RPC_DHT_store_Context * fw) {
   RPC_Param * param;
   
-  delCronJob(&rpc_DHT_store_abort, 0, fw);
+  cron_del_job(coreAPI->cron,
+	       &rpc_DHT_store_abort,
+	       0, 
+	       fw);
   delAbortJob(&rpc_DHT_store_abort, fw);
   param = RPC_paramNew();
   fw->callback(param,
@@ -3152,7 +3166,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
 
   fw_context
     = MALLOC(sizeof(RPC_DHT_store_Context));
-  MUTEX_CREATE_RECURSIVE(&fw_context->lock);
+  fw_context->lock = MUTEX_CREATE(YES);
   MUTEX_LOCK(lock);
   ltd = getLocalTableData(table);
   if (ltd == NULL) {
@@ -3176,10 +3190,11 @@ static void rpc_DHT_store(const PeerIdentity * sender,
 			  fw_context);
   addAbortJob(&rpc_DHT_store_abort,
 	      fw_context);
-  addCronJob(&rpc_DHT_store_abort,
-	     ntohll(*timeout),
-	     0,
-	     fw_context);
+  cron_add_job(coreAPI->cron,
+	       &rpc_DHT_store_abort,
+	       ntohll(*timeout),
+	       0,
+	       fw_context);
   FREE(value);
 }
 
@@ -3197,9 +3212,9 @@ static void rpc_DHT_remove_abort(RPC_DHT_remove_Context * fw) {
   ENTER();
   delAbortJob((CronJob) &rpc_DHT_remove_abort,
 	      fw);
-  MUTEX_LOCK(&fw->lock);
+  MUTEX_LOCK(fw->lock);
   if (fw->done == YES) {
-    MUTEX_UNLOCK(&fw->lock);
+    MUTEX_UNLOCK(fw->lock);
     return;
   }
   dht_remove_async_stop(fw->remove_record);
@@ -3214,7 +3229,7 @@ static void rpc_DHT_remove_abort(RPC_DHT_remove_Context * fw) {
 		 fw->rpc_context);
   RPC_paramFree(results);
   fw->done = YES;
-  MUTEX_UNLOCK(&fw->lock);
+  MUTEX_UNLOCK(fw->lock);
 }
 
 /**
@@ -3226,7 +3241,10 @@ static void rpc_DHT_remove_abort(RPC_DHT_remove_Context * fw) {
 static void rpc_dht_remove_callback(RPC_DHT_remove_Context * fw) {
   RPC_Param * param;
   
-  delCronJob(&rpc_DHT_store_abort, 0, fw);
+  cron_del_job(coreAPI->cron,
+	       &rpc_DHT_store_abort, 
+	       0, 
+	       fw);
   delAbortJob(&rpc_DHT_store_abort, fw);
   param = RPC_paramNew();
 
@@ -3288,7 +3306,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 				       "value");
   fw_context
     = MALLOC(sizeof(RPC_DHT_remove_Context));
-  MUTEX_CREATE_RECURSIVE(&fw_context->lock);
+  fw_context->lock = MUTEX_CREATE(YES);
   MUTEX_LOCK(lock);
   ltd = getLocalTableData(table);
   if (ltd == NULL) {
@@ -3312,10 +3330,11 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 			     fw_context);
   addAbortJob((CronJob)&rpc_DHT_remove_abort,
 	      fw_context);
-  addCronJob((CronJob)&rpc_DHT_remove_abort,
-	     ntohll(*timeout),
-	     0,
-	     fw_context);
+  cron_add_job(coreAPI->cron,
+	       (CronJob)&rpc_DHT_remove_abort,
+	       ntohll(*timeout),
+	       0,
+	       fw_context);
   FREE(value);
 }
 
@@ -3354,9 +3373,10 @@ static void dhtMaintainJob(void * shutdownFlag) {
 #if DEBUG_DHT
   printRoutingTable();
   /* first, free resources from ASYNC calls started last time */
-  LOG(LOG_CRON,
-      "`%s' stops async requests from last cron round.\n",
-      __FUNCTION__);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
+	 "`%s' stops async requests from last cron round.\n",
+	 __FUNCTION__);
 #endif
   now = get_time();
   for (i=putRecordsSize-1;i>=0;i--) {
@@ -3418,7 +3438,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
 	 coreAPI->myIdentity,
 	 sizeof(PeerIdentity));
 #if DEBUG_DHT
-  LOG(LOG_CRON,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "`%s' issues DHT_PUTs to advertise tables this peer participates in.\n",
       __FUNCTION__);
 #endif
@@ -3452,7 +3472,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
     for each table that we have joined gather OUR neighbours
   */
 #if DEBUG_DHT
-  LOG(LOG_CRON,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "`%s' issues findNodes for each table that we participate in.\n",
       __FUNCTION__);
 #endif
@@ -3478,7 +3498,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
      b) if lastActivity is very very old, drop
   */
 #if DEBUG_DHT
-  LOG(LOG_CRON,
+  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
       "`%s' issues put to advertise tables that we participate in.\n",
       __FUNCTION__);
 #endif
@@ -3553,17 +3573,32 @@ static void dhtMaintainJob(void * shutdownFlag) {
  */
 DHT_ServiceAPI * provide_module_dht(CoreAPIForApplication * capi) {
   static DHT_ServiceAPI api;
-  unsigned int i;
+  unsigned long long i;
+  unsigned long long j;
 
   ENTER();
   coreAPI = capi;
+  ectx = capi->ectx;
   rpcAPI = capi->requestService("rpc");
   if (rpcAPI == NULL)
     return NULL;
-  i = getConfigurationInt("DHT",
-			  "BUCKETCOUNT");
-  if ( (i == 0) || (i > 512) )
-    i = 512;
+  if ( (-1 == GC_get_configuration_value_number(capi->cfg,
+						"DHT",
+						"BUCKETCOUNT",
+						1,
+						512,
+						512,
+						&i)) ||
+       (-1 == GC_get_configuration_value_number(capi->cfg,
+						"DHT",
+						"MASTER-TABLE-SIZE",
+						1,
+						65536 * 1024,
+						65536,
+						&j)) ) {
+    capi->releaseService(rpcAPI);
+    return NULL;
+  }
   GROW(buckets,
        bucketCount,
        i);
@@ -3572,6 +3607,7 @@ DHT_ServiceAPI * provide_module_dht(CoreAPIForApplication * capi) {
     buckets[i].bend = 512 * (i+1) / bucketCount;
     buckets[i].peers = vectorNew(4);
   }
+
 
   rpcAPI->RPC_register("DHT_ping",
 		       &rpc_DHT_ping);
@@ -3595,18 +3631,16 @@ DHT_ServiceAPI * provide_module_dht(CoreAPIForApplication * capi) {
 
   memset(&masterTableId, 0, sizeof(HashCode512));
   /* join the master table */
-  i = getConfigurationInt("DHT",
-			  "MASTER-TABLE-SIZE");
-  if (i == 0)
-    i = 65536; /* 64k memory should suffice */
   masterTableDatastore
-    = create_datastore_dht_master(i);
+    = create_datastore_dht_master(ectx,
+				  j);
   dht_join(masterTableDatastore,
 	   &masterTableId);
-  addCronJob(&dhtMaintainJob,
-	     0,
-	     DHT_MAINTAIN_FREQUENCY,
-	     NULL);
+  cron_add_job(coreAPI->cron,
+	       &dhtMaintainJob,
+	       0,
+	       DHT_MAINTAIN_FREQUENCY,
+	       NULL);
   return &api;
 }
 
@@ -3628,14 +3662,16 @@ int release_module_dht() {
 			       &rpc_DHT_store);
   rpcAPI->RPC_unregister_async("DHT_remove",
 			       &rpc_DHT_remove);
-  delCronJob(&dhtMaintainJob,
-	     DHT_MAINTAIN_FREQUENCY,
-	     NULL);
+  cron_del_job(coreAPI->cron,
+	       &dhtMaintainJob,
+	       DHT_MAINTAIN_FREQUENCY,
+	       NULL);
   /* stop existing / pending DHT operations */
   while (abortTableSize > 0) {
-    delCronJob(abortTable[0].job,
-	       0,
-	       abortTable[0].arg);
+    cron_del_job(coreAPI->cron,
+		 abortTable[0].job,
+		 0,
+		 abortTable[0].arg);
     abortTable[0].job(abortTable[0].arg);
   }
   /* leave the master table */

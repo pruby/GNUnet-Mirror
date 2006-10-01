@@ -1,5 +1,6 @@
  /*
       This file is part of GNUnet
+      Copyright (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -48,7 +49,7 @@ typedef struct HT_Entry_t {
  * @brief the per-table data
  */
 typedef struct {
-  Mutex lock;
+  struct MUTEX * lock;
   size_t max_memory;
   HT_Entry * first;
 } MemoryDatastore;
@@ -81,7 +82,7 @@ static int lookup(void * closure,
 
   if ( (ds == NULL) || (keyCount != 1) )
     return SYSERR;
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   pos = ds->first;
   while (pos != NULL) {
     if (equalsHashCode512(&keys[0], &pos->key)) {
@@ -89,15 +90,15 @@ static int lookup(void * closure,
 	if (OK != resultCallback(&pos->key,
 				 pos->values[i],
 				 resCallbackClosure)) {
-	  MUTEX_UNLOCK(&ds->lock);
+	  MUTEX_UNLOCK(ds->lock);
 	  return SYSERR;
 	}
-      MUTEX_UNLOCK(&ds->lock);
+      MUTEX_UNLOCK(ds->lock);
       return pos->count;
     }
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   return 0;
 }
 
@@ -113,7 +114,7 @@ static int store(void * closure,
 		 const HashCode512 * key,
 		 const DataContainer * value,
 		 unsigned int prio) {
-  MemoryDatastore * ds = (MemoryDatastore*) closure;
+  MemoryDatastore * ds = closure;
   HT_Entry * pos;
   unsigned int size;
 
@@ -121,12 +122,12 @@ static int store(void * closure,
     return SYSERR;
 
   size = ntohl(value->size);
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   pos = ds->first;
   while (pos != NULL) {
     if (equalsHashCode512(key, &pos->key)) {
       if (ds->max_memory < size) {
-	MUTEX_UNLOCK(&ds->lock);
+	MUTEX_UNLOCK(ds->lock);
 	return NO;
       }
       ds->max_memory -= size;
@@ -138,14 +139,14 @@ static int store(void * closure,
       memcpy(pos->values[pos->count-1],
 	     value,
 	     size);
-      MUTEX_UNLOCK(&ds->lock);
+      MUTEX_UNLOCK(ds->lock);
       return OK;
     } /* end key match */
     pos = pos->next;
   }
   /* no key matched, create fresh entry */
   if (ds->max_memory < sizeof(HT_Entry) + size) {
-    MUTEX_UNLOCK(&ds->lock);
+    MUTEX_UNLOCK(ds->lock);
     return NO;
   }
   ds->max_memory -= sizeof(HT_Entry) + size;
@@ -159,7 +160,7 @@ static int store(void * closure,
 	 size);
   pos->next = ds->first;
   ds->first = pos;
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   return OK;
 }
 
@@ -182,7 +183,7 @@ static int ds_remove(void * closure,
   if (ds == NULL)
     return SYSERR;
   size = ntohl(value->size);
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   prev = NULL;
   pos = ds->first;
   while (pos != NULL) {
@@ -207,7 +208,7 @@ static int ds_remove(void * closure,
 	      FREE(pos);
 	      ds->max_memory += sizeof(HT_Entry);	
 	    }
-	    MUTEX_UNLOCK(&ds->lock);
+	    MUTEX_UNLOCK(ds->lock);
 	    return OK;
 	  }
 	}
@@ -228,13 +229,13 @@ static int ds_remove(void * closure,
 	FREE(pos);
 	ds->max_memory += sizeof(HT_Entry);
       }
-      MUTEX_UNLOCK(&ds->lock);
+      MUTEX_UNLOCK(ds->lock);
       return OK;
     }
     prev = pos;
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   return SYSERR; /* not found */
 }
 
@@ -256,7 +257,7 @@ static int iterate(void * closure,
   if (ds == NULL)
     return SYSERR;
 
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   pos = ds->first;
   ret = 0;
   while (pos != NULL) {
@@ -266,13 +267,13 @@ static int iterate(void * closure,
 	if (OK != processor(&pos->key,
 			    pos->values[i],
 			    cls)) {
-	  MUTEX_UNLOCK(&ds->lock);
+	  MUTEX_UNLOCK(ds->lock);
 	  return ret;
 	}
     }
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   return SYSERR;
 }
 
@@ -287,7 +288,7 @@ Blockstore * create_blockstore_memory(size_t max_memory) {
   md = MALLOC(sizeof(MemoryDatastore));
   md->max_memory = max_memory;
   md->first = NULL;
-  MUTEX_CREATE_RECURSIVE(&md->lock);
+  md->lock = MUTEX_CREATE(YES);
 
   res = MALLOC(sizeof(Blockstore));
   res->get = &lookup;
@@ -319,7 +320,7 @@ void destroy_blockstore_memory(Blockstore * ds) {
     FREE(pos);
     pos = next;
   }
-  MUTEX_DESTROY(&md->lock);
+  MUTEX_DESTROY(md->lock);
   FREE(md);
   FREE(ds);
 }

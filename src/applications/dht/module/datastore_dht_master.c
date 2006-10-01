@@ -1,5 +1,6 @@
  /*
       This file is part of GNUnet
+      Copyright (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -38,6 +39,7 @@
 #include "platform.h"
 
 #include "gnunet_core.h"
+#include "gnunet_util_cron.h"
 #include "datastore_dht_master.h"
 
 typedef struct {
@@ -59,7 +61,9 @@ typedef struct HT_Entry_t {
  * @brief the per-table data
  */
 typedef struct {
-  Mutex lock;
+  struct GE_Context * ectx;
+  struct MUTEX * lock;
+  struct CronManager * cron;
   size_t max_memory;
   HT_Entry * first;
 } MemoryDatastore;
@@ -80,16 +84,16 @@ static int lookup(void * closure,
 		  const HashCode512 * keys,
 		  DataProcessor resultCallback,
 		  void * resCallbackClosure) {
-  MemoryDatastore * ds = (MemoryDatastore*) closure;
+  MemoryDatastore * ds = closure;
   HT_Entry * pos;
   int count;
   int i;
   DataContainer * data;
 
-  GE_ASSERT(ectx, keyCount == 1);
+  GE_ASSERT(ds->ectx, keyCount == 1);
   if (ds == NULL)
     return SYSERR;
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   pos = ds->first;
   while (pos != NULL) {
     if (equalsHashCode512(&keys[0], &pos->key)) {
@@ -123,12 +127,12 @@ static int lookup(void * closure,
 	FREE(data);
       }
       FREENONNULL(perm);
-      MUTEX_UNLOCK(&ds->lock);
+      MUTEX_UNLOCK(ds->lock);
       return count;
     }
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   return 0;
 }
 
@@ -155,7 +159,7 @@ static int store(void * closure,
       != sizeof(HashCode512))
     return SYSERR;
 
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   pos = ds->first;
   while (pos != NULL) {
     if (equalsHashCode512(key, &pos->key)) {
@@ -163,11 +167,11 @@ static int store(void * closure,
 	if (equalsHashCode512(&pos->values[i].hash,
 			      (HashCode512*)&value[1])) {
 	  pos->values[i].lastRefreshTime = get_time();
-	  MUTEX_UNLOCK(&ds->lock);
+	  MUTEX_UNLOCK(ds->lock);
 	  return OK; /* already present */
 	}
       if (ds->max_memory < sizeof(MasterEntry)) {
-	MUTEX_UNLOCK(&ds->lock);
+	MUTEX_UNLOCK(ds->lock);
 	return NO;
       }
       ds->max_memory -= sizeof(MasterEntry);
@@ -178,14 +182,14 @@ static int store(void * closure,
       memcpy(&pos->values[pos->count-1].hash,
 	     &value[1],
 	     sizeof(HashCode512));
-      MUTEX_UNLOCK(&ds->lock);
+      MUTEX_UNLOCK(ds->lock);
       return OK;
     } /* end key match */
     pos = pos->next;
   }
   /* no key matched, create fresh entry */
   if (ds->max_memory < sizeof(HT_Entry) + sizeof(MasterEntry)) {
-    MUTEX_UNLOCK(&ds->lock);
+    MUTEX_UNLOCK(ds->lock);
     return NO;
   }
   ds->max_memory -= sizeof(HT_Entry) + sizeof(MasterEntry);
@@ -199,7 +203,7 @@ static int store(void * closure,
   pos->values[0].lastRefreshTime = get_time();
   pos->next = ds->first;
   ds->first = pos;
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   return OK;
 }
 
@@ -224,7 +228,7 @@ static int ds_remove(void * closure,
 	!= sizeof(HashCode512)) )
     return SYSERR;
 
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   prev = NULL;
   pos = ds->first;
   while (pos != NULL) {
@@ -247,7 +251,7 @@ static int ds_remove(void * closure,
 	      FREE(pos);
 	      ds->max_memory += sizeof(HT_Entry);	
 	    }
-	    MUTEX_UNLOCK(&ds->lock);
+	    MUTEX_UNLOCK(ds->lock);
 	    return OK;
 	  }
 	}
@@ -265,13 +269,13 @@ static int ds_remove(void * closure,
 	FREE(pos);
 	ds->max_memory += sizeof(HT_Entry);
       }
-      MUTEX_UNLOCK(&ds->lock);
+      MUTEX_UNLOCK(ds->lock);
       return OK;
     }
     prev = pos;
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   return SYSERR; /* not found */
 }
 
@@ -294,7 +298,7 @@ static int iterate(void * closure,
   if (ds == NULL)
     return SYSERR;
 
-  MUTEX_LOCK(&ds->lock);
+  MUTEX_LOCK(ds->lock);
   pos = ds->first;
   ret = 0;
   cont = MALLOC(sizeof(HashCode512) + sizeof(DataContainer));
@@ -309,7 +313,7 @@ static int iterate(void * closure,
 	if (OK != processor(&pos->key,
 			    cont,
 			    cls)) {
-	  MUTEX_UNLOCK(&ds->lock);
+	  MUTEX_UNLOCK(ds->lock);
 	  FREE(cont);
 	  return ret;
 	}
@@ -317,7 +321,7 @@ static int iterate(void * closure,
     }
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&ds->lock);
+  MUTEX_UNLOCK(ds->lock);
   FREE(cont);
   return SYSERR;
 }
@@ -329,7 +333,7 @@ static void expirationJob(MemoryDatastore * store) {
   cron_t now;
 
   prev = NULL;
-  MUTEX_LOCK(&store->lock);
+  MUTEX_LOCK(store->lock);
   now = get_time();
   pos = store->first;
   while (pos != NULL) {
@@ -355,32 +359,36 @@ static void expirationJob(MemoryDatastore * store) {
     prev = pos;
     pos = pos->next;
   }
-  MUTEX_UNLOCK(&store->lock);
+  MUTEX_UNLOCK(store->lock);
 }
 
 /**
  * Create a DHT Datastore (in memory)
  * @param max_memory do not use more than max_memory memory.
  */
-Blockstore * create_datastore_dht_master(size_t max_memory) {
+Blockstore * create_datastore_dht_master(struct GE_Context * ectx,
+					 size_t max_memory) {
   Blockstore * res;
   MemoryDatastore * md;
 
   md = MALLOC(sizeof(MemoryDatastore));
   md->max_memory = max_memory;
   md->first = NULL;
-  MUTEX_CREATE_RECURSIVE(&md->lock);
-
+  md->lock = MUTEX_CREATE(YES);
+  md->cron = cron_create(ectx);
+  md->ectx = ectx;
   res = MALLOC(sizeof(Blockstore));
   res->get  = &lookup;
   res->put   = &store;
   res->del  = &ds_remove;
   res->iterate = &iterate;
   res->closure = md;
-  addCronJob((CronJob) &expirationJob,
-	     5 * cronMINUTES,
-	     5 * cronMINUTES,
-	     md);
+  cron_add_job(md->cron,
+	       (CronJob) &expirationJob,
+	       5 * cronMINUTES,
+	       5 * cronMINUTES,
+	       md);
+  cron_start(md->cron);
   return res;
 }
 
@@ -393,17 +401,14 @@ void destroy_datastore_dht_master(Blockstore * ds) {
   MemoryDatastore * md;
   HT_Entry * pos;
   HT_Entry * next;
-  int icr;
 
   md  = ds->closure;
-  icr = isCronRunning();
-  if (icr)
-    suspendCron();
-  delCronJob((CronJob) &expirationJob,
-	     5 * cronMINUTES,
-	     md);
-  if (icr)
-    resumeCron();
+  cron_stop(md->cron);
+  cron_del_job(md->cron,
+	       (CronJob) &expirationJob,
+	       5 * cronMINUTES,
+	       md);
+  cron_destroy(md->cron);
 
   pos = md->first;
   while (pos != NULL) {
@@ -414,7 +419,7 @@ void destroy_datastore_dht_master(Blockstore * ds) {
     FREE(pos);
     pos = next;
   }
-  MUTEX_DESTROY(&md->lock);
+  MUTEX_DESTROY(md->lock);
   FREE(md);
   FREE(ds);
 }

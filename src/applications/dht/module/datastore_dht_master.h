@@ -1,5 +1,6 @@
  /*
       This file is part of GNUnet
+      Copyright (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -28,12 +29,14 @@
 #define DHT_DATASTORE_MASTER_H
 
 #include "gnunet_blockstore.h"
+#include "gnunet_util.h"
 
 /**
  * Create a DHT Master Datastore
  * @param max_memory do not use more than max_memory memory.
  */
-Blockstore * create_datastore_dht_master(size_t max_memory);
+Blockstore * create_datastore_dht_master(struct GE_Context * ectx,
+					 size_t max_memory);
 
 /**
  * Destroy a DHT Master Datastore (in memory)
