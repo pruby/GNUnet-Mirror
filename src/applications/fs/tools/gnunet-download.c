@@ -235,6 +235,7 @@ int main(int argc,
   /* FIXME: use gnunetutil shutdown management instead! */
   if (dl != NULL)
     SEMAPHORE_DOWN(signalFinished, YES);
+  FSUI_stopDownload(ctx, dl);
   FSUI_stop(ctx);
   SEMAPHORE_DESTROY(signalFinished);
 

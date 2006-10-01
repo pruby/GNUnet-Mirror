@@ -14,61 +14,48 @@ Notes:
 
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring: [RC]
-  * util: 
-    + loggers: SMTP logger
-    + use new loggers in for CS error reporting
-  * make testcases compile & pass again:
+  * Not compiling:
+    + dht/module
+    + dht/tools
+    + vpn
+  * Testcases not compiling or passing:
     + dht/tools, dht/module
-  * transports:
-    + SMTP/HTTP: do not yet compile (commented out from build)
-      - libcurl / libmicrohttpd / libesmtp?
-  * applications:
-    + more testing needed:
-      - advertising
-      - ecrs_core
-      - tracekit
-      - gap
-      - rpc
-    + incomplete (API change-related fixes):
-      - fs/fslib
-        * error handing
-      - fs/module 
-      - fs/ecrs
-      - fs/uritrack 
-      - fs/tools
-      - fs/namespace,
-      - fs/collection
-      - fs/fsui:
-        * events for suspend, abort
-        * make sure new event fields are set for all events
-    + not compiling:
-      - vpn
-      - chat
-      - dht
-      - testbed
-  * setup:
-    + gtk wizard
-    + ncurses wizard
-    + Scheme (scm) specification of entire configuration
+  * Missing functionality: 
+    + fs/fsui:
+      @ generate events for suspend, abort
+      @ make sure new event fields are set for all events
+    + fs/fslib: error handing
+    + fs/module: error handing
+    + fs/ecrs: test-terminate integration (upload, unindex)
+    + logger configuration
+- More testcases: [RC]
+  * advertising
+  * ecrs_core
+  * tracekit
+  * gap (incl. economy)
+  * rpc
+  * fs/uritrack
+  * fs/collection
+  * make dht tests work (and write more) 
+  * fs/fsui: recursive uploads and downloads (incl. persistence)
+  * fs/namespaces
+- gnunet-setup: [RC]
+  * gtk wizard
+  * ncurses wizard
+  * Scheme (scm) specification of entire configuration
 - fix known bugs (see Mantis for updates):
   * file/socket leak (#955)
   * Windows installer, uninstall: Remove account [Nils, RC]
-- testing:
-  * make dht tests work (and write more) [ CG, RC ]
-  * more "make check" targets to test: 
-    + gap and economy  [ RC ]
-    + FSUI URI tracking [ RC ]
-    + FSUI recursive uploads and downloads (incl. persistence) [ RC ]
-    + FSUI namespaces
-    + FSUI collections
-    + gnunet-tracekit
+
 
 0.7.2 ['06] (aka "performance"):
+- Transports:
+  * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
+- Features:
+  * SMTP logger
+  * Chat support [RC]
+  * XFS / support for location URIs [CG, RC]
 - Optimizations:
-  * cache some kblock-public/private keys in memory [ CG, RC ]
-    (1024 bit keys are much better than the 2048 bit keys,
-     but this would give another performance boost, especially for
-     insertion of zip files with hundreds of files/keywords!)
   * directories can be compacted -- add heuristic to determine
     if we should NOT padd with zeros (if we would waste too
     much space).  Needs some lookahead for size of remaining
@@ -76,7 +63,6 @@ Notes:
     by 50% (?) -- incidentially 25% is what gzip can do on the
     current directories!) [ CG ]
   * DHT: use additional optional fields (HELLOs) [ CG ]
-- XFS / support for location URIs [CG, RC]
 
 0.7.3 ['06] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)

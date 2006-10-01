@@ -463,12 +463,14 @@ int main(int argc,
   ECRS_freeUri(gloKeywords);
   ECRS_freeUri(topKeywords);
   FREE(tmp);
-  /* wait for completion */
-  SEMAPHORE_DOWN(exitSignal, YES);
-  es = exitSignal;
-  exitSignal = NULL;
-  SEMAPHORE_DESTROY(es);
-
+  if (ul != NULL) {
+    /* wait for completion */
+    SEMAPHORE_DOWN(exitSignal, YES);
+    es = exitSignal;
+    exitSignal = NULL;
+    SEMAPHORE_DESTROY(es);
+    FSUI_stopUpload(ctx, ul);
+  }
   ECRS_freeMetaData(meta);
   FSUI_stop(ctx);
   
