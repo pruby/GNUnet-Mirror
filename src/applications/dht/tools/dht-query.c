@@ -28,94 +28,43 @@
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
 #include "gnunet_dht_lib.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
+#include "gnunet_dht_datastore_memory.h"
 
 static DHT_TableId table;
 
-static void printHelp() {
-  static Help help[] = {
-    HELP_CONFIG,
-    HELP_HELP,
-    HELP_LOGLEVEL,
-    { 't', "table", "NAME",
-      gettext_noop("query table called NAME") },
-    { 'T', "timeout", "TIME",
-      gettext_noop("allow TIME ms to process each command") },
-    HELP_VERSION,
-    HELP_END,
-  };
-  formatHelp("dht-query [OPTIONS] COMMANDS",
-	     _("Query (get KEY, put KEY VALUE, remove KEY VALUE) a DHT table."),
-	     help);
-}
+static char * table_id;
 
-static int parseOptions(int argc,
-			char ** argv) {
-  int c;
+static unsigned int timeout;
 
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "table", 1, 0, 't' },
-      { "timeout", 1, 0, 'T' },
-      { 0,0,0,0 }
-    };
-    c = GNgetopt_long(argc,
-		      argv,
-		      "vhH:c:L:dt:T:",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'h':
-      printHelp();
-      return SYSERR;
-    case 't':
-      FREENONNULL(setConfigurationString("DHT-QUERY",
-					 "TABLE",
-					 GNoptarg));
-      break;
-     case 'T': {
-      unsigned int max;
-      if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-T");
-	return SYSERR;
-      } else {	
-	setConfigurationInt("DHT-QUERY",
-			    "TIMEOUT",
-			    max);
-      }
-      break;
-    }
-    case 'v':
-      printf("dht-query v0.0.1\n");
-      return SYSERR;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"),
-	  c);
-      return SYSERR;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  if (argc - GNoptind == 0) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("No commands specified.\n"));
-    printHelp();
-    return SYSERR;
-  }
-  setConfigurationStringList(&argv[GNoptind],
-			     argc - GNoptind);
-  return OK;
-}
+static struct GE_Context * ectx;
+
+static char * cfgFilename;
+
+/**
+ * All gnunet-dht-query command line options
+ */
+static struct CommandLineOption gnunetjoinOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE, remove KEY VALUE) a DHT table.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */  
+  { 't', "table", "NAME",
+    gettext_noop("join table called NAME"),
+    1, &gnunet_getopt_configure_set_string, &table_id },  
+  { 'T', "timeout", "TIME",
+    gettext_noop("allow TIME ms to process each command"),
+    1, &gnunet_getopt_configure_set_uint, &timeout }, 
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
 static int printCallback(const HashCode512 * hash,
 			 const DataContainer * data,
-			 char * key) {
+			 void * cls) {
+  char * key = cls;
   printf("%s(%s): '%.*s'\n",
 	 "get",
 	 key,
@@ -132,9 +81,10 @@ static void do_get(struct ClientServerConnection * sock,
   hash(key,
        strlen(key),
        &hc);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Issuing '%s(%s)' command.\n",
-      "get", key);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Issuing '%s(%s)' command.\n",
+	 "get", key);
   ret = DHT_LIB_get(&table,
 		    DHT_STRING2STRING_BLOCK,
 		    1, /* prio */
@@ -142,7 +92,7 @@ static void do_get(struct ClientServerConnection * sock,
 		    &hc,
 		    getConfigurationInt("DHT-QUERY",
 					"TIMEOUT"),
-		    (DataProcessor) &printCallback,
+		    &printCallback,
 		    (void*) key);
   if (ret == 0)
     printf("%s(%s) operation returned no results.\n",
@@ -216,76 +166,108 @@ static void do_remove(struct ClientServerConnection * sock,
 
 int main(int argc,
 	 char **argv) {
-  char * tableName;
   int count;
   char ** commands;
   int i;
   struct ClientServerConnection * handle;
+  HashCode512 table;
+  struct GC_Configuration * cfg;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0;
-
-  count = getConfigurationStringList(&commands);
-  tableName = getConfigurationString("DHT-QUERY",
-				     "TABLE");
-  if (tableName == NULL) {
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  os_init(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  i = gnunet_parse_options("gnunet-insert [OPTIONS] FILENAME",
+			   ectx,
+			   cfg,
+			   gnunetjoinOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i == SYSERR) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  if (table_id == NULL) {
     printf(_("No table name specified, using `%s'.\n"),
 	   "test");
-    tableName = STRDUP("test");
+    table_id = STRDUP("test");
   }
-  if (OK != enc2hash(tableName,
+  if (OK != enc2hash(table_id,
 		     &table)) {
-    hash(tableName,
-	 strlen(tableName),
+    hash(table_id,
+	 strlen(table_id),
 	 &table);
   }
-  FREE(tableName);
-  DHT_LIB_init();
+  FREE(table_id);
+  table_id = NULL;
+
+  count = getConfigurationStringList(&commands);
   handle = getClientSocket();
   if (handle == NULL) {
     fprintf(stderr,
 	    _("Failed to connect to gnunetd.\n"));
+    GC_free(cfg);
+    GE_free_context(ectx);
     return 1;
   }
 
   for (i=0;i<count;i++) {
     if (0 == strcmp("get", commands[i])) {
-      if (i+2 > count)
-	errexit(_("Command `%s' requires an argument (`%s').\n"),
+      if (i+2 > count) {
+	fprintf(stderr,
+		_("Command `%s' requires an argument (`%s').\n"),
 		"get",
 		"key");
-      do_get(handle, commands[++i]);
+	break;
+      } else {
+	do_get(handle, commands[++i]);
+      }
       continue;
     }
     if (0 == strcmp("put", commands[i])) {
-      if (i+3 > count)
-	errexit(_("Command `%s' requires two arguments (`%s' and `%s').\n"),
+      if (i+3 > count) {
+	fprintf(stderr,
+		_("Command `%s' requires two arguments (`%s' and `%s').\n"),
 		"put",
 		"key",
 		"value");
-      do_put(handle, commands[i+1], commands[i+2]);
-      i+=2;
+	break;
+      } else {
+	do_put(handle, commands[i+1], commands[i+2]);
+	i+=2;
+      }
       continue;
     }
     if (0 == strcmp("remove", commands[i])) {
-      if (i+3 > count)
-	errexit(_("Command `%s' requires two arguments (`%s' and `%s').\n"),
+      if (i+3 > count) {
+	fprintf(stderr,
+		_("Command `%s' requires two arguments (`%s' and `%s').\n"),
 		"remove",
 		"key",
 		"value");
-      do_remove(handle, commands[i+1], commands[i+2]);
-      i+=2;
+	break;
+      } else {
+	do_remove(handle, commands[i+1], commands[i+2]);
+	i+=2;
+      }
       continue;
     }
-    printf(_("Unsupported command `%s'.  Aborting.\n"),
-	   commands[i]);
+    fprintf(stderr,
+	    _("Unsupported command `%s'.  Aborting.\n"),
+	    commands[i]);
     break;
   }
   connection_destroy(handle);
   for (i=0;i<count;i++)
     FREE(commands[i]);
   FREE(commands);
-  DHT_LIB_done();
+  GC_free(cfg);
+  GE_free_context(ectx);
   return 0;
 }
 
