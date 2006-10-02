@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,14 +29,9 @@
 #include "gnunet_dht_lib.h"
 #include "gnunet_dht_datastore_memory.h"
 #include "gnunet_stats_lib.h"
-
-static int parseOptions(int argc,
-			char ** argv) {
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  return OK;
-}
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_network_client.h"
+#include "gnunet_util_cron.h"
 
 /**
  * Identity of peer 2 (hardwired).
@@ -53,15 +48,18 @@ static int waitForConnect(const char * name,
   return OK;
 }
 
+#define START_PEERS 1
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
+
 #define CHECK2(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE2; } } while(0)
 
 /**
  * Testcase to test gap routing (2 peers only).
  * @return 0: ok, -1: error
  */
-int main(int argc, char ** argv) {
+int main(int argc,
+	 const char ** argv) {
   pid_t daemon1;
   pid_t daemon2;
   pid_t sto2;
@@ -73,57 +71,84 @@ int main(int argc, char ** argv) {
   DHT_TableId key;
   DataContainer * value;
   Blockstore * store;
+  struct GE_Context * ectx;
+  struct GC_Configuration * cfg;
 
-  GE_ASSERT(ectx, OK ==
-		enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
-			 "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
-			 "OPDA8F1VIKESLSNBO",
-			 &peer2.hashPubKey));
-  if (OK != initUtil(argc,
-		     argv,
-		     &parseOptions))
-    return -1;
-  printf("Starting daemons (1st round)\n");
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer1.conf"));
-  daemon1 = startGNUnetDaemon(NO);
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer2.conf"));
-  daemon2 = startGNUnetDaemon(NO);
+  enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
+	   "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
+	   "OPDA8F1VIKESLSNBO",
+	   &peer2.hashPubKey);
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;  
+  }
+#if START_PEERS
+  daemon1  = os_daemon_start(NULL,
+			     cfg,
+			     "peer1.conf",
+			     NO);
+  daemon2 = os_daemon_start(NULL,
+			    cfg,
+			    "peer2.conf",
+			    NO);
+#endif
   /* in case existing hellos have expired */
   PTHREAD_SLEEP(30 * cronSECONDS);
   system("cp peer1/data/hosts/* peer2/data/hosts/");
   system("cp peer2/data/hosts/* peer1/data/hosts/");
+  ret = 0;
+#if START_PEERS
   if (daemon1 != -1) {
-    if (! termProcess(daemon1))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
+    if (os_daemon_stop(NULL, daemon1) != YES)
+      ret = 1;
   }
   if (daemon2 != -1) {
-    if (! termProcess(daemon2))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
+    if (os_daemon_stop(NULL, daemon2) != YES)
+      ret = 1;
   }
-  printf("Re-starting daemons.\n");
-  /* re-start, this time we're sure up-to-date hellos are available */
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer1.conf"));
-  daemon1 = startGNUnetDaemon(NO);
-  FREENONNULL(setConfigurationString("GNUNET",
-				     "GNUNETD-CONFIG",
-				     "peer2.conf"));
-  daemon2 = startGNUnetDaemon(NO);
-  PTHREAD_SLEEP(5 * cronSECONDS);
+  if (ret != 0)
+    return 1;
+  daemon1  = os_daemon_start(NULL,
+			     cfg,
+			     "peer1.conf",
+			     NO);
+  daemon2 = os_daemon_start(NULL,
+			    cfg,
+			    "peer2.conf",
+			    NO);
+#endif
+  if (OK == connection_wait_for_running(NULL,
+					cfg,
+					30 * cronSECONDS)) {
+    sock = client_connection_create(NULL,
+				    cfg);
+    left = 30; /* how many iterations should we wait? */
+    while (OK == requestStatistics(ectx,
+				   sock,
+				   &waitForConnect,
+				   NULL)) {
+      printf("Waiting for peers to connect (%u iterations left)...\n",
+	     left);
+      sleep(5);
+      left--;
+      if (left == 0) {
+	ret = 1;
+	break;
+      }
+    }
+    connection_destroy(sock);
+  } else {
+    printf("Could not establish connection with peer.\n");
+    ret = 1;
+  }
 
   ret = 0;
   left = 5;
   /* wait for connection or abort with error */
-  startCron();
   do {
-    sock = getClientSocket();
+    sock = client_connection_create(ectx, cfg);
     if (sock == NULL) {
       printf(_("Waiting for gnunetd to start (%u iterations left)...\n"),
 	     left);
@@ -134,7 +159,8 @@ int main(int argc, char ** argv) {
   } while (sock == NULL);
 
   left = 30; /* how many iterations should we wait? */
-  while (OK == requestStatistics(sock,
+  while (OK == requestStatistics(ectx,
+				 sock,
 				 &waitForConnect,
 				 NULL)) {
     printf(_("Waiting for peers to connect (%u iterations left)...\n"),
@@ -147,30 +173,37 @@ int main(int argc, char ** argv) {
   printf("Peers connected.  Running actual test.\n");
   
   memset(&table, 33, sizeof(DHT_TableId));
-  DHT_LIB_init();
   store = create_blockstore_memory(65536);
 
   /* actual test code */
   sto2 = fork();
   if (sto2 == 0) {
     /* switch to peer2 */
-    setConfigurationInt("NETWORK",
-			"PORT",
-			12087);
+    GC_set_configuration_value_number(cfg,
+				      ectx,
+				      "NETWORK",
+				      "PORT",
+				      12087);
     printf("Peer2 joins DHT\n");
     DHT_LIB_join(store,
+		 cfg,
+		 ectx,
 		 &table);
     hash("key", 3, &key);
     value = MALLOC(8);
     value->size = ntohl(8);
     printf("Peer2 stores key.\n");
-    CHECK2(OK == DHT_LIB_put(&table,
+    CHECK2(OK == DHT_LIB_put(cfg,
+			     ectx,
+			     &table,
 			     &key,
 			     0,
 			     5 * cronSECONDS,
 			     value));
     printf("Peer2 gets key.\n");
-    CHECK2(1 == DHT_LIB_get(&table,
+    CHECK2(1 == DHT_LIB_get(cfg,
+			    ectx,
+			    &table,
 			    0,
 			    0,
 			    1,
@@ -181,7 +214,9 @@ int main(int argc, char ** argv) {
 
     hash("key2", 4, &key);
     printf("Peer2 gets key2.\n");
-    CHECK2(1 == DHT_LIB_get(&table,
+    CHECK2(1 == DHT_LIB_get(cfg,
+			    ectx,
+			    &table,
 			    0,
 			    0,
 			    1,
@@ -194,25 +229,28 @@ int main(int argc, char ** argv) {
   FAILURE2:
     DHT_LIB_leave(&table);
     destroy_blockstore_memory(store);
-    DHT_LIB_done();
-    stopCron();
-    doneUtil();
     exit(ret);
   }
   printf("Peer1 joints DHT\n");
   DHT_LIB_join(store,
+	       cfg,
+	       ectx,
 	       &table);
   hash("key2", 4, &key);
   value = MALLOC(8);
   value->size = ntohl(8);
   printf("Peer1 stores key2\n");
-  CHECK(OK == DHT_LIB_put(&table,
+  CHECK(OK == DHT_LIB_put(cfg,
+			  ectx,
+			  &table,
 			  &key,
 			  0,
 			  5 * cronSECONDS,
 			  value));
   printf("Peer1 gets key2\n");
-  CHECK(1 == DHT_LIB_get(&table,
+  CHECK(1 == DHT_LIB_get(cfg,
+			 ectx,
+			 &table,
 			 0,
 			 0,
 			 1,
@@ -222,7 +260,9 @@ int main(int argc, char ** argv) {
 			 NULL));
   hash("key", 3, &key);
   printf("Peer1 gets key\n");
-  CHECK(1 == DHT_LIB_get(&table,
+  CHECK(1 == DHT_LIB_get(cfg,
+			 ectx, 
+			 &table,
 			 0,
 			 0,
 			 1,
@@ -233,25 +273,26 @@ int main(int argc, char ** argv) {
   printf("Peer1 tests successful, shutting down.\n");
   DHT_LIB_leave(&table);
   destroy_blockstore_memory(store);
-  DHT_LIB_done();
 
   if (sto2 != waitpid(sto2, &status, 0))
-    DIE_STRERROR("waitpid");
+    GE_DIE_STRERROR(ectx,
+		    GE_FATAL | GE_USER | GE_IMMEDIATE,
+		    "waitpid");
   /* end of actual test code */
 
  FAILURE:
-  stopCron();
+
+#if START_PEERS
   if (daemon1 != -1) {
-    if (! termProcess(daemon1))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon1));
+    if (os_daemon_stop(NULL, daemon1) != YES)
+      ret = 1;
   }
   if (daemon2 != -1) {
-    if (! termProcess(daemon2))
-      DIE_STRERROR("kill");
-    GE_ASSERT(ectx, OK == waitForGNUnetDaemonTermination(daemon2));
+    if (os_daemon_stop(NULL, daemon2) != YES)
+      ret = 1;
   }
-  doneUtil();
+#endif
+  GC_free(cfg);
   return ret;
 }
 
