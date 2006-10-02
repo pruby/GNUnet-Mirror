@@ -15,7 +15,6 @@ Notes:
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring: [RC]
   * Not compiling:
-    + dht/tools
     + vpn
   * Testcases not compiling or passing:
     + dht/tools

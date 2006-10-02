@@ -27,9 +27,11 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util.h"
+#include "gnunet_util_crypto.h"
 #include "gnunet_dht_lib.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
+#include "gnunet_util_network_client.h"
 #include "gnunet_dht_datastore_memory.h"
 
 static DHT_TableId table;
@@ -39,6 +41,8 @@ static char * table_id;
 static unsigned int timeout;
 
 static struct GE_Context * ectx;
+
+static struct GC_Configuration * cfg;
 
 static char * cfgFilename;
 
@@ -85,13 +89,14 @@ static void do_get(struct ClientServerConnection * sock,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Issuing '%s(%s)' command.\n",
 	 "get", key);
-  ret = DHT_LIB_get(&table,
+  ret = DHT_LIB_get(cfg,
+		    ectx,
+		    &table,
 		    DHT_STRING2STRING_BLOCK,
 		    1, /* prio */
 		    1, /* key count */
 		    &hc,
-		    getConfigurationInt("DHT-QUERY",
-					"TIMEOUT"),
+		    timeout,
 		    &printCallback,
 		    (void*) key);
   if (ret == 0)
@@ -102,7 +107,7 @@ static void do_get(struct ClientServerConnection * sock,
 
 static void do_put(struct ClientServerConnection * sock,
 		   const char * key,
-		   char * value) {
+		   const char * value) {
   DataContainer * dc;
   HashCode512 hc;
 
@@ -112,14 +117,16 @@ static void do_put(struct ClientServerConnection * sock,
   dc->size = htonl(strlen(value)
 		   + sizeof(DataContainer));
   memcpy(&dc[1], value, strlen(value));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Issuing '%s(%s,%s)' command.\n",
-      "put", key, value);
-  if (OK == DHT_LIB_put(&table,		
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Issuing '%s(%s,%s)' command.\n",
+	 "put", key, value);
+  if (OK == DHT_LIB_put(cfg,
+			ectx,
+			&table,
 			&hc,
 			1, /* prio */
-			getConfigurationInt("DHT-QUERY",
-					    "TIMEOUT"),
+			timeout,
 			dc)) {
     printf(_("'%s(%s,%s)' succeeded\n"),
 	   "put",
@@ -134,7 +141,7 @@ static void do_put(struct ClientServerConnection * sock,
 
 static void do_remove(struct ClientServerConnection * sock,
 		      const char * key,
-		      char * value) {
+		      const char * value) {
   DataContainer * dc;
   HashCode512 hc;
 
@@ -144,13 +151,15 @@ static void do_remove(struct ClientServerConnection * sock,
   dc->size = htonl(strlen(value)
 		   + sizeof(DataContainer));
   memcpy(&dc[1], value, strlen(value));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Issuing '%s(%s,%s)' command.\n",
-      "remove", key, value);
-  if (OK == DHT_LIB_remove(&table,
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Issuing '%s(%s,%s)' command.\n",
+	 "remove", key, value);
+  if (OK == DHT_LIB_remove(cfg,
+			   ectx,
+			   &table,
 			   &hc,
-			   getConfigurationInt("DHT-QUERY",
-					       "TIMEOUT"),
+			   timeout,
 			   dc)) {
     printf(_("'%s(%s,%s)' succeeded\n"),
 	   "remove",
@@ -165,13 +174,10 @@ static void do_remove(struct ClientServerConnection * sock,
 
 
 int main(int argc,
-	 char **argv) {
-  int count;
-  char ** commands;
+	 const char **argv) {
   int i;
   struct ClientServerConnection * handle;
   HashCode512 table;
-  struct GC_Configuration * cfg;
 
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
@@ -206,8 +212,7 @@ int main(int argc,
   FREE(table_id);
   table_id = NULL;
 
-  count = getConfigurationStringList(&commands);
-  handle = getClientSocket();
+  handle = client_connection_create(ectx, cfg);
   if (handle == NULL) {
     fprintf(stderr,
 	    _("Failed to connect to gnunetd.\n"));
@@ -216,21 +221,21 @@ int main(int argc,
     return 1;
   }
 
-  for (i=0;i<count;i++) {
-    if (0 == strcmp("get", commands[i])) {
-      if (i+2 > count) {
+  while (i < argc) {
+    if (0 == strcmp("get", argv[i])) {
+      if (i+2 > argc) {
 	fprintf(stderr,
 		_("Command `%s' requires an argument (`%s').\n"),
 		"get",
 		"key");
 	break;
       } else {
-	do_get(handle, commands[++i]);
+	do_get(handle, argv[++i]);
       }
       continue;
     }
-    if (0 == strcmp("put", commands[i])) {
-      if (i+3 > count) {
+    if (0 == strcmp("put", argv[i])) {
+      if (i+3 > argc) {
 	fprintf(stderr,
 		_("Command `%s' requires two arguments (`%s' and `%s').\n"),
 		"put",
@@ -238,13 +243,13 @@ int main(int argc,
 		"value");
 	break;
       } else {
-	do_put(handle, commands[i+1], commands[i+2]);
+	do_put(handle, argv[i+1], argv[i+2]);
 	i+=2;
       }
       continue;
     }
-    if (0 == strcmp("remove", commands[i])) {
-      if (i+3 > count) {
+    if (0 == strcmp("remove", argv[i])) {
+      if (i+3 > argc) {
 	fprintf(stderr,
 		_("Command `%s' requires two arguments (`%s' and `%s').\n"),
 		"remove",
@@ -252,20 +257,17 @@ int main(int argc,
 		"value");
 	break;
       } else {
-	do_remove(handle, commands[i+1], commands[i+2]);
+	do_remove(handle, argv[i+1], argv[i+2]);
 	i+=2;
       }
       continue;
     }
     fprintf(stderr,
 	    _("Unsupported command `%s'.  Aborting.\n"),
-	    commands[i]);
+	    argv[i]);
     break;
   }
   connection_destroy(handle);
-  for (i=0;i<count;i++)
-    FREE(commands[i]);
-  FREE(commands);
   GC_free(cfg);
   GE_free_context(ectx);
   return 0;

@@ -728,7 +728,7 @@ FSUI_unindex(struct FSUI_Context * ctx,
 
 
 /**
- * Abort an upload.  If the context is for a recursive
+ * Abort an unindex operation.  If the context is for a recursive
  * upload, all sub-uploads will also be aborted.
  *
  * @return SYSERR on error

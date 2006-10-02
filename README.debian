@@ -23,7 +23,7 @@ libgmp3-dev
 libltdl3-dev
 libgtk2.0-dev
 libsqlite3-dev
-libmysqlclient14-dev
+libmysqlclient15-dev
 libncurses5-dev
 libcurl3-gnutls-dev
 libncursesw5-dev
