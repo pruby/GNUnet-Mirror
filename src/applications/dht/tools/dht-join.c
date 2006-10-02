@@ -30,92 +30,39 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_util_config_impl.h"
+#include "gnunet_util_error_loggers.h"
 #include "gnunet_dht_lib.h"
 #include "gnunet_dht_datastore_memory.h"
 
+static unsigned int memory = 64 * 1024;
+
+static char * table_id;
+
+static char * cfgFilename;
+
 static int verbose;
 
-static void printHelp() {
-  static Help help[] = {
-    HELP_CONFIG,
-    HELP_HELP,
-    HELP_LOGLEVEL,
-    { 'm', "memory", "SIZE",
-      gettext_noop("allow SIZE bytes of memory for the local table") },
-    { 't', "table", "NAME",
-      gettext_noop("join table called NAME") },
-    HELP_VERSION,
-    HELP_VERBOSE,
-    HELP_END,
-  };
-  formatHelp("dht-join [OPTIONS]",
-	     _("Join a DHT."),
-	     help);
-}
+static struct GE_Context * ectx;
 
-static int parseOptions(int argc,
-			char ** argv) {
-  int c;
-
-  while (1) {
-    int option_index = 0;
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "memory", 1, 0, 'm' },
-      { "table", 1, 0, 't' },
-      { "verbose", 0, 0, 'V' },
-      { 0,0,0,0 }
-    };
-    c = GNgetopt_long(argc,
-		      argv,
-		      "vhH:c:L:dt:m:T:V",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'h':
-      printHelp();
-      return SYSERR;
-    case 'm': {
-      unsigned int max;
-      if (1 != sscanf(GNoptarg, "%ud", &max)) {
-	GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	    _("You must pass a number to the `%s' option.\n"),
-	    "-m");
-	return SYSERR;
-      } else {	
-	setConfigurationInt("DHT-JOIN",
-			    "MEMORY",
-			    max);
-      }
-      break;
-    }
-    case 't':
-      FREENONNULL(setConfigurationString("DHT-JOIN",
-					 "TABLE",
-					 GNoptarg));
-      break;
-    case 'v':
-      printf("dht-join v0.0.0\n");
-      return SYSERR;
-    case 'V':
-      verbose++;
-      break;
-    default:
-      GE_LOG(ectx, GE_ERROR | GE_IMMEDIATE | GE_USER,
-	  _("Use --help to get a list of options.\n"),
-	  c);
-      return SYSERR;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  if (argc - GNoptind != 0)
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Superflous arguments (ignored).\n"));
-  return OK;
-}
+/**
+ * All gnunet-dht-join command line options
+ */
+static struct CommandLineOption gnunetjoinOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Join a DHT.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */  
+  { 'm', "memory", "SIZE",
+    gettext_noop("allow SIZE bytes of memory for the local table"),
+    1, &gnunet_getopt_configure_set_uint, &memory }, 
+  { 't', "table", "NAME",
+    gettext_noop("join table called NAME"),
+    1, &gnunet_getopt_configure_set_string, &table_id },  
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_VERBOSE,
+  COMMAND_LINE_OPTION_END,
+};
 
 static void dump(const char * fmt,
 		    ...) {
@@ -141,7 +88,7 @@ static int lookup(void * closure,
 		  DataProcessor processor,
 		  void * pclosure) {
   int ret;
-  Blockstore * cls = (Blockstore*) closure;
+  Blockstore * cls = closure;
   LOGKEY(&keys[0]);
   ret = cls->get(cls->closure,
 		 type,
@@ -159,7 +106,7 @@ static int store(void * closure,
 		 const DataContainer * value,
 		 unsigned int prio) {
   int ret;
-  Blockstore * cls = (Blockstore*) closure;
+  Blockstore * cls = closure;
   LOGKEY(key);
   LOGVAL(value);
   ret = cls->put(cls->closure,
@@ -174,7 +121,7 @@ static int removeDS(void * closure,
 		    const HashCode512 * key,
 		    const DataContainer * value) {
   int ret;
-  Blockstore * cls = (Blockstore*) closure;
+  Blockstore * cls = closure;
   LOGKEY(key);
   LOGVAL(value);
   ret = cls->del(cls->closure,
@@ -188,7 +135,7 @@ static int iterate(void * closure,
 		   DataProcessor processor,
 		   void * parg) {
   int ret;
-  Blockstore * cls = (Blockstore*) closure;
+  Blockstore * cls = closure;
   ret = cls->iterate(cls->closure,
 		     processor,
 		     parg);
@@ -196,69 +143,82 @@ static int iterate(void * closure,
   return ret;
 }
 
-int main(int argc,
-	 char **argv) {
-  char * tableName;
-  unsigned int mem;
+int main(int argc, 
+	 const char ** argv) {
+  int i;
   HashCode512 table;
+  struct GC_Configuration * cfg;
   Blockstore myStore;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0;
-
-  tableName = getConfigurationString("DHT-JOIN",
-				     "TABLE");
-  if (tableName == NULL) {
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  os_init(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  i = gnunet_parse_options("gnunet-insert [OPTIONS] FILENAME",
+			   ectx,
+			   cfg,
+			   gnunetjoinOptions,
+			   (unsigned int) argc,
+			   argv);
+  if (i == SYSERR) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return 1;
+  }
+  if (table_id == NULL) {
     printf(_("No table name specified, using `%s'.\n"),
 	   "test");
-    tableName = STRDUP("test");
+    table_id = STRDUP("test");
   }
-  if (OK != enc2hash(tableName,
+  if (OK != enc2hash(table_id,
 		     &table)) {
-    hash(tableName,
-	 strlen(tableName),
+    hash(table_id,
+	 strlen(table_id),
 	 &table);
   }
-  FREE(tableName);
-  mem = getConfigurationInt("DHT-JOIN",
-			    "MEMORY");
-  if (mem == 0) mem = 65536; /* default: use 64k */
-  myStore.closure = create_blockstore_memory(mem);
+  FREE(table_id);
+  table_id = NULL;
+  myStore.closure = create_blockstore_memory(memory);
   myStore.get = &lookup;
   myStore.put = &store;
   myStore.del = &removeDS;
   myStore.iterate = &iterate;
 
-  DHT_LIB_init();
-  initializeShutdownHandlers();
   if (OK != DHT_LIB_join(&myStore,
+			 cfg,
+			 ectx,
 			 &table)) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Error joining DHT.\n"));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Error joining DHT.\n"));
     destroy_blockstore_memory((Blockstore*)myStore.closure);
-    doneShutdownHandlers();
-    DHT_LIB_done();
+    GC_free(cfg);
+    GE_free_context(ectx);
     return 1;
   }
 
   printf(_("Joined DHT.  Press CTRL-C to leave.\n"));
-  /* wait for CTRL-C */
-  wait_for_shutdown();
+  GNUNET_SHUTDOWN_WAITFOR();
 
+  i = OK;
   /* shutdown */
   if (OK != DHT_LIB_leave(&table)) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Error leaving DHT.\n"));
-    destroy_blockstore_memory((Blockstore*)myStore.closure);
-    doneShutdownHandlers();
-    DHT_LIB_done();
-    return 1;
-  } else {
-    destroy_blockstore_memory((Blockstore*)myStore.closure);
-    doneShutdownHandlers();
-    DHT_LIB_done();
-    return 0;
+    i = SYSERR;
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Error leaving DHT.\n"));
   }
+  
+  destroy_blockstore_memory((Blockstore*)myStore.closure);
+  GC_free(cfg);
+  GE_free_context(ectx);
+  if (i != OK)
+    return 1;
+  return 0; 
 }
 
 /* end of dht-join.c */
