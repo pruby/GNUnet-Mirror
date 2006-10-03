@@ -282,6 +282,29 @@ extern "C" {
 #define CS_PROTO_dht_REQUEST_ITERATE   79
 
 
+/* ************* CS VPN messages ************* */
+
+/**
+ * Most are commands available to clients
+ * except VPN_MSG (general loggable output) and
+ * VPN_REPLY = output from a command.
+ * The commands output their last using their own code
+ * instead of the VPN_REPLY so the UI knows it has
+ * seen all the output.
+ */
+#define CS_PROTO_VPN_MSG 92
+#define CS_PROTO_VPN_REPLY 93
+#define CS_PROTO_VPN_DEBUGOFF 94
+#define CS_PROTO_VPN_DEBUGON 95
+#define CS_PROTO_VPN_TUNNELS 96
+#define CS_PROTO_VPN_ROUTES 97
+#define CS_PROTO_VPN_REALISED 98
+#define CS_PROTO_VPN_RESET 99
+#define CS_PROTO_VPN_REALISE 100
+#define CS_PROTO_VPN_ADD 101
+#define CS_PROTO_VPN_TRUST 102
+
+
 #define CS_PROTO_MAX_USED 80
 
 /* ******** node-to-node (p2p) messages (over anything) ********* */
@@ -363,7 +386,18 @@ extern "C" {
 #define P2P_PROTO_rpc_RES 43
 #define P2P_PROTO_rpc_ACK 44
 
-#define P2P_PROTO_MAX_USED 45
+/* ************* p2p VPN messages ************* */
+
+#define P2P_PROTO_aip_IP 64	/* contains IPv6 frame */
+
+#define P2P_PROTO_aip_ROUTE 65 /* a route to a node */
+
+#define P2P_PROTO_aip_ROUTES 66 /* no more routes in my table */
+
+#define P2P_PROTO_aip_GETROUTE 67 /* request for a table entry from a peer */
+
+
+#define P2P_PROTO_MAX_USED 68
 
 
 
