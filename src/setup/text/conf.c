@@ -529,7 +529,7 @@ int main_setup_text(int argc,
   char c;
   int ret;
 
-#if defined(OSX)
+#ifdef OSX
 #  define TCGETS TIOCGETA
 #  define TCSETS TIOCSETA
 #endif
