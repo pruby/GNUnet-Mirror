@@ -25,31 +25,13 @@
  */
 
 #include "gnunet_util.h"
+#include "gnunet_protocols.h"
 #include "platform.h"
 
 #define TEMPLATE_VERSION "2006072900"
 
 #define buf ((CS_MESSAGE_HEADER*)&buffer)
 
-/**
- * Most are commands availabe to clients
- * except VPN_MSG (general loggable output) and
- * VPN_REPLY = output from a command.
- * The commands output their last using their own code
- * instead of the VPN_REPLY so the UI knows it has
- * seen all the output.
- */
-#define CS_PROTO_VPN_MSG 0xf0
-#define CS_PROTO_VPN_REPLY 0xf1
-#define CS_PROTO_VPN_DEBUGOFF 0xf2
-#define CS_PROTO_VPN_DEBUGON 0xf3
-#define CS_PROTO_VPN_TUNNELS 0xf4
-#define CS_PROTO_VPN_ROUTES 0xf5
-#define CS_PROTO_VPN_REALISED 0xf6
-#define CS_PROTO_VPN_RESET 0xf7
-#define CS_PROTO_VPN_REALISE 0xf8
-#define CS_PROTO_VPN_ADD 0xf9
-#define CS_PROTO_VPN_TRUST 0xfa
 
 static Semaphore * doneSem;
 static Semaphore * cmdAck;
