@@ -529,6 +529,10 @@ int main_setup_text(int argc,
   char c;
   int ret;
 
+#if defined(OSX)
+#  define TCGETS TIOCGETA
+#  define TCSETS TIOCSETA
+#endif
   ioctl(0, TCGETS, &oldT);
   newT = oldT;
   newT.c_lflag &= ~ECHO;

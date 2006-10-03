@@ -161,7 +161,6 @@ AC_CHECK_LIB(c, getloadavg, AC_DEFINE(HAVE_GETLOADAVG,1,[getloadavg supported]))
 # will be more selective!
 SAVE_LIBS=$LIBS
 
-AC_CHECK_LIB(gmp, __gmpz_import,, AC_MSG_ERROR([GNUnet requires the GNU MP library (libgmp)]))
 
 # pthread_t is a struct since 11/2004
 AC_CHECK_MEMBER(pthread_t.p, AC_DEFINE(HAVE_NEW_PTHREAD_T, 1,
@@ -219,6 +218,39 @@ AC_ARG_WITH(extractor,
 if test "$extractor" != 1
 then
  AC_MSG_ERROR([GNUnet requires libextractor])
+fi
+
+# test for libgmp
+gmp=0
+AC_MSG_CHECKING(for libgmp)
+AC_ARG_WITH(gmp,
+   [  --with-gmp=PFX    Base of libgmp installation],
+   [AC_MSG_RESULT([$with_gmp])
+    case $with_gmp in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(gmp.h,
+          AC_CHECK_LIB([gmp], [GMP_loadDefaultLibraries],
+            gmp=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_gmp/lib $LDFLAGS"
+        CPPFLAGS="-I$with_gmp/include $CPPFLAGS"
+        AC_CHECK_HEADERS(gmp.h,
+          AC_CHECK_LIB([gmp], [GMP_loadDefaultLibraries],
+            EXT_LIB_PATH="-L$with_gmp/lib $EXT_LIB_PATH"
+            gmp=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-gmp not specified])
+    AC_CHECK_HEADERS(gmp.h,
+     AC_CHECK_LIB([gmp], [GMP_loadDefaultLibraries],
+      gmp=1))])
+if test "$gmp" != 1
+then
+ AC_MSG_ERROR([GNUnet requires libgmp])
 fi
 
 SAVE_LDFLAGS=$LDFLAGS
