@@ -26,6 +26,8 @@
 
 #include "gnunet_util.h"
 #include "gnunet_util_network_client.h"
+#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_config_impl.h"
 #include "gnunet_protocols.h"
 #include "platform.h"
 
@@ -39,71 +41,24 @@ static struct SEMAPHORE * cmdAck;
 static struct SEMAPHORE * exitCheck;
 static struct MUTEX * lock;
 static int wantExit;
-static int silent = NO;
+static int silent;
+
+static char * cfgFilename;
 
 /**
- * Parse the options, set the timeout.
- * @param argc the number of options
- * @param argv the option list (including keywords)
- * @return OK on error, SYSERR if we should exit
+ * All gnunet-transport-check command line options
  */
-static int parseOptions(int argc,
-			char ** argv) {
-  int option_index;
-  int c;
-
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  while (1) {
-    static struct GNoption long_options[] = {
-      LONG_DEFAULT_OPTIONS,
-      { "silent", 0, 0, 's' },
-      { 0,0,0,0 }
-    };
-    option_index=0;
-    c = GNgetopt_long(argc,
-		      argv,
-		      "svhdc:L:H:t",
-		      long_options,
-		      &option_index);
-    if (c == -1)
-      break;  /* No more flags to process */
-    if (YES == parseDefaultOptions(c, GNoptarg))
-      continue;
-    switch(c) {
-    case 'h': {
-      static Help help[] = {
-	HELP_CONFIG,
-	HELP_HELP,
-	HELP_LOGLEVEL,
-	{ 's', "silent", NULL,
-	  gettext_noop("Suppress display of asynchronous log messages") },
-	HELP_VERSION,
-	HELP_END,
-      };
-      formatHelp("gnunet-vpn [OPTIONS]",
-		 _("VPN over GNUnet."),
-		 help);
-
-      return SYSERR;
-    }
-    case 'v':
-      printf("GNUnet v%s, gnunet-vpn v%s\n",
-	     VERSION,
-	     TEMPLATE_VERSION);
-      return SYSERR;
-    case 's':
-      silent = YES;
-      break;
-    default:
-      LOG(LOG_FAILURE,
-	  _("Use --help to get a list of options.\n"));
-      return -1;
-    } /* end of parsing commandline */
-  } /* while (1) */
-  return OK;
-}
+static struct CommandLineOption gnunetvpnOptions[] = {
+  COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Print statistics about GNUnet operations.")), /* -h */
+  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
+  { 's', "silent", NULL, 
+    gettext_noop("Suppress display of asynchronous log messages"),
+    0, &gnunet_getopt_configure_set_one, &silent },
+  COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
+  COMMAND_LINE_OPTION_END,
+};
 
 static void * receiveThread(struct ClientServerConnection * sock) {
   /* printf("Welcome to the VPN console: (Ctrl-D to exit)\n"); */
@@ -163,22 +118,48 @@ static void * receiveThread(struct ClientServerConnection * sock) {
  * @param argv command line arguments
  * @return return value from gnunet-template: 0: ok, -1: error
  */
-int main(int argc, char ** argv) {
+int main(int argc, 
+	 const char ** argv) {
   struct ClientServerConnection * sock;
   struct PTHREAD * messageReceiveThread;
   void * unused;
   char buffer[sizeof(MESSAGE_HEADER) + 1024];
   int rancommand = 0;
+  struct GC_Configuration * cfg;
+  struct GE_Context * ectx;
 
-  if (SYSERR == initUtil(argc, argv, &parseOptions))
-    return 0; /* parse error, --help, etc. */
-
+  ectx = GE_create_context_stderr(NO, 
+				  GE_WARNING | GE_ERROR | GE_FATAL |
+				  GE_USER | GE_ADMIN | GE_DEVELOPER |
+				  GE_IMMEDIATE | GE_BULK);
+  GE_setDefaultContext(ectx);
+  os_init(ectx);
+  cfg = GC_create_C_impl();
+  GE_ASSERT(ectx, cfg != NULL);
+  if (-1 == gnunet_parse_options("gnunet-vpn",
+				 ectx,
+				 cfg,
+				 gnunetvpnOptions,
+				 argc,
+				 argv)) {
+    GC_free(cfg);
+    GE_free_context(ectx);
+    os_done();
+    return -1;  
+  }
+  sock = client_connection_create(ectx,
+				  cfg);
+  if (sock == NULL) {
+    fprintf(stderr,
+	    _("Error establishing connection with gnunetd.\n"));
+    os_done();
+    return 1;
+  }
 
   doneSem = SEMAPHORE_CREATE(0);
   cmdAck = SEMAPHORE_CREATE(0);
   exitCheck = SEMAPHORE_CREATE(0);
   lock = MUTEX_CREATE(NO);
-  sock = getClientSocket();
   wantExit = NO;
 
   messageReceiveThread = PTHREAD_CREATE((PThreadMain) &receiveThread,
@@ -270,7 +251,7 @@ int main(int argc, char ** argv) {
   }
 
   /* we can't guarantee that this can be called while the other thread is waiting for read */
-  closeSocketTemporarily(sock);
+  connection_close_temporarily(sock);
   SEMAPHORE_DOWN(doneSem, YES);
 
   SEMAPHORE_DESTROY(doneSem);

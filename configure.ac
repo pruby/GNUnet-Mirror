@@ -231,14 +231,14 @@ AC_ARG_WITH(gmp,
         ;;
       yes)
         AC_CHECK_HEADERS(gmp.h,
-          AC_CHECK_LIB([gmp], [GMP_loadDefaultLibraries],
+          AC_CHECK_LIB([gmp], [__gmpz_add],
             gmp=1))
         ;;
       *)
         LDFLAGS="-L$with_gmp/lib $LDFLAGS"
         CPPFLAGS="-I$with_gmp/include $CPPFLAGS"
         AC_CHECK_HEADERS(gmp.h,
-          AC_CHECK_LIB([gmp], [GMP_loadDefaultLibraries],
+          AC_CHECK_LIB([gmp], [__gmpz_add],
             EXT_LIB_PATH="-L$with_gmp/lib $EXT_LIB_PATH"
             gmp=1))
         ;;
@@ -246,7 +246,7 @@ AC_ARG_WITH(gmp,
    ],
    [AC_MSG_RESULT([--with-gmp not specified])
     AC_CHECK_HEADERS(gmp.h,
-     AC_CHECK_LIB([gmp], [GMP_loadDefaultLibraries],
+     AC_CHECK_LIB([gmp], [__gmpz_add],
       gmp=1))])
 if test "$gmp" != 1
 then

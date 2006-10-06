@@ -1,4 +1,3 @@
-# commented out for now: vpn
 
 if HAVE_MYSQL
  MYSQL_DIR = sqstore_mysql
@@ -10,7 +9,9 @@ endif
 
 if !MINGW
 # TESTBED_DIR = testbed
-# VPN_DIR = vpn
+if !MACOSX
+ VPN_DIR = vpn
+endif
 endif
 
 SUBDIRS	= \
@@ -37,8 +38,8 @@ SUBDIRS	= \
  tracekit \
  traffic \
  transport \
- dht 
-# $(VPN_DIR)
+ dht \
+ $(VPN_DIR)
 # $(TESTBED_DIR) 
 # chat
 # kvstore_sqlite
