@@ -452,6 +452,11 @@ void __attribute__ ((constructor)) gns_scheme_init() {
   putenv(env);
   free(env);
 #endif
+
+  /* Guile doesn't get the stack boundaries right in our case.
+     This workaround ensures that Guile's garbage collector will never run. */
+  putenv("GUILE_INIT_MALLOC_LIMIT=100000000");
+
   scm_with_guile(&init_helper, NULL);
 }
 
