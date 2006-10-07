@@ -436,7 +436,7 @@ void __attribute__ ((constructor)) gns_scheme_init() {
   InitWinEnv();
 
   /* add path of "system" .scm files to guile's load path */
-  plibc_conv_to_win_path("/share/guile/1.9/", load);
+  plibc_conv_to_win_path("/share/guile/1.8/", load);
   len = 0;
   oldpath = getenv("GUILE_LOAD_PATH");
   if (oldpath)
