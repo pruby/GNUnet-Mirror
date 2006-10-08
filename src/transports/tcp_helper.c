@@ -50,11 +50,6 @@ typedef struct {
   struct SocketHandle * sock;
 
   /**
-   * number of users of this session (reference count)
-   */
-  int users;
-
-  /**
    * mutex for synchronized access to 'users'
    */
   struct MUTEX * lock;
@@ -69,6 +64,16 @@ typedef struct {
    * Are we still expecting the welcome? (YES/NO)
    */
   int expectingWelcome;
+
+  /**
+   * number of users of this session (reference count)
+   */
+  int users;
+
+  /**
+   * Is this session active with select?
+   */
+  int in_select;
 
 } TCPSession;
 
@@ -98,22 +103,26 @@ static int tcpDisconnect(TSession * tsession) {
 
   GE_ASSERT(ectx, selector != NULL);
   MUTEX_LOCK(tcpsession->lock);
+  GE_ASSERT(ectx, tcpsession->users > 0);
   tcpsession->users--;
-  if (tcpsession->users > 0) {
+  if ( (tcpsession->users > 0) ||
+       (tcpsession->in_select == YES) ) {
     MUTEX_UNLOCK(tcpsession->lock);
     return OK;
   }  
+#if DEBUG_TCP
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_BULK,
 	 "TCP disconnect closes socket session.\n");
-
+#endif
   select_disconnect(selector,
 		    tcpsession->sock);
   MUTEX_UNLOCK(tcpsession->lock);
-  MUTEX_DESTROY(tcpsession->lock);
-  FREE(tcpsession);  
-  FREE(tsession);
-
+  if (tcpsession->in_select == NO) {
+    MUTEX_DESTROY(tcpsession->lock);
+    FREE(tcpsession);  
+    FREE(tsession);
+  }
   return OK;
 }
 
@@ -243,7 +252,8 @@ static void * select_accept_handler(void * ah_cls,
   tcpSession->sender = *(coreAPI->myIdentity);
   tcpSession->expectingWelcome = YES;
   tcpSession->lock = MUTEX_CREATE(YES);
-  tcpSession->users = 1; /* select only, core has not seen this tsession! */
+  tcpSession->users = 0;
+  tcpSession->in_select = YES;
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
@@ -256,7 +266,18 @@ static void select_close_handler(void * ch_cls,
 				 struct SocketHandle * sock,
 				 void * sock_ctx) {
   TSession * tsession = sock_ctx;
-  tcpDisconnect(tsession);
+  TCPSession * tcpSession = tsession->internal;
+
+  MUTEX_LOCK(tcpSession->lock);
+  tcpSession->in_select = NO;
+  if (tcpSession->users == 0) {
+    MUTEX_UNLOCK(tcpSession->lock);
+    MUTEX_DESTROY(tcpSession->lock);
+    FREE(tcpSession);
+    FREE(tsession);
+  } else {
+    MUTEX_UNLOCK(tcpSession->lock);
+  }
 }
 
 /**
@@ -353,13 +374,16 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
   tsession->internal = tcpSession;
   tsession->ttype = protocolNumber;
   tcpSession->lock = MUTEX_CREATE(YES);
-  tcpSession->users = 2; /* caller + select */
+  tcpSession->users = 1; /* caller */
+  tcpSession->in_select = NO;
   tcpSession->sender = helo->senderIdentity;
   tcpSession->expectingWelcome = NO;
   MUTEX_LOCK(tcplock);
-  select_connect(selector,
-		 tcpSession->sock,
-		 tsession);
+  if (OK == 
+      select_connect(selector,
+		     tcpSession->sock,
+		     tsession))
+    tcpSession->in_select = YES;
 
   /* send our node identity to the other side to fully establish the
      connection! */
@@ -380,8 +404,7 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
 	   "Could not sent TCP welcome message, closing connection.\n");
 #endif
     /* disconnect caller -- error! */
-    tcpDisconnect(tsession); /* for caller */
-    tcpDisconnect(tsession); /* for select */
+    tcpDisconnect(tsession);
     MUTEX_UNLOCK(tcplock);
     return SYSERR;
   } else if (stats != NULL) 
