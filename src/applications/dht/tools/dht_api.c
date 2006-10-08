@@ -163,7 +163,8 @@ static int sendAllResults(const HashCode512 * key,
  * Thread that processes requests from gnunetd (by forwarding
  * them to the implementation of list->store).
  */
-static void * process_thread(TableList * list) {
+static void * process_thread(void * cls) {
+  TableList * list = cls;
   MESSAGE_HEADER * buffer;
   MESSAGE_HEADER * reply;
   CS_dht_request_join_MESSAGE req;
@@ -487,9 +488,9 @@ int DHT_LIB_join(Blockstore * store,
     return SYSERR;
   }
   list->lock = MUTEX_CREATE(NO);
-  list->processor = PTHREAD_CREATE((PThreadMain)&process_thread,
+  list->processor = PTHREAD_CREATE(&process_thread,
 				   list,
-				   16 * 1024);
+				   32 * 1024);
   if (list->processor == NULL) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
@@ -588,7 +589,8 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   MUTEX_UNLOCK(list->lock);
   unused = NULL;
   PTHREAD_JOIN(list->processor, &unused);
-  connection_destroy(list->sock);
+  if (list->sock != NULL)
+    connection_destroy(list->sock);
   MUTEX_DESTROY(list->lock);
   FREE(list);
   return ret;

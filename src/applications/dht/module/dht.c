@@ -658,7 +658,7 @@ static HashCode512 masterTableId;
 /**
  * List of the tables that this peer participates in.
  */
-static LocalTableData * tables;
+static LocalTableData ** tables;
 
 /**
  * Number of entries in the tables array.
@@ -784,8 +784,8 @@ static LocalTableData * getLocalTableData(const DHT_TableId * id) {
   int i;
   for (i=tablesCount-1;i>=0;i--)
     if (equalsHashCode512(id,
-			  &tables[i].id))
-      return &tables[i];
+			  &tables[i]->id))
+      return tables[i];
   return NULL;
 }
 
@@ -1067,7 +1067,7 @@ static void addOptionalFields(RPC_Param * args) {
   tc = tablesCount;
   tabs = MALLOC(sizeof(DHT_TableId) * tc);
   for (i=0;i<tc;i++)
-    tabs[i] = tables[i].id;
+    tabs[i] = tables[i]->id;
   MUTEX_UNLOCK(lock);
   s = RPC_paramSize(args) + sizeof(DHT_TableId) * tc;
   /* always add if resulting size is less than 1k;
@@ -2755,7 +2755,7 @@ static int dht_join(Blockstore * datastore,
   ENTER();
   MUTEX_LOCK(lock);
   for (i=0;i<tablesCount;i++) {
-    if (equalsDHT_TableId(&tables[i].id, table)) {
+    if (equalsDHT_TableId(&tables[i]->id, table)) {
       MUTEX_UNLOCK(lock);
       return SYSERR;
     }
@@ -2763,8 +2763,9 @@ static int dht_join(Blockstore * datastore,
   GROW(tables,
        tablesCount,
        tablesCount+1);
-  tables[tablesCount-1].id = *table;
-  tables[tablesCount-1].store = datastore;
+  tables[tablesCount-1] = MALLOC(sizeof(LocalTableData));
+  tables[tablesCount-1]->id = *table;
+  tables[tablesCount-1]->store = datastore;
   MUTEX_UNLOCK(lock);
   return OK;
 }
@@ -2781,14 +2782,14 @@ static int dht_join(Blockstore * datastore,
 static int dht_leave(const DHT_TableId * table) {
   int i;
   int idx;
-  LocalTableData old;
+  LocalTableData * old;
   DHT_REMOVE_RECORD * remRec;
 
   ENTER();
   MUTEX_LOCK(lock);
   idx = -1;
   for (i=0;i<tablesCount;i++) {
-    if (equalsDHT_TableId(&tables[i].id, table)) {
+    if (equalsDHT_TableId(&tables[i]->id, table)) {
       idx = i;
       break;
     }
@@ -2803,6 +2804,7 @@ static int dht_leave(const DHT_TableId * table) {
   GROW(tables,
        tablesCount,
        tablesCount-1);
+  FREE(old);
   MUTEX_UNLOCK(lock);
   if (! equalsHashCode512(&masterTableId,
 			  table)) {
@@ -3071,7 +3073,6 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 			  fw_context,
 			  (DHT_OP_Complete) &rpc_dht_findValue_complete,
 			  fw_context);
-  RPC_paramFree(arguments);
   addAbortJob((CronJob)&rpc_DHT_findValue_abort,
 	      fw_context);
   cron_add_job(coreAPI->cron,
@@ -3079,6 +3080,7 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 	       ntohll(*timeout),
 	       0,
 	       fw_context);
+  RPC_paramFree(arguments);
 }
 
 /**
@@ -3213,7 +3215,6 @@ static void rpc_DHT_store(const PeerIdentity * sender,
 			  value,
 			  (DHT_OP_Complete) &rpc_dht_store_callback,
 			  fw_context);
-  RPC_paramFree(arguments);
   addAbortJob(&rpc_DHT_store_abort,
 	      fw_context);
   cron_add_job(coreAPI->cron,
@@ -3221,6 +3222,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
 	       ntohll(*timeout),
 	       0,
 	       fw_context);
+  RPC_paramFree(arguments);
   FREE(value);
 }
 
@@ -3363,7 +3365,6 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 			     value,
 			     (DHT_OP_Complete) &rpc_dht_remove_callback,
 			     fw_context);
-  RPC_paramFree(arguments);
   addAbortJob((CronJob)&rpc_DHT_remove_abort,
 	      fw_context);
   cron_add_job(coreAPI->cron,
@@ -3371,6 +3372,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 	       ntohll(*timeout),
 	       0,
 	       fw_context);
+  RPC_paramFree(arguments);
   FREE(value);
 }
 
@@ -3480,9 +3482,9 @@ static void dhtMaintainJob(void * shutdownFlag) {
 #endif
 
   for (i=0;i<tablesCount;i++) {
-    if (tables[i].lastMasterAdvertisement + DHT_MAINTAIN_BUCKET_FREQUENCY < now) {
-      tables[i].lastMasterAdvertisement = now;
-      if (equalsHashCode512(&tables[i].id,
+    if (tables[i]->lastMasterAdvertisement + DHT_MAINTAIN_BUCKET_FREQUENCY < now) {
+      tables[i]->lastMasterAdvertisement = now;
+      if (equalsHashCode512(&tables[i]->id,
 			    &masterTableId))
 	continue;
       GROW(putRecords,
@@ -3493,7 +3495,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
 	   putTimesSize+1);
       putRecords[putRecordsSize-1]
 	= dht_put_async_start(&masterTableId,
-			      &tables[i].id,
+			      &tables[i]->id,
 			      DHT_MAINTAIN_BUCKET_FREQUENCY,
 			      value,
 			      NULL,
@@ -3513,8 +3515,8 @@ static void dhtMaintainJob(void * shutdownFlag) {
       __FUNCTION__);
 #endif
   for (i=0;i<tablesCount;i++) {
-    if (tables[i].lastFindOperation + DHT_MAINTAIN_FIND_FREQUENCY < now) {
-      tables[i].lastFindOperation = now;
+    if (tables[i]->lastFindOperation + DHT_MAINTAIN_FIND_FREQUENCY < now) {
+      tables[i]->lastFindOperation = now;
       GROW(findRecords,
 	   findRecordsSize,
 	   findRecordsSize+1);
@@ -3522,7 +3524,7 @@ static void dhtMaintainJob(void * shutdownFlag) {
 	   findTimesSize,
 	   findTimesSize+1);
       findRecords[findRecordsSize-1]
-	= findNodes_start(&tables[i].id,
+	= findNodes_start(&tables[i]->id,
 			  &coreAPI->myIdentity->hashPubKey,
 			  DHT_MAINTAIN_FIND_FREQUENCY);
       findTimes[findTimesSize-1] = now;

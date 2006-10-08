@@ -522,8 +522,9 @@ static int csPut(struct ClientHandle * client,
        putRecordsSize+1);
   putRecords[putRecordsSize-1] = ptr;
   MUTEX_UNLOCK(csLock);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Starting DHT put\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Starting DHT put\n");
   ptr->put_record = dhtAPI->put_start(&req->table,
 				      &req->key,
 				      ntohll(req->timeout),

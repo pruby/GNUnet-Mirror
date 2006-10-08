@@ -255,6 +255,7 @@ static void select_close_handler(void * ch_cls,
 				 struct SelectHandle * sh,
 				 struct SocketHandle * sock,
 				 void * sock_ctx) {
+  FREE(sock_ctx);
 }
 
 /**
