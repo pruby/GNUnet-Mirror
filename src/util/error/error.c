@@ -88,18 +88,11 @@ void GE_LOG(struct GE_Context * ctx,
 		 kind,
 		 date,
 		 buf);
-  else {
-    printf("!\n");
-    printf(date);
-    printf("\n");
-    printf(buf);
-    fprintf(stderr,
-	    "X!\n");
+  else
     fprintf(stderr,
 	    "%s %s", 
 	    date,
 	    buf);
-  }
   free(buf);
 }
 
