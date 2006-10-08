@@ -10,6 +10,7 @@ bin_PROGRAMS = \
 libgnunetdht_api_la_SOURCES = \
   dht_api.c 
 libgnunetdht_api_la_LIBADD = \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
 

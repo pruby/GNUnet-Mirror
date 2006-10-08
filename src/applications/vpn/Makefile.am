@@ -2,8 +2,7 @@ INCLUDES = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/GNUnet
 
-LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
+
 
 bin_PROGRAMS = \
   gnunet-vpn
@@ -25,6 +24,6 @@ libgnunetmodule_vpn_la_SOURCES = \
 libgnunetmodule_vpn_la_LDFLAGS = \
   -export-dynamic -avoid-version -module \
   $(LDADD)
-
-
-
+libgnunetmodule_vpn_la_LIBADD = \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+ $(top_builddir)/src/util/libgnunetutil.la 

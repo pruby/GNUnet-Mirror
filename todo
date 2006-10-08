@@ -14,14 +14,14 @@ Notes:
 
 0.7.1 ['06] (aka "stabilization")
 - finish util refactoring: [RC]
-  * Not compiling:
-    + vpn
   * Testcases not compiling or passing:
     + dht/tools
   * Missing functionality: 
     + fs/fsui:
       @ generate events for suspend, abort
       @ make sure new event fields are set for all events
+    + uridb (?):
+      @ slow gnunet-gtk iterator (see drupal)
     + fs/fslib: error handing
     + fs/module: error handing
     + fs/ecrs: test-terminate integration (upload, unindex)

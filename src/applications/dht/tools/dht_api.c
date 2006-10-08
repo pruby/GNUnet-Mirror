@@ -232,8 +232,9 @@ static void * process_thread(TableList * list) {
 	  FREE(buffer);
 	}
 	req = (CS_dht_request_get_MESSAGE*) buffer;
-	if (! equalsHashCode512(&req->table,
-				&list->table)) {
+	if (0 != memcmp(&req->table,
+			&list->table,
+			sizeof(HashCode512))) {
 	  GE_LOG(ectx,
 		 GE_ERROR | GE_BULK | GE_USER,
 		 _("Received invalid `%s' request (wrong table)\n"),
@@ -287,8 +288,9 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	req = (CS_dht_request_put_MESSAGE*) buffer;
-	if (! equalsHashCode512(&req->table,
-				&list->table)) {
+	if (0 != memcmp(&req->table,
+			&list->table,
+			sizeof(HashCode512))) {
 	  GE_LOG(ectx,
 		 GE_ERROR | GE_BULK | GE_USER,
 		 _("Received invalid `%s' request (wrong table)\n"),
@@ -344,8 +346,9 @@ static void * process_thread(TableList * list) {
 	  break;
 	}
 	req = (CS_dht_request_remove_MESSAGE*) buffer;
-	if (! equalsHashCode512(&req->table,
-				&list->table)) {
+	if (0 != memcmp(&req->table,
+			&list->table,
+			sizeof(HashCode512))) {
 	  GE_LOG(ectx,
 		 GE_ERROR | GE_BULK | GE_USER,
 		 _("Received invalid `%s' request (wrong table)\n"),
@@ -461,8 +464,9 @@ int DHT_LIB_join(Blockstore * store,
 
   MUTEX_LOCK(lock);
   for (i=0;i<tableCount;i++)
-    if (equalsHashCode512(&tables[i]->table,
-			  table)) {
+    if (0 == memcmp(&tables[i]->table,
+		    table,
+		    sizeof(HashCode512))) {
       GE_LOG(ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     _("This client already participates in the given DHT!\n"));
@@ -525,8 +529,9 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   list = NULL;
   MUTEX_LOCK(lock);
   for (i=0;i<tableCount;i++) {
-    if (equalsHashCode512(&tables[i]->table,
-			  table)) {
+    if (0 == memcmp(&tables[i]->table,
+		    table,
+		    sizeof(HashCode512))) {
       list = tables[i];
       tables[i] = tables[tableCount-1];
       GROW(tables,

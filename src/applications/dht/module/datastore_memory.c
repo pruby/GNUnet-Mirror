@@ -85,7 +85,9 @@ static int lookup(void * closure,
   MUTEX_LOCK(ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode512(&keys[0], &pos->key)) {
+    if (0 == memcmp(&keys[0],
+		    &pos->key,
+		    sizeof(HashCode512))) {
       for (i=0;i<pos->count;i++)
 	if (OK != resultCallback(&pos->key,
 				 pos->values[i],
@@ -125,7 +127,9 @@ static int store(void * closure,
   MUTEX_LOCK(ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode512(key, &pos->key)) {
+    if (0 == memcmp(key, 
+		    &pos->key,
+		    sizeof(HashCode512))) {
       if (ds->max_memory < size) {
 	MUTEX_UNLOCK(ds->lock);
 	return NO;
@@ -187,7 +191,9 @@ static int ds_remove(void * closure,
   prev = NULL;
   pos = ds->first;
   while (pos != NULL) {
-    if (equalsHashCode512(key, &pos->key)) {
+    if (0 == memcmp(key, 
+		    &pos->key,
+		    sizeof(HashCode512))) {
       if (value != NULL) {
 	for (i=0;i<pos->count;i++) {
 	  if ( (pos->values[i]->size == value->size) &&

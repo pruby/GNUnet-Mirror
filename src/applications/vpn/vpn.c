@@ -1331,6 +1331,34 @@ static void clientExitHandler(struct ClientHandle * c) {
 	MUTEX_UNLOCK(lock);
 }
 
+
+static int makeNonblocking(int handle) {
+#if MINGW
+  u_long l = 1;
+  if (ioctlsocket(handle, 
+		  FIONBIO, 
+		  &l) == SOCKET_ERROR) {
+    SetErrnoFromWinsockError(WSAGetLastError());
+    return SYSERR;
+  } else {
+    /* store the blocking mode */
+    __win_SetHandleBlockingMode(handle, 0);
+  }
+#else
+  int flags = fcntl(handle, F_GETFL);
+  flags |= O_NONBLOCK;
+  if (-1 == fcntl(handle,
+		  F_SETFL,
+		  flags)) {
+    GE_LOG_STRERROR(ectx,
+		    GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+		    "fcntl");
+    return SYSERR;
+  }
+#endif
+  return OK;
+}
+
 /**
  * Module inserted... create thread to listen to TUNTAP and pass
  * these messages on to GNUnet.
@@ -1402,7 +1430,7 @@ int initialize_module_vpn(CoreAPIForApplication * capi) {
 	PIPE(signalingPipe);
 	/* important: make signalingPipe non-blocking
 		to avoid stalling on signaling! */
-	setBlocking(signalingPipe[1], NO);
+	makeNonblocking(signalingPipe[1]);
 
 	/* Yes we have to make our own thread, cause the GUNnet API is
 	 * missing some callbacks (Namely CanReadThisFd - SELECT()) that I would like ;-(
