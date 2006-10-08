@@ -731,8 +731,12 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
 
   sock = client_connection_create(ectx,
 				  cfg);
-  if (sock == NULL)
+  if (sock == NULL) {
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Could not connect to gnunetd\n");
     return SYSERR;
+  }
   req = MALLOC(sizeof(CS_dht_request_put_MESSAGE) +
 	       ntohl(value->size) -
 	       sizeof(DataContainer));

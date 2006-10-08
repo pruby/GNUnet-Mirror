@@ -203,6 +203,9 @@ int main(int argc,
     hash("key", 3, &key);
     value = MALLOC(8);
     value->size = ntohl(8);
+    memset(&value[1],
+	   'B',
+	   4);
     printf("Peer2 stores key.\n");
     CHECK2(OK == DHT_LIB_put(cfg,
 			     ectx,
@@ -250,6 +253,9 @@ int main(int argc,
   hash("key2", 4, &key);
   value = MALLOC(8);
   value->size = ntohl(8);
+  memset(&value[1],
+	 'A',
+	 4);
   printf("Peer1 stores key2\n");
   CHECK(OK == DHT_LIB_put(cfg,
 			  ectx,
