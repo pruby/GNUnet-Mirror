@@ -243,7 +243,7 @@ static void * select_accept_handler(void * ah_cls,
   tcpSession->sender = *(coreAPI->myIdentity);
   tcpSession->expectingWelcome = YES;
   tcpSession->lock = MUTEX_CREATE(YES);
-  tcpSession->users = 1; /* us only, core has not seen this tsession! */
+  tcpSession->users = 1; /* select only, core has not seen this tsession! */
   tsession = MALLOC(sizeof(TSession));
   tsession->ttype = TCP_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
@@ -255,7 +255,8 @@ static void select_close_handler(void * ch_cls,
 				 struct SelectHandle * sh,
 				 struct SocketHandle * sock,
 				 void * sock_ctx) {
-  FREE(sock_ctx);
+  TSession * tsession = sock_ctx;
+  tcpDisconnect(tsession);
 }
 
 /**
@@ -352,7 +353,7 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
   tsession->internal = tcpSession;
   tsession->ttype = protocolNumber;
   tcpSession->lock = MUTEX_CREATE(YES);
-  tcpSession->users = 1; /* caller */
+  tcpSession->users = 2; /* caller + select */
   tcpSession->sender = helo->senderIdentity;
   tcpSession->expectingWelcome = NO;
   MUTEX_LOCK(tcplock);
@@ -379,7 +380,8 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
 	   "Could not sent TCP welcome message, closing connection.\n");
 #endif
     /* disconnect caller -- error! */
-    tcpDisconnect(tsession);
+    tcpDisconnect(tsession); /* for caller */
+    tcpDisconnect(tsession); /* for select */
     MUTEX_UNLOCK(tcplock);
     return SYSERR;
   } else if (stats != NULL) 

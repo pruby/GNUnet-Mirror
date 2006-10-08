@@ -257,9 +257,9 @@ static void block(void * cls) {
 void cron_suspend(struct CronManager * cron,
 		  int checkSelf) {
   if ( (YES == checkSelf) &&
+       (cron->cron_shutdown == NO) &&
        (NO != PTHREAD_TEST_SELF(cron->cron_handle)) )
     return;
-  GE_ASSERT(NULL, cron->cron_shutdown == NO);
   GE_ASSERT(NULL, NO == PTHREAD_TEST_SELF(cron->cron_handle));
   MUTEX_LOCK(cron->inBlockLock_);
   cron->inBlock++;
@@ -287,6 +287,7 @@ int cron_test_running(struct CronManager * cron) {
 void cron_resume_jobs(struct CronManager * cron,
 		      int checkSelf) {
   if ( (YES == checkSelf) &&
+       (cron->cron_shutdown == NO) &&
        (NO != PTHREAD_TEST_SELF(cron->cron_handle)) )
     return;
   GE_ASSERT(NULL, cron->inBlock > 0);

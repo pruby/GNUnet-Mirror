@@ -439,6 +439,7 @@ static void notifyPeerRequest(PeerIdentity * peer,
   pi->lastRequestTimes[0] = get_time();
   pi->lastRequestId[0] = messageID;
   pi->oldestRTIndex = 1;
+  vectorInsertLast(peerInformation, pi);
   MUTEX_UNLOCK(rpcLock);
 }
 
