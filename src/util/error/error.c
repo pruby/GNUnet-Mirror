@@ -24,8 +24,10 @@
  *
  * @author Christian Grothoff
  */
-#include "gnunet_util_error.h"
+#include <conio.h>
+
 #include "platform.h"
+#include "gnunet_util_error.h"
 
 /**
  * Default context for logging errors; used
@@ -38,6 +40,7 @@ typedef struct GE_Context {
   GE_LogHandler handler;
   void * cls;
   GE_CtxFree destruct;
+  GE_Confirm confirm;
 } GE_Context;
 
 /**
@@ -65,7 +68,15 @@ void GE_LOG(struct GE_Context * ctx,
   char * buf;
 
   if (ctx == NULL)
+  {
     ctx = defaultContext;
+#ifdef WINDOWS
+    /* Most tools disband the console window early in the initialization
+       process, so we have to create a new one if we're logging to the
+       default context. */
+    AllocConsole();
+#endif
+  }
   if ( (ctx != NULL)  &&
        (! GE_applies(kind, ctx->mask)) )
     return;
@@ -97,6 +108,30 @@ void GE_LOG(struct GE_Context * ctx,
 }
 
 /**
+ * @brief Get user confirmation (e.g. before the app shuts down and closes the
+ *        error message
+ */
+void GE_CONFIRM(struct GE_Context * ctx)
+{
+  if (ctx == NULL)
+  {
+    /* @TODO: we probably ought to get confirmations in all graphical
+              environments */
+#ifdef WINDOWS
+    /* Console open? */
+    if (GetStdHandle(STD_ERROR_HANDLE) != NULL)
+    {
+      fprintf(stderr,
+        _("\nPress any key to continue\n"));
+      getch();
+    }
+#endif
+  }
+  else if (ctx->confirm)
+    ctx->confirm(ctx->cls); 
+}
+
+/**
  * Create a log context that calls a callback function
  * for matching events.
  *
@@ -108,7 +143,8 @@ struct GE_Context *
 GE_create_context_callback(GE_KIND mask,
 			   GE_LogHandler handler,
 			   void * ctx,
-			   GE_CtxFree liberator) {
+			   GE_CtxFree liberator,
+         GE_Confirm confirm) {
   GE_Context * ret;
 
   ret = malloc(sizeof(GE_Context));
@@ -118,6 +154,7 @@ GE_create_context_callback(GE_KIND mask,
   ret->handler = handler;
   ret->cls = ctx;
   ret->destruct = liberator;
+  ret->confirm = confirm;
   return ret;
 }
 

@@ -88,7 +88,8 @@ GE_create_context_memory(GE_KIND mask,
   return GE_create_context_callback(mask,
 				    &memorylogger,
 				    memory,
-				    NULL);
+				    NULL,
+            NULL);
 }
 
 /**

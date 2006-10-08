@@ -77,6 +77,12 @@ void GE_LOG(struct GE_Context * ctx,
 	    GE_KIND kind,
 	    const char * message,
 	    ...);
+   
+/**
+ * @brief Get user confirmation (e.g. before the app shuts down and closes the
+ *        error message
+ */
+void GE_CONFIRM(struct GE_Context * ctx);
 
 void GE_setDefaultContext(struct GE_Context * ctx);
 
@@ -94,6 +100,11 @@ typedef void (*GE_LogHandler)(void * ctx,
 typedef void (*GE_CtxFree)(void * ctx);
 
 /**
+ * User-defined method to wait for user confirmation
+ */
+typedef void (*GE_Confirm)(void * ctx);
+
+/**
  * Create a log context that calls a callback function
  * for matching events.
  *
@@ -106,7 +117,8 @@ struct GE_Context *
 GE_create_context_callback(GE_KIND mask,
 			   GE_LogHandler handler,
 			   void * ctx,
-			   GE_CtxFree liberator);
+			   GE_CtxFree liberator,
+         GE_Confirm confirm);
 				 
 /**
  * Free a log context.
@@ -160,9 +172,9 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
  */ 
 #define IF_GELOG(ctx, kind, a) do { if (GE_isLogged(ctx, kind)) { a; } } while(0);
 
-#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); abort(); } } while(0);
+#define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0);
 
-#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), file, line, function); abort(); } } while(0);
+#define GE_ASSERT_FLF(ctx, cond, file, line, function) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), file, line, function); GE_CONFIRM(ctx); abort(); } } while(0);
 
 #define GE_BREAK(ctx, cond)  do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); } } while(0);
 
@@ -180,14 +192,14 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_DIE_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); abort(); } while(0);
+#define GE_DIE_STRERROR(ctx, level, cmd) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, __FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); abort(); } while(0);
+#define GE_DIE_STRERROR_FLF(ctx, level, cmd, file, line, function) do { GE_LOG(ctx, level, _("`%s' failed at %s:%d in %s with error: %s\n"), cmd, file, line, function, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0);
 
 /**
  * Log an error message at log-level 'level' that indicates
@@ -208,7 +220,7 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); abort(); } while(0);
+#define GE_DIE_STRERROR_FILE(ctx, level, cmd, filename) do { GE_LOG(ctx, level, _("`%s' failed on file `%s' at %s:%d in %s with error: %s\n"), cmd, filename,__FILE__, __LINE__, __FUNCTION__, STRERROR(errno)); GE_CONFIRM(ctx); abort(); } while(0);
 
 
 #if 0 /* keep Emacsens' auto-indent happy */

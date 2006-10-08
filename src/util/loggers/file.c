@@ -306,7 +306,8 @@ GE_create_context_logfile(struct GE_Context * ectx,
   return GE_create_context_callback(mask,
 				    &filelogger,
 				    fctx,
-				    &fileclose);
+				    &fileclose,
+            NULL);
 }
 
 
@@ -332,7 +333,8 @@ GE_create_context_stderr(int logDate,
   return GE_create_context_callback(mask,
 				    &filelogger,
 				    fctx,
-				    &fileclose);
+				    &fileclose,
+            NULL);
 
 }
 
@@ -358,6 +360,7 @@ GE_create_context_stdout(int logDate,
   return GE_create_context_callback(mask,
 				    &filelogger,
 				    fctx,
-				    &fileclose);
+				    &fileclose,
+            NULL);
 
 }
