@@ -48,7 +48,9 @@ static int waitForConnect(const char * name,
   return OK;
 }
 
-#define START_PEERS 1
+#define START_PEERS 0
+
+#define DO_FORK 0
 
 #define CHECK(a) do { if (!(a)) { ret = 1; GE_BREAK(ectx, 0); goto FAILURE; } } while(0)
 
@@ -60,11 +62,15 @@ static int waitForConnect(const char * name,
  */
 int main(int argc,
 	 const char ** argv) {
+#if START_PEERS
   pid_t daemon1;
   pid_t daemon2;
+#endif
   pid_t sto2;
   int ret;
+#if DO_FORK
   int status;
+#endif
   struct ClientServerConnection * sock;
   int left;
   DHT_TableId table;
@@ -74,6 +80,7 @@ int main(int argc,
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
 
+  ectx = NULL;
   enc2hash("BV3AS3KMIIBVIFCGEG907N6NTDTH26B7T6FODUSLSGK"
 	   "5B2Q58IEU1VF5FTR838449CSHVBOAHLDVQAOA33O77F"
 	   "OPDA8F1VIKESLSNBO",
@@ -176,7 +183,11 @@ int main(int argc,
   store = create_blockstore_memory(65536);
 
   /* actual test code */
+#if DO_FORK
   sto2 = fork();
+#else
+  sto2 = argc == 1;
+#endif
   if (sto2 == 0) {
     /* switch to peer2 */
     GC_set_configuration_value_number(cfg,
@@ -273,11 +284,12 @@ int main(int argc,
   printf("Peer1 tests successful, shutting down.\n");
   DHT_LIB_leave(&table);
   destroy_blockstore_memory(store);
-
+#if DO_FORK
   if (sto2 != waitpid(sto2, &status, 0))
     GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_USER | GE_IMMEDIATE,
 		    "waitpid");
+#endif
   /* end of actual test code */
 
  FAILURE:

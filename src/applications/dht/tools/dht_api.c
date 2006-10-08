@@ -188,10 +188,10 @@ static void * process_thread(TableList * list) {
     ok = NO;
     /* send 'join' message via socket! */
     if (OK == connection_write(list->sock,
-			    &req.header)) {
+			       &req.header)) {
       reply = NULL;
       if (OK == connection_read(list->sock,
-			       &reply)) {
+				&reply)) {
 	if (OK == checkACK(reply))
 	  ok = YES;
 	FREENONNULL(reply);
@@ -721,10 +721,11 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
   MESSAGE_HEADER * reply;
   int ret;
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "DHT_LIB_put called with value '%.*s'\n",
-      ntohl(value->size),
-      &value[1]);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "DHT_LIB_put called with value '%.*s'\n",
+	 ntohl(value->size),
+	 &value[1]);
 
   sock = client_connection_create(ectx,
 				  cfg);

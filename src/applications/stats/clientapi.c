@@ -158,18 +158,18 @@ int requestStatistics(struct GE_Context * ectx,
 				 &csHdr))
     return SYSERR;
   statMsg
-    = MALLOC(MAX_BUFFER_SIZE);
+    = MALLOC(sizeof(CS_stats_reply_MESSAGE));
   statMsg->totalCounters
     = htonl(1); /* to ensure we enter the loop */
   count = 0;
   while ( count < ntohl(statMsg->totalCounters) ) {
+    FREE(statMsg);
+    statMsg = NULL;
     /* printf("reading from socket starting %u of %d\n",
        count, ntohl(statMsg->totalCounters) );*/
     if (SYSERR == connection_read(sock,
-				  (MESSAGE_HEADER**)&statMsg)) {
-      FREE(statMsg);
-      return SYSERR;
-    }
+				  (MESSAGE_HEADER**)&statMsg)) 
+      return SYSERR;    
     if (ntohs(statMsg->header.size) < sizeof(CS_stats_reply_MESSAGE)) {
       GE_BREAK(ectx, 0);
       ret = SYSERR;

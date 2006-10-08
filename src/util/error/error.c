@@ -77,8 +77,8 @@ void GE_LOG(struct GE_Context * ctx,
   vsnprintf(buf, size, message, va);
   va_end(va);
   time(&timetmp);
-  tmptr = localtime(&timetmp);
   memset(date, 0, 64);
+  tmptr = localtime(&timetmp);
   strftime(date,
 	   64,
 	   "%b %d %H:%M:%S",
@@ -88,11 +88,18 @@ void GE_LOG(struct GE_Context * ctx,
 		 kind,
 		 date,
 		 buf);
-  else
+  else {
+    printf("!\n");
+    printf(date);
+    printf("\n");
+    printf(buf);
+    fprintf(stderr,
+	    "X!\n");
     fprintf(stderr,
 	    "%s %s", 
 	    date,
 	    buf);
+  }
   free(buf);
 }
 

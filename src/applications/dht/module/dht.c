@@ -60,7 +60,7 @@
 #define DEBUG_DHT YES
 
 #if DEBUG_DHT
-#define ENTER() GE_LOG(ectx, GE_REQUEST | GE_DEVELOPER | GE_DEBUG, "Entering method %s at %s:%d.\n", __FUNCTION__, __FILE__, __LINE__)
+#define ENTER() GE_LOG(ectx, GE_REQUEST | GE_DEVELOPER | GE_USER | GE_DEBUG, "Entering method %s at %s:%d.\n", __FUNCTION__, __FILE__, __LINE__)
 #else
 #define ENTER() do {} while (0)
 #endif
@@ -1597,17 +1597,19 @@ dht_get_async_start(const DHT_TableId * table,
   IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc2));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "performing `%s' operation on key `%s' and table `%s'.\n",
-      "DHT_GET",
-      &enc,
-      &enc2);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "performing `%s' operation on key `%s' and table `%s'.\n",
+	 "DHT_GET",
+	 &enc,
+	 &enc2);
 #endif
 
   if (timeout > 1 * cronHOURS) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("`%s' called with timeout above 1 hour (bug?)\n"),
-	__FUNCTION__);
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("`%s' called with timeout above 1 hour (bug?)\n"),
+	   __FUNCTION__);
     timeout = 1 * cronHOURS;
   }
 
@@ -1636,13 +1638,15 @@ dht_get_async_start(const DHT_TableId * table,
   if (ltd != NULL) {
     PeerIdentity * hosts;
 #if DEBUG_DHT
-    IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  hash2enc(table,
-		   &enc));
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"I participate in the table `%s' for the `%s' operation.\n",
-	&enc,
-	"DHT_GET");
+    IF_GELOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     hash2enc(table,
+		      &enc));
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "I participate in the table `%s' for the `%s' operation.\n",
+	   &enc,
+	   "DHT_GET");
 #endif
     /* We do participate in the table, it is fair to assume
        that we know the relevant peers in my neighbour set */
@@ -2289,7 +2293,8 @@ send_dht_put_rpc(const PeerIdentity * peer,
 static void
 dht_put_async_timeout(void * cls) {
   struct DHT_PUT_RECORD * dpr = cls;
-  dpr->callback(dpr->closure);
+  if (dpr->callback != NULL)
+    dpr->callback(dpr->closure);
   delAbortJob(&dht_put_async_timeout, cls);
 }
 
@@ -2793,7 +2798,8 @@ static int dht_leave(const DHT_TableId * table) {
     return SYSERR;
   }
   old = tables[i];
-  tables[i] = tables[tablesCount-1];
+  if (tablesCount > 1)
+    tables[i] = tables[tablesCount-1];
   GROW(tables,
        tablesCount,
        tablesCount-1);
@@ -3003,6 +3009,7 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
   unsigned int keysLength;
   unsigned int dataLength;
   RPC_DHT_FindValue_Context * fw_context;
+  RPC_Param * results;
 
   ENTER();
   processOptionalFields(sender, arguments);
@@ -3027,15 +3034,23 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 				   &dataLength,
 				   (void**) &type)) ||
        (dataLength != sizeof(unsigned int)) ) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Received invalid RPC `%s'.\n"),
-	"DHT_findValue");
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Received invalid RPC `%s'.\n"),
+	   "DHT_findValue");
+    RPC_paramFree(arguments);
+    results = RPC_paramNew();
+    if (callback != NULL)
+      callback(results,
+	       SYSERR,
+	       rpc_context);
+    RPC_paramFree(results);
     return;
   }
-
   fw_context
     = MALLOC(sizeof(RPC_DHT_FindValue_Context));
-  fw_context->lock = MUTEX_CREATE(YES);
+  fw_context->lock 
+    = MUTEX_CREATE(YES);
   fw_context->count
     = 0;
   fw_context->done
@@ -3056,6 +3071,7 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
 			  fw_context,
 			  (DHT_OP_Complete) &rpc_dht_findValue_complete,
 			  fw_context);
+  RPC_paramFree(arguments);
   addAbortJob((CronJob)&rpc_DHT_findValue_abort,
 	      fw_context);
   cron_add_job(coreAPI->cron,
@@ -3137,6 +3153,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
   unsigned long long * timeout;
   RPC_DHT_store_Context * fw_context;
   LocalTableData * ltd;
+  RPC_Param * results;
 
   ENTER();
   processOptionalFields(sender, arguments);
@@ -3158,9 +3175,17 @@ static void rpc_DHT_store(const PeerIdentity * sender,
        (dataLength != sizeof(unsigned long long)) ||
        ((NULL == (value = RPC_paramDataContainerByName(arguments,
 						       "value")))) ) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Received invalid RPC `%s'.\n"),
-	"DHT_store");
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Received invalid RPC `%s'.\n"),
+	   "DHT_store");
+    RPC_paramFree(arguments);
+    results = RPC_paramNew();
+    if (callback != NULL)
+      callback(results,
+	       SYSERR,
+	       rpc_context);
+    RPC_paramFree(results);
     return;
   }
 
@@ -3188,6 +3213,7 @@ static void rpc_DHT_store(const PeerIdentity * sender,
 			  value,
 			  (DHT_OP_Complete) &rpc_dht_store_callback,
 			  fw_context);
+  RPC_paramFree(arguments);
   addAbortJob(&rpc_DHT_store_abort,
 	      fw_context);
   cron_add_job(coreAPI->cron,
@@ -3277,6 +3303,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
   unsigned long long * timeout;
   RPC_DHT_remove_Context * fw_context;
   LocalTableData * ltd;
+  RPC_Param * results;
 
   ENTER();
   processOptionalFields(sender, arguments);
@@ -3296,9 +3323,17 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 				   &dataLength,
 				   (void**) &timeout)) ||
        (dataLength != sizeof(unsigned long long)) ) {
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Received invalid RPC `%s'.\n"),
-	"DHT_remove");
+    GE_LOG(ectx,
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Received invalid RPC `%s'.\n"),
+	   "DHT_remove");
+    RPC_paramFree(arguments);
+    results = RPC_paramNew();
+    if (callback != NULL)
+      callback(results,
+	       SYSERR,
+	       rpc_context);
+    RPC_paramFree(results);
     return;
   }
 
@@ -3328,6 +3363,7 @@ static void rpc_DHT_remove(const PeerIdentity * sender,
 			     value,
 			     (DHT_OP_Complete) &rpc_dht_remove_callback,
 			     fw_context);
+  RPC_paramFree(arguments);
   addAbortJob((CronJob)&rpc_DHT_remove_abort,
 	      fw_context);
   cron_add_job(coreAPI->cron,
