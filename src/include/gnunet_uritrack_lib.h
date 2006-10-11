@@ -72,9 +72,13 @@ void URITRACK_trackURI(struct GE_Context * ectx,
 
 /**
  * List all URIs.
+ * 
+ * @param need_metadata YES if metadata should be 
+ *        provided, NO if metadata is not needed (faster)
  */
 int URITRACK_listURIs(struct GE_Context * ectx,
 		      struct GC_Configuration * cfg,
+		      int need_metadata,
 		      ECRS_SearchProgressCallback iterator,
 		      void * closure); /* file_info.c */
 

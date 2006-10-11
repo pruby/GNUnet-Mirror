@@ -197,6 +197,7 @@ int main(int argc,
     GC_parse_configuration(cfg,
 			   cfgFilename);
   dirname = os_get_installation_path(IPK_DATADIR);
+  GE_ASSERT(ectx, dirname != NULL);
   specname = MALLOC(strlen(dirname) + strlen("config-daemon.scm") + 1);
   strcpy(specname, dirname);
   FREE(dirname);

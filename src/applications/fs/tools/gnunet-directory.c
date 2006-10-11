@@ -183,6 +183,7 @@ int main(int argc,
     printf(_("Listed %d matching entries.\n"),
 	   URITRACK_listURIs(ectx,
 			     cfg,
+			     YES,
 			     &printNode,
 			     NULL));
   if (do_kill) {

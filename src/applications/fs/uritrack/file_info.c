@@ -156,7 +156,7 @@ void URITRACK_trackURI(struct GE_Context * ectx,
 						 fi->meta,
 						 data,
 						 size,
-						 ECRS_SERIALIZE_FULL));
+						 ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS));
   size = htonl(size);
   suri = ECRS_uriToString(fi->uri);
   sem = createIPC(ectx, cfg);
@@ -234,10 +234,13 @@ void URITRACK_trackURIS(struct GE_Context * ectx,
  *
  * @param iterator function to call on each entry, may be NULL
  * @param closure extra argument to the callback
+ * @param need_metadata YES if metadata should be 
+ *        provided, NO if metadata is not needed (faster)
  * @return number of entries found
  */
 int URITRACK_listURIs(struct GE_Context * ectx,
 		      struct GC_Configuration * cfg,
+		      int need_metadata,
 		      ECRS_SearchProgressCallback iterator, 
 		      void *closure) {
   struct IPC_SEMAPHORE *sem;
@@ -316,19 +319,24 @@ int URITRACK_listURIs(struct GE_Context * ectx,
       ECRS_freeUri(fi.uri);
       goto FORMATERROR;
     }
-    fi.meta = ECRS_deserializeMetaData(ectx,
-				       &result[spos], msize);
-    if(fi.meta == NULL) {
-      GE_BREAK(ectx, 0);
-      ECRS_freeUri(fi.uri);
-      goto FORMATERROR;
+    if (need_metadata == YES) {
+      fi.meta = ECRS_deserializeMetaData(ectx,
+					 &result[spos], msize);
+      if(fi.meta == NULL) {
+	GE_BREAK(ectx, 0);
+	ECRS_freeUri(fi.uri);
+	goto FORMATERROR;
+      }
+    } else {
+      fi.meta = NULL;
     }
     pos = spos + msize;
     if(iterator != NULL) {
-      if(OK != iterator(&fi, NULL, NO, closure)) {
-        ECRS_freeMetaData(fi.meta);
+      if (OK != iterator(&fi, NULL, NO, closure)) {
+	if (fi.meta != NULL)
+	  ECRS_freeMetaData(fi.meta);
         ECRS_freeUri(fi.uri);
-        if(0 != MUNMAP(result, buf.st_size))
+        if (0 != MUNMAP(result, buf.st_size))
           GE_LOG_STRERROR_FILE(ectx,
 			       GE_ERROR | GE_ADMIN | GE_BULK,
 			       "munmap",
@@ -341,7 +349,8 @@ int URITRACK_listURIs(struct GE_Context * ectx,
       }
     }
     rval++;
-    ECRS_freeMetaData(fi.meta);
+    if (fi.meta != NULL)
+      ECRS_freeMetaData(fi.meta);
     ECRS_freeUri(fi.uri);
   }
   if(0 != MUNMAP(result, buf.st_size))
