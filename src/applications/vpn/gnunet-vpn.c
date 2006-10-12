@@ -60,11 +60,10 @@ static struct CommandLineOption gnunetvpnOptions[] = {
   COMMAND_LINE_OPTION_END,
 };
 
-static void * receiveThread(struct ClientServerConnection * sock) {
-  /* printf("Welcome to the VPN console: (Ctrl-D to exit)\n"); */
-  /* MESSAGE_HEADER *buffer; */
+static void * receiveThread(void * arg) {
+  struct ClientServerConnection * sock = arg;
   char buffer[MAX_BUFFER_SIZE];
-  MESSAGE_HEADER* bufp = buf;
+  MESSAGE_HEADER * bufp = buf;
       
   /* buffer = MALLOC(MAX_BUFFER_SIZE); */
   while (OK == connection_read(sock, &bufp)) {
@@ -144,7 +143,6 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   sock = client_connection_create(ectx,
@@ -152,7 +150,8 @@ int main(int argc,
   if (sock == NULL) {
     fprintf(stderr,
 	    _("Error establishing connection with gnunetd.\n"));
-    os_done();
+    GC_free(cfg);
+    GE_free_context(ectx);
     return 1;
   }
 
@@ -162,7 +161,7 @@ int main(int argc,
   lock = MUTEX_CREATE(NO);
   wantExit = NO;
 
-  messageReceiveThread = PTHREAD_CREATE((PThreadMain) &receiveThread,
+  messageReceiveThread = PTHREAD_CREATE(&receiveThread,
 					sock,
 					128 * 1024);
   if (messageReceiveThread == NULL)

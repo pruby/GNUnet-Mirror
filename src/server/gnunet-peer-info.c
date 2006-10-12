@@ -124,14 +124,12 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   } 
   if (-1 == GC_parse_configuration(cfg,
 	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   GE_ASSERT(ectx,
@@ -153,7 +151,6 @@ int main(int argc,
   cron_destroy(cron);
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   return 0;
 }
 

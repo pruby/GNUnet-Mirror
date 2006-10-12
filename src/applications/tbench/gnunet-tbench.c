@@ -127,7 +127,6 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   sock = client_connection_create(ectx,
@@ -137,7 +136,6 @@ int main(int argc,
 	    _("Error establishing connection with gnunetd.\n"));
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return 1;
   }
 
@@ -156,7 +154,6 @@ int main(int argc,
     connection_destroy(sock);
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return 1;
   }
   if (OK != enc2hash(messageReceiver,
@@ -164,18 +161,19 @@ int main(int argc,
     fprintf(stderr,
 	    _("Invalid receiver peer ID specified (`%s' is not valid name).\n"),
 	    messageReceiver);
+    FREE(messageReceiver);
     connection_destroy(sock);
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return 1;
   }
   FREE(messageReceiver);
 
   if (SYSERR == connection_write(sock,
-				 &msg.header))
-  {
-    os_done();
+				 &msg.header)) {
+    connection_destroy(sock);
+    GC_free(cfg);
+    GE_free_context(ectx);
     return -1;
   }
 
@@ -228,7 +226,6 @@ int main(int argc,
   connection_destroy(sock);
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   return 0;
 }
 

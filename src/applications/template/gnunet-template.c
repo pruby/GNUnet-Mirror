@@ -91,7 +91,6 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
 
@@ -102,7 +101,6 @@ int main(int argc,
 	    _("Error establishing connection with gnunetd.\n"));
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return 1;
   }
   messageReceiveThread = PTHREAD_CREATE(&receiveThread,
@@ -123,7 +121,6 @@ int main(int argc,
   connection_destroy(sock);
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   return 0;
 }
 

@@ -45,7 +45,7 @@ int os_init(struct GE_Context *ectx)
 /**
  * @brief Perform OS specific cleanup
  */
-void os_done()
+void __attribute__ ((destructor)) os_fini()
 {
 #ifdef MINGW
   ShutdownWinEnv();

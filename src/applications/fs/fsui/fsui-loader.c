@@ -70,7 +70,6 @@ int main(int argc,
   if (argc != 2) {
     fprintf(stderr,
 	    "Call with name of FSUI resource file!\n");
-    os_done();
     return -1;
   }
   ctx = FSUI_start(ectx,
@@ -85,6 +84,5 @@ int main(int argc,
   else 
     fprintf(stderr,
 	    "FSUI_start failed!\n");  
-  os_done();
   return (ctx == NULL);
 }

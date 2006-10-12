@@ -211,7 +211,6 @@ int main(int argc,
     GC_free(cfg);
     GE_free_context(ectx);
     ECRS_freeMetaData(meta);
-    os_done();
     return -1;  
   }
   success = 0; /* no errors */
@@ -330,7 +329,6 @@ int main(int argc,
   ECRS_freeMetaData(meta);
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   return success;
 }
 

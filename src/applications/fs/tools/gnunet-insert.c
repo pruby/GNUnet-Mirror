@@ -477,7 +477,6 @@ int main(int argc,
 quit:
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   return errorCode;
 }
 

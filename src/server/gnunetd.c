@@ -216,20 +216,17 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   if (-1 == GC_parse_configuration(cfg,
 	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   if (OK != changeUser(ectx, cfg)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return 1;
   }
   if (OK != checkUpToDate(ectx,
@@ -240,14 +237,11 @@ int main(int argc,
 	   "gnunet-update");
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return 1;
   }  
   ret = gnunet_main(ectx);
   GC_free(cfg);
-  os_done();
   GE_free_context(ectx);
-  os_done();
   if (ret != OK)
     return 1;
   return 0;

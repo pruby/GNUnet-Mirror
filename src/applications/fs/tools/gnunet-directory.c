@@ -176,7 +176,6 @@ int main(int argc,
   if (i == SYSERR) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   if (do_list)
@@ -198,8 +197,6 @@ int main(int argc,
 
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
-
   return 0;
 }
 

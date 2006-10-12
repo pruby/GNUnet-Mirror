@@ -251,6 +251,15 @@ static void writeURI(int fd,
   FREE(buf);
 }
 
+static void WRITESTRING(int fd,
+			const char * name) {
+  WRITEINT(fd,
+	   strlen(name));
+  WRITE(fd,
+	name,
+	strlen(name));
+}
+
 /**
  * (recursively) write a download list.
  */
@@ -698,6 +707,20 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 			   &ret->activeDownloads);
       doResumeEvents(ret->activeDownloads.child,
 		     ret);
+
+      /* deserialize uploads */
+      while (1) {
+	if (sizeof(unsigned int) !=
+	    READ(fd, &big, sizeof(unsigned int))) {
+	  GE_BREAK(ectx, 0);
+	  goto WARN;
+	}
+	if (ntohl(big) != 1) 
+	  break; /* no more uploads */
+	
+
+      }
+
       /* success, read complete! */
       goto END;
     WARNL:
@@ -954,12 +977,33 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	  sizeof(unsigned int));
   }
   while (ctx->activeUploads != NULL) {
+    big = htonl(1);
+    WRITE(fd,
+	  &big,
+	  sizeof(unsigned int));
     upos = ctx->activeUploads;
     ctx->activeUploads = upos->next;
     upos->force_termination = YES;
     PTHREAD_STOP_SLEEP(upos->handle);
     PTHREAD_JOIN(upos->handle, &unused);
     if (fd != -1) {
+      WRITEINT(fd, upos->status);
+      WRITELONG(fd, upos->main_completed);
+      WRITELONG(fd, upos->main_total);
+      WRITELONG(fd, upos->expiration);
+      WRITELONG(fd, upos->start_time);
+      /* dir track!? */
+      writeURI(fd, upos->uri);
+      writeURI(fd, upos->globalUri); /* need to handle NULL? */
+      WRITESTRING(fd, upos->filename);
+      WRITESTRING(fd, upos->main_filename);
+      WRITEINT(fd, upos->isRecursive);
+      WRITEINT(fd, upos->doIndex);
+      WRITEINT(fd, upos->anonymityLevel);
+      WRITEINT(fd, upos->priority);
+      WRITEINT(fd, upos->individualKeywords);
+      
+
       /* FIXME: serialize! */
       event.type = FSUI_upload_suspending;
       event.data.UploadSuspending.uc.pos = upos;
@@ -974,6 +1018,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     if (upos->globalUri != NULL)
       ECRS_freeUri(upos->globalUri);
     EXTRACTOR_removeAll(upos->extractors);
+    FREE(upos);
   }
   if (fd != -1) {
     /* upload list terminator */

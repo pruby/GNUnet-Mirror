@@ -142,10 +142,13 @@ typedef struct FSUI_SearchList {
 
   void * cctx;
 
+  FSUI_State state;
+
 } FSUI_SearchList;
 
 /**
- * Current state of a download.
+ * Current state of a download (or uploads, or search,
+ * or unindex operations).
  *
  * PENDING means that the download is waiting for a thread
  * to be assigned to run it.  Downloads start in this state,
@@ -189,16 +192,17 @@ typedef struct FSUI_SearchList {
  * resumes).
  */
 typedef enum {
-  FSUI_DOWNLOAD_PENDING = 0,
-  FSUI_DOWNLOAD_ACTIVE = 1,
-  FSUI_DOWNLOAD_COMPLETED = 2,
-  FSUI_DOWNLOAD_COMPLETED_JOINED = 3,
-  FSUI_DOWNLOAD_ABORTED = 4,
-  FSUI_DOWNLOAD_ABORTED_JOINED = 5,
-  FSUI_DOWNLOAD_ERROR = 6,
-  FSUI_DOWNLOAD_ERROR_JOINED = 7,
-  FSUI_DOWNLOAD_SUSPENDING = 8,
-} FSUI_DownloadState;
+  FSUI_PENDING = 0,
+  FSUI_ACTIVE = 1,
+  FSUI_COMPLETED = 2,
+  FSUI_COMPLETED_JOINED = 3,
+  FSUI_ABORTED = 4,
+  FSUI_ABORTED_JOINED = 5,
+  FSUI_ERROR = 6,
+  FSUI_ERROR_JOINED = 7,
+  FSUI_SUSPENDING = 8,
+} FSUI_State;
+
 
 
 /**
@@ -313,7 +317,7 @@ typedef struct FSUI_DownloadList {
   /**
    * State of the download.
    */
-  FSUI_DownloadState state;
+  FSUI_State state;
 
 } FSUI_DownloadList;
 
@@ -335,6 +339,8 @@ typedef struct FSUI_UnindexList {
   void * cctx;
 
   int force_termination;
+
+  FSUI_State state;
 
 } FSUI_UnindexList;
 
@@ -393,6 +399,8 @@ typedef struct FSUI_UploadList {
   int individualKeywords;
 
   int force_termination;
+
+  FSUI_State state;
 
 } FSUI_UploadList;
 

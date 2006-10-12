@@ -312,11 +312,6 @@ void os_terminal_detach_complete(struct GE_Context * ectx,
  */
 int os_init(struct GE_Context *ectx);
 
-/**
- * @brief Perform OS specific cleanup
- */
-void os_done(void);
-
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

@@ -167,7 +167,6 @@ int main(int argc,
   if (i == SYSERR) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
 
@@ -178,7 +177,6 @@ int main(int argc,
 	     "You must specify a GNUnet file URI\n"));
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;
   }
   GC_get_configuration_value_number(cfg,
@@ -199,7 +197,6 @@ int main(int argc,
 	   argv[i]);
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;
   }
 
@@ -255,7 +252,6 @@ int main(int argc,
   ECRS_freeUri(uri);
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   if (dl == NULL)
     return 1;
   return 0;

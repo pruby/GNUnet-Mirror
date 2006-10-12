@@ -138,7 +138,6 @@ int main(int argc,
   if (i == SYSERR) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   if (i == argc) {
@@ -148,7 +147,6 @@ int main(int argc,
 	     "You must specify a filename.\n"));
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;
   }
   GC_get_configuration_value_number(cfg,
@@ -187,7 +185,6 @@ int main(int argc,
   SEMAPHORE_DESTROY(exitSignal);
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   return errorCode;
 }
 

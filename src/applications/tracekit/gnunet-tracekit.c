@@ -311,7 +311,6 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return -1;  
   }
   sock = client_connection_create(ectx, cfg);
@@ -320,7 +319,6 @@ int main(int argc,
 	    _("Error establishing connection with gnunetd.\n"));
     GC_free(cfg);
     GE_free_context(ectx);
-    os_done();
     return 1;
   }
 
@@ -374,7 +372,6 @@ int main(int argc,
   cron_destroy(cron);
   GC_free(cfg);
   GE_free_context(ectx);
-  os_done();
   return 0;
 }
 
