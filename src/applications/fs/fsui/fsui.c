@@ -72,6 +72,29 @@ static struct ECRS_URI * readURI(struct GE_Context * ectx,
   return NULL;
 }
 
+static void doResumeEvents(struct FSUI_DownloadList * ret,
+			   FSUI_Context * ctx) {
+  FSUI_Event event;
+
+  while (ret != NULL) {
+    event.type = FSUI_download_resuming;
+    event.data.DownloadResuming.dc.pos = ret;
+    event.data.DownloadResuming.dc.cctx = ret->cctx;
+    event.data.DownloadResuming.dc.ppos = ret->parent;
+    event.data.DownloadResuming.dc.pcctx = ret->parent != NULL ? ret->parent->cctx : NULL;
+    event.data.DownloadResuming.eta = get_time(); /* best guess */
+    event.data.DownloadResuming.total = ret->total;
+    event.data.DownloadResuming.completed = ret->completedFile;
+    event.data.DownloadResuming.anonymityLevel = ret->anonymityLevel;
+    event.data.DownloadResuming.uri = ret->uri;
+    ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
+    if (ret->child != NULL)
+      doResumeEvents(ret->child,
+		     ctx);
+    ret = ret->next;
+  }
+}
+
 /**
  * (Recursively) read a download list from the given fd.  The returned
  * pointer is expected to be integrated into the tree either as a next
@@ -91,7 +114,6 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
   unsigned long long bigl;
   int i;
   int ok;
-  FSUI_Event event;
 
   GE_ASSERT(ectx, ctx != NULL);
   if (1 != READ(fd, &zaro, sizeof(char))) {
@@ -185,19 +207,6 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
 	 ret->completed,
 	 ret->total);
 #endif
-  /* signal event handler! */
-  event.type = FSUI_download_resuming;
-  event.data.DownloadResuming.dc.pos = ret;
-  event.data.DownloadResuming.dc.cctx = NULL;
-  event.data.DownloadResuming.dc.ppos = ret->parent;
-  event.data.DownloadResuming.dc.pcctx = NULL; /* not yet available */
-  event.data.DownloadResuming.eta = get_time(); /* best guess */
-  event.data.DownloadResuming.total = ret->total;
-  event.data.DownloadResuming.completed = ret->completedFile;
-  event.data.DownloadResuming.anonymityLevel = ret->anonymityLevel;
-  event.data.DownloadResuming.uri = ret->uri;
-  ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
-
   return ret;
  ERR:
   FREENONNULL(ret->filename);
@@ -247,10 +256,12 @@ static void writeURI(int fd,
  */
 static void writeDownloadList(struct GE_Context * ectx,
 			      int fd,
+			      FSUI_Context * ctx,
 			      const FSUI_DownloadList * list) {
   static char zero = '\0';
   static char nonzero = '+';
   int i;
+  FSUI_Event event;
 
   if (list == NULL) {
     WRITE(fd, &zero, sizeof(char));
@@ -281,13 +292,20 @@ static void writeDownloadList(struct GE_Context * ectx,
   writeURI(fd, list->uri);
   for (i=0;i<list->completedDownloadsCount;i++)
     writeURI(fd, list->completedDownloads[i]);
-
   writeDownloadList(ectx,
 		    fd,
+		    ctx,
 		    list->next);
   writeDownloadList(ectx,
 		    fd,
+		    ctx,
 		    list->child);
+  event.type = FSUI_download_suspending;
+  event.data.DownloadSuspending.dc.pos = list;
+  event.data.DownloadSuspending.dc.cctx = list->cctx;
+  event.data.DownloadSuspending.dc.ppos = list->parent;
+  event.data.DownloadSuspending.dc.pcctx = list->parent != NULL ? list->parent->cctx : NULL; 
+  ctx->ecb(ctx->ecbClosure, &event);
 }
 
 /**
@@ -678,7 +696,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 			   fd,
 			   ret,
 			   &ret->activeDownloads);
-
+      doResumeEvents(ret->activeDownloads.child);
       /* success, read complete! */
       goto END;
     WARNL:
@@ -742,6 +760,9 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   FSUI_ThreadList * tpos;
   FSUI_SearchList * spos;
   FSUI_DownloadList * dpos;
+  FSUI_UnindexList * xpos;
+  FSUI_UploadList * upos;
+  FSUI_Event event;
   void * unused;
   int i;
   int fd;
@@ -815,6 +836,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     ctx->activeSearches = spos->next;
 
     spos->signalTerminate = YES;
+    PTHREAD_STOP_SLEEP(spos->handle);
     PTHREAD_JOIN(spos->handle, &unused);
     if (fd != -1) {
       /* serialize pending searches */
@@ -862,6 +884,10 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	      rp->matchingKeys,
 	      sizeof(HashCode512) * rp->matchingKeyCount);
       }
+      event.type = FSUI_search_suspending;
+      event.data.SearchSuspending.sc.pos = spos;
+      event.data.SearchSuspending.sc.cctx = spos->cctx;
+      ctx->ecb(ctx->ecbClosure, &event);
     }
 
 
@@ -890,7 +916,6 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	 0);
     FREE(spos);
   }
-
   if (fd != -1) {
     /* search list terminator */
     big = htonl(0);
@@ -899,8 +924,64 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	  sizeof(unsigned int));
     writeDownloadList(ectx,
 		      fd,
+		      ctx,
 		      ctx->activeDownloads.child);
   }
+  while (ctx->unindexOperations != NULL) {
+    xpos = ctx->unindexOperations;
+    ctx->unindexOperations = xpos->next;
+    xpos->force_termination = YES;
+    PTHREAD_STOP_SLEEP(xpos->handle);
+    PHTREAD_JOIN(xpos->handle, &unused);    
+    if (fd != -1) {
+      WRITEINT(fd, strlen(xpos->filename));
+      WRITE(fd,
+	    xpos->filename,
+	    strlen(xpos->filename));
+      event.type = FSUI_unindex_suspending;
+      event.UnindexSuspending.uc.pos = xpos;
+      event.UnindexSuspending.uc.cctx = xpos->cctx;
+      ctx->ecb(ctx->ecbClosure, &event);
+    }
+    FREE(xpos->filename);
+  }
+  if (fd != -1) {
+    /* unindex list terminator */
+    big = htonl(0);
+    WRITE(fd,
+	  &big,
+	  sizeof(unsigned int));
+  }
+  while (ctx->activeUploads != NULL) {
+    upos = ctx->activeUploads;
+    ctx->activeUploads = upos->next;
+    upos->force_termination = YES;
+    PTHREAD_STOP_SLEEP(upos->handle);
+    PTHREAD_JOIN(upos->handle, &unused);
+    if (fd != -1) {
+      /* FIXME: serialize! */
+      event.type = FSUI_upload_suspending;
+      event.UploadSuspending.uc.pos = upos;
+      event.UploadSuspending.uc.cctx = upos->cctx;
+      event.UploadSuspending.uc.ppos = NULL;
+      event.UploadSuspending.uc.pcctx = NULL;
+    }
+    FREE(upos->filename);
+    FREENONNULL(upos->main_filename);
+    ECRS_freeMetaData(upos->meta);
+    ECRS_freeURI(upos->uri);
+    if (upos->globalUri != NULL)
+      ECRS_freeURI(upos->globalUri);
+    EXTRACTOR_removeAll(upos->extractors);
+  }
+  if (fd != -1) {
+    /* upload list terminator */
+    big = htonl(0);
+    WRITE(fd,
+	  &big,
+	  sizeof(unsigned int));
+  }
+
   if (fd != -1) {
 #if DEBUG_PERSISTENCE
     GE_LOG(ectx,
