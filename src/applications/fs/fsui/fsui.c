@@ -24,8 +24,8 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - upload suspend/resume
- * - unindex suspend/resume
+ * - upload serialize/deserialize/resume
+ * - unindex deserialize/resume
  * - events for suspend (!)
  */
 
@@ -257,7 +257,7 @@ static void writeURI(int fd,
 static void writeDownloadList(struct GE_Context * ectx,
 			      int fd,
 			      FSUI_Context * ctx,
-			      const FSUI_DownloadList * list) {
+			      FSUI_DownloadList * list) {
   static char zero = '\0';
   static char nonzero = '+';
   int i;
@@ -696,7 +696,8 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 			   fd,
 			   ret,
 			   &ret->activeDownloads);
-      doResumeEvents(ret->activeDownloads.child);
+      doResumeEvents(ret->activeDownloads.child,
+		     ret);
       /* success, read complete! */
       goto END;
     WARNL:
@@ -932,15 +933,15 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     ctx->unindexOperations = xpos->next;
     xpos->force_termination = YES;
     PTHREAD_STOP_SLEEP(xpos->handle);
-    PHTREAD_JOIN(xpos->handle, &unused);    
+    PTHREAD_JOIN(xpos->handle, &unused);    
     if (fd != -1) {
       WRITEINT(fd, strlen(xpos->filename));
       WRITE(fd,
 	    xpos->filename,
 	    strlen(xpos->filename));
       event.type = FSUI_unindex_suspending;
-      event.UnindexSuspending.uc.pos = xpos;
-      event.UnindexSuspending.uc.cctx = xpos->cctx;
+      event.data.UnindexSuspending.uc.pos = xpos;
+      event.data.UnindexSuspending.uc.cctx = xpos->cctx;
       ctx->ecb(ctx->ecbClosure, &event);
     }
     FREE(xpos->filename);
@@ -961,17 +962,17 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     if (fd != -1) {
       /* FIXME: serialize! */
       event.type = FSUI_upload_suspending;
-      event.UploadSuspending.uc.pos = upos;
-      event.UploadSuspending.uc.cctx = upos->cctx;
-      event.UploadSuspending.uc.ppos = NULL;
-      event.UploadSuspending.uc.pcctx = NULL;
+      event.data.UploadSuspending.uc.pos = upos;
+      event.data.UploadSuspending.uc.cctx = upos->cctx;
+      event.data.UploadSuspending.uc.ppos = NULL;
+      event.data.UploadSuspending.uc.pcctx = NULL;
     }
     FREE(upos->filename);
     FREENONNULL(upos->main_filename);
     ECRS_freeMetaData(upos->meta);
-    ECRS_freeURI(upos->uri);
+    ECRS_freeUri(upos->uri);
     if (upos->globalUri != NULL)
-      ECRS_freeURI(upos->globalUri);
+      ECRS_freeUri(upos->globalUri);
     EXTRACTOR_removeAll(upos->extractors);
   }
   if (fd != -1) {

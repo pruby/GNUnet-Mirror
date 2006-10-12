@@ -332,6 +332,8 @@ typedef struct FSUI_UnindexList {
 
   struct FSUI_Context * ctx;
 
+  void * cctx;
+
   int force_termination;
 
 } FSUI_UnindexList;

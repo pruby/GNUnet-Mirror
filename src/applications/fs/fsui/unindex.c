@@ -23,6 +23,11 @@
  * @brief unindex functions
  * @author Krista Bennett
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - make sure events are sent for resume/abort
+ *   when respective FSUI calls happen!
+ *   (initialize cctx!)
  */
 
 #include "platform.h"

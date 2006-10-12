@@ -24,6 +24,11 @@
  *   filtering of duplicate results as well as adding boolean search
  *   (ANDing).
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - make sure events are sent for resume/abort
+ *   when respective FSUI calls happen!
+ *   (initialize cctx!)
  */
 
 #include "platform.h"
