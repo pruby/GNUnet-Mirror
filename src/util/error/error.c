@@ -24,11 +24,11 @@
  *
  * @author Christian Grothoff
  */
-#include <conio.h>
-
 #include "platform.h"
 #include "gnunet_util_error.h"
-
+#ifdef MINGW
+#include <conio.h>
+#endif
 /**
  * Default context for logging errors; used
  * if NULL is passed to GE_LOG.
