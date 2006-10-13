@@ -24,10 +24,10 @@
  * @author Christian Grothoff
  *
  * TODO:
+ * - actual resuming (start threads)
  * - upload tree representation (currently flat list!)
  * - download tree free memory
- * - resume signaling
- * - actual resuming (start threads)
+ * - resume signaling: some minor fields uninitialized
  * - better ETA calculation for download resume
  */
 
@@ -107,6 +107,8 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   FSUI_Event event;
   FSUI_Context * ret;
   FSUI_SearchList * list;
+  FSUI_UploadList * ulist;
+  FSUI_UnindexList * xlist;
   char * fn;
   char * gh;
 
@@ -167,19 +169,45 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   signalDownloadResume(ret->activeDownloads.child,
 		       ret);
   /* 2b) signal search restarts */
-
-	event.type = FSUI_search_resumed;
-	event.data.SearchResumed.sc.pos = list;
-	event.data.SearchResumed.sc.cctx = NULL;
-	event.data.SearchResumed.fis = list->resultsReceived;
-	event.data.SearchResumed.fisSize = list->sizeResultsReceived;
-	event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
-	event.data.SearchResumed.searchURI = list->uri;
-	list->cctx = cb(closure, &event);	
-
+  list = ret->activeSearches;
+  while (list != NULL) {
+    event.type = FSUI_search_resumed;
+    event.data.SearchResumed.sc.pos = list;
+    event.data.SearchResumed.sc.cctx = NULL;
+    event.data.SearchResumed.fis = list->resultsReceived;
+    event.data.SearchResumed.fisSize = list->sizeResultsReceived;
+    event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
+    event.data.SearchResumed.searchURI = list->uri;
+    list->cctx = cb(closure, &event);	
+    list = list->next;
+  }
   /* 2c) signal upload restarts */
-
+  ulist = ret->activeUploads;
+  while (ulist != NULL) {
+    event.type = FSUI_upload_resumed;
+    event.data.UploadResumed.uc.pos = ulist;
+    event.data.UploadResumed.uc.cctx = NULL;
+    event.data.UploadResumed.completed = ulist->main_completed;
+    event.data.UploadResumed.total = ulist->main__total;
+    event.data.UploadResumed.anonymityLevel = ulist->anonymityLevel;
+    event.data.UploadResumed.eta = 0; /* FIXME: use start_time for estimate! */
+    event.data.UploadResumed.filename = ulist->filename;
+    ulist->cctx = cb(closure, &event);	
+    ulist = ulist->next;
+  }
   /* 2d) signal unindex restarts */
+  xlist = ret->activeUploads;
+  while (xlist != NULL) {
+    event.type = FSUI_unindex_resumed;
+    event.data.UnindexResumed.uc.pos = xlist;
+    event.data.UnindexResumed.uc.cctx = NULL;
+    event.data.UnindexResumed.completed = 0; /* FIXME */
+    event.data.UnindexResumed.total = 0; /* FIXME */
+    event.data.UnindexResumed.eta = 0; /* FIXME: use start_time for estimate! */
+    event.data.UnindexResumed.filename = xlist->filename;
+    xlist->cctx = cb(closure, &event);	
+    xlist = xlist->next;
+  }
 
   /* 3) restart processing */
   ret->cron = cron_create(ectx);  
