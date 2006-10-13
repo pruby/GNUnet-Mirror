@@ -24,7 +24,6 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - actual resuming (start threads)
  * - upload tree representation (currently flat list!)
  * - download tree free memory
  * - resume signaling: some minor fields uninitialized
