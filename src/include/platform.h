@@ -103,24 +103,14 @@
 #include <sys/param.h>
 #endif
 #if TIME_WITH_SYS_TIME
- #include <sys/time.h>
- #include <time.h>
+#include <sys/time.h>
+#include <time.h>
 #else
- #if HAVE_SYS_TIME_H
-  #include <sys/time.h>
- #else
-  #include <time.h>
- #endif
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#include <time.h>
 #endif
-
-/* if we have both openssl & libgcrypt, stick
-   to openssl for now (who has the obscure
-   libgcrypt CVS version that works for us!?...) */
-#if USE_OPENSSL
- #if USE_GCRYPT
-  #undef USE_GCRYPT
-  #define USE_GCRYPT 0
- #endif
 #endif
 
 #ifdef SOMEBSD
