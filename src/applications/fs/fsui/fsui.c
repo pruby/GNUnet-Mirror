@@ -188,7 +188,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     event.data.UploadResumed.uc.pos = ulist;
     event.data.UploadResumed.uc.cctx = NULL;
     event.data.UploadResumed.completed = ulist->main_completed;
-    event.data.UploadResumed.total = ulist->main__total;
+    event.data.UploadResumed.total = ulist->main_total;
     event.data.UploadResumed.anonymityLevel = ulist->anonymityLevel;
     event.data.UploadResumed.eta = 0; /* FIXME: use start_time for estimate! */
     event.data.UploadResumed.filename = ulist->filename;
@@ -196,7 +196,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     ulist = ulist->next;
   }
   /* 2d) signal unindex restarts */
-  xlist = ret->activeUploads;
+  xlist = ret->unindexOperations;
   while (xlist != NULL) {
     event.type = FSUI_unindex_resumed;
     event.data.UnindexResumed.uc.pos = xlist;
@@ -219,24 +219,56 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 	       ret);
   cron_start(ret->cron);
   /* 3b) resume uploads */
-
+  ulist = ret->activeUploads;
+  while (ulist != NULL) {
+    if ( (ulist->state != FSUI_ABORTED_JOINED) &&
+	 (ulist->state != FSUI_COMPLETED_JOINED) &&
+	 (ulist->state != FSUI_ERROR_JOINED) ) {
+      ulist->state = FSUI_ACTIVE;
+      ulist->handle = PTHREAD_CREATE(&FSUI_uploadThread,
+				     ulist,
+				     32 * 1024);
+      if (ulist->handle == NULL)
+	GE_DIE_STRERROR(ectx,
+			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+			"pthread_create");
+    }     
+    ulist = ulist->next;
+  }
   /* 3c) resume unindexing */
-
+  xlist = ret->unindexOperations;
+  while (xlist != NULL) {
+    if ( (xlist->state != FSUI_ABORTED_JOINED) &&
+	 (xlist->state != FSUI_COMPLETED_JOINED) &&
+	 (xlist->state != FSUI_ERROR_JOINED) ) {
+      xlist->state = FSUI_ACTIVE;
+      xlist->handle = PTHREAD_CREATE(&FSUI_unindexThread,
+				     xlist,
+				     32 * 1024);
+      if (xlist->handle == NULL)
+	GE_DIE_STRERROR(ectx,
+			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+			"pthread_create");
+    }    
+    xlist = xlist->next;
+  }
   /* 3d) resume searching */
-
-#if DEBUG_PERSISTENCE
-	GE_LOG(ectx, 
-	       GE_DEBUG | GE_REQUEST | GE_USER,
-	       "FSUI persistence: restarting search\n");
-#endif
-	list->handle = PTHREAD_CREATE(&FSUI_searchThread,
-				      list,
-				      32 * 1024);
-	if (list->handle == NULL)
-	  GE_DIE_STRERROR(ectx,
-			  GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
-			  "pthread_create");
-
+  list = ret->activeSearches;
+  while (list != NULL) {
+    if ( (list->state != FSUI_ABORTED_JOINED) &&
+	 (list->state != FSUI_COMPLETED_JOINED) &&
+	 (list->state != FSUI_ERROR_JOINED) ) {
+      list->state = FSUI_ACTIVE;
+      list->handle = PTHREAD_CREATE(&FSUI_searchThread,
+				    list,
+				    32 * 1024);
+      if (list->handle == NULL)
+	GE_DIE_STRERROR(ectx,
+			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
+			"pthread_create");
+    }
+    list = list->next;
+  }
 
   return ret;
 }
