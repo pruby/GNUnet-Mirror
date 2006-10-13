@@ -25,7 +25,7 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - does not signal all events properly!
+ * - can do better ETA computation (in case of suspend-resume)
  */
 
 #include "platform.h"
@@ -63,7 +63,9 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
   if (isRoot == YES)
     return OK; /* namespace ad, ignore */
 
-  URITRACK_trackURI(ectx, parent->ctx->cfg, fi);
+  URITRACK_trackURI(ectx, 
+		    parent->ctx->cfg,
+		    fi);
   for (i=0;i<parent->completedDownloadsCount;i++)
     if (ECRS_equalsUri(parent->completedDownloads[i],
 		       fi->uri))
@@ -79,7 +81,8 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 				  EXTRACTOR_FILENAME);
   if (filename == NULL) {
     char * tmp = ECRS_uriToString(fi->uri);
-    GE_ASSERT(ectx, strlen(tmp) >= strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX));
+    GE_ASSERT(ectx, 
+	      strlen(tmp) >= strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX));
     filename = STRDUP(&tmp[strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX)]);
     FREE(tmp);
   }
@@ -94,15 +97,18 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
   while (NULL != (dotdot = strstr(fullName, "..")))
     dotdot[0] = dotdot[1] = '_';
   disk_directory_create(ectx, fullName);
-  strcat(fullName, DIR_SEPARATOR_STR);
+  strcat(fullName, 
+	 DIR_SEPARATOR_STR);
   while (NULL != (dotdot = strstr(filename, "..")))
     dotdot[0] = dotdot[1] = '_';
-  strcat(fullName, filename);
+  strcat(fullName,
+	 filename);
   FREE(filename);
 #if DEBUG_DTM
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Starting recursive download of `%s'\n",
-      fullName);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Starting recursive download of `%s'\n",
+	 fullName);
 #endif
   startDownload(parent->ctx,
 		parent->anonymityLevel,
@@ -128,19 +134,15 @@ downloadProgressCallback(unsigned long long totalBytes,
   FSUI_DownloadList * dl = cls;
   FSUI_Event event;
   struct ECRS_MetaData * md;
-  FSUI_DownloadList * root;
 
-  root = dl;
-  while ( (root->parent != NULL) &&
-	  (root->parent != &dl->ctx->activeDownloads) )
-    root = root->parent;
-
-  dl->completedFile = completedBytes;
+  GE_ASSERT(dl->ctx->ectx,
+	    dl->total == totalBytes);
+  dl->completed = completedBytes;
   event.type = FSUI_download_progress;
-  event.data.DownloadProgress.total = totalBytes;
-  event.data.DownloadProgress.completed = dl->completed + completedBytes;
+  event.data.DownloadProgress.total = dl->total;
+  event.data.DownloadProgress.completed = dl->completed;
   event.data.DownloadProgress.last_offset = lastBlockOffset;
-  event.data.DownloadProgress.eta = eta;
+  event.data.DownloadProgress.eta = eta; /* FIXME: we can do better in FSUI! */
   event.data.DownloadProgress.last_block = lastBlock;
   event.data.DownloadProgress.last_size = lastBlockSize;
   event.data.DownloadProgress.filename = dl->filename;
@@ -148,7 +150,7 @@ downloadProgressCallback(unsigned long long totalBytes,
   event.data.DownloadProgress.dc.pos = dl;
   event.data.DownloadProgress.dc.cctx = dl->cctx;
   event.data.DownloadProgress.dc.ppos = dl->parent;
-  event.data.DownloadProgress.dc.pcctx = dl->parent != NULL ? dl->parent->cctx : NULL;
+  event.data.DownloadProgress.dc.pcctx = dl->parent->cctx;
   dl->ctx->ecb(dl->ctx->ecbClosure,
 	       &event);
   if ( (lastBlockOffset == 0) &&
@@ -185,11 +187,9 @@ static int
 testTerminate(void * cls) {
   FSUI_DownloadList * dl = cls;
 
-  if (dl->state != FSUI_DOWNLOAD_ACTIVE) {
+  if (dl->state != FSUI_ACTIVE) 
     return SYSERR;
-  } else {
-    return OK;
-  }
+  return OK;  
 }
 
 /**
@@ -199,11 +199,9 @@ void * downloadThread(void * cls) {
   FSUI_DownloadList * dl = cls;
   int ret;
   FSUI_Event event;
-  struct ECRS_MetaData * md;
-  FSUI_DownloadList * root;
-  unsigned long long totalBytes;
   struct GE_Context * ectx;
 
+  dl->startTime = get_time() - dl->runTime;
   ectx = dl->ctx->ectx;
 #if DEBUG_DTM
   GE_LOG(ectx,
@@ -223,29 +221,29 @@ void * downloadThread(void * cls) {
 			  &testTerminate,
 			  dl);  
   if (ret == OK) {
-    dl->state = FSUI_DOWNLOAD_COMPLETED;
-    totalBytes = ECRS_fileSize(dl->uri);
-  } else {
-#if DEBUG_DTM
-    GE_LOG(ectx, 
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "Download thread for `%s' failed (aborted or error)!\n",
-	   dl->filename);
-#endif
-    if (dl->state == FSUI_DOWNLOAD_ACTIVE)
-      dl->state = FSUI_DOWNLOAD_ERROR;
-    else if ( (dl->state != FSUI_DOWNLOAD_ABORTED) &&
-	      (dl->state != FSUI_DOWNLOAD_SUSPENDING) )
-      GE_BREAK(ectx, 0);
-    totalBytes = 0;
+    dl->state = FSUI_COMPLETED;
+    event.type = FSUI_download_complete;
+    event.data.DownloadCompleted.total = dl->total;
+    event.data.DownloadCompleted.filename = dl->filename;
+    event.data.DownloadCompleted.uri = dl->uri;
+    event.data.DownloadCompleted.dc.pos = dl;
+    event.data.DownloadCompleted.dc.cctx = dl->cctx;
+    event.data.DownloadCompleted.dc.ppos = dl->parent;
+    event.data.DownloadCompleted.dc.pcctx = dl->parent->cctx;
+    dl->ctx->ecb(dl->ctx->ecbClosure,
+		 &event);
+  } else if (dl->state == FSUI_ACTIVE) {
+    /* ECRS error, we did not signal to abort */
+    dl->state = FSUI_ERROR;
+    event.type = FSUI_download_error;
+    event.data.DownloadError.message = _("ECRS download failed (see logs)");
+    event.data.DownloadError.dc.pos = dl;
+    event.data.DownloadError.dc.cctx = dl->cctx;
+    event.data.DownloadError.dc.ppos = dl->parent;
+    event.data.DownloadError.dc.pcctx = dl->parent->cctx;
+    dl->ctx->ecb(dl->ctx->ecbClosure,
+		 &event);    
   }
-  root = dl;
-  while (root->parent != &dl->ctx->activeDownloads) {
-    root->completed += totalBytes;
-    root = root->parent;
-  }
-  root->completed += totalBytes;
-    
 
   if ( (ret == OK) &&
        (dl->is_recursive) &&
@@ -253,7 +251,10 @@ void * downloadThread(void * cls) {
     char * dirBlock;
     int fd;
     char * fn;
+    size_t totalBytes;
+    struct ECRS_MetaData * md;
 
+    totalBytes = ECRS_fileSize(dl->uri);
     fn = MALLOC(strlen(dl->filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
     strcpy(fn, dl->filename);
     if (fn[strlen(fn)-1] == '/') {
@@ -298,51 +299,6 @@ void * downloadThread(void * cls) {
     }
     FREE(fn);
   }
-  if (ret != OK) {
-    switch (dl->state) {
-    case FSUI_DOWNLOAD_ABORTED:
-      event.type = FSUI_download_aborted;
-      event.data.DownloadError.message = _("Download aborted.");
-      break;
-    case FSUI_DOWNLOAD_ERROR:
-      event.type = FSUI_download_error;
-      event.data.DownloadError.message = _("ECRS download failed (see logs).");
-      break;
-    case FSUI_DOWNLOAD_SUSPENDING:
-      event.type = FSUI_download_suspending;
-      event.data.DownloadError.message = _("ECRS download suspending.");
-      break;
-    default:
-      event.type = FSUI_download_error;
-      event.data.DownloadError.message = _("Unexpected download state.");
-      printf("State: %u\n", dl->state);
-      GE_BREAK(ectx, 0);
-    }
-    event.data.DownloadError.dc.pos = dl;
-    event.data.DownloadError.dc.cctx = dl->cctx;
-    event.data.DownloadError.dc.ppos = dl->parent;
-    event.data.DownloadError.dc.pcctx = dl->parent != NULL ? dl->parent->cctx : NULL;
-    dl->ctx->ecb(dl->ctx->ecbClosure,
-		 &event);
-  } else {
-    GE_ASSERT(ectx, dl != &dl->ctx->activeDownloads);
-    while ( (dl != NULL) &&
-	    (dl->ctx != NULL) &&
-	    (dl != &dl->ctx->activeDownloads) ) {
-      event.type = FSUI_download_complete;
-      event.data.DownloadComplete.total = dl->total;
-      event.data.DownloadComplete.filename = dl->filename;
-      event.data.DownloadComplete.uri = dl->uri;
-      event.data.DownloadComplete.dc.pos = dl;
-      event.data.DownloadComplete.dc.cctx = dl->cctx;
-      event.data.DownloadComplete.dc.ppos = dl->parent;
-      event.data.DownloadComplete.dc.pcctx = dl->parent != NULL ? dl->parent->cctx : NULL;
-      dl->ctx->ecb(dl->ctx->ecbClosure,
-		   &event);
-      dl = dl->parent;
-    }
-  }
-  dl = cls;
 #if DEBUG_DTM
   GE_LOG(ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
@@ -350,6 +306,7 @@ void * downloadThread(void * cls) {
 	 dl->filename,
 	 ret == OK ? "COMPLETED" : "ABORTED");
 #endif
+  dl->runTime = get_time() - dl->startTime;
   return NULL;
 }
 
@@ -364,8 +321,7 @@ startDownload(struct FSUI_Context * ctx,
 	      const char * filename,
 	      FSUI_DownloadList * parent) {
   FSUI_DownloadList * dl;
-  FSUI_DownloadList * root;
-  unsigned long long totalBytes;
+  FSUI_Event event;
 
   GE_ASSERT(NULL, ctx != NULL);
   GE_ASSERT(NULL, parent != NULL);
@@ -375,9 +331,12 @@ startDownload(struct FSUI_Context * ctx,
     return NULL;
   }
   dl = MALLOC(sizeof(FSUI_DownloadList));
-  memset(dl, 0, sizeof(FSUI_DownloadList));
-  dl->startTime = get_time();
-  dl->state = FSUI_DOWNLOAD_PENDING;
+  memset(dl, 
+	 0,
+	 sizeof(FSUI_DownloadList));
+  dl->startTime = 0; /* not run at all so far! */
+  dl->runTime = 0; /* not run at all so far! */
+  dl->state = FSUI_PENDING;
   dl->is_recursive = is_recursive;
   dl->parent = parent;
   dl->is_directory = SYSERR; /* don't know */
@@ -389,14 +348,20 @@ startDownload(struct FSUI_Context * ctx,
   dl->child = NULL;
   dl->next = parent->child;
   parent->child = dl;  
-  totalBytes = ECRS_fileSize(uri);
 
-  root = dl;
-  while ( (root->parent != NULL) &&
-	  (root->parent != &dl->ctx->activeDownloads) ) {
-    root = root->parent;
-    root->total += totalBytes;
-  }
+  /* signal start! */
+  event.type = FSUI_download_error;
+  event.data.DownloadStarted.filename = dl->filename;
+  event.data.DownloadStarted.total = ECRS_fileSize(uri);
+  event.data.DownloadStarted.uri = uri;
+  event.data.DownloadStarted.anonymityLevel = anonymityLevel;
+  event.data.DownloadStarted.dc.pos = dl;
+  event.data.DownloadStarted.dc.cctx = dl->cctx;
+  event.data.DownloadStarted.dc.ppos = dl->parent;
+  event.data.DownloadStarted.dc.pcctx = dl->parent->cctx; 
+  dl->cctx = ctx->ecb(ctx->ecbClosure,
+		      &event);
+
   return dl;
 }
 
@@ -429,11 +394,11 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 /**
  * Starts or stops download threads in accordance with thread pool
  * size and active downloads.  Call only while holding FSUI lock (or
- * during start/stop).
+ * during start/stop).  Called from cron job in fsui.c.
  *
  * @return YES if change done that may require re-trying
  */
-int updateDownloadThread(FSUI_DownloadList * list) {
+int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
   struct GE_Context * ectx;
   FSUI_DownloadList * dpos;
   void * unused;
@@ -455,7 +420,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
   /* should this one be started? */
   if ( (list->ctx->threadPoolSize
 	> list->ctx->activeDownloadThreads) &&
-       (list->state == FSUI_DOWNLOAD_PENDING) &&
+       (list->state == FSUI_PENDING) &&
        ( (list->total > list->completed) ||
          (list->total == 0) ) ) {
 #if DEBUG_DTM
@@ -464,7 +429,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 	   "Download thread manager starts download of file `%s'\n",
 	   list->filename);
 #endif
-    list->state = FSUI_DOWNLOAD_ACTIVE;
+    list->state = FSUI_ACTIVE;
     list->handle = PTHREAD_CREATE(&downloadThread,
 				  list,
 				  32 * 1024);
@@ -474,14 +439,14 @@ int updateDownloadThread(FSUI_DownloadList * list) {
       GE_LOG_STRERROR(ectx,
 		      GE_ADMIN | GE_USER | GE_BULK | GE_ERROR,
 		      "pthread_create");	
-      list->state = FSUI_DOWNLOAD_ERROR_JOINED;
+      list->state = FSUI_ERROR_JOINED;
     }
   }
 
   /* should this one be stopped? */
   if ( (list->ctx->threadPoolSize
 	< list->ctx->activeDownloadThreads) &&
-       (list->state == FSUI_DOWNLOAD_ACTIVE) ) {
+       (list->state == FSUI_ACTIVE) ) {
 #if DEBUG_DTM
     GE_LOG(ectx, 
 	   GE_DEBUG | GE_REQUEST | GE_USER,
@@ -490,20 +455,20 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 	   list->ctx->activeDownloadThreads,
 	   list->ctx->threadPoolSize);
 #endif
-    list->state = FSUI_DOWNLOAD_SUSPENDING;
+    list->state = FSUI_SUSPENDING;
     GE_ASSERT(ectx, list->handle != NULL);
     PTHREAD_STOP_SLEEP(list->handle);
     PTHREAD_JOIN(list->handle,
 		 &unused);
     list->ctx->activeDownloadThreads--;
-    list->state = FSUI_DOWNLOAD_PENDING;
+    list->state = FSUI_PENDING;
     ret = YES;
   }
 
   /* has this one "died naturally"? */
-  if ( (list->state == FSUI_DOWNLOAD_COMPLETED) ||
-       (list->state == FSUI_DOWNLOAD_ABORTED) ||
-       (list->state == FSUI_DOWNLOAD_ERROR) ) {       
+  if ( (list->state == FSUI_COMPLETED) ||
+       (list->state == FSUI_ABORTED) ||
+       (list->state == FSUI_ERROR) ) {       
 #if DEBUG_DTM
     GE_LOG(ectx, 
 	   GE_DEBUG | GE_REQUEST | GE_USER,
@@ -519,7 +484,7 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 
   dpos = list->child;
   while (dpos != NULL) {
-    if (YES == updateDownloadThread(dpos))
+    if (YES == FSUI_updateDownloadThread(dpos))
       ret = YES;
     dpos = dpos->next;
   }
@@ -528,66 +493,54 @@ int updateDownloadThread(FSUI_DownloadList * list) {
 
 
 /**
- * Free the subtree (assumes all threads have already been stopped and
- * that the FSUI lock is either held or that we are in FSUI stop!).
+ * Abort a download (and all child-downloads).
+ *
+ * @return SYSERR if no such download is pending,
+ *         NO if the download has already finished
  */
-void freeDownloadList(FSUI_DownloadList * list) {
-  FSUI_DownloadList * dpos;
-  int i;
+int FSUI_abortDownload(struct FSUI_Context * ctx,
+		       struct FSUI_DownloadList * dl) {
+  FSUI_Event event;
+  struct FSUI_DownloadList * c;
 
-  GE_ASSERT(NULL, list->state != FSUI_DOWNLOAD_ACTIVE);
-
-  /* first, find our predecessor and
-     unlink us from the tree! */
-  dpos = list->parent;
-  GE_ASSERT(NULL, dpos != NULL);
-  if (dpos->child == list) {
-    dpos->child = list->next;
-  } else {
-    dpos = dpos->child;
-    while ( (dpos != NULL) &&
-	    (dpos->next != list) )
-      dpos = dpos->next;
-    GE_ASSERT(NULL, dpos != NULL);
-    dpos->next = list->next;    
-  }
-
-  /* then, free all of our children */
-  while (list->child != NULL)
-    freeDownloadList(list->child);
-
-  /* finally, free this node and its data */
-  ECRS_freeUri(list->uri);
-  FREE(list->filename);
-  for (i=list->completedDownloadsCount-1;i>=0;i--)
-    ECRS_freeUri(list->completedDownloads[i]);
-  GROW(list->completedDownloads,
-       list->completedDownloadsCount,
-       0);
-  FREE(list);
+  GE_ASSERT(ctx->ectx, dl != NULL);
+  c = dl->child;
+  while (c != NULL) {
+    FSUI_abortDownload(ctx, c);
+    c = c->next;
+  }    
+  if ( (dl->state != FSUI_ACTIVE) &&
+       (dl->state != FSUI_PENDING) )
+    return NO;
+  dl->state = FSUI_ABORTED;
+  PTHREAD_STOP_SLEEP(dl->handle);
+  event.type = FSUI_download_aborted;
+  event.data.DownloadAborted.dc.pos = dl;
+  event.data.DownloadAborted.dc.cctx = dl->cctx;
+  event.data.DownloadAborted.dc.ppos = dl->parent;
+  event.data.DownloadAborted.dc.pcctx = dl->parent->cctx;
+  ctx->ecb(ctx->ecbClosure,
+	   &event);
+  return OK;
 }
 
 /**
- * Abort a download.
+ * Stops a download (and all downloads that are
+ * child downloads of this download).
  *
  * @return SYSERR if no such download is pending
  */
 int FSUI_stopDownload(struct FSUI_Context * ctx,
 		      struct FSUI_DownloadList * dl) {
-  FSUI_DownloadList * prev;
-  struct GE_Context * ectx;
-  unsigned int backup;
+  void * unused;
+  struct FSUI_DownloadList * prev;
+  FSUI_Event event;
+  int i;
 
-  ectx = ctx->ectx;
-  if (dl == NULL) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-#if 0
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "FSUI_stopDownload called.\n");
-#endif
+  GE_ASSERT(ctx->ectx, dl != NULL);
+  while (dl->child != NULL)
+    FSUI_stopDownload(ctx,
+		      dl->child);
   MUTEX_LOCK(ctx->lock);
   prev = (dl->parent != NULL) ? dl->parent->child : ctx->activeDownloads.child;
   while ( (prev != dl) &&
@@ -596,17 +549,38 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
     prev = prev->next;
   if (prev == NULL) {
     MUTEX_UNLOCK(ctx->lock);
-    GE_LOG(ectx, 
+    GE_LOG(ctx->ectx, 
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "FSUI_stopDownload failed to locate download.\n");
     return SYSERR;
   }
-  backup = ctx->threadPoolSize;
-  ctx->threadPoolSize = 0;
-  updateDownloadThread(dl);
-  freeDownloadList(dl);
-  ctx->threadPoolSize = backup;
+  if (prev == dl) 
+    dl->parent->child = dl->next; /* first child of parent */
+  else 
+    prev->next = dl->next; /* not first child */  
   MUTEX_UNLOCK(ctx->lock);
+  if ( (dl->state == FSUI_COMPLETED) ||
+       (dl->state == FSUI_ABORTED) ||
+       (dl->state == FSUI_ERROR) ) {
+    PTHREAD_JOIN(dl->handle,
+		 &unused);
+    dl->state++; /* add _JOINED */
+  }
+  event.type = FSUI_download_stopped;
+  event.data.DownloadStopped.dc.pos = dl;
+  event.data.DownloadStopped.dc.cctx = dl->cctx;
+  event.data.DownloadStopped.dc.ppos = dl->parent;
+  event.data.DownloadStopped.dc.pcctx = dl->parent->cctx;
+  ctx->ecb(ctx->ecbClosure,
+	   &event);
+  for (i=dl->completedDownloadsCount-1;i>=0;i--)
+    ECRS_freeUri(dl->completedDownloads[i]);
+  GROW(dl->completedDownloads,
+       dl->completedDownloadsCount,
+       0);
+  ECRS_freeUri(dl->uri);
+  FREE(dl->filename);
+  FREE(dl);
   return OK;
 }
 

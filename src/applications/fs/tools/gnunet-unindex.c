@@ -70,12 +70,12 @@ static void * printstatus(void * cls,
       delta = get_time() - start_time;
       PRINTF(
       _("\nUnindexing of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"),
-      event->data.UnindexComplete.filename,
-      event->data.UnindexComplete.total,
+      event->data.UnindexCompleted.filename,
+      event->data.UnindexCompleted.total,
       delta / cronSECONDS,
       (delta == 0)
       ? (double) (-1.0)
-      : (double) (event->data.UnindexComplete.total / 1024.0 * cronSECONDS / delta));
+      : (double) (event->data.UnindexCompleted.total / 1024.0 * cronSECONDS / delta));
     }
     SEMAPHORE_UP(exitSignal);
     break;

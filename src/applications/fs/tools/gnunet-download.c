@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
@@ -37,13 +38,11 @@ static unsigned long long verbose;
 
 static int do_recursive;
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 static char * filename;
 
 static unsigned int anonymity = 1;
-
-static struct SEMAPHORE * signalFinished;
 
 static cron_t start_time;
 
@@ -96,21 +95,14 @@ static void * progressModel(void * okVal,
   case FSUI_download_aborted:
     if (dl == event->data.DownloadError.dc.pos) {
       /* top-download aborted */
-      PRINTF(_("Error downloading: %s\n"),
-	     event->data.DownloadError.message);
-      *ok = SYSERR;
-      SEMAPHORE_UP(signalFinished);
-    } else {
-      /* child aborted, maybe FSUI thread
-	 policy, ignore?  How can this
-	 happen anyway with gnunet-download? */
+      PRINTF(_("Download aborted.\n"));
     }
     break;
   case FSUI_download_error:
     printf(_("Error downloading: %s\n"),
 	   event->data.DownloadError.message);
     *ok = SYSERR;
-    SEMAPHORE_UP(signalFinished);
+    GNUNET_SHUTDOWN_INITIATE();
     break;
   case FSUI_download_complete:
     if ( (event->data.DownloadProgress.completed ==
@@ -123,7 +115,7 @@ static void * progressModel(void * okVal,
 	      / (double)cronSECONDS) );
       if (dl == event->data.DownloadProgress.dc.pos) {
 	*ok = OK;
-	SEMAPHORE_UP(signalFinished);
+	GNUNET_SHUTDOWN_INITIATE();
       }
     }
     break;
@@ -164,12 +156,13 @@ int main(int argc,
 			   gnunetdownloadOptions,
 			   (unsigned int) argc,
 			   argv);
-  if (i == SYSERR) {
+  if ( (i == SYSERR) ||
+       (0 != GC_parse_configuration(cfg,
+				    cfgFilename)) ) {	 
     GC_free(cfg);
     GE_free_context(ectx);
     return -1;  
   }
-
   if (i == argc) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
@@ -215,7 +208,7 @@ int main(int argc,
 	   filename);
     try_rename = YES;
   }
-  signalFinished = SEMAPHORE_CREATE(0);
+  ok = NO;
   ctx = FSUI_start(ectx,
 		   cfg,
 		   "gnunet-download",
@@ -229,14 +222,14 @@ int main(int argc,
 			  do_recursive,
 			  uri,
 			  filename);
-  /* FIXME: use gnunetutil shutdown management instead! */
-  if (dl != NULL)
-    SEMAPHORE_DOWN(signalFinished, YES);
+  GNUNET_SHUTDOWN_WAITFOR();
+  if (OK != ok)
+    FSUI_abortDownload(ctx, dl);
   FSUI_stopDownload(ctx, dl);
   FSUI_stop(ctx);
-  SEMAPHORE_DESTROY(signalFinished);
 
-  if ( (dl != NULL) &&
+  if ( (OK == ok) &&
+       (dl != NULL) &&
        (try_rename == YES) ) {
     char * newname = ECRS_suggestFilename(ectx,
 					  filename);
@@ -252,7 +245,7 @@ int main(int argc,
   ECRS_freeUri(uri);
   GC_free(cfg);
   GE_free_context(ectx);
-  if (dl == NULL)
+  if (ok != OK)
     return 1;
   return 0;
 }

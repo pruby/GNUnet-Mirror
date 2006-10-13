@@ -6,9 +6,11 @@ lib_LTLIBRARIES = \
 noinst_PROGRAMS = fsui-loader
 
 libgnunetfsui_la_SOURCES = \
+  deserialize.c \
   download.c \
   fsui.c fsui.h \
   search.c \
+  serialize.c \
   unindex.c \
   upload.c
 libgnunetfsui_la_LIBADD = \

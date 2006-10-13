@@ -31,15 +31,17 @@
  * event processor also may have to worry about synchronizing itself
  * with the GUI library to display updates).<p>
  *
- * After creating a FSUI_Context with FSUI_start the UI can start (or
- * cancel) uploads, downloads or searches.  The FSUI_Context can be
- * destroyed, when it is created again the next time all pending
- * operations are resumed (!).  Clients can use the various iterator
- * functions to obtain information about pending actions.<p>
+ * After creating a FSUI_Context with FSUI_start the UI can start,
+ * abort and stop uploads, downloads, deletions or searches. 
+ * The FSUI_Context can be destroyed, when it is created again
+ * the next time all pending operations are resumed (!).
+ * Clients can use the various iterator functions to obtain
+ * information about pending actions.<p>
  *
- * Note that there can only be one FSUI_Context for all clients.
+ * Note that there can only be one FSUI_Context for a given
+ * client application name if resuming is enabled.
  * Creating an FSUI_Context may _fail_ if any other UI is currently
- * running (for the same user).<p>
+ * running (for the same user and application name).<p>
  *
  * Clients may use SOME functions of GNUnet's ECRS library, in
  * particular functions to deal with URIs and MetaData, but generally
@@ -54,8 +56,20 @@
  * unindexing operations have completed before attempting to close
  * the FSUI_Context.<p>
  *
+ * Any "startXXX" operation will result in FSUI state and memory
+ * being allocated until it is paired with a "stopXXX" operation.
+ * Before calling "stopXXX", one of three things must happen:
+ * Either, the client receives an "error" (something went wrong)
+ * or "completed" (action finished) event.  Alternatively, the
+ * client may call abortXXX" which will result in an "aborted"
+ * event.  In either case, the event itself will NOT result in 
+ * the action being "forgotten" by FSUI -- the client must still
+ * call "FSUI_stopXXX" explicitly.  Clients that call 
+ * "FSUI_stopXXX" before an aborted, error or completed event
+ * will be blocked until either of the three events happens.<p>
+ *
  * Note that most of this code is completely new in GNUnet 0.7.0 and
- * thus still highly experimental.  Suggestions are welcome.
+ * thus still highly experimental.  Suggestions are welcome.<p>
  */
 
 #ifndef GNUNET_FSUI_LIB_H
@@ -95,7 +109,8 @@ struct FSUI_UnindexList;
  * 
  * For the types aborted, error, suspending and complete,
  * the client MUST free the "cctx" context associated with
- * the event (if allocated).<p>
+ * the event (if allocated).  This context is created
+ * by the "resume" operation.<p>
  *
  * Resume events are issued when operations resume as well
  * as when they are first initiated!<p>
@@ -104,31 +119,38 @@ struct FSUI_UnindexList;
  * number of results has been found.
  */
 enum FSUI_EventType {
-
+  FSUI_search_started,
+  FSUI_search_stopped,
   FSUI_search_result,
   FSUI_search_completed,
   FSUI_search_aborted,
   FSUI_search_error,
-  FSUI_search_suspending,
-  FSUI_search_resuming,
+  FSUI_search_suspended,
+  FSUI_search_resumed,
+  FSUI_download_started,
+  FSUI_download_stopped,
   FSUI_download_progress,
   FSUI_download_complete,
   FSUI_download_aborted,
   FSUI_download_error,
-  FSUI_download_suspending,
-  FSUI_download_resuming,
+  FSUI_download_suspended,
+  FSUI_download_resumed,
+  FSUI_upload_started,
+  FSUI_upload_stopped,
   FSUI_upload_progress,
   FSUI_upload_complete,
   FSUI_upload_aborted,
   FSUI_upload_error,
-  FSUI_upload_suspending,
-  FSUI_upload_resuming,
+  FSUI_upload_suspended,
+  FSUI_upload_resumed,
+  FSUI_unindex_started,
+  FSUI_unindex_stopped,
   FSUI_unindex_progress,
   FSUI_unindex_complete,
   FSUI_unindex_aborted,
   FSUI_unindex_error,
-  FSUI_unindex_suspending,
-  FSUI_unindex_resuming,
+  FSUI_unindex_suspended,
+  FSUI_unindex_resumed,
   /**
    * Connection status with gnunetd changed.
    */
@@ -223,53 +245,67 @@ typedef struct {
        * The URI of the search for which data was
        * found.
        */
-      struct ECRS_URI * searchURI;
+      const struct ECRS_URI * searchURI;
 
     } SearchResult;
 
 
     struct {
 
-      struct FSUI_SearchList * pos;
+      FSUI_SearchContext sc;
 
     } SearchCompleted;
 
     struct {
 
-      struct FSUI_SearchList * pos;
+      FSUI_SearchContext sc;
 
     } SearchAborted;
 
-
     struct {
 
       FSUI_SearchContext sc;
-
-      char * message;
+      
+      const char * message;
 
     } SearchError;
 
-
     struct {
 
       FSUI_SearchContext sc;
 
-    } SearchSuspending;
-
+    } SearchSuspended;
 
     struct {
 
       FSUI_SearchContext sc;
-
-      ECRS_FileInfo * fis;
-
-      unsigned int fisSize;
-
-      unsigned int anonymityLevel;
 
       struct ECRS_URI * searchURI;
 
-    } SearchResuming;
+      const ECRS_FileInfo * fis;
+
+      unsigned int anonymityLevel;
+
+      unsigned int fisSize;
+
+    } SearchResumed;
+
+    struct {
+
+      FSUI_SearchContext sc;
+
+      const struct ECRS_URI * searchURI;
+
+      unsigned int anonymityLevel;
+
+    } SearchStarted;
+
+    struct {
+
+      FSUI_SearchContext sc;
+      
+    } SearchStopped;
+
 
 
     struct {
@@ -300,12 +336,12 @@ typedef struct {
       /**
        * Information about the download.
        */
-      char * filename;
+      const char * filename;
 
       /**
        * Original URI.
        */
-      struct ECRS_URI * uri;
+      const struct ECRS_URI * uri;
 
       /**
        * The last block (in plaintext)
@@ -333,14 +369,14 @@ typedef struct {
       /**
        * Information about the download.
        */
-      char * filename;
+      const char * filename;
 
       /**
        * Original URI.
        */
-      struct ECRS_URI * uri;
+      const struct ECRS_URI * uri;
 
-    } DownloadComplete;
+    } DownloadCompleted;
 
 
     struct {
@@ -366,8 +402,39 @@ typedef struct {
 
       FSUI_DownloadContext dc;
 
-    } DownloadSuspending;
+    } DownloadStopped;
 
+
+    struct {
+
+      FSUI_DownloadContext dc;
+
+    } DownloadSuspended;
+
+
+    struct {
+
+      FSUI_DownloadContext dc;
+
+      /**
+       * How large is the total download (as far
+       * as known so far).
+       */
+      unsigned long long total;
+
+      /**
+       * Information about the download.
+       */
+      const char * filename;
+
+      /**
+       * Original URI.
+       */
+      const struct ECRS_URI * uri;
+
+      unsigned int anonymityLevel;
+
+    } DownloadStarted;
 
     struct {
 
@@ -392,16 +459,16 @@ typedef struct {
       /**
        * Information about the download.
        */
-      char * filename;
-
-      unsigned int anonymityLevel;
+      const char * filename;
 
       /**
        * Original URI.
        */
-      struct ECRS_URI * uri;
+      const struct ECRS_URI * uri;
 
-    } DownloadResuming;
+      unsigned int anonymityLevel;
+
+    } DownloadResumed;
 
 
     struct {
@@ -426,7 +493,7 @@ typedef struct {
       /**
        * Information about the upload.
        */
-      char * filename;
+      const char * filename;
 
     } UploadProgress;
 
@@ -443,14 +510,14 @@ typedef struct {
       /**
        * Which file was uploaded?
        */
-      char * filename;
+      const char * filename;
 
       /**
        * URI of the uploaded file.
        */
       struct ECRS_URI * uri;
 
-    } UploadComplete;
+    } UploadCompleted;
 
 
     struct {
@@ -464,17 +531,40 @@ typedef struct {
 
       FSUI_UploadContext uc;
 
-      char * message;
+      const char * message;
 
     } UploadError;
+
+    struct {
+
+      FSUI_UploadContext uc;
+
+    } UploadSuspended;
+
+    struct {
+
+      FSUI_UploadContext uc;
+
+    } UploadStopped;
 
 
     struct {
 
       FSUI_UploadContext uc;
 
-    } UploadSuspending;
+      /**
+       * How large is the total upload (for the current file)
+       */
+      unsigned long long total;
 
+      unsigned int anonymityLevel;
+
+      /**
+       * Information about the upload.
+       */
+      const char * filename;
+
+    } UploadStarted;
 
     struct {
 
@@ -500,9 +590,9 @@ typedef struct {
       /**
        * Information about the upload.
        */
-      char * filename;
+      const char * filename;
 
-    } UploadResuming;
+    } UploadResumed;
 
 
     struct {
@@ -515,7 +605,7 @@ typedef struct {
 
       cron_t eta;
 
-      char * filename;
+      const char * filename;
 
     } UnindexProgress;
 
@@ -526,9 +616,9 @@ typedef struct {
 
       unsigned long long total;
 
-      char * filename;
+      const char * filename;
 
-    } UnindexComplete;
+    } UnindexCompleted;
 
 
     struct {
@@ -537,12 +627,18 @@ typedef struct {
 
     } UnindexAborted;
 
+    struct {
+
+      FSUI_UnindexContext uc;
+
+    } UnindexStopped;
+
 
     struct {
 
       FSUI_UnindexContext uc;
 
-    } UnindexSuspending;
+    } UnindexSuspended;
 
 
     struct {
@@ -554,17 +650,27 @@ typedef struct {
       unsigned long long completed;
 
       cron_t eta;
+      
+      const char * filename;
 
-      char * filename;
+    } UnindexResumed;
 
-    } UnindexResuming;
+    struct {
+
+      FSUI_UnindexContext uc;
+      
+      unsigned long long total;
+      
+      const char * filename;
+
+    } UnindexStarted;
 
 
     struct {
 
       FSUI_UnindexContext uc;
-
-      char * message;
+      
+      const char * message;
 
     } UnindexError;    
 
@@ -651,6 +757,14 @@ FSUI_startSearch(struct FSUI_Context * ctx,
 		 const struct ECRS_URI * uri); /* search.c */
 
 /**
+ * Abort a search.
+ *
+ * @return SYSERR if such a search is not known
+ */
+int FSUI_abortSearch(struct FSUI_Context * ctx,
+		     struct FSUI_SearchList * sl); /* search.c */
+
+/**
  * Stop a search.
  *
  * @return SYSERR if such a search is not known
@@ -673,6 +787,15 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 /**
  * Abort a download.  If the dl is for a recursive
  * download, all sub-downloads will also be aborted.
+ *
+ * @return SYSERR on error
+ */
+int FSUI_abortDownload(struct FSUI_Context * ctx,
+		       struct FSUI_DownloadList * dl); /* download.c */
+
+/**
+ * Stop a download.  If the dl is for a recursive
+ * download, all sub-downloads will also be stopped.
  *
  * @return SYSERR on error
  */
@@ -712,6 +835,15 @@ FSUI_startUpload(struct FSUI_Context * ctx,
  *
  * @return SYSERR on error
  */
+int FSUI_abortUpload(struct FSUI_Context * ctx,
+		     struct FSUI_UploadList * ul);
+
+/**
+ * Stop an upload.  If the context is for a recursive
+ * upload, all sub-uploads will also be stopped.
+ *
+ * @return SYSERR on error
+ */
 int FSUI_stopUpload(struct FSUI_Context * ctx,
 		    struct FSUI_UploadList * ul);
 
@@ -730,6 +862,16 @@ FSUI_unindex(struct FSUI_Context * ctx,
 /**
  * Abort an unindex operation.  If the context is for a recursive
  * upload, all sub-uploads will also be aborted.
+ *
+ * @return SYSERR on error
+ */
+int FSUI_abortUnindex(struct FSUI_Context * ctx,
+		      struct FSUI_UnindexList * ul);
+
+
+/**
+ * Stop an unindex operation.  If the context is for a recursive
+ * upload, all sub-uploads will also be stopped.
  *
  * @return SYSERR on error
  */

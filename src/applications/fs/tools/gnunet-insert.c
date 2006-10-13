@@ -177,21 +177,21 @@ static void * printstatus(void * ctx,
       delta = get_time() - start_time;
       PRINTF(_("Upload of `%s' complete, "
 	       "%llu bytes took %llu seconds (%8.3f KiB/s).\n"),
-	     event->data.UploadComplete.filename,
-	     event->data.UploadComplete.total,
+	     event->data.UploadCompleted.filename,
+	     event->data.UploadCompleted.total,
 	     delta / cronSECONDS,
 	     (delta == 0)
 	     ? (double) (-1.0)
-	     : (double) (event->data.UploadComplete.total
+	     : (double) (event->data.UploadCompleted.total
 			 / 1024.0 * cronSECONDS / delta));
     }
-    fstring = ECRS_uriToString(event->data.UploadComplete.uri);	
+    fstring = ECRS_uriToString(event->data.UploadCompleted.uri);	
     printf(_("File `%s' has URI: %s\n"),
-	   event->data.UploadComplete.filename,
+	   event->data.UploadCompleted.filename,
 	   fstring);
     FREE(fstring);
-    if (ul == event->data.UploadComplete.uc.pos) {
-      postProcess(event->data.UploadComplete.uri);
+    if (ul == event->data.UploadCompleted.uc.pos) {
+      postProcess(event->data.UploadCompleted.uri);
       if (exitSignal != NULL)
 	SEMAPHORE_UP(exitSignal);
     }

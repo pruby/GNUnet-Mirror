@@ -154,12 +154,11 @@ static int uploadDirectory(FSUI_UploadList * utc,
       if (ret == OK) {
 	GE_ASSERT(ectx, NULL != *uri);
 	event.type = FSUI_upload_complete;
-	event.data.UploadComplete.total = utc->main_total;
-	event.data.UploadComplete.filename = STRDUP(dirName);
-	event.data.UploadComplete.uri = *uri;
+	event.data.UploadCompleted.total = utc->main_total;
+	event.data.UploadCompleted.filename = dirName;
+	event.data.UploadCompleted.uri = *uri;
 	utc->ctx->ecb(utc->ctx->ecbClosure,
 		      &event);	
-	FREE(event.data.UploadComplete.filename);
 	utc->main_completed += len;
       }
       UNLINK(tempName);
@@ -214,9 +213,9 @@ static int dirEntryCallback(const char * filename,
     if (ret == OK) {
       GE_ASSERT(ectx, uri != NULL);
       event.type = FSUI_upload_complete;
-      event.data.UploadComplete.total = utc->main_total;
-      event.data.UploadComplete.filename = utc->filename;
-      event.data.UploadComplete.uri = uri;
+      event.data.UploadCompleted.total = utc->main_total;
+      event.data.UploadCompleted.filename = utc->filename;
+      event.data.UploadCompleted.uri = uri;
       if (OK == disk_file_size(ectx, 
 			       fn, 
 			       &len,
@@ -332,7 +331,7 @@ static int tt(void * cls) {
 /**
  * Thread that does the upload.
  */
-static void * uploadThread(void * cls) {
+void * FSUI_uploadThread(void * cls) {
   FSUI_UploadList * utc = cls;
   struct ECRS_URI * uri;
   struct ECRS_URI * keywordUri;
@@ -378,9 +377,9 @@ static void * uploadThread(void * cls) {
 			  &uri);
     if (ret == OK) {
       event.type = FSUI_upload_complete;
-      event.data.UploadComplete.total = utc->main_total;
-      event.data.UploadComplete.filename = utc->filename;
-      event.data.UploadComplete.uri = uri;
+      event.data.UploadCompleted.total = utc->main_total;
+      event.data.UploadCompleted.filename = utc->filename;
+      event.data.UploadCompleted.uri = uri;
     } else {
       event.type = FSUI_upload_error;
       event.data.UploadError.message = _("Upload failed.");
@@ -556,7 +555,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   utc->doIndex = doIndex;
   utc->individualKeywords = NO;
   utc->force_termination = NO;
-  utc->handle = PTHREAD_CREATE(&uploadThread,
+  utc->handle = PTHREAD_CREATE(&FSUI_uploadThread,
 			       utc,
 			       128 * 1024);
   if (utc->handle == NULL) {
@@ -575,7 +574,6 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   utc->next = ctx->activeUploads;
   ctx->activeUploads = utc;
   MUTEX_UNLOCK(ctx->lock);
-  cleanupFSUIThreadList(ctx);
   return utc;
 }
 

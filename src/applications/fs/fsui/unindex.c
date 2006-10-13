@@ -65,7 +65,7 @@ static int tt(void * cls) {
 /**
  * Thread that does the unindex.
  */
-static void * unindexThread(void * cls) {
+void * FSUI_unindexThread(void * cls) {
   FSUI_UnindexList * utc = cls;
   FSUI_Event event;
   int ret;
@@ -81,12 +81,12 @@ static void * unindexThread(void * cls) {
     event.type = FSUI_unindex_complete;
     if (OK != disk_file_size(utc->ctx->ectx,
 			     utc->filename,
-			     &event.data.UnindexComplete.total,
+			     &event.data.UnindexCompleted.total,
 			     YES)) {
       GE_BREAK(utc->ctx->ectx, 0);
-      event.data.UnindexComplete.total = 0;
+      event.data.UnindexCompleted.total = 0;
     }
-    event.data.UnindexComplete.filename = utc->filename;
+    event.data.UnindexCompleted.filename = utc->filename;
   } else {
     event.type = FSUI_unindex_error;
     event.data.UnindexError.message = _("Unindex failed.");
@@ -131,7 +131,7 @@ FSUI_unindex(struct FSUI_Context * ctx,
   utc->filename = STRDUP(filename);
   utc->start_time = get_time();
   utc->force_termination = NO;
-  utc->handle = PTHREAD_CREATE(&unindexThread,
+  utc->handle = PTHREAD_CREATE(&FSUI_unindexThread,
 			       utc,
 			       32 * 1024);
   if (utc->handle == NULL) {

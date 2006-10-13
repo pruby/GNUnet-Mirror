@@ -240,7 +240,7 @@ static int testTerminate(FSUI_SearchList * pos) {
 /**
  * Thread that searches for data.
  */
-void * searchThread(void * cls) {
+void * FSUI_searchThread(void * cls) {
   FSUI_SearchList * pos = cls;
   ECRS_search(pos->ctx->ectx,
 	      pos->ctx->cfg,
@@ -276,7 +276,7 @@ FSUI_startSearch(struct FSUI_Context * ctx,
   pos->unmatchedResultsReceived = 0;
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
-  pos->handle = PTHREAD_CREATE(&searchThread,
+  pos->handle = PTHREAD_CREATE(&FSUI_searchThread,
 			       pos,
 			       32 * 1024);
   if (pos->handle == NULL) {
