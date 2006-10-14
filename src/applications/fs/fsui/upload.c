@@ -25,9 +25,10 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - make sure events are sent for resume/abort
+ * - make sure events are sent for resume/abort/error
  *   when respective FSUI calls happen!
  *   (initialize cctx!)
+ * - proper tree handling
  */
 
 #include "platform.h"
@@ -38,14 +39,6 @@
 #include <extractor.h>
 
 #define DEBUG_UPLOAD NO
-
-/* LE <= 0.5.8/0.5.12 compatibility code */
-#ifndef EXTRACTOR_SPLIT
-#define EXTRACTOR_SPLIT 89
-#endif
-#ifndef EXTRACTOR_LOWERCASE
-#define EXTRACTOR_LOWERCASE 101
-#endif
 
 /**
  * Transform an ECRS progress callback into an FSUI event.
@@ -60,12 +53,23 @@ static void progressCallback(unsigned long long totalBytes,
 
   now = get_time();
   event.type = FSUI_upload_progress;
+  event.data.UploadProgress.uc.pos = utc;
+  event.data.UploadProgress.uc.cctx = utc->cctx;
+  event.data.UploadProgress.uc.ppos = utc->parent;
+  event.data.UploadProgress.uc.pcctx = utc->parent->cctx;
   event.data.UploadProgress.completed = completedBytes;
   event.data.UploadProgress.total = totalBytes;
   event.data.UploadProgress.filename = utc->filename;
   event.data.UploadProgress.eta = eta;
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
+}
+
+static int testTerminate(void * cls) {
+  FSUI_UploadList * utc = cls;
+  if (utc->state != FSUI_ACTIVE)
+    return SYSERR;
+  return OK;
 }
 
 /**
@@ -148,25 +152,48 @@ static int uploadDirectory(FSUI_UploadList * utc,
 			    utc->expiration,
 			    &progressCallback,
 			    utc,
-			    NULL,
-			    NULL,
+			    &testTerminate,
+			    utc,
 			    uri);
       if (ret == OK) {
 	GE_ASSERT(ectx, NULL != *uri);
 	event.type = FSUI_upload_complete;
+	event.data.UploadCompleted.uc.pos = utc;
+	event.data.UploadCompleted.uc.cctx = utc->cctx;
+	event.data.UploadCompleted.uc.ppos = utc->parent;
+	event.data.UploadCompleted.uc.pcctx = utc->parent->cctx;
 	event.data.UploadCompleted.total = utc->main_total;
 	event.data.UploadCompleted.filename = dirName;
 	event.data.UploadCompleted.uri = *uri;
 	utc->ctx->ecb(utc->ctx->ecbClosure,
 		      &event);	
-	utc->main_completed += len;
+	utc->completed = utc->total;
+	utc->uri = *uri;
+      } else if (utc->state == FSUI_ACTIVE) {
+	/* ECRS internal error - signal */
+	event.type = FSUI_upload_error;
+	event.data.UploadError.uc.pos = utc;
+	event.data.UploadError.uc.cctx = utc->cctx;
+	event.data.UploadError.uc.ppos = utc->parent;
+	event.data.UploadError.uc.pcctx = utc->parent->cctx;
+	event.data.UploadError.message = _("Error during upload (consult logs)");
+	utc->ctx->ecb(utc->ctx->ecbClosure,
+		      &event);		
       }
       UNLINK(tempName);
     }
     FREE(tempName);
     FREENONNULL(data);
+  } else {
+    event.type = FSUI_upload_error;
+    event.data.UploadError.uc.pos = utc;
+    event.data.UploadError.uc.cctx = utc->cctx;
+    event.data.UploadError.uc.ppos = utc->parent;
+    event.data.UploadError.uc.pcctx = utc->parent->cctx;
+    event.data.UploadError.message = _("Failed to create directory.");
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);		
   }
-
   if (ret != OK) {
     ECRS_freeMetaData(*meta);
     *meta = NULL;
@@ -174,13 +201,27 @@ static int uploadDirectory(FSUI_UploadList * utc,
   return ret;
 }
 
+static struct FSUI_UploadList *
+startUpload(struct FSUI_Context * ctx,
+	    const char * filename,
+	    unsigned int anonymityLevel,
+	    unsigned int priority,
+	    int doIndex,
+	    char * config,
+	    EXTRACTOR_ExtractorList * extractors,
+	    int individualKeywords,
+	    const struct ECRS_MetaData * md,
+	    const struct ECRS_URI * globalURI,
+	    const struct ECRS_URI * keyUri,
+	    struct FSUI_UploadList * parent);
+
 /**
  * For each file in the directory, upload (recursively).
  */
 static int dirEntryCallback(const char * filename,
 			    const char * dirName,
 			    void * ptr) {
-  FSUI_UploadList * utc = ptr;
+  FSUI_UploadList * parent = ptr;
   char * fn;
   struct ECRS_URI * uri;
   struct ECRS_URI * keywordUri;
@@ -195,8 +236,18 @@ static int dirEntryCallback(const char * filename,
   strcpy(fn, dirName);
   strcat(fn, "/");
   strcat(fn, filename);
-  utc->filename = fn;
-
+  startUpload(parent->ctx,
+	      fn,
+	      parent->anonymityLevel,
+	      parent->priority,
+	      parent->doIndex,
+	      parent->extractor_config,
+	      parent->extractors,
+	      parent->individualKeywords,
+	      parent->meta,
+	      parent->globalUri,
+	      parent->uri,
+	      parent);
   if (NO == disk_directory_test(ectx, fn)) {
     ret = ECRS_uploadFile(ectx,
 			  utc->ctx->cfg,
@@ -205,32 +256,36 @@ static int dirEntryCallback(const char * filename,
 			  utc->anonymityLevel,
 			  utc->priority,
 			  utc->expiration,
-			  (ECRS_UploadProgressCallback) &progressCallback,
+			  &progressCallback,
 			  utc,
-			  NULL,
-			  NULL,
+			  &testTerminate,
+			  utc,
 			  &uri);
     if (ret == OK) {
       GE_ASSERT(ectx, uri != NULL);
+      utc->completed = utc->total;
       event.type = FSUI_upload_complete;
+      event.data.UploadCompleted.uc.pos = utc;
+      event.data.UploadCompleted.uc.cctx = utc->cctx;
+      event.data.UploadCompleted.uc.ppos = utc->parent;
+      event.data.UploadCompleted.uc.pcctx = utc->parent->cctx;
       event.data.UploadCompleted.total = utc->main_total;
       event.data.UploadCompleted.filename = utc->filename;
       event.data.UploadCompleted.uri = uri;
-      if (OK == disk_file_size(ectx, 
-			       fn, 
-			       &len,
-			       YES))
-	utc->main_completed += len;
       utc->ctx->ecb(utc->ctx->ecbClosure,
 		    &event);	
       meta = ECRS_createMetaData();
       ECRS_extractMetaData(ectx,
 			   meta,
 			   fn,
-			   utc->extractors);
-    } else {
+		 	   utc->extractors);
+    } else if (utc->state == FSUI_ACTIVE) {
       event.type = FSUI_upload_error;
-      event.data.UploadError.message = _("Upload failed.");
+      event.data.UploadError.uc.pos = utc;
+      event.data.UploadError.uc.cctx = utc->cctx;
+      event.data.UploadError.uc.ppos = utc->parent;
+      event.data.UploadError.uc.pcctx = utc->parent->cctx;
+      event.data.UploadError.message = _("Error during upload (consult logs)");
       utc->ctx->ecb(utc->ctx->ecbClosure,
 		    &event);	
       meta = NULL;
@@ -321,13 +376,6 @@ static int dirEntryCallback(const char * filename,
   return OK;
 }
 
-static int tt(void * cls) {
-  FSUI_UploadList * utc = cls;
-  if (utc->force_termination == YES)
-    return SYSERR;
-  return OK;
-}
-
 /**
  * Thread that does the upload.
  */
@@ -339,50 +387,67 @@ void * FSUI_uploadThread(void * cls) {
   ECRS_FileInfo fi;
   int ret;
   char * inboundFN;
-  int sendEvent = YES;
   struct GE_Context * ectx;
 
   ectx = utc->ctx->ectx;
-  GE_ASSERT(ectx, utc->main_filename != NULL);
+  GE_ASSERT(ectx, utc->filename != NULL);
+  utc->start_time = get_time();
+  if (OK != disk_file_size(ectx,
+			   utc->filename,
+			   &utc->total,
+			   YES)) {
+    event.type = FSUI_upload_error;
+    event.data.UploadError.uc.pos = utc;
+    event.data.UploadError.uc.cctx = utc->cctx;
+    event.data.UploadError.uc.ppos = utc->parent;
+    event.data.UploadError.uc.pcctx = utc->parent->cctx;
+    event.data.UploadError.message = _("Error during upload (could not determine file size)");
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);	
+    return NULL;
+  }
+  utc->completed = 0;
+  ret = SYSERR;
+  uri = NULL;
   inboundFN
     = ECRS_getFromMetaData(utc->meta,
 			   EXTRACTOR_FILENAME);
-  utc->start_time = get_time();
-
-  if (OK != disk_file_size(ectx,
-			   utc->main_filename,
-			   &utc->main_total,
-			   YES)) {
-    utc->main_total = 0;
-    /* or signal error?? */
-  }
-  utc->main_completed = 0;
-  ret = SYSERR;
-  uri = NULL;
 
   if (NO == disk_directory_test(ectx,
-				utc->main_filename)) {
+				utc->filename)) {
     utc->filename = utc->main_filename;
     ret = ECRS_uploadFile(ectx,
 			  utc->ctx->cfg,
-			  utc->main_filename,
+			  utc->filename,
 			  utc->doIndex,
 			  utc->anonymityLevel,
 			  utc->priority,
 			  utc->expiration,
 			  &progressCallback,
 			  utc,
-			  &tt,
+			  &testTerminate,
 			  utc,
 			  &uri);
     if (ret == OK) {
       event.type = FSUI_upload_complete;
-      event.data.UploadCompleted.total = utc->main_total;
+      event.data.UploadCompleted.uc.pos = utc;
+      event.data.UploadCompleted.uc.cctx = utc->cctx;
+      event.data.UploadCompleted.uc.ppos = utc->parent;
+      event.data.UploadCompleted.uc.pcctx = utc->parent->cctx;
+      event.data.UploadCompleted.total = utc->total;
       event.data.UploadCompleted.filename = utc->filename;
       event.data.UploadCompleted.uri = uri;
+      utc->ctx->ecb(utc->ctx->ecbClosure,
+		    &event);		
     } else {
       event.type = FSUI_upload_error;
+      event.data.UploadError.uc.pos = utc;
+      event.data.UploadError.uc.cctx = utc->cctx;
+      event.data.UploadError.uc.ppos = utc->parent;
+      event.data.UploadError.uc.pcctx = utc->parent->cctx;
       event.data.UploadError.message = _("Upload failed.");
+      utc->ctx->ecb(utc->ctx->ecbClosure,
+		    &event);		
     }
     if (utc->meta == NULL)
       utc->meta = ECRS_createMetaData();
@@ -401,13 +466,12 @@ void * FSUI_uploadThread(void * cls) {
 
     memset(&current, 0, sizeof(DirTrack));
     utc->dir = &current;
-    utc->filename = utc->main_filename;
     disk_directory_scan(ectx,
-			utc->main_filename,
+			utc->filename,
 			&dirEntryCallback,
 			utc);
     ret = uploadDirectory(utc,
-			  utc->main_filename,
+			  utc->filename,
 			  &current,
 			  &uri,
 			  &utc->meta);
@@ -418,17 +482,16 @@ void * FSUI_uploadThread(void * cls) {
     GROW(current.fis,
 	 current.fiCount,
 	 0);
-
-    if (ret != OK) {
-      event.type = FSUI_upload_error;
-      event.data.UploadError.message = _("Upload failed.");
-    } else { /* for success, uploadDirectory sends event already! */
-      sendEvent = NO;
-    }
     utc->filename = NULL;
   } else {
     event.type = FSUI_upload_error;
+    event.data.UploadError.uc.pos = utc;
+    event.data.UploadError.uc.cctx = utc->cctx;
+    event.data.UploadError.uc.ppos = utc->parent;
+    event.data.UploadError.uc.pcctx = utc->parent->cctx;
     event.data.UploadError.message = _("Cannot upload directory without using recursion.");
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);		
   }
   if (ret == OK) { /* publish top-level advertisements */
     fi.meta = utc->meta;
@@ -445,8 +508,9 @@ void * FSUI_uploadThread(void * cls) {
 			 inboundFN);
     }
 #if DEBUG_UPLOAD
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Adding URI to keyspace.\n");
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Adding URI to keyspace.\n");
 #endif
     keywordUri = ECRS_metaDataToUri(utc->meta);
     if (keywordUri != NULL) {
@@ -484,12 +548,6 @@ void * FSUI_uploadThread(void * cls) {
 		       EXTRACTOR_SPLIT,
 		       NULL);
   fi.meta = utc->meta;
-  /*
-  CO_publishToCollection(ectx,
-			   utc->ctx->cfg,
-			   utc->ctx,
-			   &fi);
-  */
   if (sendEvent)
     utc->ctx->ecb(utc->ctx->ecbClosure,
 		  &event);
@@ -499,6 +557,67 @@ void * FSUI_uploadThread(void * cls) {
   FREENONNULL(inboundFN);
   return NULL;
 }
+
+static struct FSUI_UploadList *
+startUpload(struct FSUI_Context * ctx,
+	    const char * filename,
+	    unsigned int anonymityLevel,
+	    unsigned int priority,
+	    int doIndex,
+	    char * config,
+	    EXTRACTOR_ExtractorList * extractors,
+	    int individualKeywords,
+	    const struct ECRS_MetaData * md,
+	    const struct ECRS_URI * globalURI,
+	    const struct ECRS_URI * keyUri,
+	    struct FSUI_UploadList * parent) {
+  FSUI_UploadList * utc;
+  struct GE_Context * ectx;
+
+  ectx = ctx->ectx;
+  utc = MALLOC(sizeof(FSUI_UploadList));
+  utc->dir = NULL;
+  utc->anonymityLevel = anonymityLevel;
+  utc->priority = priority;
+  utc->expiration = get_time() + 120 * cronYEARS;
+  utc->ctx = ctx;
+  utc->isRecursive = NO;
+  utc->parent = parent;
+  utc->globalUri = ECRS_dupUri(globalURI);
+  utc->filename = STRDUP(filename);
+  utc->extractor_config = config;
+  utc->extractors = extractors;
+  utc->uri = ECRS_dupUri(keyUri);
+  utc->meta = ECRS_dupMetaData(md);
+  utc->doIndex = doIndex;
+  utc->individualKeywords = NO;
+  utc->force_termination = NO;
+  utc->handle = PTHREAD_CREATE(&FSUI_uploadThread,
+			       utc,
+			       128 * 1024);
+  if (utc->handle == NULL) {
+    GE_LOG_STRERROR(ectx,
+		    GE_ERROR | GE_USER | GE_BULK, 
+		    "PTHREAD_CREATE");
+    FREE(utc->filename);
+    ECRS_freeMetaData(utc->meta);
+    ECRS_freeUri(utc->uri);
+    ECRS_freeUri(utc->globalURI);
+    if (utc->parent == &utc->ctx->activeUploads) {
+      EXTRACTOR_removeAll(utc->extractors);
+      FREE(utc->extractor_config);
+    }
+    FREE(utc);
+    return NULL;
+  }
+
+  MUTEX_LOCK(ctx->lock);
+  utc->next = parent->child;
+  parent->child = utc;
+  MUTEX_UNLOCK(ctx->lock);
+  return utc;
+}
+
 
 /**
  * Start uploading a file.  Note that an upload cannot be stopped once
@@ -521,65 +640,73 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 		 const struct ECRS_MetaData * md,
 		 const struct ECRS_URI * globalURI,
 		 const struct ECRS_URI * keyUri) {
-  FSUI_UploadList * utc;
   char * config;
-  struct GE_Context * ectx;
+  EXTRACTOR_ExtractorList * extractors;
 
-  ectx = ctx->ectx;
-  utc = MALLOC(sizeof(FSUI_UploadList));
-  utc->dir = NULL;
-  utc->anonymityLevel = anonymityLevel;
-  utc->priority = priority;
-  utc->expiration = get_time() + 120 * cronYEARS;
-  utc->ctx = ctx;
-  utc->isRecursive = NO;
   if (doExtract) {
-    utc->extractors = EXTRACTOR_loadDefaultLibraries();
+    extractors = EXTRACTOR_loadDefaultLibraries();
     if ( (0 == GC_get_configuration_value_string(ctx->cfg,
 						 "FS",
 						 "EXTRACTORS",
 						 NULL,
 						 &config)) &&
 	 (config != NULL) ) {
-      utc->extractors = EXTRACTOR_loadConfigLibraries(utc->extractors,
-						      config);
-      FREE(config);
+      extractors = EXTRACTOR_loadConfigLibraries(extractors,
+						 config);
     }
-  } else
-    utc->extractors = NULL;
-  utc->globalUri = NULL;
-  utc->filename = NULL;
-  utc->main_filename = STRDUP(filename);
-  utc->uri = ECRS_dupUri(keyUri);
-  utc->meta = ECRS_dupMetaData(md);
-  utc->doIndex = doIndex;
-  utc->individualKeywords = NO;
-  utc->force_termination = NO;
-  utc->handle = PTHREAD_CREATE(&FSUI_uploadThread,
-			       utc,
-			       128 * 1024);
-  if (utc->handle == NULL) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_USER | GE_BULK, 
-		    "PTHREAD_CREATE");
-    FREE(utc->main_filename);
-    ECRS_freeMetaData(utc->meta);
-    ECRS_freeUri(utc->uri);
-    EXTRACTOR_removeAll(utc->extractors);
-    FREE(utc);
-    return NULL;
+  } else {
+    extractors = NULL;
+    extractor_config = NULL;
   }
-
-  MUTEX_LOCK(ctx->lock);
-  utc->next = ctx->activeUploads;
-  ctx->activeUploads = utc;
-  MUTEX_UNLOCK(ctx->lock);
-  return utc;
+  return startUpload(ctx,
+		     filename,
+		     anonymityLevel,
+		     priority,
+		     doIndex,
+		     extractors,
+		     extractor_config,
+		     individualKeywords,
+		     md,
+		     globalURI,
+		     keyUri,
+		     &ctx->activeUploads);
 }
 
 /**
  * Abort an upload.  If the context is for a recursive
  * upload, all sub-uploads will also be aborted.
+ *
+ * @return SYSERR on error
+ */
+int FSUI_abortUpload(struct FSUI_Context * ctx,
+		     struct FSUI_UploadList * ul) {
+  FSUI_UploadList * c;
+  struct GE_Context * ectx;
+
+  GE_ASSERT(ctx->ectx, ul != NULL);
+  c = ul->child;
+  while (c != NULL) {
+    FSUI_abortDownload(ctx, c);
+    c = c->next;
+  }    
+  if ( (ul->state != FSUI_ACTIVE) &&
+       (ul->state != FSUI_PENDING) )
+    return NO;
+  ul->state = FSUI_ABORTED;
+  PTHREAD_STOP_SLEEP(ul->handle);
+  event.type = FSUI_upload_aborted;
+  event.data.DownloadAborted.dc.pos = dl;
+  event.data.DownloadAborted.dc.cctx = dl->cctx;
+  event.data.DownloadAborted.dc.ppos = dl->parent;
+  event.data.DownloadAborted.dc.pcctx = dl->parent->cctx;
+  ctx->ecb(ctx->ecbClosure,
+	   &event);
+  return OK;
+}
+
+/**
+ * Stop an upload.  If the context is for a recursive
+ * upload, all sub-uploads will also be stopped.
  *
  * @return SYSERR on error
  */
@@ -589,42 +716,47 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
   FSUI_UploadList * prev;
   struct GE_Context * ectx;
 
-  ectx = ctx->ectx;
-  if (ul == NULL) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "FSUI_stopUpload called.\n");
+  GE_ASSERT(ctx->ectx, ul != NULL);
+  while (ul->child != NULL)
+    FSUI_stopDownload(ctx,
+		      ul->child);
   MUTEX_LOCK(ctx->lock);
-  prev = ctx->activeUploads;
+  prev = (ul->parent != NULL) ? ul->parent->child : ctx->activeDownloads.child;
   while ( (prev != ul) &&
 	  (prev != NULL) &&
 	  (prev->next != ul) ) 
     prev = prev->next;
   if (prev == NULL) {
     MUTEX_UNLOCK(ctx->lock);
-    GE_LOG(ectx, 
+    GE_LOG(ctx->ectx, 
 	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "FSUI_stopUpload failed to locate deletion operation.\n");
+	   "FSUI_stopUpload failed to locate download.\n");
     return SYSERR;
   }
-  if (prev == ul) {
-    ctx->activeUploads = ul->next;
-  } else {
-    prev->next = ul->next;
-  }
+  if (prev == ul) 
+    ul->parent->child = ul->next; /* first child of parent */
+  else 
+    prev->next = ul->next; /* not first child */  
   MUTEX_UNLOCK(ctx->lock);
-  ul->force_termination = YES;
-  PTHREAD_STOP_SLEEP(ul->handle);
-  PTHREAD_JOIN(ul->handle,
-	       &unused);
-  FREE(ul->main_filename);
+  if ( (dl->state == FSUI_COMPLETED) ||
+       (dl->state == FSUI_ABORTED) ||
+       (dl->state == FSUI_ERROR) ) {
+    PTHREAD_JOIN(ul->handle,
+		 &unused);
+    ul->state++; /* add _JOINED */
+  }
+  event.type = FSUI_upload_stopped;
+  event.data.UploadStopped.uc.pos = ul;
+  event.data.UploadStopped.uc.cctx = ul->cctx;
+  event.data.UploadStopped.uc.ppos = ul->parent;
+  event.data.UploadStopped.uc.pcctx = ul->parent->cctx;
+  ctx->ecb(ctx->ecbClosure,
+	   &event);
+  FREE(ul->filename);
+  if (ul->extractor_config != NULL)
+    FREE(ul->extractor_config);
   ECRS_freeMetaData(ul->meta);
   ECRS_freeUri(ul->uri);
-  if (ul->globalUri != NULL)
-    ECRS_freeUri(ul->globalUri);
   EXTRACTOR_removeAll(ul->extractors);
   FREE(ul);
   return OK;

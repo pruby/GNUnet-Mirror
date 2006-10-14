@@ -333,14 +333,12 @@ typedef struct {
 
 /**
  * Context for the upload thread.
- *
- * TODO: keep upload hierarchy!
  */
 typedef struct FSUI_UploadList {
 
-  unsigned long long main_completed;
+  unsigned long long completed;
 
-  unsigned long long main_total;
+  unsigned long long total;
 
   cron_t expiration;
 
@@ -352,6 +350,10 @@ typedef struct FSUI_UploadList {
 
   struct FSUI_UploadList * next;
 
+  struct FSUI_UploadList * child;
+
+  struct FSUI_UploadList * parent;
+
   DirTrack * dir;
 
   struct PTHREAD * handle;
@@ -360,11 +362,9 @@ typedef struct FSUI_UploadList {
 
   struct ECRS_URI * uri;
 
-  struct ECRS_URI * globalUri;
+  char * extractor_config;
 
   char * filename;
-
-  char * main_filename;
 
   void * cctx;
 
@@ -437,7 +437,7 @@ typedef struct FSUI_Context {
    */
   FSUI_UnindexList * unindexOperations;
 
-  FSUI_UploadList * activeUploads;
+  FSUI_UploadList activeUploads;
 
   /**
    * Root of the tree of downloads.  On shutdown,

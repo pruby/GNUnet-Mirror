@@ -186,8 +186,8 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     event.type = FSUI_upload_resumed;
     event.data.UploadResumed.uc.pos = ulist;
     event.data.UploadResumed.uc.cctx = NULL;
-    event.data.UploadResumed.completed = ulist->main_completed;
-    event.data.UploadResumed.total = ulist->main_total;
+    event.data.UploadResumed.completed = ulist->completed;
+    event.data.UploadResumed.total = ulist->total;
     event.data.UploadResumed.anonymityLevel = ulist->anonymityLevel;
     event.data.UploadResumed.eta = 0; /* FIXME: use start_time for estimate! */
     event.data.UploadResumed.filename = ulist->filename;
@@ -450,11 +450,8 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     upos = ctx->activeUploads;
     ctx->activeUploads = upos->next;
     FREE(upos->filename);
-    FREENONNULL(upos->main_filename);
     ECRS_freeMetaData(upos->meta);
     ECRS_freeUri(upos->uri);
-    if (upos->globalUri != NULL)
-      ECRS_freeUri(upos->globalUri);
     EXTRACTOR_removeAll(upos->extractors);
     FREE(upos);
   }
