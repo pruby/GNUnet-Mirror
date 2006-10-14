@@ -120,9 +120,9 @@ SCM get_option(SCM smob,
   char * sec;
   struct GNS_Tree * t;
 
-  SCM_ASSERT(SCM_SMOB_PREDICATE(tc_tag, smob), smob, SCM_ARG1, "change_visible");
-  SCM_ASSERT(scm_string_p(option), option, SCM_ARG2, "change_visible");
-  SCM_ASSERT(scm_string_p(section), section, SCM_ARG3, "change_visible");
+  SCM_ASSERT(SCM_SMOB_PREDICATE(tc_tag, smob), smob, SCM_ARG1, "get_option");
+  SCM_ASSERT(scm_string_p(option), option, SCM_ARG2, "get_option");
+  SCM_ASSERT(scm_string_p(section), section, SCM_ARG3, "get_option");
   tc    = (TC *) SCM_SMOB_DATA(smob);
   opt = scm_to_locale_string(option);
   sec = scm_to_locale_string(section);
