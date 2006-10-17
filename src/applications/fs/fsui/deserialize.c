@@ -45,7 +45,7 @@ static int read_int(int fd,
   return OK;  
 }
 
-#define READINT(a) if (OK != read_int(fd, (int*) a)) return SYSERR;
+#define READINT(a) if (OK != read_int(fd, (int*) &a)) return SYSERR;
 
 static int read_long(int fd,
 		     long long * val) {
