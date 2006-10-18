@@ -32,6 +32,9 @@
 #define HAVE_USED_CONFIG_H
 #include "config.h"
 #endif
+#ifdef OPENBSD
+#include <sys/types.h>
+#endif
 
 #define ALLOW_EXTRA_CHECKS  YES
 
