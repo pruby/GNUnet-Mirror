@@ -24,8 +24,6 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - upload tree representation (currently flat list!)
- * - download tree free memory
  * - resume signaling: some minor fields uninitialized
  * - better ETA calculation for download resume
  */
@@ -348,10 +346,17 @@ static void signalUploadSuspend(struct GE_Context * ectx,
  */
 static void freeDownloadList(FSUI_DownloadList * list) {
   FSUI_DownloadList *  next;
+  int i;
   
   while (list != NULL) {
     freeDownloadList(list->child);
-    /* FIXME: free memory! */
+    ECRS_freeUri(list->uri);
+    FREE(list->filename);
+    for (i=0;i<list->completedDownloadsCount;i++)
+      ECRS_freeUri(list->completedDownloads[i]);
+    GROW(list->completedDownloads,
+	 list->completedDownloadsCount,
+	 0);
     next = list->next;
     FREE(list);
     list = next;
