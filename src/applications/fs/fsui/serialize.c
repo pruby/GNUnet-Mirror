@@ -24,9 +24,6 @@
  * @brief FSUI functions for writing state to disk
  * @author Christian Grothoff
  * @see deserializer.c
- *
- * TODO:
- * - upload tree handling (need to change upload representation)
  */
 
 #include "platform.h"
@@ -224,26 +221,23 @@ static void writeUnindexing(int fd,
 }
 
 static void writeUploads(int fd,
-			 struct FSUI_Context * ctx) {
-  FSUI_UploadList * upos;
-
-  upos = ctx->activeUploads;
+			 struct FSUI_Context * ctx,
+			 struct FSUI_UploadList * upos) {
   while (upos != NULL) {
     WRITEINT(fd, 1);
     WRITEINT(fd, upos->state);
-    WRITELONG(fd, upos->main_completed);
-    WRITELONG(fd, upos->main_total);
+    WRITELONG(fd, upos->completed);
+    WRITELONG(fd, upos->total);
     WRITELONG(fd, upos->expiration);
     WRITELONG(fd, upos->start_time);
     writeURI(fd, upos->uri);
-    writeURI(fd, upos->globalUri); /* need to handle NULL? */
     WRITESTRING(fd, upos->filename);
-    WRITESTRING(fd, upos->main_filename);
     WRITEINT(fd, upos->isRecursive);
     WRITEINT(fd, upos->doIndex);
     WRITEINT(fd, upos->anonymityLevel);
     WRITEINT(fd, upos->priority);
     WRITEINT(fd, upos->individualKeywords);
+    writeUploads(fd, ctx, upos->child);
     upos = upos->next;
   }
   WRITEINT(fd, 0);
@@ -268,7 +262,9 @@ void FSUI_serialize(struct FSUI_Context * ctx) {
 		    ctx,
 		    ctx->activeDownloads.child);
   writeUnindexing(fd, ctx);
-  writeUploads(fd, ctx);  
+  writeUploads(fd, 
+	       ctx,
+	       ctx->activeUploads.child);  
   CLOSE(fd);
 }
 
