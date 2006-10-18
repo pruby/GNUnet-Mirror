@@ -88,6 +88,30 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
   }
 }
 
+static void signalUploadResume(struct FSUI_UploadList * ret,
+			       FSUI_Context * ctx) {
+  FSUI_Event event;
+ 
+  while (ret != NULL) {
+    event.type = FSUI_upload_resumed;
+    event.data.UploadResumed.uc.pos = ret;
+    event.data.UploadResumed.uc.cctx = NULL;
+    event.data.UploadResumed.uc.ppos = ret->parent;
+    event.data.UploadResumed.uc.pcctx = ret->parent->cctx;
+    event.data.UploadResumed.completed = ret->completed;
+    event.data.UploadResumed.total = ret->total;
+    event.data.UploadResumed.anonymityLevel = ret->anonymityLevel;
+    event.data.UploadResumed.eta = 0; /* FIXME: use start_time for estimate! */
+    event.data.UploadResumed.filename = ret->filename;
+    ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
+    if (ret->child != NULL)
+      signalUploadResume(ret->child,
+			 ctx);
+    ret = ret->next;
+  }
+}
+
+
 /**
  * Start FSUI manager.  Use the given progress callback to notify the
  * UI about events.  Start processing pending activities that were
@@ -181,19 +205,8 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     list = list->next;
   }
   /* 2c) signal upload restarts */
-  ulist = ret->activeUploads;
-  while (ulist != NULL) {
-    event.type = FSUI_upload_resumed;
-    event.data.UploadResumed.uc.pos = ulist;
-    event.data.UploadResumed.uc.cctx = NULL;
-    event.data.UploadResumed.completed = ulist->completed;
-    event.data.UploadResumed.total = ulist->total;
-    event.data.UploadResumed.anonymityLevel = ulist->anonymityLevel;
-    event.data.UploadResumed.eta = 0; /* FIXME: use start_time for estimate! */
-    event.data.UploadResumed.filename = ulist->filename;
-    ulist->cctx = cb(closure, &event);	
-    ulist = ulist->next;
-  }
+  signalUploadResume(ret->activeUploads.child,
+		     ret);
   /* 2d) signal unindex restarts */
   xlist = ret->unindexOperations;
   while (xlist != NULL) {
