@@ -36,7 +36,7 @@
 #include "gnunet_setup_lib.h"
 #include "conf.h"
 #include "platform.h"
-#include <term.h>
+#include <termios.h>
 
 static char rd() {
   size_t ret;
