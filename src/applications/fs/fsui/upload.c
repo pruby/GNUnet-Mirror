@@ -23,6 +23,9 @@
  * @brief upload functions
  * @author Krista Bennett
  * @author Christian Grothoff
+ *
+ * TODO:
+ * - use extractors to obtain metadata and keywords!
  */
 
 #include "platform.h"
