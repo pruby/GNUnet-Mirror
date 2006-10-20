@@ -452,6 +452,8 @@ int main(int argc,
   start_time = get_time();
   ul = FSUI_startUpload(ctx,
 			tmp,
+			(DirectoryScanCallback) &disk_directory_scan,
+			ectx,
 			anonymity,
 			priority,			   
 			! do_insert,
