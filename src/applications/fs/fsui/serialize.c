@@ -237,6 +237,7 @@ static void writeUploads(int fd,
       WRITELONG(fd, shared->expiration);
     } else {
       WRITEINT(fd, 1);
+      WRITEINT(fd, 1);
     }
     WRITEINT(fd, upos->state);
     WRITELONG(fd, upos->completed);

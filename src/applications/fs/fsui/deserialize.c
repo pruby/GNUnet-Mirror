@@ -57,7 +57,7 @@ static int read_long(int fd,
   return OK;  
 }
 
-#define READLONG(a) if (OK != read_long(fd, (long long*) a)) return SYSERR;
+#define READLONG(a) if (OK != read_long(fd, (long long*) &a)) return SYSERR;
 
 static struct ECRS_URI * read_uri(struct GE_Context * ectx,
 				  int fd) {
@@ -99,6 +99,8 @@ static char * read_string(int fd,
   }
   return buf;    
 }
+
+#define READSTRING(c, max) if (NULL == (c = read_string(fd, max))) return SYSERR;
 
 static void fixState(FSUI_State * state) {
   switch (*state) { /* try to correct errors */
@@ -468,16 +470,86 @@ static int readDownloads(int fd,
   return OK;
 }
 
+static int readUploadList(struct FSUI_Context * ctx,
+			  struct FSUI_UploadList * parent,
+			  int fd,
+			  struct FSUI_UploadShared * shared) {
+  struct FSUI_UploadList * list;
+  struct FSUI_UploadList l;
+  unsigned long long stime;
+  int big;
+  struct GE_Context * ectx;
+
+  ectx = ctx->ectx;
+  while (1) {
+    READINT(big);
+    if (big == 0) 
+      return OK;
+    memset(&l,
+	   0,
+	   sizeof(FSUI_UploadList));
+    READINT(l.state);
+    READLONG(l.completed);
+    READLONG(l.total);
+    READLONG(stime);
+    if (stime < get_time())
+      stime = get_time();
+    READLONG(l.start_time);
+    if (l.start_time != 0)
+      l.start_time = (get_time() - stime) + l.start_time;
+    READURI(l.uri);
+    l.filename = read_string(fd, 1024*1024);
+    if (l.filename == NULL) {
+      ECRS_freeUri(l.uri);
+      GE_BREAK(NULL, 0);
+      break;
+    }
+    list = MALLOC(sizeof(struct FSUI_UploadList));
+    list->shared = shared;
+    memcpy(list, &l, sizeof(struct FSUI_UploadList));
+    if (OK != readUploadList(ctx,
+			     list,
+			     fd,
+			     shared)) {
+      ECRS_freeUri(l.uri);
+      FREE(l.filename);
+      FREE(list);
+      GE_BREAK(NULL, 0);
+      break;
+    }
+    list->next = parent->child;
+    parent->child = list;
+  }
+  return SYSERR;
+}
+
+
 static int readUploads(int fd,
 		       struct FSUI_Context * ctx) {
   int big;
+  struct FSUI_UploadShared * shared;
 
+  memset(&ctx->activeUploads,
+	 0,
+	 sizeof(FSUI_UploadList));
   while (1) {
     READINT(big);
-    if (big != 1) 
+    if (big == 0) 
       return OK;
-
-    /* FIXME: deserialize! */
+    if (big != 2) {
+      GE_BREAK(NULL, 0);
+      break;
+    }
+    shared = MALLOC(sizeof(FSUI_UploadShared));
+    memset(shared,
+	   0,
+	   sizeof(FSUI_UploadShared));   
+    shared->extractor_config = NULL;   
+    if (OK != readUploadList(ctx,
+			     &ctx->activeUploads,
+			     fd,
+			     shared)) 
+      break;
   }
   return SYSERR;
 }
@@ -485,13 +557,20 @@ static int readUploads(int fd,
 static int readUnindex(int fd,
 		       struct FSUI_Context * ctx) {
   int big;
+  char * name;
+  struct FSUI_UnindexList * ul;
 
   while (1) {
     READINT(big);
     if (big != 1) 
       return OK;
-
-    /* FIXME: deserialize! */    
+    READINT(big); /* state */
+    READSTRING(name, 1024 * 1024);
+    ul = MALLOC(sizeof(struct FSUI_UnindexList));
+    ul->state = big;
+    ul->filename = name;
+    ul->next = ctx->unindexOperations;
+    ctx->unindexOperations = ul;
   }
   return SYSERR;
 }
