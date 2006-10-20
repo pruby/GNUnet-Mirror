@@ -750,6 +750,8 @@ void FSUI_stop(struct FSUI_Context * ctx); /* fsui.c */
 struct FSUI_SearchList *
 FSUI_startSearch(struct FSUI_Context * ctx,
 		 unsigned int anonymityLevel,
+		 unsigned int maxResults,
+		 cron_t timeout,
 		 const struct ECRS_URI * uri); /* search.c */
 
 /**

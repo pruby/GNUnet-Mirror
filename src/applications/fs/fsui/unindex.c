@@ -87,6 +87,7 @@ void * FSUI_unindexThread(void * cls) {
 			 &tt,
 			 utc);
   if (ret == OK) {
+    utc->state = FSUI_COMPLETED;
     event.type = FSUI_unindex_completed;
     event.data.UnindexCompleted.uc.pos = utc;
     event.data.UnindexCompleted.uc.cctx = utc->cctx;
@@ -95,6 +96,7 @@ void * FSUI_unindexThread(void * cls) {
     utc->ctx->ecb(utc->ctx->ecbClosure,
 		  &event);
   } else if (utc->state == FSUI_ACTIVE) {
+    utc->state = FSUI_ERROR;
     event.type = FSUI_unindex_error;
     event.data.UnindexError.uc.pos = utc;
     event.data.UnindexError.uc.cctx = utc->cctx;

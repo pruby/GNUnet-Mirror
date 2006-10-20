@@ -22,9 +22,6 @@
  * @file applications/fs/tools/gnunet-search.c
  * @brief Main function to search for files on GNUnet.
  * @author Christian Grothoff
- *
- * TODO:
- * - make sure all (search related) FSUI events are handled correctly!
  */
 
 #include "platform.h"
@@ -47,12 +44,11 @@ static char * cfgFilename;
 
 static char * output_filename;
 
-typedef struct {
-  unsigned int resultCount;
-  unsigned int max;
-  ECRS_FileInfo * fis;
-  unsigned int fiCount;
-} SearchClosure;
+static int errorCode;
+
+static ECRS_FileInfo * fis;
+
+static unsigned int fiCount;
 
 
 static int itemPrinter(EXTRACTOR_KeywordType type,
@@ -76,48 +72,55 @@ static void printMeta(const struct ECRS_MetaData * meta) {
  */
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
-  SearchClosure * sc = cls;
   char * uri;
   char * filename;
 
-  if (0 == sc->max)
-    return NULL;
-  if (event->type != FSUI_search_result)
-    return NULL;
-
-  /* retain URIs for possible directory dump later */
-  GROW(sc->fis,
-       sc->fiCount,
-       sc->fiCount+1);
-  sc->fis[sc->fiCount-1].uri
-    = ECRS_dupUri(event->data.SearchResult.fi.uri);
-  sc->fis[sc->fiCount-1].meta
-    = ECRS_dupMetaData(event->data.SearchResult.fi.meta);
-
-  uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
-  printf("%s:\n",
-	 uri);
-  filename = ECRS_getFromMetaData(event->data.SearchResult.fi.meta,
-				  EXTRACTOR_FILENAME);
-  if (filename != NULL) {
-    char * dotdot;
-    
-    while (NULL != (dotdot = strstr(filename, "..")))
-      dotdot[0] = dotdot[1] = '_';
-    
-    printf("gnunet-download -o \"%s\" %s\n",
-	   filename,
-	   uri);
-  }
-  else
-    printf("gnunet-download %s\n",
-	   uri);
-  printMeta(event->data.SearchResult.fi.meta);
-  printf("\n");
-  FREENONNULL(filename);
-  FREE(uri);
-  if (0 == --sc->max)
+  switch (event->type) {
+  case FSUI_search_error:
+    errorCode = 3;
     GNUNET_SHUTDOWN_INITIATE();
+    break;
+  case FSUI_search_completed:
+    errorCode = 0;
+    GNUNET_SHUTDOWN_INITIATE();
+    break;
+  case FSUI_search_result:
+    /* retain URIs for possible directory dump later */
+    GROW(fis,
+	 fiCount,
+	 fiCount+1);
+    fis[fiCount-1].uri
+      = ECRS_dupUri(event->data.SearchResult.fi.uri);
+    fis[fiCount-1].meta
+      = ECRS_dupMetaData(event->data.SearchResult.fi.meta);
+    
+    uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
+    printf("%s:\n",
+	   uri);
+    filename = ECRS_getFromMetaData(event->data.SearchResult.fi.meta,
+				    EXTRACTOR_FILENAME);
+    if (filename != NULL) {
+      char * dotdot;
+      
+      while (NULL != (dotdot = strstr(filename, "..")))
+	dotdot[0] = dotdot[1] = '_';
+      
+      printf("gnunet-download -o \"%s\" %s\n",
+	     filename,
+	     uri);
+    }
+    else
+      printf("gnunet-download %s\n",
+	     uri);
+    printMeta(event->data.SearchResult.fi.meta);
+    printf("\n");
+    FREENONNULL(filename);
+    FREE(uri);
+    break;
+  default:
+    GE_BREAK(NULL, 0);
+    break;
+  }
   return NULL;
 }
 
@@ -146,91 +149,6 @@ static struct CommandLineOption gnunetsearchOptions[] = {
   COMMAND_LINE_OPTION_END,
 };
 
-static void run_shutdown(void * unused) {
-  GNUNET_SHUTDOWN_INITIATE();
-}
-
-/**
- * Perform a normal (non-namespace) search.
- */
-static int runSearch(const char * suri) {
-  struct FSUI_Context * ctx;
-  SearchClosure sc;
-  struct ECRS_URI * uri;
-  struct FSUI_SearchList * s;
-  int i;
-
-  if (suri == NULL) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  uri = ECRS_stringToUri(ectx,
-			 suri);
-  memset(&sc, 0, sizeof(SearchClosure));
-  sc.max = max_results;
-  sc.resultCount = 0;
-  if (sc.max == 0)
-    sc.max = (unsigned int)-1; /* infty */
-  ctx = FSUI_start(ectx,
-		   cfg,
-		   "gnunet-search",
-		   4,
-		   NO,
-		   &eventCallback,
-		   &sc);
-  if (ctx == NULL) {
-    ECRS_freeUri(uri);
-    return SYSERR;
-  }
-  s = FSUI_startSearch(ctx,
-		       anonymity,
-		       uri);
-  if (s == NULL) {
-    printf(_("Starting search failed. Consult logs.\n"));
-  } else {
-    GNUNET_SHUTDOWN_WAITFOR();
-    FSUI_stopSearch(ctx,
-		    s);
-  }
-  ECRS_freeUri(uri);
-  FSUI_stop(ctx);
-
-  if (output_filename != NULL) {
-    char * outfile;
-    unsigned long long n;
-    char * data;
-    struct ECRS_MetaData * meta;
-
-    meta = ECRS_createMetaData();
-    /* ?: anything here to put into meta? */
-    if (OK == ECRS_createDirectory(ectx,
-				   &data,
-				   &n,
-				   sc.fiCount,
-				   sc.fis,
-				   meta)) {
-      outfile = string_expandFileName(ectx,
-				      output_filename);
-      disk_file_write(ectx,
-		      outfile,
-		      data,
-		      n,
-		      "600");
-      FREE(outfile);
-      FREE(data);
-    }
-    FREE(output_filename);
-  }
-  for (i=0;i<sc.fiCount;i++) {
-    ECRS_freeUri(sc.fis[i].uri);
-    ECRS_freeMetaData(sc.fis[i].meta);
-  }
-  GROW(sc.fis,
-       sc.fiCount,
-       0);
-  return OK;
-}
-
 /**
  * The main function to search for files on GNUnet.
  *
@@ -240,11 +158,10 @@ static int runSearch(const char * suri) {
  */
 int main(int argc,
 	 const char ** argv) {
-  int ret;
-  char * suri;
   struct ECRS_URI * uri;
   int i;
-  struct CronManager * cron;
+  struct FSUI_Context * ctx;
+  struct FSUI_SearchList * s;
 
   /* startup */
   ectx = GE_create_context_stderr(NO, 
@@ -262,47 +179,93 @@ int main(int argc,
 			   (unsigned int) argc,
 			   argv);
   if (i == SYSERR) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;  
+    errorCode = -1;
+    goto quit;
   }
-
+  if (OK != GC_parse_configuration(cfg,
+				   cfgFilename)) {  
+    errorCode = -1;
+    goto quit;
+  }
   /* convert args to URI */
-  uri = ECRS_parseArgvKeywordURI(ectx,
+ uri = ECRS_parseArgvKeywordURI(ectx,
 				 argc - i,
 				 (const char**) &argv[i]);
-  if (uri != NULL) {
-    suri = ECRS_uriToString(uri);
-    ECRS_freeUri(uri);
-  } else {
+  if (uri == NULL) {
     printf(_("Error converting arguments to URI!\n"));
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
+    errorCode = -1;
+    goto quit;
   }
+  if (max_results == 0)
+    max_results = (unsigned int)-1; /* infty */
+  ctx = FSUI_start(ectx,
+		   cfg,
+		   "gnunet-search",
+		   4,
+		   NO,
+		   &eventCallback,
+		   NULL);
+  if (ctx == NULL) {
+    ECRS_freeUri(uri);
+    return SYSERR;
+  }
+  errorCode = 1;
+  s = FSUI_startSearch(ctx,
+		       anonymity,
+		       max_results,
+		       delay * cronSECONDS,
+		       uri);
+  ECRS_freeUri(uri);
+  if (s == NULL) {
+    errorCode = 2;
+    FSUI_stop(ctx);
+    goto quit;
+  }
+  GNUNET_SHUTDOWN_WAITFOR();
+  if (errorCode == 1)
+    FSUI_abortSearch(ctx,    
+		     s);
+  FSUI_stopSearch(ctx,
+		    s);
+  FSUI_stop(ctx);
 
-  cron = cron_create(ectx);
-  cron_add_job(cron,
-	       &run_shutdown,
-	       cronSECONDS * delay,
-	       0, /* no need to repeat */
-	       NULL);
-  cron_start(cron);
-  ret = runSearch(suri);
-  FREE(suri);
+  if (output_filename != NULL) {
+    char * outfile;
+    unsigned long long n;
+    char * data;
+    struct ECRS_MetaData * meta;
 
-  cron_stop(cron);
-  cron_del_job(cron,
-	       &run_shutdown,
-	       0,
-	       NULL);
-  cron_destroy(cron);
+    meta = ECRS_createMetaData();
+    /* ?: anything here to put into meta? */
+    if (OK == ECRS_createDirectory(ectx,
+				   &data,
+				   &n,
+				   fiCount,
+				   fis,
+				   meta)) {
+      outfile = string_expandFileName(ectx,
+				      output_filename);
+      disk_file_write(ectx,
+		      outfile,
+		      data,
+		      n,
+		      "600");
+      FREE(outfile);
+      FREE(data);
+    }
+    FREE(output_filename);
+  }
+  for (i=0;i<fiCount;i++) {
+    ECRS_freeUri(fis[i].uri);
+    ECRS_freeMetaData(fis[i].meta);
+  }
+  GROW(fis,
+       fiCount,
+       0);
+ quit:
   GC_free(cfg);
   GE_free_context(ectx);
-  if (ret == OK)
-    return 0;
-  else
-    return -1;
+  return errorCode;
 }
 
 /* end of gnunet-search.c */

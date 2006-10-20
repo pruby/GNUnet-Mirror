@@ -48,6 +48,8 @@ static cron_t start_time;
 
 static struct FSUI_DownloadList * dl;
 
+static int errorCode;
+
 /**
  * All gnunet-download command line options
  */
@@ -75,10 +77,8 @@ static struct CommandLineOption gnunetdownloadOptions[] = {
  * The current incarnation just ensures that the main
  * method exits once the download is complete.
  */
-static void * progressModel(void * okVal,
+static void * progressModel(void * unused,
 			    const FSUI_Event * event) {
-  int * ok = okVal;
-
   switch (event->type) {
   case FSUI_download_progress:
     if (verbose) {
@@ -96,12 +96,14 @@ static void * progressModel(void * okVal,
     if (dl == event->data.DownloadError.dc.pos) {
       /* top-download aborted */
       PRINTF(_("Download aborted.\n"));
+      errorCode = 2;
+      GNUNET_SHUTDOWN_INITIATE();
     }
     break;
   case FSUI_download_error:
     printf(_("Error downloading: %s\n"),
 	   event->data.DownloadError.message);
-    *ok = SYSERR;
+    errorCode = 3;
     GNUNET_SHUTDOWN_INITIATE();
     break;
   case FSUI_download_completed:
@@ -114,7 +116,7 @@ static void * progressModel(void * okVal,
 	     (((double)(get_time()-(start_time - 1)))
 	      / (double)cronSECONDS) );
       if (dl == event->data.DownloadProgress.dc.pos) {
-	*ok = OK;
+	errorCode = 0;
 	GNUNET_SHUTDOWN_INITIATE();
       }
     }
@@ -159,18 +161,16 @@ int main(int argc,
   if ( (i == SYSERR) ||
        (0 != GC_parse_configuration(cfg,
 				    cfgFilename)) ) {	 
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;  
+    errorCode = -1;
+    goto quit;
   }
   if (i == argc) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Not enough arguments. "
 	     "You must specify a GNUnet file URI\n"));
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
+    errorCode = -1;
+    goto quit;
   }
   GC_get_configuration_value_number(cfg,
 				    "GNUNET",
@@ -188,9 +188,8 @@ int main(int argc,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("URI `%s' invalid for gnunet-download.\n"),
 	   argv[i]);
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
+    errorCode = -1;
+    goto quit;
   }
 
   try_rename = NO;
@@ -215,20 +214,25 @@ int main(int argc,
 		   32, /* FIXME: support option! */
 		   NO,
 		   &progressModel,
-		   &ok);
+		   NULL);
   start_time = get_time();
+  errorCode = 1;
   dl = FSUI_startDownload(ctx,
 			  anonymity,
 			  do_recursive,
 			  uri,
 			  filename);
+  if (dl == NULL) {
+    FSUI_stop(ctx);
+    goto quit;
+  }
   GNUNET_SHUTDOWN_WAITFOR();
-  if (OK != ok)
+  if (errorCode == 1)
     FSUI_abortDownload(ctx, dl);
   FSUI_stopDownload(ctx, dl);
   FSUI_stop(ctx);
 
-  if ( (OK == ok) &&
+  if ( (errorCode == 0) &&
        (dl != NULL) &&
        (try_rename == YES) ) {
     char * newname = ECRS_suggestFilename(ectx,
@@ -243,11 +247,10 @@ int main(int argc,
   }
   FREE(filename);
   ECRS_freeUri(uri);
+ quit:
   GC_free(cfg);
   GE_free_context(ectx);
-  if (ok != OK)
-    return 1;
-  return 0;
+  return errorCode;
 }
 
 /* end of gnunet-download.c */

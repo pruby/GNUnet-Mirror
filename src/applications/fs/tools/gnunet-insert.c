@@ -40,9 +40,7 @@ extern char *strptime(const char *s,
 		      const char *format,
 		      struct tm *tm);
 
-static struct SEMAPHORE * exitSignal;
-
-static int errorCode = 0;
+static int errorCode;
 
 static struct GC_Configuration * cfg;
 
@@ -192,22 +190,20 @@ static void * printstatus(void * ctx,
     FREE(fstring);
     if (ul == event->data.UploadCompleted.uc.pos) {
       postProcess(event->data.UploadCompleted.uri);
-      if (exitSignal != NULL)
-	SEMAPHORE_UP(exitSignal);
+      errorCode = 0;
+      GNUNET_SHUTDOWN_INITIATE();
     }
     break;
   case FSUI_upload_aborted:
     printf(_("\nUpload aborted.\n"));
-    errorCode = 1;
-    if (exitSignal != NULL)
-      SEMAPHORE_UP(exitSignal); /* always exit main? */
+    errorCode = 2;
+    GNUNET_SHUTDOWN_INITIATE();
     break;
   case FSUI_upload_error:
     printf(_("\nError uploading file: %s\n"),
 	   event->data.UploadError.message);
-    errorCode = 1;
-    if (exitSignal != NULL)
-      SEMAPHORE_UP(exitSignal); /* always exit main? */
+    errorCode = 3;
+    GNUNET_SHUTDOWN_INITIATE();
     break;
   default:
     GE_BREAK(ectx, 0);
@@ -302,7 +298,6 @@ int main(int argc,
   int i;
   char * tmp;
   unsigned long long verbose;
-  struct SEMAPHORE * es;
 
   ectx = GE_create_context_stderr(NO, 
 				  GE_WARNING | GE_ERROR | GE_FATAL |
@@ -321,6 +316,11 @@ int main(int argc,
   if (i == SYSERR) {
     errorCode = -1;
     goto quit;  
+  }
+  if (OK != GC_parse_configuration(cfg,
+				   cfgFilename)) {  
+    errorCode = -1;
+    goto quit;
   }
   if (i != argc - 1) {
     printf(_("You must specify one and only one filename for insertion.\n"));
@@ -380,24 +380,22 @@ int main(int argc,
     }
     if (creation_time != NULL) {
       struct tm t;
-      if ((NULL == strptime(creation_time,
+      const char * fmt;
+
 #if ENABLE_NLS
-			    nl_langinfo(D_T_FMT),
+      fmt = nl_langinfo(D_T_FMT);
 #else
-			    "%Y-%m-%d",
+      fmt = "%Y-%m-%d";
 #endif
+      if ((NULL == strptime(creation_time,
+			    fmt,
 			    &t))) {
 	GE_LOG_STRERROR(ectx,
 			GE_FATAL | GE_USER | GE_IMMEDIATE, 
 			"strptime");
 	printf(_("Parsing time failed. Use `%s' format.\n"),
-#if ENABLE_NLS
-	       nl_langinfo(D_T_FMT)
-#else
-	       "%Y-%m-%d"
-#endif
-	       );
-  errorCode = -1;
+	       fmt);
+	errorCode = -1;
 	goto quit;
       }
     }
@@ -435,7 +433,6 @@ int main(int argc,
     }
   }
 
-  exitSignal = SEMAPHORE_CREATE(0);
   /* fundamental init */
   ctx = FSUI_start(ectx,
 		   cfg,
@@ -450,6 +447,7 @@ int main(int argc,
   if (! do_disable_creation_time)
     ECRS_addPublicationDateToMetaData(meta);
   start_time = get_time();
+  errorCode = 1;
   ul = FSUI_startUpload(ctx,
 			tmp,
 			(DirectoryScanCallback) &disk_directory_scan,
@@ -466,11 +464,9 @@ int main(int argc,
   ECRS_freeUri(topKeywords);
   FREE(tmp);
   if (ul != NULL) {
-    /* wait for completion */
-    SEMAPHORE_DOWN(exitSignal, YES);
-    es = exitSignal;
-    exitSignal = NULL;
-    SEMAPHORE_DESTROY(es);
+    GNUNET_SHUTDOWN_WAITFOR();
+    if (errorCode == 1)
+      FSUI_abortUpload(ctx, ul);
     FSUI_stopUpload(ctx, ul);
   }
   ECRS_freeMetaData(meta);

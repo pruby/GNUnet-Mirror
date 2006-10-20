@@ -166,8 +166,12 @@ static void writeSearches(int fd,
     }
     GE_ASSERT(ctx->ectx,
 	      ECRS_isKeywordUri(spos->uri));
-    WRITEINT(fd, 1);
+    WRITEINT(fd, 1);    
     WRITEINT(fd, spos->state);
+    WRITEINT(fd, spos->maxResults);
+    WRITELONG(fd, spos->timeout);
+    WRITELONG(fd, spos->start_time);
+    WRITELONG(fd, get_time());
     WRITEINT(fd, spos->anonymityLevel);
     WRITEINT(fd, spos->sizeResultsReceived);
     WRITEINT(fd, spos->sizeUnmatchedResultsReceived);

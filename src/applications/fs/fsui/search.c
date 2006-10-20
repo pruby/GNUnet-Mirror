@@ -228,7 +228,8 @@ static int spcb(const ECRS_FileInfo * fi,
 
 static int testTerminate(void * cls) {
   FSUI_SearchList * pos = cls;
-  if (pos->state == FSUI_ACTIVE)
+  if ( (pos->state == FSUI_ACTIVE) &&
+       (pos->maxResults > pos->sizeResultsReceived) )
     return OK;
   return SYSERR;
 }
@@ -247,14 +248,14 @@ void * FSUI_searchThread(void * cls) {
   pos->cctx = pos->ctx->ecb(pos->ctx->ecbClosure,
 			    &event);
   ret = ECRS_search(pos->ctx->ectx,
-	      pos->ctx->cfg,
-	      pos->uri,
-	      pos->anonymityLevel,
-	      get_time() + cronYEARS, /* timeout!?*/
-	      &spcb,
-	      pos,
-	      &testTerminate,
-	      pos);
+		    pos->ctx->cfg,
+		    pos->uri,
+		    pos->anonymityLevel,
+		    pos->timeout,
+		    &spcb,
+		    pos,
+		    &testTerminate,
+		    pos);
   if (ret != OK) {
     pos->state = FSUI_ERROR;    
     event.type = FSUI_search_error;
@@ -270,6 +271,7 @@ void * FSUI_searchThread(void * cls) {
     pos->ctx->ecb(pos->ctx->ecbClosure,
 		  &event);
   } else if (pos->state == FSUI_ACTIVE) {
+    pos->state = FSUI_COMPLETED;
     event.type = FSUI_search_completed;
     event.data.SearchCompleted.sc.pos = pos;
     event.data.SearchCompleted.sc.cctx = pos->cctx;
@@ -289,6 +291,8 @@ void * FSUI_searchThread(void * cls) {
 struct FSUI_SearchList *
 FSUI_startSearch(struct FSUI_Context * ctx,
 		 unsigned int anonymityLevel,
+		 unsigned int maxResults,
+		 cron_t timeout,
 		 const struct ECRS_URI * uri) {
   FSUI_SearchList * pos;
   struct GE_Context * ectx;
@@ -296,6 +300,7 @@ FSUI_startSearch(struct FSUI_Context * ctx,
   ectx = ctx->ectx;
   MUTEX_LOCK(ctx->lock);
   pos = MALLOC(sizeof(FSUI_SearchList));
+  pos->maxResults = maxResults;
   pos->state = FSUI_ACTIVE;
   pos->uri = ECRS_dupUri(uri);
   pos->numberOfURIKeys = ECRS_countKeywordsOfUri(uri);
@@ -305,6 +310,8 @@ FSUI_startSearch(struct FSUI_Context * ctx,
   pos->unmatchedResultsReceived = 0;
   pos->anonymityLevel = anonymityLevel;
   pos->ctx = ctx;
+  pos->start_time = get_time();
+  pos->timeout = timeout;
   pos->handle = PTHREAD_CREATE(&FSUI_searchThread,
 			       pos,
 			       32 * 1024);

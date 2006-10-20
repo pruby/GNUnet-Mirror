@@ -319,6 +319,7 @@ static int readSearches(int fd,
   int i;
   ResultPending * rp;
   char * buf;
+  cron_t stime;
 
   while (1) {
     READINT(big);
@@ -330,6 +331,10 @@ static int readSearches(int fd,
 	   0,
 	   sizeof(FSUI_SearchList));
     if ( (OK != read_int(fd, (int*) &list->state)) ||
+	 (OK != read_int(fd, (int*) &list->maxResults)) ||
+	 (OK != read_long(fd, (long long*) &list->timeout)) ||
+	 (OK != read_long(fd, (long long*) &list->start_time)) ||
+	 (OK != read_long(fd, (long long*) &stime)) ||
 	 (OK != read_int(fd, (int*) &list->anonymityLevel)) ||
 	 (OK != read_int(fd, (int*) &list->sizeResultsReceived)) ||
 	 (OK != read_int(fd, (int*) &list->sizeUnmatchedResultsReceived)) ||
@@ -339,6 +344,9 @@ static int readSearches(int fd,
       break;
     }
     fixState(&list->state);
+    if (stime > get_time())
+      stime = get_time();
+    list->start_time += get_time() - stime;
     buf = read_string(fd, 1024 * 1024);
     if (buf == NULL) {
       GE_BREAK(NULL, 0);	

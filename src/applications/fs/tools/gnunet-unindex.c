@@ -181,7 +181,7 @@ int main(int argc,
     errorCode = 2;
   } else {
     GNUNET_SHUTDOWN_WAITFOR();
-    if (errorCode != 0)
+    if (errorCode == 1)
       FSUI_abortUnindex(ctx, ul);
     FSUI_stopUnindex(ctx, ul);
   }

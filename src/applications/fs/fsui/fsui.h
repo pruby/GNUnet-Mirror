@@ -117,6 +117,16 @@ typedef struct {
 typedef struct FSUI_SearchList {
 
   /**
+   * Desired timeout (relative) for this search
+   */
+  cron_t timeout;
+
+  /**
+   * start time of the search
+   */
+  cron_t start_time;
+
+  /**
    * Searches are kept in a simple linked list.
    */
   struct FSUI_SearchList * next;
@@ -149,6 +159,11 @@ typedef struct FSUI_SearchList {
    * Desired anonymity level for this search
    */
   unsigned int anonymityLevel;
+
+  /**
+   * Maximum number of results requested.
+   */
+  unsigned int maxResults;
 
   /**
    * Of how many individual queries does the
