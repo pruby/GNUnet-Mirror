@@ -20,8 +20,9 @@
 
 /**
  * @file include/gnunet_fsui_lib.h
- * @brief support for FS user interfaces
+ * @brief support for GNUnet file-sharing user interfaces
  * @author Christian Grothoff
+ * @see include/gnunet_ecrs_lib.h
  *
  * Writing a UI for GNUnet is now easier then ever before.  Basically,
  * the UI first calls FSUI_start, passing a callback that the UI uses
