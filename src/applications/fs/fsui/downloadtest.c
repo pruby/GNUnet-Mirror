@@ -72,6 +72,12 @@ static void * eventCallback(void * cls,
   char * fn;
 
   switch(event->type) {
+  case FSUI_search_suspended:
+    search = NULL;
+    break;
+  case FSUI_download_suspended:
+    download = NULL;
+    break;
   case FSUI_search_resumed:
 #if DEBUG_VERBOSE
     printf("Search resuming\n"); 
@@ -170,8 +176,6 @@ static void * eventCallback(void * cls,
     break;
   case FSUI_unindex_suspended:
   case FSUI_upload_suspended:
-  case FSUI_download_suspended:
-  case FSUI_search_suspended:
 #if DEBUG_VERBOSE
     fprintf(stderr,
 	    "Received SUSPENDING: %d\n",
@@ -180,6 +184,12 @@ static void * eventCallback(void * cls,
     break;
   case FSUI_upload_started:
   case FSUI_upload_stopped:
+  case FSUI_download_started:
+  case FSUI_download_stopped:
+  case FSUI_search_started:
+  case FSUI_search_stopped:
+  case FSUI_unindex_started:
+  case FSUI_unindex_stopped:
     break;
   default:
     printf("Unexpected event: %d\n",
@@ -313,11 +323,8 @@ int main(int argc, char * argv[]){
 #endif
       FSUI_stop(ctx); /* download possibly incomplete
 			 at this point, thus testing resume */
-      /* FIXME: this should be done in 
-	 "suspend" event handler -- once event is implemented! */
-      search = NULL;
-      download = NULL;
-      
+      CHECK(search == NULL);
+      CHECK(download == NULL);
       ctx = FSUI_start(NULL,
 		       cfg,
 		       "fsuidownloadtest",
@@ -356,9 +363,12 @@ int main(int argc, char * argv[]){
     FREE(fn);
   }
   if (ctx != NULL) {
-    if (search != NULL)
+    if (search != NULL) {
+      FSUI_abortSearch(ctx, 
+		       search);
       FSUI_stopSearch(ctx,
 		      search);
+    }
     if (unindex != NULL)
       FSUI_stopUnindex(ctx,
 		       unindex);

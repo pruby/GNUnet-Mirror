@@ -320,9 +320,12 @@ void * FSUI_uploadThread(void * cls) {
 
 static void freeUploadList(struct FSUI_UploadList * ul) {
   struct FSUI_UploadList * next;
+  struct FSUI_Context * ctx;
 
+  ctx = ul->shared->ctx;
   while (ul->child != NULL)
     freeUploadList(ul->child);
+  MUTEX_LOCK(ctx->lock);
   FREE(ul->filename);
   if (ul->keywords != NULL)
     ECRS_freeUri(ul->keywords);
@@ -333,6 +336,7 @@ static void freeUploadList(struct FSUI_UploadList * ul) {
   next = ul->parent->child;
   if (next == NULL) {
     GE_BREAK(NULL, 0);
+    MUTEX_UNLOCK(ctx->lock);
     return;
   }
   if (next == ul) {
@@ -342,12 +346,14 @@ static void freeUploadList(struct FSUI_UploadList * ul) {
       next = next->next;
       if (next == NULL) {
 	GE_BREAK(NULL, 0);
+	MUTEX_UNLOCK(ctx->lock);
 	return;
       }
     }
     next->next = ul->next;
   }
   FREE(ul);
+  MUTEX_UNLOCK(ctx->lock);
 }
 
 static struct FSUI_UploadList *
@@ -377,11 +383,8 @@ static int addChildUpload(const char * name,
 		     parent);
   FREE(filename);
   ECRS_freeMetaData(md);
-  if (child == NULL) 
-    return SYSERR;
-  GE_ASSERT(NULL, child->next == NULL);
-  child->next = parent->child;
-  parent->child = child;
+  if (child == NULL)     
+    return SYSERR; 
   return OK;
 }
 
@@ -467,7 +470,7 @@ static void signalUploadStopped(struct FSUI_UploadList * ul,
 static void freeShared(struct FSUI_UploadShared * shared) {
   ECRS_freeUri(shared->global_keywords);
   EXTRACTOR_removeAll(shared->extractors);
-  FREE(shared->extractor_config);
+  FREENONNULL(shared->extractor_config);
   FREE(shared);
 }
 
@@ -581,29 +584,10 @@ int FSUI_abortUpload(struct FSUI_Context * ctx,
 int FSUI_stopUpload(struct FSUI_Context * ctx,
 		    struct FSUI_UploadList * ul) {
   void * unused;
-  FSUI_UploadList * prev;
   struct FSUI_UploadShared * shared;
 
   GE_ASSERT(ctx->ectx, ul != NULL);
   GE_ASSERT(ctx->ectx, ul->parent == &ctx->activeUploads);
-  MUTEX_LOCK(ctx->lock);
-  prev = ctx->activeUploads.child;
-  while ( (prev != ul) &&
-	  (prev != NULL) &&
-	  (prev->next != ul) ) 
-    prev = prev->next;
-  if (prev == NULL) {
-    MUTEX_UNLOCK(ctx->lock);
-    GE_LOG(ctx->ectx, 
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   "FSUI_stopUpload failed to locate upload.\n");
-    return SYSERR;
-  }
-  if (prev == ul) 
-    ul->parent->child = ul->next; /* first child of parent */
-  else 
-    prev->next = ul->next; /* not first child */  
-  MUTEX_UNLOCK(ctx->lock);
   PTHREAD_JOIN(ul->shared->handle,
 	       &unused);
   signalUploadStopped(ul, 1);
