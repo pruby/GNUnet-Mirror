@@ -139,8 +139,13 @@ static void * eventCallback(void * cls,
   case FSUI_download_completed:
 #if DEBUG_VERBOSE
     printf("Download complete.\n");
-#endif
-    break;
+#endif 
+    FSUI_abortSearch(ctx, 
+		     search);
+    FSUI_stopSearch(ctx,
+		    search);
+    search = NULL;
+   break;
   case FSUI_download_progress:
 #if DEBUG_VERBOSE
     printf("Download is progressing (%llu/%llu)...\n",
@@ -312,7 +317,7 @@ int main(int argc, char * argv[]){
 			    uri);
   CHECK(search != NULL);
   prog = 0;
-  while (lastEvent != FSUI_download_completed) {
+  while (search != NULL) {
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
@@ -364,12 +369,6 @@ int main(int argc, char * argv[]){
     FREE(fn);
   }
   if (ctx != NULL) {
-    if (search != NULL) {
-      FSUI_abortSearch(ctx, 
-		       search);
-      FSUI_stopSearch(ctx,
-		      search);
-    }
     if (unindex != NULL)
       FSUI_stopUnindex(ctx,
 		       unindex);

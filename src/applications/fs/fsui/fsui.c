@@ -559,11 +559,11 @@ void FSUI_stop(struct FSUI_Context * ctx) {
   }
   MUTEX_DESTROY(ctx->lock);
   FREE(ctx->name);
-  FREE(ctx);
   if (ctx->ipc != NULL)
     GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   "FSUI shutdown complete.\n");
+  FREE(ctx);
 }
 
 
