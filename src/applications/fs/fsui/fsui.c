@@ -177,6 +177,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 				      "GNUNET_HOME",
 				      GNUNET_HOME_DIRECTORY,
 				      &gh);
+  disk_directory_create(ectx, gh);
   fn = MALLOC(strlen(gh) + strlen(name) + 2 + 5);
   strcpy(fn, gh);
   FREE(gh);

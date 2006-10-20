@@ -331,11 +331,20 @@ static void freeUploadList(struct FSUI_UploadList * ul) {
   ECRS_freeMetaData(ul->meta);
   /* unlink from parent */
   next = ul->parent->child;
+  if (next == NULL) {
+    GE_BREAK(NULL, 0);
+    return;
+  }
   if (next == ul) {
     ul->parent->child = ul->next;
   } else {
-    while (next->next != ul)
+    while (next->next != ul) {
       next = next->next;
+      if (next == NULL) {
+	GE_BREAK(NULL, 0);
+	return;
+      }
+    }
     next->next = ul->next;
   }
   FREE(ul);

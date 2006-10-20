@@ -35,7 +35,7 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE NO
+#define DEBUG_VERBOSE YES
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
@@ -178,6 +178,9 @@ static void * eventCallback(void * cls,
 	    event->type);
 #endif
     break;
+  case FSUI_upload_started:
+  case FSUI_upload_stopped:
+    break;
   default:
     printf("Unexpected event: %d\n",
 	   event->type);
@@ -191,9 +194,12 @@ static void * eventCallback(void * cls,
 
 #define FILESIZE (1024 * 1024 * 2)
 
+#define START_DAEMON 0
 
 int main(int argc, char * argv[]){
+#if START_DAEMON
   pid_t daemon;
+#endif
   int ok;
   int i;
   struct ECRS_URI * uri = NULL;
@@ -219,6 +225,7 @@ int main(int argc, char * argv[]){
     GC_free(cfg);
     return -1;  
   }
+#if START_DAEMON
   daemon  = os_daemon_start(NULL,
 			    cfg,
 			    "peer.conf",
@@ -229,7 +236,7 @@ int main(int argc, char * argv[]){
 						    30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   /* ACTUAL TEST CODE */
-
+#endif
   ctx = FSUI_start(NULL,
 		   cfg,
 		   "fsuidownloadtest",
@@ -289,6 +296,8 @@ int main(int argc, char * argv[]){
   waitForEvent = FSUI_download_completed;
   search = FSUI_startSearch(ctx,
 			    0,
+			    100,
+			    240 * cronSECONDS,
 			    uri);
   CHECK(search != NULL);
   prog = 0;
@@ -298,7 +307,7 @@ int main(int argc, char * argv[]){
     PTHREAD_SLEEP(50 * cronMILLIS);
     if ( (suspendRestart > 0) &&
 	 (weak_randomi(4) == 0) ) {
-#if 1
+#if 0
 #if DEBUG_VERBOSE
       printf("Testing FSUI suspend-resume\n");
 #endif
@@ -369,9 +378,9 @@ int main(int argc, char * argv[]){
   if (upURI != NULL)
     ECRS_freeUri(upURI);
 
-
- 
+#if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+#endif
   GC_free(cfg);
   return (ok == YES) ? 0 : 1;
 }

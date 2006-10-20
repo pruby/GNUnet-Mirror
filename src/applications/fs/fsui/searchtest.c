@@ -149,6 +149,8 @@ int main(int argc, char * argv[]){
   luri = ECRS_parseCharKeywordURI(NULL, keyword);
   search = FSUI_startSearch(ctx,
 			    0,
+			    100,
+			    240 * cronSECONDS,
 			    luri);
   ECRS_freeUri(luri);
   uri = NULL;

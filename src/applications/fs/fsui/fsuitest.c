@@ -194,6 +194,8 @@ int main(int argc, char * argv[]){
 				 keyword);
   search = FSUI_startSearch(ctx,
 			    0,
+			    100,
+			    240 * cronSECONDS,
 			    uri);
   CHECK(search != NULL);
   prog = 0;
