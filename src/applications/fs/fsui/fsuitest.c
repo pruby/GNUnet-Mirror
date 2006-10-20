@@ -206,7 +206,7 @@ int main(int argc, char * argv[]){
   }
   FSUI_stopSearch(ctx,
 		  search);
-  unindex = FSUI_unindex(ctx, filename);
+  unindex = FSUI_startUnindex(ctx, filename);
   prog = 0;
   while (lastEvent != FSUI_unindex_completed) {
     prog++;

@@ -228,7 +228,7 @@ int main(int argc, char * argv[]){
   }
   FSUI_stopDownload(ctx, download);
   fn = makeName(42);
-  unindex = FSUI_unindex(ctx, fn);
+  unindex = FSUI_startUnindex(ctx, fn);
   FREE(fn);
   fn = NULL;
   CHECK(NULL != unindex);

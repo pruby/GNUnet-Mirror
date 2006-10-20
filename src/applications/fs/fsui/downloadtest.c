@@ -328,7 +328,7 @@ int main(int argc, char * argv[]){
   CHECK(search != NULL);
   CHECK(download != NULL);
   waitForEvent = FSUI_unindex_completed;
-  unindex = FSUI_unindex(ctx, fn);
+  unindex = FSUI_startUnindex(ctx, fn);
   CHECK(unindex != NULL);
   prog = 0;
   while (lastEvent != FSUI_unindex_completed) {
