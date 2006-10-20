@@ -51,10 +51,9 @@
  *
  * Closing an FSUI_Context may take a while as the context may need
  * to serialize some state and complete operations that may not be
- * interrupted (such as indexing / unindexing operations). If this
- * is not acceptable, clients should wait until all uploads and
- * unindexing operations have completed before attempting to close
- * the FSUI_Context.<p>
+ * interrupted (such as communications with gnunetd).  Clients
+ * may want to open a window informing the user about the pending
+ * shutdown operation.<p>
  *
  * Any "startXXX" operation will result in FSUI state and memory
  * being allocated until it is paired with a "stopXXX" operation.
@@ -63,10 +62,19 @@
  * or "completed" (action finished) event.  Alternatively, the
  * client may call abortXXX" which will result in an "aborted"
  * event.  In either case, the event itself will NOT result in 
- * the action being "forgotten" by FSUI -- the client must still
+ * the memory being released by FSUI -- the client must still
  * call "FSUI_stopXXX" explicitly.  Clients that call 
  * "FSUI_stopXXX" before an aborted, error or completed event
  * will be blocked until either of the three events happens.<p>
+ *
+ * Using the Event mechanism, clients can associate an arbitrary
+ * pointer with any operation (upload, download, search or
+ * deletion).  The pointer is initialized using the return value
+ * from the respective start or resume events.  If any memory
+ * is associated with the datastructure, the client should free
+ * that memory when suspend or stop events are issued.  For all
+ * events (other than start/resume), FSUI will track and provide
+ * the client pointer as part of the event (cctx field).<p>
  *
  * Note that most of this code is completely new in GNUnet 0.7.0 and
  * thus still highly experimental.  Suggestions are welcome.<p>
@@ -87,14 +95,10 @@ extern "C" {
 /**
  * Entry representing an FSUI download.  FSUI downloads form a tree
  * (for properly representing recursive downloads) with an invisible
- * root (for multiple parallel downloads).
+ * root (for multiple parallel downloads).<p>
  *
  * FSUI hands out references of this type to allow clients to access
  * information about active downloads.
- *
- * Structs of this type MUST NOT be stored in anything but local
- * variables (!) by FSUI clients.  This will ensure that the
- * references are always valid.
  */
 struct FSUI_DownloadList;
 
@@ -151,15 +155,6 @@ enum FSUI_EventType {
   FSUI_unindex_error,
   FSUI_unindex_suspended,
   FSUI_unindex_resumed,
-  /**
-   * Connection status with gnunetd changed.
-   */
-  FSUI_gnunetd_connected,
-  /**
-   * Connection status with gnunetd changed.
-   */
-  FSUI_gnunetd_disconnected,
-
 };
 
 /**

@@ -168,9 +168,6 @@ static void * eventCallback(void * cls,
     printf("Received download aborted event.\n");
 #endif
     break;
-  case FSUI_gnunetd_connected:
-  case FSUI_gnunetd_disconnected:
-    break;
   case FSUI_unindex_suspended:
   case FSUI_upload_suspended:
   case FSUI_download_suspended:
