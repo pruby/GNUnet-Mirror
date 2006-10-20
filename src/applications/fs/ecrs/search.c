@@ -589,6 +589,7 @@ int ECRS_search(struct GE_Context * ectx,
   addQueryForURI(uri,
 		 &ctx);
   while ( (OK == tt(ttClosure)) &&
+	  (NO == GNUNET_SHUTDOWN_TEST())  &&
 	  (timeout > now) &&
 	  (ctx.aborted == NO) ) {
     remTime = timeout - now;

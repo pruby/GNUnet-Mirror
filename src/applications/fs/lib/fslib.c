@@ -150,6 +150,7 @@ SEARCH_CONTEXT * FS_SEARCH_makeContext(struct GE_Context * ectx,
 				       struct GC_Configuration * cfg,
 				       struct MUTEX * lock) {
   SEARCH_CONTEXT * ret;
+
   ret = MALLOC(sizeof(SEARCH_CONTEXT));
   ret->ectx = ectx;
   ret->cfg = cfg;
@@ -172,7 +173,8 @@ SEARCH_CONTEXT * FS_SEARCH_makeContext(struct GE_Context * ectx,
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   void * unused;
 
-  GE_ASSERT(ctx->ectx, ctx->handleCount == 0);
+  GE_ASSERT(ctx->ectx, 
+	    ctx->handleCount == 0);
   ctx->abort = YES;
   connection_close_temporarily(ctx->sock);
   PTHREAD_JOIN(ctx->thread,

@@ -191,12 +191,19 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
     FREE(host);
     return SYSERR;
   }
+  MUTEX_LOCK(sock->destroylock);
+  if (sock->sock != NULL) {
+    FREE(host);
+    MUTEX_UNLOCK(sock->destroylock);
+    return OK;
+  }
   osock = SOCKET(PF_INET, SOCK_STREAM, 6); /* 6: TCP */
   if (osock == -1) {
     GE_LOG_STRERROR(sock->ectx,
 		    GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 		    "socket");
     FREE(host);
+    MUTEX_UNLOCK(sock->destroylock);
     return SYSERR;
   }
   sock->sock = socket_create(sock->ectx,
@@ -222,7 +229,9 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
 	   port,
 	   STRERROR(errno));
     socket_destroy(sock->sock);
+    sock->sock = NULL;
     FREE(host);
+    MUTEX_UNLOCK(sock->destroylock);
     return SYSERR;
   }
   /* we call select() first with a timeout of 5s to
@@ -250,11 +259,14 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
 	   port,
 	   STRERROR(errno));
     socket_destroy(sock->sock);
+    sock->sock = NULL;
     FREE(host);
+    MUTEX_UNLOCK(sock->destroylock);
     return SYSERR;
   }
   FREE(host);
   socket_set_blocking(sock->sock, YES);
+  MUTEX_UNLOCK(sock->destroylock);
   return OK;
 }
 

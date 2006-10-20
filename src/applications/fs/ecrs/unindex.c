@@ -389,7 +389,7 @@ int ECRS_unindexFile(struct GE_Context * ectx,
       goto FAILURE;
     }
   }
-
+  FREE(iblocks[treedepth]);
   /* free resources */
   FREE(iblocks);
   FREE(dblock);
