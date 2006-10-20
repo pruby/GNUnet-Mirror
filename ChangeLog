@@ -1,3 +1,11 @@
+Thu Oct 19 23:44:24 MDT 2006
+	Completed huge update to FSUI API (not fully debugged).
+	Major changes include:
+	* clients can associate pointer with each action
+	* abort methods can cancel action (but do not stop everything)
+	* upload and unindex operations can now be suspended and resumed
+	* cleaned up naming conventions
+	
 Thu Sep 14 23:44:17 MDT 2006
 	Breaking UDP transport protocol compatibility -- some
 	fields have to be switched around to make it work with
