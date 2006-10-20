@@ -388,6 +388,7 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
   GROW(pos->unmatchedResultsReceived,
        pos->sizeUnmatchedResultsReceived,
        0);
+  FREE(pos);
   return OK;
 }
 
