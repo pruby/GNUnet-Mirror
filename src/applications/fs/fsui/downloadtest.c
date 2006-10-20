@@ -88,7 +88,7 @@ static void * eventCallback(void * cls,
 #if DEBUG_VERBOSE
     printf("Download resuming\n");
 #endif
-   download = event->data.DownloadResumed.dc.pos;
+    download = event->data.DownloadResumed.dc.pos;
     break;
   case FSUI_search_result:
 #if DEBUG_VERBOSE
@@ -187,6 +187,7 @@ static void * eventCallback(void * cls,
   case FSUI_download_started:
   case FSUI_download_stopped:
   case FSUI_search_started:
+  case FSUI_search_aborted:
   case FSUI_search_stopped:
   case FSUI_unindex_started:
   case FSUI_unindex_stopped:

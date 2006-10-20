@@ -207,6 +207,8 @@ int main(int argc, char * argv[]){
     CHECK(prog < 10000)
     PTHREAD_SLEEP(500 * cronMILLIS);
   }
+  FSUI_abortSearch(ctx,
+		   search);
   FSUI_stopSearch(ctx,
 		  search);
   CHECK(uri != NULL);

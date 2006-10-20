@@ -206,6 +206,8 @@ int main(int argc, char * argv[]){
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }
+  FSUI_abortSearch(ctx,
+		   search);
   FSUI_stopSearch(ctx,
 		  search);
   unindex = FSUI_startUnindex(ctx, filename);
