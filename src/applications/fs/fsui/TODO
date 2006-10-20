@@ -9,10 +9,4 @@ fsui.c:
 download.c:
 - better ETA calculations
 
-search.c:
-- check all events are sent
-
-unindex.c:
-- check all events are sent
-
 
