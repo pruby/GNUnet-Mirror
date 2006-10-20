@@ -25,11 +25,10 @@
  * @author Krista Bennett
  * @author James Blackwell
  * @author Igor Wronsky
- *
- * TODO: fix message handling, signal handling
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
@@ -38,13 +37,11 @@ static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
 
-static struct SEMAPHORE * exitSignal;
-
 static cron_t start_time;
 
 static int errorCode;
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * Print progess message.
@@ -77,13 +74,14 @@ static void * printstatus(void * cls,
       ? (double) (-1.0)
       : (double) (event->data.UnindexCompleted.total / 1024.0 * cronSECONDS / delta));
     }
-    SEMAPHORE_UP(exitSignal);
+    errorCode = 0;
+    GNUNET_SHUTDOWN_INITIATE();
     break;
   case FSUI_unindex_error:
     printf(_("\nError unindexing file: %s\n"),
 	   event->data.UnindexError.message);
-    errorCode = 1;
-    SEMAPHORE_UP(exitSignal); /* always exit main? */
+    errorCode = 3;
+    GNUNET_SHUTDOWN_INITIATE();
     break;
   default:
     GE_BREAK(ectx, 0);
@@ -149,14 +147,19 @@ int main(int argc,
     GE_free_context(ectx);
     return -1;
   }
+  if (OK != GC_parse_configuration(cfg,
+				   cfgFilename)) {  
+    GC_free(cfg);
+    GE_free_context(ectx);
+    return -1;
+  }
   GC_get_configuration_value_number(cfg,
-				    "GNUNET-INSERT",
+				    "GNUNET",
 				    "VERBOSE",
 				    0,
 				    9999,
 				    0,
 				    &verbose);
-  exitSignal = SEMAPHORE_CREATE(0);
   /* fundamental init */
   ctx = FSUI_start(ectx,
 		   cfg,
@@ -165,24 +168,25 @@ int main(int argc,
 		   NO,
 		   &printstatus,
 		   &verbose);
+  errorCode = 1;
   start_time = get_time();
   filename = string_expandFileName(ectx,
 				   argv[i]);
-  ul = FSUI_unindex(ctx,
-		    filename);
+  ul = FSUI_startUnindex(ctx,
+			 filename);
   if (ul == NULL) {
     printf(_("`%s' failed.  Is `%s' a file?\n"),
 	   "FSUI_unindex",
 	   filename);
-    errorCode = 1;
+    errorCode = 2;
   } else {
-    /* wait for completion */
-    SEMAPHORE_DOWN(exitSignal, YES);
+    GNUNET_SHUTDOWN_WAITFOR();
+    if (errorCode != 0)
+      FSUI_abortUnindex(ctx, ul);
     FSUI_stopUnindex(ctx, ul);
   }
   FREE(filename);
   FSUI_stop(ctx);
-  SEMAPHORE_DESTROY(exitSignal);
   GC_free(cfg);
   GE_free_context(ectx);
   return errorCode;

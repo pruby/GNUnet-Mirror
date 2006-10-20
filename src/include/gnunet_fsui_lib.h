@@ -870,13 +870,12 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
  * @return NULL on error
  */
 struct FSUI_UnindexList *
-FSUI_unindex(struct FSUI_Context * ctx,
-	     const char * filename);
+FSUI_startUnindex(struct FSUI_Context * ctx,
+		  const char * filename);
 
 
 /**
- * Abort an unindex operation.  If the context is for a recursive
- * upload, all sub-uploads will also be aborted.
+ * Abort an unindex operation.
  *
  * @return SYSERR on error
  */
@@ -885,8 +884,7 @@ int FSUI_abortUnindex(struct FSUI_Context * ctx,
 
 
 /**
- * Stop an unindex operation.  If the context is for a recursive
- * upload, all sub-uploads will also be stopped.
+ * Stop an unindex operation. 
  *
  * @return SYSERR on error
  */

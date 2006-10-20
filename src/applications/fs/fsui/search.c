@@ -231,8 +231,9 @@ static int spcb(const ECRS_FileInfo * fi,
   return OK;
 }
 
-static int testTerminate(FSUI_SearchList * pos) {
-  if (pos->signalTerminate == NO)
+static int testTerminate(void * cls) {
+  FSUI_SearchList * pos = cls;
+  if (pos->state == FSUI_ACTIVE)
     return OK;
   return SYSERR;
 }
@@ -242,15 +243,48 @@ static int testTerminate(FSUI_SearchList * pos) {
  */
 void * FSUI_searchThread(void * cls) {
   FSUI_SearchList * pos = cls;
-  ECRS_search(pos->ctx->ectx,
+  FSUI_Event event;
+  int ret;
+
+  event.type = FSUI_search_started;
+  event.data.SearchStarted.sc.pos = pos;
+  event.data.SearchStarted.sc.cctx = NULL;
+  pos->cctx = pos->ctx->ecb(pos->ctx->ecbClosure,
+			    &event);
+  ret = ECRS_search(pos->ctx->ectx,
 	      pos->ctx->cfg,
 	      pos->uri,
 	      pos->anonymityLevel,
 	      get_time() + cronYEARS, /* timeout!?*/
 	      &spcb,
 	      pos,
-	      (ECRS_TestTerminate) &testTerminate,
+	      &testTerminate,
 	      pos);
+  if (ret != OK) {
+    pos->state = FSUI_ERROR;    
+    event.type = FSUI_search_error;
+    event.data.SearchError.sc.pos = pos;
+    event.data.SearchError.sc.cctx = pos->cctx;
+    event.data.SearchError.message = _("Error running search (consult logs).");
+    pos->ctx->ecb(pos->ctx->ecbClosure,
+		  &event);
+  } else if (pos->state == FSUI_ABORTED) {
+    event.type = FSUI_search_aborted;
+    event.data.SearchAborted.sc.pos = pos;
+    event.data.SearchAborted.sc.cctx = pos->cctx;
+    pos->ctx->ecb(pos->ctx->ecbClosure,
+		  &event);
+  } else if (pos->state == FSUI_ACTIVE) {
+    event.type = FSUI_search_completed;
+    event.data.SearchCompleted.sc.pos = pos;
+    event.data.SearchCompleted.sc.cctx = pos->cctx;
+    pos->ctx->ecb(pos->ctx->ecbClosure,
+		  &event);
+  } else {
+    GE_ASSERT(NULL, pos->state == FSUI_PENDING);
+    /* must be suspending */
+  }
+
   return NULL;
 }
 
@@ -267,7 +301,7 @@ FSUI_startSearch(struct FSUI_Context * ctx,
   ectx = ctx->ectx;
   MUTEX_LOCK(ctx->lock);
   pos = MALLOC(sizeof(FSUI_SearchList));
-  pos->signalTerminate = NO;
+  pos->state = FSUI_ACTIVE;
   pos->uri = ECRS_dupUri(uri);
   pos->numberOfURIKeys = ECRS_countKeywordsOfUri(uri);
   pos->sizeResultsReceived = 0;
@@ -292,6 +326,16 @@ FSUI_startSearch(struct FSUI_Context * ctx,
   ctx->activeSearches = pos;
   MUTEX_UNLOCK(ctx->lock);
   return pos;
+}
+
+/**
+ * Abort a search.
+ */
+int FSUI_abortSearch(struct FSUI_Context * ctx,
+		     struct FSUI_SearchList * sl) {
+  sl->state = FSUI_ABORTED;
+  PTHREAD_STOP_SLEEP(sl->handle);
+  return OK;
 }
 
 /**
@@ -322,10 +366,6 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
     prev->next = pos->next;
   MUTEX_UNLOCK(ctx->lock);
   pos->next = NULL;
-  pos->signalTerminate = YES;
-  /* send signal to terminate sleep! */
-  GE_ASSERT(ctx->ectx, pos->handle != NULL);
-  PTHREAD_STOP_SLEEP(pos->handle);
   PTHREAD_JOIN(pos->handle,
 	       &unused);
   ECRS_freeUri(pos->uri);

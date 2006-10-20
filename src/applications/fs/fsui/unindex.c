@@ -23,11 +23,6 @@
  * @brief unindex functions
  * @author Krista Bennett
  * @author Christian Grothoff
- *
- * TODO:
- * - make sure events are sent for resume/abort
- *   when respective FSUI calls happen!
- *   (initialize cctx!)
  */
 
 #include "platform.h"
@@ -57,7 +52,7 @@ static void progressCallback(unsigned long long totalBytes,
 
 static int tt(void * cls) {
   FSUI_UnindexList * utc = cls;
-  if (utc->force_termination == YES)
+  if (utc->state != FSUI_ACTIVE)
     return SYSERR;
   return OK;
 }
@@ -69,7 +64,21 @@ void * FSUI_unindexThread(void * cls) {
   FSUI_UnindexList * utc = cls;
   FSUI_Event event;
   int ret;
+  unsigned long long size;
 
+  if (OK != disk_file_size(utc->ctx->ectx,
+			   utc->filename,
+			   &size,
+			   YES)) {
+    GE_BREAK(utc->ctx->ectx, 0);
+    event.data.UnindexCompleted.total = 0;
+  }
+  event.type = FSUI_unindex_started;
+  event.data.UnindexStarted.uc.pos = utc;
+  event.data.UnindexStarted.uc.cctx = NULL;
+  event.data.UnindexStarted.total = size;
+  utc->cctx = utc->ctx->ecb(utc->ctx->ecbClosure,
+			    &event); 
   ret = ECRS_unindexFile(utc->ctx->ectx,
 			 utc->ctx->cfg,
 			 utc->filename,
@@ -79,20 +88,30 @@ void * FSUI_unindexThread(void * cls) {
 			 utc);
   if (ret == OK) {
     event.type = FSUI_unindex_completed;
-    if (OK != disk_file_size(utc->ctx->ectx,
-			     utc->filename,
-			     &event.data.UnindexCompleted.total,
-			     YES)) {
-      GE_BREAK(utc->ctx->ectx, 0);
-      event.data.UnindexCompleted.total = 0;
-    }
+    event.data.UnindexCompleted.uc.pos = utc;
+    event.data.UnindexCompleted.uc.cctx = utc->cctx;
+    event.data.UnindexCompleted.total = size;
     event.data.UnindexCompleted.filename = utc->filename;
-  } else {
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);
+  } else if (utc->state == FSUI_ACTIVE) {
     event.type = FSUI_unindex_error;
+    event.data.UnindexError.uc.pos = utc;
+    event.data.UnindexError.uc.cctx = utc->cctx;
     event.data.UnindexError.message = _("Unindex failed.");
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);
+  } else if (utc->state == FSUI_ABORTED) {
+    event.type = FSUI_unindex_aborted;
+    event.data.UnindexAborted.uc.pos = utc;
+    event.data.UnindexAborted.uc.cctx = utc->cctx;
+    utc->ctx->ecb(utc->ctx->ecbClosure,
+		  &event);
+  } else {
+    /* must be suspending */
+    GE_BREAK(NULL, 
+	     utc->state == FSUI_PENDING);
   }
-  utc->ctx->ecb(utc->ctx->ecbClosure,
-		&event);
 #if 0
   GE_LOG(utc->ctx->ectx, 
 	 GE_DEBUG | GE_REQUEST | GE_USER,
@@ -112,8 +131,8 @@ void * FSUI_unindexThread(void * cls) {
  *  running
  */
 struct FSUI_UnindexList *
-FSUI_unindex(struct FSUI_Context * ctx,
-	     const char * filename) {
+FSUI_startUnindex(struct FSUI_Context * ctx,
+		  const char * filename) {
   FSUI_UnindexList * utc;
 
   if (YES == disk_directory_test(ctx->ectx,
@@ -130,7 +149,7 @@ FSUI_unindex(struct FSUI_Context * ctx,
   utc->ctx = ctx;
   utc->filename = STRDUP(filename);
   utc->start_time = get_time();
-  utc->force_termination = NO;
+  utc->state = FSUI_ACTIVE;
   utc->handle = PTHREAD_CREATE(&FSUI_unindexThread,
 			       utc,
 			       32 * 1024);
@@ -155,11 +174,28 @@ FSUI_unindex(struct FSUI_Context * ctx,
  *
  * @return SYSERR if no such unindex is pending
  */
+int FSUI_abortUnindex(struct FSUI_Context * ctx,
+		      struct FSUI_UnindexList * ul) {
+  if ( (ul->state != FSUI_ACTIVE) &&
+       (ul->state != FSUI_PENDING) )
+    return NO;
+  ul->state = FSUI_ABORTED;
+  PTHREAD_STOP_SLEEP(ul->handle);
+  return OK;
+}
+
+
+/**
+ * Stop a deletion operation.
+ *
+ * @return SYSERR if no such unindex is pending
+ */
 int FSUI_stopUnindex(struct FSUI_Context * ctx,
 		     struct FSUI_UnindexList * dl) {
   FSUI_UnindexList * prev;
   struct GE_Context * ectx;
   void * unused;
+  FSUI_Event event;
 
   ectx = ctx->ectx;
   if (dl == NULL) {
@@ -190,10 +226,13 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
     prev->next = dl->next;
   }
   MUTEX_UNLOCK(ctx->lock);
-  dl->force_termination = YES;
-  PTHREAD_STOP_SLEEP(dl->handle);
   PTHREAD_JOIN(dl->handle,
 	       &unused);
+  event.type = FSUI_upload_stopped;
+  event.data.UnindexStopped.uc.pos = dl;
+  event.data.UnindexStopped.uc.cctx = dl->cctx;
+  dl->ctx->ecb(dl->ctx->ecbClosure,
+	       &event);
   FREE(dl->filename);
   FREE(dl);
   return OK;

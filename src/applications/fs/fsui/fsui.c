@@ -93,7 +93,7 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
   FSUI_Event event;
  
   while (ret != NULL) {
-    if (ret->state == FSUI_PENDING) {
+    if (ret->state == FSUI_ACTIVE) {
       event.type = FSUI_upload_resumed;
       event.data.UploadResumed.uc.pos = ret;
       event.data.UploadResumed.uc.cctx = NULL;
@@ -121,8 +121,7 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
 static void doResumeUploads(struct FSUI_UploadList * ret,
 			    FSUI_Context * ctx) {
   while (ret != NULL) {
-    if (ret->state == FSUI_PENDING) {
-      ret->state = FSUI_ACTIVE;
+    if (ret->state == FSUI_ACTIVE) {
       ret->shared->handle = PTHREAD_CREATE(&FSUI_uploadThread,
 					   ret,
 					   128 * 1024);
@@ -434,12 +433,11 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	 (spos->state == FSUI_ABORTED) ||
 	 (spos->state == FSUI_ERROR) ||
 	 (spos->state == FSUI_COMPLETED) ) {
-      spos->signalTerminate = YES;
-      PTHREAD_STOP_SLEEP(spos->handle);
-      PTHREAD_JOIN(spos->handle, &unused);
       if (spos->state == FSUI_ACTIVE)
 	spos->state = FSUI_PENDING;
-      else
+      PTHREAD_STOP_SLEEP(spos->handle);
+      PTHREAD_JOIN(spos->handle, &unused);
+      if (spos->state != FSUI_PENDING)
 	spos->state++; /* _JOINED */
     }
     spos = spos->next;
@@ -451,12 +449,11 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	 (xpos->state == FSUI_ABORTED) ||
 	 (xpos->state == FSUI_ERROR) ||
 	 (xpos->state == FSUI_COMPLETED) ) {
-      xpos->force_termination = YES;
-      PTHREAD_STOP_SLEEP(xpos->handle);
-      PTHREAD_JOIN(xpos->handle, &unused);    
       if (xpos->state == FSUI_ACTIVE)
 	xpos->state = FSUI_PENDING;
-      else
+      PTHREAD_STOP_SLEEP(xpos->handle);
+      PTHREAD_JOIN(xpos->handle, &unused);    
+      if (xpos->state != FSUI_PENDING)
 	xpos->state++; /* _JOINED */
     }    
     xpos = xpos->next;    
@@ -470,12 +467,11 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	 (upos->state == FSUI_COMPLETED) ) {
       /* NOTE: will force transitive termination
 	 of rest of tree! */
-      upos->shared->force_termination = YES;
-      PTHREAD_STOP_SLEEP(upos->shared->handle);
-      PTHREAD_JOIN(upos->shared->handle, &unused);
       if (upos->state == FSUI_ACTIVE)
 	upos->state = FSUI_PENDING;
-      else
+      PTHREAD_STOP_SLEEP(upos->shared->handle);
+      PTHREAD_JOIN(upos->shared->handle, &unused);
+      if (upos->state != FSUI_PENDING)
 	upos->state++; /* _JOINED */
     }
     upos = upos->next;

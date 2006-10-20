@@ -165,8 +165,6 @@ static void writeSearches(int fd,
       continue;
     }
     GE_ASSERT(ctx->ectx,
-	      spos->signalTerminate == YES);
-    GE_ASSERT(ctx->ectx,
 	      ECRS_isKeywordUri(spos->uri));
     WRITEINT(fd, 1);
     WRITEINT(fd, spos->state);

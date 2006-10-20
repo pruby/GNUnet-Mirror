@@ -65,8 +65,7 @@ static void progressCallback(unsigned long long totalBytes,
 
 static int testTerminate(void * cls) {
   FSUI_UploadList * utc = cls;
-  if ( (utc->shared->force_termination != NO) ||
-       (utc->state != FSUI_ACTIVE) )
+  if (utc->state != FSUI_ACTIVE) 
     return SYSERR;
   return OK;
 }
@@ -172,6 +171,28 @@ static void signalError(FSUI_UploadList * utc,
 			&event);		
 }
 
+static void signalUploadStarted(struct FSUI_UploadList * utc,
+				int first_only) {
+  FSUI_Event event;
+  
+  while (utc != NULL) {
+    event.type = FSUI_upload_started;
+    event.data.UploadStarted.uc.pos = utc;
+    event.data.UploadStarted.uc.cctx = utc->cctx;
+    event.data.UploadStarted.uc.ppos = utc->parent;
+    event.data.UploadStarted.uc.pcctx = utc->parent->cctx;
+    event.data.UploadStarted.total = utc->total;
+    event.data.UploadStarted.anonymityLevel = utc->shared->anonymityLevel;
+    event.data.UploadStarted.filename = utc->filename;
+    utc->cctx = utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
+				      &event);
+    signalUploadStarted(utc->child, 0);
+    if (first_only)
+      break;
+    utc = utc->next;
+  }  
+}
+
 /**
  * Thread that does the upload.
  */
@@ -184,17 +205,20 @@ void * FSUI_uploadThread(void * cls) {
   struct GE_Context * ectx;
   char * filename;
 
+  if (utc->parent == &utc->shared->ctx->activeUploads) {
+    /* top-level call: signal client! */
+    signalUploadStarted(utc, 1);
+  }
   ectx = utc->shared->ctx->ectx;
   GE_ASSERT(ectx, utc->filename != NULL);
   cpos = utc->child;
-  while ( (cpos != NULL) &&
-	  (utc->shared->force_termination == NO) ) {
+  while (cpos != NULL) {
     if (cpos->state == FSUI_PENDING)
       FSUI_uploadThread(cpos);
     cpos = cpos->next;
   }
-  if (utc->shared->force_termination == YES)
-    return NULL; /* aborted */
+  if (utc->state != FSUI_ACTIVE)
+    return NULL; /* aborted or suspended */
   if (utc->child != NULL) {
     filename = createDirectoryHelper(ectx,
 				     utc->child,
@@ -208,7 +232,6 @@ void * FSUI_uploadThread(void * cls) {
     filename = STRDUP(utc->filename);
   }  
   utc->start_time = get_time();
-  utc->state = FSUI_ACTIVE;
     
   ret = ECRS_uploadFile(utc->shared->ctx->ectx,
 			utc->shared->ctx->cfg,
@@ -223,8 +246,21 @@ void * FSUI_uploadThread(void * cls) {
 			utc,
 			&utc->uri);
   if (ret != OK) {
-    signalError(utc,
-		_("Upload failed (consult logs)."));
+    if (utc->state == FSUI_ACTIVE) {
+      signalError(utc,
+		  _("Upload failed (consult logs)."));
+    } else if (utc->state == FSUI_ABORTED) {
+      event.type = FSUI_upload_aborted;
+      event.data.UploadAborted.uc.pos = utc;
+      event.data.UploadAborted.uc.cctx = utc->cctx;
+      event.data.UploadAborted.uc.ppos = utc->parent;
+      event.data.UploadAborted.uc.pcctx = utc->parent->cctx;
+      utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
+			    &event); 
+    } else {
+      /* must be suspended */
+      GE_BREAK(NULL, utc->state == FSUI_PENDING);
+    }
     if (utc->child != NULL) 
       UNLINK(filename);
     FREE(filename);
@@ -275,7 +311,7 @@ void * FSUI_uploadThread(void * cls) {
   event.data.UploadCompleted.filename = utc->filename;
   event.data.UploadCompleted.uri = utc->uri;
   utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
-		&event);		
+			&event);		
   if (utc->child != NULL) 
     UNLINK(filename);
   FREE(filename);
@@ -358,7 +394,7 @@ addUploads(struct FSUI_UploadShared * shared,
   utc->parent = parent;
   utc->uri = NULL;
   utc->cctx = NULL; /* to be set later */
-  utc->state = FSUI_PENDING;
+  utc->state = FSUI_ACTIVE;
   if (YES == disk_file_test(shared->ctx->ectx,
 			    filename)) {
     /* add this file */
@@ -398,28 +434,6 @@ addUploads(struct FSUI_UploadShared * shared,
   parent->child = utc;
   MUTEX_UNLOCK(shared->ctx->lock);
   return utc;
-}
-
-static void signalUploadStarted(struct FSUI_UploadList * utc,
-				int first_only) {
-  FSUI_Event event;
-  
-  while (utc != NULL) {
-    event.type = FSUI_upload_started;
-    event.data.UploadStarted.uc.pos = utc;
-    event.data.UploadStarted.uc.cctx = utc->cctx;
-    event.data.UploadStarted.uc.ppos = utc->parent;
-    event.data.UploadStarted.uc.pcctx = utc->parent->cctx;
-    event.data.UploadStarted.total = utc->total;
-    event.data.UploadStarted.anonymityLevel = utc->shared->anonymityLevel;
-    event.data.UploadStarted.filename = utc->filename;
-    utc->cctx = utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
-				      &event);
-    signalUploadStarted(utc->child, 0);
-    if (first_only)
-      break;
-    utc = utc->next;
-  }  
 }
 
 static void signalUploadStopped(struct FSUI_UploadList * ul,
@@ -503,7 +517,6 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   shared->anonymityLevel = anonymityLevel;
   shared->priority = priority;
   shared->individualKeywords = individualKeywords;
-  shared->force_termination = NO;
   ul = addUploads(shared,
 		  filename,
 		  keyUri,
@@ -520,7 +533,6 @@ FSUI_startUpload(struct FSUI_Context * ctx,
     freeShared(shared);
     return NULL;
   }
-  signalUploadStarted(ul, 1);
   return ul;
 }
 
@@ -536,27 +548,18 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 int FSUI_abortUpload(struct FSUI_Context * ctx,
 		     struct FSUI_UploadList * ul) {
   FSUI_UploadList * c;
-  FSUI_Event event;
   
   GE_ASSERT(ctx->ectx, ul != NULL);
   if ( (ul->state != FSUI_ACTIVE) &&
        (ul->state != FSUI_PENDING) )
     return NO;
   ul->state = FSUI_ABORTED;
-  ul->shared->force_termination = YES;
   c = ul->child;
   while (c != NULL) {
     FSUI_abortUpload(ctx, c);
     c = c->next;
   }    
   PTHREAD_STOP_SLEEP(ul->shared->handle);
-  event.type = FSUI_upload_aborted;
-  event.data.UploadAborted.uc.pos = ul;
-  event.data.UploadAborted.uc.cctx = ul->cctx;
-  event.data.UploadAborted.uc.ppos = ul->parent;
-  event.data.UploadAborted.uc.pcctx = ul->parent->cctx;
-  ctx->ecb(ctx->ecbClosure,
-	   &event);
   return OK;
 }
 

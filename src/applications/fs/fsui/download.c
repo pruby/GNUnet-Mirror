@@ -231,9 +231,9 @@ void * downloadThread(void * cls) {
     event.data.DownloadCompleted.dc.ppos = dl->parent;
     event.data.DownloadCompleted.dc.pcctx = dl->parent->cctx;
     dl->ctx->ecb(dl->ctx->ecbClosure,
-		 &event);
+		 &event);    
   } else if (dl->state == FSUI_ACTIVE) {
-    /* ECRS error, we did not signal to abort */
+    /* ECRS error */
     dl->state = FSUI_ERROR;
     event.type = FSUI_download_error;
     event.data.DownloadError.message = _("ECRS download failed (see logs)");
@@ -242,8 +242,20 @@ void * downloadThread(void * cls) {
     event.data.DownloadError.dc.ppos = dl->parent;
     event.data.DownloadError.dc.pcctx = dl->parent->cctx;
     dl->ctx->ecb(dl->ctx->ecbClosure,
-		 &event);    
+		 &event);
+  } else if (dl->state == FSUI_ABORTED) { /* aborted */
+    event.type = FSUI_download_aborted;
+    event.data.DownloadAborted.dc.pos = dl;
+    event.data.DownloadAborted.dc.cctx = dl->cctx;
+    event.data.DownloadAborted.dc.ppos = dl->parent;
+    event.data.DownloadAborted.dc.pcctx = dl->parent->cctx;
+    dl->ctx->ecb(dl->ctx->ecbClosure,
+		 &event);      
+  } else {
+    /* else: suspended */
+    GE_ASSERT(NULL, dl->state == FSUI_PENDING);
   }
+
 
   if ( (ret == OK) &&
        (dl->is_recursive) &&
@@ -346,22 +358,21 @@ startDownload(struct FSUI_Context * ctx,
   dl->uri = ECRS_dupUri(uri);
   dl->total = ECRS_fileSize(uri);
   dl->child = NULL;
-  dl->next = parent->child;
-  parent->child = dl;  
-
+  dl->cctx = NULL;
   /* signal start! */
-  event.type = FSUI_download_error;
+  event.type = FSUI_download_started;
   event.data.DownloadStarted.filename = dl->filename;
-  event.data.DownloadStarted.total = ECRS_fileSize(uri);
-  event.data.DownloadStarted.uri = uri;
-  event.data.DownloadStarted.anonymityLevel = anonymityLevel;
+  event.data.DownloadStarted.total = ECRS_fileSize(dl->uri);
+  event.data.DownloadStarted.uri = dl->uri;
+  event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
   event.data.DownloadStarted.dc.pos = dl;
-  event.data.DownloadStarted.dc.cctx = dl->cctx;
+  event.data.DownloadStarted.dc.cctx = NULL;
   event.data.DownloadStarted.dc.ppos = dl->parent;
   event.data.DownloadStarted.dc.pcctx = dl->parent->cctx; 
-  dl->cctx = ctx->ecb(ctx->ecbClosure,
-		      &event);
-
+  dl->cctx = dl->ctx->ecb(dl->ctx->ecbClosure,
+			  &event);
+  dl->next = parent->child;
+  parent->child = dl;  
   return dl;
 }
 
@@ -500,7 +511,6 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
  */
 int FSUI_abortDownload(struct FSUI_Context * ctx,
 		       struct FSUI_DownloadList * dl) {
-  FSUI_Event event;
   struct FSUI_DownloadList * c;
 
   GE_ASSERT(ctx->ectx, dl != NULL);
@@ -514,13 +524,6 @@ int FSUI_abortDownload(struct FSUI_Context * ctx,
     return NO;
   dl->state = FSUI_ABORTED;
   PTHREAD_STOP_SLEEP(dl->handle);
-  event.type = FSUI_download_aborted;
-  event.data.DownloadAborted.dc.pos = dl;
-  event.data.DownloadAborted.dc.cctx = dl->cctx;
-  event.data.DownloadAborted.dc.ppos = dl->parent;
-  event.data.DownloadAborted.dc.pcctx = dl->parent->cctx;
-  ctx->ecb(ctx->ecbClosure,
-	   &event);
   return OK;
 }
 

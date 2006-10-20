@@ -24,9 +24,6 @@
  * @brief FSUI functions for reading state from disk
  * @author Christian Grothoff
  * @see serializer.c
- *
- * TODO:
- * - deserialize upload and unindex!
  */
 
 #include "platform.h"
@@ -417,8 +414,6 @@ static int readSearches(int fd,
 	}
       }
     }	
-    list->signalTerminate
-      = NO;
     list->ctx
       = ctx;
     
@@ -489,6 +484,9 @@ static int readUploadList(struct FSUI_Context * ctx,
 	   0,
 	   sizeof(FSUI_UploadList));
     READINT(l.state);
+    fixState(&l.state);
+    if (l.state == FSUI_PENDING)
+      l.state = FSUI_ACTIVE;
     READLONG(l.completed);
     READLONG(l.total);
     READLONG(stime);

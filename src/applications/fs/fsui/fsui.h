@@ -143,11 +143,7 @@ typedef struct FSUI_SearchList {
 
   ResultPending * unmatchedResultsReceived;
 
-  /**
-   * Set this to YES to signal the search thread that
-   * termination is desired.  Then join on handle.
-   */
-  int signalTerminate;
+  void * cctx;
 
   /**
    * Desired anonymity level for this search
@@ -171,8 +167,6 @@ typedef struct FSUI_SearchList {
    * yet all of them.
    */
   unsigned int sizeUnmatchedResultsReceived;
-
-  void * cctx;
 
   FSUI_State state;
 
@@ -316,8 +310,6 @@ typedef struct FSUI_UnindexList {
 
   void * cctx;
 
-  int force_termination;
-
   FSUI_State state;
 
 } FSUI_UnindexList;
@@ -354,8 +346,6 @@ typedef struct FSUI_UploadShared {
   unsigned int priority;
 
   int individualKeywords;
-
-  int force_termination;
 
 } FSUI_UploadShared;
 
