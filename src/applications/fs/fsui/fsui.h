@@ -322,53 +322,30 @@ typedef struct FSUI_UnindexList {
 
 } FSUI_UnindexList;
 
-/**
- * Data used to keep track of the files in the
- * current directory.
- */
-typedef struct {
-  unsigned int fiCount;
-  ECRS_FileInfo * fis;
-} DirTrack;
 
 /**
- * Context for the upload thread.
+ * Shared context for upload of entire structure.
  */
-typedef struct FSUI_UploadList {
+typedef struct FSUI_UploadShared {
 
-  unsigned long long completed;
+  cron_t expiration; 
 
-  unsigned long long total;
+  DirectoryScanCallback dsc;
 
-  cron_t expiration;
-
-  cron_t start_time;
-
+  void * dscClosure;
+		 
   EXTRACTOR_ExtractorList * extractors;
 
   struct FSUI_Context * ctx;
 
-  struct FSUI_UploadList * next;
-
-  struct FSUI_UploadList * child;
-
-  struct FSUI_UploadList * parent;
-
-  DirTrack * dir;
-
   struct PTHREAD * handle;
 
-  struct ECRS_MetaData * meta;
-
-  struct ECRS_URI * uri;
+  /**
+   * Keywords to be used for all uploads.
+   */
+  struct ECRS_URI * global_keywords;
 
   char * extractor_config;
-
-  char * filename;
-
-  void * cctx;
-
-  int isRecursive;
 
   int doIndex;
 
@@ -380,6 +357,52 @@ typedef struct FSUI_UploadList {
 
   int force_termination;
 
+} FSUI_UploadShared;
+
+/**
+ * Context for each file upload.
+ */
+typedef struct FSUI_UploadList {
+
+  unsigned long long completed;
+
+  unsigned long long total;
+
+  cron_t start_time;
+
+  struct FSUI_UploadShared * shared;
+
+  struct FSUI_UploadList * next;
+
+  struct FSUI_UploadList * child;
+
+  struct FSUI_UploadList * parent;
+
+  /**
+   * Metadata for this file.
+   */
+  struct ECRS_MetaData * meta;
+
+  /**
+   * Keywords to be used for this upload.
+   */
+  struct ECRS_URI * keywords;
+
+  /**
+   * URI for this file (set upon completion).
+   */
+  struct ECRS_URI * uri;
+
+  char * filename;
+
+  /**
+   * FSUI-client context.
+   */
+  void * cctx;
+
+  /**
+   * State of this sub-process.
+   */
   FSUI_State state;
 
 } FSUI_UploadList;

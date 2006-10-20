@@ -223,20 +223,28 @@ static void writeUnindexing(int fd,
 static void writeUploads(int fd,
 			 struct FSUI_Context * ctx,
 			 struct FSUI_UploadList * upos) {
+  struct FSUI_UploadShared * shared;
+
   while (upos != NULL) {
-    WRITEINT(fd, 1);
+    if (upos->parent == &ctx->activeUploads) {
+      shared = upos->shared;
+      WRITEINT(fd, 2);
+      WRITESTRING(fd, shared->extractor_config);
+      WRITEINT(fd, shared->doIndex);
+      WRITEINT(fd, shared->anonymityLevel);
+      WRITEINT(fd, shared->priority);
+      WRITEINT(fd, shared->individualKeywords);	
+      WRITELONG(fd, shared->expiration);
+    } else {
+      WRITEINT(fd, 1);
+    }
     WRITEINT(fd, upos->state);
     WRITELONG(fd, upos->completed);
     WRITELONG(fd, upos->total);
-    WRITELONG(fd, upos->expiration);
+    WRITELONG(fd, get_time());
     WRITELONG(fd, upos->start_time);
     writeURI(fd, upos->uri);
     WRITESTRING(fd, upos->filename);
-    WRITEINT(fd, upos->isRecursive);
-    WRITEINT(fd, upos->doIndex);
-    WRITEINT(fd, upos->anonymityLevel);
-    WRITEINT(fd, upos->priority);
-    WRITEINT(fd, upos->individualKeywords);
     writeUploads(fd, ctx, upos->child);
     upos = upos->next;
   }

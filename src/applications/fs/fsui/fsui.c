@@ -101,7 +101,7 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
       event.data.UploadResumed.uc.pcctx = ret->parent->cctx;
       event.data.UploadResumed.completed = ret->completed;
       event.data.UploadResumed.total = ret->total;
-      event.data.UploadResumed.anonymityLevel = ret->anonymityLevel;
+      event.data.UploadResumed.anonymityLevel = ret->shared->anonymityLevel;
       event.data.UploadResumed.eta = 0; /* FIXME: use start_time for estimate! */
       event.data.UploadResumed.filename = ret->filename;
       ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
@@ -123,10 +123,10 @@ static void doResumeUploads(struct FSUI_UploadList * ret,
   while (ret != NULL) {
     if (ret->state == FSUI_PENDING) {
       ret->state = FSUI_ACTIVE;
-      ret->handle = PTHREAD_CREATE(&FSUI_uploadThread,
-				   ret,
-				   32 * 1024);
-      if (ret->handle == NULL)
+      ret->shared->handle = PTHREAD_CREATE(&FSUI_uploadThread,
+					   ret,
+					   128 * 1024);
+      if (ret->shared->handle == NULL)
 	GE_DIE_STRERROR(ctx->ectx,
 			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
 			"pthread_create");
@@ -319,7 +319,7 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
 }
 
 /**
- * (recursively) signal upload suspension.
+ * (recursively) signal upload suspension. 
  */
 static void signalUploadSuspend(struct GE_Context * ectx,
 				FSUI_Context * ctx,
@@ -369,15 +369,25 @@ static void freeDownloadList(FSUI_DownloadList * list) {
 static void freeUploadList(struct FSUI_Context * ctx,
 			   FSUI_UploadList * list) {
   FSUI_UploadList *  next;
-  
+  FSUI_UploadShared * shared;
+  unsigned int i;
+
   while (list != NULL) {
     freeUploadList(ctx, list->child);
     next = list->next;
     FREE(list->filename);
     ECRS_freeMetaData(list->meta);
-    ECRS_freeUri(list->uri);
-    if (list->parent == &ctx->activeUploads)
-      EXTRACTOR_removeAll(list->extractors);
+    if (list->keywords != NULL)
+      ECRS_freeUri(list->keywords);
+    if (list->uri != NULL)
+      ECRS_freeUri(list->uri);
+    if (list->parent == &ctx->activeUploads) {
+      shared = list->shared;
+      EXTRACTOR_removeAll(shared->extractors);
+      ECRS_freeUri(shared->global_keywords);
+      FREE(shared->extractor_config);
+      FREE(shared);
+    }
     FREE(list);
     list = next;
   }
@@ -461,9 +471,9 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	 (upos->state == FSUI_COMPLETED) ) {
       /* NOTE: will force transitive termination
 	 of rest of tree! */
-      upos->force_termination = YES;
-      PTHREAD_STOP_SLEEP(upos->handle);
-      PTHREAD_JOIN(upos->handle, &unused);
+      upos->shared->force_termination = YES;
+      PTHREAD_STOP_SLEEP(upos->shared->handle);
+      PTHREAD_JOIN(upos->shared->handle, &unused);
       if (upos->state == FSUI_ACTIVE)
 	upos->state = FSUI_PENDING;
       else
