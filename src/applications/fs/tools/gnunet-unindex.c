@@ -65,7 +65,7 @@ static void * printstatus(void * cls,
       printf("\r");
     }
     break;
-  case FSUI_unindex_complete:
+  case FSUI_unindex_completed:
     if (*verboselevel) {
       delta = get_time() - start_time;
       PRINTF(

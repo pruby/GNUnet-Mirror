@@ -59,22 +59,22 @@ static void * eventCallback(void * cls,
   static char unused;
  
   switch(event->type) {
-  case FSUI_search_resuming:
-  case FSUI_download_resuming:
-  case FSUI_upload_resuming:
-  case FSUI_unindex_resuming:
+  case FSUI_search_resumed:
+  case FSUI_download_resumed:
+  case FSUI_upload_resumed:
+  case FSUI_unindex_resumed:
     return &unused;
   case FSUI_search_result:
     printf("Received search result\n");
     uri = ECRS_dupUri(event->data.SearchResult.fi.uri);
     break;
-  case FSUI_upload_complete:
+  case FSUI_upload_completed:
     printf("Upload complete.\n");
     break;
-  case FSUI_download_complete:
+  case FSUI_download_completed:
     printf("Download complete.\n");
     break;
-  case FSUI_unindex_complete:
+  case FSUI_unindex_completed:
     printf("Unindex complete.\n");
     break;
   case FSUI_upload_error:
@@ -175,6 +175,8 @@ int main(int argc, char * argv[]){
   upload = 
 	FSUI_startUpload(ctx,
 			 fn,
+			 (DirectoryScanCallback) &disk_directory_scan,
+			 NULL,		
 			 0,
 			 0,
 			 YES,
@@ -189,7 +191,7 @@ int main(int argc, char * argv[]){
   ECRS_freeUri(kuri);
   ECRS_freeMetaData(meta);
   prog = 0;
-  while (lastEvent != FSUI_upload_complete) {
+  while (lastEvent != FSUI_upload_completed) {
     prog++;
     CHECK(prog < 10000)
     PTHREAD_SLEEP(50 * cronMILLIS);
@@ -217,7 +219,7 @@ int main(int argc, char * argv[]){
   ECRS_freeUri(uri);
 
   prog = 0;
-  while (lastEvent != FSUI_download_complete) {
+  while (lastEvent != FSUI_download_completed) {
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
@@ -231,7 +233,7 @@ int main(int argc, char * argv[]){
   fn = NULL;
   CHECK(NULL != unindex);
   prog = 0;
-  while (lastEvent != FSUI_unindex_complete) {
+  while (lastEvent != FSUI_unindex_completed) {
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);

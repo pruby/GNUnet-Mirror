@@ -222,7 +222,7 @@ void * downloadThread(void * cls) {
 			  dl);  
   if (ret == OK) {
     dl->state = FSUI_COMPLETED;
-    event.type = FSUI_download_complete;
+    event.type = FSUI_download_completed;
     event.data.DownloadCompleted.total = dl->total;
     event.data.DownloadCompleted.filename = dl->filename;
     event.data.DownloadCompleted.uri = dl->uri;

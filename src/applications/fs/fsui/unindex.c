@@ -78,7 +78,7 @@ void * FSUI_unindexThread(void * cls) {
 			 &tt,
 			 utc);
   if (ret == OK) {
-    event.type = FSUI_unindex_complete;
+    event.type = FSUI_unindex_completed;
     if (OK != disk_file_size(utc->ctx->ectx,
 			     utc->filename,
 			     &event.data.UnindexCompleted.total,

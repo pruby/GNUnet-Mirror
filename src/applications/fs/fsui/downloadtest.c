@@ -72,17 +72,17 @@ static void * eventCallback(void * cls,
   char * fn;
 
   switch(event->type) {
-  case FSUI_search_resuming:
+  case FSUI_search_resumed:
 #if DEBUG_VERBOSE
     printf("Search resuming\n"); 
 #endif
-    search = event->data.SearchResuming.sc.pos;
+    search = event->data.SearchResumed.sc.pos;
     break;
-  case FSUI_download_resuming: 
+  case FSUI_download_resumed: 
 #if DEBUG_VERBOSE
     printf("Download resuming\n");
 #endif
-   download = event->data.DownloadResuming.dc.pos;
+   download = event->data.DownloadResumed.dc.pos;
     break;
   case FSUI_search_result:
 #if DEBUG_VERBOSE
@@ -124,13 +124,13 @@ static void * eventCallback(void * cls,
 	   event->data.UploadProgress.total);
 #endif
     break;
-  case FSUI_upload_complete:
-    upURI = ECRS_dupUri(event->data.UploadComplete.uri);
+  case FSUI_upload_completed:
+    upURI = ECRS_dupUri(event->data.UploadCompleted.uri);
 #if DEBUG_VERBOSE
     printf("Upload complete.\n");
 #endif
     break;
-  case FSUI_download_complete:
+  case FSUI_download_completed:
 #if DEBUG_VERBOSE
     printf("Download complete.\n");
 #endif
@@ -149,7 +149,7 @@ static void * eventCallback(void * cls,
 	   event->data.UnindexProgress.total);
 #endif
     break;
-  case FSUI_unindex_complete:
+  case FSUI_unindex_completed:
 #if DEBUG_VERBOSE
     printf("Unindex complete.\n");
 #endif
@@ -171,10 +171,10 @@ static void * eventCallback(void * cls,
   case FSUI_gnunetd_connected:
   case FSUI_gnunetd_disconnected:
     break;
-  case FSUI_unindex_suspending:
-  case FSUI_upload_suspending:
-  case FSUI_download_suspending:
-  case FSUI_search_suspending:
+  case FSUI_unindex_suspended:
+  case FSUI_upload_suspended:
+  case FSUI_download_suspended:
+  case FSUI_search_suspended:
 #if DEBUG_VERBOSE
     fprintf(stderr,
 	    "Received SUSPENDING: %d\n",
@@ -255,9 +255,11 @@ int main(int argc, char * argv[]){
   kuri = ECRS_parseListKeywordURI(ectx,
 				  2,
 				  (const char**)keywords);
-  waitForEvent = FSUI_upload_complete;
+  waitForEvent = FSUI_upload_completed;
   upload = FSUI_startUpload(ctx,
 			    fn,
+			    (DirectoryScanCallback) &disk_directory_scan,
+			    NULL,		
 			    0,
 			    0,
 			    YES,
@@ -271,7 +273,7 @@ int main(int argc, char * argv[]){
   kuri = NULL;
   ECRS_freeMetaData(meta);
   prog = 0;
-  while (lastEvent != FSUI_upload_complete) {
+  while (lastEvent != FSUI_upload_completed) {
     prog++;
     CHECK(prog < 1000);
     PTHREAD_SLEEP(50 * cronMILLIS);
@@ -287,13 +289,13 @@ int main(int argc, char * argv[]){
 	   keywords[1]);
   uri = ECRS_parseCharKeywordURI(ectx,
 				 keyword);
-  waitForEvent = FSUI_download_complete;
+  waitForEvent = FSUI_download_completed;
   search = FSUI_startSearch(ctx,
 			    0,
 			    uri);
   CHECK(search != NULL);
   prog = 0;
-  while (lastEvent != FSUI_download_complete) {
+  while (lastEvent != FSUI_download_completed) {
     prog++;
     CHECK(prog < 10000);
     PTHREAD_SLEEP(50 * cronMILLIS);
@@ -328,11 +330,11 @@ int main(int argc, char * argv[]){
   }
   CHECK(search != NULL);
   CHECK(download != NULL);
-  waitForEvent = FSUI_unindex_complete;
+  waitForEvent = FSUI_unindex_completed;
   unindex = FSUI_unindex(ctx, fn);
   CHECK(unindex != NULL);
   prog = 0;
-  while (lastEvent != FSUI_unindex_complete) {
+  while (lastEvent != FSUI_unindex_completed) {
     prog++;
     CHECK(prog < 1000);
     PTHREAD_SLEEP(50 * cronMILLIS);
@@ -340,7 +342,7 @@ int main(int argc, char * argv[]){
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }
-  CHECK(lastEvent == FSUI_unindex_complete);
+  CHECK(lastEvent == FSUI_unindex_completed);
   /* END OF TEST CODE */
  FAILURE:
   if (fn != NULL) {

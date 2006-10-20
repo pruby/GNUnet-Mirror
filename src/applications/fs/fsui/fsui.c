@@ -370,7 +370,6 @@ static void freeUploadList(struct FSUI_Context * ctx,
 			   FSUI_UploadList * list) {
   FSUI_UploadList *  next;
   FSUI_UploadShared * shared;
-  unsigned int i;
 
   while (list != NULL) {
     freeUploadList(ctx, list->child);

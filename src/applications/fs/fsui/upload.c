@@ -266,7 +266,7 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->shared->expiration,
 		       utc->uri,
 		       utc->meta);	    
-  event.type = FSUI_upload_complete;
+  event.type = FSUI_upload_completed;
   event.data.UploadCompleted.uc.pos = utc;
   event.data.UploadCompleted.uc.cctx = utc->cctx;
   event.data.UploadCompleted.uc.ppos = utc->parent;

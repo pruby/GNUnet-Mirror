@@ -172,7 +172,7 @@ static void * printstatus(void * ctx,
       FREE(ret);
     }
     break;
-  case FSUI_upload_complete:
+  case FSUI_upload_completed:
     if (*verboselevel) {
       delta = get_time() - start_time;
       PRINTF(_("Upload of `%s' complete, "

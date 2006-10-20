@@ -104,7 +104,7 @@ static void * progressModel(void * okVal,
     *ok = SYSERR;
     GNUNET_SHUTDOWN_INITIATE();
     break;
-  case FSUI_download_complete:
+  case FSUI_download_completed:
     if ( (event->data.DownloadProgress.completed ==
 	  event->data.DownloadProgress.total) ) {
       PRINTF(_("Download of file `%s' complete.  "

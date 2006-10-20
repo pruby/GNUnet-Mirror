@@ -130,7 +130,7 @@ enum FSUI_EventType {
   FSUI_download_started,
   FSUI_download_stopped,
   FSUI_download_progress,
-  FSUI_download_complete,
+  FSUI_download_completed,
   FSUI_download_aborted,
   FSUI_download_error,
   FSUI_download_suspended,
@@ -138,7 +138,7 @@ enum FSUI_EventType {
   FSUI_upload_started,
   FSUI_upload_stopped,
   FSUI_upload_progress,
-  FSUI_upload_complete,
+  FSUI_upload_completed,
   FSUI_upload_aborted,
   FSUI_upload_error,
   FSUI_upload_suspended,
@@ -146,7 +146,7 @@ enum FSUI_EventType {
   FSUI_unindex_started,
   FSUI_unindex_stopped,
   FSUI_unindex_progress,
-  FSUI_unindex_complete,
+  FSUI_unindex_completed,
   FSUI_unindex_aborted,
   FSUI_unindex_error,
   FSUI_unindex_suspended,
@@ -803,6 +803,19 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
 		      struct FSUI_DownloadList * dl); /* download.c */
 
 /**
+ * Method that can be used to select files that
+ * should be put into a directory when doing an
+ * upload.  For example, "disk_directory_scan"
+ * is a legal implementation that would simply
+ * select all files of the directory for the
+ * upload.
+ */
+typedef int (*DirectoryScanCallback)(void * data,
+				     const char * filename,
+				     DirectoryEntryCallback dec,
+				     void * decClosure);
+
+/**
  * Start uploading a file or directory.
  *
  * @param ctx 
@@ -819,6 +832,8 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
 struct FSUI_UploadList *
 FSUI_startUpload(struct FSUI_Context * ctx,
 		 const char * filename,
+		 DirectoryScanCallback dsc,
+		 void * dscClosure,
 		 unsigned int anonymityLevel,
 		 unsigned int priority,
 		 int doIndex,
@@ -839,8 +854,8 @@ int FSUI_abortUpload(struct FSUI_Context * ctx,
 		     struct FSUI_UploadList * ul);
 
 /**
- * Stop an upload.  If the context is for a recursive
- * upload, all sub-uploads will also be stopped.
+ * Stop an upload.  Only to be called for the top-level
+ * upload.
  *
  * @return SYSERR on error
  */
