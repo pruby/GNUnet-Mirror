@@ -23,12 +23,6 @@
  * @brief upload functions
  * @author Krista Bennett
  * @author Christian Grothoff
- *
- * TODO:
- * - make sure events are sent for resume/abort/error
- *   when respective FSUI calls happen!
- *   (initialize cctx!)
- * - proper tree handling
  */
 
 #include "platform.h"
