@@ -289,6 +289,8 @@ static int readCollection(int fd,
 
   /* deserialize collection data */
   READINT(big);
+  if (big == 0)
+    return OK;
   if ( (big > 16 * 1024 * 1024) ||
        (big < sizeof(unsigned int) ) ) {
     GE_BREAK(NULL, 0);
