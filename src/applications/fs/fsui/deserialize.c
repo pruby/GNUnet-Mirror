@@ -354,6 +354,7 @@ static int readSearches(int fd,
       GE_BREAK(NULL, 0);	
       break;
     }
+    printf("Reading URI: %s\n", buf);
     list->uri
       = ECRS_stringToUri(NULL, buf);
     FREE(buf);
@@ -435,27 +436,31 @@ static int readSearches(int fd,
   } /* end OUTER: 'while(1)' */
  ERR:
   /* error - deallocate 'list' */
-  for (i=0;i<list->sizeResultsReceived;i++) {
-    if (list->resultsReceived[i].uri != NULL)
-      ECRS_freeUri(list->resultsReceived[i].uri);
-    if (list->resultsReceived[i].meta != NULL)
-      ECRS_freeMetaData(list->resultsReceived[i].meta);	
+  if (list->resultsReceived != NULL) {
+    for (i=0;i<list->sizeResultsReceived;i++) {
+      if (list->resultsReceived[i].uri != NULL)
+	ECRS_freeUri(list->resultsReceived[i].uri);
+      if (list->resultsReceived[i].meta != NULL)
+	ECRS_freeMetaData(list->resultsReceived[i].meta);	
+    }
+    GROW(list->resultsReceived,
+	 list->sizeResultsReceived,
+	 0);
   }
-  GROW(list->resultsReceived,
-       list->sizeResultsReceived,
-       0);
-  for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
-    rp = &list->unmatchedResultsReceived[i];
-    
-    if (rp->fi.uri != NULL)
-      ECRS_freeUri(rp->fi.uri);
-    if (rp->fi.meta != NULL)
-      ECRS_freeMetaData(rp->fi.meta);
-    FREENONNULL(rp->matchingKeys);
+  if (list->unmatchedResultsReceived != NULL) {
+    for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
+      rp = &list->unmatchedResultsReceived[i];
+      
+      if (rp->fi.uri != NULL)
+	ECRS_freeUri(rp->fi.uri);
+      if (rp->fi.meta != NULL)
+	ECRS_freeMetaData(rp->fi.meta);
+      FREENONNULL(rp->matchingKeys);
+    }
+    GROW(list->resultsReceived,
+	 list->sizeResultsReceived,
+	 0);  
   }
-  GROW(list->resultsReceived,
-       list->sizeResultsReceived,
-       0);  
   if (list->uri != NULL)
     ECRS_freeUri(list->uri);  
   FREE(list);
@@ -536,6 +541,7 @@ static int readUploads(int fd,
 		       struct FSUI_Context * ctx) {
   int big;
   struct FSUI_UploadShared * shared;
+  struct FSUI_UploadShared sshared;
 
   memset(&ctx->activeUploads,
 	 0,
@@ -544,20 +550,40 @@ static int readUploads(int fd,
     READINT(big);
     if (big == 0) 
       return OK;
-    if (big != 2) {
+    if ( (big != 2) && (big != 3) ) {
       GE_BREAK(NULL, 0);
       break;
     }
-    shared = MALLOC(sizeof(FSUI_UploadShared));
-    memset(shared,
+    memset(&sshared,
 	   0,
 	   sizeof(FSUI_UploadShared));   
-    shared->extractor_config = NULL;   
+    READINT(sshared.doIndex);
+    READINT(sshared.anonymityLevel);
+    READINT(sshared.priority);
+    READINT(sshared.individualKeywords);
+    READLONG(sshared.expiration);
+    if (big == 2) 
+      READSTRING(sshared.extractor_config, 1024*1024);
+    shared = MALLOC(sizeof(FSUI_UploadShared));
+    memcpy(shared,
+	   &sshared,
+	   sizeof(FSUI_UploadShared));
     if (OK != readUploadList(ctx,
 			     &ctx->activeUploads,
 			     fd,
-			     shared)) 
+			     shared)) {
+#if 0
+      /* cannot do this, readUploadList
+	 may have added *some* uploads that
+	 still reference shared -- need to
+	 find and cleanup those first,
+	 or at least detect their presence 
+	 and not free */
+      FREE(shared->extractor_config);
+      FREE(shared);
+#endif
       break;
+    }
   }
   return SYSERR;
 }

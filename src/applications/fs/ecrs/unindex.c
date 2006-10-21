@@ -335,8 +335,8 @@ int ECRS_unindexFile(struct GE_Context * ectx,
 		    * (double)filesize);
   }
   if (tt != NULL)
-    if (OK != tt(ttClosure))
-      goto FAILURE;
+    if (OK != tt(ttClosure)) 
+      goto FAILURE;    
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
     db = (DBlock*) &iblocks[i][1];
@@ -397,7 +397,7 @@ int ECRS_unindexFile(struct GE_Context * ectx,
   connection_destroy(sock);
   return OK;
  FAILURE:
-  for (i=0;i<treedepth;i++)
+  for (i=0;i<=treedepth;i++)
     FREENONNULL(iblocks[i]);
   FREE(iblocks);
   FREE(dblock);

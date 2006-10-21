@@ -35,7 +35,7 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE NO
+#define DEBUG_VERBOSE YES
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
@@ -210,7 +210,7 @@ static void * eventCallback(void * cls,
 
 #define FILESIZE (1024 * 1024 * 2)
 
-#define START_DAEMON 1
+#define START_DAEMON 0
 
 int main(int argc, char * argv[]){
 #if START_DAEMON
@@ -295,7 +295,7 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_upload_completed) {
     prog++;
-    CHECK(prog < 1000);
+    CHECK(prog < 5000);
     PTHREAD_SLEEP(50 * cronMILLIS);
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
@@ -323,7 +323,7 @@ int main(int argc, char * argv[]){
     PTHREAD_SLEEP(50 * cronMILLIS);
     if ( (suspendRestart > 0) &&
 	 (weak_randomi(4) == 0) ) {
-#if 0
+#if 1
 #if DEBUG_VERBOSE
       printf("Testing FSUI suspend-resume\n");
 #endif
@@ -355,7 +355,7 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_unindex_completed) {
     prog++;
-    CHECK(prog < 1000);
+    CHECK(prog < 5000);
     PTHREAD_SLEEP(50 * cronMILLIS);
     CHECK(lastEvent != FSUI_unindex_error);
     if (GNUNET_SHUTDOWN_TEST() == YES)
@@ -364,10 +364,6 @@ int main(int argc, char * argv[]){
   CHECK(lastEvent == FSUI_unindex_completed);
   /* END OF TEST CODE */
  FAILURE:
-  if (fn != NULL) {
-    UNLINK(fn);
-    FREE(fn);
-  }
   if (ctx != NULL) {
     if (unindex != NULL)
       FSUI_stopUnindex(ctx,
@@ -376,6 +372,10 @@ int main(int argc, char * argv[]){
       FSUI_stopDownload(ctx,
 			download);
     FSUI_stop(ctx);
+  }
+  if (fn != NULL) {
+    UNLINK(fn);
+    FREE(fn);
   }
   if (uri != NULL)
     ECRS_freeUri(uri);

@@ -1311,6 +1311,8 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   top->level = computeDepth(ctx.total);
   if (NO == checkPresent(top))
     addRequest(rm, top);
+  else
+    FREE(top);  
   while ( (OK == tt(ttClosure)) &&
 	  (rm->abortFlag == NO) &&
 	  (rm->requestListIndex != 0) ) {
@@ -1327,13 +1329,14 @@ int ECRS_downloadFile(struct GE_Context * ectx,
     ret = OK;
   } else {
 #if 0
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	"Download ends prematurely: %d %llu == %llu %d TT: %d\n",
-	rm->requestListIndex,
-	ctx.completed,
-	ctx.total,
-	rm->abortFlag,
-	tt(ttClosure));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   "Download ends prematurely: %d %llu == %llu %d TT: %d\n",
+	   rm->requestListIndex,
+	   ctx.completed,
+	   ctx.total,
+	   rm->abortFlag,
+	   tt(ttClosure));
 #endif
     ret = SYSERR;
   }
@@ -1343,11 +1346,12 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   else
     freeIOC(&ioc, NO); /* aborted */
 #if DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "`%s' terminating for file `%s' with result %s\n",
-      __FUNCTION__,
-      filename,
-      ret == OK ? "SUCCESS" : "INCOMPLETE");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "`%s' terminating for file `%s' with result %s\n",
+	 __FUNCTION__,
+	 filename,
+	 ret == OK ? "SUCCESS" : "INCOMPLETE");
 #endif
   return ret;
 }

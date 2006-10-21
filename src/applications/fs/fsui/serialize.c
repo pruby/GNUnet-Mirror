@@ -61,6 +61,7 @@ static void writeURI(int fd,
 
 static void WRITESTRING(int fd,
 			const char * name) {
+  GE_BREAK(NULL, name != NULL);
   WRITEINT(fd,
 	   strlen(name));
   WRITE(fd,
@@ -177,6 +178,7 @@ static void writeSearches(int fd,
     WRITEINT(fd, spos->sizeUnmatchedResultsReceived);
     tmp = ECRS_uriToString(spos->uri);
     GE_ASSERT(NULL, tmp != NULL);
+    printf("Writing URI: %s\n", tmp);
     WRITESTRING(fd, tmp);
     FREE(tmp);
     for (i=0;i<spos->sizeResultsReceived;i++)
@@ -230,13 +232,17 @@ static void writeUploads(int fd,
   while (upos != NULL) {
     if (upos->parent == &ctx->activeUploads) {
       shared = upos->shared;
-      WRITEINT(fd, 2);
-      WRITESTRING(fd, shared->extractor_config);
+      if (shared->extractor_config != NULL)
+	WRITEINT(fd, 2);
+      else
+	WRITEINT(fd, 3);
       WRITEINT(fd, shared->doIndex);
       WRITEINT(fd, shared->anonymityLevel);
       WRITEINT(fd, shared->priority);
       WRITEINT(fd, shared->individualKeywords);	
       WRITELONG(fd, shared->expiration);
+      if (shared->extractor_config != NULL)
+	WRITESTRING(fd, shared->extractor_config);
     } else {
       WRITEINT(fd, 1);
       WRITEINT(fd, 1);
