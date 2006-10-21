@@ -90,7 +90,7 @@ static int isBlacklisted(const void * addr,
     memcpy(&ip,
 	   &((struct sockaddr_in6*) addr)->sin6_addr,
 	   sizeof(IP6addr));
-  } else { 
+  } else {
     return SYSERR;
   }
   MUTEX_LOCK(tcplock);
@@ -272,9 +272,9 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
     break;
   }
   freeaddrinfo(res0);
-  if (sock == -1) 
+  if (sock == -1)
     return SYSERR;
-  
+
   return tcpConnectHelper(helo,
 			  s,
 			  tcp6API.protocolNumber,
@@ -360,7 +360,7 @@ static int startTransportServer(void) {
  * configuration on error, syslog errors!)
  */
 static int reloadConfiguration(void * ctx,
-			       struct GC_Configuration * cfg, 
+			       struct GC_Configuration * cfg,
 			       struct GE_Context * ectx,
 			       const char * section,
 			       const char * option) {
@@ -374,7 +374,7 @@ static int reloadConfiguration(void * ctx,
 					     "TCP",
 					     "BLACKLIST",
 					     NULL,
-					     &ch)) 
+					     &ch))
     filteredNetworks_ = parse_ipv6_network_specification(ectx,
 							 "");
   else {

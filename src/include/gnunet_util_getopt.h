@@ -46,7 +46,7 @@ typedef struct {
    * Name of the application
    */
   const char * binaryName;
-  
+
   /**
    * Array with all command line options.
    */
@@ -85,9 +85,9 @@ typedef struct {
  * @param ctx context for all options
  * @param scls specific closure (for this processor)
  * @param option long name of the option (i.e. "config" for --config)
- * @param value argument, NULL if none was given 
+ * @param value argument, NULL if none was given
  * @return OK to continue processing other options, SYSERR to abort
- */ 
+ */
 typedef int (*CommandLineOptionProcessor)(CommandLineProcessorContext * ctx,
 					  void * scls,
 					  const char * option,
@@ -125,9 +125,9 @@ typedef struct CommandLineOption {
 
   /**
    * Handler for the option.
-   */ 
+   */
   CommandLineOptionProcessor processor;
-  
+
   /**
    * Specific closure to pass to the processor.
    */
@@ -137,7 +137,7 @@ typedef struct CommandLineOption {
 
 /**
  * Macro defining the option to print the command line
- * help text.  
+ * help text.
  *
  * @param about string with brief description of the application
  */
@@ -152,7 +152,7 @@ typedef struct CommandLineOption {
  */
 #define COMMAND_LINE_OPTION_VERSION(version) \
   { 'v', "version", NULL, gettext_noop("print the version number"), 0, &gnunet_getopt_print_version, version }
-  
+
 /**
  * Set the configuration option for logging.
  */
@@ -190,7 +190,7 @@ typedef struct CommandLineOption {
  * @param ectx for reporting errors
  * @param cfg for storing/accessing configuration data
  * @param allOptions defined options and handlers
- * @param argc number of arguments 
+ * @param argc number of arguments
  * @param argv actual arguments
  * @return index into argv with first non-option
  *   argument, or -1 on error

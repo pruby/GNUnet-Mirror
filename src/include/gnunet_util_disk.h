@@ -54,8 +54,8 @@ long disk_get_blocks_available(struct GE_Context * ectx,
 /**
  * Check that fil corresponds to a filename
  * (of a file that exists and that is not a directory).
- * 
- * @returns YES if yes, NO if not a file, SYSERR if something 
+ *
+ * @returns YES if yes, NO if not a file, SYSERR if something
  * else (will print an error message in that case, too).
  */
 int disk_file_test(struct GE_Context * ectx,
@@ -81,8 +81,8 @@ int disk_file_size(struct GE_Context * ectx,
  * @return file handle, -1 on error
  */
 int disk_file_open(struct GE_Context * ectx,
-		   const char * filename, 
-		   int oflag, 
+		   const char * filename,
+		   int oflag,
 		   ...);
 
 /**

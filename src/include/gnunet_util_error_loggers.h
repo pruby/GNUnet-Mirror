@@ -42,7 +42,7 @@ struct GE_Memory;
 
 /**
  * Create a logger that writes events to a file.
- * 
+ *
  * @param ectx where to log errors in the logger
  * @param mask which events should be logged?
  * @param filename which file should we log to?
@@ -51,7 +51,7 @@ struct GE_Memory;
  *        value specifies after how many days logs should be deleted)
  *        (use 0 for no rotation)
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_logfile(struct GE_Context * ectx,
 			  GE_KIND mask,
 			  const char * filename,
@@ -61,19 +61,19 @@ GE_create_context_logfile(struct GE_Context * ectx,
 
 /**
  * Create a logger that writes events to stderr
- * 
+ *
  * @param mask which events should be logged?
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_stderr(int logDate,
 			 GE_KIND mask);
 
 /**
  * Create a logger that writes events to stderr
- * 
+ *
  * @param mask which events should be logged?
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_stdout(int logDate,
 			 GE_KIND mask);
 
@@ -81,11 +81,11 @@ GE_create_context_stdout(int logDate,
  * Create a logger that keeps events in memory (to be
  * queried later in bulk).
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_memory(GE_KIND mask,
 			 struct GE_Memory * memory);
 
-#if FICTION      
+#if FICTION
 /**
  * @param ectx where to log errors in the logger
  * @param address e-mail address to send the logs to
@@ -95,7 +95,7 @@ GE_create_context_memory(GE_KIND mask,
  * @param bulkSize for GE_BULK messages, how many lines of messages
  *        should be accumulated before an e-mail is transmitted?
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_email(struct GE_Context * ectx,
 			GE_KIND mask,
 			const char * address,
@@ -111,12 +111,12 @@ GE_create_context_email(struct GE_Context * ectx,
  * log messages of an operation to provide the
  * final error in bulk to the client (i.e. as
  * a return value, possibly over the network).
- * 
+ *
  * @param maxSize the maximum number of messages to keep, 0 for unbounded
  *  (if more than maxSize messages are received, message number maxSize
  *   will be set to a corresponding warning)
  */
-struct GE_Memory * 
+struct GE_Memory *
 GE_create_memory(unsigned int maxSize);
 
 /**

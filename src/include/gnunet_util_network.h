@@ -135,9 +135,9 @@ typedef struct {
  */
 typedef struct {
   /**
-   * struct in_addr 
+   * struct in_addr
    */
-  unsigned int addr; 
+  unsigned int addr;
 } IPaddr;
 
 /**
@@ -150,9 +150,9 @@ struct CIDRNetwork;
  */
 typedef struct {
   /**
-   * struct in6_addr addr; 
+   * struct in6_addr addr;
    */
-  unsigned int addr[4]; 
+  unsigned int addr[4];
 } IP6addr;
 
 /**
@@ -182,7 +182,7 @@ typedef int (*SelectMessageHandler)(void * mh_cls,
 				    struct SelectHandle * sh,
 				    struct SocketHandle * sock,
 				    void * sock_ctx,
-				    const MESSAGE_HEADER * msg);			     
+				    const MESSAGE_HEADER * msg);			
 
 /**
  * We've accepted a connection, check that
@@ -239,7 +239,7 @@ unsigned long long htonll(unsigned long long n);
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-struct CIDRNetwork * 
+struct CIDRNetwork *
 parse_ipv4_network_specification(struct GE_Context * ectx,
 				 const char * routeList);
 
@@ -254,7 +254,7 @@ parse_ipv4_network_specification(struct GE_Context * ectx,
  * @param routeList a string specifying the forbidden networks
  * @return the converted list, NULL if the synatx is flawed
  */
-struct CIDR6Network * 
+struct CIDR6Network *
 parse_ipv6_network_specification(struct GE_Context * ectx,
 				 const char * routeList);
 
@@ -299,7 +299,7 @@ int get_host_by_name(struct GE_Context * ectx,
  * The OS socket should henceforth be no longer used
  * directly.  socket_destroy will close it.
  */
-struct SocketHandle * 
+struct SocketHandle *
 socket_create(struct GE_Context * ectx,
 	      struct LoadMonitor * mon,
 	      int osSocket);
@@ -321,7 +321,7 @@ void socket_destroy(struct SocketHandle * s);
  * @return Upon successful completion, it returns zero.
  * @return Otherwise -1 is returned.
  */
-int socket_set_blocking(struct SocketHandle * s, 
+int socket_set_blocking(struct SocketHandle * s,
 			int doBlock);
 
 /**
@@ -332,7 +332,7 @@ int socket_set_blocking(struct SocketHandle * s,
 int socket_test_blocking(struct SocketHandle * s);
 
 /**
- * Do a read on the given socket.  
+ * Do a read on the given socket.
  *
  * @brief reads at most max bytes to buf. Interrupts are IGNORED.
  * @param s socket

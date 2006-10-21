@@ -229,7 +229,7 @@ int main(int argc, char * argv[]){
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
   now = get_time();
   cron = cron_create(NULL);
@@ -243,7 +243,7 @@ int main(int argc, char * argv[]){
   ok = YES;
   cron_start(cron);
   lock = MUTEX_CREATE(NO);
-  GE_ASSERT(NULL, 
+  GE_ASSERT(NULL,
 	    OK == connection_wait_for_running(NULL,
 					      cfg,
 					      60 * cronSECONDS));

@@ -90,8 +90,8 @@ static struct CommandLineOption gnunetstatsOptions[] = {
   COMMAND_LINE_OPTION_HELP(gettext_noop("Print statistics about GNUnet operations.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 'p', "protocols", NULL, 
-    gettext_noop("prints supported protocol messages"), 
+  { 'p', "protocols", NULL,
+    gettext_noop("prints supported protocol messages"),
     0, &gnunet_getopt_configure_set_option, "STATS:PRINT-PROTOCOLS=YES" },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_END,
@@ -105,14 +105,14 @@ static struct CommandLineOption gnunetstatsOptions[] = {
  * @param argv command line arguments
  * @return 0 ok, 1 on error
  */
-int main(int argc, 
+int main(int argc,
 	 const char ** argv) {
   int res;
   struct ClientServerConnection * sock;
   struct GC_Configuration * cfg;
   struct GE_Context * ectx;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -128,7 +128,7 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   sock = client_connection_create(ectx,
 				  cfg);

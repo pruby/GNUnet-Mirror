@@ -351,7 +351,7 @@ static void updateResponseData(PID_INDEX origin,
     pos->next = NULL;
     pos->responseList = NULL;
     pos->queryOrigin = origin;
-    change_pid_rc(origin, 1);  
+    change_pid_rc(origin, 1);
     if (prev == NULL)
       rtdList = pos;
     else
@@ -492,25 +492,25 @@ static void hotpathSelectionCode(const PeerIdentity * peer,
   if (id == qr->noTarget)
     ranking = 0; /* no chance for blocked peers */
   idx = getIndex(id);
-#if DEBUG_GAP 
+#if DEBUG_GAP
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Ranking for %u: %u\n",
       idx,
       ranking);
 #endif
-  qr->rankings[idx] = ranking; 
+  qr->rankings[idx] = ranking;
   change_pid_rc(id, -1);
 }
 
 /**
- * Return 1 if the current network (upstream) or CPU load is 
+ * Return 1 if the current network (upstream) or CPU load is
  * too high, 0 if the load is ok.
  */
 static int loadTooHigh() {
-  return ( (hardCPULimit > 0) && 
-	   (os_cpu_get_load(ectx, 
+  return ( (hardCPULimit > 0) &&
+	   (os_cpu_get_load(ectx,
 			    coreAPI->cfg) >= hardCPULimit) ) ||
-    ( (hardUpLimit > 0) && 
+    ( (hardUpLimit > 0) &&
       (os_network_monitor_get_load(coreAPI->load_monitor,
 				   Upload) >= hardUpLimit) );
 }
@@ -535,7 +535,7 @@ static void sendToSelected(const PeerIdentity * peer,
   /* Load above hard limit? */
   if (loadTooHigh())
     return;
-  
+
   id = intern_pid(peer);
   if (id == qr->noTarget) {
     change_pid_rc(id, -1);
@@ -902,7 +902,7 @@ static int addToSlot(int mode,
 		     unsigned int priority,
 		     PID_INDEX sender) {
   unsigned int i;
-  cron_t now;  
+  cron_t now;
 #if DEBUG__GAP
   EncName enc;
 
@@ -1025,11 +1025,11 @@ static int needsForwarding(const HashCode512 * query,
   ite = &ROUTING_indTable_[computeRoutingIndex(query)];
   equal_to_pending = equalsHashCode512(query, &ite->primaryKey);
   if ( (stats != NULL) &&
-       (equal_to_pending) ) 
-    stats->change(stat_routing_request_duplicates, 1);    
-  
+       (equal_to_pending) )
+    stats->change(stat_routing_request_duplicates, 1);
+
   new_ttl = now + ttl;
-  if ( (ite->ttl < now) && 
+  if ( (ite->ttl < now) &&
        (ite->ttl < now - (cron_t) (TTL_DECREMENT * 10L)) &&
        (ttl > - TTL_DECREMENT * 5) ) {
     addToSlot(ITE_REPLACE, ite, query, ttl, priority, sender);
@@ -1359,13 +1359,13 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
     if (equalsHashCode512(&hc,
 			  &ite->seen[i]))
       return OK; /* drop, duplicate result! */
-  for (i=0;i<cls->valueCount;i++) 
+  for (i=0;i<cls->valueCount;i++)
     if (equalsHashCode512(&hc,
 			  &cls->hashes[i]))
-      return OK; /* drop, duplicate entry in DB! */  
+      return OK; /* drop, duplicate entry in DB! */
   if ( (cls->valueCount > MAX_SEEN_VALUES) &&
        (weak_randomi(cls->valueCount) > 8) )
-      return OK; /* statistical drop, too many replies to keep in memory */  
+      return OK; /* statistical drop, too many replies to keep in memory */
   GROW(cls->values,
        cls->valueCount,
        cls->valueCount+1);
@@ -1374,7 +1374,7 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
   memcpy(cls->values[cls->valueCount-1],
 	 value,
 	 ntohl(value->size));
-  if (cls->hashCount < cls->valueCount) 
+  if (cls->hashCount < cls->valueCount)
     GROW(cls->hashes,
 	 cls->hashCount,
 	 cls->hashCount * 2 + 8);
@@ -1417,7 +1417,7 @@ static int execQuery(const PeerIdentity * sender,
 
   /* Load above hard limit? */
   if (loadTooHigh())
-    return SYSERR;  
+    return SYSERR;
 
   senderID = intern_pid(sender);
   GE_ASSERT(ectx,  (senderID != 0) || (sender == NULL) );
@@ -1504,7 +1504,7 @@ static int execQuery(const PeerIdentity * sender,
 			      &query->queries[0],
 			      cls.values[perm[i]])) &&
 	   (stats != NULL) )
-	stats->change(stat_routing_local_results, 1);      
+	stats->change(stat_routing_local_results, 1);
       /* even for local results, always do 'put'
 	 (at least to give back results to local client &
 	 to update priority; but only do this for
@@ -1571,12 +1571,12 @@ static int useContent(const PeerIdentity * host,
 #if DEBUG_GAP
   EncName enc;
 
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   if (host != NULL)
 	     hash2enc(&host->hashPubKey,
 		      &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "GAP received content from `%s'\n",
 	 (host != NULL) ? (const char*)&enc : "myself");
@@ -1593,7 +1593,7 @@ static int useContent(const PeerIdentity * host,
   prio = 0;
 
   if (rhf == NULL) {
-    if (stats != NULL) 
+    if (stats != NULL)
       stats->change(stat_routing_reply_drops, 1);
     return OK; /* not fully initialized! */
   }
@@ -1612,7 +1612,7 @@ static int useContent(const PeerIdentity * host,
 			  &ite->seen[i])) {
       MUTEX_UNLOCK(lookup_exclusion);
       FREE(value);
-      if (stats != NULL) 
+      if (stats != NULL)
 	stats->change(stat_routing_reply_dups, 1);
       return 0; /* seen before, useless */
     }
@@ -1626,14 +1626,14 @@ static int useContent(const PeerIdentity * host,
 		0);
   if (ret == SYSERR) {
     EncName enc;
-    
+
     IF_GELOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	  if (host != NULL)
-	    hash2enc(&host->hashPubKey, 
+	    hash2enc(&host->hashPubKey,
 		     &enc));
     GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
 	_("GAP received invalid content from `%s'\n"),
-	(host != NULL) ? (const char*)&enc : _("myself"));    
+	(host != NULL) ? (const char*)&enc : _("myself"));
     GE_BREAK(ectx, 0);
     FREE(value);
     return SYSERR; /* invalid */
@@ -1697,11 +1697,11 @@ static int useContent(const PeerIdentity * host,
       ite->priority = 0;
       ite->type = 0;
       ite->ttl = 0;
-      if (stats != NULL) 
+      if (stats != NULL)
 	stats->change(stat_routing_slots_used, -1);
     }
   } else {
-    if (stats != NULL) 
+    if (stats != NULL)
       stats->change(stat_routing_reply_drops, 1);
   }
   MUTEX_UNLOCK(lookup_exclusion);
@@ -1940,7 +1940,7 @@ static int handleQuery(const PeerIdentity * sender,
     GE_BREAK(ectx, 0);
     return 0;
   }
-  
+
   /* Load above hard limit? */
   if (loadTooHigh()) {
 #if DEBUG_GAP
@@ -1954,7 +1954,7 @@ static int handleQuery(const PeerIdentity * sender,
         sender == NULL ? "localhost" : (char*)&enc);
 #endif
     return OK;
-  }  
+  }
   queries = 1 + (ntohs(msg->size) - sizeof(P2P_gap_query_MESSAGE))
     / sizeof(HashCode512);
   if ( (queries <= 0) ||
@@ -1964,7 +1964,7 @@ static int handleQuery(const PeerIdentity * sender,
     GE_BREAK(ectx, 0);
     return SYSERR; /* malformed query */
   }
-  
+
   qmsg = MALLOC(ntohs(msg->size));
   memcpy(qmsg, msg, ntohs(msg->size));
   if (equalsHashCode512(&qmsg->returnTo.hashPubKey,
@@ -2005,7 +2005,7 @@ static int handleQuery(const PeerIdentity * sender,
       "Received GAP query `%s'.\n",
       &enc);
 #endif
-  if ((policy & QUERY_DROPMASK) == 0) { 
+  if ((policy & QUERY_DROPMASK) == 0) {
     /* policy says no answer/forward/indirect => direct drop;
        this happens if the peer is too busy (netload-up >= 100%).  */
     FREE(qmsg);
@@ -2118,11 +2118,11 @@ provide_module_gap(CoreAPIForApplication * capi) {
     stat_routing_no_route_policy    = stats->create(gettext_noop("# gap requests policy: not routed"));
     stat_routing_no_answer_policy   = stats->create(gettext_noop("# gap requests policy: not answered"));
     stat_routing_processed          = stats->create(gettext_noop("# gap requests processed: attempted add to RT"));
-    stat_routing_local_results      = stats->create(gettext_noop("# gap requests processed: local result")); 
+    stat_routing_local_results      = stats->create(gettext_noop("# gap requests processed: local result"));
     stat_routing_successes          = stats->create(gettext_noop("# gap routing successes (total)"));
     stat_routing_collisions         = stats->create(gettext_noop("# gap requests dropped: collision in RT"));
     stat_routing_forwards           = stats->create(gettext_noop("# gap requests forwarded (counting each peer)"));
-    stat_routing_request_duplicates = stats->create(gettext_noop("# gap duplicate requests (pending)")); 
+    stat_routing_request_duplicates = stats->create(gettext_noop("# gap duplicate requests (pending)"));
     stat_routing_request_repeat     = stats->create(gettext_noop("# gap duplicate requests that were re-tried"));
     stat_routing_request_repeat_dttl= stats->create(gettext_noop("# gap re-try ttl difference (cummulative)"));
     stat_routing_reply_dups         = stats->create(gettext_noop("# gap reply duplicates"));
@@ -2173,7 +2173,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
 	       2 * cronMINUTES,
 	       NULL);
 
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("`%s' registering handlers %d %d\n"),
 	 "gap",
@@ -2222,7 +2222,7 @@ void release_module_gap() {
     ite->seenReplyWasUnique = NO;
     if (stats != NULL)
       stats->change(stat_memory_destinations, - ite->hostsWaiting);
-    decrement_pid_rcs(ite->destination, ite->hostsWaiting);    
+    decrement_pid_rcs(ite->destination, ite->hostsWaiting);
     GROW(ite->destination,
 	 ite->hostsWaiting,
 	 0);

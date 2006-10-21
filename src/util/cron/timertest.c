@@ -95,9 +95,9 @@ int main(int argc, char * argv[]) {
   failureCount += check();
   cron_stop(cron);
   cron_destroy(cron);
-  if (failureCount != 0) 
+  if (failureCount != 0)
     return 1;
   return 0;
-} 
+}
 
 /* end of timertest.c */

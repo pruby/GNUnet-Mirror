@@ -51,7 +51,7 @@ int gnunet_getopt_configure_set_option(CommandLineProcessorContext * ctx,
 					  section,
 					  option,
 					  value);
-  
+
   if (ret != 0) {
     GE_LOG(ctx->ectx,
 	   GE_USER | GE_BULK | GE_ERROR,
@@ -128,7 +128,7 @@ int gnunet_getopt_configure_set_ulong(CommandLineProcessorContext * ctx,
 				      const char * value) {
   unsigned long long * val = scls;
   if (1 != SSCANF(value, "%llu", val)) {
-    GE_LOG(ctx->ectx, 
+    GE_LOG(ctx->ectx,
 	   GE_ERROR | GE_IMMEDIATE | GE_USER,
 	   _("You must pass a number to the `%s' option.\n"),
 	   "-X");
@@ -144,7 +144,7 @@ int gnunet_getopt_configure_set_uint(CommandLineProcessorContext * ctx,
   unsigned int * val = scls;
 
   if (1 != SSCANF(value, "%u", val)) {
-    GE_LOG(ctx->ectx, 
+    GE_LOG(ctx->ectx,
 	   GE_ERROR | GE_IMMEDIATE | GE_USER,
 	   _("You must pass a number to the `%s' option.\n"),
 	   "-X");

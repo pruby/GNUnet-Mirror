@@ -59,7 +59,7 @@ int changeUser(struct GE_Context * ectx,
 
 static char * getPIDFile(struct GC_Configuration * cfg) {
   char * pif;
-  
+
   if (0 != GC_get_configuration_value_filename(cfg,
 					       "GNUNETD",
 					       "PIDFILE",
@@ -88,18 +88,18 @@ void writePIDFile(struct GE_Context * ectx,
 			 pif);
     return;
   }
-  if (0 > FPRINTF(pidfd, 
-		  "%u", 
-		  (unsigned int) getpid())) 
+  if (0 > FPRINTF(pidfd,
+		  "%u",
+		  (unsigned int) getpid()))
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_ADMIN | GE_BULK,
 			 "fprintf",
-			 pif);    
+			 pif);
   if (0 != fclose(pidfd))
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_ADMIN | GE_BULK,
 			 "fclose",
-			 pif); 
+			 pif);
   FREE(pif);
 }
 

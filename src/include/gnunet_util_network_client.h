@@ -46,7 +46,7 @@ struct ClientServerConnection;
 /**
  * Get a connection with gnunetd.
  */
-struct ClientServerConnection * 
+struct ClientServerConnection *
 client_connection_create(struct GE_Context * ectx,
 			 struct GC_Configuration * cfg);
 
@@ -104,7 +104,7 @@ int connection_read(struct ClientServerConnection * sock,
  *
  * @param sock the socket to write to
  * @param buffer the buffer to write
- * @return OK if the write was sucessful, 
+ * @return OK if the write was sucessful,
  *         SYSERR if the write failed (error will be logged)
  */
 int connection_write(struct ClientServerConnection * sock,
@@ -116,7 +116,7 @@ int connection_write(struct ClientServerConnection * sock,
  * errors and pass those to the error context used when
  * the socket was created.  In that case, read_result
  * will return SYSERR for the corresponding communication.
- * 
+ *
  * @param sock the TCP socket
  * @param ret the return value from TCP
  * @return SYSERR on error, OK if the return value was
@@ -141,7 +141,7 @@ int connection_write_result(struct ClientServerConnection * sock,
  * a serious error to the other side.
  *
  * @param sock the TCP socket
- * @param mask GE_MASK 
+ * @param mask GE_MASK
  * @param date date string
  * @param msg message string
  * @return SYSERR on error, OK if the error code was send

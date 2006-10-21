@@ -30,8 +30,8 @@
 
 int os_modify_user(struct GE_Context * ectx,
 		   int testCapability,
-		   int doAdd,		   
-		   const char *group_name, 
+		   int doAdd,		
+		   const char *group_name,
 		   const char *user_name) {
   int haveGroup;
 
@@ -68,15 +68,15 @@ int os_modify_user(struct GE_Context * ectx,
     return SYSERR;
   }
   if ( (user_name == NULL) ||
-       (0 == strlen(user_name)) ) 
+       (0 == strlen(user_name)) )
     return 0;
-  
+
 #ifdef WINDOWS
-  if (IsWinNT()) 
-    return CreateServiceAccount(user_name, 
+  if (IsWinNT())
+    return CreateServiceAccount(user_name,
 				"GNUnet service account");
 #else
-  if (ACCESS("/usr/sbin/adduser", 
+  if (ACCESS("/usr/sbin/adduser",
 	     X_OK) == 0) {
     /* Debian */
     /* TODO: FreeBSD? http://www.freebsd.org/cgi/man.cgi?query=adduser&sektion=8 */
@@ -84,21 +84,21 @@ int os_modify_user(struct GE_Context * ectx,
 
     haveGroup = group_name && strlen(group_name) > 0;		
     cmd = MALLOC(haveGroup ? strlen(group_name) : 0 + strlen(user_name) + 64);
-    
+
     if (haveGroup) {
       sprintf(cmd,
-	      "/usr/sbin/addgroup --quiet --system %s", 
+	      "/usr/sbin/addgroup --quiet --system %s",
 	      group_name);		
       system(cmd);
     }
-    
-    sprintf(cmd, 
+
+    sprintf(cmd,
 	    "/usr/sbin/adduser --quiet --system %s %s "
-	    "--no-create-home %s", 
+	    "--no-create-home %s",
 	    haveGroup ? "--ingroup" : "",
-	    haveGroup ? group_name : "", 
+	    haveGroup ? group_name : "",
 	    user_name);
-    system(cmd);    
+    system(cmd);
     FREE(cmd);
     return OK;
   }
@@ -134,7 +134,7 @@ int os_change_user(struct GE_Context * ectx,
       GE_LOG(ectx,
 	     GE_FATAL | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 	     _("Cannot change user/group to `%s': %s\n"),
-	     user, 
+	     user,
 	     STRERROR(errno));
       return SYSERR;
     }

@@ -51,7 +51,7 @@ typedef struct {
   int (*read)(struct GE_Context * ectx,
 	      const char * name,
 	      void ** result);
-  
+
   /**
    * Append content to file.
    *
@@ -64,7 +64,7 @@ typedef struct {
 		const char * name,
 		int len,
 		const void * block);
-  
+
   /**
    * Write content to a file.
    *
@@ -77,7 +77,7 @@ typedef struct {
 	       const char * name,
 	       int len,
 	       const void * block);
-  
+
   /**
    * Free space in the database by removing one file
    * @param name the hashcode representing the name of the file

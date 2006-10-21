@@ -196,7 +196,7 @@ static int downloadFile(unsigned int size,
 			      NULL)) {
 
     fd = disk_file_open(NULL,
-			tmpName, 
+			tmpName,
 			O_RDONLY);
     buf = MALLOC(size);
     in = MALLOC(size);
@@ -265,7 +265,7 @@ int main(int argc, char * argv[]){
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
   daemon  = os_daemon_start(NULL,
 			    cfg,

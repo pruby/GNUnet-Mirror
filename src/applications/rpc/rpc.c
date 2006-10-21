@@ -1028,7 +1028,7 @@ static int handleRPCMessageRes(const PeerIdentity * sender,
   /* Locate the CallInstance structure. */
   call = vectorGetFirst(outgoingCalls);
   while (call != NULL) {
-    if ( (0 == memcmp(&call->receiver, 
+    if ( (0 == memcmp(&call->receiver,
 		      sender,
 		      sizeof(PeerIdentity))) &&
 	 (call->sequenceNumber == ntohl(res->sequenceNumber)) )
@@ -1116,7 +1116,7 @@ static int handleRPCMessageAck(const PeerIdentity *sender,
   /* Locate the CallInstance structure. */
   call = (CallInstance*) vectorGetFirst(incomingCalls);
   while (call != NULL) {
-    if ( (0 == memcmp(&call->receiver, 
+    if ( (0 == memcmp(&call->receiver,
 		      sender,
 		      sizeof(PeerIdentity))) &&
 	 (call->sequenceNumber == ntohl(ack->sequenceNumber)) )
@@ -1230,7 +1230,7 @@ static int RPC_execute(const PeerIdentity *receiver,
   call->finishedCallback = (RPCFinishedCallback) &RPC_execute_callback;
   call->rpcCallbackArgs = &cls;
   vectorInsertLast(outgoingCalls, call);
-  GE_ASSERT(ectx,  
+  GE_ASSERT(ectx,
 	    (get_time() + 1 * cronMINUTES > call->expirationTime) ||
 	    (call->expirationTime - get_time() < 1 * cronHOURS) );
   cron_add_job(coreAPI->cron,
@@ -1534,7 +1534,7 @@ int initialize_module_rpc(CoreAPIForApplication * capi) {
   RPC_Record * record;
   struct SEMAPHORE * sign;
 
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "RPC testcase starting\n");
   rpcAPI = capi->requestService("rpc");

@@ -74,7 +74,7 @@ int gnunet_getopt_configure_set_metadata(CommandLineProcessorContext * ctx,
     meta = ECRS_createMetaData();
     *mm = meta;
   }
- 
+
   tmp = string_convertToUtf8(NULL,
 			     value,
 			     strlen(value),

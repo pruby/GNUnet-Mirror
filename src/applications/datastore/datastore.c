@@ -164,7 +164,7 @@ static int put(const HashCode512 * key,
        (minPriority > ntohl(value->prio)) ) {
     GE_LOG(coreAPI->ectx, GE_WARNING | GE_BULK | GE_USER,
 	"Datastore full (%llu/%llu) and content priority too low to kick out other content.  Refusing put.\n",
-	sq->getSize(), 
+	sq->getSize(),
 	quota);
     return SYSERR; /* new content has such a low priority that
 		      we should not even bother! */
@@ -192,7 +192,7 @@ static int checkExists(const HashCode512 * key,
 		       const Datastore_Value * value,
 		       void * cls) {
   CE * ce = cls;
-  
+
   if ( (value->size != ce->value->size) ||
        (0 != memcmp(&value[1],
 		    &ce->value[1],
@@ -341,7 +341,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
 					      1024,
 					      &lquota)) {
     GE_BREAK(capi->ectx, 0);
-    return NULL; /* OOPS */  
+    return NULL; /* OOPS */
   }
 
   quota

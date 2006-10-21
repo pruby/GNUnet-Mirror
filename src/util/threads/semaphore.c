@@ -80,7 +80,7 @@ typedef struct SEMAPHORE {
  * on all pthread-systems so far. Odd.
  */
 #ifndef _MSC_VER
-extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr, 
+extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr,
 					int kind);
 #endif
 
@@ -100,21 +100,21 @@ Semaphore * SEMAPHORE_CREATE(int value) {
 #if LINUX
   GE_ASSERT(NULL,
 	    0 == pthread_mutexattr_setkind_np
-	    (&attr, 
+	    (&attr,
 	     PTHREAD_MUTEX_ERRORCHECK_NP));
 #else
   GE_ASSERT(NULL,
 	    0 == pthread_mutexattr_settype
-	    (&attr, 
+	    (&attr,
 	     PTHREAD_MUTEX_ERRORCHECK));
 #endif
   s = MALLOC(sizeof(Semaphore));
   s->v = value;
-  GE_ASSERT(NULL, 
-	    0 == pthread_mutex_init(&s->mutex, 
+  GE_ASSERT(NULL,
+	    0 == pthread_mutex_init(&s->mutex,
 				    &attr));
   GE_ASSERT(NULL,
-	    0 == pthread_cond_init(&s->cond, 
+	    0 == pthread_cond_init(&s->cond,
 				   NULL));
   return s;
 }
@@ -149,13 +149,13 @@ int SEMAPHORE_DOWN(Semaphore * s,
   GE_ASSERT(NULL, s != NULL);
   GE_ASSERT(NULL,
 	    0 == pthread_mutex_lock(&s->mutex));
-  while ( (s->v <= 0) && mayblock) 
+  while ( (s->v <= 0) && mayblock)
     GE_ASSERT(NULL,
 	      0 == pthread_cond_wait(&s->cond,
 				     &s->mutex));
-  if (s->v > 0) 
+  if (s->v > 0)
     ret = --(s->v);
-  else 
+  else
     ret = SYSERR;
   GE_ASSERT(NULL,
 	    0 == pthread_mutex_unlock(&s->mutex));

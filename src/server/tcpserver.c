@@ -149,14 +149,14 @@ static void * select_accept_handler(void * ah_cls,
   IPaddr ip;
   struct sockaddr_in * a;
 
-  if (addr_len != sizeof(struct sockaddr_in)) 
-    return NULL;  
+  if (addr_len != sizeof(struct sockaddr_in))
+    return NULL;
   a = (struct sockaddr_in *) addr;
   memcpy(&ip,
 	 &a->sin_addr,
 	 sizeof(IPaddr));
-  if (! isWhitelisted(ip)) 
-    return NULL;  
+  if (! isWhitelisted(ip))
+    return NULL;
   session = MALLOC(sizeof(ClientHandle));
   session->sock = sock;
   return session;
@@ -263,8 +263,8 @@ static unsigned short getGNUnetPort() {
 					      1,
 					      65535,
 					      2087,
-					      &port)) 
-    port = 0; 
+					      &port))
+    port = 0;
   return (unsigned short) port;
 }
 
@@ -302,7 +302,7 @@ static int startTCPServer() {
 		  &on,
 		  sizeof(on)) < 0 )
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK, 
+		    GE_ERROR | GE_ADMIN | GE_BULK,
 		    "setsockopt");
   /* bind the socket */
   if (BIND(listenerFD,
@@ -334,7 +334,7 @@ static int startTCPServer() {
 			   0 /* no memory quota */);
   if (selector == NULL) {
     CLOSE(listenerFD);
-    return SYSERR;  
+    return SYSERR;
   }
   return OK;
 }
@@ -375,7 +375,7 @@ int initTCPServer(struct GE_Context * e,
 					      "NETWORK",
 					      "TRUSTED",
 					      "127.0.0.0/8;",
-					      &ch)) 
+					      &ch))
     return SYSERR;
   GE_ASSERT(ectx, ch != NULL);
   trustedNetworks_ = parse_ipv4_network_specification(ectx,
@@ -386,7 +386,7 @@ int initTCPServer(struct GE_Context * e,
 	   _("Malformed network specification in the configuration in section `%s' for entry `%s': %s\n"),
 	   "NETWORK",
 	   "TRUSTED",
-	   ch);    
+	   ch);
     FREE(ch);
     return SYSERR;
   }

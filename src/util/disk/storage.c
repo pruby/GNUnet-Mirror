@@ -178,7 +178,7 @@ long disk_get_blocks_available(struct GE_Context * ectx,
 
   if (0 != statvfs(part, &buf)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK, 
+			 GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
 			 "statfs",
 			 part);
     return -1;
@@ -191,16 +191,16 @@ long disk_get_blocks_available(struct GE_Context * ectx,
 
   memcpy(szDrive, part, 3);
   szDrive[3] = 0;
-  if (!GetDiskFreeSpace(szDrive, 
+  if (!GetDiskFreeSpace(szDrive,
 			&dwDummy,
-			&dwDummy, 
+			&dwDummy,
 			&dwBlocks,
 			&dwDummy)) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
 	   _("`%s' failed for drive `%s': %u\n"),
 	   "GetDiskFreeSpace",
-	   szDrive, 
+	   szDrive,
 	   GetLastError());
 
     return -1;
@@ -222,7 +222,7 @@ long disk_get_blocks_available(struct GE_Context * ectx,
 /**
  * Test if fil is a directory.
  *
- * @return YES if yes, NO if not, SYSERR if it 
+ * @return YES if yes, NO if not, SYSERR if it
  *   does not exist
  */
 int disk_directory_test(struct GE_Context * ectx,
@@ -234,19 +234,19 @@ int disk_directory_test(struct GE_Context * ectx,
   if (ret != 0) {
     if (errno != ENOENT) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
+			   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
 			   "stat",
 			   fil);
       return SYSERR;
     }
     return NO;
   }
-  if (! S_ISDIR(filestat.st_mode)) 
+  if (! S_ISDIR(filestat.st_mode))
     return NO;
   if (ACCESS(fil, R_OK | X_OK) < 0 ) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
-			 "access", 
+			 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
+			 "access",
 			 fil);
     return SYSERR;
   }
@@ -256,7 +256,7 @@ int disk_directory_test(struct GE_Context * ectx,
 /**
  * Check that fil corresponds to a filename
  * (of a file that exists and that is not a directory).
- * @returns YES if yes, NO if not a file, SYSERR if something 
+ * @returns YES if yes, NO if not a file, SYSERR if something
  * else (will print an error message in that case, too).
  */
 int disk_file_test(struct GE_Context * ectx,
@@ -268,19 +268,19 @@ int disk_file_test(struct GE_Context * ectx,
   if (ret != 0) {
     if (errno != ENOENT) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
+			   GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
 			   "stat",
 			   fil);
       return SYSERR;
     }
     return NO;
   }
-  if (! S_ISREG(filestat.st_mode)) 
+  if (! S_ISREG(filestat.st_mode))
     return NO;
   if (ACCESS(fil, R_OK) < 0 ) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST, 
-			 "access", 
+			 GE_WARNING | GE_USER | GE_ADMIN | GE_REQUEST,
+			 "access",
 			 fil);
     return SYSERR;
   }
@@ -344,14 +344,14 @@ int disk_directory_create(struct GE_Context * ectx,
 	if ( (ret != 0) &&
 	     (errno != EEXIST) ) {
 	  GE_LOG_STRERROR_FILE(ectx,
-			       GE_ERROR | GE_USER | GE_BULK, 
-			       "mkdir", 
+			       GE_ERROR | GE_USER | GE_BULK,
+			       "mkdir",
 			       rdir);
 	  FREE(rdir);
 	  return SYSERR;
 	}
       }
-      rdir[pos] = DIR_SEPARATOR;     
+      rdir[pos] = DIR_SEPARATOR;
     }
     pos++;
   }
@@ -429,7 +429,7 @@ int disk_file_write(struct GE_Context * ectx,
 			  S_IRUSR | S_IWUSR);
   if (handle == -1)
     return SYSERR;
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    (n == 0) || (buffer != NULL));
   /* write the buffer take length from the beginning */
   if (n != WRITE(handle, buffer, n)) {
@@ -547,7 +547,7 @@ static int rmHelper(const char * fil,
  */
 int disk_directory_remove(struct GE_Context * ectx,
 			  const char * fileName) {
-  if (UNLINK(fileName) == 0) 
+  if (UNLINK(fileName) == 0)
     return OK;
   if ( (errno != EISDIR) &&
        /* EISDIR is not sufficient in all cases, e.g.
@@ -563,7 +563,7 @@ int disk_directory_remove(struct GE_Context * ectx,
   if (SYSERR == disk_directory_scan(ectx,
 				    fileName,
 				    &rmHelper,
-				    ectx)) 
+				    ectx))
     return SYSERR;
   if (0 != RMDIR(fileName)) {
     GE_LOG_STRERROR_FILE(ectx,
@@ -578,7 +578,7 @@ int disk_directory_remove(struct GE_Context * ectx,
 void disk_file_close(struct GE_Context * ectx,
 		     const char * filename,
 		     int fd) {
-  if (0 != CLOSE(fd)) 
+  if (0 != CLOSE(fd))
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_BULK,
 			 "close",
@@ -596,7 +596,7 @@ int disk_file_open(struct GE_Context * ectx,
   char szFile[_MAX_PATH + 1];
   long lRet;
 
-  if ((lRet = plibc_conv_to_win_path(filename, 
+  if ((lRet = plibc_conv_to_win_path(filename,
 				     szFile)) != ERROR_SUCCESS) {
     errno = ENOENT;
     SetLastError(lRet);
@@ -623,7 +623,7 @@ int disk_file_open(struct GE_Context * ectx,
   oflag |= O_BINARY;
 #endif
   ret = open(fn, oflag, mode);
-  if (ret == -1) 
+  if (ret == -1)
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_BULK,
 			 "open",
@@ -651,13 +651,13 @@ int disk_file_copy(struct GE_Context * ectx,
   if (OK != disk_file_size(ectx,
 			   src,
 			   &size,
-			   YES)) 
+			   YES))
     return SYSERR;
   pos = 0;
   in = disk_file_open(ectx,
 		      src,
 		      O_RDONLY | O_LARGEFILE);
-  if (in == -1) 
+  if (in == -1)
     return SYSERR;
   out = disk_file_open(ectx,
 		       dst,

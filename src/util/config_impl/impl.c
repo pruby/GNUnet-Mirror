@@ -35,17 +35,17 @@
 typedef struct GC_Entry {
 
   /**
-   * key for this entry 
+   * key for this entry
    */
   char * key;
 
   /**
-   * current, commited value 
+   * current, commited value
    */
   char * val;
 
-  /** 
-   * non-null during uncommited update 
+  /**
+   * non-null during uncommited update
    */
   char * dirty_val;
 } GC_Entry;
@@ -61,12 +61,12 @@ typedef struct GC_Section {
   char * name;
 
   /**
-   * number of entries in section 
+   * number of entries in section
    */
   unsigned int size;
 
   /**
-   * entries in the section 
+   * entries in the section
    */
   GC_Entry * entries;
 } GC_Section;
@@ -165,7 +165,7 @@ static void _set_error_context(struct GC_Configuration * cfg,
   cfg->data->ectx = ectx;
 }
 
-static int 
+static int
 _parse_configuration(struct GC_Configuration * cfg,
 		     const char * filename) {
   int dirty;
@@ -199,14 +199,14 @@ _parse_configuration(struct GC_Configuration * cfg,
     nr++;
     for (i=0;i<255;i++)
       if (line[i] == '\t')
-	line[i] = ' ';    
+	line[i] = ' ';
     if (line[0] == '\n' || line[0] == '#' || line[0] == '%' ||
 	line[0] == '\r')
       continue;
     emptyline = 1;
-    for (i=0;(i<255 && line[i] != 0);i++) 
+    for (i=0;(i<255 && line[i] != 0);i++)
       if (line[i] != ' ' && line[i] != '\n' && line[i] != '\r')
-	emptyline = 0;    
+	emptyline = 0;
     if (emptyline == 1)
       continue;
     /* remove tailing whitespace */
@@ -220,7 +220,7 @@ _parse_configuration(struct GC_Configuration * cfg,
 				    expanded))
 	ret = -1; /* failed to parse included config */
     } else if (1 == sscanf(line,
-			   "[%99[^]]]", 
+			   "[%99[^]]]",
 			   value)) {
       /* [value] */
       FREE(section);
@@ -277,12 +277,12 @@ _parse_configuration(struct GC_Configuration * cfg,
   return ret;
 }
 
-static int 
+static int
 _test_dirty(struct GC_Configuration * cfg) {
   return cfg->data->dirty;
 }
 
-static int 
+static int
 _write_configuration(struct GC_Configuration * cfg,
 		     const char * filename) {
   GC_ConfigurationData * data;
@@ -293,7 +293,7 @@ _write_configuration(struct GC_Configuration * cfg,
   FILE *fp;
   int error;
   int ret;
-  
+
   data = cfg->data;
   if (NULL == (fp = FOPEN(filename, "w"))) {
     GE_LOG_STRERROR_FILE(data->ectx,
@@ -308,7 +308,7 @@ _write_configuration(struct GC_Configuration * cfg,
   for (i=0;i<data->ssize;i++) {
     sec = &data->sections[i];
     if (0 > fprintf(fp,
-		    "[%s]\n", 
+		    "[%s]\n",
 		    sec->name)) {
       error = 1;
       break;
@@ -374,7 +374,7 @@ findSection(GC_ConfigurationData * data,
 /**
  * Call only with lock held!
  */
-static GC_Entry * 
+static GC_Entry *
 findEntry(GC_ConfigurationData * data,
 	  const char * section,
 	  const char * key) {
@@ -391,7 +391,7 @@ findEntry(GC_ConfigurationData * data,
   return NULL;	
 }
 
-static int 
+static int
 _get_configuration_value_number(struct GC_Configuration * cfg,
 				const char * section,
 				const char * option,
@@ -446,8 +446,8 @@ _get_configuration_value_number(struct GC_Configuration * cfg,
   MUTEX_UNLOCK(cfg->data->lock);
   return ret;
 }
-  
-static int 
+
+static int
 _get_configuration_value_string(struct GC_Configuration * cfg,
 				const char * section,
 				const char * option,
@@ -473,7 +473,7 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
 	     "Configuration value for option `%s' in section `%s' required.\n",
 	     option,
 	     section);
-      return -1;    
+      return -1;
     }
     *value = STRDUP(def);
     ret = 1; /* default */
@@ -481,8 +481,8 @@ _get_configuration_value_string(struct GC_Configuration * cfg,
   MUTEX_UNLOCK(cfg->data->lock);
   return ret;
 }
-  
-static int 
+
+static int
 _get_configuration_value_choice(struct GC_Configuration * cfg,
 				const char * section,
 				const char * option,
@@ -531,7 +531,7 @@ _get_configuration_value_choice(struct GC_Configuration * cfg,
   return ret;
 }
 
-static int 
+static int
 _set_configuration_value_string(struct GC_Configuration * cfg,
 				struct GE_Context * ectx,
 				const char * section,
@@ -544,7 +544,7 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
   GC_Entry ne;
   int ret;
   int i;
-    
+
   data = cfg->data;
   MUTEX_LOCK(data->lock);
   e = findEntry(data, section, option);
@@ -638,7 +638,7 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
  * @param old string to $-expand (will be freed!)
  * @return $-expanded string
  */
-static char * 
+static char *
 _configuration_expand_dollar(struct GC_Configuration * cfg,
 			     const char * section,
 			     char * orig) {
@@ -701,7 +701,7 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
  *        value, or NULL if option is not specified and no default given
  * @return 0 on success, -1 on error, 1 for default
  */
-static int 
+static int
 _get_configuration_value_filename(struct GC_Configuration * cfg,
 				  const char * section,
 				  const char * option,
@@ -710,7 +710,7 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
   GC_ConfigurationData * data;
   int ret;
   char * tmp;
-  
+
   data = cfg->data;
   tmp = NULL;
   ret = _get_configuration_value_string(cfg, section, option, def, &tmp);
@@ -718,7 +718,7 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
     tmp = _configuration_expand_dollar(cfg,
 				       section,
 				       tmp);
-    *value = string_expandFileName(data->ectx, 
+    *value = string_expandFileName(data->ectx,
 				   tmp);
     FREE(tmp);
   } else {
@@ -727,7 +727,7 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
   return ret;
 }
 
-static int 
+static int
 _set_configuration_value_number(struct GC_Configuration * cfg,
 				struct GE_Context * ectx,
 				const char * section,
@@ -737,8 +737,8 @@ _set_configuration_value_number(struct GC_Configuration * cfg,
   SNPRINTF(s, 64, "%llu", number);
   return _set_configuration_value_string(cfg, ectx, section, option, s);
 }
-  
-static int 
+
+static int
 _set_configuration_value_choice(struct GC_Configuration * cfg,
 				struct GE_Context * ectx,
 				const char * section,
@@ -747,7 +747,7 @@ _set_configuration_value_choice(struct GC_Configuration * cfg,
   return _set_configuration_value_string(cfg, ectx, section, option, choice);
 }
 
-static int 
+static int
 _attach_change_listener(struct GC_Configuration * cfg,
 			GC_ChangeListener callback,
 			void * ctx) {
@@ -780,7 +780,7 @@ _attach_change_listener(struct GC_Configuration * cfg,
   return 0;
 }
 
-static int 
+static int
 _detach_change_listener(struct GC_Configuration * cfg,
 			GC_ChangeListener callback,
 			void * ctx) {
@@ -792,7 +792,7 @@ _detach_change_listener(struct GC_Configuration * cfg,
     l = &cfg->data->listeners[i];
     if ( (l->listener == callback) &&
 	 (l->ctx == ctx) ) {
-      cfg->data->listeners[i] 
+      cfg->data->listeners[i]
 	= cfg->data->listeners[cfg->data->lsize-1];
       GROW(cfg->data->listeners,
 	   cfg->data->lsize,
@@ -804,11 +804,11 @@ _detach_change_listener(struct GC_Configuration * cfg,
   MUTEX_UNLOCK(cfg->data->lock);
   return -1;
 }
-  
+
 /**
  * Create a GC_Configuration (C implementation).
  */
-GC_Configuration * 
+GC_Configuration *
 GC_create_C_impl() {
   GC_Configuration * ret;
 

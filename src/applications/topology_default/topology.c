@@ -133,7 +133,7 @@ static void scanHelperSelect(const PeerIdentity * id,
 			     void * data) {
   IndexMatch * im = data;
 
-  if (0 == memcmp(coreAPI->myIdentity, 
+  if (0 == memcmp(coreAPI->myIdentity,
 		  id,
 		  sizeof(PeerIdentity)))
     return;
@@ -396,7 +396,7 @@ void update_module_topology_default(UpdateAPI * uapi) {
   uapi->updateModule("pingpong");
 
   /* remove version stamp file from 0.7.0x,
-     we have a global check for version, so 
+     we have a global check for version, so
      we do not need this one anymore;
      this code can be removed in a few
      versions (since it is just minor cleanup

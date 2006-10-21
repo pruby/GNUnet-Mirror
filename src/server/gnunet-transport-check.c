@@ -234,7 +234,7 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
   GC_get_configuration_value_number(cfg,
 				    "GNUNET-TRANSPORT-CHECK",
 				    "VERBOSE",
-				    0, 
+				    0,
 				    (unsigned long long) -1,
 				    0,
 				    &verbose);
@@ -322,7 +322,7 @@ static void testPING(const P2P_hello_MESSAGE * xhelo,
        (ok != YES) )
     FPRINTF(stderr,
 	    _("No reply received within %llums.\n"),
-	    timeout);  
+	    timeout);
   cron_suspend(cron,
 	       NO);
   cron_del_job(cron,
@@ -350,8 +350,8 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
   COMMAND_LINE_OPTION_HELP(gettext_noop("Tool to test if GNUnet transport services are operational.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 'p', "ping", NULL, 
-    gettext_noop("ping peers from HOSTLISTURL that match transports"), 
+  { 'p', "ping", NULL,
+    gettext_noop("ping peers from HOSTLISTURL that match transports"),
     0, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:PING=YES" },
   { 'r', "repeat", "COUNT",
     gettext_noop("send COUNT messages"),
@@ -376,7 +376,7 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
   COMMAND_LINE_OPTION_END,
 };
 
-int main(int argc, 
+int main(int argc,
 	 const char *argv[]) {
   int res;
   unsigned long long Xrepeat;
@@ -385,7 +385,7 @@ int main(int argc,
   int stats[3];
   int pos;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -401,13 +401,13 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (-1 == GC_parse_configuration(cfg,
 	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (OK != changeUser(ectx, cfg)) {
     GC_free(cfg);
@@ -433,7 +433,7 @@ int main(int argc,
 					      &timeout)) {
     return 1;
   }
-  
+
   expectedValue = MALLOC(expectedSize);
   pos = expectedSize;
   expectedValue[--pos] = '\0';
@@ -445,7 +445,7 @@ int main(int argc,
 					      "GNUNETD",
 					      "TRANSPORTS",
 					      "udp tcp http",
-					      &trans)) 
+					      &trans))
     return 1;
   GE_ASSERT(ectx, trans != NULL);
   ping = GC_get_configuration_value_yesno(cfg,
@@ -539,7 +539,7 @@ int main(int argc,
   cron_destroy(cron);
   GC_free(cfg);
   GE_free_context(ectx);
- 
+
   if (res == OK)
     return 0;
   else

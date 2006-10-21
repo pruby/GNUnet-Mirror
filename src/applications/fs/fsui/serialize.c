@@ -167,7 +167,7 @@ static void writeSearches(int fd,
     }
     GE_ASSERT(ctx->ectx,
 	      ECRS_isKeywordUri(spos->uri));
-    WRITEINT(fd, 1);    
+    WRITEINT(fd, 1);
     WRITEINT(fd, spos->state);
     WRITEINT(fd, spos->maxResults);
     WRITELONG(fd, spos->timeout);
@@ -186,7 +186,7 @@ static void writeSearches(int fd,
 		    &spos->resultsReceived[i]);
     for (i=0;i<spos->sizeUnmatchedResultsReceived;i++) {
       ResultPending * rp;
-      
+
       rp = &spos->unmatchedResultsReceived[i];
       writeFileInfo(ctx->ectx,
 		    fd,
@@ -205,7 +205,7 @@ static void writeSearches(int fd,
     spos = spos->next;
   }
   WRITEINT(fd, 0);
-} 
+}
 
 static void writeUnindexing(int fd,
 			    struct FSUI_Context * ctx) {
@@ -264,8 +264,8 @@ void FSUI_serialize(struct FSUI_Context * ctx) {
 		      ctx->name,
 		      O_CREAT|O_TRUNC|O_WRONLY,
 		      S_IRUSR|S_IWUSR);
-  if (fd == -1) 
-    return;    
+  if (fd == -1)
+    return;
   WRITE(fd,
 	"FSUI01\n\0",
 	8); /* magic */
@@ -276,9 +276,9 @@ void FSUI_serialize(struct FSUI_Context * ctx) {
 		    ctx,
 		    ctx->activeDownloads.child);
   writeUnindexing(fd, ctx);
-  writeUploads(fd, 
+  writeUploads(fd,
 	       ctx,
-	       ctx->activeUploads.child);  
+	       ctx->activeUploads.child);
   CLOSE(fd);
 }
 

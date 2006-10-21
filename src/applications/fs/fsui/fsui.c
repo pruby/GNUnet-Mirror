@@ -46,7 +46,7 @@ static void updateDownloadThreads(void * c) {
   dpos = ctx->activeDownloads.child;
 #if DEBUG_PERSISTENCE
   if (dpos != NULL)
-    GE_LOG(ctx->ectx, 
+    GE_LOG(ctx->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Download thread manager schedules pending downloads...\n");
 #endif
@@ -102,7 +102,7 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
   FSUI_Event event;
   cron_t now;
   cron_t eta;
- 
+
   while (ret != NULL) {
     if (ret->state == FSUI_ACTIVE) {
       event.type = FSUI_upload_resumed;
@@ -179,8 +179,8 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 
   GE_ASSERT(ectx, cfg != NULL);
   ret = MALLOC(sizeof(FSUI_Context));
-  memset(ret, 
-	 0, 
+  memset(ret,
+	 0,
 	 sizeof(FSUI_Context));
   ret->activeDownloads.state
     = FSUI_PENDING; /* !? */
@@ -219,7 +219,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 #endif
     IPC_SEMAPHORE_DOWN(ret->ipc, YES);
 #if DEBUG_PERSISTENCE
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   "Aquired IPC lock.\n");
 #endif
@@ -245,7 +245,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
       event.data.SearchResumed.fisSize = list->sizeResultsReceived;
       event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
       event.data.SearchResumed.searchURI = list->uri;
-      list->cctx = cb(closure, &event); 
+      list->cctx = cb(closure, &event);
     }
     list = list->next;
   }
@@ -269,7 +269,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   }
 
   /* 3) restart processing */
-  ret->cron = cron_create(ectx);  
+  ret->cron = cron_create(ectx);
   /* 3a) resume downloads */
   cron_add_job(ret->cron,
 	       &updateDownloadThreads,
@@ -292,7 +292,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
 	GE_DIE_STRERROR(ectx,
 			GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
 			"pthread_create");
-    }    
+    }
     xlist = xlist->next;
   }
   /* 3d) resume searching */
@@ -332,7 +332,7 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
       event.data.DownloadSuspended.dc.pos = list;
       event.data.DownloadSuspended.dc.cctx = list->cctx;
       event.data.DownloadSuspended.dc.ppos = list->parent;
-      event.data.DownloadSuspended.dc.pcctx = list->parent->cctx; 
+      event.data.DownloadSuspended.dc.pcctx = list->parent->cctx;
       ctx->ecb(ctx->ecbClosure, &event);
     }
     list = list->next;
@@ -340,7 +340,7 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
 }
 
 /**
- * (recursively) signal upload suspension. 
+ * (recursively) signal upload suspension.
  */
 static void signalUploadSuspend(struct GE_Context * ectx,
 				FSUI_Context * ctx,
@@ -368,7 +368,7 @@ static void signalUploadSuspend(struct GE_Context * ectx,
 static void freeDownloadList(FSUI_DownloadList * list) {
   FSUI_DownloadList *  next;
   int i;
-  
+
   while (list != NULL) {
     freeDownloadList(list->child);
     ECRS_freeUri(list->uri);
@@ -429,7 +429,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 
   ectx = ctx->ectx;
   if (ctx->ipc != NULL)
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   "FSUI shutdown.  This may take a while.\n");
 
@@ -474,11 +474,11 @@ void FSUI_stop(struct FSUI_Context * ctx) {
       if (xpos->state == FSUI_ACTIVE)
 	xpos->state = FSUI_PENDING;
       PTHREAD_STOP_SLEEP(xpos->handle);
-      PTHREAD_JOIN(xpos->handle, &unused);    
+      PTHREAD_JOIN(xpos->handle, &unused);
       if (xpos->state != FSUI_PENDING)
 	xpos->state++; /* _JOINED */
-    }    
-    xpos = xpos->next;    
+    }
+    xpos = xpos->next;
   }
   /* 1d) stop uploading */
   upos = ctx->activeUploads.child;
@@ -497,7 +497,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	upos->state++; /* _JOINED */
     }
     upos = upos->next;
-  } 
+  }
 
   /* 2) signal suspension events */
   /* 2a) signal search suspension */
@@ -524,11 +524,11 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     event.data.UnindexSuspended.uc.pos = xpos;
     event.data.UnindexSuspended.uc.cctx = xpos->cctx;
     ctx->ecb(ctx->ecbClosure, &event);
-    xpos = xpos->next;    
+    xpos = xpos->next;
   }
 
   /* 3) serialize all of the FSUI state */
-  if (ctx->ipc != NULL) 
+  if (ctx->ipc != NULL)
     FSUI_serialize(ctx);
 
   /* 4) finally, free memory */
@@ -548,7 +548,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
 	 0);
     for (i=spos->sizeUnmatchedResultsReceived-1;i>=0;i--) {
       ResultPending * rp;
-      
+
       rp = &spos->unmatchedResultsReceived[i];
       GROW(rp->matchingKeys,
 	   rp->matchingKeyCount,

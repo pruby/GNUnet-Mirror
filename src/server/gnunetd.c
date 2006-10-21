@@ -78,7 +78,7 @@ static void waitForSignalHandler(struct GE_Context * ectx) {
   GE_LOG(ectx,
 	 GE_INFO | GE_USER | GE_REQUEST,
 	 _("`%s' startup complete.\n"),
-	 "gnunetd"); 
+	 "gnunetd");
   GNUNET_SHUTDOWN_WAITFOR();
   GE_LOG(ectx,
 	 GE_INFO | GE_USER | GE_REQUEST,
@@ -120,7 +120,7 @@ int gnunet_main(struct GE_Context * ectx) {
     cron_destroy(cron);
     os_network_monitor_destroy(mon);
 #ifndef WINDOWS
-    signal_handler_uninstall(SIGHUP, 
+    signal_handler_uninstall(SIGHUP,
 			     &reread_config,
 			     shc_hup);
 #endif
@@ -130,7 +130,7 @@ int gnunet_main(struct GE_Context * ectx) {
 				  NO);
     return SYSERR;
   }
-  initConnection(ectx, cfg, mon, cron); 
+  initConnection(ectx, cfg, mon, cron);
   loadApplicationModules();
   writePIDFile(ectx, cfg);
   if (NO == debug_flag)
@@ -139,17 +139,17 @@ int gnunet_main(struct GE_Context * ectx) {
 				YES);
   cron_start(cron);
   enableCoreProcessing();
-  waitForSignalHandler(ectx);  
-  disableCoreProcessing(); 
+  waitForSignalHandler(ectx);
+  disableCoreProcessing();
   cron_stop(cron);
   deletePIDFile(ectx, cfg);
   stopTCPServer();
-  unloadApplicationModules(); 
-  doneConnection(); 
+  unloadApplicationModules();
+  doneConnection();
   doneCore();
   os_network_monitor_destroy(mon);
 #ifndef WINDOWS
-  signal_handler_uninstall(SIGHUP, 
+  signal_handler_uninstall(SIGHUP,
 			   &reread_config,
 			   shc_hup);
 #endif
@@ -162,22 +162,22 @@ int gnunet_main(struct GE_Context * ectx) {
  */
 static struct CommandLineOption gnunetdOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  { '@', "win-service", NULL, "", 0, 
+  { '@', "win-service", NULL, "", 0,
     &gnunet_getopt_configure_set_option, "GNUNETD:WINSERVICE" },
-  { 'd', "debug", NULL, 
+  { 'd', "debug", NULL,
     gettext_noop("run in debug mode; gnunetd will "
 		 "not daemonize and error messages will "
-		 "be written to stderr instead of a logfile"), 
+		 "be written to stderr instead of a logfile"),
     0, &gnunet_getopt_configure_set_one, &debug_flag },
   COMMAND_LINE_OPTION_HELP(gettext_noop("Starts the gnunetd daemon.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 'p', "padding-disable", "YES/NO", 
+  { 'p', "padding-disable", "YES/NO",
     gettext_noop("disable padding with random data (experimental)"), 0,
     &gnunet_getopt_configure_set_option, "GNUNETD-EXPERIMENTAL:PADDING" },
 #ifndef MINGW
-  { 'u', "user", "USERNAME", 
-    gettext_noop("specify username as which gnunetd should run"), 1, 
+  { 'u', "user", "USERNAME",
+    gettext_noop("specify username as which gnunetd should run"), 1,
     &gnunet_getopt_configure_set_option, "GNUNETD:USERNAME" },
 #endif
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
@@ -188,7 +188,7 @@ static struct CommandLineOption gnunetdOptions[] = {
  * Initialize util (parse command line, options) and
  * call the main routine.
  */
-int main(int argc, 
+int main(int argc,
 	 const char * argv[]) {
   int ret;
   struct GE_Context * ectx;
@@ -199,7 +199,7 @@ int main(int argc,
 	    "Sorry, your C compiler did not properly align the C structs. Aborting.\n");
     return -1;
   }
-  ectx = GE_create_context_stderr(YES, 
+  ectx = GE_create_context_stderr(YES,
 				  GE_DEBUG |
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
@@ -216,13 +216,13 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (-1 == GC_parse_configuration(cfg,
 	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (OK != changeUser(ectx, cfg)) {
     GC_free(cfg);
@@ -238,7 +238,7 @@ int main(int argc,
     GC_free(cfg);
     GE_free_context(ectx);
     return 1;
-  }  
+  }
   ret = gnunet_main(ectx);
   GC_free(cfg);
   GE_free_context(ectx);

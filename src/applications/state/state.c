@@ -237,7 +237,7 @@ static int stateUnlinkFromDB(struct GE_Context * ectx,
   return OK;
 }
 
-State_ServiceAPI * 
+State_ServiceAPI *
 provide_module_state(CoreAPIForApplication * capi) {
   static State_ServiceAPI api;
 
@@ -254,10 +254,10 @@ provide_module_state(CoreAPIForApplication * capi) {
   GE_ASSERT(capi->ectx, dbh != NULL);
   n = strlen(dbh) + strlen(DIR_EXT) + 5;
   handle = MALLOC(n);
-  SNPRINTF(handle, 
-	   n, 
-	   "%s/%s/", 
-	   dbh, 
+  SNPRINTF(handle,
+	   n,
+	   "%s/%s/",
+	   dbh,
 	   DIR_EXT);
   FREE(dbh);
   if (SYSERR == disk_directory_create(capi->ectx,

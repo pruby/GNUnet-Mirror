@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   srand(1);
   UNLINK("/tmp/bloomtest.dat");
   bf = loadBloomfilter(NULL,
-		       "/tmp/bloomtest.dat", 
+		       "/tmp/bloomtest.dat",
 		       SIZE,
 		       K);
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
 
 
   bf=loadBloomfilter(NULL,
-		     "/tmp/bloomtest.dat", 
+		     "/tmp/bloomtest.dat",
 		     SIZE,
 		     K);
 

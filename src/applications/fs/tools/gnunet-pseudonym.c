@@ -69,7 +69,7 @@ static struct ECRS_URI * advertisement;
 static struct CommandLineOption gnunetpseudonymOptions[] = {
     { 'a', "anonymity", "LEVEL",
       gettext_noop("set the desired LEVEL of sender-anonymity"),
-      1, &gnunet_getopt_configure_set_uint, &anonymity }, 
+      1, &gnunet_getopt_configure_set_uint, &anonymity },
     { 'A', "automate", NULL,
       gettext_noop("automate creation of a namespace by starting a collection"),
       0, &gnunet_getopt_configure_set_one, &start_collection },
@@ -87,7 +87,7 @@ static struct CommandLineOption gnunetpseudonymOptions[] = {
     COMMAND_LINE_OPTION_LOGGING, /* -L */
     { 'k', "keyword", "KEYWORD",
       gettext_noop("use the given keyword to advertise the namespace (use when creating a new pseudonym)"),
-      1, &gnunet_getopt_configure_set_keywords, &advertisement },    
+      1, &gnunet_getopt_configure_set_keywords, &advertisement },
     { 'm', "meta", "TYPE=VALUE",
       gettext_noop("specify metadata describing the namespace or collection"),
       1, &gnunet_getopt_configure_set_metadata, &meta },
@@ -183,7 +183,7 @@ static int namespacePrinter(void * unused,
   return OK;
 }
 
-int main(int argc, 
+int main(int argc,
 	 const char *argv[]) {
   int cnt;
   char * pname;
@@ -192,7 +192,7 @@ int main(int argc,
   HashCode512 hc;
 
   /* startup */
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -211,7 +211,7 @@ int main(int argc,
     GC_free(cfg);
     GE_free_context(ectx);
     ECRS_freeMetaData(meta);
-    return -1;  
+    return -1;
   }
   success = 0; /* no errors */
 
@@ -284,7 +284,7 @@ int main(int argc,
       } else {
 	if (advertisement == NULL)
 	  advertisement = ECRS_parseCharKeywordURI(ectx,
-						   "namespace");      
+						   "namespace");
       }
       FREE(keyword);
       rootURI = NS_createNamespace(ectx,

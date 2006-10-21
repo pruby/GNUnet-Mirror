@@ -215,13 +215,13 @@ static void initializeStats() {
 }
 
 static void immediateUpdates() {
-  statSet(stat_handle_cpu_load, 
+  statSet(stat_handle_cpu_load,
 	  os_cpu_get_load(coreAPI->ectx,
 			  coreAPI->cfg));
-  statSet(stat_handle_network_load_up, 
+  statSet(stat_handle_network_load_up,
 	  os_network_monitor_get_load(coreAPI->load_monitor,
 				      Upload));
-  statSet(stat_handle_network_load_down, 
+  statSet(stat_handle_network_load_down,
 	  os_network_monitor_get_load(coreAPI->load_monitor,
 				      Download));
   statSet(stat_connected,

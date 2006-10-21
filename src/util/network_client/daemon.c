@@ -37,7 +37,7 @@ int connection_test_running(struct GE_Context * ectx,
   int ret;
 
   sock = client_connection_create(ectx, cfg);
-  if (sock == NULL) 
+  if (sock == NULL)
     return SYSERR;
   csHdr.size
     = htons(sizeof(MESSAGE_HEADER));

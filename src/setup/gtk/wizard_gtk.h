@@ -28,7 +28,7 @@
 #ifndef WIZARD_GTK_H
 #define WIZARD_GTK_H
 
-int gtk_wizard_main(int argc, 
+int gtk_wizard_main(int argc,
 		    char **argv,
 		    void * library);
 

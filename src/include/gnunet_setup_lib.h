@@ -61,14 +61,14 @@ typedef enum {
 } GNS_Type;
 
 /**
- * @brief configuration value 
+ * @brief configuration value
  *
  * A configuration value does not only specify a value
  * but also the legal range of values.
  */
 typedef union {
 
-  struct { 
+  struct {
     int val;
 
     int def;
@@ -89,9 +89,9 @@ typedef union {
   struct {
     /**
      * 0-terminated string, never NULL
-     */ 
+     */
     char * val;
-    
+
     char * def;
 
     /**
@@ -116,7 +116,7 @@ typedef union {
  * attribute, but not the overall tree structure.
  */
 typedef struct GNS_Tree {
-  
+
   /**
    * Section for this node (maybe NULL)
    */
@@ -156,7 +156,7 @@ typedef struct GNS_Tree {
   /**
    * Value for this node (type of pointer is determined
    * by the type field)
-   */ 
+   */
   GNS_Value value;
 
 } GNS_Tree;
@@ -168,8 +168,8 @@ struct GNS_Context;
 
 /**
  * Start the setup process by loading a scheme file that
- * contains the configuration specification. 
- * 
+ * contains the configuration specification.
+ *
  * @param ectx for error reporting
  * @param cfg configuration values that have a known initial value
  * @param specification name of the guile file containing the spec
@@ -194,7 +194,7 @@ GNS_get_tree(struct GNS_Context * ctx);
 /**
  * Free resources associated with the GNS context.
  */
-void 
+void
 GNS_free_specification(struct GNS_Context * ctx);
 
 /**
@@ -211,7 +211,7 @@ typedef void (*GNS_TreeChangeListener)(const struct GNS_Tree * node,
  *
  * @param listener callback to call whenever the tree changes
  */
-void 
+void
 GNS_register_tree_change_listener(struct GNS_Context * ctx,
 				  GNS_TreeChangeListener listener,
 				  void * cls);
@@ -220,7 +220,7 @@ GNS_register_tree_change_listener(struct GNS_Context * ctx,
  * Release a tree change listener from GNS (do not call the listener
  * in the future for change events).
  */
-void 
+void
 GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
 				    GNS_TreeChangeListener listener,
 				    void * cls);

@@ -39,7 +39,7 @@ static int read_int(int fd,
   if (sizeof(int) != READ(fd, &big, sizeof(int))) \
     return SYSERR;				  \
   *val = ntohl(big);
-  return OK;  
+  return OK;
 }
 
 #define READINT(a) if (OK != read_int(fd, (int*) &a)) return SYSERR;
@@ -51,7 +51,7 @@ static int read_long(int fd,
   if (sizeof(long long) != READ(fd, &big, sizeof(long long))) \
     return SYSERR;				  \
   *val = ntohll(big);
-  return OK;  
+  return OK;
 }
 
 #define READLONG(a) if (OK != read_long(fd, (long long*) &a)) return SYSERR;
@@ -86,7 +86,7 @@ static char * read_string(int fd,
 
   if (OK != read_int(fd, (int*) &big))
     return NULL;
-  if (big > maxLen) 
+  if (big > maxLen)
     return NULL;
   buf = MALLOC(big + 1);
   buf[big] = '\0';
@@ -94,7 +94,7 @@ static char * read_string(int fd,
     FREE(buf);
     return NULL;
   }
-  return buf;    
+  return buf;
 }
 
 #define READSTRING(c, max) if (NULL == (c = read_string(fd, max))) return SYSERR;
@@ -178,15 +178,15 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
     FREE(ret);
     return NULL;
   }
-  if (ret->completedDownloadsCount > 0) 
+  if (ret->completedDownloadsCount > 0)
     ret->completedDownloads
       = MALLOC(sizeof(struct ECRS_URI *) *
-	       ret->completedDownloadsCount);  
+	       ret->completedDownloadsCount);
   ok = YES;
   for (i=0;i<ret->completedDownloadsCount;i++) {
     ret->completedDownloads[i] = read_uri(ectx, fd);
-    if (ret->completedDownloads[i] == NULL) 
-      ok = NO;    
+    if (ret->completedDownloads[i] == NULL)
+      ok = NO;
   }
   if (NO == ok) {
     FREE(ret->filename);
@@ -209,7 +209,7 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
 				ctx,
 				ret);
 #if DEBUG_PERSISTENCE
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI persistence: restoring download `%s': (%llu, %llu)\n",
 	 ret->filename,
@@ -233,7 +233,7 @@ static int readFileInfo(struct GE_Context * ectx,
 
   fi->meta = NULL;
   fi->uri = NULL;
-  READINT(size);  
+  READINT(size);
   if (size > 1024 * 1024) {
     GE_BREAK(ectx, 0);
     return SYSERR;
@@ -299,7 +299,7 @@ static int readCollection(int fd,
   if (big == 0) {
     ctx->collectionData = NULL;
     return OK;
-  } 
+  }
   ctx->collectionData
     = MALLOC(big);
   if (big - sizeof(unsigned int) !=
@@ -383,7 +383,7 @@ static int readSearches(int fd,
       memset(list->unmatchedResultsReceived,
 	     0,
 	     list->sizeUnmatchedResultsReceived *
-	     sizeof(ResultPending));	     
+	     sizeof(ResultPending));	
     }
     for (i=0;i<list->sizeResultsReceived;i++)
       if (OK != readFileInfo(ctx->ectx,
@@ -426,7 +426,7 @@ static int readSearches(int fd,
     }	
     list->ctx
       = ctx;
-    
+
     /* finally: prepend to list */
     list->next
       = ctx->activeSearches;
@@ -449,7 +449,7 @@ static int readSearches(int fd,
   if (list->unmatchedResultsReceived != NULL) {
     for (i=0;i<list->sizeUnmatchedResultsReceived;i++) {
       rp = &list->unmatchedResultsReceived[i];
-      
+
       if (rp->fi.uri != NULL)
 	ECRS_freeUri(rp->fi.uri);
       if (rp->fi.meta != NULL)
@@ -458,10 +458,10 @@ static int readSearches(int fd,
     }
     GROW(list->resultsReceived,
 	 list->sizeResultsReceived,
-	 0);  
+	 0);
   }
   if (list->uri != NULL)
-    ECRS_freeUri(list->uri);  
+    ECRS_freeUri(list->uri);
   FREE(list);
   return SYSERR;
 }
@@ -492,7 +492,7 @@ static int readUploadList(struct FSUI_Context * ctx,
   ectx = ctx->ectx;
   while (1) {
     READINT(big);
-    if (big == 0) 
+    if (big == 0)
       return OK;
     memset(&l,
 	   0,
@@ -551,7 +551,7 @@ static int readUploads(int fd,
 	 sizeof(FSUI_UploadList));
   while (1) {
     READINT(big);
-    if (big == 0) 
+    if (big == 0)
       return OK;
     if ( (big != 2) && (big != 3) ) {
       GE_BREAK(NULL, 0);
@@ -559,13 +559,13 @@ static int readUploads(int fd,
     }
     memset(&sshared,
 	   0,
-	   sizeof(FSUI_UploadShared));   
+	   sizeof(FSUI_UploadShared));
     READINT(sshared.doIndex);
     READINT(sshared.anonymityLevel);
     READINT(sshared.priority);
     READINT(sshared.individualKeywords);
     READLONG(sshared.expiration);
-    if (big == 2) 
+    if (big == 2)
       READSTRING(sshared.extractor_config, 1024*1024);
     shared = MALLOC(sizeof(FSUI_UploadShared));
     memcpy(shared,
@@ -581,7 +581,7 @@ static int readUploads(int fd,
 	 may have added *some* uploads that
 	 still reference shared -- need to
 	 find and cleanup those first,
-	 or at least detect their presence 
+	 or at least detect their presence
 	 and not free */
       FREE(shared->extractor_config);
       FREE(shared);
@@ -600,7 +600,7 @@ static int readUnindex(int fd,
 
   while (1) {
     READINT(big);
-    if (big != 1) 
+    if (big != 1)
       return OK;
     READINT(big); /* state */
     READSTRING(name, 1024 * 1024);
@@ -618,12 +618,12 @@ void FSUI_deserialize(struct FSUI_Context * ctx) {
   int fd;
 
   fd = -1;
-  if (0 != ACCESS(ctx->name, R_OK)) 
+  if (0 != ACCESS(ctx->name, R_OK))
     return;
   fd = disk_file_open(ctx->ectx,
 		      ctx->name,
-		      O_RDONLY);  
-  if (fd == -1) 
+		      O_RDONLY);
+  if (fd == -1)
     return;
 
   if ( (OK != checkMagic(fd)) ||
@@ -633,7 +633,7 @@ void FSUI_deserialize(struct FSUI_Context * ctx) {
        (OK != readUnindex(fd, ctx) ) ||
        (OK != readUploads(fd, ctx) ) ) {
     GE_BREAK(ctx->ectx, 0);
-    GE_LOG(ctx->ectx, 
+    GE_LOG(ctx->ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("FSUI state file `%s' had syntax error at offset %u.\n"),
 	   ctx->name,

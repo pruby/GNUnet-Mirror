@@ -56,7 +56,7 @@ typedef struct GC_Configuration {
    * Note that for setting options a different context can be
    * used (since failing to change an option may have to be reported
    * in a fundamentally different way to the user).
-   * 
+   *
    * @parm ectx maybe NULL, in that case errors will no longer
    *       be reported
    */
@@ -98,7 +98,7 @@ typedef struct GC_Configuration {
   char * (*configuration_expand_dollar)(struct GC_Configuration * cfg,
 					   const char * section,
 					   char * old);
-  
+
   /**
    * Get a configuration value that should be a number.
    * @param min minimal legal value
@@ -113,7 +113,7 @@ typedef struct GC_Configuration {
 					unsigned long long max,
 					unsigned long long def,
 					unsigned long long * number);
-  
+
 
   /**
    * Get a configuration value that should be a string.
@@ -142,7 +142,7 @@ typedef struct GC_Configuration {
 					  const char * option,
 					  const char * def,
 					  char ** value);
-  
+
   /**
    * Get a configuration value that should be in a set of
    * predefined strings
@@ -160,7 +160,7 @@ typedef struct GC_Configuration {
 					const char ** choices,
 					const char * def,
 					const char ** value);
-  
+
   /**
    * Set a configuration value that should be a number.
    * @return 0 on success, -1 on error (i.e. out of memory,
@@ -171,8 +171,8 @@ typedef struct GC_Configuration {
 					const char * section,
 					const char * option,
 					unsigned long long number);
-  
-  
+
+
   /**
    * Set a configuration value that should be a string.
    * @param value
@@ -184,10 +184,10 @@ typedef struct GC_Configuration {
 					const char * section,
 					const char * option,
 					const char * value);
-  
+
   /**
    * Set a configuration value that should be in a set of
-   * predefined strings.  
+   * predefined strings.
    * @param value
    * @return 0 on success, -1 on error (i.e. out of memory,
    *   or update refused by registered callback)
@@ -199,7 +199,7 @@ typedef struct GC_Configuration {
 					const char * choice);
 
   /**
-   * Attach a callback that is notified whenever a 
+   * Attach a callback that is notified whenever a
    * configuration option changes.
    * @return 0 on success, -1 on error
    */
@@ -208,16 +208,16 @@ typedef struct GC_Configuration {
 				void * ctx);
 
   /**
-   * Attach a callback that is notified whenever a 
+   * Attach a callback that is notified whenever a
    * configuration option changes.
    * @return 0 on success, -1 on error, 1 for no such handler registered
    */
   int (*detach_change_listener)(struct GC_Configuration * cfg,
 				GC_ChangeListener callback,
 				void * ctx);
-  
+
 } GC_Configuration;
-  
+
 /**
  * Create a GC_Configuration (C implementation).
  */

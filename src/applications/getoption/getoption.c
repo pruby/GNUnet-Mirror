@@ -51,7 +51,7 @@ static int handleGetOption(struct ClientHandle * sock,
 					       req->option,
 					       NULL,
 					       &val)) ||
-       (val == NULL) ) 
+       (val == NULL) )
     return SYSERR; /* signal error: option not set */
 
   rep = MALLOC(sizeof(MESSAGE_HEADER) + strlen(val) + 1);

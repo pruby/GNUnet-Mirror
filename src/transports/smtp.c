@@ -286,7 +286,7 @@ static void * listenAndDistribute(void * unused) {
     int fd;
 
     fd = disk_file_open(ectx,
-			pipename, 
+			pipename,
 			O_RDONLY);
     if (fd == -1) {
       if (smtp_shutdown == NO)
@@ -348,7 +348,7 @@ static void * listenAndDistribute(void * unused) {
 	     &mp->sender,
 	     sizeof(PeerIdentity));
 #if DEBUG_SMTP
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "SMTP message passed to the core.\n");
 #endif
@@ -538,7 +538,7 @@ static int smtpSend(TSession * tsession,
   helo = (P2P_hello_MESSAGE*)tsession->internal;
   if (helo == NULL)
     return SYSERR;
-  
+
   smtp_sock = smtp_create_session();
   if (smtp_sock == NULL) {
     GE_LOG(ectx,
@@ -562,7 +562,7 @@ static int smtpSend(TSession * tsession,
 	 size);
   ebody = NULL;
 #if DEBUG_SMTP
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Base64-encoding %d byte message.\n",
 	 ssize);
@@ -590,7 +590,7 @@ static int smtpSend(TSession * tsession,
   smtp_set_messagecb(message,
 		     &getMessage,
 		     &msg);
-  
+
 #if 0
   if (OK == writeSMTPLine(smtp_sock,
 			  "%-*s\r\n",
@@ -701,7 +701,7 @@ TransportAPI * inittransport_smtp(CoreAPIForTransport * core) {
   if (mtu == 0)
     mtu = MESSAGE_SIZE;
   if (mtu < 1200)
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("MTU for `%s' is probably too low (fragmentation not implemented!)\n"),
 	   "SMTP");

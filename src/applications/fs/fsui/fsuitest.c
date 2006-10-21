@@ -79,7 +79,7 @@ static void * eventCallback(void * cls,
 				  0,
 				  NO,
 				  event->data.SearchResult.fi.uri,
-				  fn);    
+				  fn);
     FREE(fn);
     break;
   case FSUI_upload_completed:
@@ -126,12 +126,12 @@ int main(int argc, char * argv[]){
   struct FSUI_UploadList * upload;
   struct FSUI_SearchList * search;
   struct FSUI_UnindexList * unindex;
-  
+
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
@@ -171,7 +171,7 @@ int main(int argc, char * argv[]){
 			    NULL,
 			    0, /* anonymity */
 			    0, /* priority */
-			    YES, 
+			    YES,
 			    NO,
 			    NO,
 			    meta,
@@ -225,7 +225,7 @@ int main(int argc, char * argv[]){
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }
-  
+
 
   /* END OF TEST CODE */
  FAILURE:

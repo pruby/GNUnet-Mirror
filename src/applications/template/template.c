@@ -57,7 +57,7 @@ int initialize_module_template(CoreAPIForApplication * capi) {
   client = NULL;
   coreAPI = capi;
 
-  GE_LOG(capi->ectx, 
+  GE_LOG(capi->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("`%s' registering client handler %d and %d\n"),
 	 "template",

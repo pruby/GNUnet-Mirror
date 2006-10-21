@@ -218,53 +218,53 @@ static void * printstatus(void * ctx,
 static struct CommandLineOption gnunetinsertOptions[] = {
   { 'a', "anonymity", "LEVEL",
     gettext_noop("set the desired LEVEL of sender-anonymity"),
-    1, &gnunet_getopt_configure_set_uint, &anonymity }, 
+    1, &gnunet_getopt_configure_set_uint, &anonymity },
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   { 'C', "copy", NULL,
     gettext_noop("even if gnunetd is running on the local machine, force the"
 		 " creation of a copy instead of making a link to the GNUnet share directory"),
-    0, &gnunet_getopt_configure_set_one, &do_copy }, 
+    0, &gnunet_getopt_configure_set_one, &do_copy },
   { 'd', "disable-creation-time", NULL,
     gettext_noop("disable adding the creation time to the metadata of the uploaded file"),
-    0, &gnunet_getopt_configure_set_one, &do_disable_creation_time }, 
+    0, &gnunet_getopt_configure_set_one, &do_disable_creation_time },
   { 'D', "direct", NULL,
     gettext_noop("use libextractor to add additional direct references to directory entries"),
-    0, &gnunet_getopt_configure_set_one, &do_direct_references }, 
+    0, &gnunet_getopt_configure_set_one, &do_direct_references },
   { 'e', "extract", NULL,
     gettext_noop("print list of extracted keywords that would be used, but do not perform upload"),
-    0, &gnunet_getopt_configure_set_one, &extract_only },  
+    0, &gnunet_getopt_configure_set_one, &extract_only },
   COMMAND_LINE_OPTION_HELP(gettext_noop("Make files available to GNUnet for sharing.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   { 'i', "interval", "SECONDS",
     gettext_noop("set interval for availability of updates to SECONDS"
 		 " (for namespace insertions only)"),
-    1, &gnunet_getopt_configure_set_uint, &interval },  
+    1, &gnunet_getopt_configure_set_uint, &interval },
   { 'k', "key", "KEYWORD",
     gettext_noop("add an additional keyword for the top-level file or directory"
 		 " (this option can be specified multiple times)"),
-    1, &gnunet_getopt_configure_set_keywords, &topKeywords },    
+    1, &gnunet_getopt_configure_set_keywords, &topKeywords },
   { 'K', "global-key", "KEYWORD",
     gettext_noop("add an additional keyword for all files and directories"
 		 " (this option can be specified multiple times)"),
-    1, &gnunet_getopt_configure_set_keywords, &gloKeywords },    
-  COMMAND_LINE_OPTION_LOGGING, /* -L */  
+    1, &gnunet_getopt_configure_set_keywords, &gloKeywords },
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'm', "meta", "TYPE:VALUE",
     gettext_noop("set the meta-data for the given TYPE to the given VALUE"),
     1, &gnunet_getopt_configure_set_metadata, &meta },
   { 'n', "noindex", NULL,
     gettext_noop("do not index, perform full insertion (stores entire "
 		 "file in encrypted form in GNUnet database)"),
-    0, &gnunet_getopt_configure_set_one, &do_insert },  
+    0, &gnunet_getopt_configure_set_one, &do_insert },
   { 'N', "next", "ID",
     gettext_noop("specify ID of an updated version to be published in the future"
 		 " (for namespace insertions only)"),
-    1, &gnunet_getopt_configure_set_string, &next_id },  
+    1, &gnunet_getopt_configure_set_string, &next_id },
   { 'p', "priority", "PRIORITY",
     gettext_noop("specify the priority of the content"),
-    1, &gnunet_getopt_configure_set_uint, &priority }, 
+    1, &gnunet_getopt_configure_set_uint, &priority },
   { 'P', "pseudonym", "NAME",
     gettext_noop("publish the files under the pseudonym NAME (place file into namespace)"),
-    1, &gnunet_getopt_configure_set_string, &pseudonym },  
+    1, &gnunet_getopt_configure_set_string, &pseudonym },
   { 'S', "sporadic", NULL,
     gettext_noop("specifies this as an aperiodic but updated publication"
 		 " (for namespace insertions only)"),
@@ -272,14 +272,14 @@ static struct CommandLineOption gnunetinsertOptions[] = {
   { 't', "this", "ID",
     gettext_noop("set the ID of this version of the publication"
 		 " (for namespace insertions only)"),
-    1, &gnunet_getopt_configure_set_string, &this_id },  
+    1, &gnunet_getopt_configure_set_string, &this_id },
   { 'T', "time", "TIME",
     gettext_noop("specify creation time for SBlock (see man-page for format)"),
-    1, &gnunet_getopt_configure_set_string, &creation_time },  
+    1, &gnunet_getopt_configure_set_string, &creation_time },
   { 'u', "update", "ID",
     gettext_noop("ID of the previous version of the content"
 		 " (for namespace update only)"),
-    1, &gnunet_getopt_configure_set_string, &prev_id },  
+    1, &gnunet_getopt_configure_set_string, &prev_id },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
@@ -292,14 +292,14 @@ static struct CommandLineOption gnunetinsertOptions[] = {
  * @param argv command line arguments
  * @return return 0 for ok, -1 on error
  */
-int main(int argc, 
+int main(int argc,
 	 const char ** argv) {
   const char * filename;
   int i;
   char * tmp;
   unsigned long long verbose;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -315,10 +315,10 @@ int main(int argc,
 			   argv);
   if (i == SYSERR) {
     errorCode = -1;
-    goto quit;  
+    goto quit;
   }
   if (OK != GC_parse_configuration(cfg,
-				   cfgFilename)) {  
+				   cfgFilename)) {
     errorCode = -1;
     goto quit;
   }
@@ -333,7 +333,7 @@ int main(int argc,
     EXTRACTOR_ExtractorList * l;
     char * ex;
     EXTRACTOR_KeywordList * list;
-	    
+	
     l = EXTRACTOR_loadDefaultLibraries();
     GC_get_configuration_value_string(cfg,
 				      "FS",
@@ -356,10 +356,10 @@ int main(int argc,
     ECRS_freeMetaData(meta);
 
     errorCode = 0;
-    goto quit; 
+    goto quit;
   }
 
-  
+
   GC_get_configuration_value_number(cfg,
 				    "GNUNET",
 				    "VERBOSE",
@@ -391,7 +391,7 @@ int main(int argc,
 			    fmt,
 			    &t))) {
 	GE_LOG_STRERROR(ectx,
-			GE_FATAL | GE_USER | GE_IMMEDIATE, 
+			GE_FATAL | GE_USER | GE_IMMEDIATE,
 			"strptime");
 	printf(_("Parsing time failed. Use `%s' format.\n"),
 	       fmt);
@@ -453,10 +453,10 @@ int main(int argc,
 			(DirectoryScanCallback) &disk_directory_scan,
 			ectx,
 			anonymity,
-			priority,			   
+			priority,			
 			! do_insert,
 			YES,
-			do_direct_references,			   
+			do_direct_references,			
 			meta,
 			gloKeywords,
 			topKeywords);
@@ -471,7 +471,7 @@ int main(int argc,
   }
   ECRS_freeMetaData(meta);
   FSUI_stop(ctx);
-  
+
 quit:
   GC_free(cfg);
   GE_free_context(ectx);

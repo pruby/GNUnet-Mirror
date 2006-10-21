@@ -62,7 +62,7 @@ struct ECRS_URI * ECRS_parseCharKeywordURI(struct GE_Context * ectx,
 
   if (num_Words == 0) {
     FREENONNULL(searchString);
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_IMMEDIATE | GE_USER,
 	   _("No keywords specified!\n"));
     return NULL;

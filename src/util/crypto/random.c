@@ -43,7 +43,7 @@ unsigned int randomi(unsigned int i) {
   lockGcrypt();
   /* see http://lists.gnupg.org/pipermail/gcrypt-devel/2004-May/000613.html */
 #ifdef gcry_fast_random_poll
-  if ( (invokeCount++ % 256) == 0) 
+  if ( (invokeCount++ % 256) == 0)
     gcry_fast_random_poll();
 #endif
   ret = rand(); /* in case gcry_randomize fails,
@@ -106,7 +106,7 @@ unsigned int weak_randomi(unsigned int i) {
   unsigned int ret;
 
   GE_ASSERT(NULL, i > 0);
-  ret = i * ((double) RANDOM() / RAND_MAX);  
+  ret = i * ((double) RANDOM() / RAND_MAX);
   if (ret >= i)
     ret = i - 1;
   return ret;

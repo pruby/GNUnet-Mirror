@@ -63,7 +63,7 @@ static int handlep2pReply(const PeerIdentity * sender,
   hostCount = (ntohs(message->size)-sizeof(P2P_tracekit_reply_MESSAGE))/sizeof(PeerIdentity);
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_reply_MESSAGE)+hostCount*sizeof(PeerIdentity)) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Received invalid `%s' message from `%s'.\n"),
 	   "P2P_tracekit_probe_MESSAGE",
@@ -95,7 +95,7 @@ static int handlep2pReply(const PeerIdentity * sender,
 	CS_tracekit_reply_MESSAGE * csReply;
 
 	idx = ntohl(reply->clientId);
-	GE_LOG(ectx, 
+	GE_LOG(ectx,
 	       GE_DEBUG | GE_REQUEST | GE_USER,
 	       "TRACEKIT: I am initiator, sending to client.\n");
 	if (idx >= clientCount) {
@@ -103,7 +103,7 @@ static int handlep2pReply(const PeerIdentity * sender,
 	  continue; /* discard */
 	}
 	if (clients[idx] == NULL) {
-	  GE_LOG(ectx, 
+	  GE_LOG(ectx,
 		 GE_DEBUG | GE_REQUEST | GE_USER,
 		 "TRACEKIT: received response on slot %u, but client already exited.\n",
 		 idx);
@@ -129,7 +129,7 @@ static int handlep2pReply(const PeerIdentity * sender,
 
 	hash2enc(&routeTable[i]->replyTo.hashPubKey,
 		 &hop);
-	GE_LOG(ectx, 
+	GE_LOG(ectx,
 	       GE_DEBUG | GE_REQUEST | GE_USER,
 	       "TRACEKIT: forwarding to next hop `%s'\n",
 	       &hop);
@@ -196,7 +196,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
 	   &sen);
   if (ntohs(message->size) !=
       sizeof(P2P_tracekit_probe_MESSAGE)) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Received invalid `%s' message from `%s'.\n"),
 	   "P2P_tracekit_probe_MESSAGE",
@@ -209,7 +209,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
   TIME(&now);
   msg = (P2P_tracekit_probe_MESSAGE*) message;
   if ((TIME_T)ntohl(msg->timestamp) > 3600 + now) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "TRACEKIT: probe has timestamp in the far future (%d > %d), dropping\n",
 	   ntohl(msg->timestamp),
@@ -227,7 +227,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
 	 0 == memcmp(&routeTable[i]->initiator.hashPubKey,
 		     &msg->initiatorId.hashPubKey,
 		     sizeof(HashCode512)) ) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "TRACEKIT-PROBE %d from `%s' received twice (slot %d), ignored\n",
 	     ntohl(msg->timestamp),
@@ -258,7 +258,7 @@ static int handlep2pProbe(const PeerIdentity * sender,
   }
   if (sel == -1) {
     MUTEX_UNLOCK(lock);
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   _("TRACEKIT: routing table full, trace request dropped\n"));
     return OK;
@@ -349,7 +349,7 @@ static int csHandle(struct ClientHandle * client,
   csProbe = (CS_tracekit_probe_MESSAGE*) message;
   if (ntohs(csProbe->header.size) !=
       sizeof(CS_tracekit_probe_MESSAGE) ) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("TRACEKIT: received invalid `%s' message\n"),
 	   "CS_tracekit_probe_MESSAGE");
@@ -377,7 +377,7 @@ static int csHandle(struct ClientHandle * client,
   }
   clients[idx] = client;
   MUTEX_UNLOCK(lock);
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "TRACEKIT: client joins in slot %u.\n",
 	 idx);
@@ -408,7 +408,7 @@ static void clientExitHandler(struct ClientHandle * c) {
   MUTEX_LOCK(lock);
   for (i=0;i<clientCount;i++)
     if (clients[i] == c) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "TRACEKIT: client in slot %u exits.\n",
 	     i);

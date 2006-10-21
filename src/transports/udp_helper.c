@@ -116,7 +116,7 @@ static void * select_accept_handler(void * ah_cls,
   BlacklistedTester blt = ah_cls;
   if (NO != blt(addr,
 		addr_len))
-    return NULL;  
+    return NULL;
   return &nonnullpointer;
 }
 
@@ -190,7 +190,7 @@ static int stopTransportServer() {
   if (selector != NULL) {
     select_destroy(selector);
     selector = NULL;
-  }  
+  }
   socket_destroy(udp_sock);
   udp_sock = NULL;
   return OK;

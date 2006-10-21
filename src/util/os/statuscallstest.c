@@ -33,7 +33,7 @@ int main(int argc, char * argv[]){
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);

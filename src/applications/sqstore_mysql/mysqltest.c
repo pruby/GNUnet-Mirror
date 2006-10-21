@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
   cron = cron_create(NULL);
   initCore(NULL,

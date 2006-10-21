@@ -153,7 +153,7 @@ extern "C" {
 #define GROW(arr,size,tsize) xgrow_((void**)&arr, sizeof(arr[0]), &size, tsize, __FILE__, __LINE__, __FUNCTION__)
 
 /**
- * Append an element to a list (growing the 
+ * Append an element to a list (growing the
  * list by one).
  */
 #define APPEND(arr,size,element) GROW(arr,size,(size)+1); arr[(size)-1] = (element)
@@ -203,8 +203,8 @@ char * string_expandFileName(struct GE_Context * ectx,
  * String functions
  */
 #if !HAVE_STRLCPY
-size_t strlcpy(char *dest, 
-	       const char *src, 
+size_t strlcpy(char *dest,
+	       const char *src,
 	       size_t size);
 #endif
 

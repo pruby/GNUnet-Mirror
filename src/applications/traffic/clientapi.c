@@ -62,12 +62,12 @@ int pollSocket(struct ClientServerConnection * sock,
   req.timePeriod
     = htonl(timeframe);
   if (SYSERR == connection_write(sock,
-				 &req.header)) 
-    return SYSERR;  
+				 &req.header))
+    return SYSERR;
   info = NULL;
   if (SYSERR == connection_read(sock,
-				(MESSAGE_HEADER**)&info)) 
-    return SYSERR;  
+				(MESSAGE_HEADER**)&info))
+    return SYSERR;
   if ( (ntohs(info->header.type) !=
 	CS_PROTO_traffic_INFO) ||
        (ntohs(info->header.size) !=

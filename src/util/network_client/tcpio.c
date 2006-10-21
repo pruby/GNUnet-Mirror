@@ -59,7 +59,7 @@ typedef struct ClientServerConnection {
   struct SocketHandle * sock;
 
   struct MUTEX * readlock;
-  
+
   struct MUTEX * writelock;
 
   struct MUTEX * destroylock;
@@ -119,12 +119,12 @@ static char * getGNUnetdHost(struct GE_Context * ectx,
   return res;
 }
 
-struct ClientServerConnection * 
+struct ClientServerConnection *
 client_connection_create(struct GE_Context * ectx,
 			 struct GC_Configuration * cfg) {
   ClientServerConnection * result;
 
-  result = MALLOC(sizeof(ClientServerConnection));  
+  result = MALLOC(sizeof(ClientServerConnection));
   result->sock = NULL;
   result->readlock = MUTEX_CREATE(NO);
   result->writelock = MUTEX_CREATE(NO);
@@ -181,11 +181,11 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
 		       sock->cfg);
   if (port == 0)
     return SYSERR;
-  host = getGNUnetdHost(sock->ectx, 
+  host = getGNUnetdHost(sock->ectx,
 			sock->cfg);
   if (host == NULL)
     return SYSERR;
-  if (SYSERR == get_host_by_name(sock->ectx, 
+  if (SYSERR == get_host_by_name(sock->ectx,
 				 host,
 				 &ip)) {
     FREE(host);
@@ -236,7 +236,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   }
   /* we call select() first with a timeout of 5s to
      avoid blocking on a later write indefinitely;
-     Important if a local firewall decides to just drop 
+     Important if a local firewall decides to just drop
      the TCP handshake...*/
   FD_ZERO(&rset);
   FD_ZERO(&wset);
@@ -244,10 +244,10 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
   FD_SET(osock, &wset);
   timeout.tv_sec = 5;
   timeout.tv_usec = 0;
-  ret = SELECT(osock + 1, 
+  ret = SELECT(osock + 1,
 	       &rset,
 	       &wset,
-	       &eset, 
+	       &eset,
 	       &timeout);
   if ( (ret == -1) ||
        (! FD_ISSET(osock,
@@ -312,7 +312,7 @@ int connection_read(struct ClientServerConnection * sock,
 
   if (OK != connection_ensure_connected(sock))
     return SYSERR;
-  
+
   MUTEX_LOCK(sock->readlock);
   pos = 0;
   res = 0;
@@ -370,7 +370,7 @@ int connection_read_result(struct ClientServerConnection * sock,
 
   rv = NULL;
   if (SYSERR == connection_read(sock,
-				(MESSAGE_HEADER **) &rv)) 
+				(MESSAGE_HEADER **) &rv))
     return SYSERR;
   if ( (ntohs(rv->header.size) != sizeof(RETURN_VALUE_MESSAGE)) ||
        (ntohs(rv->header.type) != CS_PROTO_RETURN_VALUE) ) {
@@ -413,7 +413,7 @@ int connection_write_result(struct ClientServerConnection * sock,
  * a serious error to the other side.
  *
  * @param sock the TCP socket
- * @param mask GE_MASK 
+ * @param mask GE_MASK
  * @param date date string
  * @param msg message string
  * @return SYSERR on error, OK if the error code was send

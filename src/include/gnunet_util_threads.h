@@ -154,7 +154,7 @@ void SEMAPHORE_DESTROY(struct SEMAPHORE * sem);
  * @param block set to NO to never block (and
  *        thus fail if semaphore counter is 0)
  * @return SYSERR if would block, otherwise
- *  new count value after change 
+ *  new count value after change
  */
 int SEMAPHORE_DOWN(struct SEMAPHORE * sem,
 		   int mayblock);
@@ -181,7 +181,7 @@ int GNUNET_SHUTDOWN_TEST(void);
 
 /**
  * Wait until the shutdown has been initiated.  This
- * should be called by the main thread (if it has 
+ * should be called by the main thread (if it has
  * nothing better to do) to wait for a user signal
  * (or other thread) to initiate the shutdown.
  */
@@ -201,7 +201,7 @@ typedef void (*SignalHandler)(void);
 
 /**
  * Install a signal handler that will be run if the
- * given signal is received.  
+ * given signal is received.
  */
 struct SignalHandlerContext * signal_handler_install(int signal,
 						     SignalHandler handler);

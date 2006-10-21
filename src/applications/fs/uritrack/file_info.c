@@ -76,7 +76,7 @@ static char * getUriDbName(struct GE_Context * ectx,
   new = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 2);
   strcpy(new, pfx);
   strcat(new, "/");
-  strcat(new, STATE_NAME); 
+  strcat(new, STATE_NAME);
   FREE(pfx);
   return new;
 }
@@ -94,7 +94,7 @@ static char * getToggleName(struct GE_Context * ectx,
   nw = MALLOC(strlen(pfx) + strlen(TRACK_OPTION) + 2);
   strcpy(nw, pfx);
   strcat(nw, "/");
-  strcat(nw, TRACK_OPTION); 
+  strcat(nw, TRACK_OPTION);
   FREE(pfx);
   return nw;
 }
@@ -123,7 +123,7 @@ int URITRACK_trackStatus(struct GE_Context * ectx,
        (ntohl(status) != YES) ) {
     FREE(tn);
 #if DEBUG_FILE_INFO
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   _("Collecting file identifiers disabled.\n"));
 #endif
@@ -163,8 +163,8 @@ void URITRACK_trackURI(struct GE_Context * ectx,
   IPC_SEMAPHORE_DOWN(sem, YES);
   fn = getUriDbName(ectx, cfg);
   fh = disk_file_open(ectx,
-		      fn, 
-		      O_WRONLY|O_APPEND|O_CREAT|O_LARGEFILE, 
+		      fn,
+		      O_WRONLY|O_APPEND|O_CREAT|O_LARGEFILE,
 		      S_IRUSR|S_IWUSR);
   if (fh == -1) {
     GE_LOG_STRERROR_FILE(ectx,
@@ -234,14 +234,14 @@ void URITRACK_trackURIS(struct GE_Context * ectx,
  *
  * @param iterator function to call on each entry, may be NULL
  * @param closure extra argument to the callback
- * @param need_metadata YES if metadata should be 
+ * @param need_metadata YES if metadata should be
  *        provided, NO if metadata is not needed (faster)
  * @return number of entries found
  */
 int URITRACK_listURIs(struct GE_Context * ectx,
 		      struct GC_Configuration * cfg,
 		      int need_metadata,
-		      ECRS_SearchProgressCallback iterator, 
+		      ECRS_SearchProgressCallback iterator,
 		      void *closure) {
   struct IPC_SEMAPHORE *sem;
   int rval;
@@ -264,14 +264,14 @@ int URITRACK_listURIs(struct GE_Context * ectx,
     return 0;                   /* no URI db */
   }
   fd = disk_file_open(ectx,
-		      fn, 
+		      fn,
 		      O_LARGEFILE | O_RDONLY);
   if (fd == -1) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
-			 "open", 
+			 "open",
 			 fn);
     FREE(fn);
     return SYSERR;              /* error opening URI db */
@@ -305,7 +305,7 @@ int URITRACK_listURIs(struct GE_Context * ectx,
       GE_BREAK(ectx, 0);
       goto FORMATERROR;
     }
-    fi.uri = ECRS_stringToUri(ectx, 
+    fi.uri = ECRS_stringToUri(ectx,
 			      &result[pos]);
     if(fi.uri == NULL) {
       GE_BREAK(ectx, 0);
@@ -356,7 +356,7 @@ int URITRACK_listURIs(struct GE_Context * ectx,
   if(0 != MUNMAP(result, buf.st_size))
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_ERROR | GE_ADMIN | GE_BULK,
-			 "munmap", 
+			 "munmap",
 			 fn);
   CLOSE(fd);
   FREE(fn);
@@ -366,7 +366,7 @@ int URITRACK_listURIs(struct GE_Context * ectx,
 FORMATERROR:
   GE_LOG(ectx,
 	 GE_WARNING | GE_BULK | GE_USER,
-	 _("Deleted corrupt URI database in `%s'."), 
+	 _("Deleted corrupt URI database in `%s'."),
 	 STATE_NAME);
   if(0 != MUNMAP(result, buf.st_size))
     GE_LOG_STRERROR_FILE(ectx,

@@ -28,7 +28,7 @@
  * @author Roman Zippel
  * @author Nils Durner
  * @author Christian Grothoff
- * 
+ *
  * TODO:
  * - support editing of string inputs...
  */
@@ -50,7 +50,7 @@ static char rd() {
 
 /**
  * printf with indentation
- */ 
+ */
 static void iprintf(int indent,
 		    const char * format,
 		    ...) {
@@ -97,7 +97,7 @@ static void printChoice(int indent,
 
   switch (type & GNS_TypeMask) {
   case GNS_Boolean:
-    iprintf(indent, 
+    iprintf(indent,
 	    _("\tEnter yes (%s), no (%s) or help (%s): "),
 	    val->Boolean.def ? "Y" : "y",
 	    val->Boolean.def ? "n" : "N",
@@ -118,7 +118,7 @@ static void printChoice(int indent,
       while (val->String.legalRange[i] != NULL) {
 	iprintf(indent,
 		"\t (%c) %s\n",
-		(i < 10) ? '0' + i : 'a' + i - 10, 
+		(i < 10) ? '0' + i : 'a' + i - 10,
 		val->String.legalRange[i]);
 	if (0 == strcmp(val->String.legalRange[i],
 			val->String.def))
@@ -162,7 +162,7 @@ static int readValue(GNS_Type type,
   int i;
   int j;
   unsigned long long l;
-  
+
   switch (type & GNS_TypeMask) {
   case GNS_Boolean:
     while (1) {
@@ -267,7 +267,7 @@ static int readValue(GNS_Type type,
 	    i = -1;
 	    break;
 	  }
-	if (i == -1) 
+	if (i == -1)
 	  continue; /* invalid entry */
 	FREE(val->String.val);
 	val->String.val = STRDUP(val->String.legalRange[i]);
@@ -297,7 +297,7 @@ static int readValue(GNS_Type type,
       if ( (buf[i] == 'd') && (i == 0) ) {
 	val->Double.val = val->Double.def;
 	printf("%f\n",
-	       val->Double.val);      
+	       val->Double.val);
 	return YES; /* default */
       }
       if (buf[i] == '?') {
@@ -313,7 +313,7 @@ static int readValue(GNS_Type type,
       }
       if (i == 0) {
 	printf("%f\n",
-	       val->Double.val);      
+	       val->Double.val);
 	return YES; /* keep */
       }
       buf[i+1] = '\0';
@@ -347,7 +347,7 @@ static int readValue(GNS_Type type,
       if ( (buf[i] == 'd') && (i == 0) ) {
 	val->UInt64.val = val->UInt64.def;
 	printf("%llu\n",
-	       val->UInt64.val);      
+	       val->UInt64.val);
 	return YES; /* default */
       }
       if (buf[i] == '?') {
@@ -363,7 +363,7 @@ static int readValue(GNS_Type type,
       }
       if (i == 0) {
 	printf("%llu\n",
-	       val->UInt64.val); 
+	       val->UInt64.val);
 	return YES; /* keep */
       }
       buf[i+1] = '\0';
@@ -413,7 +413,7 @@ static int conf(int indent,
       iprintf(indent,
 	      "%s\n",
 	      gettext(tree->description));
-      printChoice(indent, 
+      printChoice(indent,
 		  tree->type,
 		  &tree->value);
       i = readValue(tree->type,
@@ -441,7 +441,7 @@ static int conf(int indent,
       FREE(value);
       FREE(ovalue);
       return conf(indent,
-		  cfg, 
+		  cfg,
 		  ectx,
 		  tree); /* try again */
     }
@@ -462,7 +462,7 @@ static int conf(int indent,
       case 'N':
       case 'n':
 	iprintf(indent,
-		"%c\n", 
+		"%c\n",
 		choice);
 	return OK;
       case 'q':
@@ -471,7 +471,7 @@ static int conf(int indent,
 	return SYSERR; /* escape */
       case '?':
 	iprintf(indent,
-		"%c\n", 
+		"%c\n",
 		choice);
 	iprintf(indent,
 		"%s\n",
@@ -481,19 +481,19 @@ static int conf(int indent,
       case 'Y':
       case 'y':
 	iprintf(indent,
-		"%c\n", 
+		"%c\n",
 		choice);
 	break;
       default:
 	iprintf(indent,
-		"%c\n", 
+		"%c\n",
 		choice);
 	iprintf(indent,
 		_("Invalid entry.\n"));
 	choice = '\0';
 	break;
       }
-    }    
+    }
     /* fall-through! */
   case GNS_Root:
     i = 0;
@@ -515,8 +515,8 @@ static int conf(int indent,
   return SYSERR;
 }
 
-int main_setup_text(int argc, 
-		    const char **argv, 
+int main_setup_text(int argc,
+		    const char **argv,
 		    struct PluginHandle * self,
 		    struct GE_Context * ectx,
 		    struct GC_Configuration * cfg,
@@ -547,14 +547,14 @@ int main_setup_text(int argc,
   while (c == 'r') {
     if (OK != conf(-1,
 		   cfg,
-		   ectx,		 
+		   ectx,		
 		   root)) {
       ioctl(0, TCSETS, &oldT);
       return 1;
     }
     if ( (0 == GC_test_dirty(cfg)) &&
 	 (0 == ACCESS(filename, R_OK)) ) {
-      printf(_("Configuration unchanged, no need to save.\n"));    
+      printf(_("Configuration unchanged, no need to save.\n"));
       ioctl(0, TCSETS, &oldT);
       return 0;
     }
@@ -564,12 +564,12 @@ int main_setup_text(int argc,
       c = rd();
     } while ( (c != 'y') && (c != 'n') && (c != 'r') );
     printf("%c\n", c);
-  }  
+  }
   if (c == 'y') {
     ret = GC_write_configuration(cfg,
 				 filename);
     if (ret == 1) {
-      printf(_("Configuration was unchanged, no need to save.\n"));      
+      printf(_("Configuration was unchanged, no need to save.\n"));
     } else if (ret == -1) { /* error */
       ioctl(0, TCSETS, &oldT);
       return 1;

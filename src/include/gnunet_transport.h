@@ -263,7 +263,7 @@ typedef struct {
    *        or the hello_message from connect)
    * @param msg the message
    * @param size the size of the message, <= mtu
-   * @param important YES if message is important (i.e. grow 
+   * @param important YES if message is important (i.e. grow
    *        buffers to queue if needed)
    * @return SYSERR on error, NO on temporary error (retry),
    *         YES/OK on success; after any persistent error,

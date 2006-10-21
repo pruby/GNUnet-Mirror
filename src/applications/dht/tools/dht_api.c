@@ -98,7 +98,7 @@ static struct GE_Context * ectx;
  * return the status, otherwise SYSERR.
  */
 static int checkACK(MESSAGE_HEADER * reply) {
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "received ACK from gnunetd\n");
   if ( (sizeof(CS_dht_reply_ack_MESSAGE) == ntohs(reply->size)) &&
@@ -143,7 +143,7 @@ static int sendAllResults(const HashCode512 * key,
 	 ntohl(value->size));
   if (OK != connection_write(list->sock,
 			  &reply->header)) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Failed to send `%s'.  Closing connection.\n"),
 	   "CS_dht_reply_results_MESSAGE");
@@ -209,7 +209,7 @@ static void * process_thread(void * cls) {
     buffer = NULL;
     while (OK == connection_read(list->sock,
 				&buffer)) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "Received message of type %d from gnunetd\n",
 	     ntohs(buffer->type));
@@ -316,7 +316,7 @@ static void * process_thread(void * cls) {
 				     &req->key,
 				     value,
 				     ntohl(req->priority)))) {
-	  GE_LOG(ectx, 
+	  GE_LOG(ectx,
 		 GE_ERROR | GE_BULK | GE_USER,
 		 _("Failed to send `%s'.  Closing connection.\n"),
 		 "ACK");
@@ -335,7 +335,7 @@ static void * process_thread(void * cls) {
 	DataContainer * value;
 	
 	if (sizeof(CS_dht_request_remove_MESSAGE) > ntohs(buffer->size)) {
-	  GE_LOG(ectx, 
+	  GE_LOG(ectx,
 		 GE_ERROR | GE_BULK | GE_USER,
 		 _("Received invalid `%s' request (size %d)\n"),
 		 "REMOVE",
@@ -374,7 +374,7 @@ static void * process_thread(void * cls) {
 		    list->store->del(list->store->closure,
 				     &req->key,
 				     value))) {
-	  GE_LOG(ectx, 
+	  GE_LOG(ectx,
 		 GE_ERROR | GE_BULK | GE_USER,
 		 _("Failed to send `%s'.  Closing connection.\n"),
 		 "ACK");
@@ -392,7 +392,7 @@ static void * process_thread(void * cls) {
 	int resCount;
 
 	if (sizeof(CS_dht_request_iterate_MESSAGE) != ntohs(buffer->size)) {
-	  GE_LOG(ectx, 
+	  GE_LOG(ectx,
 		 GE_ERROR | GE_BULK | GE_USER,
 		 _("Received invalid `%s' request (size %d)\n"),
 		 "ITERATE",
@@ -410,7 +410,7 @@ static void * process_thread(void * cls) {
 	if (OK != sendAck(list->sock,
 					  &list->table,
 					  resCount)) {
-	  GE_LOG(ectx, 
+	  GE_LOG(ectx,
 		 GE_WARNING | GE_BULK | GE_USER,
 		 _("Failed to send `%s'.  Closing connection.\n"),
 		 "ACK");
@@ -424,7 +424,7 @@ static void * process_thread(void * cls) {
 
 
       default:
-	GE_LOG(ectx, 
+	GE_LOG(ectx,
 	       GE_ERROR | GE_BULK | GE_USER,
 	       _("Received unknown request type %d at %s:%d\n"),
 	       ntohs(buffer->type),
@@ -723,7 +723,7 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
   MESSAGE_HEADER * reply;
   int ret;
 
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "DHT_LIB_put called with value '%.*s'\n",
 	 ntohl(value->size),
@@ -732,7 +732,7 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
   sock = client_connection_create(ectx,
 				  cfg);
   if (sock == NULL) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Could not connect to gnunetd\n");
     return SYSERR;
@@ -822,14 +822,14 @@ int DHT_LIB_remove(struct GC_Configuration * cfg,
 
 
 /**
- * Initialize DHT_LIB. 
+ * Initialize DHT_LIB.
  */
 void __attribute__ ((constructor)) DHT_LIB_init() {
   lock = MUTEX_CREATE(NO);
 }
 
 /**
- * Shutdown DHT_LIB. 
+ * Shutdown DHT_LIB.
  */
 void __attribute__ ((destructor))  DHT_LIB_fini() {
   MUTEX_DESTROY(lock);

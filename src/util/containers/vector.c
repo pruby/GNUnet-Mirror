@@ -453,7 +453,7 @@ void * vectorRemoveAt(Vector *v,
      return NULL;
   v->iteratorSegment = NULL;
   segmentIndex = vectorFindIndex(v, index, &segment);
-  if (segmentIndex == -1) 
+  if (segmentIndex == -1)
     return NULL;
   rvalue = vectorSegmentRemoveAtIndex(segment,
 				      segmentIndex);

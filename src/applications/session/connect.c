@@ -494,10 +494,10 @@ static int acceptSessionKey(const PeerIdentity * sender,
   if ( (topology != NULL) &&
        (topology->allowConnectionFrom(sender) == SYSERR) ) {
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_REQUEST, 
+	   GE_DEBUG | GE_USER | GE_REQUEST,
 	   "Rejected session key from peer `%s'.\n",
 	   &enc);
-        
+
     return SYSERR;
   }
   if (equalsHashCode512(&sender->hashPubKey,
@@ -560,7 +560,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
   }
 
 #if DEBUG_SESSION
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_REQUEST,
 	 "Received setkey message with %u bytes of data and key `%s'.\n",
 	 ntohs(sessionkeySigned->header.size),
@@ -583,7 +583,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
     size -= sizeof(P2P_setkey_MESSAGE);
     plaintext = MALLOC(size);
 #if DEBUG_SESSION
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
 	   "Decrypting %d bytes of PINGPONG with key `%s' and IV %u\n",
 	   size,
@@ -774,7 +774,7 @@ provide_module_session(CoreAPIForApplication * capi) {
       = stats->create(gettext_noop("# sessions established"));
   }
 
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_INFO | GE_USER | GE_REQUEST,
 	 _("`%s' registering handler %d (plaintext and ciphertext)\n"),
 	 "session",

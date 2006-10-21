@@ -28,8 +28,8 @@
 #ifndef GNUNET_SETUP_GCONF_H
 #define GNUNET_SETUP_GCONF_H
 
-int gconf_mainsetup_gtk(int argc, 
-			const char ** argv, 
+int gconf_mainsetup_gtk(int argc,
+			const char ** argv,
 			struct PluginHandle * self,
 			struct GE_Context * ectx,
 			struct GC_Configuration * cfg,
@@ -38,5 +38,5 @@ int gconf_mainsetup_gtk(int argc,
 			int is_daemon);
 
 void gconf_main_post_init(struct PluginHandle * lib);
- 
+
 #endif

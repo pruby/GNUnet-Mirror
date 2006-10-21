@@ -95,7 +95,7 @@ int get_host_by_name(struct GE_Context * ectx,
 
 
 
-struct SocketHandle * 
+struct SocketHandle *
 socket_create(struct GE_Context * ectx,
 	      struct LoadMonitor * mon,
 	      int osSocket) {
@@ -112,9 +112,9 @@ void socket_close(struct SocketHandle * s) {
   GE_ASSERT(NULL, s != NULL);
   if ( (0 != SHUTDOWN(s->handle,
 		      SHUT_RDWR)) &&
-       (errno != ENOTCONN) ) 
+       (errno != ENOTCONN) )
     GE_LOG_STRERROR(s->ectx,
-		    GE_WARNING | GE_ADMIN | GE_BULK, 
+		    GE_WARNING | GE_ADMIN | GE_BULK,
 		    "shutdown");
   if (0 != CLOSE(s->handle))
     GE_LOG_STRERROR(s->ectx,
@@ -128,9 +128,9 @@ void socket_destroy(struct SocketHandle * s) {
   if (s->handle != -1) {
     if ( (0 != SHUTDOWN(s->handle,
 			SHUT_RDWR)) &&
-	 (errno != ENOTCONN) ) 
+	 (errno != ENOTCONN) )
       GE_LOG_STRERROR(s->ectx,
-		      GE_WARNING | GE_ADMIN | GE_BULK, 
+		      GE_WARNING | GE_ADMIN | GE_BULK,
 		      "shutdown");
     if (0 != CLOSE(s->handle))
       GE_LOG_STRERROR(s->ectx,
@@ -141,14 +141,14 @@ void socket_destroy(struct SocketHandle * s) {
 }
 
 /* TODO: log errors! */
-int socket_set_blocking(struct SocketHandle * s, 
+int socket_set_blocking(struct SocketHandle * s,
 			int doBlock) {
 #if MINGW
   u_long l = !doBlock;
-  if (ioctlsocket(s->handle, 
+  if (ioctlsocket(s->handle,
 		  FIONBIO, &l) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
-    
+
     return -1;
   } else {
     /* store the blocking mode */
@@ -170,7 +170,7 @@ int socket_set_blocking(struct SocketHandle * s,
 int socket_test_blocking(struct SocketHandle * s)
 {
 #ifndef MINGW
- return (fcntl(s->handle, 
+ return (fcntl(s->handle,
 	       F_GETFL) & O_NONBLOCK) ? NO : YES;
 #else
   return __win_IsHandleMarkedAsBlocking(s->handle);
@@ -186,7 +186,7 @@ int socket_recv(struct SocketHandle * s,
   size_t pos;
   size_t ret;
 
-  socket_set_blocking(s, 
+  socket_set_blocking(s,
 		      0 != (nc & NC_Blocking));
   flags = 0;
 #ifdef CYGWIN
@@ -213,15 +213,15 @@ int socket_recv(struct SocketHandle * s,
 			flags);
     if ( (ret == (size_t) -1) &&
 	 (errno == EINTR) &&
-	 (0 != (nc & NC_IgnoreInt)) ) 
-      continue;    
+	 (0 != (nc & NC_IgnoreInt)) )
+      continue;
     if (ret == (size_t) -1) {
       if (errno == EINTR) {
 	*read = pos;
 	return YES;
       }
       if (errno == EWOULDBLOCK) {
-	if (0 != (nc & NC_Blocking)) 
+	if (0 != (nc & NC_Blocking))
 	  continue;	
 	*read = pos;
 	return (pos == 0) ? NO : YES;
@@ -235,7 +235,7 @@ int socket_recv(struct SocketHandle * s,
     if (ret == 0) {
       /* most likely: other side closed connection */
       *read = pos;
-      return SYSERR; 
+      return SYSERR;
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
@@ -259,7 +259,7 @@ int socket_recv_from(struct SocketHandle * s,
   size_t pos;
   size_t ret;
 
-  socket_set_blocking(s, 
+  socket_set_blocking(s,
 		      0 != (nc & NC_Blocking));
   flags = 0;
 #ifdef CYGWIN
@@ -310,7 +310,7 @@ int socket_recv_from(struct SocketHandle * s,
     if (ret == 0) {
       /* most likely: other side closed connection */
       *read = pos;
-      return SYSERR; 
+      return SYSERR;
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
@@ -332,7 +332,7 @@ int socket_send(struct SocketHandle * s,
   size_t pos;
   size_t ret;
 
-  socket_set_blocking(s, 
+  socket_set_blocking(s,
 		      0 != (nc & NC_Blocking));
   flags = 0;
 #if SOMEBSD || SOLARIS
@@ -382,7 +382,7 @@ int socket_send(struct SocketHandle * s,
     if (ret == 0) {
       /* strange error; most likely: other side closed connection */
       *sent = pos;
-      return SYSERR; 
+      return SYSERR;
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
@@ -406,7 +406,7 @@ int socket_send_to(struct SocketHandle * s,
   size_t pos;
   size_t ret;
 
-  socket_set_blocking(s, 
+  socket_set_blocking(s,
 		      0 != (nc & NC_Blocking));
   flags = 0;
 #if SOMEBSD || SOLARIS
@@ -458,7 +458,7 @@ int socket_send_to(struct SocketHandle * s,
     if (ret == 0) {
       /* strange error; most likely: other side closed connection */
       *sent = pos;
-      return SYSERR; 
+      return SYSERR;
     }
     if (s->mon != NULL)
       os_network_monitor_notify_transmission(s->mon,
@@ -478,12 +478,12 @@ int socket_send_to(struct SocketHandle * s,
 int socket_test_valid(struct SocketHandle * s) {
 #ifndef MINGW
   struct stat buf;
-  return -1 != fstat(s->handle, 
+  return -1 != fstat(s->handle,
 		     &buf);
 #else
   long l;
-  return ioctlsocket(s->handle, 
-		     FIONREAD, 
+  return ioctlsocket(s->handle,
+		     FIONREAD,
 		     &l) != SOCKET_ERROR;
 #endif
 }

@@ -239,7 +239,7 @@ typedef struct FSUI_DownloadList {
 
   /**
    * Client context for the downloadx
-   */ 
+   */
   void * cctx;
 
   /**
@@ -300,7 +300,7 @@ typedef struct FSUI_DownloadList {
    * Number of completed sub-downloads.
    */
   unsigned int completedDownloadsCount;
-  
+
   /**
    * State of the download.
    */
@@ -335,12 +335,12 @@ typedef struct FSUI_UnindexList {
  */
 typedef struct FSUI_UploadShared {
 
-  cron_t expiration; 
+  cron_t expiration;
 
   DirectoryScanCallback dsc;
 
   void * dscClosure;
-		 
+		
   EXTRACTOR_ExtractorList * extractors;
 
   struct FSUI_Context * ctx;

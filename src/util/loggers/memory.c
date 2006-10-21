@@ -43,7 +43,7 @@ typedef struct GE_Memory {
   unsigned int pos;
 } GE_Memory;
 
-static void 
+static void
 memorylogger(void * cls,
 	     GE_KIND kind,
 	     const char * date,
@@ -69,7 +69,7 @@ memorylogger(void * cls,
   ctx->messages[ctx->pos].date = STRDUP(date);
   if (ctx->pos == ctx->maxSize-1) {
     ctx->messages[ctx->pos].msg = STRDUP(_("Out of memory (for logging)"));
-    ctx->messages[ctx->pos].mask = GE_STATUS | GE_USER | GE_BULK; 
+    ctx->messages[ctx->pos].mask = GE_STATUS | GE_USER | GE_BULK;
   } else {
     ctx->messages[ctx->pos].msg = STRDUP(msg);
     ctx->messages[ctx->pos].mask = kind;
@@ -82,7 +82,7 @@ memorylogger(void * cls,
  * Create a logger that keeps events in memory (to be
  * queried later in bulk).
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_memory(GE_KIND mask,
 			 struct GE_Memory * memory) {
   return GE_create_context_callback(mask,
@@ -98,12 +98,12 @@ GE_create_context_memory(GE_KIND mask,
  * log messages of an operation to provide the
  * final error in bulk to the client (i.e. as
  * a return value, possibly over the network).
- * 
+ *
  * @param maxSize the maximum number of messages to keep, 0 for unbounded
  *  (if more than maxSize messages are received, message number maxSize
  *   will be set to a corresponding warning)
  */
-struct GE_Memory * 
+struct GE_Memory *
 GE_create_memory(unsigned int maxSize) {
   GE_Memory * ret;
 
@@ -134,7 +134,7 @@ void GE_poll_memory(struct GE_Memory * memory,
     FREE(memory->messages[i].date);
     FREE(memory->messages[i].msg);
   }
-  memory->pos = 0;  
+  memory->pos = 0;
   MUTEX_UNLOCK(memory->lock);
 }
 

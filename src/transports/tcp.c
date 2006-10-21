@@ -79,7 +79,7 @@ static int isBlacklisted(const void * addr,
 			 unsigned int addr_len) {
   IPaddr ip;
   int ret;
-  
+
   if (addr_len == sizeof(struct sockaddr_in)) {
     memcpy(&ip,
 	   &((struct sockaddr_in*) addr)->sin_addr,
@@ -164,7 +164,7 @@ static P2P_hello_MESSAGE * createhello() {
     if (once == 0) {
       once = 1;
       GE_LOG(ectx,
-	     GE_DEBUG | GE_USER | GE_BULK, 
+	     GE_DEBUG | GE_USER | GE_BULK,
 	     "TCP port is 0, will only send using TCP.\n");
     }
     return NULL; /* TCP transport is configured SEND-only! */
@@ -182,7 +182,7 @@ static P2P_hello_MESSAGE * createhello() {
     return NULL;
   }
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK, 
+	 GE_DEBUG | GE_USER | GE_BULK,
 	 "TCP uses IP address %u.%u.%u.%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->ip)));
   haddr->port = htons(port);
@@ -213,7 +213,7 @@ static int tcpConnect(const P2P_hello_MESSAGE * helo,
   haddr = (HostAddress*) &helo[1];
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK, 
+	 GE_DEBUG | GE_USER | GE_BULK,
 	 "Creating TCP connection to %u.%u.%u.%u:%u.\n",
 	 PRIP(ntohl(*(int*)&haddr->ip.addr)),
 	 ntohs(haddr->port));
@@ -286,7 +286,7 @@ static int startTransportServer(void) {
     return SYSERR;
   }
   port = getGNUnetTCPPort();
-  if (port == 0) { 
+  if (port == 0) {
     /* read-only TCP */
     return OK;
   }
@@ -304,7 +304,7 @@ static int startTransportServer(void) {
 		 SO_REUSEADDR,
 		 &on,
 		 sizeof(on)) < 0 )
-    GE_DIE_STRERROR(ectx, 
+    GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
 		    "setsockopt");
   memset((char *) &serverAddr,
@@ -351,7 +351,7 @@ static int startTransportServer(void) {
  * configuration on error, syslog errors!)
  */
 static int reloadConfiguration(void * ctx,
-			       struct GC_Configuration * cfg, 
+			       struct GC_Configuration * cfg,
 			       struct GE_Context * ectx,
 			       const char * section,
 			       const char * option) {

@@ -23,7 +23,7 @@
  * @author Michael John Wensley
  * @brief tunnel RFC 4193 in GNUnet
  *
- * 
+ *
  * http://gnunet.wensley.org.uk/
  *
  * Yes this will thoroughly break most of the coding guidelines :-/ at least the first release.
@@ -45,7 +45,7 @@
  * CHANGELOG:
  * 20060110 Change ifconfig/route to ioctl's
  * 20060111 P2P packet includes length of the header.
- * 20060802 Logging for multiple clients 
+ * 20060802 Logging for multiple clients
  */
 
 #include "platform.h"
@@ -148,7 +148,7 @@ static int signalingPipe[2];
 static int running = 0;
 
 static int admin_fd;
-/** 
+/**
  * Routing goes like this. Gather routes from all peers and put them in prototype store.
  * Only store lowest hop count if get multiple of the same public key from the same peer.
  *
@@ -272,7 +272,7 @@ static int isEqualP(const PublicKey *first, const PublicKey *second) {
 	return YES;
 }
 
-/** 
+/**
  * clear out the prototype routes table
  * called at start or when we know a peer changes its route table.
  */
@@ -292,7 +292,7 @@ static void init_router() {
 	route_store->owner = *(identity->getPublicPrivateKey()); /* us! */
 }
 
-/** 
+/**
  * clear out the actual route at startup only
  */
 static void init_realised() {
@@ -341,14 +341,14 @@ static void add_route(PublicKey* them, int hops, int tunnel) {
         rcapacity = route_entries * sizeof(route_info);
         if (rcapacity > route_capacity) {
        	        rstore = REALLOC(route_store, rcapacity);
-               	if (rstore == NULL) { 
+               	if (rstore == NULL) {
 			route_entries--;
 			return; /* not enough ram, we will have to drop this route. */
 		}
                	route_capacity = rcapacity;
                	route_store = rstore;
 	}
-	/* 
+	/*
 	 * we really should keep the route table in ascending hop count order...
 	 */
 	if (route_entries > 0) {
@@ -500,7 +500,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 	 */
 
 	/* we know its going to be ipv6 cause the version tells us.
-	 * except that linux *assumes* it will be sent IPv4 frames 
+	 * except that linux *assumes* it will be sent IPv4 frames
 	 * unless we configure IFF_PI.... hmmmm.... :-/
 	 * lets see the tun linux module source
 	 *
@@ -514,7 +514,7 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 	do {
 		used = 0;
 		for (i = 0; i < entries1; i++) {
-			if ((store1+i)->id == id) { 
+			if ((store1+i)->id == id) {
 				GE_LOG(ectx, GE_DEBUG | GE_DEVELOPER | GE_REQUEST, _("RFC4193 Create skips gnu%d as we are already using it\n"), id);
 				id++;
 				used = 1;
@@ -630,8 +630,8 @@ static void setup_tunnel(int n, const PeerIdentity *them) {
 }
 
 /**
- * See if we already got a TUN/TAP open for the given GNUnet peer. if not, make one, stick 
- * PeerIdentity and the filehandle and name of the TUN/TAP in an array so we remember we did it. 
+ * See if we already got a TUN/TAP open for the given GNUnet peer. if not, make one, stick
+ * PeerIdentity and the filehandle and name of the TUN/TAP in an array so we remember we did it.
  */
 static void checkensure_peer(const PeerIdentity *them, void *callerinfo) {
 	int i;
@@ -744,7 +744,7 @@ static void * tunThread(void* arg) {
 			&tmp[0],
 			MAXSIG_BUF))
 			  GE_LOG_STRERROR(ectx,
-					  GE_WARNING | GE_BULK | GE_USER, 
+					  GE_WARNING | GE_BULK | GE_USER,
 					  "vpn could not read from exit control pipe\n");
 		}
 		MUTEX_LOCK(lock);
@@ -840,7 +840,7 @@ static int handlep2pMSG(const PeerIdentity * sender, const MESSAGE_HEADER * gp) 
 				tp->proto = htons(ETH_P_IP);
 				GE_LOG(ectx, GE_DEBUG | GE_DEVELOPER | GE_REQUEST, _("VPN Received, not anonymous, drop.\n"));
 		                return OK;
-			default: 
+			default:
 				GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, _("VPN Received unknown IP version %d...\n"), ((struct iphdr*)fp)->version);
 				return OK;
 		}
@@ -938,7 +938,7 @@ static int handlep2pMSG(const PeerIdentity * sender, const MESSAGE_HEADER * gp) 
 	        	        if (isEqual(sender, &((store1+i)->peer))) {
 					(store1+i)->active = YES;
 					VLOG _("Inserting with hops %d\n"), ntohl( ((transit_route*)(gp+1))->hops));
-					add_route( 	&( ((transit_route*)(gp+1))->owner ), 
+					add_route( 	&( ((transit_route*)(gp+1))->owner ),
 							1 + ntohl( ((transit_route*)(gp+1))->hops),
 							i);
 					if ((store1+i)->route_entry < GNUNET_VIEW_LIMIT) {
@@ -1186,8 +1186,8 @@ static int csHandle(struct ClientHandle * c,
 		for (i = 0; i < entries1; i++) {
 			id2ip(c, &(store1+i)->peer);
 			cprintf(c, CS_PROTO_VPN_REPLY, "::/48 gnu%d active=%s routeentry=%d\n",
-				(store1+i)->id, 
-				(store1+i)->active ? _("Yes") : _("No"), 
+				(store1+i)->id,
+				(store1+i)->active ? _("Yes") : _("No"),
 				(store1+i)->route_entry);
 		}
 		cprintf(c, CS_PROTO_VPN_TUNNELS, "%d Tunnels\n", entries1);
@@ -1300,7 +1300,7 @@ static int csHandle(struct ClientHandle * c,
 
 					/* req route level 0
 	                        	rgp = MALLOC(sizeof(MESSAGE_HEADER) + sizeof(int));
-					if (rgp != NULL) { 
+					if (rgp != NULL) {
                                         	rgp->type = htons(P2P_PROTO_aip_GETROUTE);
                                         	rgp->size = htons(sizeof(MESSAGE_HEADER) + sizeof(int));
 						*((int*)(rgp+1)) = 0;
@@ -1335,8 +1335,8 @@ static void clientExitHandler(struct ClientHandle * c) {
 static int makeNonblocking(int handle) {
 #if MINGW
   u_long l = 1;
-  if (ioctlsocket(handle, 
-		  FIONBIO, 
+  if (ioctlsocket(handle,
+		  FIONBIO,
 		  &l) == SOCKET_ERROR) {
     SetErrnoFromWinsockError(WSAGetLastError());
     return SYSERR;
@@ -1502,7 +1502,7 @@ void done_module_vpn() {
 	/* bye bye TUNTAP ... */
 	for (i = 0; i < entries1; i++) {
 		if (((store1+i)->fd) != 0) {
-			GE_LOG(ectx, 
+			GE_LOG(ectx,
 			       GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
 			       _("RFC4193 Closing tunnel %d fd %d\n"), i, (store1+i)->fd);
 			close((store1+i)->fd);

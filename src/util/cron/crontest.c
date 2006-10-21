@@ -111,7 +111,7 @@ int main(int argc, char * argv[]) {
   failureCount += testDelCron();
   cron_stop(cron);
   cron_destroy(cron);
-  if (failureCount != 0) 
+  if (failureCount != 0)
     return 1;
   return 0;
 } /* end of main */

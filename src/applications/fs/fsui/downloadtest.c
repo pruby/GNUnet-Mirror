@@ -80,11 +80,11 @@ static void * eventCallback(void * cls,
     break;
   case FSUI_search_resumed:
 #if DEBUG_VERBOSE
-    printf("Search resuming\n"); 
+    printf("Search resuming\n");
 #endif
     search = event->data.SearchResumed.sc.pos;
     break;
-  case FSUI_download_resumed: 
+  case FSUI_download_resumed:
 #if DEBUG_VERBOSE
     printf("Download resuming\n");
 #endif
@@ -96,7 +96,7 @@ static void * eventCallback(void * cls,
 #endif
     if (download == NULL) {
       char * u;
-      
+
       if (! ECRS_equalsUri(upURI,
 			   event->data.SearchResult.fi.uri)) {
 #if DEBUG_VERBOSE
@@ -139,8 +139,8 @@ static void * eventCallback(void * cls,
   case FSUI_download_completed:
 #if DEBUG_VERBOSE
     printf("Download complete.\n");
-#endif 
-    FSUI_abortSearch(ctx, 
+#endif
+    FSUI_abortSearch(ctx,
 		     search);
     FSUI_stopSearch(ctx,
 		    search);
@@ -239,7 +239,7 @@ int main(int argc, char * argv[]){
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,

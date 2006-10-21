@@ -42,7 +42,7 @@
 #include "confdata.h"
 
 /**
- * Current open window. 
+ * Current open window.
  */
 static GtkWidget * curwnd;
 
@@ -74,7 +74,7 @@ static void destroyCurrentWindow() {
   quit = 1;
 }
 
-void on_assi_destroy (GtkObject * object, 
+void on_assi_destroy (GtkObject * object,
 		      gpointer user_data) {
   /* Don't terminate if the user just clicked "Next" */
   if (quit)
@@ -87,7 +87,7 @@ struct insert_nic_cls {
   int nic_item_count;
 };
 
-void on_cmbNIC_changed (GtkComboBox * combobox, 
+void on_cmbNIC_changed (GtkComboBox * combobox,
 			gpointer user_data) {
   GtkTreeIter iter;
   GValue val;
@@ -100,13 +100,13 @@ void on_cmbNIC_changed (GtkComboBox * combobox,
 #endif
   struct symbol *sym;
   GtkTreeModel *model;
-  
+
   gtk_combo_box_get_active_iter(combobox, &iter);
   model = gtk_combo_box_get_model(combobox);
   memset(&val, 0, sizeof(val));
   gtk_tree_model_get_value(model, &iter, 0, &val);
   entry = (char *) g_value_get_string(&val);
-  
+
 #ifdef MINGW
   idx = strrchr(entry, '-');
   if (! idx)
@@ -133,7 +133,7 @@ static void insert_nic(const char *name,
 
   gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
   defaultNIC = wiz_is_nic_default(name, defaultNIC);
-  if (defaultNIC) 
+  if (defaultNIC)
     gtk_combo_box_set_active(GTK_COMBO_BOX(cmbNIC), inc->nic_item_count);
 }
 
@@ -161,27 +161,27 @@ void load_step2(GtkButton * button,
 
   sym = sym_find("INTERFACE", "NETWORK");
   if (sym != NULL) {
-    
+
     enumNetworkIfs(&insert_nic, &cls);
-    
+
     if (cls.nic_item_count != 0) {
       /* ifconfig unavailable */
-      
+
       sym_calc_value_ext(sym, 1);
       nic = (char *) sym_get_string_value(sym);
-      
+
       if (!nic || strlen(nic) == 0)
 	nic = "eth0";
       gtk_combo_box_append_text(GTK_COMBO_BOX(cls.cmbNIC), nic);
-      gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model), 
+      gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model),
 				    &iter);
       gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cls.cmbNIC), &iter);
       on_cmbNIC_changed(GTK_COMBO_BOX(cls.cmbNIC), NULL);			
     }
-    
+
     gtk_widget_set_usize(cls.cmbNIC, 10, -1);
   }
-  
+
   entIP = lookup_widget("entIP");
   sym = sym_find("IP", "NETWORK");
   if (sym != NULL) {
@@ -191,7 +191,7 @@ void load_step2(GtkButton * button,
       val = "";
     gtk_entry_set_text(GTK_ENTRY(entIP), val);
   }
-  
+
   chkFW = lookup_widget("chkFW");
   sym = sym_find("LIMITED", "NAT");
   if (sym != NULL) {
@@ -211,13 +211,13 @@ void load_step3(GtkButton * button,
   GtkWidget * radShare;
   GtkWidget * entCPU;
   const char * val;
-  
+
   destroyCurrentWindow();
   curwnd = get_xml("assi_step3");
   entUp = lookup_widget("entUp");
-  entDown = lookup_widget("entDown");  
+  entDown = lookup_widget("entDown");
   radGNUnet = lookup_widget("radGNUnet");
-  radShare = lookup_widget("radShare");  
+  radShare = lookup_widget("radShare");
   entCPU = lookup_widget("entCPU");
 	
   sym = sym_find("MAXNETUPBPSTOTAL", "LOAD");
@@ -239,9 +239,9 @@ void load_step3(GtkButton * button,
   sym = sym_find("BASICLIMITING", "LOAD");
   if (sym) {
     sym_calc_value_ext(sym, 1);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sym_get_tristate_value(sym) != no 
-						   ? radGNUnet 
-						   : radShare ), 
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(sym_get_tristate_value(sym) != no
+						   ? radGNUnet
+						   : radShare ),
 				 TRUE);
   }
   sym = sym_find("MAXCPULOAD", "LOAD");
@@ -350,14 +350,14 @@ void load_step5(GtkButton * button,
   GtkWidget * chkEnh;
   GtkWidget * chkStart;
   const char * val;
-  
+
   destroyCurrentWindow();
   curwnd = get_xml("assi_step5");
-  entQuota =  lookup_widget("entQuota"); 
+  entQuota =  lookup_widget("entQuota");
   chkMigr =  lookup_widget("chkMigr");
   chkStart =  lookup_widget("chkStart");
   chkEnh =  lookup_widget("chkEnh");
-  
+
   sym = sym_find("QUOTA", "FS");
   if (sym) {
     sym_calc_value_ext(sym, 1);
@@ -366,17 +366,17 @@ void load_step5(GtkButton * button,
       val = "";
     gtk_entry_set_text(GTK_ENTRY(entQuota), val);
   }
-  
+
   sym = sym_find("ACTIVEMIGRATION", "FS");
   if (sym) {
     sym_calc_value_ext(sym, 1);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkMigr),
 				 sym_get_tristate_value(sym) != no);
   }
-  
+
   if (isOSAutostartCapable())
     gtk_widget_set_sensitive(chkStart, TRUE);
-  
+
   sym = sym_find("AUTOSTART", "GNUNETD");
   if (sym) {
     sym_calc_value_ext(sym, 1);
@@ -395,24 +395,24 @@ void do_destroy_widget(GtkButton * button,
   gtk_widget_destroy(msgSaveFailed);
 }
 
-static void showErr(const char * prefix, 
+static void showErr(const char * prefix,
 		    const char * error) {
   GtkWidget * label98;
   GtkWidget * msgSaveFailed;
-  char * err;  
+  char * err;
   GladeXML * myXML;
-  
+
   myXML = load_xml("msgSaveFailed");
   msgSaveFailed = glade_xml_get_widget(myXML,
 				       "msgSaveFailed");
-  label98 = glade_xml_get_widget(myXML, "label98");  
+  label98 = glade_xml_get_widget(myXML, "label98");
   err = MALLOC(strlen(prefix) + strlen(error) + 2);
-  sprintf(err, 
-	  "%s %s", 
-	  prefix, 
-	  error);  
-  gtk_label_set_text(GTK_LABEL(label98), err);  
-  FREE(err);  
+  sprintf(err,
+	  "%s %s",
+	  prefix,
+	  error);
+  gtk_label_set_text(GTK_LABEL(label98), err);
+  FREE(err);
   gtk_widget_show(msgSaveFailed);
   g_object_unref(myXML);
 }
@@ -440,12 +440,12 @@ static int save_conf() {
   return OK;
 }
 
-void on_saveYes_clicked (GtkButton * button, 
+void on_saveYes_clicked (GtkButton * button,
 			 gpointer user_data) {
   int i;
   GtkWidget * msgSave = user_data;
 
-  i = save_conf();  
+  i = save_conf();
   gtk_widget_destroy(msgSave);
   if (OK == i) {
     quit = 1;
@@ -453,7 +453,7 @@ void on_saveYes_clicked (GtkButton * button,
   }
 }
 
-void on_saveNo_clicked (GtkButton * button, 
+void on_saveNo_clicked (GtkButton * button,
 			gpointer user_data) {
   GtkWidget * msgSave = user_data;
 
@@ -462,13 +462,13 @@ void on_saveNo_clicked (GtkButton * button,
   gtk_widget_destroy(curwnd);
 }
 
-void on_abort_clicked(GtkButton * button, 
+void on_abort_clicked(GtkButton * button,
 		      gpointer user_data) {
   showDialog("msgSave");
 }
 
-void on_finish_clicked (GtkButton * button, 
-			gpointer user_data) {  
+void on_finish_clicked (GtkButton * button,
+			gpointer user_data) {
   if (doAutoStart && (user_name != NULL))
     if (!wiz_createGroupUser(group_name, user_name)) {
 #ifndef MINGW
@@ -476,34 +476,34 @@ void on_finish_clicked (GtkButton * button,
 #endif
       return;
     }
-  
+
   if (!wiz_autostartService(doAutoStart, user_name, group_name)) {
 #ifndef MINGW
     showErr(_("Unable to change startup process:"), STRERROR(errno));
 #endif
   }	
-  
+
   if (OK != save_conf())
     return;
-  
+
   if (doUpdate &&
       (system("gnunet-update") != 0) )
-    showDialog("msgUpdateFailed");  
+    showDialog("msgUpdateFailed");
   else
     gtk_widget_destroy(curwnd);
 }
 
-void on_updateFailedOK_clicked (GtkButton * button, 
+void on_updateFailedOK_clicked (GtkButton * button,
 				gpointer user_data) {
   GtkWidget * dialog = user_data;
   gtk_widget_destroy(dialog);
 }
 
-void on_entIP_changed (GtkEditable * editable, 
+void on_entIP_changed (GtkEditable * editable,
 		       gpointer user_data) {
   struct symbol *sym;
   gchar * ret;
-  
+
   sym = sym_lookup("IP", "NETWORK", 0);
   ret = gtk_editable_get_chars(editable, 0, -1);
   sym_set_string_value(sym, ret);
@@ -511,18 +511,18 @@ void on_entIP_changed (GtkEditable * editable,
 }
 
 
-void on_chkFW_toggled (GtkToggleButton * togglebutton, 
+void on_chkFW_toggled (GtkToggleButton * togglebutton,
 		       gpointer user_data) {
   struct symbol *sym = sym_lookup("LIMITED", "NAT", 0);
   sym_set_tristate_value(sym,
 			 gtk_toggle_button_get_active(togglebutton) ? yes : no);
 }
 
-void on_entUp_changed (GtkEditable * editable, 
+void on_entUp_changed (GtkEditable * editable,
 		       gpointer user_data) {
   gchar * ret;
   struct symbol *sym;
-  
+
   sym = sym_lookup("MAXNETUPBPSTOTAL", "LOAD", 0);
   ret = gtk_editable_get_chars(editable, 0, -1);
   sym_set_string_value(sym, ret);
@@ -530,7 +530,7 @@ void on_entUp_changed (GtkEditable * editable,
 }
 
 
-void on_entDown_changed (GtkEditable * editable, 
+void on_entDown_changed (GtkEditable * editable,
 			 gpointer user_data) {
   struct symbol *sym;
   gchar * ret;
@@ -542,7 +542,7 @@ void on_entDown_changed (GtkEditable * editable,
 }
 
 
-void on_radGNUnet_toggled(GtkToggleButton * togglebutton, 
+void on_radGNUnet_toggled(GtkToggleButton * togglebutton,
 			  gpointer user_data) {
   struct symbol *sym = sym_lookup("BASICLIMITING", "LOAD", 0);
   sym_set_tristate_value(sym,	
@@ -550,7 +550,7 @@ void on_radGNUnet_toggled(GtkToggleButton * togglebutton,
 }
 
 
-void on_radShare_toggled (GtkToggleButton * togglebutton, 
+void on_radShare_toggled (GtkToggleButton * togglebutton,
 			  gpointer user_data) {
   struct symbol *sym = sym_lookup("BASICLIMITING", "LOAD", 0);
   sym_set_tristate_value(sym,	
@@ -558,7 +558,7 @@ void on_radShare_toggled (GtkToggleButton * togglebutton,
 }
 
 
-void on_entCPU_changed (GtkEditable * editable, 
+void on_entCPU_changed (GtkEditable * editable,
 			gpointer user_data) {
   struct symbol *sym;
   gchar * ret;
@@ -569,14 +569,14 @@ void on_entCPU_changed (GtkEditable * editable,
   g_free(ret);
 }
 
-void on_chkMigr_toggled (GtkToggleButton * togglebutton, 
+void on_chkMigr_toggled (GtkToggleButton * togglebutton,
 			 gpointer user_data) {
   struct symbol *sym = sym_lookup("ACTIVEMIGRATION", "FS", 0);
   sym_set_tristate_value(sym,
 			 gtk_toggle_button_get_active(togglebutton) ? yes : no);
 }
 
-void on_entQuota_changed (GtkEditable * editable, 
+void on_entQuota_changed (GtkEditable * editable,
 			  gpointer user_data) {
   struct symbol *sym;
   gchar * ret;
@@ -588,7 +588,7 @@ void on_entQuota_changed (GtkEditable * editable,
 }
 
 
-void on_chkStart_toggled (GtkToggleButton * togglebutton, 
+void on_chkStart_toggled (GtkToggleButton * togglebutton,
 			  gpointer user_data) {
   struct symbol *sym = sym_lookup("AUTOSTART", "GNUNETD", 0);
   doAutoStart = gtk_toggle_button_get_active(togglebutton);
@@ -596,12 +596,12 @@ void on_chkStart_toggled (GtkToggleButton * togglebutton,
 }
 
 
-void on_chkEnh_toggled (GtkToggleButton * togglebutton, 
+void on_chkEnh_toggled (GtkToggleButton * togglebutton,
 			gpointer user_data) {
   doOpenEnhConfigurator = gtk_toggle_button_get_active(togglebutton);
 }
 
-void on_chkUpdate_toggled(GtkToggleButton * togglebutton, 
+void on_chkUpdate_toggled(GtkToggleButton * togglebutton,
 			  gpointer user_data) {
   doUpdate = gtk_toggle_button_get_active(togglebutton);
 }
@@ -621,7 +621,7 @@ void on_entUser_changed (GtkEditable * editable,
   else
     user_name = NULL;
   g_free(ret);
-  
+
 }
 
 void on_entGroup_changed (GtkEditable * editable,
@@ -642,7 +642,7 @@ void on_entGroup_changed (GtkEditable * editable,
 }
 
 
-int gtk_wizard_main(int argc, 
+int gtk_wizard_main(int argc,
 		    char **argv,
 		    void * lib) {
   struct symbol * sym;
@@ -650,7 +650,7 @@ int gtk_wizard_main(int argc,
 	
   setLibrary(lib);
   g_thread_init(NULL);
-  gtk_init(&argc, &argv); 
+  gtk_init(&argc, &argv);
 #ifdef ENABLE_NLS
   bind_textdomain_codeset(PACKAGE, "UTF-8"); /* for gtk */
 #endif

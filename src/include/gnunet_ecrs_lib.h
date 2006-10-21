@@ -315,7 +315,7 @@ struct ECRS_URI * ECRS_dateExpandKeywordUri(const struct ECRS_URI * uri);
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 ECRS_parseCharKeywordURI(struct GE_Context * ectx,
 			 const char * keywords); /* helper.c */
 
@@ -327,7 +327,7 @@ ECRS_parseCharKeywordURI(struct GE_Context * ectx,
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 ECRS_parseArgvKeywordURI(struct GE_Context * ectx,
 			 unsigned int argc,
 			 const char ** argv); /* helper.c */
@@ -340,7 +340,7 @@ ECRS_parseArgvKeywordURI(struct GE_Context * ectx,
  * @return an ECRS URI for the given keywords, NULL
  *  if keywords is not legal (i.e. empty).
  */
-struct ECRS_URI * 
+struct ECRS_URI *
 ECRS_parseListKeywordURI(struct GE_Context * ectx,
 			 unsigned int num_keywords,
 			 const char ** keywords);

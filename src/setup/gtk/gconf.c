@@ -97,7 +97,7 @@ static void addToTree(GtkTreeStore * model,
 		     SETUP_HELPTEXT, pos->help,
 		     -1);
   switch (pos->type & GNS_KindMask) {
-  case GNS_Node: 
+  case GNS_Node:
     i = 0;
     while (pos->children[i] != NULL) {
       addToTree(model,
@@ -173,13 +173,13 @@ static void addToTree(GtkTreeStore * model,
       gtk_list_store_insert_with_values(cmodel,
 					&it2,
 					-1,
-					0, valStr, 
+					0, valStr,
 					-1);
       if (0 != strcmp(valStr, defStr)) {
 	gtk_list_store_insert_with_values(cmodel,
 					&it2,
 					  -1,
-					  0, valStr, 
+					  0, valStr,
 					  -1);
       }
       gtk_tree_store_set(model,
@@ -199,13 +199,13 @@ static void addToTree(GtkTreeStore * model,
       gtk_list_store_insert_with_values(cmodel,
 					&it2,
 					-1,
-					0, valStr, 
+					0, valStr,
 					-1);
       if (0 != strcmp(valStr, defStr)) {
 	gtk_list_store_insert_with_values(cmodel,
 					&it2,
 					  -1,
-					  0, valStr, 
+					  0, valStr,
 					  -1);
       }
       gtk_tree_store_set(model,
@@ -223,14 +223,14 @@ static void addToTree(GtkTreeStore * model,
 			    &it);
       return;
     }
-    break;    
+    break;
   case GNS_Root:
   default:
     GE_ASSERT(NULL, 0);
     gtk_tree_store_remove(model,
 			  &it);
     return;
-  }	  
+  }	
 }
 
 typedef struct {
@@ -242,11 +242,11 @@ static void collectRows(GtkTreeView * tree_view,
 			GtkTreePath * path,
 			gpointer user_data) {
   CR_Context * ctx = user_data;
-  
+
   GROW(ctx->paths,
        ctx->size,
        ctx->size+1);
-  ctx->paths[ctx->size-1] = gtk_tree_path_to_string(path);  
+  ctx->paths[ctx->size-1] = gtk_tree_path_to_string(path);
 }
 
 static void updateTreeModel(struct GNS_Context * gns) {
@@ -276,7 +276,7 @@ static void updateTreeModel(struct GNS_Context * gns) {
 			     G_TYPE_BOOLEAN, /* combo  visible? */
 			     G_TYPE_STRING,  /* description */
 			     G_TYPE_STRING);  /* help text */
-  
+
   tree = GNS_get_tree(gns);
   i = 0;
   while (tree->children[i] != NULL) {
@@ -291,7 +291,7 @@ static void updateTreeModel(struct GNS_Context * gns) {
   treeView = lookup_widget("configTreeView");
   gtk_tree_view_map_expanded_rows(GTK_TREE_VIEW(treeView),
 				  &collectRows,
-				  &crCTX);  
+				  &crCTX);
   /* update model */
   gtk_tree_view_set_model(GTK_TREE_VIEW(treeView),
 			  GTK_TREE_MODEL(model));
@@ -454,9 +454,9 @@ static void initTreeView(struct GNS_Context * gns) {
  */
 void on_saveButton_activatesetup_gtk() {
   GtkWidget * dialog;
-  
+
   if (0 == GC_write_configuration(cfg,
-				  cfg_filename)) {    
+				  cfg_filename)) {
     dialog = gtk_message_dialog_new(NULL,
 				    GTK_DIALOG_MODAL,
 				    GTK_MESSAGE_INFO,
@@ -502,7 +502,7 @@ gboolean on_main_window_delete_eventsetup_gtk() {
       return FALSE;
     case GTK_RESPONSE_NO:
       return FALSE;
-    case GTK_RESPONSE_CANCEL:      
+    case GTK_RESPONSE_CANCEL:
     default:
       return TRUE;
     }
@@ -544,7 +544,7 @@ int gconf_main_post_init(struct PluginHandle * self,
 #endif
   gtk_main();
   gdk_threads_leave();
-  destroyMainXML(); 
+  destroyMainXML();
   setLibrary(NULL);
   g_object_unref(G_OBJECT(no_model));
   no_model = NULL;
@@ -553,8 +553,8 @@ int gconf_main_post_init(struct PluginHandle * self,
 
 
 /* Main */
-int gconf_mainsetup_gtk(int argc, 
-			const char ** argv, 
+int gconf_mainsetup_gtk(int argc,
+			const char ** argv,
 			struct PluginHandle * self,
 			struct GE_Context * ectx,
 			struct GC_Configuration * cfg,
@@ -572,7 +572,7 @@ int gconf_mainsetup_gtk(int argc,
   return gconf_main_post_init(self,
 			      ectx,
 			      cfg,
-			      gns, 
+			      gns,
 			      filename,
 			      is_daemon);
 }

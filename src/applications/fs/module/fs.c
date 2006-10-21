@@ -52,7 +52,7 @@ typedef struct {
   struct DHT_PUT_RECORD * rec;
 } DHT_PUT_CLS;
 
-typedef struct LG_Job { 
+typedef struct LG_Job {
   unsigned int keyCount;
   unsigned int type;
   HashCode512 * queries;
@@ -984,7 +984,7 @@ static int uniqueReplyIdentifier(const DataContainer * content,
 
 static int fastPathProcessor(const HashCode512 * query,
 			     const DataContainer * value,
-			     void * cls) { 
+			     void * cls) {
   Datastore_Value * dv;
 
   dv = gapWrapperToDatastoreValue(value, 0);
@@ -1088,7 +1088,7 @@ static int csHandleRequestQueryStart(struct ClientHandle * sock,
     return SYSERR;
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
-#if DEBUG_FS 
+#if DEBUG_FS
   IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(&rs->query[0],
 		 &enc));
@@ -1191,7 +1191,7 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
 					((unsigned long long)-1)/1024,
 					1024,
 					&quota) == -1) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("You must specify a postive number for `%s' in the configuration in section `%s'.\n"),
 	   "QUOTA", "FS");

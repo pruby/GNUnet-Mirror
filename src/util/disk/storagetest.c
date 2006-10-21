@@ -34,12 +34,12 @@ static int testReadWrite() {
 
   disk_file_write(NULL,
 		  ".testfile",
-		  TESTSTRING, 
-		  strlen(TESTSTRING), 
+		  TESTSTRING,
+		  strlen(TESTSTRING),
 		  "644");
   tmp[disk_file_read(NULL,
 		     ".testfile",
-		     100, 
+		     100,
 		     tmp)] = '\0';
   if (0 != memcmp(tmp,
 		  TESTSTRING,

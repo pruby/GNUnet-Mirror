@@ -20,7 +20,7 @@
 
 /**
  * @file include/gnunet_util_os.h
- * @brief low level process routines (fork, IPC, 
+ * @brief low level process routines (fork, IPC,
  *        OS statistics, OS properties)
  * @author Christian Grothoff
  * @author Krista Bennett
@@ -54,7 +54,7 @@ struct IPC_SEMAPHORE;
 
 /**
  * @brief plugin (shared library) handle
- */ 
+ */
 struct PluginHandle;
 
 /**
@@ -84,7 +84,7 @@ typedef enum {
 
 struct LoadMonitor;
 
-struct IPC_SEMAPHORE * 
+struct IPC_SEMAPHORE *
 IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 		     const char * basename,
 		     unsigned int initialValue);
@@ -102,7 +102,7 @@ int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
 /**
  * Load plugin
  */
-struct PluginHandle * 
+struct PluginHandle *
 os_plugin_load(struct GE_Context * ectx,
 	       const char * libprefix,
 	       const char * dsoname);
@@ -116,14 +116,14 @@ os_plugin_load(struct GE_Context * ectx,
  *        with the respective dsoname of the plugin
  * @return NULL on error, otherwise pointer to the function
  */
-void * 
+void *
 os_plugin_resolve_function(struct PluginHandle * plugin,			
 			   const char * methodprefix,
 			   int logError);
 
 void os_plugin_unload(struct PluginHandle * plugin);
 
-struct LoadMonitor * 
+struct LoadMonitor *
 os_network_monitor_create(struct GE_Context * ectx,
 			  struct GC_Configuration * cfg);
 
@@ -178,7 +178,7 @@ int os_set_process_priority(struct GE_Context * ectx,
  *        a) autostart is not supported,
  *        b) the application does not seem to exist
  *        c) the user or group do not exist
- *        d) the user has insufficient permissions for 
+ *        d) the user has insufficient permissions for
  *           changing autostart
  *        e) doAutoStart is NO, but autostart is already
  *           disabled
@@ -194,7 +194,7 @@ int os_modify_autostart(struct GE_Context * ectx,
 			int testCapability,
 			int doAutoStart,
 			const char * application,
-			const char * username, 
+			const char * username,
 			const char * groupname);
 
 /**
@@ -204,7 +204,7 @@ int os_modify_autostart(struct GE_Context * ectx,
  *        functionality (in that case, no actual operation is
  *        performed).  SYSERR is returned if
  *        a) adding users is not supported,
- *        b) the user has insufficient permissions for 
+ *        b) the user has insufficient permissions for
  *           adding/removing users
  *        c) doAdd is NO, but user does not exist
  *        d) doAdd is YES, and user already exists
@@ -233,7 +233,7 @@ int os_change_user(struct GE_Context * ectx,
  * Get the current CPU load.
  * @param ectx for error reporting
  * @param cfg to determine acceptable load level (LOAD::MAXCPULOAD)
- * @return -1 on error, otherwise load value 
+ * @return -1 on error, otherwise load value
  */
 int os_cpu_get_load(struct GE_Context * ectx,
 		    struct GC_Configuration * cfg);
@@ -273,7 +273,7 @@ enum InstallPathKind {
   IPK_BINDIR,
   IPK_LIBDIR,
   IPK_DATADIR,
-  IPK_LOCALEDIR 
+  IPK_LOCALEDIR
 };
 
 /**

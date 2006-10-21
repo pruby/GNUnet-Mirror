@@ -115,7 +115,7 @@ static int updateCpuUsage(){
 	  total_time = usage_time + idle;
 	}
 	if ( (total_time > 0) &&
-	     (have_last_cpu == YES) ) 
+	     (have_last_cpu == YES) )
 	  currentLoad = (100 * usage_time) / total_time;
 	else
 	  currentLoad = -1;
@@ -150,7 +150,7 @@ static int updateCpuUsage(){
     kc = kstat_open();
     if (kc == NULL) {
       GE_LOG_STRERROR(NULL,
-		      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, 
+		      GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 		      "kstat_open");
       goto ABORT_KSTAT;
     }
@@ -395,7 +395,7 @@ int os_cpu_get_load(struct GE_Context * ectx,
     MUTEX_UNLOCK(statusMutex);
     return -1;
   }
-    
+
   ret = (100 * currentLoad) / maxCPULoad;
   /* for CPU, we don't do the 'fast increase' since CPU is much
      more jitterish to begin with */
@@ -415,7 +415,7 @@ int os_cpu_get_load(struct GE_Context * ectx,
 void __attribute__ ((constructor)) gnunet_cpustats_ltdl_init() {
   statusMutex = MUTEX_CREATE(NO);
 #ifdef LINUX
-  proc_stat = fopen("/proc/stat", "r");  
+  proc_stat = fopen("/proc/stat", "r");
   if (NULL == proc_stat)
     GE_LOG_STRERROR_FILE(NULL,
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,

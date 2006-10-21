@@ -87,7 +87,7 @@ int wizard_curs_main_ncurses(int argc,
 			     struct GC_Configuration * cfg,
 			     struct GNS_Context * gns,
 			     const char * filename,
-			     int is_daemon) 
+			     int is_daemon)
   void *active_ptr = NULL;
   int idx, ret, autostart = 0, adv = 0;
   struct symbol *sym;

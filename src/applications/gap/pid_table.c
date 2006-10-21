@@ -74,7 +74,7 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
       return ret;
     } else if ( (zero == size) &&
 		(table[ret].rc == 0) ) {
-      zero = ret;      
+      zero = ret;
     }
   }
   ret = zero;
@@ -91,7 +91,7 @@ PID_INDEX intern_pid(const PeerIdentity * pid) {
   if (stats != NULL) {
     stats->change(stat_pid_rc, 1);
     stats->change(stat_pid_entries, 1);
-  }  
+  }
   MUTEX_UNLOCK(lock);
   return ret;
 }
@@ -110,10 +110,10 @@ void decrement_pid_rcs(const PID_INDEX * ids,
     table[id].rc--;
     if ( (table[id].rc == 0) &&
 	 (stats != NULL) )
-      stats->change(stat_pid_entries, -1);   
+      stats->change(stat_pid_entries, -1);
   }
   MUTEX_UNLOCK(lock);
-  if (stats != NULL) 
+  if (stats != NULL)
     stats->change(stat_pid_rc, - count);
 }
 
@@ -132,7 +132,7 @@ void change_pid_rc(PID_INDEX id, int delta) {
   MUTEX_UNLOCK(lock);
 }
 
-void resolve_pid(PID_INDEX id, 
+void resolve_pid(PID_INDEX id,
 		 PeerIdentity * pid) {
   if (id == 0) {
     memset(pid, 0, sizeof(PeerIdentity));
@@ -152,7 +152,7 @@ void init_pid_table(struct GE_Context * e,
   ectx = e;
   stats = s;
   if (stats != NULL) {
-    stat_pid_entries 
+    stat_pid_entries
       = stats->create(gettext_noop("# distinct interned peer IDs in pid table"));
     stat_pid_rc
       = stats->create(gettext_noop("# total RC of interned peer IDs in pid table"));

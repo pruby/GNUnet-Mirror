@@ -33,7 +33,7 @@
  * with the GUI library to display updates).<p>
  *
  * After creating a FSUI_Context with FSUI_start the UI can start,
- * abort and stop uploads, downloads, deletions or searches. 
+ * abort and stop uploads, downloads, deletions or searches.
  * The FSUI_Context can be destroyed, when it is created again
  * the next time all pending operations are resumed (!).
  * Clients can use the various iterator functions to obtain
@@ -62,9 +62,9 @@
  * Either, the client receives an "error" (something went wrong)
  * or "completed" (action finished) event.  Alternatively, the
  * client may call abortXXX" which will result in an "aborted"
- * event.  In either case, the event itself will NOT result in 
+ * event.  In either case, the event itself will NOT result in
  * the memory being released by FSUI -- the client must still
- * call "FSUI_stopXXX" explicitly.  Clients that call 
+ * call "FSUI_stopXXX" explicitly.  Clients that call
  * "FSUI_stopXXX" before an aborted, error or completed event
  * will be blocked until either of the three events happens.<p>
  *
@@ -111,7 +111,7 @@ struct FSUI_UnindexList;
 
 /**
  * @brief types of FSUI events.
- * 
+ *
  * For the types aborted, error, suspending and complete,
  * the client MUST free the "cctx" context associated with
  * the event (if allocated).  This context is created
@@ -166,21 +166,21 @@ enum FSUI_EventType {
  *  and client context for the parent download.
  */
 typedef struct {
-  
+
   /**
    * What file in the download tree are we
    * refering to?
    */
   struct FSUI_DownloadList * pos;
-  
+
   void * cctx;
-  
+
   /**
    * What is our parent download in the download tree?
    * NULL if this is the top-level download.
    */
   struct FSUI_DownloadList * ppos;
-  
+
   void * pcctx;
 
 } FSUI_DownloadContext;
@@ -192,21 +192,21 @@ typedef struct {
    * refering to?
    */
   struct FSUI_UploadList * pos;
-  
+
   void * cctx;
-  
+
   /**
    * What is our parent upload in the upload tree?
    * NULL if this is the top-level upload.
    */
   struct FSUI_UploadList * ppos;
-  
+
   void * pcctx;
 
 } FSUI_UploadContext;
 
 typedef struct {
-  
+
   struct FSUI_SearchList * pos;
 
   void * cctx;
@@ -261,7 +261,7 @@ typedef struct {
     struct {
 
       FSUI_SearchContext sc;
-      
+
       const char * message;
 
     } SearchError;
@@ -299,7 +299,7 @@ typedef struct {
     struct {
 
       FSUI_SearchContext sc;
-      
+
     } SearchStopped;
 
 
@@ -640,13 +640,13 @@ typedef struct {
     struct {
 
       FSUI_UnindexContext uc;
-      
+
       unsigned long long total;
 
       unsigned long long completed;
 
       cron_t eta;
-      
+
       const char * filename;
 
     } UnindexResumed;
@@ -654,9 +654,9 @@ typedef struct {
     struct {
 
       FSUI_UnindexContext uc;
-      
+
       unsigned long long total;
-      
+
       const char * filename;
 
     } UnindexStarted;
@@ -665,10 +665,10 @@ typedef struct {
     struct {
 
       FSUI_UnindexContext uc;
-      
+
       const char * message;
 
-    } UnindexError;    
+    } UnindexError;
 
   } data;
 
@@ -724,7 +724,7 @@ typedef void * (*FSUI_EventCallback)(void * cls,
  * @param closure extra argument to cb
  * @return NULL on error
  */
-struct FSUI_Context * 
+struct FSUI_Context *
 FSUI_start(struct GE_Context * ectx,
 	   struct GC_Configuration * cfg,
 	   const char * name,
@@ -816,14 +816,14 @@ typedef int (*DirectoryScanCallback)(void * data,
 /**
  * Start uploading a file or directory.
  *
- * @param ctx 
+ * @param ctx
  * @param filename name of file or directory to upload (directory
  *        implies use of recursion)
  * @param doIndex use indexing, not insertion
  * @param doExtract use libextractor
  * @param individualKeywords add KBlocks for non-top-level files
  * @param topLevelMetaData metadata for top-level file or directory
- * @param globalURI keywords for all files 
+ * @param globalURI keywords for all files
  * @param keyURI keywords for top-level file
  * @return NULL on error
  */
@@ -882,7 +882,7 @@ int FSUI_abortUnindex(struct FSUI_Context * ctx,
 
 
 /**
- * Stop an unindex operation. 
+ * Stop an unindex operation.
  *
  * @return SYSERR on error
  */

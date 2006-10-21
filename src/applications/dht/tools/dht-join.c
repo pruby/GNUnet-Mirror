@@ -52,13 +52,13 @@ static struct CommandLineOption gnunetjoinOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Join a DHT.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING, /* -L */  
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'm', "memory", "SIZE",
     gettext_noop("allow SIZE bytes of memory for the local table"),
-    1, &gnunet_getopt_configure_set_uint, &memory }, 
+    1, &gnunet_getopt_configure_set_uint, &memory },
   { 't', "table", "NAME",
     gettext_noop("join table called NAME"),
-    1, &gnunet_getopt_configure_set_string, &table_id },  
+    1, &gnunet_getopt_configure_set_string, &table_id },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
@@ -143,14 +143,14 @@ static int iterate(void * closure,
   return ret;
 }
 
-int main(int argc, 
+int main(int argc,
 	 const char ** argv) {
   int i;
   HashCode512 table;
   struct GC_Configuration * cfg;
   Blockstore myStore;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -192,7 +192,7 @@ int main(int argc,
 			 cfg,
 			 ectx,
 			 &table)) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Error joining DHT.\n"));
     destroy_blockstore_memory((Blockstore*)myStore.closure);
@@ -208,17 +208,17 @@ int main(int argc,
   /* shutdown */
   if (OK != DHT_LIB_leave(&table)) {
     i = SYSERR;
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Error leaving DHT.\n"));
   }
-  
+
   destroy_blockstore_memory((Blockstore*)myStore.closure);
   GC_free(cfg);
   GE_free_context(ectx);
   if (i != OK)
     return 1;
-  return 0; 
+  return 0;
 }
 
 /* end of dht-join.c */

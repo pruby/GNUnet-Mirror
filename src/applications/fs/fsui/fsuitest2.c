@@ -53,7 +53,7 @@ int main(int argc, char * argv[]){
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,

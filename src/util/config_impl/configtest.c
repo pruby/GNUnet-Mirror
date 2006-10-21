@@ -41,7 +41,7 @@ static int testConfig() {
 					     &c))
     return 1;
   if (0 != strcmp("b",
-		  c)) 
+		  c))
     return 1;
   FREE(c);
   if (0 != GC_get_configuration_value_number(cfg,
@@ -50,7 +50,7 @@ static int testConfig() {
 					     0,
 					     10,
 					     9,
-					     &l)) 
+					     &l))
     return 1;
   if (5 != l)
     return 1;
@@ -62,17 +62,17 @@ static int testConfig() {
   if (NO == GC_get_configuration_value_yesno(cfg,
 					     "more",
 					     "c",
-					     NO)) 
+					     NO))
     return 1;
   return 0;
 }
 
-int main(int argc, 
+int main(int argc,
 	 char * argv[]) {
   struct GE_Context * ectx;
   int failureCount = 0;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);

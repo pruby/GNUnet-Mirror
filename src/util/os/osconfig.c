@@ -59,12 +59,12 @@ void os_list_network_interfaces(struct GE_Context * ectx,
   while(1) {
     int i = 0;
     int c = fgetc(f);
-    
+
     if (c == EOF)
       break;
-    
+
     dst = entry;
-    
+
     /* Read interface name until the first space (or colon under OS X) */
     while (c != EOF && c != '\n' &&
 #ifdef OSX
@@ -78,13 +78,13 @@ void os_list_network_interfaces(struct GE_Context * ectx,
       c = fgetc(f);
     }
     *dst = 0;
-    
+
     if ( (entry[0] != '\0') &&
-	 (OK != proc(entry, 
+	 (OK != proc(entry,
 		     strcmp(entry, "eth0") == 0,
 		     cls)) )
       break;
-    
+
     while ((c != '\n') && (c != EOF))
       c = fgetc(f);
   }
@@ -98,10 +98,10 @@ void os_list_network_interfaces(struct GE_Context * ectx,
  */
 static int isOSAutostartCapable() {
 #ifdef LINUX
-  if (ACCESS("/usr/sbin/update-rc.d", 
+  if (ACCESS("/usr/sbin/update-rc.d",
 	     X_OK) == 0) {
     /* Debian */
-    if (ACCESS("/etc/init.d/", 
+    if (ACCESS("/etc/init.d/",
 	       W_OK) == 0)
       return 1;
   }
@@ -119,7 +119,7 @@ int os_modify_autostart(struct GE_Context * ectx,
 			int testCapability,
 			int doAutoStart,
 			const char * application,
-			const char * username, 
+			const char * username,
 			const char * groupname) {
   if (testCapability) {
     /* TODO: check that user/group/application
@@ -131,10 +131,10 @@ int os_modify_autostart(struct GE_Context * ectx,
     if (IsWinNT()) {
       char *err = NULL;
       DWORD dwErr = 0;
-      
+
       if (username && !strlen(username))
 	username = NULL;
-      
+
       /* Install service */
       switch (InstallAsService(username)) {
       case 0:
@@ -148,7 +148,7 @@ int os_modify_autostart(struct GE_Context * ectx,
       default:
 	return -1;
       }
-      
+
       /* Grant permissions to the GNUnet directory */
       if ((!err || dwErr == ERROR_SERVICE_EXISTS) && username) {
 	char szHome[_MAX_PATH + 1];
@@ -161,17 +161,17 @@ int os_modify_autostart(struct GE_Context * ectx,
     } else {
       char szPath[_MAX_PATH + 1];
       HKEY hKey;
-      
+
       plibc_conv_to_win_path(application, szPath);
-      
+
       if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 		      "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_EXECUTE,
 		      &hKey) == ERROR_SUCCESS) {
-	if (RegSetValueEx(hKey, 
-			  "GNUnet", 
-			  0, 
-			  REG_SZ, 
-			  szPath, 
+	if (RegSetValueEx(hKey,
+			  "GNUnet",
+			  0,
+			  REG_SZ,
+			  szPath,
 			  strlen(szPath)) != ERROR_SUCCESS)
 	  return 4;
 	
@@ -196,10 +196,10 @@ int os_modify_autostart(struct GE_Context * ectx,
       }
     } else {
       HKEY hKey;
-      
+
       if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-		      "Software\\Microsoft\\Windows\\CurrentVersion\\Run", 
-		      0, 
+		      "Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+		      0,
 		      KEY_SET_VALUE,
 		      &hKey) == ERROR_SUCCESS) {
 	RegDeleteValue(hKey, "GNUnet");
@@ -209,7 +209,7 @@ int os_modify_autostart(struct GE_Context * ectx,
   }
 #else
   struct stat buf;
-      
+
   /* Unix */
   if ( (ACCESS("/usr/sbin/update-rc.d",
 	       X_OK) != 0) ) {
@@ -219,7 +219,7 @@ int os_modify_autostart(struct GE_Context * ectx,
 			 "/usr/sbin/update-rc.d");
     return SYSERR;
   }
-  
+
   /* Debian */
   if (doAutoStart) {
     if (ACCESS(application,
@@ -229,7 +229,7 @@ int os_modify_autostart(struct GE_Context * ectx,
 			   "access",
 			   application);
     }
-    if (STAT("/etc/init.d/gnunetd", 
+    if (STAT("/etc/init.d/gnunetd",
 	     &buf) == -1) {
       /* create init file */
       FILE * f = FOPEN("/etc/init.d/gnunetd", "w");
@@ -240,7 +240,7 @@ int os_modify_autostart(struct GE_Context * ectx,
 			     "/etc/init.d/gnunetd");
 	return 1;
       }
-      
+
       fprintf(f,
 	      "#!/bin/sh\n"
 	      "#\n"
@@ -274,11 +274,11 @@ int os_modify_autostart(struct GE_Context * ectx,
 	      "		;;\n"
 	      "\n"
 	      "esac\n"
-	      "exit 0\n", 
+	      "exit 0\n",
 	      "gnunet-setup",
 	      application);
       fclose(f);
-      if (0 != CHMOD("/etc/init.d/gnunetd", 
+      if (0 != CHMOD("/etc/init.d/gnunetd",
 		     S_IRWXU | S_IRGRP | S_IXGRP |
 		     S_IROTH | S_IXOTH)) {
 	GE_LOG_STRERROR_FILE(ectx,
@@ -313,7 +313,7 @@ int os_modify_autostart(struct GE_Context * ectx,
 			   "system",
 			   "/usr/sbin/update-rc.d");	
       return SYSERR;
-    } 
+    }
     return OK;
   }
 #endif

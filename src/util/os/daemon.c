@@ -81,7 +81,7 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     nice(10); /* return value is not well-defined */
     if (errno != 0)
       GE_LOG_STRERROR(ectx,
-		      GE_WARNING | GE_USER | GE_BULK, 
+		      GE_WARNING | GE_USER | GE_BULK,
 		      "nice");
     if (path != NULL)
       execv(path,
@@ -90,7 +90,7 @@ static pid_t launchWithExec(struct GE_Context * ectx,
       execvp("gnunetd",
 	     (char**) args);
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_BULK, 
+			 GE_ERROR | GE_USER | GE_BULK,
 			 "exec",
 			 path == NULL ? "gnunetd" : path);
     FREENONNULL(path);
@@ -102,7 +102,7 @@ static pid_t launchWithExec(struct GE_Context * ectx,
     ret = waitpid(pid, &status, 0);
     if (ret == -1) {
       GE_LOG_STRERROR(ectx,
-		      GE_ERROR | GE_USER | GE_BULK, 
+		      GE_ERROR | GE_USER | GE_BULK,
 		      "waitpid");
       return SYSERR;
     }
@@ -155,9 +155,9 @@ int os_daemon_start(struct GE_Context * ectx,
   if (daemonize == NO) {
     args[0] = "-d";
     idx = 1;
-    
+
     cp = GC_get_configuration_value_string(cfg,
-					   "GNUNET", 
+					   "GNUNET",
 					   "GNUNETD-CONFIG",
 					   NULL,
 					   &cp);
@@ -169,7 +169,7 @@ int os_daemon_start(struct GE_Context * ectx,
   }
 
   args[idx] = NULL;
-  pid = spawnvp(_P_NOWAIT, 
+  pid = spawnvp(_P_NOWAIT,
 		szCall,
 		(const char *const *) args);
   chdir(szCWd);
@@ -192,21 +192,21 @@ static int termProcess(int pid) {
 #else
   int ret;
   DWORD dwExitCode = 0;
-  
+
   HANDLE hProc = OpenProcess(1, 0, pid);
   GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid);
-  
+
   WaitForSingleObject(hProc, 3000);
-  
+
   GetExitCodeProcess(hProc, &dwExitCode);
   if(dwExitCode == STILL_ACTIVE) {
     ret = TerminateProcess(hProc, 0);
   }
   else
     ret = 1;
-  
+
   CloseHandle(hProc);
-  
+
   return ret;
 #endif
 }

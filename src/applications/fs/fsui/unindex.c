@@ -81,7 +81,7 @@ void * FSUI_unindexThread(void * cls) {
   event.data.UnindexStarted.total = size;
   event.data.UnindexStarted.filename = utc->filename;
   utc->cctx = utc->ctx->ecb(utc->ctx->ecbClosure,
-			    &event); 
+			    &event);
   ret = ECRS_unindexFile(utc->ctx->ectx,
 			 utc->ctx->cfg,
 			 utc->filename,
@@ -114,11 +114,11 @@ void * FSUI_unindexThread(void * cls) {
 		  &event);
   } else {
     /* must be suspending */
-    GE_BREAK(NULL, 
+    GE_BREAK(NULL,
 	     utc->state == FSUI_PENDING);
   }
 #if 0
-  GE_LOG(utc->ctx->ectx, 
+  GE_LOG(utc->ctx->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI unindexThread exits.\n");
 #endif
@@ -216,11 +216,11 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
   prev = ctx->unindexOperations;
   while ( (prev != dl) &&
 	  (prev != NULL) &&
-	  (prev->next != dl) ) 
+	  (prev->next != dl) )
     prev = prev->next;
   if (prev == NULL) {
     MUTEX_UNLOCK(ctx->lock);
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "FSUI_stopUnindex failed to locate deletion operation.\n");
     return SYSERR;

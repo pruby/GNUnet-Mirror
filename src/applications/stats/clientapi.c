@@ -168,8 +168,8 @@ int requestStatistics(struct GE_Context * ectx,
     /* printf("reading from socket starting %u of %d\n",
        count, ntohl(statMsg->totalCounters) );*/
     if (SYSERR == connection_read(sock,
-				  (MESSAGE_HEADER**)&statMsg)) 
-      return SYSERR;    
+				  (MESSAGE_HEADER**)&statMsg))
+      return SYSERR;
     if (ntohs(statMsg->header.size) < sizeof(CS_stats_reply_MESSAGE)) {
       GE_BREAK(ectx, 0);
       ret = SYSERR;

@@ -696,7 +696,7 @@ static void printRoutingTable() {
   unsigned int i;
 
   MUTEX_LOCK(lock);
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "DHT ROUTING TABLE:\n");
   for (i=0;i<bucketCount;i++) {
@@ -1235,7 +1235,7 @@ static void create_find_nodes_rpc(const PeerIdentity * peer,
  * We received a reply from a peer that we ping'ed.  Update
  * the FNC's kbest list and the buckets accordingly.
  */
-static void 
+static void
 ping_reply_handler(const PeerIdentity * responder,
 		   RPC_Param * results,
 		   void * cls) {
@@ -1597,7 +1597,7 @@ dht_get_async_start(const DHT_TableId * table,
   IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	hash2enc(table,
 		 &enc2));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "performing `%s' operation on key `%s' and table `%s'.\n",
 	 "DHT_GET",
@@ -1642,7 +1642,7 @@ dht_get_async_start(const DHT_TableId * table,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(table,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "I participate in the table `%s' for the `%s' operation.\n",
 	   &enc,
@@ -2059,7 +2059,7 @@ find_k_nodes_dht_master_get_callback(const HashCode512 * key,
  * @param closure extra argument to the callback
  * @return context for findKNodes_stop
  */
-static FindKNodesContext * 
+static FindKNodesContext *
 findKNodes_start(const DHT_TableId * table,
 		 const HashCode512 * key,
 		 cron_t timeout,
@@ -2228,7 +2228,7 @@ static void dht_put_rpc_reply_callback(const PeerIdentity * responder,
  * processed by the callback in record.  The RPC async handle is to be
  * stored in the records rpc list.  Locking is not required.
  */
-static int 
+static int
 send_dht_put_rpc(const PeerIdentity * peer,
 		 void * cls) {
   DHT_PUT_RECORD * record = cls;
@@ -2460,8 +2460,8 @@ static int dht_put_async_stop(struct DHT_PUT_RECORD * record) {
   /* cancel timeout cron job (if still live) */
   delAbortJob(&dht_put_async_timeout, record);
   cron_del_job(coreAPI->cron,
-	       &dht_put_async_timeout, 
-	       0, 
+	       &dht_put_async_timeout,
+	       0,
 	       record);
   /* abort findKNodes (if running) - it may cause
      the addition of additional RPCs otherwise! */
@@ -2487,7 +2487,7 @@ static int dht_put_async_stop(struct DHT_PUT_RECORD * record) {
  *
  * @param results::peer created in rpc_DHT_store_abort
  */
-static void 
+static void
 dht_remove_rpc_reply_callback(const PeerIdentity * responder,
 			      RPC_Param * results,
 			      void * cls) {
@@ -3051,7 +3051,7 @@ static void rpc_DHT_findValue(const PeerIdentity * sender,
   }
   fw_context
     = MALLOC(sizeof(RPC_DHT_FindValue_Context));
-  fw_context->lock 
+  fw_context->lock
     = MUTEX_CREATE(YES);
   fw_context->count
     = 0;
@@ -3127,10 +3127,10 @@ static void rpc_DHT_store_abort(void * cls) {
  */
 static void rpc_dht_store_callback(RPC_DHT_store_Context * fw) {
   RPC_Param * param;
-  
+
   cron_del_job(coreAPI->cron,
 	       &rpc_DHT_store_abort,
-	       0, 
+	       0,
 	       fw);
   delAbortJob(&rpc_DHT_store_abort, fw);
   param = RPC_paramNew();
@@ -3268,10 +3268,10 @@ static void rpc_DHT_remove_abort(RPC_DHT_remove_Context * fw) {
  */
 static void rpc_dht_remove_callback(RPC_DHT_remove_Context * fw) {
   RPC_Param * param;
-  
+
   cron_del_job(coreAPI->cron,
-	       &rpc_DHT_store_abort, 
-	       0, 
+	       &rpc_DHT_store_abort,
+	       0,
 	       fw);
   delAbortJob(&rpc_DHT_store_abort, fw);
   param = RPC_paramNew();

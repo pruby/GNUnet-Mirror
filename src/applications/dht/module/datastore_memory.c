@@ -127,7 +127,7 @@ static int store(void * closure,
   MUTEX_LOCK(ds->lock);
   pos = ds->first;
   while (pos != NULL) {
-    if (0 == memcmp(key, 
+    if (0 == memcmp(key,
 		    &pos->key,
 		    sizeof(HashCode512))) {
       if (ds->max_memory < size) {
@@ -191,7 +191,7 @@ static int ds_remove(void * closure,
   prev = NULL;
   pos = ds->first;
   while (pos != NULL) {
-    if (0 == memcmp(key, 
+    if (0 == memcmp(key,
 		    &pos->key,
 		    sizeof(HashCode512))) {
       if (value != NULL) {

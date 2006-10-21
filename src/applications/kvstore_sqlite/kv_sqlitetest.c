@@ -46,26 +46,26 @@ static int test(KVstore_ServiceAPI * api) {
 
   kv = api->getTable("TEST", "KV");
   ASSERT(kv != NULL);
-  
+
   timeStmp = get_time();
   ASSERT(api->put(kv, (void *) &k, sizeof(k), (void *) &v, sizeof(v),
     timeStmp) == OK);
-  
+
   r = api->get(kv, (void *) &k, sizeof(k), 0, 0, NULL, NULL);
   ASSERT(r != NULL);
   ASSERT(memcmp(&v, r, sizeof(v)) == 0);
   FREE(r);
-  
+
   ASSERT(api->del(kv, (void *) &k, sizeof(k), 0) == OK);
-  
+
   ASSERT(api->get(kv, (void *) &k, sizeof(k), 0, 0, NULL, NULL) == NULL);
-  
+
   ASSERT(api->dropTable(kv) == OK);
-  
+
   api->dropDatabase("TEST");
 
   return OK;
-  
+
  FAILURE:
   api->dropDatabase("TEST");
   return SYSERR;
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
   cron = cron_create(NULL);
   initCore(NULL,

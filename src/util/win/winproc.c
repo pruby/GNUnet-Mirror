@@ -74,7 +74,7 @@ void plibc_panic(int err, char *msg)
 {
   if (!pEctx)
     fprintf(stderr, "%s", msg);
-  else    
+  else
     GE_LOG(pEctx, ((err == INT_MAX) ? GE_DEBUG : GE_FATAL) | GE_USER | GE_ADMIN |
       GE_IMMEDIATE, "%s", msg);
 }
@@ -87,15 +87,15 @@ void plibc_panic(int err, char *msg)
 int InitWinEnv(struct GE_Context *ectx)
 {
 	int ret, init;
-  
+
   if (ectx)
     pEctx = ectx;
 	
-  init = plibc_initialized();  
+  init = plibc_initialized();
   plibc_set_panic_proc(plibc_panic);
 	ret = plibc_init("GNU", PACKAGE);
 
-  /* don't load other DLLs twice */  
+  /* don't load other DLLs twice */
   if (init)
     return ret;
 

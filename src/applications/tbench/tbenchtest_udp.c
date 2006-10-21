@@ -39,7 +39,7 @@ static int test(struct ClientServerConnection * sock,
 		cron_t messageSpacing,
 		unsigned int messageTrainSize,
 		cron_t messageTimeOut /* in milli-seconds */) {
-  PeerIdentity peer2; 
+  PeerIdentity peer2;
   int ret;
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE * buffer;
@@ -150,7 +150,7 @@ int main(int argc, char ** argv) {
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
 #if START_PEERS
   daemon1  = os_daemon_start(NULL,
@@ -218,7 +218,7 @@ int main(int argc, char ** argv) {
 	ret = test(sock, i, 1+1024/i, 4, 10 * cronMILLIS, 2, 2 * cronSECONDS);
       checkConnected(sock);
     }
-    ret = test(sock, 32768, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);    
+    ret = test(sock, 32768, 10, 10, 500 * cronMILLIS, 1, 10 * cronSECONDS);
     connection_destroy(sock);
   } else {
     printf("Could not establish connection with peer.\n");

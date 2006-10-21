@@ -223,7 +223,7 @@ static int test(SQstore_ServiceAPI * api) {
   api->drop();
 
   return OK;
-  
+
  FAILURE:
   api->drop();
   return SYSERR;
@@ -241,7 +241,7 @@ int main(int argc, char *argv[]) {
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
   cron = cron_create(NULL);
   initCore(NULL,
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
   } else
     ok = SYSERR;
   doneCore();
-  cron_destroy(cron);  
+  cron_destroy(cron);
   GC_free(cfg);
   if (ok == SYSERR)
     return 1;

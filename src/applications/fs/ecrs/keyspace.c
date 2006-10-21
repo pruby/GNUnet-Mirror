@@ -244,7 +244,7 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
     if (OK != FS_insert(sock, value))
       ret = SYSERR;
 #if EXTRA_CHECKS
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
 	      OK == verifyKBlock(ectx,
 				 &key,
 				 value))

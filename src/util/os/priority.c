@@ -34,7 +34,7 @@
 int os_set_process_priority(struct GE_Context * ectx,
 			    const char * str) {
   int prio = 0;
-  
+
   GE_ASSERT(ectx,
 	    str != NULL);
   /* We support four levels (NORMAL, ABOVE NORMAL, BELOW NORMAL, HIGH and IDLE)
@@ -70,7 +70,7 @@ int os_set_process_priority(struct GE_Context * ectx,
   prio = 19;
 #endif
   else {
-    if (1 != sscanf(str, 
+    if (1 != sscanf(str,
 		    "%d",
 		    &prio)) {
       GE_LOG(ectx,
@@ -79,7 +79,7 @@ int os_set_process_priority(struct GE_Context * ectx,
 	     str);
       return SYSERR;
     }
-    
+
 #ifdef MINGW
   /* Convert the nice increment to a priority class */
     if (prio == 0)
@@ -94,7 +94,7 @@ int os_set_process_priority(struct GE_Context * ectx,
       prio = HIGH_PRIORITY_CLASS;
 #endif
   }
-  
+
   /* Set process priority */
 #ifdef MINGW
   SetPriorityClass(GetCurrentProcess(), prio);

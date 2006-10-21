@@ -92,7 +92,7 @@ typedef struct {
    */
   int (* put)(KVHandle *kv, void *key, int keylen, void *val, int vallen,
     unsigned long long age);
-  
+
   /**
    * @brief Delete values from a Key/Value-Table
    * @param key key to delete (may be NULL)
@@ -101,7 +101,7 @@ typedef struct {
    * @return OK on success, SYSERR otherwise
    */
   int (* del)(KVHandle *kv, void *key, int keylen, unsigned long long age);
-  
+
   /**
    * @brief Close a handle to a Key/Value-Table
    * @param kv the handle to close
@@ -114,7 +114,7 @@ typedef struct {
    * @return OK on success, SYSERR otherwise
    */
   int (* dropTable)(KVHandle *kv);
-  
+
   /**
    * @brief Delete the database.
    */

@@ -214,8 +214,8 @@ static void work() {
  */
 static struct CommandLineOption gnunetupdateOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  { 'g', "get", "", 
-    gettext_noop("ping peers from HOSTLISTURL that match transports"), 
+  { 'g', "get", "",
+    gettext_noop("ping peers from HOSTLISTURL that match transports"),
     0, &gnunet_getopt_configure_set_option, "GNUNET-UPDATE:GET" },
   COMMAND_LINE_OPTION_HELP(gettext_noop("Updates GNUnet datastructures after version change.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
@@ -236,7 +236,7 @@ int main(int argc,
 	 const char * argv[]) {
   char * get;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -253,13 +253,13 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (-1 == GC_parse_configuration(cfg,
 	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (OK != changeUser(ectx, cfg)) {
     GC_free(cfg);
@@ -271,7 +271,7 @@ int main(int argc,
 					     "GET",
 					     NULL,
 					     &get)) {
-    doGet(get);  
+    doGet(get);
     FREE(get);
   } else {
     work();

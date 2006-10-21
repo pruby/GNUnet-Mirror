@@ -113,7 +113,7 @@ typedef struct {
 
   struct GC_Configuration * cfg;
 
-  int aborted; 
+  int aborted;
 
   /**
    * Number of queries running at the moment.
@@ -162,7 +162,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
 
   switch (uri->type) {
   case chk:
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	_("CHK URI not allowed for search.\n"));
     break;
@@ -192,7 +192,7 @@ static void addQueryForURI(const struct ECRS_URI * uri,
     int i;
 
 #if DEBUG_SEARCH
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Computing queries (this may take a while).\n");
 #endif
@@ -377,7 +377,7 @@ static int receiveReplies(const HashCode512 * key,
 	IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	      hash2enc(&ps->decryptKey,
 		       &enc));
-	GE_LOG(ectx, 
+	GE_LOG(ectx,
 	       GE_DEBUG | GE_REQUEST | GE_USER,
 	       "Decrypting KBlock with key %s.\n",
 	       &enc);
@@ -620,7 +620,7 @@ int ECRS_search(struct GE_Context * ectx,
       ps->priority = new_priority;
       ps->lastTransmission = now;
 #if DEBUG_SEARCH
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "ECRS initiating FS search with timeout %llus and priority %u.\n",
 	     (ps->timeout - now) / cronSECONDS,

@@ -118,7 +118,7 @@ static int pingReceived(const PeerIdentity * sender,
   P2P_pingpong_MESSAGE * pmsg;
 
   if (ntohs(msg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER | GE_DEVELOPER,
 	   _("Received malformed `%s' message. Dropping.\n"),
 	   "ping");
@@ -130,22 +130,22 @@ static int pingReceived(const PeerIdentity * sender,
   if (0 != memcmp(coreAPI->myIdentity,
 		  &pmsg->receiver,
 		  sizeof(PeerIdentity))) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_ADMIN,
 	   _("Received ping for another peer. Dropping.\n"));
     return SYSERR; /* not for us */
   }
 
-#if DEBUG_PINGPONG  
+#if DEBUG_PINGPONG
   EncName enc;
 
   hash2enc(&sender->hashPubKey, &enc);
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Received ping from peer %s.\n",
 	 &enc);
 #endif
-  
+
   pmsg->header.type = htons(p2p_PROTO_PONG);
   if (stats != NULL)
     stats->change(stat_pingReceived, 1);
@@ -180,13 +180,13 @@ static int sendPlaintext(const PeerIdentity * peer,
 static int plaintextPingReceived(const PeerIdentity * sender,
 				 const MESSAGE_HEADER * hmsg,
 				 TSession * tsession) {
-#if DEBUG_PINGPONG  
+#if DEBUG_PINGPONG
   EncName enc;
 #endif
   P2P_pingpong_MESSAGE * pmsg;
 
   if (ntohs(hmsg->size) != sizeof(P2P_pingpong_MESSAGE) ) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER | GE_DEVELOPER,
 	   _("Received malformed `%s' message. Dropping.\n"),
 	   "ping");
@@ -202,14 +202,14 @@ static int plaintextPingReceived(const PeerIdentity * sender,
     return SYSERR; /* not for us */
   }
 
-#if DEBUG_PINGPONG  
+#if DEBUG_PINGPONG
   hash2enc(&sender->hashPubKey, &enc);
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,  
-	 "Received plaintext ping from peer %s.\n", 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Received plaintext ping from peer %s.\n",
 	 &enc);
 #endif
-  
+
   pmsg->header.type = htons(p2p_PROTO_PONG);
   /* allow using a different transport for sending the reply, the
      transport may have been uni-directional! */
@@ -308,7 +308,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
        (0 != memcmp(sender,
 		    &pmsg->receiver,
 		    sizeof(PeerIdentity)))) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER | GE_DEVELOPER,
 	   _("Received malformed `%s' message. Dropping.\n"),
 	   "pong");
@@ -344,7 +344,7 @@ static int plaintextPongReceived(const PeerIdentity * sender,
 	 matched);
 #endif
   if (matched == 0) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_ADMIN,
 	   _("Could not match PONG against any PING. "
 	     "Try increasing MAX_PING_PONG constant.\n"));

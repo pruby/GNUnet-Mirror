@@ -59,7 +59,7 @@ static struct FSUI_Context * ctx;
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
   static char unused;
- 
+
   switch(event->type) {
   case FSUI_search_resumed:
     search = event->data.SearchResumed.sc.pos;
@@ -128,7 +128,7 @@ int main(int argc, char * argv[]){
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
 #if START_DAEMON
   daemon  = os_daemon_start(NULL,
@@ -185,7 +185,7 @@ int main(int argc, char * argv[]){
   kuri = ECRS_parseListKeywordURI(NULL,
 				  2,
 				  (const char**)keywords);
-  upload = 
+  upload =
 	FSUI_startUpload(ctx,
 			 fn,
 			 (DirectoryScanCallback) &disk_directory_scan,
@@ -261,7 +261,7 @@ int main(int argc, char * argv[]){
  FAILURE:
   if (ctx != NULL)
     FSUI_stop(ctx);
-  FREENONNULL(fn);  
+  FREENONNULL(fn);
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   fn = makeName(42);
   UNLINK(fn);

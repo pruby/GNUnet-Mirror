@@ -57,7 +57,7 @@
  * on all pthread-systems so far. Odd.
  */
 #ifndef _MSC_VER
-extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr, 
+extern int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr,
 					int kind);
 #endif
 
@@ -95,18 +95,18 @@ Mutex * MUTEX_CREATE(int isRecursive) {
 #if LINUX
     GE_ASSERT(NULL,
 	      0 == pthread_mutexattr_setkind_np
-	      (&attr, 
+	      (&attr,
 	       PTHREAD_MUTEX_ERRORCHECK_NP));
 #else
     GE_ASSERT(NULL,
 	      0 == pthread_mutexattr_settype
-	      (&attr, 
+	      (&attr,
 	       PTHREAD_MUTEX_ERRORCHECK));
 #endif
   }
   mut = MALLOC(sizeof(Mutex));
-  GE_ASSERT(NULL, 
-	    0 == pthread_mutex_init(&mut->pt, 
+  GE_ASSERT(NULL,
+	    0 == pthread_mutex_init(&mut->pt,
 				    &attr));
   return mut;
 }
@@ -135,7 +135,7 @@ void MUTEX_LOCK(Mutex * mutex) {
 #if DEBUG_LOCK_DELAY
   start = get_time() - start;
   if (start > 10)
-    printf("Locking took %llu ms!\n", 
+    printf("Locking took %llu ms!\n",
 	   start);
 #endif
   if (ret != 0) {

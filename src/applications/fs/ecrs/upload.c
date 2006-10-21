@@ -168,7 +168,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 			   YES)) {
     GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
-	   _("Cannot get size of file `%s'"), 
+	   _("Cannot get size of file `%s'"),
 	   filename);
 
     return SYSERR;
@@ -186,7 +186,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     if (SYSERR == getFileHash(ectx,
 			      filename,
                               &fileId)) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_ERROR | GE_BULK | GE_USER,
 	     _("Cannot hash `%s'.\n"),
 	     filename);
@@ -212,7 +212,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
       connection_destroy(sock);
       return SYSERR;
     case NO:
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_ERROR | GE_BULK | GE_USER,
 	     _("Indexing file `%s' failed. Trying to insert file...\n"),
 	     filename);
@@ -225,7 +225,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
 		      O_RDONLY | O_LARGEFILE);
   if (fd == -1) {
     connection_destroy(sock);
-    return SYSERR;  
+    return SYSERR;
   }
 
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
@@ -283,11 +283,11 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                       size + sizeof(DBlock),
                       &chk.query);
 #if DEBUG_UPLOAD
-    IF_GELOG(ectx, 
+    IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(&chk.query,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Query for current block of size %u is %s\n",
 	   size,
@@ -338,7 +338,7 @@ int ECRS_uploadFile(struct GE_Context * ectx,
     if (OK != tt(ttClosure))
       goto FAILURE;
 #if DEBUG_UPLOAD
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Tree depth is %u, walking up tree.\n",
 	 treedepth);
@@ -369,11 +369,11 @@ int ECRS_uploadFile(struct GE_Context * ectx,
                       size,
                       &chk.query);
 #if DEBUG_UPLOAD
-    IF_GELOG(ectx, 
+    IF_GELOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(&chk.query,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Query for current block at level %u is `%s'.\n",
 	   i,

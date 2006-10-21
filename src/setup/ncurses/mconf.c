@@ -53,7 +53,7 @@ static void show_help(const char * option,
 
 static void run_menu(struct GNS_Context * ctx,
 		     struct GNS_Tree * pos,
-		     struct GC_Configuration * cfg) {  
+		     struct GC_Configuration * cfg) {
   int st;
   int i;
   DIALOG_LISTITEM * items;
@@ -100,22 +100,22 @@ static void run_menu(struct GNS_Context * ctx,
 	if (pos->children[i]->visible) {
 	  items[st].name = pos->children[i]->option;
 	  items[st].text = gettext(pos->children[i]->description);
-	  items[st].help = gettext(pos->children[i]->help);	  
+	  items[st].help = gettext(pos->children[i]->help);	
 	  items[st].state = 0;
 	  st++;
 	}
 	i++;
-      }            
+      }
       st = dlg_menu(gettext(pos->description),
 		    "Select configuration option to change",
-		    20, 
+		    20,
 		    70,
 		    13,
 		    st,
 		    items,
 		    &msel,
 		    NULL);
-      FREE(items);      
+      FREE(items);
       switch (st) {
       case DLG_EXIT_OK:
 	i = 0;
@@ -160,8 +160,8 @@ static void run_menu(struct GNS_Context * ctx,
 	    show_help(pos->option,
 		      gettext_noop("Internal error! (Choice invalid?)"));
 	    break;
-	  } 
-	  return;	  
+	  }
+	  return;	
 	case DLG_EXIT_HELP:
 	  show_help(pos->option, pos->help);
 	  break;
@@ -174,7 +174,7 @@ static void run_menu(struct GNS_Context * ctx,
 	break;
       case GNS_String:
 	if (pos->value.String.legalRange[0] == NULL) {
-	  /* free form */	  
+	  /* free form */	
 	  fitem.text = MALLOC(65536);
 	  strcpy(fitem.text,
 		 pos->value.String.val);
@@ -200,7 +200,7 @@ static void run_menu(struct GNS_Context * ctx,
 			gettext_noop("Internal error! (Value invalid?)"));
 	      break;
 	    }
-	    FREE(fitem.text);	 
+	    FREE(fitem.text);	
 	    return;
 	  case DLG_EXIT_HELP:
 	    show_help(pos->option, pos->help);
@@ -208,21 +208,21 @@ static void run_menu(struct GNS_Context * ctx,
 	  default:
 	    break;
 	  }
-	  FREE(fitem.text);	 
+	  FREE(fitem.text);	
 	  /* end free form */
 	} else {
 	  /* begin choice */
 
 	  val = &pos->value;
 	  i = 0;
-	  while (val->String.legalRange[i] != NULL) 
+	  while (val->String.legalRange[i] != NULL)
 	    i++;
 	  GE_ASSERT(ectx, i != 0);
 	  items = MALLOC(sizeof(DIALOG_LISTITEM) * i);
 	  i = 0;
-	  msel = -1; 
-	  
-	  while (val->String.legalRange[i] != NULL) {	    
+	  msel = -1;
+	
+	  while (val->String.legalRange[i] != NULL) {	
 	    items[i].name = "";
 	    items[i].text = val->String.legalRange[i];
 	    items[i].help = "";
@@ -234,7 +234,7 @@ static void run_menu(struct GNS_Context * ctx,
 	    }
 	    if ( (msel == -1) &&
 		 (0 == strcmp(val->String.legalRange[i],
-			      val->String.def)) ) 
+			      val->String.def)) )
 	      msel = i;
 	    i++;
 	  }
@@ -247,7 +247,7 @@ static void run_menu(struct GNS_Context * ctx,
 			     items,
 			     " *",
 			     FLAG_RADIO,
-			     &msel);	  
+			     &msel);	
 	  FREE(items);
 	  switch (st) {
 	  case DLG_EXIT_OK:
@@ -259,7 +259,7 @@ static void run_menu(struct GNS_Context * ctx,
 	      show_help(pos->option,
 			gettext_noop("Internal error! (Choice invalid?)"));
 	      break;
-	    }	    
+	    }	
 	    return;
 	  case DLG_EXIT_HELP:
 	    show_help(pos->option,
@@ -300,7 +300,7 @@ static void run_menu(struct GNS_Context * ctx,
 	    show_help(pos->option,
 		      gettext_noop("Invalid input, expecting floating point value."));
 	    break;
-	  } 
+	  }
 	  if (0 != GC_set_configuration_value_string(cfg,
 						     ectx,
 						     pos->section,
@@ -308,10 +308,10 @@ static void run_menu(struct GNS_Context * ctx,
 						     fitem.text)) {
 	    show_help(pos->option,
 		      gettext_noop("Internal error! (Value invalid?)"));
-	    FREE(fitem.text); 
+	    FREE(fitem.text);
 	    break;
 	  }
-	  FREE(fitem.text); 
+	  FREE(fitem.text);
 	  return;
 	case DLG_EXIT_HELP:
 	  show_help(pos->option, pos->help);
@@ -319,10 +319,10 @@ static void run_menu(struct GNS_Context * ctx,
 	default:
 	  break;
 	}
-	FREE(fitem.text); 
+	FREE(fitem.text);
 	break;
 
-      case GNS_UInt64: 
+      case GNS_UInt64:
 	fitem.text = MALLOC(64);
 	SNPRINTF(fitem.text,
 		 64,
@@ -349,7 +349,7 @@ static void run_menu(struct GNS_Context * ctx,
 	      show_help(pos->option,
 			gettext_noop("Invalid input, expecting integer."));
 	      continue;
-	    } 
+	    }
 	    if ( (lval < pos->value.UInt64.min) ||
 		 (lval > pos->value.UInt64.max)) {
 	      show_help(pos->option,
@@ -373,7 +373,7 @@ static void run_menu(struct GNS_Context * ctx,
 	    break;
 	  }
 	}
-	FREE(fitem.text); 
+	FREE(fitem.text);
 	return;
       default:
 	GE_BREAK(ectx, 0);
@@ -385,8 +385,8 @@ static void run_menu(struct GNS_Context * ctx,
       GE_BREAK(ectx, 0);
       break;
 
-    } /* end switch type & Kind */    
-  } /* end while(1) */ 
+    } /* end switch type & Kind */
+  } /* end while(1) */
 }
 
 
@@ -405,7 +405,7 @@ int mconf_mainsetup_curses(int argc,
 #ifndef MINGW
   tcgetattr(1, &ios_org);
 #endif
-  dialog_vars.backtitle = _("GNUnet Configuration");  
+  dialog_vars.backtitle = _("GNUnet Configuration");
   dialog_vars.item_help = 1;
   dialog_vars.help_button = 1;
 
@@ -419,7 +419,7 @@ int mconf_mainsetup_curses(int argc,
   if ( (0 == GC_test_dirty(cfg)) &&
        (0 == ACCESS(filename, R_OK)) ) {
     end_dialog();
-    printf(_("Configuration unchanged, no need to save.\n"));    
+    printf(_("Configuration unchanged, no need to save.\n"));
   } else {
     dialog_vars.help_button = 0;
     ret = dialog_yesno(NULL,
@@ -432,7 +432,7 @@ int mconf_mainsetup_curses(int argc,
 	/* error message already printed... */
 	ret = 1;
       } else {
-	ret = 0;      
+	ret = 0;
       }
       printf(_("\nEnd of configuration.\n"));
     } else {

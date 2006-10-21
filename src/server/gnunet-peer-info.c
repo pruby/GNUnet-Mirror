@@ -103,12 +103,12 @@ static void printHostInfo(const PeerIdentity * id,
   FREE(info);
 }
 
-int main(int argc, 
+int main(int argc,
 	 const char *argv[]) {
   struct GC_Configuration * cfg;
   struct CronManager * cron;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -124,13 +124,13 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
-  } 
+    return -1;
+  }
   if (-1 == GC_parse_configuration(cfg,
 	 			   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   GE_ASSERT(ectx,
 	    0 == GC_set_configuration_value_string(cfg,

@@ -101,7 +101,7 @@ void GE_LOG(struct GE_Context * ctx,
 		 buf);
   else
     fprintf(stderr,
-	    "%s %s", 
+	    "%s %s",
 	    date,
 	    buf);
   free(buf);
@@ -128,7 +128,7 @@ void GE_CONFIRM(struct GE_Context * ctx)
 #endif
   }
   else if (ctx->confirm)
-    ctx->confirm(ctx->cls); 
+    ctx->confirm(ctx->cls);
 }
 
 /**
@@ -139,7 +139,7 @@ void GE_CONFIRM(struct GE_Context * ctx)
  *        an event must be non-zero in all 3 GE_KIND categories
  *        to be passed to this handler
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_callback(GE_KIND mask,
 			   GE_LogHandler handler,
 			   void * ctx,
@@ -170,7 +170,7 @@ void GE_free_context(GE_Context * ctx) {
 }
 
 /**
- * Would an event of this kind be possibly 
+ * Would an event of this kind be possibly
  * processed by the logger?
  * @param ctx the logger
  * @param have the kind of event
@@ -225,7 +225,7 @@ GE_KIND GE_getKIND(const char * log) {
   if (0 == strcasecmp(log,
 		      _("ALL")))
     return GE_ALL;
-  
+
   return GE_INVALID;
 }
 
@@ -259,7 +259,7 @@ const char * GE_kindToString(GE_KIND kind) {
 }
 
 
-typedef struct {  
+typedef struct {
   struct GE_Context * c1;
   struct GE_Context * c2;
 } CPair;
@@ -288,7 +288,7 @@ static void pairdestruct(void * ctx) {
  * Create a context that sends events to two other contexts.
  * Note that the client must stop using ctx1/ctx2 henceforth.
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_multiplexer(struct GE_Context * ctx1,
 			      struct GE_Context * ctx2) {
   CPair * cls;

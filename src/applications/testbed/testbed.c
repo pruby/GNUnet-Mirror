@@ -1352,7 +1352,7 @@ int initialize_module_testbed(CoreAPIForApplication * capi) {
   GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_testbed_REQUEST,
 						      (CSHandler)&csHandleTestbedRequest));
   httpRegister("startup");
- 
+
   GE_ASSERT(capi->ectx,
 	    0 == GC_set_configuration_value_string(capi->cfg,
 						   capi->ectx,

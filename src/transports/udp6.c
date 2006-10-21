@@ -149,7 +149,7 @@ static int isBlacklisted(const void * addr,
     memcpy(&ip,
 	   &((struct sockaddr_in6*) addr)->sin6_addr,
 	   sizeof(IP6addr));
-  } else { 
+  } else {
     return SYSERR;
   }
   MUTEX_LOCK(configLock);
@@ -215,7 +215,7 @@ static P2P_hello_MESSAGE * createhello() {
   haddr = (Host6Address*) &msg[1];
 
   if (SYSERR == getPublicIP6Address(cfg,
-				    ectx,				    
+				    ectx,				
 				    &haddr->senderIP)) {
     FREE(msg);
     GE_LOG(ectx,
@@ -307,7 +307,7 @@ static int udp6Send(TSession * tsession,
 		    ssize);
   } else {
     GE_LOG_STRERROR(ectx,
-		    GE_WARNING, 
+		    GE_WARNING,
 		    "sendto");
     if (stats != NULL)
       stats->change(stat_bytesDropped,
@@ -376,7 +376,7 @@ static int reloadConfiguration(void) {
 					     "UDP",
 					     "BLACKLIST",
 					     NULL,
-					     &ch)) 
+					     &ch))
     filteredNetworks_ = parse_ipv6_network_specification(ectx,
 							 "");
   else {

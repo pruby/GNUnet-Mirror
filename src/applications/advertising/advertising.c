@@ -663,7 +663,7 @@ phelloHandler(const PeerIdentity * sender,
  */
 static int
 configurationUpdateCallback(void * ctx,
-			    struct GC_Configuration * cfg, 
+			    struct GC_Configuration * cfg,
 			    struct GE_Context * ectx,
 			    const char * section,
 			    const char * option) {

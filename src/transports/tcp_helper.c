@@ -109,7 +109,7 @@ static int tcpDisconnect(TSession * tsession) {
        (tcpsession->in_select == YES) ) {
     MUTEX_UNLOCK(tcpsession->lock);
     return OK;
-  }  
+  }
 #if DEBUG_TCP
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_BULK,
@@ -120,7 +120,7 @@ static int tcpDisconnect(TSession * tsession) {
   MUTEX_UNLOCK(tcpsession->lock);
   if (tcpsession->in_select == NO) {
     MUTEX_DESTROY(tcpsession->lock);
-    FREE(tcpsession);  
+    FREE(tcpsession);
     FREE(tsession);
   }
   return OK;
@@ -182,15 +182,15 @@ static int select_message_handler(void * mh_cls,
     stats->change(stat_bytesReceived,
 		  len);
   tcpSession = tsession->internal;
-  if (YES == tcpSession->expectingWelcome) {    
+  if (YES == tcpSession->expectingWelcome) {
     welcome = (const TCPWelcome*) msg;
     if ( (ntohs(welcome->header.type) != 0) ||
 	 (len != sizeof(TCPWelcome)) ) {
       GE_LOG(ectx,
 	     GE_WARNING | GE_USER | GE_BULK,
 	     _("Received malformed message instead of welcome message. Closing.\n"));
-      tcpDisconnect(tsession);      
-      return SYSERR;    
+      tcpDisconnect(tsession);
+      return SYSERR;
     }
     tcpSession->expectingWelcome = NO;
     tcpSession->sender = welcome->clientIdentity;
@@ -235,14 +235,14 @@ static void * select_accept_handler(void * ah_cls,
   if (NO != blt(addr, addr_len)) {
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK, 
+	   GE_DEBUG | GE_USER | GE_BULK,
 	   "Rejecting TCP connection (blacklisted).\n");
 #endif
     return NULL;
   }
 #if DEBUG_TCP
   GE_LOG(ectx,
-	 GE_DEBUG | GE_USER | GE_BULK, 
+	 GE_DEBUG | GE_USER | GE_BULK,
 	 "Accepting TCP connection.\n");
 #endif
   tcpSession = MALLOC(sizeof(TCPSession));
@@ -307,7 +307,7 @@ static int tcpSend(TSession * tsession,
 		    size);
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK, 
+	   GE_DEBUG | GE_USER | GE_BULK,
 	   "Could not sent TCP message -- tcp transport is down.\n");
 #endif
     return SYSERR;
@@ -322,7 +322,7 @@ static int tcpSend(TSession * tsession,
 		    size);
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK, 
+	   GE_DEBUG | GE_USER | GE_BULK,
 	   "Could not sent TCP message -- other side closed connection.\n");
 #endif
     return SYSERR; /* other side closed connection */
@@ -379,7 +379,7 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
   tcpSession->sender = helo->senderIdentity;
   tcpSession->expectingWelcome = NO;
   MUTEX_LOCK(tcplock);
-  if (OK == 
+  if (OK ==
       select_connect(selector,
 		     tcpSession->sock,
 		     tsession))
@@ -394,20 +394,20 @@ static int tcpConnectHelper(const P2P_hello_MESSAGE * helo,
   welcome.clientIdentity
     = *(coreAPI->myIdentity);
   if (SYSERR == select_write(selector,
-			     s,			     
+			     s,			
 			     &welcome.header,
 			     NO,
 			     YES)) {
 #if DEBUG_TCP
     GE_LOG(ectx,
-	   GE_DEBUG | GE_USER | GE_BULK, 
+	   GE_DEBUG | GE_USER | GE_BULK,
 	   "Could not sent TCP welcome message, closing connection.\n");
 #endif
     /* disconnect caller -- error! */
     tcpDisconnect(tsession);
     MUTEX_UNLOCK(tcplock);
     return SYSERR;
-  } else if (stats != NULL) 
+  } else if (stats != NULL)
     stats->change(stat_bytesSent,
 		  sizeof(TCPWelcome));
   MUTEX_UNLOCK(tcplock);

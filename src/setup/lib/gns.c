@@ -50,7 +50,7 @@ struct GNS_Context {
   struct GC_Configuration * cfg;
 
   struct GNS_Tree * root;
-  
+
   GNS_TCL * listeners;
 
   unsigned int in_notify;
@@ -58,7 +58,7 @@ struct GNS_Context {
 };
 
 static void notify_listeners(void * ctx,
-			     struct GNS_Tree * tree) {  
+			     struct GNS_Tree * tree) {
   struct GNS_Context * g = ctx;
   GNS_TCL * lpos;
 
@@ -84,15 +84,15 @@ static void notify_listeners(void * ctx,
  *         refused
  */
 int configChangeListener(void * ctx,
-			 struct GC_Configuration * cfg, 
+			 struct GC_Configuration * cfg,
 			 struct GE_Context * ectx,
 			 const char * section,
 			 const char * option) {
   struct GNS_Context * g = ctx;
   struct GNS_Tree * pos;
-  
+
   pos = tree_lookup(g->root,
-		    section, 
+		    section,
 		    option);
   if (pos == NULL) {
     GE_LOG(g->ectx,
@@ -118,7 +118,7 @@ int configChangeListener(void * ctx,
     val = GC_get_configuration_value_yesno(cfg,
 					   section,
 					   option,
-					   pos->value.Boolean.def);    
+					   pos->value.Boolean.def);
     if (val == SYSERR) {
       return SYSERR;
     }
@@ -216,7 +216,7 @@ static void free_tree(struct GNS_Tree * t) {
     i++;
   }
   switch (t->type & GNS_TypeMask) {
-  case 0: 
+  case 0:
     break; /* no value */
   case GNS_Boolean:
   case GNS_UInt64:
@@ -244,8 +244,8 @@ static void free_tree(struct GNS_Tree * t) {
 
 /**
  * Start the setup process by loading a scheme file that
- * contains the configuration specification. 
- * 
+ * contains the configuration specification.
+ *
  * @param ectx for error reporting
  * @param cfg configuration values that have a known initial value
  * @param specification name of the guile file containing the spec
@@ -276,7 +276,7 @@ GNS_load_specification(struct GE_Context * ectx,
     FREE(ctx);
     free_tree(root);
     return NULL;
-  }  
+  }
   return ctx;
 }
 
@@ -296,7 +296,7 @@ GNS_get_tree(struct GNS_Context * ctx) {
 /**
  * Free resources associated with the GNS context.
  */
-void 
+void
 GNS_free_specification(struct GNS_Context * ctx) {
   GC_detach_change_listener(ctx->cfg,
 			    &configChangeListener,
@@ -311,12 +311,12 @@ GNS_free_specification(struct GNS_Context * ctx) {
  *
  * @param listener callback to call whenever the tree changes
  */
-void 
+void
 GNS_register_tree_change_listener(struct GNS_Context * ctx,
 				  GNS_TreeChangeListener listener,
 				  void * cls) {
   GNS_TCL  * n;
-  
+
   n = MALLOC(sizeof(GNS_TCL));
   n->l = listener;
   n->c = cls;
@@ -328,7 +328,7 @@ GNS_register_tree_change_listener(struct GNS_Context * ctx,
  * Release a tree change listener from GNS (do not call the listener
  * in the future for change events).
  */
-void 
+void
 GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
 				    GNS_TreeChangeListener listener,
 				    void * cls) {

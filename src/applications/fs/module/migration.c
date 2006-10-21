@@ -109,7 +109,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   cron_t et;
   cron_t now;
   unsigned int anonymity;
-  Datastore_Value *enc;    
+  Datastore_Value *enc;
 
   MUTEX_LOCK(lock);
   if (content != NULL) {
@@ -133,7 +133,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
       return 0;
     }
   }
-  
+
   if (ntohl(content->type) == ONDEMAND_BLOCK) {
     if (ONDEMAND_getIndexed(datastore, content, &key, &enc) != OK) {
       FREE(content);
@@ -142,19 +142,19 @@ activeMigrationCallback(const PeerIdentity * receiver,
       return 0;
     }
     if (stats != NULL)
-      stats->change(stat_on_demand_migration_attempts, 1); 
+      stats->change(stat_on_demand_migration_attempts, 1);
 
     FREE(content);
     content = enc;
   }
-  
+
   size = sizeof(GapWrapper) + ntohl(content->size) - sizeof(Datastore_Value);
   if (size > padding) {
     MUTEX_UNLOCK(lock);
 #if DEBUG_MIGRATION
     GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
 	"Available content of size %u too big for available space (%u)\n",
-	size, 
+	size,
 	padding);
 #endif
     return 0;
@@ -204,7 +204,7 @@ activeMigrationCallback(const PeerIdentity * receiver,
   MUTEX_UNLOCK(lock);
   if ( (ret > 0)&&
        (stats != NULL) )
-      stats->change(stat_migration_count, 1); 
+      stats->change(stat_migration_count, 1);
 
   return ret;
 }

@@ -81,7 +81,7 @@ static int testPTHREAD_CREATE() {
 static int testMutex() {
   struct PTHREAD * pt;
   void * unused;
-  
+
   lock = MUTEX_CREATE(NO);
 
   sv = 1;
@@ -156,7 +156,7 @@ static int testSemaphore() {
 	   __FILE__, __LINE__);
     return 1;
   }
-  for (i=0;i<42;i++) 
+  for (i=0;i<42;i++)
     SEMAPHORE_UP(sem);
   for (i=0;i<42;i++)
     if (SYSERR == SEMAPHORE_DOWN(sem, NO)) {
@@ -188,7 +188,7 @@ static int testSemaphore() {
   return 0;
 }
 
-int main(int argc, 
+int main(int argc,
 	 char * argv[]){
   int ret = 0;
 

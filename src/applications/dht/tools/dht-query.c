@@ -53,13 +53,13 @@ static struct CommandLineOption gnunetjoinOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE, remove KEY VALUE) a DHT table.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
-  COMMAND_LINE_OPTION_LOGGING, /* -L */  
+  COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 't', "table", "NAME",
     gettext_noop("join table called NAME"),
-    1, &gnunet_getopt_configure_set_string, &table_id },  
+    1, &gnunet_getopt_configure_set_string, &table_id },
   { 'T', "timeout", "TIME",
     gettext_noop("allow TIME ms to process each command"),
-    1, &gnunet_getopt_configure_set_uint, &timeout }, 
+    1, &gnunet_getopt_configure_set_uint, &timeout },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
@@ -85,7 +85,7 @@ static void do_get(struct ClientServerConnection * sock,
   hash(key,
        strlen(key),
        &hc);
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Issuing '%s(%s)' command.\n",
 	 "get", key);
@@ -151,7 +151,7 @@ static void do_remove(struct ClientServerConnection * sock,
   dc->size = htonl(strlen(value)
 		   + sizeof(DataContainer));
   memcpy(&dc[1], value, strlen(value));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Issuing '%s(%s,%s)' command.\n",
 	 "remove", key, value);
@@ -179,7 +179,7 @@ int main(int argc,
   struct ClientServerConnection * handle;
   HashCode512 table;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);

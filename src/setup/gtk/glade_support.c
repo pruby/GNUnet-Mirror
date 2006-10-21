@@ -69,8 +69,8 @@ static void connector(const gchar *handler_name,
   method = os_plugin_resolve_function(library,
 				      handler_name,
 				      YES);
-  if (method == NULL) 
-    return; 
+  if (method == NULL)
+    return;
   glade_xml_signal_connect(xml,
 			   handler_name,
 			   (GCallback) method);
@@ -84,7 +84,7 @@ GladeXML * load_xml(const char * dialog_name) {
   ret = glade_xml_new(gladeFile,
 		      dialog_name,
 		      PACKAGE_NAME);
-  if (ret == NULL) 
+  if (ret == NULL)
     GE_DIE_STRERROR_FILE(NULL,
 			 GE_USER | GE_ADMIN | GE_FATAL | GE_IMMEDIATE,
 			 "open",
@@ -112,7 +112,7 @@ void showDialog(const char * name) {
   GtkWidget * msgSave;
   char * gladeFile;
   GladeXML * myXML;
-  
+
   gladeFile = get_glade_filename();
   myXML = glade_xml_new(gladeFile,
 			name,

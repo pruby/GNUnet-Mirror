@@ -71,8 +71,8 @@ int os_terminal_detach(struct GE_Context * ectx,
 		      GE_WARNING | GE_USER | GE_BULK,
 		      "close");
     ok = SYSERR;
-    while (0 < READ(filedes[0], 
-		    &c, 
+    while (0 < READ(filedes[0],
+		    &c,
 		    sizeof(char))) {
       if (c == '.')
 	ok = OK;
@@ -110,7 +110,7 @@ int os_terminal_detach(struct GE_Context * ectx,
     return SYSERR;
   }
   pid = setsid(); /* Detach from controlling terminal */
-  if (pid == -1) 
+  if (pid == -1)
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
 		    "setsid");
@@ -125,11 +125,11 @@ void os_terminal_detach_complete(struct GE_Context * ectx,
 				 int success) {
 #ifndef MINGW
   char c = '.';
-  
+
   if (! success)
     c = '!';
-  WRITE(filedes[1], 
-	&c, 
+  WRITE(filedes[1],
+	&c,
 	sizeof(char)); /* signal success */
   if (0 != CLOSE(filedes[1]))
     GE_LOG_STRERROR(ectx,

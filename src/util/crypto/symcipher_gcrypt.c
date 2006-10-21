@@ -97,7 +97,7 @@ int encryptBlock(const void * block,
   if (rc) {
     LOG_GCRY(NULL,
 	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_open", 
+	     "gcry_cipher_open",
 	     rc);
     unlockGcrypt();
     return -1;
@@ -108,8 +108,8 @@ int encryptBlock(const void * block,
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK, 
-	     "gcry_cipher_setkey", 
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+	     "gcry_cipher_setkey",
 	     rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
@@ -117,11 +117,11 @@ int encryptBlock(const void * block,
   }
   rc = gcry_cipher_setiv(handle,
 			 iv,
-			 sizeof(INITVECTOR));  
+			 sizeof(INITVECTOR));
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
 	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
-	     "gcry_cipher_setiv", 
+	     "gcry_cipher_setiv",
 	     rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
@@ -134,9 +134,9 @@ int encryptBlock(const void * block,
 			   block,
 			   len);
   if (rc) {
-    LOG_GCRY(NULL, 
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK, 
-	     "gcry_cipher_encrypt", 
+    LOG_GCRY(NULL,
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+	     "gcry_cipher_encrypt",
 	     rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
@@ -177,8 +177,8 @@ int decryptBlock(const SESSIONKEY * sessionkey,
 			0);
   if (rc) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK, 
-	     "gcry_cipher_open", 
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+	     "gcry_cipher_open",
 	     rc);
     unlockGcrypt();
     return -1;
@@ -189,7 +189,7 @@ int decryptBlock(const SESSIONKEY * sessionkey,
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK, 
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
 	     "gcry_cipher_setkey",
 	     rc);
     gcry_cipher_close(handle);
@@ -202,8 +202,8 @@ int decryptBlock(const SESSIONKEY * sessionkey,
 
   if (rc && ((char)rc != GPG_ERR_WEAK_KEY)) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK, 
-	     "gcry_cipher_setiv", 
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+	     "gcry_cipher_setiv",
 	     rc);
     gcry_cipher_close(handle);
     unlockGcrypt();
@@ -216,8 +216,8 @@ int decryptBlock(const SESSIONKEY * sessionkey,
 			   size);
   if (rc) {
     LOG_GCRY(NULL,
-	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK, 
-	     "gcry_cipher_decrypt", 
+	     GE_ERROR | GE_USER | GE_DEVELOPER | GE_BULK,
+	     "gcry_cipher_decrypt",
 	     rc);
     gcry_cipher_close(handle);
     unlockGcrypt();

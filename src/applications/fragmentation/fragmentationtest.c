@@ -59,8 +59,8 @@ static void handleHelper(const PeerIdentity * sender,
 			 const unsigned int len,
 			 int wasEncrypted,
 			 TSession  * ts) {
-  GE_ASSERT(NULL, 
-	    0 == memcmp(sender, 
+  GE_ASSERT(NULL,
+	    0 == memcmp(sender,
 			&mySender,
 			sizeof(PeerIdentity)));
   myMsg = resultBuffer;

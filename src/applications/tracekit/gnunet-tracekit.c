@@ -55,16 +55,16 @@ static struct CommandLineOption gnunettracekitOptions[] = {
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'P', "priority", "PRIO",
-    gettext_noop("use PRIO for the priority of the trace request"), 1, 
+    gettext_noop("use PRIO for the priority of the trace request"), 1,
     &gnunet_getopt_configure_set_option, "GNUNET-TRACEKIT:PRIORITY" },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   { 'W', "wait", "DELAY",
-    gettext_noop("wait DELAY seconds for replies"), 1, 
+    gettext_noop("wait DELAY seconds for replies"), 1,
     &gnunet_getopt_configure_set_option, "GNUNET-TRACEKIT:WAIT" },
   COMMAND_LINE_OPTION_END,
 };
 
-static unsigned int 
+static unsigned int
 getConfigurationInt(const char * sec,
 		    const char * opt,
 		    unsigned int max) {
@@ -105,7 +105,7 @@ static void * receiveThread(void * cls) {
   prSize = 1;
   peersResponding = MALLOC(prSize * sizeof(PeerIdentity));
   buffer = MALLOC(MAX_BUFFER_SIZE);
-  if (-1 == 
+  if (-1 ==
       GC_get_configuration_value_number(cfg,
 					"GNUNET-TRACEKIT",
 					"FORMAT",
@@ -285,7 +285,7 @@ static void * receiveThread(void * cls) {
  * @param argv command line arguments
  * @return return value from gnunet-tracekit: 0: ok, -1: error
  */
-int main(int argc, 
+int main(int argc,
 	 const char ** argv) {
   struct ClientServerConnection * sock;
   struct PTHREAD * messageReceiveThread;
@@ -295,7 +295,7 @@ int main(int argc,
   struct GE_Context * ectx;
   struct CronManager * cron;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -311,7 +311,7 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   sock = client_connection_create(ectx, cfg);
   if (sock == NULL) {
@@ -345,7 +345,7 @@ int main(int argc,
 				0xFFFFFFFF));
   if (SYSERR == connection_write(sock,
 				 &probe.header)) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("Could not send request to gnunetd.\n"));
     return -1;

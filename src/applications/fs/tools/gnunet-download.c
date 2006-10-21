@@ -56,7 +56,7 @@ static int errorCode;
 static struct CommandLineOption gnunetdownloadOptions[] = {
   { 'a', "anonymity", "LEVEL",
     gettext_noop("set the desired LEVEL of sender-anonymity"),
-    1, &gnunet_getopt_configure_set_uint, &anonymity }, 
+    1, &gnunet_getopt_configure_set_uint, &anonymity },
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Download files from GNUnet.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
@@ -66,7 +66,7 @@ static struct CommandLineOption gnunetdownloadOptions[] = {
     1, &gnunet_getopt_configure_set_string, &filename },
   { 'R', "recursive", NULL,
     gettext_noop("download a GNUnet directory recursively"),
-    1, &gnunet_getopt_configure_set_one, &do_recursive }, 
+    1, &gnunet_getopt_configure_set_one, &do_recursive },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
@@ -144,7 +144,7 @@ int main(int argc,
   int i;
 
   /* startup */
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -160,7 +160,7 @@ int main(int argc,
 			   argv);
   if ( (i == SYSERR) ||
        (0 != GC_parse_configuration(cfg,
-				    cfgFilename)) ) {	 
+				    cfgFilename)) ) {	
     errorCode = -1;
     goto quit;
   }
@@ -194,7 +194,7 @@ int main(int argc,
 
   try_rename = NO;
   if (filename == NULL) {
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
 	      strlen(argv[i]) >
 	      strlen(ECRS_URI_PREFIX) +
 	      strlen(ECRS_FILE_INFIX));

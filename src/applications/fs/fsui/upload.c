@@ -60,7 +60,7 @@ static void progressCallback(unsigned long long totalBytes,
 
 static int testTerminate(void * cls) {
   FSUI_UploadList * utc = cls;
-  if (utc->state != FSUI_ACTIVE) 
+  if (utc->state != FSUI_ACTIVE)
     return SYSERR;
   return OK;
 }
@@ -96,7 +96,7 @@ createDirectoryHelper(struct GE_Context * ectx,
     GE_BREAK(ectx, 0);
     return NULL;
   }
-  GROW(fis, 
+  GROW(fis,
        size,
        count);
   count = 0;
@@ -119,14 +119,14 @@ createDirectoryHelper(struct GE_Context * ectx,
   GROW(fis,
        size,
        0);
-  if (ret != OK) 
-    return NULL;   
+  if (ret != OK)
+    return NULL;
   tempName = STRDUP("/tmp/gnunet-upload-dir.XXXXXX");
   handle = mkstemp(tempName);
   if (handle == -1) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_ERROR | GE_USER | GE_BULK,
-			 tempName, 
+			 tempName,
 			 "mkstemp");
     FREE(tempName);
     FREE(data);
@@ -141,7 +141,7 @@ createDirectoryHelper(struct GE_Context * ectx,
 			 "write");
     FREE(tempName);
     FREE(data);
-    return NULL;    
+    return NULL;
   }
   CLOSE(handle);
   FREE(data);
@@ -169,7 +169,7 @@ static void signalError(FSUI_UploadList * utc,
 static void signalUploadStarted(struct FSUI_UploadList * utc,
 				int first_only) {
   FSUI_Event event;
-  
+
   while (utc != NULL) {
     event.type = FSUI_upload_started;
     event.data.UploadStarted.uc.pos = utc;
@@ -185,7 +185,7 @@ static void signalUploadStarted(struct FSUI_UploadList * utc,
     if (first_only)
       break;
     utc = utc->next;
-  }  
+  }
 }
 
 /**
@@ -223,11 +223,11 @@ void * FSUI_uploadThread(void * cls) {
       signalError(utc,
 		  _("Failed to create temporary directory."));
       return NULL;
-    }      
+    }
   } else {
     filename = STRDUP(utc->filename);
-  }  
-  utc->start_time = get_time();    
+  }
+  utc->start_time = get_time();
   ret = ECRS_uploadFile(utc->shared->ctx->ectx,
 			utc->shared->ctx->cfg,
 			filename,
@@ -251,12 +251,12 @@ void * FSUI_uploadThread(void * cls) {
       event.data.UploadAborted.uc.ppos = utc->parent;
       event.data.UploadAborted.uc.pcctx = utc->parent->cctx;
       utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
-			    &event); 
+			    &event);
     } else {
       /* must be suspended */
       GE_BREAK(NULL, utc->state == FSUI_PENDING);
     }
-    if (utc->child != NULL) 
+    if (utc->child != NULL)
       UNLINK(filename);
     FREE(filename);
     return NULL;
@@ -272,7 +272,7 @@ void * FSUI_uploadThread(void * cls) {
 		       NULL);
   ECRS_addToMetaData(utc->meta,
 		     EXTRACTOR_FILENAME,
-		     utc->filename);  
+		     utc->filename);
   ECRS_delFromMetaData(utc->meta,
 		       EXTRACTOR_SPLIT,
 		       NULL);
@@ -298,7 +298,7 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->shared->priority,
 		       utc->shared->expiration,
 		       utc->uri,
-		       utc->meta);	    
+		       utc->meta);	
   if (utc->shared->individualKeywords == YES) {
     uri = ECRS_metaDataToUri(utc->meta);
     ECRS_addToKeyspace(ectx,
@@ -308,7 +308,7 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->shared->priority,
 		       utc->shared->expiration,
 		       utc->uri,
-		       utc->meta);	    
+		       utc->meta);	
     ECRS_freeUri(uri);
   }
   event.type = FSUI_upload_completed;
@@ -321,7 +321,7 @@ void * FSUI_uploadThread(void * cls) {
   event.data.UploadCompleted.uri = utc->uri;
   utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
 			&event);		
-  if (utc->child != NULL) 
+  if (utc->child != NULL)
     UNLINK(filename);
   FREE(filename);
   return NULL;
@@ -367,7 +367,7 @@ static void freeUploadList(struct FSUI_UploadList * ul) {
 
 static struct FSUI_UploadList *
 addUploads(struct FSUI_UploadShared * shared,
-	   const char * filename,	 
+	   const char * filename,	
 	   const struct ECRS_URI * keywords,
 	   const struct ECRS_MetaData * md,
 	   struct FSUI_UploadList * parent);
@@ -392,14 +392,14 @@ static int addChildUpload(const char * name,
 		     parent);
   FREE(filename);
   ECRS_freeMetaData(md);
-  if (child == NULL)     
-    return SYSERR; 
+  if (child == NULL)
+    return SYSERR;
   return OK;
 }
 
 static struct FSUI_UploadList *
 addUploads(struct FSUI_UploadShared * shared,
-	   const char * filename,	 
+	   const char * filename,	
 	   const struct ECRS_URI * keywords,
 	   const struct ECRS_MetaData * md,
 	   struct FSUI_UploadList * parent) {
@@ -425,7 +425,7 @@ addUploads(struct FSUI_UploadShared * shared,
 			     YES)) {
       FREE(utc);
       return NULL;
-    }    
+    }
     utc->meta = ECRS_dupMetaData(md);
   } else {
     if (SYSERR == shared->dsc(shared->dscClosure,
@@ -460,7 +460,7 @@ addUploads(struct FSUI_UploadShared * shared,
 static void signalUploadStopped(struct FSUI_UploadList * ul,
 				int first_only) {
   FSUI_Event event;
-  
+
   while (ul != NULL) {
     signalUploadStopped(ul->child, 0);
     event.type = FSUI_upload_stopped;
@@ -473,7 +473,7 @@ static void signalUploadStopped(struct FSUI_UploadList * ul,
     if (first_only)
       break;
     ul = ul->next;
-  }  
+  }
 }
 
 static void freeShared(struct FSUI_UploadShared * shared) {
@@ -548,7 +548,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 				  128 * 1024);
   if (shared->handle == NULL) {
     GE_LOG_STRERROR(ctx->ectx,
-		    GE_ERROR | GE_USER | GE_BULK, 
+		    GE_ERROR | GE_USER | GE_BULK,
 		    "PTHREAD_CREATE");
     freeUploadList(ul);
     freeShared(shared);
@@ -569,7 +569,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 int FSUI_abortUpload(struct FSUI_Context * ctx,
 		     struct FSUI_UploadList * ul) {
   FSUI_UploadList * c;
-  
+
   GE_ASSERT(ctx->ectx, ul != NULL);
   if ( (ul->state != FSUI_ACTIVE) &&
        (ul->state != FSUI_PENDING) )
@@ -579,7 +579,7 @@ int FSUI_abortUpload(struct FSUI_Context * ctx,
   while (c != NULL) {
     FSUI_abortUpload(ctx, c);
     c = c->next;
-  }    
+  }
   PTHREAD_STOP_SLEEP(ul->shared->handle);
   return OK;
 }

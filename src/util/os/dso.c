@@ -62,7 +62,7 @@ void __attribute__ ((constructor)) gnc_ltdl_init() {
   path = os_get_installation_path(IPK_LIBDIR);
   if (path != NULL) {
     lt_dlsetsearchpath(path);
-    FREE(path);  
+    FREE(path);
   }
 }
 
@@ -72,15 +72,15 @@ void __attribute__ ((destructor)) gnc_ltdl_fini() {
     FREE(old_dlsearchpath);
     old_dlsearchpath = NULL;
   }
-  
+
 #ifdef MINGW
   ShutdownWinEnv();
 #endif
-  
+
   lt_dlexit();
 }
 
-struct PluginHandle * 
+struct PluginHandle *
 os_plugin_load(struct GE_Context * ectx,
 	       const char * libprefix,
 	       const char * dsoname) {
@@ -119,7 +119,7 @@ void os_plugin_unload(struct PluginHandle * plugin) {
   FREE(plugin);
 }
 
-void * 
+void *
 os_plugin_resolve_function(struct PluginHandle * plug,
 			   const char * methodprefix,
 			   int logError) {
@@ -132,7 +132,7 @@ os_plugin_resolve_function(struct PluginHandle * plug,
   strcat(initName, methodprefix);
   strcat(initName, plug->dsoname);
   mptr = lt_dlsym(plug->handle, &initName[1]);
-  if (mptr == NULL) 
+  if (mptr == NULL)
     mptr = lt_dlsym(plug->handle, initName);
   if ( (mptr == NULL) &&
        (logError) )

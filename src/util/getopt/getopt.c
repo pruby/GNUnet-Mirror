@@ -22,7 +22,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-USA.  
+USA.
 
 
 This code was heavily modified for GNUnet.
@@ -968,14 +968,14 @@ GN_getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 }
 
 static int
-GNgetopt_long(int argc, 
-	      const char ** argv, 
-	      const char * options, 
+GNgetopt_long(int argc,
+	      const char ** argv,
+	      const char * options,
 	      const struct GNoption * long_options,
 	      int * opt_index) {
   return GN_getopt_internal(argc,
-			    argv, 
-			    options, 
+			    argv,
+			    options,
 			    long_options,
 			    opt_index,
 			    0);
@@ -990,7 +990,7 @@ GNgetopt_long(int argc,
  * @param ectx for reporting errors
  * @param cfg for storing/accessing configuration data
  * @param allOptions defined options and handlers
- * @param argc number of arguments 
+ * @param argc number of arguments
  * @param argv actual arguments
  * @return index into argv with first non-option
  *   argument, or -1 on error
@@ -1049,7 +1049,7 @@ int gnunet_parse_options(const char * binaryName,
 
     if (c == SYSERR)
       break;  /* No more flags to process */
-    
+
     for (i=0;i<count;i++) {
       clpc.currentArgument = GNoptind - 1;
       if ((char)c == allOptions[i].shortName) {
@@ -1065,7 +1065,7 @@ int gnunet_parse_options(const char * binaryName,
 	     GE_INFO | GE_USER | GE_IMMEDIATE,
 	     _("Use --help to get a list of options.\n"));
       cont = SYSERR;
-    } 
+    }
   }
 
   FREE(shorts);

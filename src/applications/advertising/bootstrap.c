@@ -71,7 +71,7 @@ static void processhellos(HelloListClosure * hcq) {
     /* select hello by random */
     rndidx = weak_randomi(hcq->helosCount);
 #if DEBUG_BOOTSTRAP
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "%s chose hello %d of %d\n",
 	   __FUNCTION__,
@@ -98,7 +98,7 @@ static void processhellos(HelloListClosure * hcq) {
       load = os_cpu_get_load(coreAPI->ectx,
 			     coreAPI->cfg);
       if (load == (unsigned int)-1)
-	load = 50; 
+	load = 50;
       nload = os_network_monitor_get_load(coreAPI->load_monitor,
 					  Upload);
       if (nload > load)
@@ -157,7 +157,7 @@ static int needBootstrap() {
     if (-1 != state->read(coreAPI->ectx,
 			  BOOTSTRAP_INFO,
 			  (void**)&data)) {
-      /* but not first on this machine */      
+      /* but not first on this machine */
       lastTest = now;
       delta = 2 * cronMINUTES; /* wait 2 minutes */
       FREE(data);
@@ -221,7 +221,7 @@ void startBootstrap(CoreAPIForApplication * capi) {
   coreAPI = capi;
   state = capi->requestService("state");
   GE_ASSERT(capi->ectx,
-	    state != NULL); 
+	    state != NULL);
   bootstrap = capi->requestService("bootstrap");
   GE_ASSERT(capi->ectx,
 	    bootstrap != NULL);

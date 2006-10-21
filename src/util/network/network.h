@@ -31,11 +31,11 @@
 typedef struct SocketHandle {
 
   struct LoadMonitor * mon;
-  
+
   struct GE_Context * ectx;
 
   int handle;
-  
+
 } SocketHandle;
 
 #endif

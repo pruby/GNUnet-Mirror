@@ -38,7 +38,7 @@ void ECRS_encryptInPlace(const HashCode512 * hc,
 
   hashToKey(hc, &skey, &iv);
   tmp = MALLOC(len);
-  GE_ASSERT(NULL, 
+  GE_ASSERT(NULL,
 	    len ==
 	    encryptBlock(data,
 			 len,

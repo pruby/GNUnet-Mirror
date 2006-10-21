@@ -121,7 +121,7 @@ PThread * PTHREAD_CREATE(PThreadMain main,
 }
 
 /**
- * Should we debug the time a join takes? 
+ * Should we debug the time a join takes?
  * Useful for detecting missing PTHREAD_STOP_SLEEPS
  * and similar signaling operations.
  */
@@ -134,18 +134,18 @@ void PTHREAD_JOIN(PThread * handle,
 #endif
   int k;
 
-  GE_ASSERT(NULL, 
+  GE_ASSERT(NULL,
 	    handle != NULL);
-  GE_ASSERT(NULL, 
-	    NO == PTHREAD_TEST_SELF(handle)); 
+  GE_ASSERT(NULL,
+	    NO == PTHREAD_TEST_SELF(handle));
 #if DEBUG_JOIN_DELAY
   start = get_time();
 #endif
   k = pthread_join(handle->pt, ret);
 #if DEBUG_JOIN_DELAY
   start = get_time() - start;
-  if (start > 10) 
-    printf("Join took %llu ms\n", 
+  if (start > 10)
+    printf("Join took %llu ms\n",
 	   start);
 #endif
   FREE(handle);
@@ -237,7 +237,7 @@ void PTHREAD_SLEEP(unsigned long long delay) {
     * MICROSEC_TO_CRON_UNIT;
   ret = SELECT(0, NULL, NULL, NULL, &timeout);
   if ( (ret == -1) &&
-       (errno != EINTR) ) 
+       (errno != EINTR) )
     GE_LOG_STRERROR(NULL,
 		    GE_WARNING | GE_USER | GE_BULK,
 		    "select");
@@ -252,13 +252,13 @@ void PTHREAD_STOP_SLEEP(PThread * handle) {
     return;
 #ifdef WINDOWS
   ret = QueueUserAPC((PAPCFUNC) __PTHREAD_SIGNALED,
-		     pthread_getw32threadhandle_np(handle->pt), 
+		     pthread_getw32threadhandle_np(handle->pt),
 		     0) != 0 ? 0 : EINVAL;
 #else
   ret = pthread_kill(handle->pt, SIGALRM);
 #endif
   switch (ret) {
-  case 0: 
+  case 0:
     break; /* ok */
   case EINVAL:
     GE_LOG(NULL,
@@ -297,13 +297,13 @@ void __attribute__ ((constructor)) pthread_handlers_ltdl_init() {
   memset(&sig, 0, sizeof(struct sigaction));
   memset(&old, 0, sizeof(struct sigaction));
   sig.sa_flags = SA_NODEFER;
-  sig.sa_handler =  &sigalrmHandler; 
+  sig.sa_handler =  &sigalrmHandler;
   if (0 != sigaction(SIGALRM, &sig, &old))
     GE_LOG_STRERROR(NULL,
 		    GE_WARNING | GE_ADMIN | GE_BULK,
 		    "sigaction");
 #else
-  InitWinEnv(NULL);		    
+  InitWinEnv(NULL);		
 #endif
 }
 
@@ -314,7 +314,7 @@ void __attribute__ ((destructor)) pthread_handlers_ltdl_fini() {
 		    GE_WARNING | GE_ADMIN | GE_BULK,
 		    "sigaction");
 #else
-  ShutdownWinEnv();		    
+  ShutdownWinEnv();		
 #endif
 }
 

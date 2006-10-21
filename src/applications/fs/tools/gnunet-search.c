@@ -93,7 +93,7 @@ static void * eventCallback(void * cls,
       = ECRS_dupUri(event->data.SearchResult.fi.uri);
     fis[fiCount-1].meta
       = ECRS_dupMetaData(event->data.SearchResult.fi.meta);
-    
+
     uri = ECRS_uriToString(event->data.SearchResult.fi.uri);
     printf("%s:\n",
 	   uri);
@@ -101,10 +101,10 @@ static void * eventCallback(void * cls,
 				    EXTRACTOR_FILENAME);
     if (filename != NULL) {
       char * dotdot;
-      
+
       while (NULL != (dotdot = strstr(filename, "..")))
 	dotdot[0] = dotdot[1] = '_';
-      
+
       printf("gnunet-download -o \"%s\" %s\n",
 	     filename,
 	     uri);
@@ -130,14 +130,14 @@ static void * eventCallback(void * cls,
 static struct CommandLineOption gnunetsearchOptions[] = {
   { 'a', "anonymity", "LEVEL",
     gettext_noop("set the desired LEVEL of sender-anonymity"),
-    1, &gnunet_getopt_configure_set_uint, &anonymity }, 
+    1, &gnunet_getopt_configure_set_uint, &anonymity },
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Create new pseudonyms, delete pseudonyms or list existing pseudonyms.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'm', "max", "LIMIT",
     gettext_noop("exit after receiving LIMIT results"),
-    1, &gnunet_getopt_configure_set_uint, &max_results },  
+    1, &gnunet_getopt_configure_set_uint, &max_results },
   { 'o', "output", "FILENAME",
     gettext_noop("write encountered (decrypted) search results to FILENAME"),
     1, &gnunet_getopt_configure_set_string, &output_filename },
@@ -164,7 +164,7 @@ int main(int argc,
   struct FSUI_SearchList * s;
 
   /* startup */
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -183,7 +183,7 @@ int main(int argc,
     goto quit;
   }
   if (OK != GC_parse_configuration(cfg,
-				   cfgFilename)) {  
+				   cfgFilename)) {
     errorCode = -1;
     goto quit;
   }
@@ -223,7 +223,7 @@ int main(int argc,
   }
   GNUNET_SHUTDOWN_WAITFOR();
   if (errorCode == 1)
-    FSUI_abortSearch(ctx,    
+    FSUI_abortSearch(ctx,
 		     s);
   FSUI_stopSearch(ctx,
 		    s);

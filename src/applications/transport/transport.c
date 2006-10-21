@@ -185,7 +185,7 @@ static TSession * transportConnect(const P2P_hello_MESSAGE * helo) {
     return NULL;
   }
   if (OK != tapis[prot]->connect(helo,
-				 &tsession)) 
+				 &tsession))
     return NULL;
   tsession->ttype = prot;
   return tsession;
@@ -238,7 +238,7 @@ static int transportAssociate(TSession * tsession) {
        (tsession->ttype >= tapis_count) ||
        (tapis[tsession->ttype] == NULL) )
     return SYSERR;
-  return tapis[tsession->ttype]->associate(tsession);  
+  return tapis[tsession->ttype]->associate(tsession);
 }
 
 /**
@@ -299,7 +299,7 @@ static int transportDisconnect(TSession * tsession) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  return tapis[tsession->ttype]->disconnect(tsession);  
+  return tapis[tsession->ttype]->disconnect(tsession);
 }
 
 /**
@@ -310,12 +310,12 @@ static int transportDisconnect(TSession * tsession) {
  */
 static int transportVerifyHelo(const P2P_hello_MESSAGE * helo) {
   unsigned short prot;
-  
+
   prot = ntohs(helo->protocol);
   if ( (prot == NAT_PROTOCOL_NUMBER) &&
        ( (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
 	 (ntohs(helo->header.type) != p2p_PROTO_hello) ) )
-    return SYSERR; /* invalid */  
+    return SYSERR; /* invalid */
   if ( (ntohs(helo->protocol) >= tapis_count) ||
        (tapis[prot] == NULL) )
     return SYSERR; /* not supported */
@@ -501,8 +501,8 @@ static void startTransports(P2P_PACKETProcessor mpp) {
   ctapi.receive = mpp;
   for (i=0;i<tapis_count;i++)
     if (tapis[i] != NULL) {
-      if (OK != tapis[i]->startTransportServer()) 
-	unloadTransport(i);      
+      if (OK != tapis[i]->startTransportServer())
+	unloadTransport(i);
     }
 }
 
@@ -683,8 +683,8 @@ int release_module_transport() {
   int i;
 
   forEachTransport(&doneHelper, NULL);
-  for (i=0;i<tapis_count;i++) 
-    if (tapis[i] != NULL) 
+  for (i=0;i<tapis_count;i++)
+    if (tapis[i] != NULL)
       unloadTransport(i);
   MUTEX_DESTROY(tapis_lock);
   tapis_lock = NULL;

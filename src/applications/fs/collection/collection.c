@@ -247,7 +247,7 @@ void CO_publishCollectionNow(struct GE_Context * ectx,
   fd = mkstemp(tmpName);
   if (fd == -1) {
     GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_ADMIN | GE_BULK, 
+		    GE_ERROR | GE_ADMIN | GE_BULK,
 		    "mkstemp");
     FREE(tmpName);
     return;

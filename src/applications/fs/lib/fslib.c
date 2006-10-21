@@ -70,7 +70,7 @@ static void * processReplies(void * cls) {
     if (OK == connection_read(ctx->sock,
 			      &hdr)) {
 #if DEBUG_FSLIB
-      GE_LOG(ctx->ectx, 
+      GE_LOG(ctx->ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "FSLIB: received message from gnunetd\n");
 #endif
@@ -125,13 +125,13 @@ static void * processReplies(void * cls) {
       MUTEX_UNLOCK(ctx->lock);
 #if DEBUG_FSLIB
       if (matched == 0)
-	GE_LOG(ctx->ectx, 
+	GE_LOG(ctx->ectx,
 	       GE_DEBUG | GE_REQUEST | GE_USER,
 	       "FSLIB: received content but have no pending request\n");
 #endif
     } else {
 #if DEBUG_FSLIB
-      GE_LOG(ctx->ectx, 
+      GE_LOG(ctx->ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
 	     delay);
@@ -174,7 +174,7 @@ SEARCH_CONTEXT * FS_SEARCH_makeContext(struct GE_Context * ectx,
 void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   void * unused;
 
-  GE_ASSERT(ctx->ectx, 
+  GE_ASSERT(ctx->ectx,
 	    ctx->handleCount == 0);
   ctx->abort = YES;
   connection_close_temporarily(ctx->sock);
@@ -243,7 +243,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
   ctx->handles[ctx->handleCount++] = ret;
   MUTEX_UNLOCK(ctx->lock);
 #if DEBUG_FSLIB
-  IF_GELOG(ctx->ectx, 
+  IF_GELOG(ctx->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&req->query[0],
 		    &enc));
@@ -260,7 +260,7 @@ SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
     return NULL;
   }
 #if DEBUG_FSLIB
-  GE_LOG(ctx->ectx, 
+  GE_LOG(ctx->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSLIB: search started (%p)\n",
 	 ret);
@@ -427,7 +427,7 @@ int FS_index(struct ClientServerConnection * sock,
 	 &block[1],
 	 size);
 #if DEBUG_FSLIB
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Sending index request to gnunetd\n");
 #endif

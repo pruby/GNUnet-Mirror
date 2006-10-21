@@ -85,7 +85,7 @@ typedef struct {
 
   /**
    * Do a quick test if we MAY have the content.
-   */ 
+   */
   int (*fast_get)(const HashCode512 * key);
 
   /**

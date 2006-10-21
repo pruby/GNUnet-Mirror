@@ -33,7 +33,7 @@ void init_pid_table(struct GE_Context * ectx,
 void done_pid_table(void);
 
 typedef unsigned int PID_INDEX;
- 
+
 PID_INDEX intern_pid(const PeerIdentity * pid);
 
 void change_pid_rc(PID_INDEX id, int delta);
@@ -41,6 +41,6 @@ void change_pid_rc(PID_INDEX id, int delta);
 void decrement_pid_rcs(const PID_INDEX * ids,
 		       unsigned int count);
 
-void resolve_pid(PID_INDEX id, 
+void resolve_pid(PID_INDEX id,
 		 PeerIdentity * pid);
 

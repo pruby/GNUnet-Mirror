@@ -259,7 +259,7 @@ void * FSUI_searchThread(void * cls) {
 		    &testTerminate,
 		    pos);
   if (ret != OK) {
-    pos->state = FSUI_ERROR;    
+    pos->state = FSUI_ERROR;
     event.type = FSUI_search_error;
     event.data.SearchError.sc.pos = pos;
     event.data.SearchError.sc.cctx = pos->cctx;

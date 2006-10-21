@@ -92,15 +92,15 @@ static void getVersionHash(struct GC_Configuration * cfg,
      configuration change, but that again would be too strict. */
   dyncat(cfg,
 	 &string,
-	 "GNUNETD", 
+	 "GNUNETD",
 	 "APPLICATIONS");
   dyncat(cfg,
-	 &string, 
+	 &string,
 	 "FS",
 	 "QUOTA");
-  dyncat(cfg, 
-	 &string, 
-	 "MODULES", 
+  dyncat(cfg,
+	 &string,
+	 "MODULES",
 	 "sqstore");
   hash(string,
        strlen(string),
@@ -113,7 +113,7 @@ static char * getVersionFileName(struct GE_Context * ectx,
 				 struct GC_Configuration * cfg) {
   char * en;
   char * cn;
-  
+
   en = NULL;
   if (-1 == GC_get_configuration_value_filename(cfg,
 						"GNUNETD",
@@ -171,8 +171,8 @@ int checkUpToDate(struct GE_Context * ectx,
   if ( (len != strlen(VERSION) + 1 + sizeof(EncName)) ||
        (0 != memcmp(VERSION,
 		    version,
-		    strlen(VERSION)+1)) ) 
-    return SYSERR; /* wrong version */  
+		    strlen(VERSION)+1)) )
+    return SYSERR; /* wrong version */
   getVersionHash(cfg,
 		 &enc);
   if (0 != memcmp(&enc,

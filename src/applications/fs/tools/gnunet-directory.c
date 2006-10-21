@@ -46,7 +46,7 @@ static int itemPrinter(EXTRACTOR_KeywordType type,
 		       const char * data,
 		       void * closure) {
   printf("\t%20s: %s\n",
-	 dgettext("libextractor", 
+	 dgettext("libextractor",
 		  EXTRACTOR_getKeywordTypeAsString(type)),
 	 data);
   return OK;
@@ -139,7 +139,7 @@ static void printDirectory(const char * filename) {
 static struct CommandLineOption gnunetdirectoryOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Perform directory related operations.")), /* -h */
-  { 'k', "kill", NULL, 
+  { 'k', "kill", NULL,
     gettext_noop("remove all entries from the directory database and stop tracking URIs"),
     0, &gnunet_getopt_configure_set_one, &do_kill },
   COMMAND_LINE_OPTION_LOGGING, /* -L */
@@ -159,7 +159,7 @@ int main(int argc,
   int i;
   struct GC_Configuration * cfg;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -176,7 +176,7 @@ int main(int argc,
   if (i == SYSERR) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (do_list)
     printf(_("Listed %d matching entries.\n"),

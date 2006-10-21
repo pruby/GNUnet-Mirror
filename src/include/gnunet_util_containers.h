@@ -315,12 +315,12 @@ int ht_containsValue(const struct HashTable *hashTable, const void *value, const
  * @param value the value associated with the key
  * @return 0 if successful, -1 if an error was encountered
  */
-int ht_put(struct HashTable *hashTable, 
-	   const void *key, 
+int ht_put(struct HashTable *hashTable,
+	   const void *key,
 	   const unsigned int keylen,
-	   void *value, 
+	   void *value,
 	   const unsigned int valuelen);
-  
+
 /**
  * @brief retrieves the value of a key in a HashTable
  * @param hashTable the HashTable to search
@@ -329,10 +329,10 @@ int ht_put(struct HashTable *hashTable,
  * @param valuelen the length of the value
  * @return YES if found, NO otherwise
  */
-int ht_get(const struct HashTable *hashTable, 
-	   const void *key, 
-	   const unsigned int keylen, 
-	   void **value, 
+int ht_get(const struct HashTable *hashTable,
+	   const void *key,
+	   const unsigned int keylen,
+	   void **value,
 	   unsigned int *valuelen);
 
 /**
@@ -340,7 +340,7 @@ int ht_get(const struct HashTable *hashTable,
  * @param hashTable the HashTable to remove the key/value pair from
  * @param key the key specifying the key/value pair to be removed
  */
-void ht_remove(struct HashTable *hashTable, 
+void ht_remove(struct HashTable *hashTable,
 	       const void *key,
 	       const unsigned int keylen);
 
@@ -378,7 +378,7 @@ long ht_buckets(const struct HashTable *hashTable);
  *                     specified, an appropriate number of buckets is
  *                     automatically calculated.
  */
-void ht_rehash(struct HashTable *hashTable, 
+void ht_rehash(struct HashTable *hashTable,
 	       long numOfBuckets);
 
 /**
@@ -407,9 +407,9 @@ void ht_rehash(struct HashTable *hashTable,
  *                     is considered unacceptably high, a value of 0.0 can
  *                     be specified.
  */
-void ht_setIdealRatio(struct HashTable *hashTable, 
+void ht_setIdealRatio(struct HashTable *hashTable,
 		      float idealRatio,
-		      float lowerRehashThreshold, 
+		      float lowerRehashThreshold,
 		      float upperRehashThreshold);
 
 #define HT_PUT(ht, key, val) ht_put(ht, key, sizeof(key), val, sizeof(val))

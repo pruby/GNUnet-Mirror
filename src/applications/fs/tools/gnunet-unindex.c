@@ -110,7 +110,7 @@ static struct CommandLineOption gnunetunindexOptions[] = {
  * @param argv command line arguments
  * @return return 0 for ok, -1 on error
  */
-int main(int argc, 
+int main(int argc,
 	 const char ** argv) {
   static struct FSUI_Context * ctx;
   char * filename;
@@ -119,7 +119,7 @@ int main(int argc,
   struct FSUI_UnindexList * ul;
 
   /* startup */
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -136,7 +136,7 @@ int main(int argc,
   if (i == SYSERR) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   if (i == argc) {
     GE_LOG(ectx,
@@ -148,7 +148,7 @@ int main(int argc,
     return -1;
   }
   if (OK != GC_parse_configuration(cfg,
-				   cfgFilename)) {  
+				   cfgFilename)) {
     GC_free(cfg);
     GE_free_context(ectx);
     return -1;

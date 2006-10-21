@@ -40,7 +40,7 @@ void GC_free(struct GC_Configuration * cfg) {
  * Note that for setting options a different context can be
  * used (since failing to change an option may have to be reported
  * in a fundamentally different way to the user).
- * 
+ *
  * @parm ectx maybe NULL, in that case errors will no longer
  *       be reported
  */
@@ -214,7 +214,7 @@ int GC_set_configuration_value_string(struct GC_Configuration * cfg,
 
 /**
  * Set a configuration value that should be in a set of
- * predefined strings.  
+ * predefined strings.
  * @param value
  * @return 0 on success, -1 on error (i.e. out of memory,
  *   or update refused by registered callback)
@@ -228,7 +228,7 @@ int GC_set_configuration_value_choice(struct GC_Configuration * cfg,
 }
 
 /**
- * Attach a callback that is notified whenever a 
+ * Attach a callback that is notified whenever a
  * configuration option changes.
  * @return 0 on success, -1 on error
  */
@@ -239,7 +239,7 @@ int GC_attach_change_listener(struct GC_Configuration * cfg,
 }
 
 /**
- * Attach a callback that is notified whenever a 
+ * Attach a callback that is notified whenever a
  * configuration option changes.
  * @return 0 on success, -1 on error, 1 for no such handler registered
  */

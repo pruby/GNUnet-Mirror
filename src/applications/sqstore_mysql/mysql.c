@@ -222,7 +222,7 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	  _("mysql datastore"));
-      SNPRINTF(scratch, 
+      SNPRINTF(scratch,
 	       512,
 	       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash)=%u) AND (size=%u + LENGTH(value)))",
 	       sizeof(HashCode512),
@@ -798,18 +798,18 @@ static int get(const HashCode512 * query,
 	 (datasize != size - sizeof(Datastore_Value)) ) {
       char scratch[512];
 
-      mysql_free_result(sql_res); 
+      mysql_free_result(sql_res);
       GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
 	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	  _("mysql datastore"));
-      SNPRINTF(scratch, 
+      SNPRINTF(scratch,
 	       512,
 	       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash)=%u) AND (size=%u + LENGTH(value)))",
 	       sizeof(HashCode512),
 	       sizeof(Datastore_Value));
       if (0 != mysql_query(dbh->dbf, scratch))
 	LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", dbh);
-      
+
       FREE(datum);
       MUTEX_UNLOCK(dbh->DATABASE_Lock_);
       return count;
@@ -1185,7 +1185,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 #ifndef WINDOWS
   pw = getpwuid(getuid());
   if(!pw)
-    GE_DIE_STRERROR(ectx, 
+    GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
 		    "getpwuid");
   home_dir = STRDUP(pw->pw_dir);
@@ -1195,8 +1195,8 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 #endif
   nX = strlen(home_dir)+10;
   cnffile = MALLOC(nX);
-  SNPRINTF(cnffile, 
-	   nX, 
+  SNPRINTF(cnffile,
+	   nX,
 	   "%s/.my.cnf",
 	   home_dir);
   FREE(home_dir);
@@ -1207,7 +1207,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 				      &home_dir);
   FREE(cnffile);
   cnffile = home_dir;
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("Trying to use file `%s' for MySQL configuration.\n"),
 	 cnffile);

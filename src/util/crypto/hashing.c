@@ -138,7 +138,7 @@ static void BLEND_OP(int I, unsigned long long *W) {
 }
 
 static void
-sha512_transform(unsigned long long *state, 
+sha512_transform(unsigned long long *state,
 		 const unsigned char *input) {
   unsigned long long a, b, c, d, e, f, g, h, t1, t2;
   unsigned long long W[80];
@@ -343,7 +343,7 @@ int getFileHash(struct GE_Context * ectx,
 		      O_RDONLY | O_LARGEFILE);
   if (fh == -1) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST, 
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_REQUEST,
 			 "open",
 			 filename);
     return SYSERR;
@@ -359,12 +359,12 @@ int getFileHash(struct GE_Context * ectx,
 		      buf,
 		      delta)) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, 
+			   GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			   "read",
 			   filename);
-      if (0 != CLOSE(fh)) 
+      if (0 != CLOSE(fh))
 	GE_LOG_STRERROR_FILE(ectx,
-			     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, 
+			     GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			     "close",
 			     filename);
       FREE(buf);
@@ -378,9 +378,9 @@ int getFileHash(struct GE_Context * ectx,
     else
       break;
   }
-  if (0 != CLOSE(fh)) 
+  if (0 != CLOSE(fh))
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK, 
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			 "close",
 			 filename);
   sha512_final(&ctx,

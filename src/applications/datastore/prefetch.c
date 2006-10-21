@@ -44,7 +44,7 @@ typedef struct {
   Datastore_Value * value;
   /**
    * 0 if we have never used this content with any peer.  Otherwise
-   * the value is set to the lowest 32 bit of the peer ID (to avoid 
+   * the value is set to the lowest 32 bit of the peer ID (to avoid
    * sending it to the same peer twice).  After sending out the
    * content twice, it is discarded.
    */
@@ -82,7 +82,7 @@ static struct PTHREAD * gather_thread;
 static struct GE_Context * ectx;
 
 static struct GC_Configuration * cfg;
-		  
+		
 
 static int aquire(const HashCode512 * key,
 		  const Datastore_Value * value,
@@ -104,7 +104,7 @@ static int aquire(const HashCode512 * key,
       MUTEX_UNLOCK(lock);
       return SYSERR;
     }
-  }  
+  }
 #if DEBUG_PREFETCH
   GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
       "Adding content to prefetch buffer (%u)\n",

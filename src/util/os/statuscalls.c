@@ -84,7 +84,7 @@ typedef struct {
 } DirectionInfo;
 
 typedef struct LoadMonitor {
-  
+
   /**
    * Traffic counter for only gnunetd traffic.
    */
@@ -109,7 +109,7 @@ typedef struct LoadMonitor {
 #ifdef LINUX
   FILE * proc_net_dev;
 #endif
-  
+
   /**
    * Lock.
    */
@@ -189,7 +189,7 @@ static void updateInterfaceTraffic(struct LoadMonitor * monitor) {
   BYTE bPhysAddr[MAXLEN_PHYSADDR];
   int iLine = 0;
   FILE * command;
-  
+
   /* Win 98 and NT SP 4 */
   if (GNGetIfEntry) {
     EnumNICs(&pTable, NULL);
@@ -277,7 +277,7 @@ static int resetStatusCalls(void * cls,
 					   "LOAD",
 					   "BASICLIMITING",
 					   NO);
-  if (basic == SYSERR) 
+  if (basic == SYSERR)
     return SYSERR;
   if (-1 == GC_get_configuration_value_string(cfg,
 					      "LOAD",
@@ -387,7 +387,7 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
   MUTEX_LOCK(monitor->statusMutex);
   now = get_time();
   if ( (monitor->useBasicMethod == NO) &&
-       (now - di->lastCall > 10 * cronSECONDS) ) 
+       (now - di->lastCall > 10 * cronSECONDS) )
     updateInterfaceTraffic(monitor);
   if (dir == Upload) {
     currentLoadSum = monitor->globalTrafficBetweenProc.last_out;
@@ -397,7 +397,7 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
     currentLoadSum = monitor->globalTrafficBetweenProc.last_in;
     for (i=0;i<monitor->ifcsSize;i++)
       currentLoadSum += monitor->ifcs[i].last_in;
-  } 
+  }
   if ( (di->lastSum > currentLoadSum) ||
        (di->have_last == 0) ||
        (now < di->lastCall) ) {
@@ -420,7 +420,7 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
     /* return weighted average between last return value and
        load in the last interval */
     weight = (now - di->lastCall) * 100 / (5 * cronSECONDS); /* how close are we to lastCall? */
-    if (maxExpect == 0) 
+    if (maxExpect == 0)
       ret = di->lastValue;
     else
       ret = (di->lastValue * (100-weight) + weight * (currentLoadSum - di->lastSum) / maxExpect) / 2;
@@ -441,7 +441,7 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
   return ret;
 }
 
-struct LoadMonitor * 
+struct LoadMonitor *
 os_network_monitor_create(struct GE_Context * ectx,
 			  struct GC_Configuration * cfg) {
   struct LoadMonitor * monitor;
@@ -477,7 +477,7 @@ void os_network_monitor_destroy(struct LoadMonitor * monitor) {
 			    &resetStatusCalls,
 			    monitor);
 #ifdef LINUX
-  if (monitor->proc_net_dev != NULL) 
+  if (monitor->proc_net_dev != NULL)
     fclose(monitor->proc_net_dev);
 #endif
   for (i=0;i<monitor->ifcsSize;i++)

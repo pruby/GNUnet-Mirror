@@ -63,7 +63,7 @@ static char * cfgFilename;
 static struct CommandLineOption gnunettbenchOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Start GNUnet transport benchmarking tool.")), /* -h */
-  { 'g', "gnuplot", NULL, 
+  { 'g', "gnuplot", NULL,
     gettext_noop("output in gnuplot format"), 0,
     &gnunet_getopt_configure_set_one, &outputFormat },
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
@@ -101,7 +101,7 @@ static struct CommandLineOption gnunettbenchOptions[] = {
  * @param argv command line arguments
  * @return return value from gnunetsearch: 0: ok, -1: error
  */
-int main(int argc, 
+int main(int argc,
 	 const char ** argv) {
   struct ClientServerConnection * sock;
   CS_tbench_request_MESSAGE msg;
@@ -111,7 +111,7 @@ int main(int argc,
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -127,7 +127,7 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   sock = client_connection_create(ectx,
 				  cfg);
@@ -180,7 +180,7 @@ int main(int argc,
   buffer = NULL;
   if (OK == connection_read(sock,
 			    (MESSAGE_HEADER**)&buffer)) {
-    GE_ASSERT(ectx, 
+    GE_ASSERT(ectx,
 	      ntohs(buffer->header.size) ==
 	      sizeof(CS_tbench_reply_MESSAGE));
     if ((float)buffer->mean_loss < 0){

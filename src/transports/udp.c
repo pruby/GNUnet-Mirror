@@ -73,7 +73,7 @@ static struct MUTEX * configLock;
 static unsigned short getGNUnetUDPPort() {
   struct servent * pse;	/* pointer to service information entry	*/
   unsigned long long port;
-  
+
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "UDP",
 					      "PORT",
@@ -106,7 +106,7 @@ static int listensock(unsigned short port) {
   }
   if ( SETSOCKOPT(sock,
 		  SOL_SOCKET,
-		  SO_REUSEADDR, 
+		  SO_REUSEADDR,
 		  &on,
 		  sizeof(on)) < 0 ) {
     GE_DIE_STRERROR(ectx,
@@ -115,8 +115,8 @@ static int listensock(unsigned short port) {
     return -1;
   }
   GE_ASSERT(NULL, port != 0);
-  memset(&sin, 
-	 0, 
+  memset(&sin,
+	 0,
 	 sizeof(sin));
   sin.sin_family      = AF_INET;
   sin.sin_addr.s_addr = INADDR_ANY;
@@ -290,7 +290,7 @@ static int udpSend(TSession * tsession,
 	 &haddr->senderIP,
 	 sizeof(IPaddr));
 #if DEBUG_UDP
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_BULK,
 	 "Sending message of %d bytes via UDP to %u.%u.%u.%u:%u.\n",
 	 ssize,
@@ -389,7 +389,7 @@ static int reloadConfiguration() {
 				    &ch);
   filteredNetworks_ = parse_ipv4_network_specification(ectx,
 						       ch);
-  FREE(ch);  
+  FREE(ch);
   MUTEX_UNLOCK(configLock);
   return 0;
 }
@@ -457,7 +457,7 @@ TransportAPI * inittransport_udp(CoreAPIForTransport * core) {
       = stats->create(gettext_noop("# bytes dropped by UDP (outgoing)"));
   }
   configLock = MUTEX_CREATE(NO);
-  reloadConfiguration();      
+  reloadConfiguration();
   udpAPI.protocolNumber       = UDP_PROTOCOL_NUMBER;
   udpAPI.mtu                  = mtu - sizeof(UDPMessage);
   udpAPI.cost                 = 20000;

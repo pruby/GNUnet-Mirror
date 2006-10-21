@@ -50,12 +50,12 @@ void * xmalloc_(size_t size,
 		const char * function) {
   /* As a security precaution, we generally do not allow very large
      allocations using the default 'MALLOC' macro */
-  GE_ASSERT_FLF(NULL, 
+  GE_ASSERT_FLF(NULL,
 		size <= MAX_MALLOC_CHECKED,
-		filename, 
-		linenumber, 
+		filename,
+		linenumber,
 		function);
-  return xmalloc_unchecked_(size, 
+  return xmalloc_unchecked_(size,
 			    filename,
 			    linenumber,
 			    function);
@@ -67,7 +67,7 @@ void * xmalloc_unchecked_(size_t size,
 			  const char * function) {
   void * result;
 
-  GE_ASSERT_FLF(NULL, 
+  GE_ASSERT_FLF(NULL,
 		size < INT_MAX,
 		filename,
 		linenumber,
@@ -77,8 +77,8 @@ void * xmalloc_unchecked_(size_t size,
     GE_DIE_STRERROR_FLF(NULL,
 			GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
 			"malloc",
-			filename, 
-			linenumber, 
+			filename,
+			linenumber,
 			function);
   memset(result,
 	 0,
@@ -109,7 +109,7 @@ void * xrealloc_(void * ptr,
     GE_DIE_STRERROR_FLF(NULL,
 			GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
 			"realloc",
-			filename, 
+			filename,
 			linenumber,
 			function);
   return ptr;
@@ -129,7 +129,7 @@ void xfree_(void * ptr,
 	    const char * function) {
   GE_ASSERT_FLF(NULL,
 		ptr != NULL,
-		filename, 
+		filename,
 		linenumber,
 		function);
   free(ptr);
@@ -151,15 +151,15 @@ char * xstrdup_(const char * str,
 
   GE_ASSERT_FLF(NULL,
 		str != NULL,
-		filename, 
+		filename,
 		linenumber,
 		function);
   res = (char*)xmalloc_(strlen(str)+1,
 			filename,
 			linenumber,
 			function);
-  memcpy(res, 
-	 str, 
+  memcpy(res,
+	 str,
 	 strlen(str)+1);
   return res;
 }
@@ -182,8 +182,8 @@ char * xstrndup_(const char * str,
   size_t min;
 
   GE_ASSERT_FLF(NULL,
-		str != NULL, 
-		filename, 
+		str != NULL,
+		filename,
 		linenumber,
 		function);
   min = 0;
@@ -223,7 +223,7 @@ void xgrow_(void ** old,
 
   GE_ASSERT_FLF(NULL,
 		INT_MAX / elementSize > newCount,
-		filename, 
+		filename,
 		linenumber,
 		function);
   size = newCount * elementSize;

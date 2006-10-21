@@ -72,8 +72,8 @@ void URITRACK_trackURI(struct GE_Context * ectx,
 
 /**
  * List all URIs.
- * 
- * @param need_metadata YES if metadata should be 
+ *
+ * @param need_metadata YES if metadata should be
  *        provided, NO if metadata is not needed (faster)
  */
 int URITRACK_listURIs(struct GE_Context * ectx,

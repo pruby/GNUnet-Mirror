@@ -151,7 +151,7 @@ static int handleTBenchReply(const PeerIdentity * sender,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  MUTEX_LOCK(lock);  
+  MUTEX_LOCK(lock);
   if ( (timeoutOccured == NO) &&
        (postsem != NULL) &&
        (htonl(pmsg->iterationNum) == currIteration) &&
@@ -165,7 +165,7 @@ static int handleTBenchReply(const PeerIdentity * sender,
 	  earlyEnd = get_time();
       } else {
 	res->duplicateCount++;
-      }      
+      }
     }
 #if DEBUG_TBENCH
   GE_LOG(ectx,
@@ -177,7 +177,7 @@ static int handleTBenchReply(const PeerIdentity * sender,
 #endif
   } else {
 #if DEBUG_TBENCH
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_BULK | GE_USER,
 	   "Received message %u from iteration %u too late (now at iteration %u)\n",
 	   ntohl(pmsg->packetNum),
@@ -306,7 +306,7 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
       now = get_time();
       p2p->packetNum = htonl(packetNum);
 #if DEBUG_TBENCH
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_BULK | GE_USER,
 	     "Sending message %u of size %u in iteration %u\n",
 	     packetNum,
@@ -319,8 +319,8 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
 		       0); /* no delay */
       if ( (delay != 0) &&
 	   (htonl(msg->trainSize) != 0) &&
-	   (packetNum % htonl(msg->trainSize)) == 0) 
-	PTHREAD_SLEEP(delay); 
+	   (packetNum % htonl(msg->trainSize)) == 0)
+	PTHREAD_SLEEP(delay);
     }
     SEMAPHORE_DOWN(postsem, YES);
     MUTEX_LOCK(lock);
@@ -334,7 +334,7 @@ static int csHandleTBenchRequest(struct ClientHandle * client,
   }
   MUTEX_UNLOCK(lock);
 #if DEBUG_TBENCH
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_BULK | GE_USER,
 	 "Done waiting for response.\n",
 	 packetNum,
@@ -411,7 +411,7 @@ int initialize_module_tbench(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(CS_PROTO_tbench_REQUEST,
 					    &csHandleTBenchRequest))
     ok = SYSERR;
-  
+
   GE_ASSERT(capi->ectx,
 	    0 == GC_set_configuration_value_string(capi->cfg,
 						   capi->ectx,

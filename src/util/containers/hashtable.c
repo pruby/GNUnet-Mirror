@@ -73,7 +73,7 @@ static int isProbablePrime(long oddNumber) {
       return 1;
     else if (oddNumber%i == 0)
       return 0;
-  
+
   return 1; /* maybe */
 }
 
@@ -124,7 +124,7 @@ struct HashTable *ht_create(long numOfBuckets) {
         FREE(hashTable);
         return NULL;
     }
-    
+
     hashTable->numOfBuckets = numOfBuckets;
     hashTable->numOfElements = 0;
 
@@ -167,12 +167,12 @@ void ht_destroy(struct HashTable *hashTable) {
  * @return whether or not the specified HashTable contains the
  *         specified key
  */
-int ht_containsKey(const struct HashTable *hashTable, 
-		   const void *key, 
+int ht_containsKey(const struct HashTable *hashTable,
+		   const void *key,
 		   const unsigned int keylen) {
     void *ret;
     unsigned int retlen;
-    
+
     return ht_get(hashTable, key, keylen, &ret, &retlen);
 }
 
@@ -183,15 +183,15 @@ int ht_containsKey(const struct HashTable *hashTable,
  * @return whether or not the specified HashTable contains the
  *         specified value
  */
-int ht_containsValue(const struct HashTable *hashTable, 
-		     const void *value, 
+int ht_containsValue(const struct HashTable *hashTable,
+		     const void *value,
 		     const unsigned int valuelen) {
     int i;
 
     for (i=0; i<hashTable->numOfBuckets; i++) {
         KeyValuePair *pair = hashTable->bucketArray[i];
         while (pair != NULL) {
-	  if ( (pair->valuelen == valuelen) && 
+	  if ( (pair->valuelen == valuelen) &&
 	       (memcmp(value, pair->value, valuelen) == 0) )
                 return 1;
             pair = pair->next;
@@ -208,10 +208,10 @@ int ht_containsValue(const struct HashTable *hashTable,
  * @param value the value associated with the key
  * @return YES if successful, NO if an error was encountered
  */
-int ht_put(struct HashTable *hashTable, 
-	   const void *key, 
+int ht_put(struct HashTable *hashTable,
+	   const void *key,
 	   const unsigned int keylen,
-	   void *value, 
+	   void *value,
 	   const unsigned int valuelen) {
     long hashValue;
     KeyValuePair *pair;
@@ -270,8 +270,8 @@ int ht_put(struct HashTable *hashTable,
  * @param valuelen the length of the value
  * @return YES if found, NO otherwise
  */
-int ht_get(const struct HashTable *hashTable, 
-	   const void *key, 
+int ht_get(const struct HashTable *hashTable,
+	   const void *key,
 	   const unsigned int keylen,
 	   void **value,
 	   unsigned int *valuelen) {
@@ -295,7 +295,7 @@ int ht_get(const struct HashTable *hashTable,
  * @param hashTable the HashTable to remove the key/value pair from
  * @param key the key specifying the key/value pair to be removed
  */
-void ht_remove(struct HashTable *hashTable, 
+void ht_remove(struct HashTable *hashTable,
 	       const void *key,
 	       const unsigned int keylen) {
     long hashValue = weakHash(key, keylen) % hashTable->numOfBuckets;
@@ -445,9 +445,9 @@ void ht_rehash(struct HashTable *hashTable, long numOfBuckets) {
  *                     is considered unacceptably high, a value of 0.0 can
  *                     be specified.
  */
-void ht_setIdealRatio(struct HashTable *hashTable, 
+void ht_setIdealRatio(struct HashTable *hashTable,
 		      float idealRatio,
-		      float lowerRehashThreshold, 
+		      float lowerRehashThreshold,
 		      float upperRehashThreshold) {
 
     if (idealRatio <= 0.0 || lowerRehashThreshold >= idealRatio ||

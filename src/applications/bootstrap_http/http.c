@@ -62,7 +62,7 @@ typedef struct {
 static size_t
 downloadHostlistHelper(void * ptr,
 		       size_t size,
-		       size_t nmemb, 
+		       size_t nmemb,
 		       void * ctx) {
   BootstrapContext * bctx = ctx;
   size_t osize;
@@ -73,7 +73,7 @@ downloadHostlistHelper(void * ptr,
   if (size * nmemb == 0)
     return 0; /* ok, no data */
   osize = bctx->bsize;
-  total = size * nmemb + osize; 
+  total = size * nmemb + osize;
   GROW(bctx->buf,
        bctx->bsize,
        total);
@@ -144,7 +144,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   _("No hostlist URL specified in configuration, will not bootstrap.\n"));
     FREE(url);
     return;
-  }  
+  }
   bctx.url = url;
   proxy = NULL;
   GC_get_configuration_value_string(coreAPI->cfg,
@@ -153,30 +153,30 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 				    NULL,
 				    &proxy);
   curl = curl_easy_init();
-  curl_easy_setopt(curl, 
+  curl_easy_setopt(curl,
 		   CURLOPT_WRITEFUNCTION,
 		   &downloadHostlistHelper);
-  curl_easy_setopt(curl, 
+  curl_easy_setopt(curl,
 		   CURLOPT_WRITEDATA,
 		   &bctx);
-  curl_easy_setopt(curl, 
+  curl_easy_setopt(curl,
 		   CURLOPT_FAILONERROR,
 		   1);
-  curl_easy_setopt(curl, 
+  curl_easy_setopt(curl,
 		   CURLOPT_URL,
 		   url);
   if (proxy != NULL)
-    curl_easy_setopt(curl, 
+    curl_easy_setopt(curl,
 		     CURLOPT_PROXY,
 		     proxy);
-  curl_easy_setopt(curl, 
+  curl_easy_setopt(curl,
 		   CURLOPT_BUFFERSIZE,
 		   1024); /* a bit more than one HELLO */
   if (0 == strncmp(url, "http", 4))
-    curl_easy_setopt(curl, 
+    curl_easy_setopt(curl,
 		     CURLOPT_USERAGENT,
 		     "GNUnet");
-  curl_easy_setopt(curl, 
+  curl_easy_setopt(curl,
 		   CURLOPT_CONNECTTIMEOUT,
 		   15L);
   multi = curl_multi_init();

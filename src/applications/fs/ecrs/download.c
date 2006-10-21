@@ -123,7 +123,7 @@ static void freeIOC(IOContext * this,
       strcat(fn, ".A");
       fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
-	GE_LOG(this->ectx, 
+	GE_LOG(this->ectx,
 	       GE_WARNING | GE_BULK | GE_USER,
 	       _("Could not unlink temporary file `%s': %s\n"),
 	       fn, STRERROR(errno));
@@ -258,7 +258,7 @@ int writeToIOC(IOContext * this,
 	      buf,
 	      len);
   if (ret != len) {
-    GE_LOG(this->ectx, 
+    GE_LOG(this->ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Write(%d, %p, %d) failed: %s\n"),
 	   this->handles[level],
@@ -438,9 +438,9 @@ static RequestManager * createRequestManager(struct GE_Context * ectx,
   RequestManager * rm;
 
   rm = MALLOC(sizeof(RequestManager));
-  rm->ectx 
+  rm->ectx
     = ectx;
-  rm->cfg 
+  rm->cfg
     = cfg;
   rm->requestThread
     = PTHREAD_GET_SELF();
@@ -494,7 +494,7 @@ static void destroyRequestManager(RequestManager * rm) {
   int i;
 
 #if DEBUG_DOWNLOAD
-  GE_LOG(rm->ectx, 
+  GE_LOG(rm->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "destroying request manager %p\n",
 	 rm);
@@ -550,7 +550,7 @@ static void addRequest(RequestManager * rm,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&node->chk.query,
 		    &enc));
-  GE_LOG(rm->ectx, 
+  GE_LOG(rm->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Queuing request (query: %s)\n",
 	 &enc);
@@ -653,7 +653,7 @@ static unsigned int getNodeSize(const NodeClosure * node) {
 	> node->ctx->total)
       ret = (unsigned int) (node->ctx->total - node->offset);
 #if DEBUG_DOWNLOAD
-    GE_LOG(node->ctx->rm->ectx, 
+    GE_LOG(node->ctx->rm->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Node at offset %llu and level %d has size %u\n",
 	node->offset,
@@ -823,7 +823,7 @@ static int checkPresent(NodeClosure * node) {
     ret = NO;
   FREE(data);
 #if DEBUG_DOWNLOAD
-  GE_LOG(node->ctx->rm->ectx, 
+  GE_LOG(node->ctx->rm->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Checked presence of block at %llu level %u.  Result: %s\n",
 	 node->offset,
@@ -850,7 +850,7 @@ static void iblock_download_children(NodeClosure * node,
   unsigned int levelSize;
   unsigned long long baseOffset;
 
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    node->level > 0);
   childcount = size / sizeof(CHK);
   if (size != childcount * sizeof(CHK)) {
@@ -899,7 +899,7 @@ static int decryptContent(const char * data,
   INITVECTOR iv;
   SESSIONKEY skey;
 
-  GE_ASSERT(NULL, 
+  GE_ASSERT(NULL,
 	    (data!=NULL) && (hashcode != NULL) && (result != NULL));
   /* get key and init value from the hash code */
   hashToKey(hashcode,
@@ -933,7 +933,7 @@ static int nodeReceive(const HashCode512 * query,
 #if DEBUG_DOWNLOAD
   EncName enc;
 
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(query,
 		    &enc));
@@ -1006,7 +1006,7 @@ static int nodeReceive(const HashCode512 * query,
       requestManagerEndgame(node->ctx->rm);
     }
   }
-  GE_ASSERT(node->ctx->rm->ectx, 
+  GE_ASSERT(node->ctx->rm->ectx,
 	    node->ctx->rm->requestThread != NULL);
   PTHREAD_STOP_SLEEP(node->ctx->rm->requestThread);
   FREE(data);
@@ -1146,11 +1146,11 @@ static void issueRequest(RequestManager * rm,
   if ( (0 == (entry->tries % MAX_TRIES)) &&
        (entry->tries > 0) )  {
     EncName enc;
-    IF_GELOG(rm->ectx, 
+    IF_GELOG(rm->ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(&entry->node->chk.key,
 		      &enc));
-    GE_LOG(rm->ectx, 
+    GE_LOG(rm->ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Content `%s' seems to be not available on the network (tried %u times).\n"),
 	   &enc,
@@ -1264,11 +1264,11 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 #endif
   if (0 == ECRS_fileSize(uri)) {
     ret = disk_file_open(ectx,
-			 filename, 
+			 filename,
 			 O_CREAT | O_WRONLY | O_TRUNC,
 			 S_IRUSR|S_IWUSR);
-    if (ret == -1) 
-      return SYSERR;    
+    if (ret == -1)
+      return SYSERR;
     CLOSE(ret);
     dpcb(0, 0, get_time(), 0, NULL, 0, dpcbClosure);
     return OK;
@@ -1312,24 +1312,24 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   if (NO == checkPresent(top))
     addRequest(rm, top);
   else
-    FREE(top);  
+    FREE(top);
   while ( (OK == tt(ttClosure)) &&
 	  (rm->abortFlag == NO) &&
 	  (rm->requestListIndex != 0) ) {
     minSleep = processRequests(rm);
     if ( (OK == tt(ttClosure)) &&
 	  (rm->abortFlag == NO) &&
-	  (rm->requestListIndex != 0) ) 
+	  (rm->requestListIndex != 0) )
       PTHREAD_SLEEP(minSleep);
   }
-  
+
   if ( (rm->requestListIndex == 0) &&
        (ctx.completed == ctx.total) &&
        (rm->abortFlag == NO) ) {
     ret = OK;
   } else {
 #if 0
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   "Download ends prematurely: %d %llu == %llu %d TT: %d\n",
 	   rm->requestListIndex,
@@ -1346,7 +1346,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   else
     freeIOC(&ioc, NO); /* aborted */
 #if DEBUG_DOWNLOAD
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "`%s' terminating for file `%s' with result %s\n",
 	 __FUNCTION__,

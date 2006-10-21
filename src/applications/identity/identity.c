@@ -222,7 +222,7 @@ static void addHostToKnown(const PeerIdentity * identity,
     if ( (disk_file_test(ectx,
 			 fn) == YES) &&
 	 (sizeof(unsigned int) ==
-	  disk_file_read(ectx, 
+	  disk_file_read(ectx,
 			 fn,
 			 sizeof(unsigned int),
 			 &trust)) ) {
@@ -353,7 +353,7 @@ static int cronHelper(const char * filename,
 			   "unlink",
 			   fullname);
   } else if (disk_directory_test(ectx, fullname) == YES) {
-    if (0 == RMDIR(fullname)) 
+    if (0 == RMDIR(fullname))
       GE_LOG(ectx,
 	     GE_WARNING | GE_USER | GE_ADMIN | GE_BULK,
 	     _("Directory `%s' in directory `%s' does not match naming convention. "
@@ -509,7 +509,7 @@ static void delHostFromKnown(const PeerIdentity * identity,
 	FREE(entry);
       }
       MUTEX_UNLOCK(lock_);
-      GE_ASSERT(ectx, 
+      GE_ASSERT(ectx,
 		numberOfHosts_ <= sizeOfHosts_);
       return; /* deleted */
     }
@@ -529,7 +529,7 @@ static void bindAddress(const P2P_hello_MESSAGE * msg) {
   HostEntry * host;
   int i;
 
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    numberOfHosts_ <= sizeOfHosts_);
   GE_ASSERT(ectx,
 	    msg != NULL);
@@ -749,13 +749,13 @@ static int verifyPeerSignature(const PeerIdentity * signer,
 		       YES);
   if (helo == NULL) {
     EncName enc;
-    
+
     IF_GELOG(ectx,
 	     GE_INFO | GE_USER | GE_BULK,
 	     hash2enc(&signer->hashPubKey,
 		      &enc));
     GE_LOG(ectx,
-	   GE_INFO | GE_USER | GE_BULK, 
+	   GE_INFO | GE_USER | GE_BULK,
 	   _("Signature failed verification: peer `%s' not known.\n"),
 	   &enc);
     return SYSERR;
@@ -1006,9 +1006,9 @@ static void flushHostCredit(HostEntry * host) {
     if ( (0 != UNLINK(fn)) &&
 	 (errno != ENOENT) )
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_WARNING | GE_USER | GE_BULK,			     
+			   GE_WARNING | GE_USER | GE_BULK,			
 			   "unlink",
-			   fn);    
+			   fn);
   } else {
     trust = htonl(host->trust);
     disk_file_write(ectx,
@@ -1058,7 +1058,7 @@ static int discardHostsHelper(const char *filename,
   char *fn;
   struct stat hostStat;
   int hostFile;
-  
+
   fn = (char *) MALLOC(strlen(filename) + strlen(dirname) + 2);
   sprintf(fn, "%s%s%s", dirname, DIR_SEPARATOR_STR, filename);
   hostFile = disk_file_open(ectx,
@@ -1067,13 +1067,13 @@ static int discardHostsHelper(const char *filename,
   if (hostFile != -1) {
     if (FSTAT(hostFile, &hostStat) == 0) {
       CLOSE(hostFile);
-      
+
       if (hostStat.st_mtime + (CRON_DISCARDS_HOSTS_AFTER / cronSECONDS) < *((time_t *) now))
         UNLINK(fn);
     }
   }
   FREE(fn);
-  
+
   return OK;
 }
 
@@ -1082,7 +1082,7 @@ static int discardHostsHelper(const char *filename,
  */
 static void cronDiscardHosts(void *unused) {
   time_t timeNow;
-  
+
   timeNow = time(NULL);
   disk_directory_scan(ectx,
 		      networkIdDirectory,
@@ -1129,7 +1129,7 @@ provide_module_identity(CoreAPIForApplication * capi) {
   numberOfHosts_ = 0;
 
   gnHome = NULL;
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    -1 != GC_get_configuration_value_filename(coreAPI->cfg,
 						      "GNUNETD",
 						      "GNUNETD_HOME",

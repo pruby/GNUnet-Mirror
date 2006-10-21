@@ -381,8 +381,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 		      (void *) &first_unavail) == SYSERR) {
         unsigned long long now = htonll(get_time());
         state->write(ectx,
-		     unavail_key, 
-		     sizeof(cron_t), 
+		     unavail_key,
+		     sizeof(cron_t),
 		     (void *) &now);
       } else {
         /* Delete it after 3 days */
@@ -458,7 +458,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 				       SEEK_SET)) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_ADMIN | GE_USER | GE_BULK,
-			 "lseek", 
+			 "lseek",
 			 fn);
     FREE(fn);
     CLOSE(fileHandle);
@@ -472,7 +472,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	      ntohl(odb->blockSize));
   if (blen != ntohl(odb->blockSize)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 			 "read",
 			 fn);
     FREE(fn);
@@ -537,7 +537,7 @@ static int completeValue(const HashCode512 * key,
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
 #if DEBUG_ONDEMAND
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "`%s' found value that does not match (%u, %u).\n",
 	   __FUNCTION__,
@@ -548,7 +548,7 @@ static int completeValue(const HashCode512 * key,
   }
   *comp = *value; /* make copy! */
 #if DEBUG_ONDEMAND
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "`%s' found value that matches.\n",
 	 __FUNCTION__);
@@ -583,7 +583,7 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 
   fn = getOnDemandFile(fileId);
 #if DEBUG_ONDEMAND
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Removing on-demand encoded data stored in `%s'.\n",
 	 fn);
@@ -594,8 +594,8 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 		      S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH); /* 644 */
   if(fd == -1) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
-			 "open", 
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			 "open",
 			 fn);
     FREE(fn);
     return SYSERR;
@@ -618,8 +618,8 @@ int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
 		      &block[1],
 		      delta)) {
       GE_LOG_STRERROR_FILE(ectx,
-			   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
-			   "read", 
+			   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			   "read",
 			   fn);
       CLOSE(fd);
       FREE(fn);
@@ -697,7 +697,7 @@ int ONDEMAND_init(CoreAPIForApplication * capi) {
   tmp = REALLOC(tmp,
 		strlen(tmp) +
 		strlen("/data/shared/") + 1);
-  strcat(tmp, "/data/shared/"); 
+  strcat(tmp, "/data/shared/");
   GC_get_configuration_value_filename(capi->cfg,
 				      "FS",
 				      "INDEX-DIRECTORY",
@@ -705,7 +705,7 @@ int ONDEMAND_init(CoreAPIForApplication * capi) {
 				      &index_directory);
   FREE(tmp);
   disk_directory_create(ectx,
-			index_directory); /* just in case */  
+			index_directory); /* just in case */
   return OK;
 }
 

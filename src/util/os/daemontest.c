@@ -29,13 +29,13 @@
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
-int main(int argc, 
+int main(int argc,
 	 const char *argv[]) {
   int daemon;
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -43,7 +43,7 @@ int main(int argc,
   cfg = GC_create_C_impl();
   GE_ASSERT(ectx, cfg != NULL);
   os_init(ectx);
-  daemon = os_daemon_start(ectx, 
+  daemon = os_daemon_start(ectx,
 			   cfg,
 			   "check.conf",
 			   NO);

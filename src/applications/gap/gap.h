@@ -158,7 +158,7 @@
  * THE VALUE YOU PICK MUST BE A POWER OF 2, for example:
  * 128, 256, 512, 1024, 2048, 4092, 8192, 16384, 32768, 65536
  */
-#define MIN_INDIRECTION_TABLE_SIZE 1024 
+#define MIN_INDIRECTION_TABLE_SIZE 1024
 /* #define MIN_INDIRECTION_TABLE_SIZE 4 */
 
 /**
@@ -310,7 +310,7 @@ typedef struct {
  * Keep this struct as small as possible -- an array of these
  * takes 80% of GNUnet's memory (for 65536 routing table entries,
  * the array itself uses about 8 MB of memory; the contents
- * that the entries point to can easily use another 8 MB at this 
+ * that the entries point to can easily use another 8 MB at this
  * point [see Mantis #1058])
  */
 typedef struct {

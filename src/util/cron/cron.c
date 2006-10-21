@@ -85,23 +85,23 @@
 typedef struct {
 
   /**
-   * The method to call at that point. 
+   * The method to call at that point.
    */
   CronJob method;
 
   /**
-   * data ptr (argument to the method) 
+   * data ptr (argument to the method)
    */
   void * data;
 
   /**
-   * The start-time for this event (in milliseconds). 
+   * The start-time for this event (in milliseconds).
    */
   cron_t delta;
 
   /**
    * for cron-jobs: when this should be repeated
-   * automatically, 0 if this was a once-only job 
+   * automatically, 0 if this was a once-only job
    */
   unsigned int deltaRepeat;
 
@@ -164,12 +164,12 @@ typedef struct CronManager {
 
   /**
    * Set to yes if we are shutting down or shut down.
-   */ 
+   */
   int cron_shutdown;
 
   /**
    * Are we in block?
-   */ 
+   */
   int inBlock;
 
   struct SEMAPHORE * sig;
@@ -219,8 +219,8 @@ void cron_stop(struct CronManager * cron) {
 #endif
   cron->cron_shutdown = YES;
   cron_add_job(cron,
-	       &noJob, 
-	       0, 
+	       &noJob,
+	       0,
 	       0,
 	       NULL);
   SEMAPHORE_DOWN(cron->cron_signal, YES);
@@ -527,10 +527,10 @@ static void runJob(struct CronManager * cron) {
 	   data,
 	   repeat);
 #endif
-    cron_add_job(cron, 
+    cron_add_job(cron,
 		 method,
 		 repeat,
-		 repeat, 
+		 repeat,
 		 data);
   }
   /* run */
@@ -601,7 +601,7 @@ static void * cron_main_method(void * ctx) {
 #endif
     if (next > MAXSLEEP)
       next = MAXSLEEP;
-    if (cron->cron_shutdown == NO) 
+    if (cron->cron_shutdown == NO)
       PTHREAD_SLEEP(next);
 #if DEBUG_CRON
     GE_LOG(cron->ectx,
@@ -646,7 +646,7 @@ void cron_destroy(struct CronManager * cron) {
  * Start the cron jobs.
  */
 void cron_start(struct CronManager * cron) {
-  GE_ASSERT(cron->ectx, 
+  GE_ASSERT(cron->ectx,
 	    cron->cron_signal == NULL);
   cron->cron_shutdown = NO;
   cron->cron_signal = SEMAPHORE_CREATE(0);
@@ -656,8 +656,8 @@ void cron_start(struct CronManager * cron) {
 				     cron,
 				     256 * 1024);
   if (cron->cron_handle == 0)
-    GE_DIE_STRERROR(cron->ectx, 
-		    GE_FATAL | GE_ADMIN | GE_USER | GE_BULK, 
+    GE_DIE_STRERROR(cron->ectx,
+		    GE_FATAL | GE_ADMIN | GE_USER | GE_BULK,
 		    "pthread_create");
 }
 

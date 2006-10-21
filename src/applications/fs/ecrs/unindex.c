@@ -159,8 +159,8 @@ static int undoSymlinking(struct GE_Context * ectx,
 
   if (0 != UNLINK(serverFN)) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_BULK | GE_USER | GE_ADMIN, 
-			 "unlink", 
+			 GE_ERROR | GE_BULK | GE_USER | GE_ADMIN,
+			 "unlink",
 			 serverFN);
     FREE(serverFN);
     return SYSERR;
@@ -242,10 +242,10 @@ int ECRS_unindexFile(struct GE_Context * ectx,
 		     &fileId);
 
   fd = disk_file_open(ectx,
-		      filename, 
+		      filename,
 		      O_RDONLY | O_LARGEFILE);
-  if (fd == -1) 
-    return SYSERR;  
+  if (fd == -1)
+    return SYSERR;
   dblock = MALLOC(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->size = htonl(sizeof(Datastore_Value) + DBLOCK_SIZE + sizeof(DBlock));
   dblock->anonymityLevel = htonl(0);
@@ -306,7 +306,7 @@ int ECRS_unindexFile(struct GE_Context * ectx,
       goto FAILURE;
     }
     if (! wasIndexed) {
-      if (OK == 
+      if (OK ==
 	  fileBlockEncode(db,
 			  size,
 			  &chk.query,
@@ -335,8 +335,8 @@ int ECRS_unindexFile(struct GE_Context * ectx,
 		    * (double)filesize);
   }
   if (tt != NULL)
-    if (OK != tt(ttClosure)) 
-      goto FAILURE;    
+    if (OK != tt(ttClosure))
+      goto FAILURE;
   for (i=0;i<treedepth;i++) {
     size = ntohl(iblocks[i]->size) - sizeof(Datastore_Value);
     db = (DBlock*) &iblocks[i][1];

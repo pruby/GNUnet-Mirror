@@ -621,7 +621,7 @@ ECRS_deserializeMetaData(struct GE_Context * ectx,
   while ( (pos < dataSize) &&
           (i < ic) ) {
     len = strlen(&data[pos])+1;
-    md->items[i].type = (EXTRACTOR_KeywordType) ntohl(((unsigned int*)data)[i]); 
+    md->items[i].type = (EXTRACTOR_KeywordType) ntohl(((unsigned int*)data)[i]);
     md->items[i].data = STRDUP(&data[pos]);
     pos += len;
     i++;

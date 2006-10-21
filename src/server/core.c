@@ -237,11 +237,11 @@ static int unloadApplicationModule(const char * name) {
 	   pos->dsoName,
 	   pos->dsoName);
     return SYSERR;
-  }  
+  }
   mptr();
   pos->applicationInitialized = NO;
-  if (pos->serviceCount > 0) 
-    return OK; 
+  if (pos->serviceCount > 0)
+    return OK;
 
   /* compute prev! */
   if (pos == shutdownList) {
@@ -251,7 +251,7 @@ static int unloadApplicationModule(const char * name) {
     while (prev->next != pos)
       prev = prev->next;
   }
-  os_plugin_unload(pos->library);  
+  os_plugin_unload(pos->library);
   if (prev == NULL)
     shutdownList = pos->next;
   else
@@ -386,13 +386,13 @@ int releaseService(void * service) {
   mptr = os_plugin_resolve_function(pos->library,
 				    "release_",
 				    YES);
-  if (mptr == NULL) 
-    return SYSERR;  
+  if (mptr == NULL)
+    return SYSERR;
   mptr();
   pos->serviceCount--;
   pos->servicePTR = NULL;
 
-  if (pos->applicationInitialized == YES) 
+  if (pos->applicationInitialized == YES)
     return OK; /* protocol still in use! */
   /* compute prev */
   if (pos == shutdownList) {
@@ -417,7 +417,7 @@ int loadApplicationModules() {
   char * next;
   char * pos;
   int ok;
-  
+
   ok = OK;
   dso = NULL;
   if (-1 == GC_get_configuration_value_string(applicationCore.cfg,
@@ -482,7 +482,7 @@ int unloadApplicationModules() {
 int initCore(struct GE_Context * ectx,
 	     struct GC_Configuration * cfg,
 	     struct CronManager * cron,
-	     struct LoadMonitor * monitor) {  
+	     struct LoadMonitor * monitor) {
   applicationCore.ectx = ectx;
   applicationCore.cfg = cfg;
   applicationCore.load_monitor = monitor;

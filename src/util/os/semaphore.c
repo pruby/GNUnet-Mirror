@@ -116,25 +116,25 @@ static void FLOCK(int fd,
 
   ret = -1;
   while (ret == -1) {
-    ret = flock(fd, 
+    ret = flock(fd,
 		operation);
     if (ret == -1) {
       if (errno != EINTR) {
 	GE_LOG_STRERROR(NULL,
 			GE_ERROR | GE_USER | GE_ADMIN | GE_BULK,
 			"flock");
-	return; 
+	return;
       }
     }
   }
   fsync(fd);
 }
 static int LSEEK(int fd,
-		 off_t pos, 
+		 off_t pos,
 		 int mode) {
   int ret;
-  ret = lseek(fd, 
-	      pos, 
+  ret = lseek(fd,
+	      pos,
 	      mode);
   if (ret == -1)
     GE_LOG_STRERROR(NULL,
@@ -144,7 +144,7 @@ static int LSEEK(int fd,
 }
 #endif
 
-struct IPC_SEMAPHORE * 
+struct IPC_SEMAPHORE *
 IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 		     const char * basename,
 		     const unsigned int initialValue) {
@@ -176,7 +176,7 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 			     S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP, /* 660 */
 			     initialValue);			
   }
-  if (ret->internal == (void *) SEM_FAILED) 
+  if (ret->internal == (void *) SEM_FAILED)
     GE_DIE_STRERROR_FILE(ectx,
 			 GE_FATAL | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
 			 "sem_open",
@@ -210,7 +210,7 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
   if (! ret->internal) {
     GE_LOG(ectx,
 	   GE_FATAL | GE_USER | GE_DEVELOPER | GE_BULK,
-	   _("Can't create semaphore: %i"), 
+	   _("Can't create semaphore: %i"),
 	   dwErr);
     GE_DIE_STRERROR_FILE(ectx,
 		      GE_FATAL | GE_USER | GE_DEVELOPER | GE_BULK,
@@ -249,19 +249,19 @@ IPC_SEMAPHORE_CREATE(struct GE_Context * ectx,
 
 again:
   ret->internal = semget(key,
-			 3, 
+			 3,
 			 IPC_CREAT|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
 
   if (ret->internal == -1)
     GE_DIE_STRERROR(ectx,
-		    GE_FATAL | GE_USER | GE_IMMEDIATE, 
+		    GE_FATAL | GE_USER | GE_IMMEDIATE,
 		    "semget");
   if (semop(ret->internal, &op_lock[0], 2) < 0) {
     if (errno == EINVAL)
       goto again;
     else
-      GE_DIE_STRERROR(ectx, 
-		      GE_FATAL | GE_USER | GE_IMMEDIATE, 
+      GE_DIE_STRERROR(ectx,
+		      GE_FATAL | GE_USER | GE_IMMEDIATE,
 		      "semop");
   }
 
@@ -270,33 +270,33 @@ again:
 			1,
 			GETVAL,
 			0)) < 0)
-    GE_DIE_STRERROR(ectx, 
-		    GE_FATAL | GE_USER | GE_IMMEDIATE, 
+    GE_DIE_STRERROR(ectx,
+		    GE_FATAL | GE_USER | GE_IMMEDIATE,
 		    "semctl");
   if (pcount==0) {
      semctl_arg.val = initialValue;
-     if (semctl(ret->internal, 
-		0, 
-		SETVAL, 
+     if (semctl(ret->internal,
+		0,
+		SETVAL,
 		semctl_arg) < 0)
-       GE_DIE_STRERROR(ectx, 
-		       GE_FATAL | GE_USER | GE_IMMEDIATE, 
+       GE_DIE_STRERROR(ectx,
+		       GE_FATAL | GE_USER | GE_IMMEDIATE,
 		       "semtcl");
      semctl_arg.val = PROCCOUNT;
-     if (semctl(ret->internal, 
+     if (semctl(ret->internal,
 		1,
 		SETVAL,
 		semctl_arg) < 0)
-       GE_DIE_STRERROR(ectx, 
-		       GE_FATAL | GE_USER | GE_IMMEDIATE, 
+       GE_DIE_STRERROR(ectx,
+		       GE_FATAL | GE_USER | GE_IMMEDIATE,
 		       "semtcl");
   }
 
-  if (semop(ret->internal, 
+  if (semop(ret->internal,
 	    &op_endcreate[0],
 	    2) < 0)
-    GE_DIE_STRERROR(ectx, 
-		    GE_FATAL | GE_USER | GE_IMMEDIATE, 
+    GE_DIE_STRERROR(ectx,
+		    GE_FATAL | GE_USER | GE_IMMEDIATE,
 		    "semop");
   ret->filename = ebasename;
   return ret;
@@ -332,8 +332,8 @@ again:
   }
   if (fd == -1) {
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_USER | GE_BULK, 
-			 "open", 
+			 GE_ERROR | GE_USER | GE_BULK,
+			 "open",
 			 ret->filename);
     MUTEX_DESTROY(&ret->internalLock);
     FREE(ret->filename);
@@ -342,25 +342,25 @@ again:
   }
   FLOCK(fd, LOCK_EX);
   if (sizeof(int) != READ(fd,
-			  &cnt, 
+			  &cnt,
 			  sizeof(int))) {
     cnt = htonl(initialValue);
-    LSEEK(fd, 
-	  0, 
+    LSEEK(fd,
+	  0,
 	  SEEK_SET);
-    if (sizeof(int) != WRITE(fd, 
-			     &cnt, 
+    if (sizeof(int) != WRITE(fd,
+			     &cnt,
 			     sizeof(int)))
       GE_LOG_STRERROR_FILE(ectx,
 			   GE_ERROR | GE_USER | GE_BULK,
-			   "write", 
+			   "write",
 			   basename);
   }
-  LSEEK(fd, 
-	sizeof(int), 
+  LSEEK(fd,
+	sizeof(int),
 	SEEK_SET);
-  if (sizeof(int) != READ(fd, 
-			  &cnt, 
+  if (sizeof(int) != READ(fd,
+			  &cnt,
 			  sizeof(int)))
     cnt = htonl(1);
   else
@@ -370,7 +370,7 @@ again:
 			   &cnt,
 			   sizeof(int)))
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_USER | GE_BULK, 
+			 GE_WARNING | GE_USER | GE_BULK,
 			 "write",
 			 basename);
   FLOCK(fd, LOCK_UN);
@@ -416,11 +416,11 @@ void IPC_SEMAPHORE_UP(struct IPC_SEMAPHORE * sem) {
     MUTEX_LOCK(&sem->internalLock);
     FLOCK(sem->fd,
 	  LOCK_EX);
-    LSEEK(sem->fd, 
-	  0, 
+    LSEEK(sem->fd,
+	  0,
 	  SEEK_SET);
-    if (sizeof(int) != READ(sem->fd, 
-			    &cnt, 
+    if (sizeof(int) != READ(sem->fd,
+			    &cnt,
 			    sizeof(int))) {
       GE_LOG_STRERROR_FILE(sem->ectx,
 			   GE_WARNING | GE_USER | GE_BULK,
@@ -433,10 +433,10 @@ void IPC_SEMAPHORE_UP(struct IPC_SEMAPHORE * sem) {
     }
     cnt = htonl(ntohl(cnt)+1);
     LSEEK(sem->fd,
-	  0, 
+	  0,
 	  SEEK_SET);
     if (sizeof(int) != WRITE(sem->fd,
-			     &cnt, 
+			     &cnt,
 			     sizeof(int)))
       GE_LOG_STRERROR_FILE(sem->ectx,
 			   GE_WARNING | GE_USER | GE_BULK,
@@ -465,7 +465,7 @@ int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
   }
   return OK;
 #elif WINDOWS
-  if (WaitForSingleObject(sem->internal, 
+  if (WaitForSingleObject(sem->internal,
 			  INFINITE) == WAIT_FAILED)
     GE_LOG_STRERROR(sem->ectx,
 		    GE_WARNING | GE_USER | GE_BULK,
@@ -496,17 +496,17 @@ int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
 	  LOCK_EX);
     cnt = ntohl(0);
     while (htonl(cnt) == 0) {
-      LSEEK(sem->fd, 
-	    0, 
+      LSEEK(sem->fd,
+	    0,
 	    SEEK_SET);
-      if (sizeof(int) != READ(sem->fd, 
-			      &cnt, 
+      if (sizeof(int) != READ(sem->fd,
+			      &cnt,
 			      sizeof(int))) {
 	GE_LOG_STRERROR_FILE(sem->ectx,
 			     GE_WARNING | GE_USER | GE_BULK,
 			     "read",
 			     sem->filename);
-	FLOCK(sem->fd, 
+	FLOCK(sem->fd,
 	      LOCK_UN);
 	MUTEX_UNLOCK(&sem->internalLock);
 	return;
@@ -516,21 +516,21 @@ int IPC_SEMAPHORE_DOWN(struct IPC_SEMAPHORE * sem,
 	FLOCK(sem->fd,
 	      LOCK_UN);
 	PTHREAD_SLEEP(50 * cronMILLIS);
-	FLOCK(sem->fd, 
+	FLOCK(sem->fd,
 	      LOCK_EX);
       }
     }
 
     cnt = htonl(ntohl(cnt)-1);
     LSEEK(sem->fd, 0, SEEK_SET);
-    if (sizeof(int) != WRITE(sem->fd, 
-			     &cnt, 
+    if (sizeof(int) != WRITE(sem->fd,
+			     &cnt,
 			     sizeof(int)))
       GE_LOG_STRERROR_FILE(sem->ectx,
 			   GE_WARNING | GE_USER | GE_BULK,
 			   "write",
 			   sem->filename);
-    FLOCK(sem->fd, 
+    FLOCK(sem->fd,
 	  LOCK_UN);
     MUTEX_UNLOCK(&sem->internalLock);
   }
@@ -562,7 +562,7 @@ void IPC_SEMAPHORE_DESTROY(struct IPC_SEMAPHORE * sem) {
       GE_LOG_STRERROR(sem->ectx,
 		      GE_USER | GE_WARNING | GE_BULK,
 		      "semop");
-    if ( (pcount = semctl(sem->internal, 1, GETVAL, 0)) < 0) 
+    if ( (pcount = semctl(sem->internal, 1, GETVAL, 0)) < 0)
       GE_LOG_STRERROR(sem->ectx,
 		      GE_USER | GE_WARNING | GE_BULK,
 		      "semctl");
@@ -578,14 +578,14 @@ void IPC_SEMAPHORE_DESTROY(struct IPC_SEMAPHORE * sem) {
 			"semctl");
       UNLINK(sem->filename);
     } else {
-      if (semop(sem->internal, 
+      if (semop(sem->internal,
 		&op_unlock[0],
 		1) < 0)
 	GE_LOG_STRERROR(sem->ectx,
 			GE_USER | GE_WARNING | GE_BULK,
 			"semop");
     }
-    FREE(sem->filename);   
+    FREE(sem->filename);
   }
 #elif SOMEBSD
   {
@@ -601,8 +601,8 @@ void IPC_SEMAPHORE_DESTROY(struct IPC_SEMAPHORE * sem) {
 	GE_LOG_STRERROR(sem->ectx,
 			GE_WARNING | GE_USER | GE_BULK,
 			"write");
-      if (ntohl(cnt) == 0) 
-	UNLINK(sem->filename);      
+      if (ntohl(cnt) == 0)
+	UNLINK(sem->filename);
     } else
       GE_LOG_STRERROR(sem->ectx,
 		      GE_WARNING | GE_USER | GE_BULK,

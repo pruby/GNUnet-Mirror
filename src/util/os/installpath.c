@@ -46,13 +46,13 @@ extern "C" {
 /**
  * Try to determine path by reading /proc/PID/exe
  */
-static char * 
+static char *
 get_path_from_proc_exe() {
   char fn[64];
   char * lnk;
   size_t size;
 
-  SNPRINTF(fn, 
+  SNPRINTF(fn,
 	   64,
 	   "/proc/%u/exe",
 	   getpid());
@@ -88,20 +88,20 @@ get_path_from_proc_exe() {
 static char * get_path_from_module_filename() {
   char * path;
   char * idx;
-  
+
   path = MALLOC(4097);
   GetModuleFileName(NULL, path, 4096);
   idx = path + strlen(path);
-  while ( (idx > path) && 
+  while ( (idx > path) &&
 	  (*idx != '\\') &&
 	  (*idx != '/') )
     idx--;
   *idx = '\0';
-  return path;  
+  return path;
 }
 #endif
 
-static char * 
+static char *
 get_path_from_PATH() {
   char * path;
   char * pos;
@@ -141,7 +141,7 @@ get_path_from_PATH() {
   return NULL;
 }
 
-static char * 
+static char *
 get_path_from_GNUNET_PREFIX() {
   const char * p;
 
@@ -163,8 +163,8 @@ os_get_exec_path() {
 
   ret = get_path_from_GNUNET_PREFIX();
   if (ret != NULL)
-    return ret;  
-#if LINUX  
+    return ret;
+#if LINUX
   ret = get_path_from_proc_exe();
   if (ret != NULL)
     return ret;
@@ -197,16 +197,16 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
   execpath = os_get_exec_path();
   if (execpath == NULL)
     return NULL;
-  
+
   n = strlen(execpath);
-  if (n == 0) { 
+  if (n == 0) {
     /* should never happen, but better safe than sorry */
     FREE(execpath);
     return NULL;
   }
-  if (execpath[n-1] == DIR_SEPARATOR) 
-    execpath[--n] = '\0';  
-  
+  if (execpath[n-1] == DIR_SEPARATOR)
+    execpath[--n] = '\0';
+
   if ( (n > 3) &&
        (0 == strcmp(&execpath[n-3], "bin")) ) {
     /* good, strip of '/bin'! */
@@ -231,10 +231,10 @@ char * os_get_installation_path(enum InstallPathKind dirkind) {
     break;
   default:
     FREE(execpath);
-    return NULL; 
+    return NULL;
   }
   tmp = MALLOC(strlen(execpath)+strlen(dirname)+1);
-  sprintf(tmp, 
+  sprintf(tmp,
 	  "%s%s",
 	  execpath,
 	  dirname);

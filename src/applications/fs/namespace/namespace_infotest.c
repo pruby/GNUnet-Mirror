@@ -52,7 +52,7 @@ int main(int argc, char * argv[]){
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
   daemon  = os_daemon_start(NULL,
 			    cfg,
@@ -133,7 +133,7 @@ int main(int argc, char * argv[]){
   ECRS_deleteNamespace(ectx,
 		       cfg,
 		       "test");
- 
+
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
   GC_free(cfg);
   return (ok == YES) ? 0 : 1;

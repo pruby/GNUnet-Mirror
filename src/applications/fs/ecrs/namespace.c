@@ -42,7 +42,7 @@ static char * getPseudonymFileName(struct GE_Context * ectx,
 				   const char * name) {
   char * gnHome;
   char * fileName;
-  
+
   GC_get_configuration_value_string(cfg,
 				    "GNUNET",
 				    "GNUNET_HOME",
@@ -70,7 +70,7 @@ int ECRS_deleteNamespace(struct GE_Context * ectx,
 			 struct GC_Configuration * cfg,
 			 const char * name) {
   char * fileName;
-  
+
   fileName = getPseudonymFileName(ectx, cfg, name);
   if (YES != disk_file_test(ectx,
 			    fileName)) {
@@ -80,7 +80,7 @@ int ECRS_deleteNamespace(struct GE_Context * ectx,
   if (0 != UNLINK(fileName)) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_BULK,
-			 "unlink", 
+			 "unlink",
 			 fileName);
     FREE(fileName);
     return SYSERR;
@@ -346,7 +346,7 @@ int ECRS_testNamespaceExists(struct GE_Context * ectx,
   FREE(fileName);
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("Format of pseudonym `%s' is invalid.\n"),
 	   name);
@@ -579,7 +579,7 @@ static int processFile_(const char * name,
   dst = MALLOC(len);
   len = disk_file_read(c->ectx,
 		       fileName,
-		       len, 
+		       len,
 		       dst);
   hke = (PrivateKeyEncoded*) dst;
   if ( ntohs(hke->len) != len ) {
@@ -594,7 +594,7 @@ static int processFile_(const char * name,
   hk = decodePrivateKey(hke);
   FREE(hke);
   if (hk == NULL) {
-    GE_LOG(c->ectx, 
+    GE_LOG(c->ectx,
 	   GE_ERROR | GE_BULK | GE_USER,
 	   _("Format of file `%s' is invalid.\n"),
 	   fileName);

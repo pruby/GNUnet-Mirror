@@ -107,7 +107,7 @@ static int allowConnection(const PeerIdentity * peer) {
 		    sizeof(PeerIdentity))) )
     return SYSERR; /* disallow connections to self */
   for (i=friendCount-1;i>=0;i--)
-    if (0 == memcmp(&friends[i], 
+    if (0 == memcmp(&friends[i],
 		    peer,
 		    sizeof(PeerIdentity)))
       return OK;
@@ -152,7 +152,7 @@ static void scanHelperSelect(const PeerIdentity * id,
 			     const unsigned short proto,
 			     int confirmed,
 			     IndexMatch * im) {
-  if (0 == memcmp(coreAPI->myIdentity, 
+  if (0 == memcmp(coreAPI->myIdentity,
 		  id,
 		  sizeof(PeerIdentity)))
     return;
@@ -208,7 +208,7 @@ static void scanForHosts(unsigned int index) {
   }
   hash2enc(&indexMatch.match.hashPubKey,
 	   &enc);
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Topology: trying to connect to `%s'.\n",
 	 &enc);
@@ -321,7 +321,7 @@ static double estimateSaturation() {
 }
 
 static int rereadConfiguration(void * ctx,
-			       struct GC_Configuration * cfg, 
+			       struct GC_Configuration * cfg,
 			       struct GE_Context * ectx,
 			       const char * section,
 			       const char * option) {
@@ -384,7 +384,7 @@ static int rereadConfiguration(void * ctx,
 	   friendCount+1);
       friends[friendCount-1].hashPubKey = hc;
     } else {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     _("Syntax error in topology specification, skipping bytes `%s'.\n"),
 	     &enc);
@@ -400,7 +400,7 @@ static int rereadConfiguration(void * ctx,
 Topology_ServiceAPI *
 provide_module_topology_f2f(CoreAPIForApplication * capi) {
   static Topology_ServiceAPI api;
- 
+
   coreAPI = capi;
   ectx = capi->ectx;
   identity = capi->requestService("identity");
@@ -435,7 +435,7 @@ provide_module_topology_f2f(CoreAPIForApplication * capi) {
     pingpong = NULL;
     return NULL;
   }
-  
+
   cron_add_job(coreAPI->cron,
 	       &cronCheckLiveness,
 	       LIVE_SCAN_FREQUENCY,

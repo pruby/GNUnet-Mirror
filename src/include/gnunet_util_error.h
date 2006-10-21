@@ -77,7 +77,7 @@ void GE_LOG(struct GE_Context * ctx,
 	    GE_KIND kind,
 	    const char * message,
 	    ...);
-   
+
 /**
  * @brief Get user confirmation (e.g. before the app shuts down and closes the
  *        error message
@@ -113,13 +113,13 @@ typedef void (*GE_Confirm)(void * ctx);
  *        to be passed to this handler
  * @param liberator callback to free ctx, maybe NULL
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_callback(GE_KIND mask,
 			   GE_LogHandler handler,
 			   void * ctx,
 			   GE_CtxFree liberator,
          GE_Confirm confirm);
-				 
+				
 /**
  * Free a log context.
  */
@@ -136,7 +136,7 @@ int GE_applies(GE_KIND have,
 	       GE_KIND mask);
 
 /**
- * Would an event of this kind be possibly 
+ * Would an event of this kind be possibly
  * processed by the logger?
  *
  * @param ctx the logger
@@ -162,14 +162,14 @@ const char * GE_kindToString(GE_KIND kind);
  * Create a context that sends events to two other contexts.
  * Note that the client must stop using ctx1/ctx2 henceforth.
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_multiplexer(struct GE_Context * ctx1,
 			      struct GE_Context * ctx2);
 
 /**
  * If this context would log an event of the given kind,
  * execute statement "a".
- */ 
+ */
 #define IF_GELOG(ctx, kind, a) do { if (GE_isLogged(ctx, kind)) { a; } } while(0);
 
 #define GE_ASSERT(ctx, cond) do { if (! (cond)) { GE_LOG(ctx, GE_DEVELOPER | GE_USER | GE_FATAL | GE_IMMEDIATE, _("Assertion failed at %s:%d in %s.\n"), __FILE__, __LINE__, __FUNCTION__); GE_CONFIRM(ctx); abort(); } } while(0);

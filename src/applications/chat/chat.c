@@ -207,7 +207,7 @@ int initialize_module_chat(CoreAPIForApplication * capi) {
   if (SYSERR == capi->registerClientHandler(CS_PROTO_chat_MSG,
 					    &csHandleChatRequest))
     ok = SYSERR;
-  
+
   GE_ASSERT(capi->ectx,
 	    0 == GC_set_configuration_value_string(capi->cfg,
 						   capi->ectx,

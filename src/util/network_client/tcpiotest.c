@@ -43,8 +43,8 @@ static unsigned short getGNUnetPort() {
 					      1,
 					      65535,
 					      2087,
-					      &port)) 
-    port = 0; 
+					      &port))
+    port = 0;
   return (unsigned short) port;
 }
 
@@ -87,7 +87,7 @@ static int openServerSocket() {
   if (BIND (listenerFD,
 	   (struct sockaddr *) &serverAddr,
 	    sizeof(serverAddr)) < 0) {
-    GE_LOG_STRERROR(NULL, 
+    GE_LOG_STRERROR(NULL,
 		    GE_BULK | GE_ERROR | GE_USER,
 		    "bind");
     CLOSE(listenerFD);
@@ -96,7 +96,7 @@ static int openServerSocket() {
 
   /* start listening for new connections */
   if (0 != LISTEN(listenerFD, 5)) {
-    GE_LOG_STRERROR(NULL, 
+    GE_LOG_STRERROR(NULL,
 		    GE_BULK | GE_ERROR | GE_USER,
 		    "listen");
     CLOSE(listenerFD);
@@ -117,7 +117,7 @@ static int doAccept(int serverSocket) {
 			(struct sockaddr *)&clientAddr,
 			&lenOfIncomingAddr);
     if (incomingFD < 0) {
-      GE_LOG_STRERROR(NULL, 
+      GE_LOG_STRERROR(NULL,
 		      GE_BULK | GE_ERROR | GE_USER,
 		      "accept");
       continue;
@@ -188,11 +188,11 @@ int main(int argc, char * argv[]){
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
   serverSocket = openServerSocket();
-  if (serverSocket == -1) 
-    return 1;  
+  if (serverSocket == -1)
+    return 1;
   clientSocket = client_connection_create(NULL,
 					  cfg);
   ret = 0;
@@ -214,8 +214,8 @@ int main(int argc, char * argv[]){
   connection_destroy(clientSocket);
   CLOSE(serverSocket);
   if (ret > 0)
-    fprintf(stderr, 
-	    "Error %d\n", 
+    fprintf(stderr,
+	    "Error %d\n",
 	    ret);
   GC_free(cfg);
   return ret;

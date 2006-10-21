@@ -53,7 +53,7 @@ static struct CommandLineOption gnunetvpnOptions[] = {
   COMMAND_LINE_OPTION_HELP(gettext_noop("Print statistics about GNUnet operations.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
-  { 's', "silent", NULL, 
+  { 's', "silent", NULL,
     gettext_noop("Suppress display of asynchronous log messages"),
     0, &gnunet_getopt_configure_set_one, &silent },
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
@@ -64,7 +64,7 @@ static void * receiveThread(void * arg) {
   struct ClientServerConnection * sock = arg;
   char buffer[MAX_BUFFER_SIZE];
   MESSAGE_HEADER * bufp = buf;
-      
+
   /* buffer = MALLOC(MAX_BUFFER_SIZE); */
   while (OK == connection_read(sock, &bufp)) {
 	switch (ntohs(buf->type)) {
@@ -117,7 +117,7 @@ static void * receiveThread(void * arg) {
  * @param argv command line arguments
  * @return return value from gnunet-template: 0: ok, -1: error
  */
-int main(int argc, 
+int main(int argc,
 	 const char ** argv) {
   struct ClientServerConnection * sock;
   struct PTHREAD * messageReceiveThread;
@@ -127,7 +127,7 @@ int main(int argc,
   struct GC_Configuration * cfg;
   struct GE_Context * ectx;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -143,7 +143,7 @@ int main(int argc,
 				 argv)) {
     GC_free(cfg);
     GE_free_context(ectx);
-    return -1;  
+    return -1;
   }
   sock = client_connection_create(ectx,
 				  cfg);

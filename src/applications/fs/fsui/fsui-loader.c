@@ -59,7 +59,7 @@ int main(int argc,
   struct GC_Configuration * cfg;
   struct GE_Context * ectx;
 
-  ectx = GE_create_context_stderr(NO, 
+  ectx = GE_create_context_stderr(NO,
 				  GE_WARNING | GE_ERROR | GE_FATAL |
 				  GE_USER | GE_ADMIN | GE_DEVELOPER |
 				  GE_IMMEDIATE | GE_BULK);
@@ -79,10 +79,10 @@ int main(int argc,
 		   YES,
 		   &eventCallback,
 		   NULL);
-  if (ctx != NULL) 
+  if (ctx != NULL)
     FSUI_stop(ctx);
-  else 
+  else
     fprintf(stderr,
-	    "FSUI_start failed!\n");  
+	    "FSUI_start failed!\n");
   return (ctx == NULL);
 }

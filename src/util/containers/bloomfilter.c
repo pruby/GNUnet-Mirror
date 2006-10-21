@@ -46,13 +46,13 @@
 typedef struct Bloomfilter {
 
   /**
-   * Concurrency control 
+   * Concurrency control
    */
   struct MUTEX * lock;
 
 
   /**
-   * The actual bloomfilter bit array 
+   * The actual bloomfilter bit array
    */
   char * bitArray;
 
@@ -62,17 +62,17 @@ typedef struct Bloomfilter {
   struct GE_Context * ectx;
 
   /**
-   * The bit counter file on disk 
+   * The bit counter file on disk
    */
   int fd;
 
   /**
-   * How many bits we set for each stored element 
+   * How many bits we set for each stored element
    */
   unsigned int addressesPerElement;
 
   /**
-   * Size of bitArray in bytes 
+   * Size of bitArray in bytes
    */
   unsigned int bitArraySize;
 
@@ -422,14 +422,14 @@ Bloomfilter * loadBloomfilter(struct GE_Context * ectx,
   bf->ectx = ectx;
   /* Try to open a bloomfilter file */
 #ifndef _MSC_VER
-  bf->fd = disk_file_open(ectx, 
-			  filename, 
-			  O_RDWR|O_CREAT, 
+  bf->fd = disk_file_open(ectx,
+			  filename,
+			  O_RDWR|O_CREAT,
 			  S_IRUSR|S_IWUSR);
 #else
   bf->fd = disk_file_open(ectx,
 			  filename,
-			  O_WRONLY|O_CREAT, 
+			  O_WRONLY|O_CREAT,
 			  S_IREAD|S_IWRITE);
 #endif
   if (-1 == bf->fd) {

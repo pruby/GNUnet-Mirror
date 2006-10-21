@@ -1,7 +1,7 @@
 /*
       This file is part of GNUnet
       (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
-  
+
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
       by the Free Software Foundation; either version 2, or (at your
@@ -72,7 +72,7 @@ int main(int argc, char * argv[]){
   p = RPC_paramDeserialize(buf,
 			   size);
   FREE(buf);
-  if (p == NULL) 
+  if (p == NULL)
     return 1;
   buf = NULL;
   if (OK != RPC_paramValueByName(p,
@@ -80,7 +80,7 @@ int main(int argc, char * argv[]){
 				 &len,
 				 &buf))
     return 1;
-  if (strcmp("bar", buf) != 0) 
+  if (strcmp("bar", buf) != 0)
     return 1;
   buf = NULL;
   if (4 != len)
@@ -90,20 +90,20 @@ int main(int argc, char * argv[]){
 				     &len,
 				     &buf))
     return 1;
-  if (strcmp("foo", buf) != 0) 
+  if (strcmp("foo", buf) != 0)
     return 1;
   if (4 != len)
     return 1;
   if (SYSERR != RPC_paramValueByPosition(p,
 					 2,
 					 &len,
-					 &buf)) 
+					 &buf))
     return 1;
 
   if (SYSERR != RPC_paramValueByName(p,
 				     "not there",
 				     &len,
-				     &buf)) 
+				     &buf))
     return 1;
   RPC_paramFree(p);
 

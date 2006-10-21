@@ -89,7 +89,7 @@ int main(int argc,
   if (-1 == GC_parse_configuration(cfg,
 				   "check.conf")) {
     GC_free(cfg);
-    return -1;  
+    return -1;
   }
 #if START_PEERS
   daemon1  = os_daemon_start(NULL,
@@ -178,7 +178,7 @@ int main(int argc,
   }
   connection_destroy(sock);
   printf("Peers connected.  Running actual test.\n");
-  
+
   memset(&table, 33, sizeof(DHT_TableId));
   store = create_blockstore_memory(65536);
 
@@ -278,7 +278,7 @@ int main(int argc,
   hash("key", 3, &key);
   printf("Peer1 gets key\n");
   CHECK(1 == DHT_LIB_get(cfg,
-			 ectx, 
+			 ectx,
 			 &table,
 			 0,
 			 0,

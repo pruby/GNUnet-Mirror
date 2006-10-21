@@ -70,7 +70,7 @@ static void writeNamespaceInfo(struct GE_Context * ectx,
   tag = size + sizeof(int);
   buf = MALLOC(tag);
   ((int *) buf)[0] = htonl(ranking); /* ranking */
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    size == ECRS_serializeMetaData(ectx,
 					   meta,
 					   &buf[sizeof(int)],
@@ -174,7 +174,7 @@ static int readNamespaceInfo(struct GE_Context * ectx,
  */
 struct ECRS_URI *
 NS_createNamespace(struct GE_Context * ectx,
-		   struct GC_Configuration * cfg,		   
+		   struct GC_Configuration * cfg,		
 		   unsigned int anonymityLevel,
 		   unsigned int insertPriority,
 		   unsigned int insertExpiration,
@@ -529,7 +529,7 @@ static int writeUpdateData(struct GE_Context * ectx,
   memcpy(&buf[1],
 	 uri,
 	 strlen(uri)+1);
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    metaSize ==
 	    ECRS_serializeMetaData(ectx,
 				   fi->meta,
@@ -802,7 +802,7 @@ static int lNCHelper(const char * fil,
     nextTime = lastTime;
     if ( (nextTime + pubFreq < now) &&
 	    (nextTime + pubFreq > nextTime) )
-      nextTime += pubFreq * ((now - nextTime) / pubFreq);  
+      nextTime += pubFreq * ((now - nextTime) / pubFreq);
   }
   if (cls->it != NULL) {
     if (OK != cls->it(cls->closure,

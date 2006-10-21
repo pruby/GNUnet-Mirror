@@ -38,12 +38,12 @@ typedef struct FileContext {
 
   /**
    * Error context for errors
-   */ 
+   */
   struct GE_Context * ectx;
 
   /**
    * File handle used for logging.
-   */ 
+   */
   FILE * handle;
 
   /**
@@ -67,7 +67,7 @@ typedef struct FileContext {
    * (0: NO, 1: YES)
    */
   int logdate;
-  
+
   /**
    * Should log files be rotated? 0: no,
    * otherwise number of days to keep.
@@ -86,7 +86,7 @@ typedef struct FileContext {
 
 } FileContext;
 
-static char * 
+static char *
 getDateFormat() {
   char * datefmt;
   char *idx;
@@ -103,14 +103,14 @@ getDateFormat() {
     if ((c == '\\') || (c == '/'))
       *idx = '_';
     idx++;
-  }  
+  }
   return datefmt;
 }
 
 /**
  * Remove file if it is an old log
  */
-static int 
+static int
 removeOldLog(const char * fil,
 	     const char * dir,
 	     void * ptr) {
@@ -148,7 +148,7 @@ removeOldLog(const char * fil,
     return OK; /* not a logfile */
   }
   if (ctx->logrotate
-      + t.tm_year * 365 + t.tm_yday 
+      + t.tm_year * 365 + t.tm_yday
       - lcltime.tm_year * 365 - lcltime.tm_yday
        <= 0 )
     UNLINK(fullname); /* TODO: add ctx->fctx */
@@ -157,10 +157,10 @@ removeOldLog(const char * fil,
 }
 
 /**
- * Get the current day of the year 
+ * Get the current day of the year
  * formatted for appending to the filename.
  */
-static char * 
+static char *
 getLogFileName(struct GE_Context * fctx,
 	       const char * name) {
   time_t curtime;
@@ -188,14 +188,14 @@ getLogFileName(struct GE_Context * fctx,
   size = strlen(name) + 82;
   ret = MALLOC(size);
   SNPRINTF(ret,
-	   size, 
+	   size,
 	   "%s-%s",
 	   name,
 	   date);
   return ret;
 }
 
-static void 
+static void
 filelogger(void * cls,
 	   GE_KIND kind,
 	   const char * date,
@@ -203,8 +203,8 @@ filelogger(void * cls,
   FileContext * fctx = cls;
   char * name;
   int ret;
-  
-  MUTEX_LOCK(fctx->lock);  
+
+  MUTEX_LOCK(fctx->lock);
   if (fctx->logrotate) {
     name = getLogFileName(fctx->ectx,
 			  fctx->basename);
@@ -220,7 +220,7 @@ filelogger(void * cls,
 			  fctx);
     } else {
       FREE(name);
-    }    
+    }
   }
   if (fctx->logdate) {
     ret = fprintf(fctx->handle,
@@ -258,17 +258,17 @@ fileclose(void * cls) {
 		    "fclose");
   FREE(fctx);
 }
-				 
+				
 /**
  * Create a logger that writes events to a file.
- * 
+ *
  * @param mask which events should be logged?
  * @param filename which file should we log to?
  * @param logDate should the context log event dates?
  * @param logrotate after how many days should rotated log
  *        files be deleted (use 0 for no rotation)
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_logfile(struct GE_Context * ectx,
 			  GE_KIND mask,
 			  const char * filename,
@@ -279,7 +279,7 @@ GE_create_context_logfile(struct GE_Context * ectx,
   char * name;
   TIME_T start;
 
-  TIME(&start);  
+  TIME(&start);
   if (logrotate != 0) {
     name = getLogFileName(NULL,
 			  filename);
@@ -313,10 +313,10 @@ GE_create_context_logfile(struct GE_Context * ectx,
 
 /**
  * Create a logger that writes events to stderr
- * 
+ *
  * @param mask which events should be logged?
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_stderr(int logDate,
 			 GE_KIND mask) {
   FileContext * fctx;
@@ -340,10 +340,10 @@ GE_create_context_stderr(int logDate,
 
 /**
  * Create a logger that writes events to stderr
- * 
+ *
  * @param mask which events should be logged?
  */
-struct GE_Context * 
+struct GE_Context *
 GE_create_context_stdout(int logDate,
 			 GE_KIND mask) {
   FileContext * fctx;
