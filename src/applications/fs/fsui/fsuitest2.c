@@ -19,7 +19,7 @@
 */
 
 /**
- * @file applications/fs/fsui/fsuitest.c
+ * @file applications/fs/fsui/fsuitest2.c
  * @brief testcase for fsui (upload-download)
  * @author Christian Grothoff
  */
@@ -40,9 +40,12 @@ static void * eventCallback(void * cls,
   return NULL;
 }
 
+#define START_DAEMON 1
 
 int main(int argc, char * argv[]){
+#if START_DAEMON
   pid_t daemon;
+#endif
   int ok;
   struct GC_Configuration * cfg;
 
@@ -52,11 +55,13 @@ int main(int argc, char * argv[]){
     GC_free(cfg);
     return -1;  
   }
+#if START_DAEMON
   daemon  = os_daemon_start(NULL,
 			    cfg,
 			    "peer.conf",
 			    NO);
   GE_ASSERT(NULL, daemon > 0);
+#endif
   ok = YES;
   GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
 						    cfg,
@@ -84,8 +89,9 @@ int main(int argc, char * argv[]){
  FAILURE:
   if (ctx != NULL)
     FSUI_stop(ctx);
-
+#if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+#endif
   GC_free(cfg);
 
   return (ok == YES) ? 0 : 1;

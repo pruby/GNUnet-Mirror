@@ -35,7 +35,7 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE YES
+#define DEBUG_VERBOSE NO
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
@@ -210,7 +210,7 @@ static void * eventCallback(void * cls,
 
 #define FILESIZE (1024 * 1024 * 2)
 
-#define START_DAEMON 0
+#define START_DAEMON 1
 
 int main(int argc, char * argv[]){
 #if START_DAEMON

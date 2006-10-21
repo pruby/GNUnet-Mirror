@@ -384,7 +384,7 @@ static void freeUploadList(struct FSUI_Context * ctx,
       shared = list->shared;
       EXTRACTOR_removeAll(shared->extractors);
       ECRS_freeUri(shared->global_keywords);
-      FREE(shared->extractor_config);
+      FREENONNULL(shared->extractor_config);
       FREE(shared);
     }
     FREE(list);

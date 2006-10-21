@@ -30,7 +30,7 @@
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_network_client.h"
 
-#define DEBUG_VERBOSE NO
+#define DEBUG_VERBOSE YES
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
@@ -104,9 +104,12 @@ static void * eventCallback(void * cls,
   return NULL;
 }
 
+#define START_DAEMON 0
 
 int main(int argc, char * argv[]){
+#if START_DAEMON
   pid_t daemon;
+#endif
   int ok;
   struct ECRS_URI * uri;
   char * filename = NULL;
@@ -130,11 +133,13 @@ int main(int argc, char * argv[]){
     GC_free(cfg);
     return -1;  
   }
+#if START_DAEMON
   daemon  = os_daemon_start(NULL,
 			    cfg,
 			    "peer.conf",
 			    NO);
   GE_ASSERT(NULL, daemon > 0);
+#endif
   GE_ASSERT(NULL, OK == connection_wait_for_running(NULL,
 						    cfg,
 						    30 * cronSECONDS));
@@ -234,7 +239,9 @@ int main(int argc, char * argv[]){
   UNLINK(filename);
   FREE(filename);
 
+#if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+#endif
   GC_free(cfg);
 
   return (ok == YES) ? 0 : 1;
