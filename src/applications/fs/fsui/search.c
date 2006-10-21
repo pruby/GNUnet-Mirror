@@ -55,10 +55,10 @@ static void processResult(const ECRS_FileInfo * fi,
     = ECRS_dupMetaData(fi->meta);
 
   event.type = FSUI_search_result;
-  event.data.SearchResult.fi = *fi;
-  event.data.SearchResult.searchURI = pos->uri;
   event.data.SearchResult.sc.pos = pos;
   event.data.SearchResult.sc.cctx = pos->cctx;
+  event.data.SearchResult.fi = *fi;
+  event.data.SearchResult.searchURI = pos->uri;
   pos->ctx->ecb(pos->ctx->ecbClosure,
 		&event);
 }
@@ -245,6 +245,8 @@ void * FSUI_searchThread(void * cls) {
   event.type = FSUI_search_started;
   event.data.SearchStarted.sc.pos = pos;
   event.data.SearchStarted.sc.cctx = NULL;
+  event.data.SearchStarted.searchURI = pos->uri;
+  event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
   pos->cctx = pos->ctx->ecb(pos->ctx->ecbClosure,
 			    &event);
   ret = ECRS_search(pos->ctx->ectx,

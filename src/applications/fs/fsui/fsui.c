@@ -22,10 +22,6 @@
  * @file applications/fs/fsui/fsui.c
  * @brief main FSUI functions
  * @author Christian Grothoff
- *
- * TODO:
- * - resume signaling: some minor fields uninitialized
- * - better ETA calculation for download resume
  */
 
 #include "platform.h"
@@ -66,6 +62,8 @@ static void updateDownloadThreads(void * c) {
 static void signalDownloadResume(struct FSUI_DownloadList * ret,
 				 FSUI_Context * ctx) {
   FSUI_Event event;
+  cron_t now;
+  cron_t eta;
 
   while (ret != NULL) {
     if (ret->state == FSUI_PENDING) {
@@ -74,11 +72,22 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
       event.data.DownloadResumed.dc.cctx = ret->cctx;
       event.data.DownloadResumed.dc.ppos = ret->parent;
       event.data.DownloadResumed.dc.pcctx = ret->parent->cctx;
-      event.data.DownloadResumed.eta = get_time(); /* FIXME: can do better here! */
-      event.data.DownloadResumed.total = ret->total;
       event.data.DownloadResumed.completed = ret->completed;
-      event.data.DownloadResumed.anonymityLevel = ret->anonymityLevel;
+      event.data.DownloadResumed.total = ret->total;
+      now = get_time();
+      if ( (ret->total == 0) || (ret->completed == 0) ) {
+	eta = now;
+      } else {
+	eta = (cron_t) (now - ret->runTime +
+			(((double)(ret->run_time)/(double)ret->completed))
+			* (double)ret->total);
+	if (eta < now)
+	  eta = now;
+      }
+      event.data.DownloadResumed.eta = eta;
+      event.data.DownloadResumed.filename = ret->filename;
       event.data.DownloadResumed.uri = ret->uri;
+      event.data.DownloadResumed.anonymityLevel = ret->anonymityLevel;
       ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
       if (ret->child != NULL)
 	signalDownloadResume(ret->child,
@@ -91,6 +100,8 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
 static void signalUploadResume(struct FSUI_UploadList * ret,
 			       FSUI_Context * ctx) {
   FSUI_Event event;
+  cron_t now;
+  cron_t eta;
  
   while (ret != NULL) {
     if (ret->state == FSUI_ACTIVE) {
@@ -101,8 +112,18 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
       event.data.UploadResumed.uc.pcctx = ret->parent->cctx;
       event.data.UploadResumed.completed = ret->completed;
       event.data.UploadResumed.total = ret->total;
+      now = get_time();
+      if ( (ret->total == 0) || (ret->completed == 0) ) {
+	eta = now;
+      } else {
+	eta = (cron_t) (ret->start_time +
+			(((double)(now - ret->start_time)/(double)ret->completed))
+			* (double)ret->total);
+	if (eta < now)
+	  eta = now;
+      }
+      event.data.UploadResumed.eta = eta;
       event.data.UploadResumed.anonymityLevel = ret->shared->anonymityLevel;
-      event.data.UploadResumed.eta = 0; /* FIXME: use start_time for estimate! */
       event.data.UploadResumed.filename = ret->filename;
       ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
       if (ret->child != NULL)
@@ -502,6 +523,7 @@ void FSUI_stop(struct FSUI_Context * ctx) {
     event.type = FSUI_unindex_suspended;
     event.data.UnindexSuspended.uc.pos = xpos;
     event.data.UnindexSuspended.uc.cctx = xpos->cctx;
+    ctx->ecb(ctx->ecbClosure, &event);
     xpos = xpos->next;    
   }
 

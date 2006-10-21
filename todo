@@ -12,17 +12,25 @@ Notes:
 
 
 
-0.7.1 ['06] (aka "stabilization")
+0.7.1 [10'06] (aka "stabilization")
 - finish util refactoring: [RC]
   * Testcases not compiling or passing:
     + dht/tools
   * Missing functionality: 
-    + fs/fsui:
-      @ better ETA calculations
-      @ make sure new event fields are set for all events
+    + logger configuration
+    + factor startup code into common helper function
+      @ make sure all tools load configuration file
     + fs/fslib: error handing
     + fs/module: error handing
-    + logger configuration
+    + gnunet-setup: [RC]
+      @ gtk wizard
+      @ ncurses wizard
+      @ Scheme (scm) specification of entire configuration
+- fix critical known bugs (see Mantis for updates):
+  * file/socket leak (#955) - possibly fixed
+  * Windows installer, uninstall: Remove account [Nils, RC]
+  * disk quota violations (#1128) [CG, RC]
+  * high CPU usage (quota exceeded) #1123 [CG, RC]
 - More testcases: [RC]
   * advertising
   * ecrs_core
@@ -34,16 +42,9 @@ Notes:
   * make dht tests work (and write more) 
   * fs/fsui: recursive uploads and downloads (incl. persistence)
   * fs/namespaces
-- gnunet-setup: [RC]
-  * gtk wizard
-  * ncurses wizard
-  * Scheme (scm) specification of entire configuration
-- fix known bugs (see Mantis for updates):
-  * file/socket leak (#955) - possibly fixed
-  * Windows installer, uninstall: Remove account [Nils, RC]
 
 
-0.7.2 ['06]:
+0.7.2 ['07]:
 - Transports:
   * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
 - Features:
@@ -59,14 +60,14 @@ Notes:
     current directories!) [ CG ]
   * DHT: use additional optional fields (HELLOs) [ CG ]
 
-0.7.3 ['06] (aka "features"):
+0.7.3 ['07] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Documentation:
   * LJ article
 
-0.7.4 ['06] (aka "advanced features"):
+0.7.4 ['07] (aka "advanced features"):
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
 - https://gnunet.org/drupal/?q=node/97

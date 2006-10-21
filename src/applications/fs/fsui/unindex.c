@@ -42,10 +42,12 @@ static void progressCallback(unsigned long long totalBytes,
   FSUI_Event event;
 
   event.type = FSUI_unindex_progress;
-  event.data.UnindexProgress.completed = completedBytes;
+  event.data.UnindexProgress.uc.pos = utc;
+  event.data.UnindexProgress.uc.cctx = utc->cctx;
   event.data.UnindexProgress.total = totalBytes;
-  event.data.UnindexProgress.filename = utc->filename;
+  event.data.UnindexProgress.completed = completedBytes;
   event.data.UnindexProgress.eta = eta;
+  event.data.UnindexProgress.filename = utc->filename;
   utc->ctx->ecb(utc->ctx->ecbClosure,
 		&event);
 }
@@ -77,6 +79,7 @@ void * FSUI_unindexThread(void * cls) {
   event.data.UnindexStarted.uc.pos = utc;
   event.data.UnindexStarted.uc.cctx = NULL;
   event.data.UnindexStarted.total = size;
+  event.data.UnindexStarted.filename = utc->filename;
   utc->cctx = utc->ctx->ecb(utc->ctx->ecbClosure,
 			    &event); 
   ret = ECRS_unindexFile(utc->ctx->ectx,

@@ -43,9 +43,7 @@ static void progressCallback(unsigned long long totalBytes,
 			     void * ptr) {
   FSUI_UploadList * utc = ptr;
   FSUI_Event event;
-  cron_t now;
 
-  now = get_time();
   event.type = FSUI_upload_progress;
   event.data.UploadProgress.uc.pos = utc;
   event.data.UploadProgress.uc.cctx = utc->cctx;
@@ -53,8 +51,8 @@ static void progressCallback(unsigned long long totalBytes,
   event.data.UploadProgress.uc.pcctx = utc->parent->cctx;
   event.data.UploadProgress.completed = completedBytes;
   event.data.UploadProgress.total = totalBytes;
-  event.data.UploadProgress.filename = utc->filename;
   event.data.UploadProgress.eta = eta;
+  event.data.UploadProgress.filename = utc->filename;
   utc->completed = completedBytes;
   utc->shared->ctx->ecb(utc->shared->ctx->ecbClosure,
 			&event);

@@ -1,11 +1,3 @@
-upload.c:
-- use extractors to obtain metadata and keywords
-- better ETA calculations
 
-fsui.c:
-- event signaling: uninitalized fields
-- better ETA calculations for resumes
 
-download.c:
-- better ETA calculations
 

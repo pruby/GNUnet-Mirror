@@ -23,9 +23,6 @@
  * @brief download functions
  * @author Krista Bennett
  * @author Christian Grothoff
- *
- * TODO:
- * - can do better ETA computation (in case of suspend-resume)
  */
 
 #include "platform.h"
@@ -134,23 +131,36 @@ downloadProgressCallback(unsigned long long totalBytes,
   FSUI_DownloadList * dl = cls;
   FSUI_Event event;
   struct ECRS_MetaData * md;
+  cron_t now;
+  cron_t run_time;
 
   GE_ASSERT(dl->ctx->ectx,
 	    dl->total == totalBytes);
   dl->completed = completedBytes;
   event.type = FSUI_download_progress;
-  event.data.DownloadProgress.total = dl->total;
-  event.data.DownloadProgress.completed = dl->completed;
-  event.data.DownloadProgress.last_offset = lastBlockOffset;
-  event.data.DownloadProgress.eta = eta; /* FIXME: we can do better in FSUI! */
-  event.data.DownloadProgress.last_block = lastBlock;
-  event.data.DownloadProgress.last_size = lastBlockSize;
-  event.data.DownloadProgress.filename = dl->filename;
-  event.data.DownloadProgress.uri = dl->uri;
   event.data.DownloadProgress.dc.pos = dl;
   event.data.DownloadProgress.dc.cctx = dl->cctx;
   event.data.DownloadProgress.dc.ppos = dl->parent;
   event.data.DownloadProgress.dc.pcctx = dl->parent->cctx;
+  event.data.DownloadProgress.completed = dl->completed;
+  event.data.DownloadProgress.total = dl->total;
+  event.data.DownloadProgress.last_offset = lastBlockOffset;
+  now = get_time();
+  run_time = now - dl->startTime;
+  if ( (dl->total == 0) || (dl->completed == 0) ) {
+    eta = now;
+  } else {
+    eta = (cron_t) (dl->startTime +
+		    (((double)(run_time)/(double)dl->completed))
+		    * (double)dl->total);
+    if (eta < now)
+      eta = now;
+  }
+  event.data.DownloadProgress.eta = eta; 
+  event.data.DownloadProgress.filename = dl->filename;
+  event.data.DownloadProgress.uri = dl->uri;
+  event.data.DownloadProgress.last_block = lastBlock;
+  event.data.DownloadProgress.last_size = lastBlockSize;
   dl->ctx->ecb(dl->ctx->ecbClosure,
 	       &event);
   if ( (lastBlockOffset == 0) &&
@@ -223,24 +233,24 @@ void * downloadThread(void * cls) {
   if (ret == OK) {
     dl->state = FSUI_COMPLETED;
     event.type = FSUI_download_completed;
-    event.data.DownloadCompleted.total = dl->total;
-    event.data.DownloadCompleted.filename = dl->filename;
-    event.data.DownloadCompleted.uri = dl->uri;
     event.data.DownloadCompleted.dc.pos = dl;
     event.data.DownloadCompleted.dc.cctx = dl->cctx;
     event.data.DownloadCompleted.dc.ppos = dl->parent;
     event.data.DownloadCompleted.dc.pcctx = dl->parent->cctx;
+    event.data.DownloadCompleted.total = dl->total;
+    event.data.DownloadCompleted.filename = dl->filename;
+    event.data.DownloadCompleted.uri = dl->uri;
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);    
   } else if (dl->state == FSUI_ACTIVE) {
     /* ECRS error */
     dl->state = FSUI_ERROR;
     event.type = FSUI_download_error;
-    event.data.DownloadError.message = _("ECRS download failed (see logs)");
     event.data.DownloadError.dc.pos = dl;
     event.data.DownloadError.dc.cctx = dl->cctx;
     event.data.DownloadError.dc.ppos = dl->parent;
     event.data.DownloadError.dc.pcctx = dl->parent->cctx;
+    event.data.DownloadError.message = _("ECRS download failed (see logs)");
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else if (dl->state == FSUI_ABORTED) { /* aborted */
@@ -361,14 +371,14 @@ startDownload(struct FSUI_Context * ctx,
   dl->cctx = NULL;
   /* signal start! */
   event.type = FSUI_download_started;
-  event.data.DownloadStarted.filename = dl->filename;
-  event.data.DownloadStarted.total = ECRS_fileSize(dl->uri);
-  event.data.DownloadStarted.uri = dl->uri;
-  event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
   event.data.DownloadStarted.dc.pos = dl;
   event.data.DownloadStarted.dc.cctx = NULL;
   event.data.DownloadStarted.dc.ppos = dl->parent;
   event.data.DownloadStarted.dc.pcctx = dl->parent->cctx; 
+  event.data.DownloadStarted.total = ECRS_fileSize(dl->uri);
+  event.data.DownloadStarted.filename = dl->filename;
+  event.data.DownloadStarted.uri = dl->uri;
+  event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
   dl->cctx = dl->ctx->ecb(dl->ctx->ecbClosure,
 			  &event);
   dl->next = parent->child;
