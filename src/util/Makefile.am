@@ -3,7 +3,8 @@ SUBDIRS = $(WINSUBDIRS) $(CYGSUBDIRS) \
   getopt disk threads \
   os network . \
   config_impl cron crypto \
-  containers loggers network_client
+  containers loggers network_client \
+  boot
 
 INCLUDES = -I$(top_srcdir)/src/include
 

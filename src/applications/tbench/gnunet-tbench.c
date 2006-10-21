@@ -27,8 +27,7 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util_network_client.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 #include "gnunet_util_crypto.h"
 #include "tbench.h"
 
@@ -107,26 +106,19 @@ int main(int argc,
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE * buffer;
   float messagesPercentLoss;
-
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
-
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  if (-1 == gnunet_parse_options("gnunet-tbench",
-				 ectx,
-				 cfg,
-				 gnunettbenchOptions,
-				 (unsigned int) argc,
-				 argv)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+  int res;
+  
+  res = GNUNET_init(argc,
+		    argv,
+		    "gnunet-tbench",
+		    &cfgFilename,
+		    gnunettbenchOptions,
+		    &ectx,
+		    &cfg);
+  if (res == -1) {
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
   sock = client_connection_create(ectx,
@@ -134,8 +126,7 @@ int main(int argc,
   if (sock == NULL) {
     fprintf(stderr,
 	    _("Error establishing connection with gnunetd.\n"));
-    GC_free(cfg);
-    GE_free_context(ectx);
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
 
@@ -152,8 +143,7 @@ int main(int argc,
     fprintf(stderr,
 	    _("You must specify a receiver!\n"));
     connection_destroy(sock);
-    GC_free(cfg);
-    GE_free_context(ectx);
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
   if (OK != enc2hash(messageReceiver,
@@ -163,8 +153,7 @@ int main(int argc,
 	    messageReceiver);
     FREE(messageReceiver);
     connection_destroy(sock);
-    GC_free(cfg);
-    GE_free_context(ectx);
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
   FREE(messageReceiver);
@@ -172,8 +161,7 @@ int main(int argc,
   if (SYSERR == connection_write(sock,
 				 &msg.header)) {
     connection_destroy(sock);
-    GC_free(cfg);
-    GE_free_context(ectx);
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
 
@@ -224,8 +212,7 @@ int main(int argc,
     printf(_("\nDid not receive the message from gnunetd. Is gnunetd running?\n"));
 
   connection_destroy(sock);
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return 0;
 }
 

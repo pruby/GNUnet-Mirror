@@ -30,8 +30,7 @@
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_namespace_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 #include "gnunet_util_crypto.h"
 
 /* hmm. Man says time.h, but that doesn't yield the
@@ -299,26 +298,14 @@ int main(int argc,
   char * tmp;
   unsigned long long verbose;
 
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  i = gnunet_parse_options("gnunet-insert [OPTIONS] FILENAME",
-			   ectx,
-			   cfg,
-			   gnunetinsertOptions,
-			   (unsigned int) argc,
-			   argv);
-  if (i == SYSERR) {
-    errorCode = -1;
-    goto quit;
-  }
-  if (OK != GC_parse_configuration(cfg,
-				   cfgFilename)) {
+  i = GNUNET_init(argc,
+		  argv,
+		  "gnunet-insert [OPTIONS] FILENAME",
+		  &cfgFilename,
+		  gnunetinsertOptions,
+		  &ectx,
+		  &cfg);
+  if (i == -1) {
     errorCode = -1;
     goto quit;
   }
@@ -473,8 +460,7 @@ int main(int argc,
   FSUI_stop(ctx);
 
 quit:
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return errorCode;
 }
 

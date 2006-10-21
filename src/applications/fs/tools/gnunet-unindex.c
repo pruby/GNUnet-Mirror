@@ -30,8 +30,7 @@
 #include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 
 static struct GE_Context * ectx;
 
@@ -118,24 +117,15 @@ int main(int argc,
   unsigned long long verbose;
   struct FSUI_UnindexList * ul;
 
-  /* startup */
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  i = gnunet_parse_options("gnunet-unindex [OPTIONS] FILENAME",
-			   ectx,
-			   cfg,
-			   gnunetunindexOptions,
-			   (unsigned int) argc,
-			   argv);
-  if (i == SYSERR) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+  i = GNUNET_init(argc,
+		  argv,
+		  "gnunet-unindex [OPTIONS] FILENAME",
+		  &cfgFilename,
+		  gnunetunindexOptions,
+		  &ectx,
+		  &cfg);
+  if (i == -1) {
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
   if (i == argc) {
@@ -143,14 +133,7 @@ int main(int argc,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Not enough arguments. "
 	     "You must specify a filename.\n"));
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
-  }
-  if (OK != GC_parse_configuration(cfg,
-				   cfgFilename)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
   GC_get_configuration_value_number(cfg,
@@ -187,8 +170,7 @@ int main(int argc,
   }
   FREE(filename);
   FSUI_stop(ctx);
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return errorCode;
 }
 

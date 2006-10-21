@@ -27,7 +27,6 @@
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
 
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
@@ -57,22 +56,15 @@ int main(int argc,
 	 char * argv[]) {
   struct FSUI_Context * ctx;
   struct GC_Configuration * cfg;
-  struct GE_Context * ectx;
 
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
+  os_init(NULL);
   cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
   if (argc != 2) {
     fprintf(stderr,
 	    "Call with name of FSUI resource file!\n");
     return -1;
   }
-  ctx = FSUI_start(ectx,
+  ctx = FSUI_start(NULL,
 		   cfg,
 		   argv[1],
 		   16,
@@ -84,5 +76,6 @@ int main(int argc,
   else
     fprintf(stderr,
 	    "FSUI_start failed!\n");
+  GC_free(cfg);
   return (ctx == NULL);
 }

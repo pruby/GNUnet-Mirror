@@ -5,10 +5,9 @@ plugindir = $(libdir)/GNUnet
 LDADD =  \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
-  $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
+  $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
   $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
-  $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
-  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la 
+  $(top_builddir)/src/util/cron/libgnunetutil_cron.la 
 
 bin_PROGRAMS = \
   gnunet-tracekit

@@ -27,8 +27,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 #include "gnunet_stats_lib.h"
 #include "statistics.h"
 
@@ -112,22 +111,15 @@ int main(int argc,
   struct GC_Configuration * cfg;
   struct GE_Context * ectx;
 
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  if (-1 == gnunet_parse_options("gnunet-stats",
-				 ectx,
-				 cfg,
-				 gnunetstatsOptions,
-				 (unsigned int) argc,
-				 argv)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+  res = GNUNET_init(argc,
+		    argv,
+		    "gnunet-stats",
+		    &cfgFilename,
+		    gnunetstatsOptions,
+		    &ectx,
+		    &cfg);
+  if (res == -1) {
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
   sock = client_connection_create(ectx,
@@ -155,8 +147,7 @@ int main(int argc,
     fprintf(stderr,
 	    _("Error reading information from gnunetd.\n"));
   connection_destroy(sock);
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
 
   return (res == OK) ? 0 : 1;
 }

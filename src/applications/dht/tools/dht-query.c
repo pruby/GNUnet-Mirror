@@ -29,8 +29,7 @@
 #include "gnunet_util.h"
 #include "gnunet_util_crypto.h"
 #include "gnunet_dht_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 #include "gnunet_util_network_client.h"
 #include "gnunet_dht_datastore_memory.h"
 
@@ -49,7 +48,7 @@ static char * cfgFilename;
 /**
  * All gnunet-dht-query command line options
  */
-static struct CommandLineOption gnunetjoinOptions[] = {
+static struct CommandLineOption gnunetqueryOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
   COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE, remove KEY VALUE) a DHT table.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
@@ -179,24 +178,17 @@ int main(int argc,
   struct ClientServerConnection * handle;
   HashCode512 table;
 
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  i = gnunet_parse_options("gnunet-insert [OPTIONS] FILENAME",
-			   ectx,
-			   cfg,
-			   gnunetjoinOptions,
-			   (unsigned int) argc,
-			   argv);
-  if (i == SYSERR) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return 1;
+
+  i = GNUNET_init(argc,
+		  argv,
+		  "gnunet-dht-query",
+		  &cfgFilename,
+		  gnunetqueryOptions,
+		  &ectx,
+		  &cfg);
+  if (i == -1) {
+    GNUNET_fini(ectx, cfg);
+    return -1;
   }
   if (table_id == NULL) {
     printf(_("No table name specified, using `%s'.\n"),
@@ -268,8 +260,7 @@ int main(int argc,
     break;
   }
   connection_destroy(handle);
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return 0;
 }
 

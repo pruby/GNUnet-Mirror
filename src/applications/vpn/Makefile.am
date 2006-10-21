@@ -14,9 +14,8 @@ plugin_LTLIBRARIES = \
 gnunet_vpn_SOURCES = \
   gnunet-vpn.c 	
 gnunet_vpn_LDADD = \
- $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
+ $(top_builddir)/src/util/boot/libgnunetutil_boot.la \
  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la \
- $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 libgnunetmodule_vpn_la_SOURCES = \

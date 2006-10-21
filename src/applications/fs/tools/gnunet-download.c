@@ -27,8 +27,7 @@
 #include "platform.h"
 #include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 
 static struct GE_Context * ectx;
 
@@ -143,24 +142,14 @@ int main(int argc,
   struct ECRS_URI * uri;
   int i;
 
-  /* startup */
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  i = gnunet_parse_options("gnunet-download [OPTIONS] [KEYWORDS]",
-			   ectx,
-			   cfg,
-			   gnunetdownloadOptions,
-			   (unsigned int) argc,
-			   argv);
-  if ( (i == SYSERR) ||
-       (0 != GC_parse_configuration(cfg,
-				    cfgFilename)) ) {	
+  i = GNUNET_init(argc,
+		  argv,
+		  "gnunet-download [OPTIONS] [KEYWORDS]",
+		  &cfgFilename,
+		  gnunetdownloadOptions,
+		  &ectx,
+		  &cfg);
+  if (i == -1) {
     errorCode = -1;
     goto quit;
   }
@@ -248,8 +237,7 @@ int main(int argc,
   FREE(filename);
   ECRS_freeUri(uri);
  quit:
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return errorCode;
 }
 

@@ -27,9 +27,8 @@
 #include "platform.h"
 #include "gnunet_protocols.h"
 #include "gnunet_util_network_client.h"
-#include "gnunet_util_config_impl.h"
+#include "gnunet_util_boot.h"
 #include "gnunet_util_crypto.h"
-#include "gnunet_util_error_loggers.h"
 #include "tracekit.h"
 
 static struct SEMAPHORE * doneSem;
@@ -294,31 +293,24 @@ int main(int argc,
   int sleepTime;
   struct GE_Context * ectx;
   struct CronManager * cron;
-
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  if (-1 == gnunet_parse_options("gnunet-tracekit",
-				 ectx,
-				 cfg,
-				 gnunettracekitOptions,
-				 (unsigned int) argc,
-				 argv)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+  int res;
+ 
+  res = GNUNET_init(argc,
+		    argv,
+		    "gnunet-tracekit",
+		    &cfgFilename,
+		    gnunettracekitOptions,
+		    &ectx,
+		    &cfg);
+  if (res == -1) {
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
   sock = client_connection_create(ectx, cfg);
   if (sock == NULL) {
     fprintf(stderr,
 	    _("Error establishing connection with gnunetd.\n"));
-    GC_free(cfg);
-    GE_free_context(ectx);
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
 
@@ -370,8 +362,7 @@ int main(int argc,
   connection_destroy(sock);
   cron_stop(cron);
   cron_destroy(cron);
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return 0;
 }
 

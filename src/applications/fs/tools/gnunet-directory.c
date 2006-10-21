@@ -29,8 +29,7 @@
 #include "platform.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_uritrack_lib.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 
 static char * cfgFilename;
 
@@ -159,23 +158,15 @@ int main(int argc,
   int i;
   struct GC_Configuration * cfg;
 
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  i = gnunet_parse_options("gnunet-directory [OPTIONS] [FILENAMES]",
-			   ectx,
-			   cfg,
-			   gnunetdirectoryOptions,
-			   (unsigned int) argc,
-			   argv);
-  if (i == SYSERR) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+  i = GNUNET_init(argc,
+		  argv,
+		  "gnunet-directory [OPTIONS] [FILENAMES]",
+		  &cfgFilename,
+		  gnunetdirectoryOptions,
+		  &ectx,
+		  &cfg);
+  if (i == -1) {
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
   if (do_list)
@@ -195,8 +186,7 @@ int main(int argc,
   while (i < argc)
     printDirectory(argv[i]);
 
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return 0;
 }
 

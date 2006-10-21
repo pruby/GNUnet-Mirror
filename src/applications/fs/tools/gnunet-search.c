@@ -27,8 +27,8 @@
 #include "platform.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util_cron.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
+
 
 static struct GE_Context * ectx;
 
@@ -163,29 +163,17 @@ int main(int argc,
   struct FSUI_Context * ctx;
   struct FSUI_SearchList * s;
 
-  /* startup */
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  i = gnunet_parse_options("gnunet-search [OPTIONS] [KEYWORDS]",
-			   ectx,
-			   cfg,
-			   gnunetsearchOptions,
-			   (unsigned int) argc,
-			   argv);
+  i = GNUNET_init(argc,
+		  argv,
+		  "gnunet-search [OPTIONS] [KEYWORDS]",
+		  &cfgFilename,
+		  gnunetsearchOptions,
+		  &ectx,
+		  &cfg);
   if (i == SYSERR) {
-    errorCode = -1;
-    goto quit;
-  }
-  if (OK != GC_parse_configuration(cfg,
-				   cfgFilename)) {
-    errorCode = -1;
-    goto quit;
+    GNUNET_fini(ectx,
+		cfg);
+    return -1;
   }
   /* convert args to URI */
  uri = ECRS_parseArgvKeywordURI(ectx,
@@ -207,6 +195,7 @@ int main(int argc,
 		   NULL);
   if (ctx == NULL) {
     ECRS_freeUri(uri);
+    GNUNET_fini(ectx, cfg);
     return SYSERR;
   }
   errorCode = 1;
@@ -263,8 +252,7 @@ int main(int argc,
        fiCount,
        0);
  quit:
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   return errorCode;
 }
 

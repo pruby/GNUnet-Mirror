@@ -29,8 +29,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport_service.h"
@@ -385,33 +384,16 @@ int main(int argc,
   int stats[3];
   int pos;
 
-  ectx = GE_create_context_stderr(NO,
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  if (-1 == gnunet_parse_options("gnunetd",
-				 ectx,
-				 cfg,
-				 gnunettransportcheckOptions,
-				 (unsigned int) argc,
-				 argv)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
-  }
-  if (-1 == GC_parse_configuration(cfg,
-	 			   cfgFilename)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
-  }
-  if (OK != changeUser(ectx, cfg)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+  res = GNUNET_init(argc,
+		    argv,
+		    "gnunet-transport-check",
+		    &cfgFilename,
+		    gnunettransportcheckOptions,
+		    &ectx,
+		    &cfg);
+  if ( (res == -1) ||
+       (OK != changeUser(ectx, cfg)) ) {
+    GNUNET_fini(ectx, cfg);
     return -1;
   }
 
@@ -422,6 +404,7 @@ int main(int argc,
 					      60000,
 					      12,
 					      &expectedSize)) {
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
   if (-1 == GC_get_configuration_value_number(cfg,
@@ -431,6 +414,7 @@ int main(int argc,
 					      60000,
 					      60 * cronSECONDS,
 					      &timeout)) {
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
 
@@ -445,8 +429,10 @@ int main(int argc,
 					      "GNUNETD",
 					      "TRANSPORTS",
 					      "udp tcp http",
-					      &trans))
+					      &trans)) {
+    GNUNET_fini(ectx, cfg);
     return 1;
+  }
   GE_ASSERT(ectx, trans != NULL);
   ping = GC_get_configuration_value_yesno(cfg,
 					  "TRANSPORT-CHECK",
@@ -537,13 +523,11 @@ int main(int argc,
   doneCore();
   FREE(expectedValue);
   cron_destroy(cron);
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
 
-  if (res == OK)
-    return 0;
-  else
+  if (res != OK)
     return -1;
+  return 0;
 }
 
 

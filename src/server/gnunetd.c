@@ -28,8 +28,7 @@
  */
 
 #include "gnunet_util.h"
-#include "gnunet_util_config_impl.h"
-#include "gnunet_util_error_loggers.h"
+#include "gnunet_util_boot.h"
 #include "gnunet_util_cron.h"
 #include "gnunet_core.h"
 #include "gnunet_directories.h"
@@ -199,34 +198,16 @@ int main(int argc,
 	    "Sorry, your C compiler did not properly align the C structs. Aborting.\n");
     return -1;
   }
-  ectx = GE_create_context_stderr(YES,
-				  GE_DEBUG |
-				  GE_WARNING | GE_ERROR | GE_FATAL |
-				  GE_USER | GE_ADMIN | GE_DEVELOPER |
-				  GE_IMMEDIATE | GE_BULK);
-  GE_setDefaultContext(ectx);
-  os_init(ectx);
-  cfg = GC_create_C_impl();
-  GE_ASSERT(ectx, cfg != NULL);
-  if (-1 == gnunet_parse_options("gnunetd",
-				 ectx,
-				 cfg,
-				 gnunetdOptions,
-				 (unsigned int) argc,
-				 argv)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
-  }
-  if (-1 == GC_parse_configuration(cfg,
-	 			   cfgFilename)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
-    return -1;
-  }
-  if (OK != changeUser(ectx, cfg)) {
-    GC_free(cfg);
-    GE_free_context(ectx);
+  ret = GNUNET_init(argc,
+		    argv,
+		    "gnunetd",
+		    &cfgFilename,
+		    gnunetdOptions,
+		    &ectx,
+		    &cfg);
+  if ( (ret == -1) ||
+       (OK != changeUser(ectx, cfg)) ) {
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
   if (OK != checkUpToDate(ectx,
@@ -235,13 +216,11 @@ int main(int argc,
 	   GE_USER | GE_FATAL | GE_IMMEDIATE,
 	   _("Configuration or GNUnet version changed.  You need to run `%s'!\n"),
 	   "gnunet-update");
-    GC_free(cfg);
-    GE_free_context(ectx);
+    GNUNET_fini(ectx, cfg);
     return 1;
   }
   ret = gnunet_main(ectx);
-  GC_free(cfg);
-  GE_free_context(ectx);
+  GNUNET_fini(ectx, cfg);
   if (ret != OK)
     return 1;
   return 0;

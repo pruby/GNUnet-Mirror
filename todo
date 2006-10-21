@@ -19,8 +19,10 @@ Notes:
     + make sure all tools load configuration file
   * error handling: [RC]
     + tcpio
-    + fs/fslib
     + fs/module
+    + fs/fslib
+    + fs/ecrs
+    + fs/fsui
   * gnunet-setup: [RC]
     + Scheme (scm) specification of entire configuration
       @ check for dead options!

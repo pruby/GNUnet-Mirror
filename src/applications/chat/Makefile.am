@@ -3,7 +3,8 @@ INCLUDES = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/GNUnet
 
 LDADD =  \
-  $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/util/boot/libgnunetutil_boot.la 
 
 bin_PROGRAMS = \
   gnunet-chat

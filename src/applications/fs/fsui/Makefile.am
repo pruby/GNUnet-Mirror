@@ -32,7 +32,6 @@ fsui_loader_LDADD = \
  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
- $(top_builddir)/src/util/loggers/libgnunetutil_logging.la  \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 check_PROGRAMS = \
