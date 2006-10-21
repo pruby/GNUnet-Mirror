@@ -79,7 +79,7 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
 	eta = now;
       } else {
 	eta = (cron_t) (now - ret->runTime +
-			(((double)(ret->run_time)/(double)ret->completed))
+			(((double)(ret->runTime)/(double)ret->completed))
 			* (double)ret->total);
 	if (eta < now)
 	  eta = now;
