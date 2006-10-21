@@ -378,7 +378,7 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
   GROW(pos->resultsReceived,
        pos->sizeResultsReceived,
        0);
-  for (i=0;i<pos->sizeResultsReceived;i++) {
+  for (i=0;i<pos->sizeUnmatchedResultsReceived;i++) {
     ECRS_freeUri(pos->unmatchedResultsReceived[i].fi.uri);
     ECRS_freeMetaData(pos->unmatchedResultsReceived[i].fi.meta);
     GROW(pos->unmatchedResultsReceived[i].matchingKeys,

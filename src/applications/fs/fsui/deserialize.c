@@ -519,6 +519,8 @@ static int readUploadList(struct FSUI_Context * ctx,
       GE_BREAK(NULL, 0);
       break;
     }
+    printf("Reading upload %s\n",
+	   l.filename);
     list = MALLOC(sizeof(struct FSUI_UploadList));
     list->shared = shared;
     memcpy(list, &l, sizeof(struct FSUI_UploadList));
@@ -556,6 +558,7 @@ static int readUploads(int fd,
       GE_BREAK(NULL, 0);
       break;
     }
+    printf("Reading shared\n");
     memset(&sshared,
 	   0,
 	   sizeof(FSUI_UploadShared));   
@@ -567,6 +570,7 @@ static int readUploads(int fd,
     if (big == 2) 
       READSTRING(sshared.extractor_config, 1024*1024);
     shared = MALLOC(sizeof(FSUI_UploadShared));
+    printf("Allocated shared %p\n", shared);
     memcpy(shared,
 	   &sshared,
 	   sizeof(FSUI_UploadShared));
@@ -574,6 +578,7 @@ static int readUploads(int fd,
 			     &ctx->activeUploads,
 			     fd,
 			     shared)) {
+      GE_BREAK(NULL, 0);
 #if 0
       /* cannot do this, readUploadList
 	 may have added *some* uploads that

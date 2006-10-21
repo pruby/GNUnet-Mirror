@@ -231,6 +231,7 @@ static void writeUploads(int fd,
 
   while (upos != NULL) {
     if (upos->parent == &ctx->activeUploads) {
+      printf("Writing shared!\n");
       shared = upos->shared;
       WRITEINT(fd, (shared->extractor_config != NULL) ? 2 : 3);
       WRITEINT(fd, shared->doIndex);
@@ -244,6 +245,8 @@ static void writeUploads(int fd,
       WRITEINT(fd, 1);
       WRITEINT(fd, (upos->uri != NULL) ? 1 : 2);
     }
+    printf("Writing upload %s!\n",
+	   upos->filename);
     WRITEINT(fd, upos->state);
     WRITELONG(fd, upos->completed);
     WRITELONG(fd, upos->total);
