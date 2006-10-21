@@ -23,9 +23,6 @@
  * @brief upload functions
  * @author Krista Bennett
  * @author Christian Grothoff
- *
- * TODO:
- * - use extractors to obtain metadata and keywords!
  */
 
 #include "platform.h"
@@ -204,6 +201,7 @@ void * FSUI_uploadThread(void * cls) {
   int ret;
   struct GE_Context * ectx;
   char * filename;
+  struct ECRS_URI * uri;
 
   if (utc->parent == &utc->shared->ctx->activeUploads) {
     /* top-level call: signal client! */
@@ -231,8 +229,7 @@ void * FSUI_uploadThread(void * cls) {
   } else {
     filename = STRDUP(utc->filename);
   }  
-  utc->start_time = get_time();
-    
+  utc->start_time = get_time();    
   ret = ECRS_uploadFile(utc->shared->ctx->ectx,
 			utc->shared->ctx->cfg,
 			filename,
@@ -266,10 +263,12 @@ void * FSUI_uploadThread(void * cls) {
     FREE(filename);
     return NULL;
   }
-
-  /* FIXME: metadata extraction! */
-
   utc->state = FSUI_COMPLETED;
+  if (utc->child == NULL)
+    ECRS_extractMetaData(utc->shared->ctx->ectx,
+			 utc->meta,
+			 utc->filename,
+			 utc->shared->extractors);
   ECRS_delFromMetaData(utc->meta,
 		       EXTRACTOR_FILENAME,
 		       NULL);
@@ -302,6 +301,18 @@ void * FSUI_uploadThread(void * cls) {
 		       utc->shared->expiration,
 		       utc->uri,
 		       utc->meta);	    
+  if (utc->shared->individualKeywords == YES) {
+    uri = ECRS_metaDataToUri(utc->meta);
+    ECRS_addToKeyspace(ectx,
+		       utc->shared->ctx->cfg,
+		       uri,
+		       utc->shared->anonymityLevel,
+		       utc->shared->priority,
+		       utc->shared->expiration,
+		       utc->uri,
+		       utc->meta);	    
+    ECRS_freeUri(uri);
+  }
   event.type = FSUI_upload_completed;
   event.data.UploadCompleted.uc.pos = utc;
   event.data.UploadCompleted.uc.cctx = utc->cctx;

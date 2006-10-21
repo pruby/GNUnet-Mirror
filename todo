@@ -18,7 +18,6 @@ Notes:
     + dht/tools
   * Missing functionality: 
     + fs/fsui:
-      @ upload: use extractors!
       @ better ETA calculations
       @ make sure new event fields are set for all events
     + fs/fslib: error handing
@@ -40,11 +39,11 @@ Notes:
   * ncurses wizard
   * Scheme (scm) specification of entire configuration
 - fix known bugs (see Mantis for updates):
-  * file/socket leak (#955)
+  * file/socket leak (#955) - possibly fixed
   * Windows installer, uninstall: Remove account [Nils, RC]
 
 
-0.7.2 ['06] (aka "performance"):
+0.7.2 ['06]:
 - Transports:
   * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
 - Features:
