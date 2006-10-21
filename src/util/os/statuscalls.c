@@ -486,6 +486,7 @@ void os_network_monitor_destroy(struct LoadMonitor * monitor) {
        monitor->ifcsSize,
        0);
   MUTEX_DESTROY(monitor->statusMutex);
+  FREE(monitor);
 }
 
 /* end of statuscalls.c */

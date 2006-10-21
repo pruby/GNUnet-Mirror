@@ -510,7 +510,9 @@ static int readUploadList(struct FSUI_Context * ctx,
     READLONG(l.start_time);
     if (l.start_time != 0)
       l.start_time = (get_time() - stime) + l.start_time;
-    READURI(l.uri);
+    l.uri = NULL;
+    if (big == 1)
+      READURI(l.uri);
     l.filename = read_string(fd, 1024*1024);
     if (l.filename == NULL) {
       ECRS_freeUri(l.uri);

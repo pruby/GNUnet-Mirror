@@ -232,10 +232,7 @@ static void writeUploads(int fd,
   while (upos != NULL) {
     if (upos->parent == &ctx->activeUploads) {
       shared = upos->shared;
-      if (shared->extractor_config != NULL)
-	WRITEINT(fd, 2);
-      else
-	WRITEINT(fd, 3);
+      WRITEINT(fd, (shared->extractor_config != NULL) ? 2 : 3);
       WRITEINT(fd, shared->doIndex);
       WRITEINT(fd, shared->anonymityLevel);
       WRITEINT(fd, shared->priority);
@@ -245,14 +242,15 @@ static void writeUploads(int fd,
 	WRITESTRING(fd, shared->extractor_config);
     } else {
       WRITEINT(fd, 1);
-      WRITEINT(fd, 1);
+      WRITEINT(fd, (upos->uri != NULL) ? 1 : 2);
     }
     WRITEINT(fd, upos->state);
     WRITELONG(fd, upos->completed);
     WRITELONG(fd, upos->total);
     WRITELONG(fd, get_time());
     WRITELONG(fd, upos->start_time);
-    writeURI(fd, upos->uri);
+    if (upos->uri != NULL)
+      writeURI(fd, upos->uri);
     WRITESTRING(fd, upos->filename);
     writeUploads(fd, ctx, upos->child);
     upos = upos->next;
