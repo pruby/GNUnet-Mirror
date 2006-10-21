@@ -202,6 +202,7 @@ int main(int argc, char * argv[]){
 			    100,
 			    240 * cronSECONDS,
 			    uri);
+  ECRS_freeUri(uri);
   CHECK(search != NULL);
   prog = 0;
   while (lastEvent != FSUI_download_completed) {
