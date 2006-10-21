@@ -14,18 +14,18 @@ Notes:
 
 0.7.1 [10'06] (aka "stabilization")
 - finish util refactoring: [RC]
-  * Testcases not compiling or passing:
-    + dht/tools
-  * Missing functionality: 
-    + logger configuration
-    + factor startup code into common helper function
-      @ make sure all tools load configuration file
-    + fs/fslib: error handing
-    + fs/module: error handing
-    + gnunet-setup: [RC]
-      @ gtk wizard
-      @ ncurses wizard
-      @ Scheme (scm) specification of entire configuration
+  * logger configuration 
+    + factor startup code into common helper function 
+    + make sure all tools load configuration file
+  * error handling: [RC]
+    + tcpio
+    + fs/fslib
+    + fs/module
+  * gnunet-setup: [RC]
+    + Scheme (scm) specification of entire configuration
+      @ check for dead options!
+    + gtk wizard
+    + ncurses wizard
 - fix critical known bugs (see Mantis for updates):
   * file/socket leak (#955) - possibly fixed
   * Windows installer, uninstall: Remove account [Nils, RC]
@@ -47,6 +47,8 @@ Notes:
 0.7.2 ['07]:
 - Transports:
   * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
+- Testcases not compiling or passing:
+  * dht/tools
 - Features:
   * SMTP logger
   * Chat support [RC]
