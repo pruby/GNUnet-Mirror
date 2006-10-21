@@ -120,15 +120,34 @@ PThread * PTHREAD_CREATE(PThreadMain main,
   return handle;
 }
 
+/**
+ * Should we debug the time a join takes? 
+ * Useful for detecting missing PTHREAD_STOP_SLEEPS
+ * and similar signaling operations.
+ */
+#define DEBUG_JOIN_DELAY NO
+
 void PTHREAD_JOIN(PThread * handle,
 		  void ** ret) {
+#if DEBUG_JOIN_DELAY
+  cron_t start;
+#endif
   int k;
 
   GE_ASSERT(NULL, 
 	    handle != NULL);
   GE_ASSERT(NULL, 
-	    NO == PTHREAD_TEST_SELF(handle));
+	    NO == PTHREAD_TEST_SELF(handle)); 
+#if DEBUG_JOIN_DELAY
+  start = get_time();
+#endif
   k = pthread_join(handle->pt, ret);
+#if DEBUG_JOIN_DELAY
+  start = get_time() - start;
+  if (start > 10) 
+    printf("Join took %llu ms\n", 
+	   start);
+#endif
   FREE(handle);
   switch (k) {
   case 0:
@@ -206,6 +225,7 @@ void PTHREAD_SLEEP(unsigned long long delay) {
       GE_LOG_STRERROR(NULL,
 		      GE_WARNING | GE_USER | GE_BULK,
 		      "nanosleep");
+
 #elif WINDOWS
   SleepEx(delay, TRUE);
 #else

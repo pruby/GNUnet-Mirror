@@ -119,11 +119,25 @@ void MUTEX_DESTROY(Mutex * mutex) {
   FREE(mutex);
 }
 
-void MUTEX_LOCK(Mutex * mutex) {
+#define DEBUG_LOCK_DELAY 0
+
+void MUTEX_LOCK_(Mutex * mutex) {
   int ret;
+#if DEBUG_LOCK_DELAY
+  cron_t start;
+#endif
 
   GE_ASSERT(NULL, mutex != NULL);
+#if DEBUG_LOCK_DELAY
+  start = get_time();
+#endif
   ret = pthread_mutex_lock(&mutex->pt);
+#if DEBUG_LOCK_DELAY
+  start = get_time() - start;
+  if (start > 10)
+    printf("Locking took %llu ms!\n", 
+	   start);
+#endif
   if (ret != 0) {
     if (ret == EINVAL)
       GE_LOG(NULL,

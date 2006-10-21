@@ -104,7 +104,7 @@ static void * eventCallback(void * cls,
   return NULL;
 }
 
-#define START_DAEMON 0
+#define START_DAEMON 1
 
 int main(int argc, char * argv[]){
 #if START_DAEMON

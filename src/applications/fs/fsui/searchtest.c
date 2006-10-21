@@ -50,6 +50,8 @@ static char * makeName(unsigned int i) {
 
 static volatile enum FSUI_EventType lastEvent;
 
+static struct FSUI_SearchList * search;
+
 static struct ECRS_URI * uri;
 
 static struct FSUI_Context * ctx;
@@ -60,6 +62,11 @@ static void * eventCallback(void * cls,
  
   switch(event->type) {
   case FSUI_search_resumed:
+    search = event->data.SearchResumed.sc.pos;
+    break;
+  case FSUI_search_suspended:
+    search = NULL;
+    break;
   case FSUI_download_resumed:
   case FSUI_upload_resumed:
   case FSUI_unindex_resumed:
@@ -93,9 +100,12 @@ static void * eventCallback(void * cls,
   return NULL;
 }
 
+#define START_DAEMON 0
 
 int main(int argc, char * argv[]){
+#if START_DAEMON
   pid_t daemon;
+#endif
   int ok;
   char * fn = NULL;
   char * keywords[] = {
@@ -111,7 +121,6 @@ int main(int argc, char * argv[]){
   struct FSUI_UploadList * upload;
   struct FSUI_UnindexList * unindex;
   struct FSUI_DownloadList * download;
-  struct FSUI_SearchList * search;
   struct ECRS_URI * luri;
 
   ok = YES;
@@ -121,6 +130,7 @@ int main(int argc, char * argv[]){
     GC_free(cfg);
     return -1;  
   }
+#if START_DAEMON
   daemon  = os_daemon_start(NULL,
 			    cfg,
 			    "peer.conf",
@@ -131,6 +141,7 @@ int main(int argc, char * argv[]){
 						    30 * cronSECONDS));
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   /* ACTUAL TEST CODE */
+#endif
 
   ctx = FSUI_start(NULL,
 		   cfg,
@@ -205,7 +216,7 @@ int main(int argc, char * argv[]){
   while (uri == NULL) {
     prog++;
     CHECK(prog < 10000)
-    PTHREAD_SLEEP(500 * cronMILLIS);
+    PTHREAD_SLEEP(50 * cronMILLIS);
   }
   FSUI_abortSearch(ctx,
 		   search);
@@ -259,8 +270,9 @@ int main(int argc, char * argv[]){
   UNLINK(fn);
   FREE(fn);
 
- 
+#if START_DAEMON
   GE_ASSERT(NULL, OK == os_daemon_stop(NULL, daemon));
+#endif
   GC_free(cfg);
   return (ok == YES) ? 0 : 1;
 }

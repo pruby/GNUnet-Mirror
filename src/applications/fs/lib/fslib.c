@@ -136,7 +136,8 @@ static void * processReplies(void * cls) {
 	     "FSLIB: error communicating with gnunetd; sleeping for %ums\n",
 	     delay);
 #endif
-      PTHREAD_SLEEP(delay);
+      if (ctx->abort == NO)
+	PTHREAD_SLEEP(delay);
       delay *= 2;
       if (delay > 5 * cronSECONDS)
 	delay = 5 * cronSECONDS;
@@ -177,6 +178,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
 	    ctx->handleCount == 0);
   ctx->abort = YES;
   connection_close_temporarily(ctx->sock);
+  PTHREAD_STOP_SLEEP(ctx->thread);
   PTHREAD_JOIN(ctx->thread,
 	       &unused);
   ctx->lock = NULL;
@@ -425,8 +427,9 @@ int FS_index(struct ClientServerConnection * sock,
 	 &block[1],
 	 size);
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Sending index request to gnunetd\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Sending index request to gnunetd\n");
 #endif
   if (OK != connection_write(sock,
 			  &ri->header)) {
@@ -435,8 +438,9 @@ int FS_index(struct ClientServerConnection * sock,
   }
   FREE(ri);
 #if DEBUG_FSLIB
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Waiting for confirmation of index request by gnunetd\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Waiting for confirmation of index request by gnunetd\n");
 #endif
   if (OK != connection_read_result(sock,
 			  &ret))

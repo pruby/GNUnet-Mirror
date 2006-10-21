@@ -354,7 +354,6 @@ static int readSearches(int fd,
       GE_BREAK(NULL, 0);	
       break;
     }
-    printf("Reading URI: %s\n", buf);
     list->uri
       = ECRS_stringToUri(NULL, buf);
     FREE(buf);
@@ -515,12 +514,11 @@ static int readUploadList(struct FSUI_Context * ctx,
       READURI(l.uri);
     l.filename = read_string(fd, 1024*1024);
     if (l.filename == NULL) {
-      ECRS_freeUri(l.uri);
+      if (l.uri != NULL)
+	ECRS_freeUri(l.uri);
       GE_BREAK(NULL, 0);
       break;
     }
-    printf("Reading upload %s\n",
-	   l.filename);
     list = MALLOC(sizeof(struct FSUI_UploadList));
     list->shared = shared;
     memcpy(list, &l, sizeof(struct FSUI_UploadList));
@@ -528,7 +526,8 @@ static int readUploadList(struct FSUI_Context * ctx,
 			     list,
 			     fd,
 			     shared)) {
-      ECRS_freeUri(l.uri);
+      if (l.uri != NULL)
+	ECRS_freeUri(l.uri);
       FREE(l.filename);
       FREE(list);
       GE_BREAK(NULL, 0);
@@ -558,7 +557,6 @@ static int readUploads(int fd,
       GE_BREAK(NULL, 0);
       break;
     }
-    printf("Reading shared\n");
     memset(&sshared,
 	   0,
 	   sizeof(FSUI_UploadShared));   
@@ -570,7 +568,6 @@ static int readUploads(int fd,
     if (big == 2) 
       READSTRING(sshared.extractor_config, 1024*1024);
     shared = MALLOC(sizeof(FSUI_UploadShared));
-    printf("Allocated shared %p\n", shared);
     memcpy(shared,
 	   &sshared,
 	   sizeof(FSUI_UploadShared));
