@@ -18,12 +18,11 @@ Notes:
     + dht/tools
   * Missing functionality: 
     + fs/fsui:
-      @ generate events for suspend, abort, resume
-      @ properly initialize and destruct cctx contexts
+      @ upload: use extractors!
+      @ better ETA calculations
       @ make sure new event fields are set for all events
     + fs/fslib: error handing
     + fs/module: error handing
-    + fs/ecrs: test-terminate integration (upload, unindex)
     + logger configuration
 - More testcases: [RC]
   * advertising

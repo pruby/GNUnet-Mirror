@@ -119,9 +119,9 @@ void MUTEX_DESTROY(Mutex * mutex) {
   FREE(mutex);
 }
 
-#define DEBUG_LOCK_DELAY 0
+#define DEBUG_LOCK_DELAY NO
 
-void MUTEX_LOCK_(Mutex * mutex) {
+void MUTEX_LOCK(Mutex * mutex) {
   int ret;
 #if DEBUG_LOCK_DELAY
   cron_t start;
