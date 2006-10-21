@@ -15,8 +15,6 @@ Notes:
 0.7.1 [10'06] (aka "stabilization")
 - finish util refactoring: [RC]
   * logger configuration 
-    + factor startup code into common helper function 
-    + make sure all tools load configuration file
   * error handling: [RC]
     + tcpio
     + fs/module
