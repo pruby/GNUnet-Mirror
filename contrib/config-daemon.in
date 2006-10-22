@@ -124,69 +124,16 @@ menu "Resource limitations" "LOAD"
 	bool "Basic bandwidth limiting"
 	default y
 	help
-		Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES.
+		
 
-                Basic bandwidth limitation (YES) means simply that the bandwidth limits
-                specified apply to GNUnet and only to GNUnet.  If set to YES, you
-                simply specify the maximum bandwidth (upstream and downstream) 
-                that GNUnet is allowed to use and GNUnet will stick to those
-                limitations.  This is useful if your overall bandwidth is so large that
-                the limit is mostly used to ensure that enough capacity is left for
-                other applications.  Even if you want to dedicate your entire connection
-                to GNUnet you should not set the limits to values higher than what you
-                have since GNUnet uses those limits to determine for example the number
-                of connections to establish (and it would be inefficient if that 
-                computation yields a number that is far too high).  
-
-                While basic bandwidth limitation is simple and always works, there are
-                some situations where it is not perfect.  Suppose you are running
-                another application which performs a larger download.  During that
-                particular time, it would be nice if GNUnet would throttle its
-                bandwidth consumption (automatically) and resume using more bandwidth
-                after the download is complete.  This is obviously advanced magic since
-                GNUnet will have to monitor the behavior of other applications. 
-                Another scenario is a monthly cap on bandwidth imposed by your ISP,
-                which you would want to ensure is obeyed.  Here, you may want
-                GNUnet to monitor the traffic from other applications to ensure that
-                the combined long-term traffic is within the pre-set bounds.  Note
-                that you should probably not set the bounds tightly since GNUnet may
-                observe that the bounds are about to be broken but would be unable to
-                stop other applications from continuing to use bandwidth.
-
-                If either of these two scenarios applies, set BASICLIMITING to NO.
-                Then set the bandwidth limits to the COMBINED amount of traffic that
-                is accepable for both GNUnet and other applications.  GNUnet will
-                then immediately throttle bandwidth consumption if the short-term
-                average is above the limit, and it will also try to ensure that the
-                long-term average is below the limit.  Note however that using NO
-                can have the effect of GNUnet (almost) ceasing operations after
-                other applications perform high-volume downloads that are beyond the
-                defined limits.  GNUnet would reduce consumption until the long-term
-                limits are again within bounds.
-
-                NO only works on platforms where GNUnet can monitor the amount of
-                traffic that the local host puts out on the network.  This is only
-                implemented for Linux and Win32.  In order for the code to work, GNUnet
-                needs to know the specific network interface that is used for the
-                external connection (after all, the amount of traffic on loopback
-                or on the LAN should never be counted since it is irrelevant).
-
+               
 		Default is: BASICLIMITING = YES
 
 	config INTERFACES
-	string "Network interface to monitor"
+	string "
 	depends on !Meta::BASICLIMITING
 	help
-		For which interfaces should we do accounting?  GNUnet will evaluate
-		the total traffic (not only the GNUnet related traffic) and adjust
-		its bandwidth usage accordingly. You can currently only specify a
-		single interface. GNUnet will also use this interface to determine
-		the IP to use. Typical values are eth0, ppp0, eth1, wlan0, etc.
-		'ifconfig' will tell you what you have.  Never use 'lo', that just
-		won't work.
-		Under Windows, specify the index number reported by
-		 "gnunet-win-tool -n".
-
+	
 	config MAXNETDOWNBPSTOTAL
 	int "Maximum download (bytes per second)"
 	default 50000
@@ -206,12 +153,7 @@ menu "Resource limitations" "LOAD"
 	range 0 100
 	default 50
 	help
-		Which CPU load can be tolerated.  Load here always refers to the total
-		system load, that is it includes CPU utilization by other processes.
-		A value of 50 means that once your 1 minute-load average goes over 50%	
-		non-idle, GNUnet will try to reduce CPU consumption until the load goes 
-		under the threshold.  Reasonable values are typically between 50 and 90.
-		Machines dedicated to running GNUnet maybe fine with 99.
+		
 
 		Default is 50.
     

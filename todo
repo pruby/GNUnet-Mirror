@@ -24,7 +24,8 @@ Notes:
     + fs/ecrs
     + fs/fsui
   * gnunet-setup: [RC]
-    + Scheme (scm) specification of entire configuration
+    + Scheme (scm) specification of entire configuration;
+      check options used in modules:
       - advertising
       - state
       - datastore
@@ -48,10 +49,10 @@ Notes:
     + gtk wizard
     + ncurses wizard
 - fix critical known bugs (see Mantis for updates):
-  * file/socket leak (#955) - possibly fixed
-  * Windows installer, uninstall: Remove account [Nils, RC]
   * disk quota violations (#1128) [CG, RC]
   * high CPU usage (quota exceeded) #1123 [CG, RC]
+  * Windows installer, uninstall: Remove account [Nils, RC]
+  * file/socket leak (#955) - possibly fixed
 - More testcases: [RC]
   * advertising
   * ecrs_core
