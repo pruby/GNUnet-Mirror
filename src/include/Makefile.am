@@ -35,6 +35,7 @@ gnunetinclude_HEADERS = \
   gnunet_protocols.h \
   gnunet_rpc_service.h \
   gnunet_session_service.h \
+  gnunet_setup_lib.h \
   gnunet_sqstore_service.h \
   gnunet_stats_lib.h \
   gnunet_stats_service.h \
@@ -57,6 +58,7 @@ gnunetinclude_HEADERS = \
   gnunet_util_error_loggers.h \
   gnunet_util_getopt.h \
   gnunet_util_network.h \
+  gnunet_util_network_client.h \
   gnunet_util_os.h \
   gnunet_util_string.h \
   gnunet_util_threads.h 
