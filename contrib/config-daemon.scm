@@ -850,6 +850,19 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (cons 1 999999999)
  'always))
 
+(define (load-cpu builder)
+ (builder
+ "LOAD"
+ "MAXCPULOAD"
+ (_ "What is the maximum CPU load (percentage)?")
+ (_ 
+"Which CPU load can be tolerated.  Load here always refers to the total system load, that is it includes CPU utilization by other processes.  A value of 50 means that once your 1 minute-load average goes over 50% non-idle, GNUnet will try to reduce CPU consumption until the load goes under the threshold.  Reasonable values are typically between 50 and 100.  Multiprocessors may use values above 100." )
+ '()
+ #t
+ 100
+ (cons 0 10000)
+ 'always))
+
 (define (load-padding builder)
  (builder
  "GNUNETD-EXPERIMENTAL"
@@ -862,6 +875,46 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  #f
  'experimental))
 
+(define (load-basiclimiting builder)
+ (builder
+ "LOAD"
+ "BASICLIMITING"
+ (_ "Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES.")
+ (_ 
+"Basic bandwidth limitation (YES) means simply that the bandwidth limits specified apply to GNUnet and only to GNUnet.  If set to YES, you simply specify the maximum bandwidth (upstream and downstream) that GNUnet is allowed to use and GNUnet will stick to those limitations.  This is useful if your overall bandwidth is so large that the limit is mostly used to ensure that enough capacity is left for other applications.  Even if you want to dedicate your entire connection to GNUnet you should not set the limits to values higher than what you have since GNUnet uses those limits to determine for example the number of connections to establish (and it would be inefficient if that computation yields a number that is far too high).  
+
+While basic bandwidth limitation is simple and always works, there are some situations where it is not perfect.  Suppose you are running another application which performs a larger download. During that particular time, it would be nice if GNUnet would throttle its bandwidth consumption (automatically) and resume using more bandwidth after the download is complete.  This is obviously advanced magic since GNUnet will have to monitor the behavior of other applications. Another scenario is a monthly cap on bandwidth imposed by your ISP, which you would want to ensure is obeyed.  Here, you may want GNUnet to monitor the traffic from other applications to ensure that the combined long-term traffic is within the pre-set bounds.  Note that you should probably not set the bounds tightly since GNUnet may observe that the bounds are about to be broken but would be unable to stop other applications from continuing to use bandwidth.
+
+If either of these two scenarios applies, set BASICLIMITING to NO. Then set the bandwidth limits to the COMBINED amount of traffic that is accepable for both GNUnet and other applications.  GNUnet will then immediately throttle bandwidth consumption if the short-term average is above the limit, and it will also try to ensure that the long-term average is below the limit.  Note however that using NO can have the effect of GNUnet (almost) ceasing operations after other applications perform high-volume downloads that are beyond the defined limits.  GNUnet would reduce consumption until the long-term limits are again within bounds.
+
+NO only works on platforms where GNUnet can monitor the amount of traffic that the local host puts out on the network.  This is only implemented for Linux and Win32.  In order for the code to work, GNUnet needs to know the specific network interface that is used for the external connection (after all, the amount of traffic on loopback or on the LAN should never be counted since it is irrelevant).")
+ '()
+ #t
+ #t
+ #f
+ 'advanced))
+
+(define (load-interfaces builder)
+ (builder
+ "LOAD"
+ "INTERFACES"
+ (_ "Network interface to monitor")
+ (_ 
+"	For which interfaces should we do accounting?  GNUnet will evaluate
+		the total traffic (not only the GNUnet related traffic) and adjust
+		its bandwidth usage accordingly. You can currently only specify a
+		single interface. GNUnet will also use this interface to determine
+		the IP to use. Typical values are eth0, ppp0, eth1, wlan0, etc.
+		'ifconfig' will tell you what you have.  Never use 'lo', that just
+		won't work.
+		Under Windows, specify the index number reported by
+		 \"gnunet-win-tool -n\".")
+ '()
+ #t
+ "eth0"
+ '()
+ 'nobasiclimit))
+
 (define (load builder)
  (builder
   ""
@@ -871,6 +924,9 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
   (list 
     (load-maxdown builder)
     (load-maxup builder)
+    (load-cpu builder)
+    (load-basiclimiting builder)
+    (load-interfaces builder)
     (load-padding builder)
   )
   #t
@@ -923,6 +979,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
    ( 
      (advanced (get-option ctx "Meta" "ADVANCED"))
      (rare (get-option ctx "Meta" "RARE"))
+     (nobasiclimit (not (get-option ctx "LOAD" "BASICLIMITING")))
      (experimental (get-option ctx "Meta" "EXPERIMENTAL"))
      (f2f (string= (get-option ctx "MODULES" "topology") "topology_f2f") )
      (fs-loaded (list? (member "fs" (string-split (get-option ctx "GNUNETD" "APPLICATIONS") #\  ) ) ) )
@@ -960,6 +1017,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
             ((eq? i 'tcp-loaded)   (change-visible ctx a b tcp-loaded))
             ((eq? i 'udp6-loaded)  (change-visible ctx a b udp6-loaded))
             ((eq? i 'tcp6-loaded)  (change-visible ctx a b tcp6-loaded))
+            ((eq? i 'nobasiclimit) (change-visible ctx a b nobasiclimit))
             (else 'nothing)
           )
    ) ) ) 

@@ -81,27 +81,6 @@ menu "General settings" "GNUNET"
 		Default is "NORMAL".
 endmenu
 
-if Meta::ADVANCED-CLIENT
-
-	menu "Network options for the clients" "NETWORK"
-		config CLIENT-PORT
-		int "Port to use to talk to gnunetd"
-		default 2087
-		depends on Meta::ADVANCED-CLIENT
-		help
-			Port to use to talk to gnunetd, default is 2087
-
-		config HOST
-		string "On which machine runs gnunetd (for clients)"
-		default "localhost"
-		depends on Meta::ADVANCED-CLIENT
-		help
-			On which machine runs gnunetd (for clients) This is equivalent to
-			the -H option.  Default is localhost.
-	endmenu
-
-endif
-
 
 menu "Options for filesharing (FS)" "FS"
 	config INSERT-PRIORITY

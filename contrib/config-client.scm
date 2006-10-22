@@ -222,7 +222,48 @@ However, active testing and qualified feedback of these features is always welco
    #f
    'always) )
 
+;; general options
 
+
+(define (network-port builder)
+ (builder
+ "NETWORK"
+ "PORT"
+ (_ "Client/Server Port")
+ (_ "Which is the client-server port that is used between gnunetd and the clients (TCP only).  You may firewall this port for non-local machines (but you do not have to since GNUnet will perform access control and only allow connections from machines that are listed under TRUSTED).")
+ '()
+ #t
+ 2087
+ (cons 1 65535)
+ 'advanced) )
+
+(define (network-host builder)
+ (builder
+ "NETWORK"
+ "HOST"
+ (_ "On which machine runs gnunetd (for clients)")
+ (_ "This is equivalent to the -H option.")
+ '()
+ #t
+ "localhost"
+ '()
+ 'advanced) )
+
+
+(define (general builder)
+ (builder
+   ""
+   "" 
+   (_ "General options")
+   (nohelp)
+   (list 
+     (network-port builder)
+     (network-host builder)
+   )
+   #t
+   #f
+   #f
+   'always) )
 ;; main-menu
 
 (define (main builder)
@@ -234,6 +275,7 @@ However, active testing and qualified feedback of these features is always welco
   (list 
     (meta builder)
     (logging builder)
+    (general builder)
   )
   #t 
   #f 

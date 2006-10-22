@@ -15,7 +15,8 @@ Notes:
 0.7.1 [10'06] (aka "stabilization")
 - finish util refactoring: [RC]
   * logger configuration:
-    + util/boot code to parse configuration   
+    + util/boot code to parse configuration
+      -- and improve scm code as well!
   * error handling: [RC]
     + tcpio
     + fs/module
@@ -24,8 +25,6 @@ Notes:
     + fs/fsui
   * gnunet-setup: [RC]
     + Scheme (scm) specification of entire configuration
-      - util/network_client
-      - util/os
       - advertising
       - state
       - datastore
