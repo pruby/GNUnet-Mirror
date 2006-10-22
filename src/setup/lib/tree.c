@@ -206,7 +206,6 @@ SCM set_option(SCM smob,
   SCM_ASSERT(scm_string_p(option), option, SCM_ARG2, "set_option");
   SCM_ASSERT(scm_string_p(section), section, SCM_ARG3, "set_option");
   SCM_ASSERT(scm_string_p(value), value, SCM_ARG4, "set_option");
-
   tc    = (TC *) SCM_SMOB_DATA(smob);
   opt = scm_to_locale_string(option);
   sec = scm_to_locale_string(section);
@@ -364,10 +363,6 @@ notify_change_internal(void * cls) {
   SCM smob_ctx;
   SCM proc;
 
-  /* I hope that loading of "specification" from
-     tree_parse is preserved by guile.
-     Otherwise we have to re-do this here */
-  scm_c_primitive_load("/home/grothoff/share/GNUnet/config-daemon.scm");
   proc = scm_variable_ref(scm_c_lookup("gnunet-config-change"));
   smob_ctx = box_tc(tc);
   scm_apply_1(proc, smob_ctx, SCM_EOL);
@@ -443,8 +438,7 @@ void __attribute__ ((constructor)) gns_scheme_init() {
     len = strlen(oldpath);
   env = malloc(len + strlen(load) + 18);
   strcpy(env, "GUILE_LOAD_PATH=");
-  if (oldpath)
-  {
+  if (oldpath) {
     strcat(env, oldpath);
     strcat(env, ";");
   }

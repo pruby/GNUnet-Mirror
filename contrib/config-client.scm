@@ -110,6 +110,117 @@ However, active testing and qualified feedback of these features is always welco
    'always) )
 
 
+;; logging options
+
+(define (log-conf-user-urgency-severity-logger description user urgency severity logger builder def opt)
+ (builder
+   "LOGGING"
+   (string-append user "-" urgency "-" severity "-" logger)
+   description
+   ""
+   '()
+   #t
+   def
+   opt
+   (if (string=? urgency "STDOUT") 'rare 'always)))
+
+
+;; FIXME: set default to /dev/null for DEVELOPER, INFO, STATUS and REQUEST file-logs
+(define (log-conf-user-urgency-severity description user urgency severity builder)
+ (builder
+   "LOGGING"
+   (string-append user "-" urgency "-" severity)
+   description
+   ""
+   (list
+     (log-conf-user-urgency-severity-logger (_"Log using standard error (YES/NO)") user urgency severity "STDERR" builder #f #f)
+     (log-conf-user-urgency-severity-logger (_"Log using standard output (YES/NO)") user urgency severity "STDOUT" builder #f #f)
+     (log-conf-user-urgency-severity-logger (_"Log this event type to a file (specify filename)") user urgency severity "FILE" builder "~/.gnunet/logs" '())
+   )
+   #t
+   #f
+   #f
+   (if (string=? severity "DEBUG") 'rare 
+     (if (string=? severity "STATUS") 'advanced
+        (if (string=? severity "INFO") 'advanced 'always )))))
+
+(define (log-conf-user-urgency description user urgency builder)
+ (builder
+   "LOGGING"
+   (string-append user "-" urgency)
+   description
+   ""
+   (list
+     (log-conf-user-urgency-severity (_"Logging of events that are fatal to some operation") user urgency "FATAL" builder)
+     (log-conf-user-urgency-severity (_"Logging of non-fatal errors") user urgency "ERROR" builder)
+     (log-conf-user-urgency-severity (_"Logging of warnings") user urgency "WARNING" builder)
+     (log-conf-user-urgency-severity (_"Logging of information messages") user urgency "INFO" builder)
+     (log-conf-user-urgency-severity (_"Logging of status messages") user urgency "STATUS" builder)
+     (log-conf-user-urgency-severity (_"Logging of debug messages") user urgency "DEBUG" builder)
+   )
+   #t
+   #f
+   #f
+   (if (string=? urgency "REQUEST") 'rare 'always)))
+
+(define (log-conf-user description user builder)
+ (builder
+   "LOGGING"
+   user
+   description
+   ""
+   (list
+     (log-conf-user-urgency (_"Logging of events that usually require immediate attention") user "IMMEDIATE" builder)
+     (log-conf-user-urgency (_"Logging of events that can be processed in bulk") user "BULK" builder)
+     (log-conf-user-urgency (_"Logging of events that are to be shown only on request") user "REQUEST" builder)
+   )
+   #t
+   #f
+   #f
+   (if (string=? user "DEVELOPER") 'advanced 'always)))
+
+(define (log-conf-date builder)
+ (builder
+   "LOGGING"
+   "DATE"
+   (_ "Log the date of the event")
+   (nohelp)
+   '()
+   #t
+   #t
+   #t
+   'advanced))
+
+(define (log-keeplog builder)
+ (builder
+  "GNUNETD"
+  "KEEPLOG"
+  (_ "How long should logs be kept?")
+  (_ 
+"How long should logs be kept? If you specify a value greater than zero, a log is created each day with the date appended to its filename. These logs are deleted after $KEEPLOG days.	To keep logs forever, set this value to 0." )
+  '()
+  #t
+  3
+  (cons 0 36500)
+  'advanced) )
+
+(define (logging builder)
+ (builder
+   "LOGGING"
+   "" 
+   (_ "Configuration of the logging system") 
+   (_ "Specify which system messages should be logged how")
+   (list 
+     (log-conf-date builder)
+     (log-keeplog builder)
+     (log-conf-user (_ "Logging of events for users") "USER" builder) 
+     (log-conf-user (_ "Logging of events for the system administrator") "ADMIN" builder) 
+     (log-conf-user (_ "Logging of events for developers") "DEVELOPER" builder) 
+   )
+   #t
+   #f
+   #f
+   'always) )
 
 
 ;; main-menu
@@ -122,6 +233,7 @@ However, active testing and qualified feedback of these features is always welco
   (nohelp)
   (list 
     (meta builder)
+    (logging builder)
   )
   #t 
   #f 

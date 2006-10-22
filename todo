@@ -14,7 +14,8 @@ Notes:
 
 0.7.1 [10'06] (aka "stabilization")
 - finish util refactoring: [RC]
-  * logger configuration 
+  * logger configuration:
+    + util/boot code to parse configuration   
   * error handling: [RC]
     + tcpio
     + fs/module
@@ -23,7 +24,28 @@ Notes:
     + fs/fsui
   * gnunet-setup: [RC]
     + Scheme (scm) specification of entire configuration
-      @ check for dead options!
+      - util/network_client
+      - util/os
+      - advertising
+      - state
+      - datastore
+      - identity
+      - topology_default
+      - gap
+      - connect
+      - fs/module
+      - fsui
+      - ecrs
+      - uritrack
+      - namespace
+      - sqlite
+      - mysql
+      - gnunet-stats
+      - gnunet-tracekit
+      - gnunet-insert/download/unindex
+      - DHT options
+      - topology_f2f
+      - kvstore
     + gtk wizard
     + ncurses wizard
 - fix critical known bugs (see Mantis for updates):

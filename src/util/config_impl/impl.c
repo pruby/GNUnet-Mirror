@@ -293,15 +293,30 @@ _write_configuration(struct GC_Configuration * cfg,
   FILE *fp;
   int error;
   int ret;
+  char * dirname;
+  size_t pos;
+  char * fn;
 
+  fn = string_expandFileName(NULL, filename);
+  dirname = STRDUP(fn);
+  pos = strlen(dirname);
+  while ( (pos > 0) &&
+	  (dirname[pos] != DIR_SEPARATOR) )
+    pos--;
+  dirname[pos] = '\0';
+  disk_directory_create(NULL, dirname);
+  FREE(dirname);
+  
   data = cfg->data;
-  if (NULL == (fp = FOPEN(filename, "w"))) {
+  if (NULL == (fp = FOPEN(fn, "w"))) {
     GE_LOG_STRERROR_FILE(data->ectx,
 			 GE_ERROR | GE_USER | GE_IMMEDIATE,
 			 "fopen",
-			 filename);
+			 fn);
+    FREE(fn);
     return -1;
   }
+  FREE(fn);
   error = 0;
   ret = 0;
   MUTEX_LOCK(data->lock);

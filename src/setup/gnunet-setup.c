@@ -172,6 +172,8 @@ int main(int argc,
       ? STRDUP(DEFAULT_DAEMON_CONFIG_FILE)
       : STRDUP(DEFAULT_CLIENT_CONFIG_FILE);
   dirname = string_expandFileName(ectx, cfgFilename);
+  FREE(cfgFilename);
+  cfgFilename = STRDUP(dirname);
   i = strlen(dirname) - 1;
   while (i > -1) {
     char ch = dirname[i];

@@ -30,6 +30,18 @@
 #include "platform.h"
 
 /**
+ * Configure logging mechanism as specified by
+ * user (and supported by system).  
+ * 
+ * @return 0 on success, 1 on error
+ */
+static int configure_logging(struct GE_Context ** ectx,
+			     struct GC_Configuration * cfg) {
+  
+  return 0;
+}
+
+/**
  * Run a standard GNUnet startup sequence
  * (initialize loggers and configuration,
  * parse options).
@@ -47,6 +59,8 @@ int GNUNET_init(int argc,
 		struct GC_Configuration ** cfg) {
   int i;
 
+  /* during startup, log all warnings and higher
+     for anybody to stderr */
   *ectx = GE_create_context_stderr(NO,
 				   GE_WARNING | GE_ERROR | GE_FATAL |
 				   GE_USER | GE_ADMIN | GE_DEVELOPER |
@@ -65,6 +79,8 @@ int GNUNET_init(int argc,
     return -1;
   if (OK != GC_parse_configuration(*cfg,
 				   *cfgFileName)) 
+    return -1;
+  if (configure_logging(ectx, *cfg) != 0)
     return -1;
   return i;
 }

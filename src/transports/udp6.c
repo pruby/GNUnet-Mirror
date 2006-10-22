@@ -77,7 +77,7 @@ static unsigned short getGNUnetUDP6Port() {
   unsigned long long port;
 
  if (-1 == GC_get_configuration_value_number(cfg,
-					      "UDP",
+					      "UDP6",
 					      "PORT",
 					      1,
 					      65535,
@@ -373,7 +373,7 @@ static int reloadConfiguration(void) {
   MUTEX_LOCK(configLock);
   FREENONNULL(filteredNetworks_);
   if (0 != GC_get_configuration_value_string(cfg,
-					     "UDP",
+					     "UDP6",
 					     "BLACKLIST",
 					     NULL,
 					     &ch))
@@ -427,7 +427,7 @@ TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
   configLock = MUTEX_CREATE(NO);
   reloadConfiguration();
   if (-1 == GC_get_configuration_value_number(cfg,
-					      "UDP",
+					      "UDP6",
 					      "MTU",
 					      sizeof(UDPMessage) + P2P_MESSAGE_OVERHEAD + sizeof(MESSAGE_HEADER) + 32,
 					      65500,

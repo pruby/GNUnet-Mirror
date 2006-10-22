@@ -136,32 +136,123 @@ However, active testing and qualified feedback of these features is always welco
   (cons 1 14400)
   'advanced) )
 
-(define (general-loglevel builder)
+(define (general-hostlisturl builder)
  (builder
   "GNUNETD"
-  "LOGLEVEL"
-  (_ "Log level")
-  (_ "How verbose should the logging of errors be?")
+  "HOSTLISTURL"
+  (_ "Where can GNUnet find an initial list of peers?")
+  (_ 
+"GNUnet can automatically update the hostlist from the web. While GNUnet internally communicates which hosts are online, it is typically a good idea to get a fresh hostlist whenever gnunetd starts from the WEB. By setting this option, you can specify from which server gnunetd should try to download the hostlist. The default should be fine for now.
+		
+The general format is a list of space-separated URLs.  Each URL must have the format http://HOSTNAME/FILENAME
+		
+If you want to setup an alternate hostlist server, you must run a permanent node and \"cat data/hosts/* > hostlist\" every few minutes to keep the list up-to-date.
+		
+If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts manually.")
   '()
   #t
-  "WARNING"
-  (list "NOTHING" "DEBUG" "STATUS" "INFO" "WARNING" "ERROR" "FATAL")
+  "http://gnunet.org/hostlist http://gnunet.mine.nu:8081/hostlist http://de.gnunet.org/cgi-bin/hostlist.cgi http://uk.gnunet.org/hostlist"
+  '()
   'always) )
 
-(define (general-logfile builder)
+(define (general-http-proxy builder)
  (builder
   "GNUNETD"
-  "LOGFILE"
-  (_ "Where should logs go?")
+  "HTTP-PROXY"
+  (_ "HTTP Proxy Server")
   (_ 
-"In which file should gnunetd write the logs?  If you specify nothing, logs are written to stderr (and note that if gnunetd runs in the background, stderr is closed and all logs are discarded)." )
+"If you have to use a proxy for outbound HTTP connections, specify the proxy configuration here.  Default is no proxy." )
   '()
   #t
-  "$GNUNETD_HOME/logs"
+  ""
   '()
   'advanced) )
 
-(define (general-keeplog builder)
+
+
+
+;; logging options
+
+(define (log-conf-user-urgency-severity-logger description user urgency severity logger builder def opt)
+ (builder
+   "LOGGING"
+   (string-append user "-" urgency "-" severity "-" logger)
+   description
+   ""
+   '()
+   #t
+   def
+   opt
+   (if (string=? urgency "STDOUT") 'rare 'always)))
+
+
+;; FIXME: set default to /dev/null for DEVELOPER, INFO, STATUS and REQUEST file-logs
+(define (log-conf-user-urgency-severity description user urgency severity builder)
+ (builder
+   "LOGGING"
+   (string-append user "-" urgency "-" severity)
+   description
+   ""
+   (list
+     (log-conf-user-urgency-severity-logger (_"Log using standard error (YES/NO)") user urgency severity "STDERR" builder #f #f)
+     (log-conf-user-urgency-severity-logger (_"Log using standard output (YES/NO)") user urgency severity "STDOUT" builder #f #f)
+     (log-conf-user-urgency-severity-logger (_"Log this event type to a file (specify filename)") user urgency severity "FILE" builder "~/.gnunet/logs" '())
+   )
+   #t
+   #f
+   #f
+   (if (string=? severity "DEBUG") 'rare 
+     (if (string=? severity "STATUS") 'advanced
+        (if (string=? severity "INFO") 'advanced 'always )))))
+
+(define (log-conf-user-urgency description user urgency builder)
+ (builder
+   "LOGGING"
+   (string-append user "-" urgency)
+   description
+   ""
+   (list
+     (log-conf-user-urgency-severity (_"Logging of events that are fatal to some operation") user urgency "FATAL" builder)
+     (log-conf-user-urgency-severity (_"Logging of non-fatal errors") user urgency "ERROR" builder)
+     (log-conf-user-urgency-severity (_"Logging of warnings") user urgency "WARNING" builder)
+     (log-conf-user-urgency-severity (_"Logging of information messages") user urgency "INFO" builder)
+     (log-conf-user-urgency-severity (_"Logging of status messages") user urgency "STATUS" builder)
+     (log-conf-user-urgency-severity (_"Logging of debug messages") user urgency "DEBUG" builder)
+   )
+   #t
+   #f
+   #f
+   (if (string=? urgency "REQUEST") 'rare 'always)))
+
+(define (log-conf-user description user builder)
+ (builder
+   "LOGGING"
+   user
+   description
+   ""
+   (list
+     (log-conf-user-urgency (_"Logging of events that usually require immediate attention") user "IMMEDIATE" builder)
+     (log-conf-user-urgency (_"Logging of events that can be processed in bulk") user "BULK" builder)
+     (log-conf-user-urgency (_"Logging of events that are to be shown only on request") user "REQUEST" builder)
+   )
+   #t
+   #f
+   #f
+   (if (string=? user "DEVELOPER") 'advanced 'always)))
+
+(define (log-conf-date builder)
+ (builder
+   "LOGGING"
+   "DATE"
+   (_ "Log the date of the event")
+   (nohelp)
+   '()
+   #t
+   #t
+   #t
+   'advanced))
+
+(define (log-keeplog builder)
  (builder
   "GNUNETD"
   "KEEPLOG"
@@ -173,6 +264,25 @@ However, active testing and qualified feedback of these features is always welco
   3
   (cons 0 36500)
   'advanced) )
+
+(define (logging builder)
+ (builder
+   "LOGGING"
+   "" 
+   (_ "Configuration of the logging system") 
+   (_ "Specify which system messages should be logged how")
+   (list 
+     (log-conf-date builder)
+     (log-keeplog builder)
+     (log-conf-user (_ "Logging of events for users") "USER" builder) 
+     (log-conf-user (_ "Logging of events for the system administrator") "ADMIN" builder) 
+     (log-conf-user (_ "Logging of events for developers") "DEVELOPER" builder) 
+   )
+   #t
+   #f
+   #f
+   'always) )
+
  
 (define (general-pidfile builder)
  (builder
@@ -186,6 +296,20 @@ However, active testing and qualified feedback of these features is always welco
   "$GNUNET_HOME/gnunetd.pid"
   '()
   'rare) )
+
+
+(define (general-username builder)
+ (builder
+  "GNUNETD"
+  "USER"
+  (_ "As which user should gnunetd run?")
+  (_ 
+"Empty means \"current user\". On computer startup, it is root/SYSTEM.  Under Windows, this setting affects the creation of a new system service only.")
+  '()
+  #f
+  ""
+  '()
+  'advanced) )
  
 
 (define (general-transports builder)
@@ -235,6 +359,42 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  
 
 
+(define (tcpserver-disable builder)
+ (builder
+ "TCPSERVER"
+ "DISABLE"
+ (_ "Disable client-server connections")
+ (nohelp)
+ '()
+ #t
+ #f
+ #f
+ 'advanced) )
+
+(define (network-port builder)
+ (builder
+ "NETWORK"
+ "PORT"
+ (_ "Client/Server Port")
+ (_ "Which is the client-server port that is used between gnunetd and the clients (TCP only).  You may firewall this port for non-local machines (but you do not have to since GNUnet will perform access control and only allow connections from machines that are listed under TRUSTED).")
+ '()
+ #t
+ 2087
+ (cons 1 65535)
+ 'advanced) )
+
+(define (network-trusted builder)
+ (builder
+ "NETWORK"
+ "TRUSTED"
+ (_ "IPs allowed to use gnunetd server")
+ (_ "This option specifies which hosts are trusted enough to connect as clients (to the TCP port).  This is useful if you run gnunetd on one host of your network and want to allow all other hosts to use this node as their server.  By default, this is set to 'loopback only'.  The format is IP/NETMASK where the IP is specified in dotted-decimal and the netmask either in CIDR notation (/16) or in dotted decimal (255.255.0.0). Several entries must be separated by a semicolon, spaces are not allowed.")
+ '()
+ #t
+ "127.0.0.0/8;"
+ '()
+ 'advanced) )
+
 
 
 (define (general builder)
@@ -245,11 +405,14 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   (_ "Settings that change the behavior of GNUnet in general")
   (list 
     (general-path builder) 
+    (general-hostlisturl builder)
+    (general-http-proxy builder)
     (general-helloexpires builder) 
-    (general-loglevel builder) 
-    (general-logfile builder) 
-    (general-keeplog builder) 
+    (tcpserver-disable builder) 
+    (network-port builder) 
+    (network-trusted builder) 
     (general-pidfile builder) 
+    (general-username builder) 
     (general-transports builder) 
     (general-applications builder) 
   )
@@ -482,6 +645,30 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (cons 0 65535)
  'advanced))
 
+(define (udp-mtu builder)
+ (builder
+ "UDP"
+ "MTU"
+ (_ "What is the maximum transfer unit for UDP?")
+ (nohelp)
+ '()
+ #t
+ 1472
+ (cons 1200 65500)
+ 'rare))
+
+(define (udp-blacklist builder)
+ (builder
+ "UDP"
+ "BLACKLIST"
+ (_ "Which IPs are not allowed to connect?")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (udp builder)
  (builder
  "UDP"
@@ -490,6 +677,8 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (nohelp)
  (list 
    (udp-port builder)
+   (udp-mtu builder)
+   (udp-blacklist builder)
  )
  #t
  #f
@@ -509,6 +698,18 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (cons 0 65535)
  'nat-unlimited))
 
+(define (tcp6-blacklist builder)
+ (builder
+ "TCP6"
+ "BLACKLIST"
+ (_ "Which IPs are not allowed to connect?")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (tcp6 builder)
  (builder
  "TCP6"
@@ -517,6 +718,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (nohelp)
  (list 
    (tcp6-port builder)
+   (tcp6-blacklist builder)
  )
  #t
  #f
@@ -536,6 +738,30 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (cons 0 65535)
  'advanced))
 
+(define (udp6-mtu builder)
+ (builder
+ "UDP6"
+ "MTU"
+ (_ "What is the maximum transfer unit for UDP 6?")
+ (nohelp)
+ '()
+ #t
+ 1452
+ (cons 1200 65500)
+ 'rare))
+
+(define (udp6-blacklist builder)
+ (builder
+ "UDP6"
+ "BLACKLIST"
+ (_ "Which IPs are not allowed to connect?")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'advanced))
+
 (define (udp6 builder)
  (builder
  "UDP6"
@@ -544,12 +770,38 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (nohelp)
  (list 
    (udp6-port builder)
+   (udp6-mtu builder)
+   (udp6-blacklist builder)
  )
  #t
  #f
  #f
  'udp6-loaded) )
 
+
+(define (network-interface builder)
+ (builder
+ "NETWORK"
+ "INTERFACE"
+ (_ "Network interface")
+ (nohelp)
+ '()
+ #t
+ "eth0"
+ '()
+ 'nat-unlimited) )
+
+(define (network-ip builder)
+ (builder
+ "NETWORK"
+ "IP"
+ (_ "External IP address (leave empty to try auto-detection)")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'nat-unlimited) )
 
 (define (transports builder)
  (builder
@@ -559,11 +811,67 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
   (nohelp)
   (list 
     (nat builder)
+    (network-interface builder)
+    (network-ip builder)
     (tcp builder)
     (tcp6 builder)
     (udp builder)
     (udp6 builder)
     (http builder)
+  )
+  #t
+  #f
+  #f
+  'always) )
+
+
+
+(define (load-maxdown builder)
+ (builder
+ "LOAD"
+ "MAXNETDOWNBPS"
+ (_ "What is the maximum number of bytes per second that we may receive?")
+ (nohelp)
+ '()
+ #t
+ 50000
+ (cons 1 999999999)
+ 'always))
+
+(define (load-maxup builder)
+ (builder
+ "LOAD"
+ "MAXNETDOWNBPS"
+ (_ "What is the maximum number of bytes per second that we may send?")
+ (nohelp)
+ '()
+ #t
+ 50000
+ (cons 1 999999999)
+ 'always))
+
+(define (load-padding builder)
+ (builder
+ "GNUNETD-EXPERIMENTAL"
+ "PADDING"
+ (_ "Should we disable random padding (experimental option)?")
+ (nohelp)
+ '()
+ #t
+ #f
+ #f
+ 'experimental))
+
+(define (load builder)
+ (builder
+  ""
+  ""
+  (_ "Load management")
+  (nohelp)
+  (list 
+    (load-maxdown builder)
+    (load-maxup builder)
+    (load-padding builder)
   )
   #t
   #f
@@ -582,6 +890,8 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
   (list 
     (meta builder)
     (general builder) 
+    (logging builder)
+    (load builder)
     (modules builder) 
     (f2f builder) 
     (transports builder) 
@@ -652,6 +962,9 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
             ((eq? i 'tcp6-loaded)  (change-visible ctx a b tcp6-loaded))
             (else 'nothing)
           )
-   ) ) ) )
+   ) ) ) 
+   (change-visible ctx "NETWORK" "PORT" (and advanced (not (get-option ctx "TCPSERVER" "DISABLE"))))
+   (change-visible ctx "NETWORK" "TRUSTED" (and advanced (not (get-option ctx "TCPSERVER" "DISABLE"))))
+  )
 ) )
 
