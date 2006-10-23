@@ -174,7 +174,7 @@ char * string_get_fancy_time_interval(unsigned long long delta);
 /**
  * Convert a given filesize into a fancy human-readable format.
  */
-char * strng_get_fancy_byte_size(unsigned long long size);
+char * string_get_fancy_byte_size(unsigned long long size);
 
 /**
  * Convert the len characters long character sequence
