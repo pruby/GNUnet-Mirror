@@ -178,17 +178,22 @@ _parse_configuration(struct GC_Configuration * cfg,
   int emptyline;
   int ret;
   char * section;
+  char * fn;
 
+  fn = string_expandFileName(NULL,
+			     filename);
   MUTEX_LOCK(cfg->data->lock);
   dirty = cfg->data->dirty; /* back up value! */
-  if (NULL == (fp = FOPEN(filename, "r"))) {
+  if (NULL == (fp = FOPEN(fn, "r"))) {
     GE_LOG_STRERROR_FILE(cfg->data->ectx,
 			 GE_ERROR | GE_USER | GE_IMMEDIATE | GE_BULK | GE_REQUEST,
 			 "fopen",
-			 filename);
+			 fn);
     MUTEX_UNLOCK(cfg->data->lock);
+    FREE(fn);
     return -1;
   }
+  FREE(fn);
   ret = 0;
   section = STRDUP("");
   memset(line,
