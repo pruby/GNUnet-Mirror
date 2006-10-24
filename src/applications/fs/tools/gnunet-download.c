@@ -140,6 +140,7 @@ int main(int argc,
   int try_rename;
   struct FSUI_Context * ctx;
   struct ECRS_URI * uri;
+  struct ECRS_MetaData * meta;
   int i;
 
   i = GNUNET_init(argc,
@@ -206,11 +207,14 @@ int main(int argc,
 		   NULL);
   start_time = get_time();
   errorCode = 1;
+  meta = ECRS_createMetaData();
   dl = FSUI_startDownload(ctx,
 			  anonymity,
 			  do_recursive,
 			  uri,
+			  meta,
 			  filename);
+  ECRS_freeMetaData(meta);
   if (dl == NULL) {
     FSUI_stop(ctx);
     goto quit;

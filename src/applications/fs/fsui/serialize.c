@@ -69,6 +69,32 @@ static void WRITESTRING(int fd,
 	strlen(name));
 }
 
+
+static void writeFileInfo(struct GE_Context * ectx,
+			  int fd,
+			  const ECRS_FileInfo * fi) {
+  unsigned int size;
+  char * buf;
+
+  size = ECRS_sizeofMetaData(fi->meta,
+			     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
+  if (size > 1024 * 1024)
+    size = 1024 * 1024;
+  buf = MALLOC(size);
+  ECRS_serializeMetaData(ectx,
+			 fi->meta,
+			 buf,
+			 size,
+			 ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
+  WRITEINT(fd, size);
+  WRITE(fd,
+	buf,
+	size);
+  FREE(buf);
+  writeURI(fd, fi->uri);
+}
+
+
 /**
  * (recursively) write a download list.
  */
@@ -100,7 +126,9 @@ static void writeDownloadList(struct GE_Context * ectx,
   WRITELONG(fd, list->completed);
   WRITELONG(fd, get_time() - list->startTime);
   WRITESTRING(fd, list->filename);
-  writeURI(fd, list->uri);
+  writeFileInfo(ectx,
+		fd, 
+		&list->fi);
   for (i=0;i<list->completedDownloadsCount;i++)
     writeURI(fd, list->completedDownloads[i]);
   writeDownloadList(ectx,
@@ -111,31 +139,6 @@ static void writeDownloadList(struct GE_Context * ectx,
 		    fd,
 		    ctx,
 		    list->child);
-}
-
-
-static void writeFileInfo(struct GE_Context * ectx,
-			  int fd,
-			  const ECRS_FileInfo * fi) {
-  unsigned int size;
-  char * buf;
-
-  size = ECRS_sizeofMetaData(fi->meta,
-			     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
-  if (size > 1024 * 1024)
-    size = 1024 * 1024;
-  buf = MALLOC(size);
-  ECRS_serializeMetaData(ectx,
-			 fi->meta,
-			 buf,
-			 size,
-			 ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
-  WRITEINT(fd, size);
-  WRITE(fd,
-	buf,
-	size);
-  FREE(buf);
-  writeURI(fd, fi->uri);
 }
 
 static void writeCollection(int fd,
@@ -153,7 +156,6 @@ static void writeCollection(int fd,
 
 static void writeSearches(int fd,
 			  struct FSUI_Context * ctx) {
-  char * tmp;
   FSUI_SearchList * spos;
   int i;
 
@@ -176,10 +178,7 @@ static void writeSearches(int fd,
     WRITEINT(fd, spos->anonymityLevel);
     WRITEINT(fd, spos->sizeResultsReceived);
     WRITEINT(fd, spos->sizeUnmatchedResultsReceived);
-    tmp = ECRS_uriToString(spos->uri);
-    GE_ASSERT(NULL, tmp != NULL);
-    WRITESTRING(fd, tmp);
-    FREE(tmp);
+    writeURI(fd, spos->uri);
     for (i=0;i<spos->sizeResultsReceived;i++)
       writeFileInfo(ctx->ectx,
 		    fd,

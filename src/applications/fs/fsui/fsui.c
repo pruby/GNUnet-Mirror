@@ -86,7 +86,7 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
       }
       event.data.DownloadResumed.eta = eta;
       event.data.DownloadResumed.filename = ret->filename;
-      event.data.DownloadResumed.uri = ret->uri;
+      event.data.DownloadResumed.uri = ret->fi.uri;
       event.data.DownloadResumed.anonymityLevel = ret->anonymityLevel;
       ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
       if (ret->child != NULL)
@@ -371,7 +371,8 @@ static void freeDownloadList(FSUI_DownloadList * list) {
 
   while (list != NULL) {
     freeDownloadList(list->child);
-    ECRS_freeUri(list->uri);
+    ECRS_freeUri(list->fi.uri);
+    ECRS_freeMetaData(list->fi.meta);
     FREE(list->filename);
     for (i=0;i<list->completedDownloadsCount;i++)
       ECRS_freeUri(list->completedDownloads[i]);

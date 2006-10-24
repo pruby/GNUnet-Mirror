@@ -206,7 +206,7 @@ typedef struct FSUI_DownloadList {
   /**
    * URI for this download.
    */
-  struct ECRS_URI * uri;
+  ECRS_FileInfo fi;
 
   /**
    * Filename for this download.

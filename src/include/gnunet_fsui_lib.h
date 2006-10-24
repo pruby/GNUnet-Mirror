@@ -428,6 +428,11 @@ typedef struct {
        */
       const struct ECRS_URI * uri;
 
+      /**
+       * Metadata about the download.
+       */
+      const struct ECRS_MetaData * meta;
+
       unsigned int anonymityLevel;
 
     } DownloadStarted;
@@ -456,6 +461,11 @@ typedef struct {
        * Information about the download.
        */
       const char * filename;
+
+      /**
+       * Metadata about the download.
+       */
+      const struct ECRS_MetaData * meta;
 
       /**
        * Original URI.
@@ -780,6 +790,7 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 		   unsigned int anonymityLevel,
 		   int doRecursive,
 		   const struct ECRS_URI * uri,
+		   const struct ECRS_MetaData * meta,
 		   const char * filename); /* download.c */
 
 /**

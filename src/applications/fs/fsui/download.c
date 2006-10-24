@@ -41,6 +41,7 @@ startDownload(struct FSUI_Context * ctx,
 	      unsigned int anonymityLevel,
 	      int is_recursive,
 	      const struct ECRS_URI * uri,
+	      const struct ECRS_MetaData * meta,
 	      const char * filename,
 	      FSUI_DownloadList * parent);
 
@@ -69,7 +70,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
       return OK; /* already complete! */
   pos = parent->child;
   while (pos != NULL) {
-    if (ECRS_equalsUri(pos->uri,
+    if (ECRS_equalsUri(pos->fi.uri,
 		       fi->uri))
       return OK; /* already downloading */
     pos = pos->next;
@@ -111,6 +112,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 		parent->anonymityLevel,
 		YES,
 		fi->uri,
+		fi->meta,
 		fullName,
 		parent);
   FREE(fullName);
@@ -158,7 +160,7 @@ downloadProgressCallback(unsigned long long totalBytes,
   }
   event.data.DownloadProgress.eta = eta;
   event.data.DownloadProgress.filename = dl->filename;
-  event.data.DownloadProgress.uri = dl->uri;
+  event.data.DownloadProgress.uri = dl->fi.uri;
   event.data.DownloadProgress.last_block = lastBlock;
   event.data.DownloadProgress.last_size = lastBlockSize;
   dl->ctx->ecb(dl->ctx->ecbClosure,
@@ -223,7 +225,7 @@ void * downloadThread(void * cls) {
   GE_ASSERT(ectx, dl->filename != NULL);
   ret = ECRS_downloadFile(dl->ctx->ectx,
 			  dl->ctx->cfg,
-			  dl->uri,
+			  dl->fi.uri,
 			  dl->filename,
 			  dl->anonymityLevel,
 			  &downloadProgressCallback,
@@ -239,7 +241,7 @@ void * downloadThread(void * cls) {
     event.data.DownloadCompleted.dc.pcctx = dl->parent->cctx;
     event.data.DownloadCompleted.total = dl->total;
     event.data.DownloadCompleted.filename = dl->filename;
-    event.data.DownloadCompleted.uri = dl->uri;
+    event.data.DownloadCompleted.uri = dl->fi.uri;
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else if (dl->state == FSUI_ACTIVE) {
@@ -276,7 +278,7 @@ void * downloadThread(void * cls) {
     size_t totalBytes;
     struct ECRS_MetaData * md;
 
-    totalBytes = ECRS_fileSize(dl->uri);
+    totalBytes = ECRS_fileSize(dl->fi.uri);
     fn = MALLOC(strlen(dl->filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
     strcpy(fn, dl->filename);
     if (fn[strlen(fn)-1] == '/') {
@@ -340,6 +342,7 @@ startDownload(struct FSUI_Context * ctx,
 	      unsigned int anonymityLevel,
 	      int is_recursive,
 	      const struct ECRS_URI * uri,
+	      const struct ECRS_MetaData * meta,
 	      const char * filename,
 	      FSUI_DownloadList * parent) {
   FSUI_DownloadList * dl;
@@ -365,7 +368,8 @@ startDownload(struct FSUI_Context * ctx,
   dl->anonymityLevel = anonymityLevel;
   dl->ctx = ctx;
   dl->filename = STRDUP(filename);
-  dl->uri = ECRS_dupUri(uri);
+  dl->fi.uri = ECRS_dupUri(uri);
+  dl->fi.meta = ECRS_dupMetaData(meta);
   dl->total = ECRS_fileSize(uri);
   dl->child = NULL;
   dl->cctx = NULL;
@@ -375,9 +379,10 @@ startDownload(struct FSUI_Context * ctx,
   event.data.DownloadStarted.dc.cctx = NULL;
   event.data.DownloadStarted.dc.ppos = dl->parent;
   event.data.DownloadStarted.dc.pcctx = dl->parent->cctx;
-  event.data.DownloadStarted.total = ECRS_fileSize(dl->uri);
+  event.data.DownloadStarted.total = ECRS_fileSize(dl->fi.uri);
   event.data.DownloadStarted.filename = dl->filename;
-  event.data.DownloadStarted.uri = dl->uri;
+  event.data.DownloadStarted.uri = dl->fi.uri;
+  event.data.DownloadStarted.meta = dl->fi.meta;
   event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
   dl->cctx = dl->ctx->ecb(dl->ctx->ecbClosure,
 			  &event);
@@ -398,6 +403,7 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 		   unsigned int anonymityLevel,			
 		   int doRecursive,
 		   const struct ECRS_URI * uri,
+		   const struct ECRS_MetaData * meta,
 		   const char * filename) {
   struct FSUI_DownloadList * ret;
 
@@ -406,6 +412,7 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 		      anonymityLevel,
 		      doRecursive,
 		      uri,
+		      meta,
 		      filename,
 		      &ctx->activeDownloads);
   MUTEX_UNLOCK(ctx->lock);
@@ -591,7 +598,8 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   GROW(dl->completedDownloads,
        dl->completedDownloadsCount,
        0);
-  ECRS_freeUri(dl->uri);
+  ECRS_freeUri(dl->fi.uri);
+  ECRS_freeMetaData(dl->fi.meta);
   FREE(dl->filename);
   FREE(dl);
   return OK;

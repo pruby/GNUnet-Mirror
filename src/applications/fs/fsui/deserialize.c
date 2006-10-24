@@ -124,6 +124,54 @@ static void fixState(FSUI_State * state) {
   }
 }
 
+
+/**
+ * Read file info from file.
+ *
+ * @return OK on success, SYSERR on error
+ */
+static int readFileInfo(struct GE_Context * ectx,
+			int fd,
+			ECRS_FileInfo * fi) {
+  unsigned int size;
+  char * buf;
+
+  fi->meta = NULL;
+  fi->uri = NULL;
+  READINT(size);
+  if (size > 1024 * 1024) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  buf = MALLOC(size);
+  if (size != READ(fd,
+		   buf,
+		   size)) {
+    FREE(buf);
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  fi->meta = ECRS_deserializeMetaData(ectx,
+				      buf,
+				      size);
+  if (fi->meta == NULL) {
+    FREE(buf);
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  FREE(buf);
+
+  fi->uri
+    = read_uri(ectx, fd);
+  if (fi->uri == NULL) {
+    ECRS_freeMetaData(fi->meta);
+    fi->meta = NULL;
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
+  return OK;
+}
+
 /**
  * (Recursively) read a download list from the given fd.  The returned
  * pointer is expected to be integrated into the tree either as a next
@@ -173,7 +221,9 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
     FREE(ret);
     return NULL;
   }
-  if (NULL == (ret->uri = read_uri(ectx, fd))) {
+  if (OK != readFileInfo(ectx,
+			 fd,
+			 &ret->fi)) {
     FREE(ret->filename);
     FREE(ret);
     return NULL;
@@ -190,7 +240,8 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
   }
   if (NO == ok) {
     FREE(ret->filename);
-    ECRS_freeUri(ret->uri);
+    ECRS_freeUri(ret->fi.uri);
+    ECRS_freeMetaData(ret->fi.meta);
     for (i=0;i<ret->completedDownloadsCount;i++) {
       if (ret->completedDownloads[i] != NULL)
 	ECRS_freeUri(ret->completedDownloads[i]);
@@ -217,54 +268,6 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
 	 ret->total);
 #endif
   return ret;
-}
-
-
-/**
- * Read file info from file.
- *
- * @return OK on success, SYSERR on error
- */
-static int readFileInfo(struct GE_Context * ectx,
-			int fd,
-			ECRS_FileInfo * fi) {
-  unsigned int size;
-  char * buf;
-
-  fi->meta = NULL;
-  fi->uri = NULL;
-  READINT(size);
-  if (size > 1024 * 1024) {
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  buf = MALLOC(size);
-  if (size != READ(fd,
-		   buf,
-		   size)) {
-    FREE(buf);
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  fi->meta = ECRS_deserializeMetaData(ectx,
-				      buf,
-				      size);
-  if (fi->meta == NULL) {
-    FREE(buf);
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  FREE(buf);
-
-  fi->uri
-    = read_uri(ectx, fd);
-  if (fi->uri == NULL) {
-    ECRS_freeMetaData(fi->meta);
-    fi->meta = NULL;
-    GE_BREAK(ectx, 0);
-    return SYSERR;
-  }
-  return OK;
 }
 
 static int checkMagic(int fd) {
@@ -351,14 +354,14 @@ static int readSearches(int fd,
     list->start_time += get_time() - stime;
     buf = read_string(fd, 1024 * 1024);
     if (buf == NULL) {
-      GE_BREAK(NULL, 0);	
-      break;
+       GE_BREAK(NULL, 0);
+       break;
     }
     list->uri
       = ECRS_stringToUri(NULL, buf);
     FREE(buf);
     if (list->uri == NULL) {
-      GE_BREAK(NULL, 0);	
+      GE_BREAK(NULL, 0);
       break;
     }
     if (! ECRS_isKeywordUri(list->uri)) {
