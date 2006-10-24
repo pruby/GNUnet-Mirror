@@ -79,6 +79,7 @@ static void * eventCallback(void * cls,
 				  0,
 				  NO,
 				  event->data.SearchResult.fi.uri,
+				  event->data.SearchResult.fi.meta,
 				  fn);
     FREE(fn);
     break;

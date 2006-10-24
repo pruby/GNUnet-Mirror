@@ -224,11 +224,14 @@ int main(int argc, char * argv[]){
 		  search);
   CHECK(uri != NULL);
   fn = makeName(43);
+  meta = ECRS_createMetaData();
   download = FSUI_startDownload(ctx,
 				0,
 				NO,
 				uri,
+				meta,
 				fn);
+  ECRS_freeMetaData(meta);
   FREE(fn);
   fn = NULL;
   ECRS_freeUri(uri);

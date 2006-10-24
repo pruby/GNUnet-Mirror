@@ -114,6 +114,7 @@ static void * eventCallback(void * cls,
 				    0,
 				    NO,
 				    event->data.SearchResult.fi.uri,
+				    event->data.SearchResult.fi.meta,
 				    fn);
       if (download == NULL) {
 	GE_BREAK(ectx, 0);
