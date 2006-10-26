@@ -103,6 +103,7 @@ static void writeDownloadList(struct GE_Context * ectx,
 			      FSUI_Context * ctx,
 			      FSUI_DownloadList * list) {
   int i;
+  FSUI_SearchList * pos;
 
   if (list == NULL) {
     WRITEINT(fd, 0);
@@ -117,6 +118,22 @@ static void writeDownloadList(struct GE_Context * ectx,
 	 list->total);
 #endif
   WRITEINT(fd, 1);
+  if (list->search == NULL) {
+    WRITEINT(fd, 0);
+  } else {
+    i = 1;
+    pos = ctx->activeSearches;
+    while (pos != list->search) {
+      i++;
+      pos = pos->next;
+      if (pos == NULL) {
+	GE_BREAK(ectx, 0);
+	i = 0;
+	break;
+      }
+    }
+    WRITEINT(fd, i);
+  }
   WRITEINT(fd, list->state);
   WRITEINT(fd, list->is_recursive);
   WRITEINT(fd, list->is_directory);
@@ -125,6 +142,7 @@ static void writeDownloadList(struct GE_Context * ectx,
   WRITELONG(fd, list->total);
   WRITELONG(fd, list->completed);
   WRITELONG(fd, get_time() - list->startTime);
+
   WRITESTRING(fd, list->filename);
   writeFileInfo(ectx,
 		fd, 

@@ -147,6 +147,11 @@ typedef struct FSUI_SearchList {
   struct ECRS_URI * uri;
 
   /**
+   * What downloads belong to this search?
+   */
+  struct FSUI_DownloadList ** my_downloads;
+
+  /**
    * List of all results found so far.
    */
   ECRS_FileInfo * resultsReceived;
@@ -175,6 +180,11 @@ typedef struct FSUI_SearchList {
    * Size of the resultsReceived array
    */
   unsigned int sizeResultsReceived;
+
+  /**
+   * Number of downloads associated with this search.
+   */ 
+  unsigned int my_downloads_size;
 
   /**
    * Size of the queue of results that matched at least
@@ -231,6 +241,11 @@ typedef struct FSUI_DownloadList {
    * going on in parallel.
    */
   struct FSUI_DownloadList * child;
+
+  /**
+   * Search that this download belongs to (maybe NULL)
+   */
+  struct FSUI_SearchList * search;
 
   /**
    * FSUI context for this download.

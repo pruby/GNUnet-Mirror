@@ -181,14 +181,17 @@ static int readFileInfo(struct GE_Context * ectx,
  * @return NULL on error AND on read of empty
  *  list (these two cannot be distinguished)
  */
-static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
-					    int fd,
-					    FSUI_Context * ctx,
-					    FSUI_DownloadList * parent) {
+static FSUI_DownloadList * 
+readDownloadList(struct GE_Context * ectx,
+		 int fd,
+		 FSUI_Context * ctx,
+		 FSUI_DownloadList * parent) {
   FSUI_DownloadList * ret;
+  FSUI_SearchList * pos;
   unsigned int big;
   int i;
   int ok;
+  int soff;
 
   GE_ASSERT(ectx, ctx != NULL);
   if ( (OK != read_int(fd, (int*) &big)) ||
@@ -200,6 +203,7 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
 	 sizeof(FSUI_DownloadList));
   ret->ctx = ctx;
   if ( (OK != read_int(fd, (int*) &ret->state)) ||
+       (OK != read_int(fd, (int*) &soff)) ||
        (OK != read_int(fd, (int*) &ret->is_recursive)) ||
        (OK != read_int(fd, (int*) &ret->is_directory)) ||
        (OK != read_int(fd, (int*) &ret->anonymityLevel)) ||
@@ -251,6 +255,19 @@ static FSUI_DownloadList * readDownloadList(struct GE_Context * ectx,
     return NULL;
   }
   ret->parent = parent;
+  if (soff == 0) {
+    ret->search = NULL;
+  } else {
+    pos = ctx->activeSearches;
+    while (--soff > 0) 
+      pos = pos->next;
+    ret->search = pos;
+    GROW(pos->my_downloads,
+	 pos->my_downloads_size,
+	 pos->my_downloads_size + 1);
+    pos->my_downloads[pos->my_downloads_size -1] = ret;
+
+  }
   ret->next = readDownloadList(ectx,
 			       fd,
 			       ctx,

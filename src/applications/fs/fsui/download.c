@@ -43,6 +43,7 @@ startDownload(struct FSUI_Context * ctx,
 	      const struct ECRS_URI * uri,
 	      const struct ECRS_MetaData * meta,
 	      const char * filename,
+	      struct FSUI_SearchList * psearch,
 	      FSUI_DownloadList * parent);
 
 static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
@@ -114,6 +115,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 		fi->uri,
 		fi->meta,
 		fullName,
+		NULL,
 		parent);
   FREE(fullName);
   return OK;
@@ -144,6 +146,8 @@ downloadProgressCallback(unsigned long long totalBytes,
   event.data.DownloadProgress.dc.cctx = dl->cctx;
   event.data.DownloadProgress.dc.ppos = dl->parent;
   event.data.DownloadProgress.dc.pcctx = dl->parent->cctx;
+  event.data.DownloadProgress.dc.spos = dl->search;
+  event.data.DownloadProgress.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
   event.data.DownloadProgress.completed = dl->completed;
   event.data.DownloadProgress.total = dl->total;
   event.data.DownloadProgress.last_offset = lastBlockOffset;
@@ -239,6 +243,8 @@ void * downloadThread(void * cls) {
     event.data.DownloadCompleted.dc.cctx = dl->cctx;
     event.data.DownloadCompleted.dc.ppos = dl->parent;
     event.data.DownloadCompleted.dc.pcctx = dl->parent->cctx;
+    event.data.DownloadCompleted.dc.spos = dl->search;
+    event.data.DownloadCompleted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
     event.data.DownloadCompleted.total = dl->total;
     event.data.DownloadCompleted.filename = dl->filename;
     event.data.DownloadCompleted.uri = dl->fi.uri;
@@ -252,6 +258,8 @@ void * downloadThread(void * cls) {
     event.data.DownloadError.dc.cctx = dl->cctx;
     event.data.DownloadError.dc.ppos = dl->parent;
     event.data.DownloadError.dc.pcctx = dl->parent->cctx;
+    event.data.DownloadError.dc.spos = dl->search;
+    event.data.DownloadError.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
     event.data.DownloadError.message = _("ECRS download failed (see logs)");
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
@@ -261,6 +269,8 @@ void * downloadThread(void * cls) {
     event.data.DownloadAborted.dc.cctx = dl->cctx;
     event.data.DownloadAborted.dc.ppos = dl->parent;
     event.data.DownloadAborted.dc.pcctx = dl->parent->cctx;
+    event.data.DownloadAborted.dc.spos = dl->search;
+    event.data.DownloadAborted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else {
@@ -344,6 +354,7 @@ startDownload(struct FSUI_Context * ctx,
 	      const struct ECRS_URI * uri,
 	      const struct ECRS_MetaData * meta,
 	      const char * filename,
+	      struct FSUI_SearchList * psearch,
 	      FSUI_DownloadList * parent) {
   FSUI_DownloadList * dl;
   FSUI_Event event;
@@ -364,6 +375,7 @@ startDownload(struct FSUI_Context * ctx,
   dl->state = FSUI_PENDING;
   dl->is_recursive = is_recursive;
   dl->parent = parent;
+  dl->search = psearch;
   dl->is_directory = SYSERR; /* don't know */
   dl->anonymityLevel = anonymityLevel;
   dl->ctx = ctx;
@@ -379,15 +391,23 @@ startDownload(struct FSUI_Context * ctx,
   event.data.DownloadStarted.dc.cctx = NULL;
   event.data.DownloadStarted.dc.ppos = dl->parent;
   event.data.DownloadStarted.dc.pcctx = dl->parent->cctx;
+  event.data.DownloadStarted.dc.spos = dl->search;
+  event.data.DownloadStarted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
   event.data.DownloadStarted.total = ECRS_fileSize(dl->fi.uri);
   event.data.DownloadStarted.filename = dl->filename;
-  event.data.DownloadStarted.uri = dl->fi.uri;
-  event.data.DownloadStarted.meta = dl->fi.meta;
+  event.data.DownloadStarted.fi.uri = dl->fi.uri;
+  event.data.DownloadStarted.fi.meta = dl->fi.meta;
   event.data.DownloadStarted.anonymityLevel = dl->anonymityLevel;
   dl->cctx = dl->ctx->ecb(dl->ctx->ecbClosure,
 			  &event);
   dl->next = parent->child;
   parent->child = dl;
+  if (psearch != NULL) {
+    GROW(psearch->my_downloads,
+	 psearch->my_downloads_size,
+	 psearch->my_downloads_size + 1);
+    psearch->my_downloads[psearch->my_downloads_size -1] = dl;
+  }
   return dl;
 }
 
@@ -404,17 +424,22 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 		   int doRecursive,
 		   const struct ECRS_URI * uri,
 		   const struct ECRS_MetaData * meta,
-		   const char * filename) {
+		   const char * filename,
+		   struct FSUI_SearchList * psearch,
+		   struct FSUI_DownloadList * pdownload) {
   struct FSUI_DownloadList * ret;
 
   MUTEX_LOCK(ctx->lock);
+  if (pdownload == NULL)
+    pdownload = &ctx->activeDownloads;
   ret = startDownload(ctx,
 		      anonymityLevel,
 		      doRecursive,
 		      uri,
 		      meta,
 		      filename,
-		      &ctx->activeDownloads);
+		      psearch,
+		      pdownload);
   MUTEX_UNLOCK(ctx->lock);
   return ret;
 }
@@ -591,8 +616,21 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   event.data.DownloadStopped.dc.cctx = dl->cctx;
   event.data.DownloadStopped.dc.ppos = dl->parent;
   event.data.DownloadStopped.dc.pcctx = dl->parent->cctx;
+  event.data.DownloadStopped.dc.spos = dl->search;
+  event.data.DownloadStopped.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
   ctx->ecb(ctx->ecbClosure,
 	   &event);
+  if (dl->search != NULL) {
+    for (i=0;i<dl->search->my_downloads_size;i++) {
+      if (dl->search->my_downloads[i] == dl) {
+	dl->search->my_downloads[i] =
+	  dl->search->my_downloads[dl->search->my_downloads_size -1];
+	GROW(dl->search->my_downloads,
+	     dl->search->my_downloads_size,
+	     dl->search->my_downloads_size - 1);
+      }
+    }
+  }
   for (i=dl->completedDownloadsCount-1;i>=0;i--)
     ECRS_freeUri(dl->completedDownloads[i]);
   GROW(dl->completedDownloads,

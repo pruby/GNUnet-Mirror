@@ -183,6 +183,18 @@ typedef struct {
 
   void * pcctx;
 
+  /**
+   * If this download is associated with a search,
+   * what is the search?
+   */
+  struct FSUI_SearchList * spos;
+  
+  /**
+   * If this download is associated with a search,
+   * what is the client context for the search?
+   */
+  void * sctx;
+
 } FSUI_DownloadContext;
 
 typedef struct {
@@ -426,12 +438,7 @@ typedef struct {
       /**
        * Original URI.
        */
-      const struct ECRS_URI * uri;
-
-      /**
-       * Metadata about the download.
-       */
-      const struct ECRS_MetaData * meta;
+      ECRS_FileInfo fi;
 
       unsigned int anonymityLevel;
 
@@ -462,15 +469,7 @@ typedef struct {
        */
       const char * filename;
 
-      /**
-       * Metadata about the download.
-       */
-      const struct ECRS_MetaData * meta;
-
-      /**
-       * Original URI.
-       */
-      const struct ECRS_URI * uri;
+      ECRS_FileInfo fi;
 
       unsigned int anonymityLevel;
 
@@ -791,7 +790,9 @@ FSUI_startDownload(struct FSUI_Context * ctx,
 		   int doRecursive,
 		   const struct ECRS_URI * uri,
 		   const struct ECRS_MetaData * meta,
-		   const char * filename); /* download.c */
+		   const char * filename,
+		   struct FSUI_SearchList * parentSearch,
+		   struct FSUI_DownloadList * parentDownload); /* download.c */
 
 /**
  * Abort a download.  If the dl is for a recursive

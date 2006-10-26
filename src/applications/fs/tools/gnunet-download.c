@@ -213,7 +213,9 @@ int main(int argc,
 			  do_recursive,
 			  uri,
 			  meta,
-			  filename);
+			  filename,
+			  NULL,
+			  NULL);
   ECRS_freeMetaData(meta);
   if (dl == NULL) {
     FSUI_stop(ctx);

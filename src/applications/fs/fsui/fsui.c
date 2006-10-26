@@ -72,6 +72,8 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
       event.data.DownloadResumed.dc.cctx = ret->cctx;
       event.data.DownloadResumed.dc.ppos = ret->parent;
       event.data.DownloadResumed.dc.pcctx = ret->parent->cctx;
+      event.data.DownloadResumed.dc.spos = ret->search;
+      event.data.DownloadResumed.dc.sctx = ret->search == NULL ? NULL : ret->search->cctx;
       event.data.DownloadResumed.completed = ret->completed;
       event.data.DownloadResumed.total = ret->total;
       now = get_time();
@@ -86,7 +88,8 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
       }
       event.data.DownloadResumed.eta = eta;
       event.data.DownloadResumed.filename = ret->filename;
-      event.data.DownloadResumed.uri = ret->fi.uri;
+      event.data.DownloadResumed.fi.uri = ret->fi.uri;
+      event.data.DownloadResumed.fi.meta = ret->fi.meta;
       event.data.DownloadResumed.anonymityLevel = ret->anonymityLevel;
       ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
       if (ret->child != NULL)
@@ -333,6 +336,8 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
       event.data.DownloadSuspended.dc.cctx = list->cctx;
       event.data.DownloadSuspended.dc.ppos = list->parent;
       event.data.DownloadSuspended.dc.pcctx = list->parent->cctx;
+      event.data.DownloadSuspended.dc.spos = list->search;
+      event.data.DownloadSuspended.dc.sctx = list->search == NULL ? NULL : list->search->cctx;
       ctx->ecb(ctx->ecbClosure, &event);
     }
     list = list->next;

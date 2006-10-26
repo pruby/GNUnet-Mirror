@@ -230,7 +230,9 @@ int main(int argc, char * argv[]){
 				NO,
 				uri,
 				meta,
-				fn);
+				fn,
+				NULL,
+				NULL);
   ECRS_freeMetaData(meta);
   FREE(fn);
   fn = NULL;

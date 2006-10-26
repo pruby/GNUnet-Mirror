@@ -80,7 +80,9 @@ static void * eventCallback(void * cls,
 				  NO,
 				  event->data.SearchResult.fi.uri,
 				  event->data.SearchResult.fi.meta,
-				  fn);
+				  fn,
+				  NULL,
+				  NULL);
     FREE(fn);
     break;
   case FSUI_upload_completed:
