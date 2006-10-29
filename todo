@@ -13,17 +13,17 @@ Notes:
 
 
 0.7.1 [10'06] (aka "stabilization")
-- finish util refactoring: [RC]
+- finish util refactoring: [RCpre0]
   * logger configuration:
     + util/boot code to parse configuration
       -- and improve scm code as well!
-  * error handling: [RC]
+  * error handling: [RCpre1]
     + tcpio
     + fs/module
     + fs/fslib
     + fs/ecrs
     + fs/fsui
-  * gnunet-setup: [RC]
+  * gnunet-setup: [RCpre0]
     + Scheme (scm) specification of entire configuration;
       check options used in modules:
       - advertising
@@ -53,7 +53,7 @@ Notes:
   * high CPU usage (quota exceeded) #1123 [CG, RC]
   * Windows installer, uninstall: Remove account [Nils, RC]
   * file/socket leak (#955) - possibly fixed
-- More testcases: [RC]
+- More testcases: [RCpre3]
   * advertising
   * ecrs_core
   * tracekit
