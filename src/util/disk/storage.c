@@ -418,17 +418,20 @@ int disk_file_write(struct GE_Context * ectx,
 		    unsigned int n,
 		    const char * mode) {
   int handle;
+  char * fn;
 
   /* open file, open with 600, create if not
      present, otherwise overwrite */
   GE_ASSERT(ectx, fileName != NULL);
-
+  fn = string_expandFileName(ectx, fileName);
   handle = disk_file_open(ectx,
-			  fileName,
+			  fn,
 			  O_CREAT | O_WRONLY,
 			  S_IRUSR | S_IWUSR);
-  if (handle == -1)
+  if (handle == -1) { 
+    FREE(fn);    
     return SYSERR;
+  }
   GE_ASSERT(ectx,
 	    (n == 0) || (buffer != NULL));
   /* write the buffer take length from the beginning */
@@ -436,18 +439,20 @@ int disk_file_write(struct GE_Context * ectx,
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_IMMEDIATE,
 			 "write",
-			 fileName);
-    disk_file_close(ectx, fileName, handle);
+			 fn);
+    disk_file_close(ectx, fn, handle);
+    FREE(fn);
     return SYSERR;
   }
-  disk_file_close(ectx, fileName, handle);
-  if (0 != CHMOD(fileName,
+  disk_file_close(ectx, fn, handle);
+  if (0 != CHMOD(fn,
 		 atoo(mode))) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_WARNING | GE_USER | GE_BULK,
 			 "chmod",
-			 fileName);
+			 fn);
   }
+  FREE(fn);
   return OK;
 }
 

@@ -574,13 +574,22 @@ int FSUI_abortUpload(struct FSUI_Context * ctx,
   if ( (ul->state != FSUI_ACTIVE) &&
        (ul->state != FSUI_PENDING) )
     return NO;
-  ul->state = FSUI_ABORTED;
-  c = ul->child;
-  while (c != NULL) {
-    FSUI_abortUpload(ctx, c);
-    c = c->next;
+  if (ul->state == FSUI_ACTIVE) {
+    ul->state = FSUI_ABORTED;
+    c = ul->child;
+    while (c != NULL) {
+      FSUI_abortUpload(ctx, c);
+      c = c->next;
+    }
+    PTHREAD_STOP_SLEEP(ul->shared->handle);
+  } else {
+    ul->state = FSUI_ABORTED_JOINED;
+    c = ul->child;
+    while (c != NULL) {
+      FSUI_abortUpload(ctx, c);
+      c = c->next;
+    }
   }
-  PTHREAD_STOP_SLEEP(ul->shared->handle);
   return OK;
 }
 

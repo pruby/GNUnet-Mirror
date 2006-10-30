@@ -184,8 +184,12 @@ int FSUI_abortUnindex(struct FSUI_Context * ctx,
   if ( (ul->state != FSUI_ACTIVE) &&
        (ul->state != FSUI_PENDING) )
     return NO;
-  ul->state = FSUI_ABORTED;
-  PTHREAD_STOP_SLEEP(ul->handle);
+  if (ul->state == FSUI_ACTIVE) {
+    ul->state = FSUI_ABORTED;
+    PTHREAD_STOP_SLEEP(ul->handle);
+  } else {
+    ul->state = FSUI_ABORTED_JOINED;
+  }
   return OK;
 }
 

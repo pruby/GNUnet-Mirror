@@ -564,8 +564,12 @@ int FSUI_abortDownload(struct FSUI_Context * ctx,
   if ( (dl->state != FSUI_ACTIVE) &&
        (dl->state != FSUI_PENDING) )
     return NO;
-  dl->state = FSUI_ABORTED;
-  PTHREAD_STOP_SLEEP(dl->handle);
+  if (dl->state == FSUI_ACTIVE) {
+    dl->state = FSUI_ABORTED;
+    PTHREAD_STOP_SLEEP(dl->handle);
+  } else {
+    dl->state = FSUI_ABORTED_JOINED;
+  }
   return OK;
 }
 

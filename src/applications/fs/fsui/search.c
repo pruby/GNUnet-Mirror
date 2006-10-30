@@ -337,8 +337,14 @@ FSUI_startSearch(struct FSUI_Context * ctx,
  */
 int FSUI_abortSearch(struct FSUI_Context * ctx,
 		     struct FSUI_SearchList * sl) {
+  if (sl->state == FSUI_PENDING) {
+    sl->state = FSUI_ABORTED_JOINED;
+    return OK;
+  }
+  if (sl->state != FSUI_ACTIVE) 
+    return SYSERR;
   sl->state = FSUI_ABORTED;
-  PTHREAD_STOP_SLEEP(sl->handle);
+  PTHREAD_STOP_SLEEP(sl->handle);  
   return OK;
 }
 

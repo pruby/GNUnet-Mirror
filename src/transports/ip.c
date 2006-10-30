@@ -309,7 +309,7 @@ static int getAddress(struct GC_Configuration * cfg,
   if (0 != GC_get_configuration_value_string(cfg,
 					     "NETWORK",
 					     "IP",
-					     "",
+					     "eth0",
 					     &ipString)) {
 #if LINUX || SOMEBSD || MINGW
     if (OK == getAddressFromIOCTL(cfg,

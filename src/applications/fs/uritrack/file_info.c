@@ -41,23 +41,19 @@
 static struct IPC_SEMAPHORE * createIPC(struct GE_Context * ectx,
 					struct GC_Configuration * cfg) {
   char * basename;
-  char * tmpname;
   char * ipcName;
   struct IPC_SEMAPHORE * sem;
   size_t n;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &basename);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &basename);
   n = strlen(basename) + 512;
-  tmpname = MALLOC(n);
-  SNPRINTF(tmpname, n, "%s/directory_ipc_lock", basename);
-  ipcName = string_expandFileName(ectx,
-				  tmpname);
+  ipcName = MALLOC(n);
+  SNPRINTF(ipcName, n, "%s/directory_ipc_lock", basename);
   FREE(basename);
-  FREE(tmpname);
   sem = IPC_SEMAPHORE_CREATE(ectx, ipcName, 1);
   FREE(ipcName);
   return sem;				
@@ -68,11 +64,11 @@ static char * getUriDbName(struct GE_Context * ectx,
   char * new;
   char * pfx;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &pfx);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &pfx);
   new = MALLOC(strlen(pfx) + strlen(STATE_NAME) + 2);
   strcpy(new, pfx);
   strcat(new, "/");
@@ -86,11 +82,11 @@ static char * getToggleName(struct GE_Context * ectx,
   char * nw;
   char * pfx;
 
-  GC_get_configuration_value_string(cfg,
-				    "GNUNET",
-				    "GNUNET_HOME",
-				    GNUNET_HOME_DIRECTORY,
-				    &pfx);
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNET",
+				      "GNUNET_HOME",
+				      GNUNET_HOME_DIRECTORY,
+				      &pfx);
   nw = MALLOC(strlen(pfx) + strlen(TRACK_OPTION) + 2);
   strcpy(nw, pfx);
   strcat(nw, "/");

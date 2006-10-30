@@ -360,10 +360,10 @@ void CO_publishToCollection(struct GE_Context * ectx,
   GE_ASSERT(ectx, OK ==
 	    ECRS_listDirectory(ectx,
 			       &collectionData->name[strlen(collectionData->name)+1],
-				   dirLen,
-				   &metaData,
-				   &collectCallback,
-				   &cls));
+			       dirLen,
+			       &metaData,
+			       &collectCallback,
+			       &cls));
   collectCallback(fi,
 		  NULL,
 		  NO,
