@@ -424,6 +424,8 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   FREENONNULL(iblocks[treedepth]);
   FREE(iblocks);
   FREE(dblock);
+  if (upcb != NULL)
+    upcb(filesize, filesize, eta, upcbClosure);
   CLOSE(fd);
   connection_destroy(sock);
   return OK;
