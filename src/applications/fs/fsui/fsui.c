@@ -66,36 +66,35 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
   cron_t eta;
 
   while (ret != NULL) {
-    if (ret->state == FSUI_PENDING) {
-      event.type = FSUI_download_resumed;
-      event.data.DownloadResumed.dc.pos = ret;
-      event.data.DownloadResumed.dc.cctx = ret->cctx;
-      event.data.DownloadResumed.dc.ppos = ret->parent;
-      event.data.DownloadResumed.dc.pcctx = ret->parent->cctx;
-      event.data.DownloadResumed.dc.spos = ret->search;
-      event.data.DownloadResumed.dc.sctx = ret->search == NULL ? NULL : ret->search->cctx;
-      event.data.DownloadResumed.completed = ret->completed;
-      event.data.DownloadResumed.total = ret->total;
-      now = get_time();
-      if ( (ret->total == 0) || (ret->completed == 0) ) {
+    event.type = FSUI_download_resumed;
+    event.data.DownloadResumed.dc.pos = ret;
+    event.data.DownloadResumed.dc.cctx = ret->cctx;
+    event.data.DownloadResumed.dc.ppos = ret->parent;
+    event.data.DownloadResumed.dc.pcctx = ret->parent->cctx;
+    event.data.DownloadResumed.dc.spos = ret->search;
+    event.data.DownloadResumed.dc.sctx = ret->search == NULL ? NULL : ret->search->cctx;
+    event.data.DownloadResumed.completed = ret->completed;
+    event.data.DownloadResumed.total = ret->total;
+    event.data.DownloadResumed.state = ret->state;
+    now = get_time();
+    if ( (ret->total == 0) || (ret->completed == 0) ) {
+      eta = now;
+    } else {
+      eta = (cron_t) (now - ret->runTime +
+		      (((double)(ret->runTime)/(double)ret->completed))
+		      * (double)ret->total);
+      if (eta < now)
 	eta = now;
-      } else {
-	eta = (cron_t) (now - ret->runTime +
-			(((double)(ret->runTime)/(double)ret->completed))
-			* (double)ret->total);
-	if (eta < now)
-	  eta = now;
-      }
-      event.data.DownloadResumed.eta = eta;
-      event.data.DownloadResumed.filename = ret->filename;
-      event.data.DownloadResumed.fi.uri = ret->fi.uri;
-      event.data.DownloadResumed.fi.meta = ret->fi.meta;
-      event.data.DownloadResumed.anonymityLevel = ret->anonymityLevel;
-      ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
-      if (ret->child != NULL)
-	signalDownloadResume(ret->child,
-			     ctx);
     }
+    event.data.DownloadResumed.eta = eta;
+    event.data.DownloadResumed.filename = ret->filename;
+    event.data.DownloadResumed.fi.uri = ret->fi.uri;
+    event.data.DownloadResumed.fi.meta = ret->fi.meta;
+    event.data.DownloadResumed.anonymityLevel = ret->anonymityLevel;
+    ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
+    if (ret->child != NULL)
+      signalDownloadResume(ret->child,
+			   ctx);
     ret = ret->next;
   }
 }
@@ -107,32 +106,31 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
   cron_t eta;
 
   while (ret != NULL) {
-    if (ret->state == FSUI_ACTIVE) {
-      event.type = FSUI_upload_resumed;
-      event.data.UploadResumed.uc.pos = ret;
-      event.data.UploadResumed.uc.cctx = NULL;
-      event.data.UploadResumed.uc.ppos = ret->parent;
-      event.data.UploadResumed.uc.pcctx = ret->parent->cctx;
-      event.data.UploadResumed.completed = ret->completed;
-      event.data.UploadResumed.total = ret->total;
-      now = get_time();
-      if ( (ret->total == 0) || (ret->completed == 0) ) {
+    event.type = FSUI_upload_resumed;
+    event.data.UploadResumed.uc.pos = ret;
+    event.data.UploadResumed.uc.cctx = NULL;
+    event.data.UploadResumed.uc.ppos = ret->parent;
+    event.data.UploadResumed.uc.pcctx = ret->parent->cctx;
+    event.data.UploadResumed.completed = ret->completed;
+    event.data.UploadResumed.total = ret->total;
+    event.data.UploadResumed.state = ret->state;
+    now = get_time();
+    if ( (ret->total == 0) || (ret->completed == 0) ) {
+      eta = now;
+    } else {
+      eta = (cron_t) (ret->start_time +
+		      (((double)(now - ret->start_time)/(double)ret->completed))
+		      * (double)ret->total);
+      if (eta < now)
 	eta = now;
-      } else {
-	eta = (cron_t) (ret->start_time +
-			(((double)(now - ret->start_time)/(double)ret->completed))
-			* (double)ret->total);
-	if (eta < now)
-	  eta = now;
-      }
-      event.data.UploadResumed.eta = eta;
-      event.data.UploadResumed.anonymityLevel = ret->shared->anonymityLevel;
-      event.data.UploadResumed.filename = ret->filename;
-      ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
-      if (ret->child != NULL)
-	signalUploadResume(ret->child,
-			   ctx);
     }
+    event.data.UploadResumed.eta = eta;
+    event.data.UploadResumed.anonymityLevel = ret->shared->anonymityLevel;
+    event.data.UploadResumed.filename = ret->filename;
+    ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
+    if (ret->child != NULL)
+      signalUploadResume(ret->child,
+			 ctx);    
     ret = ret->next;
   }
 }
@@ -240,16 +238,15 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   /* 2b) signal search restarts */
   list = ret->activeSearches;
   while (list != NULL) {
-    if (list->state == FSUI_PENDING) {
-      event.type = FSUI_search_resumed;
-      event.data.SearchResumed.sc.pos = list;
-      event.data.SearchResumed.sc.cctx = NULL;
-      event.data.SearchResumed.fis = list->resultsReceived;
-      event.data.SearchResumed.fisSize = list->sizeResultsReceived;
-      event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
-      event.data.SearchResumed.searchURI = list->uri;
-      list->cctx = cb(closure, &event);
-    }
+    event.type = FSUI_search_resumed;
+    event.data.SearchResumed.sc.pos = list;
+    event.data.SearchResumed.sc.cctx = NULL;
+    event.data.SearchResumed.fis = list->resultsReceived;
+    event.data.SearchResumed.fisSize = list->sizeResultsReceived;
+    event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
+    event.data.SearchResumed.searchURI = list->uri;
+    event.data.SearchResumed.state = list->state;
+    list->cctx = cb(closure, &event);    
     list = list->next;
   }
   /* 2c) signal upload restarts */
@@ -258,16 +255,15 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   /* 2d) signal unindex restarts */
   xlist = ret->unindexOperations;
   while (xlist != NULL) {
-    if (xlist->state == FSUI_PENDING) {
-      event.type = FSUI_unindex_resumed;
-      event.data.UnindexResumed.uc.pos = xlist;
-      event.data.UnindexResumed.uc.cctx = NULL;
-      event.data.UnindexResumed.completed = 0; /* FIXME */
-      event.data.UnindexResumed.total = 0; /* FIXME */
-      event.data.UnindexResumed.eta = 0; /* FIXME: use start_time for estimate! */
-      event.data.UnindexResumed.filename = xlist->filename;
-      xlist->cctx = cb(closure, &event);	
-    }
+    event.type = FSUI_unindex_resumed;
+    event.data.UnindexResumed.uc.pos = xlist;
+    event.data.UnindexResumed.uc.cctx = NULL;
+    event.data.UnindexResumed.completed = 0; /* FIXME */
+    event.data.UnindexResumed.total = 0; /* FIXME */
+    event.data.UnindexResumed.eta = 0; /* FIXME: use start_time for estimate! */
+    event.data.UnindexResumed.filename = xlist->filename;
+    event.data.UnindexResumed.state = xlist->state;
+    xlist->cctx = cb(closure, &event);	    
     xlist = xlist->next;
   }
 
@@ -327,19 +323,17 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
 				  FSUI_DownloadList * list) {
   FSUI_Event event;
   while (list != NULL) {
-    if (list->state == FSUI_PENDING) {
-      signalDownloadSuspend(ectx,
-			    ctx,
-			    list->child);
-      event.type = FSUI_download_suspended;
-      event.data.DownloadSuspended.dc.pos = list;
-      event.data.DownloadSuspended.dc.cctx = list->cctx;
-      event.data.DownloadSuspended.dc.ppos = list->parent;
-      event.data.DownloadSuspended.dc.pcctx = list->parent->cctx;
-      event.data.DownloadSuspended.dc.spos = list->search;
-      event.data.DownloadSuspended.dc.sctx = list->search == NULL ? NULL : list->search->cctx;
-      ctx->ecb(ctx->ecbClosure, &event);
-    }
+    signalDownloadSuspend(ectx,
+			  ctx,
+			  list->child);
+    event.type = FSUI_download_suspended;
+    event.data.DownloadSuspended.dc.pos = list;
+    event.data.DownloadSuspended.dc.cctx = list->cctx;
+    event.data.DownloadSuspended.dc.ppos = list->parent;
+    event.data.DownloadSuspended.dc.pcctx = list->parent->cctx;
+    event.data.DownloadSuspended.dc.spos = list->search;
+    event.data.DownloadSuspended.dc.sctx = list->search == NULL ? NULL : list->search->cctx;
+    ctx->ecb(ctx->ecbClosure, &event);    
     list = list->next;
   }
 }
@@ -352,17 +346,15 @@ static void signalUploadSuspend(struct GE_Context * ectx,
 				FSUI_UploadList * upos) {
   FSUI_Event event;
   while (upos != NULL) {
-    if (upos->state == FSUI_PENDING) {
-      signalUploadSuspend(ectx,
-			  ctx,
-			  upos->child);
-      event.type = FSUI_upload_suspended;
-      event.data.UploadSuspended.uc.pos = upos;
-      event.data.UploadSuspended.uc.cctx = upos->cctx;
-      event.data.UploadSuspended.uc.ppos = upos->parent;
-      event.data.UploadSuspended.uc.pcctx = upos->parent->cctx;
-      ctx->ecb(ctx->ecbClosure, &event);
-    }
+    signalUploadSuspend(ectx,
+			ctx,
+			upos->child);
+    event.type = FSUI_upload_suspended;
+    event.data.UploadSuspended.uc.pos = upos;
+    event.data.UploadSuspended.uc.cctx = upos->cctx;
+    event.data.UploadSuspended.uc.ppos = upos->parent;
+    event.data.UploadSuspended.uc.pcctx = upos->parent->cctx;
+    ctx->ecb(ctx->ecbClosure, &event);    
     upos = upos->next;
   }
 }
@@ -402,7 +394,8 @@ static void freeUploadList(struct FSUI_Context * ctx,
     freeUploadList(ctx, list->child);
     next = list->next;
     FREE(list->filename);
-    ECRS_freeMetaData(list->meta);
+    if (list->meta != NULL)
+      ECRS_freeMetaData(list->meta);
     if (list->keywords != NULL)
       ECRS_freeUri(list->keywords);
     if (list->uri != NULL)

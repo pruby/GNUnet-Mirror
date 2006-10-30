@@ -158,6 +158,64 @@ enum FSUI_EventType {
   FSUI_unindex_resumed,
 };
 
+
+/**
+ * Current state of a download (or uploads, or search,
+ * or unindex operations).
+ *
+ * PENDING means that the download is waiting for a thread
+ * to be assigned to run it.  Downloads start in this state,
+ * and during shutdown are serialized in this state.<br>
+ *
+ * ACTIVE means that there is currently a thread running
+ * the download (and that thread is allowed to continue).<br>
+ *
+ * COMPLETED means that the download is finished (but the
+ * thread has not been joined yet).  The download thread
+ * makes the transition from PENDING to COMPLETED when it
+ * is about to terminate.<br>
+ *
+ * COMPLETED_JOINED means that the download is finished and
+ * the thread has been joined.<br>
+ *
+ * ABORTED means that the user is causing the download to be
+ * terminated early (but the thread has not been joined yet).  The
+ * controller or the download thread make this transition; the
+ * download thread is supposed to terminate shortly after the state is
+ * moved to ABORTED.<br>
+ *
+ * ABORTED_JOINED means that the download did not complete
+ * successfully, should not be restarted and that the thread
+ * has been joined.<br>
+ *
+ * ERROR means that some fatal error is causing the download to be
+ * terminated early (but the thread has not been joined yet).  The
+ * controller or the download thread make this transition; the
+ * download thread is supposed to terminate shortly after the state is
+ * moved to ERROR.<br>
+ *
+ * ERROR_JOINED means that the download did not complete successfully,
+ * should not be restarted and that the thread has been joined.<br>
+ *
+ * SUSPENDING is used to notify the download thread that it
+ * should terminate because of an FSUI shutdown.  After this
+ * termination the code that joins the thread should move
+ * the state into PENDING (a new thread would not be started
+ * immediately because "threadPoolSize" will be 0 until FSUI
+ * resumes).
+ */
+typedef enum {
+  FSUI_PENDING = 0,
+  FSUI_ACTIVE = 1,
+  FSUI_COMPLETED = 2,
+  FSUI_COMPLETED_JOINED = 3,
+  FSUI_ABORTED = 4,
+  FSUI_ABORTED_JOINED = 5,
+  FSUI_ERROR = 6,
+  FSUI_ERROR_JOINED = 7,
+  FSUI_SUSPENDING = 8,
+} FSUI_State;
+
 /**
  * @brief Description of a download.  Gives the
  *  identifier of the download for FSUI and
@@ -295,6 +353,8 @@ typedef struct {
       unsigned int anonymityLevel;
 
       unsigned int fisSize;
+
+      FSUI_State state;
 
     } SearchResumed;
 
@@ -473,6 +533,8 @@ typedef struct {
 
       unsigned int anonymityLevel;
 
+      FSUI_State state;
+
     } DownloadResumed;
 
 
@@ -590,12 +652,14 @@ typedef struct {
        */
       cron_t eta;
 
-      unsigned int anonymityLevel;
-
       /**
        * Information about the upload.
        */
       const char * filename;
+
+      unsigned int anonymityLevel;
+
+      FSUI_State state;
 
     } UploadResumed;
 
@@ -657,6 +721,8 @@ typedef struct {
       cron_t eta;
 
       const char * filename;
+
+      FSUI_State state;
 
     } UnindexResumed;
 

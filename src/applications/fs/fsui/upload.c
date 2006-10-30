@@ -350,7 +350,8 @@ static void freeUploadList(struct FSUI_UploadList * ul) {
     ECRS_freeUri(ul->keywords);
   if (ul->uri != NULL)
     ECRS_freeUri(ul->uri);
-  ECRS_freeMetaData(ul->meta);
+  if (ul->meta != NULL)
+    ECRS_freeMetaData(ul->meta);
   /* unlink from parent */
   next = ul->parent->child;
   if (next == NULL) {
@@ -616,8 +617,13 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
 
   GE_ASSERT(ctx->ectx, ul != NULL);
   GE_ASSERT(ctx->ectx, ul->parent == &ctx->activeUploads);
-  PTHREAD_JOIN(ul->shared->handle,
-	       &unused);
+  if ( (ul->state == FSUI_COMPLETED) ||
+       (ul->state == FSUI_ABORTED) ||
+       (ul->state == FSUI_ERROR) ) {
+    PTHREAD_JOIN(ul->shared->handle,
+		 &unused);
+    ul->state++; /* add _JOINED */
+  } 
   signalUploadStopped(ul, 1);
   shared = ul->shared;
   freeUploadList(ul);

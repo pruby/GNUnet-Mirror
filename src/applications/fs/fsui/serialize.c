@@ -240,26 +240,13 @@ static void writeUnindexing(int fd,
   WRITEINT(fd, 0);
 }
 
-static void writeUploads(int fd,
-			 struct FSUI_Context * ctx,
-			 struct FSUI_UploadList * upos) {
-  struct FSUI_UploadShared * shared;
-
+static void writeUploadList(int fd,
+			    struct FSUI_Context * ctx,
+			    struct FSUI_UploadList * upos,
+			    int top) {
   while (upos != NULL) {
-    if (upos->parent == &ctx->activeUploads) {
-      shared = upos->shared;
-      WRITEINT(fd, (shared->extractor_config != NULL) ? 2 : 3);
-      WRITEINT(fd, shared->doIndex);
-      WRITEINT(fd, shared->anonymityLevel);
-      WRITEINT(fd, shared->priority);
-      WRITEINT(fd, shared->individualKeywords);	
-      WRITELONG(fd, shared->expiration);
-      if (shared->extractor_config != NULL)
-	WRITESTRING(fd, shared->extractor_config);
-    } else {
-      WRITEINT(fd, 1);
-      WRITEINT(fd, (upos->uri != NULL) ? 1 : 2);
-    }
+    WRITEINT(fd, (upos->uri != NULL) ? 1 : 2);    
+    WRITEINT(fd, 0x34D1F023);
     WRITEINT(fd, upos->state);
     WRITELONG(fd, upos->completed);
     WRITELONG(fd, upos->total);
@@ -268,7 +255,35 @@ static void writeUploads(int fd,
     if (upos->uri != NULL)
       writeURI(fd, upos->uri);
     WRITESTRING(fd, upos->filename);
-    writeUploads(fd, ctx, upos->child);
+    writeUploadList(fd, ctx, upos->child, NO);
+    if (top == YES)
+      break;
+    upos = upos->next;
+  }
+  WRITEINT(fd, 0);
+}
+
+static void writeUploads(int fd,
+			 struct FSUI_Context * ctx,
+			 struct FSUI_UploadList * upos) {
+  struct FSUI_UploadShared * shared;
+
+  while (upos != NULL) {
+    shared = upos->shared;
+    WRITEINT(fd, (shared->extractor_config != NULL) ? 2 : 3);
+    WRITEINT(fd, 0x44D1F024);
+    WRITEINT(fd, shared->doIndex);
+    WRITEINT(fd, shared->anonymityLevel);
+    WRITEINT(fd, shared->priority);
+    WRITEINT(fd, shared->individualKeywords);	
+    WRITELONG(fd, shared->expiration);
+    if (shared->extractor_config != NULL)
+      WRITESTRING(fd,
+		  shared->extractor_config);
+    writeUploadList(fd,
+		    ctx,
+		    upos,
+		    YES);
     upos = upos->next;
   }
   WRITEINT(fd, 0);
