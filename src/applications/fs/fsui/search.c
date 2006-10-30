@@ -353,6 +353,7 @@ int FSUI_abortSearch(struct FSUI_Context * ctx,
  */
 int FSUI_stopSearch(struct FSUI_Context * ctx,
 		    struct FSUI_SearchList * sl) {
+  FSUI_Event event;
   FSUI_SearchList * pos;
   FSUI_SearchList * prev;
   void * unused;
@@ -378,6 +379,13 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
   pos->next = NULL;
   PTHREAD_JOIN(pos->handle,
 	       &unused);
+  event.type = FSUI_search_stopped;
+  event.data.SearchStopped.sc.pos = pos;
+  event.data.SearchStopped.sc.cctx = pos->cctx;
+  pos->ctx->ecb(pos->ctx->ecbClosure,
+		&event);
+
+
   ECRS_freeUri(pos->uri);
   for (i=0;i<pos->sizeResultsReceived;i++) {
     ECRS_freeUri(pos->resultsReceived[i].uri);
