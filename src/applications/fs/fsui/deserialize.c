@@ -265,14 +265,20 @@ readDownloadList(struct GE_Context * ectx,
     ret->search = NULL;
   } else {
     pos = ctx->activeSearches;
-    while (--soff > 0) 
+    while (--soff > 0) {
+      if (pos == NULL) {
+	GE_BREAK(NULL, 0);
+	break;
+      }
       pos = pos->next;
+    }
     ret->search = pos;
-    GROW(pos->my_downloads,
-	 pos->my_downloads_size,
-	 pos->my_downloads_size + 1);
-    pos->my_downloads[pos->my_downloads_size -1] = ret;
-
+    if (pos != NULL) {
+      GROW(pos->my_downloads,
+	   pos->my_downloads_size,
+	   pos->my_downloads_size + 1);
+      pos->my_downloads[pos->my_downloads_size -1] = ret;
+    }
   }
   ret->next = readDownloadList(ectx,
 			       fd,
