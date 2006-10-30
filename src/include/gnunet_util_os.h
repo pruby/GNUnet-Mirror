@@ -208,15 +208,13 @@ int os_modify_autostart(struct GE_Context * ectx,
  *           adding/removing users
  *        c) doAdd is NO, but user does not exist
  *        d) doAdd is YES, and user already exists
- * @param name the name of the new user or group
  * @param doAdd YES to add, NO to remove user, SYSERR to
  *        purge (removes user AND group)
  * @param name the name of the user
  * @param group name of the group
  * @return OK on success, SYSERR on error
  */
-int os_modify_user(struct GE_Context * ectx,
-		   int testCapability,
+int os_modify_user(int testCapability,
 		   int doAdd,
 		   const char * name,
 		   const char * group);

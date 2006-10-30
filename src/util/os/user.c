@@ -28,8 +28,7 @@
 #include "gnunet_util_string.h"
 #include "platform.h"
 
-int os_modify_user(struct GE_Context * ectx,
-		   int testCapability,
+int os_modify_user(int testCapability,
 		   int doAdd,		
 		   const char *group_name,
 		   const char *user_name) {
