@@ -73,15 +73,8 @@ void * FSUI_unindexThread(void * cls) {
 			   &size,
 			   YES)) {
     GE_BREAK(utc->ctx->ectx, 0);
-    event.data.UnindexCompleted.total = 0;
+    size = 0;
   }
-  event.type = FSUI_unindex_started;
-  event.data.UnindexStarted.uc.pos = utc;
-  event.data.UnindexStarted.uc.cctx = NULL;
-  event.data.UnindexStarted.total = size;
-  event.data.UnindexStarted.filename = utc->filename;
-  utc->cctx = utc->ctx->ecb(utc->ctx->ecbClosure,
-			    &event);
   ret = ECRS_unindexFile(utc->ctx->ectx,
 			 utc->ctx->cfg,
 			 utc->filename,
@@ -126,6 +119,31 @@ void * FSUI_unindexThread(void * cls) {
 }
 
 /**
+ * Thread that does the unindex.
+ */
+static void * FSUI_unindexThreadEvent(void * cls) {
+  FSUI_UnindexList * utc = cls;
+  FSUI_Event event;
+  unsigned long long size;
+
+  if (OK != disk_file_size(utc->ctx->ectx,
+			   utc->filename,
+			   &size,
+			   YES)) {
+    GE_BREAK(utc->ctx->ectx, 0);  
+    size = 0;
+  }
+  event.type = FSUI_unindex_started;
+  event.data.UnindexStarted.uc.pos = utc;
+  event.data.UnindexStarted.uc.cctx = NULL;
+  event.data.UnindexStarted.total = size;
+  event.data.UnindexStarted.filename = utc->filename;
+  utc->cctx = utc->ctx->ecb(utc->ctx->ecbClosure,
+			    &event);
+  return FSUI_unindexThread(utc);
+}
+
+/**
  * Start unindexing a file.  Note that an unindex cannot be stopped once
  * started (not necessary anyway), but it can fail.  The function also
  * automatically the unindexed file in the global keyword space under
@@ -155,7 +173,7 @@ FSUI_startUnindex(struct FSUI_Context * ctx,
   utc->filename = STRDUP(filename);
   utc->start_time = get_time();
   utc->state = FSUI_ACTIVE;
-  utc->handle = PTHREAD_CREATE(&FSUI_unindexThread,
+  utc->handle = PTHREAD_CREATE(&FSUI_unindexThreadEvent,
 			       utc,
 			       32 * 1024);
   if (utc->handle == NULL) {

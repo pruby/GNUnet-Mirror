@@ -201,10 +201,6 @@ void * FSUI_uploadThread(void * cls) {
   char * filename;
   struct ECRS_URI * uri;
 
-  if (utc->parent == &utc->shared->ctx->activeUploads) {
-    /* top-level call: signal client! */
-    signalUploadStarted(utc, 1);
-  }
   ectx = utc->shared->ctx->ectx;
   GE_ASSERT(ectx, utc->filename != NULL);
   cpos = utc->child;
@@ -326,6 +322,20 @@ void * FSUI_uploadThread(void * cls) {
   FREE(filename);
   return NULL;
 }
+
+/**
+ * Thread that does the upload.
+ */
+static void * FSUI_uploadThreadEvent(void * cls) {
+  FSUI_UploadList * utc = cls;
+ 
+  if (utc->parent == &utc->shared->ctx->activeUploads) {
+    /* top-level call: signal client! */
+    signalUploadStarted(utc, 1);
+  }
+  return FSUI_uploadThread(utc);
+}
+
 
 static void freeUploadList(struct FSUI_UploadList * ul) {
   struct FSUI_UploadList * next;
@@ -543,7 +553,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 		  keyUri,
 		  md,
 		  &ctx->activeUploads);
-  shared->handle = PTHREAD_CREATE(&FSUI_uploadThread,
+  shared->handle = PTHREAD_CREATE(&FSUI_uploadThreadEvent,
 				  ul,
 				  128 * 1024);
   if (shared->handle == NULL) {

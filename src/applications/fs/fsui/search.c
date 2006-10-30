@@ -242,13 +242,6 @@ void * FSUI_searchThread(void * cls) {
   FSUI_Event event;
   int ret;
 
-  event.type = FSUI_search_started;
-  event.data.SearchStarted.sc.pos = pos;
-  event.data.SearchStarted.sc.cctx = NULL;
-  event.data.SearchStarted.searchURI = pos->uri;
-  event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
-  pos->cctx = pos->ctx->ecb(pos->ctx->ecbClosure,
-			    &event);
   ret = ECRS_search(pos->ctx->ectx,
 		    pos->ctx->cfg,
 		    pos->uri,
@@ -288,6 +281,23 @@ void * FSUI_searchThread(void * cls) {
 }
 
 /**
+ * Thread that searches for data (and signals startup).
+ */
+void * FSUI_searchThreadSignal(void * cls) {
+  FSUI_SearchList * pos = cls;
+  FSUI_Event event;
+
+  event.type = FSUI_search_started;
+  event.data.SearchStarted.sc.pos = pos;
+  event.data.SearchStarted.sc.cctx = NULL;
+  event.data.SearchStarted.searchURI = pos->uri;
+  event.data.SearchStarted.anonymityLevel = pos->anonymityLevel;
+  pos->cctx = pos->ctx->ecb(pos->ctx->ecbClosure,
+			    &event);
+  return FSUI_searchThread(pos);
+}
+
+/**
  * Start a search.
  */
 struct FSUI_SearchList *
@@ -314,7 +324,7 @@ FSUI_startSearch(struct FSUI_Context * ctx,
   pos->ctx = ctx;
   pos->start_time = get_time();
   pos->timeout = timeout;
-  pos->handle = PTHREAD_CREATE(&FSUI_searchThread,
+  pos->handle = PTHREAD_CREATE(&FSUI_searchThreadSignal,
 			       pos,
 			       32 * 1024);
   if (pos->handle == NULL) {

@@ -26,6 +26,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_util.h"
 #include "gnunet_util_boot.h"
 #include "gnunet_stats_lib.h"
@@ -33,7 +34,7 @@
 
 static int lastIp2p = 42; /* not YES or NO */
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 /**
  * Print statistics received.
