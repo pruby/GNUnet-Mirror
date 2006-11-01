@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -24,6 +24,7 @@
  * @brief functions to read or change the OS configuration
  * @author Nils Durner
  */
+
 #include "platform.h"
 #include "gnunet_util_os.h"
 #include "gnunet_util_string.h"
@@ -94,7 +95,7 @@ void os_list_network_interfaces(struct GE_Context *ectx,
 
 /**
  * @brief Checks if we can start GNUnet automatically
- * @return 1 if yes, 0 otherwise
+ * @return YES if yes, NO otherwise
  */
 static int isOSAutostartCapable()
 {
@@ -103,18 +104,48 @@ static int isOSAutostartCapable()
   {
     /* Debian */
     if(ACCESS("/etc/init.d/", W_OK) == 0)
-      return 1;
+      return YES;
   }
-  return 0;
+  return NO;
 #else
 #ifdef WINDOWS
-  return IsWinNT();
+  return IsWinNT() ? YES : NO;
 #else
-  return 0;
+  return NO;
 #endif
 #endif
 }
 
+/**
+ * @brief Make "application" start automatically
+ *
+ * @param testCapability YES to merely probe if the OS has this
+ *        functionality (in that case, no actual operation is
+ *        performed).  SYSERR is returned if
+ *        a) autostart is not supported,
+ *        b) the application does not seem to exist
+ *        c) the user or group do not exist
+ *        d) the user has insufficient permissions for
+ *           changing autostart
+ *        e) doAutoStart is NO, but autostart is already
+ *           disabled
+ *        f) doAutoStart is YES, but autostart is already
+ *           enabled
+ * @param doAutoStart YES to enable autostart of the
+ *        application, NO to disable it
+ * @param username name of the user account to use
+ * @param groupname name of the group to use
+ * @returns YES on success, NO if unsupported, SYSERR on failure or one of
+ *          these error codes:
+ *  Windows
+ *    2 SCM could not be opened
+ *    3 service could not be created/deleted
+ *    4 permissions could not be granted
+ *    5 registry could not be accessed
+ *    6 service could not be accessed
+ *  Unix
+ *    2 startup script could not be opened
+ */
 int os_modify_autostart(struct GE_Context *ectx,
                         int testCapability,
                         int doAutoStart,
@@ -142,15 +173,16 @@ int os_modify_autostart(struct GE_Context *ectx,
       switch (InstallAsService(username))
       {
         case 0:
-        case 1:
           break;
+        case 1:
+          return NO;
         case 2:
-          if(GetLastError() != ERROR_SERVICE_EXISTS)
-            return 1;
+            return 2;
         case 3:
-          return 2;
+          if(GetLastError() != ERROR_SERVICE_EXISTS)
+            return 3;
         default:
-          return -1;
+          return SYSERR;
       }
 
       /* Grant permissions to the GNUnet directory */
@@ -161,7 +193,7 @@ int os_modify_autostart(struct GE_Context *ectx,
         plibc_conv_to_win_path("/", szHome);
 
         if(!AddPathAccessRights(szHome, username, GENERIC_ALL))
-          return 3;
+          return 4;
       }
     }
     else
@@ -178,12 +210,12 @@ int os_modify_autostart(struct GE_Context *ectx,
         if(RegSetValueEx(hKey,
                          "GNUnet",
                          0, REG_SZ, szPath, strlen(szPath)) != ERROR_SUCCESS)
-          return 4;
+          return 5;
 
         RegCloseKey(hKey);
       }
       else
-        return 4;
+        return 5;
     }
   }
   else
@@ -193,16 +225,17 @@ int os_modify_autostart(struct GE_Context *ectx,
       switch (UninstallService())
       {
         case 0:
-        case 1:
           break;
+        case 1:
+          return NO;
         case 2:
-          return 1;
+          return 2;
         case 3:
-          return 5;
-        case 4:
           return 6;
+        case 4:
+          return 3;
         default:
-          return -1;
+          return SYSERR;
       }
     }
     else
@@ -216,8 +249,12 @@ int os_modify_autostart(struct GE_Context *ectx,
         RegDeleteValue(hKey, "GNUnet");
         RegCloseKey(hKey);
       }
+      else
+        return 5;
     }
   }
+  
+  return YES;
 #else
   struct stat buf;
 
@@ -248,7 +285,7 @@ int os_modify_autostart(struct GE_Context *ectx,
         GE_LOG_STRERROR_FILE(ectx,
                              GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
                              "fopen", "/etc/init.d/gnunetd");
-        return 1;
+        return 2;
       }
 
       fprintf(f,
@@ -301,7 +338,7 @@ int os_modify_autostart(struct GE_Context *ectx,
                            "system", "/usr/sbin/update-rc.d");
       return SYSERR;
     }
-    return OK;
+    return YES;
   }
   else
   {                             /* REMOVE autostart */
@@ -320,7 +357,7 @@ int os_modify_autostart(struct GE_Context *ectx,
                            "system", "/usr/sbin/update-rc.d");
       return SYSERR;
     }
-    return OK;
+    return YES;
   }
 #endif
   return SYSERR;

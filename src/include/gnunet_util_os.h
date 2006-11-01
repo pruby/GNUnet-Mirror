@@ -188,7 +188,16 @@ int os_set_process_priority(struct GE_Context * ectx,
  *        application, NO to disable it
  * @param username name of the user account to use
  * @param groupname name of the group to use
- * @return OK on success, SYSERR on error
+ * @returns YES on success, NO if unsupported, SYSERR on failure or one of
+ *          these error codes:
+ *  Windows
+ *    2 SCM could not be opened
+ *    3 service could not be created/deleted
+ *    4 permissions could not be granted
+ *    5 registry could not be accessed
+ *    6 service could not be accessed
+ *  Unix
+ *    2 startup script could not be opened
  */
 int os_modify_autostart(struct GE_Context * ectx,
 			int testCapability,
