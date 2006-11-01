@@ -131,18 +131,20 @@ static void fixState(FSUI_State * state) {
  *
  * @return OK on success, SYSERR on error
  */
-static int readFileInfo(struct GE_Context * ectx,
-			int fd,
-			ECRS_FileInfo * fi) {
+static struct ECRS_MetaData * 
+read_meta(struct GE_Context * ectx,
+	  int fd) {
   unsigned int size;
   char * buf;
+  struct ECRS_MetaData * meta;
 
-  fi->meta = NULL;
-  fi->uri = NULL;
-  READINT(size);
+  if (read_int(fd, &size) != OK) {
+    GE_BREAK(ectx, 0);
+    return NULL;    
+  }
   if (size > 1024 * 1024) {
     GE_BREAK(ectx, 0);
-    return SYSERR;
+    return NULL;
   }
   buf = MALLOC(size);
   if (size != READ(fd,
@@ -150,17 +152,34 @@ static int readFileInfo(struct GE_Context * ectx,
 		   size)) {
     FREE(buf);
     GE_BREAK(ectx, 0);
-    return SYSERR;
+    return NULL;
   }
-  fi->meta = ECRS_deserializeMetaData(ectx,
-				      buf,
-				      size);
-  if (fi->meta == NULL) {
+  meta = ECRS_deserializeMetaData(ectx,
+				  buf,
+				  size);
+  if (meta == NULL) {
     FREE(buf);
+    GE_BREAK(ectx, 0);
+    return NULL;
+  }
+  FREE(buf);
+  return meta;
+}
+
+/**
+ * Read file info from file.
+ *
+ * @return OK on success, SYSERR on error
+ */
+static int readFileInfo(struct GE_Context * ectx,
+			int fd,
+			ECRS_FileInfo * fi) {
+  fi->meta = read_meta(ectx, fd);
+  if (fi->meta == NULL) {
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-  FREE(buf);
+  fi->uri = NULL;
 
   fi->uri
     = read_uri(ectx, fd);
@@ -529,7 +548,7 @@ static int readUploadList(struct FSUI_Context * ctx,
     READINT(big);
     if (big == 0)
       return OK;
-    if ( (big != 1) && (big != 2) ) {
+    if ( (big < 1) || (big > 15) ) {
       GE_BREAK(NULL, 0);
       return SYSERR;
     }
@@ -554,12 +573,36 @@ static int readUploadList(struct FSUI_Context * ctx,
     if (l.start_time != 0)
       l.start_time = (get_time() - stime) + l.start_time;
     l.uri = NULL;
-    if (big == 1)
+    if ( (big & 2) == 2)
       READURI(l.uri);
+    if ( (big & 4) == 4) {
+      l.keywords = read_uri(ctx->ectx, fd);
+      if (l.keywords == NULL) {
+	if (l.uri != NULL) 
+	  ECRS_freeUri(l.uri);
+	GE_BREAK(NULL, 0);
+	break;
+      }
+    }
+    if ( (big & 8) == 8) {
+      l.meta = read_meta(ctx->ectx, fd);
+      if (l.meta == NULL) {
+	if (l.uri != NULL) 
+	  ECRS_freeUri(l.uri);
+	if (l.keywords != NULL) 
+	  ECRS_freeUri(l.keywords);
+	GE_BREAK(NULL, 0);
+	break;
+      }
+    }     
     l.filename = read_string(fd, 1024*1024);
     if (l.filename == NULL) {
       if (l.uri != NULL)
 	ECRS_freeUri(l.uri);
+      if (l.meta != NULL)
+	ECRS_freeMetaData(l.meta);
+      if (l.keywords != NULL)
+	ECRS_freeUri(l.keywords);
       GE_BREAK(NULL, 0);
       break;
     }

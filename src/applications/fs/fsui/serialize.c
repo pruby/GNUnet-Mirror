@@ -69,20 +69,19 @@ static void WRITESTRING(int fd,
 	strlen(name));
 }
 
-
-static void writeFileInfo(struct GE_Context * ectx,
+static void writeMetaData(struct GE_Context * ectx,
 			  int fd,
-			  const ECRS_FileInfo * fi) {
+			  const struct ECRS_MetaData * meta) {
   unsigned int size;
   char * buf;
 
-  size = ECRS_sizeofMetaData(fi->meta,
+  size = ECRS_sizeofMetaData(meta,
 			     ECRS_SERIALIZE_FULL | ECRS_SERIALIZE_NO_COMPRESS);
   if (size > 1024 * 1024)
     size = 1024 * 1024;
   buf = MALLOC(size);
   ECRS_serializeMetaData(ectx,
-			 fi->meta,
+			 meta,
 			 buf,
 			 size,
 			 ECRS_SERIALIZE_PART | ECRS_SERIALIZE_NO_COMPRESS);
@@ -91,6 +90,13 @@ static void writeFileInfo(struct GE_Context * ectx,
 	buf,
 	size);
   FREE(buf);
+}
+
+
+static void writeFileInfo(struct GE_Context * ectx,
+			  int fd,
+			  const ECRS_FileInfo * fi) {
+  writeMetaData(ectx, fd, fi->meta);
   writeURI(fd, fi->uri);
 }
 
@@ -244,8 +250,17 @@ static void writeUploadList(int fd,
 			    struct FSUI_Context * ctx,
 			    struct FSUI_UploadList * upos,
 			    int top) {
+  int bits;
+
   while (upos != NULL) {
-    WRITEINT(fd, (upos->uri != NULL) ? 1 : 2);    
+    bits = 1;
+    if (upos->uri != NULL)
+      bits |= 2;
+    if (upos->keywords != NULL)
+      bits |= 4;
+    if (upos->meta != NULL)
+      bits |= 8;
+    WRITEINT(fd, bits);
     WRITEINT(fd, 0x34D1F023);
     WRITEINT(fd, upos->state);
     WRITELONG(fd, upos->completed);
@@ -254,6 +269,10 @@ static void writeUploadList(int fd,
     WRITELONG(fd, upos->start_time);
     if (upos->uri != NULL)
       writeURI(fd, upos->uri);
+    if (upos->keywords != NULL)
+      writeURI(fd, upos->keywords);
+    if (upos->meta != NULL)
+      writeMetaData(ctx->ectx, fd, upos->meta);
     WRITESTRING(fd, upos->filename);
     writeUploadList(fd, ctx, upos->child, NO);
     if (top == YES)
