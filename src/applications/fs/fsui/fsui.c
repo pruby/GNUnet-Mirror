@@ -282,7 +282,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
   /* 3c) resume unindexing */
   xlist = ret->unindexOperations;
   while (xlist != NULL) {
-    if (xlist->state != FSUI_PENDING) {
+    if (xlist->state == FSUI_PENDING) {
       xlist->state = FSUI_ACTIVE;
       xlist->handle = PTHREAD_CREATE(&FSUI_unindexThread,
 				     xlist,

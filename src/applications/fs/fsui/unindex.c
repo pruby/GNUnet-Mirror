@@ -110,7 +110,7 @@ void * FSUI_unindexThread(void * cls) {
     GE_BREAK(NULL,
 	     utc->state == FSUI_PENDING);
   }
-#if 1
+#if 0
   GE_LOG(utc->ctx->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FSUI unindexThread exits in state %u.\n",
