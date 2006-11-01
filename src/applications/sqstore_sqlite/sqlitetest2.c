@@ -47,7 +47,7 @@
 /**
  * Target datastore size (in bytes).
  */
-#define MAX_SIZE 1024 * 1024 * 4
+#define MAX_SIZE 1024 * 1024 * 256
 
 /**
  * Report progress outside of major reports? Should probably be YES if
@@ -72,9 +72,18 @@
  */
 #define ITERATIONS 1000000
 
+/**
+ * Name of the database on disk.
+ */
+#define DB_NAME "/tmp/gnunet-sqlite-sqstore-test/data/fs/content/gnunet.dat"
+
 static unsigned long long stored_bytes;
 
 static unsigned long long stored_entries;
+
+static unsigned long long stored_ops;
+
+static cron_t start_time;
 
 static int putValue(SQstore_ServiceAPI * api,
 		    int i) {
@@ -113,6 +122,7 @@ static int putValue(SQstore_ServiceAPI * api,
     fprintf(stderr, "I");
 #endif
   stored_bytes += ntohl(value->size);
+  stored_ops++;
   stored_entries++;
   FREE(value);
   return OK;
@@ -147,6 +157,10 @@ static int test(SQstore_ServiceAPI * api) {
   int i;
   int j;
   unsigned long long size;
+  int have_file;
+
+  have_file = OK == disk_file_test(NULL,
+				   DB_NAME);
 
   for (i=0;i<ITERATIONS;i++) {
 #if REPORT_ID
@@ -167,21 +181,25 @@ static int test(SQstore_ServiceAPI * api) {
 
     /* every 10 iterations print status */
     if ((i % 10) == 9) {
-      disk_file_size(NULL,
-		     "/tmp/gnunet-sqlite-sqstore-test/data/fs/content/gnunet.dat",
-		     &size,
-		     NO);
+      size = 0;
+      if (have_file)
+	disk_file_size(NULL,
+		       DB_NAME,
+		       &size,
+		       NO);
       printf(
 #if REPORT_ID
 	     "\n"
 #endif
-	     "Useful %llu, API %llu (Useful-API: %lld/%.2f), disk %llu (overhead: %.2f)\n",
-	     stored_bytes, 
-	     api->getSize(),
-	     api->getSize() - stored_bytes,
-	     1.0 * (api->getSize() - stored_bytes) / (stored_entries * sizeof(Datastore_Value)),
-	     size,
-	     1.0 * size / stored_bytes);
+	     "Useful %llu, API %llu (Useful-API: %lld/%.2f), disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
+	     stored_bytes / 1024,  /* used size in k */
+	     api->getSize() / 1024, /* API-reported size in k */
+	     (api->getSize() - stored_bytes) / 1024, /* difference between reported and used */
+	     1.0 * (api->getSize() - stored_bytes) / (stored_entries * sizeof(Datastore_Value)), /* relative to number of entries (should be equal to internal overhead per entry) */
+	     size / 1024, /* disk size in kb */
+	     1.0 * size / stored_bytes, /* overhead */
+	     (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
+	     1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */
     }
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
@@ -213,6 +231,7 @@ int main(int argc, char *argv[]) {
 	   NULL);
   api = requestService("sqstore");
   if (api != NULL) {
+    start_time = get_time();
     ok = test(api);
     releaseService(api);
   } else
