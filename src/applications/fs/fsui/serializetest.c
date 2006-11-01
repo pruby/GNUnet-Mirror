@@ -60,6 +60,9 @@ static volatile enum FSUI_EventType lastEvent;
 static volatile enum FSUI_EventType waitForEvent;
 static struct FSUI_Context * ctx;
 static struct ECRS_URI * upURI;
+static struct FSUI_UnindexList * unindex;
+static struct FSUI_UploadList * upload;
+
 
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
@@ -104,15 +107,32 @@ static void * eventCallback(void * cls,
 #endif
     break;
   case FSUI_unindex_resumed:
+#if DEBUG_VERBOSE
+    fprintf(stderr,
+	    "Received RESUMING: %d\n",
+	    event->type);
+#endif
+    unindex = event->data.UnindexResumed.uc.pos;
+    break;
   case FSUI_upload_resumed:
 #if DEBUG_VERBOSE
     fprintf(stderr,
 	    "Received RESUMING: %d\n",
 	    event->type);
 #endif
+    upload = event->data.UploadResumed.uc.pos;
+    break;
     break;
   case FSUI_unindex_suspended:
+    unindex = NULL;
+#if DEBUG_VERBOSE
+    fprintf(stderr,
+	    "Received SUSPENDING: %d\n",
+	    event->type);
+#endif
+    break;
   case FSUI_upload_suspended:
+    upload = NULL;
 #if DEBUG_VERBOSE
     fprintf(stderr,
 	    "Received SUSPENDING: %d\n",
@@ -156,8 +176,6 @@ int main(int argc, char * argv[]){
   struct ECRS_MetaData * meta;
   struct ECRS_URI * kuri = NULL;
   struct GC_Configuration * cfg;
-  struct FSUI_UnindexList * unindex = NULL;
-  struct FSUI_UploadList * upload = NULL;
 
   ok = YES;
   cfg = GC_create_C_impl();
