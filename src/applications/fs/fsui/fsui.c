@@ -403,7 +403,8 @@ static void freeUploadList(struct FSUI_Context * ctx,
     if (list->parent == &ctx->activeUploads) {
       shared = list->shared;
       EXTRACTOR_removeAll(shared->extractors);
-      ECRS_freeUri(shared->global_keywords);
+      if (shared->global_keywords != NULL)
+	ECRS_freeUri(shared->global_keywords);
       FREENONNULL(shared->extractor_config);
       FREE(shared);
     }

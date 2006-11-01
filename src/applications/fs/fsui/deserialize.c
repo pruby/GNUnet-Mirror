@@ -604,7 +604,7 @@ static int readUploads(int fd,
     READINT(big);
     if (big == 0)
       return OK;
-    if ( (big != 2) && (big != 3) ) {
+    if ( (big < 1) && (big > 7) ) {
       GE_BREAK(NULL, 0);
       break;
     }
@@ -621,8 +621,16 @@ static int readUploads(int fd,
     READINT(sshared.priority);
     READINT(sshared.individualKeywords);
     READLONG(sshared.expiration);
-    if (big == 2)
+    if ((big & 2) == 2)
       READSTRING(sshared.extractor_config, 1024*1024);
+    if ((big & 4) == 4) {
+      sshared.global_keywords = read_uri(ctx->ectx, fd);
+      if (sshared.global_keywords == NULL) {
+	FREENONNULL(sshared.extractor_config);
+	GE_BREAK(NULL, 0);
+	return SYSERR;
+      }
+    }
     shared = MALLOC(sizeof(FSUI_UploadShared));    
     memcpy(shared,
 	   &sshared,

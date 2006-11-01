@@ -488,7 +488,8 @@ static void signalUploadStopped(struct FSUI_UploadList * ul,
 }
 
 static void freeShared(struct FSUI_UploadShared * shared) {
-  ECRS_freeUri(shared->global_keywords);
+  if (shared->global_keywords != NULL)
+    ECRS_freeUri(shared->global_keywords);
   EXTRACTOR_removeAll(shared->extractors);
   FREENONNULL(shared->extractor_config);
   FREE(shared);
@@ -543,7 +544,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   shared->extractors = extractors;
   shared->ctx = ctx;
   shared->handle = NULL;
-  shared->global_keywords = ECRS_dupUri(globalURI);
+  shared->global_keywords = globalURI != NULL ? ECRS_dupUri(globalURI) : NULL;
   shared->extractor_config = config;
   shared->doIndex = doIndex;
   shared->anonymityLevel = anonymityLevel;

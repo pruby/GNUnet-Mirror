@@ -267,10 +267,16 @@ static void writeUploads(int fd,
 			 struct FSUI_Context * ctx,
 			 struct FSUI_UploadList * upos) {
   struct FSUI_UploadShared * shared;
+  int bits;
 
   while (upos != NULL) {
     shared = upos->shared;
-    WRITEINT(fd, (shared->extractor_config != NULL) ? 2 : 3);
+    bits = 1;
+    if (shared->extractor_config != NULL)
+      bits |= 2;
+    if (shared->global_keywords != NULL)
+      bits |= 4;
+    WRITEINT(fd, bits);
     WRITEINT(fd, 0x44D1F024);
     WRITEINT(fd, shared->doIndex);
     WRITEINT(fd, shared->anonymityLevel);
@@ -280,6 +286,8 @@ static void writeUploads(int fd,
     if (shared->extractor_config != NULL)
       WRITESTRING(fd,
 		  shared->extractor_config);
+    if (shared->global_keywords != NULL)
+      writeURI(fd, shared->global_keywords);
     writeUploadList(fd,
 		    ctx,
 		    upos,
