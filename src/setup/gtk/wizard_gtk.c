@@ -455,7 +455,7 @@ void on_finish_clickedsetup_gtk (GtkButton * button,
 
   if (doUpdate &&
       (system("gnunet-update") != 0) )
-    showDialog("msgUpdateFailed");
+    showErr(_("gnunet-update failed. Please run gnunet-update manually."));
   else
     gtk_widget_destroy(curwnd);
 }
