@@ -22,14 +22,13 @@
  * @brief Test for the sqstore implementations.
  * @author Christian Grothoff
  *
- * This testcase inserts a bunch of (variable size) data and then deletes
- * data until the (reported) database size drops below a given threshold.
- * This is iterated 10 times, with the actual size of the content stored,
- * the database size reported and the file size on disk being printed for
- * each iteration.  The code also prints a "I" for every 40 blocks
- * inserted and a "D" for every 40 blocks deleted.  The deletion 
- * strategy alternates between "lowest priority" and "earliest expiration".
- * Priorities and expiration dates are set using a pseudo-random value 
+ * This testcase inserts a bunch of (variable size) data and then
+ * deletes data until the (reported) database size drops below a given
+ * threshold.  This is iterated 10 times, with the actual size of the
+ * content stored, the database size reported and the file size on
+ * disk being printed for each iteration.  The deletion strategy
+ * alternates between "lowest priority" and "earliest expiration".
+ * Priorities and expiration dates are set using a pseudo-random value
  * within a realistic range.
  */
 
@@ -45,41 +44,12 @@
 #define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
 /**
- * Target datastore size (in bytes).
- * <p>
- * 
- * Example impact of total size on the reported number
- * of operations (insert and delete) per second (once
- * stabilized) for a particular machine:
- * <pre>
- *   1: 824
- *   2: 650
- *   4: 350
- *   8: 343
- *  16: 230
- *  32: 131
- *  64:  70
- * 128:  47
- * </pre>
- * <p>
- * This was measured on a machine with 4 GB main 
- * memory and under 100% CPU load, so disk overhead
- * is NOT relevant for the performance loss for
- * larger sizes.  This seems to indicate that
- * at least one of the performed operation does not
- * yet scale to larger sizes!  This is most likely
- * the delete operation -- initial pure insertion 
- * peaks at about 2500 operations per second!<br>
- *
- * <p>
- * The disk size overhead (additional disk space used
- * compared to actual data stored) for all sizes
- * was around 12-17%.  The API-reported size was 
- * 12.74 bytes per entry more than the actual data 
- * stored (which is a good estimate of the module's
- * internal overhead).  
+ * Target datastore size (in bytes).  Realistic sizes are 
+ * more like 16 GB (not the default of 16 MB); however, 
+ * those take too long to run them in the usual "make check"
+ * sequence.  Hence the value used for shipping is tiny.
  */
-#define MAX_SIZE 1024 * 1024 * 4
+#define MAX_SIZE 1024LL * 1024 * 16
 
 /**
  * Report progress outside of major reports? Should probably be YES if
@@ -186,11 +156,13 @@ iterateDelete(const HashCode512 * key,
  * Add testcode here!
  */
 static int test(SQstore_ServiceAPI * api) {
+  unsigned long long lops;
   int i;
   int j;
   unsigned long long size;
   int have_file;
 
+  lops = 0;
   have_file = OK == disk_file_test(NULL,
 				   DB_NAME);
 
@@ -207,9 +179,9 @@ static int test(SQstore_ServiceAPI * api) {
 
     /* trim down below MAX_SIZE again */
     if ((i % 2) == 0)
-      api->iterateLowPriority(0, &iterateDelete, api);
-    else
-      api->iterateExpirationTime(0, &iterateDelete, api);    
+      api->iterateLowPriority(0, &iterateDelete, api); 
+    else 
+      api->iterateExpirationTime(0, &iterateDelete, api); 
 
     /* every 10 iterations print status */
     size = 0;
@@ -222,15 +194,16 @@ static int test(SQstore_ServiceAPI * api) {
 #if REPORT_ID
 	   "\n"
 #endif
-	   "Useful %llu, API %llu (Useful-API: %lld/%.2f), disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
+	   "%u: Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
+	   i,
 	   stored_bytes / 1024,  /* used size in k */
 	   api->getSize() / 1024, /* API-reported size in k */
-	   (api->getSize() - stored_bytes) / 1024, /* difference between reported and used */
-	   1.0 * (api->getSize() - stored_bytes) / (stored_entries * sizeof(Datastore_Value)), /* relative to number of entries (should be equal to internal overhead per entry) */
 	   size / 1024, /* disk size in kb */
 	   (100.0 * size / stored_bytes) - 100, /* overhead */
 	   (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
-	   1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */  
+	   1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time() - start_time)); /* operations per second */  
+    lops = stored_ops * 2 - stored_entries;
+    start_time = get_time();
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }

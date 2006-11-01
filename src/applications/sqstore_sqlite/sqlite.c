@@ -132,6 +132,10 @@ static int sq_prepare(sqlite3 * dbh,
 			 (const char**) &dummy);
 }
 
+// #define CHECK(a) GE_BREAK(ectx, a)
+#define ENULL &e
+#define CHECK(a) if (! a) { fprintf(stderr, "%s\n", e); sqlite3_free(e); }
+
 /**
  * @brief Get a database handle for this thread.
  * @note SQLite handles may no be shared between threads - see
@@ -143,6 +147,7 @@ static sqliteHandle * getDBHandle() {
   unsigned int idx;
   sqliteHandle * ret;
   sqlite3_stmt * stmt;
+  char * e;
 
   /* Is the DB already open? */
   for (idx = 0; idx < db->handle_count; idx++)
@@ -162,25 +167,19 @@ static sqliteHandle * getDBHandle() {
     return NULL;
   }
 
-  if (db->handle_count == 1) {
-    /* first open: create indices! */
-    sqlite3_exec(ret->dbh, "CREATE INDEX idx_hash ON gn070 (hash)",
-		 NULL, NULL, NULL);
-    sqlite3_exec(ret->dbh, "CREATE INDEX idx_prio ON gn070 (prio)",
-		 NULL, NULL, NULL);
-    sqlite3_exec(ret->dbh, "CREATE INDEX idx_expire ON gn070 (expire)",
-		 NULL, NULL, NULL);
-    sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
-		 NULL, NULL, NULL);
-    sqlite3_exec(ret->dbh, "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
-		 NULL, NULL, NULL);
-  }
-
-  sqlite3_exec(ret->dbh, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
-  sqlite3_exec(ret->dbh, "PRAGMA synchronous=OFF", NULL, NULL, NULL);
-  sqlite3_exec(ret->dbh, "PRAGMA count_changes=OFF", NULL, NULL, NULL);
-  sqlite3_exec(ret->dbh, "PRAGMA page_size=4096", NULL, NULL, NULL);
-
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(ret->dbh, 
+		     "PRAGMA temp_store=MEMORY", NULL, NULL, ENULL));
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(ret->dbh,
+		     "PRAGMA synchronous=OFF", NULL, NULL, ENULL));
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(ret->dbh,
+		     "PRAGMA count_changes=OFF", NULL, NULL, ENULL));
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(ret->dbh,
+		     "PRAGMA page_size=4092", NULL, NULL, ENULL));
+  
   /* We have to do it here, because otherwise precompiling SQL might fail */
   sq_prepare(ret->dbh,
 	     "Select 1 from sqlite_master where tbl_name = 'gn070'",
@@ -203,6 +202,27 @@ static sqliteHandle * getDBHandle() {
       FREE(ret);
       return NULL;
     }
+    /* create indices */
+    CHECK(SQLITE_OK == 
+	  sqlite3_exec(ret->dbh, 
+		       "CREATE INDEX idx_hash ON gn070 (hash)",
+		       NULL, NULL, ENULL));
+    CHECK(SQLITE_OK == 
+	  sqlite3_exec(ret->dbh, 
+		       "CREATE INDEX idx_prio ON gn070 (prio)",
+		       NULL, NULL, ENULL));
+    CHECK(SQLITE_OK == 
+	  sqlite3_exec(ret->dbh,
+		       "CREATE INDEX idx_expire ON gn070 (expire)",
+		       NULL, NULL, ENULL));
+    CHECK(SQLITE_OK == 
+	  sqlite3_exec(ret->dbh,
+		       "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
+		       NULL, NULL, ENULL));
+    CHECK(SQLITE_OK == 
+	  sqlite3_exec(ret->dbh, 
+		       "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
+		       NULL, NULL, ENULL));
   }
   sqlite3_finalize(stmt);
 
@@ -283,7 +303,14 @@ static unsigned long long getSize() {
   if (stats)
     stats->set(stat_size, ret);
   MUTEX_UNLOCK(db->DATABASE_Lock_);
-  return ret;
+  return ret * 1.02; 
+  /* benchmarking shows 12% overhead, this is
+     most likely related to the benchmark setup
+     of adding 10% more than quota at a time
+     before cleaning up; overhead without this
+     is usually around 2% during pure insertion;
+     so we take the 2% here, which for frequent
+     cleaning up should be sufficiently accurate */
 }
 
 /**
@@ -500,8 +527,8 @@ static int sqlite_iterate(unsigned int type,
       http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   strcpy(scratch,
 	 "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070"
-   " where rowid in (Select rowid from gn070"
-	 " WHERE ((hash > :1 AND expire == :2 AND prio == :3) OR ");
+	 " where rowid in (Select rowid from gn070"
+	 " WHERE ((expire == :2 AND prio == :3 AND hash > :1) OR ");
   if (sortByPriority)
     strcat(scratch,
 	   "(expire > :4 AND prio == :5) OR prio > :6)");

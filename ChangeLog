@@ -1,3 +1,10 @@
+Wed Nov  1 13:09:53 MST 2006
+	Fixed some problems with index creation in sqlite
+	datastore (discovered with new sqlite benchmarking
+	code).  Performance should improve significantly
+	(observed was a factor of 4-10 depending on 
+	database size and operation).
+
 Thu Oct 19 23:44:24 MDT 2006
 	Completed huge update to FSUI API (not fully debugged).
 	Major changes include:
