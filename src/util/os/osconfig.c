@@ -181,6 +181,7 @@ int os_modify_autostart(struct GE_Context *ectx,
         case 3:
           if(GetLastError() != ERROR_SERVICE_EXISTS)
             return 3;
+          break;
         default:
           return SYSERR;
       }
