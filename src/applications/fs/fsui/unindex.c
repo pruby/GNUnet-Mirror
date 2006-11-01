@@ -110,10 +110,11 @@ void * FSUI_unindexThread(void * cls) {
     GE_BREAK(NULL,
 	     utc->state == FSUI_PENDING);
   }
-#if 0
+#if 1
   GE_LOG(utc->ctx->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "FSUI unindexThread exits.\n");
+	 "FSUI unindexThread exits in state %u.\n",
+	 utc->state);
 #endif
   return NULL;
 }
@@ -253,9 +254,14 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
     prev->next = dl->next;
   }
   MUTEX_UNLOCK(ctx->lock);
-  PTHREAD_JOIN(dl->handle,
-	       &unused);
-  event.type = FSUI_upload_stopped;
+  if ( (dl->state == FSUI_COMPLETED) ||
+       (dl->state == FSUI_ABORTED) ||
+       (dl->state == FSUI_ERROR) ) {
+    PTHREAD_JOIN(dl->handle,
+		 &unused);
+    dl->state++; /* add _JOINED */
+  } 
+  event.type = FSUI_unindex_stopped;
   event.data.UnindexStopped.uc.pos = dl;
   event.data.UnindexStopped.uc.cctx = dl->cctx;
   dl->ctx->ecb(dl->ctx->ecbClosure,

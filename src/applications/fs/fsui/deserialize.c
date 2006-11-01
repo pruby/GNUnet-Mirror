@@ -717,6 +717,7 @@ static int readUnindex(int fd,
     ul->state = big;
     ul->filename = name;
     ul->next = ctx->unindexOperations;
+    ul->ctx = ctx;
     ctx->unindexOperations = ul;
   }
   return SYSERR;
