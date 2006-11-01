@@ -213,7 +213,7 @@ static void * eventCallback(void * cls,
 
 #define FILESIZE (1024 * 1024 * 2)
 
-#define START_DAEMON 0
+#define START_DAEMON 1
 
 int main(int argc, char * argv[]){
 #if START_DAEMON
