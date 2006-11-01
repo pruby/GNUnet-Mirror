@@ -94,7 +94,7 @@ static void * progressModel(void * unused,
   case FSUI_download_aborted:
     if (dl == event->data.DownloadError.dc.pos) {
       /* top-download aborted */
-      PRINTF(_("Download aborted.\n"));
+      printf(_("Download aborted.\n"));
       errorCode = 2;
       GNUNET_SHUTDOWN_INITIATE();
     }
