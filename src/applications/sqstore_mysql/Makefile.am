@@ -9,7 +9,8 @@ plugin_LTLIBRARIES = \
   libgnunetmodule_sqstore_mysql.la
 
 check_PROGRAMS = \
-  mysqltest
+  mysqltest \
+  mysqltest2 
 
 TESTS = $(check_PROGRAMS)
 

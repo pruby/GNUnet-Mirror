@@ -31,6 +31,20 @@
  * strategy alternates between "lowest priority" and "earliest expiration".
  * Priorities and expiration dates are set using a pseudo-random value 
  * within a realistic range.
+ * <p>
+ *
+ * Note that the disk overhead calculations are not very sane for
+ * MySQL: we take the entire /var/lib/mysql directory (best we can
+ * do for ISAM), which may contain other data and which never 
+ * shrinks.  The scanning of the entire mysql directory during
+ * each report is also likely to be the cause of a minor
+ * slowdown compared to sqlite.<p>
+ *
+ *
+ * Note: the MySQL API *dramatically* under-reports the stored
+ * content (19k vs. 84k for some test-run).  So there MUST BE
+ * a bug in our mysql code that avoids counting some data or
+ * over-estimates the size of deletions.
  */
 
 #include "platform.h"
@@ -46,8 +60,35 @@
 
 /**
  * Target datastore size (in bytes).
+ * <p>
+ * Example impact of total size on the reported number
+ * of operations (insert and delete) per second (once
+ * roughly stabilized -- this is not "sound" experimental
+ * data but just a rough idea) for a particular machine:
+ * <pre>
+ *    4: 60   at   7k ops total
+ *    8: 50   at   3k ops total
+ *   16: 48   at   8k ops total 
+ *   32: 46   at   8k ops total
+ *   64: 61   at   9k ops total
+ *  128: 89   at   9k ops total
+ * 4092: 11   at 383k ops total (12 GB stored, 14.8 GB DB size on disk, 2.5 GB reported)
+ * </pre>
+ * Pure insertion performance into an empty DB initially peaks
+ * at about 400 ops.  The performance seems to drop especially
+ * once the existing (fragmented) ISAM space is filled up and 
+ * the DB needs to grow on disk.  This could be explained with
+ * ISAM looking more carefully for defragmentation opportunities.
+ * <p>
+ * MySQL disk space overheads (for otherwise unused database when
+ * run with 128 MB target data size; actual size 651 MB, useful
+ * data stored 520 MB) are quite large in the range of 25-30%.
+ * <p>
+ * This kind of processing seems to be IO bound (system is roughly
+ * at 90% wait, 10% CPU).  This is with MySQL 5.0.
+ *
  */
-#define MAX_SIZE 1024 * 1024 * 16
+#define MAX_SIZE 1024LL * 1024 * 1024 * 4
 
 /**
  * Report progress outside of major reports? Should probably be YES if
@@ -78,7 +119,7 @@
  * permission to the respective directory in order 
  * to obtain all of the performance information.
  */
-#define DB_NAME "/var/lib/mysql/gnunet.foo"
+#define DB_NAME "/var/lib/mysql"
 
 static unsigned long long stored_bytes;
 
@@ -161,9 +202,9 @@ static int test(SQstore_ServiceAPI * api) {
   int j;
   unsigned long long size;
   int have_file;
+  struct stat sbuf;
 
-  have_file = OK == disk_file_test(NULL,
-				   DB_NAME);
+  have_file = 0 == stat(DB_NAME, &sbuf);
 
   for (i=0;i<ITERATIONS;i++) {
 #if REPORT_ID
@@ -182,28 +223,25 @@ static int test(SQstore_ServiceAPI * api) {
     else
       api->iterateExpirationTime(0, &iterateDelete, api);    
 
-    /* every 10 iterations print status */
-    if ((i % 10) == 9) {
-      size = 0;
-      if (have_file)
-	disk_file_size(NULL,
-		       DB_NAME,
-		       &size,
-		       NO);
-      printf(
+    size = 0;
+    if (have_file)
+      disk_file_size(NULL,
+		     DB_NAME,
+		     &size,
+		     NO);
+    printf(
 #if REPORT_ID
-	     "\n"
+	   "\n"
 #endif
-	     "Useful %llu, API %llu (Useful-API: %lld/%.2f), disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
-	     stored_bytes / 1024,  /* used size in k */
-	     api->getSize() / 1024, /* API-reported size in k */
-	     (api->getSize() - stored_bytes) / 1024, /* difference between reported and used */
-	     1.0 * (api->getSize() - stored_bytes) / (stored_entries * sizeof(Datastore_Value)), /* relative to number of entries (should be equal to internal overhead per entry) */
-	     size / 1024, /* disk size in kb */
-	     1.0 * size / stored_bytes, /* overhead */
-	     (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
-	     1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */
-    }
+	   "Useful %llu, API %llu (API-Useful: %lld/%.2f), disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
+	   stored_bytes / 1024,  /* used size in k */
+	   api->getSize() / 1024, /* API-reported size in k */
+	   (stored_bytes - api->getSize()) / 1024, /* difference between reported and used */
+	   1.0 * (stored_bytes - api->getSize()) / (stored_entries * sizeof(Datastore_Value)), /* relative to number of entries (should be equal to internal overhead per entry) */
+	   size / 1024, /* disk size in kb */
+	   (100.0 * size / stored_bytes) - 100, /* overhead */
+	   (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
+	   1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */    
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }

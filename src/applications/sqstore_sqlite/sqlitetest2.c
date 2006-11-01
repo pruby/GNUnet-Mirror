@@ -46,8 +46,40 @@
 
 /**
  * Target datastore size (in bytes).
+ * <p>
+ * 
+ * Example impact of total size on the reported number
+ * of operations (insert and delete) per second (once
+ * stabilized) for a particular machine:
+ * <pre>
+ *   1: 824
+ *   2: 650
+ *   4: 350
+ *   8: 343
+ *  16: 230
+ *  32: 131
+ *  64:  70
+ * 128:  47
+ * </pre>
+ * <p>
+ * This was measured on a machine with 4 GB main 
+ * memory and under 100% CPU load, so disk overhead
+ * is NOT relevant for the performance loss for
+ * larger sizes.  This seems to indicate that
+ * at least one of the performed operation does not
+ * yet scale to larger sizes!  This is most likely
+ * the delete operation -- initial pure insertion 
+ * peaks at about 2500 operations per second!<br>
+ *
+ * <p>
+ * The disk size overhead (additional disk space used
+ * compared to actual data stored) for all sizes
+ * was around 12-17%.  The API-reported size was 
+ * 12.74 bytes per entry more than the actual data 
+ * stored (which is a good estimate of the module's
+ * internal overhead).  
  */
-#define MAX_SIZE 1024 * 1024 * 256
+#define MAX_SIZE 1024 * 1024 * 4
 
 /**
  * Report progress outside of major reports? Should probably be YES if
@@ -70,7 +102,7 @@
  * PUT_10 put operations); we report full status every
  * 10 iterations.  Abort with CTRL-C.
  */
-#define ITERATIONS 1000000
+#define ITERATIONS 100
 
 /**
  * Name of the database on disk.
@@ -180,27 +212,25 @@ static int test(SQstore_ServiceAPI * api) {
       api->iterateExpirationTime(0, &iterateDelete, api);    
 
     /* every 10 iterations print status */
-    if ((i % 10) == 9) {
-      size = 0;
-      if (have_file)
-	disk_file_size(NULL,
-		       DB_NAME,
-		       &size,
-		       NO);
-      printf(
+    size = 0;
+    if (have_file)
+      disk_file_size(NULL,
+		     DB_NAME,
+		     &size,
+		     NO);
+    printf(
 #if REPORT_ID
-	     "\n"
+	   "\n"
 #endif
-	     "Useful %llu, API %llu (Useful-API: %lld/%.2f), disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
-	     stored_bytes / 1024,  /* used size in k */
-	     api->getSize() / 1024, /* API-reported size in k */
-	     (api->getSize() - stored_bytes) / 1024, /* difference between reported and used */
-	     1.0 * (api->getSize() - stored_bytes) / (stored_entries * sizeof(Datastore_Value)), /* relative to number of entries (should be equal to internal overhead per entry) */
-	     size / 1024, /* disk size in kb */
-	     1.0 * size / stored_bytes, /* overhead */
-	     (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
-	     1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */
-    }
+	   "Useful %llu, API %llu (Useful-API: %lld/%.2f), disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
+	   stored_bytes / 1024,  /* used size in k */
+	   api->getSize() / 1024, /* API-reported size in k */
+	   (api->getSize() - stored_bytes) / 1024, /* difference between reported and used */
+	   1.0 * (api->getSize() - stored_bytes) / (stored_entries * sizeof(Datastore_Value)), /* relative to number of entries (should be equal to internal overhead per entry) */
+	   size / 1024, /* disk size in kb */
+	   (100.0 * size / stored_bytes) - 100, /* overhead */
+	   (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
+	   1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */  
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }
