@@ -47,6 +47,7 @@ Notes:
       - topology_f2f
       - kvstore
     + gtk wizard
+    	- Mantis #0001126
     + ncurses wizard
 - fix critical known bugs (see Mantis for updates):
   * disk quota violations (#1128) [CG, RC]
