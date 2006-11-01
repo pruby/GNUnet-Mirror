@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -31,7 +31,7 @@
 #include "gnunet_sqstore_service.h"
 #include "core.h"
 
-#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE; } } while (0)
+#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
 static cron_t now;
 
@@ -60,15 +60,15 @@ static int checkValue(const HashCode512 * key,
   if ( ( value->size == val->size) &&
        (0 == memcmp(val,
 		    value,
-		    ntohl(val->size)) ) ) {
+		    ntohl(val->size)) ) )
     ret = OK;
-  } else {
-     /*
+  else {
+    /*
     printf("Wanted: %u, %llu; got %u, %llu - %d\n",
 	   ntohl(value->size), ntohll(value->expirationTime),
 	   ntohl(val->size), ntohll(val->expirationTime),
 	   memcmp(val, value, ntohl(val->size))); */
-    ret = SYSERR;		
+    ret = SYSERR;
   }
   FREE(value);
   return ret;
@@ -98,9 +98,9 @@ static int iterateDelete(const HashCode512 * key,
 			 const Datastore_Value * val,
 			 SQstore_ServiceAPI * api) {
   if (1 == api->del(key, val))
-    return OK;
+	return OK;
   else
-    return SYSERR;
+	return SYSERR;
 }
 
 static int priorityCheck(const HashCode512 * key,
@@ -148,7 +148,7 @@ static int test(SQstore_ServiceAPI * api) {
   for (i=0;i<256;i++) {
     value = initValue(i);
     memset(&key, 256-i, sizeof(HashCode512));
-    api->put(&key, value);
+    ASSERT(OK == api->put(&key, value));
     FREE(value);
   }
   ASSERT(oldSize < api->getSize());
@@ -220,9 +220,10 @@ static int test(SQstore_ServiceAPI * api) {
   ASSERT(0 == api->iterateExpirationTime(ANY_BLOCK,
 					 NULL,
 					 NULL));
-
   api->drop();
+
   return OK;
+
  FAILURE:
   api->drop();
   return SYSERR;
@@ -246,27 +247,17 @@ int main(int argc, char *argv[]) {
 	   cron,
 	   NULL);
   api = requestService("sqstore");
-  if (api == NULL) {
-    GE_BREAK(NULL, 0);
-    doneCore();
-    return 1;
-  }
-  ok = SYSERR;
   if (api != NULL) {
-    api->drop();
+    ok = test(api);
     releaseService(api);
-    api = requestService("sqstore");
-    if (api != NULL) {
-      ok = test(api);
-      releaseService(api);
-    } else {
-      GE_BREAK(NULL, 0);
-    }
-  }
+  } else
+    ok = SYSERR;
   doneCore();
+  cron_destroy(cron);
+  GC_free(cfg);
   if (ok == SYSERR)
     return 1;
   return 0;
 }
 
-/* end of mysqltest.c */
+/* end of sqlitetest.c */
