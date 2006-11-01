@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.35 $
  */
 
 #ifndef _PLIBC_H_
@@ -50,6 +50,7 @@ extern "C" {
 #include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #define __BYTE_ORDER BYTE_ORDER
 #define __BIG_ENDIAN BIG_ENDIAN
