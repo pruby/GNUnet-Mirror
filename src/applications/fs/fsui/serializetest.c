@@ -291,6 +291,7 @@ int main(int argc, char * argv[]){
       printf("Resumed...\n");
 #endif
 #endif
+      suspendRestart--;
     }
     prog++;
     CHECK(prog < 5000);
