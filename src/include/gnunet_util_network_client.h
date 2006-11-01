@@ -62,6 +62,15 @@ client_connection_create(struct GE_Context * ectx,
 void connection_close_temporarily(struct ClientServerConnection * sock);
 
 /**
+ * Close a GNUnet TCP socket forever.
+ * Prevent it from being opened again.
+ *
+ * Also, you must still call connection_destroy to free all
+ * resources associated with the connection.
+ */
+void connection_close_forever(struct ClientServerConnection * sock);
+
+/**
  * Destroy connection between gnunetd and clients.
  * Also closes the connection if it is still active.
  */

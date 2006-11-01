@@ -242,7 +242,7 @@ int main(int argc,
   }
 
   /* we can't guarantee that this can be called while the other thread is waiting for read */
-  connection_close_temporarily(sock);
+  connection_close_forever(sock);
   SEMAPHORE_DOWN(doneSem, YES);
 
   SEMAPHORE_DESTROY(doneSem);

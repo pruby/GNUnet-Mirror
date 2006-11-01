@@ -387,8 +387,13 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
     prev->next = pos->next;
   MUTEX_UNLOCK(ctx->lock);
   pos->next = NULL;
-  PTHREAD_JOIN(pos->handle,
-	       &unused);
+  if ( (pos->state == FSUI_COMPLETED) ||
+       (pos->state == FSUI_ABORTED) ||
+       (pos->state == FSUI_ERROR) ) {
+    PTHREAD_JOIN(pos->handle,
+		 &unused);
+    pos->state++; /* add _JOINED */
+  }
   event.type = FSUI_search_stopped;
   event.data.SearchStopped.sc.pos = pos;
   event.data.SearchStopped.sc.cctx = pos->cctx;

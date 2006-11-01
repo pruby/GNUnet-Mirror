@@ -106,7 +106,7 @@ int main(int argc,
 
   /* wait for shutdown... */
 
-  connection_close_temporarily(sock);
+  connection_close_forever(sock);
   SEMAPHORE_DOWN(doneSem, YES);
   SEMAPHORE_DESTROY(doneSem);
   PTHREAD_JOIN(messageReceiveThread, &unused);

@@ -177,7 +177,7 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
   GE_ASSERT(ctx->ectx,
 	    ctx->handleCount == 0);
   ctx->abort = YES;
-  connection_close_temporarily(ctx->sock);
+  connection_close_forever(ctx->sock);
   PTHREAD_STOP_SLEEP(ctx->thread);
   PTHREAD_JOIN(ctx->thread,
 	       &unused);

@@ -585,7 +585,7 @@ int DHT_LIB_leave(const DHT_TableId * table) {
   }
   MUTEX_LOCK(list->lock);
   if (list->sock != NULL)
-    connection_close_temporarily(list->sock); /* signal process_thread */
+    connection_close_forever(list->sock); /* signal process_thread */
   MUTEX_UNLOCK(list->lock);
   unused = NULL;
   PTHREAD_JOIN(list->processor, &unused);

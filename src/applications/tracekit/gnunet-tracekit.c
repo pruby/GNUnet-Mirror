@@ -355,7 +355,7 @@ int main(int argc,
 	       0,
 	       NULL);
   GNUNET_SHUTDOWN_WAITFOR();
-  connection_close_temporarily(sock);
+  connection_close_forever(sock);
   SEMAPHORE_DOWN(doneSem, YES);
   SEMAPHORE_DESTROY(doneSem);
   PTHREAD_JOIN(messageReceiveThread, &unused);

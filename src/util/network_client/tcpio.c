@@ -68,6 +68,8 @@ typedef struct ClientServerConnection {
 
   struct GC_Configuration * cfg;
 
+  int dead;
+
 } ClientServerConnection;
 
 
@@ -148,8 +150,23 @@ void connection_close_temporarily(struct ClientServerConnection * sock) {
   MUTEX_UNLOCK(sock->destroylock);
 }
 
+void connection_close_forever(struct ClientServerConnection * sock) {
+  MUTEX_LOCK(sock->destroylock);
+  if (sock->sock != NULL) {
+    socket_close(sock->sock);
+    MUTEX_LOCK(sock->readlock);
+    MUTEX_LOCK(sock->writelock);
+    socket_destroy(sock->sock);
+    sock->sock = NULL;
+    sock->dead = YES;
+    MUTEX_UNLOCK(sock->writelock);
+    MUTEX_UNLOCK(sock->readlock);
+  }
+  MUTEX_UNLOCK(sock->destroylock);
+}
+
 void connection_destroy(struct ClientServerConnection * sock) {
-  connection_close_temporarily(sock);
+  connection_close_forever(sock);
   MUTEX_DESTROY(sock->readlock);
   MUTEX_DESTROY(sock->writelock);
   MUTEX_DESTROY(sock->destroylock);
@@ -177,6 +194,8 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
 
   if (sock->sock != NULL)
     return OK;
+  if (sock->dead == YES)
+    return SYSERR;
   port = getGNUnetPort(sock->ectx,
 		       sock->cfg);
   if (port == 0)
@@ -196,6 +215,11 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
     FREE(host);
     MUTEX_UNLOCK(sock->destroylock);
     return OK;
+  }
+  if (sock->dead == YES) {
+    FREE(host);
+    MUTEX_UNLOCK(sock->destroylock);
+    return SYSERR;
   }
   osock = SOCKET(PF_INET, SOCK_STREAM, 6); /* 6: TCP */
   if (osock == -1) {

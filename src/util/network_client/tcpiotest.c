@@ -208,7 +208,7 @@ int main(int argc, char * argv[]){
     }
     sh = socket_create(NULL, NULL, acceptSocket);
     ret = ret | testTransmission(clientSocket, sh);
-    connection_close_temporarily(clientSocket);
+    connection_close_forever(clientSocket);
     socket_destroy(sh);
   }
   connection_destroy(clientSocket);

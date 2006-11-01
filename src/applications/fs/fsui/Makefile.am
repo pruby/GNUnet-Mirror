@@ -38,6 +38,7 @@ check_PROGRAMS = \
   fsuitest \
   fsuitest2 \
   searchtest \
+  serializetest \
   downloadtest 
 
 TESTS = $(check_PROGRAMS)
@@ -72,6 +73,16 @@ searchtest_LDADD = \
 downloadtest_SOURCES = \
   downloadtest.c 
 downloadtest_LDADD = \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
+  $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
+  $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
+  $(top_builddir)/src/applications/fs/fsui/libgnunetfsui.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+
+
+serializetest_SOURCES = \
+  serializetest.c 
+serializetest_LDADD = \
   $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  \
   $(top_builddir)/src/util/network_client/libgnunetutil_network_client.la  \
   $(top_builddir)/src/applications/fs/ecrs/libgnunetecrs.la \
