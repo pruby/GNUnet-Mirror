@@ -45,34 +45,75 @@
 #define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
 /**
- * Target datastore size.
+ * Target datastore size (in bytes).
  */
-#define MAX_SIZE 1024 * 1024 * 32
+#define MAX_SIZE 1024 * 1024 * 4
+
+/**
+ * Report progress outside of major reports? Should probably be YES if
+ * size is > 16 MB.
+ */
+#define REPORT_ID NO
+
+/**
+ * Number of put operations equivalent to 1/10th of MAX_SIZE 
+ */
+#define PUT_10 MAX_SIZE / 32 / 1024 / 10
+
+/**
+ * Progress report frequency.  1/10th of a put operation block.
+ */
+#define REP_FREQ PUT_10 / 10
+
+/**
+ * Total number of iterations (each iteration doing
+ * PUT_10 put operations); we report full status every
+ * 10 iterations.  Abort with CTRL-C.
+ */
+#define ITERATIONS 1000000
 
 static unsigned long long stored_bytes;
+
+static unsigned long long stored_entries;
 
 static int putValue(SQstore_ServiceAPI * api,
 		    int i) {
   Datastore_Value * value;
+  size_t size;
   static HashCode512 key;
   static int ic;
+  
+  /* most content is 32k */
+  size = sizeof(Datastore_Value) + 32 * 1024;
+  if (weak_randomi(16) == 0) /* but some of it is less! */
+    size = sizeof(Datastore_Value) + weak_randomi(32 * 1024);
+  size = size - (size & 7); /* always multiple of 8 */
 
+  /* generate random key */
   hash(&key,
        sizeof(HashCode512),
        &key);
-  value = MALLOC(sizeof(Datastore_Value) + 8 * i);
-  value->size = htonl(sizeof(Datastore_Value) + 8 * i);
+  value = MALLOC(size);
+  value->size = htonl(size);
   value->type = htonl(i);
   value->prio = htonl(weak_randomi(100));
   value->anonymityLevel = htonl(i);
   value->expirationTime = htonll(get_time() + weak_randomi(1000));
-  memset(&value[1], i, i*8);
-  if (OK != api->put(&key, value))
+  memset(&value[1], 
+	 i, 
+	 size - sizeof(Datastore_Value));
+  if (OK != api->put(&key, value)) {
+    FREE(value);
+    fprintf(stderr, "E");
     return SYSERR;
+  }
   ic++;
-  if (ic % 40 == 0)
+#if REPORT_ID
+  if (ic % REP_FREQ == 0)
     fprintf(stderr, "I");
+#endif
   stored_bytes += ntohl(value->size);
+  stored_entries++;
   FREE(value);
   return OK;
 }
@@ -86,11 +127,16 @@ iterateDelete(const HashCode512 * key,
 
   if (api->getSize() < MAX_SIZE)
     return SYSERR;
+  if (GNUNET_SHUTDOWN_TEST() == YES)
+    return SYSERR;
   dc++;
-  if (dc % 40 == 0)
+#if REPORT_ID
+  if (dc % REP_FREQ == 0)
     fprintf(stderr, "D");
+#endif
   GE_ASSERT(NULL, 1 == api->del(key, val));
   stored_bytes -= ntohl(val->size);
+  stored_entries--;
   return OK;
 }
 
@@ -102,24 +148,43 @@ static int test(SQstore_ServiceAPI * api) {
   int j;
   unsigned long long size;
 
-  for (i=0;i<100;i++) {
+  for (i=0;i<ITERATIONS;i++) {
+#if REPORT_ID
     fprintf(stderr, ".");
-    for (j=0;j<4000;j+=10)
+#endif
+    /* insert data equivalent to 1/10th of MAX_SIZE */
+    for (j=0;j<PUT_10;j++) {
       ASSERT(OK == putValue(api, j));
+      if (GNUNET_SHUTDOWN_TEST() == YES)
+	break;
+    }
+
+    /* trim down below MAX_SIZE again */
     if ((i % 2) == 0)
       api->iterateLowPriority(0, &iterateDelete, api);
     else
       api->iterateExpirationTime(0, &iterateDelete, api);    
+
+    /* every 10 iterations print status */
     if ((i % 10) == 9) {
       disk_file_size(NULL,
 		     "/tmp/gnunet-sqlite-sqstore-test/data/fs/content/gnunet.dat",
 		     &size,
 		     NO);
-      printf("\nStored %llu - reported size %llu - actual size %llu\n",
+      printf(
+#if REPORT_ID
+	     "\n"
+#endif
+	     "Useful %llu, API %llu (Useful-API: %lld/%.2f), disk %llu (overhead: %.2f)\n",
 	     stored_bytes, 
 	     api->getSize(),
-	     size);
+	     api->getSize() - stored_bytes,
+	     1.0 * (api->getSize() - stored_bytes) / (stored_entries * sizeof(Datastore_Value)),
+	     size,
+	     1.0 * size / stored_bytes);
     }
+    if (GNUNET_SHUTDOWN_TEST() == YES)
+      break;
   }
   api->drop();
   return OK;
