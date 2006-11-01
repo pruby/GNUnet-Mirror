@@ -28,8 +28,16 @@
 #ifndef WIZARD_GTK_H
 #define WIZARD_GTK_H
 
-int gtk_wizard_main(int argc,
-		    char **argv,
-		    void * library);
+#include "gnunet_setup_lib.h"
+#include "wizard_util.h"
+
+int gtk_wizard_mainsetup_gtk(int argc,
+       const char ** argv,
+       struct PluginHandle * self,
+       struct GE_Context * ectx,
+       struct GC_Configuration * cfg,
+       struct GNS_Context * gns,
+       const char * filename,
+       int is_daemon);
 
 #endif

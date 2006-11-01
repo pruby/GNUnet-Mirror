@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005 Christian Grothoff (and other contributing authors)
+     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -19,7 +19,7 @@
 */
 
 /**
- * @file conf/wizard_util.c
+ * @file setup/lib/wizard_util.c
  * @brief Common helper functions
  * @author Nils Durner
  */
@@ -27,43 +27,42 @@
 #include "platform.h"
 #include "gnunet_util.h"
 
-#define LKC_DIRECT_LINK
-#include "lkc.h"
-
 
 /**
  * @brief Determine whether a NIC makes a good default
  */
-int wiz_is_nic_default(const char *name, int suggestion) {
-	const char *nic = NULL;
-	struct symbol *sym = sym_find("INTERFACE", "NETWORK");
+int wiz_is_nic_default(struct GC_Configuration *cfg, const char *name, int suggestion) {
+  char *nic;
+  
+  GC_get_configuration_value_string(cfg, "NETWORK", "INTERFACE", "eth0", &nic);
 
-  if (sym)
-  {
-  	sym_calc_value_ext(sym, 1);
-  	nic = sym_get_string_value(sym);
 #ifdef WINDOWS
-		/* default NIC for unixes */
-		if (strcmp(nic, "eth0") == 0)
-			nic = NULL;
-#endif
+  /* default NIC for unixes */
+	if (strcmp(nic, "eth0") == 0)
+  {
+    FREE(nic);
+		nic = NULL;
   }
+#endif
 
   if (nic)
   {
-  	/* The user has selected a NIC before */
-  	int niclen = strlen(nic);
-  	int inslen = strlen(name);
-	suggestion = 0;
-	if (inslen >= niclen)
-  	{
+    /* The user has selected a NIC before */
+    int niclen, inslen;
+    
+    niclen = strlen(nic);
+    inslen = strlen(name);
+    suggestion = 0;
+    
+    if (inslen >= niclen)
+    {
 #ifdef WINDOWS
-  		if (strncmp(name + inslen - niclen - 1, nic, niclen) == 0)
+      if (strncmp(name + inslen - niclen - 1, nic, niclen) == 0)
 #else
-  		if (strcmp(name, nic) == 0)
+      if (strcmp(name, nic) == 0)
 #endif
-  			suggestion = 1; /* This is the previous selection */
-  	}
+        suggestion = 1; /* This is the previous selection */
+    }
   }
 
   return suggestion;
@@ -75,44 +74,56 @@ int wiz_is_nic_default(const char *name, int suggestion) {
  * @param doAutoStart true to enable autostart, false to disable it
  * @param username name of the user account to use
  * @param groupname name of the group to use
- * @return 1 on success, 0 on error
+ * @return OK on success, SYSERR on error
  */
 int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
-  int ret = autostartService(doAutoStart,
-			     username,
-			     groupname);
-  if (ret ) {
-#ifdef MINGW
+  int ret;
+  char *exe;
+  
+  exe = os_get_installation_path(IPK_BINDIR);
+  exe = (char *) REALLOC(exe, strlen(exe) + 12); /* 11 = "gnunetd.exe" */
+  strcat(exe,
+#ifndef WINDOWS
+    "gnunetd");
+#else
+    "gnunetd.exe");
+#endif
+  
+  ret = os_modify_autostart(NULL /* FIXME 0.7.1 NILS */, 0, doAutoStart, exe,
+          username, groupname);
+  FREE(exe);
+  if (ret != YES) {
+#ifdef WINDOWS
     char *err = NULL;
+    
     switch(ret) {
-    case 1:
-      err = winErrorStr(_("Can't open Service Control Manager"),
-			GetLastError());
-      break;
-    case 2:
-      if (GetLastError() != ERROR_SERVICE_EXISTS) {
-	err = winErrorStr(_("Can't create service"),
-			  GetLastError());
-      }
-      break;
-    case 3:
-      err = winErrorStr(_("Error changing the permissions of"
-			  " the GNUnet directory"),
-			GetLastError());
-      break;
-    case 4:
-      err = _("Cannot write to the regisitry");
-      break;
-    case 5:
-      err = winErrorStr(_("Can't access the service"),
-			GetLastError());
-	  break;
-    case 6:
-      err = winErrorStr(_("Can't delete the service"),
-			GetLastError());
-      break;
-    default:
-      err = winErrorStr(_("Unknown error"), GetLastError());
+      case 1:
+        err = winErrorStr(_("Can't open Service Control Manager"),
+          GetLastError());
+        break;
+      case 2:
+        if (GetLastError() != ERROR_SERVICE_EXISTS) {
+          err = winErrorStr(_("Can't create service"),
+            GetLastError());
+        }
+        break;
+      case 3:
+        err = winErrorStr(_("Error changing the permissions of"
+          " the GNUnet directory"), GetLastError());
+        break;
+      case 4:
+        err = winErrorStr(_("Cannot write to the regisitry"), GetLastError());
+        break;
+      case 5:
+        err = winErrorStr(_("Can't access the service"),
+  			GetLastError());
+  	  break;
+      case 6:
+        err = winErrorStr(_("Can't delete the service"),
+  			GetLastError());
+        break;
+      default:
+        err = winErrorStr(_("Unknown error"), GetLastError());
     }
     if (err) {
       MessageBox(GetActiveWindow(),
@@ -123,9 +134,9 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
     }
 #endif
 
-    return 0;
+    return SYSERR;
   }
-  return 1;
+  return OK;
 }
 
 /**
@@ -135,7 +146,9 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
  * @return 1 on success
  */
 int wiz_createGroupUser(char *group_name, char *user_name) {
-  int ret = createGroupUser(group_name, user_name);
+  int ret;
+  
+  ret = os_modify_user(0, 1, user_name, group_name);
 
   if (ret) {
 #ifdef MINGW

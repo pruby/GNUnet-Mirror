@@ -163,6 +163,7 @@ long QueryRegistry(HKEY hMainKey, char *pszKey, char *pszSubKey,
 int ListNICs(void (*callback) (const char *, int, void *), void * cls);
 BOOL AddPathAccessRights(char *lpszFileName, char *lpszAccountName,
       DWORD dwAccessMask);
+char *winErrorStr(const char *prefix, int dwErr);
 
 void GNInitWinEnv();
 void GNShutdownWinEnv();

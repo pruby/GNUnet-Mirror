@@ -11,7 +11,8 @@ lib_LTLIBRARIES = libgnunetsetup.la
 
 libgnunetsetup_la_SOURCES = \
   gns.c \
-  tree.c tree.h
+  tree.c tree.h \
+  wizard_util.c wizard_util.h
 
 libgnunetsetup_la_LIBADD = @GUILE_LDFLAGS@ \
  $(top_builddir)/src/util/libgnunetutil.la \

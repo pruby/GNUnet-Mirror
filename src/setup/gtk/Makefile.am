@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+INCLUDES = -I$(top_srcdir)/src/include -I../lib
 
 AM_CFLAGS = $(GTK_CFLAGS)
 
@@ -21,8 +21,8 @@ install-data-local:
 libgnunetsetup_gtk_la_SOURCES = \
  about.c \
  gconf.c gconf.h \
- glade_support.h glade_support.c 
-# wizard_gtk.c wizard_gtk.h
+ glade_support.h glade_support.c \
+ wizard_gtk.c wizard_gtk.h
 
 libgnunetsetup_gtk_la_LDFLAGS = \
  $(GTK_LIBS) @EXT_LIB_PATH@ @EXT_LIBS@ \
