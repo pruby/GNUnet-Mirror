@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -228,8 +228,6 @@ static int test(SQstore_ServiceAPI * api) {
   api->drop();
   return SYSERR;
 }
-
-#define TEST_DB "/tmp/GNUnet_sqstore_test/"
 
 int main(int argc, char *argv[]) {
   SQstore_ServiceAPI * api;
