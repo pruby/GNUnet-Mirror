@@ -81,11 +81,11 @@ void GE_LOG(struct GE_Context * ctx,
        (! GE_applies(kind, ctx->mask)) )
     return;
   va_start(va, message);
-  size = vsnprintf(NULL, 0, message, va) + 1;
+  size = VSNPRINTF(NULL, 0, message, va) + 1;
   va_end(va);
   buf = malloc(size);
   va_start(va, message);
-  vsnprintf(buf, size, message, va);
+  VSNPRINTF(buf, size, message, va);
   va_end(va);
   time(&timetmp);
   memset(date, 0, 64);

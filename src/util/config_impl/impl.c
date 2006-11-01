@@ -429,7 +429,7 @@ _get_configuration_value_number(struct GC_Configuration * cfg,
 		option);
   if (e != NULL) {
     val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
-    if (1 == sscanf(val,
+    if (1 == SSCANF(val,
 		    "%llu",
 		    number)) {
       if ( (*number >= min)  &&
