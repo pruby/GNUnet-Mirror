@@ -14,6 +14,8 @@ libgnunetmodule_dht_la_SOURCES = \
   datastore_dht_master.h \
   cs.c 
 libgnunetmodule_dht_la_LIBADD = \
+ $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+ $(top_builddir)/src/util/containers/libgnunetutil_containers.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
  $(top_builddir)/src/applications/rpc/libgnunetmodule_rpc_util.la
