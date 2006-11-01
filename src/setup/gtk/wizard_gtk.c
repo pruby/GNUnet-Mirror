@@ -58,6 +58,8 @@ static struct GE_Context *err_ctx = NULL;
 /* 1 = terminate app on "assi_destroy" */
 static int quit;
 
+static int daemon_config;
+
 /**
  * Destroy the current window (without exiting).
  * Also unrefs the current glade XML context.
@@ -375,8 +377,8 @@ static int save_conf() {
   const char * prefix;
   char * filename;
 
-  GC_get_configuration_value_string(editCfg, "GNUNET-SETUP", "FILENAME", "",
-    &filename);
+  GC_get_configuration_value_string(editCfg, "GNUNET-SETUP", "FILENAME",
+    daemon_config ? "/etc/gnunetd.conf" : "~/.gnunet/gnunet.conf", &filename);
   if (GC_write_configuration(editCfg, filename)) {
     prefix = _("Unable to save configuration file `%s':");
 
@@ -602,6 +604,7 @@ int gtk_wizard_mainsetup_gtk(int argc,
 
   editCfg = cfg;
   err_ctx = ectx;
+  daemon_config = is_daemon;
   setLibrary(self);
   curwnd = get_xml("assi_step1");
   gtk_widget_show(curwnd);
