@@ -127,10 +127,17 @@ void on_cmbNIC_changedsetup_gtk (GtkComboBox * combobox,
 static int insert_nic(const char *name,
 		       int defaultNIC,
 		       void * cls) {
+  gchar *utf8_name;
+  gsize unused;
   struct insert_nic_cls * inc = cls;
   GtkWidget * cmbNIC = inc->cmbNIC;
 
-  gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), name);
+  utf8_name = g_locale_to_utf8(name, -1, NULL, &unused, NULL);
+  if (!utf8_name)
+    utf8_name = strdup(_("(unknown connection)"));
+
+  gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), utf8_name);
+  free(utf8_name);
   defaultNIC = wiz_is_nic_default(editCfg, name, defaultNIC);
   if (defaultNIC)
     gtk_combo_box_set_active(GTK_COMBO_BOX(cmbNIC), inc->nic_item_count);
