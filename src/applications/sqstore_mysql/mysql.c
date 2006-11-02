@@ -1438,6 +1438,7 @@ void release_module_sqstore_mysql() {
 	       sizeof(unsigned long long),
 	       &content_size);
   coreAPI->releaseService(state);
+  mysql_library_end();
   ectx = NULL;
   coreAPI = NULL;
 }
