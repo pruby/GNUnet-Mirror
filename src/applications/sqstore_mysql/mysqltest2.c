@@ -82,7 +82,7 @@
  * at 90% wait, 10% CPU).  This is with MySQL 5.0.
  *
  */
-#define MAX_SIZE 1024LL * 1024 * 1024 * 4
+#define MAX_SIZE 1024LL * 1024 * 16
 
 /**
  * Report progress outside of major reports? Should probably be YES if
@@ -105,7 +105,7 @@
  * PUT_10 put operations); we report full status every
  * 10 iterations.  Abort with CTRL-C.
  */
-#define ITERATIONS 1000000
+#define ITERATIONS 100
 
 /**
  * Name of the database on disk.  FIXME!
@@ -227,11 +227,9 @@ static int test(SQstore_ServiceAPI * api) {
 #if REPORT_ID
 	   "\n"
 #endif
-	   "Useful %llu, API %llu (API-Useful: %lld/%.2f), disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
+	   "Useful %llu, API %llu, disk %llu (%.2f%%) / %lluk ops / %llu ops/s\n",
 	   stored_bytes / 1024,  /* used size in k */
 	   api->getSize() / 1024, /* API-reported size in k */
-	   (stored_bytes - api->getSize()) / 1024, /* difference between reported and used */
-	   1.0 * (stored_bytes - api->getSize()) / (stored_entries * sizeof(Datastore_Value)), /* relative to number of entries (should be equal to internal overhead per entry) */
 	   size / 1024, /* disk size in kb */
 	   (100.0 * size / stored_bytes) - 100, /* overhead */
 	   (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */

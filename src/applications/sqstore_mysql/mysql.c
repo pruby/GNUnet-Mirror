@@ -532,6 +532,8 @@ static int iterateLowPriority(unsigned int type,
   MUTEX_LOCK(dbhI.DATABASE_Lock_);
 
   mysql_query(dbhI.dbf,
+	      "SET AUTOCOMMIT = 0"); 
+  mysql_query(dbhI.dbf,
 	      "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
   if (type==0) {
     typestr[0] = '\0';
@@ -622,6 +624,8 @@ static int iterateExpirationTime(unsigned int type,
   if (OK != iopen(&dbhI, NO))
     return SYSERR;
   MUTEX_LOCK(dbhI.DATABASE_Lock_);
+  mysql_query(dbhI.dbf,
+	      "SET AUTOCOMMIT = 0");
   mysql_query(dbhI.dbf,
 	      "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
   if (type==0) {
