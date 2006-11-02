@@ -138,7 +138,7 @@ read_meta(struct GE_Context * ectx,
   char * buf;
   struct ECRS_MetaData * meta;
 
-  if (read_int(fd, &size) != OK) {
+  if (read_int(fd, (int*)&size) != OK) {
     GE_BREAK(ectx, 0);
     return NULL;    
   }

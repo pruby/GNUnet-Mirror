@@ -138,7 +138,7 @@
 #include <cygwin/if.h>
 #endif
 #include <errno.h>
-
+#include <grp.h>
 #include <limits.h>
 
 #if HAVE_CTYPE_H
