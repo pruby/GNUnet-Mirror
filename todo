@@ -49,12 +49,9 @@ Notes:
     + ncurses wizard
 - fix critical known bugs (see Mantis for updates):
   * disk quota violations (#1128) [CG, RCpre0]
-    - mysql estimate function is WAY off
-    => Benchmark (mysqltest2) for
-       those problems now exist! => easy to fix!
-    Likely related: high CPU usage (quota exceeded) #1123 [CG, RC]
-                    - need to check: why quota-deletion happens during startup
-                    - need to check: adding missing indices during gnunet-update
+    - need to check: why quota-deletion happens during startup
+    - need to check: adding missing indices during gnunet-update
+    - need to check: indexing quota, quota enforcement
   * Windows installer, uninstall: Remove account [Nils, RC]
   * file/socket leak (#955) - possibly fixed
 - More testcases: [RCpre3]
