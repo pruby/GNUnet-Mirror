@@ -1,3 +1,6 @@
+Wed Nov  1 20:58:44 MST 2006
+	Fixed MySQL database size underreporting.
+
 Wed Nov  1 13:09:53 MST 2006
 	Fixed some problems with index creation in sqlite
 	datastore (discovered with new sqlite benchmarking

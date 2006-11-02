@@ -85,7 +85,7 @@
  *    works. First, login as $USER. Then use,
  *
  *    <pre>
- *    $ mysql -u $USER
+ *    $ mysql -u $USER -p $the_password_you_like
  *    mysql> use gnunet;
  *    </pre>
  *
@@ -124,6 +124,7 @@
 #include "gnunet_util.h"
 #include "gnunet_sqstore_service.h"
 #include "gnunet_stats_service.h"
+#include "gnunet_state_service.h"
 #include <mysql/mysql.h>
 
 #define DEBUG_MYSQL NO
@@ -144,8 +145,20 @@
 #define LOG_MYSQL(level, cmd, dbh) do { GE_LOG(ectx, level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, mysql_error((dbh)->dbf)); } while(0);
 
 static Stats_ServiceAPI * stats;
+
 static CoreAPIForApplication * coreAPI;
+
 static unsigned int stat_size;
+
+/**
+ * Size of the mysql database on disk.
+ */
+static unsigned long long content_size;
+
+/**
+ * Lock for updating content_size
+ */
+static struct MUTEX * lock;
 
 static struct GE_Context * ectx;
 
@@ -154,33 +167,56 @@ static struct GE_Context * ectx;
  */
 typedef struct {
   MYSQL * dbf;
-  int avgLength_ID;	   /* which column contains the Avg_row_length
-                            * in SHOW TABLE STATUS resultset */
+
   char * cnffile;
+
   int prepare;
+
   MYSQL_STMT * insert;
+
   MYSQL_BIND bind[7];
+
   MYSQL_STMT * select;
+
   MYSQL_STMT * selectc;
+
   MYSQL_STMT * selects;
+
   MYSQL_STMT * selectsc;
+
   MYSQL_BIND sbind[2];
+
   MYSQL_STMT * deleteh;
+
   MYSQL_STMT * deleteg;
+
   MYSQL_BIND dbind[7];
+
   MYSQL_STMT * update;
+
   MYSQL_BIND ubind[3];
+
   struct MUTEX * DATABASE_Lock_;
+
 } mysqlHandle;
+
+#define SELECT_SIZE "SELECT sum(size) FROM gn070"
 
 #define INSERT_SAMPLE "INSERT INTO gn070 (size,type,prio,anonLevel,expire,hash,value) VALUES (?,?,?,?,?,?,?)"
 
 #define SELECT_SAMPLE "SELECT * FROM gn070 WHERE hash=?"
+
 #define SELECT_SAMPLE_COUNT "SELECT count(*) FROM gn070 WHERE hash=?"
+
 #define SELECT_TYPE_SAMPLE "SELECT * FROM gn070 WHERE hash=? AND type=?"
+
 #define SELECT_TYPE_SAMPLE_COUNT "SELECT count(*) FROM gn070 WHERE hash=? AND type=?"
 
-#define DELETE_HASH_SAMPLE "DELETE FROM gn070 WHERE hash=? ORDER BY prio ASC LIMIT 1"
+/**
+ * Select to prepare for key-based deletion.
+ */
+#define SELECT_HASH_SAMPLE "SELECT * FROM gn070 WHERE hash=? ORDER BY prio ASC LIMIT 1"
+
 #define DELETE_GENERIC_SAMPLE "DELETE FROM gn070 WHERE hash=? AND size=? AND type=? AND prio=? AND anonLevel=? AND expire=? AND value=? ORDER BY prio ASC LIMIT 1"
 
 #define UPDATE_SAMPLE "UPDATE gn070 SET prio=prio+? WHERE hash=? AND value=?"
@@ -219,9 +255,10 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
 	 (lens[6] != contentSize) ) {
       char scratch[512];
 
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
-	  _("mysql datastore"));
+      GE_LOG(ectx, 
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	     _("mysql datastore"));
       SNPRINTF(scratch,
 	       512,
 	       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash)=%u) AND (size=%u + LENGTH(value)))",
@@ -232,10 +269,8 @@ static Datastore_Datum * assembleDatum(MYSQL_RES * res,
     } else {
       GE_BREAK(ectx, 0); /* should really never happen */
     }
-
     return NULL;
   }
-
   datum = MALLOC(sizeof(Datastore_Datum) + contentSize);
   datum->value.size = htonl(contentSize + sizeof(Datastore_Value));
   datum->value.type = htonl(type);
@@ -327,7 +362,6 @@ static int iopen(mysqlHandle * dbhI,
       dbhI->dbf = NULL;
       return SYSERR;
     }
-
     dbhI->insert = mysql_stmt_init(dbhI->dbf);
     dbhI->select = mysql_stmt_init(dbhI->dbf);
     dbhI->selectc = mysql_stmt_init(dbhI->dbf);
@@ -380,8 +414,8 @@ static int iopen(mysqlHandle * dbhI,
 			   UPDATE_SAMPLE,
 			   strlen(UPDATE_SAMPLE)) ||
 	mysql_stmt_prepare(dbhI->deleteh,
-			   DELETE_HASH_SAMPLE,
-			   strlen(DELETE_HASH_SAMPLE)) ||
+			   SELECT_HASH_SAMPLE,
+			   strlen(SELECT_HASH_SAMPLE)) ||
 	mysql_stmt_prepare(dbhI->deleteg,
 			   DELETE_GENERIC_SAMPLE,
 			   strlen(DELETE_GENERIC_SAMPLE)) ) {
@@ -403,8 +437,8 @@ static int iopen(mysqlHandle * dbhI,
       return SYSERR;
     }
     memset(dbhI->bind,
-	 0,
-	 sizeof(dbhI->bind));
+	   0,
+	   sizeof(dbhI->bind));
     dbhI->bind[0].buffer_type = MYSQL_TYPE_LONG; /* size */
     dbhI->bind[1].buffer_type = MYSQL_TYPE_LONG; /* type */
     dbhI->bind[2].buffer_type = MYSQL_TYPE_LONG; /* prio */
@@ -436,7 +470,7 @@ static int iopen(mysqlHandle * dbhI,
     dbhI->prepare = YES;
   } else
     dbhI->prepare = NO;
-  dbhI->DATABASE_Lock_ = MUTEX_CREATE(NO);
+  dbhI->DATABASE_Lock_ = MUTEX_CREATE(NO);  
   return OK;
 }
 
@@ -499,7 +533,6 @@ static int iterateLowPriority(unsigned int type,
 
   mysql_query(dbhI.dbf,
 	      "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
-
   if (type==0) {
     typestr[0] = '\0';
   } else {
@@ -508,7 +541,6 @@ static int iterateLowPriority(unsigned int type,
              "WHERE type=%u ",
 	     type);
   }
-
   scratch = MALLOC(256);
   SNPRINTF(scratch,
 	   256, // SQL_BIG_RESULT SQL_BUFFER_RESULT
@@ -520,18 +552,18 @@ static int iterateLowPriority(unsigned int type,
 	      scratch);
   FREE(scratch);
   if (mysql_error(dbhI.dbf)[0]) {
-    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", &dbhI);
+    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, 
+	      "mysql_query",
+	      &dbhI);
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
     return SYSERR;
   }
-
   if (!(sql_res=mysql_use_result(dbhI.dbf))) {
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
     return SYSERR;
   }
-
   while ((sql_row=mysql_fetch_row(sql_res))) {
     datum = assembleDatum(sql_res,
 			  sql_row,
@@ -548,11 +580,12 @@ static int iterateLowPriority(unsigned int type,
       break;
     }
     FREE(datum);
-
     count++;
   }
   if (mysql_error(dbhI.dbf)[0]) {
-    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", &dbhI);
+    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, 
+	      "mysql_query", 
+	      &dbhI);
     mysql_free_result(sql_res);
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
@@ -563,9 +596,6 @@ static int iterateLowPriority(unsigned int type,
   iclose(&dbhI);
   return count;
 }
-
-
-
 
 /**
  * Iterate over the items in the datastore in ascending
@@ -591,12 +621,9 @@ static int iterateExpirationTime(unsigned int type,
   dbhI.cnffile = dbh->cnffile; /* shared */
   if (OK != iopen(&dbhI, NO))
     return SYSERR;
-
   MUTEX_LOCK(dbhI.DATABASE_Lock_);
-
   mysql_query(dbhI.dbf,
 	      "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
-
   if (type==0) {
     typestr[0] = 0;
   } else {
@@ -604,7 +631,6 @@ static int iterateExpirationTime(unsigned int type,
              32,
 	     "WHERE type=%u", type);
   }
-
   scratch = MALLOC(256);
   SNPRINTF(scratch, //SQL_BIG_RESULT SQL_BUFFER_RESULT SQL_NO_CACHE
 	   256,
@@ -616,18 +642,18 @@ static int iterateExpirationTime(unsigned int type,
 	      scratch);
   FREE(scratch);
   if (mysql_error(dbhI.dbf)[0]) {
-    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", &dbhI);
+    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, 
+	      "mysql_query", 
+	      &dbhI);
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
     return SYSERR;
   }
-
   if (!(sql_res=mysql_use_result(dbhI.dbf))) {
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
     return SYSERR;
   }
-
   while ((sql_row=mysql_fetch_row(sql_res))) {
     datum = assembleDatum(sql_res,
 			  sql_row,
@@ -638,7 +664,9 @@ static int iterateExpirationTime(unsigned int type,
       return count;
     }
     if ( (iter != NULL) &&
-	 (SYSERR == iter(&datum->key, &datum->value, closure) ) ) {
+	 (SYSERR == iter(&datum->key, 
+			 &datum->value, 
+			 closure) ) ) {
       count = SYSERR;
       FREE(datum);
       break;
@@ -647,7 +675,9 @@ static int iterateExpirationTime(unsigned int type,
     count++;
   }		
   if (mysql_error(dbhI.dbf)[0]) {
-    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, "mysql_query", &dbhI);
+    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, 
+	      "mysql_query", 
+	      &dbhI);
     mysql_free_result(sql_res);
     MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
     iclose(&dbhI);
@@ -697,13 +727,15 @@ static int get(const HashCode512 * query,
     return iterateLowPriority(type, iter, closure);
 
 #if DEBUG_MYSQL
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "MySQL looks for `%s' of type %u\n",
-      &enc,
-      type);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(query,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "MySQL looks for `%s' of type %u\n",
+	 &enc,
+	 type);
 #endif
   MUTEX_LOCK(dbh->DATABASE_Lock_);
   if (type != 0) {
@@ -724,11 +756,12 @@ static int get(const HashCode512 * query,
   GE_ASSERT(ectx, mysql_stmt_param_count(stmt) <= 2);
   sql_res = mysql_stmt_result_metadata(stmt);
   if (! sql_res) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_result_metadata",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_result_metadata",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -739,20 +772,22 @@ static int get(const HashCode512 * query,
   }
   if (mysql_stmt_bind_param(stmt,
 			    dbh->sbind)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_bind_param",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_bind_param",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
   if (mysql_stmt_execute(stmt)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_execute",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_execute",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -772,21 +807,23 @@ static int get(const HashCode512 * query,
   dbh->bind[6].buffer_length = MAX_DATUM_SIZE;
   if (mysql_stmt_bind_result(stmt,
 			     dbh->bind)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_bind_result",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_bind_result",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     FREE(datum);
     return SYSERR;
   }
   if (mysql_stmt_store_result(stmt)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_store_result",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_store_result",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     FREE(datum);
     return SYSERR;
@@ -799,9 +836,10 @@ static int get(const HashCode512 * query,
       char scratch[512];
 
       mysql_free_result(sql_res);
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Invalid data in %s.  Trying to fix (by deletion).\n"),
-	  _("mysql datastore"));
+      GE_LOG(ectx, 
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	     _("mysql datastore"));
       SNPRINTF(scratch,
 	       512,
 	       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash)=%u) AND (size=%u + LENGTH(value)))",
@@ -822,9 +860,10 @@ static int get(const HashCode512 * query,
       datum->anonymityLevel = htonl(level);
       datum->expirationTime = htonll(expiration);
 #if DEBUG_MYSQL
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Found in database block with type %u.\n",
-	  ntohl(*(int*)&datum[1]));
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "Found in database block with type %u.\n",
+	     ntohl(*(int*)&datum[1]));
 #endif
       if( SYSERR == iter(&key,
 			 datum,
@@ -836,34 +875,37 @@ static int get(const HashCode512 * query,
     datasize = MAX_DATUM_SIZE;
   }
   if (mysql_stmt_errno(stmt)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_fetch",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_fetch",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
   }
   mysql_free_result(sql_res);
   FREE(datum);
   MUTEX_UNLOCK(dbh->DATABASE_Lock_);
 
 #if DEBUG_MYSQL
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(query,
-		 &enc));
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(query,
+		    &enc));
   if (count > 0) {
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"MySQL found %d results for `%s' of type %u.\n",
-	count,
-	&enc,
-	type);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "MySQL found %d results for `%s' of type %u.\n",
+	   count,
+	   &enc,
+	   type);
   } else {
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"MySQL iteration aborted looking for `%s' of type %u.\n",
-	&enc,
-	type);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "MySQL iteration aborted looking for `%s' of type %u.\n",
+	   &enc,
+	   type);
   }
 #endif
-
   return count;
 }
 
@@ -890,24 +932,23 @@ static int put(const HashCode512 * key,
     return SYSERR;
   }
   MUTEX_LOCK(dbh->DATABASE_Lock_);
-
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   hashSize = sizeof(HashCode512);
-
   size = ntohl(value->size);
   type = ntohl(value->type);
   prio = ntohl(value->prio);
   level = ntohl(value->anonymityLevel);
   expiration = ntohll(value->expirationTime);
-
 #if DEBUG_MYSQL
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(key,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Storing in database block with type %u and key %s.\n",
-      type,
-      &enc);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(key,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Storing in database block with type %u and key %s.\n",
+	 type,
+	 &enc);
 #endif
   dbh->bind[0].buffer = (char*) &size;
   dbh->bind[1].buffer = (char*) &type;
@@ -921,25 +962,30 @@ static int put(const HashCode512 * key,
 
   if (mysql_stmt_bind_param(dbh->insert,
 			    dbh->bind)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_bind_param",
-	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->insert));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_bind_param",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(dbh->insert));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
 
   if (mysql_stmt_execute(dbh->insert)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_execute",
-	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->insert));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_execute",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(dbh->insert));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
   MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+  MUTEX_LOCK(lock);
+  content_size += ntohl(value->size);
+  MUTEX_UNLOCK(lock);
   return OK;
 }
 
@@ -962,78 +1008,213 @@ static int del(const HashCode512 * key,
   unsigned int anon;
   unsigned long long expiration;
   unsigned long datasize;
+  Datastore_Value * svalue;
+  MYSQL_RES * sql_res;
+  unsigned int rtype;
+  unsigned int level;
+  HashCode512 skey;
 #if DEBUG_MYSQL
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(key,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "MySQL is executing deletion request for content of query `%s' and type %u\n",
-      &enc,
-      value == NULL ? 0 : ntohl(value->type));
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(key,
+		    &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "MySQL is executing deletion request for content of query `%s' and type %u\n",
+	 &enc,
+	 value == NULL ? 0 : ntohl(value->type));
 #endif
   MUTEX_LOCK(dbh->DATABASE_Lock_);
-
   twenty = sizeof(HashCode512);
-
-  if(value == NULL) {
+  svalue = NULL;
+  if (value == NULL) {    
     stmt = dbh->deleteh;
     dbh->dbind[0].buffer = (char*) key;
     dbh->dbind[0].length = &twenty;
     GE_ASSERT(ectx, mysql_stmt_param_count(stmt) <= 1);
-  } else {
-    stmt = dbh->deleteg;
-    type = ntohl(value->type);
-    size = ntohl(value->size);
-    prio = ntohl(value->prio);
-    anon = ntohl(value->anonymityLevel);
-    expiration = ntohll(value->expirationTime);
-    datasize = ntohl(value->size) - sizeof(Datastore_Value);
-    dbh->dbind[0].buffer = (char*) key;
-    dbh->dbind[0].length = &twenty;
-    dbh->dbind[1].buffer = (char*) &size;
-    dbh->dbind[2].buffer = (char*) &type;
-    dbh->dbind[3].buffer = (char*) &prio;
-    dbh->dbind[4].buffer = (char*) &anon;
-    dbh->dbind[5].buffer = (char*) &expiration;
-    dbh->dbind[6].buffer = (char*) &value[1];
-    dbh->dbind[6].length = &datasize;
-    GE_ASSERT(ectx, mysql_stmt_param_count(stmt) <= 7);
+      
+    sql_res = mysql_stmt_result_metadata(stmt);
+    if (! sql_res) {
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_BULK | GE_USER,
+	     _("`%s' failed at %s:%d with error: %s\n"),
+	     "mysql_stmt_result_metadata",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(stmt));
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      return SYSERR;
+    }
+    if (7 != mysql_num_fields(sql_res)) {
+      GE_BREAK(ectx, 0);
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      return SYSERR;
+    }
+    if (mysql_stmt_bind_param(stmt,
+			      dbh->dbind)) {
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_BULK | GE_USER,
+	     _("`%s' failed at %s:%d with error: %s\n"),
+	     "mysql_stmt_bind_param",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(stmt));
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      return SYSERR;
+    }
+    if (mysql_stmt_execute(stmt)) {
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_BULK | GE_USER,
+	     _("`%s' failed at %s:%d with error: %s\n"),
+	     "mysql_stmt_execute",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(stmt));
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      return SYSERR;
+    }
+    svalue = MALLOC(sizeof(Datastore_Value) + MAX_DATUM_SIZE);
+    twenty = sizeof(HashCode512);
+    dbh->bind[0].buffer = (char*) &size;
+    dbh->bind[1].buffer = (char*) &rtype;
+    dbh->bind[2].buffer = (char*) &prio;
+    dbh->bind[3].buffer = (char*) &level;
+    dbh->bind[4].buffer = (char*) &expiration;
+    dbh->bind[5].buffer = (char*) &skey;
+    dbh->bind[6].buffer = (char*) &svalue[1];
+    dbh->bind[5].length = &twenty;
+    dbh->bind[6].length = &datasize;
+    dbh->bind[5].buffer_length = sizeof(HashCode512);
+    dbh->bind[6].buffer_length = MAX_DATUM_SIZE;
+    if (mysql_stmt_bind_result(stmt,
+			       dbh->bind)) {
+      GE_LOG(ectx,
+	     GE_ERROR | GE_BULK | GE_USER,
+	     _("`%s' failed at %s:%d with error: %s\n"),
+	     "mysql_stmt_bind_result",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(stmt));
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      FREE(svalue);
+      return SYSERR;
+    }
+    if (mysql_stmt_store_result(stmt)) {
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_BULK | GE_USER,
+	     _("`%s' failed at %s:%d with error: %s\n"),
+	     "mysql_stmt_store_result",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(stmt));
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      FREE(svalue);
+      return SYSERR;
+    }
+    datasize = MAX_DATUM_SIZE;
+    if (0 != mysql_stmt_fetch(stmt)) {
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_BULK | GE_USER,
+	     _("`%s' failed at %s:%d with error: %s\n"),
+	     "mysql_stmt_fetch",
+	     __FILE__, __LINE__,
+	     mysql_stmt_error(stmt));
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      FREE(svalue);
+      return SYSERR;
+    }
+    if ( (twenty != sizeof(HashCode512)) ||
+	 (datasize != size - sizeof(Datastore_Value)) ) {
+      char scratch[512];
+
+      mysql_free_result(sql_res);
+      GE_LOG(ectx, 
+	     GE_WARNING | GE_BULK | GE_USER,
+	     _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	     _("mysql datastore"));
+      SNPRINTF(scratch,
+	       512,
+	       "DELETE FROM gn070 WHERE NOT ((LENGTH(hash)=%u) AND (size=%u + LENGTH(value)))",
+	       sizeof(HashCode512),
+	       sizeof(Datastore_Value));
+      if (0 != mysql_query(dbh->dbf, scratch))
+	LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, 
+		  "mysql_query", dbh);
+      FREE(svalue);
+      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+      return 1;
+    }
+    mysql_free_result(sql_res);
+    svalue->size = htonl(size);
+    svalue->type = htonl(rtype);
+    svalue->prio = htonl(prio);
+    svalue->anonymityLevel = htonl(level);
+    svalue->expirationTime = htonll(expiration);
+    value = svalue;
   }
+
+  stmt = dbh->deleteg;
+  type = ntohl(value->type);
+  size = ntohl(value->size);
+  prio = ntohl(value->prio);
+  anon = ntohl(value->anonymityLevel);
+  expiration = ntohll(value->expirationTime);
+  datasize = ntohl(value->size) - sizeof(Datastore_Value);
+  dbh->dbind[0].buffer = (char*) key;
+  dbh->dbind[0].length = &twenty;
+  dbh->dbind[1].buffer = (char*) &size;
+  dbh->dbind[2].buffer = (char*) &type;
+  dbh->dbind[3].buffer = (char*) &prio;
+  dbh->dbind[4].buffer = (char*) &anon;
+  dbh->dbind[5].buffer = (char*) &expiration;
+  dbh->dbind[6].buffer = (char*) &value[1];
+  dbh->dbind[6].length = &datasize;
+#if 0
+  dbh->dbind[0].buffer_length = sizeof(HashCode512);
+  dbh->dbind[6].buffer_length = size - sizeof(Datastore_Value);
+#endif
+  GE_ASSERT(ectx, mysql_stmt_param_count(stmt) <= 7);
   if (mysql_stmt_bind_param(stmt,
 			    dbh->dbind)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_bind_param",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_bind_param",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+    if (svalue != NULL)
+      FREE(svalue);
     return SYSERR;
   }
   if (mysql_stmt_execute(stmt)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_execute",
-	__FILE__, __LINE__,
-	mysql_stmt_error(stmt));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_execute",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(stmt));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
+    if (svalue != NULL)
+      FREE(svalue);
     return SYSERR;
   }
   count = mysql_stmt_affected_rows(stmt);
   MUTEX_UNLOCK(dbh->DATABASE_Lock_);
 #if DEBUG_MYSQL
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "MySQL DELETE operation affected %d rows.\n",
-      count);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "MySQL DELETE operation affected %d rows.\n",
+	 count);
 #endif
+  MUTEX_LOCK(lock);
+  content_size -= ntohl(value->size);
+  MUTEX_UNLOCK(lock);
+  if (svalue != NULL)
+    FREE(svalue);
   return count;
 }
 
 /**
  * Update the priority for a particular key
  * in the datastore.
- *
  */
 static int update(const HashCode512 * key,
 		  const Datastore_Value * value,
@@ -1052,11 +1233,12 @@ static int update(const HashCode512 * key,
   GE_ASSERT(ectx, mysql_stmt_param_count(dbh->update) <= 3);
   if (mysql_stmt_bind_param(dbh->update,
 			    dbh->ubind)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_bind_param",
-	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->update));
+    GE_LOG(ectx,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_bind_param",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(dbh->update));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
@@ -1066,18 +1248,18 @@ static int update(const HashCode512 * key,
    * at all in this context.)
    */
   if (mysql_stmt_execute(dbh->update)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("`%s' failed at %s:%d with error: %s\n"),
-	"mysql_stmt_execute",
-	__FILE__, __LINE__,
-	mysql_stmt_error(dbh->update));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' failed at %s:%d with error: %s\n"),
+	   "mysql_stmt_execute",
+	   __FILE__, __LINE__,
+	   mysql_stmt_error(dbh->update));
     MUTEX_UNLOCK(dbh->DATABASE_Lock_);
     return SYSERR;
   }
   MUTEX_UNLOCK(dbh->DATABASE_Lock_);
   return OK;
 }
-
 
 /**
  * Get the current on-disk size of the SQ store.
@@ -1086,69 +1268,14 @@ static int update(const HashCode512 * key,
  * @return number of bytes used on disk
  */
 static unsigned long long getSize() {
-  MYSQL_RES * sql_res;
-  MYSQL_ROW sql_row;
-  long long avgRowLen = -1;
-  long long rowsInTable = 0;
-  unsigned long long bytesUsed;
-
-  MUTEX_LOCK(dbh->DATABASE_Lock_);
-
-  /* find out average row length in bytes */
-  mysql_query(dbh->dbf,
-  	      "SHOW TABLE STATUS LIKE 'gn070'");
-  if (mysql_error(dbh->dbf)[0]) {
-    DIE_MYSQL("mysql_query", dbh); /* this MUST not fail... */
-    MUTEX_UNLOCK(dbh->DATABASE_Lock_);
-    return SYSERR;	/* shouldn't get here */
-  }
-  if ((sql_res=mysql_store_result(dbh->dbf))) {
-    int rows = mysql_num_fields(sql_res);
-    sql_row = mysql_fetch_row(sql_res);
-    if (sql_row == NULL) {
-      GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  _("Query `%s' had no results.\n"),
-	  "SHOW TABLE STATUS LIKE 'gn070'");
-      MUTEX_UNLOCK(dbh->DATABASE_Lock_);
-      GE_BREAK(ectx, 0);
-      return 0;	/* shouldn't get here */
-    }
-    GE_ASSERT(ectx,  (dbh->avgLength_ID < rows) &&
- 	           (dbh->avgLength_ID >= 0) );
-    if (sql_row[dbh->avgLength_ID] != NULL)
-      avgRowLen = atoll(sql_row[dbh->avgLength_ID]);
-    else
-      avgRowLen = -1;
-
-    mysql_free_result(sql_res);
-  }
-  GE_ASSERT(ectx, avgRowLen >= 0);
-  /* find number of entries (rows) */
-  mysql_query(dbh->dbf,
-  	      "SELECT COUNT(*) FROM gn070");
-  if (!(sql_res=mysql_store_result(dbh->dbf))) {
-    MUTEX_UNLOCK(dbh->DATABASE_Lock_);
-    DIE_MYSQL("mysql_store_result", dbh);
-  }
-
-  if ((sql_row=mysql_fetch_row(sql_res))) {
-    int cols = mysql_num_fields(sql_res);
-    GE_ASSERT(ectx, cols > 0);
-    if (sql_row[0] != NULL)
-      rowsInTable = atoll(sql_row[0]);
-    else
-      rowsInTable = 0;
-  }
-  mysql_free_result(sql_res);
-
-  MUTEX_UNLOCK(dbh->DATABASE_Lock_);
-
-  bytesUsed = rowsInTable * avgRowLen;
-
+  unsigned long long ret;
+  
+  MUTEX_LOCK(lock);
+  ret = content_size;
   if (stats)
-    stats->set(stat_size, bytesUsed);
-
-  return bytesUsed;
+    stats->set(stat_size, ret);
+  MUTEX_UNLOCK(lock);
+  return ret * 2; /* common overhead seems to be 100%! */
 }
 
 /**
@@ -1158,21 +1285,26 @@ static unsigned long long getSize() {
 static void drop() {
   mysql_query(dbh->dbf,
 	      "DROP TABLE gn070");
+  if (mysql_error(dbh->dbf)[0]) {
+    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, 
+	      "mysql_query",
+	      dbh);
+  } else
+    content_size = 0;
 }
-
-
-
 
 SQstore_ServiceAPI *
 provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   static SQstore_ServiceAPI api;
-
-  MYSQL_RES * sql_res;
+  State_ServiceAPI * state;
   char * cnffile;
   FILE * fp;
   struct passwd * pw;
   size_t nX;
   char * home_dir;
+  unsigned long long * sb;
+  MYSQL_RES *sql_res;
+  MYSQL_ROW sql_row;
 
   ectx = capi->ectx;
   coreAPI = capi;
@@ -1213,7 +1345,12 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 	 cnffile);
   fp = FOPEN(cnffile, "r");
   if (!fp) {
-    GE_LOG_STRERROR_FILE(ectx, GE_ERROR | GE_ADMIN | GE_BULK, "fopen", cnffile);
+    GE_LOG_STRERROR_FILE(ectx, 
+			 GE_ERROR | GE_ADMIN | GE_BULK, 
+			 "fopen", 
+			 cnffile);
+    if (stats != NULL)
+      coreAPI->releaseService(stats);
     FREE(cnffile);
     return NULL;
   } else {
@@ -1222,78 +1359,51 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
 
   dbh = MALLOC(sizeof(mysqlHandle));
   dbh->cnffile = cnffile;
-
   if (OK != iopen(dbh, YES)) {
     FREE(cnffile);
     FREE(dbh);
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("Failed to load MySQL database module.  Check that MySQL is running and configured properly!\n"));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("Failed to load MySQL database module.  Check that MySQL is running and configured properly!\n"));
     dbh = NULL;
+    if (stats != NULL)
+      coreAPI->releaseService(stats);
     return NULL;
   }
 
-  /* Find out which column contains the avg row length field and assume
-   * that mysqld always gives it in the same order across calls :) */
-  mysql_query(dbh->dbf,
-  	      "SHOW TABLE STATUS LIKE 'gn070'");
-  if (mysql_error(dbh->dbf)[0]) {
-    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK,
-	      "mysql_query",
-	      dbh);
-    iclose(dbh);
-    FREE(dbh);
-    FREE(cnffile);
-    return NULL;
-  }
-  if((sql_res=mysql_store_result(dbh->dbf))) {
-    MYSQL_FIELD * sql_fields;
-    int num_fields;
-    int j;
-    int found = NO;
+  lock = MUTEX_CREATE(NO);
+  state = coreAPI->requestService("state");
+  sb = NULL;
+  if (sizeof(unsigned long long)
+      != state->read(ectx,
+		     "mysql-size",
+		     (void*) &sb)) {
 
-    num_fields=mysql_num_fields(sql_res);
-    if(num_fields<=0) {
-      GE_BREAK(ectx, 0);
-      iclose(dbh);
-      FREE(dbh);
-      FREE(cnffile);
-      return NULL;
+    /* need to recompute! */
+    sql_res = NULL;
+    mysql_query(dbh->dbf,
+		SELECT_SIZE);
+    if ( (mysql_error(dbh->dbf)[0]) ||
+	 (!(sql_res=mysql_use_result(dbh->dbf))) ||
+	 (!(sql_row=mysql_fetch_row(sql_res))) ) {
+      LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK, 
+		"mysql_query",
+		dbh);
+      content_size = 0;
+    } else {
+      SSCANF(sql_row[1], "%llu", &content_size);
     }
-    sql_fields=mysql_fetch_fields(sql_res);
-    if(sql_fields==NULL) {
-      GE_BREAK(ectx, 0);
-      iclose(dbh);
-      FREE(dbh);
-      FREE(cnffile);
-      return NULL;
-    }
-    dbh->avgLength_ID = -1;
-    for(j=0;j<num_fields;j++) {
-      if (strcmp(sql_fields[j].name,
-		 "Avg_row_length")==0) {
-        found = YES;
-        dbh->avgLength_ID = j;
-	break;
-      }
-    }
-    GE_ASSERT(ectx, dbh->avgLength_ID != -1);
-    mysql_free_result(sql_res);
-    if (found == NO) {
-      GE_BREAK(ectx, 0);
-      /* avg_row_length not found in SHOW TABLE STATUS */
-      iclose(dbh);
-      FREE(dbh);
-      FREE(cnffile);
-      return NULL;
-    }
+    if (sql_res != NULL)
+      mysql_free_result(sql_res);
   } else {
-    GE_BREAK(ectx, 0);
-    iclose(dbh);
-    FREE(dbh);
-    FREE(cnffile);
-    return NULL;
+    content_size = *sb;
+    FREE(sb);
+    /* no longer valid! remember it by deleting 
+       the outdated state file! */
+    state->unlink(ectx,
+		  "mysql-size");
   }
-
+  coreAPI->releaseService(state);
   api.getSize = &getSize;
   api.put = &put;
   api.get = &get;
@@ -1309,6 +1419,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
  * Shutdown the module.
  */
 void release_module_sqstore_mysql() {
+  State_ServiceAPI * state;
   iclose(dbh);
   FREE(dbh->cnffile);
   FREE(dbh);
@@ -1316,7 +1427,15 @@ void release_module_sqstore_mysql() {
 
   if (stats != NULL)
     coreAPI->releaseService(stats);
+  MUTEX_DESTROY(lock);
+  state = coreAPI->requestService("state");
+  state->write(ectx,
+	       "mysql-size",
+	       sizeof(unsigned long long),
+	       &content_size);
+  coreAPI->releaseService(state);
   ectx = NULL;
+  coreAPI = NULL;
 }
 
 /* end of mysql.c */

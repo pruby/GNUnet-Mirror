@@ -39,12 +39,6 @@
  * shrinks.  The scanning of the entire mysql directory during
  * each report is also likely to be the cause of a minor
  * slowdown compared to sqlite.<p>
- *
- *
- * Note: the MySQL API *dramatically* under-reports the stored
- * content (19k vs. 84k for some test-run).  So there MUST BE
- * a bug in our mysql code that avoids counting some data or
- * over-estimates the size of deletions.
  */
 
 #include "platform.h"
