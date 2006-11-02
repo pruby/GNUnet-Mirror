@@ -82,6 +82,23 @@ int URITRACK_listURIs(struct GE_Context * ectx,
 		      ECRS_SearchProgressCallback iterator,
 		      void * closure); /* file_info.c */
 
+/**
+ * Register a handler that is called whenever
+ * a URI is tracked.  If URIs are already in
+ * the database, the callback will be called
+ * for all existing URIs as well.
+ */
+int URITRACK_registerTrackCallback(struct GE_Context * ectx,
+				   struct GC_Configuration * cfg,
+				   ECRS_SearchProgressCallback iterator,
+				   void * closure); /* callbacks.c */
+
+/**
+ * Unregister a URI callback.
+ */
+int URITRACK_unregisterTrackCallback(ECRS_SearchProgressCallback iterator,
+				     void * closure); /* callbacks.c */
+
 #if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif

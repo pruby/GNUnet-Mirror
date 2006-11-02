@@ -32,6 +32,7 @@
 #include "gnunet_util.h"
 #include "gnunet_uritrack_lib.h"
 #include "platform.h"
+#include "callbacks.h"
 
 #define DEBUG_FILE_INFO NO
 
@@ -178,6 +179,7 @@ void URITRACK_trackURI(struct GE_Context * ectx,
   IPC_SEMAPHORE_DESTROY(sem);
   FREE(data);
   FREE(suri);
+  URITRACK_internal_notify(fi);
 }
 
 /**
