@@ -1238,10 +1238,6 @@ void release_module_sqstore_sqlite() {
 	 "SQLite: database shutdown\n");
 #endif
   coreAPI = NULL;
-  MUTEX_DESTROY(db->DATABASE_Lock_);
-  FREE(db->fn);
-  FREE(db);
-  db = NULL;
 }
 
 
@@ -1292,11 +1288,7 @@ void update_module_sqstore_sqlite(UpdateAPI * uapi) {
     return;
   }
   createIndices(dbh->dbh);
-
-  MUTEX_DESTROY(db->DATABASE_Lock_);
-  FREE(db->fn);
-  FREE(db);
-  db = NULL;
+  sqlite_shutdown();
 }
 
 /* end of sqlite.c */
