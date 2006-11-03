@@ -82,6 +82,9 @@ static void * printstatus(void * cls,
     errorCode = 3;
     GNUNET_SHUTDOWN_INITIATE();
     break;
+  case FSUI_unindex_started:
+  case FSUI_unindex_stopped:
+    break;
   default:
     GE_BREAK(ectx, 0);
     break;

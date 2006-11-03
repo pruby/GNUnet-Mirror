@@ -117,6 +117,9 @@ static void * eventCallback(void * cls,
     FREENONNULL(filename);
     FREE(uri);
     break;
+  case FSUI_search_started:
+  case FSUI_search_stopped:
+    break;
   default:
     GE_BREAK(NULL, 0);
     break;
