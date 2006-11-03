@@ -14,7 +14,11 @@ Notes:
 
 0.7.1 [11'06] (aka "stabilization")
 - fix critical known bugs (see Mantis for updates):
-  * Windows installer, uninstall: Remove account [Nils, RC]
+  * Windows installer [Nils]
+  		+ uninstall: Remove account
+			+ libcurl, guile [RCpre0]
+	* provide HTTP transport (new binaries can't load old transport if activated
+	  in config)
   * file/socket leak (#955) - possibly fixed
 - finish util refactoring: [RCpre0]
   * logger configuration:
