@@ -120,6 +120,9 @@ static void * progressModel(void * unused,
       }
     }
     break;
+  case FSUI_download_started:
+  case FSUI_download_stopped:
+    break;
   default:
     GE_BREAK(ectx, 0);
     break;
