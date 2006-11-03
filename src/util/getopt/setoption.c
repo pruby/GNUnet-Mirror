@@ -99,6 +99,10 @@ int gnunet_getopt_configure_increment_value(CommandLineProcessorContext * ctx,
 					  option,
 					  old+1);
   FREE(section);
+  if (ret == 0)
+    ret = OK;
+  else
+    ret = SYSERR;
   return ret;
 }
 
