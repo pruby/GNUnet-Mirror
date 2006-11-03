@@ -41,9 +41,9 @@ static unsigned int delay = 300;
 
 static unsigned int max_results;
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
-static char * output_filename = DEFAULT_CLIENT_CONFIG_FILE;
+static char * output_filename;
 
 static int errorCode;
 
