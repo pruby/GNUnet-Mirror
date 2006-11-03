@@ -5,7 +5,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "GNUnet"
-!define PRODUCT_VERSION "0.7.0e-2"
+!define PRODUCT_VERSION "0.7.1-pre0"
 !define PRODUCT_PUBLISHER "GNU"
 !define PRODUCT_WEB_SITE "http://www.gnunet.org/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -104,7 +104,15 @@ SectionGroup "GNUnet" SEC_GNUNET
 	  SetOutPath "$INSTDIR\bin"
 	  File "gnu.ico"	
 	  File "config.ico"	
+		File "C:\GNUnet\bin\libgnunetmodule_state.dll" 
 		File "C:\GNUnet\bin\libgnunetutil-1.dll" 
+		File "C:\GNUnet\bin\libgnunetutil_boot-0.dll" 
+		File "C:\GNUnet\bin\libgnunetutil_config-0.dll" 
+		File "C:\GNUnet\bin\libgnunetutil_cron-0.dll" 
+		File "C:\GNUnet\bin\libgnunetutil_crypto-0.dll" 
+		File "C:\GNUnet\bin\libgnunetutil_containers-0.dll" 
+		File "C:\GNUnet\bin\libgnunetutil_logging-0.dll" 
+		File "C:\GNUnet\bin\libgnunetutil_network_client-0.dll" 
 		File "C:\GNUnet\bin\libgnunetgetoption_api-0.dll"
 		File "C:\GNUnet\bin\gnunet-win-tool.exe"
 		File "C:\GNUnet\bin\gnunet-update.exe" 
@@ -164,8 +172,8 @@ SectionGroup "GNUnet" SEC_GNUNET
 		File "C:\GNUnet\bin\libgnunetsetup_gtk.dll"
 
 	  SetOutPath "$INSTDIR\share\GNUnet"
-		File "C:\GNUnet\share\GNUnet\config-client.in" 
-		File "C:\GNUnet\share\GNUnet\config-daemon.in"
+		File "C:\GNUnet\share\GNUnet\config-client.scm" 
+		File "C:\GNUnet\share\GNUnet\config-daemon.scm"
 		File "C:\GNUnet\share\GNUnet\gnunet-logo-color.png"
 		File "C:\GNUnet\share\GNUnet\wizard.glade"
 	SectionEnd
@@ -235,9 +243,12 @@ SectionGroup "GNUnet" SEC_GNUNET
 			SectionIn 1 3 4
 		  SetOutPath "$INSTDIR\bin"
 
-			File "C:\GNUnet\bin\libgnunetfs-0.dll"
+			File "C:\GNUnet\bin\libgnunetcollection-0.dll"
 			File "C:\GNUnet\bin\libgnunetecrs-0.dll"
+			File "C:\GNUnet\bin\libgnunetfs-0.dll"
 			File "C:\GNUnet\bin\libgnunetfsui-0.dll"
+			File "C:\GNUnet\bin\libgnunetnamespace-0.dll"
+			File "C:\GNUnet\bin\libgnuneturitrack-0.dll"			
 			SectionEnd
 			
 			Section "!Keyword extractor" SEC_CLIENT_LE
@@ -321,14 +332,6 @@ SectionGroup "GNUnet" SEC_GNUNET
 
 			File "C:\GNUnet\bin\gnunet-tbench.exe"			
 			File "C:\GNUnet\bin\libgnunetmodule_tbench.dll"			
-		SectionEnd
-
-		Section "Chat" SEC_CHAT
-			SectionIn 4
-		  SetOutPath "$INSTDIR\bin"
-
-			File "C:\GNUnet\bin\gnunet-tbench.exe"			
-			File "C:\GNUnet\bin\libgnunetmodule_chat.dll"			
 		SectionEnd
 
 		Section "DHT" SEC_DHT
@@ -720,7 +723,6 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DIAG} "Advanced diagnostic tools"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TRACE} "Tracekit"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TBENCH} "TBench"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CHAT} "Anonymous broadcast chat"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DHT} "Distributed Hash Tables"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_RPC} "Remote Procedure Calls"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_LE_ALL} "Sophisticated keyword extractors (mp3, pdf, zip...)"
@@ -859,6 +861,9 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunetecrs-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfs-0.dll"
 	Delete "$INSTDIR\bin\libgnunetfsui-0.dll"
+	Delete "$INSTDIR\bin\libgnuneturitrack-0.dll"
+	Delete "$INSTDIR\bin\libgnunetnamespace-0.dll"
+	Delete "$INSTDIR\bin\libgnunetcollection-0.dll"
 	Delete "$INSTDIR\bin\libgnunetgetoption_api-0.dll"
 	Delete "$INSTDIR\bin\libgnunetgtk_common-0.dll"
 	Delete "$INSTDIR\bin\libgnunetgtkmodule_stats.dll"
@@ -895,7 +900,15 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libgnunettransport_nat.dll"
 	Delete "$INSTDIR\bin\libgnunettransport_tcp.dll"
 	Delete "$INSTDIR\bin\libgnunettransport_udp.dll"
-	Delete "$INSTDIR\bin\libgnunetutil-1.dll" 
+	Delete "$INSTDIR\bin\libgnunetutil-1.dll"
+	Delete "$INSTDIR\bin\libgnunetmodule_state.dll"
+	Delete "$INSTDIR\bin\libgnunetutil_config-0.dll"
+	Delete "$INSTDIR\bin\libgnunetutil_cron-0.dll"
+	Delete "$INSTDIR\bin\libgnunetutil_crypto-0.dll"
+	Delete "$INSTDIR\bin\libgnunetutil_containers-0.dll"
+	Delete "$INSTDIR\bin\libgnunetutil_logging-0.dll"
+	Delete "$INSTDIR\bin\libgnunetutil_network_client-0.dll"
+	Delete "$INSTDIR\bin\libgnunetutil_boot-0.dll"
 	Delete "$INSTDIR\bin\libgobject-2.0-0.dll"
 	Delete "$INSTDIR\bin\libgthread-2.0-0.dll"
 	Delete "$INSTDIR\bin\libgtk-0.dll"
@@ -962,6 +975,8 @@ Section Uninstall
   
 	Delete "$INSTDIR\share\GNUnet\config-client.in" 
 	Delete "$INSTDIR\share\GNUnet\config-daemon.in"
+	Delete "$INSTDIR\share\GNUnet\config-client.scm" 
+	Delete "$INSTDIR\share\GNUnet\config-daemon.scm"
 	Delete "$INSTDIR\share\GNUnet\wizard.glade"
 	Delete "$INSTDIR\share\GNUnet\gnunet-logo-color.png"
   RmDir /REBOOTOK "$INSTDIR\share\GNUnet"
