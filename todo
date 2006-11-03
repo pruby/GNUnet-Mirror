@@ -12,18 +12,14 @@ Notes:
 
 
 
-0.7.1 [10'06] (aka "stabilization")
+0.7.1 [11'06] (aka "stabilization")
+- fix critical known bugs (see Mantis for updates):
+  * Windows installer, uninstall: Remove account [Nils, RC]
+  * file/socket leak (#955) - possibly fixed
 - finish util refactoring: [RCpre0]
   * logger configuration:
     + util/boot code to parse configuration
       -- and improve scm code as well!
-  * error handling: [RCpre1]
-    + tcpio
-    + fs/module
-    + fs/fslib
-    + fs/ecrs
-    + fs/fsui
-  * FSUI/ECRS/fslib hang if fs module not loaded by gnunetd (!) [pre0]
   * gnunet-setup: [RCpre0]
     + Scheme (scm) specification of entire configuration;
       check options used in modules:
@@ -48,10 +44,13 @@ Notes:
       - topology_f2f
       - kvstore
     + ncurses wizard
-- fix critical known bugs (see Mantis for updates):
-  * adding missing sqlite indices during gnunet-update
-  * Windows installer, uninstall: Remove account [Nils, RC]
-  * file/socket leak (#955) - possibly fixed
+  * error handling: [RCpre1]
+    + tcpio
+    + fs/module
+    + fs/fslib
+    + fs/ecrs
+    + fs/fsui
+- update documentation [RCpre2]
 - More testcases: [RCpre3]
   * advertising
   * ecrs_core

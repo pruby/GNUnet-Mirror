@@ -87,6 +87,7 @@ void writePIDFile(struct GE_Context * ectx,
 			 GE_WARNING | GE_ADMIN | GE_BULK,
 			 "fopen",
 			 pif);
+    FREE(pif);
     return;
   }
   if (0 > FPRINTF(pidfd,

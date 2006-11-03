@@ -132,9 +132,38 @@ static int sq_prepare(sqlite3 * dbh,
 			 (const char**) &dummy);
 }
 
-// #define CHECK(a) GE_BREAK(ectx, a)
+#if 1
+#define CHECK(a) GE_BREAK(ectx, a)
+#define ENULL NULL
+#else
 #define ENULL &e
+#define ENULL_DEFINED 1
 #define CHECK(a) if (! a) { fprintf(stderr, "%s\n", e); sqlite3_free(e); }
+#endif
+
+static void createIndices(sqlite3 * dbh) {
+  /* create indices */
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(dbh, 
+		     "CREATE INDEX idx_hash ON gn070 (hash)",
+		     NULL, NULL, ENULL));
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(dbh, 
+		     "CREATE INDEX idx_prio ON gn070 (prio)",
+		     NULL, NULL, ENULL));
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(dbh,
+		     "CREATE INDEX idx_expire ON gn070 (expire)",
+		     NULL, NULL, ENULL));
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(dbh,
+		     "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
+		     NULL, NULL, ENULL));
+  CHECK(SQLITE_OK == 
+	sqlite3_exec(dbh, 
+		     "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
+		     NULL, NULL, ENULL));
+}
 
 /**
  * @brief Get a database handle for this thread.
@@ -147,7 +176,9 @@ static sqliteHandle * getDBHandle() {
   unsigned int idx;
   sqliteHandle * ret;
   sqlite3_stmt * stmt;
+#if ENULL_DEFINED
   char * e;
+#endif
 
   /* Is the DB already open? */
   for (idx = 0; idx < db->handle_count; idx++)
@@ -202,27 +233,7 @@ static sqliteHandle * getDBHandle() {
       FREE(ret);
       return NULL;
     }
-    /* create indices */
-    CHECK(SQLITE_OK == 
-	  sqlite3_exec(ret->dbh, 
-		       "CREATE INDEX idx_hash ON gn070 (hash)",
-		       NULL, NULL, ENULL));
-    CHECK(SQLITE_OK == 
-	  sqlite3_exec(ret->dbh, 
-		       "CREATE INDEX idx_prio ON gn070 (prio)",
-		       NULL, NULL, ENULL));
-    CHECK(SQLITE_OK == 
-	  sqlite3_exec(ret->dbh,
-		       "CREATE INDEX idx_expire ON gn070 (expire)",
-		       NULL, NULL, ENULL));
-    CHECK(SQLITE_OK == 
-	  sqlite3_exec(ret->dbh,
-		       "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
-		       NULL, NULL, ENULL));
-    CHECK(SQLITE_OK == 
-	  sqlite3_exec(ret->dbh, 
-		       "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
-		       NULL, NULL, ENULL));
+    createIndices(ret->dbh);
   }
   sqlite3_finalize(stmt);
 
@@ -1136,7 +1147,8 @@ SQstore_ServiceAPI *
 provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   static SQstore_ServiceAPI api;
 
-  char *dir, *afsdir;
+  char *dir;
+  char *afsdir;
   size_t nX;
   sqliteHandle *dbh;
 
@@ -1226,6 +1238,65 @@ void release_module_sqstore_sqlite() {
 	 "SQLite: database shutdown\n");
 #endif
   coreAPI = NULL;
+  MUTEX_DESTROY(db->DATABASE_Lock_);
+  FREE(db->fn);
+  FREE(db);
+  db = NULL;
+}
+
+
+
+/**
+ * Update sqlite database module.
+ *
+ * Currently only makes sure that the sqlite indices are created.
+ */
+void update_module_sqstore_sqlite(UpdateAPI * uapi) {
+  sqliteHandle *dbh;
+  char *dir;
+  char *afsdir;
+  size_t nX;
+
+  db = MALLOC(sizeof(sqliteDatabase));
+  memset(db,
+	 0,
+	 sizeof(sqliteDatabase));
+  db->payload = 0;
+  db->lastSync = 0;
+  afsdir = NULL;
+  GC_get_configuration_value_filename(uapi->cfg,
+				      "FS",
+				      "DIR",
+				      VAR_DAEMON_DIRECTORY "/data/fs/",
+				      &afsdir);
+  dir = MALLOC(strlen(afsdir) + 8 + 2); /* 8 = "content/" */
+  strcpy(dir, afsdir);
+  strcat(dir, "/content/");
+  FREE(afsdir);
+  if (OK != disk_directory_create(ectx,
+				  dir)) {
+    FREE(dir);
+    FREE(db);
+    return;
+  }
+  nX = strlen(dir) + 6 + 4 + 256;  /* 6 = "gnunet", 4 = ".dat" */
+  db->fn = MALLOC(strlen(dir) + 6 + 4 + 256);
+  SNPRINTF(db->fn, nX, "%s/gnunet.dat", dir);
+  FREE(dir);
+  db->DATABASE_Lock_ = MUTEX_CREATE(NO);
+  dbh = getDBHandle();
+  if (dbh == NULL) {
+    MUTEX_DESTROY(db->DATABASE_Lock_);
+    FREE(db->fn);
+    FREE(db);
+    return;
+  }
+  createIndices(dbh->dbh);
+
+  MUTEX_DESTROY(db->DATABASE_Lock_);
+  FREE(db->fn);
+  FREE(db);
+  db = NULL;
 }
 
 /* end of sqlite.c */
