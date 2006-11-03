@@ -46,7 +46,7 @@ int changeUser(struct GE_Context * ectx,
 					     "GNUNETD",
 					     "USER",
 					     "",
-					     &user)) {
+					     &user) && strlen(user)) {
     if (OK != os_change_user(ectx,
 			     user)) {
       FREE(user);
