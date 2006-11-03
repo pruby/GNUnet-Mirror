@@ -265,6 +265,7 @@ _parse_configuration(struct GC_Configuration * cfg,
 	     _("Syntax error in configuration file `%s' at line %d.\n"),
 	     filename, nr);
       ret = -1;
+      break;
     }
   }
   if (0 != fclose(fp)) {

@@ -77,7 +77,7 @@ void __attribute__ ((destructor)) gnc_ltdl_fini() {
   ShutdownWinEnv();
 #endif
 
-  lt_dlexit();
+  // lt_dlexit();
 }
 
 struct PluginHandle *

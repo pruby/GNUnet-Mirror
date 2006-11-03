@@ -28,6 +28,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_namespace_lib.h"
 #include "gnunet_util_boot.h"
@@ -53,7 +54,7 @@ static cron_t start_time;
 
 /* ************ config options ******** */
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 static struct ECRS_MetaData * meta;
 
@@ -157,8 +158,12 @@ static void * printstatus(void * ctx,
   case FSUI_upload_progress:
     if (*verboselevel) {
       char * ret;
+      cron_t now;
 
-      delta = event->data.UploadProgress.eta - get_time();
+      now = get_time();
+      delta = event->data.UploadProgress.eta - now;
+      if (event->data.UploadProgress.eta < now)
+	delta = 0;
       ret = string_get_fancy_time_interval(delta);
       PRINTF(_("%16llu of %16llu bytes inserted "
 	       "(estimating %6s to completion) - %s\n"),
@@ -204,7 +209,12 @@ static void * printstatus(void * ctx,
     errorCode = 3;
     GNUNET_SHUTDOWN_INITIATE();
     break;
+  case FSUI_upload_started:
+  case FSUI_upload_stopped:
+    break;
   default:
+    printf(_("\nUnexpected event: %d\n"),
+	   event->type);
     GE_BREAK(ectx, 0);
     break;
   }
@@ -298,6 +308,7 @@ int main(int argc,
   char * tmp;
   unsigned long long verbose;
 
+  meta = ECRS_createMetaData();
   i = GNUNET_init(argc,
 		  argv,
 		  "gnunet-insert [OPTIONS] FILENAME",
@@ -447,8 +458,10 @@ int main(int argc,
 			meta,
 			gloKeywords,
 			topKeywords);
-  ECRS_freeUri(gloKeywords);
-  ECRS_freeUri(topKeywords);
+  if (gloKeywords != NULL)
+    ECRS_freeUri(gloKeywords);
+  if (topKeywords != NULL)
+    ECRS_freeUri(topKeywords);
   FREE(tmp);
   if (ul != NULL) {
     GNUNET_SHUTDOWN_WAITFOR();

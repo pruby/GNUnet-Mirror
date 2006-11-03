@@ -523,6 +523,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   struct FSUI_UploadShared * shared;
   struct FSUI_UploadList * ul;
 
+  config = NULL;
   if (doExtract) {
     extractors = EXTRACTOR_loadDefaultLibraries();
     if ( (0 == GC_get_configuration_value_string(ctx->cfg,
@@ -536,7 +537,6 @@ FSUI_startUpload(struct FSUI_Context * ctx,
     }
   } else {
     extractors = NULL;
-    config = NULL;
   }
   shared = MALLOC(sizeof(FSUI_UploadShared));
   shared->dsc = dsc;
@@ -566,6 +566,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
     freeShared(shared);
     return NULL;
   }
+  GE_ASSERT(ctx->ectx, ul->shared == shared);
   return ul;
 }
 

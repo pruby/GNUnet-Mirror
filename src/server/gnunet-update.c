@@ -248,14 +248,16 @@ int main(int argc,
     GNUNET_fini(ectx, cfg);
     return -1;
   }
+  get = NULL;
   if (0 == GC_get_configuration_value_string(cfg,
 					     "GNUNET-UPDATE",
 					     "GET",
-					     NULL,
+					     "",
 					     &get)) {
     doGet(get);
     FREE(get);
   } else {
+    FREE(get);
     work();
   }
   GNUNET_fini(ectx, cfg);

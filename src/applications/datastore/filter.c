@@ -70,7 +70,7 @@ int initFilters(struct GE_Context * ectx,
 					      "FS",
 					      "QUOTA",
 					      0,
-					      ((unsigned long long)-1)/1024,
+					      ((unsigned long long)-1)/1024/1024,
 					      1024,
 					      &quota))
     return SYSERR;

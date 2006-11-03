@@ -41,7 +41,7 @@
 #include "querymanager.h"
 #include "fs.h"
 
-#define DEBUG_FS NO
+#define DEBUG_FS YES
 
 typedef struct {
   struct DHT_GET_RECORD * rec;
@@ -189,12 +189,14 @@ static int gapPut(void * closure,
   }
   processResponse(query, dv);
 #if DEBUG_FS
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received GAP-PUT request (query: `%s')\n",
-      &enc);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(query,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received GAP-PUT request (query: `%s')\n",
+	 &enc);
 #endif
   if (migration)
     ret = datastore->putUpdate(query,
@@ -211,12 +213,14 @@ static int get_result_callback(const HashCode512 * query,
 #if DEBUG_FS
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Found reply to query `%s'.\n",
-      &enc);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(query,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Found reply to query `%s'.\n",
+	 &enc);
 #endif
   gapPut(NULL,
 	 query,
@@ -253,12 +257,14 @@ static int csHandleRequestQueryStop(struct ClientHandle * sock,
   }
   rs = (CS_fs_request_search_MESSAGE*) req;
 #if DEBUG_FS
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&rs->query[0],
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received QUERY STOP (query: `%s')\n",
-      &enc);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&rs->query[0],
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received QUERY STOP (query: `%s')\n",
+	 &enc);
 #endif
   if (ntohl(rs->anonymityLevel) == 0) {
     /* FIXME 0.7.1: cancel with dht? */
@@ -309,14 +315,16 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
 			(const DBlock*) &ri[1]);
 #if DEBUG_FS
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
-      &enc,
-      type,
-      ntohl(ri->prio));
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&query,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
+	 &enc,
+	 type,
+	 ntohl(ri->prio));
 #endif
   datum->type = htonl(type);
   memcpy(&datum[1],
@@ -395,13 +403,14 @@ static int csHandleCS_fs_request_init_index_MESSAGE(struct ClientHandle * sock,
   fn[fnLen] = 0;
 
   ret = ONDEMAND_initIndex(&ri->fileId,
-          fn);
+			   fn);
 
   FREE(fn);
 #if DEBUG_FS
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Sending confirmation (%s) of index initialization request to client\n",
-      ret == OK ? "success" : "failure");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Sending confirmation (%s) of index initialization request to client\n",
+	 ret == OK ? "success" : "failure");
 #endif
   return coreAPI->sendValueToClient(sock,
             ret);
@@ -431,9 +440,10 @@ static int csHandleCS_fs_request_index_MESSAGE(struct ClientHandle * sock,
 		       ntohs(ri->header.size) - sizeof(CS_fs_request_index_MESSAGE),
 		       (const DBlock*) &ri[1]);
 #if DEBUG_FS
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Sending confirmation (%s) of index request to client\n",
-      ret == OK ? "success" : "failure");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Sending confirmation (%s) of index request to client\n",
+	 ret == OK ? "success" : "failure");
 #endif
   return coreAPI->sendValueToClient(sock,
 				    ret);
@@ -455,19 +465,21 @@ static int completeValue(const HashCode512 * key,
 		    &comp[1],
 		    ntohl(value->size) - sizeof(Datastore_Value))) ) {
 #if DEBUG_FS
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"`%s' found value that does not match (%u, %u).\n",
-	__FUNCTION__,
-	ntohl(comp->size),
-	ntohl(value->size));
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "`%s' found value that does not match (%u, %u).\n",
+	   __FUNCTION__,
+	   ntohl(comp->size),
+	   ntohl(value->size));
 #endif
     return OK;
   }
   *comp = *value; /* make copy! */
 #if DEBUG_FS
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "`%s' found value that matches.\n",
-      __FUNCTION__);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "`%s' found value that matches.\n",
+	 __FUNCTION__);
 #endif
   return SYSERR;
 }
@@ -512,13 +524,15 @@ static int csHandleCS_fs_request_delete_MESSAGE(struct ClientHandle * sock,
     return SYSERR;
   }
 #if DEBUG_FS
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received REQUEST DELETE (query: `%s', type: %u)\n",
-      &enc,
-      type);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&query,
+		    &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received REQUEST DELETE (query: `%s', type: %u)\n",
+	 &enc,
+	 type);
 #endif
   MUTEX_LOCK(lock);
   if (SYSERR == datastore->get(&query,
@@ -532,9 +546,10 @@ static int csHandleCS_fs_request_delete_MESSAGE(struct ClientHandle * sock,
   MUTEX_UNLOCK(lock);
   FREE(value);
 #if DEBUG_FS
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Sending confirmation (%s) of delete request to client\n",
-      ret != SYSERR ? "success" : "failure");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Sending confirmation (%s) of delete request to client\n",
+	 ret != SYSERR ? "success" : "failure");
 #endif
   return coreAPI->sendValueToClient(sock,
 				    ret);
@@ -554,8 +569,9 @@ static int csHandleCS_fs_request_unindex_MESSAGE(struct ClientHandle * sock,
   }
   ru = (CS_fs_request_unindex_MESSAGE*) req;
 #if DEBUG_FS
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received REQUEST UNINDEX\n");
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received REQUEST UNINDEX\n");
 #endif
   ret = ONDEMAND_unindex(datastore,
 			 ntohl(ru->blocksize),
@@ -579,8 +595,9 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(struct ClientHandle * sock
   }
   ru = (RequestTestindex*) req;
 #if DEBUG_FS
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received REQUEST TESTINDEXED\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received REQUEST TESTINDEXED\n");
 #endif
   ret = ONDEMAND_testindexed(datastore,
 			     &ru->fileId);
@@ -595,8 +612,9 @@ static int csHandleCS_fs_request_test_index_MESSAGEed(struct ClientHandle * sock
 static int csHandleRequestGetAvgPriority(struct ClientHandle * sock,
 					 const MESSAGE_HEADER * req) {
 #if DEBUG_FS
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received REQUEST GETAVGPRIORITY\n");
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received REQUEST GETAVGPRIORITY\n");
 #endif
   return coreAPI->sendValueToClient(sock,
 				    gap->getAvgPriority());
@@ -633,12 +651,14 @@ static int gapGetConverter(const HashCode512 * key,
   EncName enc;
 
 #if DEBUG_FS
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(key,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Converting reply for query `%s' for gap.\n",
-      &enc);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(key,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Converting reply for query `%s' for gap.\n",
+	 &enc);
 #endif
   if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
     if (OK != ONDEMAND_getIndexed(datastore,
@@ -657,22 +677,26 @@ static int gapGetConverter(const HashCode512 * key,
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {
-    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  hash2enc(key,
-		   &enc));
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	"Converting reply for query `%s' for gap failed (datum not applicable).\n",
-	&enc);
+    IF_GELOG(ectx,
+	     GE_WARNING | GE_BULK | GE_USER,
+	     hash2enc(key,
+		      &enc));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   "Converting reply for query `%s' for gap failed (datum not applicable).\n",
+	   &enc);
     FREENONNULL(xvalue);
     return SYSERR; /* no query will ever match */
   }
   if (ret == NO) {
-    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  hash2enc(key,
-		   &enc));
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	"Converting reply for query `%s' for gap failed (type not applicable).\n",
-	&enc);
+    IF_GELOG(ectx,
+	     GE_WARNING | GE_BULK | GE_USER,
+	     hash2enc(key,
+		      &enc));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   "Converting reply for query `%s' for gap failed (type not applicable).\n",
+	   &enc);
     FREENONNULL(xvalue);
     return OK; /* Additional filtering based on type;
 		  i.e., namespace request and namespace
@@ -691,12 +715,14 @@ static int gapGetConverter(const HashCode512 * key,
        refuse to hand out data that requires
        anonymity! */
     FREENONNULL(xvalue);
-    IF_GELOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	  hash2enc(key,
-		   &enc));
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	"Converting reply for query `%s' for gap failed (insufficient cover traffic).\n",
-	&enc);
+    IF_GELOG(ectx,
+	     GE_WARNING | GE_BULK | GE_USER,
+	     hash2enc(key,
+		      &enc));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   "Converting reply for query `%s' for gap failed (insufficient cover traffic).\n",
+	   &enc);
     return OK;
   }
   gw = MALLOC(size);
@@ -747,13 +773,15 @@ static int gapGet(void * closure,
 #if DEBUG_FS
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&keys[0],
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "GAP requests content for `%s' of type %u\n",
-      &enc,
-      type);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&keys[0],
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "GAP requests content for `%s' of type %u\n",
+	 &enc,
+	 type);
 #endif
   myClosure.count = 0;
   myClosure.keyCount = keyCount;
@@ -908,13 +936,15 @@ static int dhtGet(void * closure,
   GGC myClosure;
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&keys[0],
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "DHT requests content for %s of type %u\n",
-      &enc,
-      type);
+  IF_GELOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&keys[0],
+		    &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "DHT requests content for %s of type %u\n",
+	 &enc,
+	 type);
   myClosure.keyCount = keyCount;
   myClosure.keys = keys;
   myClosure.resultCallback = resultCallback;
@@ -1089,15 +1119,17 @@ static int csHandleRequestQueryStart(struct ClientHandle * sock,
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
 #if DEBUG_FS
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&rs->query[0],
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "FS received QUERY START (query: `%s', ttl %llu, priority %u, anonymity %u)\n",
-      &enc,
-      ntohll(rs->expiration) - get_time(),
-      ntohl(rs->prio),
-      ntohl(rs->anonymityLevel));
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&rs->query[0],
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "FS received QUERY START (query: `%s', ttl %llu, priority %u, anonymity %u)\n",
+	 &enc,
+	 ntohll(rs->expiration) - get_time(),
+	 ntohl(rs->prio),
+	 ntohl(rs->anonymityLevel));
 #endif
   type = ntohl(rs->type);
   trackQuery(&rs->query[0],
@@ -1116,9 +1148,10 @@ static int csHandleRequestQueryStart(struct ClientHandle * sock,
 	 &done);
   if (done == YES) {
 #if DEBUG_FS
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"FS successfully took GAP shortcut for `%s'.\n",
-	&enc);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "FS successfully took GAP shortcut for `%s'.\n",
+	   &enc);
 #endif
     return OK;	
   }
@@ -1243,18 +1276,19 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
     dht->join(&dsDht, &dht_table);
   }
 
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      _("`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
-      "fs",
-      CS_PROTO_gap_QUERY_START,
-      CS_PROTO_gap_QUERY_STOP,
-      CS_PROTO_gap_INSERT,
-      CS_PROTO_gap_INDEX,
-      CS_PROTO_gap_DELETE,
-      CS_PROTO_gap_UNINDEX,
-      CS_PROTO_gap_TESTINDEX,
-      CS_PROTO_gap_GET_AVG_PRIORITY,
-      CS_PROTO_gap_INIT_INDEX);
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 _("`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
+	 "fs",
+	 CS_PROTO_gap_QUERY_START,
+	 CS_PROTO_gap_QUERY_STOP,
+	 CS_PROTO_gap_INSERT,
+	 CS_PROTO_gap_INDEX,
+	 CS_PROTO_gap_DELETE,
+	 CS_PROTO_gap_UNINDEX,
+	 CS_PROTO_gap_TESTINDEX,
+	 CS_PROTO_gap_GET_AVG_PRIORITY,
+	 CS_PROTO_gap_INIT_INDEX);
 
   GE_ASSERT(ectx, SYSERR != capi->registerClientHandler(CS_PROTO_gap_QUERY_START,
 						      &csHandleRequestQueryStart));
@@ -1294,11 +1328,13 @@ void done_module_fs() {
 
   doneMigration();
   if (dht != NULL) {
-    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	"Leaving DHT (this may take a while).");
+    GE_LOG(ectx, 
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   "Leaving DHT (this may take a while).");
     dht->leave(&dht_table);
-    GE_LOG(ectx, GE_INFO | GE_REQUEST | GE_USER,
-	"Leaving DHT complete.");
+    GE_LOG(ectx,
+	   GE_INFO | GE_REQUEST | GE_USER,
+	   "Leaving DHT complete.");
 
   }
   GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_START,

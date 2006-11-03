@@ -303,14 +303,8 @@ static unsigned long long getSize() {
   if (stats)
     stats->set(stat_size, ret);
   MUTEX_UNLOCK(db->DATABASE_Lock_);
-  return ret * 1.02; 
-  /* benchmarking shows 12% overhead, this is
-     most likely related to the benchmark setup
-     of adding 10% more than quota at a time
-     before cleaning up; overhead without this
-     is usually around 2% during pure insertion;
-     so we take the 2% here, which for frequent
-     cleaning up should be sufficiently accurate */
+  return ret * 1.06; 
+  /* benchmarking shows 2-12% overhead */
 }
 
 /**
@@ -518,6 +512,7 @@ static int sqlite_iterate(unsigned int type,
   HashCode512 key;
   sqlite3 * dbh;
   sqliteHandle * handle;
+  int ret;
 
   handle = getDBHandle();
   dbh = handle->dbh;
@@ -527,12 +522,12 @@ static int sqlite_iterate(unsigned int type,
       http://permalink.gmane.org/gmane.network.gnunet.devel/1363 */
   strcpy(scratch,
 	 "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070"
-	 " where rowid in (Select rowid from gn070"
-	 " WHERE ((expire == :2 AND prio == :3 AND hash > :1) OR ");
+	 " WHERE rowid IN (SELECT rowid FROM gn070"
+	 " WHERE ((hash > :1 AND expire == :2 AND prio == :3) OR ");
   if (sortByPriority)
     strcat(scratch,
 	   "(expire > :4 AND prio == :5) OR prio > :6)");
-  else
+  else 
     strcat(scratch,
 	   "(prio > :4 AND expire == :5) OR expire > :6)");
   if (type)
@@ -561,7 +556,7 @@ static int sqlite_iterate(unsigned int type,
 
   count    = 0;
   lastPrio = 0;
-  lastExp  = 0x8000000000000000LL; /* MIN long long; sqlite does not know about unsigned... */
+  lastExp  = 0;
   memset(&key, 0, sizeof(HashCode512));
   while (1) {
     sqlite3_bind_blob(stmt,
@@ -576,12 +571,12 @@ static int sqlite_iterate(unsigned int type,
 		     3,
 		     lastPrio);
     if (sortByPriority) {
-      sqlite3_bind_int(stmt,
-		       4,
-		       lastPrio);
       sqlite3_bind_int64(stmt,
-			 5,
+			 4,
 			 lastExp);
+      sqlite3_bind_int(stmt,
+		       5,
+		       lastPrio);
       sqlite3_bind_int(stmt,
 		       6,
 		       lastPrio);
@@ -600,11 +595,10 @@ static int sqlite_iterate(unsigned int type,
       sqlite3_bind_int(stmt,
 		       7,
 		       type);
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
+    if ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
       datum = assembleDatum(handle,
 			    stmt);
       sqlite3_reset(stmt);
-
       if (datum == NULL)
 	continue;
 #if 0
@@ -615,15 +609,14 @@ static int sqlite_iterate(unsigned int type,
 	     lastPrio,
 	     lastExp);
 #endif
-
       if (iter != NULL) {
 	MUTEX_UNLOCK(db->DATABASE_Lock_);
 	if (SYSERR == iter(&datum->key,
 			   &datum->value,
 			   closure) ) {
-	  count = SYSERR;
 	  FREE(datum);
 	  MUTEX_LOCK(db->DATABASE_Lock_);
+	  count = SYSERR;
 	  break;
 	}
 	MUTEX_LOCK(db->DATABASE_Lock_);
@@ -634,6 +627,14 @@ static int sqlite_iterate(unsigned int type,
       FREE(datum);
       count++;
     } else {
+      if (ret != SQLITE_DONE) {
+	LOG_SQLITE(handle,
+		   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+		   "sqlite_query");
+	sqlite3_finalize(stmt);
+	MUTEX_UNLOCK(db->DATABASE_Lock_);
+	return SYSERR;
+      }
       sqlite3_reset(stmt);
       break;
     }
@@ -757,8 +758,8 @@ static int get(const HashCode512 * key,
 		    &enc));
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
-      "SQLite: retrieving content `%s'\n",
-      &enc);
+	 "SQLite: retrieving content `%s'\n",
+	 &enc);
 #endif
   handle = getDBHandle();
   dbh = handle->dbh;
@@ -1084,12 +1085,14 @@ static int update(const HashCode512 * key,
 #if DEBUG_SQLITE
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(key,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "SQLite: updating block with key `%s'\n",
-      &enc);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(key,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "SQLite: updating block with key `%s'\n",
+	 &enc);
 #endif
 
   dbh = getDBHandle();
@@ -1152,15 +1155,11 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   db->lastSync = 0;
 
   afsdir = NULL;
-  if (0 != GC_get_configuration_value_filename(capi->cfg,
-					       "FS",
-					       "DIR",
-					       VAR_DAEMON_DIRECTORY "/data/fs/",
-					       &afsdir)) {
-    FREE(db);
-    return NULL;
-  }
-
+  GC_get_configuration_value_filename(capi->cfg,
+				      "FS",
+				      "DIR",
+				      VAR_DAEMON_DIRECTORY "/data/fs/",
+				      &afsdir);
   dir = MALLOC(strlen(afsdir) + 8 + 2); /* 8 = "content/" */
   strcpy(dir, afsdir);
   strcat(dir, "/content/");

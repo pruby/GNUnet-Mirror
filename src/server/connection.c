@@ -2792,12 +2792,12 @@ static int connectionConfigChangeCallback(void * ctx,
     max_bpm = new_max_bpm;
     newMAXHOSTS = max_bpm / (MIN_BPM_PER_PEER * 2);
     /* => for 1000 bps, we get 12 (rounded DOWN to 8) connections! */
-    if(newMAXHOSTS < 2)
+    if (newMAXHOSTS < 2)
       newMAXHOSTS = 2;          /* strict minimum is 2 */
-    if(newMAXHOSTS > 256)
+    if (newMAXHOSTS > 256)
       newMAXHOSTS = 256;        /* limit, before we run out of sockets! */
 
-    if(newMAXHOSTS != CONNECTION_MAX_HOSTS_) {
+    if (newMAXHOSTS != CONNECTION_MAX_HOSTS_) {
       /* change size of connection buffer!!! */
       unsigned int olen;
       BufferEntry **newBuffer;
@@ -2834,9 +2834,12 @@ static int connectionConfigChangeCallback(void * ctx,
       FREENONNULL(CONNECTION_buffer_);
       CONNECTION_buffer_ = newBuffer;
 
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-          "connection goal is %s%d peers (%llu BPS bandwidth downstream)\n",
-          (olen == 0) ? "" : "now ", CONNECTION_MAX_HOSTS_, max_bpm);
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "connection goal is %s%d peers (%llu BPS bandwidth downstream)\n",
+	     (olen == 0) ? "" : "now ",
+	     CONNECTION_MAX_HOSTS_,
+	     max_bpm);
 
     }
   }
@@ -2865,7 +2868,11 @@ void initConnection(struct GE_Context * e,
   scl_nextHead = NULL;
   scl_nextTail = NULL;
   lock = MUTEX_CREATE(YES);
-  CONNECTION_MAX_HOSTS_ = 0;
+  connectionConfigChangeCallback(NULL,
+				 cfg,
+				 ectx,
+				 "LOAD",
+				 "NOTHING");
   GE_ASSERT(ectx,
 	    0 == GC_attach_change_listener(cfg,
 					   &connectionConfigChangeCallback,

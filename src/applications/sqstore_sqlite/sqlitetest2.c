@@ -49,7 +49,7 @@
  * those take too long to run them in the usual "make check"
  * sequence.  Hence the value used for shipping is tiny.
  */
-#define MAX_SIZE 1024LL * 1024 * 16
+#define MAX_SIZE 1024LL * 1024 * 128
 
 /**
  * Report progress outside of major reports? Should probably be YES if
@@ -137,12 +137,12 @@ iterateDelete(const HashCode512 * key,
   SQstore_ServiceAPI * api = cls;
   static int dc;
 
-  if (api->getSize() < MAX_SIZE)
+  if (api->getSize() < MAX_SIZE) 
     return SYSERR;
   if (GNUNET_SHUTDOWN_TEST() == YES)
     return SYSERR;
   dc++;
-#if REPORT_ID
+#if REPORT_ID 
   if (dc % REP_FREQ == 0)
     fprintf(stderr, "D");
 #endif

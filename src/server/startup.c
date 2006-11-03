@@ -30,6 +30,7 @@
 
 #include "platform.h"
 #include "gnunet_util.h"
+#include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 
 #include "tcpserver.h"
@@ -63,7 +64,7 @@ static char * getPIDFile(struct GC_Configuration * cfg) {
   if (0 != GC_get_configuration_value_filename(cfg,
 					       "GNUNETD",
 					       "PIDFILE",
-					       NULL,
+					       VAR_DAEMON_DIRECTORY "/gnunetd.pid",
 					       &pif))
     return NULL;
   return pif;

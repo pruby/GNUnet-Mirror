@@ -23,6 +23,7 @@ Notes:
     + fs/fslib
     + fs/ecrs
     + fs/fsui
+  * FSUI/ECRS/fslib hang if fs module not loaded by gnunetd (!) [pre0]
   * gnunet-setup: [RCpre0]
     + Scheme (scm) specification of entire configuration;
       check options used in modules:
@@ -48,10 +49,7 @@ Notes:
       - kvstore
     + ncurses wizard
 - fix critical known bugs (see Mantis for updates):
-  * disk quota violations (#1128) [CG, RCpre0]
-    - need to check: why quota-deletion happens during startup
-    - need to check: adding missing indices during gnunet-update
-    - need to check: indexing quota, quota enforcement
+  * adding missing sqlite indices during gnunet-update
   * Windows installer, uninstall: Remove account [Nils, RC]
   * file/socket leak (#955) - possibly fixed
 - More testcases: [RCpre3]

@@ -282,7 +282,7 @@ static int resetStatusCalls(void * cls,
   if (-1 == GC_get_configuration_value_string(cfg,
 					      "LOAD",
 					      "INTERFACES",
-					      NULL,
+					      "eth0",
 					      &interfaces))
     return SYSERR;
   if (interfaces == NULL) {
