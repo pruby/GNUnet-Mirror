@@ -225,4 +225,14 @@ GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
 				    GNS_TreeChangeListener listener,
 				    void * cls);
 
+/**
+ * Convert the default value of the given tree entry to
+ * a string.
+ *
+ * @return NULL on error
+ */
+char *
+GNS_get_default_value_as_string(GNS_Type type,
+				const GNS_Value * value);
+
 #endif

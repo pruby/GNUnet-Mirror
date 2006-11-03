@@ -65,6 +65,44 @@ static struct CommandLineOption gnunetsetupOptions[] = {
   COMMAND_LINE_OPTION_END,
 };
 
+static void gns2cfg(struct GNS_Tree * pos) {
+  int i;
+  char * val;
+  
+  if (pos == NULL)
+    return;
+  i = 0;
+  while (pos->children[i] != NULL) {
+    gns2cfg(pos->children[i]);
+    i++;
+  }
+  if (i != 0)
+    return;
+  if ( (pos->section == NULL) ||
+       (pos->option == NULL) )
+    return;
+  val = NULL;
+  if (0 == GC_get_configuration_value_string(cfg,
+					     pos->section,
+					     pos->option,
+					     "",
+					     &val)) {
+    FREE(val);
+    return;
+  }
+  FREE(val);
+  val = GNS_get_default_value_as_string(pos->type,
+					&pos->value);
+  if (val != NULL) {
+    GC_set_configuration_value_string(cfg,
+				      ectx,
+				      pos->section,
+				      pos->option,
+				      val);
+    FREE(val);
+  }
+}
+
 static int dyn_config(const char * module,
 		      const char * mainfunc,
 		      int argc,
@@ -215,6 +253,7 @@ int main(int argc,
     FREE(cfgFilename);
     return -1;
   }
+  gns2cfg(GNS_get_tree(gns));
 
   done = NO;
   i = 0;

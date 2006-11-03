@@ -351,3 +351,36 @@ GNS_unregister_tree_change_listener(struct GNS_Context * ctx,
     pos = pos->next;
   }
 }
+
+/**
+ * Convert the default value of the given tree entry to
+ * a string.
+ *
+ * @return NULL on error
+ */
+char *
+GNS_get_default_value_as_string(GNS_Type type,
+				const GNS_Value * value) {
+  char buf[48];
+
+  if (value == NULL)
+    return NULL;
+  switch (type & GNS_TypeMask) {
+  case GNS_Boolean:
+    if (value->Boolean.def)
+      return STRDUP("YES");
+    return STRDUP("NO");
+  case GNS_String:
+    if (value->String.def == NULL)
+      return NULL;
+    return STRDUP(value->String.def);
+  case GNS_Double:
+    SNPRINTF(buf, 48, "%f", value->Double.def);
+    return STRDUP(buf);
+  case GNS_UInt64:
+    SNPRINTF(buf, 48, "%llu", value->UInt64.def);
+    return STRDUP(buf);
+  default:
+    return NULL;
+  }
+}
