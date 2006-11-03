@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_fsui_lib.h"
 #include "gnunet_util_cron.h"
 #include "gnunet_util_boot.h"
@@ -42,7 +43,7 @@ static unsigned int max_results;
 
 static char * cfgFilename;
 
-static char * output_filename;
+static char * output_filename = DEFAULT_CLIENT_CONFIG_FILE;
 
 static int errorCode;
 
