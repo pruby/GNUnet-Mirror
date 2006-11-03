@@ -106,18 +106,15 @@ static void * progressModel(void * unused,
     GNUNET_SHUTDOWN_INITIATE();
     break;
   case FSUI_download_completed:
-    if ( (event->data.DownloadProgress.completed ==
-	  event->data.DownloadProgress.total) ) {
-      PRINTF(_("Download of file `%s' complete.  "
-	       "Speed was %8.3f KiB per second.\n"),
-	     event->data.DownloadProgress.filename,
-	     (event->data.DownloadProgress.completed/1024.0) /
-	     (((double)(get_time()-(start_time - 1)))
-	      / (double)cronSECONDS) );
-      if (dl == event->data.DownloadProgress.dc.pos) {
-	errorCode = 0;
-	GNUNET_SHUTDOWN_INITIATE();
-      }
+    PRINTF(_("Download of file `%s' complete.  "
+	     "Speed was %8.3f KiB per second.\n"),
+	   event->data.DownloadCompleted.filename,
+	   (event->data.DownloadCompleted.total/1024.0) /
+	   (((double)(get_time()-(start_time - 1)))
+	    / (double)cronSECONDS) );
+    if (dl == event->data.DownloadCompleted.dc.pos) {
+      errorCode = 0;
+      GNUNET_SHUTDOWN_INITIATE();
     }
     break;
   case FSUI_download_started:
