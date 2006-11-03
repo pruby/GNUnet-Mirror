@@ -78,6 +78,7 @@
  #include <pwd.h>
  #include <sys/ioctl.h>
  #include <sys/wait.h>
+ #include <grp.h>
 #else
  #include "winproc.h"
 #endif
@@ -138,7 +139,6 @@
 #include <cygwin/if.h>
 #endif
 #include <errno.h>
-#include <grp.h>
 #include <limits.h>
 
 #if HAVE_CTYPE_H
