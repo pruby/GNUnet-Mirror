@@ -81,6 +81,10 @@ static void * eventCallback(void * cls,
     errorCode = 3;
     GNUNET_SHUTDOWN_INITIATE();
     break;
+  case FSUI_search_aborted:
+    errorCode = 4;
+    GNUNET_SHUTDOWN_INITIATE();
+    break;
   case FSUI_search_completed:
     errorCode = 0;
     GNUNET_SHUTDOWN_INITIATE();
