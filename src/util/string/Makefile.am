@@ -7,7 +7,9 @@ noinst_LTLIBRARIES = \
 
 libstring_la_SOURCES = \
   string.c \
-  xmalloc.c 
+  xmalloc.c \
+  dlmalloc.c \
+  dlmalloc.h
 
 check_PROGRAMS = \
  xmalloctest 

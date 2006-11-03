@@ -27,6 +27,7 @@
 #include "gnunet_util_string.h"
 #include "gnunet_util_error.h"
 #include "platform.h"
+#include "dlmalloc.h"
 
 #ifndef INT_MAX
 #define INT_MAX 0x7FFFFFFF
@@ -72,7 +73,7 @@ void * xmalloc_unchecked_(size_t size,
 		filename,
 		linenumber,
 		function);
-  result = malloc(size);
+  result = dlmalloc(size);
   if (result == NULL)
     GE_DIE_STRERROR_FLF(NULL,
 			GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
@@ -103,7 +104,7 @@ void * xrealloc_(void * ptr,
 		 const char * filename,
 		 int linenumber,
 		 const char * function) {
-  ptr = realloc(ptr, n);
+  ptr = dlrealloc(ptr, n);
 
   if (!ptr)
     GE_DIE_STRERROR_FLF(NULL,
@@ -132,7 +133,7 @@ void xfree_(void * ptr,
 		filename,
 		linenumber,
 		function);
-  free(ptr);
+  dlfree(ptr);
 }
 
 /**
