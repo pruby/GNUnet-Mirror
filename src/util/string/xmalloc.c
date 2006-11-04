@@ -29,6 +29,8 @@
 #include "platform.h"
 #include "dlmalloc.h"
 
+/* #define USE_DLMALLOC */
+
 #ifndef INT_MAX
 #define INT_MAX 0x7FFFFFFF
 #endif
@@ -73,7 +75,11 @@ void * xmalloc_unchecked_(size_t size,
 		filename,
 		linenumber,
 		function);
+#ifdef USE_DLMALLOC
   result = dlmalloc(size);
+#else
+  result = malloc(size);
+#endif
   if (result == NULL)
     GE_DIE_STRERROR_FLF(NULL,
 			GE_IMMEDIATE | GE_USER | GE_DEVELOPER | GE_FATAL,
@@ -104,7 +110,11 @@ void * xrealloc_(void * ptr,
 		 const char * filename,
 		 int linenumber,
 		 const char * function) {
+#ifdef USE_DLMALLOC
   ptr = dlrealloc(ptr, n);
+#else
+  ptr = realloc(ptr, n);
+#endif
 
   if (!ptr)
     GE_DIE_STRERROR_FLF(NULL,
@@ -133,7 +143,11 @@ void xfree_(void * ptr,
 		filename,
 		linenumber,
 		function);
+#ifdef USE_DLMALLOC
   dlfree(ptr);
+#else
+  free(ptr);
+#endif
 }
 
 /**
