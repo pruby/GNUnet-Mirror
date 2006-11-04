@@ -464,7 +464,37 @@ AM_CONDITIONAL(HAVE_IPV6, test x$ipv6 != x0)
 AC_DEFINE_UNQUOTED(USE_IPV6, $ipv6, [IPV6 available])
 
 # check for guile
-GUILE_FLAGS
+guile=0
+AC_MSG_CHECKING(for guile 1.8)
+AC_ARG_WITH(guile,
+   [  --with-guile=PFX    Base of guile installation],
+   [AC_MSG_RESULT([$with_guile])
+    case $with_guile in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(libguile.h,
+          AC_CHECK_LIB([guile], [scm_sigaction_for_thread],
+            guile=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_guile/lib $LDFLAGS"
+        CPPFLAGS="-I$with_guile/include $CPPFLAGS"
+        AC_CHECK_HEADERS(libguile.h,
+          AC_CHECK_LIB([guile], [scm_sigaction_for_thread],
+            EXT_LIB_PATH="-L$with_guile/lib $EXT_LIB_PATH"
+            guile=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-guile not specified])
+    AC_CHECK_HEADERS(libguile.h,
+     AC_CHECK_LIB([guile], [scm_sigaction_for_thread],
+      guile=1))])
+if test "$guile" != 1
+then
+ AC_MSG_ERROR([GNUnet requires libguile 1.8])
+fi
 
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
