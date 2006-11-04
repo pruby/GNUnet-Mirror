@@ -264,7 +264,63 @@ However, active testing and qualified feedback of these features is always welco
    #f
    #f
    'always) )
+
+;; file-sharing options
+
+(define (fs-disable-creation-time builder) 
+ (builder
+   "FS"
+   "DISABLE-CREATION-TIME"
+   (_ "Do not add metadata listing the creation time for inserted content")
+   (nohelp)
+   '()
+   #t
+   #t
+   #f
+   'advanced) )
+
+(define (fs-extractors builder)
+ (builder
+  "FS"
+  "EXTRACTORS"
+  (_ "Which non-default extractors should GNUnet use for keyword extractors")
+  (_ "Specify which additional extractor libraries should be used.  gnunet-insert uses libextractor to extract keywords from files. libextractor can be dynamically extended to handle additional file formats. If you want to use more than the default set of extractors, specify additional extractor libraries here.  The format is [[-]LIBRARYNAME[:[-]LIBRARYNAME]*].
+
+The default is to use filenames and to break larger words at spaces (and underscores, etc.).  This should be just fine for most people. The - before a library name indicates that this should be executed last and makes only sense for the split-library.")
+  '()
+  #t
+  "libextractor_filename:-libextractor_split:-libextractor_lower:-libextractor_thumbnail"
+  '()
+  'advanced) )
+
+(define (fs builder)
+ (builder 
+  "File-Sharing"
+  ""
+  (_ "File-Sharing options")
+  (nohelp)
+  (list 
+    (fs-extractors builder)
+    (fs-disable-creation-time builder)
+  )
+  #t 
+  #f 
+  #f 
+  'always) )
+
 ;; main-menu
+
+(define (general-path builder)
+ (builder
+  "GNUNETD"
+  "GNUNETD_HOME"
+  (_ "Full pathname of GNUnet client HOME directory")
+  (_ "The directory for GNUnet files that belong to the user.")
+  '()
+  #t
+  "$HOME/.gnunet"
+  '()
+  'always) )
 
 (define (main builder)
  (builder 
@@ -273,6 +329,7 @@ However, active testing and qualified feedback of these features is always welco
   (_ "Root node")
   (nohelp)
   (list 
+    (general-path builder)
     (meta builder)
     (logging builder)
     (general builder)

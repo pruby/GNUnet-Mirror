@@ -122,7 +122,31 @@ However, active testing and qualified feedback of these features is always welco
   "/var/lib/GNUnet"
   '()
   'always) )
- 
+
+(define (fs-path builder)
+ (builder
+  "FS"
+  "DIR"
+  (_ "Full pathname of GNUnet directory for file-sharing data")
+  (nohelp) 
+  '()
+  #t
+  "/var/lib/GNUnet/data/fs"
+  '()
+  'always) )
+
+(define (index-path builder)
+ (builder
+  "FS"
+  "INDEX-DIRECTORY"
+  (_ "Full pathname of GNUnet directory for indexed files symbolic links")
+  (nohelp) 
+  '()
+  #t
+  "/var/lib/GNUnet/data/shared"
+  '()
+  'always) )
+
 (define (general-helloexpires builder)
  (builder
   "GNUNETD"
@@ -371,6 +395,54 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  #f
  'advanced) )
 
+(define (gnunetd-private-network builder)
+ (builder
+ "GNUNETD"
+ "PRIVATE-NETWORK"
+ (_ "Disable peer discovery")
+ (_ "The option 'PRIVATE-NETWORK' can be used to limit the connections of this peer to peers of which the hostkey has been copied by hand to data/hosts;  if this option is given, GNUnet will not accept advertisements of peers that the local node does not already know about.  Note that in order for this option to work, HOSTLISTURL should either not be set at all or be set to a trusted peer that only advertises the private network. Also, the option does NOT work at the moment if the NAT transport is loaded; for that, a couple of lines above would need some minor editing :-).")
+ '()
+ #t
+ #f
+ #f
+ 'rare) )
+
+(define (network-disable-advertisting builder)
+ (builder
+ "NETWORK"
+ "DISABLE-ADVERTISEMENTS"
+ (_ "Disable advertising this peer to other peers")
+ (nohelp)
+ '()
+ #t
+ #f
+ #f
+ 'rare) )
+
+(define (network-disable-autoconnect builder)
+ (builder
+ "NETWORK"
+ "DISABLE-AUTOCONNECT"
+ (_ "Disable automatic establishment of connections")
+ (_ "If this option is enabled, GNUnet will not automatically establish connections to other peers, but instead wait for applications to specifically request connections to other peers (or for other peers to connect to us).")
+ '()
+ #t
+ #f
+ #f
+ 'rare) )
+
+(define (network-disable-helloexchange builder)
+ (builder
+ "NETWORK"
+ "HELLOEXCHANGE"
+ (_ "Disable advertising of other peers by this peer")
+ (nohelp)
+ '()
+ #t
+ #f
+ #f
+ 'rare) )
+
 (define (network-port builder)
  (builder
  "NETWORK"
@@ -396,6 +468,48 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  'advanced) )
 
 
+(define (limit-allow builder)
+ (builder
+ "GNUNETD"
+ "LIMIT-ALLOW"
+ (_ "Limit connections to the specfied set of peers.")
+ (_ "If this option is not set, any peer is allowed to connect.  If it is set, only the specified peers are allowed.")
+ '()
+ #t
+ ""
+ '()
+ 'rare))
+
+(define (limit-deny builder)
+ (builder
+ "GNUNETD"
+ "LIMIT-DENY"
+ (_ "Prevent the specfied set of peers from connecting.")
+ (_ "If this option is not set, any peer is allowed to connect.")
+ '()
+ #t
+ ""
+ '()
+ 'rare))
+
+(define (general-advertising builder)
+ (builder
+  "ADVERTISING"
+  ""
+ (_ "Rarely used settings for peer advertisements and connections")
+ (list
+    (general-helloexpires builder) 
+    (tcpserver-disable builder) 
+    (gnunetd-private-network builder) 
+    (network-disable-advertising builder) 
+    (network-disable-helloexchange builder) 
+    (network-disable-autoconnect builder) 
+    (limit-allow builder) 
+    (limit-deny builder) 
+  #t
+  #f
+  #f
+  'rare) )
 
 (define (general builder)
  (builder
@@ -405,13 +519,13 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   (_ "Settings that change the behavior of GNUnet in general")
   (list 
     (general-path builder) 
+    (fs-path builder) 
+    (index-path builder) 
+    (general-pidfile builder) 
     (general-hostlisturl builder)
     (general-http-proxy builder)
-    (general-helloexpires builder) 
-    (tcpserver-disable builder) 
     (network-port builder) 
     (network-trusted builder) 
-    (general-pidfile builder) 
     (general-username builder) 
     (general-transports builder) 
     (general-applications builder) 
@@ -477,14 +591,54 @@ Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of
 (define (f2f builder)
  (builder
   "F2F"
-  ""
+  "FRIENDS"
   (_ "List of friends for friend-to-friend topology")
   (_ "Specifies the name of a file which contains a list of GNUnet peer IDs that are friends.  If used with the friend-to-friend topology, this will ensure that GNUnet only connects to these peers (via any available transport).")
   '()
   #f
-  "$GNUNET_HOME/friends"
+  "/var/lib/GNUnet/friends"
   '()
   'f2f) )
+
+
+;; mysql menu
+
+(define (mysql-database builder)
+ (builder
+  "MYSQL"
+  "DATABASE"
+  (_ "Name of the MySQL database GNUnet should use")
+  (nohelp) 
+  '()
+  #t
+  "gnunet"
+  '()
+  'mysql) )
+
+(define (mysql-config builder)
+ (builder
+  "MYSQL"
+  "CONFIG"
+  (_ "Configuration file that specifies the MySQL username and password")
+  (nohelp) 
+  '()
+  #t
+  "/etc/my.cnf"
+  '()
+  'mysql) )
+
+(define (mysql builder)
+ (builder
+  "MYSQL"
+  ""
+  (_ "Configuration of the MySQL database")
+  (nohelp)
+  (list
+  )
+  #t
+  #f
+  #f
+  'mysql) )
  
 
 
@@ -545,6 +699,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
     (fs-quota builder)
     (fs-activemigration builder)
     (fs-gap-tablesize builder)
+    (mysql builder)
   )
   #t
   #t
@@ -863,6 +1018,30 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  (cons 0 10000)
  'always))
 
+(define (load-cpu-hard builder)
+ (builder
+ "LOAD"
+ "HARDCPULIMIT"
+ (_ "What is the maximum CPU load (hard limit)?")
+ (_ "Which CPU load can be tolerated.  This is the hard limit, so once it is reached, gnunetd will start to massively drop data to reduce the load.  Use with caution.")
+ '()
+ #t
+ 0
+ (cons 0 99999)
+ 'advanced))
+
+(define (load-hard-up-limit builder)
+ (builder
+ "LOAD"
+ "HARDUPLIMIT"
+ (_ "What is the maximum upstream bandwidth (hard limit)?")
+ (_ "Use 0 for no limit.")
+ '()
+ #t
+ 0
+ (cons 0 999999999)
+ 'advanced))
+
 (define (load-padding builder)
  (builder
  "GNUNETD-EXPERIMENTAL"
@@ -924,7 +1103,9 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
   (list 
     (load-maxdown builder)
     (load-maxup builder)
+    (load-hard-up-limit builder)
     (load-cpu builder)
+    (load-cpu-hard builder)
     (load-basiclimiting builder)
     (load-interfaces builder)
     (load-padding builder)
@@ -982,6 +1163,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
      (nobasiclimit (not (get-option ctx "LOAD" "BASICLIMITING")))
      (experimental (get-option ctx "Meta" "EXPERIMENTAL"))
      (f2f (string= (get-option ctx "MODULES" "topology") "topology_f2f") )
+     (mysql (string= (get-option ctx "MODULES" "sqstore") "sqstore_mysql") )
      (fs-loaded (list? (member "fs" (string-split (get-option ctx "GNUNETD" "APPLICATIONS") #\  ) ) ) )
      (nat-loaded (list? (member "nat" (string-split (get-option ctx "GNUNETD" "TRANSPORTS") #\  ) ) ) )
      (nat-limited (get-option ctx "NAT" "LIMITED"))
@@ -1010,6 +1192,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'rare)         (change-visible ctx a b rare))
             ((eq? i 'experimental) (change-visible ctx a b experimental))
             ((eq? i 'f2f)          (change-visible ctx a b f2f))
+            ((eq? i 'mysql)        (change-visible ctx a b mysql))
             ((eq? i 'fs-loaded)    (change-visible ctx a b fs-loaded))
             ((eq? i 'nat-unlimited)(change-visible ctx a b nat-unlimited))
             ((eq? i 'nat-loaded)   (change-visible ctx a b nat-loaded))

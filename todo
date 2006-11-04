@@ -13,47 +13,26 @@ Notes:
 
 
 0.7.1 [11'06] (aka "stabilization")
+- fix connection problem reported by Nils!
 - fix critical known bugs (see Mantis for updates):
   * Windows installer [Nils]
-  		+ uninstall: Remove account
-			+ libcurl, guile [RCpre0]
-	* provide HTTP transport (new binaries can't load old transport if activated
-	  in config)
+    + uninstall: Remove account
+    + libcurl, guile [RCpre0]
+* provide HTTP transport (new binaries can't load old transport if activated
+     in config)
   * file/socket leak (#955) - possibly fixed
 - finish util refactoring: [RCpre0]
   * logger configuration:
     + util/boot code to parse configuration
       -- and improve scm code as well!
-  * gnunet-setup: [RCpre0]
-    + Scheme (scm) specification of entire configuration;
-      check options used in modules:
-      - advertising
-      - state
-      - datastore
-      - identity
-      - topology_default
-      - gap
-      - connect
-      - fs/module
-      - fsui
-      - ecrs
-      - uritrack
-      - namespace
-      - sqlite
-      - mysql
-      - gnunet-stats
-      - gnunet-tracekit
-      - gnunet-insert/download/unindex
-      - DHT options
-      - topology_f2f
-      - kvstore
-    + ncurses wizard
   * error handling: [RCpre1]
     + tcpio
     + fs/module
     + fs/fslib
     + fs/ecrs
     + fs/fsui
+  * gnunet-setup: [RCpre1]
+    + ncurses wizard
 - update documentation [RCpre2]
 - More testcases: [RCpre3]
   * advertising
@@ -73,6 +52,10 @@ Notes:
   * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
 - Testcases not compiling or passing:
   * dht/tools
+- Scheme (scm) specification of entire configuration;
+  check options used in modules:
+  - DHT options
+  - kvstore
 - Features:
   * SMTP logger
   * Chat support [RC]
