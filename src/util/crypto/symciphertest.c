@@ -69,7 +69,7 @@ static int testSymcipher() {
 
 int verifyCrypto() {
   SESSIONKEY key;
-  char * result;
+  char result[SESSIONKEY_LEN];
   char * res;
   int ret;
 
@@ -77,15 +77,16 @@ int verifyCrypto() {
   unsigned char raw_key[] = {106, 74, 209, 88, 145, 55, 189, 135, 125, 180, 225, 108, 183, 54, 25, 169, 129, 188, 131, 75, 227, 245, 105, 10, 225, 15, 115, 159, 148, 184, 34, 191};
   unsigned char encrresult[] = {81, 81, 181, 234, 78, 198, 242, 124, 199, 59, 152, 213, 230, 76, 250, 135, 243, 23, 66, 130, 175, 146, 141, 172, 165, 82, 193, 236, 133, 145, 93, 37};
 
-  result = MALLOC(SESSIONKEY_LEN);
   res = NULL;
   ret = 0;
 
   memcpy(key.key, raw_key, SESSIONKEY_LEN);
   key.crc32 = htonl(crc32N(&key, SESSIONKEY_LEN));
 
-  if (ntohl(key.crc32) != (unsigned int) 2344502530LL) {
-    printf("Static key has different CRC\n");
+  if (ntohl(key.crc32) != (unsigned int) 38125195LL) {
+    printf("Static key has different CRC: %u - %u\n",
+	   ntohl(key.crc32),
+	   key.crc32);
 
     ret = 1;
     goto error;
@@ -122,7 +123,6 @@ int verifyCrypto() {
 
 error:
 
-  FREE(result);
   FREENONNULL(res);
 
   return ret;
