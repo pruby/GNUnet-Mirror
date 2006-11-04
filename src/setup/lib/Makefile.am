@@ -22,7 +22,6 @@ libgnunetsetup_la_LIBADD = @GUILE_LDFLAGS@ \
 libgnunetsetup_la_LDFLAGS = \
  -export-dynamic -lguile
 
-libgnunetsetup_la_CFLAGS = @GUILE_CFLAGS@ \
-  -I$(top_scrdir)/include 
+libgnunetsetup_la_CFLAGS = -I$(top_scrdir)/include 
 
 
