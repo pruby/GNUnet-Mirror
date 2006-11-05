@@ -200,12 +200,13 @@ void * FSUI_uploadThread(void * cls) {
   struct GE_Context * ectx;
   char * filename;
   struct ECRS_URI * uri;
+  size_t tpos;
 
   ectx = utc->shared->ctx->ectx;
   GE_ASSERT(ectx, utc->filename != NULL);
   cpos = utc->child;
   while (cpos != NULL) {
-    if (cpos->state == FSUI_PENDING)
+    if (cpos->state == FSUI_ACTIVE)
       FSUI_uploadThread(cpos);
     cpos = cpos->next;
   }
@@ -266,9 +267,16 @@ void * FSUI_uploadThread(void * cls) {
   ECRS_delFromMetaData(utc->meta,
 		       EXTRACTOR_FILENAME,
 		       NULL);
+  /* only publish the last part of the path
+     -- we do not want to publish $HOME or similar
+     trivially deanonymizing information */
+  tpos = strlen(utc->filename) - 1;
+  while ( (tpos > 0) &&
+	  (utc->filename[tpos] != '/') )
+    tpos--;
   ECRS_addToMetaData(utc->meta,
 		     EXTRACTOR_FILENAME,
-		     utc->filename);
+		     &utc->filename[tpos+1]);
   ECRS_delFromMetaData(utc->meta,
 		       EXTRACTOR_SPLIT,
 		       NULL);

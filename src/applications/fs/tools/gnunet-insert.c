@@ -82,7 +82,7 @@ static char * pseudonym;
 
 static int do_insert;
 
-static int do_direct_references;
+static int do_no_direct_references;
 
 static int do_copy;
 
@@ -236,9 +236,9 @@ static struct CommandLineOption gnunetinsertOptions[] = {
   { 'd', "disable-creation-time", NULL,
     gettext_noop("disable adding the creation time to the metadata of the uploaded file"),
     0, &gnunet_getopt_configure_set_one, &do_disable_creation_time },
-  { 'D', "direct", NULL,
-    gettext_noop("use libextractor to add additional direct references to directory entries"),
-    0, &gnunet_getopt_configure_set_one, &do_direct_references },
+  { 'D', "disable-direct", NULL,
+    gettext_noop("do not use libextractor to add additional references to directory entries and/or the published file"),
+    0, &gnunet_getopt_configure_set_one, &do_no_direct_references },
   { 'e', "extract", NULL,
     gettext_noop("print list of extracted keywords that would be used, but do not perform upload"),
     0, &gnunet_getopt_configure_set_one, &extract_only },
@@ -454,7 +454,7 @@ int main(int argc,
 			priority,			
 			! do_insert,
 			YES,
-			do_direct_references,			
+			! do_no_direct_references,			
 			meta,
 			gloKeywords,
 			topKeywords);

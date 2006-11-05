@@ -1103,15 +1103,17 @@ static void issueRequest(RequestManager * rm,
   }
 
 #if DEBUG_DOWNLOAD
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&entry->node->chk.query,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Starting FS search for %s:%llu:%u `%s'\n",
-      entry->node->ctx->ioc->filename,
-      entry->node->offset,
-      entry->node->level,
-      &enc);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&entry->node->chk.query,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Starting FS search for %s:%llu:%u `%s'\n",
+	 entry->node->ctx->ioc->filename,
+	 entry->node->offset,
+	 entry->node->level,
+	 &enc);
 #endif
 
   if (entry->searchHandle != NULL)
