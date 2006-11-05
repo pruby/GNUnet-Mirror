@@ -24,10 +24,31 @@
  * @author Christian Grothoff
  */
 
+#include "gnunet_directories.h"
 #include "gnunet_util_boot.h"
 #include "gnunet_util_config_impl.h"
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
+
+static GE_KIND 
+convertLogLevel(const char * level) {
+  GE_KIND ret;
+
+  ret = GE_NOTHING;
+  if (ret || (0 == strcasecmp("debug", level)))
+    ret |= GE_DEBUG;
+  if (ret || (0 == strcasecmp("status", level)))
+    ret |= GE_STATUS;
+  if (ret || (0 == strcasecmp("info", level)))
+    ret |= GE_INFO;
+  if (ret || (0 == strcasecmp("warning", level)))
+    ret |= GE_WARNING;
+  if (ret || (0 == strcasecmp("error", level)))
+    ret |= GE_ERROR;
+  if (ret || (0 == strcasecmp("fatal", level)))
+    ret = ret | GE_FATAL;
+  return ret;
+}
 
 /**
  * Configure logging mechanism as specified by
@@ -37,7 +58,68 @@
  */
 static int configure_logging(struct GE_Context ** ectx,
 			     struct GC_Configuration * cfg) {
-  
+  char * admin_log_file;
+  char * admin_log_level;
+  char * user_log_level;
+  GE_KIND all;
+  GE_KIND ull;
+  struct GE_Context * nctx;
+  struct GE_Context * tetx;
+  unsigned long long logrotate;
+
+  nctx = NULL;
+  admin_log_file = NULL;
+  admin_log_level = NULL;
+  user_log_level = NULL;
+  logrotate = 7;
+  if (-1 == GC_get_configuration_value_number(cfg,
+					      "GNUNETD",
+					      "KEEPLOG",
+					      0,
+					      36500,
+					      3,
+					      &logrotate))
+    return 1; /* error! */
+  GC_get_configuration_value_filename(cfg,
+				      "GNUNETD",
+				      "LOGFILE",
+				      VAR_DAEMON_DIRECTORY "/logs",
+				      &admin_log_file);
+  disk_directory_create_for_file(ectx,
+				 admin_log_file);
+  GC_get_configuration_value_string(cfg,
+				    "LOGGING",
+				    "ADMIN-LEVEL",
+				    "WARNING",
+				    &admin_log_level);
+  GC_get_configuration_value_string(cfg,
+				    "LOGGING",
+				    "USER-LEVEL",
+				    "WARNING",
+				    &user_log_level);
+  all = convertLogLevel(admin_log_level);
+  ull = convertLogLevel(user_log_level);
+  FREE(admin_log_level);
+  FREE(user_log_level);
+  if (all != 0) {
+    nctx = GE_create_context_logfile(NULL,
+				     all | GE_ADMIN | GE_BULK | GE_IMMEDIATE,
+				     admin_log_file,
+				     YES,
+				     (int) logrotate);
+  }
+  FREE(admin_log_file);
+  if (ull != 0) {
+    tetx = GE_create_context_stderr(NO,
+				    ull | GE_USERKIND | GE_BULK | GE_IMMEDIATE);
+    if (nctx == NULL)
+      nctx = tetx;
+    else
+      nctx = GE_create_context_multiplexer(nctx,
+					   tetx);
+  }
+  GE_free_context(*ectx);
+  *ectx = nctx;
   return 0;
 }
 
@@ -94,3 +176,4 @@ void GNUNET_fini(struct GE_Context * ectx,
   GE_free_context(ectx);
 }
 		
+/* end of startup.c */

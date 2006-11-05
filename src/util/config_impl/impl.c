@@ -258,6 +258,16 @@ _parse_configuration(struct GC_Configuration * cfg,
 						 tag,
 						 &value[i]))
 	ret = -1; /* could not set value */
+    } else if (1 == sscanf(line,
+			   " %63[^= ] =[^\n]",
+			   tag)) {
+      /* tag = */
+      if (0 != GC_set_configuration_value_string(cfg,
+						 cfg->data->ectx,
+						 section,
+						 tag,
+						 ""))
+	ret = -1; /* could not set value */
     } else {
       /* parse error */
       GE_LOG(cfg->data->ectx,
@@ -299,20 +309,10 @@ _write_configuration(struct GC_Configuration * cfg,
   FILE *fp;
   int error;
   int ret;
-  char * dirname;
-  size_t pos;
   char * fn;
 
   fn = string_expandFileName(NULL, filename);
-  dirname = STRDUP(fn);
-  pos = strlen(dirname);
-  while ( (pos > 0) &&
-	  (dirname[pos] != DIR_SEPARATOR) )
-    pos--;
-  dirname[pos] = '\0';
-  disk_directory_create(NULL, dirname);
-  FREE(dirname);
-  
+  disk_directory_create_for_file(NULL, fn);
   data = cfg->data;
   if (NULL == (fp = FOPEN(fn, "w"))) {
     GE_LOG_STRERROR_FILE(data->ectx,
@@ -413,146 +413,6 @@ findEntry(GC_ConfigurationData * data,
 }
 
 static int
-_get_configuration_value_number(struct GC_Configuration * cfg,
-				const char * section,
-				const char * option,
-				unsigned long long min,
-				unsigned long long max,
-				unsigned long long def,
-				unsigned long long * number) {
-  GC_Entry * e;
-  const char * val;
-  int ret;
-
-  MUTEX_LOCK(cfg->data->lock);
-  e = findEntry(cfg->data,
-		section,
-		option);
-  if (e != NULL) {
-    val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
-    if (1 == SSCANF(val,
-		    "%llu",
-		    number)) {
-      if ( (*number >= min)  &&
-	   (*number <= max) ) {
-	ret = 0;
-      } else {
-	GE_LOG(cfg->data->ectx,
-	       GE_ERROR | GE_USER | GE_BULK,
-	       _("Configuration value '%llu' for '%s' "
-		 "in section '%s' is out of legal bounds [%llu,%llu]\n"),
-	       *number,
-	       option,
-	       section,
-	       min,
-	       max);
-	ret = -1; /* error */
-      }
-    } else {
-      GE_LOG(cfg->data->ectx,
-	     GE_ERROR | GE_USER | GE_BULK,
-	     _("Configuration value '%s' for '%s'"
-	       " in section '%s' should be a number\n"),
-	     val,
-	     option,
-	     section,
-	     min,
-	     max);
-      ret = -1; /* error */
-    }
-  } else {
-    *number = def;
-    ret = 1; /* default */
-  }
-  MUTEX_UNLOCK(cfg->data->lock);
-  return ret;
-}
-
-static int
-_get_configuration_value_string(struct GC_Configuration * cfg,
-				const char * section,
-				const char * option,
-				const char * def,
-				char ** value) {
-  GC_Entry * e;
-  const char * val;
-  int ret;
-
-  MUTEX_LOCK(cfg->data->lock);
-  e = findEntry(cfg->data,
-		section,
-		option);
-  if (e != NULL) {
-    val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
-    *value = STRDUP(val);
-    ret = 0;
-  } else {
-    if (def == NULL) {
-      MUTEX_UNLOCK(cfg->data->lock);
-      GE_LOG(cfg->data->ectx,
-	     GE_USER | GE_IMMEDIATE | GE_ERROR,
-	     "Configuration value for option `%s' in section `%s' required.\n",
-	     option,
-	     section);
-      return -1;
-    }
-    *value = STRDUP(def);
-    ret = 1; /* default */
-  }
-  MUTEX_UNLOCK(cfg->data->lock);
-  return ret;
-}
-
-static int
-_get_configuration_value_choice(struct GC_Configuration * cfg,
-				const char * section,
-				const char * option,
-				const char ** choices,
-				const char * def,
-				const char ** value) {
-  GC_Entry * e;
-  const char * val;
-  int i;
-  int ret;
-
-  MUTEX_LOCK(cfg->data->lock);
-  e = findEntry(cfg->data,
-		section,
-		option);
-  if (e != NULL) {
-    val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
-    i = 0;
-    while (choices[i] != NULL) {
-      if (0 == strcasecmp(choices[i],
-			  val))
-	break;
-      i++;
-    }
-    if (choices[i] == NULL) {
-      GE_LOG(cfg->data->ectx,
-	     GE_ERROR | GE_USER | GE_BULK,
-	     _("Configuration value '%s' for '%s'"
-	       " in section '%s' is not in set of legal choices\n"),
-	     val,
-	     option,
-	     section);
-      ret = -1; /* error */
-    } else {
-      *value = choices[i];
-      ret = 0;
-    }
-  } else {
-    *value = def;
-    if (def == NULL)
-      ret = -1;
-    else
-      ret = 1; /* default */
-  }
-  MUTEX_UNLOCK(cfg->data->lock);
-  return ret;
-}
-
-static int
 _set_configuration_value_string(struct GC_Configuration * cfg,
 				struct GE_Context * ectx,
 				const char * section,
@@ -650,6 +510,166 @@ _set_configuration_value_string(struct GC_Configuration * cfg,
   return ret;
 }
 
+static int
+_set_configuration_value_number(struct GC_Configuration * cfg,
+				struct GE_Context * ectx,
+				const char * section,
+				const char * option,
+				unsigned long long number) {
+  char s[64];
+  SNPRINTF(s, 64, "%llu", number);
+  return _set_configuration_value_string(cfg, ectx, section, option, s);
+}
+
+static int
+_get_configuration_value_number(struct GC_Configuration * cfg,
+				const char * section,
+				const char * option,
+				unsigned long long min,
+				unsigned long long max,
+				unsigned long long def,
+				unsigned long long * number) {
+  GC_Entry * e;
+  const char * val;
+  int ret;
+
+  MUTEX_LOCK(cfg->data->lock);
+  e = findEntry(cfg->data,
+		section,
+		option);
+  if (e != NULL) {
+    val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
+    if (1 == SSCANF(val,
+		    "%llu",
+		    number)) {
+      if ( (*number >= min)  &&
+	   (*number <= max) ) {
+	ret = 0;
+      } else {
+	GE_LOG(cfg->data->ectx,
+	       GE_ERROR | GE_USER | GE_BULK,
+	       _("Configuration value '%llu' for '%s' "
+		 "in section '%s' is out of legal bounds [%llu,%llu]\n"),
+	       *number,
+	       option,
+	       section,
+	       min,
+	       max);
+	ret = -1; /* error */
+      }
+    } else {
+      GE_LOG(cfg->data->ectx,
+	     GE_ERROR | GE_USER | GE_BULK,
+	     _("Configuration value '%s' for '%s'"
+	       " in section '%s' should be a number\n"),
+	     val,
+	     option,
+	     section,
+	     min,
+	     max);
+      ret = -1; /* error */
+    }
+  } else {
+    *number = def;
+    _set_configuration_value_number(cfg,
+				    cfg->data->ectx,
+				    section,
+				    option,
+				    def);
+    ret = 1; /* default */
+  }
+  MUTEX_UNLOCK(cfg->data->lock);
+  return ret;
+}
+
+static int
+_get_configuration_value_string(struct GC_Configuration * cfg,
+				const char * section,
+				const char * option,
+				const char * def,
+				char ** value) {
+  GC_Entry * e;
+  const char * val;
+  int ret;
+
+  MUTEX_LOCK(cfg->data->lock);
+  e = findEntry(cfg->data,
+		section,
+		option);
+  if (e != NULL) {
+    val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
+    *value = STRDUP(val);
+    ret = 0;
+  } else {
+    if (def == NULL) {
+      MUTEX_UNLOCK(cfg->data->lock);
+      GE_LOG(cfg->data->ectx,
+	     GE_USER | GE_IMMEDIATE | GE_ERROR,
+	     "Configuration value for option `%s' in section `%s' required.\n",
+	     option,
+	     section);
+      return -1;
+    }
+    *value = STRDUP(def);
+    _set_configuration_value_string(cfg,
+				    cfg->data->ectx,
+				    section,
+				    option,
+				    def);
+    ret = 1; /* default */
+  }
+  MUTEX_UNLOCK(cfg->data->lock);
+  return ret;
+}
+
+static int
+_get_configuration_value_choice(struct GC_Configuration * cfg,
+				const char * section,
+				const char * option,
+				const char ** choices,
+				const char * def,
+				const char ** value) {
+  GC_Entry * e;
+  const char * val;
+  int i;
+  int ret;
+
+  MUTEX_LOCK(cfg->data->lock);
+  e = findEntry(cfg->data,
+		section,
+		option);
+  if (e != NULL) {
+    val = (e->dirty_val != NULL) ? e->dirty_val : e->val;
+    i = 0;
+    while (choices[i] != NULL) {
+      if (0 == strcasecmp(choices[i],
+			  val))
+	break;
+      i++;
+    }
+    if (choices[i] == NULL) {
+      GE_LOG(cfg->data->ectx,
+	     GE_ERROR | GE_USER | GE_BULK,
+	     _("Configuration value '%s' for '%s'"
+	       " in section '%s' is not in set of legal choices\n"),
+	     val,
+	     option,
+	     section);
+      ret = -1; /* error */
+    } else {
+      *value = choices[i];
+      ret = 0;
+    }
+  } else {
+    *value = def;
+    if (def == NULL)
+      ret = -1;
+    else
+      ret = 1; /* default */
+  }
+  MUTEX_UNLOCK(cfg->data->lock);
+  return ret;
+}
 
 /**
  * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
@@ -734,7 +754,11 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
 
   data = cfg->data;
   tmp = NULL;
-  ret = _get_configuration_value_string(cfg, section, option, def, &tmp);
+  ret = _get_configuration_value_string(cfg,
+					section, 
+					option,
+					def, 
+					&tmp);
   if (tmp != NULL) {
     tmp = _configuration_expand_dollar(cfg,
 				       section,
@@ -746,17 +770,6 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
     *value = NULL;
   }
   return ret;
-}
-
-static int
-_set_configuration_value_number(struct GC_Configuration * cfg,
-				struct GE_Context * ectx,
-				const char * section,
-				const char * option,
-				unsigned long long number) {
-  char s[64];
-  SNPRINTF(s, 64, "%llu", number);
-  return _set_configuration_value_string(cfg, ectx, section, option, s);
 }
 
 static int
@@ -827,6 +840,30 @@ _detach_change_listener(struct GC_Configuration * cfg,
 }
 
 /**
+ * Test if we have a value for a particular option
+ * @return YES if so, NO if not.
+ */
+static int
+_have_configuration_value(struct GC_Configuration * cfg,
+			  const char * section,
+			  const char * option) {
+  GC_Entry * e;
+  const char * val;
+  int ret;
+
+  MUTEX_LOCK(cfg->data->lock);
+  e = findEntry(cfg->data,
+		section,
+		option);
+  if (e == NULL)
+    ret = NO;
+  else
+    ret = YES;
+  MUTEX_UNLOCK(cfg->data->lock);
+  return ret;
+}
+
+/**
  * Create a GC_Configuration (C implementation).
  */
 GC_Configuration *
@@ -852,6 +889,7 @@ GC_create_C_impl() {
   ret->set_configuration_value_choice = &_set_configuration_value_choice;
   ret->attach_change_listener = &_attach_change_listener;
   ret->detach_change_listener = &_detach_change_listener;
+  ret->have_configuration_value = &_have_configuration_value;
   return ret;
 }
 

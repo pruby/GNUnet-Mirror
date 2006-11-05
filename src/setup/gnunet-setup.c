@@ -81,25 +81,19 @@ static void gns2cfg(struct GNS_Tree * pos) {
   if ( (pos->section == NULL) ||
        (pos->option == NULL) )
     return;
-  val = NULL;
-  if (0 == GC_get_configuration_value_string(cfg,
-					     pos->section,
-					     pos->option,
-					     "",
-					     &val)) {
-    FREE(val);
-    return;
-  }
-  FREE(val);
-  val = GNS_get_default_value_as_string(pos->type,
-					&pos->value);
-  if (val != NULL) {
-    GC_set_configuration_value_string(cfg,
-				      ectx,
-				      pos->section,
-				      pos->option,
-				      val);
-    FREE(val);
+  if (NO == GC_have_configuration_value(cfg,
+					pos->section,
+					pos->option)) {
+    val = GNS_get_default_value_as_string(pos->type,
+					  &pos->value);
+    if (val != NULL) {
+      GC_set_configuration_value_string(cfg,
+					ectx,
+					pos->section,
+					pos->option,
+					val);
+      FREE(val);
+    }
   }
 }
 

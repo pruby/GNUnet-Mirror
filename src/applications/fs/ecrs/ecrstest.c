@@ -40,19 +40,16 @@ static int testTerminate(void * unused) {
 static struct GC_Configuration * cfg;
 
 static char * makeName(unsigned int i) {
-  char * name;
   char * fn;
 
-  name = STRDUP("/tmp/gnunet-ecrstest");
-  disk_directory_create(NULL, name);
-  fn = MALLOC(strlen(name) + 40);
+  fn = MALLOC(strlen("/tmp/gnunet-ecrstest/ECRSTEST") + 14);
   SNPRINTF(fn,
-	   strlen(name) + 40,
-	   "%s%sECRSTEST%u",
+	   strlen("/tmp/gnunet-ecrstest/ECRSTEST") + 14,
+	   "/tmp/gnunet-ecrstest/ECRSTEST%u",
 	   DIR_SEPARATOR_STR,
 	   name,
 	   i);
-  FREE(name);
+  disk_directory_create_for_file(NULL, fn);
   return fn;
 }
 

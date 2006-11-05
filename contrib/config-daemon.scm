@@ -193,88 +193,32 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   'advanced) )
 
 
-
-
 ;; logging options
 
-(define (log-conf-user-urgency-severity-logger description user urgency severity logger builder def opt)
+(define (log-level description option builder)
  (builder
    "LOGGING"
-   (string-append user "-" urgency "-" severity "-" logger)
+   option
    description
-   ""
-   '()
-   #t
-   def
-   opt
-   (if (string=? urgency "STDOUT") 'rare 'always)))
-
-
-;; FIXME: set default to /dev/null for DEVELOPER, INFO, STATUS and REQUEST file-logs
-(define (log-conf-user-urgency-severity description user urgency severity builder)
- (builder
-   "LOGGING"
-   (string-append user "-" urgency "-" severity)
-   description
-   ""
-   (list
-     (log-conf-user-urgency-severity-logger (_"Log using standard error (YES/NO)") user urgency severity "STDERR" builder #f #f)
-     (log-conf-user-urgency-severity-logger (_"Log using standard output (YES/NO)") user urgency severity "STDOUT" builder #f #f)
-     (log-conf-user-urgency-severity-logger (_"Log this event type to a file (specify filename)") user urgency severity "FILE" builder "~/.gnunet/logs" '())
-   )
-   #t
-   #f
-   #f
-   (if (string=? severity "DEBUG") 'rare 
-     (if (string=? severity "STATUS") 'advanced
-        (if (string=? severity "INFO") 'advanced 'always )))))
-
-(define (log-conf-user-urgency description user urgency builder)
- (builder
-   "LOGGING"
-   (string-append user "-" urgency)
-   description
-   ""
-   (list
-     (log-conf-user-urgency-severity (_"Logging of events that are fatal to some operation") user urgency "FATAL" builder)
-     (log-conf-user-urgency-severity (_"Logging of non-fatal errors") user urgency "ERROR" builder)
-     (log-conf-user-urgency-severity (_"Logging of warnings") user urgency "WARNING" builder)
-     (log-conf-user-urgency-severity (_"Logging of information messages") user urgency "INFO" builder)
-     (log-conf-user-urgency-severity (_"Logging of status messages") user urgency "STATUS" builder)
-     (log-conf-user-urgency-severity (_"Logging of debug messages") user urgency "DEBUG" builder)
-   )
-   #t
-   #f
-   #f
-   (if (string=? urgency "REQUEST") 'rare 'always)))
-
-(define (log-conf-user description user builder)
- (builder
-   "LOGGING"
-   user
-   description
-   ""
-   (list
-     (log-conf-user-urgency (_"Logging of events that usually require immediate attention") user "IMMEDIATE" builder)
-     (log-conf-user-urgency (_"Logging of events that can be processed in bulk") user "BULK" builder)
-     (log-conf-user-urgency (_"Logging of events that are to be shown only on request") user "REQUEST" builder)
-   )
-   #t
-   #f
-   #f
-   (if (string=? user "DEVELOPER") 'advanced 'always)))
-
-(define (log-conf-date builder)
- (builder
-   "LOGGING"
-   "DATE"
-   (_ "Log the date of the event")
    (nohelp)
    '()
    #t
-   #t
-   #t
-   'advanced))
+   "WARNING"
+   (list "NOTHING" "FATAL" "ERROR" "WARNING" "INFO" "STATUS" "DEBUG")
+   'always))
+
+;; option not supported / used at the moment (useful?)
+;(define (log-conf-date builder)
+; (builder
+;   "LOGGING"
+;   "DATE"
+;   (_ "Log the date of the event")
+;   (nohelp)
+;   '()
+;   #t
+;   #t
+;   #t
+;   'advanced))
 
 (define (log-keeplog builder)
  (builder
@@ -289,6 +233,18 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   (cons 0 36500)
   'advanced) )
 
+(define (log-logfile builder)
+ (builder
+  "GNUNETD"
+  "LOGFILE"
+  (_ "Where should gnunetd write the logs?")
+  (nohelp)
+  '()
+  #f
+  "/var/lib/GNUnet/client-logs"
+  '()
+  'rare) )
+
 (define (logging builder)
  (builder
    "LOGGING"
@@ -296,11 +252,10 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
    (_ "Configuration of the logging system") 
    (_ "Specify which system messages should be logged how")
    (list 
-     (log-conf-date builder)
      (log-keeplog builder)
-     (log-conf-user (_ "Logging of events for users") "USER" builder) 
-     (log-conf-user (_ "Logging of events for the system administrator") "ADMIN" builder) 
-     (log-conf-user (_ "Logging of events for developers") "DEVELOPER" builder) 
+     (log-logfile builder)
+     (log-level (_ "Logging of events for users") "USER-LEVEL" builder) 
+     (log-level (_ "Logging of events for the system administrator") "ADMIN-LEVEL" builder) 
    )
    #t
    #f
@@ -317,7 +272,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
 "In which file should gnunetd write the process-id of the server?  If you run gnunetd as root, you may want to choose /var/run/gnunetd.pid. It's not the default since gnunetd may not have write rights at that location." )
   '()
   #f
-  "$GNUNET_HOME/gnunetd.pid"
+  "/var/run/gnunetd.pid"
   '()
   'rare) )
 
@@ -347,7 +302,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
 Loading the 'nat' and 'tcp' modules is required for peers behind NAT boxes that cannot directly be reached from the outside.  Peers that are NOT behind a NAT box and that want to *allow* peers that ARE behind a NAT box to connect must ALSO load the 'nat' module.  Note that the actual transfer will always be via tcp initiated by the peer behind the NAT box.  The nat transport requires the use of tcp, http, smtp and/or tcp6 in addition to nat itself.")
   '()
   #t
-  "udp tcp http nat"
+  "udp tcp nat"
   '()
   'advanced) )
  
@@ -506,6 +461,7 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
     (network-disable-autoconnect builder) 
     (limit-allow builder) 
     (limit-deny builder) 
+ )
   #t
   #f
   #f
@@ -634,6 +590,8 @@ Use f2f only if you have (trustworthy) friends that use GNUnet and are afraid of
   (_ "Configuration of the MySQL database")
   (nohelp)
   (list
+    (mysql-config builder)
+    (mysql-database builder)
   )
   #t
   #f

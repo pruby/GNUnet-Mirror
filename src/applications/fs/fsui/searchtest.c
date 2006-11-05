@@ -33,18 +33,16 @@
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 static char * makeName(unsigned int i) {
-  const char * name;
   char * fn;
 
-  name = "/tmp/gnunet-fsuisearchtest";
-  disk_directory_create(NULL, name);
-  fn = MALLOC(strlen(name) + 40);
+  fn = MALLOC(strlen("/tmp/gnunet-fsui-searchtest/FSUITEST") + 14);
   SNPRINTF(fn,
-	   strlen(name) + 40,
-	   "%s%sFSUITEST%u",
-	   name,
+	   strlen("/tmp/gnunet-fsui-searchtest/FSUITEST") + 14,
+	   "/tmp/gnunet-fsui-searchtest/FSUITEST%u",
 	   DIR_SEPARATOR_STR,
+	   name,
 	   i);
+  disk_directory_create_for_file(NULL, fn);
   return fn;
 }
 

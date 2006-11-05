@@ -288,9 +288,10 @@ GE_create_context_logfile(struct GE_Context * ectx,
   }
   fd = FOPEN(name, "w+");
   if (fd == NULL) {
-    GE_LOG_STRERROR(ectx,
-		    GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
-		    "fopen");
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
+			 "fopen",
+			 name);
     FREE(name);
     return NULL; /* ERROR! */
   }

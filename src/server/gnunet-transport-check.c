@@ -451,27 +451,27 @@ int main(int argc,
 				      ectx,
 				      "TCP",
 				      "BLACKLIST",
-				      NULL);
+				      "");
     GC_set_configuration_value_string(cfg,
 				      ectx,
 				      "TCP6",
 				      "BLACKLIST",
-				      NULL);
+				      "");
     GC_set_configuration_value_string(cfg,
 				      ectx,
 				      "UDP",
 				      "BLACKLIST",
-				      NULL);
+				      "");
     GC_set_configuration_value_string(cfg,
 				      ectx,
 				      "UDP6",
 				      "BLACKLIST",
-				      NULL);
+				      "");
     GC_set_configuration_value_string(cfg,
 				      ectx,
 				      "HTTP",
 				      "BLACKLIST",
-				      NULL);
+				      "");
   }
   cron = cron_create(ectx);
   initCore(ectx, cfg, cron, NULL);

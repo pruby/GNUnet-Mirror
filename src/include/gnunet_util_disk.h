@@ -150,6 +150,17 @@ int disk_directory_scan(struct GE_Context * ectx,
 			DirectoryEntryCallback callback,
 			void * data);
 
+
+/**
+ * Create the directory structure for storing
+ * a file.
+ *
+ * @param filename name of a file in the directory
+ * @returns OK on success, SYSERR on failure
+ */
+int disk_directory_create_for_file(struct GE_Context * ectx,
+				   const char * filename);
+
 /**
  * Test if fil is a directory that can be accessed.
  * Will not print an error message if the directory

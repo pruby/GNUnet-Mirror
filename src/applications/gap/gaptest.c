@@ -58,21 +58,16 @@ static int testTerminate(void * unused) {
 }
 
 static char * makeName(unsigned int i) {
-  char * name;
   char * fn;
 
-  fn = STRDUP("/tmp/gnunet-ecrstest");
-  name = string_expandFileName(ectx, fn);
-  disk_directory_create(ectx, name);
-  FREE(fn);
-  fn = MALLOC(strlen(name) + 40);
+  fn = MALLOC(strlen("/tmp/gnunet-gaptest/GAPTEST") + 14);
   SNPRINTF(fn,
-	   strlen(name) + 40,
-	   "%s%sECRSTEST%u",
+	   strlen("/tmp/gnunet-gaptest/GAPTEST") + 14,
+	   "/tmp/gnunet-gaptest/GAPTEST%u",
 	   DIR_SEPARATOR_STR,
 	   name,
 	   i);
-  FREE(name);
+  disk_directory_create_for_file(NULL, fn);
   return fn;
 }
 

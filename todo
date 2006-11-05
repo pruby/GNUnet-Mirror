@@ -13,18 +13,15 @@ Notes:
 
 
 0.7.1 [11'06] (aka "stabilization")
-- fix connection problem reported by Nils!
-- fix critical known bugs (see Mantis for updates):
+- fix critical known bugs:
+  * keyword extraction does NOT happen with gnunet-insert [RCpre0]
+  * gnunet-download stopped working [RCpre0]
+  * fix connection problem reported by Nils! [RCpre0]
   * Windows installer [Nils]
     + uninstall: Remove account
     + libcurl, guile [RCpre0]
-* provide HTTP transport (new binaries can't load old transport if activated
-     in config)
   * file/socket leak (#955) - possibly fixed
-- finish util refactoring: [RCpre0]
-  * logger configuration:
-    + util/boot code to parse configuration
-      -- and improve scm code as well!
+- finish util refactoring:
   * error handling: [RCpre1]
     + tcpio
     + fs/module

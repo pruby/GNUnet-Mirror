@@ -249,3 +249,10 @@ int GC_detach_change_listener(struct GC_Configuration * cfg,
   return cfg->detach_change_listener(cfg, callback, ctx);
 }
 
+int GC_have_configuration_value(struct GC_Configuration * cfg,
+				const char * section,
+				const char * option) {
+  return cfg->have_configuration_value(cfg,
+				       section,
+				       option);
+}

@@ -216,6 +216,10 @@ typedef struct GC_Configuration {
 				GC_ChangeListener callback,
 				void * ctx);
 
+  int (*have_configuration_value)(struct GC_Configuration * cfg,
+				  const char * section,
+				  const char * option);
+
 } GC_Configuration;
 
 /**

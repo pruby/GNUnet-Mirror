@@ -13,7 +13,7 @@
 #endif
 
 #define USE_LOCKS 1
-#define USE_DL_PREFIX 1
+#define USE_DL_PREFIX 0
 
 /* END changes */
 

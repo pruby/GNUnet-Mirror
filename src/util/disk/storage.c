@@ -359,6 +359,34 @@ int disk_directory_create(struct GE_Context * ectx,
   return ret;
 }
 
+
+/**
+ * Create the directory structure for storing
+ * a file.
+ *
+ * @param filename name of a file in the directory
+ * @returns OK on success, SYSERR on failure
+ */
+int disk_directory_create_for_file(struct GE_Context * ectx,
+				   const char * dir) {
+  char * rdir;
+  int len;
+  int ret;
+
+  rdir = string_expandFileName(ectx,
+			       dir);
+  if (rdir == NULL)
+    return SYSERR;
+  len = strlen(rdir);
+  while ( (len > 0) &&
+	  (rdir[len] != '/') )
+    len--;
+  rdir[len] = '\0';
+  ret = disk_directory_create(ectx, rdir);
+  FREE(rdir);
+  return ret;
+}
+
 /**
  * Read the contents of a binary file into a buffer.
  * @param fileName the name of the file, not freed,

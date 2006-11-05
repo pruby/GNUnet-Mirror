@@ -95,6 +95,13 @@ int GC_get_configuration_value_number(struct GC_Configuration * cfg,
 				      unsigned long long def,
 				      unsigned long long * number);
 
+/**
+ * Test if we have a value for a particular option
+ * @return YES if so, NO if not.
+ */
+int GC_have_configuration_value(struct GC_Configuration * cfg,
+				const char * section,
+				const char * option);
 
 /**
  * Get a configuration value that should be a string.

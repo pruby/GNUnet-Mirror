@@ -134,7 +134,7 @@ static int insert_nic(const char *name,
 
   utf8_name = g_locale_to_utf8(name, -1, NULL, &unused, NULL);
   if (!utf8_name)
-    utf8_name = strdup(_("(unknown connection)"));
+    utf8_name = STRDUP(_("(unknown connection)"));
 
   gtk_combo_box_append_text(GTK_COMBO_BOX(cmbNIC), utf8_name);
   free(utf8_name);

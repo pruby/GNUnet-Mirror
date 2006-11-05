@@ -40,19 +40,16 @@ static volatile int suspendRestart = 0;
 static struct GE_Context * ectx;
 
 static char * makeName(unsigned int i) {
-  char * name;
   char * fn;
 
-  name = STRDUP("/tmp/gnunet-fsuidownloadtest");
-  disk_directory_create(ectx, name);
-  fn = MALLOC(strlen(name) + 40);
+  fn = MALLOC(strlen("/tmp/gnunet-fsui-serializetest/FSUITEST") + 14);
   SNPRINTF(fn,
-	   strlen(name) + 40,
-	   "%s%sFSUITEST%u",
-	   name,
+	   strlen("/tmp/gnunet-fsui-serializetest/FSUITEST") + 14,
+	   "/tmp/gnunet-fsui-serializetest/FSUITEST%u",
 	   DIR_SEPARATOR_STR,
+	   name,
 	   i);
-  FREE(name);
+  disk_directory_create_for_file(NULL, fn);
   return fn;
 }
 

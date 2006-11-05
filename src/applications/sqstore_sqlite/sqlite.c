@@ -1172,23 +1172,18 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 				      "DIR",
 				      VAR_DAEMON_DIRECTORY "/data/fs/",
 				      &afsdir);
-  dir = MALLOC(strlen(afsdir) + 8 + 2); /* 8 = "content/" */
+  dir = MALLOC(strlen(afsdir) + strlen("/content/gnunet.dat") + 2); 
   strcpy(dir, afsdir);
-  strcat(dir, "/content/");
+  strcat(dir, "/content/gnunet.dat");
   FREE(afsdir);
-  if (OK != disk_directory_create(ectx,
-				  dir)) {
+  if (OK != disk_directory_create_for_file(ectx,
+					   dir)) {
     FREE(dir);
     FREE(db);
     return NULL;
   }
-  nX = strlen(dir) + 6 + 4 + 256;  /* 6 = "gnunet", 4 = ".dat" */
-  db->fn = MALLOC(strlen(dir) + 6 + 4 + 256);
-  SNPRINTF(db->fn, nX, "%s/gnunet.dat", dir);
-  FREE(dir);
-
   db->DATABASE_Lock_ = MUTEX_CREATE(NO);
-
+  db->fn = dir;
   dbh = getDBHandle();
   if (dbh == NULL) {
     MUTEX_DESTROY(db->DATABASE_Lock_);
@@ -1251,7 +1246,6 @@ void update_module_sqstore_sqlite(UpdateAPI * uapi) {
   sqliteHandle *dbh;
   char *dir;
   char *afsdir;
-  size_t nX;
 
   db = MALLOC(sizeof(sqliteDatabase));
   memset(db,
@@ -1275,10 +1269,7 @@ void update_module_sqstore_sqlite(UpdateAPI * uapi) {
     FREE(db);
     return;
   }
-  nX = strlen(dir) + 6 + 4 + 256;  /* 6 = "gnunet", 4 = ".dat" */
-  db->fn = MALLOC(strlen(dir) + 6 + 4 + 256);
-  SNPRINTF(db->fn, nX, "%s/gnunet.dat", dir);
-  FREE(dir);
+  db->fn = dir;
   db->DATABASE_Lock_ = MUTEX_CREATE(NO);
   dbh = getDBHandle();
   if (dbh == NULL) {
