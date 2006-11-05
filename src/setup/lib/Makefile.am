@@ -14,7 +14,7 @@ libgnunetsetup_la_SOURCES = \
   tree.c tree.h \
   wizard_util.c wizard_util.h
 
-libgnunetsetup_la_LIBADD = @GUILE_LDFLAGS@ \
+libgnunetsetup_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la  

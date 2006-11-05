@@ -848,7 +848,6 @@ _have_configuration_value(struct GC_Configuration * cfg,
 			  const char * section,
 			  const char * option) {
   GC_Entry * e;
-  const char * val;
   int ret;
 
   MUTEX_LOCK(cfg->data->lock);
