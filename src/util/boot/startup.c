@@ -85,7 +85,7 @@ static int configure_logging(struct GE_Context ** ectx,
 				      "LOGFILE",
 				      VAR_DAEMON_DIRECTORY "/logs",
 				      &admin_log_file);
-  disk_directory_create_for_file(ectx,
+  disk_directory_create_for_file(*ectx,
 				 admin_log_file);
   GC_get_configuration_value_string(cfg,
 				    "LOGGING",
@@ -118,6 +118,7 @@ static int configure_logging(struct GE_Context ** ectx,
       nctx = GE_create_context_multiplexer(nctx,
 					   tetx);
   }
+  GE_setDefaultContext(nctx);
   GE_free_context(*ectx);
   *ectx = nctx;
   return 0;
