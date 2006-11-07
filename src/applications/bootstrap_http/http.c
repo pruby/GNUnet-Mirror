@@ -22,11 +22,10 @@
  * @file bootstrap_http/http.c
  * @brief HOSTLISTURL support.  Downloads hellos via http.
  * @author Christian Grothoff
- *
- * TODO: improve error handling (check curl return values)
  */
 
 #include "platform.h"
+#include "gnunet_util_crypto.h"
 #include "gnunet_core.h"
 #include "gnunet_protocols.h"
 #include "gnunet_bootstrap_service.h"
@@ -46,13 +45,21 @@ static int stat_hellodownloaded;
 static struct GE_Context * ectx;
 
 typedef struct {
+
   bootstrap_hello_callback callback;
+
   void * arg;
+
   bootstrap_terminate_callback termTest;
+
   void * targ;
+
   char * buf;
+
   size_t bsize;
+
   const char * url;
+
 } BootstrapContext;
 
 
@@ -110,6 +117,8 @@ downloadHostlistHelper(void * ptr,
   return size * nmemb;
 }
 
+#define CURL_EASY_SETOPT(c, a, b) do { ret = curl_easy_setopt(c, a, b); if (ret != CURLE_OK) GE_LOG(ectx, GE_WARNING | GE_USER | GE_BULK, _("%s failed at %s:%d: `%s'\n"), "curl_easy_setopt", __FILE__, __LINE__, curl_easy_strerror(ret)); } while (0);
+
 
 static void downloadHostlist(bootstrap_hello_callback callback,
 			     void * arg,
@@ -126,13 +135,23 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   int max;
   struct timeval tv;
   int running;
+  CURLcode ret;
+  CURLMcode mret;
+  unsigned int urls;
+  size_t pos;
 
+  multi = NULL;
   bctx.callback = callback;
   bctx.arg = arg;
   bctx.termTest = termTest;
   bctx.targ = targ;
   bctx.buf = NULL;
   bctx.bsize = 0;
+  curl = curl_easy_init();
+  if (curl == NULL) {
+    GE_BREAK(ectx, 0);
+    return;
+  }
   url = NULL;
   if (0 != GC_get_configuration_value_string(coreAPI->cfg,
 					     "GNUNETD",
@@ -143,7 +162,36 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("No hostlist URL specified in configuration, will not bootstrap.\n"));
     FREE(url);
+    curl_easy_cleanup(curl);
     return;
+  }
+  urls = 0;
+  if (strlen(url) > 0) {
+    urls++;
+    pos = strlen(url) - 1;
+    while (pos > 0) {
+      if (url[pos] == ' ')
+	urls++;
+      pos--;
+    }
+  }
+  if (urls == 0) {
+    FREE(url);
+    curl_easy_cleanup(curl);
+    return;
+  }
+  urls = weak_randomi(urls) + 1;
+  pos = strlen(url) - 1;
+  while (pos > 0) {
+    if (url[pos] == ' ') {
+      urls--;
+      url[pos] = '\0';
+    }
+    if (urls == 0) {
+      pos++;
+      break;
+    }
+    pos--;
   }
   bctx.url = url;
   proxy = NULL;
@@ -152,46 +200,74 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 				    "HTTP-PROXY",
 				    NULL,
 				    &proxy);
-  curl = curl_easy_init();
-  curl_easy_setopt(curl,
+  CURL_EASY_SETOPT(curl,
 		   CURLOPT_WRITEFUNCTION,
 		   &downloadHostlistHelper);
-  curl_easy_setopt(curl,
+  CURL_EASY_SETOPT(curl,
 		   CURLOPT_WRITEDATA,
 		   &bctx);
-  curl_easy_setopt(curl,
+  if (ret != CURLE_OK)
+    goto ERROR;
+  CURL_EASY_SETOPT(curl,
 		   CURLOPT_FAILONERROR,
 		   1);
-  curl_easy_setopt(curl,
+  CURL_EASY_SETOPT(curl,
 		   CURLOPT_URL,
-		   url);
-  if (strlen(proxy) > 0)
-    curl_easy_setopt(curl,
+		   &url[pos]);
+  GE_LOG(ectx, 
+	 GE_INFO | GE_USER | GE_BULK,
+	 _("Trying to download hostlist from `%s'\n"), 
+	 &url[pos]);
+  if (strlen(proxy) > 0) 
+    CURL_EASY_SETOPT(curl,
 		     CURLOPT_PROXY,
 		     proxy);
-  curl_easy_setopt(curl,
+  CURL_EASY_SETOPT(curl,
 		   CURLOPT_BUFFERSIZE,
 		   1024); /* a bit more than one HELLO */
-  if (0 == strncmp(url, "http", 4))
-    curl_easy_setopt(curl,
+  if (0 == strncmp(&url[pos], "http", 4)) 
+    CURL_EASY_SETOPT(curl,
 		     CURLOPT_USERAGENT,
 		     "GNUnet");
-  curl_easy_setopt(curl,
+  CURL_EASY_SETOPT(curl,
 		   CURLOPT_CONNECTTIMEOUT,
 		   15L);
   multi = curl_multi_init();
-
-  curl_multi_add_handle(multi, curl);
+  if (multi == NULL) {
+    GE_BREAK(ectx, 0);
+    goto ERROR;
+  }
+  mret = curl_multi_add_handle(multi, curl);
+  if (mret != CURLM_OK) {
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	   _("%s failed at %s:%d: `%s'\n"), 
+	   "curl_multi_add_handle",
+	   __FILE__,
+	   __LINE__,
+	   curl_multi_strerror(mret));
+    goto ERROR;
+  }
   while (YES == termTest(targ)) {
     max = 0;
     FD_ZERO(&rs);
     FD_ZERO(&ws);
     FD_ZERO(&es);
-    curl_multi_fdset(multi,
-		     &rs,
-		     &ws,
-		     &es,
-		     &max);
+    mret = curl_multi_fdset(multi,
+			    &rs,
+			    &ws,
+			    &es,
+			    &max);
+    if (mret != CURLM_OK) {
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	     _("%s failed at %s:%d: `%s'\n"), 
+	     "curl_multi_fdset",
+	     __FILE__,
+	     __LINE__,
+	     curl_multi_strerror(mret));
+      goto ERROR;
+    }
     /* use timeout of 1s in case that SELECT is not interrupted by
        signal (just to increase portability a bit) -- better a 1s
        delay in the reaction than hanging... */
@@ -204,15 +280,53 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   &tv);
     if (YES != termTest(targ))
       break;
-    curl_multi_perform(multi, &running);
+    mret = curl_multi_perform(multi, &running);
+    if (mret != CURLM_OK) {
+      GE_LOG(ectx, 
+	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	     _("%s failed at %s:%d: `%s'\n"), 
+	     "curl_multi_perform",
+	     __FILE__,
+	     __LINE__,
+	     curl_multi_strerror(mret));
+      goto ERROR;
+    }
     if (running == 0)
       break;
   }
-  curl_multi_remove_handle(multi, curl);
+  mret = curl_multi_remove_handle(multi, curl);
+  if (mret != CURLM_OK) {
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+	   _("%s failed at %s:%d: `%s'\n"), 
+	   "curl_multi_remove_handle",
+	   __FILE__,
+	   __LINE__,
+	   curl_multi_strerror(mret));
+    goto ERROR;
+  }
   curl_easy_cleanup(curl);
-  curl_multi_cleanup(multi);
+  mret = curl_multi_cleanup(multi);
+  if (mret != CURLM_OK) 
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+	   _("%s failed at %s:%d: `%s'\n"), 
+	   "curl_multi_cleanup",
+	   __FILE__,
+	   __LINE__,
+	   curl_multi_strerror(mret));
   FREE(url);
   FREE(proxy);
+  return;
+ ERROR:
+  GE_BREAK(ectx, ret != CURLE_OK);
+  if (multi != NULL)
+    curl_multi_remove_handle(multi, curl);
+  curl_easy_cleanup(curl);
+  if (multi != NULL)
+    curl_multi_cleanup(multi);
+  FREE(url);
+  FREE(proxy);  
 }
 
 
@@ -236,6 +350,7 @@ void release_module_bootstrap() {
   if (stats != NULL)
     coreAPI->releaseService(stats);
   coreAPI = NULL;
+  curl_global_cleanup();
 }
 
 /* end of http.c */
