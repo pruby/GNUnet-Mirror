@@ -165,7 +165,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   curl_easy_setopt(curl,
 		   CURLOPT_URL,
 		   url);
-  if (proxy != NULL)
+  if (strlen(proxy) > 0)
     curl_easy_setopt(curl,
 		     CURLOPT_PROXY,
 		     proxy);

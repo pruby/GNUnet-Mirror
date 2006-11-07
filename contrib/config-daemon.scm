@@ -241,7 +241,7 @@ If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/hosts 
   (nohelp)
   '()
   #f
-  "/var/lib/GNUnet/client-logs"
+  "/var/lib/GNUnet/daemon-logs"
   '()
   'rare) )
 
