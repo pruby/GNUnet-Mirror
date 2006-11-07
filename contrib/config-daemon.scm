@@ -916,6 +916,18 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  '()
  'nat-unlimited) )
 
+(define (network-ip6 builder)
+ (builder
+ "NETWORK"
+ "IP6"
+ (_ "External IPv6 address (leave empty to try auto-detection)")
+ (nohelp)
+ '()
+ #t
+ ""
+ '()
+ 'ip6-loaded) )
+
 (define (transports builder)
  (builder
   ""
@@ -1158,6 +1170,7 @@ NO only works on platforms where GNUnet can monitor the amount of traffic that t
             ((eq? i 'tcp-loaded)   (change-visible ctx a b tcp-loaded))
             ((eq? i 'udp6-loaded)  (change-visible ctx a b udp6-loaded))
             ((eq? i 'tcp6-loaded)  (change-visible ctx a b tcp6-loaded))
+            ((eq? i 'ip6-loaded)   (change-visible ctx a b (or (tcp6-loaded udp6-loaded))))
             ((eq? i 'nobasiclimit) (change-visible ctx a b nobasiclimit))
             (else 'nothing)
           )
