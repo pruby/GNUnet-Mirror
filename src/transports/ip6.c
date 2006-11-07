@@ -93,11 +93,12 @@ static int getAddress6(struct GC_Configuration * cfg,
 
   retval = SYSERR;
   ipString = NULL;
-  if (0 != GC_get_configuration_value_string(cfg,
-					     "NETWORK",
-					     "IP",
-					     "",
-					     &ipString)) {
+  if ( (1 != GC_get_configuration_value_string(cfg,
+					       "NETWORK",
+					       "IP6",
+					       "",
+					       &ipString)) ||
+       (strlen(ipString) > 0) ) {
     retval = getAddress6FromHostname(ectx,
 				     address);
   } else {

@@ -306,11 +306,11 @@ static int getAddress(struct GC_Configuration * cfg,
   int retval;
 
   ipString = NULL;
-  if ( (0 != GC_get_configuration_value_string(cfg,
+  if ( (1 != GC_get_configuration_value_string(cfg,
 					       "NETWORK",
 					       "IP",
 					       "",
-					       &ipString)) &&
+					       &ipString)) ||
        (strlen(ipString) > 0) ) {
 #if LINUX || SOMEBSD || MINGW
     if (OK == getAddressFromIOCTL(cfg,
