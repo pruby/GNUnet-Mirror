@@ -141,10 +141,13 @@ int GNUNET_init(int argc,
 		struct GE_Context ** ectx,
 		struct GC_Configuration ** cfg) {
   int i;
+  char *path;
 
  #if ENABLE_NLS
   setlocale (LC_ALL, "");
-  BINDTEXTDOMAIN("GNUnet", LOCALEDIR);
+  path = os_get_installation_path(IPK_LOCALEDIR);
+  BINDTEXTDOMAIN("GNUnet", path);
+  FREE(path);
   textdomain("GNUnet");
 #endif
   /* during startup, log all warnings and higher
