@@ -62,6 +62,7 @@ typedef struct {
 
 } BootstrapContext;
 
+#define USE_MULTI NO
 
 /**
  * Process downloaded bits by calling callback on each hello.
@@ -128,19 +129,25 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   char * url;
   char * proxy;
   CURL * curl;
+  CURLcode ret;
+#if USE_MULTI
   CURLM * multi;
+  CURLMcode mret;
   fd_set rs;
   fd_set ws;
   fd_set es;
   int max;
   struct timeval tv;
   int running;
-  CURLcode ret;
-  CURLMcode mret;
+  struct CURLMsg * msg;
+#endif
   unsigned int urls;
   size_t pos;
 
-  multi = NULL;
+  if (0 != curl_global_init(CURL_GLOBAL_ALL)) {
+    GE_BREAK(ectx, 0);
+    return;
+  }
   bctx.callback = callback;
   bctx.arg = arg;
   bctx.termTest = termTest;
@@ -148,6 +155,9 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   bctx.buf = NULL;
   bctx.bsize = 0;
   curl = curl_easy_init();
+#if USE_MULTI
+  multi = NULL;
+#endif
   if (curl == NULL) {
     GE_BREAK(ectx, 0);
     return;
@@ -232,6 +242,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_CONNECTTIMEOUT,
 		   15L);
+#if USE_MULTI
   multi = curl_multi_init();
   if (multi == NULL) {
     GE_BREAK(ectx, 0);
@@ -280,8 +291,37 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   &tv);
     if (YES != termTest(targ))
       break;
-    mret = curl_multi_perform(multi, &running);
-    if (mret != CURLM_OK) {
+    do {
+      running = 0;
+      mret = curl_multi_perform(multi, &running);
+      if (running == 0) { 
+	do {
+	  msg = curl_multi_info_read(multi,
+				     &running);
+	  GE_BREAK(ectx, msg != NULL);
+	  if (msg == NULL) 
+	    break;
+	  switch (msg->msg) {
+	  case CURLMSG_DONE:
+	    if (msg->data.result != CURLE_OK) 
+	      GE_LOG(ectx, 
+		     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+		     _("%s failed at %s:%d: `%s'\n"), 
+		     "curl_multi_perform",
+		     __FILE__,
+		     __LINE__,
+		   curl_easy_strerror(msg->data.result));
+	    break;
+	  default:
+	    break;
+	  }	
+	} while (running > 0);
+	break;
+      }
+    } while ( (mret == CURLM_CALL_MULTI_PERFORM) &&
+	      (YES == termTest(targ)) );
+    if ( (mret != CURLM_OK) &&
+	 (mret != CURLM_CALL_MULTI_PERFORM) ) {
       GE_LOG(ectx, 
 	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	     _("%s failed at %s:%d: `%s'\n"), 
@@ -305,7 +345,19 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   curl_multi_strerror(mret));
     goto ERROR;
   }
+#else
+  ret = curl_easy_perform(curl);
+  if (ret != CURLE_OK) 
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
+	   _("%s failed at %s:%d: `%s'\n"), 
+	   "curl_easy_perform",
+	   __FILE__,
+	   __LINE__,
+	   curl_easy_strerror(ret));
+#endif
   curl_easy_cleanup(curl);
+#if USE_MULTI
   mret = curl_multi_cleanup(multi);
   if (mret != CURLM_OK) 
     GE_LOG(ectx, 
@@ -315,18 +367,25 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   __FILE__,
 	   __LINE__,
 	   curl_multi_strerror(mret));
+#endif
   FREE(url);
   FREE(proxy);
+  curl_global_cleanup();
   return;
  ERROR:
   GE_BREAK(ectx, ret != CURLE_OK);
+#if USE_MULTI
   if (multi != NULL)
     curl_multi_remove_handle(multi, curl);
+#endif
   curl_easy_cleanup(curl);
+#if USE_MULTI
   if (multi != NULL)
     curl_multi_cleanup(multi);
+#endif
   FREE(url);
   FREE(proxy);  
+  curl_global_cleanup();
 }
 
 
@@ -334,9 +393,8 @@ Bootstrap_ServiceAPI *
 provide_module_bootstrap(CoreAPIForApplication * capi) {
   static Bootstrap_ServiceAPI api;
 
-  if (0 != curl_global_init(CURL_GLOBAL_ALL))
-    return NULL;
   coreAPI = capi;
+  ectx = capi->ectx;
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_hellodownloaded
@@ -350,7 +408,6 @@ void release_module_bootstrap() {
   if (stats != NULL)
     coreAPI->releaseService(stats);
   coreAPI = NULL;
-  curl_global_cleanup();
 }
 
 /* end of http.c */
