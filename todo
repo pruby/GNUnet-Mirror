@@ -15,6 +15,7 @@ Notes:
 0.7.1 [11'06] (aka "stabilization")
 - fix critical known bugs:
   * test bootstrap_http
+  * restarting truncates existing log files (should append)
   * recursive gnunet-download stopped working [RCpre0]
     ?: no reply from gnunetd (we seem to send queries, but gnunetd does not respond!)
        => insert error? wrong query?

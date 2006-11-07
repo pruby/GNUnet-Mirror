@@ -186,13 +186,13 @@ static int needBootstrap() {
 
 static void * processThread(void * unused) {
   hlc.helos = NULL;
-  while (! hlc.do_shutdown) {
-    while (! hlc.do_shutdown) {
+  while (NO == hlc.do_shutdown) {
+    while (NO == hlc.do_shutdown) {
       PTHREAD_SLEEP(2 * cronSECONDS);
       if (needBootstrap())
 	break;
     }
-    if (! hlc.do_shutdown)
+    if (YES == hlc.do_shutdown)
       break;
 #if DEBUG_BOOTSTRAP
     GE_LOG(ectx,
