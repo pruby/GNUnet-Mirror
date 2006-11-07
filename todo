@@ -14,8 +14,7 @@ Notes:
 
 0.7.1 [11'06] (aka "stabilization")
 - fix critical known bugs:
-  * bootstrap_http is not working (CURL error checking,
-    URL splitting at spaces)
+  * test bootstrap_http
   * recursive gnunet-download stopped working [RCpre0]
     ?: no reply from gnunetd (we seem to send queries, but gnunetd does not respond!)
        => insert error? wrong query?
