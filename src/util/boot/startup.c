@@ -142,6 +142,11 @@ int GNUNET_init(int argc,
 		struct GC_Configuration ** cfg) {
   int i;
 
+ #if ENABLE_NLS
+  setlocale (LC_ALL, "");
+  BINDTEXTDOMAIN("GNUnet", LOCALEDIR);
+  textdomain("GNUnet");
+#endif
   /* during startup, log all warnings and higher
      for anybody to stderr */
   *ectx = GE_create_context_stderr(NO,
