@@ -203,21 +203,27 @@ filelogger(void * cls,
   FileContext * fctx = cls;
   char * name;
   int ret;
+  char * dirname;
 
   MUTEX_LOCK(fctx->lock);
   if (fctx->logrotate) {
     name = getLogFileName(fctx->ectx,
 			  fctx->basename);
     if (0 != strcmp(name,
-		    fctx->filename)) {
+		    fctx->filename)) {      
       fclose(fctx->handle);
       fctx->handle = FOPEN(name, "w+");
       FREE(fctx->filename);
       fctx->filename = name;
+      dirname = STRDUP(name);
+      while ( (strlen(dirname) > 0) &&
+	      (dirname[strlen(dirname)-1] != '/') )
+	dirname[strlen(dirname)-1] == '\0';
       disk_directory_scan(fctx->ectx,
-			  fctx->basename,
+			  dirname,
 			  &removeOldLog,
 			  fctx);
+      FREE(dirname);
     } else {
       FREE(name);
     }
@@ -300,15 +306,15 @@ GE_create_context_logfile(struct GE_Context * ectx,
   fctx->logdate = logDate;
   fctx->logrotate = logrotate;
   fctx->handle = fd;
-  fctx->filename = STRDUP(filename);
-  fctx->basename = name;
+  fctx->filename = name;
+  fctx->basename = STRDUP(filename);
   fctx->logstart = start;
   fctx->lock = MUTEX_CREATE(YES);
   return GE_create_context_callback(mask,
 				    &filelogger,
 				    fctx,
 				    &fileclose,
-            NULL);
+				    NULL);
 }
 
 
@@ -335,7 +341,7 @@ GE_create_context_stderr(int logDate,
 				    &filelogger,
 				    fctx,
 				    &fileclose,
-            NULL);
+				    NULL);
 
 }
 
