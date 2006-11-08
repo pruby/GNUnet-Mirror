@@ -277,6 +277,16 @@ static void multiplexer(void * ctx,
     pair->c2->handler(pair->c1->cls, kind, date, msg);
 }
 
+static void multi_confirm(void * ctx) {
+  CPair * pair = ctx;
+
+  if (pair->c1->confirm)
+    pair->c1->confirm(pair->c1->cls);
+
+  if (pair->c2->confirm)
+    pair->c2->confirm(pair->c2->cls);
+}
+
 static void pairdestruct(void * ctx) {
   CPair * pair = ctx;
 
@@ -310,6 +320,7 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
   ret->handler = &multiplexer;
   ret->mask = ctx1->mask | ctx2->mask;
   ret->destruct = &pairdestruct;
+  ret->confirm = &multi_confirm;
   return ret;
 }
 
