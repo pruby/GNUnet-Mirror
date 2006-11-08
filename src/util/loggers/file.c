@@ -212,7 +212,7 @@ filelogger(void * cls,
     if (0 != strcmp(name,
 		    fctx->filename)) {      
       fclose(fctx->handle);
-      fctx->handle = FOPEN(name, "w+");
+      fctx->handle = FOPEN(name, "a+");
       FREE(fctx->filename);
       fctx->filename = name;
       dirname = STRDUP(name);
@@ -292,7 +292,7 @@ GE_create_context_logfile(struct GE_Context * ectx,
   } else {
     name = STRDUP(filename);
   }
-  fd = FOPEN(name, "w+");
+  fd = FOPEN(name, "a+");
   if (fd == NULL) {
     GE_LOG_STRERROR_FILE(ectx,
 			 GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE | GE_BULK,
