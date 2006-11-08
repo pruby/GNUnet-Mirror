@@ -228,7 +228,7 @@ void startBootstrap(CoreAPIForApplication * capi) {
   hlc.do_shutdown = NO;
   pt = PTHREAD_CREATE(&processThread,
 		      NULL,
-		      8 * 1024);
+		      64 * 1024);
   GE_ASSERT(capi->ectx,
 	    pt != NULL);
 }
