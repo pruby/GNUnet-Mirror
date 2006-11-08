@@ -274,7 +274,7 @@ static void multiplexer(void * ctx,
   if (GE_applies(kind, pair->c1->mask))
     pair->c1->handler(pair->c1->cls, kind, date, msg);
   if (GE_applies(kind, pair->c2->mask))
-    pair->c2->handler(pair->c1->cls, kind, date, msg);
+    pair->c2->handler(pair->c2->cls, kind, date, msg);
 }
 
 static void multi_confirm(void * ctx) {
