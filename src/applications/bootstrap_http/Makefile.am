@@ -14,3 +14,17 @@ libgnunetmodule_bootstrap_la_LDFLAGS = \
   -export-dynamic -avoid-version -module 
 libgnunetmodule_bootstrap_la_CPPFLAGS = \
  @LIBCURL_CPPFLAGS@ 
+
+
+check_PROGRAMS = \
+  httptest
+
+TESTS = $(check_PROGRAMS)
+
+httptest_SOURCES = \
+  httptest.c http.c
+httptest_LDADD = @LIBCURL@ \
+  $(top_builddir)/src/util/config_impl/libgnunetutil_config.la \
+  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
+  $(top_builddir)/src/util/libgnunetutil.la 
+

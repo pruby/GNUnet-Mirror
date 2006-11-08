@@ -62,7 +62,7 @@ typedef struct {
 
 } BootstrapContext;
 
-#define USE_MULTI NO
+#define USE_MULTI YES
 
 /**
  * Process downloaded bits by calling callback on each hello.
@@ -208,7 +208,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   GC_get_configuration_value_string(coreAPI->cfg,
 				    "GNUNETD",
 				    "HTTP-PROXY",
-				    NULL,
+				    "",
 				    &proxy);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_WRITEFUNCTION,
