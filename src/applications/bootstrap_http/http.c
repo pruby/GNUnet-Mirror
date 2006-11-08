@@ -239,9 +239,17 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     CURL_EASY_SETOPT(curl,
 		     CURLOPT_USERAGENT,
 		     "GNUnet");
+#if 1
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_CONNECTTIMEOUT,
 		   15L);
+  /* NOTE: use of CONNECTTIMEOUT without also
+     setting NOSIGNAL results in really weird 
+     crashes on my system! */
+  CURL_EASY_SETOPT(curl,
+		   CURLOPT_NOSIGNAL,
+		   1);
+#endif 
 #if USE_MULTI
   multi = curl_multi_init();
   if (multi == NULL) {

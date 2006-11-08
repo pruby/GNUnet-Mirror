@@ -41,10 +41,12 @@ static void * rs(const char * name) { return NULL; }
 
 static int rsx(void * s) { return OK; }
 
+static unsigned int count;
+
+
 static void hello(const P2P_hello_MESSAGE * m,
 		  void * arg) {
-  int * cls = arg;
-  (*cls)++;
+  count++;
 }
 
 static int terminate(void * arg) {
@@ -53,12 +55,26 @@ static int terminate(void * arg) {
   return YES; /* todo: add timeout? */
 }
 
+static void * pt(void * b) {
+  Bootstrap_ServiceAPI * boot = b;
+  
+  boot->bootstrap(&hello,
+		  NULL,
+		  &terminate,
+		  NULL);
+  return NULL;
+}
+
 int main(int argc,
 	 char ** argv) {
   static CoreAPIForApplication capi;
   struct GC_Configuration * cfg;
+  struct PluginHandle * plugin;
   Bootstrap_ServiceAPI * boot;
-  unsigned int count;
+  struct PTHREAD * p;
+  void * unused;
+  ServiceInitMethod init;
+  ServiceDoneMethod done;
 
   count = 0;
   cfg = GC_create_C_impl();
@@ -73,12 +89,22 @@ int main(int argc,
   capi.cfg = cfg;
   capi.requestService = &rs;
   capi.releaseService = &rsx;
-  boot = provide_module_bootstrap(&capi);
-  boot->bootstrap(&hello,
-		  &count,
-		  &terminate,
-		  NULL);
-  release_module_bootstrap();
+  plugin = os_plugin_load(NULL,
+			  "libgnunetmodule_",
+			  "bootstrap");
+  init = os_plugin_resolve_function(plugin,
+				    "provide_module_",
+				    YES);
+  boot = init(&capi);
+  p = PTHREAD_CREATE(&pt,
+		     boot,
+		     1024 * 64);
+  PTHREAD_JOIN(p, &unused);
+  done = os_plugin_resolve_function(plugin,
+				    "release_module_",
+				    YES);
+  done();
+  os_plugin_unload(plugin);
   GC_free(cfg);
   if (count == 0)
     return 1;
