@@ -150,6 +150,7 @@ GE_create_context_callback(GE_KIND mask,
   ret = malloc(sizeof(GE_Context));
   if (ret == NULL)
     return NULL;
+  memset(ret, 0, sizeof(GE_Context));
   ret->mask = mask;
   ret->handler = handler;
   ret->cls = ctx;
@@ -304,6 +305,7 @@ GE_create_context_multiplexer(struct GE_Context * ctx1,
     free(cls);
     return NULL;
   }
+  memset(ret, 0, sizeof(GE_Context));
   ret->cls = cls;
   ret->handler = &multiplexer;
   ret->mask = ctx1->mask | ctx2->mask;
