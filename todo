@@ -14,7 +14,6 @@ Notes:
 
 0.7.1 [11'06] (aka "stabilization")
 - fix critical known bugs:
-  * recursive gnunet-download results in ".gnd"-named directories (unclean/regression!) [RCpre0]
   * fix connection problem reported by Nils! [RCpre0]
     + TCP and UDP protocols changed slightly; detection of old clients would not be easy;
     + idea: add compatibility-transports (and change new transport IDs?)
