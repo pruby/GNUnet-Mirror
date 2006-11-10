@@ -27,11 +27,12 @@
  */
 
 #include "platform.h"
+#include "gnunet_directories.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_uritrack_lib.h"
 #include "gnunet_util_boot.h"
 
-static char * cfgFilename;
+static char * cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
 
 static int do_list;
 
