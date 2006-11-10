@@ -199,6 +199,7 @@ void * FSUI_uploadThread(void * cls) {
   int ret;
   struct GE_Context * ectx;
   char * filename;
+  char * pfn;
   struct ECRS_URI * uri;
   size_t tpos;
 
@@ -274,9 +275,14 @@ void * FSUI_uploadThread(void * cls) {
   while ( (tpos > 0) &&
 	  (utc->filename[tpos] != '/') )
     tpos--;
+  pfn = MALLOC(strlen(&utc->filename[tpos+1]) + 2);
+  strcpy(pfn, &utc->filename[tpos+1]);
+  if (utc->child != NULL)
+    strcat(pfn, "/");
   ECRS_addToMetaData(utc->meta,
 		     EXTRACTOR_FILENAME,
-		     &utc->filename[tpos+1]);
+		     pfn);
+  FREE(pfn);
   ECRS_delFromMetaData(utc->meta,
 		       EXTRACTOR_SPLIT,
 		       NULL);
