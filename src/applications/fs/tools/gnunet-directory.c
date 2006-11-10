@@ -185,7 +185,7 @@ int main(int argc,
     URITRACK_trackURIS(ectx, cfg, YES);
 
   while (i < argc)
-    printDirectory(argv[i]);
+    printDirectory(argv[i++]);
 
   GNUNET_fini(ectx, cfg);
   return 0;
