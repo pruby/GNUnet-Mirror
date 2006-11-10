@@ -31,7 +31,7 @@
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
 
-#define DEBUG_DTM NO
+#define DEBUG_DTM YES
 
 /**
  * Start to download a file.
@@ -281,7 +281,7 @@ void * downloadThread(void * cls) {
 
   if ( (ret == OK) &&
        (dl->is_recursive) &&
-       (dl->is_directory) ) {
+       (dl->is_directory == YES) ) {
     char * dirBlock;
     int fd;
     char * fn;

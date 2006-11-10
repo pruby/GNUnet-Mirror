@@ -49,6 +49,14 @@ static struct FSUI_DownloadList * dl;
 
 static int errorCode;
 
+static unsigned int downloads_running;
+
+static struct FSUI_DownloadList ** downloads;
+
+static unsigned int downloads_size;
+
+static struct MUTEX * lock;
+
 /**
  * All gnunet-download command line options
  */
@@ -78,6 +86,7 @@ static struct CommandLineOption gnunetdownloadOptions[] = {
  */
 static void * progressModel(void * unused,
 			    const FSUI_Event * event) {
+  MUTEX_LOCK(lock);
   switch (event->type) {
   case FSUI_download_progress:
     if (verbose) {
@@ -112,18 +121,24 @@ static void * progressModel(void * unused,
 	   (event->data.DownloadCompleted.total/1024.0) /
 	   (((double)(get_time()-(start_time - 1)))
 	    / (double)cronSECONDS) );
-    if (dl == event->data.DownloadCompleted.dc.pos) {
+    downloads_running--;
+    if (downloads_running == 0) {
       errorCode = 0;
       GNUNET_SHUTDOWN_INITIATE();
     }
     break;
   case FSUI_download_started:
+    downloads_running++;
+    APPEND(downloads,
+	   downloads_size,
+	   event->data.DownloadStarted.dc.pos);
   case FSUI_download_stopped:
     break;
   default:
     GE_BREAK(ectx, 0);
     break;
   }
+  MUTEX_UNLOCK(lock);
   return NULL;
 }
 
@@ -198,6 +213,7 @@ int main(int argc,
     try_rename = YES;
   }
   ok = NO;
+  lock = MUTEX_CREATE(NO);
   ctx = FSUI_start(ectx,
 		   cfg,
 		   "gnunet-download",
@@ -219,13 +235,21 @@ int main(int argc,
   ECRS_freeMetaData(meta);
   if (dl == NULL) {
     FSUI_stop(ctx);
+    MUTEX_DESTROY(lock);
     goto quit;
   }
   GNUNET_SHUTDOWN_WAITFOR();
-  if (errorCode == 1)
-    FSUI_abortDownload(ctx, dl);
-  FSUI_stopDownload(ctx, dl);
+  if (errorCode == 1) {
+    for (i=0;i<downloads_size;i++)
+      FSUI_abortDownload(ctx, downloads[i]);
+  }
+  for (i=0;i<downloads_size;i++)
+    FSUI_stopDownload(ctx, downloads[i]);
+  GROW(downloads,
+       downloads_size,
+       0);
   FSUI_stop(ctx);
+  MUTEX_DESTROY(lock);
 
   if ( (errorCode == 0) &&
        (dl != NULL) &&

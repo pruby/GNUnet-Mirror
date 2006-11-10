@@ -591,58 +591,60 @@ provide_module_transport(CoreAPIForApplication * capi) {
 						    "TRANSPORTS",
 						    "udp tcp nat",
 						    &dso));
-  GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_BULK,
-	 _("Loading transports `%s'\n"),
-	 dso);
-  next = dso;
-  do {
-    pos = next;
-    while ( (*next != '\0') &&
-	    (*next != ' ') )
-      next++;
-    if (*next == '\0')
-      next = NULL; /* terminate! */
-    else {
-      *next = '\0'; /* add 0-termination for pos */
-      next++;
-    }
-    lib = os_plugin_load(ectx,
-			 "libgnunettransport_",
-			 pos);
-    if (lib == NULL) {
-      GE_LOG(ectx,
-	     GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-	     _("Could not load transport plugin `%s'\n"),
-	     pos);
-      continue;
-    }
-    tptr = os_plugin_resolve_function(lib,
-				      "inittransport_",
-				      YES);
-    if (tptr == NULL) {
-      GE_LOG(ectx,
-	     GE_ERROR | GE_ADMIN | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
-	     _("Transport library `%s' did not provide required function '%s%s'.\n"),
-	     pos,
-	     "inittransport_",
-	     pos);
-      os_plugin_unload(lib);
-      continue;
-    }
-    tapi = tptr(&ctapi);
-    if (tapi == NULL) {
-      os_plugin_unload(lib);
-      continue;
-    }
-    tapi->libHandle = lib;
-    tapi->transName = STRDUP(pos);
-    addTransport(tapi);
+  if (strlen(dso) != 0) {
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_BULK,
-	   _("Loaded transport `%s'\n"),
-	   pos);
-  } while (next != NULL);
+	   _("Loading transports `%s'\n"),
+	   dso);
+    next = dso;
+    do {
+      pos = next;
+      while ( (*next != '\0') &&
+	      (*next != ' ') )
+	next++;
+      if (*next == '\0')
+	next = NULL; /* terminate! */
+      else {
+	*next = '\0'; /* add 0-termination for pos */
+	next++;
+      }
+      lib = os_plugin_load(ectx,
+			   "libgnunettransport_",
+			   pos);
+      if (lib == NULL) {
+	GE_LOG(ectx,
+	       GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+	       _("Could not load transport plugin `%s'\n"),
+	       pos);
+	continue;
+      }
+      tptr = os_plugin_resolve_function(lib,
+					"inittransport_",
+					YES);
+      if (tptr == NULL) {
+	GE_LOG(ectx,
+	       GE_ERROR | GE_ADMIN | GE_USER | GE_DEVELOPER | GE_IMMEDIATE,
+	       _("Transport library `%s' did not provide required function '%s%s'.\n"),
+	       pos,
+	       "inittransport_",
+	       pos);
+	os_plugin_unload(lib);
+	continue;
+      }
+      tapi = tptr(&ctapi);
+      if (tapi == NULL) {
+	os_plugin_unload(lib);
+	continue;
+      }
+      tapi->libHandle = lib;
+      tapi->transName = STRDUP(pos);
+      addTransport(tapi);
+      GE_LOG(ectx,
+	     GE_INFO | GE_USER | GE_BULK,
+	     _("Loaded transport `%s'\n"),
+	     pos);
+    } while (next != NULL);
+  }
   FREE(dso);
 
   IF_GELOG(ectx,

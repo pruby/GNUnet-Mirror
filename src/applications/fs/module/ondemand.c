@@ -256,11 +256,13 @@ int ONDEMAND_index(Datastore_ServiceAPI * datastore,
 #endif
 
 #if DEBUG_ONDEMAND
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(&key, &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Storing on-demand content for query `%s'\n",
-      &enc);
+  IF_GELOG(ectx,
+ GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(&key, &enc));
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "Storing on-demand content for query `%s'\n",
+	 &enc);
 #endif
 
   ret = datastore->get(&key,
@@ -313,9 +315,10 @@ static void asyncDelete(Datastore_ServiceAPI * datastore,
 #if DEBUG_ONDEMAND
   hash2enc(query,
 	   &enc);
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      _("Indexed file disappeared, deleting block for query `%s'\n"),
-      &enc);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 _("Indexed file disappeared, deleting block for query `%s'\n"),
+	 &enc);
 #endif
   /* schedule for "immediate" execution */
   cron_add_job(coreAPI->cron,
@@ -360,10 +363,13 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   if (fileHandle == -1) {
     char unavail_key[256];
     EncName enc;
-    cron_t * first_unavail;
+    unsigned long long * first_unavail;
     struct stat linkStat;
 
-    GE_LOG_STRERROR_FILE(ectx,GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, "open", fn);
+    GE_LOG_STRERROR_FILE(ectx,
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
+			 "open", 
+			 fn);
 
     /* Is the symlink there? */
     if (LSTAT(fn, &linkStat) == -1) {
@@ -378,7 +384,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 	       (char *) &enc);
       if (state->read(ectx,
 		      unavail_key,
-		      (void *) &first_unavail) == SYSERR) {
+		      (void*)&first_unavail) != sizeof(cron_t)) {
         unsigned long long now = htonll(get_time());
         state->write(ectx,
 		     unavail_key,
@@ -386,7 +392,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 		     (void *) &now);
       } else {
         /* Delete it after 3 days */
-        if (*first_unavail - get_time() > 3 * cronDAYS) {
+        if (ntohll(*first_unavail) - get_time() > 3 * cronDAYS) {
 	  unsigned int len;
 	  char * ofn;
 	  int ret;
@@ -407,11 +413,12 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 		 len*2);
 	  	
           if (ret != -1) {
-            GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-		_("Because the file `%s' has been unavailable for 3 days"
-		  " it got removed from your share.  Please unindex files before"
-		  " deleting them as the index now contains invalid references!\n"),
-		ofn);
+            GE_LOG(ectx,
+		   GE_ERROR | GE_BULK | GE_USER,
+		   _("Because the file `%s' has been unavailable for 3 days"
+		     " it got removed from your share.  Please unindex files before"
+		     " deleting them as the index now contains invalid references!\n"),
+		   ofn);
 	  }
 	  FREE(ofn);
 	  asyncDelete(datastore, dbv, query);
@@ -488,7 +495,9 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   FREE(db);
   FREE(fn);
   if (ret == SYSERR) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER, "Indexed content does not match its hash.\n");
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER, 
+	   "Indexed content does not match its hash.\n");
     asyncDelete(datastore, dbv, query);
     return SYSERR;
   }

@@ -30,6 +30,8 @@
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
+#define DO_REQUEST YES
+
 static GE_KIND 
 convertLogLevel(const char * level) {
   GE_KIND ret;
@@ -111,7 +113,13 @@ static int configure_logging(struct GE_Context ** ectx,
   FREE(admin_log_file);
   if (ull != 0) {
     tetx = GE_create_context_stderr(NO,
-				    ull | GE_USERKIND | GE_BULK | GE_IMMEDIATE);
+				    ull 
+				    | GE_USERKIND 
+#if DO_REQUEST
+				    | GE_REQUEST
+#endif
+				    | GE_BULK 
+				    | GE_IMMEDIATE);
     if (nctx == NULL)
       nctx = tetx;
     else
@@ -143,7 +151,7 @@ int GNUNET_init(int argc,
   int i;
   char *path;
 
- #if ENABLE_NLS
+#if ENABLE_NLS
   setlocale (LC_ALL, "");
   path = os_get_installation_path(IPK_LOCALEDIR);
   BINDTEXTDOMAIN("GNUnet", path);

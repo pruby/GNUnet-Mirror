@@ -228,7 +228,7 @@ void * FSUI_uploadThread(void * cls) {
   ret = ECRS_uploadFile(utc->shared->ctx->ectx,
 			utc->shared->ctx->cfg,
 			filename,
-			utc->shared->doIndex,
+			utc->shared->doIndex == YES ? (utc->child == NULL ? YES : NO) : NO,
 			utc->shared->anonymityLevel,
 			utc->shared->priority,
 			utc->shared->expiration,

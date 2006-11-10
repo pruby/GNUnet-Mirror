@@ -22,6 +22,7 @@
  * @file applications/sqstore_sqlite/sqlite.c
  * @brief SQLite based implementation of the sqstore service
  * @author Nils Durner
+ * @author Christian Grothoff
  * @todo Estimation of DB size
  *
  * Database: SQLite
@@ -299,6 +300,20 @@ static unsigned int getIntSize(unsigned long long l) {
     return 8;
 }
 
+/**
+ * Get a (good) estimate of the size of the given
+ * value (and its key) in the datastore.<p>
+ * <pre>
+ * row length = hash length + block length + numbers + column count + estimated index size + 1 
+ * </pre>
+ */
+static unsigned int getContentDatastoreSize(const Datastore_Value * value) {
+  return sizeof(HashCode512) + ntohl(value->size) - sizeof(Datastore_Value)
+    + getIntSize(ntohl(value->size)) + getIntSize(ntohl(value->type)) + getIntSize(ntohl(value->prio))
+    + getIntSize(ntohl(value->anonymityLevel)) + getIntSize(ntohll(value->expirationTime)) + 7 + 245 + 1;
+}
+
+
 
 /**
  * Get the current on-disk size of the SQ store.  Estimates are fine,
@@ -322,8 +337,9 @@ static unsigned long long getSize() {
  * Given a full row from gn070 table (size,type,prio,anonLevel,expire,hash,value),
  * assemble it into a Datastore_Datum representation.
  */
-static Datastore_Datum * assembleDatum(sqliteHandle * handle,
-				       sqlite3_stmt *stmt) {
+static Datastore_Datum * 
+assembleDatum(sqliteHandle * handle,
+	      sqlite3_stmt *stmt) {
   Datastore_Datum * datum;
   Datastore_Value * value;
   int contentSize;
@@ -335,9 +351,10 @@ static Datastore_Datum * assembleDatum(sqliteHandle * handle,
   if (contentSize < 0) {
     sqlite3_stmt * stmt;
 
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Invalid data in %s.  Trying to fix (by deletion).\n"),
-	_("sqlite datastore"));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	   _("sqlite datastore"));
     if (sq_prepare(dbh,
 		   "DELETE FROM gn070 WHERE size < ?", &stmt) == SQLITE_OK) {
       sqlite3_bind_int(stmt,
@@ -355,9 +372,10 @@ static Datastore_Datum * assembleDatum(sqliteHandle * handle,
       sqlite3_column_bytes(stmt, 6) != contentSize) {
     sqlite3_stmt * stmt;
 
-    GE_LOG(ectx, GE_WARNING | GE_BULK | GE_USER,
-	_("Invalid data in %s.  Trying to fix (by deletion).\n"),
-	_("sqlite datastore"));
+    GE_LOG(ectx, 
+	   GE_WARNING | GE_BULK | GE_USER,
+	   _("Invalid data in %s.  Trying to fix (by deletion).\n"),
+	   _("sqlite datastore"));
     if (sq_prepare(dbh,
 		   "DELETE FROM gn070 WHERE NOT ((LENGTH(hash) = ?) AND (size = LENGTH(value) + ?))",
                    &stmt) == SQLITE_OK) {
@@ -884,7 +902,6 @@ static int put(const HashCode512 * key,
 	       const Datastore_Value * value) {
   int n;
   sqlite3_stmt *stmt;
-  unsigned long rowLen;
   unsigned int contentSize;
   unsigned int size, type, prio, anon;
   unsigned long long expir;
@@ -896,8 +913,8 @@ static int put(const HashCode512 * key,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(key,
 		    &enc));
-  GE_LOG(ectx, G
-	 E_DEBUG | GE_REQUEST | GE_USER,
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Storing in database block with type %u, key `%s' and priority %u.\n",
 	 ntohl(*(int*)&value[1]),
 	 &enc,
@@ -908,24 +925,17 @@ static int put(const HashCode512 * key,
     GE_BREAK(ectx, 0);
     return SYSERR;
   }
-
   dbh = getDBHandle();
   MUTEX_LOCK(db->DATABASE_Lock_);
-
   if (db->lastSync > 1000)
     syncStats(dbh);
-
-
-  rowLen = 0;
   contentSize = ntohl(value->size)-sizeof(Datastore_Value);
   stmt = dbh->insertContent;
-
   size = ntohl(value->size);
   type = ntohl(value->type);
   prio = ntohl(value->prio);
   anon = ntohl(value->anonymityLevel);
   expir = ntohll(value->expirationTime);
-
   sqlite3_bind_int(stmt, 1, size);
   sqlite3_bind_int(stmt, 2, type);
   sqlite3_bind_int(stmt, 3, prio);
@@ -933,7 +943,6 @@ static int put(const HashCode512 * key,
   sqlite3_bind_int64(stmt, 5, expir);
   sqlite3_bind_blob(stmt, 6, key, sizeof(HashCode512), SQLITE_TRANSIENT);
   sqlite3_bind_blob(stmt, 7, &value[1], contentSize, SQLITE_TRANSIENT);
-
   n = sqlite3_step(stmt);
   sqlite3_reset(stmt);
   if (n != SQLITE_DONE) {
@@ -944,17 +953,13 @@ static int put(const HashCode512 * key,
     return SYSERR;
   }
   db->lastSync++;
-  /* row length = hash length + block length + numbers + column count + estimated index size + 1 */
-  db->payload = db->payload + contentSize + sizeof(HashCode512) + getIntSize(size) + getIntSize(type) +
-  	getIntSize(prio) + getIntSize(anon) + getIntSize(expir) + 7 + 245 + 1;
+  db->payload += getContentDatastoreSize(value);
   MUTEX_UNLOCK(db->DATABASE_Lock_);
-
 #if DEBUG_SQLITE
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "SQLite: done writing content\n");
 #endif
-
   return OK;
 }
 
@@ -970,18 +975,26 @@ static int del(const HashCode512 * key,
 	       const Datastore_Value * value) {
   size_t n;
   sqlite3_stmt *stmt;
-  unsigned long rowLen;
   int deleted;
   sqliteHandle *dbh;
+  Datastore_Datum * dvalue; 
+  unsigned int size;
+  unsigned int type;
+  unsigned int prio;
+  unsigned int anon;
+  unsigned long long expir;
+  unsigned long contentSize;
 #if DEBUG_SQLITE
   EncName enc;
 
-  IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	hash2enc(key,
-		 &enc));
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "SQLite: deleting block with key `%s'\n",
-      &enc);
+  IF_GELOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   hash2enc(key,
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "SQLite: deleting block with key `%s'\n",
+	 &enc);
 #endif
 
   dbh = getDBHandle();
@@ -989,77 +1002,68 @@ static int del(const HashCode512 * key,
   if (db->lastSync > 1000)
     syncStats(dbh);
 
-  if (!value) {
-    sqlite3_bind_blob(dbh->exists,
+  if (NULL == value) {
+    if (sq_prepare(dbh->dbh,
+		   "SELECT size, type, prio, anonLevel, expire, hash, value "
+		   "FROM gn070 WHERE hash = ? ORDER BY prio ASC",
+		   &stmt) != SQLITE_OK) {
+      LOG_SQLITE(dbh,
+		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+		 "sqlite_query");
+      MUTEX_UNLOCK(db->DATABASE_Lock_);
+      return SYSERR;
+    }
+    sqlite3_bind_blob(stmt,
 		      1,
 		      key,
 		      sizeof(HashCode512),
-		      SQLITE_TRANSIENT);
-    while(sqlite3_step(dbh->exists) == SQLITE_ROW) {	
-      /* row length = hash length + block length + numbers + column count + estimated index size + 1 */
-      rowLen = sqlite3_column_int(dbh->exists, 0) + sqlite3_column_int(dbh->exists, 1) +
-	sqlite3_column_int(dbh->exists, 2) + sqlite3_column_int(dbh->exists, 3) +
-	sqlite3_column_int(dbh->exists, 4) + sqlite3_column_int(dbh->exists, 5) +
-	sqlite3_column_int(dbh->exists, 6) + 7 + 245 + 1;
-
-      if (db->payload > rowLen)
-	db->payload -= rowLen;
-      else
-	db->payload = 0;
-
-      db->lastSync++;
+		      SQLITE_TRANSIENT);      
+    if (sqlite3_step(stmt) != SQLITE_ROW) {
+      sqlite3_finalize(stmt);
+      MUTEX_UNLOCK(db->DATABASE_Lock_);
+      return NO;
     }
-    sqlite3_reset(dbh->exists);
-
-    n = sq_prepare(dbh->dbh,
-		   "DELETE FROM gn070 WHERE hash = ?", /*  ORDER BY prio ASC LIMIT 1" -- not available */
-		   &stmt);
-    if (n == SQLITE_OK) {
-      sqlite3_bind_blob(stmt,
-			1,
-			key,
-			sizeof(HashCode512),
-			SQLITE_TRANSIENT);
-      n = sqlite3_step(stmt);
+    dvalue = assembleDatum(dbh,
+			   stmt);    
+    if (dvalue == NULL) {
+      sqlite3_finalize(stmt);
+      MUTEX_UNLOCK(db->DATABASE_Lock_);
+      return SYSERR;
     }
-    /* FIXME: this operation fails to update db->payload properly! */
+    sqlite3_finalize(stmt);
+    value = &dvalue->value;
   } else {
-    unsigned int size, type, prio, anon;
-    unsigned long long expir;
-    unsigned long contentSize;
-  	
-    contentSize = ntohl(value->size)-sizeof(Datastore_Value);
-    n = sq_prepare(dbh->dbh,
-		   "DELETE FROM gn070 WHERE hash = ? and "
-		   "value = ? AND size = ? AND type = ? AND prio = ? AND anonLevel = ? "
-		   "AND expire = ?", /* ORDER BY prio ASC LIMIT 1" -- not available in sqlite */
-		   &stmt);
-    if (n == SQLITE_OK) {
-      size = ntohl(value->size);
-      type = ntohl(value->type);
-      prio = ntohl(value->prio);
-      anon = ntohl(value->anonymityLevel);
-      expir = ntohll(value->expirationTime);
-
-      sqlite3_bind_blob(stmt, 1, key, sizeof(HashCode512), SQLITE_TRANSIENT);
-      sqlite3_bind_blob(stmt, 2, &value[1], contentSize, SQLITE_TRANSIENT);
-      sqlite3_bind_int(stmt, 3, size);
-      sqlite3_bind_int(stmt, 4, type);
-      sqlite3_bind_int(stmt, 5, prio);
-      sqlite3_bind_int(stmt, 6, anon);
-      sqlite3_bind_int64(stmt, 7, expir);
-      n = sqlite3_step(stmt);
-      if ( (n == SQLITE_DONE) || (n == SQLITE_ROW) )
-	/* row length = hash length + block length + numbers + column count + estimated index size + 1 */
-	db->payload = db->payload - sizeof(HashCode512) - contentSize
-	  - getIntSize(size) - getIntSize(type) - getIntSize(prio)
-	  - getIntSize(anon) - getIntSize(expir) - 7 - 245 - 1;
-    } else {
-      LOG_SQLITE(dbh,
-		 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		 "sqlite3_prepare");
-    }
+    dvalue = NULL;
+  }  	
+  contentSize = ntohl(value->size)-sizeof(Datastore_Value);
+  n = sq_prepare(dbh->dbh,
+		 "DELETE FROM gn070 WHERE hash = ? and "
+		 "value = ? AND size = ? AND type = ? AND prio = ? AND anonLevel = ? "
+		 "AND expire = ?", /* ORDER BY prio ASC LIMIT 1" -- not available in sqlite */
+		 &stmt);
+  if (n == SQLITE_OK) {
+    size = ntohl(value->size);
+    type = ntohl(value->type);
+    prio = ntohl(value->prio);
+    anon = ntohl(value->anonymityLevel);
+    expir = ntohll(value->expirationTime);
+    
+    sqlite3_bind_blob(stmt, 1, key, sizeof(HashCode512), SQLITE_TRANSIENT);
+    sqlite3_bind_blob(stmt, 2, &value[1], contentSize, SQLITE_TRANSIENT);
+    sqlite3_bind_int(stmt, 3, size);
+    sqlite3_bind_int(stmt, 4, type);
+    sqlite3_bind_int(stmt, 5, prio);
+    sqlite3_bind_int(stmt, 6, anon);
+    sqlite3_bind_int64(stmt, 7, expir);
+    n = sqlite3_step(stmt);
+    if ( (n == SQLITE_DONE) || (n == SQLITE_ROW) )
+      db->payload -= getContentDatastoreSize(value);
+  } else {
+    LOG_SQLITE(dbh,
+	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+	       "sqlite3_prepare");
   }
+  FREENONNULL(dvalue);
   deleted = ( (n == SQLITE_DONE) || (n == SQLITE_ROW) ) ? sqlite3_changes(dbh->dbh) : SYSERR;
   sqlite3_finalize(stmt);
 
@@ -1149,7 +1153,6 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 
   char *dir;
   char *afsdir;
-  size_t nX;
   sqliteHandle *dbh;
 
   ectx = capi->ectx;

@@ -14,10 +14,7 @@ Notes:
 
 0.7.1 [11'06] (aka "stabilization")
 - fix critical known bugs:
-  * recursive gnunet-download stopped working [RCpre0]
-    ?: no reply from gnunetd (we seem to send queries, but gnunetd does not respond!)
-       => insert error? wrong query?
-  * gnunet-download stopped working [RCpre0]
+  * recursive gnunet-download results in ".gnd"-named directories (unclean/regression!) [RCpre0]
     Possibly related to #1144, #1143
   * fix connection problem reported by Nils! [RCpre0]
     Maybe only an issue with connections to 0.7.0e?
