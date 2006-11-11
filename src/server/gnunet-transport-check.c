@@ -59,6 +59,8 @@ static Bootstrap_ServiceAPI * bootstrap;
 
 static int ok;
 
+static int ping;
+
 static char * expectedValue;
 
 static unsigned long long expectedSize;
@@ -351,7 +353,7 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'p', "ping", NULL,
     gettext_noop("ping peers from HOSTLISTURL that match transports"),
-    0, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:PING=YES" },
+    0, &gnunet_getopt_configure_set_one, &ping },
   { 'r', "repeat", "COUNT",
     gettext_noop("send COUNT messages"),
     1, &gnunet_getopt_configure_set_option, "TRANSPORT-CHECK:REPEAT" },
@@ -434,11 +436,7 @@ int main(int argc,
     return 1;
   }
   GE_ASSERT(ectx, trans != NULL);
-  ping = GC_get_configuration_value_yesno(cfg,
-					  "TRANSPORT-CHECK",
-					  "PING",
-					  NO);
-  if (! ping)
+  if (ping)
     printf(_("Testing transport(s) %s\n"),
 	   trans);
   else
