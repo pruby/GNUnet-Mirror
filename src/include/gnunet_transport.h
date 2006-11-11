@@ -273,7 +273,7 @@ typedef struct {
    */
   int (*send)(TSession * tsession,
 	      const void * msg,
-	      const unsigned int size,
+	      unsigned int size,
 	      int important);
 
   /**

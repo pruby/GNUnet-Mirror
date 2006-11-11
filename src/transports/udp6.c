@@ -101,7 +101,7 @@ static int passivesock(unsigned short port) {
 
   sock = SOCKET(PF_INET6,
 		SOCK_DGRAM,
-		UDP_PROTOCOL_NUMBER);
+		17);
   if (sock < 0)
     GE_DIE_STRERROR(ectx,
 		    GE_FATAL | GE_ADMIN | GE_IMMEDIATE,
@@ -349,7 +349,7 @@ static int startTransportServer(void) {
     if (selector == NULL)
       return SYSERR;
   }
-  sock = SOCKET(PF_INET, SOCK_DGRAM, UDP_PROTOCOL_NUMBER);
+  sock = SOCKET(PF_INET, SOCK_DGRAM, 17);
   if (sock == -1) {
     GE_LOG_STRERROR(ectx,
 		    GE_ERROR | GE_ADMIN | GE_BULK,

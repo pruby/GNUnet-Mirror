@@ -63,9 +63,29 @@ extern "C" {
 #define NAT_PROTOCOL_NUMBER 1
 
 /**
- * protocol number of TCP. Do NEVER change, also used in other context!
+ * protocol number of TCP. 
  */
-#define TCP_PROTOCOL_NUMBER 6
+#define TCP_PROTOCOL_NUMBER 2
+
+/**
+ * protocol number of UDP. 
+ */
+#define UDP_PROTOCOL_NUMBER 3
+
+/**
+ * Protocol number for TCP on IPv6 (TCP+6)
+ */
+#define TCP6_PROTOCOL_NUMBER 4
+
+/**
+ * Protocol number for UDP on IPv6 (UDP+6)
+ */
+#define UDP6_PROTOCOL_NUMBER 5
+
+/**
+ * protocol number of TCP.
+ */
+#define TCP_OLD_PROTOCOL_NUMBER 6
 
 /**
  * protocol number for HTTP (80 is too big, so 8 will have to do)
@@ -73,19 +93,9 @@ extern "C" {
 #define HTTP_PROTOCOL_NUMBER 8
 
 /**
- * Protocol number for TCP on IPv6 (TCP+6)
- */
-#define TCP6_PROTOCOL_NUMBER 12
-
-/**
  * protocol number of UDP. Do NEVER change, also used in other context!
  */
-#define UDP_PROTOCOL_NUMBER 17
-
-/**
- * Protocol number for UDP on IPv6 (UDP+6)
- */
-#define UDP6_PROTOCOL_NUMBER 23
+#define UDP_OLD_PROTOCOL_NUMBER 17
 
 /**
  * protocol number for SMTP

@@ -27,6 +27,7 @@ libip6_la_SOURCES = \
 plugin_LTLIBRARIES = \
  libgnunettransport_tcp.la \
  libgnunettransport_udp.la \
+ libgnunettransport_tcp_old.la \
  libgnunettransport_nat.la \
  $(v6transports) # libgnunettransport_http.la 
 
@@ -76,4 +77,14 @@ libgnunettransport_udp6_la_LIBADD = \
  libip6.la
 libgnunettransport_udp6_la_LDFLAGS = \
  -export-dynamic -avoid-version -module 
+
+
+
+libgnunettransport_tcp_old_la_SOURCES = tcp_old.c
+libgnunettransport_tcp_old_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libip.la
+libgnunettransport_tcp_old_la_LDFLAGS = \
+ -export-dynamic -avoid-version -module 
+
 

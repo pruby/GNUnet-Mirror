@@ -8,6 +8,26 @@ If no migration procedure is listed for your version, a
 data-preserving migration may not be possible.  For SVN versions,
 you're on your own.
 
+0.7.0e to 0.7.1pre0
+===================
+
+There are now two TCP transports, one using the 0.7.1 protocol and one
+using the 0.7.0e protocol to allow the 0.7.1 network to connect with
+the 0.7.0 network.  The old TCP transport is hardwired to use port
+2089, so you may have to open some new holes in your firewall (you can
+only change the port by editing the source).  The new TCP transport
+will run at whatever port is specified in the configuration.
+
+Run 
+
+# gnunet-update
+# gnunet-setup -d
+$ gnunet-setup 
+
+to update the configuration and run the setup tool to configure
+new options.
+
+
 
 0.7.0pre6, 0.7.0, 0.7.0{a,b,c,d} to 0.7.0e
 ==========================================
