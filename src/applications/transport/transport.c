@@ -112,6 +112,10 @@ static int addTransport(TransportAPI * tapi) {
     GROW(tapis,
 	 tapis_count,
 	 tapi->protocolNumber+1);
+  if (tapis[tapi->protocolNumber] != NULL) {
+    GE_BREAK(ectx, 0);
+    return SYSERR;
+  }
   tapis[tapi->protocolNumber] = tapi;
   tapi->helo = NULL;
   cron_add_job(coreAPI->cron,
@@ -638,11 +642,22 @@ provide_module_transport(CoreAPIForApplication * capi) {
       }
       tapi->libHandle = lib;
       tapi->transName = STRDUP(pos);
-      addTransport(tapi);
-      GE_LOG(ectx,
-	     GE_INFO | GE_USER | GE_BULK,
-	     _("Loaded transport `%s'\n"),
-	     pos);
+      if (OK != addTransport(tapi)) {
+	void (*ptr)();
+
+	FREE(tapi->transName);
+	ptr = os_plugin_resolve_function(lib,
+					 "donetransport_",
+					 NO);
+	if (ptr != NULL)
+	  ptr();
+	os_plugin_unload(lib);	
+      } else {
+	GE_LOG(ectx,
+	       GE_INFO | GE_USER | GE_BULK,
+	       _("Loaded transport `%s'\n"),
+	       pos);
+      }
     } while (next != NULL);
   }
   FREE(dso);
