@@ -44,6 +44,7 @@ void __attribute__ ((constructor)) gnc_ltdl_init() {
   int err;
   const char * opath;
   char * path;
+  char * cpath;
 
 #ifdef MINGW
   InitWinEnv(NULL);
@@ -61,8 +62,13 @@ void __attribute__ ((constructor)) gnc_ltdl_init() {
     old_dlsearchpath = STRDUP(opath);
   path = os_get_installation_path(IPK_LIBDIR);
   if (path != NULL) {
-    lt_dlsetsearchpath(path);
+    cpath = MALLOC(strlen(path) + strlen(opath) + 4);
+    strcpy(cpath, opath);
+    strcat(cpath, ":");
+    strcat(cpath, path);
+    lt_dlsetsearchpath(cpath);
     FREE(path);
+    FREE(cpath);
   }
 }
 

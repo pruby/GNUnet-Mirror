@@ -238,6 +238,8 @@ const char * GE_kindToString(GE_KIND kind) {
     return _("DEBUG");
   if ( (kind & GE_STATUS) > 0)
     return _("STATUS");
+  if ( (kind & GE_INFO) > 0)
+    return _("INFO");
   if ( (kind & GE_WARNING) > 0)
     return _("WARNING");
   if ( (kind & GE_ERROR) > 0)
