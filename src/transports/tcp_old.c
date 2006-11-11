@@ -1234,7 +1234,7 @@ static char * addressToString(const P2P_hello_MESSAGE * helo) {
  * The exported method. Makes the core api available
  * via a global and returns the udp transport API.
  */
-TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
+TransportAPI * inittransport_tcp_old(CoreAPIForTransport * core) {
   tcplock = MUTEX_CREATE(YES);
   tsessionCount = 0;
   tsessionArrayLength = 0;
@@ -1267,7 +1267,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   return &tcpAPI;
 }
 
-void donetransport_tcp() {
+void donetransport_tcp_old() {
   int i;
 
   coreAPI->releaseService(stats);
