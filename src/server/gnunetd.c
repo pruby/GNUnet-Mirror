@@ -170,7 +170,6 @@ static struct CommandLineOption gnunetdOptions[] = {
 		 "be written to stderr instead of a logfile"),
     0, &gnunet_getopt_configure_set_one, &debug_flag },
   COMMAND_LINE_OPTION_HELP(gettext_noop("Starts the gnunetd daemon.")), /* -h */
-  COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 'p', "padding-disable", "YES/NO",
     gettext_noop("disable padding with random data (experimental)"), 0,
@@ -201,7 +200,7 @@ int main(int argc,
   }
   ret = GNUNET_init(argc,
 		    argv,
-		    "gnunetd",
+		    "gnunetd [OPTIONS]",
 		    &cfgFilename,
 		    gnunetdOptions,
 		    &ectx,

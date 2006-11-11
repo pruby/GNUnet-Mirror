@@ -1,12 +1,12 @@
-.TH GNUNET-SETUP "1" "27 Aug 2005" "GNUnet"
+.TH GNUNET-SETUP "1" "11 Nov 2006" "GNUnet"
 .SH NAME
 gnunet\-setup \- configuring GNUnet
 .SH SYNOPSIS
-.B gnunet-setup
+.B gnunet\-setup
 [\fIOPTIONS\fR] MODE
 .SH DESCRIPTION
 .PP
-gnunet\-setup can be used to generate and edit the configuration files (gnunetd.conf and gnunet.conf) for GNUnet.  gnunet\-setup runs in two basic modes, one for editing gnunet.conf and one for editing gnunetd.conf.  Depending on which libraries were available when gnunet\-setup was build, gnunet\-setup will have a curses or GTK user interface.  A text\-only interface is always available.  For a quick initial configuration gnunet\-setup offers a wizard (curses or GTK only) that can be used to quickly generate a working gnunetd.conf file.
+gnunet\-setup can be used to generate and edit the configuration files (gnunetd.conf and gnunet.conf) for GNUnet.  gnunet\-setup runs in two basic modes, one for editing gnunet.conf and one for editing gnunetd.conf.  Depending on which libraries were available when gnunet\-setup was build, gnunet\-setup will have a curses or GTK user interface.  A text\-only interface is always available.  For a quick initial configuration gnunet\-setup offers a wizard (GTK only) that can be used to quickly generate a working gnunetd.conf file.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 print help page
@@ -28,7 +28,7 @@ be verbose
 .SH NOTES
 Before you can use any GNUnet application you must run gnunet\-setup to generate the configuration.  First, run gnunet\-setup with the \-d option to generate a configuration for gnunetd.  Later, each user of the system should run gnunet\-setup without \-d to generate his personal configuration.
 .TP
-Depending on your system, gnunet\-setup will have a subset of the following modes: config (text), menuconfig (curses), gconfig (GTK), wizard-curses (curses wizard) and wizard\-gtk (GTK wizard).  The wizards can currently only be used in conjunction with the \-d option to configure gnunetd.
+Depending on your system, gnunet\-setup will have a subset of the following modes: config (text), menuconfig (curses), gconfig (GTK), and wizard\-gtk (GTK wizard).  The wizards can currently only be used in conjunction with the \-d option to configure gnunetd.
 .SH FILES
 .TP
 /etc/gnunetd.conf

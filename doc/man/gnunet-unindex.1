@@ -1,4 +1,4 @@
-.TH GNUNET-UNINDEX "1" "30 Mar 2005" "GNUnet"
+.TH GNUNET-UNINDEX "1" "11 Sep 2006" "GNUnet"
 .SH NAME
 gnunet\-unindex \- a command line interface for deleting indexed files from GNUnet
 .SH SYNOPSIS
@@ -8,20 +8,23 @@ gnunet\-unindex \- a command line interface for deleting indexed files from GNUn
 .PP
 gnunet\-unindex is used for deleting indexed files from GNUnet.
 .TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+use config file (defaults: ~/.gnunet/gnunet.conf)
+.TP
 \fB\-h\fR, \fB\-\-help\fR
 print help page
 .TP
-\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
-use config file (defaults: ~/.gnunet/gnunet.conf)
+\fB\-H \fIHOSTNAME\fR, \fB\-\-host=\fIHOSTNAME\fR
+on which host is gnunetd running (default: localhost).  You can also specify a port using the syntax HOSTNAME:PORT.  The default port is 2087.
+.TP
+\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, WARNING, INFO, STATUS and DEBUG.
 .TP
 \fB\-v\fR, \fB\-\-version\fR
 print the version number
 .TP
 \fB\-V\fR, \fB\-\-verbose\fR
-be berbose; prints progress information and the hash-pair, CRC and filesize that can be used to download the file
-.TP
-\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+be verbose
 .SH NOTES
 You can only unindex files that you indexed and that you still have available locally in full.  You should use gnunet\-unindex on files that you indexed (not inserted) and that you are going to delete or move locally.
 .TP

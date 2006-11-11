@@ -160,7 +160,7 @@ int main(int argc,
 
   i = GNUNET_init(argc,
 		  argv,
-		  "gnunet-download [OPTIONS] [KEYWORDS]",
+		  "gnunet-download [OPTIONS] URI",
 		  &cfgFilename,
 		  gnunetdownloadOptions,
 		  &ectx,

@@ -1,4 +1,4 @@
-.TH GNUNET-INSERT "1" "29 Apr 2006" "GNUnet"
+.TH GNUNET-INSERT "1" "11 Nov 2006" "GNUnet"
 .SH NAME
 gnunet\-insert \- a command line interface for inserting new content into GNUnet
 .SH SYNOPSIS
@@ -11,15 +11,16 @@ available to GNUnet.  GNUnet does not automatically share all files from a
 certain directory.  In fact, even files that are downloaded are not automatically shared.
 .PP
 In order to start sharing files, the files must be added either using
-gnunet\-insert or gnunet\-gtk.  The command line tool gnunet-insert is more
-useful if many files are supposed to be added.  gnunet-insert can
+gnunet\-insert or gnunet\-gtk.  The command line tool gnunet\-insert is more
+useful if many files are supposed to be added.  gnunet\-insert can
 automatically insert batches of files, recursively insert directories, create
 directories that can be browsed within GNUnet and publish file lists
-in a namespace.
+in a namespace.  When run on a directory, gnunet\-insert will always recursively
+publish all of the files in the directory.
 .PP
-gnunet-insert can automatically extract keywords from the files that are shared.  Users that
+gnunet\-insert can automatically extract keywords from the files that are shared.  Users that
 want to download files from GNUnet use keywords to search for the appropriate
-content.  You can disable keyword extraction with the \-n option.  You can
+content.  You can disable keyword extraction with the \-D option.  You can
 manually add keywords using the \-k and \-K options.
 .PP
 In addition to searching for files by keyword, GNUnet allows organizing
@@ -91,8 +92,8 @@ Use alternate config file (if this option is not specified, the default is ~/.gn
 Even if using links to the .gnunet directory is generally permitted, make a copy of the file (disables symlinking even if it is possible).  When indexing a file, gnunet\-insert will create a copy of the file in the "share" directory of gnunetd.  If that directory happens to be on the local machine (i.e. gnunetd runs on localhost) then gnunet\-insert can instead just use a link.  This will not work over the network, if the file\-permissions do not allow gnunetd to read the file or if the file maybe changed afterwards.  Hence the default is to be inefficient and to make a copy.  With this option you can force gnunet\-insert to not make a link.  gnunet\-insert will fall back to creating a copy.
 
 .TP
-\fB\-D\fR, \fB\-\-direct\fR
-For a recursive upload, also create direct indexing information that will refer to files inside of directories immediately.  Without \-D, contents of directories can only be found via the directory itself.
+\fB\-D\fR, \fB\-\-disable\-direct\fR
+Disable direct indexing information that would otherwise refer to files inside of directories directly.  Without \-D, contents can be found directly using keywords extracted with libextractor.  Use \-D if you index directories with many similar files that are adequately described using keywords for the directory and for which individual references would unduely pollte the global keyword search space.  Also use \-D to disable libextractor for individual file uploads.  This way you can ensure that a file will only be referenced using the keywords that you are specifying explicitly.
 
 .TP
 \fB\-e\fR, \fB\-\-extract\fR
@@ -125,7 +126,7 @@ additional key to index the content with.  Keywords specified with \-K are appli
 
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=\fILOGLEVEL\fR
-Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+Change the loglevel.  Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, WARNING, INFO, STATUS and DEBUG.
 
 .TP
 \fB\-m \fITYPE:VALUE\fR, \fB\-\-meta=\fITYPE:VALUE\fR
@@ -154,10 +155,6 @@ Set the priority of the inserted content (default: 65535).  If the local databas
 For the top\-level directory or file, create an SBlock that places the file into the namespace specified by the pseudonym NAME.
 
 .TP
-\fB\-R\fR, \fB\-\-recursive\fR
-Process directories recursively.  Without this option, directories are ignored.  With this option, gnunet-insert will process files in directories recursively.
-
-.TP
 \fB\-S\fR, \fB\-\-sporadic\fR
 This option specifies that the file will be updated sporadically but not periodically.  It is only valid in conjunction with the \-P option.  It is implied if  \-N is specified but not \-i.  It cannot be used together with the \-i option.  Use \-S if you intend to publish an update at an unknown point in the future and if you want gnunet\-insert to pick a random  identifier for that future content.
 
@@ -183,7 +180,7 @@ Print the version number.
 
 .TP
 \fB\-V\fR, \fB\-\-verbose\fR
-Be verbose.  Using this option causes gnunet-insert to print progress information and at the end the file identification that can be used to  download the file from GNUnet.
+Be verbose.  Using this option causes gnunet\-insert to print progress information and at the end the file identification that can be used to  download the file from GNUnet.
 
 
 .SH EXAMPLES
@@ -211,16 +208,19 @@ Index a file COPYING with description "GNU License", mime-type "text/plain" and 
 
 Index the files COPYING and AUTHORS with keyword \fBtest\fR and
 build a directory containing the two files.
-Make the directory itself available under keyword \fBgnu\fR:
+Make the directory itself available under keyword \fBgnu\fR
+and disable keyword extraction using libextractor:
 
-# gnunet\-insert \-K test \-k gnu \-b COPYING AUTHORS
+# mkdir gnu
+# mv COPYING AUTHORS gnu/
+# gnunet\-insert \-K test \-k gnu \-D gnu/
 
 Neatly publish an image gallery in \fBkittendir/\fR and its
 subdirs with keyword \fBkittens\fR for the directory but no
 keywords for the individual files or subdirs (\-Rn).
 Force description for all files:
 
-# gnunet\-insert \-Rn \-m "description:Kitten collection" \-k kittens kittendir
+# gnunet\-insert \-Rn \-m "description:Kitten collection" \-k kittens kittendir/
 
 \fBSecure publishing with namespaces\fR
 

@@ -986,7 +986,7 @@ GNgetopt_long(int argc,
 /**
  * Parse the command line.
  *
- * @param binaryName name of the binary / application
+ * @param binaryName name of the binary / application with options
  * @param ectx for reporting errors
  * @param cfg for storing/accessing configuration data
  * @param allOptions defined options and handlers
@@ -995,7 +995,7 @@ GNgetopt_long(int argc,
  * @return index into argv with first non-option
  *   argument, or -1 on error
  */
-int gnunet_parse_options(const char * binaryName,
+int gnunet_parse_options(const char * binaryOptions,
 			 struct GE_Context * ectx,
 			 struct GC_Configuration * cfg,
 			 const CommandLineOption * allOptions,
@@ -1012,6 +1012,7 @@ int gnunet_parse_options(const char * binaryName,
 
   GE_ASSERT(ectx, argc > 0);
   clpc.binaryName = argv[0];
+  clpc.binaryOptions = binaryOptions;
   clpc.allOptions = allOptions;
   clpc.argv = argv;
   clpc.argc = argc;

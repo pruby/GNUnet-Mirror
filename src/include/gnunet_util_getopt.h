@@ -48,6 +48,11 @@ typedef struct {
   const char * binaryName;
 
   /**
+   * Name of application with option summary
+   */
+  const char * binaryOptions;
+
+  /**
    * Array with all command line options.
    */
   const struct CommandLineOption * allOptions;
@@ -157,7 +162,7 @@ typedef struct CommandLineOption {
  * Set the configuration option for logging.
  */
 #define COMMAND_LINE_OPTION_LOGGING \
-  { 'L', "log", "LOGRULES", gettext_noop("configure logging to use LOGRULES"), 1, &gnunet_getopt_configure_set_option, "GNUNET:LOGGING" }
+  { 'L', "log", "LOGLEVEL", gettext_noop("configure logging to use LOGLEVEL"), 1, &gnunet_getopt_configure_set_option, "GNUNET:LOGGING" }
 
 /**
  * Set the configuration option for increasing verbosity.
@@ -186,7 +191,7 @@ typedef struct CommandLineOption {
 /**
  * Parse the command line.
  *
- * @param binaryName name of the binary / application
+ * @param binaryName name of the binary / application with options
  * @param ectx for reporting errors
  * @param cfg for storing/accessing configuration data
  * @param allOptions defined options and handlers

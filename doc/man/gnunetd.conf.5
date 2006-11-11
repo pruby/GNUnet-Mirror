@@ -1,13 +1,13 @@
-.TH GNUNETD.CONF "5" "30 Apr 2005" "GNUnet"
+.TH GNUNETD.CONF "5" "11 Nov 2006" "GNUnet"
 .SH NAME
 gnunetd.conf \- GNUnet daemon configuration file
 .SH SYNOPSIS
-~/.gnunet/gnunetd.conf or /var/lib/GNUnet/gnunetd.conf or /etc/gnunetd.conf
+/etc/gnunetd.conf
 .SH DESCRIPTION
 .PP
 GNUnet uses two configuation files, one for user interfaces (gnunet.conf) and one for the server (gnunetd) and associated administrative tools.  This man page describes the configuration file for the server.
 .PP
-/etc/gnunetd.conf is the default location for the configuration file used by gnunetd, the GNUnet daemon.  It contains the network and resource configuration for the peer.  You should use gnunet\-setup to create the configuration at either /var/lib/GNUnet/gnunetd.conf or ~/.gnunet/gnunetd.conf.  The locations are used by gnunetd in this order.  Binary distributions are encouraged to install an appropriate configuration file in /etc/gnunetd.conf.
+/etc/gnunetd.conf is the default location for the configuration file used by gnunetd, the GNUnet daemon.  It contains the network and resource configuration for the peer.  You should use gnunet\-setup to create the configuration.  Use the \-c option to specify alternative locations for the configuration file.  Binary distributions are encouraged to install an appropriate configuration file in /etc/gnunetd.conf.
 .TP
 The basic structure of the configuration file is the following.  The file is split into sections.  Every section begins with [SECTIONNAME] and contains a number of options of the form OPTION=VALUE.  Empty lines and lines beginning with a # are treated as comments.  Some options are optional, in particular certain sections are not used at all unless the corresponding service module is loaded (e.g. you do not have to configure the SMTP transport unless you decide to use it).
 .SH FILES
@@ -17,4 +17,4 @@ gnunetd configuration file
 .SH "REPORTING BUGS"
 Report bugs by using mantis <https://gnunet.org/mantis/> or by sending electronic mail to <gnunet-developers@gnu.org>
 .SH "SEE ALSO"
-\fBgnunet\-gtk\fP(1), \fBgnunet\-insert\fP(1), \fBgnunet\-search\fP(1), \fBgnunet\-download\fP(1), \fBgnunet.conf\fP(5), \fBgnunetd\fP(1)
+\fBgnunet\-setup\fP(1), \fBgnunet.conf\fP(5), \fBgnunet\-update\fP(1)

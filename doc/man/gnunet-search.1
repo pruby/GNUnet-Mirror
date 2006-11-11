@@ -1,4 +1,4 @@
-.TH GNUNET-SEARCH "1" "20 May 2006" "GNUnet"
+.TH GNUNET-SEARCH "1" "11 Sep 2006" "GNUnet"
 .SH NAME
 gnunet\-search \- a command line interface to search for content on GNUnet
 .SH SYNOPSIS
@@ -28,7 +28,7 @@ print help page
 on which host is gnunetd running (default: localhost).  You can also specify a port using the syntax HOSTNAME:PORT.  The default port is 2087.
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, WARNING, STATUS, INFO and DEBUG.
 .TP
 \fB\-m\fR \fIMAXRESULTS\fR
 exit after finding MAXRESULTS results.
@@ -55,7 +55,7 @@ are identical. You can use AND to separate keywords. In that case, gnunet\-searc
 Search results are printed by gnunet\-search like this:
 
 .P
-	gnunet-download -o "COPYING" gnunet://ecrs/chk/HASH1.HASH2.SIZE
+	gnunet\-download \-o "COPYING" gnunet://ecrs/chk/HASH1.HASH2.SIZE
 
 		Description: The GNU Public License
 

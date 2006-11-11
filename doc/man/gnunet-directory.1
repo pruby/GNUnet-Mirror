@@ -1,4 +1,4 @@
-.TH gnunet-directory "1" "15 Dec 2004" "GNUnet"
+.TH gnunet-directory "1" "11 Nov 2006" "GNUnet"
 .SH NAME
 gnunet\-directory \- display directories and show or delete lists of encountered file identifiers
 
@@ -14,6 +14,9 @@ gnunet\-directory will always list the contents of the GNUnet directories that a
 Manipulating the file identifier database is done by passing additional options to gnunet\-directory.  Note that by default GNUnet does not build the file identifier database and the database will thus always be empty.  You need to run gnunet\-directory with the -\t option to enable tracking of file identifiers.  The reason is that storing file identifiers in plaintext in the database can compromise your privacy if your machine should fall under the control of an adversary.
 
 .TP
+\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+use config file (defaults: ~/.gnunet/gnunet.conf)
+.TP
 \fB\-h\fR, \fB\-\-help\fR
 print help page
 .TP
@@ -24,10 +27,16 @@ delete all entries from the file identifier database and stop tracking file iden
 display entries from the file identifier database
 .TP
 \fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, FAILURE, WARNING, MESSAGE, INFO, DEBUG, CRON and EVERYTHING.
+change the loglevel. Possible values for LOGLEVEL are NOTHING, FATAL, ERROR, WARNING, STATUS, INFO and DEBUG.
 .TP
 \fB\-t, \fB\-\-track\fR
 start tracking file identifiers
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+print the version number
+.TP
+\fB\-V\fR, \fB\-\-verbose\fR
+be verbose; prints progress information
 .SH NOTES
 
 The options are evaluated in the order \-l, \-k and then \-t.  Thus specifying \-klt will first list all identifiers that were in the database previously, then delete all of those identifiers from the database and then continue (or start to) collect identifiers.  The order in which the options are specified on the command line is not important.

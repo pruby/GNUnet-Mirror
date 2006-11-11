@@ -135,7 +135,7 @@ static const char * INFO =
 #if HAVE_GTK
   "|gconfig|wizard-gtk"
 #endif
-  "\n";
+  "";
 
 /**
  * List of supported plugins.  One entry consists
