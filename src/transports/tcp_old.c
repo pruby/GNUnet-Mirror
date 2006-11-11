@@ -511,7 +511,7 @@ static void createNewSession(int sock) {
   tcpSession->users = 1; /* us only, core has not seen this tsession! */
   tcpSession->lastUse = get_time();
   tsession = MALLOC(sizeof(TSession));
-  tsession->ttype = TCP_PROTOCOL_NUMBER;
+  tsession->ttype = TCP_OLD_PROTOCOL_NUMBER;
   tsession->internal = tcpSession;
   addTSession(tsession);
 }					
@@ -926,7 +926,7 @@ static int verifyHelo(const P2P_hello_MESSAGE * helo) {
   if ( (ntohs(helo->senderAddressSize) != sizeof(HostAddress)) ||
        (ntohs(helo->header.size) != P2P_hello_MESSAGE_size(helo)) ||
        (ntohs(helo->header.type) != p2p_PROTO_hello) ||
-       (ntohs(helo->protocol) != TCP_PROTOCOL_NUMBER) )
+       (ntohs(helo->protocol) != TCP_OLD_PROTOCOL_NUMBER) )
     return SYSERR; /* obviously invalid */
   else
     return OK;
@@ -964,7 +964,7 @@ static P2P_hello_MESSAGE * createhello() {
   haddr->port = htons(port);
   haddr->reserved = htons(0);
   msg->senderAddressSize = htons(sizeof(HostAddress));
-  msg->protocol = htons(TCP_PROTOCOL_NUMBER);
+  msg->protocol = htons(TCP_OLD_PROTOCOL_NUMBER);
   msg->MTU = htonl(tcpAPI.mtu);
   return msg;
 }
@@ -1245,17 +1245,17 @@ TransportAPI * inittransport_tcp_old(CoreAPIForTransport * core) {
   stats = coreAPI->requestService("stats");
   if (stats != NULL) {
     stat_bytesReceived
-      = stats->create(gettext_noop("# bytes received via TCP"));
+      = stats->create(gettext_noop("# bytes received via TCP-OLD"));
     stat_bytesSent
-      = stats->create(gettext_noop("# bytes sent via TCP"));
+      = stats->create(gettext_noop("# bytes sent via TCP-OLD"));
     stat_bytesDropped
-      = stats->create(gettext_noop("# bytes dropped by TCP (outgoing)"));
+      = stats->create(gettext_noop("# bytes dropped by TCP-OLD (outgoing)"));
   }
-  tcpAPI.protocolNumber       = TCP_PROTOCOL_NUMBER;
+  tcpAPI.protocolNumber       = TCP_OLD_PROTOCOL_NUMBER;
   tcpAPI.mtu                  = 0;
   tcpAPI.cost                 = 20000; /* about equal to udp */
   tcpAPI.verifyHelo           = &verifyHelo;
-  tcpAPI.createhello           = &createhello;
+  tcpAPI.createhello          = &createhello;
   tcpAPI.connect              = &tcpConnect;
   tcpAPI.associate            = &tcpAssociate;
   tcpAPI.send                 = &tcpSend;

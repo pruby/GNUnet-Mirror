@@ -110,7 +110,7 @@ static unsigned short getGNUnetTCPPort() {
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "TCP",
 					      "PORT",
-					      1,
+					      0,
 					      65535,
 					      2086,
 					      &port)) {
