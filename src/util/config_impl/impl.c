@@ -672,6 +672,29 @@ _get_configuration_value_choice(struct GC_Configuration * cfg,
 }
 
 /**
+ * Test if we have a value for a particular option
+ * @return YES if so, NO if not.
+ */
+static int
+_have_configuration_value(struct GC_Configuration * cfg,
+			  const char * section,
+			  const char * option) {
+  GC_Entry * e;
+  int ret;
+
+  MUTEX_LOCK(cfg->data->lock);
+  e = findEntry(cfg->data,
+		section,
+		option);
+  if (e == NULL)
+    ret = NO;
+  else
+    ret = YES;
+  MUTEX_UNLOCK(cfg->data->lock);
+  return ret;
+}
+
+/**
  * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
  * where either in the current section or globally FOO is set to
  * DIRECTORY.
@@ -702,28 +725,32 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
     post = &orig[i+1];
   }
   prefix = NULL;
-  if (0 != _get_configuration_value_string(cfg,
-					   section,
-					   &orig[1],
-					   "",
-					   &prefix)) {
-    FREE(prefix);
-    if (0 != _get_configuration_value_string(cfg,
-					     "",
-					     &orig[1],
-					     "",
-					     &prefix)) {
-      const char * env = getenv(&orig[1]);
+  if (YES == _have_configuration_value(cfg,
+				       section,
+				       &orig[1])) {
+    _get_configuration_value_string(cfg,
+				    section,
+				    &orig[1],
+				    "",
+				    &prefix);
+  } else if (_have_configuration_value(cfg,
+				       "",
+				       &orig[1])) {
+    _get_configuration_value_string(cfg,
+				    "",
+				    &orig[1],
+				    "",
+				    &prefix);
+  } else {
+    const char * env = getenv(&orig[1]);
 
-      FREE(prefix);
-      if (env != NULL) {
-	prefix = STRDUP(env);
-      } else {
-	orig[i] = DIR_SEPARATOR;
-	return orig;
-      }
+    if (env != NULL) {
+      prefix = STRDUP(env);
+    } else {
+      orig[i] = DIR_SEPARATOR;
+      return orig;
     }
-  }
+  }  
   result = MALLOC(strlen(prefix) +
                   strlen(post) + 2);
   strcpy(result, prefix);
@@ -837,29 +864,6 @@ _detach_change_listener(struct GC_Configuration * cfg,
   }
   MUTEX_UNLOCK(cfg->data->lock);
   return -1;
-}
-
-/**
- * Test if we have a value for a particular option
- * @return YES if so, NO if not.
- */
-static int
-_have_configuration_value(struct GC_Configuration * cfg,
-			  const char * section,
-			  const char * option) {
-  GC_Entry * e;
-  int ret;
-
-  MUTEX_LOCK(cfg->data->lock);
-  e = findEntry(cfg->data,
-		section,
-		option);
-  if (e == NULL)
-    ret = NO;
-  else
-    ret = YES;
-  MUTEX_UNLOCK(cfg->data->lock);
-  return ret;
 }
 
 /**

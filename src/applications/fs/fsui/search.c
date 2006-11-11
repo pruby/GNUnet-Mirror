@@ -137,8 +137,9 @@ static int spcb(const ECRS_FileInfo * fi,
     if (ECRS_equalsUri(fi->uri,
 		       pos->resultsReceived[i].uri)) {
 #if DEBUG_SEARCH
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Received search result that I have seen before.\n");
+      GE_LOG(ectx, 
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "Received search result that I have seen before.\n");
 #endif
       return OK; /* seen before */
     }
@@ -146,8 +147,9 @@ static int spcb(const ECRS_FileInfo * fi,
     if (key == NULL) {
       GE_BREAK(ectx, 0);
 #if DEBUG_SEARCH
-      GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	  "Received search result without key to decrypt.\n");
+      GE_LOG(ectx,
+	     GE_DEBUG | GE_REQUEST | GE_USER,
+	     "Received search result without key to decrypt.\n");
 #endif
       return SYSERR;
     }
@@ -160,15 +162,17 @@ static int spcb(const ECRS_FileInfo * fi,
 			  &rp->matchingKeys[j],
 			  sizeof(HashCode512))) {
 #if DEBUG_SEARCH
-	    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-		"Received search result that I have seen before (missing keyword to show client).\n");
+	    GE_LOG(ectx,
+		   GE_DEBUG | GE_REQUEST | GE_USER,
+		   "Received search result that I have seen before (missing keyword to show client).\n");
 #endif
 	    return OK;
 	  }
 	if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
 #if DEBUG_SEARCH
-	  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	      "Received search result (showing client)!\n");
+	  GE_LOG(ectx, 
+		 GE_DEBUG | GE_REQUEST | GE_USER,
+		 "Received search result (showing client)!\n");
 #endif
 	  GROW(rp->matchingKeys,
 	       rp->matchingKeyCount,
@@ -210,15 +214,17 @@ static int spcb(const ECRS_FileInfo * fi,
 	 1);
     rp->matchingKeys[0] = *key;
 #if DEBUG_SEARCH
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Received search result (waiting for %u more keys before showing client).\n",
-	pos->numberOfURIKeys  - rp->matchingKeyCount);
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Received search result (waiting for %u more keys before showing client).\n",
+	   pos->numberOfURIKeys  - rp->matchingKeyCount);
 #endif
     return OK;
   } else {
 #if DEBUG_SEARCH
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"Received search result (showing client)!\n");
+    GE_LOG(ectx, 
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Received search result (showing client)!\n");
 #endif
     processResult(fi,
 		  pos);
