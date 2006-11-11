@@ -14,10 +14,6 @@ Notes:
 
 0.7.1 [11'06] (aka "stabilization")
 - fix critical known bugs:
-  * migrate configuration in gnunet-update [RCpre0]:
-    - transports: remove http, smtp, add tcp_old
-    - http-proxy: move port into main proxy line
-    - 
   * Windows installer [Nils]
     + uninstall: Remove account
     + libcurl, guile [RCpre0]
