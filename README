@@ -28,7 +28,7 @@ running GNUnet:
 - libextractor >= 0.5.13
 - libgcrypt    >= 1.2
 - libgmp       >= 4.0
-- mysql        >= 4.1  OR  sqlite >= 3.0
+- mysql        >= 5.0  OR  sqlite >= 3.0
 - libltdl      >= 1.5 (part of GNU libtool)
 - libguile     >= 1.8
 - libcurl      >= 7.x
@@ -77,7 +77,7 @@ about the GNU build process read the INSTALL file.
 GNUnet requires the GNU MP library (http://www.gnu.org/software/gmp/)
 and libgcrypt.  You can specify the path to libgcrypt by passing
 "--with-gcrypt=PATH" to configure.  You will also need either sqlite
-(version 3 or higher) or MySQL (version 4.1 or higher).
+(version 3 or higher) or MySQL (version 5.0 or higher).
 
 If you are compiling the code from subversion, you have to run
 ". bootstrap" before ./configure.  If you receive an error during the
@@ -99,9 +99,8 @@ gnunetd.conf (by default, gnunet-setup will edit gnunet.conf).  The
 defaults that are created the first time you run gnunet-setup are
 usually ok, you may want to adjust the limitations (space consumption,
 bandwidth, etc.) though.  The configuration files are human-readable;
-gnunetd is typically located at "/etc/gnunetd.conf",
-"~/.gnunet/gnunetd.conf" or "/var/lib/GNUnet/gnunetd.conf".  The
-per-user configuration file should be at "~/.gnunet/gnunet.conf".
+gnunetd's configuration is typically located at "/etc/gnunetd.conf".
+The per-user configuration file should be at "~/.gnunet/gnunet.conf".
 
 If you want to use a different configuration file, pass the name of
 the configuration file as an argument with the option "-c" to any

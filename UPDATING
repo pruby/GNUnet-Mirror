@@ -11,6 +11,10 @@ you're on your own.
 0.7.0e to 0.7.1pre0
 ===================
 
+First of all, read README.debian and study the changes in the
+dependencies.  Install all dependencies and check the version
+numbers.  Once you have managed to compile GNUnet, read on.
+
 There are now two TCP transports, one using the 0.7.1 protocol and one
 using the 0.7.0e protocol to allow the 0.7.1 network to connect with
 the 0.7.0 network.  The old TCP transport is hardwired to use port
@@ -18,14 +22,25 @@ the 0.7.0 network.  The old TCP transport is hardwired to use port
 only change the port by editing the source).  The new TCP transport
 will run at whatever port is specified in the configuration.
 
-Run 
+Next you should edit your gnunetd.conf file as follows:
+* remove http, smtp from TRANSPORTS, add "tcp_old"
+* if HTTP-PROXY-PORT is set, add ":PORT-NUMBER" 
+  to the HTTP-PROXY line
+
+If your "gnunetd.conf" file is not in /etc,  you may
+have to edit scripts to pass "-c THE_PATH/gnunetd.conf"
+to gnunetd as an argument.  Alternatively, move the
+configuration to "/etc/gnunetd.conf".
+
+
+Finally, stop your old gnunetd process and run 
 
 # gnunet-update
 # gnunet-setup -d
 $ gnunet-setup 
 
-to update the configuration and run the setup tool to configure
-new options.
+to update the configuration and run the setup tool to configure new
+options (you maybe able to skip gnunet-setup).  Restart gnunetd.
 
 
 
