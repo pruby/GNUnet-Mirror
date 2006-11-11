@@ -30,7 +30,7 @@
 #include "gnunet_util_error_loggers.h"
 #include "platform.h"
 
-#define DO_REQUEST YES
+#define DO_REQUEST NO
 
 static GE_KIND 
 convertLogLevel(const char * level) {
