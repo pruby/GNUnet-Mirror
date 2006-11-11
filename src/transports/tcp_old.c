@@ -231,6 +231,7 @@ static struct MUTEX * tcplock;
  * signal that the server has been stopped.
  */
 static struct SEMAPHORE * serverSignal = NULL;
+
 static int tcp_shutdown = YES;
 
 /* ******************** helper functions *********************** */
@@ -407,9 +408,6 @@ static int readAndProcess(int i) {
     /* complete message received, let's check what it is */
     if (YES == tcpSession->expectingWelcome) {
       TCPWelcome * welcome;
-#if DEBUG_TCP
-      EncName enc;
-#endif
 
       welcome = (TCPWelcome*) &tcpSession->rbuff[0];
       if ( (ntohs(welcome->header.reserved) != 0) ||
