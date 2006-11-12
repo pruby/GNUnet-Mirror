@@ -164,16 +164,19 @@ static void doGet(char * get) {
     *ent = '\0';
     ent++;
   }
-  if (0 == GC_get_configuration_value_string(cfg,
-					     sec,
-					     ent,
-					     NULL,
-					     &val)) {
+  if (YES == GC_have_configuration_value(cfg,
+					 sec,
+					 ent)) {
+    GC_get_configuration_value_string(cfg,
+				      sec,
+				      ent,
+				      NULL,
+				      &val);
     printf("%s\n",
 	   val);
     FREE(val);
   }
-  FREE(get);
+  FREE(val);
 }
 
 static void work() {
