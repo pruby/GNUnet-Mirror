@@ -29,6 +29,8 @@
 #include "gnunet_directories.h"
 #include "platform.h"
 
+#define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
+
 /**
  * Name of the file in which we store the hostkey.
  */

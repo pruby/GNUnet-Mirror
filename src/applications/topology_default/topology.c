@@ -198,7 +198,7 @@ static void scanForHosts(unsigned int index) {
   }
   IF_GELOG(coreAPI->ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
-	   hash2enc(&indexMatch.match,
+	   hash2enc(&indexMatch.match.hashPubKey,
 		    &enc));
   GE_LOG(coreAPI->ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,

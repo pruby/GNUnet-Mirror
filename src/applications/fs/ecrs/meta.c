@@ -29,6 +29,8 @@
 #include "gnunet_ecrs_lib.h"
 #include <zlib.h>
 
+#define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
+
 /**
  * Create a fresh MetaData token.
  */
