@@ -42,4 +42,3 @@ SUBDIRS	= \
  $(VPN_DIR)
 # $(TESTBED_DIR) 
 # chat
-# kvstore_sqlite
