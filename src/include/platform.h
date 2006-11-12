@@ -36,7 +36,7 @@
 #include <sys/types.h>
 #endif
 
-#define ALLOW_EXTRA_CHECKS  YES
+#define ALLOW_EXTRA_CHECKS NO 
 
 #include "plibc.h"
 
