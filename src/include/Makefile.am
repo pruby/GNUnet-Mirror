@@ -37,6 +37,7 @@ gnunetinclude_HEADERS = \
   gnunet_session_service.h \
   gnunet_setup_lib.h \
   gnunet_sqstore_service.h \
+  gnunet_state_service.h \
   gnunet_stats_lib.h \
   gnunet_stats_service.h \
   gnunet_topology_service.h \
