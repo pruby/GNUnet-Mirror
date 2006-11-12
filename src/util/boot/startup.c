@@ -32,7 +32,7 @@
 
 #define DO_REQUEST NO
 
-static GE_KIND 
+static GE_KIND
 convertLogLevel(const char * level) {
   GE_KIND ret;
 
@@ -54,8 +54,8 @@ convertLogLevel(const char * level) {
 
 /**
  * Configure logging mechanism as specified by
- * user (and supported by system).  
- * 
+ * user (and supported by system).
+ *
  * @return 0 on success, 1 on error
  */
 static int configure_logging(struct GE_Context ** ectx,
@@ -113,12 +113,12 @@ static int configure_logging(struct GE_Context ** ectx,
   FREE(admin_log_file);
   if (ull != 0) {
     tetx = GE_create_context_stderr(NO,
-				    ull 
-				    | GE_USERKIND 
+				    ull
+				    | GE_USERKIND
 #if DO_REQUEST
 				    | GE_REQUEST
 #endif
-				    | GE_BULK 
+				    | GE_BULK
 				    | GE_IMMEDIATE);
     if (nctx == NULL)
       nctx = tetx;
@@ -177,7 +177,7 @@ int GNUNET_init(int argc,
   if (i == -1)
     return -1;
   if (0 != GC_parse_configuration(*cfg,
-				   *cfgFileName)) 
+				   *cfgFileName))
     return -1;
   if (configure_logging(ectx, *cfg) != 0)
     return -1;

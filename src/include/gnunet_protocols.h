@@ -63,12 +63,12 @@ extern "C" {
 #define NAT_PROTOCOL_NUMBER 1
 
 /**
- * protocol number of TCP. 
+ * protocol number of TCP.
  */
 #define TCP_PROTOCOL_NUMBER 2
 
 /**
- * protocol number of UDP. 
+ * protocol number of UDP.
  */
 #define UDP_PROTOCOL_NUMBER 3
 

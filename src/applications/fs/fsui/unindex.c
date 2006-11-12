@@ -131,7 +131,7 @@ static void * FSUI_unindexThreadEvent(void * cls) {
 			   utc->filename,
 			   &size,
 			   YES)) {
-    GE_BREAK(utc->ctx->ectx, 0);  
+    GE_BREAK(utc->ctx->ectx, 0);
     size = 0;
   }
   event.type = FSUI_unindex_started;
@@ -260,7 +260,7 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
     PTHREAD_JOIN(dl->handle,
 		 &unused);
     dl->state++; /* add _JOINED */
-  } 
+  }
   event.type = FSUI_unindex_stopped;
   event.data.UnindexStopped.uc.pos = dl;
   event.data.UnindexStopped.uc.cctx = dl->cctx;

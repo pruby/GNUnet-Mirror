@@ -456,8 +456,8 @@ int disk_file_write(struct GE_Context * ectx,
 			  fn,
 			  O_CREAT | O_WRONLY,
 			  S_IRUSR | S_IWUSR);
-  if (handle == -1) { 
-    FREE(fn);    
+  if (handle == -1) {
+    FREE(fn);
     return SYSERR;
   }
   GE_ASSERT(ectx,

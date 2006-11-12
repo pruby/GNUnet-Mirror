@@ -294,7 +294,7 @@ int main(int argc,
   struct GE_Context * ectx;
   struct CronManager * cron;
   int res;
- 
+
   res = GNUNET_init(argc,
 		    argv,
 		    "gnunet-tracekit",

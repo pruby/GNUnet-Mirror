@@ -785,11 +785,11 @@ static int queueReply(const PeerIdentity * sender,
 #if DEBUG_GAP
   EncName enc;
 
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(primaryKey,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Gap queues reply to query `%s' for later use.\n",
 	 &enc);
@@ -807,7 +807,7 @@ static int queueReply(const PeerIdentity * sender,
   if (! equalsHashCode512(&ite->primaryKey,
 			  primaryKey) ) {
 #if DEBUG_GAP
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "GAP: Dropping reply, routing table has no query associated with it (anymore)\n");
 #endif
@@ -914,7 +914,7 @@ static int addToSlot(int mode,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(query,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "GAP: Queueing query '%s' in slot %p\n",
 	 &enc,
@@ -1825,20 +1825,20 @@ static int get_start(unsigned int type,
 			   &peers,
 			   &sizes,
 			   &timevect)) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     _("Failed to get traffic stats.\n"));
       return SYSERR;
     }
     if (anonymityLevel > 1000) {
       if (peers < anonymityLevel / 1000) {
-	GE_LOG(ectx, 
+	GE_LOG(ectx,
 	       GE_WARNING | GE_BULK | GE_USER,
 	       _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
       }
       if (count < anonymityLevel % 1000) {
-	GE_LOG(ectx, 
+	GE_LOG(ectx,
 	       GE_WARNING | GE_BULK | GE_USER,
 	       _("Cannot satisfy desired level of anonymity, ignoring request.\n"));
 	return SYSERR;
@@ -1962,7 +1962,7 @@ static int handleQuery(const PeerIdentity * sender,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));
     }
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Dropping query from %s, this peer is too busy.\n",
 	   sender == NULL ? "localhost" : (char*)&enc);
@@ -2016,7 +2016,7 @@ static int handleQuery(const PeerIdentity * sender,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&qmsg->queries[0],
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Received GAP query `%s'.\n",
 	 &enc);
@@ -2031,7 +2031,7 @@ static int handleQuery(const PeerIdentity * sender,
 	    hash2enc(&sender->hashPubKey,
 		     &enc));
     }
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Dropping query from %s, policy decided that this peer is too busy.\n",
 	   sender == NULL ? "localhost" : (const char*) &enc);

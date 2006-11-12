@@ -170,7 +170,7 @@ static int verifySKS(const PeerIdentity * hostId,
 				    "LIMIT-ALLOW",
 				    "",
 				    &limited);
-  if (strlen(limited) > 0) {   
+  if (strlen(limited) > 0) {
     hash2enc(&hostId->hashPubKey,
 	     &enc);
     if (NULL == strstr(limited,
@@ -198,7 +198,7 @@ static int verifySKS(const PeerIdentity * hostId,
     if (NULL != strstr(limited,
 		       (char*) &enc)) {
 #if DEBUG_SESSION
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_USER | GE_REQUEST,
 	     "Connection from peer `%s' was rejected.\n",
 	     &enc);
@@ -216,7 +216,7 @@ static int verifySKS(const PeerIdentity * hostId,
        &sks->signature)) {
     EncName enc;
 
-    IF_GELOG(ectx, 
+    IF_GELOG(ectx,
 	     GE_INFO | GE_USER | GE_REQUEST,
 	     hash2enc(&hostId->hashPubKey,
 		      &enc));
@@ -258,7 +258,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 					YES);
   /* create and encrypt sessionkey */
   if (NULL == foreignHelo) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
 	   _("Cannot encrypt sessionkey, other peer not known!\n"));
     return NULL; /* other host not known */
@@ -295,7 +295,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   msg->header.size = htons(size);
   msg->header.type = htons(P2P_PROTO_setkey);
   msg->creationTime = htonl(created);
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    SYSERR !=
 	    identity->signData(msg,
 			       sizeof(P2P_setkey_MESSAGE)
@@ -303,7 +303,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 			       &msg->signature));
 #if EXTRA_CHECKS
   /* verify signature/SKS */
-  GE_ASSERT(ectx, 
+  GE_ASSERT(ectx,
 	    SYSERR != verifySKS(coreAPI->myIdentity,
 				msg));
 #endif
@@ -411,7 +411,7 @@ static int exchangeKey(const PeerIdentity * receiver,
     age = TIME(NULL);
     makeSessionkey(&sk);
 #if DEBUG_SESSION
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
 	   "Created fresh sessionkey `%s'.\n",
 	   printSKEY(&sk));
@@ -702,7 +702,7 @@ static int tryConnect(const PeerIdentity * peer) {
 #if DEBUG_SESSION
   EncName enc;
 
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
 	   hash2enc(&peer->hashPubKey,
 		    &enc));
@@ -710,7 +710,7 @@ static int tryConnect(const PeerIdentity * peer) {
   if ( (topology != NULL) &&
        (topology->allowConnectionFrom(peer) == SYSERR) ) {
 #if DEBUG_SESSION
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
 	   "Topology rejected connecting to `%s'.\n",
 	   &enc);
@@ -719,7 +719,7 @@ static int tryConnect(const PeerIdentity * peer) {
   }
   if (coreAPI->queryBPMfromPeer(peer) != 0) {
 #if DEBUG_SESSION
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
 	   "Connection to `%s' already up (have BPM limit)\n",
 	   &enc);
@@ -727,7 +727,7 @@ static int tryConnect(const PeerIdentity * peer) {
     return YES; /* trivial case */
   }
 #if DEBUG_SESSION
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_REQUEST,
 	 "Trying to exchange key with `%s'.\n",
 	 &enc);

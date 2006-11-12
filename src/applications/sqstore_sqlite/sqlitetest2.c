@@ -44,8 +44,8 @@
 #define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
 
 /**
- * Target datastore size (in bytes).  Realistic sizes are 
- * more like 16 GB (not the default of 16 MB); however, 
+ * Target datastore size (in bytes).  Realistic sizes are
+ * more like 16 GB (not the default of 16 MB); however,
  * those take too long to run them in the usual "make check"
  * sequence.  Hence the value used for shipping is tiny.
  */
@@ -58,7 +58,7 @@
 #define REPORT_ID NO
 
 /**
- * Number of put operations equivalent to 1/10th of MAX_SIZE 
+ * Number of put operations equivalent to 1/10th of MAX_SIZE
  */
 #define PUT_10 MAX_SIZE / 32 / 1024 / 10
 
@@ -93,7 +93,7 @@ static int putValue(SQstore_ServiceAPI * api,
   size_t size;
   static HashCode512 key;
   static int ic;
-  
+
   /* most content is 32k */
   size = sizeof(Datastore_Value) + 32 * 1024;
   if (weak_randomi(16) == 0) /* but some of it is less! */
@@ -110,8 +110,8 @@ static int putValue(SQstore_ServiceAPI * api,
   value->prio = htonl(weak_randomi(100));
   value->anonymityLevel = htonl(i);
   value->expirationTime = htonll(get_time() + weak_randomi(1000));
-  memset(&value[1], 
-	 i, 
+  memset(&value[1],
+	 i,
 	 size - sizeof(Datastore_Value));
   if (OK != api->put(&key, value)) {
     FREE(value);
@@ -130,19 +130,19 @@ static int putValue(SQstore_ServiceAPI * api,
   return OK;
 }
 
-static int 
+static int
 iterateDelete(const HashCode512 * key,
 	      const Datastore_Value * val,
 	      void * cls) {
   SQstore_ServiceAPI * api = cls;
   static int dc;
 
-  if (api->getSize() < MAX_SIZE) 
+  if (api->getSize() < MAX_SIZE)
     return SYSERR;
   if (GNUNET_SHUTDOWN_TEST() == YES)
     return SYSERR;
   dc++;
-#if REPORT_ID 
+#if REPORT_ID
   if (dc % REP_FREQ == 0)
     fprintf(stderr, "D");
 #endif
@@ -179,9 +179,9 @@ static int test(SQstore_ServiceAPI * api) {
 
     /* trim down below MAX_SIZE again */
     if ((i % 2) == 0)
-      api->iterateLowPriority(0, &iterateDelete, api); 
-    else 
-      api->iterateExpirationTime(0, &iterateDelete, api); 
+      api->iterateLowPriority(0, &iterateDelete, api);
+    else
+      api->iterateExpirationTime(0, &iterateDelete, api);
 
     /* every 10 iterations print status */
     size = 0;
@@ -201,7 +201,7 @@ static int test(SQstore_ServiceAPI * api) {
 	   size / 1024, /* disk size in kb */
 	   (100.0 * size / stored_bytes) - 100, /* overhead */
 	   (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
-	   1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time() - start_time)); /* operations per second */  
+	   1000 * ((stored_ops * 2 - stored_entries) - lops) / (1 + get_time() - start_time)); /* operations per second */
     lops = stored_ops * 2 - stored_entries;
     start_time = get_time();
     if (GNUNET_SHUTDOWN_TEST() == YES)

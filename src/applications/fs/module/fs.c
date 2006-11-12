@@ -189,11 +189,11 @@ static int gapPut(void * closure,
   }
   processResponse(query, dv);
 #if DEBUG_FS
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(query,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FS received GAP-PUT request (query: `%s')\n",
 	 &enc);
@@ -217,7 +217,7 @@ static int get_result_callback(const HashCode512 * query,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(query,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Found reply to query `%s'.\n",
 	 &enc);
@@ -261,7 +261,7 @@ static int csHandleRequestQueryStop(struct ClientHandle * sock,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&rs->query[0],
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FS received QUERY STOP (query: `%s')\n",
 	 &enc);
@@ -319,7 +319,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&query,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FS received REQUEST INSERT (query: `%s', type: %u, priority %u)\n",
 	 &enc,
@@ -407,7 +407,7 @@ static int csHandleCS_fs_request_init_index_MESSAGE(struct ClientHandle * sock,
 
   FREE(fn);
 #if DEBUG_FS
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Sending confirmation (%s) of index initialization request to client\n",
 	 ret == OK ? "success" : "failure");
@@ -440,7 +440,7 @@ static int csHandleCS_fs_request_index_MESSAGE(struct ClientHandle * sock,
 		       ntohs(ri->header.size) - sizeof(CS_fs_request_index_MESSAGE),
 		       (const DBlock*) &ri[1]);
 #if DEBUG_FS
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Sending confirmation (%s) of index request to client\n",
 	 ret == OK ? "success" : "failure");
@@ -476,7 +476,7 @@ static int completeValue(const HashCode512 * key,
   }
   *comp = *value; /* make copy! */
 #if DEBUG_FS
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "`%s' found value that matches.\n",
 	 __FUNCTION__);
@@ -569,7 +569,7 @@ static int csHandleCS_fs_request_unindex_MESSAGE(struct ClientHandle * sock,
   }
   ru = (CS_fs_request_unindex_MESSAGE*) req;
 #if DEBUG_FS
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FS received REQUEST UNINDEX\n");
 #endif
@@ -655,7 +655,7 @@ static int gapGetConverter(const HashCode512 * key,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(key,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Converting reply for query `%s' for gap.\n",
 	 &enc);
@@ -681,7 +681,7 @@ static int gapGetConverter(const HashCode512 * key,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(key,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   "Converting reply for query `%s' for gap failed (datum not applicable).\n",
 	   &enc);
@@ -693,7 +693,7 @@ static int gapGetConverter(const HashCode512 * key,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(key,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   "Converting reply for query `%s' for gap failed (type not applicable).\n",
 	   &enc);
@@ -719,7 +719,7 @@ static int gapGetConverter(const HashCode512 * key,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(key,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   "Converting reply for query `%s' for gap failed (insufficient cover traffic).\n",
 	   &enc);
@@ -773,11 +773,11 @@ static int gapGet(void * closure,
 #if DEBUG_FS
   EncName enc;
 
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&keys[0],
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "GAP requests content for `%s' of type %u\n",
 	 &enc,
@@ -1119,11 +1119,11 @@ static int csHandleRequestQueryStart(struct ClientHandle * sock,
   }
   rs = (const CS_fs_request_search_MESSAGE*) req;
 #if DEBUG_FS
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(&rs->query[0],
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FS received QUERY START (query: `%s', ttl %llu, priority %u, anonymity %u)\n",
 	 &enc,
@@ -1148,7 +1148,7 @@ static int csHandleRequestQueryStart(struct ClientHandle * sock,
 	 &done);
   if (done == YES) {
 #if DEBUG_FS
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "FS successfully took GAP shortcut for `%s'.\n",
 	   &enc);
@@ -1328,7 +1328,7 @@ void done_module_fs() {
 
   doneMigration();
   if (dht != NULL) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_REQUEST | GE_USER,
 	   "Leaving DHT (this may take a while).");
     dht->leave(&dht_table);

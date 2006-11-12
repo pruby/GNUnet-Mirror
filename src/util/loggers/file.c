@@ -210,7 +210,7 @@ filelogger(void * cls,
     name = getLogFileName(fctx->ectx,
 			  fctx->basename);
     if (0 != strcmp(name,
-		    fctx->filename)) {      
+		    fctx->filename)) {
       fclose(fctx->handle);
       fctx->handle = FOPEN(name, "a+");
       FREE(fctx->filename);

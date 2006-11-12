@@ -151,7 +151,7 @@ static void writeDownloadList(struct GE_Context * ectx,
 
   WRITESTRING(fd, list->filename);
   writeFileInfo(ectx,
-		fd, 
+		fd,
 		&list->fi);
   for (i=0;i<list->completedDownloadsCount;i++)
     writeURI(fd, list->completedDownloads[i]);

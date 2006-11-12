@@ -159,25 +159,25 @@ receivedhello(const MESSAGE_HEADER * message) {
 			  &msg->signature,
 			  &msg->publicKey)) {
     EncName enc;
-    IF_GELOG(ectx, 
+    IF_GELOG(ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(&msg->senderIdentity.hashPubKey,
 		      &enc));
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("hello message from `%s' invalid (signature invalid). Dropping.\n"),
 	   (char*)&enc);
     return SYSERR; /* message invalid */
   }
   if ((TIME_T)ntohl(msg->expirationTime) > TIME(NULL) + MAX_HELLO_EXPIRES) {
-     GE_LOG(ectx, 
+     GE_LOG(ectx,
 	    GE_WARNING | GE_BULK | GE_USER,
 	    _("hello message received invalid (expiration time over limit). Dropping.\n"));
      return SYSERR;
   }
   if (SYSERR == transport->verifyhello(msg)) {
 #if DEBUG_ADVERTISING
-   GE_LOG(ectx, 
+   GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
 	   _("hello transport verification failed (%u).\n"),
 	   ntohs(msg->protocol));
@@ -187,7 +187,7 @@ receivedhello(const MESSAGE_HEADER * message) {
   if (stats != NULL)
     stats->change(stat_hello_in, 1);
 #if DEBUG_ADVERTISING
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_INFO | GE_REQUEST | GE_USER,
 	 _("hello advertisement for protocol %d received.\n"),
 	 ntohs(msg->protocol));
@@ -226,13 +226,13 @@ receivedhello(const MESSAGE_HEADER * message) {
       identity->addHost(msg);
       FREE(copy);
       return OK;
-    } 
+    }
 #if DEBUG_ADVERTISING
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "advertised hello differs from prior knowledge,"
 	   " requireing ping-pong confirmation.\n");
-#endif    
+#endif
     FREE(copy);
   }
 
@@ -255,7 +255,7 @@ receivedhello(const MESSAGE_HEADER * message) {
        a couple of lines above would need some minor
        editing :-). */
 #if DEBUG_ADVERTISING
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
 	   "Private network, discarding unknown advertisements\n");
 #endif
@@ -277,7 +277,7 @@ receivedhello(const MESSAGE_HEADER * message) {
        we don't want to follow that up with massive
        hello-ing by ourselves. */
 #if DEBUG_ADVERTISING
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_INFO | GE_BULK | GE_USER,
 	   "Not enough resources to verify hello at this time (%u * %u < %u * 100)\n",
 	   (unsigned int) ((now - lasthelloMsg) / cronSECONDS),

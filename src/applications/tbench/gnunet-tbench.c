@@ -109,7 +109,7 @@ int main(int argc,
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
   int res;
-  
+
   res = GNUNET_init(argc,
 		    argv,
 		    "gnunet-tbench",

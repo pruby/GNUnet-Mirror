@@ -750,7 +750,7 @@ _configuration_expand_dollar(struct GC_Configuration * cfg,
       orig[i] = DIR_SEPARATOR;
       return orig;
     }
-  }  
+  }
   result = MALLOC(strlen(prefix) +
                   strlen(post) + 2);
   strcpy(result, prefix);
@@ -782,9 +782,9 @@ _get_configuration_value_filename(struct GC_Configuration * cfg,
   data = cfg->data;
   tmp = NULL;
   ret = _get_configuration_value_string(cfg,
-					section, 
+					section,
 					option,
-					def, 
+					def,
 					&tmp);
   if (tmp != NULL) {
     tmp = _configuration_expand_dollar(cfg,

@@ -144,24 +144,24 @@ static int sq_prepare(sqlite3 * dbh,
 
 static void createIndices(sqlite3 * dbh) {
   /* create indices */
-  CHECK(SQLITE_OK == 
-	sqlite3_exec(dbh, 
+  CHECK(SQLITE_OK ==
+	sqlite3_exec(dbh,
 		     "CREATE INDEX idx_hash ON gn070 (hash)",
 		     NULL, NULL, ENULL));
-  CHECK(SQLITE_OK == 
-	sqlite3_exec(dbh, 
+  CHECK(SQLITE_OK ==
+	sqlite3_exec(dbh,
 		     "CREATE INDEX idx_prio ON gn070 (prio)",
 		     NULL, NULL, ENULL));
-  CHECK(SQLITE_OK == 
+  CHECK(SQLITE_OK ==
 	sqlite3_exec(dbh,
 		     "CREATE INDEX idx_expire ON gn070 (expire)",
 		     NULL, NULL, ENULL));
-  CHECK(SQLITE_OK == 
+  CHECK(SQLITE_OK ==
 	sqlite3_exec(dbh,
 		     "CREATE INDEX idx_comb1 ON gn070 (prio,expire,hash)",
 		     NULL, NULL, ENULL));
-  CHECK(SQLITE_OK == 
-	sqlite3_exec(dbh, 
+  CHECK(SQLITE_OK ==
+	sqlite3_exec(dbh,
 		     "CREATE INDEX idx_comb2 ON gn070 (expire,prio,hash)",
 		     NULL, NULL, ENULL));
 }
@@ -199,19 +199,19 @@ static sqliteHandle * getDBHandle() {
     return NULL;
   }
 
-  CHECK(SQLITE_OK == 
-	sqlite3_exec(ret->dbh, 
+  CHECK(SQLITE_OK ==
+	sqlite3_exec(ret->dbh,
 		     "PRAGMA temp_store=MEMORY", NULL, NULL, ENULL));
-  CHECK(SQLITE_OK == 
+  CHECK(SQLITE_OK ==
 	sqlite3_exec(ret->dbh,
 		     "PRAGMA synchronous=OFF", NULL, NULL, ENULL));
-  CHECK(SQLITE_OK == 
+  CHECK(SQLITE_OK ==
 	sqlite3_exec(ret->dbh,
 		     "PRAGMA count_changes=OFF", NULL, NULL, ENULL));
-  CHECK(SQLITE_OK == 
+  CHECK(SQLITE_OK ==
 	sqlite3_exec(ret->dbh,
 		     "PRAGMA page_size=4092", NULL, NULL, ENULL));
-  
+
   /* We have to do it here, because otherwise precompiling SQL might fail */
   sq_prepare(ret->dbh,
 	     "Select 1 from sqlite_master where tbl_name = 'gn070'",
@@ -304,7 +304,7 @@ static unsigned int getIntSize(unsigned long long l) {
  * Get a (good) estimate of the size of the given
  * value (and its key) in the datastore.<p>
  * <pre>
- * row length = hash length + block length + numbers + column count + estimated index size + 1 
+ * row length = hash length + block length + numbers + column count + estimated index size + 1
  * </pre>
  */
 static unsigned int getContentDatastoreSize(const Datastore_Value * value) {
@@ -329,7 +329,7 @@ static unsigned long long getSize() {
   if (stats)
     stats->set(stat_size, ret);
   MUTEX_UNLOCK(db->DATABASE_Lock_);
-  return ret * 1.06; 
+  return ret * 1.06;
   /* benchmarking shows 2-12% overhead */
 }
 
@@ -337,7 +337,7 @@ static unsigned long long getSize() {
  * Given a full row from gn070 table (size,type,prio,anonLevel,expire,hash,value),
  * assemble it into a Datastore_Datum representation.
  */
-static Datastore_Datum * 
+static Datastore_Datum *
 assembleDatum(sqliteHandle * handle,
 	      sqlite3_stmt *stmt) {
   Datastore_Datum * datum;
@@ -351,7 +351,7 @@ assembleDatum(sqliteHandle * handle,
   if (contentSize < 0) {
     sqlite3_stmt * stmt;
 
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	   _("sqlite datastore"));
@@ -372,7 +372,7 @@ assembleDatum(sqliteHandle * handle,
       sqlite3_column_bytes(stmt, 6) != contentSize) {
     sqlite3_stmt * stmt;
 
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Invalid data in %s.  Trying to fix (by deletion).\n"),
 	   _("sqlite datastore"));
@@ -556,7 +556,7 @@ static int sqlite_iterate(unsigned int type,
   if (sortByPriority)
     strcat(scratch,
 	   "(expire > :4 AND prio == :5) OR prio > :6)");
-  else 
+  else
     strcat(scratch,
 	   "(prio > :4 AND expire == :5) OR expire > :6)");
   if (type)
@@ -913,7 +913,7 @@ static int put(const HashCode512 * key,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(key,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Storing in database block with type %u, key `%s' and priority %u.\n",
 	 ntohl(*(int*)&value[1]),
@@ -977,7 +977,7 @@ static int del(const HashCode512 * key,
   sqlite3_stmt *stmt;
   int deleted;
   sqliteHandle *dbh;
-  Datastore_Datum * dvalue; 
+  Datastore_Datum * dvalue;
   unsigned int size;
   unsigned int type;
   unsigned int prio;
@@ -987,11 +987,11 @@ static int del(const HashCode512 * key,
 #if DEBUG_SQLITE
   EncName enc;
 
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(key,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "SQLite: deleting block with key `%s'\n",
 	 &enc);
@@ -1017,14 +1017,14 @@ static int del(const HashCode512 * key,
 		      1,
 		      key,
 		      sizeof(HashCode512),
-		      SQLITE_TRANSIENT);      
+		      SQLITE_TRANSIENT);
     if (sqlite3_step(stmt) != SQLITE_ROW) {
       sqlite3_finalize(stmt);
       MUTEX_UNLOCK(db->DATABASE_Lock_);
       return NO;
     }
     dvalue = assembleDatum(dbh,
-			   stmt);    
+			   stmt);
     if (dvalue == NULL) {
       sqlite3_finalize(stmt);
       MUTEX_UNLOCK(db->DATABASE_Lock_);
@@ -1047,7 +1047,7 @@ static int del(const HashCode512 * key,
     prio = ntohl(value->prio);
     anon = ntohl(value->anonymityLevel);
     expir = ntohll(value->expirationTime);
-    
+
     sqlite3_bind_blob(stmt, 1, key, sizeof(HashCode512), SQLITE_TRANSIENT);
     sqlite3_bind_blob(stmt, 2, &value[1], contentSize, SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt, 3, size);
@@ -1100,11 +1100,11 @@ static int update(const HashCode512 * key,
 #if DEBUG_SQLITE
   EncName enc;
 
-  IF_GELOG(ectx, 
+  IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   hash2enc(key,
 		    &enc));
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "SQLite: updating block with key `%s'\n",
 	 &enc);
@@ -1175,7 +1175,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 				      "DIR",
 				      VAR_DAEMON_DIRECTORY "/data/fs/",
 				      &afsdir);
-  dir = MALLOC(strlen(afsdir) + strlen("/content/gnunet.dat") + 2); 
+  dir = MALLOC(strlen(afsdir) + strlen("/content/gnunet.dat") + 2);
   strcpy(dir, afsdir);
   strcat(dir, "/content/gnunet.dat");
   FREE(afsdir);

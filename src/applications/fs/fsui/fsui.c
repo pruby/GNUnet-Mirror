@@ -130,7 +130,7 @@ static void signalUploadResume(struct FSUI_UploadList * ret,
     ret->cctx = ctx->ecb(ctx->ecbClosure, &event);
     if (ret->child != NULL)
       signalUploadResume(ret->child,
-			 ctx);    
+			 ctx);
     ret = ret->next;
   }
 }
@@ -246,7 +246,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     event.data.SearchResumed.anonymityLevel = list->anonymityLevel;
     event.data.SearchResumed.searchURI = list->uri;
     event.data.SearchResumed.state = list->state;
-    list->cctx = cb(closure, &event);    
+    list->cctx = cb(closure, &event);
     list = list->next;
   }
   /* 2c) signal upload restarts */
@@ -263,7 +263,7 @@ struct FSUI_Context * FSUI_start(struct GE_Context * ectx,
     event.data.UnindexResumed.eta = 0; /* FIXME: use start_time for estimate! */
     event.data.UnindexResumed.filename = xlist->filename;
     event.data.UnindexResumed.state = xlist->state;
-    xlist->cctx = cb(closure, &event);	    
+    xlist->cctx = cb(closure, &event);	
     xlist = xlist->next;
   }
 
@@ -333,7 +333,7 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
     event.data.DownloadSuspended.dc.pcctx = list->parent->cctx;
     event.data.DownloadSuspended.dc.spos = list->search;
     event.data.DownloadSuspended.dc.sctx = list->search == NULL ? NULL : list->search->cctx;
-    ctx->ecb(ctx->ecbClosure, &event);    
+    ctx->ecb(ctx->ecbClosure, &event);
     list = list->next;
   }
 }
@@ -354,7 +354,7 @@ static void signalUploadSuspend(struct GE_Context * ectx,
     event.data.UploadSuspended.uc.cctx = upos->cctx;
     event.data.UploadSuspended.uc.ppos = upos->parent;
     event.data.UploadSuspended.uc.pcctx = upos->parent->cctx;
-    ctx->ecb(ctx->ecbClosure, &event);    
+    ctx->ecb(ctx->ecbClosure, &event);
     upos = upos->next;
   }
 }

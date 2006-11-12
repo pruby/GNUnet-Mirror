@@ -705,7 +705,7 @@ static void * tcpListenMain() {
 		 &clientAddr.sin_addr,
 		 sizeof(struct in_addr));
 
-	  createNewSession(sock);	  
+	  createNewSession(sock);	
 	}
       }
     }
@@ -1129,8 +1129,8 @@ static int startTransportServer(void) {
   serverSignal = SEMAPHORE_CREATE(0);
   tcp_shutdown = NO;
 
-  if (0 != PIPE(tcp_pipe)) 
-    return SYSERR;  
+  if (0 != PIPE(tcp_pipe))
+    return SYSERR;
   setBlocking(tcp_pipe[1], NO);
 
   port = getGNUnetTCPPort();

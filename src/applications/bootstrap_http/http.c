@@ -224,18 +224,18 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_URL,
 		   &url[pos]);
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_INFO | GE_USER | GE_BULK,
-	 _("Trying to download hostlist from `%s'\n"), 
+	 _("Trying to download hostlist from `%s'\n"),
 	 &url[pos]);
-  if (strlen(proxy) > 0) 
+  if (strlen(proxy) > 0)
     CURL_EASY_SETOPT(curl,
 		     CURLOPT_PROXY,
 		     proxy);
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_BUFFERSIZE,
 		   1024); /* a bit more than one HELLO */
-  if (0 == strncmp(&url[pos], "http", 4)) 
+  if (0 == strncmp(&url[pos], "http", 4))
     CURL_EASY_SETOPT(curl,
 		     CURLOPT_USERAGENT,
 		     "GNUnet");
@@ -244,12 +244,12 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 		   CURLOPT_CONNECTTIMEOUT,
 		   15L);
   /* NOTE: use of CONNECTTIMEOUT without also
-     setting NOSIGNAL results in really weird 
+     setting NOSIGNAL results in really weird
      crashes on my system! */
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_NOSIGNAL,
 		   1);
-#endif 
+#endif
 #if USE_MULTI
   multi = curl_multi_init();
   if (multi == NULL) {
@@ -258,9 +258,9 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   }
   mret = curl_multi_add_handle(multi, curl);
   if (mret != CURLM_OK) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"), 
+	   _("%s failed at %s:%d: `%s'\n"),
 	   "curl_multi_add_handle",
 	   __FILE__,
 	   __LINE__,
@@ -278,9 +278,9 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 			    &es,
 			    &max);
     if (mret != CURLM_OK) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	     _("%s failed at %s:%d: `%s'\n"), 
+	     _("%s failed at %s:%d: `%s'\n"),
 	     "curl_multi_fdset",
 	     __FILE__,
 	     __LINE__,
@@ -302,19 +302,19 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     do {
       running = 0;
       mret = curl_multi_perform(multi, &running);
-      if (running == 0) { 
+      if (running == 0) {
 	do {
 	  msg = curl_multi_info_read(multi,
 				     &running);
 	  GE_BREAK(ectx, msg != NULL);
-	  if (msg == NULL) 
+	  if (msg == NULL)
 	    break;
 	  switch (msg->msg) {
 	  case CURLMSG_DONE:
-	    if (msg->data.result != CURLE_OK) 
-	      GE_LOG(ectx, 
+	    if (msg->data.result != CURLE_OK)
+	      GE_LOG(ectx,
 		     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-		     _("%s failed at %s:%d: `%s'\n"), 
+		     _("%s failed at %s:%d: `%s'\n"),
 		     "curl_multi_perform",
 		     __FILE__,
 		     __LINE__,
@@ -330,9 +330,9 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	      (YES == termTest(targ)) );
     if ( (mret != CURLM_OK) &&
 	 (mret != CURLM_CALL_MULTI_PERFORM) ) {
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
-	     _("%s failed at %s:%d: `%s'\n"), 
+	     _("%s failed at %s:%d: `%s'\n"),
 	     "curl_multi_perform",
 	     __FILE__,
 	     __LINE__,
@@ -344,9 +344,9 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   }
   mret = curl_multi_remove_handle(multi, curl);
   if (mret != CURLM_OK) {
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"), 
+	   _("%s failed at %s:%d: `%s'\n"),
 	   "curl_multi_remove_handle",
 	   __FILE__,
 	   __LINE__,
@@ -355,10 +355,10 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   }
 #else
   ret = curl_easy_perform(curl);
-  if (ret != CURLE_OK) 
-    GE_LOG(ectx, 
+  if (ret != CURLE_OK)
+    GE_LOG(ectx,
 	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"), 
+	   _("%s failed at %s:%d: `%s'\n"),
 	   "curl_easy_perform",
 	   __FILE__,
 	   __LINE__,
@@ -367,10 +367,10 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   curl_easy_cleanup(curl);
 #if USE_MULTI
   mret = curl_multi_cleanup(multi);
-  if (mret != CURLM_OK) 
-    GE_LOG(ectx, 
+  if (mret != CURLM_OK)
+    GE_LOG(ectx,
 	   GE_ERROR | GE_ADMIN | GE_DEVELOPER | GE_BULK,
-	   _("%s failed at %s:%d: `%s'\n"), 
+	   _("%s failed at %s:%d: `%s'\n"),
 	   "curl_multi_cleanup",
 	   __FILE__,
 	   __LINE__,
@@ -392,7 +392,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
     curl_multi_cleanup(multi);
 #endif
   FREE(url);
-  FREE(proxy);  
+  FREE(proxy);
   curl_global_cleanup();
 }
 

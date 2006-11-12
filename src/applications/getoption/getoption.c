@@ -48,7 +48,7 @@ static int handleGetOption(struct ClientHandle * sock,
   val = NULL;
   if (NO == GC_have_configuration_value(coreAPI->cfg,
 					req->section,
-					req->option)) 
+					req->option))
     return SYSERR; /* signal error: option not set */
   if ( (0 != GC_get_configuration_value_string(coreAPI->cfg,
 					       req->section,

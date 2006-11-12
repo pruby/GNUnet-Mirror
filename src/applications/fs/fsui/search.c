@@ -137,7 +137,7 @@ static int spcb(const ECRS_FileInfo * fi,
     if (ECRS_equalsUri(fi->uri,
 		       pos->resultsReceived[i].uri)) {
 #if DEBUG_SEARCH
-      GE_LOG(ectx, 
+      GE_LOG(ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     "Received search result that I have seen before.\n");
 #endif
@@ -170,7 +170,7 @@ static int spcb(const ECRS_FileInfo * fi,
 	  }
 	if (rp->matchingKeyCount + 1 == pos->numberOfURIKeys) {
 #if DEBUG_SEARCH
-	  GE_LOG(ectx, 
+	  GE_LOG(ectx,
 		 GE_DEBUG | GE_REQUEST | GE_USER,
 		 "Received search result (showing client)!\n");
 #endif
@@ -214,7 +214,7 @@ static int spcb(const ECRS_FileInfo * fi,
 	 1);
     rp->matchingKeys[0] = *key;
 #if DEBUG_SEARCH
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Received search result (waiting for %u more keys before showing client).\n",
 	   pos->numberOfURIKeys  - rp->matchingKeyCount);
@@ -222,7 +222,7 @@ static int spcb(const ECRS_FileInfo * fi,
     return OK;
   } else {
 #if DEBUG_SEARCH
-    GE_LOG(ectx, 
+    GE_LOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
 	   "Received search result (showing client)!\n");
 #endif
@@ -357,10 +357,10 @@ int FSUI_abortSearch(struct FSUI_Context * ctx,
     sl->state = FSUI_ABORTED_JOINED;
     return OK;
   }
-  if (sl->state != FSUI_ACTIVE) 
+  if (sl->state != FSUI_ACTIVE)
     return SYSERR;
   sl->state = FSUI_ABORTED;
-  PTHREAD_STOP_SLEEP(sl->handle);  
+  PTHREAD_STOP_SLEEP(sl->handle);
   return OK;
 }
 

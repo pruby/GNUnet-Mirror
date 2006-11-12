@@ -84,7 +84,7 @@ static int get(const HashCode512 * query,
 #if DEBUG_DATASTORE
     EncName enc;
 
-    IF_GELOG(coreAPI->ectx, 
+    IF_GELOG(coreAPI->ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(query,
 		      &enc));
@@ -114,7 +114,7 @@ static int del(const HashCode512 * query,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(query,
 		      &enc));
-    GE_LOG(coreAPI->ectx, 
+    GE_LOG(coreAPI->ectx,
 	   GE_WARNING | GE_BULK | GE_USER,
 	   _("Availability test failed for `%s' at %s:%d.\n"),
 	   &enc,
@@ -126,7 +126,7 @@ static int del(const HashCode512 * query,
     makeUnavailable(query); /* update filter! */
     available += ntohl(value->size);
 #if DEBUG_DATASTORE
-    IF_GELOG(coreAPI->ectx, 
+    IF_GELOG(coreAPI->ectx,
 	     GE_DEBUG | GE_REQUEST | GE_USER,
 	     hash2enc(query,
 		      &enc));
@@ -136,7 +136,7 @@ static int del(const HashCode512 * query,
 	   &enc);
 #endif
   } else {
-    IF_GELOG(coreAPI->ectx, 
+    IF_GELOG(coreAPI->ectx,
 	     GE_WARNING | GE_BULK | GE_USER,
 	     hash2enc(query,
 		      &enc));
@@ -284,10 +284,10 @@ static int freeSpaceExpired(const HashCode512 * key,
   if (get_time() < ntohll(value->expirationTime))
     return SYSERR; /* not expired */
   ret = sq->del(key, value);
-  if (ret != SYSERR) 
+  if (ret != SYSERR)
     available += ntohl(value->size);
   if ( (available > 0) &&
-       (available >= MIN_FREE) ) 
+       (available >= MIN_FREE) )
     return SYSERR;
   return OK;
 }
@@ -299,7 +299,7 @@ static int freeSpaceLow(const HashCode512 * key,
 
   minPriority = ntohl(value->prio);
   ret = sq->del(key, value);
-  if (ret != SYSERR) 
+  if (ret != SYSERR)
     available +=  ntohl(value->size);
   if ( (available > 0) &&
        (available >= MIN_FREE) )

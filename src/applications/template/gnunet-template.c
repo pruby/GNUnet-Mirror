@@ -70,7 +70,7 @@ int main(int argc,
 	 const char ** argv) {
   struct ClientServerConnection * sock;
   struct PTHREAD * messageReceiveThread;
-  void * unused;  
+  void * unused;
   struct GE_Context * ectx;
   struct GC_Configuration * cfg;
   int i;

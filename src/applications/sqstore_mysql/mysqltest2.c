@@ -27,15 +27,15 @@
  * This is iterated 10 times, with the actual size of the content stored,
  * the database size reported and the file size on disk being printed for
  * each iteration.  The code also prints a "I" for every 40 blocks
- * inserted and a "D" for every 40 blocks deleted.  The deletion 
+ * inserted and a "D" for every 40 blocks deleted.  The deletion
  * strategy alternates between "lowest priority" and "earliest expiration".
- * Priorities and expiration dates are set using a pseudo-random value 
+ * Priorities and expiration dates are set using a pseudo-random value
  * within a realistic range.
  * <p>
  *
  * Note that the disk overhead calculations are not very sane for
  * MySQL: we take the entire /var/lib/mysql directory (best we can
- * do for ISAM), which may contain other data and which never 
+ * do for ISAM), which may contain other data and which never
  * shrinks.  The scanning of the entire mysql directory during
  * each report is also likely to be the cause of a minor
  * slowdown compared to sqlite.<p>
@@ -62,7 +62,7 @@
  * <pre>
  *    4: 60   at   7k ops total
  *    8: 50   at   3k ops total
- *   16: 48   at   8k ops total 
+ *   16: 48   at   8k ops total
  *   32: 46   at   8k ops total
  *   64: 61   at   9k ops total
  *  128: 89   at   9k ops total
@@ -70,7 +70,7 @@
  * </pre>
  * Pure insertion performance into an empty DB initially peaks
  * at about 400 ops.  The performance seems to drop especially
- * once the existing (fragmented) ISAM space is filled up and 
+ * once the existing (fragmented) ISAM space is filled up and
  * the DB needs to grow on disk.  This could be explained with
  * ISAM looking more carefully for defragmentation opportunities.
  * <p>
@@ -91,7 +91,7 @@
 #define REPORT_ID NO
 
 /**
- * Number of put operations equivalent to 1/10th of MAX_SIZE 
+ * Number of put operations equivalent to 1/10th of MAX_SIZE
  */
 #define PUT_10 MAX_SIZE / 32 / 1024 / 10
 
@@ -110,7 +110,7 @@
 /**
  * Name of the database on disk.  FIXME!
  * You may have to adjust this path and the access
- * permission to the respective directory in order 
+ * permission to the respective directory in order
  * to obtain all of the performance information.
  */
 #define DB_NAME "/var/lib/mysql"
@@ -129,7 +129,7 @@ static int putValue(SQstore_ServiceAPI * api,
   size_t size;
   static HashCode512 key;
   static int ic;
-  
+
   /* most content is 32k */
   size = sizeof(Datastore_Value) + 32 * 1024;
   if (weak_randomi(16) == 0) /* but some of it is less! */
@@ -146,8 +146,8 @@ static int putValue(SQstore_ServiceAPI * api,
   value->prio = htonl(weak_randomi(100));
   value->anonymityLevel = htonl(i);
   value->expirationTime = htonll(get_time() + weak_randomi(1000));
-  memset(&value[1], 
-	 i, 
+  memset(&value[1],
+	 i,
 	 size - sizeof(Datastore_Value));
   if (OK != api->put(&key, value)) {
     FREE(value);
@@ -166,7 +166,7 @@ static int putValue(SQstore_ServiceAPI * api,
   return OK;
 }
 
-static int 
+static int
 iterateDelete(const HashCode512 * key,
 	      const Datastore_Value * val,
 	      void * cls) {
@@ -215,7 +215,7 @@ static int test(SQstore_ServiceAPI * api) {
     if ((i % 2) == 0)
       api->iterateLowPriority(0, &iterateDelete, api);
     else
-      api->iterateExpirationTime(0, &iterateDelete, api);    
+      api->iterateExpirationTime(0, &iterateDelete, api);
 
     size = 0;
     if (have_file)
@@ -233,7 +233,7 @@ static int test(SQstore_ServiceAPI * api) {
 	   size / 1024, /* disk size in kb */
 	   (100.0 * size / stored_bytes) - 100, /* overhead */
 	   (stored_ops * 2 - stored_entries) / 1024, /* total operations (in k) */
-	   1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */    
+	   1000 * (stored_ops * 2 - stored_entries) / (1 + get_time() - start_time)); /* operations per second */
     if (GNUNET_SHUTDOWN_TEST() == YES)
       break;
   }

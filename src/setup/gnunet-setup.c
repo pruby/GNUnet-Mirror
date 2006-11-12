@@ -68,7 +68,7 @@ static struct CommandLineOption gnunetsetupOptions[] = {
 static void gns2cfg(struct GNS_Tree * pos) {
   int i;
   char * val;
-  
+
   if (pos == NULL)
     return;
   i = 0;

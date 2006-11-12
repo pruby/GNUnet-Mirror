@@ -141,7 +141,7 @@ static int insert_nic(const char *name,
   defaultNIC = wiz_is_nic_default(editCfg, name, defaultNIC);
   if (defaultNIC)
     gtk_combo_box_set_active(GTK_COMBO_BOX(cmbNIC), inc->nic_item_count);
-    
+
   return OK;
 }
 
@@ -166,20 +166,20 @@ void load_step2setup_gtk(GtkButton * button,
 				      0);
 
   os_list_network_interfaces(err_ctx, &insert_nic, &cls);
-  
+
   if (cls.nic_item_count != 0) {
     GC_get_configuration_value_string(editCfg, "NETWORK", "INTERFACE", "eth0",
       &val);
     gtk_combo_box_append_text(GTK_COMBO_BOX(cls.cmbNIC), val);
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model), 
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model),
           &iter);
     gtk_combo_box_set_active_iter(GTK_COMBO_BOX(cls.cmbNIC), &iter);
     on_cmbNIC_changedsetup_gtk(GTK_COMBO_BOX(cls.cmbNIC), NULL);
     FREE(val);
   }
-    
+
   gtk_widget_set_usize(cls.cmbNIC, 10, -1);
-  
+
   entIP = lookup_widget("entIP");
   GC_get_configuration_value_string(editCfg, "NETWORK", "IP", "",
     &val);
@@ -214,17 +214,17 @@ void load_step3setup_gtk(GtkButton * button,
     &val);
   gtk_entry_set_text(GTK_ENTRY(entUp), val);
   FREE(val);
-  
+
   GC_get_configuration_value_string(editCfg, "LOAD", "MAXNETDOWNBPSTOTAL", "50000",
     &val);
   gtk_entry_set_text(GTK_ENTRY(entDown), val);
   FREE(val);
-  
+
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
     (GC_get_configuration_value_yesno(editCfg, "LOAD", "BASICLIMITING", NO) == YES)
-					   ? radGNUnet 
-					   : radShare ), 
+					   ? radGNUnet
+					   : radShare ),
 			 TRUE);
 
   GC_get_configuration_value_string(editCfg, "LOAD", "MAXCPULOAD", "50",
@@ -304,7 +304,7 @@ void load_step4setup_gtk(GtkButton * button,
     gtk_entry_set_text(GTK_ENTRY(entUser), user_name);
   if (group_name != NULL)
     gtk_entry_set_text(GTK_ENTRY(entGroup), group_name);
-    
+
   cap = os_modify_autostart(err_ctx, 1, 1, NULL, NULL, NULL);
   gtk_widget_set_sensitive(entUser, cap);
 #ifdef WINDOWS
@@ -335,7 +335,7 @@ void load_step5setup_gtk(GtkButton * button,
     &val);
   gtk_entry_set_text(GTK_ENTRY(entQuota), val);
   FREE(val);
-  
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chkMigr),
 			 GC_get_configuration_value_yesno(editCfg, "FS", "ACTIVEMIGRATION", YES) == YES);
 
@@ -405,9 +405,9 @@ void on_abort_clickedsetup_gtk(GtkButton * button,
 		      gpointer user_data) {
   GtkWidget * dialog;
   int ok, ret;
-  
+
   ok = OK;
-  
+
   dialog = gtk_message_dialog_new(NULL,
           GTK_DIALOG_MODAL,
           GTK_MESSAGE_QUESTION,
@@ -426,7 +426,7 @@ void on_abort_clickedsetup_gtk(GtkButton * button,
     default:
       ok = NO;
   }
-  
+
   if (ok)
   {
     quit = 1;

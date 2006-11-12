@@ -342,7 +342,7 @@ void * FSUI_uploadThread(void * cls) {
  */
 static void * FSUI_uploadThreadEvent(void * cls) {
   FSUI_UploadList * utc = cls;
- 
+
   if (utc->parent == &utc->shared->ctx->activeUploads) {
     /* top-level call: signal client! */
     signalUploadStarted(utc, 1);
@@ -639,7 +639,7 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
     PTHREAD_JOIN(ul->shared->handle,
 		 &unused);
     ul->state++; /* add _JOINED */
-  } 
+  }
   signalUploadStopped(ul, 1);
   shared = ul->shared;
   freeUploadList(ul);

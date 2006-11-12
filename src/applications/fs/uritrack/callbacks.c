@@ -36,7 +36,7 @@ typedef struct {
   struct GE_Context * ectx;
 
   struct GC_Configuration * cfg;
-		      
+		
   ECRS_SearchProgressCallback iterator;
 
   void * closure;
@@ -57,7 +57,7 @@ static int init_iterator(const ECRS_FileInfo * fi,
 			 int isRoot,
 			 void * closure) {
  Callback * c = closure;
- 
+
  c->iterator(fi,
 	     key,
 	     isRoot,

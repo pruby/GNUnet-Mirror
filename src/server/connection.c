@@ -1174,9 +1174,9 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
         EncName enc;
 
         hdr = (MESSAGE_HEADER *) entry->closure;
-        IF_GELOG(ectx, 
+        IF_GELOG(ectx,
 		 GE_DEBUG | GE_REQUEST | GE_USER,
-		 hash2enc(&be->session.sender.hashPubKey, 
+		 hash2enc(&be->session.sender.hashPubKey,
 			  &enc));
         GE_LOG(ectx,
 	       GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1558,7 +1558,7 @@ static int sendBuffer(BufferEntry * be) {
  * @param be on which connection to transmit
  * @param se what to transmit (with meta-data)
  */
-static void appendToBuffer(BufferEntry * be, 
+static void appendToBuffer(BufferEntry * be,
 			   SendEntry * se) {
 #if DEBUG_CONNECTION
   EncName enc;
@@ -1752,7 +1752,7 @@ static BufferEntry *addHost(const PeerIdentity * hostId,
  * @param arg the second argument to the method
  * @return the number of connected hosts
  */
-static int forAllConnectedHosts(BufferEntryCallback method, 
+static int forAllConnectedHosts(BufferEntryCallback method,
 				void *arg) {
   unsigned int i;
   int count = 0;
@@ -1800,7 +1800,7 @@ static void fENHCallback(BufferEntry * be,
  * @return OK (always successful)
  */
 static int copyCallback(void *buf,
-			void *closure, 
+			void *closure,
 			unsigned short len) {
   if(len > 0) {
     memcpy(buf, closure, len);
@@ -2502,7 +2502,7 @@ int checkHeader(const PeerIdentity * sender,
   stamp = ntohl(msg->timeStamp);
   if(stamp + 1 * cronDAYS < TIME(NULL)) {
     GE_LOG(ectx,
-	   GE_INFO | GE_BULK | GE_USER, 
+	   GE_INFO | GE_BULK | GE_USER,
 	   _("Message received more than one day old. Dropped.\n"));
     MUTEX_UNLOCK(lock);
     return SYSERR;

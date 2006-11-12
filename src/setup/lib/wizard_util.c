@@ -33,7 +33,7 @@
  */
 int wiz_is_nic_default(struct GC_Configuration *cfg, const char *name, int suggestion) {
   char *nic;
-  
+
   GC_get_configuration_value_string(cfg, "NETWORK", "INTERFACE", "eth0", &nic);
 
 #ifdef WINDOWS
@@ -49,11 +49,11 @@ int wiz_is_nic_default(struct GC_Configuration *cfg, const char *name, int sugge
   {
     /* The user has selected a NIC before */
     int niclen, inslen;
-    
+
     niclen = strlen(nic);
     inslen = strlen(name);
     suggestion = 0;
-    
+
     if (inslen >= niclen)
     {
 #ifdef WINDOWS
@@ -79,7 +79,7 @@ int wiz_is_nic_default(struct GC_Configuration *cfg, const char *name, int sugge
 int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
   int ret;
   char *exe;
-  
+
   exe = os_get_installation_path(IPK_BINDIR);
   exe = (char *) REALLOC(exe, strlen(exe) + 12); /* 11 = "gnunetd.exe" */
   strcat(exe,
@@ -88,14 +88,14 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
 #else
     "gnunetd.exe");
 #endif
-  
+
   ret = os_modify_autostart(NULL /* FIXME 0.7.1 NILS */, 0, doAutoStart, exe,
           username, groupname);
   FREE(exe);
   if (ret != YES) {
 #ifdef WINDOWS
     char *err = NULL;
-    
+
     switch(ret) {
       case 1:
         err = winErrorStr(_("Can't open Service Control Manager"),
@@ -147,7 +147,7 @@ int wiz_autostartService(int doAutoStart, char *username, char *groupname) {
  */
 int wiz_createGroupUser(char *group_name, char *user_name) {
   int ret;
-  
+
   ret = os_modify_user(0, 1, user_name, group_name);
 
   if (ret) {

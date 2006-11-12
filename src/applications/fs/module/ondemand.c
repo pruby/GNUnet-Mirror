@@ -316,7 +316,7 @@ static void asyncDelete(Datastore_ServiceAPI * datastore,
 #if DEBUG_ONDEMAND
   hash2enc(query,
 	   &enc);
-  GE_LOG(ectx, 
+  GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("Indexed file disappeared, deleting block for query `%s'\n"),
 	 &enc);
@@ -368,8 +368,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     struct stat linkStat;
 
     GE_LOG_STRERROR_FILE(ectx,
-			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK, 
-			 "open", 
+			 GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
+			 "open",
 			 fn);
 
     /* Is the symlink there? */
@@ -496,8 +496,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
   FREE(db);
   FREE(fn);
   if (ret == SYSERR) {
-    GE_LOG(ectx, 
-	   GE_ERROR | GE_BULK | GE_USER, 
+    GE_LOG(ectx,
+	   GE_ERROR | GE_BULK | GE_USER,
 	   "Indexed content does not match its hash.\n");
     asyncDelete(datastore, dbv, query);
     return SYSERR;

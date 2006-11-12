@@ -36,7 +36,7 @@ void release_module_bootstrap();
 
 Bootstrap_ServiceAPI *
 provide_module_bootstrap(CoreAPIForApplication * capi);
- 
+
 static void * rs(const char * name) { return NULL; }
 
 static int rsx(void * s) { return OK; }
@@ -57,7 +57,7 @@ static int terminate(void * arg) {
 
 static void * pt(void * b) {
   Bootstrap_ServiceAPI * boot = b;
-  
+
   boot->bootstrap(&hello,
 		  NULL,
 		  &terminate,

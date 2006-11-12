@@ -254,7 +254,7 @@ int os_modify_autostart(struct GE_Context *ectx,
         return 5;
     }
   }
-  
+
   return YES;
 #else
   struct stat buf;

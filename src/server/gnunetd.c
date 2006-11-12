@@ -212,9 +212,9 @@ int main(int argc,
   if (YES == debug_flag) {
     ectx = GE_create_context_multiplexer(ectx,
 					 GE_create_context_stderr(NO,
-								  GE_USERKIND | 
-								  GE_EVENTKIND | 
-								  GE_BULK | 
+								  GE_USERKIND |
+								  GE_EVENTKIND |
+								  GE_BULK |
 								  GE_IMMEDIATE));
   }
   if (OK != changeUser(ectx, cfg)) {

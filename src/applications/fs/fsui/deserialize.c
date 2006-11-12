@@ -131,7 +131,7 @@ static void fixState(FSUI_State * state) {
  *
  * @return OK on success, SYSERR on error
  */
-static struct ECRS_MetaData * 
+static struct ECRS_MetaData *
 read_meta(struct GE_Context * ectx,
 	  int fd) {
   unsigned int size;
@@ -140,7 +140,7 @@ read_meta(struct GE_Context * ectx,
 
   if (read_int(fd, (int*)&size) != OK) {
     GE_BREAK(ectx, 0);
-    return NULL;    
+    return NULL;
   }
   if (size > 1024 * 1024) {
     GE_BREAK(ectx, 0);
@@ -201,7 +201,7 @@ static int readFileInfo(struct GE_Context * ectx,
  * @return NULL on error AND on read of empty
  *  list (these two cannot be distinguished)
  */
-static FSUI_DownloadList * 
+static FSUI_DownloadList *
 readDownloadList(struct GE_Context * ectx,
 		 int fd,
 		 FSUI_Context * ctx,
@@ -233,7 +233,7 @@ readDownloadList(struct GE_Context * ectx,
        (OK != read_long(fd, (long long*) &ret->runTime)) ||
        (OK != read_int(fd, (int*) &big)) ||
        (big > 1024 * 1024) ) {
-    GE_BREAK(NULL, 0);      
+    GE_BREAK(NULL, 0);
     FREE(ret);
     return NULL;
   }
@@ -541,7 +541,7 @@ static int readUploadList(struct FSUI_Context * ctx,
   int big;
   int bag;
   struct GE_Context * ectx;
-  
+
   ectx = ctx->ectx;
   GE_ASSERT(ectx, shared != NULL);
   while (1) {
@@ -578,7 +578,7 @@ static int readUploadList(struct FSUI_Context * ctx,
     if ( (big & 4) == 4) {
       l.keywords = read_uri(ctx->ectx, fd);
       if (l.keywords == NULL) {
-	if (l.uri != NULL) 
+	if (l.uri != NULL)
 	  ECRS_freeUri(l.uri);
 	GE_BREAK(NULL, 0);
 	break;
@@ -587,14 +587,14 @@ static int readUploadList(struct FSUI_Context * ctx,
     if ( (big & 8) == 8) {
       l.meta = read_meta(ctx->ectx, fd);
       if (l.meta == NULL) {
-	if (l.uri != NULL) 
+	if (l.uri != NULL)
 	  ECRS_freeUri(l.uri);
-	if (l.keywords != NULL) 
+	if (l.keywords != NULL)
 	  ECRS_freeUri(l.keywords);
 	GE_BREAK(NULL, 0);
 	break;
       }
-    }     
+    }
     l.filename = read_string(fd, 1024*1024);
     if (l.filename == NULL) {
       if (l.uri != NULL)
@@ -607,8 +607,8 @@ static int readUploadList(struct FSUI_Context * ctx,
       break;
     }
     list = MALLOC(sizeof(struct FSUI_UploadList));
-    memcpy(list, 
-	   &l, 
+    memcpy(list,
+	   &l,
 	   sizeof(struct FSUI_UploadList));
     list->shared = shared;
     list->parent = parent;
@@ -674,7 +674,7 @@ static int readUploads(int fd,
 	return SYSERR;
       }
     }
-    shared = MALLOC(sizeof(FSUI_UploadShared));    
+    shared = MALLOC(sizeof(FSUI_UploadShared));
     memcpy(shared,
 	   &sshared,
 	   sizeof(FSUI_UploadShared));

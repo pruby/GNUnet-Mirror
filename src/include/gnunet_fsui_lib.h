@@ -246,7 +246,7 @@ typedef struct {
    * what is the search?
    */
   struct FSUI_SearchList * spos;
-  
+
   /**
    * If this download is associated with a search,
    * what is the client context for the search?

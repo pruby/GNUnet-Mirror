@@ -126,7 +126,7 @@ typedef struct FSUI_SearchList {
 
   /**
    * Number of downloads associated with this search.
-   */ 
+   */
   unsigned int my_downloads_size;
 
   /**
