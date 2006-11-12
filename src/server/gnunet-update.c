@@ -55,6 +55,7 @@ static UpdateAPI uapi;
 
 static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
+
 /**
  * Allow the module named "pos" to update.
  * @return OK on success, SYSERR on error
@@ -176,7 +177,6 @@ static void doGet(char * get) {
 	   val);
     FREE(val);
   }
-  FREE(val);
 }
 
 static void work() {
@@ -210,15 +210,23 @@ static void work() {
   cron_destroy(cron);
 }
 
+static int set_client_config(CommandLineProcessorContext * ctx,
+			     void * scls,
+			     const char * option,
+			     const char * value) {
+  cfgFilename = DEFAULT_CLIENT_CONFIG_FILE;
+  return OK;
+}
+	
 
 /**
  * All gnunet-update command line options
  */
 static struct CommandLineOption gnunetupdateOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  { 'g', "get", "",
-    gettext_noop("ping peers from HOSTLISTURL that match transports"),
-    0, &gnunet_getopt_configure_set_option, "GNUNET-UPDATE:GET" },
+  { 'g', "get", "SECTION:ENTRY",
+    gettext_noop("print a value from the configuration file to stdout"),
+    1, &gnunet_getopt_configure_set_option, "GNUNET-UPDATE:GET" },
   COMMAND_LINE_OPTION_HELP(gettext_noop("Updates GNUnet datastructures after version change.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
@@ -227,7 +235,7 @@ static struct CommandLineOption gnunetupdateOptions[] = {
     1, &gnunet_getopt_configure_set_option, "GNUNETD:USER" },	
   { 'U', "client", NULL,
     gettext_noop("run in client mode (for getting client configuration values)"),
-    0, &gnunet_getopt_configure_set_option, "GNUNETD:_MAGIC_=NO" },	
+    0, &set_client_config, NULL },	
   COMMAND_LINE_OPTION_VERSION(PACKAGE_VERSION), /* -v */
   COMMAND_LINE_OPTION_VERBOSE,
   COMMAND_LINE_OPTION_END,
@@ -252,17 +260,16 @@ int main(int argc,
     return -1;
   }
   get = NULL;
-  if (0 == GC_get_configuration_value_string(cfg,
-					     "GNUNET-UPDATE",
-					     "GET",
-					     "",
-					     &get)) {
+  GC_get_configuration_value_string(cfg,
+				    "GNUNET-UPDATE",
+				    "GET",
+				    "",
+				    &get);
+  if (strlen(get) > 0) 
     doGet(get);
-    FREE(get);
-  } else {
-    FREE(get);
-    work();
-  }
+  else 
+    work(); 
+  FREE(get);
   GNUNET_fini(ectx, cfg);
   return 0;
 }
