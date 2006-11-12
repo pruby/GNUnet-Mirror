@@ -62,13 +62,18 @@ void __attribute__ ((constructor)) gnc_ltdl_init() {
     old_dlsearchpath = STRDUP(opath);
   path = os_get_installation_path(IPK_LIBDIR);
   if (path != NULL) {
-    cpath = MALLOC(strlen(path) + strlen(opath) + 4);
-    strcpy(cpath, opath);
-    strcat(cpath, ":");
-    strcat(cpath, path);
-    lt_dlsetsearchpath(cpath);
-    FREE(path);
-    FREE(cpath);
+    if (opath != NULL) {
+      cpath = MALLOC(strlen(path) + strlen(opath) + 4);
+      strcpy(cpath, opath);
+      strcat(cpath, ":");
+      strcat(cpath, path);
+      lt_dlsetsearchpath(cpath);
+      FREE(path);
+      FREE(cpath);
+    } else {
+      lt_dlsetsearchpath(path);
+      FREE(path);
+    }
   }
 }
 

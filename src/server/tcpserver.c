@@ -186,7 +186,7 @@ static void select_close_handler(void * ch_cls,
 int sendToClient(struct ClientHandle * handle,
 		 const MESSAGE_HEADER * message) {
   GE_LOG(ectx,
-	 GE_INFO | GE_USER | GE_BULK,
+	 GE_DEBUG | GE_DEVELOPER | GE_REQUEST,
 	 "%s: sending reply to client\n",
 	 __FUNCTION__);
   return select_write(selector,

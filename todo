@@ -27,6 +27,8 @@ Notes:
     + fs/fsui
   * gnunet-setup: [RCpre1]
     + ncurses wizard
+- insert of tar.gz results in filename INSIDE of TGZ being
+  possibly (?) used for the filename of the archive!
 - update documentation [RCpre2]
 - More testcases: [RCpre3]
   * advertising
