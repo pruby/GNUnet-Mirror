@@ -424,7 +424,10 @@ TransportAPI * inittransport_udp6(CoreAPIForTransport * core) {
 
   GE_ASSERT(ectx, sizeof(UDPMessage) == 68);
   coreAPI = core;
+  ectx = core->ectx;
+  cfg = core->cfg;
   configLock = MUTEX_CREATE(NO);
+  
   reloadConfiguration();
   if (-1 == GC_get_configuration_value_number(cfg,
 					      "UDP6",
