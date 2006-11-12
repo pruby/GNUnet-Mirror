@@ -475,6 +475,12 @@ int initialize_module_topology_f2f(CoreAPIForApplication * capi) {
   myCapi = capi;
   myTopology = capi->requestService("topology");
   GE_ASSERT(ectx, myTopology != NULL);
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "topology",
+						   gettext_noop("maintains a friend-to-friend restricted topology")));
   return OK;
 }
 

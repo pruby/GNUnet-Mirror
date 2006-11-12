@@ -426,6 +426,12 @@ int initialize_module_topology_default(CoreAPIForApplication * capi) {
   myTopology = capi->requestService("topology");
   GE_ASSERT(capi->ectx,
 	    myTopology != NULL);
+  GE_ASSERT(capi->ectx,
+	    0 == GC_set_configuration_value_string(capi->cfg,
+						   capi->ectx,
+						   "ABOUT",
+						   "topology",
+						   gettext_noop("maintains GNUnet default mesh topology")));
   return OK;
 }
 

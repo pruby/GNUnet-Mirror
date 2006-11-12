@@ -46,6 +46,10 @@ static int handleGetOption(struct ClientHandle * sock,
   req->section[CS_getoption_request_MESSAGE_OPT_LEN-1] = '\0';
   req->option[CS_getoption_request_MESSAGE_OPT_LEN-1] = '\0';
   val = NULL;
+  if (NO == GC_test_configuration_value(coreAPI->cfg,
+					req->section,
+					req->option)) 
+    return SYSERR; /* signal error: option not set /*  
   if ( (0 != GC_get_configuration_value_string(coreAPI->cfg,
 					       req->section,
 					       req->option,
