@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre4\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-09-10 22:06-0600\n"
+"POT-Creation-Date: 2006-11-12 01:40-0700\n"
 "PO-Revision-Date: 2005-07-05 21:18+0400\n"
 "Last-Translator: Phan Vinh Thinh <teppi82@gmail.com>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
@@ -90,10 +90,20 @@ msgid ""
 msgstr ""
 
 #: contrib/config-daemon.scm:130
+#, fuzzy
+msgid "Full pathname of GNUnet directory for file-sharing data"
+msgstr "Lỗi định dạng tập tin (không phải một thư mục GNUnet?)\n"
+
+#: contrib/config-daemon.scm:142
+#, fuzzy
+msgid "Full pathname of GNUnet directory for indexed files symbolic links"
+msgstr "Lỗi định dạng tập tin (không phải một thư mục GNUnet?)\n"
+
+#: contrib/config-daemon.scm:154
 msgid "How many minutes should peer advertisements last?"
 msgstr ""
 
-#: contrib/config-daemon.scm:132
+#: contrib/config-daemon.scm:156
 msgid ""
 "How many minutes is the current IP valid?  (GNUnet will sign HELLO messages "
 "with this expiration timeline. If you are on dialup, 60 (for 1 hour) is "
@@ -103,52 +113,98 @@ msgid ""
 "than the frequency with which your IP changes."
 msgstr ""
 
-#: contrib/config-daemon.scm:143
-msgid "Log level"
+#: contrib/config-daemon.scm:167
+msgid "Where can GNUnet find an initial list of peers?"
 msgstr ""
 
-#: contrib/config-daemon.scm:144
-msgid "How verbose should the logging of errors be?"
-msgstr ""
-
-#: contrib/config-daemon.scm:155
-msgid "Where should logs go?"
-msgstr ""
-
-#: contrib/config-daemon.scm:157
+#: contrib/config-daemon.scm:169
 msgid ""
-"In which file should gnunetd write the logs?  If you specify nothing, logs "
-"are written to stderr (and note that if gnunetd runs in the background, "
-"stderr is closed and all logs are discarded)."
+"GNUnet can automatically update the hostlist from the web. While GNUnet "
+"internally communicates which hosts are online, it is typically a good idea "
+"to get a fresh hostlist whenever gnunetd starts from the WEB. By setting "
+"this option, you can specify from which server gnunetd should try to "
+"download the hostlist. The default should be fine for now.\n"
+"\t\t\n"
+"The general format is a list of space-separated URLs.  Each URL must have "
+"the format http://HOSTNAME/FILENAME\n"
+"\t\t\n"
+"If you want to setup an alternate hostlist server, you must run a permanent "
+"node and \"cat data/hosts/* > hostlist\" every few minutes to keep the list "
+"up-to-date.\n"
+"\t\t\n"
+"If you do not specify a HOSTLISTURL, you must copy valid hostkeys to data/"
+"hosts manually."
 msgstr ""
 
-#: contrib/config-daemon.scm:168
+#: contrib/config-daemon.scm:186
+msgid "HTTP Proxy Server"
+msgstr ""
+
+#: contrib/config-daemon.scm:188
+msgid ""
+"If you have to use a proxy for outbound HTTP connections, specify the proxy "
+"configuration here.  Default is no proxy."
+msgstr ""
+
+#: contrib/config-daemon.scm:227 contrib/config-client.scm:144
 msgid "How long should logs be kept?"
 msgstr ""
 
-#: contrib/config-daemon.scm:170
+#: contrib/config-daemon.scm:229 contrib/config-client.scm:146
 msgid ""
 "How long should logs be kept? If you specify a value greater than zero, a "
 "log is created each day with the date appended to its filename. These logs "
 "are deleted after $KEEPLOG days.\tTo keep logs forever, set this value to 0."
 msgstr ""
 
-#: contrib/config-daemon.scm:181
+#: contrib/config-daemon.scm:240 contrib/config-client.scm:157
+msgid "Where should gnunetd write the logs?"
+msgstr ""
+
+#: contrib/config-daemon.scm:252 contrib/config-client.scm:169
+#, fuzzy
+msgid "Configuration of the logging system"
+msgstr ""
+"Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy '%s'!\n"
+
+#: contrib/config-daemon.scm:253 contrib/config-client.scm:170
+msgid "Specify which system messages should be logged how"
+msgstr ""
+
+#: contrib/config-daemon.scm:257 contrib/config-client.scm:174
+msgid "Logging of events for users"
+msgstr ""
+
+#: contrib/config-daemon.scm:258 contrib/config-client.scm:175
+msgid "Logging of events for the system administrator"
+msgstr ""
+
+#: contrib/config-daemon.scm:270
 msgid "Where should gnunetd write the PID?"
 msgstr ""
 
-#: contrib/config-daemon.scm:183
+#: contrib/config-daemon.scm:272
 msgid ""
 "In which file should gnunetd write the process-id of the server?  If you run "
 "gnunetd as root, you may want to choose /var/run/gnunetd.pid. It's not the "
 "default since gnunetd may not have write rights at that location."
 msgstr ""
 
-#: contrib/config-daemon.scm:195
+#: contrib/config-daemon.scm:284
+msgid "As which user should gnunetd run?"
+msgstr ""
+
+#: contrib/config-daemon.scm:286
+msgid ""
+"Empty means \"current user\". On computer startup, it is root/SYSTEM.  Under "
+"Windows, this setting affects the creation of a new system service only."
+msgstr ""
+
+#: contrib/config-daemon.scm:298
 msgid "Which transport mechanisms should GNUnet use?"
 msgstr ""
 
-#: contrib/config-daemon.scm:197
+#: contrib/config-daemon.scm:300
 msgid ""
 "Use space-separated list of the modules, e.g.  \"udp smtp tcp\".  The "
 "available transports are udp, tcp, http, smtp, tcp6, udp6 and nat.\n"
@@ -162,11 +218,11 @@ msgid ""
 "itself."
 msgstr ""
 
-#: contrib/config-daemon.scm:211
+#: contrib/config-daemon.scm:314
 msgid "Which applications should gnunetd support?"
 msgstr ""
 
-#: contrib/config-daemon.scm:213
+#: contrib/config-daemon.scm:316
 msgid ""
 "Whenever this option is changed, you MUST run gnunet-update. Currently, the "
 "available applications are:\n"
@@ -203,20 +259,109 @@ msgid ""
 "compromise your anonymity."
 msgstr ""
 
-#: contrib/config-daemon.scm:244
+#: contrib/config-daemon.scm:345
+msgid "Disable client-server connections"
+msgstr ""
+
+#: contrib/config-daemon.scm:357
+msgid "Disable peer discovery"
+msgstr ""
+
+#: contrib/config-daemon.scm:358
+msgid ""
+"The option 'PRIVATE-NETWORK' can be used to limit the connections of this "
+"peer to peers of which the hostkey has been copied by hand to data/hosts;  "
+"if this option is given, GNUnet will not accept advertisements of peers that "
+"the local node does not already know about.  Note that in order for this "
+"option to work, HOSTLISTURL should either not be set at all or be set to a "
+"trusted peer that only advertises the private network. Also, the option does "
+"NOT work at the moment if the NAT transport is loaded; for that, a couple of "
+"lines above would need some minor editing :-)."
+msgstr ""
+
+#: contrib/config-daemon.scm:369
+msgid "Disable advertising this peer to other peers"
+msgstr ""
+
+#: contrib/config-daemon.scm:381
+msgid "Disable automatic establishment of connections"
+msgstr ""
+
+#: contrib/config-daemon.scm:382
+msgid ""
+"If this option is enabled, GNUnet will not automatically establish "
+"connections to other peers, but instead wait for applications to "
+"specifically request connections to other peers (or for other peers to "
+"connect to us)."
+msgstr ""
+
+#: contrib/config-daemon.scm:393
+msgid "Disable advertising of other peers by this peer"
+msgstr ""
+
+#: contrib/config-daemon.scm:405 contrib/config-client.scm:189
+msgid "Client/Server Port"
+msgstr ""
+
+#: contrib/config-daemon.scm:406 contrib/config-client.scm:190
+msgid ""
+"Which is the client-server port that is used between gnunetd and the clients "
+"(TCP only).  You may firewall this port for non-local machines (but you do "
+"not have to since GNUnet will perform access control and only allow "
+"connections from machines that are listed under TRUSTED)."
+msgstr ""
+
+#: contrib/config-daemon.scm:417
+msgid "IPs allowed to use gnunetd server"
+msgstr ""
+
+#: contrib/config-daemon.scm:418
+msgid ""
+"This option specifies which hosts are trusted enough to connect as clients "
+"(to the TCP port).  This is useful if you run gnunetd on one host of your "
+"network and want to allow all other hosts to use this node as their server.  "
+"By default, this is set to 'loopback only'.  The format is IP/NETMASK where "
+"the IP is specified in dotted-decimal and the netmask either in CIDR "
+"notation (/16) or in dotted decimal (255.255.0.0). Several entries must be "
+"separated by a semicolon, spaces are not allowed."
+msgstr ""
+
+#: contrib/config-daemon.scm:430
+msgid "Limit connections to the specfied set of peers."
+msgstr ""
+
+#: contrib/config-daemon.scm:431
+msgid ""
+"If this option is not set, any peer is allowed to connect.  If it is set, "
+"only the specified peers are allowed."
+msgstr ""
+
+#: contrib/config-daemon.scm:442
+msgid "Prevent the specfied set of peers from connecting."
+msgstr ""
+
+#: contrib/config-daemon.scm:443
+msgid "If this option is not set, any peer is allowed to connect."
+msgstr ""
+
+#: contrib/config-daemon.scm:454
+msgid "Rarely used settings for peer advertisements and connections"
+msgstr ""
+
+#: contrib/config-daemon.scm:474
 #, fuzzy
 msgid "General settings"
 msgstr "Thiết lập khác"
 
-#: contrib/config-daemon.scm:245
+#: contrib/config-daemon.scm:475
 msgid "Settings that change the behavior of GNUnet in general"
 msgstr ""
 
-#: contrib/config-daemon.scm:268
+#: contrib/config-daemon.scm:501
 msgid "Which database should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:270
+#: contrib/config-daemon.scm:503
 msgid ""
 "Which database should be used?  The options are \"sqstore_sqlite\" and "
 "\"sqstore_mysql\".  You must run gnunet-update after changing this value!\n"
@@ -225,11 +370,11 @@ msgid ""
 "is relatively simple.  Read the file doc/README.mysql for how to setup mysql."
 msgstr ""
 
-#: contrib/config-daemon.scm:283
+#: contrib/config-daemon.scm:516
 msgid "Which topology should be used?"
 msgstr ""
 
-#: contrib/config-daemon.scm:285
+#: contrib/config-daemon.scm:518
 msgid ""
 "Which topology should be used?  The only options at the moment are "
 "\"topology_default\" and \"topology_f2f\".  In default mode, GNUnet will try "
@@ -242,30 +387,44 @@ msgid ""
 "afraid of establishing (direct) connections to unknown peers."
 msgstr ""
 
-#: contrib/config-daemon.scm:300
+#: contrib/config-daemon.scm:533
 msgid "Modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:301
+#: contrib/config-daemon.scm:534
 msgid "Settings that select specific implementations for GNUnet modules"
 msgstr ""
 
-#: contrib/config-daemon.scm:318
+#: contrib/config-daemon.scm:551
 msgid "List of friends for friend-to-friend topology"
 msgstr ""
 
-#: contrib/config-daemon.scm:319
+#: contrib/config-daemon.scm:552
 msgid ""
 "Specifies the name of a file which contains a list of GNUnet peer IDs that "
 "are friends.  If used with the friend-to-friend topology, this will ensure "
 "that GNUnet only connects to these peers (via any available transport)."
 msgstr ""
 
-#: contrib/config-daemon.scm:334
+#: contrib/config-daemon.scm:566
+msgid "Name of the MySQL database GNUnet should use"
+msgstr ""
+
+#: contrib/config-daemon.scm:578
+msgid "Configuration file that specifies the MySQL username and password"
+msgstr ""
+
+#: contrib/config-daemon.scm:590
+#, fuzzy
+msgid "Configuration of the MySQL database"
+msgstr ""
+"Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy '%s'!\n"
+
+#: contrib/config-daemon.scm:609
 msgid "MB of diskspace GNUnet can use for anonymous file sharing"
 msgstr ""
 
-#: contrib/config-daemon.scm:336
+#: contrib/config-daemon.scm:611
 msgid ""
 "How much disk space (MB) is GNUnet allowed to use for anonymous file "
 "sharing?  This does not take indexed files into account, only the space "
@@ -276,15 +435,15 @@ msgid ""
 "Note that if you change the quota, you need to run gnunet-update afterwards."
 msgstr ""
 
-#: contrib/config-daemon.scm:350
+#: contrib/config-daemon.scm:625
 msgid "Size of the routing table."
 msgstr ""
 
-#: contrib/config-daemon.scm:363
+#: contrib/config-daemon.scm:638
 msgid "Allow migrating content to this peer."
 msgstr ""
 
-#: contrib/config-daemon.scm:365
+#: contrib/config-daemon.scm:640
 msgid ""
 "If you say yes here, GNUnet will migrate content to your server, and you "
 "will not be able to control what data is stored on your machine. \n"
@@ -296,20 +455,20 @@ msgid ""
 "can be considered liable for it."
 msgstr ""
 
-#: contrib/config-daemon.scm:379
+#: contrib/config-daemon.scm:654
 msgid "Options for anonymous file sharing"
 msgstr ""
 
-#: contrib/config-daemon.scm:395
+#: contrib/config-daemon.scm:671
 #, fuzzy
 msgid "Applications"
 msgstr "Tùy _chọn"
 
-#: contrib/config-daemon.scm:411
+#: contrib/config-daemon.scm:687
 msgid "Is this machine unreachable behind a NAT?"
 msgstr ""
 
-#: contrib/config-daemon.scm:412
+#: contrib/config-daemon.scm:688
 msgid ""
 "Set to YES if this machine is behind a NAT that limits connections from the "
 "outside to the GNUnet port. Note that if you have configured your NAT box to "
@@ -318,70 +477,263 @@ msgid ""
 "you directly."
 msgstr ""
 
-#: contrib/config-daemon.scm:423
+#: contrib/config-daemon.scm:699
 msgid "Which port should be used by the TCP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:435
+#: contrib/config-daemon.scm:711
 msgid "TCP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:450
+#: contrib/config-daemon.scm:726
 msgid "Which port should be used by the HTTP transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:462
+#: contrib/config-daemon.scm:738
 msgid "HTTP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:477
+#: contrib/config-daemon.scm:753
 msgid "Which port should be used by the UDP IPv4 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:489
+#: contrib/config-daemon.scm:765
+msgid "What is the maximum transfer unit for UDP?"
+msgstr ""
+
+#: contrib/config-daemon.scm:777 contrib/config-daemon.scm:818
+#: contrib/config-daemon.scm:870
+msgid "Which IPs are not allowed to connect?"
+msgstr ""
+
+#: contrib/config-daemon.scm:789
 msgid "UDP transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:504
+#: contrib/config-daemon.scm:806
 msgid "Which port should be used by the TCP IPv6 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:516
+#: contrib/config-daemon.scm:830
 msgid "TCP6 transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:531
+#: contrib/config-daemon.scm:846
 msgid "Which port should be used by the UDP IPv6 transport?"
 msgstr ""
 
-#: contrib/config-daemon.scm:543
+#: contrib/config-daemon.scm:858
+msgid "What is the maximum transfer unit for UDP 6?"
+msgstr ""
+
+#: contrib/config-daemon.scm:882
 msgid "UDP6 transport"
 msgstr ""
 
-#: contrib/config-daemon.scm:558
+#: contrib/config-daemon.scm:899
+#, fuzzy
+msgid "Network interface"
+msgstr "Giao diện mạng:"
+
+#: contrib/config-daemon.scm:911
+msgid "External IP address (leave empty to try auto-detection)"
+msgstr ""
+
+#: contrib/config-daemon.scm:923
+msgid "External IPv6 address (leave empty to try auto-detection)"
+msgstr ""
+
+#: contrib/config-daemon.scm:935
 msgid "Transports"
 msgstr ""
 
-#: contrib/config-daemon.scm:580 contrib/config-client.scm:121
+#: contrib/config-daemon.scm:958
+msgid "What is the maximum number of bytes per second that we may receive?"
+msgstr ""
+
+#: contrib/config-daemon.scm:970
+msgid "What is the maximum number of bytes per second that we may send?"
+msgstr ""
+
+#: contrib/config-daemon.scm:982
+msgid "What is the maximum CPU load (percentage)?"
+msgstr ""
+
+#: contrib/config-daemon.scm:984
+msgid ""
+"Which CPU load can be tolerated.  Load here always refers to the total "
+"system load, that is it includes CPU utilization by other processes.  A "
+"value of 50 means that once your 1 minute-load average goes over 50% non-"
+"idle, GNUnet will try to reduce CPU consumption until the load goes under "
+"the threshold.  Reasonable values are typically between 50 and 100.  "
+"Multiprocessors may use values above 100."
+msgstr ""
+
+#: contrib/config-daemon.scm:995
+msgid "What is the maximum CPU load (hard limit)?"
+msgstr ""
+
+#: contrib/config-daemon.scm:996
+msgid ""
+"Which CPU load can be tolerated.  This is the hard limit, so once it is "
+"reached, gnunetd will start to massively drop data to reduce the load.  Use "
+"with caution."
+msgstr ""
+
+#: contrib/config-daemon.scm:1007
+msgid "What is the maximum upstream bandwidth (hard limit)?"
+msgstr ""
+
+#: contrib/config-daemon.scm:1008
+msgid "Use 0 for no limit."
+msgstr ""
+
+#: contrib/config-daemon.scm:1019
+msgid "Should we disable random padding (experimental option)?"
+msgstr ""
+
+#: contrib/config-daemon.scm:1031
+msgid "Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES."
+msgstr ""
+
+#: contrib/config-daemon.scm:1033
+msgid ""
+"Basic bandwidth limitation (YES) means simply that the bandwidth limits "
+"specified apply to GNUnet and only to GNUnet.  If set to YES, you simply "
+"specify the maximum bandwidth (upstream and downstream) that GNUnet is "
+"allowed to use and GNUnet will stick to those limitations.  This is useful "
+"if your overall bandwidth is so large that the limit is mostly used to "
+"ensure that enough capacity is left for other applications.  Even if you "
+"want to dedicate your entire connection to GNUnet you should not set the "
+"limits to values higher than what you have since GNUnet uses those limits to "
+"determine for example the number of connections to establish (and it would "
+"be inefficient if that computation yields a number that is far too high).  \n"
+"\n"
+"While basic bandwidth limitation is simple and always works, there are some "
+"situations where it is not perfect.  Suppose you are running another "
+"application which performs a larger download. During that particular time, "
+"it would be nice if GNUnet would throttle its bandwidth consumption "
+"(automatically) and resume using more bandwidth after the download is "
+"complete.  This is obviously advanced magic since GNUnet will have to "
+"monitor the behavior of other applications. Another scenario is a monthly "
+"cap on bandwidth imposed by your ISP, which you would want to ensure is "
+"obeyed.  Here, you may want GNUnet to monitor the traffic from other "
+"applications to ensure that the combined long-term traffic is within the pre-"
+"set bounds.  Note that you should probably not set the bounds tightly since "
+"GNUnet may observe that the bounds are about to be broken but would be "
+"unable to stop other applications from continuing to use bandwidth.\n"
+"\n"
+"If either of these two scenarios applies, set BASICLIMITING to NO. Then set "
+"the bandwidth limits to the COMBINED amount of traffic that is accepable for "
+"both GNUnet and other applications.  GNUnet will then immediately throttle "
+"bandwidth consumption if the short-term average is above the limit, and it "
+"will also try to ensure that the long-term average is below the limit.  Note "
+"however that using NO can have the effect of GNUnet (almost) ceasing "
+"operations after other applications perform high-volume downloads that are "
+"beyond the defined limits.  GNUnet would reduce consumption until the long-"
+"term limits are again within bounds.\n"
+"\n"
+"NO only works on platforms where GNUnet can monitor the amount of traffic "
+"that the local host puts out on the network.  This is only implemented for "
+"Linux and Win32.  In order for the code to work, GNUnet needs to know the "
+"specific network interface that is used for the external connection (after "
+"all, the amount of traffic on loopback or on the LAN should never be counted "
+"since it is irrelevant)."
+msgstr ""
+
+#: contrib/config-daemon.scm:1050
+#, fuzzy
+msgid "Network interface to monitor"
+msgstr "Giao diện mạng:"
+
+#: contrib/config-daemon.scm:1052
+msgid ""
+"\tFor which interfaces should we do accounting?  GNUnet will evaluate\n"
+"\t\tthe total traffic (not only the GNUnet related traffic) and adjust\n"
+"\t\tits bandwidth usage accordingly. You can currently only specify a\n"
+"\t\tsingle interface. GNUnet will also use this interface to determine\n"
+"\t\tthe IP to use. Typical values are eth0, ppp0, eth1, wlan0, etc.\n"
+"\t\t'ifconfig' will tell you what you have.  Never use 'lo', that just\n"
+"\t\twon't work.\n"
+"\t\tUnder Windows, specify the index number reported by\n"
+"\t\t \"gnunet-win-tool -n\"."
+msgstr ""
+
+#: contrib/config-daemon.scm:1071
+#, fuzzy
+msgid "Load management"
+msgstr "Sai tham số dòng lệnh.\n"
+
+#: contrib/config-daemon.scm:1095 contrib/config-client.scm:286
 msgid "Root node"
 msgstr ""
 
-#: src/transports/ip6.c:65 src/util/network/io.c:74
+#: contrib/config-client.scm:201
+msgid "On which machine runs gnunetd (for clients)"
+msgstr ""
+
+#: contrib/config-client.scm:202
+#, fuzzy
+msgid "This is equivalent to the -H option."
+msgstr "Hiển thị giá trị của tùy chọn"
+
+#: contrib/config-client.scm:214
+#, fuzzy
+msgid "General options"
+msgstr "Thiết lập khác"
+
+#: contrib/config-client.scm:231
+msgid "Do not add metadata listing the creation time for inserted content"
+msgstr ""
+
+#: contrib/config-client.scm:243
+msgid "Which non-default extractors should GNUnet use for keyword extractors"
+msgstr ""
+
+#: contrib/config-client.scm:244
+msgid ""
+"Specify which additional extractor libraries should be used.  gnunet-insert "
+"uses libextractor to extract keywords from files. libextractor can be "
+"dynamically extended to handle additional file formats. If you want to use "
+"more than the default set of extractors, specify additional extractor "
+"libraries here.  The format is [[-]LIBRARYNAME[:[-]LIBRARYNAME]*].\n"
+"\n"
+"The default is to use filenames and to break larger words at spaces (and "
+"underscores, etc.).  This should be just fine for most people. The - before "
+"a library name indicates that this should be executed last and makes only "
+"sense for the split-library."
+msgstr ""
+
+#: contrib/config-client.scm:257
+#, fuzzy
+msgid "File-Sharing options"
+msgstr "Hiển thị mọi tùy chọn"
+
+#: contrib/config-client.scm:274
+#, fuzzy
+msgid "Full pathname of GNUnet client HOME directory"
+msgstr "Lỗi định dạng tập tin (không phải một thư mục GNUnet?)\n"
+
+#: contrib/config-client.scm:275
+msgid "The directory for GNUnet files that belong to the user."
+msgstr ""
+
+#: src/transports/ip6.c:65 src/util/network/io.c:78
 #, fuzzy, c-format
 msgid "Could not find IP of host `%s': %s\n"
 msgstr "Không tìm thấy IP của máy '%s': %s\n"
 
-#: src/transports/ip6.c:109
+#: src/transports/ip6.c:110
 #, fuzzy, c-format
 msgid "Could not resolve `%s': %s\n"
 msgstr "Không tìm thấy '%s': %s\n"
 
-#: src/transports/ip6.c:154 src/transports/ip.c:353
+#: src/transports/ip6.c:155 src/transports/ip.c:354
 #, fuzzy, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr "Lấy địa chỉ IP (ngoài) của tôi không thành công!\n"
 
-#: src/transports/udp6.c:126 src/transports/udp.c:128
+#: src/transports/udp6.c:126 src/transports/udp.c:132
 #, c-format
 msgid "Failed to bind to UDP port %d.\n"
 msgstr "Không kết gắn được tới cổng UDP %d.\n"
@@ -390,7 +742,7 @@ msgstr "Không kết gắn được tới cổng UDP %d.\n"
 msgid "UDP6: Could not determine my public IPv6 address.\n"
 msgstr "UDP6: Không nhận ra địa chỉ IP công cộng của tôi.\n"
 
-#: src/transports/udp6.c:443 src/transports/udp.c:443
+#: src/transports/udp6.c:441 src/transports/udp.c:447
 #, fuzzy, c-format
 msgid "MTU %llu for `%s' is probably too low!\n"
 msgstr "MTU cho '%s' có thể quá thấp (chưa phát triển sự phân mảnh!)\n"
@@ -438,12 +790,7 @@ msgstr "# byte gửi qua HTTP"
 msgid "# bytes dropped by HTTP (outgoing)"
 msgstr "# byte loại bỏ bởi HTTP (đi ra)"
 
-#: src/transports/smtp.c:298
-#, fuzzy, c-format
-msgid "Could not resolve name of SMTP server `%s': %s"
-msgstr "Không tìm thấy tên của máy chủ SMTP '%s': %s"
-
-#: src/transports/smtp.c:420 src/transports/smtp.c:882
+#: src/transports/smtp.c:257
 #, fuzzy, c-format
 msgid ""
 "You must specify the name of a pipe for the SMTP transport in section `%s' "
@@ -452,46 +799,35 @@ msgstr ""
 "Người dùng phải chỉ ra tên của ống pipe cho truyền tải SMTP trong phần '%s' "
 "dưới '%s'.\n"
 
-#: src/transports/smtp.c:493
+#: src/transports/smtp.c:334
 msgid "Received malformed message via SMTP (size mismatch).\n"
 msgstr "Nhận được thông báo bị hỏng qua SMTP (kích thước không tương ứng).\n"
 
-#: src/transports/smtp.c:588
+#: src/transports/smtp.c:433
 msgid "No filter for E-mail specified, cannot create SMTP advertisement.\n"
 msgstr "Không chỉ ra đầu lọc cho E-mail, không tạo được quảng cáo SMTP.\n"
 
-#: src/transports/smtp.c:595
+#: src/transports/smtp.c:440
 #, fuzzy, c-format
 msgid "SMTP filter string to long, capped to `%s'\n"
 msgstr "Đầu lọc SMTP quá dài, đổi thành '%s'\n"
 
-#: src/transports/smtp.c:769
+#: src/transports/smtp.c:546
+#, fuzzy, c-format
+msgid "Failed to initialize libesmtp: %s.\n"
+msgstr "Không chạy được SQLite.\n"
+
+#: src/transports/smtp.c:610
 #, fuzzy, c-format
 msgid "Sending E-mail to `%s' failed.\n"
 msgstr "Gửi E-mail tới '%s' thất bại.\n"
 
-#: src/transports/smtp.c:820
-#, c-format
-msgid "SMTP server send unexpected response at %s:%d.\n"
-msgstr "Máy chủ SMTP gửi cầu trả lời không mong đợi tại %s: %d.\n"
-
-#: src/transports/smtp.c:843
-#, c-format
-msgid ""
-"SMTP server failed to respond with 250 confirmation code to `%s' request.\n"
-msgstr ""
-
-#: src/transports/smtp.c:849
-#, fuzzy, c-format
-msgid "Failed to send `%s' request to SMTP server.\n"
-msgstr "Gửi yêu cầu HTTP tới máy '%s' không thành công: %s\n"
-
-#: src/transports/smtp.c:909
+#: src/transports/smtp.c:678
 #, c-format
 msgid "%.*s filter %s (SMTP)"
 msgstr "%.*s đầu lọc %s (SMTP)"
 
-#: src/transports/smtp.c:938
+#: src/transports/smtp.c:706
 #, fuzzy, c-format
 msgid "MTU for `%s' is probably too low (fragmentation not implemented!)\n"
 msgstr "MTU cho '%s' có thể quá thấp (chưa phát triển sự phân mảnh!)\n"
@@ -505,38 +841,38 @@ msgstr "Không nhận ra địa chỉ IP công cộng của tôi.\n"
 msgid "Failed to start transport service on port %d.\n"
 msgstr "Chạy dịch vụ truyền tải trên cổng %d thất bại.\n"
 
-#: src/transports/tcp.c:421
+#: src/transports/tcp.c:423
 msgid "# bytes received via TCP"
 msgstr "# byte nhận được qua TCP"
 
-#: src/transports/tcp.c:423
+#: src/transports/tcp.c:425
 msgid "# bytes sent via TCP"
 msgstr "# Byte gửi qua TCP"
 
-#: src/transports/tcp.c:425
+#: src/transports/tcp.c:427
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr "# byte loại đi bởi TCP (đi ra)"
 
-#: src/transports/udp.c:217
+#: src/transports/udp.c:222
 msgid "UDP: Could not determine my public IP address.\n"
 msgstr "UDP: Không nhận ra địa chỉ IP công cộng của tôi.\n"
 
-#: src/transports/udp.c:312
+#: src/transports/udp.c:314
 #, c-format
 msgid "Failed to send message of size %d via UDP to %u.%u.%u.%u:%u: %s\n"
 msgstr ""
 "Gửi thông báo với kích thước %d qua UDP tới %u.%u.%u.%u:%u không thành công: "
 "%s\n"
 
-#: src/transports/udp.c:449
+#: src/transports/udp.c:453
 msgid "# bytes received via UDP"
 msgstr "# byte nhận được qua UDP"
 
-#: src/transports/udp.c:451
+#: src/transports/udp.c:455
 msgid "# bytes sent via UDP"
 msgstr "# byte gửi qua UDP"
 
-#: src/transports/udp.c:453
+#: src/transports/udp.c:457
 msgid "# bytes dropped by UDP (outgoing)"
 msgstr "# byte loại bỏ bởi UDP (đi ra)"
 
@@ -592,318 +928,287 @@ msgstr "Không nhận ra địa chỉ IPv6 của tôi.\n"
 msgid "`%s': unknown service: %s\n"
 msgstr "'%s': không rõ dịch vụ: %s\n"
 
-#: src/transports/tcp6.c:430
+#: src/transports/tcp6.c:432
 #, fuzzy
 msgid "# bytes received via TCP6"
 msgstr "# byte nhận được qua TCP"
 
-#: src/transports/tcp6.c:432
+#: src/transports/tcp6.c:434
 #, fuzzy
 msgid "# bytes sent via TCP6"
 msgstr "# Byte gửi qua TCP"
 
-#: src/transports/tcp6.c:434
+#: src/transports/tcp6.c:436
 #, fuzzy
 msgid "# bytes dropped by TCP6 (outgoing)"
 msgstr "# byte loại đi bởi TCP (đi ra)"
 
-#: src/transports/tcp_helper.c:182
+#: src/transports/tcp_helper.c:191
 #, fuzzy
 msgid "Received malformed message instead of welcome message. Closing.\n"
 msgstr ""
 "Nhận được thông báo bị hỏng (kích thước %u) từ kết nối tcp-đầu peer. Đang "
 "đóng.\n"
 
-#: src/transports/tcp_helper.c:193
+#: src/transports/tcp_helper.c:202
 #, fuzzy
 msgid "Received malformed message from tcp-peer connection. Closing.\n"
 msgstr ""
 "Nhận được thông báo bị hỏng (kích thước %u) từ kết nối tcp-đầu peer. Đang "
 "đóng.\n"
 
-#: src/transports/udp_helper.c:93
+#: src/transports/udp_helper.c:91
 #, fuzzy
 msgid "Received malformed message from udp-peer connection. Closing.\n"
 msgstr ""
 "Nhận được thông báo bị hỏng (kích thước %u) từ kết nối tcp-đầu peer. Đang "
 "đóng.\n"
 
-#: src/applications/dht/tools/dhttest2.c:50
+#: src/applications/dht/tools/dhttest2.c:45
 #: src/applications/session/sessiontest.c:42
 #: src/applications/stats/statistics.c:212
 #: src/applications/tbench/tbenchtest.c:101
-#: src/applications/tbench/tbenchtest_udp.c:101
-#: src/applications/gap/gaptest.c:52
+#: src/applications/tbench/tbenchtest_udp.c:100
+#: src/applications/gap/gaptest.c:49
 msgid "# of connected peers"
 msgstr "# của các đầu đã kết nối"
 
-#: src/applications/dht/tools/dhttest2.c:128
-#: src/applications/gap/gaptest.c:318
+#: src/applications/dht/tools/dhttest2.c:160
 #, c-format
 msgid "Waiting for gnunetd to start (%u iterations left)...\n"
 msgstr "Đang chờ chạy gnunetd (còn %u lần thử)...\n"
 
-#: src/applications/dht/tools/dhttest2.c:140
+#: src/applications/dht/tools/dhttest2.c:173
 #: src/applications/tbench/tbenchtest.c:117
-#: src/applications/tbench/tbenchtest_udp.c:117
-#: src/applications/gap/gaptest.c:330
+#: src/applications/tbench/tbenchtest_udp.c:116
 #, c-format
 msgid "Waiting for peers to connect (%u iterations left)...\n"
 msgstr "Đang chờ kết nối các đầu (còn %u lần thử)...\n"
 
-#: src/applications/dht/tools/dht-query.c:39
-msgid "query table called NAME"
-msgstr "hỏi bảng có tên NAME"
-
-#: src/applications/dht/tools/dht-query.c:41
-msgid "allow TIME ms to process each command"
-msgstr "cho phép TIME mili giây để tiến hành mỗi câu lệnh"
-
-#: src/applications/dht/tools/dht-query.c:46
+#: src/applications/dht/tools/dht-query.c:53
 msgid "Query (get KEY, put KEY VALUE, remove KEY VALUE) a DHT table."
 msgstr "Hỏi (nhận KEY, đặt KEY VALUE, xoá bỏ KEY VALUE) một bảng DHT."
 
-#: src/applications/dht/tools/dht-query.c:84
-#: src/applications/dht/tools/dht-join.c:85 src/util/getopt/setoption.c:133
-#: src/util/getopt/setoption.c:149
-#, fuzzy, c-format
-msgid "You must pass a number to the `%s' option.\n"
-msgstr "Người dùng phải đưa một số vào tùy chọn '%s'.\n"
+#: src/applications/dht/tools/dht-query.c:57
+#: src/applications/dht/tools/dht-join.c:59
+msgid "join table called NAME"
+msgstr "nhập bảng có tên TÊN"
 
-#: src/applications/dht/tools/dht-query.c:99
-#: src/applications/dht/tools/dht-join.c:108
-#: src/applications/chat/gnunet-chat.c:93
-#: src/applications/testbed/gnunet-testbed.c:125
-#: src/applications/testbed/gnunet-testbed.c:546
-#: src/applications/vpn/gnunet-vpn.c:118 src/util/getopt/getopt.c:1066
-#: src/setup/gnunet-setup.c:246
-#, c-format
-msgid "Use --help to get a list of options.\n"
-msgstr "Dùng --help để xem danh sách các tùy chọn.\n"
+#: src/applications/dht/tools/dht-query.c:60
+msgid "allow TIME ms to process each command"
+msgstr "cho phép TIME mili giây để tiến hành mỗi câu lệnh"
 
-#: src/applications/dht/tools/dht-query.c:106
-msgid "No commands specified.\n"
-msgstr "Chưa chỉ ra câu lệnh.\n"
-
-#: src/applications/dht/tools/dht-query.c:173
-#: src/applications/dht/tools/dht-query.c:204
+#: src/applications/dht/tools/dht-query.c:130
+#: src/applications/dht/tools/dht-query.c:163
 #, c-format
 msgid "'%s(%s,%s)' succeeded\n"
 msgstr "'%s(%s,%s)' đã thành công\n"
 
-#: src/applications/dht/tools/dht-query.c:177
-#: src/applications/dht/tools/dht-query.c:208
+#: src/applications/dht/tools/dht-query.c:134
+#: src/applications/dht/tools/dht-query.c:167
 #, c-format
 msgid "'%s(%s,%s)' failed.\n"
 msgstr "'%s(%s,%s)' thất bại.\n"
 
-#: src/applications/dht/tools/dht-query.c:231
-#: src/applications/dht/tools/dht-join.c:211
+#: src/applications/dht/tools/dht-query.c:194
+#: src/applications/dht/tools/dht-join.c:165
 #, fuzzy, c-format
 msgid "No table name specified, using `%s'.\n"
 msgstr "Chưa chỉ ra tên bảng, đang dùng '%s'.\n"
 
-#: src/applications/dht/tools/dht-query.c:246
+#: src/applications/dht/tools/dht-query.c:210
 #, c-format
 msgid "Failed to connect to gnunetd.\n"
 msgstr "Kết nối tới gnunetd không thành công.\n"
 
-#: src/applications/dht/tools/dht-query.c:253
+#: src/applications/dht/tools/dht-query.c:220
 #, fuzzy, c-format
 msgid "Command `%s' requires an argument (`%s').\n"
 msgstr "Câu lệnh '%s' yêu cầu một tham số ('%s')\n"
 
-#: src/applications/dht/tools/dht-query.c:261
-#: src/applications/dht/tools/dht-query.c:271
+#: src/applications/dht/tools/dht-query.c:232
+#: src/applications/dht/tools/dht-query.c:246
 #, fuzzy, c-format
 msgid "Command `%s' requires two arguments (`%s' and `%s').\n"
 msgstr "Câu lệnh '%s' yêu cầu hai tham số ('%s' và '%s')\n"
 
-#: src/applications/dht/tools/dht-query.c:279
+#: src/applications/dht/tools/dht-query.c:258
 #, fuzzy, c-format
 msgid "Unsupported command `%s'.  Aborting.\n"
 msgstr "Câu lệnh không hỗ trợ '%s'.  Đang thoát.\n"
 
-#: src/applications/dht/tools/dht_api.c:127
-#: src/applications/dht/tools/dht_api.c:236
-#: src/applications/dht/tools/dht_api.c:289
-#: src/applications/dht/tools/dht_api.c:343
-#: src/applications/dht/tools/dht_api.c:377
+#: src/applications/dht/tools/dht_api.c:148
+#: src/applications/dht/tools/dht_api.c:264
+#: src/applications/dht/tools/dht_api.c:321
+#: src/applications/dht/tools/dht_api.c:379
+#: src/applications/dht/tools/dht_api.c:415
 #, fuzzy, c-format
 msgid "Failed to send `%s'.  Closing connection.\n"
 msgstr "Gửi '%s' không thành công.  Đang đóng kết nối.\n"
 
-#: src/applications/dht/tools/dht_api.c:201
-#: src/applications/dht/tools/dht_api.c:253
-#: src/applications/dht/tools/dht_api.c:307
-#: src/applications/dht/tools/dht_api.c:360
+#: src/applications/dht/tools/dht_api.c:226
+#: src/applications/dht/tools/dht_api.c:282
+#: src/applications/dht/tools/dht_api.c:340
+#: src/applications/dht/tools/dht_api.c:397
 #, fuzzy, c-format
 msgid "Received invalid `%s' request (size %d)\n"
 msgstr "Nhận được yêu cầu '%s' sai (kích thước %d)\n"
 
-#: src/applications/dht/tools/dht_api.c:214
-#: src/applications/dht/tools/dht_api.c:266
-#: src/applications/dht/tools/dht_api.c:320
+#: src/applications/dht/tools/dht_api.c:241
+#: src/applications/dht/tools/dht_api.c:297
+#: src/applications/dht/tools/dht_api.c:355
 #, fuzzy, c-format
 msgid "Received invalid `%s' request (wrong table)\n"
 msgstr "Nhận được yêu cầu '%s' sai (sai bảng)\n"
 
-#: src/applications/dht/tools/dht_api.c:390
+#: src/applications/dht/tools/dht_api.c:429
 #, c-format
 msgid "Received unknown request type %d at %s:%d\n"
 msgstr "Nhận được yêu cầu không rõ dạng %d tại %s:%d\n"
 
-#: src/applications/dht/tools/dht_api.c:430
+#: src/applications/dht/tools/dht_api.c:473
 msgid "This client already participates in the given DHT!\n"
 msgstr "Máy khách này đã tham gia trong DHT đưa ra!\n"
 
-#: src/applications/dht/tools/dht_api.c:498
+#: src/applications/dht/tools/dht_api.c:548
 msgid "Cannot leave DHT: table not known!\n"
 msgstr "Không rời bỏ được DHT: bảng không biết!\n"
 
-#: src/applications/dht/tools/dht_api.c:520
+#: src/applications/dht/tools/dht_api.c:571
 #, fuzzy, c-format
 msgid "gnunetd signaled error in response to `%s' message\n"
 msgstr "gnunetd đưa tín hiệu lỗi trong câu trả lời tới thông báo '%s'\n"
 
-#: src/applications/dht/tools/dht_api.c:525
+#: src/applications/dht/tools/dht_api.c:576
 #, fuzzy, c-format
 msgid "Failed to receive response to `%s' message from gnunetd\n"
 msgstr "Nhận câu trả lời tới thông báo '%s' không thành công từ gnunetd\n"
 
-#: src/applications/dht/tools/dht_api.c:530
+#: src/applications/dht/tools/dht_api.c:581
 #, fuzzy, c-format
 msgid "Failed to send `%s' message to gnunetd\n"
 msgstr "Gửi thông báo '%s' tới gnunetd không thành công\n"
 
-#: src/applications/dht/tools/dht_api.c:622
+#: src/applications/dht/tools/dht_api.c:677
 #, fuzzy, c-format
 msgid "Unexpected reply to `%s' operation.\n"
 msgstr "Câu trả lời không mong đợi tới thao tác '%s'.\n"
 
-#: src/applications/dht/tools/dht-join.c:43
-msgid "allow SIZE bytes of memory for the local table"
-msgstr "cho phép SIZE byte bộ nhớ cho bảng nội bộ"
-
-#: src/applications/dht/tools/dht-join.c:45
-msgid "join table called NAME"
-msgstr "nhập bảng có tên TÊN"
-
-#: src/applications/dht/tools/dht-join.c:51
+#: src/applications/dht/tools/dht-join.c:52
 msgid "Join a DHT."
 msgstr "Nhập một DHT."
 
-#: src/applications/dht/tools/dht-join.c:115
-msgid "Superflous arguments (ignored).\n"
-msgstr "Tham số thừa (lờ đi).\n"
+#: src/applications/dht/tools/dht-join.c:56
+msgid "allow SIZE bytes of memory for the local table"
+msgstr "cho phép SIZE byte bộ nhớ cho bảng nội bộ"
 
-#: src/applications/dht/tools/dht-join.c:131
+#: src/applications/dht/tools/dht-join.c:78
 #, fuzzy, c-format
 msgid "Call to `%s' returns %d.\n"
 msgstr "Gọi tới '%s' trả lại %d.\n"
 
-#: src/applications/dht/tools/dht-join.c:132
+#: src/applications/dht/tools/dht-join.c:79
 #, fuzzy, c-format
 msgid "Call to `%s' with key `%s'.\n"
 msgstr "Gọi tới '%s' với chìa khóa '%s'.\n"
 
-#: src/applications/dht/tools/dht-join.c:133
+#: src/applications/dht/tools/dht-join.c:80
 #, fuzzy, c-format
 msgid "Call to `%s' with value '%.*s' (%d bytes).\n"
 msgstr "Gọi tới '%s' với giá trị '%.*s' (%d byte).\n"
 
-#: src/applications/dht/tools/dht-join.c:236
+#: src/applications/dht/tools/dht-join.c:189
 msgid "Error joining DHT.\n"
 msgstr "Lỗi nhập DHT.\n"
 
-#: src/applications/dht/tools/dht-join.c:243
+#: src/applications/dht/tools/dht-join.c:196
 #, c-format
 msgid "Joined DHT.  Press CTRL-C to leave.\n"
 msgstr "Đã nhập DHT.  Nhấn CTRL-C để dời khỏi.\n"
 
-#: src/applications/dht/tools/dht-join.c:250
+#: src/applications/dht/tools/dht-join.c:205
 msgid "Error leaving DHT.\n"
 msgstr "Lỗi dời khỏi DHT.\n"
 
-#: src/applications/dht/module/dht.c:946
+#: src/applications/dht/module/dht.c:952
 #, fuzzy, c-format
 msgid "Malformed optional field `%s' received from peer `%s'.\n"
 msgstr "Nhận được vùng không bắt buộc '%s' bị hỏng từ dầu peer '%s'.\n"
 
-#: src/applications/dht/module/dht.c:973
+#: src/applications/dht/module/dht.c:979
 #, fuzzy, c-format
 msgid "Could not find peer `%s' in routing table!\n"
 msgstr "Không tìm thấy đầu peer '%s' trong bảng định tuyến!\n"
 
-#: src/applications/dht/module/dht.c:1120
-#: src/applications/dht/module/dht.c:1135
+#: src/applications/dht/module/dht.c:1126
+#: src/applications/dht/module/dht.c:1141
 #, fuzzy, c-format
 msgid "Received malformed response to `%s' from peer `%s'.\n"
 msgstr "Nhận được câu trả lời không đúng tới '%s' từ đầu peer '%s'.\n"
 
-#: src/applications/dht/module/dht.c:1447
+#: src/applications/dht/module/dht.c:1453
 #, fuzzy, c-format
 msgid "Invalid response to `%s' from peer `%s'.\n"
 msgstr "Câu trả lời không đúng tới '%s' từ đầu peer '%s'.\n"
 
-#: src/applications/dht/module/dht.c:1603
-#: src/applications/dht/module/dht.c:2340
-#: src/applications/dht/module/dht.c:2613 src/applications/rpc/rpc.c:1290
+#: src/applications/dht/module/dht.c:1611
+#: src/applications/dht/module/dht.c:2351
+#: src/applications/dht/module/dht.c:2628 src/applications/rpc/rpc.c:1291
 #, fuzzy, c-format
 msgid "`%s' called with timeout above 1 hour (bug?)\n"
 msgstr "đã gọi '%s' với thời gian chờ lớn hơn 1 giờ (lỗi bug?)\n"
 
-#: src/applications/dht/module/dht.c:1793
+#: src/applications/dht/module/dht.c:1803
 #, fuzzy, c-format
 msgid "Invalid response to `%s'.\n"
 msgstr "Câu trả lời không đúng tới '%s'.\n"
 
-#: src/applications/dht/module/dht.c:1993
+#: src/applications/dht/module/dht.c:2003
 #, fuzzy, c-format
 msgid "Malformed response to `%s' on master table.\n"
 msgstr "Câu trả lời bị hỏng tới '%s' trên bảng chính.\n"
 
-#: src/applications/dht/module/dht.c:2207
-#: src/applications/dht/module/dht.c:2507
+#: src/applications/dht/module/dht.c:2217
+#: src/applications/dht/module/dht.c:2522
 #, fuzzy, c-format
 msgid "Invalid response to `%s' from `%s'\n"
 msgstr "Câu trả lời không đúng tới '%s' từ '%s'\n"
 
-#: src/applications/dht/module/dht.c:2881
-#: src/applications/dht/module/dht.c:3021
-#: src/applications/dht/module/dht.c:3148
-#: src/applications/dht/module/dht.c:3282
+#: src/applications/dht/module/dht.c:2899
+#: src/applications/dht/module/dht.c:3041
+#: src/applications/dht/module/dht.c:3182
+#: src/applications/dht/module/dht.c:3330
 #, fuzzy, c-format
 msgid "Received invalid RPC `%s'.\n"
 msgstr "Nhận được RPC sai '%s'.\n"
 
-#: src/applications/dht/module/dht.c:3160
-#: src/applications/dht/module/dht.c:3296
+#: src/applications/dht/module/dht.c:3201
+#: src/applications/dht/module/dht.c:3351
 #, fuzzy, c-format
 msgid "RPC for `%s' received for table that we do not participate in!\n"
 msgstr "Nhận được RPC cho '%s' cho bảng chúng ta không có phần trong đó!\n"
 
-#: src/applications/dht/module/cs.c:446
+#: src/applications/dht/module/cs.c:449
 #, fuzzy, c-format
 msgid "`%s' failed: table not found!\n"
 msgstr "'%s' không thành công: không tìm thấy bảng!\n"
 
-#: src/applications/dht/module/cs.c:466
+#: src/applications/dht/module/cs.c:469
 #, fuzzy, c-format
 msgid "`%s' failed.  Terminating connection to client.\n"
 msgstr "'%s' không thành công.  Đang ngắt kết nối tới máy khách.\n"
 
-#: src/applications/dht/module/cs.c:542
+#: src/applications/dht/module/cs.c:546
 msgid "sendAck failed.  Terminating connection to client.\n"
 msgstr "Gửi sendAck không thành công.  Ngắt kết nối tới máy khách.\n"
 
-#: src/applications/dht/module/cs.c:661 src/applications/dht/module/cs.c:679
-#: src/applications/dht/module/cs.c:688
+#: src/applications/dht/module/cs.c:666 src/applications/dht/module/cs.c:684
+#: src/applications/dht/module/cs.c:693
 #, fuzzy, c-format
 msgid "`%s' failed. Terminating connection to client.\n"
 msgstr "'%s' không thành công. Ngắt kết nối tới máy khách.\n"
 
-#: src/applications/dht/module/cs.c:808 src/applications/dht/module/cs.c:861
+#: src/applications/dht/module/cs.c:814 src/applications/dht/module/cs.c:867
 #, fuzzy, c-format
 msgid "Failed to deliver `%s' message.\n"
 msgstr "Phân phát tin nhắn '%s' không thành công.\n"
@@ -942,6 +1247,14 @@ msgstr "chỉ ra tên nick"
 msgid "Start GNUnet chat client."
 msgstr "Chạy máy khách chát của GNUnet."
 
+#: src/applications/chat/gnunet-chat.c:93
+#: src/applications/testbed/gnunet-testbed.c:125
+#: src/applications/testbed/gnunet-testbed.c:546 src/util/getopt/getopt.c:1067
+#: src/setup/gnunet-setup.c:283
+#, c-format
+msgid "Use --help to get a list of options.\n"
+msgstr "Dùng --help để xem danh sách các tùy chọn.\n"
+
 #: src/applications/chat/gnunet-chat.c:151
 msgid "Could not connect to gnunetd.\n"
 msgstr "Không kết nối được tới gnunetd.\n"
@@ -959,74 +1272,79 @@ msgstr "Không gửi được thông báo nhập join tới gnunetd\n"
 msgid "Could not send message to gnunetd\n"
 msgstr "Không gửi được thông báo tới gnunetd\n"
 
-#: src/applications/advertising/advertising.c:162
+#: src/applications/advertising/advertising.c:168
 #, fuzzy, c-format
 msgid "hello message from `%s' invalid (signature invalid). Dropping.\n"
 msgstr "Thông báo HELO từ '%s' bị sai (sai chữ ký). Đang bỏ đi.\n"
 
-#: src/applications/advertising/advertising.c:168
+#: src/applications/advertising/advertising.c:175
 #, fuzzy
 msgid ""
 "hello message received invalid (expiration time over limit). Dropping.\n"
 msgstr "Thông báo HELO nhận được bị sai (vượt quá thời hạn). Đang bỏ đi.\n"
 
-#: src/applications/advertising/advertising.c:177
+#: src/applications/advertising/advertising.c:182
+#, c-format
+msgid "hello transport verification failed (%u).\n"
+msgstr ""
+
+#: src/applications/advertising/advertising.c:192
 #, fuzzy, c-format
 msgid "hello advertisement for protocol %d received.\n"
 msgstr "Nhận được quảng cáo HELO cho giao thức %d.\n"
 
-#: src/applications/advertising/advertising.c:297
+#: src/applications/advertising/advertising.c:325
 #, fuzzy
 msgid "Could not send hellos+PING, ping buffer full.\n"
 msgstr "Không gửi được các HELO+PING, đầy bộ đệm ping.\n"
 
-#: src/applications/advertising/advertising.c:310
+#: src/applications/advertising/advertising.c:338
 #, fuzzy, c-format
 msgid "`%s' failed (%d, %u). Will not send PING.\n"
 msgstr "'%s' thất bại (%d, %u). Sẽ không gửi PING.\n"
 
-#: src/applications/advertising/advertising.c:467
+#: src/applications/advertising/advertising.c:495
 #, c-format
 msgid "Advertising my transport %d to selected peers.\n"
 msgstr "Đang quảng cáo giao thông %d tới các đầu peer đã chọn.\n"
 
-#: src/applications/advertising/advertising.c:474
+#: src/applications/advertising/advertising.c:502
 msgid ""
 "Announcing ourselves pointless: no other peers are known to us so far.\n"
 msgstr ""
 "Đang tự thông báo sự vô nghĩa: chúng ta không còn biết đến một đầu peer "
 "nào.\n"
 
-#: src/applications/advertising/advertising.c:580
+#: src/applications/advertising/advertising.c:608
 #, fuzzy, c-format
 msgid "Removing hello from peer `%s' (expired %ds ago).\n"
 msgstr "Đang xóa bỏ HELO từ đầu peer '%s' (đã hết hạn %dgiây).\n"
 
-#: src/applications/advertising/advertising.c:760
+#: src/applications/advertising/advertising.c:788
 msgid "# Peer advertisements received"
 msgstr "# Nhận được quảng cáo của đầu peer"
 
-#: src/applications/advertising/advertising.c:761
+#: src/applications/advertising/advertising.c:789
 msgid "# Self advertisments transmitted"
 msgstr "# Đã truyền tải tự quảng cáo"
 
-#: src/applications/advertising/advertising.c:762
+#: src/applications/advertising/advertising.c:790
 msgid "# Foreign advertisements forwarded"
 msgstr "# Đã chuyển tiếp quàng cáo ngoài"
 
-#: src/applications/advertising/advertising.c:764
+#: src/applications/advertising/advertising.c:792
 #: src/applications/pingpong/pingpong.c:488
 msgid "# plaintext PING messages sent"
 msgstr "# đã gửi các thông báo PING dạng văn bản thông thường"
 
-#: src/applications/advertising/advertising.c:768
-#: src/applications/session/connect.c:779
+#: src/applications/advertising/advertising.c:796
+#: src/applications/session/connect.c:800
 #, fuzzy, c-format
 msgid "`%s' registering handler %d (plaintext and ciphertext)\n"
 msgstr ""
 "'%s' đăng ký trình điều khiển %d (văn bản thông thường và văn bản mã hóa)\n"
 
-#: src/applications/advertising/advertising.c:785
+#: src/applications/advertising/advertising.c:813
 msgid ""
 "ensures that this peer is known by other peers and discovers other peers"
 msgstr ""
@@ -1091,23 +1409,29 @@ msgstr ""
 "'%s' đăng ký trình điều khiển %d %d (văn bản thông thường và văn bản mã "
 "hóa)\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:45
-#: src/applications/sqstore_sqlite/sqlite.c:52
-#: src/applications/sqstore_mysql/mysql.c:137
-#: src/applications/sqstore_mysql/mysql.c:144
-#: src/applications/sqstore_mysql/mysql.c:389
-#: src/applications/sqstore_mysql/mysql.c:728
-#: src/applications/sqstore_mysql/mysql.c:743
-#: src/applications/sqstore_mysql/mysql.c:752
-#: src/applications/sqstore_mysql/mysql.c:776
-#: src/applications/sqstore_mysql/mysql.c:786
-#: src/applications/sqstore_mysql/mysql.c:840
-#: src/applications/sqstore_mysql/mysql.c:925
-#: src/applications/sqstore_mysql/mysql.c:935
-#: src/applications/sqstore_mysql/mysql.c:1007
-#: src/applications/sqstore_mysql/mysql.c:1016
-#: src/applications/sqstore_mysql/mysql.c:1056
-#: src/applications/sqstore_mysql/mysql.c:1070
+#: src/applications/sqstore_sqlite/sqlite.c:46
+#: src/applications/sqstore_sqlite/sqlite.c:53
+#: src/applications/sqstore_mysql/mysql.c:138
+#: src/applications/sqstore_mysql/mysql.c:145
+#: src/applications/sqstore_mysql/mysql.c:423
+#: src/applications/sqstore_mysql/mysql.c:765
+#: src/applications/sqstore_mysql/mysql.c:781
+#: src/applications/sqstore_mysql/mysql.c:791
+#: src/applications/sqstore_mysql/mysql.c:816
+#: src/applications/sqstore_mysql/mysql.c:827
+#: src/applications/sqstore_mysql/mysql.c:884
+#: src/applications/sqstore_mysql/mysql.c:971
+#: src/applications/sqstore_mysql/mysql.c:982
+#: src/applications/sqstore_mysql/mysql.c:1046
+#: src/applications/sqstore_mysql/mysql.c:1062
+#: src/applications/sqstore_mysql/mysql.c:1072
+#: src/applications/sqstore_mysql/mysql.c:1096
+#: src/applications/sqstore_mysql/mysql.c:1107
+#: src/applications/sqstore_mysql/mysql.c:1119
+#: src/applications/sqstore_mysql/mysql.c:1182
+#: src/applications/sqstore_mysql/mysql.c:1194
+#: src/applications/sqstore_mysql/mysql.c:1242
+#: src/applications/sqstore_mysql/mysql.c:1257
 #: src/applications/kvstore_sqlite/kv_sqlite.c:44
 #: src/applications/kvstore_sqlite/kv_sqlite.c:51
 #: src/util/crypto/symcipher_gcrypt.c:46 src/util/crypto/symcipher_gcrypt.c:53
@@ -1116,80 +1440,81 @@ msgstr ""
 msgid "`%s' failed at %s:%d with error: %s\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:158
+#: src/applications/sqstore_sqlite/sqlite.c:195
 #, fuzzy, c-format
 msgid "Unable to initialize SQLite: %s.\n"
 msgstr "Không chạy được SQLite.\n"
 
-#: src/applications/sqstore_sqlite/sqlite.c:307
-#: src/applications/sqstore_sqlite/sqlite.c:327
-#: src/applications/sqstore_mysql/mysql.c:223
-#: src/applications/sqstore_mysql/mysql.c:803
+#: src/applications/sqstore_sqlite/sqlite.c:356
+#: src/applications/sqstore_sqlite/sqlite.c:377
+#: src/applications/sqstore_mysql/mysql.c:260
+#: src/applications/sqstore_mysql/mysql.c:845
+#: src/applications/sqstore_mysql/mysql.c:1134
 #, c-format
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:308
-#: src/applications/sqstore_sqlite/sqlite.c:328
+#: src/applications/sqstore_sqlite/sqlite.c:357
+#: src/applications/sqstore_sqlite/sqlite.c:378
 msgid "sqlite datastore"
 msgstr ""
 
-#: src/applications/sqstore_sqlite/sqlite.c:1177
-#: src/applications/sqstore_mysql/mysql.c:1182
+#: src/applications/sqstore_sqlite/sqlite.c:1213
+#: src/applications/sqstore_mysql/mysql.c:1318
 #, fuzzy
 msgid "# bytes in datastore"
 msgstr "# byte nhận được do nhiễu đường truyền"
 
-#: src/applications/session/connect.c:221
+#: src/applications/session/connect.c:225
 #, fuzzy, c-format
 msgid "Session key from peer `%s' could not be verified.\n"
 msgstr "Không kiểm tra được chìa khóa buổi làm việc từ đầu peer '%s'.\n"
 
-#: src/applications/session/connect.c:258
+#: src/applications/session/connect.c:263
 msgid "Cannot encrypt sessionkey, other peer not known!\n"
 msgstr ""
 "Không mã hóa được chìa khóa buổi làm việc, không biết đến đầu peer khác!\n"
 
-#: src/applications/session/connect.c:517
+#: src/applications/session/connect.c:533
 #, fuzzy, c-format
 msgid "Session key received from peer `%s' has invalid format (discarded).\n"
 msgstr "Thông báo nhận được từ một đầu là sai.\n"
 
-#: src/applications/session/connect.c:540
+#: src/applications/session/connect.c:558
 #, fuzzy, c-format
 msgid "Invalid `%s' message received from peer `%s'.\n"
 msgstr "Nhận được thông báo '%s' sai từ đầu peer '%s'.\n"
 
-#: src/applications/session/connect.c:550
+#: src/applications/session/connect.c:568
 #, fuzzy, c-format
 msgid "setkey `%s' from `%s' fails CRC check (have: %u, want %u).\n"
 msgstr "Kiểm tra CRC của SKEY từ '%s' không thành công (có: %u, muốn %u).\n"
 
-#: src/applications/session/connect.c:608
+#: src/applications/session/connect.c:626
 msgid ""
 "Error parsing encrypted session key, given message part size is invalid.\n"
 msgstr ""
 "Lỗi phân tích chìa khóa buổi làm việc đã mã hóa, kích thước của phần thông "
 "báo đưa ra là sai.\n"
 
-#: src/applications/session/connect.c:619
+#: src/applications/session/connect.c:637
 #, c-format
 msgid "Unknown type in embedded message: %u (size: %u)\n"
 msgstr ""
 
-#: src/applications/session/connect.c:768
+#: src/applications/session/connect.c:789
 msgid "# session keys sent"
 msgstr "# đã gửi các phím buổi làm việc"
 
-#: src/applications/session/connect.c:770
+#: src/applications/session/connect.c:791
 msgid "# session keys rejected"
 msgstr "# đã nhả ra các phím buổi làm việc"
 
-#: src/applications/session/connect.c:772
+#: src/applications/session/connect.c:793
 msgid "# session keys accepted"
 msgstr "# đã chấp nhận các phím buổi làm việc"
 
-#: src/applications/session/connect.c:774
+#: src/applications/session/connect.c:795
 msgid "# sessions established"
 msgstr "# đã thiết lập buổi làm việc"
 
@@ -1221,56 +1546,52 @@ msgstr "%s::%s - RPC %s:%p không đăng ký được: không tìm thấy\n"
 msgid "%s::%s - async RPC %s:%p could not be unregistered: not found\n"
 msgstr "%s::%s - async RPC %s:%p không đăng ký được: không tìm thấy\n"
 
-#: src/applications/rpc/rpc.c:878 src/applications/rpc/rpc.c:1011
-#: src/applications/rpc/rpc.c:1100
+#: src/applications/rpc/rpc.c:879 src/applications/rpc/rpc.c:1012
+#: src/applications/rpc/rpc.c:1101
 #, c-format
 msgid "Invalid message of type %u received.  Dropping.\n"
 msgstr "Nhận được thông báo sai của dạng %u.  Đang bỏ đi.\n"
 
-#: src/applications/rpc/rpc.c:945
+#: src/applications/rpc/rpc.c:946
 #, c-format
 msgid "Dropping RPC request %u: message malformed.\n"
 msgstr "Đang bỏ đi yêu cầu RPC %u: thông báo hỏng.\n"
 
-#: src/applications/rpc/rpc.c:1414
+#: src/applications/rpc/rpc.c:1415
 #, c-format
 msgid "RPC not unregistered: %s:%p\n"
 msgstr "Chưa bỏ đăng ký RPC: %s: %p\n"
 
-#: src/applications/rpc/rpc.c:1441
+#: src/applications/rpc/rpc.c:1442
 #, fuzzy, c-format
 msgid "`%s' registering handlers %d %d %d\n"
 msgstr "'%s' đăng ký trình điều khiển %d %d %d\n"
 
-#: src/applications/rpc/rpc.c:1462
+#: src/applications/rpc/rpc.c:1463
 #, fuzzy, c-format
 msgid "Failed to initialize `%s' service.\n"
 msgstr "Chạy dịch vụ '%s' không thành công.\n"
 
-#: src/applications/rpc/rpc.c:1519
+#: src/applications/rpc/rpc.c:1520
 msgid "RPC async reply invalid.\n"
 msgstr "Câu trả lời async của RPC sai.\n"
 
-#: src/applications/rpc/rpc.c:1591
+#: src/applications/rpc/rpc.c:1592
 msgid "async RPC reply not received.\n"
 msgstr "Không nhận được câu trả lời async của RPC.\n"
 
-#: src/applications/sqstore_mysql/mysql.c:224
-#: src/applications/sqstore_mysql/mysql.c:804
+#: src/applications/sqstore_mysql/mysql.c:261
+#: src/applications/sqstore_mysql/mysql.c:846
+#: src/applications/sqstore_mysql/mysql.c:1135
 msgid "mysql datastore"
 msgstr ""
 
-#: src/applications/sqstore_mysql/mysql.c:1110
-#, fuzzy, c-format
-msgid "Query `%s' had no results.\n"
-msgstr "Câu hỏi '%s' không có kết quả.\n"
-
-#: src/applications/sqstore_mysql/mysql.c:1212
+#: src/applications/sqstore_mysql/mysql.c:1348
 #, fuzzy, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Đang thử dùng tập tin '%s' cho cấu hình MySQL.\n"
 
-#: src/applications/sqstore_mysql/mysql.c:1230
+#: src/applications/sqstore_mysql/mysql.c:1371
 msgid ""
 "Failed to load MySQL database module.  Check that MySQL is running and "
 "configured properly!\n"
@@ -1281,23 +1602,23 @@ msgstr ""
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr "Thử khả năng cho '%s' không thành công tại %s: %d.\n"
 
-#: src/applications/datastore/datastore.c:143
+#: src/applications/datastore/datastore.c:145
 #, fuzzy, c-format
 msgid "Database failed to delete `%s'.\n"
 msgstr "Cơ sở dữ liệu xóa %s không thành công.\n"
 
-#: src/applications/datastore/datastore.c:358
-#: src/applications/datastore/datastore.c:454
+#: src/applications/datastore/datastore.c:368
+#: src/applications/datastore/datastore.c:465
 #, fuzzy
 msgid "Failed to load state service. Trying to do without.\n"
 msgstr "Chạy dịch vụ truyền tải trên cổng %d thất bại.\n"
 
-#: src/applications/identity/hostkey.c:109
+#: src/applications/identity/hostkey.c:121
 #, fuzzy, c-format
 msgid "Failed to access GNUnet home directory `%s'\n"
 msgstr "Lỗi định dạng tập tin (không phải một thư mục GNUnet?)\n"
 
-#: src/applications/identity/hostkey.c:139
+#: src/applications/identity/hostkey.c:155
 #, fuzzy, c-format
 msgid ""
 "Existing hostkey in file `%s' failed format check, creating new hostkey.\n"
@@ -1305,11 +1626,11 @@ msgstr ""
 "Kiểm tra chìa khóa máy có trong '%s' không thành công, đang tạo chìa khóa "
 "máy mới.\n"
 
-#: src/applications/identity/hostkey.c:147
+#: src/applications/identity/hostkey.c:163
 msgid "Creating new hostkey (this may take a while).\n"
 msgstr "Đang tạo chìa khóa máy mới (có thể cần một chút thời gian).\n"
 
-#: src/applications/identity/hostkey.c:160
+#: src/applications/identity/hostkey.c:176
 msgid "Done creating hostkey.\n"
 msgstr "Đã tạo xong chìa khóa máy.\n"
 
@@ -1332,19 +1653,19 @@ msgstr ""
 msgid "Still no peers found in `%s'!\n"
 msgstr "Không hủy nạp đúng được dịch vụ '%s'!\n"
 
-#: src/applications/identity/identity.c:684
-#: src/applications/identity/identity.c:705
+#: src/applications/identity/identity.c:686
+#: src/applications/identity/identity.c:706
 #, fuzzy, c-format
 msgid "Removed file `%s' containing invalid hello data.\n"
 msgstr "Xóa bỏ tập tin '%s' chứa dữ liệu HELO sai.\n"
 
-#: src/applications/identity/identity.c:758
+#: src/applications/identity/identity.c:759
 #, fuzzy, c-format
 msgid "Signature failed verification: peer `%s' not known.\n"
 msgstr ""
 "Không mã hóa được chìa khóa buổi làm việc, không biết đến đầu peer khác!\n"
 
-#: src/applications/identity/identity.c:767
+#: src/applications/identity/identity.c:768
 #, fuzzy
 msgid "Signature failed verification: signature invalid.\n"
 msgstr "Thông báo HELO sai (sai chữ ký).\n"
@@ -1545,74 +1866,75 @@ msgstr "Thoát trình đăng ký (lỗi: không đọc được câu trả lời
 msgid "allows construction of a P2P-testbed (incomplete)"
 msgstr ""
 
-#: src/applications/transport/transport.c:136
+#: src/applications/transport/transport.c:140
 #, c-format
 msgid ""
 "Converting peer address to string failed, transport type %d not supported\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:183
+#: src/applications/transport/transport.c:187
 #, c-format
 msgid "Transport connection attempt failed, transport type %d not supported\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:278
+#: src/applications/transport/transport.c:282
 #, fuzzy, c-format
 msgid "Transmission attempt failed, transport type %d unknown.\n"
 msgstr "Không biết đến giao thông dạng %d.\n"
 
-#: src/applications/transport/transport.c:366
+#: src/applications/transport/transport.c:370
 #, c-format
 msgid "No transport of type %d known.\n"
 msgstr "Không biết đến giao thông dạng %d.\n"
 
-#: src/applications/transport/transport.c:423
+#: src/applications/transport/transport.c:427
 msgid "No transport succeeded in creating a hello!\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:596
+#: src/applications/transport/transport.c:601
 #, fuzzy, c-format
 msgid "Loading transports `%s'\n"
 msgstr "Đang thử nghiệm (các) truyền tải %s\n"
 
-#: src/applications/transport/transport.c:616
+#: src/applications/transport/transport.c:621
 #, fuzzy, c-format
 msgid "Could not load transport plugin `%s'\n"
 msgstr "Không chạy được ứng dụng '%s'\n"
 
-#: src/applications/transport/transport.c:626
+#: src/applications/transport/transport.c:631
 #, fuzzy, c-format
 msgid "Transport library `%s' did not provide required function '%s%s'.\n"
 msgstr "Thư viện giao thông '%s' không cung cấp chức năng yêu cầu '%s%s'.\n"
 
-#: src/applications/transport/transport.c:643
+#: src/applications/transport/transport.c:658
 #, fuzzy, c-format
 msgid "Loaded transport `%s'\n"
 msgstr "(Các) truyền tải có: %s\n"
 
-#: src/applications/transport/transport.c:654
+#: src/applications/transport/transport.c:671
 #, fuzzy, c-format
 msgid "I am peer `%s'.\n"
 msgstr "Tôi là một đầu peer '%s'.\n"
 
-#: src/applications/fragmentation/fragmentation.c:559
+#: src/applications/fragmentation/fragmentation.c:566
 msgid "# messages defragmented"
 msgstr "# thông báo đã gom lại"
 
-#: src/applications/fragmentation/fragmentation.c:560
+#: src/applications/fragmentation/fragmentation.c:567
 msgid "# messages fragmented"
 msgstr "# thông báo đã phân mảnh"
 
-#: src/applications/fragmentation/fragmentation.c:561
+#: src/applications/fragmentation/fragmentation.c:568
 msgid "# fragments discarded"
 msgstr "# các mảnh bị loại bỏ"
 
-#: src/applications/fragmentation/fragmentation.c:573
+#: src/applications/fragmentation/fragmentation.c:580
 #, fuzzy, c-format
 msgid "`%s' registering handler %d\n"
 msgstr "'%s' đăng ký trình điều khiển %d\n"
 
 #: src/applications/stats/gnunet-stats.c:90
+#: src/applications/vpn/gnunet-vpn.c:52
 msgid "Print statistics about GNUnet operations."
 msgstr "In thống kê về các thao tác của GNUnet."
 
@@ -1620,15 +1942,16 @@ msgstr "In thống kê về các thao tác của GNUnet."
 msgid "prints supported protocol messages"
 msgstr "in các thông báo giao thức hỗ trợ"
 
-#: src/applications/stats/gnunet-stats.c:137
-#: src/applications/tbench/gnunet-tbench.c:136
-#: src/applications/tracekit/gnunet-tracekit.c:319
-#: src/applications/template/gnunet-template.c:101
+#: src/applications/stats/gnunet-stats.c:130
+#: src/applications/tbench/gnunet-tbench.c:128
+#: src/applications/tracekit/gnunet-tracekit.c:312
+#: src/applications/template/gnunet-template.c:94
+#: src/applications/vpn/gnunet-vpn.c:145
 #, c-format
 msgid "Error establishing connection with gnunetd.\n"
 msgstr "Lỗi thiết lập kết nối với gnunetd.\n"
 
-#: src/applications/stats/gnunet-stats.c:156
+#: src/applications/stats/gnunet-stats.c:149
 #, c-format
 msgid "Error reading information from gnunetd.\n"
 msgstr "Lỗi đọc thông tin từ gnunetd.\n"
@@ -1666,109 +1989,109 @@ msgstr "'%s' đăng ký trình điều khiển máy khách %d %d %d %d %d %d %d 
 msgid "keeps statistics about gnunetd's operation"
 msgstr "In thống kê về các thao tác của GNUnet."
 
-#: src/applications/tbench/gnunet-tbench.c:65
-#: src/applications/tracekit/gnunet-tracekit.c:54
+#: src/applications/tbench/gnunet-tbench.c:64
+#: src/applications/tracekit/gnunet-tracekit.c:53
 msgid "Start GNUnet transport benchmarking tool."
 msgstr "Chạy công cụ kiểm tra truyền tải của GNUnet."
 
-#: src/applications/tbench/gnunet-tbench.c:67
+#: src/applications/tbench/gnunet-tbench.c:66
 msgid "output in gnuplot format"
 msgstr "kết quả ở dạng gnuplot"
 
-#: src/applications/tbench/gnunet-tbench.c:71
+#: src/applications/tbench/gnunet-tbench.c:70
 msgid "number of iterations"
 msgstr "số lần làm lại"
 
-#: src/applications/tbench/gnunet-tbench.c:75
+#: src/applications/tbench/gnunet-tbench.c:74
 msgid "number of messages to use per iteration"
 msgstr "số thông báo dùng cho mỗi lần làm lại"
 
-#: src/applications/tbench/gnunet-tbench.c:78
+#: src/applications/tbench/gnunet-tbench.c:77
 msgid "receiver host identifier (ENC file name)"
 msgstr "trình nhận tên máy (tên tập tin ENC)"
 
-#: src/applications/tbench/gnunet-tbench.c:81
+#: src/applications/tbench/gnunet-tbench.c:80
 msgid "message size"
 msgstr "kích thước thông báo"
 
-#: src/applications/tbench/gnunet-tbench.c:84
+#: src/applications/tbench/gnunet-tbench.c:83
 msgid "sleep for SPACE ms after each a message block"
 msgstr "ngủ SPACE miligiây sau mỗi khối tin nhắn"
 
-#: src/applications/tbench/gnunet-tbench.c:87
+#: src/applications/tbench/gnunet-tbench.c:86
 msgid "time to wait for the completion of an iteration (in ms)"
 msgstr "thời gian chờ sự hoàn thành của một lần lặp (theo miligiây)"
 
-#: src/applications/tbench/gnunet-tbench.c:91
+#: src/applications/tbench/gnunet-tbench.c:90
 msgid "number of messages in a message block"
 msgstr "số thông báo trong một khối tin nhắn"
 
-#: src/applications/tbench/gnunet-tbench.c:153
+#: src/applications/tbench/gnunet-tbench.c:144
 #, c-format
 msgid "You must specify a receiver!\n"
 msgstr "Người dùng phải chỉ ra một trình nhận!\n"
 
-#: src/applications/tbench/gnunet-tbench.c:162
+#: src/applications/tbench/gnunet-tbench.c:152
 #, fuzzy, c-format
 msgid "Invalid receiver peer ID specified (`%s' is not valid name).\n"
 msgstr "Chỉ ra ID của trình nhận sai ('%s' không phải là một tên đúng).\n"
 
-#: src/applications/tbench/gnunet-tbench.c:189
+#: src/applications/tbench/gnunet-tbench.c:182
 #, c-format
 msgid "Time:\n"
 msgstr "Thời gian:\n"
 
-#: src/applications/tbench/gnunet-tbench.c:190
+#: src/applications/tbench/gnunet-tbench.c:183
 #, c-format
 msgid "\tmax      %llums\n"
 msgstr "\tmax      %llu miligiây\n"
 
-#: src/applications/tbench/gnunet-tbench.c:192
+#: src/applications/tbench/gnunet-tbench.c:185
 #, c-format
 msgid "\tmin      %llums\n"
 msgstr "\tmin      %llu miligiây\n"
 
-#: src/applications/tbench/gnunet-tbench.c:194
+#: src/applications/tbench/gnunet-tbench.c:187
 #, c-format
 msgid "\tmean     %8.4fms\n"
 msgstr "\tý nghĩa   %8.4f miligiây\n"
 
-#: src/applications/tbench/gnunet-tbench.c:196
+#: src/applications/tbench/gnunet-tbench.c:189
 #, c-format
 msgid "\tvariance %8.4fms\n"
 msgstr "\tkhác nhau %8.4f miligiây\n"
 
-#: src/applications/tbench/gnunet-tbench.c:199
+#: src/applications/tbench/gnunet-tbench.c:192
 #, c-format
 msgid "Loss:\n"
 msgstr "Mất:\n"
 
-#: src/applications/tbench/gnunet-tbench.c:200
+#: src/applications/tbench/gnunet-tbench.c:193
 #, c-format
 msgid "\tmax      %u\n"
 msgstr "\tmax      %u\n"
 
-#: src/applications/tbench/gnunet-tbench.c:202
+#: src/applications/tbench/gnunet-tbench.c:195
 #, c-format
 msgid "\tmin      %u\n"
 msgstr "\tmin      %u\n"
 
-#: src/applications/tbench/gnunet-tbench.c:204
+#: src/applications/tbench/gnunet-tbench.c:197
 #, c-format
 msgid "\tmean     %8.4f\n"
 msgstr "\tý nghĩa   %8.4f\n"
 
-#: src/applications/tbench/gnunet-tbench.c:206
+#: src/applications/tbench/gnunet-tbench.c:199
 #, c-format
 msgid "\tvariance %8.4f\n"
 msgstr "\tkhác nhau %8.4f\n"
 
-#: src/applications/tbench/gnunet-tbench.c:215
+#: src/applications/tbench/gnunet-tbench.c:208
 #, c-format
 msgid "Output format not known, this should not happen.\n"
 msgstr "Định dạng kết quả không rõ, điều này không nên xảy ra.\n"
 
-#: src/applications/tbench/gnunet-tbench.c:219
+#: src/applications/tbench/gnunet-tbench.c:212
 #, c-format
 msgid ""
 "\n"
@@ -1778,25 +2101,25 @@ msgstr ""
 "Không nhận được thông báo từ gnunetd. gnunetd đang chạy?\n"
 
 #: src/applications/tbench/tbenchtest.c:51
-#: src/applications/tbench/tbenchtest_udp.c:51
+#: src/applications/tbench/tbenchtest_udp.c:50
 #, c-format
 msgid "Using %u messages of size %u for %u times.\n"
 msgstr "Sử dụng %u thông báo với kích thước %u trong %u lần.\n"
 
 #: src/applications/tbench/tbenchtest.c:78
-#: src/applications/tbench/tbenchtest_udp.c:78
+#: src/applications/tbench/tbenchtest_udp.c:77
 #, c-format
 msgid "Times: max %16llu  min %16llu  mean %12.3f  variance %12.3f\n"
 msgstr "Thời gian:  max %16llu  min %16llu  có nghĩa %12.3f  biến %12.3f\n"
 
 #: src/applications/tbench/tbenchtest.c:83
-#: src/applications/tbench/tbenchtest_udp.c:83
+#: src/applications/tbench/tbenchtest_udp.c:82
 #, c-format
 msgid "Loss:  max %16u  min %16u  mean %12.3f  variance %12.3f\n"
 msgstr "Mất:  max %16u  min %16u  có nghĩa %12.3f  biến %12.3f\n"
 
 #: src/applications/tbench/tbenchtest.c:89
-#: src/applications/tbench/tbenchtest_udp.c:89
+#: src/applications/tbench/tbenchtest_udp.c:88
 #, c-format
 msgid ""
 "\n"
@@ -1806,34 +2129,34 @@ msgstr ""
 "Không nhận thành công câu trả lời từ gnunetd.\n"
 
 #: src/applications/tbench/tbenchtest.c:211
-#: src/applications/tbench/tbenchtest_udp.c:211
+#: src/applications/tbench/tbenchtest_udp.c:210
 #, c-format
 msgid "Running benchmark...\n"
 msgstr "Đang chạy thử mức độ (benchmark)...\n"
 
-#: src/applications/tbench/tbench.c:460
+#: src/applications/tbench/tbench.c:420
 msgid "allows profiling of direct peer-to-peer connections"
 msgstr ""
 
-#: src/applications/tracekit/gnunet-tracekit.c:49
+#: src/applications/tracekit/gnunet-tracekit.c:48
 msgid "probe network to the given DEPTH"
 msgstr "thử mạng tới độ sâu DEPTH đưa ra"
 
-#: src/applications/tracekit/gnunet-tracekit.c:52
+#: src/applications/tracekit/gnunet-tracekit.c:51
 msgid ""
 "specify output format; 0 for human readable output, 1 for dot, 2 for vcg"
 msgstr ""
 "chỉ ra định dạng kết quả; 0 - dạng người dùng dễ đọc, 1 - dấu chấm, 2 - vcg"
 
-#: src/applications/tracekit/gnunet-tracekit.c:58
+#: src/applications/tracekit/gnunet-tracekit.c:57
 msgid "use PRIO for the priority of the trace request"
 msgstr "dùng PRIO làm ưu tiên của yêu cầu theo dấu vết trace"
 
-#: src/applications/tracekit/gnunet-tracekit.c:62
+#: src/applications/tracekit/gnunet-tracekit.c:61
 msgid "wait DELAY seconds for replies"
 msgstr "chờ các câu trả lời DELAY giây"
 
-#: src/applications/tracekit/gnunet-tracekit.c:116
+#: src/applications/tracekit/gnunet-tracekit.c:115
 #, c-format
 msgid ""
 "Format specification invalid. Use 0 for user-readable, 1 for dot, 2 for "
@@ -1841,27 +2164,27 @@ msgid ""
 msgstr ""
 "Định dạng bị sai. Dùng 0 cho người dùng dễ đọc, 1 cho chấm, 2 cho vcg.\n"
 
-#: src/applications/tracekit/gnunet-tracekit.c:163
+#: src/applications/tracekit/gnunet-tracekit.c:162
 #, fuzzy, c-format
 msgid "`%s' is not connected to any peer.\n"
 msgstr "'%s' chưa kết nối tới bất kỳ đầu peer nào.\n"
 
-#: src/applications/tracekit/gnunet-tracekit.c:197
+#: src/applications/tracekit/gnunet-tracekit.c:196
 #, fuzzy, c-format
 msgid "`%s' connected to `%s'.\n"
 msgstr "'%s' kết nối tới '%s'.\n"
 
-#: src/applications/tracekit/gnunet-tracekit.c:212
+#: src/applications/tracekit/gnunet-tracekit.c:211
 #, c-format
 msgid "Format specification invalid. Use 0 for user-readable, 1 for dot\n"
 msgstr "Định dạng sai. Dùng 0 cho người dùng dễ đọc, 1 cho chấm\n"
 
-#: src/applications/tracekit/gnunet-tracekit.c:235
+#: src/applications/tracekit/gnunet-tracekit.c:234
 #, fuzzy, c-format
 msgid "Peer `%s' did not report back.\n"
 msgstr "Đầu peer '%s' chưa báo cáo lại.\n"
 
-#: src/applications/tracekit/gnunet-tracekit.c:350
+#: src/applications/tracekit/gnunet-tracekit.c:342
 msgid "Could not send request to gnunetd.\n"
 msgstr "Không gửi được yêu cầu tới gnunetd.\n"
 
@@ -2019,35 +2342,35 @@ msgstr "'%s' đăng ký trình điều khiển máy khách %d\n"
 msgid "allows clients to determine gnunetd's configuration"
 msgstr "Không có ứng dụng định nghĩa trong cấu hình!\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:71
-#: src/applications/fs/tools/gnunet-insert.c:224
-#: src/applications/fs/tools/gnunet-search.c:129
-#: src/applications/fs/tools/gnunet-download.c:57
+#: src/applications/fs/tools/gnunet-pseudonym.c:70
+#: src/applications/fs/tools/gnunet-insert.c:229
+#: src/applications/fs/tools/gnunet-search.c:140
+#: src/applications/fs/tools/gnunet-download.c:65
 msgid "set the desired LEVEL of sender-anonymity"
 msgstr "đặt LEVEL (CẤPĐỘ) mong muốn của người gửi giấu tên"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:74
+#: src/applications/fs/tools/gnunet-pseudonym.c:73
 msgid "automate creation of a namespace by starting a collection"
 msgstr "tự động tạo một không gian tên bằng cách bắt đầu một thu thập"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:78
+#: src/applications/fs/tools/gnunet-pseudonym.c:77
 msgid "create a new pseudonym under the given NICKNAME"
 msgstr "tạo một tên hiệu mới dưới NICKNAME đưa ra"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:81
+#: src/applications/fs/tools/gnunet-pseudonym.c:80
 msgid "delete the pseudonym with the given NICKNAME"
 msgstr "xóa tên hiệu với TÊNNICK đưa ra"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:84
+#: src/applications/fs/tools/gnunet-pseudonym.c:83
 msgid "end automated building of a namespace (ends collection)"
 msgstr "kết thúc việc tự động xây dựng một không gian tên (kết thúc thu thập)"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:86
-#: src/applications/fs/tools/gnunet-search.c:132
+#: src/applications/fs/tools/gnunet-pseudonym.c:85
+#: src/applications/fs/tools/gnunet-search.c:143
 msgid "Create new pseudonyms, delete pseudonyms or list existing pseudonyms."
 msgstr "Tạo tên hiệu mới, xóa tên hiệu hoặc liệt kê các tên hiệu có."
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:89
+#: src/applications/fs/tools/gnunet-pseudonym.c:88
 msgid ""
 "use the given keyword to advertise the namespace (use when creating a new "
 "pseudonym)"
@@ -2055,12 +2378,12 @@ msgstr ""
 "sử dụng từ khóa đưa ra để quảng cáo không gian tên (dùng khi tạo một tên "
 "hiệu mới)"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:92
+#: src/applications/fs/tools/gnunet-pseudonym.c:91
 #, fuzzy
 msgid "specify metadata describing the namespace or collection"
 msgstr "kết thúc việc tự động xây dựng một không gian tên (kết thúc thu thập)"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:95
+#: src/applications/fs/tools/gnunet-pseudonym.c:94
 msgid ""
 "do not generate an advertisement for this namespace (use when creating a new "
 "pseudonym)"
@@ -2068,11 +2391,11 @@ msgstr ""
 "không tạo một quảng cáo cho không gian tên này (dùng khi tạo một tên hiệu "
 "mới)"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:98
+#: src/applications/fs/tools/gnunet-pseudonym.c:97
 msgid "do not list the pseudonyms from the pseudonym database"
 msgstr "không liệt kê tên hiệu từ cơ sở dữ liệu tên hiệu"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:101
+#: src/applications/fs/tools/gnunet-pseudonym.c:100
 msgid ""
 "specify IDENTIFIER to be the address of the entrypoint to content in the "
 "namespace (use when creating a new pseudonym)"
@@ -2080,66 +2403,66 @@ msgstr ""
 "dùng IDENTIFIER làm địa chỉ của điểm chỉ tới nội dung trong không gian tên "
 "(dùng khi tạo một tên hiệu mới)"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:104
+#: src/applications/fs/tools/gnunet-pseudonym.c:103
 msgid "set the rating of a namespace"
 msgstr "đặt xếp hạng của một không gian tên"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:138
+#: src/applications/fs/tools/gnunet-pseudonym.c:137
 #, fuzzy, c-format
 msgid "Namespace `%s' has rating %d.\n"
 msgstr "Không gian tên '%s' có xếp hạng %d.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:142
+#: src/applications/fs/tools/gnunet-pseudonym.c:141
 #, fuzzy, c-format
 msgid "Namespace `%s' (%s) has rating %d.\n"
 msgstr "Không gian tên '%s' (%s) có xếp hạng %d.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:178
+#: src/applications/fs/tools/gnunet-pseudonym.c:177
 #, c-format
 msgid "\tRating (after update): %d\n"
 msgstr "\tXếp hạng (sau cập nhật): %d\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:221
+#: src/applications/fs/tools/gnunet-pseudonym.c:211
 #, c-format
 msgid "Collection stopped.\n"
 msgstr "Dừng thu thập.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:223
+#: src/applications/fs/tools/gnunet-pseudonym.c:213
 #, c-format
 msgid "Failed to stop collection (not active?).\n"
 msgstr "Dừng thu thập không thành công (không hoạt động?).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:231
+#: src/applications/fs/tools/gnunet-pseudonym.c:221
 #, fuzzy, c-format
 msgid "Pseudonym `%s' deleted.\n"
 msgstr "Đã xóa tên hiệu '%s'.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:235
+#: src/applications/fs/tools/gnunet-pseudonym.c:225
 #, fuzzy, c-format
 msgid "Error deleting pseudonym `%s' (does not exist?).\n"
 msgstr "Lỗi xóa tên hiệu '%s' (không tồn tại?).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:254
+#: src/applications/fs/tools/gnunet-pseudonym.c:244
 #, fuzzy, c-format
 msgid "Started collection `%s'.\n"
 msgstr "Bắt đầu thu thập '%s'.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:257
+#: src/applications/fs/tools/gnunet-pseudonym.c:247
 #, c-format
 msgid "Failed to start collection.\n"
 msgstr "Bắt đầu thu thập không thành công.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:299
+#: src/applications/fs/tools/gnunet-pseudonym.c:289
 #, fuzzy, c-format
 msgid "Could not create namespace `%s' (exists?).\n"
 msgstr "Không tạo được không gian tên '%s' (đã có?).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:304
+#: src/applications/fs/tools/gnunet-pseudonym.c:294
 #, fuzzy, c-format
 msgid "Namespace `%s' created (root: %s).\n"
 msgstr "Đã tạo không gian tên '%s' (gốc: %s).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:326
+#: src/applications/fs/tools/gnunet-pseudonym.c:314
 #, c-format
 msgid "Could not access namespace information.\n"
 msgstr "Không truy cập được thông tin của không gian tên.\n"
@@ -2180,44 +2503,44 @@ msgstr "liệt kê tất cả các mục từ cơ sở dữ liệu thư mục"
 msgid "start tracking entries for the directory database"
 msgstr "bắt đầu theo dõi các mục cho cơ sở dữ liệu thư mục"
 
-#: src/applications/fs/tools/gnunet-directory.c:181
+#: src/applications/fs/tools/gnunet-directory.c:174
 #, c-format
 msgid "Listed %d matching entries.\n"
 msgstr "Đã liệt kê %d mục tương ứng.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:139
+#: src/applications/fs/tools/gnunet-insert.c:137
 #, fuzzy, c-format
 msgid "Created entry `%s' in namespace `%s'\n"
 msgstr "Đã tạo mục không gian tên '%s'\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:144
+#: src/applications/fs/tools/gnunet-insert.c:142
 #, fuzzy, c-format
 msgid "Failed to add entry to namespace `%s' (does it exist?)\n"
 msgstr "Không truy cập được không gian tên '%s' (đã có rồi?).\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:166
+#: src/applications/fs/tools/gnunet-insert.c:168
 #, fuzzy, c-format
 msgid "%16llu of %16llu bytes inserted (estimating %6s to completion) - %s\n"
 msgstr "đã chèn %16llu từ %16llu byte (sẽ hoàn thành trong %llu%s giây)\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:178
+#: src/applications/fs/tools/gnunet-insert.c:180
 #, fuzzy, c-format
 msgid "Upload of `%s' complete, %llu bytes took %llu seconds (%8.3f KiB/s).\n"
 msgstr "Hoàn thành tải lên '%s', %llu byte trong %llu giây (%8.3f kbps).\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:189
+#: src/applications/fs/tools/gnunet-insert.c:191
 #, fuzzy, c-format
 msgid "File `%s' has URI: %s\n"
 msgstr "Tập tin '%s' có URI: %s\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:200
+#: src/applications/fs/tools/gnunet-insert.c:202
 #, fuzzy, c-format
 msgid ""
 "\n"
 "Upload aborted.\n"
 msgstr "Dừng tải xuống."
 
-#: src/applications/fs/tools/gnunet-insert.c:206
+#: src/applications/fs/tools/gnunet-insert.c:207
 #, c-format
 msgid ""
 "\n"
@@ -2226,7 +2549,14 @@ msgstr ""
 "\n"
 "Lỗi tải lên tập tin: %s\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:228
+#: src/applications/fs/tools/gnunet-insert.c:216
+#, c-format
+msgid ""
+"\n"
+"Unexpected event: %d\n"
+msgstr ""
+
+#: src/applications/fs/tools/gnunet-insert.c:233
 msgid ""
 "even if gnunetd is running on the local machine, force the creation of a "
 "copy instead of making a link to the GNUnet share directory"
@@ -2234,16 +2564,17 @@ msgstr ""
 "thậm chí nếu gnunetd đang chạy trên máy nội bộ, bắt buộc tạo một bản sao "
 "thay vì tạo một liên kết đến thư mục chia sẻ của GNUnet"
 
-#: src/applications/fs/tools/gnunet-insert.c:232
+#: src/applications/fs/tools/gnunet-insert.c:237
 msgid "disable adding the creation time to the metadata of the uploaded file"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:235
+#: src/applications/fs/tools/gnunet-insert.c:240
 msgid ""
-"use libextractor to add additional direct references to directory entries"
+"do not use libextractor to add additional references to directory entries "
+"and/or the published file"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-insert.c:238
+#: src/applications/fs/tools/gnunet-insert.c:243
 msgid ""
 "print list of extracted keywords that would be used, but do not perform "
 "upload"
@@ -2251,18 +2582,18 @@ msgstr ""
 "in ra danh sách của các từ khóa đã giải phóng cần sử dụng, nhưng không thực "
 "hiện tải lên"
 
-#: src/applications/fs/tools/gnunet-insert.c:240
+#: src/applications/fs/tools/gnunet-insert.c:245
 msgid "Make files available to GNUnet for sharing."
 msgstr "Cho phép GNUnet chia sẻ các tập tin."
 
-#: src/applications/fs/tools/gnunet-insert.c:243
+#: src/applications/fs/tools/gnunet-insert.c:248
 msgid ""
 "set interval for availability of updates to SECONDS (for namespace "
 "insertions only)"
 msgstr ""
 "đặt khoảng thời gian cho cập nhật thành GIÂY (chỉ cho sự chèn không gian tên)"
 
-#: src/applications/fs/tools/gnunet-insert.c:247
+#: src/applications/fs/tools/gnunet-insert.c:252
 msgid ""
 "add an additional keyword for the top-level file or directory (this option "
 "can be specified multiple times)"
@@ -2270,7 +2601,7 @@ msgstr ""
 "thêm một từ khóa phụ cho tập tin hoặc thư mục cao nhất (có thể chỉ ra tùy "
 "chọn này nhiều lần)"
 
-#: src/applications/fs/tools/gnunet-insert.c:251
+#: src/applications/fs/tools/gnunet-insert.c:256
 msgid ""
 "add an additional keyword for all files and directories (this option can be "
 "specified multiple times)"
@@ -2278,11 +2609,11 @@ msgstr ""
 "thêm một từ khóa phụ cho tất cả tập tin và thư mục (có thể chỉ ra tùy chọn "
 "này nhiều lần)"
 
-#: src/applications/fs/tools/gnunet-insert.c:256
+#: src/applications/fs/tools/gnunet-insert.c:261
 msgid "set the meta-data for the given TYPE to the given VALUE"
 msgstr "đặt dữ liệu meta cho TYPE đưa ra tới VALUE chỉ ra"
 
-#: src/applications/fs/tools/gnunet-insert.c:259
+#: src/applications/fs/tools/gnunet-insert.c:264
 msgid ""
 "do not index, perform full insertion (stores entire file in encrypted form "
 "in GNUnet database)"
@@ -2290,7 +2621,7 @@ msgstr ""
 "không đánh chỉ mục, thực hiện việc chèn đầy đủ (chứa toàn bộ tập tin ở dạng "
 "mã hóa trong cơ sở dữ liệu GNUnet)"
 
-#: src/applications/fs/tools/gnunet-insert.c:263
+#: src/applications/fs/tools/gnunet-insert.c:268
 msgid ""
 "specify ID of an updated version to be published in the future (for "
 "namespace insertions only)"
@@ -2298,17 +2629,17 @@ msgstr ""
 "chỉ ra ID của một phiên bản đã cập nhật để chia sẻ trong tương lai (chỉ cho "
 "sự chèn không gian tên)"
 
-#: src/applications/fs/tools/gnunet-insert.c:267
+#: src/applications/fs/tools/gnunet-insert.c:272
 msgid "specify the priority of the content"
 msgstr "chỉ ra ưu tiên của nội dung"
 
-#: src/applications/fs/tools/gnunet-insert.c:270
+#: src/applications/fs/tools/gnunet-insert.c:275
 msgid "publish the files under the pseudonym NAME (place file into namespace)"
 msgstr ""
 "đưa ra dùng chung các tập tin dưới tên hiệu TÊN (đặt tập tin vào không gian "
 "tên)"
 
-#: src/applications/fs/tools/gnunet-insert.c:273
+#: src/applications/fs/tools/gnunet-insert.c:278
 msgid ""
 "specifies this as an aperiodic but updated publication (for namespace "
 "insertions only)"
@@ -2316,31 +2647,31 @@ msgstr ""
 "chỉ ra sự chia sẻ này không theo chu kỳ nhưng đã cập nhật (chỉ cho chèn "
 "không gian tên)"
 
-#: src/applications/fs/tools/gnunet-insert.c:277
+#: src/applications/fs/tools/gnunet-insert.c:282
 msgid ""
 "set the ID of this version of the publication (for namespace insertions only)"
 msgstr "đặt ID của phiên bản này của sự chia sẻ (chỉ cho chèn không gian tên)"
 
-#: src/applications/fs/tools/gnunet-insert.c:281
+#: src/applications/fs/tools/gnunet-insert.c:286
 msgid "specify creation time for SBlock (see man-page for format)"
 msgstr "chỉ ra thời gian tạo SBlock (xem trang man để biết định dạng)"
 
-#: src/applications/fs/tools/gnunet-insert.c:284
+#: src/applications/fs/tools/gnunet-insert.c:289
 msgid "ID of the previous version of the content (for namespace update only)"
 msgstr ""
 "ID của phiên bản trước của nội dung (chỉ cho sự cập nhật không gian tên)"
 
-#: src/applications/fs/tools/gnunet-insert.c:326
+#: src/applications/fs/tools/gnunet-insert.c:324
 #, fuzzy, c-format
 msgid "You must specify one and only one filename for insertion.\n"
 msgstr "Người dùng phải chỉ ra một  và chỉ một tập tin để bỏ đánh chỉ mục.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:351
+#: src/applications/fs/tools/gnunet-insert.c:348
 #, fuzzy, c-format
 msgid "Keywords for file `%s':\n"
 msgstr "Từ khóa cho tập tin '%s':\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:378
+#: src/applications/fs/tools/gnunet-insert.c:374
 #, fuzzy, c-format
 msgid "Could not access namespace `%s' (does not exist?).\n"
 msgstr "Không truy cập được không gian tên '%s' (đã có rồi?).\n"
@@ -2350,54 +2681,53 @@ msgstr "Không truy cập được không gian tên '%s' (đã có rồi?).\n"
 msgid "Parsing time failed. Use `%s' format.\n"
 msgstr "Phân tích thời gian thất bại. Hãy dùng định dạng '%s'.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:407
-#: src/applications/fs/tools/gnunet-insert.c:412
-#: src/applications/fs/tools/gnunet-insert.c:417
-#: src/applications/fs/tools/gnunet-insert.c:422
+#: src/applications/fs/tools/gnunet-insert.c:403
+#: src/applications/fs/tools/gnunet-insert.c:409
+#: src/applications/fs/tools/gnunet-insert.c:415
+#: src/applications/fs/tools/gnunet-insert.c:421
 #: src/applications/fs/tools/gnunet-insert.c:427
 #, fuzzy, c-format
 msgid "Option `%s' makes no sense without option `%s'.\n"
 msgstr "Tùy chọn '%s' không có ý nghĩa khi không có tùy chọn '%s'.\n"
 
-#: src/applications/fs/tools/gnunet-search.c:136
+#: src/applications/fs/tools/gnunet-search.c:147
 msgid "exit after receiving LIMIT results"
 msgstr "thoát sau khi nhận được kết quả GIỚIHẠN"
 
-#: src/applications/fs/tools/gnunet-search.c:139
-#: src/applications/fs/tools/gnunet-download.c:64
+#: src/applications/fs/tools/gnunet-search.c:150
+#: src/applications/fs/tools/gnunet-download.c:72
 msgid "write encountered (decrypted) search results to FILENAME"
 msgstr "ghi kết quả tìm kiếm tìm thấy (đã giải mã) vào tập tin FILENAME"
 
-#: src/applications/fs/tools/gnunet-search.c:142
+#: src/applications/fs/tools/gnunet-search.c:153
 #, fuzzy
 msgid "wait DELAY seconds for search results before aborting"
 msgstr "chờ kết quả tìm kiếm TIMEOUT giây trước khi thoát"
 
-#: src/applications/fs/tools/gnunet-search.c:189
-#, c-format
-msgid "Starting search failed. Consult logs.\n"
-msgstr "Bắt đầu tìm kiếm thất bại. Hãy xem các bản ghi log.\n"
-
-#: src/applications/fs/tools/gnunet-search.c:277
+#: src/applications/fs/tools/gnunet-search.c:191
 #, c-format
 msgid "Error converting arguments to URI!\n"
 msgstr "Lỗi chuyển đổi tham số tới URI!\n"
 
-#: src/applications/fs/tools/gnunet-download.c:60
+#: src/applications/fs/tools/gnunet-download.c:68
 msgid "Download files from GNUnet."
 msgstr "Tải tập tin từ GNUnet."
 
-#: src/applications/fs/tools/gnunet-download.c:67
+#: src/applications/fs/tools/gnunet-download.c:75
 msgid "download a GNUnet directory recursively"
 msgstr "tải xuống đệ quy một thư mục GNUnet"
 
-#: src/applications/fs/tools/gnunet-download.c:86
+#: src/applications/fs/tools/gnunet-download.c:93
 #, fuzzy, c-format
 msgid "Download of file `%s' at %16llu out of %16llu bytes (%8.3f KiB/s)\n"
 msgstr "Tải xuống tập tin '%s' tại %16llu vượt quá %16llu byte (%8.3f kbps)\n"
 
-#: src/applications/fs/tools/gnunet-download.c:99
-#: src/applications/fs/tools/gnunet-download.c:110
+#: src/applications/fs/tools/gnunet-download.c:106
+#, fuzzy, c-format
+msgid "Download aborted.\n"
+msgstr "Dừng tải xuống."
+
+#: src/applications/fs/tools/gnunet-download.c:112
 #, c-format
 msgid "Error downloading: %s\n"
 msgstr "Lỗi tải xuống: %s\n"
@@ -2412,17 +2742,17 @@ msgstr ""
 msgid "Not enough arguments. You must specify a GNUnet file URI\n"
 msgstr "Không đủ tham số. Người dùng phải chỉ ra một URI tập tin của GNUnet\n"
 
-#: src/applications/fs/tools/gnunet-download.c:195
+#: src/applications/fs/tools/gnunet-download.c:194
 #, fuzzy, c-format
 msgid "URI `%s' invalid for gnunet-download.\n"
 msgstr "Sai URI '%s' cho gnunet-download.\n"
 
-#: src/applications/fs/tools/gnunet-download.c:244
+#: src/applications/fs/tools/gnunet-download.c:262
 #, fuzzy, c-format
 msgid "File stored as `%s'.\n"
 msgstr "Tập tin chứa với tên '%s'.\n"
 
-#: src/applications/fs/tools/gnunet-unindex.c:61
+#: src/applications/fs/tools/gnunet-unindex.c:57
 #, c-format
 msgid ""
 "%16llu of %16llu bytes unindexed (estimating %llu seconds to "
@@ -2431,7 +2761,7 @@ msgstr ""
 "Đã bỏ chỉ mục %16llu từ %16llu byte (sẽ hoàn thành sau %llu "
 "giây)                "
 
-#: src/applications/fs/tools/gnunet-unindex.c:72
+#: src/applications/fs/tools/gnunet-unindex.c:68
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -2440,7 +2770,7 @@ msgstr ""
 "\n"
 "Hoàn thành bỏ chỉ mục của '%s', %llu byte sau %llu giây (%8.3f kbps).\n"
 
-#: src/applications/fs/tools/gnunet-unindex.c:83
+#: src/applications/fs/tools/gnunet-unindex.c:80
 #, c-format
 msgid ""
 "\n"
@@ -2453,22 +2783,22 @@ msgstr ""
 msgid "Unindex files."
 msgstr "Tập tin đã bỏ đánh chỉ mục."
 
-#: src/applications/fs/tools/gnunet-unindex.c:145
+#: src/applications/fs/tools/gnunet-unindex.c:137
 #, fuzzy
 msgid "Not enough arguments. You must specify a filename.\n"
 msgstr "Không đủ tham số. Người dùng phải chỉ ra một URI tập tin của GNUnet\n"
 
-#: src/applications/fs/tools/gnunet-unindex.c:173
+#: src/applications/fs/tools/gnunet-unindex.c:164
 #, fuzzy, c-format
 msgid "`%s' failed.  Is `%s' a file?\n"
 msgstr "'%s' thất bại.  '%s' là một tập tin?\n"
 
-#: src/applications/fs/module/ondemand.c:317
+#: src/applications/fs/module/ondemand.c:320
 #, fuzzy, c-format
 msgid "Indexed file disappeared, deleting block for query `%s'\n"
 msgstr "Tập tin đã đánh chỉ mục biến mất, đang xóa khối cho yêu cầu '%s'\n"
 
-#: src/applications/fs/module/ondemand.c:411
+#: src/applications/fs/module/ondemand.c:418
 #, fuzzy, c-format
 msgid ""
 "Because the file `%s' has been unavailable for 3 days it got removed from "
@@ -2479,7 +2809,7 @@ msgstr ""
 "hãy bỏ chỉ mục các tập tin trước khi xóa chúng vì chỉ mục hiện thời chứa các "
 "liên kết sai!"
 
-#: src/applications/fs/module/ondemand.c:438
+#: src/applications/fs/module/ondemand.c:445
 #, fuzzy, c-format
 msgid ""
 "Configuration file must specify directory for storage of FS data in section `"
@@ -2488,13 +2818,13 @@ msgstr ""
 "Tập tin cấu hình phải chỉ ra thư mục để chứa dữ liệu FS trong phần '%s' dưới "
 "'%s'.\n"
 
-#: src/applications/fs/module/ondemand.c:655
+#: src/applications/fs/module/ondemand.c:664
 #, fuzzy, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr "Khối ODB đã bỏ chỉ mục '%s' từ %llu không có trong kho dữ liệu.\n"
 
-#: src/applications/fs/module/fs.c:1196
+#: src/applications/fs/module/fs.c:1229
 #, fuzzy, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
@@ -2502,12 +2832,12 @@ msgid ""
 msgstr ""
 "Người dùng phải chỉ ra một số dương cho '%s' trong phần '%s' của cấu hình.\n"
 
-#: src/applications/fs/module/fs.c:1247
+#: src/applications/fs/module/fs.c:1281
 #, fuzzy, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr "'%s' đăng ký trình điều khiển máy khách %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/module/fs.c:1287
+#: src/applications/fs/module/fs.c:1321
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
@@ -2519,55 +2849,38 @@ msgstr ""
 msgid "# on-demand block migration attempts"
 msgstr ""
 
-#: src/applications/fs/fsui/searchtest.c:143
-#: src/applications/fs/fsui/fsuitest.c:167
-#: src/applications/fs/fsui/downloadtest.c:239
+#: src/applications/fs/fsui/searchtest.c:156
+#: src/applications/fs/fsui/fsuitest.c:199
+#: src/applications/fs/fsui/downloadtest.c:308
 #: src/applications/fs/ecrs/helper.c:118 src/applications/fs/ecrs/helper.c:123
 #: src/applications/fs/ecrs/helper.c:126 src/applications/fs/ecrs/helper.c:130
 msgid "AND"
 msgstr "VÀ"
 
-#: src/applications/fs/fsui/fsui.c:195
-msgid "FSUI persistence: error restoring download\n"
-msgstr "FSUI: lỗi phục hồi tải xuống\n"
-
-#: src/applications/fs/fsui/fsui.c:666
-#, fuzzy, c-format
-msgid "FSUI state file `%s' had syntax error at offset %u.\n"
-msgstr "Tập tin trạng thái FSUI '%s' có lỗi cú pháp tại vùng %u.\n"
-
-#: src/applications/fs/fsui/download.c:305
-msgid "Download aborted."
-msgstr "Dừng tải xuống."
-
-#: src/applications/fs/fsui/download.c:309
-msgid "ECRS download failed (see logs)."
-msgstr "Tải xuống ECRS thất bại (hãy xem các bản ghi log)."
-
-#: src/applications/fs/fsui/download.c:313
+#: src/applications/fs/fsui/search.c:265
 #, fuzzy
-msgid "ECRS download suspending."
+msgid "Error running search (consult logs)."
+msgstr "Bắt đầu tìm kiếm thất bại. Hãy xem các bản ghi log.\n"
+
+#: src/applications/fs/fsui/download.c:263
+#, fuzzy
+msgid "ECRS download failed (see logs)"
 msgstr "Tải xuống ECRS thất bại (hãy xem các bản ghi log)."
 
-#: src/applications/fs/fsui/download.c:317
-msgid "Unexpected download state."
-msgstr ""
-
-#: src/applications/fs/fsui/unindex.c:80
+#: src/applications/fs/fsui/unindex.c:99
 #, fuzzy
 msgid "Unindex failed."
 msgstr "Bỏ đánh chỉ mục thất bại.\n"
 
-#: src/applications/fs/fsui/upload.c:229 src/applications/fs/fsui/upload.c:374
-#: src/applications/fs/fsui/upload.c:413
+#: src/applications/fs/fsui/upload.c:222
 #, fuzzy
-msgid "Upload failed."
-msgstr "Tải lên thất bại.\n"
+msgid "Failed to create temporary directory."
+msgstr "Lỗi định dạng tập tin (không phải một thư mục GNUnet?)\n"
 
-#: src/applications/fs/fsui/upload.c:420
+#: src/applications/fs/fsui/upload.c:244
 #, fuzzy
-msgid "Cannot upload directory without using recursion."
-msgstr "Không tải lên được thư mục khi không dùng đệ quy.\n"
+msgid "Upload failed (consult logs)."
+msgstr "Tải xuống ECRS thất bại (hãy xem các bản ghi log)."
 
 #: src/applications/fs/ecrs/search.c:167
 msgid "CHK URI not allowed for search.\n"
@@ -2595,77 +2908,77 @@ msgstr ""
 "Nội dung đã giải mã không tương ứng chìa khóa. Đây là một lỗi bug hoặc một "
 "tập tin chèn vào với ý xấu. Dừng tải xuống.\n"
 
-#: src/applications/fs/ecrs/download.c:1153
+#: src/applications/fs/ecrs/download.c:1157
 #, fuzzy, c-format
 msgid ""
 "Content `%s' seems to be not available on the network (tried %u times).\n"
 msgstr "Nội dung '%s' có vẻ không có trên mạng.\n"
 
-#: src/applications/fs/ecrs/upload.c:170
+#: src/applications/fs/ecrs/upload.c:161
 #, fuzzy, c-format
 msgid "`%s' is not a file.\n"
 msgstr "'%s' không phải là một tập tin thông thường.\n"
 
-#: src/applications/fs/ecrs/upload.c:180
+#: src/applications/fs/ecrs/upload.c:171
 #, fuzzy, c-format
 msgid "Cannot get size of file `%s'"
 msgstr "Không mở được tập tin cấu hình '%s'\n"
 
-#: src/applications/fs/ecrs/upload.c:188
+#: src/applications/fs/ecrs/upload.c:179
 #, fuzzy
 msgid "Failed to connect to gnunetd."
 msgstr "Kết nối tới gnunetd không thành công.\n"
 
-#: src/applications/fs/ecrs/upload.c:200
+#: src/applications/fs/ecrs/upload.c:191
 #, fuzzy, c-format
 msgid "Cannot hash `%s'.\n"
 msgstr "Không hash được '%s'.\n"
 
-#: src/applications/fs/ecrs/upload.c:219
+#: src/applications/fs/ecrs/upload.c:210
 #, fuzzy, c-format
 msgid "Initialization for indexing file `%s' failed.\n"
 msgstr "Nạp để đánh chỉ mục tập tin '%s' thất bại.\n"
 
-#: src/applications/fs/ecrs/upload.c:226
+#: src/applications/fs/ecrs/upload.c:217
 #, fuzzy, c-format
 msgid "Indexing file `%s' failed. Trying to insert file...\n"
 msgstr "nạp môđun '%s' không thành công.  Đang cho máy khách biết.\n"
 
-#: src/applications/fs/ecrs/upload.c:312
+#: src/applications/fs/ecrs/upload.c:303
 #, c-format
 msgid "Indexing data failed at position %i.\n"
 msgstr "Đánh chỉ mục dữ liệu thất bại tại vị trí %i.\n"
 
-#: src/applications/fs/ecrs/meta.c:847
+#: src/applications/fs/ecrs/meta.c:849
 #, fuzzy, c-format
 msgid "Renaming of file `%s' to `%s' failed: %s\n"
 msgstr "Đổi tên tập tin '%s' thành '%s' thất bại: %s\n"
 
-#: src/applications/fs/ecrs/meta.c:855
+#: src/applications/fs/ecrs/meta.c:857
 #, fuzzy, c-format
 msgid "Could not rename file `%s' to `%s': file exists\n"
 msgstr "Không đổi tên được tập tin '%s' thành '%s': tập tin tồn tại\n"
 
-#: src/applications/fs/ecrs/namespace.c:153
+#: src/applications/fs/ecrs/namespace.c:154
 #, fuzzy, c-format
 msgid "Cannot create pseudonym `%s', file `%s' exists.\n"
 msgstr "Không tạo được tên hiệu '%s', tập tin '%s' tồn tại.\n"
 
-#: src/applications/fs/ecrs/namespace.c:338
-#: src/applications/fs/ecrs/namespace.c:419
-#: src/applications/fs/ecrs/namespace.c:573
+#: src/applications/fs/ecrs/namespace.c:339
+#: src/applications/fs/ecrs/namespace.c:420
+#: src/applications/fs/ecrs/namespace.c:574
 #, fuzzy, c-format
 msgid "File `%s' does not contain a pseudonym.\n"
 msgstr "Tập tin '%s' không chứa một tên hiệu.\n"
 
-#: src/applications/fs/ecrs/namespace.c:350
-#: src/applications/fs/ecrs/namespace.c:430
+#: src/applications/fs/ecrs/namespace.c:351
+#: src/applications/fs/ecrs/namespace.c:431
 #, fuzzy, c-format
 msgid "Format of pseudonym `%s' is invalid.\n"
 msgstr "Định dạng của tên hiệu '%s' sai.\n"
 
-#: src/applications/fs/ecrs/namespace.c:587
-#: src/applications/fs/ecrs/namespace.c:598
+#: src/applications/fs/ecrs/namespace.c:588
+#: src/applications/fs/ecrs/namespace.c:599
 #, fuzzy, c-format
 msgid "Format of file `%s' is invalid.\n"
 msgstr "Định dạng của tập tin '%s' sai.\n"
@@ -2681,21 +2994,21 @@ msgid ""
 "`unknown' instead.\n"
 msgstr ""
 
-#: src/applications/fs/uritrack/file_info.c:123
+#: src/applications/fs/uritrack/file_info.c:125
 msgid "Collecting file identifiers disabled.\n"
 msgstr "Tắt bỏ thu thập tên tập tin.\n"
 
-#: src/applications/fs/uritrack/file_info.c:355
+#: src/applications/fs/uritrack/file_info.c:367
 #, c-format
 msgid "Deleted corrupt URI database in `%s'."
 msgstr ""
 
-#: src/applications/fs/namespace/namespace_info.c:654
+#: src/applications/fs/namespace/namespace_info.c:656
 msgid "Publication interval for periodic publication changed."
 msgstr ""
 "Đã thay đổi khoảng thời gian giữa các lần đưa ra chia sẻ cho chia sẻ định kỳ."
 
-#: src/applications/fs/namespace/namespace_info.c:675
+#: src/applications/fs/namespace/namespace_info.c:677
 msgid ""
 "Publishing update for periodically updated content more than a week ahead of "
 "schedule.\n"
@@ -2703,16 +3016,16 @@ msgstr ""
 "Đang đưa ra các cập nhật cho nội dung cập nhật thường xuyên trước một tuần "
 "so với lịch.\n"
 
-#: src/applications/topology_f2f/topology.c:354
+#: src/applications/topology_f2f/topology.c:359
 #, fuzzy, c-format
 msgid "Failed to read friends list from `%s'\n"
 msgstr "Đọc danh sách bạn bè từ '%s' không thành công\n"
 
-#: src/applications/topology_f2f/topology.c:371
+#: src/applications/topology_f2f/topology.c:376
 msgid "Syntax error in topology specification, skipping bytes.\n"
 msgstr "Lỗi cú pháp trong sự xác định địa hình học, bỏ qua byte.\n"
 
-#: src/applications/topology_f2f/topology.c:384
+#: src/applications/topology_f2f/topology.c:389
 #, fuzzy, c-format
 msgid "Syntax error in topology specification, skipping bytes `%s'.\n"
 msgstr "Lỗi cú pháp trong sự xác định địa hình, bỏ qua các byte '%s'.\n"
@@ -2722,20 +3035,37 @@ msgstr "Lỗi cú pháp trong sự xác định địa hình, bỏ qua các byte
 msgid "`%s' registering client handler %d and %d\n"
 msgstr "'%s' đang đăng ký trình điều khiển máy khách %d và %d\n"
 
-#: src/applications/template/gnunet-template.c:44
+#: src/applications/template/gnunet-template.c:43
 msgid "Template description."
 msgstr ""
 
-#: src/applications/bootstrap_http/http.c:92
+#: src/applications/bootstrap_http/http.c:100
 #, fuzzy, c-format
 msgid "Bootstrap data obtained from `%s' is invalid.\n"
 msgstr "Định dạng của tên hiệu '%s' sai.\n"
 
-#: src/applications/bootstrap_http/http.c:144
+#: src/applications/bootstrap_http/http.c:121
+#: src/applications/bootstrap_http/http.c:263
+#: src/applications/bootstrap_http/http.c:283
+#: src/applications/bootstrap_http/http.c:317
+#: src/applications/bootstrap_http/http.c:335
+#: src/applications/bootstrap_http/http.c:349
+#: src/applications/bootstrap_http/http.c:361
+#: src/applications/bootstrap_http/http.c:373
+#, fuzzy, c-format
+msgid "%s failed at %s:%d: `%s'\n"
+msgstr "'%s' thất bại tại %s:%d với lỗi: '%s'.\n"
+
+#: src/applications/bootstrap_http/http.c:173
 msgid "No hostlist URL specified in configuration, will not bootstrap.\n"
 msgstr ""
 
 #: src/applications/bootstrap_http/http.c:229
+#, fuzzy, c-format
+msgid "Trying to download hostlist from `%s'\n"
+msgstr "Đọc danh sách bạn bè từ '%s' không thành công\n"
+
+#: src/applications/bootstrap_http/http.c:409
 #, fuzzy
 msgid "# hellos downloaded via http"
 msgstr "# đã tải xuống HELO qua http"
@@ -2754,341 +3084,337 @@ msgstr "# byte nhận được của dạng %d"
 msgid "tracks bandwidth utilization by gnunetd"
 msgstr ""
 
-#: src/applications/vpn/gnunet-vpn.c:98
+#: src/applications/vpn/gnunet-vpn.c:56
 msgid "Suppress display of asynchronous log messages"
 msgstr ""
 
-#: src/applications/vpn/gnunet-vpn.c:103
-msgid "VPN over GNUnet."
-msgstr ""
-
-#: src/applications/vpn/vpn.c:351
+#: src/applications/vpn/vpn.c:326
 #, c-format
 msgid "Not storing route to myself from peer %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:359
+#: src/applications/vpn/vpn.c:334
 #, c-format
 msgid "Duplicate route to node from peer %d, choosing minimum hops"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:387
+#: src/applications/vpn/vpn.c:362
 #, c-format
 msgid "Inserting route from peer %d in route table at location %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:436
+#: src/applications/vpn/vpn.c:411
 #, c-format
 msgid "RFC4193 Frame length %d is too big for GNUnet!\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:440
+#: src/applications/vpn/vpn.c:415
 #, c-format
 msgid "RFC4193 Frame length %d too small\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:450
+#: src/applications/vpn/vpn.c:425
 #, c-format
 msgid "RFC4193 Ethertype %x and IP version %x do not match!\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:510
+#: src/applications/vpn/vpn.c:485
 #, c-format
 msgid "RFC4193 Going to try and make a tunnel in slot %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:514
+#: src/applications/vpn/vpn.c:489
 #, c-format
 msgid "Cannot open tunnel device because of %s"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:541
+#: src/applications/vpn/vpn.c:518
 #, c-format
 msgid "RFC4193 Create skips gnu%d as we are already using it\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:549
+#: src/applications/vpn/vpn.c:526
 #, c-format
 msgid "Cannot set tunnel name to %s because of %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:553
+#: src/applications/vpn/vpn.c:530
 #, c-format
 msgid "Configured tunnel name to %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:591
+#: src/applications/vpn/vpn.c:568
 #, c-format
 msgid "Cannot get socket flags for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:595
+#: src/applications/vpn/vpn.c:572
 #, c-format
 msgid "Cannot set socket flags for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:602
+#: src/applications/vpn/vpn.c:579
 #, c-format
 msgid "Cannot set MTU for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:607
+#: src/applications/vpn/vpn.c:584
 #, c-format
 msgid "Cannot get interface index for gnu%d because %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:615
+#: src/applications/vpn/vpn.c:592
 #, c-format
 msgid "IPv6 ifaddr gnu%d - %x:%x:%x:%x:%x:%x:%x:%x/%d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:627
+#: src/applications/vpn/vpn.c:604
 #, fuzzy, c-format
 msgid "Cannot set interface IPv6 address for gnu%d because %s\n"
 msgstr "Không tìm thấy một địa chỉ IP cho giao diện '%s'.\n"
 
-#: src/applications/vpn/vpn.c:638
+#: src/applications/vpn/vpn.c:615
 #, c-format
 msgid "IPv6 route gnu%d - destination %x:%x:%x:%x:%x:%x:%x:%x/%d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:650
+#: src/applications/vpn/vpn.c:627
 #, fuzzy, c-format
 msgid "Cannot add route IPv6 address for gnu%s because %s\n"
 msgstr "Không tìm thấy một địa chỉ IP cho giao diện '%s'.\n"
 
-#: src/applications/vpn/vpn.c:683
+#: src/applications/vpn/vpn.c:660
 msgid ""
 "RFC4193 We have run out of memory and so I can't store a tunnel for this "
 "peer.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:729
+#: src/applications/vpn/vpn.c:706
 #, c-format
 msgid "RFC4193 Thread running (frame %d tunnel %d f2f %d) ...\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:788
+#: src/applications/vpn/vpn.c:769
 #, c-format
 msgid "VPN dropping connection %x\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:792
+#: src/applications/vpn/vpn.c:773
 #, c-format
 msgid "VPN cannot drop connection %x\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:810
+#: src/applications/vpn/vpn.c:791
 msgid "RFC4193 Thread exiting\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:850
+#: src/applications/vpn/vpn.c:831
 msgid "VPN IP src not anonymous. drop..\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:854
+#: src/applications/vpn/vpn.c:835
 msgid "VPN IP not anonymous, drop.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:860
+#: src/applications/vpn/vpn.c:841
 msgid "VPN Received, not anonymous, drop.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:863
+#: src/applications/vpn/vpn.c:844
 #, fuzzy, c-format
 msgid "VPN Received unknown IP version %d...\n"
 msgstr "Nhận được thông báo testbed không rõ dạng %u.\n"
 
-#: src/applications/vpn/vpn.c:873
+#: src/applications/vpn/vpn.c:854
 #, c-format
 msgid "<- GNUnet(%d) : %s\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:892
+#: src/applications/vpn/vpn.c:873
 msgid "Could not write the tunnelled IP to the OS... Did to setup a tunnel?\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:913
+#: src/applications/vpn/vpn.c:894
 msgid "Receive route request\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:918
+#: src/applications/vpn/vpn.c:899
 #, c-format
 msgid "Prepare route announcement level %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:929
+#: src/applications/vpn/vpn.c:910
 #, c-format
 msgid "Send route announcement %d with route announce\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:935
+#: src/applications/vpn/vpn.c:916
 #, c-format
 msgid "Send outside table info %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:951
+#: src/applications/vpn/vpn.c:932
 msgid "Receive route announce.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:955
+#: src/applications/vpn/vpn.c:936
 msgid "Going to try insert route into local table.\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:959
+#: src/applications/vpn/vpn.c:940
 #, c-format
 msgid "Inserting with hops %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:973
+#: src/applications/vpn/vpn.c:954
 #, c-format
 msgid "Request level %d from peer %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:988
+#: src/applications/vpn/vpn.c:969
 #, c-format
 msgid "Receive table limit on peer reached %d\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1016
+#: src/applications/vpn/vpn.c:997
 msgid "realise alloc ram\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1031
+#: src/applications/vpn/vpn.c:1012
 msgid "realise add routes\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1076
+#: src/applications/vpn/vpn.c:1057
 msgid "realise pull routes\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1122
+#: src/applications/vpn/vpn.c:1103
 msgid "realise copy table\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1148
+#: src/applications/vpn/vpn.c:1129
 msgid "Cannot store client info\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1208
+#: src/applications/vpn/vpn.c:1190
 msgid "Yes"
 msgstr "Có"
 
-#: src/applications/vpn/vpn.c:1208
+#: src/applications/vpn/vpn.c:1190
 msgid "No"
 msgstr "Không"
 
-#: src/applications/vpn/vpn.c:1385
+#: src/applications/vpn/vpn.c:1396
 #, fuzzy, c-format
 msgid "`%s' initialising RFC4913 module  %d and %d\n"
 msgstr "'%s' đăng ký trình điều khiển %d và %d\n"
 
-#: src/applications/vpn/vpn.c:1386
+#: src/applications/vpn/vpn.c:1397
 #, c-format
 msgid "RFC4193 my First 4 hex digits of host id are %x\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1434
+#: src/applications/vpn/vpn.c:1447
 msgid "enables IPv6 over GNUnet (incomplete)"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1466
+#: src/applications/vpn/vpn.c:1479
 msgid "RFC4193 Waiting for tun thread to end\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1477
+#: src/applications/vpn/vpn.c:1492
 msgid "RFC4193 The tun thread has ended\n"
 msgstr ""
 
-#: src/applications/vpn/vpn.c:1490
+#: src/applications/vpn/vpn.c:1507
 #, c-format
 msgid "RFC4193 Closing tunnel %d fd %d\n"
 msgstr ""
 
-#: src/server/gnunet-update.c:142
+#: src/server/gnunet-update.c:141
 #, fuzzy, c-format
 msgid "Updating data for module `%s'\n"
 msgstr "Đang cập nhật dữ liệu cho môđun '%s'\n"
 
-#: src/server/gnunet-update.c:147
+#: src/server/gnunet-update.c:146
 #, fuzzy, c-format
 msgid "Failed to update data for module `%s'\n"
 msgstr "Cập nhật dữ liệu cho môđun '%s' không thành công\n"
 
-#: src/server/gnunet-update.c:218 src/server/gnunet-transport-check.c:354
+#: src/server/gnunet-update.c:217 src/server/gnunet-transport-check.c:355
 msgid "ping peers from HOSTLISTURL that match transports"
 msgstr "ping các đầu peer từ HOSTLISTURL tương ứng với truyền tải"
 
-#: src/server/gnunet-update.c:220
+#: src/server/gnunet-update.c:219
 msgid "Updates GNUnet datastructures after version change."
 msgstr "Cập nhật cấu trúc dữ liệu GNUnet sau khi thay đổi phiên bản."
 
-#: src/server/gnunet-update.c:224 src/server/gnunet-transport-check.c:369
+#: src/server/gnunet-update.c:223 src/server/gnunet-transport-check.c:370
 msgid "run as user LOGIN"
 msgstr "chạy dưới người dùng LOGIN"
 
-#: src/server/gnunet-update.c:227
+#: src/server/gnunet-update.c:226
 #, fuzzy
 msgid "run in client mode (for getting client configuration values)"
 msgstr "chạy trong chế độ người dùng (để lấy giá trị cấu hình của người dùng)"
 
-#: src/server/connection.c:992
+#: src/server/connection.c:1023
 #, fuzzy, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "'%s' đã chọn %d vượt quá %d thông báo (MTU: %d).\n"
 
-#: src/server/connection.c:999
+#: src/server/connection.c:1032
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Chi tiết về thông báo: %u: dài %d, ưu tiên: %d\n"
 
-#: src/server/connection.c:2283
+#: src/server/connection.c:2417
 #, fuzzy, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Bỏ đi thông báo từ '%s': định dạng sai.\n"
 
-#: src/server/connection.c:2355
+#: src/server/connection.c:2489
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Số của chuỗi sai %u <= %u, đang bỏ đi thông báo.\n"
 
-#: src/server/connection.c:2370
+#: src/server/connection.c:2506
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "Thông báo nhận được cũ hơn một ngày. Đã loại bỏ.\n"
 
-#: src/server/connection.c:2774
+#: src/server/connection.c:2929
 msgid "# outgoing messages dropped"
 msgstr "# thông báo đi ra đã loại bỏ"
 
-#: src/server/connection.c:2778
+#: src/server/connection.c:2933
 msgid "# bytes of outgoing messages dropped"
 msgstr "# byte của các thông báo đi ra đã loại bỏ"
 
-#: src/server/connection.c:2780
+#: src/server/connection.c:2935
 msgid "# connections closed (HANGUP sent)"
 msgstr "# các kết nối đã đóng (gửi HANGUP)"
 
-#: src/server/connection.c:2783
+#: src/server/connection.c:2938
 #, fuzzy
 msgid "# bytes encrypted"
 msgstr "# byte nhận được của dạng %d"
 
-#: src/server/connection.c:2787
+#: src/server/connection.c:2942
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# byte đã truyền của dạng %d"
 
-#: src/server/connection.c:2791
+#: src/server/connection.c:2946
 #, fuzzy
 msgid "# bytes received"
 msgstr "# byte nhận được qua TCP"
 
-#: src/server/connection.c:2793
+#: src/server/connection.c:2948
 #, fuzzy
 msgid "# bytes decrypted"
 msgstr "# byte nhận được của dạng %d"
 
-#: src/server/connection.c:2794
+#: src/server/connection.c:2949
 #, fuzzy
 msgid "# bytes noise sent"
 msgstr "# byte nhận được do nhiễu đường truyền"
@@ -3115,16 +3441,16 @@ msgstr ""
 msgid "Starts the gnunetd daemon."
 msgstr "Chạy daemon gnunetd."
 
-#: src/server/gnunetd.c:176
+#: src/server/gnunetd.c:175
 msgid "disable padding with random data (experimental)"
 msgstr ""
 
-#: src/server/gnunetd.c:180
+#: src/server/gnunetd.c:179
 #, fuzzy
 msgid "specify username as which gnunetd should run"
 msgstr "chỉ ra máy đang chạy gnunetd"
 
-#: src/server/gnunetd.c:236
+#: src/server/gnunetd.c:228
 #, fuzzy, c-format
 msgid "Configuration or GNUnet version changed.  You need to run `%s'!\n"
 msgstr ""
@@ -3170,32 +3496,32 @@ msgstr "Không tắt đúng được ứng dụng '%s'.\n"
 msgid "Could not properly unload service `%s'!\n"
 msgstr "Không hủy nạp đúng được dịch vụ '%s'!\n"
 
-#: src/server/gnunet-transport-check.c:115
+#: src/server/gnunet-transport-check.c:116
 #, fuzzy, c-format
 msgid "`%s': Could not create hello.\n"
 msgstr "'%s': Không tạo được HELO.\n"
 
-#: src/server/gnunet-transport-check.c:124
+#: src/server/gnunet-transport-check.c:125
 #, fuzzy, c-format
 msgid "`%s': Could not connect.\n"
 msgstr "'%s': Không kết nối được.\n"
 
-#: src/server/gnunet-transport-check.c:158
+#: src/server/gnunet-transport-check.c:159
 #, fuzzy, c-format
 msgid "`%s': Could not send.\n"
 msgstr "'%s': Không gửi được.\n"
 
-#: src/server/gnunet-transport-check.c:180
+#: src/server/gnunet-transport-check.c:181
 #, fuzzy, c-format
 msgid "`%s': Did not receive message within %llu ms.\n"
 msgstr "'%s': Không nhận được thông báo trong %llu mili giây.\n"
 
-#: src/server/gnunet-transport-check.c:194
+#: src/server/gnunet-transport-check.c:195
 #, fuzzy, c-format
 msgid "`%s': Could not disconnect.\n"
 msgstr "'%s': Không ngắt kết nối được.\n"
 
-#: src/server/gnunet-transport-check.c:201
+#: src/server/gnunet-transport-check.c:202
 #, fuzzy, c-format
 msgid ""
 "`%s' transport OK.  It took %ums to transmit %llu messages of %llu bytes "
@@ -3204,12 +3530,12 @@ msgstr ""
 "'%s' truyền tải OK.  Cần %umiligiây để truyền đi %d thông báo với %d byte "
 "mỗi cái.\n"
 
-#: src/server/gnunet-transport-check.c:229
+#: src/server/gnunet-transport-check.c:230
 #, fuzzy, c-format
 msgid " Transport %d is not being tested\n"
 msgstr " Giao thông %d là không thể\n"
 
-#: src/server/gnunet-transport-check.c:245
+#: src/server/gnunet-transport-check.c:246
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -3218,57 +3544,57 @@ msgstr ""
 "\n"
 "Đang liên hệ '%s'."
 
-#: src/server/gnunet-transport-check.c:266
+#: src/server/gnunet-transport-check.c:267
 #, c-format
 msgid " Connection failed\n"
 msgstr " Kết nối không thành công\n"
 
-#: src/server/gnunet-transport-check.c:272
+#: src/server/gnunet-transport-check.c:273
 #, c-format
 msgid " Connection failed (bug?)\n"
 msgstr " Kết nối thất bại (lỗi bug?)\n"
 
-#: src/server/gnunet-transport-check.c:324
+#: src/server/gnunet-transport-check.c:325
 #, c-format
 msgid "No reply received within %llums.\n"
 msgstr "Không nhận được trả lời trong %llu miligiây.\n"
 
-#: src/server/gnunet-transport-check.c:350
+#: src/server/gnunet-transport-check.c:351
 msgid "Tool to test if GNUnet transport services are operational."
 msgstr ""
 "Công cụ để thử nghiệm xem dịch vụ truyền tải GNUnet có hoạt động không."
 
-#: src/server/gnunet-transport-check.c:357
+#: src/server/gnunet-transport-check.c:358
 msgid "send COUNT messages"
 msgstr "gửi COUNT thông báo"
 
-#: src/server/gnunet-transport-check.c:360
+#: src/server/gnunet-transport-check.c:361
 msgid "send messages with SIZE bytes payload"
 msgstr "gửi các thông báo với SIZE byte nạp trả"
 
-#: src/server/gnunet-transport-check.c:363
+#: src/server/gnunet-transport-check.c:364
 msgid "specifies which TRANSPORT should be tested"
 msgstr "chỉ ra TRANSPORT cần được thử nghiệm"
 
-#: src/server/gnunet-transport-check.c:366
+#: src/server/gnunet-transport-check.c:367
 msgid "specifies after how many MS to time-out"
 msgstr "chỉ ra hết thời gian chờ sau bao nhiên MS"
 
-#: src/server/gnunet-transport-check.c:374
+#: src/server/gnunet-transport-check.c:375
 msgid "repeat each test X times"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:455
+#: src/server/gnunet-transport-check.c:440
 #, c-format
 msgid "Testing transport(s) %s\n"
 msgstr "Đang thử nghiệm (các) truyền tải %s\n"
 
-#: src/server/gnunet-transport-check.c:458
+#: src/server/gnunet-transport-check.c:443
 #, c-format
 msgid "Available transport(s): %s\n"
 msgstr "(Các) truyền tải có: %s\n"
 
-#: src/server/gnunet-transport-check.c:518
+#: src/server/gnunet-transport-check.c:503
 #, c-format
 msgid ""
 "%d out of %d peers contacted successfully (%d times transport unavailable).\n"
@@ -3284,7 +3610,7 @@ msgstr "Yêu cầu '%s' nhận được từ máy khác là hỏng.\n"
 msgid "`%s' failed for port %d. Is gnunetd already running?\n"
 msgstr "'%s' thất bại cho cổng %d: %s. Sẽ thử lại trong %d giây.\n"
 
-#: src/server/tcpserver.c:384
+#: src/server/tcpserver.c:386
 #, fuzzy, c-format
 msgid ""
 "Malformed network specification in the configuration in section `%s' for "
@@ -3292,7 +3618,7 @@ msgid ""
 msgstr ""
 "Sự xác định mạng không đúng trong phần '%s' của cấu hình cho mục '%s': %s\n"
 
-#: src/server/tcpserver.c:437
+#: src/server/tcpserver.c:439
 #, c-format
 msgid "%s failed, message type %d already in use.\n"
 msgstr "%s thất bại, dạng thông báo %d đã sử dụng.\n"
@@ -3302,31 +3628,31 @@ msgstr "%s thất bại, dạng thông báo %d đã sử dụng.\n"
 msgid "Received corrupt message from peer `%s'in %s:%d.\n"
 msgstr "Nhận được thông báo không đúng từ đầu peer '%s' trong '%s': %d.\n"
 
-#: src/server/version.c:157
+#: src/server/version.c:152
 msgid ""
 "Failed to determine filename used to store GNUnet version information!\n"
 msgstr ""
 
-#: src/server/gnunet-peer-info.c:52
+#: src/server/gnunet-peer-info.c:51
 msgid "Print information about GNUnet peers."
 msgstr "In thông tin về các đầu peer của GNUnet."
 
-#: src/server/gnunet-peer-info.c:79 src/server/gnunet-peer-info.c:94
+#: src/server/gnunet-peer-info.c:78 src/server/gnunet-peer-info.c:93
 #, fuzzy, c-format
 msgid "Could not get address of peer `%s'.\n"
 msgstr "Không nhận được địa chỉ của đầu peer '%s'.\n"
 
-#: src/server/gnunet-peer-info.c:88
+#: src/server/gnunet-peer-info.c:87
 #, fuzzy
 msgid "hello message invalid (signature invalid).\n"
 msgstr "Thông báo HELO sai (sai chữ ký).\n"
 
-#: src/server/gnunet-peer-info.c:99
+#: src/server/gnunet-peer-info.c:98
 #, fuzzy, c-format
 msgid "Peer `%s' with trust %8u and address `%s'\n"
 msgstr "Đầu peer '%s' với tin tưởng %8u và địa chỉ '%s'\n"
 
-#: src/util/cron/cron.c:355
+#: src/util/cron/cron.c:356
 #, fuzzy, c-format
 msgid ""
 "`%s' called with cron job not in queue, adding.  This may not be what you "
@@ -3335,20 +3661,20 @@ msgstr ""
 "'%s' gọi với công việc cron không trong hàng đợi, đang thêm.  Đây có thể "
 "không phải cái người dùng muốn.\n"
 
-#: src/util/network_client/tcpio.c:90
+#: src/util/network_client/tcpio.c:94
 msgid "Could not find valid value for PORT in section NETWORK."
 msgstr ""
 
-#: src/util/network_client/tcpio.c:114
+#: src/util/network_client/tcpio.c:118
 msgid "Could not find valid value for HOST in section NETWORK."
 msgstr ""
 
-#: src/util/network_client/tcpio.c:209 src/util/network_client/tcpio.c:237
+#: src/util/network_client/tcpio.c:251 src/util/network_client/tcpio.c:281
 #, fuzzy, c-format
 msgid "Cannot connect to %s:u: %s\n"
 msgstr "Không kết nối được tới %u.%u.%u.%u:%u: %s\n"
 
-#: src/util/network_client/tcpio.c:356
+#: src/util/network_client/tcpio.c:403
 #, fuzzy, c-format
 msgid "`%s' failed, reply invalid!\n"
 msgstr "'%s' thất bại, câu trả lời sai!\n"
@@ -3380,17 +3706,17 @@ msgstr ""
 msgid "Can't create semaphore: %i"
 msgstr "Không tạo được đèn tín hiệu: %i"
 
-#: src/util/os/dso.c:51
+#: src/util/os/dso.c:56
 #, c-format
 msgid "Initialization of plugin mechanism failed: %s!\n"
 msgstr "Chạy cơ chế plugin không thành công: %s!\n"
 
-#: src/util/os/dso.c:90
+#: src/util/os/dso.c:110
 #, fuzzy, c-format
 msgid "`%s' failed for library `%s' with error: %s\n"
 msgstr "'%s' thất bại cho thư viện '%s' tại %s:%d với lỗi: %s\n"
 
-#: src/util/os/dso.c:132
+#: src/util/os/dso.c:152
 #, fuzzy, c-format
 msgid "`%s' failed to resolve method '%s' with error: %s\n"
 msgstr ""
@@ -3409,24 +3735,24 @@ msgstr "Không hỏi được sự sử dụng CPU (Windows 9x).\n"
 msgid "Invalid process priority `%s'\n"
 msgstr "Câu trả lời không đúng tới '%s'.\n"
 
-#: src/util/os/user.c:125
+#: src/util/os/user.c:124
 #, fuzzy, c-format
 msgid "User `%s' not known, cannot change UID to it.\n"
 msgstr "Người dùng '%s' không rõ, không thay đổi được UID thành nó."
 
-#: src/util/os/user.c:136
+#: src/util/os/user.c:135
 #, fuzzy, c-format
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr "Không thay đổi được người dùng/nhóm thành '%s': %s"
 
-#: src/util/network/select.c:272
+#: src/util/network/select.c:282
 #, fuzzy
 msgid "Received malformed message (too small) from connection. Closing.\n"
 msgstr ""
 "Nhận được thông báo bị hỏng (kích thước %u) từ kết nối tcp-đầu peer. Đang "
 "đóng.\n"
 
-#: src/util/network/select.c:421
+#: src/util/network/select.c:443
 msgid "select listen socket not valid!\n"
 msgstr ""
 
@@ -3461,124 +3787,125 @@ msgstr "Định dạng sai '%s' cho mạng: %s\n"
 msgid "`%s' failed for drive `%s': %u\n"
 msgstr "'%s' thất bại cho ổ %s: %u\n"
 
-#: src/util/disk/storage.c:247
+#: src/util/disk/storage.c:517
 #, fuzzy, c-format
-msgid "Expected `%s' to be a directory\n"
+msgid "Expected `%s' to be a directory!\n"
 msgstr "'%s' mong đợi '%s' là một thư mục!\n"
 
-#: src/util/disk/storage.c:286
-#, fuzzy, c-format
-msgid "Expected `%s' to be a regular file\n"
-msgstr "'%s' không phải là một tập tin thông thường.\n"
-
-#: src/util/disk/storage.c:493
-#, fuzzy, c-format
-msgid "expected `%s' to be a directory!\n"
-msgstr "'%s' mong đợi '%s' là một thư mục!\n"
-
-#: src/util/config_impl/impl.c:260
+#: src/util/config_impl/impl.c:275
 #, fuzzy, c-format
 msgid "Syntax error in configuration file `%s' at line %d.\n"
 msgstr "Lỗi cú pháp trong tập tin cấu hình '%s' trên dòng %d.\n"
 
-#: src/util/config_impl/impl.c:421
+#: src/util/config_impl/impl.c:505
+#, c-format
+msgid "Setting option `%s' in section `%s' to value `%s' was refused.\n"
+msgstr ""
+
+#: src/util/config_impl/impl.c:551
 #, c-format
 msgid ""
 "Configuration value '%llu' for '%s' in section '%s' is out of legal bounds [%"
 "llu,%llu]\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:433
+#: src/util/config_impl/impl.c:563
 #, c-format
 msgid "Configuration value '%s' for '%s' in section '%s' should be a number\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:513
+#: src/util/config_impl/impl.c:653
 #, c-format
 msgid ""
 "Configuration value '%s' for '%s' in section '%s' is not in set of legal "
 "choices\n"
 msgstr ""
 
-#: src/util/config_impl/impl.c:624
+#: src/util/error/error.c:122
 #, c-format
-msgid "Setting option `%s' in section `%s' to value `%s' was refused.\n"
+msgid ""
+"\n"
+"Press any key to continue\n"
 msgstr ""
 
-#: src/util/error/error.c:156 src/util/error/error.c:200
+#: src/util/error/error.c:190 src/util/error/error.c:234
 msgid "DEBUG"
 msgstr "TÌMLỖI"
 
-#: src/util/error/error.c:159 src/util/error/error.c:202
+#: src/util/error/error.c:193 src/util/error/error.c:236
 msgid "STATUS"
 msgstr ""
 
-#: src/util/error/error.c:162 src/util/error/error.c:204
+#: src/util/error/error.c:196 src/util/error/error.c:240
 msgid "WARNING"
 msgstr "CẢNH BÁO"
 
-#: src/util/error/error.c:165 src/util/error/error.c:206
+#: src/util/error/error.c:199 src/util/error/error.c:242
 msgid "ERROR"
 msgstr "LỖI"
 
-#: src/util/error/error.c:168 src/util/error/error.c:208
+#: src/util/error/error.c:202 src/util/error/error.c:244
 msgid "FATAL"
 msgstr "LỖI NẶNG"
 
-#: src/util/error/error.c:171 src/util/error/error.c:210
+#: src/util/error/error.c:205 src/util/error/error.c:246
 msgid "USER"
 msgstr ""
 
-#: src/util/error/error.c:174 src/util/error/error.c:212
+#: src/util/error/error.c:208 src/util/error/error.c:248
 msgid "ADMIN"
 msgstr ""
 
-#: src/util/error/error.c:177 src/util/error/error.c:214
+#: src/util/error/error.c:211 src/util/error/error.c:250
 msgid "DEVELOPER"
 msgstr ""
 
-#: src/util/error/error.c:180 src/util/error/error.c:216
+#: src/util/error/error.c:214 src/util/error/error.c:252
 msgid "REQUEST"
 msgstr ""
 
-#: src/util/error/error.c:183 src/util/error/error.c:218
+#: src/util/error/error.c:217 src/util/error/error.c:254
 msgid "BULK"
 msgstr ""
 
-#: src/util/error/error.c:186 src/util/error/error.c:220
+#: src/util/error/error.c:220 src/util/error/error.c:256
 msgid "IMMEDIATE"
 msgstr ""
 
-#: src/util/error/error.c:189
+#: src/util/error/error.c:223
 msgid "ALL"
 msgstr ""
 
-#: src/util/error/error.c:221
+#: src/util/error/error.c:238
+msgid "INFO"
+msgstr "THÔNGTIN"
+
+#: src/util/error/error.c:257
 msgid "NOTHING"
 msgstr "KHÔNGCÓGÌ"
 
-#: src/util/threads/mutex.c:131 src/util/threads/mutex.c:151
+#: src/util/threads/mutex.c:145 src/util/threads/mutex.c:165
 #, fuzzy, c-format
 msgid "Invalid argument for `%s'.\n"
 msgstr "Tham số sai: '%s'\n"
 
-#: src/util/threads/mutex.c:136
+#: src/util/threads/mutex.c:150
 #, fuzzy, c-format
 msgid "Deadlock due to `%s'.\n"
 msgstr "Khóa chết theo '%s' tại %s: %d.\n"
 
-#: src/util/threads/mutex.c:156
+#: src/util/threads/mutex.c:170
 #, fuzzy, c-format
 msgid "Permission denied for `%s'.\n"
 msgstr "Không đủ quyền hạn cho '%s' tại %s:%d.\n"
 
-#: src/util/threads/pthread.c:139 src/util/threads/pthread.c:147
-#: src/util/threads/pthread.c:154 src/util/threads/pthread.c:245
+#: src/util/threads/pthread.c:158 src/util/threads/pthread.c:166
+#: src/util/threads/pthread.c:173 src/util/threads/pthread.c:266
 #, fuzzy, c-format
 msgid "`%s' failed with error code %s: %s\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
 
-#: src/util/threads/pthread.c:161 src/util/threads/pthread.c:256
+#: src/util/threads/pthread.c:180 src/util/threads/pthread.c:277
 #, fuzzy, c-format
 msgid "`%s' failed with error code %d: %s\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
@@ -3649,7 +3976,12 @@ msgid ""
 "option `%s' was denied.\n"
 msgstr ""
 
-#: src/util/getopt/printhelp.c:49
+#: src/util/getopt/setoption.c:137 src/util/getopt/setoption.c:153
+#, fuzzy, c-format
+msgid "You must pass a number to the `%s' option.\n"
+msgstr "Người dùng phải đưa một số vào tùy chọn '%s'.\n"
+
+#: src/util/getopt/printhelp.c:50
 #, c-format
 msgid ""
 "Arguments mandatory for long options are also mandatory for short options.\n"
@@ -3707,22 +4039,22 @@ msgstr ""
 msgid "Tool to setup GNUnet."
 msgstr ""
 
-#: src/setup/gnunet-setup.c:152
+#: src/setup/gnunet-setup.c:185
 #, fuzzy, c-format
 msgid "Too many arguments.\n"
 msgstr "Sai tham số dòng lệnh.\n"
 
-#: src/setup/gnunet-setup.c:157
+#: src/setup/gnunet-setup.c:190
 #, fuzzy
 msgid "No interface specified, using default\n"
 msgstr "Chưa chỉ ra tên bảng, đang dùng '%s'.\n"
 
-#: src/setup/gnunet-setup.c:227
+#: src/setup/gnunet-setup.c:264
 #, fuzzy, c-format
 msgid "`%s' is not available."
 msgstr "'%s' không phải là một tập tin thông thường.\n"
 
-#: src/setup/gnunet-setup.c:243
+#: src/setup/gnunet-setup.c:280
 #, fuzzy, c-format
 msgid "Unknown operation `%s'\n"
 msgstr "Lỗi không rõ.\n"
@@ -3833,18 +4165,32 @@ msgid "Configuration changed. Save?"
 msgstr ""
 "Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy '%s'!\n"
 
-#: src/setup/gtk/wizard_gtk.c:429
+#: src/setup/gtk/wizard_gtk.c:137
+#, fuzzy
+msgid "(unknown connection)"
+msgstr "Kết nối mạng"
+
+#: src/setup/gtk/wizard_gtk.c:390
 #, fuzzy, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Không ghi được tập tin cấu hình %s:"
 
-#: src/setup/gtk/wizard_gtk.c:475 src/setup/ncurses/wizard_curs.c:620
+#: src/setup/gtk/wizard_gtk.c:415
+#, fuzzy
+msgid "Do you want to save the new configuration?"
+msgstr "Ghi thiết lập?"
+
+#: src/setup/gtk/wizard_gtk.c:442 src/setup/ncurses/wizard_curs.c:620
 msgid "Unable to create user account:"
 msgstr "Không tạo được tài khoản người dùng:"
 
-#: src/setup/gtk/wizard_gtk.c:482 src/setup/ncurses/wizard_curs.c:623
+#: src/setup/gtk/wizard_gtk.c:449 src/setup/ncurses/wizard_curs.c:623
 msgid "Unable to change startup process:"
 msgstr "Không thay đổi được tiến trình khởi động:"
+
+#: src/setup/gtk/wizard_gtk.c:458
+msgid "gnunet-update failed. Please run gnunet-update manually."
+msgstr ""
 
 #: src/setup/text/conf.c:74
 #, fuzzy
@@ -3940,36 +4286,36 @@ msgstr "Tham số sai: '%s'\n"
 msgid "Unknown kind %x (internal error).  Aborting.\n"
 msgstr ""
 
-#: src/setup/text/conf.c:538
+#: src/setup/text/conf.c:542
 #, c-format
 msgid "You can always press ENTER to keep the current value.\n"
 msgstr ""
 
-#: src/setup/text/conf.c:539
+#: src/setup/text/conf.c:543
 #, c-format
 msgid "Use the '%s' key to abort.\n"
 msgstr ""
 
-#: src/setup/text/conf.c:553 src/setup/ncurses/mconf.c:422
+#: src/setup/text/conf.c:557 src/setup/ncurses/mconf.c:422
 #, fuzzy, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr ""
 "Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy '%s'!\n"
 
-#: src/setup/text/conf.c:558
+#: src/setup/text/conf.c:562
 #, c-format
 msgid ""
 "Save configuration?  Answer 'y' for yes, 'n' for no, 'r' to repeat "
 "configuration. "
 msgstr ""
 
-#: src/setup/text/conf.c:568
+#: src/setup/text/conf.c:572
 #, fuzzy, c-format
 msgid "Configuration was unchanged, no need to save.\n"
 msgstr ""
 "Cấu hình hoặc phiên bản GNUnet đã thay đổi.  Người dùng cần chạy '%s'!\n"
 
-#: src/setup/text/conf.c:573
+#: src/setup/text/conf.c:577
 #, fuzzy, c-format
 msgid "Configuration file `%s' written.\n"
 msgstr "Đã tạo (lại) các tập tin cấu hình.\n"
@@ -4354,46 +4700,97 @@ msgid ""
 "Internal error: entry `%s' in section `%s' not found for visibility change!\n"
 msgstr ""
 
-#: src/include/gnunet_util_getopt.h:145
+#: src/include/gnunet_util_getopt.h:150
 msgid "print this help"
 msgstr "in trợ giúp này"
 
-#: src/include/gnunet_util_getopt.h:154
+#: src/include/gnunet_util_getopt.h:159
 msgid "print the version number"
 msgstr "in số của phiên bản"
 
-#: src/include/gnunet_util_getopt.h:160
-msgid "configure logging to use LOGRULES"
+#: src/include/gnunet_util_getopt.h:165
+msgid "configure logging to use LOGLEVEL"
 msgstr ""
 
-#: src/include/gnunet_util_getopt.h:166
+#: src/include/gnunet_util_getopt.h:171
 msgid "be verbose"
 msgstr "thông báo chi tiết"
 
-#: src/include/gnunet_util_getopt.h:172
+#: src/include/gnunet_util_getopt.h:177
 msgid "use configuration file FILENAME"
 msgstr "dùng tập tin cấu hình FILENAME"
 
-#: src/include/gnunet_util_getopt.h:178
+#: src/include/gnunet_util_getopt.h:183
 msgid "specify host on which gnunetd is running"
 msgstr "chỉ ra máy đang chạy gnunetd"
 
-#: src/include/gnunet_util_error.h:163 src/include/gnunet_util_error.h:165
-#: src/include/gnunet_util_error.h:167 src/include/gnunet_util_error.h:169
+#: src/include/gnunet_util_error.h:175 src/include/gnunet_util_error.h:177
+#: src/include/gnunet_util_error.h:179 src/include/gnunet_util_error.h:181
 #, fuzzy, c-format
 msgid "Assertion failed at %s:%d in %s.\n"
 msgstr "Xác nhận thất bại tại %s:%d.\n"
 
-#: src/include/gnunet_util_error.h:176 src/include/gnunet_util_error.h:183
-#: src/include/gnunet_util_error.h:190 src/include/gnunet_util_error.h:197
+#: src/include/gnunet_util_error.h:188 src/include/gnunet_util_error.h:195
+#: src/include/gnunet_util_error.h:202 src/include/gnunet_util_error.h:209
 #, fuzzy, c-format
 msgid "`%s' failed at %s:%d in %s with error: %s\n"
 msgstr "'%s' thất bại tại %s:%d với lỗi: %s\n"
 
-#: src/include/gnunet_util_error.h:204 src/include/gnunet_util_error.h:211
+#: src/include/gnunet_util_error.h:216 src/include/gnunet_util_error.h:223
 #, fuzzy, c-format
 msgid "`%s' failed on file `%s' at %s:%d in %s with error: %s\n"
 msgstr "'%s' thất bại trên tập tin'%s' tại %s:%d với lỗi: %s\n"
+
+#, fuzzy
+#~ msgid "Could not resolve name of SMTP server `%s': %s"
+#~ msgstr "Không tìm thấy tên của máy chủ SMTP '%s': %s"
+
+#~ msgid "SMTP server send unexpected response at %s:%d.\n"
+#~ msgstr "Máy chủ SMTP gửi cầu trả lời không mong đợi tại %s: %d.\n"
+
+#, fuzzy
+#~ msgid "Failed to send `%s' request to SMTP server.\n"
+#~ msgstr "Gửi yêu cầu HTTP tới máy '%s' không thành công: %s\n"
+
+#~ msgid "query table called NAME"
+#~ msgstr "hỏi bảng có tên NAME"
+
+#~ msgid "No commands specified.\n"
+#~ msgstr "Chưa chỉ ra câu lệnh.\n"
+
+#~ msgid "Superflous arguments (ignored).\n"
+#~ msgstr "Tham số thừa (lờ đi).\n"
+
+#, fuzzy
+#~ msgid "Query `%s' had no results.\n"
+#~ msgstr "Câu hỏi '%s' không có kết quả.\n"
+
+#~ msgid "FSUI persistence: error restoring download\n"
+#~ msgstr "FSUI: lỗi phục hồi tải xuống\n"
+
+#, fuzzy
+#~ msgid "FSUI state file `%s' had syntax error at offset %u.\n"
+#~ msgstr "Tập tin trạng thái FSUI '%s' có lỗi cú pháp tại vùng %u.\n"
+
+#, fuzzy
+#~ msgid "ECRS download suspending."
+#~ msgstr "Tải xuống ECRS thất bại (hãy xem các bản ghi log)."
+
+#, fuzzy
+#~ msgid "Upload failed."
+#~ msgstr "Tải lên thất bại.\n"
+
+#, fuzzy
+#~ msgid "Cannot upload directory without using recursion."
+#~ msgstr "Không tải lên được thư mục khi không dùng đệ quy.\n"
+
+#, fuzzy
+#~ msgid "Expected `%s' to be a regular file\n"
+#~ msgstr "'%s' không phải là một tập tin thông thường.\n"
+
+#, fuzzy
+#~ msgid "expected `%s' to be a directory!\n"
+#~ msgstr "'%s' mong đợi '%s' là một thư mục!\n"
 
 #, fuzzy
 #~ msgid "Sorry, no help is available for this option.\n"
@@ -4626,10 +5023,6 @@ msgstr "'%s' thất bại trên tập tin'%s' tại %s:%d với lỗi: %s\n"
 #~ "Cổng sai \"%s\" nằm trong xác định danh sách máy, đang thử cổng %d.\n"
 
 #, fuzzy
-#~ msgid "`%s' failed at %s:%d with error: `%s'.\n"
-#~ msgstr "'%s' thất bại tại %s:%d với lỗi: '%s'.\n"
-
-#, fuzzy
 #~ msgid "Could not download list of peer contacts, host `%s' unknown.\n"
 #~ msgstr ""
 #~ "Không tải xuống được danh sách liên hệ các đầu peer, máy '%s' không rõ.\n"
@@ -4851,17 +5244,11 @@ msgstr "'%s' thất bại trên tập tin'%s' tại %s:%d với lỗi: %s\n"
 #~ "kết nối thẳng qua môđem, thẻ ISDN, và DNAT (hay còng gọi là \"chuyển tiếp "
 #~ "cổng\")."
 
-#~ msgid "Network interface:"
-#~ msgstr "Giao diện mạng:"
-
 #~ msgid "IP-Address/Hostname:"
 #~ msgstr "Địa chỉ IP/Tên máy:"
 
 #~ msgid "Computer cannot receive inbound connections (SNAT/Firewall)"
 #~ msgstr "Máy không thể nhận được kết nối đi vào (SNAT/Firewall)"
-
-#~ msgid "Network connection"
-#~ msgstr "Kết nối mạng"
 
 #~ msgid ""
 #~ "You can limit GNUnet's ressource usage here.\n"
@@ -5026,14 +5413,8 @@ msgstr "'%s' thất bại trên tập tin'%s' tại %s:%d với lỗi: %s\n"
 #~ msgid "Show _range"
 #~ msgstr "Hiện _xếp hạng"
 
-#~ msgid "Show value of the option"
-#~ msgstr "Hiển thị giá trị của tùy chọn"
-
 #~ msgid "Show _data"
 #~ msgstr "Hiển thị _dữ liệu"
-
-#~ msgid "Show all options"
-#~ msgstr "Hiển thị mọi tùy chọn"
 
 #~ msgid "Show all _options"
 #~ msgstr "Hiển thị mọi _tùy chọn"
@@ -5131,9 +5512,6 @@ msgstr "'%s' thất bại trên tập tin'%s' tại %s:%d với lỗi: %s\n"
 
 #~ msgid "MESSAGE"
 #~ msgstr "TIN NHẮN"
-
-#~ msgid "INFO"
-#~ msgstr "THÔNGTIN"
 
 #~ msgid "CRON"
 #~ msgstr "CRON"

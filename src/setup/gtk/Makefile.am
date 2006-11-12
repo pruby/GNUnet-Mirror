@@ -11,7 +11,7 @@ plugin_LTLIBRARIES = \
   libgnunetsetup_gtk.la
 
 EXTRA_DIST = \
- wizard.glade 
+ gnunet-setup.glade 
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
