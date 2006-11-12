@@ -1,5 +1,7 @@
 INCLUDES = -I$(top_srcdir)/src/include
 
+EXTRA_DIST = tcp_helper.c udp_helper.c
+
 plugindir = $(libdir)/GNUnet
 
 if HAVE_IPV6
