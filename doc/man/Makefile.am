@@ -18,3 +18,5 @@ gnunet-update.1 \
 gnunetd.1 \
 gnunet.conf.5 \
 gnunetd.conf.5
+
+EXTRA_DIST = ${man_MANS}
