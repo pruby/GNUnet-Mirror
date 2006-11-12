@@ -161,6 +161,7 @@ static void scanHelperSelect(const PeerIdentity * id,
 static void scanForHosts(unsigned int index) {
   IndexMatch indexMatch;
   cron_t now;
+  EncName enc;
 
   if (os_network_monitor_get_load(coreAPI->load_monitor,
 				  Upload) > 100)
@@ -175,7 +176,7 @@ static void scanForHosts(unsigned int index) {
 			&indexMatch);
   if (indexMatch.matchCount == 0) {
     GE_LOG(coreAPI->ectx,
-	   GE_DEBUG | GE_REQUEST,
+	   GE_DEBUG | GE_REQUEST | GE_DEVELOPER,
 	   "No peers found for slot %u\n",
 	   index);
     return; /* no matching peers found! */
@@ -195,6 +196,14 @@ static void scanForHosts(unsigned int index) {
     GE_BREAK(NULL, 0); /* should REALLY not happen */
     return;
   }
+  IF_GELOG(coreAPI->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
+	   hash2enc(&indexMatch.match,
+		    &enc));
+  GE_LOG(coreAPI->ectx,
+	 GE_DEBUG | GE_REQUEST | GE_USER | GE_DEVELOPER,
+	 "Trying to connect to peer `%s'\n",
+	 &enc);
   coreAPI->unicast(&indexMatch.match,
 		   NULL,
 		   0,
@@ -273,7 +282,7 @@ static void cronCheckLiveness(void * unused) {
     if (weak_randomi(LIVE_SCAN_EFFECTIVENESS) != 0)
       continue;
     if ( (minint > coreAPI->isSlotUsed(i)) &&
-	 (! autoconnect) )
+	 (NO == autoconnect) )
       scanForHosts(i);
   }
   active = coreAPI->forAllConnectedNodes

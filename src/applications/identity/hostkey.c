@@ -62,10 +62,22 @@ const PublicKey * getPublicPrivateKey() {
 int signData(const void * data,
 	     unsigned short size,
 	     Signature * result) {
-  return sign(hostkey,
-	      size,
-	      data,
-	      result);
+  int ret;
+
+  ret = sign(hostkey,
+	     size,
+	     data,
+	     result);
+#if EXTRA_CHECKS
+  if (ret == OK) {
+    GE_ASSERT(NULL,
+	      OK == verifySig(data,
+			      size,
+			      result,
+			      &publicKey));
+  }
+#endif
+  return ret;
 }
 
 /**

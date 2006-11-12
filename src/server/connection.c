@@ -666,7 +666,8 @@ approximateKnapsack(BufferEntry * be, unsigned int available) {
  * @param available what is the maximum length available?
  * @return the overall priority that was achieved
  */
-static unsigned int solveKnapsack(BufferEntry * be, unsigned int available) {
+static unsigned int solveKnapsack(BufferEntry * be,
+				  unsigned int available) {
   unsigned int i;
   int j;
   int max;
@@ -1173,10 +1174,16 @@ static unsigned int prepareSelectedMessages(BufferEntry * be) {
         EncName enc;
 
         hdr = (MESSAGE_HEADER *) entry->closure;
-        IF_GELOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER, hash2enc(&be->session.sender.hashPubKey, &enc));
-        GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-            "Core selected message of type %u and size %u for sending to peer `%s'.\n",
-            ntohs(hdr->type), ntohs(hdr->size), &enc);
+        IF_GELOG(ectx, 
+		 GE_DEBUG | GE_REQUEST | GE_USER,
+		 hash2enc(&be->session.sender.hashPubKey, 
+			  &enc));
+        GE_LOG(ectx,
+	       GE_DEBUG | GE_REQUEST | GE_USER,
+	       "Core selected message of type %u and size %u for sending to peer `%s'.\n",
+	       ntohs(hdr->type),
+	       ntohs(hdr->size),
+	       &enc);
       }
 #endif
     }
@@ -1551,7 +1558,8 @@ static int sendBuffer(BufferEntry * be) {
  * @param be on which connection to transmit
  * @param se what to transmit (with meta-data)
  */
-static void appendToBuffer(BufferEntry * be, SendEntry * se) {
+static void appendToBuffer(BufferEntry * be, 
+			   SendEntry * se) {
 #if DEBUG_CONNECTION
   EncName enc;
 #endif
@@ -1744,7 +1752,8 @@ static BufferEntry *addHost(const PeerIdentity * hostId,
  * @param arg the second argument to the method
  * @return the number of connected hosts
  */
-static int forAllConnectedHosts(BufferEntryCallback method, void *arg) {
+static int forAllConnectedHosts(BufferEntryCallback method, 
+				void *arg) {
   unsigned int i;
   int count = 0;
   BufferEntry *be;
@@ -1771,7 +1780,8 @@ static int forAllConnectedHosts(BufferEntryCallback method, void *arg) {
  * @param arg closure of type fENHWrap giving the function
  *        to call
  */
-static void fENHCallback(BufferEntry * be, void *arg) {
+static void fENHCallback(BufferEntry * be,
+			 void *arg) {
   fENHWrap *wrap;
 
   wrap = (fENHWrap *) arg;
@@ -1789,7 +1799,9 @@ static void fENHCallback(BufferEntry * be, void *arg) {
  * @param len the length of the pre-build message
  * @return OK (always successful)
  */
-static int copyCallback(void *buf, void *closure, unsigned short len) {
+static int copyCallback(void *buf,
+			void *closure, 
+			unsigned short len) {
   if(len > 0) {
     memcpy(buf, closure, len);
     FREE(closure);
@@ -2489,7 +2501,9 @@ int checkHeader(const PeerIdentity * sender,
   }
   stamp = ntohl(msg->timeStamp);
   if(stamp + 1 * cronDAYS < TIME(NULL)) {
-    GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER, _("Message received more than one day old. Dropped.\n"));
+    GE_LOG(ectx,
+	   GE_INFO | GE_BULK | GE_USER, 
+	   _("Message received more than one day old. Dropped.\n"));
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }

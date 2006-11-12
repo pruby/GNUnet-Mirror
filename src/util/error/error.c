@@ -111,23 +111,19 @@ void GE_LOG(struct GE_Context * ctx,
  * @brief Get user confirmation (e.g. before the app shuts down and closes the
  *        error message
  */
-void GE_CONFIRM(struct GE_Context * ctx)
-{
-  if (ctx == NULL)
-  {
+void GE_CONFIRM(struct GE_Context * ctx) {
+  if (ctx == NULL) {
     /* @TODO: we probably ought to get confirmations in all graphical
-              environments */
+       environments */
 #ifdef WINDOWS
     /* Console open? */
-    if (GetStdHandle(STD_ERROR_HANDLE) != NULL)
-    {
+    if (GetStdHandle(STD_ERROR_HANDLE) != NULL) {
       fprintf(stderr,
-        _("\nPress any key to continue\n"));
+	      _("\nPress any key to continue\n"));
       getch();
     }
 #endif
-  }
-  else if (ctx->confirm)
+  } else if (ctx->confirm)
     ctx->confirm(ctx->cls);
 }
 

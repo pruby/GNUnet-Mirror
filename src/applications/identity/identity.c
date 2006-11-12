@@ -151,7 +151,7 @@ static CoreAPIForApplication * coreAPI;
  * @return filename of the form DIRECTORY/HOSTID.PROTOCOL
  */
 static char * getHostFileName(const PeerIdentity * id,
-			      const unsigned short protocol) {
+			      unsigned short protocol) {
   EncName fil;
   char * fn;
   size_t n;
@@ -454,7 +454,7 @@ static void addHostTemporarily(const P2P_hello_MESSAGE * tmp) {
  * Delete a host from the list.
  */
 static void delHostFromKnown(const PeerIdentity * identity,
-			     const unsigned short protocol) {
+			     unsigned short protocol) {
   HostEntry * entry;
   char * fn;
   int i;
