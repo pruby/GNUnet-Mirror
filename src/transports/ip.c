@@ -305,28 +305,33 @@ static int getAddress(struct GC_Configuration * cfg,
   char * ipString;
   int retval;
 
-  ipString = NULL;
-  if ( (1 != GC_get_configuration_value_string(cfg,
-					       "NETWORK",
-					       "IP",
-					       "",
-					       &ipString)) ||
-       (strlen(ipString) > 0) ) {
+  retval = SYSERR;
+  if (GC_have_configuration_value(cfg,
+				  "NETWORK",
+				  "IP")) {	
+    ipString = NULL;
+    GC_get_configuration_value_string(cfg,
+				      "NETWORK",
+				      "IP",
+				      "",
+				      &ipString);
+    if (strlen(ipString) > 0) {
+      retval = get_host_by_name(ectx,
+				ipString,
+				address);
+    }
+    FREE(ipString);
+  }
 #if LINUX || SOMEBSD || MINGW
+  if (retval == SYSERR)
     if (OK == getAddressFromIOCTL(cfg,
 				  ectx,
 				  address))
       retval = OK;
-    else 
 #endif
-      retval = getAddressFromHostname(ectx,
-				      address);
-  } else {
-    retval = get_host_by_name(ectx,
-			      ipString,
-			      address);
-  }
-  FREE(ipString);
+  if (retval == SYSERR)
+    retval = getAddressFromHostname(ectx,
+				    address);
   return retval;
 }
 

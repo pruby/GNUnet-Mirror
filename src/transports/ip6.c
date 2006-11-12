@@ -92,27 +92,25 @@ static int getAddress6(struct GC_Configuration * cfg,
   struct hostent * ip; /* for the lookup of the IP in gnunet.conf */
 
   retval = SYSERR;
-  ipString = NULL;
-  if ( (1 != GC_get_configuration_value_string(cfg,
-					       "NETWORK",
-					       "IP6",
-					       "",
-					       &ipString)) ||
-       (strlen(ipString) > 0) ) {
-    retval = getAddress6FromHostname(ectx,
-				     address);
-  } else {
-    ip = gethostbyname2(ipString,
-			AF_INET6);
-    if (ip == NULL) {
-      GE_LOG(ectx,
-	     GE_ERROR | GE_USER | GE_BULK,
-	     _("Could not resolve `%s': %s\n"),
-	     ipString, 
-	     hstrerror(h_errno));
-      retval = SYSERR;
-    } else {
-      if (ip->h_addrtype != AF_INET6) {
+  if (GC_have_configuration_value(cfg,
+				  "NETWORK",
+				  "IP6")) {
+    ipString = NULL;
+    GC_get_configuration_value_string(cfg,
+				      "NETWORK",
+				      "IP6",
+				      "",
+				      &ipString);
+    if (strlen(ipString) > 0) {
+      ip = gethostbyname2(ipString,
+			  AF_INET6);
+      if (ip == NULL) {
+	GE_LOG(ectx,
+	       GE_ERROR | GE_USER | GE_BULK,
+	       _("Could not resolve `%s': %s\n"),
+	       ipString, 
+	       hstrerror(h_errno));
+      } else if (ip->h_addrtype != AF_INET6) {
 	GE_ASSERT(ectx,
 		  0);
 	retval = SYSERR;
@@ -125,8 +123,11 @@ static int getAddress6(struct GC_Configuration * cfg,
 	retval = OK;
       }
     }
+    FREE(ipString);      
   }
-  FREE(ipString);  
+  if (retval == SYSERR)
+    retval = getAddress6FromHostname(ectx,
+				     address);
   return retval;
 }
 
