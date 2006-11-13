@@ -421,7 +421,7 @@ TransportAPI * inittransport_tcp6(CoreAPIForTransport * core) {
   ectx = core->ectx;
   cfg = core->cfg;
   tcplock = MUTEX_CREATE(YES);
-  tcpblacklistlock = MUTEX_CREATE(NO);
+  tcpblacklistlock = MUTEX_CREATE(YES);
   if (0 != GC_attach_change_listener(cfg,
 				     &reloadConfiguration,
 				     NULL)) {

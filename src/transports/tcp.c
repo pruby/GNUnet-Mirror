@@ -411,7 +411,7 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   GE_ASSERT(ectx, sizeof(MESSAGE_HEADER) == 4);
   GE_ASSERT(ectx, sizeof(TCPWelcome) == 68);
   tcplock = MUTEX_CREATE(YES);
-  tcpblacklistlock = MUTEX_CREATE(NO);
+  tcpblacklistlock = MUTEX_CREATE(YES);
   if (0 != GC_attach_change_listener(cfg,
 				     &reloadConfiguration,
 				     NULL)) {
