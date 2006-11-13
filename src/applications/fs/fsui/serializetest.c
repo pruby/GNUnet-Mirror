@@ -46,8 +46,6 @@ static char * makeName(unsigned int i) {
   SNPRINTF(fn,
 	   strlen("/tmp/gnunet-fsui-serializetest/FSUITEST") + 14,
 	   "/tmp/gnunet-fsui-serializetest/FSUITEST%u",
-	   DIR_SEPARATOR_STR,
-	   name,
 	   i);
   disk_directory_create_for_file(NULL, fn);
   return fn;

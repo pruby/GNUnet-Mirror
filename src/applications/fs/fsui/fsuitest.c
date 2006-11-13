@@ -35,21 +35,14 @@
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(NULL, 0); goto FAILURE; }
 
 static char * makeName(unsigned int i) {
-  char * name;
   char * fn;
 
-  fn = STRDUP("/tmp/gnunet-fsuitest");
-  name = string_expandFileName(NULL, fn);
-  disk_directory_create(NULL, name);
-  FREE(fn);
-  fn = MALLOC(strlen(name) + 40);
+  fn = MALLOC(strlen("/tmp/gnunet-fsui-serializetest/FSUITEST") + 14);
   SNPRINTF(fn,
-	   strlen(name) + 40,
-	   "%s%sFSUITEST%u",
-	   DIR_SEPARATOR_STR,
-	   name,
+	   strlen("/tmp/gnunet-fsui-test/FSUITEST") + 14,
+	   "/tmp/gnunet-fsui-test/FSUITEST%u",
 	   i);
-  FREE(name);
+  disk_directory_create_for_file(NULL, fn);
   return fn;
 }
 
