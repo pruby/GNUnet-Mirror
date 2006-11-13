@@ -1264,6 +1264,9 @@ int ECRS_downloadFile(struct GE_Context * ectx,
       __FUNCTION__,
       filename);
 #endif
+  if (SYSERR == disk_directory_create_for_file(ectx,
+					       filename))
+    return SYSERR;
   if (0 == ECRS_fileSize(uri)) {
     ret = disk_file_open(ectx,
 			 filename,
