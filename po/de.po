@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-11-13 12:12-0700\n"
+"POT-Creation-Date: 2006-11-13 13:57-0700\n"
 "PO-Revision-Date: 2006-03-17 21:37+0100\n"
 "Last-Translator: Nils Durner <durner@gnunet.org>\n"
 "Language-Team: German <de@li.org>\n"
@@ -771,7 +771,7 @@ msgstr ""
 msgid "HTTP: Could not determine my public IP address.\n"
 msgstr "HTTP: öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/http.c:1190 src/transports/tcp.c:254
+#: src/transports/http.c:1190 src/transports/tcp.c:256
 #, c-format
 msgid "Cannot connect to %u.%u.%u.%u:%u: %s\n"
 msgstr "Verbindung zu %u.%u.%u.%u:%u fehlgeschlagen: %s\n"
@@ -848,24 +848,24 @@ msgstr ""
 "MTU für `%s' ist möglicherweise zu gering (Fragmentierung ist nicht "
 "implementiert!)\n"
 
-#: src/transports/tcp.c:181
+#: src/transports/tcp.c:183
 msgid "Could not determine my public IP address.\n"
 msgstr "Öffentliche IP-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/tcp.c:324 src/transports/tcp6.c:334
+#: src/transports/tcp.c:326 src/transports/tcp6.c:336
 #, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr "Der Transportdienst auf Port %d konnte nicht gestartet werden.\n"
 
-#: src/transports/tcp.c:423
+#: src/transports/tcp.c:428
 msgid "# bytes received via TCP"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/transports/tcp.c:425
+#: src/transports/tcp.c:430
 msgid "# bytes sent via TCP"
 msgstr "# Bytes gesendet über TCP"
 
-#: src/transports/tcp.c:427
+#: src/transports/tcp.c:432
 msgid "# bytes dropped by TCP (outgoing)"
 msgstr "# Bytes verworfen von TCP (ausgehend)"
 
@@ -939,26 +939,26 @@ msgstr ""
 msgid "GNUnet now uses the IP address %u.%u.%u.%u.\n"
 msgstr "GNUnet verwendet nun die IP-Adresse %u.%u.%u.%u.\n"
 
-#: src/transports/tcp6.c:179
+#: src/transports/tcp6.c:181
 msgid "Could not determine my public IPv6 address.\n"
 msgstr "Die öffentliche IPv6-Adresse konnte nicht ermittelt werden.\n"
 
-#: src/transports/tcp6.c:221
+#: src/transports/tcp6.c:223
 #, c-format
 msgid "`%s': unknown service: %s\n"
 msgstr "`%s': unbekannter Dienst: %s\n"
 
-#: src/transports/tcp6.c:433
+#: src/transports/tcp6.c:438
 #, fuzzy
 msgid "# bytes received via TCP6"
 msgstr "# Bytes empfangen über TCP"
 
-#: src/transports/tcp6.c:435
+#: src/transports/tcp6.c:440
 #, fuzzy
 msgid "# bytes sent via TCP6"
 msgstr "# Bytes gesendet über TCP"
 
-#: src/transports/tcp6.c:437
+#: src/transports/tcp6.c:442
 #, fuzzy
 msgid "# bytes dropped by TCP6 (outgoing)"
 msgstr "# Bytes verworfen von TCP (ausgehend)"
@@ -1489,7 +1489,7 @@ msgstr "Ungültige Daten in %s. Korrektur wird versucht (durch Löschung).\n"
 msgid "sqlite datastore"
 msgstr "sqlite Datenspeicher"
 
-#: src/applications/sqstore_sqlite/sqlite.c:1213
+#: src/applications/sqstore_sqlite/sqlite.c:1216
 #: src/applications/sqstore_mysql/mysql.c:1318
 msgid "# bytes in datastore"
 msgstr "# bytes in der Datenbank"
