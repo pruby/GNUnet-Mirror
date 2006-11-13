@@ -196,6 +196,9 @@ static void destroySession(SelectHandle * sh,
     s->locked = -1;
     return;
   }
+  if (s->locked == 2)
+    return; /* already in process of destroying! */
+  s->locked = 2;
 #if DEBUG_SELECT
   GE_LOG(sh->ectx,
 	 GE_DEBUG | GE_DEVELOPER | GE_BULK,
@@ -205,10 +208,12 @@ static void destroySession(SelectHandle * sh,
 	 s->rsize,
 	 s->wsize);	
 #endif
+  MUTEX_UNLOCK(sh->lock);
   sh->ch(sh->ch_cls,
 	 sh,
 	 s->sock,
 	 s->sock_ctx);
+  MUTEX_LOCK(sh->lock);
   socket_destroy(s->sock);
   GROW(s->rbuff,
        s->rsize,

@@ -969,7 +969,7 @@ GN_getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 
 static int
 GNgetopt_long(int argc,
-	      const char ** argv,
+	      char * const * argv,
 	      const char * options,
 	      const struct GNoption * long_options,
 	      int * opt_index) {
@@ -1000,7 +1000,7 @@ int gnunet_parse_options(const char * binaryOptions,
 			 struct GC_Configuration * cfg,
 			 const CommandLineOption * allOptions,
 			 unsigned int argc,
-			 const char ** argv) {
+			 char * const * argv) {
   struct GNoption * long_options;
   CommandLineProcessorContext clpc;
   int count;

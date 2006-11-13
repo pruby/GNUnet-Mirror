@@ -60,7 +60,7 @@ typedef struct {
   /**
    * Original command line
    */
-  const char ** argv;
+  char * const * argv;
 
   /**
    * Total number of argv's.
@@ -205,7 +205,7 @@ int gnunet_parse_options(const char * binaryName,
 			 struct GC_Configuration * cfg,
 			 const CommandLineOption * allOptions,
 			 unsigned int argc,
-			 const char ** argv);
+			 char * const * argv);
 
 int gnunet_getopt_configure_set_option(CommandLineProcessorContext * ctx,
 				       void * scls,
