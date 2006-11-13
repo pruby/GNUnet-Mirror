@@ -55,6 +55,8 @@ static struct GC_Configuration *editCfg = NULL;
 
 static struct GE_Context *err_ctx = NULL;
 
+static char *cfg_fn = NULL;
+
 /* 1 = terminate app on "assi_destroy" */
 static int quit;
 
@@ -382,11 +384,8 @@ static void showErr(const char * prefix,
 static int save_conf() {
   char * err;
   const char * prefix;
-  char * filename;
 
-  GC_get_configuration_value_string(editCfg, "GNUNET-SETUP", "FILENAME",
-    daemon_config ? "/etc/gnunetd.conf" : "~/.gnunet/gnunet.conf", &filename);
-  if (GC_write_configuration(editCfg, filename)) {
+  if (GC_write_configuration(editCfg, cfg_fn)) {
     prefix = _("Unable to save configuration file `%s':");
 
     err = MALLOC(strlen(filename) + strlen(prefix) + 1);
@@ -611,6 +610,7 @@ int gtk_wizard_mainsetup_gtk(int argc,
 
   editCfg = cfg;
   err_ctx = ectx;
+  cfg_fn = filename;
   daemon_config = is_daemon;
   setLibrary(self);
   curwnd = get_xml("assi_step1");
