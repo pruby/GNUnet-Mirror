@@ -275,7 +275,7 @@ void * downloadThread(void * cls) {
 		 &event);
   } else {
     /* else: suspended */
-    GE_ASSERT(NULL, dl->state == FSUI_SUSPENDING);
+    GE_BREAK(NULL, dl->state == FSUI_SUSPENDING);
   }
 
 
