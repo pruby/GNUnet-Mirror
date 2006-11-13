@@ -356,7 +356,7 @@ int disk_directory_create(struct GE_Context * ectx,
     pos++;
   }
   FREE(rdir);
-  return ret;
+  return OK;
 }
 
 
