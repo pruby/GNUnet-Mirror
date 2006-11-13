@@ -144,7 +144,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   unsigned int urls;
   size_t pos;
 
-  if (0 != curl_global_init(CURL_GLOBAL_ALL)) {
+  if (0 != curl_global_init(CURL_GLOBAL_WIN32)) {
     GE_BREAK(ectx, 0);
     return;
   }
