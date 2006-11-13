@@ -59,6 +59,12 @@ typedef struct {
 
   cron_t lastUse;
 
+  /**
+   * 0 : can be destroyed
+   * 1 : if destruction is required, it must be delayed
+   * -1: delayed destruction required
+   * 2 : destruction in progress
+   */
   int locked;
 
   /**
@@ -296,8 +302,8 @@ static int readAndProcess(SelectHandle * sh,
     /* do we have the entire message? */
     if (session->pos < len)
       break; /* wait for more */
-
-    session->locked = 1;
+    if (session->locked == 0)
+      session->locked = 1;
     MUTEX_UNLOCK(sh->lock);
     if (OK != sh->mh(sh->mh_cls,
 		     sh,
@@ -305,7 +311,8 @@ static int readAndProcess(SelectHandle * sh,
 		     session->sock_ctx,
 		     pack)) {
       MUTEX_LOCK(sh->lock);
-      session->locked = 0;
+      if (session->locked == 1)
+	session->locked = 0;
       destroySession(sh, session);
       return SYSERR;
     }
@@ -315,7 +322,8 @@ static int readAndProcess(SelectHandle * sh,
       destroySession(sh, session);
       return OK;
     }
-    session->locked = 0;
+    if (session->locked == 1)
+      session->locked = 0;
     /* shrink buffer adequately */
     memmove(&session->rbuff[0],
 	    &session->rbuff[len],
