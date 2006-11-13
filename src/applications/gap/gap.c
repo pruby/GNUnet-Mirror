@@ -2114,7 +2114,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
 						"LOAD",
 						"HARDUPLIMIT",
 						0,
-						100, /* 100% */
+						999999999,
 						0, /* 0 == no limit */
 						&hardUpLimit)) ||
        (-1 == GC_get_configuration_value_number(cfg,

@@ -966,7 +966,7 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
 (define (load-maxup builder)
  (builder
  "LOAD"
- "MAXNETDOWNBPS"
+ "MAXNETUPBPS"
  (_ "What is the maximum number of bytes per second that we may send?")
  (nohelp)
  '()
@@ -1005,7 +1005,8 @@ If you activate it, you can claim for *all* the non-indexed (-n to gnunet-insert
  "LOAD"
  "HARDUPLIMIT"
  (_ "What is the maximum upstream bandwidth (hard limit)?")
- (_ "Use 0 for no limit.")
+ (_ "The limit is given as a percentage o
+f the MAXNETUPBPS limit.  Use 100 to have MAXNETUPBPS be the hard limit.  Use zero for no limit.")
  '()
  #t
  0
