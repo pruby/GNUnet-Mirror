@@ -142,7 +142,7 @@ static int configure_logging(struct GE_Context ** ectx,
  *  otherwise
  */
 int GNUNET_init(int argc,
-		const char ** argv,
+		char * const * argv,
 		const char * binaryName,
 		char ** cfgFileName,
 		const struct CommandLineOption * options,

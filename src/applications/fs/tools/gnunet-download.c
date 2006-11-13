@@ -150,7 +150,7 @@ static void * progressModel(void * unused,
  * @return return value from download file: 0: ok, -1, 1: error
  */
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   int ok;
   int try_rename;
   struct FSUI_Context * ctx;

@@ -236,6 +236,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
 #endif
 
   sock = -1;
+  s = NULL;
   for (res=res0; res; res=res->ai_next) {
     if (res->ai_family != PF_INET6)
       continue;
@@ -265,8 +266,8 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
       GE_LOG_STRERROR(ectx,
 		      GE_WARNING | GE_ADMIN | GE_BULK,
 		      "connect");
-      CLOSE(sock);
-      sock = -1;
+      socket_destroy(s);
+      s = NULL;
       continue;
     }
     break;
@@ -274,7 +275,7 @@ static int tcp6Connect(const P2P_hello_MESSAGE * helo,
   freeaddrinfo(res0);
   if (sock == -1)
     return SYSERR;
-
+  GE_ASSERT(ectx, s != NULL);
   return tcpConnectHelper(helo,
 			  s,
 			  tcp6API.protocolNumber,

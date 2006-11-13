@@ -143,7 +143,7 @@ static int iterate(void * closure,
 }
 
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   int i;
   HashCode512 table;
   struct GC_Configuration * cfg;

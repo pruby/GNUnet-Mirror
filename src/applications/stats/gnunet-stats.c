@@ -106,7 +106,7 @@ static struct CommandLineOption gnunetstatsOptions[] = {
  * @return 0 ok, 1 on error
  */
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   int res;
   struct ClientServerConnection * sock;
   struct GC_Configuration * cfg;

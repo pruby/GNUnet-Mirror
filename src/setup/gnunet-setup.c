@@ -33,7 +33,7 @@
 #include "platform.h"
 
 typedef int (*ConfigurationPluginMain)(int argc,
-				       const char ** argv,
+				       char * const * argv,
 				       struct PluginHandle * self,
 				       struct GE_Context * ectx,
 				       struct GC_Configuration * cfg,
@@ -100,7 +100,7 @@ static void gns2cfg(struct GNS_Tree * pos) {
 static int dyn_config(const char * module,
 		      const char * mainfunc,
 		      int argc,
-		      const char **argv,
+		      char * const * argv,
 		      const char * filename) {
   ConfigurationPluginMain mptr;
   struct PluginHandle * library;
@@ -153,7 +153,7 @@ static const char * modules[] = {
 
 
 int main(int argc,
-	 const char * argv[]) {
+	 char * const * argv) {
   const char * operation;
   int done;
   char * dirname;

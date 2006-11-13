@@ -341,7 +341,6 @@ void CO_publishToCollection(struct GE_Context * ectx,
 			    struct GC_Configuration * cfg,
 			    const ECRS_FileInfo * fi,
 			    unsigned int prio) {
-  CollectionData * collectionData;
   unsigned long long dirLen;
   char * dirData;
   struct ECRS_MetaData * metaData;

@@ -243,7 +243,7 @@ static struct CommandLineOption gnunetupdateOptions[] = {
 
 
 int main(int argc,
-	 const char * argv[]) {
+	 char * const * argv) {
   char * get;
   int ret;
 

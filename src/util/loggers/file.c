@@ -218,7 +218,7 @@ filelogger(void * cls,
       dirname = STRDUP(name);
       while ( (strlen(dirname) > 0) &&
 	      (dirname[strlen(dirname)-1] != '/') )
-	dirname[strlen(dirname)-1] == '\0';
+	dirname[strlen(dirname)-1] = '\0';
       disk_directory_scan(fctx->ectx,
 			  dirname,
 			  &removeOldLog,

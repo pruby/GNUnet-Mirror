@@ -101,7 +101,7 @@ static struct CommandLineOption gnunettbenchOptions[] = {
  * @return return value from gnunetsearch: 0: ok, -1: error
  */
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   struct ClientServerConnection * sock;
   CS_tbench_request_MESSAGE msg;
   CS_tbench_reply_MESSAGE * buffer;

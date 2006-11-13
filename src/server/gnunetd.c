@@ -188,7 +188,7 @@ static struct CommandLineOption gnunetdOptions[] = {
  * call the main routine.
  */
 int main(int argc,
-	 const char * argv[]) {
+	 char * const * argv) {
   int ret;
   struct GE_Context * ectx;
 

@@ -58,7 +58,7 @@ extern "C" {
  *  otherwise
  */
 int GNUNET_init(int argc,
-		const char ** argv,
+		char * const * argv,
 		const char * binaryName,
 		char ** configurationFileName,
 		const struct CommandLineOption * options,

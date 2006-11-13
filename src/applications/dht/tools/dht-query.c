@@ -173,7 +173,7 @@ static void do_remove(struct ClientServerConnection * sock,
 
 
 int main(int argc,
-	 const char **argv) {
+	 char * const * argv) {
   int i;
   struct ClientServerConnection * handle;
   HashCode512 table;

@@ -183,9 +183,8 @@ static int namespacePrinter(void * unused,
 }
 
 int main(int argc,
-	 const char *argv[]) {
+	 char * const * argv) {
   int cnt;
-  char * pname;
   int success;
   int i;
   HashCode512 hc;
@@ -233,16 +232,16 @@ int main(int argc,
     if (start_collection) {
       ECRS_addToMetaData(meta,
 			 EXTRACTOR_OWNER,
-			 pname);
+			 create_name);
       if (OK == CO_startCollection(ectx,
 				   cfg,
 				   anonymity,
 				   priority,
 				   ECRS_SBLOCK_UPDATE_SPORADIC, /* FIXME: allow other update policies */
-				   pname,
+				   create_name,
 				   meta)) {
 	printf(_("Started collection `%s'.\n"),
-	       pname);
+	       create_name);
       } else {
 	printf(_("Failed to start collection.\n"));
 	success++;
@@ -250,11 +249,9 @@ int main(int argc,
 
       ECRS_delFromMetaData(meta,
 			   EXTRACTOR_OWNER,
-			   pname);
+			   create_name);
     } else { /* no collection */
       HashCode512 rootEntry;
-      char * keyword;
-      struct ECRS_URI * advertisement;
       struct ECRS_URI * rootURI;
       char * root;
 
@@ -268,14 +265,14 @@ int main(int argc,
 	       &hc);
       }
       if (no_advertisement) {
-	ECRS_freeUri(advertisement);
+	if (advertisement != NULL)
+	  ECRS_freeUri(advertisement);
 	advertisement = NULL;
       } else {
 	if (advertisement == NULL)
 	  advertisement = ECRS_parseCharKeywordURI(ectx,
 						   "namespace");
       }
-      FREE(keyword);
       rootURI = NS_createNamespace(ectx,
 				   cfg,
 				   anonymity,
@@ -287,12 +284,12 @@ int main(int argc,
 				   &rootEntry);
       if (rootURI == NULL) {
 	printf(_("Could not create namespace `%s' (exists?).\n"),
-	       pname);
+	       create_name);
 	success += 1;
       } else {
 	root = ECRS_uriToString(rootURI);
 	printf(_("Namespace `%s' created (root: %s).\n"),
-	       pname,
+	       create_name,
 	       root);
 	FREE(root);
 	ECRS_freeUri(rootURI);
@@ -300,8 +297,8 @@ int main(int argc,
       if (NULL != advertisement)
 	ECRS_freeUri(advertisement);
     }
-    FREE(pname);
-    pname = NULL;
+    FREE(create_name);
+    create_name = NULL;
   }
   if (0 == be_quiet) {
   /* print information about pseudonyms */

@@ -130,7 +130,6 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
   unsigned int size;
   unsigned int mdsize;
   struct PrivateKey * pk;
-  HashCode512 hc;
   char * dstURI;
   KBlock * kb;
   char ** keywords;
@@ -138,6 +137,9 @@ int ECRS_addToKeyspace(struct GE_Context * ectx,
   int i;
 #if DEBUG_KEYSPACE
   EncName enc;
+#endif
+#if EXTRA_CHECKS
+  HashCode512 hc;
 #endif
   HashCode512 key;
   char * cpy; /* copy of the encrypted portion */

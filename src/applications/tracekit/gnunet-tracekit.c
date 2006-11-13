@@ -285,7 +285,7 @@ static void * receiveThread(void * cls) {
  * @return return value from gnunet-tracekit: 0: ok, -1: error
  */
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   struct ClientServerConnection * sock;
   struct PTHREAD * messageReceiveThread;
   void * unused;

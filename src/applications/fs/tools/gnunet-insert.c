@@ -107,7 +107,6 @@ static void convertId(const char * s,
  * post-processing.
  */
 static void postProcess(const struct ECRS_URI * uri) {
-  char * pname;
   HashCode512 prevId;
   HashCode512 thisId;
   HashCode512 nextId;
@@ -124,7 +123,7 @@ static void postProcess(const struct ECRS_URI * uri) {
 			    anonymity,
 			    priority,
 			    1024, /* FIXME: expiration */
-			    pname,
+			    pseudonym,
 			    (TIME_T) interval,
 			    prev_id == NULL ? NULL : &prevId,
 			    this_id == NULL ? NULL : &thisId,
@@ -136,13 +135,14 @@ static void postProcess(const struct ECRS_URI * uri) {
     ECRS_freeUri(nsuri);
     printf(_("Created entry `%s' in namespace `%s'\n"),
 	   us,
-	   pname);
+	   pseudonym);
     FREE(us);
   } else {
     printf(_("Failed to add entry to namespace `%s' (does it exist?)\n"),
-	   pname);
+	   pseudonym);
   }
-  FREE(pname);
+  FREE(pseudonym);
+  pseudonym = NULL;
 }
 
 /**
@@ -302,7 +302,7 @@ static struct CommandLineOption gnunetinsertOptions[] = {
  * @return return 0 for ok, -1 on error
  */
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   const char * filename;
   int i;
   char * tmp;

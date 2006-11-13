@@ -378,11 +378,10 @@ static struct CommandLineOption gnunettransportcheckOptions[] = {
 };
 
 int main(int argc,
-	 const char *argv[]) {
+	 char * const * argv) {
   int res;
   unsigned long long Xrepeat;
   char * trans;
-  int ping;
   int stats[3];
   int pos;
 

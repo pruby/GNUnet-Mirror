@@ -103,7 +103,7 @@ static void printHostInfo(const PeerIdentity * id,
 }
 
 int main(int argc,
-	 const char *argv[]) {
+	 char * const * argv) {
   struct GC_Configuration * cfg;
   struct CronManager * cron;
   int ret;
