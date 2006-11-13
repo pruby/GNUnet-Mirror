@@ -72,6 +72,8 @@ static struct CIDR6Network * filteredNetworks_;
 
 static struct GC_Configuration * cfg;
 
+static struct MUTEX * tcpblacklistlock;
+
 /* ******************** helper functions *********************** */
 
 /**
@@ -93,10 +95,10 @@ static int isBlacklisted(const void * addr,
   } else {
     return SYSERR;
   }
-  MUTEX_LOCK(tcplock);
+  MUTEX_LOCK(tcpblacklistlock);
   ret = check_ipv6_listed(filteredNetworks_,
 			  ip);
-  MUTEX_UNLOCK(tcplock);
+  MUTEX_UNLOCK(tcpblacklistlock);
   return ret;
 }
 
@@ -369,7 +371,7 @@ static int reloadConfiguration(void * ctx,
 
   if (0 != strcmp(section, "TCP6"))
     return 0; /* fast path */
-  MUTEX_LOCK(tcplock);
+  MUTEX_LOCK(tcpblacklistlock);
   FREENONNULL(filteredNetworks_);
   if (0 != GC_get_configuration_value_string(cfg,
 					     "TCP",
@@ -383,7 +385,7 @@ static int reloadConfiguration(void * ctx,
 							 ch);
     FREE(ch);
   }
-  MUTEX_UNLOCK(tcplock);
+  MUTEX_UNLOCK(tcpblacklistlock);
   return 0;
 }
 
@@ -419,11 +421,14 @@ TransportAPI * inittransport_tcp6(CoreAPIForTransport * core) {
   ectx = core->ectx;
   cfg = core->cfg;
   tcplock = MUTEX_CREATE(YES);
+  tcpblacklistlock = MUTEX_CREATE(NO);
   if (0 != GC_attach_change_listener(cfg,
 				     &reloadConfiguration,
 				     NULL)) {
     MUTEX_DESTROY(tcplock);
+    MUTEX_DESTROY(tcpblacklistlock);
     tcplock = NULL;
+    tcpblacklistlock = NULL;
     return NULL;
   }
   coreAPI = core;
@@ -460,6 +465,7 @@ void donetransport_tcp6() {
   stats = NULL;
   FREENONNULL(filteredNetworks_);
   MUTEX_DESTROY(tcplock);
+  MUTEX_DESTROY(tcpblacklistlock);
 }
 
 /* end of tcp6.c */

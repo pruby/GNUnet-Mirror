@@ -72,6 +72,8 @@ static struct CIDRNetwork * filteredNetworks_;
 
 static struct GC_Configuration * cfg;
 
+static struct MUTEX * tcpblacklistlock;
+
 /**
  * Check if we are allowed to connect to the given IP.
  */
@@ -91,10 +93,10 @@ static int isBlacklisted(const void * addr,
   } else {
     return SYSERR;
   }
-  MUTEX_LOCK(tcplock);
+  MUTEX_LOCK(tcpblacklistlock);
   ret = check_ipv4_listed(filteredNetworks_,
 			  ip);
-  MUTEX_UNLOCK(tcplock);
+  MUTEX_UNLOCK(tcpblacklistlock);
   return ret;
 }
 
@@ -360,7 +362,7 @@ static int reloadConfiguration(void * ctx,
   if (0 != strcmp(section, "TCP"))
     return 0; /* fast path */
 	
-  MUTEX_LOCK(tcplock);
+  MUTEX_LOCK(tcpblacklistlock);
   FREENONNULL(filteredNetworks_);
   ch = NULL;
   GC_get_configuration_value_string(cfg,
@@ -371,7 +373,7 @@ static int reloadConfiguration(void * ctx,
   filteredNetworks_ = parse_ipv4_network_specification(ectx,
 						       ch);
   FREE(ch);
-  MUTEX_UNLOCK(tcplock);
+  MUTEX_UNLOCK(tcpblacklistlock);
   /* TODO: error handling! */
   return 0;
 }
@@ -409,11 +411,14 @@ TransportAPI * inittransport_tcp(CoreAPIForTransport * core) {
   GE_ASSERT(ectx, sizeof(MESSAGE_HEADER) == 4);
   GE_ASSERT(ectx, sizeof(TCPWelcome) == 68);
   tcplock = MUTEX_CREATE(YES);
+  tcpblacklistlock = MUTEX_CREATE(NO);
   if (0 != GC_attach_change_listener(cfg,
 				     &reloadConfiguration,
 				     NULL)) {
     MUTEX_DESTROY(tcplock);
+    MUTEX_DESTROY(tcpblacklistlock);
     tcplock = NULL;
+    tcpblacklistlock = NULL;
     return NULL;
   }
   coreAPI = core;
@@ -450,6 +455,7 @@ void donetransport_tcp() {
   stats = NULL;
   FREENONNULL(filteredNetworks_);
   MUTEX_DESTROY(tcplock);
+  MUTEX_DESTROY(tcpblacklistlock);
 }
 
 /* end of tcp.c */

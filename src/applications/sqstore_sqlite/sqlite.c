@@ -1181,6 +1181,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   FREE(afsdir);
   if (OK != disk_directory_create_for_file(ectx,
 					   dir)) {
+    GE_BREAK(ectx, 0);
     FREE(dir);
     FREE(db);
     return NULL;
@@ -1189,6 +1190,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   db->fn = dir;
   dbh = getDBHandle();
   if (dbh == NULL) {
+    GE_BREAK(ectx, 0);
     MUTEX_DESTROY(db->DATABASE_Lock_);
     FREE(db->fn);
     FREE(db);
@@ -1197,6 +1199,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
 
   db->payload = getStat(dbh, "PAYLOAD");
   if (db->payload == SYSERR) {
+    GE_BREAK(ectx, 0);
     LOG_SQLITE(dbh,
 	       GE_ERROR | GE_ADMIN | GE_USER | GE_BULK,
 	       "sqlite_payload");

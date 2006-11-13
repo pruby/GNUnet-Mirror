@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0b\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-11-12 02:16-0700\n"
+"POT-Creation-Date: 2006-11-13 12:12-0700\n"
 "PO-Revision-Date: 2006-01-21 17:16+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -586,18 +586,21 @@ msgid "What is the maximum upstream bandwidth (hard limit)?"
 msgstr ""
 
 #: contrib/config-daemon.scm:1008
-msgid "Use 0 for no limit."
+msgid ""
+"The limit is given as a percentage o\n"
+"f the MAXNETUPBPS limit.  Use 100 to have MAXNETUPBPS be the hard limit.  "
+"Use zero for no limit."
 msgstr ""
 
-#: contrib/config-daemon.scm:1019
+#: contrib/config-daemon.scm:1020
 msgid "Should we disable random padding (experimental option)?"
 msgstr ""
 
-#: contrib/config-daemon.scm:1031
+#: contrib/config-daemon.scm:1032
 msgid "Use basic bandwidth limitation? (YES/NO).  If in doubt, say YES."
 msgstr ""
 
-#: contrib/config-daemon.scm:1033
+#: contrib/config-daemon.scm:1034
 msgid ""
 "Basic bandwidth limitation (YES) means simply that the bandwidth limits "
 "specified apply to GNUnet and only to GNUnet.  If set to YES, you simply "
@@ -642,12 +645,12 @@ msgid ""
 "since it is irrelevant)."
 msgstr ""
 
-#: contrib/config-daemon.scm:1050
+#: contrib/config-daemon.scm:1051
 #, fuzzy
 msgid "Network interface to monitor"
 msgstr "Nätverksgränssnitt:"
 
-#: contrib/config-daemon.scm:1052
+#: contrib/config-daemon.scm:1053
 msgid ""
 "\tFor which interfaces should we do accounting?  GNUnet will evaluate\n"
 "\t\tthe total traffic (not only the GNUnet related traffic) and adjust\n"
@@ -660,12 +663,12 @@ msgid ""
 "\t\t \"gnunet-win-tool -n\"."
 msgstr ""
 
-#: contrib/config-daemon.scm:1071
+#: contrib/config-daemon.scm:1072
 #, fuzzy
 msgid "Load management"
 msgstr "Ogiltiga kommandoradsargument.\n"
 
-#: contrib/config-daemon.scm:1095 contrib/config-client.scm:286
+#: contrib/config-daemon.scm:1096 contrib/config-client.scm:286
 msgid "Root node"
 msgstr ""
 
@@ -728,7 +731,7 @@ msgstr ""
 msgid "Could not resolve `%s': %s\n"
 msgstr "Kunde inte slå upp \"%s\": %s\n"
 
-#: src/transports/ip6.c:155 src/transports/ip.c:354
+#: src/transports/ip6.c:156 src/transports/ip.c:359
 #, c-format
 msgid "Failed to obtain my (external) %s address!\n"
 msgstr ""
@@ -742,7 +745,7 @@ msgstr "Misslyckades att binda till UDP-port %d.\n"
 msgid "UDP6: Could not determine my public IPv6 address.\n"
 msgstr ""
 
-#: src/transports/udp6.c:441 src/transports/udp.c:447
+#: src/transports/udp6.c:444 src/transports/udp.c:447
 #, c-format
 msgid "MTU %llu for `%s' is probably too low!\n"
 msgstr ""
@@ -835,7 +838,7 @@ msgstr ""
 msgid "Could not determine my public IP address.\n"
 msgstr ""
 
-#: src/transports/tcp.c:324 src/transports/tcp6.c:333
+#: src/transports/tcp.c:324 src/transports/tcp6.c:334
 #, c-format
 msgid "Failed to start transport service on port %d.\n"
 msgstr ""
@@ -922,17 +925,17 @@ msgstr "Kunde inte fastställa min publika IPv6-adress.\n"
 msgid "`%s': unknown service: %s\n"
 msgstr "\"%s\": okänd tjänst: %s\n"
 
-#: src/transports/tcp6.c:432
+#: src/transports/tcp6.c:433
 #, fuzzy
 msgid "# bytes received via TCP6"
 msgstr "# byte mottogs via TCP"
 
-#: src/transports/tcp6.c:434
+#: src/transports/tcp6.c:435
 #, fuzzy
 msgid "# bytes sent via TCP6"
 msgstr "# byte skickades via TCP"
 
-#: src/transports/tcp6.c:436
+#: src/transports/tcp6.c:437
 #, fuzzy
 msgid "# bytes dropped by TCP6 (outgoing)"
 msgstr "# byte kastade via TCP (utgående)"
@@ -2366,47 +2369,47 @@ msgstr ""
 msgid "\tRating (after update): %d\n"
 msgstr ""
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:211
+#: src/applications/fs/tools/gnunet-pseudonym.c:210
 #, c-format
 msgid "Collection stopped.\n"
 msgstr "Samling stoppad.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:213
+#: src/applications/fs/tools/gnunet-pseudonym.c:212
 #, c-format
 msgid "Failed to stop collection (not active?).\n"
 msgstr "Misslyckades att stoppa samling (inte aktiv?).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:221
+#: src/applications/fs/tools/gnunet-pseudonym.c:220
 #, c-format
 msgid "Pseudonym `%s' deleted.\n"
 msgstr "Pseudonym \"%s\" togs bort.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:225
+#: src/applications/fs/tools/gnunet-pseudonym.c:224
 #, c-format
 msgid "Error deleting pseudonym `%s' (does not exist?).\n"
 msgstr "Fel vid borttagning av pseudonym \"%s\" (existerar den?).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:244
+#: src/applications/fs/tools/gnunet-pseudonym.c:243
 #, c-format
 msgid "Started collection `%s'.\n"
 msgstr "Startade samling \"%s\".\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:247
+#: src/applications/fs/tools/gnunet-pseudonym.c:246
 #, c-format
 msgid "Failed to start collection.\n"
 msgstr "Misslyckades att starta samling.\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:289
+#: src/applications/fs/tools/gnunet-pseudonym.c:286
 #, c-format
 msgid "Could not create namespace `%s' (exists?).\n"
 msgstr "Kunde inte skapa namnrymd \"%s\" (existerar?).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:294
+#: src/applications/fs/tools/gnunet-pseudonym.c:291
 #, c-format
 msgid "Namespace `%s' created (root: %s).\n"
 msgstr "Namnrymd \"%s\" skapad(rot: %s).\n"
 
-#: src/applications/fs/tools/gnunet-pseudonym.c:314
+#: src/applications/fs/tools/gnunet-pseudonym.c:311
 #, c-format
 msgid "Could not access namespace information.\n"
 msgstr "Kunde inte komma åt namnrymdsinformation.\n"
@@ -2452,12 +2455,12 @@ msgstr ""
 msgid "Listed %d matching entries.\n"
 msgstr "Listade %d matchande poster.\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:137
+#: src/applications/fs/tools/gnunet-insert.c:136
 #, c-format
 msgid "Created entry `%s' in namespace `%s'\n"
 msgstr "Skapade post \"%s\" i namnrymd \"%s\"\n"
 
-#: src/applications/fs/tools/gnunet-insert.c:142
+#: src/applications/fs/tools/gnunet-insert.c:141
 #, c-format
 msgid "Failed to add entry to namespace `%s' (does it exist?)\n"
 msgstr ""
@@ -3258,29 +3261,29 @@ msgstr ""
 msgid "RFC4193 Closing tunnel %d fd %d\n"
 msgstr ""
 
-#: src/server/gnunet-update.c:141
+#: src/server/gnunet-update.c:142
 #, c-format
 msgid "Updating data for module `%s'\n"
 msgstr "Uppdaterar data för modul \"%s\"\n"
 
-#: src/server/gnunet-update.c:146
+#: src/server/gnunet-update.c:147
 #, c-format
 msgid "Failed to update data for module `%s'\n"
 msgstr ""
 
-#: src/server/gnunet-update.c:217 src/server/gnunet-transport-check.c:355
-msgid "ping peers from HOSTLISTURL that match transports"
-msgstr ""
+#: src/server/gnunet-update.c:228
+msgid "print a value from the configuration file to stdout"
+msgstr "skriv ut ett värde från konfigurationsfilen till standard ut"
 
-#: src/server/gnunet-update.c:219
+#: src/server/gnunet-update.c:230
 msgid "Updates GNUnet datastructures after version change."
 msgstr "Uppdaterar GNUnets datastruktur efter versionsändring."
 
-#: src/server/gnunet-update.c:223 src/server/gnunet-transport-check.c:370
+#: src/server/gnunet-update.c:234 src/server/gnunet-transport-check.c:370
 msgid "run as user LOGIN"
 msgstr "kör som användare LOGIN"
 
-#: src/server/gnunet-update.c:226
+#: src/server/gnunet-update.c:237
 msgid "run in client mode (for getting client configuration values)"
 msgstr "kör i klientläge (för att hämta värden från klientkonfiguration)"
 
@@ -3484,6 +3487,10 @@ msgstr "Inget svar mottaget inom %llums.\n"
 msgid "Tool to test if GNUnet transport services are operational."
 msgstr ""
 
+#: src/server/gnunet-transport-check.c:355
+msgid "ping peers from HOSTLISTURL that match transports"
+msgstr ""
+
 #: src/server/gnunet-transport-check.c:358
 msgid "send COUNT messages"
 msgstr "skicka ANTAL meddelanden"
@@ -3504,17 +3511,17 @@ msgstr "anger timeout efter antal MS"
 msgid "repeat each test X times"
 msgstr ""
 
-#: src/server/gnunet-transport-check.c:440
+#: src/server/gnunet-transport-check.c:439
 #, c-format
 msgid "Testing transport(s) %s\n"
 msgstr "Testar transport(er) %s\n"
 
-#: src/server/gnunet-transport-check.c:443
+#: src/server/gnunet-transport-check.c:442
 #, c-format
 msgid "Available transport(s): %s\n"
 msgstr "Tillgängliga transport(er): %s\n"
 
-#: src/server/gnunet-transport-check.c:503
+#: src/server/gnunet-transport-check.c:502
 #, c-format
 msgid ""
 "%d out of %d peers contacted successfully (%d times transport unavailable).\n"
@@ -3587,7 +3594,7 @@ msgstr ""
 
 #: src/util/network_client/tcpio.c:251 src/util/network_client/tcpio.c:281
 #, fuzzy, c-format
-msgid "Cannot connect to %s:u: %s\n"
+msgid "Cannot connect to %s:%u: %s\n"
 msgstr "Kan inte ansluta till %u.%u.%u.%u:%u: %s\n"
 
 #: src/util/network_client/tcpio.c:403
@@ -3661,11 +3668,11 @@ msgstr ""
 msgid "Cannot change user/group to `%s': %s\n"
 msgstr "Kan inte ändra användare/grupp till \"%s\": %s\n"
 
-#: src/util/network/select.c:282
+#: src/util/network/select.c:293
 msgid "Received malformed message (too small) from connection. Closing.\n"
 msgstr ""
 
-#: src/util/network/select.c:443
+#: src/util/network/select.c:456
 msgid "select listen socket not valid!\n"
 msgstr ""
 
@@ -4709,9 +4716,6 @@ msgstr "\"%s\" misslyckades för fil \"%s\" vid %s:%d med fel: %s\n"
 #~ msgstr ""
 #~ "Konfigurationsfil måste ange en katalog för GNUnet att lagra motpartsdata "
 #~ "under %s\\%s.\n"
-
-#~ msgid "print a value from the configuration file to stdout"
-#~ msgstr "skriv ut ett värde från konfigurationsfilen till standard ut"
 
 #~ msgid "Invalid arguments: "
 #~ msgstr "Ogiltiga argument: "
