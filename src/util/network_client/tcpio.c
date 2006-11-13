@@ -248,7 +248,7 @@ int connection_ensure_connected(struct ClientServerConnection * sock) {
        (errno != EINPROGRESS) ) {
     GE_LOG(sock->ectx,
 	   GE_WARNING | GE_USER | GE_BULK,
-	   _("Cannot connect to %s:u: %s\n"),
+	   _("Cannot connect to %s:%u: %s\n"),
 	   host,
 	   port,
 	   STRERROR(errno));
