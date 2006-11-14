@@ -162,7 +162,7 @@ typedef struct CommandLineOption {
  * Set the configuration option for logging.
  */
 #define COMMAND_LINE_OPTION_LOGGING \
-  { 'L', "log", "LOGLEVEL", gettext_noop("configure logging to use LOGLEVEL"), 1, &gnunet_getopt_configure_set_option, "GNUNET:LOGGING" }
+  { 'L', "log", "LOGLEVEL", gettext_noop("configure logging to use LOGLEVEL"), 1, &gnunet_getopt_configure_set_option, "LOGGING:USER-LEVEL" }
 
 /**
  * Set the configuration option for increasing verbosity.
