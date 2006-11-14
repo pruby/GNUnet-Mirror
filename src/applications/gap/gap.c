@@ -1355,10 +1355,10 @@ queryLocalResultCallback(const HashCode512 * primaryKey,
       primaryKey);
 #endif
 
-  /* check seen */
-  ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
   if (rhf == NULL)
     return OK; /* drop, not fully initialized! */
+  /* check seen */
+  ite = &ROUTING_indTable_[computeRoutingIndex(primaryKey)];
   rhf(value,
       &hc);
   for (i=0;i<ite->seenIndex;i++)
@@ -1635,13 +1635,15 @@ static int useContent(const PeerIdentity * host,
   if (ret == SYSERR) {
     EncName enc;
 
-    IF_GELOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	  if (host != NULL)
-	    hash2enc(&host->hashPubKey,
-		     &enc));
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-	_("GAP received invalid content from `%s'\n"),
-	(host != NULL) ? (const char*)&enc : _("myself"));
+    IF_GELOG(ectx,
+	     GE_ERROR | GE_BULK | GE_USER,
+	     if (host != NULL)
+	       hash2enc(&host->hashPubKey,
+			&enc));
+    GE_LOG(ectx,
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("GAP received invalid content from `%s'\n"),
+	   (host != NULL) ? (const char*)&enc : _("myself"));
     GE_BREAK(ectx, 0);
     FREE(value);
     return SYSERR; /* invalid */

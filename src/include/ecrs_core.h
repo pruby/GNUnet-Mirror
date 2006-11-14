@@ -216,6 +216,7 @@ int getQueryFor(unsigned int size,
  * @param type the type of the queryo
  * @param size the size of the data
  * @param data the encoded data
+ * @param knownDatumQuery result of getQueryFor
  * @param keyCount the number of keys in the query
  * @param keys the keys of the query
  * @return YES if this data matches the query, otherwise
@@ -225,6 +226,7 @@ int getQueryFor(unsigned int size,
 int isDatumApplicable(unsigned int type,
 		      unsigned int size,
 		      const DBlock * data,
+		      const HashCode512 * knownDatumQuery,
 		      unsigned int keyCount,
 		      const HashCode512 * keys);
 

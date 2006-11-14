@@ -181,6 +181,7 @@ static int gapPut(void * closure,
   if (YES != isDatumApplicable(ntohl(dv->type),
 			       ntohl(dv->size) - sizeof(Datastore_Value),
 			       (DBlock*) &dv[1],
+			       &hc,
 			       0,
 			       query)) {
     GE_BREAK(ectx, 0);
@@ -674,6 +675,7 @@ static int gapGetConverter(const HashCode512 * key,
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
 			  (const DBlock*) &value[1],
+			  key,
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {
@@ -868,6 +870,7 @@ static int dhtGetConverter(const HashCode512 * key,
   ret = isDatumApplicable(ntohl(value->type),
 			  ntohl(value->size) - sizeof(Datastore_Value),
 			  (const DBlock*) &value[1],
+			  key,
 			  ggc->keyCount,
 			  ggc->keys);
   if (ret == SYSERR) {

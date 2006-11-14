@@ -358,6 +358,7 @@ static int receiveReplies(const HashCode512 * key,
 	 (YES == isDatumApplicable(type,
 				   size,
 				   (const DBlock*) &value[1],
+				   &query,
 				   ps->keyCount,
 				   ps->keys)) ) {
       switch (type) {

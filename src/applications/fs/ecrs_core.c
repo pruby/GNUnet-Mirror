@@ -55,7 +55,9 @@ int fileBlockEncode(const DBlock * data,
 
   GE_ASSERT(NULL, len >= sizeof(DBlock));
   GE_ASSERT(NULL, (data!=NULL) && (query != NULL));
-  hash(&data[1], len - sizeof(DBlock), &hc);
+  hash(&data[1],
+       len - sizeof(DBlock), 
+       &hc);
   hashToKey(&hc,
 	    &skey,
 	    &iv);
@@ -67,26 +69,27 @@ int fileBlockEncode(const DBlock * data,
   val->expirationTime = htonl(0);
   db = (DBlock*) &val[1];
   db->type = htonl(D_BLOCK);
-  GE_ASSERT(NULL, len - sizeof(DBlock) < MAX_BUFFER_SIZE);
-  GE_ASSERT(NULL, len - sizeof(DBlock)
-		== encryptBlock(&data[1],
-				len - sizeof(DBlock),
-				&skey,
-				&iv,
-				&db[1]));
+  GE_ASSERT(NULL, 
+	    len - sizeof(DBlock) < MAX_BUFFER_SIZE);
+  GE_ASSERT(NULL, 
+	    len - sizeof(DBlock)
+	    == encryptBlock(&data[1],
+			    len - sizeof(DBlock),
+			    &skey,
+			    &iv,
+			    &db[1]));
   hash(&db[1],
        len - sizeof(DBlock),
        &hc);
-  if (equalsHashCode512(query,
-			&hc)) {
-    *value = val;
-    return OK;
-  } else {
+  if (! equalsHashCode512(query,
+			  &hc)) {
     FREE(val);
     GE_BREAK(NULL, 0);
     *value = NULL;
     return SYSERR;
   }
+  *value = val;
+  return OK;
 }
 
 /**
@@ -274,6 +277,7 @@ int getQueryFor(unsigned int size,
  * @param type the type of the query
  * @param size the size of the data
  * @param data the encoded data
+ * @param hc result of getQueryFor
  * @param keyCount the number of keys in the query,
  *        use 0 to match only primary key
  * @param keys the keys of the query
@@ -284,19 +288,16 @@ int getQueryFor(unsigned int size,
 int isDatumApplicable(unsigned int type,
 		      unsigned int size,
 		      const DBlock * data,
+		      const HashCode512 * hc,
 		      unsigned int keyCount,
 		      const HashCode512 * keys) {
-  HashCode512 hc;
+  HashCode512 h;
 
   if (type != getTypeOfBlock(size, data)) {
     GE_BREAK(NULL, 0);
     return SYSERR; /* type mismatch */
   }
-  if (OK != getQueryFor(size, data, YES, &hc)) {
-    GE_BREAK(NULL, 0); /* malformed data */
-    return SYSERR;
-  }
-  if (! equalsHashCode512(&hc, &keys[0])) {
+  if (! equalsHashCode512(hc, &keys[0])) {
     GE_BREAK(NULL, 0); /* mismatch between primary queries,
 		we should not even see those here. */
     return SYSERR;
@@ -309,23 +310,21 @@ int isDatumApplicable(unsigned int type,
       return SYSERR; /* no match */
     hash(&((const SBlock*)data)->subspace,
 	 sizeof(PublicKey),
-	 &hc);	
+	 &h);	
     if (equalsHashCode512(&keys[1],
-			  &hc))
+			  &h))
       return OK;
-    else
-      return SYSERR;
+    return SYSERR;
   case N_BLOCK:
     if (keyCount != 2)
       return SYSERR; /* no match */
     hash(&((const NBlock*)data)->subspace,
 	 sizeof(PublicKey),
-	 &hc);	
-    if (equalsHashCode512(&keys[1],
-			  &hc))
-      return OK;
-    else
+	 &h);	
+    if (! equalsHashCode512(&keys[1],
+			    &h))
       return SYSERR;
+    return OK;      
   case D_BLOCK:
   case K_BLOCK:
   case KN_BLOCK:
