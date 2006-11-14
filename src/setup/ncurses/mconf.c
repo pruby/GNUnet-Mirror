@@ -20,7 +20,7 @@
 
 /**
  * @brief GNUnet Setup using dialog
- * @file conf/mconf.c
+ * @file setup/ncurses/mconf.c
  * @author Christian Grothoff
  */
 
@@ -205,6 +205,11 @@ static void run_menu(struct GNS_Context * ctx,
 	  case DLG_EXIT_HELP:
 	    show_help(pos->option, pos->help);
 	    break;
+	  case DLG_EXIT_CANCEL:
+	  case DLG_EXIT_ERROR:
+	  case DLG_EXIT_ESC:
+	    FREE(fitem.text);	
+	    return;
 	  default:
 	    break;
 	  }
