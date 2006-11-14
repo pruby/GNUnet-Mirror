@@ -357,7 +357,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
     = lquota * 1024 * 1024; /* MB to bytes */
   stats = capi->requestService("stats");
   if (stats != NULL) {
-    stats->set(stats->create(gettext_noop("# bytes allowed for datastore")),
+    stats->set(stats->create(gettext_noop("# bytes allowed in datastore")),
 	       quota);
     capi->releaseService(stats);
   }
