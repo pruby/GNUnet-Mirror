@@ -64,8 +64,6 @@ static char * makeName(unsigned int i) {
   SNPRINTF(fn,
 	   strlen("/tmp/gnunet-gaptest/GAPTEST") + 14,
 	   "/tmp/gnunet-gaptest/GAPTEST%u",
-	   DIR_SEPARATOR_STR,
-	   name,
 	   i);
   disk_directory_create_for_file(NULL, fn);
   return fn;
