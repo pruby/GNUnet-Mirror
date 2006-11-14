@@ -33,6 +33,7 @@
 #include "gnunet_datastore_service.h"
 #include "gnunet_sqstore_service.h"
 #include "gnunet_state_service.h"
+#include "gnunet_stats_service.h"
 #include "filter.h"
 #include "prefetch.h"
 
@@ -340,6 +341,7 @@ provide_module_datastore(CoreAPIForApplication * capi) {
   unsigned long long lquota;
   unsigned int sqot;
   State_ServiceAPI * state;
+  Stats_ServiceAPI * stats;
 
   if (-1 == GC_get_configuration_value_number(capi->cfg,
 					      "FS",
@@ -351,9 +353,14 @@ provide_module_datastore(CoreAPIForApplication * capi) {
     GE_BREAK(capi->ectx, 0);
     return NULL; /* OOPS */
   }
-
   quota
     = lquota * 1024 * 1024; /* MB to bytes */
+  stats = capi->requestService("stats");
+  if (stats != NULL) {
+    stats->set(stats->create(gettext_noop("# bytes allowed for datastore")),
+	       quota);
+    capi->releaseService(stats);
+  }
   state = capi->requestService("state");
   if (state != NULL) {
     sqot = htonl(lquota);
