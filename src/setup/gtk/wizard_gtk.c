@@ -19,7 +19,7 @@
 */
 
 /**
- * @file conf/wizard_gtk.c
+ * @file setup/gtk/wizard_gtk.c
  * @brief A easy-to-use configuration assistant
  * @author Nils Durner
  * @author Christian Grothoff
@@ -55,7 +55,7 @@ static struct GC_Configuration *editCfg = NULL;
 
 static struct GE_Context *err_ctx = NULL;
 
-static char *cfg_fn = NULL;
+static const char *cfg_fn = NULL;
 
 /* 1 = terminate app on "assi_destroy" */
 static int quit;
@@ -388,15 +388,12 @@ static int save_conf() {
   if (GC_write_configuration(editCfg, cfg_fn)) {
     prefix = _("Unable to save configuration file `%s':");
 
-    err = MALLOC(strlen(filename) + strlen(prefix) + 1);
-    sprintf(err, prefix, filename);
+    err = MALLOC(strlen(cfg_fn) + strlen(prefix) + 1);
+    sprintf(err, prefix, cfg_fn);
     showErr(err, STRERROR(errno));
     FREE(err);
-
-    FREE(filename);
     return SYSERR;
   }
-  FREE(filename);	
   return OK;
 }
 
@@ -592,13 +589,13 @@ void on_entGroup_changedsetup_gtk (GtkEditable * editable,
 }
 
 int gtk_wizard_mainsetup_gtk(int argc,
-       const char ** argv,
-       struct PluginHandle * self,
-       struct GE_Context * ectx,
-       struct GC_Configuration * cfg,
-       struct GNS_Context * gns,
-       const char * filename,
-       int is_daemon) {
+			     char * const * argv,
+			     struct PluginHandle * self,
+			     struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     struct GNS_Context * gns,
+			     const char * filename,
+			     int is_daemon) {
   g_thread_init(NULL);
   gtk_init(&argc, (char ***) &argv);
 #ifdef ENABLE_NLS

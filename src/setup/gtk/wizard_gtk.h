@@ -32,12 +32,12 @@
 #include "wizard_util.h"
 
 int gtk_wizard_mainsetup_gtk(int argc,
-       const char ** argv,
-       struct PluginHandle * self,
-       struct GE_Context * ectx,
-       struct GC_Configuration * cfg,
-       struct GNS_Context * gns,
-       const char * filename,
-       int is_daemon);
+			     char * const * argv,
+			     struct PluginHandle * self,
+			     struct GE_Context * ectx,
+			     struct GC_Configuration * cfg,
+			     struct GNS_Context * gns,
+			     const char * filename,
+			     int is_daemon);
 
 #endif
