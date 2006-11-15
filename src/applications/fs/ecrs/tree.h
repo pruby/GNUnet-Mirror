@@ -24,8 +24,7 @@
 #include "ecrs_core.h"
 
 /**
- * Size of a DBlock.  Currently set for debugging.
- * Should be a multiple of 8 and larger than
+ * Size of a DBlock.  Should be a multiple of 8 and larger than
  * sizeof(CHK).
  */
 #define DBLOCK_SIZE 32768

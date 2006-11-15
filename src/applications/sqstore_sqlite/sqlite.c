@@ -559,7 +559,7 @@ static int sqlite_iterate(unsigned int type,
   else
     strcat(scratch,
 	   "(prio > :4 AND expire == :5) OR expire > :6)");
-  if (type)
+  if (type != 0)
     strcat(scratch, " AND type = :7");
   else
     SNPRINTF(&scratch[strlen(scratch)],

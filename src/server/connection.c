@@ -208,11 +208,11 @@ FILE *prioFile;
  * implement a round-robbin invocation chain).
  */
 typedef struct SendCallbackList__ {
+
   /**
-   * Minimum number of bytes that must be available
-   * to call this callback.
+   * Did we say that this is a linked list?
    */
-  unsigned int minimumPadding;
+  struct SendCallbackList__ *next;
 
   /**
    * The callback method.
@@ -220,9 +220,10 @@ typedef struct SendCallbackList__ {
   BufferFillCallback callback;
 
   /**
-   * Did we say that this is a linked list?
+   * Minimum number of bytes that must be available
+   * to call this callback.
    */
-  struct SendCallbackList__ *next;
+  unsigned int minimumPadding;
 
 } SendCallbackList;
 
@@ -1447,8 +1448,8 @@ static int sendBuffer(BufferEntry * be) {
 
   /* still room left? try callbacks! */
   pos = scl_nextHead;
-  while(pos != NULL) {
-    if(pos->minimumPadding + p <= totalMessageSize) {
+  while (pos != NULL) {
+    if (pos->minimumPadding + p <= totalMessageSize) {
       p += pos->callback(&be->session.sender,
                          &plaintextMsg[p],
 			 be->session.mtu - p);
@@ -3087,7 +3088,7 @@ void printConnectionBuffer() {
 /**
  * Register a callback method that should be invoked whenever a
  * message is about to be send that has more than minimumPadding bytes
- * left before maxing out the MTU. The callback method can then be
+ * left before maxing out the MTU.  The callback method can then be
  * used to add additional content to the message (instead of the
  * random noise that is added by otherwise). Note that if the MTU is 0
  * (for streams), the callback method will always be called with
@@ -3148,7 +3149,8 @@ int unregisterSendCallback(const unsigned int minimumPadding,
   MUTEX_LOCK(lock);
   pos = scl_nextHead;
   while(pos != NULL) {
-    if((pos->callback == callback) && (pos->minimumPadding == minimumPadding)) {
+    if ( (pos->callback == callback) && 
+	 (pos->minimumPadding == minimumPadding) ) {
       if(prev == NULL)
         scl_nextHead = pos->next;
       else

@@ -470,6 +470,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
 			 fn);
     FREE(fn);
     CLOSE(fileHandle);
+    asyncDelete(datastore, dbv, query);
     return SYSERR;
   }
   db = MALLOC(sizeof(DBlock) + ntohl(odb->blockSize));
@@ -486,6 +487,7 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
     FREE(fn);
     FREE(db);
     CLOSE(fileHandle);
+    asyncDelete(datastore, dbv, query);
     return SYSERR;
   }
   CLOSE(fileHandle);

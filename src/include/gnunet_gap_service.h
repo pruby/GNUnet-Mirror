@@ -41,6 +41,11 @@ extern "C" {
 #endif
 #endif
 
+/**
+ * Estimated size of most blocks transported with
+ * the GAP protocol.  32k DBlocks plus overhead.
+ */
+#define GAP_ESTIMATED_DATA_SIZE (33*1024)
 
 /**
  * Function that helps the routing code to find out if
