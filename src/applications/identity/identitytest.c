@@ -57,7 +57,7 @@ static int runTest() {
   transport = requestService("transport");
   identity = requestService("identity");
   cron_start(cron);
-  PTHREAD_SLEEP(30 * cronSECONDS);
+  PTHREAD_SLEEP(5 * cronSECONDS);
   helo = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == helo) {
     printf("Cannot run test, failed to create any hello.\n");
