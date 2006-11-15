@@ -10,6 +10,8 @@ install-data-local:
 	@$(NORMAL_INSTALL)
 
 EXTRA_DIST = \
+ gnunet.conf \
+ gnunetd.conf \
  gnunet-logo-color.png \
  hostlist.cgi \
  hostlist.php \
