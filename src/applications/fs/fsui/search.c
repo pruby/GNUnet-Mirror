@@ -339,6 +339,7 @@ FSUI_startSearch(struct FSUI_Context * ctx,
 		    "PTHREAD_CREATE");
     ECRS_freeUri(pos->uri);
     FREE(pos);
+    pos->state = FSUI_ERROR_JOINED;
     MUTEX_UNLOCK(ctx->lock);
     return NULL;
   }
@@ -393,12 +394,20 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
     prev->next = pos->next;
   MUTEX_UNLOCK(ctx->lock);
   pos->next = NULL;
-  if ( (pos->state == FSUI_COMPLETED) ||
+  if ( (pos->state == FSUI_ACTIVE) ||
+       (pos->state == FSUI_COMPLETED) ||
        (pos->state == FSUI_ABORTED) ||
        (pos->state == FSUI_ERROR) ) {
+    GE_ASSERT(ctx->ectx, pos->handle != NULL);
     PTHREAD_JOIN(pos->handle,
 		 &unused);
-    pos->state++; /* add _JOINED */
+    pos->handle = NULL;
+    if (pos->state == FSUI_ACTIVE)
+      pos->state = FSUI_PENDING;
+    else
+      pos->state++; /* add _JOINED */
+  } else {
+    GE_ASSERT(ctx->ectx, pos->handle == NULL);
   }
   event.type = FSUI_search_stopped;
   event.data.SearchStopped.sc.pos = pos;

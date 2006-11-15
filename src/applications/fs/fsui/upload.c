@@ -633,12 +633,20 @@ int FSUI_stopUpload(struct FSUI_Context * ctx,
 
   GE_ASSERT(ctx->ectx, ul != NULL);
   GE_ASSERT(ctx->ectx, ul->parent == &ctx->activeUploads);
-  if ( (ul->state == FSUI_COMPLETED) ||
+  if ( (ul->state == FSUI_ACTIVE) ||
+       (ul->state == FSUI_COMPLETED) ||
        (ul->state == FSUI_ABORTED) ||
        (ul->state == FSUI_ERROR) ) {
+    GE_ASSERT(ctx->ectx, ul->shared->handle != NULL);
     PTHREAD_JOIN(ul->shared->handle,
 		 &unused);
-    ul->state++; /* add _JOINED */
+    ul->shared->handle = NULL;
+    if (ul->state == FSUI_ACTIVE)
+      ul->state = FSUI_PENDING;
+    else
+      ul->state++; /* add _JOINED */
+  } else {
+    GE_ASSERT(ctx->ectx, ul->shared->handle == NULL);
   }
   signalUploadStopped(ul, 1);
   shared = ul->shared;

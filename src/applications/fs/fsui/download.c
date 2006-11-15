@@ -513,6 +513,7 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
     PTHREAD_STOP_SLEEP(list->handle);
     PTHREAD_JOIN(list->handle,
 		 &unused);
+    list->handle = NULL;
     list->ctx->activeDownloadThreads--;
     list->state = FSUI_PENDING;
     ret = YES;
@@ -530,6 +531,7 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
 #endif
     PTHREAD_JOIN(list->handle,
 		 &unused);
+    list->handle = NULL;
     list->ctx->activeDownloadThreads--;
     list->state++; /* adds _JOINED */
     ret = YES;
@@ -608,12 +610,20 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   else
     prev->next = dl->next; /* not first child */
   MUTEX_UNLOCK(ctx->lock);
-  if ( (dl->state == FSUI_COMPLETED) ||
+  if ( (dl->state == FSUI_ACTIVE) ||
+       (dl->state == FSUI_COMPLETED) ||
        (dl->state == FSUI_ABORTED) ||
        (dl->state == FSUI_ERROR) ) {
+    GE_ASSERT(ctx->ectx, dl->handle != NULL);
     PTHREAD_JOIN(dl->handle,
 		 &unused);
-    dl->state++; /* add _JOINED */
+    dl->handle = NULL;
+    if (dl->state == FSUI_ACTIVE) 
+      dl->state = FSUI_PENDING;
+    else
+      dl->state++; /* add _JOINED */
+  } else {
+    GE_ASSERT(ctx->ectx, dl->handle == NULL);
   }
   event.type = FSUI_download_stopped;
   event.data.DownloadStopped.dc.pos = dl;

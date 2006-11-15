@@ -254,12 +254,20 @@ int FSUI_stopUnindex(struct FSUI_Context * ctx,
     prev->next = dl->next;
   }
   MUTEX_UNLOCK(ctx->lock);
-  if ( (dl->state == FSUI_COMPLETED) ||
+  if ( (dl->state == FSUI_ACTIVE) ||
+       (dl->state == FSUI_COMPLETED) ||
        (dl->state == FSUI_ABORTED) ||
        (dl->state == FSUI_ERROR) ) {
+    GE_ASSERT(ctx->ectx, dl->handle != NULL);
     PTHREAD_JOIN(dl->handle,
 		 &unused);
-    dl->state++; /* add _JOINED */
+    dl->handle = NULL;
+    if (dl->state == FSUI_ACTIVE)
+      dl->state = FSUI_PENDING;
+    else
+      dl->state++; /* add _JOINED */
+  } else {
+    GE_ASSERT(ctx->ectx, dl->handle == NULL);
   }
   event.type = FSUI_unindex_stopped;
   event.data.UnindexStopped.uc.pos = dl;
