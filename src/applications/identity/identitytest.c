@@ -30,6 +30,7 @@
 #include "gnunet_identity_service.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_core.h"
+#include "gnunet_util_config_impl.h"
 #include "core.h"
 
 #define ASSERT(cond) do { \
@@ -101,35 +102,28 @@ static int runTest() {
   return OK;
 }
 
-/**
- * Perform option parsing from the command line.
- */
-static int parser(int argc,
-		  char * argv[]) {
-  FREENONNULL(setConfigurationString("FILES",
-				     "gnunet.conf",
-				     "check.conf"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "_MAGIC_",
-				     "YES"));
-  FREENONNULL(setConfigurationString("GNUNETD",
-				     "LOGFILE",
-				     NULL));
-  return OK;
-}
-
 int main(int argc, char *argv[]) {
   int err;
+  struct GC_Configuration * cfg;
+  struct CronManager * cron;
 
-  if (OK != initUtil(argc, argv, &parser))
-    return SYSERR;
-  initCore();
+  cfg = GC_create_C_impl();
+  if (-1 == GC_parse_configuration(cfg,
+				   "check.conf")) {
+    GC_free(cfg);
+    return -1;
+  }
+  cron = cron_create(NULL);
+  initCore(NULL,
+	   cfg,
+	   cron,
+	   NULL);
   err = 0;
   if (OK != runTest())
     err = 1;
-
   doneCore();
-  doneUtil();
+  cron_destroy(cron);
+  GC_free(cfg);
   return err;
 }
 
