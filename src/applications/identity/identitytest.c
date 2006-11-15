@@ -57,6 +57,7 @@ static int runTest() {
   transport = requestService("transport");
   identity = requestService("identity");
   cron_start(cron);
+  /* give cron job chance to run */
   PTHREAD_SLEEP(5 * cronSECONDS);
   helo = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == helo) {
