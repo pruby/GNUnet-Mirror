@@ -340,7 +340,8 @@ static int transportGetMTU(unsigned short ttype) {
  * Create a hello advertisement for the given
  * transport type for this node.
  */
-static P2P_hello_MESSAGE * transportCreatehello(unsigned short ttype) {
+static P2P_hello_MESSAGE * 
+transportCreatehello(unsigned short ttype) {
   TransportAPI * tapi;
   P2P_hello_MESSAGE * helo;
 

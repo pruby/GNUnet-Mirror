@@ -33,10 +33,13 @@
 #include "gnunet_util_config_impl.h"
 #include "core.h"
 
+static struct CronManager * cron;
+
 #define ASSERT(cond) do { \
   if (!cond) { \
    printf("Assertion failed at %s:%d\n", \
           __FILE__, __LINE__); \
+   cron_stop(cron); \
    releaseService(identity); \
    releaseService(transport); \
    return SYSERR; \
@@ -53,12 +56,15 @@ static int runTest() {
 
   transport = requestService("transport");
   identity = requestService("identity");
+  cron_start(cron);
+  PTHREAD_SLEEP(30 * cronSECONDS);
   helo = transport->createhello(ANY_PROTOCOL_NUMBER);
   if (NULL == helo) {
     printf("Cannot run test, failed to create any hello.\n");
+    cron_stop(cron);
     releaseService(identity);
     releaseService(transport);
-    return OK;
+    return SYSERR;
   }
   identity->addHost(helo);
   pid = helo->senderIdentity;
@@ -97,6 +103,7 @@ static int runTest() {
   /* to test:
      hello verification, temporary storage,
      permanent storage, blacklisting, etc. */
+  cron_stop(cron);
   releaseService(identity);
   releaseService(transport);
   return OK;
@@ -105,7 +112,6 @@ static int runTest() {
 int main(int argc, char *argv[]) {
   int err;
   struct GC_Configuration * cfg;
-  struct CronManager * cron;
 
   cfg = GC_create_C_impl();
   if (-1 == GC_parse_configuration(cfg,
