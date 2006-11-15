@@ -513,18 +513,23 @@ static void * selectThread(void * ctx) {
 	lenOfIncomingAddr = sh->max_addr_len;
 	memset(clientAddr,
 	       0,
-	     lenOfIncomingAddr);
+	       lenOfIncomingAddr);
+	/* make sure this is non-blocking */
+	socket_set_blocking(sh->listen_sock,
+			    NO);
 	s = ACCEPT(sh->listen_sock->handle,
 		   (struct sockaddr *) clientAddr,
 		   &lenOfIncomingAddr);
 	if (s == -1) {	
+	  GE_LOG_STRERROR(sh->ectx,
+			  GE_WARNING | GE_ADMIN | GE_BULK,
+			  "accept");
 	  GE_LOG(sh->ectx,
 		 GE_WARNING | GE_ADMIN | GE_BULK,
 		 "Select %s failed to accept!\n",
 		 sh->description);
-	  GE_LOG_STRERROR(sh->ectx,
-			  GE_WARNING | GE_ADMIN | GE_BULK,
-			  "accept");
+	  if ( (errno == EAGAIN) || (errno == EWOULDBLOCK))
+	    continue; /* not good, but not fatal either */
 	  break;
 	} else {
 #if DEBUG_SELECT
@@ -867,11 +872,13 @@ void select_destroy(struct SelectHandle * sh) {
   signalSelect(sh);
   PTHREAD_STOP_SLEEP(sh->thread);
   PTHREAD_JOIN(sh->thread, &unused);
+  MUTEX_LOCK(sh->lock);
   while (sh->sessionCount > 0)
     destroySession(sh, sh->sessions[0]);
   GROW(sh->sessions,
        sh->sessionArrayLength,
        0);
+  MUTEX_UNLOCK(sh->lock);
   MUTEX_DESTROY(sh->lock);
   if (0 != CLOSE(sh->signal_pipe[1]))
     GE_LOG_STRERROR(sh->ectx,

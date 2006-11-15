@@ -692,6 +692,8 @@ static void * tcpListenMain() {
 	int sock;
 	
 	lenOfIncomingAddr = sizeof(clientAddr);
+	/* make sure we do not block */
+	setBlocking(tcp_sock, NO);
 	sock = ACCEPT(tcp_sock,
 		      (struct sockaddr *)&clientAddr,
 		      &lenOfIncomingAddr);
