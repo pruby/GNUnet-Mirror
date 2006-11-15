@@ -374,9 +374,13 @@ static int readAndProcess(int i) {
 	     &tcpSession->rbuff[tcpSession->pos],
 	     tcpSession->rsize - tcpSession->pos);
   if ( (ret > 0) &&
-       (stats != NULL) )
+       (stats != NULL) ) {
+    os_network_monitor_notify_transmission(coreAPI->load_monitor,
+					   Download,
+					   ret);
     stats->change(stat_bytesReceived,
 		  ret);
+  }
   tcpSession->lastUse = get_time();
   if (ret == 0) {
     tcpDisconnect(tsession);
@@ -594,14 +598,16 @@ static int SEND_NONBLOCKING(int s,
 
   } while ( (*sent == -1) &&
 	    (errno == EINTR) );
-
+  
   setBlocking(s, YES);
 
   if (*sent == SYSERR && (errno == EWOULDBLOCK || errno == EAGAIN))
     return NO;
   else if ( (*sent < 0) || (*sent > max) )
     return SYSERR;
-
+  os_network_monitor_notify_transmission(coreAPI->load_monitor,
+					 Upload,
+					 *sent);
   return YES;
 }
 

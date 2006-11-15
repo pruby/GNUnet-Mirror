@@ -1401,9 +1401,11 @@ static int sendBuffer(BufferEntry * be) {
      fails, return (but clean up garbage) */
   if ( (SYSERR == outgoingCheck(priority)) ||
        (0 == prepareSelectedMessages(be)) ) {
+#if DEBUG_CONNECTION
     GE_LOG(ectx,
 	   GE_DEBUG | GE_DEVELOPER | GE_BULK,
 	   "Insufficient bandwidth or priority to send message\n");
+#endif
     expireSendBufferEntries(be);
     be->inSendBuffer = NO;
     return NO;             /* deferr further */

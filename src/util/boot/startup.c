@@ -36,7 +36,7 @@ static GE_KIND
 convertLogLevel(const char * level) {
   GE_KIND ret;
 
-  ret = GE_NOTHING;
+  ret = 0;
   if (ret || (0 == strcasecmp("debug", level)))
     ret |= GE_DEBUG;
   if (ret || (0 == strcasecmp("status", level)))

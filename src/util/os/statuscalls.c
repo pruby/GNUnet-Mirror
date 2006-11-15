@@ -123,13 +123,18 @@ typedef struct LoadMonitor {
 
   DirectionInfo download_info;
 
+  cron_t last_ifc_update;
+
 } LoadMonitor;
 
 void os_network_monitor_notify_transmission(struct LoadMonitor * monitor,
 					    NetworkDirection dir,
 					    unsigned long long delta) {
   MUTEX_LOCK(monitor->statusMutex);
-  monitor->globalTrafficBetweenProc.last_in += delta;
+  if (dir == Download)
+    monitor->globalTrafficBetweenProc.last_in += delta;
+  else
+    monitor->globalTrafficBetweenProc.last_out += delta;
   MUTEX_UNLOCK(monitor->statusMutex);
 }
 
@@ -387,8 +392,10 @@ int os_network_monitor_get_load(struct LoadMonitor * monitor,
   MUTEX_LOCK(monitor->statusMutex);
   now = get_time();
   if ( (monitor->useBasicMethod == NO) &&
-       (now - di->lastCall > 10 * cronSECONDS) )
+       (now - monitor->last_ifc_update > 10 * cronSECONDS) ) {
+    monitor->last_ifc_update = now;
     updateInterfaceTraffic(monitor);
+  }
   if (dir == Upload) {
     currentLoadSum = monitor->globalTrafficBetweenProc.last_out;
     for (i=0;i<monitor->ifcsSize;i++)
