@@ -135,10 +135,6 @@ activeMigrationCallback(const PeerIdentity * receiver,
     }
   }
 
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_BULK | GE_USER,
-	 "Migration: got block of type %u\n",
-	 ntohl(content->type));
   if (ntohl(content->type) == ONDEMAND_BLOCK) {
     if (ONDEMAND_getIndexed(datastore, 
 			    content,

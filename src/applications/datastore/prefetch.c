@@ -95,11 +95,6 @@ static int aquire(const HashCode512 * key,
 		  void * closure) {
   int load;
 
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_BULK | GE_USER,
-	 "Prefetch: got block of type %u\n",
-	 ntohl(value->type));
-  
   if (doneSignal)
     return SYSERR;
   SEMAPHORE_DOWN(acquireMoreSignal, YES);
