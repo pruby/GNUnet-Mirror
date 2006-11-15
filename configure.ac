@@ -376,6 +376,34 @@ then
 fi
 
 # GNUnet Setup
+dialog=0
+AC_MSG_CHECKING([for dialog 1.0-20051207])
+AC_ARG_WITH(dialog,
+   [  --with-dialog=PFX    Base of dialog installation],
+   [AC_MSG_RESULT([$with_dialog])
+    case $with_dialog in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(dialog.h,
+          AC_CHECK_LIB([dialog], [dialog_menu],
+            dialog=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_dialog/lib $LDFLAGS"
+        CPPFLAGS="-I$with_dialog/include $CPPFLAGS"
+        AC_CHECK_HEADERS(dialog.h,
+          AC_CHECK_LIB([dialog], [dialog_menu],
+            EXT_LIB_PATH="-L$with_dialog/lib $EXT_LIB_PATH"
+            dialog=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-dialog not specified])
+    AC_CHECK_HEADERS(dialog.h,
+     AC_CHECK_LIB([dialog], [dialog_menu],
+      dialog=1))])
+
 AC_CHECK_HEADER([dialog.h],curses=1,curses=0)
 AM_CONDITIONAL(HAVE_DIALOG, test x$curses = x1)
 AC_DEFINE_UNQUOTED([HAVE_CURSES], $curses, [We have ncurses])
@@ -579,6 +607,11 @@ fi
 if test "x$guile" = "x0"
 then
   AC_MSG_NOTICE([NOTICE: Guile not found, gnunet-download-manager will not be installed.])
+fi
+
+if test "$dialog" != 1
+then
+ AC_MSG_NOTICE([curses based gnunet-setup frontends will not be installed.])
 fi
 
 if test "$ipv6" = "0"
