@@ -404,9 +404,8 @@ AC_ARG_WITH(dialog,
      AC_CHECK_LIB([dialog], [dialog_menu],
       dialog=1))])
 
-AC_CHECK_HEADER([dialog.h],curses=1,curses=0)
-AM_CONDITIONAL(HAVE_DIALOG, test x$curses = x1)
-AC_DEFINE_UNQUOTED([HAVE_CURSES], $curses, [We have ncurses])
+AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
+AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
 
 # check for gtk >= 2.6.0
 AC_MSG_CHECKING(for gtk)
