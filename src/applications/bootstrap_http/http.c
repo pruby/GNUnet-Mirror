@@ -217,7 +217,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 		   CURLOPT_WRITEDATA,
 		   &bctx);
   if (ret != CURLE_OK)
-    goto ERROR;
+    goto cleanup;
   CURL_EASY_SETOPT(curl,
 		   CURLOPT_FAILONERROR,
 		   1);
@@ -254,7 +254,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   multi = curl_multi_init();
   if (multi == NULL) {
     GE_BREAK(ectx, 0);
-    goto ERROR;
+    goto cleanup;
   }
   mret = curl_multi_add_handle(multi, curl);
   if (mret != CURLM_OK) {
@@ -265,7 +265,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   __FILE__,
 	   __LINE__,
 	   curl_multi_strerror(mret));
-    goto ERROR;
+    goto cleanup;
   }
   while (YES == termTest(targ)) {
     max = 0;
@@ -285,7 +285,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	     __FILE__,
 	     __LINE__,
 	     curl_multi_strerror(mret));
-      goto ERROR;
+      goto cleanup;
     }
     /* use timeout of 1s in case that SELECT is not interrupted by
        signal (just to increase portability a bit) -- better a 1s
@@ -337,7 +337,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	     __FILE__,
 	     __LINE__,
 	     curl_multi_strerror(mret));
-      goto ERROR;
+      goto cleanup;
     }
     if (running == 0)
       break;
@@ -351,7 +351,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
 	   __FILE__,
 	   __LINE__,
 	   curl_multi_strerror(mret));
-    goto ERROR;
+    goto cleanup;
   }
 #else
   ret = curl_easy_perform(curl);
@@ -380,7 +380,7 @@ static void downloadHostlist(bootstrap_hello_callback callback,
   FREE(proxy);
   curl_global_cleanup();
   return;
- ERROR:
+cleanup:
   GE_BREAK(ectx, ret != CURLE_OK);
 #if USE_MULTI
   if (multi != NULL)
