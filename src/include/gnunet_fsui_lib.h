@@ -915,6 +915,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 		 int doIndex,
 		 int doExtract,
 		 int individualKeywords,
+		 cron_t expiration,
 		 const struct ECRS_MetaData * topLevelMetaData,
 		 const struct ECRS_URI * globalURI,
 		 const struct ECRS_URI * keyUri);
