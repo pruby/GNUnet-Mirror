@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0pre0\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-11-13 13:57-0700\n"
+"POT-Creation-Date: 2006-11-15 23:17-0700\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -1521,24 +1521,24 @@ msgstr ""
 #: src/applications/sqstore_mysql/mysql.c:138
 #: src/applications/sqstore_mysql/mysql.c:145
 #: src/applications/sqstore_mysql/mysql.c:423
-#: src/applications/sqstore_mysql/mysql.c:765
-#: src/applications/sqstore_mysql/mysql.c:781
-#: src/applications/sqstore_mysql/mysql.c:791
-#: src/applications/sqstore_mysql/mysql.c:816
-#: src/applications/sqstore_mysql/mysql.c:827
-#: src/applications/sqstore_mysql/mysql.c:884
-#: src/applications/sqstore_mysql/mysql.c:971
-#: src/applications/sqstore_mysql/mysql.c:982
-#: src/applications/sqstore_mysql/mysql.c:1046
-#: src/applications/sqstore_mysql/mysql.c:1062
-#: src/applications/sqstore_mysql/mysql.c:1072
-#: src/applications/sqstore_mysql/mysql.c:1096
-#: src/applications/sqstore_mysql/mysql.c:1107
-#: src/applications/sqstore_mysql/mysql.c:1119
-#: src/applications/sqstore_mysql/mysql.c:1182
-#: src/applications/sqstore_mysql/mysql.c:1194
-#: src/applications/sqstore_mysql/mysql.c:1242
-#: src/applications/sqstore_mysql/mysql.c:1257
+#: src/applications/sqstore_mysql/mysql.c:734
+#: src/applications/sqstore_mysql/mysql.c:750
+#: src/applications/sqstore_mysql/mysql.c:760
+#: src/applications/sqstore_mysql/mysql.c:785
+#: src/applications/sqstore_mysql/mysql.c:796
+#: src/applications/sqstore_mysql/mysql.c:853
+#: src/applications/sqstore_mysql/mysql.c:940
+#: src/applications/sqstore_mysql/mysql.c:951
+#: src/applications/sqstore_mysql/mysql.c:1015
+#: src/applications/sqstore_mysql/mysql.c:1031
+#: src/applications/sqstore_mysql/mysql.c:1041
+#: src/applications/sqstore_mysql/mysql.c:1065
+#: src/applications/sqstore_mysql/mysql.c:1076
+#: src/applications/sqstore_mysql/mysql.c:1088
+#: src/applications/sqstore_mysql/mysql.c:1151
+#: src/applications/sqstore_mysql/mysql.c:1163
+#: src/applications/sqstore_mysql/mysql.c:1211
+#: src/applications/sqstore_mysql/mysql.c:1226
 #: src/applications/kvstore_sqlite/kv_sqlite.c:44
 #: src/applications/kvstore_sqlite/kv_sqlite.c:51
 #: src/util/crypto/symcipher_gcrypt.c:46 src/util/crypto/symcipher_gcrypt.c:53
@@ -1555,8 +1555,8 @@ msgstr "Kuri gutangiza"
 #: src/applications/sqstore_sqlite/sqlite.c:356
 #: src/applications/sqstore_sqlite/sqlite.c:377
 #: src/applications/sqstore_mysql/mysql.c:260
-#: src/applications/sqstore_mysql/mysql.c:845
-#: src/applications/sqstore_mysql/mysql.c:1134
+#: src/applications/sqstore_mysql/mysql.c:814
+#: src/applications/sqstore_mysql/mysql.c:1103
 #, c-format
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr ""
@@ -1567,8 +1567,8 @@ msgstr ""
 msgid "sqlite datastore"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/applications/sqstore_sqlite/sqlite.c:1216
-#: src/applications/sqstore_mysql/mysql.c:1318
+#: src/applications/sqstore_sqlite/sqlite.c:1252
+#: src/applications/sqstore_mysql/mysql.c:1287
 #, fuzzy
 msgid "# bytes in datastore"
 msgstr "#Bayite Bya BYAKIRIWE"
@@ -1686,35 +1686,40 @@ msgid "async RPC reply not received.\n"
 msgstr "Subiza OYA BYAKIRIWE"
 
 #: src/applications/sqstore_mysql/mysql.c:261
-#: src/applications/sqstore_mysql/mysql.c:846
-#: src/applications/sqstore_mysql/mysql.c:1135
+#: src/applications/sqstore_mysql/mysql.c:815
+#: src/applications/sqstore_mysql/mysql.c:1104
 #, fuzzy
 msgid "mysql datastore"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/applications/sqstore_mysql/mysql.c:1348
+#: src/applications/sqstore_mysql/mysql.c:1317
 #, fuzzy, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Kuri Gukoresha IDOSIYE kugirango Iboneza"
 
-#: src/applications/sqstore_mysql/mysql.c:1371
+#: src/applications/sqstore_mysql/mysql.c:1340
 msgid ""
 "Failed to load MySQL database module.  Check that MySQL is running and "
 "configured properly!\n"
 msgstr ""
 
-#: src/applications/datastore/datastore.c:119
+#: src/applications/datastore/datastore.c:120
 #, fuzzy, c-format
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr "kugirango ku"
 
-#: src/applications/datastore/datastore.c:145
+#: src/applications/datastore/datastore.c:146
 #, fuzzy, c-format
 msgid "Database failed to delete `%s'.\n"
 msgstr "Kuri Ibikubiyemo"
 
-#: src/applications/datastore/datastore.c:368
-#: src/applications/datastore/datastore.c:465
+#: src/applications/datastore/datastore.c:360
+#, fuzzy
+msgid "# bytes allowed in datastore"
+msgstr "#Bayite Bya BYAKIRIWE"
+
+#: src/applications/datastore/datastore.c:375
+#: src/applications/datastore/datastore.c:472
 #, fuzzy
 msgid "Failed to load state service. Trying to do without.\n"
 msgstr "Kuri Gutangira Serivisi ku Umuyoboro"
@@ -2025,36 +2030,36 @@ msgstr ""
 msgid "Transmission attempt failed, transport type %d unknown.\n"
 msgstr "Bya Ubwoko"
 
-#: src/applications/transport/transport.c:370
+#: src/applications/transport/transport.c:371
 #, fuzzy, c-format
 msgid "No transport of type %d known.\n"
 msgstr "Bya Ubwoko"
 
-#: src/applications/transport/transport.c:427
+#: src/applications/transport/transport.c:428
 msgid "No transport succeeded in creating a hello!\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:601
+#: src/applications/transport/transport.c:602
 #, fuzzy, c-format
 msgid "Loading transports `%s'\n"
 msgstr "S"
 
-#: src/applications/transport/transport.c:621
+#: src/applications/transport/transport.c:622
 #, fuzzy, c-format
 msgid "Could not load transport plugin `%s'\n"
 msgstr "OYA gutangiza Porogaramu"
 
-#: src/applications/transport/transport.c:631
+#: src/applications/transport/transport.c:632
 #, fuzzy, c-format
 msgid "Transport library `%s' did not provide required function '%s%s'.\n"
 msgstr "Isomero OYA Bya ngombwa Umumaro"
 
-#: src/applications/transport/transport.c:658
+#: src/applications/transport/transport.c:659
 #, fuzzy, c-format
 msgid "Loaded transport `%s'\n"
 msgstr "S"
 
-#: src/applications/transport/transport.c:671
+#: src/applications/transport/transport.c:672
 #, c-format
 msgid "I am peer `%s'.\n"
 msgstr ""
@@ -2381,117 +2386,117 @@ msgstr "BYAKIRIWE Sibyo"
 msgid "allows mapping of the network topology"
 msgstr "urusobe"
 
-#: src/applications/gap/gap.c:1643
+#: src/applications/gap/gap.c:1645
 #, fuzzy, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr "Sibyo Ubutumwa Bivuye"
 
-#: src/applications/gap/gap.c:1644
+#: src/applications/gap/gap.c:1646
 msgid "myself"
 msgstr ""
 
-#: src/applications/gap/gap.c:1818
+#: src/applications/gap/gap.c:1820
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:1830 src/applications/fs/module/anonymity.c:66
+#: src/applications/gap/gap.c:1832 src/applications/fs/module/anonymity.c:66
 #, fuzzy
 msgid "Failed to get traffic stats.\n"
 msgstr "Kuri Ikibazo# Ibyerekeye"
 
-#: src/applications/gap/gap.c:1837 src/applications/gap/gap.c:1843
-#: src/applications/gap/gap.c:1850
+#: src/applications/gap/gap.c:1839 src/applications/gap/gap.c:1845
+#: src/applications/gap/gap.c:1852
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2133
+#: src/applications/gap/gap.c:2135
 #, fuzzy
 msgid "# gap requests total received"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2134
+#: src/applications/gap/gap.c:2136
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:2135
+#: src/applications/gap/gap.c:2137
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:2136
+#: src/applications/gap/gap.c:2138
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:2137
+#: src/applications/gap/gap.c:2139
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2138
+#: src/applications/gap/gap.c:2140
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2139
+#: src/applications/gap/gap.c:2141
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2140
+#: src/applications/gap/gap.c:2142
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2141
+#: src/applications/gap/gap.c:2143
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2142
+#: src/applications/gap/gap.c:2144
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2143
+#: src/applications/gap/gap.c:2145
 #, fuzzy
 msgid "# gap duplicate requests that were re-tried"
 msgstr "#BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2144
+#: src/applications/gap/gap.c:2146
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2145
+#: src/applications/gap/gap.c:2147
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2146
+#: src/applications/gap/gap.c:2148
 #, fuzzy
 msgid "# gap spurious replies"
 msgstr "#hejuru Ibibazo BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2147
+#: src/applications/gap/gap.c:2149
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2148
+#: src/applications/gap/gap.c:2150
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2149
+#: src/applications/gap/gap.c:2151
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2150
+#: src/applications/gap/gap.c:2152
 msgid "# gap rewards pending"
 msgstr ""
 
-#: src/applications/gap/gap.c:2151
+#: src/applications/gap/gap.c:2153
 #, fuzzy
 msgid "# gap response weights"
 msgstr "#hejuru Ibibazo BYAKIRIWE"
 
-#: src/applications/gap/gap.c:2167
+#: src/applications/gap/gap.c:2169
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2195
+#: src/applications/gap/gap.c:2197
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr ""
@@ -3028,39 +3033,39 @@ msgid ""
 "%s' under `%s'.\n"
 msgstr "IDOSIYE bushyinguro kugirango Bya Ibyatanzwe in Icyiciro"
 
-#: src/applications/fs/module/ondemand.c:665
+#: src/applications/fs/module/ondemand.c:667
 #, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1229
+#: src/applications/fs/module/fs.c:1232
 #, fuzzy, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
 "s'.\n"
 msgstr "a Umubare kugirango in i Iboneza in Icyiciro"
 
-#: src/applications/fs/module/fs.c:1281
+#: src/applications/fs/module/fs.c:1284
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr ""
 
-#: src/applications/fs/module/fs.c:1321
+#: src/applications/fs/module/fs.c:1324
 msgid "enables (anonymous) file-sharing"
 msgstr ""
 
-#: src/applications/fs/module/migration.c:228
+#: src/applications/fs/module/migration.c:242
 msgid "# blocks migrated"
 msgstr ""
 
-#: src/applications/fs/module/migration.c:229
+#: src/applications/fs/module/migration.c:244
 msgid "# on-demand block migration attempts"
 msgstr ""
 
-#: src/applications/fs/fsui/searchtest.c:156
-#: src/applications/fs/fsui/fsuitest.c:199
-#: src/applications/fs/fsui/downloadtest.c:308
+#: src/applications/fs/fsui/searchtest.c:154
+#: src/applications/fs/fsui/fsuitest.c:193
+#: src/applications/fs/fsui/downloadtest.c:307
 #: src/applications/fs/ecrs/helper.c:118 src/applications/fs/ecrs/helper.c:123
 #: src/applications/fs/ecrs/helper.c:126 src/applications/fs/ecrs/helper.c:130
 msgid "AND"
@@ -3576,66 +3581,66 @@ msgstr "Gukoresha Nka Ukoresha:"
 msgid "run in client mode (for getting client configuration values)"
 msgstr "Gukoresha in Ukoresha: Ubwoko kugirango Ukoresha: Iboneza Uduciro"
 
-#: src/server/connection.c:1023
+#: src/server/connection.c:1024
 #, fuzzy, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr "`%s'Byahiswemo Inyuma Bya Ubutumwa"
 
-#: src/server/connection.c:1032
+#: src/server/connection.c:1033
 #, fuzzy, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Birambuye Uburebure By'ibanze"
 
-#: src/server/connection.c:2417
+#: src/server/connection.c:2420
 #, fuzzy, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Bivuye Sibyo Imiterere"
 
-#: src/server/connection.c:2489
+#: src/server/connection.c:2492
 #, fuzzy, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Umubare Bya"
 
-#: src/server/connection.c:2506
+#: src/server/connection.c:2509
 #, fuzzy
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "BYAKIRIWE Birenzeho UMUNSI ki/ bishaje"
 
-#: src/server/connection.c:2929
+#: src/server/connection.c:2932
 #, fuzzy
 msgid "# outgoing messages dropped"
 msgstr "#Ubutumwa"
 
-#: src/server/connection.c:2933
+#: src/server/connection.c:2936
 #, fuzzy
 msgid "# bytes of outgoing messages dropped"
 msgstr "#Bayite Bya BYAKIRIWE"
 
-#: src/server/connection.c:2935
+#: src/server/connection.c:2938
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:2938
+#: src/server/connection.c:2941
 #, fuzzy
 msgid "# bytes encrypted"
 msgstr "#Bayite"
 
-#: src/server/connection.c:2942
+#: src/server/connection.c:2945
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "#Bayite Bya Ubwoko"
 
-#: src/server/connection.c:2946
+#: src/server/connection.c:2949
 #, fuzzy
 msgid "# bytes received"
 msgstr "#Bayite BYAKIRIWE Bya Ubwoko"
 
-#: src/server/connection.c:2948
+#: src/server/connection.c:2951
 #, fuzzy
 msgid "# bytes decrypted"
 msgstr "#Bayite"
 
-#: src/server/connection.c:2949
+#: src/server/connection.c:2952
 #, fuzzy
 msgid "# bytes noise sent"
 msgstr "#Bayite Bya BYAKIRIWE"
@@ -3926,12 +3931,12 @@ msgstr "Isinya Byanze ku"
 msgid "libgcrypt has not the expected version (version %s is required).\n"
 msgstr "OYA i Ikitezwe: Verisiyo Verisiyo ni Bya ngombwa"
 
-#: src/util/os/statuscalls.c:171 src/util/os/statuscalls.c:249
+#: src/util/os/statuscalls.c:176 src/util/os/statuscalls.c:254
 #, fuzzy, c-format
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Kuri Ibyatanzwe Bivuye ku"
 
-#: src/util/os/statuscalls.c:291 src/util/os/statuscalls.c:300
+#: src/util/os/statuscalls.c:296 src/util/os/statuscalls.c:305
 #, fuzzy, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
@@ -4403,30 +4408,30 @@ msgstr "OYA Iboneza IDOSIYE"
 msgid "Configuration changed. Save?"
 msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
 
-#: src/setup/gtk/wizard_gtk.c:137
+#: src/setup/gtk/wizard_gtk.c:139
 #, fuzzy
 msgid "(unknown connection)"
 msgstr "Imiterere Verisiyo"
 
-#: src/setup/gtk/wizard_gtk.c:390
+#: src/setup/gtk/wizard_gtk.c:389
 #, fuzzy, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "OYA Iboneza IDOSIYE"
 
-#: src/setup/gtk/wizard_gtk.c:415
+#: src/setup/gtk/wizard_gtk.c:411
 #, fuzzy
 msgid "Do you want to save the new configuration?"
 msgstr "OYA Iboneza IDOSIYE"
 
-#: src/setup/gtk/wizard_gtk.c:442 src/setup/ncurses/wizard_curs.c:620
+#: src/setup/gtk/wizard_gtk.c:438 src/setup/ncurses/wizard_curs.c:620
 msgid "Unable to create user account:"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:449 src/setup/ncurses/wizard_curs.c:623
+#: src/setup/gtk/wizard_gtk.c:445 src/setup/ncurses/wizard_curs.c:623
 msgid "Unable to change startup process:"
 msgstr ""
 
-#: src/setup/gtk/wizard_gtk.c:458
+#: src/setup/gtk/wizard_gtk.c:454
 msgid "gnunet-update failed. Please run gnunet-update manually."
 msgstr ""
 
@@ -4536,7 +4541,7 @@ msgstr ""
 msgid "Use the '%s' key to abort.\n"
 msgstr ""
 
-#: src/setup/text/conf.c:557 src/setup/ncurses/mconf.c:422
+#: src/setup/text/conf.c:557 src/setup/ncurses/mconf.c:427
 #, fuzzy, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr "Cyangwa Verisiyo Byahinduwe Kuri Gukoresha"
@@ -4566,44 +4571,44 @@ msgstr "Kureka"
 msgid "Exit"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:161 src/setup/ncurses/mconf.c:260
-#: src/setup/ncurses/mconf.c:365
+#: src/setup/ncurses/mconf.c:161 src/setup/ncurses/mconf.c:265
+#: src/setup/ncurses/mconf.c:370
 msgid "Internal error! (Choice invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:200 src/setup/ncurses/mconf.c:310
+#: src/setup/ncurses/mconf.c:200 src/setup/ncurses/mconf.c:315
 msgid "Internal error! (Value invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:301
+#: src/setup/ncurses/mconf.c:306
 msgid "Invalid input, expecting floating point value."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:350
+#: src/setup/ncurses/mconf.c:355
 msgid "Invalid input, expecting integer."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:356
+#: src/setup/ncurses/mconf.c:361
 msgid "Value is not in legal range."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:408
+#: src/setup/ncurses/mconf.c:413
 #, fuzzy
 msgid "GNUnet Configuration"
 msgstr "A bushyinguro"
 
-#: src/setup/ncurses/mconf.c:426
+#: src/setup/ncurses/mconf.c:431
 msgid "Do you wish to save your new configuration?"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:437
+#: src/setup/ncurses/mconf.c:442
 #, fuzzy, c-format
 msgid ""
 "\n"
 "End of configuration.\n"
 msgstr "A bushyinguro"
 
-#: src/setup/ncurses/mconf.c:440
+#: src/setup/ncurses/mconf.c:445
 #, fuzzy, c-format
 msgid ""
 "\n"

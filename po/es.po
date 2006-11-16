@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNUnet 0.7.0e\n"
 "Report-Msgid-Bugs-To: gnunet-developers@mail.gnu.org\n"
-"POT-Creation-Date: 2006-11-13 13:57-0700\n"
+"POT-Creation-Date: 2006-11-15 23:17-0700\n"
 "PO-Revision-Date: 2006-06-29 12:05+0200\n"
 "Last-Translator: Miguel Angel Arruga <miguel.13@telefonica.net>\n"
 "Language-Team: Spanish\n"
@@ -1407,24 +1407,24 @@ msgstr "'%s' registrando manejadores %d %d (texto plano e hipertexto)\n"
 #: src/applications/sqstore_mysql/mysql.c:138
 #: src/applications/sqstore_mysql/mysql.c:145
 #: src/applications/sqstore_mysql/mysql.c:423
-#: src/applications/sqstore_mysql/mysql.c:765
-#: src/applications/sqstore_mysql/mysql.c:781
-#: src/applications/sqstore_mysql/mysql.c:791
-#: src/applications/sqstore_mysql/mysql.c:816
-#: src/applications/sqstore_mysql/mysql.c:827
-#: src/applications/sqstore_mysql/mysql.c:884
-#: src/applications/sqstore_mysql/mysql.c:971
-#: src/applications/sqstore_mysql/mysql.c:982
-#: src/applications/sqstore_mysql/mysql.c:1046
-#: src/applications/sqstore_mysql/mysql.c:1062
-#: src/applications/sqstore_mysql/mysql.c:1072
-#: src/applications/sqstore_mysql/mysql.c:1096
-#: src/applications/sqstore_mysql/mysql.c:1107
-#: src/applications/sqstore_mysql/mysql.c:1119
-#: src/applications/sqstore_mysql/mysql.c:1182
-#: src/applications/sqstore_mysql/mysql.c:1194
-#: src/applications/sqstore_mysql/mysql.c:1242
-#: src/applications/sqstore_mysql/mysql.c:1257
+#: src/applications/sqstore_mysql/mysql.c:734
+#: src/applications/sqstore_mysql/mysql.c:750
+#: src/applications/sqstore_mysql/mysql.c:760
+#: src/applications/sqstore_mysql/mysql.c:785
+#: src/applications/sqstore_mysql/mysql.c:796
+#: src/applications/sqstore_mysql/mysql.c:853
+#: src/applications/sqstore_mysql/mysql.c:940
+#: src/applications/sqstore_mysql/mysql.c:951
+#: src/applications/sqstore_mysql/mysql.c:1015
+#: src/applications/sqstore_mysql/mysql.c:1031
+#: src/applications/sqstore_mysql/mysql.c:1041
+#: src/applications/sqstore_mysql/mysql.c:1065
+#: src/applications/sqstore_mysql/mysql.c:1076
+#: src/applications/sqstore_mysql/mysql.c:1088
+#: src/applications/sqstore_mysql/mysql.c:1151
+#: src/applications/sqstore_mysql/mysql.c:1163
+#: src/applications/sqstore_mysql/mysql.c:1211
+#: src/applications/sqstore_mysql/mysql.c:1226
 #: src/applications/kvstore_sqlite/kv_sqlite.c:44
 #: src/applications/kvstore_sqlite/kv_sqlite.c:51
 #: src/util/crypto/symcipher_gcrypt.c:46 src/util/crypto/symcipher_gcrypt.c:53
@@ -1441,8 +1441,8 @@ msgstr "Imposible inicializar SQLite.\n"
 #: src/applications/sqstore_sqlite/sqlite.c:356
 #: src/applications/sqstore_sqlite/sqlite.c:377
 #: src/applications/sqstore_mysql/mysql.c:260
-#: src/applications/sqstore_mysql/mysql.c:845
-#: src/applications/sqstore_mysql/mysql.c:1134
+#: src/applications/sqstore_mysql/mysql.c:814
+#: src/applications/sqstore_mysql/mysql.c:1103
 #, c-format
 msgid "Invalid data in %s.  Trying to fix (by deletion).\n"
 msgstr "Datos no válidos en %s.  Intentando fijar (por borrado).\n"
@@ -1452,8 +1452,8 @@ msgstr "Datos no válidos en %s.  Intentando fijar (por borrado).\n"
 msgid "sqlite datastore"
 msgstr "base de datos sqlite"
 
-#: src/applications/sqstore_sqlite/sqlite.c:1216
-#: src/applications/sqstore_mysql/mysql.c:1318
+#: src/applications/sqstore_sqlite/sqlite.c:1252
+#: src/applications/sqstore_mysql/mysql.c:1287
 msgid "# bytes in datastore"
 msgstr "# bytes en la base de datos"
 
@@ -1574,17 +1574,17 @@ msgid "async RPC reply not received.\n"
 msgstr "respuesta RPC asíncrona no recibida.\n"
 
 #: src/applications/sqstore_mysql/mysql.c:261
-#: src/applications/sqstore_mysql/mysql.c:846
-#: src/applications/sqstore_mysql/mysql.c:1135
+#: src/applications/sqstore_mysql/mysql.c:815
+#: src/applications/sqstore_mysql/mysql.c:1104
 msgid "mysql datastore"
 msgstr "base de datos mysql"
 
-#: src/applications/sqstore_mysql/mysql.c:1348
+#: src/applications/sqstore_mysql/mysql.c:1317
 #, c-format
 msgid "Trying to use file `%s' for MySQL configuration.\n"
 msgstr "Intentando usar el fichero '%s' para la configuración de MySQL.\n"
 
-#: src/applications/sqstore_mysql/mysql.c:1371
+#: src/applications/sqstore_mysql/mysql.c:1340
 msgid ""
 "Failed to load MySQL database module.  Check that MySQL is running and "
 "configured properly!\n"
@@ -1592,18 +1592,23 @@ msgstr ""
 "Falló al cargar el modulo de la base de datos MySQL.  ¡Comprueba que MySQL "
 "esta ejecutandose y esta configurada correctamente!\n"
 
-#: src/applications/datastore/datastore.c:119
+#: src/applications/datastore/datastore.c:120
 #, c-format
 msgid "Availability test failed for `%s' at %s:%d.\n"
 msgstr "Test de disponibilidad fallido para '%s' en %s:%d.\n"
 
-#: src/applications/datastore/datastore.c:145
+#: src/applications/datastore/datastore.c:146
 #, c-format
 msgid "Database failed to delete `%s'.\n"
 msgstr "Falló al borrar de la base de datos %s.\n"
 
-#: src/applications/datastore/datastore.c:368
-#: src/applications/datastore/datastore.c:465
+#: src/applications/datastore/datastore.c:360
+#, fuzzy
+msgid "# bytes allowed in datastore"
+msgstr "# bytes en la base de datos"
+
+#: src/applications/datastore/datastore.c:375
+#: src/applications/datastore/datastore.c:472
 msgid "Failed to load state service. Trying to do without.\n"
 msgstr ""
 
@@ -1876,37 +1881,37 @@ msgstr ""
 msgid "Transmission attempt failed, transport type %d unknown.\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:370
+#: src/applications/transport/transport.c:371
 #, c-format
 msgid "No transport of type %d known.\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:427
+#: src/applications/transport/transport.c:428
 msgid "No transport succeeded in creating a hello!\n"
 msgstr ""
 
-#: src/applications/transport/transport.c:601
+#: src/applications/transport/transport.c:602
 #, fuzzy, c-format
 msgid "Loading transports `%s'\n"
 msgstr "Probando transporte(s) %s\n"
 
-#: src/applications/transport/transport.c:621
+#: src/applications/transport/transport.c:622
 #, fuzzy, c-format
 msgid "Could not load transport plugin `%s'\n"
 msgstr "Imposible inicializar la aplicación '%s'\n"
 
-#: src/applications/transport/transport.c:631
+#: src/applications/transport/transport.c:632
 #, c-format
 msgid "Transport library `%s' did not provide required function '%s%s'.\n"
 msgstr ""
 "La biblioteca de transporte '%s' no provee la función '%s%s' requerida.\n"
 
-#: src/applications/transport/transport.c:658
+#: src/applications/transport/transport.c:659
 #, fuzzy, c-format
 msgid "Loaded transport `%s'\n"
 msgstr "Transporte(s) disponible(s): %s\n"
 
-#: src/applications/transport/transport.c:671
+#: src/applications/transport/transport.c:672
 #, c-format
 msgid "I am peer `%s'.\n"
 msgstr "Yo soy el par '%s'.\n"
@@ -2200,115 +2205,115 @@ msgstr ""
 msgid "allows mapping of the network topology"
 msgstr ""
 
-#: src/applications/gap/gap.c:1643
+#: src/applications/gap/gap.c:1645
 #, c-format
 msgid "GAP received invalid content from `%s'\n"
 msgstr "GAP recibido contenido no válido de '%s'\n"
 
-#: src/applications/gap/gap.c:1644
+#: src/applications/gap/gap.c:1646
 msgid "myself"
 msgstr "yo"
 
-#: src/applications/gap/gap.c:1818
+#: src/applications/gap/gap.c:1820
 msgid ""
 "Cover traffic requested but traffic service not loaded.  Rejecting request.\n"
 msgstr ""
 "Solicitada la cobertura de tráfico pero el servicio de tráfico no ha sido "
 "cargado. Rechazando la petición.\n"
 
-#: src/applications/gap/gap.c:1830 src/applications/fs/module/anonymity.c:66
+#: src/applications/gap/gap.c:1832 src/applications/fs/module/anonymity.c:66
 msgid "Failed to get traffic stats.\n"
 msgstr "Fallo en las estadísticas del tráfico.\n"
 
-#: src/applications/gap/gap.c:1837 src/applications/gap/gap.c:1843
-#: src/applications/gap/gap.c:1850
+#: src/applications/gap/gap.c:1839 src/applications/gap/gap.c:1845
+#: src/applications/gap/gap.c:1852
 msgid "Cannot satisfy desired level of anonymity, ignoring request.\n"
 msgstr ""
 "Imposible satisfacer el nivel deseado de anonimato, ignorando la petición.\n"
 
-#: src/applications/gap/gap.c:2133
+#: src/applications/gap/gap.c:2135
 msgid "# gap requests total received"
 msgstr ""
 
-#: src/applications/gap/gap.c:2134
+#: src/applications/gap/gap.c:2136
 msgid "# gap requests policy: immediate drop"
 msgstr ""
 
-#: src/applications/gap/gap.c:2135
+#: src/applications/gap/gap.c:2137
 msgid "# gap requests policy: not routed"
 msgstr ""
 
-#: src/applications/gap/gap.c:2136
+#: src/applications/gap/gap.c:2138
 msgid "# gap requests policy: not answered"
 msgstr ""
 
-#: src/applications/gap/gap.c:2137
+#: src/applications/gap/gap.c:2139
 msgid "# gap requests processed: attempted add to RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2138
+#: src/applications/gap/gap.c:2140
 msgid "# gap requests processed: local result"
 msgstr ""
 
-#: src/applications/gap/gap.c:2139
+#: src/applications/gap/gap.c:2141
 msgid "# gap routing successes (total)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2140
+#: src/applications/gap/gap.c:2142
 msgid "# gap requests dropped: collision in RT"
 msgstr ""
 
-#: src/applications/gap/gap.c:2141
+#: src/applications/gap/gap.c:2143
 msgid "# gap requests forwarded (counting each peer)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2142
+#: src/applications/gap/gap.c:2144
 msgid "# gap duplicate requests (pending)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2143
+#: src/applications/gap/gap.c:2145
 msgid "# gap duplicate requests that were re-tried"
 msgstr ""
 
-#: src/applications/gap/gap.c:2144
+#: src/applications/gap/gap.c:2146
 msgid "# gap re-try ttl difference (cummulative)"
 msgstr ""
 
-#: src/applications/gap/gap.c:2145
+#: src/applications/gap/gap.c:2147
 msgid "# gap reply duplicates"
 msgstr ""
 
-#: src/applications/gap/gap.c:2146
+#: src/applications/gap/gap.c:2148
 msgid "# gap spurious replies"
 msgstr ""
 
-#: src/applications/gap/gap.c:2147
+#: src/applications/gap/gap.c:2149
 msgid "# gap routing slots currently in use"
 msgstr ""
 
-#: src/applications/gap/gap.c:2148
+#: src/applications/gap/gap.c:2150
 msgid "# gap memory used for tracking seen content"
 msgstr ""
 
-#: src/applications/gap/gap.c:2149
+#: src/applications/gap/gap.c:2151
 msgid "# gap memory used for tracking routing destinations"
 msgstr ""
 
-#: src/applications/gap/gap.c:2150
+#: src/applications/gap/gap.c:2152
 msgid "# gap rewards pending"
 msgstr ""
 
-#: src/applications/gap/gap.c:2151
+#: src/applications/gap/gap.c:2153
 msgid "# gap response weights"
 msgstr ""
 
-#: src/applications/gap/gap.c:2167
+#: src/applications/gap/gap.c:2169
 msgid ""
 "Traffic service failed to load; gap cannot ensure cover-traffic "
 "availability.\n"
 msgstr ""
 
-#: src/applications/gap/gap.c:2195
+#: src/applications/gap/gap.c:2197
 #, c-format
 msgid "`%s' registering handlers %d %d\n"
 msgstr "'%s' registrando manejadores %d %d\n"
@@ -2827,14 +2832,14 @@ msgstr ""
 "El fichero de configuración debe especificar un directorio para el "
 "almacenamiento de los datos de FS en la sección '%s' bajo '%s'.\n"
 
-#: src/applications/fs/module/ondemand.c:665
+#: src/applications/fs/module/ondemand.c:667
 #, fuzzy, c-format
 msgid ""
 "Unindexed ODB block `%s' from offset %llu already missing from datastore.\n"
 msgstr ""
 "Bloque ODB '%s' desindexado del offset %llu perdido de la base de datos.\n"
 
-#: src/applications/fs/module/fs.c:1229
+#: src/applications/fs/module/fs.c:1232
 #, c-format
 msgid ""
 "You must specify a postive number for `%s' in the configuration in section `%"
@@ -2843,26 +2848,26 @@ msgstr ""
 "Debes especificar un número positivo para '%s' en la configuración en la "
 "sección '%s'.\n"
 
-#: src/applications/fs/module/fs.c:1281
+#: src/applications/fs/module/fs.c:1284
 #, c-format
 msgid "`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"
 msgstr "'%s' registrando manejadores de clientes %d %d %d %d %d %d %d %d %d\n"
 
-#: src/applications/fs/module/fs.c:1321
+#: src/applications/fs/module/fs.c:1324
 msgid "enables (anonymous) file-sharing"
 msgstr "activa la compartición de ficheros anónima"
 
-#: src/applications/fs/module/migration.c:228
+#: src/applications/fs/module/migration.c:242
 msgid "# blocks migrated"
 msgstr "# blocks migrados"
 
-#: src/applications/fs/module/migration.c:229
+#: src/applications/fs/module/migration.c:244
 msgid "# on-demand block migration attempts"
 msgstr ""
 
-#: src/applications/fs/fsui/searchtest.c:156
-#: src/applications/fs/fsui/fsuitest.c:199
-#: src/applications/fs/fsui/downloadtest.c:308
+#: src/applications/fs/fsui/searchtest.c:154
+#: src/applications/fs/fsui/fsuitest.c:193
+#: src/applications/fs/fsui/downloadtest.c:307
 #: src/applications/fs/ecrs/helper.c:118 src/applications/fs/ecrs/helper.c:123
 #: src/applications/fs/ecrs/helper.c:126 src/applications/fs/ecrs/helper.c:130
 msgid "AND"
@@ -3376,61 +3381,61 @@ msgstr "ejecuta como el usuario LOGIN"
 msgid "run in client mode (for getting client configuration values)"
 msgstr ""
 
-#: src/server/connection.c:1023
+#: src/server/connection.c:1024
 #, c-format
 msgid "`%s' selected %d out of %d messages (MTU: %d).\n"
 msgstr ""
 
-#: src/server/connection.c:1032
+#: src/server/connection.c:1033
 #, c-format
 msgid "Message details: %u: length %d, priority: %d\n"
 msgstr "Detalles del mensaje: %u: longitud %d, prioridad: %d\n"
 
-#: src/server/connection.c:2417
+#: src/server/connection.c:2420
 #, c-format
 msgid "Message from `%s' discarded: invalid format.\n"
 msgstr "Mensaje de '%s' descartado: formato inválido.\n"
 
-#: src/server/connection.c:2489
+#: src/server/connection.c:2492
 #, c-format
 msgid "Invalid sequence number %u <= %u, dropping message.\n"
 msgstr "Secuencia de números no válida %u <= %u, omitiendo mensaje.\n"
 
-#: src/server/connection.c:2506
+#: src/server/connection.c:2509
 msgid "Message received more than one day old. Dropped.\n"
 msgstr "Mensajes recibidos de mas de un día de antigüedad. Omitidos.\n"
 
-#: src/server/connection.c:2929
+#: src/server/connection.c:2932
 msgid "# outgoing messages dropped"
 msgstr "# mensajes salientes omitidos"
 
-#: src/server/connection.c:2933
+#: src/server/connection.c:2936
 msgid "# bytes of outgoing messages dropped"
 msgstr "# bytes de mensajes salientes omitidos"
 
-#: src/server/connection.c:2935
+#: src/server/connection.c:2938
 msgid "# connections closed (HANGUP sent)"
 msgstr ""
 
-#: src/server/connection.c:2938
+#: src/server/connection.c:2941
 msgid "# bytes encrypted"
 msgstr "# bytes encriptados"
 
-#: src/server/connection.c:2942
+#: src/server/connection.c:2945
 #, fuzzy
 msgid "# bytes transmitted"
 msgstr "# bytes desencriptados"
 
-#: src/server/connection.c:2946
+#: src/server/connection.c:2949
 #, fuzzy
 msgid "# bytes received"
 msgstr "# bytes recibidos por TCP"
 
-#: src/server/connection.c:2948
+#: src/server/connection.c:2951
 msgid "# bytes decrypted"
 msgstr "# bytes desencriptados"
 
-#: src/server/connection.c:2949
+#: src/server/connection.c:2952
 msgid "# bytes noise sent"
 msgstr "# \"bytes-ruido\" mandados"
 
@@ -3704,12 +3709,12 @@ msgid "libgcrypt has not the expected version (version %s is required).\n"
 msgstr ""
 "libgcrypt no está en la versión esperada (se necesita la versión %s).\n"
 
-#: src/util/os/statuscalls.c:171 src/util/os/statuscalls.c:249
+#: src/util/os/statuscalls.c:176 src/util/os/statuscalls.c:254
 #, fuzzy, c-format
 msgid "Failed to parse interface data from `%s'.\n"
 msgstr "Falló al pasar los datos de la interfaz de '%s' de %s:%d.\n"
 
-#: src/util/os/statuscalls.c:291 src/util/os/statuscalls.c:300
+#: src/util/os/statuscalls.c:296 src/util/os/statuscalls.c:305
 #, c-format
 msgid ""
 "No network interfaces defined in configuration section `%s' under `%s'!\n"
@@ -4177,30 +4182,30 @@ msgid "Configuration changed. Save?"
 msgstr ""
 "La configuración o la versión de GNUnet cambiaron.  ¡Debes ejecutar '%s'!\n"
 
-#: src/setup/gtk/wizard_gtk.c:137
+#: src/setup/gtk/wizard_gtk.c:139
 #, fuzzy
 msgid "(unknown connection)"
 msgstr "Conexión de red"
 
-#: src/setup/gtk/wizard_gtk.c:390
+#: src/setup/gtk/wizard_gtk.c:389
 #, c-format
 msgid "Unable to save configuration file `%s':"
 msgstr "Imposible guardar el fichero de configuración '%s':"
 
-#: src/setup/gtk/wizard_gtk.c:415
+#: src/setup/gtk/wizard_gtk.c:411
 #, fuzzy
 msgid "Do you want to save the new configuration?"
 msgstr "¿Quieres guardar tu configuración?"
 
-#: src/setup/gtk/wizard_gtk.c:442 src/setup/ncurses/wizard_curs.c:620
+#: src/setup/gtk/wizard_gtk.c:438 src/setup/ncurses/wizard_curs.c:620
 msgid "Unable to create user account:"
 msgstr "Imposible crear la cuenta de usuario:"
 
-#: src/setup/gtk/wizard_gtk.c:449 src/setup/ncurses/wizard_curs.c:623
+#: src/setup/gtk/wizard_gtk.c:445 src/setup/ncurses/wizard_curs.c:623
 msgid "Unable to change startup process:"
 msgstr "Imposible cambiar el proceso de arranque:"
 
-#: src/setup/gtk/wizard_gtk.c:458
+#: src/setup/gtk/wizard_gtk.c:454
 msgid "gnunet-update failed. Please run gnunet-update manually."
 msgstr ""
 
@@ -4308,7 +4313,7 @@ msgstr ""
 msgid "Use the '%s' key to abort.\n"
 msgstr ""
 
-#: src/setup/text/conf.c:557 src/setup/ncurses/mconf.c:422
+#: src/setup/text/conf.c:557 src/setup/ncurses/mconf.c:427
 #, fuzzy, c-format
 msgid "Configuration unchanged, no need to save.\n"
 msgstr ""
@@ -4340,45 +4345,45 @@ msgstr "Cancelar"
 msgid "Exit"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:161 src/setup/ncurses/mconf.c:260
-#: src/setup/ncurses/mconf.c:365
+#: src/setup/ncurses/mconf.c:161 src/setup/ncurses/mconf.c:265
+#: src/setup/ncurses/mconf.c:370
 msgid "Internal error! (Choice invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:200 src/setup/ncurses/mconf.c:310
+#: src/setup/ncurses/mconf.c:200 src/setup/ncurses/mconf.c:315
 msgid "Internal error! (Value invalid?)"
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:301
+#: src/setup/ncurses/mconf.c:306
 msgid "Invalid input, expecting floating point value."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:350
+#: src/setup/ncurses/mconf.c:355
 msgid "Invalid input, expecting integer."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:356
+#: src/setup/ncurses/mconf.c:361
 msgid "Value is not in legal range."
 msgstr ""
 
-#: src/setup/ncurses/mconf.c:408
+#: src/setup/ncurses/mconf.c:413
 #, fuzzy
 msgid "GNUnet Configuration"
 msgstr "Configuración de GNUnet"
 
-#: src/setup/ncurses/mconf.c:426
+#: src/setup/ncurses/mconf.c:431
 #, fuzzy
 msgid "Do you wish to save your new configuration?"
 msgstr "¿Quieres guardar tu configuración?"
 
-#: src/setup/ncurses/mconf.c:437
+#: src/setup/ncurses/mconf.c:442
 #, fuzzy, c-format
 msgid ""
 "\n"
 "End of configuration.\n"
 msgstr " gconfig\tConfiguración GTK\n"
 
-#: src/setup/ncurses/mconf.c:440
+#: src/setup/ncurses/mconf.c:445
 #, fuzzy, c-format
 msgid ""
 "\n"
