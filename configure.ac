@@ -377,6 +377,7 @@ fi
 
 # GNUnet Setup
 dialog=0
+AC_CHECK_LIB([ncursesw],[wmove])
 AC_MSG_CHECKING([for dialog 1.0-20051207])
 AC_ARG_WITH(dialog,
    [  --with-dialog=PFX    Base of dialog installation],
@@ -386,26 +387,23 @@ AC_ARG_WITH(dialog,
         ;;
       yes)
         AC_CHECK_HEADERS(dialog.h,
-          AC_CHECK_LIB([ncursesw], [wmove], 
-            AC_CHECK_LIB([dialog], [dialog_menu],
-              dialog=1)))
+          AC_CHECK_LIB([dialog], [dialog_menu],
+            dialog=1))
         ;;
       *)
         LDFLAGS="-L$with_dialog/lib $LDFLAGS"
         CPPFLAGS="-I$with_dialog/include $CPPFLAGS"
         AC_CHECK_HEADERS(dialog.h,
-          AC_CHECK_LIB([ncursesw], [wmove], 
-            AC_CHECK_LIB([dialog], [dialog_menu],
-              EXT_LIB_PATH="-L$with_dialog/lib $EXT_LIB_PATH"
-              dialog=1)))
+          AC_CHECK_LIB([dialog], [dialog_menu],
+            EXT_LIB_PATH="-L$with_dialog/lib $EXT_LIB_PATH"
+              dialog=1))
         ;;
     esac
    ],
    [AC_MSG_RESULT([--with-dialog not specified])
     AC_CHECK_HEADERS(dialog.h,
-      AC_CHECK_LIB([ncursesw], [wmove], 
-        AC_CHECK_LIB([dialog], [dialog_menu],
-          dialog=1)))])
+      AC_CHECK_LIB([dialog], [dialog_menu],
+          dialog=1))])
 
 AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
 AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
