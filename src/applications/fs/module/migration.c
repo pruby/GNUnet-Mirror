@@ -135,6 +135,12 @@ activeMigrationCallback(const PeerIdentity * receiver,
     }
   }
 
+#if DEBUG_MIGRATION
+  GE_LOG(ectx,
+	 GE_DEBUG | GE_BULK | GE_USER,
+	 "Migration: random lookup in datastore returned type %d.\n",
+	 ntohl(content->type));
+#endif
   if (ntohl(content->type) == ONDEMAND_BLOCK) {
     if (ONDEMAND_getIndexed(datastore, 
 			    content,

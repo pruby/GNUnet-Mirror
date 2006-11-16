@@ -112,10 +112,20 @@ static int aquire(const HashCode512 * key,
     }
   }
 #if DEBUG_PREFETCH
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Adding content to prefetch buffer (%u)\n",
-	 rCBPos);
+  {
+    EncName enc;
+
+    hash2enc(key,
+	     &enc);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_BULK | GE_USER,
+	   "Adding content `%s' of type %u/size %u/exp %llu to prefetch buffer (%u)\n",
+	   &enc,
+	   ntohl(value->type),
+	   ntohl(value->size),
+	   ntohll(value->expirationTime),
+	   rCBPos);
+  }
 #endif
   randomContentBuffer[rCBPos].key = *key;
   randomContentBuffer[rCBPos].used = 0;

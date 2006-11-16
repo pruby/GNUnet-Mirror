@@ -599,10 +599,14 @@ static int sqlite_iterate(unsigned int type,
     MUTEX_UNLOCK(db->DATABASE_Lock_);
     return SYSERR;
   }
-
   count    = 0;
-  lastPrio = 0;
-  lastExp  = 0;
+  if (inverseOrder) {
+    lastPrio = 0x7FFFFFFF;
+    lastExp  = 0x7FFFFFFFFFFFFFFFLL;
+  } else {
+    lastPrio = 0;
+    lastExp  = 0;
+  }
   memset(&key, 0, sizeof(HashCode512));
   while (1) {
     sqlite3_bind_blob(stmt,
@@ -938,18 +942,19 @@ static int put(const HashCode512 * key,
   unsigned long long expir;
   sqliteHandle *dbh;
 #if DEBUG_SQLITE
-  EncName enc;
+  EncName enc; 
 
   IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   GE_DEBUG | GE_BULK | GE_USER,
 	   hash2enc(key,
 		    &enc));
   GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Storing in database block with type %u, key `%s' and priority %u.\n",
+	 GE_DEBUG | GE_BULK | GE_USER,
+	 "Storing in database block with type %u/key `%s'/priority %u/expiration %llu.\n",
 	 ntohl(*(int*)&value[1]),
 	 &enc,
-	 ntohl(value->prio));
+	 ntohl(value->prio),
+	 ntohll(value->expirationTime));
 #endif
 
   if ( (ntohl(value->size) < sizeof(Datastore_Value)) ) {

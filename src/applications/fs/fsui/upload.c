@@ -529,6 +529,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
 		 int doIndex,
 		 int doExtract,
 		 int individualKeywords,
+		 cron_t expiration,
 		 const struct ECRS_MetaData * md,
 		 const struct ECRS_URI * globalURI,
 		 const struct ECRS_URI * keyUri) {
@@ -556,6 +557,7 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   shared->dsc = dsc;
   shared->dscClosure = dscClosure;
   shared->extractors = extractors;
+  shared->expiration = expiration;
   shared->ctx = ctx;
   shared->handle = NULL;
   shared->global_keywords = globalURI != NULL ? ECRS_dupUri(globalURI) : NULL;
