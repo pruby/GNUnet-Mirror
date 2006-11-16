@@ -531,7 +531,8 @@ static void syncStats(sqliteHandle * handle) {
 static int sqlite_iterate(unsigned int type,
 			  Datum_Iterator iter,
 			  void * closure,
-			  int sortByPriority) {	
+			  int sortByPriority,
+			  int inverseOrder) {	
   sqlite3_stmt * stmt;
   int count;
   char scratch[512];
@@ -553,12 +554,21 @@ static int sqlite_iterate(unsigned int type,
 	 "SELECT size, type, prio, anonLevel, expire, hash, value FROM gn070"
 	 " WHERE rowid IN (SELECT rowid FROM gn070"
 	 " WHERE ((hash > :1 AND expire == :2 AND prio == :3) OR ");
-  if (sortByPriority)
-    strcat(scratch,
-	   "(expire > :4 AND prio == :5) OR prio > :6)");
-  else
-    strcat(scratch,
-	   "(prio > :4 AND expire == :5) OR expire > :6)");
+  if (sortByPriority) {
+    if (inverseOrder)
+      strcat(scratch,
+	     "(expire < :4 AND prio == :5) OR prio < :6)");
+    else
+      strcat(scratch,
+	     "(expire > :4 AND prio == :5) OR prio > :6)");
+  } else {
+    if (inverseOrder)
+      strcat(scratch,
+	     "(prio < :4 AND expire == :5) OR expire < :6)");
+    else
+      strcat(scratch,
+	     "(prio > :4 AND expire == :5) OR expire > :6)");
+  }
   if (type != 0)
     strcat(scratch, " AND type = :7");
   else
@@ -568,10 +578,17 @@ static int sqlite_iterate(unsigned int type,
 	     RESERVED_BLOCK); /* otherwise we iterate over
 				 the stats entry, which would
 				 be bad */
-  if (sortByPriority)
-    strcat(scratch, " ORDER BY prio ASC, expire ASC, hash ASC");
-  else
-    strcat(scratch, " ORDER BY expire ASC, prio ASC, hash ASC");
+  if (sortByPriority) {
+    if (inverseOrder)
+      strcat(scratch, " ORDER BY prio DESC, expire DESC, hash ASC");
+    else
+      strcat(scratch, " ORDER BY prio ASC, expire ASC, hash ASC");
+  } else {
+    if (inverseOrder) 
+      strcat(scratch, " ORDER BY expire DESC, prio DESC, hash ASC");
+    else
+      strcat(scratch, " ORDER BY expire ASC, prio ASC, hash ASC");
+  }
   strcat(scratch, " LIMIT 1)");
   if (sq_prepare(dbh,
 		 scratch,
@@ -689,7 +706,7 @@ static int sqlite_iterate(unsigned int type,
 static int iterateLowPriority(unsigned int type,
 			      Datum_Iterator iter,
 			      void * closure) {
-  return sqlite_iterate(type, iter, closure, 1);
+  return sqlite_iterate(type, iter, closure, 1, NO);
 }
 
 /**
@@ -704,8 +721,22 @@ static int iterateLowPriority(unsigned int type,
 static int iterateExpirationTime(unsigned int type,
 				 Datum_Iterator iter,
 				 void * closure) {
-  return sqlite_iterate(type, iter, closure, 0);
+  return sqlite_iterate(type, iter, closure, 0, NO);
 }
+
+/**
+ * Iterate over the items in the datastore in migration
+ * order.
+ *
+ * @param iter never NULL
+ * @return the number of results, SYSERR if the
+ *   iter is non-NULL and aborted the iteration
+ */
+static int iterateMigrationOrder(Datum_Iterator iter,
+			         void * closure) {
+  return sqlite_iterate(0, iter, closure, 0, YES);
+}
+
 
 static void sqlite_shutdown() {
   unsigned int idx;
@@ -1220,6 +1251,7 @@ provide_module_sqstore_sqlite(CoreAPIForApplication * capi) {
   api.get = &get;
   api.iterateLowPriority = &iterateLowPriority;
   api.iterateExpirationTime = &iterateExpirationTime;
+  api.iterateMigrationOrder = &iterateMigrationOrder;
   api.del = &del;
   api.drop = &drop;
   api.update = &update;

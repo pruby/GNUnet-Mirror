@@ -147,8 +147,7 @@ static int aquire(const HashCode512 * key,
 static void * rcbAcquire(void * unused) {
   int load;
   while (doneSignal == NO) {
-    sq->iterateExpirationTime(0,
-			      &aquire,
+    sq->iterateMigrationOrder(&aquire,
 			      NULL);
     /* sleep here, too - otherwise we start looping immediately
        if there is no content in the DB! */
@@ -263,8 +262,8 @@ void donePrefetch() {
   doneSignal = YES;
   PTHREAD_STOP_SLEEP(gather_thread);
   SEMAPHORE_UP(acquireMoreSignal);
-  SEMAPHORE_DESTROY(acquireMoreSignal);
   PTHREAD_JOIN(gather_thread, &unused);
+  SEMAPHORE_DESTROY(acquireMoreSignal);
   for (i=0;i<RCB_SIZE;i++)
     FREENONNULL(randomContentBuffer[i].value);
   MUTEX_DESTROY(lock);

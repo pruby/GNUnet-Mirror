@@ -135,6 +135,18 @@ typedef struct {
 			       Datum_Iterator iter,
 			       void * closure);
 
+
+  /**
+   * Iterate over the items in the datastore in migration
+   * order.
+   *
+   * @param iter never NULL
+   * @return the number of results, SYSERR if the
+   *   iter is non-NULL and aborted the iteration
+   */
+  int (*iterateMigrationOrder)(Datum_Iterator iter,
+			       void * closure);
+
   /**
    * Delete an item from the datastore.
    *

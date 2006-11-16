@@ -504,9 +504,11 @@ static int iclose(mysqlHandle * dbhI) {
   return OK;
 }
 
+
 /**
- * Iterate over the items in the datastore in ascending
- * order of priority.
+ * Iterate over the items in the datastore 
+ * using the given query to select and order
+ * the items.
  *
  * @param type entries of which type should be considered?
  *        Use 0 for any type.
@@ -514,9 +516,10 @@ static int iclose(mysqlHandle * dbhI) {
  * @return the number of results, SYSERR if the
  *   iter is non-NULL and aborted the iteration
  */
-static int iterateLowPriority(unsigned int type,
-			      Datum_Iterator iter,
-			      void * closure) {
+static int iterateHelper(unsigned int type,
+			 const char * query,
+			 Datum_Iterator iter,
+			 void * closure) {
   MYSQL_RES *sql_res;
   MYSQL_ROW sql_row;
   Datastore_Datum * datum;
@@ -545,10 +548,8 @@ static int iterateLowPriority(unsigned int type,
   }
   scratch = MALLOC(256);
   SNPRINTF(scratch,
-	   256, // SQL_BIG_RESULT SQL_BUFFER_RESULT
-	   "SELECT SQL_NO_CACHE * FROM gn070"
-	   " %s"
-	   "ORDER BY prio ASC",
+	   256,	   
+	   query,
 	   typestr);
   mysql_query(dbhI.dbf,
 	      scratch);
@@ -576,7 +577,9 @@ static int iterateLowPriority(unsigned int type,
       return count;
     }
     if ( (iter != NULL) &&
-	 (SYSERR == iter(&datum->key, &datum->value, closure) ) ) {
+	 (SYSERR == iter(&datum->key, 
+			 &datum->value, 
+			 closure) ) ) {
       count = SYSERR;
       FREE(datum);
       break;
@@ -601,6 +604,27 @@ static int iterateLowPriority(unsigned int type,
 
 /**
  * Iterate over the items in the datastore in ascending
+ * order of priority.
+ *
+ * @param type entries of which type should be considered?
+ *        Use 0 for any type.
+ * @param iter never NULL
+ * @return the number of results, SYSERR if the
+ *   iter is non-NULL and aborted the iteration
+ */
+static int iterateLowPriority(unsigned int type,
+			      Datum_Iterator iter,
+			      void * closure) {
+  return iterateHelper(type,
+		       "SELECT SQL_NO_CACHE * FROM gn070"
+		       " %s"
+		       "ORDER BY prio ASC",
+		       iter,
+		       closure);
+}
+
+/**
+ * Iterate over the items in the datastore in ascending
  * order of expiration time.
  *
  * @param type entries of which type should be considered?
@@ -612,85 +636,30 @@ static int iterateLowPriority(unsigned int type,
 static int iterateExpirationTime(unsigned int type,
 			         Datum_Iterator iter,
 			         void * closure) {
-  MYSQL_RES *sql_res;
-  MYSQL_ROW sql_row;
-  Datastore_Datum * datum;
-  char * scratch;
-  char typestr[32];
-  int count = 0;
-  mysqlHandle dbhI;
+  return iterateHelper(type,
+		       "SELECT SQL_NO_CACHE * FROM gn070"
+		       " %s"
+		       " ORDER BY expire ASC",
+		       iter,
+		       closure);
+}
 
-  dbhI.cnffile = dbh->cnffile; /* shared */
-  if (OK != iopen(&dbhI, NO))
-    return SYSERR;
-  MUTEX_LOCK(dbhI.DATABASE_Lock_);
-  mysql_query(dbhI.dbf,
-	      "SET AUTOCOMMIT = 0");
-  mysql_query(dbhI.dbf,
-	      "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED");
-  if (type==0) {
-    typestr[0] = 0;
-  } else {
-    SNPRINTF(typestr,
-             32,
-	     "WHERE type=%u", type);
-  }
-  scratch = MALLOC(256);
-  SNPRINTF(scratch, //SQL_BIG_RESULT SQL_BUFFER_RESULT SQL_NO_CACHE
-	   256,
-	   "SELECT SQL_NO_CACHE * FROM gn070"
-	   " %s"
-	   " ORDER BY expire ASC",
-	   typestr);
-  mysql_query(dbhI.dbf,
-	      scratch);
-  FREE(scratch);
-  if (mysql_error(dbhI.dbf)[0]) {
-    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK,
-	      "mysql_query",
-	      &dbhI);
-    MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
-    iclose(&dbhI);
-    return SYSERR;
-  }
-  if (!(sql_res=mysql_use_result(dbhI.dbf))) {
-    MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
-    iclose(&dbhI);
-    return SYSERR;
-  }
-  while ((sql_row=mysql_fetch_row(sql_res))) {
-    datum = assembleDatum(sql_res,
-			  sql_row,
-			  &dbhI);
-    if (datum == NULL) {
-      MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
-      iclose(&dbhI);
-      return count;
-    }
-    if ( (iter != NULL) &&
-	 (SYSERR == iter(&datum->key,
-			 &datum->value,
-			 closure) ) ) {
-      count = SYSERR;
-      FREE(datum);
-      break;
-    }
-    FREE(datum);
-    count++;
-  }		
-  if (mysql_error(dbhI.dbf)[0]) {
-    LOG_MYSQL(GE_ERROR | GE_ADMIN | GE_BULK,
-	      "mysql_query",
-	      &dbhI);
-    mysql_free_result(sql_res);
-    MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
-    iclose(&dbhI);
-    return SYSERR;
-  }
-  mysql_free_result(sql_res);
-  MUTEX_UNLOCK(dbhI.DATABASE_Lock_);
-  iclose(&dbhI);
-  return count;
+/**
+ * Iterate over the items in the datastore in migration
+ * order.
+ *
+ * @param iter never NULL
+ * @return the number of results, SYSERR if the
+ *   iter is non-NULL and aborted the iteration
+ */
+static int iterateMigrationOrder(Datum_Iterator iter,
+			         void * closure) {
+  return iterateHelper(0,
+		       "SELECT SQL_NO_CACHE * FROM gn070"
+		       " %s"
+		       " ORDER BY expire DESC",
+		       iter,
+		       closure);
 }
 
 #define MAX_DATUM_SIZE 65536
@@ -1413,6 +1382,7 @@ provide_module_sqstore_mysql(CoreAPIForApplication * capi) {
   api.get = &get;
   api.iterateLowPriority = &iterateLowPriority;
   api.iterateExpirationTime = &iterateExpirationTime;
+  api.iterateMigrationOrder = &iterateMigrationOrder;
   api.del = &del;
   api.drop = &drop;
   api.update = &update;
