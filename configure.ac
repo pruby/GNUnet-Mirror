@@ -386,23 +386,26 @@ AC_ARG_WITH(dialog,
         ;;
       yes)
         AC_CHECK_HEADERS(dialog.h,
-          AC_CHECK_LIB([dialog], [dialog_menu],
-            dialog=1))
+          AC_CHECK_LIB([ncursesw], [wmove], 
+            AC_CHECK_LIB([dialog], [dialog_menu],
+              dialog=1)))
         ;;
       *)
         LDFLAGS="-L$with_dialog/lib $LDFLAGS"
         CPPFLAGS="-I$with_dialog/include $CPPFLAGS"
         AC_CHECK_HEADERS(dialog.h,
-          AC_CHECK_LIB([dialog], [dialog_menu],
-            EXT_LIB_PATH="-L$with_dialog/lib $EXT_LIB_PATH"
-            dialog=1))
+          AC_CHECK_LIB([ncursesw], [wmove], 
+            AC_CHECK_LIB([dialog], [dialog_menu],
+              EXT_LIB_PATH="-L$with_dialog/lib $EXT_LIB_PATH"
+              dialog=1)))
         ;;
     esac
    ],
    [AC_MSG_RESULT([--with-dialog not specified])
     AC_CHECK_HEADERS(dialog.h,
-     AC_CHECK_LIB([dialog], [dialog_menu],
-      dialog=1))])
+      AC_CHECK_LIB([ncursesw], [wmove], 
+        AC_CHECK_LIB([dialog], [dialog_menu],
+          dialog=1)))])
 
 AM_CONDITIONAL(HAVE_DIALOG, test x$dialog = x1)
 AC_DEFINE_UNQUOTED([HAVE_DIALOG], $dialog, [We have dialog])
@@ -610,7 +613,7 @@ fi
 
 if test "$dialog" != 1
 then
- AC_MSG_NOTICE([curses based gnunet-setup frontends will not be installed.])
+ AC_MSG_NOTICE([NOTICE: curses based gnunet-setup frontends will not be installed.])
 fi
 
 if test "$ipv6" = "0"
