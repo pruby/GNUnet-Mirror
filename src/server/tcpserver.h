@@ -101,6 +101,17 @@ int sendToClient(struct ClientHandle * handle,
 int sendTCPResultToClient(struct ClientHandle * sock,
 			  int ret);
 
+/**
+ * Send an error message to the caller of a remote call via
+ * TCP.
+ * @param sock the TCP socket
+ * @param message the error message to send via TCP
+ * @return SYSERR on error, OK if the return value was
+ *         send successfully
+ */
+int sendTCPErrorToClient(struct ClientHandle * sock,
+			 GE_KIND kind,
+			 const char * message);
 
 void terminateClientConnection(struct ClientHandle * sock);
 
@@ -112,6 +123,10 @@ void terminateClientConnection(struct ClientHandle * sock);
  * @return number of registered handlers (0 or 1)
  */
 unsigned int isCSHandlerRegistered(unsigned short type);
+
+struct GE_Context * 
+createClientLogContext(GE_KIND mask,
+		       struct ClientHandle * handle);
 
 #endif
 /* end of tcpserver.h */

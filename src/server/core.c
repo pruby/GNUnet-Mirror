@@ -532,6 +532,9 @@ int initCore(struct GE_Context * ectx,
   applicationCore.isSlotUsed = &isSlotUsed; /* connection.c */
   applicationCore.getLastActivityOf = &getLastActivityOf; /* connection.c */
 
+  applicationCore.sendErrorMessageToClient = &sendTCPErrorToClient; /* tcpserver.c */
+  applicationCore.createClientLogContext = &createClientLogContext; /* tcpserver.c */
+
   identity = requestService("identity");
   if (identity == NULL)
     return SYSERR;

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2001, 2002, 2004, 2005 Christian Grothoff (and other contributing authors)
+     (C) 2001, 2002, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -38,14 +38,16 @@
  * @return SYSERR on error, NO if symlinking failed,
  *         YES on success
  */
-int ONDEMAND_initIndex(const HashCode512 * fileId,
+int ONDEMAND_initIndex(struct GE_Context * cectx,
+		       const HashCode512 * fileId,
 		       const char *fn);
 
 /**
  * @return NO if already present, YES on success,
  *  SYSERR on other error (i.e. datastore full)
  */
-int ONDEMAND_index(Datastore_ServiceAPI * datastore,
+int ONDEMAND_index(struct GE_Context * cectx,
+		   Datastore_ServiceAPI * datastore,
 		   unsigned int prio,
 		   cron_t expiration,
 		   unsigned long long fileOffset,
@@ -77,7 +79,8 @@ int ONDEMAND_getIndexed(Datastore_ServiceAPI * datastore,
  *        up the file properly when computing
  *        the keys of the odb blocks).
  */
-int ONDEMAND_unindex(Datastore_ServiceAPI * datastore,
+int ONDEMAND_unindex(struct GE_Context * cectx,
+		     Datastore_ServiceAPI * datastore,
 		     unsigned int blocksize,
 		     const HashCode512 * fileId);
 

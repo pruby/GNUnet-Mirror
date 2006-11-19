@@ -333,50 +333,75 @@ int connection_read(struct ClientServerConnection * sock,
   unsigned int pos;
   char * buf;
   unsigned short size;
+  RETURN_ERROR_MESSAGE * rem;
 
   if (OK != connection_ensure_connected(sock))
     return SYSERR;
 
   MUTEX_LOCK(sock->readlock);
-  pos = 0;
-  res = 0;
-  if ( (OK != socket_recv(sock->sock,
-			  NC_Complete,
-			  &size,
-			  sizeof(unsigned short),
-			  &pos)) ||
-       (pos != sizeof(unsigned short)) ) {
-    MUTEX_UNLOCK(sock->readlock);
-    connection_close_temporarily(sock);
-    return SYSERR;
-  }
-  size = ntohs(size);
-  if (size < sizeof(MESSAGE_HEADER)) {
-    MUTEX_UNLOCK(sock->readlock);
-    connection_close_temporarily(sock);
-    return SYSERR; /* invalid header */
-  }
-
-  buf = MALLOC(size);
-  if ( (OK != socket_recv(sock->sock,
-			  NC_Complete,
-			  &buf[pos],
-			  size - pos,
-			  &pos)) ||
-       (pos + sizeof(unsigned short) != size) ) {
-    FREE(buf);
-    MUTEX_UNLOCK(sock->readlock);
-    connection_close_temporarily(sock);
-    return SYSERR;
-  }
+  while (1) {
+    pos = 0;
+    res = 0;
+    if ( (OK != socket_recv(sock->sock,
+			    NC_Complete,
+			    &size,
+			    sizeof(unsigned short),
+			    &pos)) ||
+	 (pos != sizeof(unsigned short)) ) {
+      GE_BREAK(sock->ectx, 0);
+      MUTEX_UNLOCK(sock->readlock);
+      connection_close_temporarily(sock);
+      return SYSERR;
+    }
+    size = ntohs(size);
+    if (size < sizeof(MESSAGE_HEADER)) {
+      GE_BREAK(sock->ectx, 0);
+      MUTEX_UNLOCK(sock->readlock);
+      connection_close_temporarily(sock);
+      return SYSERR; /* invalid header */
+    }
+    
+    buf = MALLOC(size);
+    if ( (OK != socket_recv(sock->sock,
+			    NC_Complete,
+			    &buf[pos],
+			    size - pos,
+			    &pos)) ||
+	 (pos + sizeof(unsigned short) != size) ) {
+      GE_BREAK(sock->ectx, 0);
+      FREE(buf);
+      MUTEX_UNLOCK(sock->readlock);
+      connection_close_temporarily(sock);
+      return SYSERR;
+    }
 #if DEBUG_TCPIO
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "Successfully received %d bytes from TCP socket.\n",
-      size);
+    GE_LOG(sock->ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "Successfully received %d bytes from TCP socket.\n",
+	   size);
 #endif
-  MUTEX_UNLOCK(sock->readlock);
-  *buffer = (MESSAGE_HEADER*) buf;
-  (*buffer)->size = htons(size);
+    MUTEX_UNLOCK(sock->readlock);
+    *buffer = (MESSAGE_HEADER*) buf;
+    (*buffer)->size = htons(size);
+    
+    if (ntohs((*buffer)->type) != CS_PROTO_RETURN_ERROR) 
+      break; /* got actual message! */
+    rem = (RETURN_ERROR_MESSAGE*) *buffer;
+    if (ntohs(rem->header.size) < sizeof(RETURN_ERROR_MESSAGE)) {
+      GE_BREAK(sock->ectx, 0);
+      MUTEX_UNLOCK(sock->readlock);
+      connection_close_temporarily(sock);
+      FREE(buf);
+      return SYSERR;
+    }
+    size = ntohs(rem->header.size) - sizeof(RETURN_ERROR_MESSAGE);
+    GE_LOG(sock->ectx,
+	   ntohl(rem->kind),
+	   "%*s",
+	   size,
+	   &rem[1]);
+    FREE(rem);
+  } /* while (1) */
   return OK; /* success */
 }
 
@@ -391,6 +416,7 @@ int connection_read(struct ClientServerConnection * sock,
 int connection_read_result(struct ClientServerConnection * sock,
 			   int * ret) {
   RETURN_VALUE_MESSAGE * rv;
+  size_t size;
 
   rv = NULL;
   if (SYSERR == connection_read(sock,
@@ -431,24 +457,5 @@ int connection_write_result(struct ClientServerConnection * sock,
   return connection_write(sock,
 			  &rv.header);
 }
-
-/**
- * Send a return value that indicates
- * a serious error to the other side.
- *
- * @param sock the TCP socket
- * @param mask GE_MASK
- * @param date date string
- * @param msg message string
- * @return SYSERR on error, OK if the error code was send
- *         successfully
- */
-int connection_write_error(struct ClientServerConnection * sock,
-			   GE_KIND mask,
-			   const char * date,
-			   const char * msg) {
-  return SYSERR; /* not implemented! */
-}
-
 
 /*  end of tcpio.c */

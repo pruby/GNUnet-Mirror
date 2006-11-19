@@ -147,9 +147,10 @@ static void * processReplies(void * cls) {
   return NULL;
 }
 
-SEARCH_CONTEXT * FS_SEARCH_makeContext(struct GE_Context * ectx,
-				       struct GC_Configuration * cfg,
-				       struct MUTEX * lock) {
+SEARCH_CONTEXT * 
+FS_SEARCH_makeContext(struct GE_Context * ectx,
+		      struct GC_Configuration * cfg,
+		      struct MUTEX * lock) {
   SEARCH_CONTEXT * ret;
 
   ret = MALLOC(sizeof(SEARCH_CONTEXT));
@@ -199,15 +200,16 @@ void FS_SEARCH_destroyContext(struct FS_SEARCH_CONTEXT * ctx) {
  * @param callback method to call for each result
  * @param prio priority to use for the search
  */
-SEARCH_HANDLE * FS_start_search(SEARCH_CONTEXT * ctx,
-				unsigned int type,
-				unsigned int keyCount,
-				const HashCode512 * keys,
-				unsigned int anonymityLevel,
-				unsigned int prio,
-				cron_t timeout,
-				Datum_Iterator callback,
-				void * closure) {
+SEARCH_HANDLE * 
+FS_start_search(SEARCH_CONTEXT * ctx,
+		unsigned int type,
+		unsigned int keyCount,
+		const HashCode512 * keys,
+		unsigned int anonymityLevel,
+		unsigned int prio,
+		cron_t timeout,
+		Datum_Iterator callback,
+		void * closure) {
   SEARCH_HANDLE * ret;
   CS_fs_request_search_MESSAGE * req;
 #if DEBUG_FSLIB

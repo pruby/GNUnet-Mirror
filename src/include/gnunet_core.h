@@ -678,7 +678,23 @@ typedef struct {
   int (*getLastActivityOf)(const PeerIdentity * peer,
 			   cron_t * time);
 
+  /* here for binary compatibility (for now) */
+
+  /**
+   * Send a message to the client identified by the handle.  Note that
+   * the core will typically buffer these messages as much as possible
+   * and only return SYSERR if it runs out of buffers.  Returning OK
+   * on the other hand does NOT confirm delivery since the actual
+   * transfer happens asynchronously.
+   */
+  int (*sendErrorMessageToClient)(struct ClientHandle * handle,
+				  GE_KIND kind,
+				  const char * value);
+
+  struct GE_Context * (*createClientLogContext)(GE_KIND mask,
+						struct ClientHandle * handle);
 } CoreAPIForApplication;
+
 
 /**
  * Type of the initialization method implemented by GNUnet protocol

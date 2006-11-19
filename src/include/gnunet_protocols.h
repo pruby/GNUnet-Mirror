@@ -130,6 +130,11 @@ extern "C" {
  */
 #define CS_PROTO_GET_OPTION_REPLY 3
 
+/**
+ * gnunetd to client: error message
+ */
+#define CS_PROTO_RETURN_ERROR 4
+
 
 /* ********** CS AFS application messages ********** */
 

@@ -129,6 +129,23 @@ typedef struct {
 
 } RETURN_VALUE_MESSAGE;
 
+/**
+ * Client-server communication: simple error message
+ */
+typedef struct {
+
+  /**
+   * The CS header (values: sizeof(CS_returnvalue_MESSAGE) + error-size, CS_PROTO_RETURN_VALUE)
+   */
+  MESSAGE_HEADER header;
+
+  /**
+   * The return value (network byte order)
+   */
+  GE_KIND kind;
+
+} RETURN_ERROR_MESSAGE;
+
 
 /**
  * @brief an IPv4 address

@@ -1,10 +1,9 @@
-This is a list of debian (sarge) packages that you may want to install
+This is a list of debian (etch) packages that you may want to install
 prior to compiling GNUnet.
 
-Since sarge does not include libextractor 0.5.x, you will also have to
-compile libextractor by hand.  The following list of packages (and
-their dependencies) is what is needed for a complete installation of
-GNUnet and libextractor (to the best of our knowledge):
+The following list of packages (and their dependencies) is what is
+needed for a complete installation of GNUnet and libextractor (to the
+best of our knowledge):
 
 =====================================================================
 
@@ -13,7 +12,6 @@ Basic compilation tools:
 libtool
 gcc
 make
-g++ (for libextractor)
 intltool
 
 GNUnet library dependencies:
@@ -21,35 +19,35 @@ GNUnet library dependencies:
 libgcrypt11-dev
 libgmp3-dev
 libltdl3-dev
-libgtk2.0-dev
-libsqlite3-dev
-libmysqlclient15-dev
-libncurses5-dev
+guile-1.8-dev 
+libextractor-dev
 libcurl3-gnutls-dev
-libncursesw5-dev
-dialog
-guile-1.8-dev (out since Feb 2006 - still no debian package!)
-libextractor-dev (unstable required!)
+libsqlite3-dev (recommended)
+libmysqlclient15-dev (optional)
+libncursesw5-dev (optional)
+dialog (optional)
+libglade2-dev (recommended)
+libgtk2.0-dev (recommended)
 
 
 Additional libextractor dependencies:
 
-libvorbis-dev
+g++
 zlib1g-dev
-python2.3-dev
-libgcj-dev
+libvorbis-dev (recommended)
+python2.3-dev (optional)
+libgcj-dev (optional)
 
 
 Additional gnunet-gtk dependencies:
 
-libglade2-dev (unstable required!)
-libnotify-dev
+libnotify-dev (optional)
 
 
 For running GNUnet with the MySQL database:
 
 mysql-server-5.0
-mysql-client-5.0 (for administration)
+mysql-client-5.0 (optional, for administration)
 
 
 For Subversion access and compilation:
@@ -61,7 +59,7 @@ automake1.8
 
 For changing gnunet-gtk glade user interface (development):
 
-glade (unstable required!)
+glade
 
 
 ==============================================

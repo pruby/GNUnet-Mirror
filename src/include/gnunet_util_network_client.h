@@ -146,22 +146,6 @@ int connection_write_result(struct ClientServerConnection * sock,
 			    int ret);
 
 /**
- * Send a return value that indicates
- * a serious error to the other side.
- *
- * @param sock the TCP socket
- * @param mask GE_MASK
- * @param date date string
- * @param msg message string
- * @return SYSERR on error, OK if the error code was send
- *         successfully
- */
-int connection_write_error(struct ClientServerConnection * sock,
-			   GE_KIND mask,
-			   const char * date,
-			   const char * msg);
-
-/**
  * Stop gnunetd
  *
  * Note that returning an error does NOT mean that

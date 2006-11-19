@@ -118,8 +118,8 @@ GE_create_context_callback(GE_KIND mask,
 			   GE_LogHandler handler,
 			   void * ctx,
 			   GE_CtxFree liberator,
-         GE_Confirm confirm);
-				
+			   GE_Confirm confirm);
+
 /**
  * Free a log context.
  */

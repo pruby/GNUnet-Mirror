@@ -113,7 +113,7 @@ static struct CommandLineOption gnunetunindexOptions[] = {
  * @return return 0 for ok, -1 on error
  */
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   static struct FSUI_Context * ctx;
   char * filename;
   int i;

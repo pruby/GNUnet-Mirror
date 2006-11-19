@@ -292,9 +292,14 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
 #if DEBUG_FS
   EncName enc;
 #endif
+  struct GE_Context * cectx;
 
+  cectx = coreAPI->createClientLogContext(GE_USER | GE_EVENTKIND | GE_ROUTEKIND,
+					  sock);
   if (ntohs(req->size) < sizeof(CS_fs_request_insert_MESSAGE)) {
     GE_BREAK(ectx, 0);
+    GE_BREAK(cectx, 0);
+    GE_free_context(cectx);
     return SYSERR;
   }
   ri = (const CS_fs_request_insert_MESSAGE*) req;
@@ -310,7 +315,9 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
 			YES,
 			&query)) {
     GE_BREAK(ectx, 0);
+    GE_BREAK(cectx, 0);
     FREE(datum);
+    GE_free_context(cectx);
     return SYSERR;
   }
   type = getTypeOfBlock(ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE),
@@ -373,6 +380,7 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
   }
 
   FREE(datum);
+  GE_free_context(cectx);
   return coreAPI->sendValueToClient(sock,
 				    ret);
 }
@@ -386,9 +394,14 @@ static int csHandleCS_fs_request_init_index_MESSAGE(struct ClientHandle * sock,
   char *fn;
   CS_fs_request_init_index_MESSAGE *ri;
   int fnLen;
+  struct GE_Context * cectx;
 
+  cectx = coreAPI->createClientLogContext(GE_USER | GE_EVENTKIND | GE_ROUTEKIND,
+					  sock);
   if (ntohs(req->size) < sizeof(CS_fs_request_init_index_MESSAGE)) {
     GE_BREAK(ectx, 0);
+    GE_BREAK(cectx, 0);
+    GE_free_context(cectx);
     return SYSERR;
   }
 
@@ -396,14 +409,17 @@ static int csHandleCS_fs_request_init_index_MESSAGE(struct ClientHandle * sock,
 
   fnLen = ntohs(ri->header.size) - sizeof(CS_fs_request_init_index_MESSAGE);
 #if WINDOWS
-  if (fnLen > _MAX_PATH)
+  if (fnLen > _MAX_PATH) {
+    GE_BREAK(cectx, 0);
+    GE_free_context(cectx);
     return SYSERR;
+  }
 #endif
   fn = MALLOC(fnLen + 1);
   strncpy(fn, (char*) &ri[1], fnLen+1);
   fn[fnLen] = 0;
-
-  ret = ONDEMAND_initIndex(&ri->fileId,
+  ret = ONDEMAND_initIndex(cectx,
+			   &ri->fileId,
 			   fn);
 
   FREE(fn);
@@ -413,6 +429,7 @@ static int csHandleCS_fs_request_init_index_MESSAGE(struct ClientHandle * sock,
 	 "Sending confirmation (%s) of index initialization request to client\n",
 	 ret == OK ? "success" : "failure");
 #endif
+  GE_free_context(cectx);
   return coreAPI->sendValueToClient(sock,
             ret);
 }
@@ -426,13 +443,19 @@ static int csHandleCS_fs_request_index_MESSAGE(struct ClientHandle * sock,
 					       const MESSAGE_HEADER * req) {
   int ret;
   const CS_fs_request_index_MESSAGE * ri;
+  struct GE_Context * cectx;
 
+  cectx = coreAPI->createClientLogContext(GE_USER | GE_EVENTKIND | GE_ROUTEKIND,
+					  sock);
   if (ntohs(req->size) < sizeof(CS_fs_request_index_MESSAGE)) {
     GE_BREAK(ectx, 0);
+    GE_BREAK(cectx, 0);
+    GE_free_context(cectx);
     return SYSERR;
   }
   ri = (const CS_fs_request_index_MESSAGE*) req;
-  ret = ONDEMAND_index(datastore,
+  ret = ONDEMAND_index(cectx,
+		       datastore,
 		       ntohl(ri->prio),
 		       ntohll(ri->expiration),
 		       ntohll(ri->fileOffset),
@@ -446,6 +469,7 @@ static int csHandleCS_fs_request_index_MESSAGE(struct ClientHandle * sock,
 	 "Sending confirmation (%s) of index request to client\n",
 	 ret == OK ? "success" : "failure");
 #endif
+  GE_free_context(cectx);
   return coreAPI->sendValueToClient(sock,
 				    ret);
 }
@@ -500,9 +524,14 @@ static int csHandleCS_fs_request_delete_MESSAGE(struct ClientHandle * sock,
 #if DEBUG_FS
   EncName enc;
 #endif
+  struct GE_Context * cectx;
 
+  cectx = coreAPI->createClientLogContext(GE_USER | GE_EVENTKIND | GE_ROUTEKIND,
+					  sock);
   if (ntohs(req->size) < sizeof(CS_fs_request_delete_MESSAGE)) {
     GE_BREAK(ectx, 0);
+    GE_BREAK(cectx, 0);
+    GE_free_context(cectx);
     return SYSERR;
   }
   rd = (const CS_fs_request_delete_MESSAGE*) req;
@@ -522,6 +551,8 @@ static int csHandleCS_fs_request_delete_MESSAGE(struct ClientHandle * sock,
 			&query)) {
     FREE(value);
     GE_BREAK(ectx, 0);
+    GE_BREAK(cectx, 0);
+    GE_free_context(cectx);
     return SYSERR;
   }
 #if DEBUG_FS
@@ -552,6 +583,7 @@ static int csHandleCS_fs_request_delete_MESSAGE(struct ClientHandle * sock,
 	 "Sending confirmation (%s) of delete request to client\n",
 	 ret != SYSERR ? "success" : "failure");
 #endif
+  GE_free_context(cectx);
   return coreAPI->sendValueToClient(sock,
 				    ret);
 }
@@ -563,9 +595,14 @@ static int csHandleCS_fs_request_unindex_MESSAGE(struct ClientHandle * sock,
 						 const MESSAGE_HEADER * req) {
   int ret;
   CS_fs_request_unindex_MESSAGE * ru;
+  struct GE_Context * cectx;
 
+  cectx = coreAPI->createClientLogContext(GE_USER | GE_EVENTKIND | GE_ROUTEKIND,
+					  sock);
   if (ntohs(req->size) != sizeof(CS_fs_request_unindex_MESSAGE)) {
     GE_BREAK(ectx, 0);
+    GE_BREAK(cectx, 0);
+    GE_free_context(cectx);
     return SYSERR;
   }
   ru = (CS_fs_request_unindex_MESSAGE*) req;
@@ -574,9 +611,11 @@ static int csHandleCS_fs_request_unindex_MESSAGE(struct ClientHandle * sock,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "FS received REQUEST UNINDEX\n");
 #endif
-  ret = ONDEMAND_unindex(datastore,
+  ret = ONDEMAND_unindex(cectx,
+			 datastore,
 			 ntohl(ru->blocksize),
 			 &ru->fileId);
+  GE_free_context(cectx);
   return coreAPI->sendValueToClient(sock,
 				    ret);
 }

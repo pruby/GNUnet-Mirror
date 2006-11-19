@@ -18,29 +18,41 @@ Notes:
     + uninstall: Remove account
     + libcurl, guile [RCpre0]
   * file/socket leak (#955) - possibly fixed
+  * gnunet-setup gtk-wizard problems: [RCpre1]
+    + running gnunet-setup with gtk-wizard should imply running with -d 
+    + gnunet-setup wizard looks for INTERFACE/MAXNET*BPS in section LOAD,
+      and GROUP in section GNUNETD but it is not there!
+    + at the end: Unable to change startup process: no such file or directory
+      -- which file (something about gnunet-setup's main run)
+    + also, running gnunet-update fails
+    + error messages about failed accesses to /etc, /etc/init.d/ are
+     printed to console, not to GUI
+    + call to updateTreeModel from gconf_main_post_init
+      is illegal -- setup resources have already been freed
+      (in doOpenEnhConfigurator branch from main method of gnunet-setup)
+      => segfault!
 - finish util refactoring:
   * error handling: [RCpre1]
-    + tcpio
-    + fs/module
-    + fs/fslib
-    + fs/ecrs
-    + fs/fsui
+    + fs/fsui: capture ectx errors and convert to event error msgs!
   * gnunet-setup: [RCpre1]
     + ncurses wizard
 - insert of tar.gz results in filename INSIDE of TGZ being
-  possibly (?) used for the filename of the archive!
+  possibly (?) used for the filename of the archive! [RCpre1]
+- indexing of directories with relative path specification
+  results in empty paths being used for public directory
+  name [RCpre1]
 - update documentation [RCpre2]
 - More testcases: [RCpre3]
-  * advertising
   * ecrs_core
-  * tracekit
   * gap (incl. economy)
-  * rpc
-  * fs/uritrack
-  * fs/collection
-  * make dht tests work (and write more) 
   * fs/fsui: recursive uploads and downloads (incl. persistence)
+  * fs/uritrack
   * fs/namespaces
+  * fs/collection
+  * tracekit
+  * advertising
+  * rpc
+  * make dht tests work (and write more) 
 
 
 0.7.2 ['07]:

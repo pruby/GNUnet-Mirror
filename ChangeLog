@@ -1,3 +1,7 @@
+Sun Nov 19 00:20:14 MST 2006
+	Improved error handling.  gnunetd now can communicate
+	text error messages to clients (not just error codes).
+	
 Wed Nov 15 23:17:36 MST 2006
 	Fixed expiration time setting.  Improved bias of
 	migration towards valuable content.

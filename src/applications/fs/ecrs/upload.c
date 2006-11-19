@@ -156,10 +156,11 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   start = get_time();
   memset(&chk, 0, sizeof(CHK));
   if (YES != disk_file_test(ectx,
-			  filename)) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-        _("`%s' is not a file.\n"),
-        filename);
+			    filename)) {
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("`%s' is not a file.\n"),
+	   filename);
     return SYSERR;
   }
   if (OK != disk_file_size(ectx,
@@ -175,8 +176,9 @@ int ECRS_uploadFile(struct GE_Context * ectx,
   }
   sock = client_connection_create(ectx, cfg);
   if (sock == NULL) {
-    GE_LOG(ectx, GE_ERROR | GE_BULK | GE_USER,
-        _("Failed to connect to gnunetd."));
+    GE_LOG(ectx, 
+	   GE_ERROR | GE_BULK | GE_USER,
+	   _("Failed to connect to gnunetd."));
     return SYSERR;
   }
   eta = 0;

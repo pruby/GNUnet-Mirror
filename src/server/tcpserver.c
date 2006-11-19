@@ -501,6 +501,44 @@ int sendTCPResultToClient(struct ClientHandle * sock,
   return sendToClient(sock,
 		      &rv.header);
 }
+
+/**
+ * Send an error message to the caller of a remote call via
+ * TCP.
+ * @param sock the TCP socket
+ * @param message the error message to send via TCP
+ * @return SYSERR on error, OK if the return value was
+ *         send successfully
+ */
+int sendTCPErrorToClient(struct ClientHandle * sock,
+			 GE_KIND kind,
+			 const char * message) {
+  RETURN_ERROR_MESSAGE * rv;
+  size_t msgLen;
+  int ret;
+
+  msgLen = strlen(message);
+  msgLen = ((msgLen + 3) >> 2) << 2;
+  if (msgLen > 60000)
+    msgLen = 60000;
+  rv = MALLOC(sizeof(RETURN_ERROR_MESSAGE) + msgLen);
+  memset(rv, 
+	 0,
+	 sizeof(RETURN_ERROR_MESSAGE) + msgLen);
+  rv->header.size
+    = htons(sizeof(MESSAGE_HEADER) + msgLen);
+  rv->header.type
+    = htons(CS_PROTO_RETURN_ERROR);
+  rv->kind
+    = htonl(kind);
+  memcpy(&rv[1],
+	 message,
+	 strlen(message));
+  ret = sendToClient(sock,
+		     &rv->header);
+  FREE(rv);
+  return ret;
+}
 			
 /**
  * Check if a handler is registered for a given
@@ -519,6 +557,29 @@ unsigned int isCSHandlerRegistered(unsigned short type) {
   }
   MUTEX_UNLOCK(handlerlock);
   return 0;
+}
+
+static void freeClientLogContext(void * ctx) { }
+
+static void confirmClientLogContext(void * ctx) { }
+
+static void logClientLogContext(void * ctx,
+				GE_KIND kind,
+				const char * date,
+				const char * msg) {
+  sendTCPErrorToClient(ctx,
+		       kind,
+		       msg);
+}
+
+struct GE_Context * 
+createClientLogContext(GE_KIND mask,
+		       struct ClientHandle * handle) {
+  return GE_create_context_callback(mask,
+				    &logClientLogContext,
+				    handle,
+				    &freeClientLogContext,
+				    &confirmClientLogContext);
 }
 
 /* end of tcpserver.c */
