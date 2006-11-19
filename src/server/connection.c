@@ -2144,8 +2144,6 @@ static void scheduleInboundTraffic() {
           decrementSB += share - entries[u]->idealized_limit;
           didAssign = YES;
         }
-	if (share > 0)
-	  didAssign = YES;
         entries[u]->idealized_limit = share;
       }
     } /* end for all peers */
