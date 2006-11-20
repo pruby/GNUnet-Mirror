@@ -36,11 +36,6 @@ Notes:
     + fs/fsui: capture ectx errors and convert to event error msgs!
   * gnunet-setup: [RCpre1]
     + ncurses wizard
-- insert of tar.gz results in filename INSIDE of TGZ being
-  possibly (?) used for the filename of the archive! [RCpre1]
-- indexing of directories with relative path specification
-  results in empty paths being used for public directory
-  name [RCpre1]
 - update documentation [RCpre2]
 - More testcases: [RCpre3]
   * ecrs_core

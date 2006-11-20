@@ -265,19 +265,24 @@ void * FSUI_uploadThread(void * cls) {
 			 utc->meta,
 			 utc->filename,
 			 utc->shared->extractors);
-  ECRS_delFromMetaData(utc->meta,
-		       EXTRACTOR_FILENAME,
-		       NULL);
+  while (OK == ECRS_delFromMetaData(utc->meta,
+				    EXTRACTOR_FILENAME,
+				    NULL)) ;
   /* only publish the last part of the path
      -- we do not want to publish $HOME or similar
      trivially deanonymizing information */
   tpos = strlen(utc->filename) - 1;
+  if ( (utc->filename[tpos] == '/') &&
+       (tpos > 0) )
+    tpos--;
   while ( (tpos > 0) &&
 	  (utc->filename[tpos] != '/') )
     tpos--;
   pfn = MALLOC(strlen(&utc->filename[tpos+1]) + 2);
   strcpy(pfn, &utc->filename[tpos+1]);
-  if (utc->child != NULL)
+  if ( (utc->child != NULL) &&
+       ( (strlen(pfn) == 0) ||
+	 (pfn[strlen(pfn)-1] != '/') ) )
     strcat(pfn, "/");
   ECRS_addToMetaData(utc->meta,
 		     EXTRACTOR_FILENAME,
@@ -539,19 +544,21 @@ FSUI_startUpload(struct FSUI_Context * ctx,
   struct FSUI_UploadList * ul;
 
   config = NULL;
+  extractors = NULL;
   if (doExtract) {
     extractors = EXTRACTOR_loadDefaultLibraries();
-    if ( (0 == GC_get_configuration_value_string(ctx->cfg,
-						 "FS",
-						 "EXTRACTORS",
-						 NULL,
-						 &config)) &&
-	 (config != NULL) ) {
-      extractors = EXTRACTOR_loadConfigLibraries(extractors,
-						 config);
+    if (GC_have_configuration_value(ctx->cfg,
+				    "FS",
+				    "EXTRACTORS")) {
+      GC_get_configuration_value_string(ctx->cfg,
+					"FS",
+					"EXTRACTORS",
+					NULL,
+					&config);
+      if (config != NULL) 
+	extractors = EXTRACTOR_loadConfigLibraries(extractors,
+						   config);
     }
-  } else {
-    extractors = NULL;
   }
   shared = MALLOC(sizeof(FSUI_UploadShared));
   shared->dsc = dsc;

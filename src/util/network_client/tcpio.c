@@ -348,7 +348,6 @@ int connection_read(struct ClientServerConnection * sock,
 			    sizeof(unsigned short),
 			    &pos)) ||
 	 (pos != sizeof(unsigned short)) ) {
-      GE_BREAK(sock->ectx, 0);
       MUTEX_UNLOCK(sock->readlock);
       connection_close_temporarily(sock);
       return SYSERR;
@@ -368,7 +367,6 @@ int connection_read(struct ClientServerConnection * sock,
 			    size - pos,
 			    &pos)) ||
 	 (pos + sizeof(unsigned short) != size) ) {
-      GE_BREAK(sock->ectx, 0);
       FREE(buf);
       MUTEX_UNLOCK(sock->readlock);
       connection_close_temporarily(sock);
