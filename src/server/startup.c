@@ -110,11 +110,14 @@ void deletePIDFile(struct GE_Context * ectx,
   char * pif = getPIDFile(cfg);
   if (pif == NULL)
     return; /* no PID file */
-  if (0 != UNLINK(pif))
-    GE_LOG_STRERROR_FILE(ectx,
-			 GE_WARNING | GE_ADMIN | GE_BULK,
-			 "unlink",
-			 pif);
+  if (YES == disk_file_test(ectx,
+			    pif)) {
+    if (0 != UNLINK(pif))
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_WARNING | GE_ADMIN | GE_BULK,
+			   "unlink",
+			   pif);
+  }
   FREE(pif);
 }
 
