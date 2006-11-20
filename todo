@@ -36,7 +36,7 @@ Notes:
     + fs/fsui: capture ectx errors and convert to event error msgs!
   * gnunet-setup: [RCpre1]
     + ncurses wizard
-- update documentation [RCpre2]
+    + extractors option for FS (missing in client config!)
 - More testcases: [RCpre3]
   * ecrs_core
   * gap (incl. economy)
