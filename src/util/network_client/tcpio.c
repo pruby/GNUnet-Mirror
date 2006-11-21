@@ -414,7 +414,6 @@ int connection_read(struct ClientServerConnection * sock,
 int connection_read_result(struct ClientServerConnection * sock,
 			   int * ret) {
   RETURN_VALUE_MESSAGE * rv;
-  size_t size;
 
   rv = NULL;
   if (SYSERR == connection_read(sock,
