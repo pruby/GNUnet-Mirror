@@ -1530,7 +1530,7 @@ static int sendBuffer(BufferEntry * be) {
       j = sizeof(P2P_PACKET_HEADER);
       while (j < p) {
         MESSAGE_HEADER * part = (MESSAGE_HEADER *) &plaintextMsg[j];
-        unsigned short plen = htons(part->size);
+        unsigned short plen = htons(UNALIGNED(part->size));
         if (plen < sizeof(MESSAGE_HEADER)) {
           GE_BREAK(ectx, 0);
           break;

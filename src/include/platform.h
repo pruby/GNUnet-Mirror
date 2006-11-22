@@ -182,4 +182,10 @@ long long atoll(const char *nptr);
 #define O_LARGEFILE 0
 #endif
 
+#if defined(__sparc__)
+#define UNALIGNED(val) ({ __typeof__((val)) __tmp; memmove(&__tmp, &(val), sizeof((val))); __tmp; })
+#else
+#define UNALIGNED(val) val
+#endif
+
 #endif
