@@ -373,13 +373,14 @@ static int readAndProcess(int i) {
   ret = READ(tcpSession->sock,
 	     &tcpSession->rbuff[tcpSession->pos],
 	     tcpSession->rsize - tcpSession->pos);
-  if ( (ret > 0) &&
-       (stats != NULL) ) {
-    os_network_monitor_notify_transmission(coreAPI->load_monitor,
-					   Download,
-					   ret);
-    stats->change(stat_bytesReceived,
-		  ret);
+  if (ret > 0) {
+    if (stats != NULL)
+      stats->change(stat_bytesReceived,
+		    ret);
+    if (coreAPI->load_monitor != NULL)
+      os_network_monitor_notify_transmission(coreAPI->load_monitor,
+					     Download,
+					     ret);
   }
   tcpSession->lastUse = get_time();
   if (ret == 0) {
@@ -605,9 +606,10 @@ static int SEND_NONBLOCKING(int s,
     return NO;
   else if ( (*sent < 0) || (*sent > max) )
     return SYSERR;
-  os_network_monitor_notify_transmission(coreAPI->load_monitor,
-					 Upload,
-					 *sent);
+  if (coreAPI->load_monitor != NULL)
+    os_network_monitor_notify_transmission(coreAPI->load_monitor,
+					   Upload,
+					   *sent);
   return YES;
 }
 
