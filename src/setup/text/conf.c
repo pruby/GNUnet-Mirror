@@ -62,6 +62,7 @@ static void iprintf(int indent,
   va_start(va, format);
   vfprintf(stdout, format, va);
   va_end(va);
+  fflush(stdout);
 }
 
 static char * getValueAsString(GNS_Type type,
@@ -229,6 +230,7 @@ static int readValue(GNS_Type type,
 	if (buf[i] != '\n') {
 	  if (i < 1023) {
 	    printf("%c", buf[i]);
+	    fflush(stdout);  
 	    i++;
 	  }
 	  continue;
@@ -307,6 +309,7 @@ static int readValue(GNS_Type type,
       if (buf[i] != '\n') {
 	if (i < 1023) {
 	  printf("%c", buf[i]);
+	  fflush(stdout);  
 	  i++;
 	}
 	continue;
@@ -325,6 +328,7 @@ static int readValue(GNS_Type type,
       }
       i = 0;
       printf(_("\nInvalid entry, try again (use '?' for help): "));
+      fflush(stdout);  
     }
     break;
   case GNS_UInt64:
@@ -357,6 +361,7 @@ static int readValue(GNS_Type type,
       if (buf[i] != '\n') {
 	if (i < 1023) {
 	  printf("%c", buf[i]);
+	  fflush(stdout);  
 	  i++;
 	}
 	continue;
@@ -378,6 +383,7 @@ static int readValue(GNS_Type type,
       }
       i = 0;
       printf(_("\nInvalid entry, try again (use '?' for help): "));
+      fflush(stdout);
     }
     break;
   default:
@@ -560,10 +566,12 @@ int main_setup_text(int argc,
     }
     printf("\n");
     printf(_("Save configuration?  Answer 'y' for yes, 'n' for no, 'r' to repeat configuration. "));
+    fflush(stdout);
     do {
       c = rd();
     } while ( (c != 'y') && (c != 'n') && (c != 'r') );
     printf("%c\n", c);
+    fflush(stdout);
   }
   if (c == 'y') {
     ret = GC_write_configuration(cfg,
