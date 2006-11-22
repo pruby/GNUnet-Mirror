@@ -34,7 +34,7 @@ int gnunet_getopt_print_version(CommandLineProcessorContext * ctx,
 				const char * value) {
   const char * version = scls;
 
-  printf("%s v%s",
+  printf("%s v%s\n",
 	 ctx->binaryName,
 	 version);
   return SYSERR;
