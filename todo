@@ -12,17 +12,12 @@ Notes:
 
 
 
-0.7.1 [11'06] (aka "stabilization")
-- fix critical known bugs:
-  * Windows installer [Nils]
-    + uninstall: Remove account
-    + libcurl, guile [RCpre0]
-  * file/socket leak (#955) - possibly fixed
+0.7.1 [12'06] (aka "stabilization")
 - finish util refactoring:
   * extractors option for FS (missing in client config!) [RCpre1, CG]
   * fs/fsui: capture ectx errors and convert to event error msgs! [RCpre1, CG]
   * gnunet-setup ncurses wizard [RCpre2]
-- More testcases: [RCpre3]
+- more testcases: [RCpre3]
   * ecrs_core
   * gap (incl. economy)
   * fs/fsui: recursive uploads and downloads (incl. persistence)
@@ -32,10 +27,13 @@ Notes:
   * tracekit
   * advertising
   * rpc
-  * make dht tests work (and write more) 
+- fix critical known bugs:
+  * Windows installer [Nils]
+    + uninstall: Remove account
+    + libcurl, guile [RCpre0]
+  * file/socket leak (#955) - possibly fixed
 
-
-0.7.2 ['07]:
+0.7.2 [3'07]:
 - Transports:
   * SMTP/HTTP (using libcurl, libmicrohttpd, libesmtp)
 - Testcases not compiling or passing:
@@ -55,16 +53,15 @@ Notes:
     directory entries. (theoretically can compact some directories
     by 50% (?) -- incidentially 25% is what gzip can do on the
     current directories!) [ CG ]
-  * DHT: use additional optional fields (HELLOs) [ CG ]
 
-0.7.3 ['07] (aka "features"):
+0.7.3 [6'07] (aka "features"):
 - #747 (sharing stats for gnunet-gtk)
 - insert meta-data under hash (md5? sha1? sha-512? GNUnet-URI?)
   as keyword (to allow getting meta-data from URI only)
 - Documentation:
   * LJ article
 
-0.7.4 ['07] (aka "advanced features"):
+0.7.4 [12'07] (aka "advanced features"):
 - gnunet-chat [ RC ]
 - Insert/Index a "shared directory" automatically [Nils]
 - https://gnunet.org/drupal/?q=node/97

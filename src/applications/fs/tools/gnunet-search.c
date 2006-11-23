@@ -165,7 +165,7 @@ static struct CommandLineOption gnunetsearchOptions[] = {
  * @return return value from gnunet-search: 0: ok, -1: error
  */
 int main(int argc,
-	 const char ** argv) {
+	 char * const * argv) {
   struct ECRS_URI * uri;
   int i;
   struct FSUI_Context * ctx;
