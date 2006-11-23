@@ -19,11 +19,9 @@ Notes:
     + libcurl, guile [RCpre0]
   * file/socket leak (#955) - possibly fixed
 - finish util refactoring:
-  * error handling: [RCpre1]
-    + fs/fsui: capture ectx errors and convert to event error msgs!
-  * gnunet-setup: [RCpre1]
-    + ncurses wizard
-    + extractors option for FS (missing in client config!)
+  * extractors option for FS (missing in client config!) [RCpre1, CG]
+  * fs/fsui: capture ectx errors and convert to event error msgs! [RCpre1, CG]
+  * gnunet-setup ncurses wizard [RCpre2]
 - More testcases: [RCpre3]
   * ecrs_core
   * gap (incl. economy)
