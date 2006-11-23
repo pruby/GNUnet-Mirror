@@ -362,6 +362,7 @@ extern "C" {
  */
 #define P2P_PROTO_noise 6
 
+
 /* ************* p2p GAP application messages *********** */
 
 /**

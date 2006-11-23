@@ -18,19 +18,6 @@ Notes:
     + uninstall: Remove account
     + libcurl, guile [RCpre0]
   * file/socket leak (#955) - possibly fixed
-  * gnunet-setup gtk-wizard problems: [RCpre1]
-    + running gnunet-setup with gtk-wizard should imply running with -d 
-    + gnunet-setup wizard looks for INTERFACE/MAXNET*BPS in section LOAD,
-      and GROUP in section GNUNETD but it is not there!
-    + at the end: Unable to change startup process: no such file or directory
-      -- which file (something about gnunet-setup's main run)
-    + also, running gnunet-update fails
-    + error messages about failed accesses to /etc, /etc/init.d/ are
-     printed to console, not to GUI
-    + call to updateTreeModel from gconf_main_post_init
-      is illegal -- setup resources have already been freed
-      (in doOpenEnhConfigurator branch from main method of gnunet-setup)
-      => segfault!
 - finish util refactoring:
   * error handling: [RCpre1]
     + fs/fsui: capture ectx errors and convert to event error msgs!

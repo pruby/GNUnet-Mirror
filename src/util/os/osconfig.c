@@ -258,34 +258,35 @@ int os_modify_autostart(struct GE_Context *ectx,
   return YES;
 #else
   struct stat buf;
+  int ret;
 
   /* Unix */
-  if((ACCESS("/usr/sbin/update-rc.d", X_OK) != 0))
-  {
+  if ((ACCESS("/usr/sbin/update-rc.d", 
+	      X_OK) != 0)) {
     GE_LOG_STRERROR_FILE(ectx,
                          GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                         "access", "/usr/sbin/update-rc.d");
+                         "access", 
+			 "/usr/sbin/update-rc.d");
     return SYSERR;
   }
 
   /* Debian */
-  if(doAutoStart)
-  {
-    if(ACCESS(application, X_OK) != 0)
-    {
+  if (doAutoStart) {
+
+    if (ACCESS(application, X_OK) != 0) {
       GE_LOG_STRERROR_FILE(ectx,
                            GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                           "access", application);
+                           "access", 
+			   application);
     }
-    if(STAT("/etc/init.d/gnunetd", &buf) == -1)
-    {
+    if (STAT("/etc/init.d/gnunetd", &buf) == -1) {
       /* create init file */
       FILE *f = FOPEN("/etc/init.d/gnunetd", "w");
-      if(!f)
-      {
+      if (f == NULL) {
         GE_LOG_STRERROR_FILE(ectx,
                              GE_ERROR | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                             "fopen", "/etc/init.d/gnunetd");
+                             "fopen", 
+			     "/etc/init.d/gnunetd");
         return 2;
       }
 
@@ -320,42 +321,54 @@ int os_modify_autostart(struct GE_Context *ectx,
               "		echo \"Usage: /etc/init.d/gnunetd {start|stop|reload|restart|force-reload}\" >&2\n"
               "		exit 1\n"
               "		;;\n"
-              "\n" "esac\n" "exit 0\n", "gnunet-setup", application);
+              "\n" "esac\n" "exit 0\n", 
+	      "gnunet-setup", 
+	      application);
       fclose(f);
-      if(0 != CHMOD("/etc/init.d/gnunetd",
-                    S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
-      {
+      if (0 != CHMOD("/etc/init.d/gnunetd",
+		     S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)) {
         GE_LOG_STRERROR_FILE(ectx,
                              GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                             "chmod", "/etc/init.d/gnunetd");
+                             "chmod", 
+			     "/etc/init.d/gnunetd");
         return SYSERR;
       }
     }
-    errno = 0;
-    if(-1 == system("/usr/sbin/update-rc.d gnunetd defaults"))
-    {
-      GE_LOG_STRERROR_FILE(ectx,
-                           GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                           "system", "/usr/sbin/update-rc.d");
-      return SYSERR;
+    if (STAT("/etc/init.d/gnunetd", &buf) != -1) {
+      errno = 0;
+      ret = system("/usr/sbin/update-rc.d gnunetd defaults");
+      if (ret != 0) {
+	if (errno != 0) {
+	  GE_LOG_STRERROR_FILE(ectx,
+			       GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+			       "system", 
+			       "/usr/sbin/update-rc.d");
+	} else {
+	  GE_LOG(ectx,
+		 GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
+		 _("Command `%s' failed with error code %u\n"),
+		 "/usr/sbin/update-rc.d gnunetd defaults",
+		 WEXITSTATUS(ret));
+	}
+	return SYSERR;
+      }
     }
     return YES;
-  }
-  else
-  {                             /* REMOVE autostart */
-    if((UNLINK("/etc/init.d/gnunetd") == -1) && (errno != ENOENT))
-    {
+  } else {  /* REMOVE autostart */
+    if ( (UNLINK("/etc/init.d/gnunetd") == -1) &&
+	 (errno != ENOENT)) {
       GE_LOG_STRERROR_FILE(ectx,
                            GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                           "unlink", "/etc/init.d/gnunetd");
+                           "unlink", 
+			   "/etc/init.d/gnunetd");
       return SYSERR;
     }
     errno = 0;
-    if(-1 != system("/usr/sbin/update-rc.d gnunetd remove"))
-    {
+    if(-1 != system("/usr/sbin/update-rc.d gnunetd remove")) {
       GE_LOG_STRERROR_FILE(ectx,
                            GE_WARNING | GE_USER | GE_ADMIN | GE_IMMEDIATE,
-                           "system", "/usr/sbin/update-rc.d");
+                           "system",
+			   "/usr/sbin/update-rc.d");
       return SYSERR;
     }
     return YES;

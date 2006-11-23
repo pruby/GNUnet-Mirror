@@ -198,7 +198,8 @@ int main(int argc,
   } else {
     operation = argv[i];
   }
-
+  if (NULL != strstr(operation, "wizard"))
+    config_daemon = YES; /* wizard implies daemon! */
   if (cfgFilename == NULL)
     cfgFilename = config_daemon
       ? STRDUP(DEFAULT_DAEMON_CONFIG_FILE)

@@ -435,6 +435,43 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
  '()
  'rare))
 
+(define (username builder)
+ (builder
+ "GNUNETD"
+ "USER"
+ (_ "Run gnunetd as this user.")
+ (_ "When started as root, gnunetd will change permissions to the given user.")
+ '()
+ #t
+ "gnunetd"
+ '()
+ 'advanced))
+
+(define (groupname builder)
+ (builder
+ "GNUNETD"
+ "GROUP"
+ (_ "Run gnunetd as this group.")
+ (_ "When started as root, gnunetd will change permissions to the given group.")
+ '()
+ #t
+ "gnunetd"
+ '()
+ 'advanced))
+
+(define (autostart builder)
+ (builder
+ "GNUNETD"
+ "AUTOSTART"
+ (_ "Run gnunetd during system startup?")
+ (nohelp)
+ '()
+ #t
+ #t
+ '()
+ 'rare))
+
+
 (define (limit-deny builder)
  (builder
  "GNUNETD"
@@ -475,6 +512,9 @@ tracekit: topology visualization toolkit.  Required for gnunet-tracekit. Note th
   (_ "Settings that change the behavior of GNUnet in general")
   (list 
     (general-path builder) 
+    (username builder) 
+    (groupname builder) 
+    (autostart builder) 
     (fs-path builder) 
     (index-path builder) 
     (general-pidfile builder) 

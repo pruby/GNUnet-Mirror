@@ -37,6 +37,11 @@ int gconf_mainsetup_gtk(int argc,
 			const char * filename,
 			int is_daemon);
 
-void gconf_main_post_init(struct PluginHandle * lib);
+int gconf_main_post_init(struct PluginHandle * lib,
+			 struct GE_Context * e,
+			 struct GC_Configuration * c,
+			 struct GNS_Context * gns,
+			 const char * filename,
+			 int is_daemon);
 
 #endif

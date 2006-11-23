@@ -1825,15 +1825,16 @@ static int copyCallback(void *buf,
 static void shutdownConnection(BufferEntry * be) {
   P2P_hangup_MESSAGE hangup;
   unsigned int i;
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
   EncName enc;
 #endif
 
   ENTRY();
-#if DEBUG_CONNECTION
+#if DEBUG_CONNECTION || 1
   IF_GELOG(ectx,
 	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   hash2enc(&be->session.sender.hashPubKey, &enc));
+	   hash2enc(&be->session.sender.hashPubKey,
+		    &enc));
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 "Shutting down connection with `%s'\n",
@@ -2545,8 +2546,14 @@ static int handleHANGUP(const PeerIdentity * sender,
 		 &((P2P_hangup_MESSAGE *) msg)->sender,
 		 sizeof(PeerIdentity)))
     return SYSERR;
-  IF_GELOG(ectx, GE_INFO | GE_BULK | GE_USER, hash2enc(&sender->hashPubKey, &enc));
-  GE_LOG(ectx, GE_INFO | GE_BULK | GE_USER, "received HANGUP from `%s'\n", &enc);
+  IF_GELOG(ectx, 
+	   GE_INFO | GE_BULK | GE_USER, 
+	   hash2enc(&sender->hashPubKey, 
+		    &enc));
+  GE_LOG(ectx, 
+	 GE_INFO | GE_BULK | GE_USER, 
+	 "received HANGUP from `%s'\n",
+	 &enc);
   MUTEX_LOCK(lock);
   be = lookForHost(sender);
   if(be == NULL) {

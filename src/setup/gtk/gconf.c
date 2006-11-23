@@ -26,6 +26,7 @@
 
 #include "gnunet_setup_lib.h"
 #include "glade_support.h"
+#include "gconf.h"
 #include "platform.h"
 
 /**
