@@ -37,7 +37,7 @@
 
 #define hello_HELPER_TABLE_START_SIZE 64
 
-#define DEBUG_SESSION NO
+#define DEBUG_SESSION YES
 
 #define EXTRA_CHECKS ALLOW_EXTRA_CHECKS
 
@@ -87,6 +87,36 @@ typedef struct {
   Signature signature;
 
 } P2P_setkey_MESSAGE;
+
+/**
+ * @brief message for session key exchange.
+ */
+typedef struct {
+  MESSAGE_HEADER header;
+  /**
+   * time when this key was created  (network byte order)
+   * Must be the first field after the header since
+   * the signature starts at this offset.
+   */
+  TIME_T creationTime;
+
+  /**
+   * The encrypted session key.  May ALSO contain
+   * encrypted PINGs and PONGs.
+   */
+  RSAEncryptedData key;
+
+  /**
+   * Who is the intended recipient?
+   */ 
+  PeerIdentity target;
+
+  /**
+   * Signature of the stuff above.
+   */
+  Signature signature;
+
+} P2P_new_setkey_MESSAGE;
 
 
 #if DEBUG_SESSION
@@ -153,7 +183,8 @@ static void notifyPONG(void * arg) {
  *  connections are disallowed
  */
 static int verifySKS(const PeerIdentity * hostId,
-		     P2P_setkey_MESSAGE * sks) {
+		     const P2P_setkey_MESSAGE * sks,
+		     const Signature * signature) {
   char * limited;
   EncName enc;
 
@@ -178,7 +209,7 @@ static int verifySKS(const PeerIdentity * hostId,
 #if DEBUG_SESSION
       GE_LOG(ectx,
 	     GE_DEBUG | GE_USER | GE_REQUEST,
-	     "Connection from peer `%s' was rejected.\n",
+	     "Connection from peer `%s' was rejected (not allowed).\n",
 	     &enc);
 #endif
       FREE(limited);
@@ -200,7 +231,7 @@ static int verifySKS(const PeerIdentity * hostId,
 #if DEBUG_SESSION
       GE_LOG(ectx,
 	     GE_DEBUG | GE_USER | GE_REQUEST,
-	     "Connection from peer `%s' was rejected.\n",
+	     "Connection from peer `%s' was rejected (explicitly denied).\n",
 	     &enc);
 #endif
       FREE(limited);
@@ -212,8 +243,8 @@ static int verifySKS(const PeerIdentity * hostId,
   if (OK != identity->verifyPeerSignature
       (hostId,
        sks,
-       sizeof(P2P_setkey_MESSAGE) - sizeof(Signature),
-       &sks->signature)) {
+       ntohs(sks->header.size) - sizeof(Signature),
+       signature)) {
     EncName enc;
 
     IF_GELOG(ectx,
@@ -251,6 +282,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   int size;
   P2P_setkey_MESSAGE * msg;
   char * pt;
+  EncName enc;
 
   GE_ASSERT(ectx, sk != NULL);
   foreignHelo = identity->identity2Helo(hostId,
@@ -258,9 +290,12 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 					YES);
   /* create and encrypt sessionkey */
   if (NULL == foreignHelo) {
+    hash2enc(&hostId->hashPubKey,
+	     &enc);
     GE_LOG(ectx,
 	   GE_INFO | GE_USER | GE_REQUEST,
-	   _("Cannot encrypt sessionkey, other peer not known!\n"));
+	   _("Cannot encrypt sessionkey, peer `%s' not known!\n"),
+	   enc);
     return NULL; /* other host not known */
   }
 
@@ -270,15 +305,17 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   if (pong != NULL)
     size += ntohs(pong->size);
   msg = MALLOC(size);
-
+  /* msg->target = *hostId; */
 #if DEBUG_SESSION
+  hash2enc(&hostId->hashPubKey,
+	   &enc);
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_REQUEST,
-	 "Sending setkey %s with %u bytes of data (%s, %s).\n",
+	 "Sending setkey %s with %u bytes of data (%s, %s) to `%s'.\n",
 	 printSKEY(sk),
-      size,
-      ping != NULL ? "ping":"",
-      pong != NULL ? "pong":"");
+	 size,
+	 ping != NULL ? "ping":"",
+	 pong != NULL ? "pong":"");
 #endif
   if (SYSERR == encryptPrivateKey(sk,
 				  sizeof(SESSIONKEY),
@@ -305,7 +342,8 @@ makeSessionKeySigned(const PeerIdentity * hostId,
   /* verify signature/SKS */
   GE_ASSERT(ectx,
 	    SYSERR != verifySKS(coreAPI->myIdentity,
-				msg));
+				msg,
+				&msg->signature));
 #endif
 
   size = 0;
@@ -347,7 +385,7 @@ makeSessionKeySigned(const PeerIdentity * hostId,
 }
 
 /**
- * Perform a session key exchange for entry be.  First sends a hello
+ * Perform a session key exchange.  First sends a hello
  * and then the new SKEY (in two plaintext packets). When called, the
  * semaphore of at the given index must already be down
  *
@@ -413,8 +451,9 @@ static int exchangeKey(const PeerIdentity * receiver,
 #if DEBUG_SESSION
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
-	   "Created fresh sessionkey `%s'.\n",
-	   printSKEY(&sk));
+	   "Created fresh sessionkey `%s' for peer `%s'.\n",
+	   printSKEY(&sk),
+	   &enc);
 #endif
   }
 
@@ -503,6 +542,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
   char * plaintext;
   EncName enc;
   int ret;
+  Signature * sig;
 
   hash2enc(&sender->hashPubKey,
 	   &enc);
@@ -527,6 +567,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	 "Received session key from peer `%s'.\n",
 	 &enc);
 #endif
+
   if (ntohs(msg->size) < sizeof(P2P_setkey_MESSAGE)) {
     GE_LOG(ectx,
 	   GE_WARNING | GE_DEVELOPER | GE_USER | GE_BULK,
@@ -535,8 +576,28 @@ static int acceptSessionKey(const PeerIdentity * sender,
     return SYSERR;
   }
   sessionkeySigned = (P2P_setkey_MESSAGE *) msg;
+  
+  if (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE)) {
+    P2P_new_setkey_MESSAGE * newMsg = (P2P_new_setkey_MESSAGE *) msg;
+    if (!equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
+			   &newMsg->target.hashPubKey)) {
+      EncName ta;
+      hash2enc(&newMsg->target.hashPubKey,
+	       &ta);
+      GE_LOG(ectx,
+	     GE_WARNING | GE_DEVELOPER | GE_USER | GE_BULK,
+	     _("Session key received from peer `%s' is for `%s' and not for me!\n"),
+	     &enc,
+	     &ta);
+      return SYSERR; /* not for us! */
+    }
+    sig = &newMsg->signature;
+  } else {
+    sig = &sessionkeySigned->signature;
+  }
   ret = verifySKS(sender,
-		  sessionkeySigned);
+		  sessionkeySigned,
+		  sig);
   if (OK != ret) {
     if (ret == SYSERR)
       GE_LOG(ectx,
@@ -549,6 +610,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 		    1);
     return SYSERR;  /* rejected */
   }
+  memset(&key, 0, sizeof(SESSIONKEY));
   size = identity->decryptData(&sessionkeySigned->key,
 			       &key,
 			       sizeof(SESSIONKEY));
@@ -580,7 +642,8 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
   GE_LOG(ectx,
 	 GE_DEBUG | GE_USER | GE_REQUEST,
-	 "Received setkey message with %u bytes of data and key `%s'.\n",
+	 "Received setkey message from `%s' with %u bytes of data and key `%s'.\n",
+	 &enc,
 	 ntohs(sessionkeySigned->header.size),
 	 printSKEY(&key));
 #endif
@@ -603,8 +666,9 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
-	   "Decrypting %d bytes of PINGPONG with key `%s' and IV %u\n",
+	   "Decrypting %d bytes of PINGPONG from `%s' with key `%s' and IV %u\n",
 	   size,
+	   &enc,
 	   printSKEY(&key),
 	   *(int*)&sessionkeySigned->signature);
 #endif
@@ -623,8 +687,9 @@ static int acceptSessionKey(const PeerIdentity * sender,
       if (htons(hdr->size) + pos > size) {
 	GE_LOG(ectx,
 	       GE_WARNING | GE_DEVELOPER | GE_USER | GE_BULK,
-	       _("Error parsing encrypted session key, "
-		 "given message part size is invalid.\n"));
+	       _("Error parsing encrypted session key from `%s', "
+		 "given message part size is invalid.\n"),
+	       &enc);
 	break;
       }
       if (htons(hdr->type) == p2p_PROTO_PING)
@@ -634,7 +699,8 @@ static int acceptSessionKey(const PeerIdentity * sender,
       else
 	GE_LOG(ectx,
 	       GE_WARNING | GE_DEVELOPER | GE_USER | GE_BULK,
-	       _("Unknown type in embedded message: %u (size: %u)\n"),
+	       _("Unknown type in embedded message from `%s': %u (size: %u)\n"),
+	       &enc,
 	       htons(hdr->type),
 	       htons(hdr->size));
       pos += ntohs(hdr->size);
@@ -646,7 +712,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
     GE_LOG(ectx,
 	   GE_DEBUG | GE_USER | GE_REQUEST,
-	   "Received pong in session key, injecting!\n",
+	   "Received pong in session key from `%s', injecting!\n",
 	   &enc);
 #endif
     coreAPI->injectMessage(sender,
@@ -659,7 +725,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
       GE_LOG(ectx,
 	     GE_DEBUG | GE_USER | GE_REQUEST,
-	     "Received ping in session key, "
+	     "Received ping in session key from `%s', "
 	     "sending pong over normal encrypted session!\n",
 	     &enc);
 #endif
@@ -674,7 +740,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
 #if DEBUG_SESSION
       GE_LOG(ectx,
 	     GE_DEBUG | GE_USER | GE_REQUEST,
-	     "Received ping in session key, "
+	     "Received ping in session key from `%s', "
 	     "sending pong together with my session key!\n",
 	     &enc);
 #endif
