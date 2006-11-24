@@ -74,6 +74,8 @@ typedef struct {
 			       void * data,
 			       int plaintext);
 
+  unsigned int ping_size;
+
 } Pingpong_ServiceAPI;
 
 

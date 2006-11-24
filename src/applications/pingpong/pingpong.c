@@ -511,6 +511,7 @@ provide_module_pingpong(CoreAPIForApplication * capi) {
 				 &plaintextPongReceived);
   ret.ping = &initiatePing;
   ret.pingUser = &createPing;
+  ret.ping_size = sizeof(P2P_pingpong_MESSAGE);
   return &ret;
 }
 

@@ -187,6 +187,7 @@ static int verifySKS(const PeerIdentity * hostId,
 		     const Signature * signature) {
   char * limited;
   EncName enc;
+  unsigned int rsize;
 
   if ( (sks == NULL) ||
        (hostId == NULL) ) {
@@ -240,10 +241,27 @@ static int verifySKS(const PeerIdentity * hostId,
   }
   FREE(limited);
 
+  rsize = ntohs(sks->header.size);
+  while (rsize > sizeof(P2P_new_setkey_MESSAGE))
+    rsize -= pingpong->ping_size;
+  if (rsize < sizeof(P2P_setkey_MESSAGE)) {
+    EncName enc;
+
+    GE_BREAK(ectx, 0);
+    IF_GELOG(ectx,
+	     GE_INFO | GE_USER | GE_REQUEST,
+	     hash2enc(&hostId->hashPubKey,
+		      &enc));
+    GE_LOG(ectx,
+	   GE_INFO | GE_USER | GE_REQUEST,
+	   _("Session key from peer `%s' could not be verified.\n"),
+	   &enc);
+    return SYSERR;
+  }
   if (OK != identity->verifyPeerSignature
       (hostId,
        sks,
-       ntohs(sks->header.size) - sizeof(Signature),
+       rsize - sizeof(Signature),
        signature)) {
     EncName enc;
 
@@ -543,6 +561,8 @@ static int acceptSessionKey(const PeerIdentity * sender,
   EncName enc;
   int ret;
   Signature * sig;
+  P2P_new_setkey_MESSAGE * newMsg;
+  const void * end;
 
   hash2enc(&sender->hashPubKey,
 	   &enc);
@@ -577,8 +597,11 @@ static int acceptSessionKey(const PeerIdentity * sender,
   }
   sessionkeySigned = (P2P_setkey_MESSAGE *) msg;
   
-  if (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE)) {
-    P2P_new_setkey_MESSAGE * newMsg = (P2P_new_setkey_MESSAGE *) msg;
+  if ( (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE)) ||
+       (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE) + pingpong->ping_size) ||
+       (ntohs(msg->size) == sizeof(P2P_new_setkey_MESSAGE) + pingpong->ping_size * 2) ) {
+    newMsg = (P2P_new_setkey_MESSAGE *) msg;
+
     if (!equalsHashCode512(&coreAPI->myIdentity->hashPubKey,
 			   &newMsg->target.hashPubKey)) {
       EncName ta;
@@ -594,6 +617,7 @@ static int acceptSessionKey(const PeerIdentity * sender,
     sig = &newMsg->signature;
   } else {
     sig = &sessionkeySigned->signature;
+    newMsg = NULL;
   }
   ret = verifySKS(sender,
 		  sessionkeySigned,
@@ -660,8 +684,17 @@ static int acceptSessionKey(const PeerIdentity * sender,
   pong = NULL;
   plaintext = NULL;
   size = ntohs(sessionkeySigned->header.size);
-  if (sizeof(P2P_setkey_MESSAGE) < size) {
-    size -= sizeof(P2P_setkey_MESSAGE);
+  if ( ( (newMsg == NULL) &&
+	 (sizeof(P2P_setkey_MESSAGE) < size) ) ||
+       ( (newMsg != NULL) &&
+	 (sizeof(P2P_new_setkey_MESSAGE) < size) ) ) {
+    if (newMsg == NULL) {
+      size -= sizeof(P2P_setkey_MESSAGE);
+      end = &sessionkeySigned[1];
+    } else {
+      size -= sizeof(P2P_new_setkey_MESSAGE);
+      end = &newMsg[1];
+    }
     plaintext = MALLOC(size);
 #if DEBUG_SESSION
     GE_LOG(ectx,
@@ -670,13 +703,13 @@ static int acceptSessionKey(const PeerIdentity * sender,
 	   size,
 	   &enc,
 	   printSKEY(&key),
-	   *(int*)&sessionkeySigned->signature);
+	   *(int*)sig);
 #endif
     GE_ASSERT(ectx,
 	      -1 != decryptBlock(&key,
-				 &((char*)sessionkeySigned)[sizeof(P2P_setkey_MESSAGE)],
+				 end,
 				 size,
-				 (const INITVECTOR*) &sessionkeySigned->signature,
+				 (const INITVECTOR*) sig,
 				 plaintext));
     pos = 0;
     /* find pings & pongs! */
