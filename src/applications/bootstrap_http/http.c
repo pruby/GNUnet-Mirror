@@ -56,7 +56,7 @@ typedef struct {
 
   char * buf;
 
-  size_t bsize;
+  unsigned int bsize;
 
   const char * url;
 
@@ -74,7 +74,7 @@ downloadHostlistHelper(void * ptr,
 		       void * ctx) {
   BootstrapContext * bctx = ctx;
   size_t osize;
-  size_t total;
+  unsigned int total;
   P2P_hello_MESSAGE * helo;
   unsigned int hs;
 
