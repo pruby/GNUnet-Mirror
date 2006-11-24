@@ -155,7 +155,7 @@ static struct CommandLineOption gnunetdirectoryOptions[] = {
 };
 
 int main(int argc,
-	 const char * argv[]) {
+	 char * const * argv) {
   int i;
   struct GC_Configuration * cfg;
 

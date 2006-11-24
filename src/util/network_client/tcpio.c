@@ -330,7 +330,7 @@ int connection_write(struct ClientServerConnection * sock,
 int connection_read(struct ClientServerConnection * sock,
 		    MESSAGE_HEADER ** buffer) {
   int res;
-  unsigned int pos;
+  size_t pos;
   char * buf;
   unsigned short size;
   RETURN_ERROR_MESSAGE * rem;

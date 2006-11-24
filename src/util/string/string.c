@@ -297,6 +297,7 @@ char * string_expandFileName(struct GE_Context * ectx,
     fil_ptr = fil;
     len = 512;
     errno = ERANGE;
+    fm = NULL;
     while (errno == ERANGE) {
       buffer = MALLOC(len);
       if (getcwd(buffer, len) != NULL) {
