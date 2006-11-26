@@ -52,10 +52,13 @@ static struct ECRS_URI * uri;
 
 static struct FSUI_Context * ctx;
 
+static struct MUTEX * lock;
+
 static void * eventCallback(void * cls,
 			    const FSUI_Event * event) {
   static char unused;
 
+  MUTEX_LOCK(lock);
   switch(event->type) {
   case FSUI_search_resumed:
     search = event->data.SearchResumed.sc.pos;
@@ -66,6 +69,7 @@ static void * eventCallback(void * cls,
   case FSUI_download_resumed:
   case FSUI_upload_resumed:
   case FSUI_unindex_resumed:
+    MUTEX_UNLOCK(lock);
     return &unused;
   case FSUI_search_result:
     printf("Received search result\n");
@@ -93,6 +97,7 @@ static void * eventCallback(void * cls,
     break;
   }
   lastEvent = event->type;
+  MUTEX_UNLOCK(lock);
   return NULL;
 }
 
@@ -138,7 +143,7 @@ int main(int argc, char * argv[]){
   PTHREAD_SLEEP(5 * cronSECONDS); /* give apps time to start */
   /* ACTUAL TEST CODE */
 #endif
-
+  lock = MUTEX_CREATE(NO);
   ctx = FSUI_start(NULL,
 		   cfg,
 		   "fsuisearchtest",
@@ -263,6 +268,8 @@ int main(int argc, char * argv[]){
  FAILURE:
   if (ctx != NULL)
     FSUI_stop(ctx);
+  if (lock != NULL)
+    MUTEX_DESTROY(lock);
   FREENONNULL(fn);
   /* TODO: verify file 'fn(42)' == file 'fn(43)' */
   fn = makeName(42);
