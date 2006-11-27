@@ -89,7 +89,7 @@ GE_create_context_memory(GE_KIND mask,
 				    &memorylogger,
 				    memory,
 				    NULL,
-            NULL);
+				    NULL);
 }
 
 /**
@@ -104,7 +104,7 @@ GE_create_context_memory(GE_KIND mask,
  *   will be set to a corresponding warning)
  */
 struct GE_Memory *
-GE_create_memory(unsigned int maxSize) {
+GE_memory_create(unsigned int maxSize) {
   GE_Memory * ret;
 
   ret = MALLOC(sizeof(GE_Memory));
@@ -117,10 +117,21 @@ GE_create_memory(unsigned int maxSize) {
 }
 
 /**
+ * Get a particular log message from the store.
+ */
+const char * 
+GE_memory_get(struct GE_Memory * memory,
+	      unsigned int index) {
+  if (index > memory->pos)
+    return NULL;
+  return memory->messages[index].msg;
+}
+
+/**
  * For all messages stored in the memory, call the handler.
  * Also clears the memory.
  */
-void GE_poll_memory(struct GE_Memory * memory,
+void GE_memory_poll(struct GE_Memory * memory,
 		    GE_LogHandler handler,
 		    void * ctx) {
   int i;
@@ -138,7 +149,21 @@ void GE_poll_memory(struct GE_Memory * memory,
   MUTEX_UNLOCK(memory->lock);
 }
 
-void GE_free_memory(struct GE_Memory * memory) {
+void GE_memory_reset(struct GE_Memory * memory) {
+  int i;
+
+  MUTEX_LOCK(memory->lock);
+  for (i=memory->pos-1;i>=0;i--) {
+    FREE(memory->messages[i].date);
+    FREE(memory->messages[i].msg);
+  }
+  GROW(memory->messages,
+       memory->size,
+       0);
+  MUTEX_UNLOCK(memory->lock);
+}
+
+void GE_memory_free(struct GE_Memory * memory) {
   int i;
 
   MUTEX_DESTROY(memory->lock);

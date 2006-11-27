@@ -26,6 +26,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_util_error_loggers.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_fsui_lib.h"
 #include "fsui.h"
@@ -67,6 +68,8 @@ void * FSUI_unindexThread(void * cls) {
   FSUI_Event event;
   int ret;
   unsigned long long size;
+  struct GE_Memory * mem;
+  struct GE_Context * ee; 
 
   if (OK != disk_file_size(utc->ctx->ectx,
 			   utc->filename,
@@ -75,7 +78,10 @@ void * FSUI_unindexThread(void * cls) {
     GE_BREAK(utc->ctx->ectx, 0);
     size = 0;
   }
-  ret = ECRS_unindexFile(utc->ctx->ectx,
+  mem = GE_memory_create(2);
+  ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
+				mem);
+  ret = ECRS_unindexFile(ee,
 			 utc->ctx->cfg,
 			 utc->filename,
 			 &progressCallback,
@@ -92,11 +98,16 @@ void * FSUI_unindexThread(void * cls) {
     utc->ctx->ecb(utc->ctx->ecbClosure,
 		  &event);
   } else if (utc->state == FSUI_ACTIVE) {
+    const char * error;
+
     utc->state = FSUI_ERROR;
     event.type = FSUI_unindex_error;
     event.data.UnindexError.uc.pos = utc;
     event.data.UnindexError.uc.cctx = utc->cctx;
-    event.data.UnindexError.message = _("Unindex failed.");
+    error = GE_memory_get(mem, 0);
+    if (error == NULL)
+      error = _("Unindexing failed (no reason given)");
+    event.data.UnindexError.message = error;
     utc->ctx->ecb(utc->ctx->ecbClosure,
 		  &event);
   } else if (utc->state == FSUI_ABORTED) {
@@ -116,6 +127,8 @@ void * FSUI_unindexThread(void * cls) {
 	 "FSUI unindexThread exits in state %u.\n",
 	 utc->state);
 #endif
+  GE_free_context(ee);
+  GE_memory_free(mem);
   return NULL;
 }
 

@@ -117,17 +117,26 @@ GE_create_context_email(struct GE_Context * ectx,
  *   will be set to a corresponding warning)
  */
 struct GE_Memory *
-GE_create_memory(unsigned int maxSize);
+GE_memory_create(unsigned int maxSize);
 
 /**
  * For all messages stored in the memory, call the handler.
  * Also clears the memory.
  */
-void GE_poll_memory(struct GE_Memory * memory,
+void GE_memory_poll(struct GE_Memory * memory,
 		    GE_LogHandler handler,
 		    void * ctx);
 
-void GE_free_memory(struct GE_Memory * memory);
+void GE_memory_reset(struct GE_Memory * memory);
+
+/**
+ * Get a particular log message from the store.
+ */
+const char * 
+GE_memory_get(struct GE_Memory * memory,
+	      unsigned int index);
+
+void GE_memory_free(struct GE_Memory * memory);
 
 
 #if 0 /* keep Emacsens' auto-indent happy */

@@ -19,6 +19,7 @@ libgnunetfsui_la_LIBADD = \
  $(top_builddir)/src/applications/fs/namespace/libgnunetnamespace.la \
  $(top_builddir)/src/applications/fs/uritrack/libgnuneturitrack.la \
  $(top_builddir)/src/util/cron/libgnunetutil_cron.la \
+ $(top_builddir)/src/util/loggers/libgnunetutil_logging.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 
 EXTRA_DIST = \

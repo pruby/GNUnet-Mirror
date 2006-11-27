@@ -26,6 +26,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_util_error_loggers.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_uritrack_lib.h"
 #include "gnunet_fsui_lib.h"
@@ -216,6 +217,8 @@ void * downloadThread(void * cls) {
   int ret;
   FSUI_Event event;
   struct GE_Context * ectx;
+  struct GE_Memory * mem;
+  struct GE_Context * ee; 
 
   dl->startTime = get_time() - dl->runTime;
   ectx = dl->ctx->ectx;
@@ -227,7 +230,10 @@ void * downloadThread(void * cls) {
 #endif
   GE_ASSERT(ectx, dl->ctx != NULL);
   GE_ASSERT(ectx, dl->filename != NULL);
-  ret = ECRS_downloadFile(dl->ctx->ectx,
+  mem = GE_memory_create(2);
+  ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
+				mem);
+  ret = ECRS_downloadFile(ee,
 			  dl->ctx->cfg,
 			  dl->fi.uri,
 			  dl->filename,
@@ -251,6 +257,8 @@ void * downloadThread(void * cls) {
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else if (dl->state == FSUI_ACTIVE) {
+    const char * error;
+
     /* ECRS error */
     dl->state = FSUI_ERROR;
     event.type = FSUI_download_error;
@@ -260,7 +268,11 @@ void * downloadThread(void * cls) {
     event.data.DownloadError.dc.pcctx = dl->parent->cctx;
     event.data.DownloadError.dc.spos = dl->search;
     event.data.DownloadError.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
-    event.data.DownloadError.message = _("ECRS download failed (see logs)");
+    error = GE_memory_get(mem, 0);
+    if (error == NULL)
+      error = _("Download failed (no reason given)");
+    event.data.DownloadError.message = error;
+    
     dl->ctx->ecb(dl->ctx->ecbClosure,
 		 &event);
   } else if (dl->state == FSUI_ABORTED) { /* aborted */
@@ -341,6 +353,8 @@ void * downloadThread(void * cls) {
 	 ret == OK ? "COMPLETED" : "ABORTED");
 #endif
   dl->runTime = get_time() - dl->startTime;
+  GE_free_context(ee);
+  GE_memory_free(mem);
   return NULL;
 }
 

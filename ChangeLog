@@ -1,3 +1,7 @@
+Mon Nov 27 08:51:46 MST 2006
+	Added conversion of ECRS error messages to FSUI 
+	error event messages.
+
 Sun Nov 19 00:20:14 MST 2006
 	Improved error handling.  gnunetd now can communicate
 	text error messages to clients (not just error codes).

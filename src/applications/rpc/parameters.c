@@ -85,6 +85,7 @@ void RPC_paramSerialize(RPC_Param * param,
   if (target == NULL)
     return;
   pos = 0;
+  dataLength = 0;
   for (i = 0; i < RPC_paramCount(param); i++) {
     paramName = RPC_paramName(param, i);
     paramValue = NULL;
@@ -159,6 +160,7 @@ size_t RPC_paramSize(RPC_Param * param) {
   if (param == NULL)
     return 0;
   pos = 0;
+  dataLength = 0;
   for (i = 0; i < RPC_paramCount(param); i++) {
     paramName = RPC_paramName(param, i);
     paramValue = NULL;

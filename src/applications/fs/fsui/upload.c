@@ -26,6 +26,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_util_error_loggers.h"
 #include "gnunet_ecrs_lib.h"
 #include "gnunet_uritrack_lib.h"
 #include "gnunet_fsui_lib.h"
@@ -72,7 +73,8 @@ static int testTerminate(void * cls) {
 static char *
 createDirectoryHelper(struct GE_Context * ectx,
 		      struct FSUI_UploadList * children,
-		      struct ECRS_MetaData * meta) {
+		      struct ECRS_MetaData * meta,
+		      char ** error) {
   ECRS_FileInfo * fis;
   unsigned int count;
   unsigned int size;
@@ -82,6 +84,8 @@ createDirectoryHelper(struct GE_Context * ectx,
   char * tempName;
   struct FSUI_UploadList * pos;
   int handle;
+  struct GE_Memory * mem;
+  struct GE_Context * ee; 
 
   fis = NULL;
   size = 0;
@@ -110,7 +114,10 @@ createDirectoryHelper(struct GE_Context * ectx,
     pos = pos->next;
   }
   GE_BREAK(ectx, count == size);
-  ret = ECRS_createDirectory(ectx,
+  mem = GE_memory_create(2);
+  ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
+				mem);
+  ret = ECRS_createDirectory(ee,
 			     &data,
 			     &len,
 			     size,
@@ -119,30 +126,41 @@ createDirectoryHelper(struct GE_Context * ectx,
   GROW(fis,
        size,
        0);
-  if (ret != OK)
+  if (ret != OK) {
+    *error = STRDUP(GE_memory_get(mem, 0));
+    GE_free_context(ee);
+    GE_memory_free(mem);
     return NULL;
+  }
+  GE_memory_reset(mem);
   tempName = STRDUP("/tmp/gnunet-upload-dir.XXXXXX");
   handle = mkstemp(tempName);
   if (handle == -1) {
-    GE_LOG_STRERROR_FILE(ectx,
+    GE_LOG_STRERROR_FILE(ee,
 			 GE_ERROR | GE_USER | GE_BULK,
 			 tempName,
 			 "mkstemp");
     FREE(tempName);
     FREE(data);
+    *error = STRDUP(GE_memory_get(mem, 0));
+    GE_free_context(ee);
+    GE_memory_free(mem);
     return NULL;
   }
   if (len != WRITE(handle,
 		   data,
 		   len)) {
-    GE_LOG_STRERROR_FILE(ectx,
+    GE_LOG_STRERROR_FILE(ee,
 			 GE_ERROR | GE_USER | GE_BULK,
 			 tempName,
 			 "write");
-    FREE(tempName);
-    FREE(data);
+    *error = STRDUP(GE_memory_get(mem, 0));
+    GE_free_context(ee);
+    GE_memory_free(mem);
     return NULL;
   }
+  GE_free_context(ee);
+  GE_memory_free(mem);
   CLOSE(handle);
   FREE(data);
   return tempName;
@@ -202,6 +220,9 @@ void * FSUI_uploadThread(void * cls) {
   char * pfn;
   struct ECRS_URI * uri;
   size_t tpos;
+  char * error;
+  struct GE_Memory * mem;
+  struct GE_Context * ee; 
 
   ectx = utc->shared->ctx->ectx;
   GE_ASSERT(ectx, utc->filename != NULL);
@@ -214,19 +235,27 @@ void * FSUI_uploadThread(void * cls) {
   if (utc->state != FSUI_ACTIVE)
     return NULL; /* aborted or suspended */
   if (utc->child != NULL) {
+    error = NULL;
     filename = createDirectoryHelper(ectx,
 				     utc->child,
-				     utc->meta);
+				     utc->meta,
+				     &error);
     if (filename == NULL) {
+      if (error == NULL)
+	error = STRDUP(_("Failed to create temporary directory."));
       signalError(utc,
-		  _("Failed to create temporary directory."));
+		  error);
+      FREE(error);
       return NULL;
     }
   } else {
     filename = STRDUP(utc->filename);
   }
   utc->start_time = get_time();
-  ret = ECRS_uploadFile(utc->shared->ctx->ectx,
+  mem = GE_memory_create(2);
+  ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
+				mem);
+  ret = ECRS_uploadFile(ee,
 			utc->shared->ctx->cfg,
 			filename,
 			utc->shared->doIndex == YES ? (utc->child == NULL ? YES : NO) : NO,
@@ -241,7 +270,7 @@ void * FSUI_uploadThread(void * cls) {
   if (ret != OK) {
     if (utc->state == FSUI_ACTIVE) {
       signalError(utc,
-		  _("Upload failed (consult logs)."));
+		  GE_memory_get(mem, 0));
     } else if (utc->state == FSUI_ABORTED) {
       event.type = FSUI_upload_aborted;
       event.data.UploadAborted.uc.pos = utc;
@@ -257,6 +286,8 @@ void * FSUI_uploadThread(void * cls) {
     if (utc->child != NULL)
       UNLINK(filename);
     FREE(filename);
+    GE_free_context(ee);
+    GE_memory_free(mem);
     return NULL;
   }
   utc->state = FSUI_COMPLETED;

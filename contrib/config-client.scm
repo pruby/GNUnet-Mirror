@@ -290,6 +290,7 @@ The default is to use filenames and to break larger words at spaces (and undersc
     (meta builder)
     (logging builder)
     (general builder)
+    (fs builder)
   )
   #t 
   #f 

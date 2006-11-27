@@ -14,8 +14,6 @@ Notes:
 
 0.7.1 [12'06] (aka "stabilization")
 - finish util refactoring:
-  * extractors option for FS (missing in client config!) [RCpre1, CG]
-  * fs/fsui: capture ectx errors and convert to event error msgs! [RCpre1, CG]
   * gnunet-setup ncurses wizard [RCpre2]
 - more testcases: [RCpre3]
   * ecrs_core

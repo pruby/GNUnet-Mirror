@@ -27,6 +27,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_util_error_loggers.h"
 #include "gnunet_directories.h"
 #include "gnunet_protocols.h"
 #include "gnunet_fsui_lib.h"
@@ -247,8 +248,13 @@ void * FSUI_searchThread(void * cls) {
   FSUI_SearchList * pos = cls;
   FSUI_Event event;
   int ret;
+  struct GE_Memory * mem;
+  struct GE_Context * ee; 
 
-  ret = ECRS_search(pos->ctx->ectx,
+  mem = GE_memory_create(2);
+  ee = GE_create_context_memory(GE_USER | GE_ADMIN | GE_ERROR | GE_WARNING | GE_FATAL | GE_BULK | GE_IMMEDIATE,
+				mem);
+  ret = ECRS_search(ee,
 		    pos->ctx->cfg,
 		    pos->uri,
 		    pos->anonymityLevel,
@@ -258,11 +264,16 @@ void * FSUI_searchThread(void * cls) {
 		    &testTerminate,
 		    pos);
   if (ret != OK) {
+    const char * error;
+
     pos->state = FSUI_ERROR;
     event.type = FSUI_search_error;
     event.data.SearchError.sc.pos = pos;
     event.data.SearchError.sc.cctx = pos->cctx;
-    event.data.SearchError.message = _("Error running search (consult logs).");
+    error = GE_memory_get(mem, 0);
+    if (error == NULL)
+      error = _("Error running search (no reason given).");
+    event.data.SearchError.message = error;
     pos->ctx->ecb(pos->ctx->ecbClosure,
 		  &event);
   } else if (pos->state == FSUI_ABORTED) {
@@ -282,6 +293,8 @@ void * FSUI_searchThread(void * cls) {
     GE_ASSERT(NULL, pos->state == FSUI_PENDING);
     /* must be suspending */
   }
+  GE_free_context(ee);
+  GE_memory_free(mem);
 
   return NULL;
 }
