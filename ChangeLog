@@ -1,3 +1,8 @@
+Wed Nov 29 22:20:26 MST 2006
+	Fixed various bugs with (de)serialization of FSUI state
+	and closing searches with associated downloads.  Extended
+	FSUI test suite.
+
 Mon Nov 27 08:51:46 MST 2006
 	Added conversion of ECRS error messages to FSUI 
 	error event messages.

@@ -18,7 +18,6 @@ Notes:
 - more testcases: [RCpre3]
   * ecrs_core
   * gap (incl. economy)
-  * fs/fsui: recursive uploads and downloads (incl. persistence)
   * fs/uritrack
   * fs/namespaces
   * fs/collection
