@@ -370,6 +370,8 @@ void * FSUI_uploadThread(void * cls) {
   if (utc->child != NULL)
     UNLINK(filename);
   FREE(filename);
+  GE_free_context(ee);
+  GE_memory_free(mem);
   return NULL;
 }
 

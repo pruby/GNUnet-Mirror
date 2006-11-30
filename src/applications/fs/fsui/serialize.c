@@ -130,7 +130,9 @@ static void writeDownloadList(struct GE_Context * ectx,
     i = 1;
     pos = ctx->activeSearches;
     while (pos != list->search) {
-      i++;
+      if ( (pos->sizeResultsReceived <= 1024 * 1024) &&
+	   (pos->sizeUnmatchedResultsReceived <= 1024 * 1024) ) 
+	i++;
       pos = pos->next;
       if (pos == NULL) {
 	GE_BREAK(ectx, 0);
@@ -138,6 +140,10 @@ static void writeDownloadList(struct GE_Context * ectx,
 	break;
       }
     }
+    if ( (pos != NULL) &&
+	 ( (pos->sizeResultsReceived < 1024 * 1024) ||
+	   (pos->sizeUnmatchedResultsReceived < 1024 * 1024) ) )
+      i = 0;
     WRITEINT(fd, i);
   }
   WRITEINT(fd, list->state);

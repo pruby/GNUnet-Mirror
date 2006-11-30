@@ -69,7 +69,7 @@ static void signalDownloadResume(struct FSUI_DownloadList * ret,
     event.type = FSUI_download_resumed;
     event.data.DownloadResumed.dc.pos = ret;
     event.data.DownloadResumed.dc.cctx = ret->cctx;
-    event.data.DownloadResumed.dc.ppos = ret->parent;
+    event.data.DownloadResumed.dc.ppos = ret->parent == &ctx->activeDownloads ? NULL : ret->parent;
     event.data.DownloadResumed.dc.pcctx = ret->parent->cctx;
     event.data.DownloadResumed.dc.spos = ret->search;
     event.data.DownloadResumed.dc.sctx = ret->search == NULL ? NULL : ret->search->cctx;
@@ -329,7 +329,7 @@ static void signalDownloadSuspend(struct GE_Context * ectx,
     event.type = FSUI_download_suspended;
     event.data.DownloadSuspended.dc.pos = list;
     event.data.DownloadSuspended.dc.cctx = list->cctx;
-    event.data.DownloadSuspended.dc.ppos = list->parent;
+    event.data.DownloadSuspended.dc.ppos = list->parent == &ctx->activeDownloads ? NULL : list->parent;
     event.data.DownloadSuspended.dc.pcctx = list->parent->cctx;
     event.data.DownloadSuspended.dc.spos = list->search;
     event.data.DownloadSuspended.dc.sctx = list->search == NULL ? NULL : list->search->cctx;

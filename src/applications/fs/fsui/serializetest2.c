@@ -89,7 +89,9 @@ static void * eventCallback(void * cls,
     if ( (event->data.DownloadSuspended.dc.pos != download) &&
 	 (event->data.DownloadSuspended.dc.ppos != download) ) {
       fprintf(stderr,
-	      "Download suspended but parent reference not set correctly.\n");
+	      "Download suspended but parent reference not set correctly (%p instead of %p).\n",
+	      event->data.DownloadSuspended.dc.ppos,
+	      download);
       have_error = 1;
     }
     if ( (event->data.DownloadSuspended.dc.pos != download) &&
@@ -150,6 +152,8 @@ static void * eventCallback(void * cls,
 #endif
     break;
   case FSUI_upload_completed:
+    if (upURI != NULL)
+      ECRS_freeUri(upURI);
     upURI = ECRS_dupUri(event->data.UploadCompleted.uri);
 #if DEBUG_VERBOSE
     printf("Upload complete.\n");
@@ -250,6 +254,8 @@ static void * eventCallback(void * cls,
 #endif
     break;
   case FSUI_download_started:
+    if (download == NULL)
+      download = event->data.DownloadStarted.dc.pos;
     if ( (event->data.DownloadStarted.dc.pos == download) &&
 	 (event->data.DownloadStarted.dc.spos != search) ) {
       fprintf(stderr,
@@ -319,7 +325,7 @@ static void * eventCallback(void * cls,
 
 #define FILESIZE (1024)
 
-#define START_DAEMON 1
+#define START_DAEMON 0
 
 int main(int argc, char * argv[]){
 #if START_DAEMON
@@ -429,7 +435,7 @@ int main(int argc, char * argv[]){
 				YES,
 				upURI,
 				meta,
-				fn,
+				UPLOAD_PREFIX "-download",
 				search,
 				NULL);
   ECRS_freeMetaData(meta);

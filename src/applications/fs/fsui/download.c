@@ -145,7 +145,7 @@ downloadProgressCallback(unsigned long long totalBytes,
   event.type = FSUI_download_progress;
   event.data.DownloadProgress.dc.pos = dl;
   event.data.DownloadProgress.dc.cctx = dl->cctx;
-  event.data.DownloadProgress.dc.ppos = dl->parent;
+  event.data.DownloadProgress.dc.ppos = dl->parent == &dl->ctx->activeDownloads ? NULL : dl->parent;
   event.data.DownloadProgress.dc.pcctx = dl->parent->cctx;
   event.data.DownloadProgress.dc.spos = dl->search;
   event.data.DownloadProgress.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
@@ -247,7 +247,7 @@ void * downloadThread(void * cls) {
     event.type = FSUI_download_completed;
     event.data.DownloadCompleted.dc.pos = dl;
     event.data.DownloadCompleted.dc.cctx = dl->cctx;
-    event.data.DownloadCompleted.dc.ppos = dl->parent;
+    event.data.DownloadCompleted.dc.ppos = dl->parent == &dl->ctx->activeDownloads ? NULL : dl->parent;
     event.data.DownloadCompleted.dc.pcctx = dl->parent->cctx;
     event.data.DownloadCompleted.dc.spos = dl->search;
     event.data.DownloadCompleted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
@@ -264,7 +264,7 @@ void * downloadThread(void * cls) {
     event.type = FSUI_download_error;
     event.data.DownloadError.dc.pos = dl;
     event.data.DownloadError.dc.cctx = dl->cctx;
-    event.data.DownloadError.dc.ppos = dl->parent;
+    event.data.DownloadError.dc.ppos = dl->parent == &dl->ctx->activeDownloads ? NULL : dl->parent;
     event.data.DownloadError.dc.pcctx = dl->parent->cctx;
     event.data.DownloadError.dc.spos = dl->search;
     event.data.DownloadError.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
@@ -279,7 +279,7 @@ void * downloadThread(void * cls) {
     event.type = FSUI_download_aborted;
     event.data.DownloadAborted.dc.pos = dl;
     event.data.DownloadAborted.dc.cctx = dl->cctx;
-    event.data.DownloadAborted.dc.ppos = dl->parent;
+    event.data.DownloadAborted.dc.ppos = dl->parent == &dl->ctx->activeDownloads ? NULL : dl->parent;
     event.data.DownloadAborted.dc.pcctx = dl->parent->cctx;
     event.data.DownloadAborted.dc.spos = dl->search;
     event.data.DownloadAborted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
@@ -403,7 +403,7 @@ startDownload(struct FSUI_Context * ctx,
   event.type = FSUI_download_started;
   event.data.DownloadStarted.dc.pos = dl;
   event.data.DownloadStarted.dc.cctx = NULL;
-  event.data.DownloadStarted.dc.ppos = dl->parent;
+  event.data.DownloadStarted.dc.ppos = dl->parent == &ctx->activeDownloads ? NULL : dl->parent;
   event.data.DownloadStarted.dc.pcctx = dl->parent->cctx;
   event.data.DownloadStarted.dc.spos = dl->search;
   event.data.DownloadStarted.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;
@@ -642,7 +642,7 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
   event.type = FSUI_download_stopped;
   event.data.DownloadStopped.dc.pos = dl;
   event.data.DownloadStopped.dc.cctx = dl->cctx;
-  event.data.DownloadStopped.dc.ppos = dl->parent;
+  event.data.DownloadStopped.dc.ppos = dl->parent == &ctx->activeDownloads ? NULL : dl->parent;
   event.data.DownloadStopped.dc.pcctx = dl->parent->cctx;
   event.data.DownloadStopped.dc.spos = dl->search;
   event.data.DownloadStopped.dc.sctx = dl->search == NULL ? NULL : dl->search->cctx;

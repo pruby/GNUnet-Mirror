@@ -405,6 +405,11 @@ int FSUI_stopSearch(struct FSUI_Context * ctx,
     ctx->activeSearches = pos->next;
   else
     prev->next = pos->next;
+  for (i=0;i<sl->my_downloads_size;i++) 
+    sl->my_downloads[i]->search = NULL;
+  GROW(sl->my_downloads,
+       sl->my_downloads_size,
+       0);
   MUTEX_UNLOCK(ctx->lock);
   pos->next = NULL;
   if ( (pos->state == FSUI_ACTIVE) ||

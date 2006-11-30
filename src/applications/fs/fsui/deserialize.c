@@ -222,8 +222,8 @@ readDownloadList(struct GE_Context * ectx,
 	 0,
 	 sizeof(FSUI_DownloadList));
   ret->ctx = ctx;
-  if ( (OK != read_int(fd, (int*) &ret->state)) ||
-       (OK != read_int(fd, (int*) &soff)) ||
+  if ( (OK != read_int(fd, (int*) &soff)) ||
+       (OK != read_int(fd, (int*) &ret->state)) ||
        (OK != read_int(fd, (int*) &ret->is_recursive)) ||
        (OK != read_int(fd, (int*) &ret->is_directory)) ||
        (OK != read_int(fd, (int*) &ret->anonymityLevel)) ||
@@ -369,6 +369,7 @@ static int readSearches(int fd,
 			struct FSUI_Context * ctx) {
   int big;
   FSUI_SearchList * list;
+  FSUI_SearchList * last;
   int i;
   ResultPending * rp;
   char * buf;
@@ -477,12 +478,18 @@ static int readSearches(int fd,
     }	
     list->ctx
       = ctx;
-
-    /* finally: prepend to list */
     list->next
-      = ctx->activeSearches;
-    ctx->activeSearches
-      = list;
+      = NULL;
+    /* finally: append (!) to list */
+
+    if (ctx->activeSearches == NULL) {
+      ctx->activeSearches = list;
+    } else {
+      last = ctx->activeSearches;
+      while (last->next != NULL)
+	last = last->next;
+      last->next = list;
+    }
   } /* end OUTER: 'while(1)' */
  ERR:
   /* error - deallocate 'list' */
