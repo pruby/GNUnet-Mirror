@@ -293,7 +293,8 @@ void * downloadThread(void * cls) {
 
   if ( (ret == OK) &&
        (dl->is_recursive) &&
-       (dl->is_directory == YES) ) {
+       (dl->is_directory == YES) &&
+       (ECRS_fileSize(dl->fi.uri) > 0) ) {
     char * dirBlock;
     int fd;
     char * fn;
@@ -325,7 +326,7 @@ void * downloadThread(void * cls) {
       if (MAP_FAILED == dirBlock) {
 	GE_LOG_STRERROR_FILE(ectx,
 			     GE_ERROR | GE_BULK | GE_ADMIN | GE_USER,
-			     "MMAP",
+			     "mmap",
 			     fn);	
       } else {
 	/* load directory, start downloads */
@@ -631,6 +632,9 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
     GE_ASSERT(ctx->ectx, dl->handle != NULL);
     PTHREAD_JOIN(dl->handle,
 		 &unused);
+    MUTEX_LOCK(ctx->lock);
+    dl->ctx->activeDownloadThreads--;
+    MUTEX_UNLOCK(ctx->lock);
     dl->handle = NULL;
     if (dl->state == FSUI_ACTIVE) 
       dl->state = FSUI_PENDING;

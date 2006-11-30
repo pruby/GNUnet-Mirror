@@ -256,7 +256,8 @@ int URITRACK_listURIs(struct GE_Context * ectx,
   fn = getUriDbName(ectx, cfg);
   sem = createIPC(ectx, cfg);
   IPC_SEMAPHORE_DOWN(sem, YES);
-  if(0 != STAT(fn, &buf)) {
+  if ( (0 != STAT(fn, &buf)) ||
+       (buf.st_size == 0) ) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
     return 0;                   /* no URI db */
