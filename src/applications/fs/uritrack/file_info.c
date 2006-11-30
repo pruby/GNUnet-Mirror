@@ -260,6 +260,7 @@ int URITRACK_listURIs(struct GE_Context * ectx,
        (buf.st_size == 0) ) {
     IPC_SEMAPHORE_UP(sem);
     IPC_SEMAPHORE_DESTROY(sem);
+    FREE(fn);
     return 0;                   /* no URI db */
   }
   fd = disk_file_open(ectx,
