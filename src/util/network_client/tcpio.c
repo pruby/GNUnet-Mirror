@@ -161,6 +161,8 @@ void connection_close_forever(struct ClientServerConnection * sock) {
     sock->dead = YES;
     MUTEX_UNLOCK(sock->writelock);
     MUTEX_UNLOCK(sock->readlock);
+  } else {
+    sock->dead = YES;
   }
   MUTEX_UNLOCK(sock->destroylock);
 }

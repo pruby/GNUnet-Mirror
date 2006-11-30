@@ -43,7 +43,7 @@ static pid_t launchWithExec(struct GE_Context * ectx,
 
   pid = fork();
   if (pid == 0) {
-    const char * args[5];
+    const char * args[6];
     char * path;
     char * cp;
     int i;
@@ -67,7 +67,8 @@ static pid_t launchWithExec(struct GE_Context * ectx,
       args[2] = cfgFile;
       if (NO == daemonize) {
 	args[3] = "-d";
-	args[4] = NULL;
+	args[4] = "-q";
+	args[5] = NULL;
       } else
 	args[3] = NULL;
     } else {

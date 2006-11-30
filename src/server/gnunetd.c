@@ -48,6 +48,8 @@ static char * cfgFilename = DEFAULT_DAEMON_CONFIG_FILE;
 
 static int debug_flag;
 
+static int quiet_flag;
+
 #ifndef WINDOWS
 /**
  * Cron job that triggers re-reading of the configuration.
@@ -174,6 +176,9 @@ static struct CommandLineOption gnunetdOptions[] = {
   { 'p', "padding-disable", "YES/NO",
     gettext_noop("disable padding with random data (experimental)"), 0,
     &gnunet_getopt_configure_set_option, "GNUNETD-EXPERIMENTAL:PADDING" },
+  { 'q', "quiet", NULL,
+    gettext_noop("run in quiet mode"),
+    0, &gnunet_getopt_configure_set_one, &quiet_flag },
 #ifndef MINGW
   { 'u', "user", "USERNAME",
     gettext_noop("specify username as which gnunetd should run"), 1,
@@ -210,12 +215,14 @@ int main(int argc,
     return 1;
   }
   if (YES == debug_flag) {
-    ectx = GE_create_context_multiplexer(ectx,
-					 GE_create_context_stderr(NO,
-								  GE_USERKIND |
-								  GE_EVENTKIND |
-								  GE_BULK |
-								  GE_IMMEDIATE));
+    if (quiet_flag == 0) {
+      ectx = GE_create_context_multiplexer(ectx,
+					   GE_create_context_stderr(NO,
+								    GE_USERKIND |
+								    GE_EVENTKIND |
+								    GE_BULK |
+								    GE_IMMEDIATE));
+    }
   }
   if (OK != changeUser(ectx, cfg)) {
     GNUNET_fini(ectx, cfg);

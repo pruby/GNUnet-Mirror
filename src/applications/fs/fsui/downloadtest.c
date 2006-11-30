@@ -22,10 +22,6 @@
  * @file applications/fs/fsui/downloadtest.c
  * @brief testcase for fsui download persistence (upload-download)
  * @author Christian Grothoff
- *
- * Todo:
- * - test more features of download (recursive, multiple files
- *   in parallel, etc.)
  */
 
 #include "platform.h"
@@ -84,6 +80,15 @@ static void * eventCallback(void * cls,
     printf("Download resuming\n");
 #endif
     download = event->data.DownloadResumed.dc.pos;
+    break;
+  case FSUI_search_completed:
+#if DEBUG_VERBOSE
+    printf("Search completed\n");
+#endif
+    if (download == NULL) {
+      fprintf(stderr,
+	      "ERROR: Search completed but download not started!\n");
+    }
     break;
   case FSUI_search_result:
 #if DEBUG_VERBOSE

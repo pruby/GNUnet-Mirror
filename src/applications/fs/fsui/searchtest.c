@@ -208,6 +208,11 @@ int main(int argc, char * argv[]){
   prog = 0;
   while (lastEvent != FSUI_upload_completed) {
     prog++;
+    if (prog == 10000) {
+      fprintf(stderr,
+	      "Upload failed to complete -- last event: %u\n",
+	      lastEvent);
+    }
     CHECK(prog < 10000)
     PTHREAD_SLEEP(50 * cronMILLIS);
     if (GNUNET_SHUTDOWN_TEST() == YES)
