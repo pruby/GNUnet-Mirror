@@ -32,7 +32,7 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE YES
+#define DEBUG_VERBOSE NO
 
 #define UPLOAD_PREFIX "/tmp/gnunet-fsui-searializetest2"
 
@@ -326,7 +326,7 @@ static void * eventCallback(void * cls,
 
 #define FILESIZE (1024)
 
-#define START_DAEMON 0
+#define START_DAEMON 1
 
 int main(int argc, char * argv[]){
 #if START_DAEMON
