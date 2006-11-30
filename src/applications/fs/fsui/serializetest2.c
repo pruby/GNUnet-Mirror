@@ -100,7 +100,8 @@ static void * eventCallback(void * cls,
 	      "Download suspended but search reference not set to NULL.\n");
       have_error = 1;
     }
-    download = NULL;
+    if (event->data.DownloadSuspended.dc.pos == download) 
+      download = NULL;
     break;
   case FSUI_search_resumed:
 #if DEBUG_VERBOSE
