@@ -31,7 +31,7 @@
 #include "gnunet_util_network_client.h"
 #include "gnunet_util_crypto.h"
 
-#define DEBUG_VERBOSE NO
+#define DEBUG_VERBOSE YES
 
 #define CHECK(a) if (!(a)) { ok = NO; GE_BREAK(ectx, 0); goto FAILURE; }
 
@@ -316,7 +316,7 @@ int main(int argc, char * argv[]){
   waitForEvent = FSUI_download_completed;
   search = FSUI_startSearch(ctx,
 			    0,
-			    100,
+			    10000,
 			    240 * cronSECONDS,
 			    uri);
   CHECK(search != NULL);
