@@ -113,13 +113,9 @@ static void freeIOC(IOContext * this,
   }
   MUTEX_DESTROY(this->lock);
   if (YES == unlinkTreeFiles) {
-    for (i=1;i<= this->treedepth;i++) {
-      fn = MALLOC(strlen(this->filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
+    for (i=1;i<=this->treedepth;i++) {
+      fn = MALLOC(strlen(this->filename) + 3);
       strcpy(fn, this->filename);
-      if (fn[strlen(fn)-1] == '/') {
-	fn[strlen(fn)-1] = '\0';
-	strcat(fn, GNUNET_DIRECTORY_EXT);
-      }
       strcat(fn, ".A");
       fn[strlen(fn)-1]+=i;
       if (0 != UNLINK(fn))
@@ -172,12 +168,8 @@ static int createIOContext(struct GE_Context * ectx,
     this->handles[i] = -1;
 
   for (i=0;i<=this->treedepth;i++) {
-    fn = MALLOC(strlen(filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
+    fn = MALLOC(strlen(filename) + 3);
     strcpy(fn, filename);
-    if (fn[strlen(fn)-1] == '/') {
-      fn[strlen(fn)-1] = '\0';
-      strcat(fn, GNUNET_DIRECTORY_EXT);
-    }
     if (i > 0) {
       strcat(fn, ".A");
       fn[strlen(fn)-1] += i;
@@ -1257,49 +1249,93 @@ int ECRS_downloadFile(struct GE_Context * ectx,
   NodeClosure * top;
   FileIdentifier fid;
   cron_t minSleep;
+  char * realFN;
+  char * path;
+  char * pos;
+  struct stat buf;
 
 #if DEBUG_DOWNLOAD
-  GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-      "`%s' running for file `%s'\n",
-      __FUNCTION__,
-      filename);
+  GE_LOG(ectx, 
+	 GE_DEBUG | GE_REQUEST | GE_USER,
+	 "`%s' running for file `%s'\n",
+	 __FUNCTION__,
+	 filename);
 #endif
+  GE_ASSERT(ectx, filename != NULL);
+  if ( (filename[strlen(filename)-1] == '/') ||
+       (filename[strlen(filename)-1] == '\\') ) {
+    realFN = MALLOC(strlen(filename) + strlen(GNUNET_DIRECTORY_EXT));
+    strcpy(realFN, filename);
+    realFN[strlen(filename)-1] = '\0';
+    strcat(realFN, GNUNET_DIRECTORY_EXT);
+  } else {
+    realFN = STRDUP(filename);
+  }
+  path = MALLOC(strlen(realFN) * strlen(GNUNET_DIRECTORY_EXT) + 1);
+  strcpy(path, realFN);
+  pos = path;
+  while (*pos != '\0') {
+    if (*pos == '/') {
+      *pos = '\0';
+      if ( (0 == STAT(path, &buf)) &&
+	   (! S_ISDIR(buf.st_mode)) ) {
+	*pos = '/';
+	memmove(pos + strlen(GNUNET_DIRECTORY_EXT),
+		pos,
+		strlen(pos));
+	memcpy(pos,
+	       GNUNET_DIRECTORY_EXT,
+	       strlen(GNUNET_DIRECTORY_EXT));
+	pos += strlen(GNUNET_DIRECTORY_EXT);
+      } else {
+	*pos = '/';
+      }
+    }
+    pos++;
+  }
+  FREE(realFN);
+  realFN = path;
+
   if (SYSERR == disk_directory_create_for_file(ectx,
-					       filename))
+					       realFN)) {
+    FREE(realFN);
     return SYSERR;
+  }
   if (0 == ECRS_fileSize(uri)) {
     ret = disk_file_open(ectx,
-			 filename,
+			 realFN,
 			 O_CREAT | O_WRONLY | O_TRUNC,
 			 S_IRUSR|S_IWUSR);
+    FREE(realFN);
     if (ret == -1)
       return SYSERR;
     CLOSE(ret);
     dpcb(0, 0, get_time(), 0, NULL, 0, dpcbClosure);
     return OK;
   }
-  GE_ASSERT(ectx, filename != NULL);
   fid = uri->data.chk;
   if (! ECRS_isFileUri(uri)) {
     GE_BREAK(ectx, 0);
+    FREE(realFN);
     return SYSERR;
   }
 
   if (OK != createIOContext(ectx,
 			    &ioc,
 			    ntohll(fid.file_length),
-			    filename)) {
+			    realFN)) {
 #if DEBUG_DOWNLOAD
-    GE_LOG(ectx, GE_DEBUG | GE_REQUEST | GE_USER,
-	"`%s' aborted for file `%s'\n",
-	__FUNCTION__,
-	filename);
+    GE_LOG(ectx,
+	   GE_DEBUG | GE_REQUEST | GE_USER,
+	   "`%s' aborted for file `%s'\n",
+	   __FUNCTION__,
+	   realFN);
 #endif
+    FREE(realFN);
     return SYSERR;
   }
   rm = createRequestManager(ectx,
 			    cfg);
-
   ctx.startTime = get_time();
   ctx.anonymityLevel = anonymityLevel;
   ctx.TTL_DECREMENT = 5 * cronSECONDS; /* HACK! */
@@ -1346,11 +1382,32 @@ int ECRS_downloadFile(struct GE_Context * ectx,
     ret = SYSERR;
   }
   destroyRequestManager(rm);
-  if ( (ret == OK) ||
-       (tt(ttClosure) == SYSERR) )
+  if (ret == OK) {
     freeIOC(&ioc, YES);
-  else
+  } else if (tt(ttClosure) == SYSERR) {
+    freeIOC(&ioc, YES);
+    if (0 != UNLINK(realFN)) {
+      GE_LOG_STRERROR_FILE(ectx,
+			   GE_WARNING | GE_USER | GE_BULK,
+			   "unlink",
+			   realFN);
+    } else { /* delete empty directories */
+      char * rdir;
+      int len;
+      
+      rdir = STRDUP(realFN);
+      len = strlen(rdir);
+      do {
+	while ( (len > 0) &&
+		(rdir[len] != '/') )
+	  len--;
+	rdir[len] = '\0';
+      } while ( (len > 0) && (0 == rmdir(rdir)) );
+      FREE(rdir);
+    }
+  } else {
     freeIOC(&ioc, NO); /* aborted */
+  }
 #if DEBUG_DOWNLOAD
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
@@ -1359,6 +1416,7 @@ int ECRS_downloadFile(struct GE_Context * ectx,
 	 filename,
 	 ret == OK ? "SUCCESS" : "INCOMPLETE");
 #endif
+  FREE(realFN);
   return ret;
 }
 

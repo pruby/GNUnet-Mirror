@@ -86,23 +86,14 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
     filename = STRDUP(&tmp[strlen(ECRS_URI_PREFIX) + strlen(ECRS_FILE_INFIX)]);
     FREE(tmp);
   }
-  fullName = MALLOC(strlen(parent->filename) +
-		    + strlen(GNUNET_DIRECTORY_EXT) + 2
+  fullName = MALLOC(strlen(parent->filename) + 2
 		    + strlen(filename));
-  strcpy(fullName, parent->filename);
-  if (fullName[strlen(fullName)-1] == '/')
-    fullName[strlen(fullName)-1] = '\0';
-  else
-    strcat(fullName, GNUNET_DIRECTORY_EXT);
-  while (NULL != (dotdot = strstr(fullName, "..")))
-    dotdot[0] = dotdot[1] = '_';
-  disk_directory_create(ectx, fullName);
-  strcat(fullName,
-	 DIR_SEPARATOR_STR);
-  while (NULL != (dotdot = strstr(filename, "..")))
-    dotdot[0] = dotdot[1] = '_';
+  strcpy(fullName, 
+	 parent->filename);
   strcat(fullName,
 	 filename);
+  while (NULL != (dotdot = strstr(fullName, "..")))
+    dotdot[0] = dotdot[1] = '_';
   FREE(filename);
 #if DEBUG_DTM
   GE_LOG(ectx,
@@ -204,7 +195,8 @@ static int
 testTerminate(void * cls) {
   FSUI_DownloadList * dl = cls;
   
-  if (dl->state == FSUI_ERROR)
+  if ( (dl->state == FSUI_ERROR) ||
+       (dl->state == FSUI_ABORTED) )
     return SYSERR; /* aborted - delete! */
   if (dl->state != FSUI_ACTIVE)
     return NO; /* suspended */
@@ -304,7 +296,7 @@ void * downloadThread(void * cls) {
     struct ECRS_MetaData * md;
 
     totalBytes = ECRS_fileSize(dl->fi.uri);
-    fn = MALLOC(strlen(dl->filename) + 3 + strlen(GNUNET_DIRECTORY_EXT));
+    fn = MALLOC(strlen(dl->filename) + strlen(GNUNET_DIRECTORY_EXT));
     strcpy(fn, dl->filename);
     if (fn[strlen(fn)-1] == '/') {
       fn[strlen(fn)-1] = '\0';
@@ -497,7 +489,7 @@ int FSUI_updateDownloadThread(FSUI_DownloadList * list) {
     list->state = FSUI_ACTIVE;
     list->handle = PTHREAD_CREATE(&downloadThread,
 				  list,
-				  32 * 1024);
+				  128 * 1024);
     if (list->handle != NULL) {
       list->ctx->activeDownloadThreads++;
     } else {
@@ -639,13 +631,6 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
       dl->state++; /* add _JOINED */
   } else {
     GE_ASSERT(ctx->ectx, dl->handle == NULL);
-  }
-  if (dl->state == FSUI_ERROR_JOINED) {
-    if (0 != UNLINK(dl->filename))
-      GE_LOG_STRERROR_FILE(ctx->ectx,
-			   GE_WARNING | GE_USER | GE_BULK,
-			   "unlink",
-			   dl->filename);
   }
   event.type = FSUI_download_stopped;
   event.data.DownloadStopped.dc.pos = dl;
