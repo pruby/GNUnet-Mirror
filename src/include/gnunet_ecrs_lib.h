@@ -458,7 +458,8 @@ typedef void (*ECRS_UploadProgressCallback)
  * be aborted by any signal, after which the functions will call
  * this callback to check if they should continue).
  *
- * @return OK to continue, SYSERR to abort
+ * @return OK to continue, SYSERR to abort with deleting
+ *  temporary files, NO to abort without deleting temporary files
  */
 typedef int (*ECRS_TestTerminate)(void * closure);
 

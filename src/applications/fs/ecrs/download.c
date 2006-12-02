@@ -187,7 +187,7 @@ static int createIOContext(struct GE_Context * ectx,
 				      O_CREAT|O_RDWR,
 				      S_IRUSR|S_IWUSR );
     if (this->handles[i] < 0) {
-      freeIOC(this, NO);
+      freeIOC(this, YES);
       FREE(fn);
       return SYSERR;
     }
@@ -1346,7 +1346,8 @@ int ECRS_downloadFile(struct GE_Context * ectx,
     ret = SYSERR;
   }
   destroyRequestManager(rm);
-  if (ret == OK)
+  if ( (ret == OK) ||
+       (tt(ttClosure) == SYSERR) )
     freeIOC(&ioc, YES);
   else
     freeIOC(&ioc, NO); /* aborted */

@@ -203,9 +203,11 @@ downloadProgressCallback(unsigned long long totalBytes,
 static int
 testTerminate(void * cls) {
   FSUI_DownloadList * dl = cls;
-
+  
+  if (dl->state == FSUI_ERROR)
+    return SYSERR; /* aborted - delete! */
   if (dl->state != FSUI_ACTIVE)
-    return SYSERR;
+    return NO; /* suspended */
   return OK;
 }
 
@@ -311,12 +313,7 @@ void * downloadThread(void * cls) {
     fd = disk_file_open(ectx,
 			fn,
 			O_LARGEFILE | O_RDONLY);
-    if (fd == -1) {
-      GE_LOG_STRERROR_FILE(ectx,
-			   GE_ERROR | GE_BULK | GE_ADMIN | GE_USER,
-			   "OPEN",
-			   fn);
-    } else {
+    if (fd != -1) {
       dirBlock = MMAP(NULL,
 		      totalBytes,
 		      PROT_READ,
@@ -642,6 +639,13 @@ int FSUI_stopDownload(struct FSUI_Context * ctx,
       dl->state++; /* add _JOINED */
   } else {
     GE_ASSERT(ctx->ectx, dl->handle == NULL);
+  }
+  if (dl->state == FSUI_ERROR_JOINED) {
+    if (0 != UNLINK(dl->filename))
+      GE_LOG_STRERROR_FILE(ctx->ectx,
+			   GE_WARNING | GE_USER | GE_BULK,
+			   "unlink",
+			   dl->filename);
   }
   event.type = FSUI_download_stopped;
   event.data.DownloadStopped.dc.pos = dl;
