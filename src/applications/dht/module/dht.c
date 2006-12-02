@@ -3658,14 +3658,10 @@ DHT_ServiceAPI * provide_module_dht(CoreAPIForApplication * capi) {
   rpcAPI->RPC_register_async("DHT_remove",
 			     &rpc_DHT_remove);
   lock = coreAPI->getConnectionModuleLock();
-  api.join = &dht_join;
-  api.leave = &dht_leave;
   api.get_start = &dht_get_async_start;
   api.get_stop = &dht_get_async_stop;
   api.put_start = &dht_put_async_start;
   api.put_stop = &dht_put_async_stop;
-  api.remove_start = &dht_remove_async_start;
-  api.remove_stop = &dht_remove_async_stop;
 
   memset(&masterTableId, 0, sizeof(HashCode512));
   /* join the master table */

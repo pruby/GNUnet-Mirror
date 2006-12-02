@@ -35,7 +35,8 @@
  *     reliabily metrics (to be added later)
  *   + routing.c: tracking of get/put operations, retry, reply handling
  *     code tries best-match routing among entries in table
- *   + dstore (plugin): SQL-based datastore: key, value, expiration
+ *   + cs.c: services to out-of-process DHT clients (via dht-lib)
+ *   + dstore.c + plugin: SQL-based datastore: key, value, expiration
  *     (bounded FIFO-datastore, when full, kill oldest entry first)
  *     [?: better replacement policy to guard against attacks?]
  */
@@ -710,7 +711,6 @@ int init_dht_table(CoreAPIForApplication * capi) {
 /**
  * Shutdown table DHT component.
  *
- * @param capi the core API
  * @return OK on success
  */
 int done_dht_table() {

@@ -257,44 +257,24 @@ extern "C" {
 /* ********** CS DHT application messages ********** */
 
 /**
- * client to CS: join table
- */
-#define CS_PROTO_dht_REQUEST_JOIN     72
-
-/**
- * client to CS: leave table
- */
-#define CS_PROTO_dht_REQUEST_LEAVE    73
-
-/**
  * Client to CS or CS to client: get from table
  */
-#define CS_PROTO_dht_REQUEST_GET      74
+#define CS_PROTO_dht_REQUEST_GET      72
 
 /**
  * Client to CS or CS to client: put into table
  */
-#define CS_PROTO_dht_REQUEST_PUT      75
-
-/**
- * Client to CS or CS to client: remove from table
- */
-#define CS_PROTO_dht_REQUEST_REMOVE   76
+#define CS_PROTO_dht_REQUEST_PUT      73
 
 /**
  * Client to CS or CS to client: results from get
  */
-#define CS_PROTO_dht_REPLY_GET        77
+#define CS_PROTO_dht_REPLY_GET        74
 
 /**
  * Client to CS or CS to client: confirmed
  */
-#define CS_PROTO_dht_REPLY_ACK        78
-
-/**
- * Client to CS: iterate over table
- */
-#define CS_PROTO_dht_REQUEST_ITERATE   79
+#define CS_PROTO_dht_REPLY_ACK        75
 
 
 /* ************* CS VPN messages ************* */
@@ -408,6 +388,7 @@ extern "C" {
 #define P2P_PROTO_DHT_ASK_HELLO 46
 #define P2P_PROTO_DHT_GET       47
 #define P2P_PROTO_DHT_PUT       48
+#define P2P_PROTO_DHT_RESULT    49
 
 
 /* ************* p2p VPN messages ************* */

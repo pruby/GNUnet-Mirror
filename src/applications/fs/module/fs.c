@@ -876,132 +876,6 @@ static int gapIterate(void * closure,
   return SYSERR;
 }
 
-
-/**
- * Callback that converts the Datastore_Value values
- * from the datastore to Blockstore values for the
- * DHT routing protocol.
- */
-static int dhtGetConverter(const HashCode512 * key,
-			   const Datastore_Value * invalue,
-			   void * cls) {
-  GGC * ggc = (GGC*) cls;
-  GapWrapper * gw;
-  int ret;
-  unsigned int size;
-  cron_t et;
-  cron_t now;
-  const Datastore_Value * value;
-  Datastore_Value * xvalue;
-
-  if (ntohl(invalue->type) == ONDEMAND_BLOCK) {
-    if (OK != ONDEMAND_getIndexed(datastore,
-				  invalue,
-				  key,
-				  &xvalue))
-      return SYSERR;
-    value = xvalue;
-  } else {
-    xvalue = NULL;
-    value = invalue;
-  }
-
-  ret = isDatumApplicable(ntohl(value->type),
-			  ntohl(value->size) - sizeof(Datastore_Value),
-			  (const DBlock*) &value[1],
-			  key,
-			  ggc->keyCount,
-			  ggc->keys);
-  if (ret == SYSERR) {
-    FREENONNULL(xvalue);
-    return SYSERR; /* no query will ever match */
-  }
-  if (ret == NO) {
-    FREENONNULL(xvalue);
-    return OK; /* Additional filtering based on type;
-		  i.e., namespace request and namespace
-		  in reply does not match namespace in query */
-  }
-  size = sizeof(GapWrapper) +
-    ntohl(value->size) -
-    sizeof(Datastore_Value);
-
-  if (ntohl(value->anonymityLevel) != 0) {
-    FREENONNULL(xvalue);
-    return OK; /* do not allow anonymous content to leak through DHT */
-  }
-
-  gw = MALLOC(size);
-  gw->dc.size = htonl(size);
-  et = ntohll(value->expirationTime);
-  /* expiration time normalization and randomization */
-  now = get_time();
-  if (et > now) {
-    et -= now;
-    et = et % MAX_MIGRATION_EXP;
-    if (et > 0)
-      et = weak_randomi(et);
-    et = et + now;
-  }
-  gw->timeout = htonll(et);
-  memcpy(&gw[1],
-	 &value[1],
-	 size - sizeof(GapWrapper));
-
-  if (ggc->resultCallback != NULL)
-    ret = ggc->resultCallback(key,
-			      &gw->dc,
-			      ggc->resCallbackClosure);
-  else
-    ret = OK;
-  FREE(gw);
-  FREENONNULL(xvalue);
-  return ret;
-}
-
-/**
- * Lookup an item in the datastore.
- *
- * @param key the value to lookup
- * @param resultCallback function to call for each result that was found
- * @param resCallbackClosure extra argument to resultCallback
- * @return number of results, SYSERR on error
- */
-static int dhtGet(void * closure,
-		  unsigned int type,
-		  unsigned int prio,
-		  unsigned int keyCount,
-		  const HashCode512 * keys,
-		  DataProcessor resultCallback,
-		  void * resCallbackClosure) {
-  int ret;
-  GGC myClosure;
-  EncName enc;
-
-  IF_GELOG(ectx,
-	   GE_DEBUG | GE_REQUEST | GE_USER,
-	   hash2enc(&keys[0],
-		    &enc));
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "DHT requests content for %s of type %u\n",
-	 &enc,
-	 type);
-  myClosure.keyCount = keyCount;
-  myClosure.keys = keys;
-  myClosure.resultCallback = resultCallback;
-  myClosure.resCallbackClosure = resCallbackClosure;
-  ret = datastore->get(&keys[0],
-		       type,
-		       &dhtGetConverter,
-		       &myClosure);
-  if (ret != SYSERR)
-    ret = myClosure.count; /* return number of actual
-			      results (unfiltered) that
-			      were found */
-  return ret;
-}
-
 static int replyHashFunction(const DataContainer * content,
 	   	             HashCode512 * id) {
   const GapWrapper * gw;
@@ -1239,7 +1113,6 @@ static int fastGet(const HashCode512 * key) {
  */
 int initialize_module_fs(CoreAPIForApplication * capi) {
   static Blockstore dsGap;
-  static Blockstore dsDht;
   unsigned long long quota;
 
   ectx = capi->ectx;
@@ -1307,17 +1180,6 @@ int initialize_module_fs(CoreAPIForApplication * capi) {
   gap->init(&dsGap,
 	    &uniqueReplyIdentifier,
 	    (ReplyHashFunction) &replyHashFunction);
-
-  if (dht != NULL) {
-    dsDht.closure = NULL;
-    dsDht.get = &dhtGet;
-    dsDht.put = &gapPut; /* exactly the same method for gap/dht*/
-    dsDht.del = &gapDel; /* exactly the same method for gap/dht*/
-    dsDht.iterate = &gapIterate;  /* exactly the same method for gap/dht*/
-    dsDht.fast_get = &fastGet;
-    dht->join(&dsDht, &dht_table);
-  }
-
   GE_LOG(ectx,
 	 GE_DEBUG | GE_REQUEST | GE_USER,
 	 _("`%s' registering client handlers %d %d %d %d %d %d %d %d %d\n"),
@@ -1369,16 +1231,6 @@ void done_module_fs() {
   void * unused;
 
   doneMigration();
-  if (dht != NULL) {
-    GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   "Leaving DHT (this may take a while).");
-    dht->leave(&dht_table);
-    GE_LOG(ectx,
-	   GE_INFO | GE_REQUEST | GE_USER,
-	   "Leaving DHT complete.");
-
-  }
   GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_START,
 							   &csHandleRequestQueryStart));
   GE_ASSERT(ectx, SYSERR != coreAPI->unregisterClientHandler(CS_PROTO_gap_QUERY_STOP,

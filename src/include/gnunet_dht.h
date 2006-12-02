@@ -62,32 +62,6 @@ typedef HashCode512 DHT_TableId;
 #define equalsDHT_TableId(a,b) equalsHashCode512(a,b)
 
 /**
- * TCP communication: client to gnunetd: join table.
- * All future communications via this socket are reserved
- * for either gnunetd requesting datastore operations or
- * the client sending a leave table message.
- */
-typedef struct {
-
-  MESSAGE_HEADER header;
-
-  DHT_TableId table;
-
-} CS_dht_request_join_MESSAGE;
-
-/**
- * TCP communication: client to gnunetd: leave table
- */
-typedef struct {
-
-  MESSAGE_HEADER header;
-
-  DHT_TableId table;
-
-} CS_dht_request_leave_MESSAGE;
-
-
-/**
  * TCP communication: put <key,value>-mapping to table.
  * Reply is an ACK.
  */
@@ -125,31 +99,6 @@ typedef struct {
   HashCode512 keys;
 
 } CS_dht_request_get_MESSAGE;
-
-/**
- * remove value.  Reply is just an ACK.
- */
-typedef struct {
-
-  MESSAGE_HEADER header;
-
-  DHT_TableId table;
-
-  unsigned long long timeout; /* nbo */
-
-  HashCode512 key;
-
-} CS_dht_request_remove_MESSAGE;
-
-/**
- * gnunetd to client: iterate over all values.  Reply is
- * a CS_dht_reply_results_MESSAGE message.
- */
-typedef struct {
-
-  MESSAGE_HEADER header;
-
-} CS_dht_request_iterate_MESSAGE;
 
 /**
  * TCP communication: Results for a request.  Uses a separate message

@@ -20,7 +20,7 @@
 
 /**
  * @file dht-query.c
- * @brief perform DHT operations (insert, lookup, remove)
+ * @brief perform DHT operations (insert, lookup)
  * @author Christian Grothoff
  */
 
@@ -50,7 +50,7 @@ static char * cfgFilename;
  */
 static struct CommandLineOption gnunetqueryOptions[] = {
   COMMAND_LINE_OPTION_CFG_FILE(&cfgFilename), /* -c */
-  COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE, remove KEY VALUE) a DHT table.")), /* -h */
+  COMMAND_LINE_OPTION_HELP(gettext_noop("Query (get KEY, put KEY VALUE) a DHT table.")), /* -h */
   COMMAND_LINE_OPTION_HOSTNAME, /* -H */
   COMMAND_LINE_OPTION_LOGGING, /* -L */
   { 't', "table", "NAME",
@@ -138,40 +138,6 @@ static void do_put(struct ClientServerConnection * sock,
   FREE(dc);
 }
 
-static void do_remove(struct ClientServerConnection * sock,
-		      const char * key,
-		      const char * value) {
-  DataContainer * dc;
-  HashCode512 hc;
-
-  hash(key, strlen(key), &hc);
-  dc = MALLOC(sizeof(DataContainer)
-	      + strlen(value));
-  dc->size = htonl(strlen(value)
-		   + sizeof(DataContainer));
-  memcpy(&dc[1], value, strlen(value));
-  GE_LOG(ectx,
-	 GE_DEBUG | GE_REQUEST | GE_USER,
-	 "Issuing '%s(%s,%s)' command.\n",
-	 "remove", key, value);
-  if (OK == DHT_LIB_remove(cfg,
-			   ectx,
-			   &table,
-			   &hc,
-			   timeout,
-			   dc)) {
-    printf(_("'%s(%s,%s)' succeeded\n"),
-	   "remove",
-	   key, value);
-  } else {
-    printf(_("'%s(%s,%s)' failed.\n"),
-	   "remove",
-	   key, value);
-  }	
-  FREE(dc);
-}
-
-
 int main(int argc,
 	 char * const * argv) {
   int i;
@@ -236,20 +202,6 @@ int main(int argc,
 	break;
       } else {
 	do_put(handle, argv[i+1], argv[i+2]);
-	i+=2;
-      }
-      continue;
-    }
-    if (0 == strcmp("remove", argv[i])) {
-      if (i+3 > argc) {
-	fprintf(stderr,
-		_("Command `%s' requires two arguments (`%s' and `%s').\n"),
-		"remove",
-		"key",
-		"value");
-	break;
-      } else {
-	do_remove(handle, argv[i+1], argv[i+2]);
 	i+=2;
       }
       continue;

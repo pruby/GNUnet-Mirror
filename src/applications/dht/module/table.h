@@ -58,7 +58,6 @@ int init_dht_table(CoreAPIForApplication * capi);
 /**
  * Shutdown table DHT component.
  *
- * @param capi the core API
  * @return OK on success
  */
 int done_dht_table(void);

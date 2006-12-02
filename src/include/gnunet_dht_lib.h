@@ -38,41 +38,6 @@ extern "C" {
 #endif
 
 /**
- * Join a table (start storing data for the table).  Join
- * fails if the node is already joint with the particular
- * table.
- *
- * @param datastore the storage callbacks to use for the table
- * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to
- *   the join request (has no impact on success or failure)
- * @param flags
- * @return SYSERR on error, OK on success
- */
-int DHT_LIB_join(Blockstore * store,
-		 struct GC_Configuration * cfg,
-		 struct GE_Context * ectx,
-		 const DHT_TableId * table);
-
-
-/**
- * Leave a table (stop storing data for the table).  Leave
- * fails if the node is not joint with the table.
- *
- * @param datastore the storage callbacks to use for the table
- * @param table the ID of the table
- * @param timeout how long to wait for other peers to respond to
- *   the leave request (has no impact on success or failure);
- *   but only timeout time is available for migrating data, so
- *   pick this value with caution.
- * @param flags maximum number of parallel puts for migration (0
- *   implies 'use value from gnunet.conf').
- * @return SYSERR on error, OK on success
- */
-int DHT_LIB_leave(const DHT_TableId * table);
-
-
-/**
  * Perform a synchronous GET operation on the DHT identified by
  * 'table' using 'key' as the key; store the result in 'result'.  If
  * result->dataLength == 0 the result size is unlimited and
@@ -119,25 +84,6 @@ int DHT_LIB_put(struct GC_Configuration * cfg,
 		unsigned int prio,
 		cron_t timeout,
 		const DataContainer * value);
-
-/**
- * Perform a synchronous remove operation.  The peer does not have
- * to be part of the table!
- *
- * @param table table to use for the lookup
- * @param key the key to store
- * @param timeout how long to wait until this operation should
- *        automatically time-out
- * @param value what to remove; NULL for all values matching the key
- * @return OK on success, SYSERR on error (or timeout)
- */
-int DHT_LIB_remove(struct GC_Configuration * cfg,
-		   struct GE_Context * ectx,
-		   const DHT_TableId * table,
-		   const HashCode512 * key,
-		   cron_t timeout,
-		   const DataContainer * value);
-
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {
