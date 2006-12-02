@@ -28,7 +28,7 @@ libgnunetdht_datastore_memory_la_LIBADD = \
  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/libgnunetutil.la 
 libgnunetdht_datastore_memory_la_LDFLAGS = \
-  -export-dynamic 
+  -export-dynamic -lm
 
 
 check_PROGRAMS = \

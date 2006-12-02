@@ -402,6 +402,14 @@ extern "C" {
 #define P2P_PROTO_rpc_RES 43
 #define P2P_PROTO_rpc_ACK 44
 
+/************** p2p DHT application messages ************/
+
+#define P2P_PROTO_DHT_DISCOVERY 45
+#define P2P_PROTO_DHT_ASK_HELLO 46
+#define P2P_PROTO_DHT_GET       47
+#define P2P_PROTO_DHT_PUT       48
+
+
 /* ************* p2p VPN messages ************* */
 
 #define P2P_PROTO_aip_IP 64	/* contains IPv6 frame */
