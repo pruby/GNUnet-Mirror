@@ -2201,7 +2201,7 @@ provide_module_gap(CoreAPIForApplication * capi) {
   capi->registerHandler(P2P_PROTO_gap_QUERY,
 			&handleQuery);
   capi->registerHandler(P2P_PROTO_gap_RESULT,
-			(MessagePartHandler) &useContent);
+			&useContent);
   coreAPI->registerSendCallback(sizeof(P2P_gap_query_MESSAGE),
 				&fillInQuery);
 

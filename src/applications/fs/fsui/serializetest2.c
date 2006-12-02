@@ -74,8 +74,7 @@ static void * eventCallback(void * cls,
     search = NULL;
     break;
   case FSUI_download_suspended:
-    if ( (event->data.DownloadSuspended.dc.pos == download) &&
-	 (event->data.DownloadSuspended.dc.spos != search) ) {
+    if (event->data.DownloadSuspended.dc.spos != search) {
       fprintf(stderr,
 	      "Download suspended but search reference not set correctly.\n");
       have_error = 1;
@@ -94,12 +93,6 @@ static void * eventCallback(void * cls,
 	      download);
       have_error = 1;
     }
-    if ( (event->data.DownloadSuspended.dc.pos != download) &&
-	 (event->data.DownloadSuspended.dc.spos != NULL) ) {
-      fprintf(stderr,
-	      "Download suspended but search reference not set to NULL.\n");
-      have_error = 1;
-    }
     if (event->data.DownloadSuspended.dc.pos == download) 
       download = NULL;
     break;
@@ -112,8 +105,7 @@ static void * eventCallback(void * cls,
   case FSUI_download_resumed:
     if (download == NULL)
       download = event->data.DownloadResumed.dc.pos;
-    if ( (event->data.DownloadResumed.dc.pos == download) &&
-	 (event->data.DownloadResumed.dc.spos != search) ) {
+    if (event->data.DownloadResumed.dc.spos != search) {
       fprintf(stderr,
 	      "Download resuming but search reference not set correctly.\n");
       have_error = 1;
@@ -128,12 +120,6 @@ static void * eventCallback(void * cls,
 	 (event->data.DownloadResumed.dc.ppos != download) ) {
       fprintf(stderr,
 	      "Download resuming but parent reference not set correctly.\n");
-      have_error = 1;
-    }
-    if ( (event->data.DownloadResumed.dc.pos != download) &&
-	 (event->data.DownloadResumed.dc.spos != NULL) ) {
-      fprintf(stderr,
-	      "Download resuming but search reference not set to NULL.\n");
       have_error = 1;
     }
 #if DEBUG_VERBOSE
@@ -161,8 +147,7 @@ static void * eventCallback(void * cls,
 #endif
     break;
   case FSUI_download_completed:
-     if ( (event->data.DownloadCompleted.dc.pos == download) &&
-	 (event->data.DownloadCompleted.dc.spos != search) ) {
+    if (event->data.DownloadCompleted.dc.spos != search) {
       fprintf(stderr,
 	      "Download completed but search reference not set correctly.\n");
       have_error = 1;
@@ -179,19 +164,12 @@ static void * eventCallback(void * cls,
 	      "Download completed but parent reference not set correctly.\n");
       have_error = 1;
     }
-    if ( (event->data.DownloadCompleted.dc.pos != download) &&
-	 (event->data.DownloadCompleted.dc.spos != NULL) ) {
-      fprintf(stderr,
-	      "Download completed but search reference not set to NULL.\n");
-      have_error = 1;
-    }
 #if DEBUG_VERBOSE
     printf("Download complete.\n");
 #endif
    break;
   case FSUI_download_progress:
-     if ( (event->data.DownloadResumed.dc.pos == download) &&
-	 (event->data.DownloadResumed.dc.spos != search) ) {
+    if (event->data.DownloadResumed.dc.spos != search) {
       fprintf(stderr,
 	      "Download progressing but search reference not set correctly.\n");
       have_error = 1;
@@ -206,12 +184,6 @@ static void * eventCallback(void * cls,
 	 (event->data.DownloadResumed.dc.ppos != download) ) {
       fprintf(stderr,
 	      "Download progressing but parent reference not set correctly.\n");
-      have_error = 1;
-    }
-    if ( (event->data.DownloadResumed.dc.pos != download) &&
-	 (event->data.DownloadResumed.dc.spos != NULL) ) {
-      fprintf(stderr,
-	      "Download progressing but search reference not set to NULL.\n");
       have_error = 1;
     }
 #if DEBUG_VERBOSE
@@ -257,8 +229,7 @@ static void * eventCallback(void * cls,
   case FSUI_download_started:
     if (download == NULL)
       download = event->data.DownloadStarted.dc.pos;
-    if ( (event->data.DownloadStarted.dc.pos == download) &&
-	 (event->data.DownloadStarted.dc.spos != search) ) {
+    if (event->data.DownloadStarted.dc.spos != search) {
       fprintf(stderr,
 	      "Download started but search reference not set correctly.\n");
       have_error = 1;
@@ -275,16 +246,9 @@ static void * eventCallback(void * cls,
 	      "Download started but parent reference not set correctly.\n");
       have_error = 1;
     }
-    if ( (event->data.DownloadStarted.dc.pos != download) &&
-	 (event->data.DownloadStarted.dc.spos != NULL) ) {
-      fprintf(stderr,
-	      "Download started but search reference not set to NULL.\n");
-      have_error = 1;
-    }
     break;
   case FSUI_download_stopped:
-    if ( (event->data.DownloadStopped.dc.pos == download) &&
-	 (event->data.DownloadStopped.dc.spos != search) ) {
+    if (event->data.DownloadStopped.dc.spos != search) {
       fprintf(stderr,
 	      "Download stopped but search reference not set correctly.\n");
       have_error = 1;
@@ -299,12 +263,6 @@ static void * eventCallback(void * cls,
 	 (event->data.DownloadStopped.dc.ppos != download) ) {
       fprintf(stderr,
 	      "Download stopped but parent reference not set correctly.\n");
-      have_error = 1;
-    }
-    if ( (event->data.DownloadStopped.dc.pos != download) &&
-	 (event->data.DownloadStopped.dc.spos != NULL) ) {
-      fprintf(stderr,
-	      "Download stopped but search reference not set to NULL.\n");
       have_error = 1;
     }
     break;

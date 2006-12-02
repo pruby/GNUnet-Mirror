@@ -116,7 +116,7 @@ static int triggerRecursiveDownload(const ECRS_FileInfo * fi,
 		fi->uri,
 		fi->meta,
 		fullName,
-		NULL,
+		parent->search,
 		parent);
   FREE(fullName);
   return OK;
