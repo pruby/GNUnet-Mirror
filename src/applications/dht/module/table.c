@@ -29,20 +29,25 @@
  * - no per-table storage; instead global,
  *   SQL database-based storage for entire peer
  * - no delete operation, just get/put + expiration
+ * - no "put" confirmation, try a get to confirm important put!
  * - modules:
  *   + table.c: DHT-peer table, peer discovery cron jobs;
- *     code tries to fill table "as much as possible" over time;
- *     reliabily metrics (to be added later)
- *   + routing.c: tracking of get/put operations, retry, reply handling
- *     code tries best-match routing among entries in table
- *   + cs.c: services to out-of-process DHT clients (via dht-lib)
+ *     code tries to fill table "as much as possible" over time; 
+ *     TODO: expose and improve reliabily metrics (to be added later)
  *   + dstore.c + plugin: SQL-based datastore: key, value, expiration
  *     (bounded FIFO-datastore, when full, kill oldest entry first)
  *     [?: better replacement policy to guard against attacks?]
+ *   + routing.c: tracking of get/put operations, retry, reply handling
+ *     code tries best-match routing among entries in table
+ *   + service.c: provide DHT services to rest of GNUnet process
+ *     (i.e. register datastore with shared data, get/put operations)
+ *   + cs.c: services to out-of-process DHT clients (via dht-lib) [mostly done]
  */
 
 #include "platform.h"
 #include "table.h"
+#include "gnunet_protocols.h"
+#include "gnunet_util.h"
 #include "gnunet_dht_service.h"
 #include "gnunet_stats_service.h"
 #include "gnunet_identity_service.h"
@@ -141,7 +146,7 @@ typedef struct {
 
 } PeerBucket;
 
-
+/**
  * Global core API.
  */
 static CoreAPIForApplication * coreAPI;
@@ -179,7 +184,7 @@ static Stats_ServiceAPI * stats;
 /**
  * Pingpong service.
  */
-static PingPong_ServiceAPI * pingpong;
+static Pingpong_ServiceAPI * pingpong;
 
 static int stat_dht_total_peers;
 
@@ -277,8 +282,8 @@ findPeerEntryInBucket(PeerBucket * bucket,
  */
 static PeerInfo * 
 findPeerEntry(const PeerIdentity * peer) {
-  return findPeerEntryInBucke(findBucketFor(peer),
-			      peer);
+  return findPeerEntryInBucket(findBucketFor(peer),
+			       peer);
 }
 
 /**
@@ -333,7 +338,7 @@ int select_dht_peer(PeerIdentity * set,
 
   MUTEX_LOCK(lock);
   if (stats != NULL)
-    stats->update(stat_dht_route_looks, 1);
+    stats->change(stat_dht_route_looks, 1);
   for (bc=0;bc<bucketCount;bc++) {
     bucket = &buckets[bc];
     for (ec=0;ec<bucket->peers_size;ec++) {
@@ -341,7 +346,8 @@ int select_dht_peer(PeerIdentity * set,
       match = NO;
       for (i=0;i<blocked_size;i++) {
 	if (0 == memcmp(&pi->id,
-			&blocked[i])) {
+			&blocked[i],
+			sizeof(PeerIdentity))) {
 	  match = YES;
 	  break;
 	}
@@ -364,7 +370,8 @@ int select_dht_peer(PeerIdentity * set,
       match = NO;
       for (i=0;i<blocked_size;i++) {
 	if (0 == memcmp(&pi->id,
-			&blocked[i])) {
+			&blocked[i],
+			sizeof(PeerIdentity))) {
 	  match = YES;
 	  break;
 	}
@@ -374,7 +381,7 @@ int select_dht_peer(PeerIdentity * set,
       distance = inverse_distance(target,
 				  &pi->id.hashPubKey);
       if (distance > selected) {
-	set = pi->id;
+	*set = pi->id;
 	MUTEX_UNLOCK(lock);
 	return OK;
       } 
@@ -529,12 +536,12 @@ static void checkExpiration(PeerBucket * bucket) {
     if (checkExpired(peer) == YES) {
       total_peers--;
       if (stats != NULL)
-	stats->update(stat_dht_total_peers, -1);
+	stats->change(stat_dht_total_peers, -1);
       FREE(peer);
       bucket->peers[i] = bucket->peers[bucket->peers_size-1];
       GROW(bucket->peers,
-	   bucket->peeers_size,
-	   bucket->peeers_size - 1);
+	   bucket->peers_size,
+	   bucket->peers_size - 1);
     }
   }
 }
@@ -542,24 +549,23 @@ static void checkExpiration(PeerBucket * bucket) {
 /**
  * Consider adding the given peer to the DHT.
  */
-static void considerPeer(const PeerIdentity * peer) {
-  unsigned int pc;
+static void considerPeer(const PeerIdentity * sender,
+			 const PeerIdentity * peer) {
   PeerInfo * pi;
   PeerBucket * bucket;
-  const P2P_DHT_Discovery * disco;
   P2P_DHT_ASK_HELLO ask;
   P2P_hello_MESSAGE * hello;
 
   bucket = findBucketFor(peer);
   if (bucket == NULL)
-    continue; /* peers[i] == self */
+    return; /* peers[i] == self */
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE) 
     checkExpiration(bucket);
   if (bucket->peers_size >= MAINTAIN_BUCKET_SIZE) 
-    continue; /* do not care */
+    return; /* do not care */
   if (NULL != findPeerEntryInBucket(bucket,
 				    peer))
-    continue; /* already have this peer in buckets */
+    return; /* already have this peer in buckets */
   /* do we know how to contact this peer? */
   hello = identity->identity2Helo(peer,
 				  ANY_PROTOCOL_NUMBER,
@@ -569,12 +575,12 @@ static void considerPeer(const PeerIdentity * peer) {
     ask.header.size = htons(sizeof(P2P_DHT_ASK_HELLO));
     ask.header.type = htons(sizeof(P2P_PROTO_DHT_ASK_HELLO));
     ask.reserved = 0;
-    ask.peer = *peers[i];
+    ask.peer = *peer;
     coreAPI->unicast(sender,
 		     &ask.header,
 		     0, /* FIXME: priority */
-		     5 * CRON_SECONDS);
-    continue;
+		     5 * cronSECONDS);
+    return;
   }
   FREE(hello);
   /* check if connected, if not, send discovery */
@@ -582,7 +588,7 @@ static void considerPeer(const PeerIdentity * peer) {
     /* not yet connected; connect sending DISCOVERY */
     broadcast_dht_discovery(peer,
 			    NULL);
-    continue;
+    return;
   }
   /* we are connected (in core), add to bucket */
   pi = MALLOC(sizeof(PeerInfo));
@@ -597,7 +603,7 @@ static void considerPeer(const PeerIdentity * peer) {
   bucket->peers[bucket->peers_size-1] = pi;
   total_peers++;
   if (stats != NULL)
-    stats->update(stat_dht_total_peers, 1);
+    stats->change(stat_dht_total_peers, 1);
 }
 
 /**
@@ -608,6 +614,7 @@ static int handleDiscovery(const PeerIdentity * sender,
   unsigned int pc;
   unsigned int i;
   const P2P_DHT_Discovery * disco;
+  const PeerIdentity * peers;
 
   pc = (ntohs(msg->size) - sizeof(P2P_DHT_Discovery)) / sizeof(PeerIdentity);
   if (pc > MAINTAIN_ADV_CAP * 8) {
@@ -618,9 +625,9 @@ static int handleDiscovery(const PeerIdentity * sender,
     GE_BREAK(coreAPI->ectx, 0);
     return SYSERR; /* malformed */
   }
-  disco = (const P2P_DHT_Discovery) msg;
+  disco = (const P2P_DHT_Discovery*) msg;
   if (stats != NULL)
-    stats->update(stat_dht_discoveries, 1);
+    stats->change(stat_dht_discoveries, 1);
   if (pc == 0) {
     /* if peer has 0 connections, be sure to send discovery back */
     broadcast_dht_discovery(sender,
@@ -628,10 +635,10 @@ static int handleDiscovery(const PeerIdentity * sender,
     return OK;
   }
   MUTEX_LOCK(lock);
-  considerPeer(sender);
+  considerPeer(sender, sender);
   peers = (const PeerIdentity*) &disco[1];
   for (i=0;i<pc;i++) 
-    considerPeer(&peers[i]);
+    considerPeer(sender, &peers[i]);
   MUTEX_UNLOCK(lock);
   return OK;
 }
@@ -657,7 +664,7 @@ static int handleAskHello(const PeerIdentity * sender,
   coreAPI->unicast(sender,
 		   &hello->header,
 		   0,
-		   5 * CRON_SECONDS);
+		   5 * cronSECONDS);
   FREE(hello);
   return OK;
 }
@@ -670,10 +677,8 @@ static int handleAskHello(const PeerIdentity * sender,
  */
 int init_dht_table(CoreAPIForApplication * capi) {
   unsigned long long i;
-  unsigned long long j;
 
   coreAPI = capi;
-  ectx = capi->ectx;
   /* use less than 50% of peer's ideal number of
      connections for DHT table size */
   i = coreAPI->getSlotCount() / MAINTAIN_BUCKET_SIZE / 2;
@@ -694,17 +699,18 @@ int init_dht_table(CoreAPIForApplication * capi) {
     stat_dht_route_looks = stats->create(gettext_noop("# dht route host lookups performed"));
   }
   identity = coreAPI->requestService("identity");
-  GE_ASSERT(ectx, identity != NULL);
+  GE_ASSERT(coreAPI->ectx, identity != NULL);
   pingpong = coreAPI->requestService("pingpong");
-  GE_ASSERT(ectx, pingpong != NULL);
+  GE_ASSERT(coreAPI->ectx, pingpong != NULL);
   capi->registerHandler(P2P_PROTO_DHT_DISCOVERY,
 			&handleDiscovery);
-  capi->registerHandler(P2P_PROTO_ASK_HELLO,
+  capi->registerHandler(P2P_PROTO_DHT_ASK_HELLO,
 			&handleAskHello);
-  cron_add_job(coreAPI->cron_manager,
+  cron_add_job(coreAPI->cron,
 	       &maintain_dht_job,
 	       MAINTAIN_FREQUENCY,
-	       MAINTAIN_FREQUENCY);
+	       MAINTAIN_FREQUENCY,
+	       NULL);
   return OK;
 }
 
@@ -715,14 +721,16 @@ int init_dht_table(CoreAPIForApplication * capi) {
  */
 int done_dht_table() {
   unsigned int i;
-
-  capi->unregisterHandler(P2P_PROTO_DHT_DISCOVERY,
-			  &handleDiscovery);
-  capi->unregisterHandler(P2P_PROTO_ASK_HELLO,
-			  &handleAskHello);
-  cron_del_job(coreAPI->cron_manager,
+  unsigned int j;
+  
+  coreAPI->unregisterHandler(P2P_PROTO_DHT_DISCOVERY,
+			     &handleDiscovery);
+  coreAPI->unregisterHandler(P2P_PROTO_DHT_ASK_HELLO,
+			     &handleAskHello);
+  cron_del_job(coreAPI->cron,
 	       &maintain_dht_job,
-	       MAINTAIN_FREQUENCY);
+	       MAINTAIN_FREQUENCY,
+	       NULL);
   if (stats != NULL) {
     coreAPI->releaseService(stats);
     stats = NULL;
@@ -731,9 +739,11 @@ int done_dht_table() {
   identity = NULL;
   coreAPI->releaseService(pingpong);
   pingpong = NULL;
-  for (i=0;i<bucketCount;i++) {
-    GROW(buckets[i]->peers,
-	 buckets[i]->peers_size,
+  for (i=0;i<bucketCount;i++) { 
+    for (j=0;j<buckets[i].peers_size;j++)
+      FREE(buckets[i].peers[j]);
+    GROW(buckets[i].peers,
+	 buckets[i].peers_size,
 	 0);
   }
   GROW(buckets,
