@@ -235,7 +235,7 @@ SectionGroup "GNUnet" SEC_GNUNET
 		 cp_conf:
 		  StrCpy $USR_PROF "$USR_PROF\.gnunet\"
 		  SetOutPath $USR_PROF
-		  File "C:\GNUnet\etc\gnunet.conf"
+		  File "C:\GNUnet\etc\gnunetd.conf"
 		SectionEnd
 	
 		SectionGroup "Filesharing" SEC_CLIENT_FS
@@ -414,9 +414,11 @@ SectionGroup "Dependencies"
 		SetOutPath "$INSTDIR\bin"
 		File "C:\GNUnet\bin\iconv.dll"
 		File "C:\GNUnet\bin\intl.dll"
+		File "C:\GNUnet\bin\libcurl-3.dll"		
 		File "C:\GNUnet\bin\libgcrypt-11.dll"
 		File "C:\GNUnet\bin\libgpg-error-0.dll"
 		File "C:\GNUnet\bin\libgmp.dll"
+		File "C:\GNUnet\bin\libguile-17.dll"		
 		File "C:\GNUnet\bin\libiconv-2.dll"
 		File "C:\GNUnet\bin\libintl-2.dll"
 		File "C:\GNUnet\bin\libintl-3.dll"
@@ -426,6 +428,7 @@ SectionGroup "Dependencies"
 		File "C:\GNUnet\bin\libsqlite3-0.dll"
 		File "C:\GNUnet\bin\pthreadGC2.dll"
 		File "C:\GNUnet\bin\zlib1.dll"
+    File /r "C:\GNUnet\share\guile"
 	SectionEnd
 	
 	Section "!GUI libs (GTK, Glade)" SEC_DEPS_GTK
@@ -845,9 +848,12 @@ Section Uninstall
 	Delete "$INSTDIR\bin\libextractor_translit.dll"
 	Delete "$INSTDIR\bin\libextractor_wav.dll"
 	Delete "$INSTDIR\bin\libextractor_zip.dll"
+	Delete "$INSTDIR\bin\libcurl-3.dll"	
 	Delete "$INSTDIR\bin\libgcrypt.dll"
 	Delete "$INSTDIR\bin\libgcrypt-11.dll"
 	Delete "$INSTDIR\bin\libgpg-error-0.dll"
+	Delete "$INSTDIR\bin\libguile-17.dll"
+  RMDir /r /REBOOTOK "$INSTDIR\share\guile"
 	Delete "$INSTDIR\bin\libgdk-0.dll"
 	Delete "$INSTDIR\bin\libgdk-win32-2.0-0.dll"
 	Delete "$INSTDIR\bin\libgdk_pixbuf-2.0-0.dll"
