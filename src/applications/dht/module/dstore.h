@@ -31,20 +31,44 @@
 #include "gnunet_core.h"
 #include "gnunet_blockstore.h"
 
+typedef void (*ResultHandler)(const HashCode512 * key,
+			      unsigned int type,
+			      unsigned int size,
+			      const char * data,
+			      void * cls);
+
+/**
+ * Lookup in the local datastore.
+ * @return total number of results found
+ */
+int dht_store_get(const HashCode512 * key,
+		  unsigned int type,
+		  ResultHandler handler,
+		  void * cls);
+
+/**
+ * Store the given data in the local datastore.
+ */
+void dht_store_put(unsigned int type,
+		   const HashCode512 * key,
+		   cron_t discard_time,
+		   unsigned int size,
+		   const char * data);
+
 /**
  * Initialize dstore DHT component.
  *
  * @param capi the core API
- * @return NULL on error
+ * @return OK on success
  */
-Blockstore * init_dht_store(size_t max_size,
-			    CoreAPIForApplication * capi);
+int init_dht_store(size_t max_size,
+		   CoreAPIForApplication * capi);
 
 /**
  * Shutdown dstore DHT component.
  *
  * @return OK on success
  */
-int done_dht_store(Blockstore * store);
+int done_dht_store(void);
 
 #endif

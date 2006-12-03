@@ -283,6 +283,30 @@ static int ds_iterate(void * closure,
   MUTEX_UNLOCK(ds->lock);
   return SYSERR;
 }
+
+/**
+ * Lookup in the local datastore.
+ * @return total number of results found
+ */
+int dht_store_get(const HashCode512 * key,
+		  unsigned int type,
+		  ResultHandler handler,
+		  void * cls) {
+  return 0;
+}
+
+/**
+ * Store the given data in the local datastore.
+ */
+void dht_store_put(unsigned int type,
+		   const HashCode512 * key,
+		   cron_t discard_time,
+		   unsigned int size,
+		   const char * data) {
+  if (discard_time < get_time())
+    return;
+  
+}
   
 /**
  * Initialize dstore DHT component.
@@ -290,22 +314,9 @@ static int ds_iterate(void * closure,
  * @param capi the core API
  * @return OK on success
  */
-Blockstore * init_dht_store(size_t max_size,
-			    CoreAPIForApplication * capi) {
-  Blockstore * res;
-  MemoryDatastore * md;
-
-  md = MALLOC(sizeof(MemoryDatastore));
-  md->max_memory = max_size;
-  md->first = NULL;
-  md->lock = MUTEX_CREATE(YES);
-  res = MALLOC(sizeof(Blockstore));
-  res->get = &ds_lookup;
-  res->put = &ds_store;
-  res->del = &ds_remove;
-  res->iterate = &ds_iterate;
-  res->closure = md;
-  return res;
+int init_dht_store(size_t max_size,
+		   CoreAPIForApplication * capi) {
+  return OK;
 }
 
 /**
@@ -313,25 +324,7 @@ Blockstore * init_dht_store(size_t max_size,
  *
  * @return OK on success
  */
-int done_dht_store(Blockstore * ds) {
-  MemoryDatastore * md;
-  HT_Entry * pos;
-  HT_Entry * next;
-  unsigned int i;
-
-  md  = ds->closure;
-  pos = md->first;
-  while (pos != NULL) {
-    next = pos->next;
-    for (i=0;i<pos->count;i++)
-      FREENONNULL(pos->values[i]);
-    FREE(pos->values);
-    FREE(pos);
-    pos = next;
-  }
-  MUTEX_DESTROY(md->lock);
-  FREE(md);
-  FREE(ds);
+int done_dht_store() {
   return OK;
 }
 
