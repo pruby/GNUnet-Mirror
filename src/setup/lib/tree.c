@@ -350,8 +350,7 @@ tree_parse(struct GE_Context * ectx,
 	   const char * specification) {
   struct GNS_Tree * ret;
 
-  ret = scm_with_guile(parse_internal,
-		       (void*) specification);
+  ret = parse_internal((void*) specification);
   if (ret != NULL)
     ret->type = GNS_Root;
   return ret;
@@ -388,32 +387,7 @@ void tree_notify_change(struct GC_Configuration * cfg,
   tc.vcl = vcl;
   tc.ctx = ctx;
   tc.root = root;
-  scm_with_guile(&notify_change_internal, &tc);
-}
-
-static void * init_helper(void * unused) {
-  tc_tag = scm_make_smob_type ("tc", 0);
-  scm_set_smob_mark (tc_tag, NULL);
-  scm_set_smob_free (tc_tag, free_box);
-  scm_set_smob_print (tc_tag, print_tc);
-
-  tree_tag = scm_make_smob_type ("tc", sizeof (struct GNS_Tree));
-  scm_set_smob_mark (tree_tag, NULL);
-  scm_set_smob_free (tree_tag, free_box);
-  scm_set_smob_print (tree_tag, print_tree);
-  scm_c_define_gsubr("change-visible",
-		     4, 0, 0,
-		     &change_visible);
-  scm_c_define_gsubr("build-tree-node",
-		     8, 0, 0,
-		     &build_tree_node);
-  scm_c_define_gsubr("get-option",
-		     3, 0, 0,
-		     &get_option);
-  scm_c_define_gsubr("set-option",
-		     4, 0, 0,
-		     &set_option);
-  return NULL;
+  notify_change_internal(&tc);
 }
 
 /**
@@ -447,11 +421,29 @@ void __attribute__ ((constructor)) gns_scheme_init() {
   free(env);
 #endif
 
-  /* Guile doesn't get the stack boundaries right in our case.
-     This workaround ensures that Guile's garbage collector will never run. */
-  putenv("GUILE_INIT_MALLOC_LIMIT=100000000");
+	scm_init_guile();
 
-  scm_with_guile(&init_helper, NULL);
+  tc_tag = scm_make_smob_type ("tc", 0);
+  scm_set_smob_mark (tc_tag, NULL);
+  scm_set_smob_free (tc_tag, free_box);
+  scm_set_smob_print (tc_tag, print_tc);
+
+  tree_tag = scm_make_smob_type ("tc", sizeof (struct GNS_Tree));
+  scm_set_smob_mark (tree_tag, NULL);
+  scm_set_smob_free (tree_tag, free_box);
+  scm_set_smob_print (tree_tag, print_tree);
+  scm_c_define_gsubr("change-visible",
+		     4, 0, 0,
+		     &change_visible);
+  scm_c_define_gsubr("build-tree-node",
+		     8, 0, 0,
+		     &build_tree_node);
+  scm_c_define_gsubr("get-option",
+		     3, 0, 0,
+		     &get_option);
+  scm_c_define_gsubr("set-option",
+		     4, 0, 0,
+		     &set_option);
 }
 
 void __attribute__ ((destructor)) gns_scheme_fin() {

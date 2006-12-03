@@ -525,6 +525,9 @@ then
  AC_MSG_ERROR([GNUnet requires libguile 1.8])
 fi
 
+AC_CHECK_LIB([guile], [scm_init_guile], [],
+	AC_MSG_ERROR([Guile doesn't provide scm_init_guile(). Please report to bug-gnunet@gnu.org]))
+
 AC_CONFIG_FILES([ po/Makefile.in m4/Makefile
 Makefile
 contrib/Makefile
