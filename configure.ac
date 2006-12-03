@@ -539,6 +539,7 @@ src/applications/datastore/Makefile
 src/applications/dht/Makefile
 src/applications/dht/tools/Makefile
 src/applications/dht/module/Makefile
+src/applications/dstore/Makefile
 src/applications/fragmentation/Makefile
 src/applications/fs/Makefile
 src/applications/fs/collection/Makefile

@@ -4,7 +4,7 @@ if HAVE_MYSQL
 endif
 
 if HAVE_SQLITE
- SQLITE_DIR = sqstore_sqlite kvstore_sqlite
+ SQLITE_DIR = sqstore_sqlite kvstore_sqlite dstore dht
 endif
 
 if !MINGW
@@ -38,7 +38,6 @@ SUBDIRS	= \
  tracekit \
  traffic \
  transport \
- dht \
  $(VPN_DIR)
 # $(TESTBED_DIR) 
 # chat

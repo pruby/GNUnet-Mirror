@@ -28,13 +28,7 @@
 #define DHT_DSTORE_H
 
 #include "gnunet_util.h"
-#include "gnunet_core.h"
-
-typedef void (*ResultHandler)(const HashCode512 * key,
-			      unsigned int type,
-			      unsigned int size,
-			      const char * data,
-			      void * cls);
+#include "gnunet_dstore_service.h"
 
 /**
  * Lookup in the local datastore.
