@@ -28,7 +28,7 @@
  *
  * TODO:
  * - add bloomfilter to reduce disk IO
- * - finish Sqlite interaction
+ * - finish delete for quota maintenance
  */
 
 #include "platform.h"
@@ -145,6 +145,29 @@ static int d_put(const HashCode512 * key,
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
+  sqlite3_bind_int(stmt,
+		   1,
+		   size);
+  sqlite3_bind_int(stmt,
+		   2,
+		   type);
+  sqlite3_bind_int64(stmt,
+		     3,
+		     get_time());
+  sqlite3_bind_int64(stmt,
+		     4,
+		     discard_time);
+  sqlite3_bind_blob(stmt,
+		    5,
+		    key,
+		    sizeof(HashCode512),
+		    SQLITE_TRANSIENT);
+  sqlite3_bind_blob(stmt,
+		    6,
+		    data,
+		    size,
+		    SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   stmt = NULL;
   dstmt = NULL;
@@ -192,6 +215,9 @@ static int d_get(const HashCode512 * key,
 		 void * closure) {
   sqlite3 * dbh;
   sqlite3_stmt * stmt;
+  cron_t expire;
+  unsigned int size;
+  const char * dat;
 
   MUTEX_LOCK(lock);
   if (SQLITE_OK != sqlite3_open(fn,
@@ -208,8 +234,30 @@ static int d_get(const HashCode512 * key,
     MUTEX_UNLOCK(lock);
     return SYSERR;
   }
-  /* FIXME: run GET! */
-
+  sqlite3_bind_blob(stmt,
+		    1,
+		    key,
+		    sizeof(HashCode512),
+		    SQLITE_TRANSIENT);
+  sqlite3_bind_int(stmt,
+		   2,
+		   type);
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    size = sqlite3_column_int(stmt, 1);
+    if (size != sqlite3_column_bytes(stmt, 6)) {
+      GE_BREAK(NULL, 0);
+      continue;
+    }
+    expire = sqlite3_column_int64(stmt, 4);
+    if (expire < get_time())
+      continue;
+    dat = sqlite3_column_blob(stmt, 6);
+    handler(key,
+	    type,
+	    size,
+	    dat,
+	    closure);
+  }
   sqlite3_finalize(stmt);
   sqlite3_close(dbh);
   MUTEX_UNLOCK(lock);
