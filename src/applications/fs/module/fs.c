@@ -235,11 +235,6 @@ static void get_complete_callback(DHT_GET_CLS * cls) {
   FREE(cls);
 }
 
-static void put_complete_callback(DHT_PUT_CLS * cls) {
-  dht->put_stop(cls->rec);
-  FREE(cls);
-}
-
 /**
  * Stop processing a query.
  *
@@ -286,13 +281,13 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
 						const MESSAGE_HEADER * req) {
   const CS_fs_request_insert_MESSAGE * ri;
   Datastore_Value * datum;
-  int ret;
+  struct GE_Context * cectx;
   HashCode512 query;
+  int ret;
   unsigned int type;
 #if DEBUG_FS
   EncName enc;
 #endif
-  struct GE_Context * cectx;
 
   cectx = coreAPI->createClientLogContext(GE_USER | GE_EVENTKIND | GE_ROUTEKIND,
 					  sock);
@@ -348,7 +343,6 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
     unsigned int size;
     cron_t now;
     cron_t et;
-    DHT_PUT_CLS * cls;
 
     size = sizeof(GapWrapper) +
       ntohs(ri->header.size) - sizeof(CS_fs_request_insert_MESSAGE) -
@@ -370,15 +364,13 @@ static int csHandleCS_fs_request_insert_MESSAGE(struct ClientHandle * sock,
     memcpy(&gw[1],
 	   &ri[1],
 	   size - sizeof(GapWrapper));
-    cls = MALLOC(sizeof(DHT_PUT_CLS));
-    cls->rec = dht->put_start(&dht_table,
-			      &query,
-			      15 * cronSECONDS, /* FIXME 0.7.1: better timeout for DHT PUT operation */
-			      &gw->dc,
-			      (DHT_OP_Complete) &put_complete_callback,
-			      cls);
+    dht->put(&query,
+	     0, /* FIXME 0.7.1: type? */
+	     size,
+	     et,
+	     (const char*) gw);
+    FREE(gw);
   }
-
   FREE(datum);
   GE_free_context(cectx);
   return coreAPI->sendValueToClient(sock,
@@ -1088,9 +1080,7 @@ static int csHandleRequestQueryStart(struct ClientHandle * sock,
 
     cls = MALLOC(sizeof(DHT_GET_CLS));
     cls->prio = ntohl(rs->prio);
-    cls->rec = dht->get_start(&dht_table,
-			      type,
-			      keyCount,
+    cls->rec = dht->get_start(type,
 			      &rs->query[0],
 			      ntohll(rs->expiration),
 			      (DataProcessor) &get_result_callback,

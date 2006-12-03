@@ -35,9 +35,9 @@
  * Start a DHT get operation.
  */
 void dht_get_start(const HashCode512 * key,
-		  unsigned int type,
-		  ResultHandler handler,
-		  void * cls);
+		   unsigned int type,
+		   ResultHandler handler,
+		   void * cls);
 
 /**
  * Stop a DHT get operation (prevents calls to

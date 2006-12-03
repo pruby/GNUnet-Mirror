@@ -42,10 +42,7 @@ extern "C" {
 #endif
 #endif
 
-
 struct DHT_GET_RECORD;
-
-struct DHT_PUT_RECORD;
 
 /**
  * DHT operation 'complete' (i.e timed out).
@@ -70,10 +67,8 @@ typedef struct {
    * @param closure extra argument to callback
    * @return handle to stop the async get
    */
-  struct DHT_GET_RECORD * (*get_start)(const DHT_TableId * table,
-				       unsigned int type,
-				       unsigned int keyCount,
-				       const HashCode512 * keys,
+  struct DHT_GET_RECORD * (*get_start)(unsigned int type,
+				       const HashCode512 * key,
 				       cron_t timeout,
 				       DataProcessor callback,
 				       void * cls,
@@ -86,30 +81,17 @@ typedef struct {
   int (*get_stop)(struct DHT_GET_RECORD * record);
 
   /**
-   * Perform an asynchronous PUT operation on the DHT identified by
-   * 'table' storing a binding of 'key' to 'value'.  The peer does not
-   * have to be part of the table (if so, we will attempt to locate a
-   * peer that is!)
+   * Perform a PUT operation on the DHT identified by 'table' storing
+   * a binding of 'key' to 'value'.  The peer does not have to be part
+   * of the table (if so, we will attempt to locate a peer that is!)
    *
-   * @param table table to use for the lookup
-   * @param key the key to look up
-   * @param timeout how long to wait until this operation should
-   *        automatically time-out
-   * @param callback function to call on successful completion
-   * @param closure extra argument to callback
-   * @return handle to stop the async put
+   * @param key the key to store under
    */
-  struct DHT_PUT_RECORD * (*put_start)(const DHT_TableId * table,
-				       const HashCode512 * key,
-				       cron_t timeout,
-				       const DataContainer * value,
-				       DHT_OP_Complete callback,
-				       void * closure);
-
-  /**
-   * Stop async DHT-put.  Frees associated resources.
-   */
-  int (*put_stop)(struct DHT_PUT_RECORD * record);
+  void (*put)(const HashCode512 * key,
+	      unsigned int type,
+	      unsigned int size,
+	      cron_t expire,
+	      const char * data);
 
 } DHT_ServiceAPI;
 
