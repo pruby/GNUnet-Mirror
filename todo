@@ -42,7 +42,13 @@ Notes:
 - Features:
   * SMTP logger
   * Chat support [RC]
-  * XFS / support for location URIs [CG, RC]
+  * XFS / support for location URIs [CG] 
+    + dstore deletion for quota maintenance [RC]
+    + dstore bloomfilter
+    + dht/service.c: timeout [RC]
+    + dht/cs: not done yet [RC]
+    + dht/tools: update clients [RC]
+    + dht/gap integration [RC]
 - Optimizations:
   * directories can be compacted -- add heuristic to determine
     if we should NOT padd with zeros (if we would waste too
