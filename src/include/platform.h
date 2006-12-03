@@ -167,6 +167,9 @@
  #define socklen_t unsigned int
  #define __BYTE_ORDER BYTE_ORDER
  #define __BIG_ENDIAN BIG_ENDIAN
+ /* not available on OS X, override configure */
+ #undef HAVE_STAT64
+ #undef HAVE_MREMAP
 #endif
 
 
