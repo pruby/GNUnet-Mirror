@@ -31,7 +31,6 @@
 #include "gnunet_dht_lib.h"
 #include "gnunet_util_boot.h"
 #include "gnunet_util_network_client.h"
-#include "gnunet_dht_datastore_memory.h"
 
 static DHT_TableId table;
 

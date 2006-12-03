@@ -6,7 +6,9 @@ plugin_LTLIBRARIES = \
   libgnunetmodule_dht.la 
 
 libgnunetmodule_dht_la_SOURCES = \
-  table.c dstore.c 
+  table.c table.h \
+  dstore.c dstore.h \
+  routing.c routing.h
 libgnunetmodule_dht_la_LIBADD = \
  $(top_builddir)/src/util/crypto/libgnunetutil_crypto.la \
  $(top_builddir)/src/util/containers/libgnunetutil_containers.la \
